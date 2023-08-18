@@ -25,6 +25,7 @@ using LibRpFile::IRpFile;
 
 // C++ STL classes
 using std::array;
+using std::shared_ptr;
 using std::string;
 using std::vector;
 
@@ -62,7 +63,7 @@ const RomDataInfo NintendoDSPrivate::romDataInfo = {
 	"NintendoDS", exts, mimeTypes
 };
 
-NintendoDSPrivate::NintendoDSPrivate(IRpFile *file, bool cia)
+NintendoDSPrivate::NintendoDSPrivate(const shared_ptr<IRpFile> &file, bool cia)
 	: super(file, &romDataInfo)
 	, iconAnimData(nullptr)
 	, icon_first_frame(nullptr)
@@ -588,7 +589,7 @@ RomFields::ListData_t *NintendoDSPrivate::getDSiFlagsStringVector(void)
  *
  * @param file Open ROM image.
  */
-NintendoDS::NintendoDS(IRpFile *file)
+NintendoDS::NintendoDS(const shared_ptr<IRpFile> &file)
 	: super(new NintendoDSPrivate(file, false))
 {
 	RP_D(NintendoDS);
@@ -614,7 +615,7 @@ NintendoDS::NintendoDS(IRpFile *file)
  * @param file Open ROM image.
  * @param cia If true, hide fields that aren't relevant to DSiWare in 3DS CIA packages.
  */
-NintendoDS::NintendoDS(IRpFile *file, bool cia)
+NintendoDS::NintendoDS(const shared_ptr<IRpFile> &file, bool cia)
 	: super(new NintendoDSPrivate(file, cia))
 {
 	RP_D(NintendoDS);
@@ -637,7 +638,7 @@ void NintendoDS::init(void)
 	d->file->rewind();
 	size_t size = d->file->read(&d->romHeader, sizeof(d->romHeader));
 	if (size != sizeof(d->romHeader)) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -654,7 +655,7 @@ void NintendoDS::init(void)
 	d->isValid = ((int)d->romType >= 0);
 
 	if (!d->isValid) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 

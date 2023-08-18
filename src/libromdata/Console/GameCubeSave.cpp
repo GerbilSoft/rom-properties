@@ -19,9 +19,8 @@ using namespace LibRpText;
 using namespace LibRpTexture;
 using LibRpFile::IRpFile;
 
-// C++ STL classes.
-#include <string>
-#include <vector>
+// C++ STL classes
+using std::shared_ptr;
 using std::string;
 using std::vector;
 
@@ -30,7 +29,7 @@ namespace LibRomData {
 class GameCubeSavePrivate final : public RomDataPrivate
 {
 	public:
-		GameCubeSavePrivate(IRpFile *file);
+		GameCubeSavePrivate(const shared_ptr<IRpFile> &file);
 		~GameCubeSavePrivate() final;
 
 	private:
@@ -130,7 +129,7 @@ const RomDataInfo GameCubeSavePrivate::romDataInfo = {
 	"GameCubeSave", exts, mimeTypes
 };
 
-GameCubeSavePrivate::GameCubeSavePrivate(IRpFile *file)
+GameCubeSavePrivate::GameCubeSavePrivate(const shared_ptr<IRpFile> &file)
 	: super(file, &romDataInfo)
 	, img_banner(nullptr)
 	, iconAnimData(nullptr)
@@ -550,7 +549,7 @@ const rp_image *GameCubeSavePrivate::loadBanner(void)
  *
  * @param file Open disc image.
  */
-GameCubeSave::GameCubeSave(IRpFile *file)
+GameCubeSave::GameCubeSave(const shared_ptr<IRpFile> &file)
 	: super(new GameCubeSavePrivate(file))
 {
 	// This class handles save files.
@@ -568,7 +567,7 @@ GameCubeSave::GameCubeSave(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(&header, sizeof(header));
 	if (size != sizeof(header)) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -595,7 +594,7 @@ GameCubeSave::GameCubeSave(IRpFile *file)
 		default:
 			// Unknown save type.
 			d->saveType = GameCubeSavePrivate::SaveType::Unknown;
-			UNREF_AND_NULL_NOCHK(d->file);
+			d->file.reset();
 			return;
 	}
 

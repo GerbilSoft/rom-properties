@@ -38,7 +38,8 @@ using LibRomData::TCreateThumbnail;
 #  include "networkmanagerinterface.h"
 #endif /* QT_VERSION >= QT_VERSION_CHECK(5,0,0) && HAVE_QtDBus */
 
-// C++ STL classes.
+// C++ STL classes
+using std::shared_ptr;
 using std::string;
 using std::unique_ptr;
 
@@ -266,7 +267,7 @@ bool RomThumbCreator::create(const QString &path, int width, int height, QImage 
 	path_enc.replace(QChar(L'#'), QLatin1String("%23"));
 	const QUrl path_url(path_enc);
 
-	IRpFile *const file = openQUrl(path_url, true);
+	shared_ptr<IRpFile> file(openQUrl(path_url, true));
 	if (!file) {
 		return false;
 	}
@@ -276,7 +277,6 @@ bool RomThumbCreator::create(const QString &path, int width, int height, QImage 
 	Q_D(RomThumbCreator);
 	RomThumbCreatorPrivate::GetThumbnailOutParams_t outParams;
 	int ret = d->getThumbnail(file, width, &outParams);
-	file->unref();
 
 	if (ret == 0) {
 		img = outParams.retImg;
@@ -344,7 +344,7 @@ KIO::ThumbnailResult RomThumbnailCreator::create(const KIO::ThumbnailRequest &re
 	}
 
 	// Attempt to open the ROM file.
-	IRpFile *const file = openQUrl(url, true);
+	shared_ptr<IRpFile> file(openQUrl(url, true));
 	if (!file) {
 		return KIO::ThumbnailResult::fail();
 	}
@@ -355,7 +355,6 @@ KIO::ThumbnailResult RomThumbnailCreator::create(const KIO::ThumbnailRequest &re
 	const int width = request.targetSize().width();
 	RomThumbnailCreatorPrivate::GetThumbnailOutParams_t outParams;
 	int ret = d->getThumbnail(file, width, &outParams);
-	file->unref();
 
 	if (ret != 0) {
 		return KIO::ThumbnailResult::fail();
@@ -416,7 +415,7 @@ Q_DECL_EXPORT int RP_C_API rp_create_thumbnail2(const char *source_file, const c
 
 	// Attempt to open the ROM file.
 	const QUrl localUrl = localizeQUrl(QUrl(QString::fromUtf8(source_file)));
-	IRpFile *const file = openQUrl(localUrl, true);
+	shared_ptr<IRpFile> file(openQUrl(localUrl, true));
 	if (!file) {
 		// Could not open the file.
 		return RPCT_ERROR_CANNOT_OPEN_SOURCE_FILE;
@@ -425,7 +424,6 @@ Q_DECL_EXPORT int RP_C_API rp_create_thumbnail2(const char *source_file, const c
 	// Get the appropriate RomData class for this ROM.
 	// RomData class *must* support at least one image type.
 	RomData *const romData = RomDataFactory::create(file, RomDataFactory::RDA_HAS_THUMBNAIL);
-	file->unref();	// file is ref()'d by RomData.
 	if (!romData) {
 		// ROM is not supported.
 		return RPCT_ERROR_SOURCE_FILE_NOT_SUPPORTED;

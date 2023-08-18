@@ -22,7 +22,7 @@ class NASOSReader : public LibRpBase::SparseDiscReader
 		 * unref()'d by the caller afterwards.
 		 * @param file File to read from.
 		 */
-		explicit NASOSReader(LibRpFile::IRpFile *file);
+		explicit NASOSReader(const std::shared_ptr<LibRpFile::IRpFile> &file);
 
 	private:
 		typedef SparseDiscReader super;

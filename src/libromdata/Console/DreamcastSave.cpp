@@ -16,7 +16,8 @@ using namespace LibRpText;
 using namespace LibRpTexture;
 using LibRpFile::IRpFile;
 
-// C++ STL classes.
+// C++ STL classes
+using std::shared_ptr;
 using std::string;
 using std::vector;
 
@@ -25,7 +26,7 @@ namespace LibRomData {
 class DreamcastSavePrivate final : public RomDataPrivate
 {
 	public:
-		DreamcastSavePrivate(IRpFile *file);
+		DreamcastSavePrivate(const shared_ptr<IRpFile> &file);
 		~DreamcastSavePrivate() final;
 
 	private:
@@ -80,7 +81,7 @@ class DreamcastSavePrivate final : public RomDataPrivate
 
 		// VMI save file. (for .VMI+.VMS)
 		// NOTE: Standalone VMI uses this->file.
-		IRpFile *vmi_file;
+		shared_ptr<IRpFile> vmi_file;
 
 		// Offset in the main file to the data area.
 		// - VMS: 0
@@ -124,7 +125,7 @@ class DreamcastSavePrivate final : public RomDataPrivate
 		 * @param vmi_file VMI file.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		int readVmiHeader(IRpFile *vmi_file);
+		int readVmiHeader(const shared_ptr<IRpFile> &vmi_file);
 
 		// Graphic eyecatch sizes.
 		static const uint32_t eyecatch_sizes[4];
@@ -213,7 +214,7 @@ const uint32_t DreamcastSavePrivate::eyecatch_sizes[4] = {
 	DC_VMS_EYECATCH_CI4_PALETTE_SIZE + DC_VMS_EYECATCH_CI4_DATA_SIZE
 };
 
-DreamcastSavePrivate::DreamcastSavePrivate(IRpFile *file)
+DreamcastSavePrivate::DreamcastSavePrivate(const shared_ptr<IRpFile> &file)
 	: super(file, &romDataInfo)
 	, img_banner(nullptr)
 	, iconAnimData(nullptr)
@@ -233,8 +234,6 @@ DreamcastSavePrivate::DreamcastSavePrivate(IRpFile *file)
 
 DreamcastSavePrivate::~DreamcastSavePrivate()
 {
-	UNREF(vmi_file);
-
 	UNREF(img_banner);
 	UNREF(iconAnimData);
 }
@@ -369,7 +368,7 @@ unsigned int DreamcastSavePrivate::readAndVerifyVmsHeader(uint32_t address)
  * @param vmi_file VMI file.
  * @return 0 on success; negative POSIX error code on error.
  */
-int DreamcastSavePrivate::readVmiHeader(IRpFile *vmi_file)
+int DreamcastSavePrivate::readVmiHeader(const shared_ptr<IRpFile> &vmi_file)
 {
 	// NOTE: vmi_file shadows this->vmi_file.
 
@@ -774,7 +773,7 @@ const rp_image *DreamcastSavePrivate::loadBanner(void)
  *
  * @param file Open disc image.
  */
-DreamcastSave::DreamcastSave(IRpFile *file)
+DreamcastSave::DreamcastSave(const shared_ptr<IRpFile> &file)
 	: super(new DreamcastSavePrivate(file))
 {
 	// This class handles save files.
@@ -821,7 +820,7 @@ DreamcastSave::DreamcastSave(IRpFile *file)
 		size_t size = d->file->read(&d->vms_dirent, sizeof(d->vms_dirent));
 		if (size != sizeof(d->vms_dirent)) {
 			// Read error.
-			UNREF_AND_NULL_NOCHK(d->file);
+			d->file.reset();
 			return;
 		}
 
@@ -849,7 +848,7 @@ DreamcastSave::DreamcastSave(IRpFile *file)
 		int ret = d->readVmiHeader(d->file);
 		if (ret != 0) {
 			// Read error.
-			UNREF_AND_NULL_NOCHK(d->file);
+			d->file.reset();
 			return;
 		}
 
@@ -860,7 +859,7 @@ DreamcastSave::DreamcastSave(IRpFile *file)
 	} else {
 		// Not valid.
 		d->saveType = DreamcastSavePrivate::SaveType::Unknown;
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -882,7 +881,7 @@ DreamcastSave::DreamcastSave(IRpFile *file)
 			d->loaded_headers |= headerLoaded;
 		} else {
 			// Not valid.
-			UNREF_AND_NULL_NOCHK(d->file);
+			d->file.reset();
 			return;
 		}
 
@@ -907,7 +906,7 @@ DreamcastSave::DreamcastSave(IRpFile *file)
 				d->loaded_headers |= headerLoaded;
 			} else {
 				// Not valid.
-				UNREF_AND_NULL_NOCHK(d->file);
+				d->file.reset();
 				return;
 			}
 		}
@@ -933,25 +932,20 @@ DreamcastSave::DreamcastSave(IRpFile *file)
  * @param vms_file Open .VMS save file.
  * @param vmi_file Open .VMI save file.
  */
-DreamcastSave::DreamcastSave(IRpFile *vms_file, IRpFile *vmi_file)
+DreamcastSave::DreamcastSave(const shared_ptr<IRpFile> &vms_file, const shared_ptr<IRpFile> &vmi_file)
 	: super(new DreamcastSavePrivate(vms_file))
 {
 	// This class handles save files.
 	RP_D(DreamcastSave);
 	d->fileType = FileType::SaveFile;
 
-	if (!d->file) {
+	if (!d->file || !vmi_file) {
 		// Could not ref() the file handle.
 		return;
 	}
 
 	// ref() the VMI file.
-	d->vmi_file = vmi_file->ref();
-	if (!d->vmi_file) {
-		// Could not ref() the VMI file.
-		UNREF_AND_NULL_NOCHK(d->file);
-		return;
-	}
+	d->vmi_file = vmi_file;
 
 	// Sanity check:
 	// - VMS file should be a multiple of 512 bytes,
@@ -963,8 +957,8 @@ DreamcastSave::DreamcastSave(IRpFile *vms_file, IRpFile *vmi_file)
 	      vmi_fileSize != sizeof(DC_VMI_Header))
 	{
 		// Invalid file(s).
-		UNREF_AND_NULL_NOCHK(d->vmi_file);
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->vmi_file.reset();
+		d->file.reset();
 		return;
 	}
 
@@ -978,8 +972,8 @@ DreamcastSave::DreamcastSave(IRpFile *vms_file, IRpFile *vmi_file)
 	int ret = d->readVmiHeader(d->vmi_file);
 	if (ret != 0) {
 		// Error reading the VMI header.
-		UNREF_AND_NULL_NOCHK(d->vmi_file);
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->vmi_file.reset();
+		d->file.reset();
 		return;
 	}
 
@@ -997,8 +991,8 @@ DreamcastSave::DreamcastSave(IRpFile *vms_file, IRpFile *vmi_file)
 			d->loaded_headers |= headerLoaded;
 		} else {
 			// Not valid.
-			UNREF_AND_NULL_NOCHK(d->vmi_file);
-			UNREF_AND_NULL_NOCHK(d->file);
+			d->vmi_file.reset();
+			d->file.reset();
 			return;
 		}
 	}
@@ -1015,7 +1009,7 @@ void DreamcastSave::close(void)
 	RP_D(DreamcastSave);
 
 	// Close the VMI file if it's open.
-	UNREF_AND_NULL(d->vmi_file);
+	d->vmi_file.reset();
 
 	// Call the superclass function.
 	super::close();

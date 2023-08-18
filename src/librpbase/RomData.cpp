@@ -19,6 +19,7 @@ using LibRpTexture::rp_image;
 using namespace LibRpText;
 
 // C++ STL classes
+using std::shared_ptr;
 using std::string;
 using std::vector;
 
@@ -31,12 +32,12 @@ namespace LibRpBase {
  * @param file ROM file
  * @param pRomDataInfo RomData subclass information
  */
-RomDataPrivate::RomDataPrivate(IRpFile *file, const RomDataInfo *pRomDataInfo)
+RomDataPrivate::RomDataPrivate(const std::shared_ptr<LibRpFile::IRpFile> &file, const RomDataInfo *pRomDataInfo)
 	: pRomDataInfo(pRomDataInfo)
 	, mimeType(nullptr)
 	, fileType(RomData::FileType::ROM_Image)
 	, isValid(false)
-	, file(nullptr)
+	, file(file)
 	, filename(nullptr)
 #ifdef _WIN32
 	, filenameW(nullptr)
@@ -49,14 +50,13 @@ RomDataPrivate::RomDataPrivate(IRpFile *file, const RomDataInfo *pRomDataInfo)
 	// Initialize i18n.
 	rp_i18n_init();
 
-	if (file) {
-		// Reference the file.
-		this->file = file->ref();
-		this->isCompressed = file->isCompressed();
+	if (this->file) {
+		// A file was specified. Copy important information.
+		this->isCompressed = this->file->isCompressed();
 
 #ifdef _WIN32
 		// If this is RpFile, get the UTF-16 filename directly.
-		RpFile *const rpFile = dynamic_cast<RpFile*>(file);
+		RpFile *const rpFile = dynamic_cast<RpFile*>(this->file.get());
 		if (rpFile) {
 			const wchar_t *const filenameW = rpFile->filenameW();
 			if (filenameW) {
@@ -66,7 +66,7 @@ RomDataPrivate::RomDataPrivate(IRpFile *file, const RomDataInfo *pRomDataInfo)
 #endif /* _WIN32 */
 
 		// TODO: Don't set if filenameW was set?
-		const char *const filename = file->filename();
+		const char *const filename = this->file->filename();
 		if (filename) {
 			this->filename = strdup(filename);
 		}
@@ -80,9 +80,6 @@ RomDataPrivate::~RomDataPrivate()
 #ifdef _WIN32
 	free(filenameW);
 #endif /* _WIN32 */
-
-	// Unreference the file.
-	UNREF(this->file);
 }
 
 /** Convenience functions. **/
@@ -491,7 +488,7 @@ bool RomData::isValid(void) const
 bool RomData::isOpen(void) const
 {
 	RP_D(const RomData);
-	return (d->file != nullptr);
+	return ((bool)d->file);
 }
 
 /**
@@ -501,17 +498,17 @@ void RomData::close(void)
 {
 	// Unreference the file.
 	RP_D(RomData);
-	UNREF_AND_NULL(d->file);
+	d->file.reset();
 }
 
 /**
  * Get a reference to the internal file.
  * @return Reference to file, or nullptr on error.
  */
-IRpFile *RomData::ref_file(void)
+shared_ptr<IRpFile> RomData::ref_file(void) const
 {
-	RP_D(RomData);
-	return (d->file ? d->file->ref() : nullptr);
+	RP_D(const RomData);
+	return d->file;
 }
 
 /**
@@ -1027,10 +1024,10 @@ int RomData::doRomOp(int id, RomOpParams *pParams)
 			}
 			pParams->status = ret;
 			pParams->msg = C_("RomData", "Unable to reopen the file for writing.");
-			UNREF(file);
+			delete file;
 			return ret;
 		}
-		d->file = file;
+		d->file.reset(file);
 	}
 
 	// If the ROM operation requires a writable file,
@@ -1042,7 +1039,7 @@ int RomData::doRomOp(int id, RomOpParams *pParams)
 			pParams->status = -EIO;
 			pParams->msg = C_("RomData", "Cannot perform this ROM operation on a compressed file.");
 			if (closeFileAfter) {
-				UNREF_AND_NULL_NOCHK(d->file);
+				d->file.reset();
 			}
 			return -EIO;
 		}
@@ -1055,7 +1052,7 @@ int RomData::doRomOp(int id, RomOpParams *pParams)
 				pParams->status = ret;
 				pParams->msg = C_("RomData", "Cannot perform this ROM operation on a read-only file.");
 				if (closeFileAfter) {
-					UNREF_AND_NULL_NOCHK(d->file);
+					d->file.reset();
 				}
 				return ret;
 			}
@@ -1064,7 +1061,7 @@ int RomData::doRomOp(int id, RomOpParams *pParams)
 
 	int ret = doRomOp_int(id, pParams);
 	if (closeFileAfter) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 	}
 	return ret;
 }

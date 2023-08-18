@@ -16,6 +16,7 @@ using namespace LibRpText;
 using LibRpFile::IRpFile;
 
 // C++ STL classes
+using std::shared_ptr;
 using std::string;
 
 namespace LibRomData {
@@ -23,7 +24,7 @@ namespace LibRomData {
 class Atari7800Private final : public RomDataPrivate
 {
 	public:
-		Atari7800Private(IRpFile *file);
+		Atari7800Private(const shared_ptr<IRpFile> &file);
 
 	private:
 		typedef RomDataPrivate super;
@@ -60,7 +61,7 @@ const RomDataInfo Atari7800Private::romDataInfo = {
 	"Atari7800", exts, mimeTypes
 };
 
-Atari7800Private::Atari7800Private(IRpFile *file)
+Atari7800Private::Atari7800Private(const shared_ptr<IRpFile> &file)
 	: super(file, &romDataInfo)
 {
 	// Clear the ROM header struct.
@@ -82,7 +83,7 @@ Atari7800Private::Atari7800Private(IRpFile *file)
  *
  * @param file Open ROM image.
  */
-Atari7800::Atari7800(IRpFile *file)
+Atari7800::Atari7800(const shared_ptr<IRpFile> &file)
 	: super(new Atari7800Private(file))
 {
 	RP_D(Atari7800);
@@ -97,7 +98,7 @@ Atari7800::Atari7800(IRpFile *file)
 	size_t size = d->file->read(&d->romHeader, sizeof(d->romHeader));
 	if (size != sizeof(d->romHeader)) {
 		// Seek and/or read error.
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -110,7 +111,7 @@ Atari7800::Atari7800(IRpFile *file)
 	d->isValid = (isRomSupported_static(&info) >= 0);
 
 	if (!d->isValid) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 	}
 }
 

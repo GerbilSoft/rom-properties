@@ -15,7 +15,8 @@ using namespace LibRpBase;
 using namespace LibRpText;
 using LibRpFile::IRpFile;
 
-// C++ STL classes.
+// C++ STL classes
+using std::shared_ptr;
 using std::string;
 using std::vector;
 
@@ -24,7 +25,7 @@ namespace LibRomData {
 class NGPCPrivate final : public RomDataPrivate
 {
 	public:
-		NGPCPrivate(IRpFile *file);
+		NGPCPrivate(const shared_ptr<IRpFile> &file);
 
 	private:
 		typedef RomDataPrivate super;
@@ -79,7 +80,7 @@ const RomDataInfo NGPCPrivate::romDataInfo = {
 	"NGPC", exts, mimeTypes
 };
 
-NGPCPrivate::NGPCPrivate(IRpFile *file)
+NGPCPrivate::NGPCPrivate(const shared_ptr<IRpFile> &file)
 	: super(file, &romDataInfo)
 	, romType(RomType::Unknown)
 {
@@ -102,7 +103,7 @@ NGPCPrivate::NGPCPrivate(IRpFile *file)
  *
  * @param file Open ROM file.
  */
-NGPC::NGPC(IRpFile *file)
+NGPC::NGPC(const shared_ptr<IRpFile> &file)
 	: super(new NGPCPrivate(file))
 {
 	RP_D(NGPC);
@@ -118,7 +119,7 @@ NGPC::NGPC(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(&d->romHeader, sizeof(d->romHeader));
 	if (size != sizeof(d->romHeader)) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -132,7 +133,7 @@ NGPC::NGPC(IRpFile *file)
 	d->isValid = ((int)d->romType >= 0);
 
 	if (!d->isValid) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 

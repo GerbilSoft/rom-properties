@@ -42,8 +42,9 @@ using LibRpTexture::rp_image;
 // for strnlen() if it's not available in <string.h>
 #include "librptext/libc.h"
 
-// C++ STL classes.
+// C++ STL classes
 using std::array;
+using std::shared_ptr;
 using std::string;
 using std::unique_ptr;
 using std::vector;
@@ -53,7 +54,7 @@ namespace LibRomData {
 class GameCubePrivate final : public RomDataPrivate
 {
 	public:
-		GameCubePrivate(IRpFile *file);
+		GameCubePrivate(const shared_ptr<IRpFile> &file);
 		~GameCubePrivate() final;
 
 	private:
@@ -261,7 +262,7 @@ const uint8_t GameCubePrivate::nddemo_header[64] = {
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 };
 
-GameCubePrivate::GameCubePrivate(IRpFile *file)
+GameCubePrivate::GameCubePrivate(const shared_ptr<IRpFile> &file)
 	: super(file, &romDataInfo)
 	, discType(DISC_UNKNOWN)
 	, discReader(nullptr)
@@ -499,7 +500,7 @@ int GameCubePrivate::gcn_loadOpeningBnr(void)
 		return -EIO;
 	}
 
-	IRpFile *const f_opening_bnr = gcnPartition->open("/opening.bnr");
+	shared_ptr<IRpFile> f_opening_bnr = gcnPartition->open("/opening.bnr");
 	if (!f_opening_bnr) {
 		// Error opening "opening.bnr".
 		const int err = -gcnPartition->lastError();
@@ -509,7 +510,6 @@ int GameCubePrivate::gcn_loadOpeningBnr(void)
 
 	// Attempt to open a GameCubeBNR subclass.
 	GameCubeBNR *const bnr = new GameCubeBNR(f_opening_bnr, this->gcnRegion);
-	f_opening_bnr->unref();
 	if (!bnr->isOpen()) {
 		// Unable to open the subclass.
 		bnr->unref();
@@ -548,7 +548,7 @@ int GameCubePrivate::wii_loadOpeningBnr(void)
 		return -ENOENT;
 	}
 
-	IRpFile *const f_opening_bnr = gamePartition->open("/opening.bnr");
+	shared_ptr<IRpFile> f_opening_bnr = gamePartition->open("/opening.bnr");
 	if (!f_opening_bnr) {
 		// Error opening "opening.bnr".
 		return -gamePartition->lastError();
@@ -560,10 +560,8 @@ int GameCubePrivate::wii_loadOpeningBnr(void)
 	if (size != sizeof(*pBanner)) {
 		// Read error.
 		const int err = f_opening_bnr->lastError();
-		f_opening_bnr->unref();
 		return (err != 0 ? -err : -EIO);
 	}
-	f_opening_bnr->unref();
 
 	// Verify the IMET magic.
 	if (pBanner->magic != cpu_to_be32(WII_IMET_MAGIC)) {
@@ -702,7 +700,7 @@ const char *GameCubePrivate::wii_getCryptoStatus(WiiPartition *partition)
  *
  * @param file Open disc image.
  */
-GameCube::GameCube(IRpFile *file)
+GameCube::GameCube(const shared_ptr<IRpFile> &file)
 	: super(new GameCubePrivate(file))
 {
 	// This class handles disc images.
@@ -719,7 +717,7 @@ GameCube::GameCube(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(&header, sizeof(header));
 	if (size != sizeof(header)) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -735,7 +733,7 @@ GameCube::GameCube(IRpFile *file)
 	d->isValid = (d->discType >= 0);
 	if (!d->isValid) {
 		// Not supported.
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -803,14 +801,14 @@ GameCube::GameCube(IRpFile *file)
 			} else*/ if ((d->discType & GameCubePrivate::DISC_FORMAT_MASK) == GameCubePrivate::DISC_FORMAT_WBFS) {
 				// First part of split WBFS.
 				// Check for a WBF1 file.
-				IRpFile *wbfs1 = nullptr;
+				shared_ptr<IRpFile> wbfs1;
 				const char *const filename = file->filename();
 				if (filename) {
 					wbfs1 = FileSystem::openRelatedFile(file->filename(), nullptr, ".wbf1");
 					if (unlikely(!wbfs1 || !wbfs1->isOpen())) {
 						// Unable to open the .wbf1 file.
 						// Assume it's a single .wbfs file.
-						UNREF_AND_NULL(wbfs1);
+						wbfs1.reset();
 					}
 				}
 
@@ -824,17 +822,15 @@ GameCube::GameCube(IRpFile *file)
 				DualFile *const dualFile = new DualFile(d->file, wbfs1);
 				if (!dualFile->isOpen()) {
 					// Unable to open DualFile.
-					dualFile->unref();
+					delete dualFile;
 					d->discType = GameCubePrivate::DISC_UNKNOWN;
 					break;
 				}
 
-				// DualFile maintains its own references, so unreference
-				// d->file and replace it with the DualFile.
-				IRpFile *const file_tmp = d->file;
-				d->file = dualFile;
-				file_tmp->unref();
-				wbfs1->unref();
+				// DualFile maintains its own references,
+				// so replace d->file with the DualFile.
+				// FIXME BEFORE COMMIT: Do testing!
+				d->file.reset(dualFile);
 
 				// Open the WbfsReader.
 				d->discReader = new WbfsReader(d->file);
@@ -882,7 +878,7 @@ GameCube::GameCube(IRpFile *file)
 	d->isValid = (d->discType >= 0);
 	if (!d->isValid) {
 		// Not supported.
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -1122,7 +1118,7 @@ GameCube::GameCube(IRpFile *file)
 notSupported:
 	// This disc image is not supported.
 	UNREF_AND_NULL(d->discReader);
-	UNREF_AND_NULL_NOCHK(d->file);
+	d->file.reset();
 	d->discType = GameCubePrivate::DISC_UNKNOWN;
 	d->isValid = false;
 }
@@ -1786,11 +1782,10 @@ int GameCube::loadFieldData(void)
 
 			// Check if __update.inf exists.
 			// If it does, read the datestamp.
-			IRpFile *const update_inf = d->updatePartition->open("/__update.inf");
+			shared_ptr<IRpFile> update_inf = d->updatePartition->open("/__update.inf");
 			if (update_inf) {
 				char buf[11];
 				size_t size = update_inf->read(buf, sizeof(buf));
-				update_inf->unref();
 				if (size == sizeof(buf) && buf[sizeof(buf)-1] == '\0') {
 					struct tm tm;
 					memset(&tm, 0, sizeof(tm));

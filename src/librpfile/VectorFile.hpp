@@ -23,8 +23,8 @@ class RP_LIBROMDATA_PUBLIC VectorFile final : public IRpFile
 		 * The resulting IRpFile is writable.
 		 */
 		VectorFile();
-	protected:
-		~VectorFile() final;	// call unref() instead
+	public:
+		~VectorFile() final;
 
 	private:
 		typedef IRpFile super;

@@ -19,7 +19,8 @@ using LibRpTexture::rp_image;
 // RpFileKio
 #include "RpFile_kio.hpp"
 
-// C++ STL classes.
+// C++ STL classes
+using std::shared_ptr;
 using std::string;
 
 /** Image conversion **/
@@ -57,7 +58,7 @@ QImage rpToQImage(const rp_image *image)
  *
  * @return IRpFile, or nullptr on error.
  */
-IRpFile *openQUrl(const QUrl &url, bool isThumbnail)
+std::shared_ptr<LibRpFile::IRpFile> openQUrl(const QUrl &url, bool isThumbnail)
 {
 	// Some things work better with local paths than with remote.
 	// KDE uses some custom URL schemes, e.g. desktop:/, to represent
@@ -130,10 +131,11 @@ IRpFile *openQUrl(const QUrl &url, bool isThumbnail)
 	if (!file->isOpen()) {
 		// Unable to open the file...
 		// TODO: Return an error code?
-		UNREF_AND_NULL_NOCHK(file);
+		delete file;
+		file = nullptr;
 	}
 
-	return file;
+	return shared_ptr<IRpFile>(file);
 }
 
 /**

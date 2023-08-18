@@ -17,6 +17,9 @@ namespace LibRpTexture {
 	class rp_image;
 }
 
+// C++ includes
+#include <memory>
+
 namespace LibRpBase { namespace RpImageLoader {
 
 /**
@@ -25,6 +28,6 @@ namespace LibRpBase { namespace RpImageLoader {
  * @return rp_image*, or nullptr on error.
  */
 RP_LIBROMDATA_PUBLIC
-LibRpTexture::rp_image *load(LibRpFile::IRpFile *file);
+LibRpTexture::rp_image *load(const std::shared_ptr<LibRpFile::IRpFile> &file);
 
 } }

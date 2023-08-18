@@ -16,7 +16,8 @@ using namespace LibRpBase;
 using namespace LibRpText;
 using LibRpFile::IRpFile;
 
-// C++ STL classes.
+// C++ STL classes
+using std::shared_ptr;
 using std::string;
 using std::unique_ptr;
 using std::vector;
@@ -38,7 +39,7 @@ DELAYLOAD_TEST_FUNCTION_IMPL0(get_crc_table);
 class CBMCartPrivate final : public RomDataPrivate
 {
 	public:
-		CBMCartPrivate(IRpFile *file);
+		CBMCartPrivate(const shared_ptr<IRpFile> &file);
 
 	private:
 		typedef RomDataPrivate super;
@@ -106,7 +107,7 @@ const RomDataInfo CBMCartPrivate::romDataInfo = {
 	"CBMCart", exts, mimeTypes
 };
 
-CBMCartPrivate::CBMCartPrivate(IRpFile *file)
+CBMCartPrivate::CBMCartPrivate(const shared_ptr<IRpFile> &file)
 	: super(file, &romDataInfo)
 	, romType(RomType::Unknown)
 	, rom_16k_crc32(0)
@@ -154,7 +155,7 @@ int CBMCartPrivate::zlibInit(void)
  *
  * @param file Open ROM image.
  */
-CBMCart::CBMCart(IRpFile *file)
+CBMCart::CBMCart(const shared_ptr<IRpFile> &file)
 	: super(new CBMCartPrivate(file))
 {
 	RP_D(CBMCart);
@@ -169,7 +170,7 @@ CBMCart::CBMCart(IRpFile *file)
 	size_t size = d->file->read(&d->romHeader, sizeof(d->romHeader));
 	if (size != sizeof(d->romHeader)) {
 		// Seek and/or read error.
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -183,7 +184,7 @@ CBMCart::CBMCart(IRpFile *file)
 	d->isValid = (d->romType > CBMCartPrivate::RomType::Unknown);
 
 	if (!d->isValid) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 	}
 }
 

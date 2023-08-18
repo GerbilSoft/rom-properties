@@ -21,7 +21,8 @@ using namespace LibRpFile;
 // librpthreads
 #include "librpthreads/pthread_once.h"
 
-// C++ STL classes.
+// C++ STL classes
+using std::shared_ptr;
 using std::string;
 using std::unordered_set;
 using std::vector;
@@ -60,7 +61,7 @@ class FileFormatFactoryPrivate
 		// FIXME: TGA format doesn't follow this...
 		//typedef int (*pfnIsTextureSupported_t)(const FileFormat::DetectInfo *info);	// TODO
 		typedef const TextureInfo* (*pfnTextureInfo_t)(void);
-		typedef FileFormat* (*pfnNewFileFormat_t)(IRpFile *file);
+		typedef FileFormat* (*pfnNewFileFormat_t)(const shared_ptr<IRpFile> &file);
 
 		struct FileFormatFns {
 			//pfnIsTextureSupported_t isTextureSupported;	// TODO
@@ -75,7 +76,7 @@ class FileFormatFactoryPrivate
 		 * @param klass Class name.
 		 */
 		template<typename klass>
-		static FileFormat *FileFormat_ctor(LibRpFile::IRpFile *file)
+		static FileFormat *FileFormat_ctor(const shared_ptr<IRpFile> &file)
 		{
 			return new klass(file);
 		}
@@ -168,10 +169,10 @@ const FileFormatFactoryPrivate::FileFormatFns FileFormatFactoryPrivate::FileForm
  * types must be supported by the FileFormat subclass in order to
  * be returned.
  *
- * @param file Texture file.
+ * @param file Texture file
  * @return FileFormat subclass, or nullptr if the texture file isn't supported.
  */
-FileFormat *FileFormatFactory::create(IRpFile *file)
+FileFormat *FileFormatFactory::create(const shared_ptr<IRpFile> &file)
 {
 	assert(file != nullptr);
 	if (!file || file->isDevice()) {

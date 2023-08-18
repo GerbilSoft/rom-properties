@@ -15,7 +15,8 @@ using namespace LibRpBase;
 using namespace LibRpText;
 using LibRpFile::IRpFile;
 
-// C++ STL classes.
+// C++ STL classes
+using std::shared_ptr;
 using std::string;
 using std::vector;
 
@@ -24,7 +25,7 @@ namespace LibRomData {
 class PokemonMiniPrivate final : public RomDataPrivate
 {
 	public:
-		PokemonMiniPrivate(IRpFile *file);
+		PokemonMiniPrivate(const shared_ptr<IRpFile> &file);
 
 	private:
 		typedef RomDataPrivate super;
@@ -62,7 +63,7 @@ const RomDataInfo PokemonMiniPrivate::romDataInfo = {
 	"PokemonMini", exts, mimeTypes
 };
 
-PokemonMiniPrivate::PokemonMiniPrivate(IRpFile *file)
+PokemonMiniPrivate::PokemonMiniPrivate(const shared_ptr<IRpFile> &file)
 	: super(file, &romDataInfo)
 {
 	// Clear the ROM header struct.
@@ -84,7 +85,7 @@ PokemonMiniPrivate::PokemonMiniPrivate(IRpFile *file)
  *
  * @param file Open ROM image.
  */
-PokemonMini::PokemonMini(IRpFile *file)
+PokemonMini::PokemonMini(const shared_ptr<IRpFile> &file)
 	: super(new PokemonMiniPrivate(file))
 {
 	RP_D(PokemonMini);
@@ -98,7 +99,7 @@ PokemonMini::PokemonMini(IRpFile *file)
 	// Read the ROM header.
 	size_t size = d->file->seekAndRead(POKEMONMINI_HEADER_ADDRESS, &d->romHeader, sizeof(d->romHeader));
 	if (size != sizeof(d->romHeader)) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -112,7 +113,7 @@ PokemonMini::PokemonMini(IRpFile *file)
 	d->isValid = (isRomSupported_static(&info) >= 0);
 
 	if (!d->isValid) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 	}
 }
 

@@ -21,7 +21,8 @@ using LibRpFile::IRpFile;
 // for memmem() if it's not available in <string.h>
 #include "librptext/libc.h"
 
-// C++ STL classes.
+// C++ STL classes
+using std::shared_ptr;
 using std::string;
 using std::vector;
 
@@ -42,7 +43,7 @@ DELAYLOAD_TEST_FUNCTION_IMPL0(get_crc_table);
 class iQuePlayerPrivate final : public RomDataPrivate
 {
 	public:
-		iQuePlayerPrivate(IRpFile *file);
+		iQuePlayerPrivate(const shared_ptr<IRpFile> &file);
 		~iQuePlayerPrivate() final;
 
 	private:
@@ -142,7 +143,7 @@ const RomDataInfo iQuePlayerPrivate::romDataInfo = {
 	"iQuePlayer", exts, mimeTypes
 };
 
-iQuePlayerPrivate::iQuePlayerPrivate(IRpFile *file)
+iQuePlayerPrivate::iQuePlayerPrivate(const shared_ptr<IRpFile> &file)
 	: super(file, &romDataInfo)
 	, iQueFileType(IQueFileType::Unknown)
 	, img_thumbnail(nullptr)
@@ -407,7 +408,7 @@ const rp_image *iQuePlayerPrivate::loadTitleImage(void)
  *
  * @param file Open ROM image.
  */
-iQuePlayer::iQuePlayer(IRpFile *file)
+iQuePlayer::iQuePlayer(const shared_ptr<IRpFile> &file)
 	: super(new iQuePlayerPrivate(file))
 {
 	RP_D(iQuePlayer);
@@ -425,7 +426,7 @@ iQuePlayer::iQuePlayer(IRpFile *file)
 	    fileSize != IQUE_PLAYER_DAT_FILESIZE)
 	{
 		// Incorrect filesize.
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -433,7 +434,7 @@ iQuePlayer::iQuePlayer(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(&d->contentDesc, sizeof(d->contentDesc));
 	if (size != sizeof(d->contentDesc)) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -447,7 +448,7 @@ iQuePlayer::iQuePlayer(IRpFile *file)
 	d->isValid = ((int)d->iQueFileType >= 0);
 
 	if (!d->isValid) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -457,7 +458,7 @@ iQuePlayer::iQuePlayer(IRpFile *file)
 	if (size != sizeof(d->bbContentMetaDataHead)) {
 		d->iQueFileType = iQuePlayerPrivate::IQueFileType::Unknown;
 		d->isValid = false;
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 

@@ -31,7 +31,7 @@ class CIAReader final : public LibRpBase::IPartition
 		 * @param ticket		[in,opt] Ticket for decryption. (nullptr if NoCrypto)
 		 * @param tmd_content_index	[in,opt] TMD content index for decryption.
 		 */
-		CIAReader(LibRpFile::IRpFile *file,
+		CIAReader(const std::shared_ptr<LibRpFile::IRpFile> &file,
 			off64_t content_offset, uint32_t content_length,
 			const N3DS_Ticket_t *ticket,
 			uint16_t tmd_content_index);

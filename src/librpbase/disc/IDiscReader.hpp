@@ -8,11 +8,14 @@
 
 #pragma once
 
-// C includes.
+// C includes
 #include <stdint.h>
 
-// C includes. (C++ namespace)
+// C includes (C++ namespace)
 #include <cstddef>
+
+// C++ includes
+#include <memory>
 
 // common macros
 #include "common.h"
@@ -27,7 +30,7 @@ namespace LibRpBase {
 class IDiscReader : public RefBase
 {
 	protected:
-		explicit IDiscReader(LibRpFile::IRpFile *file);
+		explicit IDiscReader(const std::shared_ptr<LibRpFile::IRpFile> &file);
 		explicit IDiscReader(IDiscReader *discReader);
 	protected:
 		~IDiscReader() override;	// call unref() instead
@@ -115,7 +118,7 @@ class IDiscReader : public RefBase
 		virtual off64_t size(void) = 0;
 
 	public:
-		/** Convenience functions implemented for all IRpFile classes. **/
+		/** Convenience functions implemented for all IDiscReader subclasses. **/
 
 		/**
 		 * Seek to the specified address, then read data.
@@ -149,10 +152,9 @@ class IDiscReader : public RefBase
 
 		// Subclasses may have an underlying file, or may
 		// stack another IDiscReader object.
-		union {
-			LibRpFile::IRpFile *m_file;
-			IDiscReader *m_discReader;
-		};
+		// NOTE: This used to be a union{} prior to the std::shared_ptr<> conversion.
+		std::shared_ptr<LibRpFile::IRpFile> m_file;
+		IDiscReader *m_discReader;
 };
 
 }

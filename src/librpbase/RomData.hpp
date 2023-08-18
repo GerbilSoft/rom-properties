@@ -19,6 +19,7 @@
 #include <stdint.h>
 
 // C++ includes
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -97,7 +98,7 @@ public:
 	 * Get a reference to the internal file.
 	 * @return Reference to file, or nullptr on error.
 	 */
-	LibRpFile::IRpFile *ref_file(void);
+	std::shared_ptr<LibRpFile::IRpFile> ref_file(void) const;
 
 	/**
 	 * Get the filename that was loaded.

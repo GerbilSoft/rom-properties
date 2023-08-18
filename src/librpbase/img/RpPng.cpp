@@ -27,6 +27,7 @@ using LibRpTexture::argb32_t;
 #include "RpPngWriter.hpp"
 
 // C++ STL classes
+using std::shared_ptr;
 using std::unique_ptr;
 
 // Image format libraries
@@ -480,7 +481,7 @@ static rp_image *loadPng(png_structp png_ptr, png_infop info_ptr)
  * @param file IRpFile to load from
  * @return rp_image*, or nullptr on error
  */
-rp_image *load(IRpFile *file)
+rp_image *load(const std::shared_ptr<LibRpFile::IRpFile> &file)
 {
 	if (!file)
 		return nullptr;
@@ -521,10 +522,10 @@ rp_image *load(IRpFile *file)
 #endif /* PNG_WARNINGS_SUPPORTED */
 
 	// Initialize the custom I/O handler for IRpFile.
-	png_set_read_fn(png_ptr, file, png_io_IRpFile_read);
+	png_set_read_fn(png_ptr, file.get(), png_io_IRpFile_read);
 
 	// Call the actual PNG image reading function.
-	rp_image *img = loadPng(png_ptr, info_ptr);
+	rp_image *const img = loadPng(png_ptr, info_ptr);
 
 	// Free the PNG structs.
 	png_destroy_read_struct(&png_ptr, &info_ptr, nullptr);
@@ -542,9 +543,9 @@ rp_image *load(IRpFile *file)
  * @param img rp_image to save
  * @return 0 on success; negative POSIX error code on error
  */
-int save(IRpFile *file, const rp_image *img)
+int save(const std::shared_ptr<LibRpFile::IRpFile> &file, const rp_image *img)
 {
-	assert(file != nullptr);
+	assert((bool)file);
 	assert(img != nullptr);
 	if (!file || !file->isOpen() || !img)
 		return -EINVAL;
@@ -642,9 +643,9 @@ int save(const wchar_t *filename, const rp_image *img)
  * @param iconAnimData Animated image data to save
  * @return 0 on success; negative POSIX error code on error
  */
-int save(IRpFile *file, const IconAnimData *iconAnimData)
+int save(const std::shared_ptr<LibRpFile::IRpFile> &file, const IconAnimData *iconAnimData)
 {
-	assert(file != nullptr);
+	assert((bool)file);
 	assert(iconAnimData != nullptr);
 	if (!file || !file->isOpen() || !iconAnimData)
 		return -EINVAL;

@@ -15,6 +15,9 @@
 using namespace LibRpBase;
 using LibRpFile::IRpFile;
 
+// C++ STL classes
+using std::shared_ptr;
+
 namespace LibRomData {
 
 class WbfsReaderPrivate final : public SparseDiscReaderPrivate {
@@ -332,7 +335,7 @@ off64_t WbfsReaderPrivate::getWbfsDiscSize(const wbfs_disc_t *disc) const
 
 /** WbfsReader **/
 
-WbfsReader::WbfsReader(IRpFile *file)
+WbfsReader::WbfsReader(const shared_ptr<IRpFile> &file)
 	: super(new WbfsReaderPrivate(this), file)
 {
 	if (!m_file) {
@@ -345,7 +348,7 @@ WbfsReader::WbfsReader(IRpFile *file)
 	d->m_wbfs = d->readWbfsHeader();
 	if (!d->m_wbfs) {
 		// Error reading the WBFS header.
-		UNREF_AND_NULL_NOCHK(m_file);
+		m_file.reset();
 		m_lastError = EIO;
 		return;
 	}
@@ -356,7 +359,7 @@ WbfsReader::WbfsReader(IRpFile *file)
 		// Error opening the WBFS disc.
 		d->freeWbfsHeader(d->m_wbfs);
 		d->m_wbfs = nullptr;
-		UNREF_AND_NULL_NOCHK(m_file);
+		m_file.reset();
 		m_lastError = EIO;
 		return;
 	}

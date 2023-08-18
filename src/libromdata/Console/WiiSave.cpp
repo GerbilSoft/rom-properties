@@ -27,8 +27,9 @@ using LibRpTexture::rp_image;
 # include "WiiWIBN.hpp"
 #endif /* ENABLE_DECRYPTION */
 
-// C++ STL classes.
+// C++ STL classes
 using std::array;
+using std::shared_ptr;
 using std::string;
 using std::vector;
 
@@ -37,7 +38,7 @@ namespace LibRomData {
 class WiiSavePrivate final : public RomDataPrivate
 {
 	public:
-		WiiSavePrivate(IRpFile *file);
+		WiiSavePrivate(const shared_ptr<IRpFile> &file);
 		~WiiSavePrivate() final;
 
 	private:
@@ -111,7 +112,7 @@ const uint8_t WiiSavePrivate::bk_header_magic[8] = {
 	0x00, 0x00, 0x00, 0x70, 0x42, 0x6B, 0x00, 0x01
 };
 
-WiiSavePrivate::WiiSavePrivate(IRpFile *file)
+WiiSavePrivate::WiiSavePrivate(const shared_ptr<IRpFile> &file)
 	: super(file, &romDataInfo)
 	, svLoaded(false)
 #ifdef ENABLE_DECRYPTION
@@ -150,7 +151,7 @@ WiiSavePrivate::~WiiSavePrivate()
  *
  * @param file Open disc image.
  */
-WiiSave::WiiSave(IRpFile *file)
+WiiSave::WiiSave(const shared_ptr<IRpFile> &file)
 	: super(new WiiSavePrivate(file))
 {
 	// This class handles save files.
@@ -180,7 +181,7 @@ WiiSave::WiiSave(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(svData.get(), svSizeTotal);
 	if (size < svSizeMin) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	} else if (size > svSizeTotal) {
 		// NOTE: Shouldn't happen...
@@ -204,7 +205,7 @@ WiiSave::WiiSave(IRpFile *file)
 	if (d->bkHeader.magic != cpu_to_be16(WII_BK_MAGIC)) {
 		// Bk header not found.
 		d->isValid = false;
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -269,9 +270,9 @@ WiiSave::WiiSave(IRpFile *file)
 		// Create the PartitionFile.
 		// TODO: Only if the save game header is valid?
 		// TODO: Get the size from the save game header?
-		PartitionFile *const ptFile = new PartitionFile(d->cbcReader,
+		shared_ptr<IRpFile> ptFile(new PartitionFile(d->cbcReader,
 			sizeof(Wii_SaveGame_Header_t),
-			bkHeaderAddr - sizeof(Wii_SaveGame_Header_t));
+			bkHeaderAddr - sizeof(Wii_SaveGame_Header_t)));
 		if (ptFile->isOpen()) {
 			// Open the WiiWIBN.
 			WiiWIBN *const wibn = new WiiWIBN(ptFile);
@@ -283,7 +284,6 @@ WiiSave::WiiSave(IRpFile *file)
 				wibn->unref();
 			}
 		}
-		ptFile->unref();
 	}
 #endif /* ENABLE_DECRYPTION */
 }

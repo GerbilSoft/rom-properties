@@ -17,6 +17,7 @@ using LibRpFile::IRpFile;
 
 // C++ STL classes
 using std::array;
+using std::shared_ptr;
 using std::string;
 using std::unique_ptr;
 using std::vector;
@@ -26,7 +27,7 @@ namespace LibRomData {
 class VGMPrivate final : public RomDataPrivate
 {
 	public:
-		VGMPrivate(IRpFile *file);
+		VGMPrivate(const shared_ptr<IRpFile> &file);
 
 	private:
 		typedef RomDataPrivate super;
@@ -92,7 +93,7 @@ const RomDataInfo VGMPrivate::romDataInfo = {
 	"VGM", exts, mimeTypes
 };
 
-VGMPrivate::VGMPrivate(IRpFile *file)
+VGMPrivate::VGMPrivate(const shared_ptr<IRpFile> &file)
 	: super(file, &romDataInfo)
 	, s_clockrate(nullptr)
 	, s_dualchip(nullptr)
@@ -219,7 +220,7 @@ void VGMPrivate::addCommonSoundChip(unsigned int clk_full, const char *display, 
  *
  * @param file Open ROM image.
  */
-VGM::VGM(IRpFile *file)
+VGM::VGM(const shared_ptr<IRpFile> &file)
 	: super(new VGMPrivate(file))
 {
 	RP_D(VGM);
@@ -235,7 +236,7 @@ VGM::VGM(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(&d->vgmHeader, sizeof(d->vgmHeader));
 	if (size != sizeof(d->vgmHeader)) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -248,7 +249,7 @@ VGM::VGM(IRpFile *file)
 	d->isValid = (isRomSupported_static(&info) >= 0);
 
 	if (!d->isValid) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 	}
 }
 

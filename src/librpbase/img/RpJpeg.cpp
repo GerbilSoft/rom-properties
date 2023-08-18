@@ -25,8 +25,11 @@ using LibRpTexture::argb32_t;
 #  include "librpcpu/cpuflags_x86.h"
 #endif /* RPJPEG_HAS_SSSE3 */
 
-// C includes. (C++ namespace)
+// C includes (C++ namespace)
 #include <csetjmp>
+
+// C++ STL classes
+using std::shared_ptr;
 
 #ifdef _WIN32
 // For OutputDebugStringA().
@@ -208,7 +211,7 @@ void RpJpegPrivate::jpeg_IRpFile_src(j_decompress_ptr cinfo, IRpFile *infile)
  * @param file IRpFile to load from.
  * @return rp_image*, or nullptr on error.
  */
-rp_image *RpJpeg::load(IRpFile *file)
+rp_image *RpJpeg::load(const shared_ptr<IRpFile> &file)
 {
 	if (!file)
 		return nullptr;
@@ -264,7 +267,7 @@ rp_image *RpJpeg::load(IRpFile *file)
 	jpeg_create_decompress(&cinfo);
 
 	/** Step 2: Specify data source. **/
-	RpJpegPrivate::jpeg_IRpFile_src(&cinfo, file);
+	RpJpegPrivate::jpeg_IRpFile_src(&cinfo, file.get());
 
 	/** Step 3: Read file parameters with jpeg_read_header(). */
 	// Return value is not useful here since:

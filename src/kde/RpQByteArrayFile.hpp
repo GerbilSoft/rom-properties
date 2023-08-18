@@ -22,8 +22,6 @@ class RpQByteArrayFile : public LibRpFile::IRpFile
 		 * The resulting IRpFile is writable.
 		 */
 		RpQByteArrayFile();
-	protected:
-		~RpQByteArrayFile() override { }	// call unref() instead
 
 	private:
 		typedef LibRpFile::IRpFile super;

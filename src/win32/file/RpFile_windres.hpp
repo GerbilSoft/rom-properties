@@ -23,8 +23,8 @@ class RpFile_windres final : public LibRpFile::MemFile
 		 * @param lpType Resource type.
 		 */
 		RpFile_windres(HMODULE hModule, LPCTSTR lpName, LPCTSTR lpType);
-	protected:
-		~RpFile_windres() final;	// call unref() instead
+	public:
+		~RpFile_windres() final;
 
 	private:
 		typedef LibRpFile::MemFile super;

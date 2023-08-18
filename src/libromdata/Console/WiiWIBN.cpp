@@ -18,7 +18,8 @@ using namespace LibRpText;
 using namespace LibRpTexture;
 using LibRpFile::IRpFile;
 
-// C++ STL classes.
+// C++ STL classes
+using std::shared_ptr;
 using std::string;
 using std::vector;
 
@@ -27,7 +28,7 @@ namespace LibRomData {
 class WiiWIBNPrivate final : public RomDataPrivate
 {
 	public:
-		WiiWIBNPrivate(IRpFile *file);
+		WiiWIBNPrivate(const shared_ptr<IRpFile> &file);
 		~WiiWIBNPrivate() final;
 
 	private:
@@ -94,7 +95,7 @@ const RomDataInfo WiiWIBNPrivate::romDataInfo = {
 	"WiiSave", exts, mimeTypes
 };
 
-WiiWIBNPrivate::WiiWIBNPrivate(IRpFile *file)
+WiiWIBNPrivate::WiiWIBNPrivate(const shared_ptr<IRpFile> &file)
 	: super(file, &romDataInfo)
 	, img_banner(nullptr)
 	, iconAnimData(nullptr)
@@ -261,7 +262,7 @@ const rp_image *WiiWIBNPrivate::loadBanner(void)
  *
  * @param file Open disc image.
  */
-WiiWIBN::WiiWIBN(IRpFile *file)
+WiiWIBN::WiiWIBN(const shared_ptr<IRpFile> &file)
 	: super(new WiiWIBNPrivate(file))
 {
 	// This class handles banner files.
@@ -280,7 +281,7 @@ WiiWIBN::WiiWIBN(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(&d->wibnHeader, sizeof(d->wibnHeader));
 	if (size != sizeof(d->wibnHeader)) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -293,7 +294,7 @@ WiiWIBN::WiiWIBN(IRpFile *file)
 	d->isValid = (isRomSupported_static(&info) >= 0);
 
 	if (!d->isValid) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 	}
 }
 

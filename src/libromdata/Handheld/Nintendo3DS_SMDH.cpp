@@ -22,6 +22,7 @@ using LibRpFile::IRpFile;
 
 // C++ STL classes
 using std::array;
+using std::shared_ptr;
 using std::string;
 using std::vector;
 
@@ -33,7 +34,7 @@ namespace LibRomData {
 class Nintendo3DS_SMDH_Private final : public RomDataPrivate
 {
 	public:
-		Nintendo3DS_SMDH_Private(IRpFile *file);
+		Nintendo3DS_SMDH_Private(const shared_ptr<IRpFile> &file);
 		~Nintendo3DS_SMDH_Private() final;
 
 	private:
@@ -103,7 +104,7 @@ const RomDataInfo Nintendo3DS_SMDH_Private::romDataInfo = {
 	"Nintendo3DS", exts, mimeTypes
 };
 
-Nintendo3DS_SMDH_Private::Nintendo3DS_SMDH_Private(IRpFile *file)
+Nintendo3DS_SMDH_Private::Nintendo3DS_SMDH_Private(const shared_ptr<IRpFile> &file)
 	: super(file, &romDataInfo)
 {
 	// Clear img_icon.
@@ -249,7 +250,7 @@ inline uint32_t Nintendo3DS_SMDH_Private::getDefaultLC(void) const
  *
  * @param file Open SMDH file and/or section..
  */
-Nintendo3DS_SMDH::Nintendo3DS_SMDH(IRpFile *file)
+Nintendo3DS_SMDH::Nintendo3DS_SMDH(const shared_ptr<IRpFile> &file)
 	: super(new Nintendo3DS_SMDH_Private(file))
 {
 	// This class handles SMDH files and/or sections only.
@@ -268,8 +269,7 @@ Nintendo3DS_SMDH::Nintendo3DS_SMDH(IRpFile *file)
 	size_t size = d->file->read(&d->smdh, sizeof(d->smdh));
 	if (size != sizeof(d->smdh)) {
 		d->smdh.header.magic = 0;
-		d->file->unref();
-		d->file = nullptr;
+		d->file.reset();
 		return;
 	}
 
@@ -283,8 +283,7 @@ Nintendo3DS_SMDH::Nintendo3DS_SMDH(IRpFile *file)
 
 	if (!d->isValid) {
 		d->smdh.header.magic = 0;
-		d->file->unref();
-		d->file = nullptr;
+		d->file.reset();
 		return;
 	}
 }

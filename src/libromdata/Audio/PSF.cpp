@@ -18,6 +18,7 @@ using namespace LibRpText;
 using LibRpFile::IRpFile;
 
 // C++ STL classes
+using std::shared_ptr;
 using std::string;
 using std::unique_ptr;
 using std::unordered_map;
@@ -27,7 +28,7 @@ namespace LibRomData {
 class PSFPrivate final : public RomDataPrivate
 {
 	public:
-		PSFPrivate(IRpFile *file);
+		PSFPrivate(const shared_ptr<IRpFile> &file);
 
 	private:
 		typedef RomDataPrivate super;
@@ -124,7 +125,7 @@ const PSFPrivate::psf_type_tbl_t PSFPrivate::psf_type_tbl[] = {
 };
 const PSFPrivate::psf_type_tbl_t *const PSFPrivate::p_psf_type_tbl_end = &psf_type_tbl[ARRAY_SIZE(psf_type_tbl)];
 
-PSFPrivate::PSFPrivate(IRpFile *file)
+PSFPrivate::PSFPrivate(const shared_ptr<IRpFile> &file)
 	: super(file, &romDataInfo)
 {
 	// Clear the PSF header struct.
@@ -396,7 +397,7 @@ unsigned int PSFPrivate::lengthToMs(const char *str)
  *
  * @param file Open ROM image.
  */
-PSF::PSF(IRpFile *file)
+PSF::PSF(const shared_ptr<IRpFile> &file)
 	: super(new PSFPrivate(file))
 {
 	RP_D(PSF);
@@ -412,7 +413,7 @@ PSF::PSF(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(&d->psfHeader, sizeof(d->psfHeader));
 	if (size != sizeof(d->psfHeader)) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -425,7 +426,7 @@ PSF::PSF(IRpFile *file)
 	d->isValid = (isRomSupported_static(&info) >= 0);
 
 	if (!d->isValid) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 	}
 }
 

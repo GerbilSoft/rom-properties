@@ -17,6 +17,7 @@ using LibRpFile::IRpFile;
 
 // C++ STL classes
 using std::ostringstream;
+using std::shared_ptr;
 using std::string;
 
 namespace LibRomData {
@@ -24,7 +25,7 @@ namespace LibRomData {
 class ADXPrivate final : public RomDataPrivate
 {
 	public:
-		ADXPrivate(IRpFile *file);
+		ADXPrivate(const shared_ptr<IRpFile> &file);
 
 	private:
 		typedef RomDataPrivate super;
@@ -68,7 +69,7 @@ const RomDataInfo ADXPrivate::romDataInfo = {
 	"ADX", exts, mimeTypes
 };
 
-ADXPrivate::ADXPrivate(IRpFile *file)
+ADXPrivate::ADXPrivate(const shared_ptr<IRpFile> &file)
 	: super(file, &romDataInfo)
 	, pLoopData(nullptr)
 {
@@ -91,7 +92,7 @@ ADXPrivate::ADXPrivate(IRpFile *file)
  *
  * @param file Open ROM image.
  */
-ADX::ADX(IRpFile *file)
+ADX::ADX(const shared_ptr<IRpFile> &file)
 	: super(new ADXPrivate(file))
 {
 	RP_D(ADX);
@@ -109,7 +110,7 @@ ADX::ADX(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(header, sizeof(header));
 	if (size != sizeof(header)) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -122,7 +123,7 @@ ADX::ADX(IRpFile *file)
 	d->isValid = (isRomSupported_static(&info) >= 0);
 
 	if (!d->isValid) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 

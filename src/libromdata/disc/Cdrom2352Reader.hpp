@@ -25,7 +25,7 @@ class Cdrom2352Reader : public LibRpBase::SparseDiscReader
 		 *
 		 * @param file File to read from.
 		 */
-		explicit Cdrom2352Reader(LibRpFile::IRpFile *file);
+		explicit Cdrom2352Reader(const std::shared_ptr<LibRpFile::IRpFile> &file);
 
 		/**
 		 * Construct a Cdrom2352Reader with the specified file.
@@ -35,7 +35,7 @@ class Cdrom2352Reader : public LibRpBase::SparseDiscReader
 		 * @param file File to read from.
 		 * @param physBlockSize Sector size. (2352, 2446)
 		 */
-		explicit Cdrom2352Reader(LibRpFile::IRpFile *file, unsigned int physBlockSize);
+		explicit Cdrom2352Reader(const std::shared_ptr<LibRpFile::IRpFile> &file, unsigned int physBlockSize);
 
 	private:
 		typedef SparseDiscReader super;

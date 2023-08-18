@@ -34,7 +34,8 @@ using LibRpFile::IRpFile;
 #include "decoder/ImageDecoder_BC7.hpp"
 #include "decoder/ImageDecoder_ASTC.hpp"
 
-// C++ STL classes.
+// C++ STL classes
+using std::shared_ptr;
 using std::string;
 using std::unique_ptr;
 using std::vector;
@@ -44,7 +45,7 @@ namespace LibRpTexture {
 class PowerVR3Private final : public FileFormatPrivate
 {
 	public:
-		PowerVR3Private(PowerVR3 *q, IRpFile *file);
+		PowerVR3Private(PowerVR3 *q, const shared_ptr<IRpFile> &file);
 		~PowerVR3Private() final;
 
 	private:
@@ -199,7 +200,7 @@ const struct PowerVR3Private::FmtLkup_t PowerVR3Private::fmtLkup_tbl_U32[] = {
 };
 #endif
 
-PowerVR3Private::PowerVR3Private(PowerVR3 *q, IRpFile *file)
+PowerVR3Private::PowerVR3Private(PowerVR3 *q, const shared_ptr<IRpFile> &file)
 	: super(q, file, &textureInfo)
 	, isByteswapNeeded(false)
 	, flipOp(rp_image::FLIP_NONE)
@@ -798,7 +799,7 @@ int PowerVR3Private::loadPvr3Metadata(void)
  *
  * @param file Open ROM image.
  */
-PowerVR3::PowerVR3(IRpFile *file)
+PowerVR3::PowerVR3(const shared_ptr<IRpFile> &file)
 	: super(new PowerVR3Private(this, file))
 {
 	RP_D(PowerVR3);
@@ -813,7 +814,7 @@ PowerVR3::PowerVR3(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(&d->pvr3Header, sizeof(d->pvr3Header));
 	if (size != sizeof(d->pvr3Header)) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -860,7 +861,7 @@ PowerVR3::PowerVR3(IRpFile *file)
 		d->isByteswapNeeded = true;
 	} else {
 		// Invalid magic.
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 

@@ -24,7 +24,8 @@ using LibRpFile::IRpFile;
 #include "decoder/ImageDecoder_GCN.hpp"
 #include "decoder/ImageDecoder_S3TC.hpp"
 
-// C++ STL classes.
+// C++ STL classes
+using std::shared_ptr;
 using std::unique_ptr;
 
 namespace LibRpTexture {
@@ -32,7 +33,7 @@ namespace LibRpTexture {
 class SegaPVRPrivate final : public FileFormatPrivate
 {
 	public:
-		SegaPVRPrivate(SegaPVR *q, IRpFile *file);
+		SegaPVRPrivate(SegaPVR *q, const shared_ptr<IRpFile> &file);
 		~SegaPVRPrivate() final;
 
 	private:
@@ -157,7 +158,7 @@ const TextureInfo SegaPVRPrivate::textureInfo = {
 	exts, mimeTypes
 };
 
-SegaPVRPrivate::SegaPVRPrivate(SegaPVR *q, IRpFile *file)
+SegaPVRPrivate::SegaPVRPrivate(SegaPVR *q, const shared_ptr<IRpFile> &file)
 	: super(q, file, &textureInfo)
 	, pvrType(PVRType::Unknown)
 	, gbix_len(0)
@@ -1200,7 +1201,7 @@ rp_image *SegaPVRPrivate::svr_unswizzle_16(const rp_image *img_swz)
  *
  * @param file Open ROM image.
  */
-SegaPVR::SegaPVR(IRpFile *file)
+SegaPVR::SegaPVR(const shared_ptr<IRpFile> &file)
 	: super(new SegaPVRPrivate(this, file))
 {
 	RP_D(SegaPVR);
@@ -1217,7 +1218,7 @@ SegaPVR::SegaPVR(IRpFile *file)
 	d->file->rewind();
 	size_t sz_header = d->file->read(header, sizeof(header));
 	if (sz_header < 32) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -1231,7 +1232,7 @@ SegaPVR::SegaPVR(IRpFile *file)
 	d->isValid = ((int)d->pvrType >= 0);
 
 	if (!d->isValid) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -1262,9 +1263,9 @@ SegaPVR::SegaPVR(IRpFile *file)
 		assert(d->gbix_len <= 128);
 		if (d->gbix_len < 4 || d->gbix_len > 128 || (d->gbix_len > (sz_header-8))) {
 			// Invalid GBIX header.
-			UNREF_AND_NULL_NOCHK(d->file);
 			d->pvrType = SegaPVRPrivate::PVRType::Unknown;
 			d->isValid = false;
+			d->file.reset();
 			return;
 		}
 
@@ -1294,9 +1295,9 @@ SegaPVR::SegaPVR(IRpFile *file)
 		default:
 			// Should not get here...
 			assert(!"Invalid PVR type.");
-			UNREF_AND_NULL_NOCHK(d->file);
 			d->pvrType = SegaPVRPrivate::PVRType::Unknown;
 			d->isValid = false;
+			d->file.reset();
 			return;
 	}
 

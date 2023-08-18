@@ -15,7 +15,8 @@ using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;
 
-// C++ STL classes.
+// C++ STL classes
+using std::shared_ptr;
 using std::string;
 using std::vector;
 
@@ -24,7 +25,7 @@ namespace LibRomData {
 class SufamiTurboPrivate final : public RomDataPrivate
 {
 	public:
-		SufamiTurboPrivate(IRpFile *file);
+		SufamiTurboPrivate(const shared_ptr<IRpFile> &file);
 
 	private:
 		typedef RomDataPrivate super;
@@ -79,7 +80,7 @@ const RomDataInfo SufamiTurboPrivate::romDataInfo = {
 	"SNES", exts, mimeTypes
 };
 
-SufamiTurboPrivate::SufamiTurboPrivate(IRpFile *file)
+SufamiTurboPrivate::SufamiTurboPrivate(const shared_ptr<IRpFile> &file)
 	: super(file, &romDataInfo)
 {
 	// Clear the ROM header struct.
@@ -149,7 +150,7 @@ string SufamiTurboPrivate::getRomTitle(void) const
  *
  * @param file Open ROM image.
  */
-SufamiTurbo::SufamiTurbo(IRpFile *file)
+SufamiTurbo::SufamiTurbo(const shared_ptr<IRpFile> &file)
 	: super(new SufamiTurboPrivate(file))
 {
 	// NOTE: Handling Sufami Turbo ROMs as if they're Super NES.
@@ -168,7 +169,7 @@ SufamiTurbo::SufamiTurbo(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(&d->romHeader, sizeof(d->romHeader));
 	if (size != sizeof(d->romHeader)) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -181,7 +182,7 @@ SufamiTurbo::SufamiTurbo(IRpFile *file)
 	d->isValid = (isRomSupported_static(&info) >= 0);
 
 	if (!d->isValid) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -190,7 +191,7 @@ SufamiTurbo::SufamiTurbo(IRpFile *file)
 	if (!memcmp(d->romHeader.title, ST_BIOS_TITLE, sizeof(d->romHeader.title))) {
 		// This is the Sufami Turbo BIOS.
 		d->isValid = false;
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 

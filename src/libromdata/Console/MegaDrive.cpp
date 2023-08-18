@@ -24,7 +24,8 @@ using LibRpFile::IRpFile;
 // Other RomData subclasses
 #include "Other/ISO.hpp"
 
-// C++ STL classes.
+// C++ STL classes
+using std::shared_ptr;
 using std::string;
 using std::vector;
 
@@ -45,7 +46,7 @@ DELAYLOAD_TEST_FUNCTION_IMPL0(get_crc_table);
 class MegaDrivePrivate final : public RomDataPrivate
 {
 	public:
-		MegaDrivePrivate(IRpFile *file);
+		MegaDrivePrivate(const shared_ptr<IRpFile> &file);
 		~MegaDrivePrivate() final;
 
 	private:
@@ -249,7 +250,7 @@ const RomDataInfo MegaDrivePrivate::romDataInfo = {
 	"MegaDrive", exts, mimeTypes
 };
 
-MegaDrivePrivate::MegaDrivePrivate(IRpFile *file)
+MegaDrivePrivate::MegaDrivePrivate(const shared_ptr<IRpFile> &file)
 	: super(file, &romDataInfo)
 	, romType(ROM_UNKNOWN)
 	, md_region(0)
@@ -748,7 +749,7 @@ int MegaDrivePrivate::zlibInit(void)
  *
  * @param file Open ROM file.
  */
-MegaDrive::MegaDrive(IRpFile *file)
+MegaDrive::MegaDrive(const shared_ptr<IRpFile> &file)
 	: super(new MegaDrivePrivate(file))
 {
 	RP_D(MegaDrive);
@@ -765,7 +766,7 @@ MegaDrive::MegaDrive(IRpFile *file)
 	uint8_t header[0x810];
 	size_t size = d->file->read(header, sizeof(header));
 	if (size < 0x200) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -845,7 +846,7 @@ MegaDrive::MegaDrive(IRpFile *file)
 				if (size < 0x210) {
 					// Not enough data for a 2352-byte sector disc image.
 					d->romType = MegaDrivePrivate::ROM_UNKNOWN;
-					UNREF_AND_NULL_NOCHK(d->file);
+					d->file.reset();
 					return;
 				}
 				d->fileType = FileType::DiscImage;
@@ -878,7 +879,7 @@ MegaDrive::MegaDrive(IRpFile *file)
 	d->isValid = (d->romType >= 0);
 	if (!d->isValid) {
 		// Not valid. Close the file.
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 	}
 
 	// MD region code.

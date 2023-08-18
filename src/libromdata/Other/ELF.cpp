@@ -29,6 +29,7 @@ using LibRpFile::IRpFile;
 #endif
 
 // C++ STL classes
+using std::shared_ptr;
 using std::string;
 using std::vector;
 
@@ -44,7 +45,7 @@ namespace LibRomData {
 class ELFPrivate final : public RomDataPrivate
 {
 	public:
-		ELFPrivate(LibRpFile::IRpFile *file);
+		ELFPrivate(const shared_ptr<IRpFile> &file);
 
 	private:
 		typedef RomDataPrivate super;
@@ -249,7 +250,7 @@ const RomDataInfo ELFPrivate::romDataInfo = {
 	"ELF", exts, mimeTypes
 };
 
-ELFPrivate::ELFPrivate(IRpFile *file)
+ELFPrivate::ELFPrivate(const shared_ptr<IRpFile> &file)
 	: super(file, &romDataInfo)
 	, elfFormat(Elf_Format::Unknown)
 	, hasCheckedPH(false)
@@ -1150,7 +1151,7 @@ int ELFPrivate::addSymbolFields(span<const char> dynsym_strtab)
  *
  * @param file Open ROM image.
  */
-ELF::ELF(IRpFile *file)
+ELF::ELF(const shared_ptr<IRpFile> &file)
 	: super(new ELFPrivate(file))
 {
 	// This class handles different types of files.
@@ -1169,7 +1170,7 @@ ELF::ELF(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(&d->Elf_Header, sizeof(d->Elf_Header));
 	if (size != sizeof(d->Elf_Header)) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -1184,7 +1185,7 @@ ELF::ELF(IRpFile *file)
 	d->isValid = ((int)d->elfFormat >= 0);
 	if (!d->isValid) {
 		// Not an ELF executable.
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -1195,7 +1196,7 @@ ELF::ELF(IRpFile *file)
 			assert(!"Should not get here...");
 			d->isValid = false;
 			d->elfFormat = ELFPrivate::Elf_Format::Unknown;
-			UNREF_AND_NULL_NOCHK(d->file);
+			d->file.reset();
 			return;
 
 		case ELFPrivate::Elf_Format::_32HOST:

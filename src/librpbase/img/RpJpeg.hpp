@@ -17,6 +17,9 @@ namespace LibRpTexture {
 	class rp_image;
 }
 
+// C++ includes
+#include <memory>
+
 namespace LibRpBase {
 
 class RpJpeg
@@ -34,7 +37,7 @@ class RpJpeg
 		 * @param file IRpFile to load from.
 		 * @return rp_image*, or nullptr on error.
 		 */
-		static LibRpTexture::rp_image *load(LibRpFile::IRpFile *file);
+		static LibRpTexture::rp_image *load(const std::shared_ptr<LibRpFile::IRpFile> &file);
 };
 
 }

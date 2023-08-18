@@ -23,11 +23,13 @@ using LibRpTexture::rp_image;
 
 // RpFile_windres
 #include "file/RpFile_windres.hpp"
+using LibRpFile::IRpFile;
 
 // ROM icon
 #include "config/PropSheetIcon.hpp"
 
 // C++ STL classes
+using std::shared_ptr;
 using std::string;
 using std::tstring;
 using std::unordered_map;
@@ -222,15 +224,14 @@ const rp_image *AchWin32Private::loadSpriteSheet(int iconSize)
 	// Load the achievements sprite sheet.
 	// TODO: Is premultiplied alpha needed?
 	// Reference: https://stackoverflow.com/questions/307348/how-to-draw-32-bit-alpha-channel-bitmaps
-	RpFile_windres *const f_res = new RpFile_windres(HINST_THISCOMPONENT, MAKEINTRESOURCE(resID), MAKEINTRESOURCE(RT_PNG));
+	shared_ptr<IRpFile> f_res(new RpFile_windres(HINST_THISCOMPONENT, MAKEINTRESOURCE(resID), MAKEINTRESOURCE(RT_PNG)));
+	assert(f_res->isOpen());
 	if (!f_res->isOpen()) {
 		// Unable to open the resource.
-		f_res->unref();
 		return nullptr;
 	}
 
 	rp_image *const imgAchSheet = RpPng::load(f_res);
-	f_res->unref();
 	if (!imgAchSheet) {
 		// Unable to load the achievements sprite sheet.
 		return nullptr;

@@ -71,11 +71,12 @@ using LibRpTexture::argb32_t;
 # define PNG_Z_DEFAULT_COMPRESSION (-1)
 #endif
 
-// C includes. (C++ namespace)
+// C includes (C++ namespace)
 #include <csetjmp>
 
-// C++ STL classes.
+// C++ STL classes
 using std::array;
+using std::shared_ptr;
 using std::string;
 using std::unique_ptr;
 using std::vector;
@@ -111,85 +112,77 @@ static int DelayLoad_test_zlib_and_png(void)
 class RpPngWriterPrivate
 {
 	public:
-		// NOTE: The public class constructor must NOT ref() file.
-		// ref() is done here if needed.
-		RpPngWriterPrivate(IRpFile *file, int width, int height, rp_image::Format format)
-			: lastError(0), file(nullptr), imageTag(ImageTag::Invalid)
+		RpPngWriterPrivate(const shared_ptr<IRpFile> &file, int width, int height, rp_image::Format format)
+			: lastError(0), file(file), imageTag(ImageTag::Invalid)
 			, png_ptr(nullptr), info_ptr(nullptr), IHDR_written(false)
 		{
-			init(file, width, height, format);
+			init(width, height, format);
 		}
-		RpPngWriterPrivate(IRpFile *file, const rp_image *img)
-			: lastError(0), file(nullptr), imageTag(ImageTag::Invalid)
+		RpPngWriterPrivate(const shared_ptr<IRpFile> &file, const rp_image *img)
+			: lastError(0), file(file), imageTag(ImageTag::Invalid)
 			, png_ptr(nullptr), info_ptr(nullptr), IHDR_written(false)
 		{
-			init(file, img);
+			init(img);
 		}
-		RpPngWriterPrivate(IRpFile *file, const IconAnimData *iconAnimData)
-			: lastError(0), file(nullptr), imageTag(ImageTag::Invalid)
+		RpPngWriterPrivate(const shared_ptr<IRpFile> &file, const IconAnimData *iconAnimData)
+			: lastError(0), file(file), imageTag(ImageTag::Invalid)
 			, png_ptr(nullptr), info_ptr(nullptr), IHDR_written(false)
 		{
-			init(file, iconAnimData);
+			init(iconAnimData);
 		}
 
 		RpPngWriterPrivate(const char *filename, int width, int height, rp_image::Format format)
-			: lastError(0), file(nullptr), imageTag(ImageTag::Invalid)
+			: lastError(0), imageTag(ImageTag::Invalid)
 			, png_ptr(nullptr), info_ptr(nullptr), IHDR_written(false)
 		{
-			RpFile *const file = (filename ? new RpFile(filename, RpFile::FM_CREATE_WRITE) : nullptr);
-			init(file, width, height, format);
-			UNREF(file);
+			file.reset(filename ? new RpFile(filename, RpFile::FM_CREATE_WRITE) : nullptr);
+			init(width, height, format);
 		}
 		RpPngWriterPrivate(const char *filename, const rp_image *img)
-			: lastError(0), file(nullptr), imageTag(ImageTag::Invalid)
+			: lastError(0), imageTag(ImageTag::Invalid)
 			, png_ptr(nullptr), info_ptr(nullptr), IHDR_written(false)
 		{
-			RpFile *const file = (filename ? new RpFile(filename, RpFile::FM_CREATE_WRITE) : nullptr);
-			init(file, img);
-			UNREF(file);
+			file.reset(filename ? new RpFile(filename, RpFile::FM_CREATE_WRITE) : nullptr);
+			init(img);
 		}
 		RpPngWriterPrivate(const char *filename, const IconAnimData *iconAnimData)
-			: lastError(0), file(nullptr), imageTag(ImageTag::Invalid)
+			: lastError(0), imageTag(ImageTag::Invalid)
 			, png_ptr(nullptr), info_ptr(nullptr), IHDR_written(false)
 		{
-			RpFile *const file = (filename ? new RpFile(filename, RpFile::FM_CREATE_WRITE) : nullptr);
-			init(file, iconAnimData);
-			UNREF(file);
+			file.reset(filename ? new RpFile(filename, RpFile::FM_CREATE_WRITE) : nullptr);
+			init(iconAnimData);
 		}
 
 #ifdef _WIN32
 		RpPngWriterPrivate(const wchar_t *filename, int width, int height, rp_image::Format format)
-			: lastError(0), file(nullptr), imageTag(ImageTag::Invalid)
+			: lastError(0), imageTag(ImageTag::Invalid)
 			, png_ptr(nullptr), info_ptr(nullptr), IHDR_written(false)
 		{
-			RpFile *const file = (filename ? new RpFile(filename, RpFile::FM_CREATE_WRITE) : nullptr);
-			init(file, width, height, format);
-			UNREF(file);
+			file.reset(filename ? new RpFile(filename, RpFile::FM_CREATE_WRITE) : nullptr);
+			init(width, height, format);
 		}
 		RpPngWriterPrivate(const wchar_t *filename, const rp_image *img)
-			: lastError(0), file(nullptr), imageTag(ImageTag::Invalid)
+			: lastError(0), imageTag(ImageTag::Invalid)
 			, png_ptr(nullptr), info_ptr(nullptr), IHDR_written(false)
 		{
-			RpFile *const file = (filename ? new RpFile(filename, RpFile::FM_CREATE_WRITE) : nullptr);
-			init(file, img);
-			UNREF(file);
+			file.reset(filename ? new RpFile(filename, RpFile::FM_CREATE_WRITE) : nullptr);
+			init(img);
 		}
 		RpPngWriterPrivate(const wchar_t *filename, const IconAnimData *iconAnimData)
-			: lastError(0), file(nullptr), imageTag(ImageTag::Invalid)
+			: lastError(0), imageTag(ImageTag::Invalid)
 			, png_ptr(nullptr), info_ptr(nullptr), IHDR_written(false)
 		{
-			RpFile *const file = (filename ? new RpFile(filename, RpFile::FM_CREATE_WRITE) : nullptr);
-			init(file, iconAnimData);
-			UNREF(file);
+			file.reset(filename ? new RpFile(filename, RpFile::FM_CREATE_WRITE) : nullptr);
+			init(iconAnimData);
 		}
 #endif /* _WIN32 */
 
 		~RpPngWriterPrivate();
 	private:
 		// Internal constructor functions.
-		void init(IRpFile *file, int width, int height, rp_image::Format format);
-		void init(IRpFile *file, const rp_image *img);
-		void init(IRpFile *file, const IconAnimData *iconAnimData);
+		void init(int width, int height, rp_image::Format format);
+		void init(const rp_image *img);
+		void init(const IconAnimData *iconAnimData);
 
 	private:
 		RP_DISABLE_COPY(RpPngWriterPrivate)
@@ -200,7 +193,7 @@ class RpPngWriterPrivate
 
 		// Open reference of a file.
 		// Must be unref()'d on close.
-		IRpFile *file;
+		shared_ptr<IRpFile> file;
 
 		// Image and/or animated image data to save.
 		enum class ImageTag {
@@ -379,7 +372,7 @@ class RpPngWriterPrivate
 
 /** RpPngWriterPrivate **/
 
-void RpPngWriterPrivate::init(IRpFile *file, int width, int height, rp_image::Format format)
+void RpPngWriterPrivate::init(int width, int height, rp_image::Format format)
 {
 	this->img = nullptr;
 	if (!file || width <= 0 || height <= 0 ||
@@ -428,10 +421,6 @@ void RpPngWriterPrivate::init(IRpFile *file, int width, int height, rp_image::Fo
 	// but let's do it anyway.
 	file->rewind();
 
-	// ref() the file.
-	// This must be done *before* initializing PNG write structs.
-	this->file = file->ref();
-
 	// Initialize the PNG write structs.
 	ret = init_png_write_structs();
 	if (ret != 0) {
@@ -447,7 +436,7 @@ void RpPngWriterPrivate::init(IRpFile *file, int width, int height, rp_image::Fo
 	cache.format = format;
 }
 
-void RpPngWriterPrivate::init(IRpFile *file, const rp_image *img)
+void RpPngWriterPrivate::init(const rp_image *img)
 {
 	this->img = img;
 	if (!file || !img || !img->isValid()) {
@@ -490,10 +479,6 @@ void RpPngWriterPrivate::init(IRpFile *file, const rp_image *img)
 	// but let's do it anyway.
 	file->rewind();
 
-	// ref() the file.
-	// This must be done *before* initializing PNG write structs.
-	this->file = file->ref();
-
 	// Initialize the PNG write structs.
 	ret = init_png_write_structs();
 	if (ret != 0) {
@@ -506,7 +491,7 @@ void RpPngWriterPrivate::init(IRpFile *file, const rp_image *img)
 	cache.setFrom(img);
 }
 
-void RpPngWriterPrivate::init(IRpFile *file, const IconAnimData *iconAnimData)
+void RpPngWriterPrivate::init(const IconAnimData *iconAnimData)
 {
 	this->iconAnimData = nullptr;
 	if (!file || !iconAnimData || iconAnimData->seq_count <= 0) {
@@ -579,10 +564,6 @@ void RpPngWriterPrivate::init(IRpFile *file, const IconAnimData *iconAnimData)
 		cache.setFrom(img);
 	}
 
-	// ref() the file.
-	// This must be done *before* initializing PNG write structs.
-	this->file = file->ref();
-
 	// Initialize the PNG write structs.
 	ret = init_png_write_structs();
 	if (ret != 0) {
@@ -620,7 +601,7 @@ int RpPngWriterPrivate::init_png_write_structs(void)
 	}
 
 	// Initialize the custom I/O handler for IRpFile.
-	png_set_write_fn(png_ptr, file,
+	png_set_write_fn(png_ptr, file.get(),
 		png_io_IRpFile_write,
 		png_io_IRpFile_flush);
 	return 0;
@@ -650,9 +631,6 @@ void RpPngWriterPrivate::close(void)
 		png_ptr = nullptr;
 		info_ptr = nullptr;
 	}
-
-	// unref() the file.
-	UNREF_AND_NULL(this->file);
 }
 
 /**
@@ -964,7 +942,7 @@ int RpPngWriterPrivate::write_IDAT_APNG(void)
 
 	// Free the PNG structs and unref() the file.
 	png_destroy_write_struct(&png_ptr, &info_ptr);
-	UNREF_AND_NULL_NOCHK(file);
+	file.reset();
 	return 0;
 }
 
@@ -1032,7 +1010,7 @@ RpPngWriter::RpPngWriter(const wchar_t *filename, int width, int height, rp_imag
  * @param height 	[in] Image height
  * @param format 	[in] Image format
  */
-RpPngWriter::RpPngWriter(IRpFile *file, int width, int height, rp_image::Format format)
+RpPngWriter::RpPngWriter(const std::shared_ptr<IRpFile> &file, int width, int height, rp_image::Format format)
 	: d_ptr(new RpPngWriterPrivate(file, width, height, format))
 { }
 
@@ -1092,7 +1070,7 @@ RpPngWriter::RpPngWriter(const wchar_t *filename, const rp_image *img)
  * @param file	[in] IRpFile open for writing
  * @param img	[in] rp_image
  */
-RpPngWriter::RpPngWriter(IRpFile *file, const rp_image *img)
+RpPngWriter::RpPngWriter(const std::shared_ptr<IRpFile> &file, const rp_image *img)
 	: d_ptr(new RpPngWriterPrivate(file, img))
 {}
 
@@ -1167,7 +1145,7 @@ RpPngWriter::RpPngWriter(const wchar_t *filename, const IconAnimData *iconAnimDa
  * @param file		[in] IRpFile open for writing.
  * @param iconAnimData	[in] Animated image data.
  */
-RpPngWriter::RpPngWriter(IRpFile *file, const IconAnimData *iconAnimData)
+RpPngWriter::RpPngWriter(const std::shared_ptr<IRpFile> &file, const IconAnimData *iconAnimData)
 	: d_ptr(new RpPngWriterPrivate(file, iconAnimData))
 {}
 

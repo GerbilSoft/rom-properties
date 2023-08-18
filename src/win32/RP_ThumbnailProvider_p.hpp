@@ -26,14 +26,13 @@ class RP_ThumbnailProvider_Private
 {
 	public:
 		RP_ThumbnailProvider_Private();
-		~RP_ThumbnailProvider_Private();
 
 	private:
 		RP_DISABLE_COPY(RP_ThumbnailProvider_Private)
 
 	public:
 		// Set by IInitializeWithStream::Initialize().
-		LibRpFile::IRpFile *file;
+		std::shared_ptr<LibRpFile::IRpFile> file;
 
 		// CreateThumbnail instance.
 		CreateThumbnail thumbnailer;

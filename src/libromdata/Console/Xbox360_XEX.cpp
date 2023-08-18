@@ -37,9 +37,10 @@ using LibRpTexture::rp_image;
 #  include "xenia_lzx.h"
 #endif /* ENABLE_LIBMSPACK */
 
-// C++ STL classes.
+// C++ STL classes
 using std::array;
 using std::ostringstream;
+using std::shared_ptr;
 using std::string;
 using std::unique_ptr;
 using std::unordered_map;
@@ -53,7 +54,7 @@ namespace LibRomData {
 class Xbox360_XEX_Private final : public RomDataPrivate
 {
 	public:
-		Xbox360_XEX_Private(IRpFile *file);
+		Xbox360_XEX_Private(const shared_ptr<IRpFile> &file);
 		~Xbox360_XEX_Private() final;
 
 	private:
@@ -287,7 +288,7 @@ const uint8_t Xbox360_XEXPrivate::EncryptionKeyVerifyData[Xbox360_XEX::Key_Max][
 };
 #endif /* ENABLE_DECRYPTION */
 
-Xbox360_XEX_Private::Xbox360_XEX_Private(IRpFile *file)
+Xbox360_XEX_Private::Xbox360_XEX_Private(const shared_ptr<IRpFile> &file)
 	: super(file, &romDataInfo)
 	, xexType(XexType::Unknown)
 	, isExecutionIDLoaded(false)
@@ -1216,14 +1217,14 @@ const EXE *Xbox360_XEX_Private::initEXE(void)
 
 	// Attempt to open the EXE section.
 	// Assuming a maximum of 8 KB for the PE headers.
-	IRpFile *peFile_tmp;
+	shared_ptr<IRpFile> peFile_tmp;
 #ifdef ENABLE_LIBMSPACK
 	if (!lzx_peHeader.empty()) {
-		peFile_tmp = new MemFile(lzx_peHeader.data(), lzx_peHeader.size());
+		peFile_tmp.reset(new MemFile(lzx_peHeader.data(), lzx_peHeader.size()));
 	} else
 #endif /* ENABLE_LIBMSPACK */
 	{
-		peFile_tmp = new PartitionFile(peReader, 0, PE_HEADER_SIZE);
+		peFile_tmp.reset(new PartitionFile(peReader, 0, PE_HEADER_SIZE));
 	}
 	if (peFile_tmp->isOpen()) {
 		EXE *const pe_exe_tmp = new EXE(peFile_tmp);
@@ -1233,7 +1234,6 @@ const EXE *Xbox360_XEX_Private::initEXE(void)
 			pe_exe_tmp->unref();
 		}
 	}
-	peFile_tmp->unref();
 
 	return pe_exe;
 }
@@ -1256,10 +1256,10 @@ const Xbox360_XDBF *Xbox360_XEX_Private::initXDBF(void)
 	}
 
 	// Attempt to open the XDBF section.
-	IRpFile *peFile_tmp;
+	shared_ptr<IRpFile> peFile_tmp;
 #ifdef ENABLE_LIBMSPACK
 	if (!lzx_xdbfSection.empty()) {
-		peFile_tmp = new MemFile(lzx_xdbfSection.data(), lzx_xdbfSection.size());
+		peFile_tmp.reset(new MemFile(lzx_xdbfSection.data(), lzx_xdbfSection.size()));
 	} else
 #endif /* ENABLE_LIBMSPACK */
 	{
@@ -1291,7 +1291,7 @@ const Xbox360_XDBF *Xbox360_XEX_Private::initXDBF(void)
 				xdbf_physaddr -= (iter->vaddr - iter->physaddr);
 			}
 		}
-		peFile_tmp = new PartitionFile(peReader, xdbf_physaddr, pResInfo->size);
+		peFile_tmp.reset(new PartitionFile(peReader, xdbf_physaddr, pResInfo->size));
 	}
 	if (peFile_tmp->isOpen()) {
 		// FIXME: XEX1 XDBF is either encrypted or garbage...
@@ -1302,7 +1302,6 @@ const Xbox360_XDBF *Xbox360_XEX_Private::initXDBF(void)
 			pe_xdbf_tmp->unref();
 		}
 	}
-	peFile_tmp->unref();
 
 	return pe_xdbf;
 }
@@ -1359,7 +1358,7 @@ string Xbox360_XEX_Private::getPublisher(void) const
  *
  * @param file Open XEX file.
  */
-Xbox360_XEX::Xbox360_XEX(IRpFile *file)
+Xbox360_XEX::Xbox360_XEX(const shared_ptr<IRpFile> &file)
 	: super(new Xbox360_XEX_Private(file))
 {
 	// This class handles executables.
@@ -1380,7 +1379,7 @@ Xbox360_XEX::Xbox360_XEX(IRpFile *file)
 	size_t size = d->file->read(header, sizeof(header));
 	if (size != sizeof(header)) {
 		d->xex2Header.magic = 0;
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -1394,7 +1393,7 @@ Xbox360_XEX::Xbox360_XEX(IRpFile *file)
 	d->isValid = ((int)d->xexType >= 0);
 
 	if (!d->isValid) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -1433,7 +1432,7 @@ Xbox360_XEX::Xbox360_XEX(IRpFile *file)
 		size = d->file->seekAndRead(d->xex2Header.sec_info_offset, &d->secInfo, sizeof(d->secInfo));
 		if (size != sizeof(d->secInfo)) {
 			// Seek and/or read error.
-			UNREF_AND_NULL_NOCHK(d->file);
+			d->file.reset();
 			d->xexType = Xbox360_XEX_Private::XexType::Unknown;
 			d->isValid = false;
 			return;

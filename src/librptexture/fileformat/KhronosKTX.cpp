@@ -36,7 +36,8 @@ using LibRpFile::IRpFile;
 #include "decoder/ImageDecoder_PVRTC.hpp"
 #include "decoder/ImageDecoder_ASTC.hpp"
 
-// C++ STL classes.
+// C++ STL classes
+using std::shared_ptr;
 using std::string;
 using std::unique_ptr;
 using std::vector;
@@ -46,7 +47,7 @@ namespace LibRpTexture {
 class KhronosKTXPrivate final : public FileFormatPrivate
 {
 	public:
-		KhronosKTXPrivate(KhronosKTX *q, IRpFile *file);
+		KhronosKTXPrivate(KhronosKTX *q, const shared_ptr<IRpFile> &file);
 		~KhronosKTXPrivate() final;
 
 	private:
@@ -120,7 +121,7 @@ const TextureInfo KhronosKTXPrivate::textureInfo = {
 	exts, mimeTypes
 };
 
-KhronosKTXPrivate::KhronosKTXPrivate(KhronosKTX *q, IRpFile *file)
+KhronosKTXPrivate::KhronosKTXPrivate(KhronosKTX *q, const shared_ptr<IRpFile> &file)
 	: super(q, file, &textureInfo)
 	, isByteswapNeeded(false)
 	, flipOp(rp_image::FLIP_V)
@@ -840,7 +841,7 @@ void KhronosKTXPrivate::loadKeyValueData(void)
  *
  * @param file Open ROM image.
  */
-KhronosKTX::KhronosKTX(IRpFile *file)
+KhronosKTX::KhronosKTX(const shared_ptr<IRpFile> &file)
 	: super(new KhronosKTXPrivate(this, file))
 {
 	RP_D(KhronosKTX);
@@ -855,7 +856,7 @@ KhronosKTX::KhronosKTX(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(&d->ktxHeader, sizeof(d->ktxHeader));
 	if (size != sizeof(d->ktxHeader)) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -868,7 +869,7 @@ KhronosKTX::KhronosKTX(IRpFile *file)
 	d->isValid = (isRomSupported_static(&info) >= 0);
 
 	if (!d->isValid) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 

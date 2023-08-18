@@ -71,8 +71,9 @@ class RpFile final : public IRpFile
 
 	private:
 		void init(void);
-	protected:
-		~RpFile() final;	// call unref() instead
+	public:
+		RP_LIBROMDATA_PUBLIC
+		~RpFile() final;
 
 	private:
 		typedef IRpFile super;

@@ -21,7 +21,8 @@ using namespace LibRpText;
 using namespace LibRpTexture;
 using LibRpFile::IRpFile;
 
-// C++ STL classes.
+// C++ STL classes
+using std::shared_ptr;
 using std::vector;
 
 namespace LibRomData {
@@ -29,7 +30,7 @@ namespace LibRomData {
 class PlayStationSavePrivate final : public RomDataPrivate
 {
 	public:
-		PlayStationSavePrivate(IRpFile *file);
+		PlayStationSavePrivate(const shared_ptr<IRpFile> &file);
 		~PlayStationSavePrivate() final;
 
 	private:
@@ -105,7 +106,7 @@ const RomDataInfo PlayStationSavePrivate::romDataInfo = {
 	"PlayStationSave", exts, mimeTypes
 };
 
-PlayStationSavePrivate::PlayStationSavePrivate(IRpFile *file)
+PlayStationSavePrivate::PlayStationSavePrivate(const shared_ptr<IRpFile> &file)
 	: super(file, &romDataInfo)
 	, iconAnimData(nullptr)
 	, saveType(SaveType::Unknown)
@@ -211,7 +212,7 @@ const rp_image *PlayStationSavePrivate::loadIcon(void)
  *
  * @param file Open ROM image.
  */
-PlayStationSave::PlayStationSave(IRpFile *file)
+PlayStationSave::PlayStationSave(const shared_ptr<IRpFile> &file)
 	: super(new PlayStationSavePrivate(file))
 {
 	// This class handles save files.
@@ -229,7 +230,7 @@ PlayStationSave::PlayStationSave(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(&header, sizeof(header));
 	if (size != sizeof(header)) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -260,7 +261,7 @@ PlayStationSave::PlayStationSave(IRpFile *file)
 			break;
 		default:
 			// Unknown save type.
-			UNREF_AND_NULL_NOCHK(d->file);
+			d->file.reset();
 			d->saveType = PlayStationSavePrivate::SaveType::Unknown;
 			return;
 	}

@@ -78,7 +78,9 @@ using std::cerr;
 using std::endl;
 using std::locale;
 using std::ofstream;
+using std::shared_ptr;
 using std::string;
+using std::unique_ptr;
 using std::vector;
 
 #include "libi18n/config.libi18n.h"
@@ -208,17 +210,15 @@ static void DoFile(const TCHAR *filename, bool json, const vector<ExtractParam>&
 {
 	// FIXME: Make T2U8c() unnecessary here.
 	cerr << "== " << rp_sprintf(C_("rpcli", "Reading file '%s'..."), T2U8c(filename)) << endl;
-	RpFile *const file = new RpFile(filename, RpFile::FM_OPEN_READ_GZ);
+	shared_ptr<IRpFile> file(new RpFile(filename, RpFile::FM_OPEN_READ_GZ));
 	if (!file->isOpen()) {
 		// TODO: Return an error code?
 		cerr << "-- " << rp_sprintf(C_("rpcli", "Couldn't open file: %s"), strerror(file->lastError())) << endl;
 		if (json) cout << "{\"error\":\"couldn't open file\",\"code\":" << file->lastError() << '}' << endl;
-		file->unref();
 		return;
 	}
 
 	RomData *const romData = RomDataFactory::create(file);
-	file->unref();
 	if (romData && romData->isValid()) {
 		if (json) {
 			cerr << "-- " << C_("rpcli", "Outputting JSON data") << endl;
@@ -298,12 +298,11 @@ static void DoScsiInquiry(const TCHAR *filename, bool json)
 {
 	// FIXME: Make T2U8c() unnecessary here.
 	cerr << "== " << rp_sprintf(C_("rpcli", "Opening device file '%s'..."), T2U8c(filename)) << endl;
-	RpFile *const file = new RpFile(filename, RpFile::FM_OPEN_READ_GZ);
+	unique_ptr<RpFile> file(new RpFile(filename, RpFile::FM_OPEN_READ_GZ));
 	if (!file->isOpen()) {
 		// TODO: Return an error code?
 		cerr << "-- " << rp_sprintf(C_("rpcli", "Couldn't open file: %s"), strerror(file->lastError())) << endl;
 		if (json) cout << "{\"error\":\"couldn't open file\",\"code\":" << file->lastError() << '}' << endl;
-		file->unref();
 		return;
 	}
 
@@ -312,18 +311,16 @@ static void DoScsiInquiry(const TCHAR *filename, bool json)
 		// TODO: Return an error code?
 		cerr << "-- " << C_("rpcli", "Not a device file") << endl;
 		if (json) cout << "{\"error\":\"Not a device file\"}" << endl;
-		file->unref();
 		return;
 	}
 
 	if (json) {
 		cerr << "-- " << C_("rpcli", "Outputting JSON data") << endl;
 		// TODO: JSONScsiInquiry
-		//cout << JSONScsiInquiry(file) << endl;
+		//cout << JSONScsiInquiry(file.get()) << endl;
 	} else {
-		cout << ScsiInquiry(file) << endl;
+		cout << ScsiInquiry(file.get()) << endl;
 	}
-	file->unref();
 }
 
 /**
@@ -336,12 +333,11 @@ static void DoAtaIdentifyDevice(const TCHAR *filename, bool json, bool packet)
 {
 	// FIXME: Make T2U8c() unnecessary here.
 	cerr << "== " << rp_sprintf(C_("rpcli", "Opening device file '%s'..."), T2U8c(filename)) << endl;
-	RpFile *const file = new RpFile(filename, RpFile::FM_OPEN_READ_GZ);
+	unique_ptr<RpFile> file(new RpFile(filename, RpFile::FM_OPEN_READ_GZ));
 	if (!file->isOpen()) {
 		// TODO: Return an error code?
 		cerr << "-- " << rp_sprintf(C_("rpcli", "Couldn't open file: %s"), strerror(file->lastError())) << endl;
 		if (json) cout << "{\"error\":\"couldn't open file\",\"code\":" << file->lastError() << '}' << endl;
-		file->unref();
 		return;
 	}
 
@@ -350,18 +346,16 @@ static void DoAtaIdentifyDevice(const TCHAR *filename, bool json, bool packet)
 		// TODO: Return an error code?
 		cerr << "-- " << C_("rpcli", "Not a device file") << endl;
 		if (json) cout << "{\"error\":\"Not a device file\"}" << endl;
-		file->unref();
 		return;
 	}
 
 	if (json) {
 		cerr << "-- " << C_("rpcli", "Outputting JSON data") << endl;
 		// TODO: JSONAtaIdentifyDevice
-		//cout << JSONAtaIdentifyDevice(file) << endl;
+		//cout << JSONAtaIdentifyDevice(file.get(), packet) << endl;
 	} else {
-		cout << AtaIdentifyDevice(file, packet) << endl;
+		cout << AtaIdentifyDevice(file.get(), packet) << endl;
 	}
-	file->unref();
 }
 #endif /* RP_OS_SCSI_SUPPORTED */
 

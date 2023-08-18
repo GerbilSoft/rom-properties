@@ -34,10 +34,12 @@ using LibRpFile::MemFile;
 // C++ includes
 #include <forward_list>
 #include <iostream>
+#include <memory>
 #include <sstream>
 #include <string>
 using std::forward_list;
 using std::ostringstream;
+using std::shared_ptr;
 using std::string;
 
 // Uninitialized vector class.
@@ -85,13 +87,11 @@ class RomHeaderTest : public ::testing::TestWithParam<RomHeaderTest_mode>
 	protected:
 		RomHeaderTest()
 			: ::testing::TestWithParam<RomHeaderTest_mode>()
-			, memFile(nullptr)
 			, romData(nullptr)
 		{ }
 
 		~RomHeaderTest() override
 		{
-			UNREF(memFile);
 			UNREF(romData);
 		}
 
@@ -117,7 +117,7 @@ class RomHeaderTest : public ::testing::TestWithParam<RomHeaderTest_mode>
 		int read_next_files(const RomHeaderTest_mode &mode);
 
 	protected:
-		MemFile *memFile;
+		shared_ptr<MemFile> memFile;
 		RomData *romData;
 
 	public:
@@ -304,7 +304,7 @@ TEST_P(RomHeaderTest, Text)
 	ASSERT_GT(last_bin_data.size(), 0) << "Binary file is empty.";
 
 	// Get the text output for this binary file, e.g. as if we're running `rpcli`.
-	memFile = new MemFile(last_bin_data.data(), last_bin_data.size());
+	memFile.reset(new MemFile(last_bin_data.data(), last_bin_data.size()));
 	ASSERT_NE(memFile, nullptr) << "Unable to create MemFile object for binary data.";
 	memFile->setFilename(mode.bin_filename);	// needed for SNES
 	romData = RomDataFactory::create(memFile);
@@ -350,7 +350,7 @@ TEST_P(RomHeaderTest, JSON)
 	ASSERT_GT(last_bin_data.size(), 0) << "Binary file is empty.";
 
 	// Get the JSON output for this binary file, e.g. as if we're running `rpcli -j`.
-	memFile = new MemFile(last_bin_data.data(), last_bin_data.size());
+	memFile.reset(new MemFile(last_bin_data.data(), last_bin_data.size()));
 	ASSERT_NE(memFile, nullptr) << "Unable to create MemFile object for binary data.";
 	memFile->setFilename(mode.bin_filename);	// needed for SNES
 	romData = RomDataFactory::create(memFile);

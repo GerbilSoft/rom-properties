@@ -20,8 +20,9 @@ using namespace LibRpText;
 using namespace LibRpTexture;
 using LibRpFile::IRpFile;
 
-// C++ STL classes.
+// C++ STL classes
 using std::array;
+using std::shared_ptr;
 using std::string;
 using std::vector;
 
@@ -30,7 +31,7 @@ namespace LibRomData {
 class NintendoBadgePrivate final : public RomDataPrivate
 {
 	public:
-		NintendoBadgePrivate(IRpFile *file);
+		NintendoBadgePrivate(const shared_ptr<IRpFile> &file);
 		~NintendoBadgePrivate() final;
 
 	private:
@@ -127,7 +128,7 @@ const RomDataInfo NintendoBadgePrivate::romDataInfo = {
 	"NintendoBadge", exts, mimeTypes
 };
 
-NintendoBadgePrivate::NintendoBadgePrivate(IRpFile *file)
+NintendoBadgePrivate::NintendoBadgePrivate(const shared_ptr<IRpFile> &file)
 	: super(file, &romDataInfo)
 	, badgeType(BadgeType::Unknown)
 	, megaBadge(false)
@@ -408,7 +409,7 @@ inline uint32_t NintendoBadgePrivate::getDefaultLC(void) const
  *
  * @param file Open ROM image.
  */
-NintendoBadge::NintendoBadge(IRpFile *file)
+NintendoBadge::NintendoBadge(const shared_ptr<IRpFile> &file)
 	: super(new NintendoBadgePrivate(file))
 {
 	// This class handles texture files.
@@ -426,7 +427,7 @@ NintendoBadge::NintendoBadge(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(&d->badgeHeader, sizeof(d->badgeHeader));
 	if (size != sizeof(d->badgeHeader)) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -441,7 +442,7 @@ NintendoBadge::NintendoBadge(IRpFile *file)
 	d->megaBadge = false;	// check later
 
 	if (!d->isValid) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 

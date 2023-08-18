@@ -94,7 +94,8 @@ typedef int (RP_C_API *PFN_RP_CREATE_THUMBNAIL)(const char *source_file, const c
 #include "librpbase/RomData.hpp"
 #include "librptexture/img/rp_image.hpp"
 
-// C++ includes.
+// C++ includes
+#include <memory>
 #include <string>
 
 namespace LibRpBase {
@@ -177,7 +178,7 @@ class TCreateThumbnail
 		 * @param pOutParams	[out] Output parameters (If an error occurs, pOutParams->retImg will be null)
 		 * @return 0 on success; non-zero on error.
 		 */
-		int getThumbnail(LibRpFile::IRpFile *file, int reqSize, GetThumbnailOutParams_t *pOutParams);
+		int getThumbnail(const std::shared_ptr<LibRpFile::IRpFile> &file, int reqSize, GetThumbnailOutParams_t *pOutParams);
 
 		/**
 		 * Create a thumbnail for the specified ROM file.

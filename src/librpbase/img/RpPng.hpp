@@ -11,6 +11,9 @@
 #include "common.h"
 #include "dll-macros.h"	// for RP_LIBROMDATA_PUBLIC
 
+// C++ includes
+#include <memory>
+
 namespace LibRpFile {
 	class IRpFile;
 }
@@ -30,7 +33,7 @@ namespace RpPng {
  * @return rp_image*, or nullptr on error
  */
 RP_LIBROMDATA_PUBLIC
-LibRpTexture::rp_image *load(LibRpFile::IRpFile *file);
+LibRpTexture::rp_image *load(const std::shared_ptr<LibRpFile::IRpFile> &file);
 
 /**
  * Save an image in PNG format to an IRpFile.
@@ -43,7 +46,7 @@ LibRpTexture::rp_image *load(LibRpFile::IRpFile *file);
  * @param img rp_image to save
  * @return 0 on success; negative POSIX error code on error
  */
-int save(LibRpFile::IRpFile *file, const LibRpTexture::rp_image *img);
+int save(const std::shared_ptr<LibRpFile::IRpFile> &file, const LibRpTexture::rp_image *img);
 
 /**
  * Save an image in PNG format to a file.
@@ -86,7 +89,7 @@ int save(const wchar_t *filename, const LibRpTexture::rp_image *img);
  * @param iconAnimData Animated image data to save
  * @return 0 on success; negative POSIX error code on error
  */
-int save(LibRpFile::IRpFile *file, const IconAnimData *iconAnimData);
+int save(const std::shared_ptr<LibRpFile::IRpFile> &file, const IconAnimData *iconAnimData);
 
 /**
  * Save an animated image in APNG format to a file.

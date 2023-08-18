@@ -23,12 +23,15 @@ using LibRpText::rp_sprintf;
 #include "decoder/ImageDecoder_Linear.hpp"
 #include "decoder/ImageDecoder_S3TC.hpp"
 
+// C++ STL classes
+using std::shared_ptr;
+
 namespace LibRpTexture {
 
 class XboxXPRPrivate final : public FileFormatPrivate
 {
 	public:
-		XboxXPRPrivate(XboxXPR *q, IRpFile *file);
+		XboxXPRPrivate(XboxXPR *q, const shared_ptr<IRpFile> &file);
 		~XboxXPRPrivate() final;
 
 	private:
@@ -172,7 +175,7 @@ const TextureInfo XboxXPRPrivate::textureInfo = {
 	exts, mimeTypes
 };
 
-XboxXPRPrivate::XboxXPRPrivate(XboxXPR *q, IRpFile *file)
+XboxXPRPrivate::XboxXPRPrivate(XboxXPR *q, const shared_ptr<IRpFile> &file)
 	: super(q, file, &textureInfo)
 	, xprType(XPRType::Unknown)
 	, img(nullptr)
@@ -565,7 +568,7 @@ const rp_image *XboxXPRPrivate::loadXboxXPR0Image(void)
  *
  * @param file Open ROM image.
  */
-XboxXPR::XboxXPR(IRpFile *file)
+XboxXPR::XboxXPR(const shared_ptr<IRpFile> &file)
 	: super(new XboxXPRPrivate(this, file))
 {
 	RP_D(XboxXPR);
@@ -580,7 +583,7 @@ XboxXPR::XboxXPR(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(&d->xpr0Header, sizeof(d->xpr0Header));
 	if (size != sizeof(d->xpr0Header)) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -609,7 +612,7 @@ XboxXPR::XboxXPR(IRpFile *file)
 	}
 
 	if (!d->isValid) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 

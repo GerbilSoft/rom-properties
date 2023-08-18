@@ -17,6 +17,9 @@
 using namespace LibRpBase;
 using LibRpTexture::rp_image;
 
+// C++ STL classes
+using std::shared_ptr;
+
 // TODO: Adjust minimum image size based on DPI.
 #define DIL_MIN_IMAGE_SIZE 32
 
@@ -672,7 +675,7 @@ rp_drag_image_drag_data_get(RpDragImage *image, GdkDragContext *context, GtkSele
 	const bool isAnimated = (anim && anim->iconAnimData && anim->iconAnimHelper.isAnimated());
 
 	using LibRpFile::VectorFile;
-	VectorFile *const pngData = new VectorFile();
+	shared_ptr<VectorFile> pngData(new VectorFile());
 	RpPngWriter *pngWriter;
 	if (isAnimated) {
 		// Animated icon.
@@ -684,14 +687,12 @@ rp_drag_image_drag_data_get(RpDragImage *image, GdkDragContext *context, GtkSele
 		pngWriter = new RpPngWriter(pngData, image->img);
 	} else {
 		// No icon...
-		pngData->unref();
 		return;
 	}
 
 	if (!pngWriter->isOpen()) {
 		// Unable to open the PNG writer.
 		delete pngWriter;
-		pngData->unref();
 		return;
 	}
 
@@ -701,14 +702,12 @@ rp_drag_image_drag_data_get(RpDragImage *image, GdkDragContext *context, GtkSele
 	if (pwRet != 0) {
 		// Error writing the PNG image...
 		delete pngWriter;
-		pngData->unref();
 		return;
 	}
 	pwRet = pngWriter->write_IDAT();
 	if (pwRet != 0) {
 		// Error writing the PNG image...
 		delete pngWriter;
-		pngData->unref();
 		return;
 	}
 
@@ -720,9 +719,6 @@ rp_drag_image_drag_data_get(RpDragImage *image, GdkDragContext *context, GtkSele
 	const std::vector<uint8_t> &pngVec = pngData->vector();
 	gtk_selection_data_set(data, gdk_atom_intern_static_string("image/png"), 8,
 		pngVec.data(), static_cast<gint>(pngVec.size()));
-
-	// We're done here.
-	pngData->unref();
 }
 #endif /* !GTK_CHECK_VERSION(4,0,0) */
 

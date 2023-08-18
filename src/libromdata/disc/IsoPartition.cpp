@@ -16,6 +16,7 @@ using namespace LibRpText;
 using LibRpFile::IRpFile;
 
 // C++ STL classes
+using std::shared_ptr;
 using std::string;
 using std::unordered_map;
 
@@ -675,7 +676,7 @@ int IsoPartition::closedir(IFst::Dir *dirp)
  * @param filename Filename.
  * @return IRpFile*, or nullptr on error.
  */
-IRpFile *IsoPartition::open(const char *filename)
+shared_ptr<IRpFile> IsoPartition::open(const char *filename)
 {
 	RP_D(IsoPartition);
 	assert(m_discReader != nullptr);
@@ -726,7 +727,7 @@ IRpFile *IsoPartition::open(const char *filename)
 	// This is an IRpFile implementation that uses an
 	// IPartition as the reader and takes an offset
 	// and size as the file parameters.
-	return new PartitionFile(this, file_addr, dirEntry->size.he);
+	return shared_ptr<IRpFile>(new PartitionFile(this, file_addr, dirEntry->size.he));
 }
 
 /**

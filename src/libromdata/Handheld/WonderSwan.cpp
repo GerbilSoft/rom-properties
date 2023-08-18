@@ -16,7 +16,8 @@ using namespace LibRpBase;
 using namespace LibRpText;
 using namespace LibRpFile;
 
-// C++ STL classes.
+// C++ STL classes
+using std::shared_ptr;
 using std::string;
 using std::vector;
 
@@ -25,7 +26,7 @@ namespace LibRomData {
 class WonderSwanPrivate final : public RomDataPrivate
 {
 	public:
-		WonderSwanPrivate(IRpFile *file);
+		WonderSwanPrivate(const shared_ptr<IRpFile> &file);
 
 	private:
 		typedef RomDataPrivate super;
@@ -94,7 +95,7 @@ const RomDataInfo WonderSwanPrivate::romDataInfo = {
 	"WonderSwan", exts, mimeTypes
 };
 
-WonderSwanPrivate::WonderSwanPrivate(IRpFile *file)
+WonderSwanPrivate::WonderSwanPrivate(const shared_ptr<IRpFile> &file)
 	: super(file, &romDataInfo)
 	, romType(RomType::Unknown)
 	, forceGameIDSysIDTo0(false)
@@ -144,7 +145,7 @@ string WonderSwanPrivate::getGameID(void) const
  *
  * @param file Open ROM file.
  */
-WonderSwan::WonderSwan(IRpFile *file)
+WonderSwan::WonderSwan(const shared_ptr<IRpFile> &file)
 	: super(new WonderSwanPrivate(file))
 {
 	RP_D(WonderSwan);
@@ -159,7 +160,7 @@ WonderSwan::WonderSwan(IRpFile *file)
 	// and cannot be larger than 16 MB.
 	if (fileSize < 1024 || fileSize > (16*1024*1024)) {
 		// File size is out of range.
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -168,7 +169,7 @@ WonderSwan::WonderSwan(IRpFile *file)
 	d->file->seek(footer_addr);
 	size_t size = d->file->read(&d->romFooter, sizeof(d->romFooter));
 	if (size != sizeof(d->romFooter)) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -177,7 +178,7 @@ WonderSwan::WonderSwan(IRpFile *file)
 	const char *const ext = FileSystem::file_ext(filename);
 	if (!ext) {
 		// Unable to get the file extension.
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -192,7 +193,7 @@ WonderSwan::WonderSwan(IRpFile *file)
 	d->isValid = ((int)d->romType >= 0);
 
 	if (!d->isValid) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 	}
 
 	// Check for certain ROMs that have incorrect footers.

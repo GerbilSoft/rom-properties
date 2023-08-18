@@ -19,6 +19,7 @@ using LibRpFile::IRpFile;
 
 // C++ STL classes
 using std::pair;
+using std::shared_ptr;
 using std::string;
 using std::unique_ptr;
 using std::vector;
@@ -28,7 +29,7 @@ namespace LibRomData {
 class SAPPrivate final : public RomDataPrivate
 {
 	public:
-		SAPPrivate(IRpFile *file);
+		SAPPrivate(const shared_ptr<IRpFile> &file);
 
 	private:
 		typedef RomDataPrivate super;
@@ -110,7 +111,7 @@ const RomDataInfo SAPPrivate::romDataInfo = {
 	"SAP", exts, mimeTypes
 };
 
-SAPPrivate::SAPPrivate(IRpFile *file)
+SAPPrivate::SAPPrivate(const shared_ptr<IRpFile> &file)
 	: super(file, &romDataInfo)
 { }
 
@@ -451,7 +452,7 @@ SAPPrivate::sap_tags_t SAPPrivate::parseTags(void)
  *
  * @param file Open ROM image.
  */
-SAP::SAP(IRpFile *file)
+SAP::SAP(const shared_ptr<IRpFile> &file)
 	: super(new SAPPrivate(file))
 {
 	RP_D(SAP);
@@ -468,7 +469,7 @@ SAP::SAP(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(buf, sizeof(buf));
 	if (size != sizeof(buf)) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -481,7 +482,7 @@ SAP::SAP(IRpFile *file)
 	d->isValid = (isRomSupported_static(&info) >= 0);
 
 	if (!d->isValid) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 	}
 }
 

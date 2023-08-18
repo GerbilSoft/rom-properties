@@ -23,7 +23,8 @@ using namespace LibRpFile;
 #include "Audio/GBS.hpp"
 #include "Audio/gbs_structs.h"
 
-// C++ STL classes.
+// C++ STL classes
+using std::shared_ptr;
 using std::string;
 using std::vector;
 
@@ -32,7 +33,7 @@ namespace LibRomData {
 class DMGPrivate final : public RomDataPrivate
 {
 	public:
-		DMGPrivate(IRpFile *file);
+		DMGPrivate(const shared_ptr<IRpFile> &file);
 
 	private:
 		typedef RomDataPrivate super;
@@ -307,7 +308,7 @@ const DMGPrivate::dmg_cart_type DMGPrivate::dmg_cart_types_end[] = {
 	{DMG_Hardware::HUC1, DMG_FEATURE_RAM|DMG_FEATURE_BATTERY},
 };
 
-DMGPrivate::DMGPrivate(IRpFile *file)
+DMGPrivate::DMGPrivate(const shared_ptr<IRpFile> &file)
 	: super(file, &romDataInfo)
 	, romType(RomType::Unknown)
 	, copier_offset(0)
@@ -769,7 +770,7 @@ void DMGPrivate::addFields_romHeader(const DMG_RomHeader *pRomHeader)
  *
  * @param file Open ROM file.
  */
-DMG::DMG(IRpFile *file)
+DMG::DMG(const shared_ptr<IRpFile> &file)
 	: super(new DMGPrivate(file))
 {
 	RP_D(DMG);
@@ -791,7 +792,7 @@ DMG::DMG(IRpFile *file)
 	header_read_t header;
 	size_t size = d->file->read(header.u8, sizeof(header.u8));
 	if (size < (0x100 + sizeof(d->romHeader))) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 	if (size < sizeof(header.u8)) {
@@ -807,7 +808,7 @@ DMG::DMG(IRpFile *file)
 	d->romType = static_cast<DMGPrivate::RomType>(isRomSupported_static(&info));
 	d->isValid = ((int)d->romType >= 0);
 	if (!d->isValid) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -1303,7 +1304,7 @@ int DMG::loadFieldData(void)
 			if (size == sizeof(gbs_magic) && gbs_magic == cpu_to_be32(GBS_MAGIC)) {
 				// Found the GBS magic number.
 				// Open the GBS.
-				SubFile *const gbsFile = new SubFile(d->file, jp_addr, fileSize + d->copier_offset - jp_addr);
+				shared_ptr<IRpFile> gbsFile(new SubFile(d->file, jp_addr, fileSize + d->copier_offset - jp_addr));
 				if (gbsFile->isOpen()) {
 					// Open the GBS.
 					GBS *const gbs = new GBS(gbsFile);
@@ -1319,7 +1320,6 @@ int DMG::loadFieldData(void)
 					}
 					gbs->unref();
 				}
-				gbsFile->unref();
 			}
 		}
 	}

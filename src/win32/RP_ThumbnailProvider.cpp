@@ -19,7 +19,8 @@ using LibRpTexture::rp_image;
 // RpFile_IStream
 #include "file/RpFile_IStream.hpp"
 
-// C++ STL classes.
+// C++ STL classes
+using std::shared_ptr;
 using std::wstring;
 
 // CLSID
@@ -32,17 +33,9 @@ const CLSID CLSID_RP_ThumbnailProvider =
 /** RP_ThumbnailProvider_Private **/
 
 RP_ThumbnailProvider_Private::RP_ThumbnailProvider_Private()
-	: file(nullptr)
-	, pstream(nullptr)
+	: pstream(nullptr)
 	, grfMode(0)
 { }
-
-RP_ThumbnailProvider_Private::~RP_ThumbnailProvider_Private()
-{
-	// pstream is owned by file,
-	// so don't Release() it here.
-	UNREF(file);
-}
 
 /** RP_ThumbnailProvider **/
 
@@ -87,15 +80,14 @@ IFACEMETHODIMP RP_ThumbnailProvider::Initialize(_In_ IStream *pstream, DWORD grf
 	// thumbnailing if it's too slow.
 
 	// Create an IRpFile wrapper for the IStream.
-	RpFile_IStream *const file = new RpFile_IStream(pstream, true);
+	// NOTE: RpFile_IStream adds a reference to the IStream.
+	shared_ptr<IRpFile> file(new RpFile_IStream(pstream, true));
 	if (!file->isOpen() || file->lastError() != 0) {
 		// Error initializing the IRpFile.
-		file->unref();
 		return E_FAIL;
 	}
 
 	RP_D(RP_ThumbnailProvider);
-	UNREF(d->file);
 	d->file = file;
 
 	// Save the IStream and grfMode.

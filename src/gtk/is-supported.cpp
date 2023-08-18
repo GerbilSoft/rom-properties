@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * is-supported.hpp: Check if a URI is supported.                          *
  *                                                                         *
- * Copyright (c) 2017-2022 by David Korth.                                 *
+ * Copyright (c) 2017-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -15,6 +15,9 @@ using LibRpFile::IRpFile;
 using LibRpFile::RpFile;
 using LibRpBase::RomData;
 using LibRomData::RomDataFactory;
+
+// C++ STL classes
+using std::shared_ptr;
 
 /**
  * Attempt to open a RomData object from the specified GVfs URI.
@@ -43,13 +46,10 @@ LibRpBase::RomData *rp_gtk_open_uri(const gchar *uri)
 	if (!file->isOpen()) {
 		// Unable to open the file...
 		// TODO: Return an error code?
-		file->unref();
+		delete file;
 		return nullptr;
 	}
 
 	// Create the RomData object.
-	RomData *const romData = RomDataFactory::create(file);
-	file->unref();
-
-	return romData;
+	return RomDataFactory::create(shared_ptr<IRpFile>(file));
 }

@@ -20,7 +20,8 @@ using LibRpTexture::rp_image;
 using LibRpTexture::FileFormat;
 using LibRpTexture::FileFormatFactory;
 
-// C++ STL classes.
+// C++ STL classes
+using std::shared_ptr;
 using std::vector;
 
 namespace LibRomData {
@@ -28,7 +29,7 @@ namespace LibRomData {
 class RpTextureWrapperPrivate final : public RomDataPrivate
 {
 	public:
-		RpTextureWrapperPrivate(IRpFile *file);
+		RpTextureWrapperPrivate(const shared_ptr<IRpFile> &file);
 		~RpTextureWrapperPrivate() final;
 
 	private:
@@ -64,7 +65,7 @@ const RomDataInfo RpTextureWrapperPrivate::romDataInfo = {
 	"RpTextureWrapper", exts, mimeTypes
 };
 
-RpTextureWrapperPrivate::RpTextureWrapperPrivate(IRpFile *file)
+RpTextureWrapperPrivate::RpTextureWrapperPrivate(const shared_ptr<IRpFile> &file)
 	: super(file, &romDataInfo)
 	, texture(nullptr)
 { }
@@ -89,7 +90,7 @@ RpTextureWrapperPrivate::~RpTextureWrapperPrivate()
  *
  * @param file Open ROM image.
  */
-RpTextureWrapper::RpTextureWrapper(IRpFile *file)
+RpTextureWrapper::RpTextureWrapper(const shared_ptr<IRpFile> &file)
 	: super(new RpTextureWrapperPrivate(file))
 {
 	// This class handles texture files.
@@ -105,7 +106,7 @@ RpTextureWrapper::RpTextureWrapper(IRpFile *file)
 	d->texture = FileFormatFactory::create(d->file);
 	if (!d->texture) {
 		// Not a valid texture.
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 

@@ -28,6 +28,9 @@
 using namespace LibRpBase;
 using LibRpFile::IRpFile;
 
+// C++ STL classes
+using std::shared_ptr;
+
 namespace LibRomData {
 
 #ifdef _MSC_VER
@@ -110,7 +113,7 @@ uint32_t GczReaderPrivate::getBlockCompressedSize(uint32_t blockNum) const
 
 /** GczReader **/
 
-GczReader::GczReader(IRpFile *file)
+GczReader::GczReader(const shared_ptr<IRpFile> &file)
 	: super(new GczReaderPrivate(this), file)
 {
 	if (!m_file) {
@@ -124,7 +127,7 @@ GczReader::GczReader(IRpFile *file)
 	if (DelayLoad_test_get_crc_table() != 0) {
 		// Delay load failed.
 		// GCZ is not supported without zlib.
-		UNREF_AND_NULL_NOCHK(m_file);
+		m_file.reset();
 		return;
 	}
 #else /* !defined(_MSC_VER) || !defined(ZLIB_IS_DLL) */
@@ -139,7 +142,7 @@ GczReader::GczReader(IRpFile *file)
 	size_t sz = m_file->read(&d->gczHeader, sizeof(d->gczHeader));
 	if (sz != sizeof(d->gczHeader)) {
 		// Error reading the GCZ header.
-		UNREF_AND_NULL_NOCHK(m_file);
+		m_file.reset();
 		m_lastError = EIO;
 		return;
 	}
@@ -147,7 +150,7 @@ GczReader::GczReader(IRpFile *file)
 	// Check the GCZ magic.
 	if (d->gczHeader.magic != cpu_to_le32(GCZ_MAGIC)) {
 		// Invalid magic.
-		UNREF_AND_NULL_NOCHK(m_file);
+		m_file.reset();
 		m_lastError = EIO;
 		return;
 	}
@@ -170,7 +173,7 @@ GczReader::GczReader(IRpFile *file)
 	    d->block_size < GCZ_BLOCK_SIZE_MIN || d->block_size > GCZ_BLOCK_SIZE_MAX)
 	{
 		// Block size is out of range.
-		UNREF_AND_NULL_NOCHK(m_file);
+		m_file.reset();
 		m_lastError = EIO;
 		return;
 	}
@@ -188,7 +191,7 @@ GczReader::GczReader(IRpFile *file)
 	}
 	if (((uint64_t)d->block_size * (uint64_t)d->gczHeader.num_blocks) != expected_data_size) {
 		// Not a multiple.
-		UNREF_AND_NULL_NOCHK(m_file);
+		m_file.reset();
 		m_lastError = EIO;
 		return;
 	}
@@ -199,7 +202,7 @@ GczReader::GczReader(IRpFile *file)
 	if (d->gczHeader.num_blocks == 0) {
 		// Zero blocks...
 		d->disc_size = 0;
-		UNREF_AND_NULL_NOCHK(m_file);
+		m_file.reset();
 		m_lastError = EIO;
 		return;
 	}
@@ -209,7 +212,7 @@ GczReader::GczReader(IRpFile *file)
 	if (dataSizeCalc > 16ULL*1024ULL*1024ULL*1024ULL) {
 		// More than 16 GB...
 		d->disc_size = 0;
-		UNREF_AND_NULL_NOCHK(m_file);
+		m_file.reset();
 		m_lastError = EIO;
 		return;
 	}
@@ -226,7 +229,7 @@ GczReader::GczReader(IRpFile *file)
 			m_lastError = EIO;
 		}
 		d->disc_size = 0;
-		UNREF_AND_NULL_NOCHK(m_file);
+		m_file.reset();
 		return;
 	}
 	d->hashes.resize(d->gczHeader.num_blocks);
@@ -239,7 +242,7 @@ GczReader::GczReader(IRpFile *file)
 			m_lastError = EIO;
 		}
 		d->disc_size = 0;
-		UNREF_AND_NULL_NOCHK(m_file);
+		m_file.reset();
 		return;
 	}
 
@@ -254,7 +257,7 @@ GczReader::GczReader(IRpFile *file)
 		d->blockPointers.clear();
 		d->hashes.clear();
 		d->disc_size = 0;
-		UNREF_AND_NULL_NOCHK(m_file);
+		m_file.reset();
 		return;
 	}
 	d->dataOffset = static_cast<uint32_t>(pos);

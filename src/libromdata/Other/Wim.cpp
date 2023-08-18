@@ -36,6 +36,7 @@ using LibRpFile::IRpFile;
 #include <ctime>
 
 // C++ STL classes
+using std::shared_ptr;
 using std::string;
 using std::vector;
 
@@ -44,7 +45,7 @@ namespace LibRomData {
 class WimPrivate final : public RomDataPrivate
 {
 	public:
-		WimPrivate(LibRpFile::IRpFile* file);  
+		WimPrivate(const shared_ptr<IRpFile> &file);  
 	private:
 		typedef RomDataPrivate super;
 		RP_DISABLE_COPY(WimPrivate)
@@ -431,7 +432,7 @@ int WimPrivate::addFields_XML()
 }
 #endif /* ENABLE_XML */
 
-WimPrivate::WimPrivate(LibRpFile::IRpFile* file)
+WimPrivate::WimPrivate(const shared_ptr<IRpFile> &file)
 	: super(file, &romDataInfo)
 { 
 	// Clear the WIM header struct.
@@ -451,7 +452,7 @@ WimPrivate::WimPrivate(LibRpFile::IRpFile* file)
  *
  * @param file Open WIM image.
  */
-Wim::Wim(LibRpFile::IRpFile* file)
+Wim::Wim(const shared_ptr<IRpFile> &file)
 	: super(new WimPrivate(file))
 {
 	RP_D(Wim);
@@ -469,7 +470,7 @@ Wim::Wim(LibRpFile::IRpFile* file)
 	// Read the Wim header.
 	size_t size = d->file->read(&d->wimHeader, sizeof(d->wimHeader));
 	if (size != sizeof(d->wimHeader)) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -483,7 +484,7 @@ Wim::Wim(LibRpFile::IRpFile* file)
 
 	d->isValid = ((int)d->versionType >= 0);
 	if (!d->isValid) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 

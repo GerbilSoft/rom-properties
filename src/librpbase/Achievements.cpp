@@ -15,8 +15,9 @@
 #include "librpfile/RpFile.hpp"
 using namespace LibRpFile;
 
-// C++ STL classes.
+// C++ STL classes
 using std::string;
+using std::unique_ptr;
 using std::unordered_map;
 
 // Uninitialized vector class.
@@ -469,13 +470,12 @@ int AchievementsPrivate::save(void) const
 		return -EIO;
 	}
 
-	RpFile *const file = new RpFile(filename, RpFile::FM_CREATE_WRITE);
+	unique_ptr<RpFile> file(new RpFile(filename, RpFile::FM_CREATE_WRITE));
 	if (!file->isOpen()) {
 		int ret = -file->lastError();
 		if (ret == 0) {
 			ret = -EIO;
 		}
-		file->unref();
 		return ret;
 	}
 	size_t size = file->write(buf.data(), buf.size());
@@ -486,10 +486,8 @@ int AchievementsPrivate::save(void) const
 		if (ret == 0) {
 			ret = -EIO;
 		}
-		file->unref();
 		return ret;
 	}
-	file->unref();
 
 	// Achievements written.
 	const_cast<AchievementsPrivate*>(this)->loaded = true;
@@ -523,20 +521,18 @@ int AchievementsPrivate::load(void)
 		return -EIO;
 	}
 
-	RpFile *const file = new RpFile(filename, RpFile::FM_OPEN_READ);
+	unique_ptr<RpFile> file(new RpFile(filename, RpFile::FM_OPEN_READ));
 	if (!file->isOpen()) {
 		int ret = -file->lastError();
 		if (ret == 0) {
 			ret = -EIO;
 		}
-		file->unref();
 		return ret;
 	}
 
 	const off64_t fileSize = file->size();
 	if (fileSize > 1*1024*1024) {
 		// 1 MB is probably way too much...
-		file->unref();
 		return -ENOMEM;
 	}
 
@@ -548,10 +544,9 @@ int AchievementsPrivate::load(void)
 		if (ret == 0) {
 			ret = -EIO;
 		}
-		file->unref();
 		return ret;
 	}
-	file->unref();
+	file.reset(nullptr);
 
 #if defined(NDEBUG) || defined(FORCE_OBFUSCATE)
 	// Deobfuscate the data.

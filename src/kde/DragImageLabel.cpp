@@ -21,6 +21,9 @@ using LibRpTexture::rp_image;
 // Qt includes
 #include <QDesktopServices>
 
+// C++ STL classes
+using std::shared_ptr;
+
 DragImageLabel::DragImageLabel(const QString &text, QWidget *parent, Qt::WindowFlags f)
 	: super(text, parent, f)
 	, m_minimumImageSize(DIL_MIN_IMAGE_SIZE, DIL_MIN_IMAGE_SIZE)
@@ -338,7 +341,8 @@ void DragImageLabel::mouseMoveEvent(QMouseEvent *event)
 
 	const bool isAnimated = (m_anim && m_anim->iconAnimData && m_anim->iconAnimHelper.isAnimated());
 
-	RpQByteArrayFile *const pngData = new RpQByteArrayFile();
+	// COMMIT FIXME: How does shared_ptr<RpQByteArrayFile> handle conversion to shared_ptr<IRpFile>?
+	shared_ptr<RpQByteArrayFile> pngData(new RpQByteArrayFile());
 	RpPngWriter *pngWriter;
 	if (isAnimated) {
 		// Animated icon.
@@ -350,14 +354,12 @@ void DragImageLabel::mouseMoveEvent(QMouseEvent *event)
 		pngWriter = new RpPngWriter(pngData, m_img);
 	} else {
 		// No icon...
-		pngData->unref();
 		return;
 	}
 
 	if (!pngWriter->isOpen()) {
 		// Unable to open the PNG writer.
 		delete pngWriter;
-		pngData->unref();
 		return;
 	}
 
@@ -367,14 +369,12 @@ void DragImageLabel::mouseMoveEvent(QMouseEvent *event)
 	if (pwRet != 0) {
 		// Error writing the PNG image...
 		delete pngWriter;
-		pngData->unref();
 		return;
 	}
 	pwRet = pngWriter->write_IDAT();
 	if (pwRet != 0) {
 		// Error writing the PNG image...
 		delete pngWriter;
-		pngData->unref();
 		return;
 	}
 
@@ -408,5 +408,4 @@ void DragImageLabel::mouseMoveEvent(QMouseEvent *event)
 	}
 
 	drag->exec(Qt::CopyAction);
-	pngData->unref();
 }

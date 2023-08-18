@@ -17,7 +17,7 @@ class SparseDiscReaderPrivate;
 class SparseDiscReader : public IDiscReader
 {
 	protected:
-		explicit SparseDiscReader(SparseDiscReaderPrivate *d, LibRpFile::IRpFile *file);
+		explicit SparseDiscReader(SparseDiscReaderPrivate *d, const std::shared_ptr<LibRpFile::IRpFile> &file);
 	public:
 		~SparseDiscReader() override;
 

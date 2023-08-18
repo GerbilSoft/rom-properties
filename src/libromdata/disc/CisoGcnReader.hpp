@@ -22,7 +22,7 @@ class CisoGcnReader : public LibRpBase::SparseDiscReader
 		 * unref()'d by the caller afterwards.
 		 * @param file File to read from.
 		 */
-		explicit CisoGcnReader(LibRpFile::IRpFile *file);
+		explicit CisoGcnReader(const std::shared_ptr<LibRpFile::IRpFile> &file);
 
 	private:
 		typedef SparseDiscReader super;

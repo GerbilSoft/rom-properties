@@ -31,7 +31,8 @@ using namespace LibRpTexture;
 #include "disc/NCCHReader.hpp"
 #include "disc/CIAReader.hpp"
 
-// C++ STL classes.
+// C++ STL classes
+using std::shared_ptr;
 using std::string;
 using std::unique_ptr;
 using std::vector;
@@ -86,7 +87,7 @@ const RomDataInfo Nintendo3DSPrivate::romDataInfo = {
 	"Nintendo3DS", exts, mimeTypes
 };
 
-Nintendo3DSPrivate::Nintendo3DSPrivate(IRpFile *file)
+Nintendo3DSPrivate::Nintendo3DSPrivate(const shared_ptr<IRpFile> &file)
 	: super(file, &romDataInfo)
 	, romType(RomType::Unknown)
 	, headers_loaded(0)
@@ -119,7 +120,7 @@ int Nintendo3DSPrivate::loadSMDH(void)
 	static const size_t N3DS_SMDH_Section_Size =
 		sizeof(N3DS_SMDH_Header_t) + sizeof(N3DS_SMDH_Icon_t);
 
-	SubFile *smdhFile = nullptr;
+	shared_ptr<IRpFile> smdhFile;
 	switch (romType) {
 		default:
 			// Unsupported...
@@ -139,7 +140,7 @@ int Nintendo3DSPrivate::loadSMDH(void)
 			}
 
 			// Open the SMDH section.
-			smdhFile = new SubFile(this->file, le32_to_cpu(mxh.hb3dsx_header.smdh_offset), N3DS_SMDH_Section_Size);
+			smdhFile.reset(new SubFile(this->file, le32_to_cpu(mxh.hb3dsx_header.smdh_offset), N3DS_SMDH_Section_Size));
 			break;
 		}
 
@@ -173,7 +174,7 @@ int Nintendo3DSPrivate::loadSMDH(void)
 
 				// Open the SMDH section.
 				// TODO: Verify that this works.
-				smdhFile = new SubFile(this->file, addr, N3DS_SMDH_Section_Size);
+				smdhFile.reset(new SubFile(this->file, addr, N3DS_SMDH_Section_Size));
 				break;
 			}
 
@@ -191,32 +192,28 @@ int Nintendo3DSPrivate::loadSMDH(void)
 				return -6;
 			}
 
-			IRpFile *const ncch_f_icon = ncch_reader->open(N3DS_NCCH_SECTION_EXEFS, "icon");
+			shared_ptr<IRpFile> ncch_f_icon(ncch_reader->open(N3DS_NCCH_SECTION_EXEFS, "icon"));
 			if (!ncch_f_icon) {
 				// Failed to open "icon".
 				return -7;
 			} else if (ncch_f_icon->size() < (off64_t)N3DS_SMDH_Section_Size) {
 				// Icon is too small.
-				ncch_f_icon->unref();
 				return -8;
 			}
 
 			// Create the SMDH subfile.
-			smdhFile = new SubFile(ncch_f_icon, 0, N3DS_SMDH_Section_Size);
-			ncch_f_icon->unref();
+			smdhFile.reset(new SubFile(ncch_f_icon, 0, N3DS_SMDH_Section_Size));
 			break;
 		}
 	}
 
 	if (!smdhFile || !smdhFile->isOpen()) {
 		// Unable to open the SMDH subfile.
-		UNREF(smdhFile);
 		return -9;
 	}
 
 	// Open the SMDH RomData subclass.
 	Nintendo3DS_SMDH *const smdhData = new Nintendo3DS_SMDH(smdhFile);
-	smdhFile->unref();
 	if (!smdhData->isOpen()) {
 		// Unable to open the SMDH file.
 		smdhData->unref();
@@ -617,13 +614,12 @@ int Nintendo3DSPrivate::openSRL(void)
 	// TODO: Make IDiscReader derive from IRpFile.
 	// May need to add reference counting to IRpFile...
 	NintendoDS *srlData = nullptr;
-	PartitionFile *const srlFile = new PartitionFile(srlReader, 0, length);
+	shared_ptr<IRpFile> srlFile(new PartitionFile(srlReader, 0, length));
 	srlReader->unref();
 	if (srlFile->isOpen()) {
 		// Create the NintendoDS object.
 		srlData = new NintendoDS(srlFile, true);
 	}
-	srlFile->unref();
 
 	if (srlData && srlData->isOpen() && srlData->isValid()) {
 		// SRL opened successfully.
@@ -754,7 +750,7 @@ void Nintendo3DSPrivate::addTitleIdAndProductCodeFields(bool showContentType)
 	// NOTE: All known official logo binaries are 8 KB.
 	// The original and new "Homebrew" logos are also 8 KB.
 	uint32_t crc = 0;
-	IRpFile *const f_logo = ncch->openLogo();
+	shared_ptr<IRpFile> f_logo(ncch->openLogo());
 	if (f_logo) {
 		const off64_t szFile = f_logo->size();
 		if (szFile == 8192) {
@@ -786,7 +782,6 @@ void Nintendo3DSPrivate::addTitleIdAndProductCodeFields(bool showContentType)
 			// Some other custom logo.
 			crc = 1;
 		}
-		f_logo->unref();
 	}
 
 	struct logo_crc_tbl_t {
@@ -1220,7 +1215,7 @@ int Nintendo3DSPrivate::addFields_permissions(void)
  *
  * @param file Open disc image.
  */
-Nintendo3DS::Nintendo3DS(IRpFile *file)
+Nintendo3DS::Nintendo3DS(const shared_ptr<IRpFile> &file)
 	: super(new Nintendo3DSPrivate(file))
 {
 	// This class handles several different types of files,
@@ -1238,8 +1233,7 @@ Nintendo3DS::Nintendo3DS(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(&header, sizeof(header));
 	if (size != sizeof(header)) {
-		d->file->unref();
-		d->file = nullptr;
+		d->file.reset();
 		return;
 	}
 
@@ -1298,7 +1292,7 @@ Nintendo3DS::Nintendo3DS(IRpFile *file)
 		default:
 			// Unknown ROM format.
 			d->romType = Nintendo3DSPrivate::RomType::Unknown;
-			UNREF_AND_NULL_NOCHK(d->file);
+			d->file.reset();
 			return;
 	}
 

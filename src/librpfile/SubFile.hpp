@@ -11,6 +11,9 @@
 
 #include "librpfile/IRpFile.hpp"
 
+// C++ includes
+#include <memory>
+
 namespace LibRpFile {
 
 class SubFile final : public IRpFile
@@ -19,21 +22,12 @@ class SubFile final : public IRpFile
 		/**
 		 * Open a portion of an IRpFile.
 		 */
-		SubFile(IRpFile *file, off64_t offset, off64_t length)
-			: m_file(nullptr)
+		SubFile(const std::shared_ptr<IRpFile> &file, off64_t offset, off64_t length)
+			: m_file(file)
 			, m_offset(offset)
 			, m_length(length)
 		{
-			if (file) {
-				m_file = file->ref();
-				this->rewind();
-			}
-		}
-	protected:
-		// call unref() instead
-		~SubFile() final
-		{
-			UNREF(m_file);
+			this->rewind();
 		}
 
 	private:
@@ -48,19 +42,14 @@ class SubFile final : public IRpFile
 		 */
 		bool isOpen(void) const final
 		{
-			return (m_file != nullptr);
+			return (bool)m_file;
 		}
 
 		/**
 		 * Close the file.
 		 */
 		void close(void) final
-		{
-			if (m_file) {
-				m_file->unref();
-				m_file = nullptr;
-			}
-		}
+		{}
 
 		/**
 		 * Read data from the file.
@@ -166,7 +155,7 @@ class SubFile final : public IRpFile
 		}
 
 	protected:
-		IRpFile *m_file;
+		std::shared_ptr<IRpFile> m_file;
 		off64_t m_offset;
 		off64_t m_length;
 };

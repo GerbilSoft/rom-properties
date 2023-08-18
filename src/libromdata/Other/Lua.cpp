@@ -15,7 +15,8 @@
 using namespace LibRpBase;
 using LibRpFile::IRpFile;
 
-// C++ STL classes.
+// C++ STL classes
+using std::shared_ptr;
 using std::string;
 
 namespace LibRomData {
@@ -23,7 +24,7 @@ namespace LibRomData {
 class LuaPrivate final : public RomDataPrivate
 {
 	public:
-		LuaPrivate(IRpFile *file);
+		LuaPrivate(const shared_ptr<IRpFile> &file);
 
 	public:
 		/** RomDataInfo **/
@@ -188,7 +189,7 @@ const RomDataInfo LuaPrivate::romDataInfo = {
 	"Lua", exts, mimeTypes
 };
 
-LuaPrivate::LuaPrivate(IRpFile *file)
+LuaPrivate::LuaPrivate(const shared_ptr<IRpFile> &file)
 	: super(file, &romDataInfo)
 	, luaVersion(LuaVersion::Unknown)
 {
@@ -544,7 +545,7 @@ void LuaPrivate::parse4(uint8_t version, const uint8_t *p) {
  *
  * @param file Open ROM file.
  */
-Lua::Lua(IRpFile *file)
+Lua::Lua(const shared_ptr<IRpFile> &file)
 	: super(new LuaPrivate(file))
 {
 	RP_D(Lua);
@@ -562,7 +563,7 @@ Lua::Lua(IRpFile *file)
 	// Read the ROM header.
 	size_t size = d->file->read(&d->header, sizeof(d->header));
 	if (size != sizeof(d->header)) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -576,7 +577,7 @@ Lua::Lua(IRpFile *file)
 	d->isValid = ((int)d->luaVersion >= 0);
 
 	if (!d->isValid) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 	}
 }
 

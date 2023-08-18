@@ -38,7 +38,8 @@ using LibRpFile::IRpFile;
 #include "decoder/ImageDecoder_PVRTC.hpp"
 #include "decoder/ImageDecoder_ASTC.hpp"
 
-// C++ STL classes.
+// C++ STL classes
+using std::shared_ptr;
 using std::string;
 using std::unique_ptr;
 using std::vector;
@@ -52,7 +53,7 @@ namespace LibRpTexture {
 class KhronosKTX2Private final : public FileFormatPrivate
 {
 	public:
-		KhronosKTX2Private(KhronosKTX2 *q, IRpFile *file);
+		KhronosKTX2Private(KhronosKTX2 *q, const shared_ptr<IRpFile> &file);
 		~KhronosKTX2Private() final;
 
 	private:
@@ -132,7 +133,7 @@ const TextureInfo KhronosKTX2Private::textureInfo = {
 	exts, mimeTypes
 };
 
-KhronosKTX2Private::KhronosKTX2Private(KhronosKTX2 *q, IRpFile *file)
+KhronosKTX2Private::KhronosKTX2Private(KhronosKTX2 *q, const shared_ptr<IRpFile> &file)
 	: super(q, file, &textureInfo)
 	, flipOp(rp_image::FLIP_V)
 {
@@ -795,7 +796,7 @@ void KhronosKTX2Private::loadKeyValueData(void)
  *
  * @param file Open ROM image.
  */
-KhronosKTX2::KhronosKTX2(IRpFile *file)
+KhronosKTX2::KhronosKTX2(const shared_ptr<IRpFile> &file)
 	: super(new KhronosKTX2Private(this, file))
 {
 	RP_D(KhronosKTX2);
@@ -810,7 +811,7 @@ KhronosKTX2::KhronosKTX2(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(&d->ktx2Header, sizeof(d->ktx2Header));
 	if (size != sizeof(d->ktx2Header)) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -823,7 +824,7 @@ KhronosKTX2::KhronosKTX2(IRpFile *file)
 	d->isValid = (isRomSupported_static(&info) >= 0);
 
 	if (!d->isValid) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -855,7 +856,7 @@ KhronosKTX2::KhronosKTX2(IRpFile *file)
 	} else if (mipmapCount > 128) {
 		// Too many mipmaps.
 		d->isValid = false;
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 	d->mipmaps.resize(mipmapCount);
@@ -864,7 +865,7 @@ KhronosKTX2::KhronosKTX2(IRpFile *file)
 	size = d->file->read(d->mipmap_data.data(), mipdata_size);
 	if (size != mipdata_size) {
 		d->isValid = false;
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 #if SYS_BYTEORDER == SYS_BIG_ENDIAN

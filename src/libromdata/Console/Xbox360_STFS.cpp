@@ -25,7 +25,8 @@ using namespace LibRpFile;
 using namespace LibRpText;
 using namespace LibRpTexture;
 
-// C++ STL classes.
+// C++ STL classes
+using std::shared_ptr;
 using std::string;
 using std::vector;
 
@@ -37,7 +38,7 @@ namespace LibRomData {
 class Xbox360_STFS_Private final : public RomDataPrivate
 {
 	public:
-		Xbox360_STFS_Private(IRpFile *file);
+		Xbox360_STFS_Private(const shared_ptr<IRpFile> &file);
 		~Xbox360_STFS_Private() final;
 
 	private:
@@ -173,7 +174,7 @@ const RomDataInfo Xbox360_STFS_Private::romDataInfo = {
 	"Xbox360_STFS", exts, mimeTypes
 };
 
-Xbox360_STFS_Private::Xbox360_STFS_Private(IRpFile *file)
+Xbox360_STFS_Private::Xbox360_STFS_Private(const shared_ptr<IRpFile> &file)
 	: super(file, &romDataInfo)
 	, stfsType(StfsType::Unknown)
 	, img_icon(nullptr)
@@ -236,9 +237,8 @@ const rp_image *Xbox360_STFS_Private::loadIcon(void)
 
 	// Create a MemFile and decode the image.
 	// TODO: For rpcli, shortcut to extract the PNG directly.
-	MemFile *f_mem = new MemFile(pIconData, iconSize);
+	shared_ptr<IRpFile> f_mem(new MemFile(pIconData, iconSize));
 	rp_image *img = RpPng::load(f_mem);
-	f_mem->unref();
 
 	if (!img) {
 		// Unable to load the title thumbnail image.
@@ -253,9 +253,8 @@ const rp_image *Xbox360_STFS_Private::loadIcon(void)
 			iconSize = sizeof(stfsThumbnails.mdv2.thumbnail_image);
 		}
 
-		f_mem = new MemFile(pIconData, iconSize);
+		f_mem.reset(new MemFile(pIconData, iconSize));
 		img = RpPng::load(f_mem);
-		f_mem->unref();
 	}
 
 	this->img_icon = img;
@@ -527,7 +526,7 @@ Xbox360_XEX *Xbox360_STFS_Private::openDefaultXex(void)
 	// Load default.xexp.
 	// FIXME: Maybe add a reader class to handle the hashes,
 	// though we only need the XEX header right now.
-	SubFile *const xexFile_tmp = new SubFile(this->file, offset, filesize);
+	shared_ptr<IRpFile> xexFile_tmp(new SubFile(this->file, offset, filesize));
 	if (xexFile_tmp->isOpen()) {
 		Xbox360_XEX *const xex_tmp = new Xbox360_XEX(xexFile_tmp);
 		if (xex_tmp->isOpen()) {
@@ -536,7 +535,6 @@ Xbox360_XEX *Xbox360_STFS_Private::openDefaultXex(void)
 			xex_tmp->unref();
 		}
 	}
-	xexFile_tmp->unref();
 
 	return this->xex;
 }
@@ -556,7 +554,7 @@ Xbox360_XEX *Xbox360_STFS_Private::openDefaultXex(void)
  *
  * @param file Open STFS file.
  */
-Xbox360_STFS::Xbox360_STFS(IRpFile *file)
+Xbox360_STFS::Xbox360_STFS(const shared_ptr<IRpFile> &file)
 	: super(new Xbox360_STFS_Private(file))
 {
 	// This class handles application packages.
@@ -575,7 +573,7 @@ Xbox360_STFS::Xbox360_STFS(IRpFile *file)
 	size_t size = d->file->read(&d->stfsHeader, sizeof(d->stfsHeader));
 	if (size != sizeof(d->stfsHeader)) {
 		// Read error.
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -589,7 +587,7 @@ Xbox360_STFS::Xbox360_STFS(IRpFile *file)
 	d->isValid = ((int)d->stfsType >= 0);
 
 	if (!d->isValid) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 	}
 
 	// Package metadata and thumbnails are loaded on demand.

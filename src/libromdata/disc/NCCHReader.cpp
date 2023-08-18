@@ -22,6 +22,9 @@ using LibRpFile::IRpFile;
 #include "disc/CIAReader.hpp"
 #include "disc/PartitionFile.hpp"
 
+// C++ STL classes
+using std::shared_ptr;
+
 #include "NCCHReader_p.hpp"
 namespace LibRomData {
 
@@ -506,7 +509,7 @@ int NCCHReaderPrivate::loadExHeader(void)
  * @param ncch_offset		[in] NCCH start offset, in bytes.
  * @param ncch_length		[in] NCCH length, in bytes.
  */
-NCCHReader::NCCHReader(IRpFile *file, uint8_t media_unit_shift,
+NCCHReader::NCCHReader(const shared_ptr<IRpFile> &file, uint8_t media_unit_shift,
 		off64_t ncch_offset, uint32_t ncch_length)
 	: super(file)
 	, d_ptr(new NCCHReaderPrivate(this, media_unit_shift, ncch_offset, ncch_length))
@@ -997,7 +1000,7 @@ const char *NCCHReader::contentType(void) const
  * @param filename Filename. (ASCII)
  * @return IRpFile*, or nullptr on error.
  */
-IRpFile *NCCHReader::open(int section, const char *filename)
+shared_ptr<IRpFile> NCCHReader::open(int section, const char *filename)
 {
 	RP_D(const NCCHReader);
 	assert(isOpen());
@@ -1056,7 +1059,7 @@ IRpFile *NCCHReader::open(int section, const char *filename)
 	// This is an IRpFile implementation that uses an
 	// IPartition as the reader and takes an offset
 	// and size as the file parameters.
-	return new PartitionFile(this, offset, size);
+	return shared_ptr<IRpFile>(new PartitionFile(this, offset, size));
 }
 
 /**
@@ -1067,7 +1070,7 @@ IRpFile *NCCHReader::open(int section, const char *filename)
  *
  * @return IRpFile*, or nullptr on error.
  */
-LibRpFile::IRpFile *NCCHReader::openLogo(void)
+shared_ptr<IRpFile> NCCHReader::openLogo(void)
 {
 	RP_D(const NCCHReader);
 	assert(isOpen());
@@ -1080,9 +1083,9 @@ LibRpFile::IRpFile *NCCHReader::openLogo(void)
 	const uint32_t logo_region_size = le32_to_cpu(d->ncch_header.hdr.logo_region_size) << d->media_unit_shift;
 	if (logo_region_size > 0) {
 		// Dedicated logo section is present.
-		return new PartitionFile(this,
+		return shared_ptr<IRpFile>(new PartitionFile(this,
 			le32_to_cpu(d->ncch_header.hdr.logo_region_offset) << d->media_unit_shift,
-			logo_region_size);
+			logo_region_size));
 	}
 
 	// Pre-SDK5. Load the "logo" file from ExeFS.

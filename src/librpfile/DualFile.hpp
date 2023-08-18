@@ -10,6 +10,9 @@
 
 #include "IRpFile.hpp"
 
+// C++ includes
+#include <memory>
+
 namespace LibRpFile {
 
 class DualFile final : public IRpFile
@@ -22,15 +25,15 @@ class DualFile final : public IRpFile
 		 * @param file0 First file.
 		 * @param file1 Second file.
 		 */
-		DualFile(IRpFile *file0, IRpFile *file1);
+		DualFile(const std::shared_ptr<IRpFile> &file0, const std::shared_ptr<IRpFile> &file1);
 	protected:
 		/**
 		 * Internal constructor for use by subclasses.
 		 * This initializes everything to nullptr.
 		 */
 		DualFile();
-	protected:
-		~DualFile() final;	// call unref() instead
+	public:
+		~DualFile() final = default;
 
 	private:
 		typedef IRpFile super;
@@ -91,7 +94,7 @@ class DualFile final : public IRpFile
 		off64_t size(void) final;
 
 	protected:
-		IRpFile *m_file[2];
+		std::shared_ptr<IRpFile> m_file[2];
 		off64_t m_size[2];
 		off64_t m_fullSize;	// Combined sizes.
 		off64_t m_pos;		// Current position.

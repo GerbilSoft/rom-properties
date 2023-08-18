@@ -26,9 +26,9 @@
 using namespace LibRpFile;
 
 // C++ includes
-#include <string>
 using std::string;
 using std::tstring;
+using std::unique_ptr;
 
 // Mini-U82T()
 #ifdef _WIN32
@@ -328,22 +328,20 @@ int AmiiboDataPrivate::loadIfNeeded(void)
 	}
 
 	// Load amiibo.bin.
-	RpFile *const pFile = new RpFile(tfilename, RpFile::FM_OPEN_READ);
-	if (!pFile->isOpen()) {
+	unique_ptr<RpFile> f_amiibo_bin(new RpFile(tfilename, RpFile::FM_OPEN_READ));
+	if (!f_amiibo_bin->isOpen()) {
 		// Unable to open the file.
-		int err = -pFile->lastError();
-		pFile->unref();
+		int err = -f_amiibo_bin->lastError();
 		return err;
 	}
 
 	// Make sure the file is larger than sizeof(AmiiboBinHeader)
 	// and it's under 1 MB.
-	const off64_t fileSize_o = pFile->size();
+	const off64_t fileSize_o = f_amiibo_bin->size();
 	if (fileSize_o < (off64_t)sizeof(AmiiboBinHeader) ||
 	    fileSize_o >= 1024*1024)
 	{
 		// Over 1 MB.
-		pFile->unref();
 		return -ENOMEM;
 	}
 
@@ -353,18 +351,17 @@ int AmiiboDataPrivate::loadIfNeeded(void)
 	// Load the data.
 	const size_t fileSize = static_cast<size_t>(fileSize_o);
 	amiibo_bin_data.resize(fileSize);
-	size_t size = pFile->read(amiibo_bin_data.data(), fileSize);
+	size_t size = f_amiibo_bin->read(amiibo_bin_data.data(), fileSize);
 	if (size != fileSize) {
 		// Read error.
-		int err = -pFile->lastError();
+		int err = -f_amiibo_bin->lastError();
 		if (err == 0) {
 			err = -EIO;
 		}
 		amiibo_bin_data.clear();
-		pFile->unref();
 		return err;
 	}
-	pFile->unref();
+	f_amiibo_bin.reset(nullptr);
 
 	// Verify the header.
 	const AmiiboBinHeader *const pHeader_tmp =

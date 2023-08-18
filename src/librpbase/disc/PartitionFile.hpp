@@ -25,8 +25,8 @@ class PartitionFile final : public LibRpFile::IRpFile
 		 * @param size		[in] File size.
 		 */
 		PartitionFile(IDiscReader *partition, off64_t offset, off64_t size);
-	protected:
-		~PartitionFile() final;	// call unref() instead
+	public:
+		~PartitionFile() final;
 
 	private:
 		typedef IRpFile super;

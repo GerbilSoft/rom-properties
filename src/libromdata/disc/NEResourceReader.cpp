@@ -17,6 +17,7 @@ using namespace LibRpFile;
 using namespace LibRpText;
 
 // C++ STL classes
+using std::shared_ptr;
 using std::string;
 using std::unique_ptr;
 using std::unordered_map;
@@ -93,14 +94,14 @@ NEResourceReaderPrivate::NEResourceReaderPrivate(
 		q->m_lastError = -EBADF;
 		return;
 	} else if (rsrc_tbl_addr == 0) {
-		UNREF_AND_NULL_NOCHK(q->m_file);
+		q->m_file.reset();
 		q->m_lastError = -EIO;
 		return;
 	} else if (rsrc_tbl_size < 6 || rsrc_tbl_size >= 65536) {
 		// 64 KB is the segment size, so this shouldn't be possible.
 		// Also, it should be at least 6 bytes.
 		// (TODO: Larger minimum size?)
-		UNREF_AND_NULL_NOCHK(q->m_file);
+		q->m_file.reset();
 		q->m_lastError = -EIO;
 		return;
 	}
@@ -114,7 +115,7 @@ NEResourceReaderPrivate::NEResourceReaderPrivate(
 	const off64_t fileSize_o64 = q->m_file->size();
 	if (fileSize_o64 > fileSize_MAX) {
 		// A Win16 executable larger than 16 MB doesn't make any sense.
-		UNREF_AND_NULL_NOCHK(q->m_file);
+		q->m_file.reset();
 		q->m_lastError = -EIO;
 		return;
 	}
@@ -126,7 +127,7 @@ NEResourceReaderPrivate::NEResourceReaderPrivate(
 	{
 		// Starting address is past the end of the file,
 		// or resource ends past the end of the file.
-		UNREF_AND_NULL_NOCHK(q->m_file);
+		q->m_file.reset();
 		q->m_lastError = -EIO;
 		return;
 	}
@@ -135,7 +136,7 @@ NEResourceReaderPrivate::NEResourceReaderPrivate(
 	int ret = loadResTbl();
 	if (ret != 0) {
 		// No resources, or an error occurred.
-		UNREF_AND_NULL_NOCHK(q->m_file);
+		q->m_file.reset();
 	}
 }
 
@@ -493,7 +494,7 @@ int NEResourceReaderPrivate::load_StringTable(IRpFile *file, IResourceReader::St
  * @param rsrc_tbl_addr Resource table start address.
  * @param rsrc_tbl_size Resource table size.
  */
-NEResourceReader::NEResourceReader(IRpFile *file, uint32_t rsrc_tbl_addr, uint32_t rsrc_tbl_size)
+NEResourceReader::NEResourceReader(const shared_ptr<IRpFile> &file, uint32_t rsrc_tbl_addr, uint32_t rsrc_tbl_size)
 	: super(file)
 	, d_ptr(new NEResourceReaderPrivate(this, rsrc_tbl_addr, rsrc_tbl_size))
 { }
@@ -513,7 +514,7 @@ NEResourceReader::~NEResourceReader()
  */
 size_t NEResourceReader::read(void *ptr, size_t size)
 {
-	assert(m_file != nullptr);
+	assert((bool)m_file);
 	assert(m_file->isOpen());
 	if (!m_file || !m_file->isOpen()) {
 		m_lastError = EBADF;
@@ -533,7 +534,7 @@ size_t NEResourceReader::read(void *ptr, size_t size)
  */
 int NEResourceReader::seek(off64_t pos)
 {
-	assert(m_file != nullptr);
+	assert((bool)m_file);
 	assert(m_file->isOpen());
 	if (!m_file || !m_file->isOpen()) {
 		m_lastError = EBADF;
@@ -552,7 +553,7 @@ int NEResourceReader::seek(off64_t pos)
  */
 off64_t NEResourceReader::tell(void)
 {
-	assert(m_file != nullptr);
+	assert((bool)m_file);
 	assert(m_file->isOpen());
 	if (!m_file || !m_file->isOpen()) {
 		m_lastError = EBADF;
@@ -574,7 +575,7 @@ off64_t NEResourceReader::tell(void)
 off64_t NEResourceReader::size(void)
 {
 	// TODO: Errors?
-	assert(m_file != nullptr);
+	assert((bool)m_file);
 	assert(m_file->isOpen());
 	if (!m_file || !m_file->isOpen()) {
 		m_lastError = EBADF;
@@ -629,7 +630,7 @@ off64_t NEResourceReader::partition_size_used(void) const
  * @param lang Language ID. (-1 for "first entry")
  * @return IRpFile*, or nullptr on error.
  */
-IRpFile *NEResourceReader::open(uint16_t type, int id, int lang)
+std::shared_ptr<LibRpFile::IRpFile> NEResourceReader::open(uint16_t type, int id, int lang)
 {
 	RP_D(NEResourceReader);
 
@@ -674,7 +675,7 @@ IRpFile *NEResourceReader::open(uint16_t type, int id, int lang)
 	// IPartition as the reader and takes an offset
 	// and size as the file parameters.
 	// TODO: Set the codepage somewhere?
-	return new PartitionFile(this, entry->addr, entry->len);
+	return shared_ptr<IRpFile>(new PartitionFile(this, entry->addr, entry->len));
 }
 
 /**
@@ -696,7 +697,7 @@ int NEResourceReader::load_VS_VERSION_INFO(int id, int lang, VS_FIXEDFILEINFO *p
 	}
 
 	// Open the VS_VERSION_INFO resource.
-	unique_RefBase<IRpFile> f_ver(this->open(RT_VERSION, id, lang));
+	shared_ptr<IRpFile> f_ver(this->open(RT_VERSION, id, lang));
 	if (!f_ver) {
 		// Not found.
 		return -ENOENT;

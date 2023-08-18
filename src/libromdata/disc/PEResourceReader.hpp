@@ -27,7 +27,7 @@ class PEResourceReader final : public IResourceReader
 		 * @param rsrc_size .rsrc section size.
 		 * @param rsrc_va .rsrc virtual address.
 		 */
-		PEResourceReader(LibRpFile::IRpFile *file, uint32_t rsrc_addr, uint32_t rsrc_size, uint32_t rsrc_va);
+		PEResourceReader(const std::shared_ptr<LibRpFile::IRpFile> &file, uint32_t rsrc_addr, uint32_t rsrc_size, uint32_t rsrc_va);
 		~PEResourceReader() final;
 
 	private:
@@ -98,7 +98,7 @@ class PEResourceReader final : public IResourceReader
 		 * @param lang Language ID. (-1 for "first entry")
 		 * @return IRpFile*, or nullptr on error.
 		 */
-		LibRpFile::IRpFile *open(uint16_t type, int id, int lang) final;
+		std::shared_ptr<LibRpFile::IRpFile> open(uint16_t type, int id, int lang) final;
 
 		/**
 		 * Load a VS_VERSION_INFO resource.

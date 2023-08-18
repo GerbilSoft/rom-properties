@@ -15,7 +15,8 @@ using namespace LibRpBase;
 using namespace LibRpText;
 using LibRpFile::IRpFile;
 
-// C++ STL classes.
+// C++ STL classes
+using std::shared_ptr;
 using std::string;
 
 namespace LibRomData {
@@ -23,7 +24,7 @@ namespace LibRomData {
 class PlayStationEXEPrivate final : public RomDataPrivate
 {
 	public:
-		PlayStationEXEPrivate(IRpFile *file, uint32_t sp_override);
+		PlayStationEXEPrivate(const shared_ptr<IRpFile> &file, uint32_t sp_override);
 
 	private:
 		typedef RomDataPrivate super;
@@ -65,7 +66,7 @@ const RomDataInfo PlayStationEXEPrivate::romDataInfo = {
 	"PlayStationEXE", exts, mimeTypes
 };
 
-PlayStationEXEPrivate::PlayStationEXEPrivate(IRpFile *file, uint32_t sp_override)
+PlayStationEXEPrivate::PlayStationEXEPrivate(const shared_ptr<IRpFile> &file, uint32_t sp_override)
 	: super(file, &romDataInfo)
 	, sp_override(sp_override)
 {
@@ -88,7 +89,7 @@ PlayStationEXEPrivate::PlayStationEXEPrivate(IRpFile *file, uint32_t sp_override
  *
  * @param file Open PS-X executable file.
  */
-PlayStationEXE::PlayStationEXE(IRpFile *file)
+PlayStationEXE::PlayStationEXE(const shared_ptr<IRpFile> &file)
 	: super(new PlayStationEXEPrivate(file, 0))
 {
 	// This class handles executables.
@@ -118,7 +119,7 @@ PlayStationEXE::PlayStationEXE(IRpFile *file)
  * @param file Open PS-X executable file.
  * @param sp_override Stack pointer override.
  */
-PlayStationEXE::PlayStationEXE(IRpFile *file, uint32_t sp_override)
+PlayStationEXE::PlayStationEXE(const shared_ptr<IRpFile> &file, uint32_t sp_override)
 	: super(new PlayStationEXEPrivate(file, sp_override))
 {
 	// This class handles executables.
@@ -146,7 +147,7 @@ void PlayStationEXE::init(void)
 	size_t size = d->file->read(&d->psxHeader, sizeof(d->psxHeader));
 	if (size != sizeof(d->psxHeader)) {
 		d->psxHeader.magic[0] = 0;
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -160,7 +161,7 @@ void PlayStationEXE::init(void)
 
 	if (!d->isValid) {
 		d->psxHeader.magic[0] = 0;
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 	}
 }
 

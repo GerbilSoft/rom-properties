@@ -26,7 +26,7 @@ class NEResourceReader final : public IResourceReader
 		 * @param rsrc_tbl_addr Resource table start address.
 		 * @param rsrc_tbl_size Resource table size.
 		 */
-		NEResourceReader(LibRpFile::IRpFile *file, uint32_t rsrc_tbl_addr, uint32_t rsrc_tbl_size);
+		NEResourceReader(const std::shared_ptr<LibRpFile::IRpFile> &file, uint32_t rsrc_tbl_addr, uint32_t rsrc_tbl_size);
 		~NEResourceReader() final;
 
 	private:
@@ -97,7 +97,7 @@ class NEResourceReader final : public IResourceReader
 		 * @param lang Language ID. (-1 for "first entry")
 		 * @return IRpFile*, or nullptr on error.
 		 */
-		LibRpFile::IRpFile *open(uint16_t type, int id, int lang) final;
+		std::shared_ptr<LibRpFile::IRpFile> open(uint16_t type, int id, int lang) final;
 
 		/**
 		 * Load a VS_VERSION_INFO resource.

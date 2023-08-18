@@ -25,7 +25,8 @@ using namespace LibRpFile;
 #include "librptexture/FileFormatFactory.hpp"
 using LibRpTexture::FileFormatFactory;
 
-// C++ STL classes.
+// C++ STL classes
+using std::shared_ptr;
 using std::string;
 using std::unordered_map;
 using std::unordered_set;
@@ -121,7 +122,7 @@ class RomDataFactoryPrivate
 	public:
 		typedef int (*pfnIsRomSupported_t)(const RomData::DetectInfo *info);
 		typedef const RomDataInfo * (*pfnRomDataInfo_t)(void);
-		typedef RomData* (*pfnNewRomData_t)(IRpFile *file);
+		typedef RomData* (*pfnNewRomData_t)(const shared_ptr<IRpFile> &file);
 
 		struct RomDataFns {
 			pfnIsRomSupported_t isRomSupported;
@@ -140,7 +141,7 @@ class RomDataFactoryPrivate
 		 * @param klass Class name.
 		 */
 		template<typename klass>
-		static LibRpBase::RomData *RomData_ctor(IRpFile *file)
+		static LibRpBase::RomData *RomData_ctor(const shared_ptr<IRpFile> &file)
 		{
 			return new klass(file);
 		}
@@ -181,7 +182,7 @@ class RomDataFactoryPrivate
 		 * @param file One opened file in the .VMI+.VMS pair.
 		 * @return DreamcastSave if valid; nullptr if not.
 		 */
-		static RomData *openDreamcastVMSandVMI(IRpFile *file);
+		static RomData *openDreamcastVMSandVMI(const shared_ptr<IRpFile> &file);
 
 		// Vectors for file extensions and MIME types.
 		// We want to collect them once per session instead of
@@ -221,7 +222,7 @@ class RomDataFactoryPrivate
 		 * @param file ISO-9660 disc image
 		 * @return Game-specific RomData subclass, or nullptr if none are supported.
 		 */
-		static RomData *checkISO(IRpFile *file);
+		static RomData *checkISO(const shared_ptr<IRpFile> &file);
 };
 
 /** RomDataFactoryPrivate **/
@@ -390,7 +391,7 @@ const RomDataFactoryPrivate::RomDataFns *const RomDataFactoryPrivate::romDataFns
  * @param file One opened file in the .VMI+.VMS pair.
  * @return DreamcastSave if valid; nullptr if not.
  */
-RomData *RomDataFactoryPrivate::openDreamcastVMSandVMI(IRpFile *file)
+RomData *RomDataFactoryPrivate::openDreamcastVMSandVMI(const shared_ptr<IRpFile> &file)
 {
 	// We're assuming the file extension was already checked.
 	// VMS files are always a multiple of 512 bytes,
@@ -406,22 +407,20 @@ RomData *RomDataFactoryPrivate::openDreamcastVMSandVMI(IRpFile *file)
 	}
 
 	// Determine which file we should look for.
-	IRpFile *vms_file;
-	IRpFile *vmi_file;
-	IRpFile **other_file;	// Points to vms_file or vmi_file.
+	shared_ptr<IRpFile> vms_file;
+	shared_ptr<IRpFile> vmi_file;
+	shared_ptr<IRpFile> *other_file;	// Points to vms_file or vmi_file.
 
 	const char *rel_ext;
 	if (has_dc_vms) {
 		// We have the VMS file.
 		// Find the VMI file.
 		vms_file = file;
-		vmi_file = nullptr;
 		other_file = &vmi_file;
 		rel_ext = ".VMI";
 	} else /*if (has_dc_vmi)*/ {
 		// We have the VMI file.
 		// Find the VMS file.
-		vms_file = nullptr;
 		vmi_file = file;
 		other_file = &vms_file;
 		rel_ext = ".VMS";
@@ -440,7 +439,6 @@ RomData *RomDataFactoryPrivate::openDreamcastVMSandVMI(IRpFile *file)
 	// Attempt to create a DreamcastSave using both the
 	// VMS and VMI files.
 	DreamcastSave *const dcSave = new DreamcastSave(vms_file, vmi_file);
-	(*other_file)->unref();	// Not needed anymore.
 	if (!dcSave->isValid()) {
 		// Not valid.
 		dcSave->unref();
@@ -460,7 +458,7 @@ RomData *RomDataFactoryPrivate::openDreamcastVMSandVMI(IRpFile *file)
  * @param file ISO-9660 disc image
  * @return Game-specific RomData subclass, or nullptr if none are supported.
  */
-RomData *RomDataFactoryPrivate::checkISO(IRpFile *file)
+RomData *RomDataFactoryPrivate::checkISO(const shared_ptr<IRpFile> &file)
 {
 	// Check for a CD file system with 2048-byte sectors.
 	CDROM_2352_Sector_t sector;
@@ -577,7 +575,7 @@ RomData *RomDataFactoryPrivate::checkISO(IRpFile *file)
  * @param attrs RomDataAttr bitfield. If set, RomData subclass must have the specified attributes.
  * @return RomData subclass, or nullptr if the ROM isn't supported.
  */
-RomData *RomDataFactory::create(IRpFile *file, unsigned int attrs)
+RomData *RomDataFactory::create(const shared_ptr<IRpFile> &file, unsigned int attrs)
 {
 	RomData::DetectInfo info;
 
@@ -879,10 +877,9 @@ RomData *RomDataFactory::create(const char *filename, unsigned int attrs)
 	// call create(IRpFile*,unsigned int).
 	if (!FileSystem::is_directory(filename)) {
 		// Not a directory.
-		RpFile *const file = new RpFile(filename, RpFile::FM_OPEN_READ_GZ);
+		shared_ptr<IRpFile> file(new RpFile(filename, RpFile::FM_OPEN_READ_GZ));
 		if (file->isOpen()) {
 			RomData *const romData = create(file, attrs);
-			file->unref();
 			return romData;
 		}
 	}
@@ -918,10 +915,9 @@ RomData *RomDataFactory::create(const wchar_t *filenameW, unsigned int attrs)
 	// call create(IRpFile*,unsigned int).
 	if (!FileSystem::is_directory(filenameW)) {
 		// Not a directory.
-		RpFile *const file = new RpFile(filenameW, RpFile::FM_OPEN_READ_GZ);
+		shared_ptr<IRpFile> file(new RpFile(filenameW, RpFile::FM_OPEN_READ_GZ));
 		if (file->isOpen()) {
 			RomData *const romData = create(file, attrs);
-			file->unref();
 			return romData;
 		}
 	}

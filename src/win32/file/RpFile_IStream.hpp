@@ -29,8 +29,8 @@ class RpFile_IStream final : public LibRpFile::IRpFile
 		 * @param gzip		[in] If true, handle gzipped files automatically.
 		 */
 		explicit RpFile_IStream(IStream *pStream, bool gzip = false);
-	protected:
-		~RpFile_IStream() final;	// call unref() instead
+	public:
+		~RpFile_IStream() final;
 
 	private:
 		typedef LibRpFile::IRpFile super;

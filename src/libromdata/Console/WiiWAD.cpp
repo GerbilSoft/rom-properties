@@ -38,7 +38,8 @@ using LibRpTexture::rp_image;
 #include "WiiWIBN.hpp"
 #include "Handheld/NintendoDS.hpp"
 
-// C++ STL classes.
+// C++ STL classes
+using std::shared_ptr;
 using std::string;
 using std::unique_ptr;
 using std::vector;
@@ -74,7 +75,7 @@ const RomDataInfo WiiWADPrivate::romDataInfo = {
 	"WiiWAD", exts, mimeTypes
 };
 
-WiiWADPrivate::WiiWADPrivate(IRpFile *file)
+WiiWADPrivate::WiiWADPrivate(const shared_ptr<IRpFile> &file)
 	: super(file, &romDataInfo)
 	, wadType(WadType::Unknown)
 	, data_offset(0)
@@ -207,8 +208,8 @@ int WiiWADPrivate::openSRL(void)
 	}
 
 	int ret = 0;
-	PartitionFile *const ptFile = new PartitionFile(cbcReader,
-		imetContentOffset, be64_to_cpu(pIMETContent->size));
+	shared_ptr<IRpFile> ptFile(new PartitionFile(cbcReader,
+		imetContentOffset, be64_to_cpu(pIMETContent->size)));
 	if (ptFile->isOpen()) {
 		// Open the SRL..
 		NintendoDS *const srl = new NintendoDS(ptFile);
@@ -226,7 +227,6 @@ int WiiWADPrivate::openSRL(void)
 			ret = -EIO;
 		}
 	}
-	UNREF(ptFile);
 	return ret;
 }
 #endif /* ENABLE_DECRYPTION */
@@ -246,7 +246,7 @@ int WiiWADPrivate::openSRL(void)
  *
  * @param file Open disc image.
  */
-WiiWAD::WiiWAD(IRpFile *file)
+WiiWAD::WiiWAD(const shared_ptr<IRpFile> &file)
 	: super(new WiiWADPrivate(file))
 {
 	// This class handles application packages.
@@ -263,7 +263,7 @@ WiiWAD::WiiWAD(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(&d->wadHeader, sizeof(d->wadHeader));
 	if (size != sizeof(d->wadHeader)) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -275,7 +275,7 @@ WiiWAD::WiiWAD(IRpFile *file)
 	};
 	d->wadType = static_cast<WiiWADPrivate::WadType>(isRomSupported_static(&info));
 	if ((int)d->wadType < 0) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -326,7 +326,7 @@ WiiWAD::WiiWAD(IRpFile *file)
 
 		default:
 			assert(!"Should not get here...");
-			UNREF_AND_NULL_NOCHK(d->file);
+			d->file.reset();
 			d->wadType = WiiWADPrivate::WadType::Unknown;
 			return;
 	}
@@ -335,7 +335,7 @@ WiiWAD::WiiWAD(IRpFile *file)
 	const off64_t data_end_offset = (off64_t)d->data_offset + (off64_t)d->data_size;
 	if (data_end_offset > d->file->size()) {
 		// Out of range.
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		d->wadType = WiiWADPrivate::WadType::Unknown;
 		return;
 	}
@@ -345,14 +345,14 @@ WiiWAD::WiiWAD(IRpFile *file)
 	size = d->file->seekAndRead(ticket_addr, &d->ticket, sizeof(d->ticket));
 	if (size != sizeof(d->ticket)) {
 		// Seek and/or read error.
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		d->wadType = WiiWADPrivate::WadType::Unknown;
 		return;
 	}
 	size = d->file->seekAndRead(tmd_addr, &d->tmdHeader, sizeof(d->tmdHeader));
 	if (size != sizeof(d->tmdHeader)) {
 		// Seek and/or read error.
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		d->wadType = WiiWADPrivate::WadType::Unknown;
 		return;
 	}
@@ -478,9 +478,9 @@ WiiWAD::WiiWAD(IRpFile *file)
 			// Create the PartitionFile and WiiWIBN subclass.
 			// NOTE: Not sure how big the WIBN data is, so we'll
 			// allow it to read the rest of the file.
-			PartitionFile *const ptFile = new PartitionFile(d->cbcReader,
+			shared_ptr<IRpFile> ptFile(new PartitionFile(d->cbcReader,
 				offsetof(Wii_IMET_t, magic),
-				be64_to_cpu(d->pIMETContent->size) - offsetof(Wii_IMET_t, magic));
+				be64_to_cpu(d->pIMETContent->size) - offsetof(Wii_IMET_t, magic)));
 			if (ptFile->isOpen()) {
 				// Open the WiiWIBN.
 				WiiWIBN *const wibn = new WiiWIBN(ptFile);
@@ -492,7 +492,6 @@ WiiWAD::WiiWAD(IRpFile *file)
 					UNREF(wibn);
 				}
 			}
-			UNREF(ptFile);
 		} else {
 			// Sometimes the IMET header has a 64-byte offset.
 			// FIXME: Figure out why.

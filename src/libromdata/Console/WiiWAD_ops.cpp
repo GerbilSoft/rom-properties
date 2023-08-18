@@ -21,6 +21,7 @@ using LibRpFile::RpFile;
 #include "Handheld/NintendoDS.hpp"
 
 // C++ STL classes
+using std::shared_ptr;
 using std::string;
 using std::vector;
 
@@ -123,8 +124,8 @@ int WiiWAD::doRomOp_int(int id, RomOpParams *pParams)
 
 	// Get the source file.
 	RpFile *destFile = nullptr;
-	IRpFile *const srcFile = srl->ref_file();
-	assert(srcFile != nullptr);
+	shared_ptr<IRpFile> srcFile = srl->ref_file();
+	assert((bool)srcFile);
 	if (!srcFile) {
 		// No source file...
 		// TODO: More useful message? (may need std::string)
@@ -159,8 +160,7 @@ int WiiWAD::doRomOp_int(int id, RomOpParams *pParams)
 	}
 
 out:
-	UNREF(destFile);
-	UNREF(srcFile);
+	delete destFile;
 	if (!wasMainContentOpen) {
 		d->mainContent->close();
 	}

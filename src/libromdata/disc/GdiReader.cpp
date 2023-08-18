@@ -23,6 +23,7 @@ using namespace LibRpFile;
 #include "Other/ISO.hpp"
 
 // C++ STL classes
+using std::shared_ptr;
 using std::string;
 using std::unique_ptr;
 using std::vector;
@@ -52,7 +53,7 @@ class GdiReaderPrivate final : public SparseDiscReaderPrivate {
 			uint8_t reserved;
 			// TODO: Data vs. audio?
 			string filename;		// Relative to the .gdi file. Cleared on error.
-			IRpFile *file;
+			IRpFile *file;			// Internal only; not using shared_ptr here.
 		};
 		vector<BlockRange> blockRanges;
 
@@ -104,14 +105,14 @@ GdiReaderPrivate::~GdiReaderPrivate()
 void GdiReaderPrivate::close(void)
 {
 	for (BlockRange &blockRange : blockRanges) {
-		UNREF(blockRange.file);
+		delete blockRange.file;
 	}
 	blockRanges.clear();
 	trackMappings.clear();
 
 	// GDI file.
 	RP_Q(GdiReader);
-	UNREF_AND_NULL(q->m_file);
+	q->m_file.reset();
 }
 
 /**
@@ -271,7 +272,7 @@ int GdiReaderPrivate::openTrack(int trackNumber)
 	}
 
 	// Open the related file.
-	IRpFile *const file = FileSystem::openRelatedFile(filename.c_str(), basename.c_str(), ext.c_str());
+	IRpFile *const file = FileSystem::openRelatedFile_rawptr(filename.c_str(), basename.c_str(), ext.c_str());
 	if (!file) {
 		// Unable to open the file.
 		// TODO: Return the actual error.
@@ -282,14 +283,14 @@ int GdiReaderPrivate::openTrack(int trackNumber)
 	const off64_t fileSize = file->size();
 	if (fileSize <= 0) {
 		// Empty or invalid file...
-		file->unref();
+		delete file;
 		return -EIO;
 	}
 
 	// Is the file a multiple of the sector size?
 	if (fileSize % blockRange->sectorSize != 0) {
 		// Not a multiple of the sector size.
-		file->unref();
+		delete file;
 		return -EIO;
 	}
 
@@ -301,7 +302,7 @@ int GdiReaderPrivate::openTrack(int trackNumber)
 
 /** GdiReader **/
 
-GdiReader::GdiReader(IRpFile *file)
+GdiReader::GdiReader(const shared_ptr<IRpFile> &file)
 	: super(new GdiReaderPrivate(this), file)
 {
 	if (!m_file) {
@@ -320,7 +321,7 @@ GdiReader::GdiReader(IRpFile *file)
 	const off64_t fileSize = m_file->size();
 	if (fileSize <= 0 || fileSize > 4096) {
 		// Invalid GDI file size.
-		UNREF_AND_NULL_NOCHK(m_file);
+		m_file.reset();
 		m_lastError = EIO;
 		return;
 	}
@@ -332,7 +333,7 @@ GdiReader::GdiReader(IRpFile *file)
 	size_t size = m_file->read(gdibuf.get(), gdisize);
 	if (size != gdisize) {
 		// Read error.
-		UNREF_AND_NULL_NOCHK(m_file);
+		m_file.reset();
 		m_lastError = EIO;
 		return;
 	}
@@ -646,9 +647,9 @@ ISO *GdiReader::openIsoRomData(int trackNumber)
 	// ISO object for ISO-9660 PVD
 	ISO *isoData = nullptr;
 
-	PartitionFile *const isoFile = new PartitionFile(this,
+	shared_ptr<IRpFile> isoFile(new PartitionFile(this,
 		static_cast<off64_t>(lba_start) * 2048,
-		static_cast<off64_t>(lba_size) * 2048);
+		static_cast<off64_t>(lba_size) * 2048));
 	if (isoFile->isOpen()) {
 		isoData = new ISO(isoFile);
 		if (!isoData->isOpen()) {
@@ -656,7 +657,6 @@ ISO *GdiReader::openIsoRomData(int trackNumber)
 			UNREF_AND_NULL_NOCHK(isoData);
 		}
 	}
-	isoFile->unref();
 	return isoData;
 }
 

@@ -28,6 +28,7 @@ using LibRpFile::IRpFile;
 using LibRomData::RomDataFactory;
 
 // C++ STL classes
+using std::shared_ptr;
 using std::string;
 
 /**
@@ -39,7 +40,7 @@ using std::string;
 RomDataView *RomPropertiesDialogPlugin::createRomDataView(const KFileItem &fileItem, KPropertiesDialog *props)
 {
 	// Attempt to open the ROM file.
-	IRpFile *const file = openQUrl(fileItem.url(), false);
+	shared_ptr<IRpFile> file(openQUrl(fileItem.url(), false));
 	if (!file) {
 		// Unable to open the file.
 		return nullptr;
@@ -47,7 +48,6 @@ RomDataView *RomPropertiesDialogPlugin::createRomDataView(const KFileItem &fileI
 
 	// Get the appropriate RomData class for this ROM.
 	RomData *const romData = RomDataFactory::create(file);
-	file->unref();	// file is ref()'d by RomData.
 	if (!romData) {
 		// ROM is not supported.
 		return nullptr;

@@ -16,7 +16,8 @@ using namespace LibRpText;
 using LibRpFile::IRpFile;
 using LibRpTexture::rp_image;
 
-// C++ STL classes.
+// C++ STL classes
+using std::shared_ptr;
 using std::string;
 using std::unique_ptr;
 using std::vector;
@@ -26,7 +27,7 @@ namespace LibRomData {
 class GameComPrivate final : public RomDataPrivate
 {
 	public:
-		GameComPrivate(IRpFile *file);
+		GameComPrivate(const shared_ptr<IRpFile> &file);
 		~GameComPrivate() final;
 
 	private:
@@ -110,7 +111,7 @@ const uint32_t GameComPrivate::gcom_palette[4] = {
 	0xFF000000,
 };
 
-GameComPrivate::GameComPrivate(IRpFile *file)
+GameComPrivate::GameComPrivate(const shared_ptr<IRpFile> &file)
 	: super(file, &romDataInfo)
 	, img_icon(nullptr)
 {
@@ -503,7 +504,7 @@ const rp_image *GameComPrivate::loadIconRLE(void)
  *
  * @param file Open ROM image.
  */
-GameCom::GameCom(IRpFile *file)
+GameCom::GameCom(const shared_ptr<IRpFile> &file)
 	: super(new GameComPrivate(file))
 {
 	RP_D(GameCom);
@@ -540,7 +541,7 @@ GameCom::GameCom(IRpFile *file)
 
 	if (!d->isValid) {
 		// Still not valid.
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 	}
 }
 

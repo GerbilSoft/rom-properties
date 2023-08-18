@@ -22,7 +22,8 @@ using LibRpFile::IRpFile;
 #include "libromdata/RomDataFactory.hpp"
 using LibRomData::RomDataFactory;
 
-// C++ STL classes.
+// C++ STL classes
+using std::shared_ptr;
 using std::string;
 using std::vector;
 
@@ -191,7 +192,7 @@ void ExtractorPlugin::extract(ExtractionResult *result)
 	}
 
 	// Attempt to open the ROM file.
-	IRpFile *const file = openQUrl(QUrl(result->inputUrl()), false);
+	shared_ptr<IRpFile> file(openQUrl(QUrl(result->inputUrl()), false));
 	if (!file) {
 		// Could not open the file.
 		return;
@@ -224,7 +225,6 @@ void ExtractorPlugin::extract(ExtractionResult *result)
 	// Get the appropriate RomData class for this ROM.
 	// file is dup()'d by RomData.
 	RomData *const romData = RomDataFactory::create(file, attrs);
-	file->unref();	// file is ref()'d by RomData.
 	if (!romData) {
 		// ROM is not supported.
 		return;

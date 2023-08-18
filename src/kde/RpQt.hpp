@@ -17,13 +17,14 @@ namespace LibRpTexture {
 	class rp_image;
 }
 
-// C++ includes.
-#include <string>
-
 // Qt includes
 #include <QtCore/QObject>
 #include <QtCore/QString>
 #include <QtGui/QImage>
+
+// C++ includes
+#include <memory>
+#include <string>
 
 #define CONCAT_FN(fn, suffix)		CONCAT_FN_INT(fn, suffix)
 #define CONCAT_FN_INT(fn, suffix)	fn ## suffix
@@ -150,7 +151,7 @@ QImage rpToQImage(const LibRpTexture::rp_image *image);
  *
  * @return IRpFile, or nullptr on error.
  */
-LibRpFile::IRpFile *openQUrl(const QUrl &url, bool isThumbnail = false);
+std::shared_ptr<LibRpFile::IRpFile> openQUrl(const QUrl &url, bool isThumbnail = false);
 
 /**
  * Convert an RP file dialog filter to Qt.

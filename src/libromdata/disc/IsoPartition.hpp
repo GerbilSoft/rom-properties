@@ -133,7 +133,7 @@ class IsoPartition final : public LibRpBase::IPartition
 		 * @param filename Filename.
 		 * @return IRpFile*, or nullptr on error.
 		 */
-		LibRpFile::IRpFile *open(const char *filename);
+		std::shared_ptr<LibRpFile::IRpFile> open(const char *filename);
 
 		/**
 		 * Get a file's timestamp.

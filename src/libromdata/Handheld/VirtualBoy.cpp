@@ -18,6 +18,7 @@ using namespace LibRpText;
 using LibRpFile::IRpFile;
 
 // C++ STL classes
+using std::shared_ptr;
 using std::string;
 
 namespace LibRomData {
@@ -25,7 +26,7 @@ namespace LibRomData {
 class VirtualBoyPrivate final : public RomDataPrivate
 {
 	public:
-		VirtualBoyPrivate(IRpFile *file);
+		VirtualBoyPrivate(const shared_ptr<IRpFile> &file);
 
 	private:
 		typedef RomDataPrivate super;
@@ -87,7 +88,7 @@ const RomDataInfo VirtualBoyPrivate::romDataInfo = {
 	"VirtualBoy", exts, mimeTypes
 };
 
-VirtualBoyPrivate::VirtualBoyPrivate(IRpFile *file)
+VirtualBoyPrivate::VirtualBoyPrivate(const shared_ptr<IRpFile> &file)
 	: super(file, &romDataInfo)
 {
 	// Clear the ROM footer struct.
@@ -144,7 +145,7 @@ bool inline VirtualBoyPrivate::isGameID(char c){
  *
  * @param file Open ROM file.
  */
-VirtualBoy::VirtualBoy(IRpFile *file)
+VirtualBoy::VirtualBoy(const shared_ptr<IRpFile> &file)
 	: super(new VirtualBoyPrivate(file))
 {
 	RP_D(VirtualBoy);
@@ -161,7 +162,7 @@ VirtualBoy::VirtualBoy(IRpFile *file)
 	// and cannot be larger than 16 MB.
 	if (fileSize < 0x220 || fileSize > (16*1024*1024)) {
 		// File size is out of range.
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -170,7 +171,7 @@ VirtualBoy::VirtualBoy(IRpFile *file)
 	d->file->seek(footer_addr);
 	size_t size = d->file->read(&d->romFooter, sizeof(d->romFooter));
 	if (size != sizeof(d->romFooter)) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -184,7 +185,7 @@ VirtualBoy::VirtualBoy(IRpFile *file)
 	d->isValid = (isRomSupported(&info) >= 0);
 
 	if (!d->isValid) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 	}
 }
 

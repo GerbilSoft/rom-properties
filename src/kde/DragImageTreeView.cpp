@@ -17,6 +17,9 @@
 using LibRpBase::RpPngWriter;
 using LibRpTexture::rp_image;
 
+// C++ STL classes
+using std::shared_ptr;
+
 void DragImageTreeView::startDrag(Qt::DropActions supportedActions)
 {
 	// TODO: Handle supportedActions?
@@ -56,12 +59,11 @@ void DragImageTreeView::startDrag(Qt::DropActions supportedActions)
 			continue;
 
 		// Convert the rp_image to PNG.
-		RpQByteArrayFile *const pngData = new RpQByteArrayFile();
+		shared_ptr<RpQByteArrayFile> pngData(new RpQByteArrayFile());
 		RpPngWriter *const pngWriter = new RpPngWriter(pngData, img);
 		if (!pngWriter->isOpen()) {
 			// Unable to open the PNG writer.
 			delete pngWriter;
-			pngData->unref();
 			continue;
 		}
 
@@ -71,14 +73,12 @@ void DragImageTreeView::startDrag(Qt::DropActions supportedActions)
 		if (pwRet != 0) {
 			// Error writing the PNG image...
 			delete pngWriter;
-			pngData->unref();
 			continue;
 		}
 		pwRet = pngWriter->write_IDAT();
 		if (pwRet != 0) {
 			// Error writing the PNG image...
 			delete pngWriter;
-			pngData->unref();
 			continue;
 		}
 
@@ -87,7 +87,6 @@ void DragImageTreeView::startDrag(Qt::DropActions supportedActions)
 
 		// Set the PNG data.
 		mimeData->setData(QLatin1String("image/png"), pngData->qByteArray());
-		pngData->unref();
 
 		// Save the icon.
 		if (dragIcon.isNull()) {

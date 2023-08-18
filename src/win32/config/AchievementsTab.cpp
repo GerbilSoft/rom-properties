@@ -22,8 +22,10 @@ using LibRpTexture::rp_image;
 
 // RpFile_windres
 #include "file/RpFile_windres.hpp"
+using LibRpFile::IRpFile;
 
 // C++ STL classes
+using std::shared_ptr;
 using std::tstring;
 using std::unique_ptr;
 
@@ -279,15 +281,14 @@ void AchievementsTabPrivate::updateImageList(void)
 	// Load the sprite sheets.
 	rp_image *imgAchSheet = nullptr;
 	rp_image *imgAchGraySheet = nullptr;
-	RpFile_windres *f_res = new RpFile_windres(HINST_THISCOMPONENT, MAKEINTRESOURCE(resID), MAKEINTRESOURCE(RT_PNG));
-	assert(f_res != nullptr);
+	shared_ptr<IRpFile> f_res(new RpFile_windres(HINST_THISCOMPONENT, MAKEINTRESOURCE(resID), MAKEINTRESOURCE(RT_PNG)));
+	assert(f_res->isOpen());
 	if (!f_res->isOpen()) {
-		f_res->unref();
+		// Unable to open the resource.
 		return;
 	}
 
 	imgAchSheet = RpPng::load(f_res);
-	f_res->unref();
 	assert(imgAchSheet != nullptr);
 	if (!imgAchSheet)
 		return;
@@ -300,16 +301,15 @@ void AchievementsTabPrivate::updateImageList(void)
 		return;
 	}
 
-	f_res = new RpFile_windres(HINST_THISCOMPONENT, MAKEINTRESOURCE(resID_gray), MAKEINTRESOURCE(RT_PNG));
-	assert(f_res != nullptr);
+	f_res.reset(new RpFile_windres(HINST_THISCOMPONENT, MAKEINTRESOURCE(resID_gray), MAKEINTRESOURCE(RT_PNG)));
+	assert(f_res->isOpen());
 	if (!f_res->isOpen()) {
-		f_res->unref();
+		// Unable to open the resource.
 		imgAchSheet->unref();
 		return;
 	}
 
 	imgAchGraySheet = RpPng::load(f_res);
-	f_res->unref();
 	assert(imgAchGraySheet != nullptr);
 	if (!imgAchGraySheet) {
 		imgAchSheet->unref();

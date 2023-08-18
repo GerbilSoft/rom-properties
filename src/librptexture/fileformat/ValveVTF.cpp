@@ -30,7 +30,8 @@ using LibRpFile::IRpFile;
 #include "decoder/ImageDecoder_S3TC.hpp"
 using LibRpTexture::ImageSizeCalc::OpCode;
 
-// C++ STL classes.
+// C++ STL classes
+using std::shared_ptr;
 using std::string;
 using std::vector;
 
@@ -39,7 +40,7 @@ namespace LibRpTexture {
 class ValveVTFPrivate final : public FileFormatPrivate
 {
 	public:
-		ValveVTFPrivate(ValveVTF *q, IRpFile *file);
+		ValveVTFPrivate(ValveVTF *q, const shared_ptr<IRpFile> &file);
 		~ValveVTFPrivate() final;
 
 	private:
@@ -198,7 +199,7 @@ const ImageSizeCalc::OpCode ValveVTFPrivate::op_tbl[] = {
 static_assert(ARRAY_SIZE(ValveVTFPrivate::img_format_tbl)-1 == VTF_IMAGE_FORMAT_MAX,
 	"Missing VTF image formats.");
 
-ValveVTFPrivate::ValveVTFPrivate(ValveVTF *q, IRpFile *file)
+ValveVTFPrivate::ValveVTFPrivate(ValveVTF *q, const shared_ptr<IRpFile> &file)
 	: super(q, file, &textureInfo)
 	, texDataStartAddr(0)
 {
@@ -653,7 +654,7 @@ const rp_image *ValveVTFPrivate::loadImage(int mip)
  *
  * @param file Open ROM image.
  */
-ValveVTF::ValveVTF(IRpFile *file)
+ValveVTF::ValveVTF(const shared_ptr<IRpFile> &file)
 	: super(new ValveVTFPrivate(this, file))
 {
 	RP_D(ValveVTF);
@@ -668,14 +669,14 @@ ValveVTF::ValveVTF(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(&d->vtfHeader, sizeof(d->vtfHeader));
 	if (size != sizeof(d->vtfHeader)) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
 	// Verify the VTF magic.
 	if (d->vtfHeader.signature != cpu_to_be32(VTF_SIGNATURE)) {
 		// Incorrect magic.
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 

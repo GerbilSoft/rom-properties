@@ -22,7 +22,7 @@ class GczReader : public LibRpBase::SparseDiscReader
 		 * unref()'d by the caller afterwards.
 		 * @param file File to read from.
 		 */
-		explicit GczReader(LibRpFile::IRpFile *file);
+		explicit GczReader(const std::shared_ptr<LibRpFile::IRpFile> &file);
 
 	private:
 		typedef SparseDiscReader super;

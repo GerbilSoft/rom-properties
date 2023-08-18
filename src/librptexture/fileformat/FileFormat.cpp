@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * FileFormat.cpp: Texture file format base class.                         *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -15,6 +15,9 @@
 // librpfile
 using LibRpFile::IRpFile;
 
+// C++ STL classes
+using std::shared_ptr;
+
 namespace LibRpTexture {
 
 /** FileFormatPrivate **/
@@ -26,11 +29,11 @@ namespace LibRpTexture {
  * @param file Texture file
  * @param pTextureInfo FileFormat subclass information
  */
-FileFormatPrivate::FileFormatPrivate(FileFormat *q, IRpFile *file, const TextureInfo *pTextureInfo)
+FileFormatPrivate::FileFormatPrivate(FileFormat *q, const std::shared_ptr<LibRpFile::IRpFile> &file, const TextureInfo *pTextureInfo)
 	: q_ptr(q)
 	, ref_cnt(1)
 	, isValid(false)
-	, file(nullptr)
+	, file(file)
 	, pTextureInfo(pTextureInfo)
 	, mimeType(nullptr)
 {
@@ -42,17 +45,6 @@ FileFormatPrivate::FileFormatPrivate(FileFormat *q, IRpFile *file, const Texture
 
 	// Initialize i18n.
 	rp_i18n_init();
-
-	if (file) {
-		// Reference the file.
-		this->file = file->ref();
-	}
-}
-
-FileFormatPrivate::~FileFormatPrivate()
-{
-	// Unreference the file.
-	UNREF(this->file);
 }
 
 /** FileFormat **/
@@ -93,7 +85,7 @@ void FileFormat::close(void)
 {
 	// Unreference the file.
 	RP_D(FileFormat);
-	UNREF_AND_NULL(d->file);
+	d->file.reset();
 }
 
 /** Property accessors **/

@@ -1641,7 +1641,7 @@ KeyStoreUI::ImportReturn KeyStoreUI::importKeysFromBin(ImportFileID fileID, cons
 {
 	ImportReturn iret = {ImportStatus::InvalidParams, 0, 0, 0, 0, 0, 0, 0};
 
-	unique_RefBase<RpFile> file(new RpFile(filename, RpFile::FM_OPEN_READ));
+	unique_ptr<RpFile> file(new RpFile(filename, RpFile::FM_OPEN_READ));
 	if (!file->isOpen()) {
 		// TODO: file->lastError()?
 		iret.status = ImportStatus::OpenError;
@@ -1663,7 +1663,7 @@ KeyStoreUI::ImportReturn KeyStoreUI::importKeysFromBin(ImportFileID fileID, cons
 {
 	ImportReturn iret = {ImportStatus::InvalidParams, 0, 0, 0, 0, 0, 0, 0};
 
-	unique_RefBase<RpFile> file(new RpFile(filenameW, RpFile::FM_OPEN_READ));
+	unique_ptr<RpFile> file(new RpFile(filenameW, RpFile::FM_OPEN_READ));
 	if (!file->isOpen()) {
 		// TODO: file->lastError()?
 		iret.status = ImportStatus::OpenError;

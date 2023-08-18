@@ -15,6 +15,9 @@
 
 /** Macros for FileFormat subclasses. **/
 
+// C++ includes
+#include <memory>
+
 namespace LibRpFile {
 	class IRpFile;
 }
@@ -44,7 +47,7 @@ public: \
 class klass##Private; \
 class klass final : public LibRpTexture::FileFormat { \
 public: \
-	explicit klass(LibRpFile::IRpFile *file); \
+	explicit klass(const std::shared_ptr<LibRpFile::IRpFile> &file); \
 protected: \
 	~klass() final = default; \
 private: \

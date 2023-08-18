@@ -29,7 +29,8 @@ using LibRpFile::IRpFile;
 #include "Other/ISO.hpp"
 #include "Other/ELF.hpp"
 
-// C++ STL classes.
+// C++ STL classes
+using std::shared_ptr;
 using std::string;
 using std::vector;
 
@@ -38,7 +39,7 @@ namespace LibRomData {
 class PSPPrivate final : public LibRpBase::RomDataPrivate
 {
 	public:
-		PSPPrivate(IRpFile *file);
+		PSPPrivate(const shared_ptr<IRpFile> &file);
 		~PSPPrivate() final;
 
 	private:
@@ -128,7 +129,7 @@ const RomDataInfo PSPPrivate::romDataInfo = {
 	"PSP", exts, mimeTypes
 };
 
-PSPPrivate::PSPPrivate(IRpFile *file)
+PSPPrivate::PSPPrivate(const shared_ptr<IRpFile> &file)
 	: super(file, &romDataInfo)
 	, discType(DiscType::Unknown)
 	, discReader(nullptr)
@@ -168,17 +169,15 @@ const rp_image *PSPPrivate::loadIcon(void)
 		(unlikely(discType == DiscType::UmdVideo)
 			? "/UMD_VIDEO/ICON0.PNG"
 			: "/PSP_GAME/ICON0.PNG");
-	IRpFile *const f_icon = isoPartition->open(icon_filename);
+	shared_ptr<IRpFile> f_icon(isoPartition->open(icon_filename));
 	if (!f_icon) {
 		// Unable to open the icon file.
-		UNREF(f_icon);
 		return nullptr;
 	}
 
 	// Decode the image.
 	// TODO: For rpcli, shortcut to extract the PNG directly.
 	this->img_icon = RpPng::load(f_icon);
-	f_icon->unref();
 	return this->img_icon;
 }
 
@@ -201,10 +200,9 @@ RomData *PSPPrivate::openBootExe(void)
 	// Open the boot file.
 	// FIXME: This is normally encrypted, but some games have
 	// an unencrypted EBOOT.BIN.
-	IRpFile *f_bootExe = isoPartition->open("/PSP_GAME/SYSDIR/EBOOT.BIN");
+	shared_ptr<IRpFile> f_bootExe(isoPartition->open("/PSP_GAME/SYSDIR/EBOOT.BIN"));
 	if (f_bootExe) {
 		RomData *const exeData = new ELF(f_bootExe);
-		f_bootExe->unref();
 		if (exeData->isOpen() && exeData->isValid()) {
 			// Boot executable is open and valid.
 			bootExeData = exeData;
@@ -234,7 +232,7 @@ RomData *PSPPrivate::openBootExe(void)
  *
  * @param file Open ROM image.
  */
-PSP::PSP(IRpFile *file)
+PSP::PSP(const shared_ptr<IRpFile> &file)
 	: super(new PSPPrivate(file))
 {
 	// This class handles disc images.
@@ -256,7 +254,7 @@ PSP::PSP(IRpFile *file)
 	size_t size = d->file->read(header, sizeof(header));
 	if (size != sizeof(header)) {
 		// Read error.
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 	if (CisoPspReader::isDiscSupported_static(header, sizeof(header)) >= 0) {
@@ -276,7 +274,7 @@ PSP::PSP(IRpFile *file)
 	if (!discReader->isOpen()) {
 		// Error opening the DiscReader.
 		UNREF(discReader);
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -284,13 +282,13 @@ PSP::PSP(IRpFile *file)
 	size = discReader->seekAndRead(ISO_PVD_ADDRESS_2048, &d->pvd, sizeof(d->pvd));
 	if (size != sizeof(d->pvd)) {
 		UNREF(discReader);
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 	if (ISO::checkPVD(reinterpret_cast<const uint8_t*>(&d->pvd)) < 0) {
 		// Not ISO-9660.
 		UNREF(discReader);
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -299,7 +297,7 @@ PSP::PSP(IRpFile *file)
 	if ((int)d->discType < 0) {
 		// Incorrect system ID.
 		UNREF(discReader);
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -309,7 +307,7 @@ PSP::PSP(IRpFile *file)
 		// Error opening the ISO partition.
 		UNREF(isoPartition);
 		UNREF(discReader);
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -536,11 +534,11 @@ int PSP::loadFieldData(void)
 	// - Field 1: Encryption key?
 	// - Field 2: Revision?
 	// - Field 3: Age rating?
-	IRpFile *const umdDataBin = d->isoPartition->open("/UMD_DATA.BIN");
-	if (umdDataBin) {
+	shared_ptr<IRpFile> f_umdDataBin = d->isoPartition->open("/UMD_DATA.BIN");
+	if (f_umdDataBin) {
 		// Read up to 128 bytes.
 		char buf[129];
-		size_t size = umdDataBin->read(buf, sizeof(buf)-1);
+		size_t size = f_umdDataBin->read(buf, sizeof(buf)-1);
 		buf[size] = 0;
 
 		// Find the first '|'.
@@ -555,7 +553,6 @@ int PSP::loadFieldData(void)
 				latin1_to_utf8(buf, static_cast<int>(p - buf)));
 		}
 	}
-	UNREF(umdDataBin);
 
 	// TODO: Add fields from PARAM.SFO.
 
@@ -582,9 +579,8 @@ int PSP::loadFieldData(void)
 
 	// ISO object for ISO-9660 PVD
 	// TODO: DiscReader overload for ISO.
-	PartitionFile *const ptFile = new PartitionFile(d->discReader, 0, d->discReader->size());
+	shared_ptr<IRpFile> ptFile(new PartitionFile(d->discReader, 0, d->discReader->size()));
 	ISO *const isoData = new ISO(ptFile);
-	ptFile->unref();
 	if (isoData->isOpen()) {
 		// Add the fields.
 		const RomFields *const isoFields = isoData->fields();
@@ -652,11 +648,11 @@ int PSP::loadMetaData(void)
 	// - Field 1: Encryption key?
 	// - Field 2: Revision?
 	// - Field 3: Age rating?
-	IRpFile *const umdDataBin = d->isoPartition->open("/UMD_DATA.BIN");
-	if (umdDataBin) {
+	shared_ptr<IRpFile> f_umdDataBin(d->isoPartition->open("/UMD_DATA.BIN"));
+	if (f_umdDataBin) {
 		// Read up to 128 bytes.
 		char buf[129];
-		size_t size = umdDataBin->read(buf, sizeof(buf)-1);
+		size_t size = f_umdDataBin->read(buf, sizeof(buf)-1);
 		buf[size] = 0;
 
 		// Find the first '|'.
@@ -667,7 +663,6 @@ int PSP::loadMetaData(void)
 				latin1_to_utf8(buf, static_cast<int>(p - buf)));
 		}
 	}
-	UNREF(umdDataBin);
 
 	// TODO: More PSP-specific metadata?
 

@@ -24,6 +24,7 @@ using LibRpFile::IRpFile;
 #include "Other/ISO.hpp"
 
 // C++ STL classes
+using std::shared_ptr;
 using std::string;
 using std::vector;
 
@@ -32,7 +33,7 @@ namespace LibRomData {
 class SegaSaturnPrivate final : public RomDataPrivate
 {
 	public:
-		SegaSaturnPrivate(IRpFile *file);
+		SegaSaturnPrivate(const shared_ptr<IRpFile> &file);
 
 	private:
 		typedef RomDataPrivate super;
@@ -167,7 +168,7 @@ const RomDataInfo SegaSaturnPrivate::romDataInfo = {
 	"SegaSaturn", exts, mimeTypes
 };
 
-SegaSaturnPrivate::SegaSaturnPrivate(IRpFile *file)
+SegaSaturnPrivate::SegaSaturnPrivate(const shared_ptr<IRpFile> &file)
 	: super(file, &romDataInfo)
 	, discType(DiscType::Unknown)
 	, saturn_region(0)
@@ -348,7 +349,7 @@ void SegaSaturnPrivate::parseDiscNumber(uint8_t &disc_num, uint8_t &disc_total) 
  *
  * @param file Open ROM image.
  */
-SegaSaturn::SegaSaturn(IRpFile *file)
+SegaSaturn::SegaSaturn(const shared_ptr<IRpFile> &file)
 	: super(new SegaSaturnPrivate(file))
 {
 	// This class handles disc images.
@@ -367,7 +368,7 @@ SegaSaturn::SegaSaturn(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(&sector, sizeof(sector));
 	if (size != sizeof(sector)) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -397,7 +398,7 @@ SegaSaturn::SegaSaturn(IRpFile *file)
 			break;
 		default:
 			// Unsupported.
-			UNREF_AND_NULL_NOCHK(d->file);
+			d->file.reset();
 			return;
 	}
 	d->isValid = true;

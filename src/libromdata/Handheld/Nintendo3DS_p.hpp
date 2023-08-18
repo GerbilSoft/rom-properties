@@ -37,7 +37,7 @@ class NintendoDS;
 class Nintendo3DSPrivate final : public LibRpBase::RomDataPrivate
 {
 	public:
-		Nintendo3DSPrivate(LibRpFile::IRpFile *file);
+		Nintendo3DSPrivate(const std::shared_ptr<LibRpFile::IRpFile> &file);
 		~Nintendo3DSPrivate() final;
 
 	private:

@@ -29,7 +29,8 @@ using LibRomData::TCreateThumbnail;
 #include <glib-object.h>
 #include "NetworkManager.h"
 
-// C++ STL classes.
+// C++ STL classes
+using std::shared_ptr;
 using std::string;
 using std::unique_ptr;
 
@@ -184,18 +185,17 @@ class CreateThumbnailPrivate : public TCreateThumbnail<PIMGTYPE>
 
 /**
  * Open a file from a filename or URI.
- * @param source_file	[in] Source filename or URI.
- * @param pp_file	[out] Opened file.
- * @param s_uri		[out] Normalized URI. (file:/ for a filename, etc.)
- * @return 0 on success; RPCT error code on error.
+ * @param source_file	[in] Source filename or URI
+ * @param s_uri		[out] Normalized URI (file:/ for a filename, etc.)
+ * @param p_err		[out] RPCT error code
+ * @return shared_ptr<IRpFile> on success; nullptr on error.
  */
-static int openFromFilenameOrURI(const char *source_file, IRpFile **pp_file, string &s_uri)
+static shared_ptr<IRpFile> openFromFilenameOrURI(const char *source_file, string &s_uri, int *p_err)
 {
 	// NOTE: Not checking these in Release builds.
 	assert(source_file != nullptr);
-	assert(pp_file != nullptr);
+	assert(p_err != nullptr);
 
-	*pp_file = nullptr;
 	s_uri.clear();
 	const bool enableThumbnailOnNetworkFS = Config::instance()->enableThumbnailOnNetworkFS();
 
@@ -213,7 +213,8 @@ static int openFromFilenameOrURI(const char *source_file, IRpFile **pp_file, str
 			if (FileSystem::isOnBadFS(source_filename, enableThumbnailOnNetworkFS)) {
 				// It's on a "bad" filesystem.
 				g_free(source_filename);
-				return RPCT_ERROR_SOURCE_FILE_BAD_FS;
+				*p_err = RPCT_ERROR_SOURCE_FILE_BAD_FS;
+				return nullptr;
 			}
 
 			// Open the file using RpFile.
@@ -223,7 +224,8 @@ static int openFromFilenameOrURI(const char *source_file, IRpFile **pp_file, str
 			// Not a local filename.
 			if (!enableThumbnailOnNetworkFS) {
 				// Thumbnailing on network file systems is disabled.
-				return RPCT_ERROR_SOURCE_FILE_BAD_FS;
+				*p_err = RPCT_ERROR_SOURCE_FILE_BAD_FS;
+				return nullptr;
 			}
 
 			// Open the file using RpFileGio.
@@ -238,7 +240,8 @@ static int openFromFilenameOrURI(const char *source_file, IRpFile **pp_file, str
 		// Check if it's on a "bad" filesystem.
 		if (FileSystem::isOnBadFS(source_file, enableThumbnailOnNetworkFS)) {
 			// It's on a "bad" filesystem.
-			return RPCT_ERROR_SOURCE_FILE_BAD_FS;
+			*p_err = RPCT_ERROR_SOURCE_FILE_BAD_FS;
+			return nullptr;
 		}
 
 		// Check fi we have an absolute or relative path.
@@ -273,14 +276,15 @@ static int openFromFilenameOrURI(const char *source_file, IRpFile **pp_file, str
 
 	if (file && file->isOpen()) {
 		// File has been opened successfully.
-		*pp_file = file;
-		return 0;
+		*p_err = 0;
+		return shared_ptr<IRpFile>(file);
 	}
 
 	// File was not opened.
 	// TODO: Actual error code?
-	UNREF(file);
-	return RPCT_ERROR_CANNOT_OPEN_SOURCE_FILE;
+	delete file;
+	*p_err = RPCT_ERROR_CANNOT_OPEN_SOURCE_FILE;
+	return nullptr;
 }
 
 /**
@@ -314,19 +318,17 @@ G_MODULE_EXPORT int RP_C_API rp_create_thumbnail2(const char *source_file, const
 	// in order to return better error codes.
 
 	// Attempt to open the ROM file.
-	IRpFile *file = nullptr;
 	string s_uri;
-	int ret = openFromFilenameOrURI(source_file, &file, s_uri);
-	if (ret != 0) {
+	int ret = -1;
+	shared_ptr<IRpFile> file = openFromFilenameOrURI(source_file, s_uri, &ret);
+	if (!file || ret != 0) {
 		// Error opening the file.
 		return ret;
 	}
-	assert(file != nullptr);
 
 	// Get the appropriate RomData class for this ROM.
 	// RomData class *must* support at least one image type.
 	RomData *const romData = RomDataFactory::create(file, RomDataFactory::RDA_HAS_THUMBNAIL);
-	file->unref();	// file is ref()'d by RomData.
 	if (!romData) {
 		// ROM is not supported.
 		return RPCT_ERROR_SOURCE_FILE_NOT_SUPPORTED;

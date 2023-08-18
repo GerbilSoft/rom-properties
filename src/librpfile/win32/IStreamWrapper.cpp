@@ -14,61 +14,10 @@
 #include "librptext/wchar.hpp"
 
 // C++ STL classes
+using std::shared_ptr;
 using std::wstring;
 
 namespace LibRpFile {
-
-/**
- * Create an IStream wrapper for IRpFile.
- * The IRpFile is ref()'d.
- * @param file IRpFile.
- */
-IStreamWrapper::IStreamWrapper(IRpFile *file)
-{
-	if (file) {
-		// ref() the file.
-		m_file = file->ref();
-	} else {
-		// No file specified.
-		m_file = nullptr;
-	}
-}
-
-IStreamWrapper::~IStreamWrapper()
-{
-	UNREF(m_file);
-}
-
-/**
- * Get the IRpFile.
- * NOTE: The IRpFile is still owned by this object.
- * @return IRpFile.
- */
-IRpFile *IStreamWrapper::file(void) const
-{
-	return m_file;
-}
-
-/**
- * Set the IRpFile.
- * @param file New IRpFile.
- */
-void IStreamWrapper::setFile(IRpFile *file)
-{
-	if (m_file) {
-		IRpFile *const old = m_file;
-		if (file) {
-			m_file = file->ref();
-		} else {
-			m_file = nullptr;
-		}
-		old->unref();
-	} else {
-		if (file) {
-			m_file = file->ref();
-		}
-	}
-}
 
 /** IUnknown **/
 // Reference: https://docs.microsoft.com/en-us/office/client-developer/outlook/mapi/implementing-iunknown-in-c-plus-plus

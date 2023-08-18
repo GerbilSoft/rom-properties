@@ -12,7 +12,8 @@
 #include "dll-macros.h"	// for RP_LIBROMDATA_PUBLIC
 #include "librptexture/img/rp_image.hpp"
 
-// C++ includes.
+// C++ includes
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -86,7 +87,7 @@ public:
 	 * @param height 	[in] Image height
 	 * @param format 	[in] Image format
 	 */
-	RpPngWriter(LibRpFile::IRpFile *file, int width, int height, LibRpTexture::rp_image::Format format);
+	RpPngWriter(const std::shared_ptr<LibRpFile::IRpFile> &file, int width, int height, LibRpTexture::rp_image::Format format);
 
 	/**
 	 * Write an image to a PNG file.
@@ -140,7 +141,7 @@ public:
 	 * @param file	[in] IRpFile open for writing
 	 * @param img	[in] rp_image
 	 */
-	RpPngWriter(LibRpFile::IRpFile *file, const LibRpTexture::rp_image *img);
+	RpPngWriter(const std::shared_ptr<LibRpFile::IRpFile> &file, const LibRpTexture::rp_image *img);
 
 	/**
 	 * Write an animated image to an APNG file.
@@ -209,7 +210,7 @@ public:
 	 * @param file		[in] IRpFile open for writing
 	 * @param iconAnimData	[in] Animated image data
 	 */
-	RpPngWriter(LibRpFile::IRpFile *file, const IconAnimData *iconAnimData);
+	RpPngWriter(const std::shared_ptr<LibRpFile::IRpFile> &file, const IconAnimData *iconAnimData);
 
 	~RpPngWriter();
 

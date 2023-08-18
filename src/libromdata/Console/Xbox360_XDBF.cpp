@@ -23,6 +23,7 @@ using LibRpTexture::rp_image;
 
 // C++ STL classes
 using std::array;
+using std::shared_ptr;
 using std::string;
 using std::unique_ptr;
 using std::unordered_map;
@@ -36,7 +37,7 @@ namespace LibRomData {
 class Xbox360_XDBF_Private final : public RomDataPrivate
 {
 	public:
-		Xbox360_XDBF_Private(IRpFile *file, bool xex);
+		Xbox360_XDBF_Private(const shared_ptr<IRpFile> &file, bool xex);
 		~Xbox360_XDBF_Private() final;
 
 	private:
@@ -288,7 +289,7 @@ const RomDataInfo Xbox360_XDBF_Private::romDataInfo = {
 	"Xbox360_XEX", exts, mimeTypes
 };
 
-Xbox360_XDBF_Private::Xbox360_XDBF_Private(IRpFile *file, bool xex)
+Xbox360_XDBF_Private::Xbox360_XDBF_Private(const shared_ptr<IRpFile> &file, bool xex)
 	: super(file, &romDataInfo)
 	, xdbfType(XDBFType::Unknown)
 	, img_icon(nullptr)
@@ -775,9 +776,8 @@ rp_image *Xbox360_XDBF_Private::loadImage(uint64_t image_id)
 
 	// Create a MemFile and decode the image.
 	// TODO: For rpcli, shortcut to extract the PNG directly.
-	MemFile *const f_mem = new MemFile(png_buf.get(), length);
-	rp_image *img = RpPng::load(f_mem);
-	f_mem->unref();
+	shared_ptr<IRpFile> f_mem(new MemFile(png_buf.get(), length));
+	rp_image *const img = RpPng::load(f_mem);
 
 	if (img) {
 		// Save the image for later use.
@@ -1560,7 +1560,7 @@ int Xbox360_XDBF_Private::addFields_achievements_GPD(void)
  *
  * @param file Open XDBF file and/or section.
  */
-Xbox360_XDBF::Xbox360_XDBF(IRpFile *file)
+Xbox360_XDBF::Xbox360_XDBF(const shared_ptr<IRpFile> &file)
 	: super(new Xbox360_XDBF_Private(file, false))
 {
 	// This class handles XDBF files and/or sections only.
@@ -1591,7 +1591,7 @@ Xbox360_XDBF::Xbox360_XDBF(IRpFile *file)
  * @param file Open XDBF file and/or section.
  * @param xex If true, hide fields that are displayed separately in XEX executables.
  */
-Xbox360_XDBF::Xbox360_XDBF(IRpFile *file, bool xex)
+Xbox360_XDBF::Xbox360_XDBF(const shared_ptr<IRpFile> &file, bool xex)
 	: super(new Xbox360_XDBF_Private(file, xex))
 {
 	// This class handles XDBF files and/or sections only.
@@ -1620,7 +1620,7 @@ void Xbox360_XDBF::init(void)
 	d->file->rewind();
 	size_t size = d->file->read(header, sizeof(header));
 	if (size != sizeof(header)) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -1635,7 +1635,7 @@ void Xbox360_XDBF::init(void)
 
 	if (!d->isValid) {
 		d->xdbfHeader.magic = 0;
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -1662,7 +1662,7 @@ void Xbox360_XDBF::init(void)
 	if (d->xdbfHeader.entry_table_length >= 1048576) {
 		// Too many entries.
 		d->xdbfHeader.magic = 0;
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		d->isValid = false;
 		return;
 	}
@@ -1676,7 +1676,7 @@ void Xbox360_XDBF::init(void)
 		// Read error.
 		d->entryTable.clear();
 		d->xdbfHeader.magic = 0;
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		d->isValid = false;
 		return;
 	}

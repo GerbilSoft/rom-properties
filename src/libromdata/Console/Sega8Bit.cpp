@@ -16,6 +16,7 @@ using namespace LibRpText;
 using LibRpFile::IRpFile;
 
 // C++ STL classes
+using std::shared_ptr;
 using std::string;
 
 namespace LibRomData {
@@ -23,7 +24,7 @@ namespace LibRomData {
 class Sega8BitPrivate final : public RomDataPrivate
 {
 	public:
-		Sega8BitPrivate(IRpFile *file);
+		Sega8BitPrivate(const shared_ptr<IRpFile> &file);
 
 	private:
 		typedef RomDataPrivate super;
@@ -91,7 +92,7 @@ const RomDataInfo Sega8BitPrivate::romDataInfo = {
 	"Sega8Bit", exts, mimeTypes
 };
 
-Sega8BitPrivate::Sega8BitPrivate(IRpFile *file)
+Sega8BitPrivate::Sega8BitPrivate(const shared_ptr<IRpFile> &file)
 	: super(file, &romDataInfo)
 {
 	// Clear the ROM header struct.
@@ -227,7 +228,7 @@ time_t Sega8BitPrivate::sdsc_date_to_unix_time(const Sega8_SDSC_Date *date)
  *
  * @param file Open ROM image.
  */
-Sega8Bit::Sega8Bit(IRpFile *file)
+Sega8Bit::Sega8Bit(const shared_ptr<IRpFile> &file)
 	: super(new Sega8BitPrivate(file))
 {
 	RP_D(Sega8Bit);
@@ -242,7 +243,7 @@ Sega8Bit::Sega8Bit(IRpFile *file)
 	size_t size = d->file->seekAndRead(0x7FE0, &d->romHeader, sizeof(d->romHeader));
 	if (size != sizeof(d->romHeader)) {
 		// Seek and/or read error.
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -255,8 +256,7 @@ Sega8Bit::Sega8Bit(IRpFile *file)
 	d->isValid = (isRomSupported_static(&info) >= 0);
 
 	if (!d->isValid) {
-		d->file->unref();
-		d->file = nullptr;
+		d->file.reset();
 	}
 }
 

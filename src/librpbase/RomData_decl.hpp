@@ -13,12 +13,15 @@
 #  error RomData_decl.hpp should only be included by RomData.hpp
 #endif
 
-// for loadInternalImage() implementation macros
-#include <cerrno>
-
 namespace LibRpBase {
 	struct RomDataInfo;
 }
+
+// for loadInternalImage() implementation macros
+#include <cerrno>
+
+// C++ includes
+#include <memory>
 
 /** Macros for RomData subclasses. **/
 
@@ -31,7 +34,7 @@ namespace LibRpBase {
 class klass##Private; \
 class klass final : public LibRpBase::RomData { \
 public: \
-	explicit klass(LibRpFile::IRpFile *file); \
+	explicit klass(const std::shared_ptr<LibRpFile::IRpFile> &file); \
 protected: \
 	RP_LIBROMDATA_LOCAL \
 	~klass() final = default; \

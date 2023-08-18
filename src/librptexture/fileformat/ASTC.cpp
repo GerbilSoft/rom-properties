@@ -21,12 +21,15 @@ using LibRpFile::IRpFile;
 #include "img/rp_image.hpp"
 #include "decoder/ImageDecoder_ASTC.hpp"
 
+// C++ STL classes
+using std::shared_ptr;
+
 namespace LibRpTexture {
 
 class ASTCPrivate final : public FileFormatPrivate
 {
 	public:
-		ASTCPrivate(ASTC *q, IRpFile *file);
+		ASTCPrivate(ASTC *q, const shared_ptr<IRpFile> &file);
 		~ASTCPrivate() final;
 
 	private:
@@ -77,7 +80,7 @@ const TextureInfo ASTCPrivate::textureInfo = {
 	exts, mimeTypes
 };
 
-ASTCPrivate::ASTCPrivate(ASTC *q, IRpFile *file)
+ASTCPrivate::ASTCPrivate(ASTC *q, const shared_ptr<IRpFile> &file)
 	: super(q, file, &textureInfo)
 	, img(nullptr)
 {
@@ -186,7 +189,7 @@ const rp_image *ASTCPrivate::loadImage(void)
  *
  * @param file Open ROM image.
  */
-ASTC::ASTC(IRpFile *file)
+ASTC::ASTC(const shared_ptr<IRpFile> &file)
 	: super(new ASTCPrivate(this, file))
 {
 	RP_D(ASTC);
@@ -201,14 +204,14 @@ ASTC::ASTC(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(&d->astcHeader, sizeof(d->astcHeader));
 	if (size != sizeof(d->astcHeader)) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
 	// Verify the ASTC magic.
 	if (d->astcHeader.magic != cpu_to_le32(ASTC_MAGIC)) {
 		// Incorrect magic.
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 

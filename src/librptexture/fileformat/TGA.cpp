@@ -25,7 +25,8 @@ using LibRpFile::IRpFile;
 #include "img/rp_image.hpp"
 #include "decoder/ImageDecoder_Linear.hpp"
 
-// C++ STL classes.
+// C++ STL classes
+using std::shared_ptr;
 using std::string;
 using std::unique_ptr;
 
@@ -34,7 +35,7 @@ namespace LibRpTexture {
 class TGAPrivate final : public FileFormatPrivate
 {
 	public:
-		TGAPrivate(TGA *q, IRpFile *file);
+		TGAPrivate(TGA *q, const shared_ptr<IRpFile> &file);
 		~TGAPrivate() final;
 
 	private:
@@ -125,7 +126,7 @@ const TextureInfo TGAPrivate::textureInfo = {
 	exts, mimeTypes
 };
 
-TGAPrivate::TGAPrivate(TGA *q, IRpFile *file)
+TGAPrivate::TGAPrivate(TGA *q, const shared_ptr<IRpFile> &file)
 	: super(q, file, &textureInfo)
 	, texType(TexType::Unknown)
 	, alphaType(TGA_ALPHATYPE_PRESENT)
@@ -517,7 +518,7 @@ time_t TGAPrivate::tgaTimeToUnixTime(const TGA_DateStamp *timestamp)
  *
  * @param file Open ROM image.
  */
-TGA::TGA(IRpFile *file)
+TGA::TGA(const shared_ptr<IRpFile> &file)
 	: super(new TGAPrivate(this, file))
 {
 	RP_D(TGA);
@@ -536,7 +537,7 @@ TGA::TGA(IRpFile *file)
 	if (fileSize < static_cast<off64_t>(sizeof(d->tgaHeader) + sizeof(d->tgaFooter)) ||
 	    fileSize > TGA_MAX_SIZE)
 	{
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -545,7 +546,7 @@ TGA::TGA(IRpFile *file)
 	if (size != sizeof(d->tgaFooter)) {
 		// Could not read the TGA footer.
 		// The file is likely too small to be valid.
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -565,7 +566,7 @@ TGA::TGA(IRpFile *file)
 	size = d->file->read(&d->tgaHeader, sizeof(d->tgaHeader));
 	if (size != sizeof(d->tgaHeader)) {
 		// Seek and/or read error.
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 

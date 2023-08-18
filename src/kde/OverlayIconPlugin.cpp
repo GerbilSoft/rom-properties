@@ -23,6 +23,7 @@ using LibRpFile::IRpFile;
 using LibRomData::RomDataFactory;
 
 // C++ STL classes
+using std::shared_ptr;
 using std::string;
 
 // Qt includes.
@@ -59,7 +60,7 @@ QStringList OverlayIconPlugin::getOverlays(const QUrl &item)
 	}
 
 	// Attempt to open the ROM file.
-	IRpFile *const file = openQUrl(item, true);
+	shared_ptr<IRpFile> file(openQUrl(item, true));
 	if (!file) {
 		// Could not open the file.
 		return sl;
@@ -67,7 +68,6 @@ QStringList OverlayIconPlugin::getOverlays(const QUrl &item)
 
 	// Get the appropriate RomData class for this ROM.
 	RomData *const romData = RomDataFactory::create(file, RomDataFactory::RDA_HAS_DPOVERLAY);
-	file->unref();	// file is ref()'d by RomData.
 	if (!romData) {
 		// No RomData.
 		return sl;

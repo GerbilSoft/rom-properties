@@ -44,18 +44,19 @@ using namespace LibRpFile;
 #include "librptexture/img/rp_image.hpp"
 using LibRpTexture::rp_image;
 
-// C includes.
+// C includes
 #include <stdint.h>
 #include <stdlib.h>
 
-// C includes. (C++ namespace)
+// C includes (C++ namespace)
 #include "ctypex.h"
 #include <cstring>
 
-// C++ includes.
+// C++ includes
 #include <memory>
 #include <ostream>
 #include <string>
+using std::shared_ptr;
 using std::string;
 
 namespace LibRpBase { namespace Tests {
@@ -312,7 +313,7 @@ void RpPngFormatTest::SetUp(void)
 	const RpPngFormatTest_mode &mode = GetParam();
 
 	// Open the PNG image file being tested.
-	unique_RefBase<RpFile> file(new RpFile(mode.png_filename, RpFile::FM_OPEN_READ));
+	shared_ptr<IRpFile> file(new RpFile(mode.png_filename, RpFile::FM_OPEN_READ));
 	ASSERT_TRUE(file->isOpen());
 
 	// Maximum image size.
@@ -878,11 +879,11 @@ TEST_P(RpPngFormatTest, loadTest)
 	EXPECT_EQ(mode.ihdr.interlace_method,	ihdr.interlace_method);
 
 	// Create a MemFile.
-	unique_RefBase<MemFile> png_mem_file(new MemFile(m_png_buf.data(), m_png_buf.size()));
+	shared_ptr<IRpFile> png_mem_file(new MemFile(m_png_buf.data(), m_png_buf.size()));
 	ASSERT_TRUE(png_mem_file->isOpen());
 
 	// Load the PNG image from memory.
-	m_img = RpPng::load(png_mem_file.get());
+	m_img = RpPng::load(png_mem_file);
 	ASSERT_NE(nullptr, m_img) << "RpPng failed to load the image.";
 
 	// Check the rp_image parameters.

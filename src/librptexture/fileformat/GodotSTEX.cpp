@@ -35,6 +35,7 @@ using LibRpFile::MemFile;
 using LibRpTexture::ImageSizeCalc::OpCode;
 
 // C++ STL classes
+using std::shared_ptr;
 using std::string;
 using std::unique_ptr;
 using std::vector;
@@ -44,7 +45,7 @@ namespace LibRpTexture {
 class GodotSTEXPrivate final : public FileFormatPrivate
 {
 	public:
-		GodotSTEXPrivate(GodotSTEX *q, IRpFile *file);
+		GodotSTEXPrivate(GodotSTEX *q, const shared_ptr<IRpFile> &file);
 		~GodotSTEXPrivate() final;
 
 	private:
@@ -292,7 +293,7 @@ const ImageSizeCalc::OpCode GodotSTEXPrivate::op_tbl_v4[] = {
 	OpCode::Align8Divide4,	// STEX4_FORMAT_ASTC_8x8_HDR	// 8x8 == 2bpp
 };
 
-GodotSTEXPrivate::GodotSTEXPrivate(GodotSTEX *q, IRpFile *file)
+GodotSTEXPrivate::GodotSTEXPrivate(GodotSTEX *q, const shared_ptr<IRpFile> &file)
 	: super(q, file, &textureInfo)
 	, stexVersion(0)
 	, pixelFormat(static_cast<STEX_Format_e>(~0U))
@@ -576,9 +577,8 @@ const rp_image *GodotSTEXPrivate::loadImage(int mip)
 		// FIXME: Move RpPng to librptexture.
 		// Requires moving IconAnimData and some other stuff...
 		// TODO: Make use of PartitionFile instead of loading it into memory?
-		MemFile *const memFile = new MemFile(buf.get(), mdata.size);
+		shared_ptr<IRpFile> memFile(new MemFile(buf.get(), mdata.size));
 		mipmaps[mip] = RpPng::load(memFile);
-		memFile->unref();
 
 		return mipmaps[mip];
 	}
@@ -886,7 +886,7 @@ const rp_image *GodotSTEXPrivate::loadImage(int mip)
  *
  * @param file Open ROM image.
  */
-GodotSTEX::GodotSTEX(IRpFile *file)
+GodotSTEX::GodotSTEX(const shared_ptr<IRpFile> &file)
 	: super(new GodotSTEXPrivate(this, file))
 {
 	RP_D(GodotSTEX);
@@ -901,7 +901,7 @@ GodotSTEX::GodotSTEX(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(&d->stexHeader, sizeof(d->stexHeader));
 	if (size != sizeof(d->stexHeader)) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -920,7 +920,7 @@ GodotSTEX::GodotSTEX(IRpFile *file)
 				&d->embedHeader, sizeof(d->embedHeader));
 			if (size != sizeof(d->embedHeader)) {
 				// Seek and/or read error.
-				UNREF_AND_NULL_NOCHK(d->file);
+				d->file.reset();
 				return;
 			}
 #if SYS_BYTEORDER == SYS_BIG_ENDIAN
@@ -932,7 +932,7 @@ GodotSTEX::GodotSTEX(IRpFile *file)
 		// Godot 4 texture
 		if (le32_to_cpu(d->stexHeader.v4.version) > STEX4_FORMAT_VERSION) {
 			// Unsupported format version.
-			UNREF_AND_NULL_NOCHK(d->file);
+			d->file.reset();
 			return;
 		}
 		d->stexVersion = 4;
@@ -945,7 +945,7 @@ GodotSTEX::GodotSTEX(IRpFile *file)
 					&d->embedHeader, sizeof(d->embedHeader));
 				if (size != sizeof(d->embedHeader)) {
 					// Seek and/or read error.
-					UNREF_AND_NULL_NOCHK(d->file);
+					d->file.reset();
 					return;
 				}
 #if SYS_BYTEORDER == SYS_BIG_ENDIAN
@@ -958,7 +958,7 @@ GodotSTEX::GodotSTEX(IRpFile *file)
 		}
 	} else {
 		// Incorrect magic.
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -972,7 +972,7 @@ GodotSTEX::GodotSTEX(IRpFile *file)
 	switch (d->stexVersion) {
 		default:
 			assert(!"Invalid STEX version.");
-			UNREF_AND_NULL_NOCHK(d->file);
+			d->file.reset();
 			return;
 
 		case 3:
@@ -1007,7 +1007,7 @@ GodotSTEX::GodotSTEX(IRpFile *file)
 	switch (d->stexVersion) {
 		default:
 			assert(!"Invalid STEX version.");
-			UNREF_AND_NULL_NOCHK(d->file);
+			d->file.reset();
 			return;
 		case 3:
 			d->pixelFormat = static_cast<STEX_Format_e>(d->stexHeader.v3.format & STEX_FORMAT_MASK);

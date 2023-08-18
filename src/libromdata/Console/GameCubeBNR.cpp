@@ -20,7 +20,8 @@ using namespace LibRpText;
 using namespace LibRpTexture;
 using LibRpFile::IRpFile;
 
-// C++ STL classes.
+// C++ STL classes
+using std::shared_ptr;
 using std::string;
 using std::vector;
 
@@ -33,7 +34,7 @@ namespace LibRomData {
 class GameCubeBNRPrivate final : public RomDataPrivate
 {
 	public:
-		GameCubeBNRPrivate(IRpFile *file, uint32_t gcnRegion = ~0U);
+		GameCubeBNRPrivate(const shared_ptr<IRpFile> &file, uint32_t gcnRegion = ~0U);
 		~GameCubeBNRPrivate() final;
 
 	private:
@@ -146,7 +147,7 @@ const RomDataInfo GameCubeBNRPrivate::romDataInfo = {
 	"GameCube", exts, mimeTypes
 };
 
-GameCubeBNRPrivate::GameCubeBNRPrivate(IRpFile *file, uint32_t gcnRegion)
+GameCubeBNRPrivate::GameCubeBNRPrivate(const shared_ptr<IRpFile> &file, uint32_t gcnRegion)
 	: super(file, &romDataInfo)
 	, bannerType(BannerType::Unknown)
 	, gcnRegion(gcnRegion)
@@ -382,7 +383,7 @@ string GameCubeBNRPrivate::getGameInfoString(const gcn_banner_comment_t *comment
  *
  * @param file Open banner file
  */
-GameCubeBNR::GameCubeBNR(IRpFile *file)
+GameCubeBNR::GameCubeBNR(const shared_ptr<IRpFile> &file)
 	: super(new GameCubeBNRPrivate(file))
 {
 	init();
@@ -401,7 +402,7 @@ GameCubeBNR::GameCubeBNR(IRpFile *file)
  *
  * @param file Open banner file
  */
-GameCubeBNR::GameCubeBNR(IRpFile *file, uint32_t gcnRegion)
+GameCubeBNR::GameCubeBNR(const shared_ptr<IRpFile> &file, uint32_t gcnRegion)
 	: super(new GameCubeBNRPrivate(file, gcnRegion))
 {
 	init();
@@ -429,7 +430,7 @@ void GameCubeBNR::init(void)
 	d->file->rewind();
 	size_t size = d->file->read(&bnr_magic, sizeof(bnr_magic));
 	if (size != sizeof(bnr_magic)) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -443,7 +444,7 @@ void GameCubeBNR::init(void)
 	d->isValid = ((int)d->bannerType >= 0);
 
 	if (!d->isValid) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 

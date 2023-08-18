@@ -14,6 +14,9 @@
 using namespace LibRpBase;
 using LibRpFile::IRpFile;
 
+// C++ STL classes
+using std::shared_ptr;
+
 #include "GcnPartition_p.hpp"
 namespace LibRomData {
 
@@ -249,7 +252,7 @@ int GcnPartition::closedir(IFst::Dir *dirp)
  * @param filename Filename.
  * @return IRpFile*, or nullptr on error.
  */
-IRpFile *GcnPartition::open(const char *filename)
+shared_ptr<IRpFile> GcnPartition::open(const char *filename)
 {
 	// TODO: File reference counter.
 	// This might be difficult to do because GcnFile is a separate class.
@@ -298,7 +301,7 @@ IRpFile *GcnPartition::open(const char *filename)
 	// This is an IRpFile implementation that uses an
 	// IPartition as the reader and takes an offset
 	// and size as the file parameters.
-	return new PartitionFile(this, dirent.offset, dirent.size);
+	return shared_ptr<IRpFile>(new PartitionFile(this, dirent.offset, dirent.size));
 }
 
 }

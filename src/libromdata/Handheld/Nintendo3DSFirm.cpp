@@ -19,7 +19,8 @@ using LibRpFile::IRpFile;
 // for memmem() if it's not available in <string.h>
 #include "librptext/libc.h"
 
-// C++ STL classes.
+// C++ STL classes
+using std::shared_ptr;
 using std::string;
 using std::unique_ptr;
 
@@ -40,7 +41,7 @@ DELAYLOAD_TEST_FUNCTION_IMPL0(get_crc_table);
 class Nintendo3DSFirmPrivate final : public RomDataPrivate
 {
 	public:
-		Nintendo3DSFirmPrivate(IRpFile *file);
+		Nintendo3DSFirmPrivate(const shared_ptr<IRpFile> &file);
 
 	private:
 		typedef RomDataPrivate super;
@@ -80,7 +81,7 @@ const RomDataInfo Nintendo3DSFirmPrivate::romDataInfo = {
 	"Nintendo3DSFirm", exts, mimeTypes
 };
 
-Nintendo3DSFirmPrivate::Nintendo3DSFirmPrivate(IRpFile *file)
+Nintendo3DSFirmPrivate::Nintendo3DSFirmPrivate(const shared_ptr<IRpFile> &file)
 	: super(file, &romDataInfo)
 {
 	// Clear the various structs.
@@ -102,7 +103,7 @@ Nintendo3DSFirmPrivate::Nintendo3DSFirmPrivate(IRpFile *file)
  *
  * @param file Open ROM image.
  */
-Nintendo3DSFirm::Nintendo3DSFirm(IRpFile *file)
+Nintendo3DSFirm::Nintendo3DSFirm(const shared_ptr<IRpFile> &file)
 	: super(new Nintendo3DSFirmPrivate(file))
 {
 	RP_D(Nintendo3DSFirm);
@@ -118,7 +119,7 @@ Nintendo3DSFirm::Nintendo3DSFirm(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(&d->firmHeader, sizeof(d->firmHeader));
 	if (size != sizeof(d->firmHeader)) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -131,7 +132,7 @@ Nintendo3DSFirm::Nintendo3DSFirm(IRpFile *file)
 	d->isValid = (isRomSupported_static(&info) >= 0);
 
 	if (!d->isValid) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 	}
 }
 

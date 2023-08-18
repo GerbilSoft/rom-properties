@@ -29,7 +29,8 @@ using LibRpFile::IRpFile;
 # include "libwin32common/DelayLoadHelper.h"
 #endif /* _MSC_VER */
 
-// C++ STL classes.
+// C++ STL classes
+using std::shared_ptr;
 using std::string;
 using std::unique_ptr;
 
@@ -43,7 +44,7 @@ DELAYLOAD_TEST_FUNCTION_IMPL0(get_crc_table);
 class DidjTexPrivate final : public FileFormatPrivate
 {
 	public:
-		DidjTexPrivate(DidjTex *q, IRpFile *file);
+		DidjTexPrivate(DidjTex *q, const shared_ptr<IRpFile> &file);
 		~DidjTexPrivate() final;
 
 	private:
@@ -105,7 +106,7 @@ const TextureInfo DidjTexPrivate::textureInfo = {
 	exts, mimeTypes
 };
 
-DidjTexPrivate::DidjTexPrivate(DidjTex *q, IRpFile *file)
+DidjTexPrivate::DidjTexPrivate(DidjTex *q, const shared_ptr<IRpFile> &file)
 	: super(q, file, &textureInfo)
 	, texType(TexType::Unknown)
 	, img(nullptr)
@@ -343,7 +344,7 @@ const rp_image *DidjTexPrivate::loadDidjTexImage(void)
  *
  * @param file Open ROM image.
  */
-DidjTex::DidjTex(IRpFile *file)
+DidjTex::DidjTex(const shared_ptr<IRpFile> &file)
 	: super(new DidjTexPrivate(this, file))
 {
 	RP_D(DidjTex);
@@ -358,7 +359,7 @@ DidjTex::DidjTex(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(&d->texHeader, sizeof(d->texHeader));
 	if (size != sizeof(d->texHeader)) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -369,7 +370,7 @@ DidjTex::DidjTex(IRpFile *file)
 	    d->texHeader.num_images != cpu_to_le32(1))
 	{
 		// Incorrect values.
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -385,7 +386,7 @@ DidjTex::DidjTex(IRpFile *file)
 		// .texs - allow the total filesize to be larger than the compressed size.
 		if (our_size > filesize) {
 			// Incorrect compressed filesize.
-			UNREF_AND_NULL_NOCHK(d->file);
+			d->file.reset();
 			return;
 		}
 		d->texType = DidjTexPrivate::TexType::TEXS;
@@ -393,7 +394,7 @@ DidjTex::DidjTex(IRpFile *file)
 		// .tex - total filesize must be equal to compressed size plus header size.
 		if (our_size != filesize) {
 			// Incorrect compressed filesize.
-			UNREF_AND_NULL_NOCHK(d->file);
+			d->file.reset();
 			return;
 		}
 		d->texType = DidjTexPrivate::TexType::TEX;

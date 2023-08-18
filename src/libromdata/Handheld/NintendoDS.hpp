@@ -29,7 +29,7 @@ ROMDATA_DECL_BEGIN(NintendoDS)
 		 * @param file Open ROM image.
 		 * @param cia If true, hide fields that aren't relevant to DSiWare in 3DS CIA packages.
 		 */
-		explicit NintendoDS(LibRpFile::IRpFile *file, bool cia);
+		explicit NintendoDS(const std::shared_ptr<LibRpFile::IRpFile> &file, bool cia);
 
 	private:
 		/**

@@ -19,8 +19,10 @@ using LibRpTexture::rp_image;
 
 // RpFile_windres
 #include "file/RpFile_windres.hpp"
+using LibRpFile::IRpFile;
 
 // C++ STL classes
+using std::shared_ptr;
 using std::tstring;
 using std::vector;
 
@@ -139,8 +141,9 @@ LRESULT LanguageComboBoxPrivate::setLCs(const uint32_t *lcs_array)
 	// TODO: Is premultiplied alpha needed?
 	// Reference: https://stackoverflow.com/questions/307348/how-to-draw-32-bit-alpha-channel-bitmaps
 	rp_image *imgFlagsSheet = nullptr;
-	RpFile_windres *const f_res = new RpFile_windres(HINST_THISCOMPONENT,
-		MAKEINTRESOURCE(resID), MAKEINTRESOURCE(RT_PNG));
+	shared_ptr<IRpFile> f_res(new RpFile_windres(HINST_THISCOMPONENT,
+		MAKEINTRESOURCE(resID), MAKEINTRESOURCE(RT_PNG)));
+	assert(f_res->isOpen());
 	if (f_res->isOpen()) do {
 		imgFlagsSheet = RpPng::load(f_res);
 		if (!imgFlagsSheet)
@@ -172,7 +175,6 @@ LRESULT LanguageComboBoxPrivate::setLCs(const uint32_t *lcs_array)
 			}
 		}
 	} while (0);
-	UNREF(f_res);
 
 	// Create the ImageList.
 	if (imgFlagsSheet) {

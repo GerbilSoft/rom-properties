@@ -18,6 +18,9 @@
 using namespace LibRpBase;
 using LibRpFile::IRpFile;
 
+// C++ STL classes
+using std::shared_ptr;
+
 namespace LibRomData {
 
 class WuxReaderPrivate : public SparseDiscReaderPrivate {
@@ -53,7 +56,7 @@ WuxReaderPrivate::WuxReaderPrivate(WuxReader *q)
 
 /** WuxReader **/
 
-WuxReader::WuxReader(IRpFile *file)
+WuxReader::WuxReader(const shared_ptr<IRpFile> &file)
 	: super(new WuxReaderPrivate(this), file)
 {
 	if (!m_file) {
@@ -67,7 +70,7 @@ WuxReader::WuxReader(IRpFile *file)
 	size_t sz = m_file->read(&d->wuxHeader, sizeof(d->wuxHeader));
 	if (sz != sizeof(d->wuxHeader)) {
 		// Error reading the .wux header.
-		UNREF_AND_NULL_NOCHK(m_file);
+		m_file.reset();
 		m_lastError = EIO;
 		return;
 	}
@@ -77,7 +80,7 @@ WuxReader::WuxReader(IRpFile *file)
 	    d->wuxHeader.magic[1] != cpu_to_be32(WUX_MAGIC_1))
 	{
 		// Invalid magic.
-		UNREF_AND_NULL_NOCHK(m_file);
+		m_file.reset();
 		m_lastError = EIO;
 		return;
 	}
@@ -90,7 +93,7 @@ WuxReader::WuxReader(IRpFile *file)
 	    d->block_size < WUX_BLOCK_SIZE_MIN || d->block_size > WUX_BLOCK_SIZE_MAX)
 	{
 		// Block size is out of range.
-		UNREF_AND_NULL_NOCHK(m_file);
+		m_file.reset();
 		m_lastError = EIO;
 		return;
 	}
@@ -99,7 +102,7 @@ WuxReader::WuxReader(IRpFile *file)
 	d->disc_size = static_cast<off64_t>(le64_to_cpu(d->wuxHeader.uncompressedSize));
 	if (d->disc_size < 0 || d->disc_size > 50LL*1024*1024*1024) {
 		// Disc size is out of range.
-		UNREF_AND_NULL_NOCHK(m_file);
+		m_file.reset();
 		m_lastError = EIO;
 		return;
 	}
@@ -113,7 +116,7 @@ WuxReader::WuxReader(IRpFile *file)
 		// Read error.
 		d->idxTbl.clear();
 		d->disc_size = 0;
-		UNREF_AND_NULL_NOCHK(m_file);
+		m_file.reset();
 		m_lastError = EIO;
 		return;
 	}

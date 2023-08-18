@@ -21,12 +21,15 @@ using LibRpFile::IRpFile;
 #include "img/rp_image.hpp"
 #include "decoder/ImageDecoder_S3TC.hpp"
 
+// C++ STL classes
+using std::shared_ptr;
+
 namespace LibRpTexture {
 
 class ValveVTF3Private final : public FileFormatPrivate
 {
 	public:
-		ValveVTF3Private(ValveVTF3 *q, IRpFile *file);
+		ValveVTF3Private(ValveVTF3 *q, const shared_ptr<IRpFile> &file);
 		~ValveVTF3Private() final;
 
 	private:
@@ -93,7 +96,7 @@ const TextureInfo ValveVTF3Private::textureInfo = {
 	exts, mimeTypes
 };
 
-ValveVTF3Private::ValveVTF3Private(ValveVTF3 *q, IRpFile *file)
+ValveVTF3Private::ValveVTF3Private(ValveVTF3 *q, const shared_ptr<IRpFile> &file)
 	: super(q, file, &textureInfo)
 	, img(nullptr)
 {
@@ -214,7 +217,7 @@ const rp_image *ValveVTF3Private::loadImage(void)
  *
  * @param file Open ROM image.
  */
-ValveVTF3::ValveVTF3(IRpFile *file)
+ValveVTF3::ValveVTF3(const shared_ptr<IRpFile> &file)
 	: super(new ValveVTF3Private(this, file))
 {
 	RP_D(ValveVTF3);
@@ -229,14 +232,14 @@ ValveVTF3::ValveVTF3(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(&d->vtf3Header, sizeof(d->vtf3Header));
 	if (size != sizeof(d->vtf3Header)) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
 	// Verify the VTF magic.
 	if (d->vtf3Header.signature != cpu_to_be32(VTF3_SIGNATURE)) {
 		// Incorrect magic.
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 

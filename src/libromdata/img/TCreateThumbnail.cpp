@@ -32,12 +32,12 @@ using LibRpTexture::rp_image;
 // libromdata
 #include "../RomDataFactory.hpp"
 
-// C includes. (C++ namespace)
+// C includes (C++ namespace)
 #include <cassert>
 #include <cstring>
 
-// C++ includes.
-#include <memory>
+// C++ includes
+using std::shared_ptr;
 using std::unique_ptr;
 
 namespace LibRomData {
@@ -174,9 +174,9 @@ ImgClass TCreateThumbnail<ImgClass>::getExternalImage(
 			continue;
 
 		// Attempt to load the image.
-		unique_RefBase<RpFile> file(new RpFile(cache_filename, RpFile::FM_OPEN_READ));
+		shared_ptr<IRpFile> file(new RpFile(cache_filename, RpFile::FM_OPEN_READ));
 		if (file->isOpen()) {
-			rp_image *const dl_img = RpImageLoader::load(file.get());
+			rp_image *const dl_img = RpImageLoader::load(file);
 			if (dl_img && dl_img->isValid()) {
 				// Image loaded successfully.
 				file->close();
@@ -510,7 +510,7 @@ skip_image_check:
  * @return 0 on success; non-zero on error.
  */
 template<typename ImgClass>
-int TCreateThumbnail<ImgClass>::getThumbnail(IRpFile *file, int reqSize, GetThumbnailOutParams_t *pOutParams)
+int TCreateThumbnail<ImgClass>::getThumbnail(const std::shared_ptr<LibRpFile::IRpFile> &file, int reqSize, GetThumbnailOutParams_t *pOutParams)
 {
 	assert(file != nullptr);
 	assert(reqSize > 0);
@@ -522,7 +522,7 @@ int TCreateThumbnail<ImgClass>::getThumbnail(IRpFile *file, int reqSize, GetThum
 
 	// Get the appropriate RomData class for this ROM.
 	// RomData class *must* support at least one image type.
-	RomData *romData = RomDataFactory::create(file, RomDataFactory::RDA_HAS_THUMBNAIL);
+	RomData *const romData = RomDataFactory::create(file, RomDataFactory::RDA_HAS_THUMBNAIL);
 	if (!romData) {
 		// ROM is not supported.
 		return RPCT_ERROR_SOURCE_FILE_NOT_SUPPORTED;
@@ -555,17 +555,15 @@ int TCreateThumbnail<ImgClass>::getThumbnail(const char *filename, int reqSize, 
 	// Attempt to open the ROM file.
 	// TODO: OS-specific wrappers, e.g. RpQFile or RpGVfsFile.
 	// For now, using RpFile, which is an stdio wrapper.
-	RpFile *const file = new RpFile(filename, RpFile::FM_OPEN_READ_GZ);
+	shared_ptr<IRpFile> file(new RpFile(filename, RpFile::FM_OPEN_READ_GZ));
 	if (!file->isOpen()) {
 		// Could not open the file.
-		file->unref();
 		return RPCT_ERROR_CANNOT_OPEN_SOURCE_FILE;
 	}
 
 	// Get the appropriate RomData class for this ROM.
 	// RomData class *must* support at least one image type.
 	RomData *const romData = RomDataFactory::create(file, RomDataFactory::RDA_HAS_THUMBNAIL);
-	file->unref();	// file is ref()'d by RomData.
 	if (!romData) {
 		// ROM is not supported.
 		return RPCT_ERROR_SOURCE_FILE_NOT_SUPPORTED;

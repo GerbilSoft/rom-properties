@@ -23,7 +23,9 @@ namespace LibRomData {
 class IResourceReader : public LibRpBase::IPartition
 {
 	protected:
-		IResourceReader(LibRpFile::IRpFile *file) : super(file) { }
+		IResourceReader(const std::shared_ptr<LibRpFile::IRpFile> &file)
+			: super(file)
+		{}
 	protected:
 		~IResourceReader() override = 0;	// call unref() instead
 
@@ -49,7 +51,7 @@ class IResourceReader : public LibRpBase::IPartition
 		 * @param lang Language ID. (-1 for "first entry")
 		 * @return IRpFile*, or nullptr on error.
 		 */
-		virtual LibRpFile::IRpFile *open(uint16_t type, int id, int lang) = 0;
+		virtual std::shared_ptr<LibRpFile::IRpFile> open(uint16_t type, int id, int lang) = 0;
 
 		// StringTable.
 		// - Element 1: Key

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpfile)                        *
  * DualFile.cpp: Special wrapper for handling a split file as one.         *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -21,25 +21,24 @@ namespace LibRpFile {
  * @param file0 First file.
  * @param file1 Second file.
  */
-DualFile::DualFile(IRpFile *file0, IRpFile *file1)
+DualFile::DualFile(const std::shared_ptr<IRpFile> &file0, const std::shared_ptr<IRpFile> &file1)
 	: super()
+	, m_file{file0, file1}
 	, m_pos(0)
 {
-	assert(file0 != nullptr);
-	assert(file1 != nullptr);
+	assert((bool)file0);
+	assert((bool)file1);
 	if (!file0 || !file1) {
-		// File is missing.
+		// At least one file is missing.
 		m_lastError = EBADF;
 		m_fullSize = 0;
-		m_file[0] = nullptr;
-		m_file[1] = nullptr;
+		m_file[0].reset();
+		m_file[1].reset();
 		m_size[0] = 0;
 		m_size[1] = 0;
 		return;
 	}
 
-	m_file[0] = file0->ref();
-	m_file[1] = file1->ref();
 	m_size[0] = file0->size();
 	m_size[1] = file1->size();
 
@@ -52,20 +51,10 @@ DualFile::DualFile(IRpFile *file0, IRpFile *file1)
  */
 DualFile::DualFile()
 	: super()
+	, m_size{0, 0}
 	, m_fullSize(0)
 	, m_pos(0)
-{
-	m_file[0] = nullptr;
-	m_file[1] = nullptr;
-	m_size[0] = 0;
-	m_size[1] = 0;
-}
-
-DualFile::~DualFile()
-{
-	UNREF(m_file[0]);
-	UNREF(m_file[1]);
-}
+{}
 
 /**
  * Is the file open?
@@ -74,7 +63,7 @@ DualFile::~DualFile()
  */
 bool DualFile::isOpen(void) const
 {
-	return (m_file[0] != nullptr && m_file[1] != nullptr);
+	return ((bool)m_file[0] && (bool)m_file[1]);
 }
 
 /**
@@ -82,12 +71,13 @@ bool DualFile::isOpen(void) const
  */
 void DualFile::close(void)
 {
-	UNREF_AND_NULL(m_file[0]);
-	UNREF_AND_NULL(m_file[1]);
+	m_file[0].reset();
+	m_file[1].reset();
 
 	m_size[0] = 0;
 	m_size[1] = 0;
 
+	m_fullSize = 0;
 	m_pos = 0;
 }
 

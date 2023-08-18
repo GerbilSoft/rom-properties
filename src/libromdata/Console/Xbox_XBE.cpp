@@ -28,6 +28,7 @@ using LibRpTexture::XboxXPR;
 
 // C++ STL classes
 using std::ostringstream;
+using std::shared_ptr;
 using std::string;
 using std::unique_ptr;
 using std::vector;
@@ -40,7 +41,7 @@ namespace LibRomData {
 class Xbox_XBE_Private final : public RomDataPrivate
 {
 	public:
-		Xbox_XBE_Private(IRpFile *file);
+		Xbox_XBE_Private(const shared_ptr<IRpFile> &file);
 		~Xbox_XBE_Private() final;
 
 	private:
@@ -127,7 +128,7 @@ const RomDataInfo Xbox_XBE_Private::romDataInfo = {
 	"Xbox_XBE", exts, mimeTypes
 };
 
-Xbox_XBE_Private::Xbox_XBE_Private(IRpFile *file)
+Xbox_XBE_Private::Xbox_XBE_Private(const shared_ptr<IRpFile> &file)
 	: super(file, &romDataInfo)
 	, pe_exe(nullptr)
 {
@@ -271,11 +272,10 @@ int Xbox_XBE_Private::initXPR0_xtImage(void)
 
 	// Open the XPR0 image.
 	// paddr/psize have absolute addresses.
-	SubFile *const subFile = new SubFile(this->file,
-		hdr_xtImage.paddr, hdr_xtImage.psize);
+	shared_ptr<IRpFile> subFile(new SubFile(this->file,
+		hdr_xtImage.paddr, hdr_xtImage.psize));
 	if (!subFile->isOpen()) {
 		// Unable to open the XPR0 file.
-		subFile->unref();
 		return -EIO;
 	}
 
@@ -286,7 +286,6 @@ int Xbox_XBE_Private::initXPR0_xtImage(void)
 	size_t size = subFile->read(&magic, sizeof(magic));
 	if (size != sizeof(magic)) {
 		// Read error.
-		subFile->unref();
 		return -EIO;
 	}
 	subFile->rewind();
@@ -318,7 +317,6 @@ int Xbox_XBE_Private::initXPR0_xtImage(void)
 			ret = -EIO;
 		}
 	}
-	subFile->unref();
 	return ret;
 }
 
@@ -349,21 +347,14 @@ const EXE *Xbox_XBE_Private::initEXE(void)
 	}
 
 	// Open the EXE file.
-	SubFile *const subFile = new SubFile(this->file,
-		exe_address, fileSize - exe_address);
+	shared_ptr<IRpFile> subFile(new SubFile(this->file,
+		exe_address, fileSize - exe_address));
 	if (subFile->isOpen()) {
 		EXE *const pe_exe_tmp = new EXE(subFile);
-		subFile->unref();
 		if (pe_exe_tmp->isOpen()) {
 			// EXE opened.
 			this->pe_exe = pe_exe_tmp;
-		} else {
-			// Unable to open the XPR0 image.
-			pe_exe_tmp->unref();
 		}
-	} else {
-		// Unable to open the file.
-		subFile->unref();
 	}
 
 	// EXE loaded.
@@ -414,7 +405,7 @@ string Xbox_XBE_Private::getPublisher(void) const
  *
  * @param file Open XBE file.
  */
-Xbox_XBE::Xbox_XBE(IRpFile *file)
+Xbox_XBE::Xbox_XBE(const shared_ptr<IRpFile> &file)
 	: super(new Xbox_XBE_Private(file))
 {
 	// This class handles executables.
@@ -432,7 +423,7 @@ Xbox_XBE::Xbox_XBE(IRpFile *file)
 	size_t size = d->file->read(&d->xbeHeader, sizeof(d->xbeHeader));
 	if (size != sizeof(d->xbeHeader)) {
 		d->xbeHeader.magic = 0;
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -446,7 +437,7 @@ Xbox_XBE::Xbox_XBE(IRpFile *file)
 
 	if (!d->isValid) {
 		d->xbeHeader.magic = 0;
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 

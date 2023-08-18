@@ -11,6 +11,7 @@
 #include "common.h"
 
 // C++ includes
+#include <memory>
 #include <vector>
 
 namespace LibRpFile {
@@ -41,10 +42,10 @@ public:
 	 * types must be supported by the FileFormat subclass in order to
 	 * be returned.
 	 *
-	 * @param file Texture file.
+	 * @param file Texture file
 	 * @return FileFormat subclass, or nullptr if the texture file isn't supported.
 	 */
-	static LibRpTexture::FileFormat *create(LibRpFile::IRpFile *file);
+	static LibRpTexture::FileFormat *create(const std::shared_ptr<LibRpFile::IRpFile> &file);
 
 	/**
 	 * Get all supported file extensions.

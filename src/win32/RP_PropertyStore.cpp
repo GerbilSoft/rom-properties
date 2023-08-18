@@ -27,7 +27,8 @@ using LibRomData::RomDataFactory;
 // RpFile_IStream
 #include "file/RpFile_IStream.hpp"
 
-// C++ STL classes.
+// C++ STL classes
+using std::shared_ptr;
 using std::wstring;
 
 // CLSID
@@ -175,10 +176,6 @@ RP_PropertyStore_Private::~RP_PropertyStore_Private()
 {
 	UNREF(romData);
 
-	// pstream is owned by file,
-	// so don't Release() it here.
-	UNREF(file);
-
 	// Clear property variants.
 	for (PROPVARIANT &pv : prop_val) {
 		PropVariantClear(&pv);
@@ -226,23 +223,18 @@ IFACEMETHODIMP RP_PropertyStore::Initialize(_In_ IStream *pstream, DWORD grfMode
 	RP_UNUSED(grfMode);
 
 	// Create an IRpFile wrapper for the IStream.
-	RpFile_IStream *const file = new RpFile_IStream(pstream, true);
+	shared_ptr<IRpFile> file(new RpFile_IStream(pstream, true));
 	if (file->lastError() != 0) {
 		// Error initializing the IRpFile.
-		file->unref();
 		return E_FAIL;
 	}
 
+	// Update d->file().
+	// shared_ptr<> will automatically unreference the old
+	// file if one is set.
+	// TODO: Use shared_ptr::swap<> instead? (same for elsewhere...)
 	RP_D(RP_PropertyStore);
-	if (d->file) {
-		// unref() the old file first.
-		IRpFile *const old_file = d->file;
-		d->file = file;
-		old_file->unref();
-	} else {
-		// No old file to unref().
-		d->file = file;
-	}
+	d->file = file;
 
 	// Save the IStream and grfMode.
 	d->pstream = pstream;

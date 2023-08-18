@@ -30,7 +30,8 @@ using LibRpFile::IRpFile;
 #include "decoder/ImageDecoder_PVRTC.hpp"
 #include "decoder/ImageDecoder_ASTC.hpp"
 
-// C++ STL classes.
+// C++ STL classes
+using std::shared_ptr;
 using std::string;
 using std::vector;
 
@@ -39,7 +40,7 @@ namespace LibRpTexture {
 class DirectDrawSurfacePrivate final : public FileFormatPrivate
 {
 	public:
-		DirectDrawSurfacePrivate(DirectDrawSurface *q, IRpFile *file);
+		DirectDrawSurfacePrivate(DirectDrawSurface *q, const shared_ptr<IRpFile> &file);
 		~DirectDrawSurfacePrivate() final;
 
 	private:
@@ -512,7 +513,7 @@ int DirectDrawSurfacePrivate::updatePixelFormat(void)
 	return ret;
 }
 
-DirectDrawSurfacePrivate::DirectDrawSurfacePrivate(DirectDrawSurface *q, IRpFile *file)
+DirectDrawSurfacePrivate::DirectDrawSurfacePrivate(DirectDrawSurface *q, const shared_ptr<IRpFile> &file)
 	: super(q, file, &textureInfo)
 	, texDataStartAddr(0)
 	, img(nullptr)
@@ -932,7 +933,7 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
  *
  * @param file Open ROM image.
  */
-DirectDrawSurface::DirectDrawSurface(IRpFile *file)
+DirectDrawSurface::DirectDrawSurface(const shared_ptr<IRpFile> &file)
 	: super(new DirectDrawSurfacePrivate(this, file))
 {
 	RP_D(DirectDrawSurface);
@@ -948,7 +949,7 @@ DirectDrawSurface::DirectDrawSurface(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(header, sizeof(header));
 	if (size < 4+sizeof(DDS_HEADER)) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -961,7 +962,7 @@ DirectDrawSurface::DirectDrawSurface(IRpFile *file)
 	d->isValid = (isRomSupported_static(&info) >= 0);
 
 	if (!d->isValid) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -982,7 +983,7 @@ DirectDrawSurface::DirectDrawSurface(IRpFile *file)
 		}
 		if (size < headerSize) {
 			// Extra headers weren't read.
-			UNREF_AND_NULL_NOCHK(d->file);
+			d->file.reset();
 			d->isValid = false;
 			return;
 		}
@@ -1018,7 +1019,7 @@ DirectDrawSurface::DirectDrawSurface(IRpFile *file)
 		    d->dxt10Header.dxgiFormat <= DXGI_FORMAT_FAKE_END)
 		{
 			// "Fake" format...
-			UNREF_AND_NULL_NOCHK(d->file);
+			d->file.reset();
 			d->isValid = false;
 			return;
 		}

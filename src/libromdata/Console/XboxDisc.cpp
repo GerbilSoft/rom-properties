@@ -27,7 +27,8 @@ using LibRpTexture::rp_image;
 #include "Xbox_XBE.hpp"
 #include "Xbox360_XEX.hpp"
 
-// C++ STL classes.
+// C++ STL classes
+using std::shared_ptr;
 using std::string;
 using std::vector;
 
@@ -36,7 +37,7 @@ namespace LibRomData {
 class XboxDiscPrivate final : public RomDataPrivate
 {
 	public:
-		XboxDiscPrivate(LibRpFile::IRpFile *file);
+		XboxDiscPrivate(const shared_ptr<IRpFile> &file);
 		~XboxDiscPrivate() final;
 
 	private:
@@ -145,7 +146,7 @@ const RomDataInfo XboxDiscPrivate::romDataInfo = {
 	"XboxDisc", exts, mimeTypes
 };
 
-XboxDiscPrivate::XboxDiscPrivate(IRpFile *file)
+XboxDiscPrivate::XboxDiscPrivate(const shared_ptr<IRpFile> &file)
 	: super(file, &romDataInfo)
 	, discType(DiscType::Unknown)
 	, wave(0)
@@ -188,10 +189,9 @@ RomData *XboxDiscPrivate::openDefaultExe(ExeType *pExeType)
 	}
 
 	// Try to open default.xex.
-	IRpFile *f_defaultExe = xdvdfsPartition->open("/default.xex");
+	shared_ptr<IRpFile> f_defaultExe(xdvdfsPartition->open("/default.xex"));
 	if (f_defaultExe) {
 		RomData *const xexData = new Xbox360_XEX(f_defaultExe);
-		f_defaultExe->unref();
 		if (xexData->isValid()) {
 			// default.xex is open and valid.
 			defaultExeData = xexData;
@@ -208,7 +208,6 @@ RomData *XboxDiscPrivate::openDefaultExe(ExeType *pExeType)
 	f_defaultExe = xdvdfsPartition->open("/default.xbe");
 	if (f_defaultExe) {
 		RomData *const xbeData = new Xbox_XBE(f_defaultExe);
-		f_defaultExe->unref();
 		if (xbeData->isValid()) {
 			// default.xbe is open and valid.
 			defaultExeData = xbeData;
@@ -268,10 +267,10 @@ XboxDiscPrivate::ConsoleType XboxDiscPrivate::getConsoleType(void) const
  */
 inline void XboxDiscPrivate::unlockKreonDrive(void)
 {
-	if (!isKreon)
+	if (!isKreon || !this->file)
 		return;
 
-	RpFile *const rpFile = dynamic_cast<RpFile*>(this->file);
+	RpFile *const rpFile = dynamic_cast<RpFile*>(this->file.get());
 	if (rpFile) {
 		rpFile->setKreonErrorSkipState(true);
 		rpFile->setKreonLockState(RpFile::KreonLockState::State2WxRipper);
@@ -283,10 +282,10 @@ inline void XboxDiscPrivate::unlockKreonDrive(void)
  */
 inline void XboxDiscPrivate::lockKreonDrive(void)
 {
-	if (!isKreon)
+	if (!isKreon || !this->file)
 		return;
 
-	RpFile *const rpFile = dynamic_cast<RpFile*>(this->file);
+	RpFile *const rpFile = dynamic_cast<RpFile*>(this->file.get());
 	if (rpFile) {
 		rpFile->setKreonErrorSkipState(false);
 		rpFile->setKreonLockState(RpFile::KreonLockState::Locked);
@@ -308,7 +307,7 @@ inline void XboxDiscPrivate::lockKreonDrive(void)
  *
  * @param file Open ROM image.
  */
-XboxDisc::XboxDisc(IRpFile *file)
+XboxDisc::XboxDisc(const shared_ptr<IRpFile> &file)
 	: super(new XboxDiscPrivate(file))
 {
 	// This class handles disc images.
@@ -328,7 +327,7 @@ XboxDisc::XboxDisc(IRpFile *file)
 	ISO_Primary_Volume_Descriptor pvd;
 	size_t size = d->file->seekAndRead(ISO_PVD_ADDRESS_2048, &pvd, sizeof(pvd));
 	if (size != sizeof(pvd)) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -358,13 +357,13 @@ XboxDisc::XboxDisc(IRpFile *file)
 	const off64_t fileSize = d->file->size();
 	if (fileSize < d->xdvdfs_addr + XDVDFS_BLOCK_SIZE) {
 		// File is too small.
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
 	// If this is a Kreon drive, unlock it.
 	if (d->file->isDevice()) {
-		RpFile *const rpFile = dynamic_cast<RpFile*>(d->file);
+		RpFile *const rpFile = dynamic_cast<RpFile*>(d->file.get());
 		if (rpFile && rpFile->isKreonDriveModel()) {
 			// Do we have Kreon features?
 			const vector<RpFile::KreonFeature> features = rpFile->getKreonFeatureList();
@@ -389,7 +388,7 @@ XboxDisc::XboxDisc(IRpFile *file)
 	if (!discReader->isOpen()) {
 		// Unable to open the discReader.
 		discReader->unref();
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		d->lockKreonDrive();
 		d->isKreon = false;
 		return;
@@ -421,7 +420,7 @@ XboxDisc::XboxDisc(IRpFile *file)
 		if (!d->xdvdfsPartition) {
 			// Unable to open the XDVDFSPartition.
 			discReader->unref();
-			UNREF_AND_NULL_NOCHK(d->file);
+			d->file.reset();
 			d->lockKreonDrive();
 			d->isKreon = false;
 			return;

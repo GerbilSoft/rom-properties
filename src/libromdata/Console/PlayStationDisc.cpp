@@ -31,7 +31,8 @@ using LibRpFile::IRpFile;
 // inih for SYSTEM.CNF
 #include "ini.h"
 
-// C++ STL classes.
+// C++ STL classes
+using std::shared_ptr;
 using std::string;
 using std::unordered_map;
 using std::vector;
@@ -41,7 +42,7 @@ namespace LibRomData {
 class PlayStationDiscPrivate final : public RomDataPrivate
 {
 	public:
-		PlayStationDiscPrivate(IRpFile *file);
+		PlayStationDiscPrivate(const shared_ptr<IRpFile> &file);
 		~PlayStationDiscPrivate() final;
 
 	private:
@@ -139,7 +140,7 @@ const RomDataInfo PlayStationDiscPrivate::romDataInfo = {
 	"PlayStationDisc", exts, mimeTypes
 };
 
-PlayStationDiscPrivate::PlayStationDiscPrivate(IRpFile *file)
+PlayStationDiscPrivate::PlayStationDiscPrivate(const shared_ptr<IRpFile> &file)
 	: super(file, &romDataInfo)
 	, discReader(nullptr)
 	, isoPartition(nullptr)
@@ -194,19 +195,18 @@ int PlayStationDiscPrivate::loadSystemCnf(IsoPartition *pt)
 		return 0;
 	}
 
-	IRpFile *const f_system_cnf = pt->open("SYSTEM.CNF");
+	shared_ptr<IRpFile> f_system_cnf(pt->open("SYSTEM.CNF"));
 	if (!f_system_cnf) {
 		// SYSTEM.CNF might not be present.
 		// If it isn't, but PSX.EXE is present, use default values.
 		int ret = pt->lastError();
 		if (ret == ENOENT) {
 			// SYSTEM.CNF not found. Check for PSX.EXE.
-			IRpFile *const f_psx_exe = pt->open("PSX.EXE");
+			shared_ptr<IRpFile> f_psx_exe(pt->open("PSX.EXE"));
 			if (f_psx_exe && f_psx_exe->isOpen()) {
 				// Found PSX.EXE.
 				boot_filename = "PSX.EXE";
 				system_cnf.emplace("BOOT", boot_filename);
-				f_psx_exe->unref();
 				// Pretend that we did find SYSTEM.CNF.
 				return 0;
 			} else {
@@ -221,14 +221,12 @@ int PlayStationDiscPrivate::loadSystemCnf(IsoPartition *pt)
 		if (ret == 0) {
 			ret = -EIO;
 		}
-		f_system_cnf->unref();
 		return ret;
 	}
 
 	// CNF file should be less than 2048 bytes.
 	const off64_t fileSize = f_system_cnf->size();
 	if (fileSize > 2048) {
-		f_system_cnf->unref();
 		return -ENOMEM;
 	}
 
@@ -237,7 +235,6 @@ int PlayStationDiscPrivate::loadSystemCnf(IsoPartition *pt)
 	size_t size = f_system_cnf->read(buf, 2048);
 	if (size != static_cast<size_t>(fileSize)) {
 		// Short read.
-		f_system_cnf->unref();
 		return -EIO;
 	}
 	buf[static_cast<size_t>(fileSize)] = '\0';
@@ -246,7 +243,6 @@ int PlayStationDiscPrivate::loadSystemCnf(IsoPartition *pt)
 	// TODO: Fail on error?
 	ini_parse_string(buf, parse_system_cnf, this);
 
-	f_system_cnf->unref();
 	return (!system_cnf.empty() ? 0 : -EIO);
 }
 
@@ -273,7 +269,7 @@ RomData *PlayStationDiscPrivate::openBootExe(void)
 
 	// Open the boot file.
 	// TODO: Do we need a leading slash?
-	IRpFile *f_bootExe = isoPartition->open(boot_filename.c_str());
+	shared_ptr<IRpFile> f_bootExe(isoPartition->open(boot_filename.c_str()));
 	if (f_bootExe) {
 		RomData *exeData = nullptr;
 		switch (consoleType) {
@@ -299,7 +295,6 @@ RomData *PlayStationDiscPrivate::openBootExe(void)
 				assert(!"Console type not supported.");
 				break;
 		}
-		f_bootExe->unref();
 		if (exeData && exeData->isValid()) {
 			// Boot executable is open and valid.
 			bootExeData = exeData;
@@ -329,7 +324,7 @@ RomData *PlayStationDiscPrivate::openBootExe(void)
  *
  * @param file Open ROM image.
  */
-PlayStationDisc::PlayStationDisc(IRpFile *file)
+PlayStationDisc::PlayStationDisc(const shared_ptr<IRpFile> &file)
 	: super(new PlayStationDiscPrivate(file))
 {
 	// This class handles disc images.
@@ -347,7 +342,7 @@ PlayStationDisc::PlayStationDisc(IRpFile *file)
 	// Check for a PVD with 2048-byte sectors.
 	size_t size = d->file->seekAndRead(ISO_PVD_ADDRESS_2048, &d->pvd, sizeof(d->pvd));
 	if (size != sizeof(d->pvd)) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 	if (ISO::checkPVD(reinterpret_cast<const uint8_t*>(&d->pvd)) >= 0) {
@@ -361,7 +356,7 @@ PlayStationDisc::PlayStationDisc(IRpFile *file)
 		for (const unsigned int p : sector_sizes) {
 			size_t size = d->file->seekAndRead(p * ISO_PVD_LBA, &sector, sizeof(sector));
 			if (size != sizeof(sector)) {
-				UNREF_AND_NULL_NOCHK(d->file);
+				d->file.reset();
 				return;
 			}
 
@@ -378,7 +373,7 @@ PlayStationDisc::PlayStationDisc(IRpFile *file)
 	if (!discReader || !discReader->isOpen()) {
 		// Error opening the DiscReader.
 		UNREF(discReader);
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -388,8 +383,7 @@ PlayStationDisc::PlayStationDisc(IRpFile *file)
 		// Error opening the ISO partition.
 		UNREF(isoPartition);
 		UNREF(discReader);
-		d->file->unref();
-		d->file = nullptr;
+		d->file.reset();
 		return;
 	}
 
@@ -400,7 +394,7 @@ PlayStationDisc::PlayStationDisc(IRpFile *file)
 		// Error loading SYSTEM.CNF.
 		UNREF(isoPartition);
 		UNREF(discReader);
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -419,7 +413,7 @@ PlayStationDisc::PlayStationDisc(IRpFile *file)
 			// Not valid.
 			UNREF(isoPartition);
 			UNREF(discReader);
-			UNREF_AND_NULL_NOCHK(d->file);
+			d->file.reset();
 			return;
 		}
 	}

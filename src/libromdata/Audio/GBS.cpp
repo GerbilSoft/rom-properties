@@ -16,6 +16,7 @@ using namespace LibRpText;
 using LibRpFile::IRpFile;
 
 // C++ STL classes
+using std::shared_ptr;
 using std::string;
 
 namespace LibRomData {
@@ -23,7 +24,7 @@ namespace LibRomData {
 class GBSPrivate : public RomDataPrivate
 {
 	public:
-		GBSPrivate(IRpFile *file);
+		GBSPrivate(const shared_ptr<IRpFile> &file);
 
 	private:
 		typedef RomDataPrivate super;
@@ -80,7 +81,7 @@ const RomDataInfo GBSPrivate::romDataInfo = {
 	"GBS", exts, mimeTypes
 };
 
-GBSPrivate::GBSPrivate(IRpFile *file)
+GBSPrivate::GBSPrivate(const shared_ptr<IRpFile> &file)
 	: super(file, &romDataInfo)
 	, audioFormat(AudioFormat::Unknown)
 {
@@ -103,7 +104,7 @@ GBSPrivate::GBSPrivate(IRpFile *file)
  *
  * @param file Open ROM image.
  */
-GBS::GBS(IRpFile *file)
+GBS::GBS(const shared_ptr<IRpFile> &file)
 	: super(new GBSPrivate(file))
 {
 	RP_D(GBS);
@@ -118,7 +119,7 @@ GBS::GBS(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(&d->header, sizeof(d->header));
 	if (size != sizeof(d->header)) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -131,7 +132,7 @@ GBS::GBS(IRpFile *file)
 	d->audioFormat = static_cast<GBSPrivate::AudioFormat>(isRomSupported_static(&info));
 
 	if ((int)d->audioFormat < 0) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	} else if ((int)d->audioFormat < ARRAY_SIZE_I(d->mimeTypes)-1) {
 		d->mimeType = d->mimeTypes[(int)d->audioFormat];
