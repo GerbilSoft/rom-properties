@@ -334,7 +334,7 @@ int WimPrivate::addFields_XML()
 	}
 
 	auto vv_data = new RomFields::ListData_t();
-	vv_data->reserve(10);
+	vv_data->reserve(wimHeader.number_of_images);
 
 	// loop for the rows
 	for (uint32_t i = 0; i < wimHeader.number_of_images; i++) {
