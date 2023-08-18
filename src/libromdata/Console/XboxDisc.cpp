@@ -365,24 +365,21 @@ XboxDisc::XboxDisc(IRpFile *file)
 	// If this is a Kreon drive, unlock it.
 	if (d->file->isDevice()) {
 		RpFile *const rpFile = dynamic_cast<RpFile*>(d->file);
-		if (rpFile) {
-			// Check if this is a supported drive model.
-			if (rpFile->isKreonDriveModel()) {
-				// Do we have Kreon features?
-				const vector<RpFile::KreonFeature> features = rpFile->getKreonFeatureList();
-				if (!features.empty()) {
-					// Found Kreon features.
-					// TODO: Check the feature list?
-					d->isKreon = true;
+		if (rpFile && rpFile->isKreonDriveModel()) {
+			// Do we have Kreon features?
+			const vector<RpFile::KreonFeature> features = rpFile->getKreonFeatureList();
+			if (!features.empty()) {
+				// Found Kreon features.
+				// TODO: Check the feature list?
+				d->isKreon = true;
 
-					// Unlock the drive.
-					d->unlockKreonDrive();
+				// Unlock the drive.
+				d->unlockKreonDrive();
 
-					// Re-read the device size.
-					// Windows doesn't return the full device size
-					// while the drive is locked, but Linux does.
-					rpFile->rereadDeviceSizeScsi();
-				}
+				// Re-read the device size.
+				// Windows doesn't return the full device size
+				// while the drive is locked, but Linux does.
+				rpFile->rereadDeviceSizeScsi();
 			}
 		}
 	}
