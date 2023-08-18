@@ -271,55 +271,54 @@ int Xbox_XBE_Private::initXPR0_xtImage(void)
 
 	// Open the XPR0 image.
 	// paddr/psize have absolute addresses.
-	ret = 0;
 	SubFile *const subFile = new SubFile(this->file,
 		hdr_xtImage.paddr, hdr_xtImage.psize);
-	if (subFile->isOpen()) {
-		// $$XTIMAGE is usually an XPR0 image.
-		// The Burger King games, wihch have both Xbox and Xbox 360
-		// executables, incorrectly use PNG format here.
-		uint32_t magic = 0;
-		size_t size = subFile->read(&magic, sizeof(magic));
-		if (size != sizeof(magic)) {
-			// Read error.
-			subFile->unref();
-			return -EIO;
-		}
-		subFile->rewind();
-
-		if (magic == cpu_to_be32('XPR0')) {
-			XboxXPR *const xpr0 = new XboxXPR(subFile);
-			if (xpr0->isOpen()) {
-				// XPR0 image opened.
-				xtImage.isInit = true;
-				xtImage.isPng = false;
-				xtImage.xpr0 = xpr0;
-			} else {
-				// Unable to open the XPR0 image.
-				xpr0->unref();
-				ret = -EIO;
-			}
-		} else if (magic == cpu_to_be32(0x89504E47U)) {	// '\x89PNG'
-			// PNG image.
-			rp_image *const img = RpPng::load(subFile);
-			if (img->isValid()) {
-				// PNG image opened.
-				xtImage.isInit = true;
-				xtImage.isPng = true;
-				xtImage.png = img;
-			} else {
-				// Unable to open the PNG image.
-				img->unref();
-				ret = -EIO;
-			}
-		}
+	if (!subFile->isOpen()) {
+		// Unable to open the XPR0 file.
 		subFile->unref();
-	} else {
-		// Unable to open the file.
-		ret = -EIO;
-		subFile->unref();
+		return -EIO;
 	}
 
+	// $$XTIMAGE is usually an XPR0 image.
+	// The Burger King games, wihch have both Xbox and Xbox 360
+	// executables, incorrectly use PNG format here.
+	uint32_t magic = 0;
+	size_t size = subFile->read(&magic, sizeof(magic));
+	if (size != sizeof(magic)) {
+		// Read error.
+		subFile->unref();
+		return -EIO;
+	}
+	subFile->rewind();
+
+	ret = 0;
+	if (magic == cpu_to_be32('XPR0')) {
+		XboxXPR *const xpr0 = new XboxXPR(subFile);
+		if (xpr0->isOpen()) {
+			// XPR0 image opened.
+			xtImage.isInit = true;
+			xtImage.isPng = false;
+			xtImage.xpr0 = xpr0;
+		} else {
+			// Unable to open the XPR0 image.
+			xpr0->unref();
+			ret = -EIO;
+		}
+	} else if (magic == cpu_to_be32(0x89504E47U)) {	// '\x89PNG'
+		// PNG image.
+		rp_image *const img = RpPng::load(subFile);
+		if (img->isValid()) {
+			// PNG image opened.
+			xtImage.isInit = true;
+			xtImage.isPng = true;
+			xtImage.png = img;
+		} else {
+			// Unable to open the PNG image.
+			img->unref();
+			ret = -EIO;
+		}
+	}
+	subFile->unref();
 	return ret;
 }
 
