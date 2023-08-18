@@ -169,7 +169,7 @@ const rp_image *PSPPrivate::loadIcon(void)
 			? "/UMD_VIDEO/ICON0.PNG"
 			: "/PSP_GAME/ICON0.PNG");
 	IRpFile *const f_icon = isoPartition->open(icon_filename);
-	if (!f_icon || !f_icon->isOpen()) {
+	if (!f_icon) {
 		// Unable to open the icon file.
 		UNREF(f_icon);
 		return nullptr;
@@ -537,7 +537,7 @@ int PSP::loadFieldData(void)
 	// - Field 2: Revision?
 	// - Field 3: Age rating?
 	IRpFile *const umdDataBin = d->isoPartition->open("/UMD_DATA.BIN");
-	if (umdDataBin->isOpen()) {
+	if (umdDataBin) {
 		// Read up to 128 bytes.
 		char buf[129];
 		size_t size = umdDataBin->read(buf, sizeof(buf)-1);
@@ -653,7 +653,7 @@ int PSP::loadMetaData(void)
 	// - Field 2: Revision?
 	// - Field 3: Age rating?
 	IRpFile *const umdDataBin = d->isoPartition->open("/UMD_DATA.BIN");
-	if (umdDataBin->isOpen()) {
+	if (umdDataBin) {
 		// Read up to 128 bytes.
 		char buf[129];
 		size_t size = umdDataBin->read(buf, sizeof(buf)-1);
