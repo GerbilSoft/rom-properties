@@ -1646,7 +1646,6 @@ KeyStoreUI::ImportReturn KeyStoreUI::importKeysFromBin(ImportFileID fileID, cons
 		// TODO: file->lastError()?
 		iret.status = ImportStatus::OpenError;
 		iret.error_code = static_cast<uint8_t>(file->lastError());
-		UNREF(file);
 		return iret;
 	}
 
