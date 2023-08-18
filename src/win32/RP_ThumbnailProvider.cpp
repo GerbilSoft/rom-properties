@@ -81,7 +81,7 @@ IFACEMETHODIMP RP_ThumbnailProvider::Initialize(_In_ IStream *pstream, DWORD grf
 
 	// Create an IRpFile wrapper for the IStream.
 	// NOTE: RpFile_IStream adds a reference to the IStream.
-	shared_ptr<IRpFile> file(new RpFile_IStream(pstream, true));
+	shared_ptr<RpFile_IStream> file = std::make_shared<RpFile_IStream>(pstream, true);
 	if (!file->isOpen() || file->lastError() != 0) {
 		// Error initializing the IRpFile.
 		return E_FAIL;

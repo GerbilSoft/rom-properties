@@ -210,7 +210,7 @@ static void DoFile(const TCHAR *filename, bool json, const vector<ExtractParam>&
 {
 	// FIXME: Make T2U8c() unnecessary here.
 	cerr << "== " << rp_sprintf(C_("rpcli", "Reading file '%s'..."), T2U8c(filename)) << endl;
-	shared_ptr<IRpFile> file(new RpFile(filename, RpFile::FM_OPEN_READ_GZ));
+	shared_ptr<RpFile> file = std::make_shared<RpFile>(filename, RpFile::FM_OPEN_READ_GZ);
 	if (!file->isOpen()) {
 		// TODO: Return an error code?
 		cerr << "-- " << rp_sprintf(C_("rpcli", "Couldn't open file: %s"), strerror(file->lastError())) << endl;

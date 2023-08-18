@@ -174,7 +174,7 @@ ImgClass TCreateThumbnail<ImgClass>::getExternalImage(
 			continue;
 
 		// Attempt to load the image.
-		shared_ptr<IRpFile> file(new RpFile(cache_filename, RpFile::FM_OPEN_READ));
+		shared_ptr<RpFile> file = std::make_shared<RpFile>(cache_filename, RpFile::FM_OPEN_READ);
 		if (file->isOpen()) {
 			rp_image *const dl_img = RpImageLoader::load(file);
 			if (dl_img && dl_img->isValid()) {
@@ -555,7 +555,7 @@ int TCreateThumbnail<ImgClass>::getThumbnail(const char *filename, int reqSize, 
 	// Attempt to open the ROM file.
 	// TODO: OS-specific wrappers, e.g. RpQFile or RpGVfsFile.
 	// For now, using RpFile, which is an stdio wrapper.
-	shared_ptr<IRpFile> file(new RpFile(filename, RpFile::FM_OPEN_READ_GZ));
+	shared_ptr<RpFile> file = std::make_shared<RpFile>(filename, RpFile::FM_OPEN_READ_GZ);
 	if (!file->isOpen()) {
 		// Could not open the file.
 		return RPCT_ERROR_CANNOT_OPEN_SOURCE_FILE;

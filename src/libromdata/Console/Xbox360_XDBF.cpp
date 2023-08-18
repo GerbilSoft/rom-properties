@@ -776,7 +776,7 @@ rp_image *Xbox360_XDBF_Private::loadImage(uint64_t image_id)
 
 	// Create a MemFile and decode the image.
 	// TODO: For rpcli, shortcut to extract the PNG directly.
-	shared_ptr<IRpFile> f_mem(new MemFile(png_buf.get(), length));
+	shared_ptr<MemFile> f_mem = std::make_shared<MemFile>(png_buf.get(), length);
 	rp_image *const img = RpPng::load(f_mem);
 
 	if (img) {

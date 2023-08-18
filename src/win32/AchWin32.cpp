@@ -224,7 +224,8 @@ const rp_image *AchWin32Private::loadSpriteSheet(int iconSize)
 	// Load the achievements sprite sheet.
 	// TODO: Is premultiplied alpha needed?
 	// Reference: https://stackoverflow.com/questions/307348/how-to-draw-32-bit-alpha-channel-bitmaps
-	shared_ptr<IRpFile> f_res(new RpFile_windres(HINST_THISCOMPONENT, MAKEINTRESOURCE(resID), MAKEINTRESOURCE(RT_PNG)));
+	shared_ptr<RpFile_windres> f_res = std::make_shared<RpFile_windres>(
+		HINST_THISCOMPONENT, MAKEINTRESOURCE(resID), MAKEINTRESOURCE(RT_PNG));
 	assert(f_res->isOpen());
 	if (!f_res->isOpen()) {
 		// Unable to open the resource.

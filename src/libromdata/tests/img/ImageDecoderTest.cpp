@@ -285,7 +285,7 @@ void ImageDecoderTest::SetUp(void)
 	path.clear();
 	path += mode.png_filename;
 	replace_slashes(path);
-	shared_ptr<IRpFile> file(new RpFile(path, RpFile::FM_OPEN_READ));
+	shared_ptr<RpFile> file = std::make_shared<RpFile>(path, RpFile::FM_OPEN_READ);
 	ASSERT_TRUE(file->isOpen()) << "Error loading PNG image file: " << strerror(file->lastError());
 
 	// Maximum image size.
@@ -408,14 +408,14 @@ void ImageDecoderTest::decodeTest_internal(void)
 	const ImageDecoderTest_mode &mode = GetParam();
 
 	// Load the PNG image.
-	shared_ptr<IRpFile> f_png(new MemFile(m_png_buf.data(), m_png_buf.size()));
+	shared_ptr<MemFile> f_png = std::make_shared<MemFile>(m_png_buf.data(), m_png_buf.size());
 	ASSERT_TRUE(f_png->isOpen()) << "Could not create MemFile for the PNG image.";
 	unique_ptr<rp_image, RpImageUnrefDeleter> img_png(RpPng::load(f_png), RpImageUnrefDeleter());
 	ASSERT_NE(img_png,nullptr) << "Could not load the PNG image as rp_image.";
 	ASSERT_TRUE(img_png->isValid()) << "Could not load the PNG image as rp_image.";
 
 	// Open the image as an IRpFile.
-	m_f_dds.reset(new MemFile(m_dds_buf.data(), m_dds_buf.size()));
+	m_f_dds = std::make_shared<MemFile>(m_dds_buf.data(), m_dds_buf.size());
 	ASSERT_TRUE(m_f_dds->isOpen()) << "Could not create MemFile for the DDS image.";
 	m_f_dds->setFilename(mode.dds_gz_filename);
 
@@ -499,7 +499,7 @@ void ImageDecoderTest::decodeBenchmark_internal(void)
 	const ImageDecoderTest_mode &mode = GetParam();
 
 	// Open the image as an IRpFile.
-	m_f_dds.reset(new MemFile(m_dds_buf.data(), m_dds_buf.size()));
+	m_f_dds = std::make_shared<MemFile>(m_dds_buf.data(), m_dds_buf.size());
 	ASSERT_TRUE(m_f_dds->isOpen()) << "Could not create MemFile for the DDS image.";
 	m_f_dds->setFilename(mode.dds_gz_filename);
 

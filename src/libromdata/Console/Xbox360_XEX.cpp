@@ -129,7 +129,9 @@ class Xbox360_XEX_Private final : public RomDataPrivate
 		ao::uvector<BasicZDataSeg_t> basicZDataSegments;
 
 		// Amount of data we'll read for the PE header.
-		static const unsigned int PE_HEADER_SIZE = 8192;
+		// NOTE: Changed from `static const unsigned int` to #define
+		// due to shared_ptr causing problems in debug builds.
+#define PE_HEADER_SIZE 8192U
 
 #ifdef ENABLE_LIBMSPACK
 		// Decompressed EXE header.
@@ -1220,11 +1222,11 @@ const EXE *Xbox360_XEX_Private::initEXE(void)
 	shared_ptr<IRpFile> peFile_tmp;
 #ifdef ENABLE_LIBMSPACK
 	if (!lzx_peHeader.empty()) {
-		peFile_tmp.reset(new MemFile(lzx_peHeader.data(), lzx_peHeader.size()));
+		peFile_tmp = std::make_shared<MemFile>(lzx_peHeader.data(), lzx_peHeader.size());
 	} else
 #endif /* ENABLE_LIBMSPACK */
 	{
-		peFile_tmp.reset(new PartitionFile(peReader, 0, PE_HEADER_SIZE));
+		peFile_tmp = std::make_shared<PartitionFile>(peReader, 0, PE_HEADER_SIZE);
 	}
 	if (peFile_tmp->isOpen()) {
 		EXE *const pe_exe_tmp = new EXE(peFile_tmp);
@@ -1259,7 +1261,7 @@ const Xbox360_XDBF *Xbox360_XEX_Private::initXDBF(void)
 	shared_ptr<IRpFile> peFile_tmp;
 #ifdef ENABLE_LIBMSPACK
 	if (!lzx_xdbfSection.empty()) {
-		peFile_tmp.reset(new MemFile(lzx_xdbfSection.data(), lzx_xdbfSection.size()));
+		peFile_tmp = std::make_shared<MemFile>(lzx_xdbfSection.data(), lzx_xdbfSection.size());
 	} else
 #endif /* ENABLE_LIBMSPACK */
 	{
@@ -1291,7 +1293,7 @@ const Xbox360_XDBF *Xbox360_XEX_Private::initXDBF(void)
 				xdbf_physaddr -= (iter->vaddr - iter->physaddr);
 			}
 		}
-		peFile_tmp.reset(new PartitionFile(peReader, xdbf_physaddr, pResInfo->size));
+		peFile_tmp = std::make_shared<PartitionFile>(peReader, xdbf_physaddr, pResInfo->size);
 	}
 	if (peFile_tmp->isOpen()) {
 		// FIXME: XEX1 XDBF is either encrypted or garbage...

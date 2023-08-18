@@ -1059,7 +1059,7 @@ shared_ptr<IRpFile> NCCHReader::open(int section, const char *filename)
 	// This is an IRpFile implementation that uses an
 	// IPartition as the reader and takes an offset
 	// and size as the file parameters.
-	return shared_ptr<IRpFile>(new PartitionFile(this, offset, size));
+	return std::make_shared<PartitionFile>(this, offset, size);
 }
 
 /**
@@ -1083,9 +1083,9 @@ shared_ptr<IRpFile> NCCHReader::openLogo(void)
 	const uint32_t logo_region_size = le32_to_cpu(d->ncch_header.hdr.logo_region_size) << d->media_unit_shift;
 	if (logo_region_size > 0) {
 		// Dedicated logo section is present.
-		return shared_ptr<IRpFile>(new PartitionFile(this,
+		return std::make_shared<PartitionFile>(this,
 			le32_to_cpu(d->ncch_header.hdr.logo_region_offset) << d->media_unit_shift,
-			logo_region_size));
+			logo_region_size);
 	}
 
 	// Pre-SDK5. Load the "logo" file from ExeFS.

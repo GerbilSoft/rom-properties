@@ -675,7 +675,7 @@ std::shared_ptr<LibRpFile::IRpFile> NEResourceReader::open(uint16_t type, int id
 	// IPartition as the reader and takes an offset
 	// and size as the file parameters.
 	// TODO: Set the codepage somewhere?
-	return shared_ptr<IRpFile>(new PartitionFile(this, entry->addr, entry->len));
+	return std::make_shared<PartitionFile>(this, entry->addr, entry->len);
 }
 
 /**

@@ -341,8 +341,7 @@ void DragImageLabel::mouseMoveEvent(QMouseEvent *event)
 
 	const bool isAnimated = (m_anim && m_anim->iconAnimData && m_anim->iconAnimHelper.isAnimated());
 
-	// COMMIT FIXME: How does shared_ptr<RpQByteArrayFile> handle conversion to shared_ptr<IRpFile>?
-	shared_ptr<RpQByteArrayFile> pngData(new RpQByteArrayFile());
+	shared_ptr<RpQByteArrayFile> pngData = std::make_shared<RpQByteArrayFile>();
 	RpPngWriter *pngWriter;
 	if (isAnimated) {
 		// Animated icon.

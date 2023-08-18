@@ -140,7 +140,7 @@ int Nintendo3DSPrivate::loadSMDH(void)
 			}
 
 			// Open the SMDH section.
-			smdhFile.reset(new SubFile(this->file, le32_to_cpu(mxh.hb3dsx_header.smdh_offset), N3DS_SMDH_Section_Size));
+			smdhFile = std::make_shared<SubFile>(this->file, le32_to_cpu(mxh.hb3dsx_header.smdh_offset), N3DS_SMDH_Section_Size);
 			break;
 		}
 
@@ -174,7 +174,7 @@ int Nintendo3DSPrivate::loadSMDH(void)
 
 				// Open the SMDH section.
 				// TODO: Verify that this works.
-				smdhFile.reset(new SubFile(this->file, addr, N3DS_SMDH_Section_Size));
+				smdhFile = std::make_shared<SubFile>(this->file, addr, N3DS_SMDH_Section_Size);
 				break;
 			}
 
@@ -202,7 +202,7 @@ int Nintendo3DSPrivate::loadSMDH(void)
 			}
 
 			// Create the SMDH subfile.
-			smdhFile.reset(new SubFile(ncch_f_icon, 0, N3DS_SMDH_Section_Size));
+			smdhFile = std::make_shared<SubFile>(ncch_f_icon, 0, N3DS_SMDH_Section_Size);
 			break;
 		}
 	}
@@ -614,7 +614,7 @@ int Nintendo3DSPrivate::openSRL(void)
 	// TODO: Make IDiscReader derive from IRpFile.
 	// May need to add reference counting to IRpFile...
 	NintendoDS *srlData = nullptr;
-	shared_ptr<IRpFile> srlFile(new PartitionFile(srlReader, 0, length));
+	shared_ptr<PartitionFile> srlFile = std::make_shared<PartitionFile>(srlReader, 0, length);
 	srlReader->unref();
 	if (srlFile->isOpen()) {
 		// Create the NintendoDS object.

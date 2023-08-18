@@ -223,7 +223,7 @@ IFACEMETHODIMP RP_PropertyStore::Initialize(_In_ IStream *pstream, DWORD grfMode
 	RP_UNUSED(grfMode);
 
 	// Create an IRpFile wrapper for the IStream.
-	shared_ptr<IRpFile> file(new RpFile_IStream(pstream, true));
+	shared_ptr<RpFile_IStream> file = std::make_shared<RpFile_IStream>(pstream, true);
 	if (file->lastError() != 0) {
 		// Error initializing the IRpFile.
 		return E_FAIL;

@@ -59,7 +59,7 @@ void DragImageTreeView::startDrag(Qt::DropActions supportedActions)
 			continue;
 
 		// Convert the rp_image to PNG.
-		shared_ptr<RpQByteArrayFile> pngData(new RpQByteArrayFile());
+		shared_ptr<RpQByteArrayFile> pngData = std::make_shared<RpQByteArrayFile>();
 		RpPngWriter *const pngWriter = new RpPngWriter(pngData, img);
 		if (!pngWriter->isOpen()) {
 			// Unable to open the PNG writer.

@@ -237,7 +237,7 @@ const rp_image *Xbox360_STFS_Private::loadIcon(void)
 
 	// Create a MemFile and decode the image.
 	// TODO: For rpcli, shortcut to extract the PNG directly.
-	shared_ptr<IRpFile> f_mem(new MemFile(pIconData, iconSize));
+	shared_ptr<MemFile> f_mem = std::make_shared<MemFile>(pIconData, iconSize);
 	rp_image *img = RpPng::load(f_mem);
 
 	if (!img) {
@@ -253,7 +253,7 @@ const rp_image *Xbox360_STFS_Private::loadIcon(void)
 			iconSize = sizeof(stfsThumbnails.mdv2.thumbnail_image);
 		}
 
-		f_mem.reset(new MemFile(pIconData, iconSize));
+		f_mem = std::make_shared<MemFile>(pIconData, iconSize);
 		img = RpPng::load(f_mem);
 	}
 
@@ -526,7 +526,7 @@ Xbox360_XEX *Xbox360_STFS_Private::openDefaultXex(void)
 	// Load default.xexp.
 	// FIXME: Maybe add a reader class to handle the hashes,
 	// though we only need the XEX header right now.
-	shared_ptr<IRpFile> xexFile_tmp(new SubFile(this->file, offset, filesize));
+	shared_ptr<SubFile> xexFile_tmp = std::make_shared<SubFile>(this->file, offset, filesize);
 	if (xexFile_tmp->isOpen()) {
 		Xbox360_XEX *const xex_tmp = new Xbox360_XEX(xexFile_tmp);
 		if (xex_tmp->isOpen()) {

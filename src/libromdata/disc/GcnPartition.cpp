@@ -301,7 +301,7 @@ shared_ptr<IRpFile> GcnPartition::open(const char *filename)
 	// This is an IRpFile implementation that uses an
 	// IPartition as the reader and takes an offset
 	// and size as the file parameters.
-	return shared_ptr<IRpFile>(new PartitionFile(this, dirent.offset, dirent.size));
+	return std::make_shared<PartitionFile>(this, dirent.offset, dirent.size);
 }
 
 }

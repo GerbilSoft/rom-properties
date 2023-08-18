@@ -579,7 +579,7 @@ int PSP::loadFieldData(void)
 
 	// ISO object for ISO-9660 PVD
 	// TODO: DiscReader overload for ISO.
-	shared_ptr<IRpFile> ptFile(new PartitionFile(d->discReader, 0, d->discReader->size()));
+	shared_ptr<PartitionFile> ptFile = std::make_shared<PartitionFile>(d->discReader, 0, d->discReader->size());
 	ISO *const isoData = new ISO(ptFile);
 	if (isoData->isOpen()) {
 		// Add the fields.

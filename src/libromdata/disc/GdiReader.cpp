@@ -647,9 +647,9 @@ ISO *GdiReader::openIsoRomData(int trackNumber)
 	// ISO object for ISO-9660 PVD
 	ISO *isoData = nullptr;
 
-	shared_ptr<IRpFile> isoFile(new PartitionFile(this,
+	shared_ptr<PartitionFile> isoFile = std::make_shared<PartitionFile>(this,
 		static_cast<off64_t>(lba_start) * 2048,
-		static_cast<off64_t>(lba_size) * 2048));
+		static_cast<off64_t>(lba_size) * 2048);
 	if (isoFile->isOpen()) {
 		isoData = new ISO(isoFile);
 		if (!isoData->isOpen()) {

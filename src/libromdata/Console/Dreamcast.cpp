@@ -803,7 +803,7 @@ int Dreamcast::loadFieldData(void)
 		}
 	} else {
 		// ISO object for ISO-9660 PVD
-		shared_ptr<IRpFile> isoFile(new PartitionFile(d->discReader, 0, d->discReader->size()));
+		shared_ptr<PartitionFile> isoFile = std::make_shared<PartitionFile>(d->discReader, 0, d->discReader->size());
 		if (isoFile->isOpen()) {
 			ISO *const isoData = new ISO(isoFile);
 			if (isoData->isOpen()) {

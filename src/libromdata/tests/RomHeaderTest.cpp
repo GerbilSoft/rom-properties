@@ -304,7 +304,7 @@ TEST_P(RomHeaderTest, Text)
 	ASSERT_GT(last_bin_data.size(), 0) << "Binary file is empty.";
 
 	// Get the text output for this binary file, e.g. as if we're running `rpcli`.
-	memFile.reset(new MemFile(last_bin_data.data(), last_bin_data.size()));
+	memFile = std::make_shared<MemFile>(last_bin_data.data(), last_bin_data.size());
 	ASSERT_NE(memFile, nullptr) << "Unable to create MemFile object for binary data.";
 	memFile->setFilename(mode.bin_filename);	// needed for SNES
 	romData = RomDataFactory::create(memFile);
@@ -350,7 +350,7 @@ TEST_P(RomHeaderTest, JSON)
 	ASSERT_GT(last_bin_data.size(), 0) << "Binary file is empty.";
 
 	// Get the JSON output for this binary file, e.g. as if we're running `rpcli -j`.
-	memFile.reset(new MemFile(last_bin_data.data(), last_bin_data.size()));
+	memFile = std::make_shared<MemFile>(last_bin_data.data(), last_bin_data.size());
 	ASSERT_NE(memFile, nullptr) << "Unable to create MemFile object for binary data.";
 	memFile->setFilename(mode.bin_filename);	// needed for SNES
 	romData = RomDataFactory::create(memFile);

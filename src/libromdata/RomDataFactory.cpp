@@ -877,7 +877,7 @@ RomData *RomDataFactory::create(const char *filename, unsigned int attrs)
 	// call create(IRpFile*,unsigned int).
 	if (!FileSystem::is_directory(filename)) {
 		// Not a directory.
-		shared_ptr<IRpFile> file(new RpFile(filename, RpFile::FM_OPEN_READ_GZ));
+		shared_ptr<RpFile> file = std::make_shared<RpFile>(filename, RpFile::FM_OPEN_READ_GZ);
 		if (file->isOpen()) {
 			RomData *const romData = create(file, attrs);
 			return romData;
@@ -915,7 +915,7 @@ RomData *RomDataFactory::create(const wchar_t *filenameW, unsigned int attrs)
 	// call create(IRpFile*,unsigned int).
 	if (!FileSystem::is_directory(filenameW)) {
 		// Not a directory.
-		shared_ptr<IRpFile> file(new RpFile(filenameW, RpFile::FM_OPEN_READ_GZ));
+		shared_ptr<RpFile> file = std::make_shared<RpFile>(filenameW, RpFile::FM_OPEN_READ_GZ);
 		if (file->isOpen()) {
 			RomData *const romData = create(file, attrs);
 			return romData;

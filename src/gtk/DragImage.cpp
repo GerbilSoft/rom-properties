@@ -675,7 +675,7 @@ rp_drag_image_drag_data_get(RpDragImage *image, GdkDragContext *context, GtkSele
 	const bool isAnimated = (anim && anim->iconAnimData && anim->iconAnimHelper.isAnimated());
 
 	using LibRpFile::VectorFile;
-	shared_ptr<VectorFile> pngData(new VectorFile());
+	shared_ptr<VectorFile> pngData = std::make_shared<VectorFile>();
 	RpPngWriter *pngWriter;
 	if (isAnimated) {
 		// Animated icon.

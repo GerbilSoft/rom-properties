@@ -761,7 +761,7 @@ std::shared_ptr<LibRpFile::IRpFile> PEResourceReader::open(uint16_t type, int id
 	// IPartition as the reader and takes an offset
 	// and size as the file parameters.
 	// TODO: Set the codepage somewhere?
-	return shared_ptr<IRpFile>(new PartitionFile(this, data_addr, le32_to_cpu(irdata.Size)));
+	return std::make_shared<PartitionFile>(this, data_addr, le32_to_cpu(irdata.Size));
 }
 
 /**

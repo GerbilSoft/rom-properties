@@ -272,8 +272,8 @@ int Xbox_XBE_Private::initXPR0_xtImage(void)
 
 	// Open the XPR0 image.
 	// paddr/psize have absolute addresses.
-	shared_ptr<IRpFile> subFile(new SubFile(this->file,
-		hdr_xtImage.paddr, hdr_xtImage.psize));
+	shared_ptr<SubFile> subFile = std::make_shared<SubFile>(this->file,
+		hdr_xtImage.paddr, hdr_xtImage.psize);
 	if (!subFile->isOpen()) {
 		// Unable to open the XPR0 file.
 		return -EIO;
@@ -347,8 +347,8 @@ const EXE *Xbox_XBE_Private::initEXE(void)
 	}
 
 	// Open the EXE file.
-	shared_ptr<IRpFile> subFile(new SubFile(this->file,
-		exe_address, fileSize - exe_address));
+	shared_ptr<SubFile> subFile = std::make_shared<SubFile>(this->file,
+		exe_address, fileSize - exe_address);
 	if (subFile->isOpen()) {
 		EXE *const pe_exe_tmp = new EXE(subFile);
 		if (pe_exe_tmp->isOpen()) {

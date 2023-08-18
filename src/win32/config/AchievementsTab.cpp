@@ -281,7 +281,8 @@ void AchievementsTabPrivate::updateImageList(void)
 	// Load the sprite sheets.
 	rp_image *imgAchSheet = nullptr;
 	rp_image *imgAchGraySheet = nullptr;
-	shared_ptr<IRpFile> f_res(new RpFile_windres(HINST_THISCOMPONENT, MAKEINTRESOURCE(resID), MAKEINTRESOURCE(RT_PNG)));
+	shared_ptr<RpFile_windres> f_res = std::make_shared<RpFile_windres>(
+		HINST_THISCOMPONENT, MAKEINTRESOURCE(resID), MAKEINTRESOURCE(RT_PNG));
 	assert(f_res->isOpen());
 	if (!f_res->isOpen()) {
 		// Unable to open the resource.
@@ -301,7 +302,7 @@ void AchievementsTabPrivate::updateImageList(void)
 		return;
 	}
 
-	f_res.reset(new RpFile_windres(HINST_THISCOMPONENT, MAKEINTRESOURCE(resID_gray), MAKEINTRESOURCE(RT_PNG)));
+	f_res = std::make_shared<RpFile_windres>(HINST_THISCOMPONENT, MAKEINTRESOURCE(resID_gray), MAKEINTRESOURCE(RT_PNG));
 	assert(f_res->isOpen());
 	if (!f_res->isOpen()) {
 		// Unable to open the resource.

@@ -141,8 +141,8 @@ LRESULT LanguageComboBoxPrivate::setLCs(const uint32_t *lcs_array)
 	// TODO: Is premultiplied alpha needed?
 	// Reference: https://stackoverflow.com/questions/307348/how-to-draw-32-bit-alpha-channel-bitmaps
 	rp_image *imgFlagsSheet = nullptr;
-	shared_ptr<IRpFile> f_res(new RpFile_windres(HINST_THISCOMPONENT,
-		MAKEINTRESOURCE(resID), MAKEINTRESOURCE(RT_PNG)));
+	shared_ptr<RpFile_windres> f_res = std::make_shared<RpFile_windres>(
+		HINST_THISCOMPONENT, MAKEINTRESOURCE(resID), MAKEINTRESOURCE(RT_PNG));
 	assert(f_res->isOpen());
 	if (f_res->isOpen()) do {
 		imgFlagsSheet = RpPng::load(f_res);

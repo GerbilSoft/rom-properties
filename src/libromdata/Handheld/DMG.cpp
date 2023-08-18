@@ -1304,7 +1304,7 @@ int DMG::loadFieldData(void)
 			if (size == sizeof(gbs_magic) && gbs_magic == cpu_to_be32(GBS_MAGIC)) {
 				// Found the GBS magic number.
 				// Open the GBS.
-				shared_ptr<IRpFile> gbsFile(new SubFile(d->file, jp_addr, fileSize + d->copier_offset - jp_addr));
+				shared_ptr<SubFile> gbsFile = std::make_shared<SubFile>(d->file, jp_addr, fileSize + d->copier_offset - jp_addr);
 				if (gbsFile->isOpen()) {
 					// Open the GBS.
 					GBS *const gbs = new GBS(gbsFile);

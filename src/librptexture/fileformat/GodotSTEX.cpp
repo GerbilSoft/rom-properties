@@ -577,7 +577,7 @@ const rp_image *GodotSTEXPrivate::loadImage(int mip)
 		// FIXME: Move RpPng to librptexture.
 		// Requires moving IconAnimData and some other stuff...
 		// TODO: Make use of PartitionFile instead of loading it into memory?
-		shared_ptr<IRpFile> memFile(new MemFile(buf.get(), mdata.size));
+		shared_ptr<MemFile> memFile = std::make_shared<MemFile>(buf.get(), mdata.size);
 		mipmaps[mip] = RpPng::load(memFile);
 
 		return mipmaps[mip];
