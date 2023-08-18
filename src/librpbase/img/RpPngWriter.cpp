@@ -438,7 +438,7 @@ void RpPngWriterPrivate::init(int width, int height, rp_image::Format format)
 
 void RpPngWriterPrivate::init(const rp_image *img)
 {
-	this->img = img;
+	this->img = nullptr;
 	if (!file || !img || !img->isValid()) {
 		// Invalid parameters.
 		lastError = EINVAL;
@@ -487,8 +487,9 @@ void RpPngWriterPrivate::init(const rp_image *img)
 	}
 
 	// Cache the image parameters.
+	this->img = img->ref();
 	imageTag = ImageTag::RpImage;
-	cache.setFrom(img);
+	cache.setFrom(this->img);
 }
 
 void RpPngWriterPrivate::init(const IconAnimData *iconAnimData)
@@ -549,9 +550,9 @@ void RpPngWriterPrivate::init(const IconAnimData *iconAnimData)
 
 	// Set img or iconAnimData.
 	if (imageTag == ImageTag::IconAnimData) {
-		this->iconAnimData = iconAnimData;
+		this->iconAnimData = iconAnimData->ref();
 		// Cache the image parameters.
-		const rp_image *const img0 = iconAnimData->frames[iconAnimData->seq_index[0]];
+		const rp_image *const img0 = this->iconAnimData->frames[iconAnimData->seq_index[0]];
 		assert(img0 != nullptr);
 		if (unlikely(!img0)) {
 			// Invalid animated image.
@@ -560,8 +561,8 @@ void RpPngWriterPrivate::init(const IconAnimData *iconAnimData)
 		}
 		cache.setFrom(img0);
 	} else {
-		this->img = iconAnimData->frames[iconAnimData->seq_index[0]];
-		cache.setFrom(img);
+		this->img = iconAnimData->frames[iconAnimData->seq_index[0]]->ref();
+		cache.setFrom(this->img);
 	}
 
 	// Initialize the PNG write structs.
@@ -576,9 +577,16 @@ RpPngWriterPrivate::~RpPngWriterPrivate()
 {
 	this->close();
 
-	if (imageTag == ImageTag::IconAnimData) {
-		// Unreference APNG.
-		APNG_unref();
+	switch (imageTag) {
+		default:
+			break;
+		case ImageTag::RpImage:
+			UNREF(img);
+			break;
+		case ImageTag::IconAnimData:
+			UNREF(iconAnimData);
+			APNG_unref();
+			break;
 	}
 }
 
