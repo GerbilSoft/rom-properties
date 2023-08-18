@@ -224,7 +224,7 @@ int WimPrivate::addFields_XML()
 	const XMLElement *currentimage = wim_element->FirstChildElement("IMAGE");
 
 	const char *const s_unknown = C_("Wim", "(unknown)");
-	for (uint32_t i = 0; i <= wimHeader.number_of_images-1; i++) {
+	for (uint32_t i = 0; i < wimHeader.number_of_images; i++) {
 		WimIndex currentindex;
 		currentindex.index = i + 1;
 
@@ -337,7 +337,7 @@ int WimPrivate::addFields_XML()
 	vv_data->reserve(10);
 
 	// loop for the rows
-	for (uint32_t i = 0; i <= wimHeader.number_of_images-1; i++) {
+	for (uint32_t i = 0; i < wimHeader.number_of_images; i++) {
 		vv_data->resize(vv_data->size()+1);
 		auto &data_row = vv_data->at(vv_data->size()-1);
 		data_row.reserve(10);
