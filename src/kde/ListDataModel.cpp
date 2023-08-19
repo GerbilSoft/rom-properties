@@ -623,7 +623,8 @@ void ListDataModel::setField(const RomFields::Field *pField)
 		// NOTE: Icons are the same for all languages.
 		// Also, we can assume all rows are present, since
 		// icons and checkboxes are mutually exclusive.
-		d->icons.reserve(rowCount);
+		d->icons_rp.clear();
+		d->icons_rp.reserve(rowCount);
 		for (const rp_image *icon : *(pField->data.list_data.mxd.icons)) {
 			d->icons_rp.emplace_back(icon ? icon->ref() : nullptr);
 		}
