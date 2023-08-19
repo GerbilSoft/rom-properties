@@ -158,6 +158,8 @@ AesCAPI_NG_Private::~AesCAPI_NG_Private()
 		}
 	}
 
+	free(pbKeyObject);
+
 	assert(ref_cnt > 0);
 	if (ATOMIC_DEC_FETCH(&ref_cnt) == 0) {
 		// Unload bcrypt.dll.
@@ -325,7 +327,7 @@ int AesCAPI_NG::setKey(const uint8_t *RESTRICT pKey, size_t size)
 		return -ENOMEM;
 	}
 
-	uint8_t *pbKeyObject = static_cast<uint8_t*>(malloc(cbKeyObject));
+	uint8_t *const pbKeyObject = static_cast<uint8_t*>(malloc(cbKeyObject));
 	if (!pbKeyObject) {
 		return -ENOMEM;
 	}
@@ -346,7 +348,7 @@ int AesCAPI_NG::setKey(const uint8_t *RESTRICT pKey, size_t size)
 
 	// Key loaded successfully.
 	BCRYPT_KEY_HANDLE hOldKey = d->hKey;
-	uint8_t *pbOldKeyObject = d->pbKeyObject;
+	uint8_t *const pbOldKeyObject = d->pbKeyObject;
 	d->hKey = hKey;
 	d->pbKeyObject = pbKeyObject;
 	d->cbKeyObject = cbKeyObject;
