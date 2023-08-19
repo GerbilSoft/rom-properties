@@ -22,9 +22,6 @@ class DragImageTreeView : public QTreeView
 		explicit DragImageTreeView(QWidget *parent = nullptr)
 			: super(parent) { }
 
-		// Role for an rp_image*.
-		static const int RpImageRole = Qt::UserRole + 0x4049;
-
 	private:
 		typedef QTreeView super;
 		Q_DISABLE_COPY(DragImageTreeView)

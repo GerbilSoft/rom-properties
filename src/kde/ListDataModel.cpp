@@ -417,6 +417,13 @@ QVariant ListDataModel::data(const QModelIndex& index, int role) const
 				return d->icons[row];
 			break;
 
+		case RpImageRole:
+			if (column != 0 || d->icons.empty())
+				break;
+			if (row <= (int)d->icons.size())
+				return QVariant::fromValue((void*)d->icons_rp[row]);
+			break;
+
 		default:
 			break;
 	}

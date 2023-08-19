@@ -38,6 +38,10 @@ class ListDataModel : public QAbstractListModel
 		Q_DISABLE_COPY(ListDataModel)
 
 	public:
+		// Role for an rp_image*.
+		static const int RpImageRole = Qt::UserRole + 0x4049;
+
+	public:
 		// Qt Model/View interface.
 		int rowCount(const QModelIndex& parent = QModelIndex()) const final;
 		int columnCount(const QModelIndex& parent = QModelIndex()) const final;

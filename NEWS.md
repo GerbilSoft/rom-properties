@@ -48,6 +48,12 @@
     "Open" dialog properly.
   * Windows rp-config: Fix the Key Manager tab not showing up at all.
     * This regressed in v2.2.1.
+  * KDE: Fixed dragging images from ListData views to the file browser. Note
+    that Dolphin 23.04.3 has issues receiving drags when using Wayland, but
+    it works when using X11.
+    * This broke in Oct 2020 when the ListData views were reworked from
+      QTreeWidget to QTreeView in order to implement sorting.
+    * Affects: v1.8 - v2.2.1
 
 * Other changes:
   * Nintendo3DS: The "Options" menu no longer shows a grayed-out "Extract SRL"

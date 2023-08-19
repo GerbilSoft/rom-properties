@@ -13,6 +13,9 @@
 #include "DragImageTreeView.hpp"
 #include "RpQByteArrayFile.hpp"
 
+// for RpImageRole
+#include "ListDataModel.hpp"
+
 // librpbase, librptexture
 using LibRpBase::RpPngWriter;
 using LibRpTexture::rp_image;
@@ -38,7 +41,7 @@ void DragImageTreeView::startDrag(Qt::DropActions supportedActions)
 	// Find the first item with a valid RpImageRole.
 	QModelIndexList items;
 	for (const QModelIndex &p : indexes) {
-		void *img = p.data(RpImageRole).value<void*>();
+		void *img = p.data(ListDataModel::RpImageRole).value<void*>();
 		if (img != nullptr) {
 			// Index has a valid image.
 			items.append(p);
@@ -54,7 +57,7 @@ void DragImageTreeView::startDrag(Qt::DropActions supportedActions)
 	QIcon dragIcon;
 	bool hasOne = false;
 	for (const QModelIndex &index : items) {
-		const rp_image *const img = static_cast<const rp_image*>(index.data(RpImageRole).value<void*>());
+		const rp_image *const img = static_cast<const rp_image*>(index.data(ListDataModel::RpImageRole).value<void*>());
 		if (!img)
 			continue;
 
