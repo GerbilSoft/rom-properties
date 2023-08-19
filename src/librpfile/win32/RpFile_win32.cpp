@@ -133,7 +133,7 @@ int RpFilePrivate::reOpenFile(void)
 	{
 		// Drive letter. Append '\\'.
 		wchar_t *drvfilename = static_cast<wchar_t*>(malloc(4*sizeof(wchar_t)));
-		drvfilename[0] = filename[0];
+		drvfilename[0] = filenameW[0];
 		drvfilename[1] = _T(':');
 		drvfilename[2] = _T('\\');
 		drvfilename[3] = _T('\0');
