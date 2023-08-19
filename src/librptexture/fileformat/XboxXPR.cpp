@@ -23,9 +23,6 @@ using LibRpText::rp_sprintf;
 #include "decoder/ImageDecoder_Linear.hpp"
 #include "decoder/ImageDecoder_S3TC.hpp"
 
-// C++ STL classes
-using std::shared_ptr;
-
 namespace LibRpTexture {
 
 class XboxXPRPrivate final : public FileFormatPrivate
@@ -60,7 +57,7 @@ class XboxXPRPrivate final : public FileFormatPrivate
 		Xbox_XPR0_Header xpr0Header;
 
 		// Decoded image
-		shared_ptr<rp_image> img;
+		rp_image_ptr img;
 
 		// Invalid pixel format message
 		char invalid_pixel_format[24];
@@ -150,7 +147,7 @@ class XboxXPRPrivate final : public FileFormatPrivate
 		 * Load the XboxXPR image.
 		 * @return Image, or nullptr on error.
 		 */
-		shared_ptr<const rp_image> loadXboxXPR0Image(void);
+		rp_image_const_ptr loadXboxXPR0Image(void);
 };
 
 FILEFORMAT_IMPL(XboxXPR)
@@ -315,7 +312,7 @@ void XboxXPRPrivate::unswizzle_box(const uint8_t *src_buf,
  * Load the XPR0 image.
  * @return Image, or nullptr on error.
  */
-shared_ptr<const rp_image> XboxXPRPrivate::loadXboxXPR0Image(void)
+rp_image_const_ptr XboxXPRPrivate::loadXboxXPR0Image(void)
 {
 	if (img) {
 		// Image has already been loaded.
@@ -535,7 +532,7 @@ shared_ptr<const rp_image> XboxXPRPrivate::loadXboxXPR0Image(void)
 
 		// Assuming img is ARGB32, since we're converting it
 		// from either a 16-bit or 32-bit ARGB format.
-		shared_ptr<rp_image> imgunswz = std::make_shared<rp_image>(width, height, rp_image::Format::ARGB32);
+		rp_image_ptr imgunswz = std::make_shared<rp_image>(width, height, rp_image::Format::ARGB32);
 		unswizzle_box(static_cast<const uint8_t*>(img->bits()),
 			width, height,
 			static_cast<uint8_t*>(imgunswz->bits()),
@@ -780,7 +777,7 @@ int XboxXPR::getFields(RomFields *fields) const
  * The image is owned by this object.
  * @return Image, or nullptr on error.
  */
-shared_ptr<const rp_image> XboxXPR::image(void) const
+rp_image_const_ptr XboxXPR::image(void) const
 {
 	RP_D(const XboxXPR);
 	if (!d->isValid || (int)d->xprType < 0) {
@@ -798,7 +795,7 @@ shared_ptr<const rp_image> XboxXPR::image(void) const
  * @param mip Mipmap number.
  * @return Image, or nullptr on error.
  */
-shared_ptr<const rp_image> XboxXPR::mipmap(int mip) const
+rp_image_const_ptr XboxXPR::mipmap(int mip) const
 {
 	// Allowing mipmap 0 for compatibility.
 	if (mip == 0) {

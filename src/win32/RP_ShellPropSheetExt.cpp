@@ -39,12 +39,11 @@ using LibWin32UI::WTSSessionNotification;
 using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;
-using LibRpTexture::rp_image;
+using namespace LibRpTexture;
 using LibRomData::RomDataFactory;
 
 // C++ STL classes
 using std::set;
-using std::shared_ptr;
 using std::string;
 using std::unique_ptr;
 using std::vector;
@@ -120,7 +119,7 @@ void RP_ShellPropSheetExt_Private::loadImages(void)
 	bool ok = false;
 	if (imgbf & RomData::IMGBF_INT_BANNER) {
 		// Get the banner.
-		const shared_ptr<const rp_image> banner = romData->image(RomData::IMG_INT_BANNER);
+		const rp_image_const_ptr banner = romData->image(RomData::IMG_INT_BANNER);
 		if (banner && banner->isValid()) {
 			if (!lblBanner) {
 				lblBanner = new DragImageLabel(hDlgSheet);
@@ -142,7 +141,7 @@ void RP_ShellPropSheetExt_Private::loadImages(void)
 	ok = false;
 	if (imgbf & RomData::IMGBF_INT_ICON) {
 		// Get the icon.
-		const shared_ptr<const rp_image> icon = romData->image(RomData::IMG_INT_ICON);
+		const rp_image_const_ptr icon = romData->image(RomData::IMG_INT_ICON);
 		if (icon && icon->isValid()) {
 			if (!lblIcon) {
 				lblIcon = new DragImageLabel(hDlgSheet);
@@ -1056,7 +1055,7 @@ int RP_ShellPropSheetExt_Private::initListData(_In_ HWND hWndTab,
 			for (auto iter = icons->cbegin(); iter != icons_cend;
 			     ++iter, rowColorIdx = !rowColorIdx)
 			{
-				shared_ptr<const rp_image> icon = *iter;
+				rp_image_const_ptr icon = *iter;
 				if (!icon) {
 					// No icon for this row.
 					lvData.vImageList.emplace_back(-1);
@@ -1069,7 +1068,7 @@ int RP_ShellPropSheetExt_Private::initListData(_In_ HWND hWndTab,
 					// but we can't rely on that being the case, and this option
 					// was first introduced in Windows XP.
 					// We'll flip the image here to counteract it.
-					const shared_ptr<const rp_image> flipimg = icon->flip(rp_image::FLIP_H);
+					const rp_image_const_ptr flipimg = icon->flip(rp_image::FLIP_H);
 					assert((bool)flipimg);
 					if (flipimg) {
 						icon = flipimg;
@@ -1091,7 +1090,7 @@ int RP_ShellPropSheetExt_Private::initListData(_In_ HWND hWndTab,
 					// TODO: Handle theme changes?
 					// TODO: Error handling.
 					if (icon->format() != rp_image::Format::ARGB32) {
-						const shared_ptr<const rp_image> icon32 = icon->dup_ARGB32();
+						const rp_image_const_ptr icon32 = icon->dup_ARGB32();
 						assert((bool)icon32);
 						if (icon32) {
 							icon = icon32;
@@ -1099,7 +1098,7 @@ int RP_ShellPropSheetExt_Private::initListData(_In_ HWND hWndTab,
 					}
 
 					// Resize the icon.
-					const shared_ptr<const rp_image> icon_resized = icon->resized(
+					const rp_image_const_ptr icon_resized = icon->resized(
 						szResize.cx, szResize.cy,
 						rp_image::AlignVCenter, lvBgColor[rowColorIdx]);
 					assert((bool)icon_resized);

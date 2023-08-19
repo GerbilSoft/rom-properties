@@ -59,7 +59,7 @@ struct IconAnimData final : public RefBase
 	// how many frames are actually here.
 	// NOTE: Frames may be nullptr, in which case
 	// the previous frame should be used.
-	std::array<std::shared_ptr<LibRpTexture::rp_image>, MAX_FRAMES> frames;
+	std::array<LibRpTexture::rp_image_ptr, MAX_FRAMES> frames;
 
 	IconAnimData()
 		: count(0)

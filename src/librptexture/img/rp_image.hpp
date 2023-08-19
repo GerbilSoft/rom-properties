@@ -11,9 +11,12 @@
 #include "common.h"
 #include "dll-macros.h"
 
-// C includes.
+// C includes
 #include <stddef.h>	/* size_t */
 #include <stdint.h>
+
+// C++ includes
+#include <memory>
 
 #include "librpcpu/cpu_dispatch.h"
 #if defined(RP_CPU_I386) || defined(RP_CPU_AMD64)
@@ -28,7 +31,7 @@
 
 #include "../argb32_t.hpp"
 
-// TODO: Make this implicitly shared.
+// TODO: Make this implicitly shared?
 
 namespace LibRpTexture {
 
@@ -533,6 +536,9 @@ class rp_image final
 		 */
 		int unswizzle_AExp(void);
 };
+
+typedef std::shared_ptr<rp_image> rp_image_ptr;
+typedef std::shared_ptr<const rp_image> rp_image_const_ptr;
 
 /**
  * Un-premultiply this image.

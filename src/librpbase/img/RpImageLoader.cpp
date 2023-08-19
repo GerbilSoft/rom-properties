@@ -12,7 +12,7 @@
 #include "RpImageLoader.hpp"
 #include "librpfile/IRpFile.hpp"
 
-// librpfile, librptexture
+// Other rom-properties libraries
 using namespace LibRpFile;
 using namespace LibRpTexture;
 
@@ -21,9 +21,6 @@ using namespace LibRpTexture;
 #ifdef HAVE_JPEG
 #  include "RpJpeg.hpp"
 #endif /* HAVE_JPEG */
-
-// C++ STL classes
-using std::shared_ptr;
 
 // RpImageLoader isn't used by libromdata directly,
 // so use some linker hax to force linkage.
@@ -48,7 +45,7 @@ static const uint8_t exif_magic[4] = {'E','x','i','f'};
  * @param file IRpFile to load from.
  * @return rp_image*, or nullptr on error.
  */
-shared_ptr<rp_image> load(const IRpFilePtr &file)
+rp_image_ptr load(const IRpFilePtr &file)
 {
 	file->rewind();
 

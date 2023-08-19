@@ -24,7 +24,7 @@
 // Other rom-properties libraries
 using namespace LibRpBase;
 using namespace LibRpText;
-using LibRpTexture::rp_image;
+using namespace LibRpTexture;
 
 // libdl
 #ifdef HAVE_DLVSYM
@@ -38,7 +38,6 @@ using LibRpTexture::rp_image;
 
 // C++ STL classes
 using std::set;
-using std::shared_ptr;
 using std::string;
 using std::unique_ptr;
 using std::vector;
@@ -665,7 +664,7 @@ rp_rom_data_view_init_header_row(RpRomDataView *page)
 	gtk_widget_set_visible(page->imgIcon, false);
 	if (imgbf & RomData::IMGBF_INT_ICON) {
 		// Get the icon.
-		const shared_ptr<const rp_image> icon = romData->image(RomData::IMG_INT_ICON);
+		const rp_image_const_ptr icon = romData->image(RomData::IMG_INT_ICON);
 		if (icon && icon->isValid()) {
 			// Is this an animated icon?
 			bool ok = rp_drag_image_set_icon_anim_data(RP_DRAG_IMAGE(page->imgIcon), romData->iconAnimData());
@@ -991,7 +990,7 @@ rp_rom_data_view_init_listdata(RpRomDataView *page,
 			checkboxes >>= 1;
 		} else if (hasIcons) {
 			// Icon column
-			const shared_ptr<const rp_image> &icon = field.data.list_data.mxd.icons->at(row);
+			const rp_image_const_ptr &icon = field.data.list_data.mxd.icons->at(row);
 			if (icon) {
 				PIMGTYPE pixbuf = rp_image_to_PIMGTYPE(icon);
 				if (pixbuf) {

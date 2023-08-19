@@ -27,9 +27,6 @@ using namespace LibRpTexture;
 // C includes (C++ namespace)
 #include <csetjmp>
 
-// C++ STL classes
-using std::shared_ptr;
-
 #ifdef _WIN32
 // For OutputDebugStringA().
 #  include <windows.h>
@@ -210,7 +207,7 @@ void RpJpegPrivate::jpeg_IRpFile_src(j_decompress_ptr cinfo, IRpFile *infile)
  * @param file IRpFile to load from.
  * @return rp_image*, or nullptr on error.
  */
-shared_ptr<rp_image> RpJpeg::load(const IRpFilePtr &file)
+rp_image_ptr RpJpeg::load(const IRpFilePtr &file)
 {
 	if (!file)
 		return nullptr;
@@ -221,7 +218,7 @@ shared_ptr<rp_image> RpJpeg::load(const IRpFilePtr &file)
 	RpJpegPrivate::my_error_mgr jerr;
 	jpeg_decompress_struct cinfo;
 	int row_stride;			// Physical row width in output buffer
-	shared_ptr<rp_image> img;	// Image
+	rp_image_ptr img;	// Image
 	bool direct_copy = false;	// True if a direct copy can be made
 
 	// libjpeg-turbo BGRA extension.

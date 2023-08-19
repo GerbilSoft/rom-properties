@@ -22,7 +22,6 @@ using namespace LibRpTexture;
 #include "RpPngWriter.hpp"
 
 // C++ STL classes
-using std::shared_ptr;
 using std::unique_ptr;
 
 // Image format libraries
@@ -231,11 +230,11 @@ static void Read_CI8_Palette(png_structp png_ptr, png_infop info_ptr,
  * @param info_ptr png_infop
  * @return rp_image*, or nullptr on error.
  */
-static shared_ptr<rp_image> loadPng(png_structp png_ptr, png_infop info_ptr)
+static rp_image_ptr loadPng(png_structp png_ptr, png_infop info_ptr)
 {
 	// Row pointers. (NOTE: Allocated after IHDR is read.)
 	const png_byte **row_pointers = nullptr;
-	shared_ptr<rp_image> img;
+	rp_image_ptr img;
 
 	bool has_sBIT = false;
 	png_color_8p png_sBIT = nullptr;
@@ -473,7 +472,7 @@ static shared_ptr<rp_image> loadPng(png_structp png_ptr, png_infop info_ptr)
  * @param file IRpFile to load from
  * @return rp_image*, or nullptr on error
  */
-shared_ptr<rp_image> load(const IRpFilePtr &file)
+rp_image_ptr load(const IRpFilePtr &file)
 {
 	if (!file)
 		return nullptr;
@@ -517,7 +516,7 @@ shared_ptr<rp_image> load(const IRpFilePtr &file)
 	png_set_read_fn(png_ptr, file.get(), png_io_IRpFile_read);
 
 	// Call the actual PNG image reading function.
-	const shared_ptr<rp_image> img = loadPng(png_ptr, info_ptr);
+	const rp_image_ptr img = loadPng(png_ptr, info_ptr);
 
 	// Free the PNG structs.
 	png_destroy_read_struct(&png_ptr, &info_ptr, nullptr);
@@ -535,7 +534,7 @@ shared_ptr<rp_image> load(const IRpFilePtr &file)
  * @param img rp_image to save
  * @return 0 on success; negative POSIX error code on error
  */
-int save(const IRpFilePtr &file, const shared_ptr<const rp_image> &img)
+int save(const IRpFilePtr &file, const rp_image_const_ptr &img)
 {
 	assert((bool)file);
 	assert(img != nullptr);
@@ -563,7 +562,7 @@ int save(const IRpFilePtr &file, const shared_ptr<const rp_image> &img)
  * @param img rp_image to save
  * @return 0 on success; negative POSIX error code on error
  */
-int save(const char *filename, const shared_ptr<const rp_image> &img)
+int save(const char *filename, const rp_image_const_ptr &img)
 {
 	assert(filename != nullptr);
 	assert(filename[0] != '\0');
@@ -593,7 +592,7 @@ int save(const char *filename, const shared_ptr<const rp_image> &img)
  * @param img rp_image to save
  * @return 0 on success; negative POSIX error code on error
  */
-int save(const wchar_t *filename, const shared_ptr<const rp_image> &img)
+int save(const wchar_t *filename, const rp_image_const_ptr &img)
 {
 	assert(filename != nullptr);
 	assert(filename[0] != L'\0');

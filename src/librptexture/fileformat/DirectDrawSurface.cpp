@@ -31,7 +31,6 @@ using LibRpText::rp_sprintf;
 #include "decoder/ImageDecoder_ASTC.hpp"
 
 // C++ STL classes
-using std::shared_ptr;
 using std::string;
 using std::vector;
 
@@ -63,7 +62,7 @@ class DirectDrawSurfacePrivate final : public FileFormatPrivate
 		unsigned int texDataStartAddr;
 
 		// Decoded image
-		shared_ptr<rp_image> img;
+		rp_image_ptr img;
 
 		// Pixel format message
 		// NOTE: Used for both valid and invalid pixel formats
@@ -74,7 +73,7 @@ class DirectDrawSurfacePrivate final : public FileFormatPrivate
 		 * Load the image.
 		 * @return Image, or nullptr on error.
 		 */
-		shared_ptr<const rp_image> loadImage(void);
+		rp_image_const_ptr loadImage(void);
 
 	public:
 		// Supported uncompressed RGB formats.
@@ -533,7 +532,7 @@ DirectDrawSurfacePrivate::DirectDrawSurfacePrivate(DirectDrawSurface *q, const I
  * Load the image.
  * @return Image, or nullptr on error.
  */
-shared_ptr<const rp_image> DirectDrawSurfacePrivate::loadImage(void)
+rp_image_const_ptr DirectDrawSurfacePrivate::loadImage(void)
 {
 	if (img) {
 		// Image has already been loaded.
@@ -1371,7 +1370,7 @@ int DirectDrawSurface::getFields(RomFields *fields) const
  * The image is owned by this object.
  * @return Image, or nullptr on error.
  */
-shared_ptr<const rp_image> DirectDrawSurface::image(void) const
+rp_image_const_ptr DirectDrawSurface::image(void) const
 {
 	// The full image is mipmap 0.
 	return this->mipmap(0);
@@ -1383,7 +1382,7 @@ shared_ptr<const rp_image> DirectDrawSurface::image(void) const
  * @param mip Mipmap number.
  * @return Image, or nullptr on error.
  */
-shared_ptr<const rp_image> DirectDrawSurface::mipmap(int mip) const
+rp_image_const_ptr DirectDrawSurface::mipmap(int mip) const
 {
 	RP_D(const DirectDrawSurface);
 	if (!d->isValid) {

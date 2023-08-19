@@ -15,9 +15,6 @@
 #include "PixelConversion.hpp"
 using namespace LibRpTexture::PixelConversion;
 
-// C++ STL classes
-using std::shared_ptr;
-
 // SSE2 intrinsics
 #include <emmintrin.h>
 
@@ -234,7 +231,7 @@ static inline void VECTORCALL T_ARGB16_sse2(
  * @param stride	[in,opt] Stride, in bytes. If 0, assumes width*bytespp.
  * @return rp_image, or nullptr on error.
  */
-shared_ptr<rp_image> fromLinear16_sse2(PixelFormat px_format,
+rp_image_ptr fromLinear16_sse2(PixelFormat px_format,
 	int width, int height,
 	const uint16_t *RESTRICT img_buf, size_t img_siz, int stride)
 {
@@ -292,7 +289,7 @@ shared_ptr<rp_image> fromLinear16_sse2(PixelFormat px_format,
 	}
 
 	// Create an rp_image.
-	const shared_ptr<rp_image> img = std::make_shared<rp_image>(width, height, rp_image::Format::ARGB32);
+	const rp_image_ptr img = std::make_shared<rp_image>(width, height, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
 		return nullptr;

@@ -57,7 +57,7 @@ namespace LibRpTexture {
  * @param img rp_image, or nullptr to clear.
  * @return True on success; false on error or if clearing.
  */
-bool rp_drag_image_set_rp_image(RpDragImage *image, const std::shared_ptr<const LibRpTexture::rp_image> &img);
+bool rp_drag_image_set_rp_image(RpDragImage *image, const LibRpTexture::rp_image_const_ptr &img);
 
 /**
  * Set the icon animation data for this image.

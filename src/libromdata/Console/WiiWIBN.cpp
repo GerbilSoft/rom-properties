@@ -19,7 +19,6 @@ using namespace LibRpText;
 using namespace LibRpTexture;
 
 // C++ STL classes
-using std::shared_ptr;
 using std::string;
 using std::vector;
 
@@ -43,7 +42,7 @@ class WiiWIBNPrivate final : public RomDataPrivate
 
 	public:
 		// Internal images
-		shared_ptr<rp_image> img_banner;
+		rp_image_ptr img_banner;
 
 		// Animated icon data
 		IconAnimData *iconAnimData;
@@ -60,13 +59,13 @@ class WiiWIBNPrivate final : public RomDataPrivate
 		 *
 		 * @return Icon, or nullptr on error.
 		 */
-		shared_ptr<const rp_image> loadIcon(void);
+		rp_image_const_ptr loadIcon(void);
 
 		/**
 		 * Load the save file's banner.
 		 * @return Banner, or nullptr on error.
 		 */
-		shared_ptr<const rp_image> loadBanner(void);
+		rp_image_const_ptr loadBanner(void);
 };
 
 ROMDATA_IMPL(WiiWIBN)
@@ -117,7 +116,7 @@ WiiWIBNPrivate::~WiiWIBNPrivate()
  *
  * @return Icon, or nullptr on error.
  */
-shared_ptr<const rp_image> WiiWIBNPrivate::loadIcon(void)
+rp_image_const_ptr WiiWIBNPrivate::loadIcon(void)
 {
 	if (iconAnimData) {
 		// Icon has already been loaded.
@@ -219,7 +218,7 @@ shared_ptr<const rp_image> WiiWIBNPrivate::loadIcon(void)
  * Load the save file's banner.
  * @return Banner, or nullptr on error.
  */
-shared_ptr<const rp_image> WiiWIBNPrivate::loadBanner(void)
+rp_image_const_ptr WiiWIBNPrivate::loadBanner(void)
 {
 	if (img_banner) {
 		// Banner is already loaded.
@@ -497,10 +496,10 @@ int WiiWIBN::loadFieldData(void)
  * Load an internal image.
  * Called by RomData::image().
  * @param imageType	[in] Image type to load.
- * @param pImage	[out] Reference to shared_ptr<const rp_image> to store the image in.
+ * @param pImage	[out] Reference to rp_image_const_ptr to store the image in.
  * @return 0 on success; negative POSIX error code on error.
  */
-int WiiWIBN::loadInternalImage(ImageType imageType, shared_ptr<const rp_image> &pImage)
+int WiiWIBN::loadInternalImage(ImageType imageType, rp_image_const_ptr &pImage)
 {
 	ASSERT_loadInternalImage(imageType, pImage);
 

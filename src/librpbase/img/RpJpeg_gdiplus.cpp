@@ -28,9 +28,6 @@ namespace Gdiplus {
 }
 #include <gdiplus.h>
 
-// C++ STL classes
-using std::shared_ptr;
-
 namespace LibRpBase {
 
 /** RpJpeg **/
@@ -40,7 +37,7 @@ namespace LibRpBase {
  * @param file IRpFile to load from.
  * @return rp_image*, or nullptr on error.
  */
-shared_ptr<rp_image> RpJpeg::load(const IRpFilePtr &file)
+rp_image_ptr RpJpeg::load(const IRpFilePtr &file)
 {
 	if (!file)
 		return nullptr;

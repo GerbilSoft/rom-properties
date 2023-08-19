@@ -18,7 +18,6 @@ using namespace LibRpText;
 using namespace LibRpTexture;
 
 // C++ STL classes
-using std::shared_ptr;
 using std::string;
 using std::vector;
 
@@ -743,10 +742,10 @@ uint32_t RomData::imgpf(ImageType imageType) const
  * Load an internal image.
  * Called by RomData::image().
  * @param imageType	[in] Image type to load.
- * @param pImage	[out] Reference to shared_ptr<const rp_image> to store the image in.
+ * @param pImage	[out] Reference to rp_image_const_ptr to store the image in.
  * @return 0 on success; negative POSIX error code on error.
  */
-int RomData::loadInternalImage(ImageType imageType, shared_ptr<const rp_image> &pImage)
+int RomData::loadInternalImage(ImageType imageType, rp_image_const_ptr &pImage)
 {
 	assert(imageType >= IMG_INT_MIN && imageType <= IMG_INT_MAX);
 	if (imageType < IMG_INT_MIN || imageType > IMG_INT_MAX) {
@@ -814,7 +813,7 @@ const RomMetaData *RomData::metaData(void) const
  * @param imageType Image type to load.
  * @return Internal image, or nullptr if the ROM doesn't have one.
  */
-shared_ptr<const rp_image> RomData::image(ImageType imageType) const
+rp_image_const_ptr RomData::image(ImageType imageType) const
 {
 	assert(imageType >= IMG_INT_MIN && imageType <= IMG_INT_MAX);
 	if (imageType < IMG_INT_MIN || imageType > IMG_INT_MAX) {
@@ -824,7 +823,7 @@ shared_ptr<const rp_image> RomData::image(ImageType imageType) const
 	// TODO: Check supportedImageTypes()?
 
 	// Load the internal image.
-	shared_ptr<const rp_image> img;
+	rp_image_const_ptr img;
 	int ret = const_cast<RomData*>(this)->loadInternalImage(imageType, img);
 
 	// SANITY CHECK: If loadInternalImage() returns 0,

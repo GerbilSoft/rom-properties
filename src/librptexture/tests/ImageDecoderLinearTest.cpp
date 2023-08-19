@@ -34,7 +34,6 @@ using namespace LibRpTexture;
 // C++ includes
 #include <memory>
 #include <string>
-using std::shared_ptr;
 using std::string;
 
 // Uninitialized vector class.
@@ -122,7 +121,7 @@ class ImageDecoderLinearTest : public ::testing::TestWithParam<ImageDecoderLinea
 		size_t m_img_buf_len;
 
 		// Image
-		shared_ptr<rp_image> m_img;
+		rp_image_ptr m_img;
 
 	public:
 		/**

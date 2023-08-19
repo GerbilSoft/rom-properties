@@ -17,7 +17,6 @@
 using namespace LibRpTexture::PixelConversion;
 
 // C++ STL classes
-using std::shared_ptr;
 using std::unique_ptr;
 
 // One-time initialization.
@@ -74,7 +73,7 @@ static FORCEINLINE void initDreamcastTwiddleMap(void)
  * @param img_siz Size of image data. [must be >= (w*h)*2]
  * @return rp_image, or nullptr on error.
  */
-shared_ptr<rp_image> fromDreamcastSquareTwiddled16(PixelFormat px_format,
+rp_image_ptr fromDreamcastSquareTwiddled16(PixelFormat px_format,
 	int width, int height,
 	const uint16_t *RESTRICT img_buf, size_t img_siz)
 {
@@ -97,7 +96,7 @@ shared_ptr<rp_image> fromDreamcastSquareTwiddled16(PixelFormat px_format,
 	const unsigned int *const p_tmap = dc_tmap.get();
 
 	// Create an rp_image.
-	const shared_ptr<rp_image> img = std::make_shared<rp_image>(width, height, rp_image::Format::ARGB32);
+	const rp_image_ptr img = std::make_shared<rp_image>(width, height, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
 		return nullptr;
@@ -174,7 +173,7 @@ shared_ptr<rp_image> fromDreamcastSquareTwiddled16(PixelFormat px_format,
  * @param pal_siz Size of palette data. [must be >= 1024*2; for SmallVQ, 64*2, 256*2, or 512*2]
  * @return rp_image, or nullptr on error.
  */
-shared_ptr<rp_image> fromDreamcastVQ16(PixelFormat px_format,
+rp_image_ptr fromDreamcastVQ16(PixelFormat px_format,
 	bool smallVQ, bool hasMipmaps,
 	int width, int height,
 	const uint8_t *RESTRICT img_buf, size_t img_siz,
@@ -221,7 +220,7 @@ shared_ptr<rp_image> fromDreamcastVQ16(PixelFormat px_format,
 	const unsigned int *const p_tmap = dc_tmap.get();
 
 	// Create an rp_image.
-	const shared_ptr<rp_image> img = std::make_shared<rp_image>(width, height, rp_image::Format::ARGB32);
+	const rp_image_ptr img = std::make_shared<rp_image>(width, height, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
 		return nullptr;

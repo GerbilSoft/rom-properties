@@ -30,7 +30,6 @@ using LibRpBase::RomFields;
 #endif /* _MSC_VER */
 
 // C++ STL classes
-using std::shared_ptr;
 using std::string;
 using std::unique_ptr;
 
@@ -72,7 +71,7 @@ class DidjTexPrivate final : public FileFormatPrivate
 		Didj_Tex_Header texHeader;
 
 		// Decoded image
-		shared_ptr<rp_image> img;
+		rp_image_ptr img;
 
 		// Invalid pixel format message
 		char invalid_pixel_format[24];
@@ -81,7 +80,7 @@ class DidjTexPrivate final : public FileFormatPrivate
 		 * Load the DidjTex image.
 		 * @return Image, or nullptr on error.
 		 */
-		shared_ptr<const rp_image> loadDidjTexImage(void);
+		rp_image_const_ptr loadDidjTexImage(void);
 };
 
 FILEFORMAT_IMPL(DidjTex)
@@ -120,7 +119,7 @@ DidjTexPrivate::DidjTexPrivate(DidjTex *q, const IRpFilePtr &file)
  * Load the .tex image.
  * @return Image, or nullptr on error.
  */
-shared_ptr<const rp_image> DidjTexPrivate::loadDidjTexImage(void)
+rp_image_const_ptr DidjTexPrivate::loadDidjTexImage(void)
 {
 	if (img) {
 		// Image has already been loaded.
@@ -209,7 +208,7 @@ shared_ptr<const rp_image> DidjTexPrivate::loadDidjTexImage(void)
 	inflateEnd(&strm);
 
 	// Decode the image.
-	shared_ptr<rp_image> imgtmp;
+	rp_image_ptr imgtmp;
 	const unsigned int width = le32_to_cpu(texHeader.width);
 	const unsigned int height = le32_to_cpu(texHeader.height);
 	switch (le32_to_cpu(texHeader.px_format)) {
@@ -509,7 +508,7 @@ int DidjTex::getFields(RomFields *fields) const
  * The image is owned by this object.
  * @return Image, or nullptr on error.
  */
-shared_ptr<const rp_image> DidjTex::image(void) const
+rp_image_const_ptr DidjTex::image(void) const
 {
 	RP_D(const DidjTex);
 	if (!d->isValid || (int)d->texType < 0) {
@@ -527,7 +526,7 @@ shared_ptr<const rp_image> DidjTex::image(void) const
  * @param mip Mipmap number.
  * @return Image, or nullptr on error.
  */
-shared_ptr<const rp_image> DidjTex::mipmap(int mip) const
+rp_image_const_ptr DidjTex::mipmap(int mip) const
 {
 	// Allowing mipmap 0 for compatibility.
 	if (mip == 0) {

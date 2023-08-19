@@ -16,9 +16,6 @@
 #include "PixelConversion.hpp"
 using namespace LibRpTexture::PixelConversion;
 
-// C++ STL classes
-using std::shared_ptr;
-
 // SSSE3 intrinsics
 #include <emmintrin.h>
 #include <tmmintrin.h>
@@ -36,7 +33,7 @@ namespace LibRpTexture { namespace ImageDecoder {
  * @param stride	[in,opt] Stride, in bytes. If 0, assumes width*bytespp.
  * @return rp_image, or nullptr on error.
  */
-shared_ptr<rp_image> fromLinear24_ssse3(PixelFormat px_format,
+rp_image_ptr fromLinear24_ssse3(PixelFormat px_format,
 	int width, int height,
 	const uint8_t *RESTRICT img_buf, size_t img_siz, int stride)
 {
@@ -81,7 +78,7 @@ shared_ptr<rp_image> fromLinear24_ssse3(PixelFormat px_format,
 	}
 
 	// Create an rp_image.
-	const shared_ptr<rp_image> img = std::make_shared<rp_image>(width, height, rp_image::Format::ARGB32);
+	const rp_image_ptr img = std::make_shared<rp_image>(width, height, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
 		return nullptr;
@@ -185,7 +182,7 @@ shared_ptr<rp_image> fromLinear24_ssse3(PixelFormat px_format,
  * @param stride	[in,opt] Stride, in bytes. If 0, assumes width*bytespp.
  * @return rp_image, or nullptr on error.
  */
-shared_ptr<rp_image> fromLinear32_ssse3(PixelFormat px_format,
+rp_image_ptr fromLinear32_ssse3(PixelFormat px_format,
 	int width, int height,
 	const uint32_t *RESTRICT img_buf, size_t img_siz, int stride)
 {
@@ -247,7 +244,7 @@ shared_ptr<rp_image> fromLinear32_ssse3(PixelFormat px_format,
 	}
 
 	// Create an rp_image.
-	const shared_ptr<rp_image> img = std::make_shared<rp_image>(width, height, rp_image::Format::ARGB32);
+	const rp_image_ptr img = std::make_shared<rp_image>(width, height, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
 		return nullptr;

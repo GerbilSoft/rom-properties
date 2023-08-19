@@ -11,10 +11,10 @@
 #include "RP_ExtractIcon.hpp"
 #include "RpImageWin32.hpp"
 
-// librpbase, librpfile, librptexture, libromdata
+// Other rom-properties libraries
 using namespace LibRpBase;
 using namespace LibRpFile;
-using LibRpTexture::rp_image;
+using namespace LibRpTexture;
 using LibRomData::RomDataFactory;
 
 // C++ STL classes

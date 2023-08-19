@@ -14,9 +14,6 @@
 // librptexture
 #include "img/rp_image.hpp"
 
-// C++ STL classes
-using std::shared_ptr;
-
 // References:
 // - https://www.khronos.org/registry/OpenGL/extensions/IMG/IMG_texture_compression_pvrtc.txt
 // - https://gist.github.com/andreysm/bf835e634de37c2ee48d
@@ -35,7 +32,7 @@ namespace LibRpTexture { namespace ImageDecoder {
  * @param mode Mode bitfield. (See PVRTC_Mode_e.)
  * @return rp_image, or nullptr on error.
  */
-shared_ptr<rp_image> fromPVRTC(int width, int height,
+rp_image_ptr fromPVRTC(int width, int height,
 	const uint8_t *RESTRICT img_buf, size_t img_siz,
 	uint8_t mode)
 {
@@ -81,7 +78,7 @@ shared_ptr<rp_image> fromPVRTC(int width, int height,
 	}
 
 	// Create an rp_image.
-	const shared_ptr<rp_image> img = std::make_shared<rp_image>(physWidth, physHeight, rp_image::Format::ARGB32);
+	const rp_image_ptr img = std::make_shared<rp_image>(physWidth, physHeight, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
 		return nullptr;
@@ -123,7 +120,7 @@ shared_ptr<rp_image> fromPVRTC(int width, int height,
  * @param mode Mode bitfield. (See PVRTC_Mode_e.)
  * @return rp_image, or nullptr on error.
  */
-shared_ptr<rp_image> fromPVRTCII(int width, int height,
+rp_image_ptr fromPVRTCII(int width, int height,
 	const uint8_t *RESTRICT img_buf, size_t img_siz,
 	uint8_t mode)
 {
@@ -173,7 +170,7 @@ shared_ptr<rp_image> fromPVRTCII(int width, int height,
 	}
 
 	// Create an rp_image.
-	const shared_ptr<rp_image> img = std::make_shared<rp_image>(physWidth, physHeight, rp_image::Format::ARGB32);
+	const rp_image_ptr img = std::make_shared<rp_image>(physWidth, physHeight, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
 		return nullptr;

@@ -16,7 +16,6 @@ using namespace LibRpTexture::PixelConversion;
 
 // C++ STL classes
 using std::array;
-using std::shared_ptr;
 
 // References:
 // - http://www.matejtomcik.com/Public/KnowHow/DXTDecompression/
@@ -196,7 +195,7 @@ static inline uint8_t decode_DXT5_alpha_S3TC(unsigned int a3, const uint8_t *RES
  * @param img_siz Size of image data. [must be >= (w*h)/2]
  * @return rp_image, or nullptr on error.
  */
-shared_ptr<rp_image> fromDXT1_GCN(int width, int height,
+rp_image_ptr fromDXT1_GCN(int width, int height,
 	const uint8_t *RESTRICT img_buf, size_t img_siz)
 {
 	// Verify parameters.
@@ -217,7 +216,7 @@ shared_ptr<rp_image> fromDXT1_GCN(int width, int height,
 		return nullptr;
 
 	// Create an rp_image.
-	const shared_ptr<rp_image> img = std::make_shared<rp_image>(width, height, rp_image::Format::ARGB32);
+	const rp_image_ptr img = std::make_shared<rp_image>(width, height, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
 		return nullptr;
@@ -283,7 +282,7 @@ shared_ptr<rp_image> fromDXT1_GCN(int width, int height,
  * @return rp_image, or nullptr on error.
  */
 template<unsigned int palflags>
-static shared_ptr<rp_image> T_fromDXT1(int width, int height,
+static rp_image_ptr T_fromDXT1(int width, int height,
 	const uint8_t *RESTRICT img_buf, size_t img_siz)
 {
 	// Verify parameters.
@@ -305,7 +304,7 @@ static shared_ptr<rp_image> T_fromDXT1(int width, int height,
 	}
 
 	// Create an rp_image.
-	const shared_ptr<rp_image> img = std::make_shared<rp_image>(physWidth, physHeight, rp_image::Format::ARGB32);
+	const rp_image_ptr img = std::make_shared<rp_image>(physWidth, physHeight, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
 		return nullptr;
@@ -360,7 +359,7 @@ static shared_ptr<rp_image> T_fromDXT1(int width, int height,
  * @param img_siz Size of image data. [must be >= (w*h)/2]
  * @return rp_image, or nullptr on error.
  */
-shared_ptr<rp_image> fromDXT1(int width, int height,
+rp_image_ptr fromDXT1(int width, int height,
 	const uint8_t *RESTRICT img_buf, size_t img_siz)
 {
 	return T_fromDXT1<0>(width, height, img_buf, img_siz);
@@ -376,7 +375,7 @@ shared_ptr<rp_image> fromDXT1(int width, int height,
  * @param img_siz Size of image data. [must be >= (w*h)/2]
  * @return rp_image, or nullptr on error.
  */
-shared_ptr<rp_image> fromDXT1_A1(int width, int height,
+rp_image_ptr fromDXT1_A1(int width, int height,
 	const uint8_t *RESTRICT img_buf, size_t img_siz)
 {
 	return T_fromDXT1<DXTn_PALETTE_COLOR3_ALPHA>(width, height, img_buf, img_siz);
@@ -390,14 +389,14 @@ shared_ptr<rp_image> fromDXT1_A1(int width, int height,
  * @param img_siz Size of image data. [must be >= (w*h)]
  * @return rp_image, or nullptr on error.
  */
-shared_ptr<rp_image> fromDXT2(int width, int height,
+rp_image_ptr fromDXT2(int width, int height,
 	const uint8_t *RESTRICT img_buf, size_t img_siz)
 {
 	// TODO: Completely untested. Needs testing!
 
 	// Use fromDXT3(), then convert from premultiplied alpha
 	// to standard alpha.
-	const shared_ptr<rp_image> img = fromDXT3(width, height, img_buf, img_siz);
+	const rp_image_ptr img = fromDXT3(width, height, img_buf, img_siz);
 	if (!img) {
 		return nullptr;
 	}
@@ -418,7 +417,7 @@ shared_ptr<rp_image> fromDXT2(int width, int height,
  * @param img_siz Size of image data. [must be >= (w*h)]
  * @return rp_image, or nullptr on error.
  */
-shared_ptr<rp_image> fromDXT3(int width, int height,
+rp_image_ptr fromDXT3(int width, int height,
 	const uint8_t *RESTRICT img_buf, size_t img_siz)
 {
 	// Verify parameters.
@@ -440,7 +439,7 @@ shared_ptr<rp_image> fromDXT3(int width, int height,
 	}
 
 	// Create an rp_image.
-	const shared_ptr<rp_image> img = std::make_shared<rp_image>(physWidth, physHeight, rp_image::Format::ARGB32);
+	const rp_image_ptr img = std::make_shared<rp_image>(physWidth, physHeight, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
 		return nullptr;
@@ -506,14 +505,14 @@ shared_ptr<rp_image> fromDXT3(int width, int height,
  * @param img_siz Size of image data. [must be >= (w*h)]
  * @return rp_image, or nullptr on error.
  */
-shared_ptr<rp_image> fromDXT4(int width, int height,
+rp_image_ptr fromDXT4(int width, int height,
 	const uint8_t *RESTRICT img_buf, size_t img_siz)
 {
 	// TODO: Completely untested. Needs testing!
 
 	// Use fromDXT5(), then convert from premultiplied alpha
 	// to standard alpha.
-	const shared_ptr<rp_image> img = fromDXT5(width, height, img_buf, img_siz);
+	const rp_image_ptr img = fromDXT5(width, height, img_buf, img_siz);
 	if (!img) {
 		return nullptr;
 	}
@@ -534,7 +533,7 @@ shared_ptr<rp_image> fromDXT4(int width, int height,
  * @param img_siz Size of image data. [must be >= (w*h)]
  * @return rp_image, or nullptr on error.
  */
-shared_ptr<rp_image> fromDXT5(int width, int height,
+rp_image_ptr fromDXT5(int width, int height,
 	const uint8_t *RESTRICT img_buf, size_t img_siz)
 {
 	// Verify parameters.
@@ -556,7 +555,7 @@ shared_ptr<rp_image> fromDXT5(int width, int height,
 	}
 
 	// Create an rp_image.
-	const shared_ptr<rp_image> img = std::make_shared<rp_image>(physWidth, physHeight, rp_image::Format::ARGB32);
+	const rp_image_ptr img = std::make_shared<rp_image>(physWidth, physHeight, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
 		return nullptr;
@@ -624,7 +623,7 @@ shared_ptr<rp_image> fromDXT5(int width, int height,
  * @param img_siz Size of image data. [must be >= (w*h)/2]
  * @return rp_image, or nullptr on error.
  */
-shared_ptr<rp_image> fromBC4(int width, int height,
+rp_image_ptr fromBC4(int width, int height,
 	const uint8_t *RESTRICT img_buf, size_t img_siz)
 {
 	// Verify parameters.
@@ -646,7 +645,7 @@ shared_ptr<rp_image> fromBC4(int width, int height,
 	}
 
 	// Create an rp_image.
-	const shared_ptr<rp_image> img = std::make_shared<rp_image>(physWidth, physHeight, rp_image::Format::ARGB32);
+	const rp_image_ptr img = std::make_shared<rp_image>(physWidth, physHeight, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
 		return nullptr;
@@ -714,7 +713,7 @@ shared_ptr<rp_image> fromBC4(int width, int height,
  * @param img_siz Size of image data. [must be >= (w*h)]
  * @return rp_image, or nullptr on error.
  */
-shared_ptr<rp_image> fromBC5(int width, int height,
+rp_image_ptr fromBC5(int width, int height,
 	const uint8_t *RESTRICT img_buf, size_t img_siz)
 {
 	// Verify parameters.
@@ -736,7 +735,7 @@ shared_ptr<rp_image> fromBC5(int width, int height,
 	}
 
 	// Create an rp_image.
-	const shared_ptr<rp_image> img = std::make_shared<rp_image>(physWidth, physHeight, rp_image::Format::ARGB32);
+	const rp_image_ptr img = std::make_shared<rp_image>(physWidth, physHeight, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
 		return nullptr;
@@ -805,7 +804,7 @@ shared_ptr<rp_image> fromBC5(int width, int height,
  * @param img rp_image to convert in-place.
  * @return 0 on success; negative POSIX error code on error.
  */
-int fromRed8ToL8(const shared_ptr<rp_image> &img)
+int fromRed8ToL8(const rp_image_ptr &img)
 {
 	assert(img != nullptr);
 	assert(img->format() == rp_image::Format::ARGB32);
@@ -844,7 +843,7 @@ int fromRed8ToL8(const shared_ptr<rp_image> &img)
  * @param img rp_image to convert in-place.
  * @return 0 on success; negative POSIX error code on error.
  */
-int fromRG8ToLA8(const shared_ptr<rp_image> &img)
+int fromRG8ToLA8(const rp_image_ptr &img)
 {
 	assert(img != nullptr);
 	assert(img->format() == rp_image::Format::ARGB32);

@@ -12,13 +12,13 @@
 #include "res/resource.h"
 #include "RomDataFormat.hpp"
 
-// librpbase, librpfile, librptexture
+// Other rom-properties libraries
 #include "librpbase/Achievements.hpp"
 #include "librpbase/RomFields.hpp"
 #include "librpbase/img/RpPng.hpp"
 #include "librptexture/img/rp_image.hpp"
 using namespace LibRpBase;
-using LibRpTexture::rp_image;
+using namespace LibRpTexture;
 
 // RpFile_windres
 #include "file/RpFile_windres.hpp"
@@ -287,7 +287,7 @@ void AchievementsTabPrivate::updateImageList(void)
 		return;
 	}
 
-	const shared_ptr<const rp_image> imgAchSheet = RpPng::load(f_res);
+	const rp_image_const_ptr imgAchSheet = RpPng::load(f_res);
 	assert((bool)imgAchSheet);
 	if (!imgAchSheet)
 		return;
@@ -306,7 +306,7 @@ void AchievementsTabPrivate::updateImageList(void)
 		return;
 	}
 
-	const shared_ptr<const rp_image> imgAchGraySheet = RpPng::load(f_res);
+	const rp_image_const_ptr imgAchGraySheet = RpPng::load(f_res);
 	assert((bool)imgAchGraySheet);
 	if (!imgAchGraySheet) {
 		return;

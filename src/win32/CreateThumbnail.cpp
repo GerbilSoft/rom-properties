@@ -16,7 +16,6 @@
 using namespace LibRpTexture;
 
 // C++ STL classes
-using std::shared_ptr;
 using std::string;
 
 // TCreateThumbnail is a templated class,
@@ -33,7 +32,7 @@ template class LibRomData::TCreateThumbnail<HBITMAP>;
  * @param img rp_image
  * @return ImgClass
  */
-HBITMAP CreateThumbnail::rpImageToImgClass(const shared_ptr<const rp_image> &img) const
+HBITMAP CreateThumbnail::rpImageToImgClass(const rp_image_const_ptr &img) const
 {
 	// IExtractIcon and IThumbnailProvider both support alpha transparency.
 	// We're returning HBITMAP here, which works for IThumbnailProvider.
@@ -51,7 +50,7 @@ HBITMAP CreateThumbnail::rpImageToImgClass(const shared_ptr<const rp_image> &img
 	// Windows doesn't like non-square icons.
 	// Add extra transparent columns/rows before
 	// converting to HBITMAP.
-	shared_ptr<rp_image> tmp_img;
+	rp_image_ptr tmp_img;
 	if (m_doSquaring && !img->isSquare()) {
 		// Image is non-square.
 		tmp_img = img->squared();
@@ -82,7 +81,7 @@ HBITMAP CreateThumbnail::rpImageToImgClass(const shared_ptr<const rp_image> &img
 HBITMAP CreateThumbnail::rescaleImgClass(const HBITMAP &imgClass, ImgSize sz, ScalingMethod method) const
 {
 	// Convert the HBITMAP to rp_image.
-	const shared_ptr<const rp_image> img = RpImageWin32::fromHBITMAP(imgClass);
+	const rp_image_const_ptr img = RpImageWin32::fromHBITMAP(imgClass);
 	if (!img) {
 		// Error converting to rp_image.
 		return nullptr;
@@ -138,7 +137,7 @@ bool CreateThumbnail::isMetered(void)
  * @param img rp_image
  * @return ImgClass
  */
-HBITMAP CreateThumbnailNoAlpha::rpImageToImgClass(const shared_ptr<const rp_image> &img) const
+HBITMAP CreateThumbnailNoAlpha::rpImageToImgClass(const rp_image_const_ptr &img) const
 {
 	// IExtractImage doesn't support alpha transparency, so we'll
 	// use COLOR_WINDOW as the background color.
@@ -174,7 +173,7 @@ HBITMAP CreateThumbnailNoAlpha::rpImageToImgClass(const shared_ptr<const rp_imag
 HBITMAP CreateThumbnailNoAlpha::rescaleImgClass(const HBITMAP &imgClass, ImgSize sz, ScalingMethod method) const
 {
 	// Convert the HBITMAP to rp_image.
-	const shared_ptr<const rp_image> img = RpImageWin32::fromHBITMAP(imgClass);
+	const rp_image_const_ptr img = RpImageWin32::fromHBITMAP(imgClass);
 	if (!img) {
 		// Error converting to rp_image.
 		return nullptr;

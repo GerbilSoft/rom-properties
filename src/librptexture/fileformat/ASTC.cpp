@@ -21,9 +21,6 @@ using LibRpBase::RomFields;
 #include "img/rp_image.hpp"
 #include "decoder/ImageDecoder_ASTC.hpp"
 
-// C++ STL classes
-using std::shared_ptr;
-
 namespace LibRpTexture {
 
 class ASTCPrivate final : public FileFormatPrivate
@@ -47,7 +44,7 @@ class ASTCPrivate final : public FileFormatPrivate
 		ASTC_Header astcHeader;
 
 		// Decoded image
-		shared_ptr<rp_image> img;
+		rp_image_ptr img;
 
 		// Pixel format message
 		char pixel_format[20];
@@ -56,7 +53,7 @@ class ASTCPrivate final : public FileFormatPrivate
 		 * Load the image.
 		 * @return Image, or nullptr on error.
 		 */
-		shared_ptr<const rp_image> loadImage(void);
+		rp_image_const_ptr loadImage(void);
 };
 
 FILEFORMAT_IMPL(ASTC)
@@ -93,7 +90,7 @@ ASTCPrivate::ASTCPrivate(ASTC *q, const IRpFilePtr &file)
  * Load the image.
  * @return Image, or nullptr on error.
  */
-shared_ptr<const rp_image> ASTCPrivate::loadImage(void)
+rp_image_const_ptr ASTCPrivate::loadImage(void)
 {
 	if (img) {
 		// Image has already been loaded.
@@ -315,7 +312,7 @@ int ASTC::getFields(RomFields *fields) const
  * The image is owned by this object.
  * @return Image, or nullptr on error.
  */
-shared_ptr<const rp_image> ASTC::image(void) const
+rp_image_const_ptr ASTC::image(void) const
 {
 	RP_D(const ASTC);
 	if (!d->isValid) {
@@ -333,7 +330,7 @@ shared_ptr<const rp_image> ASTC::image(void) const
  * @param mip Mipmap number.
  * @return Image, or nullptr on error.
  */
-shared_ptr<const rp_image> ASTC::mipmap(int mip) const
+rp_image_const_ptr ASTC::mipmap(int mip) const
 {
 	// Allowing mipmap 0 for compatibility.
 	if (mip == 0) {

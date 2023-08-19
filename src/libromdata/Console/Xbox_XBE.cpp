@@ -70,7 +70,7 @@ class Xbox_XBE_Private final : public RomDataPrivate
 		struct {
 			// TODO: Union of XboxXPR and rp_image, or std::variant<>?
 			XboxXPR *xpr0;
-			shared_ptr<rp_image> png;
+			rp_image_ptr png;
 
 			bool isInit;
 			bool isPng;
@@ -296,7 +296,7 @@ int Xbox_XBE_Private::initXPR0_xtImage(void)
 		}
 	} else if (magic == cpu_to_be32(0x89504E47U)) {	// '\x89PNG'
 		// PNG image.
-		shared_ptr<rp_image> img = RpPng::load(subFile);
+		rp_image_ptr img = RpPng::load(subFile);
 		if (img->isValid()) {
 			// PNG image opened.
 			xtImage.isInit = true;
@@ -865,10 +865,10 @@ int Xbox_XBE::loadMetaData(void)
  * Load an internal image.
  * Called by RomData::image().
  * @param imageType	[in] Image type to load.
- * @param pImage	[out] Reference to shared_ptr<const rp_image> to store the image in.
+ * @param pImage	[out] Reference to rp_image_const_ptr to store the image in.
  * @return 0 on success; negative POSIX error code on error.
  */
-int Xbox_XBE::loadInternalImage(ImageType imageType, shared_ptr<const rp_image> &pImage)
+int Xbox_XBE::loadInternalImage(ImageType imageType, rp_image_const_ptr &pImage)
 {
 	ASSERT_loadInternalImage(imageType, pImage);
 

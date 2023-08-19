@@ -21,7 +21,6 @@ using namespace LibRpText;
 using namespace LibRpTexture;
 
 // C++ STL classes
-using std::shared_ptr;
 using std::string;
 using std::vector;
 
@@ -63,7 +62,7 @@ class GameCubeBNRPrivate final : public RomDataPrivate
 		uint32_t gcnRegion;
 
 		// Internal images
-		shared_ptr<rp_image> img_banner;
+		rp_image_ptr img_banner;
 
 		// Banner comments
 		// - If BNR1: 1 item.
@@ -75,7 +74,7 @@ class GameCubeBNRPrivate final : public RomDataPrivate
 		 * Load the banner.
 		 * @return Banner, or nullptr on error.
 		 */
-		shared_ptr<const rp_image> loadBanner(void);
+		rp_image_const_ptr loadBanner(void);
 
 		/**
 		 * Should the string be handled as Shift-JIS?
@@ -158,7 +157,7 @@ GameCubeBNRPrivate::GameCubeBNRPrivate(const IRpFilePtr &file, uint32_t gcnRegio
  * Load the banner image.
  * @return Banner, or nullptr on error.
  */
-shared_ptr<const rp_image> GameCubeBNRPrivate::loadBanner(void)
+rp_image_const_ptr GameCubeBNRPrivate::loadBanner(void)
 {
 	if (img_banner) {
 		// Banner is already loaded.
@@ -833,10 +832,10 @@ int GameCubeBNR::loadMetaData(void)
  * Load an internal image.
  * Called by RomData::image().
  * @param imageType	[in] Image type to load.
- * @param pImage	[out] Reference to shared_ptr<const rp_image> to store the image in.
+ * @param pImage	[out] Reference to rp_image_const_ptr to store the image in.
  * @return 0 on success; negative POSIX error code on error.
  */
-int GameCubeBNR::loadInternalImage(ImageType imageType, shared_ptr<const rp_image> &pImage)
+int GameCubeBNR::loadInternalImage(ImageType imageType, rp_image_const_ptr &pImage)
 {
 	ASSERT_loadInternalImage(imageType, pImage);
 	RP_D(GameCubeBNR);

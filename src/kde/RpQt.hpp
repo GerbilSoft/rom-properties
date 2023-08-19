@@ -138,20 +138,20 @@ QImage rpToQImage(const LibRpTexture::rp_image *image);
 
 /**
  * Convert an rp_image to QImage.
- * @param image shared_ptr<rp_image>
+ * @param image rp_image_ptr
  * @return QImage.
  */
-static inline QImage rpToQImage(const std::shared_ptr<LibRpTexture::rp_image> &image)
+static inline QImage rpToQImage(const LibRpTexture::rp_image_ptr &image)
 {
 	return rpToQImage(image.get());
 }
 
 /**
  * Convert an rp_image to QImage.
- * @param image shared_ptr<rp_image>
+ * @param image rp_image_const_ptr
  * @return QImage.
  */
-static inline QImage rpToQImage(const std::shared_ptr<const LibRpTexture::rp_image> &image)
+static inline QImage rpToQImage(const LibRpTexture::rp_image_const_ptr &image)
 {
 	return rpToQImage(image.get());
 }

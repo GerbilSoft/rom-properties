@@ -38,11 +38,10 @@
 #include "MessageWidget.hpp"
 #include "OptionsMenuButton.hpp"
 
-// rp_image backend registration.
+// rp_image backend registration
 #include "librptexture/img/GdiplusHelper.hpp"
 #include "librptexture/img/RpGdiplusBackend.hpp"
-using LibRpTexture::RpGdiplusBackend;
-using LibRpTexture::rp_image;
+using namespace LibRpTexture;
 
 // GDI+ token.
 static ULONG_PTR gdipToken = 0;

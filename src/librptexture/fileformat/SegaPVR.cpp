@@ -25,7 +25,6 @@ using LibRpBase::RomFields;
 #include "decoder/ImageDecoder_S3TC.hpp"
 
 // C++ STL classes
-using std::shared_ptr;
 using std::unique_ptr;
 
 namespace LibRpTexture {
@@ -82,7 +81,7 @@ class SegaPVRPrivate final : public FileFormatPrivate
 		uint32_t gbix;
 
 		// Decoded image
-		shared_ptr<rp_image> img;
+		rp_image_ptr img;
 
 		// Invalid pixel format message
 		char invalid_pixel_format[24];
@@ -105,13 +104,13 @@ class SegaPVRPrivate final : public FileFormatPrivate
 		 * Load the PVR/SVR image.
 		 * @return Image, or nullptr on error.
 		 */
-		shared_ptr<const rp_image> loadPvrImage(void);
+		rp_image_const_ptr loadPvrImage(void);
 
 		/**
 		 * Load the GVR image.
 		 * @return Image, or nullptr on error.
 		 */
-		shared_ptr<const rp_image> loadGvrImage(void);
+		rp_image_const_ptr loadGvrImage(void);
 
 		/**
 		 * Unswizzle a 4-bit or 8-bit SVR texture.
@@ -119,7 +118,7 @@ class SegaPVRPrivate final : public FileFormatPrivate
 		 * @param img_swz Swizzled 4-bit or 8-bit SVR texture.
 		 * @return Unswizzled 4-bit or 8-bit SVR texture, or nullptr on error.
 		 */
-		static shared_ptr<rp_image> svr_unswizzle_4or8(const shared_ptr<const rp_image> &img_swz);
+		static rp_image_ptr svr_unswizzle_4or8(const rp_image_const_ptr &img_swz);
 
 		/**
 		 * Unswizzle a 16-bit SVR texture.
@@ -127,7 +126,7 @@ class SegaPVRPrivate final : public FileFormatPrivate
 		 * @param img_swz Swizzled 16-bit SVR texture.
 		 * @return Unswizzled 16-bit SVR texture, or nullptr on error.
 		 */
-		static shared_ptr<rp_image> svr_unswizzle_16(const shared_ptr<const rp_image> &img_swz);
+		static rp_image_ptr svr_unswizzle_16(const rp_image_const_ptr &img_swz);
 };
 
 FILEFORMAT_IMPL(SegaPVR)
@@ -382,7 +381,7 @@ const char *SegaPVRPrivate::imageDataTypeName(void) const
  * Load the PVR/SVR image.
  * @return Image, or nullptr on error.
  */
-shared_ptr<const rp_image> SegaPVRPrivate::loadPvrImage(void)
+rp_image_const_ptr SegaPVRPrivate::loadPvrImage(void)
 {
 	if (img) {
 		// Image has already been loaded.
@@ -679,7 +678,7 @@ shared_ptr<const rp_image> SegaPVRPrivate::loadPvrImage(void)
 				    pvrHeader.width >= 64 && pvrHeader.height >= 64)
 				{
 					// Need to unswizzle the texture.
-					const shared_ptr<rp_image> img_unswz = svr_unswizzle_16(img);
+					const rp_image_ptr img_unswz = svr_unswizzle_16(img);
 					if (img_unswz) {
 						img = img_unswz;
 					}
@@ -782,7 +781,7 @@ shared_ptr<const rp_image> SegaPVRPrivate::loadPvrImage(void)
 			// Puyo Tools: Minimum swizzle size for 4-bit is 128x128.
 			if (pvrHeader.width >= 128 && pvrHeader.height >= 128) {
 				// Need to unswizzle the texture.
-				const shared_ptr<rp_image> img_unswz = svr_unswizzle_4or8(img);
+				const rp_image_ptr img_unswz = svr_unswizzle_4or8(img);
 				if (img_unswz) {
 					img = img_unswz;
 				}
@@ -832,7 +831,7 @@ shared_ptr<const rp_image> SegaPVRPrivate::loadPvrImage(void)
 			// Puyo Tools: Minimum swizzle size for 8-bit is 128x64.
 			if (pvrHeader.width >= 128 && pvrHeader.height >= 64) {
 				// Need to unswizzle the texture.
-				const shared_ptr<rp_image> img_unswz = svr_unswizzle_4or8(img);
+				const rp_image_ptr img_unswz = svr_unswizzle_4or8(img);
 				if (img_unswz) {
 					img = img_unswz;
 				}
@@ -852,7 +851,7 @@ shared_ptr<const rp_image> SegaPVRPrivate::loadPvrImage(void)
  * Load the GVR image.
  * @return Image, or nullptr on error.
  */
-shared_ptr<const rp_image> SegaPVRPrivate::loadGvrImage(void)
+rp_image_const_ptr SegaPVRPrivate::loadGvrImage(void)
 {
 	if (img) {
 		// Image has already been loaded.
@@ -980,7 +979,7 @@ shared_ptr<const rp_image> SegaPVRPrivate::loadGvrImage(void)
  * @param img_swz Swizzled 4-bit or 8-bit SVR texture.
  * @return Unswizzled 4-bit or 8-bit SVR texture, or nullptr on error.
  */
-shared_ptr<rp_image> SegaPVRPrivate::svr_unswizzle_4or8(const shared_ptr<const rp_image> &img_swz)
+rp_image_ptr SegaPVRPrivate::svr_unswizzle_4or8(const rp_image_const_ptr &img_swz)
 {
 	// TODO: Move to ImageDecoder if more PS2 formats are added.
 
@@ -1024,7 +1023,7 @@ shared_ptr<rp_image> SegaPVRPrivate::svr_unswizzle_4or8(const shared_ptr<const r
 		return nullptr;
 	}
 
-	const shared_ptr<rp_image> img = std::make_shared<rp_image>(width, height, img_swz->format());
+	const rp_image_ptr img = std::make_shared<rp_image>(width, height, img_swz->format());
 	if (!img->isValid()) {
 		// Could not allocate the image.
 		return nullptr;
@@ -1082,7 +1081,7 @@ shared_ptr<rp_image> SegaPVRPrivate::svr_unswizzle_4or8(const shared_ptr<const r
  * @param img_swz Swizzled 16-bit SVR texture.
  * @return Unswizzled 16-bit SVR texture, or nullptr on error.
  */
-shared_ptr<rp_image> SegaPVRPrivate::svr_unswizzle_16(const shared_ptr<const rp_image> &img_swz)
+rp_image_ptr SegaPVRPrivate::svr_unswizzle_16(const rp_image_const_ptr &img_swz)
 {
 	// TODO: Move to ImageDecoder if more PS2 formats are added.
 
@@ -1124,7 +1123,7 @@ shared_ptr<rp_image> SegaPVRPrivate::svr_unswizzle_16(const shared_ptr<const rp_
 		return nullptr;
 	}
 
-	const shared_ptr<rp_image> img = std::make_shared<rp_image>(width, height, img_swz->format());
+	const rp_image_ptr img = std::make_shared<rp_image>(width, height, img_swz->format());
 	if (!img->isValid()) {
 		// Could not allocate the image.
 		return nullptr;
@@ -1525,7 +1524,7 @@ int SegaPVR::getFields(RomFields *fields) const
  * The image is owned by this object.
  * @return Image, or nullptr on error.
  */
-shared_ptr<const rp_image> SegaPVR::image(void) const
+rp_image_const_ptr SegaPVR::image(void) const
 {
 	// The full image is mipmap 0.
 	return this->mipmap(0);
@@ -1537,7 +1536,7 @@ shared_ptr<const rp_image> SegaPVR::image(void) const
  * @param mip Mipmap number.
  * @return Image, or nullptr on error.
  */
-shared_ptr<const rp_image> SegaPVR::mipmap(int mip) const
+rp_image_const_ptr SegaPVR::mipmap(int mip) const
 {
 	RP_D(const SegaPVR);
 	if (!d->isValid) {

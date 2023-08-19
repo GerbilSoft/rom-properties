@@ -11,11 +11,9 @@
 
 // librptexture
 #include "librptexture/img/RpGdiplusBackend.hpp"
-using LibRpTexture::rp_image;
-using LibRpTexture::RpGdiplusBackend;
+using namespace LibRpTexture;
 
 // C++ STL classes
-using std::shared_ptr;
 using std::unique_ptr;
 
 // Gdiplus for HBITMAP conversion.
@@ -197,7 +195,7 @@ static HBITMAP toHBITMAP_mask(const rp_image *image)
  * @param image rp_image.
  * @return HBITMAP, or nullptr on error.
  */
-static inline HBITMAP toHBITMAP_mask(const shared_ptr<rp_image> &image)
+static inline HBITMAP toHBITMAP_mask(const rp_image_ptr &image)
 {
 	return toHBITMAP_mask(image.get());
 }
@@ -207,7 +205,7 @@ static inline HBITMAP toHBITMAP_mask(const shared_ptr<rp_image> &image)
  * @param image rp_image.
  * @return HBITMAP, or nullptr on error.
  */
-static inline HBITMAP toHBITMAP_mask(const shared_ptr<const rp_image> &image)
+static inline HBITMAP toHBITMAP_mask(const rp_image_const_ptr &image)
 {
 	return toHBITMAP_mask(image.get());
 }
@@ -343,7 +341,7 @@ HICON toHICON(const rp_image *image)
 	// Windows doesn't like non-square icons.
 	// Add extra transparent columns/rows before
 	// converting to HBITMAP.
-	std::shared_ptr<rp_image> tmp_img;
+	rp_image_ptr tmp_img;
 	if (!image->isSquare()) {
 		// Image is non-square.
 		tmp_img = image->squared();
@@ -397,7 +395,7 @@ cleanup:
  * @param hBitmap HBITMAP.
  * @return rp_image.
  */
-shared_ptr<rp_image> fromHBITMAP(HBITMAP hBitmap)
+rp_image_ptr fromHBITMAP(HBITMAP hBitmap)
 {
 	BITMAP bm;
 	if (!GetObject(hBitmap, sizeof(bm), &bm)) {
@@ -458,7 +456,7 @@ shared_ptr<rp_image> fromHBITMAP(HBITMAP hBitmap)
 	}
 
 	// Copy the data into a new rp_image.
-	shared_ptr<rp_image> img = std::make_shared<rp_image>(bm.bmWidth, height, format);
+	rp_image_ptr img = std::make_shared<rp_image>(bm.bmWidth, height, format);
 	if (!img->isValid()) {
 		// Could not allocate the image.
 		return nullptr;
@@ -499,7 +497,7 @@ HICON toHICON(HBITMAP hBitmap)
 	// NOTE: Windows doesn't seem to have any way to get
 	// direct access to the HBITMAP's pixels, so this step
 	// step is required. (GetDIBits() copies the pixels.)
-	shared_ptr<rp_image> img = fromHBITMAP(hBitmap);
+	rp_image_ptr img = fromHBITMAP(hBitmap);
 	if (!img) {
 		// Error converting to rp_image.
 		return nullptr;
@@ -511,7 +509,7 @@ HICON toHICON(HBITMAP hBitmap)
 	HBITMAP hBmpTmp = nullptr;
 	if (!img->isSquare()) {
 		// Image is non-square.
-		const shared_ptr<rp_image> tmp_img = img->squared();
+		const rp_image_ptr tmp_img = img->squared();
 		if (tmp_img) {
 			img = tmp_img;
 		}

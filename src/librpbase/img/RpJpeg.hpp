@@ -10,15 +10,9 @@
 
 #include "common.h"
 
-namespace LibRpFile {
-	class IRpFile;
-}
-namespace LibRpTexture {
-	class rp_image;
-}
-
-// C++ includes
-#include <memory>
+// Other rom-properties libraries
+#include "librpfile/IRpFile.hpp"
+#include "librptexture/img/rp_image.hpp"
 
 namespace LibRpBase {
 
@@ -37,7 +31,7 @@ class RpJpeg
 		 * @param file IRpFile to load from.
 		 * @return rp_image*, or nullptr on error.
 		 */
-		static std::shared_ptr<LibRpTexture::rp_image> load(const LibRpFile::IRpFilePtr &file);
+		static LibRpTexture::rp_image_ptr load(const LibRpFile::IRpFilePtr &file);
 };
 
 }

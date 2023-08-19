@@ -11,10 +11,10 @@
 #include "RP_ThumbnailProvider.hpp"
 #include "RpImageWin32.hpp"
 
-// librpbase, librpfile, librptexture
+// Other rom-properties libraries
 using namespace LibRpBase;
-using LibRpFile::IRpFile;
-using LibRpTexture::rp_image;
+using namespace LibRpFile;
+using namespace LibRpTexture;
 
 // RpFile_IStream
 #include "file/RpFile_IStream.hpp"

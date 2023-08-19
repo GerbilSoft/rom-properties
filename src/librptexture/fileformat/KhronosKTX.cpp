@@ -37,7 +37,6 @@ using LibRpBase::RomFields;
 #include "decoder/ImageDecoder_ASTC.hpp"
 
 // C++ STL classes
-using std::shared_ptr;
 using std::string;
 using std::unique_ptr;
 using std::vector;
@@ -78,7 +77,7 @@ class KhronosKTXPrivate final : public FileFormatPrivate
 		unsigned int texDataStartAddr;
 
 		// Decoded image
-		shared_ptr<rp_image> img;
+		rp_image_ptr img;
 
 		// Invalid pixel format message
 		char invalid_pixel_format[24];
@@ -93,7 +92,7 @@ class KhronosKTXPrivate final : public FileFormatPrivate
 		 * Load the image.
 		 * @return Image, or nullptr on error.
 		 */
-		shared_ptr<const rp_image> loadImage(void);
+		rp_image_const_ptr loadImage(void);
 
 		/**
 		 * Load key/value data.
@@ -137,7 +136,7 @@ KhronosKTXPrivate::KhronosKTXPrivate(KhronosKTX *q, const IRpFilePtr &file)
  * Load the image.
  * @return Image, or nullptr on error.
  */
-shared_ptr<const rp_image> KhronosKTXPrivate::loadImage(void)
+rp_image_const_ptr KhronosKTXPrivate::loadImage(void)
 {
 	if (img) {
 		// Image has already been loaded.
@@ -691,7 +690,7 @@ shared_ptr<const rp_image> KhronosKTXPrivate::loadImage(void)
 
 	// Post-processing: Check if a flip is needed.
 	if (img && flipOp != rp_image::FLIP_NONE) {
-		const shared_ptr<rp_image> flipimg = img->flip(flipOp);
+		const rp_image_ptr flipimg = img->flip(flipOp);
 		if (flipimg) {
 			img = flipimg;
 		}
@@ -1125,7 +1124,7 @@ int KhronosKTX::getFields(RomFields *fields) const
  * The image is owned by this object.
  * @return Image, or nullptr on error.
  */
-shared_ptr<const rp_image> KhronosKTX::image(void) const
+rp_image_const_ptr KhronosKTX::image(void) const
 {
 	// The full image is mipmap 0.
 	return this->mipmap(0);
@@ -1137,7 +1136,7 @@ shared_ptr<const rp_image> KhronosKTX::image(void) const
  * @param mip Mipmap number.
  * @return Image, or nullptr on error.
  */
-shared_ptr<const rp_image> KhronosKTX::mipmap(int mip) const
+rp_image_const_ptr KhronosKTX::mipmap(int mip) const
 {
 	RP_D(const KhronosKTX);
 	if (!d->isValid) {

@@ -332,8 +332,8 @@ void ImageDecoderTest::Compare_RpImage(
 	ASSERT_EQ(pImgExpected->height(), pImgActual->height()) << "Image sizes don't match.";
 
 	// Ensure we delete temporary images if they're created.
-	shared_ptr<const rp_image> tmpImg_expected;
-	shared_ptr<const rp_image> tmpImg_actual;
+	rp_image_const_ptr tmpImg_expected;
+	rp_image_const_ptr tmpImg_actual;
 
 	switch (pImgExpected->format()) {
 		case rp_image::Format::ARGB32:
@@ -404,7 +404,7 @@ void ImageDecoderTest::decodeTest_internal(void)
 	// Load the PNG image.
 	shared_ptr<MemFile> f_png = std::make_shared<MemFile>(m_png_buf.data(), m_png_buf.size());
 	ASSERT_TRUE(f_png->isOpen()) << "Could not create MemFile for the PNG image.";
-	shared_ptr<const rp_image> img_png(RpPng::load(f_png));
+	rp_image_const_ptr img_png(RpPng::load(f_png));
 	ASSERT_NE(img_png,nullptr) << "Could not load the PNG image as rp_image.";
 	ASSERT_TRUE(img_png->isValid()) << "Could not load the PNG image as rp_image.";
 
@@ -420,12 +420,12 @@ void ImageDecoderTest::decodeTest_internal(void)
 	ASSERT_TRUE(m_romData->isOpen()) << "Could not load the DDS image.";
 
 	// Get the DDS image as an rp_image.
-	const shared_ptr<const rp_image> img_dds = m_romData->image(mode.imgType);
+	const rp_image_const_ptr img_dds = m_romData->image(mode.imgType);
 	ASSERT_NE(img_dds, nullptr) << "Could not load the DDS image as rp_image.";
 
 	// Get the image again.
 	// The pointer should be identical to the first one.
-	const shared_ptr<const rp_image> img_dds_2 = m_romData->image(mode.imgType);
+	const rp_image_const_ptr img_dds_2 = m_romData->image(mode.imgType);
 	EXPECT_EQ(img_dds.get(), img_dds_2.get()) << "Retrieving the image twice resulted in a different rp_image object.";
 
 	// Verify the pixel format.
@@ -566,7 +566,7 @@ void ImageDecoderTest::decodeBenchmark_internal(void)
 
 		// Get the DDS image as an rp_image.
 		// TODO: imgType to string?
-		const shared_ptr<const rp_image> img_dds = m_romData->image(mode.imgType);
+		const rp_image_const_ptr img_dds = m_romData->image(mode.imgType);
 		ASSERT_TRUE(img_dds != nullptr) << "Could not load the DDS image as rp_image.";
 
 		UNREF_AND_NULL_NOCHK(m_romData);

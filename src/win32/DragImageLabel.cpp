@@ -10,19 +10,12 @@
 #include "DragImageLabel.hpp"
 #include "RpImageWin32.hpp"
 
-// librpbase
+// Other rom-properties libraries
 #include "librpbase/img/IconAnimData.hpp"
 #include "librpbase/img/IconAnimHelper.hpp"
 #include "librpbase/img/RpPngWriter.hpp"
-using LibRpBase::IconAnimData;
-using LibRpBase::IconAnimHelper;
-using LibRpBase::RpPngWriter;
-
-// librptexture
-using LibRpTexture::rp_image;
-
-// C++ STL classes
-using std::shared_ptr;
+using namespace LibRpBase;
+using namespace LibRpTexture;
 
 // Gdiplus for image drawing.
 // NOTE: Gdiplus requires min/max.
@@ -59,7 +52,7 @@ class DragImageLabelPrivate
 		HMENU hMenuEcksBawks;
 
 		// rp_image
-		shared_ptr<const rp_image> img;
+		rp_image_const_ptr img;
 		HBITMAP hbmpImg;	// for non-animated only
 
 		// Animated icon data.
@@ -240,7 +233,7 @@ bool DragImageLabelPrivate::updateBitmaps(void)
 		// Convert the icons to HBITMAP using the window background color.
 		// TODO: Rescale the icon. (port rescaleImage())
 		for (int i = iconAnimData->count-1; i >= 0; i--) {
-			const shared_ptr<const rp_image> &frame = iconAnimData->frames[i];
+			const rp_image_const_ptr &frame = iconAnimData->frames[i];
 			if (frame && frame->isValid()) {
 				if (actualSize.cx == 0) {
 					// Get the icon size and rescale it, if necessary.
@@ -510,7 +503,7 @@ void DragImageLabel::tryPopupEcksBawks(LPARAM lParam)
  * @param img rp_image, or nullptr to clear.
  * @return True on success; false on error or if clearing.
  */
-bool DragImageLabel::setRpImage(const shared_ptr<const rp_image> &img)
+bool DragImageLabel::setRpImage(const rp_image_const_ptr &img)
 {
 	RP_D(DragImageLabel);
 

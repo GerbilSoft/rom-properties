@@ -35,7 +35,6 @@ using LibRpBase::RomFields;
 #include "decoder/ImageDecoder_ASTC.hpp"
 
 // C++ STL classes
-using std::shared_ptr;
 using std::string;
 using std::unique_ptr;
 using std::vector;
@@ -64,7 +63,7 @@ class PowerVR3Private final : public FileFormatPrivate
 
 		// Decoded mipmaps
 		// Mipmap 0 is the full image.
-		vector<shared_ptr<rp_image> > mipmaps;
+		vector<rp_image_ptr > mipmaps;
 
 		// Invalid pixel format message
 		char invalid_pixel_format[40];
@@ -111,7 +110,7 @@ class PowerVR3Private final : public FileFormatPrivate
 		 * @param mip Mipmap number. (0 == full image)
 		 * @return Image, or nullptr on error.
 		 */
-		shared_ptr<const rp_image> loadImage(int mip);
+		rp_image_const_ptr loadImage(int mip);
 
 		/**
 		 * Load PowerVR3 metadata.
@@ -218,7 +217,7 @@ PowerVR3Private::PowerVR3Private(PowerVR3 *q, const IRpFilePtr &file)
  * @param mip Mipmap number. (0 == full image)
  * @return Image, or nullptr on error.
  */
-shared_ptr<const rp_image> PowerVR3Private::loadImage(int mip)
+rp_image_const_ptr PowerVR3Private::loadImage(int mip)
 {
 	int mipmapCount = pvr3Header.mipmap_count;
 	if (mipmapCount <= 0) {
@@ -478,7 +477,7 @@ shared_ptr<const rp_image> PowerVR3Private::loadImage(int mip)
 	}
 
 	// Decode the image.
-	shared_ptr<rp_image> img;
+	rp_image_ptr img;
 	if (pvr3Header.channel_depth != 0) {
 		// Uncompressed format.
 		assert(fmtLkup != nullptr);
@@ -674,7 +673,7 @@ shared_ptr<const rp_image> PowerVR3Private::loadImage(int mip)
 
 	// Post-processing: Check if a flip is needed.
 	if (img && flipOp != rp_image::FLIP_NONE) {
-		const shared_ptr<rp_image> flipimg = img->flip(flipOp);
+		const rp_image_ptr flipimg = img->flip(flipOp);
 		if (flipimg) {
 			img = flipimg;
 		}
@@ -1151,7 +1150,7 @@ int PowerVR3::getFields(RomFields *fields) const
  * The image is owned by this object.
  * @return Image, or nullptr on error.
  */
-shared_ptr<const rp_image> PowerVR3::image(void) const
+rp_image_const_ptr PowerVR3::image(void) const
 {
 	// The full image is mipmap 0.
 	return this->mipmap(0);
@@ -1163,7 +1162,7 @@ shared_ptr<const rp_image> PowerVR3::image(void) const
  * @param mip Mipmap number.
  * @return Image, or nullptr on error.
  */
-shared_ptr<const rp_image> PowerVR3::mipmap(int mip) const
+rp_image_const_ptr PowerVR3::mipmap(int mip) const
 {
 	RP_D(const PowerVR3);
 	if (!d->isValid) {

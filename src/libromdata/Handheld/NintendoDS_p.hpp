@@ -11,19 +11,18 @@
 #include "common.h"
 #include "nds_structs.h"
 
-// C++ includes.
+// C++ includes
 #include <vector>
 
-// librpbase, librpfile, librptexture
+// Other rom-properties libraries
 #include "librpbase/RomData_p.hpp"
 #include "librpbase/RomFields.hpp"
 #include "librptexture/img/rp_image.hpp"
+using namespace LibRpFile;
+using namespace LibRpTexture;
 
 namespace LibRpBase {
 	struct IconAnimData;
-}
-namespace LibRpFile {
-	class IRpFile;
 }
 
 namespace LibRomData {
@@ -52,7 +51,7 @@ class NintendoDSPrivate final : public LibRpBase::RomDataPrivate
 
 		// Pointer to the first frame in iconAnimData.
 		// Used when showing a static icon.
-		std::shared_ptr<const LibRpTexture::rp_image> icon_first_frame;
+		rp_image_const_ptr icon_first_frame;
 
 	public:
 		/** RomFields **/
@@ -139,7 +138,7 @@ class NintendoDSPrivate final : public LibRpBase::RomDataPrivate
 		 * Load the ROM image's icon.
 		 * @return Icon, or nullptr on error.
 		 */
-		std::shared_ptr<const LibRpTexture::rp_image> loadIcon(void);
+		rp_image_const_ptr loadIcon(void);
 
 		/**
 		 * Get the title index.

@@ -22,7 +22,6 @@ using namespace LibRpTexture;
 
 // C++ STL classes
 using std::array;
-using std::shared_ptr;
 using std::string;
 using std::vector;
 
@@ -50,7 +49,7 @@ class Nintendo3DS_SMDH_Private final : public RomDataPrivate
 	public:
 		// Internal images.
 		// 0 == 24x24; 1 == 48x48
-		array<shared_ptr<rp_image>, 2> img_icon;
+		array<rp_image_ptr, 2> img_icon;
 
 	public:
 		// SMDH headers.
@@ -65,7 +64,7 @@ class Nintendo3DS_SMDH_Private final : public RomDataPrivate
 		 * @param idx Image index. (0 == 24x24; 1 == 48x48)
 		 * @return Icon, or nullptr on error.
 		 */
-		shared_ptr<const rp_image> loadIcon(int idx = 1);
+		rp_image_const_ptr loadIcon(int idx = 1);
 
 		/**
 		 * Get the language ID to use for the title fields.
@@ -116,7 +115,7 @@ Nintendo3DS_SMDH_Private::Nintendo3DS_SMDH_Private(const IRpFilePtr &file)
  * @param idx Image index. (0 == 24x24; 1 == 48x48)
  * @return Icon, or nullptr on error.
  */
-shared_ptr<const rp_image> Nintendo3DS_SMDH_Private::loadIcon(int idx)
+rp_image_const_ptr Nintendo3DS_SMDH_Private::loadIcon(int idx)
 {
 	assert(idx == 0 || idx == 1);
 	if (idx != 0 && idx != 1) {
@@ -675,10 +674,10 @@ int Nintendo3DS_SMDH::loadMetaData(void)
  * Load an internal image.
  * Called by RomData::image().
  * @param imageType	[in] Image type to load.
- * @param pImage	[out] Reference to shared_ptr<const rp_image> to store the image in.
+ * @param pImage	[out] Reference to rp_image_const_ptr to store the image in.
  * @return 0 on success; negative POSIX error code on error.
  */
-int Nintendo3DS_SMDH::loadInternalImage(ImageType imageType, shared_ptr<const rp_image> &pImage)
+int Nintendo3DS_SMDH::loadInternalImage(ImageType imageType, rp_image_const_ptr &pImage)
 {
 	ASSERT_loadInternalImage(imageType, pImage);
 

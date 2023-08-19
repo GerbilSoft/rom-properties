@@ -15,7 +15,6 @@ using namespace LibRpTexture::PixelConversion;
 
 // C++ STL classes
 using std::array;
-using std::shared_ptr;
 
 namespace LibRpTexture { namespace ImageDecoder {
 
@@ -28,7 +27,7 @@ namespace LibRpTexture { namespace ImageDecoder {
  * @param img_siz Size of image data. [must be >= (w*h)*2]
  * @return rp_image, or nullptr on error.
  */
-shared_ptr<rp_image> fromGcn16(PixelFormat px_format,
+rp_image_ptr fromGcn16(PixelFormat px_format,
 	int width, int height,
 	const uint16_t *RESTRICT img_buf, size_t img_siz)
 {
@@ -50,7 +49,7 @@ shared_ptr<rp_image> fromGcn16(PixelFormat px_format,
 		return nullptr;
 
 	// Create an rp_image.
-	const shared_ptr<rp_image> img = std::make_shared<rp_image>(width, height, rp_image::Format::ARGB32);
+	const rp_image_ptr img = std::make_shared<rp_image>(width, height, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
 		return nullptr;
@@ -148,7 +147,7 @@ shared_ptr<rp_image> fromGcn16(PixelFormat px_format,
  * @param pal_siz Size of palette data. [must be >= 256*2]
  * @return rp_image, or nullptr on error.
  */
-shared_ptr<rp_image> fromGcnCI8(int width, int height,
+rp_image_ptr fromGcnCI8(int width, int height,
 	const uint8_t *RESTRICT img_buf, size_t img_siz,
 	const uint16_t *RESTRICT pal_buf, size_t pal_siz)
 {
@@ -172,7 +171,7 @@ shared_ptr<rp_image> fromGcnCI8(int width, int height,
 		return nullptr;
 
 	// Create an rp_image.
-	const shared_ptr<rp_image> img = std::make_shared<rp_image>(width, height, rp_image::Format::CI8);
+	const rp_image_ptr img = std::make_shared<rp_image>(width, height, rp_image::Format::CI8);
 	if (!img->isValid()) {
 		// Could not allocate the image.
 		return nullptr;
@@ -239,7 +238,7 @@ shared_ptr<rp_image> fromGcnCI8(int width, int height,
  * @param img_siz Size of image data. [must be >= (w*h)]
  * @return rp_image, or nullptr on error.
  */
-shared_ptr<rp_image> fromGcnI8(int width, int height,
+rp_image_ptr fromGcnI8(int width, int height,
 	const uint8_t *img_buf, size_t img_siz)
 {
 	// Verify parameters.
@@ -265,7 +264,7 @@ shared_ptr<rp_image> fromGcnI8(int width, int height,
 	const unsigned int tilesY = (unsigned int)(height / 4);
 
 	// Create an rp_image.
-	const shared_ptr<rp_image> img = std::make_shared<rp_image>(width, height, rp_image::Format::CI8);
+	const rp_image_ptr img = std::make_shared<rp_image>(width, height, rp_image::Format::CI8);
 	if (!img->isValid()) {
 		// Could not allocate the image.
 		return nullptr;

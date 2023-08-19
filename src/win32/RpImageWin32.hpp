@@ -39,7 +39,7 @@ HBITMAP toHBITMAP(const LibRpTexture::rp_image *image, uint32_t bgColor);
  * @param bgColor	[in] Background color for images with alpha transparency. (ARGB32 format)
  * @return HBITMAP, or nullptr on error.
  */
-static inline HBITMAP toHBITMAP(const std::shared_ptr<LibRpTexture::rp_image> &image, uint32_t bgColor)
+static inline HBITMAP toHBITMAP(const LibRpTexture::rp_image_ptr &image, uint32_t bgColor)
 {
 	return toHBITMAP(image.get(), bgColor);
 }
@@ -50,7 +50,7 @@ static inline HBITMAP toHBITMAP(const std::shared_ptr<LibRpTexture::rp_image> &i
  * @param bgColor	[in] Background color for images with alpha transparency. (ARGB32 format)
  * @return HBITMAP, or nullptr on error.
  */
-static inline HBITMAP toHBITMAP(const std::shared_ptr<const LibRpTexture::rp_image> &image, uint32_t bgColor)
+static inline HBITMAP toHBITMAP(const LibRpTexture::rp_image_const_ptr &image, uint32_t bgColor)
 {
 	return toHBITMAP(image.get(), bgColor);
 }
@@ -75,7 +75,7 @@ HBITMAP toHBITMAP(const LibRpTexture::rp_image *image, uint32_t bgColor, SIZE si
  * @param nearest	[in] If true, use nearest-neighbor scaling.
  * @return HBITMAP, or nullptr on error.
  */
-static inline HBITMAP toHBITMAP(const std::shared_ptr<LibRpTexture::rp_image> &image, uint32_t bgColor, SIZE size, bool nearest)
+static inline HBITMAP toHBITMAP(const LibRpTexture::rp_image_ptr &image, uint32_t bgColor, SIZE size, bool nearest)
 {
 	return toHBITMAP(image.get(), bgColor, size, nearest);
 }
@@ -89,7 +89,7 @@ static inline HBITMAP toHBITMAP(const std::shared_ptr<LibRpTexture::rp_image> &i
  * @param nearest	[in] If true, use nearest-neighbor scaling.
  * @return HBITMAP, or nullptr on error.
  */
-static inline HBITMAP toHBITMAP(const std::shared_ptr<const LibRpTexture::rp_image> &image, uint32_t bgColor, SIZE size, bool nearest)
+static inline HBITMAP toHBITMAP(const LibRpTexture::rp_image_const_ptr &image, uint32_t bgColor, SIZE size, bool nearest)
 {
 	return toHBITMAP(image.get(), bgColor, size, nearest);
 }
@@ -108,7 +108,7 @@ HBITMAP toHBITMAP_alpha(const LibRpTexture::rp_image *image);
  * @param image		[in] rp_image
  * @return HBITMAP, or nullptr on error.
  */
-static inline HBITMAP toHBITMAP_alpha(const std::shared_ptr<LibRpTexture::rp_image> &image)
+static inline HBITMAP toHBITMAP_alpha(const LibRpTexture::rp_image_ptr &image)
 {
 	return toHBITMAP_alpha(image.get());
 }
@@ -119,7 +119,7 @@ static inline HBITMAP toHBITMAP_alpha(const std::shared_ptr<LibRpTexture::rp_ima
  * @param image		[in] rp_image
  * @return HBITMAP, or nullptr on error.
  */
-static inline HBITMAP toHBITMAP_alpha(const std::shared_ptr<const LibRpTexture::rp_image> &image)
+static inline HBITMAP toHBITMAP_alpha(const LibRpTexture::rp_image_const_ptr &image)
 {
 	return toHBITMAP_alpha(image.get());
 }
@@ -142,7 +142,7 @@ HBITMAP toHBITMAP_alpha(const LibRpTexture::rp_image *image, SIZE size, bool nea
  * @param nearest	[in] If true, use nearest-neighbor scaling.
  * @return HBITMAP, or nullptr on error.
  */
-static inline HBITMAP toHBITMAP_alpha(const std::shared_ptr<LibRpTexture::rp_image> &image, SIZE size, bool nearest)
+static inline HBITMAP toHBITMAP_alpha(const LibRpTexture::rp_image_ptr &image, SIZE size, bool nearest)
 {
 	return toHBITMAP_alpha(image.get(), size, nearest);
 }
@@ -155,7 +155,7 @@ static inline HBITMAP toHBITMAP_alpha(const std::shared_ptr<LibRpTexture::rp_ima
  * @param nearest	[in] If true, use nearest-neighbor scaling.
  * @return HBITMAP, or nullptr on error.
  */
-static inline HBITMAP toHBITMAP_alpha(const std::shared_ptr<const LibRpTexture::rp_image> &image, SIZE size, bool nearest)
+static inline HBITMAP toHBITMAP_alpha(const LibRpTexture::rp_image_const_ptr &image, SIZE size, bool nearest)
 {
 	return toHBITMAP_alpha(image.get(), size, nearest);
 }
@@ -172,7 +172,7 @@ HICON toHICON(const LibRpTexture::rp_image *image);
  * @param image rp_image.
  * @return HICON, or nullptr on error.
  */
-static inline HICON toHICON(const std::shared_ptr<LibRpTexture::rp_image> &image)
+static inline HICON toHICON(const LibRpTexture::rp_image_ptr &image)
 {
 	return toHICON(image.get());
 }
@@ -182,7 +182,7 @@ static inline HICON toHICON(const std::shared_ptr<LibRpTexture::rp_image> &image
  * @param image rp_image.
  * @return HICON, or nullptr on error.
  */
-static inline HICON toHICON(const std::shared_ptr<const LibRpTexture::rp_image> &image)
+static inline HICON toHICON(const LibRpTexture::rp_image_const_ptr &image)
 {
 	return toHICON(image.get());
 }
@@ -192,7 +192,7 @@ static inline HICON toHICON(const std::shared_ptr<const LibRpTexture::rp_image> 
  * @param hBitmap HBITMAP.
  * @return rp_image.
  */
-std::shared_ptr<LibRpTexture::rp_image> fromHBITMAP(HBITMAP hBitmap);
+LibRpTexture::rp_image_ptr fromHBITMAP(HBITMAP hBitmap);
 
 /**
  * Convert an HBITMAP to HICON.
@@ -225,7 +225,7 @@ HBITMAP getSubBitmap(const LibRpTexture::rp_image *img, int x, int y, int w, int
  * @param dpi			[in,opt] DPI value.
  * @return Sub-bitmap, or nullptr on error.
  */
-static inline HBITMAP getSubBitmap(const std::shared_ptr<LibRpTexture::rp_image> &img, int x, int y, int w, int h, UINT dpi = 96)
+static inline HBITMAP getSubBitmap(const LibRpTexture::rp_image_ptr &img, int x, int y, int w, int h, UINT dpi = 96)
 {
 	return getSubBitmap(img.get(), x, y, w, h, dpi);
 }
@@ -241,7 +241,7 @@ static inline HBITMAP getSubBitmap(const std::shared_ptr<LibRpTexture::rp_image>
  * @param dpi			[in,opt] DPI value.
  * @return Sub-bitmap, or nullptr on error.
  */
-static inline HBITMAP getSubBitmap(const std::shared_ptr<const LibRpTexture::rp_image> &img, int x, int y, int w, int h, UINT dpi = 96)
+static inline HBITMAP getSubBitmap(const LibRpTexture::rp_image_const_ptr &img, int x, int y, int w, int h, UINT dpi = 96)
 {
 	return getSubBitmap(img.get(), x, y, w, h, dpi);
 }

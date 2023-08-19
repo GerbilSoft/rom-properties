@@ -17,7 +17,6 @@ using namespace LibRpFile;
 using namespace LibRpTexture;
 
 // C++ STL classes
-using std::shared_ptr;
 using std::vector;
 
 namespace LibRomData {
@@ -345,10 +344,10 @@ int RpTextureWrapper::loadMetaData(void)
  * Load an internal image.
  * Called by RomData::image().
  * @param imageType	[in] Image type to load.
- * @param pImage	[out] Reference to shared_ptr<const rp_image> to store the image in.
+ * @param pImage	[out] Reference to rp_image_const_ptr to store the image in.
  * @return 0 on success; negative POSIX error code on error.
  */
-int RpTextureWrapper::loadInternalImage(ImageType imageType, shared_ptr<const rp_image> &pImage)
+int RpTextureWrapper::loadInternalImage(ImageType imageType, rp_image_const_ptr &pImage)
 {
 	ASSERT_loadInternalImage(imageType, pImage);
 	RP_D(RpTextureWrapper);

@@ -20,7 +20,6 @@ using namespace LibRpText;
 using namespace LibRpTexture;
 
 // C++ STL classes
-using std::shared_ptr;
 using std::string;
 using std::vector;
 
@@ -44,7 +43,7 @@ class GameCubeSavePrivate final : public RomDataPrivate
 
 	public:
 		// Internal images
-		shared_ptr<rp_image> img_banner;
+		rp_image_ptr img_banner;
 
 		// Animated icon data
 		IconAnimData *iconAnimData;
@@ -96,13 +95,13 @@ class GameCubeSavePrivate final : public RomDataPrivate
 		 *
 		 * @return Icon, or nullptr on error.
 		 */
-		shared_ptr<const rp_image> loadIcon(void);
+		rp_image_const_ptr loadIcon(void);
 
 		/**
 		 * Load the save file's banner.
 		 * @return Banner, or nullptr on error.
 		 */
-		shared_ptr<const rp_image> loadBanner(void);
+		rp_image_const_ptr loadBanner(void);
 };
 
 ROMDATA_IMPL(GameCubeSave)
@@ -295,7 +294,7 @@ bool GameCubeSavePrivate::isCardDirEntry(const uint8_t *buffer, uint32_t data_si
  *
  * @return Icon, or nullptr on error.
  */
-shared_ptr<const rp_image> GameCubeSavePrivate::loadIcon(void)
+rp_image_const_ptr GameCubeSavePrivate::loadIcon(void)
 {
 	if (iconAnimData) {
 		// Icon has already been loaded.
@@ -474,7 +473,7 @@ shared_ptr<const rp_image> GameCubeSavePrivate::loadIcon(void)
  * Load the save file's banner.
  * @return Banner, or nullptr on error.
  */
-shared_ptr<const rp_image> GameCubeSavePrivate::loadBanner(void)
+rp_image_const_ptr GameCubeSavePrivate::loadBanner(void)
 {
 	if (img_banner) {
 		// Banner is already loaded.
@@ -1022,10 +1021,10 @@ int GameCubeSave::loadMetaData(void)
  * Load an internal image.
  * Called by RomData::image().
  * @param imageType	[in] Image type to load.
- * @param pImage	[out] Reference to shared_ptr<const rp_image> to store the image in.
+ * @param pImage	[out] Reference to rp_image_const_ptr to store the image in.
  * @return 0 on success; negative POSIX error code on error.
  */
-int GameCubeSave::loadInternalImage(ImageType imageType, shared_ptr<const rp_image> &pImage)
+int GameCubeSave::loadInternalImage(ImageType imageType, rp_image_const_ptr &pImage)
 {
 	ASSERT_loadInternalImage(imageType, pImage);
 

@@ -30,7 +30,6 @@ using namespace LibRpTexture;
 // C++ includes
 #include <memory>
 #include <string>
-using std::shared_ptr;
 using std::string;
 
 namespace LibRpTexture { namespace Tests {
@@ -58,7 +57,7 @@ class UnPremultiplyTest : public ::testing::Test
 		static const unsigned int BENCHMARK_ITERATIONS = 1000;
 
 		// Image
-		shared_ptr<rp_image> m_img;
+		rp_image_ptr m_img;
 };
 
 // TODO: Add actual tests to verify that un-premultiply works.

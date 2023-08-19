@@ -11,11 +11,11 @@
 #include "RpImageWin32.hpp"
 #include "res/resource.h"
 
-// librpbase, librpfile, librptexture
+// Other rom-properties libraries
 #include "librpbase/SystemRegion.hpp"
 #include "librpbase/img/RpPng.hpp"
 using namespace LibRpBase;
-using LibRpTexture::rp_image;
+using namespace LibRpTexture;
 
 // RpFile_windres
 #include "file/RpFile_windres.hpp"
@@ -140,7 +140,7 @@ LRESULT LanguageComboBoxPrivate::setLCs(const uint32_t *lcs_array)
 	// Load the flags sprite sheet.
 	// TODO: Is premultiplied alpha needed?
 	// Reference: https://stackoverflow.com/questions/307348/how-to-draw-32-bit-alpha-channel-bitmaps
-	shared_ptr<const rp_image> imgFlagsSheet;
+	rp_image_const_ptr imgFlagsSheet;
 	shared_ptr<RpFile_windres> f_res = std::make_shared<RpFile_windres>(
 		HINST_THISCOMPONENT, MAKEINTRESOURCE(resID), MAKEINTRESOURCE(RT_PNG));
 	assert(f_res->isOpen());
@@ -166,7 +166,7 @@ LRESULT LanguageComboBoxPrivate::setLCs(const uint32_t *lcs_array)
 			// but we can't rely on that being the case, and this option
 			// was first introduced in Windows XP.
 			// We'll flip the image here to counteract it.
-			const shared_ptr<const rp_image> flipimg = imgFlagsSheet->flip(rp_image::FLIP_H);
+			const rp_image_const_ptr flipimg = imgFlagsSheet->flip(rp_image::FLIP_H);
 			assert((bool)flipimg);
 			if (flipimg) {
 				imgFlagsSheet = flipimg;

@@ -12,9 +12,9 @@
 #include "check-uid.h"
 #include "ProxyForUrl.hpp"
 
-// librpbase, librptexture
+// Other rom-properties libraries
 using namespace LibRpBase;
-using LibRpTexture::rp_image;
+using namespace LibRpTexture;
 
 // libromdata
 #include "libromdata/RomDataFactory.hpp"
@@ -30,7 +30,6 @@ using LibRomData::TCreateThumbnail;
 #include "NetworkManager.h"
 
 // C++ STL classes
-using std::shared_ptr;
 using std::string;
 using std::unique_ptr;
 
@@ -68,7 +67,7 @@ class CreateThumbnailPrivate : public TCreateThumbnail<PIMGTYPE>
 		 * @param img rp_image
 		 * @return ImgClass
 		 */
-		inline PIMGTYPE rpImageToImgClass(const shared_ptr<const rp_image> &img) const final
+		inline PIMGTYPE rpImageToImgClass(const rp_image_const_ptr &img) const final
 		{
 			// NOTE: Don't premultiply the image when using Cairo,
 			// since the image data is going directly to PNG.

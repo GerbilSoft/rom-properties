@@ -20,9 +20,6 @@ namespace LibRpBase {
 // for loadInternalImage() implementation macros
 #include <cerrno>
 
-// C++ includes
-#include <memory>
-
 /** Macros for RomData subclasses. **/
 
 /**
@@ -161,10 +158,10 @@ public: \
 	 * Load an internal image. \
 	 * Called by RomData::image(). \
 	 * @param imageType	[in] Image type to load. \
-	 * @param pImage	[out] Reference to shared_ptr<const rp_image> to store the image in. \
+	 * @param pImage	[out] Reference to rp_image_const_ptr to store the image in. \
 	 * @return 0 on success; negative POSIX error code on error. \
 	 */ \
-	int loadInternalImage(ImageType imageType, std::shared_ptr<const LibRpTexture::rp_image> &pImage) final; \
+	int loadInternalImage(ImageType imageType, LibRpTexture::rp_image_const_ptr &pImage) final; \
 
 /**
  * RomData subclass function declaration for obtaining URLs for external images.

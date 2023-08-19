@@ -11,7 +11,6 @@
 
 // C++ STL classes
 using std::array;
-using std::shared_ptr;
 
 // librptexture
 #include "librptexture/ImageSizeCalc.hpp"
@@ -49,7 +48,7 @@ cairo_surface_t *CairoImageConv::rp_image_to_cairo_surface_t(const rp_image *img
 
 	switch (img->format()) {
 		case rp_image::Format::ARGB32: {
-			shared_ptr<rp_image> img_prex;
+			rp_image_ptr img_prex;
 			const rp_image *src_img;
 			if (premultiply) {
 				// Premultiply the image first.

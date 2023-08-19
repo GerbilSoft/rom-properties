@@ -75,7 +75,7 @@ class DragImageLabel : public QLabel
 		 * @param img rp_image, or nullptr to clear.
 		 * @return True on success; false on error or if clearing.
 		 */
-		bool setRpImage(const std::shared_ptr<const LibRpTexture::rp_image> &img);
+		bool setRpImage(const LibRpTexture::rp_image_const_ptr &img);
 
 		/**
 		 * Set the icon animation data for this label.
@@ -162,7 +162,7 @@ class DragImageLabel : public QLabel
 		bool m_ecksBawks;
 
 		// rp_image
-		std::shared_ptr<const LibRpTexture::rp_image> m_img;
+		LibRpTexture::rp_image_const_ptr m_img;
 
 		// Animated icon data
 		struct anim_vars {

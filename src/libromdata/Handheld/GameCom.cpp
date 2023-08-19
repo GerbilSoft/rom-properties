@@ -17,7 +17,6 @@ using namespace LibRpText;
 using namespace LibRpTexture;
 
 // C++ STL classes
-using std::shared_ptr;
 using std::string;
 using std::unique_ptr;
 using std::vector;
@@ -45,13 +44,13 @@ class GameComPrivate final : public RomDataPrivate
 		Gcom_RomHeader romHeader;
 
 		// Icon
-		shared_ptr<rp_image> img_icon;
+		rp_image_ptr img_icon;
 
 		/**
 		 * Load the icon.
 		 * @return Icon, or nullptr on error.
 		 */
-		shared_ptr<const rp_image> loadIcon(void);
+		rp_image_const_ptr loadIcon(void);
 
 	protected:
 		static const uint32_t gcom_palette[4];
@@ -76,7 +75,7 @@ class GameComPrivate final : public RomDataPrivate
 		 * This is called from loadIcon().
 		 * @return Icon, or nullptr on error.
 		 */
-		shared_ptr<const rp_image> loadIconRLE(void);
+		rp_image_const_ptr loadIconRLE(void);
 };
 
 ROMDATA_IMPL(GameCom)
@@ -123,7 +122,7 @@ GameComPrivate::GameComPrivate(const IRpFilePtr &file)
  * Load the icon.
  * @return Icon, or nullptr on error.
  */
-shared_ptr<const rp_image> GameComPrivate::loadIcon(void)
+rp_image_const_ptr GameComPrivate::loadIcon(void)
 {
 	if (img_icon) {
 		// Icon has already been loaded.
@@ -196,7 +195,7 @@ shared_ptr<const rp_image> GameComPrivate::loadIcon(void)
 
 	// Create the icon.
 	// TODO: Split into an ImageDecoder function?
-	const shared_ptr<rp_image> tmp_icon = std::make_shared<rp_image>(GCOM_ICON_W, GCOM_ICON_H, rp_image::Format::CI8);
+	const rp_image_ptr tmp_icon = std::make_shared<rp_image>(GCOM_ICON_W, GCOM_ICON_H, rp_image::Format::CI8);
 
 	uint32_t *const palette = tmp_icon->palette();
 	assert(palette != nullptr);
@@ -368,7 +367,7 @@ ssize_t GameComPrivate::rle_decompress(uint8_t *pOut, size_t out_len, const uint
  * This is called from loadIcon().
  * @return Icon, or nullptr on error.
  */
-shared_ptr<const rp_image> GameComPrivate::loadIconRLE(void)
+rp_image_const_ptr GameComPrivate::loadIconRLE(void)
 {
 	// Checks were already done in loadIcon().
 	assert(romHeader.flags & GCOM_FLAG_ICON_RLE);
@@ -431,7 +430,7 @@ shared_ptr<const rp_image> GameComPrivate::loadIconRLE(void)
 
 	// Create the icon.
 	// TODO: Split into an ImageDecoder function?
-	const shared_ptr<rp_image> tmp_icon = std::make_shared<rp_image>(GCOM_ICON_W, GCOM_ICON_H, rp_image::Format::CI8);
+	const rp_image_ptr tmp_icon = std::make_shared<rp_image>(GCOM_ICON_W, GCOM_ICON_H, rp_image::Format::CI8);
 
 	uint32_t *const palette = tmp_icon->palette();
 	assert(palette != nullptr);
@@ -777,10 +776,10 @@ int GameCom::loadMetaData(void)
  * Load an internal image.
  * Called by RomData::image().
  * @param imageType	[in] Image type to load.
- * @param pImage	[out] Reference to shared_ptr<const rp_image> to store the image in.
+ * @param pImage	[out] Reference to rp_image_const_ptr to store the image in.
  * @return 0 on success; negative POSIX error code on error.
  */
-int GameCom::loadInternalImage(ImageType imageType, shared_ptr<const rp_image> &pImage)
+int GameCom::loadInternalImage(ImageType imageType, rp_image_const_ptr &pImage)
 {
 	ASSERT_loadInternalImage(imageType, pImage);
 

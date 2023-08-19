@@ -21,7 +21,7 @@ namespace LibRpTexture { namespace ImageDecoder {
  * @param img_siz Size of image data. [must be >= (w*h)*2]
  * @return rp_image, or nullptr on error.
  */
-std::shared_ptr<rp_image> fromDreamcastSquareTwiddled16(PixelFormat px_format,
+rp_image_ptr fromDreamcastSquareTwiddled16(PixelFormat px_format,
 	int width, int height,
 	const uint16_t *RESTRICT img_buf, size_t img_siz);
 
@@ -39,7 +39,7 @@ std::shared_ptr<rp_image> fromDreamcastSquareTwiddled16(PixelFormat px_format,
  * @return rp_image, or nullptr on error.
  */
 ATTR_ACCESS_SIZE(read_only, 6, 7)
-std::shared_ptr<rp_image> fromDreamcastVQ16(PixelFormat px_format,
+rp_image_ptr fromDreamcastVQ16(PixelFormat px_format,
 	bool smallVQ, bool hasMipmaps,
 	int width, int height,
 	const uint8_t *RESTRICT img_buf, size_t img_siz,

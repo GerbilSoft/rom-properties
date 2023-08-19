@@ -20,14 +20,13 @@
 using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;
-using LibRpTexture::rp_image;
+using namespace LibRpTexture;
 
 // libi18n
 #include "libi18n/i18n.h"
 
 // C++ STL classes
 using std::set;
-using std::shared_ptr;
 using std::string;
 
 // Custom widgets
@@ -182,7 +181,7 @@ void RomDataViewPrivate::initHeaderRow(void)
 	// Icon
 	if (imgbf & RomData::IMGBF_INT_ICON) {
 		// Get the icon.
-		const shared_ptr<const rp_image> icon = romData->image(RomData::IMG_INT_ICON);
+		const rp_image_const_ptr icon = romData->image(RomData::IMG_INT_ICON);
 		if (icon && icon->isValid()) {
 			// Is this an animated icon?
 			bool ok = ui.lblIcon->setIconAnimData(romData->iconAnimData());

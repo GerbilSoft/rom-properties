@@ -92,18 +92,15 @@ typedef int (RP_C_API *PFN_RP_CREATE_THUMBNAIL)(const char *source_file, const c
 
 #ifdef __cplusplus
 #include "librpbase/RomData.hpp"
+#include "librpfile/IRpFile.hpp"
 #include "librptexture/img/rp_image.hpp"
 
 // C++ includes
-#include <memory>
 #include <string>
 
 namespace LibRpBase {
 	class RomData;
 };
-namespace LibRpFile {
-	class IRpFile;
-}
 
 namespace LibRomData {
 
@@ -206,7 +203,7 @@ class TCreateThumbnail
 		 * @param img rp_image
 		 * @return ImgClass
 		 */
-		virtual ImgClass rpImageToImgClass(const std::shared_ptr<const LibRpTexture::rp_image> &img) const = 0;
+		virtual ImgClass rpImageToImgClass(const LibRpTexture::rp_image_const_ptr &img) const = 0;
 
 		/**
 		 * Wrapper function to check if an ImgClass is valid.

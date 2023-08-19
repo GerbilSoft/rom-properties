@@ -434,10 +434,10 @@ public:
 	 * Load an internal image.
 	 * Called by RomData::image().
 	 * @param imageType	[in] Image type to load.
-	 * @param pImage	[out] Reference to shared_ptr<const rp_image> to store the image in.
+	 * @param pImage	[out] Reference to rp_image_const_ptr to store the image in.
 	 * @return 0 on success; negative POSIX error code on error.
 	 */
-	virtual int loadInternalImage(ImageType imageType, std::shared_ptr<const LibRpTexture::rp_image> &pImage);
+	virtual int loadInternalImage(ImageType imageType, LibRpTexture::rp_image_const_ptr &pImage);
 
 public:
 	/**
@@ -473,7 +473,7 @@ public:
 	 * @return Internal image, or nullptr if the ROM doesn't have one.
 	 */
 	RP_LIBROMDATA_PUBLIC
-	std::shared_ptr<const LibRpTexture::rp_image> image(ImageType imageType) const;
+	LibRpTexture::rp_image_const_ptr image(ImageType imageType) const;
 
 	/**
 	 * External URLs for a media type.

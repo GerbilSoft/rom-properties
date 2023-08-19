@@ -16,9 +16,9 @@
 // for RpImageRole
 #include "ListDataModel.hpp"
 
-// librpbase, librptexture
+// Other rom-properties libraries
+using namespace LibRpTexture;
 using LibRpBase::RpPngWriter;
-using LibRpTexture::rp_image;
 
 // C++ STL classes
 using std::shared_ptr;
@@ -57,8 +57,8 @@ void DragImageTreeView::startDrag(Qt::DropActions supportedActions)
 	QIcon dragIcon;
 	bool hasOne = false;
 	for (const QModelIndex &index : items) {
-		const shared_ptr<const rp_image> *const pImg =
-			static_cast<const shared_ptr<const rp_image>*>(
+		const rp_image_const_ptr *const pImg =
+			static_cast<const rp_image_const_ptr*>(
 				index.data(ListDataModel::RpImageRole).value<void*>());
 		if (!pImg || !*pImg)
 			continue;

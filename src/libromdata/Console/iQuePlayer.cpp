@@ -22,7 +22,6 @@ using namespace LibRpTexture;
 #include "librptext/libc.h"
 
 // C++ STL classes
-using std::shared_ptr;
 using std::string;
 using std::vector;
 
@@ -74,8 +73,8 @@ class iQuePlayerPrivate final : public RomDataPrivate
 		iQuePlayer_BbTicketHead bbTicketHead;
 
 		// Internal images
-		shared_ptr<rp_image> img_thumbnail;	// handled as icon
-		shared_ptr<rp_image> img_title;		// handled as banner
+		rp_image_ptr img_thumbnail;	// handled as icon
+		rp_image_ptr img_title;		// handled as banner
 
 	public:
 		/**
@@ -98,7 +97,7 @@ class iQuePlayerPrivate final : public RomDataPrivate
 		 * @param byteswap	[in] If true, byteswap before decoding if needed.
 		 * @return Image, or nullptr on error.
 		 */
-		shared_ptr<rp_image> loadImage(off64_t address, size_t z_size, size_t unz_size,
+		rp_image_ptr loadImage(off64_t address, size_t z_size, size_t unz_size,
 			ImageDecoder::PixelFormat px_format, int w, int h, bool byteswap);
 
 	public:
@@ -106,14 +105,14 @@ class iQuePlayerPrivate final : public RomDataPrivate
 		 * Load the thumbnail image.
 		 * @return Thumbnail image, or nullptr on error.
 		 */
-		shared_ptr<const rp_image> loadThumbnailImage(void);
+		rp_image_const_ptr loadThumbnailImage(void);
 
 		/**
 		 * Load the title image.
 		 * This is the game title in Chinese.
 		 * @return Title image, or nullptr on error.
 		 */
-		shared_ptr<const rp_image> loadTitleImage(void);
+		rp_image_const_ptr loadTitleImage(void);
 };
 
 ROMDATA_IMPL(iQuePlayer)
@@ -245,7 +244,7 @@ int iQuePlayerPrivate::getTitleAndISBN(string &title, string &isbn)
  * @param byteswap	[in] If true, byteswap before decoding if needed.
  * @return Image, or nullptr on error.
  */
-shared_ptr<rp_image> iQuePlayerPrivate::loadImage(off64_t address, size_t z_size, size_t unz_size,
+rp_image_ptr iQuePlayerPrivate::loadImage(off64_t address, size_t z_size, size_t unz_size,
 	ImageDecoder::PixelFormat px_format, int w, int h, bool byteswap)
 {
 	assert(address >= static_cast<off64_t>(sizeof(contentDesc)));
@@ -324,7 +323,7 @@ shared_ptr<rp_image> iQuePlayerPrivate::loadImage(off64_t address, size_t z_size
  * Load the thumbnail image.
  * @return Thumbnail image, or nullptr on error.
  */
-shared_ptr<const rp_image> iQuePlayerPrivate::loadThumbnailImage(void)
+rp_image_const_ptr iQuePlayerPrivate::loadThumbnailImage(void)
 {
 	if (img_thumbnail) {
 		// Thumbnail is already loaded.
@@ -354,7 +353,7 @@ shared_ptr<const rp_image> iQuePlayerPrivate::loadThumbnailImage(void)
  * This is the game title in Chinese.
  * @return Title image, or nullptr on error.
  */
-shared_ptr<const rp_image> iQuePlayerPrivate::loadTitleImage(void)
+rp_image_const_ptr iQuePlayerPrivate::loadTitleImage(void)
 {
 	if (img_title) {
 		// Title is already loaded.
@@ -740,10 +739,10 @@ int iQuePlayer::loadMetaData(void)
  * Load an internal image.
  * Called by RomData::image().
  * @param imageType	[in] Image type to load.
- * @param pImage	[out] Reference to shared_ptr<const rp_image> to store the image in.
+ * @param pImage	[out] Reference to rp_image_const_ptr to store the image in.
  * @return 0 on success; negative POSIX error code on error.
  */
-int iQuePlayer::loadInternalImage(ImageType imageType, shared_ptr<const rp_image> &pImage)
+int iQuePlayer::loadInternalImage(ImageType imageType, rp_image_const_ptr &pImage)
 {
 	ASSERT_loadInternalImage(imageType, pImage);
 

@@ -10,12 +10,12 @@
 #include "DragImage.hpp"
 #include "PIMGTYPE.hpp"
 
-// librpbase, librpfile, librptexture
+// Other rom-properties libraries
 #include "librpbase/img/IconAnimData.hpp"
 #include "librpbase/img/IconAnimHelper.hpp"
 #include "librpfile/VectorFile.hpp"
 using namespace LibRpBase;
-using LibRpTexture::rp_image;
+using namespace LibRpTexture;
 
 // C++ STL classes
 using std::shared_ptr;
@@ -92,7 +92,7 @@ struct _RpDragImage {
 #endif /* USE_G_MENU_MODEL */
 
 	// rp_image (C++ shared_ptr)
-	shared_ptr<const rp_image> *pImg;
+	rp_image_const_ptr *pImg;
 
 	// Animated icon data.
 	struct anim_vars {
@@ -249,7 +249,7 @@ rp_drag_image_update_pixmaps(RpDragImage *image)
 				anim->iconFrames[i] = nullptr;
 			}
 
-			const shared_ptr<const rp_image> &frame = iconAnimData->frames[i];
+			const rp_image_const_ptr &frame = iconAnimData->frames[i];
 			if (frame && frame->isValid()) {
 				// NOTE: Allowing NULL frames here...
 				anim->iconFrames[i] = rp_image_to_PIMGTYPE(frame);
@@ -434,7 +434,7 @@ void rp_drag_image_set_ecks_bawks(RpDragImage *image, bool new_ecks_bawks)
  * @return True on success; false on error or if clearing.
  */
 bool
-rp_drag_image_set_rp_image(RpDragImage *image, const shared_ptr<const rp_image> &img)
+rp_drag_image_set_rp_image(RpDragImage *image, const rp_image_const_ptr &img)
 {
 	g_return_val_if_fail(RP_IS_DRAG_IMAGE(image), false);
 

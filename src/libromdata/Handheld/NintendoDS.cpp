@@ -25,7 +25,6 @@ using namespace LibRpTexture;
 
 // C++ STL classes
 using std::array;
-using std::shared_ptr;
 using std::string;
 using std::vector;
 
@@ -148,7 +147,7 @@ int NintendoDSPrivate::loadIconTitleData(void)
  * Load the ROM image's icon.
  * @return Icon, or nullptr on error.
  */
-shared_ptr<const rp_image> NintendoDSPrivate::loadIcon(void)
+rp_image_const_ptr NintendoDSPrivate::loadIcon(void)
 {
 	if (icon_first_frame) {
 		// Icon has already been loaded.
@@ -228,7 +227,7 @@ shared_ptr<const rp_image> NintendoDSPrivate::loadIcon(void)
 				// Not used yet. Create the bitmap.
 				const uint8_t bmp = (high_token & 7);
 				const uint8_t pal = (high_token >> 3) & 7;
-				shared_ptr<rp_image> img = ImageDecoder::fromNDS_CI4(32, 32,
+				rp_image_ptr img = ImageDecoder::fromNDS_CI4(32, 32,
 					nds_icon_title.dsi_icon_data[bmp],
 					sizeof(nds_icon_title.dsi_icon_data[bmp]),
 					nds_icon_title.dsi_icon_pal[pal],
@@ -244,7 +243,7 @@ shared_ptr<const rp_image> NintendoDSPrivate::loadIcon(void)
 						// V-flip
 						flipOp = static_cast<rp_image::FlipOp>(flipOp | rp_image::FLIP_V);
 					}
-					const shared_ptr<rp_image> flipimg = img->flip(flipOp);
+					const rp_image_ptr flipimg = img->flip(flipOp);
 					if (flipimg && flipimg->isValid()) {
 						img = flipimg;
 					}
@@ -1382,10 +1381,10 @@ int NintendoDS::loadMetaData(void)
  * Load an internal image.
  * Called by RomData::image().
  * @param imageType	[in] Image type to load.
- * @param pImage	[out] Reference to shared_ptr<const rp_image> to store the image in.
+ * @param pImage	[out] Reference to rp_image_const_ptr to store the image in.
  * @return 0 on success; negative POSIX error code on error.
  */
-int NintendoDS::loadInternalImage(ImageType imageType, shared_ptr<const rp_image> &pImage)
+int NintendoDS::loadInternalImage(ImageType imageType, rp_image_const_ptr &pImage)
 {
 	ASSERT_loadInternalImage(imageType, pImage);
 	RP_D(NintendoDS);

@@ -15,7 +15,6 @@ using namespace LibRpTexture::PixelConversion;
 
 // C++ STL classes
 using std::array;
-using std::shared_ptr;
 
 namespace LibRpTexture { namespace ImageDecoder {
 
@@ -38,7 +37,7 @@ static const uint8_t N3DS_tile_order[] = {
  * @param img_siz Size of image data. [must be >= (w*h)*2]
  * @return rp_image, or nullptr on error.
  */
-shared_ptr<rp_image> fromN3DSTiledRGB565(int width, int height,
+rp_image_ptr fromN3DSTiledRGB565(int width, int height,
 	const uint16_t *RESTRICT img_buf, size_t img_siz)
 {
 	// Verify parameters.
@@ -59,7 +58,7 @@ shared_ptr<rp_image> fromN3DSTiledRGB565(int width, int height,
 		return nullptr;
 
 	// Create an rp_image.
-	const shared_ptr<rp_image> img = std::make_shared<rp_image>(width, height, rp_image::Format::ARGB32);
+	const rp_image_ptr img = std::make_shared<rp_image>(width, height, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
 		return nullptr;
@@ -103,7 +102,7 @@ shared_ptr<rp_image> fromN3DSTiledRGB565(int width, int height,
  * @param alpha_siz Size of alpha data. [must be >= (w*h)/2]
  * @return rp_image, or nullptr on error.
  */
-shared_ptr<rp_image> fromN3DSTiledRGB565_A4(int width, int height,
+rp_image_ptr fromN3DSTiledRGB565_A4(int width, int height,
 	const uint16_t *RESTRICT img_buf, size_t img_siz,
 	const uint8_t *RESTRICT alpha_buf, size_t alpha_siz)
 {
@@ -132,7 +131,7 @@ shared_ptr<rp_image> fromN3DSTiledRGB565_A4(int width, int height,
 	const unsigned int tilesY = static_cast<unsigned int>(height / 8);
 
 	// Create an rp_image.
-	const shared_ptr<rp_image> img = std::make_shared<rp_image>(width, height, rp_image::Format::ARGB32);
+	const rp_image_ptr img = std::make_shared<rp_image>(width, height, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
 		return nullptr;

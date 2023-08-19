@@ -17,20 +17,18 @@
 // for RPCT_* constants
 #include "CreateThumbnail.hpp"
 
-// librpbase, librpfile, librptexture, libromdata
+// Other rom-properties libraries
 #include "librpbase/img/RpPngWriter.hpp"
 #include "librptexture/FileFormatFactory.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
+using namespace LibRpTexture;
 using LibRomData::RomDataFactory;
-using LibRpTexture::rp_image;
-using LibRpTexture::FileFormatFactory;
 
 // libwin32ui
 using LibWin32UI::RegKey;
 
 // C++ STL classes
-using std::shared_ptr;
 using std::string;
 using std::tstring;
 using std::unique_ptr;
@@ -120,7 +118,7 @@ int RP_ContextMenu_Private::convert_to_png(LPCTSTR source_file)
 	// Get the internal image.
 	// NOTE: The GTK and KDE implementations use CreateThumbnail.
 	// NOTE 2: Image is owned by the RomData object.
-	const shared_ptr<const rp_image> img = romData->image(RomData::IMG_INT_IMAGE);
+	const rp_image_const_ptr img = romData->image(RomData::IMG_INT_IMAGE);
 	if (!img) {
 		// No image.
 		romData->unref();

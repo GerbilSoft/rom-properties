@@ -13,7 +13,6 @@
 
 // C++ STL classes
 using std::array;
-using std::shared_ptr;
 
 // References:
 // - https://docs.microsoft.com/en-us/windows/win32/direct3d11/bc7-format
@@ -650,7 +649,7 @@ static int decodeBC7Block(array<argb32_t, 4*4> &tileBuf, const uint64_t *bc7_src
  * @param img_siz Size of image data. [must be >= (w*h)]
  * @return rp_image, or nullptr on error.
  */
-shared_ptr<rp_image> fromBC7(int width, int height,
+rp_image_ptr fromBC7(int width, int height,
 	const uint8_t *img_buf, size_t img_siz)
 {
 	// Verify parameters.
@@ -677,7 +676,7 @@ shared_ptr<rp_image> fromBC7(int width, int height,
 	const unsigned int bytesPerTileRow = tilesX * sizeof(bc7_block);	// for OpenMP
 
 	// Create an rp_image.
-	const shared_ptr<rp_image> img = std::make_shared<rp_image>(physWidth, physHeight, rp_image::Format::ARGB32);
+	const rp_image_ptr img = std::make_shared<rp_image>(physWidth, physHeight, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
 		return nullptr;

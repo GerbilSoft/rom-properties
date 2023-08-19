@@ -63,12 +63,12 @@ class Xbox360_XDBF_Private final : public RomDataPrivate
 
 		// Internal icon
 		// Points to an rp_image within map_images.
-		shared_ptr<const rp_image> img_icon;
+		rp_image_const_ptr img_icon;
 
 		// Loaded images.
 		// - Key: resource_id
 		// - Value: rp_image*
-		unordered_map<uint64_t, shared_ptr<rp_image> > map_images;
+		unordered_map<uint64_t, rp_image_ptr > map_images;
 
 	public:
 		// XDBF header.
@@ -157,13 +157,13 @@ class Xbox360_XDBF_Private final : public RomDataPrivate
 		 * @param image_id Image ID.
 		 * @return Decoded image, or nullptr on error.
 		 */
-		shared_ptr<const rp_image> loadImage(uint64_t image_id);
+		rp_image_const_ptr loadImage(uint64_t image_id);
 
 		/**
 		 * Load the main title icon.
 		 * @return Icon, or nullptr on error.
 		 */
-		shared_ptr<const rp_image> loadIcon(void);
+		rp_image_const_ptr loadIcon(void);
 
 	public:
 		/**
@@ -718,7 +718,7 @@ inline uint32_t Xbox360_XDBF_Private::getDefaultLC(void) const
  * @param image_id Image ID.
  * @return Decoded image, or nullptr on error.
  */
-shared_ptr<const rp_image> Xbox360_XDBF_Private::loadImage(uint64_t image_id)
+rp_image_const_ptr Xbox360_XDBF_Private::loadImage(uint64_t image_id)
 {
 	// Is the image already loaded?
 	auto iter = map_images.find(image_id);
@@ -770,7 +770,7 @@ shared_ptr<const rp_image> Xbox360_XDBF_Private::loadImage(uint64_t image_id)
 	// Create a MemFile and decode the image.
 	// TODO: For rpcli, shortcut to extract the PNG directly.
 	shared_ptr<MemFile> f_mem = std::make_shared<MemFile>(png_buf.get(), length);
-	shared_ptr<rp_image> img = RpPng::load(f_mem);
+	rp_image_ptr img = RpPng::load(f_mem);
 
 	if (img) {
 		// Save the image for later use.
@@ -784,7 +784,7 @@ shared_ptr<const rp_image> Xbox360_XDBF_Private::loadImage(uint64_t image_id)
  * Load the main title icon.
  * @return Icon, or nullptr on error.
  */
-shared_ptr<const rp_image> Xbox360_XDBF_Private::loadIcon(void)
+rp_image_const_ptr Xbox360_XDBF_Private::loadIcon(void)
 {
 	if (img_icon) {
 		// Icon has already been loaded.
@@ -1913,10 +1913,10 @@ int Xbox360_XDBF::loadMetaData(void)
  * Load an internal image.
  * Called by RomData::image().
  * @param imageType	[in] Image type to load.
- * @param pImage	[out] Reference to shared_ptr<const rp_image> to store the image in.
+ * @param pImage	[out] Reference to rp_image_const_ptr to store the image in.
  * @return 0 on success; negative POSIX error code on error.
  */
-int Xbox360_XDBF::loadInternalImage(ImageType imageType, shared_ptr<const rp_image> &pImage)
+int Xbox360_XDBF::loadInternalImage(ImageType imageType, rp_image_const_ptr &pImage)
 {
 	ASSERT_loadInternalImage(imageType, pImage);
 

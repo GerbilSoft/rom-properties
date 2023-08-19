@@ -16,7 +16,7 @@
 // Cache Manager
 #include "CacheManager.hpp"
 
-// librpbase, librpfile
+// Other rom-properties libraries
 #include "librpbase/RomData.hpp"
 #include "librpbase/RomFields.hpp"
 #include "librpbase/config/Config.hpp"
@@ -27,7 +27,7 @@ using namespace LibRpFile;
 
 // librptexture
 #include "librptexture/img/rp_image.hpp"
-using LibRpTexture::rp_image;
+using namespace LibRpTexture;
 
 // libromdata
 #include "../RomDataFactory.hpp"
@@ -66,7 +66,7 @@ ImgClass TCreateThumbnail<ImgClass>::getInternalImage(
 		return getNullImgClass();
 	}
 
-	const shared_ptr<const rp_image> image = romData->image(imageType);
+	const rp_image_const_ptr image = romData->image(imageType);
 	if (!image) {
 		// No image.
 		if (sBIT) {
@@ -176,7 +176,7 @@ ImgClass TCreateThumbnail<ImgClass>::getExternalImage(
 		// Attempt to load the image.
 		shared_ptr<RpFile> file = std::make_shared<RpFile>(cache_filename, RpFile::FM_OPEN_READ);
 		if (file->isOpen()) {
-			const shared_ptr<const rp_image> dl_img = RpImageLoader::load(file);
+			const rp_image_const_ptr dl_img = RpImageLoader::load(file);
 			if (dl_img && dl_img->isValid()) {
 				// Image loaded successfully.
 				file->close();

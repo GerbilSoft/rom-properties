@@ -21,7 +21,7 @@ namespace LibRpTexture { namespace ImageDecoder {
  * @return rp_image, or nullptr on error.
  */
 ATTR_ACCESS_SIZE(read_only, 3, 4)
-std::shared_ptr<rp_image> fromETC1(int width, int height,
+rp_image_ptr fromETC1(int width, int height,
 	const uint8_t *RESTRICT img_buf, size_t img_siz);
 
 /**
@@ -33,7 +33,7 @@ std::shared_ptr<rp_image> fromETC1(int width, int height,
  * @return rp_image, or nullptr on error.
  */
 ATTR_ACCESS_SIZE(read_only, 3, 4)
-std::shared_ptr<rp_image> fromETC2_RGB(int width, int height,
+rp_image_ptr fromETC2_RGB(int width, int height,
 	const uint8_t *RESTRICT img_buf, size_t img_siz);
 
 /**
@@ -45,7 +45,7 @@ std::shared_ptr<rp_image> fromETC2_RGB(int width, int height,
  * @return rp_image, or nullptr on error.
  */
 ATTR_ACCESS_SIZE(read_only, 3, 4)
-std::shared_ptr<rp_image> fromETC2_RGBA(int width, int height,
+rp_image_ptr fromETC2_RGBA(int width, int height,
 	const uint8_t *RESTRICT img_buf, size_t img_siz);
 
 /**
@@ -57,7 +57,7 @@ std::shared_ptr<rp_image> fromETC2_RGBA(int width, int height,
  * @return rp_image, or nullptr on error.
  */
 ATTR_ACCESS_SIZE(read_only, 3, 4)
-std::shared_ptr<rp_image> fromETC2_RGB_A1(int width, int height,
+rp_image_ptr fromETC2_RGB_A1(int width, int height,
 	const uint8_t *RESTRICT img_buf, size_t img_siz);
 
 /**
@@ -69,7 +69,7 @@ std::shared_ptr<rp_image> fromETC2_RGB_A1(int width, int height,
  * @return rp_image, or nullptr on error.
  */
 ATTR_ACCESS_SIZE(read_only, 3, 4)
-std::shared_ptr<rp_image> fromEAC_R11(int width, int height,
+rp_image_ptr fromEAC_R11(int width, int height,
 	const uint8_t *RESTRICT img_buf, size_t img_siz);
 
 /**
@@ -81,7 +81,7 @@ std::shared_ptr<rp_image> fromEAC_R11(int width, int height,
  * @return rp_image, or nullptr on error.
  */
 ATTR_ACCESS_SIZE(read_only, 3, 4)
-std::shared_ptr<rp_image> fromEAC_RG11(int width, int height,
+rp_image_ptr fromEAC_RG11(int width, int height,
 	const uint8_t *RESTRICT img_buf, size_t img_siz);
 
 } }

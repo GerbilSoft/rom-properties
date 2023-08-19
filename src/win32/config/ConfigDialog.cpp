@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * ConfigDialog.cpp: Configuration dialog.                                 *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -33,11 +33,10 @@ using std::tstring;
 DELAYLOAD_TEST_FUNCTION_IMPL1(textdomain, nullptr);
 #endif /* defined(_MSC_VER) && defined(ENABLE_NLS) */
 
-// rp_image backend registration.
+// rp_image backend registration
 #include "librptexture/img/GdiplusHelper.hpp"
 #include "librptexture/img/RpGdiplusBackend.hpp"
-using LibRpTexture::RpGdiplusBackend;
-using LibRpTexture::rp_image;
+using namespace LibRpTexture;
 
 // Property sheet tabs.
 #include "ImageTypesTab.hpp"
@@ -46,7 +45,7 @@ using LibRpTexture::rp_image;
 #include "CacheTab.hpp"
 #include "AchievementsTab.hpp"
 #ifdef ENABLE_DECRYPTION
-# include "KeyManagerTab.hpp"
+#  include "KeyManagerTab.hpp"
 #endif /* ENABLE_DECRYPTION */
 #include "AboutTab.hpp"
 

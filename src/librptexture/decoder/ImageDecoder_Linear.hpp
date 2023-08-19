@@ -26,7 +26,7 @@ namespace LibRpTexture { namespace ImageDecoder {
  */
 ATTR_ACCESS_SIZE(read_only, 5, 6)
 ATTR_ACCESS_SIZE(read_only, 7, 8)
-std::shared_ptr<rp_image> fromLinearCI4(PixelFormat px_format, bool msn_left,
+rp_image_ptr fromLinearCI4(PixelFormat px_format, bool msn_left,
 	int width, int height,
 	const uint8_t *RESTRICT img_buf, size_t img_siz,
 	const void *RESTRICT pal_buf, size_t pal_siz);
@@ -44,7 +44,7 @@ std::shared_ptr<rp_image> fromLinearCI4(PixelFormat px_format, bool msn_left,
  */
 ATTR_ACCESS_SIZE(read_only, 4, 5)
 ATTR_ACCESS_SIZE(read_only, 6, 7)
-std::shared_ptr<rp_image> fromLinearCI8(PixelFormat px_format,
+rp_image_ptr fromLinearCI8(PixelFormat px_format,
 	int width, int height,
 	const uint8_t *RESTRICT img_buf, size_t img_siz,
 	const void *RESTRICT pal_buf, size_t pal_siz);
@@ -58,7 +58,7 @@ std::shared_ptr<rp_image> fromLinearCI8(PixelFormat px_format,
  * @return rp_image, or nullptr on error.
  */
 ATTR_ACCESS_SIZE(read_only, 3, 4)
-std::shared_ptr<rp_image> fromLinearMono(int width, int height,
+rp_image_ptr fromLinearMono(int width, int height,
 	const uint8_t *RESTRICT img_buf, size_t img_siz);
 
 /**
@@ -73,7 +73,7 @@ std::shared_ptr<rp_image> fromLinearMono(int width, int height,
  * @return rp_image, or nullptr on error.
  */
 ATTR_ACCESS_SIZE(read_only, 4, 5)
-std::shared_ptr<rp_image> fromLinear8(PixelFormat px_format,
+rp_image_ptr fromLinear8(PixelFormat px_format,
 	int width, int height,
 	const uint8_t *RESTRICT img_buf, size_t img_siz, int stride = 0);
 
@@ -92,7 +92,7 @@ std::shared_ptr<rp_image> fromLinear8(PixelFormat px_format,
  */
 ATTR_ACCESS_SIZE(read_only, 4, 5)
 RP_LIBROMDATA_PUBLIC
-std::shared_ptr<rp_image> fromLinear16_cpp(PixelFormat px_format,
+rp_image_ptr fromLinear16_cpp(PixelFormat px_format,
 	int width, int height,
 	const uint16_t *RESTRICT img_buf, size_t img_siz, int stride = 0);
 
@@ -110,7 +110,7 @@ std::shared_ptr<rp_image> fromLinear16_cpp(PixelFormat px_format,
  */
 ATTR_ACCESS_SIZE(read_only, 4, 5)
 RP_LIBROMDATA_PUBLIC
-std::shared_ptr<rp_image> fromLinear16_sse2(PixelFormat px_format,
+rp_image_ptr fromLinear16_sse2(PixelFormat px_format,
 	int width, int height,
 	const uint16_t *RESTRICT img_buf, size_t img_siz, int stride = 0);
 #endif /* IMAGEDECODER_HAS_SSE2 */
@@ -132,7 +132,7 @@ std::shared_ptr<rp_image> fromLinear16_sse2(PixelFormat px_format,
  * @return rp_image, or nullptr on error.
  */
 ATTR_ACCESS_SIZE(read_only, 4, 5)
-static inline std::shared_ptr<rp_image> fromLinear16(PixelFormat px_format,
+static inline rp_image_ptr fromLinear16(PixelFormat px_format,
 	int width, int height,
 	const uint16_t *img_buf, size_t img_siz, int stride = 0)
 {
@@ -154,7 +154,7 @@ static inline std::shared_ptr<rp_image> fromLinear16(PixelFormat px_format,
  */
 ATTR_ACCESS_SIZE(read_only, 4, 5)
 RP_LIBROMDATA_PUBLIC
-IFUNC_SSE2_STATIC_INLINE std::shared_ptr<rp_image> fromLinear16(PixelFormat px_format,
+IFUNC_SSE2_STATIC_INLINE rp_image_ptr fromLinear16(PixelFormat px_format,
 	int width, int height,
 	const uint16_t *RESTRICT img_buf, size_t img_siz, int stride = 0);
 #  endif /* IMAGEDECODER_ALWAYS_HAS_SSE2 */
@@ -174,7 +174,7 @@ IFUNC_SSE2_STATIC_INLINE std::shared_ptr<rp_image> fromLinear16(PixelFormat px_f
  * @return rp_image, or nullptr on error.
  */
 ATTR_ACCESS_SIZE(read_only, 4, 5)
-static inline std::shared_ptr<rp_image> fromLinear16(PixelFormat px_format,
+static inline rp_image_ptr fromLinear16(PixelFormat px_format,
 	int width, int height,
 	const uint16_t *RESTRICT img_buf, size_t img_siz, int stride = 0)
 {
@@ -210,7 +210,7 @@ static inline std::shared_ptr<rp_image> fromLinear16(PixelFormat px_format,
  */
 ATTR_ACCESS_SIZE(read_only, 4, 5)
 RP_LIBROMDATA_PUBLIC
-std::shared_ptr<rp_image> fromLinear24_cpp(PixelFormat px_format,
+rp_image_ptr fromLinear24_cpp(PixelFormat px_format,
 	int width, int height,
 	const uint8_t *RESTRICT img_buf, size_t img_siz, int stride = 0);
 
@@ -228,7 +228,7 @@ std::shared_ptr<rp_image> fromLinear24_cpp(PixelFormat px_format,
  */
 ATTR_ACCESS_SIZE(read_only, 4, 5)
 RP_LIBROMDATA_PUBLIC
-std::shared_ptr<rp_image> fromLinear24_ssse3(PixelFormat px_format,
+rp_image_ptr fromLinear24_ssse3(PixelFormat px_format,
 	int width, int height,
 	const uint8_t *RESTRICT img_buf, size_t img_siz, int stride = 0);
 #endif /* IMAGEDECODER_HAS_SSSE3 */
@@ -246,7 +246,7 @@ std::shared_ptr<rp_image> fromLinear24_ssse3(PixelFormat px_format,
  */
 ATTR_ACCESS_SIZE(read_only, 4, 5)
 RP_LIBROMDATA_PUBLIC
-IFUNC_STATIC_INLINE std::shared_ptr<rp_image> fromLinear24(PixelFormat px_format,
+IFUNC_STATIC_INLINE rp_image_ptr fromLinear24(PixelFormat px_format,
 	int width, int height,
 	const uint8_t *RESTRICT img_buf, size_t img_siz, int stride = 0);
 #else
@@ -264,7 +264,7 @@ IFUNC_STATIC_INLINE std::shared_ptr<rp_image> fromLinear24(PixelFormat px_format
  * @return rp_image, or nullptr on error.
  */
 ATTR_ACCESS_SIZE(read_only, 4, 5)
-static inline std::shared_ptr<rp_image> fromLinear24(PixelFormat px_format,
+static inline rp_image_ptr fromLinear24(PixelFormat px_format,
 	int width, int height,
 	const uint8_t *RESTRICT img_buf, size_t img_siz, int stride = 0)
 {
@@ -294,7 +294,7 @@ static inline std::shared_ptr<rp_image> fromLinear24(PixelFormat px_format,
  */
 ATTR_ACCESS_SIZE(read_only, 4, 5)
 RP_LIBROMDATA_PUBLIC
-std::shared_ptr<rp_image> fromLinear32_cpp(PixelFormat px_format,
+rp_image_ptr fromLinear32_cpp(PixelFormat px_format,
 	int width, int height,
 	const uint32_t *RESTRICT img_buf, size_t img_siz, int stride = 0);
 
@@ -312,7 +312,7 @@ std::shared_ptr<rp_image> fromLinear32_cpp(PixelFormat px_format,
  */
 ATTR_ACCESS_SIZE(read_only, 4, 5)
 RP_LIBROMDATA_PUBLIC
-std::shared_ptr<rp_image> fromLinear32_ssse3(PixelFormat px_format,
+rp_image_ptr fromLinear32_ssse3(PixelFormat px_format,
 	int width, int height,
 	const uint32_t *RESTRICT img_buf, size_t img_siz, int stride = 0);
 #endif /* IMAGEDECODER_HAS_SSSE3 */
@@ -329,7 +329,7 @@ std::shared_ptr<rp_image> fromLinear32_ssse3(PixelFormat px_format,
  * @return rp_image, or nullptr on error.
  */
 RP_LIBROMDATA_PUBLIC
-IFUNC_STATIC_INLINE std::shared_ptr<rp_image> fromLinear32(PixelFormat px_format,
+IFUNC_STATIC_INLINE rp_image_ptr fromLinear32(PixelFormat px_format,
 	int width, int height,
 	const uint32_t *RESTRICT img_buf, size_t img_siz, int stride = 0);
 #else /* !(HAVE_IFUNC && (RP_CPU_I386 || RP_CPU_AMD64)) */
@@ -346,7 +346,7 @@ IFUNC_STATIC_INLINE std::shared_ptr<rp_image> fromLinear32(PixelFormat px_format
  * @param stride	[in,opt] Stride, in bytes. If 0, assumes width*bytespp.
  * @return rp_image, or nullptr on error.
  */
-static inline std::shared_ptr<rp_image> fromLinear32(PixelFormat px_format,
+static inline rp_image_ptr fromLinear32(PixelFormat px_format,
 	int width, int height,
 	const uint32_t *RESTRICT img_buf, size_t img_siz, int stride = 0)
 {

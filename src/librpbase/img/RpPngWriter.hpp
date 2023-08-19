@@ -104,7 +104,7 @@ public:
 	 * @param filename	[in] Filename (UTF-8)
 	 * @param img		[in] rp_image
 	 */
-	RpPngWriter(const char *filename, const std::shared_ptr<const LibRpTexture::rp_image> &img);
+	RpPngWriter(const char *filename, const LibRpTexture::rp_image_const_ptr &img);
 
 #ifdef _WIN32
 	/**
@@ -122,7 +122,7 @@ public:
 	 * @param filename	[in] Filename (UTF-16)
 	 * @param img		[in] rp_image
 	 */
-	RpPngWriter(const wchar_t *filename, const std::shared_ptr<const LibRpTexture::rp_image> &img);
+	RpPngWriter(const wchar_t *filename, const LibRpTexture::rp_image_const_ptr &img);
 #endif /* _WIN32 */
 
 	/**
@@ -141,7 +141,7 @@ public:
 	 * @param file	[in] IRpFile open for writing
 	 * @param img	[in] rp_image
 	 */
-	RpPngWriter(const LibRpFile::IRpFilePtr &file, const std::shared_ptr<const LibRpTexture::rp_image> &img);
+	RpPngWriter(const LibRpFile::IRpFilePtr &file, const LibRpTexture::rp_image_const_ptr &img);
 
 	/**
 	 * Write an animated image to an APNG file.

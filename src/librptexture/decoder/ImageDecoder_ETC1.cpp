@@ -12,7 +12,6 @@
 
 // C++ STL classes
 using std::array;
-using std::shared_ptr;
 
 // References:
 // - https://www.khronos.org/registry/OpenGL/extensions/OES/OES_compressed_ETC1_RGB8_texture.txt
@@ -611,7 +610,7 @@ static void decodeBlock_ETC_RGB(array<uint32_t, 4*4> &tileBuf, const etc1_block 
  * @param img_siz Size of image data. [must be >= (w*h)/2]
  * @return rp_image, or nullptr on error.
  */
-shared_ptr<rp_image> fromETC1(int width, int height,
+rp_image_ptr fromETC1(int width, int height,
 	const uint8_t *RESTRICT img_buf, size_t img_siz)
 {
 	// Verify parameters.
@@ -632,7 +631,7 @@ shared_ptr<rp_image> fromETC1(int width, int height,
 	const int physHeight = ALIGN_BYTES(4, height);
 
 	// Create an rp_image.
-	const shared_ptr<rp_image> img = std::make_shared<rp_image>(physWidth, physHeight, rp_image::Format::ARGB32);
+	const rp_image_ptr img = std::make_shared<rp_image>(physWidth, physHeight, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
 		return nullptr;
@@ -677,7 +676,7 @@ shared_ptr<rp_image> fromETC1(int width, int height,
  * @param img_siz Size of image data. [must be >= (w*h)/2]
  * @return rp_image, or nullptr on error.
  */
-shared_ptr<rp_image> fromETC2_RGB(int width, int height,
+rp_image_ptr fromETC2_RGB(int width, int height,
 	const uint8_t *RESTRICT img_buf, size_t img_siz)
 {
 	// Verify parameters.
@@ -698,7 +697,7 @@ shared_ptr<rp_image> fromETC2_RGB(int width, int height,
 	const int physHeight = ALIGN_BYTES(4, height);
 
 	// Create an rp_image.
-	const shared_ptr<rp_image> img = std::make_shared<rp_image>(physWidth, physHeight, rp_image::Format::ARGB32);
+	const rp_image_ptr img = std::make_shared<rp_image>(physWidth, physHeight, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
 		return nullptr;
@@ -787,7 +786,7 @@ static void T_decodeBlock_EAC(array<uint32_t, 4*4> &tileBuf, const etc2_alpha *a
  * @param img_siz Size of image data. [must be >= (w*h)]
  * @return rp_image, or nullptr on error.
  */
-shared_ptr<rp_image> fromETC2_RGBA(int width, int height,
+rp_image_ptr fromETC2_RGBA(int width, int height,
 	const uint8_t *RESTRICT img_buf, size_t img_siz)
 {
 	// Verify parameters.
@@ -808,7 +807,7 @@ shared_ptr<rp_image> fromETC2_RGBA(int width, int height,
 	const int physHeight = ALIGN_BYTES(4, height);
 
 	// Create an rp_image.
-	const shared_ptr<rp_image> img = std::make_shared<rp_image>(physWidth, physHeight, rp_image::Format::ARGB32);
+	const rp_image_ptr img = std::make_shared<rp_image>(physWidth, physHeight, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
 		return nullptr;
@@ -857,7 +856,7 @@ shared_ptr<rp_image> fromETC2_RGBA(int width, int height,
  * @param img_siz Size of image data. [must be >= (w*h)/2]
  * @return rp_image, or nullptr on error.
  */
-shared_ptr<rp_image> fromETC2_RGB_A1(int width, int height,
+rp_image_ptr fromETC2_RGB_A1(int width, int height,
 	const uint8_t *RESTRICT img_buf, size_t img_siz)
 {
 	// Verify parameters.
@@ -878,7 +877,7 @@ shared_ptr<rp_image> fromETC2_RGB_A1(int width, int height,
 	const int physHeight = ALIGN_BYTES(4, height);
 
 	// Create an rp_image.
-	const shared_ptr<rp_image> img = std::make_shared<rp_image>(physWidth, physHeight, rp_image::Format::ARGB32);
+	const rp_image_ptr img = std::make_shared<rp_image>(physWidth, physHeight, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
 		return nullptr;
@@ -923,7 +922,7 @@ shared_ptr<rp_image> fromETC2_RGB_A1(int width, int height,
  * @param img_siz Size of image data. [must be >= (w*h)/2]
  * @return rp_image, or nullptr on error.
  */
-shared_ptr<rp_image> fromEAC_R11(int width, int height,
+rp_image_ptr fromEAC_R11(int width, int height,
 	const uint8_t *RESTRICT img_buf, size_t img_siz)
 {
 	// Verify parameters.
@@ -944,7 +943,7 @@ shared_ptr<rp_image> fromEAC_R11(int width, int height,
 	const int physHeight = ALIGN_BYTES(4, height);
 
 	// Create an rp_image.
-	const shared_ptr<rp_image> img = std::make_shared<rp_image>(physWidth, physHeight, rp_image::Format::ARGB32);
+	const rp_image_ptr img = std::make_shared<rp_image>(physWidth, physHeight, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
 		return nullptr;
@@ -993,7 +992,7 @@ shared_ptr<rp_image> fromEAC_R11(int width, int height,
  * @param img_siz Size of image data. [must be >= (w*h)]
  * @return rp_image, or nullptr on error.
  */
-shared_ptr<rp_image> fromEAC_RG11(int width, int height,
+rp_image_ptr fromEAC_RG11(int width, int height,
 	const uint8_t *RESTRICT img_buf, size_t img_siz)
 {
 	// Verify parameters.
@@ -1014,7 +1013,7 @@ shared_ptr<rp_image> fromEAC_RG11(int width, int height,
 	const int physHeight = ALIGN_BYTES(4, height);
 
 	// Create an rp_image.
-	const shared_ptr<rp_image> img = std::make_shared<rp_image>(physWidth, physHeight, rp_image::Format::ARGB32);
+	const rp_image_ptr img = std::make_shared<rp_image>(physWidth, physHeight, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
 		return nullptr;

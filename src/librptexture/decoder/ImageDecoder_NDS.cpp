@@ -15,7 +15,6 @@ using namespace LibRpTexture::PixelConversion;
 
 // C++ STL classes
 using std::array;
-using std::shared_ptr;
 
 namespace LibRpTexture { namespace ImageDecoder {
 
@@ -29,7 +28,7 @@ namespace LibRpTexture { namespace ImageDecoder {
  * @param pal_siz Size of palette data. [must be >= 16*2]
  * @return rp_image, or nullptr on error.
  */
-shared_ptr<rp_image> fromNDS_CI4(int width, int height,
+rp_image_ptr fromNDS_CI4(int width, int height,
 	const uint8_t *RESTRICT img_buf, size_t img_siz,
 	const uint16_t *RESTRICT pal_buf, size_t pal_siz)
 {
@@ -53,7 +52,7 @@ shared_ptr<rp_image> fromNDS_CI4(int width, int height,
 		return nullptr;
 
 	// Create an rp_image.
-	const shared_ptr<rp_image> img = std::make_shared<rp_image>(width, height, rp_image::Format::CI8);
+	const rp_image_ptr img = std::make_shared<rp_image>(width, height, rp_image::Format::CI8);
 	if (!img->isValid()) {
 		// Could not allocate the image.
 		return nullptr;

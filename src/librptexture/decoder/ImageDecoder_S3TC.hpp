@@ -24,7 +24,7 @@ namespace LibRpTexture { namespace ImageDecoder {
  * @return rp_image, or nullptr on error.
  */
 ATTR_ACCESS_SIZE(read_only, 3, 4)
-std::shared_ptr<rp_image> fromDXT1_GCN(int width, int height,
+rp_image_ptr fromDXT1_GCN(int width, int height,
 	const uint8_t *RESTRICT img_buf, size_t img_siz);
 
 /**
@@ -38,7 +38,7 @@ std::shared_ptr<rp_image> fromDXT1_GCN(int width, int height,
  * @return rp_image, or nullptr on error.
  */
 ATTR_ACCESS_SIZE(read_only, 3, 4)
-std::shared_ptr<rp_image> fromDXT1(int width, int height,
+rp_image_ptr fromDXT1(int width, int height,
 	const uint8_t *RESTRICT img_buf, size_t img_siz);
 
 /**
@@ -52,7 +52,7 @@ std::shared_ptr<rp_image> fromDXT1(int width, int height,
  * @return rp_image, or nullptr on error.
  */
 ATTR_ACCESS_SIZE(read_only, 3, 4)
-std::shared_ptr<rp_image> fromDXT1_A1(int width, int height,
+rp_image_ptr fromDXT1_A1(int width, int height,
 	const uint8_t *RESTRICT img_buf, size_t img_siz);
 
 /**
@@ -64,7 +64,7 @@ std::shared_ptr<rp_image> fromDXT1_A1(int width, int height,
  * @return rp_image, or nullptr on error.
  */
 ATTR_ACCESS_SIZE(read_only, 3, 4)
-std::shared_ptr<rp_image> fromDXT2(int width, int height,
+rp_image_ptr fromDXT2(int width, int height,
 	const uint8_t *RESTRICT img_buf, size_t img_siz);
 
 /**
@@ -76,7 +76,7 @@ std::shared_ptr<rp_image> fromDXT2(int width, int height,
  * @return rp_image, or nullptr on error.
  */
 ATTR_ACCESS_SIZE(read_only, 3, 4)
-std::shared_ptr<rp_image> fromDXT3(int width, int height,
+rp_image_ptr fromDXT3(int width, int height,
 	const uint8_t *RESTRICT img_buf, size_t img_siz);
 
 /**
@@ -88,7 +88,7 @@ std::shared_ptr<rp_image> fromDXT3(int width, int height,
  * @return rp_image, or nullptr on error.
  */
 ATTR_ACCESS_SIZE(read_only, 3, 4)
-std::shared_ptr<rp_image> fromDXT4(int width, int height,
+rp_image_ptr fromDXT4(int width, int height,
 	const uint8_t *RESTRICT img_buf, size_t img_siz);
 
 /**
@@ -100,7 +100,7 @@ std::shared_ptr<rp_image> fromDXT4(int width, int height,
  * @return rp_image, or nullptr on error.
  */
 ATTR_ACCESS_SIZE(read_only, 3, 4)
-std::shared_ptr<rp_image> fromDXT5(int width, int height,
+rp_image_ptr fromDXT5(int width, int height,
 	const uint8_t *RESTRICT img_buf, size_t img_siz);
 
 /**
@@ -114,7 +114,7 @@ std::shared_ptr<rp_image> fromDXT5(int width, int height,
  * @return rp_image, or nullptr on error.
  */
 ATTR_ACCESS_SIZE(read_only, 3, 4)
-std::shared_ptr<rp_image> fromBC4(int width, int height,
+rp_image_ptr fromBC4(int width, int height,
 	const uint8_t *RESTRICT img_buf, size_t img_siz);
 
 /**
@@ -128,7 +128,7 @@ std::shared_ptr<rp_image> fromBC4(int width, int height,
  * @return rp_image, or nullptr on error.
  */
 ATTR_ACCESS_SIZE(read_only, 3, 4)
-std::shared_ptr<rp_image> fromBC5(int width, int height,
+rp_image_ptr fromBC5(int width, int height,
 	const uint8_t *RESTRICT img_buf, size_t img_siz);
 
 /**
@@ -137,7 +137,7 @@ std::shared_ptr<rp_image> fromBC5(int width, int height,
  * @param img rp_image to convert in-place.
  * @return 0 on success; negative POSIX error code on error.
  */
-int fromRed8ToL8(const std::shared_ptr<rp_image> &img);
+int fromRed8ToL8(const rp_image_ptr &img);
 
 /**
  * Convert a Red+Green image to Luminance+Alpha.
@@ -145,6 +145,6 @@ int fromRed8ToL8(const std::shared_ptr<rp_image> &img);
  * @param img rp_image to convert in-place.
  * @return 0 on success; negative POSIX error code on error.
  */
-int fromRG8ToLA8(const std::shared_ptr<rp_image> &img);
+int fromRG8ToLA8(const rp_image_ptr &img);
 
 } }

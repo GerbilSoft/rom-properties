@@ -39,7 +39,6 @@ using LibRpText::rp_sprintf;
 #include "decoder/ImageDecoder_ASTC.hpp"
 
 // C++ STL classes
-using std::shared_ptr;
 using std::string;
 using std::unique_ptr;
 using std::vector;
@@ -81,7 +80,7 @@ class KhronosKTX2Private final : public FileFormatPrivate
 
 		// Decoded mipmaps
 		// Mipmap 0 is the full image.
-		vector<shared_ptr<rp_image> > mipmaps;
+		vector<rp_image_ptr > mipmaps;
 
 		// Invalid pixel format message
 		char invalid_pixel_format[24];
@@ -104,7 +103,7 @@ class KhronosKTX2Private final : public FileFormatPrivate
 		 * @param mip Mipmap number. (0 == full image)
 		 * @return Image, or nullptr on error.
 		 */
-		shared_ptr<const rp_image> loadImage(int mip);
+		rp_image_const_ptr loadImage(int mip);
 
 		/**
 		 * Load key/value data.
@@ -148,7 +147,7 @@ KhronosKTX2Private::KhronosKTX2Private(KhronosKTX2 *q, const IRpFilePtr &file)
  * @param mip Mipmap number. (0 == full image)
  * @return Image, or nullptr on error.
  */
-shared_ptr<const rp_image> KhronosKTX2Private::loadImage(int mip)
+rp_image_const_ptr KhronosKTX2Private::loadImage(int mip)
 {
 	int mipmapCount = ktx2Header.levelCount;
 	if (mipmapCount <= 0) {
@@ -398,7 +397,7 @@ shared_ptr<const rp_image> KhronosKTX2Private::loadImage(int mip)
 	}
 
 	// TODO: Handle sRGB post-processing? (for e.g. GL_SRGB8)
-	shared_ptr<rp_image> img;
+	rp_image_ptr img;
 	switch (ktx2Header.vkFormat) {
 		case VK_FORMAT_R8G8B8_UNORM:
 		case VK_FORMAT_R8G8B8_UINT:
@@ -616,7 +615,7 @@ shared_ptr<const rp_image> KhronosKTX2Private::loadImage(int mip)
 		// Check if a flip is needed.
 		if (flipOp != rp_image::FLIP_NONE) {
 			// TODO: Assert that img dimensions match ktx2Header?
-			const shared_ptr<rp_image> flipimg = img->flip(flipOp);
+			const rp_image_ptr flipimg = img->flip(flipOp);
 			if (flipimg) {
 				img = flipimg;
 			}
@@ -1060,7 +1059,7 @@ int KhronosKTX2::getFields(RomFields *fields) const
  * The image is owned by this object.
  * @return Image, or nullptr on error.
  */
-shared_ptr<const rp_image> KhronosKTX2::image(void) const
+rp_image_const_ptr KhronosKTX2::image(void) const
 {
 	// The full image is mipmap 0.
 	return this->mipmap(0);
@@ -1072,7 +1071,7 @@ shared_ptr<const rp_image> KhronosKTX2::image(void) const
  * @param mip Mipmap number.
  * @return Image, or nullptr on error.
  */
-shared_ptr<const rp_image> KhronosKTX2::mipmap(int mip) const
+rp_image_const_ptr KhronosKTX2::mipmap(int mip) const
 {
 	RP_D(const KhronosKTX2);
 	if (!d->isValid) {

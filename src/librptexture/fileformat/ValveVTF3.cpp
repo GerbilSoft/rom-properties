@@ -21,9 +21,6 @@ using LibRpBase::RomFields;
 #include "img/rp_image.hpp"
 #include "decoder/ImageDecoder_S3TC.hpp"
 
-// C++ STL classes
-using std::shared_ptr;
-
 namespace LibRpTexture {
 
 class ValveVTF3Private final : public FileFormatPrivate
@@ -47,13 +44,13 @@ class ValveVTF3Private final : public FileFormatPrivate
 		VTF3HEADER vtf3Header;
 
 		// Decoded image
-		shared_ptr<rp_image> img;
+		rp_image_ptr img;
 
 		/**
 		 * Load the image.
 		 * @return Image, or nullptr on error.
 		 */
-		shared_ptr<const rp_image> loadImage(void);
+		rp_image_const_ptr loadImage(void);
 
 #if SYS_BYTEORDER == SYS_BIG_ENDIAN
 		/**
@@ -108,7 +105,7 @@ ValveVTF3Private::ValveVTF3Private(ValveVTF3 *q, const IRpFilePtr &file)
  * Load the image.
  * @return Image, or nullptr on error.
  */
-shared_ptr<const rp_image> ValveVTF3Private::loadImage(void)
+rp_image_const_ptr ValveVTF3Private::loadImage(void)
 {
 	if (img) {
 		// Image has already been loaded.
@@ -329,7 +326,7 @@ int ValveVTF3::getFields(RomFields *fields) const
  * The image is owned by this object.
  * @return Image, or nullptr on error.
  */
-shared_ptr<const rp_image> ValveVTF3::image(void) const
+rp_image_const_ptr ValveVTF3::image(void) const
 {
 	RP_D(const ValveVTF3);
 	if (!d->isValid) {
@@ -347,7 +344,7 @@ shared_ptr<const rp_image> ValveVTF3::image(void) const
  * @param mip Mipmap number.
  * @return Image, or nullptr on error.
  */
-shared_ptr<const rp_image> ValveVTF3::mipmap(int mip) const
+rp_image_const_ptr ValveVTF3::mipmap(int mip) const
 {
 	// Allowing mipmap 0 for compatibility.
 	if (mip == 0) {

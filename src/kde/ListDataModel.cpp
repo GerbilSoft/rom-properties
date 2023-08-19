@@ -10,15 +10,14 @@
 #include "ListDataModel.hpp"
 #include "RomDataFormat.hpp"
 
-// librpbase, librptexture
+// Other rom-properties libraries
 #include "librpbase/RomFields.hpp"
 #include "librptexture/img/rp_image.hpp"
+using namespace LibRpTexture;
 using LibRpBase::RomFields;
-using LibRpTexture::rp_image;
 
 // C++ STL classes
 using std::set;
-using std::shared_ptr;
 using std::string;
 using std::unordered_map;
 using std::vector;
@@ -60,7 +59,7 @@ class ListDataModelPrivate
 		// NOTE: References to rp_image* are kept in case
 		// the icon size is changed.
 		vector<QPixmap> icons;
-		vector<shared_ptr<const rp_image> > icons_rp;
+		vector<rp_image_const_ptr > icons_rp;
 		QSize iconSize;
 
 		// Qt::ItemFlags

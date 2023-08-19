@@ -19,7 +19,7 @@
 #include "librptext/wchar.hpp"
 #include "librptexture/img/rp_image.hpp"
 using namespace LibRpBase;
-using LibRpTexture::rp_image;
+using namespace LibRpTexture;
 
 // RpFile_windres
 #include "file/RpFile_windres.hpp"
@@ -70,7 +70,7 @@ class AchWin32Private
 		 * @param iconSize Icon size. (16, 24, 32, 64)
 		 * @return const rp_image*, or nullptr on error.
 		 */
-		const shared_ptr<const rp_image> &loadSpriteSheet(int iconSize);
+		const rp_image_const_ptr &loadSpriteSheet(int iconSize);
 
 	public:
 		/**
@@ -119,7 +119,7 @@ class AchWin32Private
 		// Sprite sheets.
 		// - Key: Icon size
 		// - Value: rp_image*
-		unordered_map<int, shared_ptr<const rp_image> > map_imgAchSheet;
+		unordered_map<int, rp_image_const_ptr > map_imgAchSheet;
 };
 
 // Property for "NotifyIconData uID".
@@ -187,7 +187,7 @@ AchWin32Private::~AchWin32Private()
  * @param iconSize Icon size. (16, 24, 32, 64)
  * @return const rp_image*, or nullptr on error.
  */
-const shared_ptr<const rp_image> &AchWin32Private::loadSpriteSheet(int iconSize)
+const rp_image_const_ptr &AchWin32Private::loadSpriteSheet(int iconSize)
 {
 	assert(iconSize == 16 || iconSize == 24 || iconSize == 32 || iconSize == 64);
 	UINT resID;
@@ -227,7 +227,7 @@ const shared_ptr<const rp_image> &AchWin32Private::loadSpriteSheet(int iconSize)
 		return nullptr;
 	}
 
-	shared_ptr<const rp_image> imgAchSheet = RpPng::load(f_res);
+	rp_image_const_ptr imgAchSheet = RpPng::load(f_res);
 	if (!imgAchSheet) {
 		// Unable to load the achievements sprite sheet.
 		return nullptr;
@@ -369,7 +369,7 @@ int AchWin32Private::notifyFunc(Achievements::ID id)
 
 	// FIXME: Icon size. Using 32px for now.
 	HICON hBalloonIcon = nullptr;
-	const shared_ptr<const rp_image> imgspr = loadSpriteSheet(iconSize);
+	const rp_image_const_ptr imgspr = loadSpriteSheet(iconSize);
 	if (imgspr) {
 		// Determine row and column.
 		const int col = ((int)id % Achievements::ACH_SPRITE_SHEET_COLS);

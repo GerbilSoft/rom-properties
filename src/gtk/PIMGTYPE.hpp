@@ -68,44 +68,44 @@ static inline PIMGTYPE rp_image_to_PIMGTYPE(const LibRpTexture::rp_image *img, b
 
 /**
  * rp_image_to_PIMGTYPE wrapper function.
- * @param img shared_ptr<rp_image>
+ * @param img rp_image_ptr
  * @param premultiply Premultiply alpha (NOTE: Only used for Cairo)
  * @return PIMGTYPE
  */
-static inline PIMGTYPE rp_image_to_PIMGTYPE(const std::shared_ptr<LibRpTexture::rp_image> &img, bool premultiply = true)
+static inline PIMGTYPE rp_image_to_PIMGTYPE(const LibRpTexture::rp_image_ptr &img, bool premultiply = true)
 {
 	return rp_image_to_PIMGTYPE(img.get(), premultiply);
 }
 
 /**
  * rp_image_to_PIMGTYPE wrapper function.
- * @param img shared_ptr<const rp_image>
+ * @param img rp_image_const_ptr
  * @param premultiply Premultiply alpha (NOTE: Only used for Cairo)
  * @return PIMGTYPE
  */
-static inline PIMGTYPE rp_image_to_PIMGTYPE(const std::shared_ptr<const LibRpTexture::rp_image> &img, bool premultiply = true)
+static inline PIMGTYPE rp_image_to_PIMGTYPE(const LibRpTexture::rp_image_const_ptr &img, bool premultiply = true)
 {
 	return rp_image_to_PIMGTYPE(img.get(), premultiply);
 }
 
 /**
  * rp_image_to_PIMGTYPE wrapper function.
- * @param pImg shared_ptr<rp_image>*
+ * @param pImg rp_image_ptr*
  * @param premultiply Premultiply alpha (NOTE: Only used for Cairo)
  * @return PIMGTYPE
  */
-static inline PIMGTYPE rp_image_to_PIMGTYPE(const std::shared_ptr<LibRpTexture::rp_image> *pImg, bool premultiply = true)
+static inline PIMGTYPE rp_image_to_PIMGTYPE(const LibRpTexture::rp_image_ptr *pImg, bool premultiply = true)
 {
 	return rp_image_to_PIMGTYPE(pImg->get(), premultiply);
 }
 
 /**
  * rp_image_to_PIMGTYPE wrapper function.
- * @param pImg shared_ptr<const rp_image>*
+ * @param pImg rp_image_const_ptr*
  * @param premultiply Premultiply alpha (NOTE: Only used for Cairo)
  * @return PIMGTYPE
  */
-static inline PIMGTYPE rp_image_to_PIMGTYPE(const std::shared_ptr<const LibRpTexture::rp_image> *pImg, bool premultiply = true)
+static inline PIMGTYPE rp_image_to_PIMGTYPE(const LibRpTexture::rp_image_const_ptr *pImg, bool premultiply = true)
 {
 	return rp_image_to_PIMGTYPE(pImg->get(), premultiply);
 }

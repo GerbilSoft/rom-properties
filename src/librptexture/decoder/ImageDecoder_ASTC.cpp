@@ -17,7 +17,6 @@
 
 // C++ STL classes
 using std::array;
-using std::shared_ptr;
 
 namespace LibRpTexture { namespace ImageDecoder {
 
@@ -45,7 +44,7 @@ const uint8_t astc_lkup_tbl[14][2] = {
  * @return rp_image, or nullptr on error.
  */
 ATTR_ACCESS_SIZE(read_only, 3, 4)
-shared_ptr<rp_image> fromASTC(int width, int height,
+rp_image_ptr fromASTC(int width, int height,
 	const uint8_t *RESTRICT img_buf, size_t img_siz,
 	uint8_t block_x, uint8_t block_y)
 {
@@ -75,7 +74,7 @@ shared_ptr<rp_image> fromASTC(int width, int height,
 	ImageSizeCalc::alignImageSizeASTC(physWidth, physHeight, block_x, block_y);
 
 	// Create an rp_image.
-	const shared_ptr<rp_image> img = std::make_shared<rp_image>(physWidth, physHeight, rp_image::Format::ARGB32);
+	const rp_image_ptr img = std::make_shared<rp_image>(physWidth, physHeight, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
 		return nullptr;

@@ -173,7 +173,7 @@ public:
 	 * The image is owned by this object.
 	 * @return Image, or nullptr on error.
 	 */
-	virtual std::shared_ptr<const rp_image> image(void) const = 0;
+	virtual rp_image_const_ptr image(void) const = 0;
 
 	/**
 	 * Get the image for the specified mipmap.
@@ -181,7 +181,7 @@ public:
 	 * @param mip Mipmap number.
 	 * @return Image, or nullptr on error.
 	 */
-	virtual std::shared_ptr<const rp_image> mipmap(int mip) const = 0;
+	virtual rp_image_const_ptr mipmap(int mip) const = 0;
 };
 
 } //namespace LibRpTexture

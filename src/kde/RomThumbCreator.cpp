@@ -19,7 +19,7 @@
 using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;
-using LibRpTexture::rp_image;
+using namespace LibRpTexture;
 
 // RpFileKio
 #include "RpFile_kio.hpp"
@@ -40,7 +40,6 @@ using LibRomData::TCreateThumbnail;
 #endif /* QT_VERSION >= QT_VERSION_CHECK(5,0,0) && HAVE_QtDBus */
 
 // C++ STL classes
-using std::shared_ptr;
 using std::string;
 using std::unique_ptr;
 
@@ -82,7 +81,7 @@ class RomThumbCreatorPrivate final : public TCreateThumbnail<QImage>
 		 * @param img rp_image
 		 * @return ImgClass
 		 */
-		inline QImage rpImageToImgClass(const shared_ptr<const rp_image> &img) const final
+		inline QImage rpImageToImgClass(const rp_image_const_ptr &img) const final
 		{
 			return rpToQImage(img);
 		}

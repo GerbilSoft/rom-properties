@@ -14,14 +14,11 @@
 #include "cdrom_structs.h"
 
 // Other rom-properties libraries
+#include "librptexture/fileformat/SegaPVR.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;
-
-// librptexture
-#include "librptexture/fileformat/SegaPVR.hpp"
-using LibRpTexture::rp_image;
-using LibRpTexture::SegaPVR;
+using namespace LibRpTexture;
 
 // DiscReader
 #include "disc/Cdrom2352Reader.hpp"
@@ -96,7 +93,7 @@ class DreamcastPrivate final : public RomDataPrivate
 		 * Load 0GDTEX.PVR.
 		 * @return 0GDTEX.PVR as rp_image, or nullptr on error.
 		 */
-		shared_ptr<const rp_image> load0GDTEX(void);
+		rp_image_const_ptr load0GDTEX(void);
 
 		/**
 		 * Get the disc publisher.
@@ -195,7 +192,7 @@ uint16_t DreamcastPrivate::calcProductCRC16(const DC_IP0000_BIN_t *ip0000_bin)
  * Load 0GDTEX.PVR.
  * @return 0GDTEX.PVR as rp_image, or nullptr on error.
  */
-shared_ptr<const rp_image> DreamcastPrivate::load0GDTEX(void)
+rp_image_const_ptr DreamcastPrivate::load0GDTEX(void)
 {
 	if (pvrData) {
 		// Image has already been loaded.
@@ -876,10 +873,10 @@ int Dreamcast::loadMetaData(void)
  * Load an internal image.
  * Called by RomData::image().
  * @param imageType	[in] Image type to load.
- * @param pImage	[out] Reference to shared_ptr<const rp_image> to store the image in.
+ * @param pImage	[out] Reference to rp_image_const_ptr to store the image in.
  * @return 0 on success; negative POSIX error code on error.
  */
-int Dreamcast::loadInternalImage(ImageType imageType, shared_ptr<const rp_image> &pImage)
+int Dreamcast::loadInternalImage(ImageType imageType, rp_image_const_ptr &pImage)
 {
 	ASSERT_loadInternalImage(imageType, pImage);
 	RP_D(Dreamcast);

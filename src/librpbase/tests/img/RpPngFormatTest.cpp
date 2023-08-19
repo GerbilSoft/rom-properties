@@ -42,7 +42,7 @@ using namespace LibRpFile;
 // librptexture
 #include "img/RpPng.hpp"
 #include "librptexture/img/rp_image.hpp"
-using LibRpTexture::rp_image;
+using namespace LibRpTexture;
 
 // C includes
 #include <stdint.h>
@@ -276,7 +276,7 @@ class RpPngFormatTest : public ::testing::TestWithParam<RpPngFormatTest_mode>
 		gzFile m_gzBmp;
 
 		// Loaded image.
-		shared_ptr<rp_image> m_img;
+		rp_image_ptr m_img;
 
 	public:
 		/** Test case parameters. **/

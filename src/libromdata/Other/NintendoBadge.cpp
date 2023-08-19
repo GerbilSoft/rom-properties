@@ -22,7 +22,6 @@ using namespace LibRpTexture;
 
 // C++ STL classes
 using std::array;
-using std::shared_ptr;
 using std::string;
 using std::vector;
 
@@ -77,14 +76,14 @@ class NintendoBadgePrivate final : public RomDataPrivate
 		} badgeHeader;
 
 		// Decoded images
-		array<shared_ptr<rp_image>, static_cast<unsigned int>(BadgeIndex_PRBS::Max)> img_badges;
+		array<rp_image_ptr, static_cast<unsigned int>(BadgeIndex_PRBS::Max)> img_badges;
 
 		/**
 		 * Load the badge image.
 		 * @param idx Image index.
 		 * @return Image, or nullptr on error.
 		 */
-		shared_ptr<const rp_image> loadImage(int idx);
+		rp_image_const_ptr loadImage(int idx);
 
 		/**
 		 * Get the language ID to use for the title fields.
@@ -150,7 +149,7 @@ NintendoBadgePrivate::NintendoBadgePrivate(const IRpFilePtr &file)
  * @param idx Image index.
  * @return Image, or nullptr on error.
  */
-shared_ptr<const rp_image> NintendoBadgePrivate::loadImage(int idx)
+rp_image_const_ptr NintendoBadgePrivate::loadImage(int idx)
 {
 	assert(idx >= 0 || idx < (int)img_badges.size());
 	if (idx < 0 || idx >= (int)img_badges.size()) {
@@ -251,7 +250,7 @@ shared_ptr<const rp_image> NintendoBadgePrivate::loadImage(int idx)
 	const size_t badge_sz = badge_rgb_sz + badge_a4_sz;
 	auto badgeData = aligned_uptr<uint8_t>(16, badge_sz);
 
-	shared_ptr<rp_image> img;
+	rp_image_ptr img;
 	if (!doMegaBadge) {
 		// Single badge.
 		size_t size = file->seekAndRead(start_addr, badgeData.get(), badge_sz);
@@ -274,7 +273,7 @@ shared_ptr<const rp_image> NintendoBadgePrivate::loadImage(int idx)
 
 		if (badgeType == BadgeType::CABS) {
 			// Need to crop the 64x64 image to 48x48.
-			const shared_ptr<rp_image> img48 = img->resized(48, 48);
+			const rp_image_ptr img48 = img->resized(48, 48);
 			if (img48) {
 				img = img48;
 			}
@@ -299,7 +298,7 @@ shared_ptr<const rp_image> NintendoBadgePrivate::loadImage(int idx)
 					return nullptr;
 				}
 
-				const shared_ptr<rp_image> mb_img = ImageDecoder::fromN3DSTiledRGB565_A4(
+				const rp_image_ptr mb_img = ImageDecoder::fromN3DSTiledRGB565_A4(
 					badge_dims, badge_dims,
 					reinterpret_cast<const uint16_t*>(badgeData.get()), badge_rgb_sz,
 					badgeData.get() + badge_rgb_sz, badge_a4_sz);
@@ -821,10 +820,10 @@ int NintendoBadge::loadFieldData(void)
  * Load an internal image.
  * Called by RomData::image().
  * @param imageType	[in] Image type to load.
- * @param pImage	[out] Reference to shared_ptr<const rp_image> to store the image in.
+ * @param pImage	[out] Reference to rp_image_const_ptr to store the image in.
  * @return 0 on success; negative POSIX error code on error.
  */
-int NintendoBadge::loadInternalImage(ImageType imageType, shared_ptr<const rp_image> &pImage)
+int NintendoBadge::loadInternalImage(ImageType imageType, rp_image_const_ptr &pImage)
 {
 	ASSERT_loadInternalImage(imageType, pImage);
 

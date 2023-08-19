@@ -26,7 +26,6 @@ using LibRpBase::RomFields;
 #include "decoder/ImageDecoder_Linear.hpp"
 
 // C++ STL classes
-using std::shared_ptr;
 using std::string;
 using std::unique_ptr;
 
@@ -68,7 +67,7 @@ class TGAPrivate final : public FileFormatPrivate
 		TGA_AlphaType_e alphaType;
 
 		// Decoded image
-		shared_ptr<rp_image> img;
+		rp_image_ptr img;
 
 		// Is HFlip/VFlip needed?
 		// Some textures may be stored upside-down due to
@@ -95,7 +94,7 @@ class TGAPrivate final : public FileFormatPrivate
 		 * Load the TGA image.
 		 * @return Image, or nullptr on error.
 		 */
-		shared_ptr<const rp_image> loadImage(void);
+		rp_image_const_ptr loadImage(void);
 
 		/**
 		 * Convert a TGA timestamp to UNIX time.
@@ -210,7 +209,7 @@ int TGAPrivate::decompressRLE(uint8_t *pDest, size_t dest_len,
  * Load the TGA image.
  * @return Image, or nullptr on error.
  */
-shared_ptr<const rp_image> TGAPrivate::loadImage(void)
+rp_image_const_ptr TGAPrivate::loadImage(void)
 {
 	if (img) {
 		// Image has already been loaded.
@@ -331,7 +330,7 @@ shared_ptr<const rp_image> TGAPrivate::loadImage(void)
 	// TODO: Handle premultiplied alpha.
 	const bool hasAlpha = (alphaType >= TGA_ALPHATYPE_PRESENT) &&
 			      ((tgaHeader.img.attr_dir & 0x0F) > 0);
-	shared_ptr<rp_image> imgtmp;
+	rp_image_ptr imgtmp;
 	switch (tgaHeader.image_type & ~TGA_IMAGETYPE_RLE_FLAG) {
 		case TGA_IMAGETYPE_COLORMAP:
 		case TGA_IMAGETYPE_HUFFMAN_COLORMAP:
@@ -453,7 +452,7 @@ shared_ptr<const rp_image> TGAPrivate::loadImage(void)
 
 	// Post-processing: Check if a flip is needed.
 	if (imgtmp && flipOp != rp_image::FLIP_NONE) {
-		const shared_ptr<rp_image> flipimg = imgtmp->flip(flipOp);
+		const rp_image_ptr flipimg = imgtmp->flip(flipOp);
 		if (flipimg) {
 			imgtmp = flipimg;
 		}
@@ -925,7 +924,7 @@ int TGA::getFields(RomFields *fields) const
  * The image is owned by this object.
  * @return Image, or nullptr on error.
  */
-shared_ptr<const rp_image> TGA::image(void) const
+rp_image_const_ptr TGA::image(void) const
 {
 	RP_D(const TGA);
 	if (!d->isValid || (int)d->texType < 0) {
@@ -943,7 +942,7 @@ shared_ptr<const rp_image> TGA::image(void) const
  * @param mip Mipmap number.
  * @return Image, or nullptr on error.
  */
-shared_ptr<const rp_image> TGA::mipmap(int mip) const
+rp_image_const_ptr TGA::mipmap(int mip) const
 {
 	// Allowing mipmap 0 for compatibility.
 	if (mip == 0) {

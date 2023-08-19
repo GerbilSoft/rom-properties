@@ -11,12 +11,12 @@
 #include "DragImageLabel.hpp"
 #include "RpQByteArrayFile.hpp"
 
-// librpbase, librptexture
+// Other rom-properties libraries
 #include "librpbase/img/IconAnimData.hpp"
 #include "librpbase/img/IconAnimHelper.hpp"
+using namespace LibRpTexture;
 using LibRpBase::IconAnimData;
 using LibRpBase::RpPngWriter;
-using LibRpTexture::rp_image;
 
 // Qt includes
 #include <QDesktopServices>
@@ -80,7 +80,7 @@ void DragImageLabel::setEcksBawks(bool newEcksBawks)
  * @param img rp_image, or nullptr to clear.
  * @return True on success; false on error or if clearing.
  */
-bool DragImageLabel::setRpImage(const shared_ptr<const rp_image> &img)
+bool DragImageLabel::setRpImage(const rp_image_const_ptr &img)
 {
 	m_img = img;
 	if (!img) {
@@ -195,7 +195,7 @@ bool DragImageLabel::updatePixmaps(void)
 
 		// Convert the icons to QPixmaps.
 		for (int i = iconAnimData->count-1; i >= 0; i--) {
-			const shared_ptr<rp_image> &frame = iconAnimData->frames[i];
+			const rp_image_ptr &frame = iconAnimData->frames[i];
 			if (frame && frame->isValid()) {
 				// NOTE: Allowing NULL frames here...
 				m_anim->iconFrames[i] = imgToPixmap(rpToQImage(frame));

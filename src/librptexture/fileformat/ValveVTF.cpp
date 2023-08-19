@@ -31,7 +31,6 @@ using LibRpText::rp_sprintf;
 using LibRpTexture::ImageSizeCalc::OpCode;
 
 // C++ STL classes
-using std::shared_ptr;
 using std::string;
 using std::vector;
 
@@ -62,7 +61,7 @@ class ValveVTFPrivate final : public FileFormatPrivate
 
 		// Decoded mipmaps
 		// Mipmap 0 is the full image.
-		vector<shared_ptr<rp_image> > mipmaps;
+		vector<rp_image_ptr > mipmaps;
 
 		// Mipmap sizes and start addresses.
 		struct mipmap_data_t {
@@ -104,7 +103,7 @@ class ValveVTFPrivate final : public FileFormatPrivate
 		 * @param mip Mipmap number. (0 == full image)
 		 * @return Image, or nullptr on error.
 		 */
-		shared_ptr<const rp_image> loadImage(int mip);
+		rp_image_const_ptr loadImage(int mip);
 };
 
 FILEFORMAT_IMPL(ValveVTF)
@@ -363,7 +362,7 @@ int ValveVTFPrivate::getMipmapInfo(void)
  * @param mip Mipmap number. (0 == full image)
  * @return Image, or nullptr on error.
  */
-shared_ptr<const rp_image> ValveVTFPrivate::loadImage(int mip)
+rp_image_const_ptr ValveVTFPrivate::loadImage(int mip)
 {
 	// TODO: Option to load the low-res image instead?
 	int mipmapCount = vtfHeader.mipmapCount;
@@ -446,7 +445,7 @@ shared_ptr<const rp_image> ValveVTFPrivate::loadImage(int mip)
 	// (The channels appear to be backwards.)
 	// TODO: Lookup table to convert to PXF constants?
 	// TODO: Verify on big-endian?
-	shared_ptr<rp_image> img;
+	rp_image_ptr img;
 	switch (vtfHeader.highResImageFormat) {
 		/* 32-bit */
 		case VTF_IMAGE_FORMAT_RGBA8888:
@@ -946,7 +945,7 @@ int ValveVTF::getFields(RomFields *fields) const
  * The image is owned by this object.
  * @return Image, or nullptr on error.
  */
-shared_ptr<const rp_image> ValveVTF::image(void) const
+rp_image_const_ptr ValveVTF::image(void) const
 {
 	// The full image is mipmap 0.
 	return this->mipmap(0);
@@ -958,7 +957,7 @@ shared_ptr<const rp_image> ValveVTF::image(void) const
  * @param mip Mipmap number.
  * @return Image, or nullptr on error.
  */
-shared_ptr<const rp_image> ValveVTF::mipmap(int mip) const
+rp_image_const_ptr ValveVTF::mipmap(int mip) const
 {
 	RP_D(const ValveVTF);
 	if (!d->isValid) {
