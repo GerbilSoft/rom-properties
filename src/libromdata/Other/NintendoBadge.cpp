@@ -876,12 +876,14 @@ int NintendoBadge::loadInternalImage(ImageType imageType, const rp_image **pImag
 					break;
 				default:
 					// Badge isn't valid.
+					*pImage = nullptr;
 					return -EIO;
 			}
 			break;
 
 		default:
 			// Unsupported image type.
+			*pImage = nullptr;
 			return -ENOENT;
 	}
 

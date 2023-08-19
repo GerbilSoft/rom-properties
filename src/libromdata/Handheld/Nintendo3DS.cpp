@@ -2435,6 +2435,7 @@ int Nintendo3DS::loadInternalImage(ImageType imageType, const rp_image **pImage)
 	RP_D(Nintendo3DS);
 	if (!d->isValid) {
 		// ROM image isn't valid.
+		*pImage = nullptr;
 		return -EIO;
 	}
 

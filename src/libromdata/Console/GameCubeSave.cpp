@@ -1072,6 +1072,7 @@ int GameCubeSave::loadInternalImage(ImageType imageType, const rp_image **pImage
 			break;
 		default:
 			// Unsupported.
+			*pImage = nullptr;
 			return -ENOENT;
 	}
 

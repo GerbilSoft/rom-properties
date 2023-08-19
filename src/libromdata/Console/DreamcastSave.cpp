@@ -1549,7 +1549,7 @@ int DreamcastSave::loadInternalImage(ImageType imageType, const rp_image **pImag
 		default:
 			// Unsupported image type.
 			*pImage = nullptr;
-			return 0;
+			return -ENOENT;
 	}
 
 	if (!d->file) {

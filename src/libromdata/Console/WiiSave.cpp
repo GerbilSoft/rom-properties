@@ -553,7 +553,7 @@ int WiiSave::loadInternalImage(ImageType imageType, const rp_image **pImage)
 
 	// No WiiWIBN object.
 	*pImage = nullptr;
-	return 0;
+	return -ENOENT;
 }
 
 /**
