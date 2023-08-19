@@ -271,6 +271,10 @@ FileFormat *FileFormatFactory::create(const IRpFilePtr &file)
 						// FileFormat subclass obtained.
 						return fileFormat;
 					}
+
+					// Not actually supported.
+					fileFormat->unref();
+					break;
 				}
 
 				default:
