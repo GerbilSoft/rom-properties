@@ -282,8 +282,10 @@ const rp_image *NintendoBadgePrivate::loadImage(int idx)
 		if (badgeType == BadgeType::CABS) {
 			// Need to crop the 64x64 image to 48x48.
 			rp_image *const img48 = img->resized(48, 48);
-			img->unref();
-			img = img48;
+			if (img48) {
+				img->unref();
+				img = img48;
+			}
 		}
 	} else {
 		// Mega badge. Need to convert each 64x64 badge
