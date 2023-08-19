@@ -161,10 +161,10 @@ public: \
 	 * Load an internal image. \
 	 * Called by RomData::image(). \
 	 * @param imageType	[in] Image type to load. \
-	 * @param pImage	[out] Pointer to const rp_image* to store the image in. \
+	 * @param pImage	[out] Reference to shared_ptr<const rp_image> to store the image in. \
 	 * @return 0 on success; negative POSIX error code on error. \
 	 */ \
-	int loadInternalImage(ImageType imageType, const LibRpTexture::rp_image **pImage) final;
+	int loadInternalImage(ImageType imageType, std::shared_ptr<const LibRpTexture::rp_image> &pImage) final; \
 
 /**
  * RomData subclass function declaration for obtaining URLs for external images.
@@ -346,13 +346,9 @@ std::vector<RomData::ImageSizeDef> klass::supportedImageSizes(ImageType imageTyp
 
 #define ASSERT_loadInternalImage(imageType, pImage) do { \
 	assert((imageType) >= IMG_INT_MIN && (imageType) <= IMG_INT_MAX); \
-	assert((pImage) != nullptr); \
-	if (!(pImage)) { \
-		/* Invalid parameters. */ \
-		return -EINVAL; \
-	} else if ((imageType) < IMG_INT_MIN || (imageType) > IMG_INT_MAX) { \
+	if ((imageType) < IMG_INT_MIN || (imageType) > IMG_INT_MAX) { \
 		/* ImageType is out of range. */ \
-		*(pImage) = nullptr; \
+		(pImage).reset(); \
 		return -ERANGE; \
 	} \
 } while (0)
@@ -383,19 +379,19 @@ std::vector<RomData::ImageSizeDef> klass::supportedImageSizes(ImageType imageTyp
  */
 #define ROMDATA_loadInternalImage_single(ourImageType, file, isValid, romType, imgCache, func) do { \
 	if ((imageType) != (ourImageType)) { \
-		*(pImage) = nullptr; \
+		(pImage).reset(); \
 		return -ENOENT; \
 	} else if ((imgCache) != nullptr) { \
-		*(pImage) = (imgCache); \
+		(pImage) = (imgCache); \
 		return 0; \
 	} else if (!(file)) { \
-		*(pImage) = nullptr; \
+		(pImage).reset(); \
 		return -EBADF; \
 	} else if (!(isValid) || ((int)(romType)) < 0) { \
-		*(pImage) = nullptr; \
+		(pImage).reset(); \
 		return -EIO; \
 	} \
 	\
-	*(pImage) = (func)(); \
-	return (*(pImage) != nullptr ? 0 : -EIO); \
+	(pImage) = (func)(); \
+	return ((bool)pImage ? 0 : -EIO); \
 } while (0)

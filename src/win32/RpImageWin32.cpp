@@ -15,6 +15,7 @@ using LibRpTexture::rp_image;
 using LibRpTexture::RpGdiplusBackend;
 
 // C++ STL classes
+using std::shared_ptr;
 using std::unique_ptr;
 
 // Gdiplus for HBITMAP conversion.
@@ -192,6 +193,26 @@ static HBITMAP toHBITMAP_mask(const rp_image *image)
 }
 
 /**
+ * Convert an rp_image to a HBITMAP for use as an icon mask.
+ * @param image rp_image.
+ * @return HBITMAP, or nullptr on error.
+ */
+static inline HBITMAP toHBITMAP_mask(const shared_ptr<rp_image> &image)
+{
+	return toHBITMAP_mask(image.get());
+}
+
+/**
+ * Convert an rp_image to a HBITMAP for use as an icon mask.
+ * @param image rp_image.
+ * @return HBITMAP, or nullptr on error.
+ */
+static inline HBITMAP toHBITMAP_mask(const shared_ptr<const rp_image> &image)
+{
+	return toHBITMAP_mask(image.get());
+}
+
+/**
  * Convert an rp_image to HBITMAP.
  * @return image rp_image.
  * @param bgColor Background color for images with alpha transparency. (ARGB32 format)
@@ -322,12 +343,12 @@ HICON toHICON(const rp_image *image)
 	// Windows doesn't like non-square icons.
 	// Add extra transparent columns/rows before
 	// converting to HBITMAP.
-	rp_image *tmp_img = nullptr;
+	std::shared_ptr<rp_image> tmp_img;
 	if (!image->isSquare()) {
 		// Image is non-square.
 		tmp_img = image->squared();
 		if (tmp_img) {
-			image = tmp_img;
+			image = tmp_img.get();
 		}
 	}
 
@@ -368,7 +389,6 @@ cleanup:
 		DeleteBitmap(hBitmap);
 	if (hbmMask)
 		DeleteBitmap(hbmMask);
-	UNREF(tmp_img);
 	return hIcon;
 }
 
@@ -377,7 +397,7 @@ cleanup:
  * @param hBitmap HBITMAP.
  * @return rp_image.
  */
-rp_image *fromHBITMAP(HBITMAP hBitmap)
+shared_ptr<rp_image> fromHBITMAP(HBITMAP hBitmap)
 {
 	BITMAP bm;
 	if (!GetObject(hBitmap, sizeof(bm), &bm)) {
@@ -438,10 +458,9 @@ rp_image *fromHBITMAP(HBITMAP hBitmap)
 	}
 
 	// Copy the data into a new rp_image.
-	rp_image *const img = new rp_image(bm.bmWidth, height, format);
+	shared_ptr<rp_image> img = std::make_shared<rp_image>(bm.bmWidth, height, format);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		img->unref();
 		return nullptr;
 	}
 
@@ -480,7 +499,7 @@ HICON toHICON(HBITMAP hBitmap)
 	// NOTE: Windows doesn't seem to have any way to get
 	// direct access to the HBITMAP's pixels, so this step
 	// step is required. (GetDIBits() copies the pixels.)
-	rp_image *img = fromHBITMAP(hBitmap);
+	shared_ptr<rp_image> img = fromHBITMAP(hBitmap);
 	if (!img) {
 		// Error converting to rp_image.
 		return nullptr;
@@ -492,9 +511,8 @@ HICON toHICON(HBITMAP hBitmap)
 	HBITMAP hBmpTmp = nullptr;
 	if (!img->isSquare()) {
 		// Image is non-square.
-		rp_image *const tmp_img = img->squared();
+		const shared_ptr<rp_image> tmp_img = img->squared();
 		if (tmp_img) {
-			UNREF(img);
 			img = tmp_img;
 		}
 
@@ -504,7 +522,6 @@ HICON toHICON(HBITMAP hBitmap)
 		assert(backend != nullptr);
 		if (!backend) {
 			// Incorrect backend set.
-			UNREF(img);
 			return nullptr;
 		}
 		hBmpTmp = const_cast<RpGdiplusBackend*>(backend)->toHBITMAP_alpha();
@@ -517,7 +534,6 @@ HICON toHICON(HBITMAP hBitmap)
 	HBITMAP hbmMask = toHBITMAP_mask(img);
 	if (!hbmMask) {
 		// Failed to create the icon mask.
-		img->unref();
 		if (hBmpTmp) {
 			DeleteBitmap(hBmpTmp);
 		}
@@ -541,7 +557,6 @@ HICON toHICON(HBITMAP hBitmap)
 	if (hBmpTmp) {
 		DeleteBitmap(hBmpTmp);
 	}
-	img->unref();
 	return hIcon;
 }
 

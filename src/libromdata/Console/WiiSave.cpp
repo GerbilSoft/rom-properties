@@ -536,10 +536,10 @@ int WiiSave::loadFieldData(void)
  * Load an internal image.
  * Called by RomData::image().
  * @param imageType	[in] Image type to load.
- * @param pImage	[out] Pointer to const rp_image* to store the image in.
+ * @param pImage	[out] Reference to shared_ptr<const rp_image> to store the image in.
  * @return 0 on success; negative POSIX error code on error.
  */
-int WiiSave::loadInternalImage(ImageType imageType, const rp_image **pImage)
+int WiiSave::loadInternalImage(ImageType imageType, shared_ptr<const rp_image> &pImage)
 {
 	ASSERT_loadInternalImage(imageType, pImage);
 
@@ -552,7 +552,7 @@ int WiiSave::loadInternalImage(ImageType imageType, const rp_image **pImage)
 #endif /* ENABLE_DECRYPTION */
 
 	// No WiiWIBN object.
-	*pImage = nullptr;
+	pImage.reset();
 	return -ENOENT;
 }
 

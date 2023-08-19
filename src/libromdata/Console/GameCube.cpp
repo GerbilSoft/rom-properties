@@ -2076,28 +2076,28 @@ int GameCube::loadMetaData(void)
  * Load an internal image.
  * Called by RomData::image().
  * @param imageType	[in] Image type to load.
- * @param pImage	[out] Pointer to const rp_image* to store the image in.
+ * @param pImage	[out] Reference to shared_ptr<const rp_image> to store the image in.
  * @return 0 on success; negative POSIX error code on error.
  */
-int GameCube::loadInternalImage(ImageType imageType, const rp_image **pImage)
+int GameCube::loadInternalImage(ImageType imageType, shared_ptr<const rp_image> &pImage)
 {
 	ASSERT_loadInternalImage(imageType, pImage);
 
 	RP_D(GameCube);
 	if (imageType != IMG_INT_BANNER) {
 		// Only IMG_INT_BANNER is supported by GameCube.
-		*pImage = nullptr;
+		pImage.reset();
 		return -ENOENT;
 	} else if (!d->isValid) {
 		// Disc image isn't valid.
-		*pImage = nullptr;
+		pImage.reset();
 		return -EIO;
 	}
 
 	// Internal images are currently only supported for GCN.
 	if ((d->discType & GameCubePrivate::DISC_SYSTEM_MASK) != GameCubePrivate::DISC_SYSTEM_GCN) {
 		// opening.bnr doesn't have an image.
-		*pImage = nullptr;
+		pImage.reset();
 		return -ENOENT;
 	}
 
@@ -2109,7 +2109,7 @@ int GameCube::loadInternalImage(ImageType imageType, const rp_image **pImage)
 		case GameCubePrivate::DISC_FORMAT_WIA:
 		case GameCubePrivate::DISC_FORMAT_RVZ:
 			// WIA/RVZ isn't fully supported, so we can't load images.
-			*pImage = nullptr;
+			pImage.reset();
 			return -ENOENT;
 	}
 
@@ -2117,7 +2117,7 @@ int GameCube::loadInternalImage(ImageType imageType, const rp_image **pImage)
 	// FIXME: Does Triforce have opening.bnr?
 	if (d->gcn_loadOpeningBnr() != 0) {
 		// Could not load opening.bnr.
-		*pImage = nullptr;
+		pImage.reset();
 		return -ENOENT;
 	}
 
@@ -2127,7 +2127,7 @@ int GameCube::loadInternalImage(ImageType imageType, const rp_image **pImage)
 	}
 
 	// No GameCubeBNR object.
-	*pImage = nullptr;
+	pImage.reset();
 	return -ENOENT;
 }
 

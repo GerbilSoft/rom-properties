@@ -32,7 +32,7 @@ class XboxXPRPrivate final : public FileFormatPrivate
 {
 	public:
 		XboxXPRPrivate(XboxXPR *q, const shared_ptr<IRpFile> &file);
-		~XboxXPRPrivate() final;
+		~XboxXPRPrivate() final = default;
 
 	private:
 		typedef FileFormatPrivate super;
@@ -56,13 +56,13 @@ class XboxXPRPrivate final : public FileFormatPrivate
 		};
 		XPRType xprType;
 
-		// XPR0 header.
+		// XPR0 header
 		Xbox_XPR0_Header xpr0Header;
 
-		// Decoded image.
-		rp_image *img;
+		// Decoded image
+		shared_ptr<rp_image> img;
 
-		// Invalid pixel format message.
+		// Invalid pixel format message
 		char invalid_pixel_format[24];
 
 		/**
@@ -150,7 +150,7 @@ class XboxXPRPrivate final : public FileFormatPrivate
 		 * Load the XboxXPR image.
 		 * @return Image, or nullptr on error.
 		 */
-		const rp_image *loadXboxXPR0Image(void);
+		shared_ptr<const rp_image> loadXboxXPR0Image(void);
 };
 
 FILEFORMAT_IMPL(XboxXPR)
@@ -183,11 +183,6 @@ XboxXPRPrivate::XboxXPRPrivate(XboxXPR *q, const shared_ptr<IRpFile> &file)
 	// Clear the structs and arrays.
 	memset(&xpr0Header, 0, sizeof(xpr0Header));
 	memset(invalid_pixel_format, 0, sizeof(invalid_pixel_format));
-}
-
-XboxXPRPrivate::~XboxXPRPrivate()
-{
-	UNREF(img);
 }
 
 /**
@@ -320,7 +315,7 @@ void XboxXPRPrivate::unswizzle_box(const uint8_t *src_buf,
  * Load the XPR0 image.
  * @return Image, or nullptr on error.
  */
-const rp_image *XboxXPRPrivate::loadXboxXPR0Image(void)
+shared_ptr<const rp_image> XboxXPRPrivate::loadXboxXPR0Image(void)
 {
 	if (img) {
 		// Image has already been loaded.
@@ -540,14 +535,12 @@ const rp_image *XboxXPRPrivate::loadXboxXPR0Image(void)
 
 		// Assuming img is ARGB32, since we're converting it
 		// from either a 16-bit or 32-bit ARGB format.
-		rp_image *const imgunswz = new rp_image(width, height, rp_image::Format::ARGB32);
+		shared_ptr<rp_image> imgunswz = std::make_shared<rp_image>(width, height, rp_image::Format::ARGB32);
 		unswizzle_box(static_cast<const uint8_t*>(img->bits()),
 			width, height,
 			static_cast<uint8_t*>(imgunswz->bits()),
 			img->stride(), sizeof(uint32_t));
-		img->unref();
 		img = imgunswz;
-		return imgunswz;
 	}
 
 	return img;
@@ -787,7 +780,7 @@ int XboxXPR::getFields(RomFields *fields) const
  * The image is owned by this object.
  * @return Image, or nullptr on error.
  */
-const rp_image *XboxXPR::image(void) const
+shared_ptr<const rp_image> XboxXPR::image(void) const
 {
 	RP_D(const XboxXPR);
 	if (!d->isValid || (int)d->xprType < 0) {
@@ -805,7 +798,7 @@ const rp_image *XboxXPR::image(void) const
  * @param mip Mipmap number.
  * @return Image, or nullptr on error.
  */
-const rp_image *XboxXPR::mipmap(int mip) const
+shared_ptr<const rp_image> XboxXPR::mipmap(int mip) const
 {
 	// Allowing mipmap 0 for compatibility.
 	if (mip == 0) {

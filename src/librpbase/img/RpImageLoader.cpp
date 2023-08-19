@@ -48,7 +48,7 @@ static const uint8_t exif_magic[4] = {'E','x','i','f'};
  * @param file IRpFile to load from.
  * @return rp_image*, or nullptr on error.
  */
-rp_image *load(const std::shared_ptr<LibRpFile::IRpFile> &file)
+shared_ptr<rp_image> load(const shared_ptr<IRpFile> &file)
 {
 	file->rewind();
 

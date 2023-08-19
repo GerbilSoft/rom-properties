@@ -52,7 +52,7 @@ class Xbox360_STFS_Private final : public RomDataPrivate
 		static const RomDataInfo romDataInfo;
 
 	public:
-		// STFS type.
+		// STFS type
 		enum class StfsType {
 			Unknown	= -1,
 
@@ -64,16 +64,16 @@ class Xbox360_STFS_Private final : public RomDataPrivate
 		};
 		StfsType stfsType;
 
-		// Icon.
+		// Icon
 		// NOTE: Currently using Title Thumbnail.
 		// Should we make regular Thumbnail available too?
-		rp_image *img_icon;
+		shared_ptr<rp_image> img_icon;
 
 		/**
 		 * Load the icon.
 		 * @return Icon, or nullptr on error.
 		 */
-		const rp_image *loadIcon(void);
+		shared_ptr<const rp_image> loadIcon(void);
 
 		/**
 		 * Get the default language code for the multi-string fields.
@@ -177,7 +177,6 @@ const RomDataInfo Xbox360_STFS_Private::romDataInfo = {
 Xbox360_STFS_Private::Xbox360_STFS_Private(const shared_ptr<IRpFile> &file)
 	: super(file, &romDataInfo)
 	, stfsType(StfsType::Unknown)
-	, img_icon(nullptr)
 	, headers_loaded(0)
 	, xex(nullptr)
 {
@@ -190,14 +189,13 @@ Xbox360_STFS_Private::Xbox360_STFS_Private(const shared_ptr<IRpFile> &file)
 Xbox360_STFS_Private::~Xbox360_STFS_Private()
 {
 	UNREF(xex);
-	UNREF(img_icon);
 }
 
 /**
  * Load the icon.
  * @return Icon, or nullptr on error.
  */
-const rp_image *Xbox360_STFS_Private::loadIcon(void)
+shared_ptr<const rp_image> Xbox360_STFS_Private::loadIcon(void)
 {
 	if (img_icon) {
 		// Icon has already been loaded.
@@ -238,7 +236,7 @@ const rp_image *Xbox360_STFS_Private::loadIcon(void)
 	// Create a MemFile and decode the image.
 	// TODO: For rpcli, shortcut to extract the PNG directly.
 	shared_ptr<MemFile> f_mem = std::make_shared<MemFile>(pIconData, iconSize);
-	rp_image *img = RpPng::load(f_mem);
+	shared_ptr<rp_image> img = RpPng::load(f_mem);
 
 	if (!img) {
 		// Unable to load the title thumbnail image.
@@ -1114,10 +1112,10 @@ int Xbox360_STFS::loadMetaData(void)
  * Load an internal image.
  * Called by RomData::image().
  * @param imageType	[in] Image type to load.
- * @param pImage	[out] Pointer to const rp_image* to store the image in.
+ * @param pImage	[out] Reference to shared_ptr<const rp_image> to store the image in.
  * @return 0 on success; negative POSIX error code on error.
  */
-int Xbox360_STFS::loadInternalImage(ImageType imageType, const rp_image **pImage)
+int Xbox360_STFS::loadInternalImage(ImageType imageType, shared_ptr<const rp_image> &pImage)
 {
 	ASSERT_loadInternalImage(imageType, pImage);
 	RP_D(Xbox360_STFS);

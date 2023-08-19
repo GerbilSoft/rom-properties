@@ -36,7 +36,7 @@ namespace LibRpTexture {
 class rp_image_backend;
 
 class rp_image_private;
-class rp_image final : public RefBase
+class rp_image final
 {
 	public:
 		enum class Format {
@@ -69,38 +69,14 @@ class rp_image final : public RefBase
 		 */
 		explicit rp_image(rp_image_backend *backend);
 
-	protected:
-		~rp_image() final;	// call unref() instead
+		RP_LIBROMDATA_PUBLIC
+		virtual ~rp_image() final;
 
 	private:
 		RP_DISABLE_COPY(rp_image)
 	private:
 		friend class rp_image_private;
 		rp_image_private *const d_ptr;
-
-	public:
-		inline rp_image *ref(void)
-		{
-			return RefBase::ref<rp_image>();
-		}
-
-		/**
-		 * Special case ref() function to allow
-		 * const rp_image* to be ref'd.
-		 */
-		inline const rp_image *ref(void) const
-		{
-			return const_cast<rp_image*>(this)->RefBase::ref<rp_image>();
-		}
-
-		/**
-		 * Special case unref() function to allow
-		 * const rp_image* to be unref'd.
-		 */
-		inline void unref(void) const
-		{
-			const_cast<rp_image*>(this)->RefBase::unref();
-		}
 
 	public:
 		/**
@@ -314,14 +290,14 @@ class rp_image final : public RefBase
 		 * @return New rp_image with a copy of the image data.
 		 */
 		RP_LIBROMDATA_PUBLIC
-		rp_image *dup(void) const;
+		std::shared_ptr<rp_image> dup(void) const;
 
 		/**
 		 * Duplicate the rp_image, converting to ARGB32 if necessary.
 		 * @return New ARGB32 rp_image with a copy of the image data.
 		 */
 		RP_LIBROMDATA_PUBLIC
-		rp_image *dup_ARGB32(void) const;
+		std::shared_ptr<rp_image> dup_ARGB32(void) const;
 
 		/**
 		 * Square the rp_image.
@@ -333,7 +309,7 @@ class rp_image final : public RefBase
 		 * @return New rp_image with a squared version of the original, or nullptr on error.
 		 */
 		RP_LIBROMDATA_PUBLIC
-		rp_image *squared(void) const;
+		std::shared_ptr<rp_image> squared(void) const;
 
 		/**
 		 * Alignment constants for resized().
@@ -385,7 +361,7 @@ class rp_image final : public RefBase
 		 * @return New rp_image with a resized version of the original, or nullptr on error.
 		 */
 		RP_LIBROMDATA_PUBLIC
-		rp_image *resized(int width, int height,
+		std::shared_ptr<rp_image> resized(int width, int height,
 			Alignment alignment = AlignDefault,
 			uint32_t bgColor = 0x00000000) const;
 
@@ -500,7 +476,7 @@ class rp_image final : public RefBase
 		 * @return Flipped image, or nullptr on error.
 		 */
 		RP_LIBROMDATA_PUBLIC
-		rp_image *flip(FlipOp op) const;
+		std::shared_ptr<rp_image> flip(FlipOp op) const;
 
 		/**
 		 * Shrink image dimensions.

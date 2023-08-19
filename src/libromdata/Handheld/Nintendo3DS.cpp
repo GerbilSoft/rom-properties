@@ -2425,17 +2425,17 @@ int Nintendo3DS::loadMetaData(void)
  * Load an internal image.
  * Called by RomData::image().
  * @param imageType	[in] Image type to load.
- * @param pImage	[out] Pointer to const rp_image* to store the image in.
+ * @param pImage	[out] Reference to shared_ptr<const rp_image> to store the image in.
  * @return 0 on success; negative POSIX error code on error.
  */
-int Nintendo3DS::loadInternalImage(ImageType imageType, const rp_image **pImage)
+int Nintendo3DS::loadInternalImage(ImageType imageType, shared_ptr<const rp_image> &pImage)
 {
 	ASSERT_loadInternalImage(imageType, pImage);
 
 	RP_D(Nintendo3DS);
 	if (!d->isValid) {
 		// ROM image isn't valid.
-		*pImage = nullptr;
+		pImage.reset();
 		return -EIO;
 	}
 
@@ -2444,7 +2444,7 @@ int Nintendo3DS::loadInternalImage(ImageType imageType, const rp_image **pImage)
 		case Nintendo3DSPrivate::RomType::Unknown:
 		case Nintendo3DSPrivate::RomType::eMMC:
 			// Cannot get external images for eMMC and unknown ROM types.
-			*pImage = nullptr;
+			pImage.reset();
 			return -ENOENT;
 
 		case Nintendo3DSPrivate::RomType::CIA:
@@ -2468,14 +2468,13 @@ int Nintendo3DS::loadInternalImage(ImageType imageType, const rp_image **pImage)
 
 	if (!d->mainContent) {
 		// No main content...
-		*pImage = nullptr;
+		pImage.reset();
 		return -ENOENT;
 	}
 
 	// Get the icon from the main content.
-	const rp_image *image = d->mainContent->image(imageType);
-	*pImage = image;
-	return (image ? 0 : -EIO);
+	pImage = d->mainContent->image(imageType);
+	return ((bool)pImage ? 0 : -EIO);
 }
 
 /**

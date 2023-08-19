@@ -44,7 +44,7 @@ class iQuePlayerPrivate final : public RomDataPrivate
 {
 	public:
 		iQuePlayerPrivate(const shared_ptr<IRpFile> &file);
-		~iQuePlayerPrivate() final;
+		~iQuePlayerPrivate() final = default;
 
 	private:
 		typedef RomDataPrivate super;
@@ -57,7 +57,7 @@ class iQuePlayerPrivate final : public RomDataPrivate
 		static const RomDataInfo romDataInfo;
 
 	public:
-		// File type.
+		// File type
 		enum class IQueFileType {
 			Unknown	= -1,	// Unknown ROM type.
 
@@ -68,14 +68,14 @@ class iQuePlayerPrivate final : public RomDataPrivate
 		};
 		IQueFileType iQueFileType;
 
-		// .cmd structs.
+		// .cmd structs
 		iQuePlayer_contentDesc contentDesc;
 		iQuePlayer_BbContentMetaDataHead bbContentMetaDataHead;
 		iQuePlayer_BbTicketHead bbTicketHead;
 
-		// Internal images.
-		rp_image *img_thumbnail;	// handled as icon
-		rp_image *img_title;		// handled as banner
+		// Internal images
+		shared_ptr<rp_image> img_thumbnail;	// handled as icon
+		shared_ptr<rp_image> img_title;		// handled as banner
 
 	public:
 		/**
@@ -98,7 +98,7 @@ class iQuePlayerPrivate final : public RomDataPrivate
 		 * @param byteswap	[in] If true, byteswap before decoding if needed.
 		 * @return Image, or nullptr on error.
 		 */
-		rp_image *loadImage(off64_t address, size_t z_size, size_t unz_size,
+		shared_ptr<rp_image> loadImage(off64_t address, size_t z_size, size_t unz_size,
 			ImageDecoder::PixelFormat px_format, int w, int h, bool byteswap);
 
 	public:
@@ -106,14 +106,14 @@ class iQuePlayerPrivate final : public RomDataPrivate
 		 * Load the thumbnail image.
 		 * @return Thumbnail image, or nullptr on error.
 		 */
-		const rp_image *loadThumbnailImage(void);
+		shared_ptr<const rp_image> loadThumbnailImage(void);
 
 		/**
 		 * Load the title image.
 		 * This is the game title in Chinese.
 		 * @return Title image, or nullptr on error.
 		 */
-		const rp_image *loadTitleImage(void);
+		shared_ptr<const rp_image> loadTitleImage(void);
 };
 
 ROMDATA_IMPL(iQuePlayer)
@@ -153,12 +153,6 @@ iQuePlayerPrivate::iQuePlayerPrivate(const shared_ptr<IRpFile> &file)
 	memset(&contentDesc, 0, sizeof(contentDesc));
 	memset(&bbContentMetaDataHead, 0, sizeof(bbContentMetaDataHead));
 	memset(&bbTicketHead, 0, sizeof(bbTicketHead));
-}
-
-iQuePlayerPrivate::~iQuePlayerPrivate()
-{
-	UNREF(img_thumbnail);
-	UNREF(img_title);
 }
 
 /**
@@ -251,7 +245,7 @@ int iQuePlayerPrivate::getTitleAndISBN(string &title, string &isbn)
  * @param byteswap	[in] If true, byteswap before decoding if needed.
  * @return Image, or nullptr on error.
  */
-rp_image *iQuePlayerPrivate::loadImage(off64_t address, size_t z_size, size_t unz_size,
+shared_ptr<rp_image> iQuePlayerPrivate::loadImage(off64_t address, size_t z_size, size_t unz_size,
 	ImageDecoder::PixelFormat px_format, int w, int h, bool byteswap)
 {
 	assert(address >= static_cast<off64_t>(sizeof(contentDesc)));
@@ -330,7 +324,7 @@ rp_image *iQuePlayerPrivate::loadImage(off64_t address, size_t z_size, size_t un
  * Load the thumbnail image.
  * @return Thumbnail image, or nullptr on error.
  */
-const rp_image *iQuePlayerPrivate::loadThumbnailImage(void)
+shared_ptr<const rp_image> iQuePlayerPrivate::loadThumbnailImage(void)
 {
 	if (img_thumbnail) {
 		// Thumbnail is already loaded.
@@ -360,7 +354,7 @@ const rp_image *iQuePlayerPrivate::loadThumbnailImage(void)
  * This is the game title in Chinese.
  * @return Title image, or nullptr on error.
  */
-const rp_image *iQuePlayerPrivate::loadTitleImage(void)
+shared_ptr<const rp_image> iQuePlayerPrivate::loadTitleImage(void)
 {
 	if (img_title) {
 		// Title is already loaded.
@@ -746,10 +740,10 @@ int iQuePlayer::loadMetaData(void)
  * Load an internal image.
  * Called by RomData::image().
  * @param imageType	[in] Image type to load.
- * @param pImage	[out] Pointer to const rp_image* to store the image in.
+ * @param pImage	[out] Reference to shared_ptr<const rp_image> to store the image in.
  * @return 0 on success; negative POSIX error code on error.
  */
-int iQuePlayer::loadInternalImage(ImageType imageType, const rp_image **pImage)
+int iQuePlayer::loadInternalImage(ImageType imageType, shared_ptr<const rp_image> &pImage)
 {
 	ASSERT_loadInternalImage(imageType, pImage);
 
@@ -758,20 +752,20 @@ int iQuePlayer::loadInternalImage(ImageType imageType, const rp_image **pImage)
 		case IMG_INT_ICON:
 			if (d->img_thumbnail) {
 				// Icon (thumbnail) is loaded.
-				*pImage = d->img_thumbnail;
+				pImage = d->img_thumbnail;
 				return 0;
 			}
 			break;
 		case IMG_INT_BANNER:
 			if (d->img_title) {
 				// Banner (title) is loaded.
-				*pImage = d->img_title;
+				pImage = d->img_title;
 				return 0;
 			}
 			break;
 		default:
 			// Unsupported image type.
-			*pImage = nullptr;
+			pImage.reset();
 			return 0;
 	}
 
@@ -786,19 +780,19 @@ int iQuePlayer::loadInternalImage(ImageType imageType, const rp_image **pImage)
 	// Load the image.
 	switch (imageType) {
 		case IMG_INT_ICON:
-			*pImage = d->loadThumbnailImage();
+			pImage = d->loadThumbnailImage();
 			break;
 		case IMG_INT_BANNER:
-			*pImage = d->loadTitleImage();
+			pImage = d->loadTitleImage();
 			break;
 		default:
 			// Unsupported.
-			*pImage = nullptr;
+			pImage.reset();
 			return -ENOENT;
 	}
 
 	// TODO: -ENOENT if the file doesn't actually have an icon/banner.
-	return (*pImage != nullptr ? 0 : -EIO);
+	return ((bool)pImage ? 0 : -EIO);
 }
 
 }

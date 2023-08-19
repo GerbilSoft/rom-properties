@@ -236,11 +236,11 @@ static void Read_CI8_Palette(png_structp png_ptr, png_infop info_ptr,
  * @param info_ptr png_infop
  * @return rp_image*, or nullptr on error.
  */
-static rp_image *loadPng(png_structp png_ptr, png_infop info_ptr)
+static shared_ptr<rp_image> loadPng(png_structp png_ptr, png_infop info_ptr)
 {
 	// Row pointers. (NOTE: Allocated after IHDR is read.)
 	const png_byte **row_pointers = nullptr;
-	rp_image *img = nullptr;
+	shared_ptr<rp_image> img;
 
 	bool has_sBIT = false;
 	png_color_8p png_sBIT = nullptr;
@@ -251,7 +251,6 @@ static rp_image *loadPng(png_structp png_ptr, png_infop info_ptr)
 	if (setjmp(png_jmpbuf(png_ptr))) {
 		// PNG read failed.
 		png_free(png_ptr, row_pointers);
-		UNREF(img);
 		return nullptr;
 	}
 #endif
@@ -428,10 +427,9 @@ static rp_image *loadPng(png_structp png_ptr, png_infop info_ptr)
 	// Create the rp_image.
 
 	// Initialize the row pointers array.
-	img = new rp_image(width, height, fmt);
+	img = std::make_shared<rp_image>(width, height, fmt);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		img->unref();
 		return nullptr;
 	}
 
@@ -439,7 +437,6 @@ static rp_image *loadPng(png_structp png_ptr, png_infop info_ptr)
 	row_pointers = static_cast<const png_byte**>(
 		png_malloc(png_ptr, sizeof(const png_byte*) * height));
 	if (!row_pointers) {
-		img->unref();
 		return nullptr;
 	}
 
@@ -456,7 +453,7 @@ static rp_image *loadPng(png_structp png_ptr, png_infop info_ptr)
 
 	// If CI8, read the palette.
 	if (fmt == rp_image::Format::CI8) {
-		Read_CI8_Palette(png_ptr, info_ptr, color_type, img);
+		Read_CI8_Palette(png_ptr, info_ptr, color_type, img.get());
 	}
 
 #ifdef PNG_sBIT_SUPPORTED
@@ -481,7 +478,7 @@ static rp_image *loadPng(png_structp png_ptr, png_infop info_ptr)
  * @param file IRpFile to load from
  * @return rp_image*, or nullptr on error
  */
-rp_image *load(const std::shared_ptr<LibRpFile::IRpFile> &file)
+shared_ptr<rp_image> load(const shared_ptr<IRpFile> &file)
 {
 	if (!file)
 		return nullptr;
@@ -525,7 +522,7 @@ rp_image *load(const std::shared_ptr<LibRpFile::IRpFile> &file)
 	png_set_read_fn(png_ptr, file.get(), png_io_IRpFile_read);
 
 	// Call the actual PNG image reading function.
-	rp_image *const img = loadPng(png_ptr, info_ptr);
+	const shared_ptr<rp_image> img = loadPng(png_ptr, info_ptr);
 
 	// Free the PNG structs.
 	png_destroy_read_struct(&png_ptr, &info_ptr, nullptr);
@@ -543,7 +540,7 @@ rp_image *load(const std::shared_ptr<LibRpFile::IRpFile> &file)
  * @param img rp_image to save
  * @return 0 on success; negative POSIX error code on error
  */
-int save(const std::shared_ptr<LibRpFile::IRpFile> &file, const rp_image *img)
+int save(const shared_ptr<IRpFile> &file, const shared_ptr<const rp_image> &img)
 {
 	assert((bool)file);
 	assert(img != nullptr);
@@ -571,7 +568,7 @@ int save(const std::shared_ptr<LibRpFile::IRpFile> &file, const rp_image *img)
  * @param img rp_image to save
  * @return 0 on success; negative POSIX error code on error
  */
-int save(const char *filename, const rp_image *img)
+int save(const char *filename, const shared_ptr<const rp_image> &img)
 {
 	assert(filename != nullptr);
 	assert(filename[0] != '\0');
@@ -601,7 +598,7 @@ int save(const char *filename, const rp_image *img)
  * @param img rp_image to save
  * @return 0 on success; negative POSIX error code on error
  */
-int save(const wchar_t *filename, const rp_image *img)
+int save(const wchar_t *filename, const shared_ptr<const rp_image> &img)
 {
 	assert(filename != nullptr);
 	assert(filename[0] != L'\0');
@@ -643,7 +640,7 @@ int save(const wchar_t *filename, const rp_image *img)
  * @param iconAnimData Animated image data to save
  * @return 0 on success; negative POSIX error code on error
  */
-int save(const std::shared_ptr<LibRpFile::IRpFile> &file, const IconAnimData *iconAnimData)
+int save(const shared_ptr<IRpFile> &file, const IconAnimData *iconAnimData)
 {
 	assert((bool)file);
 	assert(iconAnimData != nullptr);

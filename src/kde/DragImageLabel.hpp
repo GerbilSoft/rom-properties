@@ -20,6 +20,7 @@ namespace LibRpTexture {
 
 // C++ includes
 #include <array>
+#include <memory>
 
 // Qt includes
 #include <QtCore/QTimer>
@@ -68,17 +69,13 @@ class DragImageLabel : public QLabel
 		/**
 		 * Set the rp_image for this label.
 		 *
-		 * NOTE: The rp_image pointer is stored and used if necessary.
-		 * Make sure to call this function with nullptr before deleting
-		 * the rp_image object.
-		 *
-		 * NOTE 2: If animated icon data is specified, that supercedes
+		 * NOTE: If animated icon data is specified, that supercedes
 		 * the individual rp_image.
 		 *
 		 * @param img rp_image, or nullptr to clear.
 		 * @return True on success; false on error or if clearing.
 		 */
-		bool setRpImage(const LibRpTexture::rp_image *img);
+		bool setRpImage(const std::shared_ptr<const LibRpTexture::rp_image> &img);
 
 		/**
 		 * Set the icon animation data for this label.
@@ -164,10 +161,10 @@ class DragImageLabel : public QLabel
 		QPoint m_dragStartPos;
 		bool m_ecksBawks;
 
-		// rp_image. (NOTE: Not owned by this object.)
-		const LibRpTexture::rp_image *m_img;
+		// rp_image
+		std::shared_ptr<const LibRpTexture::rp_image> m_img;
 
-		// Animated icon data.
+		// Animated icon data
 		struct anim_vars {
 			const LibRpBase::IconAnimData *iconAnimData;
 			std::array<QPixmap, LibRpBase::IconAnimData::MAX_FRAMES> iconFrames;

@@ -21,6 +21,9 @@ using LibRpBase::RpPngWriter;
 // librptexture
 using LibRpTexture::rp_image;
 
+// C++ STL classes
+using std::shared_ptr;
+
 // Gdiplus for image drawing.
 // NOTE: Gdiplus requires min/max.
 #include <algorithm>
@@ -55,8 +58,8 @@ class DragImageLabelPrivate
 		bool ecksBawks;
 		HMENU hMenuEcksBawks;
 
-		// rp_image (NOTE: Not owned by this object.)
-		const LibRpTexture::rp_image *img;
+		// rp_image
+		shared_ptr<const rp_image> img;
 		HBITMAP hbmpImg;	// for non-animated only
 
 		// Animated icon data.
@@ -131,7 +134,6 @@ DragImageLabelPrivate::DragImageLabelPrivate(HWND hwndParent)
 	: hwndParent(hwndParent)
 	, ecksBawks(false)
 	, hMenuEcksBawks(nullptr)
-	, img(nullptr)
 	, hbmpImg(nullptr)
 	, anim(nullptr)
 	, useNearestNeighbor(false)
@@ -153,7 +155,6 @@ DragImageLabelPrivate::DragImageLabelPrivate(HWND hwndParent)
 DragImageLabelPrivate::~DragImageLabelPrivate()
 {
 	delete anim;
-	UNREF(img);
 
 	if (hbmpImg) {
 		DeleteBitmap(hbmpImg);
@@ -239,7 +240,7 @@ bool DragImageLabelPrivate::updateBitmaps(void)
 		// Convert the icons to HBITMAP using the window background color.
 		// TODO: Rescale the icon. (port rescaleImage())
 		for (int i = iconAnimData->count-1; i >= 0; i--) {
-			const rp_image *const frame = iconAnimData->frames[i];
+			const shared_ptr<const rp_image> &frame = iconAnimData->frames[i];
 			if (frame && frame->isValid()) {
 				if (actualSize.cx == 0) {
 					// Get the icon size and rescale it, if necessary.
@@ -509,15 +510,11 @@ void DragImageLabel::tryPopupEcksBawks(LPARAM lParam)
  * @param img rp_image, or nullptr to clear.
  * @return True on success; false on error or if clearing.
  */
-bool DragImageLabel::setRpImage(const rp_image *img)
+bool DragImageLabel::setRpImage(const shared_ptr<const rp_image> &img)
 {
 	RP_D(DragImageLabel);
 
-	// NOTE: We're not checking if the image pointer matches the
-	// previously stored image, since the underlying image may
-	// have changed.
-	UNREF_AND_NULL(d->img);
-
+	d->img = img;
 	if (!img) {
 		if (d->hbmpImg) {
 			DeleteBitmap(d->hbmpImg);
@@ -529,8 +526,6 @@ bool DragImageLabel::setRpImage(const rp_image *img)
 		}
 		return false;
 	}
-
-	d->img = img->ref();
 	return d->updateBitmaps();
 }
 
@@ -598,7 +593,7 @@ void DragImageLabel::clearRp(void)
 		d->anim->iconAnimData = nullptr;
 	}
 
-	UNREF_AND_NULL(d->img);
+	d->img.reset();
 	if (d->hbmpImg) {
 		DeleteBitmap(d->hbmpImg);
 		d->hbmpImg = nullptr;

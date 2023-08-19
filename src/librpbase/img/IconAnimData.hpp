@@ -11,16 +11,17 @@
 #include "common.h"
 #include "RefBase.hpp"
 
-// C includes.
+// C includes
 #include <stdint.h>
 
-// C includes. (C++ namespace)
+// C includes (C++ namespace)
 #include <cstring>
 
-// C++ includes.
+// C++ includes
 #include <algorithm>
 #include <array>
 #include <cstdio>
+#include <memory>
 
 // librptexture
 #include "librptexture/img/rp_image.hpp"
@@ -58,9 +59,7 @@ struct IconAnimData final : public RefBase
 	// how many frames are actually here.
 	// NOTE: Frames may be nullptr, in which case
 	// the previous frame should be used.
-	// NOTE 2: Frames stored here must be ref()'d.
-	// They will be automatically unref()'d in the destructor.
-	std::array<LibRpTexture::rp_image*, MAX_FRAMES> frames;
+	std::array<std::shared_ptr<LibRpTexture::rp_image>, MAX_FRAMES> frames;
 
 	IconAnimData()
 		: count(0)
@@ -76,12 +75,7 @@ struct IconAnimData final : public RefBase
 	}
 
 protected:
-	~IconAnimData() final	// call unref() instead
-	{
-		for (LibRpTexture::rp_image *img : frames) {
-			UNREF(img);
-		}
-	}
+	~IconAnimData() final = default;	// call unref() instead
 
 private:
 	RP_DISABLE_COPY(IconAnimData);

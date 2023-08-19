@@ -66,7 +66,6 @@ const RomDataInfo NintendoDSPrivate::romDataInfo = {
 NintendoDSPrivate::NintendoDSPrivate(const shared_ptr<IRpFile> &file, bool cia)
 	: super(file, &romDataInfo)
 	, iconAnimData(nullptr)
-	, icon_first_frame(nullptr)
 	, romType(RomType::Unknown)
 	, romSize(0)
 	, secData(0)
@@ -149,7 +148,7 @@ int NintendoDSPrivate::loadIconTitleData(void)
  * Load the ROM image's icon.
  * @return Icon, or nullptr on error.
  */
-const rp_image *NintendoDSPrivate::loadIcon(void)
+shared_ptr<const rp_image> NintendoDSPrivate::loadIcon(void)
 {
 	if (icon_first_frame) {
 		// Icon has already been loaded.
@@ -229,7 +228,7 @@ const rp_image *NintendoDSPrivate::loadIcon(void)
 				// Not used yet. Create the bitmap.
 				const uint8_t bmp = (high_token & 7);
 				const uint8_t pal = (high_token >> 3) & 7;
-				rp_image *img = ImageDecoder::fromNDS_CI4(32, 32,
+				shared_ptr<rp_image> img = ImageDecoder::fromNDS_CI4(32, 32,
 					nds_icon_title.dsi_icon_data[bmp],
 					sizeof(nds_icon_title.dsi_icon_data[bmp]),
 					nds_icon_title.dsi_icon_pal[pal],
@@ -245,9 +244,8 @@ const rp_image *NintendoDSPrivate::loadIcon(void)
 						// V-flip
 						flipOp = static_cast<rp_image::FlipOp>(flipOp | rp_image::FLIP_V);
 					}
-					rp_image *const flipimg = img->flip(flipOp);
+					const shared_ptr<rp_image> flipimg = img->flip(flipOp);
 					if (flipimg && flipimg->isValid()) {
-						img->unref();
 						img = flipimg;
 					}
 				}
@@ -1384,10 +1382,10 @@ int NintendoDS::loadMetaData(void)
  * Load an internal image.
  * Called by RomData::image().
  * @param imageType	[in] Image type to load.
- * @param pImage	[out] Pointer to const rp_image* to store the image in.
+ * @param pImage	[out] Reference to shared_ptr<const rp_image> to store the image in.
  * @return 0 on success; negative POSIX error code on error.
  */
-int NintendoDS::loadInternalImage(ImageType imageType, const rp_image **pImage)
+int NintendoDS::loadInternalImage(ImageType imageType, shared_ptr<const rp_image> &pImage)
 {
 	ASSERT_loadInternalImage(imageType, pImage);
 	RP_D(NintendoDS);

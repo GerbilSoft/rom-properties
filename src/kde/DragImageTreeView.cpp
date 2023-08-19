@@ -57,13 +57,15 @@ void DragImageTreeView::startDrag(Qt::DropActions supportedActions)
 	QIcon dragIcon;
 	bool hasOne = false;
 	for (const QModelIndex &index : items) {
-		const rp_image *const img = static_cast<const rp_image*>(index.data(ListDataModel::RpImageRole).value<void*>());
-		if (!img)
+		const shared_ptr<const rp_image> *const pImg =
+			static_cast<const shared_ptr<const rp_image>*>(
+				index.data(ListDataModel::RpImageRole).value<void*>());
+		if (!pImg || !*pImg)
 			continue;
 
 		// Convert the rp_image to PNG.
 		shared_ptr<RpQByteArrayFile> pngData = std::make_shared<RpQByteArrayFile>();
-		RpPngWriter *const pngWriter = new RpPngWriter(pngData, img);
+		RpPngWriter *const pngWriter = new RpPngWriter(pngData, *pImg);
 		if (!pngWriter->isOpen()) {
 			// Unable to open the PNG writer.
 			delete pngWriter;

@@ -20,7 +20,7 @@ namespace LibRpTexture { namespace ImageDecoder {
  * @param img_siz Size of image data. [must be >= (w*h)*2]
  * @return rp_image, or nullptr on error.
  */
-rp_image *fromN3DSTiledRGB565(int width, int height,
+std::shared_ptr<rp_image> fromN3DSTiledRGB565(int width, int height,
 	const uint16_t *RESTRICT img_buf, size_t img_siz);
 
 /**
@@ -34,7 +34,7 @@ rp_image *fromN3DSTiledRGB565(int width, int height,
  * @return rp_image, or nullptr on error.
  */
 ATTR_ACCESS_SIZE(read_only, 5, 6)
-rp_image *fromN3DSTiledRGB565_A4(int width, int height,
+std::shared_ptr<rp_image> fromN3DSTiledRGB565_A4(int width, int height,
 	const uint16_t *RESTRICT img_buf, size_t img_siz,
 	const uint8_t *RESTRICT alpha_buf, size_t alpha_siz);
 

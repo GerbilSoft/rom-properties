@@ -29,7 +29,8 @@ using LibRpTexture::FileFormatFactory;
 // libwin32ui
 using LibWin32UI::RegKey;
 
-// C++ STL classes.
+// C++ STL classes
+using std::shared_ptr;
 using std::string;
 using std::tstring;
 using std::unique_ptr;
@@ -119,7 +120,7 @@ int RP_ContextMenu_Private::convert_to_png(LPCTSTR source_file)
 	// Get the internal image.
 	// NOTE: The GTK and KDE implementations use CreateThumbnail.
 	// NOTE 2: Image is owned by the RomData object.
-	const rp_image *const img = romData->image(RomData::IMG_INT_IMAGE);
+	const shared_ptr<const rp_image> img = romData->image(RomData::IMG_INT_IMAGE);
 	if (!img) {
 		// No image.
 		romData->unref();

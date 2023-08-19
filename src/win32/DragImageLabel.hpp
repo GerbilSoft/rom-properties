@@ -11,6 +11,9 @@
 #include "libwin32common/RpWin32_sdk.h"
 #include "common.h"
 
+// C++ includes
+#include <memory>
+
 namespace LibRpBase {
 	struct IconAnimData;
 }
@@ -59,7 +62,7 @@ class DragImageLabel
 		 * @param img rp_image, or nullptr to clear.
 		 * @return True on success; false on error or if clearing.
 		 */
-		bool setRpImage(const LibRpTexture::rp_image *img);
+		bool setRpImage(const std::shared_ptr<const LibRpTexture::rp_image> &img);
 
 		/**
 		 * Set the icon animation data for this label.

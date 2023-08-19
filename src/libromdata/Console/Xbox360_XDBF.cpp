@@ -51,7 +51,7 @@ class Xbox360_XDBF_Private final : public RomDataPrivate
 		static const RomDataInfo romDataInfo;
 
 	public:
-		// XDBF type.
+		// XDBF type
 		enum class XDBFType {
 			Unknown	= -1,	// Unknown XDBF type.
 
@@ -62,14 +62,14 @@ class Xbox360_XDBF_Private final : public RomDataPrivate
 		};
 		XDBFType xdbfType;
 
-		// Internal icon.
+		// Internal icon
 		// Points to an rp_image within map_images.
-		const rp_image *img_icon;
+		shared_ptr<const rp_image> img_icon;
 
 		// Loaded images.
 		// - Key: resource_id
 		// - Value: rp_image*
-		unordered_map<uint64_t, rp_image*> map_images;
+		unordered_map<uint64_t, shared_ptr<rp_image> > map_images;
 
 	public:
 		// XDBF header.
@@ -158,13 +158,13 @@ class Xbox360_XDBF_Private final : public RomDataPrivate
 		 * @param image_id Image ID.
 		 * @return Decoded image, or nullptr on error.
 		 */
-		rp_image *loadImage(uint64_t image_id);
+		shared_ptr<const rp_image> loadImage(uint64_t image_id);
 
 		/**
 		 * Load the main title icon.
 		 * @return Icon, or nullptr on error.
 		 */
-		const rp_image *loadIcon(void);
+		shared_ptr<const rp_image> loadIcon(void);
 
 	public:
 		/**
@@ -292,7 +292,6 @@ const RomDataInfo Xbox360_XDBF_Private::romDataInfo = {
 Xbox360_XDBF_Private::Xbox360_XDBF_Private(const shared_ptr<IRpFile> &file, bool xex)
 	: super(file, &romDataInfo)
 	, xdbfType(XDBFType::Unknown)
-	, img_icon(nullptr)
 	, data_offset(0)
 	, m_langID(XDBF_LANGUAGE_UNKNOWN)
 	, xex(xex)
@@ -310,11 +309,6 @@ Xbox360_XDBF_Private::~Xbox360_XDBF_Private()
 	// Delete any allocated string tables.
 	for (ao::uvector<char> *pStrTbl : strTbls) {
 		delete pStrTbl;
-	}
-
-	// Delete any loaded images.
-	for (auto &&p : map_images) {
-		UNREF(p.second);
 	}
 }
 
@@ -725,7 +719,7 @@ inline uint32_t Xbox360_XDBF_Private::getDefaultLC(void) const
  * @param image_id Image ID.
  * @return Decoded image, or nullptr on error.
  */
-rp_image *Xbox360_XDBF_Private::loadImage(uint64_t image_id)
+shared_ptr<const rp_image> Xbox360_XDBF_Private::loadImage(uint64_t image_id)
 {
 	// Is the image already loaded?
 	auto iter = map_images.find(image_id);
@@ -777,7 +771,7 @@ rp_image *Xbox360_XDBF_Private::loadImage(uint64_t image_id)
 	// Create a MemFile and decode the image.
 	// TODO: For rpcli, shortcut to extract the PNG directly.
 	shared_ptr<MemFile> f_mem = std::make_shared<MemFile>(png_buf.get(), length);
-	rp_image *const img = RpPng::load(f_mem);
+	shared_ptr<rp_image> img = RpPng::load(f_mem);
 
 	if (img) {
 		// Save the image for later use.
@@ -791,7 +785,7 @@ rp_image *Xbox360_XDBF_Private::loadImage(uint64_t image_id)
  * Load the main title icon.
  * @return Icon, or nullptr on error.
  */
-const rp_image *Xbox360_XDBF_Private::loadIcon(void)
+shared_ptr<const rp_image> Xbox360_XDBF_Private::loadIcon(void)
 {
 	if (img_icon) {
 		// Icon has already been loaded.
@@ -1920,35 +1914,35 @@ int Xbox360_XDBF::loadMetaData(void)
  * Load an internal image.
  * Called by RomData::image().
  * @param imageType	[in] Image type to load.
- * @param pImage	[out] Pointer to const rp_image* to store the image in.
+ * @param pImage	[out] Reference to shared_ptr<const rp_image> to store the image in.
  * @return 0 on success; negative POSIX error code on error.
  */
-int Xbox360_XDBF::loadInternalImage(ImageType imageType, const rp_image **pImage)
+int Xbox360_XDBF::loadInternalImage(ImageType imageType, shared_ptr<const rp_image> &pImage)
 {
 	ASSERT_loadInternalImage(imageType, pImage);
 
 	RP_D(Xbox360_XDBF);
 	if (imageType != IMG_INT_ICON) {
 		// Only IMG_INT_ICON is supported by 3DS.
-		*pImage = nullptr;
+		pImage.reset();
 		return -ENOENT;
 	} else if (d->img_icon) {
 		// Image has already been loaded.
-		*pImage = d->img_icon;
+		pImage = d->img_icon;
 		return 0;
 	} else if (!d->file) {
 		// File isn't open.
-		*pImage = nullptr;
+		pImage.reset();
 		return -EBADF;
 	} else if (!d->isValid || (int)d->xdbfType < 0) {
 		// XDBF file isn't valid.
-		*pImage = nullptr;
+		pImage.reset();
 		return -EIO;
 	}
 
 	// Load the icon.
-	*pImage = d->loadIcon();
-	return (*pImage != nullptr ? 0 : -EIO);
+	pImage = d->loadIcon();
+	return ((bool)pImage ? 0 : -EIO);
 }
 
 /** Special XDBF accessor functions. **/

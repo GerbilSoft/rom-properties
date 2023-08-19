@@ -68,7 +68,7 @@ class CreateThumbnailPrivate : public TCreateThumbnail<PIMGTYPE>
 		 * @param img rp_image
 		 * @return ImgClass
 		 */
-		inline PIMGTYPE rpImageToImgClass(const rp_image *img) const final
+		inline PIMGTYPE rpImageToImgClass(const shared_ptr<const rp_image> &img) const final
 		{
 			// NOTE: Don't premultiply the image when using Cairo,
 			// since the image data is going directly to PNG.

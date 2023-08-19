@@ -3,7 +3,7 @@
  * ImageDecoder_Linear.cpp: Image decoding functions: Linear               *
  * SSSE3-optimized version.                                                *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -15,6 +15,9 @@
 #include "img/rp_image.hpp"
 #include "PixelConversion.hpp"
 using namespace LibRpTexture::PixelConversion;
+
+// C++ STL classes
+using std::shared_ptr;
 
 // SSSE3 intrinsics
 #include <emmintrin.h>
@@ -33,7 +36,7 @@ namespace LibRpTexture { namespace ImageDecoder {
  * @param stride	[in,opt] Stride, in bytes. If 0, assumes width*bytespp.
  * @return rp_image, or nullptr on error.
  */
-rp_image *fromLinear24_ssse3(PixelFormat px_format,
+shared_ptr<rp_image> fromLinear24_ssse3(PixelFormat px_format,
 	int width, int height,
 	const uint8_t *RESTRICT img_buf, size_t img_siz, int stride)
 {
@@ -78,10 +81,9 @@ rp_image *fromLinear24_ssse3(PixelFormat px_format,
 	}
 
 	// Create an rp_image.
-	rp_image *const img = new rp_image(width, height, rp_image::Format::ARGB32);
+	const shared_ptr<rp_image> img = std::make_shared<rp_image>(width, height, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		img->unref();
 		return nullptr;
 	}
 	const int dest_stride_adj = (img->stride() / sizeof(argb32_t)) - img->width();
@@ -105,7 +107,6 @@ rp_image *fromLinear24_ssse3(PixelFormat px_format,
 			break;
 		default:
 			assert(!"Unsupported 24-bit pixel format.");
-			img->unref();
 			return nullptr;
 	}
 
@@ -157,7 +158,6 @@ rp_image *fromLinear24_ssse3(PixelFormat px_format,
 
 			default:
 				assert(!"Unsupported 24-bit pixel format.");
-				img->unref();
 				return nullptr;
 		} }
 
@@ -185,7 +185,7 @@ rp_image *fromLinear24_ssse3(PixelFormat px_format,
  * @param stride	[in,opt] Stride, in bytes. If 0, assumes width*bytespp.
  * @return rp_image, or nullptr on error.
  */
-rp_image *fromLinear32_ssse3(PixelFormat px_format,
+shared_ptr<rp_image> fromLinear32_ssse3(PixelFormat px_format,
 	int width, int height,
 	const uint32_t *RESTRICT img_buf, size_t img_siz, int stride)
 {
@@ -247,10 +247,9 @@ rp_image *fromLinear32_ssse3(PixelFormat px_format,
 	}
 
 	// Create an rp_image.
-	rp_image *const img = new rp_image(width, height, rp_image::Format::ARGB32);
+	const shared_ptr<rp_image> img = std::make_shared<rp_image>(width, height, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		img->unref();
 		return nullptr;
 	}
 
@@ -289,7 +288,6 @@ rp_image *fromLinear32_ssse3(PixelFormat px_format,
 	switch (px_format) {
 		case PixelFormat::Host_ARGB32:
 			assert(!"ARGB32 is handled separately.");
-			img->unref();
 			return nullptr;
 		case PixelFormat::Host_xRGB32:
 			// TODO: Only apply the alpha mask instead of shuffling.
@@ -328,7 +326,6 @@ rp_image *fromLinear32_ssse3(PixelFormat px_format,
 
 		default:
 			assert(!"Unsupported 32-bit pixel format.");
-			img->unref();
 			return nullptr;
 	}
 
@@ -395,7 +392,6 @@ rp_image *fromLinear32_ssse3(PixelFormat px_format,
 
 				default:
 					assert(!"Unsupported 32-bit alpha pixel format.");
-					img->unref();
 					return nullptr;
 			} }
 
@@ -494,7 +490,6 @@ rp_image *fromLinear32_ssse3(PixelFormat px_format,
 
 				default:
 					assert(!"Unsupported 32-bit no-alpha pixel format.");
-					img->unref();
 					return nullptr;
 			} }
 

@@ -96,7 +96,7 @@ class DreamcastPrivate final : public RomDataPrivate
 		 * Load 0GDTEX.PVR.
 		 * @return 0GDTEX.PVR as rp_image, or nullptr on error.
 		 */
-		const rp_image *load0GDTEX(void);
+		shared_ptr<const rp_image> load0GDTEX(void);
 
 		/**
 		 * Get the disc publisher.
@@ -195,7 +195,7 @@ uint16_t DreamcastPrivate::calcProductCRC16(const DC_IP0000_BIN_t *ip0000_bin)
  * Load 0GDTEX.PVR.
  * @return 0GDTEX.PVR as rp_image, or nullptr on error.
  */
-const rp_image *DreamcastPrivate::load0GDTEX(void)
+shared_ptr<const rp_image> DreamcastPrivate::load0GDTEX(void)
 {
 	if (pvrData) {
 		// Image has already been loaded.
@@ -876,10 +876,10 @@ int Dreamcast::loadMetaData(void)
  * Load an internal image.
  * Called by RomData::image().
  * @param imageType	[in] Image type to load.
- * @param pImage	[out] Pointer to const rp_image* to store the image in.
+ * @param pImage	[out] Reference to shared_ptr<const rp_image> to store the image in.
  * @return 0 on success; negative POSIX error code on error.
  */
-int Dreamcast::loadInternalImage(ImageType imageType, const rp_image **pImage)
+int Dreamcast::loadInternalImage(ImageType imageType, shared_ptr<const rp_image> &pImage)
 {
 	ASSERT_loadInternalImage(imageType, pImage);
 	RP_D(Dreamcast);

@@ -314,12 +314,6 @@ void ImageDecoderTest::TearDown(void)
 	}
 }
 
-struct RpImageUnrefDeleter {
-	void operator()(rp_image *img) {
-		UNREF(img);
-	}
-};
-
 /**
  * Compare two rp_image objects.
  * If either rp_image is CI8, a copy of the image
@@ -338,8 +332,8 @@ void ImageDecoderTest::Compare_RpImage(
 	ASSERT_EQ(pImgExpected->height(), pImgActual->height()) << "Image sizes don't match.";
 
 	// Ensure we delete temporary images if they're created.
-	unique_ptr<rp_image, RpImageUnrefDeleter> tmpImg_expected(nullptr, RpImageUnrefDeleter());
-	unique_ptr<rp_image, RpImageUnrefDeleter> tmpImg_actual(nullptr, RpImageUnrefDeleter());
+	shared_ptr<const rp_image> tmpImg_expected;
+	shared_ptr<const rp_image> tmpImg_actual;
 
 	switch (pImgExpected->format()) {
 		case rp_image::Format::ARGB32:
@@ -348,8 +342,8 @@ void ImageDecoderTest::Compare_RpImage(
 
 		case rp_image::Format::CI8:
 			// Convert to ARGB32.
-			tmpImg_expected.reset(pImgExpected->dup_ARGB32());
-			ASSERT_TRUE(tmpImg_expected != nullptr);
+			tmpImg_expected = pImgExpected->dup_ARGB32();
+			ASSERT_TRUE(tmpImg_expected);
 			ASSERT_TRUE(tmpImg_expected->isValid());
 			pImgExpected = tmpImg_expected.get();
 			break;
@@ -366,8 +360,8 @@ void ImageDecoderTest::Compare_RpImage(
 
 		case rp_image::Format::CI8:
 			// Convert to ARGB32.
-			tmpImg_actual.reset(pImgActual->dup_ARGB32());
-			ASSERT_TRUE(tmpImg_actual != nullptr);
+			tmpImg_actual = pImgActual->dup_ARGB32();
+			ASSERT_TRUE(tmpImg_actual);
 			ASSERT_TRUE(tmpImg_actual->isValid());
 			pImgActual = tmpImg_actual.get();
 			break;
@@ -410,7 +404,7 @@ void ImageDecoderTest::decodeTest_internal(void)
 	// Load the PNG image.
 	shared_ptr<MemFile> f_png = std::make_shared<MemFile>(m_png_buf.data(), m_png_buf.size());
 	ASSERT_TRUE(f_png->isOpen()) << "Could not create MemFile for the PNG image.";
-	unique_ptr<rp_image, RpImageUnrefDeleter> img_png(RpPng::load(f_png), RpImageUnrefDeleter());
+	shared_ptr<const rp_image> img_png(RpPng::load(f_png));
 	ASSERT_NE(img_png,nullptr) << "Could not load the PNG image as rp_image.";
 	ASSERT_TRUE(img_png->isValid()) << "Could not load the PNG image as rp_image.";
 
@@ -426,13 +420,13 @@ void ImageDecoderTest::decodeTest_internal(void)
 	ASSERT_TRUE(m_romData->isOpen()) << "Could not load the DDS image.";
 
 	// Get the DDS image as an rp_image.
-	const rp_image *const img_dds = m_romData->image(mode.imgType);
+	const shared_ptr<const rp_image> img_dds = m_romData->image(mode.imgType);
 	ASSERT_NE(img_dds, nullptr) << "Could not load the DDS image as rp_image.";
 
 	// Get the image again.
 	// The pointer should be identical to the first one.
-	const rp_image *const img_dds_2 = m_romData->image(mode.imgType);
-	EXPECT_EQ(img_dds, img_dds_2) << "Retrieving the image twice resulted in a different rp_image object.";
+	const shared_ptr<const rp_image> img_dds_2 = m_romData->image(mode.imgType);
+	EXPECT_EQ(img_dds.get(), img_dds_2.get()) << "Retrieving the image twice resulted in a different rp_image object.";
 
 	// Verify the pixel format.
 	if (!mode.expected_pixel_format.empty()) {
@@ -479,7 +473,7 @@ void ImageDecoderTest::decodeTest_internal(void)
 	}
 
 	// Compare the image data.
-	ASSERT_NO_FATAL_FAILURE(Compare_RpImage(img_png.get(), img_dds));
+	ASSERT_NO_FATAL_FAILURE(Compare_RpImage(img_png.get(), img_dds.get()));
 }
 
 /**
@@ -572,7 +566,7 @@ void ImageDecoderTest::decodeBenchmark_internal(void)
 
 		// Get the DDS image as an rp_image.
 		// TODO: imgType to string?
-		const rp_image *const img_dds = m_romData->image(mode.imgType);
+		const shared_ptr<const rp_image> img_dds = m_romData->image(mode.imgType);
 		ASSERT_TRUE(img_dds != nullptr) << "Could not load the DDS image as rp_image.";
 
 		UNREF_AND_NULL_NOCHK(m_romData);

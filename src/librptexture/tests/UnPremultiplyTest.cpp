@@ -20,15 +20,17 @@
 #endif /* _WIN32 */
 using namespace LibRpTexture;
 
-// C includes.
+// C includes
 #include <stdint.h>
 #include <stdlib.h>
 
-// C includes. (C++ namespace)
+// C includes (C++ namespace)
 #include <cstring>
 
-// C++ includes.
+// C++ includes
+#include <memory>
 #include <string>
+using std::shared_ptr;
 using std::string;
 
 namespace LibRpTexture { namespace Tests {
@@ -37,7 +39,7 @@ class UnPremultiplyTest : public ::testing::Test
 {
 	protected:
 		UnPremultiplyTest()
-			: m_img(new rp_image(512, 512, rp_image::Format::ARGB32))
+			: m_img(std::make_shared<rp_image>(512, 512, rp_image::Format::ARGB32))
 		{
 #ifdef _WIN32
 			// Register RpGdiplusBackend.
@@ -51,17 +53,12 @@ class UnPremultiplyTest : public ::testing::Test
 			memset(m_img->bits(), 0x55, sz);
 		}
 
-		~UnPremultiplyTest() override
-		{
-			m_img->unref();
-		}
-
 	public:
-		// Number of iterations for benchmarks.
+		// Number of iterations for benchmarks
 		static const unsigned int BENCHMARK_ITERATIONS = 1000;
 
-		// Image.
-		rp_image *m_img;
+		// Image
+		shared_ptr<rp_image> m_img;
 };
 
 // TODO: Add actual tests to verify that un-premultiply works.

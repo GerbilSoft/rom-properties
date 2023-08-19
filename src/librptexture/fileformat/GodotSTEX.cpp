@@ -46,7 +46,7 @@ class GodotSTEXPrivate final : public FileFormatPrivate
 {
 	public:
 		GodotSTEXPrivate(GodotSTEX *q, const shared_ptr<IRpFile> &file);
-		~GodotSTEXPrivate() final;
+		~GodotSTEXPrivate() final = default;
 
 	private:
 		typedef FileFormatPrivate super;
@@ -73,9 +73,9 @@ class GodotSTEXPrivate final : public FileFormatPrivate
 		bool hasEmbeddedFile;
 		STEX_Embed_Header embedHeader;
 
-		// Decoded mipmaps.
+		// Decoded mipmaps
 		// Mipmap 0 is the full image.
-		vector<rp_image*> mipmaps;
+		vector<shared_ptr<rp_image> > mipmaps;
 
 		// Mipmap sizes and start addresses.
 		struct mipmap_data_t {
@@ -110,7 +110,7 @@ class GodotSTEXPrivate final : public FileFormatPrivate
 		 * @param mip Mipmap number. (0 == full image)
 		 * @return Image, or nullptr on error.
 		 */
-		const rp_image *loadImage(int mip);
+		shared_ptr<const rp_image> loadImage(int mip);
 };
 
 FILEFORMAT_IMPL(GodotSTEX)
@@ -316,13 +316,6 @@ GodotSTEXPrivate::GodotSTEXPrivate(GodotSTEX *q, const shared_ptr<IRpFile> &file
 	memset(invalid_pixel_format, 0, sizeof(invalid_pixel_format));
 }
 
-GodotSTEXPrivate::~GodotSTEXPrivate()
-{
-	for (rp_image *img : mipmaps) {
-		UNREF(img);
-	}
-}
-
 /**
  * Get mipmap information.
  * @return 0 on success; non-zero on error.
@@ -510,7 +503,7 @@ int GodotSTEXPrivate::getMipmapInfo(void)
  * @param mip Mipmap number. (0 == full image)
  * @return Image, or nullptr on error.
  */
-const rp_image *GodotSTEXPrivate::loadImage(int mip)
+shared_ptr<const rp_image> GodotSTEXPrivate::loadImage(int mip)
 {
 	// Make sure the mipmap information is loaded.
 	int ret = getMipmapInfo();
@@ -600,7 +593,7 @@ const rp_image *GodotSTEXPrivate::loadImage(int mip)
 
 	// Decode the image.
 	// TODO: More formats.
-	rp_image *img = nullptr;
+	shared_ptr<rp_image> img;
 	if (pixelFormat <= STEX_FORMAT_BPTC_RGBFU) {
 		// Common format between v3 and v4.
 		switch (pixelFormat) {
@@ -1302,7 +1295,7 @@ int GodotSTEX::getFields(RomFields *fields) const
  * The image is owned by this object.
  * @return Image, or nullptr on error.
  */
-const rp_image *GodotSTEX::image(void) const
+shared_ptr<const rp_image> GodotSTEX::image(void) const
 {
 	// The full image is mipmap 0.
 	return this->mipmap(0);
@@ -1314,7 +1307,7 @@ const rp_image *GodotSTEX::image(void) const
  * @param mip Mipmap number.
  * @return Image, or nullptr on error.
  */
-const rp_image *GodotSTEX::mipmap(int mip) const
+shared_ptr<const rp_image> GodotSTEX::mipmap(int mip) const
 {
 	RP_D(const GodotSTEX);
 	if (!d->isValid) {

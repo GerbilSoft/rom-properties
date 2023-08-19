@@ -744,25 +744,20 @@ uint32_t RomData::imgpf(ImageType imageType) const
  * Load an internal image.
  * Called by RomData::image().
  * @param imageType	[in] Image type to load.
- * @param pImage	[out] Pointer to const rp_image* to store the image in.
+ * @param pImage	[out] Reference to shared_ptr<const rp_image> to store the image in.
  * @return 0 on success; negative POSIX error code on error.
  */
-int RomData::loadInternalImage(ImageType imageType, const rp_image **pImage)
+int RomData::loadInternalImage(ImageType imageType, shared_ptr<const rp_image> &pImage)
 {
 	assert(imageType >= IMG_INT_MIN && imageType <= IMG_INT_MAX);
-	assert(pImage != nullptr);
-	if (!pImage) {
-		// Invalid parameters.
-		return -EINVAL;
-	} else if (imageType < IMG_INT_MIN || imageType > IMG_INT_MAX) {
+	if (imageType < IMG_INT_MIN || imageType > IMG_INT_MAX) {
 		// ImageType is out of range.
-		*pImage = nullptr;
+		pImage.reset();
 		return -EINVAL;
 	}
 
 	// No images supported by the base class.
-	RP_UNUSED(imageType);
-	*pImage = nullptr;
+	pImage.reset();
 	return -ENOENT;
 }
 
@@ -820,7 +815,7 @@ const RomMetaData *RomData::metaData(void) const
  * @param imageType Image type to load.
  * @return Internal image, or nullptr if the ROM doesn't have one.
  */
-const rp_image *RomData::image(ImageType imageType) const
+shared_ptr<const rp_image> RomData::image(ImageType imageType) const
 {
 	assert(imageType >= IMG_INT_MIN && imageType <= IMG_INT_MAX);
 	if (imageType < IMG_INT_MIN || imageType > IMG_INT_MAX) {
@@ -830,25 +825,13 @@ const rp_image *RomData::image(ImageType imageType) const
 	// TODO: Check supportedImageTypes()?
 
 	// Load the internal image.
-	// The subclass maintains ownership of the image.
-#ifdef _DEBUG
-	// TODO: Verify casting on 32-bit.
-	#define INVALID_IMG_PTR ((const rp_image*)((intptr_t)-1LL))
-	const rp_image *img = INVALID_IMG_PTR;
-#else /* !_DEBUG */
-	const rp_image *img;
-#endif
-	int ret = const_cast<RomData*>(this)->loadInternalImage(imageType, &img);
+	shared_ptr<const rp_image> img;
+	int ret = const_cast<RomData*>(this)->loadInternalImage(imageType, img);
 
 	// SANITY CHECK: If loadInternalImage() returns 0,
 	// img *must* be valid. Otherwise, it must be nullptr.
-	assert((ret == 0 && img != nullptr) ||
-	       (ret != 0 && img == nullptr));
-
-#ifdef _DEBUG // Must be guarded with this in case neither `_DEBUG` nor `NDEBUG` are defined
-	// SANITY CHECK: `img` must not be -1LL.
-	assert(img != INVALID_IMG_PTR);
-#endif
+	assert((ret == 0 && (bool)img) ||
+	       (ret != 0 && !img));
 
 	return (ret == 0 ? img : nullptr);
 }

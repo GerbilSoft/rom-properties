@@ -2,15 +2,16 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * CairoImageConv.cpp: Helper functions to convert from rp_image to Cairo. *
  *                                                                         *
- * Copyright (c) 2017-2022 by David Korth.                                 *
+ * Copyright (c) 2017-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "stdafx.h"
 #include "CairoImageConv.hpp"
 
-// C++ STL classes.
+// C++ STL classes
 using std::array;
+using std::shared_ptr;
 
 // librptexture
 #include "librptexture/ImageSizeCalc.hpp"
@@ -48,30 +49,32 @@ cairo_surface_t *CairoImageConv::rp_image_to_cairo_surface_t(const rp_image *img
 
 	switch (img->format()) {
 		case rp_image::Format::ARGB32: {
-			const rp_image *img_prex;
+			shared_ptr<rp_image> img_prex;
+			const rp_image *src_img;
 			if (premultiply) {
 				// Premultiply the image first.
 				// TODO: Combined dup()/premultiply() function?
 				img_prex = img->dup();
-				const_cast<rp_image*>(img_prex)->premultiply();
+				img_prex->premultiply();
+				src_img = img_prex.get();
 			} else {
 				// No premultiplication.
-				img_prex = img;
+				src_img = img;
 			}
 
 			// Copy the image data.
 			int dest_stride = cairo_image_surface_get_stride(surface);
-			int src_stride = img_prex->stride();
+			int src_stride = src_img->stride();
 
 			if (dest_stride == src_stride) {
 				// Stride is identical. Copy the whole image all at once.
 				// NOTE: Partial copy for the last line.
 				size_t sz = ImageSizeCalc::T_calcImageSize(dest_stride, (height - 1));
 				sz += width * sizeof(uint32_t);
-				memcpy(px_dest, img_prex->bits(), sz);
+				memcpy(px_dest, src_img->bits(), sz);
 			} else {
 				// Stride is not identical. Copy each scanline.
-				const uint32_t *img_buf = static_cast<const uint32_t*>(img_prex->bits());
+				const uint32_t *img_buf = static_cast<const uint32_t*>(src_img->bits());
 				const int row_bytes = img->row_bytes();
 				// We're adding strides to pointers, so the strides
 				// must be in uint32_t units here.
@@ -86,9 +89,6 @@ cairo_surface_t *CairoImageConv::rp_image_to_cairo_surface_t(const rp_image *img
 
 			// Mark the surface as dirty.
 			cairo_surface_mark_dirty(surface);
-			if (premultiply) {
-				img_prex->unref();
-			}
 			break;
 		}
 

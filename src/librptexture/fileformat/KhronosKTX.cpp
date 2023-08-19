@@ -48,7 +48,7 @@ class KhronosKTXPrivate final : public FileFormatPrivate
 {
 	public:
 		KhronosKTXPrivate(KhronosKTX *q, const shared_ptr<IRpFile> &file);
-		~KhronosKTXPrivate() final;
+		~KhronosKTXPrivate() final = default;
 
 	private:
 		typedef FileFormatPrivate super;
@@ -61,7 +61,7 @@ class KhronosKTXPrivate final : public FileFormatPrivate
 		static const TextureInfo textureInfo;
 
 	public:
-		// KTX header.
+		// KTX header
 		KTX_Header ktxHeader;
 
 		// Is byteswapping needed?
@@ -74,16 +74,16 @@ class KhronosKTXPrivate final : public FileFormatPrivate
 		// Default without KTXorientation is HFlip=false, VFlip=true
 		rp_image::FlipOp flipOp;
 
-		// Texture data start address.
+		// Texture data start address
 		unsigned int texDataStartAddr;
 
-		// Decoded image.
-		rp_image *img;
+		// Decoded image
+		shared_ptr<rp_image> img;
 
-		// Invalid pixel format message.
+		// Invalid pixel format message
 		char invalid_pixel_format[24];
 
-		// Key/Value data.
+		// Key/Value data
 		// NOTE: Stored as vector<vector<string> > instead of
 		// vector<pair<string, string> > for compatibility with
 		// RFT_LISTDATA.
@@ -93,7 +93,7 @@ class KhronosKTXPrivate final : public FileFormatPrivate
 		 * Load the image.
 		 * @return Image, or nullptr on error.
 		 */
-		const rp_image *loadImage(void);
+		shared_ptr<const rp_image> loadImage(void);
 
 		/**
 		 * Load key/value data.
@@ -133,16 +133,11 @@ KhronosKTXPrivate::KhronosKTXPrivate(KhronosKTX *q, const shared_ptr<IRpFile> &f
 	memset(invalid_pixel_format, 0, sizeof(invalid_pixel_format));
 }
 
-KhronosKTXPrivate::~KhronosKTXPrivate()
-{
-	UNREF(img);
-}
-
 /**
  * Load the image.
  * @return Image, or nullptr on error.
  */
-const rp_image *KhronosKTXPrivate::loadImage(void)
+shared_ptr<const rp_image> KhronosKTXPrivate::loadImage(void)
 {
 	if (img) {
 		// Image has already been loaded.
@@ -696,9 +691,8 @@ const rp_image *KhronosKTXPrivate::loadImage(void)
 
 	// Post-processing: Check if a flip is needed.
 	if (img && flipOp != rp_image::FLIP_NONE) {
-		rp_image *const flipimg = img->flip(flipOp);
+		const shared_ptr<rp_image> flipimg = img->flip(flipOp);
 		if (flipimg) {
-			img->unref();
 			img = flipimg;
 		}
 	}
@@ -1131,7 +1125,7 @@ int KhronosKTX::getFields(RomFields *fields) const
  * The image is owned by this object.
  * @return Image, or nullptr on error.
  */
-const rp_image *KhronosKTX::image(void) const
+shared_ptr<const rp_image> KhronosKTX::image(void) const
 {
 	// The full image is mipmap 0.
 	return this->mipmap(0);
@@ -1143,7 +1137,7 @@ const rp_image *KhronosKTX::image(void) const
  * @param mip Mipmap number.
  * @return Image, or nullptr on error.
  */
-const rp_image *KhronosKTX::mipmap(int mip) const
+shared_ptr<const rp_image> KhronosKTX::mipmap(int mip) const
 {
 	RP_D(const KhronosKTX);
 	if (!d->isValid) {

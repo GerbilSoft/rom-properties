@@ -35,7 +35,7 @@ class GameCubeBNRPrivate final : public RomDataPrivate
 {
 	public:
 		GameCubeBNRPrivate(const shared_ptr<IRpFile> &file, uint32_t gcnRegion = ~0U);
-		~GameCubeBNRPrivate() final;
+		~GameCubeBNRPrivate() final = default;
 
 	private:
 		typedef RomDataPrivate super;
@@ -62,10 +62,10 @@ class GameCubeBNRPrivate final : public RomDataPrivate
 		// GameCube region for BNR1 encoding
 		uint32_t gcnRegion;
 
-		// Internal images.
-		rp_image *img_banner;
+		// Internal images
+		shared_ptr<rp_image> img_banner;
 
-		// Banner comments.
+		// Banner comments
 		// - If BNR1: 1 item.
 		// - If BNR2: 6 items.
 		ao::uvector<gcn_banner_comment_t> comments;
@@ -75,7 +75,7 @@ class GameCubeBNRPrivate final : public RomDataPrivate
 		 * Load the banner.
 		 * @return Banner, or nullptr on error.
 		 */
-		const rp_image *loadBanner(void);
+		shared_ptr<const rp_image> loadBanner(void);
 
 		/**
 		 * Should the string be handled as Shift-JIS?
@@ -154,16 +154,11 @@ GameCubeBNRPrivate::GameCubeBNRPrivate(const shared_ptr<IRpFile> &file, uint32_t
 	, img_banner(nullptr)
 { }
 
-GameCubeBNRPrivate::~GameCubeBNRPrivate()
-{
-	UNREF(img_banner);
-}
-
 /**
  * Load the banner image.
  * @return Banner, or nullptr on error.
  */
-const rp_image *GameCubeBNRPrivate::loadBanner(void)
+shared_ptr<const rp_image> GameCubeBNRPrivate::loadBanner(void)
 {
 	if (img_banner) {
 		// Banner is already loaded.
@@ -838,10 +833,10 @@ int GameCubeBNR::loadMetaData(void)
  * Load an internal image.
  * Called by RomData::image().
  * @param imageType	[in] Image type to load.
- * @param pImage	[out] Pointer to const rp_image* to store the image in.
+ * @param pImage	[out] Reference to shared_ptr<const rp_image> to store the image in.
  * @return 0 on success; negative POSIX error code on error.
  */
-int GameCubeBNR::loadInternalImage(ImageType imageType, const rp_image **pImage)
+int GameCubeBNR::loadInternalImage(ImageType imageType, shared_ptr<const rp_image> &pImage)
 {
 	ASSERT_loadInternalImage(imageType, pImage);
 	RP_D(GameCubeBNR);

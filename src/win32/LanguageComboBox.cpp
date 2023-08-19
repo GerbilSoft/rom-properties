@@ -140,7 +140,7 @@ LRESULT LanguageComboBoxPrivate::setLCs(const uint32_t *lcs_array)
 	// Load the flags sprite sheet.
 	// TODO: Is premultiplied alpha needed?
 	// Reference: https://stackoverflow.com/questions/307348/how-to-draw-32-bit-alpha-channel-bitmaps
-	rp_image *imgFlagsSheet = nullptr;
+	shared_ptr<const rp_image> imgFlagsSheet;
 	shared_ptr<RpFile_windres> f_res = std::make_shared<RpFile_windres>(
 		HINST_THISCOMPONENT, MAKEINTRESOURCE(resID), MAKEINTRESOURCE(RT_PNG));
 	assert(f_res->isOpen());
@@ -156,8 +156,7 @@ LRESULT LanguageComboBoxPrivate::setLCs(const uint32_t *lcs_array)
 		    imgFlagsSheet->height() != (iconSize * SystemRegion::FLAGS_SPRITE_SHEET_ROWS))
 		{
 			// Incorrect size. We can't use it.
-			imgFlagsSheet->unref();
-			imgFlagsSheet = nullptr;
+			imgFlagsSheet.reset();
 			break;
 		}
 
@@ -167,10 +166,9 @@ LRESULT LanguageComboBoxPrivate::setLCs(const uint32_t *lcs_array)
 			// but we can't rely on that being the case, and this option
 			// was first introduced in Windows XP.
 			// We'll flip the image here to counteract it.
-			rp_image *const flipimg = imgFlagsSheet->flip(rp_image::FLIP_H);
-			assert(flipimg != nullptr);
+			const shared_ptr<const rp_image> flipimg = imgFlagsSheet->flip(rp_image::FLIP_H);
+			assert((bool)flipimg);
 			if (flipimg) {
-				imgFlagsSheet->unref();
 				imgFlagsSheet = flipimg;
 			}
 		}
@@ -182,8 +180,7 @@ LRESULT LanguageComboBoxPrivate::setLCs(const uint32_t *lcs_array)
 		assert(himglFlags != nullptr);
 		if (!himglFlags) {
 			// Unable to create the ImageList.
-			imgFlagsSheet->unref();
-			imgFlagsSheet = nullptr;
+			imgFlagsSheet.reset();
 		}
 	}
 
@@ -275,7 +272,6 @@ LRESULT LanguageComboBoxPrivate::setLCs(const uint32_t *lcs_array)
 			sel_idx = static_cast<int>(cbItem.iItem);
 		}
 	}
-	UNREF(imgFlagsSheet);
 
 	// Add iconSize + iconMargin for the icon.
 	minSize.cx += iconSize + iconMargin;

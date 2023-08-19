@@ -70,7 +70,7 @@ class AchWin32Private
 		 * @param iconSize Icon size. (16, 24, 32, 64)
 		 * @return const rp_image*, or nullptr on error.
 		 */
-		const rp_image *loadSpriteSheet(int iconSize);
+		const shared_ptr<const rp_image> &loadSpriteSheet(int iconSize);
 
 	public:
 		/**
@@ -119,7 +119,7 @@ class AchWin32Private
 		// Sprite sheets.
 		// - Key: Icon size
 		// - Value: rp_image*
-		unordered_map<int, rp_image*> map_imgAchSheet;
+		unordered_map<int, shared_ptr<const rp_image> > map_imgAchSheet;
 };
 
 // Property for "NotifyIconData uID".
@@ -180,11 +180,6 @@ AchWin32Private::~AchWin32Private()
 	if (atomWindowClass > 0) {
 		UnregisterClass(MAKEINTATOM(atomWindowClass), HINST_THISCOMPONENT);
 	}
-
-	// Delete the achievements sprite sheets.
-	for (auto &pair : map_imgAchSheet) {
-		pair.second->unref();
-	}
 }
 
 /**
@@ -192,7 +187,7 @@ AchWin32Private::~AchWin32Private()
  * @param iconSize Icon size. (16, 24, 32, 64)
  * @return const rp_image*, or nullptr on error.
  */
-const rp_image *AchWin32Private::loadSpriteSheet(int iconSize)
+const shared_ptr<const rp_image> &AchWin32Private::loadSpriteSheet(int iconSize)
 {
 	assert(iconSize == 16 || iconSize == 24 || iconSize == 32 || iconSize == 64);
 	UINT resID;
@@ -232,7 +227,7 @@ const rp_image *AchWin32Private::loadSpriteSheet(int iconSize)
 		return nullptr;
 	}
 
-	rp_image *const imgAchSheet = RpPng::load(f_res);
+	shared_ptr<const rp_image> imgAchSheet = RpPng::load(f_res);
 	if (!imgAchSheet) {
 		// Unable to load the achievements sprite sheet.
 		return nullptr;
@@ -245,13 +240,11 @@ const rp_image *AchWin32Private::loadSpriteSheet(int iconSize)
 	    imgAchSheet->height() != (int)(iconSize * Achievements::ACH_SPRITE_SHEET_ROWS))
 	{
 		// Incorrect size. We can't use it.
-		imgAchSheet->unref();
 		return nullptr;
 	}
 
 	// Sprite sheet is correct.
-	map_imgAchSheet.emplace(iconSize, imgAchSheet);
-	return imgAchSheet;
+	return map_imgAchSheet.emplace(iconSize, imgAchSheet).first->second;
 }
 
 /**
@@ -376,7 +369,7 @@ int AchWin32Private::notifyFunc(Achievements::ID id)
 
 	// FIXME: Icon size. Using 32px for now.
 	HICON hBalloonIcon = nullptr;
-	const rp_image *const imgspr = loadSpriteSheet(iconSize);
+	const shared_ptr<const rp_image> imgspr = loadSpriteSheet(iconSize);
 	if (imgspr) {
 		// Determine row and column.
 		const int col = ((int)id % Achievements::ACH_SPRITE_SHEET_COLS);

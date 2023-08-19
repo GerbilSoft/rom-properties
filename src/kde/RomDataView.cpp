@@ -27,6 +27,7 @@ using LibRpTexture::rp_image;
 
 // C++ STL classes
 using std::set;
+using std::shared_ptr;
 using std::string;
 
 // Custom widgets
@@ -181,7 +182,7 @@ void RomDataViewPrivate::initHeaderRow(void)
 	// Icon
 	if (imgbf & RomData::IMGBF_INT_ICON) {
 		// Get the icon.
-		const rp_image *const icon = romData->image(RomData::IMG_INT_ICON);
+		const shared_ptr<const rp_image> icon = romData->image(RomData::IMG_INT_ICON);
 		if (icon && icon->isValid()) {
 			// Is this an animated icon?
 			bool ok = ui.lblIcon->setIconAnimData(romData->iconAnimData());

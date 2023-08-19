@@ -28,7 +28,7 @@ class GameComPrivate final : public RomDataPrivate
 {
 	public:
 		GameComPrivate(const shared_ptr<IRpFile> &file);
-		~GameComPrivate() final;
+		~GameComPrivate() final = default;
 
 	private:
 		typedef RomDataPrivate super;
@@ -41,17 +41,17 @@ class GameComPrivate final : public RomDataPrivate
 		static const RomDataInfo romDataInfo;
 
 	public:
-		// ROM header.
+		// ROM header
 		Gcom_RomHeader romHeader;
 
-		// Icon.
-		rp_image *img_icon;
+		// Icon
+		shared_ptr<rp_image> img_icon;
 
 		/**
 		 * Load the icon.
 		 * @return Icon, or nullptr on error.
 		 */
-		const rp_image *loadIcon(void);
+		shared_ptr<const rp_image> loadIcon(void);
 
 	protected:
 		static const uint32_t gcom_palette[4];
@@ -76,7 +76,7 @@ class GameComPrivate final : public RomDataPrivate
 		 * This is called from loadIcon().
 		 * @return Icon, or nullptr on error.
 		 */
-		const rp_image *loadIconRLE(void);
+		shared_ptr<const rp_image> loadIconRLE(void);
 };
 
 ROMDATA_IMPL(GameCom)
@@ -119,16 +119,11 @@ GameComPrivate::GameComPrivate(const shared_ptr<IRpFile> &file)
 	memset(&romHeader, 0, sizeof(romHeader));
 }
 
-GameComPrivate::~GameComPrivate()
-{
-	UNREF(img_icon);
-}
-
 /**
  * Load the icon.
  * @return Icon, or nullptr on error.
  */
-const rp_image *GameComPrivate::loadIcon(void)
+shared_ptr<const rp_image> GameComPrivate::loadIcon(void)
 {
 	if (img_icon) {
 		// Icon has already been loaded.
@@ -201,13 +196,12 @@ const rp_image *GameComPrivate::loadIcon(void)
 
 	// Create the icon.
 	// TODO: Split into an ImageDecoder function?
-	rp_image *const tmp_icon = new rp_image(GCOM_ICON_W, GCOM_ICON_H, rp_image::Format::CI8);
+	const shared_ptr<rp_image> tmp_icon = std::make_shared<rp_image>(GCOM_ICON_W, GCOM_ICON_H, rp_image::Format::CI8);
 
 	uint32_t *const palette = tmp_icon->palette();
 	assert(palette != nullptr);
 	assert(tmp_icon->palette_len() >= 4);
 	if (!palette || tmp_icon->palette_len() < 4) {
-		tmp_icon->unref();
 		return nullptr;
 	}
 	memcpy(palette, gcom_palette, sizeof(gcom_palette));
@@ -219,7 +213,6 @@ const rp_image *GameComPrivate::loadIcon(void)
 	size_t size = file->seekAndRead(icon_file_offset, icon_data.get(), icon_data_len);
 	if (size != icon_data_len) {
 		// Short read.
-		tmp_icon->unref();
 		return nullptr;
 	}
 
@@ -375,7 +368,7 @@ ssize_t GameComPrivate::rle_decompress(uint8_t *pOut, size_t out_len, const uint
  * This is called from loadIcon().
  * @return Icon, or nullptr on error.
  */
-const rp_image *GameComPrivate::loadIconRLE(void)
+shared_ptr<const rp_image> GameComPrivate::loadIconRLE(void)
 {
 	// Checks were already done in loadIcon().
 	assert(romHeader.flags & GCOM_FLAG_ICON_RLE);
@@ -438,13 +431,12 @@ const rp_image *GameComPrivate::loadIconRLE(void)
 
 	// Create the icon.
 	// TODO: Split into an ImageDecoder function?
-	rp_image *const tmp_icon = new rp_image(GCOM_ICON_W, GCOM_ICON_H, rp_image::Format::CI8);
+	const shared_ptr<rp_image> tmp_icon = std::make_shared<rp_image>(GCOM_ICON_W, GCOM_ICON_H, rp_image::Format::CI8);
 
 	uint32_t *const palette = tmp_icon->palette();
 	assert(palette != nullptr);
 	assert(tmp_icon->palette_len() >= 4);
 	if (!palette || tmp_icon->palette_len() < 4) {
-		tmp_icon->unref();
 		return nullptr;
 	}
 	memcpy(palette, gcom_palette, sizeof(gcom_palette));
@@ -457,7 +449,7 @@ const rp_image *GameComPrivate::loadIconRLE(void)
 	// NOTE 2: Due to RLE compression, the icon is *always* aligned
 	// on a byte boundary in the decompressed data, so we won't need
 	// to do manual realignment.
-	uint8_t *pDestBase = static_cast<uint8_t*>(tmp_icon->bits());
+	uint8_t *const pDestBase = static_cast<uint8_t*>(tmp_icon->bits());
 	const int dest_stride = tmp_icon->stride();
 
 	// Convert 2bpp to 8bpp.
@@ -785,34 +777,34 @@ int GameCom::loadMetaData(void)
  * Load an internal image.
  * Called by RomData::image().
  * @param imageType	[in] Image type to load.
- * @param pImage	[out] Pointer to const rp_image* to store the image in.
+ * @param pImage	[out] Reference to shared_ptr<const rp_image> to store the image in.
  * @return 0 on success; negative POSIX error code on error.
  */
-int GameCom::loadInternalImage(ImageType imageType, const rp_image **pImage)
+int GameCom::loadInternalImage(ImageType imageType, shared_ptr<const rp_image> &pImage)
 {
 	ASSERT_loadInternalImage(imageType, pImage);
 
 	RP_D(GameCom);
 	if (imageType != IMG_INT_ICON) {
-		*pImage = nullptr;
+		pImage.reset();
 		return -ENOENT;
 	} else if (d->img_icon != nullptr) {
-		*pImage = d->img_icon;
+		pImage = d->img_icon;
 		return 0;
 	} else if (!(d->romHeader.flags & GCOM_FLAG_HAS_ICON)) {
 		// ROM doesn't have an icon.
-		*pImage = nullptr;
+		pImage.reset();
 		return -ENOENT;
 	} else if (!d->file) {
-		*pImage = nullptr;
+		pImage.reset();
 		return -EBADF;
 	} else if (!d->isValid) {
-		*pImage = nullptr;
+		pImage.reset();
 		return -EIO;
 	}
 
-	*pImage = d->loadIcon();
-	return (*pImage != nullptr ? 0 : -EIO);
+	pImage = d->loadIcon();
+	return ((bool)pImage ? 0 : -EIO);
 }
 
 }

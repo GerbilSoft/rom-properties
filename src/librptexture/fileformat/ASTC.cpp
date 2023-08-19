@@ -30,7 +30,7 @@ class ASTCPrivate final : public FileFormatPrivate
 {
 	public:
 		ASTCPrivate(ASTC *q, const shared_ptr<IRpFile> &file);
-		~ASTCPrivate() final;
+		~ASTCPrivate() final = default;
 
 	private:
 		typedef FileFormatPrivate super;
@@ -43,11 +43,11 @@ class ASTCPrivate final : public FileFormatPrivate
 		static const TextureInfo textureInfo;
 
 	public:
-		// ASTC header.
+		// ASTC header
 		ASTC_Header astcHeader;
 
-		// Decoded image.
-		rp_image *img;
+		// Decoded image
+		shared_ptr<rp_image> img;
 
 		// Pixel format message
 		char pixel_format[20];
@@ -56,7 +56,7 @@ class ASTCPrivate final : public FileFormatPrivate
 		 * Load the image.
 		 * @return Image, or nullptr on error.
 		 */
-		const rp_image *loadImage(void);
+		shared_ptr<const rp_image> loadImage(void);
 };
 
 FILEFORMAT_IMPL(ASTC)
@@ -89,16 +89,11 @@ ASTCPrivate::ASTCPrivate(ASTC *q, const shared_ptr<IRpFile> &file)
 	memset(pixel_format, 0, sizeof(pixel_format));
 }
 
-ASTCPrivate::~ASTCPrivate()
-{
-	UNREF(img);
-}
-
 /**
  * Load the image.
  * @return Image, or nullptr on error.
  */
-const rp_image *ASTCPrivate::loadImage(void)
+shared_ptr<const rp_image> ASTCPrivate::loadImage(void)
 {
 	if (img) {
 		// Image has already been loaded.
@@ -320,7 +315,7 @@ int ASTC::getFields(RomFields *fields) const
  * The image is owned by this object.
  * @return Image, or nullptr on error.
  */
-const rp_image *ASTC::image(void) const
+shared_ptr<const rp_image> ASTC::image(void) const
 {
 	RP_D(const ASTC);
 	if (!d->isValid) {
@@ -338,7 +333,7 @@ const rp_image *ASTC::image(void) const
  * @param mip Mipmap number.
  * @return Image, or nullptr on error.
  */
-const rp_image *ASTC::mipmap(int mip) const
+shared_ptr<const rp_image> ASTC::mipmap(int mip) const
 {
 	// Allowing mipmap 0 for compatibility.
 	if (mip == 0) {

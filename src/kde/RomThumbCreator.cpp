@@ -81,7 +81,7 @@ class RomThumbCreatorPrivate final : public TCreateThumbnail<QImage>
 		 * @param img rp_image
 		 * @return ImgClass
 		 */
-		inline QImage rpImageToImgClass(const rp_image *img) const final
+		inline QImage rpImageToImgClass(const shared_ptr<const rp_image> &img) const final
 		{
 			return rpToQImage(img);
 		}

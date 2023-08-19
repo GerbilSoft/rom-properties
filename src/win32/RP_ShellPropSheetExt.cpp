@@ -44,6 +44,7 @@ using LibRomData::RomDataFactory;
 
 // C++ STL classes
 using std::set;
+using std::shared_ptr;
 using std::string;
 using std::unique_ptr;
 using std::vector;
@@ -112,14 +113,14 @@ RP_ShellPropSheetExt_Private::~RP_ShellPropSheetExt_Private()
  */
 void RP_ShellPropSheetExt_Private::loadImages(void)
 {
-	// Supported image types.
+	// Supported image types
 	const uint32_t imgbf = romData->supportedImageTypes();
 
-	// Banner.
+	// Banner
 	bool ok = false;
 	if (imgbf & RomData::IMGBF_INT_BANNER) {
 		// Get the banner.
-		const rp_image *const banner = romData->image(RomData::IMG_INT_BANNER);
+		const shared_ptr<const rp_image> banner = romData->image(RomData::IMG_INT_BANNER);
 		if (banner && banner->isValid()) {
 			if (!lblBanner) {
 				lblBanner = new DragImageLabel(hDlgSheet);
@@ -137,11 +138,11 @@ void RP_ShellPropSheetExt_Private::loadImages(void)
 		lblBanner = nullptr;
 	}
 
-	// Icon.
+	// Icon
 	ok = false;
 	if (imgbf & RomData::IMGBF_INT_ICON) {
 		// Get the icon.
-		const rp_image *const icon = romData->image(RomData::IMG_INT_ICON);
+		const shared_ptr<const rp_image> icon = romData->image(RomData::IMG_INT_ICON);
 		if (icon && icon->isValid()) {
 			if (!lblIcon) {
 				lblIcon = new DragImageLabel(hDlgSheet);
@@ -1055,12 +1056,10 @@ int RP_ShellPropSheetExt_Private::initListData(_In_ HWND hWndTab,
 			for (auto iter = icons->cbegin(); iter != icons_cend;
 			     ++iter, rowColorIdx = !rowColorIdx)
 			{
-				bool needsUnref = false;
-				int iImage = -1;
-				const rp_image *icon = *iter;
+				shared_ptr<const rp_image> icon = *iter;
 				if (!icon) {
 					// No icon for this row.
-					lvData.vImageList.emplace_back(iImage);
+					lvData.vImageList.emplace_back(-1);
 					continue;
 				}
 
@@ -1070,11 +1069,10 @@ int RP_ShellPropSheetExt_Private::initListData(_In_ HWND hWndTab,
 					// but we can't rely on that being the case, and this option
 					// was first introduced in Windows XP.
 					// We'll flip the image here to counteract it.
-					const rp_image *const flipimg = icon->flip(rp_image::FLIP_H);
-					assert(flipimg != nullptr);
+					const shared_ptr<const rp_image> flipimg = icon->flip(rp_image::FLIP_H);
+					assert((bool)flipimg);
 					if (flipimg) {
 						icon = flipimg;
-						needsUnref = true;
 					}
 				}
 
@@ -1093,35 +1091,25 @@ int RP_ShellPropSheetExt_Private::initListData(_In_ HWND hWndTab,
 					// TODO: Handle theme changes?
 					// TODO: Error handling.
 					if (icon->format() != rp_image::Format::ARGB32) {
-						const rp_image *const icon32 = icon->dup_ARGB32();
+						const shared_ptr<const rp_image> icon32 = icon->dup_ARGB32();
+						assert((bool)icon32);
 						if (icon32) {
-							if (needsUnref) {
-								icon->unref();
-							}
 							icon = icon32;
-							needsUnref = true;
 						}
 					}
 
 					// Resize the icon.
-					const rp_image *const icon_resized = icon->resized(
+					const shared_ptr<const rp_image> icon_resized = icon->resized(
 						szResize.cx, szResize.cy,
 						rp_image::AlignVCenter, lvBgColor[rowColorIdx]);
-					assert(icon_resized != nullptr);
+					assert((bool)icon_resized);
 					if (icon_resized) {
-						if (needsUnref) {
-							icon->unref();
-						}
 						icon = icon_resized;
-						needsUnref = true;
 					}
 				}
 
+				int iImage = -1;
 				HICON hIcon = RpImageWin32::toHICON(icon);
-				if (needsUnref) {
-					icon->unref();
-				}
-
 				assert(hIcon != nullptr);
 				if (hIcon) {
 					const int idx = ImageList_AddIcon(himl, hIcon);

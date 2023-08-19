@@ -35,7 +35,7 @@ class Nintendo3DS_SMDH_Private final : public RomDataPrivate
 {
 	public:
 		Nintendo3DS_SMDH_Private(const shared_ptr<IRpFile> &file);
-		~Nintendo3DS_SMDH_Private() final;
+		~Nintendo3DS_SMDH_Private() final = default;
 
 	private:
 		typedef RomDataPrivate super;
@@ -50,7 +50,7 @@ class Nintendo3DS_SMDH_Private final : public RomDataPrivate
 	public:
 		// Internal images.
 		// 0 == 24x24; 1 == 48x48
-		array<rp_image*, 2> img_icon;
+		array<shared_ptr<rp_image>, 2> img_icon;
 
 	public:
 		// SMDH headers.
@@ -65,7 +65,7 @@ class Nintendo3DS_SMDH_Private final : public RomDataPrivate
 		 * @param idx Image index. (0 == 24x24; 1 == 48x48)
 		 * @return Icon, or nullptr on error.
 		 */
-		const rp_image *loadIcon(int idx = 1);
+		shared_ptr<const rp_image> loadIcon(int idx = 1);
 
 		/**
 		 * Get the language ID to use for the title fields.
@@ -107,19 +107,8 @@ const RomDataInfo Nintendo3DS_SMDH_Private::romDataInfo = {
 Nintendo3DS_SMDH_Private::Nintendo3DS_SMDH_Private(const shared_ptr<IRpFile> &file)
 	: super(file, &romDataInfo)
 {
-	// Clear img_icon.
-	img_icon.fill(nullptr);
-
 	// Clear the SMDH headers.
 	memset(&smdh, 0, sizeof(smdh));
-}
-
-Nintendo3DS_SMDH_Private::~Nintendo3DS_SMDH_Private()
-{
-	// Delete any loaded icons.
-	for (rp_image *img : img_icon) {
-		UNREF(img);
-	}
 }
 
 /**
@@ -127,7 +116,7 @@ Nintendo3DS_SMDH_Private::~Nintendo3DS_SMDH_Private()
  * @param idx Image index. (0 == 24x24; 1 == 48x48)
  * @return Icon, or nullptr on error.
  */
-const rp_image *Nintendo3DS_SMDH_Private::loadIcon(int idx)
+shared_ptr<const rp_image> Nintendo3DS_SMDH_Private::loadIcon(int idx)
 {
 	assert(idx == 0 || idx == 1);
 	if (idx != 0 && idx != 1) {
@@ -686,10 +675,10 @@ int Nintendo3DS_SMDH::loadMetaData(void)
  * Load an internal image.
  * Called by RomData::image().
  * @param imageType	[in] Image type to load.
- * @param pImage	[out] Pointer to const rp_image* to store the image in.
+ * @param pImage	[out] Reference to shared_ptr<const rp_image> to store the image in.
  * @return 0 on success; negative POSIX error code on error.
  */
-int Nintendo3DS_SMDH::loadInternalImage(ImageType imageType, const rp_image **pImage)
+int Nintendo3DS_SMDH::loadInternalImage(ImageType imageType, shared_ptr<const rp_image> &pImage)
 {
 	ASSERT_loadInternalImage(imageType, pImage);
 
@@ -699,25 +688,25 @@ int Nintendo3DS_SMDH::loadInternalImage(ImageType imageType, const rp_image **pI
 	RP_D(Nintendo3DS_SMDH);
 	if (imageType != IMG_INT_ICON) {
 		// Only IMG_INT_ICON is supported by 3DS.
-		*pImage = nullptr;
+		pImage.reset();
 		return -ENOENT;
 	} else if (d->img_icon[idx]) {
 		// Image has already been loaded.
-		*pImage = d->img_icon[idx];
+		pImage = d->img_icon[idx];
 		return 0;
 	} else if (!d->file) {
 		// File isn't open.
-		*pImage = nullptr;
+		pImage.reset();
 		return -EBADF;
 	} else if (!d->isValid) {
 		// SMDH file isn't valid.
-		*pImage = nullptr;
+		pImage.reset();
 		return -EIO;
 	}
 
 	// Load the icon.
-	*pImage = d->loadIcon(idx);
-	return (*pImage != nullptr ? 0 : -EIO);
+	pImage = d->loadIcon(idx);
+	return ((bool)pImage ? 0 : -EIO);
 }
 
 /** Special SMDH accessor functions. **/

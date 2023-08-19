@@ -96,7 +96,7 @@ public: \
 	 * The image is owned by this object. \
 	 * @return Image, or nullptr on error. \
 	 */ \
-	const LibRpTexture::rp_image *image(void) const final; \
+	std::shared_ptr<const LibRpTexture::rp_image> image(void) const final; \
 \
 	/** \
 	 * Get the image for the specified mipmap. \
@@ -104,7 +104,7 @@ public: \
 	 * @param mip Mipmap number. \
 	 * @return Image, or nullptr on error. \
 	 */ \
-	const LibRpTexture::rp_image *mipmap(int mip) const final;
+	std::shared_ptr<const LibRpTexture::rp_image> mipmap(int mip) const final;
 
 /**
  * FileFormat subclass function declaration for closing the internal file handle.

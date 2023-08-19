@@ -30,7 +30,7 @@ class ValveVTF3Private final : public FileFormatPrivate
 {
 	public:
 		ValveVTF3Private(ValveVTF3 *q, const shared_ptr<IRpFile> &file);
-		~ValveVTF3Private() final;
+		~ValveVTF3Private() final = default;
 
 	private:
 		typedef FileFormatPrivate super;
@@ -43,17 +43,17 @@ class ValveVTF3Private final : public FileFormatPrivate
 		static const TextureInfo textureInfo;
 
 	public:
-		// VTF3 header.
+		// VTF3 header
 		VTF3HEADER vtf3Header;
 
-		// Decoded image.
-		rp_image *img;
+		// Decoded image
+		shared_ptr<rp_image> img;
 
 		/**
 		 * Load the image.
 		 * @return Image, or nullptr on error.
 		 */
-		const rp_image *loadImage(void);
+		shared_ptr<const rp_image> loadImage(void);
 
 #if SYS_BYTEORDER == SYS_BIG_ENDIAN
 		/**
@@ -104,16 +104,11 @@ ValveVTF3Private::ValveVTF3Private(ValveVTF3 *q, const shared_ptr<IRpFile> &file
 	memset(&vtf3Header, 0, sizeof(vtf3Header));
 }
 
-ValveVTF3Private::~ValveVTF3Private()
-{
-	UNREF(img);
-}
-
 /**
  * Load the image.
  * @return Image, or nullptr on error.
  */
-const rp_image *ValveVTF3Private::loadImage(void)
+shared_ptr<const rp_image> ValveVTF3Private::loadImage(void)
 {
 	if (img) {
 		// Image has already been loaded.
@@ -334,7 +329,7 @@ int ValveVTF3::getFields(RomFields *fields) const
  * The image is owned by this object.
  * @return Image, or nullptr on error.
  */
-const rp_image *ValveVTF3::image(void) const
+shared_ptr<const rp_image> ValveVTF3::image(void) const
 {
 	RP_D(const ValveVTF3);
 	if (!d->isValid) {
@@ -352,7 +347,7 @@ const rp_image *ValveVTF3::image(void) const
  * @param mip Mipmap number.
  * @return Image, or nullptr on error.
  */
-const rp_image *ValveVTF3::mipmap(int mip) const
+shared_ptr<const rp_image> ValveVTF3::mipmap(int mip) const
 {
 	// Allowing mipmap 0 for compatibility.
 	if (mip == 0) {

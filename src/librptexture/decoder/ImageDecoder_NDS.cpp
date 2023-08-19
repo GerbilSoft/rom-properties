@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * ImageDecoder_GCN.cpp: Image decoding functions: Nintendo DS             *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -13,8 +13,9 @@
 #include "PixelConversion.hpp"
 using namespace LibRpTexture::PixelConversion;
 
-// C++ STL classes.
+// C++ STL classes
 using std::array;
+using std::shared_ptr;
 
 namespace LibRpTexture { namespace ImageDecoder {
 
@@ -28,7 +29,7 @@ namespace LibRpTexture { namespace ImageDecoder {
  * @param pal_siz Size of palette data. [must be >= 16*2]
  * @return rp_image, or nullptr on error.
  */
-rp_image *fromNDS_CI4(int width, int height,
+shared_ptr<rp_image> fromNDS_CI4(int width, int height,
 	const uint8_t *RESTRICT img_buf, size_t img_siz,
 	const uint16_t *RESTRICT pal_buf, size_t pal_siz)
 {
@@ -52,10 +53,9 @@ rp_image *fromNDS_CI4(int width, int height,
 		return nullptr;
 
 	// Create an rp_image.
-	rp_image *const img = new rp_image(width, height, rp_image::Format::CI8);
+	const shared_ptr<rp_image> img = std::make_shared<rp_image>(width, height, rp_image::Format::CI8);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		img->unref();
 		return nullptr;
 	}
 
@@ -64,7 +64,6 @@ rp_image *fromNDS_CI4(int width, int height,
 	assert(img->palette_len() >= 16);
 	if (img->palette_len() < 16) {
 		// Not enough colors...
-		img->unref();
 		return nullptr;
 	}
 
@@ -90,7 +89,7 @@ rp_image *fromNDS_CI4(int width, int height,
 	for (unsigned int y = 0; y < tilesY; y++) {
 		for (unsigned int x = 0; x < tilesX; x++) {
 			// Blit the tile to the main image buffer.
-			ImageDecoderPrivate::BlitTile_CI4_LeftLSN<8, 8>(img, *pTileBuf, x, y);
+			ImageDecoderPrivate::BlitTile_CI4_LeftLSN<8, 8>(img.get(), *pTileBuf, x, y);
 			pTileBuf++;
 		}
 	}

@@ -23,7 +23,7 @@ namespace LibRpTexture { namespace ImageDecoder {
  * @return rp_image, or nullptr on error.
  */
 ATTR_ACCESS_SIZE(read_only, 3, 4)
-rp_image *fromNDS_CI4(int width, int height,
+std::shared_ptr<rp_image> fromNDS_CI4(int width, int height,
 	const uint8_t *RESTRICT img_buf, size_t img_siz,
 	const uint16_t *RESTRICT pal_buf, size_t pal_siz);
 

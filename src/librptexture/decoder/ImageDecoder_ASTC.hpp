@@ -32,7 +32,7 @@ extern const uint8_t astc_lkup_tbl[14][2];
  * @return rp_image, or nullptr on error.
  */
 ATTR_ACCESS_SIZE(read_only, 3, 4)
-rp_image *fromASTC(int width, int height,
+std::shared_ptr<rp_image> fromASTC(int width, int height,
 	const uint8_t *RESTRICT img_buf, size_t img_siz,
 	uint8_t block_x, uint8_t block_y);
 #endif /* ENABLE_ASTC */

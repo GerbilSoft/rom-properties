@@ -78,7 +78,7 @@ class PlayStationSavePrivate final : public RomDataPrivate
 		 *
 		 * @return Icon, or nullptr on error.
 		 */
-		const rp_image *loadIcon(void);
+		shared_ptr<const rp_image> loadIcon(void);
 };
 
 ROMDATA_IMPL(PlayStationSave)
@@ -129,7 +129,7 @@ PlayStationSavePrivate::~PlayStationSavePrivate()
  *
  * @return Icon, or nullptr on error.
  */
-const rp_image *PlayStationSavePrivate::loadIcon(void)
+shared_ptr<const rp_image> PlayStationSavePrivate::loadIcon(void)
 {
 	if (iconAnimData) {
 		// Icon has already been loaded.
@@ -552,38 +552,38 @@ int PlayStationSave::loadMetaData(void)
  * Load an internal image.
  * Called by RomData::image().
  * @param imageType	[in] Image type to load.
- * @param pImage	[out] Pointer to const rp_image* to store the image in.
+ * @param pImage	[out] Reference to shared_ptr<const rp_image> to store the image in.
  * @return 0 on success; negative POSIX error code on error.
  */
-int PlayStationSave::loadInternalImage(ImageType imageType, const rp_image **pImage)
+int PlayStationSave::loadInternalImage(ImageType imageType, shared_ptr<const rp_image> &pImage)
 {
 	ASSERT_loadInternalImage(imageType, pImage);
 
 	RP_D(PlayStationSave);
 	if (imageType != IMG_INT_ICON) {
 		// Only IMG_INT_ICON is supported by PS1.
-		*pImage = nullptr;
+		pImage.reset();
 		return -ENOENT;
 	} else if (d->iconAnimData) {
 		// Image has already been loaded.
 		// NOTE: PS1 icon animations are always sequential,
 		// so we can use a shortcut here.
-		*pImage = d->iconAnimData->frames[0];
+		pImage = d->iconAnimData->frames[0];
 		return 0;
 	} else if (!d->file) {
 		// File isn't open.
-		*pImage = nullptr;
+		pImage.reset();
 		return -EBADF;
 	} else if (!d->isValid) {
 		// Save file isn't valid.
-		*pImage = nullptr;
+		pImage.reset();
 		return -EIO;
 	}
 
 	// Load the icon.
 	// TODO: -ENOENT if the file doesn't actually have an icon.
-	*pImage = d->loadIcon();
-	return (*pImage != nullptr ? 0 : -EIO);
+	pImage = d->loadIcon();
+	return ((bool)pImage ? 0 : -EIO);
 }
 
 /**

@@ -54,7 +54,7 @@ class KhronosKTX2Private final : public FileFormatPrivate
 {
 	public:
 		KhronosKTX2Private(KhronosKTX2 *q, const shared_ptr<IRpFile> &file);
-		~KhronosKTX2Private() final;
+		~KhronosKTX2Private() final = default;
 
 	private:
 		typedef FileFormatPrivate super;
@@ -67,7 +67,7 @@ class KhronosKTX2Private final : public FileFormatPrivate
 		static const TextureInfo textureInfo;
 
 	public:
-		// KTX2 header.
+		// KTX2 header
 		KTX2_Header ktx2Header;
 
 		// Is HFlip/VFlip needed?
@@ -81,9 +81,9 @@ class KhronosKTX2Private final : public FileFormatPrivate
 
 		// Decoded mipmaps
 		// Mipmap 0 is the full image.
-		vector<rp_image*> mipmaps;
+		vector<shared_ptr<rp_image> > mipmaps;
 
-		// Invalid pixel format message.
+		// Invalid pixel format message
 		char invalid_pixel_format[24];
 
 		// Key/Value data
@@ -104,7 +104,7 @@ class KhronosKTX2Private final : public FileFormatPrivate
 		 * @param mip Mipmap number. (0 == full image)
 		 * @return Image, or nullptr on error.
 		 */
-		const rp_image *loadImage(int mip);
+		shared_ptr<const rp_image> loadImage(int mip);
 
 		/**
 		 * Load key/value data.
@@ -143,19 +143,12 @@ KhronosKTX2Private::KhronosKTX2Private(KhronosKTX2 *q, const shared_ptr<IRpFile>
 	memset(ktx_swizzle, 0, sizeof(ktx_swizzle));
 }
 
-KhronosKTX2Private::~KhronosKTX2Private()
-{
-	for (rp_image *img : mipmaps) {
-		UNREF(img);
-	}
-}
-
 /**
  * Load the image.
  * @param mip Mipmap number. (0 == full image)
  * @return Image, or nullptr on error.
  */
-const rp_image *KhronosKTX2Private::loadImage(int mip)
+shared_ptr<const rp_image> KhronosKTX2Private::loadImage(int mip)
 {
 	int mipmapCount = ktx2Header.levelCount;
 	if (mipmapCount <= 0) {
@@ -405,7 +398,7 @@ const rp_image *KhronosKTX2Private::loadImage(int mip)
 	}
 
 	// TODO: Handle sRGB post-processing? (for e.g. GL_SRGB8)
-	rp_image *img = nullptr;
+	shared_ptr<rp_image> img;
 	switch (ktx2Header.vkFormat) {
 		case VK_FORMAT_R8G8B8_UNORM:
 		case VK_FORMAT_R8G8B8_UINT:
@@ -623,9 +616,8 @@ const rp_image *KhronosKTX2Private::loadImage(int mip)
 		// Check if a flip is needed.
 		if (flipOp != rp_image::FLIP_NONE) {
 			// TODO: Assert that img dimensions match ktx2Header?
-			rp_image *const flipimg = img->flip(flipOp);
+			const shared_ptr<rp_image> flipimg = img->flip(flipOp);
 			if (flipimg) {
-				img->unref();
 				img = flipimg;
 			}
 		}
@@ -1068,7 +1060,7 @@ int KhronosKTX2::getFields(RomFields *fields) const
  * The image is owned by this object.
  * @return Image, or nullptr on error.
  */
-const rp_image *KhronosKTX2::image(void) const
+shared_ptr<const rp_image> KhronosKTX2::image(void) const
 {
 	// The full image is mipmap 0.
 	return this->mipmap(0);
@@ -1080,7 +1072,7 @@ const rp_image *KhronosKTX2::image(void) const
  * @param mip Mipmap number.
  * @return Image, or nullptr on error.
  */
-const rp_image *KhronosKTX2::mipmap(int mip) const
+shared_ptr<const rp_image> KhronosKTX2::mipmap(int mip) const
 {
 	RP_D(const KhronosKTX2);
 	if (!d->isValid) {

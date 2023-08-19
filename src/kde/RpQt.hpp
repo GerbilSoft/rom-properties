@@ -135,10 +135,30 @@ static inline T findDirectChild(QObject *obj, const QString &aName = QString())
 
 /**
  * Convert an rp_image to QImage.
- * @param image rp_image.
+ * @param image rp_image
  * @return QImage.
  */
 QImage rpToQImage(const LibRpTexture::rp_image *image);
+
+/**
+ * Convert an rp_image to QImage.
+ * @param image shared_ptr<rp_image>
+ * @return QImage.
+ */
+static inline QImage rpToQImage(const std::shared_ptr<LibRpTexture::rp_image> &image)
+{
+	return rpToQImage(image.get());
+}
+
+/**
+ * Convert an rp_image to QImage.
+ * @param image shared_ptr<rp_image>
+ * @return QImage.
+ */
+static inline QImage rpToQImage(const std::shared_ptr<const LibRpTexture::rp_image> &image)
+{
+	return rpToQImage(image.get());
+}
 
 /** QUrl **/
 

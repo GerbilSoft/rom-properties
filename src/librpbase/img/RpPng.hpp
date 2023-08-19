@@ -33,7 +33,7 @@ namespace RpPng {
  * @return rp_image*, or nullptr on error
  */
 RP_LIBROMDATA_PUBLIC
-LibRpTexture::rp_image *load(const std::shared_ptr<LibRpFile::IRpFile> &file);
+std::shared_ptr<LibRpTexture::rp_image> load(const std::shared_ptr<LibRpFile::IRpFile> &file);
 
 /**
  * Save an image in PNG format to an IRpFile.
@@ -46,7 +46,7 @@ LibRpTexture::rp_image *load(const std::shared_ptr<LibRpFile::IRpFile> &file);
  * @param img rp_image to save
  * @return 0 on success; negative POSIX error code on error
  */
-int save(const std::shared_ptr<LibRpFile::IRpFile> &file, const LibRpTexture::rp_image *img);
+int save(const std::shared_ptr<LibRpFile::IRpFile> &file, const std::shared_ptr<const LibRpTexture::rp_image> &img);
 
 /**
  * Save an image in PNG format to a file.
@@ -56,7 +56,7 @@ int save(const std::shared_ptr<LibRpFile::IRpFile> &file, const LibRpTexture::rp
  * @return 0 on success; negative POSIX error code on error
  */
 RP_LIBROMDATA_PUBLIC
-int save(const char *filename, const LibRpTexture::rp_image *img);
+int save(const char *filename, const std::shared_ptr<const LibRpTexture::rp_image> &img);
 
 #ifdef _WIN32
 /**
@@ -67,7 +67,7 @@ int save(const char *filename, const LibRpTexture::rp_image *img);
  * @return 0 on success; negative POSIX error code on error
  */
 RP_LIBROMDATA_PUBLIC
-int save(const wchar_t *filename, const LibRpTexture::rp_image *img);
+int save(const wchar_t *filename, const std::shared_ptr<const LibRpTexture::rp_image> &img);
 #endif /* _WIN32 */
 
 /**

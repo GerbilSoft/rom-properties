@@ -42,7 +42,7 @@ namespace LibRpBase {
  * @param file IRpFile to load from.
  * @return rp_image*, or nullptr on error.
  */
-rp_image *RpJpeg::load(const std::shared_ptr<LibRpFile::IRpFile> &file)
+shared_ptr<rp_image> RpJpeg::load(const shared_ptr<IRpFile> &file)
 {
 	if (!file)
 		return nullptr;
@@ -61,7 +61,7 @@ rp_image *RpJpeg::load(const std::shared_ptr<LibRpFile::IRpFile> &file)
 
 	// Create an rp_image using the GDI+ bitmap.
 	RpGdiplusBackend *const backend = new RpGdiplusBackend(pGdipBmp);
-	return new rp_image(backend);
+	return std::make_shared<rp_image>(backend);
 }
 
 }

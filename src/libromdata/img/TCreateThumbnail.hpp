@@ -206,7 +206,7 @@ class TCreateThumbnail
 		 * @param img rp_image
 		 * @return ImgClass
 		 */
-		virtual ImgClass rpImageToImgClass(const LibRpTexture::rp_image *img) const = 0;
+		virtual ImgClass rpImageToImgClass(const std::shared_ptr<const LibRpTexture::rp_image> &img) const = 0;
 
 		/**
 		 * Wrapper function to check if an ImgClass is valid.

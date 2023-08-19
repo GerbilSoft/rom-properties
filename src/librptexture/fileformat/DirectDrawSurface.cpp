@@ -41,7 +41,7 @@ class DirectDrawSurfacePrivate final : public FileFormatPrivate
 {
 	public:
 		DirectDrawSurfacePrivate(DirectDrawSurface *q, const shared_ptr<IRpFile> &file);
-		~DirectDrawSurfacePrivate() final;
+		~DirectDrawSurfacePrivate() final = default;
 
 	private:
 		typedef FileFormatPrivate super;
@@ -54,18 +54,18 @@ class DirectDrawSurfacePrivate final : public FileFormatPrivate
 		static const TextureInfo textureInfo;
 
 	public:
-		// DDS header.
+		// DDS header
 		DDS_HEADER ddsHeader;
 		DDS_HEADER_DXT10 dxt10Header;
 		DDS_HEADER_XBOX xb1Header;
 
-		// Texture data start address.
+		// Texture data start address
 		unsigned int texDataStartAddr;
 
-		// Decoded image.
-		rp_image *img;
+		// Decoded image
+		shared_ptr<rp_image> img;
 
-		// Pixel format message.
+		// Pixel format message
 		// NOTE: Used for both valid and invalid pixel formats
 		// due to various bit specifications.
 		char pixel_format[32];
@@ -74,7 +74,7 @@ class DirectDrawSurfacePrivate final : public FileFormatPrivate
 		 * Load the image.
 		 * @return Image, or nullptr on error.
 		 */
-		const rp_image *loadImage(void);
+		shared_ptr<const rp_image> loadImage(void);
 
 	public:
 		// Supported uncompressed RGB formats.
@@ -529,16 +529,11 @@ DirectDrawSurfacePrivate::DirectDrawSurfacePrivate(DirectDrawSurface *q, const s
 	memset(pixel_format, 0, sizeof(pixel_format));
 }
 
-DirectDrawSurfacePrivate::~DirectDrawSurfacePrivate()
-{
-	UNREF(img);
-}
-
 /**
  * Load the image.
  * @return Image, or nullptr on error.
  */
-const rp_image *DirectDrawSurfacePrivate::loadImage(void)
+shared_ptr<const rp_image> DirectDrawSurfacePrivate::loadImage(void)
 {
 	if (img) {
 		// Image has already been loaded.
@@ -1376,7 +1371,7 @@ int DirectDrawSurface::getFields(RomFields *fields) const
  * The image is owned by this object.
  * @return Image, or nullptr on error.
  */
-const rp_image *DirectDrawSurface::image(void) const
+shared_ptr<const rp_image> DirectDrawSurface::image(void) const
 {
 	// The full image is mipmap 0.
 	return this->mipmap(0);
@@ -1388,7 +1383,7 @@ const rp_image *DirectDrawSurface::image(void) const
  * @param mip Mipmap number.
  * @return Image, or nullptr on error.
  */
-const rp_image *DirectDrawSurface::mipmap(int mip) const
+shared_ptr<const rp_image> DirectDrawSurface::mipmap(int mip) const
 {
 	RP_D(const DirectDrawSurface);
 	if (!d->isValid) {

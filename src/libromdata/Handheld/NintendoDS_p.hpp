@@ -52,7 +52,7 @@ class NintendoDSPrivate final : public LibRpBase::RomDataPrivate
 
 		// Pointer to the first frame in iconAnimData.
 		// Used when showing a static icon.
-		const LibRpTexture::rp_image *icon_first_frame;
+		std::shared_ptr<const LibRpTexture::rp_image> icon_first_frame;
 
 	public:
 		/** RomFields **/
@@ -139,7 +139,7 @@ class NintendoDSPrivate final : public LibRpBase::RomDataPrivate
 		 * Load the ROM image's icon.
 		 * @return Icon, or nullptr on error.
 		 */
-		const LibRpTexture::rp_image *loadIcon(void);
+		std::shared_ptr<const LibRpTexture::rp_image> loadIcon(void);
 
 		/**
 		 * Get the title index.

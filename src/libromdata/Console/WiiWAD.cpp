@@ -1250,17 +1250,17 @@ int WiiWAD::loadMetaData(void)
  * Load an internal image.
  * Called by RomData::image().
  * @param imageType	[in] Image type to load.
- * @param pImage	[out] Pointer to const rp_image* to store the image in.
+ * @param pImage	[out] Reference to shared_ptr<const rp_image> to store the image in.
  * @return 0 on success; negative POSIX error code on error.
  */
-int WiiWAD::loadInternalImage(ImageType imageType, const rp_image **pImage)
+int WiiWAD::loadInternalImage(ImageType imageType, shared_ptr<const rp_image> &pImage)
 {
 	ASSERT_loadInternalImage(imageType, pImage);
 
 	RP_D(WiiWAD);
 	if (!d->isValid) {
 		// Banner file isn't valid.
-		*pImage = nullptr;
+		pImage.reset();
 		return -EIO;
 	}
 
@@ -1272,7 +1272,7 @@ int WiiWAD::loadInternalImage(ImageType imageType, const rp_image **pImage)
 #endif /* ENABLE_DECRYPTION */
 
 	// No main content object.
-	*pImage = nullptr;
+	pImage.reset();
 	return -ENOENT;
 }
 

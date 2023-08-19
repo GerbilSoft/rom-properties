@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * ImageDecoder_DC.cpp: Image decoding functions: Dreamcast                *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -16,7 +16,8 @@
 #include "PixelConversion.hpp"
 using namespace LibRpTexture::PixelConversion;
 
-// C++ STL classes.
+// C++ STL classes
+using std::shared_ptr;
 using std::unique_ptr;
 
 // One-time initialization.
@@ -73,7 +74,7 @@ static FORCEINLINE void initDreamcastTwiddleMap(void)
  * @param img_siz Size of image data. [must be >= (w*h)*2]
  * @return rp_image, or nullptr on error.
  */
-rp_image *fromDreamcastSquareTwiddled16(PixelFormat px_format,
+shared_ptr<rp_image> fromDreamcastSquareTwiddled16(PixelFormat px_format,
 	int width, int height,
 	const uint16_t *RESTRICT img_buf, size_t img_siz)
 {
@@ -96,10 +97,9 @@ rp_image *fromDreamcastSquareTwiddled16(PixelFormat px_format,
 	const unsigned int *const p_tmap = dc_tmap.get();
 
 	// Create an rp_image.
-	rp_image *const img = new rp_image(width, height, rp_image::Format::ARGB32);
+	const shared_ptr<rp_image> img = std::make_shared<rp_image>(width, height, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		img->unref();
 		return nullptr;
 	}
 
@@ -154,7 +154,6 @@ rp_image *fromDreamcastSquareTwiddled16(PixelFormat px_format,
 
 		default:
 			assert(!"Invalid pixel format for this function.");
-			img->unref();
 			return nullptr;
 	}
 
@@ -175,7 +174,7 @@ rp_image *fromDreamcastSquareTwiddled16(PixelFormat px_format,
  * @param pal_siz Size of palette data. [must be >= 1024*2; for SmallVQ, 64*2, 256*2, or 512*2]
  * @return rp_image, or nullptr on error.
  */
-rp_image *fromDreamcastVQ16(PixelFormat px_format,
+shared_ptr<rp_image> fromDreamcastVQ16(PixelFormat px_format,
 	bool smallVQ, bool hasMipmaps,
 	int width, int height,
 	const uint8_t *RESTRICT img_buf, size_t img_siz,
@@ -222,10 +221,9 @@ rp_image *fromDreamcastVQ16(PixelFormat px_format,
 	const unsigned int *const p_tmap = dc_tmap.get();
 
 	// Create an rp_image.
-	rp_image *const img = new rp_image(width, height, rp_image::Format::ARGB32);
+	const shared_ptr<rp_image> img = std::make_shared<rp_image>(width, height, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		img->unref();
 		return nullptr;
 	}
 
@@ -267,7 +265,6 @@ rp_image *fromDreamcastVQ16(PixelFormat px_format,
 
 		default:
 			assert(!"Invalid pixel format for this function.");
-			img->unref();
 			return nullptr;
 	}
 
@@ -282,7 +279,6 @@ rp_image *fromDreamcastVQ16(PixelFormat px_format,
 		assert(srcIdx < (unsigned int)img_siz);
 		if (srcIdx >= static_cast<unsigned int>(img_siz)) {
 			// Out of bounds.
-			img->unref();
 			return nullptr;
 		}
 
@@ -297,7 +293,6 @@ rp_image *fromDreamcastVQ16(PixelFormat px_format,
 				// Palette index is out of bounds.
 				// NOTE: This can only happen with SmallVQ,
 				// since VQ always has 1024 palette entries.
-				img->unref();
 				return nullptr;
 			}
 		}

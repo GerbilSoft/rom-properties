@@ -32,7 +32,7 @@ class NintendoBadgePrivate final : public RomDataPrivate
 {
 	public:
 		NintendoBadgePrivate(const shared_ptr<IRpFile> &file);
-		~NintendoBadgePrivate() final;
+		~NintendoBadgePrivate() final = default;
 
 	private:
 		typedef RomDataPrivate super;
@@ -55,7 +55,7 @@ class NintendoBadgePrivate final : public RomDataPrivate
 		};
 		BadgeType badgeType;
 
-		// PRBS badge index.
+		// PRBS badge index
 		enum class BadgeIndex_PRBS {
 			Small		= 0,	// 32x32
 			Large		= 1,	// 64x64
@@ -69,22 +69,22 @@ class NintendoBadgePrivate final : public RomDataPrivate
 		bool megaBadge;
 
 	public:
-		// Badge header.
+		// Badge header
 		// Byteswapped to host-endian on load, except `magic` and `title_id`.
 		union {
 			Badge_PRBS_Header prbs;
 			Badge_CABS_Header cabs;
 		} badgeHeader;
 
-		// Decoded images.
-		array<rp_image*, static_cast<unsigned int>(BadgeIndex_PRBS::Max)> img_badges;
+		// Decoded images
+		array<shared_ptr<rp_image>, static_cast<unsigned int>(BadgeIndex_PRBS::Max)> img_badges;
 
 		/**
 		 * Load the badge image.
 		 * @param idx Image index.
 		 * @return Image, or nullptr on error.
 		 */
-		const rp_image *loadImage(int idx);
+		shared_ptr<const rp_image> loadImage(int idx);
 
 		/**
 		 * Get the language ID to use for the title fields.
@@ -133,6 +133,11 @@ NintendoBadgePrivate::NintendoBadgePrivate(const shared_ptr<IRpFile> &file)
 	, badgeType(BadgeType::Unknown)
 	, megaBadge(false)
 {
+	static_assert(static_cast<unsigned int>(BadgeIndex_PRBS::Max) == 4,
+		"BadgeIndex_PRBS::Max != 4");
+	static_assert(static_cast<unsigned int>(BadgeIndex_PRBS::Max) == ARRAY_SIZE(img_badges),
+		"BadgeIndex_PRBS::Max != ARRAY_SIZE(img)");
+
 	// Clear the header structs.
 	memset(&badgeHeader, 0, sizeof(badgeHeader));
 
@@ -140,24 +145,12 @@ NintendoBadgePrivate::NintendoBadgePrivate(const shared_ptr<IRpFile> &file)
 	img_badges.fill(nullptr);
 }
 
-NintendoBadgePrivate::~NintendoBadgePrivate()
-{
-	static_assert(static_cast<unsigned int>(BadgeIndex_PRBS::Max) == 4,
-		"BadgeIndex_PRBS::Max != 4");
-	static_assert(static_cast<unsigned int>(BadgeIndex_PRBS::Max) == ARRAY_SIZE(img_badges),
-		"BadgeIndex_PRBS::Max != ARRAY_SIZE(img)");
-
-	for (rp_image *img : img_badges) {
-		UNREF(img);
-	}
-}
-
 /**
  * Load the badge image.
  * @param idx Image index.
  * @return Image, or nullptr on error.
  */
-const rp_image *NintendoBadgePrivate::loadImage(int idx)
+shared_ptr<const rp_image> NintendoBadgePrivate::loadImage(int idx)
 {
 	assert(idx >= 0 || idx < (int)img_badges.size());
 	if (idx < 0 || idx >= (int)img_badges.size()) {
@@ -258,7 +251,7 @@ const rp_image *NintendoBadgePrivate::loadImage(int idx)
 	const size_t badge_sz = badge_rgb_sz + badge_a4_sz;
 	auto badgeData = aligned_uptr<uint8_t>(16, badge_sz);
 
-	rp_image *img = nullptr;
+	shared_ptr<rp_image> img;
 	if (!doMegaBadge) {
 		// Single badge.
 		size_t size = file->seekAndRead(start_addr, badgeData.get(), badge_sz);
@@ -281,9 +274,8 @@ const rp_image *NintendoBadgePrivate::loadImage(int idx)
 
 		if (badgeType == BadgeType::CABS) {
 			// Need to crop the 64x64 image to 48x48.
-			rp_image *const img48 = img->resized(48, 48);
+			const shared_ptr<rp_image> img48 = img->resized(48, 48);
 			if (img48) {
-				img->unref();
 				img = img48;
 			}
 		}
@@ -297,18 +289,17 @@ const rp_image *NintendoBadgePrivate::loadImage(int idx)
 		const unsigned int mb_row_bytes = badge_dims * sizeof(uint32_t);
 
 		// Badges are stored vertically, then horizontally.
-		img = new rp_image(badge_dims * mb_width, badge_dims * mb_height, rp_image::Format::ARGB32);
+		img = std::make_shared<rp_image>(badge_dims * mb_width, badge_dims * mb_height, rp_image::Format::ARGB32);
 		for (unsigned int y = 0; y < mb_height; y++) {
 			const unsigned int my = y*badge_dims;
 			for (unsigned int x = 0; x < mb_width; x++, start_addr += (0x2800+0xA00)) {
 				size_t size = file->seekAndRead(start_addr, badgeData.get(), badge_sz);
 				if (size != badge_sz) {
 					// Seek and/or read error.
-					img->unref();
 					return nullptr;
 				}
 
-				rp_image *const mb_img = ImageDecoder::fromN3DSTiledRGB565_A4(
+				const shared_ptr<rp_image> mb_img = ImageDecoder::fromN3DSTiledRGB565_A4(
 					badge_dims, badge_dims,
 					reinterpret_cast<const uint16_t*>(badgeData.get()), badge_rgb_sz,
 					badgeData.get() + badge_rgb_sz, badge_a4_sz);
@@ -321,8 +312,6 @@ const rp_image *NintendoBadgePrivate::loadImage(int idx)
 					uint32_t *dest = static_cast<uint32_t*>(img->scanLine(py+my)) + mx;
 					memcpy(dest, src, mb_row_bytes);
 				}
-
-				mb_img->unref();
 			}
 		}
 	}
@@ -832,21 +821,21 @@ int NintendoBadge::loadFieldData(void)
  * Load an internal image.
  * Called by RomData::image().
  * @param imageType	[in] Image type to load.
- * @param pImage	[out] Pointer to const rp_image* to store the image in.
+ * @param pImage	[out] Reference to shared_ptr<const rp_image> to store the image in.
  * @return 0 on success; negative POSIX error code on error.
  */
-int NintendoBadge::loadInternalImage(ImageType imageType, const rp_image **pImage)
+int NintendoBadge::loadInternalImage(ImageType imageType, shared_ptr<const rp_image> &pImage)
 {
 	ASSERT_loadInternalImage(imageType, pImage);
 
 	RP_D(NintendoBadge);
 	if (!d->file) {
 		// File isn't open.
-		*pImage = nullptr;
+		pImage.reset();
 		return -EBADF;
 	} else if (!d->isValid) {
 		// Badge isn't valid.
-		*pImage = nullptr;
+		pImage.reset();
 		return -EIO;
 	}
 
@@ -878,20 +867,20 @@ int NintendoBadge::loadInternalImage(ImageType imageType, const rp_image **pImag
 					break;
 				default:
 					// Badge isn't valid.
-					*pImage = nullptr;
+					pImage.reset();
 					return -EIO;
 			}
 			break;
 
 		default:
 			// Unsupported image type.
-			*pImage = nullptr;
+			pImage.reset();
 			return -ENOENT;
 	}
 
 	// Load the image.
-	*pImage = d->loadImage((int)idx);
-	return (*pImage != nullptr ? 0 : -EIO);
+	pImage = d->loadImage((int)idx);
+	return ((bool)pImage ? 0 : -EIO);
 }
 
 }

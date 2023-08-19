@@ -37,7 +37,7 @@ enum PVRTC_Mode_e {
  * @return rp_image, or nullptr on error.
  */
 ATTR_ACCESS_SIZE(read_only, 3, 4)
-rp_image *fromPVRTC(int width, int height,
+std::shared_ptr<rp_image> fromPVRTC(int width, int height,
 	const uint8_t *RESTRICT img_buf, size_t img_siz,
 	uint8_t mode);
 
@@ -51,7 +51,7 @@ rp_image *fromPVRTC(int width, int height,
  * @return rp_image, or nullptr on error.
  */
 ATTR_ACCESS_SIZE(read_only, 3, 4)
-rp_image *fromPVRTCII(int width, int height,
+std::shared_ptr<rp_image> fromPVRTCII(int width, int height,
 	const uint8_t *RESTRICT img_buf, size_t img_siz,
 	uint8_t mode);
 #endif /* ENABLE_PVRTC */

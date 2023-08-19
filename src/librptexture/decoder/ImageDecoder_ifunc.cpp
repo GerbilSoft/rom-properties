@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * ImageDecoder_ifunc.cpp: ImageDecoder IFUNC resolution functions.        *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -12,6 +12,9 @@
 
 #include "ImageDecoder_Linear.hpp"
 using namespace LibRpTexture;
+
+// C++ STL classes
+using std::shared_ptr;
 
 // NOTE: llvm/clang 14.0.0 fails to detect the resolver functions
 // if they're marked static, even though the docs say this is okay.
@@ -80,18 +83,18 @@ __typeof__(&ImageDecoder::fromLinear32_cpp) fromLinear32_resolve(void)
 }
 
 #ifndef IMAGEDECODER_ALWAYS_HAS_SSE2
-rp_image *ImageDecoder::fromLinear16(PixelFormat px_format,
+shared_ptr<rp_image> ImageDecoder::fromLinear16(PixelFormat px_format,
 	int width, int height,
 	const uint16_t *img_buf, size_t img_siz, int stride)
 	IFUNC_ATTR(fromLinear16_resolve);
 #endif /* IMAGEDECODER_ALWAYS_HAS_SSE2 */
 
-rp_image *ImageDecoder::fromLinear24(PixelFormat px_format,
+shared_ptr<rp_image> ImageDecoder::fromLinear24(PixelFormat px_format,
 	int width, int height,
 	const uint8_t *img_buf, size_t img_siz, int stride)
 	IFUNC_ATTR(fromLinear24_resolve);
 
-rp_image *ImageDecoder::fromLinear32(PixelFormat px_format,
+shared_ptr<rp_image> ImageDecoder::fromLinear32(PixelFormat px_format,
 	int width, int height,
 	const uint32_t *img_buf, size_t img_siz, int stride)
 	IFUNC_ATTR(fromLinear32_resolve);

@@ -21,6 +21,7 @@
 // C++ includes.
 #include <array>
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -253,7 +254,7 @@ class RomFields
 		typedef std::map<uint32_t, std::string> StringMultiMap_t;
 		typedef std::vector<std::vector<std::string> > ListData_t;
 		typedef std::map<uint32_t, ListData_t> ListDataMultiMap_t;
-		typedef std::vector<const LibRpTexture::rp_image*> ListDataIcons_t;
+		typedef std::vector<std::shared_ptr<const LibRpTexture::rp_image> > ListDataIcons_t;
 
 		// ROM field struct.
 		// Dynamically allocated.

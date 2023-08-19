@@ -279,8 +279,6 @@ void AchievementsTabPrivate::updateImageList(void)
 	}
 
 	// Load the sprite sheets.
-	rp_image *imgAchSheet = nullptr;
-	rp_image *imgAchGraySheet = nullptr;
 	shared_ptr<RpFile_windres> f_res = std::make_shared<RpFile_windres>(
 		HINST_THISCOMPONENT, MAKEINTRESOURCE(resID), MAKEINTRESOURCE(RT_PNG));
 	assert(f_res->isOpen());
@@ -289,8 +287,8 @@ void AchievementsTabPrivate::updateImageList(void)
 		return;
 	}
 
-	imgAchSheet = RpPng::load(f_res);
-	assert(imgAchSheet != nullptr);
+	const shared_ptr<const rp_image> imgAchSheet = RpPng::load(f_res);
+	assert((bool)imgAchSheet);
 	if (!imgAchSheet)
 		return;
 	assert(imgAchSheet->width() == (int)(iconSize * Achievements::ACH_SPRITE_SHEET_COLS));
@@ -298,7 +296,6 @@ void AchievementsTabPrivate::updateImageList(void)
 	if (imgAchSheet->width() != (int)(iconSize * Achievements::ACH_SPRITE_SHEET_COLS) ||
 	    imgAchSheet->height() != (int)(iconSize * Achievements::ACH_SPRITE_SHEET_ROWS))
 	{
-		imgAchSheet->unref();
 		return;
 	}
 
@@ -306,14 +303,12 @@ void AchievementsTabPrivate::updateImageList(void)
 	assert(f_res->isOpen());
 	if (!f_res->isOpen()) {
 		// Unable to open the resource.
-		imgAchSheet->unref();
 		return;
 	}
 
-	imgAchGraySheet = RpPng::load(f_res);
-	assert(imgAchGraySheet != nullptr);
+	const shared_ptr<const rp_image> imgAchGraySheet = RpPng::load(f_res);
+	assert((bool)imgAchGraySheet);
 	if (!imgAchGraySheet) {
-		imgAchSheet->unref();
 		return;
 	}
 	assert(imgAchGraySheet->width() == (int)(iconSize * Achievements::ACH_SPRITE_SHEET_COLS));
@@ -321,8 +316,6 @@ void AchievementsTabPrivate::updateImageList(void)
 	if (imgAchGraySheet->width() != (int)(iconSize * Achievements::ACH_SPRITE_SHEET_COLS) ||
 	    imgAchGraySheet->height() != (int)(iconSize * Achievements::ACH_SPRITE_SHEET_ROWS))
 	{
-		imgAchSheet->unref();
-		imgAchGraySheet->unref();
 		return;
 	}
 
@@ -377,9 +370,6 @@ void AchievementsTabPrivate::updateImageList(void)
 	// TODO: The row highlight doesn't surround the empty area
 	// of the icon. LVS_OWNERDRAW is probably needed for that.
 	ListView_SetImageList(hListView, himglAch, LVSIL_SMALL);
-
-	imgAchSheet->unref();
-	imgAchGraySheet->unref();
 }
 
 /**

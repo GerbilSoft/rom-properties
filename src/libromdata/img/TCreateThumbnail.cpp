@@ -66,7 +66,7 @@ ImgClass TCreateThumbnail<ImgClass>::getInternalImage(
 		return getNullImgClass();
 	}
 
-	const rp_image *image = romData->image(imageType);
+	const shared_ptr<const rp_image> image = romData->image(imageType);
 	if (!image) {
 		// No image.
 		if (sBIT) {
@@ -176,7 +176,7 @@ ImgClass TCreateThumbnail<ImgClass>::getExternalImage(
 		// Attempt to load the image.
 		shared_ptr<RpFile> file = std::make_shared<RpFile>(cache_filename, RpFile::FM_OPEN_READ);
 		if (file->isOpen()) {
-			rp_image *const dl_img = RpImageLoader::load(file);
+			const shared_ptr<const rp_image> dl_img = RpImageLoader::load(file);
 			if (dl_img && dl_img->isValid()) {
 				// Image loaded successfully.
 				file->close();
@@ -200,7 +200,6 @@ ImgClass TCreateThumbnail<ImgClass>::getExternalImage(
 					return ret_img;
 				}
 			}
-			UNREF(dl_img);
 		}
 	}
 

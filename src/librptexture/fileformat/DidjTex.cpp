@@ -45,7 +45,7 @@ class DidjTexPrivate final : public FileFormatPrivate
 {
 	public:
 		DidjTexPrivate(DidjTex *q, const shared_ptr<IRpFile> &file);
-		~DidjTexPrivate() final;
+		~DidjTexPrivate() final = default;
 
 	private:
 		typedef FileFormatPrivate super;
@@ -68,20 +68,20 @@ class DidjTexPrivate final : public FileFormatPrivate
 		};
 		TexType texType;
 
-		// .tex header.
+		// .tex header
 		Didj_Tex_Header texHeader;
 
-		// Decoded image.
-		rp_image *img;
+		// Decoded image
+		shared_ptr<rp_image> img;
 
-		// Invalid pixel format message.
+		// Invalid pixel format message
 		char invalid_pixel_format[24];
 
 		/**
 		 * Load the DidjTex image.
 		 * @return Image, or nullptr on error.
 		 */
-		const rp_image *loadDidjTexImage(void);
+		shared_ptr<const rp_image> loadDidjTexImage(void);
 };
 
 FILEFORMAT_IMPL(DidjTex)
@@ -116,16 +116,11 @@ DidjTexPrivate::DidjTexPrivate(DidjTex *q, const shared_ptr<IRpFile> &file)
 	memset(invalid_pixel_format, 0, sizeof(invalid_pixel_format));
 }
 
-DidjTexPrivate::~DidjTexPrivate()
-{
-	UNREF(img);
-}
-
 /**
  * Load the .tex image.
  * @return Image, or nullptr on error.
  */
-const rp_image *DidjTexPrivate::loadDidjTexImage(void)
+shared_ptr<const rp_image> DidjTexPrivate::loadDidjTexImage(void)
 {
 	if (img) {
 		// Image has already been loaded.
@@ -214,7 +209,7 @@ const rp_image *DidjTexPrivate::loadDidjTexImage(void)
 	inflateEnd(&strm);
 
 	// Decode the image.
-	rp_image *imgtmp = nullptr;
+	shared_ptr<rp_image> imgtmp;
 	const unsigned int width = le32_to_cpu(texHeader.width);
 	const unsigned int height = le32_to_cpu(texHeader.height);
 	switch (le32_to_cpu(texHeader.px_format)) {
@@ -514,7 +509,7 @@ int DidjTex::getFields(RomFields *fields) const
  * The image is owned by this object.
  * @return Image, or nullptr on error.
  */
-const rp_image *DidjTex::image(void) const
+shared_ptr<const rp_image> DidjTex::image(void) const
 {
 	RP_D(const DidjTex);
 	if (!d->isValid || (int)d->texType < 0) {
@@ -532,7 +527,7 @@ const rp_image *DidjTex::image(void) const
  * @param mip Mipmap number.
  * @return Image, or nullptr on error.
  */
-const rp_image *DidjTex::mipmap(int mip) const
+shared_ptr<const rp_image> DidjTex::mipmap(int mip) const
 {
 	// Allowing mipmap 0 for compatibility.
 	if (mip == 0) {

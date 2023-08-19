@@ -15,7 +15,8 @@
 #include "librptexture/img/RpGdiplusBackend.hpp"
 using namespace LibRpTexture;
 
-// C++ STL classes.
+// C++ STL classes
+using std::shared_ptr;
 using std::string;
 
 // TCreateThumbnail is a templated class,
@@ -29,11 +30,10 @@ template class LibRomData::TCreateThumbnail<HBITMAP>;
 
 /**
  * Wrapper function to convert rp_image* to ImgClass.
- * @tparam alpha If true, use alpha transparency. Otherwise, use COLOR_WINDOW.
  * @param img rp_image
- * @return ImgClass.
+ * @return ImgClass
  */
-HBITMAP CreateThumbnail::rpImageToImgClass(const rp_image *img) const
+HBITMAP CreateThumbnail::rpImageToImgClass(const shared_ptr<const rp_image> &img) const
 {
 	// IExtractIcon and IThumbnailProvider both support alpha transparency.
 	// We're returning HBITMAP here, which works for IThumbnailProvider.
@@ -51,11 +51,11 @@ HBITMAP CreateThumbnail::rpImageToImgClass(const rp_image *img) const
 	// Windows doesn't like non-square icons.
 	// Add extra transparent columns/rows before
 	// converting to HBITMAP.
-	rp_image *tmp_img = nullptr;
+	shared_ptr<rp_image> tmp_img;
 	if (m_doSquaring && !img->isSquare()) {
 		// Image is non-square.
 		tmp_img = img->squared();
-		assert(tmp_img != nullptr);
+		assert((bool)tmp_img);
 		if (tmp_img) {
 			const RpGdiplusBackend *const tmp_backend =
 				dynamic_cast<const RpGdiplusBackend*>(tmp_img->backend());
@@ -69,7 +69,6 @@ HBITMAP CreateThumbnail::rpImageToImgClass(const rp_image *img) const
 	// Convert to HBITMAP.
 	// TODO: Const-ness stuff.
 	HBITMAP hbmp = const_cast<RpGdiplusBackend*>(backend)->toHBITMAP_alpha();
-	UNREF(tmp_img);
 	return hbmp;
 }
 
@@ -83,7 +82,7 @@ HBITMAP CreateThumbnail::rpImageToImgClass(const rp_image *img) const
 HBITMAP CreateThumbnail::rescaleImgClass(const HBITMAP &imgClass, ImgSize sz, ScalingMethod method) const
 {
 	// Convert the HBITMAP to rp_image.
-	rp_image *const img = RpImageWin32::fromHBITMAP(imgClass);
+	const shared_ptr<const rp_image> img = RpImageWin32::fromHBITMAP(imgClass);
 	if (!img) {
 		// Error converting to rp_image.
 		return nullptr;
@@ -96,7 +95,6 @@ HBITMAP CreateThumbnail::rescaleImgClass(const HBITMAP &imgClass, ImgSize sz, Sc
 	// Resize the image.
 	const SIZE win_sz = {sz.width, sz.height};
 	HBITMAP hbmp = RpImageWin32::toHBITMAP_alpha(img, win_sz, (method == ScalingMethod::Nearest));
-	img->unref();
 	return hbmp;
 }
 
@@ -137,11 +135,10 @@ bool CreateThumbnail::isMetered(void)
 
 /**
  * Wrapper function to convert rp_image* to ImgClass.
- * @tparam alpha If true, use alpha transparency. Otherwise, use COLOR_WINDOW.
  * @param img rp_image
- * @return ImgClass.
+ * @return ImgClass
  */
-HBITMAP CreateThumbnailNoAlpha::rpImageToImgClass(const rp_image *img) const
+HBITMAP CreateThumbnailNoAlpha::rpImageToImgClass(const shared_ptr<const rp_image> &img) const
 {
 	// IExtractImage doesn't support alpha transparency, so we'll
 	// use COLOR_WINDOW as the background color.
@@ -177,7 +174,7 @@ HBITMAP CreateThumbnailNoAlpha::rpImageToImgClass(const rp_image *img) const
 HBITMAP CreateThumbnailNoAlpha::rescaleImgClass(const HBITMAP &imgClass, ImgSize sz, ScalingMethod method) const
 {
 	// Convert the HBITMAP to rp_image.
-	rp_image *const img = RpImageWin32::fromHBITMAP(imgClass);
+	const shared_ptr<const rp_image> img = RpImageWin32::fromHBITMAP(imgClass);
 	if (!img) {
 		// Error converting to rp_image.
 		return nullptr;
@@ -194,6 +191,5 @@ HBITMAP CreateThumbnailNoAlpha::rescaleImgClass(const HBITMAP &imgClass, ImgSize
 	HBITMAP hbmp = RpImageWin32::toHBITMAP(img,
 		LibWin32UI::GetSysColor_ARGB32(COLOR_WINDOW),
 		win_sz, (method == ScalingMethod::Nearest));
-	img->unref();
 	return hbmp;
 }

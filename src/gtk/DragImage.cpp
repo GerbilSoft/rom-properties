@@ -91,8 +91,8 @@ struct _RpDragImage {
 	GtkWidget *menuEcksBawks;	// GtkMenu
 #endif /* USE_G_MENU_MODEL */
 
-	// rp_image. [ref()'d]
-	const rp_image *img;
+	// rp_image (C++ shared_ptr)
+	shared_ptr<const rp_image> *pImg;
 
 	// Animated icon data.
 	struct anim_vars {
@@ -147,8 +147,6 @@ rp_drag_image_init(RpDragImage *image)
 {
 	image->minimumImageSize.width = DIL_MIN_IMAGE_SIZE;
 	image->minimumImageSize.height = DIL_MIN_IMAGE_SIZE;
-	image->img = nullptr;
-	image->anim = nullptr;
 
 	// Create the child GtkImage widget.
 	image->imageWidget = gtk_image_new();
@@ -185,8 +183,9 @@ rp_drag_image_dispose(GObject *object)
 	delete image->anim;
 	image->anim = nullptr;
 
-	// Unreference the image.
-	UNREF_AND_NULL(image->img);
+	// Delete the image shared_ptr.
+	delete image->pImg;
+	image->pImg = nullptr;
 
 #ifdef USE_G_MENU_MODEL
 #  if GTK_CHECK_VERSION(4,0,0)
@@ -250,7 +249,7 @@ rp_drag_image_update_pixmaps(RpDragImage *image)
 				anim->iconFrames[i] = nullptr;
 			}
 
-			const rp_image *const frame = iconAnimData->frames[i];
+			const shared_ptr<const rp_image> &frame = iconAnimData->frames[i];
 			if (frame && frame->isValid()) {
 				// NOTE: Allowing NULL frames here...
 				anim->iconFrames[i] = rp_image_to_PIMGTYPE(frame);
@@ -270,9 +269,9 @@ rp_drag_image_update_pixmaps(RpDragImage *image)
 		image->curFrame = PIMGTYPE_ref(anim->iconFrames[anim->iconAnimHelper.frameNumber()]);
 		gtk_image_set_from_PIMGTYPE(GTK_IMAGE(image->imageWidget), image->curFrame);
 		bRet = true;
-	} else if (image->img && image->img->isValid()) {
+	} else if (image->pImg && (*image->pImg)->isValid()) {
 		// Single image.
-		image->curFrame = rp_image_to_PIMGTYPE(image->img);
+		image->curFrame = rp_image_to_PIMGTYPE(image->pImg);
 		gtk_image_set_from_PIMGTYPE(GTK_IMAGE(image->imageWidget), image->curFrame);
 		bRet = true;
 	}
@@ -435,15 +434,11 @@ void rp_drag_image_set_ecks_bawks(RpDragImage *image, bool new_ecks_bawks)
  * @return True on success; false on error or if clearing.
  */
 bool
-rp_drag_image_set_rp_image(RpDragImage *image, const LibRpTexture::rp_image *img)
+rp_drag_image_set_rp_image(RpDragImage *image, const shared_ptr<const rp_image> &img)
 {
 	g_return_val_if_fail(RP_IS_DRAG_IMAGE(image), false);
 
-	// NOTE: We're not checking if the image pointer matches the
-	// previously stored image, since the underlying image may
-	// have changed.
-	UNREF_AND_NULL(image->img);
-
+	(*image->pImg) = img;
 	if (!img) {
 		if (!image->anim || !image->anim->iconAnimData) {
 			gtk_image_clear(GTK_IMAGE(image->imageWidget));
@@ -452,8 +447,6 @@ rp_drag_image_set_rp_image(RpDragImage *image, const LibRpTexture::rp_image *img
 		}
 		return false;
 	}
-
-	image->img = img->ref();
 	return rp_drag_image_update_pixmaps(image);
 }
 
@@ -489,7 +482,7 @@ rp_drag_image_set_icon_anim_data(RpDragImage *image, const LibRpBase::IconAnimDa
 	if (!iconAnimData) {
 		g_clear_handle_id(&anim->tmrIconAnim, g_source_remove);
 
-		if (!image->img) {
+		if (!(*image->pImg)) {
 			gtk_image_clear(GTK_IMAGE(image->imageWidget));
 		} else {
 			return rp_drag_image_update_pixmaps(image);
@@ -517,7 +510,7 @@ rp_drag_image_clear(RpDragImage *image)
 		UNREF_AND_NULL(anim->iconAnimData);
 	}
 
-	UNREF_AND_NULL(image->img);
+	(*image->pImg).reset();
 	gtk_image_clear(GTK_IMAGE(image->imageWidget));
 }
 
@@ -680,11 +673,11 @@ rp_drag_image_drag_data_get(RpDragImage *image, GdkDragContext *context, GtkSele
 	if (isAnimated) {
 		// Animated icon.
 		pngWriter = new RpPngWriter(pngData, anim->iconAnimData);
-	} else if (image->img) {
+	} else if (image->pImg && (*image->pImg)) {
 		// Standard icon.
 		// NOTE: Using the source image because we want the original
 		// size, not the resized version.
-		pngWriter = new RpPngWriter(pngData, image->img);
+		pngWriter = new RpPngWriter(pngData, *image->pImg);
 	} else {
 		// No icon...
 		return;

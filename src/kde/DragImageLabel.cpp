@@ -43,7 +43,6 @@ DragImageLabel::DragImageLabel(QWidget *parent, Qt::WindowFlags f)
 DragImageLabel::~DragImageLabel()
 {
 	delete m_anim;
-	UNREF(m_img);
 }
 
 void DragImageLabel::setEcksBawks(bool newEcksBawks)
@@ -75,23 +74,15 @@ void DragImageLabel::setEcksBawks(bool newEcksBawks)
 /**
  * Set the rp_image for this label.
  *
- * NOTE: The rp_image pointer is stored and used if necessary.
- * Make sure to call this function with nullptr before deleting
- * the rp_image object.
- *
- * NOTE 2: If animated icon data is specified, that supercedes
+ * NOTE: If animated icon data is specified, that supercedes
  * the individual rp_image.
  *
  * @param img rp_image, or nullptr to clear.
  * @return True on success; false on error or if clearing.
  */
-bool DragImageLabel::setRpImage(const rp_image *img)
+bool DragImageLabel::setRpImage(const shared_ptr<const rp_image> &img)
 {
-	// NOTE: We're not checking if the image pointer matches the
-	// previously stored image, since the underlying image may
-	// have changed.
-	UNREF_AND_NULL(m_img);
-
+	m_img = img;
 	if (!img) {
 		if (!m_anim || !m_anim->iconAnimData) {
 			this->clear();
@@ -100,8 +91,6 @@ bool DragImageLabel::setRpImage(const rp_image *img)
 		}
 		return false;
 	}
-
-	m_img = img->ref();
 	return updatePixmaps();
 }
 
@@ -161,7 +150,7 @@ void DragImageLabel::clearRp(void)
 		UNREF_AND_NULL(m_anim->iconAnimData);
 	}
 
-	UNREF_AND_NULL(m_img);
+	m_img.reset();
 	this->clear();
 }
 
@@ -206,7 +195,7 @@ bool DragImageLabel::updatePixmaps(void)
 
 		// Convert the icons to QPixmaps.
 		for (int i = iconAnimData->count-1; i >= 0; i--) {
-			const rp_image *const frame = iconAnimData->frames[i];
+			const shared_ptr<rp_image> &frame = iconAnimData->frames[i];
 			if (frame && frame->isValid()) {
 				// NOTE: Allowing NULL frames here...
 				m_anim->iconFrames[i] = imgToPixmap(rpToQImage(frame));

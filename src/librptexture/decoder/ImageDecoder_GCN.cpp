@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * ImageDecoder_GCN.cpp: Image decoding functions: GameCube                *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -13,8 +13,9 @@
 #include "PixelConversion.hpp"
 using namespace LibRpTexture::PixelConversion;
 
-// C++ STL classes.
+// C++ STL classes
 using std::array;
+using std::shared_ptr;
 
 namespace LibRpTexture { namespace ImageDecoder {
 
@@ -27,7 +28,7 @@ namespace LibRpTexture { namespace ImageDecoder {
  * @param img_siz Size of image data. [must be >= (w*h)*2]
  * @return rp_image, or nullptr on error.
  */
-rp_image *fromGcn16(PixelFormat px_format,
+shared_ptr<rp_image> fromGcn16(PixelFormat px_format,
 	int width, int height,
 	const uint16_t *RESTRICT img_buf, size_t img_siz)
 {
@@ -49,10 +50,9 @@ rp_image *fromGcn16(PixelFormat px_format,
 		return nullptr;
 
 	// Create an rp_image.
-	rp_image *const img = new rp_image(width, height, rp_image::Format::ARGB32);
+	const shared_ptr<rp_image> img = std::make_shared<rp_image>(width, height, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		img->unref();
 		return nullptr;
 	}
 
@@ -75,7 +75,7 @@ rp_image *fromGcn16(PixelFormat px_format,
 					}
 
 					// Blit the tile to the main image buffer.
-					ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img, tileBuf, x, y);
+					ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img.get(), tileBuf, x, y);
 				}
 			}
 			// Set the sBIT metadata.
@@ -98,7 +98,7 @@ rp_image *fromGcn16(PixelFormat px_format,
 					}
 
 					// Blit the tile to the main image buffer.
-					ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img, tileBuf, x, y);
+					ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img.get(), tileBuf, x, y);
 				}
 			}
 			// Set the sBIT metadata.
@@ -118,7 +118,7 @@ rp_image *fromGcn16(PixelFormat px_format,
 					}
 
 					// Blit the tile to the main image buffer.
-					ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img, tileBuf, x, y);
+					ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img.get(), tileBuf, x, y);
 				}
 			}
 			// Set the sBIT metadata.
@@ -131,7 +131,6 @@ rp_image *fromGcn16(PixelFormat px_format,
 
 		default:
 			assert(!"Invalid pixel format for this function.");
-			img->unref();
 			return nullptr;
 	}
 
@@ -149,7 +148,7 @@ rp_image *fromGcn16(PixelFormat px_format,
  * @param pal_siz Size of palette data. [must be >= 256*2]
  * @return rp_image, or nullptr on error.
  */
-rp_image *fromGcnCI8(int width, int height,
+shared_ptr<rp_image> fromGcnCI8(int width, int height,
 	const uint8_t *RESTRICT img_buf, size_t img_siz,
 	const uint16_t *RESTRICT pal_buf, size_t pal_siz)
 {
@@ -173,10 +172,9 @@ rp_image *fromGcnCI8(int width, int height,
 		return nullptr;
 
 	// Create an rp_image.
-	rp_image *const img = new rp_image(width, height, rp_image::Format::CI8);
+	const shared_ptr<rp_image> img = std::make_shared<rp_image>(width, height, rp_image::Format::CI8);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		img->unref();
 		return nullptr;
 	}
 
@@ -186,7 +184,6 @@ rp_image *fromGcnCI8(int width, int height,
 	assert(img->palette_len() >= 256);
 	if (img->palette_len() < 256) {
 		// Not enough colors...
-		img->unref();
 		return nullptr;
 	}
 
@@ -216,7 +213,7 @@ rp_image *fromGcnCI8(int width, int height,
 	for (unsigned int y = 0; y < tilesY; y++) {
 		for (unsigned int x = 0; x < tilesX; x++) {
 			// Decode the current tile.
-			ImageDecoderPrivate::BlitTile<uint8_t, 8, 4>(img, *pTileBuf, x, y);
+			ImageDecoderPrivate::BlitTile<uint8_t, 8, 4>(img.get(), *pTileBuf, x, y);
 			pTileBuf++;
 		}
 	}
@@ -242,7 +239,7 @@ rp_image *fromGcnCI8(int width, int height,
  * @param img_siz Size of image data. [must be >= (w*h)]
  * @return rp_image, or nullptr on error.
  */
-rp_image *fromGcnI8(int width, int height,
+shared_ptr<rp_image> fromGcnI8(int width, int height,
 	const uint8_t *img_buf, size_t img_siz)
 {
 	// Verify parameters.
@@ -268,10 +265,9 @@ rp_image *fromGcnI8(int width, int height,
 	const unsigned int tilesY = (unsigned int)(height / 4);
 
 	// Create an rp_image.
-	rp_image *const img = new rp_image(width, height, rp_image::Format::CI8);
+	const shared_ptr<rp_image> img = std::make_shared<rp_image>(width, height, rp_image::Format::CI8);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		img->unref();
 		return nullptr;
 	}
 
@@ -281,7 +277,6 @@ rp_image *fromGcnI8(int width, int height,
 	assert(img->palette_len() >= 256);
 	if (img->palette_len() < 256) {
 		// Not enough colors...
-		img->unref();
 		return nullptr;
 	}
 
@@ -298,7 +293,7 @@ rp_image *fromGcnI8(int width, int height,
 	for (unsigned int y = 0; y < tilesY; y++) {
 		for (unsigned int x = 0; x < tilesX; x++) {
 			// Decode the current tile.
-			ImageDecoderPrivate::BlitTile<uint8_t, 8, 4>(img, *pTileBuf, x, y);
+			ImageDecoderPrivate::BlitTile<uint8_t, 8, 4>(img.get(), *pTileBuf, x, y);
 			pTileBuf++;
 		}
 	}
