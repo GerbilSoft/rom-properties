@@ -246,8 +246,10 @@ const rp_image *NintendoDSPrivate::loadIcon(void)
 						flipOp = static_cast<rp_image::FlipOp>(flipOp | rp_image::FLIP_V);
 					}
 					rp_image *const flipimg = img->flip(flipOp);
-					img->unref();
-					img = flipimg;
+					if (flipimg && flipimg->isValid()) {
+						img->unref();
+						img = flipimg;
+					}
 				}
 				iconAnimData->frames[bmp_idx] = img;
 				arr_bmpUsed[high_token] = bmp_idx;
