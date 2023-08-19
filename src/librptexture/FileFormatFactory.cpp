@@ -171,7 +171,7 @@ const FileFormatFactoryPrivate::FileFormatFns FileFormatFactoryPrivate::FileForm
  * @param file Texture file
  * @return FileFormat subclass, or nullptr if the texture file isn't supported.
  */
-FileFormat *FileFormatFactory::create(const IRpFilePtr &file)
+FileFormatPtr FileFormatFactory::create(const IRpFilePtr &file)
 {
 	assert(file != nullptr);
 	if (!file || file->isDevice()) {
@@ -208,11 +208,11 @@ FileFormat *FileFormatFactory::create(const IRpFilePtr &file)
 		if (fileFormat) {
 			if (fileFormat->isValid()) {
 				// FileFormat subclass obtained.
-				return fileFormat;
+				return FileFormatPtr(fileFormat);
 			}
 
 			// Not actually supported.
-			fileFormat->unref();
+			delete fileFormat;
 		}
 	}
 
@@ -269,11 +269,11 @@ FileFormat *FileFormatFactory::create(const IRpFilePtr &file)
 					FileFormat *const fileFormat = new TGA(file);
 					if (fileFormat->isValid()) {
 						// FileFormat subclass obtained.
-						return fileFormat;
+						return FileFormatPtr(fileFormat);
 					}
 
 					// Not actually supported.
-					fileFormat->unref();
+					delete fileFormat;
 					break;
 				}
 
@@ -301,11 +301,11 @@ FileFormat *FileFormatFactory::create(const IRpFilePtr &file)
 				FileFormat *const fileFormat = fns->newFileFormat(file);
 				if (fileFormat->isValid()) {
 					// FileFormat subclass obtained.
-					return fileFormat;
+					return FileFormatPtr(fileFormat);
 				}
 
 				// Not actually supported.
-				fileFormat->unref();
+				delete fileFormat;
 			}
 		}
 	}

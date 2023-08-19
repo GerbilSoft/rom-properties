@@ -74,7 +74,7 @@ class DreamcastPrivate final : public RomDataPrivate
 		DC_IP0000_BIN_t discHeader;
 
 		// 0GDTEX.PVR image.
-		SegaPVR *pvrData;	// SegaPVR object
+		shared_ptr<SegaPVR> pvrData;	// SegaPVR object
 
 		// Track 03 start address.
 		// ISO-9660 directories use physical offsets,
@@ -147,7 +147,6 @@ DreamcastPrivate::DreamcastPrivate(const IRpFilePtr &file)
 	, discType(DiscType::Unknown)
 	, discReader(nullptr)
 	, isoPartition(nullptr)
-	, pvrData(nullptr)
 	, iso_start_offset(-1)
 {
 	// Clear the disc header struct.
@@ -156,7 +155,6 @@ DreamcastPrivate::DreamcastPrivate(const IRpFilePtr &file)
 
 DreamcastPrivate::~DreamcastPrivate()
 {
-	UNREF(pvrData);
 	UNREF(isoPartition);
 	UNREF(discReader);
 }
@@ -233,15 +231,14 @@ rp_image_const_ptr DreamcastPrivate::load0GDTEX(void)
 	}
 
 	// Create the SegaPVR object.
-	SegaPVR *const pvrData_tmp = new SegaPVR(pvrFile_tmp);
+	shared_ptr<SegaPVR> pvrData_tmp = std::make_shared<SegaPVR>(pvrFile_tmp);
 	if (pvrData_tmp->isValid()) {
 		// PVR is valid. Save it.
-		this->pvrData = pvrData_tmp;
+		this->pvrData = std::move(pvrData_tmp);
 		return pvrData->image();
 	}
 
 	// PVR is invalid.
-	pvrData_tmp->unref();
 	return nullptr;
 }
 
@@ -417,7 +414,7 @@ void Dreamcast::close(void)
 	RP_D(Dreamcast);
 
 	// Close any child RomData subclasses.
-	UNREF_AND_NULL(d->pvrData);
+	d->pvrData.reset();
 	UNREF_AND_NULL(d->isoPartition);
 	UNREF_AND_NULL(d->discReader);
 

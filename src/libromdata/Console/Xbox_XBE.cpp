@@ -69,7 +69,7 @@ class Xbox_XBE_Private final : public RomDataPrivate
 		// NOTE: May be a PNG image on some discs.
 		struct {
 			// TODO: Union of XboxXPR and rp_image, or std::variant<>?
-			XboxXPR *xpr0;
+			shared_ptr<XboxXPR> xpr0;
 			rp_image_ptr png;
 
 			bool isInit;
@@ -135,7 +135,6 @@ Xbox_XBE_Private::Xbox_XBE_Private(const IRpFilePtr &file)
 	memset(&xbeCertificate, 0, sizeof(xbeCertificate));
 
 	// No xtImage initially.
-	xtImage.xpr0 = nullptr;
 	xtImage.isInit = false;
 	xtImage.isPng = false;
 }
@@ -143,7 +142,6 @@ Xbox_XBE_Private::Xbox_XBE_Private(const IRpFilePtr &file)
 Xbox_XBE_Private::~Xbox_XBE_Private()
 {
 	UNREF(pe_exe);
-	UNREF(xtImage.xpr0);
 }
 
 /**
@@ -283,15 +281,14 @@ int Xbox_XBE_Private::initXPR0_xtImage(void)
 
 	ret = 0;
 	if (magic == cpu_to_be32('XPR0')) {
-		XboxXPR *const xpr0 = new XboxXPR(subFile);
+		shared_ptr<XboxXPR> xpr0 = std::make_shared<XboxXPR>(subFile);
 		if (xpr0->isOpen()) {
 			// XPR0 image opened.
 			xtImage.isInit = true;
 			xtImage.isPng = false;
-			xtImage.xpr0 = xpr0;
+			xtImage.xpr0 = std::move(xpr0);
 		} else {
 			// Unable to open the XPR0 image.
-			xpr0->unref();
 			ret = -EIO;
 		}
 	} else if (magic == cpu_to_be32(0x89504E47U)) {	// '\x89PNG'
@@ -301,7 +298,7 @@ int Xbox_XBE_Private::initXPR0_xtImage(void)
 			// PNG image opened.
 			xtImage.isInit = true;
 			xtImage.isPng = true;
-			xtImage.png = img;
+			xtImage.png = std::move(img);
 		} else {
 			// Unable to open the PNG image.
 			ret = -EIO;

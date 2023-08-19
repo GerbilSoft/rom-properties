@@ -25,7 +25,7 @@ class RpTextureWrapperPrivate final : public RomDataPrivate
 {
 	public:
 		RpTextureWrapperPrivate(const IRpFilePtr &file);
-		~RpTextureWrapperPrivate() final;
+		~RpTextureWrapperPrivate() final = default;
 
 	private:
 		typedef RomDataPrivate super;
@@ -39,7 +39,7 @@ class RpTextureWrapperPrivate final : public RomDataPrivate
 
 	public:
 		// librptexture file format object.
-		FileFormat *texture;
+		FileFormatPtr texture;
 };
 
 ROMDATA_IMPL(RpTextureWrapper)
@@ -62,13 +62,7 @@ const RomDataInfo RpTextureWrapperPrivate::romDataInfo = {
 
 RpTextureWrapperPrivate::RpTextureWrapperPrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
-	, texture(nullptr)
-{ }
-
-RpTextureWrapperPrivate::~RpTextureWrapperPrivate()
-{
-	UNREF(texture);
-}
+{}
 
 /** RpTextureWrapper **/
 
@@ -255,7 +249,7 @@ int RpTextureWrapper::loadFieldData(void)
 	}
 
 	// RpTextureWrapper header
-	const FileFormat *const texture = d->texture;
+	const FileFormat *const texture = d->texture.get();
 	d->fields.reserve(4);	// Maximum of 4 fields.
 
 	// Dimensions

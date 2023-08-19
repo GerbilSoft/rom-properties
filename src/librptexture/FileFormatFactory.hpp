@@ -14,13 +14,14 @@
 #include <memory>
 #include <vector>
 
-namespace LibRpFile {
-	class IRpFile;
-}
+// Other rom-properties libraries
+#include "librpfile/IRpFile.hpp"
+
+// librptexture
+#include "fileformat/FileFormat.hpp"
 
 namespace LibRpTexture {
 
-class FileFormat;
 class FileFormatFactory
 {
 public:
@@ -45,7 +46,7 @@ public:
 	 * @param file Texture file
 	 * @return FileFormat subclass, or nullptr if the texture file isn't supported.
 	 */
-	static LibRpTexture::FileFormat *create(const LibRpFile::IRpFilePtr &file);
+	static FileFormatPtr create(const LibRpFile::IRpFilePtr &file);
 
 	/**
 	 * Get all supported file extensions.

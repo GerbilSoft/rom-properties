@@ -15,14 +15,11 @@
 
 /** Macros for FileFormat subclasses. **/
 
-// C++ includes
-#include <memory>
+// Other rom-properties libraries
+#include "librpfile/IRpFile.hpp"
+#include "../img/rp_image.hpp"
 
-namespace LibRpFile {
-	class IRpFile;
-}
 namespace LibRpTexture {
-	class rp_image;
 	struct TextureInfo;
 }
 
@@ -48,7 +45,6 @@ class klass##Private; \
 class klass final : public LibRpTexture::FileFormat { \
 public: \
 	explicit klass(const LibRpFile::IRpFilePtr &file); \
-protected: \
 	~klass() final = default; \
 private: \
 	typedef FileFormat super; \
