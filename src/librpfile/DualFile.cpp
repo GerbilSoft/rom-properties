@@ -9,7 +9,7 @@
 #include "stdafx.h"
 #include "DualFile.hpp"
 
-// C++ STL classes.
+// C++ STL classes
 using std::string;
 
 namespace LibRpFile {
@@ -34,8 +34,7 @@ DualFile::DualFile(const IRpFilePtr &file0, const IRpFilePtr &file1)
 		m_fullSize = 0;
 		m_file[0].reset();
 		m_file[1].reset();
-		m_size[0] = 0;
-		m_size[1] = 0;
+		m_size.fill(0);
 		return;
 	}
 
@@ -73,9 +72,7 @@ void DualFile::close(void)
 {
 	m_file[0].reset();
 	m_file[1].reset();
-
-	m_size[0] = 0;
-	m_size[1] = 0;
+	m_size.fill(0);
 
 	m_fullSize = 0;
 	m_pos = 0;

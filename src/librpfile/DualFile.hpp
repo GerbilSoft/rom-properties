@@ -10,6 +10,9 @@
 
 #include "IRpFile.hpp"
 
+// C++ includes
+#include <array>
+
 namespace LibRpFile {
 
 class DualFile final : public IRpFile
@@ -91,8 +94,8 @@ class DualFile final : public IRpFile
 		off64_t size(void) final;
 
 	protected:
-		IRpFilePtr m_file[2];
-		off64_t m_size[2];
+		std::array<IRpFilePtr, 2> m_file;
+		std::array<off64_t, 2> m_size;
 		off64_t m_fullSize;	// Combined sizes.
 		off64_t m_pos;		// Current position.
 };
