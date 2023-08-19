@@ -874,6 +874,8 @@ RomData *RomDataFactory::create(IRpFile *file, unsigned int attrs)
  */
 RomData *RomDataFactory::create(const char *filename, unsigned int attrs)
 {
+	RomData *romData = nullptr;
+
 	// Check if this is a file or a directory.
 	// If it's a file, we'll create an RpFile and then
 	// call create(IRpFile*,unsigned int).
@@ -881,14 +883,13 @@ RomData *RomDataFactory::create(const char *filename, unsigned int attrs)
 		// Not a directory.
 		RpFile *const file = new RpFile(filename, RpFile::FM_OPEN_READ_GZ);
 		if (file->isOpen()) {
-			RomData *const romData = create(file, attrs);
-			file->unref();
-			return romData;
+			romData = create(file, attrs);
 		}
+		file->unref();
 	}
 
 	// TODO: Check for RomData subclasses that support directories.
-	return nullptr;
+	return romData;
 }
 
 #ifdef _WIN32
@@ -913,6 +914,8 @@ RomData *RomDataFactory::create(const char *filename, unsigned int attrs)
  */
 RomData *RomDataFactory::create(const wchar_t *filenameW, unsigned int attrs)
 {
+	RomData *romData = nullptr;
+
 	// Check if this is a file or a directory.
 	// If it's a file, we'll create an RpFile and then
 	// call create(IRpFile*,unsigned int).
@@ -920,14 +923,13 @@ RomData *RomDataFactory::create(const wchar_t *filenameW, unsigned int attrs)
 		// Not a directory.
 		RpFile *const file = new RpFile(filenameW, RpFile::FM_OPEN_READ_GZ);
 		if (file->isOpen()) {
-			RomData *const romData = create(file, attrs);
-			file->unref();
-			return romData;
+			romData = create(file, attrs);
 		}
+		file->unref();
 	}
 
 	// TODO: Check for RomData subclasses that support directories.
-	return nullptr;
+	return romData;
 }
 #endif /* _WIN32 */
 
