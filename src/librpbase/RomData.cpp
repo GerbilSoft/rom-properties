@@ -13,10 +13,9 @@
 // Other rom-properties libraries
 #include "libi18n/i18n.h"
 #include "libcachecommon/CacheKeys.hpp"
-using LibRpFile::IRpFile;
-using LibRpFile::RpFile;
-using LibRpTexture::rp_image;
+using namespace LibRpFile;
 using namespace LibRpText;
+using namespace LibRpTexture;
 
 // C++ STL classes
 using std::shared_ptr;
@@ -32,7 +31,7 @@ namespace LibRpBase {
  * @param file ROM file
  * @param pRomDataInfo RomData subclass information
  */
-RomDataPrivate::RomDataPrivate(const std::shared_ptr<LibRpFile::IRpFile> &file, const RomDataInfo *pRomDataInfo)
+RomDataPrivate::RomDataPrivate(const IRpFilePtr &file, const RomDataInfo *pRomDataInfo)
 	: pRomDataInfo(pRomDataInfo)
 	, mimeType(nullptr)
 	, fileType(RomData::FileType::ROM_Image)
@@ -505,7 +504,7 @@ void RomData::close(void)
  * Get a reference to the internal file.
  * @return Reference to file, or nullptr on error.
  */
-shared_ptr<IRpFile> RomData::ref_file(void) const
+IRpFilePtr RomData::ref_file(void) const
 {
 	RP_D(const RomData);
 	return d->file;

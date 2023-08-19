@@ -16,9 +16,9 @@
 // Other rom-properties libraries
 #include "librptexture/decoder/ImageDecoder_N3DS.hpp"
 using namespace LibRpBase;
+using namespace LibRpFile;
 using namespace LibRpText;
 using namespace LibRpTexture;
-using LibRpFile::IRpFile;
 
 // C++ STL classes
 using std::array;
@@ -31,7 +31,7 @@ namespace LibRomData {
 class NintendoBadgePrivate final : public RomDataPrivate
 {
 	public:
-		NintendoBadgePrivate(const shared_ptr<IRpFile> &file);
+		NintendoBadgePrivate(const IRpFilePtr &file);
 		~NintendoBadgePrivate() final = default;
 
 	private:
@@ -128,7 +128,7 @@ const RomDataInfo NintendoBadgePrivate::romDataInfo = {
 	"NintendoBadge", exts, mimeTypes
 };
 
-NintendoBadgePrivate::NintendoBadgePrivate(const shared_ptr<IRpFile> &file)
+NintendoBadgePrivate::NintendoBadgePrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
 	, badgeType(BadgeType::Unknown)
 	, megaBadge(false)
@@ -400,7 +400,7 @@ inline uint32_t NintendoBadgePrivate::getDefaultLC(void) const
  *
  * @param file Open ROM image.
  */
-NintendoBadge::NintendoBadge(const shared_ptr<IRpFile> &file)
+NintendoBadge::NintendoBadge(const IRpFilePtr &file)
 	: super(new NintendoBadgePrivate(file))
 {
 	// This class handles texture files.

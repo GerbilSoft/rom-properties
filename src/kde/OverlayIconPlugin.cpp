@@ -14,16 +14,15 @@
 #include "OverlayIconPlugin.hpp"
 #include "check-uid.hpp"
 
-// librpbase, librpfile
+// Other rom-properties libraries
 using namespace LibRpBase;
-using LibRpFile::IRpFile;
+using namespace LibRpFile;
 
 // libromdata
 #include "libromdata/RomDataFactory.hpp"
 using LibRomData::RomDataFactory;
 
 // C++ STL classes
-using std::shared_ptr;
 using std::string;
 
 // Qt includes.
@@ -60,7 +59,7 @@ QStringList OverlayIconPlugin::getOverlays(const QUrl &item)
 	}
 
 	// Attempt to open the ROM file.
-	shared_ptr<IRpFile> file(openQUrl(item, true));
+	const IRpFilePtr file(openQUrl(item, true));
 	if (!file) {
 		// Could not open the file.
 		return sl;

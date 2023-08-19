@@ -54,7 +54,7 @@ namespace LibRomData {
 class GameCubePrivate final : public RomDataPrivate
 {
 	public:
-		GameCubePrivate(const shared_ptr<IRpFile> &file);
+		GameCubePrivate(const IRpFilePtr &file);
 		~GameCubePrivate() final;
 
 	private:
@@ -262,7 +262,7 @@ const uint8_t GameCubePrivate::nddemo_header[64] = {
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 };
 
-GameCubePrivate::GameCubePrivate(const shared_ptr<IRpFile> &file)
+GameCubePrivate::GameCubePrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
 	, discType(DISC_UNKNOWN)
 	, discReader(nullptr)
@@ -500,7 +500,7 @@ int GameCubePrivate::gcn_loadOpeningBnr(void)
 		return -EIO;
 	}
 
-	shared_ptr<IRpFile> f_opening_bnr = gcnPartition->open("/opening.bnr");
+	const IRpFilePtr f_opening_bnr = gcnPartition->open("/opening.bnr");
 	if (!f_opening_bnr) {
 		// Error opening "opening.bnr".
 		const int err = -gcnPartition->lastError();
@@ -548,7 +548,7 @@ int GameCubePrivate::wii_loadOpeningBnr(void)
 		return -ENOENT;
 	}
 
-	shared_ptr<IRpFile> f_opening_bnr = gamePartition->open("/opening.bnr");
+	const IRpFilePtr f_opening_bnr = gamePartition->open("/opening.bnr");
 	if (!f_opening_bnr) {
 		// Error opening "opening.bnr".
 		return -gamePartition->lastError();
@@ -700,7 +700,7 @@ const char *GameCubePrivate::wii_getCryptoStatus(WiiPartition *partition)
  *
  * @param file Open disc image.
  */
-GameCube::GameCube(const shared_ptr<IRpFile> &file)
+GameCube::GameCube(const IRpFilePtr &file)
 	: super(new GameCubePrivate(file))
 {
 	// This class handles disc images.
@@ -801,7 +801,7 @@ GameCube::GameCube(const shared_ptr<IRpFile> &file)
 			} else*/ if ((d->discType & GameCubePrivate::DISC_FORMAT_MASK) == GameCubePrivate::DISC_FORMAT_WBFS) {
 				// First part of split WBFS.
 				// Check for a WBF1 file.
-				shared_ptr<IRpFile> wbfs1;
+				IRpFilePtr wbfs1;
 				const char *const filename = file->filename();
 				if (filename) {
 					wbfs1 = FileSystem::openRelatedFile(file->filename(), nullptr, ".wbf1");
@@ -1782,7 +1782,7 @@ int GameCube::loadFieldData(void)
 
 			// Check if __update.inf exists.
 			// If it does, read the datestamp.
-			shared_ptr<IRpFile> update_inf = d->updatePartition->open("/__update.inf");
+			const IRpFilePtr update_inf = d->updatePartition->open("/__update.inf");
 			if (update_inf) {
 				char buf[11];
 				size_t size = update_inf->read(buf, sizeof(buf));

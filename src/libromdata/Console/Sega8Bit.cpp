@@ -12,11 +12,10 @@
 
 // Other rom-properties libraries
 using namespace LibRpBase;
+using namespace LibRpFile;
 using namespace LibRpText;
-using LibRpFile::IRpFile;
 
 // C++ STL classes
-using std::shared_ptr;
 using std::string;
 
 namespace LibRomData {
@@ -24,7 +23,7 @@ namespace LibRomData {
 class Sega8BitPrivate final : public RomDataPrivate
 {
 	public:
-		Sega8BitPrivate(const shared_ptr<IRpFile> &file);
+		Sega8BitPrivate(const IRpFilePtr &file);
 
 	private:
 		typedef RomDataPrivate super;
@@ -92,7 +91,7 @@ const RomDataInfo Sega8BitPrivate::romDataInfo = {
 	"Sega8Bit", exts, mimeTypes
 };
 
-Sega8BitPrivate::Sega8BitPrivate(const shared_ptr<IRpFile> &file)
+Sega8BitPrivate::Sega8BitPrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
 {
 	// Clear the ROM header struct.
@@ -228,7 +227,7 @@ time_t Sega8BitPrivate::sdsc_date_to_unix_time(const Sega8_SDSC_Date *date)
  *
  * @param file Open ROM image.
  */
-Sega8Bit::Sega8Bit(const shared_ptr<IRpFile> &file)
+Sega8Bit::Sega8Bit(const IRpFilePtr &file)
 	: super(new Sega8BitPrivate(file))
 {
 	RP_D(Sega8Bit);

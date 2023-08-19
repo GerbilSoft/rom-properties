@@ -21,9 +21,9 @@
 #include "librpbase/Achievements.hpp"
 #include "librpbase/SystemRegion.hpp"
 using namespace LibRpBase;
+using namespace LibRpFile;
 using namespace LibRpText;
-using LibRpFile::IRpFile;
-using LibRpTexture::rp_image;
+using namespace LibRpTexture;
 
 // Decryption.
 #ifdef ENABLE_DECRYPTION
@@ -75,7 +75,7 @@ const RomDataInfo WiiWADPrivate::romDataInfo = {
 	"WiiWAD", exts, mimeTypes
 };
 
-WiiWADPrivate::WiiWADPrivate(const shared_ptr<IRpFile> &file)
+WiiWADPrivate::WiiWADPrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
 	, wadType(WadType::Unknown)
 	, data_offset(0)
@@ -246,7 +246,7 @@ int WiiWADPrivate::openSRL(void)
  *
  * @param file Open disc image.
  */
-WiiWAD::WiiWAD(const shared_ptr<IRpFile> &file)
+WiiWAD::WiiWAD(const IRpFilePtr &file)
 	: super(new WiiWADPrivate(file))
 {
 	// This class handles application packages.

@@ -18,7 +18,7 @@ namespace LibRpBase {
 class IPartition : public IDiscReader
 {
 	protected:
-		explicit IPartition(const std::shared_ptr<LibRpFile::IRpFile> &file) : super(file) { }
+		explicit IPartition(const LibRpFile::IRpFilePtr &file) : super(file) { }
 		explicit IPartition(IDiscReader *discReader) : super(discReader) { }
 	protected:
 		~IPartition() override = 0;	// call unref() instead

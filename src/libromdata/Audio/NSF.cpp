@@ -12,11 +12,10 @@
 
 // Other rom-properties libraries
 using namespace LibRpBase;
+using namespace LibRpFile;
 using namespace LibRpText;
-using LibRpFile::IRpFile;
 
 // C++ STL classes
-using std::shared_ptr;
 using std::string;
 using std::vector;
 
@@ -25,7 +24,7 @@ namespace LibRomData {
 class NSFPrivate final : public RomDataPrivate
 {
 	public:
-		NSFPrivate(const shared_ptr<IRpFile> &file);
+		NSFPrivate(const IRpFilePtr &file);
 
 	private:
 		typedef RomDataPrivate super;
@@ -63,7 +62,7 @@ const RomDataInfo NSFPrivate::romDataInfo = {
 	"NSF", exts, mimeTypes
 };
 
-NSFPrivate::NSFPrivate(const shared_ptr<IRpFile> &file)
+NSFPrivate::NSFPrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
 {
 	// Clear the NSF header struct.
@@ -85,7 +84,7 @@ NSFPrivate::NSFPrivate(const shared_ptr<IRpFile> &file)
  *
  * @param file Open ROM image.
  */
-NSF::NSF(const shared_ptr<IRpFile> &file)
+NSF::NSF(const IRpFilePtr &file)
 	: super(new NSFPrivate(file))
 {
 	RP_D(NSF);

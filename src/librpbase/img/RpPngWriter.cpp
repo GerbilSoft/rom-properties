@@ -15,10 +15,8 @@
 #include "librpfile/RpFile.hpp"
 #include "img/rp_image.hpp"
 using namespace LibRpText;
-using LibRpFile::IRpFile;
-using LibRpFile::RpFile;
-using LibRpTexture::rp_image;
-using LibRpTexture::argb32_t;
+using namespace LibRpFile;
+using namespace LibRpTexture;
 
 // APNG
 #include "img/IconAnimData.hpp"
@@ -112,19 +110,19 @@ static int DelayLoad_test_zlib_and_png(void)
 class RpPngWriterPrivate
 {
 	public:
-		RpPngWriterPrivate(const shared_ptr<IRpFile> &file, int width, int height, rp_image::Format format)
+		RpPngWriterPrivate(const IRpFilePtr &file, int width, int height, rp_image::Format format)
 			: lastError(0), file(file), imageTag(ImageTag::Invalid)
 			, png_ptr(nullptr), info_ptr(nullptr), IHDR_written(false)
 		{
 			init(width, height, format);
 		}
-		RpPngWriterPrivate(const shared_ptr<IRpFile> &file, const shared_ptr<const rp_image> &img)
+		RpPngWriterPrivate(const IRpFilePtr &file, const shared_ptr<const rp_image> &img)
 			: lastError(0), file(file), imageTag(ImageTag::Invalid)
 			, png_ptr(nullptr), info_ptr(nullptr), IHDR_written(false)
 		{
 			init(img);
 		}
-		RpPngWriterPrivate(const shared_ptr<IRpFile> &file, const IconAnimData *iconAnimData)
+		RpPngWriterPrivate(const IRpFilePtr &file, const IconAnimData *iconAnimData)
 			: lastError(0), file(file), imageTag(ImageTag::Invalid)
 			, png_ptr(nullptr), info_ptr(nullptr), IHDR_written(false)
 		{
@@ -188,12 +186,11 @@ class RpPngWriterPrivate
 		RP_DISABLE_COPY(RpPngWriterPrivate)
 
 	public:
-		// Last error value.
+		// Last error value
 		int lastError;
 
-		// Open reference of a file.
-		// Must be unref()'d on close.
-		shared_ptr<IRpFile> file;
+		// Open file reference
+		IRpFilePtr file;
 
 		// Image and/or animated image data to save.
 		enum class ImageTag {
@@ -1010,7 +1007,7 @@ RpPngWriter::RpPngWriter(const wchar_t *filename, int width, int height, rp_imag
  * @param height 	[in] Image height
  * @param format 	[in] Image format
  */
-RpPngWriter::RpPngWriter(const std::shared_ptr<IRpFile> &file, int width, int height, rp_image::Format format)
+RpPngWriter::RpPngWriter(const IRpFilePtr &file, int width, int height, rp_image::Format format)
 	: d_ptr(new RpPngWriterPrivate(file, width, height, format))
 { }
 
@@ -1070,7 +1067,7 @@ RpPngWriter::RpPngWriter(const wchar_t *filename, const shared_ptr<const rp_imag
  * @param file	[in] IRpFile open for writing
  * @param img	[in] rp_image
  */
-RpPngWriter::RpPngWriter(const std::shared_ptr<IRpFile> &file, const shared_ptr<const rp_image> &img)
+RpPngWriter::RpPngWriter(const IRpFilePtr &file, const shared_ptr<const rp_image> &img)
 	: d_ptr(new RpPngWriterPrivate(file, img))
 {}
 
@@ -1145,7 +1142,7 @@ RpPngWriter::RpPngWriter(const wchar_t *filename, const IconAnimData *iconAnimDa
  * @param file		[in] IRpFile open for writing.
  * @param iconAnimData	[in] Animated image data.
  */
-RpPngWriter::RpPngWriter(const std::shared_ptr<IRpFile> &file, const IconAnimData *iconAnimData)
+RpPngWriter::RpPngWriter(const IRpFilePtr &file, const IconAnimData *iconAnimData)
 	: d_ptr(new RpPngWriterPrivate(file, iconAnimData))
 {}
 

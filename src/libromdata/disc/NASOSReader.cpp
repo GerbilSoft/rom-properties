@@ -15,12 +15,9 @@
 #include "librpbase/disc/SparseDiscReader_p.hpp"
 #include "nasos_gcn.h"
 
-// librpbase, librpfile
+// Other rom-properties libraries
 using namespace LibRpBase;
-using LibRpFile::IRpFile;
-
-// C++ STL classes
-using std::shared_ptr;
+using namespace LibRpFile;
 
 namespace LibRomData {
 
@@ -74,7 +71,7 @@ NASOSReaderPrivate::NASOSReaderPrivate(NASOSReader *q)
 
 /** NASOSReader **/
 
-NASOSReader::NASOSReader(const shared_ptr<IRpFile> &file)
+NASOSReader::NASOSReader(const IRpFilePtr &file)
 	: super(new NASOSReaderPrivate(this), file)
 {
 	if (!m_file) {

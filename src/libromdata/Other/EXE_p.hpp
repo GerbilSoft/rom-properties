@@ -34,7 +34,7 @@ class EXE;
 class EXEPrivate final : public LibRpBase::RomDataPrivate
 {
 	public:
-		EXEPrivate(const std::shared_ptr<LibRpFile::IRpFile> &file);
+		EXEPrivate(const LibRpFile::IRpFilePtr &file);
 		~EXEPrivate() final;
 
 	private:

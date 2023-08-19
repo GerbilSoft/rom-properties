@@ -10,8 +10,7 @@
 
 #include "IRpFile.hpp"
 
-// C++ includes.
-#include <memory>
+// C++ includes
 #include <vector>
 
 // from scsi_protocol.h

@@ -18,11 +18,10 @@
 #include "librpbase/Achievements.hpp"
 #include "libi18n/i18n.h"
 using namespace LibRpBase;
+using namespace LibRpFile;
 using namespace LibRpText;
-using LibRpFile::IRpFile;
 
 // C++ STL classes
-using std::shared_ptr;
 using std::string;
 using std::vector;
 
@@ -31,7 +30,7 @@ namespace LibRomData {
 class ISOPrivate final : public RomDataPrivate
 {
 	public:
-		ISOPrivate(const shared_ptr<IRpFile> &file);
+		ISOPrivate(const IRpFilePtr &file);
 
 	private:
 		typedef RomDataPrivate super;
@@ -212,7 +211,7 @@ const RomDataInfo ISOPrivate::romDataInfo = {
 	"ISO", exts, mimeTypes
 };
 
-ISOPrivate::ISOPrivate(const shared_ptr<IRpFile> &file)
+ISOPrivate::ISOPrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
 	, discType(DiscType::Unknown)
 	, sector_size(0)
@@ -573,7 +572,7 @@ void ISOPrivate::addPVDTimestamps_metaData(RomMetaData *metaData, const T *pvd)
  *
  * @param file Open ROM image.
  */
-ISO::ISO(const shared_ptr<IRpFile> &file)
+ISO::ISO(const IRpFilePtr &file)
 	: super(new ISOPrivate(file))
 {
 	// This class handles disc images.

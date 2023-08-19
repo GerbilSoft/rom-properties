@@ -16,8 +16,8 @@
 
 // Other rom-properties libraries
 using namespace LibRpBase;
+using namespace LibRpFile;
 using namespace LibRpText;
-using LibRpFile::IRpFile;
 
 // unice68
 #ifdef ENABLE_UNICE68
@@ -28,7 +28,6 @@ using LibRpFile::IRpFile;
 #include "librptext/libc.h"
 
 // C++ STL classes
-using std::shared_ptr;
 using std::string;
 using std::unique_ptr;
 using std::vector;
@@ -38,7 +37,7 @@ namespace LibRomData {
 class SNDHPrivate final : public RomDataPrivate
 {
 	public:
-		SNDHPrivate(const shared_ptr<IRpFile> &file);
+		SNDHPrivate(const IRpFilePtr &file);
 
 	private:
 		typedef RomDataPrivate super;
@@ -125,7 +124,7 @@ const RomDataInfo SNDHPrivate::romDataInfo = {
 	"SNDH", exts, mimeTypes
 };
 
-SNDHPrivate::SNDHPrivate(const shared_ptr<IRpFile> &file)
+SNDHPrivate::SNDHPrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
 { }
 
@@ -629,7 +628,7 @@ SNDHPrivate::TagData SNDHPrivate::parseTags(void)
  *
  * @param file Open ROM image.
  */
-SNDH::SNDH(const shared_ptr<IRpFile> &file)
+SNDH::SNDH(const IRpFilePtr &file)
 	: super(new SNDHPrivate(file))
 {
 	RP_D(SNDH);

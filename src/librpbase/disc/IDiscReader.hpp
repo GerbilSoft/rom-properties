@@ -21,16 +21,15 @@
 #include "common.h"
 #include "RefBase.hpp"
 
-namespace LibRpFile {
-	class IRpFile;
-}
+// librpfile
+#include "librpfile/IRpFile.hpp"
 
 namespace LibRpBase {
 
 class IDiscReader : public RefBase
 {
 	protected:
-		explicit IDiscReader(const std::shared_ptr<LibRpFile::IRpFile> &file);
+		explicit IDiscReader(const LibRpFile::IRpFilePtr &file);
 		explicit IDiscReader(IDiscReader *discReader);
 	protected:
 		~IDiscReader() override;	// call unref() instead
@@ -153,7 +152,7 @@ class IDiscReader : public RefBase
 		// Subclasses may have an underlying file, or may
 		// stack another IDiscReader object.
 		// NOTE: This used to be a union{} prior to the std::shared_ptr<> conversion.
-		std::shared_ptr<LibRpFile::IRpFile> m_file;
+		LibRpFile::IRpFilePtr m_file;
 		IDiscReader *m_discReader;
 };
 

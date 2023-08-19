@@ -19,7 +19,6 @@ using namespace LibRpText;
 using namespace LibRpFile;
 
 // C++ STL classes
-using std::shared_ptr;
 using std::string;
 using std::vector;
 
@@ -28,7 +27,7 @@ namespace LibRomData {
 class SNESPrivate final : public RomDataPrivate
 {
 	public:
-		SNESPrivate(const shared_ptr<IRpFile> &file);
+		SNESPrivate(const IRpFilePtr &file);
 
 	private:
 		typedef RomDataPrivate super;
@@ -150,7 +149,7 @@ const RomDataInfo SNESPrivate::romDataInfo = {
 	"SNES", exts, mimeTypes
 };
 
-SNESPrivate::SNESPrivate(const shared_ptr<IRpFile> &file)
+SNESPrivate::SNESPrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
 	, romType(RomType::Unknown)
 	, header_address(0)
@@ -793,7 +792,7 @@ string SNESPrivate::getGameID(bool doFake) const
  *
  * @param file Open ROM image.
  */
-SNES::SNES(const shared_ptr<IRpFile> &file)
+SNES::SNES(const IRpFilePtr &file)
 	: super(new SNESPrivate(file))
 {
 	RP_D(SNES);

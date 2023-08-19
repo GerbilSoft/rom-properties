@@ -17,7 +17,6 @@ using namespace LibRpText;
 using namespace LibRpFile;
 
 // C++ STL classes
-using std::shared_ptr;
 using std::string;
 using std::vector;
 
@@ -26,7 +25,7 @@ namespace LibRomData {
 class WonderSwanPrivate final : public RomDataPrivate
 {
 	public:
-		WonderSwanPrivate(const shared_ptr<IRpFile> &file);
+		WonderSwanPrivate(const IRpFilePtr &file);
 
 	private:
 		typedef RomDataPrivate super;
@@ -95,7 +94,7 @@ const RomDataInfo WonderSwanPrivate::romDataInfo = {
 	"WonderSwan", exts, mimeTypes
 };
 
-WonderSwanPrivate::WonderSwanPrivate(const shared_ptr<IRpFile> &file)
+WonderSwanPrivate::WonderSwanPrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
 	, romType(RomType::Unknown)
 	, forceGameIDSysIDTo0(false)
@@ -145,7 +144,7 @@ string WonderSwanPrivate::getGameID(void) const
  *
  * @param file Open ROM file.
  */
-WonderSwan::WonderSwan(const shared_ptr<IRpFile> &file)
+WonderSwan::WonderSwan(const IRpFilePtr &file)
 	: super(new WonderSwanPrivate(file))
 {
 	RP_D(WonderSwan);

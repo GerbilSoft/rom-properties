@@ -12,11 +12,10 @@
 
 // Other rom-properties libraries
 using namespace LibRpBase;
+using namespace LibRpFile;
 using namespace LibRpText;
-using LibRpFile::IRpFile;
 
 // C++ STL classes
-using std::shared_ptr;
 using std::string;
 
 namespace LibRomData {
@@ -24,7 +23,7 @@ namespace LibRomData {
 class GBSPrivate : public RomDataPrivate
 {
 	public:
-		GBSPrivate(const shared_ptr<IRpFile> &file);
+		GBSPrivate(const IRpFilePtr &file);
 
 	private:
 		typedef RomDataPrivate super;
@@ -81,7 +80,7 @@ const RomDataInfo GBSPrivate::romDataInfo = {
 	"GBS", exts, mimeTypes
 };
 
-GBSPrivate::GBSPrivate(const shared_ptr<IRpFile> &file)
+GBSPrivate::GBSPrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
 	, audioFormat(AudioFormat::Unknown)
 {
@@ -104,7 +103,7 @@ GBSPrivate::GBSPrivate(const shared_ptr<IRpFile> &file)
  *
  * @param file Open ROM image.
  */
-GBS::GBS(const shared_ptr<IRpFile> &file)
+GBS::GBS(const IRpFilePtr &file)
 	: super(new GBSPrivate(file))
 {
 	RP_D(GBS);

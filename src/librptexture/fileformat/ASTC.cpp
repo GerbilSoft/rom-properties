@@ -12,9 +12,9 @@
 
 #include "astc_structs.h"
 
-// librpbase, librpfile
+// Other rom-properties libraries
+using namespace LibRpFile;
 using LibRpBase::RomFields;
-using LibRpFile::IRpFile;
 
 // librptexture
 #include "ImageSizeCalc.hpp"
@@ -29,7 +29,7 @@ namespace LibRpTexture {
 class ASTCPrivate final : public FileFormatPrivate
 {
 	public:
-		ASTCPrivate(ASTC *q, const shared_ptr<IRpFile> &file);
+		ASTCPrivate(ASTC *q, const IRpFilePtr &file);
 		~ASTCPrivate() final = default;
 
 	private:
@@ -80,7 +80,7 @@ const TextureInfo ASTCPrivate::textureInfo = {
 	exts, mimeTypes
 };
 
-ASTCPrivate::ASTCPrivate(ASTC *q, const shared_ptr<IRpFile> &file)
+ASTCPrivate::ASTCPrivate(ASTC *q, const IRpFilePtr &file)
 	: super(q, file, &textureInfo)
 	, img(nullptr)
 {
@@ -184,7 +184,7 @@ shared_ptr<const rp_image> ASTCPrivate::loadImage(void)
  *
  * @param file Open ROM image.
  */
-ASTC::ASTC(const shared_ptr<IRpFile> &file)
+ASTC::ASTC(const IRpFilePtr &file)
 	: super(new ASTCPrivate(this, file))
 {
 	RP_D(ASTC);

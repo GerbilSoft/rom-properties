@@ -188,9 +188,9 @@ class CreateThumbnailPrivate : public TCreateThumbnail<PIMGTYPE>
  * @param source_file	[in] Source filename or URI
  * @param s_uri		[out] Normalized URI (file:/ for a filename, etc.)
  * @param p_err		[out] RPCT error code
- * @return shared_ptr<IRpFile> on success; nullptr on error.
+ * @return IRpFilePtr on success; nullptr on error.
  */
-static shared_ptr<IRpFile> openFromFilenameOrURI(const char *source_file, string &s_uri, int *p_err)
+static IRpFilePtr openFromFilenameOrURI(const char *source_file, string &s_uri, int *p_err)
 {
 	// NOTE: Not checking these in Release builds.
 	assert(source_file != nullptr);
@@ -277,7 +277,7 @@ static shared_ptr<IRpFile> openFromFilenameOrURI(const char *source_file, string
 	if (file && file->isOpen()) {
 		// File has been opened successfully.
 		*p_err = 0;
-		return shared_ptr<IRpFile>(file);
+		return IRpFilePtr(file);
 	}
 
 	// File was not opened.
@@ -320,7 +320,7 @@ G_MODULE_EXPORT int RP_C_API rp_create_thumbnail2(const char *source_file, const
 	// Attempt to open the ROM file.
 	string s_uri;
 	int ret = -1;
-	shared_ptr<IRpFile> file = openFromFilenameOrURI(source_file, s_uri, &ret);
+	const IRpFilePtr file = openFromFilenameOrURI(source_file, s_uri, &ret);
 	if (!file || ret != 0) {
 		// Error opening the file.
 		return ret;

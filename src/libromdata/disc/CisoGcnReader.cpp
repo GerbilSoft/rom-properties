@@ -15,13 +15,12 @@
 #include "librpbase/disc/SparseDiscReader_p.hpp"
 #include "ciso_gcn.h"
 
-// librpbase, librpfile
+// Other rom-properties libraries
 using namespace LibRpBase;
-using LibRpFile::IRpFile;
+using namespace LibRpFile;
 
 // C++ STL classes
 using std::array;
-using std::shared_ptr;
 
 namespace LibRomData {
 
@@ -60,7 +59,7 @@ CisoGcnReaderPrivate::CisoGcnReaderPrivate(CisoGcnReader *q)
 
 /** CisoGcnReader **/
 
-CisoGcnReader::CisoGcnReader(const shared_ptr<IRpFile> &file)
+CisoGcnReader::CisoGcnReader(const IRpFilePtr &file)
 	: super(new CisoGcnReaderPrivate(this), file)
 {
 	if (!m_file) {

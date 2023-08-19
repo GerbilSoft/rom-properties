@@ -14,8 +14,8 @@
 
 // Other rom-properties libraries
 using namespace LibRpBase;
+using namespace LibRpFile;
 using namespace LibRpText;
-using LibRpFile::IRpFile;
 
 // CD-ROM reader
 #include "disc/Cdrom2352Reader.hpp"
@@ -24,7 +24,6 @@ using LibRpFile::IRpFile;
 #include "Other/ISO.hpp"
 
 // C++ STL classes
-using std::shared_ptr;
 using std::string;
 using std::vector;
 
@@ -33,7 +32,7 @@ namespace LibRomData {
 class SegaSaturnPrivate final : public RomDataPrivate
 {
 	public:
-		SegaSaturnPrivate(const shared_ptr<IRpFile> &file);
+		SegaSaturnPrivate(const IRpFilePtr &file);
 
 	private:
 		typedef RomDataPrivate super;
@@ -168,7 +167,7 @@ const RomDataInfo SegaSaturnPrivate::romDataInfo = {
 	"SegaSaturn", exts, mimeTypes
 };
 
-SegaSaturnPrivate::SegaSaturnPrivate(const shared_ptr<IRpFile> &file)
+SegaSaturnPrivate::SegaSaturnPrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
 	, discType(DiscType::Unknown)
 	, saturn_region(0)
@@ -349,7 +348,7 @@ void SegaSaturnPrivate::parseDiscNumber(uint8_t &disc_num, uint8_t &disc_total) 
  *
  * @param file Open ROM image.
  */
-SegaSaturn::SegaSaturn(const shared_ptr<IRpFile> &file)
+SegaSaturn::SegaSaturn(const IRpFilePtr &file)
 	: super(new SegaSaturnPrivate(file))
 {
 	// This class handles disc images.

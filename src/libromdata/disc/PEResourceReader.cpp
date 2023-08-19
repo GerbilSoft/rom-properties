@@ -17,7 +17,6 @@ using namespace LibRpFile;
 using namespace LibRpText;
 
 // C++ STL classes
-using std::shared_ptr;
 using std::string;
 using std::unique_ptr;
 using std::unordered_map;
@@ -553,7 +552,7 @@ int PEResourceReaderPrivate::load_StringTable(IRpFile *file, IResourceReader::St
  * @param rsrc_size .rsrc section size.
  * @param rsrc_va .rsrc virtual address.
  */
-PEResourceReader::PEResourceReader(const shared_ptr<IRpFile> &file, uint32_t rsrc_addr, uint32_t rsrc_size, uint32_t rsrc_va)
+PEResourceReader::PEResourceReader(const IRpFilePtr &file, uint32_t rsrc_addr, uint32_t rsrc_size, uint32_t rsrc_va)
 	: super(file)
 	, d_ptr(new PEResourceReaderPrivate(this, rsrc_addr, rsrc_size, rsrc_va))
 { }
@@ -696,7 +695,7 @@ off64_t PEResourceReader::partition_size_used(void) const
  * @param lang Language ID. (-1 for "first entry")
  * @return IRpFile*, or nullptr on error.
  */
-std::shared_ptr<LibRpFile::IRpFile> PEResourceReader::open(uint16_t type, int id, int lang)
+IRpFilePtr PEResourceReader::open(uint16_t type, int id, int lang)
 {
 	// Check if the directory has been cached.
 	RP_D(PEResourceReader);
@@ -783,7 +782,7 @@ int PEResourceReader::load_VS_VERSION_INFO(int id, int lang, VS_FIXEDFILEINFO *p
 	}
 
 	// Open the VS_VERSION_INFO resource.
-	shared_ptr<IRpFile> f_ver(this->open(RT_VERSION, id, lang));
+	const IRpFilePtr f_ver(this->open(RT_VERSION, id, lang));
 	if (!f_ver) {
 		// Not found.
 		return -ENOENT;

@@ -17,9 +17,6 @@
 #include "libwin32common/ComBase.hpp"
 #include <objidl.h>
 
-// C++ includes
-#include <memory>
-
 namespace LibRpFile {
 
 class IStreamWrapper final : public LibWin32Common::ComBase<IStream>
@@ -30,7 +27,7 @@ class IStreamWrapper final : public LibWin32Common::ComBase<IStream>
 		 * The IRpFile is dup()'d.
 		 * @param file IRpFile.
 		 */
-		explicit IStreamWrapper(const std::shared_ptr<IRpFile> &file)
+		explicit IStreamWrapper(const LibRpFile::IRpFilePtr &file)
 			: m_file(file)
 		{}
 	public:
@@ -55,7 +52,7 @@ class IStreamWrapper final : public LibWin32Common::ComBase<IStream>
 		 * Set the IRpFile.
 		 * @param file New IRpFile.
 		 */
-		void setFile(const std::shared_ptr<IRpFile> &file)
+		void setFile(const LibRpFile::IRpFilePtr &file)
 		{
 			m_file = file;
 		}
@@ -80,7 +77,7 @@ class IStreamWrapper final : public LibWin32Common::ComBase<IStream>
 		IFACEMETHODIMP Clone(IStream **ppstm) final;
 
 	protected:
-		std::shared_ptr<IRpFile> m_file;
+		LibRpFile::IRpFilePtr m_file;
 };
 
 }

@@ -17,7 +17,6 @@ using namespace LibRpFile;
 using namespace LibRpText;
 
 // C++ STL classes
-using std::shared_ptr;
 using std::string;
 using std::unique_ptr;
 using std::unordered_map;
@@ -494,7 +493,7 @@ int NEResourceReaderPrivate::load_StringTable(IRpFile *file, IResourceReader::St
  * @param rsrc_tbl_addr Resource table start address.
  * @param rsrc_tbl_size Resource table size.
  */
-NEResourceReader::NEResourceReader(const shared_ptr<IRpFile> &file, uint32_t rsrc_tbl_addr, uint32_t rsrc_tbl_size)
+NEResourceReader::NEResourceReader(const IRpFilePtr &file, uint32_t rsrc_tbl_addr, uint32_t rsrc_tbl_size)
 	: super(file)
 	, d_ptr(new NEResourceReaderPrivate(this, rsrc_tbl_addr, rsrc_tbl_size))
 { }
@@ -630,7 +629,7 @@ off64_t NEResourceReader::partition_size_used(void) const
  * @param lang Language ID. (-1 for "first entry")
  * @return IRpFile*, or nullptr on error.
  */
-std::shared_ptr<LibRpFile::IRpFile> NEResourceReader::open(uint16_t type, int id, int lang)
+IRpFilePtr NEResourceReader::open(uint16_t type, int id, int lang)
 {
 	RP_D(NEResourceReader);
 
@@ -697,7 +696,7 @@ int NEResourceReader::load_VS_VERSION_INFO(int id, int lang, VS_FIXEDFILEINFO *p
 	}
 
 	// Open the VS_VERSION_INFO resource.
-	shared_ptr<IRpFile> f_ver(this->open(RT_VERSION, id, lang));
+	const IRpFilePtr f_ver(this->open(RT_VERSION, id, lang));
 	if (!f_ver) {
 		// Not found.
 		return -ENOENT;

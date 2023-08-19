@@ -19,10 +19,10 @@
 
 #include "pvr3_structs.h"
 
-// librpbase, librpfile
+// Other rom-properties libraries
 #include "libi18n/i18n.h"
+using namespace LibRpFile;
 using LibRpBase::RomFields;
-using LibRpFile::IRpFile;
 
 // librptexture
 #include "ImageSizeCalc.hpp"
@@ -45,7 +45,7 @@ namespace LibRpTexture {
 class PowerVR3Private final : public FileFormatPrivate
 {
 	public:
-		PowerVR3Private(PowerVR3 *q, const shared_ptr<IRpFile> &file);
+		PowerVR3Private(PowerVR3 *q, const IRpFilePtr &file);
 		~PowerVR3Private() final = default;
 
 	private:
@@ -200,7 +200,7 @@ const struct PowerVR3Private::FmtLkup_t PowerVR3Private::fmtLkup_tbl_U32[] = {
 };
 #endif
 
-PowerVR3Private::PowerVR3Private(PowerVR3 *q, const shared_ptr<IRpFile> &file)
+PowerVR3Private::PowerVR3Private(PowerVR3 *q, const IRpFilePtr &file)
 	: super(q, file, &textureInfo)
 	, isByteswapNeeded(false)
 	, flipOp(rp_image::FLIP_NONE)
@@ -791,7 +791,7 @@ int PowerVR3Private::loadPvr3Metadata(void)
  *
  * @param file Open ROM image.
  */
-PowerVR3::PowerVR3(const shared_ptr<IRpFile> &file)
+PowerVR3::PowerVR3(const IRpFilePtr &file)
 	: super(new PowerVR3Private(this, file))
 {
 	RP_D(PowerVR3);

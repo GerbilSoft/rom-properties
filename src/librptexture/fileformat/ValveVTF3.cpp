@@ -12,9 +12,9 @@
 
 #include "vtf3_structs.h"
 
-// librpbase, librpfile
+// Other rom-properties libraries
+using namespace LibRpFile;
 using LibRpBase::RomFields;
-using LibRpFile::IRpFile;
 
 // librptexture
 #include "ImageSizeCalc.hpp"
@@ -29,7 +29,7 @@ namespace LibRpTexture {
 class ValveVTF3Private final : public FileFormatPrivate
 {
 	public:
-		ValveVTF3Private(ValveVTF3 *q, const shared_ptr<IRpFile> &file);
+		ValveVTF3Private(ValveVTF3 *q, const IRpFilePtr &file);
 		~ValveVTF3Private() final = default;
 
 	private:
@@ -96,7 +96,7 @@ const TextureInfo ValveVTF3Private::textureInfo = {
 	exts, mimeTypes
 };
 
-ValveVTF3Private::ValveVTF3Private(ValveVTF3 *q, const shared_ptr<IRpFile> &file)
+ValveVTF3Private::ValveVTF3Private(ValveVTF3 *q, const IRpFilePtr &file)
 	: super(q, file, &textureInfo)
 	, img(nullptr)
 {
@@ -212,7 +212,7 @@ shared_ptr<const rp_image> ValveVTF3Private::loadImage(void)
  *
  * @param file Open ROM image.
  */
-ValveVTF3::ValveVTF3(const shared_ptr<IRpFile> &file)
+ValveVTF3::ValveVTF3(const IRpFilePtr &file)
 	: super(new ValveVTF3Private(this, file))
 {
 	RP_D(ValveVTF3);

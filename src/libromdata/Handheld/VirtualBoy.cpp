@@ -14,11 +14,10 @@
 
 // Other rom-properties libraries
 using namespace LibRpBase;
+using namespace LibRpFile;
 using namespace LibRpText;
-using LibRpFile::IRpFile;
 
 // C++ STL classes
-using std::shared_ptr;
 using std::string;
 
 namespace LibRomData {
@@ -26,7 +25,7 @@ namespace LibRomData {
 class VirtualBoyPrivate final : public RomDataPrivate
 {
 	public:
-		VirtualBoyPrivate(const shared_ptr<IRpFile> &file);
+		VirtualBoyPrivate(const IRpFilePtr &file);
 
 	private:
 		typedef RomDataPrivate super;
@@ -88,7 +87,7 @@ const RomDataInfo VirtualBoyPrivate::romDataInfo = {
 	"VirtualBoy", exts, mimeTypes
 };
 
-VirtualBoyPrivate::VirtualBoyPrivate(const shared_ptr<IRpFile> &file)
+VirtualBoyPrivate::VirtualBoyPrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
 {
 	// Clear the ROM footer struct.
@@ -145,7 +144,7 @@ bool inline VirtualBoyPrivate::isGameID(char c){
  *
  * @param file Open ROM file.
  */
-VirtualBoy::VirtualBoy(const shared_ptr<IRpFile> &file)
+VirtualBoy::VirtualBoy(const IRpFilePtr &file)
 	: super(new VirtualBoyPrivate(file))
 {
 	RP_D(VirtualBoy);

@@ -12,10 +12,10 @@
 
 #include "xbox_xpr_structs.h"
 
-// librpbase, librpfile
+// Other rom-properties libraries
 #include "libi18n/i18n.h"
+using namespace LibRpFile;
 using LibRpBase::RomFields;
-using LibRpFile::IRpFile;
 using LibRpText::rp_sprintf;
 
 // librptexture
@@ -31,7 +31,7 @@ namespace LibRpTexture {
 class XboxXPRPrivate final : public FileFormatPrivate
 {
 	public:
-		XboxXPRPrivate(XboxXPR *q, const shared_ptr<IRpFile> &file);
+		XboxXPRPrivate(XboxXPR *q, const IRpFilePtr &file);
 		~XboxXPRPrivate() final = default;
 
 	private:
@@ -175,7 +175,7 @@ const TextureInfo XboxXPRPrivate::textureInfo = {
 	exts, mimeTypes
 };
 
-XboxXPRPrivate::XboxXPRPrivate(XboxXPR *q, const shared_ptr<IRpFile> &file)
+XboxXPRPrivate::XboxXPRPrivate(XboxXPR *q, const IRpFilePtr &file)
 	: super(q, file, &textureInfo)
 	, xprType(XPRType::Unknown)
 	, img(nullptr)
@@ -561,7 +561,7 @@ shared_ptr<const rp_image> XboxXPRPrivate::loadXboxXPR0Image(void)
  *
  * @param file Open ROM image.
  */
-XboxXPR::XboxXPR(const shared_ptr<IRpFile> &file)
+XboxXPR::XboxXPR(const IRpFilePtr &file)
 	: super(new XboxXPRPrivate(this, file))
 {
 	RP_D(XboxXPR);

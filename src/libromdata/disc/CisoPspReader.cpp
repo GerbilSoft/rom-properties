@@ -39,12 +39,9 @@
 #  endif
 #endif /* HAVE_LZO */
 
-// librpbase, librpfile
+// Other rom-properties libraries
 using namespace LibRpBase;
-using LibRpFile::IRpFile;
-
-// C++ STL classes
-using std::shared_ptr;
+using namespace LibRpFile;
 
 namespace LibRomData {
 
@@ -194,7 +191,7 @@ uint32_t CisoPspReaderPrivate::getBlockCompressedSize(uint32_t blockNum) const
 
 /** CisoPspReader **/
 
-CisoPspReader::CisoPspReader(const shared_ptr<IRpFile> &file)
+CisoPspReader::CisoPspReader(const IRpFilePtr &file)
 	: super(new CisoPspReaderPrivate(this), file)
 {
 	if (!m_file) {

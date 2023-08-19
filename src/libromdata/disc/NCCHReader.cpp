@@ -11,19 +11,16 @@
 
 #include "NCCHReader.hpp"
 
-// librpbase, librpfile
+// Other rom-properties libraries
 #ifdef ENABLE_DECRYPTION
 #  include "librpbase/crypto/AesCipherFactory.hpp"
 #  include "librpbase/crypto/IAesCipher.hpp"
 #endif /* ENABLE_DECRYPTION */
 using namespace LibRpBase;
-using LibRpFile::IRpFile;
+using namespace LibRpFile;
 
 #include "disc/CIAReader.hpp"
 #include "disc/PartitionFile.hpp"
-
-// C++ STL classes
-using std::shared_ptr;
 
 #include "NCCHReader_p.hpp"
 namespace LibRomData {
@@ -509,7 +506,7 @@ int NCCHReaderPrivate::loadExHeader(void)
  * @param ncch_offset		[in] NCCH start offset, in bytes.
  * @param ncch_length		[in] NCCH length, in bytes.
  */
-NCCHReader::NCCHReader(const shared_ptr<IRpFile> &file, uint8_t media_unit_shift,
+NCCHReader::NCCHReader(const IRpFilePtr &file, uint8_t media_unit_shift,
 		off64_t ncch_offset, uint32_t ncch_length)
 	: super(file)
 	, d_ptr(new NCCHReaderPrivate(this, media_unit_shift, ncch_offset, ncch_length))
@@ -1000,7 +997,7 @@ const char *NCCHReader::contentType(void) const
  * @param filename Filename. (ASCII)
  * @return IRpFile*, or nullptr on error.
  */
-shared_ptr<IRpFile> NCCHReader::open(int section, const char *filename)
+IRpFilePtr NCCHReader::open(int section, const char *filename)
 {
 	RP_D(const NCCHReader);
 	assert(isOpen());
@@ -1070,7 +1067,7 @@ shared_ptr<IRpFile> NCCHReader::open(int section, const char *filename)
  *
  * @return IRpFile*, or nullptr on error.
  */
-shared_ptr<IRpFile> NCCHReader::openLogo(void)
+IRpFilePtr NCCHReader::openLogo(void)
 {
 	RP_D(const NCCHReader);
 	assert(isOpen());

@@ -41,7 +41,7 @@ namespace LibRomData {
 class DreamcastPrivate final : public RomDataPrivate
 {
 	public:
-		DreamcastPrivate(const shared_ptr<IRpFile> &file);
+		DreamcastPrivate(const IRpFilePtr &file);
 		~DreamcastPrivate() final;
 
 	private:
@@ -145,7 +145,7 @@ const RomDataInfo DreamcastPrivate::romDataInfo = {
 	"Dreamcast", exts, mimeTypes
 };
 
-DreamcastPrivate::DreamcastPrivate(const shared_ptr<IRpFile> &file)
+DreamcastPrivate::DreamcastPrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
 	, discType(DiscType::Unknown)
 	, discReader(nullptr)
@@ -223,7 +223,7 @@ shared_ptr<const rp_image> DreamcastPrivate::load0GDTEX(void)
 	}
 
 	// Find "0GDTEX.PVR".
-	shared_ptr<IRpFile> pvrFile_tmp = isoPartition->open("/0GDTEX.PVR");
+	const IRpFilePtr pvrFile_tmp = isoPartition->open("/0GDTEX.PVR");
 	if (!pvrFile_tmp) {
 		// Error opening "0GDTEX.PVR".
 		return nullptr;
@@ -324,7 +324,7 @@ void DreamcastPrivate::parseDiscNumber(uint8_t &disc_num, uint8_t &disc_total) c
  *
  * @param file Open ROM image.
  */
-Dreamcast::Dreamcast(const shared_ptr<IRpFile> &file)
+Dreamcast::Dreamcast(const IRpFilePtr &file)
 	: super(new DreamcastPrivate(file))
 {
 	// This class handles disc images.

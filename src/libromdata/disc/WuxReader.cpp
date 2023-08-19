@@ -14,12 +14,9 @@
 #include "librpbase/disc/SparseDiscReader_p.hpp"
 #include "wux_structs.h"
 
-// librpbase, librpfile
+// Other rom-properties libraries
 using namespace LibRpBase;
-using LibRpFile::IRpFile;
-
-// C++ STL classes
-using std::shared_ptr;
+using namespace LibRpFile;
 
 namespace LibRomData {
 
@@ -56,7 +53,7 @@ WuxReaderPrivate::WuxReaderPrivate(WuxReader *q)
 
 /** WuxReader **/
 
-WuxReader::WuxReader(const shared_ptr<IRpFile> &file)
+WuxReader::WuxReader(const IRpFilePtr &file)
 	: super(new WuxReaderPrivate(this), file)
 {
 	if (!m_file) {

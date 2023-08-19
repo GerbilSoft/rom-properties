@@ -13,10 +13,9 @@
 
 // librpbase, librpfile
 using namespace LibRpBase;
-using LibRpFile::IRpFile;
+using namespace LibRpFile;
 
 // C++ STL classes
-using std::shared_ptr;
 using std::string;
 
 namespace LibRomData {
@@ -24,7 +23,7 @@ namespace LibRomData {
 class LuaPrivate final : public RomDataPrivate
 {
 	public:
-		LuaPrivate(const shared_ptr<IRpFile> &file);
+		LuaPrivate(const IRpFilePtr &file);
 
 	public:
 		/** RomDataInfo **/
@@ -189,7 +188,7 @@ const RomDataInfo LuaPrivate::romDataInfo = {
 	"Lua", exts, mimeTypes
 };
 
-LuaPrivate::LuaPrivate(const shared_ptr<IRpFile> &file)
+LuaPrivate::LuaPrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
 	, luaVersion(LuaVersion::Unknown)
 {
@@ -545,7 +544,7 @@ void LuaPrivate::parse4(uint8_t version, const uint8_t *p) {
  *
  * @param file Open ROM file.
  */
-Lua::Lua(const shared_ptr<IRpFile> &file)
+Lua::Lua(const IRpFilePtr &file)
 	: super(new LuaPrivate(file))
 {
 	RP_D(Lua);

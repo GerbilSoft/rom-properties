@@ -12,8 +12,8 @@
 
 // Other rom-properties libraries
 using namespace LibRpBase;
+using namespace LibRpFile;
 using namespace LibRpText;
-using LibRpFile::IRpFile;
 
 // C++ STL classes
 using std::shared_ptr;
@@ -24,7 +24,7 @@ namespace LibRomData {
 class N64Private final : public RomDataPrivate
 {
 	public:
-		N64Private(const shared_ptr<IRpFile> &file);
+		N64Private(const IRpFilePtr &file);
 
 	private:
 		typedef RomDataPrivate super;
@@ -76,7 +76,7 @@ const RomDataInfo N64Private::romDataInfo = {
 	"N64", exts, mimeTypes
 };
 
-N64Private::N64Private(const shared_ptr<IRpFile> &file)
+N64Private::N64Private(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
 	, romType(RomType::Unknown)
 {
@@ -99,7 +99,7 @@ N64Private::N64Private(const shared_ptr<IRpFile> &file)
  *
  * @param file Open ROM image.
  */
-N64::N64(const shared_ptr<IRpFile> &file)
+N64::N64(const IRpFilePtr &file)
 	: super(new N64Private(file))
 {
 	RP_D(N64);

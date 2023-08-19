@@ -13,11 +13,10 @@
 
 // Other rom-properties libraries
 using namespace LibRpBase;
+using namespace LibRpFile;
 using namespace LibRpText;
-using LibRpFile::IRpFile;
 
 // C++ STL classes
-using std::shared_ptr;
 using std::string;
 using std::vector;
 
@@ -26,7 +25,7 @@ namespace LibRomData {
 class GameBoyAdvancePrivate final : public RomDataPrivate
 {
 	public:
-		GameBoyAdvancePrivate(const shared_ptr<IRpFile> &file);
+		GameBoyAdvancePrivate(const IRpFilePtr &file);
 
 	private:
 		typedef RomDataPrivate super;
@@ -85,7 +84,7 @@ const RomDataInfo GameBoyAdvancePrivate::romDataInfo = {
 	"GameBoyAdvance", exts, mimeTypes
 };
 
-GameBoyAdvancePrivate::GameBoyAdvancePrivate(const shared_ptr<IRpFile> &file)
+GameBoyAdvancePrivate::GameBoyAdvancePrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
 	, romType(RomType::Unknown)
 {
@@ -134,7 +133,7 @@ string GameBoyAdvancePrivate::getPublisher(void) const
  *
  * @param file Open ROM image.
  */
-GameBoyAdvance::GameBoyAdvance(const shared_ptr<IRpFile> &file)
+GameBoyAdvance::GameBoyAdvance(const IRpFilePtr &file)
 	: super(new GameBoyAdvancePrivate(file))
 {
 	RP_D(GameBoyAdvance);

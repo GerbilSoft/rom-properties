@@ -19,9 +19,8 @@
 #include "librpbase/img/RpPng.hpp"
 #include "librpfile/MemFile.hpp"
 using namespace LibRpBase;
+using namespace LibRpFile;
 using namespace LibRpText;
-using LibRpFile::IRpFile;
-using LibRpFile::MemFile;
 
 // librptexture
 #include "ImageSizeCalc.hpp"
@@ -45,7 +44,7 @@ namespace LibRpTexture {
 class GodotSTEXPrivate final : public FileFormatPrivate
 {
 	public:
-		GodotSTEXPrivate(GodotSTEX *q, const shared_ptr<IRpFile> &file);
+		GodotSTEXPrivate(GodotSTEX *q, const IRpFilePtr &file);
 		~GodotSTEXPrivate() final = default;
 
 	private:
@@ -293,7 +292,7 @@ const ImageSizeCalc::OpCode GodotSTEXPrivate::op_tbl_v4[] = {
 	OpCode::Align8Divide4,	// STEX4_FORMAT_ASTC_8x8_HDR	// 8x8 == 2bpp
 };
 
-GodotSTEXPrivate::GodotSTEXPrivate(GodotSTEX *q, const shared_ptr<IRpFile> &file)
+GodotSTEXPrivate::GodotSTEXPrivate(GodotSTEX *q, const IRpFilePtr &file)
 	: super(q, file, &textureInfo)
 	, stexVersion(0)
 	, pixelFormat(static_cast<STEX_Format_e>(~0U))
@@ -879,7 +878,7 @@ shared_ptr<const rp_image> GodotSTEXPrivate::loadImage(int mip)
  *
  * @param file Open ROM image.
  */
-GodotSTEX::GodotSTEX(const shared_ptr<IRpFile> &file)
+GodotSTEX::GodotSTEX(const IRpFilePtr &file)
 	: super(new GodotSTEXPrivate(this, file))
 {
 	RP_D(GodotSTEX);

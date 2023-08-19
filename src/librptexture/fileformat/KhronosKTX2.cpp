@@ -22,11 +22,11 @@
 #include "vk_defs.h"
 #include "data/VkEnumStrings.hpp"
 
-// librpbase, librpfile
+// Other rom-properties libraries
 #include "libi18n/i18n.h"
-using LibRpText::rp_sprintf;
+using namespace LibRpFile;
 using LibRpBase::RomFields;
-using LibRpFile::IRpFile;
+using LibRpText::rp_sprintf;
 
 // librptexture
 #include "ImageSizeCalc.hpp"
@@ -53,7 +53,7 @@ namespace LibRpTexture {
 class KhronosKTX2Private final : public FileFormatPrivate
 {
 	public:
-		KhronosKTX2Private(KhronosKTX2 *q, const shared_ptr<IRpFile> &file);
+		KhronosKTX2Private(KhronosKTX2 *q, const IRpFilePtr &file);
 		~KhronosKTX2Private() final = default;
 
 	private:
@@ -133,7 +133,7 @@ const TextureInfo KhronosKTX2Private::textureInfo = {
 	exts, mimeTypes
 };
 
-KhronosKTX2Private::KhronosKTX2Private(KhronosKTX2 *q, const shared_ptr<IRpFile> &file)
+KhronosKTX2Private::KhronosKTX2Private(KhronosKTX2 *q, const IRpFilePtr &file)
 	: super(q, file, &textureInfo)
 	, flipOp(rp_image::FLIP_V)
 {
@@ -788,7 +788,7 @@ void KhronosKTX2Private::loadKeyValueData(void)
  *
  * @param file Open ROM image.
  */
-KhronosKTX2::KhronosKTX2(const shared_ptr<IRpFile> &file)
+KhronosKTX2::KhronosKTX2(const IRpFilePtr &file)
 	: super(new KhronosKTX2Private(this, file))
 {
 	RP_D(KhronosKTX2);

@@ -11,13 +11,9 @@
 
 // librpfile, librpbase, libromdata
 #include "libromdata/RomDataFactory.hpp"
-using LibRpFile::IRpFile;
-using LibRpFile::RpFile;
+using namespace LibRpFile;
 using LibRpBase::RomData;
 using LibRomData::RomDataFactory;
-
-// C++ STL classes
-using std::shared_ptr;
 
 /**
  * Attempt to open a RomData object from the specified GVfs URI.
@@ -51,5 +47,5 @@ LibRpBase::RomData *rp_gtk_open_uri(const gchar *uri)
 	}
 
 	// Create the RomData object.
-	return RomDataFactory::create(shared_ptr<IRpFile>(file));
+	return RomDataFactory::create(IRpFilePtr(file));
 }

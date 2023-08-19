@@ -14,16 +14,15 @@
 #include "ExtractorPlugin.hpp"
 #include "check-uid.hpp"
 
-// librpbase, librpfile
+// Other rom-properties libraries
 using namespace LibRpBase;
-using LibRpFile::IRpFile;
+using namespace LibRpFile;
 
 // libromdata
 #include "libromdata/RomDataFactory.hpp"
 using LibRomData::RomDataFactory;
 
 // C++ STL classes
-using std::shared_ptr;
 using std::string;
 using std::vector;
 
@@ -192,7 +191,7 @@ void ExtractorPlugin::extract(ExtractionResult *result)
 	}
 
 	// Attempt to open the ROM file.
-	shared_ptr<IRpFile> file(openQUrl(QUrl(result->inputUrl()), false));
+	const IRpFilePtr file(openQUrl(QUrl(result->inputUrl()), false));
 	if (!file) {
 		// Could not open the file.
 		return;

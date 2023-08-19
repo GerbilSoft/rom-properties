@@ -13,8 +13,8 @@
 #include "librpfile/IRpFile.hpp"
 
 // librpfile, librptexture
-using LibRpFile::IRpFile;
-using LibRpTexture::rp_image;
+using namespace LibRpFile;
+using namespace LibRpTexture;
 
 // Image loaders
 #include "RpPng.hpp"
@@ -48,7 +48,7 @@ static const uint8_t exif_magic[4] = {'E','x','i','f'};
  * @param file IRpFile to load from.
  * @return rp_image*, or nullptr on error.
  */
-shared_ptr<rp_image> load(const shared_ptr<IRpFile> &file)
+shared_ptr<rp_image> load(const IRpFilePtr &file)
 {
 	file->rewind();
 

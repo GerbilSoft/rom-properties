@@ -16,9 +16,9 @@
 // Other rom-properties libraries
 #include "librptexture/decoder/ImageDecoder_N3DS.hpp"
 using namespace LibRpBase;
+using namespace LibRpFile;
 using namespace LibRpText;
 using namespace LibRpTexture;
-using LibRpFile::IRpFile;
 
 // C++ STL classes
 using std::array;
@@ -34,7 +34,7 @@ namespace LibRomData {
 class Nintendo3DS_SMDH_Private final : public RomDataPrivate
 {
 	public:
-		Nintendo3DS_SMDH_Private(const shared_ptr<IRpFile> &file);
+		Nintendo3DS_SMDH_Private(const IRpFilePtr &file);
 		~Nintendo3DS_SMDH_Private() final = default;
 
 	private:
@@ -104,7 +104,7 @@ const RomDataInfo Nintendo3DS_SMDH_Private::romDataInfo = {
 	"Nintendo3DS", exts, mimeTypes
 };
 
-Nintendo3DS_SMDH_Private::Nintendo3DS_SMDH_Private(const shared_ptr<IRpFile> &file)
+Nintendo3DS_SMDH_Private::Nintendo3DS_SMDH_Private(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
 {
 	// Clear the SMDH headers.
@@ -239,7 +239,7 @@ inline uint32_t Nintendo3DS_SMDH_Private::getDefaultLC(void) const
  *
  * @param file Open SMDH file and/or section..
  */
-Nintendo3DS_SMDH::Nintendo3DS_SMDH(const shared_ptr<IRpFile> &file)
+Nintendo3DS_SMDH::Nintendo3DS_SMDH(const IRpFilePtr &file)
 	: super(new Nintendo3DS_SMDH_Private(file))
 {
 	// This class handles SMDH files and/or sections only.

@@ -13,11 +13,10 @@
 
 // Other rom-properties libraries
 using namespace LibRpBase;
+using namespace LibRpFile;
 using namespace LibRpText;
-using LibRpFile::IRpFile;
 
 // C++ STL classes
-using std::shared_ptr;
 using std::string;
 using std::vector;
 
@@ -30,7 +29,7 @@ namespace LibRomData {
 class MachOPrivate final : public RomDataPrivate
 {
 	public:
-		MachOPrivate(const shared_ptr<IRpFile> &file);
+		MachOPrivate(const IRpFilePtr &file);
 
 	private:
 		typedef RomDataPrivate super;
@@ -130,7 +129,7 @@ const RomDataInfo MachOPrivate::romDataInfo = {
 	"MachO", exts, mimeTypes
 };
 
-MachOPrivate::MachOPrivate(const shared_ptr<IRpFile> &file)
+MachOPrivate::MachOPrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
 	, execFormat(Exec_Format::Unknown)
 { }
@@ -175,7 +174,7 @@ MachOPrivate::Mach_Format MachOPrivate::checkMachMagicNumber(uint32_t magic)
  *
  * @param file Open ROM image.
  */
-MachO::MachO(const shared_ptr<IRpFile> &file)
+MachO::MachO(const IRpFilePtr &file)
 	: super(new MachOPrivate(file))
 {
 	// This class handles different types of files.

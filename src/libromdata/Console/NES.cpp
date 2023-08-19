@@ -16,11 +16,10 @@
 // Other rom-properties libraries
 #include "librpbase/SystemRegion.hpp"
 using namespace LibRpBase;
+using namespace LibRpFile;
 using namespace LibRpText;
-using LibRpFile::IRpFile;
 
 // C++ STL classes
-using std::shared_ptr;
 using std::string;
 
 namespace LibRomData {
@@ -28,7 +27,7 @@ namespace LibRomData {
 class NESPrivate final : public RomDataPrivate
 {
 	public:
-		NESPrivate(const shared_ptr<IRpFile> &file);
+		NESPrivate(const IRpFilePtr &file);
 
 	private:
 		typedef RomDataPrivate super;
@@ -191,7 +190,7 @@ const uint8_t NESPrivate::footer_chr_rom_size_shift_lkup[] = {
 	19,	// 5 (512 KB)
 };
 
-NESPrivate::NESPrivate(const shared_ptr<IRpFile> &file)
+NESPrivate::NESPrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
 	, romType(ROM_UNKNOWN)
 	, hasCheckedIntFooter(false)
@@ -620,7 +619,7 @@ int NESPrivate::loadInternalFooter(void)
  *
  * @param file Open ROM file.
  */
-NES::NES(const shared_ptr<IRpFile> &file)
+NES::NES(const IRpFilePtr &file)
 	: super(new NESPrivate(file))
 {
 	RP_D(NES);

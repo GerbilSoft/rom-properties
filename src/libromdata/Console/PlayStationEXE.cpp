@@ -12,11 +12,10 @@
 
 // Other rom-properties libraries
 using namespace LibRpBase;
+using namespace LibRpFile;
 using namespace LibRpText;
-using LibRpFile::IRpFile;
 
 // C++ STL classes
-using std::shared_ptr;
 using std::string;
 
 namespace LibRomData {
@@ -24,7 +23,7 @@ namespace LibRomData {
 class PlayStationEXEPrivate final : public RomDataPrivate
 {
 	public:
-		PlayStationEXEPrivate(const shared_ptr<IRpFile> &file, uint32_t sp_override);
+		PlayStationEXEPrivate(const IRpFilePtr &file, uint32_t sp_override);
 
 	private:
 		typedef RomDataPrivate super;
@@ -66,7 +65,7 @@ const RomDataInfo PlayStationEXEPrivate::romDataInfo = {
 	"PlayStationEXE", exts, mimeTypes
 };
 
-PlayStationEXEPrivate::PlayStationEXEPrivate(const shared_ptr<IRpFile> &file, uint32_t sp_override)
+PlayStationEXEPrivate::PlayStationEXEPrivate(const IRpFilePtr &file, uint32_t sp_override)
 	: super(file, &romDataInfo)
 	, sp_override(sp_override)
 {
@@ -89,7 +88,7 @@ PlayStationEXEPrivate::PlayStationEXEPrivate(const shared_ptr<IRpFile> &file, ui
  *
  * @param file Open PS-X executable file.
  */
-PlayStationEXE::PlayStationEXE(const shared_ptr<IRpFile> &file)
+PlayStationEXE::PlayStationEXE(const IRpFilePtr &file)
 	: super(new PlayStationEXEPrivate(file, 0))
 {
 	// This class handles executables.
@@ -119,7 +118,7 @@ PlayStationEXE::PlayStationEXE(const shared_ptr<IRpFile> &file)
  * @param file Open PS-X executable file.
  * @param sp_override Stack pointer override.
  */
-PlayStationEXE::PlayStationEXE(const shared_ptr<IRpFile> &file, uint32_t sp_override)
+PlayStationEXE::PlayStationEXE(const IRpFilePtr &file, uint32_t sp_override)
 	: super(new PlayStationEXEPrivate(file, sp_override))
 {
 	// This class handles executables.

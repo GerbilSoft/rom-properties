@@ -135,7 +135,7 @@ class XDVDFSPartition final : public LibRpBase::IPartition
 		 * @param filename Filename.
 		 * @return IRpFile*, or nullptr on error.
 		 */
-		std::shared_ptr<LibRpFile::IRpFile> open(const char *filename);
+		LibRpFile::IRpFilePtr open(const char *filename);
 
 	public:
 		/** XDVDFSPartition **/

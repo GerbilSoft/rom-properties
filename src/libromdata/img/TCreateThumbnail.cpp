@@ -509,7 +509,7 @@ skip_image_check:
  * @return 0 on success; non-zero on error.
  */
 template<typename ImgClass>
-int TCreateThumbnail<ImgClass>::getThumbnail(const std::shared_ptr<LibRpFile::IRpFile> &file, int reqSize, GetThumbnailOutParams_t *pOutParams)
+int TCreateThumbnail<ImgClass>::getThumbnail(const IRpFilePtr &file, int reqSize, GetThumbnailOutParams_t *pOutParams)
 {
 	assert(file != nullptr);
 	assert(reqSize > 0);

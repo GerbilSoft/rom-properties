@@ -87,7 +87,7 @@ const RomDataInfo Nintendo3DSPrivate::romDataInfo = {
 	"Nintendo3DS", exts, mimeTypes
 };
 
-Nintendo3DSPrivate::Nintendo3DSPrivate(const shared_ptr<IRpFile> &file)
+Nintendo3DSPrivate::Nintendo3DSPrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
 	, romType(RomType::Unknown)
 	, headers_loaded(0)
@@ -120,7 +120,7 @@ int Nintendo3DSPrivate::loadSMDH(void)
 	static const size_t N3DS_SMDH_Section_Size =
 		sizeof(N3DS_SMDH_Header_t) + sizeof(N3DS_SMDH_Icon_t);
 
-	shared_ptr<IRpFile> smdhFile;
+	IRpFilePtr smdhFile;
 	switch (romType) {
 		default:
 			// Unsupported...
@@ -192,7 +192,7 @@ int Nintendo3DSPrivate::loadSMDH(void)
 				return -6;
 			}
 
-			shared_ptr<IRpFile> ncch_f_icon(ncch_reader->open(N3DS_NCCH_SECTION_EXEFS, "icon"));
+			const IRpFilePtr ncch_f_icon(ncch_reader->open(N3DS_NCCH_SECTION_EXEFS, "icon"));
 			if (!ncch_f_icon) {
 				// Failed to open "icon".
 				return -7;
@@ -750,7 +750,7 @@ void Nintendo3DSPrivate::addTitleIdAndProductCodeFields(bool showContentType)
 	// NOTE: All known official logo binaries are 8 KB.
 	// The original and new "Homebrew" logos are also 8 KB.
 	uint32_t crc = 0;
-	shared_ptr<IRpFile> f_logo(ncch->openLogo());
+	const IRpFilePtr f_logo(ncch->openLogo());
 	if (f_logo) {
 		const off64_t szFile = f_logo->size();
 		if (szFile == 8192) {
@@ -1215,7 +1215,7 @@ int Nintendo3DSPrivate::addFields_permissions(void)
  *
  * @param file Open disc image.
  */
-Nintendo3DS::Nintendo3DS(const shared_ptr<IRpFile> &file)
+Nintendo3DS::Nintendo3DS(const IRpFilePtr &file)
 	: super(new Nintendo3DSPrivate(file))
 {
 	// This class handles several different types of files,

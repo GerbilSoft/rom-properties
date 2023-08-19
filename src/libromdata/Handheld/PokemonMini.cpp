@@ -12,11 +12,10 @@
 
 // Other rom-properties libraries
 using namespace LibRpBase;
+using namespace LibRpFile;
 using namespace LibRpText;
-using LibRpFile::IRpFile;
 
 // C++ STL classes
-using std::shared_ptr;
 using std::string;
 using std::vector;
 
@@ -25,7 +24,7 @@ namespace LibRomData {
 class PokemonMiniPrivate final : public RomDataPrivate
 {
 	public:
-		PokemonMiniPrivate(const shared_ptr<IRpFile> &file);
+		PokemonMiniPrivate(const IRpFilePtr &file);
 
 	private:
 		typedef RomDataPrivate super;
@@ -63,7 +62,7 @@ const RomDataInfo PokemonMiniPrivate::romDataInfo = {
 	"PokemonMini", exts, mimeTypes
 };
 
-PokemonMiniPrivate::PokemonMiniPrivate(const shared_ptr<IRpFile> &file)
+PokemonMiniPrivate::PokemonMiniPrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
 {
 	// Clear the ROM header struct.
@@ -85,7 +84,7 @@ PokemonMiniPrivate::PokemonMiniPrivate(const shared_ptr<IRpFile> &file)
  *
  * @param file Open ROM image.
  */
-PokemonMini::PokemonMini(const shared_ptr<IRpFile> &file)
+PokemonMini::PokemonMini(const IRpFilePtr &file)
 	: super(new PokemonMiniPrivate(file))
 {
 	RP_D(PokemonMini);

@@ -23,11 +23,11 @@ using namespace tinyxml2;
 #  include "librptext/conversion.hpp"
 #endif /* ENABLE_XML */
 
-// librpbase, librpfile
+// Other rom-properties libraries
 #include "librpbase/timeconv.h"
-using namespace LibRpText;
 using namespace LibRpBase;
-using LibRpFile::IRpFile;
+using namespace LibRpFile;
+using namespace LibRpText;
 
 // C includes
 #include <uchar.h>
@@ -36,7 +36,6 @@ using LibRpFile::IRpFile;
 #include <ctime>
 
 // C++ STL classes
-using std::shared_ptr;
 using std::string;
 using std::vector;
 
@@ -45,7 +44,7 @@ namespace LibRomData {
 class WimPrivate final : public RomDataPrivate
 {
 	public:
-		WimPrivate(const shared_ptr<IRpFile> &file);  
+		WimPrivate(const IRpFilePtr &file);  
 	private:
 		typedef RomDataPrivate super;
 		RP_DISABLE_COPY(WimPrivate)
@@ -432,7 +431,7 @@ int WimPrivate::addFields_XML()
 }
 #endif /* ENABLE_XML */
 
-WimPrivate::WimPrivate(const shared_ptr<IRpFile> &file)
+WimPrivate::WimPrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
 { 
 	// Clear the WIM header struct.
@@ -452,7 +451,7 @@ WimPrivate::WimPrivate(const shared_ptr<IRpFile> &file)
  *
  * @param file Open WIM image.
  */
-Wim::Wim(const shared_ptr<IRpFile> &file)
+Wim::Wim(const IRpFilePtr &file)
 	: super(new WimPrivate(file))
 {
 	RP_D(Wim);

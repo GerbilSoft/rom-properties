@@ -17,8 +17,8 @@
 #include <cstddef>	// for size_t
 
 // C++ includes
+#include <memory>
 #include <string>
-#include <type_traits>
 
 // Common macros
 #include "common.h"
@@ -275,5 +275,7 @@ class RP_LIBROMDATA_PUBLIC IRpFile
 		bool m_isCompressed;	// Is this file compressed?
 		uint8_t m_fileType;	// File type (see d_type.h)
 };
+
+typedef std::shared_ptr<IRpFile> IRpFilePtr;
 
 }

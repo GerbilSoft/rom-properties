@@ -12,10 +12,7 @@
 #include "SparseDiscReader_p.hpp"
 
 // librpfile
-using LibRpFile::IRpFile;
-
-// C++ STL classes
-using std::shared_ptr;
+using namespace LibRpFile;
 
 namespace LibRpBase {
 
@@ -35,7 +32,7 @@ SparseDiscReaderPrivate::SparseDiscReaderPrivate(SparseDiscReader *q)
 
 /** SparseDiscReader **/
 
-SparseDiscReader::SparseDiscReader(SparseDiscReaderPrivate *d, const shared_ptr<IRpFile> &file)
+SparseDiscReader::SparseDiscReader(SparseDiscReaderPrivate *d, const IRpFilePtr &file)
 	: super(file)
 	, d_ptr(d)
 { }

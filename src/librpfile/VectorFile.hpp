@@ -10,7 +10,7 @@
 
 #include "librpfile/IRpFile.hpp"
 
-// C++ includes.
+// C++ includes
 #include <vector>
 
 namespace LibRpFile {

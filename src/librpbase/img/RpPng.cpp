@@ -11,17 +11,12 @@
 
 #include "RpPng.hpp"
 
-// librpcpu
+// librpcpu, librpfile, librptexture
 #include "librpcpu/byteorder.h"
-
-// librpfile
 #include "librpfile/IRpFile.hpp"
-using LibRpFile::IRpFile;
-
-// librptexture
-#include "img/rp_image.hpp"
-using LibRpTexture::rp_image;
-using LibRpTexture::argb32_t;
+#include "librptexture/img/rp_image.hpp"
+using namespace LibRpFile;
+using namespace LibRpTexture;
 
 // PNG writer
 #include "RpPngWriter.hpp"
@@ -478,7 +473,7 @@ static shared_ptr<rp_image> loadPng(png_structp png_ptr, png_infop info_ptr)
  * @param file IRpFile to load from
  * @return rp_image*, or nullptr on error
  */
-shared_ptr<rp_image> load(const shared_ptr<IRpFile> &file)
+shared_ptr<rp_image> load(const IRpFilePtr &file)
 {
 	if (!file)
 		return nullptr;
@@ -540,7 +535,7 @@ shared_ptr<rp_image> load(const shared_ptr<IRpFile> &file)
  * @param img rp_image to save
  * @return 0 on success; negative POSIX error code on error
  */
-int save(const shared_ptr<IRpFile> &file, const shared_ptr<const rp_image> &img)
+int save(const IRpFilePtr &file, const shared_ptr<const rp_image> &img)
 {
 	assert((bool)file);
 	assert(img != nullptr);
@@ -640,7 +635,7 @@ int save(const wchar_t *filename, const shared_ptr<const rp_image> &img)
  * @param iconAnimData Animated image data to save
  * @return 0 on success; negative POSIX error code on error
  */
-int save(const shared_ptr<IRpFile> &file, const IconAnimData *iconAnimData)
+int save(const IRpFilePtr &file, const IconAnimData *iconAnimData)
 {
 	assert((bool)file);
 	assert(iconAnimData != nullptr);

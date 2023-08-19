@@ -12,12 +12,11 @@
 
 // Other rom-properties libraries
 using namespace LibRpBase;
+using namespace LibRpFile;
 using namespace LibRpText;
-using LibRpFile::IRpFile;
 
 // C++ STL classes
 using std::ostringstream;
-using std::shared_ptr;
 using std::string;
 
 namespace LibRomData {
@@ -25,7 +24,7 @@ namespace LibRomData {
 class BRSTMPrivate final : public RomDataPrivate
 {
 	public:
-		BRSTMPrivate(const shared_ptr<IRpFile> &file);
+		BRSTMPrivate(const IRpFilePtr &file);
 
 	private:
 		typedef RomDataPrivate super;
@@ -88,7 +87,7 @@ const RomDataInfo BRSTMPrivate::romDataInfo = {
 	"BRSTM", exts, mimeTypes
 };
 
-BRSTMPrivate::BRSTMPrivate(const shared_ptr<IRpFile> &file)
+BRSTMPrivate::BRSTMPrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
 	, needsByteswap(false)
 {
@@ -112,7 +111,7 @@ BRSTMPrivate::BRSTMPrivate(const shared_ptr<IRpFile> &file)
  *
  * @param file Open ROM image.
  */
-BRSTM::BRSTM(const shared_ptr<IRpFile> &file)
+BRSTM::BRSTM(const IRpFilePtr &file)
 	: super(new BRSTMPrivate(file))
 {
 	RP_D(BRSTM);

@@ -21,10 +21,9 @@
 #include "librpbase/disc/CBCReader.hpp"
 #include "librpfile/MemFile.hpp"
 using namespace LibRpBase;
+using namespace LibRpFile;
 using namespace LibRpText;
-using LibRpFile::IRpFile;
-using LibRpFile::MemFile;
-using LibRpTexture::rp_image;
+using namespace LibRpTexture;
 
 #ifdef ENABLE_DECRYPTION
 #  include "librpbase/crypto/IAesCipher.hpp"
@@ -54,7 +53,7 @@ namespace LibRomData {
 class Xbox360_XEX_Private final : public RomDataPrivate
 {
 	public:
-		Xbox360_XEX_Private(const shared_ptr<IRpFile> &file);
+		Xbox360_XEX_Private(const IRpFilePtr &file);
 		~Xbox360_XEX_Private() final;
 
 	private:
@@ -290,7 +289,7 @@ const uint8_t Xbox360_XEXPrivate::EncryptionKeyVerifyData[Xbox360_XEX::Key_Max][
 };
 #endif /* ENABLE_DECRYPTION */
 
-Xbox360_XEX_Private::Xbox360_XEX_Private(const shared_ptr<IRpFile> &file)
+Xbox360_XEX_Private::Xbox360_XEX_Private(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
 	, xexType(XexType::Unknown)
 	, isExecutionIDLoaded(false)
@@ -1219,7 +1218,7 @@ const EXE *Xbox360_XEX_Private::initEXE(void)
 
 	// Attempt to open the EXE section.
 	// Assuming a maximum of 8 KB for the PE headers.
-	shared_ptr<IRpFile> peFile_tmp;
+	IRpFilePtr peFile_tmp;
 #ifdef ENABLE_LIBMSPACK
 	if (!lzx_peHeader.empty()) {
 		peFile_tmp = std::make_shared<MemFile>(lzx_peHeader.data(), lzx_peHeader.size());
@@ -1258,7 +1257,7 @@ const Xbox360_XDBF *Xbox360_XEX_Private::initXDBF(void)
 	}
 
 	// Attempt to open the XDBF section.
-	shared_ptr<IRpFile> peFile_tmp;
+	IRpFilePtr peFile_tmp;
 #ifdef ENABLE_LIBMSPACK
 	if (!lzx_xdbfSection.empty()) {
 		peFile_tmp = std::make_shared<MemFile>(lzx_xdbfSection.data(), lzx_xdbfSection.size());
@@ -1360,7 +1359,7 @@ string Xbox360_XEX_Private::getPublisher(void) const
  *
  * @param file Open XEX file.
  */
-Xbox360_XEX::Xbox360_XEX(const shared_ptr<IRpFile> &file)
+Xbox360_XEX::Xbox360_XEX(const IRpFilePtr &file)
 	: super(new Xbox360_XEX_Private(file))
 {
 	// This class handles executables.

@@ -21,14 +21,13 @@
 
 // librpbase, librpfile
 using LibRpBase::RomData;
-using LibRpFile::IRpFile;
+using namespace LibRpFile;
 
 // libromdata
 #include "libromdata/RomDataFactory.hpp"
 using LibRomData::RomDataFactory;
 
 // C++ STL classes
-using std::shared_ptr;
 using std::string;
 
 /**
@@ -40,7 +39,7 @@ using std::string;
 RomDataView *RomPropertiesDialogPlugin::createRomDataView(const KFileItem &fileItem, KPropertiesDialog *props)
 {
 	// Attempt to open the ROM file.
-	shared_ptr<IRpFile> file(openQUrl(fileItem.url(), false));
+	const IRpFilePtr file(openQUrl(fileItem.url(), false));
 	if (!file) {
 		// Unable to open the file.
 		return nullptr;

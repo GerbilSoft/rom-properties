@@ -16,9 +16,9 @@
 // Other rom-properties libraries
 #include "librptexture/decoder/ImageDecoder_GCN.hpp"
 using namespace LibRpBase;
+using namespace LibRpFile;
 using namespace LibRpText;
 using namespace LibRpTexture;
-using LibRpFile::IRpFile;
 
 // C++ STL classes
 using std::shared_ptr;
@@ -34,7 +34,7 @@ namespace LibRomData {
 class GameCubeBNRPrivate final : public RomDataPrivate
 {
 	public:
-		GameCubeBNRPrivate(const shared_ptr<IRpFile> &file, uint32_t gcnRegion = ~0U);
+		GameCubeBNRPrivate(const IRpFilePtr &file, uint32_t gcnRegion = ~0U);
 		~GameCubeBNRPrivate() final = default;
 
 	private:
@@ -147,7 +147,7 @@ const RomDataInfo GameCubeBNRPrivate::romDataInfo = {
 	"GameCube", exts, mimeTypes
 };
 
-GameCubeBNRPrivate::GameCubeBNRPrivate(const shared_ptr<IRpFile> &file, uint32_t gcnRegion)
+GameCubeBNRPrivate::GameCubeBNRPrivate(const IRpFilePtr &file, uint32_t gcnRegion)
 	: super(file, &romDataInfo)
 	, bannerType(BannerType::Unknown)
 	, gcnRegion(gcnRegion)
@@ -378,7 +378,7 @@ string GameCubeBNRPrivate::getGameInfoString(const gcn_banner_comment_t *comment
  *
  * @param file Open banner file
  */
-GameCubeBNR::GameCubeBNR(const shared_ptr<IRpFile> &file)
+GameCubeBNR::GameCubeBNR(const IRpFilePtr &file)
 	: super(new GameCubeBNRPrivate(file))
 {
 	init();
@@ -397,7 +397,7 @@ GameCubeBNR::GameCubeBNR(const shared_ptr<IRpFile> &file)
  *
  * @param file Open banner file
  */
-GameCubeBNR::GameCubeBNR(const shared_ptr<IRpFile> &file, uint32_t gcnRegion)
+GameCubeBNR::GameCubeBNR(const IRpFilePtr &file, uint32_t gcnRegion)
 	: super(new GameCubeBNRPrivate(file, gcnRegion))
 {
 	init();

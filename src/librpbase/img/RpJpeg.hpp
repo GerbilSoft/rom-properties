@@ -37,7 +37,7 @@ class RpJpeg
 		 * @param file IRpFile to load from.
 		 * @return rp_image*, or nullptr on error.
 		 */
-		static std::shared_ptr<LibRpTexture::rp_image> load(const std::shared_ptr<LibRpFile::IRpFile> &file);
+		static std::shared_ptr<LibRpTexture::rp_image> load(const LibRpFile::IRpFilePtr &file);
 };
 
 }

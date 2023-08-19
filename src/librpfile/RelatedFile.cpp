@@ -14,7 +14,6 @@
 #include "RpFile.hpp"
 
 // C++ STL classes
-using std::shared_ptr;
 using std::string;
 #ifdef _WIN32
 using std::wstring;
@@ -127,11 +126,11 @@ IRpFile *openRelatedFile_rawptr(const char *filename, const char *basename, cons
  * @param filename	[in] Primary filename.
  * @param basename	[in] New basename.
  * @param ext		[in] New extension, including leading dot.
- * @return shared_ptr<IRpFile>, or nullptr if not found.
+ * @return IRpFilePtr, or nullptr if not found.
  */
-shared_ptr<IRpFile> openRelatedFile(const char *filename, const char *basename, const char *ext)
+IRpFilePtr openRelatedFile(const char *filename, const char *basename, const char *ext)
 {
-	return shared_ptr<IRpFile>(openRelatedFile_rawptr(filename, basename, ext));
+	return IRpFilePtr(openRelatedFile_rawptr(filename, basename, ext));
 }
 
 #ifdef _WIN32
@@ -149,7 +148,7 @@ shared_ptr<IRpFile> openRelatedFile(const char *filename, const char *basename, 
  * @param filename	[in] Primary filename. (UTF-16)
  * @param basename	[in,opt] New basename. (UTF-16) If nullptr, uses the existing basename.
  * @param ext		[in] New extension, including leading dot. (UTF-16)
- * @return shared_ptr<IRpFile>, or nullptr if not found.
+ * @return IRpFile*, or nullptr if not found.
  */
 IRpFile *openRelatedFile_rawptr(const wchar_t *filenameW, const wchar_t *basenameW, const wchar_t *extW)
 {
@@ -240,11 +239,11 @@ IRpFile *openRelatedFile_rawptr(const wchar_t *filenameW, const wchar_t *basenam
  * @param filename	[in] Primary filename. (UTF-16)
  * @param basename	[in,opt] New basename. (UTF-16) If nullptr, uses the existing basename.
  * @param ext		[in] New extension, including leading dot. (UTF-16)
- * @return shared_ptr<IRpFile>, or nullptr if not found.
+ * @return IRpFilePtr, or nullptr if not found.
  */
-shared_ptr<IRpFile> openRelatedFile(const wchar_t *filenameW, const wchar_t *basenameW, const wchar_t *extW)
+IRpFilePtr openRelatedFile(const wchar_t *filenameW, const wchar_t *basenameW, const wchar_t *extW)
 {
-	return shared_ptr<IRpFile>(openRelatedFile_rawptr(filenameW, basenameW, extW));
+	return IRpFilePtr(openRelatedFile_rawptr(filenameW, basenameW, extW));
 }
 #endif /* _WIN32 */
 

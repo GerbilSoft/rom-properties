@@ -14,9 +14,9 @@
 
 // Other rom-properties libraries
 using namespace LibRpBase;
+using namespace LibRpFile;
 using namespace LibRpText;
 using namespace LibRpTexture;
-using LibRpFile::IRpFile;
 
 // for memmem() if it's not available in <string.h>
 #include "librptext/libc.h"
@@ -43,7 +43,7 @@ DELAYLOAD_TEST_FUNCTION_IMPL0(get_crc_table);
 class iQuePlayerPrivate final : public RomDataPrivate
 {
 	public:
-		iQuePlayerPrivate(const shared_ptr<IRpFile> &file);
+		iQuePlayerPrivate(const IRpFilePtr &file);
 		~iQuePlayerPrivate() final = default;
 
 	private:
@@ -143,7 +143,7 @@ const RomDataInfo iQuePlayerPrivate::romDataInfo = {
 	"iQuePlayer", exts, mimeTypes
 };
 
-iQuePlayerPrivate::iQuePlayerPrivate(const shared_ptr<IRpFile> &file)
+iQuePlayerPrivate::iQuePlayerPrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
 	, iQueFileType(IQueFileType::Unknown)
 	, img_thumbnail(nullptr)
@@ -402,7 +402,7 @@ shared_ptr<const rp_image> iQuePlayerPrivate::loadTitleImage(void)
  *
  * @param file Open ROM image.
  */
-iQuePlayer::iQuePlayer(const shared_ptr<IRpFile> &file)
+iQuePlayer::iQuePlayer(const IRpFilePtr &file)
 	: super(new iQuePlayerPrivate(file))
 {
 	RP_D(iQuePlayer);

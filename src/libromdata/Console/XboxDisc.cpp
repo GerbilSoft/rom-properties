@@ -12,10 +12,9 @@
 // Other rom-properties libraries
 #include "librpfile/RpFile.hpp"
 using namespace LibRpBase;
+using namespace LibRpFile;
 using namespace LibRpText;
-using LibRpFile::IRpFile;
-using LibRpFile::RpFile;
-using LibRpTexture::rp_image;
+using namespace LibRpTexture;
 
 // XDVDFSPartition
 #include "../iso_structs.h"
@@ -37,7 +36,7 @@ namespace LibRomData {
 class XboxDiscPrivate final : public RomDataPrivate
 {
 	public:
-		XboxDiscPrivate(const shared_ptr<IRpFile> &file);
+		XboxDiscPrivate(const IRpFilePtr &file);
 		~XboxDiscPrivate() final;
 
 	private:
@@ -146,7 +145,7 @@ const RomDataInfo XboxDiscPrivate::romDataInfo = {
 	"XboxDisc", exts, mimeTypes
 };
 
-XboxDiscPrivate::XboxDiscPrivate(const shared_ptr<IRpFile> &file)
+XboxDiscPrivate::XboxDiscPrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
 	, discType(DiscType::Unknown)
 	, wave(0)
@@ -189,7 +188,7 @@ RomData *XboxDiscPrivate::openDefaultExe(ExeType *pExeType)
 	}
 
 	// Try to open default.xex.
-	shared_ptr<IRpFile> f_defaultExe(xdvdfsPartition->open("/default.xex"));
+	IRpFilePtr f_defaultExe(xdvdfsPartition->open("/default.xex"));
 	if (f_defaultExe) {
 		RomData *const xexData = new Xbox360_XEX(f_defaultExe);
 		if (xexData->isValid()) {
@@ -307,7 +306,7 @@ inline void XboxDiscPrivate::lockKreonDrive(void)
  *
  * @param file Open ROM image.
  */
-XboxDisc::XboxDisc(const shared_ptr<IRpFile> &file)
+XboxDisc::XboxDisc(const IRpFilePtr &file)
 	: super(new XboxDiscPrivate(file))
 {
 	// This class handles disc images.

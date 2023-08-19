@@ -33,7 +33,7 @@ namespace LibRomData {
 class DMGPrivate final : public RomDataPrivate
 {
 	public:
-		DMGPrivate(const shared_ptr<IRpFile> &file);
+		DMGPrivate(const IRpFilePtr &file);
 
 	private:
 		typedef RomDataPrivate super;
@@ -308,7 +308,7 @@ const DMGPrivate::dmg_cart_type DMGPrivate::dmg_cart_types_end[] = {
 	{DMG_Hardware::HUC1, DMG_FEATURE_RAM|DMG_FEATURE_BATTERY},
 };
 
-DMGPrivate::DMGPrivate(const shared_ptr<IRpFile> &file)
+DMGPrivate::DMGPrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
 	, romType(RomType::Unknown)
 	, copier_offset(0)
@@ -770,7 +770,7 @@ void DMGPrivate::addFields_romHeader(const DMG_RomHeader *pRomHeader)
  *
  * @param file Open ROM file.
  */
-DMG::DMG(const shared_ptr<IRpFile> &file)
+DMG::DMG(const IRpFilePtr &file)
 	: super(new DMGPrivate(file))
 {
 	RP_D(DMG);

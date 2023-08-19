@@ -18,14 +18,13 @@
 // Other rom-properties libraries
 #include "librpbase/Achievements.hpp"
 using namespace LibRpBase;
+using namespace LibRpFile;
 using namespace LibRpText;
-using LibRpFile::IRpFile;
 
 // Other RomData subclasses
 #include "Other/ISO.hpp"
 
 // C++ STL classes
-using std::shared_ptr;
 using std::string;
 using std::vector;
 
@@ -46,7 +45,7 @@ DELAYLOAD_TEST_FUNCTION_IMPL0(get_crc_table);
 class MegaDrivePrivate final : public RomDataPrivate
 {
 	public:
-		MegaDrivePrivate(const shared_ptr<IRpFile> &file);
+		MegaDrivePrivate(const IRpFilePtr &file);
 		~MegaDrivePrivate() final;
 
 	private:
@@ -250,7 +249,7 @@ const RomDataInfo MegaDrivePrivate::romDataInfo = {
 	"MegaDrive", exts, mimeTypes
 };
 
-MegaDrivePrivate::MegaDrivePrivate(const shared_ptr<IRpFile> &file)
+MegaDrivePrivate::MegaDrivePrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
 	, romType(ROM_UNKNOWN)
 	, md_region(0)
@@ -749,7 +748,7 @@ int MegaDrivePrivate::zlibInit(void)
  *
  * @param file Open ROM file.
  */
-MegaDrive::MegaDrive(const shared_ptr<IRpFile> &file)
+MegaDrive::MegaDrive(const IRpFilePtr &file)
 	: super(new MegaDrivePrivate(file))
 {
 	RP_D(MegaDrive);

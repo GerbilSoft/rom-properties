@@ -12,12 +12,11 @@
 
 // Other rom-properties libraries
 using namespace LibRpBase;
+using namespace LibRpFile;
 using namespace LibRpText;
-using LibRpFile::IRpFile;
 
 // C++ STL classes
 using std::array;
-using std::shared_ptr;
 using std::string;
 using std::unique_ptr;
 using std::vector;
@@ -27,7 +26,7 @@ namespace LibRomData {
 class VGMPrivate final : public RomDataPrivate
 {
 	public:
-		VGMPrivate(const shared_ptr<IRpFile> &file);
+		VGMPrivate(const IRpFilePtr &file);
 
 	private:
 		typedef RomDataPrivate super;
@@ -93,7 +92,7 @@ const RomDataInfo VGMPrivate::romDataInfo = {
 	"VGM", exts, mimeTypes
 };
 
-VGMPrivate::VGMPrivate(const shared_ptr<IRpFile> &file)
+VGMPrivate::VGMPrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
 	, s_clockrate(nullptr)
 	, s_dualchip(nullptr)
@@ -220,7 +219,7 @@ void VGMPrivate::addCommonSoundChip(unsigned int clk_full, const char *display, 
  *
  * @param file Open ROM image.
  */
-VGM::VGM(const shared_ptr<IRpFile> &file)
+VGM::VGM(const IRpFilePtr &file)
 	: super(new VGMPrivate(file))
 {
 	RP_D(VGM);

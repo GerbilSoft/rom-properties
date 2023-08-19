@@ -21,10 +21,10 @@
 #include "gl_defs.h"
 #include "data/GLenumStrings.hpp"
 
-// librpbase, librpfile
+// Other rom-properties libraries
 #include "libi18n/i18n.h"
+using namespace LibRpFile;
 using LibRpBase::RomFields;
-using LibRpFile::IRpFile;
 
 // librptexture
 #include "ImageSizeCalc.hpp"
@@ -47,7 +47,7 @@ namespace LibRpTexture {
 class KhronosKTXPrivate final : public FileFormatPrivate
 {
 	public:
-		KhronosKTXPrivate(KhronosKTX *q, const shared_ptr<IRpFile> &file);
+		KhronosKTXPrivate(KhronosKTX *q, const IRpFilePtr &file);
 		~KhronosKTXPrivate() final = default;
 
 	private:
@@ -121,7 +121,7 @@ const TextureInfo KhronosKTXPrivate::textureInfo = {
 	exts, mimeTypes
 };
 
-KhronosKTXPrivate::KhronosKTXPrivate(KhronosKTX *q, const shared_ptr<IRpFile> &file)
+KhronosKTXPrivate::KhronosKTXPrivate(KhronosKTX *q, const IRpFilePtr &file)
 	: super(q, file, &textureInfo)
 	, isByteswapNeeded(false)
 	, flipOp(rp_image::FLIP_V)
@@ -835,7 +835,7 @@ void KhronosKTXPrivate::loadKeyValueData(void)
  *
  * @param file Open ROM image.
  */
-KhronosKTX::KhronosKTX(const shared_ptr<IRpFile> &file)
+KhronosKTX::KhronosKTX(const IRpFilePtr &file)
 	: super(new KhronosKTXPrivate(this, file))
 {
 	RP_D(KhronosKTX);

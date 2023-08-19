@@ -22,11 +22,11 @@
 #include "librpbase/TextOut.hpp"
 #include "librpfile/FileSystem.hpp"
 #include "librpfile/MemFile.hpp"
+using namespace LibRpFile;
 using LibRomData::RomDataFactory;
 using LibRpBase::RomData;
 using LibRpBase::ROMOutput;
 using LibRpBase::JSONROMOutput;
-using LibRpFile::MemFile;
 
 // C includes (C++ namespace)
 #include "ctypex.h"

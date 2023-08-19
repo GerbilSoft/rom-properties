@@ -14,12 +14,9 @@
 // C++ includes
 #include <memory>
 
-namespace LibRpFile {
-	class IRpFile;
-}
-namespace LibRpTexture {
-	class rp_image;
-}
+// Other rom-properties libraries
+#include "librpfile/IRpFile.hpp"
+#include "librptexture/img/rp_image.hpp"
 
 namespace LibRpBase {
 
@@ -33,7 +30,7 @@ namespace RpPng {
  * @return rp_image*, or nullptr on error
  */
 RP_LIBROMDATA_PUBLIC
-std::shared_ptr<LibRpTexture::rp_image> load(const std::shared_ptr<LibRpFile::IRpFile> &file);
+std::shared_ptr<LibRpTexture::rp_image> load(const LibRpFile::IRpFilePtr &file);
 
 /**
  * Save an image in PNG format to an IRpFile.
@@ -46,7 +43,7 @@ std::shared_ptr<LibRpTexture::rp_image> load(const std::shared_ptr<LibRpFile::IR
  * @param img rp_image to save
  * @return 0 on success; negative POSIX error code on error
  */
-int save(const std::shared_ptr<LibRpFile::IRpFile> &file, const std::shared_ptr<const LibRpTexture::rp_image> &img);
+int save(const LibRpFile::IRpFilePtr &file, const std::shared_ptr<const LibRpTexture::rp_image> &img);
 
 /**
  * Save an image in PNG format to a file.
@@ -89,7 +86,7 @@ int save(const wchar_t *filename, const std::shared_ptr<const LibRpTexture::rp_i
  * @param iconAnimData Animated image data to save
  * @return 0 on success; negative POSIX error code on error
  */
-int save(const std::shared_ptr<LibRpFile::IRpFile> &file, const IconAnimData *iconAnimData);
+int save(const LibRpFile::IRpFilePtr &file, const IconAnimData *iconAnimData);
 
 /**
  * Save an animated image in APNG format to a file.

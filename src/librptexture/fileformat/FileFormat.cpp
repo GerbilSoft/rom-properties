@@ -12,11 +12,8 @@
 
 #include "libi18n/i18n.h"
 
-// librpfile
-using LibRpFile::IRpFile;
-
-// C++ STL classes
-using std::shared_ptr;
+// Other rom-properties libraries
+using namespace LibRpFile;
 
 namespace LibRpTexture {
 
@@ -29,7 +26,7 @@ namespace LibRpTexture {
  * @param file Texture file
  * @param pTextureInfo FileFormat subclass information
  */
-FileFormatPrivate::FileFormatPrivate(FileFormat *q, const std::shared_ptr<LibRpFile::IRpFile> &file, const TextureInfo *pTextureInfo)
+FileFormatPrivate::FileFormatPrivate(FileFormat *q, const IRpFilePtr &file, const TextureInfo *pTextureInfo)
 	: q_ptr(q)
 	, ref_cnt(1)
 	, isValid(false)

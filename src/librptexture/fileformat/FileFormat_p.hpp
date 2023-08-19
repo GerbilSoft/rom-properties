@@ -33,7 +33,7 @@ class FileFormatPrivate
 		 * @param file Texture file
 		 * @param pTextureInfo FileFormat subclass information
 		 */
-		explicit FileFormatPrivate(FileFormat *q, const std::shared_ptr<LibRpFile::IRpFile> &file, const TextureInfo *pTextureInfo);
+		explicit FileFormatPrivate(FileFormat *q, const LibRpFile::IRpFilePtr &file, const TextureInfo *pTextureInfo);
 	public:
 		virtual ~FileFormatPrivate() = default;
 
@@ -46,7 +46,7 @@ class FileFormatPrivate
 	public:
 		volatile int ref_cnt;		// Reference count.
 		bool isValid;			// Subclass must set this to true if the ROM is valid.
-		std::shared_ptr<LibRpFile::IRpFile> file;	// Open file
+		LibRpFile::IRpFilePtr file;	// Open file
 
 	public:
 		/** These fields must be set by FileFormat subclasses in their constructors. **/

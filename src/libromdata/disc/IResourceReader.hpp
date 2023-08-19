@@ -23,7 +23,7 @@ namespace LibRomData {
 class IResourceReader : public LibRpBase::IPartition
 {
 	protected:
-		IResourceReader(const std::shared_ptr<LibRpFile::IRpFile> &file)
+		IResourceReader(const LibRpFile::IRpFilePtr &file)
 			: super(file)
 		{}
 	protected:
@@ -51,7 +51,7 @@ class IResourceReader : public LibRpBase::IPartition
 		 * @param lang Language ID. (-1 for "first entry")
 		 * @return IRpFile*, or nullptr on error.
 		 */
-		virtual std::shared_ptr<LibRpFile::IRpFile> open(uint16_t type, int id, int lang) = 0;
+		virtual LibRpFile::IRpFilePtr open(uint16_t type, int id, int lang) = 0;
 
 		// StringTable.
 		// - Element 1: Key

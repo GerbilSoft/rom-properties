@@ -15,9 +15,9 @@
 #include "librpbase/SystemRegion.hpp"
 #include "librptexture/decoder/ImageDecoder_GCN.hpp"
 using namespace LibRpBase;
+using namespace LibRpFile;
 using namespace LibRpText;
 using namespace LibRpTexture;
-using LibRpFile::IRpFile;
 
 // C++ STL classes
 using std::shared_ptr;
@@ -29,7 +29,7 @@ namespace LibRomData {
 class GameCubeSavePrivate final : public RomDataPrivate
 {
 	public:
-		GameCubeSavePrivate(const shared_ptr<IRpFile> &file);
+		GameCubeSavePrivate(const IRpFilePtr &file);
 		~GameCubeSavePrivate() final;
 
 	private:
@@ -129,7 +129,7 @@ const RomDataInfo GameCubeSavePrivate::romDataInfo = {
 	"GameCubeSave", exts, mimeTypes
 };
 
-GameCubeSavePrivate::GameCubeSavePrivate(const shared_ptr<IRpFile> &file)
+GameCubeSavePrivate::GameCubeSavePrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
 	, img_banner(nullptr)
 	, iconAnimData(nullptr)
@@ -548,7 +548,7 @@ shared_ptr<const rp_image> GameCubeSavePrivate::loadBanner(void)
  *
  * @param file Open disc image.
  */
-GameCubeSave::GameCubeSave(const shared_ptr<IRpFile> &file)
+GameCubeSave::GameCubeSave(const IRpFilePtr &file)
 	: super(new GameCubeSavePrivate(file))
 {
 	// This class handles save files.

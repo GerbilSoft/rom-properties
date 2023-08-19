@@ -15,11 +15,11 @@
 #include "dds_structs.h"
 #include "data/DX10Formats.hpp"
 
-// librpbase, librpfile
+// Other rom-properties libraries
 #include "libi18n/i18n.h"
-using LibRpText::rp_sprintf;
+using namespace LibRpFile;
 using LibRpBase::RomFields;
-using LibRpFile::IRpFile;
+using LibRpText::rp_sprintf;
 
 // librptexture
 #include "ImageSizeCalc.hpp"
@@ -40,7 +40,7 @@ namespace LibRpTexture {
 class DirectDrawSurfacePrivate final : public FileFormatPrivate
 {
 	public:
-		DirectDrawSurfacePrivate(DirectDrawSurface *q, const shared_ptr<IRpFile> &file);
+		DirectDrawSurfacePrivate(DirectDrawSurface *q, const IRpFilePtr &file);
 		~DirectDrawSurfacePrivate() final = default;
 
 	private:
@@ -513,7 +513,7 @@ int DirectDrawSurfacePrivate::updatePixelFormat(void)
 	return ret;
 }
 
-DirectDrawSurfacePrivate::DirectDrawSurfacePrivate(DirectDrawSurface *q, const shared_ptr<IRpFile> &file)
+DirectDrawSurfacePrivate::DirectDrawSurfacePrivate(DirectDrawSurface *q, const IRpFilePtr &file)
 	: super(q, file, &textureInfo)
 	, texDataStartAddr(0)
 	, img(nullptr)
@@ -928,7 +928,7 @@ shared_ptr<const rp_image> DirectDrawSurfacePrivate::loadImage(void)
  *
  * @param file Open ROM image.
  */
-DirectDrawSurface::DirectDrawSurface(const shared_ptr<IRpFile> &file)
+DirectDrawSurface::DirectDrawSurface(const IRpFilePtr &file)
 	: super(new DirectDrawSurfacePrivate(this, file))
 {
 	RP_D(DirectDrawSurface);

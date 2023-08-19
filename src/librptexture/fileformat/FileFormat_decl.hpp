@@ -47,7 +47,7 @@ public: \
 class klass##Private; \
 class klass final : public LibRpTexture::FileFormat { \
 public: \
-	explicit klass(const std::shared_ptr<LibRpFile::IRpFile> &file); \
+	explicit klass(const LibRpFile::IRpFilePtr &file); \
 protected: \
 	~klass() final = default; \
 private: \

@@ -11,12 +11,9 @@
 #include "librpbase/disc/SparseDiscReader_p.hpp"
 #include "libwbfs.h"
 
-// librpbase, librpfile
+// Other rom-properties libraries
 using namespace LibRpBase;
-using LibRpFile::IRpFile;
-
-// C++ STL classes
-using std::shared_ptr;
+using namespace LibRpFile;
 
 namespace LibRomData {
 
@@ -335,7 +332,7 @@ off64_t WbfsReaderPrivate::getWbfsDiscSize(const wbfs_disc_t *disc) const
 
 /** WbfsReader **/
 
-WbfsReader::WbfsReader(const shared_ptr<IRpFile> &file)
+WbfsReader::WbfsReader(const IRpFilePtr &file)
 	: super(new WbfsReaderPrivate(this), file)
 {
 	if (!m_file) {

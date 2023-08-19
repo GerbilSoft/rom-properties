@@ -33,7 +33,7 @@ class NCCHReader final : public LibRpBase::IPartition
 		 * @param ncch_offset		[in] NCCH start offset, in bytes.
 		 * @param ncch_length		[in] NCCH length, in bytes.
 		 */
-		NCCHReader(const std::shared_ptr<LibRpFile::IRpFile> &file,
+		NCCHReader(const LibRpFile::IRpFilePtr &file,
 			uint8_t media_unit_shift,
 			off64_t ncch_offset, uint32_t ncch_length);
 
@@ -196,7 +196,7 @@ class NCCHReader final : public LibRpBase::IPartition
 		 * @param filename Filename. (ASCII)
 		 * @return IRpFile*, or nullptr on error.
 		 */
-		std::shared_ptr<LibRpFile::IRpFile> open(int section, const char *filename);
+		LibRpFile::IRpFilePtr open(int section, const char *filename);
 
 		/**
 		 * Open the logo section.
@@ -206,7 +206,7 @@ class NCCHReader final : public LibRpBase::IPartition
 		 *
 		 * @return IRpFile*, or nullptr on error.
 		 */
-		std::shared_ptr<LibRpFile::IRpFile> openLogo(void);
+		LibRpFile::IRpFilePtr openLogo(void);
 };
 
 }

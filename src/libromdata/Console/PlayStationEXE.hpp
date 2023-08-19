@@ -29,7 +29,7 @@ ROMDATA_DECL_BEGIN(PlayStationEXE)
 		 * @param file Open PS-X executable file.
 		 * @param sp_override Stack pointer override.
 		 */
-		PlayStationEXE(const std::shared_ptr<LibRpFile::IRpFile> &file, uint32_t sp_override);
+		PlayStationEXE(const LibRpFile::IRpFilePtr &file, uint32_t sp_override);
 
 	private:
 		/**

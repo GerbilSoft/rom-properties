@@ -19,9 +19,9 @@
 #include "librpbase/SystemRegion.hpp"
 #include "librptexture/decoder/ImageDecoder_NDS.hpp"
 using namespace LibRpBase;
+using namespace LibRpFile;
 using namespace LibRpText;
 using namespace LibRpTexture;
-using LibRpFile::IRpFile;
 
 // C++ STL classes
 using std::array;
@@ -63,7 +63,7 @@ const RomDataInfo NintendoDSPrivate::romDataInfo = {
 	"NintendoDS", exts, mimeTypes
 };
 
-NintendoDSPrivate::NintendoDSPrivate(const shared_ptr<IRpFile> &file, bool cia)
+NintendoDSPrivate::NintendoDSPrivate(const IRpFilePtr &file, bool cia)
 	: super(file, &romDataInfo)
 	, iconAnimData(nullptr)
 	, romType(RomType::Unknown)
@@ -589,7 +589,7 @@ RomFields::ListData_t *NintendoDSPrivate::getDSiFlagsStringVector(void)
  *
  * @param file Open ROM image.
  */
-NintendoDS::NintendoDS(const shared_ptr<IRpFile> &file)
+NintendoDS::NintendoDS(const IRpFilePtr &file)
 	: super(new NintendoDSPrivate(file, false))
 {
 	RP_D(NintendoDS);
@@ -615,7 +615,7 @@ NintendoDS::NintendoDS(const shared_ptr<IRpFile> &file)
  * @param file Open ROM image.
  * @param cia If true, hide fields that aren't relevant to DSiWare in 3DS CIA packages.
  */
-NintendoDS::NintendoDS(const shared_ptr<IRpFile> &file, bool cia)
+NintendoDS::NintendoDS(const IRpFilePtr &file, bool cia)
 	: super(new NintendoDSPrivate(file, cia))
 {
 	RP_D(NintendoDS);

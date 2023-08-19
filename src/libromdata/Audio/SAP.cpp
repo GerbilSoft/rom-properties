@@ -14,12 +14,11 @@
 
 // Other rom-properties libraries
 using namespace LibRpBase;
+using namespace LibRpFile;
 using namespace LibRpText;
-using LibRpFile::IRpFile;
 
 // C++ STL classes
 using std::pair;
-using std::shared_ptr;
 using std::string;
 using std::unique_ptr;
 using std::vector;
@@ -29,7 +28,7 @@ namespace LibRomData {
 class SAPPrivate final : public RomDataPrivate
 {
 	public:
-		SAPPrivate(const shared_ptr<IRpFile> &file);
+		SAPPrivate(const IRpFilePtr &file);
 
 	private:
 		typedef RomDataPrivate super;
@@ -111,7 +110,7 @@ const RomDataInfo SAPPrivate::romDataInfo = {
 	"SAP", exts, mimeTypes
 };
 
-SAPPrivate::SAPPrivate(const shared_ptr<IRpFile> &file)
+SAPPrivate::SAPPrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
 { }
 
@@ -452,7 +451,7 @@ SAPPrivate::sap_tags_t SAPPrivate::parseTags(void)
  *
  * @param file Open ROM image.
  */
-SAP::SAP(const shared_ptr<IRpFile> &file)
+SAP::SAP(const IRpFilePtr &file)
 	: super(new SAPPrivate(file))
 {
 	RP_D(SAP);

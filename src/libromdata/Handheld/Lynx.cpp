@@ -13,18 +13,15 @@
 
 // Other rom-properties libraries
 using namespace LibRpBase;
+using namespace LibRpFile;
 using namespace LibRpText;
-using LibRpFile::IRpFile;
-
-// C++ STL classes
-using std::shared_ptr;
 
 namespace LibRomData {
 
 class LynxPrivate final : public RomDataPrivate
 {
 	public:
-		LynxPrivate(const shared_ptr<IRpFile> &file);
+		LynxPrivate(const IRpFilePtr &file);
 
 	private:
 		typedef RomDataPrivate super;
@@ -61,7 +58,7 @@ const RomDataInfo LynxPrivate::romDataInfo = {
 	"Lynx", exts, mimeTypes
 };
 
-LynxPrivate::LynxPrivate(const shared_ptr<IRpFile> &file)
+LynxPrivate::LynxPrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
 {
 	// Clear the ROM header struct.
@@ -83,7 +80,7 @@ LynxPrivate::LynxPrivate(const shared_ptr<IRpFile> &file)
  *
  * @param file Open ROM file.
  */
-Lynx::Lynx(const shared_ptr<IRpFile> &file)
+Lynx::Lynx(const IRpFilePtr &file)
 	: super(new LynxPrivate(file))
 {
 	RP_D(Lynx);

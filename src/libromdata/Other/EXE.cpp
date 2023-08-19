@@ -13,11 +13,10 @@
 #include "librpbase/Achievements.hpp"
 #include "librpbase/timeconv.h"
 using namespace LibRpBase;
+using namespace LibRpFile;
 using namespace LibRpText;
-using LibRpFile::IRpFile;
 
 // C++ STL classes
-using std::shared_ptr;
 using std::string;
 using std::vector;
 
@@ -80,7 +79,7 @@ const char *const EXEPrivate::NE_TargetOSes[6] = {
 	"Borland Operating System Services",	// NE_OS_BOSS
 };
 
-EXEPrivate::EXEPrivate(const shared_ptr<IRpFile> &file)
+EXEPrivate::EXEPrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
 	, exeType(ExeType::Unknown)
 	, rsrcReader(nullptr)
@@ -491,7 +490,7 @@ void EXEPrivate::addFields_LE(void)
  *
  * @param file Open ROM image.
  */
-EXE::EXE(const shared_ptr<IRpFile> &file)
+EXE::EXE(const IRpFilePtr &file)
 	: super(new EXEPrivate(file))
 {
 	// This class handles different types of files.

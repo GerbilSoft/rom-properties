@@ -10,21 +10,17 @@
 
 #include "RpQUrl.hpp"
 
-namespace LibRpFile {
-	class IRpFile;
-}
-namespace LibRpTexture {
-	class rp_image;
-}
-
 // Qt includes
 #include <QtCore/QObject>
 #include <QtCore/QString>
 #include <QtGui/QImage>
 
 // C++ includes
-#include <memory>
 #include <string>
+
+// librpfile, librptexture
+#include "librpfile/IRpFile.hpp"
+#include "librptexture/img/rp_image.hpp"
 
 #define CONCAT_FN(fn, suffix)		CONCAT_FN_INT(fn, suffix)
 #define CONCAT_FN_INT(fn, suffix)	fn ## suffix
@@ -171,7 +167,7 @@ static inline QImage rpToQImage(const std::shared_ptr<const LibRpTexture::rp_ima
  *
  * @return IRpFile, or nullptr on error.
  */
-std::shared_ptr<LibRpFile::IRpFile> openQUrl(const QUrl &url, bool isThumbnail = false);
+LibRpFile::IRpFilePtr openQUrl(const QUrl &url, bool isThumbnail = false);
 
 /**
  * Convert an RP file dialog filter to Qt.

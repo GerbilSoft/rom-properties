@@ -25,7 +25,7 @@ class GdiReader : public LibRpBase::SparseDiscReader
 		 * unref()'d by the caller afterwards.
 		 * @param file File to read from.
 		 */
-		explicit GdiReader(const std::shared_ptr<LibRpFile::IRpFile> &file);
+		explicit GdiReader(const LibRpFile::IRpFilePtr &file);
 
 	private:
 		typedef SparseDiscReader super;

@@ -12,10 +12,10 @@
 
 #include "didj_tex_structs.h"
 
-// librpbase, librpfile
+// Other rom-properties libraries
 #include "libi18n/i18n.h"
+using namespace LibRpFile;
 using LibRpBase::RomFields;
-using LibRpFile::IRpFile;
 
 // librptexture
 #include "ImageSizeCalc.hpp"
@@ -44,7 +44,7 @@ DELAYLOAD_TEST_FUNCTION_IMPL0(get_crc_table);
 class DidjTexPrivate final : public FileFormatPrivate
 {
 	public:
-		DidjTexPrivate(DidjTex *q, const shared_ptr<IRpFile> &file);
+		DidjTexPrivate(DidjTex *q, const IRpFilePtr &file);
 		~DidjTexPrivate() final = default;
 
 	private:
@@ -106,7 +106,7 @@ const TextureInfo DidjTexPrivate::textureInfo = {
 	exts, mimeTypes
 };
 
-DidjTexPrivate::DidjTexPrivate(DidjTex *q, const shared_ptr<IRpFile> &file)
+DidjTexPrivate::DidjTexPrivate(DidjTex *q, const IRpFilePtr &file)
 	: super(q, file, &textureInfo)
 	, texType(TexType::Unknown)
 	, img(nullptr)
@@ -339,7 +339,7 @@ shared_ptr<const rp_image> DidjTexPrivate::loadDidjTexImage(void)
  *
  * @param file Open ROM image.
  */
-DidjTex::DidjTex(const shared_ptr<IRpFile> &file)
+DidjTex::DidjTex(const IRpFilePtr &file)
 	: super(new DidjTexPrivate(this, file))
 {
 	RP_D(DidjTex);

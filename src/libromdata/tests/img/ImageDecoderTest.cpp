@@ -513,7 +513,7 @@ void ImageDecoderTest::decodeBenchmark_internal(void)
 
 	// Load the image file.
 	// TODO: RomDataFactory function to retrieve a constructor function?
-	auto fn_ctor = [](const shared_ptr<IRpFile> &file) -> RomData* { return RomDataFactory::create(file); };
+	auto fn_ctor = [](const IRpFilePtr &file) -> RomData* { return RomDataFactory::create(file); };
 
 	// For certain types, increase the number of iterations.
 	ASSERT_GT(mode.dds_gz_filename.size(), 4U);

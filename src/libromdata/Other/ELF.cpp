@@ -13,8 +13,8 @@
 
 // Other rom-properties libraries
 using namespace LibRpBase;
+using namespace LibRpFile;
 using namespace LibRpText;
-using LibRpFile::IRpFile;
 
 // cinttypes was added in MSVC 2013.
 // For older versions, we'll need to manually define PRIX64.
@@ -29,7 +29,6 @@ using LibRpFile::IRpFile;
 #endif
 
 // C++ STL classes
-using std::shared_ptr;
 using std::string;
 using std::vector;
 
@@ -45,7 +44,7 @@ namespace LibRomData {
 class ELFPrivate final : public RomDataPrivate
 {
 	public:
-		ELFPrivate(const shared_ptr<IRpFile> &file);
+		ELFPrivate(const IRpFilePtr &file);
 
 	private:
 		typedef RomDataPrivate super;
@@ -250,7 +249,7 @@ const RomDataInfo ELFPrivate::romDataInfo = {
 	"ELF", exts, mimeTypes
 };
 
-ELFPrivate::ELFPrivate(const shared_ptr<IRpFile> &file)
+ELFPrivate::ELFPrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
 	, elfFormat(Elf_Format::Unknown)
 	, hasCheckedPH(false)
@@ -1151,7 +1150,7 @@ int ELFPrivate::addSymbolFields(span<const char> dynsym_strtab)
  *
  * @param file Open ROM image.
  */
-ELF::ELF(const shared_ptr<IRpFile> &file)
+ELF::ELF(const IRpFilePtr &file)
 	: super(new ELFPrivate(file))
 {
 	// This class handles different types of files.

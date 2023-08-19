@@ -12,11 +12,10 @@
 
 // Other rom-properties libraries
 using namespace LibRpBase;
+using namespace LibRpFile;
 using namespace LibRpText;
-using LibRpFile::IRpFile;
 
 // C++ STL classes
-using std::shared_ptr;
 using std::string;
 
 namespace LibRomData {
@@ -24,7 +23,7 @@ namespace LibRomData {
 class Atari7800Private final : public RomDataPrivate
 {
 	public:
-		Atari7800Private(const shared_ptr<IRpFile> &file);
+		Atari7800Private(const IRpFilePtr &file);
 
 	private:
 		typedef RomDataPrivate super;
@@ -61,7 +60,7 @@ const RomDataInfo Atari7800Private::romDataInfo = {
 	"Atari7800", exts, mimeTypes
 };
 
-Atari7800Private::Atari7800Private(const shared_ptr<IRpFile> &file)
+Atari7800Private::Atari7800Private(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
 {
 	// Clear the ROM header struct.
@@ -83,7 +82,7 @@ Atari7800Private::Atari7800Private(const shared_ptr<IRpFile> &file)
  *
  * @param file Open ROM image.
  */
-Atari7800::Atari7800(const shared_ptr<IRpFile> &file)
+Atari7800::Atari7800(const IRpFilePtr &file)
 	: super(new Atari7800Private(file))
 {
 	RP_D(Atari7800);

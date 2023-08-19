@@ -12,11 +12,10 @@
 
 // Other rom-properties libraries
 using namespace LibRpBase;
+using namespace LibRpFile;
 using namespace LibRpText;
-using LibRpFile::IRpFile;
 
 // C++ STL classes
-using std::shared_ptr;
 using std::string;
 using std::vector;
 
@@ -25,7 +24,7 @@ namespace LibRomData {
 class NGPCPrivate final : public RomDataPrivate
 {
 	public:
-		NGPCPrivate(const shared_ptr<IRpFile> &file);
+		NGPCPrivate(const IRpFilePtr &file);
 
 	private:
 		typedef RomDataPrivate super;
@@ -80,7 +79,7 @@ const RomDataInfo NGPCPrivate::romDataInfo = {
 	"NGPC", exts, mimeTypes
 };
 
-NGPCPrivate::NGPCPrivate(const shared_ptr<IRpFile> &file)
+NGPCPrivate::NGPCPrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
 	, romType(RomType::Unknown)
 {
@@ -103,7 +102,7 @@ NGPCPrivate::NGPCPrivate(const shared_ptr<IRpFile> &file)
  *
  * @param file Open ROM file.
  */
-NGPC::NGPC(const shared_ptr<IRpFile> &file)
+NGPC::NGPC(const IRpFilePtr &file)
 	: super(new NGPCPrivate(file))
 {
 	RP_D(NGPC);

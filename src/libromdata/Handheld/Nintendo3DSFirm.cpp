@@ -13,14 +13,13 @@
 
 // Other rom-properties libraries
 using namespace LibRpBase;
+using namespace LibRpFile;
 using namespace LibRpText;
-using LibRpFile::IRpFile;
 
 // for memmem() if it's not available in <string.h>
 #include "librptext/libc.h"
 
 // C++ STL classes
-using std::shared_ptr;
 using std::string;
 using std::unique_ptr;
 
@@ -41,7 +40,7 @@ DELAYLOAD_TEST_FUNCTION_IMPL0(get_crc_table);
 class Nintendo3DSFirmPrivate final : public RomDataPrivate
 {
 	public:
-		Nintendo3DSFirmPrivate(const shared_ptr<IRpFile> &file);
+		Nintendo3DSFirmPrivate(const IRpFilePtr &file);
 
 	private:
 		typedef RomDataPrivate super;
@@ -81,7 +80,7 @@ const RomDataInfo Nintendo3DSFirmPrivate::romDataInfo = {
 	"Nintendo3DSFirm", exts, mimeTypes
 };
 
-Nintendo3DSFirmPrivate::Nintendo3DSFirmPrivate(const shared_ptr<IRpFile> &file)
+Nintendo3DSFirmPrivate::Nintendo3DSFirmPrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
 {
 	// Clear the various structs.
@@ -103,7 +102,7 @@ Nintendo3DSFirmPrivate::Nintendo3DSFirmPrivate(const shared_ptr<IRpFile> &file)
  *
  * @param file Open ROM image.
  */
-Nintendo3DSFirm::Nintendo3DSFirm(const shared_ptr<IRpFile> &file)
+Nintendo3DSFirm::Nintendo3DSFirm(const IRpFilePtr &file)
 	: super(new Nintendo3DSFirmPrivate(file))
 {
 	RP_D(Nintendo3DSFirm);

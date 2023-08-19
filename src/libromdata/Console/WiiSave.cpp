@@ -13,9 +13,9 @@
 
 // Other rom-properties libraries
 using namespace LibRpBase;
+using namespace LibRpFile;
 using namespace LibRpText;
-using LibRpFile::IRpFile;
-using LibRpTexture::rp_image;
+using namespace LibRpTexture;
 
 // Decryption.
 #include "librpbase/crypto/KeyManager.hpp"
@@ -38,7 +38,7 @@ namespace LibRomData {
 class WiiSavePrivate final : public RomDataPrivate
 {
 	public:
-		WiiSavePrivate(const shared_ptr<IRpFile> &file);
+		WiiSavePrivate(const IRpFilePtr &file);
 		~WiiSavePrivate() final;
 
 	private:
@@ -112,7 +112,7 @@ const uint8_t WiiSavePrivate::bk_header_magic[8] = {
 	0x00, 0x00, 0x00, 0x70, 0x42, 0x6B, 0x00, 0x01
 };
 
-WiiSavePrivate::WiiSavePrivate(const shared_ptr<IRpFile> &file)
+WiiSavePrivate::WiiSavePrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
 	, svLoaded(false)
 #ifdef ENABLE_DECRYPTION
@@ -151,7 +151,7 @@ WiiSavePrivate::~WiiSavePrivate()
  *
  * @param file Open disc image.
  */
-WiiSave::WiiSave(const shared_ptr<IRpFile> &file)
+WiiSave::WiiSave(const IRpFilePtr &file)
 	: super(new WiiSavePrivate(file))
 {
 	// This class handles save files.

@@ -8,12 +8,7 @@
 
 #pragma once
 
-// C++ includes
-#include <memory>
-
-namespace LibRpFile {
-	class IRpFile;
-}
+#include "IRpFile.hpp"
 
 namespace LibRpFile { namespace FileSystem {
 
@@ -48,9 +43,9 @@ LibRpFile::IRpFile *openRelatedFile_rawptr(const char *filename, const char *bas
  * @param filename	[in] Primary filename. (UTF-8)
  * @param basename	[in,opt] New basename. (UTF-8) If nullptr, uses the existing basename.
  * @param ext		[in] New extension, including leading dot. (UTF-8)
- * @return shared_ptr<IRpFile>, or nullptr if not found.
+ * @return IRpFilePtr, or nullptr if not found.
  */
-std::shared_ptr<LibRpFile::IRpFile> openRelatedFile(const char *filename, const char *basename, const char *ext);
+LibRpFile::IRpFilePtr openRelatedFile(const char *filename, const char *basename, const char *ext);
 
 #ifdef _WIN32
 /**
@@ -84,9 +79,9 @@ LibRpFile::IRpFile *openRelatedFile_rawptr(const wchar_t *filenameW, const wchar
  * @param filename	[in] Primary filename. (UTF-16)
  * @param basename	[in,opt] New basename. (UTF-16) If nullptr, uses the existing basename.
  * @param ext		[in] New extension, including leading dot. (UTF-16)
- * @return shared_ptr<IRpFile>, or nullptr if not found.
+ * @return IRpFilePtr, or nullptr if not found.
  */
-std::shared_ptr<LibRpFile::IRpFile> openRelatedFile(const wchar_t *filenameW, const wchar_t *basenameW, const wchar_t *extW);
+LibRpFile::IRpFilePtr openRelatedFile(const wchar_t *filenameW, const wchar_t *basenameW, const wchar_t *extW);
 #endif /* _WIN32 */
 
 } }

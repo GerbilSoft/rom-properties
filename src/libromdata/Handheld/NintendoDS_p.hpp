@@ -31,7 +31,7 @@ namespace LibRomData {
 class NintendoDSPrivate final : public LibRpBase::RomDataPrivate
 {
 	public:
-		NintendoDSPrivate(const std::shared_ptr<LibRpFile::IRpFile> &file, bool cia);
+		NintendoDSPrivate(const LibRpFile::IRpFilePtr &file, bool cia);
 		~NintendoDSPrivate() final;
 
 	private:

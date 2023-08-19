@@ -17,9 +17,9 @@
 
 // Other rom-properties libraries
 #include "libi18n/i18n.h"
+using namespace LibRpFile;
 using namespace LibRpText;
 using LibRpBase::RomFields;
-using LibRpFile::IRpFile;
 
 // librptexture
 #include "img/rp_image.hpp"
@@ -35,7 +35,7 @@ namespace LibRpTexture {
 class TGAPrivate final : public FileFormatPrivate
 {
 	public:
-		TGAPrivate(TGA *q, const shared_ptr<IRpFile> &file);
+		TGAPrivate(TGA *q, const IRpFilePtr &file);
 		~TGAPrivate() final = default;
 
 	private:
@@ -126,7 +126,7 @@ const TextureInfo TGAPrivate::textureInfo = {
 	exts, mimeTypes
 };
 
-TGAPrivate::TGAPrivate(TGA *q, const shared_ptr<IRpFile> &file)
+TGAPrivate::TGAPrivate(TGA *q, const IRpFilePtr &file)
 	: super(q, file, &textureInfo)
 	, texType(TexType::Unknown)
 	, alphaType(TGA_ALPHATYPE_PRESENT)
@@ -512,7 +512,7 @@ time_t TGAPrivate::tgaTimeToUnixTime(const TGA_DateStamp *timestamp)
  *
  * @param file Open ROM image.
  */
-TGA::TGA(const shared_ptr<IRpFile> &file)
+TGA::TGA(const IRpFilePtr &file)
 	: super(new TGAPrivate(this, file))
 {
 	RP_D(TGA);

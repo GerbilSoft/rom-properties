@@ -14,8 +14,8 @@
 
 // Other rom-properties libraries
 using namespace LibRpBase;
+using namespace LibRpFile;
 using namespace LibRpText;
-using LibRpFile::IRpFile;
 
 // IsoPartition
 #include "../cdrom_structs.h"
@@ -32,7 +32,6 @@ using LibRpFile::IRpFile;
 #include "ini.h"
 
 // C++ STL classes
-using std::shared_ptr;
 using std::string;
 using std::unordered_map;
 using std::vector;
@@ -42,7 +41,7 @@ namespace LibRomData {
 class PlayStationDiscPrivate final : public RomDataPrivate
 {
 	public:
-		PlayStationDiscPrivate(const shared_ptr<IRpFile> &file);
+		PlayStationDiscPrivate(const IRpFilePtr &file);
 		~PlayStationDiscPrivate() final;
 
 	private:
@@ -140,7 +139,7 @@ const RomDataInfo PlayStationDiscPrivate::romDataInfo = {
 	"PlayStationDisc", exts, mimeTypes
 };
 
-PlayStationDiscPrivate::PlayStationDiscPrivate(const shared_ptr<IRpFile> &file)
+PlayStationDiscPrivate::PlayStationDiscPrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
 	, discReader(nullptr)
 	, isoPartition(nullptr)
@@ -195,14 +194,14 @@ int PlayStationDiscPrivate::loadSystemCnf(IsoPartition *pt)
 		return 0;
 	}
 
-	shared_ptr<IRpFile> f_system_cnf(pt->open("SYSTEM.CNF"));
+	const IRpFilePtr f_system_cnf(pt->open("SYSTEM.CNF"));
 	if (!f_system_cnf) {
 		// SYSTEM.CNF might not be present.
 		// If it isn't, but PSX.EXE is present, use default values.
 		int ret = pt->lastError();
 		if (ret == ENOENT) {
 			// SYSTEM.CNF not found. Check for PSX.EXE.
-			shared_ptr<IRpFile> f_psx_exe(pt->open("PSX.EXE"));
+			const IRpFilePtr f_psx_exe(pt->open("PSX.EXE"));
 			if (f_psx_exe && f_psx_exe->isOpen()) {
 				// Found PSX.EXE.
 				boot_filename = "PSX.EXE";
@@ -269,7 +268,7 @@ RomData *PlayStationDiscPrivate::openBootExe(void)
 
 	// Open the boot file.
 	// TODO: Do we need a leading slash?
-	shared_ptr<IRpFile> f_bootExe(isoPartition->open(boot_filename.c_str()));
+	const IRpFilePtr f_bootExe(isoPartition->open(boot_filename.c_str()));
 	if (f_bootExe) {
 		RomData *exeData = nullptr;
 		switch (consoleType) {
@@ -324,7 +323,7 @@ RomData *PlayStationDiscPrivate::openBootExe(void)
  *
  * @param file Open ROM image.
  */
-PlayStationDisc::PlayStationDisc(const shared_ptr<IRpFile> &file)
+PlayStationDisc::PlayStationDisc(const IRpFilePtr &file)
 	: super(new PlayStationDiscPrivate(file))
 {
 	// This class handles disc images.

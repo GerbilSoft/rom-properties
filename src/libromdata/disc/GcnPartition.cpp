@@ -10,12 +10,9 @@
 #include "GcnPartition.hpp"
 #include "GcnFst.hpp"
 
-// librpbase, librpfile
+// Other rom-properties libraries
 using namespace LibRpBase;
-using LibRpFile::IRpFile;
-
-// C++ STL classes
-using std::shared_ptr;
+using namespace LibRpFile;
 
 #include "GcnPartition_p.hpp"
 namespace LibRomData {
@@ -252,7 +249,7 @@ int GcnPartition::closedir(IFst::Dir *dirp)
  * @param filename Filename.
  * @return IRpFile*, or nullptr on error.
  */
-shared_ptr<IRpFile> GcnPartition::open(const char *filename)
+IRpFilePtr GcnPartition::open(const char *filename)
 {
 	// TODO: File reference counter.
 	// This might be difficult to do because GcnFile is a separate class.

@@ -32,7 +32,7 @@ class RP_ThumbnailProvider_Private
 
 	public:
 		// Set by IInitializeWithStream::Initialize().
-		std::shared_ptr<LibRpFile::IRpFile> file;
+		LibRpFile::IRpFilePtr file;
 
 		// CreateThumbnail instance.
 		CreateThumbnail thumbnailer;

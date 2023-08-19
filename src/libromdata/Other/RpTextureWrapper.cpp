@@ -9,16 +9,12 @@
 #include "stdafx.h"
 #include "RpTextureWrapper.hpp"
 
-// librpbase, librpfile
-using namespace LibRpBase;
-using LibRpFile::IRpFile;
-
-// librptexture
+// Other rom-properties libraries
 #include "librptexture/FileFormatFactory.hpp"
 #include "librptexture/fileformat/FileFormat.hpp"
-using LibRpTexture::rp_image;
-using LibRpTexture::FileFormat;
-using LibRpTexture::FileFormatFactory;
+using namespace LibRpBase;
+using namespace LibRpFile;
+using namespace LibRpTexture;
 
 // C++ STL classes
 using std::shared_ptr;
@@ -29,7 +25,7 @@ namespace LibRomData {
 class RpTextureWrapperPrivate final : public RomDataPrivate
 {
 	public:
-		RpTextureWrapperPrivate(const shared_ptr<IRpFile> &file);
+		RpTextureWrapperPrivate(const IRpFilePtr &file);
 		~RpTextureWrapperPrivate() final;
 
 	private:
@@ -65,7 +61,7 @@ const RomDataInfo RpTextureWrapperPrivate::romDataInfo = {
 	"RpTextureWrapper", exts, mimeTypes
 };
 
-RpTextureWrapperPrivate::RpTextureWrapperPrivate(const shared_ptr<IRpFile> &file)
+RpTextureWrapperPrivate::RpTextureWrapperPrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
 	, texture(nullptr)
 { }
@@ -90,7 +86,7 @@ RpTextureWrapperPrivate::~RpTextureWrapperPrivate()
  *
  * @param file Open ROM image.
  */
-RpTextureWrapper::RpTextureWrapper(const shared_ptr<IRpFile> &file)
+RpTextureWrapper::RpTextureWrapper(const IRpFilePtr &file)
 	: super(new RpTextureWrapperPrivate(file))
 {
 	// This class handles texture files.

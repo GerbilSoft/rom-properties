@@ -46,7 +46,7 @@ class RomDataPrivate
 		 * @param file ROM file
 		 * @param pRomDataInfo RomData subclass information
 		 */
-		RomDataPrivate(const std::shared_ptr<LibRpFile::IRpFile> &file, const RomDataInfo *pRomDataInfo);
+		RomDataPrivate(const LibRpFile::IRpFilePtr &file, const RomDataInfo *pRomDataInfo);
 
 		virtual ~RomDataPrivate();
 
@@ -61,8 +61,8 @@ class RomDataPrivate
 		bool isValid;			// Subclass must set this to true if the ROM is valid.
 	public:
 		/** These fields are set by RomData's own constructor. **/
-		std::shared_ptr<LibRpFile::IRpFile> file;	// Open file
-		char *filename;					// Copy of the filename (UTF-8)
+		LibRpFile::IRpFilePtr file;	// Open file
+		char *filename;			// Copy of the filename (UTF-8)
 #ifdef _WIN32
 		wchar_t *filenameW;		// Copy of the filename (UTF-16; Windows only)
 #endif /* _WIN32 */

@@ -11,11 +11,8 @@
 #include "stdafx.h"
 #include "DiscReader.hpp"
 
-// librpfile
-using LibRpFile::IRpFile;
-
-// C++ STL classes
-using std::shared_ptr;
+// Other rom-properties libraries
+using namespace LibRpFile;
 
 namespace LibRpBase {
 
@@ -25,7 +22,7 @@ namespace LibRpBase {
  * unref()'d afterwards.
  * @param file File to read from.
  */
-DiscReader::DiscReader(const shared_ptr<IRpFile> &file)
+DiscReader::DiscReader(const IRpFilePtr &file)
 	: super(file)
 	, m_offset(0)
 	, m_length(0)
@@ -50,7 +47,7 @@ DiscReader::DiscReader(const shared_ptr<IRpFile> &file)
  * @param offset Starting offset.
  * @param length Disc length. (-1 for "until end of file")
  */
-DiscReader::DiscReader(const shared_ptr<IRpFile> &file, off64_t offset, off64_t length)
+DiscReader::DiscReader(const IRpFilePtr &file, off64_t offset, off64_t length)
 	: super(file)
 	, m_offset(0)
 	, m_length(0)

@@ -12,16 +12,14 @@
 #include "WiiWAD.hpp"
 #include "WiiWAD_p.hpp"
 
-// librpbase, librpfile
+// Other rom-properties libraries
+using namespace LibRpFile;
 using LibRpBase::RomData;
-using LibRpFile::IRpFile;
-using LibRpFile::RpFile;
 
 // For sections delegated to other RomData subclasses.
 #include "Handheld/NintendoDS.hpp"
 
 // C++ STL classes
-using std::shared_ptr;
 using std::string;
 using std::vector;
 
@@ -124,7 +122,7 @@ int WiiWAD::doRomOp_int(int id, RomOpParams *pParams)
 
 	// Get the source file.
 	RpFile *destFile = nullptr;
-	shared_ptr<IRpFile> srcFile = srl->ref_file();
+	const IRpFilePtr srcFile = srl->ref_file();
 	assert((bool)srcFile);
 	if (!srcFile) {
 		// No source file...

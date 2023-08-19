@@ -23,12 +23,9 @@
 #include <string>
 #include <vector>
 
-namespace LibRpFile {
-	class IRpFile;
-}
-namespace LibRpTexture {
-	class rp_image;
-}
+// librpfile, librptexture
+#include "librpfile/IRpFile.hpp"
+#include "librptexture/img/rp_image.hpp"
 
 namespace LibRpBase {
 
@@ -98,7 +95,7 @@ public:
 	 * Get a reference to the internal file.
 	 * @return Reference to file, or nullptr on error.
 	 */
-	std::shared_ptr<LibRpFile::IRpFile> ref_file(void) const;
+	LibRpFile::IRpFilePtr ref_file(void) const;
 
 	/**
 	 * Get the filename that was loaded.

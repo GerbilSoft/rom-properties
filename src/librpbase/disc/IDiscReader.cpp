@@ -9,12 +9,12 @@
 #include "stdafx.h"
 #include "IDiscReader.hpp"
 
-// librpfile
-using LibRpFile::IRpFile;
+// Other rom-properties libraries
+using namespace LibRpFile;
 
 namespace LibRpBase {
 
-IDiscReader::IDiscReader(const std::shared_ptr<IRpFile> &file)
+IDiscReader::IDiscReader(const IRpFilePtr &file)
 	: m_lastError(0)
 	, m_hasDiscReader(false)
 	, m_file(file)

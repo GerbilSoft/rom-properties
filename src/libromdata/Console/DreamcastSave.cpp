@@ -12,9 +12,9 @@
 
 // Other rom-properties libraries
 using namespace LibRpBase;
+using namespace LibRpFile;
 using namespace LibRpText;
 using namespace LibRpTexture;
-using LibRpFile::IRpFile;
 
 // C++ STL classes
 using std::shared_ptr;
@@ -26,7 +26,7 @@ namespace LibRomData {
 class DreamcastSavePrivate final : public RomDataPrivate
 {
 	public:
-		DreamcastSavePrivate(const shared_ptr<IRpFile> &file);
+		DreamcastSavePrivate(const IRpFilePtr &file);
 		~DreamcastSavePrivate() final;
 
 	private:
@@ -81,7 +81,7 @@ class DreamcastSavePrivate final : public RomDataPrivate
 
 		// VMI save file. (for .VMI+.VMS)
 		// NOTE: Standalone VMI uses this->file.
-		shared_ptr<IRpFile> vmi_file;
+		IRpFilePtr vmi_file;
 
 		// Offset in the main file to the data area.
 		// - VMS: 0
@@ -125,7 +125,7 @@ class DreamcastSavePrivate final : public RomDataPrivate
 		 * @param vmi_file VMI file.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		int readVmiHeader(const shared_ptr<IRpFile> &vmi_file);
+		int readVmiHeader(const IRpFilePtr &vmi_file);
 
 		// Graphic eyecatch sizes.
 		static const uint32_t eyecatch_sizes[4];
@@ -214,7 +214,7 @@ const uint32_t DreamcastSavePrivate::eyecatch_sizes[4] = {
 	DC_VMS_EYECATCH_CI4_PALETTE_SIZE + DC_VMS_EYECATCH_CI4_DATA_SIZE
 };
 
-DreamcastSavePrivate::DreamcastSavePrivate(const shared_ptr<IRpFile> &file)
+DreamcastSavePrivate::DreamcastSavePrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
 	, iconAnimData(nullptr)
 	, saveType(SaveType::Unknown)
@@ -366,7 +366,7 @@ unsigned int DreamcastSavePrivate::readAndVerifyVmsHeader(uint32_t address)
  * @param vmi_file VMI file.
  * @return 0 on success; negative POSIX error code on error.
  */
-int DreamcastSavePrivate::readVmiHeader(const shared_ptr<IRpFile> &vmi_file)
+int DreamcastSavePrivate::readVmiHeader(const IRpFilePtr &vmi_file)
 {
 	// NOTE: vmi_file shadows this->vmi_file.
 
@@ -771,7 +771,7 @@ shared_ptr<const rp_image> DreamcastSavePrivate::loadBanner(void)
  *
  * @param file Open disc image.
  */
-DreamcastSave::DreamcastSave(const shared_ptr<IRpFile> &file)
+DreamcastSave::DreamcastSave(const IRpFilePtr &file)
 	: super(new DreamcastSavePrivate(file))
 {
 	// This class handles save files.
@@ -930,7 +930,7 @@ DreamcastSave::DreamcastSave(const shared_ptr<IRpFile> &file)
  * @param vms_file Open .VMS save file.
  * @param vmi_file Open .VMI save file.
  */
-DreamcastSave::DreamcastSave(const shared_ptr<IRpFile> &vms_file, const shared_ptr<IRpFile> &vmi_file)
+DreamcastSave::DreamcastSave(const IRpFilePtr &vms_file, const IRpFilePtr &vmi_file)
 	: super(new DreamcastSavePrivate(vms_file))
 {
 	// This class handles save files.

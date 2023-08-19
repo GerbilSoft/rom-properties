@@ -21,7 +21,7 @@ namespace LibRpFile {
  * @param file0 First file.
  * @param file1 Second file.
  */
-DualFile::DualFile(const std::shared_ptr<IRpFile> &file0, const std::shared_ptr<IRpFile> &file1)
+DualFile::DualFile(const IRpFilePtr &file0, const IRpFilePtr &file1)
 	: super()
 	, m_file{file0, file1}
 	, m_pos(0)

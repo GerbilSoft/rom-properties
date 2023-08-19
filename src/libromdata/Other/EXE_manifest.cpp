@@ -13,16 +13,15 @@
 #error Cannot compile EXE_manifest.cpp without XML support.
 #endif
 
-// librpbase, librpfile
+// Other orm-properties libraries
 using namespace LibRpBase;
-using LibRpFile::IRpFile;
+using namespace LibRpFile;
 
 // TinyXML2
 #include "tinyxml2.h"
 using namespace tinyxml2;
 
 // C++ STL classes
-using std::shared_ptr;
 using std::string;
 using std::unique_ptr;
 using std::vector;
@@ -103,7 +102,7 @@ int EXEPrivate::loadWin32ManifestResource(XMLDocument &doc, const char **ppResNa
 	};
 
 	// Search for a PE manifest resource.
-	shared_ptr<IRpFile> f_manifest;
+	IRpFilePtr f_manifest;
 	unsigned int id_idx;
 	for (id_idx = 0; id_idx < ARRAY_SIZE(resource_ids); id_idx++) {
 		f_manifest = rsrcReader->open(RT_MANIFEST, resource_ids[id_idx].id, -1);

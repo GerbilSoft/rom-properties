@@ -17,11 +17,11 @@
 
 #include "vtf_structs.h"
 
-// librpbase, librpfile
+// Other rom-properties libraries
 #include "libi18n/i18n.h"
-using LibRpText::rp_sprintf;
+using namespace LibRpFile;
 using LibRpBase::RomFields;
-using LibRpFile::IRpFile;
+using LibRpText::rp_sprintf;
 
 // librptexture
 #include "ImageSizeCalc.hpp"
@@ -40,7 +40,7 @@ namespace LibRpTexture {
 class ValveVTFPrivate final : public FileFormatPrivate
 {
 	public:
-		ValveVTFPrivate(ValveVTF *q, const shared_ptr<IRpFile> &file);
+		ValveVTFPrivate(ValveVTF *q, const IRpFilePtr &file);
 		~ValveVTFPrivate() final = default;
 
 	private:
@@ -199,7 +199,7 @@ const ImageSizeCalc::OpCode ValveVTFPrivate::op_tbl[] = {
 static_assert(ARRAY_SIZE(ValveVTFPrivate::img_format_tbl)-1 == VTF_IMAGE_FORMAT_MAX,
 	"Missing VTF image formats.");
 
-ValveVTFPrivate::ValveVTFPrivate(ValveVTF *q, const shared_ptr<IRpFile> &file)
+ValveVTFPrivate::ValveVTFPrivate(ValveVTF *q, const IRpFilePtr &file)
 	: super(q, file, &textureInfo)
 	, texDataStartAddr(0)
 {
@@ -647,7 +647,7 @@ shared_ptr<const rp_image> ValveVTFPrivate::loadImage(int mip)
  *
  * @param file Open ROM image.
  */
-ValveVTF::ValveVTF(const shared_ptr<IRpFile> &file)
+ValveVTF::ValveVTF(const IRpFilePtr &file)
 	: super(new ValveVTFPrivate(this, file))
 {
 	RP_D(ValveVTF);

@@ -28,6 +28,6 @@ namespace LibRpBase { namespace RpImageLoader {
  * @return rp_image*, or nullptr on error.
  */
 RP_LIBROMDATA_PUBLIC
-std::shared_ptr<LibRpTexture::rp_image> load(const std::shared_ptr<LibRpFile::IRpFile> &file);
+std::shared_ptr<LibRpTexture::rp_image> load(const LibRpFile::IRpFilePtr &file);
 
 } }

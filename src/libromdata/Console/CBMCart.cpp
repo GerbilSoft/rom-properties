@@ -13,11 +13,10 @@
 
 // Other rom-properties libraries
 using namespace LibRpBase;
+using namespace LibRpFile;
 using namespace LibRpText;
-using LibRpFile::IRpFile;
 
 // C++ STL classes
-using std::shared_ptr;
 using std::string;
 using std::unique_ptr;
 using std::vector;
@@ -39,7 +38,7 @@ DELAYLOAD_TEST_FUNCTION_IMPL0(get_crc_table);
 class CBMCartPrivate final : public RomDataPrivate
 {
 	public:
-		CBMCartPrivate(const shared_ptr<IRpFile> &file);
+		CBMCartPrivate(const IRpFilePtr &file);
 
 	private:
 		typedef RomDataPrivate super;
@@ -107,7 +106,7 @@ const RomDataInfo CBMCartPrivate::romDataInfo = {
 	"CBMCart", exts, mimeTypes
 };
 
-CBMCartPrivate::CBMCartPrivate(const shared_ptr<IRpFile> &file)
+CBMCartPrivate::CBMCartPrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
 	, romType(RomType::Unknown)
 	, rom_16k_crc32(0)
@@ -155,7 +154,7 @@ int CBMCartPrivate::zlibInit(void)
  *
  * @param file Open ROM image.
  */
-CBMCart::CBMCart(const shared_ptr<IRpFile> &file)
+CBMCart::CBMCart(const IRpFilePtr &file)
 	: super(new CBMCartPrivate(file))
 {
 	RP_D(CBMCart);

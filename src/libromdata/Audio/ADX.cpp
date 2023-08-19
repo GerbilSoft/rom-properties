@@ -12,12 +12,11 @@
 
 // Other rom-properties libraries
 using namespace LibRpBase;
+using namespace LibRpFile;
 using namespace LibRpText;
-using LibRpFile::IRpFile;
 
 // C++ STL classes
 using std::ostringstream;
-using std::shared_ptr;
 using std::string;
 
 namespace LibRomData {
@@ -25,7 +24,7 @@ namespace LibRomData {
 class ADXPrivate final : public RomDataPrivate
 {
 	public:
-		ADXPrivate(const shared_ptr<IRpFile> &file);
+		ADXPrivate(const IRpFilePtr &file);
 
 	private:
 		typedef RomDataPrivate super;
@@ -69,7 +68,7 @@ const RomDataInfo ADXPrivate::romDataInfo = {
 	"ADX", exts, mimeTypes
 };
 
-ADXPrivate::ADXPrivate(const shared_ptr<IRpFile> &file)
+ADXPrivate::ADXPrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
 	, pLoopData(nullptr)
 {
@@ -92,7 +91,7 @@ ADXPrivate::ADXPrivate(const shared_ptr<IRpFile> &file)
  *
  * @param file Open ROM image.
  */
-ADX::ADX(const shared_ptr<IRpFile> &file)
+ADX::ADX(const IRpFilePtr &file)
 	: super(new ADXPrivate(file))
 {
 	RP_D(ADX);

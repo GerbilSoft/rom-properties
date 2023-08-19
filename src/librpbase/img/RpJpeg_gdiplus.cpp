@@ -12,14 +12,12 @@
 // librpfile
 #include "librpfile/IRpFile.hpp"
 #include "librpfile/win32/IStreamWrapper.hpp"
-using LibRpFile::IRpFile;
-using LibRpFile::IStreamWrapper;
+using namespace LibRpFile;
 
 // librptexture
 #include "librptexture/img/rp_image.hpp"
 #include "librptexture/img/RpGdiplusBackend.hpp"
-using LibRpTexture::rp_image;
-using LibRpTexture::RpGdiplusBackend;
+using namespace LibRpTexture;
 
 // Gdiplus for JPEG decoding.
 // NOTE: Gdiplus requires min/max.
@@ -42,7 +40,7 @@ namespace LibRpBase {
  * @param file IRpFile to load from.
  * @return rp_image*, or nullptr on error.
  */
-shared_ptr<rp_image> RpJpeg::load(const shared_ptr<IRpFile> &file)
+shared_ptr<rp_image> RpJpeg::load(const IRpFilePtr &file)
 {
 	if (!file)
 		return nullptr;

@@ -11,9 +11,6 @@
 
 #include "librpfile/IRpFile.hpp"
 
-// C++ includes
-#include <memory>
-
 namespace LibRpFile {
 
 class SubFile final : public IRpFile
@@ -22,7 +19,7 @@ class SubFile final : public IRpFile
 		/**
 		 * Open a portion of an IRpFile.
 		 */
-		SubFile(const std::shared_ptr<IRpFile> &file, off64_t offset, off64_t length)
+		SubFile(const LibRpFile::IRpFilePtr &file, off64_t offset, off64_t length)
 			: m_file(file)
 			, m_offset(offset)
 			, m_length(length)
@@ -155,7 +152,7 @@ class SubFile final : public IRpFile
 		}
 
 	protected:
-		std::shared_ptr<IRpFile> m_file;
+		LibRpFile::IRpFilePtr m_file;
 		off64_t m_offset;
 		off64_t m_length;
 };

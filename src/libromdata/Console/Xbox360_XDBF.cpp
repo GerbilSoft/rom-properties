@@ -16,10 +16,9 @@
 #include "librpbase/img/RpPng.hpp"
 #include "librpfile/MemFile.hpp"
 using namespace LibRpBase;
+using namespace LibRpFile;
 using namespace LibRpText;
-using LibRpFile::IRpFile;
-using LibRpFile::MemFile;
-using LibRpTexture::rp_image;
+using namespace LibRpTexture;
 
 // C++ STL classes
 using std::array;
@@ -37,7 +36,7 @@ namespace LibRomData {
 class Xbox360_XDBF_Private final : public RomDataPrivate
 {
 	public:
-		Xbox360_XDBF_Private(const shared_ptr<IRpFile> &file, bool xex);
+		Xbox360_XDBF_Private(const IRpFilePtr &file, bool xex);
 		~Xbox360_XDBF_Private() final;
 
 	private:
@@ -289,7 +288,7 @@ const RomDataInfo Xbox360_XDBF_Private::romDataInfo = {
 	"Xbox360_XEX", exts, mimeTypes
 };
 
-Xbox360_XDBF_Private::Xbox360_XDBF_Private(const shared_ptr<IRpFile> &file, bool xex)
+Xbox360_XDBF_Private::Xbox360_XDBF_Private(const IRpFilePtr &file, bool xex)
 	: super(file, &romDataInfo)
 	, xdbfType(XDBFType::Unknown)
 	, data_offset(0)
@@ -1554,7 +1553,7 @@ int Xbox360_XDBF_Private::addFields_achievements_GPD(void)
  *
  * @param file Open XDBF file and/or section.
  */
-Xbox360_XDBF::Xbox360_XDBF(const shared_ptr<IRpFile> &file)
+Xbox360_XDBF::Xbox360_XDBF(const IRpFilePtr &file)
 	: super(new Xbox360_XDBF_Private(file, false))
 {
 	// This class handles XDBF files and/or sections only.
@@ -1585,7 +1584,7 @@ Xbox360_XDBF::Xbox360_XDBF(const shared_ptr<IRpFile> &file)
  * @param file Open XDBF file and/or section.
  * @param xex If true, hide fields that are displayed separately in XEX executables.
  */
-Xbox360_XDBF::Xbox360_XDBF(const shared_ptr<IRpFile> &file, bool xex)
+Xbox360_XDBF::Xbox360_XDBF(const IRpFilePtr &file, bool xex)
 	: super(new Xbox360_XDBF_Private(file, xex))
 {
 	// This class handles XDBF files and/or sections only.

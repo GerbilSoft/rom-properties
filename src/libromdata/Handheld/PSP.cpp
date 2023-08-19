@@ -14,9 +14,9 @@
 // Other rom-properties libraries
 #include "librpbase/img/RpPng.hpp"
 using namespace LibRpBase;
+using namespace LibRpFile;
 using namespace LibRpText;
 using namespace LibRpTexture;
-using LibRpFile::IRpFile;
 
 // DiscReader
 #include "cdrom_structs.h"
@@ -39,7 +39,7 @@ namespace LibRomData {
 class PSPPrivate final : public LibRpBase::RomDataPrivate
 {
 	public:
-		PSPPrivate(const shared_ptr<IRpFile> &file);
+		PSPPrivate(const IRpFilePtr &file);
 		~PSPPrivate() final;
 
 	private:
@@ -129,7 +129,7 @@ const RomDataInfo PSPPrivate::romDataInfo = {
 	"PSP", exts, mimeTypes
 };
 
-PSPPrivate::PSPPrivate(const shared_ptr<IRpFile> &file)
+PSPPrivate::PSPPrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
 	, discType(DiscType::Unknown)
 	, discReader(nullptr)
@@ -166,7 +166,7 @@ shared_ptr<const rp_image> PSPPrivate::loadIcon(void)
 		(unlikely(discType == DiscType::UmdVideo)
 			? "/UMD_VIDEO/ICON0.PNG"
 			: "/PSP_GAME/ICON0.PNG");
-	shared_ptr<IRpFile> f_icon(isoPartition->open(icon_filename));
+	const IRpFilePtr f_icon(isoPartition->open(icon_filename));
 	if (!f_icon) {
 		// Unable to open the icon file.
 		return nullptr;
@@ -197,7 +197,7 @@ RomData *PSPPrivate::openBootExe(void)
 	// Open the boot file.
 	// FIXME: This is normally encrypted, but some games have
 	// an unencrypted EBOOT.BIN.
-	shared_ptr<IRpFile> f_bootExe(isoPartition->open("/PSP_GAME/SYSDIR/EBOOT.BIN"));
+	const IRpFilePtr f_bootExe(isoPartition->open("/PSP_GAME/SYSDIR/EBOOT.BIN"));
 	if (f_bootExe) {
 		RomData *const exeData = new ELF(f_bootExe);
 		if (exeData->isOpen() && exeData->isValid()) {
@@ -229,7 +229,7 @@ RomData *PSPPrivate::openBootExe(void)
  *
  * @param file Open ROM image.
  */
-PSP::PSP(const shared_ptr<IRpFile> &file)
+PSP::PSP(const IRpFilePtr &file)
 	: super(new PSPPrivate(file))
 {
 	// This class handles disc images.
@@ -531,7 +531,7 @@ int PSP::loadFieldData(void)
 	// - Field 1: Encryption key?
 	// - Field 2: Revision?
 	// - Field 3: Age rating?
-	shared_ptr<IRpFile> f_umdDataBin = d->isoPartition->open("/UMD_DATA.BIN");
+	const IRpFilePtr f_umdDataBin = d->isoPartition->open("/UMD_DATA.BIN");
 	if (f_umdDataBin) {
 		// Read up to 128 bytes.
 		char buf[129];
@@ -645,7 +645,7 @@ int PSP::loadMetaData(void)
 	// - Field 1: Encryption key?
 	// - Field 2: Revision?
 	// - Field 3: Age rating?
-	shared_ptr<IRpFile> f_umdDataBin(d->isoPartition->open("/UMD_DATA.BIN"));
+	const IRpFilePtr f_umdDataBin(d->isoPartition->open("/UMD_DATA.BIN"));
 	if (f_umdDataBin) {
 		// Read up to 128 bytes.
 		char buf[129];

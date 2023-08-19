@@ -29,7 +29,7 @@ class CBCReader final : public LibRpBase::IPartition
 		 * @param key		[in] Encryption key. (Must be 128-bit) [If NULL, acts like no encryption.]
 		 * @param iv		[in] Initialization vector. (Must be 128-bit) [If NULL, uses ECB instead of CBC.]
 		 */
-		CBCReader(const std::shared_ptr<LibRpFile::IRpFile> &file, off64_t offset, off64_t length,
+		CBCReader(const LibRpFile::IRpFilePtr &file, off64_t offset, off64_t length,
 			const uint8_t *key, const uint8_t *iv);
 	protected:
 		~CBCReader() final;	// call unref() instead

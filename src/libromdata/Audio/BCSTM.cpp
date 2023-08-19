@@ -12,12 +12,11 @@
 
 // Other rom-properties libraries
 using namespace LibRpBase;
+using namespace LibRpFile;
 using namespace LibRpText;
-using LibRpFile::IRpFile;
 
 // C++ STL classes
 using std::ostringstream;
-using std::shared_ptr;
 using std::string;
 
 namespace LibRomData {
@@ -25,7 +24,7 @@ namespace LibRomData {
 class BCSTMPrivate final : public RomDataPrivate
 {
 	public:
-		BCSTMPrivate(const shared_ptr<IRpFile> &file);
+		BCSTMPrivate(const IRpFilePtr &file);
 
 	private:
 		typedef RomDataPrivate super;
@@ -110,7 +109,7 @@ const RomDataInfo BCSTMPrivate::romDataInfo = {
 	"BCSTM", exts, mimeTypes
 };
 
-BCSTMPrivate::BCSTMPrivate(const shared_ptr<IRpFile> &file)
+BCSTMPrivate::BCSTMPrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
 	, audioFormat(AudioFormat::Unknown)
 	, needsByteswap(false)
@@ -135,7 +134,7 @@ BCSTMPrivate::BCSTMPrivate(const shared_ptr<IRpFile> &file)
  *
  * @param file Open ROM image.
  */
-BCSTM::BCSTM(const shared_ptr<IRpFile> &file)
+BCSTM::BCSTM(const IRpFilePtr &file)
 	: super(new BCSTMPrivate(file))
 {
 	RP_D(BCSTM);

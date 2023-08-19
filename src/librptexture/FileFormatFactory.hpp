@@ -45,7 +45,7 @@ public:
 	 * @param file Texture file
 	 * @return FileFormat subclass, or nullptr if the texture file isn't supported.
 	 */
-	static LibRpTexture::FileFormat *create(const std::shared_ptr<LibRpFile::IRpFile> &file);
+	static LibRpTexture::FileFormat *create(const LibRpFile::IRpFilePtr &file);
 
 	/**
 	 * Get all supported file extensions.

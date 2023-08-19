@@ -19,15 +19,14 @@
 // Other rom-properties libraries
 #include "librpbase/SystemRegion.hpp"
 using namespace LibRpBase;
+using namespace LibRpFile;
 using namespace LibRpText;
-using LibRpFile::IRpFile;
 
 // DiscReader
 #include "librpbase/disc/DiscReader.hpp"
 #include "disc/WuxReader.hpp"
 
 // C++ STL classes
-using std::shared_ptr;
 using std::string;
 using std::vector;
 
@@ -36,7 +35,7 @@ namespace LibRomData {
 class WiiUPrivate final : public RomDataPrivate
 {
 	public:
-		WiiUPrivate(const shared_ptr<IRpFile> &file);
+		WiiUPrivate(const IRpFilePtr &file);
 		~WiiUPrivate() final;
 
 	private:
@@ -93,7 +92,7 @@ const RomDataInfo WiiUPrivate::romDataInfo = {
 	"WiiU", exts, mimeTypes
 };
 
-WiiUPrivate::WiiUPrivate(const shared_ptr<IRpFile> &file)
+WiiUPrivate::WiiUPrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
 	, discType(DiscType::Unknown)
 	, discReader(nullptr)
@@ -122,7 +121,7 @@ WiiUPrivate::~WiiUPrivate()
  *
  * @param file Open disc image.
  */
-WiiU::WiiU(const shared_ptr<IRpFile> &file)
+WiiU::WiiU(const IRpFilePtr &file)
 	: super(new WiiUPrivate(file))
 {
 	// This class handles disc images.

@@ -13,11 +13,10 @@
 // Other rom-properties libraries
 #include "librpbase/timeconv.h"
 using namespace LibRpBase;
+using namespace LibRpFile;
 using namespace LibRpText;
-using LibRpFile::IRpFile;
 
 // C++ STL classes
-using std::shared_ptr;
 using std::string;
 using std::unordered_map;
 
@@ -516,7 +515,7 @@ int XDVDFSPartition::closedir(IFst::Dir *dirp)
  * @param filename Filename.
  * @return IRpFile*, or nullptr on error.
  */
-shared_ptr<IRpFile> XDVDFSPartition::open(const char *filename)
+IRpFilePtr XDVDFSPartition::open(const char *filename)
 {
 	// TODO: File reference counter.
 	// This might be difficult to do because PartitionFile is a separate class.

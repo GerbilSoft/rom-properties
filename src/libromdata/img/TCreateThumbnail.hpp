@@ -178,7 +178,7 @@ class TCreateThumbnail
 		 * @param pOutParams	[out] Output parameters (If an error occurs, pOutParams->retImg will be null)
 		 * @return 0 on success; non-zero on error.
 		 */
-		int getThumbnail(const std::shared_ptr<LibRpFile::IRpFile> &file, int reqSize, GetThumbnailOutParams_t *pOutParams);
+		int getThumbnail(const LibRpFile::IRpFilePtr &file, int reqSize, GetThumbnailOutParams_t *pOutParams);
 
 		/**
 		 * Create a thumbnail for the specified ROM file.

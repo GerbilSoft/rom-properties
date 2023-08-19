@@ -14,11 +14,10 @@
 
 // Other rom-properties libraries
 using namespace LibRpBase;
+using namespace LibRpFile;
 using namespace LibRpText;
-using LibRpFile::IRpFile;
 
 // C++ STL classes
-using std::shared_ptr;
 using std::string;
 using std::unique_ptr;
 using std::unordered_map;
@@ -28,7 +27,7 @@ namespace LibRomData {
 class PSFPrivate final : public RomDataPrivate
 {
 	public:
-		PSFPrivate(const shared_ptr<IRpFile> &file);
+		PSFPrivate(const IRpFilePtr &file);
 
 	private:
 		typedef RomDataPrivate super;
@@ -125,7 +124,7 @@ const PSFPrivate::psf_type_tbl_t PSFPrivate::psf_type_tbl[] = {
 };
 const PSFPrivate::psf_type_tbl_t *const PSFPrivate::p_psf_type_tbl_end = &psf_type_tbl[ARRAY_SIZE(psf_type_tbl)];
 
-PSFPrivate::PSFPrivate(const shared_ptr<IRpFile> &file)
+PSFPrivate::PSFPrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
 {
 	// Clear the PSF header struct.
@@ -397,7 +396,7 @@ unsigned int PSFPrivate::lengthToMs(const char *str)
  *
  * @param file Open ROM image.
  */
-PSF::PSF(const shared_ptr<IRpFile> &file)
+PSF::PSF(const IRpFilePtr &file)
 	: super(new PSFPrivate(file))
 {
 	RP_D(PSF);

@@ -12,11 +12,10 @@
 
 // Other rom-properties libraries
 using namespace LibRpBase;
+using namespace LibRpFile;
 using namespace LibRpText;
-using LibRpFile::IRpFile;
 
 // C++ STL classes
-using std::shared_ptr;
 using std::string;
 
 namespace LibRomData {
@@ -24,7 +23,7 @@ namespace LibRomData {
 class SIDPrivate final : public RomDataPrivate
 {
 	public:
-		SIDPrivate(const shared_ptr<IRpFile> &file);
+		SIDPrivate(const IRpFilePtr &file);
 
 	private:
 		typedef RomDataPrivate super;
@@ -62,7 +61,7 @@ const RomDataInfo SIDPrivate::romDataInfo = {
 	"SID", exts, mimeTypes
 };
 
-SIDPrivate::SIDPrivate(const shared_ptr<IRpFile> &file)
+SIDPrivate::SIDPrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
 {
 	// Clear the SID header struct.
@@ -84,7 +83,7 @@ SIDPrivate::SIDPrivate(const shared_ptr<IRpFile> &file)
  *
  * @param file Open ROM image.
  */
-SID::SID(const shared_ptr<IRpFile> &file)
+SID::SID(const IRpFilePtr &file)
 	: super(new SIDPrivate(file))
 {
 	RP_D(SID);

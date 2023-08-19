@@ -12,9 +12,9 @@
 
 // Other rom-properties libraries
 using namespace LibRpBase;
+using namespace LibRpFile;
 using namespace LibRpText;
-using LibRpFile::IRpFile;
-using LibRpTexture::rp_image;
+using namespace LibRpTexture;
 
 // C++ STL classes
 using std::shared_ptr;
@@ -27,7 +27,7 @@ namespace LibRomData {
 class GameComPrivate final : public RomDataPrivate
 {
 	public:
-		GameComPrivate(const shared_ptr<IRpFile> &file);
+		GameComPrivate(const IRpFilePtr &file);
 		~GameComPrivate() final = default;
 
 	private:
@@ -111,7 +111,7 @@ const uint32_t GameComPrivate::gcom_palette[4] = {
 	0xFF000000,
 };
 
-GameComPrivate::GameComPrivate(const shared_ptr<IRpFile> &file)
+GameComPrivate::GameComPrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
 	, img_icon(nullptr)
 {
@@ -496,7 +496,7 @@ shared_ptr<const rp_image> GameComPrivate::loadIconRLE(void)
  *
  * @param file Open ROM image.
  */
-GameCom::GameCom(const shared_ptr<IRpFile> &file)
+GameCom::GameCom(const IRpFilePtr &file)
 	: super(new GameComPrivate(file))
 {
 	RP_D(GameCom);

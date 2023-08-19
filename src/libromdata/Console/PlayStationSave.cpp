@@ -17,9 +17,9 @@
 
 // Other rom-properties libraries
 using namespace LibRpBase;
+using namespace LibRpFile;
 using namespace LibRpText;
 using namespace LibRpTexture;
-using LibRpFile::IRpFile;
 
 // C++ STL classes
 using std::shared_ptr;
@@ -30,7 +30,7 @@ namespace LibRomData {
 class PlayStationSavePrivate final : public RomDataPrivate
 {
 	public:
-		PlayStationSavePrivate(const shared_ptr<IRpFile> &file);
+		PlayStationSavePrivate(const IRpFilePtr &file);
 		~PlayStationSavePrivate() final;
 
 	private:
@@ -106,7 +106,7 @@ const RomDataInfo PlayStationSavePrivate::romDataInfo = {
 	"PlayStationSave", exts, mimeTypes
 };
 
-PlayStationSavePrivate::PlayStationSavePrivate(const shared_ptr<IRpFile> &file)
+PlayStationSavePrivate::PlayStationSavePrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
 	, iconAnimData(nullptr)
 	, saveType(SaveType::Unknown)
@@ -212,7 +212,7 @@ shared_ptr<const rp_image> PlayStationSavePrivate::loadIcon(void)
  *
  * @param file Open ROM image.
  */
-PlayStationSave::PlayStationSave(const shared_ptr<IRpFile> &file)
+PlayStationSave::PlayStationSave(const IRpFilePtr &file)
 	: super(new PlayStationSavePrivate(file))
 {
 	// This class handles save files.

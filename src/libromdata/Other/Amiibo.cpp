@@ -13,11 +13,10 @@
 
 // Other rom-properties libraries
 using namespace LibRpBase;
+using namespace LibRpFile;
 using namespace LibRpText;
-using LibRpFile::IRpFile;
 
 // C++ STL classes
-using std::shared_ptr;
 using std::string;
 using std::vector;
 
@@ -26,7 +25,7 @@ namespace LibRomData {
 class AmiiboPrivate final : public RomDataPrivate
 {
 	public:
-		AmiiboPrivate(const shared_ptr<IRpFile> &file);
+		AmiiboPrivate(const IRpFilePtr &file);
 
 	private:
 		typedef RomDataPrivate super;
@@ -81,7 +80,7 @@ const RomDataInfo AmiiboPrivate::romDataInfo = {
 	"Amiibo", exts, mimeTypes
 };
 
-AmiiboPrivate::AmiiboPrivate(const shared_ptr<IRpFile> &file)
+AmiiboPrivate::AmiiboPrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
 	, nfpSize(0)
 {
@@ -121,7 +120,7 @@ bool AmiiboPrivate::verifyCheckBytes(const uint8_t *serial)
  *
  * @param file Open NFC dump.
  */
-Amiibo::Amiibo(const shared_ptr<IRpFile> &file)
+Amiibo::Amiibo(const IRpFilePtr &file)
 	: super(new AmiiboPrivate(file))
 {
 	// This class handles NFC dumps.

@@ -12,11 +12,10 @@
 
 // Other rom-properties libraries
 using namespace LibRpBase;
+using namespace LibRpFile;
 using namespace LibRpText;
-using LibRpFile::IRpFile;
 
 // C++ STL classes
-using std::shared_ptr;
 using std::string;
 using std::unique_ptr;
 using std::unordered_map;
@@ -27,7 +26,7 @@ namespace LibRomData {
 class SPCPrivate final : public RomDataPrivate
 {
 	public:
-		SPCPrivate(const shared_ptr<IRpFile> &file);
+		SPCPrivate(const IRpFilePtr &file);
 
 	private:
 		typedef RomDataPrivate super;
@@ -195,7 +194,7 @@ const RomDataInfo SPCPrivate::romDataInfo = {
 	"SPC", exts, mimeTypes
 };
 
-SPCPrivate::SPCPrivate(const shared_ptr<IRpFile> &file)
+SPCPrivate::SPCPrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
 {
 	// Clear the SPC header struct.
@@ -518,7 +517,7 @@ SPCPrivate::spc_tags_t SPCPrivate::parseTags(void)
  *
  * @param file Open ROM image.
  */
-SPC::SPC(const shared_ptr<IRpFile> &file)
+SPC::SPC(const IRpFilePtr &file)
 	: super(new SPCPrivate(file))
 {
 	RP_D(SPC);

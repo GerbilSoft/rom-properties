@@ -34,7 +34,7 @@ class RP_PropertyStore_Private
 
 	public:
 		// Set by IInitializeWithStream::Initialize().
-		std::shared_ptr<LibRpFile::IRpFile> file;
+		LibRpFile::IRpFilePtr file;
 
 		// RomData object.
 		LibRpBase::RomData *romData;

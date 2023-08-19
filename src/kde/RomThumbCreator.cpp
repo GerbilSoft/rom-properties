@@ -17,6 +17,7 @@
 
 // Other rom-properties libraries
 using namespace LibRpBase;
+using namespace LibRpFile;
 using namespace LibRpText;
 using LibRpTexture::rp_image;
 
@@ -267,7 +268,7 @@ bool RomThumbCreator::create(const QString &path, int width, int height, QImage 
 	path_enc.replace(QChar(L'#'), QLatin1String("%23"));
 	const QUrl path_url(path_enc);
 
-	shared_ptr<IRpFile> file(openQUrl(path_url, true));
+	const IRpFilePtr file(openQUrl(path_url, true));
 	if (!file) {
 		return false;
 	}
@@ -344,7 +345,7 @@ KIO::ThumbnailResult RomThumbnailCreator::create(const KIO::ThumbnailRequest &re
 	}
 
 	// Attempt to open the ROM file.
-	shared_ptr<IRpFile> file(openQUrl(url, true));
+	const IRpFilePtr file(openQUrl(url, true));
 	if (!file) {
 		return KIO::ThumbnailResult::fail();
 	}
@@ -415,7 +416,7 @@ Q_DECL_EXPORT int RP_C_API rp_create_thumbnail2(const char *source_file, const c
 
 	// Attempt to open the ROM file.
 	const QUrl localUrl = localizeQUrl(QUrl(QString::fromUtf8(source_file)));
-	shared_ptr<IRpFile> file(openQUrl(localUrl, true));
+	const IRpFilePtr file(openQUrl(localUrl, true));
 	if (!file) {
 		// Could not open the file.
 		return RPCT_ERROR_CANNOT_OPEN_SOURCE_FILE;

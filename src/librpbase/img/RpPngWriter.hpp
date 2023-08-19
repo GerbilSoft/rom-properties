@@ -87,7 +87,7 @@ public:
 	 * @param height 	[in] Image height
 	 * @param format 	[in] Image format
 	 */
-	RpPngWriter(const std::shared_ptr<LibRpFile::IRpFile> &file, int width, int height, LibRpTexture::rp_image::Format format);
+	RpPngWriter(const LibRpFile::IRpFilePtr &file, int width, int height, LibRpTexture::rp_image::Format format);
 
 	/**
 	 * Write an image to a PNG file.
@@ -141,7 +141,7 @@ public:
 	 * @param file	[in] IRpFile open for writing
 	 * @param img	[in] rp_image
 	 */
-	RpPngWriter(const std::shared_ptr<LibRpFile::IRpFile> &file, const std::shared_ptr<const LibRpTexture::rp_image> &img);
+	RpPngWriter(const LibRpFile::IRpFilePtr &file, const std::shared_ptr<const LibRpTexture::rp_image> &img);
 
 	/**
 	 * Write an animated image to an APNG file.
@@ -210,7 +210,7 @@ public:
 	 * @param file		[in] IRpFile open for writing
 	 * @param iconAnimData	[in] Animated image data
 	 */
-	RpPngWriter(const std::shared_ptr<LibRpFile::IRpFile> &file, const IconAnimData *iconAnimData);
+	RpPngWriter(const LibRpFile::IRpFilePtr &file, const IconAnimData *iconAnimData);
 
 	~RpPngWriter();
 

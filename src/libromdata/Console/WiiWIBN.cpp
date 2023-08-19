@@ -14,9 +14,9 @@
 // Other rom-properties libraries
 #include "librptexture/decoder/ImageDecoder_GCN.hpp"
 using namespace LibRpBase;
+using namespace LibRpFile;
 using namespace LibRpText;
 using namespace LibRpTexture;
-using LibRpFile::IRpFile;
 
 // C++ STL classes
 using std::shared_ptr;
@@ -28,7 +28,7 @@ namespace LibRomData {
 class WiiWIBNPrivate final : public RomDataPrivate
 {
 	public:
-		WiiWIBNPrivate(const shared_ptr<IRpFile> &file);
+		WiiWIBNPrivate(const IRpFilePtr &file);
 		~WiiWIBNPrivate() final;
 
 	private:
@@ -95,7 +95,7 @@ const RomDataInfo WiiWIBNPrivate::romDataInfo = {
 	"WiiSave", exts, mimeTypes
 };
 
-WiiWIBNPrivate::WiiWIBNPrivate(const shared_ptr<IRpFile> &file)
+WiiWIBNPrivate::WiiWIBNPrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
 	, img_banner(nullptr)
 	, iconAnimData(nullptr)
@@ -261,7 +261,7 @@ shared_ptr<const rp_image> WiiWIBNPrivate::loadBanner(void)
  *
  * @param file Open disc image.
  */
-WiiWIBN::WiiWIBN(const shared_ptr<IRpFile> &file)
+WiiWIBN::WiiWIBN(const IRpFilePtr &file)
 	: super(new WiiWIBNPrivate(file))
 {
 	// This class handles banner files.

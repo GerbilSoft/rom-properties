@@ -24,12 +24,9 @@
 #  include "libwin32common/DelayLoadHelper.h"
 #endif /* _MSC_VER */
 
-// librpbase, librpfile
+// Other rom-properties libraries
 using namespace LibRpBase;
-using LibRpFile::IRpFile;
-
-// C++ STL classes
-using std::shared_ptr;
+using namespace LibRpFile;
 
 namespace LibRomData {
 
@@ -113,7 +110,7 @@ uint32_t GczReaderPrivate::getBlockCompressedSize(uint32_t blockNum) const
 
 /** GczReader **/
 
-GczReader::GczReader(const shared_ptr<IRpFile> &file)
+GczReader::GczReader(const IRpFilePtr &file)
 	: super(new GczReaderPrivate(this), file)
 {
 	if (!m_file) {

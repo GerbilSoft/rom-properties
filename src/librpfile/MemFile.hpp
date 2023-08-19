@@ -10,12 +10,6 @@
 
 #include "IRpFile.hpp"
 
-// C includes (C++ namespace)
-#include <cerrno>
-
-// C++ includes
-#include <string>
-
 namespace LibRpFile {
 
 class RP_LIBROMDATA_PUBLIC MemFile : public IRpFile

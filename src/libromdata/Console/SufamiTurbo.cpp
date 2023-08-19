@@ -16,7 +16,6 @@ using namespace LibRpFile;
 using namespace LibRpText;
 
 // C++ STL classes
-using std::shared_ptr;
 using std::string;
 using std::vector;
 
@@ -25,7 +24,7 @@ namespace LibRomData {
 class SufamiTurboPrivate final : public RomDataPrivate
 {
 	public:
-		SufamiTurboPrivate(const shared_ptr<IRpFile> &file);
+		SufamiTurboPrivate(const IRpFilePtr &file);
 
 	private:
 		typedef RomDataPrivate super;
@@ -80,7 +79,7 @@ const RomDataInfo SufamiTurboPrivate::romDataInfo = {
 	"SNES", exts, mimeTypes
 };
 
-SufamiTurboPrivate::SufamiTurboPrivate(const shared_ptr<IRpFile> &file)
+SufamiTurboPrivate::SufamiTurboPrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
 {
 	// Clear the ROM header struct.
@@ -150,7 +149,7 @@ string SufamiTurboPrivate::getRomTitle(void) const
  *
  * @param file Open ROM image.
  */
-SufamiTurbo::SufamiTurbo(const shared_ptr<IRpFile> &file)
+SufamiTurbo::SufamiTurbo(const IRpFilePtr &file)
 	: super(new SufamiTurboPrivate(file))
 {
 	// NOTE: Handling Sufami Turbo ROMs as if they're Super NES.

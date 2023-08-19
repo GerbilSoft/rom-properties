@@ -14,14 +14,12 @@
 // Other rom-properties libraries
 #include "librpbase/img/RpPng.hpp"
 using namespace LibRpBase;
+using namespace LibRpFile;
 using namespace LibRpText;
-using LibRpFile::IRpFile;
-using LibRpFile::SubFile;
 
 // librptexture
 #include "librptexture/fileformat/XboxXPR.hpp"
-using LibRpTexture::rp_image;
-using LibRpTexture::XboxXPR;
+using namespace LibRpTexture;
 
 // Other RomData subclasses
 #include "Other/EXE.hpp"
@@ -41,7 +39,7 @@ namespace LibRomData {
 class Xbox_XBE_Private final : public RomDataPrivate
 {
 	public:
-		Xbox_XBE_Private(const shared_ptr<IRpFile> &file);
+		Xbox_XBE_Private(const IRpFilePtr &file);
 		~Xbox_XBE_Private() final;
 
 	private:
@@ -128,7 +126,7 @@ const RomDataInfo Xbox_XBE_Private::romDataInfo = {
 	"Xbox_XBE", exts, mimeTypes
 };
 
-Xbox_XBE_Private::Xbox_XBE_Private(const shared_ptr<IRpFile> &file)
+Xbox_XBE_Private::Xbox_XBE_Private(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
 	, pe_exe(nullptr)
 {
@@ -397,7 +395,7 @@ string Xbox_XBE_Private::getPublisher(void) const
  *
  * @param file Open XBE file.
  */
-Xbox_XBE::Xbox_XBE(const shared_ptr<IRpFile> &file)
+Xbox_XBE::Xbox_XBE(const IRpFilePtr &file)
 	: super(new Xbox_XBE_Private(file))
 {
 	// This class handles executables.

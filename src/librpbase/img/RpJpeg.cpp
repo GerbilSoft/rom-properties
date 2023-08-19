@@ -17,9 +17,8 @@
 #include "libi18n/i18n.h"
 
 // librpfile, librptexture
-using LibRpFile::IRpFile;
-using LibRpTexture::rp_image;
-using LibRpTexture::argb32_t;
+using namespace LibRpFile;
+using namespace LibRpTexture;
 
 #ifdef RPJPEG_HAS_SSSE3
 #  include "librpcpu/cpuflags_x86.h"
@@ -211,7 +210,7 @@ void RpJpegPrivate::jpeg_IRpFile_src(j_decompress_ptr cinfo, IRpFile *infile)
  * @param file IRpFile to load from.
  * @return rp_image*, or nullptr on error.
  */
-shared_ptr<rp_image> RpJpeg::load(const shared_ptr<IRpFile> &file)
+shared_ptr<rp_image> RpJpeg::load(const IRpFilePtr &file)
 {
 	if (!file)
 		return nullptr;

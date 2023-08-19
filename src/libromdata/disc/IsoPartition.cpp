@@ -12,11 +12,10 @@
 
 // Other rom-properties libraries
 using namespace LibRpBase;
+using namespace LibRpFile;
 using namespace LibRpText;
-using LibRpFile::IRpFile;
 
 // C++ STL classes
-using std::shared_ptr;
 using std::string;
 using std::unordered_map;
 
@@ -676,7 +675,7 @@ int IsoPartition::closedir(IFst::Dir *dirp)
  * @param filename Filename.
  * @return IRpFile*, or nullptr on error.
  */
-shared_ptr<IRpFile> IsoPartition::open(const char *filename)
+IRpFilePtr IsoPartition::open(const char *filename)
 {
 	RP_D(IsoPartition);
 	assert(m_discReader != nullptr);

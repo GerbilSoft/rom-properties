@@ -17,12 +17,9 @@
 #include "librpbase/disc/SparseDiscReader_p.hpp"
 #include "../cdrom_structs.h"
 
-// librpbase, librpfile
+// Other rom-properties libraries
 using namespace LibRpBase;
-using LibRpFile::IRpFile;
-
-// C++ STL classes
-using std::shared_ptr;
+using namespace LibRpFile;
 
 namespace LibRomData {
 
@@ -60,13 +57,13 @@ Cdrom2352ReaderPrivate::Cdrom2352ReaderPrivate(Cdrom2352Reader *q, unsigned int 
 
 /** Cdrom2352Reader **/
 
-Cdrom2352Reader::Cdrom2352Reader(const shared_ptr<IRpFile> &file)
+Cdrom2352Reader::Cdrom2352Reader(const IRpFilePtr &file)
 	: super(new Cdrom2352ReaderPrivate(this, 2352), file)
 {
 	init();
 }
 
-Cdrom2352Reader::Cdrom2352Reader(const shared_ptr<IRpFile> &file, unsigned int physBlockSize)
+Cdrom2352Reader::Cdrom2352Reader(const IRpFilePtr &file, unsigned int physBlockSize)
 	: super(new Cdrom2352ReaderPrivate(this, physBlockSize), file)
 {
 	init();

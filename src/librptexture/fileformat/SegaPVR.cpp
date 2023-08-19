@@ -12,10 +12,10 @@
 
 #include "pvr_structs.h"
 
-// librpbase, librpfile
+// Other rom-properties libraries
 #include "libi18n/i18n.h"
+using namespace LibRpFile;
 using LibRpBase::RomFields;
-using LibRpFile::IRpFile;
 
 // librptexture
 #include "img/rp_image.hpp"
@@ -33,7 +33,7 @@ namespace LibRpTexture {
 class SegaPVRPrivate final : public FileFormatPrivate
 {
 	public:
-		SegaPVRPrivate(SegaPVR *q, const shared_ptr<IRpFile> &file);
+		SegaPVRPrivate(SegaPVR *q, const IRpFilePtr &file);
 		~SegaPVRPrivate() final = default;
 
 	private:
@@ -158,7 +158,7 @@ const TextureInfo SegaPVRPrivate::textureInfo = {
 	exts, mimeTypes
 };
 
-SegaPVRPrivate::SegaPVRPrivate(SegaPVR *q, const shared_ptr<IRpFile> &file)
+SegaPVRPrivate::SegaPVRPrivate(SegaPVR *q, const IRpFilePtr &file)
 	: super(q, file, &textureInfo)
 	, pvrType(PVRType::Unknown)
 	, gbix_len(0)
@@ -1189,7 +1189,7 @@ shared_ptr<rp_image> SegaPVRPrivate::svr_unswizzle_16(const shared_ptr<const rp_
  *
  * @param file Open ROM image.
  */
-SegaPVR::SegaPVR(const shared_ptr<IRpFile> &file)
+SegaPVR::SegaPVR(const IRpFilePtr &file)
 	: super(new SegaPVRPrivate(this, file))
 {
 	RP_D(SegaPVR);

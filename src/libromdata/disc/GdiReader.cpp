@@ -16,8 +16,8 @@
 // Other rom-properties libraries
 #include "librpfile/RelatedFile.hpp"
 using namespace LibRpBase;
-using namespace LibRpText;
 using namespace LibRpFile;
+using namespace LibRpText;
 
 // Other RomData subclasses
 #include "Other/ISO.hpp"
@@ -302,7 +302,7 @@ int GdiReaderPrivate::openTrack(int trackNumber)
 
 /** GdiReader **/
 
-GdiReader::GdiReader(const shared_ptr<IRpFile> &file)
+GdiReader::GdiReader(const IRpFilePtr &file)
 	: super(new GdiReaderPrivate(this), file)
 {
 	if (!m_file) {

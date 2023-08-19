@@ -10,7 +10,7 @@
 #include "librpbase/config.librpbase.h"
 #include "CIAReader.hpp"
 
-// librpbase, librpfile
+// Other rom-properties libraries
 #include "librpbase/disc/CBCReader.hpp"
 #ifdef ENABLE_DECRYPTION
 #  include "librpbase/crypto/AesCipherFactory.hpp"
@@ -19,10 +19,7 @@
 #  include "../crypto/N3DSVerifyKeys.hpp"
 #endif /* ENABLE_DECRYPTION */
 using namespace LibRpBase;
-using LibRpFile::IRpFile;
-
-// C++ STL classes
-using std::shared_ptr;
+using namespace LibRpFile;
 
 namespace LibRomData {
 
@@ -198,7 +195,7 @@ CIAReaderPrivate::~CIAReaderPrivate()
  * @param ticket		[in,opt] Ticket for decryption. (nullptr if NoCrypto)
  * @param tmd_content_index	[in,opt] TMD content index for decryption.
  */
-CIAReader::CIAReader(const std::shared_ptr<LibRpFile::IRpFile> &file,
+CIAReader::CIAReader(const IRpFilePtr &file,
 		off64_t content_offset, uint32_t content_length,
 		const N3DS_Ticket_t *ticket,
 		uint16_t tmd_content_index)

@@ -29,7 +29,7 @@ ROMDATA_DECL_BEGIN(GameCubeBNR)
 		 * @param file Open banner file
 		 * @param gcnRegion GameCube region for BNR1 encoding
 		 */
-		explicit GameCubeBNR(const std::shared_ptr<LibRpFile::IRpFile> &file, uint32_t gcnRegion);
+		explicit GameCubeBNR(const LibRpFile::IRpFilePtr &file, uint32_t gcnRegion);
 
 	private:
 		/**
