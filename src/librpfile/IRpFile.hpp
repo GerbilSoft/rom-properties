@@ -23,7 +23,6 @@
 // Common macros
 #include "common.h"
 #include "dll-macros.h"	// for RP_LIBROMDATA_PUBLIC
-#include "RefBase.hpp"
 #include "d_type.h"
 
 namespace LibRpFile {

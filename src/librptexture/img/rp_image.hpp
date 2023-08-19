@@ -10,7 +10,6 @@
 
 #include "common.h"
 #include "dll-macros.h"
-#include "RefBase.hpp"
 
 // C includes.
 #include <stddef.h>	/* size_t */
