@@ -11,7 +11,6 @@
 #include "PIMGTYPE.hpp"
 
 // Other rom-properties libraries
-#include "librpbase/img/IconAnimData.hpp"
 #include "librpbase/img/IconAnimHelper.hpp"
 #include "librpfile/VectorFile.hpp"
 using namespace LibRpBase;
@@ -96,7 +95,7 @@ struct _RpDragImage {
 
 	// Animated icon data.
 	struct anim_vars {
-		const IconAnimData *iconAnimData;
+		IconAnimDataConstPtr iconAnimData;
 		std::array<PIMGTYPE, IconAnimData::MAX_FRAMES> iconFrames;
 		IconAnimHelper iconAnimHelper;
 		guint tmrIconAnim;	// Timer ID
@@ -104,8 +103,7 @@ struct _RpDragImage {
 		int last_frame_number;	// Last frame number.
 
 		anim_vars()
-			: iconAnimData(nullptr)
-			, tmrIconAnim(0)
+			: tmrIconAnim(0)
 			, last_delay(0)
 			, last_frame_number(0)
 		{
@@ -119,8 +117,6 @@ struct _RpDragImage {
 					PIMGTYPE_unref(frame);
 				}
 			}
-
-			UNREF(iconAnimData);
 		}
 	};
 	anim_vars *anim;
@@ -239,7 +235,7 @@ rp_drag_image_update_pixmaps(RpDragImage *image)
 	// (Super Smash Bros. Melee)
 	auto *const anim = image->anim;
 	if (anim && anim->iconAnimData) {
-		const IconAnimData *const iconAnimData = anim->iconAnimData;
+		const IconAnimDataConstPtr &iconAnimData = anim->iconAnimData;
 
 		// Convert the frames to PIMGTYPE.
 		for (int i = iconAnimData->count-1; i >= 0; i--) {
@@ -422,11 +418,7 @@ void rp_drag_image_set_ecks_bawks(RpDragImage *image, bool new_ecks_bawks)
 /**
  * Set the rp_image for this image.
  *
- * NOTE: The rp_image pointer is stored and used if necessary.
- * Make sure to call this function with nullptr before deleting
- * the rp_image object.
- *
- * NOTE 2: If animated icon data is specified, that supercedes
+ * NOTE: If animated icon data is specified, that supercedes
  * the individual rp_image.
  *
  * @param image RpDragImage
@@ -437,6 +429,10 @@ bool
 rp_drag_image_set_rp_image(RpDragImage *image, const rp_image_const_ptr &img)
 {
 	g_return_val_if_fail(RP_IS_DRAG_IMAGE(image), false);
+
+	// NOTE: We're not checking if the image pointer matches the
+	// previously stored image, since the underlying image may
+	// have changed.
 
 	(*image->pImg) = img;
 	if (!img) {
@@ -453,11 +449,7 @@ rp_drag_image_set_rp_image(RpDragImage *image, const rp_image_const_ptr &img)
 /**
  * Set the icon animation data for this image.
  *
- * NOTE: The iconAnimData pointer is stored and used if necessary.
- * Make sure to call this function with nullptr before deleting
- * the IconAnimData object.
- *
- * NOTE 2: If animated icon data is specified, that supercedes
+ * NOTE: If animated icon data is specified, that supercedes
  * the individual rp_image.
  *
  * @param image RpDragImage
@@ -465,7 +457,7 @@ rp_drag_image_set_rp_image(RpDragImage *image, const rp_image_const_ptr &img)
  * @return True on success; false on error or if clearing.
  */
 bool
-rp_drag_image_set_icon_anim_data(RpDragImage *image, const LibRpBase::IconAnimData *iconAnimData)
+rp_drag_image_set_icon_anim_data(RpDragImage *image, const IconAnimDataConstPtr &iconAnimData)
 {
 	g_return_val_if_fail(RP_IS_DRAG_IMAGE(image), false);
 
@@ -477,8 +469,8 @@ rp_drag_image_set_icon_anim_data(RpDragImage *image, const LibRpBase::IconAnimDa
 	// NOTE: We're not checking if the image pointer matches the
 	// previously stored image, since the underlying image may
 	// have changed.
-	UNREF_AND_NULL(anim->iconAnimData);
 
+	anim->iconAnimData = iconAnimData;
 	if (!iconAnimData) {
 		g_clear_handle_id(&anim->tmrIconAnim, g_source_remove);
 
@@ -489,8 +481,6 @@ rp_drag_image_set_icon_anim_data(RpDragImage *image, const LibRpBase::IconAnimDa
 		}
 		return false;
 	}
-
-	anim->iconAnimData = iconAnimData->ref();
 	return rp_drag_image_update_pixmaps(image);
 }
 
@@ -507,7 +497,7 @@ rp_drag_image_clear(RpDragImage *image)
 	auto *const anim = image->anim;
 	if (anim) {
 		g_clear_handle_id(&anim->tmrIconAnim, g_source_remove);
-		UNREF_AND_NULL(anim->iconAnimData);
+		anim->iconAnimData.reset();
 	}
 
 	(*image->pImg).reset();

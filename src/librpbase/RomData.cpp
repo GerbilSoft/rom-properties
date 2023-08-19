@@ -918,12 +918,9 @@ const char *RomData::getImageTypeName(ImageType imageType) {
  * Check imgpf for IMGPF_ICON_ANIMATED first to see if this
  * object has an animated icon.
  *
- * The retrieved IconAnimData must be ref()'d by the caller if the
- * caller stores it instead of using it immediately.
- *
  * @return Animated icon data, or nullptr if no animated icon is present.
  */
-const IconAnimData *RomData::iconAnimData(void) const
+IconAnimDataConstPtr RomData::iconAnimData(void) const
 {
 	// No animated icon by default.
 	return nullptr;

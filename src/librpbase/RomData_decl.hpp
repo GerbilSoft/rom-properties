@@ -196,12 +196,9 @@ public: \
 	 * Check imgpf for IMGPF_ICON_ANIMATED first to see if this \
 	 * object has an animated icon. \
 	 * \
-	 * The retrieved IconAnimData must be ref()'d by the caller if the \
-	 * caller stores it instead of using it immediately. \
-	 * \
 	 * @return Animated icon data, or nullptr if no animated icon is present. \
 	 */ \
-	const LibRpBase::IconAnimData *iconAnimData(void) const final;
+	LibRpBase::IconAnimDataConstPtr iconAnimData(void) const final;
 
 /**
  * RomData subclass function declaration for indicating "dangerous" permissions.

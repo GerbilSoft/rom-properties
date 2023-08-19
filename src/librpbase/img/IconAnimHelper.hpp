@@ -17,14 +17,13 @@ class IconAnimHelper
 {
 	public:
 		IconAnimHelper()
-			: m_iconAnimData(nullptr)
-			, m_seq_idx(0)
+			: m_seq_idx(0)
 			, m_frame(0)
 			, m_delay(0)
 			, m_last_valid_frame(0)
 		{ }
 
-		explicit IconAnimHelper(const IconAnimData *iconAnimData)
+		explicit IconAnimHelper(const IconAnimDataConstPtr &iconAnimData)
 			: m_iconAnimData(iconAnimData)
 			, m_seq_idx(0)
 			, m_frame(0)
@@ -34,24 +33,18 @@ class IconAnimHelper
 			reset();
 		}
 
-		~IconAnimHelper()
-		{
-			UNREF(m_iconAnimData);
-		}
-
 	private:
 		RP_DISABLE_COPY(IconAnimHelper);
 
 	public:
 		/**
 		 * Set the IconAnimData.
-		 * The iconAnimData() will be ref()'d.
 		 * @param iconAnimData New iconAnimData.
 		 */
-		void setIconAnimData(const IconAnimData *iconAnimData)
+		void setIconAnimData(const IconAnimDataConstPtr &iconAnimData)
 		{
-			UNREF(m_iconAnimData);
-			m_iconAnimData = iconAnimData->ref();
+			// TODO: Don't do anything if the pointers match?
+			m_iconAnimData = iconAnimData;
 			reset();
 		}
 
@@ -60,7 +53,7 @@ class IconAnimHelper
 		 * The caller must take a ref() to the IconAnimData.
 		 * @return IconAnimData.
 		 */
-		const IconAnimData *iconAnimData(void) const
+		IconAnimDataConstPtr iconAnimData(void) const
 		{
 			return m_iconAnimData;
 		}
@@ -119,7 +112,7 @@ class IconAnimHelper
 		int nextFrame(int *pDelay);
 
 	protected:
-		const IconAnimData *m_iconAnimData;
+		IconAnimDataConstPtr m_iconAnimData;
 		int m_seq_idx;		// Current sequence index.
 		int m_frame;		// Current frame.
 		int m_delay;		// Current frame delay. (ms)

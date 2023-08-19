@@ -10,17 +10,13 @@
 
 #pragma once
 
-namespace LibRpTexture {
-	class rp_image;
-}
-
-// librpbase
+// Other rom-properties libraries
 #include "librpbase/img/IconAnimData.hpp"
 #include "librpbase/img/IconAnimHelper.hpp"
+#include "librptexture/img/rp_image.hpp"
 
 // C++ includes
 #include <array>
-#include <memory>
 
 // Qt includes
 #include <QtCore/QTimer>
@@ -80,17 +76,13 @@ class DragImageLabel : public QLabel
 		/**
 		 * Set the icon animation data for this label.
 		 *
-		 * NOTE: The iconAnimData pointer is stored and used if necessary.
-		 * Make sure to call this function with nullptr before deleting
-		 * the IconAnimData object.
-		 *
-		 * NOTE 2: If animated icon data is specified, that supercedes
+		 * NOTE: If animated icon data is specified, that supercedes
 		 * the individual rp_image.
 		 *
 		 * @param iconAnimData IconAnimData, or nullptr to clear.
 		 * @return True on success; false on error or if clearing.
 		 */
-		bool setIconAnimData(const LibRpBase::IconAnimData *iconAnimData);
+		bool setIconAnimData(const LibRpBase::IconAnimDataConstPtr &iconAnimData);
 
 		/**
 		 * Clear the rp_image and iconAnimData.
@@ -166,7 +158,7 @@ class DragImageLabel : public QLabel
 
 		// Animated icon data
 		struct anim_vars {
-			const LibRpBase::IconAnimData *iconAnimData;
+			LibRpBase::IconAnimDataConstPtr iconAnimData;
 			std::array<QPixmap, LibRpBase::IconAnimData::MAX_FRAMES> iconFrames;
 			LibRpBase::IconAnimHelper iconAnimHelper;
 			QTimer *tmrIconAnim;
@@ -174,12 +166,10 @@ class DragImageLabel : public QLabel
 			bool anim_running;		// Animation is running.
 
 			anim_vars()
-				: iconAnimData(nullptr)
-				, tmrIconAnim(nullptr)
+				: tmrIconAnim(nullptr)
 				, last_frame_number(0)
 				, anim_running(false) { }
 			~anim_vars() {
-				UNREF(iconAnimData);
 				delete tmrIconAnim;
 			}
 		};

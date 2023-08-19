@@ -11,7 +11,6 @@
 #include "RpImageWin32.hpp"
 
 // Other rom-properties libraries
-#include "librpbase/img/IconAnimData.hpp"
 #include "librpbase/img/IconAnimHelper.hpp"
 #include "librpbase/img/RpPngWriter.hpp"
 using namespace LibRpBase;
@@ -57,7 +56,7 @@ class DragImageLabelPrivate
 
 		// Animated icon data.
 		struct anim_vars {
-			const LibRpBase::IconAnimData *iconAnimData;
+			IconAnimDataConstPtr iconAnimData;
 			std::array<HBITMAP, IconAnimData::MAX_FRAMES> iconFrames;
 			IconAnimHelper iconAnimHelper;
 			HWND m_hwndParent;
@@ -65,8 +64,7 @@ class DragImageLabelPrivate
 			int last_frame_number;		// Last frame number.
 
 			explicit anim_vars(HWND hwndParent)
-				: iconAnimData(nullptr)
-				, m_hwndParent(hwndParent)
+				: m_hwndParent(hwndParent)
 				, animTimerID(0)
 				, last_frame_number(0)
 			{
@@ -82,7 +80,6 @@ class DragImageLabelPrivate
 						DeleteBitmap(hbmp);
 					}
 				}
-				UNREF(iconAnimData);
 			}
 		};
 		anim_vars *anim;
@@ -228,7 +225,7 @@ bool DragImageLabelPrivate::updateBitmaps(void)
 	actualSize.cx = 0;
 
 	if (anim && anim->iconAnimData) {
-		const IconAnimData *const iconAnimData = anim->iconAnimData;
+		const IconAnimDataConstPtr &iconAnimData = anim->iconAnimData;
 
 		// Convert the icons to HBITMAP using the window background color.
 		// TODO: Rescale the icon. (port rescaleImage())
@@ -493,11 +490,7 @@ void DragImageLabel::tryPopupEcksBawks(LPARAM lParam)
 /**
  * Set the rp_image for this label.
  *
- * NOTE: The rp_image pointer is stored and used if necessary.
- * Make sure to call this function with nullptr before deleting
- * the rp_image object.
- *
- * NOTE 2: If animated icon data is specified, that supercedes
+ * NOTE: If animated icon data is specified, that supercedes
  * the individual rp_image.
  *
  * @param img rp_image, or nullptr to clear.
@@ -505,8 +498,11 @@ void DragImageLabel::tryPopupEcksBawks(LPARAM lParam)
  */
 bool DragImageLabel::setRpImage(const rp_image_const_ptr &img)
 {
-	RP_D(DragImageLabel);
+	// NOTE: We're not checking if the image pointer matches the
+	// previously stored image, since the underlying image may
+	// have changed.
 
+	RP_D(DragImageLabel);
 	d->img = img;
 	if (!img) {
 		if (d->hbmpImg) {
@@ -525,17 +521,13 @@ bool DragImageLabel::setRpImage(const rp_image_const_ptr &img)
 /**
  * Set the icon animation data for this label.
  *
- * NOTE: The iconAnimData pointer is stored and used if necessary.
- * Make sure to call this function with nullptr before deleting
- * the IconAnimData object.
- *
- * NOTE 2: If animated icon data is specified, that supercedes
+ * NOTE: If animated icon data is specified, that supercedes
  * the individual rp_image.
  *
  * @param iconAnimData IconAnimData, or nullptr to clear.
  * @return True on success; false on error or if clearing.
  */
-bool DragImageLabel::setIconAnimData(const IconAnimData *iconAnimData)
+bool DragImageLabel::setIconAnimData(const IconAnimDataConstPtr &iconAnimData)
 {
 	RP_D(DragImageLabel);
 
@@ -547,14 +539,12 @@ bool DragImageLabel::setIconAnimData(const IconAnimData *iconAnimData)
 	// NOTE: We're not checking if the image pointer matches the
 	// previously stored image, since the underlying image may
 	// have changed.
-	UNREF_AND_NULL(anim->iconAnimData);
-
+	anim->iconAnimData = iconAnimData;
 	if (!iconAnimData) {
 		if (anim->animTimerID) {
 			KillTimer(d->hwndParent, anim->animTimerID);
 			anim->animTimerID = 0;
 		}
-		anim->iconAnimData = nullptr;
 
 		if (!d->img) {
 			if (d->hbmpImg) {
@@ -566,8 +556,6 @@ bool DragImageLabel::setIconAnimData(const IconAnimData *iconAnimData)
 		}
 		return false;
 	}
-
-	anim->iconAnimData = iconAnimData->ref();
 	return d->updateBitmaps();
 }
 
@@ -583,7 +571,7 @@ void DragImageLabel::clearRp(void)
 			KillTimer(d->hwndParent, d->anim->animTimerID);
 			d->anim->animTimerID = 0;
 		}
-		d->anim->iconAnimData = nullptr;
+		d->anim->iconAnimData.reset();
 	}
 
 	d->img.reset();

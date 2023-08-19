@@ -64,7 +64,6 @@ const RomDataInfo NintendoDSPrivate::romDataInfo = {
 
 NintendoDSPrivate::NintendoDSPrivate(const IRpFilePtr &file, bool cia)
 	: super(file, &romDataInfo)
-	, iconAnimData(nullptr)
 	, romType(RomType::Unknown)
 	, romSize(0)
 	, secData(0)
@@ -77,11 +76,6 @@ NintendoDSPrivate::NintendoDSPrivate(const IRpFilePtr &file, bool cia)
 	// Clear the various structs.
 	memset(&romHeader, 0, sizeof(romHeader));
 	memset(&nds_icon_title, 0, sizeof(nds_icon_title));
-}
-
-NintendoDSPrivate::~NintendoDSPrivate()
-{
-	UNREF(iconAnimData);
 }
 
 /**
@@ -166,7 +160,7 @@ rp_image_const_ptr NintendoDSPrivate::loadIcon(void)
 
 	// Load the icon data.
 	// TODO: Only read the first frame unless specifically requested?
-	this->iconAnimData = new IconAnimData();
+	this->iconAnimData = std::make_shared<IconAnimData>();
 	iconAnimData->count = 0;
 
 	// Check if a DSi animated icon is present.
@@ -1403,12 +1397,9 @@ int NintendoDS::loadInternalImage(ImageType imageType, rp_image_const_ptr &pImag
  * Check imgpf for IMGPF_ICON_ANIMATED first to see if this
  * object has an animated icon.
  *
- * The retrieved IconAnimData must be ref()'d by the caller if the
- * caller stores it instead of using it immediately.
- *
  * @return Animated icon data, or nullptr if no animated icon is present.
  */
-const IconAnimData *NintendoDS::iconAnimData(void) const
+IconAnimDataConstPtr NintendoDS::iconAnimData(void) const
 {
 	RP_D(const NintendoDS);
 	if (!d->iconAnimData) {

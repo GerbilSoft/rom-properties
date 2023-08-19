@@ -15,12 +15,11 @@
 #include <memory>
 
 // Other rom-properties libraries
+#include "../img/IconAnimData.hpp"
 #include "librpfile/IRpFile.hpp"
 #include "librptexture/img/rp_image.hpp"
 
 namespace LibRpBase {
-
-struct IconAnimData;
 
 namespace RpPng {
 
@@ -86,7 +85,7 @@ int save(const wchar_t *filename, const LibRpTexture::rp_image_const_ptr &img);
  * @param iconAnimData Animated image data to save
  * @return 0 on success; negative POSIX error code on error
  */
-int save(const LibRpFile::IRpFilePtr &file, const IconAnimData *iconAnimData);
+int save(const LibRpFile::IRpFilePtr &file, const IconAnimDataConstPtr &iconAnimData);
 
 /**
  * Save an animated image in APNG format to a file.
@@ -104,7 +103,7 @@ int save(const LibRpFile::IRpFilePtr &file, const IconAnimData *iconAnimData);
  * @return 0 on success; negative POSIX error code on error
  */
 RP_LIBROMDATA_PUBLIC
-int save(const char *filename, const IconAnimData *iconAnimData);
+int save(const char *filename, const IconAnimDataConstPtr &iconAnimData);
 
 #ifdef _WIN32
 /**
@@ -123,7 +122,7 @@ int save(const char *filename, const IconAnimData *iconAnimData);
  * @return 0 on success; negative POSIX error code on error
  */
 RP_LIBROMDATA_PUBLIC
-int save(const wchar_t *filename, const IconAnimData *iconAnimData);
+int save(const wchar_t *filename, const IconAnimDataConstPtr &iconAnimData);
 #endif /* _WIN32 */
 
 /** Version info wrapper functions **/

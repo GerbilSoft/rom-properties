@@ -28,7 +28,7 @@ class WiiWIBNPrivate final : public RomDataPrivate
 {
 	public:
 		WiiWIBNPrivate(const IRpFilePtr &file);
-		~WiiWIBNPrivate() final;
+		~WiiWIBNPrivate() final = default;
 
 	private:
 		typedef RomDataPrivate super;
@@ -45,7 +45,7 @@ class WiiWIBNPrivate final : public RomDataPrivate
 		rp_image_ptr img_banner;
 
 		// Animated icon data
-		IconAnimData *iconAnimData;
+		IconAnimDataPtr iconAnimData;
 
 	public:
 		// File header.
@@ -96,16 +96,9 @@ const RomDataInfo WiiWIBNPrivate::romDataInfo = {
 
 WiiWIBNPrivate::WiiWIBNPrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
-	, img_banner(nullptr)
-	, iconAnimData(nullptr)
 {
 	// Clear the WIBN header struct.
 	memset(&wibnHeader, 0, sizeof(wibnHeader));
-}
-
-WiiWIBNPrivate::~WiiWIBNPrivate()
-{
-	UNREF(iconAnimData);
 }
 
 /**
@@ -147,7 +140,7 @@ rp_image_const_ptr WiiWIBNPrivate::loadIcon(void)
 	// Number of icons read.
 	const unsigned int icons_read = (unsigned int)(size / BANNER_WIBN_ICON_SIZE);
 
-	this->iconAnimData = new IconAnimData();
+	this->iconAnimData = std::make_shared<IconAnimData>();
 	iconAnimData->count = 0;
 
 	// Process the icons.
@@ -559,12 +552,9 @@ int WiiWIBN::loadInternalImage(ImageType imageType, rp_image_const_ptr &pImage)
  * Check imgpf for IMGPF_ICON_ANIMATED first to see if this
  * object has an animated icon.
  *
- * The retrieved IconAnimData must be ref()'d by the caller if the
- * caller stores it instead of using it immediately.
- *
  * @return Animated icon data, or nullptr if no animated icon is present.
  */
-const IconAnimData *WiiWIBN::iconAnimData(void) const
+IconAnimDataConstPtr WiiWIBN::iconAnimData(void) const
 {
 	RP_D(const WiiWIBN);
 	if (!d->iconAnimData) {

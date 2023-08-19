@@ -26,7 +26,7 @@ class DreamcastSavePrivate final : public RomDataPrivate
 {
 	public:
 		DreamcastSavePrivate(const IRpFilePtr &file);
-		~DreamcastSavePrivate() final;
+		~DreamcastSavePrivate() final = default;
 
 	private:
 		typedef RomDataPrivate super;
@@ -43,7 +43,7 @@ class DreamcastSavePrivate final : public RomDataPrivate
 		rp_image_ptr img_banner;
 
 		// Animated icon data
-		IconAnimData *iconAnimData;
+		IconAnimDataPtr iconAnimData;
 
 	public:
 		// Save file type.
@@ -215,7 +215,6 @@ const uint32_t DreamcastSavePrivate::eyecatch_sizes[4] = {
 
 DreamcastSavePrivate::DreamcastSavePrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
-	, iconAnimData(nullptr)
 	, saveType(SaveType::Unknown)
 	, loaded_headers(0)
 	, vmi_file(nullptr)
@@ -228,11 +227,6 @@ DreamcastSavePrivate::DreamcastSavePrivate(const IRpFilePtr &file)
 	memset(&vms_header, 0, sizeof(vms_header));
 	memset(&vmi_header, 0, sizeof(vmi_header));
 	memset(&vms_dirent, 0, sizeof(vms_dirent));
-}
-
-DreamcastSavePrivate::~DreamcastSavePrivate()
-{
-	UNREF(iconAnimData);
 }
 
 /**
@@ -487,7 +481,7 @@ rp_image_const_ptr DreamcastSavePrivate::loadIcon(void)
 		rp_byte_swap_32_array(buf.palette.u32, sizeof(buf.palette.u32));
 	}
 
-	this->iconAnimData = new IconAnimData();
+	this->iconAnimData = std::make_shared<IconAnimData>();
 	iconAnimData->count = 0;
 
 	// icon_anim_speed is in units of 1/30th of a second.
@@ -562,7 +556,7 @@ rp_image_const_ptr DreamcastSavePrivate::loadIcon_ICONDATA_VMS(void)
 
 	// NOTE: We need to set up iconAnimData in order to ensure
 	// this icon is deleted when the DreamcastSave is deleted.
-	this->iconAnimData = new IconAnimData();
+	this->iconAnimData = std::make_shared<IconAnimData>();
 	iconAnimData->count = 1;
 	iconAnimData->seq_index[0] = 0;
 	iconAnimData->delays[0].numer = 0;
@@ -1581,12 +1575,9 @@ int DreamcastSave::loadInternalImage(ImageType imageType, rp_image_const_ptr &pI
  * Check imgpf for IMGPF_ICON_ANIMATED first to see if this
  * object has an animated icon.
  *
- * The retrieved IconAnimData must be ref()'d by the caller if the
- * caller stores it instead of using it immediately.
- *
  * @return Animated icon data, or nullptr if no animated icon is present.
  */
-const IconAnimData *DreamcastSave::iconAnimData(void) const
+IconAnimDataConstPtr DreamcastSave::iconAnimData(void) const
 {
 	RP_D(const DreamcastSave);
 	if (!d->iconAnimData) {

@@ -17,13 +17,10 @@
 // Other rom-properties libraries
 #include "librpbase/RomData_p.hpp"
 #include "librpbase/RomFields.hpp"
+#include "librpbase/img/IconAnimData.hpp"
 #include "librptexture/img/rp_image.hpp"
 using namespace LibRpFile;
 using namespace LibRpTexture;
-
-namespace LibRpBase {
-	struct IconAnimData;
-}
 
 namespace LibRomData {
 
@@ -31,7 +28,7 @@ class NintendoDSPrivate final : public LibRpBase::RomDataPrivate
 {
 	public:
 		NintendoDSPrivate(const LibRpFile::IRpFilePtr &file, bool cia);
-		~NintendoDSPrivate() final;
+		~NintendoDSPrivate() final = default;
 
 	private:
 		typedef LibRpBase::RomDataPrivate super;
@@ -47,7 +44,7 @@ class NintendoDSPrivate final : public LibRpBase::RomDataPrivate
 		// Animated icon data.
 		// This class owns all of the icons in here, so we
 		// must delete all of them.
-		LibRpBase::IconAnimData *iconAnimData;
+		LibRpBase::IconAnimDataPtr iconAnimData;
 
 		// Pointer to the first frame in iconAnimData.
 		// Used when showing a static icon.

@@ -10,6 +10,9 @@
 
 #include "common.h"
 #include "dll-macros.h"	// for RP_LIBROMDATA_PUBLIC
+
+// librpbase, librptexture
+#include "../img/IconAnimData.hpp"
 #include "librptexture/img/rp_image.hpp"
 
 // C++ includes
@@ -22,8 +25,6 @@ namespace LibRpFile {
 }
 
 namespace LibRpBase {
-
-struct IconAnimData;
 
 class RpPngWriterPrivate;
 class RP_LIBROMDATA_PUBLIC RpPngWriter
@@ -163,7 +164,7 @@ public:
 	 * @param filename	[in] Filename (UTF-8)
 	 * @param iconAnimData	[in] Animated image data
 	 */
-	RpPngWriter(const char *filename, const IconAnimData *iconAnimData);
+	RpPngWriter(const char *filename, const IconAnimDataConstPtr &iconAnimData);
 
 #ifdef _WIN32
 	/**
@@ -186,7 +187,7 @@ public:
 	 * @param filename	[in] Filename (UTF-16)
 	 * @param iconAnimData	[in] Animated image data
 	 */
-	RpPngWriter(const wchar_t *filename, const IconAnimData *iconAnimData);
+	RpPngWriter(const wchar_t *filename, const IconAnimDataConstPtr &iconAnimData);
 #endif /* _WIN32 */
 
 	/**
@@ -210,7 +211,7 @@ public:
 	 * @param file		[in] IRpFile open for writing
 	 * @param iconAnimData	[in] Animated image data
 	 */
-	RpPngWriter(const LibRpFile::IRpFilePtr &file, const IconAnimData *iconAnimData);
+	RpPngWriter(const LibRpFile::IRpFilePtr &file, const IconAnimDataConstPtr &iconAnimData);
 
 	~RpPngWriter();
 

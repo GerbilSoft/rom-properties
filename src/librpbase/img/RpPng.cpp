@@ -634,10 +634,10 @@ int save(const wchar_t *filename, const rp_image_const_ptr &img)
  * @param iconAnimData Animated image data to save
  * @return 0 on success; negative POSIX error code on error
  */
-int save(const IRpFilePtr &file, const IconAnimData *iconAnimData)
+int save(const IRpFilePtr &file, const IconAnimDataConstPtr &iconAnimData)
 {
 	assert((bool)file);
-	assert(iconAnimData != nullptr);
+	assert((bool)iconAnimData);
 	if (!file || !file->isOpen() || !iconAnimData)
 		return -EINVAL;
 
@@ -671,11 +671,11 @@ int save(const IRpFilePtr &file, const IconAnimData *iconAnimData)
  * @param iconAnimData Animated image data to save
  * @return 0 on success; negative POSIX error code on error
  */
-int save(const char *filename, const IconAnimData *iconAnimData)
+int save(const char *filename, const IconAnimDataConstPtr &iconAnimData)
 {
 	assert(filename != nullptr);
 	assert(filename[0] != '\0');
-	assert(iconAnimData != nullptr);
+	assert((bool)iconAnimData);
 	if (!filename || filename[0] == '\0' || !iconAnimData)
 		return -EINVAL;
 
@@ -710,11 +710,11 @@ int save(const char *filename, const IconAnimData *iconAnimData)
  * @param iconAnimData Animated image data to save
  * @return 0 on success; negative POSIX error code on error
  */
-int save(const wchar_t *filename, const IconAnimData *iconAnimData)
+int save(const wchar_t *filename, const IconAnimDataConstPtr &iconAnimData)
 {
 	assert(filename != nullptr);
 	assert(filename[0] != L'\0');
-	assert(iconAnimData != nullptr);
+	assert((bool)iconAnimData);
 	if (!filename || filename[0] == L'\0' || !iconAnimData)
 		return -EINVAL;
 

@@ -23,7 +23,8 @@
 #include <string>
 #include <vector>
 
-// librpfile, librptexture
+// Other rom-properties libraries
+#include "img/IconAnimData.hpp"
 #include "librpfile/IRpFile.hpp"
 #include "librptexture/img/rp_image.hpp"
 
@@ -31,7 +32,6 @@ namespace LibRpBase {
 
 class RomFields;
 class RomMetaData;
-struct IconAnimData;
 
 class RomDataPrivate;
 class RomData : public RefBase
@@ -542,12 +542,9 @@ public:
 	 * Check imgpf for IMGPF_ICON_ANIMATED first to see if this
 	 * object has an animated icon.
 	 *
-	 * The retrieved IconAnimData must be ref()'d by the caller if the
-	 * caller stores it instead of using it immediately.
-	 *
 	 * @return Animated icon data, or nullptr if no animated icon is present.
 	 */
-	virtual const IconAnimData *iconAnimData(void) const;
+	virtual IconAnimDataConstPtr iconAnimData(void) const;
 
 public:
 	/**

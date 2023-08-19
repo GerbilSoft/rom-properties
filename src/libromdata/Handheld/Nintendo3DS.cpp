@@ -2483,12 +2483,9 @@ int Nintendo3DS::loadInternalImage(ImageType imageType, rp_image_const_ptr &pIma
  * Check imgpf for IMGPF_ICON_ANIMATED first to see if this
  * object has an animated icon.
  *
- * The retrieved IconAnimData must be ref()'d by the caller if the
- * caller stores it instead of using it immediately.
- *
  * @return Animated icon data, or nullptr if no animated icon is present.
  */
-const IconAnimData *Nintendo3DS::iconAnimData(void) const
+IconAnimDataConstPtr Nintendo3DS::iconAnimData(void) const
 {
 	// NOTE: Nintendo 3DS icons cannot be animated.
 	// Nintendo DSi icons can be animated, so this is

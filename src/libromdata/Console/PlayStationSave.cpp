@@ -30,7 +30,7 @@ class PlayStationSavePrivate final : public RomDataPrivate
 {
 	public:
 		PlayStationSavePrivate(const IRpFilePtr &file);
-		~PlayStationSavePrivate() final;
+		~PlayStationSavePrivate() final = default;
 
 	private:
 		typedef RomDataPrivate super;
@@ -44,7 +44,7 @@ class PlayStationSavePrivate final : public RomDataPrivate
 
 	public:
 		// Animated icon data.
-		IconAnimData *iconAnimData;
+		IconAnimDataPtr iconAnimData;
 
 	public:
 		// Save file type.
@@ -115,11 +115,6 @@ PlayStationSavePrivate::PlayStationSavePrivate(const IRpFilePtr &file)
 	memset(&scHeader, 0, sizeof(scHeader));
 }
 
-PlayStationSavePrivate::~PlayStationSavePrivate()
-{
-	UNREF(iconAnimData);
-}
-
 /**
  * Load the save file's icons.
  *
@@ -173,7 +168,7 @@ rp_image_const_ptr PlayStationSavePrivate::loadIcon(void)
 			break;
 	}
 
-	this->iconAnimData = new IconAnimData();
+	this->iconAnimData = std::make_shared<IconAnimData>();
 	iconAnimData->count = frames;
 	iconAnimData->seq_count = frames;
 
@@ -591,12 +586,9 @@ int PlayStationSave::loadInternalImage(ImageType imageType, rp_image_const_ptr &
  * Check imgpf for IMGPF_ICON_ANIMATED first to see if this
  * object has an animated icon.
  *
- * The retrieved IconAnimData must be ref()'d by the caller if the
- * caller stores it instead of using it immediately.
- *
  * @return Animated icon data, or nullptr if no animated icon is present.
  */
-const IconAnimData *PlayStationSave::iconAnimData(void) const
+IconAnimDataConstPtr PlayStationSave::iconAnimData(void) const
 {
 	RP_D(const PlayStationSave);
 	if (!d->iconAnimData) {

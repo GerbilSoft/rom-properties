@@ -29,7 +29,7 @@ class GameCubeSavePrivate final : public RomDataPrivate
 {
 	public:
 		GameCubeSavePrivate(const IRpFilePtr &file);
-		~GameCubeSavePrivate() final;
+		~GameCubeSavePrivate() final = default;
 
 	private:
 		typedef RomDataPrivate super;
@@ -46,7 +46,7 @@ class GameCubeSavePrivate final : public RomDataPrivate
 		rp_image_ptr img_banner;
 
 		// Animated icon data
-		IconAnimData *iconAnimData;
+		IconAnimDataPtr iconAnimData;
 
 	public:
 		// RomFields data
@@ -130,18 +130,11 @@ const RomDataInfo GameCubeSavePrivate::romDataInfo = {
 
 GameCubeSavePrivate::GameCubeSavePrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
-	, img_banner(nullptr)
-	, iconAnimData(nullptr)
 	, saveType(SaveType::Unknown)
 	, dataOffset(-1)
 {
 	// Clear the directory entry.
 	memset(&direntry, 0, sizeof(direntry));
-}
-
-GameCubeSavePrivate::~GameCubeSavePrivate()
-{
-	UNREF(iconAnimData);
 }
 
 /**
@@ -380,7 +373,7 @@ rp_image_const_ptr GameCubeSavePrivate::loadIcon(void)
 			icondata.get() + (iconsizetotal - (256*2)));
 	}
 
-	this->iconAnimData = new IconAnimData();
+	this->iconAnimData = std::make_shared<IconAnimData>();
 	iconAnimData->count = 0;
 
 	unsigned int iconaddr_cur = 0;
@@ -1084,12 +1077,9 @@ int GameCubeSave::loadInternalImage(ImageType imageType, rp_image_const_ptr &pIm
  * Check imgpf for IMGPF_ICON_ANIMATED first to see if this
  * object has an animated icon.
  *
- * The retrieved IconAnimData must be ref()'d by the caller if the
- * caller stores it instead of using it immediately.
- *
  * @return Animated icon data, or nullptr if no animated icon is present.
  */
-const IconAnimData *GameCubeSave::iconAnimData(void) const
+IconAnimDataConstPtr GameCubeSave::iconAnimData(void) const
 {
 	RP_D(const GameCubeSave);
 	if (!d->iconAnimData) {

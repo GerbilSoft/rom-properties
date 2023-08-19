@@ -12,11 +12,8 @@
 #include "RpQByteArrayFile.hpp"
 
 // Other rom-properties libraries
-#include "librpbase/img/IconAnimData.hpp"
-#include "librpbase/img/IconAnimHelper.hpp"
+using namespace LibRpBase;
 using namespace LibRpTexture;
-using LibRpBase::IconAnimData;
-using LibRpBase::RpPngWriter;
 
 // Qt includes
 #include <QDesktopServices>
@@ -82,6 +79,10 @@ void DragImageLabel::setEcksBawks(bool newEcksBawks)
  */
 bool DragImageLabel::setRpImage(const rp_image_const_ptr &img)
 {
+	// NOTE: We're not checking if the image pointer matches the
+	// previously stored image, since the underlying image may
+	// have changed.
+
 	m_img = img;
 	if (!img) {
 		if (!m_anim || !m_anim->iconAnimData) {
@@ -97,17 +98,13 @@ bool DragImageLabel::setRpImage(const rp_image_const_ptr &img)
 /**
  * Set the icon animation data for this label.
  *
- * NOTE: The iconAnimData pointer is stored and used if necessary.
- * Make sure to call this function with nullptr before deleting
- * the IconAnimData object.
- *
- * NOTE 2: If animated icon data is specified, that supercedes
+ * NOTE: If animated icon data is specified, that supercedes
  * the individual rp_image.
  *
  * @param iconAnimData IconAnimData, or nullptr to clear.
  * @return True on success; false on error or if clearing.
  */
-bool DragImageLabel::setIconAnimData(const IconAnimData *iconAnimData)
+bool DragImageLabel::setIconAnimData(const IconAnimDataConstPtr &iconAnimData)
 {
 	if (!m_anim) {
 		m_anim = new anim_vars();
@@ -116,8 +113,8 @@ bool DragImageLabel::setIconAnimData(const IconAnimData *iconAnimData)
 	// NOTE: We're not checking if the image pointer matches the
 	// previously stored image, since the underlying image may
 	// have changed.
-	UNREF_AND_NULL(m_anim->iconAnimData);
 
+	m_anim->iconAnimData = iconAnimData;
 	if (!iconAnimData) {
 		if (m_anim->tmrIconAnim) {
 			m_anim->tmrIconAnim->stop();
@@ -131,8 +128,6 @@ bool DragImageLabel::setIconAnimData(const IconAnimData *iconAnimData)
 		}
 		return false;
 	}
-
-	m_anim->iconAnimData = iconAnimData->ref();
 	return updatePixmaps();
 }
 
@@ -147,7 +142,7 @@ void DragImageLabel::clearRp(void)
 			m_anim->tmrIconAnim->stop();
 		}
 		m_anim->anim_running = false;
-		UNREF_AND_NULL(m_anim->iconAnimData);
+		m_anim->iconAnimData.reset();
 	}
 
 	m_img.reset();
@@ -191,7 +186,7 @@ QPixmap DragImageLabel::imgToPixmap(const QImage &img) const
 bool DragImageLabel::updatePixmaps(void)
 {
 	if (m_anim && m_anim->iconAnimData) {
-		const IconAnimData *const iconAnimData = m_anim->iconAnimData;
+		const IconAnimDataConstPtr &iconAnimData = m_anim->iconAnimData;
 
 		// Convert the icons to QPixmaps.
 		for (int i = iconAnimData->count-1; i >= 0; i--) {
