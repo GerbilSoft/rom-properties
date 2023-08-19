@@ -269,6 +269,11 @@ rp_image *fromGcnI8(int width, int height,
 
 	// Create an rp_image.
 	rp_image *const img = new rp_image(width, height, rp_image::Format::CI8);
+	if (!img->isValid()) {
+		// Could not allocate the image.
+		img->unref();
+		return nullptr;
+	}
 
 	// Initialize a grayscale palette.
 	// TODO: Optimize using pointers instead of indexes?
