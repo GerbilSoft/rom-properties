@@ -377,6 +377,9 @@ void AchievementsTabPrivate::updateImageList(void)
 	// TODO: The row highlight doesn't surround the empty area
 	// of the icon. LVS_OWNERDRAW is probably needed for that.
 	ListView_SetImageList(hListView, himglAch, LVSIL_SMALL);
+
+	imgAchSheet->unref();
+	imgAchGraySheet->unref();
 }
 
 /**
