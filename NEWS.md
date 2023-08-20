@@ -49,6 +49,8 @@
   * Windows rp-config: Fix the Key Manager tab not showing up at all.
     * This regressed in v2.2.1.
   * Nintendo3DS: Added non-standard MIME types used by Citra.
+    * See issue #382: Errors in KDE
+      * This particular issue was diagnosed by @dnmodder.
 
 * Other changes:
   * Nintendo3DS: The "Options" menu no longer shows a grayed-out "Extract SRL"
