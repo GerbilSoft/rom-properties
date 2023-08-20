@@ -780,38 +780,28 @@ int Dreamcast::loadFieldData(void)
 	// NOTE: Only done here because the ISO-9660 fields
 	// are used for field info only.
 	// TODO: Get from GdiReader for GDI.
+	ISO *isoData = nullptr;
 	if (d->discType == DreamcastPrivate::DiscType::GDI) {
 		// Open track 3 as ISO-9660.
-		ISO *const isoData = d->gdiReader->openIsoRomData(3);
-		if (isoData) {
-			if (isoData->isOpen()) {
-				// Add the fields.
-				const RomFields *const isoFields = isoData->fields();
-				assert(isoFields != nullptr);
-				if (isoFields) {
-					d->fields.addFields_romFields(isoFields,
-						RomFields::TabOffset_AddTabs);
-				}
-			}
-			isoData->unref();
-		}
+		isoData = d->gdiReader->openIsoRomData(3);
 	} else {
 		// ISO object for ISO-9660 PVD
 		shared_ptr<PartitionFile> isoFile = std::make_shared<PartitionFile>(d->discReader, 0, d->discReader->size());
 		if (isoFile->isOpen()) {
-			ISO *const isoData = new ISO(isoFile);
-			if (isoData->isOpen()) {
-				// Add the fields.
-				const RomFields *const isoFields = isoData->fields();
-				assert(isoFields != nullptr);
-				if (isoFields) {
-					d->fields.addFields_romFields(isoFields,
-						RomFields::TabOffset_AddTabs);
-				}
-			}
-			isoData->unref();
+			isoData = new ISO(isoFile);
 		}
 	}
+
+	if (isoData && isoData->isOpen()) {
+		// Add the fields.
+		const RomFields *const isoFields = isoData->fields();
+		assert(isoFields != nullptr);
+		if (isoFields) {
+			d->fields.addFields_romFields(isoFields,
+				RomFields::TabOffset_AddTabs);
+		}
+	}
+	UNREF(isoData);
 
 	// Finished reading the field data.
 	return static_cast<int>(d->fields.count());
