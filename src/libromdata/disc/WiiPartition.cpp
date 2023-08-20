@@ -501,14 +501,14 @@ int WiiPartitionPrivate::readSector(uint32_t sector_num)
  * @param partition_size	[in] Calculated partition size. Used if the size in the header is 0.
  * @param cryptoMethod		[in] Crypto method.
  */
-WiiPartition::WiiPartition(IDiscReader *discReader, off64_t partition_offset,
+WiiPartition::WiiPartition(const IDiscReaderPtr &discReader, off64_t partition_offset,
 		off64_t partition_size, CryptoMethod cryptoMethod)
 	: super(new WiiPartitionPrivate(this, discReader->size(),
 		partition_offset, cryptoMethod), discReader)
 {
 	// q->m_lastError is handled by GcnPartitionPrivate's constructor.
 	if (!m_discReader || !m_discReader->isOpen()) {
-		UNREF_AND_NULL(m_discReader);
+		m_discReader.reset();
 		return;
 	}
 
@@ -516,13 +516,13 @@ WiiPartition::WiiPartition(IDiscReader *discReader, off64_t partition_offset,
 	RP_D(WiiPartition);
 	if (m_discReader->seek(partition_offset) != 0) {
 		m_lastError = m_discReader->lastError();
-		UNREF_AND_NULL_NOCHK(m_discReader);
+		m_discReader.reset();
 		return;
 	}
 	size_t size = m_discReader->read(&d->partitionHeader, sizeof(d->partitionHeader));
 	if (size != sizeof(d->partitionHeader)) {
 		m_lastError = EIO;
-		UNREF_AND_NULL_NOCHK(m_discReader);
+		m_discReader.reset();
 		return;
 	}
 
@@ -530,7 +530,7 @@ WiiPartition::WiiPartition(IDiscReader *discReader, off64_t partition_offset,
 	if (d->partitionHeader.ticket.signature_type != cpu_to_be32(RVL_SIGNATURE_TYPE_RSA2048)) {
 		// TODO: Better error?
 		m_lastError = EIO;
-		UNREF_AND_NULL_NOCHK(m_discReader);
+		m_discReader.reset();
 		return;
 	}
 

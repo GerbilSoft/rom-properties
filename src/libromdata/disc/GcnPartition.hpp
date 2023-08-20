@@ -26,11 +26,11 @@ class GcnPartition : public LibRpBase::IPartition
 		 * @param discReader IDiscReader.
 		 * @param partition_offset Partition start offset.
 		 */
-		explicit GcnPartition(IDiscReader *discReader, off64_t partition_offset);
+		explicit GcnPartition(const LibRpBase::IDiscReaderPtr &discReader, off64_t partition_offset);
+	public:
+		~GcnPartition() override;
 	protected:
-		~GcnPartition() override;	// call unref() instead
-	protected:
-		explicit GcnPartition(GcnPartitionPrivate *d, IDiscReader *discReader);
+		explicit GcnPartition(GcnPartitionPrivate *d, const LibRpBase::IDiscReaderPtr &discReader);
 
 	private:
 		typedef IPartition super;
@@ -133,5 +133,7 @@ class GcnPartition : public LibRpBase::IPartition
 		 */
 		LibRpFile::IRpFilePtr open(const char *filename);
 };
+
+typedef std::shared_ptr<GcnPartition> GcnPartitionPtr;
 
 }

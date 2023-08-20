@@ -29,9 +29,9 @@ class XDVDFSPartition final : public LibRpBase::IPartition
 		 * @param partition_offset Partition start offset.
 		 * @param partition_size Partition size.
 		 */
-		XDVDFSPartition(IDiscReader *discReader, off64_t partition_offset, off64_t partition_size);
-	protected:
-		~XDVDFSPartition() final;	// call unref() instead
+		XDVDFSPartition(const LibRpBase::IDiscReaderPtr &discReader, off64_t partition_offset, off64_t partition_size);
+	public:
+		~XDVDFSPartition() final;
 
 	private:
 		typedef IPartition super;
@@ -146,5 +146,7 @@ class XDVDFSPartition final : public LibRpBase::IPartition
 		 */
 		time_t xdvdfsTimestamp(void) const;
 };
+
+typedef std::shared_ptr<XDVDFSPartition> XDVDFSPartitionPtr;
 
 }

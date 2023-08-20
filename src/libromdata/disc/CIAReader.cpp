@@ -30,7 +30,6 @@ class CIAReaderPrivate
 			off64_t content_offset, uint32_t content_length,
 			const N3DS_Ticket_t *ticket,
 			uint16_t tmd_content_index);
-		~CIAReaderPrivate();
 
 	private:
 		RP_DISABLE_COPY(CIAReaderPrivate)
@@ -38,7 +37,7 @@ class CIAReaderPrivate
 		CIAReader *const q_ptr;
 
 	public:
-		CBCReader *cbcReader;		// CBC reader.
+		CBCReaderPtr cbcReader;
 
 #ifdef ENABLE_DECRYPTION
 		// KeyY index for title key encryption.
@@ -54,7 +53,6 @@ CIAReaderPrivate::CIAReaderPrivate(CIAReader *q,
 	off64_t content_offset, uint32_t content_length,
 	const N3DS_Ticket_t *ticket, uint16_t tmd_content_index)
 	: q_ptr(q)
-	, cbcReader(nullptr)
 #ifdef ENABLE_DECRYPTION
 	, titleKeyEncIdx(0)
 	, tmd_content_index(tmd_content_index)
@@ -74,7 +72,7 @@ CIAReaderPrivate::CIAReaderPrivate(CIAReader *q,
 	if (!ticket) {
 		// No ticket. Assuming no encryption.
 		// Create a passthru CBCReader anyway.
-		cbcReader = new CBCReader(q->m_file, content_offset, content_length, nullptr, nullptr);
+		cbcReader = std::make_shared<CBCReader>(q->m_file, content_offset, content_length, nullptr, nullptr);
 		return;
 	}
 
@@ -162,7 +160,7 @@ CIAReaderPrivate::CIAReaderPrivate(CIAReader *q,
 		memset(&cia_iv.u8[2], 0, sizeof(cia_iv.u8)-2);
 
 		// Create a CBC reader to decrypt the CIA.
-		cbcReader = new CBCReader(q->m_file, content_offset, content_length, title_key, cia_iv.u8);
+		cbcReader = std::make_shared<CBCReader>(q->m_file, content_offset, content_length, title_key, cia_iv.u8);
 	} else {
 		// Unable to get the CIA encryption keys.
 		// TODO: Set an error.
@@ -174,11 +172,6 @@ CIAReaderPrivate::CIAReaderPrivate(CIAReader *q,
 	// TODO: Set an error.
 	q->m_file.reset();
 #endif /* ENABLE_DECRYPTION */
-}
-
-CIAReaderPrivate::~CIAReaderPrivate()
-{
-	UNREF(cbcReader);
 }
 
 /** CIAReader **/
@@ -222,7 +215,7 @@ size_t CIAReader::read(void *ptr, size_t size)
 	assert(ptr != nullptr);
 	assert(m_file != nullptr);
 	assert(m_file->isOpen());
-	assert(d->cbcReader != nullptr);
+	assert((bool)d->cbcReader);
 	if (!ptr) {
 		m_lastError = EINVAL;
 		return 0;

@@ -66,8 +66,8 @@ class PSPPrivate final : public LibRpBase::RomDataPrivate
 		ISO_Primary_Volume_Descriptor pvd;
 
 		// IsoPartition
-		IDiscReader *discReader;
-		IsoPartition *isoPartition;
+		IDiscReaderPtr discReader;
+		IsoPartitionPtr isoPartition;
 
 		// Icon
 		rp_image_ptr img_icon;
@@ -132,8 +132,6 @@ const RomDataInfo PSPPrivate::romDataInfo = {
 PSPPrivate::PSPPrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
 	, discType(DiscType::Unknown)
-	, discReader(nullptr)
-	, isoPartition(nullptr)
 	, bootExeData(nullptr)
 {
 	// Clear the structs.
@@ -143,8 +141,6 @@ PSPPrivate::PSPPrivate(const IRpFilePtr &file)
 PSPPrivate::~PSPPrivate()
 {
 	UNREF(bootExeData);
-	UNREF(isoPartition);
-	UNREF(discReader);
 }
 
 /**
@@ -243,7 +239,7 @@ PSP::PSP(const IRpFilePtr &file)
 	}
 
 	// UMD is based on the DVD specification and therefore only has 2048-byte sectors.
-	IDiscReader *discReader = nullptr;
+	IDiscReaderPtr discReader;
 
 	// Check if this is a supported compressed disc image.
 	uint8_t header[256];
@@ -255,22 +251,21 @@ PSP::PSP(const IRpFilePtr &file)
 		return;
 	}
 	if (CisoPspReader::isDiscSupported_static(header, sizeof(header)) >= 0) {
-		discReader = new CisoPspReader(d->file);
+		discReader = std::make_shared<CisoPspReader>(d->file);
 		if (!discReader->isOpen()) {
 			// Not CISO.
-			UNREF_AND_NULL_NOCHK(discReader);
+			discReader.reset();
 		}
 	}
 
 	if (!discReader) {
 		// Not a supported compressed disc image.
 		// Try opening as uncompressed.
-		discReader = new DiscReader(d->file);
+		discReader = std::make_shared<DiscReader>(d->file);
 	}
 
 	if (!discReader->isOpen()) {
 		// Error opening the DiscReader.
-		UNREF(discReader);
 		d->file.reset();
 		return;
 	}
@@ -278,13 +273,11 @@ PSP::PSP(const IRpFilePtr &file)
 	// Check the ISO PVD and system ID.
 	size = discReader->seekAndRead(ISO_PVD_ADDRESS_2048, &d->pvd, sizeof(d->pvd));
 	if (size != sizeof(d->pvd)) {
-		UNREF(discReader);
 		d->file.reset();
 		return;
 	}
 	if (ISO::checkPVD(reinterpret_cast<const uint8_t*>(&d->pvd)) < 0) {
 		// Not ISO-9660.
-		UNREF(discReader);
 		d->file.reset();
 		return;
 	}
@@ -293,24 +286,21 @@ PSP::PSP(const IRpFilePtr &file)
 	d->discType = static_cast<PSPPrivate::DiscType>(isRomSupported_static(&d->pvd));
 	if ((int)d->discType < 0) {
 		// Incorrect system ID.
-		UNREF(discReader);
 		d->file.reset();
 		return;
 	}
 
 	// Try to open the ISO partition.
-	IsoPartition *const isoPartition = new IsoPartition(discReader, 0, 0);
+	IsoPartitionPtr isoPartition = std::make_shared<IsoPartition>(discReader, 0, 0);
 	if (!isoPartition->isOpen()) {
 		// Error opening the ISO partition.
-		UNREF(isoPartition);
-		UNREF(discReader);
 		d->file.reset();
 		return;
 	}
 
 	// Disc image is ready.
-	d->discReader = discReader;
-	d->isoPartition = isoPartition;
+	d->discReader = std::move(discReader);
+	d->isoPartition = std::move(isoPartition);
 	d->isValid = true;
 }
 
@@ -327,8 +317,8 @@ void PSP::close(void)
 		d->bootExeData->close();
 	}
 
-	UNREF_AND_NULL(d->isoPartition);
-	UNREF_AND_NULL(d->discReader);
+	d->isoPartition.reset();
+	d->discReader.reset();
 
 	// Call the superclass function.
 	super::close();
@@ -576,7 +566,7 @@ int PSP::loadFieldData(void)
 
 	// ISO object for ISO-9660 PVD
 	// TODO: DiscReader overload for ISO.
-	shared_ptr<PartitionFile> ptFile = std::make_shared<PartitionFile>(d->discReader, 0, d->discReader->size());
+	PartitionFilePtr ptFile = std::make_shared<PartitionFile>(d->discReader.get(), 0, d->discReader->size());
 	ISO *const isoData = new ISO(ptFile);
 	if (isoData->isOpen()) {
 		// Add the fields.

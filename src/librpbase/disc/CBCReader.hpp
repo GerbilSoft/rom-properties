@@ -31,8 +31,8 @@ class CBCReader final : public LibRpBase::IPartition
 		 */
 		CBCReader(const LibRpFile::IRpFilePtr &file, off64_t offset, off64_t length,
 			const uint8_t *key, const uint8_t *iv);
-	protected:
-		~CBCReader() final;	// call unref() instead
+	public:
+		~CBCReader() final;
 
 	private:
 		typedef IPartition super;
@@ -94,5 +94,7 @@ class CBCReader final : public LibRpBase::IPartition
 		 */
 		off64_t partition_size_used(void) const final;
 };
+
+typedef std::shared_ptr<CBCReader> CBCReaderPtr;
 
 }

@@ -85,6 +85,15 @@ class GdiReaderPrivate final : public SparseDiscReaderPrivate {
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
 		int openTrack(int trackNumber);
+
+		/**
+		 * Get the starting LBA and size of the specified track number.
+		 * @param trackNumber	[in] Track number (1-based)
+		 * @param lba_start	[out] Starting LBA
+		 * @param lba_size	[out] Length of track, in LBAs
+		 * @return 0 on success; non-zero on error.
+		 */
+		int getTrackLBAInfo(int trackNumber, unsigned int &lba_start, unsigned int &lba_size);
 };
 
 /** GdiReaderPrivate **/
@@ -297,6 +306,32 @@ int GdiReaderPrivate::openTrack(int trackNumber)
 	// File opened.
 	blockRange->blockEnd = blockRange->blockStart + static_cast<unsigned int>(fileSize / blockRange->sectorSize) - 1;
 	blockRange->file = file;
+	return 0;
+}
+
+/**
+ * Get the starting LBA and size of the specified track number.
+ * @param trackNumber	[in] Track number (1-based)
+ * @param lba_start	[out] Starting LBA
+ * @param lba_size	[out] Length of track, in LBAs
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int GdiReaderPrivate::getTrackLBAInfo(int trackNumber, unsigned int &lba_start, unsigned int &lba_size)
+{
+	if (openTrack(trackNumber) != 0) {
+		// Cannot open the track.
+		return -EIO;
+	}
+
+	if (trackMappings.size() < static_cast<size_t>(trackNumber)) {
+		// Invalid track number.
+		return -EINVAL;
+	}
+	GdiReaderPrivate::BlockRange *const blockRange = trackMappings[trackNumber-1];
+
+	// Calculate the track length.
+	lba_start = blockRange->blockStart;
+	lba_size = blockRange->blockEnd - lba_start + 1;
 	return 0;
 }
 
@@ -609,15 +644,38 @@ int GdiReader::startingLBA(int trackNumber) const
  * @param trackNumber Track number. (1-based)
  * @return IsoPartition, or nullptr on error.
  */
-IsoPartition *GdiReader::openIsoPartition(int trackNumber)
+IsoPartitionPtr GdiReader::openIsoPartition(int trackNumber)
 {
-	const int lba = startingLBA(trackNumber);
-	if (lba < 0)
+	RP_D(GdiReader);
+
+	unsigned int lba_start, lba_size;
+	if (d->getTrackLBAInfo(trackNumber, lba_start, lba_size) != 0) {
+		// Unable to get track LBA info.
 		return nullptr;
+	}
+
+	// FIXME: IsoPartition's constructor requires an IDiscReaderPtr,
+	// but we don't have our own shared_ptr<> available.
+	// Workaround: Create a PartitionFile and use that.
+	PartitionFilePtr isoFile = std::make_shared<PartitionFile>(this,
+		static_cast<off64_t>(lba_start) * 2048,
+		static_cast<off64_t>(lba_size) * 2048);
+	if (!isoFile->isOpen()) {
+		// Unable to open the PartitionFile.
+		return nullptr;
+	}
+
+	// NOTE: IsoPartition *only* works properly with IDiscReader.
+	IDiscReaderPtr discReader = std::make_shared<DiscReader>(isoFile);
+	if (!discReader->isOpen()) {
+		// Unable to open the DiscReader.
+		return nullptr;
+	}
 
 	// Logical block size is 2048.
 	// ISO starting offset is the LBA.
-	return new IsoPartition(this, lba * 2048, lba);
+	// FIXME BEFORE COMMIT: Verify that this works correctly.
+	return std::make_shared<IsoPartition>(discReader, 0, lba_start);
 }
 
 /**
@@ -627,27 +685,18 @@ IsoPartition *GdiReader::openIsoPartition(int trackNumber)
  */
 ISO *GdiReader::openIsoRomData(int trackNumber)
 {
-	// Make sure the track is open.
 	RP_D(GdiReader);
-	if (d->openTrack(trackNumber) != 0) {
-		// Cannot open the track.
+
+	unsigned int lba_start, lba_size;
+	if (d->getTrackLBAInfo(trackNumber, lba_start, lba_size) != 0) {
+		// Unable to get track LBA info.
 		return nullptr;
 	}
-
-	if (d->trackMappings.size() < static_cast<size_t>(trackNumber)) {
-		// Invalid track number.
-		return nullptr;
-	}
-	GdiReaderPrivate::BlockRange *const blockRange = d->trackMappings[trackNumber-1];
-
-	// Calculate the track length.
-	const int lba_start = blockRange->blockStart;
-	const int lba_size = blockRange->blockEnd - lba_start + 1;
 
 	// ISO object for ISO-9660 PVD
 	ISO *isoData = nullptr;
 
-	shared_ptr<PartitionFile> isoFile = std::make_shared<PartitionFile>(this,
+	PartitionFilePtr isoFile = std::make_shared<PartitionFile>(this,
 		static_cast<off64_t>(lba_start) * 2048,
 		static_cast<off64_t>(lba_size) * 2048);
 	if (isoFile->isOpen()) {

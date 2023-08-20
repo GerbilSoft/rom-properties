@@ -76,11 +76,11 @@ class PlayStationDiscPrivate final : public RomDataPrivate
 		 * @param pt IPartition containing SYSTEM.CNF.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		int loadSystemCnf(IsoPartition *pt);
+		int loadSystemCnf(const IsoPartitionPtr &pt);
 
 		// IsoPartition
-		IDiscReader *discReader;
-		IsoPartition *isoPartition;
+		IDiscReaderPtr discReader;
+		IsoPartitionPtr isoPartition;
 
 		// Boot executable
 		RomData *bootExeData;
@@ -141,8 +141,6 @@ const RomDataInfo PlayStationDiscPrivate::romDataInfo = {
 
 PlayStationDiscPrivate::PlayStationDiscPrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
-	, discReader(nullptr)
-	, isoPartition(nullptr)
 	, bootExeData(nullptr)
 	, consoleType(ConsoleType::Unknown)
 {
@@ -153,8 +151,6 @@ PlayStationDiscPrivate::PlayStationDiscPrivate(const IRpFilePtr &file)
 PlayStationDiscPrivate::~PlayStationDiscPrivate()
 {
 	UNREF(bootExeData);
-	UNREF(isoPartition);
-	UNREF(discReader);
 }
 
 /**
@@ -187,7 +183,7 @@ int PlayStationDiscPrivate::parse_system_cnf(void *user, const char *section, co
  * @param pt IPartition containing SYSTEM.CNF.
  * @return 0 on success; negative POSIX error code on error.
  */
-int PlayStationDiscPrivate::loadSystemCnf(IsoPartition *pt)
+int PlayStationDiscPrivate::loadSystemCnf(const IsoPartitionPtr &pt)
 {
 	if (!system_cnf.empty()) {
 		// Already loaded.
@@ -336,7 +332,7 @@ PlayStationDisc::PlayStationDisc(const IRpFilePtr &file)
 		return;
 	}
 
-	IDiscReader *discReader = nullptr;
+	IDiscReaderPtr discReader;
 
 	// Check for a PVD with 2048-byte sectors.
 	size_t size = d->file->seekAndRead(ISO_PVD_ADDRESS_2048, &d->pvd, sizeof(d->pvd));
@@ -346,7 +342,7 @@ PlayStationDisc::PlayStationDisc(const IRpFilePtr &file)
 	}
 	if (ISO::checkPVD(reinterpret_cast<const uint8_t*>(&d->pvd)) >= 0) {
 		// Disc has 2048-byte sectors.
-		discReader = new DiscReader(d->file);
+		discReader = std::make_shared<DiscReader>(d->file);
 	} else {
 		// Check for a PVD with 2352-byte or 2448-byte sectors.
 		static const unsigned int sector_sizes[] = {2352, 2448};
@@ -363,7 +359,7 @@ PlayStationDisc::PlayStationDisc(const IRpFilePtr &file)
 			if (ISO::checkPVD(pData) >= 0) {
 				// Found the correct sector size.
 				memcpy(&d->pvd, pData, sizeof(d->pvd));
-				discReader = new Cdrom2352Reader(d->file, p);
+				discReader = std::make_shared<Cdrom2352Reader>(d->file, p);
 				break;
 			}
 		}
@@ -371,17 +367,14 @@ PlayStationDisc::PlayStationDisc(const IRpFilePtr &file)
 
 	if (!discReader || !discReader->isOpen()) {
 		// Error opening the DiscReader.
-		UNREF(discReader);
 		d->file.reset();
 		return;
 	}
 
 	// Try to open the ISO partition.
-	IsoPartition *const isoPartition = new IsoPartition(discReader, 0, 0);
+	IsoPartitionPtr isoPartition = std::make_shared<IsoPartition>(discReader, 0, 0);
 	if (!isoPartition->isOpen()) {
 		// Error opening the ISO partition.
-		UNREF(isoPartition);
-		UNREF(discReader);
 		d->file.reset();
 		return;
 	}
@@ -391,8 +384,6 @@ PlayStationDisc::PlayStationDisc(const IRpFilePtr &file)
 	int ret = d->loadSystemCnf(isoPartition);
 	if (ret != 0) {
 		// Error loading SYSTEM.CNF.
-		UNREF(isoPartition);
-		UNREF(discReader);
 		d->file.reset();
 		return;
 	}
@@ -410,8 +401,6 @@ PlayStationDisc::PlayStationDisc(const IRpFilePtr &file)
 			consoleType = PlayStationDiscPrivate::ConsoleType::PS1;
 		} else {
 			// Not valid.
-			UNREF(isoPartition);
-			UNREF(discReader);
 			d->file.reset();
 			return;
 		}
@@ -476,8 +465,8 @@ PlayStationDisc::PlayStationDisc(const IRpFilePtr &file)
 
 	// Disc image is ready.
 	d->consoleType = consoleType;
-	d->discReader = discReader;
-	d->isoPartition = isoPartition;
+	d->discReader = std::move(discReader);
+	d->isoPartition = std::move(isoPartition);
 	d->isValid = true;
 }
 
@@ -494,8 +483,8 @@ void PlayStationDisc::close(void)
 		d->bootExeData->close();
 	}
 
-	UNREF_AND_NULL(d->isoPartition);
-	UNREF_AND_NULL(d->discReader);
+	d->isoPartition.reset();
+	d->discReader.reset();
 
 	// Call the superclass function.
 	super::close();

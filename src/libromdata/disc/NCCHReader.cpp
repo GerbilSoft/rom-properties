@@ -16,11 +16,9 @@
 #  include "librpbase/crypto/AesCipherFactory.hpp"
 #  include "librpbase/crypto/IAesCipher.hpp"
 #endif /* ENABLE_DECRYPTION */
+#include "librpbase/disc/PartitionFile.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
-
-#include "disc/CIAReader.hpp"
-#include "disc/PartitionFile.hpp"
 
 #include "NCCHReader_p.hpp"
 namespace LibRomData {
@@ -498,9 +496,6 @@ int NCCHReaderPrivate::loadExHeader(void)
 /**
  * Construct an NCCHReader with the specified IRpFile.
  *
- * NOTE: The IRpFile *must* remain valid while this
- * NCCHReader is open.
- *
  * @param file 			[in] IRpFile. (for CCIs only)
  * @param media_unit_shift	[in] Media unit shift.
  * @param ncch_offset		[in] NCCH start offset, in bytes.
@@ -515,10 +510,6 @@ NCCHReader::NCCHReader(const IRpFilePtr &file, uint8_t media_unit_shift,
 /**
  * Construct an NCCHReader with the specified CIAReader.
  *
- * NOTE: The NCCHReader *takes ownership* of the CIAReader.
- * This makes it easier to create a temporary CIAReader
- * without worrying about keeping track of it.
- *
  * @param ciaReader		[in] CIAReader. (for CIAs only)
  * @param media_unit_shift	[in] Media unit shift.
  * @param ncch_offset		[in] NCCH start offset, in bytes.
@@ -526,7 +517,7 @@ NCCHReader::NCCHReader(const IRpFilePtr &file, uint8_t media_unit_shift,
  * @param ticket		[in,opt] Ticket for CIA decryption. (nullptr if NoCrypto)
  * @param tmd_content_index	[in,opt] TMD content index for CIA decryption.
  */
-NCCHReader::NCCHReader(CIAReader *ciaReader, uint8_t media_unit_shift,
+NCCHReader::NCCHReader(const CIAReaderPtr &ciaReader, uint8_t media_unit_shift,
 		off64_t ncch_offset, uint32_t ncch_length)
 	: super(ciaReader)
 	, d_ptr(new NCCHReaderPrivate(this, media_unit_shift, ncch_offset, ncch_length))

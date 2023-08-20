@@ -178,7 +178,7 @@ class NCCHReaderPrivate
 		{
 			RP_Q(NCCHReader);
 			if (q->m_hasDiscReader) {
-				UNREF_AND_NULL_NOCHK(q->m_discReader);
+				q->m_discReader.reset();
 			}
 			if (q->m_file) {
 				q->m_file.reset();

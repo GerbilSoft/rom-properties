@@ -206,15 +206,15 @@ class Xbox360_XEX_Private final : public RomDataPrivate
 	public:
 		// CBC reader for encrypted PE executables.
 		// Also used for unencrypted executables.
-		CBCReader *peReader;
+		CBCReaderPtr peReader;
 		EXE *pe_exe;
 		Xbox360_XDBF *pe_xdbf;
 
 		/**
 		 * Initialize the PE executable reader.
-		 * @return peReader on success; nullptr on error.
+		 * @return 0 on success (saved in this->peReader); negative POSIX error code on error.
 		 */
-		CBCReader *initPeReader(void);
+		int initPeReader(void);
 
 		/**
 		 * Initialize the EXE object.
@@ -293,7 +293,6 @@ Xbox360_XEX_Private::Xbox360_XEX_Private(const IRpFilePtr &file)
 	, xexType(XexType::Unknown)
 	, isExecutionIDLoaded(false)
 	, keyInUse(-1)
-	, peReader(nullptr)
 	, pe_exe(nullptr)
 	, pe_xdbf(nullptr)
 {
@@ -308,7 +307,6 @@ Xbox360_XEX_Private::~Xbox360_XEX_Private()
 {
 	UNREF(pe_xdbf);
 	UNREF(pe_exe);
-	UNREF(peReader);
 }
 
 /**
@@ -554,28 +552,31 @@ const XEX2_Resource_Info *Xbox360_XEX_Private::getXdbfResInfo(const char *resour
 
 /**
  * Initialize the PE executable reader.
- * @return peReader on success; nullptr on error.
+ * @return 0 on success (saved in this->peReader); negative POSIX error code on error.
  */
-CBCReader *Xbox360_XEX_Private::initPeReader(void)
+int Xbox360_XEX_Private::initPeReader(void)
 {
 	if (peReader) {
 		// PE Reader is already initialized.
-		return peReader;
+		return 0;
 	}
 #ifdef ENABLE_LIBMSPACK
 	if (!lzx_peHeader.empty()) {
 		// LZX has been decompressed.
-		return peReader;
+		return 0;
 	}
 #endif /* ENABLE_LIBMSPACK */
+
+	// NOTE: Since we're returning CBCReaderPtr&, we'll return
+	// peReader even if it isn't initialized.
 	if (!file) {
 		// File is closed. Can't initialize PE Reader.
-		return nullptr;
+		return -EIO;
 	}
 
 	if (xexType <= XexType::Unknown || xexType >= XexType::Max) {
 		// Invalid XEX type.
-		return nullptr;
+		return -EIO;
 	}
 
 	// Get the file format info.
@@ -583,7 +584,7 @@ CBCReader *Xbox360_XEX_Private::initPeReader(void)
 	size_t size = getOptHdrData(XEX2_OPTHDR_FILE_FORMAT_INFO, u8_ffi);
 	if (size < sizeof(fileFormatInfo)) {
 		// Seek and/or read error.
-		return nullptr;
+		return -EIO;
 	}
 
 	// Copy the file format information.
@@ -602,14 +603,13 @@ CBCReader *Xbox360_XEX_Private::initPeReader(void)
 	//
 	// We need to decrypt before we decompress, so we can't check
 	// if the decryption key works until decompression is done.
-	array<CBCReader*, 2> reader;
-	reader.fill(nullptr);
+	array<CBCReaderPtr, 2> reader;
 
 	// Create the CBCReader for decryption.
 	const size_t pe_length = (size_t)file->size() - xex2Header.pe_offset;
 	if (fileFormatInfo.encryption_type == XEX2_ENCRYPTION_TYPE_NONE) {
 		// No encryption.
-		reader[0] = new CBCReader(file, xex2Header.pe_offset, pe_length, nullptr, nullptr);
+		reader[0] = std::make_shared<CBCReader>(file, xex2Header.pe_offset, pe_length, nullptr, nullptr);
 	}
 #ifdef ENABLE_DECRYPTION
 	else {
@@ -684,10 +684,10 @@ CBCReader *Xbox360_XEX_Private::initPeReader(void)
 			}
 
 			// Initialize the CBCReader.
-			reader[i] = new CBCReader(file, xex2Header.pe_offset, pe_length, dec_title_key, zero16);
+			reader[i] = std::make_shared<CBCReader>(file, xex2Header.pe_offset, pe_length, dec_title_key, zero16);
 			if (!reader[i]->isOpen()) {
 				// Unable to open the CBCReader.
-				UNREF_AND_NULL_NOCHK(reader[i]);
+				reader[i].reset();
 				continue;
 			}
 
@@ -700,9 +700,7 @@ CBCReader *Xbox360_XEX_Private::initPeReader(void)
 	    (!reader[1] || !reader[1]->isOpen()))
 	{
 		// Unable to open any CBCReader.
-		UNREF(reader[0]);
-		UNREF(reader[1]);
-		return nullptr;
+		return -EIO;
 	}
 
 	// Check the compression type.
@@ -719,9 +717,7 @@ CBCReader *Xbox360_XEX_Private::initPeReader(void)
 			assert(fileFormatInfo.size > sizeof(fileFormatInfo));
 			if (fileFormatInfo.size <= sizeof(fileFormatInfo)) {
 				// No segment information is available.
-				UNREF(reader[0]);
-				UNREF(reader[1]);
-				return nullptr;
+				return -EIO;
 			}
 
 			const uint32_t seg_len = fileFormatInfo.size - sizeof(fileFormatInfo);
@@ -752,9 +748,7 @@ CBCReader *Xbox360_XEX_Private::initPeReader(void)
 			assert(fileFormatInfo.size >= sizeof(fileFormatInfo) + sizeof(XEX2_Compression_Normal_Header));
 			if (fileFormatInfo.size < sizeof(fileFormatInfo) + sizeof(XEX2_Compression_Normal_Header)) {
 				// No segment information is available.
-				UNREF(reader[0]);
-				UNREF(reader[1]);
-				return nullptr;
+				return -EIO;
 			}
 
 			// Image size must be at least 8 KB.
@@ -765,9 +759,7 @@ CBCReader *Xbox360_XEX_Private::initPeReader(void)
 			assert(image_size >= PE_HEADER_SIZE);
 			if (image_size < PE_HEADER_SIZE) {
 				// Too small.
-				UNREF(reader[0]);
-				UNREF(reader[1]);
-				return nullptr;
+				return -EIO;
 			}
 
 			// Window size.
@@ -799,9 +791,7 @@ CBCReader *Xbox360_XEX_Private::initPeReader(void)
 			const off64_t fileSize = file->size();
 			if (fileSize > 64*1024*1024 || image_size > 64*1024*1024) {
 				// 64 MB is our compressed and uncompressed limit.
-				UNREF(reader[0]);
-				UNREF(reader[1]);
-				return nullptr;
+				return -ENOMEM;
 			}
 
 			// Compressed EXE buffer.
@@ -819,9 +809,7 @@ CBCReader *Xbox360_XEX_Private::initPeReader(void)
 			unsigned int rd_idx = (reader[0] ? 0 : 1);
 			if (!reader[rd_idx]) {
 				// No readers available...
-				// FIXME: Not sure if this is needed...
-				UNREF(reader[!rd_idx]);
-				return nullptr;
+				return -EIO;
 			}
 
 			// Start at the beginning.
@@ -833,9 +821,11 @@ CBCReader *Xbox360_XEX_Private::initPeReader(void)
 				size = reader[rd_idx]->read(&lzx_blocks[!lzx_idx], sizeof(lzx_blocks[!lzx_idx]));
 				if (size != sizeof(lzx_blocks[!lzx_idx])) {
 					// Seek and/or read error.
-					UNREF(reader[0]);
-					UNREF(reader[1]);
-					return nullptr;
+					int err = reader[rd_idx]->lastError();
+					if (err == 0) {
+						err = EIO;
+					}
+					return -err;
 				}
 
 				// Does the block size make sense?
@@ -847,15 +837,14 @@ CBCReader *Xbox360_XEX_Private::initPeReader(void)
 					// Switch to the other reader.
 					if (rd_idx == 1) {
 						// No more readers...
-						UNREF(reader[1]);
-						return nullptr;
+						return -EIO;
 					}
-					UNREF_AND_NULL(reader[0]);
+					reader[0].reset();
 
 					// reader[1] might be nullptr here...
 					if (!reader[1]) {
 						// Cannot continue.
-						return nullptr;
+						return -EIO;
 					}
 					rd_idx = 1;
 
@@ -874,9 +863,7 @@ CBCReader *Xbox360_XEX_Private::initPeReader(void)
 				assert(block_size > sizeof(lzx_blocks[!lzx_idx]));
 				if (block_size <= sizeof(lzx_blocks[!lzx_idx])) {
 					// Block is missing the "next block" header...
-					UNREF(reader[0]);
-					UNREF(reader[1]);
-					return nullptr;
+					return -EIO;
 				}
 				block_size -= sizeof(lzx_blocks[!lzx_idx]);
 
@@ -886,9 +873,11 @@ CBCReader *Xbox360_XEX_Private::initPeReader(void)
 					size = reader[rd_idx]->read(&chunk_size, sizeof(chunk_size));
 					if (size != sizeof(chunk_size)) {
 						// Seek and/or read error.
-						UNREF(reader[0]);
-						UNREF(reader[1]);
-						return nullptr;
+						int err = reader[rd_idx]->lastError();
+						if (err == 0) {
+							err = EIO;
+						}
+						return -err;
 					}
 #if SYS_BYTEORDER == SYS_LIL_ENDIAN
 					chunk_size = be16_to_cpu(chunk_size);
@@ -902,18 +891,13 @@ CBCReader *Xbox360_XEX_Private::initPeReader(void)
 					// Do we have enough space?
 					if (p_dblk + chunk_size >= p_dblk_end) {
 						// Out of memory.
-						// TODO: Error reporting.
-						UNREF(reader[0]);
-						UNREF(reader[1]);
-						return nullptr;
+						return -ENOMEM;
 					}
 
 					size = reader[rd_idx]->read(p_dblk, chunk_size);
 					if (size != chunk_size) {
 						// Seek and/or read error.
-						UNREF(reader[0]);
-						UNREF(reader[1]);
-						return nullptr;
+						return -EIO;
 					}
 
 					p_dblk += chunk_size;
@@ -937,9 +921,7 @@ CBCReader *Xbox360_XEX_Private::initPeReader(void)
 				window_size, nullptr, 0);
 			if (res != MSPACK_ERR_OK) {
 				// Error decompressing the data.
-				UNREF(reader[0]);
-				UNREF(reader[1]);
-				return nullptr;
+				return -EIO;
 			}
 
 			// Verify the MZ header.
@@ -948,9 +930,7 @@ CBCReader *Xbox360_XEX_Private::initPeReader(void)
 			if (mz != cpu_to_be16('MZ')) {
 				// MZ header is not valid.
 				// TODO: Other checks?
-				UNREF(reader[0]);
-				UNREF(reader[1]);
-				return nullptr;
+				return -EIO;
 			}
 
 			// Copy the PE header.
@@ -975,10 +955,9 @@ CBCReader *Xbox360_XEX_Private::initPeReader(void)
 			}
 
 			// Save the correct reader.
-			this->peReader = reader[rd_idx];
-			reader[rd_idx] = nullptr;
+			this->peReader = std::move(reader[rd_idx]);
 			keyInUse = rd_idx;
-			break;
+			return 0;
 		}
 #endif /* ENABLE_LIBMSPACK */
 	}
@@ -998,8 +977,7 @@ CBCReader *Xbox360_XEX_Private::initPeReader(void)
 				if (mz == cpu_to_be16('MZ')) {
 					// MZ header is valid.
 					// TODO: Other checks?
-					this->peReader = reader[i];
-					reader[i] = nullptr;
+					this->peReader = std::move(reader[i]);
 					keyInUse = static_cast<int>(i);
 					break;
 				}
@@ -1007,12 +985,8 @@ CBCReader *Xbox360_XEX_Private::initPeReader(void)
 		}
 	}
 
-	// Delete the incorrect CBCReaders.
-	UNREF(reader[0]);
-	UNREF(reader[1]);
-
 	// CBCReader is open and file decompression has been initialized.
-	return this->peReader;
+	return 0;
 }
 
 /**
@@ -1224,7 +1198,7 @@ const EXE *Xbox360_XEX_Private::initEXE(void)
 	} else
 #endif /* ENABLE_LIBMSPACK */
 	{
-		peFile_tmp = std::make_shared<PartitionFile>(peReader, 0, PE_HEADER_SIZE);
+		peFile_tmp = std::make_shared<PartitionFile>(peReader.get(), 0, PE_HEADER_SIZE);
 	}
 	if (peFile_tmp->isOpen()) {
 		EXE *const pe_exe_tmp = new EXE(peFile_tmp);
@@ -1291,7 +1265,7 @@ const Xbox360_XDBF *Xbox360_XEX_Private::initXDBF(void)
 				xdbf_physaddr -= (iter->vaddr - iter->physaddr);
 			}
 		}
-		peFile_tmp = std::make_shared<PartitionFile>(peReader, xdbf_physaddr, pResInfo->size);
+		peFile_tmp = std::make_shared<PartitionFile>(peReader.get(), xdbf_physaddr, pResInfo->size);
 	}
 	if (peFile_tmp->isOpen()) {
 		// FIXME: XEX1 XDBF is either encrypted or garbage...
@@ -1462,7 +1436,7 @@ void Xbox360_XEX::close(void)
 		d->pe_exe->close();
 	}
 
-	UNREF_AND_NULL(d->peReader);
+	d->peReader.reset();
 
 #ifdef ENABLE_LIBMSPACK
 	d->lzx_peHeader.clear();
@@ -1631,7 +1605,7 @@ int Xbox360_XEX::loadFieldData(void)
 
 	// Is the encryption key available?
 	bool noKeyAvailable = false;
-	if (d->initPeReader() != nullptr) {
+	if (d->initPeReader() == 0) {
 		if (d->keyInUse < 0 &&
 		    d->fileFormatInfo.encryption_type != cpu_to_be16(XEX2_ENCRYPTION_TYPE_NONE))
 		{

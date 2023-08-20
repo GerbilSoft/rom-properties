@@ -82,17 +82,11 @@ const char *const EXEPrivate::NE_TargetOSes[6] = {
 EXEPrivate::EXEPrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
 	, exeType(ExeType::Unknown)
-	, rsrcReader(nullptr)
 	, pe_subsystem(IMAGE_SUBSYSTEM_UNKNOWN)
 {
 	// Clear the structs.
 	memset(&mz, 0, sizeof(mz));
 	memset(&hdr, 0, sizeof(hdr));
-}
-
-EXEPrivate::~EXEPrivate()
-{
-	UNREF(rsrcReader);
 }
 
 /**

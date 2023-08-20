@@ -121,7 +121,7 @@ IsoPartitionPrivate::IsoPartitionPrivate(IsoPartition *q,
 		if (q->m_lastError == 0) {
 			q->m_lastError = EIO;
 		}
-		UNREF_AND_NULL_NOCHK(q->m_discReader);
+		q->m_discReader.reset();
 		return;
 	}
 
@@ -134,7 +134,7 @@ IsoPartitionPrivate::IsoPartitionPrivate(IsoPartition *q,
 	size_t size = q->m_discReader->seekAndRead(partition_offset + ISO_PVD_ADDRESS_2048, &pvd, sizeof(pvd));
 	if (size != sizeof(pvd)) {
 		// Seek and/or read error.
-		UNREF_AND_NULL_NOCHK(q->m_discReader);
+		q->m_discReader.reset();
 		return;
 	}
 
@@ -143,7 +143,7 @@ IsoPartitionPrivate::IsoPartitionPrivate(IsoPartition *q,
 	    memcmp(pvd.header.identifier, ISO_VD_MAGIC, sizeof(pvd.header.identifier)) != 0)
 	{
 		// Invalid volume descriptor.
-		UNREF_AND_NULL_NOCHK(q->m_discReader);
+		q->m_discReader.reset();
 		return;
 	}
 
@@ -481,17 +481,14 @@ time_t IsoPartitionPrivate::parseTimestamp(const ISO_Dir_DateTime_t *isofiletime
 /**
  * Construct an IsoPartition with the specified IDiscReader.
  *
- * NOTE: The IDiscReader *must* remain valid while this
- * IsoPartition is open.
- *
- * @param discReader IDiscReader.
+ * @param discReader IDiscReader
  * @param partition_offset Partition start offset.
  * @param iso_start_offset ISO start offset, in blocks. (If -1, uses heuristics.)
  */
-IsoPartition::IsoPartition(IDiscReader *discReader, off64_t partition_offset, int iso_start_offset)
+IsoPartition::IsoPartition(const IDiscReaderPtr &discReader, off64_t partition_offset, int iso_start_offset)
 	: super(discReader)
 	, d_ptr(new IsoPartitionPrivate(this, partition_offset, iso_start_offset))
-{ }
+{}
 
 IsoPartition::~IsoPartition()
 {
@@ -678,7 +675,7 @@ int IsoPartition::closedir(IFst::Dir *dirp)
 IRpFilePtr IsoPartition::open(const char *filename)
 {
 	RP_D(IsoPartition);
-	assert(m_discReader != nullptr);
+	assert((bool)m_discReader);
 	assert(m_discReader->isOpen());
 	if (!m_discReader ||  !m_discReader->isOpen()) {
 		m_lastError = EBADF;

@@ -21,10 +21,10 @@ using namespace LibRpTexture;
 #include "librpbase/crypto/KeyManager.hpp"
 #include "disc/WiiPartition.hpp"	// for key information
 #ifdef ENABLE_DECRYPTION
-# include "librpbase/disc/CBCReader.hpp"
+#  include "librpbase/disc/CBCReader.hpp"
 // For sections delegated to other RomData subclasses.
-# include "librpbase/disc/PartitionFile.hpp"
-# include "WiiWIBN.hpp"
+#  include "librpbase/disc/PartitionFile.hpp"
+#  include "WiiWIBN.hpp"
 #endif /* ENABLE_DECRYPTION */
 
 // C++ STL classes
@@ -74,7 +74,7 @@ class WiiSavePrivate final : public RomDataPrivate
 
 #ifdef ENABLE_DECRYPTION
 		// CBC reader for the main data area.
-		CBCReader *cbcReader;
+		CBCReaderPtr cbcReader;
 		WiiWIBN *wibnData;
 
 		// Key indexes. (0 == AES, 1 == IV)
@@ -116,7 +116,6 @@ WiiSavePrivate::WiiSavePrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
 	, svLoaded(false)
 #ifdef ENABLE_DECRYPTION
-	, cbcReader(nullptr)
 	, wibnData(nullptr)
 #endif /* ENABLE_DECRYPTION */
 {
@@ -134,7 +133,6 @@ WiiSavePrivate::~WiiSavePrivate()
 {
 #ifdef ENABLE_DECRYPTION
 	UNREF(wibnData);
-	UNREF(cbcReader);
 #endif /* ENABLE_DECRYPTION */
 }
 
@@ -245,7 +243,7 @@ WiiSave::WiiSave(const IRpFilePtr &file)
 	{
 		// Create a CBC reader to decrypt the banner and icon.
 		// TODO: Verify some known data?
-		d->cbcReader = new CBCReader(d->file, 0, bkHeaderAddr,
+		d->cbcReader = std::make_shared<CBCReader>(d->file, 0, bkHeaderAddr,
 			keyData[0].key, keyData[1].key);
 
 		// Read the save game header.
@@ -270,7 +268,7 @@ WiiSave::WiiSave(const IRpFilePtr &file)
 		// Create the PartitionFile.
 		// TODO: Only if the save game header is valid?
 		// TODO: Get the size from the save game header?
-		shared_ptr<PartitionFile> ptFile = std::make_shared<PartitionFile>(d->cbcReader,
+		PartitionFilePtr ptFile = std::make_shared<PartitionFile>(d->cbcReader.get(),
 			sizeof(Wii_SaveGame_Header_t),
 			bkHeaderAddr - sizeof(Wii_SaveGame_Header_t));
 		if (ptFile->isOpen()) {
@@ -302,7 +300,7 @@ void WiiSave::close(void)
 	}
 
 	// Close associated files used with child RomData subclasses.
-	UNREF_AND_NULL(d->cbcReader);
+	d->cbcReader.reset();
 #endif /* ENABLE_DECRYPTION */
 
 	// Call the superclass function.

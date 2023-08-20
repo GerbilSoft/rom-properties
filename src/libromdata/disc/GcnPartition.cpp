@@ -28,7 +28,7 @@ namespace LibRomData {
  * @param discReader IDiscReader.
  * @param partition_offset Partition start offset.
  */
-GcnPartition::GcnPartition(IDiscReader *discReader, off64_t partition_offset)
+GcnPartition::GcnPartition(const IDiscReaderPtr &discReader, off64_t partition_offset)
 	: super(discReader)
 	, d_ptr(new GcnPartitionPrivate(this, partition_offset, discReader->size()))
 { }
@@ -43,7 +43,7 @@ GcnPartition::~GcnPartition()
  * @param d GcnPartitionPrivate subclass.
  * @param discReader IDiscReader.
  */
-GcnPartition::GcnPartition(GcnPartitionPrivate *d, IDiscReader *discReader)
+GcnPartition::GcnPartition(GcnPartitionPrivate *d, const IDiscReaderPtr &discReader)
 	: super(discReader)
 	, d_ptr(d)
 { }

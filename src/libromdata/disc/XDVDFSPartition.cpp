@@ -94,7 +94,7 @@ XDVDFSPartitionPrivate::XDVDFSPartitionPrivate(XDVDFSPartition *q,
 		if (q->m_lastError == 0) {
 			q->m_lastError = EIO;
 		}
-		UNREF_AND_NULL_NOCHK(q->m_discReader);
+		q->m_discReader.reset();
 		return;
 	}
 
@@ -105,7 +105,7 @@ XDVDFSPartitionPrivate::XDVDFSPartitionPrivate(XDVDFSPartition *q,
 	if (size != sizeof(xdvdfsHeader)) {
 		// Seek and/or read error.
 		memset(&xdvdfsHeader, 0, sizeof(xdvdfsHeader));
-		UNREF_AND_NULL_NOCHK(q->m_discReader);
+		q->m_discReader.reset();
 		return;
 	}
 
@@ -115,7 +115,7 @@ XDVDFSPartitionPrivate::XDVDFSPartitionPrivate(XDVDFSPartition *q,
 	{
 		// Invalid XDVDFS header.
 		memset(&xdvdfsHeader, 0, sizeof(xdvdfsHeader));
-		UNREF_AND_NULL_NOCHK(q->m_discReader);
+		q->m_discReader.reset();
 		return;
 	}
 
@@ -330,7 +330,7 @@ const ao::uvector<uint8_t> *XDVDFSPartitionPrivate::getDirectory(const char *pat
  * @param partition_offset Partition start offset.
  * @param partition_size Partition size.
  */
-XDVDFSPartition::XDVDFSPartition(IDiscReader *discReader, off64_t partition_offset, off64_t partition_size)
+XDVDFSPartition::XDVDFSPartition(const IDiscReaderPtr &discReader, off64_t partition_offset, off64_t partition_size)
 	: super(discReader)
 	, d_ptr(new XDVDFSPartitionPrivate(this, partition_offset, partition_size))
 { }

@@ -39,7 +39,7 @@ class DreamcastPrivate final : public RomDataPrivate
 {
 	public:
 		DreamcastPrivate(const IRpFilePtr &file);
-		~DreamcastPrivate() final;
+		~DreamcastPrivate() final = default;
 
 	private:
 		typedef RomDataPrivate super;
@@ -63,12 +63,13 @@ class DreamcastPrivate final : public RomDataPrivate
 		};
 		DiscType discType;
 
-		// Disc reader.
-		union {
-			IDiscReader *discReader;
-			GdiReader *gdiReader;
-		};
-		IsoPartition *isoPartition;
+		// Disc reader
+		// TODO: Before shared_ptr<>, discReader and gdiReader were in a union{}.
+		// TODO: Use std::variant<>?
+		IDiscReaderPtr discReader;
+		GdiReaderPtr gdiReader;
+
+		IsoPartitionPtr isoPartition;
 
 		// Disc header.
 		DC_IP0000_BIN_t discHeader;
@@ -145,18 +146,10 @@ const RomDataInfo DreamcastPrivate::romDataInfo = {
 DreamcastPrivate::DreamcastPrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
 	, discType(DiscType::Unknown)
-	, discReader(nullptr)
-	, isoPartition(nullptr)
 	, iso_start_offset(-1)
 {
 	// Clear the disc header struct.
 	memset(&discHeader, 0, sizeof(discHeader));
-}
-
-DreamcastPrivate::~DreamcastPrivate()
-{
-	UNREF(isoPartition);
-	UNREF(discReader);
 }
 
 /**
@@ -195,7 +188,7 @@ rp_image_const_ptr DreamcastPrivate::load0GDTEX(void)
 	if (pvrData) {
 		// Image has already been loaded.
 		return pvrData->image();
-	} else if (!this->file || !this->discReader) {
+	} else if (!this->file || (!this->discReader && !this->gdiReader)) {
 		// Can't load the image.
 		return nullptr;
 	}
@@ -208,11 +201,11 @@ rp_image_const_ptr DreamcastPrivate::load0GDTEX(void)
 		} else {
 			// Standalone track.
 			// Using the ISO start offset calculated earlier.
-			isoPartition = new IsoPartition(discReader, 0, iso_start_offset);
+			isoPartition = std::make_shared<IsoPartition>(discReader, 0, iso_start_offset);
 		}
 		if (!isoPartition->isOpen()) {
 			// Unable to open the ISO-9660 partition.
-			UNREF_AND_NULL_NOCHK(isoPartition);
+			isoPartition.reset();
 			return nullptr;
 		}
 	}
@@ -362,7 +355,7 @@ Dreamcast::Dreamcast(const IRpFilePtr &file)
 			d->mimeType = "application/x-dreamcast-rom";	// unofficial
 			memcpy(&d->discHeader, &sector, sizeof(d->discHeader));
 			d->iso_start_offset = -1;
-			d->discReader = new DiscReader(d->file);
+			d->discReader = std::make_shared<DiscReader>(d->file);
 			if (d->file->size() <= 64*1024) {
 				// 64 KB is way too small for a Dreamcast disc image.
 				// We'll assume this is IP.bin.
@@ -375,7 +368,7 @@ Dreamcast::Dreamcast(const IRpFilePtr &file)
 			d->mimeType = "application/x-dreamcast-rom";	// unofficial
 			const uint8_t *const data = cdromSectorDataPtr(&sector);
 			memcpy(&d->discHeader, data, sizeof(d->discHeader));
-			d->discReader = new Cdrom2352Reader(d->file);
+			d->discReader = std::make_shared<Cdrom2352Reader>(d->file);
 			d->iso_start_offset = static_cast<int>(cdrom_msf_to_lba(&sector.msf));
 			break;
 		}
@@ -383,12 +376,12 @@ Dreamcast::Dreamcast(const IRpFilePtr &file)
 		case DreamcastPrivate::DiscType::GDI: {
 			// GD-ROM cuesheet.
 			// iso_start_offset isn't used for GDI.
-			d->gdiReader = new GdiReader(d->file);
+			d->gdiReader = std::make_shared<GdiReader>(d->file);
 			// Read the actual track 3 disc header.
 			const int lba_track03 = d->gdiReader->startingLBA(3);
 			if (lba_track03 < 0) {
 				// Error getting the track 03 LBA.
-				UNREF_AND_NULL_NOCHK(d->gdiReader);
+				d->gdiReader.reset();
 				d->file.reset();
 				return;
 			}
@@ -415,8 +408,9 @@ void Dreamcast::close(void)
 
 	// Close any child RomData subclasses.
 	d->pvrData.reset();
-	UNREF_AND_NULL(d->isoPartition);
-	UNREF_AND_NULL(d->discReader);
+	d->isoPartition.reset();
+	d->gdiReader.reset();
+	d->discReader.reset();
 
 	// Call the superclass function.
 	super::close();
@@ -786,7 +780,8 @@ int Dreamcast::loadFieldData(void)
 		isoData = d->gdiReader->openIsoRomData(3);
 	} else {
 		// ISO object for ISO-9660 PVD
-		shared_ptr<PartitionFile> isoFile = std::make_shared<PartitionFile>(d->discReader, 0, d->discReader->size());
+		PartitionFilePtr isoFile = std::make_shared<PartitionFile>(
+			d->discReader.get(), 0, d->discReader->size());
 		if (isoFile->isOpen()) {
 			isoData = new ISO(isoFile);
 		}

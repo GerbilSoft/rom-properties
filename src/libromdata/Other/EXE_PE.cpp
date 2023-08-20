@@ -178,14 +178,14 @@ int EXEPrivate::loadPEResourceTypes(void)
 
 	// Load the resources using PEResourceReader.
 	// NOTE: .rsrc address and size are validated by PEResourceReader.
-	rsrcReader = new PEResourceReader(file,
+	rsrcReader = std::make_shared<PEResourceReader>(file,
 		le32_to_cpu(rsrc->PointerToRawData),
 		le32_to_cpu(rsrc->SizeOfRawData),
 		le32_to_cpu(rsrc->VirtualAddress));
 	if (!rsrcReader->isOpen()) {
 		// Failed to open the .rsrc section.
 		int err = rsrcReader->lastError();
-		UNREF_AND_NULL_NOCHK(rsrcReader);
+		rsrcReader.reset();
 		return (err != 0 ? err : -EIO);
 	}
 

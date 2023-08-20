@@ -44,6 +44,7 @@ using namespace LibRpTexture;
 
 // C++ STL classes
 using std::array;
+using std::shared_ptr;
 using std::string;
 using std::unique_ptr;
 using std::vector;
@@ -100,23 +101,27 @@ class GameCubePrivate final : public RomDataPrivate
 
 		// Disc type and reader.
 		int discType;
-		IDiscReader *discReader;
+		IDiscReaderPtr discReader;
 
 		// Disc header.
 		GCN_DiscHeader discHeader;
 		RVL_RegionSetting regionSetting;
 
 		// opening.bnr
-		union {
-			struct {
-				// opening.bnr file and object.
-				GcnPartition *partition;
-				GameCubeBNR *data;
-			} gcn;
-			struct {
-				// Wii opening.bnr. (IMET section)
-				Wii_IMET_t *imet;
-			} wii;
+		struct {
+			// FIXME: gcn_partition used to be in the 'gcn' union.
+			// Can't do that with shared_ptr...
+			GcnPartitionPtr gcn_partition;	// GcnPartition for opening.bnr
+			union {
+				struct {
+					// GameCube opening.bnr object
+					GameCubeBNR *data;
+				} gcn;
+				struct {
+					// Wii opening.bnr (IMET section)
+					Wii_IMET_t *imet;
+				} wii;
+			};
 		} opening_bnr;
 
 		// Do we have certain things loaded?
@@ -132,19 +137,19 @@ class GameCubePrivate final : public RomDataPrivate
 		 * Decoded from the actual on-disc tables.
 		 */
 		struct WiiPartEntry {
-			off64_t start;		// Starting address, in bytes.
-			off64_t size;		// Estimated partition size, in bytes.
+			off64_t start;		// Starting address, in bytes
+			off64_t size;		// Estimated partition size, in bytes
 
-			WiiPartition *partition;	// Partition object.
-			uint32_t type;		// Partition type. (See WiiPartitionType.)
-			uint8_t vg;		// Volume group number.
-			uint8_t pt;		// Partition number.
+			WiiPartitionPtr partition;	// Partition object
+			uint32_t type;		// Partition type (See WiiPartitionType.)
+			uint8_t vg;		// Volume group number
+			uint8_t pt;		// Partition number
 		};
 		vector<WiiPartEntry> wiiPtbl;
 
 		// Pointers to specific partitions within wiiPtbl.
-		WiiPartition *updatePartition;
-		WiiPartition *gamePartition;
+		WiiPartitionPtr updatePartition;
+		WiiPartitionPtr gamePartition;
 
 		/**
 		 * Load the Wii volume group and partition tables.
@@ -198,7 +203,7 @@ class GameCubePrivate final : public RomDataPrivate
 		 * @param partition Partition to check.
 		 * @return nullptr if partition is readable; error message if not.
 		 */
-		const char *wii_getCryptoStatus(WiiPartition *partition);
+		const char *wii_getCryptoStatus(const WiiPartitionPtr &partition);
 };
 
 ROMDATA_IMPL(GameCube)
@@ -264,7 +269,6 @@ const uint8_t GameCubePrivate::nddemo_header[64] = {
 GameCubePrivate::GameCubePrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
 	, discType(DISC_UNKNOWN)
-	, discReader(nullptr)
 	, hasRegionCode(false)
 	, wiiPtblLoaded(false)
 	, hasDiscHeader(false)
@@ -275,7 +279,9 @@ GameCubePrivate::GameCubePrivate(const IRpFilePtr &file)
 	// Clear the various structs.
 	memset(&discHeader, 0, sizeof(discHeader));
 	memset(&regionSetting, 0, sizeof(regionSetting));
-	memset(&opening_bnr, 0, sizeof(opening_bnr));
+
+	// opening_bnr has some C++ objects, so manually clear it.
+	opening_bnr.gcn.data = nullptr;
 }
 
 GameCubePrivate::~GameCubePrivate()
@@ -285,9 +291,6 @@ GameCubePrivate::~GameCubePrivate()
 	gamePartition = nullptr;
 
 	// Clear the existing partition table vector.
-	for (WiiPartEntry &entry : wiiPtbl) {
-		UNREF(entry.partition);
-	}
 	wiiPtbl.clear();
 
 	if (discType > DISC_UNKNOWN) {
@@ -295,7 +298,7 @@ GameCubePrivate::~GameCubePrivate()
 		switch (discType & DISC_SYSTEM_MASK) {
 			case DISC_SYSTEM_GCN:
 				UNREF(opening_bnr.gcn.data);
-				UNREF(opening_bnr.gcn.partition);
+				opening_bnr.gcn_partition.reset();
 				break;
 			case DISC_SYSTEM_WII:
 				delete opening_bnr.wii.imet;
@@ -304,8 +307,6 @@ GameCubePrivate::~GameCubePrivate()
 				break;
 		}
 	}
-
-	UNREF(discReader);
 }
 
 /**
@@ -327,9 +328,6 @@ int GameCubePrivate::loadWiiPartitionTables(void)
 	}
 
 	// Clear the existing partition table vector.
-	for (WiiPartEntry &entry : wiiPtbl) {
-		UNREF(entry.partition);
-	}
 	wiiPtbl.clear();
 
 	// Assuming a maximum of 128 partitions per table.
@@ -425,7 +423,7 @@ int GameCubePrivate::loadWiiPartitionTables(void)
 
 	// Create the WiiPartition objects.
 	for (auto &p : wiiPtbl) {
-		p.partition = new WiiPartition(discReader, p.start, p.size,
+		p.partition = std::make_shared<WiiPartition>(discReader, p.start, p.size,
 			(WiiPartition::CryptoMethod)cryptoMethod);
 
 		if (p.type == RVL_PT_UPDATE && !updatePartition) {
@@ -474,7 +472,7 @@ string GameCubePrivate::getPublisher(void) const
  */
 int GameCubePrivate::gcn_loadOpeningBnr(void)
 {
-	assert(discReader != nullptr);
+	assert((bool)discReader);
 	assert((discType & DISC_SYSTEM_MASK) == DISC_SYSTEM_GCN);
 	if (!discReader) {
 		return -EIO;
@@ -492,10 +490,9 @@ int GameCubePrivate::gcn_loadOpeningBnr(void)
 	// NOTE: The GCN partition needs to stay open,
 	// since we have a subclass for reading the object.
 	// since we don't need to access more than one file.
-	GcnPartition *const gcnPartition = new GcnPartition(discReader, 0);
+	GcnPartitionPtr gcnPartition = std::make_shared<GcnPartition>(discReader, 0);
 	if (!gcnPartition->isOpen()) {
 		// Could not open the partition.
-		gcnPartition->unref();
 		return -EIO;
 	}
 
@@ -503,7 +500,6 @@ int GameCubePrivate::gcn_loadOpeningBnr(void)
 	if (!f_opening_bnr) {
 		// Error opening "opening.bnr".
 		const int err = -gcnPartition->lastError();
-		gcnPartition->unref();
 		return err;
 	}
 
@@ -512,12 +508,11 @@ int GameCubePrivate::gcn_loadOpeningBnr(void)
 	if (!bnr->isOpen()) {
 		// Unable to open the subclass.
 		bnr->unref();
-		gcnPartition->unref();
 		return -EIO;
 	}
 
 	// GameCubeBNR subclass is open.
-	opening_bnr.gcn.partition = gcnPartition;
+	opening_bnr.gcn_partition = std::move(gcnPartition);
 	opening_bnr.gcn.data = bnr;
 	return 0;
 }
@@ -528,7 +523,7 @@ int GameCubePrivate::gcn_loadOpeningBnr(void)
  */
 int GameCubePrivate::wii_loadOpeningBnr(void)
 {
-	assert(discReader != nullptr);
+	assert((bool)discReader);
 	assert((discType & DISC_SYSTEM_MASK) == DISC_SYSTEM_WII);
 	if (!discReader) {
 		return -EIO;
@@ -660,7 +655,7 @@ int GameCubePrivate::wii_addBannerName(void)
  * @param partition Partition to check.
  * @return nullptr if partition is readable; error message if not.
  */
-const char *GameCubePrivate::wii_getCryptoStatus(WiiPartition *partition)
+const char *GameCubePrivate::wii_getCryptoStatus(const WiiPartitionPtr &partition)
 {
 	const KeyManager::VerifyResult res = partition->verifyResult();
 	if (res == KeyManager::VerifyResult::KeyNotFound) {
@@ -741,11 +736,11 @@ GameCube::GameCube(const IRpFilePtr &file)
 	switch (d->discType & GameCubePrivate::DISC_FORMAT_MASK) {
 		case GameCubePrivate::DISC_FORMAT_RAW:
 		case GameCubePrivate::DISC_FORMAT_PARTITION:
-			d->discReader = new DiscReader(d->file);
+			d->discReader = std::make_shared<DiscReader>(d->file);
 			break;
 		case GameCubePrivate::DISC_FORMAT_SDK:
 			// Skip the SDK header.
-			d->discReader = new DiscReader(d->file, 32768, -1);
+			d->discReader = std::make_shared<DiscReader>(d->file, 32768, -1);
 			break;
 
 		case GameCubePrivate::DISC_FORMAT_TGC: {
@@ -754,7 +749,7 @@ GameCube::GameCube(const IRpFilePtr &file)
 			// Check the TGC header for the disc offset.
 			const GCN_TGC_Header *tgcHeader = reinterpret_cast<const GCN_TGC_Header*>(header);
 			const uint32_t gcm_offset = be32_to_cpu(tgcHeader->header_size);
-			d->discReader = new DiscReader(d->file, gcm_offset, -1);
+			d->discReader = std::make_shared<DiscReader>(d->file, gcm_offset, -1);
 			break;
 		}
 
@@ -771,32 +766,28 @@ GameCube::GameCube(const IRpFilePtr &file)
 					break;
 				}
 
-				IRpFile *const wbfs0 = FileSystem::openRelatedFile(filename, nullptr, ".wbfs");
+				IRpFilePtr wbfs0 = FileSystem::openRelatedFile(filename, nullptr, ".wbfs");
 				if (unlikely(!wbfs0) || !wbfs0->isOpen()) {
 					// Unable to open the .wbfs file.
-					UNREF(wbfs0);
 					d->discType = GameCubePrivate::DISC_UNKNOWN;
 					break;
 				}
 
 				// Split .wbfs/.wbf1.
-				DualFile *const dualFile = new DualFile(wbfs0, d->file);
+				DualFile *const dualFile = std::make_shared<DualFile>(wbfs0, d->file);
 				if (!dualFile->isOpen()) {
 					// Unable to open DualFile.
-					dualFile->unref();
+					delete dualFile;
 					d->discType = GameCubePrivate::DISC_UNKNOWN;
 					break;
 				}
 
 				// DualFile maintains its own references, so unreference
 				// d->file and replace it with the DualFile.
-				IRpFile *const file_tmp = d->file;
-				d->file = dualFile;
-				file_tmp->unref();
-				wbfs0->unref();
+				d->file.reset(dualFile);
 
 				// Open the WbfsReader.
-				d->discReader = new WbfsReader(d->file);
+				d->discReader = std::make_shared<WbfsReader>(d->file);
 			} else*/ if ((d->discType & GameCubePrivate::DISC_FORMAT_MASK) == GameCubePrivate::DISC_FORMAT_WBFS) {
 				// First part of split WBFS.
 				// Check for a WBF1 file.
@@ -813,7 +804,7 @@ GameCube::GameCube(const IRpFilePtr &file)
 
 				if (likely(!wbfs1)) {
 					// Single .wbfs file.
-					d->discReader = new WbfsReader(d->file);
+					d->discReader = std::make_shared<WbfsReader>(d->file);
 					break;
 				}
 
@@ -832,7 +823,7 @@ GameCube::GameCube(const IRpFilePtr &file)
 				d->file.reset(dualFile);
 
 				// Open the WbfsReader.
-				d->discReader = new WbfsReader(d->file);
+				d->discReader = std::make_shared<WbfsReader>(d->file);
 			} else {
 				// Not supported.
 				d->discType = GameCubePrivate::DISC_UNKNOWN;
@@ -843,15 +834,15 @@ GameCube::GameCube(const IRpFilePtr &file)
 
 		case GameCubePrivate::DISC_FORMAT_CISO:
 			d->mimeType = "application/x-cso";
-			d->discReader = new CisoGcnReader(d->file);
+			d->discReader = std::make_shared<CisoGcnReader>(d->file);
 			break;
 		case GameCubePrivate::DISC_FORMAT_NASOS:
 			d->mimeType = "application/x-nasos-image";
-			d->discReader = new NASOSReader(d->file);
+			d->discReader = std::make_shared<NASOSReader>(d->file);
 			break;
 		case GameCubePrivate::DISC_FORMAT_GCZ:
 			d->mimeType = "application/x-gcz-image";
-			d->discReader = new GczReader(d->file);
+			d->discReader = std::make_shared<GczReader>(d->file);
 			break;
 
 		case GameCubePrivate::DISC_FORMAT_WIA:
@@ -932,7 +923,7 @@ GameCube::GameCube(const IRpFilePtr &file)
 		pt.size = d->file->size();
 		pt.vg = 0;
 		pt.pt = 0;
-		pt.partition = new WiiPartition(d->discReader, pt.start, pt.size);
+		pt.partition = std::make_shared<WiiPartition>(d->discReader, pt.start, pt.size);
 
 		// Determine the partition type.
 		// TODO: Super Smash Bros. Brawl "Masterpieces" partitions.
@@ -971,7 +962,7 @@ GameCube::GameCube(const IRpFilePtr &file)
 			if (pt.partition->verifyResult() != KeyManager::VerifyResult::IncrementingValues) {
 				// Not Incrementing Values.
 				// Error reading the partition header.
-				UNREF_AND_NULL_NOCHK(pt.partition);
+				pt.partition.reset();
 				d->wiiPtbl.clear();
 				goto notSupported;
 			}
@@ -1116,7 +1107,7 @@ GameCube::GameCube(const IRpFilePtr &file)
 
 notSupported:
 	// This disc image is not supported.
-	UNREF_AND_NULL(d->discReader);
+	d->discReader.reset();
 	d->file.reset();
 	d->discType = GameCubePrivate::DISC_UNKNOWN;
 	d->isValid = false;
@@ -1137,7 +1128,7 @@ void GameCube::close(void)
 				if (d->opening_bnr.gcn.data) {
 					d->opening_bnr.gcn.data->close();
 				}
-				UNREF_AND_NULL(d->opening_bnr.gcn.partition);
+				d->opening_bnr.gcn_partition.reset();
 				break;
 			case GameCubePrivate::DISC_SYSTEM_WII:
 				// No subclass for Wii yet.
@@ -2317,9 +2308,10 @@ int GameCube::checkViewedAchievements(void) const
 	}
 
 	// Check for the main partition.
-	const WiiPartition *pt = d->gamePartition;
+	// NOTE: Using raw pointers here for efficiency.
+	const WiiPartition *pt = d->gamePartition.get();
 	if (!pt) {
-		pt = d->updatePartition;
+		pt = d->updatePartition.get();
 	}
 	if (!pt) {
 		// No partitions...

@@ -35,8 +35,8 @@ class CIAReader final : public LibRpBase::IPartition
 			off64_t content_offset, uint32_t content_length,
 			const N3DS_Ticket_t *ticket,
 			uint16_t tmd_content_index);
-	protected:
-		~CIAReader() final;	// call unref() instead
+	public:
+		~CIAReader() final;
 
 	private:
 		typedef IPartition super;
@@ -97,5 +97,7 @@ class CIAReader final : public LibRpBase::IPartition
 		 */
 		off64_t partition_size_used(void) const final;
 };
+
+typedef std::shared_ptr<CIAReader> CIAReaderPtr;
 
 }

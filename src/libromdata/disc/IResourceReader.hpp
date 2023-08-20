@@ -13,7 +13,7 @@
 // librpbase
 #include "librpbase/disc/IPartition.hpp"
 
-// C++ includes.
+// C++ includes
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -26,8 +26,8 @@ class IResourceReader : public LibRpBase::IPartition
 		IResourceReader(const LibRpFile::IRpFilePtr &file)
 			: super(file)
 		{}
-	protected:
-		~IResourceReader() override = 0;	// call unref() instead
+	public:
+		~IResourceReader() override = 0;
 
 	private:
 		typedef LibRpBase::IPartition super;
@@ -75,6 +75,8 @@ class IResourceReader : public LibRpBase::IPartition
 		 */
 		virtual int load_VS_VERSION_INFO(int id, int lang, VS_FIXEDFILEINFO *pVsFfi, StringFileInfo *pVsSfi) = 0;
 };
+
+typedef std::shared_ptr<IResourceReader> IResourceReaderPtr;
 
 /**
  * Both gcc and MSVC fail to compile unless we provide

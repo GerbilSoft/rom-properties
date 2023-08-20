@@ -20,22 +20,11 @@ IDiscReader::IDiscReader(const IRpFilePtr &file)
 	, m_file(file)
 {}
 
-IDiscReader::IDiscReader(IDiscReader *discReader)
+IDiscReader::IDiscReader(const IDiscReaderPtr &discReader)
 	: m_lastError(0)
 	, m_hasDiscReader(true)
 {
-	if (discReader) {
-		m_discReader = discReader->ref();
-	} else {
-		m_discReader = nullptr;
-	}
-}
-
-IDiscReader::~IDiscReader()
-{
-	if (m_hasDiscReader) {
-		UNREF(m_discReader);
-	}
+	m_discReader = discReader;
 }
 
 /**

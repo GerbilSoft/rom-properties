@@ -9,10 +9,9 @@
 #pragma once
 
 #include "librpfile/IRpFile.hpp"
+#include "IDiscReader.hpp"
 
 namespace LibRpBase {
-
-class IDiscReader;
 
 class PartitionFile final : public LibRpFile::IRpFile
 {
@@ -20,13 +19,18 @@ class PartitionFile final : public LibRpFile::IRpFile
 		/**
 		 * Open a file from an IPartition.
 		 * NOTE: These files are read-only.
+		 *
+		 * FIXME: Cannot specify IDiscReaderPtr because this is created
+		 * from within an IPartition. Reference counts will not be taken.
+		 * Make sure the file is unreferenced before the parent IDiscReader!
+		 *
 		 * @param partition	[in] IPartition (or IDiscReader) object.
 		 * @param offset	[in] File starting offset.
 		 * @param size		[in] File size.
 		 */
 		PartitionFile(IDiscReader *partition, off64_t offset, off64_t size);
 	public:
-		~PartitionFile() final;
+		~PartitionFile() final = default;
 
 	private:
 		typedef IRpFile super;
@@ -92,5 +96,7 @@ class PartitionFile final : public LibRpFile::IRpFile
 		off64_t m_size;		// File size.
 		off64_t m_pos;		// Current position.
 };
+
+typedef std::shared_ptr<PartitionFile> PartitionFilePtr;
 
 }

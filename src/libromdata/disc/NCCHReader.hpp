@@ -14,9 +14,10 @@
 #include "librpbase/disc/IPartition.hpp"
 #include "librpbase/crypto/KeyManager.hpp"
 
-namespace LibRomData {
+// CIAReader
+#include "CIAReader.hpp"
 
-class CIAReader;
+namespace LibRomData {
 
 class NCCHReaderPrivate;
 class NCCHReader final : public LibRpBase::IPartition
@@ -24,9 +25,6 @@ class NCCHReader final : public LibRpBase::IPartition
 	public:
 		/**
 		 * Construct an NCCHReader with the specified IRpFile.
-		 *
-		 * NOTE: The IRpFile *must* remain valid while this
-		 * NCCHReader is open.
 		 *
 		 * @param file 			[in] IRpFile. (for CCIs only)
 		 * @param media_unit_shift	[in] Media unit shift.
@@ -40,20 +38,16 @@ class NCCHReader final : public LibRpBase::IPartition
 		/**
 		 * Construct an NCCHReader with the specified CIAReader.
 		 *
-		 * NOTE: The NCCHReader *takes ownership* of the CIAReader.
-		 * This makes it easier to create a temporary CIAReader
-		 * without worrying about keeping track of it.
-		 *
 		 * @param ciaReader		[in] CIAReader. (for CIAs only)
 		 * @param media_unit_shift	[in] Media unit shift.
 		 * @param ncch_offset		[in] NCCH start offset, in bytes.
 		 * @param ncch_length		[in] NCCH length, in bytes.
 		 */
-		NCCHReader(CIAReader *ciaReader,
+		NCCHReader(const CIAReaderPtr &ciaReader,
 			uint8_t media_unit_shift,
 			off64_t ncch_offset, uint32_t ncch_length);
-	protected:
-		~NCCHReader() final;	// call unref() instead
+	public:
+		~NCCHReader() final;
 
 	private:
 		typedef IPartition super;
@@ -208,5 +202,8 @@ class NCCHReader final : public LibRpBase::IPartition
 		 */
 		LibRpFile::IRpFilePtr openLogo(void);
 };
+
+typedef std::shared_ptr<NCCHReader> NCCHReaderPtr;
+typedef std::shared_ptr<NCCHReader> NCCHReaderConstPtr;
 
 }

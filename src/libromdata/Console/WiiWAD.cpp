@@ -83,7 +83,6 @@ WiiWADPrivate::WiiWADPrivate(const IRpFilePtr &file)
 	, pIMETContent(nullptr)
 	, imetContentOffset(0)
 #ifdef ENABLE_DECRYPTION
-	, cbcReader(nullptr)
 	, mainContent(nullptr)
 #endif /* ENABLE_DECRYPTION */
 	, key_idx(WiiPartition::Key_Max)
@@ -104,7 +103,6 @@ WiiWADPrivate::~WiiWADPrivate()
 {
 #ifdef ENABLE_DECRYPTION
 	UNREF(mainContent);
-	UNREF(cbcReader);
 #endif /* ENABLE_DECRYPTION */
 }
 
@@ -194,7 +192,7 @@ int WiiWADPrivate::openSRL(void)
 		memcpy(iv, &pIMETContent->index, sizeof(pIMETContent->index));
 		memset(&iv[2], 0, sizeof(iv)-2);
 
-		cbcReader = new CBCReader(file,
+		cbcReader = std::make_shared<CBCReader>(file,
 			data_offset, data_size, dec_title_key, iv);
 		if (!cbcReader->isOpen()) {
 			// Unable to open a CBC reader.
@@ -202,13 +200,13 @@ int WiiWADPrivate::openSRL(void)
 			if (ret == 0) {
 				ret = -EIO;
 			}
-			UNREF_AND_NULL(cbcReader);
+			cbcReader.reset();
 			return ret;
 		}
 	}
 
 	int ret = 0;
-	shared_ptr<PartitionFile> ptFile = std::make_shared<PartitionFile>(cbcReader,
+	PartitionFilePtr ptFile = std::make_shared<PartitionFile>(cbcReader.get(),
 		imetContentOffset, be64_to_cpu(pIMETContent->size));
 	if (ptFile->isOpen()) {
 		// Open the SRL..
@@ -458,7 +456,7 @@ WiiWAD::WiiWAD(const IRpFilePtr &file)
 
 	// Create a CBC reader to decrypt the data section.
 	// TODO: Verify some known data?
-	d->cbcReader = new CBCReader(d->file,
+	d->cbcReader = std::make_shared<CBCReader>(d->file,
 		d->data_offset, d->data_size, d->dec_title_key, iv);
 
 	if (d->tmdHeader.title_id.sysID != cpu_to_be16(3)) {
@@ -478,7 +476,7 @@ WiiWAD::WiiWAD(const IRpFilePtr &file)
 			// Create the PartitionFile and WiiWIBN subclass.
 			// NOTE: Not sure how big the WIBN data is, so we'll
 			// allow it to read the rest of the file.
-			shared_ptr<PartitionFile> ptFile = std::make_shared<PartitionFile>(d->cbcReader,
+			PartitionFilePtr ptFile = std::make_shared<PartitionFile>(d->cbcReader.get(),
 				offsetof(Wii_IMET_t, magic),
 				be64_to_cpu(d->pIMETContent->size) - offsetof(Wii_IMET_t, magic));
 			if (ptFile->isOpen()) {
@@ -527,7 +525,7 @@ void WiiWAD::close(void)
 	}
 
 	// Close associated files used with child RomData subclasses.
-	UNREF_AND_NULL(d->cbcReader);
+	d->cbcReader.reset();
 #endif /* ENABLE_DECRYPTION */
 
 	// Call the superclass function.
