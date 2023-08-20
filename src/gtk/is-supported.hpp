@@ -8,8 +8,6 @@
 
 #pragma once
 
-#include <glib.h>
-
 #ifdef __cplusplus
 
 namespace LibRpBase {
@@ -22,6 +20,6 @@ namespace LibRpBase {
  * @param uri URI from e.g. nautilus_file_info_get_uri() [UTF-8]
  * @return RomData object if supported; nullptr if not.
  */
-LibRpBase::RomData *rp_gtk_open_uri(const gchar *uri);
+LibRpBase::RomData *rp_gtk_open_uri(const char *uri);
 
 #endif /* __cplusplus */
