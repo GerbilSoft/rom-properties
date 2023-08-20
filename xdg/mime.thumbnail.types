@@ -78,15 +78,19 @@ application/x-gba-rom			# GameBoyAdvance
 application/x-game-com-rom		# GameCom
 application/x-neo-geo-pocket-rom	# NGPC
 application/x-neo-geo-pocket-color-rom	# NGPC
-application/x-nintendo-3ds-executable	# Nintendo3DS
-application/x-nintendo-3ds-rom		# Nintendo3DS
-application/x-wonderswan-rom		# WonderSwan
-application/x-wonderswan-color-rom	# WonderSwan
 model/x.stl-binary			# Nintendo3DS (?)
 image/x-3ds				# Nintendo3DS (?)
+application/x-nintendo-3ds-executable	# Nintendo3DS
 application/x-nintendo-3ds-cia		# Nintendo3DS
+application/x-nintendo-3ds-cxi		# Nintendo3DS
 application/x-nintendo-3ds-ncch		# Nintendo3DS
+application/x-nintendo-3ds-rom		# Nintendo3DS
+application/x-ctr-3dsx			# Nintendo3DS
+application/x-ctr-cci			# Nintendo3DS
+application/x-ctr-cia			# Nintendo3DS
+application/x-ctr-cxi			# Nintendo3DS
 application/x-nintendo-3ds-smdh		# Nintendo3DS_SMDH
+application/x-ctr-smdh			# Nintendo3DS_SMDH
 application/x-nintendo-ds-rom		# NintendoDS
 application/vnd.nintendo.nitro.rom	# NintendoDS
 application/x-nintendo-dsi-rom		# NintendoDS
@@ -94,6 +98,8 @@ application/x-psp-ciso-image		# PSP
 application/x-psp-dax-image		# PSP
 application/x-psp-jiso-image		# PSP
 application/x-psp-ziso-image		# PSP
+application/x-wonderswan-rom		# WonderSwan
+application/x-wonderswan-color-rom	# WonderSwan
 
 # Other
 application/x-nintendo-amiibo		# Amiibo

@@ -80,6 +80,18 @@ const char *const Nintendo3DSPrivate::mimeTypes[] = {
 	"application/x-nintendo-3ds-cia",		// NOT on fd.o
 	"application/x-nintendo-3ds-ncch",		// NOT on fd.o
 
+	// Unofficial MIME types.
+	// NOT used by N3DS_RomType.
+	// TODO: Add a specific type for CXI?
+	"application/x-nintendo-3ds-cxi",		// NOT on fd.o
+
+	// Unofficial MIME types from Citra.
+	// NOT used by N3DS_RomType.
+	"application/x-ctr-3dsx",
+	"application/x-ctr-cci",
+	"application/x-ctr-cia",
+	"application/x-ctr-cxi",
+
 	nullptr
 };
 const RomDataInfo Nintendo3DSPrivate::romDataInfo = {

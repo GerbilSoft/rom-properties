@@ -97,6 +97,9 @@ const char *const Nintendo3DS_SMDH_Private::mimeTypes[] = {
 	// TODO: Get these upstreamed on FreeDesktop.org.
 	"application/x-nintendo-3ds-smdh",
 
+	// Unofficial MIME types from Citra.
+	"application/x-ctr-smdh",
+
 	nullptr
 };
 const RomDataInfo Nintendo3DS_SMDH_Private::romDataInfo = {

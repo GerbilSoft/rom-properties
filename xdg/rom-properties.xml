@@ -596,6 +596,7 @@
     <comment>Nintendo 3DS homebrew application</comment>
     <sub-class-of type="application/x-executable"/>
     <generic-icon name="application-x-executable"/>
+    <alias type="application/x-ctr-3dsx"/>
     <glob pattern="*.3dsx"/>
     <magic priority="50">
       <match value="3DSX" type="string" offset="0"/>
@@ -605,6 +606,7 @@
     <comment>Nintendo 3DS ROM image</comment>
     <sub-class-of type="application/x-raw-disk-image"/>
     <generic-icon name="application-x-executable"/>
+    <alias type="application/x-ctr-cci"/>
     <glob pattern="*.3ds"/>
     <glob pattern="*.3dz"/>
     <glob pattern="*.cci"/>
@@ -630,6 +632,7 @@
     <comment>Nintendo 3DS installable archive</comment>
     <sub-class-of type="application/x-archive"/>
     <generic-icon name="package-x-generic"/>
+    <alias type="application/x-ctr-cia"/>
     <glob pattern="*.cia"/>
   </mime-type>
   <mime-type type="application/x-nintendo-3ds-ncch">
@@ -641,12 +644,21 @@
       <match value="NCCH" type="string" offset="256"/>
     </magic>
   </mime-type>
+  <mime-type type="application/x-nintendo-3ds-cxi">
+    <comment>Nintendo 3DS executable</comment>
+    <sub-class-of type="application/x-nintendo-3ds-ncch"/>
+    <generic-icon name="application-x-executable"/>
+    <!-- NOTE: CXI is a specific type of NCCH. -->
+    <alias type="application/x-ctr-cxi"/>
+    <glob pattern="*.cxi"/>
+  </mime-type>
 
   <!-- Nintendo3DS_SMDH -->
   <mime-type type="application/x-nintendo-3ds-smdh">
     <comment>Nintendo 3DS icon file</comment>
     <sub-class-of type="image/x-generic"/>
     <generic-icon name="image-x-generic"/>
+    <alias type="application/x-ctr-smdh"/>
     <glob pattern="*.smdh"/>
     <magic priority="50">
       <match value="SMDH" type="string" offset="0"/>
