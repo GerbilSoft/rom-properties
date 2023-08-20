@@ -149,8 +149,8 @@ class GameCubePrivate final : public RomDataPrivate
 		vector<WiiPartEntry> wiiPtbl;
 
 		// Pointers to specific partitions within wiiPtbl.
-		WiiPartitionPtr updatePartition;
-		WiiPartitionPtr gamePartition;
+		WiiPartition *updatePartition;
+		WiiPartition *gamePartition;
 
 		/**
 		 * Load the Wii volume group and partition tables.
@@ -204,7 +204,7 @@ class GameCubePrivate final : public RomDataPrivate
 		 * @param partition Partition to check.
 		 * @return nullptr if partition is readable; error message if not.
 		 */
-		const char *wii_getCryptoStatus(const WiiPartitionPtr &partition);
+		const char *wii_getCryptoStatus(const WiiPartition *partition);
 };
 
 ROMDATA_IMPL(GameCube)
@@ -429,10 +429,10 @@ int GameCubePrivate::loadWiiPartitionTables(void)
 
 		if (p.type == RVL_PT_UPDATE && !updatePartition) {
 			// System Update partition.
-			updatePartition = p.partition;
+			updatePartition = p.partition.get();
 		} else if (p.type == RVL_PT_GAME && !gamePartition) {
 			// Game partition.
-			gamePartition = p.partition;
+			gamePartition = p.partition.get();
 		}
 	}
 
@@ -656,7 +656,7 @@ int GameCubePrivate::wii_addBannerName(void)
  * @param partition Partition to check.
  * @return nullptr if partition is readable; error message if not.
  */
-const char *GameCubePrivate::wii_getCryptoStatus(const WiiPartitionPtr &partition)
+const char *GameCubePrivate::wii_getCryptoStatus(const WiiPartition *partition)
 {
 	const KeyManager::VerifyResult res = partition->verifyResult();
 	if (res == KeyManager::VerifyResult::KeyNotFound) {
@@ -941,7 +941,7 @@ GameCube::GameCube(const IRpFilePtr &file)
 			// Last character is title ID, except for 'UPD' which is 'all regions'.
 			// (Usually used for IOS-only update paritions.)
 			pt.type = RVL_PT_UPDATE;
-			d->updatePartition = pt.partition;
+			d->updatePartition = pt.partition.get();
 		} else if (tid.lo == be32_to_cpu('INS')) {
 			// Channel partition.
 			pt.type = RVL_PT_CHANNEL;
@@ -949,7 +949,7 @@ GameCube::GameCube(const IRpFilePtr &file)
 			// Game partition.
 			// TODO: Extract partitions from Brawl and check.
 			pt.type = RVL_PT_GAME;
-			d->gamePartition = pt.partition;
+			d->gamePartition = pt.partition.get();
 		}
 
 		// Read the partition header.
@@ -2309,10 +2309,9 @@ int GameCube::checkViewedAchievements(void) const
 	}
 
 	// Check for the main partition.
-	// NOTE: Using raw pointers here for efficiency.
-	const WiiPartition *pt = d->gamePartition.get();
+	const WiiPartition *pt = d->gamePartition;
 	if (!pt) {
-		pt = d->updatePartition.get();
+		pt = d->updatePartition;
 	}
 	if (!pt) {
 		// No partitions...
