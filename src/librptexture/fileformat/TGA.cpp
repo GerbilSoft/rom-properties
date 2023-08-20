@@ -17,15 +17,15 @@
 
 // Other rom-properties libraries
 #include "libi18n/i18n.h"
+using namespace LibRpFile;
 using namespace LibRpText;
 using LibRpBase::RomFields;
-using LibRpFile::IRpFile;
 
 // librptexture
 #include "img/rp_image.hpp"
 #include "decoder/ImageDecoder_Linear.hpp"
 
-// C++ STL classes.
+// C++ STL classes
 using std::string;
 using std::unique_ptr;
 
@@ -34,8 +34,8 @@ namespace LibRpTexture {
 class TGAPrivate final : public FileFormatPrivate
 {
 	public:
-		TGAPrivate(TGA *q, IRpFile *file);
-		~TGAPrivate() final;
+		TGAPrivate(TGA *q, const IRpFilePtr &file);
+		~TGAPrivate() final = default;
 
 	private:
 		typedef FileFormatPrivate super;
@@ -58,16 +58,16 @@ class TGAPrivate final : public FileFormatPrivate
 		};
 		TexType texType;
 
-		// TGA headers.
+		// TGA headers
 		TGA_Header tgaHeader;
 		TGA_ExtArea tgaExtArea;
 		TGA_Footer tgaFooter;
 
-		// Alpha channel type.
+		// Alpha channel type
 		TGA_AlphaType_e alphaType;
 
-		// Decoded image.
-		rp_image *img;
+		// Decoded image
+		rp_image_ptr img;
 
 		// Is HFlip/VFlip needed?
 		// Some textures may be stored upside-down due to
@@ -94,7 +94,7 @@ class TGAPrivate final : public FileFormatPrivate
 		 * Load the TGA image.
 		 * @return Image, or nullptr on error.
 		 */
-		const rp_image *loadTGAImage(void);
+		rp_image_const_ptr loadImage(void);
 
 		/**
 		 * Convert a TGA timestamp to UNIX time.
@@ -125,7 +125,7 @@ const TextureInfo TGAPrivate::textureInfo = {
 	exts, mimeTypes
 };
 
-TGAPrivate::TGAPrivate(TGA *q, IRpFile *file)
+TGAPrivate::TGAPrivate(TGA *q, const IRpFilePtr &file)
 	: super(q, file, &textureInfo)
 	, texType(TexType::Unknown)
 	, alphaType(TGA_ALPHATYPE_PRESENT)
@@ -136,11 +136,6 @@ TGAPrivate::TGAPrivate(TGA *q, IRpFile *file)
 	memset(&tgaHeader, 0, sizeof(tgaHeader));
 	memset(&tgaExtArea, 0, sizeof(tgaExtArea));
 	memset(&tgaFooter, 0, sizeof(tgaFooter));
-}
-
-TGAPrivate::~TGAPrivate()
-{
-	UNREF(img);
 }
 
 /**
@@ -211,10 +206,10 @@ int TGAPrivate::decompressRLE(uint8_t *pDest, size_t dest_len,
 }
 
 /**
- * Load the .tex image.
+ * Load the TGA image.
  * @return Image, or nullptr on error.
  */
-const rp_image *TGAPrivate::loadTGAImage(void)
+rp_image_const_ptr TGAPrivate::loadImage(void)
 {
 	if (img) {
 		// Image has already been loaded.
@@ -335,7 +330,7 @@ const rp_image *TGAPrivate::loadTGAImage(void)
 	// TODO: Handle premultiplied alpha.
 	const bool hasAlpha = (alphaType >= TGA_ALPHATYPE_PRESENT) &&
 			      ((tgaHeader.img.attr_dir & 0x0F) > 0);
-	rp_image *imgtmp = nullptr;
+	rp_image_ptr imgtmp;
 	switch (tgaHeader.image_type & ~TGA_IMAGETYPE_RLE_FLAG) {
 		case TGA_IMAGETYPE_COLORMAP:
 		case TGA_IMAGETYPE_HUFFMAN_COLORMAP:
@@ -457,9 +452,8 @@ const rp_image *TGAPrivate::loadTGAImage(void)
 
 	// Post-processing: Check if a flip is needed.
 	if (imgtmp && flipOp != rp_image::FLIP_NONE) {
-		rp_image *const flipimg = imgtmp->flip(flipOp);
+		const rp_image_ptr flipimg = imgtmp->flip(flipOp);
 		if (flipimg) {
-			imgtmp->unref();
 			imgtmp = flipimg;
 		}
 	}
@@ -517,7 +511,7 @@ time_t TGAPrivate::tgaTimeToUnixTime(const TGA_DateStamp *timestamp)
  *
  * @param file Open ROM image.
  */
-TGA::TGA(IRpFile *file)
+TGA::TGA(const IRpFilePtr &file)
 	: super(new TGAPrivate(this, file))
 {
 	RP_D(TGA);
@@ -536,7 +530,7 @@ TGA::TGA(IRpFile *file)
 	if (fileSize < static_cast<off64_t>(sizeof(d->tgaHeader) + sizeof(d->tgaFooter)) ||
 	    fileSize > TGA_MAX_SIZE)
 	{
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -545,7 +539,7 @@ TGA::TGA(IRpFile *file)
 	if (size != sizeof(d->tgaFooter)) {
 		// Could not read the TGA footer.
 		// The file is likely too small to be valid.
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -565,7 +559,7 @@ TGA::TGA(IRpFile *file)
 	size = d->file->read(&d->tgaHeader, sizeof(d->tgaHeader));
 	if (size != sizeof(d->tgaHeader)) {
 		// Seek and/or read error.
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -930,7 +924,7 @@ int TGA::getFields(RomFields *fields) const
  * The image is owned by this object.
  * @return Image, or nullptr on error.
  */
-const rp_image *TGA::image(void) const
+rp_image_const_ptr TGA::image(void) const
 {
 	RP_D(const TGA);
 	if (!d->isValid || (int)d->texType < 0) {
@@ -939,7 +933,7 @@ const rp_image *TGA::image(void) const
 	}
 
 	// Load the image.
-	return const_cast<TGAPrivate*>(d)->loadTGAImage();
+	return const_cast<TGAPrivate*>(d)->loadImage();
 }
 
 /**
@@ -948,7 +942,7 @@ const rp_image *TGA::image(void) const
  * @param mip Mipmap number.
  * @return Image, or nullptr on error.
  */
-const rp_image *TGA::mipmap(int mip) const
+rp_image_const_ptr TGA::mipmap(int mip) const
 {
 	// Allowing mipmap 0 for compatibility.
 	if (mip == 0) {

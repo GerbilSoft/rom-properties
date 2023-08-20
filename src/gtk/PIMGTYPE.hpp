@@ -47,8 +47,15 @@ G_END_DECLS
 // librptexture
 #include "librptexture/img/rp_image.hpp"
 
-// rp_image_to_PIMGTYPE wrapper function.
-// NOTE: premultiply is only used for Cairo.
+// C++ includes
+#include <memory>
+
+/**
+ * rp_image_to_PIMGTYPE wrapper function.
+ * @param img rp_image
+ * @param premultiply Premultiply alpha (NOTE: Only used for Cairo)
+ * @return PIMGTYPE
+ */
 static inline PIMGTYPE rp_image_to_PIMGTYPE(const LibRpTexture::rp_image *img, bool premultiply = true)
 {
 #ifdef RP_GTK_USE_CAIRO
@@ -57,6 +64,50 @@ static inline PIMGTYPE rp_image_to_PIMGTYPE(const LibRpTexture::rp_image *img, b
 	((void)premultiply);
 	return GdkImageConv::rp_image_to_GdkPixbuf(img);
 #endif /* RP_GTK_USE_CAIRO */
+}
+
+/**
+ * rp_image_to_PIMGTYPE wrapper function.
+ * @param img rp_image_ptr
+ * @param premultiply Premultiply alpha (NOTE: Only used for Cairo)
+ * @return PIMGTYPE
+ */
+static inline PIMGTYPE rp_image_to_PIMGTYPE(const LibRpTexture::rp_image_ptr &img, bool premultiply = true)
+{
+	return rp_image_to_PIMGTYPE(img.get(), premultiply);
+}
+
+/**
+ * rp_image_to_PIMGTYPE wrapper function.
+ * @param img rp_image_const_ptr
+ * @param premultiply Premultiply alpha (NOTE: Only used for Cairo)
+ * @return PIMGTYPE
+ */
+static inline PIMGTYPE rp_image_to_PIMGTYPE(const LibRpTexture::rp_image_const_ptr &img, bool premultiply = true)
+{
+	return rp_image_to_PIMGTYPE(img.get(), premultiply);
+}
+
+/**
+ * rp_image_to_PIMGTYPE wrapper function.
+ * @param pImg rp_image_ptr*
+ * @param premultiply Premultiply alpha (NOTE: Only used for Cairo)
+ * @return PIMGTYPE
+ */
+static inline PIMGTYPE rp_image_to_PIMGTYPE(const LibRpTexture::rp_image_ptr *pImg, bool premultiply = true)
+{
+	return rp_image_to_PIMGTYPE(pImg->get(), premultiply);
+}
+
+/**
+ * rp_image_to_PIMGTYPE wrapper function.
+ * @param pImg rp_image_const_ptr*
+ * @param premultiply Premultiply alpha (NOTE: Only used for Cairo)
+ * @return PIMGTYPE
+ */
+static inline PIMGTYPE rp_image_to_PIMGTYPE(const LibRpTexture::rp_image_const_ptr *pImg, bool premultiply = true)
+{
+	return rp_image_to_PIMGTYPE(pImg->get(), premultiply);
 }
 #endif /* __cplusplus **/
 

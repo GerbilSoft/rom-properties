@@ -14,9 +14,9 @@
 // Other rom-properties libraries
 #include "librpbase/img/RpPng.hpp"
 using namespace LibRpBase;
+using namespace LibRpFile;
 using namespace LibRpText;
 using namespace LibRpTexture;
-using LibRpFile::IRpFile;
 
 // DiscReader
 #include "cdrom_structs.h"
@@ -29,7 +29,8 @@ using LibRpFile::IRpFile;
 #include "Other/ISO.hpp"
 #include "Other/ELF.hpp"
 
-// C++ STL classes.
+// C++ STL classes
+using std::shared_ptr;
 using std::string;
 using std::vector;
 
@@ -38,8 +39,8 @@ namespace LibRomData {
 class PSPPrivate final : public LibRpBase::RomDataPrivate
 {
 	public:
-		PSPPrivate(IRpFile *file);
-		~PSPPrivate() final;
+		PSPPrivate(const IRpFilePtr &file);
+		~PSPPrivate() final = default;
 
 	private:
 		typedef RomDataPrivate super;
@@ -65,26 +66,26 @@ class PSPPrivate final : public LibRpBase::RomDataPrivate
 		ISO_Primary_Volume_Descriptor pvd;
 
 		// IsoPartition
-		IDiscReader *discReader;
-		IsoPartition *isoPartition;
+		IDiscReaderPtr discReader;
+		IsoPartitionPtr isoPartition;
 
-		// Icon.
-		rp_image *img_icon;
+		// Icon
+		rp_image_ptr img_icon;
 
 		/**
 		 * Load the icon.
 		 * @return Icon, or nullptr on error.
 		 */
-		const rp_image *loadIcon(void);
+		rp_image_const_ptr loadIcon(void);
 
 		// Boot executable (EBOOT.BIN)
-		RomData *bootExeData;
+		RomDataPtr bootExeData;
 
 		/**
 		 * Open the boot executable.
 		 * @return RomData* on success; nullptr on error.
 		 */
-		RomData *openBootExe(void);
+		RomDataPtr openBootExe(void);
 };
 
 ROMDATA_IMPL(PSP)
@@ -128,32 +129,19 @@ const RomDataInfo PSPPrivate::romDataInfo = {
 	"PSP", exts, mimeTypes
 };
 
-PSPPrivate::PSPPrivate(IRpFile *file)
+PSPPrivate::PSPPrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
 	, discType(DiscType::Unknown)
-	, discReader(nullptr)
-	, isoPartition(nullptr)
-	, img_icon(nullptr)
-	, bootExeData(nullptr)
 {
 	// Clear the structs.
 	memset(&pvd, 0, sizeof(pvd));
-}
-
-PSPPrivate::~PSPPrivate()
-{
-	UNREF(bootExeData);
-	UNREF(isoPartition);
-	UNREF(discReader);
-
-	UNREF(img_icon);
 }
 
 /**
  * Load the icon.
  * @return Icon, or nullptr on error.
  */
-const rp_image *PSPPrivate::loadIcon(void)
+rp_image_const_ptr PSPPrivate::loadIcon(void)
 {
 	if (img_icon) {
 		// Icon has already been loaded.
@@ -168,17 +156,15 @@ const rp_image *PSPPrivate::loadIcon(void)
 		(unlikely(discType == DiscType::UmdVideo)
 			? "/UMD_VIDEO/ICON0.PNG"
 			: "/PSP_GAME/ICON0.PNG");
-	IRpFile *const f_icon = isoPartition->open(icon_filename);
-	if (!f_icon || !f_icon->isOpen()) {
+	const IRpFilePtr f_icon(isoPartition->open(icon_filename));
+	if (!f_icon) {
 		// Unable to open the icon file.
-		UNREF(f_icon);
 		return nullptr;
 	}
 
 	// Decode the image.
 	// TODO: For rpcli, shortcut to extract the PNG directly.
 	this->img_icon = RpPng::load(f_icon);
-	f_icon->unref();
 	return this->img_icon;
 }
 
@@ -186,8 +172,12 @@ const rp_image *PSPPrivate::loadIcon(void)
  * Open the boot executable.
  * @return RomData* on success; nullptr on error.
  */
-RomData *PSPPrivate::openBootExe(void)
+RomDataPtr PSPPrivate::openBootExe(void)
 {
+	// FIXME: Returning `const RomDataPtr &` would be better,
+	// but the compiler is complaining that the nullptrs end up
+	// returning a reference to a local temporary object.
+
 	if (bootExeData) {
 		// The boot executable is already open.
 		return bootExeData;
@@ -201,18 +191,14 @@ RomData *PSPPrivate::openBootExe(void)
 	// Open the boot file.
 	// FIXME: This is normally encrypted, but some games have
 	// an unencrypted EBOOT.BIN.
-	IRpFile *f_bootExe = isoPartition->open("/PSP_GAME/SYSDIR/EBOOT.BIN");
+	const IRpFilePtr f_bootExe(isoPartition->open("/PSP_GAME/SYSDIR/EBOOT.BIN"));
 	if (f_bootExe) {
-		RomData *const exeData = new ELF(f_bootExe);
-		f_bootExe->unref();
+		RomDataPtr exeData = std::make_shared<ELF>(f_bootExe);
 		if (exeData->isOpen() && exeData->isValid()) {
 			// Boot executable is open and valid.
 			bootExeData = exeData;
 			return exeData;
 		}
-
-		// Unable to open the executable.
-		UNREF(exeData);
 	}
 
 	// Unable to open the default executable.
@@ -234,7 +220,7 @@ RomData *PSPPrivate::openBootExe(void)
  *
  * @param file Open ROM image.
  */
-PSP::PSP(IRpFile *file)
+PSP::PSP(const IRpFilePtr &file)
 	: super(new PSPPrivate(file))
 {
 	// This class handles disc images.
@@ -248,7 +234,7 @@ PSP::PSP(IRpFile *file)
 	}
 
 	// UMD is based on the DVD specification and therefore only has 2048-byte sectors.
-	IDiscReader *discReader = nullptr;
+	IDiscReaderPtr discReader;
 
 	// Check if this is a supported compressed disc image.
 	uint8_t header[256];
@@ -256,41 +242,38 @@ PSP::PSP(IRpFile *file)
 	size_t size = d->file->read(header, sizeof(header));
 	if (size != sizeof(header)) {
 		// Read error.
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 	if (CisoPspReader::isDiscSupported_static(header, sizeof(header)) >= 0) {
-		discReader = new CisoPspReader(d->file);
+		discReader = std::make_shared<CisoPspReader>(d->file);
 		if (!discReader->isOpen()) {
 			// Not CISO.
-			UNREF_AND_NULL_NOCHK(discReader);
+			discReader.reset();
 		}
 	}
 
 	if (!discReader) {
 		// Not a supported compressed disc image.
 		// Try opening as uncompressed.
-		discReader = new DiscReader(d->file);
+		discReader = std::make_shared<DiscReader>(d->file);
 	}
 
 	if (!discReader->isOpen()) {
 		// Error opening the DiscReader.
-		UNREF(discReader);
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
 	// Check the ISO PVD and system ID.
 	size = discReader->seekAndRead(ISO_PVD_ADDRESS_2048, &d->pvd, sizeof(d->pvd));
 	if (size != sizeof(d->pvd)) {
-		UNREF(discReader);
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 	if (ISO::checkPVD(reinterpret_cast<const uint8_t*>(&d->pvd)) < 0) {
 		// Not ISO-9660.
-		UNREF(discReader);
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -298,24 +281,21 @@ PSP::PSP(IRpFile *file)
 	d->discType = static_cast<PSPPrivate::DiscType>(isRomSupported_static(&d->pvd));
 	if ((int)d->discType < 0) {
 		// Incorrect system ID.
-		UNREF(discReader);
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
 	// Try to open the ISO partition.
-	IsoPartition *const isoPartition = new IsoPartition(discReader, 0, 0);
+	IsoPartitionPtr isoPartition = std::make_shared<IsoPartition>(discReader, 0, 0);
 	if (!isoPartition->isOpen()) {
 		// Error opening the ISO partition.
-		UNREF(isoPartition);
-		UNREF(discReader);
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
 	// Disc image is ready.
-	d->discReader = discReader;
-	d->isoPartition = isoPartition;
+	d->discReader = std::move(discReader);
+	d->isoPartition = std::move(isoPartition);
 	d->isValid = true;
 }
 
@@ -332,8 +312,8 @@ void PSP::close(void)
 		d->bootExeData->close();
 	}
 
-	UNREF_AND_NULL(d->isoPartition);
-	UNREF_AND_NULL(d->discReader);
+	d->isoPartition.reset();
+	d->discReader.reset();
 
 	// Call the superclass function.
 	super::close();
@@ -536,11 +516,11 @@ int PSP::loadFieldData(void)
 	// - Field 1: Encryption key?
 	// - Field 2: Revision?
 	// - Field 3: Age rating?
-	IRpFile *const umdDataBin = d->isoPartition->open("/UMD_DATA.BIN");
-	if (umdDataBin->isOpen()) {
+	const IRpFilePtr f_umdDataBin = d->isoPartition->open("/UMD_DATA.BIN");
+	if (f_umdDataBin) {
 		// Read up to 128 bytes.
 		char buf[129];
-		size_t size = umdDataBin->read(buf, sizeof(buf)-1);
+		size_t size = f_umdDataBin->read(buf, sizeof(buf)-1);
 		buf[size] = 0;
 
 		// Find the first '|'.
@@ -555,12 +535,11 @@ int PSP::loadFieldData(void)
 				latin1_to_utf8(buf, static_cast<int>(p - buf)));
 		}
 	}
-	UNREF(umdDataBin);
 
 	// TODO: Add fields from PARAM.SFO.
 
 	// Show a tab for the boot file.
-	RomData *const bootExeData = d->openBootExe();
+	RomDataPtr bootExeData = d->openBootExe();
 	if (bootExeData) {
 		// Add the fields.
 		// NOTE: Adding tabs manually so we can show the disc info in
@@ -582,9 +561,8 @@ int PSP::loadFieldData(void)
 
 	// ISO object for ISO-9660 PVD
 	// TODO: DiscReader overload for ISO.
-	PartitionFile *const ptFile = new PartitionFile(d->discReader, 0, d->discReader->size());
+	PartitionFilePtr ptFile = std::make_shared<PartitionFile>(d->discReader.get(), 0, d->discReader->size());
 	ISO *const isoData = new ISO(ptFile);
-	ptFile->unref();
 	if (isoData->isOpen()) {
 		// Add the fields.
 		const RomFields *const isoFields = isoData->fields();
@@ -593,7 +571,7 @@ int PSP::loadFieldData(void)
 				RomFields::TabOffset_AddTabs);
 		}
 	}
-	isoData->unref();
+	delete isoData;
 
 	// Finished reading the field data.
 	return static_cast<int>(d->fields.count());
@@ -603,10 +581,10 @@ int PSP::loadFieldData(void)
  * Load an internal image.
  * Called by RomData::image().
  * @param imageType	[in] Image type to load.
- * @param pImage	[out] Pointer to const rp_image* to store the image in.
+ * @param pImage	[out] Reference to rp_image_const_ptr to store the image in.
  * @return 0 on success; negative POSIX error code on error.
  */
-int PSP::loadInternalImage(ImageType imageType, const rp_image **pImage)
+int PSP::loadInternalImage(ImageType imageType, rp_image_const_ptr &pImage)
 {
 	ASSERT_loadInternalImage(imageType, pImage);
 	RP_D(PSP);
@@ -652,11 +630,11 @@ int PSP::loadMetaData(void)
 	// - Field 1: Encryption key?
 	// - Field 2: Revision?
 	// - Field 3: Age rating?
-	IRpFile *const umdDataBin = d->isoPartition->open("/UMD_DATA.BIN");
-	if (umdDataBin->isOpen()) {
+	const IRpFilePtr f_umdDataBin(d->isoPartition->open("/UMD_DATA.BIN"));
+	if (f_umdDataBin) {
 		// Read up to 128 bytes.
 		char buf[129];
-		size_t size = umdDataBin->read(buf, sizeof(buf)-1);
+		size_t size = f_umdDataBin->read(buf, sizeof(buf)-1);
 		buf[size] = 0;
 
 		// Find the first '|'.
@@ -667,7 +645,6 @@ int PSP::loadMetaData(void)
 				latin1_to_utf8(buf, static_cast<int>(p - buf)));
 		}
 	}
-	UNREF(umdDataBin);
 
 	// TODO: More PSP-specific metadata?
 

@@ -31,7 +31,8 @@ ROMDATA_DECL_BEGIN(DreamcastSave)
 		 * @param vms_file Open .VMS save file.
 		 * @param vmi_file Open .VMI save file.
 		 */
-		DreamcastSave(LibRpFile::IRpFile *vms_file, LibRpFile::IRpFile *vmi_file);
+		DreamcastSave(const LibRpFile::IRpFilePtr &vms_file,
+		              const LibRpFile::IRpFilePtr &vmi_file);
 
 ROMDATA_DECL_CLOSE()
 ROMDATA_DECL_METADATA()

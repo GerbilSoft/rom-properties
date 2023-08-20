@@ -12,9 +12,9 @@
 
 #include "astc_structs.h"
 
-// librpbase, librpfile
+// Other rom-properties libraries
+using namespace LibRpFile;
 using LibRpBase::RomFields;
-using LibRpFile::IRpFile;
 
 // librptexture
 #include "ImageSizeCalc.hpp"
@@ -26,8 +26,8 @@ namespace LibRpTexture {
 class ASTCPrivate final : public FileFormatPrivate
 {
 	public:
-		ASTCPrivate(ASTC *q, IRpFile *file);
-		~ASTCPrivate() final;
+		ASTCPrivate(ASTC *q, const IRpFilePtr &file);
+		~ASTCPrivate() final = default;
 
 	private:
 		typedef FileFormatPrivate super;
@@ -40,11 +40,11 @@ class ASTCPrivate final : public FileFormatPrivate
 		static const TextureInfo textureInfo;
 
 	public:
-		// ASTC header.
+		// ASTC header
 		ASTC_Header astcHeader;
 
-		// Decoded image.
-		rp_image *img;
+		// Decoded image
+		rp_image_ptr img;
 
 		// Pixel format message
 		char pixel_format[20];
@@ -53,7 +53,7 @@ class ASTCPrivate final : public FileFormatPrivate
 		 * Load the image.
 		 * @return Image, or nullptr on error.
 		 */
-		const rp_image *loadImage(void);
+		rp_image_const_ptr loadImage(void);
 };
 
 FILEFORMAT_IMPL(ASTC)
@@ -77,7 +77,7 @@ const TextureInfo ASTCPrivate::textureInfo = {
 	exts, mimeTypes
 };
 
-ASTCPrivate::ASTCPrivate(ASTC *q, IRpFile *file)
+ASTCPrivate::ASTCPrivate(ASTC *q, const IRpFilePtr &file)
 	: super(q, file, &textureInfo)
 	, img(nullptr)
 {
@@ -86,16 +86,11 @@ ASTCPrivate::ASTCPrivate(ASTC *q, IRpFile *file)
 	memset(pixel_format, 0, sizeof(pixel_format));
 }
 
-ASTCPrivate::~ASTCPrivate()
-{
-	UNREF(img);
-}
-
 /**
  * Load the image.
  * @return Image, or nullptr on error.
  */
-const rp_image *ASTCPrivate::loadImage(void)
+rp_image_const_ptr ASTCPrivate::loadImage(void)
 {
 	if (img) {
 		// Image has already been loaded.
@@ -186,7 +181,7 @@ const rp_image *ASTCPrivate::loadImage(void)
  *
  * @param file Open ROM image.
  */
-ASTC::ASTC(IRpFile *file)
+ASTC::ASTC(const IRpFilePtr &file)
 	: super(new ASTCPrivate(this, file))
 {
 	RP_D(ASTC);
@@ -201,14 +196,14 @@ ASTC::ASTC(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(&d->astcHeader, sizeof(d->astcHeader));
 	if (size != sizeof(d->astcHeader)) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
 	// Verify the ASTC magic.
 	if (d->astcHeader.magic != cpu_to_le32(ASTC_MAGIC)) {
 		// Incorrect magic.
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -317,7 +312,7 @@ int ASTC::getFields(RomFields *fields) const
  * The image is owned by this object.
  * @return Image, or nullptr on error.
  */
-const rp_image *ASTC::image(void) const
+rp_image_const_ptr ASTC::image(void) const
 {
 	RP_D(const ASTC);
 	if (!d->isValid) {
@@ -335,7 +330,7 @@ const rp_image *ASTC::image(void) const
  * @param mip Mipmap number.
  * @return Image, or nullptr on error.
  */
-const rp_image *ASTC::mipmap(int mip) const
+rp_image_const_ptr ASTC::mipmap(int mip) const
 {
 	// Allowing mipmap 0 for compatibility.
 	if (mip == 0) {

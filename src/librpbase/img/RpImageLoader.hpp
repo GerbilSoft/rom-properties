@@ -10,12 +10,9 @@
 
 #include "common.h"
 
-namespace LibRpFile {
-	class IRpFile;
-}
-namespace LibRpTexture {
-	class rp_image;
-}
+// Other rom-properties libraries
+#include "librpfile/IRpFile.hpp"
+#include "librptexture/img/rp_image.hpp"
 
 namespace LibRpBase { namespace RpImageLoader {
 
@@ -25,6 +22,6 @@ namespace LibRpBase { namespace RpImageLoader {
  * @return rp_image*, or nullptr on error.
  */
 RP_LIBROMDATA_PUBLIC
-LibRpTexture::rp_image *load(LibRpFile::IRpFile *file);
+LibRpTexture::rp_image_ptr load(const LibRpFile::IRpFilePtr &file);
 
 } }

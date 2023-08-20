@@ -17,15 +17,14 @@
 #include "libi18n/i18n.h"
 
 // librpfile, librptexture
-using LibRpFile::IRpFile;
-using LibRpTexture::rp_image;
-using LibRpTexture::argb32_t;
+using namespace LibRpFile;
+using namespace LibRpTexture;
 
 #ifdef RPJPEG_HAS_SSSE3
 #  include "librpcpu/cpuflags_x86.h"
 #endif /* RPJPEG_HAS_SSSE3 */
 
-// C includes. (C++ namespace)
+// C includes (C++ namespace)
 #include <csetjmp>
 
 #ifdef _WIN32
@@ -208,7 +207,7 @@ void RpJpegPrivate::jpeg_IRpFile_src(j_decompress_ptr cinfo, IRpFile *infile)
  * @param file IRpFile to load from.
  * @return rp_image*, or nullptr on error.
  */
-rp_image *RpJpeg::load(IRpFile *file)
+rp_image_ptr RpJpeg::load(const IRpFilePtr &file)
 {
 	if (!file)
 		return nullptr;
@@ -219,8 +218,8 @@ rp_image *RpJpeg::load(IRpFile *file)
 	RpJpegPrivate::my_error_mgr jerr;
 	jpeg_decompress_struct cinfo;
 	int row_stride;			// Physical row width in output buffer
-	rp_image *img = nullptr;	// Image.
-	bool direct_copy = false;	// True if a direct copy can be made.
+	rp_image_ptr img;	// Image
+	bool direct_copy = false;	// True if a direct copy can be made
 
 	// libjpeg-turbo BGRA extension.
 	// Defining MY_JCS_EXT_BGRA so it can be compiled with libjpeg and
@@ -255,7 +254,6 @@ rp_image *RpJpeg::load(IRpFile *file)
 			// NOTE: buffer is allocated using JPEG allocation functions,
 			// so it's automatically freed when we destroy cinfo.
 			jpeg_destroy_decompress(&cinfo);
-			UNREF(img);
 			return nullptr;
 		}
 	}
@@ -264,7 +262,7 @@ rp_image *RpJpeg::load(IRpFile *file)
 	jpeg_create_decompress(&cinfo);
 
 	/** Step 2: Specify data source. **/
-	RpJpegPrivate::jpeg_IRpFile_src(&cinfo, file);
+	RpJpegPrivate::jpeg_IRpFile_src(&cinfo, file.get());
 
 	/** Step 3: Read file parameters with jpeg_read_header(). */
 	// Return value is not useful here since:
@@ -335,11 +333,10 @@ rp_image *RpJpeg::load(IRpFile *file)
 			}
 
 			// Create the image.
-			img = new rp_image(cinfo.output_width, cinfo.output_height, rp_image::Format::CI8);
+			img = std::make_shared<rp_image>(cinfo.output_width, cinfo.output_height, rp_image::Format::CI8);
 			if (!img->isValid()) {
 				// Could not allocate the image.
 				jpeg_destroy_decompress(&cinfo);
-				img->unref();
 				return nullptr;
 			}
 
@@ -349,7 +346,6 @@ rp_image *RpJpeg::load(IRpFile *file)
 			if (!img_palette) {
 				// No palette...
 				jpeg_destroy_decompress(&cinfo);
-				img->unref();
 				return nullptr;
 			}
 
@@ -384,11 +380,10 @@ rp_image *RpJpeg::load(IRpFile *file)
 				return nullptr;
 			}
 
-			img = new rp_image(cinfo.image_width, cinfo.image_height, rp_image::Format::ARGB32);
+			img = std::make_shared<rp_image>(cinfo.image_width, cinfo.image_height, rp_image::Format::ARGB32);
 			if (!img->isValid()) {
 				// Could not allocate the image.
 				jpeg_destroy_decompress(&cinfo);
-				img->unref();
 				return nullptr;
 			}
 			break;
@@ -405,11 +400,10 @@ rp_image *RpJpeg::load(IRpFile *file)
 				return nullptr;
 			}
 
-			img = new rp_image(cinfo.image_width, cinfo.image_height, rp_image::Format::ARGB32);
+			img = std::make_shared<rp_image>(cinfo.image_width, cinfo.image_height, rp_image::Format::ARGB32);
 			if (!img->isValid()) {
 				// Could not allocate the image.
 				jpeg_destroy_decompress(&cinfo);
-				img->unref();
 				return nullptr;
 			}
 			break;
@@ -424,11 +418,10 @@ rp_image *RpJpeg::load(IRpFile *file)
 				return nullptr;
 			}
 
-			img = new rp_image(cinfo.image_width, cinfo.image_height, rp_image::Format::ARGB32);
+			img = std::make_shared<rp_image>(cinfo.image_width, cinfo.image_height, rp_image::Format::ARGB32);
 			if (!img->isValid()) {
 				// Could not allocate the image.
 				jpeg_destroy_decompress(&cinfo);
-				img->unref();
 				return nullptr;
 			}
 			break;
@@ -438,7 +431,6 @@ rp_image *RpJpeg::load(IRpFile *file)
 			// Unsupported colorspace.
 			assert(!"Colorspace is not supported.");
 			jpeg_destroy_decompress(&cinfo);
-			img->unref();
 			return nullptr;
 	}
 
@@ -460,7 +452,7 @@ rp_image *RpJpeg::load(IRpFile *file)
 				// conversion step.
 #ifdef RPJPEG_HAS_SSSE3
 				if (RP_CPU_HasSSSE3()) {
-					RpJpegPrivate::decodeBGRtoARGB(img, &cinfo, buffer);
+					RpJpegPrivate::decodeBGRtoARGB(img.get(), &cinfo, buffer);
 					break;
 				}
 #endif /* RPJPEG_HAS_SSSE3 */
@@ -542,7 +534,6 @@ rp_image *RpJpeg::load(IRpFile *file)
 				assert(!"Unsupported JPEG colorspace.");
 				jpeg_finish_decompress(&cinfo);
 				jpeg_destroy_decompress(&cinfo);
-				img->unref();
 				return nullptr;
 		}
 

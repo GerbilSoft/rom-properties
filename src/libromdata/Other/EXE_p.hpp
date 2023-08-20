@@ -34,8 +34,8 @@ class EXE;
 class EXEPrivate final : public LibRpBase::RomDataPrivate
 {
 	public:
-		EXEPrivate(LibRpFile::IRpFile *file);
-		~EXEPrivate() final;
+		EXEPrivate(const LibRpFile::IRpFilePtr &file);
+		~EXEPrivate() final = default;
 
 	private:
 		typedef RomDataPrivate super;
@@ -89,8 +89,8 @@ class EXEPrivate final : public LibRpBase::RomDataPrivate
 		} hdr;
 		#pragma pack()
 
-		// Resource reader.
-		IResourceReader *rsrcReader;
+		// Resource reader
+		IResourceReaderPtr rsrcReader;
 
 		/**
 		 * Add VS_VERSION_INFO fields.

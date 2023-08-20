@@ -17,31 +17,25 @@
 #include <cstddef>	// for size_t
 
 // C++ includes
+#include <memory>
 #include <string>
-#include <type_traits>
 
 // Common macros
 #include "common.h"
 #include "dll-macros.h"	// for RP_LIBROMDATA_PUBLIC
-#include "RefBase.hpp"
 #include "d_type.h"
 
 namespace LibRpFile {
 
-class RP_LIBROMDATA_PUBLIC IRpFile : public RefBase
+class RP_LIBROMDATA_PUBLIC IRpFile
 {
 	protected:
 		explicit IRpFile();
-		~IRpFile() override = default;	// call unref() instead
+	public:
+		virtual ~IRpFile() = default;
 
 	private:
 		RP_DISABLE_COPY(IRpFile)
-
-	public:
-		inline IRpFile *ref(void)
-		{
-			return RefBase::ref<IRpFile>();
-		}
 
 	public:
 		/**
@@ -206,7 +200,7 @@ class RP_LIBROMDATA_PUBLIC IRpFile : public RefBase
 		}
 
 	public:
-		/** Convenience functions implemented for all IRpFile classes. **/
+		/** Convenience functions implemented for all IRpFile subclasses. **/
 
 		/**
 		 * Get a single character (byte) from the file
@@ -280,5 +274,7 @@ class RP_LIBROMDATA_PUBLIC IRpFile : public RefBase
 		bool m_isCompressed;	// Is this file compressed?
 		uint8_t m_fileType;	// File type (see d_type.h)
 };
+
+typedef std::shared_ptr<IRpFile> IRpFilePtr;
 
 }

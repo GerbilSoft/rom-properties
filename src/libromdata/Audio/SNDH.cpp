@@ -16,8 +16,8 @@
 
 // Other rom-properties libraries
 using namespace LibRpBase;
+using namespace LibRpFile;
 using namespace LibRpText;
-using LibRpFile::IRpFile;
 
 // unice68
 #ifdef ENABLE_UNICE68
@@ -37,7 +37,7 @@ namespace LibRomData {
 class SNDHPrivate final : public RomDataPrivate
 {
 	public:
-		SNDHPrivate(IRpFile *file);
+		SNDHPrivate(const IRpFilePtr &file);
 
 	private:
 		typedef RomDataPrivate super;
@@ -124,7 +124,7 @@ const RomDataInfo SNDHPrivate::romDataInfo = {
 	"SNDH", exts, mimeTypes
 };
 
-SNDHPrivate::SNDHPrivate(IRpFile *file)
+SNDHPrivate::SNDHPrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
 { }
 
@@ -628,7 +628,7 @@ SNDHPrivate::TagData SNDHPrivate::parseTags(void)
  *
  * @param file Open ROM image.
  */
-SNDH::SNDH(IRpFile *file)
+SNDH::SNDH(const IRpFilePtr &file)
 	: super(new SNDHPrivate(file))
 {
 	RP_D(SNDH);
@@ -651,7 +651,7 @@ SNDH::SNDH(IRpFile *file)
 	// ICE-compressed SNDH files are really small.
 	// - Lowe_Al/Kings_Quest_II.sndh: 453 bytes.
 	if (size < 12) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -664,7 +664,7 @@ SNDH::SNDH(IRpFile *file)
 	d->isValid = (isRomSupported_static(&info) >= 0);
 
 	if (!d->isValid) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 	}
 }
 

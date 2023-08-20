@@ -23,7 +23,7 @@ class DiscReader final : public IDiscReader
 		 * unref()'d by the caller afterwards.
 		 * @param file File to read from.
 		 */
-		explicit DiscReader(LibRpFile::IRpFile *file);
+		explicit DiscReader(const LibRpFile::IRpFilePtr &file);
 
 		/**
 		 * Construct a DiscReader with the specified file.
@@ -33,9 +33,9 @@ class DiscReader final : public IDiscReader
 		 * @param offset Starting offset.
 		 * @param length Disc length. (-1 for "until end of file")
 		 */
-		explicit DiscReader(LibRpFile::IRpFile *file, off64_t offset, off64_t length);
-	protected:
-		~DiscReader() final = default;	// call unref() instead
+		explicit DiscReader(const LibRpFile::IRpFilePtr &file, off64_t offset, off64_t length);
+	public:
+		~DiscReader() final = default;
 
 	private:
 		typedef IDiscReader super;

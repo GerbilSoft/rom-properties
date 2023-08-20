@@ -20,7 +20,7 @@
 #include "../RomDataView.hpp"
 
 #include "librpbase/RomData.hpp"
-using LibRpBase::RomData;
+using namespace LibRpBase;
 
 // nautilus-extension.h mini replacement
 #include "nautilus-extension-mini.h"
@@ -114,7 +114,7 @@ rp_nautilus_properties_model_provider_get_models(NautilusPropertiesModelProvider
 	}
 
 	// Attempt to open the URI.
-	RomData *const romData = rp_gtk_open_uri(uri);
+	const RomDataPtr romData = rp_gtk_open_uri(uri);
 	if (G_UNLIKELY(!romData)) {
 		// Unable to open the URI as a RomData object.
 		g_free(uri);
@@ -123,7 +123,6 @@ rp_nautilus_properties_model_provider_get_models(NautilusPropertiesModelProvider
 
 	// Create the RpNautilusPropertiesModel and return it in a GList.
 	NautilusPropertiesModel *const model = rp_nautilus_properties_model_new(romData);
-	romData->unref();
 	g_free(uri);
 	return g_list_prepend(nullptr, model);
 }

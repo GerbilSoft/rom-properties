@@ -13,8 +13,8 @@
 
 // Other rom-properties libraries
 using namespace LibRpBase;
+using namespace LibRpFile;
 using namespace LibRpText;
-using LibRpFile::IRpFile;
 
 // C++ STL classes
 using std::string;
@@ -25,7 +25,7 @@ namespace LibRomData {
 class GameBoyAdvancePrivate final : public RomDataPrivate
 {
 	public:
-		GameBoyAdvancePrivate(IRpFile *file);
+		GameBoyAdvancePrivate(const IRpFilePtr &file);
 
 	private:
 		typedef RomDataPrivate super;
@@ -88,7 +88,7 @@ const RomDataInfo GameBoyAdvancePrivate::romDataInfo = {
 	"GameBoyAdvance", exts, mimeTypes
 };
 
-GameBoyAdvancePrivate::GameBoyAdvancePrivate(IRpFile *file)
+GameBoyAdvancePrivate::GameBoyAdvancePrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
 	, romType(RomType::Unknown)
 {
@@ -137,7 +137,7 @@ string GameBoyAdvancePrivate::getPublisher(void) const
  *
  * @param file Open ROM image.
  */
-GameBoyAdvance::GameBoyAdvance(IRpFile *file)
+GameBoyAdvance::GameBoyAdvance(const IRpFilePtr &file)
 	: super(new GameBoyAdvancePrivate(file))
 {
 	RP_D(GameBoyAdvance);
@@ -152,7 +152,7 @@ GameBoyAdvance::GameBoyAdvance(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(&d->romHeader, sizeof(d->romHeader));
 	if (size != sizeof(d->romHeader)) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -166,7 +166,7 @@ GameBoyAdvance::GameBoyAdvance(IRpFile *file)
 
 	d->isValid = ((int)d->romType >= 0);
 	if (!d->isValid) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 	}
 }
 

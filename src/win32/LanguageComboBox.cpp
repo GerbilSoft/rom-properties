@@ -11,15 +11,18 @@
 #include "RpImageWin32.hpp"
 #include "res/resource.h"
 
-// librpbase, librpfile, librptexture
+// Other rom-properties libraries
 #include "librpbase/SystemRegion.hpp"
 #include "librpbase/img/RpPng.hpp"
-#include "librpfile/win32/RpFile_windres.hpp"
 using namespace LibRpBase;
-using LibRpFile::RpFile_windres;
-using LibRpTexture::rp_image;
+using namespace LibRpTexture;
+
+// RpFile_windres
+#include "file/RpFile_windres.hpp"
+using LibRpFile::IRpFile;
 
 // C++ STL classes
+using std::shared_ptr;
 using std::tstring;
 using std::vector;
 
@@ -137,9 +140,10 @@ LRESULT LanguageComboBoxPrivate::setLCs(const uint32_t *lcs_array)
 	// Load the flags sprite sheet.
 	// TODO: Is premultiplied alpha needed?
 	// Reference: https://stackoverflow.com/questions/307348/how-to-draw-32-bit-alpha-channel-bitmaps
-	rp_image *imgFlagsSheet = nullptr;
-	RpFile_windres *const f_res = new RpFile_windres(HINST_THISCOMPONENT,
-		MAKEINTRESOURCE(resID), MAKEINTRESOURCE(RT_PNG));
+	rp_image_const_ptr imgFlagsSheet;
+	shared_ptr<RpFile_windres> f_res = std::make_shared<RpFile_windres>(
+		HINST_THISCOMPONENT, MAKEINTRESOURCE(resID), MAKEINTRESOURCE(RT_PNG));
+	assert(f_res->isOpen());
 	if (f_res->isOpen()) do {
 		imgFlagsSheet = RpPng::load(f_res);
 		if (!imgFlagsSheet)
@@ -152,8 +156,7 @@ LRESULT LanguageComboBoxPrivate::setLCs(const uint32_t *lcs_array)
 		    imgFlagsSheet->height() != (iconSize * SystemRegion::FLAGS_SPRITE_SHEET_ROWS))
 		{
 			// Incorrect size. We can't use it.
-			imgFlagsSheet->unref();
-			imgFlagsSheet = nullptr;
+			imgFlagsSheet.reset();
 			break;
 		}
 
@@ -163,15 +166,13 @@ LRESULT LanguageComboBoxPrivate::setLCs(const uint32_t *lcs_array)
 			// but we can't rely on that being the case, and this option
 			// was first introduced in Windows XP.
 			// We'll flip the image here to counteract it.
-			rp_image *const flipimg = imgFlagsSheet->flip(rp_image::FLIP_H);
-			assert(flipimg != nullptr);
+			const rp_image_const_ptr flipimg = imgFlagsSheet->flip(rp_image::FLIP_H);
+			assert((bool)flipimg);
 			if (flipimg) {
-				imgFlagsSheet->unref();
 				imgFlagsSheet = flipimg;
 			}
 		}
 	} while (0);
-	UNREF(f_res);
 
 	// Create the ImageList.
 	if (imgFlagsSheet) {
@@ -179,8 +180,7 @@ LRESULT LanguageComboBoxPrivate::setLCs(const uint32_t *lcs_array)
 		assert(himglFlags != nullptr);
 		if (!himglFlags) {
 			// Unable to create the ImageList.
-			imgFlagsSheet->unref();
-			imgFlagsSheet = nullptr;
+			imgFlagsSheet.reset();
 		}
 	}
 
@@ -272,7 +272,6 @@ LRESULT LanguageComboBoxPrivate::setLCs(const uint32_t *lcs_array)
 			sel_idx = static_cast<int>(cbItem.iItem);
 		}
 	}
-	UNREF(imgFlagsSheet);
 
 	// Add iconSize + iconMargin for the icon.
 	minSize.cx += iconSize + iconMargin;

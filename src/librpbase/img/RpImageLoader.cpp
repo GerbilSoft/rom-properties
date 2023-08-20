@@ -12,11 +12,11 @@
 #include "RpImageLoader.hpp"
 #include "librpfile/IRpFile.hpp"
 
-// librpfile, librptexture
-using LibRpFile::IRpFile;
-using LibRpTexture::rp_image;
+// Other rom-properties libraries
+using namespace LibRpFile;
+using namespace LibRpTexture;
 
-// Image loaders.
+// Image loaders
 #include "RpPng.hpp"
 #ifdef HAVE_JPEG
 #  include "RpJpeg.hpp"
@@ -45,7 +45,7 @@ static const uint8_t exif_magic[4] = {'E','x','i','f'};
  * @param file IRpFile to load from.
  * @return rp_image*, or nullptr on error.
  */
-rp_image *load(IRpFile *file)
+rp_image_ptr load(const IRpFilePtr &file)
 {
 	file->rewind();
 

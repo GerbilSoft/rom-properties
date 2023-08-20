@@ -15,13 +15,11 @@
 #include "librpbase/SystemRegion.hpp"
 #include "librptexture/decoder/ImageDecoder_GCN.hpp"
 using namespace LibRpBase;
+using namespace LibRpFile;
 using namespace LibRpText;
 using namespace LibRpTexture;
-using LibRpFile::IRpFile;
 
-// C++ STL classes.
-#include <string>
-#include <vector>
+// C++ STL classes
 using std::string;
 using std::vector;
 
@@ -30,8 +28,8 @@ namespace LibRomData {
 class GameCubeSavePrivate final : public RomDataPrivate
 {
 	public:
-		GameCubeSavePrivate(IRpFile *file);
-		~GameCubeSavePrivate() final;
+		GameCubeSavePrivate(const IRpFilePtr &file);
+		~GameCubeSavePrivate() final = default;
 
 	private:
 		typedef RomDataPrivate super;
@@ -44,14 +42,14 @@ class GameCubeSavePrivate final : public RomDataPrivate
 		static const RomDataInfo romDataInfo;
 
 	public:
-		// Internal images.
-		rp_image *img_banner;
+		// Internal images
+		rp_image_ptr img_banner;
 
-		// Animated icon data.
-		IconAnimData *iconAnimData;
+		// Animated icon data
+		IconAnimDataPtr iconAnimData;
 
 	public:
-		// RomFields data.
+		// RomFields data
 
 		// Directory entry from the GCI header.
 		card_direntry direntry;
@@ -97,13 +95,13 @@ class GameCubeSavePrivate final : public RomDataPrivate
 		 *
 		 * @return Icon, or nullptr on error.
 		 */
-		const rp_image *loadIcon(void);
+		rp_image_const_ptr loadIcon(void);
 
 		/**
 		 * Load the save file's banner.
 		 * @return Banner, or nullptr on error.
 		 */
-		const rp_image *loadBanner(void);
+		rp_image_const_ptr loadBanner(void);
 };
 
 ROMDATA_IMPL(GameCubeSave)
@@ -130,21 +128,13 @@ const RomDataInfo GameCubeSavePrivate::romDataInfo = {
 	"GameCubeSave", exts, mimeTypes
 };
 
-GameCubeSavePrivate::GameCubeSavePrivate(IRpFile *file)
+GameCubeSavePrivate::GameCubeSavePrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
-	, img_banner(nullptr)
-	, iconAnimData(nullptr)
 	, saveType(SaveType::Unknown)
 	, dataOffset(-1)
 {
 	// Clear the directory entry.
 	memset(&direntry, 0, sizeof(direntry));
-}
-
-GameCubeSavePrivate::~GameCubeSavePrivate()
-{
-	UNREF(img_banner);
-	UNREF(iconAnimData);
 }
 
 /**
@@ -297,7 +287,7 @@ bool GameCubeSavePrivate::isCardDirEntry(const uint8_t *buffer, uint32_t data_si
  *
  * @return Icon, or nullptr on error.
  */
-const rp_image *GameCubeSavePrivate::loadIcon(void)
+rp_image_const_ptr GameCubeSavePrivate::loadIcon(void)
 {
 	if (iconAnimData) {
 		// Icon has already been loaded.
@@ -383,7 +373,7 @@ const rp_image *GameCubeSavePrivate::loadIcon(void)
 			icondata.get() + (iconsizetotal - (256*2)));
 	}
 
-	this->iconAnimData = new IconAnimData();
+	this->iconAnimData = std::make_shared<IconAnimData>();
 	iconAnimData->count = 0;
 
 	unsigned int iconaddr_cur = 0;
@@ -476,7 +466,7 @@ const rp_image *GameCubeSavePrivate::loadIcon(void)
  * Load the save file's banner.
  * @return Banner, or nullptr on error.
  */
-const rp_image *GameCubeSavePrivate::loadBanner(void)
+rp_image_const_ptr GameCubeSavePrivate::loadBanner(void)
 {
 	if (img_banner) {
 		// Banner is already loaded.
@@ -550,7 +540,7 @@ const rp_image *GameCubeSavePrivate::loadBanner(void)
  *
  * @param file Open disc image.
  */
-GameCubeSave::GameCubeSave(IRpFile *file)
+GameCubeSave::GameCubeSave(const IRpFilePtr &file)
 	: super(new GameCubeSavePrivate(file))
 {
 	// This class handles save files.
@@ -568,7 +558,7 @@ GameCubeSave::GameCubeSave(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(&header, sizeof(header));
 	if (size != sizeof(header)) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -595,7 +585,7 @@ GameCubeSave::GameCubeSave(IRpFile *file)
 		default:
 			// Unknown save type.
 			d->saveType = GameCubeSavePrivate::SaveType::Unknown;
-			UNREF_AND_NULL_NOCHK(d->file);
+			d->file.reset();
 			return;
 	}
 
@@ -1024,10 +1014,10 @@ int GameCubeSave::loadMetaData(void)
  * Load an internal image.
  * Called by RomData::image().
  * @param imageType	[in] Image type to load.
- * @param pImage	[out] Pointer to const rp_image* to store the image in.
+ * @param pImage	[out] Reference to rp_image_const_ptr to store the image in.
  * @return 0 on success; negative POSIX error code on error.
  */
-int GameCubeSave::loadInternalImage(ImageType imageType, const rp_image **pImage)
+int GameCubeSave::loadInternalImage(ImageType imageType, rp_image_const_ptr &pImage)
 {
 	ASSERT_loadInternalImage(imageType, pImage);
 
@@ -1038,20 +1028,20 @@ int GameCubeSave::loadInternalImage(ImageType imageType, const rp_image **pImage
 				// Return the first icon frame.
 				// NOTE: GCN save icon animations are always
 				// sequential, so we can use a shortcut here.
-				*pImage = d->iconAnimData->frames[0];
+				pImage = d->iconAnimData->frames[0];
 				return 0;
 			}
 			break;
 		case IMG_INT_BANNER:
 			if (d->img_banner) {
 				// Banner is loaded.
-				*pImage = d->img_banner;
+				pImage = d->img_banner;
 				return 0;
 			}
 			break;
 		default:
 			// Unsupported image type.
-			*pImage = nullptr;
+			pImage.reset();
 			return 0;
 	}
 
@@ -1066,18 +1056,19 @@ int GameCubeSave::loadInternalImage(ImageType imageType, const rp_image **pImage
 	// Load the image.
 	switch (imageType) {
 		case IMG_INT_ICON:
-			*pImage = d->loadIcon();
+			pImage = d->loadIcon();
 			break;
 		case IMG_INT_BANNER:
-			*pImage = d->loadBanner();
+			pImage = d->loadBanner();
 			break;
 		default:
 			// Unsupported.
+			pImage.reset();
 			return -ENOENT;
 	}
 
 	// TODO: -ENOENT if the file doesn't actually have an icon/banner.
-	return (*pImage != nullptr ? 0 : -EIO);
+	return ((bool)pImage ? 0 : -EIO);
 }
 
 /**
@@ -1086,12 +1077,9 @@ int GameCubeSave::loadInternalImage(ImageType imageType, const rp_image **pImage
  * Check imgpf for IMGPF_ICON_ANIMATED first to see if this
  * object has an animated icon.
  *
- * The retrieved IconAnimData must be ref()'d by the caller if the
- * caller stores it instead of using it immediately.
- *
  * @return Animated icon data, or nullptr if no animated icon is present.
  */
-const IconAnimData *GameCubeSave::iconAnimData(void) const
+IconAnimDataConstPtr GameCubeSave::iconAnimData(void) const
 {
 	RP_D(const GameCubeSave);
 	if (!d->iconAnimData) {

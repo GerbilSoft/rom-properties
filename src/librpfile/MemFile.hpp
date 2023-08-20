@@ -10,12 +10,6 @@
 
 #include "IRpFile.hpp"
 
-// C includes (C++ namespace)
-#include <cerrno>
-
-// C++ includes
-#include <string>
-
 namespace LibRpFile {
 
 class RP_LIBROMDATA_PUBLIC MemFile : public IRpFile
@@ -39,8 +33,8 @@ class RP_LIBROMDATA_PUBLIC MemFile : public IRpFile
 		 * This initializes everything to nullptr.
 		 */
 		RP_LIBROMDATA_LOCAL MemFile();
-	protected:
-		RP_LIBROMDATA_LOCAL ~MemFile() override;	// call unref() instead
+	public:
+		RP_LIBROMDATA_LOCAL ~MemFile() override;
 
 	private:
 		typedef IRpFile super;

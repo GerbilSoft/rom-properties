@@ -82,7 +82,6 @@ class ImageDecoderLinearTest : public ::testing::TestWithParam<ImageDecoderLinea
 			: ::testing::TestWithParam<ImageDecoderLinearTest_mode>()
 			, m_img_buf(nullptr)
 			, m_img_buf_len(0)
-			, m_img(nullptr)
 		{
 #ifdef _WIN32
 			// Register RpGdiplusBackend.
@@ -114,15 +113,15 @@ class ImageDecoderLinearTest : public ::testing::TestWithParam<ImageDecoderLinea
 		static const unsigned int BENCHMARK_ITERATIONS = 100000;
 
 	public:
-		// Temporary image buffer.
+		// Temporary image buffer
 		// 128x128 24-bit or 32-bit image data.
 		// FIXME: Use an aligned Allocator with ao::uvector<>.
 		//ao::uvector<uint8_t> m_img_buf;
 		uint8_t *m_img_buf;
 		size_t m_img_buf_len;
 
-		// Image.
-		rp_image *m_img;
+		// Image
+		rp_image_ptr m_img;
 
 	public:
 		/**
@@ -378,7 +377,7 @@ void ImageDecoderLinearTest::SetUp(void)
  */
 void ImageDecoderLinearTest::TearDown(void)
 {
-	UNREF_AND_NULL(m_img);
+	m_img.reset();
 }
 
 /**
@@ -441,10 +440,10 @@ TEST_P(ImageDecoderLinearTest, fromLinear_cpp_test)
 			return;
 	}
 
-	ASSERT_TRUE(m_img != nullptr);
+	ASSERT_TRUE((bool)m_img);
 
 	// Validate the image.
-	ASSERT_NO_FATAL_FAILURE(Validate_RpImage(m_img, mode.dest_pixel));
+	ASSERT_NO_FATAL_FAILURE(Validate_RpImage(m_img.get(), mode.dest_pixel));
 }
 
 /**
@@ -462,7 +461,7 @@ TEST_P(ImageDecoderLinearTest, fromLinear_cpp_benchmark)
 			for (unsigned int i = BENCHMARK_ITERATIONS; i > 0; i--) {
 				m_img = ImageDecoder::fromLinear24_cpp(mode.src_pxf, 128, 128,
 					m_img_buf, m_img_buf_len, mode.stride);
-				UNREF_AND_NULL(m_img);
+				m_img.reset();
 			}
 			break;
 
@@ -472,7 +471,7 @@ TEST_P(ImageDecoderLinearTest, fromLinear_cpp_benchmark)
 				m_img = ImageDecoder::fromLinear32_cpp(mode.src_pxf, 128, 128,
 					reinterpret_cast<const uint32_t*>(m_img_buf),
 					m_img_buf_len, mode.stride);
-				UNREF_AND_NULL(m_img);
+				m_img.reset();
 			}
 			break;
 
@@ -483,7 +482,7 @@ TEST_P(ImageDecoderLinearTest, fromLinear_cpp_benchmark)
 				m_img = ImageDecoder::fromLinear16_cpp(mode.src_pxf, 128, 128,
 					reinterpret_cast<const uint16_t*>(m_img_buf),
 					m_img_buf_len, mode.stride);
-				UNREF_AND_NULL(m_img);
+				m_img.reset();
 			}
 			break;
 
@@ -530,10 +529,10 @@ TEST_P(ImageDecoderLinearTest, fromLinear_sse2_test)
 			return;
 	}
 
-	ASSERT_TRUE(m_img != nullptr);
+	ASSERT_TRUE((bool)m_img);
 
 	// Validate the image.
-	ASSERT_NO_FATAL_FAILURE(Validate_RpImage(m_img, mode.dest_pixel));
+	ASSERT_NO_FATAL_FAILURE(Validate_RpImage(m_img.get(), mode.dest_pixel));
 }
 
 /**
@@ -566,7 +565,7 @@ TEST_P(ImageDecoderLinearTest, fromLinear_sse2_benchmark)
 				m_img = ImageDecoder::fromLinear16_sse2(mode.src_pxf, 128, 128,
 					reinterpret_cast<const uint16_t*>(m_img_buf),
 					m_img_buf_len, mode.stride);
-				UNREF_AND_NULL(m_img);
+				m_img.reset();
 			}
 			break;
 
@@ -619,10 +618,10 @@ TEST_P(ImageDecoderLinearTest, fromLinear_ssse3_test)
 			return;
 	}
 
-	ASSERT_TRUE(m_img != nullptr);
+	ASSERT_TRUE((bool)m_img);
 
 	// Validate the image.
-	ASSERT_NO_FATAL_FAILURE(Validate_RpImage(m_img, mode.dest_pixel));
+	ASSERT_NO_FATAL_FAILURE(Validate_RpImage(m_img.get(), mode.dest_pixel));
 }
 
 /**
@@ -645,7 +644,7 @@ TEST_P(ImageDecoderLinearTest, fromLinear_ssse3_benchmark)
 			for (unsigned int i = BENCHMARK_ITERATIONS; i > 0; i--) {
 				m_img = ImageDecoder::fromLinear24_ssse3(mode.src_pxf, 128, 128,
 					m_img_buf, m_img_buf_len, mode.stride);
-				UNREF_AND_NULL(m_img);
+				m_img.reset();
 			}
 			break;
 
@@ -655,7 +654,7 @@ TEST_P(ImageDecoderLinearTest, fromLinear_ssse3_benchmark)
 				m_img = ImageDecoder::fromLinear32_ssse3(mode.src_pxf, 128, 128,
 					reinterpret_cast<const uint32_t*>(m_img_buf),
 					m_img_buf_len, mode.stride);
-				UNREF_AND_NULL(m_img);
+				m_img.reset();
 			}
 			break;
 
@@ -712,10 +711,10 @@ TEST_P(ImageDecoderLinearTest, fromLinear_dispatch_test)
 			return;
 	}
 
-	ASSERT_TRUE(m_img != nullptr);
+	ASSERT_TRUE((bool)m_img);
 
 	// Validate the image.
-	ASSERT_NO_FATAL_FAILURE(Validate_RpImage(m_img, mode.dest_pixel));
+	ASSERT_NO_FATAL_FAILURE(Validate_RpImage(m_img.get(), mode.dest_pixel));
 }
 
 /**
@@ -733,7 +732,7 @@ TEST_P(ImageDecoderLinearTest, fromLinear_dispatch_benchmark)
 			for (unsigned int i = BENCHMARK_ITERATIONS; i > 0; i--) {
 				m_img = ImageDecoder::fromLinear24(mode.src_pxf, 128, 128,
 					m_img_buf, m_img_buf_len, mode.stride);
-				UNREF_AND_NULL(m_img);
+				m_img.reset();
 			}
 			break;
 
@@ -743,7 +742,7 @@ TEST_P(ImageDecoderLinearTest, fromLinear_dispatch_benchmark)
 				m_img = ImageDecoder::fromLinear32(mode.src_pxf, 128, 128,
 					reinterpret_cast<const uint32_t*>(m_img_buf),
 					m_img_buf_len, mode.stride);
-				UNREF_AND_NULL(m_img);
+				m_img.reset();
 			}
 			break;
 
@@ -754,7 +753,7 @@ TEST_P(ImageDecoderLinearTest, fromLinear_dispatch_benchmark)
 				m_img = ImageDecoder::fromLinear16(mode.src_pxf, 128, 128,
 					reinterpret_cast<const uint16_t*>(m_img_buf),
 					m_img_buf_len, mode.stride);
-				UNREF_AND_NULL(m_img);
+				m_img.reset();
 			}
 			break;
 

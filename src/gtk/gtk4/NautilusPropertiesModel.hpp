@@ -21,6 +21,6 @@
 
 #include "librpbase/RomData.hpp"
 
-NautilusPropertiesModel *rp_nautilus_properties_model_new(const LibRpBase::RomData *romData);
+NautilusPropertiesModel *rp_nautilus_properties_model_new(const LibRpBase::RomDataPtr &romData);
 
 #endif /* __cplusplus */

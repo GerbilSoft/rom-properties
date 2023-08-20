@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * ImageDecoder_ETC1.cpp: Image decoding functions: ETC1                   *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -10,7 +10,7 @@
 #include "ImageDecoder_ETC1.hpp"
 #include "ImageDecoder_p.hpp"
 
-// C++ STL classes.
+// C++ STL classes
 using std::array;
 
 // References:
@@ -610,7 +610,7 @@ static void decodeBlock_ETC_RGB(array<uint32_t, 4*4> &tileBuf, const etc1_block 
  * @param img_siz Size of image data. [must be >= (w*h)/2]
  * @return rp_image, or nullptr on error.
  */
-rp_image *fromETC1(int width, int height,
+rp_image_ptr fromETC1(int width, int height,
 	const uint8_t *RESTRICT img_buf, size_t img_siz)
 {
 	// Verify parameters.
@@ -631,10 +631,9 @@ rp_image *fromETC1(int width, int height,
 	const int physHeight = ALIGN_BYTES(4, height);
 
 	// Create an rp_image.
-	rp_image *const img = new rp_image(physWidth, physHeight, rp_image::Format::ARGB32);
+	const rp_image_ptr img = std::make_shared<rp_image>(physWidth, physHeight, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		img->unref();
 		return nullptr;
 	}
 
@@ -653,7 +652,7 @@ rp_image *fromETC1(int width, int height,
 		decodeBlock_ETC_RGB<ETC_DM_ETC1>(tileBuf, etc1_src);
 
 		// Blit the tile to the main image buffer.
-		ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img, tileBuf, x, y);
+		ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img.get(), tileBuf, x, y);
 	} }
 
 	if (width < physWidth || height < physHeight) {
@@ -677,7 +676,7 @@ rp_image *fromETC1(int width, int height,
  * @param img_siz Size of image data. [must be >= (w*h)/2]
  * @return rp_image, or nullptr on error.
  */
-rp_image *fromETC2_RGB(int width, int height,
+rp_image_ptr fromETC2_RGB(int width, int height,
 	const uint8_t *RESTRICT img_buf, size_t img_siz)
 {
 	// Verify parameters.
@@ -698,10 +697,9 @@ rp_image *fromETC2_RGB(int width, int height,
 	const int physHeight = ALIGN_BYTES(4, height);
 
 	// Create an rp_image.
-	rp_image *const img = new rp_image(physWidth, physHeight, rp_image::Format::ARGB32);
+	const rp_image_ptr img = std::make_shared<rp_image>(physWidth, physHeight, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		img->unref();
 		return nullptr;
 	}
 
@@ -720,7 +718,7 @@ rp_image *fromETC2_RGB(int width, int height,
 		decodeBlock_ETC_RGB<ETC_DM_ETC2>(tileBuf, etc1_src);
 
 		// Blit the tile to the main image buffer.
-		ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img, tileBuf, x, y);
+		ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img.get(), tileBuf, x, y);
 	} }
 
 	if (width < physWidth || height < physHeight) {
@@ -788,7 +786,7 @@ static void T_decodeBlock_EAC(array<uint32_t, 4*4> &tileBuf, const etc2_alpha *a
  * @param img_siz Size of image data. [must be >= (w*h)]
  * @return rp_image, or nullptr on error.
  */
-rp_image *fromETC2_RGBA(int width, int height,
+rp_image_ptr fromETC2_RGBA(int width, int height,
 	const uint8_t *RESTRICT img_buf, size_t img_siz)
 {
 	// Verify parameters.
@@ -809,10 +807,9 @@ rp_image *fromETC2_RGBA(int width, int height,
 	const int physHeight = ALIGN_BYTES(4, height);
 
 	// Create an rp_image.
-	rp_image *const img = new rp_image(physWidth, physHeight, rp_image::Format::ARGB32);
+	const rp_image_ptr img = std::make_shared<rp_image>(physWidth, physHeight, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		img->unref();
 		return nullptr;
 	}
 
@@ -835,7 +832,7 @@ rp_image *fromETC2_RGBA(int width, int height,
 		T_decodeBlock_EAC<ARGB32_BYTE_OFFSET_A>(tileBuf, &etc2_src->alpha);
 
 		// Blit the tile to the main image buffer.
-		ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img, tileBuf, x, y);
+		ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img.get(), tileBuf, x, y);
 	} }
 
 	if (width < physWidth || height < physHeight) {
@@ -859,7 +856,7 @@ rp_image *fromETC2_RGBA(int width, int height,
  * @param img_siz Size of image data. [must be >= (w*h)/2]
  * @return rp_image, or nullptr on error.
  */
-rp_image *fromETC2_RGB_A1(int width, int height,
+rp_image_ptr fromETC2_RGB_A1(int width, int height,
 	const uint8_t *RESTRICT img_buf, size_t img_siz)
 {
 	// Verify parameters.
@@ -880,10 +877,9 @@ rp_image *fromETC2_RGB_A1(int width, int height,
 	const int physHeight = ALIGN_BYTES(4, height);
 
 	// Create an rp_image.
-	rp_image *const img = new rp_image(physWidth, physHeight, rp_image::Format::ARGB32);
+	const rp_image_ptr img = std::make_shared<rp_image>(physWidth, physHeight, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		img->unref();
 		return nullptr;
 	}
 
@@ -902,7 +898,7 @@ rp_image *fromETC2_RGB_A1(int width, int height,
 		decodeBlock_ETC_RGB<ETC_DM_ETC2 | ETC2_DM_A1>(tileBuf, etc1_src);
 
 		// Blit the tile to the main image buffer.
-		ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img, tileBuf, x, y);
+		ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img.get(), tileBuf, x, y);
 	} }
 
 	if (width < physWidth || height < physHeight) {
@@ -926,7 +922,7 @@ rp_image *fromETC2_RGB_A1(int width, int height,
  * @param img_siz Size of image data. [must be >= (w*h)/2]
  * @return rp_image, or nullptr on error.
  */
-rp_image *fromEAC_R11(int width, int height,
+rp_image_ptr fromEAC_R11(int width, int height,
 	const uint8_t *RESTRICT img_buf, size_t img_siz)
 {
 	// Verify parameters.
@@ -947,10 +943,9 @@ rp_image *fromEAC_R11(int width, int height,
 	const int physHeight = ALIGN_BYTES(4, height);
 
 	// Create an rp_image.
-	rp_image *const img = new rp_image(physWidth, physHeight, rp_image::Format::ARGB32);
+	const rp_image_ptr img = std::make_shared<rp_image>(physWidth, physHeight, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		img->unref();
 		return nullptr;
 	}
 
@@ -972,7 +967,7 @@ rp_image *fromEAC_R11(int width, int height,
 		T_decodeBlock_EAC<ARGB32_BYTE_OFFSET_R>(tileBuf, eac_block);
 
 		// Blit the tile to the main image buffer.
-		ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img, tileBuf, x, y);
+		ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img.get(), tileBuf, x, y);
 	} }
 
 	if (width < physWidth || height < physHeight) {
@@ -997,7 +992,7 @@ rp_image *fromEAC_R11(int width, int height,
  * @param img_siz Size of image data. [must be >= (w*h)]
  * @return rp_image, or nullptr on error.
  */
-rp_image *fromEAC_RG11(int width, int height,
+rp_image_ptr fromEAC_RG11(int width, int height,
 	const uint8_t *RESTRICT img_buf, size_t img_siz)
 {
 	// Verify parameters.
@@ -1018,10 +1013,9 @@ rp_image *fromEAC_RG11(int width, int height,
 	const int physHeight = ALIGN_BYTES(4, height);
 
 	// Create an rp_image.
-	rp_image *const img = new rp_image(physWidth, physHeight, rp_image::Format::ARGB32);
+	const rp_image_ptr img = std::make_shared<rp_image>(physWidth, physHeight, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		img->unref();
 		return nullptr;
 	}
 
@@ -1045,7 +1039,7 @@ rp_image *fromEAC_RG11(int width, int height,
 		T_decodeBlock_EAC<ARGB32_BYTE_OFFSET_G>(tileBuf, &eac_block[1]);
 
 		// Blit the tile to the main image buffer.
-		ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img, tileBuf, x, y);
+		ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img.get(), tileBuf, x, y);
 	} }
 
 	if (width < physWidth || height < physHeight) {

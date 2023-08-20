@@ -12,9 +12,9 @@
 
 #include "vtf3_structs.h"
 
-// librpbase, librpfile
+// Other rom-properties libraries
+using namespace LibRpFile;
 using LibRpBase::RomFields;
-using LibRpFile::IRpFile;
 
 // librptexture
 #include "ImageSizeCalc.hpp"
@@ -26,8 +26,8 @@ namespace LibRpTexture {
 class ValveVTF3Private final : public FileFormatPrivate
 {
 	public:
-		ValveVTF3Private(ValveVTF3 *q, IRpFile *file);
-		~ValveVTF3Private() final;
+		ValveVTF3Private(ValveVTF3 *q, const IRpFilePtr &file);
+		~ValveVTF3Private() final = default;
 
 	private:
 		typedef FileFormatPrivate super;
@@ -40,17 +40,17 @@ class ValveVTF3Private final : public FileFormatPrivate
 		static const TextureInfo textureInfo;
 
 	public:
-		// VTF3 header.
+		// VTF3 header
 		VTF3HEADER vtf3Header;
 
-		// Decoded image.
-		rp_image *img;
+		// Decoded image
+		rp_image_ptr img;
 
 		/**
 		 * Load the image.
 		 * @return Image, or nullptr on error.
 		 */
-		const rp_image *loadImage(void);
+		rp_image_const_ptr loadImage(void);
 
 #if SYS_BYTEORDER == SYS_BIG_ENDIAN
 		/**
@@ -93,7 +93,7 @@ const TextureInfo ValveVTF3Private::textureInfo = {
 	exts, mimeTypes
 };
 
-ValveVTF3Private::ValveVTF3Private(ValveVTF3 *q, IRpFile *file)
+ValveVTF3Private::ValveVTF3Private(ValveVTF3 *q, const IRpFilePtr &file)
 	: super(q, file, &textureInfo)
 	, img(nullptr)
 {
@@ -101,16 +101,11 @@ ValveVTF3Private::ValveVTF3Private(ValveVTF3 *q, IRpFile *file)
 	memset(&vtf3Header, 0, sizeof(vtf3Header));
 }
 
-ValveVTF3Private::~ValveVTF3Private()
-{
-	UNREF(img);
-}
-
 /**
  * Load the image.
  * @return Image, or nullptr on error.
  */
-const rp_image *ValveVTF3Private::loadImage(void)
+rp_image_const_ptr ValveVTF3Private::loadImage(void)
 {
 	if (img) {
 		// Image has already been loaded.
@@ -214,7 +209,7 @@ const rp_image *ValveVTF3Private::loadImage(void)
  *
  * @param file Open ROM image.
  */
-ValveVTF3::ValveVTF3(IRpFile *file)
+ValveVTF3::ValveVTF3(const IRpFilePtr &file)
 	: super(new ValveVTF3Private(this, file))
 {
 	RP_D(ValveVTF3);
@@ -229,14 +224,14 @@ ValveVTF3::ValveVTF3(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(&d->vtf3Header, sizeof(d->vtf3Header));
 	if (size != sizeof(d->vtf3Header)) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
 	// Verify the VTF magic.
 	if (d->vtf3Header.signature != cpu_to_be32(VTF3_SIGNATURE)) {
 		// Incorrect magic.
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -331,7 +326,7 @@ int ValveVTF3::getFields(RomFields *fields) const
  * The image is owned by this object.
  * @return Image, or nullptr on error.
  */
-const rp_image *ValveVTF3::image(void) const
+rp_image_const_ptr ValveVTF3::image(void) const
 {
 	RP_D(const ValveVTF3);
 	if (!d->isValid) {
@@ -349,7 +344,7 @@ const rp_image *ValveVTF3::image(void) const
  * @param mip Mipmap number.
  * @return Image, or nullptr on error.
  */
-const rp_image *ValveVTF3::mipmap(int mip) const
+rp_image_const_ptr ValveVTF3::mipmap(int mip) const
 {
 	// Allowing mipmap 0 for compatibility.
 	if (mip == 0) {

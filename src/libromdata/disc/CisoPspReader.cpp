@@ -39,9 +39,9 @@
 #  endif
 #endif /* HAVE_LZO */
 
-// librpbase, librpfile
+// Other rom-properties libraries
 using namespace LibRpBase;
-using LibRpFile::IRpFile;
+using namespace LibRpFile;
 
 namespace LibRomData {
 
@@ -191,7 +191,7 @@ uint32_t CisoPspReaderPrivate::getBlockCompressedSize(uint32_t blockNum) const
 
 /** CisoPspReader **/
 
-CisoPspReader::CisoPspReader(IRpFile *file)
+CisoPspReader::CisoPspReader(const IRpFilePtr &file)
 	: super(new CisoPspReaderPrivate(this), file)
 {
 	if (!m_file) {
@@ -205,7 +205,7 @@ CisoPspReader::CisoPspReader(IRpFile *file)
 	size_t sz = m_file->read(&d->header, sizeof(d->header));
 	if (sz != sizeof(d->header)) {
 		// Error reading the header.
-		UNREF_AND_NULL_NOCHK(m_file);
+		m_file.reset();
 		m_lastError = EIO;
 		return;
 	}
@@ -215,7 +215,7 @@ CisoPspReader::CisoPspReader(IRpFile *file)
 		isDiscSupported_static(reinterpret_cast<const uint8_t*>(&d->header), sizeof(d->header)));
 	if ((int)d->cisoType < 0) {
 		// Not valid.
-		UNREF_AND_NULL_NOCHK(m_file);
+		m_file.reset();
 		m_lastError = EIO;
 		return;
 	}
@@ -234,7 +234,7 @@ CisoPspReader::CisoPspReader(IRpFile *file)
 		default:
 		case CisoPspReaderPrivate::CisoType::Unknown:
 			assert(!"Unsupported CisoType.");
-			UNREF_AND_NULL_NOCHK(m_file);
+			m_file.reset();
 			m_lastError = ENOTSUP;
 			return;
 
@@ -272,7 +272,7 @@ CisoPspReader::CisoPspReader(IRpFile *file)
 #ifndef HAVE_LZO
 			if (d->header.jiso.method == JISO_METHOD_LZO) {
 				// LZO is not available.
-				UNREF_AND_NULL_NOCHK(m_file);
+				m_file.reset();
 				m_lastError = ENOTSUP;
 				return;
 			}
@@ -334,7 +334,7 @@ CisoPspReader::CisoPspReader(IRpFile *file)
 	if (isZlib) {
 		if (DelayLoad_test_get_crc_table() != 0) {
 			// Delay load for zlib failed.
-			UNREF_AND_NULL_NOCHK(m_file);
+			m_file.reset();
 			return;
 		}
 	}
@@ -343,7 +343,7 @@ CisoPspReader::CisoPspReader(IRpFile *file)
 	if (isLZ4) {
 		if (DelayLoad_test_LZ4_versionNumber() != 0) {
 			// Delay load for LZ4 failed.
-			UNREF_AND_NULL_NOCHK(m_file);
+			m_file.reset();
 			return;
 		}
 	}
@@ -352,7 +352,7 @@ CisoPspReader::CisoPspReader(IRpFile *file)
 	if (isLZO) {
 		if (DelayLoad_test_lzo_version() != 0) {
 			// Delay load for LZO failed.
-			UNREF_AND_NULL_NOCHK(m_file);
+			m_file.reset();
 			return;
 		}
 	}
@@ -372,7 +372,7 @@ CisoPspReader::CisoPspReader(IRpFile *file)
 	assert(num_blocks > 0);
 	if (num_blocks == 0) {
 		// No blocks...
-		UNREF_AND_NULL_NOCHK(m_file);
+		m_file.reset();
 		return;
 	}
 
@@ -400,7 +400,7 @@ CisoPspReader::CisoPspReader(IRpFile *file)
 		if (m_lastError == 0) {
 			m_lastError = EIO;
 		}
-		UNREF_AND_NULL_NOCHK(m_file);
+		m_file.reset();
 		return;
 	}
 
@@ -425,7 +425,7 @@ CisoPspReader::CisoPspReader(IRpFile *file)
 			if (m_lastError == 0) {
 				m_lastError = EIO;
 			}
-			UNREF_AND_NULL_NOCHK(m_file);
+			m_file.reset();
 			return;
 		}
 
@@ -442,7 +442,7 @@ CisoPspReader::CisoPspReader(IRpFile *file)
 				if (m_lastError == 0) {
 					m_lastError = EIO;
 				}
-				UNREF_AND_NULL_NOCHK(m_file);
+				m_file.reset();
 				return;
 			}
 
@@ -454,7 +454,7 @@ CisoPspReader::CisoPspReader(IRpFile *file)
 				if (end > num_blocks) {
 					// Out of range...
 					m_lastError = EIO;
-					UNREF_AND_NULL_NOCHK(m_file);
+					m_file.reset();
 					return;
 				}
 
@@ -776,7 +776,7 @@ int CisoPspReader::readBlock(uint32_t blockIdx, int pos, void *ptr, size_t size)
 		default:
 		case CisoPspReaderPrivate::CisoType::Unknown:
 			assert(!"Unsupported CisoType.");
-			UNREF_AND_NULL_NOCHK(m_file);
+			m_file.reset();
 			m_lastError = ENOTSUP;
 			return 0;
 

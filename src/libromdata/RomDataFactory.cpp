@@ -25,7 +25,8 @@ using namespace LibRpFile;
 #include "librptexture/FileFormatFactory.hpp"
 using LibRpTexture::FileFormatFactory;
 
-// C++ STL classes.
+// C++ STL classes
+using std::shared_ptr;
 using std::string;
 using std::unordered_map;
 using std::unordered_set;
@@ -121,7 +122,7 @@ class RomDataFactoryPrivate
 	public:
 		typedef int (*pfnIsRomSupported_t)(const RomData::DetectInfo *info);
 		typedef const RomDataInfo * (*pfnRomDataInfo_t)(void);
-		typedef RomData* (*pfnNewRomData_t)(IRpFile *file);
+		typedef RomData* (*pfnNewRomData_t)(const IRpFilePtr &file);
 
 		struct RomDataFns {
 			pfnIsRomSupported_t isRomSupported;
@@ -140,7 +141,7 @@ class RomDataFactoryPrivate
 		 * @param klass Class name.
 		 */
 		template<typename klass>
-		static LibRpBase::RomData *RomData_ctor(IRpFile *file)
+		static LibRpBase::RomData *RomData_ctor(const IRpFilePtr &file)
 		{
 			return new klass(file);
 		}
@@ -181,7 +182,7 @@ class RomDataFactoryPrivate
 		 * @param file One opened file in the .VMI+.VMS pair.
 		 * @return DreamcastSave if valid; nullptr if not.
 		 */
-		static RomData *openDreamcastVMSandVMI(IRpFile *file);
+		static RomDataPtr openDreamcastVMSandVMI(const IRpFilePtr &file);
 
 		// Vectors for file extensions and MIME types.
 		// We want to collect them once per session instead of
@@ -218,10 +219,13 @@ class RomDataFactoryPrivate
 		 * If this is a valid ISO-9660 disc image, but no game-specific
 		 * RomData subclasses support it, an ISO object will be returned.
 		 *
+		 * NOTE: This function returns a raw RomData* pointer.
+		 * It should be wrapped in RomDataPtr before returning it outside of RomDataFactory.
+		 *
 		 * @param file ISO-9660 disc image
 		 * @return Game-specific RomData subclass, or nullptr if none are supported.
 		 */
-		static RomData *checkISO(IRpFile *file);
+		static RomData *checkISO(const IRpFilePtr &file);
 };
 
 /** RomDataFactoryPrivate **/
@@ -390,7 +394,7 @@ const RomDataFactoryPrivate::RomDataFns *const RomDataFactoryPrivate::romDataFns
  * @param file One opened file in the .VMI+.VMS pair.
  * @return DreamcastSave if valid; nullptr if not.
  */
-RomData *RomDataFactoryPrivate::openDreamcastVMSandVMI(IRpFile *file)
+RomDataPtr RomDataFactoryPrivate::openDreamcastVMSandVMI(const IRpFilePtr &file)
 {
 	// We're assuming the file extension was already checked.
 	// VMS files are always a multiple of 512 bytes,
@@ -406,22 +410,20 @@ RomData *RomDataFactoryPrivate::openDreamcastVMSandVMI(IRpFile *file)
 	}
 
 	// Determine which file we should look for.
-	IRpFile *vms_file;
-	IRpFile *vmi_file;
-	IRpFile **other_file;	// Points to vms_file or vmi_file.
+	IRpFilePtr vms_file;
+	IRpFilePtr vmi_file;
+	IRpFilePtr *other_file;	// Points to vms_file or vmi_file.
 
 	const char *rel_ext;
 	if (has_dc_vms) {
 		// We have the VMS file.
 		// Find the VMI file.
 		vms_file = file;
-		vmi_file = nullptr;
 		other_file = &vmi_file;
 		rel_ext = ".VMI";
 	} else /*if (has_dc_vmi)*/ {
 		// We have the VMI file.
 		// Find the VMS file.
-		vms_file = nullptr;
 		vmi_file = file;
 		other_file = &vms_file;
 		rel_ext = ".VMS";
@@ -439,11 +441,9 @@ RomData *RomDataFactoryPrivate::openDreamcastVMSandVMI(IRpFile *file)
 
 	// Attempt to create a DreamcastSave using both the
 	// VMS and VMI files.
-	DreamcastSave *const dcSave = new DreamcastSave(vms_file, vmi_file);
-	(*other_file)->unref();	// Not needed anymore.
+	const RomDataPtr dcSave = std::make_shared<DreamcastSave>(vms_file, vmi_file);
 	if (!dcSave->isValid()) {
 		// Not valid.
-		dcSave->unref();
 		return nullptr;
 	}
 
@@ -457,10 +457,13 @@ RomData *RomDataFactoryPrivate::openDreamcastVMSandVMI(IRpFile *file)
  * If this is a valid ISO-9660 disc image, but no game-specific
  * RomData subclasses support it, an ISO object will be returned.
  *
+ * NOTE: This function returns a raw RomData* pointer.
+ * It should be wrapped in RomDataPtr before returning it outside of RomDataFactory.
+ *
  * @param file ISO-9660 disc image
  * @return Game-specific RomData subclass, or nullptr if none are supported.
  */
-RomData *RomDataFactoryPrivate::checkISO(IRpFile *file)
+RomData *RomDataFactoryPrivate::checkISO(const IRpFilePtr &file)
 {
 	// Check for a CD file system with 2048-byte sectors.
 	CDROM_2352_Sector_t sector;
@@ -529,7 +532,9 @@ RomData *RomDataFactoryPrivate::checkISO(IRpFile *file)
 				// Found the correct RomData subclass.
 				return romData;
 			}
-			romData->unref();
+
+			// Not actually supported.
+			delete romData;
 		}
 	}
 
@@ -550,14 +555,23 @@ RomData *RomDataFactoryPrivate::checkISO(IRpFile *file)
 					// Found the correct RomData subclass.
 					return romData;
 				}
-				romData->unref();
+
+				// Not actually supported.
+				delete romData;
 			}
 		}
 	}
 
 	// Not a game-specific file system.
 	// Use the generic ISO-9660 parser.
-	return new ISO(file);
+	RomData *const romData = new ISO(file);
+	if (romData->isValid()) {
+		return romData;
+	}
+	delete romData;
+
+	// Still not an ISO...
+	return nullptr;
 }
 
 /** RomDataFactory **/
@@ -577,7 +591,7 @@ RomData *RomDataFactoryPrivate::checkISO(IRpFile *file)
  * @param attrs RomDataAttr bitfield. If set, RomData subclass must have the specified attributes.
  * @return RomData subclass, or nullptr if the ROM isn't supported.
  */
-RomData *RomDataFactory::create(IRpFile *file, unsigned int attrs)
+RomDataPtr RomDataFactory::create(const IRpFilePtr &file, unsigned int attrs)
 {
 	RomData::DetectInfo info;
 
@@ -624,17 +638,11 @@ RomData *RomDataFactory::create(IRpFile *file, unsigned int attrs)
 	{
 		// Dreamcast .VMI+.VMS pair.
 		// Attempt to open the other file in the pair.
-		RomData *romData = RomDataFactoryPrivate::openDreamcastVMSandVMI(file);
+		const RomDataPtr romData = RomDataFactoryPrivate::openDreamcastVMSandVMI(file);
 		if (romData) {
-			if (romData->isValid()) {
-				// .VMI+.VMS pair opened.
-				return romData;
-			}
-			// Not a .VMI+.VMS pair.
-			romData->unref();
+			// .VMI+.VMS pair opened.
+			return romData;
 		}
-
-		// Not a .VMI+.VMS pair.
 	}
 
 	// Check RomData subclasses that take a header at 0
@@ -659,11 +667,11 @@ RomData *RomDataFactory::create(IRpFile *file, unsigned int attrs)
 				RomData *const romData = fns->newRomData(file);
 				if (romData->isValid()) {
 					// RomData subclass obtained.
-					return romData;
+					return RomDataPtr(romData);
 				}
 
 				// Not actually supported.
-				romData->unref();
+				delete romData;
 			}
 		}
 	}
@@ -674,11 +682,11 @@ RomData *RomDataFactory::create(IRpFile *file, unsigned int attrs)
 		RomData *const romData = new RpTextureWrapper(file);
 		if (romData->isValid()) {
 			// RomData subclass obtained.
-			return romData;
+			return RomDataPtr(romData);
 		}
 
 		// Not actually supported.
-		romData->unref();
+		delete romData;
 	}
 
 	// Check other RomData subclasses that take a header,
@@ -769,14 +777,13 @@ RomData *RomDataFactory::create(IRpFile *file, unsigned int attrs)
 				romData = fns->newRomData(file);
 			}
 
-			if (romData) {
-				if (romData->isValid()) {
-					// RomData subclass obtained.
-					return romData;
-				}
-				// Not actually supported.
-				romData->unref();
+			if (romData && romData->isValid()) {
+				// RomData subclass obtained.
+				return RomDataPtr(romData);
 			}
+
+			// Not actually supported.
+			delete romData;
 		}
 	}
 
@@ -841,11 +848,11 @@ RomData *RomDataFactory::create(IRpFile *file, unsigned int attrs)
 			RomData *const romData = fns->newRomData(file);
 			if (romData->isValid()) {
 				// RomData subclass obtained.
-				return romData;
+				return RomDataPtr(romData);
 			}
 
 			// Not actually supported.
-			romData->unref();
+			delete romData;
 		}
 	}
 
@@ -872,20 +879,19 @@ RomData *RomDataFactory::create(IRpFile *file, unsigned int attrs)
  * @param attrs RomDataAttr bitfield. If set, RomData subclass must have the specified attributes.
  * @return RomData subclass, or nullptr if the ROM isn't supported.
  */
-RomData *RomDataFactory::create(const char *filename, unsigned int attrs)
+RomDataPtr RomDataFactory::create(const char *filename, unsigned int attrs)
 {
-	RomData *romData = nullptr;
+	RomDataPtr romData;
 
 	// Check if this is a file or a directory.
 	// If it's a file, we'll create an RpFile and then
 	// call create(IRpFile*,unsigned int).
 	if (!FileSystem::is_directory(filename)) {
 		// Not a directory.
-		RpFile *const file = new RpFile(filename, RpFile::FM_OPEN_READ_GZ);
+		shared_ptr<RpFile> file = std::make_shared<RpFile>(filename, RpFile::FM_OPEN_READ_GZ);
 		if (file->isOpen()) {
 			romData = create(file, attrs);
 		}
-		file->unref();
 	}
 
 	// TODO: Check for RomData subclasses that support directories.
@@ -912,20 +918,19 @@ RomData *RomDataFactory::create(const char *filename, unsigned int attrs)
  * @param attrs RomDataAttr bitfield. If set, RomData subclass must have the specified attributes.
  * @return RomData subclass, or nullptr if the ROM isn't supported.
  */
-RomData *RomDataFactory::create(const wchar_t *filenameW, unsigned int attrs)
+RomDataPtr RomDataFactory::create(const wchar_t *filenameW, unsigned int attrs)
 {
-	RomData *romData = nullptr;
+	RomDataPtr romData;
 
 	// Check if this is a file or a directory.
 	// If it's a file, we'll create an RpFile and then
 	// call create(IRpFile*,unsigned int).
 	if (!FileSystem::is_directory(filenameW)) {
 		// Not a directory.
-		RpFile *const file = new RpFile(filenameW, RpFile::FM_OPEN_READ_GZ);
+		shared_ptr<RpFile> file = std::make_shared<RpFile>(filenameW, RpFile::FM_OPEN_READ_GZ);
 		if (file->isOpen()) {
 			romData = create(file, attrs);
 		}
-		file->unref();
 	}
 
 	// TODO: Check for RomData subclasses that support directories.

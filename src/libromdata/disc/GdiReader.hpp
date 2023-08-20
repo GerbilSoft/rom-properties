@@ -9,11 +9,12 @@
 #pragma once
 
 #include "librpbase/disc/SparseDiscReader.hpp"
+#include "IsoPartition.hpp"
+
+// for ISOPtr
+#include "../Other/ISO.hpp"
 
 namespace LibRomData {
-
-class IsoPartition;
-class ISO;
 
 class GdiReaderPrivate;
 class GdiReader : public LibRpBase::SparseDiscReader
@@ -25,7 +26,7 @@ class GdiReader : public LibRpBase::SparseDiscReader
 		 * unref()'d by the caller afterwards.
 		 * @param file File to read from.
 		 */
-		explicit GdiReader(LibRpFile::IRpFile *file);
+		explicit GdiReader(const LibRpFile::IRpFilePtr &file);
 
 	private:
 		typedef SparseDiscReader super;
@@ -103,14 +104,16 @@ class GdiReader : public LibRpBase::SparseDiscReader
 		 * @param trackNumber Track number. (1-based)
 		 * @return IsoPartition, or nullptr on error.
 		 */
-		IsoPartition *openIsoPartition(int trackNumber);
+		IsoPartitionPtr openIsoPartition(int trackNumber);
 
 		/**
 		 * Create an ISO RomData object for a given track number.
 		 * @param trackNumber Track number. (1-based)
 		 * @return ISO object, or nullptr on error.
 		 */
-		ISO *openIsoRomData(int trackNumber);
+		ISOPtr openIsoRomData(int trackNumber);
 };
+
+typedef std::shared_ptr<GdiReader> GdiReaderPtr;
 
 }

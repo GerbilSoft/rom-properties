@@ -14,14 +14,11 @@
 #include "cdrom_structs.h"
 
 // Other rom-properties libraries
+#include "librptexture/fileformat/SegaPVR.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;
-
-// librptexture
-#include "librptexture/fileformat/SegaPVR.hpp"
-using LibRpTexture::rp_image;
-using LibRpTexture::SegaPVR;
+using namespace LibRpTexture;
 
 // DiscReader
 #include "disc/Cdrom2352Reader.hpp"
@@ -31,7 +28,8 @@ using LibRpTexture::SegaPVR;
 // Other RomData subclasses
 #include "Other/ISO.hpp"
 
-// C++ STL classes.
+// C++ STL classes
+using std::shared_ptr;
 using std::string;
 using std::vector;
 
@@ -40,8 +38,8 @@ namespace LibRomData {
 class DreamcastPrivate final : public RomDataPrivate
 {
 	public:
-		DreamcastPrivate(IRpFile *file);
-		~DreamcastPrivate() final;
+		DreamcastPrivate(const IRpFilePtr &file);
+		~DreamcastPrivate() final = default;
 
 	private:
 		typedef RomDataPrivate super;
@@ -65,18 +63,19 @@ class DreamcastPrivate final : public RomDataPrivate
 		};
 		DiscType discType;
 
-		// Disc reader.
-		union {
-			IDiscReader *discReader;
-			GdiReader *gdiReader;
-		};
-		IsoPartition *isoPartition;
+		// Disc reader
+		// TODO: Before shared_ptr<>, discReader and gdiReader were in a union{}.
+		// TODO: Use std::variant<>?
+		IDiscReaderPtr discReader;
+		GdiReaderPtr gdiReader;
+
+		IsoPartitionPtr isoPartition;
 
 		// Disc header.
 		DC_IP0000_BIN_t discHeader;
 
 		// 0GDTEX.PVR image.
-		SegaPVR *pvrData;	// SegaPVR object
+		shared_ptr<SegaPVR> pvrData;	// SegaPVR object
 
 		// Track 03 start address.
 		// ISO-9660 directories use physical offsets,
@@ -95,7 +94,7 @@ class DreamcastPrivate final : public RomDataPrivate
 		 * Load 0GDTEX.PVR.
 		 * @return 0GDTEX.PVR as rp_image, or nullptr on error.
 		 */
-		const rp_image *load0GDTEX(void);
+		rp_image_const_ptr load0GDTEX(void);
 
 		/**
 		 * Get the disc publisher.
@@ -144,23 +143,13 @@ const RomDataInfo DreamcastPrivate::romDataInfo = {
 	"Dreamcast", exts, mimeTypes
 };
 
-DreamcastPrivate::DreamcastPrivate(IRpFile *file)
+DreamcastPrivate::DreamcastPrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
 	, discType(DiscType::Unknown)
-	, discReader(nullptr)
-	, isoPartition(nullptr)
-	, pvrData(nullptr)
 	, iso_start_offset(-1)
 {
 	// Clear the disc header struct.
 	memset(&discHeader, 0, sizeof(discHeader));
-}
-
-DreamcastPrivate::~DreamcastPrivate()
-{
-	UNREF(pvrData);
-	UNREF(isoPartition);
-	UNREF(discReader);
 }
 
 /**
@@ -194,12 +183,12 @@ uint16_t DreamcastPrivate::calcProductCRC16(const DC_IP0000_BIN_t *ip0000_bin)
  * Load 0GDTEX.PVR.
  * @return 0GDTEX.PVR as rp_image, or nullptr on error.
  */
-const rp_image *DreamcastPrivate::load0GDTEX(void)
+rp_image_const_ptr DreamcastPrivate::load0GDTEX(void)
 {
 	if (pvrData) {
 		// Image has already been loaded.
 		return pvrData->image();
-	} else if (!this->file || !this->discReader) {
+	} else if (!this->file || (!this->discReader && !this->gdiReader)) {
 		// Can't load the image.
 		return nullptr;
 	}
@@ -212,17 +201,17 @@ const rp_image *DreamcastPrivate::load0GDTEX(void)
 		} else {
 			// Standalone track.
 			// Using the ISO start offset calculated earlier.
-			isoPartition = new IsoPartition(discReader, 0, iso_start_offset);
+			isoPartition = std::make_shared<IsoPartition>(discReader, 0, iso_start_offset);
 		}
 		if (!isoPartition->isOpen()) {
 			// Unable to open the ISO-9660 partition.
-			UNREF_AND_NULL_NOCHK(isoPartition);
+			isoPartition.reset();
 			return nullptr;
 		}
 	}
 
 	// Find "0GDTEX.PVR".
-	IRpFile *pvrFile_tmp = isoPartition->open("/0GDTEX.PVR");
+	const IRpFilePtr pvrFile_tmp = isoPartition->open("/0GDTEX.PVR");
 	if (!pvrFile_tmp) {
 		// Error opening "0GDTEX.PVR".
 		return nullptr;
@@ -231,21 +220,18 @@ const rp_image *DreamcastPrivate::load0GDTEX(void)
 	// Sanity check: PVR shouldn't be larger than 4 MB.
 	if (pvrFile_tmp->size() > 4*1024*1024) {
 		// PVR is too big.
-		pvrFile_tmp->unref();
 		return nullptr;
 	}
 
 	// Create the SegaPVR object.
-	SegaPVR *const pvrData_tmp = new SegaPVR(pvrFile_tmp);
-	pvrFile_tmp->unref();
+	shared_ptr<SegaPVR> pvrData_tmp = std::make_shared<SegaPVR>(pvrFile_tmp);
 	if (pvrData_tmp->isValid()) {
 		// PVR is valid. Save it.
-		this->pvrData = pvrData_tmp;
+		this->pvrData = std::move(pvrData_tmp);
 		return pvrData->image();
 	}
 
 	// PVR is invalid.
-	pvrData_tmp->unref();
 	return nullptr;
 }
 
@@ -325,7 +311,7 @@ void DreamcastPrivate::parseDiscNumber(uint8_t &disc_num, uint8_t &disc_total) c
  *
  * @param file Open ROM image.
  */
-Dreamcast::Dreamcast(IRpFile *file)
+Dreamcast::Dreamcast(const IRpFilePtr &file)
 	: super(new DreamcastPrivate(file))
 {
 	// This class handles disc images.
@@ -344,7 +330,7 @@ Dreamcast::Dreamcast(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(&sector, sizeof(sector));
 	if (size == 0 || size > sizeof(sector)) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -358,7 +344,7 @@ Dreamcast::Dreamcast(IRpFile *file)
 	d->discType = static_cast<DreamcastPrivate::DiscType>(isRomSupported_static(&info));
 
 	if ((int)d->discType < 0) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -369,7 +355,7 @@ Dreamcast::Dreamcast(IRpFile *file)
 			d->mimeType = "application/x-dreamcast-rom";	// unofficial
 			memcpy(&d->discHeader, &sector, sizeof(d->discHeader));
 			d->iso_start_offset = -1;
-			d->discReader = new DiscReader(d->file);
+			d->discReader = std::make_shared<DiscReader>(d->file);
 			if (d->file->size() <= 64*1024) {
 				// 64 KB is way too small for a Dreamcast disc image.
 				// We'll assume this is IP.bin.
@@ -382,7 +368,7 @@ Dreamcast::Dreamcast(IRpFile *file)
 			d->mimeType = "application/x-dreamcast-rom";	// unofficial
 			const uint8_t *const data = cdromSectorDataPtr(&sector);
 			memcpy(&d->discHeader, data, sizeof(d->discHeader));
-			d->discReader = new Cdrom2352Reader(d->file);
+			d->discReader = std::make_shared<Cdrom2352Reader>(d->file);
 			d->iso_start_offset = static_cast<int>(cdrom_msf_to_lba(&sector.msf));
 			break;
 		}
@@ -390,13 +376,13 @@ Dreamcast::Dreamcast(IRpFile *file)
 		case DreamcastPrivate::DiscType::GDI: {
 			// GD-ROM cuesheet.
 			// iso_start_offset isn't used for GDI.
-			d->gdiReader = new GdiReader(d->file);
+			d->gdiReader = std::make_shared<GdiReader>(d->file);
 			// Read the actual track 3 disc header.
 			const int lba_track03 = d->gdiReader->startingLBA(3);
 			if (lba_track03 < 0) {
 				// Error getting the track 03 LBA.
-				UNREF_AND_NULL_NOCHK(d->gdiReader);
-				UNREF_AND_NULL_NOCHK(d->file);
+				d->gdiReader.reset();
+				d->file.reset();
 				return;
 			}
 			// TODO: Don't hard-code 2048?
@@ -421,9 +407,10 @@ void Dreamcast::close(void)
 	RP_D(Dreamcast);
 
 	// Close any child RomData subclasses.
-	UNREF_AND_NULL(d->pvrData);
-	UNREF_AND_NULL(d->isoPartition);
-	UNREF_AND_NULL(d->discReader);
+	d->pvrData.reset();
+	d->isoPartition.reset();
+	d->gdiReader.reset();
+	d->discReader.reset();
 
 	// Call the superclass function.
 	super::close();
@@ -787,38 +774,27 @@ int Dreamcast::loadFieldData(void)
 	// NOTE: Only done here because the ISO-9660 fields
 	// are used for field info only.
 	// TODO: Get from GdiReader for GDI.
+	ISOPtr isoData;
 	if (d->discType == DreamcastPrivate::DiscType::GDI) {
 		// Open track 3 as ISO-9660.
-		ISO *const isoData = d->gdiReader->openIsoRomData(3);
-		if (isoData) {
-			if (isoData->isOpen()) {
-				// Add the fields.
-				const RomFields *const isoFields = isoData->fields();
-				assert(isoFields != nullptr);
-				if (isoFields) {
-					d->fields.addFields_romFields(isoFields,
-						RomFields::TabOffset_AddTabs);
-				}
-			}
-			isoData->unref();
-		}
+		isoData = d->gdiReader->openIsoRomData(3);
 	} else {
 		// ISO object for ISO-9660 PVD
-		PartitionFile *const isoFile = new PartitionFile(d->discReader, 0, d->discReader->size());
+		PartitionFilePtr isoFile = std::make_shared<PartitionFile>(
+			d->discReader.get(), 0, d->discReader->size());
 		if (isoFile->isOpen()) {
-			ISO *const isoData = new ISO(isoFile);
-			if (isoData->isOpen()) {
-				// Add the fields.
-				const RomFields *const isoFields = isoData->fields();
-				assert(isoFields != nullptr);
-				if (isoFields) {
-					d->fields.addFields_romFields(isoFields,
-						RomFields::TabOffset_AddTabs);
-				}
-			}
-			isoData->unref();
+			isoData = std::make_shared<ISO>(isoFile);
 		}
-		isoFile->unref();
+	}
+
+	if (isoData && isoData->isOpen()) {
+		// Add the fields.
+		const RomFields *const isoFields = isoData->fields();
+		assert(isoFields != nullptr);
+		if (isoFields) {
+			d->fields.addFields_romFields(isoFields,
+				RomFields::TabOffset_AddTabs);
+		}
 	}
 
 	// Finished reading the field data.
@@ -878,10 +854,10 @@ int Dreamcast::loadMetaData(void)
  * Load an internal image.
  * Called by RomData::image().
  * @param imageType	[in] Image type to load.
- * @param pImage	[out] Pointer to const rp_image* to store the image in.
+ * @param pImage	[out] Reference to rp_image_const_ptr to store the image in.
  * @return 0 on success; negative POSIX error code on error.
  */
-int Dreamcast::loadInternalImage(ImageType imageType, const rp_image **pImage)
+int Dreamcast::loadInternalImage(ImageType imageType, rp_image_const_ptr &pImage)
 {
 	ASSERT_loadInternalImage(imageType, pImage);
 	RP_D(Dreamcast);

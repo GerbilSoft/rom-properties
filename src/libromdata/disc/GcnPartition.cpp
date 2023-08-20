@@ -10,9 +10,9 @@
 #include "GcnPartition.hpp"
 #include "GcnFst.hpp"
 
-// librpbase, librpfile
+// Other rom-properties libraries
 using namespace LibRpBase;
-using LibRpFile::IRpFile;
+using namespace LibRpFile;
 
 #include "GcnPartition_p.hpp"
 namespace LibRomData {
@@ -28,7 +28,7 @@ namespace LibRomData {
  * @param discReader IDiscReader.
  * @param partition_offset Partition start offset.
  */
-GcnPartition::GcnPartition(IDiscReader *discReader, off64_t partition_offset)
+GcnPartition::GcnPartition(const IDiscReaderPtr &discReader, off64_t partition_offset)
 	: super(discReader)
 	, d_ptr(new GcnPartitionPrivate(this, partition_offset, discReader->size()))
 { }
@@ -43,7 +43,7 @@ GcnPartition::~GcnPartition()
  * @param d GcnPartitionPrivate subclass.
  * @param discReader IDiscReader.
  */
-GcnPartition::GcnPartition(GcnPartitionPrivate *d, IDiscReader *discReader)
+GcnPartition::GcnPartition(GcnPartitionPrivate *d, const IDiscReaderPtr &discReader)
 	: super(discReader)
 	, d_ptr(d)
 { }
@@ -249,7 +249,7 @@ int GcnPartition::closedir(IFst::Dir *dirp)
  * @param filename Filename.
  * @return IRpFile*, or nullptr on error.
  */
-IRpFile *GcnPartition::open(const char *filename)
+IRpFilePtr GcnPartition::open(const char *filename)
 {
 	// TODO: File reference counter.
 	// This might be difficult to do because GcnFile is a separate class.
@@ -298,7 +298,7 @@ IRpFile *GcnPartition::open(const char *filename)
 	// This is an IRpFile implementation that uses an
 	// IPartition as the reader and takes an offset
 	// and size as the file parameters.
-	return new PartitionFile(this, dirent.offset, dirent.size);
+	return std::make_shared<PartitionFile>(this, dirent.offset, dirent.size);
 }
 
 }

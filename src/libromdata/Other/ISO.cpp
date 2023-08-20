@@ -18,8 +18,8 @@
 #include "librpbase/Achievements.hpp"
 #include "libi18n/i18n.h"
 using namespace LibRpBase;
+using namespace LibRpFile;
 using namespace LibRpText;
-using LibRpFile::IRpFile;
 
 // C++ STL classes
 using std::string;
@@ -30,7 +30,7 @@ namespace LibRomData {
 class ISOPrivate final : public RomDataPrivate
 {
 	public:
-		ISOPrivate(LibRpFile::IRpFile *file);
+		ISOPrivate(const IRpFilePtr &file);
 
 	private:
 		typedef RomDataPrivate super;
@@ -211,7 +211,7 @@ const RomDataInfo ISOPrivate::romDataInfo = {
 	"ISO", exts, mimeTypes
 };
 
-ISOPrivate::ISOPrivate(IRpFile *file)
+ISOPrivate::ISOPrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
 	, discType(DiscType::Unknown)
 	, sector_size(0)
@@ -572,7 +572,7 @@ void ISOPrivate::addPVDTimestamps_metaData(RomMetaData *metaData, const T *pvd)
  *
  * @param file Open ROM image.
  */
-ISO::ISO(IRpFile *file)
+ISO::ISO(const IRpFilePtr &file)
 	: super(new ISOPrivate(file))
 {
 	// This class handles disc images.
@@ -590,7 +590,7 @@ ISO::ISO(IRpFile *file)
 		&d->pvd, sizeof(d->pvd));
 	if (size != sizeof(d->pvd)) {
 		// Seek and/or read error.
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -611,7 +611,7 @@ ISO::ISO(IRpFile *file)
 			size_t size = d->file->seekAndRead(p * ISO_PVD_LBA, &sector, sizeof(sector));
 			if (size != sizeof(sector)) {
 				// Unable to read the PVD.
-				UNREF_AND_NULL_NOCHK(d->file);
+				d->file.reset();
 				return;
 			}
 
@@ -628,7 +628,7 @@ ISO::ISO(IRpFile *file)
 
 		if (d->sector_size == 0) {
 			// Could not find a valid PVD.
-			UNREF_AND_NULL_NOCHK(d->file);
+			d->file.reset();
 			return;
 		}
 	}

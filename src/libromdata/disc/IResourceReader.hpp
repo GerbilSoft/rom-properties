@@ -13,7 +13,7 @@
 // librpbase
 #include "librpbase/disc/IPartition.hpp"
 
-// C++ includes.
+// C++ includes
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -23,9 +23,11 @@ namespace LibRomData {
 class IResourceReader : public LibRpBase::IPartition
 {
 	protected:
-		IResourceReader(LibRpFile::IRpFile *file) : super(file) { }
-	protected:
-		~IResourceReader() override = 0;	// call unref() instead
+		IResourceReader(const LibRpFile::IRpFilePtr &file)
+			: super(file)
+		{}
+	public:
+		~IResourceReader() override = 0;
 
 	private:
 		typedef LibRpBase::IPartition super;
@@ -49,7 +51,7 @@ class IResourceReader : public LibRpBase::IPartition
 		 * @param lang Language ID. (-1 for "first entry")
 		 * @return IRpFile*, or nullptr on error.
 		 */
-		virtual LibRpFile::IRpFile *open(uint16_t type, int id, int lang) = 0;
+		virtual LibRpFile::IRpFilePtr open(uint16_t type, int id, int lang) = 0;
 
 		// StringTable.
 		// - Element 1: Key
@@ -73,6 +75,8 @@ class IResourceReader : public LibRpBase::IPartition
 		 */
 		virtual int load_VS_VERSION_INFO(int id, int lang, VS_FIXEDFILEINFO *pVsFfi, StringFileInfo *pVsSfi) = 0;
 };
+
+typedef std::shared_ptr<IResourceReader> IResourceReaderPtr;
 
 /**
  * Both gcc and MSVC fail to compile unless we provide

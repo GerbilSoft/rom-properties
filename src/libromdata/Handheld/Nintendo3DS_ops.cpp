@@ -12,15 +12,14 @@
 #include "Nintendo3DS.hpp"
 #include "Nintendo3DS_p.hpp"
 
-// librpbase, librpfile
+// Other rom-properties libraries
+using namespace LibRpFile;
 using LibRpBase::RomData;
-using LibRpFile::IRpFile;
-using LibRpFile::RpFile;
 
 // For sections delegated to other RomData subclasses.
 #include "NintendoDS.hpp"
 
-// C++ STL classes.
+// C++ STL classes
 using std::string;
 using std::vector;
 
@@ -44,7 +43,7 @@ vector<RomData::RomOp> Nintendo3DS::romOps_int(void) const
 	}
 
 	// Check for a DSi SRL.
-	NintendoDS *const srl = dynamic_cast<NintendoDS*>(d->mainContent);
+	NintendoDS *const srl = dynamic_cast<NintendoDS*>(d->mainContent.get());
 	if (srl) {
 		RomOp op("E&xtract SRL...", RomOp::ROF_SAVE_FILE | RomOp::ROF_ENABLED);
 		op.sfi.title = C_("Nintendo3DS|RomOps", "Extract Nintendo DS SRL File");
@@ -102,7 +101,7 @@ int Nintendo3DS::doRomOp_int(int id, RomOpParams *pParams)
 		return ret;
 	}
 
-	NintendoDS *const srl = dynamic_cast<NintendoDS*>(d->mainContent);
+	NintendoDS *const srl = dynamic_cast<NintendoDS*>(d->mainContent.get());
 	assert(srl != nullptr);
 	if (!srl) {
 		// This shouldn't have happened...
@@ -116,8 +115,8 @@ int Nintendo3DS::doRomOp_int(int id, RomOpParams *pParams)
 
 	// Get the source file.
 	RpFile *destFile = nullptr;
-	IRpFile *const srcFile = srl->ref_file();
-	assert(srcFile != nullptr);
+	const IRpFilePtr srcFile(srl->ref_file());
+	assert((bool)srcFile);
 	if (!srcFile) {
 		// No source file...
 		// TODO: More useful message? (may need std::string)
@@ -152,8 +151,7 @@ int Nintendo3DS::doRomOp_int(int id, RomOpParams *pParams)
 	}
 
 out:
-	UNREF(destFile);
-	UNREF(srcFile);
+	delete destFile;
 	if (!wasMainContentOpen) {
 		d->mainContent->close();
 	}

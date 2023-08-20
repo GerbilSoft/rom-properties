@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * ImageDecoder_S3TC.cpp: Image decoding functions: S3TC                   *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -14,7 +14,7 @@
 #include "PixelConversion.hpp"
 using namespace LibRpTexture::PixelConversion;
 
-// C++ STL classes.
+// C++ STL classes
 using std::array;
 
 // References:
@@ -195,7 +195,7 @@ static inline uint8_t decode_DXT5_alpha_S3TC(unsigned int a3, const uint8_t *RES
  * @param img_siz Size of image data. [must be >= (w*h)/2]
  * @return rp_image, or nullptr on error.
  */
-rp_image *fromDXT1_GCN(int width, int height,
+rp_image_ptr fromDXT1_GCN(int width, int height,
 	const uint8_t *RESTRICT img_buf, size_t img_siz)
 {
 	// Verify parameters.
@@ -216,10 +216,9 @@ rp_image *fromDXT1_GCN(int width, int height,
 		return nullptr;
 
 	// Create an rp_image.
-	rp_image *const img = new rp_image(width, height, rp_image::Format::ARGB32);
+	const rp_image_ptr img = std::make_shared<rp_image>(width, height, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		img->unref();
 		return nullptr;
 	}
 
@@ -259,10 +258,10 @@ rp_image *fromDXT1_GCN(int width, int height,
 		}
 
 		// Blit the tiles to the main image buffer.
-		ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img, tileBuf[0], x+0, y+0);
-		ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img, tileBuf[1], x+1, y+0);
-		ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img, tileBuf[2], x+0, y+1);
-		ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img, tileBuf[3], x+1, y+1);
+		ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img.get(), tileBuf[0], x+0, y+0);
+		ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img.get(), tileBuf[1], x+1, y+0);
+		ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img.get(), tileBuf[2], x+0, y+1);
+		ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img.get(), tileBuf[3], x+1, y+1);
 	} }
 
 	// Set the sBIT metadata.
@@ -283,7 +282,7 @@ rp_image *fromDXT1_GCN(int width, int height,
  * @return rp_image, or nullptr on error.
  */
 template<unsigned int palflags>
-static rp_image *T_fromDXT1(int width, int height,
+static rp_image_ptr T_fromDXT1(int width, int height,
 	const uint8_t *RESTRICT img_buf, size_t img_siz)
 {
 	// Verify parameters.
@@ -305,10 +304,9 @@ static rp_image *T_fromDXT1(int width, int height,
 	}
 
 	// Create an rp_image.
-	rp_image *const img = new rp_image(physWidth, physHeight, rp_image::Format::ARGB32);
+	const rp_image_ptr img = std::make_shared<rp_image>(physWidth, physHeight, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		img->unref();
 		return nullptr;
 	}
 
@@ -335,7 +333,7 @@ static rp_image *T_fromDXT1(int width, int height,
 		}
 
 		// Blit the tile to the main image buffer.
-		ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img, tileBuf, x, y);
+		ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img.get(), tileBuf, x, y);
 	} }
 
 	if (width < physWidth || height < physHeight) {
@@ -361,7 +359,7 @@ static rp_image *T_fromDXT1(int width, int height,
  * @param img_siz Size of image data. [must be >= (w*h)/2]
  * @return rp_image, or nullptr on error.
  */
-rp_image *fromDXT1(int width, int height,
+rp_image_ptr fromDXT1(int width, int height,
 	const uint8_t *RESTRICT img_buf, size_t img_siz)
 {
 	return T_fromDXT1<0>(width, height, img_buf, img_siz);
@@ -377,7 +375,7 @@ rp_image *fromDXT1(int width, int height,
  * @param img_siz Size of image data. [must be >= (w*h)/2]
  * @return rp_image, or nullptr on error.
  */
-rp_image *fromDXT1_A1(int width, int height,
+rp_image_ptr fromDXT1_A1(int width, int height,
 	const uint8_t *RESTRICT img_buf, size_t img_siz)
 {
 	return T_fromDXT1<DXTn_PALETTE_COLOR3_ALPHA>(width, height, img_buf, img_siz);
@@ -391,14 +389,14 @@ rp_image *fromDXT1_A1(int width, int height,
  * @param img_siz Size of image data. [must be >= (w*h)]
  * @return rp_image, or nullptr on error.
  */
-rp_image *fromDXT2(int width, int height,
+rp_image_ptr fromDXT2(int width, int height,
 	const uint8_t *RESTRICT img_buf, size_t img_siz)
 {
 	// TODO: Completely untested. Needs testing!
 
 	// Use fromDXT3(), then convert from premultiplied alpha
 	// to standard alpha.
-	rp_image *const img = fromDXT3(width, height, img_buf, img_siz);
+	const rp_image_ptr img = fromDXT3(width, height, img_buf, img_siz);
 	if (!img) {
 		return nullptr;
 	}
@@ -406,7 +404,6 @@ rp_image *fromDXT2(int width, int height,
 	// Un-premultiply the image.
 	int ret = img->un_premultiply();
 	if (ret != 0) {
-		img->unref();
 		return nullptr;
 	}
 	return img;
@@ -420,7 +417,7 @@ rp_image *fromDXT2(int width, int height,
  * @param img_siz Size of image data. [must be >= (w*h)]
  * @return rp_image, or nullptr on error.
  */
-rp_image *fromDXT3(int width, int height,
+rp_image_ptr fromDXT3(int width, int height,
 	const uint8_t *RESTRICT img_buf, size_t img_siz)
 {
 	// Verify parameters.
@@ -442,10 +439,9 @@ rp_image *fromDXT3(int width, int height,
 	}
 
 	// Create an rp_image.
-	rp_image *const img = new rp_image(physWidth, physHeight, rp_image::Format::ARGB32);
+	const rp_image_ptr img = std::make_shared<rp_image>(physWidth, physHeight, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		img->unref();
 		return nullptr;
 	}
 
@@ -485,7 +481,7 @@ rp_image *fromDXT3(int width, int height,
 		}
 
 		// Blit the tile to the main image buffer.
-		ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img, tileBuf, x, y);
+		ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img.get(), tileBuf, x, y);
 	} }
 
 	if (width < physWidth || height < physHeight) {
@@ -509,14 +505,14 @@ rp_image *fromDXT3(int width, int height,
  * @param img_siz Size of image data. [must be >= (w*h)]
  * @return rp_image, or nullptr on error.
  */
-rp_image *fromDXT4(int width, int height,
+rp_image_ptr fromDXT4(int width, int height,
 	const uint8_t *RESTRICT img_buf, size_t img_siz)
 {
 	// TODO: Completely untested. Needs testing!
 
 	// Use fromDXT5(), then convert from premultiplied alpha
 	// to standard alpha.
-	rp_image *const img = fromDXT5(width, height, img_buf, img_siz);
+	const rp_image_ptr img = fromDXT5(width, height, img_buf, img_siz);
 	if (!img) {
 		return nullptr;
 	}
@@ -524,7 +520,6 @@ rp_image *fromDXT4(int width, int height,
 	// Un-premultiply the image.
 	int ret = img->un_premultiply();
 	if (ret != 0) {
-		img->unref();
 		return nullptr;
 	}
 	return img;
@@ -538,7 +533,7 @@ rp_image *fromDXT4(int width, int height,
  * @param img_siz Size of image data. [must be >= (w*h)]
  * @return rp_image, or nullptr on error.
  */
-rp_image *fromDXT5(int width, int height,
+rp_image_ptr fromDXT5(int width, int height,
 	const uint8_t *RESTRICT img_buf, size_t img_siz)
 {
 	// Verify parameters.
@@ -560,10 +555,9 @@ rp_image *fromDXT5(int width, int height,
 	}
 
 	// Create an rp_image.
-	rp_image *const img = new rp_image(physWidth, physHeight, rp_image::Format::ARGB32);
+	const rp_image_ptr img = std::make_shared<rp_image>(physWidth, physHeight, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		img->unref();
 		return nullptr;
 	}
 
@@ -605,7 +599,7 @@ rp_image *fromDXT5(int width, int height,
 		}
 
 		// Blit the tile to the main image buffer.
-		ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img, tileBuf, x, y);
+		ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img.get(), tileBuf, x, y);
 	} }
 
 	if (width < physWidth || height < physHeight) {
@@ -629,7 +623,7 @@ rp_image *fromDXT5(int width, int height,
  * @param img_siz Size of image data. [must be >= (w*h)/2]
  * @return rp_image, or nullptr on error.
  */
-rp_image *fromBC4(int width, int height,
+rp_image_ptr fromBC4(int width, int height,
 	const uint8_t *RESTRICT img_buf, size_t img_siz)
 {
 	// Verify parameters.
@@ -651,10 +645,9 @@ rp_image *fromBC4(int width, int height,
 	}
 
 	// Create an rp_image.
-	rp_image *const img = new rp_image(physWidth, physHeight, rp_image::Format::ARGB32);
+	const rp_image_ptr img = std::make_shared<rp_image>(physWidth, physHeight, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		img->unref();
 		return nullptr;
 	}
 
@@ -694,7 +687,7 @@ rp_image *fromBC4(int width, int height,
 		}
 
 		// Blit the tile to the main image buffer.
-		ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img, tileBuf, x, y);
+		ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img.get(), tileBuf, x, y);
 	} }
 
 	if (width < physWidth || height < physHeight) {
@@ -720,7 +713,7 @@ rp_image *fromBC4(int width, int height,
  * @param img_siz Size of image data. [must be >= (w*h)]
  * @return rp_image, or nullptr on error.
  */
-rp_image *fromBC5(int width, int height,
+rp_image_ptr fromBC5(int width, int height,
 	const uint8_t *RESTRICT img_buf, size_t img_siz)
 {
 	// Verify parameters.
@@ -742,10 +735,9 @@ rp_image *fromBC5(int width, int height,
 	}
 
 	// Create an rp_image.
-	rp_image *const img = new rp_image(physWidth, physHeight, rp_image::Format::ARGB32);
+	const rp_image_ptr img = std::make_shared<rp_image>(physWidth, physHeight, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		img->unref();
 		return nullptr;
 	}
 
@@ -788,7 +780,7 @@ rp_image *fromBC5(int width, int height,
 		}
 
 		// Blit the tile to the main image buffer.
-		ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img, tileBuf, x, y);
+		ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img.get(), tileBuf, x, y);
 	} }
 
 	if (width < physWidth || height < physHeight) {
@@ -812,7 +804,7 @@ rp_image *fromBC5(int width, int height,
  * @param img rp_image to convert in-place.
  * @return 0 on success; negative POSIX error code on error.
  */
-int fromRed8ToL8(rp_image *img)
+int fromRed8ToL8(const rp_image_ptr &img)
 {
 	assert(img != nullptr);
 	assert(img->format() == rp_image::Format::ARGB32);
@@ -851,7 +843,7 @@ int fromRed8ToL8(rp_image *img)
  * @param img rp_image to convert in-place.
  * @return 0 on success; negative POSIX error code on error.
  */
-int fromRG8ToLA8(rp_image *img)
+int fromRG8ToLA8(const rp_image_ptr &img)
 {
 	assert(img != nullptr);
 	assert(img->format() == rp_image::Format::ARGB32);

@@ -11,16 +11,14 @@
 
 #include "NCCHReader.hpp"
 
-// librpbase, librpfile
+// Other rom-properties libraries
 #ifdef ENABLE_DECRYPTION
 #  include "librpbase/crypto/AesCipherFactory.hpp"
 #  include "librpbase/crypto/IAesCipher.hpp"
 #endif /* ENABLE_DECRYPTION */
+#include "librpbase/disc/PartitionFile.hpp"
 using namespace LibRpBase;
-using LibRpFile::IRpFile;
-
-#include "disc/CIAReader.hpp"
-#include "disc/PartitionFile.hpp"
+using namespace LibRpFile;
 
 #include "NCCHReader_p.hpp"
 namespace LibRomData {
@@ -498,15 +496,12 @@ int NCCHReaderPrivate::loadExHeader(void)
 /**
  * Construct an NCCHReader with the specified IRpFile.
  *
- * NOTE: The IRpFile *must* remain valid while this
- * NCCHReader is open.
- *
  * @param file 			[in] IRpFile. (for CCIs only)
  * @param media_unit_shift	[in] Media unit shift.
  * @param ncch_offset		[in] NCCH start offset, in bytes.
  * @param ncch_length		[in] NCCH length, in bytes.
  */
-NCCHReader::NCCHReader(IRpFile *file, uint8_t media_unit_shift,
+NCCHReader::NCCHReader(const IRpFilePtr &file, uint8_t media_unit_shift,
 		off64_t ncch_offset, uint32_t ncch_length)
 	: super(file)
 	, d_ptr(new NCCHReaderPrivate(this, media_unit_shift, ncch_offset, ncch_length))
@@ -515,10 +510,6 @@ NCCHReader::NCCHReader(IRpFile *file, uint8_t media_unit_shift,
 /**
  * Construct an NCCHReader with the specified CIAReader.
  *
- * NOTE: The NCCHReader *takes ownership* of the CIAReader.
- * This makes it easier to create a temporary CIAReader
- * without worrying about keeping track of it.
- *
  * @param ciaReader		[in] CIAReader. (for CIAs only)
  * @param media_unit_shift	[in] Media unit shift.
  * @param ncch_offset		[in] NCCH start offset, in bytes.
@@ -526,7 +517,7 @@ NCCHReader::NCCHReader(IRpFile *file, uint8_t media_unit_shift,
  * @param ticket		[in,opt] Ticket for CIA decryption. (nullptr if NoCrypto)
  * @param tmd_content_index	[in,opt] TMD content index for CIA decryption.
  */
-NCCHReader::NCCHReader(CIAReader *ciaReader, uint8_t media_unit_shift,
+NCCHReader::NCCHReader(const CIAReaderPtr &ciaReader, uint8_t media_unit_shift,
 		off64_t ncch_offset, uint32_t ncch_length)
 	: super(ciaReader)
 	, d_ptr(new NCCHReaderPrivate(this, media_unit_shift, ncch_offset, ncch_length))
@@ -997,7 +988,7 @@ const char *NCCHReader::contentType(void) const
  * @param filename Filename. (ASCII)
  * @return IRpFile*, or nullptr on error.
  */
-IRpFile *NCCHReader::open(int section, const char *filename)
+IRpFilePtr NCCHReader::open(int section, const char *filename)
 {
 	RP_D(const NCCHReader);
 	assert(isOpen());
@@ -1056,7 +1047,7 @@ IRpFile *NCCHReader::open(int section, const char *filename)
 	// This is an IRpFile implementation that uses an
 	// IPartition as the reader and takes an offset
 	// and size as the file parameters.
-	return new PartitionFile(this, offset, size);
+	return std::make_shared<PartitionFile>(this, offset, size);
 }
 
 /**
@@ -1067,7 +1058,7 @@ IRpFile *NCCHReader::open(int section, const char *filename)
  *
  * @return IRpFile*, or nullptr on error.
  */
-LibRpFile::IRpFile *NCCHReader::openLogo(void)
+IRpFilePtr NCCHReader::openLogo(void)
 {
 	RP_D(const NCCHReader);
 	assert(isOpen());
@@ -1080,7 +1071,7 @@ LibRpFile::IRpFile *NCCHReader::openLogo(void)
 	const uint32_t logo_region_size = le32_to_cpu(d->ncch_header.hdr.logo_region_size) << d->media_unit_shift;
 	if (logo_region_size > 0) {
 		// Dedicated logo section is present.
-		return new PartitionFile(this,
+		return std::make_shared<PartitionFile>(this,
 			le32_to_cpu(d->ncch_header.hdr.logo_region_offset) << d->media_unit_shift,
 			logo_region_size);
 	}

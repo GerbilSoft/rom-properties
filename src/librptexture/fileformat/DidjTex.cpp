@@ -12,10 +12,10 @@
 
 #include "didj_tex_structs.h"
 
-// librpbase, librpfile
+// Other rom-properties libraries
 #include "libi18n/i18n.h"
+using namespace LibRpFile;
 using LibRpBase::RomFields;
-using LibRpFile::IRpFile;
 
 // librptexture
 #include "ImageSizeCalc.hpp"
@@ -29,7 +29,7 @@ using LibRpFile::IRpFile;
 # include "libwin32common/DelayLoadHelper.h"
 #endif /* _MSC_VER */
 
-// C++ STL classes.
+// C++ STL classes
 using std::string;
 using std::unique_ptr;
 
@@ -43,8 +43,8 @@ DELAYLOAD_TEST_FUNCTION_IMPL0(get_crc_table);
 class DidjTexPrivate final : public FileFormatPrivate
 {
 	public:
-		DidjTexPrivate(DidjTex *q, IRpFile *file);
-		~DidjTexPrivate() final;
+		DidjTexPrivate(DidjTex *q, const IRpFilePtr &file);
+		~DidjTexPrivate() final = default;
 
 	private:
 		typedef FileFormatPrivate super;
@@ -67,20 +67,20 @@ class DidjTexPrivate final : public FileFormatPrivate
 		};
 		TexType texType;
 
-		// .tex header.
+		// .tex header
 		Didj_Tex_Header texHeader;
 
-		// Decoded image.
-		rp_image *img;
+		// Decoded image
+		rp_image_ptr img;
 
-		// Invalid pixel format message.
+		// Invalid pixel format message
 		char invalid_pixel_format[24];
 
 		/**
 		 * Load the DidjTex image.
 		 * @return Image, or nullptr on error.
 		 */
-		const rp_image *loadDidjTexImage(void);
+		rp_image_const_ptr loadDidjTexImage(void);
 };
 
 FILEFORMAT_IMPL(DidjTex)
@@ -105,7 +105,7 @@ const TextureInfo DidjTexPrivate::textureInfo = {
 	exts, mimeTypes
 };
 
-DidjTexPrivate::DidjTexPrivate(DidjTex *q, IRpFile *file)
+DidjTexPrivate::DidjTexPrivate(DidjTex *q, const IRpFilePtr &file)
 	: super(q, file, &textureInfo)
 	, texType(TexType::Unknown)
 	, img(nullptr)
@@ -115,16 +115,11 @@ DidjTexPrivate::DidjTexPrivate(DidjTex *q, IRpFile *file)
 	memset(invalid_pixel_format, 0, sizeof(invalid_pixel_format));
 }
 
-DidjTexPrivate::~DidjTexPrivate()
-{
-	UNREF(img);
-}
-
 /**
  * Load the .tex image.
  * @return Image, or nullptr on error.
  */
-const rp_image *DidjTexPrivate::loadDidjTexImage(void)
+rp_image_const_ptr DidjTexPrivate::loadDidjTexImage(void)
 {
 	if (img) {
 		// Image has already been loaded.
@@ -213,7 +208,7 @@ const rp_image *DidjTexPrivate::loadDidjTexImage(void)
 	inflateEnd(&strm);
 
 	// Decode the image.
-	rp_image *imgtmp = nullptr;
+	rp_image_ptr imgtmp;
 	const unsigned int width = le32_to_cpu(texHeader.width);
 	const unsigned int height = le32_to_cpu(texHeader.height);
 	switch (le32_to_cpu(texHeader.px_format)) {
@@ -343,7 +338,7 @@ const rp_image *DidjTexPrivate::loadDidjTexImage(void)
  *
  * @param file Open ROM image.
  */
-DidjTex::DidjTex(IRpFile *file)
+DidjTex::DidjTex(const IRpFilePtr &file)
 	: super(new DidjTexPrivate(this, file))
 {
 	RP_D(DidjTex);
@@ -358,7 +353,7 @@ DidjTex::DidjTex(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(&d->texHeader, sizeof(d->texHeader));
 	if (size != sizeof(d->texHeader)) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -369,7 +364,7 @@ DidjTex::DidjTex(IRpFile *file)
 	    d->texHeader.num_images != cpu_to_le32(1))
 	{
 		// Incorrect values.
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -385,7 +380,7 @@ DidjTex::DidjTex(IRpFile *file)
 		// .texs - allow the total filesize to be larger than the compressed size.
 		if (our_size > filesize) {
 			// Incorrect compressed filesize.
-			UNREF_AND_NULL_NOCHK(d->file);
+			d->file.reset();
 			return;
 		}
 		d->texType = DidjTexPrivate::TexType::TEXS;
@@ -393,7 +388,7 @@ DidjTex::DidjTex(IRpFile *file)
 		// .tex - total filesize must be equal to compressed size plus header size.
 		if (our_size != filesize) {
 			// Incorrect compressed filesize.
-			UNREF_AND_NULL_NOCHK(d->file);
+			d->file.reset();
 			return;
 		}
 		d->texType = DidjTexPrivate::TexType::TEX;
@@ -513,7 +508,7 @@ int DidjTex::getFields(RomFields *fields) const
  * The image is owned by this object.
  * @return Image, or nullptr on error.
  */
-const rp_image *DidjTex::image(void) const
+rp_image_const_ptr DidjTex::image(void) const
 {
 	RP_D(const DidjTex);
 	if (!d->isValid || (int)d->texType < 0) {
@@ -531,7 +526,7 @@ const rp_image *DidjTex::image(void) const
  * @param mip Mipmap number.
  * @return Image, or nullptr on error.
  */
-const rp_image *DidjTex::mipmap(int mip) const
+rp_image_const_ptr DidjTex::mipmap(int mip) const
 {
 	// Allowing mipmap 0 for compatibility.
 	if (mip == 0) {

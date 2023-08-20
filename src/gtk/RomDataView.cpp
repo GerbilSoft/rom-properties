@@ -24,7 +24,7 @@
 // Other rom-properties libraries
 using namespace LibRpBase;
 using namespace LibRpText;
-using LibRpTexture::rp_image;
+using namespace LibRpTexture;
 
 // libdl
 #ifdef HAVE_DLVSYM
@@ -395,9 +395,6 @@ rp_rom_data_view_finalize(GObject *object)
 	g_free(page->prevExportDir);
 	g_free(page->uri);
 
-	// Unreference romData.
-	UNREF(page->romData);
-
 	// Call the superclass finalize() function.
 	G_OBJECT_CLASS(rp_rom_data_view_parent_class)->finalize(object);
 }
@@ -415,7 +412,7 @@ rp_rom_data_view_new_with_uri(const gchar *uri, RpDescFormatType desc_format_typ
 }
 
 GtkWidget*
-rp_rom_data_view_new_with_romData(const gchar *uri, RomData *romData, RpDescFormatType desc_format_type)
+rp_rom_data_view_new_with_romData(const gchar *uri, const RomDataPtr &romData, RpDescFormatType desc_format_type)
 {
 	// At least URI needs to be set.
 	assert(uri != nullptr);
@@ -425,11 +422,11 @@ rp_rom_data_view_new_with_romData(const gchar *uri, RomData *romData, RpDescForm
 	if (uri) {
 		page->uri = g_strdup(uri);
 		if (romData) {
-			page->romData = romData->ref();
+			page->cxx->romData = romData;
 		}
 	}
 
-	if (G_LIKELY(romData != nullptr)) {
+	if (G_LIKELY((bool)romData)) {
 		// NOTE: Don't call rp_rom_data_view_load_rom_data() because that will
 		// close and reopen romData, which wastes CPU cycles.
 		// Call rp_rom_data_view_update_display() instead.
@@ -489,7 +486,7 @@ rp_rom_data_view_get_property(GObject	*object,
 			break;
 
 		case PROP_SHOWING_DATA:
-			g_value_set_boolean(value, (page->romData != nullptr));
+			g_value_set_boolean(value, (bool)page->cxx->romData);
 			break;
 
 		default:
@@ -536,7 +533,7 @@ rp_rom_data_view_set_uri(RpRomDataView	*page,
 		page->uri = nullptr;
 
 		// Unreference the existing RomData object.
-		UNREF_AND_NULL(page->romData);
+		page->cxx->romData.reset();
 		page->hasCheckedAchievements = false;
 
 		// Delete the icon frames and tabs.
@@ -609,7 +606,7 @@ rp_rom_data_view_is_showing_data(RpRomDataView *page)
 	// the RomData was valid, but the RomData isn't loaded
 	// until idle is processed...
 	g_return_val_if_fail(RP_IS_ROM_DATA_VIEW(page), false);
-	return (page->romData != nullptr);
+	return (bool)page->cxx->romData;
 }
 
 static void
@@ -619,7 +616,7 @@ rp_rom_data_view_init_header_row(RpRomDataView *page)
 	assert(page != nullptr);
 
 	// NOTE: romData might be nullptr in some cases.
-	const RomData *const romData = page->romData;
+	const RomData *const romData = page->cxx->romData.get();
 	//assert(romData != nullptr);
 	if (!romData) {
 		// No ROM data.
@@ -650,7 +647,7 @@ rp_rom_data_view_init_header_row(RpRomDataView *page)
 	// Supported image types.
 	const uint32_t imgbf = romData->supportedImageTypes();
 
-	// Banner.
+	// Banner
 	gtk_widget_set_visible(page->imgBanner, false);
 	if (imgbf & RomData::IMGBF_INT_BANNER) {
 		// Get the banner.
@@ -660,11 +657,11 @@ rp_rom_data_view_init_header_row(RpRomDataView *page)
 		}
 	}
 
-	// Icon.
+	// Icon
 	gtk_widget_set_visible(page->imgIcon, false);
 	if (imgbf & RomData::IMGBF_INT_ICON) {
 		// Get the icon.
-		const rp_image *const icon = romData->image(RomData::IMG_INT_ICON);
+		const rp_image_const_ptr icon = romData->image(RomData::IMG_INT_ICON);
 		if (icon && icon->isValid()) {
 			// Is this an animated icon?
 			bool ok = rp_drag_image_set_icon_anim_data(RP_DRAG_IMAGE(page->imgIcon), romData->iconAnimData());
@@ -985,12 +982,12 @@ rp_rom_data_view_init_listdata(RpRomDataView *page,
 		GtkTreeIter treeIter;
 		gtk_list_store_append(listStore, &treeIter);
 		if (hasCheckboxes) {
-			// Checkbox column.
+			// Checkbox column
 			gtk_list_store_set(listStore, &treeIter, 0, (checkboxes & 1), -1);
 			checkboxes >>= 1;
 		} else if (hasIcons) {
-			// Icon column.
-			const rp_image *const icon = field.data.list_data.mxd.icons->at(row);
+			// Icon column
+			const rp_image_const_ptr &icon = field.data.list_data.mxd.icons->at(row);
 			if (icon) {
 				PIMGTYPE pixbuf = rp_image_to_PIMGTYPE(icon);
 				if (pixbuf) {
@@ -1662,7 +1659,7 @@ rp_rom_data_view_create_options_button(RpRomDataView *page)
 	g_signal_connect(page->btnOptions, "triggered", G_CALLBACK(btnOptions_triggered_signal_handler), page);
 
 	// Initialize the menu options.
-	rp_options_menu_button_reinit_menu(RP_OPTIONS_MENU_BUTTON(page->btnOptions), page->romData);
+	rp_options_menu_button_reinit_menu(RP_OPTIONS_MENU_BUTTON(page->btnOptions), page->cxx->romData.get());
 }
 
 /**
@@ -1686,14 +1683,14 @@ rp_rom_data_view_update_display(RpRomDataView *page)
 	// Initialize the header row.
 	rp_rom_data_view_init_header_row(page);
 
-	if (!page->romData) {
+	if (!page->cxx->romData) {
 		// No ROM data...
 		page->changed_idle = 0;
 		return G_SOURCE_REMOVE;
 	}
 
 	// Get the fields.
-	const RomFields *const pFields = page->romData->fields();
+	const RomFields *const pFields = page->cxx->romData->fields();
 	assert(pFields != nullptr);
 	if (!pFields) {
 		// No fields.
@@ -2042,24 +2039,24 @@ rp_rom_data_view_load_rom_data(RpRomDataView *page)
 	}
 
 	// Do we have a RomData object loaded already?
-	if (page->romData) {
+	if (page->cxx->romData) {
 		// Unload the existing RomData object.
-		UNREF_AND_NULL_NOCHK(page->romData);
+		page->cxx->romData.reset();
 		page->hasCheckedAchievements = false;
 		g_object_notify_by_pspec(G_OBJECT(page), props[PROP_SHOWING_DATA]);
 	}
 
 	// Load the specified URI.
-	RomData *const romData = rp_gtk_open_uri(page->uri);
+	RomDataPtr romData = rp_gtk_open_uri(page->uri);
 	if (romData) {
 		// FIXME: If called from rp_rom_data_view_set_property(), this might
 		// result in *two* notifications.
-		page->romData = romData;
+		page->cxx->romData = std::move(romData);
 		page->hasCheckedAchievements = false;
 		g_object_notify_by_pspec(G_OBJECT(page), props[PROP_SHOWING_DATA]);
 	}
 
-	if (page->romData) {
+	if (page->cxx->romData) {
 		// Update the display widgets.
 		// TODO: If already mapped, check achievements again.
 		// NOTE: This will clear page->changed_idle.
@@ -2068,7 +2065,7 @@ rp_rom_data_view_load_rom_data(RpRomDataView *page)
 		// Make sure the underlying file handle is closed,
 		// since we don't need it once the RomData has been
 		// loaded by RomDataView.
-		page->romData->close();
+		page->cxx->romData->close();
 	}
 
 	// Animation timer will be started when the page
@@ -2194,7 +2191,7 @@ rp_rom_data_view_map_signal_handler(RpRomDataView	*page,
 
 	// Check for "viewed" achievements.
 	if (!page->hasCheckedAchievements) {
-		page->romData->checkViewedAchievements();
+		page->cxx->romData->checkViewedAchievements();
 		page->hasCheckedAchievements = true;
 	}
 }

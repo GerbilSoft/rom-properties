@@ -26,8 +26,7 @@
 
 #include "librpbase/RomData.hpp"
 #include "librpbase/config/Config.hpp"
-using LibRpBase::Config;
-using LibRpBase::RomData;
+using namespace LibRpBase;
 
 // nautilus-extension.h mini replacement
 #include "nautilus-extension-mini.h"
@@ -105,7 +104,7 @@ static NautilusPropertyPage*
 rp_nautilus_property_page_provider_get_RomDataView(const gchar *uri)
 {
 	// Attempt to open the URI.
-	RomData *const romData = rp_gtk_open_uri(uri);
+	const RomDataPtr romData = rp_gtk_open_uri(uri);
 	if (G_UNLIKELY(!romData)) {
 		// Unable to open the URI as a RomData object.
 		return nullptr;
@@ -115,7 +114,6 @@ rp_nautilus_property_page_provider_get_RomDataView(const gchar *uri)
 	GtkWidget *const romDataView = rp_rom_data_view_new_with_romData(uri, romData, RP_DFT_GNOME);
 	gtk_widget_set_name(romDataView, "romDataView");
 	gtk_widget_show(romDataView);
-	romData->unref();
 
 	// tr: Tab title.
 	const char *const tabTitle = C_("RomDataView", "ROM Properties");

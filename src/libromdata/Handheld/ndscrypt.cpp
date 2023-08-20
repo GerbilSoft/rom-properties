@@ -97,21 +97,19 @@ int ndscrypt_load_blowfish_bin(BlowfishKey bfkey)
 	bin_filename += filenames[bfkey];
 
 	// Open the file.
-	RpFile *const f_blowfish = new RpFile(bin_filename, RpFile::FM_OPEN_READ);
+	unique_ptr<RpFile> f_blowfish(new RpFile(bin_filename, RpFile::FM_OPEN_READ));
 	if (!f_blowfish->isOpen()) {
 		// Unable to open the file.
 		int err = f_blowfish->lastError();
 		if (err == 0) {
 			err = EIO;
 		}
-		UNREF(f_blowfish);
 		return -err;
 	}
 
 	// File must be the correct size.
 	if (f_blowfish->size() != NDS_BLOWFISH_SIZE) {
 		// Wrong size.
-		UNREF(f_blowfish);
 		return 1;
 	}
 
@@ -125,10 +123,9 @@ int ndscrypt_load_blowfish_bin(BlowfishKey bfkey)
 		if (err == 0) {
 			err = EIO;
 		}
-		f_blowfish->unref();
 		return -err;
 	}
-	f_blowfish->unref();
+	f_blowfish.reset(nullptr);
 
 	// Verify the MD5.
 	uint8_t md5[16];

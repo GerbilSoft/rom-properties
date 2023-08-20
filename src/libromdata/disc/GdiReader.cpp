@@ -16,13 +16,14 @@
 // Other rom-properties libraries
 #include "librpfile/RelatedFile.hpp"
 using namespace LibRpBase;
-using namespace LibRpText;
 using namespace LibRpFile;
+using namespace LibRpText;
 
 // Other RomData subclasses
 #include "Other/ISO.hpp"
 
 // C++ STL classes
+using std::shared_ptr;
 using std::string;
 using std::unique_ptr;
 using std::vector;
@@ -52,7 +53,7 @@ class GdiReaderPrivate final : public SparseDiscReaderPrivate {
 			uint8_t reserved;
 			// TODO: Data vs. audio?
 			string filename;		// Relative to the .gdi file. Cleared on error.
-			IRpFile *file;
+			IRpFile *file;			// Internal only; not using shared_ptr here.
 		};
 		vector<BlockRange> blockRanges;
 
@@ -84,6 +85,15 @@ class GdiReaderPrivate final : public SparseDiscReaderPrivate {
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
 		int openTrack(int trackNumber);
+
+		/**
+		 * Get the starting LBA and size of the specified track number.
+		 * @param trackNumber	[in] Track number (1-based)
+		 * @param lba_start	[out] Starting LBA
+		 * @param lba_size	[out] Length of track, in LBAs
+		 * @return 0 on success; non-zero on error.
+		 */
+		int getTrackLBAInfo(int trackNumber, unsigned int &lba_start, unsigned int &lba_size);
 };
 
 /** GdiReaderPrivate **/
@@ -104,14 +114,14 @@ GdiReaderPrivate::~GdiReaderPrivate()
 void GdiReaderPrivate::close(void)
 {
 	for (BlockRange &blockRange : blockRanges) {
-		UNREF(blockRange.file);
+		delete blockRange.file;
 	}
 	blockRanges.clear();
 	trackMappings.clear();
 
 	// GDI file.
 	RP_Q(GdiReader);
-	UNREF_AND_NULL(q->m_file);
+	q->m_file.reset();
 }
 
 /**
@@ -271,7 +281,7 @@ int GdiReaderPrivate::openTrack(int trackNumber)
 	}
 
 	// Open the related file.
-	IRpFile *const file = FileSystem::openRelatedFile(filename.c_str(), basename.c_str(), ext.c_str());
+	IRpFile *const file = FileSystem::openRelatedFile_rawptr(filename.c_str(), basename.c_str(), ext.c_str());
 	if (!file) {
 		// Unable to open the file.
 		// TODO: Return the actual error.
@@ -282,14 +292,14 @@ int GdiReaderPrivate::openTrack(int trackNumber)
 	const off64_t fileSize = file->size();
 	if (fileSize <= 0) {
 		// Empty or invalid file...
-		file->unref();
+		delete file;
 		return -EIO;
 	}
 
 	// Is the file a multiple of the sector size?
 	if (fileSize % blockRange->sectorSize != 0) {
 		// Not a multiple of the sector size.
-		file->unref();
+		delete file;
 		return -EIO;
 	}
 
@@ -299,9 +309,35 @@ int GdiReaderPrivate::openTrack(int trackNumber)
 	return 0;
 }
 
+/**
+ * Get the starting LBA and size of the specified track number.
+ * @param trackNumber	[in] Track number (1-based)
+ * @param lba_start	[out] Starting LBA
+ * @param lba_size	[out] Length of track, in LBAs
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int GdiReaderPrivate::getTrackLBAInfo(int trackNumber, unsigned int &lba_start, unsigned int &lba_size)
+{
+	if (openTrack(trackNumber) != 0) {
+		// Cannot open the track.
+		return -EIO;
+	}
+
+	if (trackMappings.size() < static_cast<size_t>(trackNumber)) {
+		// Invalid track number.
+		return -EINVAL;
+	}
+	GdiReaderPrivate::BlockRange *const blockRange = trackMappings[trackNumber-1];
+
+	// Calculate the track length.
+	lba_start = blockRange->blockStart;
+	lba_size = blockRange->blockEnd - lba_start + 1;
+	return 0;
+}
+
 /** GdiReader **/
 
-GdiReader::GdiReader(IRpFile *file)
+GdiReader::GdiReader(const IRpFilePtr &file)
 	: super(new GdiReaderPrivate(this), file)
 {
 	if (!m_file) {
@@ -320,7 +356,7 @@ GdiReader::GdiReader(IRpFile *file)
 	const off64_t fileSize = m_file->size();
 	if (fileSize <= 0 || fileSize > 4096) {
 		// Invalid GDI file size.
-		UNREF_AND_NULL_NOCHK(m_file);
+		m_file.reset();
 		m_lastError = EIO;
 		return;
 	}
@@ -332,7 +368,7 @@ GdiReader::GdiReader(IRpFile *file)
 	size_t size = m_file->read(gdibuf.get(), gdisize);
 	if (size != gdisize) {
 		// Read error.
-		UNREF_AND_NULL_NOCHK(m_file);
+		m_file.reset();
 		m_lastError = EIO;
 		return;
 	}
@@ -608,15 +644,38 @@ int GdiReader::startingLBA(int trackNumber) const
  * @param trackNumber Track number. (1-based)
  * @return IsoPartition, or nullptr on error.
  */
-IsoPartition *GdiReader::openIsoPartition(int trackNumber)
+IsoPartitionPtr GdiReader::openIsoPartition(int trackNumber)
 {
-	const int lba = startingLBA(trackNumber);
-	if (lba < 0)
+	RP_D(GdiReader);
+
+	unsigned int lba_start, lba_size;
+	if (d->getTrackLBAInfo(trackNumber, lba_start, lba_size) != 0) {
+		// Unable to get track LBA info.
 		return nullptr;
+	}
+
+	// FIXME: IsoPartition's constructor requires an IDiscReaderPtr,
+	// but we don't have our own shared_ptr<> available.
+	// Workaround: Create a PartitionFile and use that.
+	PartitionFilePtr isoFile = std::make_shared<PartitionFile>(this,
+		static_cast<off64_t>(lba_start) * 2048,
+		static_cast<off64_t>(lba_size) * 2048);
+	if (!isoFile->isOpen()) {
+		// Unable to open the PartitionFile.
+		return nullptr;
+	}
+
+	// NOTE: IsoPartition *only* works properly with IDiscReader.
+	IDiscReaderPtr discReader = std::make_shared<DiscReader>(isoFile);
+	if (!discReader->isOpen()) {
+		// Unable to open the DiscReader.
+		return nullptr;
+	}
 
 	// Logical block size is 2048.
 	// ISO starting offset is the LBA.
-	return new IsoPartition(this, lba * 2048, lba);
+	// FIXME BEFORE COMMIT: Verify that this works correctly.
+	return std::make_shared<IsoPartition>(discReader, 0, lba_start);
 }
 
 /**
@@ -624,40 +683,29 @@ IsoPartition *GdiReader::openIsoPartition(int trackNumber)
  * @param trackNumber Track number. (1-based)
  * @return ISO object, or nullptr on error.
  */
-ISO *GdiReader::openIsoRomData(int trackNumber)
+ISOPtr GdiReader::openIsoRomData(int trackNumber)
 {
-	// Make sure the track is open.
 	RP_D(GdiReader);
-	if (d->openTrack(trackNumber) != 0) {
-		// Cannot open the track.
+
+	unsigned int lba_start, lba_size;
+	if (d->getTrackLBAInfo(trackNumber, lba_start, lba_size) != 0) {
+		// Unable to get track LBA info.
 		return nullptr;
 	}
 
-	if (d->trackMappings.size() < static_cast<size_t>(trackNumber)) {
-		// Invalid track number.
-		return nullptr;
-	}
-	GdiReaderPrivate::BlockRange *const blockRange = d->trackMappings[trackNumber-1];
-
-	// Calculate the track length.
-	const int lba_start = blockRange->blockStart;
-	const int lba_size = blockRange->blockEnd - lba_start + 1;
-
-	// ISO object for ISO-9660 PVD
-	ISO *isoData = nullptr;
-
-	PartitionFile *const isoFile = new PartitionFile(this,
+	PartitionFilePtr isoFile = std::make_shared<PartitionFile>(this,
 		static_cast<off64_t>(lba_start) * 2048,
 		static_cast<off64_t>(lba_size) * 2048);
 	if (isoFile->isOpen()) {
-		isoData = new ISO(isoFile);
-		if (!isoData->isOpen()) {
-			// Unable to open ISO object.
-			UNREF_AND_NULL_NOCHK(isoData);
+		ISOPtr isoData = std::make_shared<ISO>(isoFile);
+		if (isoData->isOpen()) {
+			// ISO is opened.
+			return isoData;
 		}
 	}
-	isoFile->unref();
-	return isoData;
+
+	// Unable to open the ISO object.
+	return nullptr;
 }
 
 }

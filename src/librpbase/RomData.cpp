@@ -13,10 +13,9 @@
 // Other rom-properties libraries
 #include "libi18n/i18n.h"
 #include "libcachecommon/CacheKeys.hpp"
-using LibRpFile::IRpFile;
-using LibRpFile::RpFile;
-using LibRpTexture::rp_image;
+using namespace LibRpFile;
 using namespace LibRpText;
+using namespace LibRpTexture;
 
 // C++ STL classes
 using std::string;
@@ -31,12 +30,12 @@ namespace LibRpBase {
  * @param file ROM file
  * @param pRomDataInfo RomData subclass information
  */
-RomDataPrivate::RomDataPrivate(IRpFile *file, const RomDataInfo *pRomDataInfo)
+RomDataPrivate::RomDataPrivate(const IRpFilePtr &file, const RomDataInfo *pRomDataInfo)
 	: pRomDataInfo(pRomDataInfo)
 	, mimeType(nullptr)
 	, fileType(RomData::FileType::ROM_Image)
 	, isValid(false)
-	, file(nullptr)
+	, file(file)
 	, filename(nullptr)
 #ifdef _WIN32
 	, filenameW(nullptr)
@@ -49,14 +48,13 @@ RomDataPrivate::RomDataPrivate(IRpFile *file, const RomDataInfo *pRomDataInfo)
 	// Initialize i18n.
 	rp_i18n_init();
 
-	if (file) {
-		// Reference the file.
-		this->file = file->ref();
-		this->isCompressed = file->isCompressed();
+	if (this->file) {
+		// A file was specified. Copy important information.
+		this->isCompressed = this->file->isCompressed();
 
 #ifdef _WIN32
 		// If this is RpFile, get the UTF-16 filename directly.
-		RpFile *const rpFile = dynamic_cast<RpFile*>(file);
+		RpFile *const rpFile = dynamic_cast<RpFile*>(this->file.get());
 		if (rpFile) {
 			const wchar_t *const filenameW = rpFile->filenameW();
 			if (filenameW) {
@@ -66,7 +64,7 @@ RomDataPrivate::RomDataPrivate(IRpFile *file, const RomDataInfo *pRomDataInfo)
 #endif /* _WIN32 */
 
 		// TODO: Don't set if filenameW was set?
-		const char *const filename = file->filename();
+		const char *const filename = this->file->filename();
 		if (filename) {
 			this->filename = strdup(filename);
 		}
@@ -80,9 +78,6 @@ RomDataPrivate::~RomDataPrivate()
 #ifdef _WIN32
 	free(filenameW);
 #endif /* _WIN32 */
-
-	// Unreference the file.
-	UNREF(this->file);
 }
 
 /** Convenience functions. **/
@@ -491,7 +486,7 @@ bool RomData::isValid(void) const
 bool RomData::isOpen(void) const
 {
 	RP_D(const RomData);
-	return (d->file != nullptr);
+	return ((bool)d->file);
 }
 
 /**
@@ -501,17 +496,17 @@ void RomData::close(void)
 {
 	// Unreference the file.
 	RP_D(RomData);
-	UNREF_AND_NULL(d->file);
+	d->file.reset();
 }
 
 /**
  * Get a reference to the internal file.
  * @return Reference to file, or nullptr on error.
  */
-IRpFile *RomData::ref_file(void)
+IRpFilePtr RomData::ref_file(void) const
 {
-	RP_D(RomData);
-	return (d->file ? d->file->ref() : nullptr);
+	RP_D(const RomData);
+	return d->file;
 }
 
 /**
@@ -747,25 +742,20 @@ uint32_t RomData::imgpf(ImageType imageType) const
  * Load an internal image.
  * Called by RomData::image().
  * @param imageType	[in] Image type to load.
- * @param pImage	[out] Pointer to const rp_image* to store the image in.
+ * @param pImage	[out] Reference to rp_image_const_ptr to store the image in.
  * @return 0 on success; negative POSIX error code on error.
  */
-int RomData::loadInternalImage(ImageType imageType, const rp_image **pImage)
+int RomData::loadInternalImage(ImageType imageType, rp_image_const_ptr &pImage)
 {
 	assert(imageType >= IMG_INT_MIN && imageType <= IMG_INT_MAX);
-	assert(pImage != nullptr);
-	if (!pImage) {
-		// Invalid parameters.
-		return -EINVAL;
-	} else if (imageType < IMG_INT_MIN || imageType > IMG_INT_MAX) {
+	if (imageType < IMG_INT_MIN || imageType > IMG_INT_MAX) {
 		// ImageType is out of range.
-		*pImage = nullptr;
+		pImage.reset();
 		return -EINVAL;
 	}
 
 	// No images supported by the base class.
-	RP_UNUSED(imageType);
-	*pImage = nullptr;
+	pImage.reset();
 	return -ENOENT;
 }
 
@@ -823,7 +813,7 @@ const RomMetaData *RomData::metaData(void) const
  * @param imageType Image type to load.
  * @return Internal image, or nullptr if the ROM doesn't have one.
  */
-const rp_image *RomData::image(ImageType imageType) const
+rp_image_const_ptr RomData::image(ImageType imageType) const
 {
 	assert(imageType >= IMG_INT_MIN && imageType <= IMG_INT_MAX);
 	if (imageType < IMG_INT_MIN || imageType > IMG_INT_MAX) {
@@ -833,25 +823,13 @@ const rp_image *RomData::image(ImageType imageType) const
 	// TODO: Check supportedImageTypes()?
 
 	// Load the internal image.
-	// The subclass maintains ownership of the image.
-#ifdef _DEBUG
-	// TODO: Verify casting on 32-bit.
-	#define INVALID_IMG_PTR ((const rp_image*)((intptr_t)-1LL))
-	const rp_image *img = INVALID_IMG_PTR;
-#else /* !_DEBUG */
-	const rp_image *img;
-#endif
-	int ret = const_cast<RomData*>(this)->loadInternalImage(imageType, &img);
+	rp_image_const_ptr img;
+	int ret = const_cast<RomData*>(this)->loadInternalImage(imageType, img);
 
 	// SANITY CHECK: If loadInternalImage() returns 0,
 	// img *must* be valid. Otherwise, it must be nullptr.
-	assert((ret == 0 && img != nullptr) ||
-	       (ret != 0 && img == nullptr));
-
-#ifdef _DEBUG // Must be guarded with this in case neither `_DEBUG` nor `NDEBUG` are defined
-	// SANITY CHECK: `img` must not be -1LL.
-	assert(img != INVALID_IMG_PTR);
-#endif
+	assert((ret == 0 && (bool)img) ||
+	       (ret != 0 && !img));
 
 	return (ret == 0 ? img : nullptr);
 }
@@ -940,12 +918,9 @@ const char *RomData::getImageTypeName(ImageType imageType) {
  * Check imgpf for IMGPF_ICON_ANIMATED first to see if this
  * object has an animated icon.
  *
- * The retrieved IconAnimData must be ref()'d by the caller if the
- * caller stores it instead of using it immediately.
- *
  * @return Animated icon data, or nullptr if no animated icon is present.
  */
-const IconAnimData *RomData::iconAnimData(void) const
+IconAnimDataConstPtr RomData::iconAnimData(void) const
 {
 	// No animated icon by default.
 	return nullptr;
@@ -1027,10 +1002,10 @@ int RomData::doRomOp(int id, RomOpParams *pParams)
 			}
 			pParams->status = ret;
 			pParams->msg = C_("RomData", "Unable to reopen the file for writing.");
-			UNREF(file);
+			delete file;
 			return ret;
 		}
-		d->file = file;
+		d->file.reset(file);
 	}
 
 	// If the ROM operation requires a writable file,
@@ -1042,7 +1017,7 @@ int RomData::doRomOp(int id, RomOpParams *pParams)
 			pParams->status = -EIO;
 			pParams->msg = C_("RomData", "Cannot perform this ROM operation on a compressed file.");
 			if (closeFileAfter) {
-				UNREF_AND_NULL_NOCHK(d->file);
+				d->file.reset();
 			}
 			return -EIO;
 		}
@@ -1055,7 +1030,7 @@ int RomData::doRomOp(int id, RomOpParams *pParams)
 				pParams->status = ret;
 				pParams->msg = C_("RomData", "Cannot perform this ROM operation on a read-only file.");
 				if (closeFileAfter) {
-					UNREF_AND_NULL_NOCHK(d->file);
+					d->file.reset();
 				}
 				return ret;
 			}
@@ -1064,7 +1039,7 @@ int RomData::doRomOp(int id, RomOpParams *pParams)
 
 	int ret = doRomOp_int(id, pParams);
 	if (closeFileAfter) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 	}
 	return ret;
 }

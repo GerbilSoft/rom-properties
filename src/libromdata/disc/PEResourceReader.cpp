@@ -136,7 +136,7 @@ PEResourceReaderPrivate::PEResourceReaderPrivate(
 		q->m_lastError = -EBADF;
 		return;
 	} else if (rsrc_addr == 0 || rsrc_size == 0) {
-		UNREF_AND_NULL_NOCHK(q->m_file);
+		q->m_file.reset();
 		q->m_lastError = -EIO;
 		return;
 	}
@@ -146,7 +146,7 @@ PEResourceReaderPrivate::PEResourceReaderPrivate(
 	const off64_t fileSize_o64 = q->m_file->size();
 	if (fileSize_o64 > fileSize_MAX) {
 		// A Win32/Win64 executable larger than 2 GB doesn't make any sense.
-		UNREF_AND_NULL_NOCHK(q->m_file);
+		q->m_file.reset();
 		q->m_lastError = -EIO;
 		return;
 	}
@@ -158,7 +158,7 @@ PEResourceReaderPrivate::PEResourceReaderPrivate(
 	{
 		// Starting address is past the end of the file,
 		// or resource ends past the end of the file.
-		UNREF_AND_NULL_NOCHK(q->m_file);
+		q->m_file.reset();
 		q->m_lastError = -EIO;
 		return;
 	}
@@ -167,7 +167,7 @@ PEResourceReaderPrivate::PEResourceReaderPrivate(
 	int ret = loadResDir(0, res_types);
 	if (ret <= 0) {
 		// No resources, or an error occurred.
-		UNREF_AND_NULL_NOCHK(q->m_file);
+		q->m_file.reset();
 	}
 }
 
@@ -552,7 +552,7 @@ int PEResourceReaderPrivate::load_StringTable(IRpFile *file, IResourceReader::St
  * @param rsrc_size .rsrc section size.
  * @param rsrc_va .rsrc virtual address.
  */
-PEResourceReader::PEResourceReader(IRpFile *file, uint32_t rsrc_addr, uint32_t rsrc_size, uint32_t rsrc_va)
+PEResourceReader::PEResourceReader(const IRpFilePtr &file, uint32_t rsrc_addr, uint32_t rsrc_size, uint32_t rsrc_va)
 	: super(file)
 	, d_ptr(new PEResourceReaderPrivate(this, rsrc_addr, rsrc_size, rsrc_va))
 { }
@@ -573,7 +573,7 @@ PEResourceReader::~PEResourceReader()
 size_t PEResourceReader::read(void *ptr, size_t size)
 {
 	RP_D(PEResourceReader);
-	assert(m_file != nullptr);
+	assert((bool)m_file);
 	assert(m_file->isOpen());
 	if (!m_file || !m_file->isOpen()) {
 		m_lastError = EBADF;
@@ -610,7 +610,7 @@ size_t PEResourceReader::read(void *ptr, size_t size)
 int PEResourceReader::seek(off64_t pos)
 {
 	RP_D(PEResourceReader);
-	assert(m_file != nullptr);
+	assert((bool)m_file);
 	assert(m_file->isOpen());
 	if (!m_file || !m_file->isOpen()) {
 		m_lastError = EBADF;
@@ -637,7 +637,7 @@ int PEResourceReader::seek(off64_t pos)
 off64_t PEResourceReader::tell(void)
 {
 	RP_D(const PEResourceReader);
-	assert(m_file != nullptr);
+	assert((bool)m_file);
 	assert(m_file->isOpen());
 	if (!m_file || !m_file->isOpen()) {
 		m_lastError = EBADF;
@@ -695,7 +695,7 @@ off64_t PEResourceReader::partition_size_used(void) const
  * @param lang Language ID. (-1 for "first entry")
  * @return IRpFile*, or nullptr on error.
  */
-IRpFile *PEResourceReader::open(uint16_t type, int id, int lang)
+IRpFilePtr PEResourceReader::open(uint16_t type, int id, int lang)
 {
 	// Check if the directory has been cached.
 	RP_D(PEResourceReader);
@@ -760,7 +760,7 @@ IRpFile *PEResourceReader::open(uint16_t type, int id, int lang)
 	// IPartition as the reader and takes an offset
 	// and size as the file parameters.
 	// TODO: Set the codepage somewhere?
-	return new PartitionFile(this, data_addr, le32_to_cpu(irdata.Size));
+	return std::make_shared<PartitionFile>(this, data_addr, le32_to_cpu(irdata.Size));
 }
 
 /**
@@ -782,7 +782,7 @@ int PEResourceReader::load_VS_VERSION_INFO(int id, int lang, VS_FIXEDFILEINFO *p
 	}
 
 	// Open the VS_VERSION_INFO resource.
-	unique_RefBase<IRpFile> f_ver(this->open(RT_VERSION, id, lang));
+	const IRpFilePtr f_ver(this->open(RT_VERSION, id, lang));
 	if (!f_ver) {
 		// Not found.
 		return -ENOENT;

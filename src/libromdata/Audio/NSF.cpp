@@ -12,8 +12,8 @@
 
 // Other rom-properties libraries
 using namespace LibRpBase;
+using namespace LibRpFile;
 using namespace LibRpText;
-using LibRpFile::IRpFile;
 
 // C++ STL classes
 using std::string;
@@ -24,7 +24,7 @@ namespace LibRomData {
 class NSFPrivate final : public RomDataPrivate
 {
 	public:
-		NSFPrivate(IRpFile *file);
+		NSFPrivate(const IRpFilePtr &file);
 
 	private:
 		typedef RomDataPrivate super;
@@ -62,7 +62,7 @@ const RomDataInfo NSFPrivate::romDataInfo = {
 	"NSF", exts, mimeTypes
 };
 
-NSFPrivate::NSFPrivate(IRpFile *file)
+NSFPrivate::NSFPrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
 {
 	// Clear the NSF header struct.
@@ -84,7 +84,7 @@ NSFPrivate::NSFPrivate(IRpFile *file)
  *
  * @param file Open ROM image.
  */
-NSF::NSF(IRpFile *file)
+NSF::NSF(const IRpFilePtr &file)
 	: super(new NSFPrivate(file))
 {
 	RP_D(NSF);
@@ -100,7 +100,7 @@ NSF::NSF(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(&d->nsfHeader, sizeof(d->nsfHeader));
 	if (size != sizeof(d->nsfHeader)) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -113,7 +113,7 @@ NSF::NSF(IRpFile *file)
 	d->isValid = (isRomSupported_static(&info) >= 0);
 
 	if (!d->isValid) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 	}
 }
 

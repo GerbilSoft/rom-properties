@@ -12,8 +12,8 @@
 
 // Other rom-properties libraries
 using namespace LibRpBase;
+using namespace LibRpFile;
 using namespace LibRpText;
-using LibRpFile::IRpFile;
 
 // C++ STL classes
 using std::ostringstream;
@@ -24,7 +24,7 @@ namespace LibRomData {
 class BRSTMPrivate final : public RomDataPrivate
 {
 	public:
-		BRSTMPrivate(IRpFile *file);
+		BRSTMPrivate(const IRpFilePtr &file);
 
 	private:
 		typedef RomDataPrivate super;
@@ -87,7 +87,7 @@ const RomDataInfo BRSTMPrivate::romDataInfo = {
 	"BRSTM", exts, mimeTypes
 };
 
-BRSTMPrivate::BRSTMPrivate(IRpFile *file)
+BRSTMPrivate::BRSTMPrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
 	, needsByteswap(false)
 {
@@ -111,7 +111,7 @@ BRSTMPrivate::BRSTMPrivate(IRpFile *file)
  *
  * @param file Open ROM image.
  */
-BRSTM::BRSTM(IRpFile *file)
+BRSTM::BRSTM(const IRpFilePtr &file)
 	: super(new BRSTMPrivate(file))
 {
 	RP_D(BRSTM);
@@ -127,7 +127,7 @@ BRSTM::BRSTM(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(&d->brstmHeader, sizeof(d->brstmHeader));
 	if (size != sizeof(d->brstmHeader)) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -140,7 +140,7 @@ BRSTM::BRSTM(IRpFile *file)
 	d->isValid = (isRomSupported_static(&info) >= 0);
 
 	if (!d->isValid) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -154,14 +154,14 @@ BRSTM::BRSTM(IRpFile *file)
 	if (head_offset == 0 || head_size < sizeof(headHeader)) {
 		// Invalid HEAD chunk.
 		d->isValid = false;
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 	size = d->file->seekAndRead(head_offset, &headHeader, sizeof(headHeader));
 	if (size != sizeof(headHeader)) {
 		// Seek and/or read error.
 		d->isValid = false;
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -169,7 +169,7 @@ BRSTM::BRSTM(IRpFile *file)
 	if (headHeader.magic != cpu_to_be32(BRSTM_HEAD_MAGIC)) {
 		// Incorrect magic number.
 		d->isValid = false;
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -179,14 +179,14 @@ BRSTM::BRSTM(IRpFile *file)
 	if (head1_offset < sizeof(headHeader) - 8) {
 		// Invalid offset.
 		d->isValid = false;
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 	size = d->file->seekAndRead(head_offset + 8 + head1_offset, &d->headChunk1, sizeof(d->headChunk1));
 	if (size != sizeof(d->headChunk1)) {
 		// Seek and/or read error.
 		d->isValid = false;
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 

@@ -17,11 +17,11 @@
 
 // Other rom-properties libraries
 using namespace LibRpBase;
+using namespace LibRpFile;
 using namespace LibRpText;
 using namespace LibRpTexture;
-using LibRpFile::IRpFile;
 
-// C++ STL classes.
+// C++ STL classes
 using std::vector;
 
 namespace LibRomData {
@@ -29,8 +29,8 @@ namespace LibRomData {
 class PlayStationSavePrivate final : public RomDataPrivate
 {
 	public:
-		PlayStationSavePrivate(IRpFile *file);
-		~PlayStationSavePrivate() final;
+		PlayStationSavePrivate(const IRpFilePtr &file);
+		~PlayStationSavePrivate() final = default;
 
 	private:
 		typedef RomDataPrivate super;
@@ -44,7 +44,7 @@ class PlayStationSavePrivate final : public RomDataPrivate
 
 	public:
 		// Animated icon data.
-		IconAnimData *iconAnimData;
+		IconAnimDataPtr iconAnimData;
 
 	public:
 		// Save file type.
@@ -77,7 +77,7 @@ class PlayStationSavePrivate final : public RomDataPrivate
 		 *
 		 * @return Icon, or nullptr on error.
 		 */
-		const rp_image *loadIcon(void);
+		rp_image_const_ptr loadIcon(void);
 };
 
 ROMDATA_IMPL(PlayStationSave)
@@ -105,7 +105,7 @@ const RomDataInfo PlayStationSavePrivate::romDataInfo = {
 	"PlayStationSave", exts, mimeTypes
 };
 
-PlayStationSavePrivate::PlayStationSavePrivate(IRpFile *file)
+PlayStationSavePrivate::PlayStationSavePrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
 	, iconAnimData(nullptr)
 	, saveType(SaveType::Unknown)
@@ -113,11 +113,6 @@ PlayStationSavePrivate::PlayStationSavePrivate(IRpFile *file)
 	// Clear the various headers.
 	memset(&mxh, 0, sizeof(mxh));
 	memset(&scHeader, 0, sizeof(scHeader));
-}
-
-PlayStationSavePrivate::~PlayStationSavePrivate()
-{
-	UNREF(iconAnimData);
 }
 
 /**
@@ -128,7 +123,7 @@ PlayStationSavePrivate::~PlayStationSavePrivate()
  *
  * @return Icon, or nullptr on error.
  */
-const rp_image *PlayStationSavePrivate::loadIcon(void)
+rp_image_const_ptr PlayStationSavePrivate::loadIcon(void)
 {
 	if (iconAnimData) {
 		// Icon has already been loaded.
@@ -173,7 +168,7 @@ const rp_image *PlayStationSavePrivate::loadIcon(void)
 			break;
 	}
 
-	this->iconAnimData = new IconAnimData();
+	this->iconAnimData = std::make_shared<IconAnimData>();
 	iconAnimData->count = frames;
 	iconAnimData->seq_count = frames;
 
@@ -211,7 +206,7 @@ const rp_image *PlayStationSavePrivate::loadIcon(void)
  *
  * @param file Open ROM image.
  */
-PlayStationSave::PlayStationSave(IRpFile *file)
+PlayStationSave::PlayStationSave(const IRpFilePtr &file)
 	: super(new PlayStationSavePrivate(file))
 {
 	// This class handles save files.
@@ -229,7 +224,7 @@ PlayStationSave::PlayStationSave(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(&header, sizeof(header));
 	if (size != sizeof(header)) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -260,7 +255,7 @@ PlayStationSave::PlayStationSave(IRpFile *file)
 			break;
 		default:
 			// Unknown save type.
-			UNREF_AND_NULL_NOCHK(d->file);
+			d->file.reset();
 			d->saveType = PlayStationSavePrivate::SaveType::Unknown;
 			return;
 	}
@@ -551,38 +546,38 @@ int PlayStationSave::loadMetaData(void)
  * Load an internal image.
  * Called by RomData::image().
  * @param imageType	[in] Image type to load.
- * @param pImage	[out] Pointer to const rp_image* to store the image in.
+ * @param pImage	[out] Reference to rp_image_const_ptr to store the image in.
  * @return 0 on success; negative POSIX error code on error.
  */
-int PlayStationSave::loadInternalImage(ImageType imageType, const rp_image **pImage)
+int PlayStationSave::loadInternalImage(ImageType imageType, rp_image_const_ptr &pImage)
 {
 	ASSERT_loadInternalImage(imageType, pImage);
 
 	RP_D(PlayStationSave);
 	if (imageType != IMG_INT_ICON) {
 		// Only IMG_INT_ICON is supported by PS1.
-		*pImage = nullptr;
+		pImage.reset();
 		return -ENOENT;
 	} else if (d->iconAnimData) {
 		// Image has already been loaded.
 		// NOTE: PS1 icon animations are always sequential,
 		// so we can use a shortcut here.
-		*pImage = d->iconAnimData->frames[0];
+		pImage = d->iconAnimData->frames[0];
 		return 0;
 	} else if (!d->file) {
 		// File isn't open.
-		*pImage = nullptr;
+		pImage.reset();
 		return -EBADF;
 	} else if (!d->isValid) {
 		// Save file isn't valid.
-		*pImage = nullptr;
+		pImage.reset();
 		return -EIO;
 	}
 
 	// Load the icon.
 	// TODO: -ENOENT if the file doesn't actually have an icon.
-	*pImage = d->loadIcon();
-	return (*pImage != nullptr ? 0 : -EIO);
+	pImage = d->loadIcon();
+	return ((bool)pImage ? 0 : -EIO);
 }
 
 /**
@@ -591,12 +586,9 @@ int PlayStationSave::loadInternalImage(ImageType imageType, const rp_image **pIm
  * Check imgpf for IMGPF_ICON_ANIMATED first to see if this
  * object has an animated icon.
  *
- * The retrieved IconAnimData must be ref()'d by the caller if the
- * caller stores it instead of using it immediately.
- *
  * @return Animated icon data, or nullptr if no animated icon is present.
  */
-const IconAnimData *PlayStationSave::iconAnimData(void) const
+IconAnimDataConstPtr PlayStationSave::iconAnimData(void) const
 {
 	RP_D(const PlayStationSave);
 	if (!d->iconAnimData) {

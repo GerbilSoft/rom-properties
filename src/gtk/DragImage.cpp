@@ -10,12 +10,14 @@
 #include "DragImage.hpp"
 #include "PIMGTYPE.hpp"
 
-// librpbase, librpfile, librptexture
-#include "librpbase/img/IconAnimData.hpp"
+// Other rom-properties libraries
 #include "librpbase/img/IconAnimHelper.hpp"
 #include "librpfile/VectorFile.hpp"
 using namespace LibRpBase;
-using LibRpTexture::rp_image;
+using namespace LibRpTexture;
+
+// C++ STL classes
+using std::shared_ptr;
 
 // TODO: Adjust minimum image size based on DPI.
 #define DIL_MIN_IMAGE_SIZE 32
@@ -88,12 +90,12 @@ struct _RpDragImage {
 	GtkWidget *menuEcksBawks;	// GtkMenu
 #endif /* USE_G_MENU_MODEL */
 
-	// rp_image. [ref()'d]
-	const rp_image *img;
+	// rp_image (C++ shared_ptr)
+	rp_image_const_ptr *pImg;
 
 	// Animated icon data.
 	struct anim_vars {
-		const IconAnimData *iconAnimData;
+		IconAnimDataConstPtr iconAnimData;
 		std::array<PIMGTYPE, IconAnimData::MAX_FRAMES> iconFrames;
 		IconAnimHelper iconAnimHelper;
 		guint tmrIconAnim;	// Timer ID
@@ -101,8 +103,7 @@ struct _RpDragImage {
 		int last_frame_number;	// Last frame number.
 
 		anim_vars()
-			: iconAnimData(nullptr)
-			, tmrIconAnim(0)
+			: tmrIconAnim(0)
 			, last_delay(0)
 			, last_frame_number(0)
 		{
@@ -116,8 +117,6 @@ struct _RpDragImage {
 					PIMGTYPE_unref(frame);
 				}
 			}
-
-			UNREF(iconAnimData);
 		}
 	};
 	anim_vars *anim;
@@ -144,8 +143,6 @@ rp_drag_image_init(RpDragImage *image)
 {
 	image->minimumImageSize.width = DIL_MIN_IMAGE_SIZE;
 	image->minimumImageSize.height = DIL_MIN_IMAGE_SIZE;
-	image->img = nullptr;
-	image->anim = nullptr;
 
 	// Create the child GtkImage widget.
 	image->imageWidget = gtk_image_new();
@@ -182,8 +179,9 @@ rp_drag_image_dispose(GObject *object)
 	delete image->anim;
 	image->anim = nullptr;
 
-	// Unreference the image.
-	UNREF_AND_NULL(image->img);
+	// Delete the image shared_ptr.
+	delete image->pImg;
+	image->pImg = nullptr;
 
 #ifdef USE_G_MENU_MODEL
 #  if GTK_CHECK_VERSION(4,0,0)
@@ -237,7 +235,7 @@ rp_drag_image_update_pixmaps(RpDragImage *image)
 	// (Super Smash Bros. Melee)
 	auto *const anim = image->anim;
 	if (anim && anim->iconAnimData) {
-		const IconAnimData *const iconAnimData = anim->iconAnimData;
+		const IconAnimDataConstPtr &iconAnimData = anim->iconAnimData;
 
 		// Convert the frames to PIMGTYPE.
 		for (int i = iconAnimData->count-1; i >= 0; i--) {
@@ -247,7 +245,7 @@ rp_drag_image_update_pixmaps(RpDragImage *image)
 				anim->iconFrames[i] = nullptr;
 			}
 
-			const rp_image *const frame = iconAnimData->frames[i];
+			const rp_image_const_ptr &frame = iconAnimData->frames[i];
 			if (frame && frame->isValid()) {
 				// NOTE: Allowing NULL frames here...
 				anim->iconFrames[i] = rp_image_to_PIMGTYPE(frame);
@@ -267,9 +265,9 @@ rp_drag_image_update_pixmaps(RpDragImage *image)
 		image->curFrame = PIMGTYPE_ref(anim->iconFrames[anim->iconAnimHelper.frameNumber()]);
 		gtk_image_set_from_PIMGTYPE(GTK_IMAGE(image->imageWidget), image->curFrame);
 		bRet = true;
-	} else if (image->img && image->img->isValid()) {
+	} else if (image->pImg && (*image->pImg)->isValid()) {
 		// Single image.
-		image->curFrame = rp_image_to_PIMGTYPE(image->img);
+		image->curFrame = rp_image_to_PIMGTYPE(image->pImg);
 		gtk_image_set_from_PIMGTYPE(GTK_IMAGE(image->imageWidget), image->curFrame);
 		bRet = true;
 	}
@@ -420,11 +418,7 @@ void rp_drag_image_set_ecks_bawks(RpDragImage *image, bool new_ecks_bawks)
 /**
  * Set the rp_image for this image.
  *
- * NOTE: The rp_image pointer is stored and used if necessary.
- * Make sure to call this function with nullptr before deleting
- * the rp_image object.
- *
- * NOTE 2: If animated icon data is specified, that supercedes
+ * NOTE: If animated icon data is specified, that supercedes
  * the individual rp_image.
  *
  * @param image RpDragImage
@@ -432,15 +426,15 @@ void rp_drag_image_set_ecks_bawks(RpDragImage *image, bool new_ecks_bawks)
  * @return True on success; false on error or if clearing.
  */
 bool
-rp_drag_image_set_rp_image(RpDragImage *image, const LibRpTexture::rp_image *img)
+rp_drag_image_set_rp_image(RpDragImage *image, const rp_image_const_ptr &img)
 {
 	g_return_val_if_fail(RP_IS_DRAG_IMAGE(image), false);
 
 	// NOTE: We're not checking if the image pointer matches the
 	// previously stored image, since the underlying image may
 	// have changed.
-	UNREF_AND_NULL(image->img);
 
+	(*image->pImg) = img;
 	if (!img) {
 		if (!image->anim || !image->anim->iconAnimData) {
 			gtk_image_clear(GTK_IMAGE(image->imageWidget));
@@ -449,19 +443,13 @@ rp_drag_image_set_rp_image(RpDragImage *image, const LibRpTexture::rp_image *img
 		}
 		return false;
 	}
-
-	image->img = img->ref();
 	return rp_drag_image_update_pixmaps(image);
 }
 
 /**
  * Set the icon animation data for this image.
  *
- * NOTE: The iconAnimData pointer is stored and used if necessary.
- * Make sure to call this function with nullptr before deleting
- * the IconAnimData object.
- *
- * NOTE 2: If animated icon data is specified, that supercedes
+ * NOTE: If animated icon data is specified, that supercedes
  * the individual rp_image.
  *
  * @param image RpDragImage
@@ -469,7 +457,7 @@ rp_drag_image_set_rp_image(RpDragImage *image, const LibRpTexture::rp_image *img
  * @return True on success; false on error or if clearing.
  */
 bool
-rp_drag_image_set_icon_anim_data(RpDragImage *image, const LibRpBase::IconAnimData *iconAnimData)
+rp_drag_image_set_icon_anim_data(RpDragImage *image, const IconAnimDataConstPtr &iconAnimData)
 {
 	g_return_val_if_fail(RP_IS_DRAG_IMAGE(image), false);
 
@@ -481,20 +469,18 @@ rp_drag_image_set_icon_anim_data(RpDragImage *image, const LibRpBase::IconAnimDa
 	// NOTE: We're not checking if the image pointer matches the
 	// previously stored image, since the underlying image may
 	// have changed.
-	UNREF_AND_NULL(anim->iconAnimData);
 
+	anim->iconAnimData = iconAnimData;
 	if (!iconAnimData) {
 		g_clear_handle_id(&anim->tmrIconAnim, g_source_remove);
 
-		if (!image->img) {
+		if (!(*image->pImg)) {
 			gtk_image_clear(GTK_IMAGE(image->imageWidget));
 		} else {
 			return rp_drag_image_update_pixmaps(image);
 		}
 		return false;
 	}
-
-	anim->iconAnimData = iconAnimData->ref();
 	return rp_drag_image_update_pixmaps(image);
 }
 
@@ -511,10 +497,10 @@ rp_drag_image_clear(RpDragImage *image)
 	auto *const anim = image->anim;
 	if (anim) {
 		g_clear_handle_id(&anim->tmrIconAnim, g_source_remove);
-		UNREF_AND_NULL(anim->iconAnimData);
+		anim->iconAnimData.reset();
 	}
 
-	UNREF_AND_NULL(image->img);
+	(*image->pImg).reset();
 	gtk_image_clear(GTK_IMAGE(image->imageWidget));
 }
 
@@ -672,26 +658,24 @@ rp_drag_image_drag_data_get(RpDragImage *image, GdkDragContext *context, GtkSele
 	const bool isAnimated = (anim && anim->iconAnimData && anim->iconAnimHelper.isAnimated());
 
 	using LibRpFile::VectorFile;
-	VectorFile *const pngData = new VectorFile();
+	shared_ptr<VectorFile> pngData = std::make_shared<VectorFile>();
 	RpPngWriter *pngWriter;
 	if (isAnimated) {
 		// Animated icon.
 		pngWriter = new RpPngWriter(pngData, anim->iconAnimData);
-	} else if (image->img) {
+	} else if (image->pImg && (*image->pImg)) {
 		// Standard icon.
 		// NOTE: Using the source image because we want the original
 		// size, not the resized version.
-		pngWriter = new RpPngWriter(pngData, image->img);
+		pngWriter = new RpPngWriter(pngData, *image->pImg);
 	} else {
 		// No icon...
-		pngData->unref();
 		return;
 	}
 
 	if (!pngWriter->isOpen()) {
 		// Unable to open the PNG writer.
 		delete pngWriter;
-		pngData->unref();
 		return;
 	}
 
@@ -701,14 +685,12 @@ rp_drag_image_drag_data_get(RpDragImage *image, GdkDragContext *context, GtkSele
 	if (pwRet != 0) {
 		// Error writing the PNG image...
 		delete pngWriter;
-		pngData->unref();
 		return;
 	}
 	pwRet = pngWriter->write_IDAT();
 	if (pwRet != 0) {
 		// Error writing the PNG image...
 		delete pngWriter;
-		pngData->unref();
 		return;
 	}
 
@@ -720,9 +702,6 @@ rp_drag_image_drag_data_get(RpDragImage *image, GdkDragContext *context, GtkSele
 	const std::vector<uint8_t> &pngVec = pngData->vector();
 	gtk_selection_data_set(data, gdk_atom_intern_static_string("image/png"), 8,
 		pngVec.data(), static_cast<gint>(pngVec.size()));
-
-	// We're done here.
-	pngData->unref();
 }
 #endif /* !GTK_CHECK_VERSION(4,0,0) */
 

@@ -14,11 +14,11 @@
 // Other rom-properties libraries
 #include "librptexture/decoder/ImageDecoder_GCN.hpp"
 using namespace LibRpBase;
+using namespace LibRpFile;
 using namespace LibRpText;
 using namespace LibRpTexture;
-using LibRpFile::IRpFile;
 
-// C++ STL classes.
+// C++ STL classes
 using std::string;
 using std::vector;
 
@@ -27,8 +27,8 @@ namespace LibRomData {
 class WiiWIBNPrivate final : public RomDataPrivate
 {
 	public:
-		WiiWIBNPrivate(IRpFile *file);
-		~WiiWIBNPrivate() final;
+		WiiWIBNPrivate(const IRpFilePtr &file);
+		~WiiWIBNPrivate() final = default;
 
 	private:
 		typedef RomDataPrivate super;
@@ -41,11 +41,11 @@ class WiiWIBNPrivate final : public RomDataPrivate
 		static const RomDataInfo romDataInfo;
 
 	public:
-		// Internal images.
-		rp_image *img_banner;
+		// Internal images
+		rp_image_ptr img_banner;
 
-		// Animated icon data.
-		IconAnimData *iconAnimData;
+		// Animated icon data
+		IconAnimDataPtr iconAnimData;
 
 	public:
 		// File header.
@@ -59,13 +59,13 @@ class WiiWIBNPrivate final : public RomDataPrivate
 		 *
 		 * @return Icon, or nullptr on error.
 		 */
-		const rp_image *loadIcon(void);
+		rp_image_const_ptr loadIcon(void);
 
 		/**
 		 * Load the save file's banner.
 		 * @return Banner, or nullptr on error.
 		 */
-		const rp_image *loadBanner(void);
+		rp_image_const_ptr loadBanner(void);
 };
 
 ROMDATA_IMPL(WiiWIBN)
@@ -94,19 +94,11 @@ const RomDataInfo WiiWIBNPrivate::romDataInfo = {
 	"WiiSave", exts, mimeTypes
 };
 
-WiiWIBNPrivate::WiiWIBNPrivate(IRpFile *file)
+WiiWIBNPrivate::WiiWIBNPrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
-	, img_banner(nullptr)
-	, iconAnimData(nullptr)
 {
 	// Clear the WIBN header struct.
 	memset(&wibnHeader, 0, sizeof(wibnHeader));
-}
-
-WiiWIBNPrivate::~WiiWIBNPrivate()
-{
-	UNREF(img_banner);
-	UNREF(iconAnimData);
 }
 
 /**
@@ -117,7 +109,7 @@ WiiWIBNPrivate::~WiiWIBNPrivate()
  *
  * @return Icon, or nullptr on error.
  */
-const rp_image *WiiWIBNPrivate::loadIcon(void)
+rp_image_const_ptr WiiWIBNPrivate::loadIcon(void)
 {
 	if (iconAnimData) {
 		// Icon has already been loaded.
@@ -148,7 +140,7 @@ const rp_image *WiiWIBNPrivate::loadIcon(void)
 	// Number of icons read.
 	const unsigned int icons_read = (unsigned int)(size / BANNER_WIBN_ICON_SIZE);
 
-	this->iconAnimData = new IconAnimData();
+	this->iconAnimData = std::make_shared<IconAnimData>();
 	iconAnimData->count = 0;
 
 	// Process the icons.
@@ -219,7 +211,7 @@ const rp_image *WiiWIBNPrivate::loadIcon(void)
  * Load the save file's banner.
  * @return Banner, or nullptr on error.
  */
-const rp_image *WiiWIBNPrivate::loadBanner(void)
+rp_image_const_ptr WiiWIBNPrivate::loadBanner(void)
 {
 	if (img_banner) {
 		// Banner is already loaded.
@@ -261,7 +253,7 @@ const rp_image *WiiWIBNPrivate::loadBanner(void)
  *
  * @param file Open disc image.
  */
-WiiWIBN::WiiWIBN(IRpFile *file)
+WiiWIBN::WiiWIBN(const IRpFilePtr &file)
 	: super(new WiiWIBNPrivate(file))
 {
 	// This class handles banner files.
@@ -280,7 +272,7 @@ WiiWIBN::WiiWIBN(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(&d->wibnHeader, sizeof(d->wibnHeader));
 	if (size != sizeof(d->wibnHeader)) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -293,7 +285,7 @@ WiiWIBN::WiiWIBN(IRpFile *file)
 	d->isValid = (isRomSupported_static(&info) >= 0);
 
 	if (!d->isValid) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 	}
 }
 
@@ -497,10 +489,10 @@ int WiiWIBN::loadFieldData(void)
  * Load an internal image.
  * Called by RomData::image().
  * @param imageType	[in] Image type to load.
- * @param pImage	[out] Pointer to const rp_image* to store the image in.
+ * @param pImage	[out] Reference to rp_image_const_ptr to store the image in.
  * @return 0 on success; negative POSIX error code on error.
  */
-int WiiWIBN::loadInternalImage(ImageType imageType, const rp_image **pImage)
+int WiiWIBN::loadInternalImage(ImageType imageType, rp_image_const_ptr &pImage)
 {
 	ASSERT_loadInternalImage(imageType, pImage);
 
@@ -511,20 +503,20 @@ int WiiWIBN::loadInternalImage(ImageType imageType, const rp_image **pImage)
 				// Return the first icon frame.
 				// NOTE: Wii save icon animations are always
 				// sequential, so we can use a shortcut here.
-				*pImage = d->iconAnimData->frames[0];
+				pImage = d->iconAnimData->frames[0];
 				return 0;
 			}
 			break;
 		case IMG_INT_BANNER:
 			if (d->img_banner) {
 				// Banner is loaded.
-				*pImage = d->img_banner;
+				pImage = d->img_banner;
 				return 0;
 			}
 			break;
 		default:
 			// Unsupported image type.
-			*pImage = nullptr;
+			pImage.reset();
 			return -ENOENT;
 	}
 
@@ -539,18 +531,19 @@ int WiiWIBN::loadInternalImage(ImageType imageType, const rp_image **pImage)
 	// Load the image.
 	switch (imageType) {
 		case IMG_INT_ICON:
-			*pImage = d->loadIcon();
+			pImage = d->loadIcon();
 			break;
 		case IMG_INT_BANNER:
-			*pImage = d->loadBanner();
+			pImage = d->loadBanner();
 			break;
 		default:
 			// Unsupported.
+			pImage.reset();
 			return -ENOENT;
 	}
 
 	// TODO: -ENOENT if the file doesn't actually have an icon/banner.
-	return (*pImage != nullptr ? 0 : -EIO);
+	return ((bool)pImage ? 0 : -EIO);
 }
 
 /**
@@ -559,12 +552,9 @@ int WiiWIBN::loadInternalImage(ImageType imageType, const rp_image **pImage)
  * Check imgpf for IMGPF_ICON_ANIMATED first to see if this
  * object has an animated icon.
  *
- * The retrieved IconAnimData must be ref()'d by the caller if the
- * caller stores it instead of using it immediately.
- *
  * @return Animated icon data, or nullptr if no animated icon is present.
  */
-const IconAnimData *WiiWIBN::iconAnimData(void) const
+IconAnimDataConstPtr WiiWIBN::iconAnimData(void) const
 {
 	RP_D(const WiiWIBN);
 	if (!d->iconAnimData) {

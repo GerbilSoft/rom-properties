@@ -25,7 +25,8 @@ using namespace LibRpFile;
 using namespace LibRpText;
 using namespace LibRpTexture;
 
-// C++ STL classes.
+// C++ STL classes
+using std::shared_ptr;
 using std::string;
 using std::vector;
 
@@ -37,7 +38,7 @@ namespace LibRomData {
 class Xbox360_STFS_Private final : public RomDataPrivate
 {
 	public:
-		Xbox360_STFS_Private(IRpFile *file);
+		Xbox360_STFS_Private(const IRpFilePtr &file);
 		~Xbox360_STFS_Private() final;
 
 	private:
@@ -51,7 +52,7 @@ class Xbox360_STFS_Private final : public RomDataPrivate
 		static const RomDataInfo romDataInfo;
 
 	public:
-		// STFS type.
+		// STFS type
 		enum class StfsType {
 			Unknown	= -1,
 
@@ -63,16 +64,16 @@ class Xbox360_STFS_Private final : public RomDataPrivate
 		};
 		StfsType stfsType;
 
-		// Icon.
+		// Icon
 		// NOTE: Currently using Title Thumbnail.
 		// Should we make regular Thumbnail available too?
-		rp_image *img_icon;
+		rp_image_ptr img_icon;
 
 		/**
 		 * Load the icon.
 		 * @return Icon, or nullptr on error.
 		 */
-		const rp_image *loadIcon(void);
+		rp_image_const_ptr loadIcon(void);
 
 		/**
 		 * Get the default language code for the multi-string fields.
@@ -173,10 +174,9 @@ const RomDataInfo Xbox360_STFS_Private::romDataInfo = {
 	"Xbox360_STFS", exts, mimeTypes
 };
 
-Xbox360_STFS_Private::Xbox360_STFS_Private(IRpFile *file)
+Xbox360_STFS_Private::Xbox360_STFS_Private(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
 	, stfsType(StfsType::Unknown)
-	, img_icon(nullptr)
 	, headers_loaded(0)
 	, xex(nullptr)
 {
@@ -188,15 +188,14 @@ Xbox360_STFS_Private::Xbox360_STFS_Private(IRpFile *file)
 
 Xbox360_STFS_Private::~Xbox360_STFS_Private()
 {
-	UNREF(xex);
-	UNREF(img_icon);
+	delete xex;
 }
 
 /**
  * Load the icon.
  * @return Icon, or nullptr on error.
  */
-const rp_image *Xbox360_STFS_Private::loadIcon(void)
+rp_image_const_ptr Xbox360_STFS_Private::loadIcon(void)
 {
 	if (img_icon) {
 		// Icon has already been loaded.
@@ -236,9 +235,8 @@ const rp_image *Xbox360_STFS_Private::loadIcon(void)
 
 	// Create a MemFile and decode the image.
 	// TODO: For rpcli, shortcut to extract the PNG directly.
-	MemFile *f_mem = new MemFile(pIconData, iconSize);
-	rp_image *img = RpPng::load(f_mem);
-	f_mem->unref();
+	shared_ptr<MemFile> f_mem = std::make_shared<MemFile>(pIconData, iconSize);
+	rp_image_ptr img = RpPng::load(f_mem);
 
 	if (!img) {
 		// Unable to load the title thumbnail image.
@@ -253,9 +251,8 @@ const rp_image *Xbox360_STFS_Private::loadIcon(void)
 			iconSize = sizeof(stfsThumbnails.mdv2.thumbnail_image);
 		}
 
-		f_mem = new MemFile(pIconData, iconSize);
+		f_mem = std::make_shared<MemFile>(pIconData, iconSize);
 		img = RpPng::load(f_mem);
-		f_mem->unref();
 	}
 
 	this->img_icon = img;
@@ -527,16 +524,15 @@ Xbox360_XEX *Xbox360_STFS_Private::openDefaultXex(void)
 	// Load default.xexp.
 	// FIXME: Maybe add a reader class to handle the hashes,
 	// though we only need the XEX header right now.
-	SubFile *const xexFile_tmp = new SubFile(this->file, offset, filesize);
+	shared_ptr<SubFile> xexFile_tmp = std::make_shared<SubFile>(this->file, offset, filesize);
 	if (xexFile_tmp->isOpen()) {
 		Xbox360_XEX *const xex_tmp = new Xbox360_XEX(xexFile_tmp);
 		if (xex_tmp->isOpen()) {
 			this->xex = xex_tmp;
 		} else {
-			xex_tmp->unref();
+			delete xex_tmp;
 		}
 	}
-	xexFile_tmp->unref();
 
 	return this->xex;
 }
@@ -556,7 +552,7 @@ Xbox360_XEX *Xbox360_STFS_Private::openDefaultXex(void)
  *
  * @param file Open STFS file.
  */
-Xbox360_STFS::Xbox360_STFS(IRpFile *file)
+Xbox360_STFS::Xbox360_STFS(const IRpFilePtr &file)
 	: super(new Xbox360_STFS_Private(file))
 {
 	// This class handles application packages.
@@ -575,7 +571,7 @@ Xbox360_STFS::Xbox360_STFS(IRpFile *file)
 	size_t size = d->file->read(&d->stfsHeader, sizeof(d->stfsHeader));
 	if (size != sizeof(d->stfsHeader)) {
 		// Read error.
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -589,7 +585,7 @@ Xbox360_STFS::Xbox360_STFS(IRpFile *file)
 	d->isValid = ((int)d->stfsType >= 0);
 
 	if (!d->isValid) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 	}
 
 	// Package metadata and thumbnails are loaded on demand.
@@ -1116,10 +1112,10 @@ int Xbox360_STFS::loadMetaData(void)
  * Load an internal image.
  * Called by RomData::image().
  * @param imageType	[in] Image type to load.
- * @param pImage	[out] Pointer to const rp_image* to store the image in.
+ * @param pImage	[out] Reference to rp_image_const_ptr to store the image in.
  * @return 0 on success; negative POSIX error code on error.
  */
-int Xbox360_STFS::loadInternalImage(ImageType imageType, const rp_image **pImage)
+int Xbox360_STFS::loadInternalImage(ImageType imageType, rp_image_const_ptr &pImage)
 {
 	ASSERT_loadInternalImage(imageType, pImage);
 	RP_D(Xbox360_STFS);

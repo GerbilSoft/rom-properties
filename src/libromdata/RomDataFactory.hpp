@@ -11,15 +11,13 @@
 #include "common.h"
 #include "dll-macros.h"
 
-// C++ includes.
-#include <vector>
+// Other rom-properties libraries
+#include "librpbase/RomData.hpp"
+#include "librpfile/IRpFile.hpp"
 
-namespace LibRpBase {
-	class RomData;
-}
-namespace LibRpFile {
-	class IRpFile;
-}
+// C++ includes
+#include <memory>
+#include <vector>
 
 namespace LibRomData {
 
@@ -75,7 +73,7 @@ public:
 	 * @return RomData subclass, or nullptr if the ROM isn't supported.
 	 */
 	RP_LIBROMDATA_PUBLIC
-	static LibRpBase::RomData *create(LibRpFile::IRpFile *file, unsigned int attrs = 0);
+	static LibRpBase::RomDataPtr create(const LibRpFile::IRpFilePtr &file, unsigned int attrs = 0);
 
 	/**
 	 * Create a RomData subclass for the specified ROM file.
@@ -97,7 +95,7 @@ public:
 	 * @return RomData subclass, or nullptr if the ROM isn't supported.
 	 */
 	RP_LIBROMDATA_PUBLIC
-	static LibRpBase::RomData *create(const char *filename, unsigned int attrs = 0);
+	static LibRpBase::RomDataPtr create(const char *filename, unsigned int attrs = 0);
 
 #ifdef _WIN32
 	/**
@@ -120,7 +118,7 @@ public:
 	 * @return RomData subclass, or nullptr if the ROM isn't supported.
 	 */
 	RP_LIBROMDATA_PUBLIC
-	static LibRpBase::RomData *create(const wchar_t *filenameW, unsigned int attrs = 0);
+	static LibRpBase::RomDataPtr create(const wchar_t *filenameW, unsigned int attrs = 0);
 #endif /* _WIN32 */
 
 	struct ExtInfo {

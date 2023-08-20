@@ -12,17 +12,20 @@
 #include "res/resource.h"
 #include "RomDataFormat.hpp"
 
-// librpbase, librpfile, librptexture
+// Other rom-properties libraries
 #include "librpbase/Achievements.hpp"
 #include "librpbase/RomFields.hpp"
 #include "librpbase/img/RpPng.hpp"
-#include "librpfile/win32/RpFile_windres.hpp"
 #include "librptexture/img/rp_image.hpp"
 using namespace LibRpBase;
-using LibRpFile::RpFile_windres;
-using LibRpTexture::rp_image;
+using namespace LibRpTexture;
 
-// C++ STL classes.
+// RpFile_windres
+#include "file/RpFile_windres.hpp"
+using LibRpFile::IRpFile;
+
+// C++ STL classes
+using std::shared_ptr;
 using std::tstring;
 using std::unique_ptr;
 
@@ -276,18 +279,16 @@ void AchievementsTabPrivate::updateImageList(void)
 	}
 
 	// Load the sprite sheets.
-	rp_image *imgAchSheet = nullptr;
-	rp_image *imgAchGraySheet = nullptr;
-	RpFile_windres *f_res = new RpFile_windres(HINST_THISCOMPONENT, MAKEINTRESOURCE(resID), MAKEINTRESOURCE(RT_PNG));
-	assert(f_res != nullptr);
+	shared_ptr<RpFile_windres> f_res = std::make_shared<RpFile_windres>(
+		HINST_THISCOMPONENT, MAKEINTRESOURCE(resID), MAKEINTRESOURCE(RT_PNG));
+	assert(f_res->isOpen());
 	if (!f_res->isOpen()) {
-		f_res->unref();
+		// Unable to open the resource.
 		return;
 	}
 
-	imgAchSheet = RpPng::load(f_res);
-	f_res->unref();
-	assert(imgAchSheet != nullptr);
+	const rp_image_const_ptr imgAchSheet = RpPng::load(f_res);
+	assert((bool)imgAchSheet);
 	if (!imgAchSheet)
 		return;
 	assert(imgAchSheet->width() == (int)(iconSize * Achievements::ACH_SPRITE_SHEET_COLS));
@@ -295,23 +296,19 @@ void AchievementsTabPrivate::updateImageList(void)
 	if (imgAchSheet->width() != (int)(iconSize * Achievements::ACH_SPRITE_SHEET_COLS) ||
 	    imgAchSheet->height() != (int)(iconSize * Achievements::ACH_SPRITE_SHEET_ROWS))
 	{
-		imgAchSheet->unref();
 		return;
 	}
 
-	f_res = new RpFile_windres(HINST_THISCOMPONENT, MAKEINTRESOURCE(resID_gray), MAKEINTRESOURCE(RT_PNG));
-	assert(f_res != nullptr);
+	f_res = std::make_shared<RpFile_windres>(HINST_THISCOMPONENT, MAKEINTRESOURCE(resID_gray), MAKEINTRESOURCE(RT_PNG));
+	assert(f_res->isOpen());
 	if (!f_res->isOpen()) {
-		f_res->unref();
-		imgAchSheet->unref();
+		// Unable to open the resource.
 		return;
 	}
 
-	imgAchGraySheet = RpPng::load(f_res);
-	f_res->unref();
-	assert(imgAchGraySheet != nullptr);
+	const rp_image_const_ptr imgAchGraySheet = RpPng::load(f_res);
+	assert((bool)imgAchGraySheet);
 	if (!imgAchGraySheet) {
-		imgAchSheet->unref();
 		return;
 	}
 	assert(imgAchGraySheet->width() == (int)(iconSize * Achievements::ACH_SPRITE_SHEET_COLS));
@@ -319,8 +316,6 @@ void AchievementsTabPrivate::updateImageList(void)
 	if (imgAchGraySheet->width() != (int)(iconSize * Achievements::ACH_SPRITE_SHEET_COLS) ||
 	    imgAchGraySheet->height() != (int)(iconSize * Achievements::ACH_SPRITE_SHEET_ROWS))
 	{
-		imgAchSheet->unref();
-		imgAchGraySheet->unref();
 		return;
 	}
 

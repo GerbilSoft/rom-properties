@@ -282,18 +282,18 @@ rp_nautilus_properties_model_load_from_romData(RpNautilusPropertiesModel *self,
 static void
 rp_nautilus_properties_model_free_callback(void *data, GObject*)
 {
-	g_free((RpNautilusPropertiesModel*)data);
+	g_free(static_cast<RpNautilusPropertiesModel*>(data));
 }
 
 NautilusPropertiesModel *
-rp_nautilus_properties_model_new(const RomData *romData)
+rp_nautilus_properties_model_new(const RomDataPtr &romData)
 {
 	RpNautilusPropertiesModel *const self = g_new0(RpNautilusPropertiesModel, 1);
 
 	rp_nautilus_properties_model_init(self);
-	rp_nautilus_properties_model_load_from_romData(self, romData);
+	rp_nautilus_properties_model_load_from_romData(self, romData.get());
 
-	NautilusPropertiesModel *model = nautilus_properties_model_new(
+	NautilusPropertiesModel *const model = nautilus_properties_model_new(
 		C_("RomDataView", "ROM Properties"), G_LIST_MODEL(self->listStore));
 
 	g_object_weak_ref(G_OBJECT(model), rp_nautilus_properties_model_free_callback, self);

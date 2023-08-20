@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include "librpfile/IRpFile.hpp"
 #include "IDiscReader.hpp"
 
 namespace LibRpBase {
@@ -15,10 +16,10 @@ namespace LibRpBase {
 class IPartition : public IDiscReader
 {
 	protected:
-		explicit IPartition(LibRpFile::IRpFile *file) : super(file) { }
-		explicit IPartition(IDiscReader *discReader) : super(discReader) { }
-	protected:
-		~IPartition() override = 0;	// call unref() instead
+		explicit IPartition(const LibRpFile::IRpFilePtr &file) : super(file) { }
+		explicit IPartition(const IDiscReaderPtr &discReader) : super(discReader) { }
+	public:
+		~IPartition() = 0;
 
 	private:
 		typedef IDiscReader super;

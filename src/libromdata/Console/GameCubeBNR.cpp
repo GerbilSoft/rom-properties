@@ -16,11 +16,11 @@
 // Other rom-properties libraries
 #include "librptexture/decoder/ImageDecoder_GCN.hpp"
 using namespace LibRpBase;
+using namespace LibRpFile;
 using namespace LibRpText;
 using namespace LibRpTexture;
-using LibRpFile::IRpFile;
 
-// C++ STL classes.
+// C++ STL classes
 using std::string;
 using std::vector;
 
@@ -33,8 +33,8 @@ namespace LibRomData {
 class GameCubeBNRPrivate final : public RomDataPrivate
 {
 	public:
-		GameCubeBNRPrivate(IRpFile *file, uint32_t gcnRegion = ~0U);
-		~GameCubeBNRPrivate() final;
+		GameCubeBNRPrivate(const IRpFilePtr &file, uint32_t gcnRegion = ~0U);
+		~GameCubeBNRPrivate() final = default;
 
 	private:
 		typedef RomDataPrivate super;
@@ -61,10 +61,10 @@ class GameCubeBNRPrivate final : public RomDataPrivate
 		// GameCube region for BNR1 encoding
 		uint32_t gcnRegion;
 
-		// Internal images.
-		rp_image *img_banner;
+		// Internal images
+		rp_image_ptr img_banner;
 
-		// Banner comments.
+		// Banner comments
 		// - If BNR1: 1 item.
 		// - If BNR2: 6 items.
 		ao::uvector<gcn_banner_comment_t> comments;
@@ -74,7 +74,7 @@ class GameCubeBNRPrivate final : public RomDataPrivate
 		 * Load the banner.
 		 * @return Banner, or nullptr on error.
 		 */
-		const rp_image *loadBanner(void);
+		rp_image_const_ptr loadBanner(void);
 
 		/**
 		 * Should the string be handled as Shift-JIS?
@@ -146,23 +146,18 @@ const RomDataInfo GameCubeBNRPrivate::romDataInfo = {
 	"GameCube", exts, mimeTypes
 };
 
-GameCubeBNRPrivate::GameCubeBNRPrivate(IRpFile *file, uint32_t gcnRegion)
+GameCubeBNRPrivate::GameCubeBNRPrivate(const IRpFilePtr &file, uint32_t gcnRegion)
 	: super(file, &romDataInfo)
 	, bannerType(BannerType::Unknown)
 	, gcnRegion(gcnRegion)
 	, img_banner(nullptr)
 { }
 
-GameCubeBNRPrivate::~GameCubeBNRPrivate()
-{
-	UNREF(img_banner);
-}
-
 /**
  * Load the banner image.
  * @return Banner, or nullptr on error.
  */
-const rp_image *GameCubeBNRPrivate::loadBanner(void)
+rp_image_const_ptr GameCubeBNRPrivate::loadBanner(void)
 {
 	if (img_banner) {
 		// Banner is already loaded.
@@ -382,7 +377,7 @@ string GameCubeBNRPrivate::getGameInfoString(const gcn_banner_comment_t *comment
  *
  * @param file Open banner file
  */
-GameCubeBNR::GameCubeBNR(IRpFile *file)
+GameCubeBNR::GameCubeBNR(const IRpFilePtr &file)
 	: super(new GameCubeBNRPrivate(file))
 {
 	init();
@@ -401,7 +396,7 @@ GameCubeBNR::GameCubeBNR(IRpFile *file)
  *
  * @param file Open banner file
  */
-GameCubeBNR::GameCubeBNR(IRpFile *file, uint32_t gcnRegion)
+GameCubeBNR::GameCubeBNR(const IRpFilePtr &file, uint32_t gcnRegion)
 	: super(new GameCubeBNRPrivate(file, gcnRegion))
 {
 	init();
@@ -429,7 +424,7 @@ void GameCubeBNR::init(void)
 	d->file->rewind();
 	size_t size = d->file->read(&bnr_magic, sizeof(bnr_magic));
 	if (size != sizeof(bnr_magic)) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -443,7 +438,7 @@ void GameCubeBNR::init(void)
 	d->isValid = ((int)d->bannerType >= 0);
 
 	if (!d->isValid) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -837,10 +832,10 @@ int GameCubeBNR::loadMetaData(void)
  * Load an internal image.
  * Called by RomData::image().
  * @param imageType	[in] Image type to load.
- * @param pImage	[out] Pointer to const rp_image* to store the image in.
+ * @param pImage	[out] Reference to rp_image_const_ptr to store the image in.
  * @return 0 on success; negative POSIX error code on error.
  */
-int GameCubeBNR::loadInternalImage(ImageType imageType, const rp_image **pImage)
+int GameCubeBNR::loadInternalImage(ImageType imageType, rp_image_const_ptr &pImage)
 {
 	ASSERT_loadInternalImage(imageType, pImage);
 	RP_D(GameCubeBNR);

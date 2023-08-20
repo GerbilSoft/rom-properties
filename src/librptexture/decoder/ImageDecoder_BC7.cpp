@@ -11,7 +11,7 @@
 #include "ImageDecoder_ASTC.hpp"
 #include "ImageDecoder_p.hpp"
 
-// C++ STL classes.
+// C++ STL classes
 using std::array;
 
 // References:
@@ -649,7 +649,7 @@ static int decodeBC7Block(array<argb32_t, 4*4> &tileBuf, const uint64_t *bc7_src
  * @param img_siz Size of image data. [must be >= (w*h)]
  * @return rp_image, or nullptr on error.
  */
-rp_image *fromBC7(int width, int height,
+rp_image_ptr fromBC7(int width, int height,
 	const uint8_t *img_buf, size_t img_siz)
 {
 	// Verify parameters.
@@ -676,10 +676,9 @@ rp_image *fromBC7(int width, int height,
 	const unsigned int bytesPerTileRow = tilesX * sizeof(bc7_block);	// for OpenMP
 
 	// Create an rp_image.
-	rp_image *const img = new rp_image(physWidth, physHeight, rp_image::Format::ARGB32);
+	const rp_image_ptr img = std::make_shared<rp_image>(physWidth, physHeight, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		img->unref();
 		return nullptr;
 	}
 
@@ -717,20 +716,18 @@ rp_image *fromBC7(int width, int height,
 				break;
 #else /* !_OPENMP */
 				// Not using OpenMP, so return immediately.
-				img->unref();
 				return nullptr;
 #endif /* _OPENMP */
 			}
 
 			// Blit the tile to the main image buffer.
-			ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img, tileBuf, x, y);
+			ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img.get(), tileBuf, x, y);
 		}
 	}
 
 #ifdef _OPENMP
 	if (bErr) {
 		// A decoding error occurred.
-		img->unref();
 		return nullptr;
 	}
 #endif /* _OPENMP */

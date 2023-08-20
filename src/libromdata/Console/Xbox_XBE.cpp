@@ -14,20 +14,19 @@
 // Other rom-properties libraries
 #include "librpbase/img/RpPng.hpp"
 using namespace LibRpBase;
+using namespace LibRpFile;
 using namespace LibRpText;
-using LibRpFile::IRpFile;
-using LibRpFile::SubFile;
 
 // librptexture
 #include "librptexture/fileformat/XboxXPR.hpp"
-using LibRpTexture::rp_image;
-using LibRpTexture::XboxXPR;
+using namespace LibRpTexture;
 
 // Other RomData subclasses
 #include "Other/EXE.hpp"
 
 // C++ STL classes
 using std::ostringstream;
+using std::shared_ptr;
 using std::string;
 using std::unique_ptr;
 using std::vector;
@@ -40,7 +39,7 @@ namespace LibRomData {
 class Xbox_XBE_Private final : public RomDataPrivate
 {
 	public:
-		Xbox_XBE_Private(IRpFile *file);
+		Xbox_XBE_Private(const IRpFilePtr &file);
 		~Xbox_XBE_Private() final;
 
 	private:
@@ -69,10 +68,10 @@ class Xbox_XBE_Private final : public RomDataPrivate
 		// Title image.
 		// NOTE: May be a PNG image on some discs.
 		struct {
-			union {
-				XboxXPR *xpr0;
-				rp_image *png;
-			};
+			// TODO: Union of XboxXPR and rp_image, or std::variant<>?
+			shared_ptr<XboxXPR> xpr0;
+			rp_image_ptr png;
+
 			bool isInit;
 			bool isPng;
 		} xtImage;
@@ -127,7 +126,7 @@ const RomDataInfo Xbox_XBE_Private::romDataInfo = {
 	"Xbox_XBE", exts, mimeTypes
 };
 
-Xbox_XBE_Private::Xbox_XBE_Private(IRpFile *file)
+Xbox_XBE_Private::Xbox_XBE_Private(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
 	, pe_exe(nullptr)
 {
@@ -136,22 +135,13 @@ Xbox_XBE_Private::Xbox_XBE_Private(IRpFile *file)
 	memset(&xbeCertificate, 0, sizeof(xbeCertificate));
 
 	// No xtImage initially.
-	memset(&xtImage, 0, sizeof(xtImage));
+	xtImage.isInit = false;
+	xtImage.isPng = false;
 }
 
 Xbox_XBE_Private::~Xbox_XBE_Private()
 {
-	UNREF(pe_exe);
-
-	if (xtImage.isInit) {
-		if (!xtImage.isPng) {
-			// XPR0 image
-			UNREF(xtImage.xpr0);
-		} else {
-			// PNG image
-			UNREF(xtImage.png);
-		}
-	}
+	delete pe_exe;
 }
 
 /**
@@ -271,55 +261,49 @@ int Xbox_XBE_Private::initXPR0_xtImage(void)
 
 	// Open the XPR0 image.
 	// paddr/psize have absolute addresses.
-	ret = 0;
-	SubFile *const subFile = new SubFile(this->file,
+	shared_ptr<SubFile> subFile = std::make_shared<SubFile>(this->file,
 		hdr_xtImage.paddr, hdr_xtImage.psize);
-	if (subFile->isOpen()) {
-		// $$XTIMAGE is usually an XPR0 image.
-		// The Burger King games, wihch have both Xbox and Xbox 360
-		// executables, incorrectly use PNG format here.
-		uint32_t magic = 0;
-		size_t size = subFile->read(&magic, sizeof(magic));
-		if (size != sizeof(magic)) {
-			// Read error.
-			subFile->unref();
-			return -EIO;
-		}
-		subFile->rewind();
-
-		if (magic == cpu_to_be32('XPR0')) {
-			XboxXPR *const xpr0 = new XboxXPR(subFile);
-			if (xpr0->isOpen()) {
-				// XPR0 image opened.
-				xtImage.isInit = true;
-				xtImage.isPng = false;
-				xtImage.xpr0 = xpr0;
-			} else {
-				// Unable to open the XPR0 image.
-				xpr0->unref();
-				ret = -EIO;
-			}
-		} else if (magic == cpu_to_be32(0x89504E47U)) {	// '\x89PNG'
-			// PNG image.
-			rp_image *const img = RpPng::load(subFile);
-			if (img->isValid()) {
-				// PNG image opened.
-				xtImage.isInit = true;
-				xtImage.isPng = true;
-				xtImage.png = img;
-			} else {
-				// Unable to open the PNG image.
-				img->unref();
-				ret = -EIO;
-			}
-		}
-		subFile->unref();
-	} else {
-		// Unable to open the file.
-		ret = -EIO;
-		subFile->unref();
+	if (!subFile->isOpen()) {
+		// Unable to open the XPR0 file.
+		return -EIO;
 	}
 
+	// $$XTIMAGE is usually an XPR0 image.
+	// The Burger King games, wihch have both Xbox and Xbox 360
+	// executables, incorrectly use PNG format here.
+	uint32_t magic = 0;
+	size_t size = subFile->read(&magic, sizeof(magic));
+	if (size != sizeof(magic)) {
+		// Read error.
+		return -EIO;
+	}
+	subFile->rewind();
+
+	ret = 0;
+	if (magic == cpu_to_be32('XPR0')) {
+		shared_ptr<XboxXPR> xpr0 = std::make_shared<XboxXPR>(subFile);
+		if (xpr0->isOpen()) {
+			// XPR0 image opened.
+			xtImage.isInit = true;
+			xtImage.isPng = false;
+			xtImage.xpr0 = std::move(xpr0);
+		} else {
+			// Unable to open the XPR0 image.
+			ret = -EIO;
+		}
+	} else if (magic == cpu_to_be32(0x89504E47U)) {	// '\x89PNG'
+		// PNG image.
+		rp_image_ptr img = RpPng::load(subFile);
+		if (img->isValid()) {
+			// PNG image opened.
+			xtImage.isInit = true;
+			xtImage.isPng = true;
+			xtImage.png = std::move(img);
+		} else {
+			// Unable to open the PNG image.
+			ret = -EIO;
+		}
+	}
 	return ret;
 }
 
@@ -350,21 +334,17 @@ const EXE *Xbox_XBE_Private::initEXE(void)
 	}
 
 	// Open the EXE file.
-	SubFile *const subFile = new SubFile(this->file,
+	shared_ptr<SubFile> subFile = std::make_shared<SubFile>(this->file,
 		exe_address, fileSize - exe_address);
 	if (subFile->isOpen()) {
 		EXE *const pe_exe_tmp = new EXE(subFile);
-		subFile->unref();
 		if (pe_exe_tmp->isOpen()) {
 			// EXE opened.
 			this->pe_exe = pe_exe_tmp;
 		} else {
-			// Unable to open the XPR0 image.
-			pe_exe_tmp->unref();
+			// Failed to open the EXE.
+			delete pe_exe_tmp;
 		}
-	} else {
-		// Unable to open the file.
-		subFile->unref();
 	}
 
 	// EXE loaded.
@@ -415,7 +395,7 @@ string Xbox_XBE_Private::getPublisher(void) const
  *
  * @param file Open XBE file.
  */
-Xbox_XBE::Xbox_XBE(IRpFile *file)
+Xbox_XBE::Xbox_XBE(const IRpFilePtr &file)
 	: super(new Xbox_XBE_Private(file))
 {
 	// This class handles executables.
@@ -433,7 +413,7 @@ Xbox_XBE::Xbox_XBE(IRpFile *file)
 	size_t size = d->file->read(&d->xbeHeader, sizeof(d->xbeHeader));
 	if (size != sizeof(d->xbeHeader)) {
 		d->xbeHeader.magic = 0;
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -447,7 +427,7 @@ Xbox_XBE::Xbox_XBE(IRpFile *file)
 
 	if (!d->isValid) {
 		d->xbeHeader.magic = 0;
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -885,10 +865,10 @@ int Xbox_XBE::loadMetaData(void)
  * Load an internal image.
  * Called by RomData::image().
  * @param imageType	[in] Image type to load.
- * @param pImage	[out] Pointer to const rp_image* to store the image in.
+ * @param pImage	[out] Reference to rp_image_const_ptr to store the image in.
  * @return 0 on success; negative POSIX error code on error.
  */
-int Xbox_XBE::loadInternalImage(ImageType imageType, const rp_image **pImage)
+int Xbox_XBE::loadInternalImage(ImageType imageType, rp_image_const_ptr &pImage)
 {
 	ASSERT_loadInternalImage(imageType, pImage);
 
@@ -896,18 +876,18 @@ int Xbox_XBE::loadInternalImage(ImageType imageType, const rp_image **pImage)
 	if (imageType != IMG_INT_ICON) {
 		// Only IMG_INT_ICON is supported by XBE.
 		// TODO: -EIO for unsupported imageType?
-		*pImage = nullptr;
+		pImage.reset();
 		return -ENOENT;
 	} else if (d->xtImage.isInit) {
 		// Image has already been loaded.
 		// We'll get the actual image after this.
 	} else if (!d->file) {
 		// File isn't open.
-		*pImage = nullptr;
+		pImage.reset();
 		return -EBADF;
 	} else if (!d->isValid) {
 		// Save file isn't valid.
-		*pImage = nullptr;
+		pImage.reset();
 		return -EIO;
 	}
 
@@ -917,13 +897,13 @@ int Xbox_XBE::loadInternalImage(ImageType imageType, const rp_image **pImage)
 
 	if (!d->xtImage.isPng) {
 		// XPR0 image
-		*pImage = d->xtImage.xpr0->image();
+		pImage = d->xtImage.xpr0->image();
 	} else {
 		// PNG image
-		*pImage = d->xtImage.png;
+		pImage = d->xtImage.png;
 	}
 
-	return (*pImage != nullptr ? 0 : -EIO);
+	return ((bool)pImage ? 0 : -EIO);
 }
 
 }

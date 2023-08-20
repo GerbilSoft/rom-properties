@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * ImageDecoder_PVRTC.cpp: Image decoding functions: PVRTC                 *
  *                                                                         *
- * Copyright (c) 2019-2022 by David Korth.                                 *
+ * Copyright (c) 2019-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -32,7 +32,7 @@ namespace LibRpTexture { namespace ImageDecoder {
  * @param mode Mode bitfield. (See PVRTC_Mode_e.)
  * @return rp_image, or nullptr on error.
  */
-rp_image *fromPVRTC(int width, int height,
+rp_image_ptr fromPVRTC(int width, int height,
 	const uint8_t *RESTRICT img_buf, size_t img_siz,
 	uint8_t mode)
 {
@@ -78,10 +78,9 @@ rp_image *fromPVRTC(int width, int height,
 	}
 
 	// Create an rp_image.
-	rp_image *const img = new rp_image(physWidth, physHeight, rp_image::Format::ARGB32);
+	const rp_image_ptr img = std::make_shared<rp_image>(physWidth, physHeight, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		img->unref();
 		return nullptr;
 	}
 
@@ -93,7 +92,6 @@ rp_image *fromPVRTC(int width, int height,
 	assert(size == expected_size_in);
 	if (size != expected_size_in) {
 		// Read error...
-		img->unref();
 		return nullptr;
 	}
 
@@ -122,7 +120,7 @@ rp_image *fromPVRTC(int width, int height,
  * @param mode Mode bitfield. (See PVRTC_Mode_e.)
  * @return rp_image, or nullptr on error.
  */
-rp_image *fromPVRTCII(int width, int height,
+rp_image_ptr fromPVRTCII(int width, int height,
 	const uint8_t *RESTRICT img_buf, size_t img_siz,
 	uint8_t mode)
 {
@@ -172,10 +170,9 @@ rp_image *fromPVRTCII(int width, int height,
 	}
 
 	// Create an rp_image.
-	rp_image *const img = new rp_image(physWidth, physHeight, rp_image::Format::ARGB32);
+	const rp_image_ptr img = std::make_shared<rp_image>(physWidth, physHeight, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		img->unref();
 		return nullptr;
 	}
 
@@ -187,7 +184,6 @@ rp_image *fromPVRTCII(int width, int height,
 	assert(size == expected_size_in);
 	if (size != expected_size_in) {
 		// Read error...
-		img->unref();
 		return nullptr;
 	}
 

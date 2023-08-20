@@ -11,22 +11,21 @@
 #include "common.h"
 #include "dll-macros.h"	// for RP_LIBROMDATA_PUBLIC
 
-// C includes.
+// C includes
 #include <stddef.h>	/* size_t */
 #include <stdint.h>
 
-// C includes. (C++ namespace)
+// C includes (C++ namespace)
 #include <ctime>
 
-// C++ includes.
+// C++ includes
 #include <array>
 #include <map>
 #include <string>
 #include <vector>
 
-namespace LibRpTexture {
-	class rp_image;
-}
+// Other rom-properties libraries
+#include "librptexture/img/rp_image.hpp"
 
 namespace LibRpBase {
 
@@ -253,7 +252,7 @@ class RomFields
 		typedef std::map<uint32_t, std::string> StringMultiMap_t;
 		typedef std::vector<std::vector<std::string> > ListData_t;
 		typedef std::map<uint32_t, ListData_t> ListDataMultiMap_t;
-		typedef std::vector<const LibRpTexture::rp_image*> ListDataIcons_t;
+		typedef std::vector<LibRpTexture::rp_image_const_ptr > ListDataIcons_t;
 
 		// ROM field struct.
 		// Dynamically allocated.

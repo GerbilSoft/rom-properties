@@ -19,14 +19,14 @@
 // Other rom-properties libraries
 #include "librpbase/SystemRegion.hpp"
 using namespace LibRpBase;
+using namespace LibRpFile;
 using namespace LibRpText;
-using LibRpFile::IRpFile;
 
 // DiscReader
 #include "librpbase/disc/DiscReader.hpp"
 #include "disc/WuxReader.hpp"
 
-// C++ STL classes.
+// C++ STL classes
 using std::string;
 using std::vector;
 
@@ -35,8 +35,8 @@ namespace LibRomData {
 class WiiUPrivate final : public RomDataPrivate
 {
 	public:
-		WiiUPrivate(IRpFile *file);
-		~WiiUPrivate() final;
+		WiiUPrivate(const IRpFilePtr &file);
+		~WiiUPrivate() final = default;
 
 	private:
 		typedef RomDataPrivate super;
@@ -60,7 +60,7 @@ class WiiUPrivate final : public RomDataPrivate
 		DiscType discType;
 
 		// Disc reader
-		IDiscReader *discReader;
+		IDiscReaderPtr discReader;
 
 		// Disc header
 		WiiU_DiscHeader discHeader;
@@ -92,18 +92,12 @@ const RomDataInfo WiiUPrivate::romDataInfo = {
 	"WiiU", exts, mimeTypes
 };
 
-WiiUPrivate::WiiUPrivate(IRpFile *file)
+WiiUPrivate::WiiUPrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
 	, discType(DiscType::Unknown)
-	, discReader(nullptr)
 {
 	// Clear the discHeader struct.
 	memset(&discHeader, 0, sizeof(discHeader));
-}
-
-WiiUPrivate::~WiiUPrivate()
-{
-	UNREF(discReader);
 }
 
 /** WiiU **/
@@ -121,7 +115,7 @@ WiiUPrivate::~WiiUPrivate()
  *
  * @param file Open disc image.
  */
-WiiU::WiiU(IRpFile *file)
+WiiU::WiiU(const IRpFilePtr &file)
 	: super(new WiiUPrivate(file))
 {
 	// This class handles disc images.
@@ -143,7 +137,7 @@ WiiU::WiiU(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(header, sizeof(header));
 	if (size != sizeof(header)) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -158,25 +152,24 @@ WiiU::WiiU(IRpFile *file)
 	// Create an IDiscReader.
 	switch (d->discType) {
 		case WiiUPrivate::DiscType::WUD:
-			d->discReader = new DiscReader(d->file);
+			d->discReader = std::make_shared<DiscReader>(d->file);
 			break;
 		case WiiUPrivate::DiscType::WUX:
-			d->discReader = new WuxReader(d->file);
+			d->discReader = std::make_shared<WuxReader>(d->file);
 			break;
 		case WiiUPrivate::DiscType::Unknown:
 		default:
 			// Disc image is invalid.
-			d->discReader = nullptr;
 			d->fileType = FileType::Unknown;
 			d->discType = WiiUPrivate::DiscType::Unknown;
-			UNREF_AND_NULL_NOCHK(d->file);
+			d->file.reset();
 			return;
 	}
 
 	if (!d->discReader || !d->discReader->isOpen()) {
 		// Error opening the DiscReader.
-		UNREF_AND_NULL(d->discReader);
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->discReader.reset();
+		d->file.reset();
 		d->fileType = FileType::Unknown;
 		d->discType = WiiUPrivate::DiscType::Unknown;
 		return;
@@ -187,8 +180,8 @@ WiiU::WiiU(IRpFile *file)
 		size = d->discReader->seekAndRead(0, header, sizeof(header));
 		if (size != sizeof(header)) {
 			// Seek and/or read error.
-			UNREF_AND_NULL_NOCHK(d->discReader);
-			UNREF_AND_NULL_NOCHK(d->file);
+			d->discReader.reset();
+			d->file.reset();
 			d->discType = WiiUPrivate::DiscType::Unknown;
 			return;
 		}
@@ -199,8 +192,8 @@ WiiU::WiiU(IRpFile *file)
 	size = d->discReader->seekAndRead(0x10000, &disc_magic, sizeof(disc_magic));
 	if (size != sizeof(disc_magic)) {
 		// Seek and/or read error.
-		UNREF_AND_NULL_NOCHK(d->discReader);
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->discReader.reset();
+		d->file.reset();
 		d->discType = WiiUPrivate::DiscType::Unknown;
 		return;
 	}
@@ -213,8 +206,8 @@ WiiU::WiiU(IRpFile *file)
 		memcpy(&d->discHeader, header, sizeof(d->discHeader));
 	} else {
 		// No match.
-		UNREF_AND_NULL_NOCHK(d->discReader);
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->discReader.reset();
+		d->file.reset();
 		d->discType = WiiUPrivate::DiscType::Unknown;
 		return;
 	}

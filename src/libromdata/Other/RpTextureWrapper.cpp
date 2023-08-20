@@ -9,18 +9,14 @@
 #include "stdafx.h"
 #include "RpTextureWrapper.hpp"
 
-// librpbase, librpfile
-using namespace LibRpBase;
-using LibRpFile::IRpFile;
-
-// librptexture
+// Other rom-properties libraries
 #include "librptexture/FileFormatFactory.hpp"
 #include "librptexture/fileformat/FileFormat.hpp"
-using LibRpTexture::rp_image;
-using LibRpTexture::FileFormat;
-using LibRpTexture::FileFormatFactory;
+using namespace LibRpBase;
+using namespace LibRpFile;
+using namespace LibRpTexture;
 
-// C++ STL classes.
+// C++ STL classes
 using std::vector;
 
 namespace LibRomData {
@@ -28,8 +24,8 @@ namespace LibRomData {
 class RpTextureWrapperPrivate final : public RomDataPrivate
 {
 	public:
-		RpTextureWrapperPrivate(IRpFile *file);
-		~RpTextureWrapperPrivate() final;
+		RpTextureWrapperPrivate(const IRpFilePtr &file);
+		~RpTextureWrapperPrivate() final = default;
 
 	private:
 		typedef RomDataPrivate super;
@@ -43,7 +39,7 @@ class RpTextureWrapperPrivate final : public RomDataPrivate
 
 	public:
 		// librptexture file format object.
-		FileFormat *texture;
+		FileFormatPtr texture;
 };
 
 ROMDATA_IMPL(RpTextureWrapper)
@@ -64,15 +60,9 @@ const RomDataInfo RpTextureWrapperPrivate::romDataInfo = {
 	"RpTextureWrapper", exts, mimeTypes
 };
 
-RpTextureWrapperPrivate::RpTextureWrapperPrivate(IRpFile *file)
+RpTextureWrapperPrivate::RpTextureWrapperPrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
-	, texture(nullptr)
-{ }
-
-RpTextureWrapperPrivate::~RpTextureWrapperPrivate()
-{
-	UNREF(texture);
-}
+{}
 
 /** RpTextureWrapper **/
 
@@ -89,7 +79,7 @@ RpTextureWrapperPrivate::~RpTextureWrapperPrivate()
  *
  * @param file Open ROM image.
  */
-RpTextureWrapper::RpTextureWrapper(IRpFile *file)
+RpTextureWrapper::RpTextureWrapper(const IRpFilePtr &file)
 	: super(new RpTextureWrapperPrivate(file))
 {
 	// This class handles texture files.
@@ -105,7 +95,7 @@ RpTextureWrapper::RpTextureWrapper(IRpFile *file)
 	d->texture = FileFormatFactory::create(d->file);
 	if (!d->texture) {
 		// Not a valid texture.
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -259,7 +249,7 @@ int RpTextureWrapper::loadFieldData(void)
 	}
 
 	// RpTextureWrapper header
-	const FileFormat *const texture = d->texture;
+	const FileFormat *const texture = d->texture.get();
 	d->fields.reserve(4);	// Maximum of 4 fields.
 
 	// Dimensions
@@ -348,10 +338,10 @@ int RpTextureWrapper::loadMetaData(void)
  * Load an internal image.
  * Called by RomData::image().
  * @param imageType	[in] Image type to load.
- * @param pImage	[out] Pointer to const rp_image* to store the image in.
+ * @param pImage	[out] Reference to rp_image_const_ptr to store the image in.
  * @return 0 on success; negative POSIX error code on error.
  */
-int RpTextureWrapper::loadInternalImage(ImageType imageType, const rp_image **pImage)
+int RpTextureWrapper::loadInternalImage(ImageType imageType, rp_image_const_ptr &pImage)
 {
 	ASSERT_loadInternalImage(imageType, pImage);
 	RP_D(RpTextureWrapper);

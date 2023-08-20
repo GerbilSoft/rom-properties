@@ -25,9 +25,10 @@ using LibRomData::RomDataFactory;
 #include "libwin32common/propsys_xp.h"
 
 // RpFile_IStream
-#include "RpFile_IStream.hpp"
+#include "file/RpFile_IStream.hpp"
 
-// C++ STL classes.
+// C++ STL classes
+using std::shared_ptr;
 using std::wstring;
 
 // CLSID
@@ -166,19 +167,12 @@ static inline HRESULT InitPropVariantFromInt8(_In_ CHAR iVal, _Out_ PROPVARIANT 
 
 RP_PropertyStore_Private::RP_PropertyStore_Private()
 	: file(nullptr)
-	, romData(nullptr)
 	, pstream(nullptr)
 	, grfMode(0)
 { }
 
 RP_PropertyStore_Private::~RP_PropertyStore_Private()
 {
-	UNREF(romData);
-
-	// pstream is owned by file,
-	// so don't Release() it here.
-	UNREF(file);
-
 	// Clear property variants.
 	for (PROPVARIANT &pv : prop_val) {
 		PropVariantClear(&pv);
@@ -226,29 +220,25 @@ IFACEMETHODIMP RP_PropertyStore::Initialize(_In_ IStream *pstream, DWORD grfMode
 	RP_UNUSED(grfMode);
 
 	// Create an IRpFile wrapper for the IStream.
-	RpFile_IStream *const file = new RpFile_IStream(pstream, true);
+	shared_ptr<RpFile_IStream> file = std::make_shared<RpFile_IStream>(pstream, true);
 	if (file->lastError() != 0) {
 		// Error initializing the IRpFile.
-		file->unref();
 		return E_FAIL;
 	}
 
+	// Update d->file().
+	// shared_ptr<> will automatically unreference the old
+	// file if one is set.
+	// TODO: Use shared_ptr::swap<> instead? (same for elsewhere...)
 	RP_D(RP_PropertyStore);
-	if (d->file) {
-		// unref() the old file first.
-		IRpFile *const old_file = d->file;
-		d->file = file;
-		old_file->unref();
-	} else {
-		// No old file to unref().
-		d->file = file;
-	}
+	d->file = file;
 
 	// Save the IStream and grfMode.
 	d->pstream = pstream;
 	d->grfMode = grfMode;
 
 	// Attempt to create a RomData object.
+	// TODO: Do we need to keep it open?
 	d->romData = RomDataFactory::create(file, RomDataFactory::RDA_HAS_METADATA);
 	if (!d->romData) {
 		// No RomData.

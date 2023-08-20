@@ -17,11 +17,11 @@
 
 #include "vtf_structs.h"
 
-// librpbase, librpfile
+// Other rom-properties libraries
 #include "libi18n/i18n.h"
-using LibRpText::rp_sprintf;
+using namespace LibRpFile;
 using LibRpBase::RomFields;
-using LibRpFile::IRpFile;
+using LibRpText::rp_sprintf;
 
 // librptexture
 #include "ImageSizeCalc.hpp"
@@ -30,7 +30,7 @@ using LibRpFile::IRpFile;
 #include "decoder/ImageDecoder_S3TC.hpp"
 using LibRpTexture::ImageSizeCalc::OpCode;
 
-// C++ STL classes.
+// C++ STL classes
 using std::string;
 using std::vector;
 
@@ -39,8 +39,8 @@ namespace LibRpTexture {
 class ValveVTFPrivate final : public FileFormatPrivate
 {
 	public:
-		ValveVTFPrivate(ValveVTF *q, IRpFile *file);
-		~ValveVTFPrivate() final;
+		ValveVTFPrivate(ValveVTF *q, const IRpFilePtr &file);
+		~ValveVTFPrivate() final = default;
 
 	private:
 		typedef FileFormatPrivate super;
@@ -53,15 +53,15 @@ class ValveVTFPrivate final : public FileFormatPrivate
 		static const TextureInfo textureInfo;
 
 	public:
-		// VTF header.
+		// VTF header
 		VTFHEADER vtfHeader;
 
-		// Texture data start address.
+		// Texture data start address
 		uint32_t texDataStartAddr;
 
-		// Decoded mipmaps.
+		// Decoded mipmaps
 		// Mipmap 0 is the full image.
-		vector<rp_image*> mipmaps;
+		vector<rp_image_ptr > mipmaps;
 
 		// Mipmap sizes and start addresses.
 		struct mipmap_data_t {
@@ -74,7 +74,7 @@ class ValveVTFPrivate final : public FileFormatPrivate
 		};
 		vector<mipmap_data_t> mipmap_data;
 
-		// Invalid pixel format message.
+		// Invalid pixel format message
 		char invalid_pixel_format[24];
 
 	public:
@@ -103,7 +103,7 @@ class ValveVTFPrivate final : public FileFormatPrivate
 		 * @param mip Mipmap number. (0 == full image)
 		 * @return Image, or nullptr on error.
 		 */
-		const rp_image *loadImage(int mip);
+		rp_image_const_ptr loadImage(int mip);
 };
 
 FILEFORMAT_IMPL(ValveVTF)
@@ -198,20 +198,13 @@ const ImageSizeCalc::OpCode ValveVTFPrivate::op_tbl[] = {
 static_assert(ARRAY_SIZE(ValveVTFPrivate::img_format_tbl)-1 == VTF_IMAGE_FORMAT_MAX,
 	"Missing VTF image formats.");
 
-ValveVTFPrivate::ValveVTFPrivate(ValveVTF *q, IRpFile *file)
+ValveVTFPrivate::ValveVTFPrivate(ValveVTF *q, const IRpFilePtr &file)
 	: super(q, file, &textureInfo)
 	, texDataStartAddr(0)
 {
 	// Clear the structs and arrays.
 	memset(&vtfHeader, 0, sizeof(vtfHeader));
 	memset(invalid_pixel_format, 0, sizeof(invalid_pixel_format));
-}
-
-ValveVTFPrivate::~ValveVTFPrivate()
-{
-	for (rp_image *img : mipmaps) {
-		UNREF(img);
-	}
 }
 
 /**
@@ -369,7 +362,7 @@ int ValveVTFPrivate::getMipmapInfo(void)
  * @param mip Mipmap number. (0 == full image)
  * @return Image, or nullptr on error.
  */
-const rp_image *ValveVTFPrivate::loadImage(int mip)
+rp_image_const_ptr ValveVTFPrivate::loadImage(int mip)
 {
 	// TODO: Option to load the low-res image instead?
 	int mipmapCount = vtfHeader.mipmapCount;
@@ -452,7 +445,7 @@ const rp_image *ValveVTFPrivate::loadImage(int mip)
 	// (The channels appear to be backwards.)
 	// TODO: Lookup table to convert to PXF constants?
 	// TODO: Verify on big-endian?
-	rp_image *img = nullptr;
+	rp_image_ptr img;
 	switch (vtfHeader.highResImageFormat) {
 		/* 32-bit */
 		case VTF_IMAGE_FORMAT_RGBA8888:
@@ -653,7 +646,7 @@ const rp_image *ValveVTFPrivate::loadImage(int mip)
  *
  * @param file Open ROM image.
  */
-ValveVTF::ValveVTF(IRpFile *file)
+ValveVTF::ValveVTF(const IRpFilePtr &file)
 	: super(new ValveVTFPrivate(this, file))
 {
 	RP_D(ValveVTF);
@@ -668,14 +661,14 @@ ValveVTF::ValveVTF(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(&d->vtfHeader, sizeof(d->vtfHeader));
 	if (size != sizeof(d->vtfHeader)) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
 	// Verify the VTF magic.
 	if (d->vtfHeader.signature != cpu_to_be32(VTF_SIGNATURE)) {
 		// Incorrect magic.
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -952,7 +945,7 @@ int ValveVTF::getFields(RomFields *fields) const
  * The image is owned by this object.
  * @return Image, or nullptr on error.
  */
-const rp_image *ValveVTF::image(void) const
+rp_image_const_ptr ValveVTF::image(void) const
 {
 	// The full image is mipmap 0.
 	return this->mipmap(0);
@@ -964,7 +957,7 @@ const rp_image *ValveVTF::image(void) const
  * @param mip Mipmap number.
  * @return Image, or nullptr on error.
  */
-const rp_image *ValveVTF::mipmap(int mip) const
+rp_image_const_ptr ValveVTF::mipmap(int mip) const
 {
 	RP_D(const ValveVTF);
 	if (!d->isValid) {

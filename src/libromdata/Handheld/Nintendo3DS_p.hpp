@@ -15,6 +15,9 @@
 // librpbase
 #include "librpbase/RomData_p.hpp"
 
+// NCCHReader
+#include "../disc/NCCHReader.hpp"
+
 namespace LibRpBase {
 	class IDiscReader;
 	class PartitionFile;
@@ -30,15 +33,14 @@ namespace LibRpFile {
 
 namespace LibRomData {
 
-class NCCHReader;
 class Nintendo3DS_SMDH;
 class NintendoDS;
 
 class Nintendo3DSPrivate final : public LibRpBase::RomDataPrivate
 {
 	public:
-		Nintendo3DSPrivate(LibRpFile::IRpFile *file);
-		~Nintendo3DSPrivate() final;
+		Nintendo3DSPrivate(const LibRpFile::IRpFilePtr &file);
+		~Nintendo3DSPrivate() final = default;
 
 	private:
 		typedef RomDataPrivate super;
@@ -138,13 +140,13 @@ class Nintendo3DSPrivate final : public LibRpBase::RomDataPrivate
 		// Primary NCCH reader.
 		// NOTE: Do NOT access this directly!
 		// Use loadNCCH() instead.
-		NCCHReader *ncch_reader;
+		NCCHReaderPtr ncch_reader;
 
 	public:
 		// Main content object.
 		// - If SMDH is present, this is Nintendo3DS_SMDH.
 		// - If SRL is present, this is NintendoDS.
-		LibRpBase::RomData *mainContent;
+		LibRpBase::RomDataPtr mainContent;
 
 		/**
 		 * Round a value to the next highest multiple of 64.
@@ -170,7 +172,7 @@ class Nintendo3DSPrivate final : public LibRpBase::RomDataPrivate
 		 * @return 0 on success; negative POSIX error code on error.
 		 * NOTE: Caller must check NCCHReader::isOpen().
 		 */
-		int loadNCCH(int idx, NCCHReader **pOutNcchReader);
+		int loadNCCH(int idx, NCCHReaderPtr &pOutNcchReader);
 
 		/**
 		 * Create an NCCHReader for the primary content.
@@ -178,7 +180,7 @@ class Nintendo3DSPrivate final : public LibRpBase::RomDataPrivate
 		 * @return this->ncch_reader on success; nullptr on error.
 		 * NOTE: Caller must check NCCHReader::isOpen().
 		 */
-		NCCHReader *loadNCCH(void);
+		const NCCHReaderConstPtr &loadNCCH(void);
 
 		/**
 		 * Get the NCCH header from the primary content.

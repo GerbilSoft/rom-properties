@@ -16,17 +16,20 @@
 // Other rom-properties libraries
 #include "librpbase/Achievements.hpp"
 #include "librpbase/img/RpPng.hpp"
-#include "librpfile/win32/RpFile_windres.hpp"
 #include "librptext/wchar.hpp"
 #include "librptexture/img/rp_image.hpp"
 using namespace LibRpBase;
-using LibRpFile::RpFile_windres;
-using LibRpTexture::rp_image;
+using namespace LibRpTexture;
+
+// RpFile_windres
+#include "file/RpFile_windres.hpp"
+using LibRpFile::IRpFile;
 
 // ROM icon
 #include "config/PropSheetIcon.hpp"
 
 // C++ STL classes
+using std::shared_ptr;
 using std::string;
 using std::tstring;
 using std::unordered_map;
@@ -67,7 +70,7 @@ class AchWin32Private
 		 * @param iconSize Icon size. (16, 24, 32, 64)
 		 * @return const rp_image*, or nullptr on error.
 		 */
-		const rp_image *loadSpriteSheet(int iconSize);
+		const rp_image_const_ptr &loadSpriteSheet(int iconSize);
 
 	public:
 		/**
@@ -116,7 +119,7 @@ class AchWin32Private
 		// Sprite sheets.
 		// - Key: Icon size
 		// - Value: rp_image*
-		unordered_map<int, rp_image*> map_imgAchSheet;
+		unordered_map<int, rp_image_const_ptr > map_imgAchSheet;
 };
 
 // Property for "NotifyIconData uID".
@@ -177,11 +180,6 @@ AchWin32Private::~AchWin32Private()
 	if (atomWindowClass > 0) {
 		UnregisterClass(MAKEINTATOM(atomWindowClass), HINST_THISCOMPONENT);
 	}
-
-	// Delete the achievements sprite sheets.
-	for (auto &pair : map_imgAchSheet) {
-		pair.second->unref();
-	}
 }
 
 /**
@@ -189,7 +187,7 @@ AchWin32Private::~AchWin32Private()
  * @param iconSize Icon size. (16, 24, 32, 64)
  * @return const rp_image*, or nullptr on error.
  */
-const rp_image *AchWin32Private::loadSpriteSheet(int iconSize)
+const rp_image_const_ptr &AchWin32Private::loadSpriteSheet(int iconSize)
 {
 	assert(iconSize == 16 || iconSize == 24 || iconSize == 32 || iconSize == 64);
 	UINT resID;
@@ -221,15 +219,15 @@ const rp_image *AchWin32Private::loadSpriteSheet(int iconSize)
 	// Load the achievements sprite sheet.
 	// TODO: Is premultiplied alpha needed?
 	// Reference: https://stackoverflow.com/questions/307348/how-to-draw-32-bit-alpha-channel-bitmaps
-	RpFile_windres *const f_res = new RpFile_windres(HINST_THISCOMPONENT, MAKEINTRESOURCE(resID), MAKEINTRESOURCE(RT_PNG));
+	shared_ptr<RpFile_windres> f_res = std::make_shared<RpFile_windres>(
+		HINST_THISCOMPONENT, MAKEINTRESOURCE(resID), MAKEINTRESOURCE(RT_PNG));
+	assert(f_res->isOpen());
 	if (!f_res->isOpen()) {
 		// Unable to open the resource.
-		f_res->unref();
 		return nullptr;
 	}
 
-	rp_image *const imgAchSheet = RpPng::load(f_res);
-	f_res->unref();
+	rp_image_const_ptr imgAchSheet = RpPng::load(f_res);
 	if (!imgAchSheet) {
 		// Unable to load the achievements sprite sheet.
 		return nullptr;
@@ -242,13 +240,11 @@ const rp_image *AchWin32Private::loadSpriteSheet(int iconSize)
 	    imgAchSheet->height() != (int)(iconSize * Achievements::ACH_SPRITE_SHEET_ROWS))
 	{
 		// Incorrect size. We can't use it.
-		imgAchSheet->unref();
 		return nullptr;
 	}
 
 	// Sprite sheet is correct.
-	map_imgAchSheet.emplace(iconSize, imgAchSheet);
-	return imgAchSheet;
+	return map_imgAchSheet.emplace(iconSize, imgAchSheet).first->second;
 }
 
 /**
@@ -373,7 +369,7 @@ int AchWin32Private::notifyFunc(Achievements::ID id)
 
 	// FIXME: Icon size. Using 32px for now.
 	HICON hBalloonIcon = nullptr;
-	const rp_image *const imgspr = loadSpriteSheet(iconSize);
+	const rp_image_const_ptr imgspr = loadSpriteSheet(iconSize);
 	if (imgspr) {
 		// Determine row and column.
 		const int col = ((int)id % Achievements::ACH_SPRITE_SHEET_COLS);

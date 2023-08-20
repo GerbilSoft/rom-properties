@@ -12,8 +12,8 @@
 
 // Other rom-properties libraries
 using namespace LibRpBase;
+using namespace LibRpFile;
 using namespace LibRpText;
-using LibRpFile::IRpFile;
 
 // C++ STL classes
 using std::string;
@@ -26,7 +26,7 @@ namespace LibRomData {
 class SPCPrivate final : public RomDataPrivate
 {
 	public:
-		SPCPrivate(IRpFile *file);
+		SPCPrivate(const IRpFilePtr &file);
 
 	private:
 		typedef RomDataPrivate super;
@@ -194,7 +194,7 @@ const RomDataInfo SPCPrivate::romDataInfo = {
 	"SPC", exts, mimeTypes
 };
 
-SPCPrivate::SPCPrivate(IRpFile *file)
+SPCPrivate::SPCPrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
 {
 	// Clear the SPC header struct.
@@ -517,7 +517,7 @@ SPCPrivate::spc_tags_t SPCPrivate::parseTags(void)
  *
  * @param file Open ROM image.
  */
-SPC::SPC(IRpFile *file)
+SPC::SPC(const IRpFilePtr &file)
 	: super(new SPCPrivate(file))
 {
 	RP_D(SPC);
@@ -533,7 +533,7 @@ SPC::SPC(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(&d->spcHeader, sizeof(d->spcHeader));
 	if (size != sizeof(d->spcHeader)) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -546,7 +546,7 @@ SPC::SPC(IRpFile *file)
 	d->isValid = (isRomSupported_static(&info) >= 0);
 
 	if (!d->isValid) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 	}
 }
 

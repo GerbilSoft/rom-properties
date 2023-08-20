@@ -13,8 +13,8 @@
 // Other rom-properties libraries
 #include "librpbase/timeconv.h"
 using namespace LibRpBase;
+using namespace LibRpFile;
 using namespace LibRpText;
-using LibRpFile::IRpFile;
 
 // C++ STL classes
 using std::string;
@@ -94,7 +94,7 @@ XDVDFSPartitionPrivate::XDVDFSPartitionPrivate(XDVDFSPartition *q,
 		if (q->m_lastError == 0) {
 			q->m_lastError = EIO;
 		}
-		UNREF_AND_NULL_NOCHK(q->m_discReader);
+		q->m_discReader.reset();
 		return;
 	}
 
@@ -105,7 +105,7 @@ XDVDFSPartitionPrivate::XDVDFSPartitionPrivate(XDVDFSPartition *q,
 	if (size != sizeof(xdvdfsHeader)) {
 		// Seek and/or read error.
 		memset(&xdvdfsHeader, 0, sizeof(xdvdfsHeader));
-		UNREF_AND_NULL_NOCHK(q->m_discReader);
+		q->m_discReader.reset();
 		return;
 	}
 
@@ -115,7 +115,7 @@ XDVDFSPartitionPrivate::XDVDFSPartitionPrivate(XDVDFSPartition *q,
 	{
 		// Invalid XDVDFS header.
 		memset(&xdvdfsHeader, 0, sizeof(xdvdfsHeader));
-		UNREF_AND_NULL_NOCHK(q->m_discReader);
+		q->m_discReader.reset();
 		return;
 	}
 
@@ -330,7 +330,7 @@ const ao::uvector<uint8_t> *XDVDFSPartitionPrivate::getDirectory(const char *pat
  * @param partition_offset Partition start offset.
  * @param partition_size Partition size.
  */
-XDVDFSPartition::XDVDFSPartition(IDiscReader *discReader, off64_t partition_offset, off64_t partition_size)
+XDVDFSPartition::XDVDFSPartition(const IDiscReaderPtr &discReader, off64_t partition_offset, off64_t partition_size)
 	: super(discReader)
 	, d_ptr(new XDVDFSPartitionPrivate(this, partition_offset, partition_size))
 { }
@@ -515,7 +515,7 @@ int XDVDFSPartition::closedir(IFst::Dir *dirp)
  * @param filename Filename.
  * @return IRpFile*, or nullptr on error.
  */
-IRpFile *XDVDFSPartition::open(const char *filename)
+IRpFilePtr XDVDFSPartition::open(const char *filename)
 {
 	// TODO: File reference counter.
 	// This might be difficult to do because PartitionFile is a separate class.
@@ -573,7 +573,7 @@ IRpFile *XDVDFSPartition::open(const char *filename)
 	// This is an IRpFile implementation that uses an
 	// IPartition as the reader and takes an offset
 	// and size as the file parameters.
-	return new PartitionFile(this, file_addr, file_size);
+	return std::make_shared<PartitionFile>(this, file_addr, file_size);
 }
 
 /** XDVDFSPartition **/

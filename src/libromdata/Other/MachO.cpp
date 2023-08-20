@@ -13,8 +13,8 @@
 
 // Other rom-properties libraries
 using namespace LibRpBase;
+using namespace LibRpFile;
 using namespace LibRpText;
-using LibRpFile::IRpFile;
 
 // C++ STL classes
 using std::string;
@@ -29,7 +29,7 @@ namespace LibRomData {
 class MachOPrivate final : public RomDataPrivate
 {
 	public:
-		MachOPrivate(LibRpFile::IRpFile *file);
+		MachOPrivate(const IRpFilePtr &file);
 
 	private:
 		typedef RomDataPrivate super;
@@ -129,7 +129,7 @@ const RomDataInfo MachOPrivate::romDataInfo = {
 	"MachO", exts, mimeTypes
 };
 
-MachOPrivate::MachOPrivate(IRpFile *file)
+MachOPrivate::MachOPrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
 	, execFormat(Exec_Format::Unknown)
 { }
@@ -174,7 +174,7 @@ MachOPrivate::Mach_Format MachOPrivate::checkMachMagicNumber(uint32_t magic)
  *
  * @param file Open ROM image.
  */
-MachO::MachO(IRpFile *file)
+MachO::MachO(const IRpFilePtr &file)
 	: super(new MachOPrivate(file))
 {
 	// This class handles different types of files.
@@ -195,7 +195,7 @@ MachO::MachO(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(header, sizeof(header));
 	if (size != sizeof(header)) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -268,7 +268,7 @@ MachO::MachO(IRpFile *file)
 		d->execFormat = MachOPrivate::Exec_Format::Unknown;
 		d->machFormats.clear();
 		d->machHeaders.clear();
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 

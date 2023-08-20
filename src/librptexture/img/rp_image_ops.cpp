@@ -25,7 +25,7 @@ namespace LibRpTexture {
  * Duplicate the rp_image.
  * @return New rp_image with a copy of the image data.
  */
-rp_image *rp_image::dup(void) const
+rp_image_ptr rp_image::dup(void) const
 {
 	RP_D(const rp_image);
 	const rp_image_backend *const backend = d->backend;
@@ -36,7 +36,7 @@ rp_image *rp_image::dup(void) const
 	assert(width > 0);
 	assert(height > 0);
 
-	rp_image *img = new rp_image(width, height, format);
+	const rp_image_ptr img = std::make_shared<rp_image>(width, height, format);
 	if (!img->isValid()) {
 		// Image is invalid. Return it immediately.
 		return img;
@@ -84,7 +84,7 @@ rp_image *rp_image::dup(void) const
  * Duplicate the rp_image, converting to ARGB32 if necessary.
  * @return New ARGB32 rp_image with a copy of the image data.
  */
-rp_image *rp_image::dup_ARGB32(void) const
+rp_image_ptr rp_image::dup_ARGB32(void) const
 {
 	RP_D(const rp_image);
 	const rp_image_backend *const backend = d->backend;
@@ -109,10 +109,9 @@ rp_image *rp_image::dup_ARGB32(void) const
 		return nullptr;
 	}
 
-	rp_image *const img = new rp_image(width, height, Format::ARGB32);
+	const rp_image_ptr img = std::make_shared<rp_image>(width, height, Format::ARGB32);
 	if (!img->isValid()) {
 		// Image is invalid. Something went wrong.
-		img->unref();
 		return nullptr;
 	}
 
@@ -164,7 +163,7 @@ rp_image *rp_image::dup_ARGB32(void) const
  *
  * @return New rp_image with a squared version of the original, or nullptr on error.
  */
-rp_image *rp_image::squared(void) const
+rp_image_ptr rp_image::squared(void) const
 {
 	// Windows doesn't like non-square icons.
 	// Add extra transparent columns/rows before
@@ -188,7 +187,7 @@ rp_image *rp_image::squared(void) const
 
 	// Image needs adjustment.
 	// TODO: Native 8bpp support?
-	rp_image *tmp_rp_image = nullptr;
+	rp_image_ptr tmp_rp_image;
 	if (backend->format != rp_image::Format::ARGB32) {
 		// Convert to ARGB32 first.
 		tmp_rp_image = this->dup_ARGB32();
@@ -196,11 +195,9 @@ rp_image *rp_image::squared(void) const
 
 	// Create the squared image.
 	const int max_dim = std::max(width, height);
-	rp_image *const sq_img = new rp_image(max_dim, max_dim, rp_image::Format::ARGB32);
+	const rp_image_ptr sq_img = std::make_shared<rp_image>(max_dim, max_dim, rp_image::Format::ARGB32);
 	if (!sq_img->isValid()) {
 		// Could not allocate the image.
-		sq_img->unref();
-		UNREF(tmp_rp_image);
 		return nullptr;
 	}
 
@@ -280,7 +277,6 @@ rp_image *rp_image::squared(void) const
 		sq_img->set_sBIT(&d->sBIT);
 	}
 
-	UNREF(tmp_rp_image);
 	return sq_img;
 }
 
@@ -303,7 +299,7 @@ rp_image *rp_image::squared(void) const
  * @param bgColor Background color for empty space. (default is ARGB 0x00000000)
  * @return New rp_image with a resized version of the original, or nullptr on error.
  */
-rp_image *rp_image::resized(int width, int height, Alignment alignment, uint32_t bgColor) const
+rp_image_ptr rp_image::resized(int width, int height, Alignment alignment, uint32_t bgColor) const
 {
 	assert(width > 0);
 	assert(height > 0);
@@ -330,10 +326,9 @@ rp_image *rp_image::resized(int width, int height, Alignment alignment, uint32_t
 	}
 
 	const rp_image::Format format = backend->format;
-	rp_image *const img = new rp_image(width, height, format);
+	const rp_image_ptr img = std::make_shared<rp_image>(width, height, format);
 	if (!img->isValid()) {
 		// Image is invalid.
-		img->unref();
 		return nullptr;
 	}
 
@@ -569,7 +564,7 @@ int rp_image::apply_chroma_key_cpp(uint32_t key)
  * @param op Flip operation.
  * @return Flipped image, or nullptr on error.
  */
-rp_image *rp_image::flip(FlipOp op) const
+rp_image_ptr rp_image::flip(FlipOp op) const
 {
 	assert(op >= FLIP_V);
 	assert(op <= FLIP_VH);
@@ -592,7 +587,7 @@ rp_image *rp_image::flip(FlipOp op) const
 	}
 
 	const int row_bytes = this->row_bytes();
-	rp_image *const flipimg = new rp_image(width, height, backend->format);
+	const rp_image_ptr flipimg = std::make_shared<rp_image>(width, height, backend->format);
 	const uint8_t *src = static_cast<const uint8_t*>(backend->data());
 	uint8_t *dest;
 	if (op & FLIP_V) {
@@ -618,7 +613,6 @@ rp_image *rp_image::flip(FlipOp op) const
 		switch (backend->format) {
 			default:
 				assert(!"rp_image format not supported for H-flip.");
-				flipimg->unref();
 				return nullptr;
 
 			case rp_image::Format::CI8:

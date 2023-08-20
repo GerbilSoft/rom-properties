@@ -160,12 +160,12 @@ int EXEPrivate::loadNEResourceTable(void)
 	}
 
 	// Load the resources using NEResourceReader.
-	rsrcReader = new NEResourceReader(file, ResTableOffset,
+	rsrcReader = std::make_shared<NEResourceReader>(file, ResTableOffset,
 		static_cast<uint32_t>(ne_resource_table.size()));
 	if (!rsrcReader->isOpen()) {
 		// Failed to open the resource table.
 		int err = rsrcReader->lastError();
-		UNREF_AND_NULL_NOCHK(rsrcReader);
+		rsrcReader.reset();
 		return (err != 0 ? err : -EIO);
 	}
 

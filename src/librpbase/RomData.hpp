@@ -11,7 +11,6 @@
 
 #include "common.h"
 #include "dll-macros.h"	// for RP_LIBROMDATA_PUBLIC
-#include "RefBase.hpp"
 #include "RomData_decl.hpp"
 
 // C includes
@@ -19,24 +18,22 @@
 #include <stdint.h>
 
 // C++ includes
+#include <memory>
 #include <string>
 #include <vector>
 
-namespace LibRpFile {
-	class IRpFile;
-}
-namespace LibRpTexture {
-	class rp_image;
-}
+// Other rom-properties libraries
+#include "img/IconAnimData.hpp"
+#include "librpfile/IRpFile.hpp"
+#include "librptexture/img/rp_image.hpp"
 
 namespace LibRpBase {
 
 class RomFields;
 class RomMetaData;
-struct IconAnimData;
 
 class RomDataPrivate;
-class RomData : public RefBase
+class RomData
 {
 protected:
 	/**
@@ -54,24 +51,14 @@ protected:
 	 */
 	explicit RomData(RomDataPrivate *d);
 
-protected:
-	/**
-	 * RomData destructor is protected.
-	 * Use unref() instead.
-	 */
-	~RomData() override;
+public:
+	virtual ~RomData();
 
 private:
 	RP_DISABLE_COPY(RomData)
 protected:
 	friend class RomDataPrivate;
 	RomDataPrivate *const d_ptr;
-
-public:
-	inline RomData *ref(void)
-	{
-		return RefBase::ref<RomData>();
-	}
 
 public:
 	/**
@@ -97,7 +84,7 @@ public:
 	 * Get a reference to the internal file.
 	 * @return Reference to file, or nullptr on error.
 	 */
-	LibRpFile::IRpFile *ref_file(void);
+	LibRpFile::IRpFilePtr ref_file(void) const;
 
 	/**
 	 * Get the filename that was loaded.
@@ -436,10 +423,10 @@ public:
 	 * Load an internal image.
 	 * Called by RomData::image().
 	 * @param imageType	[in] Image type to load.
-	 * @param pImage	[out] Pointer to const rp_image* to store the image in.
+	 * @param pImage	[out] Reference to rp_image_const_ptr to store the image in.
 	 * @return 0 on success; negative POSIX error code on error.
 	 */
-	virtual int loadInternalImage(ImageType imageType, const LibRpTexture::rp_image **pImage);
+	virtual int loadInternalImage(ImageType imageType, LibRpTexture::rp_image_const_ptr &pImage);
 
 public:
 	/**
@@ -475,7 +462,7 @@ public:
 	 * @return Internal image, or nullptr if the ROM doesn't have one.
 	 */
 	RP_LIBROMDATA_PUBLIC
-	const LibRpTexture::rp_image *image(ImageType imageType) const;
+	LibRpTexture::rp_image_const_ptr image(ImageType imageType) const;
 
 	/**
 	 * External URLs for a media type.
@@ -544,12 +531,9 @@ public:
 	 * Check imgpf for IMGPF_ICON_ANIMATED first to see if this
 	 * object has an animated icon.
 	 *
-	 * The retrieved IconAnimData must be ref()'d by the caller if the
-	 * caller stores it instead of using it immediately.
-	 *
 	 * @return Animated icon data, or nullptr if no animated icon is present.
 	 */
-	virtual const IconAnimData *iconAnimData(void) const;
+	virtual IconAnimDataConstPtr iconAnimData(void) const;
 
 public:
 	/**
@@ -656,5 +640,8 @@ public:
 	 */
 	virtual int checkViewedAchievements(void) const;
 };
+
+typedef std::shared_ptr<RomData> RomDataPtr;
+typedef std::shared_ptr<const RomData> RomDataConstPtr;
 
 } //namespace LibRpBase

@@ -12,8 +12,8 @@
 
 // Other rom-properties libraries
 using namespace LibRpBase;
+using namespace LibRpFile;
 using namespace LibRpText;
-using LibRpFile::IRpFile;
 
 // C++ STL classes
 using std::string;
@@ -23,7 +23,7 @@ namespace LibRomData {
 class SIDPrivate final : public RomDataPrivate
 {
 	public:
-		SIDPrivate(IRpFile *file);
+		SIDPrivate(const IRpFilePtr &file);
 
 	private:
 		typedef RomDataPrivate super;
@@ -61,7 +61,7 @@ const RomDataInfo SIDPrivate::romDataInfo = {
 	"SID", exts, mimeTypes
 };
 
-SIDPrivate::SIDPrivate(IRpFile *file)
+SIDPrivate::SIDPrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
 {
 	// Clear the SID header struct.
@@ -83,7 +83,7 @@ SIDPrivate::SIDPrivate(IRpFile *file)
  *
  * @param file Open ROM image.
  */
-SID::SID(IRpFile *file)
+SID::SID(const IRpFilePtr &file)
 	: super(new SIDPrivate(file))
 {
 	RP_D(SID);
@@ -99,7 +99,7 @@ SID::SID(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(&d->sidHeader, sizeof(d->sidHeader));
 	if (size != sizeof(d->sidHeader)) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -112,7 +112,7 @@ SID::SID(IRpFile *file)
 	d->isValid = (isRomSupported_static(&info) >= 0);
 
 	if (!d->isValid) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 	}
 }
 

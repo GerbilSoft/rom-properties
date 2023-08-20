@@ -15,11 +15,11 @@
 #include "dds_structs.h"
 #include "data/DX10Formats.hpp"
 
-// librpbase, librpfile
+// Other rom-properties libraries
 #include "libi18n/i18n.h"
-using LibRpText::rp_sprintf;
+using namespace LibRpFile;
 using LibRpBase::RomFields;
-using LibRpFile::IRpFile;
+using LibRpText::rp_sprintf;
 
 // librptexture
 #include "ImageSizeCalc.hpp"
@@ -30,7 +30,7 @@ using LibRpFile::IRpFile;
 #include "decoder/ImageDecoder_PVRTC.hpp"
 #include "decoder/ImageDecoder_ASTC.hpp"
 
-// C++ STL classes.
+// C++ STL classes
 using std::string;
 using std::vector;
 
@@ -39,8 +39,8 @@ namespace LibRpTexture {
 class DirectDrawSurfacePrivate final : public FileFormatPrivate
 {
 	public:
-		DirectDrawSurfacePrivate(DirectDrawSurface *q, IRpFile *file);
-		~DirectDrawSurfacePrivate() final;
+		DirectDrawSurfacePrivate(DirectDrawSurface *q, const IRpFilePtr &file);
+		~DirectDrawSurfacePrivate() final = default;
 
 	private:
 		typedef FileFormatPrivate super;
@@ -53,18 +53,18 @@ class DirectDrawSurfacePrivate final : public FileFormatPrivate
 		static const TextureInfo textureInfo;
 
 	public:
-		// DDS header.
+		// DDS header
 		DDS_HEADER ddsHeader;
 		DDS_HEADER_DXT10 dxt10Header;
 		DDS_HEADER_XBOX xb1Header;
 
-		// Texture data start address.
+		// Texture data start address
 		unsigned int texDataStartAddr;
 
-		// Decoded image.
-		rp_image *img;
+		// Decoded image
+		rp_image_ptr img;
 
-		// Pixel format message.
+		// Pixel format message
 		// NOTE: Used for both valid and invalid pixel formats
 		// due to various bit specifications.
 		char pixel_format[32];
@@ -73,7 +73,7 @@ class DirectDrawSurfacePrivate final : public FileFormatPrivate
 		 * Load the image.
 		 * @return Image, or nullptr on error.
 		 */
-		const rp_image *loadImage(void);
+		rp_image_const_ptr loadImage(void);
 
 	public:
 		// Supported uncompressed RGB formats.
@@ -512,7 +512,7 @@ int DirectDrawSurfacePrivate::updatePixelFormat(void)
 	return ret;
 }
 
-DirectDrawSurfacePrivate::DirectDrawSurfacePrivate(DirectDrawSurface *q, IRpFile *file)
+DirectDrawSurfacePrivate::DirectDrawSurfacePrivate(DirectDrawSurface *q, const IRpFilePtr &file)
 	: super(q, file, &textureInfo)
 	, texDataStartAddr(0)
 	, img(nullptr)
@@ -528,16 +528,11 @@ DirectDrawSurfacePrivate::DirectDrawSurfacePrivate(DirectDrawSurface *q, IRpFile
 	memset(pixel_format, 0, sizeof(pixel_format));
 }
 
-DirectDrawSurfacePrivate::~DirectDrawSurfacePrivate()
-{
-	UNREF(img);
-}
-
 /**
  * Load the image.
  * @return Image, or nullptr on error.
  */
-const rp_image *DirectDrawSurfacePrivate::loadImage(void)
+rp_image_const_ptr DirectDrawSurfacePrivate::loadImage(void)
 {
 	if (img) {
 		// Image has already been loaded.
@@ -932,7 +927,7 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
  *
  * @param file Open ROM image.
  */
-DirectDrawSurface::DirectDrawSurface(IRpFile *file)
+DirectDrawSurface::DirectDrawSurface(const IRpFilePtr &file)
 	: super(new DirectDrawSurfacePrivate(this, file))
 {
 	RP_D(DirectDrawSurface);
@@ -948,7 +943,7 @@ DirectDrawSurface::DirectDrawSurface(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(header, sizeof(header));
 	if (size < 4+sizeof(DDS_HEADER)) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -961,7 +956,7 @@ DirectDrawSurface::DirectDrawSurface(IRpFile *file)
 	d->isValid = (isRomSupported_static(&info) >= 0);
 
 	if (!d->isValid) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -982,7 +977,7 @@ DirectDrawSurface::DirectDrawSurface(IRpFile *file)
 		}
 		if (size < headerSize) {
 			// Extra headers weren't read.
-			UNREF_AND_NULL_NOCHK(d->file);
+			d->file.reset();
 			d->isValid = false;
 			return;
 		}
@@ -1018,7 +1013,7 @@ DirectDrawSurface::DirectDrawSurface(IRpFile *file)
 		    d->dxt10Header.dxgiFormat <= DXGI_FORMAT_FAKE_END)
 		{
 			// "Fake" format...
-			UNREF_AND_NULL_NOCHK(d->file);
+			d->file.reset();
 			d->isValid = false;
 			return;
 		}
@@ -1375,7 +1370,7 @@ int DirectDrawSurface::getFields(RomFields *fields) const
  * The image is owned by this object.
  * @return Image, or nullptr on error.
  */
-const rp_image *DirectDrawSurface::image(void) const
+rp_image_const_ptr DirectDrawSurface::image(void) const
 {
 	// The full image is mipmap 0.
 	return this->mipmap(0);
@@ -1387,7 +1382,7 @@ const rp_image *DirectDrawSurface::image(void) const
  * @param mip Mipmap number.
  * @return Image, or nullptr on error.
  */
-const rp_image *DirectDrawSurface::mipmap(int mip) const
+rp_image_const_ptr DirectDrawSurface::mipmap(int mip) const
 {
 	RP_D(const DirectDrawSurface);
 	if (!d->isValid) {

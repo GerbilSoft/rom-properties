@@ -11,15 +11,15 @@
 #include "DragImageLabel.hpp"
 #include "RpQByteArrayFile.hpp"
 
-// librpbase, librptexture
-#include "librpbase/img/IconAnimData.hpp"
-#include "librpbase/img/IconAnimHelper.hpp"
-using LibRpBase::IconAnimData;
-using LibRpBase::RpPngWriter;
-using LibRpTexture::rp_image;
+// Other rom-properties libraries
+using namespace LibRpBase;
+using namespace LibRpTexture;
 
 // Qt includes
 #include <QDesktopServices>
+
+// C++ STL classes
+using std::shared_ptr;
 
 DragImageLabel::DragImageLabel(const QString &text, QWidget *parent, Qt::WindowFlags f)
 	: super(text, parent, f)
@@ -40,7 +40,6 @@ DragImageLabel::DragImageLabel(QWidget *parent, Qt::WindowFlags f)
 DragImageLabel::~DragImageLabel()
 {
 	delete m_anim;
-	UNREF(m_img);
 }
 
 void DragImageLabel::setEcksBawks(bool newEcksBawks)
@@ -72,23 +71,19 @@ void DragImageLabel::setEcksBawks(bool newEcksBawks)
 /**
  * Set the rp_image for this label.
  *
- * NOTE: The rp_image pointer is stored and used if necessary.
- * Make sure to call this function with nullptr before deleting
- * the rp_image object.
- *
- * NOTE 2: If animated icon data is specified, that supercedes
+ * NOTE: If animated icon data is specified, that supercedes
  * the individual rp_image.
  *
  * @param img rp_image, or nullptr to clear.
  * @return True on success; false on error or if clearing.
  */
-bool DragImageLabel::setRpImage(const rp_image *img)
+bool DragImageLabel::setRpImage(const rp_image_const_ptr &img)
 {
 	// NOTE: We're not checking if the image pointer matches the
 	// previously stored image, since the underlying image may
 	// have changed.
-	UNREF_AND_NULL(m_img);
 
+	m_img = img;
 	if (!img) {
 		if (!m_anim || !m_anim->iconAnimData) {
 			this->clear();
@@ -97,25 +92,19 @@ bool DragImageLabel::setRpImage(const rp_image *img)
 		}
 		return false;
 	}
-
-	m_img = img->ref();
 	return updatePixmaps();
 }
 
 /**
  * Set the icon animation data for this label.
  *
- * NOTE: The iconAnimData pointer is stored and used if necessary.
- * Make sure to call this function with nullptr before deleting
- * the IconAnimData object.
- *
- * NOTE 2: If animated icon data is specified, that supercedes
+ * NOTE: If animated icon data is specified, that supercedes
  * the individual rp_image.
  *
  * @param iconAnimData IconAnimData, or nullptr to clear.
  * @return True on success; false on error or if clearing.
  */
-bool DragImageLabel::setIconAnimData(const IconAnimData *iconAnimData)
+bool DragImageLabel::setIconAnimData(const IconAnimDataConstPtr &iconAnimData)
 {
 	if (!m_anim) {
 		m_anim = new anim_vars();
@@ -124,8 +113,8 @@ bool DragImageLabel::setIconAnimData(const IconAnimData *iconAnimData)
 	// NOTE: We're not checking if the image pointer matches the
 	// previously stored image, since the underlying image may
 	// have changed.
-	UNREF_AND_NULL(m_anim->iconAnimData);
 
+	m_anim->iconAnimData = iconAnimData;
 	if (!iconAnimData) {
 		if (m_anim->tmrIconAnim) {
 			m_anim->tmrIconAnim->stop();
@@ -139,8 +128,6 @@ bool DragImageLabel::setIconAnimData(const IconAnimData *iconAnimData)
 		}
 		return false;
 	}
-
-	m_anim->iconAnimData = iconAnimData->ref();
 	return updatePixmaps();
 }
 
@@ -155,10 +142,10 @@ void DragImageLabel::clearRp(void)
 			m_anim->tmrIconAnim->stop();
 		}
 		m_anim->anim_running = false;
-		UNREF_AND_NULL(m_anim->iconAnimData);
+		m_anim->iconAnimData.reset();
 	}
 
-	UNREF_AND_NULL(m_img);
+	m_img.reset();
 	this->clear();
 }
 
@@ -199,11 +186,11 @@ QPixmap DragImageLabel::imgToPixmap(const QImage &img) const
 bool DragImageLabel::updatePixmaps(void)
 {
 	if (m_anim && m_anim->iconAnimData) {
-		const IconAnimData *const iconAnimData = m_anim->iconAnimData;
+		const IconAnimDataConstPtr &iconAnimData = m_anim->iconAnimData;
 
 		// Convert the icons to QPixmaps.
 		for (int i = iconAnimData->count-1; i >= 0; i--) {
-			const rp_image *const frame = iconAnimData->frames[i];
+			const rp_image_ptr &frame = iconAnimData->frames[i];
 			if (frame && frame->isValid()) {
 				// NOTE: Allowing NULL frames here...
 				m_anim->iconFrames[i] = imgToPixmap(rpToQImage(frame));
@@ -338,7 +325,7 @@ void DragImageLabel::mouseMoveEvent(QMouseEvent *event)
 
 	const bool isAnimated = (m_anim && m_anim->iconAnimData && m_anim->iconAnimHelper.isAnimated());
 
-	RpQByteArrayFile *const pngData = new RpQByteArrayFile();
+	shared_ptr<RpQByteArrayFile> pngData = std::make_shared<RpQByteArrayFile>();
 	RpPngWriter *pngWriter;
 	if (isAnimated) {
 		// Animated icon.
@@ -350,14 +337,12 @@ void DragImageLabel::mouseMoveEvent(QMouseEvent *event)
 		pngWriter = new RpPngWriter(pngData, m_img);
 	} else {
 		// No icon...
-		pngData->unref();
 		return;
 	}
 
 	if (!pngWriter->isOpen()) {
 		// Unable to open the PNG writer.
 		delete pngWriter;
-		pngData->unref();
 		return;
 	}
 
@@ -367,14 +352,12 @@ void DragImageLabel::mouseMoveEvent(QMouseEvent *event)
 	if (pwRet != 0) {
 		// Error writing the PNG image...
 		delete pngWriter;
-		pngData->unref();
 		return;
 	}
 	pwRet = pngWriter->write_IDAT();
 	if (pwRet != 0) {
 		// Error writing the PNG image...
 		delete pngWriter;
-		pngData->unref();
 		return;
 	}
 
@@ -408,5 +391,4 @@ void DragImageLabel::mouseMoveEvent(QMouseEvent *event)
 	}
 
 	drag->exec(Qt::CopyAction);
-	pngData->unref();
 }

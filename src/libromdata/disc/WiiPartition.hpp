@@ -47,7 +47,7 @@ class WiiPartition final : public GcnPartition
 		 * @param partition_size	[in] Calculated partition size. Used if the size in the header is 0.
 		 * @param cryptoMethod		[in] Crypto method.
 		 */
-		WiiPartition(IDiscReader *discReader, off64_t partition_offset,
+		WiiPartition(const LibRpBase::IDiscReaderPtr &discReader, off64_t partition_offset,
 			off64_t partition_size, CryptoMethod crypto = CM_STANDARD);
 		~WiiPartition() final = default;
 
@@ -196,5 +196,7 @@ class WiiPartition final : public GcnPartition
 		static const uint8_t* encryptionVerifyData_static(int keyIdx);
 #endif /* ENABLE_DECRYPTION */
 };
+
+typedef std::shared_ptr<WiiPartition> WiiPartitionPtr;
 
 }

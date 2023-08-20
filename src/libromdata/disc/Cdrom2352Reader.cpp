@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * Cdrom2352Reader.hpp: CD-ROM reader for 2352-byte sector images.         *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -17,9 +17,9 @@
 #include "librpbase/disc/SparseDiscReader_p.hpp"
 #include "../cdrom_structs.h"
 
-// librpbase, librpfile
+// Other rom-properties libraries
 using namespace LibRpBase;
-using LibRpFile::IRpFile;
+using namespace LibRpFile;
 
 namespace LibRomData {
 
@@ -57,13 +57,13 @@ Cdrom2352ReaderPrivate::Cdrom2352ReaderPrivate(Cdrom2352Reader *q, unsigned int 
 
 /** Cdrom2352Reader **/
 
-Cdrom2352Reader::Cdrom2352Reader(IRpFile *file)
+Cdrom2352Reader::Cdrom2352Reader(const IRpFilePtr &file)
 	: super(new Cdrom2352ReaderPrivate(this, 2352), file)
 {
 	init();
 }
 
-Cdrom2352Reader::Cdrom2352Reader(IRpFile *file, unsigned int physBlockSize)
+Cdrom2352Reader::Cdrom2352Reader(const IRpFilePtr &file, unsigned int physBlockSize)
 	: super(new Cdrom2352ReaderPrivate(this, physBlockSize), file)
 {
 	init();
@@ -86,7 +86,7 @@ void Cdrom2352Reader::init(void)
 	const off64_t fileSize = m_file->size();
 	if (fileSize <= 0 || fileSize % d->physBlockSize != 0) {
 		// Invalid disc size.
-		UNREF_AND_NULL_NOCHK(m_file);
+		m_file.reset();
 		m_lastError = EIO;
 		return;
 	}

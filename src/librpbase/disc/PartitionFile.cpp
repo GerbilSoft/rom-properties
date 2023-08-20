@@ -8,7 +8,6 @@
 
 #include "stdafx.h"
 #include "PartitionFile.hpp"
-#include "IDiscReader.hpp"
 
 // C++ STL classes.
 using std::string;
@@ -18,29 +17,25 @@ namespace LibRpBase {
 /**
  * Open a file from an IPartition.
  * NOTE: These files are read-only.
+ *
+ * FIXME: Cannot specify IDiscReaderPtr because this is created
+ * from within an IPartition. Reference counts will not be taken.
+ * Make sure the file is unreferenced before the parent IDiscReader!
+ *
  * @param partition	[in] IPartition (or IDiscReader) object.
  * @param offset	[in] File starting offset.
  * @param size		[in] File size.
  */
 PartitionFile::PartitionFile(IDiscReader *partition, off64_t offset, off64_t size)
 	: super()
+	, m_partition(partition)
 	, m_offset(offset)
 	, m_size(size)
 	, m_pos(0)
 {
-	if (partition) {
-		m_partition = partition->ref();
-	} else {
-		m_partition = nullptr;
+	if (!m_partition) {
 		m_lastError = EBADF;
 	}
-
-	// TODO: Reference counting?
-}
-
-PartitionFile::~PartitionFile()
-{
-	UNREF(m_partition);
 }
 
 /**
@@ -50,7 +45,7 @@ PartitionFile::~PartitionFile()
  */
 bool PartitionFile::isOpen(void) const
 {
-	return (m_partition != nullptr);
+	return !!m_partition;
 }
 
 /**
@@ -58,7 +53,7 @@ bool PartitionFile::isOpen(void) const
  */
 void PartitionFile::close(void)
 {
-	UNREF_AND_NULL(m_partition);
+	m_partition = nullptr;
 }
 
 /**

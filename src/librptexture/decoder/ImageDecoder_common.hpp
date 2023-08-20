@@ -13,8 +13,11 @@
 #include "common.h"
 #include "librpcpu/cpu_dispatch.h"
 
-// C includes.
+// C includes
 #include <stdint.h>
+
+// C++ includes
+#include <memory>
 
 // Common definitions, including function attributes.
 #include "common.h"

@@ -11,13 +11,15 @@
 
 #include "librptexture/config.librptexture.h"
 
-// C includes.
+// C includes
 #include <stdint.h>
 #include <sys/types.h>	// for off64_t
 
+// C++ includes
+#include <memory>
+
 // Common macros
 #include "common.h"
-#include "RefBase.hpp"
 
 // Common declarations
 #include "FileFormat_decl.hpp"
@@ -28,34 +30,25 @@ namespace LibRpBase {
 }
 #endif /* ENABLE_LIBRPBASE_ROMFIELDS */
 
+// librptexture
+#include "../img/rp_image.hpp"
+
 namespace LibRpTexture {
 
-class rp_image;
-
 class FileFormatPrivate;
-class FileFormat : public RefBase
+class FileFormat
 {
 protected:
 	explicit FileFormat(FileFormatPrivate *d);
 
-protected:
-	/**
-	 * FileFormat destructor is protected.
-	 * Use unref() instead.
-	 */
-	~FileFormat() override;
+public:
+	virtual ~FileFormat();
 
 private:
 	RP_DISABLE_COPY(FileFormat)
 protected:
 	friend class FileFormatPrivate;
 	FileFormatPrivate *const d_ptr;
-
-public:
-	inline FileFormat *ref(void)
-	{
-		return RefBase::ref<FileFormat>();
-	}
 
 public:
 	/**
@@ -170,7 +163,7 @@ public:
 	 * The image is owned by this object.
 	 * @return Image, or nullptr on error.
 	 */
-	virtual const rp_image *image(void) const = 0;
+	virtual rp_image_const_ptr image(void) const = 0;
 
 	/**
 	 * Get the image for the specified mipmap.
@@ -178,7 +171,10 @@ public:
 	 * @param mip Mipmap number.
 	 * @return Image, or nullptr on error.
 	 */
-	virtual const rp_image *mipmap(int mip) const = 0;
+	virtual rp_image_const_ptr mipmap(int mip) const = 0;
 };
+
+typedef std::shared_ptr<FileFormat> FileFormatPtr;
+typedef std::shared_ptr<const FileFormat> FileFormatConstPtr;
 
 } //namespace LibRpTexture

@@ -18,18 +18,25 @@ class IsoPartition final : public LibRpBase::IPartition
 {
 	public:
 		/**
-		 * Construct an IsoPartition with the specified IDiscReader.
+		 * Construct an IsoPartition with the specified IRpFile.
+		 * *** EXPLICITLY DELETED ***
 		 *
-		 * NOTE: The IDiscReader *must* remain valid while this
-		 * IsoPartition is open.
-		 *
-		 * @param discReader IDiscReader.
+		 * @param file IRpFile
 		 * @param partition_offset Partition start offset.
 		 * @param iso_start_offset ISO start offset, in blocks. (If -1, uses heuristics.)
 		 */
-		IsoPartition(IDiscReader *discReader, off64_t partition_offset, int iso_start_offset = -1);
-	protected:
-		~IsoPartition() final;	// call unref() instead
+		IsoPartition(const LibRpFile::IRpFilePtr &file, off64_t partition_offset, int iso_start_offset = -1) = delete;
+
+		/**
+		 * Construct an IsoPartition with the specified IDiscReader.
+		 *
+		 * @param discReader IDiscReader
+		 * @param partition_offset Partition start offset.
+		 * @param iso_start_offset ISO start offset, in blocks. (If -1, uses heuristics.)
+		 */
+		IsoPartition(const LibRpBase::IDiscReaderPtr &discReader, off64_t partition_offset, int iso_start_offset = -1);
+	public:
+		~IsoPartition() final;
 
 	private:
 		typedef IPartition super;
@@ -133,7 +140,7 @@ class IsoPartition final : public LibRpBase::IPartition
 		 * @param filename Filename.
 		 * @return IRpFile*, or nullptr on error.
 		 */
-		LibRpFile::IRpFile *open(const char *filename);
+		LibRpFile::IRpFilePtr open(const char *filename);
 
 		/**
 		 * Get a file's timestamp.
@@ -142,5 +149,7 @@ class IsoPartition final : public LibRpBase::IPartition
 		 */
 		time_t get_mtime(const char *filename);
 };
+
+typedef std::shared_ptr<IsoPartition> IsoPartitionPtr;
 
 }

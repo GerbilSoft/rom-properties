@@ -19,9 +19,9 @@
 #include "librpbase/SystemRegion.hpp"
 #include "librptexture/decoder/ImageDecoder_NDS.hpp"
 using namespace LibRpBase;
+using namespace LibRpFile;
 using namespace LibRpText;
 using namespace LibRpTexture;
-using LibRpFile::IRpFile;
 
 // C++ STL classes
 using std::array;
@@ -62,10 +62,8 @@ const RomDataInfo NintendoDSPrivate::romDataInfo = {
 	"NintendoDS", exts, mimeTypes
 };
 
-NintendoDSPrivate::NintendoDSPrivate(IRpFile *file, bool cia)
+NintendoDSPrivate::NintendoDSPrivate(const IRpFilePtr &file, bool cia)
 	: super(file, &romDataInfo)
-	, iconAnimData(nullptr)
-	, icon_first_frame(nullptr)
 	, romType(RomType::Unknown)
 	, romSize(0)
 	, secData(0)
@@ -78,11 +76,6 @@ NintendoDSPrivate::NintendoDSPrivate(IRpFile *file, bool cia)
 	// Clear the various structs.
 	memset(&romHeader, 0, sizeof(romHeader));
 	memset(&nds_icon_title, 0, sizeof(nds_icon_title));
-}
-
-NintendoDSPrivate::~NintendoDSPrivate()
-{
-	UNREF(iconAnimData);
 }
 
 /**
@@ -148,7 +141,7 @@ int NintendoDSPrivate::loadIconTitleData(void)
  * Load the ROM image's icon.
  * @return Icon, or nullptr on error.
  */
-const rp_image *NintendoDSPrivate::loadIcon(void)
+rp_image_const_ptr NintendoDSPrivate::loadIcon(void)
 {
 	if (icon_first_frame) {
 		// Icon has already been loaded.
@@ -167,7 +160,7 @@ const rp_image *NintendoDSPrivate::loadIcon(void)
 
 	// Load the icon data.
 	// TODO: Only read the first frame unless specifically requested?
-	this->iconAnimData = new IconAnimData();
+	this->iconAnimData = std::make_shared<IconAnimData>();
 	iconAnimData->count = 0;
 
 	// Check if a DSi animated icon is present.
@@ -228,7 +221,7 @@ const rp_image *NintendoDSPrivate::loadIcon(void)
 				// Not used yet. Create the bitmap.
 				const uint8_t bmp = (high_token & 7);
 				const uint8_t pal = (high_token >> 3) & 7;
-				rp_image *img = ImageDecoder::fromNDS_CI4(32, 32,
+				rp_image_ptr img = ImageDecoder::fromNDS_CI4(32, 32,
 					nds_icon_title.dsi_icon_data[bmp],
 					sizeof(nds_icon_title.dsi_icon_data[bmp]),
 					nds_icon_title.dsi_icon_pal[pal],
@@ -244,9 +237,10 @@ const rp_image *NintendoDSPrivate::loadIcon(void)
 						// V-flip
 						flipOp = static_cast<rp_image::FlipOp>(flipOp | rp_image::FLIP_V);
 					}
-					rp_image *const flipimg = img->flip(flipOp);
-					img->unref();
-					img = flipimg;
+					const rp_image_ptr flipimg = img->flip(flipOp);
+					if (flipimg && flipimg->isValid()) {
+						img = flipimg;
+					}
 				}
 				iconAnimData->frames[bmp_idx] = img;
 				arr_bmpUsed[high_token] = bmp_idx;
@@ -588,7 +582,7 @@ RomFields::ListData_t *NintendoDSPrivate::getDSiFlagsStringVector(void)
  *
  * @param file Open ROM image.
  */
-NintendoDS::NintendoDS(IRpFile *file)
+NintendoDS::NintendoDS(const IRpFilePtr &file)
 	: super(new NintendoDSPrivate(file, false))
 {
 	RP_D(NintendoDS);
@@ -614,7 +608,7 @@ NintendoDS::NintendoDS(IRpFile *file)
  * @param file Open ROM image.
  * @param cia If true, hide fields that aren't relevant to DSiWare in 3DS CIA packages.
  */
-NintendoDS::NintendoDS(IRpFile *file, bool cia)
+NintendoDS::NintendoDS(const IRpFilePtr &file, bool cia)
 	: super(new NintendoDSPrivate(file, cia))
 {
 	RP_D(NintendoDS);
@@ -637,7 +631,7 @@ void NintendoDS::init(void)
 	d->file->rewind();
 	size_t size = d->file->read(&d->romHeader, sizeof(d->romHeader));
 	if (size != sizeof(d->romHeader)) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -654,7 +648,7 @@ void NintendoDS::init(void)
 	d->isValid = ((int)d->romType >= 0);
 
 	if (!d->isValid) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -1381,10 +1375,10 @@ int NintendoDS::loadMetaData(void)
  * Load an internal image.
  * Called by RomData::image().
  * @param imageType	[in] Image type to load.
- * @param pImage	[out] Pointer to const rp_image* to store the image in.
+ * @param pImage	[out] Reference to rp_image_const_ptr to store the image in.
  * @return 0 on success; negative POSIX error code on error.
  */
-int NintendoDS::loadInternalImage(ImageType imageType, const rp_image **pImage)
+int NintendoDS::loadInternalImage(ImageType imageType, rp_image_const_ptr &pImage)
 {
 	ASSERT_loadInternalImage(imageType, pImage);
 	RP_D(NintendoDS);
@@ -1403,12 +1397,9 @@ int NintendoDS::loadInternalImage(ImageType imageType, const rp_image **pImage)
  * Check imgpf for IMGPF_ICON_ANIMATED first to see if this
  * object has an animated icon.
  *
- * The retrieved IconAnimData must be ref()'d by the caller if the
- * caller stores it instead of using it immediately.
- *
  * @return Animated icon data, or nullptr if no animated icon is present.
  */
-const IconAnimData *NintendoDS::iconAnimData(void) const
+IconAnimDataConstPtr NintendoDS::iconAnimData(void) const
 {
 	RP_D(const NintendoDS);
 	if (!d->iconAnimData) {

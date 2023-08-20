@@ -12,10 +12,9 @@
 // Other rom-properties libraries
 #include "librpfile/RpFile.hpp"
 using namespace LibRpBase;
+using namespace LibRpFile;
 using namespace LibRpText;
-using LibRpFile::IRpFile;
-using LibRpFile::RpFile;
-using LibRpTexture::rp_image;
+using namespace LibRpTexture;
 
 // XDVDFSPartition
 #include "../iso_structs.h"
@@ -27,7 +26,7 @@ using LibRpTexture::rp_image;
 #include "Xbox_XBE.hpp"
 #include "Xbox360_XEX.hpp"
 
-// C++ STL classes.
+// C++ STL classes
 using std::string;
 using std::vector;
 
@@ -36,7 +35,7 @@ namespace LibRomData {
 class XboxDiscPrivate final : public RomDataPrivate
 {
 	public:
-		XboxDiscPrivate(LibRpFile::IRpFile *file);
+		XboxDiscPrivate(const IRpFilePtr &file);
 		~XboxDiscPrivate() final;
 
 	private:
@@ -69,7 +68,7 @@ class XboxDiscPrivate final : public RomDataPrivate
 		off64_t xdvdfs_addr;
 
 		// XDVDFSPartition
-		XDVDFSPartition *xdvdfsPartition;
+		XDVDFSPartitionPtr xdvdfsPartition;
 
 		// default.xbe / default.xex
 		RomData *defaultExeData;
@@ -145,13 +144,12 @@ const RomDataInfo XboxDiscPrivate::romDataInfo = {
 	"XboxDisc", exts, mimeTypes
 };
 
-XboxDiscPrivate::XboxDiscPrivate(IRpFile *file)
+XboxDiscPrivate::XboxDiscPrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
 	, discType(DiscType::Unknown)
 	, wave(0)
 	, isKreon(false)
 	, xdvdfs_addr(0)
-	, xdvdfsPartition(nullptr)
 	, defaultExeData(nullptr)
 	, exeType(ExeType::Unknown)
 {
@@ -163,8 +161,7 @@ XboxDiscPrivate::~XboxDiscPrivate()
 		lockKreonDrive();
 	}
 
-	UNREF(defaultExeData);
-	UNREF(xdvdfsPartition);
+	delete defaultExeData;
 }
 
 /**
@@ -188,10 +185,9 @@ RomData *XboxDiscPrivate::openDefaultExe(ExeType *pExeType)
 	}
 
 	// Try to open default.xex.
-	IRpFile *f_defaultExe = xdvdfsPartition->open("/default.xex");
+	IRpFilePtr f_defaultExe(xdvdfsPartition->open("/default.xex"));
 	if (f_defaultExe) {
 		RomData *const xexData = new Xbox360_XEX(f_defaultExe);
-		f_defaultExe->unref();
 		if (xexData->isValid()) {
 			// default.xex is open and valid.
 			defaultExeData = xexData;
@@ -201,6 +197,9 @@ RomData *XboxDiscPrivate::openDefaultExe(ExeType *pExeType)
 			}
 			return xexData;
 		}
+
+		// Not actually an XEX.
+		delete xexData;
 	}
 
 	// Try to open default.xbe.
@@ -208,7 +207,6 @@ RomData *XboxDiscPrivate::openDefaultExe(ExeType *pExeType)
 	f_defaultExe = xdvdfsPartition->open("/default.xbe");
 	if (f_defaultExe) {
 		RomData *const xbeData = new Xbox_XBE(f_defaultExe);
-		f_defaultExe->unref();
 		if (xbeData->isValid()) {
 			// default.xbe is open and valid.
 			defaultExeData = xbeData;
@@ -218,6 +216,9 @@ RomData *XboxDiscPrivate::openDefaultExe(ExeType *pExeType)
 			}
 			return xbeData;
 		}
+
+		// Not actually an XBE.
+		delete xbeData;
 	}
 
 	// Unable to open the default executable.
@@ -268,10 +269,10 @@ XboxDiscPrivate::ConsoleType XboxDiscPrivate::getConsoleType(void) const
  */
 inline void XboxDiscPrivate::unlockKreonDrive(void)
 {
-	if (!isKreon)
+	if (!isKreon || !this->file)
 		return;
 
-	RpFile *const rpFile = dynamic_cast<RpFile*>(this->file);
+	RpFile *const rpFile = dynamic_cast<RpFile*>(this->file.get());
 	if (rpFile) {
 		rpFile->setKreonErrorSkipState(true);
 		rpFile->setKreonLockState(RpFile::KreonLockState::State2WxRipper);
@@ -283,10 +284,10 @@ inline void XboxDiscPrivate::unlockKreonDrive(void)
  */
 inline void XboxDiscPrivate::lockKreonDrive(void)
 {
-	if (!isKreon)
+	if (!isKreon || !this->file)
 		return;
 
-	RpFile *const rpFile = dynamic_cast<RpFile*>(this->file);
+	RpFile *const rpFile = dynamic_cast<RpFile*>(this->file.get());
 	if (rpFile) {
 		rpFile->setKreonErrorSkipState(false);
 		rpFile->setKreonLockState(RpFile::KreonLockState::Locked);
@@ -308,7 +309,7 @@ inline void XboxDiscPrivate::lockKreonDrive(void)
  *
  * @param file Open ROM image.
  */
-XboxDisc::XboxDisc(IRpFile *file)
+XboxDisc::XboxDisc(const IRpFilePtr &file)
 	: super(new XboxDiscPrivate(file))
 {
 	// This class handles disc images.
@@ -328,7 +329,7 @@ XboxDisc::XboxDisc(IRpFile *file)
 	ISO_Primary_Volume_Descriptor pvd;
 	size_t size = d->file->seekAndRead(ISO_PVD_ADDRESS_2048, &pvd, sizeof(pvd));
 	if (size != sizeof(pvd)) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -358,49 +359,45 @@ XboxDisc::XboxDisc(IRpFile *file)
 	const off64_t fileSize = d->file->size();
 	if (fileSize < d->xdvdfs_addr + XDVDFS_BLOCK_SIZE) {
 		// File is too small.
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
 	// If this is a Kreon drive, unlock it.
 	if (d->file->isDevice()) {
-		RpFile *const rpFile = dynamic_cast<RpFile*>(d->file);
-		if (rpFile) {
-			// Check if this is a supported drive model.
-			if (rpFile->isKreonDriveModel()) {
-				// Do we have Kreon features?
-				const vector<RpFile::KreonFeature> features = rpFile->getKreonFeatureList();
-				if (!features.empty()) {
-					// Found Kreon features.
-					// TODO: Check the feature list?
-					d->isKreon = true;
+		RpFile *const rpFile = dynamic_cast<RpFile*>(d->file.get());
+		if (rpFile && rpFile->isKreonDriveModel()) {
+			// Do we have Kreon features?
+			const vector<RpFile::KreonFeature> features = rpFile->getKreonFeatureList();
+			if (!features.empty()) {
+				// Found Kreon features.
+				// TODO: Check the feature list?
+				d->isKreon = true;
 
-					// Unlock the drive.
-					d->unlockKreonDrive();
+				// Unlock the drive.
+				d->unlockKreonDrive();
 
-					// Re-read the device size.
-					// Windows doesn't return the full device size
-					// while the drive is locked, but Linux does.
-					rpFile->rereadDeviceSizeScsi();
-				}
+				// Re-read the device size.
+				// Windows doesn't return the full device size
+				// while the drive is locked, but Linux does.
+				rpFile->rereadDeviceSizeScsi();
 			}
 		}
 	}
 
 	// Open the XDVDFSPartition.
-	DiscReader *const discReader = new DiscReader(d->file);
+	IDiscReaderPtr discReader = std::make_shared<DiscReader>(d->file);
 	if (!discReader->isOpen()) {
 		// Unable to open the discReader.
-		discReader->unref();
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		d->lockKreonDrive();
 		d->isKreon = false;
 		return;
 	}
-	d->xdvdfsPartition = new XDVDFSPartition(discReader, d->xdvdfs_addr, d->file->size() - d->xdvdfs_addr);
+	d->xdvdfsPartition = std::make_shared<XDVDFSPartition>(discReader, d->xdvdfs_addr, d->file->size() - d->xdvdfs_addr);
 	if (!d->xdvdfsPartition->isOpen()) {
 		// Unable to open the XDVDFSPartition.
-		UNREF_AND_NULL_NOCHK(d->xdvdfsPartition);
+		d->xdvdfsPartition.reset();
 
 		// If this is XGD2, try the XGD3 offset in case this happens
 		// to be an edge case where it's an XGD3 disc that has a video
@@ -408,7 +405,7 @@ XboxDisc::XboxDisc(IRpFile *file)
 		if (d->discType == XboxDiscPrivate::DiscType::XGD2) {
 			static const off64_t xgd3_offset = XDVDFS_LBA_OFFSET_XGD3 * XDVDFS_BLOCK_SIZE;
 			d->xdvdfs_addr = XDVDFS_LBA_OFFSET_XGD3 * XDVDFS_BLOCK_SIZE;
-			d->xdvdfsPartition = new XDVDFSPartition(discReader,
+			d->xdvdfsPartition = std::make_shared<XDVDFSPartition>(discReader,
 				xgd3_offset, d->file->size() - xgd3_offset);
 			if (d->xdvdfsPartition->isOpen()) {
 				// It's an XGD3.
@@ -417,14 +414,13 @@ XboxDisc::XboxDisc(IRpFile *file)
 				d->xdvdfs_addr = xgd3_offset;
 			} else {
 				// It's not an XGD3.
-				UNREF_AND_NULL_NOCHK(d->xdvdfsPartition);
+				d->xdvdfsPartition.reset();
 			}
 		}
 
 		if (!d->xdvdfsPartition) {
 			// Unable to open the XDVDFSPartition.
-			discReader->unref();
-			UNREF_AND_NULL_NOCHK(d->file);
+			d->file.reset();
 			d->lockKreonDrive();
 			d->isKreon = false;
 			return;
@@ -432,7 +428,6 @@ XboxDisc::XboxDisc(IRpFile *file)
 	}
 
 	// XDVDFS partition is open.
-	discReader->unref();	// XDVDFSPartition has this referenced.
 	if (d->discType <= XboxDiscPrivate::DiscType::Unknown) {
 		// This is an extracted XDVDFS.
 		d->discType = XboxDiscPrivate::DiscType::Extracted;
@@ -456,7 +451,7 @@ void XboxDisc::close(void)
 		d->defaultExeData->close();
 	}
 
-	UNREF_AND_NULL(d->xdvdfsPartition);
+	d->xdvdfsPartition.reset();
 
 	// Call the superclass function.
 	super::close();
@@ -708,8 +703,8 @@ int XboxDisc::loadFieldData(void)
 	// Unlock the Kreon drive in order to read the executable.
 	d->unlockKreonDrive();
 
-	// XDVDFS partition.
-	const XDVDFSPartition *const xdvdfsPartition = d->xdvdfsPartition;
+	// XDVDFS partition. (NOTE: Using the raw pointer.)
+	const XDVDFSPartition *const xdvdfsPartition = d->xdvdfsPartition.get();
 	if (!xdvdfsPartition) {
 		// XDVDFS partition isn't open.
 		d->lockKreonDrive();
@@ -808,7 +803,7 @@ int XboxDisc::loadFieldData(void)
 					RomFields::TabOffset_AddTabs);
 			}
 		}
-		isoData->unref();
+		delete isoData;
 	}
 
 	// Re-lock the Kreon drive.
@@ -867,10 +862,10 @@ int XboxDisc::loadMetaData(void)
  * Load an internal image.
  * Called by RomData::image().
  * @param imageType	[in] Image type to load.
- * @param pImage	[out] Pointer to const rp_image* to store the image in.
+ * @param pImage	[out] Reference to rp_image_const_ptr to store the image in.
  * @return 0 on success; negative POSIX error code on error.
  */
-int XboxDisc::loadInternalImage(ImageType imageType, const rp_image **pImage)
+int XboxDisc::loadInternalImage(ImageType imageType, rp_image_const_ptr &pImage)
 {
 	ASSERT_loadInternalImage(imageType, pImage);
 

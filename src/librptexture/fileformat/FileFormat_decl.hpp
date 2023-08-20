@@ -15,11 +15,11 @@
 
 /** Macros for FileFormat subclasses. **/
 
-namespace LibRpFile {
-	class IRpFile;
-}
+// Other rom-properties libraries
+#include "librpfile/IRpFile.hpp"
+#include "../img/rp_image.hpp"
+
 namespace LibRpTexture {
-	class rp_image;
 	struct TextureInfo;
 }
 
@@ -44,8 +44,7 @@ public: \
 class klass##Private; \
 class klass final : public LibRpTexture::FileFormat { \
 public: \
-	explicit klass(LibRpFile::IRpFile *file); \
-protected: \
+	explicit klass(const LibRpFile::IRpFilePtr &file); \
 	~klass() final = default; \
 private: \
 	typedef FileFormat super; \
@@ -93,7 +92,7 @@ public: \
 	 * The image is owned by this object. \
 	 * @return Image, or nullptr on error. \
 	 */ \
-	const LibRpTexture::rp_image *image(void) const final; \
+	LibRpTexture::rp_image_const_ptr image(void) const final; \
 \
 	/** \
 	 * Get the image for the specified mipmap. \
@@ -101,7 +100,7 @@ public: \
 	 * @param mip Mipmap number. \
 	 * @return Image, or nullptr on error. \
 	 */ \
-	const LibRpTexture::rp_image *mipmap(int mip) const final;
+	LibRpTexture::rp_image_const_ptr mipmap(int mip) const final;
 
 /**
  * FileFormat subclass function declaration for closing the internal file handle.

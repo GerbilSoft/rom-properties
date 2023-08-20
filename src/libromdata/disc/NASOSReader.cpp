@@ -15,9 +15,9 @@
 #include "librpbase/disc/SparseDiscReader_p.hpp"
 #include "nasos_gcn.h"
 
-// librpbase, librpfile
+// Other rom-properties libraries
 using namespace LibRpBase;
-using LibRpFile::IRpFile;
+using namespace LibRpFile;
 
 namespace LibRomData {
 
@@ -71,7 +71,7 @@ NASOSReaderPrivate::NASOSReaderPrivate(NASOSReader *q)
 
 /** NASOSReader **/
 
-NASOSReader::NASOSReader(IRpFile *file)
+NASOSReader::NASOSReader(const IRpFilePtr &file)
 	: super(new NASOSReaderPrivate(this), file)
 {
 	if (!m_file) {
@@ -85,7 +85,7 @@ NASOSReader::NASOSReader(IRpFile *file)
 	size_t sz = m_file->read(&d->header, sizeof(d->header));
 	if (sz != sizeof(d->header)) {
 		// Error reading the NASOS header.
-		UNREF_AND_NULL_NOCHK(m_file);
+		m_file.reset();
 		m_lastError = EIO;
 		return;
 	}
@@ -111,7 +111,7 @@ NASOSReader::NASOSReader(IRpFile *file)
 		d->blockMapShift = 8;
 	} else {
 		// Invalid magic.
-		UNREF_AND_NULL_NOCHK(m_file);
+		m_file.reset();
 		m_lastError = EIO;
 		return;
 	}
@@ -126,7 +126,7 @@ NASOSReader::NASOSReader(IRpFile *file)
 	if (sz != sz_blockMap) {
 		// Error reading the block map.
 		d->blockMap.clear();
-		UNREF_AND_NULL_NOCHK(m_file);
+		m_file.reset();
 		m_lastError = EIO;
 		return;
 	}

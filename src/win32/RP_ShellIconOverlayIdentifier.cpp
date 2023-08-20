@@ -108,16 +108,14 @@ IFACEMETHODIMP RP_ShellIconOverlayIdentifier::IsMemberOf(_In_ PCWSTR pwszPath, D
 	}
 
 	// Attempt to create a RomData object.
-	RomData *const romData = RomDataFactory::create(pwszPath, RomDataFactory::RDA_HAS_DPOVERLAY);
+	const RomDataPtr romData = RomDataFactory::create(pwszPath, RomDataFactory::RDA_HAS_DPOVERLAY);
 	if (!romData) {
 		// ROM is not supported.
 		// TODO: Return E_FAIL if the file couldn't be opened?
 		return S_FALSE;
 	}
 
-	HRESULT hr = (romData->hasDangerousPermissions() ? S_OK : S_FALSE);
-	romData->unref();
-	return hr;
+	return (romData->hasDangerousPermissions()) ? S_OK : S_FALSE;
 }
 
 IFACEMETHODIMP RP_ShellIconOverlayIdentifier::GetOverlayInfo(_Out_writes_(cchMax) PWSTR pwszIconFile, int cchMax, _Out_ int *pIndex, _Out_ DWORD *pdwFlags)

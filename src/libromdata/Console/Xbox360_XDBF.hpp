@@ -37,7 +37,7 @@ ROMDATA_DECL_IMGINT()
 		 * @param file Open XDBF file and/or section.
 		 * @param xex If true, hide fields that are displayed separately in XEX executables.
 		 */
-		explicit Xbox360_XDBF(LibRpFile::IRpFile *file, bool xex);
+		explicit Xbox360_XDBF(const LibRpFile::IRpFilePtr &file, bool xex);
 
 	private:
 		/**

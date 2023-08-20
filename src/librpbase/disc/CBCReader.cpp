@@ -16,8 +16,9 @@
 #  include "crypto/IAesCipher.hpp"
 #endif
 
-// librpfile
+// Other rom-properties libraries
 #include "librpfile/IRpFile.hpp"
+using namespace LibRpFile;
 
 namespace LibRpBase {
 
@@ -62,7 +63,7 @@ CBCReaderPrivate::CBCReaderPrivate(CBCReader *q,
 	, cipher(nullptr)
 #endif
 {
-	assert(q->m_file != nullptr);
+	assert((bool)q->m_file);
 	if (!q->m_file) {
 		// No file...
 		return;
@@ -91,7 +92,7 @@ CBCReaderPrivate::CBCReaderPrivate(CBCReader *q,
 	if (!cipher) {
 		// Unable to initialize decryption.
 		// TODO: Error code.
-		UNREF_AND_NULL_NOCHK(q->m_file);
+		q->m_file.reset();
 		return;
 	}
 
@@ -125,13 +126,13 @@ CBCReaderPrivate::~CBCReaderPrivate()
  * NOTE: The IRpFile *must* remain valid while this
  * CBCReader is open.
  *
- * @param file 		[in] IRpFile.
+ * @param file 		[in] IRpFile
  * @param offset	[in] Encrypted data start offset, in bytes.
  * @param length	[in] Encrypted data length, in bytes.
  * @param key		[in] Encryption key. (Must be 128-bit) [If NULL, acts like no encryption.]
  * @param iv		[in] Initialization vector. (Must be 128-bit) [If NULL, uses ECB instead of CBC.]
  */
-CBCReader::CBCReader(LibRpFile::IRpFile *file, off64_t offset, off64_t length,
+CBCReader::CBCReader(const IRpFilePtr &file, off64_t offset, off64_t length,
 		const uint8_t *key, const uint8_t *iv)
 	: super(file)
 	, d_ptr(new CBCReaderPrivate(this, offset, length, key, iv))

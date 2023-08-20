@@ -19,9 +19,9 @@
 #include "RomDataView.hpp"
 #include "check-uid.hpp"
 
-// librpbase, librpfile
-using LibRpBase::RomData;
-using LibRpFile::IRpFile;
+// Other rom-properties libraries
+using namespace LibRpBase;
+using namespace LibRpFile;
 
 // libromdata
 #include "libromdata/RomDataFactory.hpp"
@@ -39,15 +39,14 @@ using std::string;
 RomDataView *RomPropertiesDialogPlugin::createRomDataView(const KFileItem &fileItem, KPropertiesDialog *props)
 {
 	// Attempt to open the ROM file.
-	IRpFile *const file = openQUrl(fileItem.url(), false);
+	const IRpFilePtr file(openQUrl(fileItem.url(), false));
 	if (!file) {
 		// Unable to open the file.
 		return nullptr;
 	}
 
 	// Get the appropriate RomData class for this ROM.
-	RomData *const romData = RomDataFactory::create(file);
-	file->unref();	// file is ref()'d by RomData.
+	const RomDataPtr romData = RomDataFactory::create(file);
 	if (!romData) {
 		// ROM is not supported.
 		return nullptr;
@@ -61,10 +60,6 @@ RomDataView *RomPropertiesDialogPlugin::createRomDataView(const KFileItem &fileI
 	// since we don't need it once the RomData has been
 	// loaded by RomDataView.
 	romData->close();
-
-	// RomDataView takes a reference to the RomData object.
-	// We don't need to hold on to it.
-	romData->unref();
 
 	return romDataView;
 }

@@ -3,7 +3,7 @@
  * ImageDecoder_Linear.cpp: Image decoding functions: Linear               *
  * Standard version. (C++ code only)                                       *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -30,7 +30,7 @@ namespace LibRpTexture { namespace ImageDecoder {
  * @param pal_siz Size of palette data. [must be >= 16*2 for 16-bit, >= 16*4 for 32-bit]
  * @return rp_image, or nullptr on error.
  */
-rp_image *fromLinearCI4(PixelFormat px_format, bool msn_left,
+rp_image_ptr fromLinearCI4(PixelFormat px_format, bool msn_left,
 	int width, int height,
 	const uint8_t *RESTRICT img_buf, size_t img_siz,
 	const void *RESTRICT pal_buf, size_t pal_siz)
@@ -68,10 +68,9 @@ rp_image *fromLinearCI4(PixelFormat px_format, bool msn_left,
 		return nullptr;
 
 	// Create an rp_image.
-	rp_image *const img = new rp_image(width, height, rp_image::Format::CI8);
+	const rp_image_ptr img = std::make_shared<rp_image>(width, height, rp_image::Format::CI8);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		img->unref();
 		return nullptr;
 	}
 	const int dest_stride_adj = img->stride() - img->width();
@@ -82,7 +81,6 @@ rp_image *fromLinearCI4(PixelFormat px_format, bool msn_left,
 	assert(img->palette_len() >= 16);
 	if (img->palette_len() < 16) {
 		// Not enough colors...
-		img->unref();
 		return nullptr;
 	}
 
@@ -220,7 +218,6 @@ rp_image *fromLinearCI4(PixelFormat px_format, bool msn_left,
 
 		default:
 			assert(!"Invalid pixel format for this function.");
-			img->unref();
 			return nullptr;
 	}
 	img->set_tr_idx(tr_idx);
@@ -269,7 +266,7 @@ rp_image *fromLinearCI4(PixelFormat px_format, bool msn_left,
  * @param pal_siz Size of palette data. [must be >= 256*2 for 16-bit, >= 256*4 for 32-bit]
  * @return rp_image, or nullptr on error.
  */
-rp_image *fromLinearCI8(PixelFormat px_format,
+rp_image_ptr fromLinearCI8(PixelFormat px_format,
 	int width, int height,
 	const uint8_t *RESTRICT img_buf, size_t img_siz,
 	const void *RESTRICT pal_buf, size_t pal_siz)
@@ -314,10 +311,9 @@ rp_image *fromLinearCI8(PixelFormat px_format,
 	}
 
 	// Create an rp_image.
-	rp_image *const img = new rp_image(width, height, rp_image::Format::CI8);
+	const rp_image_ptr img = std::make_shared<rp_image>(width, height, rp_image::Format::CI8);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		img->unref();
 		return nullptr;
 	}
 
@@ -327,7 +323,6 @@ rp_image *fromLinearCI8(PixelFormat px_format,
 	assert(img->palette_len() >= 256);
 	if (img->palette_len() < 256) {
 		// Not enough colors...
-		img->unref();
 		return nullptr;
 	}
 
@@ -559,7 +554,6 @@ rp_image *fromLinearCI8(PixelFormat px_format,
 
 		default:
 			assert(!"Invalid pixel format for this function.");
-			img->unref();
 			return nullptr;
 	}
 	img->set_tr_idx(tr_idx);
@@ -592,7 +586,7 @@ rp_image *fromLinearCI8(PixelFormat px_format,
  * @param img_siz Size of image data. [must be >= (w*h)/8]
  * @return rp_image, or nullptr on error.
  */
-rp_image *fromLinearMono(int width, int height,
+rp_image_ptr fromLinearMono(int width, int height,
 	const uint8_t *RESTRICT img_buf, size_t img_siz)
 {
 	// Verify parameters.
@@ -612,10 +606,9 @@ rp_image *fromLinearMono(int width, int height,
 		return nullptr;
 
 	// Create an rp_image.
-	rp_image *const img = new rp_image(width, height, rp_image::Format::CI8);
+	const rp_image_ptr img = std::make_shared<rp_image>(width, height, rp_image::Format::CI8);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		img->unref();
 		return nullptr;
 	}
 	const int dest_stride_adj = img->stride() - img->width();
@@ -665,7 +658,7 @@ rp_image *fromLinearMono(int width, int height,
  * @param stride	[in,opt] Stride, in bytes. If 0, assumes width*bytespp.
  * @return rp_image, or nullptr on error.
  */
-rp_image *fromLinear8(PixelFormat px_format,
+rp_image_ptr fromLinear8(PixelFormat px_format,
 	int width, int height,
 	const uint8_t *RESTRICT img_buf, size_t img_siz, int stride)
 {
@@ -698,10 +691,9 @@ rp_image *fromLinear8(PixelFormat px_format,
 	}
 
 	// Create an rp_image.
-	rp_image *const img = new rp_image(width, height, rp_image::Format::ARGB32);
+	const rp_image_ptr img = std::make_shared<rp_image>(width, height, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		img->unref();
 		return nullptr;
 	}
 	const int dest_stride_adj = (img->stride() / sizeof(argb32_t)) - img->width();
@@ -748,7 +740,6 @@ rp_image *fromLinear8(PixelFormat px_format,
 
 		default:
 			assert(!"Unsupported 8-bit pixel format.");
-			img->unref();
 			return nullptr;
 	}
 
@@ -767,7 +758,7 @@ rp_image *fromLinear8(PixelFormat px_format,
  * @param stride	[in,opt] Stride, in bytes. If 0, assumes width*bytespp.
  * @return rp_image, or nullptr on error.
  */
-rp_image *fromLinear16_cpp(PixelFormat px_format,
+rp_image_ptr fromLinear16_cpp(PixelFormat px_format,
 	int width, int height,
 	const uint16_t *RESTRICT img_buf, size_t img_siz, int stride)
 {
@@ -800,10 +791,9 @@ rp_image *fromLinear16_cpp(PixelFormat px_format,
 	}
 
 	// Create an rp_image.
-	rp_image *const img = new rp_image(width, height, rp_image::Format::ARGB32);
+	const rp_image_ptr img = std::make_shared<rp_image>(width, height, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		img->unref();
 		return nullptr;
 	}
 	const int dest_stride_adj = (img->stride() / sizeof(argb32_t)) - img->width();
@@ -866,7 +856,6 @@ rp_image *fromLinear16_cpp(PixelFormat px_format,
 
 		default:
 			assert(!"Unsupported 16-bit pixel format.");
-			img->unref();
 			return nullptr;
 	}
 
@@ -885,7 +874,7 @@ rp_image *fromLinear16_cpp(PixelFormat px_format,
  * @param stride	[in,opt] Stride, in bytes. If 0, assumes width*bytespp.
  * @return rp_image, or nullptr on error.
  */
-rp_image *fromLinear24_cpp(PixelFormat px_format,
+rp_image_ptr fromLinear24_cpp(PixelFormat px_format,
 	int width, int height,
 	const uint8_t *RESTRICT img_buf, size_t img_siz, int stride)
 {
@@ -918,10 +907,9 @@ rp_image *fromLinear24_cpp(PixelFormat px_format,
 	}
 
 	// Create an rp_image.
-	rp_image *const img = new rp_image(width, height, rp_image::Format::ARGB32);
+	const rp_image_ptr img = std::make_shared<rp_image>(width, height, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		img->unref();
 		return nullptr;
 	}
 	const int dest_stride_adj = (img->stride() / sizeof(argb32_t)) - img->width();
@@ -963,7 +951,6 @@ rp_image *fromLinear24_cpp(PixelFormat px_format,
 
 		default:
 			assert(!"Unsupported 24-bit pixel format.");
-			img->unref();
 			return nullptr;
 	}
 
@@ -986,7 +973,7 @@ rp_image *fromLinear24_cpp(PixelFormat px_format,
  * @param stride	[in,opt] Stride, in bytes. If 0, assumes width*bytespp.
  * @return rp_image, or nullptr on error.
  */
-rp_image *fromLinear32_cpp(PixelFormat px_format,
+rp_image_ptr fromLinear32_cpp(PixelFormat px_format,
 	int width, int height,
 	const uint32_t *RESTRICT img_buf, size_t img_siz, int stride)
 {
@@ -1019,10 +1006,9 @@ rp_image *fromLinear32_cpp(PixelFormat px_format,
 	}
 
 	// Create an rp_image
-	rp_image *const img = new rp_image(width, height, rp_image::Format::ARGB32);
+	const rp_image_ptr img = std::make_shared<rp_image>(width, height, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		img->unref();
 		return nullptr;
 	}
 	int dest_stride = img->stride();
@@ -1343,7 +1329,6 @@ rp_image *fromLinear32_cpp(PixelFormat px_format,
 
 		default:
 			assert(!"Unsupported 32-bit pixel format.");
-			img->unref();
 			return nullptr;
 	}
 

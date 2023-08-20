@@ -12,10 +12,11 @@
 
 // Other rom-properties libraries
 using namespace LibRpBase;
+using namespace LibRpFile;
 using namespace LibRpText;
-using LibRpFile::IRpFile;
 
 // C++ STL classes
+using std::shared_ptr;
 using std::string;
 
 namespace LibRomData {
@@ -23,7 +24,7 @@ namespace LibRomData {
 class N64Private final : public RomDataPrivate
 {
 	public:
-		N64Private(IRpFile *file);
+		N64Private(const IRpFilePtr &file);
 
 	private:
 		typedef RomDataPrivate super;
@@ -75,7 +76,7 @@ const RomDataInfo N64Private::romDataInfo = {
 	"N64", exts, mimeTypes
 };
 
-N64Private::N64Private(IRpFile *file)
+N64Private::N64Private(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
 	, romType(RomType::Unknown)
 {
@@ -98,7 +99,7 @@ N64Private::N64Private(IRpFile *file)
  *
  * @param file Open ROM image.
  */
-N64::N64(IRpFile *file)
+N64::N64(const IRpFilePtr &file)
 	: super(new N64Private(file))
 {
 	RP_D(N64);
@@ -113,7 +114,7 @@ N64::N64(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(&d->romHeader, sizeof(d->romHeader));
 	if (size != sizeof(d->romHeader)) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -157,7 +158,7 @@ N64::N64(IRpFile *file)
 		default:
 			// Unknown ROM type.
 			d->romType = N64Private::RomType::Unknown;
-			UNREF_AND_NULL_NOCHK(d->file);
+			d->file.reset();
 			return;
 	}
 

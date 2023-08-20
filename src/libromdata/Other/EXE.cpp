@@ -13,8 +13,8 @@
 #include "librpbase/Achievements.hpp"
 #include "librpbase/timeconv.h"
 using namespace LibRpBase;
+using namespace LibRpFile;
 using namespace LibRpText;
-using LibRpFile::IRpFile;
 
 // C++ STL classes
 using std::string;
@@ -79,20 +79,14 @@ const char *const EXEPrivate::NE_TargetOSes[6] = {
 	"Borland Operating System Services",	// NE_OS_BOSS
 };
 
-EXEPrivate::EXEPrivate(IRpFile *file)
+EXEPrivate::EXEPrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
 	, exeType(ExeType::Unknown)
-	, rsrcReader(nullptr)
 	, pe_subsystem(IMAGE_SUBSYSTEM_UNKNOWN)
 {
 	// Clear the structs.
 	memset(&mz, 0, sizeof(mz));
 	memset(&hdr, 0, sizeof(hdr));
-}
-
-EXEPrivate::~EXEPrivate()
-{
-	UNREF(rsrcReader);
 }
 
 /**
@@ -490,7 +484,7 @@ void EXEPrivate::addFields_LE(void)
  *
  * @param file Open ROM image.
  */
-EXE::EXE(IRpFile *file)
+EXE::EXE(const IRpFilePtr &file)
 	: super(new EXEPrivate(file))
 {
 	// This class handles different types of files.
@@ -508,7 +502,7 @@ EXE::EXE(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(&d->mz, sizeof(d->mz));
 	if (size != sizeof(d->mz)) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -523,7 +517,7 @@ EXE::EXE(IRpFile *file)
 	d->isValid = ((int)d->exeType >= 0);
 	if (!d->isValid) {
 		// Not an MZ executable.
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 

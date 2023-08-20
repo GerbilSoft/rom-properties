@@ -3,7 +3,7 @@
  * SparseDiscReader.cpp: Disc reader base class for disc image formats     *
  * that use sparse and/or compressed blocks, e.g. CISO, WBFS, GCZ.         *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -12,7 +12,7 @@
 #include "SparseDiscReader_p.hpp"
 
 // librpfile
-using LibRpFile::IRpFile;
+using namespace LibRpFile;
 
 namespace LibRpBase {
 
@@ -32,7 +32,7 @@ SparseDiscReaderPrivate::SparseDiscReaderPrivate(SparseDiscReader *q)
 
 /** SparseDiscReader **/
 
-SparseDiscReader::SparseDiscReader(SparseDiscReaderPrivate *d, IRpFile *file)
+SparseDiscReader::SparseDiscReader(SparseDiscReaderPrivate *d, const IRpFilePtr &file)
 	: super(file)
 	, d_ptr(d)
 { }

@@ -50,7 +50,7 @@ class ListDataModel;
 class RomDataViewPrivate
 {
 	public:
-		RomDataViewPrivate(RomDataView *q, LibRpBase::RomData *romData);
+		RomDataViewPrivate(RomDataView *q, const LibRpBase::RomDataPtr &romData);
 		~RomDataViewPrivate();
 
 	private:
@@ -62,10 +62,10 @@ class RomDataViewPrivate
 	public:
 		Ui::RomDataView ui;
 
-		// RomData object.
-		LibRpBase::RomData *romData;
+		// RomData object
+		LibRpBase::RomDataPtr romData;
 
-		// Tab contents.
+		// Tab contents
 		struct tab {
 			QVBoxLayout *vbox;
 			QFormLayout *form;

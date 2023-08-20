@@ -11,17 +11,12 @@
 
 #include "RpPng.hpp"
 
-// librpcpu
+// librpcpu, librpfile, librptexture
 #include "librpcpu/byteorder.h"
-
-// librpfile
 #include "librpfile/IRpFile.hpp"
-using LibRpFile::IRpFile;
-
-// librptexture
-#include "img/rp_image.hpp"
-using LibRpTexture::rp_image;
-using LibRpTexture::argb32_t;
+#include "librptexture/img/rp_image.hpp"
+using namespace LibRpFile;
+using namespace LibRpTexture;
 
 // PNG writer
 #include "RpPngWriter.hpp"
@@ -235,11 +230,11 @@ static void Read_CI8_Palette(png_structp png_ptr, png_infop info_ptr,
  * @param info_ptr png_infop
  * @return rp_image*, or nullptr on error.
  */
-static rp_image *loadPng(png_structp png_ptr, png_infop info_ptr)
+static rp_image_ptr loadPng(png_structp png_ptr, png_infop info_ptr)
 {
 	// Row pointers. (NOTE: Allocated after IHDR is read.)
 	const png_byte **row_pointers = nullptr;
-	rp_image *img = nullptr;
+	rp_image_ptr img;
 
 	bool has_sBIT = false;
 	png_color_8p png_sBIT = nullptr;
@@ -250,7 +245,6 @@ static rp_image *loadPng(png_structp png_ptr, png_infop info_ptr)
 	if (setjmp(png_jmpbuf(png_ptr))) {
 		// PNG read failed.
 		png_free(png_ptr, row_pointers);
-		UNREF(img);
 		return nullptr;
 	}
 #endif
@@ -427,10 +421,9 @@ static rp_image *loadPng(png_structp png_ptr, png_infop info_ptr)
 	// Create the rp_image.
 
 	// Initialize the row pointers array.
-	img = new rp_image(width, height, fmt);
+	img = std::make_shared<rp_image>(width, height, fmt);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		img->unref();
 		return nullptr;
 	}
 
@@ -438,7 +431,6 @@ static rp_image *loadPng(png_structp png_ptr, png_infop info_ptr)
 	row_pointers = static_cast<const png_byte**>(
 		png_malloc(png_ptr, sizeof(const png_byte*) * height));
 	if (!row_pointers) {
-		img->unref();
 		return nullptr;
 	}
 
@@ -455,7 +447,7 @@ static rp_image *loadPng(png_structp png_ptr, png_infop info_ptr)
 
 	// If CI8, read the palette.
 	if (fmt == rp_image::Format::CI8) {
-		Read_CI8_Palette(png_ptr, info_ptr, color_type, img);
+		Read_CI8_Palette(png_ptr, info_ptr, color_type, img.get());
 	}
 
 #ifdef PNG_sBIT_SUPPORTED
@@ -480,7 +472,7 @@ static rp_image *loadPng(png_structp png_ptr, png_infop info_ptr)
  * @param file IRpFile to load from
  * @return rp_image*, or nullptr on error
  */
-rp_image *load(IRpFile *file)
+rp_image_ptr load(const IRpFilePtr &file)
 {
 	if (!file)
 		return nullptr;
@@ -521,10 +513,10 @@ rp_image *load(IRpFile *file)
 #endif /* PNG_WARNINGS_SUPPORTED */
 
 	// Initialize the custom I/O handler for IRpFile.
-	png_set_read_fn(png_ptr, file, png_io_IRpFile_read);
+	png_set_read_fn(png_ptr, file.get(), png_io_IRpFile_read);
 
 	// Call the actual PNG image reading function.
-	rp_image *img = loadPng(png_ptr, info_ptr);
+	const rp_image_ptr img = loadPng(png_ptr, info_ptr);
 
 	// Free the PNG structs.
 	png_destroy_read_struct(&png_ptr, &info_ptr, nullptr);
@@ -542,9 +534,9 @@ rp_image *load(IRpFile *file)
  * @param img rp_image to save
  * @return 0 on success; negative POSIX error code on error
  */
-int save(IRpFile *file, const rp_image *img)
+int save(const IRpFilePtr &file, const rp_image_const_ptr &img)
 {
-	assert(file != nullptr);
+	assert((bool)file);
 	assert(img != nullptr);
 	if (!file || !file->isOpen() || !img)
 		return -EINVAL;
@@ -570,7 +562,7 @@ int save(IRpFile *file, const rp_image *img)
  * @param img rp_image to save
  * @return 0 on success; negative POSIX error code on error
  */
-int save(const char *filename, const rp_image *img)
+int save(const char *filename, const rp_image_const_ptr &img)
 {
 	assert(filename != nullptr);
 	assert(filename[0] != '\0');
@@ -600,7 +592,7 @@ int save(const char *filename, const rp_image *img)
  * @param img rp_image to save
  * @return 0 on success; negative POSIX error code on error
  */
-int save(const wchar_t *filename, const rp_image *img)
+int save(const wchar_t *filename, const rp_image_const_ptr &img)
 {
 	assert(filename != nullptr);
 	assert(filename[0] != L'\0');
@@ -642,10 +634,10 @@ int save(const wchar_t *filename, const rp_image *img)
  * @param iconAnimData Animated image data to save
  * @return 0 on success; negative POSIX error code on error
  */
-int save(IRpFile *file, const IconAnimData *iconAnimData)
+int save(const IRpFilePtr &file, const IconAnimDataConstPtr &iconAnimData)
 {
-	assert(file != nullptr);
-	assert(iconAnimData != nullptr);
+	assert((bool)file);
+	assert((bool)iconAnimData);
 	if (!file || !file->isOpen() || !iconAnimData)
 		return -EINVAL;
 
@@ -679,11 +671,11 @@ int save(IRpFile *file, const IconAnimData *iconAnimData)
  * @param iconAnimData Animated image data to save
  * @return 0 on success; negative POSIX error code on error
  */
-int save(const char *filename, const IconAnimData *iconAnimData)
+int save(const char *filename, const IconAnimDataConstPtr &iconAnimData)
 {
 	assert(filename != nullptr);
 	assert(filename[0] != '\0');
-	assert(iconAnimData != nullptr);
+	assert((bool)iconAnimData);
 	if (!filename || filename[0] == '\0' || !iconAnimData)
 		return -EINVAL;
 
@@ -718,11 +710,11 @@ int save(const char *filename, const IconAnimData *iconAnimData)
  * @param iconAnimData Animated image data to save
  * @return 0 on success; negative POSIX error code on error
  */
-int save(const wchar_t *filename, const IconAnimData *iconAnimData)
+int save(const wchar_t *filename, const IconAnimDataConstPtr &iconAnimData)
 {
 	assert(filename != nullptr);
 	assert(filename[0] != L'\0');
-	assert(iconAnimData != nullptr);
+	assert((bool)iconAnimData);
 	if (!filename || filename[0] == L'\0' || !iconAnimData)
 		return -EINVAL;
 

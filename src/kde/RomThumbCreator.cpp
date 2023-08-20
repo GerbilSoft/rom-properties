@@ -17,8 +17,9 @@
 
 // Other rom-properties libraries
 using namespace LibRpBase;
+using namespace LibRpFile;
 using namespace LibRpText;
-using LibRpTexture::rp_image;
+using namespace LibRpTexture;
 
 // RpFileKio
 #include "RpFile_kio.hpp"
@@ -38,7 +39,7 @@ using LibRomData::TCreateThumbnail;
 #  include "networkmanagerinterface.h"
 #endif /* QT_VERSION >= QT_VERSION_CHECK(5,0,0) && HAVE_QtDBus */
 
-// C++ STL classes.
+// C++ STL classes
 using std::string;
 using std::unique_ptr;
 
@@ -80,7 +81,7 @@ class RomThumbCreatorPrivate final : public TCreateThumbnail<QImage>
 		 * @param img rp_image
 		 * @return ImgClass
 		 */
-		inline QImage rpImageToImgClass(const rp_image *img) const final
+		inline QImage rpImageToImgClass(const rp_image_const_ptr &img) const final
 		{
 			return rpToQImage(img);
 		}
@@ -266,7 +267,7 @@ bool RomThumbCreator::create(const QString &path, int width, int height, QImage 
 	path_enc.replace(QChar(L'#'), QLatin1String("%23"));
 	const QUrl path_url(path_enc);
 
-	IRpFile *const file = openQUrl(path_url, true);
+	const IRpFilePtr file(openQUrl(path_url, true));
 	if (!file) {
 		return false;
 	}
@@ -276,7 +277,6 @@ bool RomThumbCreator::create(const QString &path, int width, int height, QImage 
 	Q_D(RomThumbCreator);
 	RomThumbCreatorPrivate::GetThumbnailOutParams_t outParams;
 	int ret = d->getThumbnail(file, width, &outParams);
-	file->unref();
 
 	if (ret == 0) {
 		img = outParams.retImg;
@@ -344,7 +344,7 @@ KIO::ThumbnailResult RomThumbnailCreator::create(const KIO::ThumbnailRequest &re
 	}
 
 	// Attempt to open the ROM file.
-	IRpFile *const file = openQUrl(url, true);
+	const IRpFilePtr file(openQUrl(url, true));
 	if (!file) {
 		return KIO::ThumbnailResult::fail();
 	}
@@ -355,7 +355,6 @@ KIO::ThumbnailResult RomThumbnailCreator::create(const KIO::ThumbnailRequest &re
 	const int width = request.targetSize().width();
 	RomThumbnailCreatorPrivate::GetThumbnailOutParams_t outParams;
 	int ret = d->getThumbnail(file, width, &outParams);
-	file->unref();
 
 	if (ret != 0) {
 		return KIO::ThumbnailResult::fail();
@@ -416,7 +415,7 @@ Q_DECL_EXPORT int RP_C_API rp_create_thumbnail2(const char *source_file, const c
 
 	// Attempt to open the ROM file.
 	const QUrl localUrl = localizeQUrl(QUrl(QString::fromUtf8(source_file)));
-	IRpFile *const file = openQUrl(localUrl, true);
+	const IRpFilePtr file(openQUrl(localUrl, true));
 	if (!file) {
 		// Could not open the file.
 		return RPCT_ERROR_CANNOT_OPEN_SOURCE_FILE;
@@ -424,8 +423,7 @@ Q_DECL_EXPORT int RP_C_API rp_create_thumbnail2(const char *source_file, const c
 
 	// Get the appropriate RomData class for this ROM.
 	// RomData class *must* support at least one image type.
-	RomData *const romData = RomDataFactory::create(file, RomDataFactory::RDA_HAS_THUMBNAIL);
-	file->unref();	// file is ref()'d by RomData.
+	const RomDataPtr romData = RomDataFactory::create(file, RomDataFactory::RDA_HAS_THUMBNAIL);
 	if (!romData) {
 		// ROM is not supported.
 		return RPCT_ERROR_SOURCE_FILE_NOT_SUPPORTED;
@@ -439,7 +437,6 @@ Q_DECL_EXPORT int RP_C_API rp_create_thumbnail2(const char *source_file, const c
 
 	if (ret != 0 || outParams.retImg.isNull()) {
 		// No image.
-		romData->unref();
 		return RPCT_ERROR_SOURCE_FILE_NO_IMAGE;
 	}
 
@@ -469,7 +466,6 @@ Q_DECL_EXPORT int RP_C_API rp_create_thumbnail2(const char *source_file, const c
 		default:
 			// Unsupported...
 			assert(!"Unsupported QImage image format.");
-			romData->unref();
 			return RPCT_ERROR_OUTPUT_FILE_FAILED;
 	}
 
@@ -478,7 +474,6 @@ Q_DECL_EXPORT int RP_C_API rp_create_thumbnail2(const char *source_file, const c
 	if (!pngWriter->isOpen()) {
 		// Could not open the PNG writer.
 		delete pngWriter;
-		romData->unref();
 		return RPCT_ERROR_OUTPUT_FILE_FAILED;
 	}
 
@@ -552,7 +547,6 @@ Q_DECL_EXPORT int RP_C_API rp_create_thumbnail2(const char *source_file, const c
 		// Error writing IHDR.
 		// TODO: Unlink the PNG image.
 		delete pngWriter;
-		romData->unref();
 		return RPCT_ERROR_OUTPUT_FILE_FAILED;
 	}
 
@@ -575,7 +569,6 @@ Q_DECL_EXPORT int RP_C_API rp_create_thumbnail2(const char *source_file, const c
 	}
 
 	delete pngWriter;
-	romData->unref();
 	return ret;
 }
 

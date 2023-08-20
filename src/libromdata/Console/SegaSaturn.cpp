@@ -14,8 +14,8 @@
 
 // Other rom-properties libraries
 using namespace LibRpBase;
+using namespace LibRpFile;
 using namespace LibRpText;
-using LibRpFile::IRpFile;
 
 // CD-ROM reader
 #include "disc/Cdrom2352Reader.hpp"
@@ -32,7 +32,7 @@ namespace LibRomData {
 class SegaSaturnPrivate final : public RomDataPrivate
 {
 	public:
-		SegaSaturnPrivate(IRpFile *file);
+		SegaSaturnPrivate(const IRpFilePtr &file);
 
 	private:
 		typedef RomDataPrivate super;
@@ -167,7 +167,7 @@ const RomDataInfo SegaSaturnPrivate::romDataInfo = {
 	"SegaSaturn", exts, mimeTypes
 };
 
-SegaSaturnPrivate::SegaSaturnPrivate(IRpFile *file)
+SegaSaturnPrivate::SegaSaturnPrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
 	, discType(DiscType::Unknown)
 	, saturn_region(0)
@@ -348,7 +348,7 @@ void SegaSaturnPrivate::parseDiscNumber(uint8_t &disc_num, uint8_t &disc_total) 
  *
  * @param file Open ROM image.
  */
-SegaSaturn::SegaSaturn(IRpFile *file)
+SegaSaturn::SegaSaturn(const IRpFilePtr &file)
 	: super(new SegaSaturnPrivate(file))
 {
 	// This class handles disc images.
@@ -367,7 +367,7 @@ SegaSaturn::SegaSaturn(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(&sector, sizeof(sector));
 	if (size != sizeof(sector)) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -397,7 +397,7 @@ SegaSaturn::SegaSaturn(IRpFile *file)
 			break;
 		default:
 			// Unsupported.
-			UNREF_AND_NULL_NOCHK(d->file);
+			d->file.reset();
 			return;
 	}
 	d->isValid = true;
@@ -594,7 +594,7 @@ int SegaSaturn::loadFieldData(void)
 				RomFields::TabOffset_AddTabs);
 		}
 	}
-	isoData->unref();
+	delete isoData;
 
 	// Finished reading the field data.
 	return static_cast<int>(d->fields.count());

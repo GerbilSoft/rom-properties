@@ -10,20 +10,17 @@
 
 #include "RpQUrl.hpp"
 
-namespace LibRpFile {
-	class IRpFile;
-}
-namespace LibRpTexture {
-	class rp_image;
-}
-
-// C++ includes.
-#include <string>
-
 // Qt includes
 #include <QtCore/QObject>
 #include <QtCore/QString>
 #include <QtGui/QImage>
+
+// C++ includes
+#include <string>
+
+// librpfile, librptexture
+#include "librpfile/IRpFile.hpp"
+#include "librptexture/img/rp_image.hpp"
 
 #define CONCAT_FN(fn, suffix)		CONCAT_FN_INT(fn, suffix)
 #define CONCAT_FN_INT(fn, suffix)	fn ## suffix
@@ -134,10 +131,30 @@ static inline T findDirectChild(QObject *obj, const QString &aName = QString())
 
 /**
  * Convert an rp_image to QImage.
- * @param image rp_image.
+ * @param image rp_image
  * @return QImage.
  */
 QImage rpToQImage(const LibRpTexture::rp_image *image);
+
+/**
+ * Convert an rp_image to QImage.
+ * @param image rp_image_ptr
+ * @return QImage.
+ */
+static inline QImage rpToQImage(const LibRpTexture::rp_image_ptr &image)
+{
+	return rpToQImage(image.get());
+}
+
+/**
+ * Convert an rp_image to QImage.
+ * @param image rp_image_const_ptr
+ * @return QImage.
+ */
+static inline QImage rpToQImage(const LibRpTexture::rp_image_const_ptr &image)
+{
+	return rpToQImage(image.get());
+}
 
 /** QUrl **/
 
@@ -150,7 +167,7 @@ QImage rpToQImage(const LibRpTexture::rp_image *image);
  *
  * @return IRpFile, or nullptr on error.
  */
-LibRpFile::IRpFile *openQUrl(const QUrl &url, bool isThumbnail = false);
+LibRpFile::IRpFilePtr openQUrl(const QUrl &url, bool isThumbnail = false);
 
 /**
  * Convert an RP file dialog filter to Qt.

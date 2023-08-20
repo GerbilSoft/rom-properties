@@ -21,7 +21,7 @@ using namespace LibRpFile;
 // librpthreads
 #include "librpthreads/pthread_once.h"
 
-// C++ STL classes.
+// C++ STL classes
 using std::string;
 using std::unordered_set;
 using std::vector;
@@ -60,7 +60,7 @@ class FileFormatFactoryPrivate
 		// FIXME: TGA format doesn't follow this...
 		//typedef int (*pfnIsTextureSupported_t)(const FileFormat::DetectInfo *info);	// TODO
 		typedef const TextureInfo* (*pfnTextureInfo_t)(void);
-		typedef FileFormat* (*pfnNewFileFormat_t)(IRpFile *file);
+		typedef FileFormat* (*pfnNewFileFormat_t)(const IRpFilePtr &file);
 
 		struct FileFormatFns {
 			//pfnIsTextureSupported_t isTextureSupported;	// TODO
@@ -75,7 +75,7 @@ class FileFormatFactoryPrivate
 		 * @param klass Class name.
 		 */
 		template<typename klass>
-		static FileFormat *FileFormat_ctor(LibRpFile::IRpFile *file)
+		static FileFormat *FileFormat_ctor(const IRpFilePtr &file)
 		{
 			return new klass(file);
 		}
@@ -168,10 +168,10 @@ const FileFormatFactoryPrivate::FileFormatFns FileFormatFactoryPrivate::FileForm
  * types must be supported by the FileFormat subclass in order to
  * be returned.
  *
- * @param file Texture file.
+ * @param file Texture file
  * @return FileFormat subclass, or nullptr if the texture file isn't supported.
  */
-FileFormat *FileFormatFactory::create(IRpFile *file)
+FileFormatPtr FileFormatFactory::create(const IRpFilePtr &file)
 {
 	assert(file != nullptr);
 	if (!file || file->isDevice()) {
@@ -208,11 +208,11 @@ FileFormat *FileFormatFactory::create(IRpFile *file)
 		if (fileFormat) {
 			if (fileFormat->isValid()) {
 				// FileFormat subclass obtained.
-				return fileFormat;
+				return FileFormatPtr(fileFormat);
 			}
 
 			// Not actually supported.
-			fileFormat->unref();
+			delete fileFormat;
 		}
 	}
 
@@ -269,8 +269,12 @@ FileFormat *FileFormatFactory::create(IRpFile *file)
 					FileFormat *const fileFormat = new TGA(file);
 					if (fileFormat->isValid()) {
 						// FileFormat subclass obtained.
-						return fileFormat;
+						return FileFormatPtr(fileFormat);
 					}
+
+					// Not actually supported.
+					delete fileFormat;
+					break;
 				}
 
 				default:
@@ -297,11 +301,11 @@ FileFormat *FileFormatFactory::create(IRpFile *file)
 				FileFormat *const fileFormat = fns->newFileFormat(file);
 				if (fileFormat->isValid()) {
 					// FileFormat subclass obtained.
-					return fileFormat;
+					return FileFormatPtr(fileFormat);
 				}
 
 				// Not actually supported.
-				fileFormat->unref();
+				delete fileFormat;
 			}
 		}
 	}

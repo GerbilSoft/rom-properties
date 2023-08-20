@@ -10,16 +10,16 @@
 #include "RpQt.hpp"
 #include "RpQImageBackend.hpp"
 
-// librpbase, librpfile, librptexture
+// Other rom-properties libraries
 #include "librpbase/config/Config.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
-using LibRpTexture::rp_image;
+using namespace LibRpTexture;
 
 // RpFileKio
 #include "RpFile_kio.hpp"
 
-// C++ STL classes.
+// C++ STL classes
 using std::string;
 
 /** Image conversion **/
@@ -57,7 +57,7 @@ QImage rpToQImage(const rp_image *image)
  *
  * @return IRpFile, or nullptr on error.
  */
-IRpFile *openQUrl(const QUrl &url, bool isThumbnail)
+IRpFilePtr openQUrl(const QUrl &url, bool isThumbnail)
 {
 	// Some things work better with local paths than with remote.
 	// KDE uses some custom URL schemes, e.g. desktop:/, to represent
@@ -130,10 +130,11 @@ IRpFile *openQUrl(const QUrl &url, bool isThumbnail)
 	if (!file->isOpen()) {
 		// Unable to open the file...
 		// TODO: Return an error code?
-		UNREF_AND_NULL_NOCHK(file);
+		delete file;
+		file = nullptr;
 	}
 
-	return file;
+	return IRpFilePtr(file);
 }
 
 /**

@@ -12,11 +12,11 @@
 
 // Other rom-properties libraries
 using namespace LibRpBase;
+using namespace LibRpFile;
 using namespace LibRpText;
 using namespace LibRpTexture;
-using LibRpFile::IRpFile;
 
-// C++ STL classes.
+// C++ STL classes
 using std::string;
 using std::vector;
 
@@ -25,8 +25,8 @@ namespace LibRomData {
 class DreamcastSavePrivate final : public RomDataPrivate
 {
 	public:
-		DreamcastSavePrivate(IRpFile *file);
-		~DreamcastSavePrivate() final;
+		DreamcastSavePrivate(const IRpFilePtr &file);
+		~DreamcastSavePrivate() final = default;
 
 	private:
 		typedef RomDataPrivate super;
@@ -39,11 +39,11 @@ class DreamcastSavePrivate final : public RomDataPrivate
 		static const RomDataInfo romDataInfo;
 
 	public:
-		// Internal images.
-		rp_image *img_banner;
+		// Internal images
+		rp_image_ptr img_banner;
 
-		// Animated icon data.
-		IconAnimData *iconAnimData;
+		// Animated icon data
+		IconAnimDataPtr iconAnimData;
 
 	public:
 		// Save file type.
@@ -80,7 +80,7 @@ class DreamcastSavePrivate final : public RomDataPrivate
 
 		// VMI save file. (for .VMI+.VMS)
 		// NOTE: Standalone VMI uses this->file.
-		IRpFile *vmi_file;
+		IRpFilePtr vmi_file;
 
 		// Offset in the main file to the data area.
 		// - VMS: 0
@@ -124,7 +124,7 @@ class DreamcastSavePrivate final : public RomDataPrivate
 		 * @param vmi_file VMI file.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		int readVmiHeader(IRpFile *vmi_file);
+		int readVmiHeader(const IRpFilePtr &vmi_file);
 
 		// Graphic eyecatch sizes.
 		static const uint32_t eyecatch_sizes[4];
@@ -158,7 +158,7 @@ class DreamcastSavePrivate final : public RomDataPrivate
 		 *
 		 * @return Icon, or nullptr on error.
 		 */
-		const rp_image *loadIcon(void);
+		rp_image_const_ptr loadIcon(void);
 
 		/**
 		 * Load the icon from an ICONDATA_VMS file.
@@ -168,13 +168,13 @@ class DreamcastSavePrivate final : public RomDataPrivate
 		 *
 		 * @return Icon, or nullptr on error.
 		 */
-		const rp_image *loadIcon_ICONDATA_VMS(void);
+		rp_image_const_ptr loadIcon_ICONDATA_VMS(void);
 
 		/**
 		 * Load the save file's banner.
 		 * @return Banner, or nullptr on error.
 		 */
-		const rp_image *loadBanner(void);
+		rp_image_const_ptr loadBanner(void);
 };
 
 ROMDATA_IMPL(DreamcastSave)
@@ -213,10 +213,8 @@ const uint32_t DreamcastSavePrivate::eyecatch_sizes[4] = {
 	DC_VMS_EYECATCH_CI4_PALETTE_SIZE + DC_VMS_EYECATCH_CI4_DATA_SIZE
 };
 
-DreamcastSavePrivate::DreamcastSavePrivate(IRpFile *file)
+DreamcastSavePrivate::DreamcastSavePrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
-	, img_banner(nullptr)
-	, iconAnimData(nullptr)
 	, saveType(SaveType::Unknown)
 	, loaded_headers(0)
 	, vmi_file(nullptr)
@@ -229,14 +227,6 @@ DreamcastSavePrivate::DreamcastSavePrivate(IRpFile *file)
 	memset(&vms_header, 0, sizeof(vms_header));
 	memset(&vmi_header, 0, sizeof(vmi_header));
 	memset(&vms_dirent, 0, sizeof(vms_dirent));
-}
-
-DreamcastSavePrivate::~DreamcastSavePrivate()
-{
-	UNREF(vmi_file);
-
-	UNREF(img_banner);
-	UNREF(iconAnimData);
 }
 
 /**
@@ -369,7 +359,7 @@ unsigned int DreamcastSavePrivate::readAndVerifyVmsHeader(uint32_t address)
  * @param vmi_file VMI file.
  * @return 0 on success; negative POSIX error code on error.
  */
-int DreamcastSavePrivate::readVmiHeader(IRpFile *vmi_file)
+int DreamcastSavePrivate::readVmiHeader(const IRpFilePtr &vmi_file)
 {
 	// NOTE: vmi_file shadows this->vmi_file.
 
@@ -432,7 +422,7 @@ int DreamcastSavePrivate::readVmiHeader(IRpFile *vmi_file)
  *
  * @return Icon, or nullptr on error.
  */
-const rp_image *DreamcastSavePrivate::loadIcon(void)
+rp_image_const_ptr DreamcastSavePrivate::loadIcon(void)
 {
 	if (iconAnimData) {
 		// Icon has already been loaded.
@@ -491,7 +481,7 @@ const rp_image *DreamcastSavePrivate::loadIcon(void)
 		rp_byte_swap_32_array(buf.palette.u32, sizeof(buf.palette.u32));
 	}
 
-	this->iconAnimData = new IconAnimData();
+	this->iconAnimData = std::make_shared<IconAnimData>();
 	iconAnimData->count = 0;
 
 	// icon_anim_speed is in units of 1/30th of a second.
@@ -549,7 +539,7 @@ const rp_image *DreamcastSavePrivate::loadIcon(void)
  *
  * @return Icon, or nullptr on error.
  */
-const rp_image *DreamcastSavePrivate::loadIcon_ICONDATA_VMS(void)
+rp_image_const_ptr DreamcastSavePrivate::loadIcon_ICONDATA_VMS(void)
 {
 	if (iconAnimData) {
 		// Icon has already been loaded.
@@ -566,7 +556,7 @@ const rp_image *DreamcastSavePrivate::loadIcon_ICONDATA_VMS(void)
 
 	// NOTE: We need to set up iconAnimData in order to ensure
 	// this icon is deleted when the DreamcastSave is deleted.
-	this->iconAnimData = new IconAnimData();
+	this->iconAnimData = std::make_shared<IconAnimData>();
 	iconAnimData->count = 1;
 	iconAnimData->seq_index[0] = 0;
 	iconAnimData->delays[0].numer = 0;
@@ -607,7 +597,7 @@ const rp_image *DreamcastSavePrivate::loadIcon_ICONDATA_VMS(void)
 		}
 
 		// Convert the icon to rp_image.
-		rp_image *img = ImageDecoder::fromLinearCI4(
+		const rp_image_ptr img = ImageDecoder::fromLinearCI4(
 			ImageDecoder::PixelFormat::ARGB4444, true,
 			DC_VMS_ICON_W, DC_VMS_ICON_H,
 			buf.icon_color.u8, sizeof(buf.icon_color.u8),
@@ -634,7 +624,7 @@ const rp_image *DreamcastSavePrivate::loadIcon_ICONDATA_VMS(void)
 	}
 
 	// Convert the icon to rp_image.
-	rp_image *img = ImageDecoder::fromLinearMono(
+	const rp_image_ptr img = ImageDecoder::fromLinearMono(
 		DC_VMS_ICON_W, DC_VMS_ICON_H,
 		buf.icon_mono.u8, sizeof(buf.icon_mono.u8));
 	if (img) {
@@ -665,7 +655,7 @@ const rp_image *DreamcastSavePrivate::loadIcon_ICONDATA_VMS(void)
  * Load the save file's banner.
  * @return Banner, or nullptr on error.
  */
-const rp_image *DreamcastSavePrivate::loadBanner(void)
+rp_image_const_ptr DreamcastSavePrivate::loadBanner(void)
 {
 	if (img_banner) {
 		// Banner is already loaded.
@@ -774,7 +764,7 @@ const rp_image *DreamcastSavePrivate::loadBanner(void)
  *
  * @param file Open disc image.
  */
-DreamcastSave::DreamcastSave(IRpFile *file)
+DreamcastSave::DreamcastSave(const IRpFilePtr &file)
 	: super(new DreamcastSavePrivate(file))
 {
 	// This class handles save files.
@@ -821,7 +811,7 @@ DreamcastSave::DreamcastSave(IRpFile *file)
 		size_t size = d->file->read(&d->vms_dirent, sizeof(d->vms_dirent));
 		if (size != sizeof(d->vms_dirent)) {
 			// Read error.
-			UNREF_AND_NULL_NOCHK(d->file);
+			d->file.reset();
 			return;
 		}
 
@@ -849,7 +839,7 @@ DreamcastSave::DreamcastSave(IRpFile *file)
 		int ret = d->readVmiHeader(d->file);
 		if (ret != 0) {
 			// Read error.
-			UNREF_AND_NULL_NOCHK(d->file);
+			d->file.reset();
 			return;
 		}
 
@@ -860,7 +850,7 @@ DreamcastSave::DreamcastSave(IRpFile *file)
 	} else {
 		// Not valid.
 		d->saveType = DreamcastSavePrivate::SaveType::Unknown;
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -882,7 +872,7 @@ DreamcastSave::DreamcastSave(IRpFile *file)
 			d->loaded_headers |= headerLoaded;
 		} else {
 			// Not valid.
-			UNREF_AND_NULL_NOCHK(d->file);
+			d->file.reset();
 			return;
 		}
 
@@ -907,7 +897,7 @@ DreamcastSave::DreamcastSave(IRpFile *file)
 				d->loaded_headers |= headerLoaded;
 			} else {
 				// Not valid.
-				UNREF_AND_NULL_NOCHK(d->file);
+				d->file.reset();
 				return;
 			}
 		}
@@ -933,25 +923,20 @@ DreamcastSave::DreamcastSave(IRpFile *file)
  * @param vms_file Open .VMS save file.
  * @param vmi_file Open .VMI save file.
  */
-DreamcastSave::DreamcastSave(IRpFile *vms_file, IRpFile *vmi_file)
+DreamcastSave::DreamcastSave(const IRpFilePtr &vms_file, const IRpFilePtr &vmi_file)
 	: super(new DreamcastSavePrivate(vms_file))
 {
 	// This class handles save files.
 	RP_D(DreamcastSave);
 	d->fileType = FileType::SaveFile;
 
-	if (!d->file) {
+	if (!d->file || !vmi_file) {
 		// Could not ref() the file handle.
 		return;
 	}
 
 	// ref() the VMI file.
-	d->vmi_file = vmi_file->ref();
-	if (!d->vmi_file) {
-		// Could not ref() the VMI file.
-		UNREF_AND_NULL_NOCHK(d->file);
-		return;
-	}
+	d->vmi_file = vmi_file;
 
 	// Sanity check:
 	// - VMS file should be a multiple of 512 bytes,
@@ -963,8 +948,8 @@ DreamcastSave::DreamcastSave(IRpFile *vms_file, IRpFile *vmi_file)
 	      vmi_fileSize != sizeof(DC_VMI_Header))
 	{
 		// Invalid file(s).
-		UNREF_AND_NULL_NOCHK(d->vmi_file);
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->vmi_file.reset();
+		d->file.reset();
 		return;
 	}
 
@@ -978,8 +963,8 @@ DreamcastSave::DreamcastSave(IRpFile *vms_file, IRpFile *vmi_file)
 	int ret = d->readVmiHeader(d->vmi_file);
 	if (ret != 0) {
 		// Error reading the VMI header.
-		UNREF_AND_NULL_NOCHK(d->vmi_file);
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->vmi_file.reset();
+		d->file.reset();
 		return;
 	}
 
@@ -997,8 +982,8 @@ DreamcastSave::DreamcastSave(IRpFile *vms_file, IRpFile *vmi_file)
 			d->loaded_headers |= headerLoaded;
 		} else {
 			// Not valid.
-			UNREF_AND_NULL_NOCHK(d->vmi_file);
-			UNREF_AND_NULL_NOCHK(d->file);
+			d->vmi_file.reset();
+			d->file.reset();
 			return;
 		}
 	}
@@ -1015,7 +1000,7 @@ void DreamcastSave::close(void)
 	RP_D(DreamcastSave);
 
 	// Close the VMI file if it's open.
-	UNREF_AND_NULL(d->vmi_file);
+	d->vmi_file.reset();
 
 	// Call the superclass function.
 	super::close();
@@ -1527,10 +1512,10 @@ int DreamcastSave::loadMetaData(void)
  * Load an internal image.
  * Called by RomData::image().
  * @param imageType	[in] Image type to load.
- * @param pImage	[out] Pointer to const rp_image* to store the image in.
+ * @param pImage	[out] Reference to rp_image_const_ptr to store the image in.
  * @return 0 on success; negative POSIX error code on error.
  */
-int DreamcastSave::loadInternalImage(ImageType imageType, const rp_image **pImage)
+int DreamcastSave::loadInternalImage(ImageType imageType, rp_image_const_ptr &pImage)
 {
 	ASSERT_loadInternalImage(imageType, pImage);
 
@@ -1541,21 +1526,21 @@ int DreamcastSave::loadInternalImage(ImageType imageType, const rp_image **pImag
 				// Return the first icon frame.
 				// NOTE: DC save icon animations are always
 				// sequential, so we can use a shortcut here.
-				*pImage = d->iconAnimData->frames[0];
+				pImage = d->iconAnimData->frames[0];
 				return 0;
 			}
 			break;
 		case IMG_INT_BANNER:
 			if (d->img_banner) {
 				// Banner is loaded.
-				*pImage = d->img_banner;
+				pImage = d->img_banner;
 				return 0;
 			}
 			break;
 		default:
 			// Unsupported image type.
-			*pImage = nullptr;
-			return 0;
+			pImage.reset();
+			return -ENOENT;
 	}
 
 	if (!d->file) {
@@ -1569,18 +1554,19 @@ int DreamcastSave::loadInternalImage(ImageType imageType, const rp_image **pImag
 	// Load the image.
 	switch (imageType) {
 		case IMG_INT_ICON:
-			*pImage = d->loadIcon();
+			pImage = d->loadIcon();
 			break;
 		case IMG_INT_BANNER:
-			*pImage = d->loadBanner();
+			pImage = d->loadBanner();
 			break;
 		default:
 			// Unsupported.
+			pImage.reset();
 			return -ENOENT;
 	}
 
 	// TODO: -ENOENT if the file doesn't actually have an icon/banner.
-	return (*pImage != nullptr ? 0 : -EIO);
+	return ((bool)pImage ? 0 : -EIO);
 }
 
 /**
@@ -1589,12 +1575,9 @@ int DreamcastSave::loadInternalImage(ImageType imageType, const rp_image **pImag
  * Check imgpf for IMGPF_ICON_ANIMATED first to see if this
  * object has an animated icon.
  *
- * The retrieved IconAnimData must be ref()'d by the caller if the
- * caller stores it instead of using it immediately.
- *
  * @return Animated icon data, or nullptr if no animated icon is present.
  */
-const IconAnimData *DreamcastSave::iconAnimData(void) const
+IconAnimDataConstPtr DreamcastSave::iconAnimData(void) const
 {
 	RP_D(const DreamcastSave);
 	if (!d->iconAnimData) {

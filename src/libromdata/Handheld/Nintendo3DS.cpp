@@ -31,7 +31,8 @@ using namespace LibRpTexture;
 #include "disc/NCCHReader.hpp"
 #include "disc/CIAReader.hpp"
 
-// C++ STL classes.
+// C++ STL classes
+using std::shared_ptr;
 using std::string;
 using std::unique_ptr;
 using std::vector;
@@ -98,23 +99,15 @@ const RomDataInfo Nintendo3DSPrivate::romDataInfo = {
 	"Nintendo3DS", exts, mimeTypes
 };
 
-Nintendo3DSPrivate::Nintendo3DSPrivate(IRpFile *file)
+Nintendo3DSPrivate::Nintendo3DSPrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
 	, romType(RomType::Unknown)
 	, headers_loaded(0)
 	, media_unit_shift(9)	// default is 9 (512 bytes)
-	, ncch_reader(nullptr)
-	, mainContent(nullptr)
 {
 	// Clear the various structs.
 	memset(&mxh, 0, sizeof(mxh));
 	memset(&perm, 0, sizeof(perm));
-}
-
-Nintendo3DSPrivate::~Nintendo3DSPrivate()
-{
-	UNREF(mainContent);
-	UNREF(ncch_reader);
 }
 
 /**
@@ -131,7 +124,7 @@ int Nintendo3DSPrivate::loadSMDH(void)
 	static const size_t N3DS_SMDH_Section_Size =
 		sizeof(N3DS_SMDH_Header_t) + sizeof(N3DS_SMDH_Icon_t);
 
-	SubFile *smdhFile = nullptr;
+	IRpFilePtr smdhFile;
 	switch (romType) {
 		default:
 			// Unsupported...
@@ -151,7 +144,7 @@ int Nintendo3DSPrivate::loadSMDH(void)
 			}
 
 			// Open the SMDH section.
-			smdhFile = new SubFile(this->file, le32_to_cpu(mxh.hb3dsx_header.smdh_offset), N3DS_SMDH_Section_Size);
+			smdhFile = std::make_shared<SubFile>(this->file, le32_to_cpu(mxh.hb3dsx_header.smdh_offset), N3DS_SMDH_Section_Size);
 			break;
 		}
 
@@ -185,7 +178,7 @@ int Nintendo3DSPrivate::loadSMDH(void)
 
 				// Open the SMDH section.
 				// TODO: Verify that this works.
-				smdhFile = new SubFile(this->file, addr, N3DS_SMDH_Section_Size);
+				smdhFile = std::make_shared<SubFile>(this->file, addr, N3DS_SMDH_Section_Size);
 				break;
 			}
 
@@ -197,47 +190,42 @@ int Nintendo3DSPrivate::loadSMDH(void)
 		case RomType::NCCH: {
 			// CCI file, CIA file with no meta section, or NCCH file.
 			// Open "exefs:/icon".
-			NCCHReader *const ncch_reader = loadNCCH();
-			if (!ncch_reader || !ncch_reader->isOpen()) {
+			const NCCHReaderConstPtr &ncch = loadNCCH();
+			if (!ncch || !ncch->isOpen()) {
 				// Unable to open the primary NCCH section.
 				return -6;
 			}
 
-			IRpFile *const ncch_f_icon = ncch_reader->open(N3DS_NCCH_SECTION_EXEFS, "icon");
+			const IRpFilePtr ncch_f_icon(ncch->open(N3DS_NCCH_SECTION_EXEFS, "icon"));
 			if (!ncch_f_icon) {
 				// Failed to open "icon".
 				return -7;
 			} else if (ncch_f_icon->size() < (off64_t)N3DS_SMDH_Section_Size) {
 				// Icon is too small.
-				ncch_f_icon->unref();
 				return -8;
 			}
 
 			// Create the SMDH subfile.
-			smdhFile = new SubFile(ncch_f_icon, 0, N3DS_SMDH_Section_Size);
-			ncch_f_icon->unref();
+			smdhFile = std::make_shared<SubFile>(ncch_f_icon, 0, N3DS_SMDH_Section_Size);
 			break;
 		}
 	}
 
 	if (!smdhFile || !smdhFile->isOpen()) {
 		// Unable to open the SMDH subfile.
-		UNREF(smdhFile);
 		return -9;
 	}
 
 	// Open the SMDH RomData subclass.
-	Nintendo3DS_SMDH *const smdhData = new Nintendo3DS_SMDH(smdhFile);
-	smdhFile->unref();
+	RomDataPtr smdhData = std::make_shared<Nintendo3DS_SMDH>(smdhFile);
 	if (!smdhData->isOpen()) {
 		// Unable to open the SMDH file.
-		smdhData->unref();
 		return -11;
 	}
 
 	// Loaded the SMDH section.
 	headers_loaded |= HEADER_SMDH;
-	this->mainContent = smdhData;
+	this->mainContent = std::move(smdhData);
 	return 0;
 }
 
@@ -247,30 +235,30 @@ int Nintendo3DSPrivate::loadSMDH(void)
  * @return 0 on success; negative POSIX error code on error.
  * NOTE: Caller must check NCCHReader::isOpen().
  */
-int Nintendo3DSPrivate::loadNCCH(int idx, NCCHReader **pOutNcchReader)
+int Nintendo3DSPrivate::loadNCCH(int idx, NCCHReaderPtr &pOutNcchReader)
 {
-	assert(pOutNcchReader != nullptr);
-	if (!pOutNcchReader)
-		return -EINVAL;
-
+	// TODO: Move pOutNcchReader.reset() up here?
 	off64_t offset = 0;
 	uint32_t length = 0;
 	switch (romType) {
 		case RomType::CIA: {
 			if (!(headers_loaded & HEADER_CIA)) {
 				// CIA header is not loaded...
+				pOutNcchReader.reset();
 				return -EIO;
 			}
 
 			// Load the ticket and TMD header.
 			if (loadTicketAndTMD() != 0) {
 				// Unable to load the ticket and TMD header.
+				pOutNcchReader.reset();
 				return -EIO;
 			}
 
 			// Check if the content index is valid.
 			if (static_cast<unsigned int>(idx) >= content_chunks.size()) {
 				// Content index is out of range.
+				pOutNcchReader.reset();
 				return -ENOENT;
 			}
 
@@ -288,6 +276,7 @@ int Nintendo3DSPrivate::loadNCCH(int idx, NCCHReader **pOutNcchReader)
 			}
 			if (length == 0) {
 				// Content chunk not found.
+				pOutNcchReader.reset();
 				return -ENOENT;
 			}
 
@@ -317,6 +306,7 @@ int Nintendo3DSPrivate::loadNCCH(int idx, NCCHReader **pOutNcchReader)
 			// Make sure the partition starts after the card info header.
 			if (offset <= 0x2000) {
 				// Invalid partition offset.
+				pOutNcchReader.reset();
 				return -EIO;
 			}
 			break;
@@ -326,6 +316,7 @@ int Nintendo3DSPrivate::loadNCCH(int idx, NCCHReader **pOutNcchReader)
 			// NCCH file. Only one content.
 			if (idx != 0) {
 				// Invalid content index.
+				pOutNcchReader.reset();
 				return -ENOENT;
 			}
 			offset = 0;
@@ -335,11 +326,12 @@ int Nintendo3DSPrivate::loadNCCH(int idx, NCCHReader **pOutNcchReader)
 
 		default:
 			// Unsupported...
+			pOutNcchReader.reset();
 			return -ENOTSUP;
 	}
 
 	// Is this encrypted using CIA title key encryption?
-	CIAReader *ciaReader = nullptr;
+	CIAReaderPtr ciaReader;
 	if (romType == RomType::CIA && idx < (int)content_chunks.size()) {
 		// Check if this content is encrypted.
 		// If it is, we'll need to create a CIAReader.
@@ -358,10 +350,10 @@ int Nintendo3DSPrivate::loadNCCH(int idx, NCCHReader **pOutNcchReader)
 
 		if (ticket) {
 			// Create a CIAReader.
-			ciaReader = new CIAReader(file, offset, length, ticket, idx);
+			ciaReader = std::make_shared<CIAReader>(file, offset, length, ticket, idx);
 			if (!ciaReader->isOpen()) {
 				// Unable to open the CIAReader.
-				UNREF_AND_NULL_NOCHK(ciaReader);
+				ciaReader.reset();
 			}
 		}
 	}
@@ -373,14 +365,12 @@ int Nintendo3DSPrivate::loadNCCH(int idx, NCCHReader **pOutNcchReader)
 		// This is an encrypted CIA.
 		// NOTE 2: CIAReader handles the offset, so we need to
 		// tell NCCHReader that the offset is 0.
-		*pOutNcchReader = new NCCHReader(ciaReader, media_unit_shift, 0, length);
+		pOutNcchReader = std::make_shared<NCCHReader>(ciaReader, media_unit_shift, 0, length);
 	} else {
 		// Anything else is read directly.
-		*pOutNcchReader = new NCCHReader(file, media_unit_shift, offset, length);
+		pOutNcchReader = std::make_shared<NCCHReader>(file, media_unit_shift, offset, length);
 	}
 
-	// We don't need to keep a reference to the CIAReader.
-	UNREF(ciaReader);
 	return 0;
 }
 
@@ -390,7 +380,7 @@ int Nintendo3DSPrivate::loadNCCH(int idx, NCCHReader **pOutNcchReader)
  * @return this->ncch_reader on success; nullptr on error.
  * NOTE: Caller must check NCCHReader::isOpen().
  */
-NCCHReader *Nintendo3DSPrivate::loadNCCH(void)
+const NCCHReaderConstPtr &Nintendo3DSPrivate::loadNCCH(void)
 {
 	if (this->ncch_reader) {
 		// NCCH reader has already been created.
@@ -409,7 +399,7 @@ NCCHReader *Nintendo3DSPrivate::loadNCCH(void)
 	// Card Info Header matches the actual partition?
 	// NOTE: We're not checking isOpen() here.
 	// That should be checked by the caller.
-	loadNCCH(content_idx, &this->ncch_reader);
+	loadNCCH(content_idx, this->ncch_reader);
 	return this->ncch_reader;
 }
 
@@ -420,7 +410,7 @@ NCCHReader *Nintendo3DSPrivate::loadNCCH(void)
  */
 inline const N3DS_NCCH_Header_NoSig_t *Nintendo3DSPrivate::loadNCCHHeader(void)
 {
-	const NCCHReader *const ncch = loadNCCH();
+	const NCCHReaderConstPtr &ncch = loadNCCH();
 	return (ncch && ncch->isOpen() ? ncch->ncchHeader() : nullptr);
 }
 
@@ -589,7 +579,7 @@ int Nintendo3DSPrivate::openSRL(void)
 		}
 		// File is no longer open.
 		// unref() and reopen it.
-		UNREF_AND_NULL(this->mainContent);
+		this->mainContent.reset();
 	}
 
 	if (!this->file || !this->file->isOpen()) {
@@ -610,42 +600,36 @@ int Nintendo3DSPrivate::openSRL(void)
 
 	// Check if this content is encrypted.
 	// If it is, we'll need to create a CIAReader.
-	IDiscReader *srlReader = nullptr;
+	IDiscReaderPtr srlReader;
 	if (chunk0->type & cpu_to_be16(N3DS_CONTENT_CHUNK_ENCRYPTED)) {
 		// Content is encrypted.
-		srlReader = new CIAReader(this->file, offset, length,
+		srlReader = std::make_shared<CIAReader>(this->file, offset, length,
 			&mxh.ticket, be16_to_cpu(chunk0->index));
 	} else {
 		// Content is NOT encrypted.
 		// Use a plain old DiscReader.
-		srlReader = new DiscReader(this->file, offset, length);
+		srlReader = std::make_shared<DiscReader>(this->file, offset, length);
 	}
 	if (!srlReader->isOpen()) {
 		// Unable to open the SRL reader.
-		srlReader->unref();
 		return -EIO;
 	}
 
 	// TODO: Make IDiscReader derive from IRpFile.
 	// May need to add reference counting to IRpFile...
-	NintendoDS *srlData = nullptr;
-	PartitionFile *const srlFile = new PartitionFile(srlReader, 0, length);
-	srlReader->unref();
+	RomDataPtr srlData;
+	PartitionFilePtr srlFile = std::make_shared<PartitionFile>(srlReader.get(), 0, length);
 	if (srlFile->isOpen()) {
 		// Create the NintendoDS object.
-		srlData = new NintendoDS(srlFile, true);
+		srlData = std::make_shared<NintendoDS>(srlFile, true);
 	}
-	srlFile->unref();
 
 	if (srlData && srlData->isOpen() && srlData->isValid()) {
 		// SRL opened successfully.
-		this->mainContent = srlData;
-	} else {
-		// Failed to open the SRL.
-		UNREF(srlData);
+		this->mainContent = std::move(srlData);
 	}
 
-	return (this->mainContent != nullptr ? 0 : -EIO);
+	return ((bool)this->mainContent) ? 0 : -EIO;
 }
 
 /**
@@ -657,7 +641,7 @@ uint32_t Nintendo3DSPrivate::getSMDHRegionCode(void)
 	uint32_t smdhRegion = 0;
 	if ((headers_loaded & Nintendo3DSPrivate::HEADER_SMDH) || loadSMDH() == 0) {
 		// SMDH section loaded.
-		Nintendo3DS_SMDH *const smdh = dynamic_cast<Nintendo3DS_SMDH*>(this->mainContent);
+		Nintendo3DS_SMDH *const smdh = dynamic_cast<Nintendo3DS_SMDH*>(this->mainContent.get());
 		if (smdh) {
 			smdhRegion = smdh->getRegionCode();
 		}
@@ -681,7 +665,7 @@ void Nintendo3DSPrivate::addTitleIdAndProductCodeFields(bool showContentType)
 	// and will be printed if it doesn't match the title ID.
 
 	// NCCH header.
-	NCCHReader *const ncch = loadNCCH();
+	const NCCHReaderConstPtr &ncch = loadNCCH();
 	const N3DS_NCCH_Header_NoSig_t *const ncch_header =
 		(ncch && ncch->isOpen() ? ncch->ncchHeader() : nullptr);
 
@@ -766,7 +750,7 @@ void Nintendo3DSPrivate::addTitleIdAndProductCodeFields(bool showContentType)
 	// NOTE: All known official logo binaries are 8 KB.
 	// The original and new "Homebrew" logos are also 8 KB.
 	uint32_t crc = 0;
-	IRpFile *const f_logo = ncch->openLogo();
+	const IRpFilePtr f_logo(ncch->openLogo());
 	if (f_logo) {
 		const off64_t szFile = f_logo->size();
 		if (szFile == 8192) {
@@ -798,7 +782,6 @@ void Nintendo3DSPrivate::addTitleIdAndProductCodeFields(bool showContentType)
 			// Some other custom logo.
 			crc = 1;
 		}
-		f_logo->unref();
 	}
 
 	struct logo_crc_tbl_t {
@@ -1027,7 +1010,7 @@ int Nintendo3DSPrivate::loadPermissions(void)
 		return 0;
 	}
 
-	const NCCHReader *const ncch = loadNCCH();
+	const NCCHReaderConstPtr &ncch = loadNCCH();
 	if (!ncch || !ncch->isOpen()) {
 		// Can't open the primary NCCH.
 		return -1;
@@ -1232,7 +1215,7 @@ int Nintendo3DSPrivate::addFields_permissions(void)
  *
  * @param file Open disc image.
  */
-Nintendo3DS::Nintendo3DS(IRpFile *file)
+Nintendo3DS::Nintendo3DS(const IRpFilePtr &file)
 	: super(new Nintendo3DSPrivate(file))
 {
 	// This class handles several different types of files,
@@ -1250,8 +1233,7 @@ Nintendo3DS::Nintendo3DS(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(&header, sizeof(header));
 	if (size != sizeof(header)) {
-		d->file->unref();
-		d->file = nullptr;
+		d->file.reset();
 		return;
 	}
 
@@ -1310,7 +1292,7 @@ Nintendo3DS::Nintendo3DS(IRpFile *file)
 		default:
 			// Unknown ROM format.
 			d->romType = Nintendo3DSPrivate::RomType::Unknown;
-			UNREF_AND_NULL_NOCHK(d->file);
+			d->file.reset();
 			return;
 	}
 
@@ -1471,7 +1453,7 @@ const char *Nintendo3DS::systemName(unsigned int type) const
 	// Product code.
 	// Used to determine if it's *New* Nintendo 3DS exclusive.
 	// (KTR instead of CTR)
-	NCCHReader *const ncch = const_cast<Nintendo3DSPrivate*>(d)->loadNCCH();
+	const NCCHReaderConstPtr &ncch = const_cast<Nintendo3DSPrivate*>(d)->loadNCCH();
 	const N3DS_NCCH_Header_NoSig_t *const ncch_header =
 		(ncch && ncch->isOpen() ? ncch->ncchHeader() : nullptr);
 	if (ncch_header && ncch_header->product_code[0] == 'K') {
@@ -1533,7 +1515,7 @@ uint32_t Nintendo3DS::supportedImageTypes(void) const
 			const_cast<Nintendo3DSPrivate*>(d)->loadTicketAndTMD();
 		}
 		// Is it in fact DSiWare?
-		NintendoDS *const srl = dynamic_cast<NintendoDS*>(d->mainContent);
+		NintendoDS *const srl = dynamic_cast<NintendoDS*>(d->mainContent.get());
 		if (srl) {
 			// This is a DSiWare SRL.
 			// Get the image information from the underlying SRL.
@@ -1621,7 +1603,7 @@ uint32_t Nintendo3DS::imgpf(ImageType imageType) const
 			const_cast<Nintendo3DSPrivate*>(d)->loadTicketAndTMD();
 		}
 		// Is it in fact DSiWare?
-		NintendoDS *const srl = dynamic_cast<NintendoDS*>(d->mainContent);
+		NintendoDS *const srl = dynamic_cast<NintendoDS*>(d->mainContent.get());
 		if (srl) {
 			// This is a DSiWare SRL.
 			// Get the image information from the underlying SRL.
@@ -1688,7 +1670,7 @@ int Nintendo3DS::loadFieldData(void)
 	// Get the primary NCCH.
 	// If this fails, and the file type is NCSD or CIA,
 	// it usually means there's a missing key.
-	const NCCHReader *const ncch = d->loadNCCH();
+	const NCCHReaderConstPtr &ncch = d->loadNCCH();
 
 	// Check for potential encryption key errors.
 	if (d->romType == Nintendo3DSPrivate::RomType::CCI ||
@@ -1737,7 +1719,7 @@ int Nintendo3DS::loadFieldData(void)
 		}
 
 		// Add the SMDH fields from the Nintendo3DS_SMDH object.
-		assert(d->mainContent != nullptr);
+		assert((bool)d->mainContent);
 		const RomFields *const smdh_fields = d->mainContent->fields();
 		assert(smdh_fields != nullptr);
 		if (smdh_fields) {
@@ -1992,8 +1974,8 @@ int Nintendo3DS::loadFieldData(void)
 				continue;
 
 			// Make sure the partition exists first.
-			NCCHReader *pNcch = nullptr;
-			int ret = d->loadNCCH(i, &pNcch);
+			NCCHReaderPtr pNcch;
+			int ret = d->loadNCCH(i, pNcch);
 			if (ret == -ENOENT)
 				continue;
 
@@ -2072,8 +2054,6 @@ int Nintendo3DS::loadFieldData(void)
 			// Partition size.
 			const off64_t length_bytes = static_cast<off64_t>(length) << d->media_unit_shift;
 			data_row.emplace_back(LibRpText::formatFileSize(length_bytes));
-
-			UNREF(pNcch);
 		}
 
 		// Add the partitions list data.
@@ -2156,8 +2136,8 @@ int Nintendo3DS::loadFieldData(void)
 		     iter != content_chunks_cend; ++iter, ++i)
 		{
 			// Make sure the content exists first.
-			NCCHReader *pNcch = nullptr;
-			int ret = d->loadNCCH(i, &pNcch);
+			NCCHReaderPtr pNcch;
+			int ret = d->loadNCCH(i, pNcch);
 			if (ret == -ENOENT)
 				continue;
 
@@ -2215,7 +2195,6 @@ int Nintendo3DS::loadFieldData(void)
 
 				// Content size
 				data_row.emplace_back(LibRpText::formatFileSize(be64_to_cpu(iter->size)));
-				UNREF(pNcch);
 				continue;
 			}
 
@@ -2260,8 +2239,6 @@ int Nintendo3DS::loadFieldData(void)
 
 			// Content size
 			data_row.emplace_back(LibRpText::formatFileSize(pNcch->partition_size()));
-
-			UNREF(pNcch);
 		}
 
 		// Add the contents table.
@@ -2429,7 +2406,7 @@ int Nintendo3DS::loadMetaData(void)
 		ret = const_cast<Nintendo3DSPrivate*>(d)->loadTicketAndTMD();
 	}
 
-	if (ret == 0 && d->mainContent != nullptr) {
+	if (ret == 0 && (bool)d->mainContent) {
 		// Add the metadata.
 		d->metaData = new RomMetaData();
 		d->metaData->addMetaData_metaData(d->mainContent->metaData());
@@ -2443,16 +2420,17 @@ int Nintendo3DS::loadMetaData(void)
  * Load an internal image.
  * Called by RomData::image().
  * @param imageType	[in] Image type to load.
- * @param pImage	[out] Pointer to const rp_image* to store the image in.
+ * @param pImage	[out] Reference to rp_image_const_ptr to store the image in.
  * @return 0 on success; negative POSIX error code on error.
  */
-int Nintendo3DS::loadInternalImage(ImageType imageType, const rp_image **pImage)
+int Nintendo3DS::loadInternalImage(ImageType imageType, rp_image_const_ptr &pImage)
 {
 	ASSERT_loadInternalImage(imageType, pImage);
 
 	RP_D(Nintendo3DS);
 	if (!d->isValid) {
 		// ROM image isn't valid.
+		pImage.reset();
 		return -EIO;
 	}
 
@@ -2461,7 +2439,7 @@ int Nintendo3DS::loadInternalImage(ImageType imageType, const rp_image **pImage)
 		case Nintendo3DSPrivate::RomType::Unknown:
 		case Nintendo3DSPrivate::RomType::eMMC:
 			// Cannot get external images for eMMC and unknown ROM types.
-			*pImage = nullptr;
+			pImage.reset();
 			return -ENOENT;
 
 		case Nintendo3DSPrivate::RomType::CIA:
@@ -2485,14 +2463,13 @@ int Nintendo3DS::loadInternalImage(ImageType imageType, const rp_image **pImage)
 
 	if (!d->mainContent) {
 		// No main content...
-		*pImage = nullptr;
+		pImage.reset();
 		return -ENOENT;
 	}
 
 	// Get the icon from the main content.
-	const rp_image *image = d->mainContent->image(imageType);
-	*pImage = image;
-	return (image ? 0 : -EIO);
+	pImage = d->mainContent->image(imageType);
+	return ((bool)pImage ? 0 : -EIO);
 }
 
 /**
@@ -2501,12 +2478,9 @@ int Nintendo3DS::loadInternalImage(ImageType imageType, const rp_image **pImage)
  * Check imgpf for IMGPF_ICON_ANIMATED first to see if this
  * object has an animated icon.
  *
- * The retrieved IconAnimData must be ref()'d by the caller if the
- * caller stores it instead of using it immediately.
- *
  * @return Animated icon data, or nullptr if no animated icon is present.
  */
-const IconAnimData *Nintendo3DS::iconAnimData(void) const
+IconAnimDataConstPtr Nintendo3DS::iconAnimData(void) const
 {
 	// NOTE: Nintendo 3DS icons cannot be animated.
 	// Nintendo DSi icons can be animated, so this is
@@ -2559,7 +2533,7 @@ int Nintendo3DS::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size
 				const_cast<Nintendo3DSPrivate*>(d)->loadTicketAndTMD();
 			}
 			// Check for a DSiWare SRL.
-			NintendoDS *const srl = dynamic_cast<NintendoDS*>(d->mainContent);
+			NintendoDS *const srl = dynamic_cast<NintendoDS*>(d->mainContent.get());
 			if (srl) {
 				// This is a DSiWare SRL.
 				// Get the image URLs from the underlying SRL.
@@ -2764,7 +2738,7 @@ bool Nintendo3DS::hasDangerousPermissions(void) const
 	int ret = const_cast<Nintendo3DSPrivate*>(d)->loadTicketAndTMD();
 	if (ret == 0) {
 		// Is it in fact DSiWare?
-		NintendoDS *const srl = dynamic_cast<NintendoDS*>(d->mainContent);
+		NintendoDS *const srl = dynamic_cast<NintendoDS*>(d->mainContent.get());
 		if (srl) {
 			// DSiWare: Check DSi permissions.
 			return d->mainContent->hasDangerousPermissions();
@@ -2795,8 +2769,8 @@ int Nintendo3DS::checkViewedAchievements(void) const
 	}
 
 #ifdef ENABLE_DECRYPTION
-	// NCCH header.
-	NCCHReader *const ncch = const_cast<Nintendo3DSPrivate*>(d)->loadNCCH();
+	// NCCH header
+	const NCCHReaderConstPtr &ncch = const_cast<Nintendo3DSPrivate*>(d)->loadNCCH();
 	if (!ncch) {
 		// Cannot load the NCCH.
 		return 0;

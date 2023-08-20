@@ -22,7 +22,7 @@ class CisoPspReader : public LibRpBase::SparseDiscReader
 		 * unref()'d by the caller afterwards.
 		 * @param file File to read from.
 		 */
-		explicit CisoPspReader(LibRpFile::IRpFile *file);
+		explicit CisoPspReader(const LibRpFile::IRpFilePtr &file);
 
 	private:
 		typedef SparseDiscReader super;

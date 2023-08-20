@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * ImageDecoder_ifunc.cpp: ImageDecoder IFUNC resolution functions.        *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -80,18 +80,18 @@ __typeof__(&ImageDecoder::fromLinear32_cpp) fromLinear32_resolve(void)
 }
 
 #ifndef IMAGEDECODER_ALWAYS_HAS_SSE2
-rp_image *ImageDecoder::fromLinear16(PixelFormat px_format,
+rp_image_ptr ImageDecoder::fromLinear16(PixelFormat px_format,
 	int width, int height,
 	const uint16_t *img_buf, size_t img_siz, int stride)
 	IFUNC_ATTR(fromLinear16_resolve);
 #endif /* IMAGEDECODER_ALWAYS_HAS_SSE2 */
 
-rp_image *ImageDecoder::fromLinear24(PixelFormat px_format,
+rp_image_ptr ImageDecoder::fromLinear24(PixelFormat px_format,
 	int width, int height,
 	const uint8_t *img_buf, size_t img_siz, int stride)
 	IFUNC_ATTR(fromLinear24_resolve);
 
-rp_image *ImageDecoder::fromLinear32(PixelFormat px_format,
+rp_image_ptr ImageDecoder::fromLinear32(PixelFormat px_format,
 	int width, int height,
 	const uint32_t *img_buf, size_t img_siz, int stride)
 	IFUNC_ATTR(fromLinear32_resolve);

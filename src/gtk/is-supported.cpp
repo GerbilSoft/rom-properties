@@ -2,18 +2,19 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * is-supported.hpp: Check if a URI is supported.                          *
  *                                                                         *
- * Copyright (c) 2017-2022 by David Korth.                                 *
+ * Copyright (c) 2017-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "stdafx.h"
 #include "is-supported.hpp"
 
+#include <glib.h>
+
 // librpfile, librpbase, libromdata
 #include "libromdata/RomDataFactory.hpp"
-using LibRpFile::IRpFile;
-using LibRpFile::RpFile;
-using LibRpBase::RomData;
+using namespace LibRpBase;
+using namespace LibRpFile;
 using LibRomData::RomDataFactory;
 
 /**
@@ -22,7 +23,7 @@ using LibRomData::RomDataFactory;
  * @param uri URI from e.g. nautilus_file_info_get_uri() [UTF-8]
  * @return RomData object if supported; nullptr if not.
  */
-LibRpBase::RomData *rp_gtk_open_uri(const gchar *uri)
+RomDataPtr rp_gtk_open_uri(const char *uri)
 {
 	g_return_val_if_fail(uri != nullptr && uri[0] != '\0', nullptr);
 
@@ -40,13 +41,13 @@ LibRpBase::RomData *rp_gtk_open_uri(const gchar *uri)
 		file = new RpFileGio(uri);
 	}
 
-	// Open the ROM file.
-	RomData *romData = nullptr;
-	if (file->isOpen()) {
-		// Attempt to open the ROM file.
-		romData = RomDataFactory::create(file);
+	if (!file->isOpen()) {
+		// Unable to open the file...
+		// TODO: Return an error code?
+		delete file;
+		return nullptr;
 	}
-	file->unref();
 
-	return romData;
+	// Create the RomData object.
+	return RomDataFactory::create(IRpFilePtr(file));
 }

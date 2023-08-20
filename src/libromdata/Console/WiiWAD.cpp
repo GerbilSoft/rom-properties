@@ -21,9 +21,9 @@
 #include "librpbase/Achievements.hpp"
 #include "librpbase/SystemRegion.hpp"
 using namespace LibRpBase;
+using namespace LibRpFile;
 using namespace LibRpText;
-using LibRpFile::IRpFile;
-using LibRpTexture::rp_image;
+using namespace LibRpTexture;
 
 // Decryption.
 #ifdef ENABLE_DECRYPTION
@@ -38,7 +38,8 @@ using LibRpTexture::rp_image;
 #include "WiiWIBN.hpp"
 #include "Handheld/NintendoDS.hpp"
 
-// C++ STL classes.
+// C++ STL classes
+using std::shared_ptr;
 using std::string;
 using std::unique_ptr;
 using std::vector;
@@ -74,17 +75,13 @@ const RomDataInfo WiiWADPrivate::romDataInfo = {
 	"WiiWAD", exts, mimeTypes
 };
 
-WiiWADPrivate::WiiWADPrivate(IRpFile *file)
+WiiWADPrivate::WiiWADPrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
 	, wadType(WadType::Unknown)
 	, data_offset(0)
 	, data_size(0)
 	, pIMETContent(nullptr)
 	, imetContentOffset(0)
-#ifdef ENABLE_DECRYPTION
-	, cbcReader(nullptr)
-	, mainContent(nullptr)
-#endif /* ENABLE_DECRYPTION */
 	, key_idx(WiiPartition::Key_Max)
 	, key_status(KeyManager::VerifyResult::Unknown)
 {
@@ -96,14 +93,6 @@ WiiWADPrivate::WiiWADPrivate(IRpFile *file)
 #ifdef ENABLE_DECRYPTION
 	memset(dec_title_key, 0, sizeof(dec_title_key));
 	memset(&imet, 0, sizeof(imet));
-#endif /* ENABLE_DECRYPTION */
-}
-
-WiiWADPrivate::~WiiWADPrivate()
-{
-#ifdef ENABLE_DECRYPTION
-	UNREF(mainContent);
-	UNREF(cbcReader);
 #endif /* ENABLE_DECRYPTION */
 }
 
@@ -171,7 +160,7 @@ int WiiWADPrivate::openSRL(void)
 		}
 		// File is no longer open.
 		// unref() and reopen it.
-		UNREF_AND_NULL(mainContent);
+		mainContent.reset();
 	}
 
 	if (!file || !file->isOpen()) {
@@ -193,7 +182,7 @@ int WiiWADPrivate::openSRL(void)
 		memcpy(iv, &pIMETContent->index, sizeof(pIMETContent->index));
 		memset(&iv[2], 0, sizeof(iv)-2);
 
-		cbcReader = new CBCReader(file,
+		cbcReader = std::make_shared<CBCReader>(file,
 			data_offset, data_size, dec_title_key, iv);
 		if (!cbcReader->isOpen()) {
 			// Unable to open a CBC reader.
@@ -201,24 +190,23 @@ int WiiWADPrivate::openSRL(void)
 			if (ret == 0) {
 				ret = -EIO;
 			}
-			UNREF_AND_NULL(cbcReader);
+			cbcReader.reset();
 			return ret;
 		}
 	}
 
 	int ret = 0;
-	PartitionFile *const ptFile = new PartitionFile(cbcReader,
+	PartitionFilePtr ptFile = std::make_shared<PartitionFile>(cbcReader.get(),
 		imetContentOffset, be64_to_cpu(pIMETContent->size));
 	if (ptFile->isOpen()) {
 		// Open the SRL..
-		NintendoDS *const srl = new NintendoDS(ptFile);
+		RomDataPtr srl = std::make_shared<NintendoDS>(ptFile);
 		if (srl->isOpen()) {
 			// Opened successfully.
-			mainContent = srl;
+			mainContent = std::move(srl);
 		} else {
 			// Unable to open the SRL.
 			ret = -EIO;
-			UNREF(srl);
 		}
 	} else {
 		ret = -ptFile->lastError();
@@ -226,7 +214,6 @@ int WiiWADPrivate::openSRL(void)
 			ret = -EIO;
 		}
 	}
-	UNREF(ptFile);
 	return ret;
 }
 #endif /* ENABLE_DECRYPTION */
@@ -246,7 +233,7 @@ int WiiWADPrivate::openSRL(void)
  *
  * @param file Open disc image.
  */
-WiiWAD::WiiWAD(IRpFile *file)
+WiiWAD::WiiWAD(const IRpFilePtr &file)
 	: super(new WiiWADPrivate(file))
 {
 	// This class handles application packages.
@@ -263,7 +250,7 @@ WiiWAD::WiiWAD(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(&d->wadHeader, sizeof(d->wadHeader));
 	if (size != sizeof(d->wadHeader)) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -275,7 +262,7 @@ WiiWAD::WiiWAD(IRpFile *file)
 	};
 	d->wadType = static_cast<WiiWADPrivate::WadType>(isRomSupported_static(&info));
 	if ((int)d->wadType < 0) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -326,7 +313,7 @@ WiiWAD::WiiWAD(IRpFile *file)
 
 		default:
 			assert(!"Should not get here...");
-			UNREF_AND_NULL_NOCHK(d->file);
+			d->file.reset();
 			d->wadType = WiiWADPrivate::WadType::Unknown;
 			return;
 	}
@@ -335,7 +322,7 @@ WiiWAD::WiiWAD(IRpFile *file)
 	const off64_t data_end_offset = (off64_t)d->data_offset + (off64_t)d->data_size;
 	if (data_end_offset > d->file->size()) {
 		// Out of range.
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		d->wadType = WiiWADPrivate::WadType::Unknown;
 		return;
 	}
@@ -345,14 +332,14 @@ WiiWAD::WiiWAD(IRpFile *file)
 	size = d->file->seekAndRead(ticket_addr, &d->ticket, sizeof(d->ticket));
 	if (size != sizeof(d->ticket)) {
 		// Seek and/or read error.
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		d->wadType = WiiWADPrivate::WadType::Unknown;
 		return;
 	}
 	size = d->file->seekAndRead(tmd_addr, &d->tmdHeader, sizeof(d->tmdHeader));
 	if (size != sizeof(d->tmdHeader)) {
 		// Seek and/or read error.
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		d->wadType = WiiWADPrivate::WadType::Unknown;
 		return;
 	}
@@ -458,7 +445,7 @@ WiiWAD::WiiWAD(IRpFile *file)
 
 	// Create a CBC reader to decrypt the data section.
 	// TODO: Verify some known data?
-	d->cbcReader = new CBCReader(d->file,
+	d->cbcReader = std::make_shared<CBCReader>(d->file,
 		d->data_offset, d->data_size, d->dec_title_key, iv);
 
 	if (d->tmdHeader.title_id.sysID != cpu_to_be16(3)) {
@@ -478,21 +465,17 @@ WiiWAD::WiiWAD(IRpFile *file)
 			// Create the PartitionFile and WiiWIBN subclass.
 			// NOTE: Not sure how big the WIBN data is, so we'll
 			// allow it to read the rest of the file.
-			PartitionFile *const ptFile = new PartitionFile(d->cbcReader,
+			PartitionFilePtr ptFile = std::make_shared<PartitionFile>(d->cbcReader.get(),
 				offsetof(Wii_IMET_t, magic),
 				be64_to_cpu(d->pIMETContent->size) - offsetof(Wii_IMET_t, magic));
 			if (ptFile->isOpen()) {
 				// Open the WiiWIBN.
-				WiiWIBN *const wibn = new WiiWIBN(ptFile);
+				RomDataPtr wibn = std::make_shared<WiiWIBN>(ptFile);
 				if (wibn->isOpen()) {
 					// Opened successfully.
-					d->mainContent = wibn;
-				} else {
-					// Unable to open the WiiWIBN.
-					UNREF(wibn);
+					d->mainContent = std::move(wibn);
 				}
 			}
-			UNREF(ptFile);
 		} else {
 			// Sometimes the IMET header has a 64-byte offset.
 			// FIXME: Figure out why.
@@ -528,7 +511,7 @@ void WiiWAD::close(void)
 	}
 
 	// Close associated files used with child RomData subclasses.
-	UNREF_AND_NULL(d->cbcReader);
+	d->cbcReader.reset();
 #endif /* ENABLE_DECRYPTION */
 
 	// Call the superclass function.
@@ -1251,17 +1234,17 @@ int WiiWAD::loadMetaData(void)
  * Load an internal image.
  * Called by RomData::image().
  * @param imageType	[in] Image type to load.
- * @param pImage	[out] Pointer to const rp_image* to store the image in.
+ * @param pImage	[out] Reference to rp_image_const_ptr to store the image in.
  * @return 0 on success; negative POSIX error code on error.
  */
-int WiiWAD::loadInternalImage(ImageType imageType, const rp_image **pImage)
+int WiiWAD::loadInternalImage(ImageType imageType, rp_image_const_ptr &pImage)
 {
 	ASSERT_loadInternalImage(imageType, pImage);
 
 	RP_D(WiiWAD);
 	if (!d->isValid) {
 		// Banner file isn't valid.
-		*pImage = nullptr;
+		pImage.reset();
 		return -EIO;
 	}
 
@@ -1273,7 +1256,7 @@ int WiiWAD::loadInternalImage(ImageType imageType, const rp_image **pImage)
 #endif /* ENABLE_DECRYPTION */
 
 	// No main content object.
-	*pImage = nullptr;
+	pImage.reset();
 	return -ENOENT;
 }
 
@@ -1283,12 +1266,9 @@ int WiiWAD::loadInternalImage(ImageType imageType, const rp_image **pImage)
  * Check imgpf for IMGPF_ICON_ANIMATED first to see if this
  * object has an animated icon.
  *
- * The retrieved IconAnimData must be ref()'d by the caller if the
- * caller stores it instead of using it immediately.
- *
  * @return Animated icon data, or nullptr if no animated icon is present.
  */
-const IconAnimData *WiiWAD::iconAnimData(void) const
+IconAnimDataConstPtr WiiWAD::iconAnimData(void) const
 {
 #ifdef ENABLE_DECRYPTION
 	// Forward this call to the main content object.

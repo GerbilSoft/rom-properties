@@ -53,18 +53,19 @@ using namespace LibRpTexture;
 // RomDataFactory to load test files.
 #include "RomDataFactory.hpp"
 
-// C includes.
+// C includes
 #include <stdint.h>
 #include <stdlib.h>
 
-// C includes. (C++ namespace)
+// C includes (C++ namespace)
 #include "ctypex.h"
 #include <cstring>
 
-// C++ includes.
+// C++ includes
 #include <functional>
 #include <memory>
 #include <string>
+using std::shared_ptr;
 using std::string;
 using std::unique_ptr;
 
@@ -134,8 +135,6 @@ class ImageDecoderTest : public ::testing::TestWithParam<ImageDecoderTest_mode>
 		ImageDecoderTest()
 			: ::testing::TestWithParam<ImageDecoderTest_mode>()
 			, m_gzDds(nullptr)
-			, m_f_dds(nullptr)
-			, m_romData(nullptr)
 		{
 #ifdef _WIN32
 			// Register RpGdiplusBackend.
@@ -176,8 +175,8 @@ class ImageDecoderTest : public ::testing::TestWithParam<ImageDecoderTest_mode>
 		// Placed here so it can be freed by TearDown() if necessary.
 		// The underlying MemFile is here as well, since we can't
 		// delete it before deleting the RomData object.
-		MemFile *m_f_dds;
-		RomData *m_romData;
+		shared_ptr<MemFile> m_f_dds;
+		RomDataPtr m_romData;
 
 	public:
 		/** Test case parameters. **/
@@ -285,7 +284,7 @@ void ImageDecoderTest::SetUp(void)
 	path.clear();
 	path += mode.png_filename;
 	replace_slashes(path);
-	unique_RefBase<RpFile> file(new RpFile(path, RpFile::FM_OPEN_READ));
+	shared_ptr<RpFile> file = std::make_shared<RpFile>(path, RpFile::FM_OPEN_READ);
 	ASSERT_TRUE(file->isOpen()) << "Error loading PNG image file: " << strerror(file->lastError());
 
 	// Maximum image size.
@@ -305,20 +304,14 @@ void ImageDecoderTest::SetUp(void)
  */
 void ImageDecoderTest::TearDown(void)
 {
-	UNREF_AND_NULL(m_romData);
-	UNREF_AND_NULL(m_f_dds);
+	m_romData.reset();
+	m_f_dds.reset();
 
 	if (m_gzDds) {
 		gzclose_r(m_gzDds);
 		m_gzDds = nullptr;
 	}
 }
-
-struct RpImageUnrefDeleter {
-	void operator()(rp_image *img) {
-		UNREF(img);
-	}
-};
 
 /**
  * Compare two rp_image objects.
@@ -338,8 +331,8 @@ void ImageDecoderTest::Compare_RpImage(
 	ASSERT_EQ(pImgExpected->height(), pImgActual->height()) << "Image sizes don't match.";
 
 	// Ensure we delete temporary images if they're created.
-	unique_ptr<rp_image, RpImageUnrefDeleter> tmpImg_expected(nullptr, RpImageUnrefDeleter());
-	unique_ptr<rp_image, RpImageUnrefDeleter> tmpImg_actual(nullptr, RpImageUnrefDeleter());
+	rp_image_const_ptr tmpImg_expected;
+	rp_image_const_ptr tmpImg_actual;
 
 	switch (pImgExpected->format()) {
 		case rp_image::Format::ARGB32:
@@ -348,8 +341,8 @@ void ImageDecoderTest::Compare_RpImage(
 
 		case rp_image::Format::CI8:
 			// Convert to ARGB32.
-			tmpImg_expected.reset(pImgExpected->dup_ARGB32());
-			ASSERT_TRUE(tmpImg_expected != nullptr);
+			tmpImg_expected = pImgExpected->dup_ARGB32();
+			ASSERT_TRUE(tmpImg_expected);
 			ASSERT_TRUE(tmpImg_expected->isValid());
 			pImgExpected = tmpImg_expected.get();
 			break;
@@ -366,8 +359,8 @@ void ImageDecoderTest::Compare_RpImage(
 
 		case rp_image::Format::CI8:
 			// Convert to ARGB32.
-			tmpImg_actual.reset(pImgActual->dup_ARGB32());
-			ASSERT_TRUE(tmpImg_actual != nullptr);
+			tmpImg_actual = pImgActual->dup_ARGB32();
+			ASSERT_TRUE(tmpImg_actual);
 			ASSERT_TRUE(tmpImg_actual->isValid());
 			pImgActual = tmpImg_actual.get();
 			break;
@@ -408,38 +401,38 @@ void ImageDecoderTest::decodeTest_internal(void)
 	const ImageDecoderTest_mode &mode = GetParam();
 
 	// Load the PNG image.
-	unique_RefBase<MemFile> f_png(new MemFile(m_png_buf.data(), m_png_buf.size()));
+	shared_ptr<MemFile> f_png = std::make_shared<MemFile>(m_png_buf.data(), m_png_buf.size());
 	ASSERT_TRUE(f_png->isOpen()) << "Could not create MemFile for the PNG image.";
-	unique_ptr<rp_image, RpImageUnrefDeleter> img_png(RpPng::load(f_png.get()), RpImageUnrefDeleter());
+	rp_image_const_ptr img_png(RpPng::load(f_png));
 	ASSERT_NE(img_png,nullptr) << "Could not load the PNG image as rp_image.";
 	ASSERT_TRUE(img_png->isValid()) << "Could not load the PNG image as rp_image.";
 
 	// Open the image as an IRpFile.
-	m_f_dds = new MemFile(m_dds_buf.data(), m_dds_buf.size());
+	m_f_dds = std::make_shared<MemFile>(m_dds_buf.data(), m_dds_buf.size());
 	ASSERT_TRUE(m_f_dds->isOpen()) << "Could not create MemFile for the DDS image.";
 	m_f_dds->setFilename(mode.dds_gz_filename);
 
 	// Load the image file.
 	m_romData = RomDataFactory::create(m_f_dds);
-	ASSERT_NE(m_romData, nullptr) << "Could not load the DDS image.";
+	ASSERT_TRUE((bool)m_romData) << "Could not load the DDS image.";
 	ASSERT_TRUE(m_romData->isValid()) << "Could not load the DDS image.";
 	ASSERT_TRUE(m_romData->isOpen()) << "Could not load the DDS image.";
 
 	// Get the DDS image as an rp_image.
-	const rp_image *const img_dds = m_romData->image(mode.imgType);
+	const rp_image_const_ptr img_dds = m_romData->image(mode.imgType);
 	ASSERT_NE(img_dds, nullptr) << "Could not load the DDS image as rp_image.";
 
 	// Get the image again.
 	// The pointer should be identical to the first one.
-	const rp_image *const img_dds_2 = m_romData->image(mode.imgType);
-	EXPECT_EQ(img_dds, img_dds_2) << "Retrieving the image twice resulted in a different rp_image object.";
+	const rp_image_const_ptr img_dds_2 = m_romData->image(mode.imgType);
+	EXPECT_EQ(img_dds.get(), img_dds_2.get()) << "Retrieving the image twice resulted in a different rp_image object.";
 
 	// Verify the pixel format.
 	if (!mode.expected_pixel_format.empty()) {
 		// This must be RpTextureWrapper.
 		// TODO: Support for other RomData subclasses.
 		// NOTE: Using static_cast<> so we don't have to export RpTextureWrapper's vtable.
-		const RpTextureWrapper *const rptw = static_cast<RpTextureWrapper*>(m_romData);
+		const RpTextureWrapper *const rptw = static_cast<RpTextureWrapper*>(m_romData.get());
 		EXPECT_NE(rptw, nullptr);
 		if (rptw) {
 			// To avoid having to add test-only functions to RpTextureWrapper,
@@ -479,7 +472,7 @@ void ImageDecoderTest::decodeTest_internal(void)
 	}
 
 	// Compare the image data.
-	ASSERT_NO_FATAL_FAILURE(Compare_RpImage(img_png.get(), img_dds));
+	ASSERT_NO_FATAL_FAILURE(Compare_RpImage(img_png.get(), img_dds.get()));
 }
 
 /**
@@ -499,7 +492,7 @@ void ImageDecoderTest::decodeBenchmark_internal(void)
 	const ImageDecoderTest_mode &mode = GetParam();
 
 	// Open the image as an IRpFile.
-	m_f_dds = new MemFile(m_dds_buf.data(), m_dds_buf.size());
+	m_f_dds = std::make_shared<MemFile>(m_dds_buf.data(), m_dds_buf.size());
 	ASSERT_TRUE(m_f_dds->isOpen()) << "Could not create MemFile for the DDS image.";
 	m_f_dds->setFilename(mode.dds_gz_filename);
 
@@ -519,7 +512,7 @@ void ImageDecoderTest::decodeBenchmark_internal(void)
 
 	// Load the image file.
 	// TODO: RomDataFactory function to retrieve a constructor function?
-	auto fn_ctor = [](IRpFile *file) -> RomData* { return RomDataFactory::create(file); };
+	auto fn_ctor = [](const IRpFilePtr &file) -> RomDataPtr { return RomDataFactory::create(file); };
 
 	// For certain types, increase the number of iterations.
 	ASSERT_GT(mode.dds_gz_filename.size(), 4U);
@@ -566,16 +559,16 @@ void ImageDecoderTest::decodeBenchmark_internal(void)
 
 	for (unsigned int i = max_iterations; i > 0; i--) {
 		m_romData = fn_ctor(m_f_dds);
-		ASSERT_TRUE(m_romData != nullptr) << "Could not load the DDS image.";
+		ASSERT_TRUE((bool)m_romData) << "Could not load the DDS image.";
 		ASSERT_TRUE(m_romData->isValid()) << "Could not load the DDS image.";
 		ASSERT_TRUE(m_romData->isOpen()) << "Could not load the DDS image.";
 
 		// Get the DDS image as an rp_image.
 		// TODO: imgType to string?
-		const rp_image *const img_dds = m_romData->image(mode.imgType);
+		const rp_image_const_ptr img_dds = m_romData->image(mode.imgType);
 		ASSERT_TRUE(img_dds != nullptr) << "Could not load the DDS image as rp_image.";
 
-		UNREF_AND_NULL_NOCHK(m_romData);
+		m_romData.reset();
 	}
 }
 

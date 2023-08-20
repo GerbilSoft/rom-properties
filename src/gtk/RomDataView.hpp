@@ -44,10 +44,11 @@ gboolean	rp_rom_data_view_is_showing_data(RpRomDataView	*page);
 G_END_DECLS
 
 #ifdef __cplusplus
-namespace LibRpBase {
-	class RomData;
-};
+
+// librpbase
+#include "librpbase/RomData.hpp"
+
 GtkWidget	*rp_rom_data_view_new_with_romData(const gchar *uri,
-						 LibRpBase::RomData *romData,
+						 const LibRpBase::RomDataPtr &romData,
 						 RpDescFormatType desc_format_type) G_GNUC_MALLOC;
 #endif /* __cplusplus */

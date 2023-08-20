@@ -11,16 +11,15 @@
 #include "common.h"
 #include "dll-macros.h"	// for RP_LIBROMDATA_PUBLIC
 
-namespace LibRpFile {
-	class IRpFile;
-}
-namespace LibRpTexture {
-	class rp_image;
-}
+// C++ includes
+#include <memory>
+
+// Other rom-properties libraries
+#include "../img/IconAnimData.hpp"
+#include "librpfile/IRpFile.hpp"
+#include "librptexture/img/rp_image.hpp"
 
 namespace LibRpBase {
-
-struct IconAnimData;
 
 namespace RpPng {
 
@@ -30,7 +29,7 @@ namespace RpPng {
  * @return rp_image*, or nullptr on error
  */
 RP_LIBROMDATA_PUBLIC
-LibRpTexture::rp_image *load(LibRpFile::IRpFile *file);
+LibRpTexture::rp_image_ptr load(const LibRpFile::IRpFilePtr &file);
 
 /**
  * Save an image in PNG format to an IRpFile.
@@ -43,7 +42,7 @@ LibRpTexture::rp_image *load(LibRpFile::IRpFile *file);
  * @param img rp_image to save
  * @return 0 on success; negative POSIX error code on error
  */
-int save(LibRpFile::IRpFile *file, const LibRpTexture::rp_image *img);
+int save(const LibRpFile::IRpFilePtr &file, const LibRpTexture::rp_image_const_ptr &img);
 
 /**
  * Save an image in PNG format to a file.
@@ -53,7 +52,7 @@ int save(LibRpFile::IRpFile *file, const LibRpTexture::rp_image *img);
  * @return 0 on success; negative POSIX error code on error
  */
 RP_LIBROMDATA_PUBLIC
-int save(const char *filename, const LibRpTexture::rp_image *img);
+int save(const char *filename, const LibRpTexture::rp_image_const_ptr &img);
 
 #ifdef _WIN32
 /**
@@ -64,7 +63,7 @@ int save(const char *filename, const LibRpTexture::rp_image *img);
  * @return 0 on success; negative POSIX error code on error
  */
 RP_LIBROMDATA_PUBLIC
-int save(const wchar_t *filename, const LibRpTexture::rp_image *img);
+int save(const wchar_t *filename, const LibRpTexture::rp_image_const_ptr &img);
 #endif /* _WIN32 */
 
 /**
@@ -86,7 +85,7 @@ int save(const wchar_t *filename, const LibRpTexture::rp_image *img);
  * @param iconAnimData Animated image data to save
  * @return 0 on success; negative POSIX error code on error
  */
-int save(LibRpFile::IRpFile *file, const IconAnimData *iconAnimData);
+int save(const LibRpFile::IRpFilePtr &file, const IconAnimDataConstPtr &iconAnimData);
 
 /**
  * Save an animated image in APNG format to a file.
@@ -104,7 +103,7 @@ int save(LibRpFile::IRpFile *file, const IconAnimData *iconAnimData);
  * @return 0 on success; negative POSIX error code on error
  */
 RP_LIBROMDATA_PUBLIC
-int save(const char *filename, const IconAnimData *iconAnimData);
+int save(const char *filename, const IconAnimDataConstPtr &iconAnimData);
 
 #ifdef _WIN32
 /**
@@ -123,7 +122,7 @@ int save(const char *filename, const IconAnimData *iconAnimData);
  * @return 0 on success; negative POSIX error code on error
  */
 RP_LIBROMDATA_PUBLIC
-int save(const wchar_t *filename, const IconAnimData *iconAnimData);
+int save(const wchar_t *filename, const IconAnimDataConstPtr &iconAnimData);
 #endif /* _WIN32 */
 
 /** Version info wrapper functions **/

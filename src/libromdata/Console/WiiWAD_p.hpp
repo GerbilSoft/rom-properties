@@ -13,9 +13,10 @@
 
 #include "common.h"
 
-// librpbase
+// Other rom-properties libraries
 #include "librpbase/RomData_p.hpp"
 #include "librpbase/crypto/KeyManager.hpp"
+#include "librpfile/IRpFile.hpp"
 
 // for key information
 #include "disc/WiiPartition.hpp"
@@ -26,19 +27,18 @@
 #include "wii_wad.h"
 #include "wii_banner.h"
 
+#ifdef ENABLE_DECRYPTION
+#  include "librpbase/disc/CBCReader.hpp"
+#endif /* ENABLE_DECRYPTION */
+
 // Uninitialized vector class.
 // Reference: http://andreoffringa.org/?q=uvector
 #include "uvector.h"
 
 namespace LibRpBase {
 #ifdef ENABLE_DECRYPTION
-	class CBCReader;
 	class RomData;
 #endif /* ENABLE_DECRYPTION */
-}
-
-namespace LibRpFile {
-	class IRpFile;
 }
 
 namespace LibRomData {
@@ -46,8 +46,8 @@ namespace LibRomData {
 class WiiWADPrivate final : public LibRpBase::RomDataPrivate
 {
 	public:
-		WiiWADPrivate(LibRpFile::IRpFile *file);
-		~WiiWADPrivate() final;
+		WiiWADPrivate(const LibRpFile::IRpFilePtr &file);
+		~WiiWADPrivate() final = default;
 
 	private:
 		typedef RomDataPrivate super;
@@ -105,8 +105,8 @@ class WiiWADPrivate final : public LibRpBase::RomDataPrivate
 
 #ifdef ENABLE_DECRYPTION
 		// CBC reader for the main data area.
-		LibRpBase::CBCReader *cbcReader;
-		LibRpBase::RomData *mainContent;	// WiiWIBN or NintendoDS
+		LibRpBase::CBCReaderPtr cbcReader;
+		LibRpBase::RomDataPtr mainContent;	// WiiWIBN or NintendoDS
 
 		// Decrypted title key.
 		uint8_t dec_title_key[16];

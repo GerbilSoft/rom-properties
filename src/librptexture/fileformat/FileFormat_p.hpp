@@ -8,6 +8,9 @@
 
 #pragma once
 
+// C++ includes
+#include <memory>
+
 namespace LibRpFile {
 	class IRpFile;
 }
@@ -30,9 +33,9 @@ class FileFormatPrivate
 		 * @param file Texture file
 		 * @param pTextureInfo FileFormat subclass information
 		 */
-		explicit FileFormatPrivate(FileFormat *q, LibRpFile::IRpFile *file, const TextureInfo *pTextureInfo);
-
-		virtual ~FileFormatPrivate();
+		explicit FileFormatPrivate(FileFormat *q, const LibRpFile::IRpFilePtr &file, const TextureInfo *pTextureInfo);
+	public:
+		virtual ~FileFormatPrivate() = default;
 
 	private:
 		RP_DISABLE_COPY(FileFormatPrivate)
@@ -43,7 +46,7 @@ class FileFormatPrivate
 	public:
 		volatile int ref_cnt;		// Reference count.
 		bool isValid;			// Subclass must set this to true if the ROM is valid.
-		LibRpFile::IRpFile *file;	// Open file.
+		LibRpFile::IRpFilePtr file;	// Open file
 
 	public:
 		/** These fields must be set by FileFormat subclasses in their constructors. **/

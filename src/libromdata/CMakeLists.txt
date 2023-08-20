@@ -623,7 +623,6 @@ IF(${PROJECT_NAME}_LINKAGE STREQUAL SHARED)
 		)
 	IF(WIN32)
 		SET(SYMS_FORCE ${SYMS_FORCE}
-			RP_LibRpFile_RpFile_windres_ForceLinkage
 			RP_LibRpTexture_GdiplusHelper_ForceLinkage
 			RP_LibWin32Common_propsys_xp_ForceLinkage
 			)

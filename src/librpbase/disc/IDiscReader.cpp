@@ -2,47 +2,29 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * IDiscReader.cpp: Disc reader interface.                                 *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "stdafx.h"
 #include "IDiscReader.hpp"
 
-// librpfile
-using LibRpFile::IRpFile;
+// Other rom-properties libraries
+using namespace LibRpFile;
 
 namespace LibRpBase {
 
-IDiscReader::IDiscReader(IRpFile *file)
+IDiscReader::IDiscReader(const IRpFilePtr &file)
 	: m_lastError(0)
 	, m_hasDiscReader(false)
-{
-	if (file) {
-		m_file = file->ref();
-	} else {
-		m_file = nullptr;
-	}
-}
+	, m_file(file)
+{}
 
-IDiscReader::IDiscReader(IDiscReader *discReader)
+IDiscReader::IDiscReader(const IDiscReaderPtr &discReader)
 	: m_lastError(0)
 	, m_hasDiscReader(true)
 {
-	if (discReader) {
-		m_discReader = discReader->ref();
-	} else {
-		m_discReader = nullptr;
-	}
-}
-
-IDiscReader::~IDiscReader()
-{
-	if (!m_hasDiscReader) {
-		UNREF(m_file);
-	} else {
-		UNREF(m_discReader);
-	}
+	m_discReader = discReader;
 }
 
 /**

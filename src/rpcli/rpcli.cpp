@@ -78,7 +78,9 @@ using std::cerr;
 using std::endl;
 using std::locale;
 using std::ofstream;
+using std::shared_ptr;
 using std::string;
+using std::unique_ptr;
 using std::vector;
 
 #include "libi18n/config.libi18n.h"
@@ -208,29 +210,27 @@ static void DoFile(const TCHAR *filename, bool json, const vector<ExtractParam>&
 {
 	// FIXME: Make T2U8c() unnecessary here.
 	cerr << "== " << rp_sprintf(C_("rpcli", "Reading file '%s'..."), T2U8c(filename)) << endl;
-	RpFile *const file = new RpFile(filename, RpFile::FM_OPEN_READ_GZ);
-	if (file->isOpen()) {
-		RomData *romData = RomDataFactory::create(file);
-		if (romData && romData->isValid()) {
-			if (json) {
-				cerr << "-- " << C_("rpcli", "Outputting JSON data") << endl;
-				cout << JSONROMOutput(romData, lc, flags) << endl;
-			} else {
-				cout << ROMOutput(romData, lc, flags) << endl;
-			}
-
-			ExtractImages(romData, extract);
-		} else {
-			cerr << "-- " << C_("rpcli", "ROM is not supported") << endl;
-			if (json) cout << "{\"error\":\"rom is not supported\"}" << endl;
-		}
-
-		UNREF(romData);
-	} else {
+	shared_ptr<RpFile> file = std::make_shared<RpFile>(filename, RpFile::FM_OPEN_READ_GZ);
+	if (!file->isOpen()) {
+		// TODO: Return an error code?
 		cerr << "-- " << rp_sprintf(C_("rpcli", "Couldn't open file: %s"), strerror(file->lastError())) << endl;
 		if (json) cout << "{\"error\":\"couldn't open file\",\"code\":" << file->lastError() << '}' << endl;
+		return;
 	}
-	file->unref();
+
+	const RomDataPtr romData = RomDataFactory::create(file);
+	if (romData) {
+		if (json) {
+			cerr << "-- " << C_("rpcli", "Outputting JSON data") << endl;
+			cout << JSONROMOutput(romData.get(), lc, flags) << endl;
+		} else {
+			cout << ROMOutput(romData.get(), lc, flags) << endl;
+		}
+		ExtractImages(romData.get(), extract);
+	} else {
+		cerr << "-- " << C_("rpcli", "ROM is not supported") << endl;
+		if (json) cout << "{\"error\":\"rom is not supported\"}" << endl;
+	}
 }
 
 /**
@@ -297,26 +297,29 @@ static void DoScsiInquiry(const TCHAR *filename, bool json)
 {
 	// FIXME: Make T2U8c() unnecessary here.
 	cerr << "== " << rp_sprintf(C_("rpcli", "Opening device file '%s'..."), T2U8c(filename)) << endl;
-	RpFile *const file = new RpFile(filename, RpFile::FM_OPEN_READ_GZ);
-	if (file->isOpen()) {
-		// TODO: Check for unsupported devices? (Only CD-ROM is supported.)
-		if (file->isDevice()) {
-			if (json) {
-				cerr << "-- " << C_("rpcli", "Outputting JSON data") << endl;
-				// TODO: JSONScsiInquiry
-				//cout << JSONScsiInquiry(file) << endl;
-			} else {
-				cout << ScsiInquiry(file) << endl;
-			}
-		} else {
-			cerr << "-- " << C_("rpcli", "Not a device file") << endl;
-			if (json) cout << "{\"error\":\"Not a device file\"}" << endl;
-		}
-	} else {
+	unique_ptr<RpFile> file(new RpFile(filename, RpFile::FM_OPEN_READ_GZ));
+	if (!file->isOpen()) {
+		// TODO: Return an error code?
 		cerr << "-- " << rp_sprintf(C_("rpcli", "Couldn't open file: %s"), strerror(file->lastError())) << endl;
 		if (json) cout << "{\"error\":\"couldn't open file\",\"code\":" << file->lastError() << '}' << endl;
+		return;
 	}
-	file->unref();
+
+	// TODO: Check for unsupported devices? (Only CD-ROM is supported.)
+	if (file->isDevice()) {
+		// TODO: Return an error code?
+		cerr << "-- " << C_("rpcli", "Not a device file") << endl;
+		if (json) cout << "{\"error\":\"Not a device file\"}" << endl;
+		return;
+	}
+
+	if (json) {
+		cerr << "-- " << C_("rpcli", "Outputting JSON data") << endl;
+		// TODO: JSONScsiInquiry
+		//cout << JSONScsiInquiry(file.get()) << endl;
+	} else {
+		cout << ScsiInquiry(file.get()) << endl;
+	}
 }
 
 /**
@@ -329,26 +332,29 @@ static void DoAtaIdentifyDevice(const TCHAR *filename, bool json, bool packet)
 {
 	// FIXME: Make T2U8c() unnecessary here.
 	cerr << "== " << rp_sprintf(C_("rpcli", "Opening device file '%s'..."), T2U8c(filename)) << endl;
-	RpFile *const file = new RpFile(filename, RpFile::FM_OPEN_READ_GZ);
-	if (file->isOpen()) {
-		// TODO: Check for unsupported devices? (Only CD-ROM is supported.)
-		if (file->isDevice()) {
-			if (json) {
-				cerr << "-- " << C_("rpcli", "Outputting JSON data") << endl;
-				// TODO: JSONAtaIdentifyDevice
-				//cout << JSONAtaIdentifyDevice(file) << endl;
-			} else {
-				cout << AtaIdentifyDevice(file, packet) << endl;
-			}
-		} else {
-			cerr << "-- " << C_("rpcli", "Not a device file") << endl;
-			if (json) cout << "{\"error\":\"Not a device file\"}" << endl;
-		}
-	} else {
+	unique_ptr<RpFile> file(new RpFile(filename, RpFile::FM_OPEN_READ_GZ));
+	if (!file->isOpen()) {
+		// TODO: Return an error code?
 		cerr << "-- " << rp_sprintf(C_("rpcli", "Couldn't open file: %s"), strerror(file->lastError())) << endl;
 		if (json) cout << "{\"error\":\"couldn't open file\",\"code\":" << file->lastError() << '}' << endl;
+		return;
 	}
-	file->unref();
+
+	// TODO: Check for unsupported devices? (Only CD-ROM is supported.)
+	if (!file->isDevice()) {
+		// TODO: Return an error code?
+		cerr << "-- " << C_("rpcli", "Not a device file") << endl;
+		if (json) cout << "{\"error\":\"Not a device file\"}" << endl;
+		return;
+	}
+
+	if (json) {
+		cerr << "-- " << C_("rpcli", "Outputting JSON data") << endl;
+		// TODO: JSONAtaIdentifyDevice
+		//cout << JSONAtaIdentifyDevice(file.get(), packet) << endl;
+	} else {
+		cout << AtaIdentifyDevice(file.get(), packet) << endl;
+	}
 }
 #endif /* RP_OS_SCSI_SUPPORTED */
 

@@ -32,7 +32,7 @@ class RP_ExtractImage_Private
 		LPOLESTR olefilename;
 
 		// RomData object. Loaded in IPersistFile::Load().
-		LibRpBase::RomData *romData;
+		LibRpBase::RomDataPtr romData;
 
 		// CreateThumbnail instance.
 		CreateThumbnailNoAlpha thumbnailer;

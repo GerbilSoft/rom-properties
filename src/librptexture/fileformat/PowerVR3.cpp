@@ -19,10 +19,10 @@
 
 #include "pvr3_structs.h"
 
-// librpbase, librpfile
+// Other rom-properties libraries
 #include "libi18n/i18n.h"
+using namespace LibRpFile;
 using LibRpBase::RomFields;
-using LibRpFile::IRpFile;
 
 // librptexture
 #include "ImageSizeCalc.hpp"
@@ -34,7 +34,7 @@ using LibRpFile::IRpFile;
 #include "decoder/ImageDecoder_BC7.hpp"
 #include "decoder/ImageDecoder_ASTC.hpp"
 
-// C++ STL classes.
+// C++ STL classes
 using std::string;
 using std::unique_ptr;
 using std::vector;
@@ -44,8 +44,8 @@ namespace LibRpTexture {
 class PowerVR3Private final : public FileFormatPrivate
 {
 	public:
-		PowerVR3Private(PowerVR3 *q, IRpFile *file);
-		~PowerVR3Private() final;
+		PowerVR3Private(PowerVR3 *q, const IRpFilePtr &file);
+		~PowerVR3Private() final = default;
 
 	private:
 		typedef FileFormatPrivate super;
@@ -58,14 +58,14 @@ class PowerVR3Private final : public FileFormatPrivate
 		static const TextureInfo textureInfo;
 
 	public:
-		// PVR3 header.
+		// PVR3 header
 		PowerVR3_Header pvr3Header;
 
-		// Decoded mipmaps.
+		// Decoded mipmaps
 		// Mipmap 0 is the full image.
-		vector<rp_image*> mipmaps;
+		vector<rp_image_ptr > mipmaps;
 
-		// Invalid pixel format message.
+		// Invalid pixel format message
 		char invalid_pixel_format[40];
 
 		// Is byteswapping needed?
@@ -78,11 +78,11 @@ class PowerVR3Private final : public FileFormatPrivate
 		// Default without orientation metadata is HFlip=false, VFlip=false
 		rp_image::FlipOp flipOp;
 
-		// Metadata.
+		// Metadata
 		bool orientation_valid;
 		PowerVR3_Metadata_Orientation orientation;
 
-		// Texture data start address.
+		// Texture data start address
 		unsigned int texDataStartAddr;
 
 		/**
@@ -110,7 +110,7 @@ class PowerVR3Private final : public FileFormatPrivate
 		 * @param mip Mipmap number. (0 == full image)
 		 * @return Image, or nullptr on error.
 		 */
-		const rp_image *loadImage(int mip);
+		rp_image_const_ptr loadImage(int mip);
 
 		/**
 		 * Load PowerVR3 metadata.
@@ -199,7 +199,7 @@ const struct PowerVR3Private::FmtLkup_t PowerVR3Private::fmtLkup_tbl_U32[] = {
 };
 #endif
 
-PowerVR3Private::PowerVR3Private(PowerVR3 *q, IRpFile *file)
+PowerVR3Private::PowerVR3Private(PowerVR3 *q, const IRpFilePtr &file)
 	: super(q, file, &textureInfo)
 	, isByteswapNeeded(false)
 	, flipOp(rp_image::FLIP_NONE)
@@ -212,19 +212,12 @@ PowerVR3Private::PowerVR3Private(PowerVR3 *q, IRpFile *file)
 	memset(invalid_pixel_format, 0, sizeof(invalid_pixel_format));
 }
 
-PowerVR3Private::~PowerVR3Private()
-{
-	for (rp_image *img : mipmaps) {
-		UNREF(img);
-	}
-}
-
 /**
  * Load the image.
  * @param mip Mipmap number. (0 == full image)
  * @return Image, or nullptr on error.
  */
-const rp_image *PowerVR3Private::loadImage(int mip)
+rp_image_const_ptr PowerVR3Private::loadImage(int mip)
 {
 	int mipmapCount = pvr3Header.mipmap_count;
 	if (mipmapCount <= 0) {
@@ -484,7 +477,7 @@ const rp_image *PowerVR3Private::loadImage(int mip)
 	}
 
 	// Decode the image.
-	rp_image *img = nullptr;
+	rp_image_ptr img;
 	if (pvr3Header.channel_depth != 0) {
 		// Uncompressed format.
 		assert(fmtLkup != nullptr);
@@ -680,9 +673,8 @@ const rp_image *PowerVR3Private::loadImage(int mip)
 
 	// Post-processing: Check if a flip is needed.
 	if (img && flipOp != rp_image::FLIP_NONE) {
-		rp_image *const flipimg = img->flip(flipOp);
+		const rp_image_ptr flipimg = img->flip(flipOp);
 		if (flipimg) {
-			img->unref();
 			img = flipimg;
 		}
 	}
@@ -798,7 +790,7 @@ int PowerVR3Private::loadPvr3Metadata(void)
  *
  * @param file Open ROM image.
  */
-PowerVR3::PowerVR3(IRpFile *file)
+PowerVR3::PowerVR3(const IRpFilePtr &file)
 	: super(new PowerVR3Private(this, file))
 {
 	RP_D(PowerVR3);
@@ -813,7 +805,7 @@ PowerVR3::PowerVR3(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(&d->pvr3Header, sizeof(d->pvr3Header));
 	if (size != sizeof(d->pvr3Header)) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -860,7 +852,7 @@ PowerVR3::PowerVR3(IRpFile *file)
 		d->isByteswapNeeded = true;
 	} else {
 		// Invalid magic.
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -1158,7 +1150,7 @@ int PowerVR3::getFields(RomFields *fields) const
  * The image is owned by this object.
  * @return Image, or nullptr on error.
  */
-const rp_image *PowerVR3::image(void) const
+rp_image_const_ptr PowerVR3::image(void) const
 {
 	// The full image is mipmap 0.
 	return this->mipmap(0);
@@ -1170,7 +1162,7 @@ const rp_image *PowerVR3::image(void) const
  * @param mip Mipmap number.
  * @return Image, or nullptr on error.
  */
-const rp_image *PowerVR3::mipmap(int mip) const
+rp_image_const_ptr PowerVR3::mipmap(int mip) const
 {
 	RP_D(const PowerVR3);
 	if (!d->isValid) {

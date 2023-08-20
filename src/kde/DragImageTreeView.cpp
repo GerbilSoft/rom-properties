@@ -13,9 +13,15 @@
 #include "DragImageTreeView.hpp"
 #include "RpQByteArrayFile.hpp"
 
-// librpbase, librptexture
+// for RpImageRole
+#include "ListDataModel.hpp"
+
+// Other rom-properties libraries
+using namespace LibRpTexture;
 using LibRpBase::RpPngWriter;
-using LibRpTexture::rp_image;
+
+// C++ STL classes
+using std::shared_ptr;
 
 void DragImageTreeView::startDrag(Qt::DropActions supportedActions)
 {
@@ -35,7 +41,7 @@ void DragImageTreeView::startDrag(Qt::DropActions supportedActions)
 	// Find the first item with a valid RpImageRole.
 	QModelIndexList items;
 	for (const QModelIndex &p : indexes) {
-		void *img = p.data(RpImageRole).value<void*>();
+		void *img = p.data(ListDataModel::RpImageRole).value<void*>();
 		if (img != nullptr) {
 			// Index has a valid image.
 			items.append(p);
@@ -51,17 +57,18 @@ void DragImageTreeView::startDrag(Qt::DropActions supportedActions)
 	QIcon dragIcon;
 	bool hasOne = false;
 	for (const QModelIndex &index : items) {
-		const rp_image *const img = static_cast<const rp_image*>(index.data(RpImageRole).value<void*>());
-		if (!img)
+		const rp_image_const_ptr *const pImg =
+			static_cast<const rp_image_const_ptr*>(
+				index.data(ListDataModel::RpImageRole).value<void*>());
+		if (!pImg || !*pImg)
 			continue;
 
 		// Convert the rp_image to PNG.
-		RpQByteArrayFile *const pngData = new RpQByteArrayFile();
-		RpPngWriter *const pngWriter = new RpPngWriter(pngData, img);
+		shared_ptr<RpQByteArrayFile> pngData = std::make_shared<RpQByteArrayFile>();
+		RpPngWriter *const pngWriter = new RpPngWriter(pngData, *pImg);
 		if (!pngWriter->isOpen()) {
 			// Unable to open the PNG writer.
 			delete pngWriter;
-			pngData->unref();
 			continue;
 		}
 
@@ -71,14 +78,12 @@ void DragImageTreeView::startDrag(Qt::DropActions supportedActions)
 		if (pwRet != 0) {
 			// Error writing the PNG image...
 			delete pngWriter;
-			pngData->unref();
 			continue;
 		}
 		pwRet = pngWriter->write_IDAT();
 		if (pwRet != 0) {
 			// Error writing the PNG image...
 			delete pngWriter;
-			pngData->unref();
 			continue;
 		}
 
@@ -87,7 +92,6 @@ void DragImageTreeView::startDrag(Qt::DropActions supportedActions)
 
 		// Set the PNG data.
 		mimeData->setData(QLatin1String("image/png"), pngData->qByteArray());
-		pngData->unref();
 
 		// Save the icon.
 		if (dragIcon.isNull()) {

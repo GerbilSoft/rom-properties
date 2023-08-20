@@ -41,8 +41,8 @@ class RpFileKio : public QObject, public LibRpFile::IRpFile
 		RpFileKio(const QUrl &uri);
 	private:
 		void init(void);
-	protected:
-		~RpFileKio() override;	// call unref() instead
+	public:
+		~RpFileKio() override;
 
 	private:
 		typedef LibRpFile::IRpFile super;

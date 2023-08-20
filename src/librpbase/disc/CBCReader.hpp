@@ -23,16 +23,16 @@ class CBCReader final : public LibRpBase::IPartition
 		 * NOTE: The IRpFile *must* remain valid while this
 		 * CBCReader is open.
 		 *
-		 * @param file 		[in] IRpFile.
+		 * @param file 		[in] IRpFile
 		 * @param offset	[in] Encrypted data start offset, in bytes.
 		 * @param length	[in] Encrypted data length, in bytes.
 		 * @param key		[in] Encryption key. (Must be 128-bit) [If NULL, acts like no encryption.]
 		 * @param iv		[in] Initialization vector. (Must be 128-bit) [If NULL, uses ECB instead of CBC.]
 		 */
-		CBCReader(LibRpFile::IRpFile *file, off64_t offset, off64_t length,
+		CBCReader(const LibRpFile::IRpFilePtr &file, off64_t offset, off64_t length,
 			const uint8_t *key, const uint8_t *iv);
-	protected:
-		~CBCReader() final;	// call unref() instead
+	public:
+		~CBCReader() final;
 
 	private:
 		typedef IPartition super;
@@ -94,5 +94,7 @@ class CBCReader final : public LibRpBase::IPartition
 		 */
 		off64_t partition_size_used(void) const final;
 };
+
+typedef std::shared_ptr<CBCReader> CBCReaderPtr;
 
 }

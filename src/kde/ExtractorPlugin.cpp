@@ -14,15 +14,15 @@
 #include "ExtractorPlugin.hpp"
 #include "check-uid.hpp"
 
-// librpbase, librpfile
+// Other rom-properties libraries
 using namespace LibRpBase;
-using LibRpFile::IRpFile;
+using namespace LibRpFile;
 
 // libromdata
 #include "libromdata/RomDataFactory.hpp"
 using LibRomData::RomDataFactory;
 
-// C++ STL classes.
+// C++ STL classes
 using std::string;
 using std::vector;
 
@@ -191,7 +191,7 @@ void ExtractorPlugin::extract(ExtractionResult *result)
 	}
 
 	// Attempt to open the ROM file.
-	IRpFile *const file = openQUrl(QUrl(result->inputUrl()), false);
+	const IRpFilePtr file(openQUrl(QUrl(result->inputUrl()), false));
 	if (!file) {
 		// Could not open the file.
 		return;
@@ -223,8 +223,7 @@ void ExtractorPlugin::extract(ExtractionResult *result)
 
 	// Get the appropriate RomData class for this ROM.
 	// file is dup()'d by RomData.
-	RomData *const romData = RomDataFactory::create(file, attrs);
-	file->unref();	// file is ref()'d by RomData.
+	const RomDataPtr romData = RomDataFactory::create(file, attrs);
 	if (!romData) {
 		// ROM is not supported.
 		return;
@@ -256,18 +255,17 @@ void ExtractorPlugin::extract(ExtractionResult *result)
 
 	// Metadata properties
 	if (flags & ExtractionResult::ExtractMetaData) {
-		extract_properties(result, romData);
+		extract_properties(result, romData.get());
 	}
 
 #if KCOREADDONS_VERSION >= QT_VERSION_CHECK(5,76,0)
 	// KFileMetaData 5.76.0 added images.
 	if (flags & ExtractionResult::ExtractImageData) {
-		extract_image(result, romData);
+		extract_image(result, romData.get());
 	}
 #endif /* KCOREADDONS_VERSION >= QT_VERSION_CHECK(5,76,0) */
 
 	// Finished extracting metadata.
-	romData->unref();
 }
 
 }

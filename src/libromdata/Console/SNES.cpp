@@ -27,7 +27,7 @@ namespace LibRomData {
 class SNESPrivate final : public RomDataPrivate
 {
 	public:
-		SNESPrivate(IRpFile *file);
+		SNESPrivate(const IRpFilePtr &file);
 
 	private:
 		typedef RomDataPrivate super;
@@ -149,7 +149,7 @@ const RomDataInfo SNESPrivate::romDataInfo = {
 	"SNES", exts, mimeTypes
 };
 
-SNESPrivate::SNESPrivate(IRpFile *file)
+SNESPrivate::SNESPrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
 	, romType(RomType::Unknown)
 	, header_address(0)
@@ -792,7 +792,7 @@ string SNESPrivate::getGameID(bool doFake) const
  *
  * @param file Open ROM image.
  */
-SNES::SNES(IRpFile *file)
+SNES::SNES(const IRpFilePtr &file)
 	: super(new SNESPrivate(file))
 {
 	RP_D(SNES);
@@ -826,7 +826,7 @@ SNES::SNES(IRpFile *file)
 			size_t size = d->file->seekAndRead(bsx_addrs[i], buf, sizeof(buf));
 			if (size != sizeof(buf)) {
 				// Read error.
-				UNREF_AND_NULL_NOCHK(d->file);
+				d->file.reset();
 				return;
 			}
 
@@ -855,7 +855,7 @@ SNES::SNES(IRpFile *file)
 		d->file->rewind();
 		size_t size = d->file->read(&smdHeader, sizeof(smdHeader));
 		if (size != sizeof(smdHeader)) {
-			UNREF_AND_NULL_NOCHK(d->file);
+			d->file.reset();
 			return;
 		}
 
@@ -953,7 +953,7 @@ SNES::SNES(IRpFile *file)
 
 	if (d->header_address == 0) {
 		// No ROM header.
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		d->romType = SNESPrivate::RomType::Unknown;
 		d->isValid = false;
 		return;

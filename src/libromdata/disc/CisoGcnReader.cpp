@@ -15,11 +15,11 @@
 #include "librpbase/disc/SparseDiscReader_p.hpp"
 #include "ciso_gcn.h"
 
-// librpbase, librpfile
+// Other rom-properties libraries
 using namespace LibRpBase;
-using LibRpFile::IRpFile;
+using namespace LibRpFile;
 
-// C++ STL classes.
+// C++ STL classes
 using std::array;
 
 namespace LibRomData {
@@ -59,7 +59,7 @@ CisoGcnReaderPrivate::CisoGcnReaderPrivate(CisoGcnReader *q)
 
 /** CisoGcnReader **/
 
-CisoGcnReader::CisoGcnReader(IRpFile *file)
+CisoGcnReader::CisoGcnReader(const IRpFilePtr &file)
 	: super(new CisoGcnReaderPrivate(this), file)
 {
 	if (!m_file) {
@@ -75,7 +75,7 @@ CisoGcnReader::CisoGcnReader(IRpFile *file)
 	size_t sz = m_file->read(&d->cisoHeader, sizeof(d->cisoHeader));
 	if (sz != sizeof(d->cisoHeader)) {
 		// Error reading the CISO header.
-		UNREF_AND_NULL_NOCHK(m_file);
+		m_file.reset();
 		m_lastError = EIO;
 		return;
 	}
@@ -83,7 +83,7 @@ CisoGcnReader::CisoGcnReader(IRpFile *file)
 	// Verify the CISO header.
 	if (d->cisoHeader.magic != cpu_to_be32(CISO_MAGIC)) {
 		// Invalid magic.
-		UNREF_AND_NULL_NOCHK(m_file);
+		m_file.reset();
 		m_lastError = EIO;
 		return;
 	}
@@ -99,7 +99,7 @@ CisoGcnReader::CisoGcnReader(IRpFile *file)
 		// If the block size is 0x18, then this is
 		// actually a PSP CISO, and this field is
 		// the CISO header size.
-		UNREF_AND_NULL_NOCHK(m_file);
+		m_file.reset();
 		m_lastError = EIO;
 		return;
 	}
@@ -119,7 +119,7 @@ CisoGcnReader::CisoGcnReader(IRpFile *file)
 				break;
 			default:
 				// Invalid entry.
-				UNREF_AND_NULL_NOCHK(m_file);
+				m_file.reset();
 				m_lastError = EIO;
 				return;
 		}

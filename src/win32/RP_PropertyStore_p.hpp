@@ -34,10 +34,10 @@ class RP_PropertyStore_Private
 
 	public:
 		// Set by IInitializeWithStream::Initialize().
-		LibRpFile::IRpFile *file;
+		LibRpFile::IRpFilePtr file;
 
-		// RomData object.
-		LibRpBase::RomData *romData;
+		// RomData object
+		LibRpBase::RomDataPtr romData;
 
 		// NOTE: prop_key.pid == index + 2,
 		// since pids 0 and 1 are reserved.

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * CIAReader.cpp: Nintendo 3DS CIA reader.                                 *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -10,16 +10,16 @@
 #include "librpbase/config.librpbase.h"
 #include "CIAReader.hpp"
 
-// librpbase, librpfile
+// Other rom-properties libraries
 #include "librpbase/disc/CBCReader.hpp"
 #ifdef ENABLE_DECRYPTION
-# include "librpbase/crypto/AesCipherFactory.hpp"
-# include "librpbase/crypto/IAesCipher.hpp"
-# include "librpbase/crypto/KeyManager.hpp"
-# include "../crypto/N3DSVerifyKeys.hpp"
+#  include "librpbase/crypto/AesCipherFactory.hpp"
+#  include "librpbase/crypto/IAesCipher.hpp"
+#  include "librpbase/crypto/KeyManager.hpp"
+#  include "../crypto/N3DSVerifyKeys.hpp"
 #endif /* ENABLE_DECRYPTION */
 using namespace LibRpBase;
-using LibRpFile::IRpFile;
+using namespace LibRpFile;
 
 namespace LibRomData {
 
@@ -30,7 +30,6 @@ class CIAReaderPrivate
 			off64_t content_offset, uint32_t content_length,
 			const N3DS_Ticket_t *ticket,
 			uint16_t tmd_content_index);
-		~CIAReaderPrivate();
 
 	private:
 		RP_DISABLE_COPY(CIAReaderPrivate)
@@ -38,7 +37,7 @@ class CIAReaderPrivate
 		CIAReader *const q_ptr;
 
 	public:
-		CBCReader *cbcReader;		// CBC reader.
+		CBCReaderPtr cbcReader;
 
 #ifdef ENABLE_DECRYPTION
 		// KeyY index for title key encryption.
@@ -54,7 +53,6 @@ CIAReaderPrivate::CIAReaderPrivate(CIAReader *q,
 	off64_t content_offset, uint32_t content_length,
 	const N3DS_Ticket_t *ticket, uint16_t tmd_content_index)
 	: q_ptr(q)
-	, cbcReader(nullptr)
 #ifdef ENABLE_DECRYPTION
 	, titleKeyEncIdx(0)
 	, tmd_content_index(tmd_content_index)
@@ -74,7 +72,7 @@ CIAReaderPrivate::CIAReaderPrivate(CIAReader *q,
 	if (!ticket) {
 		// No ticket. Assuming no encryption.
 		// Create a passthru CBCReader anyway.
-		cbcReader = new CBCReader(q->m_file, content_offset, content_length, nullptr, nullptr);
+		cbcReader = std::make_shared<CBCReader>(q->m_file, content_offset, content_length, nullptr, nullptr);
 		return;
 	}
 
@@ -162,23 +160,18 @@ CIAReaderPrivate::CIAReaderPrivate(CIAReader *q,
 		memset(&cia_iv.u8[2], 0, sizeof(cia_iv.u8)-2);
 
 		// Create a CBC reader to decrypt the CIA.
-		cbcReader = new CBCReader(q->m_file, content_offset, content_length, title_key, cia_iv.u8);
+		cbcReader = std::make_shared<CBCReader>(q->m_file, content_offset, content_length, title_key, cia_iv.u8);
 	} else {
 		// Unable to get the CIA encryption keys.
 		// TODO: Set an error.
 		//verifyResult = res;
-		UNREF_AND_NULL_NOCHK(q->m_file);
+		q->m_file.reset();
 	}
 #else /* !ENABLE_DECRYPTION */
 	// Cannot decrypt the CIA.
 	// TODO: Set an error.
-	UNREF_AND_NULL_NOCHK(q->m_file);
+	q->m_file.reset();
 #endif /* ENABLE_DECRYPTION */
-}
-
-CIAReaderPrivate::~CIAReaderPrivate()
-{
-	UNREF(cbcReader);
 }
 
 /** CIAReader **/
@@ -195,7 +188,7 @@ CIAReaderPrivate::~CIAReaderPrivate()
  * @param ticket		[in,opt] Ticket for decryption. (nullptr if NoCrypto)
  * @param tmd_content_index	[in,opt] TMD content index for decryption.
  */
-CIAReader::CIAReader(IRpFile *file,
+CIAReader::CIAReader(const IRpFilePtr &file,
 		off64_t content_offset, uint32_t content_length,
 		const N3DS_Ticket_t *ticket,
 		uint16_t tmd_content_index)
@@ -222,7 +215,7 @@ size_t CIAReader::read(void *ptr, size_t size)
 	assert(ptr != nullptr);
 	assert(m_file != nullptr);
 	assert(m_file->isOpen());
-	assert(d->cbcReader != nullptr);
+	assert((bool)d->cbcReader);
 	if (!ptr) {
 		m_lastError = EINVAL;
 		return 0;

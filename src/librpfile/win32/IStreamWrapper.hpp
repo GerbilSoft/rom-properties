@@ -27,9 +27,11 @@ class IStreamWrapper final : public LibWin32Common::ComBase<IStream>
 		 * The IRpFile is dup()'d.
 		 * @param file IRpFile.
 		 */
-		explicit IStreamWrapper(IRpFile *file);
-	protected:
-		~IStreamWrapper() final;
+		explicit IStreamWrapper(const LibRpFile::IRpFilePtr &file)
+			: m_file(file)
+		{}
+	public:
+		~IStreamWrapper() final = default;
 
 	private:
 		typedef LibWin32Common::ComBase<IStream> super;
@@ -41,13 +43,19 @@ class IStreamWrapper final : public LibWin32Common::ComBase<IStream>
 		 * NOTE: The IRpFile is still owned by this object.
 		 * @return IRpFile.
 		 */
-		IRpFile *file(void) const;
+		inline IRpFile *file(void) const
+		{
+			return m_file.get();
+		}
 
 		/**
 		 * Set the IRpFile.
 		 * @param file New IRpFile.
 		 */
-		void setFile(IRpFile *file);
+		void setFile(const LibRpFile::IRpFilePtr &file)
+		{
+			m_file = file;
+		}
 
 	public:
 		// IUnknown
@@ -69,7 +77,7 @@ class IStreamWrapper final : public LibWin32Common::ComBase<IStream>
 		IFACEMETHODIMP Clone(IStream **ppstm) final;
 
 	protected:
-		IRpFile *m_file;
+		LibRpFile::IRpFilePtr m_file;
 };
 
 }

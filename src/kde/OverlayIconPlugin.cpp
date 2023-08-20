@@ -14,9 +14,9 @@
 #include "OverlayIconPlugin.hpp"
 #include "check-uid.hpp"
 
-// librpbase, librpfile
+// Other rom-properties libraries
 using namespace LibRpBase;
-using LibRpFile::IRpFile;
+using namespace LibRpFile;
 
 // libromdata
 #include "libromdata/RomDataFactory.hpp"
@@ -59,15 +59,14 @@ QStringList OverlayIconPlugin::getOverlays(const QUrl &item)
 	}
 
 	// Attempt to open the ROM file.
-	IRpFile *const file = openQUrl(item, true);
+	const IRpFilePtr file(openQUrl(item, true));
 	if (!file) {
 		// Could not open the file.
 		return sl;
 	}
 
 	// Get the appropriate RomData class for this ROM.
-	RomData *const romData = RomDataFactory::create(file, RomDataFactory::RDA_HAS_DPOVERLAY);
-	file->unref();	// file is ref()'d by RomData.
+	const RomDataPtr romData = RomDataFactory::create(file, RomDataFactory::RDA_HAS_DPOVERLAY);
 	if (!romData) {
 		// No RomData.
 		return sl;
@@ -78,7 +77,6 @@ QStringList OverlayIconPlugin::getOverlays(const QUrl &item)
 	if (romData->hasDangerousPermissions()) {
 		sl += QLatin1String("security-medium");
 	}
-	romData->unref();
 
 	return sl;
 }

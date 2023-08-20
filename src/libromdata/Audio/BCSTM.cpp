@@ -12,8 +12,8 @@
 
 // Other rom-properties libraries
 using namespace LibRpBase;
+using namespace LibRpFile;
 using namespace LibRpText;
-using LibRpFile::IRpFile;
 
 // C++ STL classes
 using std::ostringstream;
@@ -24,7 +24,7 @@ namespace LibRomData {
 class BCSTMPrivate final : public RomDataPrivate
 {
 	public:
-		BCSTMPrivate(IRpFile *file);
+		BCSTMPrivate(const IRpFilePtr &file);
 
 	private:
 		typedef RomDataPrivate super;
@@ -109,7 +109,7 @@ const RomDataInfo BCSTMPrivate::romDataInfo = {
 	"BCSTM", exts, mimeTypes
 };
 
-BCSTMPrivate::BCSTMPrivate(IRpFile *file)
+BCSTMPrivate::BCSTMPrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
 	, audioFormat(AudioFormat::Unknown)
 	, needsByteswap(false)
@@ -134,7 +134,7 @@ BCSTMPrivate::BCSTMPrivate(IRpFile *file)
  *
  * @param file Open ROM image.
  */
-BCSTM::BCSTM(IRpFile *file)
+BCSTM::BCSTM(const IRpFilePtr &file)
 	: super(new BCSTMPrivate(file))
 {
 	RP_D(BCSTM);
@@ -149,7 +149,7 @@ BCSTM::BCSTM(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(&d->bcstmHeader, sizeof(d->bcstmHeader));
 	if (size != sizeof(d->bcstmHeader)) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -162,7 +162,7 @@ BCSTM::BCSTM(IRpFile *file)
 	d->audioFormat = static_cast<BCSTMPrivate::AudioFormat>(isRomSupported_static(&info));
 
 	if ((int)d->audioFormat < 0) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	} else if ((int)d->audioFormat < ARRAY_SIZE_I(d->mimeTypes)-1) {
 		d->mimeType = d->mimeTypes[(int)d->audioFormat];
@@ -181,7 +181,7 @@ BCSTM::BCSTM(IRpFile *file)
 	{
 		// Invalid INFO block.
 		d->audioFormat = BCSTMPrivate::AudioFormat::Unknown;
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 	if (d->audioFormat == BCSTMPrivate::AudioFormat::BCWAV) {
@@ -194,7 +194,7 @@ BCSTM::BCSTM(IRpFile *file)
 	if (size != req_size) {
 		// Seek and/or read error.
 		d->audioFormat = BCSTMPrivate::AudioFormat::Unknown;
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -204,7 +204,7 @@ BCSTM::BCSTM(IRpFile *file)
        if (d->infoBlock.cstm.magic != cpu_to_be32(BCSTM_INFO_MAGIC)) {
 		// Incorrect magic number.
 		d->audioFormat = BCSTMPrivate::AudioFormat::Unknown;
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 

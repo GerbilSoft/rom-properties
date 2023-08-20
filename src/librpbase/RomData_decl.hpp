@@ -13,12 +13,12 @@
 #  error RomData_decl.hpp should only be included by RomData.hpp
 #endif
 
-// for loadInternalImage() implementation macros
-#include <cerrno>
-
 namespace LibRpBase {
 	struct RomDataInfo;
 }
+
+// for loadInternalImage() implementation macros
+#include <cerrno>
 
 /** Macros for RomData subclasses. **/
 
@@ -31,9 +31,7 @@ namespace LibRpBase {
 class klass##Private; \
 class klass final : public LibRpBase::RomData { \
 public: \
-	explicit klass(LibRpFile::IRpFile *file); \
-protected: \
-	RP_LIBROMDATA_LOCAL \
+	explicit klass(const LibRpFile::IRpFilePtr &file); \
 	~klass() final = default; \
 private: \
 	typedef RomData super; \
@@ -158,10 +156,10 @@ public: \
 	 * Load an internal image. \
 	 * Called by RomData::image(). \
 	 * @param imageType	[in] Image type to load. \
-	 * @param pImage	[out] Pointer to const rp_image* to store the image in. \
+	 * @param pImage	[out] Reference to rp_image_const_ptr to store the image in. \
 	 * @return 0 on success; negative POSIX error code on error. \
 	 */ \
-	int loadInternalImage(ImageType imageType, const LibRpTexture::rp_image **pImage) final;
+	int loadInternalImage(ImageType imageType, LibRpTexture::rp_image_const_ptr &pImage) final; \
 
 /**
  * RomData subclass function declaration for obtaining URLs for external images.
@@ -196,12 +194,9 @@ public: \
 	 * Check imgpf for IMGPF_ICON_ANIMATED first to see if this \
 	 * object has an animated icon. \
 	 * \
-	 * The retrieved IconAnimData must be ref()'d by the caller if the \
-	 * caller stores it instead of using it immediately. \
-	 * \
 	 * @return Animated icon data, or nullptr if no animated icon is present. \
 	 */ \
-	const LibRpBase::IconAnimData *iconAnimData(void) const final;
+	LibRpBase::IconAnimDataConstPtr iconAnimData(void) const final;
 
 /**
  * RomData subclass function declaration for indicating "dangerous" permissions.
@@ -343,13 +338,9 @@ std::vector<RomData::ImageSizeDef> klass::supportedImageSizes(ImageType imageTyp
 
 #define ASSERT_loadInternalImage(imageType, pImage) do { \
 	assert((imageType) >= IMG_INT_MIN && (imageType) <= IMG_INT_MAX); \
-	assert((pImage) != nullptr); \
-	if (!(pImage)) { \
-		/* Invalid parameters. */ \
-		return -EINVAL; \
-	} else if ((imageType) < IMG_INT_MIN || (imageType) > IMG_INT_MAX) { \
+	if ((imageType) < IMG_INT_MIN || (imageType) > IMG_INT_MAX) { \
 		/* ImageType is out of range. */ \
-		*(pImage) = nullptr; \
+		(pImage).reset(); \
 		return -ERANGE; \
 	} \
 } while (0)
@@ -380,19 +371,19 @@ std::vector<RomData::ImageSizeDef> klass::supportedImageSizes(ImageType imageTyp
  */
 #define ROMDATA_loadInternalImage_single(ourImageType, file, isValid, romType, imgCache, func) do { \
 	if ((imageType) != (ourImageType)) { \
-		*(pImage) = nullptr; \
+		(pImage).reset(); \
 		return -ENOENT; \
 	} else if ((imgCache) != nullptr) { \
-		*(pImage) = (imgCache); \
+		(pImage) = (imgCache); \
 		return 0; \
 	} else if (!(file)) { \
-		*(pImage) = nullptr; \
+		(pImage).reset(); \
 		return -EBADF; \
 	} else if (!(isValid) || ((int)(romType)) < 0) { \
-		*(pImage) = nullptr; \
+		(pImage).reset(); \
 		return -EIO; \
 	} \
 	\
-	*(pImage) = (func)(); \
-	return (*(pImage) != nullptr ? 0 : -EIO); \
+	(pImage) = (func)(); \
+	return ((bool)pImage ? 0 : -EIO); \
 } while (0)

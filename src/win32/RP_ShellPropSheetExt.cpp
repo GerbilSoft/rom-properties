@@ -39,7 +39,7 @@ using LibWin32UI::WTSSessionNotification;
 using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;
-using LibRpTexture::rp_image;
+using namespace LibRpTexture;
 using LibRomData::RomDataFactory;
 
 // C++ STL classes
@@ -68,7 +68,6 @@ RP_ShellPropSheetExt_Private::RP_ShellPropSheetExt_Private(RP_ShellPropSheetExt 
 	: q_ptr(q)
 	, hDlgSheet(nullptr)
 	, tfilename(tfilename)
-	, romData(nullptr)
 	, fontHandler(nullptr)
 	, lblSysInfo(nullptr)
 	, lblBanner(nullptr)
@@ -96,9 +95,8 @@ RP_ShellPropSheetExt_Private::~RP_ShellPropSheetExt_Private()
 	delete lblBanner;
 	delete lblIcon;
 
-	// Unreference the RomData object.
+	// Delete the copy of the RomData object's filename.
 	free(tfilename);
-	UNREF(romData);
 }
 
 /**
@@ -112,14 +110,14 @@ RP_ShellPropSheetExt_Private::~RP_ShellPropSheetExt_Private()
  */
 void RP_ShellPropSheetExt_Private::loadImages(void)
 {
-	// Supported image types.
+	// Supported image types
 	const uint32_t imgbf = romData->supportedImageTypes();
 
-	// Banner.
+	// Banner
 	bool ok = false;
 	if (imgbf & RomData::IMGBF_INT_BANNER) {
 		// Get the banner.
-		const rp_image *const banner = romData->image(RomData::IMG_INT_BANNER);
+		const rp_image_const_ptr banner = romData->image(RomData::IMG_INT_BANNER);
 		if (banner && banner->isValid()) {
 			if (!lblBanner) {
 				lblBanner = new DragImageLabel(hDlgSheet);
@@ -137,11 +135,11 @@ void RP_ShellPropSheetExt_Private::loadImages(void)
 		lblBanner = nullptr;
 	}
 
-	// Icon.
+	// Icon
 	ok = false;
 	if (imgbf & RomData::IMGBF_INT_ICON) {
 		// Get the icon.
-		const rp_image *const icon = romData->image(RomData::IMG_INT_ICON);
+		const rp_image_const_ptr icon = romData->image(RomData::IMG_INT_ICON);
 		if (icon && icon->isValid()) {
 			if (!lblIcon) {
 				lblIcon = new DragImageLabel(hDlgSheet);
@@ -1055,12 +1053,10 @@ int RP_ShellPropSheetExt_Private::initListData(_In_ HWND hWndTab,
 			for (auto iter = icons->cbegin(); iter != icons_cend;
 			     ++iter, rowColorIdx = !rowColorIdx)
 			{
-				bool needsUnref = false;
-				int iImage = -1;
-				const rp_image *icon = *iter;
+				rp_image_const_ptr icon = *iter;
 				if (!icon) {
 					// No icon for this row.
-					lvData.vImageList.emplace_back(iImage);
+					lvData.vImageList.emplace_back(-1);
 					continue;
 				}
 
@@ -1070,11 +1066,10 @@ int RP_ShellPropSheetExt_Private::initListData(_In_ HWND hWndTab,
 					// but we can't rely on that being the case, and this option
 					// was first introduced in Windows XP.
 					// We'll flip the image here to counteract it.
-					const rp_image *const flipimg = icon->flip(rp_image::FLIP_H);
-					assert(flipimg != nullptr);
+					const rp_image_const_ptr flipimg = icon->flip(rp_image::FLIP_H);
+					assert((bool)flipimg);
 					if (flipimg) {
 						icon = flipimg;
-						needsUnref = true;
 					}
 				}
 
@@ -1093,35 +1088,25 @@ int RP_ShellPropSheetExt_Private::initListData(_In_ HWND hWndTab,
 					// TODO: Handle theme changes?
 					// TODO: Error handling.
 					if (icon->format() != rp_image::Format::ARGB32) {
-						const rp_image *const icon32 = icon->dup_ARGB32();
+						const rp_image_const_ptr icon32 = icon->dup_ARGB32();
+						assert((bool)icon32);
 						if (icon32) {
-							if (needsUnref) {
-								icon->unref();
-							}
 							icon = icon32;
-							needsUnref = true;
 						}
 					}
 
 					// Resize the icon.
-					const rp_image *const icon_resized = icon->resized(
+					const rp_image_const_ptr icon_resized = icon->resized(
 						szResize.cx, szResize.cy,
 						rp_image::AlignVCenter, lvBgColor[rowColorIdx]);
-					assert(icon_resized != nullptr);
+					assert((bool)icon_resized);
 					if (icon_resized) {
-						if (needsUnref) {
-							icon->unref();
-						}
 						icon = icon_resized;
-						needsUnref = true;
 					}
 				}
 
+				int iImage = -1;
 				HICON hIcon = RpImageWin32::toHICON(icon);
-				if (needsUnref) {
-					icon->unref();
-				}
-
 				assert(hIcon != nullptr);
 				if (hIcon) {
 					const int idx = ImageList_AddIcon(himl, hIcon);
@@ -2182,7 +2167,6 @@ IFACEMETHODIMP RP_ShellPropSheetExt::Initialize(
 
 	HRESULT hr = E_FAIL;
 	UINT nFiles, cchFilename;
-	RomData *romData = nullptr;
 	TCHAR *tfilename = nullptr;	// RP_ShellPropSheetExt_Private takes ownership!
 
 	const Config *config;
@@ -2221,18 +2205,19 @@ IFACEMETHODIMP RP_ShellPropSheetExt::Initialize(
 		goto cleanup;
 	}
 
-	// Get the appropriate RomData class for this ROM.
-	romData = RomDataFactory::create(tfilename);
-	if (!romData) {
-		// Could not open the RomData object.
-		goto cleanup;
-	}
+	// Attempt to open the file using RomDataFactory.
+	{
+		const RomDataPtr romData_tmp = RomDataFactory::create(tfilename);
+		if (!romData_tmp) {
+			// Could not open the RomData object.
+			goto cleanup;
+		}
 
-	// Unreference the RomData object.
-	// We only want to open the RomData if the "ROM Properties"
-	// tab is clicked, because otherwise the file will be held
-	// open and may block the user from changing attributes.
-	romData->unref();
+		// NOTE: We're not saving the RomData object at this point.
+		// We only want to open the RomData if the "ROM Properties"
+		// tab is clicked, because otherwise the file will be held
+		// open and may block the user from changing attributes.
+	}
 
 	// Save the filename in the private class for later.
 	if (!d_ptr) {

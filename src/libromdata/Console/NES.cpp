@@ -16,10 +16,10 @@
 // Other rom-properties libraries
 #include "librpbase/SystemRegion.hpp"
 using namespace LibRpBase;
+using namespace LibRpFile;
 using namespace LibRpText;
-using LibRpFile::IRpFile;
 
-// C++ STL classes.
+// C++ STL classes
 using std::string;
 
 namespace LibRomData {
@@ -27,7 +27,7 @@ namespace LibRomData {
 class NESPrivate final : public RomDataPrivate
 {
 	public:
-		NESPrivate(IRpFile *file);
+		NESPrivate(const IRpFilePtr &file);
 
 	private:
 		typedef RomDataPrivate super;
@@ -190,7 +190,7 @@ const uint8_t NESPrivate::footer_chr_rom_size_shift_lkup[] = {
 	19,	// 5 (512 KB)
 };
 
-NESPrivate::NESPrivate(IRpFile *file)
+NESPrivate::NESPrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
 	, romType(ROM_UNKNOWN)
 	, hasCheckedIntFooter(false)
@@ -619,7 +619,7 @@ int NESPrivate::loadInternalFooter(void)
  *
  * @param file Open ROM file.
  */
-NES::NES(IRpFile *file)
+NES::NES(const IRpFilePtr &file)
 	: super(new NESPrivate(file))
 {
 	RP_D(NES);
@@ -637,7 +637,7 @@ NES::NES(IRpFile *file)
 	uint8_t header[128];
 	size_t size = d->file->read(header, sizeof(header));
 	if (size < 16) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -670,7 +670,7 @@ NES::NES(IRpFile *file)
 			// FDS disk image.
 			if (size < sizeof(FDS_DiskHeader)) {
 				// Not enough data for an FDS image.
-				UNREF_AND_NULL_NOCHK(d->file);
+				d->file.reset();
 				return;
 			}
 			d->fileType = FileType::DiskImage;
@@ -682,7 +682,7 @@ NES::NES(IRpFile *file)
 			// FDS disk image, with fwNES header.
 			if (size < (sizeof(FDS_DiskHeader) + sizeof(FDS_DiskHeader_fwNES))) {
 				// Not enough data for an FDS image with fwNES header.
-				UNREF_AND_NULL_NOCHK(d->file);
+				d->file.reset();
 				return;
 			}
 			d->fileType = FileType::DiskImage;
@@ -696,7 +696,7 @@ NES::NES(IRpFile *file)
 			size_t szret = d->file->seekAndRead(0x2010, &d->header.fds, sizeof(d->header.fds));
 			if (szret != sizeof(d->header.fds)) {
 				// Seek and/or read error.
-				UNREF_AND_NULL_NOCHK(d->file);
+				d->file.reset();
 				d->fileType = FileType::Unknown;
 				d->romType = NESPrivate::ROM_FORMAT_UNKNOWN;
 				return;
@@ -708,7 +708,7 @@ NES::NES(IRpFile *file)
 
 		default:
 			// Unknown ROM type.
-			UNREF_AND_NULL_NOCHK(d->file);
+			d->file.reset();
 			d->fileType = FileType::Unknown;
 			d->romType = NESPrivate::ROM_FORMAT_UNKNOWN;
 			return;

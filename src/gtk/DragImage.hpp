@@ -32,45 +32,39 @@ G_END_DECLS
 
 #ifdef __cplusplus
 
+// C++ includes
+#include <memory>
+
 namespace LibRpTexture {
 	class rp_image;
 }
 
 // librpbase
 #include "librpbase/img/IconAnimData.hpp"
-#include "librpbase/img/IconAnimHelper.hpp"
 
 /**
  * Set the rp_image for this image.
  *
- * NOTE: The rp_image pointer is stored and used if necessary.
- * Make sure to call this function with nullptr before deleting
- * the rp_image object.
- *
- * NOTE 2: If animated icon data is specified, that supercedes
+ * NOTE: If animated icon data is specified, that supercedes
  * the individual rp_image.
  *
  * @param image RpDragImage
  * @param img rp_image, or nullptr to clear.
  * @return True on success; false on error or if clearing.
  */
-bool rp_drag_image_set_rp_image(RpDragImage *image, const LibRpTexture::rp_image *img);
+bool rp_drag_image_set_rp_image(RpDragImage *image, const LibRpTexture::rp_image_const_ptr &img);
 
 /**
  * Set the icon animation data for this image.
  *
- * NOTE: The iconAnimData pointer is stored and used if necessary.
- * Make sure to call this function with nullptr before deleting
- * the IconAnimData object.
- *
- * NOTE 2: If animated icon data is specified, that supercedes
+ * NOTE: If animated icon data is specified, that supercedes
  * the individual rp_image.
  *
  * @param image RpDragImage
  * @param iconAnimData IconAnimData, or nullptr to clear.
  * @return True on success; false on error or if clearing.
  */
-bool rp_drag_image_set_icon_anim_data(RpDragImage *image, const LibRpBase::IconAnimData *iconAnimData);
+bool rp_drag_image_set_icon_anim_data(RpDragImage *image, const LibRpBase::IconAnimDataConstPtr &iconAnimData);
 
 #endif /* __cplusplus */
 

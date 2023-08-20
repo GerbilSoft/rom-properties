@@ -10,11 +10,11 @@
 #include "ListDataModel.hpp"
 #include "RomDataFormat.hpp"
 
-// librpbase, librptexture
+// Other rom-properties libraries
 #include "librpbase/RomFields.hpp"
 #include "librptexture/img/rp_image.hpp"
+using namespace LibRpTexture;
 using LibRpBase::RomFields;
-using LibRpTexture::rp_image;
 
 // C++ STL classes
 using std::set;
@@ -28,7 +28,6 @@ class ListDataModelPrivate
 {
 	public:
 		explicit ListDataModelPrivate(ListDataModel *q);
-		~ListDataModelPrivate();
 
 	protected:
 		ListDataModel *const q_ptr;
@@ -60,7 +59,7 @@ class ListDataModelPrivate
 		// NOTE: References to rp_image* are kept in case
 		// the icon size is changed.
 		vector<QPixmap> icons;
-		vector<const rp_image*> icons_rp;
+		vector<rp_image_const_ptr > icons_rp;
 		QSize iconSize;
 
 		// Qt::ItemFlags
@@ -142,14 +141,6 @@ ListDataModelPrivate::ListDataModelPrivate(ListDataModel *q)
 	// TODO: Better default icon size?
 }
 
-ListDataModelPrivate::~ListDataModelPrivate()
-{
-	// Unreference rp_images.
-	for (const rp_image *img : icons_rp) {
-		UNREF(img);
-	}
-}
-
 /**
  * Clear all internal data.
  */
@@ -166,10 +157,6 @@ void ListDataModelPrivate::clearData(void)
 
 	// Clear icons.
 	icons.clear();
-	// Unreference rp_images.
-	for (const rp_image *img : icons_rp) {
-		UNREF(img);
-	}
 	icons_rp.clear();
 }
 
@@ -181,7 +168,7 @@ void ListDataModelPrivate::updateIconPixmaps(void)
 	icons.clear();
 	icons.reserve(icons_rp.size());
 
-	for (const rp_image *img : icons_rp) {
+	for (const auto &img : icons_rp) {
 		if (!img) {
 			icons.emplace_back();
 			continue;
@@ -417,6 +404,18 @@ QVariant ListDataModel::data(const QModelIndex& index, int role) const
 				return d->icons[row];
 			break;
 
+		case RpImageRole:
+			if (column != 0 || d->icons.empty())
+				break;
+			if (row <= (int)d->icons.size()) {
+				// NOTE: We can't put an std::shared_ptr<> in QVariant.
+				// Pass a pointer to the std::shared_ptr<> instead.
+				if (d->icons_rp[row]) {
+					return QVariant::fromValue((void*)&d->icons_rp[row]);
+				}
+			}
+			break;
+
 		default:
 			break;
 	}
@@ -623,10 +622,11 @@ void ListDataModel::setField(const RomFields::Field *pField)
 		// NOTE: Icons are the same for all languages.
 		// Also, we can assume all rows are present, since
 		// icons and checkboxes are mutually exclusive.
-		d->icons.reserve(rowCount);
-		for (const rp_image *icon : *(pField->data.list_data.mxd.icons)) {
-			d->icons_rp.emplace_back(icon ? icon->ref() : nullptr);
-		}
+
+		// NOTE 2: Since we're using shared_ptr<> now, we can just
+		// copy the entire vector over without manually iterating.
+		d->icons_rp = *(pField->data.list_data.mxd.icons);
+
 		// Update the icons pixmap vector.
 		d->updateIconPixmaps();
 	}

@@ -8,38 +8,30 @@
 
 #pragma once
 
-// C includes.
+// C includes
 #include <stdint.h>
 
-// C includes. (C++ namespace)
+// C includes (C++ namespace)
 #include <cstddef>
 
 // common macros
 #include "common.h"
-#include "RefBase.hpp"
 
-namespace LibRpFile {
-	class IRpFile;
-}
+// librpfile
+#include "librpfile/IRpFile.hpp"
 
 namespace LibRpBase {
 
-class IDiscReader : public RefBase
+class IDiscReader
 {
 	protected:
-		explicit IDiscReader(LibRpFile::IRpFile *file);
-		explicit IDiscReader(IDiscReader *discReader);
-	protected:
-		~IDiscReader() override;	// call unref() instead
+		explicit IDiscReader(const LibRpFile::IRpFilePtr &file);
+		explicit IDiscReader(const std::shared_ptr<IDiscReader> &discReader);
+	public:
+		virtual ~IDiscReader() = default;
 
 	private:
 		RP_DISABLE_COPY(IDiscReader)
-
-	public:
-		inline IDiscReader *ref(void)
-		{
-			return RefBase::ref<IDiscReader>();
-		}
 
 	public:
 		/** Disc image detection functions. **/
@@ -115,7 +107,7 @@ class IDiscReader : public RefBase
 		virtual off64_t size(void) = 0;
 
 	public:
-		/** Convenience functions implemented for all IRpFile classes. **/
+		/** Convenience functions implemented for all IDiscReader subclasses. **/
 
 		/**
 		 * Seek to the specified address, then read data.
@@ -149,10 +141,12 @@ class IDiscReader : public RefBase
 
 		// Subclasses may have an underlying file, or may
 		// stack another IDiscReader object.
-		union {
-			LibRpFile::IRpFile *m_file;
-			IDiscReader *m_discReader;
-		};
+		// NOTE: This used to be a union{} prior to the std::shared_ptr<> conversion.
+		// TODO: Convert to std::variant<>?
+		LibRpFile::IRpFilePtr m_file;
+		std::shared_ptr<IDiscReader> m_discReader;
 };
+
+typedef std::shared_ptr<IDiscReader> IDiscReaderPtr;
 
 }

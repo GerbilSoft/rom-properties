@@ -13,22 +13,23 @@
 
 // Other rom-properties libraries
 using namespace LibRpBase;
+using namespace LibRpFile;
 using namespace LibRpText;
-using LibRpFile::IRpFile;
-using LibRpTexture::rp_image;
+using namespace LibRpTexture;
 
 // Decryption.
 #include "librpbase/crypto/KeyManager.hpp"
 #include "disc/WiiPartition.hpp"	// for key information
 #ifdef ENABLE_DECRYPTION
-# include "librpbase/disc/CBCReader.hpp"
+#  include "librpbase/disc/CBCReader.hpp"
 // For sections delegated to other RomData subclasses.
-# include "librpbase/disc/PartitionFile.hpp"
-# include "WiiWIBN.hpp"
+#  include "librpbase/disc/PartitionFile.hpp"
+#  include "WiiWIBN.hpp"
 #endif /* ENABLE_DECRYPTION */
 
-// C++ STL classes.
+// C++ STL classes
 using std::array;
+using std::shared_ptr;
 using std::string;
 using std::vector;
 
@@ -37,7 +38,7 @@ namespace LibRomData {
 class WiiSavePrivate final : public RomDataPrivate
 {
 	public:
-		WiiSavePrivate(IRpFile *file);
+		WiiSavePrivate(const IRpFilePtr &file);
 		~WiiSavePrivate() final;
 
 	private:
@@ -73,7 +74,7 @@ class WiiSavePrivate final : public RomDataPrivate
 
 #ifdef ENABLE_DECRYPTION
 		// CBC reader for the main data area.
-		CBCReader *cbcReader;
+		CBCReaderPtr cbcReader;
 		WiiWIBN *wibnData;
 
 		// Key indexes. (0 == AES, 1 == IV)
@@ -111,11 +112,10 @@ const uint8_t WiiSavePrivate::bk_header_magic[8] = {
 	0x00, 0x00, 0x00, 0x70, 0x42, 0x6B, 0x00, 0x01
 };
 
-WiiSavePrivate::WiiSavePrivate(IRpFile *file)
+WiiSavePrivate::WiiSavePrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
 	, svLoaded(false)
 #ifdef ENABLE_DECRYPTION
-	, cbcReader(nullptr)
 	, wibnData(nullptr)
 #endif /* ENABLE_DECRYPTION */
 {
@@ -132,8 +132,7 @@ WiiSavePrivate::WiiSavePrivate(IRpFile *file)
 WiiSavePrivate::~WiiSavePrivate()
 {
 #ifdef ENABLE_DECRYPTION
-	UNREF(wibnData);
-	UNREF(cbcReader);
+	delete wibnData;
 #endif /* ENABLE_DECRYPTION */
 }
 
@@ -150,7 +149,7 @@ WiiSavePrivate::~WiiSavePrivate()
  *
  * @param file Open disc image.
  */
-WiiSave::WiiSave(IRpFile *file)
+WiiSave::WiiSave(const IRpFilePtr &file)
 	: super(new WiiSavePrivate(file))
 {
 	// This class handles save files.
@@ -180,7 +179,7 @@ WiiSave::WiiSave(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(svData.get(), svSizeTotal);
 	if (size < svSizeMin) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	} else if (size > svSizeTotal) {
 		// NOTE: Shouldn't happen...
@@ -204,7 +203,7 @@ WiiSave::WiiSave(IRpFile *file)
 	if (d->bkHeader.magic != cpu_to_be16(WII_BK_MAGIC)) {
 		// Bk header not found.
 		d->isValid = false;
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -244,7 +243,7 @@ WiiSave::WiiSave(IRpFile *file)
 	{
 		// Create a CBC reader to decrypt the banner and icon.
 		// TODO: Verify some known data?
-		d->cbcReader = new CBCReader(d->file, 0, bkHeaderAddr,
+		d->cbcReader = std::make_shared<CBCReader>(d->file, 0, bkHeaderAddr,
 			keyData[0].key, keyData[1].key);
 
 		// Read the save game header.
@@ -269,7 +268,7 @@ WiiSave::WiiSave(IRpFile *file)
 		// Create the PartitionFile.
 		// TODO: Only if the save game header is valid?
 		// TODO: Get the size from the save game header?
-		PartitionFile *const ptFile = new PartitionFile(d->cbcReader,
+		PartitionFilePtr ptFile = std::make_shared<PartitionFile>(d->cbcReader.get(),
 			sizeof(Wii_SaveGame_Header_t),
 			bkHeaderAddr - sizeof(Wii_SaveGame_Header_t));
 		if (ptFile->isOpen()) {
@@ -280,10 +279,9 @@ WiiSave::WiiSave(IRpFile *file)
 				d->wibnData = wibn;
 			} else {
 				// Unable to open the WiiWIBN.
-				wibn->unref();
+				delete wibn;
 			}
 		}
-		ptFile->unref();
 	}
 #endif /* ENABLE_DECRYPTION */
 }
@@ -302,7 +300,7 @@ void WiiSave::close(void)
 	}
 
 	// Close associated files used with child RomData subclasses.
-	UNREF_AND_NULL(d->cbcReader);
+	d->cbcReader.reset();
 #endif /* ENABLE_DECRYPTION */
 
 	// Call the superclass function.
@@ -536,10 +534,10 @@ int WiiSave::loadFieldData(void)
  * Load an internal image.
  * Called by RomData::image().
  * @param imageType	[in] Image type to load.
- * @param pImage	[out] Pointer to const rp_image* to store the image in.
+ * @param pImage	[out] Reference to rp_image_const_ptr to store the image in.
  * @return 0 on success; negative POSIX error code on error.
  */
-int WiiSave::loadInternalImage(ImageType imageType, const rp_image **pImage)
+int WiiSave::loadInternalImage(ImageType imageType, rp_image_const_ptr &pImage)
 {
 	ASSERT_loadInternalImage(imageType, pImage);
 
@@ -552,8 +550,8 @@ int WiiSave::loadInternalImage(ImageType imageType, const rp_image **pImage)
 #endif /* ENABLE_DECRYPTION */
 
 	// No WiiWIBN object.
-	*pImage = nullptr;
-	return 0;
+	pImage.reset();
+	return -ENOENT;
 }
 
 /**
@@ -562,12 +560,9 @@ int WiiSave::loadInternalImage(ImageType imageType, const rp_image **pImage)
  * Check imgpf for IMGPF_ICON_ANIMATED first to see if this
  * object has an animated icon.
  *
- * The retrieved IconAnimData must be ref()'d by the caller if the
- * caller stores it instead of using it immediately.
- *
  * @return Animated icon data, or nullptr if no animated icon is present.
  */
-const IconAnimData *WiiSave::iconAnimData(void) const
+IconAnimDataConstPtr WiiSave::iconAnimData(void) const
 {
 #ifdef ENABLE_DECRYPTION
 	// Forward this call to the WiiWIBN object.

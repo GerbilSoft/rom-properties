@@ -13,15 +13,15 @@
 
 // Other rom-properties libraries
 using namespace LibRpBase;
+using namespace LibRpFile;
 using namespace LibRpText;
-using LibRpFile::IRpFile;
 
 namespace LibRomData {
 
 class LynxPrivate final : public RomDataPrivate
 {
 	public:
-		LynxPrivate(IRpFile *file);
+		LynxPrivate(const IRpFilePtr &file);
 
 	private:
 		typedef RomDataPrivate super;
@@ -58,7 +58,7 @@ const RomDataInfo LynxPrivate::romDataInfo = {
 	"Lynx", exts, mimeTypes
 };
 
-LynxPrivate::LynxPrivate(IRpFile *file)
+LynxPrivate::LynxPrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
 {
 	// Clear the ROM header struct.
@@ -80,7 +80,7 @@ LynxPrivate::LynxPrivate(IRpFile *file)
  *
  * @param file Open ROM file.
  */
-Lynx::Lynx(IRpFile *file)
+Lynx::Lynx(const IRpFilePtr &file)
 	: super(new LynxPrivate(file))
 {
 	RP_D(Lynx);
@@ -98,7 +98,7 @@ Lynx::Lynx(IRpFile *file)
 	uint8_t header[0x40];
 	size_t size = d->file->read(header, sizeof(header));
 	if (size != sizeof(header)) {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 		return;
 	}
 
@@ -114,7 +114,7 @@ Lynx::Lynx(IRpFile *file)
 		// Save the header for later.
 		memcpy(&d->romHeader, header, sizeof(d->romHeader));
 	} else {
-		UNREF_AND_NULL_NOCHK(d->file);
+		d->file.reset();
 	}
 }
 
