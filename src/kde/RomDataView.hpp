@@ -12,18 +12,19 @@
 #include <QWidget>
 
 #include "librpbase/RomData.hpp"
-Q_DECLARE_METATYPE(LibRpBase::RomData*)
+//Q_DECLARE_METATYPE(LibRpBase::RomData*)
 
 class RomDataViewPrivate;
 class RomDataView : public QWidget
 {
 	Q_OBJECT
 
-	Q_PROPERTY(LibRpBase::RomData* romData READ romData WRITE setRomData NOTIFY romDataChanged)
+	// FIXME: Not compatible with std::shared_ptr<>.
+	//Q_PROPERTY(LibRpBase::RomData* romData READ romData WRITE setRomData NOTIFY romDataChanged)
 
 	public:
 		explicit RomDataView(QWidget *parent = nullptr);
-		explicit RomDataView(LibRpBase::RomData *romData, QWidget *parent = nullptr);
+		explicit RomDataView(const LibRpBase::RomDataPtr &romData, QWidget *parent = nullptr);
 		~RomDataView() override;
 
 	private:
@@ -88,9 +89,9 @@ class RomDataView : public QWidget
 
 		/**
 		 * Get the current RomData object.
-		 * @return RomData object.
+		 * @return RomData object
 		 */
-		LibRpBase::RomData *romData(void) const;
+		LibRpBase::RomDataPtr romData(void) const;
 
 	public slots:
 		/**
@@ -98,15 +99,20 @@ class RomDataView : public QWidget
 		 *
 		 * If a RomData object is already set, it is unref()'d.
 		 * The new RomData object is ref()'d when set.
+		 *
+		 * @param romData New RomData object
 		 */
-		void setRomData(LibRpBase::RomData *romData);
+		void setRomData(const LibRpBase::RomDataPtr &romData);
 
+#if 0
+	/* FIXME: Not compatible with std::shared_ptr<>. */
 	signals:
 		/**
 		 * The RomData object has been changed.
-		 * @param romData New RomData object.
+		 * @param romData New RomData object
 		 */
 		void romDataChanged(LibRpBase::RomData *romData);
+#endif
 
 	private slots:
 		/**

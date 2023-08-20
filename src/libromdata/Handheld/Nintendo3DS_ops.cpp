@@ -43,7 +43,7 @@ vector<RomData::RomOp> Nintendo3DS::romOps_int(void) const
 	}
 
 	// Check for a DSi SRL.
-	NintendoDS *const srl = dynamic_cast<NintendoDS*>(d->mainContent);
+	NintendoDS *const srl = dynamic_cast<NintendoDS*>(d->mainContent.get());
 	if (srl) {
 		RomOp op("E&xtract SRL...", RomOp::ROF_SAVE_FILE | RomOp::ROF_ENABLED);
 		op.sfi.title = C_("Nintendo3DS|RomOps", "Extract Nintendo DS SRL File");
@@ -101,7 +101,7 @@ int Nintendo3DS::doRomOp_int(int id, RomOpParams *pParams)
 		return ret;
 	}
 
-	NintendoDS *const srl = dynamic_cast<NintendoDS*>(d->mainContent);
+	NintendoDS *const srl = dynamic_cast<NintendoDS*>(d->mainContent.get());
 	assert(srl != nullptr);
 	if (!srl) {
 		// This shouldn't have happened...

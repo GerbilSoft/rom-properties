@@ -40,9 +40,9 @@ using std::string;
 
 /** RomDataViewPrivate **/
 
-RomDataViewPrivate::RomDataViewPrivate(RomDataView *q, RomData *romData)
+RomDataViewPrivate::RomDataViewPrivate(RomDataView *q, const RomDataPtr &romData)
 	: q_ptr(q)
-	, romData(nullptr)
+	, romData(romData)
 	, btnOptions(nullptr)
 #ifdef HAVE_KMESSAGEWIDGET
 	, messageWidget(nullptr)
@@ -50,17 +50,12 @@ RomDataViewPrivate::RomDataViewPrivate(RomDataView *q, RomData *romData)
 	, cboLanguage(nullptr)
 	, def_lc(0)
 	, hasCheckedAchievements(false)
-{
-	if (romData) {
-		this->romData = romData->ref();
-	}
-}
+{}
 
 RomDataViewPrivate::~RomDataViewPrivate()
 {
 	ui.lblIcon->clearRp();
 	ui.lblBanner->clearRp();
-	UNREF(romData);
 }
 
 /**
@@ -128,7 +123,7 @@ void RomDataViewPrivate::createOptionsButton(void)
 			 q, SLOT(btnOptions_triggered(int)));
 
 	// Initialize the menu options.
-	btnOptions->reinitMenu(romData);
+	btnOptions->reinitMenu(romData.get());
 }
 
 /**
@@ -1080,7 +1075,7 @@ RomDataView::RomDataView(QWidget *parent)
 	d->createOptionsButton();
 }
 
-RomDataView::RomDataView(RomData *romData, QWidget *parent)
+RomDataView::RomDataView(const RomDataPtr &romData, QWidget *parent)
 	: super(parent)
 	, d_ptr(new RomDataViewPrivate(this, romData))
 {
@@ -1255,9 +1250,9 @@ void RomDataView::cboLanguage_lcChanged_slot(uint32_t lc)
 
 /**
  * Get the current RomData object.
- * @return RomData object.
+ * @return RomData object
  */
-RomData *RomDataView::romData(void) const
+RomDataPtr RomDataView::romData(void) const
 {
 	Q_D(const RomDataView);
 	return d->romData;
@@ -1268,8 +1263,10 @@ RomData *RomDataView::romData(void) const
  *
  * If a RomData object is already set, it is unref()'d.
  * The new RomData object is ref()'d when set.
+ *
+ * @param romData New RomData object
  */
-void RomDataView::setRomData(RomData *romData)
+void RomDataView::setRomData(const RomDataPtr &romData)
 {
 	Q_D(RomDataView);
 	if (d->romData == romData)
@@ -1283,15 +1280,15 @@ void RomDataView::setRomData(RomData *romData)
 		d->ui.lblIcon->resetAnimFrame();
 	}
 
-	UNREF(d->romData);
-	d->romData = (romData ? romData->ref() : nullptr);
+	d->romData = romData;
 	d->initDisplayWidgets();
 
-	if (romData != nullptr && prevAnimTimerRunning) {
+	if ((bool)romData && prevAnimTimerRunning) {
 		// Restart the animation timer.
 		// FIXME: Ensure frame 0 is drawn?
 		d->ui.lblIcon->startAnimTimer();
 	}
 
-	emit romDataChanged(romData);
+	// FIXME: Not compatible with std::shared_ptr<>.
+	//emit romDataChanged(romData);
 }

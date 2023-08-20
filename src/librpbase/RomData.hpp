@@ -11,7 +11,6 @@
 
 #include "common.h"
 #include "dll-macros.h"	// for RP_LIBROMDATA_PUBLIC
-#include "RefBase.hpp"
 #include "RomData_decl.hpp"
 
 // C includes
@@ -34,7 +33,7 @@ class RomFields;
 class RomMetaData;
 
 class RomDataPrivate;
-class RomData : public RefBase
+class RomData
 {
 protected:
 	/**
@@ -52,24 +51,14 @@ protected:
 	 */
 	explicit RomData(RomDataPrivate *d);
 
-protected:
-	/**
-	 * RomData destructor is protected.
-	 * Use unref() instead.
-	 */
-	~RomData() override;
+public:
+	virtual ~RomData();
 
 private:
 	RP_DISABLE_COPY(RomData)
 protected:
 	friend class RomDataPrivate;
 	RomDataPrivate *const d_ptr;
-
-public:
-	inline RomData *ref(void)
-	{
-		return RefBase::ref<RomData>();
-	}
 
 public:
 	/**
@@ -651,5 +640,8 @@ public:
 	 */
 	virtual int checkViewedAchievements(void) const;
 };
+
+typedef std::shared_ptr<RomData> RomDataPtr;
+typedef std::shared_ptr<const RomData> RomDataConstPtr;
 
 } //namespace LibRpBase

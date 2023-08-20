@@ -167,15 +167,12 @@ static inline HRESULT InitPropVariantFromInt8(_In_ CHAR iVal, _Out_ PROPVARIANT 
 
 RP_PropertyStore_Private::RP_PropertyStore_Private()
 	: file(nullptr)
-	, romData(nullptr)
 	, pstream(nullptr)
 	, grfMode(0)
 { }
 
 RP_PropertyStore_Private::~RP_PropertyStore_Private()
 {
-	UNREF(romData);
-
 	// Clear property variants.
 	for (PROPVARIANT &pv : prop_val) {
 		PropVariantClear(&pv);
@@ -241,6 +238,7 @@ IFACEMETHODIMP RP_PropertyStore::Initialize(_In_ IStream *pstream, DWORD grfMode
 	d->grfMode = grfMode;
 
 	// Attempt to create a RomData object.
+	// TODO: Do we need to keep it open?
 	d->romData = RomDataFactory::create(file, RomDataFactory::RDA_HAS_METADATA);
 	if (!d->romData) {
 		// No RomData.

@@ -135,7 +135,6 @@ class ImageDecoderTest : public ::testing::TestWithParam<ImageDecoderTest_mode>
 		ImageDecoderTest()
 			: ::testing::TestWithParam<ImageDecoderTest_mode>()
 			, m_gzDds(nullptr)
-			, m_romData(nullptr)
 		{
 #ifdef _WIN32
 			// Register RpGdiplusBackend.
@@ -177,7 +176,7 @@ class ImageDecoderTest : public ::testing::TestWithParam<ImageDecoderTest_mode>
 		// The underlying MemFile is here as well, since we can't
 		// delete it before deleting the RomData object.
 		shared_ptr<MemFile> m_f_dds;
-		RomData *m_romData;
+		RomDataPtr m_romData;
 
 	public:
 		/** Test case parameters. **/
@@ -305,7 +304,7 @@ void ImageDecoderTest::SetUp(void)
  */
 void ImageDecoderTest::TearDown(void)
 {
-	UNREF_AND_NULL(m_romData);
+	m_romData.reset();
 	m_f_dds.reset();
 
 	if (m_gzDds) {
@@ -415,7 +414,7 @@ void ImageDecoderTest::decodeTest_internal(void)
 
 	// Load the image file.
 	m_romData = RomDataFactory::create(m_f_dds);
-	ASSERT_NE(m_romData, nullptr) << "Could not load the DDS image.";
+	ASSERT_TRUE((bool)m_romData) << "Could not load the DDS image.";
 	ASSERT_TRUE(m_romData->isValid()) << "Could not load the DDS image.";
 	ASSERT_TRUE(m_romData->isOpen()) << "Could not load the DDS image.";
 
@@ -433,7 +432,7 @@ void ImageDecoderTest::decodeTest_internal(void)
 		// This must be RpTextureWrapper.
 		// TODO: Support for other RomData subclasses.
 		// NOTE: Using static_cast<> so we don't have to export RpTextureWrapper's vtable.
-		const RpTextureWrapper *const rptw = static_cast<RpTextureWrapper*>(m_romData);
+		const RpTextureWrapper *const rptw = static_cast<RpTextureWrapper*>(m_romData.get());
 		EXPECT_NE(rptw, nullptr);
 		if (rptw) {
 			// To avoid having to add test-only functions to RpTextureWrapper,
@@ -513,7 +512,7 @@ void ImageDecoderTest::decodeBenchmark_internal(void)
 
 	// Load the image file.
 	// TODO: RomDataFactory function to retrieve a constructor function?
-	auto fn_ctor = [](const IRpFilePtr &file) -> RomData* { return RomDataFactory::create(file); };
+	auto fn_ctor = [](const IRpFilePtr &file) -> RomDataPtr { return RomDataFactory::create(file); };
 
 	// For certain types, increase the number of iterations.
 	ASSERT_GT(mode.dds_gz_filename.size(), 4U);
@@ -560,7 +559,7 @@ void ImageDecoderTest::decodeBenchmark_internal(void)
 
 	for (unsigned int i = max_iterations; i > 0; i--) {
 		m_romData = fn_ctor(m_f_dds);
-		ASSERT_TRUE(m_romData != nullptr) << "Could not load the DDS image.";
+		ASSERT_TRUE((bool)m_romData) << "Could not load the DDS image.";
 		ASSERT_TRUE(m_romData->isValid()) << "Could not load the DDS image.";
 		ASSERT_TRUE(m_romData->isOpen()) << "Could not load the DDS image.";
 
@@ -569,7 +568,7 @@ void ImageDecoderTest::decodeBenchmark_internal(void)
 		const rp_image_const_ptr img_dds = m_romData->image(mode.imgType);
 		ASSERT_TRUE(img_dds != nullptr) << "Could not load the DDS image as rp_image.";
 
-		UNREF_AND_NULL_NOCHK(m_romData);
+		m_romData.reset();
 	}
 }
 

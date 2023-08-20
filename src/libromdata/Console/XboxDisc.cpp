@@ -161,7 +161,7 @@ XboxDiscPrivate::~XboxDiscPrivate()
 		lockKreonDrive();
 	}
 
-	UNREF(defaultExeData);
+	delete defaultExeData;
 }
 
 /**
@@ -199,7 +199,7 @@ RomData *XboxDiscPrivate::openDefaultExe(ExeType *pExeType)
 		}
 
 		// Not actually an XEX.
-		xexData->unref();
+		delete xexData;
 	}
 
 	// Try to open default.xbe.
@@ -218,7 +218,7 @@ RomData *XboxDiscPrivate::openDefaultExe(ExeType *pExeType)
 		}
 
 		// Not actually an XBE.
-		xbeData->unref();
+		delete xbeData;
 	}
 
 	// Unable to open the default executable.
@@ -803,7 +803,7 @@ int XboxDisc::loadFieldData(void)
 					RomFields::TabOffset_AddTabs);
 			}
 		}
-		isoData->unref();
+		delete isoData;
 	}
 
 	// Re-lock the Kreon drive.

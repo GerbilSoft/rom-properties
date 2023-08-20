@@ -115,6 +115,7 @@ class GameCubePrivate final : public RomDataPrivate
 			union {
 				struct {
 					// GameCube opening.bnr object
+					// NOTE: Not turning this into a shared_ptr<>.
 					GameCubeBNR *data;
 				} gcn;
 				struct {
@@ -297,7 +298,7 @@ GameCubePrivate::~GameCubePrivate()
 		// Delete opening.bnr data.
 		switch (discType & DISC_SYSTEM_MASK) {
 			case DISC_SYSTEM_GCN:
-				UNREF(opening_bnr.gcn.data);
+				delete opening_bnr.gcn.data;
 				opening_bnr.gcn_partition.reset();
 				break;
 			case DISC_SYSTEM_WII:
@@ -507,7 +508,7 @@ int GameCubePrivate::gcn_loadOpeningBnr(void)
 	GameCubeBNR *const bnr = new GameCubeBNR(f_opening_bnr, this->gcnRegion);
 	if (!bnr->isOpen()) {
 		// Unable to open the subclass.
-		bnr->unref();
+		delete bnr;
 		return -EIO;
 	}
 

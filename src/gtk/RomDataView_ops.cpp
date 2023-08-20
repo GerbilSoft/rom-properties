@@ -51,7 +51,7 @@ rp_rom_data_view_update_field(RpRomDataView *page, int fieldIdx)
 	assert(page->cxx != nullptr);
 	_RpRomDataViewCxx *const cxx = page->cxx;
 
-	const RomFields *const pFields = page->romData->fields();
+	const RomFields *const pFields = cxx->romData->fields();
 	assert(pFields != nullptr);
 	if (!pFields) {
 		// No fields.
@@ -278,6 +278,7 @@ rp_rom_data_view_getSaveFileDialog_callback(GFile *file, save_data_t *save_data)
 
 	// for convenience purposes
 	RpRomDataView *const page = save_data->page;
+	RomData *const romData = page->cxx->romData.get();
 
 	if (filename) {
 		// Save the previous export directory.
@@ -305,14 +306,14 @@ rp_rom_data_view_getSaveFileDialog_callback(GFile *file, save_data_t *save_data)
 					? rp_language_combo_box_get_selected_lc(RP_LANGUAGE_COMBO_BOX(page->cboLanguage))
 					: 0;
 
-				ofs << "== " << rp_sprintf(C_("RomDataView", "File: '%s'"), page->romData->filename()) << std::endl;
-				ROMOutput ro(page->romData, sel_lc);
+				ofs << "== " << rp_sprintf(C_("RomDataView", "File: '%s'"), romData->filename()) << std::endl;
+				ROMOutput ro(romData, sel_lc);
 				ofs << ro;
 				break;
 			}
 
 			case OPTION_EXPORT_JSON: {
-				JSONROMOutput jsro(page->romData);
+				JSONROMOutput jsro(romData);
 				ofs << jsro << std::endl;
 				break;
 			}
@@ -329,7 +330,7 @@ rp_rom_data_view_getSaveFileDialog_callback(GFile *file, save_data_t *save_data)
 	// Run the ROM operation.
 	RomData::RomOpParams params;
 	params.save_filename = filename;
-	int ret = page->romData->doRomOp(id, &params);
+	int ret = romData->doRomOp(id, &params);
 	g_free(filename);
 
 	GtkMessageType messageType;
@@ -344,7 +345,7 @@ rp_rom_data_view_getSaveFileDialog_callback(GFile *file, save_data_t *save_data)
 		// Update the RomOp menu entry in case it changed.
 		// TODO: Don't keep rebuilding this vector...
 		// NOTE: Assuming the RomOps vector order hasn't changed.
-		vector<RomData::RomOp> ops = page->romData->romOps();
+		vector<RomData::RomOp> ops = romData->romOps();
 		assert(id < (int)ops.size());
 		if (id < (int)ops.size()) {
 			rp_options_menu_button_update_op(RP_OPTIONS_MENU_BUTTON(page->btnOptions), id, &ops[id]);
@@ -394,7 +395,10 @@ rp_rom_data_view_doRomOp_stdop(RpRomDataView *page, int id)
 	RP_UNUSED(RFT_STRING_warning_quark);
 	RP_UNUSED(RFT_LISTDATA_rows_visible_quark);
 
-	const char *const rom_filename = page->romData->filename();
+	// for convenience purposes
+	const RomData *const romData = page->cxx->romData.get();
+
+	const char *const rom_filename = romData->filename();
 	if (!rom_filename)
 		return;
 
@@ -411,7 +415,7 @@ rp_rom_data_view_doRomOp_stdop(RpRomDataView *page, int id)
 
 			ostringstream oss;
 			oss << "== " << rp_sprintf(C_("RomDataView", "File: '%s'"), rom_filename) << std::endl;
-			ROMOutput ro(page->romData, sel_lc);
+			ROMOutput ro(romData, sel_lc);
 			oss << ro;
 			rp_gtk_main_clipboard_set_text(oss.str().c_str());
 			// Nothing else to do here.
@@ -420,7 +424,7 @@ rp_rom_data_view_doRomOp_stdop(RpRomDataView *page, int id)
 
 		case OPTION_COPY_JSON: {
 			ostringstream oss;
-			JSONROMOutput jsro(page->romData);
+			JSONROMOutput jsro(romData);
 			oss << jsro << std::endl;
 			rp_gtk_main_clipboard_set_text(oss.str().c_str());
 			// Nothing else to do here.
@@ -503,9 +507,12 @@ btnOptions_triggered_signal_handler(RpOptionsMenuButton *menuButton,
 		return;
 	}
 
+	// for convenience purposes
+	const RomData *const romData = page->cxx->romData.get();
+
 	// Run a ROM operation.
 	// TODO: Don't keep rebuilding this vector...
-	vector<RomData::RomOp> ops = page->romData->romOps();
+	vector<RomData::RomOp> ops = romData->romOps();
 	assert(id < (int)ops.size());
 	if (id >= (int)ops.size()) {
 		// ID is out of range.
@@ -532,7 +539,7 @@ btnOptions_triggered_signal_handler(RpOptionsMenuButton *menuButton,
 
 		// Initial file and directory, based on the current file.
 		// NOTE: Not checking if it's a file or a directory. Assuming it's a file.
-		const string fullFilename = FileSystem::replace_ext(page->romData->filename(), op->sfi.ext);
+		const string fullFilename = FileSystem::replace_ext(romData->filename(), op->sfi.ext);
 		string init_dir, init_name;
 		if (!fullFilename.empty()) {
 			// Split the directory and basename.

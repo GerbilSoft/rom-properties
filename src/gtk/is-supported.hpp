@@ -10,9 +10,8 @@
 
 #ifdef __cplusplus
 
-namespace LibRpBase {
-	class RomData;
-};
+// librpbase
+#include "librpbase/RomData.hpp"
 
 /**
  * Attempt to open a RomData object from the specified GVfs URI.
@@ -20,6 +19,6 @@ namespace LibRpBase {
  * @param uri URI from e.g. nautilus_file_info_get_uri() [UTF-8]
  * @return RomData object if supported; nullptr if not.
  */
-LibRpBase::RomData *rp_gtk_open_uri(const char *uri);
+LibRpBase::RomDataPtr rp_gtk_open_uri(const char *uri);
 
 #endif /* __cplusplus */

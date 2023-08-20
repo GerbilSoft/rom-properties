@@ -92,16 +92,10 @@ Nintendo3DSPrivate::Nintendo3DSPrivate(const IRpFilePtr &file)
 	, romType(RomType::Unknown)
 	, headers_loaded(0)
 	, media_unit_shift(9)	// default is 9 (512 bytes)
-	, mainContent(nullptr)
 {
 	// Clear the various structs.
 	memset(&mxh, 0, sizeof(mxh));
 	memset(&perm, 0, sizeof(perm));
-}
-
-Nintendo3DSPrivate::~Nintendo3DSPrivate()
-{
-	UNREF(mainContent);
 }
 
 /**
@@ -211,16 +205,15 @@ int Nintendo3DSPrivate::loadSMDH(void)
 	}
 
 	// Open the SMDH RomData subclass.
-	Nintendo3DS_SMDH *const smdhData = new Nintendo3DS_SMDH(smdhFile);
+	RomDataPtr smdhData = std::make_shared<Nintendo3DS_SMDH>(smdhFile);
 	if (!smdhData->isOpen()) {
 		// Unable to open the SMDH file.
-		smdhData->unref();
 		return -11;
 	}
 
 	// Loaded the SMDH section.
 	headers_loaded |= HEADER_SMDH;
-	this->mainContent = smdhData;
+	this->mainContent = std::move(smdhData);
 	return 0;
 }
 
@@ -574,7 +567,7 @@ int Nintendo3DSPrivate::openSRL(void)
 		}
 		// File is no longer open.
 		// unref() and reopen it.
-		UNREF_AND_NULL(this->mainContent);
+		this->mainContent.reset();
 	}
 
 	if (!this->file || !this->file->isOpen()) {
@@ -612,22 +605,19 @@ int Nintendo3DSPrivate::openSRL(void)
 
 	// TODO: Make IDiscReader derive from IRpFile.
 	// May need to add reference counting to IRpFile...
-	NintendoDS *srlData = nullptr;
+	RomDataPtr srlData;
 	PartitionFilePtr srlFile = std::make_shared<PartitionFile>(srlReader.get(), 0, length);
 	if (srlFile->isOpen()) {
 		// Create the NintendoDS object.
-		srlData = new NintendoDS(srlFile, true);
+		srlData = std::make_shared<NintendoDS>(srlFile, true);
 	}
 
 	if (srlData && srlData->isOpen() && srlData->isValid()) {
 		// SRL opened successfully.
-		this->mainContent = srlData;
-	} else {
-		// Failed to open the SRL.
-		UNREF(srlData);
+		this->mainContent = std::move(srlData);
 	}
 
-	return (this->mainContent != nullptr ? 0 : -EIO);
+	return ((bool)this->mainContent) ? 0 : -EIO;
 }
 
 /**
@@ -639,7 +629,7 @@ uint32_t Nintendo3DSPrivate::getSMDHRegionCode(void)
 	uint32_t smdhRegion = 0;
 	if ((headers_loaded & Nintendo3DSPrivate::HEADER_SMDH) || loadSMDH() == 0) {
 		// SMDH section loaded.
-		Nintendo3DS_SMDH *const smdh = dynamic_cast<Nintendo3DS_SMDH*>(this->mainContent);
+		Nintendo3DS_SMDH *const smdh = dynamic_cast<Nintendo3DS_SMDH*>(this->mainContent.get());
 		if (smdh) {
 			smdhRegion = smdh->getRegionCode();
 		}
@@ -1513,7 +1503,7 @@ uint32_t Nintendo3DS::supportedImageTypes(void) const
 			const_cast<Nintendo3DSPrivate*>(d)->loadTicketAndTMD();
 		}
 		// Is it in fact DSiWare?
-		NintendoDS *const srl = dynamic_cast<NintendoDS*>(d->mainContent);
+		NintendoDS *const srl = dynamic_cast<NintendoDS*>(d->mainContent.get());
 		if (srl) {
 			// This is a DSiWare SRL.
 			// Get the image information from the underlying SRL.
@@ -1601,7 +1591,7 @@ uint32_t Nintendo3DS::imgpf(ImageType imageType) const
 			const_cast<Nintendo3DSPrivate*>(d)->loadTicketAndTMD();
 		}
 		// Is it in fact DSiWare?
-		NintendoDS *const srl = dynamic_cast<NintendoDS*>(d->mainContent);
+		NintendoDS *const srl = dynamic_cast<NintendoDS*>(d->mainContent.get());
 		if (srl) {
 			// This is a DSiWare SRL.
 			// Get the image information from the underlying SRL.
@@ -1717,7 +1707,7 @@ int Nintendo3DS::loadFieldData(void)
 		}
 
 		// Add the SMDH fields from the Nintendo3DS_SMDH object.
-		assert(d->mainContent != nullptr);
+		assert((bool)d->mainContent);
 		const RomFields *const smdh_fields = d->mainContent->fields();
 		assert(smdh_fields != nullptr);
 		if (smdh_fields) {
@@ -2404,7 +2394,7 @@ int Nintendo3DS::loadMetaData(void)
 		ret = const_cast<Nintendo3DSPrivate*>(d)->loadTicketAndTMD();
 	}
 
-	if (ret == 0 && d->mainContent != nullptr) {
+	if (ret == 0 && (bool)d->mainContent) {
 		// Add the metadata.
 		d->metaData = new RomMetaData();
 		d->metaData->addMetaData_metaData(d->mainContent->metaData());
@@ -2531,7 +2521,7 @@ int Nintendo3DS::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size
 				const_cast<Nintendo3DSPrivate*>(d)->loadTicketAndTMD();
 			}
 			// Check for a DSiWare SRL.
-			NintendoDS *const srl = dynamic_cast<NintendoDS*>(d->mainContent);
+			NintendoDS *const srl = dynamic_cast<NintendoDS*>(d->mainContent.get());
 			if (srl) {
 				// This is a DSiWare SRL.
 				// Get the image URLs from the underlying SRL.
@@ -2736,7 +2726,7 @@ bool Nintendo3DS::hasDangerousPermissions(void) const
 	int ret = const_cast<Nintendo3DSPrivate*>(d)->loadTicketAndTMD();
 	if (ret == 0) {
 		// Is it in fact DSiWare?
-		NintendoDS *const srl = dynamic_cast<NintendoDS*>(d->mainContent);
+		NintendoDS *const srl = dynamic_cast<NintendoDS*>(d->mainContent.get());
 		if (srl) {
 			// DSiWare: Check DSi permissions.
 			return d->mainContent->hasDangerousPermissions();

@@ -29,7 +29,6 @@ const CLSID CLSID_RP_ExtractIcon =
 
 RP_ExtractIcon_Private::RP_ExtractIcon_Private()
 	: olefilename(nullptr)
-	, romData(nullptr)
 {
 	// Enable icon squaring only on Windows XP.
 	// On Windows 7 and 11, it causes the icon to look "squished"
@@ -45,7 +44,6 @@ RP_ExtractIcon_Private::RP_ExtractIcon_Private()
 RP_ExtractIcon_Private::~RP_ExtractIcon_Private()
 {
 	free(olefilename);
-	UNREF(romData);
 }
 
 /** RP_ExtractIcon **/
@@ -109,7 +107,7 @@ IFACEMETHODIMP RP_ExtractIcon::Load(_In_ LPCOLESTR pszFileName, DWORD dwMode)
 
 	// If we already have a RomData object, unref() it first.
 	RP_D(RP_ExtractIcon);
-	UNREF_AND_NULL(d->romData);
+	d->romData.reset();
 
 	// pszFileName is the file being worked on.
 	// TODO: If the file was already loaded, don't reload it.

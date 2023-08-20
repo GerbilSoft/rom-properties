@@ -223,7 +223,7 @@ void ExtractorPlugin::extract(ExtractionResult *result)
 
 	// Get the appropriate RomData class for this ROM.
 	// file is dup()'d by RomData.
-	RomData *const romData = RomDataFactory::create(file, attrs);
+	const RomDataPtr romData = RomDataFactory::create(file, attrs);
 	if (!romData) {
 		// ROM is not supported.
 		return;
@@ -255,18 +255,17 @@ void ExtractorPlugin::extract(ExtractionResult *result)
 
 	// Metadata properties
 	if (flags & ExtractionResult::ExtractMetaData) {
-		extract_properties(result, romData);
+		extract_properties(result, romData.get());
 	}
 
 #if KCOREADDONS_VERSION >= QT_VERSION_CHECK(5,76,0)
 	// KFileMetaData 5.76.0 added images.
 	if (flags & ExtractionResult::ExtractImageData) {
-		extract_image(result, romData);
+		extract_image(result, romData.get());
 	}
 #endif /* KCOREADDONS_VERSION >= QT_VERSION_CHECK(5,76,0) */
 
 	// Finished extracting metadata.
-	romData->unref();
 }
 
 }

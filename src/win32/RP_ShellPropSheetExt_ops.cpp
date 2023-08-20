@@ -181,7 +181,7 @@ void RP_ShellPropSheetExt_Private::createOptionsButton(void)
 	SetWindowFont(hBtnOptions, GetWindowFont(hDlgSheet), FALSE);
 
 	// Initialize the "Options" submenu.
-	OptionsMenuButton_ReinitMenu(hBtnOptions, romData);
+	OptionsMenuButton_ReinitMenu(hBtnOptions, romData.get());
 
 	// Fix up the tab order. ("Options" should be after "Apply".)
 	HWND hBtnApply = GetDlgItem(hWndParent, IDC_APPLY_BUTTON);
@@ -413,13 +413,13 @@ void RP_ShellPropSheetExt_Private::btnOptions_action_triggered(int menuId)
 					? LanguageComboBox_GetSelectedLC(cboLanguage)
 					: 0;
 				ofs << "== " << rp_sprintf(C_("RomDataView", "File: '%s'"), rom_filename) << '\n';
-				ROMOutput ro(romData, lc);
+				ROMOutput ro(romData.get(), lc);
 				ofs << ro;
 				ofs.flush();
 				break;
 			}
 			case IDM_OPTIONS_MENU_EXPORT_JSON: {
-				JSONROMOutput jsro(romData);
+				JSONROMOutput jsro(romData.get());
 				ofs << jsro << '\n';
 				ofs.flush();
 				break;
@@ -432,7 +432,7 @@ void RP_ShellPropSheetExt_Private::btnOptions_action_triggered(int menuId)
 					: 0;
 				ostringstream oss;
 				oss << "== " << rp_sprintf(C_("RomDataView", "File: '%s'"), rom_filename) << '\n';
-				ROMOutput ro(romData, lc);
+				ROMOutput ro(romData.get(), lc);
 				oss << ro;
 				oss.flush();
 				ts_out = LibWin32UI::unix2dos(U82T_s(oss.str()));
@@ -440,7 +440,7 @@ void RP_ShellPropSheetExt_Private::btnOptions_action_triggered(int menuId)
 			}
 			case IDM_OPTIONS_MENU_COPY_JSON: {
 				ostringstream oss;
-				JSONROMOutput jsro(romData);
+				JSONROMOutput jsro(romData.get());
 				jsro.setCrlf(true);
 				oss << jsro << '\n';
 				oss.flush();

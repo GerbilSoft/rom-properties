@@ -108,7 +108,7 @@ int RP_ContextMenu_Private::convert_to_png(LPCTSTR source_file)
 	// Get the appropriate RomData class for this ROM.
 	// RomData class *must* support at least one image type.
 	// TODO: Use FileFormatFactory from librptexture instead?
-	RomData *const romData = RomDataFactory::create(source_file, RomDataFactory::RDA_HAS_THUMBNAIL);
+	const RomDataPtr romData = RomDataFactory::create(source_file, RomDataFactory::RDA_HAS_THUMBNAIL);
 	if (!romData) {
 		// ROM is not supported.
 		free(output_file);
@@ -121,7 +121,6 @@ int RP_ContextMenu_Private::convert_to_png(LPCTSTR source_file)
 	const rp_image_const_ptr img = romData->image(RomData::IMG_INT_IMAGE);
 	if (!img) {
 		// No image.
-		romData->unref();
 		free(output_file);
 		return RPCT_ERROR_SOURCE_FILE_NO_IMAGE;
 	}
@@ -137,7 +136,6 @@ int RP_ContextMenu_Private::convert_to_png(LPCTSTR source_file)
 	free(output_file);
 	if (!pngWriter->isOpen()) {
 		// Could not open the PNG writer.
-		romData->unref();
 		return RPCT_ERROR_OUTPUT_FILE_FAILED;
 	}
 
@@ -162,11 +160,10 @@ int RP_ContextMenu_Private::convert_to_png(LPCTSTR source_file)
 	if (pwRet != 0) {
 		// Error writing IHDR.
 		// TODO: Unlink the PNG image.
-		romData->unref();
 		return RPCT_ERROR_OUTPUT_FILE_FAILED;
 	}
 
-	/** IDAT chunk. **/
+	/** IDAT chunk **/
 
 	// Initialize the row pointers.
 	unique_ptr<const uint8_t*[]> row_pointers(new const uint8_t*[height]);
@@ -181,12 +178,10 @@ int RP_ContextMenu_Private::convert_to_png(LPCTSTR source_file)
 	if (pwRet != 0) {
 		// Error writing IDAT.
 		// TODO: Unlink the PNG image.
-		romData->unref();
 		return RPCT_ERROR_OUTPUT_FILE_FAILED;
 	}
 
 	// Finished writing the PNG image.
-	romData->unref();
 	return 0;
 }
 

@@ -11,9 +11,10 @@
 #include "librpbase/disc/SparseDiscReader.hpp"
 #include "IsoPartition.hpp"
 
-namespace LibRomData {
+// for ISOPtr
+#include "../Other/ISO.hpp"
 
-class ISO;
+namespace LibRomData {
 
 class GdiReaderPrivate;
 class GdiReader : public LibRpBase::SparseDiscReader
@@ -110,7 +111,7 @@ class GdiReader : public LibRpBase::SparseDiscReader
 		 * @param trackNumber Track number. (1-based)
 		 * @return ISO object, or nullptr on error.
 		 */
-		ISO *openIsoRomData(int trackNumber);
+		ISOPtr openIsoRomData(int trackNumber);
 };
 
 typedef std::shared_ptr<GdiReader> GdiReaderPtr;

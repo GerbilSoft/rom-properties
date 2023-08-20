@@ -40,7 +40,7 @@ class PSPPrivate final : public LibRpBase::RomDataPrivate
 {
 	public:
 		PSPPrivate(const IRpFilePtr &file);
-		~PSPPrivate() final;
+		~PSPPrivate() final = default;
 
 	private:
 		typedef RomDataPrivate super;
@@ -79,13 +79,13 @@ class PSPPrivate final : public LibRpBase::RomDataPrivate
 		rp_image_const_ptr loadIcon(void);
 
 		// Boot executable (EBOOT.BIN)
-		RomData *bootExeData;
+		RomDataPtr bootExeData;
 
 		/**
 		 * Open the boot executable.
 		 * @return RomData* on success; nullptr on error.
 		 */
-		RomData *openBootExe(void);
+		RomDataPtr openBootExe(void);
 };
 
 ROMDATA_IMPL(PSP)
@@ -132,15 +132,9 @@ const RomDataInfo PSPPrivate::romDataInfo = {
 PSPPrivate::PSPPrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
 	, discType(DiscType::Unknown)
-	, bootExeData(nullptr)
 {
 	// Clear the structs.
 	memset(&pvd, 0, sizeof(pvd));
-}
-
-PSPPrivate::~PSPPrivate()
-{
-	UNREF(bootExeData);
 }
 
 /**
@@ -178,8 +172,12 @@ rp_image_const_ptr PSPPrivate::loadIcon(void)
  * Open the boot executable.
  * @return RomData* on success; nullptr on error.
  */
-RomData *PSPPrivate::openBootExe(void)
+RomDataPtr PSPPrivate::openBootExe(void)
 {
+	// FIXME: Returning `const RomDataPtr &` would be better,
+	// but the compiler is complaining that the nullptrs end up
+	// returning a reference to a local temporary object.
+
 	if (bootExeData) {
 		// The boot executable is already open.
 		return bootExeData;
@@ -195,15 +193,12 @@ RomData *PSPPrivate::openBootExe(void)
 	// an unencrypted EBOOT.BIN.
 	const IRpFilePtr f_bootExe(isoPartition->open("/PSP_GAME/SYSDIR/EBOOT.BIN"));
 	if (f_bootExe) {
-		RomData *const exeData = new ELF(f_bootExe);
+		RomDataPtr exeData = std::make_shared<ELF>(f_bootExe);
 		if (exeData->isOpen() && exeData->isValid()) {
 			// Boot executable is open and valid.
 			bootExeData = exeData;
 			return exeData;
 		}
-
-		// Unable to open the executable.
-		UNREF(exeData);
 	}
 
 	// Unable to open the default executable.
@@ -544,7 +539,7 @@ int PSP::loadFieldData(void)
 	// TODO: Add fields from PARAM.SFO.
 
 	// Show a tab for the boot file.
-	RomData *const bootExeData = d->openBootExe();
+	RomDataPtr bootExeData = d->openBootExe();
 	if (bootExeData) {
 		// Add the fields.
 		// NOTE: Adding tabs manually so we can show the disc info in
@@ -576,7 +571,7 @@ int PSP::loadFieldData(void)
 				RomFields::TabOffset_AddTabs);
 		}
 	}
-	isoData->unref();
+	delete isoData;
 
 	// Finished reading the field data.
 	return static_cast<int>(d->fields.count());

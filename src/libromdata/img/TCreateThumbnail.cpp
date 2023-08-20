@@ -44,15 +44,15 @@ namespace LibRomData {
 
 /**
  * Get an internal image.
- * @param romData	[in] RomData object.
- * @param imageType	[in] Image type.
- * @param pOutSize	[out,opt] Pointer to ImgSize to store the image's size.
- * @param sBIT		[out,opt] sBIT metadata.
+ * @param romData	[in] RomData object
+ * @param imageType	[in] Image type
+ * @param pOutSize	[out,opt] Pointer to ImgSize to store the image's size
+ * @param sBIT		[out,opt] sBIT metadata
  * @return Internal image, or null ImgClass on error.
  */
 template<typename ImgClass>
 ImgClass TCreateThumbnail<ImgClass>::getInternalImage(
-	const RomData *romData,
+	const RomDataPtr &romData,
 	RomData::ImageType imageType,
 	ImgSize *pOutSize,
 	rp_image::sBIT_t *sBIT)
@@ -103,16 +103,17 @@ ImgClass TCreateThumbnail<ImgClass>::getInternalImage(
 
 /**
  * Get an external image.
- * @param romData	[in] RomData object.
- * @param imageType	[in] Image type.
- * @param reqSize	[in] Requested image size.
- * @param pOutSize	[out,opt] Pointer to ImgSize to store the image's size.
- * @param sBIT		[out,opt] sBIT metadata.
+ * @param romData	[in] RomData object
+ * @param imageType	[in] Image type
+ * @param reqSize	[in] Requested image size
+ * @param pOutSize	[out,opt] Pointer to ImgSize to store the image's size
+ * @param sBIT		[out,opt] sBIT metadata
  * @return External image, or null ImgClass on error.
  */
 template<typename ImgClass>
 ImgClass TCreateThumbnail<ImgClass>::getExternalImage(
-	const RomData *romData, RomData::ImageType imageType,
+	const RomDataPtr &romData,
+	RomData::ImageType imageType,
 	int reqSize, ImgSize *pOutSize,
 	rp_image::sBIT_t *sBIT)
 {
@@ -246,7 +247,7 @@ inline void TCreateThumbnail<ImgClass>::rescale_aspect(ImgSize &rs_size, ImgSize
  * @return 0 on success; non-zero on error.
  */
 template<typename ImgClass>
-int TCreateThumbnail<ImgClass>::getThumbnail(const RomData *romData, int reqSize, GetThumbnailOutParams_t *pOutParams)
+int TCreateThumbnail<ImgClass>::getThumbnail(const RomDataPtr &romData, int reqSize, GetThumbnailOutParams_t *pOutParams)
 {
 	assert(romData != nullptr);
 	assert(reqSize >= 0);
@@ -521,16 +522,14 @@ int TCreateThumbnail<ImgClass>::getThumbnail(const IRpFilePtr &file, int reqSize
 
 	// Get the appropriate RomData class for this ROM.
 	// RomData class *must* support at least one image type.
-	RomData *const romData = RomDataFactory::create(file, RomDataFactory::RDA_HAS_THUMBNAIL);
+	const RomDataPtr romData = RomDataFactory::create(file, RomDataFactory::RDA_HAS_THUMBNAIL);
 	if (!romData) {
 		// ROM is not supported.
 		return RPCT_ERROR_SOURCE_FILE_NOT_SUPPORTED;
 	}
 
 	// Call the actual function.
-	int ret = getThumbnail(romData, reqSize, pOutParams);
-	romData->unref();
-	return ret;
+	return getThumbnail(romData, reqSize, pOutParams);
 }
 
 /**
@@ -562,16 +561,14 @@ int TCreateThumbnail<ImgClass>::getThumbnail(const char *filename, int reqSize, 
 
 	// Get the appropriate RomData class for this ROM.
 	// RomData class *must* support at least one image type.
-	RomData *const romData = RomDataFactory::create(file, RomDataFactory::RDA_HAS_THUMBNAIL);
+	const RomDataPtr romData = RomDataFactory::create(file, RomDataFactory::RDA_HAS_THUMBNAIL);
 	if (!romData) {
 		// ROM is not supported.
 		return RPCT_ERROR_SOURCE_FILE_NOT_SUPPORTED;
 	}
 
 	// Call the actual function.
-	int ret = getThumbnail(romData, reqSize, pOutParams);
-	romData->unref();
-	return ret;
+	return getThumbnail(romData, reqSize, pOutParams);
 }
 
 }

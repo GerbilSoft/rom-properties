@@ -108,7 +108,7 @@ int WiiWAD::doRomOp_int(int id, RomOpParams *pParams)
 		return ret;
 	}
 
-	NintendoDS *const srl = dynamic_cast<NintendoDS*>(d->mainContent);
+	NintendoDS *const srl = dynamic_cast<NintendoDS*>(d->mainContent.get());
 	assert(srl != nullptr);
 	if (!srl) {
 		// This shouldn't have happened...

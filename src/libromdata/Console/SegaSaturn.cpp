@@ -594,7 +594,7 @@ int SegaSaturn::loadFieldData(void)
 				RomFields::TabOffset_AddTabs);
 		}
 	}
-	isoData->unref();
+	delete isoData;
 
 	// Finished reading the field data.
 	return static_cast<int>(d->fields.count());

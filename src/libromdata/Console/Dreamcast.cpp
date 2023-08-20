@@ -774,7 +774,7 @@ int Dreamcast::loadFieldData(void)
 	// NOTE: Only done here because the ISO-9660 fields
 	// are used for field info only.
 	// TODO: Get from GdiReader for GDI.
-	ISO *isoData = nullptr;
+	ISOPtr isoData;
 	if (d->discType == DreamcastPrivate::DiscType::GDI) {
 		// Open track 3 as ISO-9660.
 		isoData = d->gdiReader->openIsoRomData(3);
@@ -783,7 +783,7 @@ int Dreamcast::loadFieldData(void)
 		PartitionFilePtr isoFile = std::make_shared<PartitionFile>(
 			d->discReader.get(), 0, d->discReader->size());
 		if (isoFile->isOpen()) {
-			isoData = new ISO(isoFile);
+			isoData = std::make_shared<ISO>(isoFile);
 		}
 	}
 
@@ -796,7 +796,6 @@ int Dreamcast::loadFieldData(void)
 				RomFields::TabOffset_AddTabs);
 		}
 	}
-	UNREF(isoData);
 
 	// Finished reading the field data.
 	return static_cast<int>(d->fields.count());

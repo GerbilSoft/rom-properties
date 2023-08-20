@@ -68,7 +68,6 @@ RP_ShellPropSheetExt_Private::RP_ShellPropSheetExt_Private(RP_ShellPropSheetExt 
 	: q_ptr(q)
 	, hDlgSheet(nullptr)
 	, tfilename(tfilename)
-	, romData(nullptr)
 	, fontHandler(nullptr)
 	, lblSysInfo(nullptr)
 	, lblBanner(nullptr)
@@ -96,9 +95,8 @@ RP_ShellPropSheetExt_Private::~RP_ShellPropSheetExt_Private()
 	delete lblBanner;
 	delete lblIcon;
 
-	// Unreference the RomData object.
+	// Delete the copy of the RomData object's filename.
 	free(tfilename);
-	UNREF(romData);
 }
 
 /**
@@ -2169,7 +2167,6 @@ IFACEMETHODIMP RP_ShellPropSheetExt::Initialize(
 
 	HRESULT hr = E_FAIL;
 	UINT nFiles, cchFilename;
-	RomData *romData = nullptr;
 	TCHAR *tfilename = nullptr;	// RP_ShellPropSheetExt_Private takes ownership!
 
 	const Config *config;
@@ -2208,18 +2205,19 @@ IFACEMETHODIMP RP_ShellPropSheetExt::Initialize(
 		goto cleanup;
 	}
 
-	// Get the appropriate RomData class for this ROM.
-	romData = RomDataFactory::create(tfilename);
-	if (!romData) {
-		// Could not open the RomData object.
-		goto cleanup;
-	}
+	// Attempt to open the file using RomDataFactory.
+	{
+		const RomDataPtr romData_tmp = RomDataFactory::create(tfilename);
+		if (!romData_tmp) {
+			// Could not open the RomData object.
+			goto cleanup;
+		}
 
-	// Unreference the RomData object.
-	// We only want to open the RomData if the "ROM Properties"
-	// tab is clicked, because otherwise the file will be held
-	// open and may block the user from changing attributes.
-	romData->unref();
+		// NOTE: We're not saving the RomData object at this point.
+		// We only want to open the RomData if the "ROM Properties"
+		// tab is clicked, because otherwise the file will be held
+		// open and may block the user from changing attributes.
+	}
 
 	// Save the filename in the private class for later.
 	if (!d_ptr) {

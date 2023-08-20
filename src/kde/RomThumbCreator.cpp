@@ -423,7 +423,7 @@ Q_DECL_EXPORT int RP_C_API rp_create_thumbnail2(const char *source_file, const c
 
 	// Get the appropriate RomData class for this ROM.
 	// RomData class *must* support at least one image type.
-	RomData *const romData = RomDataFactory::create(file, RomDataFactory::RDA_HAS_THUMBNAIL);
+	const RomDataPtr romData = RomDataFactory::create(file, RomDataFactory::RDA_HAS_THUMBNAIL);
 	if (!romData) {
 		// ROM is not supported.
 		return RPCT_ERROR_SOURCE_FILE_NOT_SUPPORTED;
@@ -437,7 +437,6 @@ Q_DECL_EXPORT int RP_C_API rp_create_thumbnail2(const char *source_file, const c
 
 	if (ret != 0 || outParams.retImg.isNull()) {
 		// No image.
-		romData->unref();
 		return RPCT_ERROR_SOURCE_FILE_NO_IMAGE;
 	}
 
@@ -467,7 +466,6 @@ Q_DECL_EXPORT int RP_C_API rp_create_thumbnail2(const char *source_file, const c
 		default:
 			// Unsupported...
 			assert(!"Unsupported QImage image format.");
-			romData->unref();
 			return RPCT_ERROR_OUTPUT_FILE_FAILED;
 	}
 
@@ -476,7 +474,6 @@ Q_DECL_EXPORT int RP_C_API rp_create_thumbnail2(const char *source_file, const c
 	if (!pngWriter->isOpen()) {
 		// Could not open the PNG writer.
 		delete pngWriter;
-		romData->unref();
 		return RPCT_ERROR_OUTPUT_FILE_FAILED;
 	}
 
@@ -550,7 +547,6 @@ Q_DECL_EXPORT int RP_C_API rp_create_thumbnail2(const char *source_file, const c
 		// Error writing IHDR.
 		// TODO: Unlink the PNG image.
 		delete pngWriter;
-		romData->unref();
 		return RPCT_ERROR_OUTPUT_FILE_FAILED;
 	}
 
@@ -573,7 +569,6 @@ Q_DECL_EXPORT int RP_C_API rp_create_thumbnail2(const char *source_file, const c
 	}
 
 	delete pngWriter;
-	romData->unref();
 	return ret;
 }
 

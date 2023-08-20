@@ -98,10 +98,6 @@ typedef int (RP_C_API *PFN_RP_CREATE_THUMBNAIL)(const char *source_file, const c
 // C++ includes
 #include <string>
 
-namespace LibRpBase {
-	class RomData;
-};
-
 namespace LibRomData {
 
 template<typename ImgClass>
@@ -124,33 +120,33 @@ class TCreateThumbnail
 
 		/**
 		 * Get an internal image.
-		 * @param romData	[in] RomData object.
-		 * @param imageType	[in] Image type.
-		 * @param pOutSize	[out,opt] Pointer to ImgSize to store the image's size.
-		 * @param sBIT		[out,opt] sBIT metadata.
+		 * @param romData	[in] RomData object
+		 * @param imageType	[in] Image type
+		 * @param pOutSize	[out,opt] Pointer to ImgSize to store the image's size
+		 * @param sBIT		[out,opt] sBIT metadata
 		 * @return Internal image, or null ImgClass on error.
 		 */
-		ImgClass getInternalImage(const LibRpBase::RomData *romData,
+		ImgClass getInternalImage(const LibRpBase::RomDataPtr &romData,
 			LibRpBase::RomData::ImageType imageType,
 			ImgSize *pOutSize = nullptr,
 			LibRpTexture::rp_image::sBIT_t *sBIT = nullptr);
 
 		/**
 		 * Get an external image.
-		 * @param romData	[in] RomData object.
-		 * @param imageType	[in] Image type.
+		 * @param romData	[in] RomData object
+		 * @param imageType	[in] Image type
 		 * @param reqSize	[in] Requested image size. [0 for largest]
-		 * @param pOutSize	[out,opt] Pointer to ImgSize to store the image's size.
-		 * @param sBIT		[out,opt] sBIT metadata.
+		 * @param pOutSize	[out,opt] Pointer to ImgSize to store the image's size
+		 * @param sBIT		[out,opt] sBIT metadata
 		 * @return External image, or null ImgClass on error.
 		 */
-		ImgClass getExternalImage(
-			const LibRpBase::RomData *romData, LibRpBase::RomData::ImageType imageType,
+		ImgClass getExternalImage(const LibRpBase::RomDataPtr &romData,
+			LibRpBase::RomData::ImageType imageType,
 			int reqSize = 0, ImgSize *pOutSize = nullptr,
 			LibRpTexture::rp_image::sBIT_t *sBIT = nullptr);
 
 		/**
-		 * getThumbnail() output parameters.
+		 * getThumbnail() output parameters
 		 */
 		struct GetThumbnailOutParams_t {
 			ImgClass retImg;			// [out] Returned image
@@ -166,7 +162,7 @@ class TCreateThumbnail
 		 * @param pOutParams	[out] Output parameters (If an error occurs, pOutParams->retImg will be null)
 		 * @return 0 on success; non-zero on error.
 		 */
-		int getThumbnail(const LibRpBase::RomData *romData, int reqSize, GetThumbnailOutParams_t *pOutParams);
+		int getThumbnail(const LibRpBase::RomDataPtr &romData, int reqSize, GetThumbnailOutParams_t *pOutParams);
 
 		/**
 		 * Create a thumbnail for the specified ROM file.

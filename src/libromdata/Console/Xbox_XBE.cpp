@@ -141,7 +141,7 @@ Xbox_XBE_Private::Xbox_XBE_Private(const IRpFilePtr &file)
 
 Xbox_XBE_Private::~Xbox_XBE_Private()
 {
-	UNREF(pe_exe);
+	delete pe_exe;
 }
 
 /**
@@ -343,7 +343,7 @@ const EXE *Xbox_XBE_Private::initEXE(void)
 			this->pe_exe = pe_exe_tmp;
 		} else {
 			// Failed to open the EXE.
-			pe_exe_tmp->unref();
+			delete pe_exe_tmp;
 		}
 	}
 

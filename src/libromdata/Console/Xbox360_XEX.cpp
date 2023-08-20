@@ -305,8 +305,8 @@ Xbox360_XEX_Private::Xbox360_XEX_Private(const IRpFilePtr &file)
 
 Xbox360_XEX_Private::~Xbox360_XEX_Private()
 {
-	UNREF(pe_xdbf);
-	UNREF(pe_exe);
+	delete pe_xdbf;
+	delete pe_exe;
 }
 
 /**
@@ -1205,7 +1205,7 @@ const EXE *Xbox360_XEX_Private::initEXE(void)
 		if (pe_exe_tmp->isOpen()) {
 			pe_exe = pe_exe_tmp;
 		} else {
-			pe_exe_tmp->unref();
+			delete pe_exe_tmp;
 		}
 	}
 
@@ -1273,7 +1273,7 @@ const Xbox360_XDBF *Xbox360_XEX_Private::initXDBF(void)
 		if (pe_xdbf_tmp->isOpen()) {
 			pe_xdbf = pe_xdbf_tmp;
 		} else {
-			pe_xdbf_tmp->unref();
+			delete pe_xdbf_tmp;
 		}
 	}
 

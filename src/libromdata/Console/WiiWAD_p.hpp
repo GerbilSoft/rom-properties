@@ -47,7 +47,7 @@ class WiiWADPrivate final : public LibRpBase::RomDataPrivate
 {
 	public:
 		WiiWADPrivate(const LibRpFile::IRpFilePtr &file);
-		~WiiWADPrivate() final;
+		~WiiWADPrivate() final = default;
 
 	private:
 		typedef RomDataPrivate super;
@@ -106,7 +106,7 @@ class WiiWADPrivate final : public LibRpBase::RomDataPrivate
 #ifdef ENABLE_DECRYPTION
 		// CBC reader for the main data area.
 		LibRpBase::CBCReaderPtr cbcReader;
-		LibRpBase::RomData *mainContent;	// WiiWIBN or NintendoDS
+		LibRpBase::RomDataPtr mainContent;	// WiiWIBN or NintendoDS
 
 		// Decrypted title key.
 		uint8_t dec_title_key[16];

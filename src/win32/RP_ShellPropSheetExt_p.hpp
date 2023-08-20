@@ -77,7 +77,7 @@ class RP_ShellPropSheetExt_Private
 		// ROM filename (malloc'd; free on delete)
 		TCHAR *tfilename;
 		// ROM data (Not opened until the properties tab is shown.)
-		LibRpBase::RomData *romData;
+		LibRpBase::RomDataPtr romData;
 
 		// Font handler
 		FontHandler fontHandler;

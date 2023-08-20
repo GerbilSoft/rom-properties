@@ -1318,7 +1318,7 @@ int DMG::loadFieldData(void)
 								RomFields::TabOffset_AddTabs);
 						}
 					}
-					gbs->unref();
+					delete gbs;
 				}
 			}
 		}

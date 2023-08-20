@@ -21,6 +21,7 @@
 #define PFN_CREATEEXTRACTORPLUGINKDE_FN CONCAT_FN(createExtractorPlugin, RP_KDE_SUFFIX)
 #define PFN_CREATEEXTRACTORPLUGINKDE_NAME "createExtractorPlugin" RP_KDE_UPPER
 
+// librpbase
 namespace LibRpBase {
 	class RomData;
 }

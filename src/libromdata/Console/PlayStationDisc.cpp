@@ -42,7 +42,7 @@ class PlayStationDiscPrivate final : public RomDataPrivate
 {
 	public:
 		PlayStationDiscPrivate(const IRpFilePtr &file);
-		~PlayStationDiscPrivate() final;
+		~PlayStationDiscPrivate() final = default;
 
 	private:
 		typedef RomDataPrivate super;
@@ -83,7 +83,7 @@ class PlayStationDiscPrivate final : public RomDataPrivate
 		IsoPartitionPtr isoPartition;
 
 		// Boot executable
-		RomData *bootExeData;
+		RomDataPtr bootExeData;
 
 		// Boot filename.
 		// Normalized:
@@ -98,7 +98,7 @@ class PlayStationDiscPrivate final : public RomDataPrivate
 		 * Open the boot executable.
 		 * @return RomData* on success; nullptr on error.
 		 */
-		RomData *openBootExe(void);
+		RomDataPtr openBootExe(void);
 
 		enum class ConsoleType {
 			Unknown	= -1,
@@ -141,16 +141,10 @@ const RomDataInfo PlayStationDiscPrivate::romDataInfo = {
 
 PlayStationDiscPrivate::PlayStationDiscPrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
-	, bootExeData(nullptr)
 	, consoleType(ConsoleType::Unknown)
 {
 	// Clear the structs.
 	memset(&pvd, 0, sizeof(pvd));
-}
-
-PlayStationDiscPrivate::~PlayStationDiscPrivate()
-{
-	UNREF(bootExeData);
 }
 
 /**
@@ -245,8 +239,12 @@ int PlayStationDiscPrivate::loadSystemCnf(const IsoPartitionPtr &pt)
  * Open the boot executable.
  * @return RomData* on success; nullptr on error.
  */
-RomData *PlayStationDiscPrivate::openBootExe(void)
+RomDataPtr PlayStationDiscPrivate::openBootExe(void)
 {
+	// FIXME: Returning `const RomDataPtr &` would be better,
+	// but the compiler is complaining that the nullptrs end up
+	// returning a reference to a local temporary object.
+
 	if (bootExeData) {
 		// The boot executable is already open.
 		return bootExeData;
@@ -270,7 +268,7 @@ RomData *PlayStationDiscPrivate::openBootExe(void)
 		return nullptr;
 	}
 
-	RomData *exeData = nullptr;
+	RomDataPtr exeData;
 	switch (consoleType) {
 		case ConsoleType::PS1: {
 			// Check if we have a STACK override in SYSTEM.CNF.
@@ -284,11 +282,11 @@ RomData *PlayStationDiscPrivate::openBootExe(void)
 					sp_override = 0;
 				}
 			}
-			exeData = new PlayStationEXE(f_bootExe, sp_override);
+			exeData = std::make_shared<PlayStationEXE>(f_bootExe, sp_override);
 			break;
 		}
 		case ConsoleType::PS2:
-			exeData = new ELF(f_bootExe);
+			exeData = std::make_shared<ELF>(f_bootExe);
 			break;
 		default:
 			assert(!"Console type not supported.");
@@ -302,7 +300,6 @@ RomData *PlayStationDiscPrivate::openBootExe(void)
 	}
 
 	// Unable to open the executable.
-	UNREF(exeData);
 	return nullptr;
 }
 
@@ -790,7 +787,7 @@ int PlayStationDisc::loadFieldData(void)
 		RomFields::RFT_DATETIME_HAS_TIME);
 
 	// Show a tab for the boot file.
-	RomData *const bootExeData = d->openBootExe();
+	const RomDataPtr bootExeData = d->openBootExe();
 	if (bootExeData) {
 		// Add the fields.
 		// NOTE: Adding tabs manually so we can show the disc info in
@@ -871,7 +868,7 @@ int PlayStationDisc::loadFieldData(void)
 				RomFields::TabOffset_AddTabs);
 		}
 	}
-	isoData->unref();
+	delete isoData;
 
 	// Finished reading the field data.
 	return static_cast<int>(d->fields.count());

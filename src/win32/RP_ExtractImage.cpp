@@ -30,7 +30,6 @@ const CLSID CLSID_RP_ExtractImage =
 
 RP_ExtractImage_Private::RP_ExtractImage_Private()
 	: olefilename(nullptr)
-	, romData(nullptr)
 	, dwRecClrDepth(0)
 	, dwFlags(0)
 {
@@ -41,7 +40,6 @@ RP_ExtractImage_Private::RP_ExtractImage_Private()
 RP_ExtractImage_Private::~RP_ExtractImage_Private()
 {
 	free(olefilename);
-	UNREF(romData);
 }
 
 /** RP_ExtractImage **/
@@ -105,7 +103,7 @@ IFACEMETHODIMP RP_ExtractImage::Load(_In_ LPCOLESTR pszFileName, DWORD dwMode)
 
 	// If we already have a RomData object, unref() it first.
 	RP_D(RP_ExtractImage);
-	UNREF_AND_NULL(d->romData);
+	d->romData.reset();
 
 	// pszFileName is the file being worked on.
 	// TODO: If the file was already loaded, don't reload it.

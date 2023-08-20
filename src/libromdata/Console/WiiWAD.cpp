@@ -82,9 +82,6 @@ WiiWADPrivate::WiiWADPrivate(const IRpFilePtr &file)
 	, data_size(0)
 	, pIMETContent(nullptr)
 	, imetContentOffset(0)
-#ifdef ENABLE_DECRYPTION
-	, mainContent(nullptr)
-#endif /* ENABLE_DECRYPTION */
 	, key_idx(WiiPartition::Key_Max)
 	, key_status(KeyManager::VerifyResult::Unknown)
 {
@@ -96,13 +93,6 @@ WiiWADPrivate::WiiWADPrivate(const IRpFilePtr &file)
 #ifdef ENABLE_DECRYPTION
 	memset(dec_title_key, 0, sizeof(dec_title_key));
 	memset(&imet, 0, sizeof(imet));
-#endif /* ENABLE_DECRYPTION */
-}
-
-WiiWADPrivate::~WiiWADPrivate()
-{
-#ifdef ENABLE_DECRYPTION
-	UNREF(mainContent);
 #endif /* ENABLE_DECRYPTION */
 }
 
@@ -170,7 +160,7 @@ int WiiWADPrivate::openSRL(void)
 		}
 		// File is no longer open.
 		// unref() and reopen it.
-		UNREF_AND_NULL(mainContent);
+		mainContent.reset();
 	}
 
 	if (!file || !file->isOpen()) {
@@ -210,14 +200,13 @@ int WiiWADPrivate::openSRL(void)
 		imetContentOffset, be64_to_cpu(pIMETContent->size));
 	if (ptFile->isOpen()) {
 		// Open the SRL..
-		NintendoDS *const srl = new NintendoDS(ptFile);
+		RomDataPtr srl = std::make_shared<NintendoDS>(ptFile);
 		if (srl->isOpen()) {
 			// Opened successfully.
-			mainContent = srl;
+			mainContent = std::move(srl);
 		} else {
 			// Unable to open the SRL.
 			ret = -EIO;
-			UNREF(srl);
 		}
 	} else {
 		ret = -ptFile->lastError();
@@ -481,13 +470,10 @@ WiiWAD::WiiWAD(const IRpFilePtr &file)
 				be64_to_cpu(d->pIMETContent->size) - offsetof(Wii_IMET_t, magic));
 			if (ptFile->isOpen()) {
 				// Open the WiiWIBN.
-				WiiWIBN *const wibn = new WiiWIBN(ptFile);
+				RomDataPtr wibn = std::make_shared<WiiWIBN>(ptFile);
 				if (wibn->isOpen()) {
 					// Opened successfully.
-					d->mainContent = wibn;
-				} else {
-					// Unable to open the WiiWIBN.
-					UNREF(wibn);
+					d->mainContent = std::move(wibn);
 				}
 			}
 		} else {

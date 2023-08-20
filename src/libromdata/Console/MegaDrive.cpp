@@ -1441,7 +1441,7 @@ int MegaDrive::loadFieldData(void)
 					RomFields::TabOffset_AddTabs);
 			}
 		}
-		isoData->unref();
+		delete isoData;
 	}
 
 	// Finished reading the field data.

@@ -132,7 +132,7 @@ WiiSavePrivate::WiiSavePrivate(const IRpFilePtr &file)
 WiiSavePrivate::~WiiSavePrivate()
 {
 #ifdef ENABLE_DECRYPTION
-	UNREF(wibnData);
+	delete wibnData;
 #endif /* ENABLE_DECRYPTION */
 }
 
@@ -279,7 +279,7 @@ WiiSave::WiiSave(const IRpFilePtr &file)
 				d->wibnData = wibn;
 			} else {
 				// Unable to open the WiiWIBN.
-				wibn->unref();
+				delete wibn;
 			}
 		}
 	}

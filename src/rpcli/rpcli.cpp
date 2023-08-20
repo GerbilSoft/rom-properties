@@ -218,20 +218,19 @@ static void DoFile(const TCHAR *filename, bool json, const vector<ExtractParam>&
 		return;
 	}
 
-	RomData *const romData = RomDataFactory::create(file);
-	if (romData && romData->isValid()) {
+	const RomDataPtr romData = RomDataFactory::create(file);
+	if (romData) {
 		if (json) {
 			cerr << "-- " << C_("rpcli", "Outputting JSON data") << endl;
-			cout << JSONROMOutput(romData, lc, flags) << endl;
+			cout << JSONROMOutput(romData.get(), lc, flags) << endl;
 		} else {
-			cout << ROMOutput(romData, lc, flags) << endl;
+			cout << ROMOutput(romData.get(), lc, flags) << endl;
 		}
-		ExtractImages(romData, extract);
+		ExtractImages(romData.get(), extract);
 	} else {
 		cerr << "-- " << C_("rpcli", "ROM is not supported") << endl;
 		if (json) cout << "{\"error\":\"rom is not supported\"}" << endl;
 	}
-	UNREF(romData);
 }
 
 /**

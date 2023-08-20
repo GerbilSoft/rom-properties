@@ -40,7 +40,7 @@ class Nintendo3DSPrivate final : public LibRpBase::RomDataPrivate
 {
 	public:
 		Nintendo3DSPrivate(const LibRpFile::IRpFilePtr &file);
-		~Nintendo3DSPrivate() final;
+		~Nintendo3DSPrivate() final = default;
 
 	private:
 		typedef RomDataPrivate super;
@@ -146,7 +146,7 @@ class Nintendo3DSPrivate final : public LibRpBase::RomDataPrivate
 		// Main content object.
 		// - If SMDH is present, this is Nintendo3DS_SMDH.
 		// - If SRL is present, this is NintendoDS.
-		LibRpBase::RomData *mainContent;
+		LibRpBase::RomDataPtr mainContent;
 
 		/**
 		 * Round a value to the next highest multiple of 64.

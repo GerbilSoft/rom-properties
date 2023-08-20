@@ -14,8 +14,8 @@
 #include "OptionsMenuButton.hpp"
 
 // librpbase
+#include "librpbase/RomData.hpp"
 namespace LibRpBase {
-	class RomData;
 	class RomFields;
 }
 
@@ -57,6 +57,8 @@ struct Data_ListDataMulti_t {
 
 // C++ objects
 struct _RpRomDataViewCxx {
+	LibRpBase::RomDataPtr	romData;	// RomData
+
 	struct tab {
 		GtkWidget	*vbox;		// Either parent page or a GtkVBox/GtkBox.
 		GtkWidget	*table;		// GtkTable (2.x); GtkGrid (3.x)
@@ -84,7 +86,6 @@ struct _RpRomDataView {
 	super __parent__;
 
 	_RpRomDataViewCxx	*cxx;		// C++ objects
-	LibRpBase::RomData	*romData;	// ROM data
 	gchar			*uri;		// URI (GVfs)
 
 	// Header row.

@@ -13,8 +13,8 @@
 
 // librpfile, librpbase, libromdata
 #include "libromdata/RomDataFactory.hpp"
+using namespace LibRpBase;
 using namespace LibRpFile;
-using LibRpBase::RomData;
 using LibRomData::RomDataFactory;
 
 /**
@@ -23,7 +23,7 @@ using LibRomData::RomDataFactory;
  * @param uri URI from e.g. nautilus_file_info_get_uri() [UTF-8]
  * @return RomData object if supported; nullptr if not.
  */
-LibRpBase::RomData *rp_gtk_open_uri(const char *uri)
+RomDataPtr rp_gtk_open_uri(const char *uri)
 {
 	g_return_val_if_fail(uri != nullptr && uri[0] != '\0', nullptr);
 

@@ -188,7 +188,7 @@ Xbox360_STFS_Private::Xbox360_STFS_Private(const IRpFilePtr &file)
 
 Xbox360_STFS_Private::~Xbox360_STFS_Private()
 {
-	UNREF(xex);
+	delete xex;
 }
 
 /**
@@ -530,7 +530,7 @@ Xbox360_XEX *Xbox360_STFS_Private::openDefaultXex(void)
 		if (xex_tmp->isOpen()) {
 			this->xex = xex_tmp;
 		} else {
-			xex_tmp->unref();
+			delete xex_tmp;
 		}
 	}
 

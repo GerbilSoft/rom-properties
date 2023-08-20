@@ -327,7 +327,7 @@ G_MODULE_EXPORT int RP_C_API rp_create_thumbnail2(const char *source_file, const
 
 	// Get the appropriate RomData class for this ROM.
 	// RomData class *must* support at least one image type.
-	RomData *const romData = RomDataFactory::create(file, RomDataFactory::RDA_HAS_THUMBNAIL);
+	const RomDataPtr romData = RomDataFactory::create(file, RomDataFactory::RDA_HAS_THUMBNAIL);
 	if (!romData) {
 		// ROM is not supported.
 		return RPCT_ERROR_SOURCE_FILE_NOT_SUPPORTED;
@@ -339,7 +339,6 @@ G_MODULE_EXPORT int RP_C_API rp_create_thumbnail2(const char *source_file, const
 	ret = d->getThumbnail(romData, maximum_size, &outParams);
 	if (ret != 0) {
 		// No image.
-		romData->unref();
 		return RPCT_ERROR_SOURCE_FILE_NO_IMAGE;
 	}
 
@@ -487,7 +486,6 @@ G_MODULE_EXPORT int RP_C_API rp_create_thumbnail2(const char *source_file, const
 
 cleanup:
 	d->freeImgClass(outParams.retImg);
-	romData->unref();
 	return ret;
 }
 

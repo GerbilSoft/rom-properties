@@ -683,7 +683,7 @@ IsoPartitionPtr GdiReader::openIsoPartition(int trackNumber)
  * @param trackNumber Track number. (1-based)
  * @return ISO object, or nullptr on error.
  */
-ISO *GdiReader::openIsoRomData(int trackNumber)
+ISOPtr GdiReader::openIsoRomData(int trackNumber)
 {
 	RP_D(GdiReader);
 
@@ -693,20 +693,19 @@ ISO *GdiReader::openIsoRomData(int trackNumber)
 		return nullptr;
 	}
 
-	// ISO object for ISO-9660 PVD
-	ISO *isoData = nullptr;
-
 	PartitionFilePtr isoFile = std::make_shared<PartitionFile>(this,
 		static_cast<off64_t>(lba_start) * 2048,
 		static_cast<off64_t>(lba_size) * 2048);
 	if (isoFile->isOpen()) {
-		isoData = new ISO(isoFile);
-		if (!isoData->isOpen()) {
-			// Unable to open ISO object.
-			UNREF_AND_NULL_NOCHK(isoData);
+		ISOPtr isoData = std::make_shared<ISO>(isoFile);
+		if (isoData->isOpen()) {
+			// ISO is opened.
+			return isoData;
 		}
 	}
-	return isoData;
+
+	// Unable to open the ISO object.
+	return nullptr;
 }
 
 }

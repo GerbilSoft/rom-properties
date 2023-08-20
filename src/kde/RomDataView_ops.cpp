@@ -195,7 +195,7 @@ void RomDataViewPrivate::doRomOp_stdop(int id)
 		case OPTION_COPY_TEXT: {
 			ostringstream oss;
 			oss << "== " << rp_sprintf(C_("RomDataView", "File: '%s'"), rom_filename) << std::endl;
-			ROMOutput ro(romData, sel_lc);
+			ROMOutput ro(romData.get(), sel_lc);
 			oss << ro;
 			QApplication::clipboard()->setText(U82Q(oss.str()));
 			// Nothing else to do here.
@@ -204,7 +204,7 @@ void RomDataViewPrivate::doRomOp_stdop(int id)
 
 		case OPTION_COPY_JSON: {
 			ostringstream oss;
-			JSONROMOutput jsro(romData);
+			JSONROMOutput jsro(romData.get());
 			oss << jsro << std::endl;
 			QApplication::clipboard()->setText(U82Q(oss.str()));
 			// Nothing else to do here.
@@ -263,13 +263,13 @@ void RomDataViewPrivate::doRomOp_stdop(int id)
 	switch (id) {
 		case OPTION_EXPORT_TEXT: {
 			ofs << "== " << rp_sprintf(C_("RomDataView", "File: '%s'"), rom_filename) << std::endl;
-			ROMOutput ro(romData, sel_lc);
+			ROMOutput ro(romData.get(), sel_lc);
 			ofs << ro;
 			break;
 		}
 
 		case OPTION_EXPORT_JSON: {
-			JSONROMOutput jsro(romData);
+			JSONROMOutput jsro(romData.get());
 			ofs << jsro << std::endl;
 			break;
 		}

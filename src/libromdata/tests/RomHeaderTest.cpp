@@ -22,11 +22,9 @@
 #include "librpbase/TextOut.hpp"
 #include "librpfile/FileSystem.hpp"
 #include "librpfile/MemFile.hpp"
+using namespace LibRpBase;
 using namespace LibRpFile;
 using LibRomData::RomDataFactory;
-using LibRpBase::RomData;
-using LibRpBase::ROMOutput;
-using LibRpBase::JSONROMOutput;
 
 // C includes (C++ namespace)
 #include "ctypex.h"
@@ -87,13 +85,7 @@ class RomHeaderTest : public ::testing::TestWithParam<RomHeaderTest_mode>
 	protected:
 		RomHeaderTest()
 			: ::testing::TestWithParam<RomHeaderTest_mode>()
-			, romData(nullptr)
-		{ }
-
-		~RomHeaderTest() override
-		{
-			UNREF(romData);
-		}
+		{}
 
 	public:
 		// Opened .tar files.
@@ -115,10 +107,6 @@ class RomHeaderTest : public ::testing::TestWithParam<RomHeaderTest_mode>
 		 * @return 0 on success; non-zero on error.
 		 */
 		int read_next_files(const RomHeaderTest_mode &mode);
-
-	protected:
-		shared_ptr<MemFile> memFile;
-		RomData *romData;
 
 	public:
 		/** Test case parameters **/
@@ -304,17 +292,17 @@ TEST_P(RomHeaderTest, Text)
 	ASSERT_GT(last_bin_data.size(), 0) << "Binary file is empty.";
 
 	// Get the text output for this binary file, e.g. as if we're running `rpcli`.
-	memFile = std::make_shared<MemFile>(last_bin_data.data(), last_bin_data.size());
+	const shared_ptr<MemFile> memFile = std::make_shared<MemFile>(last_bin_data.data(), last_bin_data.size());
 	ASSERT_NE(memFile, nullptr) << "Unable to create MemFile object for binary data.";
 	memFile->setFilename(mode.bin_filename);	// needed for SNES
-	romData = RomDataFactory::create(memFile);
+	const RomDataPtr romData = RomDataFactory::create(memFile);
 
 	if (romData) {
 		// RomData object was created.
 		ASSERT_GT(last_txt_data.size(), 0) << "Binary file is valid RomData, but text file is empty.";
 
 		ostringstream oss;
-		oss << ROMOutput(romData, 0, 0);
+		oss << ROMOutput(romData.get(), 0, 0);
 
 		// FIXME: On Windows, ROMOutput adds an extra newline at the end.
 		// The string should end with a single newline.
@@ -350,17 +338,17 @@ TEST_P(RomHeaderTest, JSON)
 	ASSERT_GT(last_bin_data.size(), 0) << "Binary file is empty.";
 
 	// Get the JSON output for this binary file, e.g. as if we're running `rpcli -j`.
-	memFile = std::make_shared<MemFile>(last_bin_data.data(), last_bin_data.size());
+	const shared_ptr<MemFile> memFile = std::make_shared<MemFile>(last_bin_data.data(), last_bin_data.size());
 	ASSERT_NE(memFile, nullptr) << "Unable to create MemFile object for binary data.";
 	memFile->setFilename(mode.bin_filename);	// needed for SNES
-	romData = RomDataFactory::create(memFile);
+	const RomDataPtr romData = RomDataFactory::create(memFile);
 
 	if (romData) {
 		// RomData object was created.
 		ASSERT_GT(last_json_data.size(), 0) << "Binary file is valid RomData, but JSON file is empty.";
 
 		ostringstream oss;
-		oss << JSONROMOutput(romData, 0, LibRpBase::OF_JSON_NoPrettyPrint);
+		oss << JSONROMOutput(romData.get(), 0, LibRpBase::OF_JSON_NoPrettyPrint);
 
 		// The expected JSON files have trailing newlines, but RapidJSON
 		// does not add a trailing newline when not pretty-printing.
