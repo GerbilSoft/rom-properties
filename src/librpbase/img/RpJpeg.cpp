@@ -438,7 +438,7 @@ rp_image_ptr RpJpeg::load(const IRpFilePtr &file)
 
 		default:
 			// Unsupported colorspace.
-			assert(!"Colorspace is not supported.");
+			assert(!"Unsupported JPEG colorspace. (Step 5)");
 			jpeg_destroy_decompress(&cinfo);
 			return nullptr;
 	}
@@ -540,7 +540,8 @@ rp_image_ptr RpJpeg::load(const IRpFilePtr &file)
 			}
 
 			default:
-				assert(!"Unsupported JPEG colorspace.");
+				assert(!"Unsupported JPEG colorspace. (Step 6)");
+				delete img;
 				jpeg_finish_decompress(&cinfo);
 				jpeg_destroy_decompress(&cinfo);
 				return nullptr;
