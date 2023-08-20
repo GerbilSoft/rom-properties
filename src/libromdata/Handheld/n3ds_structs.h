@@ -201,7 +201,7 @@ ASSERT_STRUCT(N3DS_3DSX_Header_t, 44);
 #define N3DS_CERT_CHAIN_SIZE 0xA00
 
 /**
- * Nintendo 3DS Installable Archive. (.cia)
+ * Nintendo 3DS Importable Archive (.cia)
  * Reference: https://www.3dbrew.org/wiki/CIA
  *
  * All fields are little-endian.
@@ -219,7 +219,7 @@ typedef struct _N3DS_CIA_Header_t {
 } N3DS_CIA_Header_t;
 ASSERT_STRUCT(N3DS_CIA_Header_t, 0x2020);
 
-// Order of sections within CIA file:
+// Order of sections within a CIA file:
 // - CIA header
 // - Certificate chain
 // - Ticket

@@ -604,6 +604,8 @@
   </mime-type>
   <mime-type type="application/x-nintendo-3ds-rom">
     <comment>Nintendo 3DS ROM image</comment>
+    <acronym>CCI</acronym>
+    <expanded-acronym>CTR Cart Image</expanded-acronym>
     <sub-class-of type="application/x-raw-disk-image"/>
     <generic-icon name="application-x-executable"/>
     <alias type="application/x-ctr-cci"/>
@@ -629,7 +631,9 @@
     </magic>
   </mime-type>
   <mime-type type="application/x-nintendo-3ds-cia">
-    <comment>Nintendo 3DS installable archive</comment>
+    <comment>Nintendo 3DS importable archive</comment>
+    <acronym>CIA</acronym>
+    <expanded-acronym>CTR Importable Archive</expanded-acronym>
     <sub-class-of type="application/x-archive"/>
     <generic-icon name="package-x-generic"/>
     <alias type="application/x-ctr-cia"/>
@@ -646,6 +650,8 @@
   </mime-type>
   <mime-type type="application/x-nintendo-3ds-cxi">
     <comment>Nintendo 3DS executable</comment>
+    <acronym>CXI</acronym>
+    <expanded-acronym>CTR eXecutable Image</expanded-acronym>
     <sub-class-of type="application/x-nintendo-3ds-ncch"/>
     <generic-icon name="application-x-executable"/>
     <!-- NOTE: CXI is a specific type of NCCH. -->
@@ -656,6 +662,8 @@
   <!-- Nintendo3DS_SMDH -->
   <mime-type type="application/x-nintendo-3ds-smdh">
     <comment>Nintendo 3DS icon file</comment>
+    <acronym>SMDH</acronym>
+    <expanded-acronym>System Menu Data Header</expanded-acronym>
     <sub-class-of type="image/x-generic"/>
     <generic-icon name="image-x-generic"/>
     <alias type="application/x-ctr-smdh"/>
