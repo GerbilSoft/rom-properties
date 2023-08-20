@@ -31,6 +31,11 @@ XAttrReader::XAttrReader(const wchar_t *filename)
 { }
 #endif /* _WIN32 */
 
+XAttrReader::~XAttrReader()
+{
+	delete d_ptr;
+}
+
 /**
  * Get the last error number.
  * @return Last error number (POSIX error code)

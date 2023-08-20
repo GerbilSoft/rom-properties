@@ -30,6 +30,8 @@ class RP_LIBROMDATA_PUBLIC XAttrReader
 #if defined(_WIN32) && defined(_UNICODE)
 		explicit XAttrReader(const wchar_t *filename);
 #endif /* _WIN32 && _UNICODE */
+	public:
+		~XAttrReader();
 
 	private:
 		RP_DISABLE_COPY(XAttrReader)
