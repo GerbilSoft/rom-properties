@@ -357,13 +357,10 @@ string formatFileSize(off64_t size)
 		// tr: %1$s == localized value, %2$s == suffix (e.g. MiB)
 		return rp_sprintf_p(C_("LibRpText|FileSize", "%1$s %2$s"),
 			s_value.str().c_str(), suffix);
-	} else {
-		return s_value.str();
 	}
 
-	// Should not get here...
-	assert(!"Invalid code path.");
-	return "QUACK";
+	// No suffix needed.
+	return s_value.str();
 }
 
 /**
