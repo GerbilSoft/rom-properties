@@ -886,7 +886,7 @@ rp_image_const_ptr DirectDrawSurfacePrivate::loadImage(void)
 	}
 
 	// Check if we need to unswizzle a GIMP-DDS texture.
-	if (!memcmp(ddsHeader.gimp.magic, DDS_GIMP_MAGIC, sizeof(ddsHeader.gimp.magic))) {
+	if (img && !memcmp(ddsHeader.gimp.magic, DDS_GIMP_MAGIC, sizeof(ddsHeader.gimp.magic))) {
 		// TODO: Verify that the image format is ARGB32.
 		switch (be32_to_cpu(ddsHeader.gimp.fourCC.u32)) {
 			default:
