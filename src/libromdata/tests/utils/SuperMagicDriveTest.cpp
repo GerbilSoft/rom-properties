@@ -123,7 +123,7 @@ int SuperMagicDriveTest::decompress(uint8_t *pOut, unsigned int out_len, const u
 	// Based on zlib example code:
 	// http://www.zlib.net/zlib_how.html
 	int ret;
-	z_stream strm;
+	z_stream strm = { };
 
 	const unsigned int buf_siz = SuperMagicDrive::SMD_BLOCK_SIZE;
 	assert(out_len >= OUT_BLOCK_UNZ_SIZE);
@@ -134,9 +134,6 @@ int SuperMagicDriveTest::decompress(uint8_t *pOut, unsigned int out_len, const u
 	unsigned int out_pos = 0;
 
 	// Allocate the zlib inflate state.
-	strm.zalloc = Z_NULL;
-	strm.zfree = Z_NULL;
-	strm.opaque = Z_NULL;
 	ret = inflateInit2(&strm, 15+16);
 	if (ret != Z_OK) {
 		return ret;

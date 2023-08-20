@@ -183,7 +183,7 @@ int RpFile_IStream::copyZlibStream(const RpFile_IStream &other)
 	}
 
 	// Copy the stream.
-	m_pZstm = static_cast<z_stream*>(malloc(sizeof(z_stream)));
+	m_pZstm = static_cast<z_stream*>(calloc(1, sizeof(z_stream)));
 	if (!m_pZstm) {
 		// Error allocating the z_stream.
 		m_lastError = ENOMEM;

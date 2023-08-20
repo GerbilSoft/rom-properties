@@ -281,12 +281,7 @@ rp_image_ptr iQuePlayerPrivate::loadImage(off64_t address, size_t z_size, size_t
 	// Initialize zlib.
 	// Reference: https://zlib.net/zlib_how.html
 	// NOTE: Raw deflate is used, so we need to specify -15.
-	z_stream strm;
-	strm.zalloc = Z_NULL;
-	strm.zfree = Z_NULL;
-	strm.opaque = Z_NULL;
-	strm.avail_in = 0;
-	strm.next_in = Z_NULL;
+	z_stream strm = { };
 	int ret = inflateInit2(&strm, -15);
 	if (ret != Z_OK) {
 		// Error initializing zlib.

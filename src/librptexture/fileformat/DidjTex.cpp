@@ -168,8 +168,7 @@ rp_image_const_ptr DidjTexPrivate::loadDidjTexImage(void)
 	auto uncompr_data = aligned_uptr<uint8_t>(16, uncompr_size);
 
 	// Initialize zlib.
-	z_stream strm;
-	memset(&strm, 0, sizeof(strm));
+	z_stream strm = { };
 	int ret = inflateInit(&strm);
 	if (ret != Z_OK) {
 		// Error initializing inflate.

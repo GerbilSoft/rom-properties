@@ -941,16 +941,16 @@ int CisoPspReader::readBlock(uint32_t blockIdx, int pos, void *ptr, size_t size)
 			}
 
 			// Decompress the data.
-			z_stream z = { };
-			z.next_in = d->z_buffer.data();
-			z.avail_in = z_block_size;
-			z.next_out = d->blockCache.data();
-			z.avail_out = d->block_size;
-			inflateInit2(&z, windowBits);
+			z_stream strm = { };
+			strm.next_in = d->z_buffer.data();
+			strm.avail_in = z_block_size;
+			strm.next_out = d->blockCache.data();
+			strm.avail_out = d->block_size;
+			inflateInit2(&strm, windowBits);
 
-			int status = inflate(&z, Z_FULL_FLUSH);
-			const uint32_t uncomp_size = d->block_size - z.avail_out;
-			inflateEnd(&z);
+			int status = inflate(&strm, Z_FULL_FLUSH);
+			const uint32_t uncomp_size = d->block_size - strm.avail_out;
+			inflateEnd(&strm);
 
 			if (status != Z_STREAM_END || uncomp_size != d->block_size) {
 				// Decompression error.
