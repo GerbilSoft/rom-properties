@@ -265,42 +265,44 @@ RomData *PlayStationDiscPrivate::openBootExe(void)
 	// Open the boot file.
 	// TODO: Do we need a leading slash?
 	const IRpFilePtr f_bootExe(isoPartition->open(boot_filename.c_str()));
-	if (f_bootExe) {
-		RomData *exeData = nullptr;
-		switch (consoleType) {
-			case ConsoleType::PS1: {
-				// Check if we have a STACK override in SYSTEM.CNF.
-				uint32_t sp_override = 0;
-				auto iter = system_cnf.find("STACK");
-				if (iter != system_cnf.end() && !iter->second.empty()) {
-					// Validate the value.
-					char *endptr = nullptr;
-					sp_override = strtoul(iter->second.c_str(), &endptr, 16);
-					if (*endptr != '\0') {
-						sp_override = 0;
-					}
-				}
-				exeData = new PlayStationEXE(f_bootExe, sp_override);
-				break;
-			}
-			case ConsoleType::PS2:
-				exeData = new ELF(f_bootExe);
-				break;
-			default:
-				assert(!"Console type not supported.");
-				break;
-		}
-		if (exeData && exeData->isValid()) {
-			// Boot executable is open and valid.
-			bootExeData = exeData;
-			return exeData;
-		}
-
-		// Unable to open the executable.
-		UNREF(exeData);
+	if (!f_bootExe) {
+		// Unable to open the default executable.
+		return nullptr;
 	}
 
-	// Unable to open the default executable.
+	RomData *exeData = nullptr;
+	switch (consoleType) {
+		case ConsoleType::PS1: {
+			// Check if we have a STACK override in SYSTEM.CNF.
+			uint32_t sp_override = 0;
+			auto iter = system_cnf.find("STACK");
+			if (iter != system_cnf.end() && !iter->second.empty()) {
+				// Validate the value.
+				char *endptr = nullptr;
+				sp_override = strtoul(iter->second.c_str(), &endptr, 16);
+				if (*endptr != '\0') {
+					sp_override = 0;
+				}
+			}
+			exeData = new PlayStationEXE(f_bootExe, sp_override);
+			break;
+		}
+		case ConsoleType::PS2:
+			exeData = new ELF(f_bootExe);
+			break;
+		default:
+			assert(!"Console type not supported.");
+			break;
+	}
+
+	if (exeData && exeData->isValid()) {
+		// Boot executable is open and valid.
+		bootExeData = exeData;
+		return exeData;
+	}
+
+	// Unable to open the executable.
+	UNREF(exeData);
 	return nullptr;
 }
 
