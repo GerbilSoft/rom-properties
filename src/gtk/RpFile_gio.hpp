@@ -24,8 +24,8 @@ class RpFileGio final : public LibRpFile::IRpFile
 		explicit RpFileGio(const std::string &uri);
 	private:
 		void init(void);
-	protected:
-		~RpFileGio() final;	// call unref() instead
+	public:
+		~RpFileGio() final;
 
 	private:
 		typedef LibRpFile::IRpFile super;
