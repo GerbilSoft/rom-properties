@@ -117,7 +117,6 @@ rp_image_ptr fromASTC(int width, int height,
 				break;
 #else /* !_OPENMP */
 				// Not using OpenMP, so return immediately.
-				img->unref();
 				return nullptr;
 #endif /* _OPENMP */
 			}
