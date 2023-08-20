@@ -61,6 +61,8 @@
   <!-- GBS -->
   <mime-type type="audio/x-gbs">
     <comment>Game Boy Sound System audio</comment>
+    <acronym>GBS</acronym>
+    <expanded-acronym>Game Boy Sound System</expanded-acronym>
     <generic-icon name="audio-x-generic"/>
     <glob pattern="*.gbs"/>
     <magic priority="50">
@@ -69,6 +71,8 @@
   </mime-type>
   <mime-type type="audio/x-gbr">
     <comment>Game Boy Ripped audio</comment>
+    <acronym>GBR</acronym>
+    <expanded-acronym>Game Boy Ripped</expanded-acronym>
     <generic-icon name="audio-x-generic"/>
     <glob pattern="*.gbr"/>
     <magic priority="50">
@@ -79,6 +83,8 @@
   <!-- NSF -->
   <mime-type type="audio/x-nsf">
     <comment>Nintendo Sound Format audio</comment>
+    <acronym>NSF</acronym>
+    <expanded-acronym>Nintendo Sound Format</expanded-acronym>
     <generic-icon name="audio-x-generic"/>
     <glob pattern="*.nsf"/>
     <magic priority="50">
@@ -89,6 +95,8 @@
   <!-- SAP -->
   <mime-type type="audio/x-sap">
     <comment>Atari 8-bit audio</comment>
+    <acronym>SAP</acronym>
+    <expanded-acronym>Slight Atari Player</expanded-acronym>
     <generic-icon name="audio-x-generic"/>
     <glob pattern="*.sap"/>
     <magic priority="50">
@@ -123,6 +131,8 @@
   <!-- VGM -->
   <mime-type type="audio/x-vgm">
     <comment>Video Game Music audio</comment>
+    <acronym>VGM</acronym>
+    <expanded-acronym>Video Game Music</expanded-acronym>
     <generic-icon name="audio-x-generic"/>
     <glob pattern="*.vgm"/>
     <glob pattern="*.vgz"/>
@@ -189,6 +199,8 @@
   </mime-type>
   <mime-type type="application/x-gd-rom-cue">
     <comment>GD-ROM image cuesheet</comment>
+    <acronym>GD-ROM</acronym>
+    <expanded-acronym>Gigabyte Disc Read-Only Memory</expanded-acronym>
     <sub-class-of type="application/x-cd-image"/>
     <generic-icon name="application-x-cd-image"/>
     <glob pattern="*.gdi"/>
@@ -197,6 +209,8 @@
   <!-- DreamcastSave -->
   <mime-type type="application/x-dreamcast-vms">
     <comment>Dreamcast VMS save file</comment>
+    <acronym>VMS</acronym>
+    <expanded-acronym>Visual Memory System</expanded-acronym>
     <!-- FIXME: Better icon. -->
     <sub-class-of type="application/octet-stream"/>
     <generic-icon name="application-octet-stream"/>
@@ -204,6 +218,8 @@
   </mime-type>
   <mime-type type="application/x-dreamcast-vms-info">
     <comment>Dreamcast VMS information file</comment>
+    <acronym>VMS</acronym>
+    <expanded-acronym>Visual Memory System</expanded-acronym>
     <!-- FIXME: Better icon. -->
     <sub-class-of type="application/octet-stream"/>
     <generic-icon name="application-octet-stream"/>
@@ -326,6 +342,8 @@
   <!-- TODO: Distinguish between CMD (10,668 bytes) and DAT (11,084 bytes). -->
   <mime-type type="application/x-ique-cmd">
     <comment>iQue Player content metadata file</comment>
+    <acronym>CMD</acronym>
+    <expanded-acronym>Content Metadata</expanded-acronym>
     <!-- FIXME: Better icon. -->
     <sub-class-of type="application/octet-stream"/>
     <generic-icon name="application-octet-stream"/>
@@ -380,6 +398,8 @@
   <mime-type type="application/x-nes-rom">
     <!-- NOTE: This is already upstream, but is missing magic numbers. -->
     <comment>NES ROM</comment>
+    <acronym>NES</acronym>
+    <expanded-acronym>Nintendo Entertainment System</expanded-acronym>
     <generic-icon name="application-x-executable"/>
     <glob pattern="*.nes"/>
     <glob pattern="*.nez"/>
@@ -507,6 +527,8 @@
   <!-- Xbox_XBE -->
   <mime-type type="application/x-xbox-executable">
     <comment>Xbox executable</comment>
+    <acronym>XBE</acronym>
+    <expanded-acronym>Xbox Executable</expanded-acronym>
     <sub-class-of type="application/octet-stream"/>
     <generic-icon name="application-octet-stream"/>
     <glob pattern="*.xbe"/>
@@ -518,6 +540,8 @@
   <!-- Xbox360_STFS -->
   <mime-type type="application/x-xbox360-stfs">
     <comment>Xbox 360 package</comment>
+    <acronym>STFS</acronym>
+    <expanded-acronym>Secure Transacted File System</expanded-acronym>
     <sub-class-of type="application/x-archive"/>
     <generic-icon name="package-x-generic"/>
     <glob pattern="*.fxs"/>	<!-- Fallout -->
@@ -532,6 +556,8 @@
   <!-- Xbox360_XDBF -->
   <mime-type type="application/x-xbox360-xdbf">
     <comment>Xbox 360 resource database file</comment>
+    <acronym>XDBF</acronym>
+    <expanded-acronym>Xbox Database File</expanded-acronym>
     <sub-class-of type="application/octet-stream"/>
     <generic-icon name="application-octet-stream"/>
     <glob pattern="*.xdbf"/>
@@ -544,6 +570,8 @@
   <!-- Xbox360_XEX -->
   <mime-type type="application/x-xbox360-executable">
     <comment>Xbox 360 executable</comment>
+    <acronym>XEX</acronym>
+    <expanded-acronym>Xbox 360 Executable</expanded-acronym>
     <sub-class-of type="application/x-executable"/>
     <generic-icon name="application-x-executable"/>
     <glob pattern="*.xex"/>
@@ -771,6 +799,8 @@
   <!-- Amiibo -->
   <mime-type type="application/x-nintendo-amiibo">
     <comment>Nintendo amiibo NFC dump</comment>
+    <acronym>NFC</acronym>
+    <expanded-acronym>Near Field Communication</expanded-acronym>
     <generic-icon name="application-octet-stream"/>
     <glob pattern="*.nfc"/>
     <glob pattern="*.nfp"/>
@@ -965,6 +995,8 @@
   <!-- ASTC -->
   <mime-type type="image/astc">
     <comment>ASTC texture image</comment>
+    <acronym>ASTC</acronym>
+    <expanded-acronym>Adaptive Scalable Texture Compression</expanded-acronym>
     <sub-class-of type="image/x-generic"/>
     <glob pattern="*.astc"/>
     <generic-icon name="image-x-generic"/>
@@ -996,7 +1028,9 @@
   <!-- KhronosKTX2 -->
   <!-- NOTE: Upstream has KTX1. -->
   <mime-type type="image/ktx2">
-    <comment>Khronos KTX2 texture image</comment>
+    <comment>Khronos Texture Image (KTX2)</comment>
+    <acronym>KTX</acronym>
+    <expanded-acronym>Khronos Texture</expanded-acronym>
     <sub-class-of type="image/x-generic"/>
     <glob pattern="*.ktx2"/>
     <generic-icon name="image-x-generic"/>
@@ -1013,6 +1047,8 @@
   <!-- FIXME: libmirage-gbi.xml is overriding this. -->
   <mime-type type="image/x-sega-pvr">
     <comment>Sega Dreamcast PVR texture file</comment>
+    <acronym>PVR</acronym>
+    <expanded-acronym>PowerVR</expanded-acronym>
     <sub-class-of type="image/x-generic"/>
     <generic-icon name="image-x-generic"/>
     <glob pattern="*.pvr"/>
@@ -1030,6 +1066,8 @@
   </mime-type>
   <mime-type type="image/x-sega-gvr">
     <comment>Sega GVR for GameCube texture file</comment>
+    <acronym>GVR</acronym>
+    <expanded-acronym>PowerVR (GameCube version)</expanded-acronym>
     <sub-class-of type="image/x-generic"/>
     <generic-icon name="image-x-generic"/>
     <glob pattern="*.gvr"/>
@@ -1047,6 +1085,8 @@
   </mime-type>
   <mime-type type="image/x-sega-pvrx">
     <comment>Sega PVRX for Xbox texture file</comment>
+    <acronym>PVRX</acronym>
+    <expanded-acronym>PowerVR (Xbox version)</expanded-acronym>
     <sub-class-of type="image/x-generic"/>
     <generic-icon name="image-x-generic"/>
     <glob pattern="*.pvr"/>
@@ -1064,6 +1104,8 @@
   </mime-type>
   <mime-type type="image/x-sega-svr">
     <comment>Sega SVR for PlayStation 2 texture file</comment>
+    <acronym>SVR</acronym>
+    <expanded-acronym>PowerVR (Sony version)</expanded-acronym>
     <sub-class-of type="image/x-generic"/>
     <generic-icon name="image-x-generic"/>
     <glob pattern="*.svr"/>
@@ -1107,6 +1149,8 @@
   <!-- XboxXPR -->
   <mime-type type="image/x-xbox-xpr0">
     <comment>Microsoft Xbox XPR0 texture file</comment>
+    <acronym>XPR</acronym>
+    <expanded-acronym>Xbox Packed Resource</expanded-acronym>
     <sub-class-of type="image/x-generic"/>
     <generic-icon name="image-x-generic"/>
     <glob pattern="*.xbx"/>
@@ -1117,6 +1161,8 @@
   </mime-type>
   <mime-type type="image/x-xbox-xpr1">
     <comment>Microsoft Xbox XPR0 texture archive</comment>
+    <acronym>XPR</acronym>
+    <expanded-acronym>Xbox Packed Resource</expanded-acronym>
     <sub-class-of type="image/x-generic"/>
     <generic-icon name="image-x-generic"/>
     <glob pattern="*.xpr"/>
@@ -1126,6 +1172,8 @@
   </mime-type>
   <mime-type type="image/x-xbox-xpr2">
     <comment>Microsoft Xbox XPR2 texture archive</comment>
+    <acronym>XPR</acronym>
+    <expanded-acronym>Xbox Packed Resource</expanded-acronym>
     <sub-class-of type="image/x-generic"/>
     <generic-icon name="image-x-generic"/>
     <glob pattern="*.xpr"/>
@@ -1139,6 +1187,8 @@
   <!-- IPS patches -->
   <mime-type type="application/x-ips-patch">
     <comment>IPS patch file</comment>
+    <acronym>IPS</acronym>
+    <expanded-acronym>International Patching System</expanded-acronym>
     <sub-class-of type="application/x-patch"/>
     <generic-icon name="text-x-patch"/>
     <glob pattern="*.ips"/>
