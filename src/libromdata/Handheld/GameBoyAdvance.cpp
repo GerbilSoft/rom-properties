@@ -78,6 +78,10 @@ const char *const GameBoyAdvancePrivate::mimeTypes[] = {
 	// Unofficial MIME types from FreeDesktop.org.
 	"application/x-gba-rom",
 
+	// Unofficial MIME types from mGBA.
+	"application/x-gameboy-advance-rom",
+	"application/x-agb-rom",
+
 	nullptr
 };
 const RomDataInfo GameBoyAdvancePrivate::romDataInfo = {

@@ -611,6 +611,8 @@
   <mime-type type="application/x-gba-rom">
     <comment>Game Boy Advance ROM</comment>
     <generic-icon name="application-x-executable"/>
+    <alias type="application/x-gameboy-advance-rom"/>
+    <alias type="application/x-agb-rom"/>
     <glob pattern="*.gba"/>
     <glob pattern="*.agb"/>
     <!-- <glob pattern="*.mb"/> --> <!-- TODO -->

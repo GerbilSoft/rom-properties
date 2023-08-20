@@ -75,6 +75,8 @@ application/x-xbox360-patch		# Xbox360_XEX
 application/x-gameboy-rom		# DMG
 application/x-gameboy-color-rom		# DMG
 application/x-gba-rom			# GameBoyAdvance
+application/x-gameboy-advance-rom	# GameBoyAdvance (mGBA)
+application/x-agb-rom			# GameBoyAdvance (mGBA)
 application/x-game-com-rom		# GameCom
 application/x-neo-geo-pocket-rom	# NGPC
 application/x-neo-geo-pocket-color-rom	# NGPC
@@ -85,12 +87,12 @@ application/x-nintendo-3ds-cia		# Nintendo3DS
 application/x-nintendo-3ds-cxi		# Nintendo3DS
 application/x-nintendo-3ds-ncch		# Nintendo3DS
 application/x-nintendo-3ds-rom		# Nintendo3DS
-application/x-ctr-3dsx			# Nintendo3DS
-application/x-ctr-cci			# Nintendo3DS
-application/x-ctr-cia			# Nintendo3DS
-application/x-ctr-cxi			# Nintendo3DS
+application/x-ctr-3dsx			# Nintendo3DS (Citra)
+application/x-ctr-cci			# Nintendo3DS (Citra)
+application/x-ctr-cia			# Nintendo3DS (Citra)
+application/x-ctr-cxi			# Nintendo3DS (Citra)
 application/x-nintendo-3ds-smdh		# Nintendo3DS_SMDH
-application/x-ctr-smdh			# Nintendo3DS_SMDH
+application/x-ctr-smdh			# Nintendo3DS_SMDH (Citra)
 application/x-nintendo-ds-rom		# NintendoDS
 application/vnd.nintendo.nitro.rom	# NintendoDS
 application/x-nintendo-dsi-rom		# NintendoDS
