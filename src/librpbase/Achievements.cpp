@@ -598,16 +598,16 @@ int AchievementsPrivate::load(void)
 	// Resize the buffer to get rid of any extra data.
 	buf.resize(data_len + HeaderSizeMinusCount);
 
+	// NOTE: buf may have been reallocated, so we need to
+	// get the header pointer again.
+	header = reinterpret_cast<const AchBinHeader*>(buf.data());
+
 	// Verify the CRC32.
 	const uint32_t crc = crc32(0, &buf.data()[HeaderSizeMinusCount], data_len);
 	if (crc != le32_to_cpu(header->crc32)) {
 		// Incorrect CRC32.
 		return -EBADF;
 	}
-
-	// NOTE: buf may have been reallocated, so we need to
-	// get the header pointer again.
-	header = reinterpret_cast<const AchBinHeader*>(buf.data());
 
 	// Process all achievements.
 	bool ok = true;
