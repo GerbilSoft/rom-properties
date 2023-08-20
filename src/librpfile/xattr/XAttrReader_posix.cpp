@@ -151,6 +151,15 @@ XAttrReaderPrivate::XAttrReaderPrivate(const char *filename)
 	// Initialize attributes.
 	lastError = init();
 	close(fd);
+	fd = -1;
+}
+
+XAttrReaderPrivate::~XAttrReaderPrivate()
+{
+	// Just in case fd wasn't closed for some reason...
+	if (fd >= 0) {
+		close(fd);
+	}
 }
 
 /**

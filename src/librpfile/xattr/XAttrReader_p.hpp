@@ -27,9 +27,13 @@ class XAttrReaderPrivate
 {
 	public:
 		explicit XAttrReaderPrivate(const char *filename);
-#if defined(_WIN32)
+#ifdef _WIN32
 		explicit XAttrReaderPrivate(const wchar_t *filename);
 #endif /* _WIN32 */
+#ifndef _WIN32
+		~XAttrReaderPrivate();
+#endif /* !_WIN32 */
+
 	private:
 		/**
 		 * Initialize attributes.
