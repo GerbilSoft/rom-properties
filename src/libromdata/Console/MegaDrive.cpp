@@ -879,6 +879,7 @@ MegaDrive::MegaDrive(const IRpFilePtr &file)
 	if (!d->isValid) {
 		// Not valid. Close the file.
 		d->file.reset();
+		return;
 	}
 
 	// MD region code.
