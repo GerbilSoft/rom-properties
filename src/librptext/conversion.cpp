@@ -447,13 +447,10 @@ std::string formatFrequency(uint32_t frequency)
 		// tr: %1$s == localized value, %2$s == suffix (e.g. MHz)
 		return rp_sprintf_p(C_("LibRpText|Frequency", "%1$s %2$s"),
 			s_value.str().c_str(), suffix);
-	} else {
-		return s_value.str();
 	}
 
-	// Should not get here...
-	assert(!"Invalid code path.");
-	return "QUACK";
+	// No suffix needed.
+	return s_value.str();
 }
 
 /**
