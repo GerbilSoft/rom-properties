@@ -65,6 +65,10 @@
     * For example, if a file is missing, it now shows "No such file or directory"
       instead of just "Input/output error".
     * This bug has been present since at least v1.4.
+  * General: The custom reference counting implementation, RefBase, which was
+    previously used by RomData, IRpFile, and many other base classes, has been
+    removed in favor of std::shared_ptr<>. shared_ptr does have a bit more
+    overhead for both code and RAM, but it significantly simplifies the code.
 
 ## v2.2.1 (released 2023/07/30)
 
