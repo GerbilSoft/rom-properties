@@ -975,14 +975,20 @@
 
   <!-- GodotSTEX -->
   <mime-type type="image/x-godot-stex">
-    <comment>Godot STEX texture image</comment>
+    <comment>Godot STEX (v3) texture image</comment>
     <sub-class-of type="image/x-generic"/>
     <glob pattern="*.stex"/>
-    <glob pattern="*.ctex"/>
     <generic-icon name="image-x-generic"/>
-    <alias type="application/x-godot-ctex"/>
     <magic priority="80">
       <match value="GDST" type="string" offset="0"/>
+    </magic>
+  </mime-type>
+  <mime-type type="image/x-godot-ctex">
+    <comment>Godot CTEX (v4) texture image</comment>
+    <sub-class-of type="image/x-generic"/>
+    <glob pattern="*.ctex"/>
+    <generic-icon name="image-x-generic"/>
+    <magic priority="80">
       <match value="GST2" type="string" offset="0"/>
     </magic>
   </mime-type>
