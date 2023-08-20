@@ -217,8 +217,8 @@ rp_image_ptr RpJpeg::load(const IRpFilePtr &file)
 
 	RpJpegPrivate::my_error_mgr jerr;
 	jpeg_decompress_struct cinfo;
+	rp_image *img = nullptr;	// Image
 	int row_stride;			// Physical row width in output buffer
-	rp_image_ptr img;	// Image
 	bool direct_copy = false;	// True if a direct copy can be made
 
 	// libjpeg-turbo BGRA extension.
@@ -239,6 +239,9 @@ rp_image_ptr RpJpeg::load(const IRpFilePtr &file)
 	// Multi-level setjmp() so we can test for JCS_EXT_BGRA.
 	int jmperr = setjmp(jerr.setjmp_buffer);
 	if (jmperr) {
+		delete img;
+		img = nullptr;
+
 		if (try_ext_bgra && tried_ext_bgra) {
 			// Tried using JCS_EXT_BGRA and it didn't work.
 			// Try again with JCS_RGB.
@@ -253,6 +256,7 @@ rp_image_ptr RpJpeg::load(const IRpFilePtr &file)
 			// An error occurred while decoding the JPEG.
 			// NOTE: buffer is allocated using JPEG allocation functions,
 			// so it's automatically freed when we destroy cinfo.
+			delete img;
 			jpeg_destroy_decompress(&cinfo);
 			return nullptr;
 		}
@@ -333,9 +337,10 @@ rp_image_ptr RpJpeg::load(const IRpFilePtr &file)
 			}
 
 			// Create the image.
-			img = std::make_shared<rp_image>(cinfo.output_width, cinfo.output_height, rp_image::Format::CI8);
+			img = new rp_image(cinfo.output_width, cinfo.output_height, rp_image::Format::CI8);
 			if (!img->isValid()) {
 				// Could not allocate the image.
+				delete img;
 				jpeg_destroy_decompress(&cinfo);
 				return nullptr;
 			}
@@ -345,6 +350,7 @@ rp_image_ptr RpJpeg::load(const IRpFilePtr &file)
 			assert(img_palette != nullptr);
 			if (!img_palette) {
 				// No palette...
+				delete img;
 				jpeg_destroy_decompress(&cinfo);
 				return nullptr;
 			}
@@ -380,9 +386,10 @@ rp_image_ptr RpJpeg::load(const IRpFilePtr &file)
 				return nullptr;
 			}
 
-			img = std::make_shared<rp_image>(cinfo.image_width, cinfo.image_height, rp_image::Format::ARGB32);
+			img = new rp_image(cinfo.image_width, cinfo.image_height, rp_image::Format::ARGB32);
 			if (!img->isValid()) {
 				// Could not allocate the image.
+				delete img;
 				jpeg_destroy_decompress(&cinfo);
 				return nullptr;
 			}
@@ -400,9 +407,10 @@ rp_image_ptr RpJpeg::load(const IRpFilePtr &file)
 				return nullptr;
 			}
 
-			img = std::make_shared<rp_image>(cinfo.image_width, cinfo.image_height, rp_image::Format::ARGB32);
+			img = new rp_image(cinfo.image_width, cinfo.image_height, rp_image::Format::ARGB32);
 			if (!img->isValid()) {
 				// Could not allocate the image.
+				delete img;
 				jpeg_destroy_decompress(&cinfo);
 				return nullptr;
 			}
@@ -418,9 +426,10 @@ rp_image_ptr RpJpeg::load(const IRpFilePtr &file)
 				return nullptr;
 			}
 
-			img = std::make_shared<rp_image>(cinfo.image_width, cinfo.image_height, rp_image::Format::ARGB32);
+			img = new rp_image(cinfo.image_width, cinfo.image_height, rp_image::Format::ARGB32);
 			if (!img->isValid()) {
 				// Could not allocate the image.
+				delete img;
 				jpeg_destroy_decompress(&cinfo);
 				return nullptr;
 			}
@@ -452,7 +461,7 @@ rp_image_ptr RpJpeg::load(const IRpFilePtr &file)
 				// conversion step.
 #ifdef RPJPEG_HAS_SSSE3
 				if (RP_CPU_HasSSSE3()) {
-					RpJpegPrivate::decodeBGRtoARGB(img.get(), &cinfo, buffer);
+					RpJpegPrivate::decodeBGRtoARGB(img, &cinfo, buffer);
 					break;
 				}
 #endif /* RPJPEG_HAS_SSSE3 */
@@ -570,7 +579,7 @@ rp_image_ptr RpJpeg::load(const IRpFilePtr &file)
 	jpeg_destroy_decompress(&cinfo);
 
 	// Return the image.
-	return img;
+	return rp_image_ptr(img);
 }
 
 }
