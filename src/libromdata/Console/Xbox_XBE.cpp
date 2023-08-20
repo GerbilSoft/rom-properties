@@ -341,6 +341,9 @@ const EXE *Xbox_XBE_Private::initEXE(void)
 		if (pe_exe_tmp->isOpen()) {
 			// EXE opened.
 			this->pe_exe = pe_exe_tmp;
+		} else {
+			// Failed to open the EXE.
+			pe_exe_tmp->unref();
 		}
 	}
 
