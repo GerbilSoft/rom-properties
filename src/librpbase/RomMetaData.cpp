@@ -589,14 +589,17 @@ int RomMetaData::addMetaData_string(Property name, const char *str, unsigned int
 	RP_D(RomMetaData);
 	MetaData *const pMetaData = d->addProperty(name);
 	assert(pMetaData != nullptr);
-	if (!pMetaData)
+	if (!pMetaData) {
+		delete nstr;
 		return -1;
+	}
 
 	// Make sure this is a string property.
 	assert(pMetaData->type == PropertyType::String);
 	if (pMetaData->type != PropertyType::String) {
 		// TODO: Delete the property in this case?
 		pMetaData->data.iptrvalue = 0;
+		delete nstr;
 		return -1;
 	}
 
