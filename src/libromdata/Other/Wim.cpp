@@ -433,6 +433,7 @@ int WimPrivate::addFields_XML()
 
 WimPrivate::WimPrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
+	, versionType(Wim_Unknown)
 { 
 	// Clear the WIM header struct.
 	memset(&wimHeader, 0, sizeof(wimHeader));
