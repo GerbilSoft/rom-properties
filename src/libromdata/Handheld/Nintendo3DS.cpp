@@ -2562,15 +2562,13 @@ int Nintendo3DS::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size
 	// Otherwise, use the primary Title ID.
 	uint32_t tid_hi, tid_lo;
 	if (d->headers_loaded & Nintendo3DSPrivate::HEADER_NCSD) {
+		// Use the media ID from the NCSD header.
 		tid_lo = le32_to_cpu(d->mxh.ncsd_header.media_id.lo);
 		tid_hi = le32_to_cpu(d->mxh.ncsd_header.media_id.hi);
-	} else if (ncch_header) {
+	} else {
+		// Use the title ID from the primary NCCH header.
 		tid_lo = le32_to_cpu(ncch_header->program_id.lo);
 		tid_hi = le32_to_cpu(ncch_header->program_id.hi);
-	} else {
-		// Unlikely, but cppcheck complained.
-		tid_lo = 0;
-		tid_hi = 0;
 	}
 
 	// Validate the title ID.
