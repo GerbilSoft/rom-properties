@@ -197,6 +197,9 @@ RomData *XboxDiscPrivate::openDefaultExe(ExeType *pExeType)
 			}
 			return xexData;
 		}
+
+		// Not actually an XEX.
+		xexData->unref();
 	}
 
 	// Try to open default.xbe.
@@ -213,6 +216,9 @@ RomData *XboxDiscPrivate::openDefaultExe(ExeType *pExeType)
 			}
 			return xbeData;
 		}
+
+		// Not actually an XBE.
+		xbeData->unref();
 	}
 
 	// Unable to open the default executable.
