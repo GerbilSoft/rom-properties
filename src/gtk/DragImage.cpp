@@ -141,6 +141,9 @@ rp_drag_image_class_init(RpDragImageClass *klass)
 static void
 rp_drag_image_init(RpDragImage *image)
 {
+	// Initialize the C++ shared_ptr.
+	image->pImg = new rp_image_const_ptr();
+
 	image->minimumImageSize.width = DIL_MIN_IMAGE_SIZE;
 	image->minimumImageSize.height = DIL_MIN_IMAGE_SIZE;
 
