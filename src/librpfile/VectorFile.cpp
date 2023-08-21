@@ -21,6 +21,9 @@ extern "C" {
 
 namespace LibRpFile {
 
+// 128 MB *should* be a reasonable maximum...
+static const off64_t VECTOR_FILE_MAX_SIZE = 128U*1024*1024;
+
 /**
  * Open an IRpFile backed by an std::vector.
  * The resulting IRpFile is writable.
@@ -90,8 +93,9 @@ size_t VectorFile::write(const void *ptr, size_t size)
 	if (req_size < 0) {
 		// Overflow...
 		return 0;
-	} else if (req_size > static_cast<off64_t>(std::numeric_limits<size_t>::max())) {
-		// Too big for size_t.
+	} else if (req_size > VECTOR_FILE_MAX_SIZE) {
+		// Too much...
+		m_lastError = -ENOMEM;
 		return 0;
 	} else if (req_size > static_cast<off64_t>(vec_size)) {
 		// Need to expand the std::vector.
@@ -122,6 +126,25 @@ int VectorFile::seek(off64_t pos)
 		m_pos = static_cast<size_t>(pos);
 	}
 
+	return 0;
+}
+
+/**
+ * Truncate the file.
+ * @param size New size. (default is 0)
+ * @return 0 on success; -1 on error.
+ */
+int VectorFile::truncate(off64_t size)
+{
+	if (unlikely(size < 0)) {
+		m_lastError = -EINVAL;
+		return -1;
+	} else if (size > VECTOR_FILE_MAX_SIZE) {
+		m_lastError = -ENOMEM;
+		return -1;
+	}
+
+	m_pVector->resize(size);
 	return 0;
 }
 
