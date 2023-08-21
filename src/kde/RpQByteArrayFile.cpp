@@ -25,6 +25,9 @@ RpQByteArrayFile::RpQByteArrayFile()
 {
 	// Reserve at least 16 KB.
 	m_byteArray.reserve(16*1024);
+
+	// RpQByteArrayFile is writable.
+	m_isWritable = true;
 }
 
 /**
