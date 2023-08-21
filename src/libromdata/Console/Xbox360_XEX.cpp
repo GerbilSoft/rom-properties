@@ -567,8 +567,6 @@ int Xbox360_XEX_Private::initPeReader(void)
 	}
 #endif /* ENABLE_LIBMSPACK */
 
-	// NOTE: Since we're returning CBCReaderPtr&, we'll return
-	// peReader even if it isn't initialized.
 	if (!file) {
 		// File is closed. Can't initialize PE Reader.
 		return -EIO;
@@ -1181,7 +1179,7 @@ const EXE *Xbox360_XEX_Private::initEXE(void)
 	}
 
 	// Initialize the PE reader.
-	if (!initPeReader()) {
+	if (initPeReader() != 0) {
 		// Error initializing the PE reader.
 		return nullptr;
 	}
@@ -1224,7 +1222,7 @@ const Xbox360_XDBF *Xbox360_XEX_Private::initXDBF(void)
 	}
 
 	// Initialize the PE reader.
-	if (!initPeReader()) {
+	if (initPeReader() != 0) {
 		// Error initializing the PE reader.
 		return nullptr;
 	}
