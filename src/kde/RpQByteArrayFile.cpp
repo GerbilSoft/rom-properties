@@ -12,6 +12,9 @@
 // C++ STL classes.
 using std::string;
 
+// 128 MB *should* be a reasonable maximum...
+static const off64_t QBYTEARRAYFILE_MAX_SIZE = 128U*1024*1024;
+
 /**
  * Open an IRpFile backed by a QByteArray.
  * The resulting IRpFile is writable.
@@ -89,6 +92,10 @@ size_t RpQByteArrayFile::write(const void *ptr, size_t size)
 	if (req_size < 0) {
 		// Overflow...
 		return 0;
+	} else if (req_size > static_cast<off64_t>(QBYTEARRAYFILE_MAX_SIZE)) {
+		// Too much...
+		m_lastError = -ENOMEM;
+		return 0;
 	} else if (req_size > m_byteArray.size()) {
 		// Need to expand the QByteArray.
 		m_byteArray.resize(req_size);
@@ -137,6 +144,15 @@ off64_t RpQByteArrayFile::tell(void)
  */
 int RpQByteArrayFile::truncate(off64_t size)
 {
+	if (unlikely(size < 0)) {
+		m_lastError = -EINVAL;
+		return -1;
+	} else if (size > QBYTEARRAYFILE_MAX_SIZE) {
+		// 128 MB *should* be a reasonable maximum...
+		m_lastError = -ENOMEM;
+		return -1;
+	}
+
 	m_byteArray.resize(size);
 	return 0;
 }
