@@ -32,6 +32,7 @@ using std::shared_ptr;
 static GQuark ecksbawks_quark = 0;
 
 static void	rp_drag_image_dispose	(GObject	*object);
+static void	rp_drag_image_finalize	(GObject	*object);
 
 // Signal handlers
 // FIXME: GTK4 has a new Drag & Drop API.
@@ -66,34 +67,21 @@ struct _RpDragImageClass {
 	superclass __parent__;
 };
 
-// DragImage instance
-struct _RpDragImage {
-	super __parent__;
+// C++ objects
+struct _RpDragImageCxx {
+	_RpDragImageCxx()
+		: anim(nullptr)
+	{}
 
-	// GtkImage child widget.
-	GtkWidget *imageWidget;
-	// Current frame.
-	PIMGTYPE curFrame;
-
-	// Minimum image size.
-	struct {
-		int width;
-		int height;
-	} minimumImageSize;
-
-	bool ecksBawks;
-#ifdef USE_G_MENU_MODEL
-	GMenu *menuEcksBawks;
-	GtkWidget *popEcksBawks;		// GtkPopover (3.x); GtkPopoverMenu (4.x)
-	GSimpleActionGroup *actionGroup;
-#else /* !USE_G_MENU_MODEL */
-	GtkWidget *menuEcksBawks;	// GtkMenu
-#endif /* USE_G_MENU_MODEL */
+	~_RpDragImageCxx()
+	{
+		delete anim;
+	}
 
 	// rp_image (C++ shared_ptr)
-	rp_image_const_ptr *pImg;
+	rp_image_const_ptr img;
 
-	// Animated icon data.
+	// Animated icon data
 	struct anim_vars {
 		IconAnimDataConstPtr iconAnimData;
 		std::array<PIMGTYPE, IconAnimData::MAX_FRAMES> iconFrames;
@@ -101,6 +89,11 @@ struct _RpDragImage {
 		guint tmrIconAnim;	// Timer ID
 		int last_delay;		// Last delay value.
 		int last_frame_number;	// Last frame number.
+
+		void unregister_timer(void)
+		{
+			g_clear_handle_id(&tmrIconAnim, g_source_remove);
+		}
 
 		anim_vars()
 			: tmrIconAnim(0)
@@ -122,6 +115,34 @@ struct _RpDragImage {
 	anim_vars *anim;
 };
 
+// DragImage instance
+struct _RpDragImage {
+	super __parent__;
+
+	// C++ objects
+	_RpDragImageCxx *cxx;
+
+	// GtkImage child widget.
+	GtkWidget *imageWidget;
+	// Current frame.
+	PIMGTYPE curFrame;
+
+	// Minimum image size.
+	struct {
+		int width;
+		int height;
+	} minimumImageSize;
+
+	bool ecksBawks;
+#ifdef USE_G_MENU_MODEL
+	GMenu *menuEcksBawks;
+	GtkWidget *popEcksBawks;		// GtkPopover (3.x); GtkPopoverMenu (4.x)
+	GSimpleActionGroup *actionGroup;
+#else /* !USE_G_MENU_MODEL */
+	GtkWidget *menuEcksBawks;	// GtkMenu
+#endif /* USE_G_MENU_MODEL */
+};
+
 // NOTE: G_DEFINE_TYPE() doesn't work in C++ mode with gcc-6.2
 // due to an implicit int to GTypeFlags conversion.
 G_DEFINE_TYPE_EXTENDED(RpDragImage, rp_drag_image,
@@ -132,6 +153,7 @@ rp_drag_image_class_init(RpDragImageClass *klass)
 {
 	GObjectClass *const gobject_class = G_OBJECT_CLASS(klass);
 	gobject_class->dispose = rp_drag_image_dispose;
+	gobject_class->finalize = rp_drag_image_finalize;
 
 	// TODO
 	//gobject_class->set_property = rp_drag_image_set_property;
@@ -141,8 +163,10 @@ rp_drag_image_class_init(RpDragImageClass *klass)
 static void
 rp_drag_image_init(RpDragImage *image)
 {
-	// Initialize the C++ shared_ptr.
-	image->pImg = new rp_image_const_ptr();
+	// g_object_new() guarantees that all values are initialized to 0.
+
+	// Initialize C++ objects.
+	image->cxx = new _RpDragImageCxx();
 
 	image->minimumImageSize.width = DIL_MIN_IMAGE_SIZE;
 	image->minimumImageSize.height = DIL_MIN_IMAGE_SIZE;
@@ -177,14 +201,10 @@ rp_drag_image_dispose(GObject *object)
 		image->curFrame = nullptr;
 	}
 
-	// Delete the animation data if present.
-	// This will automatically unregister the timer.
-	delete image->anim;
-	image->anim = nullptr;
-
-	// Delete the image shared_ptr.
-	delete image->pImg;
-	image->pImg = nullptr;
+	// Unregister the animation timer if it's set.
+	if (image->cxx->anim) {
+		image->cxx->anim->unregister_timer();
+	}
 
 #ifdef USE_G_MENU_MODEL
 #  if GTK_CHECK_VERSION(4,0,0)
@@ -212,6 +232,18 @@ rp_drag_image_dispose(GObject *object)
 	G_OBJECT_CLASS(rp_drag_image_parent_class)->dispose(object);
 }
 
+static void
+rp_drag_image_finalize(GObject *object)
+{
+	RpDragImage *const image = RP_DRAG_IMAGE(object);
+
+	// Delete the C++ objects.
+	delete image->cxx;
+
+	// Call the superclass finalize() function.
+	G_OBJECT_CLASS(rp_drag_image_parent_class)->finalize(object);
+}
+
 GtkWidget*
 rp_drag_image_new(void)
 {
@@ -227,6 +259,7 @@ static bool
 rp_drag_image_update_pixmaps(RpDragImage *image)
 {
 	g_return_val_if_fail(RP_IS_DRAG_IMAGE(image), false);
+	_RpDragImageCxx *const cxx = image->cxx;
 	bool bRet = false;
 
 	if (image->curFrame) {
@@ -236,7 +269,7 @@ rp_drag_image_update_pixmaps(RpDragImage *image)
 
 	// FIXME: Transparency isn't working for e.g. GALE01.gci.
 	// (Super Smash Bros. Melee)
-	auto *const anim = image->anim;
+	auto *const anim = cxx->anim;
 	if (anim && anim->iconAnimData) {
 		const IconAnimDataConstPtr &iconAnimData = anim->iconAnimData;
 
@@ -268,9 +301,9 @@ rp_drag_image_update_pixmaps(RpDragImage *image)
 		image->curFrame = PIMGTYPE_ref(anim->iconFrames[anim->iconAnimHelper.frameNumber()]);
 		gtk_image_set_from_PIMGTYPE(GTK_IMAGE(image->imageWidget), image->curFrame);
 		bRet = true;
-	} else if (image->pImg && (*image->pImg)->isValid()) {
+	} else if (cxx->img && cxx->img->isValid()) {
 		// Single image.
-		image->curFrame = rp_image_to_PIMGTYPE(image->pImg);
+		image->curFrame = rp_image_to_PIMGTYPE(cxx->img);
 		gtk_image_set_from_PIMGTYPE(GTK_IMAGE(image->imageWidget), image->curFrame);
 		bRet = true;
 	}
@@ -432,14 +465,15 @@ bool
 rp_drag_image_set_rp_image(RpDragImage *image, const rp_image_const_ptr &img)
 {
 	g_return_val_if_fail(RP_IS_DRAG_IMAGE(image), false);
+	_RpDragImageCxx *const cxx = image->cxx;
 
 	// NOTE: We're not checking if the image pointer matches the
 	// previously stored image, since the underlying image may
 	// have changed.
 
-	(*image->pImg) = img;
+	cxx->img = img;
 	if (!img) {
-		if (!image->anim || !image->anim->iconAnimData) {
+		if (!cxx->anim || !cxx->anim->iconAnimData) {
 			gtk_image_clear(GTK_IMAGE(image->imageWidget));
 		} else {
 			return rp_drag_image_update_pixmaps(image);
@@ -463,11 +497,12 @@ bool
 rp_drag_image_set_icon_anim_data(RpDragImage *image, const IconAnimDataConstPtr &iconAnimData)
 {
 	g_return_val_if_fail(RP_IS_DRAG_IMAGE(image), false);
+	_RpDragImageCxx *const cxx = image->cxx;
 
-	if (!image->anim) {
-		image->anim = new RpDragImage::anim_vars();
+	if (!cxx->anim) {
+		cxx->anim = new _RpDragImageCxx::anim_vars();
 	}
-	auto *const anim = image->anim;
+	auto *const anim = cxx->anim;
 
 	// NOTE: We're not checking if the image pointer matches the
 	// previously stored image, since the underlying image may
@@ -477,7 +512,7 @@ rp_drag_image_set_icon_anim_data(RpDragImage *image, const IconAnimDataConstPtr 
 	if (!iconAnimData) {
 		g_clear_handle_id(&anim->tmrIconAnim, g_source_remove);
 
-		if (!(*image->pImg)) {
+		if (!cxx->img) {
 			gtk_image_clear(GTK_IMAGE(image->imageWidget));
 		} else {
 			return rp_drag_image_update_pixmaps(image);
@@ -496,14 +531,15 @@ void
 rp_drag_image_clear(RpDragImage *image)
 {
 	g_return_if_fail(RP_IS_DRAG_IMAGE(image));
+	_RpDragImageCxx *const cxx = image->cxx;
 
-	auto *const anim = image->anim;
+	auto *const anim = cxx->anim;
 	if (anim) {
 		g_clear_handle_id(&anim->tmrIconAnim, g_source_remove);
 		anim->iconAnimData.reset();
 	}
 
-	(*image->pImg).reset();
+	cxx->img.reset();
 	gtk_image_clear(GTK_IMAGE(image->imageWidget));
 }
 
@@ -516,7 +552,7 @@ static gboolean
 rp_drag_image_anim_timer_func(RpDragImage *image)
 {
 	g_return_val_if_fail(RP_IS_DRAG_IMAGE(image), false);
-	auto *const anim = image->anim;
+	auto *const anim = image->cxx->anim;
 	g_return_val_if_fail(anim != nullptr, false);
 
 	if (anim->tmrIconAnim == 0) {
@@ -561,7 +597,7 @@ rp_drag_image_start_anim_timer(RpDragImage *image)
 {
 	g_return_if_fail(RP_IS_DRAG_IMAGE(image));
 
-	auto *const anim = image->anim;
+	auto *const anim = image->cxx->anim;
 	if (!anim || !anim->iconAnimHelper.isAnimated()) {
 		// Not an animated icon.
 		return;
@@ -580,8 +616,8 @@ rp_drag_image_start_anim_timer(RpDragImage *image)
 	rp_drag_image_stop_anim_timer(image);
 
 	// Set a single-shot timer for the current frame.
-	image->anim->last_delay = delay;
-	image->anim->tmrIconAnim = g_timeout_add(delay,
+	anim->last_delay = delay;
+	anim->tmrIconAnim = g_timeout_add(delay,
 		G_SOURCE_FUNC(rp_drag_image_anim_timer_func), image);
 }
 
@@ -594,7 +630,7 @@ rp_drag_image_stop_anim_timer(RpDragImage *image)
 {
 	g_return_if_fail(RP_IS_DRAG_IMAGE(image));
 
-	auto *const anim = image->anim;
+	auto *const anim = image->cxx->anim;
 	if (anim) {
 		g_clear_handle_id(&anim->tmrIconAnim, g_source_remove);
 		anim->last_delay = 0;
@@ -610,7 +646,7 @@ bool
 rp_drag_image_is_anim_timer_running(RpDragImage *image)
 {
 	g_return_val_if_fail(RP_IS_DRAG_IMAGE(image), false);
-	auto *const anim = image->anim;
+	auto *const anim = image->cxx->anim;
 	return (anim && (anim->tmrIconAnim > 0));
 }
 
@@ -624,7 +660,7 @@ rp_drag_image_reset_anim_frame(RpDragImage *image)
 {
 	g_return_if_fail(RP_IS_DRAG_IMAGE(image));
 
-	auto *const anim = image->anim;
+	auto *const anim = image->cxx->anim;
 	if (anim) {
 		anim->last_frame_number = 0;
 	}
@@ -656,8 +692,9 @@ rp_drag_image_drag_data_get(RpDragImage *image, GdkDragContext *context, GtkSele
 	RP_UNUSED(time);
 	RP_UNUSED(user_data);
 	g_return_if_fail(RP_IS_DRAG_IMAGE(image));
+	_RpDragImageCxx *const cxx = image->cxx;
 
-	auto *const anim = image->anim;
+	auto *const anim = cxx->anim;
 	const bool isAnimated = (anim && anim->iconAnimData && anim->iconAnimHelper.isAnimated());
 
 	using LibRpFile::VectorFile;
@@ -666,11 +703,11 @@ rp_drag_image_drag_data_get(RpDragImage *image, GdkDragContext *context, GtkSele
 	if (isAnimated) {
 		// Animated icon.
 		pngWriter = new RpPngWriter(pngData, anim->iconAnimData);
-	} else if (image->pImg && (*image->pImg)) {
+	} else if (cxx->img) {
 		// Standard icon.
 		// NOTE: Using the source image because we want the original
 		// size, not the resized version.
-		pngWriter = new RpPngWriter(pngData, *image->pImg);
+		pngWriter = new RpPngWriter(pngData, cxx->img);
 	} else {
 		// No icon...
 		return;
