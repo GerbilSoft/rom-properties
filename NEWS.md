@@ -57,6 +57,8 @@
     * This broke in Oct 2020 when the ListData views were reworked from
       QTreeWidget to QTreeView in order to implement sorting.
     * Affects: v1.8 - v2.2.1
+  * GTK: Fixed dragging the main icon from RomDataView to the file browser.
+    * Affects: v1.8 - v2.2.1
 
 * Other changes:
   * Nintendo3DS: The "Options" menu no longer shows a grayed-out "Extract SRL"
