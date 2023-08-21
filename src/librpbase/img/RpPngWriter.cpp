@@ -458,8 +458,7 @@ void RpPngWriterPrivate::init(const rp_image_const_ptr &img)
 	}
 
 	// Truncate the file.
-	int ret = file->truncate(0);
-	if (ret != 0) {
+	if (file->truncate(0) != 0) {
 		// Unable to truncate the file.
 		lastError = file->lastError();
 		if (lastError == 0) {
@@ -473,7 +472,7 @@ void RpPngWriterPrivate::init(const rp_image_const_ptr &img)
 	file->rewind();
 
 	// Initialize the PNG write structs.
-	ret = init_png_write_structs();
+	int ret = init_png_write_structs();
 	if (ret != 0) {
 		// FIXME: Unlink the file if necessary.
 		lastError = -ret;
@@ -1188,12 +1187,19 @@ int RpPngWriter::write_IHDR(void)
 	if (unlikely(!d->file)) {
 		// Invalid state.
 		d->lastError = EIO;
-		return -d->lastError;
-	}
-	if (unlikely(d->IHDR_written)) {
+		return -EIO;
+	} else if (unlikely(d->IHDR_written)) {
 		// IHDR has already been written.
 		d->lastError = EEXIST;
-		return -d->lastError;
+		return -EEXIST;
+	}
+
+	// png_ptr should be set here...
+	assert(d->png_ptr);
+	if (!d->png_ptr) {
+		// Something happened...
+		d->lastError = EIO;
+		return -EIO;
 	}
 
 	// Using the cached width/height from the first image.
@@ -1205,7 +1211,7 @@ int RpPngWriter::write_IHDR(void)
 	if (setjmp(png_jmpbuf(d->png_ptr))) {
 		// PNG write failed.
 		d->lastError = EIO;
-		return -d->lastError;
+		return -EIO;
 	}
 #endif /* PNG_SETJMP_SUPPORTED */
 
