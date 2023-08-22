@@ -551,40 +551,34 @@ vector<RomData::ImageSizeDef> Xbox_XBE::supportedImageSizes(ImageType imageType)
 
 	if (imageType != IMG_INT_ICON) {
 		// Only icons are supported.
-		return vector<ImageSizeDef>();
+		return {};
 	}
 
 	RP_D(const Xbox_XBE);
 	if (!d->xtImage.isInit) {
+		// No images yet. Try loading it.
 		const_cast<Xbox_XBE_Private*>(d)->initXPR0_xtImage();
 	}
-
-	if (d->xtImage.isInit) {
-		if (!d->xtImage.isPng) {
-			// XPR0 image
-			const ImageSizeDef sz_INT_ICON_XPR0[] = {{
-				nullptr,
-				static_cast<uint16_t>(d->xtImage.xpr0->width()),
-				static_cast<uint16_t>(d->xtImage.xpr0->height()),
-				0
-			}};
-			return vector<ImageSizeDef>(sz_INT_ICON_XPR0,
-				sz_INT_ICON_XPR0 + ARRAY_SIZE(sz_INT_ICON_XPR0));
-		} else {
-			// PNG image
-			const ImageSizeDef sz_INT_ICON_PNG[] = {{
-				nullptr,
-				static_cast<uint16_t>(d->xtImage.png->width()),
-				static_cast<uint16_t>(d->xtImage.png->height()),
-				0
-			}};
-			return vector<ImageSizeDef>(sz_INT_ICON_PNG,
-				sz_INT_ICON_PNG + ARRAY_SIZE(sz_INT_ICON_PNG));
-		}
+	if (!d->xtImage.isInit) {
+		// Still no images.
+		return {};
 	}
 
-	// No images.
-	return vector<ImageSizeDef>();
+	ImageSizeDef sz_INT_ICON;
+	sz_INT_ICON.name = nullptr;
+	sz_INT_ICON.index = 0;
+
+	if (!d->xtImage.isPng) {
+		// XPR0 image
+		sz_INT_ICON.width = d->xtImage.xpr0->width();
+		sz_INT_ICON.height = d->xtImage.xpr0->height();
+	} else {
+		// PNG image
+		sz_INT_ICON.width = d->xtImage.png->width();
+		sz_INT_ICON.height = d->xtImage.png->height();
+	}
+
+	return {sz_INT_ICON};
 }
 
 /**
