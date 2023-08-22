@@ -200,6 +200,13 @@ FOREACH(_target ${TARGETS})
 		)
 	# rapidjson: Enable std::string support.
 	ADD_DEFINITIONS(-DRAPIDJSON_HAS_STDSTRING)
+	IF(CPU_amd64)
+		# rapidjson: Enable SSE2 support in amd64 builds.
+		# NOTE: rapidjson does not have dynamic dispatch,
+		# so we can't enable SSE2 in i386 or SSE 4.2 at all
+		# because it'll crash if the machine doesn't support it.
+		ADD_DEFINITIONS(-DRAPIDJSON_SSE2)
+	ENDIF(CPU_amd64)
 
 	IF(MSVC)
 		# Delay-load implementation.
