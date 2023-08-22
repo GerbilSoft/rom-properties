@@ -39,7 +39,7 @@ void RpJpegPrivate::decodeBGRtoARGB(rp_image *RESTRICT img, jpeg_decompress_stru
 	__m128i shuf_mask = _mm_setr_epi8(2,1,0,-1, 5,4,3,-1, 8,7,6,-1, 11,10,9,-1);
 	__m128i alpha_mask = _mm_setr_epi8(0,0,0,-1, 0,0,0,-1, 0,0,0,-1, 0,0,0,-1);
 	argb32_t *dest = static_cast<argb32_t*>(img->bits());
-	const int dest_stride_adj = (img->stride() / sizeof(argb32_t)) - img->width();
+	const int dest_stride_adj = (img->stride() - img->row_bytes()) / sizeof(argb32_t);
 	while (cinfo->output_scanline < cinfo->output_height) {
 		jpeg_read_scanlines(cinfo, buffer, 1);
 		const uint8_t *src = buffer[0];

@@ -557,16 +557,24 @@ rp_image_ptr RpJpeg::load(const IRpFilePtr &file)
 		// NOTE: jpeg_read_scanlines() has an option to specify how many
 		// scanlines to read, but it doesn't work. We'll have to read
 		// one scanline at a time.
-		for (unsigned int i = 0; i < cinfo.output_height; i++) {
-			uint8_t *dest = static_cast<uint8_t*>(img->scanLine(i));
+		// FIXME: Might be because it's expecting an array of row pointers?
+		uint8_t *dest = static_cast<uint8_t*>(img->bits());
+		const int stride = img->stride();
+		for (unsigned int i = 0; i < cinfo.output_height; i++, dest += stride) {
+			// TODO: Verify return value.
 			jpeg_read_scanlines(&cinfo, &dest, 1);
 		}
 
 		// Set the sBIT metadata.
-		// NOTE: Setting the grayscale value, though we're
-		// not saving grayscale PNGs at the moment.
-		static const rp_image::sBIT_t sBIT = {8,8,8,8,0};
-		img->set_sBIT(&sBIT);
+		if (cinfo.out_color_space == JCS_GRAYSCALE) {
+			// NOTE: Setting the grayscale value, though we're
+			// not saving grayscale PNGs at the moment.
+			static const rp_image::sBIT_t sBIT = {8,8,8,8,0};
+			img->set_sBIT(&sBIT);
+		} else {
+			static const rp_image::sBIT_t sBIT = {8,8,8,0,0};
+			img->set_sBIT(&sBIT);
+		}
 	}
 
 	/** Step 7: Finish decompression. **/
