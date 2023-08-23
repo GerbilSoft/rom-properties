@@ -1340,7 +1340,7 @@ vector<RomData::ImageSizeDef> MegaDrive::supportedImageSizes_static(ImageType im
 			// FIXME: Assuming 320x224; some games might use 256x224,
 			// which will need scaling.
 			static const ImageSizeDef sz_EXT_TITLE_SCREEN[] = {
-				{nullptr, 292, 224, 0},
+				{nullptr, 320, 224, 0},
 			};
 			return {sz_EXT_TITLE_SCREEN,
 				sz_EXT_TITLE_SCREEN + ARRAY_SIZE(sz_EXT_TITLE_SCREEN)};
