@@ -91,7 +91,7 @@ QStringList ExtractorPluginForwarder::mimetypes(void) const
 	if (fwd_plugin) {
 		return fwd_plugin->mimetypes();
 	}
-	return QStringList();
+	return {};
 }
 
 void ExtractorPluginForwarder::extract(ExtractionResult *result)

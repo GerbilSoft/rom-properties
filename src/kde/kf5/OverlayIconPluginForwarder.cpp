@@ -94,7 +94,7 @@ QStringList OverlayIconPluginForwarder::getOverlays(const QUrl &item)
 	if (fwd_plugin) {
 		return fwd_plugin->getOverlays(item);
 	}
-	return QStringList();
+	return {};
 }
 
 /**

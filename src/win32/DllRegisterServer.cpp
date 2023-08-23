@@ -303,7 +303,7 @@ static tstring GetUserFileAssoc(const tstring &sid, const char *ext)
 		sid.c_str(), U82T_c(ext));
 	if (len <= 0 || len >= (int)_countof(regPath)) {
 		// Buffer isn't large enough...
-		return tstring();
+		return {};
 	}
 
 	// FIXME: This will NOT update profiles that aren't loaded.
@@ -315,11 +315,11 @@ static tstring GetUserFileAssoc(const tstring &sid, const char *ext)
 		// ERROR_FILE_NOT_FOUND is acceptable.
 		// Anything else is an error.
 		if (hkcu_UserChoice.lOpenRes() == ERROR_FILE_NOT_FOUND) {
-			return tstring();
+			return {};
 		}
 		// TODO: Return an error.
 		//return hkcu_UserChoice.lOpenRes();
-		return tstring();
+		return {};
 	}
 
 	// Read the user's choice.

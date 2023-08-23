@@ -112,7 +112,7 @@ tstring RegKey::read(LPCTSTR lpValueName, LPDWORD lpType) const
 		if (lpType) {
 			*lpType = REG_NONE;
 		}
-		return tstring();
+		return {};
 	}
 
 	// Determine the required buffer size.
@@ -130,7 +130,7 @@ tstring RegKey::read(LPCTSTR lpValueName, LPDWORD lpType) const
 		if (lpType) {
 			*lpType = REG_NONE;
 		}
-		return tstring();
+		return {};
 	}
 
 	// Allocate a buffer and get the data.
@@ -147,7 +147,7 @@ tstring RegKey::read(LPCTSTR lpValueName, LPDWORD lpType) const
 		if (lpType) {
 			*lpType = REG_NONE;
 		}
-		return tstring();
+		return {};
 	}
 
 	// Save the key type.
@@ -166,7 +166,7 @@ tstring RegKey::read(LPCTSTR lpValueName, LPDWORD lpType) const
 
 	if (cchData == 0) {
 		// No actual string data.
-		return tstring();
+		return {};
 	}
 
 	// Return the string.
@@ -204,7 +204,7 @@ tstring RegKey::read_expand(LPCTSTR lpValueName, LPDWORD lpType) const
 		if (lpType) {
 			*lpType = 0;
 		}
-		return tstring();
+		return {};
 	}
 
 	if (cchExpand <= _countof(locbuf)) {
@@ -215,7 +215,7 @@ tstring RegKey::read_expand(LPCTSTR lpValueName, LPDWORD lpType) const
 			if (lpType) {
 				*lpType = 0;
 			}
-			return tstring();
+			return {};
 		}
 
 		// String has been expanded.
@@ -234,7 +234,7 @@ tstring RegKey::read_expand(LPCTSTR lpValueName, LPDWORD lpType) const
 		if (lpType) {
 			*lpType = 0;
 		}
-		return tstring();
+		return {};
 	}
 
 	// String has been expanded.

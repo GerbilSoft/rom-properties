@@ -104,7 +104,7 @@ string SufamiTurboPrivate::getRomTitle(void) const
 	}
 	if (start >= sizeof(romHeader.title)) {
 		// Empty title...
-		return string();
+		return {};
 	}
 
 	// Trim spaces at the end of the title.
@@ -127,7 +127,7 @@ string SufamiTurboPrivate::getRomTitle(void) const
 	}
 	if (len == 0) {
 		// Empty title...
-		return string();
+		return {};
 	}
 
 	// Convert the title from cp1252 and/or Shift-JIS.
@@ -283,15 +283,15 @@ vector<RomData::ImageSizeDef> SufamiTurbo::supportedImageSizes_static(ImageType 
 			static const ImageSizeDef sz_EXT_TITLE_SCREEN[] = {
 				{nullptr, 292, 224, 0},
 			};
-			return vector<ImageSizeDef>(sz_EXT_TITLE_SCREEN,
-				sz_EXT_TITLE_SCREEN + ARRAY_SIZE(sz_EXT_TITLE_SCREEN));
+			return {sz_EXT_TITLE_SCREEN,
+				sz_EXT_TITLE_SCREEN + ARRAY_SIZE(sz_EXT_TITLE_SCREEN)};
 		}
 		default:
 			break;
 	}
 
 	// Unsupported image type.
-	return vector<ImageSizeDef>();
+	return {};
 }
 
 /**

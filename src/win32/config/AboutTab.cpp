@@ -641,7 +641,7 @@ string AboutTabPrivate::rtfEscape(const char *str)
 {
 	assert(str != nullptr);
 	if (unlikely(!str)) {
-		return string();
+		return {};
 	}
 
 	// Convert the string to UTF-16 first.

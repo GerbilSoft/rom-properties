@@ -175,7 +175,7 @@ QImage AchQtDBusPrivate::loadSpriteSheet(int iconSize)
 	    imgAchSheet.height() != (int)(iconSize * Achievements::ACH_SPRITE_SHEET_ROWS))
 	{
 		// Incorrect size. We can't use it.
-		return QImage();
+		return {};
 	}
 
 	// NOTE: The R and B channels need to be swapped for XDG notifications.

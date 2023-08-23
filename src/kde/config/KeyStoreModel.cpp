@@ -196,13 +196,13 @@ QModelIndex KeyStoreModel::index(int row, int column, const QModelIndex& parent)
 {
 	Q_D(const KeyStoreModel);
 	if (!d->keyStore || !hasIndex(row, column, parent))
-		return QModelIndex();
+		return {};
 
 	if (!parent.isValid()) {
 		// Root item.
 		if (row < 0 || row >= d->keyStore->sectCount()) {
 			// Invalid index.
-			return QModelIndex();
+			return {};
 		}
 		return createIndex(row, column, MAKELONG(row, 0xFFFF));
 	} else {
@@ -212,12 +212,12 @@ QModelIndex KeyStoreModel::index(int row, int column, const QModelIndex& parent)
 			// Section header.
 			if (row < 0 || row >= d->keyStore->keyCount(LOWORD(id))) {
 				// Invalid index.
-				return QModelIndex();
+				return {};
 			}
 			return createIndex(row, column, MAKELONG(LOWORD(id), row));
 		} else {
 			// Key. Cannot create child index.
-			return QModelIndex();
+			return {};
 		}
 	}
 }
@@ -226,13 +226,13 @@ QModelIndex KeyStoreModel::parent(const QModelIndex& index) const
 {
 	Q_D(const KeyStoreModel);
 	if (!d->keyStore || !index.isValid())
-		return QModelIndex();
+		return {};
 
 	// Check the internal ID.
 	const uint32_t id = (uint32_t)index.internalId();
 	if (HIWORD(id) == 0xFFFF) {
 		// Section header. Parent is root.
-		return QModelIndex();
+		return {};
 	} else {
 		// Key. Parent is a section header.
 		return createIndex(LOWORD(id), 0, MAKELONG(LOWORD(id), 0xFFFF));
@@ -243,7 +243,7 @@ QVariant KeyStoreModel::data(const QModelIndex& index, int role) const
 {
 	Q_D(const KeyStoreModel);
 	if (!d->keyStore || !index.isValid())
-		return QVariant();
+		return {};
 
 	// Check the internal ID.
 	const uint32_t id = (uint32_t)index.internalId();
@@ -251,7 +251,7 @@ QVariant KeyStoreModel::data(const QModelIndex& index, int role) const
 		// Section header.
 		if (index.column() != 0) {
 			// Invalid column.
-			return QVariant();
+			return {};
 		}
 
 		switch (role) {
@@ -262,13 +262,13 @@ QVariant KeyStoreModel::data(const QModelIndex& index, int role) const
 		}
 
 		// Nothing for this role.
-		return QVariant();
+		return {};
 	}
 
 	// Key index.
 	const KeyStoreQt::Key *key = d->keyStore->getKey(LOWORD(id), HIWORD(id));
 	if (!key)
-		return QVariant();
+		return {};
 
 	switch (role) {
 		case Qt::DisplayRole:
@@ -361,7 +361,7 @@ QVariant KeyStoreModel::data(const QModelIndex& index, int role) const
 	}
 
 	// Default value.
-	return QVariant();
+	return {};
 }
 
 bool KeyStoreModel::setData(const QModelIndex& index, const QVariant& value, int role)
@@ -394,7 +394,7 @@ Qt::ItemFlags KeyStoreModel::flags(const QModelIndex &index) const
 {
 	Q_D(const KeyStoreModel);
 	if (!d->keyStore || !index.isValid())
-		return Qt::ItemFlags();
+		return {};
 
 	// Check the internal ID.
 	const uint32_t id = (uint32_t)index.internalId();
@@ -433,7 +433,7 @@ QVariant KeyStoreModel::headerData(int section, Qt::Orientation orientation, int
 	}
 
 	// Default value.
-	return QVariant();
+	return {};
 }
 
 /**

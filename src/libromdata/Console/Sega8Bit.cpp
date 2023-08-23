@@ -110,12 +110,12 @@ string Sega8BitPrivate::getSdscString(uint16_t ptr)
 	assert(isValid);
 	if (!file || !file->isOpen() || !isValid) {
 		// Can't add anything...
-		return string();
+		return {};
 	}
 
 	if (ptr == 0x0000 || ptr == 0xFFFF) {
 		// No string here...
-		return string();
+		return {};
 	}
 
 	char strbuf[256];
@@ -128,7 +128,7 @@ string Sega8BitPrivate::getSdscString(uint16_t ptr)
 	}
 
 	// Unable to read the string...
-	return string();
+	return {};
 }
 
 /**

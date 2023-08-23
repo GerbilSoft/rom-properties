@@ -29,7 +29,7 @@ QString GettextTranslator::translate(const char *context,
 		const char *const txt = dnpgettext_expr(RP_I18N_DOMAIN, context, sourceText, sourceText, n);
 		if (txt == sourceText) {
 			// No translation is available from gettext.
-			return QString();
+			return {};
 		}
 		return QString::fromUtf8(txt);
 	}
@@ -39,7 +39,7 @@ QString GettextTranslator::translate(const char *context,
 	const char *const txt = dpgettext_expr(RP_I18N_DOMAIN, context, sourceText);
 	if (txt == sourceText) {
 		// No translation is available from gettext.
-		return QString();
+		return {};
 	}
 	return QString::fromUtf8(txt);
 #endif
@@ -55,7 +55,7 @@ QString GettextTranslator::translate(const char *context,
 	const char *const txt = dpgettext_expr(RP_I18N_DOMAIN, context, sourceText);
 	if (txt == sourceText) {
 		// No translation is available from gettext.
-		return QString();
+		return {};
 	}
 	return QString::fromUtf8(txt);
 }

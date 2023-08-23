@@ -88,7 +88,7 @@ string CacheManager::download(const char *cache_key)
 	string cache_filename = LibCacheCommon::getCacheFilename(cache_key);
 	if (cache_filename.empty()) {
 		// Error obtaining the cache key filename.
-		return string();
+		return {};
 	}
 
 	// If the cache key begins with "sys/", then we have to
@@ -116,14 +116,14 @@ string CacheManager::download(const char *cache_key)
 				const time_t systime = time(nullptr);
 				if ((systime - filemtime) < (86400*7)) {
 					// Less than a week old.
-					return string();
+					return {};
 				}
 
 				// More than a week old.
 				// Delete the cache file and try to download it again.
 				if (FileSystem::delete_file(cache_filename) != 0) {
 					// Unable to delete the cache file.
-					return string();
+					return {};
 				}
 			} else if (filesize > 0) {
 				// File is larger than 0 bytes, which indicates
@@ -132,7 +132,7 @@ string CacheManager::download(const char *cache_key)
 			}
 		} else if (ret != -ENOENT) {
 			// Some error other than "file not found" occurred.
-			return string();
+			return {};
 		}
 	}
 
@@ -151,7 +151,7 @@ string CacheManager::download(const char *cache_key)
 	int ret = execRpDownload(cache_key);
 	if (ret != 0) {
 		// rp-download failed for some reason.
-		return string();
+		return {};
 	}
 
 	// rp-download has successfully downloaded the file.
@@ -169,7 +169,7 @@ string CacheManager::findInCache(const char *cache_key)
 	string cache_filename = LibCacheCommon::getCacheFilename(cache_key);
 	if (cache_filename.empty()) {
 		// Error obtaining the cache key filename.
-		return string();
+		return {};
 	}
 
 	// Return the filename if the file exists.

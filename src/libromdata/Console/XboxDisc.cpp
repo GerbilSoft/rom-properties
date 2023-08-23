@@ -656,7 +656,7 @@ vector<RomData::ImageSizeDef> XboxDisc::supportedImageSizes(ImageType imageType)
 		return defaultExeData->supportedImageSizes(imageType);
 	}
 	
-	return vector<ImageSizeDef>();
+	return {};
 }
 
 /**

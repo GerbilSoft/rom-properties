@@ -634,14 +634,14 @@ vector<RomData::ImageSizeDef> GameCom::supportedImageSizes(ImageType imageType) 
 	{
 		// Only IMG_INT_ICON is supported,
 		// and/or the ROM doesn't have an icon.
-		return vector<ImageSizeDef>();
+		return {};
 	}
 
 	static const ImageSizeDef sz_INT_ICON[] = {
 		{nullptr, GCOM_ICON_W, GCOM_ICON_H, 0},
 	};
-	return vector<ImageSizeDef>(sz_INT_ICON,
-		sz_INT_ICON + ARRAY_SIZE(sz_INT_ICON));
+	return {sz_INT_ICON,
+		sz_INT_ICON + ARRAY_SIZE(sz_INT_ICON)};
 }
 
 /**
@@ -655,14 +655,14 @@ vector<RomData::ImageSizeDef> GameCom::supportedImageSizes_static(ImageType imag
 
 	if (imageType != IMG_INT_ICON) {
 		// Only IMG_INT_ICON is supported.
-		return vector<ImageSizeDef>();
+		return {};
 	}
 
 	static const ImageSizeDef sz_INT_ICON[] = {
 		{nullptr, GCOM_ICON_W, GCOM_ICON_H, 0},
 	};
-	return vector<ImageSizeDef>(sz_INT_ICON,
-		sz_INT_ICON + ARRAY_SIZE(sz_INT_ICON));
+	return {sz_INT_ICON,
+		sz_INT_ICON + ARRAY_SIZE(sz_INT_ICON)};
 }
 
 /**

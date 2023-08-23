@@ -707,13 +707,13 @@ uint32_t RomData::supportedImageTypes(void) const
  * @param imageType Image type.
  * @return Vector of available image sizes, or empty vector if no images are available.
  */
-std::vector<RomData::ImageSizeDef> RomData::supportedImageSizes(ImageType imageType) const
+vector<RomData::ImageSizeDef> RomData::supportedImageSizes(ImageType imageType) const
 {
 	assert(imageType >= IMG_INT_MIN && imageType <= IMG_EXT_MAX);
 
 	// No images supported by default.
 	RP_UNUSED(imageType);
-	return std::vector<ImageSizeDef>();
+	return {};
 }
 
 /**
@@ -1052,7 +1052,7 @@ int RomData::doRomOp(int id, RomOpParams *pParams)
 vector<RomData::RomOp> RomData::romOps_int(void) const
 {
 	// Default implementation has no ROM operations.
-	return vector<RomData::RomOp>();
+	return {};
 }
 
 /**

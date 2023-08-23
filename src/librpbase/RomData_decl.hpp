@@ -324,7 +324,7 @@ std::vector<RomData::ImageSizeDef> klass::supportedImageSizes(ImageType imageTyp
 	assert((imageType) >= IMG_INT_MIN && (imageType) <= IMG_EXT_MAX); \
 	if ((imageType) < IMG_INT_MIN || (imageType) > IMG_EXT_MAX) { \
 		/* ImageType is out of range. */ \
-		return vector<ImageSizeDef>(); \
+		return {}; \
 	} \
 } while (0)
 

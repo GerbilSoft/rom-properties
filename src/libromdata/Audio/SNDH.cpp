@@ -140,14 +140,14 @@ string SNDHPrivate::readStrFromBuffer(const uint8_t **p, const uint8_t *p_end, b
 	if (*p >= p_end) {
 		// Out of bounds.
 		*p_err = true;
-		return string();
+		return {};
 	}
 
 	const uint8_t *const s_end = reinterpret_cast<const uint8_t*>(memchr(*p, 0, p_end-*p));
 	if (!s_end) {
 		// Out of bounds.
 		*p_err = true;
-		return string();
+		return {};
 	}
 
 	*p_err = false;
@@ -162,7 +162,7 @@ string SNDHPrivate::readStrFromBuffer(const uint8_t **p, const uint8_t *p_end, b
 	}
 
 	// Empty string.
-	return string();
+	return {};
 }
 
 /**

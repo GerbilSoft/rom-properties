@@ -245,7 +245,7 @@ string utf16_to_cpN(unsigned int cp, const char16_t *wcs, int len)
 		s_mbs.clear();
 	}
 
-	return s_mbs;;
+	return s_mbs;
 }
 
 /** Specialized UTF-16 conversion functions. **/
@@ -274,7 +274,7 @@ string utf16be_to_utf8(const char16_t *wcs, int len)
 {
 	if (!wcs || !*wcs || len == 0) {
 		// Empty string.
-		return string();
+		return {};
 	}
 
 	// NOTE: NULL characters are NOT truncated in the
@@ -286,13 +286,13 @@ string utf16be_to_utf8(const char16_t *wcs, int len)
 	u16string bwcs = utf16_bswap(wcs, len);
 	if (bwcs.empty()) {
 		// Error byteswapping the string...
-		return string();
+		return {};
 	} else if (len > 0 && len != static_cast<int>(bwcs.size())) {
 		// Byteswapping failed.
 		// NOTE: Only checking if an explicit length
 		// is specified, since we don't want to
 		// call u16_strlen() here.
-		return string();
+		return {};
 	}
 
 	// Convert the byteswapped text.

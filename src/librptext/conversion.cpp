@@ -57,12 +57,12 @@ static char lc_decimal[8];
 u16string utf16_bswap(const char16_t *str, int len)
 {
 	if (len == 0) {
-		return u16string();
+		return {};
 	} else if (len < 0) {
 		// NULL-terminated string.
 		len = static_cast<int>(u16_strlen(str));
 		if (len <= 0) {
-			return u16string();
+			return {};
 		}
 	}
 
@@ -595,7 +595,7 @@ string formatSampleAsTime(unsigned int sample, unsigned int rate)
 	int len = snprintf(buf, sizeof(buf), "%u:%02u.%02u", min, sec, cs);
 	if (len >= (int)sizeof(buf))
 		len = (int)sizeof(buf)-1;
-	return string(buf, len);
+	return {buf, static_cast<size_t>(len)};
 }
 
 /**

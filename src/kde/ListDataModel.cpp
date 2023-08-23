@@ -377,11 +377,11 @@ QVariant ListDataModel::data(const QModelIndex& index, int role) const
 {
 	Q_D(const ListDataModel);
 	if (!index.isValid() || !d->pData)
-		return QVariant();
+		return {};
 	const int row = index.row();
 	const int column = index.column();
 	if (row < 0 || row >= d->rowCount || column < 0 || column >= d->columnCount)
-		return QVariant();
+		return {};
 
 	// TODO: Icon/checkbox.
 	switch (role) {
@@ -421,7 +421,7 @@ QVariant ListDataModel::data(const QModelIndex& index, int role) const
 	}
 
 	// Default value.
-	return QVariant();
+	return {};
 }
 
 Qt::ItemFlags ListDataModel::flags(const QModelIndex& index) const
@@ -443,7 +443,7 @@ QVariant ListDataModel::headerData(int section, Qt::Orientation orientation, int
 
 	Q_D(const ListDataModel);
 	if (section < 0 || section >= d->columnCount)
-		return QVariant();
+		return {};
 
 	switch (role) {
 		case Qt::DisplayRole:
@@ -459,7 +459,7 @@ QVariant ListDataModel::headerData(int section, Qt::Orientation orientation, int
 	}
 
 	// Default value.
-	return QVariant();
+	return {};
 }
 
 /**

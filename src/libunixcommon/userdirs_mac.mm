@@ -39,14 +39,14 @@ static string getFMDirectory(NSSearchPathDirectory directory,
 			error:nil];
 	if (!url) {
 		// Could not obtain the directory.
-		return string();
+		return {};
 	}
 
 	// Get the path of the URL.
 	NSString *path = (NSString*)[url path];
 	if (!path) {
 		// Could not obtain the directory.
-		return string();
+		return {};
 	}
 
 	// Convert to a C++ string.

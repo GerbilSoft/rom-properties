@@ -540,7 +540,7 @@ vector<RomData::ImageSizeDef> NintendoBadge::supportedImageSizes(ImageType image
 
 	RP_D(const NintendoBadge);
 	if (!d->isValid || (imageType != IMG_INT_ICON && imageType != IMG_INT_IMAGE)) {
-		return vector<ImageSizeDef>();
+		return {};
 	}
 
 	switch (d->badgeType) {
@@ -554,8 +554,7 @@ vector<RomData::ImageSizeDef> NintendoBadge::supportedImageSizes(ImageType image
 					{nullptr, BADGE_SIZE_SMALL_W, BADGE_SIZE_SMALL_H, (int)NintendoBadgePrivate::BadgeIndex_PRBS::Small},
 					{nullptr, BADGE_SIZE_LARGE_W, BADGE_SIZE_LARGE_H, (int)NintendoBadgePrivate::BadgeIndex_PRBS::Large},
 				};
-				return vector<ImageSizeDef>(imgsz,
-					imgsz + ARRAY_SIZE(imgsz));
+				return {imgsz, imgsz + ARRAY_SIZE(imgsz)};
 			}
 
 			// Mega Badge.
@@ -569,8 +568,7 @@ vector<RomData::ImageSizeDef> NintendoBadge::supportedImageSizes(ImageType image
 				{nullptr, (uint16_t)(BADGE_SIZE_SMALL_W*mb_width), (uint16_t)(BADGE_SIZE_SMALL_H*mb_height), (int)NintendoBadgePrivate::BadgeIndex_PRBS::MegaSmall},
 				{nullptr, (uint16_t)(BADGE_SIZE_LARGE_W*mb_width), (uint16_t)(BADGE_SIZE_LARGE_H*mb_height), (int)NintendoBadgePrivate::BadgeIndex_PRBS::MegaLarge},
 			};
-			return vector<ImageSizeDef>(imgsz,
-				imgsz + ARRAY_SIZE(imgsz));
+			return {imgsz, imgsz + ARRAY_SIZE(imgsz)};
 		}
 
 		case NintendoBadgePrivate::BadgeType::CABS: {
@@ -578,8 +576,7 @@ vector<RomData::ImageSizeDef> NintendoBadge::supportedImageSizes(ImageType image
 			static const ImageSizeDef sz_CABS[] = {
 				{nullptr, 48, 48, 0},
 			};
-			return vector<ImageSizeDef>(sz_CABS,
-				sz_CABS + ARRAY_SIZE(sz_CABS));
+			return {sz_CABS, sz_CABS + ARRAY_SIZE(sz_CABS)};
 		}
 
 		default:
@@ -588,7 +585,7 @@ vector<RomData::ImageSizeDef> NintendoBadge::supportedImageSizes(ImageType image
 
 	// Should not get here...
 	assert(!"Unknown badge type. (Should not get here!)");
-	return vector<ImageSizeDef>();
+	return {};
 }
 
 /**

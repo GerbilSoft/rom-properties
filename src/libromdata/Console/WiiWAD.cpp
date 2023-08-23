@@ -109,7 +109,7 @@ string WiiWADPrivate::getGameInfo(void)
 	// TODO: Read on demand instead of always reading in the constructor.
 	if (imet.magic != cpu_to_be32(WII_IMET_MAGIC)) {
 		// Not valid.
-		return string();
+		return {};
 	}
 
 	// TODO: Combine with GameCubePrivate::wii_getBannerName()?
@@ -137,7 +137,7 @@ string WiiWADPrivate::getGameInfo(void)
 	return info;
 #else /* !ENABLE_DECRYPTION */
 	// Unable to decrypt the IMET header.
-	return string();
+	return {};
 #endif /* ENABLE_DECRYPTION */
 }
 
@@ -687,15 +687,15 @@ vector<RomData::ImageSizeDef> WiiWAD::supportedImageSizes_static(ImageType image
 			static const ImageSizeDef sz_INT_ICON[] = {
 				{nullptr, BANNER_WIBN_ICON_W, BANNER_WIBN_ICON_H, 0},
 			};
-			return vector<ImageSizeDef>(sz_INT_ICON,
-				sz_INT_ICON + ARRAY_SIZE(sz_INT_ICON));
+			return {sz_INT_ICON,
+				sz_INT_ICON + ARRAY_SIZE(sz_INT_ICON)};
 		}
 		case IMG_INT_BANNER: {
 			static const ImageSizeDef sz_INT_BANNER[] = {
 				{nullptr, BANNER_WIBN_IMAGE_W, BANNER_WIBN_IMAGE_H, 0},
 			};
-			return vector<ImageSizeDef>(sz_INT_BANNER,
-				sz_INT_BANNER + ARRAY_SIZE(sz_INT_BANNER));
+			return {sz_INT_BANNER,
+				sz_INT_BANNER + ARRAY_SIZE(sz_INT_BANNER)};
 		}
 #else /* !ENABLE_DECRYPTION */
 		case IMG_INT_ICON:
@@ -708,37 +708,37 @@ vector<RomData::ImageSizeDef> WiiWAD::supportedImageSizes_static(ImageType image
 			static const ImageSizeDef sz_EXT_COVER[] = {
 				{nullptr, 160, 224, 0},
 			};
-			return vector<ImageSizeDef>(sz_EXT_COVER,
-				sz_EXT_COVER + ARRAY_SIZE(sz_EXT_COVER));
+			return {sz_EXT_COVER,
+				sz_EXT_COVER + ARRAY_SIZE(sz_EXT_COVER)};
 		}
 		case IMG_EXT_COVER_3D: {
 			static const ImageSizeDef sz_EXT_COVER_3D[] = {
 				{nullptr, 176, 248, 0},
 			};
-			return vector<ImageSizeDef>(sz_EXT_COVER_3D,
-				sz_EXT_COVER_3D + ARRAY_SIZE(sz_EXT_COVER_3D));
+			return {sz_EXT_COVER_3D,
+				sz_EXT_COVER_3D + ARRAY_SIZE(sz_EXT_COVER_3D)};
 		}
 		case IMG_EXT_COVER_FULL: {
 			static const ImageSizeDef sz_EXT_COVER_FULL[] = {
 				{nullptr, 512, 340, 0},
 				{"HQ", 1024, 680, 1},
 			};
-			return vector<ImageSizeDef>(sz_EXT_COVER_FULL,
-				sz_EXT_COVER_FULL + ARRAY_SIZE(sz_EXT_COVER_FULL));
+			return {sz_EXT_COVER_FULL,
+				sz_EXT_COVER_FULL + ARRAY_SIZE(sz_EXT_COVER_FULL)};
 		}
 		case IMG_EXT_TITLE_SCREEN: {
 			static const ImageSizeDef sz_EXT_TITLE_SCREEN[] = {
 				{nullptr, 192, 112, 0},
 			};
-			return vector<ImageSizeDef>(sz_EXT_TITLE_SCREEN,
-				sz_EXT_TITLE_SCREEN + ARRAY_SIZE(sz_EXT_TITLE_SCREEN));
+			return {sz_EXT_TITLE_SCREEN,
+				sz_EXT_TITLE_SCREEN + ARRAY_SIZE(sz_EXT_TITLE_SCREEN)};
 		}
 		default:
 			break;
 	}
 
 	// Unsupported image type.
-	return vector<ImageSizeDef>();
+	return {};
 }
 
 /**
@@ -765,8 +765,8 @@ vector<RomData::ImageSizeDef> WiiWAD::supportedImageSizes(ImageType imageType) c
 					static const ImageSizeDef sz_INT_ICON[] = {
 						{nullptr, BANNER_WIBN_ICON_W, BANNER_WIBN_ICON_H, 0},
 					};
-					return vector<ImageSizeDef>(sz_INT_ICON,
-						sz_INT_ICON + ARRAY_SIZE(sz_INT_ICON));
+					return {sz_INT_ICON,
+						sz_INT_ICON + ARRAY_SIZE(sz_INT_ICON)};
 				}
 				break;
 			}
@@ -775,8 +775,8 @@ vector<RomData::ImageSizeDef> WiiWAD::supportedImageSizes(ImageType imageType) c
 					static const ImageSizeDef sz_INT_BANNER[] = {
 						{nullptr, BANNER_WIBN_IMAGE_W, BANNER_WIBN_IMAGE_H, 0},
 					};
-					return vector<ImageSizeDef>(sz_INT_BANNER,
-						sz_INT_BANNER + ARRAY_SIZE(sz_INT_BANNER));
+					return {sz_INT_BANNER,
+						sz_INT_BANNER + ARRAY_SIZE(sz_INT_BANNER)};
 				}
 				break;
 			}
@@ -790,30 +790,30 @@ vector<RomData::ImageSizeDef> WiiWAD::supportedImageSizes(ImageType imageType) c
 				static const ImageSizeDef sz_EXT_COVER[] = {
 					{nullptr, 160, 224, 0},
 				};
-				return vector<ImageSizeDef>(sz_EXT_COVER,
-					sz_EXT_COVER + ARRAY_SIZE(sz_EXT_COVER));
+				return {sz_EXT_COVER,
+					sz_EXT_COVER + ARRAY_SIZE(sz_EXT_COVER)};
 			}
 			case IMG_EXT_COVER_3D: {
 				static const ImageSizeDef sz_EXT_COVER_3D[] = {
 					{nullptr, 176, 248, 0},
 				};
-				return vector<ImageSizeDef>(sz_EXT_COVER_3D,
-					sz_EXT_COVER_3D + ARRAY_SIZE(sz_EXT_COVER_3D));
+				return {sz_EXT_COVER_3D,
+					sz_EXT_COVER_3D + ARRAY_SIZE(sz_EXT_COVER_3D)};
 			}
 			case IMG_EXT_COVER_FULL: {
 				static const ImageSizeDef sz_EXT_COVER_FULL[] = {
 					{nullptr, 512, 340, 0},
 					{"HQ", 1024, 680, 1},
 				};
-				return vector<ImageSizeDef>(sz_EXT_COVER_FULL,
-					sz_EXT_COVER_FULL + ARRAY_SIZE(sz_EXT_COVER_FULL));
+				return {sz_EXT_COVER_FULL,
+					sz_EXT_COVER_FULL + ARRAY_SIZE(sz_EXT_COVER_FULL)};
 			}
 			case IMG_EXT_TITLE_SCREEN: {
 				static const ImageSizeDef sz_EXT_TITLE_SCREEN[] = {
 					{nullptr, 192, 112, 0},
 				};
-				return vector<ImageSizeDef>(sz_EXT_TITLE_SCREEN,
-					sz_EXT_TITLE_SCREEN + ARRAY_SIZE(sz_EXT_TITLE_SCREEN));
+				return {sz_EXT_TITLE_SCREEN,
+					sz_EXT_TITLE_SCREEN + ARRAY_SIZE(sz_EXT_TITLE_SCREEN)};
 			}
 			default:
 				break;
@@ -831,7 +831,7 @@ vector<RomData::ImageSizeDef> WiiWAD::supportedImageSizes(ImageType imageType) c
 	}
 
 	// Unsupported image type.
-	return vector<ImageSizeDef>();
+	return {};
 }
 
 /**

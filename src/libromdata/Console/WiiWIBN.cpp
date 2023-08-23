@@ -375,22 +375,22 @@ vector<RomData::ImageSizeDef> WiiWIBN::supportedImageSizes_static(ImageType imag
 			static const ImageSizeDef sz_INT_ICON[] = {
 				{nullptr, BANNER_WIBN_ICON_W, BANNER_WIBN_ICON_H, 0},
 			};
-			return vector<ImageSizeDef>(sz_INT_ICON,
-				sz_INT_ICON + ARRAY_SIZE(sz_INT_ICON));
+			return {sz_INT_ICON,
+				sz_INT_ICON + ARRAY_SIZE(sz_INT_ICON)};
 		}
 		case IMG_INT_BANNER: {
 			static const ImageSizeDef sz_INT_BANNER[] = {
 				{nullptr, BANNER_WIBN_IMAGE_W, BANNER_WIBN_IMAGE_H, 0},
 			};
-			return vector<ImageSizeDef>(sz_INT_BANNER,
-				sz_INT_BANNER + ARRAY_SIZE(sz_INT_BANNER));
+			return {sz_INT_BANNER,
+				sz_INT_BANNER + ARRAY_SIZE(sz_INT_BANNER)};
 		}
 		default:
 			break;
 	}
 
 	// Unsupported image type.
-	return vector<ImageSizeDef>();
+	return {};
 }
 
 /**

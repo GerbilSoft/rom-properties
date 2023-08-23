@@ -310,15 +310,15 @@ vector<RomData::ImageSizeDef> Amiibo::supportedImageSizes_static(ImageType image
 
 	if (imageType != IMG_EXT_MEDIA) {
 		// Only media scans are supported.
-		return vector<ImageSizeDef>();
+		return {};
 	}
 
 	// Amiibo scan sizes may vary, but there's always one.
 	static const ImageSizeDef sz_EXT_MEDIA[] = {
 		{nullptr, 0, 0, 0},
 	};
-	return vector<ImageSizeDef>(sz_EXT_MEDIA,
-		sz_EXT_MEDIA + ARRAY_SIZE(sz_EXT_MEDIA));
+	return {sz_EXT_MEDIA,
+		sz_EXT_MEDIA + ARRAY_SIZE(sz_EXT_MEDIA)};
 }
 
 /**

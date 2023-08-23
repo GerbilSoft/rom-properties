@@ -677,7 +677,7 @@ string KeyStoreUIPrivate::convertKanjiToHex(const char *str)
 		pHex[3] = hex_lookup[(u16 >>  8) & 0x0F];
 	}
 
-	return string(hexstr.get(), hexlen);
+	return {hexstr.get(), hexlen};
 }
 
 /**
@@ -785,7 +785,7 @@ string KeyStoreUIPrivate::binToHexStr(const uint8_t *data, unsigned int len)
 	assert(len > 0);
 	assert(len <= 64);
 	if (!data || len == 0 || len > 64)
-		return string();
+		return {};
 
 	const unsigned int hexlen = len*2;
 	unique_ptr<char[]> hexstr(new char[hexlen]);
@@ -795,7 +795,7 @@ string KeyStoreUIPrivate::binToHexStr(const uint8_t *data, unsigned int len)
 		pHex[1] = hex_lookup[*data & 0x0F];
 	}
 
-	return string(hexstr.get(), hexlen);
+	return {hexstr.get(), hexlen};
 }
 
 /** KeyStore **/

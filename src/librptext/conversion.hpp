@@ -587,7 +587,7 @@ static inline std::u16string utf16le_to_utf16(const char16_t *wcs, int len)
 	}
 
 #if SYS_BYTEORDER == SYS_LIL_ENDIAN
-	return std::u16string(wcs, len);
+	return {wcs, static_cast<size_t>(len)};
 #else /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
 	return utf16_bswap(wcs, len);
 #endif
@@ -611,7 +611,7 @@ static inline std::u16string utf16be_to_utf16(const char16_t *wcs, int len)
 #if SYS_BYTEORDER == SYS_LIL_ENDIAN
 	return utf16_bswap(wcs, len);
 #else /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
-	return std::u16string(wcs, len);
+	return {wcs, static_cast<size_t>(len)};
 #endif
 }
 

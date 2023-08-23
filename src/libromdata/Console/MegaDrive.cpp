@@ -1342,15 +1342,15 @@ vector<RomData::ImageSizeDef> MegaDrive::supportedImageSizes_static(ImageType im
 			static const ImageSizeDef sz_EXT_TITLE_SCREEN[] = {
 				{nullptr, 292, 224, 0},
 			};
-			return vector<ImageSizeDef>(sz_EXT_TITLE_SCREEN,
-				sz_EXT_TITLE_SCREEN + ARRAY_SIZE(sz_EXT_TITLE_SCREEN));
+			return {sz_EXT_TITLE_SCREEN,
+				sz_EXT_TITLE_SCREEN + ARRAY_SIZE(sz_EXT_TITLE_SCREEN)};
 		}
 		default:
 			break;
 	}
 
 	// Unsupported image type.
-	return vector<ImageSizeDef>();
+	return {};
 }
 
 /**

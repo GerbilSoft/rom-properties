@@ -126,7 +126,7 @@ string WonderSwanPrivate::getGameID(void) const
 	char game_id[16];
 	snprintf(game_id, sizeof(game_id), "SWJ-%s%c%02X",
 		publisher_code, sys_id, romFooter.game_id);
-	return string(game_id);
+	return {game_id};
 }
 
 /** WonderSwan **/
@@ -585,15 +585,15 @@ vector<RomData::ImageSizeDef> WonderSwan::supportedImageSizes_static(ImageType i
 			static const ImageSizeDef sz_EXT_TITLE_SCREEN_H[] = {
 				{nullptr, 224, 144, 0},
 			};
-			return vector<ImageSizeDef>(sz_EXT_TITLE_SCREEN_H,
-				sz_EXT_TITLE_SCREEN_H + ARRAY_SIZE(sz_EXT_TITLE_SCREEN_H));
+			return {sz_EXT_TITLE_SCREEN_H,
+				sz_EXT_TITLE_SCREEN_H + ARRAY_SIZE(sz_EXT_TITLE_SCREEN_H)};
 		}
 		default:
 			break;
 	}
 
 	// Unsupported image type.
-	return vector<ImageSizeDef>();
+	return {};
 }
 
 /**
@@ -616,11 +616,11 @@ vector<RomData::ImageSizeDef> WonderSwan::supportedImageSizes(ImageType imageTyp
 
 			RP_D(const WonderSwan);
 			if ((d->romFooter.flags & WS_FLAG_DISPLAY_MASK) == WS_FLAG_DISPLAY_VERTICAL) {
-				return vector<ImageSizeDef>(sz_EXT_TITLE_SCREEN_V,
-					sz_EXT_TITLE_SCREEN_V + ARRAY_SIZE(sz_EXT_TITLE_SCREEN_V));
+				return {sz_EXT_TITLE_SCREEN_V,
+					sz_EXT_TITLE_SCREEN_V + ARRAY_SIZE(sz_EXT_TITLE_SCREEN_V)};
 			} else {
-				return vector<ImageSizeDef>(sz_EXT_TITLE_SCREEN_H,
-					sz_EXT_TITLE_SCREEN_H + ARRAY_SIZE(sz_EXT_TITLE_SCREEN_H));
+				return {sz_EXT_TITLE_SCREEN_H,
+					sz_EXT_TITLE_SCREEN_H + ARRAY_SIZE(sz_EXT_TITLE_SCREEN_H)};
 			}
 		}
 		default:
@@ -628,7 +628,7 @@ vector<RomData::ImageSizeDef> WonderSwan::supportedImageSizes(ImageType imageTyp
 	}
 
 	// Unsupported image type.
-	return vector<ImageSizeDef>();
+	return {};
 }
 
 /**

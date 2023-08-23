@@ -1543,8 +1543,8 @@ vector<RomData::ImageSizeDef> Nintendo3DS::supportedImageSizes_static(ImageType 
 				{nullptr, 24, 24, 0},
 				{nullptr, 48, 48, 1},
 			};
-			return vector<ImageSizeDef>(sz_INT_ICON,
-				sz_INT_ICON + ARRAY_SIZE(sz_INT_ICON));
+			return {sz_INT_ICON,
+				sz_INT_ICON + ARRAY_SIZE(sz_INT_ICON)};
 		}
 #ifdef HAVE_JPEG
 		case IMG_EXT_COVER: {
@@ -1554,8 +1554,8 @@ vector<RomData::ImageSizeDef> Nintendo3DS::supportedImageSizes_static(ImageType 
 				{"M", 400, 352, 2},
 				{"HQ", 768, 680, 3},
 			};
-			return vector<ImageSizeDef>(sz_EXT_COVER,
-				sz_EXT_COVER + ARRAY_SIZE(sz_EXT_COVER));
+			return {sz_EXT_COVER,
+				sz_EXT_COVER + ARRAY_SIZE(sz_EXT_COVER)};
 		}
 		case IMG_EXT_COVER_FULL: {
 			static const ImageSizeDef sz_EXT_COVER_FULL[] = {
@@ -1564,23 +1564,23 @@ vector<RomData::ImageSizeDef> Nintendo3DS::supportedImageSizes_static(ImageType 
 				{"M", 856, 352, 2},
 				{"HQ", 1616, 680, 3},
 			};
-			return vector<ImageSizeDef>(sz_EXT_COVER_FULL,
-				sz_EXT_COVER_FULL + ARRAY_SIZE(sz_EXT_COVER_FULL));
+			return {sz_EXT_COVER_FULL,
+				sz_EXT_COVER_FULL + ARRAY_SIZE(sz_EXT_COVER_FULL)};
 		}
 #endif /* HAVE_JPEG */
 		case IMG_EXT_BOX: {
 			static const ImageSizeDef sz_EXT_BOX[] = {
 				{nullptr, 240, 216, 0},
 			};
-			return vector<ImageSizeDef>(sz_EXT_BOX,
-				sz_EXT_BOX + ARRAY_SIZE(sz_EXT_BOX));
+			return {sz_EXT_BOX,
+				sz_EXT_BOX + ARRAY_SIZE(sz_EXT_BOX)};
 		}
 		default:
 			break;
 	}
 
 	// Unsupported image type.
-	return vector<ImageSizeDef>();
+	return {};
 }
 
 /**

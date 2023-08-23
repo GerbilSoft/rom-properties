@@ -643,7 +643,7 @@ static tstring rpFileDialogFilterToWin32(const TCHAR *filter)
 		if (!token) {
 			// Missing token...
 			free(tmpfilter);
-			return tstring();
+			return {};
 		}
 		const size_t lastpos = ts_ret.size();
 		ts_ret += token;
@@ -654,7 +654,7 @@ static tstring rpFileDialogFilterToWin32(const TCHAR *filter)
 		if (!token) {
 			// Missing token...
 			free(tmpfilter);
-			return tstring();
+			return {};
 		}
 
 		// Windows users are more accustomed to "*.*" instead of "*".

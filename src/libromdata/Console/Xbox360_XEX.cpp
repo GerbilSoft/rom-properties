@@ -1016,7 +1016,7 @@ string Xbox360_XEX_Private::formatMediaID(const uint8_t *pId)
 	}
 	*p = '\0';
 
-	return string(buf, (16*2)+1);
+	return {buf, (16*2)+1};
 }
 
 /**
@@ -1288,7 +1288,7 @@ string Xbox360_XEX_Private::getPublisher(void) const
 		const_cast<Xbox360_XEX_Private*>(this)->getXdbfResInfo();
 		if (!isExecutionIDLoaded) {
 			// Unable to get the publisher.
-			return string();
+			return {};
 		}
 	}
 
@@ -1541,7 +1541,7 @@ vector<RomData::ImageSizeDef> Xbox360_XEX::supportedImageSizes(ImageType imageTy
 		return pe_xdbf->supportedImageSizes(imageType);
 	}
 
-	return vector<ImageSizeDef>();
+	return {};
 }
 
 /**

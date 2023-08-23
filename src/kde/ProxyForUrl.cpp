@@ -27,7 +27,7 @@ string proxyForUrl(const char *url)
 	const QString proxy = KProtocolManager::proxyForUrl(QUrl(U82Q(url)));
 	if (proxy.isEmpty() || proxy == QLatin1String("DIRECT")) {
 		// No proxy.
-		return string();
+		return {};
 	}
 
 	// Proxy is required.

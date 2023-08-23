@@ -92,7 +92,7 @@ class CreateThumbnail : public LibRomData::TCreateThumbnail<HBITMAP>
 			// rp-download uses WinInet on Windows, which
 			// always uses the system proxy.
 			((void)url);
-			return std::string();
+			return {};
 		}
 
 		/**

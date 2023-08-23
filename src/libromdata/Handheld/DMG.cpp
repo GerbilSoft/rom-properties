@@ -1027,21 +1027,21 @@ vector<RomData::ImageSizeDef> DMG::supportedImageSizes(ImageType imageType) cons
 			if (dmg_system & DMGPrivate::DMG_SYSTEM_SGB) {
 				if (!(dmg_system & DMGPrivate::DMG_SYSTEM_CGB)) {
 					// SGB but not CGB.
-					return vector<ImageSizeDef>(sz_EXT_TITLE_SCREEN_SGB,
-						sz_EXT_TITLE_SCREEN_SGB + 1);
+					return {sz_EXT_TITLE_SCREEN_SGB,
+						sz_EXT_TITLE_SCREEN_SGB + ARRAY_SIZE(sz_EXT_TITLE_SCREEN_SGB)};
 				}
 			}
 
 			// Not SGB, or has CGB.
-			return vector<ImageSizeDef>(sz_EXT_TITLE_SCREEN_DMG,
-				sz_EXT_TITLE_SCREEN_DMG + 1);
+			return {sz_EXT_TITLE_SCREEN_DMG,
+				sz_EXT_TITLE_SCREEN_DMG + ARRAY_SIZE(sz_EXT_TITLE_SCREEN_DMG)};
 		}
 		default:
 			break;
 	}
 
 	// Unsupported image type.
-	return vector<ImageSizeDef>();
+	return {};
 }
 
 /**

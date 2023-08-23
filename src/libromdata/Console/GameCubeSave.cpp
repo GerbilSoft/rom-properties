@@ -748,22 +748,22 @@ vector<RomData::ImageSizeDef> GameCubeSave::supportedImageSizes_static(ImageType
 			static const ImageSizeDef sz_INT_ICON[] = {
 				{nullptr, 32, 32, 0},
 			};
-			return vector<ImageSizeDef>(sz_INT_ICON,
-				sz_INT_ICON + ARRAY_SIZE(sz_INT_ICON));
+			return {sz_INT_ICON,
+				sz_INT_ICON + ARRAY_SIZE(sz_INT_ICON)};
 		}
 		case IMG_INT_BANNER: {
 			static const ImageSizeDef sz_INT_BANNER[] = {
 				{nullptr, 96, 32, 0},
 			};
-			return vector<ImageSizeDef>(sz_INT_BANNER,
-				sz_INT_BANNER + ARRAY_SIZE(sz_INT_BANNER));
+			return {sz_INT_BANNER,
+				sz_INT_BANNER + ARRAY_SIZE(sz_INT_BANNER)};
 		}
 		default:
 			break;
 	}
 
 	// Unsupported image type.
-	return vector<ImageSizeDef>();
+	return {};
 }
 
 /**

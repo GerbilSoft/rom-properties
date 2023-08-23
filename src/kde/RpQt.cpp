@@ -32,7 +32,7 @@ using std::string;
 QImage rpToQImage(const rp_image *image)
 {
 	if (!image || !image->isValid())
-		return QImage();
+		return {};
 
 	// We should be using the RpQImageBackend.
 	const RpQImageBackend *backend =
@@ -40,7 +40,7 @@ QImage rpToQImage(const rp_image *image)
 	assert(backend != nullptr);
 	if (!backend) {
 		// Incorrect backend set.
-		return QImage();
+		return {};
 	}
 
 	return backend->getQImage();

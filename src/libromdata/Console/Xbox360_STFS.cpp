@@ -755,7 +755,7 @@ vector<RomData::ImageSizeDef> Xbox360_STFS::supportedImageSizes(ImageType imageT
 	RP_D(const Xbox360_STFS);
 	if (!d->isValid || imageType != IMG_INT_MEDIA) {
 		// Only IMG_INT_MEDIA is supported.
-		return vector<ImageSizeDef>();
+		return {};
 	}
 
 	// TODO: Actually check the title thumbnail.
@@ -763,8 +763,8 @@ vector<RomData::ImageSizeDef> Xbox360_STFS::supportedImageSizes(ImageType imageT
 	static const ImageSizeDef sz_INT_ICON[] = {
 		{nullptr, 64, 64, 0},
 	};
-	return vector<ImageSizeDef>(sz_INT_ICON,
-		sz_INT_ICON + ARRAY_SIZE(sz_INT_ICON));
+	return {sz_INT_ICON,
+		sz_INT_ICON + ARRAY_SIZE(sz_INT_ICON)};
 }
 
 /**
@@ -782,15 +782,15 @@ vector<RomData::ImageSizeDef> Xbox360_STFS::supportedImageSizes_static(ImageType
 
 	if (imageType != IMG_INT_ICON) {
 		// Only icons are supported.
-		return vector<ImageSizeDef>();
+		return {};
 	}
 
 	// NOTE: Assuming the title thumbnail is 64x64.
 	static const ImageSizeDef sz_INT_ICON[] = {
 		{nullptr, 64, 64, 0},
 	};
-	return vector<ImageSizeDef>(sz_INT_ICON,
-		sz_INT_ICON + ARRAY_SIZE(sz_INT_ICON));
+	return {sz_INT_ICON,
+		sz_INT_ICON + ARRAY_SIZE(sz_INT_ICON)};
 }
 
 /**

@@ -1785,7 +1785,7 @@ vector<RomData::ImageSizeDef> Xbox360_XDBF::supportedImageSizes_static(ImageType
 
 	if (imageType != IMG_INT_ICON) {
 		// Only icons are supported.
-		return vector<ImageSizeDef>();
+		return {};
 	}
 
 	// FIXME: Get the actual icon size from the PNG image.
@@ -1793,8 +1793,8 @@ vector<RomData::ImageSizeDef> Xbox360_XDBF::supportedImageSizes_static(ImageType
 	static const ImageSizeDef sz_INT_ICON[] = {
 		{nullptr, 64, 64, 0},
 	};
-	return vector<ImageSizeDef>(sz_INT_ICON,
-		sz_INT_ICON + ARRAY_SIZE(sz_INT_ICON));
+	return {sz_INT_ICON,
+		sz_INT_ICON + ARRAY_SIZE(sz_INT_ICON)};
 }
 
 /**
@@ -1976,7 +1976,7 @@ string Xbox360_XDBF::getString(LibRpBase::Property property) const
 	assert(string_id != 0);
 	if (string_id == 0) {
 		// Not supported.
-		return string();
+		return {};
 	}
 
 	RP_D(Xbox360_XDBF);

@@ -307,14 +307,14 @@ tstring IDownloader::getOSRelease(void)
 	}
 	if (!ctx.field_name) {
 		// No field name...
-		return tstring();
+		return {};
 	}
 
 	// Find the requested field.
 	ini_parse_file(f_in, parse_os_release, &ctx);
 	if (ctx.ret_value[0] == '\0') {
 		// Field not found.
-		return tstring();
+		return {};
 	}
 
 	// Remove leading and trailing double-quotes, if present.

@@ -640,8 +640,8 @@ vector<RomData::ImageSizeDef> PlayStationDisc::supportedImageSizes_static(ImageT
 			static const ImageSizeDef sz_EXT_COVER[] = {
 				{nullptr, 500, 500, 0},
 			};
-			return vector<ImageSizeDef>(sz_EXT_COVER,
-				sz_EXT_COVER + ARRAY_SIZE(sz_EXT_COVER));
+			return {sz_EXT_COVER,
+				sz_EXT_COVER + ARRAY_SIZE(sz_EXT_COVER)};
 		}
 #endif /* HAVE_JPEG */
 		default:
@@ -649,7 +649,7 @@ vector<RomData::ImageSizeDef> PlayStationDisc::supportedImageSizes_static(ImageT
 	}
 
 	// Unsupported image type.
-	return vector<ImageSizeDef>();
+	return {};
 }
 
 /**
@@ -677,15 +677,15 @@ vector<RomData::ImageSizeDef> PlayStationDisc::supportedImageSizes(ImageType ima
 					static const ImageSizeDef sz_EXT_COVER_PS1[] = {
 						{nullptr, 500, 500, 0},
 					};
-					return vector<ImageSizeDef>(sz_EXT_COVER_PS1,
-						sz_EXT_COVER_PS1 + ARRAY_SIZE(sz_EXT_COVER_PS1));
+					return {sz_EXT_COVER_PS1,
+						sz_EXT_COVER_PS1 + ARRAY_SIZE(sz_EXT_COVER_PS1)};
 				}
 				case PlayStationDiscPrivate::ConsoleType::PS2: {
 					static const ImageSizeDef sz_EXT_COVER_PS2[] = {
 						{nullptr, 512, 736, 0},
 					};
-					return vector<ImageSizeDef>(sz_EXT_COVER_PS2,
-						sz_EXT_COVER_PS2 + ARRAY_SIZE(sz_EXT_COVER_PS2));
+					return {sz_EXT_COVER_PS2,
+						sz_EXT_COVER_PS2 + ARRAY_SIZE(sz_EXT_COVER_PS2)};
 				}
 			}
 			break;
@@ -696,7 +696,7 @@ vector<RomData::ImageSizeDef> PlayStationDisc::supportedImageSizes(ImageType ima
 	}
 
 	// Unsupported image type.
-	return vector<ImageSizeDef>();
+	return {};
 }
 
 /**

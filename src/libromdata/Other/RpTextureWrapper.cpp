@@ -181,7 +181,7 @@ vector<RomData::ImageSizeDef> RpTextureWrapper::supportedImageSizes(ImageType im
 
 	RP_D(const RpTextureWrapper);
 	if (!d->isValid || imageType != IMG_INT_IMAGE) {
-		return vector<ImageSizeDef>();
+		return {};
 	}
 
 	// Return the image's size.
@@ -190,7 +190,7 @@ vector<RomData::ImageSizeDef> RpTextureWrapper::supportedImageSizes(ImageType im
 		static_cast<uint16_t>(d->texture->height()),
 		0
 	}};
-	return vector<ImageSizeDef>(imgsz, imgsz + 1);
+	return {imgsz, imgsz + ARRAY_SIZE(imgsz)};
 }
 
 /**

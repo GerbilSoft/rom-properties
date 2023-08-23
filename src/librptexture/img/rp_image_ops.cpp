@@ -570,7 +570,7 @@ rp_image_ptr rp_image::flip(FlipOp op) const
 	assert(op <= FLIP_VH);
 	if (op == 0) {
 		// No-op...
-		return dup();
+		return this->dup();
 	} else if (op < FLIP_V || op > FLIP_VH) {
 		// Not supported.
 		return nullptr;

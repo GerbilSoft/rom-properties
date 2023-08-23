@@ -49,7 +49,7 @@ static inline wstring makeWinPath(const char *filename)
 	assert(filename != nullptr);
 	assert(filename[0] != '\0');
 	if (unlikely(!filename || filename[0] == '\0')) {
-		return wstring();
+		return {};
 	}
 
 	// TODO: Don't bother if the filename is <= 240 characters?
@@ -78,7 +78,7 @@ static inline wstring makeWinPath(const string &filename)
 {
 	assert(!filename.empty());
 	if (unlikely(filename.empty())) {
-		return wstring();
+		return {};
 	}
 
 	// TODO: Don't bother if the filename is <= 240 characters?
@@ -108,7 +108,7 @@ static inline wstring makeWinPath(const wchar_t *filename)
 	assert(filename != nullptr);
 	assert(filename[0] != '\0');
 	if (unlikely(!filename || filename[0] == L'\0')) {
-		return wstring();
+		return {};
 	}
 
 	// TODO: Don't bother if the filename is <= 240 characters?
@@ -137,7 +137,7 @@ static inline wstring makeWinPath(const wstring &filename)
 {
 	assert(!filename.empty());
 	if (unlikely(filename.empty())) {
-		return wstring();
+		return {};
 	}
 
 	// TODO: Don't bother if the filename is <= 240 characters?
@@ -600,7 +600,7 @@ static wstring resolve_symlink_int(const TCHAR *tfilename)
 	pthread_once(&once_gfpbh, LookupGetFinalPathnameByHandle);
 	if (!pfnGetFinalPathnameByHandle) {
 		// GetFinalPathnameByHandle() not available.
-		return wstring();
+		return {};
 	}
 
 	// Reference: https://devblogs.microsoft.com/oldnewthing/20100212-00/?p=14963
@@ -614,7 +614,7 @@ static wstring resolve_symlink_int(const TCHAR *tfilename)
 		nullptr);
 	if (!hFile || hFile == INVALID_HANDLE_VALUE) {
 		// Unable to open the file.
-		return wstring();
+		return {};
 	}
 
 	// NOTE: GetFinalPathNameByHandle() always returns "\\\\?\\" paths.
@@ -622,7 +622,7 @@ static wstring resolve_symlink_int(const TCHAR *tfilename)
 	if (cchDeref == 0) {
 		// Error...
 		CloseHandle(hFile);
-		return wstring();
+		return {};
 	}
 
 	// NOTE: cchDeref may include the NULL terminator on ANSI systems.
@@ -655,7 +655,7 @@ string resolve_symlink(const char *filename)
 	assert(filename != nullptr);
 	assert(filename[0] != '\0');
 	if (unlikely(!filename || filename[0] == '\0')) {
-		return string();
+		return {};
 	}
 	const tstring tfilename = makeWinPath(filename);
 	return W2U8(resolve_symlink_int(tfilename.c_str()));
@@ -675,7 +675,7 @@ wstring resolve_symlink(const wchar_t *filenameW)
 	assert(filenameW != nullptr);
 	assert(filenameW[0] != L'\0');
 	if (unlikely(!filenameW || filenameW[0] == '\0')) {
-		return wstring();
+		return {};
 	}
 	const tstring tfilename = makeWinPath(filenameW);
 	return resolve_symlink_int(tfilename.c_str());

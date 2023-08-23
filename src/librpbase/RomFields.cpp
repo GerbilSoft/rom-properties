@@ -363,7 +363,7 @@ string RomFields::ageRatingDecode(AgeRatingsCountry country, uint16_t rating)
 {
 	if (!(rating & AGEBF_ACTIVE)) {
 		// Rating isn't active.
-		return string();
+		return {};
 	}
 
 	// Check for special statuses.
@@ -493,7 +493,7 @@ string RomFields::ageRatingsDecode(const age_ratings_t *age_ratings, bool newlin
 {
 	assert(age_ratings != nullptr);
 	if (!age_ratings)
-		return string();
+		return {};
 
 	// Convert the age ratings field to a string.
 	string str;

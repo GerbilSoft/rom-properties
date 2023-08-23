@@ -115,7 +115,7 @@ string getHomeDirectory(void)
 	int ret = getpwuid_r(getuid(), &pwd, buf.get(), GETPW_BUF_SIZE, &pwd_result);
 	if (ret != 0 || !pwd_result) {
 		// getpwuid_r() failed.
-		return string();
+		return {};
 	}
 	pw_dir = pwd_result->pw_dir;
 #elif defined(HAVE_GETPWUID)
@@ -123,7 +123,7 @@ string getHomeDirectory(void)
 	struct passwd *pwd = getpwuid(getuid());
 	if (!pwd) {
 		// getpwuid() failed.
-		return string();
+		return {};
 	}
 	pw_dir = pwd->pw_dir;
 #else
@@ -132,7 +132,7 @@ string getHomeDirectory(void)
 
 	if (!pw_dir || pw_dir[0] == 0) {
 		// Empty home directory...
-		return string();
+		return {};
 	}
 
 	// Make sure the directory is writable.
@@ -150,7 +150,7 @@ string getHomeDirectory(void)
 
 	// Unable to get the user's home directory...
 	assert(!"Unable to get the user's home directory.");
-	return string();
+	return {};
 }
 
 /**
@@ -198,7 +198,7 @@ static string getXDGDirectory(const char *xdgvar, const char *relpath, int mode)
 	xdg_dir = getHomeDirectory();
 	if (xdg_dir.empty()) {
 		// No home directory...
-		return string();
+		return {};
 	}
 
 	xdg_dir += '/';

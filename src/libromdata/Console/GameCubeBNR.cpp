@@ -567,14 +567,14 @@ vector<RomData::ImageSizeDef> GameCubeBNR::supportedImageSizes_static(ImageType 
 
 	if (imageType != IMG_INT_BANNER) {
 		// Only banners are supported.
-		return vector<ImageSizeDef>();
+		return {};
 	}
 
 	static const ImageSizeDef sz_INT_BANNER[] = {
 		{nullptr, GCN_BANNER_IMAGE_W, GCN_BANNER_IMAGE_H, 0},
 	};
-	return vector<ImageSizeDef>(sz_INT_BANNER,
-		sz_INT_BANNER + ARRAY_SIZE(sz_INT_BANNER));
+	return {sz_INT_BANNER,
+		sz_INT_BANNER + ARRAY_SIZE(sz_INT_BANNER)};
 }
 
 /**

@@ -146,7 +146,7 @@ std::string replace_ext(const char *filename, const char *ext)
 {
 	if (!filename || filename[0] == '\0') {
 		// No filename...
-		return string();
+		return {};
 	}
 
 	string s_ret = filename;

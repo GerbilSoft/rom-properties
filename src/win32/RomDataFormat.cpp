@@ -47,7 +47,7 @@ tstring formatDateTime(time_t date_time, unsigned int flags)
 		BOOL ret = SystemTimeToTzSpecificLocalTime(nullptr, &st_utc, &st);
 		if (!ret) {
 			// Conversion failed.
-			return tstring();
+			return {};
 		}
 	}
 
@@ -76,7 +76,7 @@ tstring formatDateTime(time_t date_time, unsigned int flags)
 		}
 		if (!ret) {
 			// Error!
-			return tstring();;
+			return {};
 		}
 
 		// Add to the tstring.

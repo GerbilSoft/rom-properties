@@ -57,7 +57,7 @@ static string str8_to_utf8(const char16_t tbl[256], const char *str, int len)
 
 	if (len <= 0) {
 		// Nothing to do...
-		return string();
+		return {};
 	}
 
 	s_utf8.reserve(len + 8);
@@ -95,12 +95,12 @@ std::string cpRP_to_utf8(unsigned int cp, const char *str, int len)
 {
 	assert(cp & CP_RP_BASE);
 	if (!(cp & CP_RP_BASE))
-		return string();
+		return {};
 
 	cp &= ~CP_RP_BASE;
 	assert(cp < ARRAY_SIZE(CodePageTables::lkup_tbls));
 	if (cp >= ARRAY_SIZE(CodePageTables::lkup_tbls))
-		return string();
+		return {};
 
 	return str8_to_utf8(CodePageTables::lkup_tbls[cp], str, len);
 }

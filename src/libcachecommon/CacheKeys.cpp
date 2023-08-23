@@ -313,7 +313,7 @@ string getCacheFilename(const char *pCacheKey)
 	assert(pCacheKey[0] != '\0');
 	if (!pCacheKey || pCacheKey[0] == '\0') {
 		// No cache key...
-		return string();
+		return {};
 	}
 
 	// Filter the cache key.
@@ -321,7 +321,7 @@ string getCacheFilename(const char *pCacheKey)
 	int ret = filterCacheKey(filteredCacheKey);
 	if (ret != 0) {
 		// Invalid cache key.
-		return string();
+		return {};
 	}
 
 	// Cache filename in the user's directory.

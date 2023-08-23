@@ -102,7 +102,7 @@ class RomThumbCreatorPrivate final : public TCreateThumbnail<QImage>
 		 */
 		inline QImage getNullImgClass(void) const final
 		{
-			return QImage();
+			return {};
 		}
 
 		/**

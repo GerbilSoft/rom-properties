@@ -52,11 +52,11 @@ string rp_vsprintf(const char *fmt, va_list ap)
 
 	if (len <= 0) {
 		// Nothing to format...
-		return string();
+		return {};
 	} else if (len < (int)sizeof(locbuf)) {
 		// The string fits in the local buffer.
 		vsnprintf(locbuf, sizeof(locbuf), fmt, ap);
-		return string(locbuf, len);
+		return {locbuf, static_cast<size_t>(len)};
 	}
 #else
 	// C99-compliant vsnprintf().
@@ -65,10 +65,10 @@ string rp_vsprintf(const char *fmt, va_list ap)
 	va_end(ap_tmp);
 	if (len <= 0) {
 		// Nothing to format...
-		return string();
+		return {};
 	} else if (len < (int)sizeof(locbuf)) {
 		// The string fits in the local buffer.
-		return string(locbuf, len);
+		return {locbuf, static_cast<size_t>(len)};
 	}
 #endif
 
@@ -117,7 +117,7 @@ string rp_vsprintf_p(const char *fmt, va_list ap)
 
 	if (len <= 0) {
 		// Nothing to format...
-		return string();
+		return {};
 	} else if (len < (int)sizeof(locbuf)) {
 		// The string fits in the local buffer.
 		_vsprintf_p(locbuf, sizeof(locbuf), fmt, ap);
@@ -163,7 +163,7 @@ wstring rp_vswprintf(const wchar_t *fmt, va_list ap)
 
 	if (len <= 0) {
 		// Nothing to format...
-		return wstring();
+		return {};
 	} else if (len < (int)_countof(locbuf)) {
 		// The string fits in the local buffer.
 		vswprintf(locbuf, _countof(locbuf), fmt, ap);
@@ -176,7 +176,7 @@ wstring rp_vswprintf(const wchar_t *fmt, va_list ap)
 	va_end(ap_tmp);
 	if (len <= 0) {
 		// Nothing to format...
-		return wstring();
+		return {};
 	} else if (len < (int)_countof(locbuf)) {
 		// The string fits in the local buffer.
 		return wstring(locbuf, len);
@@ -223,7 +223,7 @@ wstring rp_vswprintf_p(const wchar_t *fmt, va_list ap)
 
 	if (len <= 0) {
 		// Nothing to format...
-		return wstring();
+		return {};
 	} else if (len < (int)_countof(locbuf)) {
 		// The string fits in the local buffer.
 		_vswprintf_p(locbuf, _countof(locbuf), fmt, ap);

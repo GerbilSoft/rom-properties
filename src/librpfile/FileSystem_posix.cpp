@@ -295,7 +295,7 @@ string resolve_symlink(const char *filename)
 	assert(filename != nullptr);
 	assert(filename[0] != '\0');
 	if (unlikely(!filename || filename[0] == '\0')) {
-		return string();
+		return {};
 	}
 
 	// NOTE: realpath() might not be available on some systems...
