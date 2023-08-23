@@ -550,11 +550,10 @@ vector<RomData::ImageSizeDef> NintendoBadge::supportedImageSizes(ImageType image
 			// have 32x32 and 64x64 previews.
 			if (imageType == IMG_INT_ICON || !d->megaBadge) {
 				// Not a mega badge.
-				static const ImageSizeDef imgsz[] = {
+				return {
 					{nullptr, BADGE_SIZE_SMALL_W, BADGE_SIZE_SMALL_H, (int)NintendoBadgePrivate::BadgeIndex_PRBS::Small},
 					{nullptr, BADGE_SIZE_LARGE_W, BADGE_SIZE_LARGE_H, (int)NintendoBadgePrivate::BadgeIndex_PRBS::Large},
 				};
-				return {imgsz, imgsz + ARRAY_SIZE(imgsz)};
 			}
 
 			// Mega Badge.
@@ -562,22 +561,17 @@ vector<RomData::ImageSizeDef> NintendoBadge::supportedImageSizes(ImageType image
 			const unsigned int mb_width = d->badgeHeader.prbs.mb_width;
 			const unsigned int mb_height = d->badgeHeader.prbs.mb_height;
 
-			const ImageSizeDef imgsz[] = {
+			return {
 				{nullptr, BADGE_SIZE_SMALL_W, BADGE_SIZE_SMALL_H, (int)NintendoBadgePrivate::BadgeIndex_PRBS::Small},
 				{nullptr, BADGE_SIZE_LARGE_W, BADGE_SIZE_LARGE_H, (int)NintendoBadgePrivate::BadgeIndex_PRBS::Large},
 				{nullptr, (uint16_t)(BADGE_SIZE_SMALL_W*mb_width), (uint16_t)(BADGE_SIZE_SMALL_H*mb_height), (int)NintendoBadgePrivate::BadgeIndex_PRBS::MegaSmall},
 				{nullptr, (uint16_t)(BADGE_SIZE_LARGE_W*mb_width), (uint16_t)(BADGE_SIZE_LARGE_H*mb_height), (int)NintendoBadgePrivate::BadgeIndex_PRBS::MegaLarge},
 			};
-			return {imgsz, imgsz + ARRAY_SIZE(imgsz)};
 		}
 
-		case NintendoBadgePrivate::BadgeType::CABS: {
+		case NintendoBadgePrivate::BadgeType::CABS:
 			// Badge set icons are always 48x48.
-			static const ImageSizeDef sz_CABS[] = {
-				{nullptr, 48, 48, 0},
-			};
-			return {sz_CABS, sz_CABS + ARRAY_SIZE(sz_CABS)};
-		}
+			return {{nullptr, 48, 48, 0}};
 
 		default:
 			break;

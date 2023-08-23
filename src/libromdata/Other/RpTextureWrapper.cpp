@@ -185,12 +185,10 @@ vector<RomData::ImageSizeDef> RpTextureWrapper::supportedImageSizes(ImageType im
 	}
 
 	// Return the image's size.
-	const ImageSizeDef imgsz[] = {{nullptr,
+	return {{nullptr,
 		static_cast<uint16_t>(d->texture->width()),
 		static_cast<uint16_t>(d->texture->height()),
-		0
-	}};
-	return {imgsz, imgsz + ARRAY_SIZE(imgsz)};
+		0}};
 }
 
 /**

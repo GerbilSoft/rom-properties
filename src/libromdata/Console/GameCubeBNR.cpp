@@ -570,11 +570,7 @@ vector<RomData::ImageSizeDef> GameCubeBNR::supportedImageSizes_static(ImageType 
 		return {};
 	}
 
-	static const ImageSizeDef sz_INT_BANNER[] = {
-		{nullptr, GCN_BANNER_IMAGE_W, GCN_BANNER_IMAGE_H, 0},
-	};
-	return {sz_INT_BANNER,
-		sz_INT_BANNER + ARRAY_SIZE(sz_INT_BANNER)};
+	return {{nullptr, GCN_BANNER_IMAGE_W, GCN_BANNER_IMAGE_H, 0}};
 }
 
 /**

@@ -636,13 +636,8 @@ vector<RomData::ImageSizeDef> PlayStationDisc::supportedImageSizes_static(ImageT
 	// Assuming PS1 disc images.
 	switch (imageType) {
 #ifdef HAVE_JPEG
-		case IMG_EXT_COVER: {
-			static const ImageSizeDef sz_EXT_COVER[] = {
-				{nullptr, 500, 500, 0},
-			};
-			return {sz_EXT_COVER,
-				sz_EXT_COVER + ARRAY_SIZE(sz_EXT_COVER)};
-		}
+		case IMG_EXT_COVER:
+			return {{nullptr, 500, 500, 0}};
 #endif /* HAVE_JPEG */
 		default:
 			break;
@@ -673,20 +668,10 @@ vector<RomData::ImageSizeDef> PlayStationDisc::supportedImageSizes(ImageType ima
 				default:
 					assert(!"Invalid ConsoleType.");
 					break;
-				case PlayStationDiscPrivate::ConsoleType::PS1: {
-					static const ImageSizeDef sz_EXT_COVER_PS1[] = {
-						{nullptr, 500, 500, 0},
-					};
-					return {sz_EXT_COVER_PS1,
-						sz_EXT_COVER_PS1 + ARRAY_SIZE(sz_EXT_COVER_PS1)};
-				}
-				case PlayStationDiscPrivate::ConsoleType::PS2: {
-					static const ImageSizeDef sz_EXT_COVER_PS2[] = {
-						{nullptr, 512, 736, 0},
-					};
-					return {sz_EXT_COVER_PS2,
-						sz_EXT_COVER_PS2 + ARRAY_SIZE(sz_EXT_COVER_PS2)};
-				}
+				case PlayStationDiscPrivate::ConsoleType::PS1:
+					return {{nullptr, 500, 500, 0}};
+				case PlayStationDiscPrivate::ConsoleType::PS2:
+					return {{nullptr, 512, 736, 0}};
 			}
 			break;
 		}

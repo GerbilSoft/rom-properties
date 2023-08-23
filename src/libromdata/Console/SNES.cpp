@@ -1144,15 +1144,10 @@ vector<RomData::ImageSizeDef> SNES::supportedImageSizes_static(ImageType imageTy
 	ASSERT_supportedImageSizes(imageType);
 
 	switch (imageType) {
-		case IMG_EXT_TITLE_SCREEN: {
+		case IMG_EXT_TITLE_SCREEN:
 			// NOTE: Some images might use high-resolution mode.
 			// 292 = floor((256 * 8) / 7)
-			static const ImageSizeDef sz_EXT_TITLE_SCREEN[] = {
-				{nullptr, 292, 224, 0},
-			};
-			return {sz_EXT_TITLE_SCREEN,
-				sz_EXT_TITLE_SCREEN + ARRAY_SIZE(sz_EXT_TITLE_SCREEN)};
-		}
+			return {{nullptr, 292, 224, 0}};
 		default:
 			break;
 	}

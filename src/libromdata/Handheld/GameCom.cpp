@@ -637,11 +637,7 @@ vector<RomData::ImageSizeDef> GameCom::supportedImageSizes(ImageType imageType) 
 		return {};
 	}
 
-	static const ImageSizeDef sz_INT_ICON[] = {
-		{nullptr, GCOM_ICON_W, GCOM_ICON_H, 0},
-	};
-	return {sz_INT_ICON,
-		sz_INT_ICON + ARRAY_SIZE(sz_INT_ICON)};
+	return {{nullptr, GCOM_ICON_W, GCOM_ICON_H, 0}};
 }
 
 /**
@@ -658,11 +654,7 @@ vector<RomData::ImageSizeDef> GameCom::supportedImageSizes_static(ImageType imag
 		return {};
 	}
 
-	static const ImageSizeDef sz_INT_ICON[] = {
-		{nullptr, GCOM_ICON_W, GCOM_ICON_H, 0},
-	};
-	return {sz_INT_ICON,
-		sz_INT_ICON + ARRAY_SIZE(sz_INT_ICON)};
+	return {{nullptr, GCOM_ICON_W, GCOM_ICON_H, 0}};
 }
 
 /**

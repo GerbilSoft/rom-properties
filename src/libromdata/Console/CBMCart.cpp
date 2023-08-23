@@ -299,15 +299,10 @@ vector<RomData::ImageSizeDef> CBMCart::supportedImageSizes_static(ImageType imag
 	ASSERT_supportedImageSizes(imageType);
 
 	switch (imageType) {
-		case IMG_EXT_TITLE_SCREEN: {
+		case IMG_EXT_TITLE_SCREEN:
 			// FIXME: NTSC vs. PAL; proper rescaling.
 			// Using VICE C64 NTSC image dimensions.
-			static const ImageSizeDef sz_EXT_TITLE_SCREEN[] = {
-				{nullptr, 384, 247, 0},
-			};
-			return {sz_EXT_TITLE_SCREEN,
-				sz_EXT_TITLE_SCREEN + ARRAY_SIZE(sz_EXT_TITLE_SCREEN)};
-		}
+			return {{nullptr, 384, 247, 0}};
 		default:
 			break;
 	}

@@ -795,42 +795,26 @@ vector<RomData::ImageSizeDef> NintendoDS::supportedImageSizes_static(ImageType i
 	ASSERT_supportedImageSizes(imageType);
 
 	switch (imageType) {
-		case IMG_INT_ICON: {
-			static const ImageSizeDef sz_INT_ICON[] = {
-				{nullptr, 32, 32, 0},
-			};
-			return {sz_INT_ICON,
-				sz_INT_ICON + ARRAY_SIZE(sz_INT_ICON)};
-		}
+		case IMG_INT_ICON:
+			return {{nullptr, 32, 32, 0}};
 #ifdef HAVE_JPEG
-		case IMG_EXT_COVER: {
-			static const ImageSizeDef sz_EXT_COVER[] = {
+		case IMG_EXT_COVER:
+			return {
 				{nullptr, 160, 144, 0},
 				//{"S", 128, 115, 1},	// DISABLED; not needed.
 				{"M", 400, 352, 2},
 				{"HQ", 768, 680, 3},
 			};
-			return {sz_EXT_COVER,
-				sz_EXT_COVER + ARRAY_SIZE(sz_EXT_COVER)};
-		}
-		case IMG_EXT_COVER_FULL: {
-			static const ImageSizeDef sz_EXT_COVER_FULL[] = {
+		case IMG_EXT_COVER_FULL:
+			return {
 				{nullptr, 340, 144, 0},
 				//{"S", 272, 115, 1},	// Not currently present on GameTDB.
 				{"M", 856, 352, 2},
 				{"HQ", 1616, 680, 3},
 			};
-			return {sz_EXT_COVER_FULL,
-				sz_EXT_COVER_FULL + ARRAY_SIZE(sz_EXT_COVER_FULL)};
-		}
 #endif /* HAVE_JPEG */
-		case IMG_EXT_BOX: {
-			static const ImageSizeDef sz_EXT_BOX[] = {
-				{nullptr, 240, 216, 0},
-			};
-			return {sz_EXT_BOX,
-				sz_EXT_BOX + ARRAY_SIZE(sz_EXT_BOX)};
-		}
+		case IMG_EXT_BOX:
+			return {{nullptr, 240, 216, 0}};
 		default:
 			break;
 	}

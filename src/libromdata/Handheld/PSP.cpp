@@ -454,11 +454,7 @@ vector<RomData::ImageSizeDef> PSP::supportedImageSizes(ImageType imageType) cons
 
 	// TODO: Actually check the icon size.
 	// Assuming 144x80 for now.
-	static const ImageSizeDef sz_INT_ICON[] = {
-		{nullptr, 144, 80, 0},
-	};
-	return {sz_INT_ICON,
-		sz_INT_ICON + ARRAY_SIZE(sz_INT_ICON)};
+	return {{nullptr, 144, 80, 0}};
 }
 
 /**
@@ -480,11 +476,7 @@ vector<RomData::ImageSizeDef> PSP::supportedImageSizes_static(ImageType imageTyp
 	}
 
 	// NOTE: Assuming the icon is 144x80.
-	static const ImageSizeDef sz_INT_ICON[] = {
-		{nullptr, 144, 80, 0},
-	};
-	return {sz_INT_ICON,
-		sz_INT_ICON + ARRAY_SIZE(sz_INT_ICON)};
+	return {{nullptr, 144, 80, 0}};
 }
 
 /**

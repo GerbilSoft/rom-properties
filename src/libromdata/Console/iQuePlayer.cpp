@@ -559,22 +559,12 @@ vector<RomData::ImageSizeDef> iQuePlayer::supportedImageSizes_static(ImageType i
 	ASSERT_supportedImageSizes(imageType);
 
 	switch (imageType) {
-		case IMG_INT_ICON: {
+		case IMG_INT_ICON:
 			// Icon (thumbnail)
-			static const ImageSizeDef sz_INT_ICON[] = {
-				{nullptr, IQUE_PLAYER_THUMB_W, IQUE_PLAYER_THUMB_H, 0},
-			};
-			return {sz_INT_ICON,
-				sz_INT_ICON + ARRAY_SIZE(sz_INT_ICON)};
-		}
-		case IMG_INT_BANNER: {
+			return {{nullptr, IQUE_PLAYER_THUMB_W, IQUE_PLAYER_THUMB_H, 0}};
+		case IMG_INT_BANNER:
 			// Banner (title)
-			static const ImageSizeDef sz_INT_BANNER[] = {
-				{nullptr, IQUE_PLAYER_TITLE_W, IQUE_PLAYER_TITLE_H, 0},
-			};
-			return {sz_INT_BANNER,
-				sz_INT_BANNER + ARRAY_SIZE(sz_INT_BANNER)};
-		}
+			return {{nullptr, IQUE_PLAYER_TITLE_W, IQUE_PLAYER_TITLE_H, 0}};
 		default:
 			break;
 	}

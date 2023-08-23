@@ -1790,11 +1790,7 @@ vector<RomData::ImageSizeDef> Xbox360_XDBF::supportedImageSizes_static(ImageType
 
 	// FIXME: Get the actual icon size from the PNG image.
 	// For now, assuming all games use 64x64.
-	static const ImageSizeDef sz_INT_ICON[] = {
-		{nullptr, 64, 64, 0},
-	};
-	return {sz_INT_ICON,
-		sz_INT_ICON + ARRAY_SIZE(sz_INT_ICON)};
+	return {{nullptr, 64, 64, 0}};
 }
 
 /**

@@ -580,14 +580,9 @@ vector<RomData::ImageSizeDef> WonderSwan::supportedImageSizes_static(ImageType i
 	ASSERT_supportedImageSizes(imageType);
 
 	switch (imageType) {
-		case IMG_EXT_TITLE_SCREEN: {
+		case IMG_EXT_TITLE_SCREEN:
 			// Assuming horizontal orientation by default.
-			static const ImageSizeDef sz_EXT_TITLE_SCREEN_H[] = {
-				{nullptr, 224, 144, 0},
-			};
-			return {sz_EXT_TITLE_SCREEN_H,
-				sz_EXT_TITLE_SCREEN_H + ARRAY_SIZE(sz_EXT_TITLE_SCREEN_H)};
-		}
+			return {{nullptr, 224, 144, 0}};
 		default:
 			break;
 	}
@@ -607,20 +602,11 @@ vector<RomData::ImageSizeDef> WonderSwan::supportedImageSizes(ImageType imageTyp
 
 	switch (imageType) {
 		case IMG_EXT_TITLE_SCREEN: {
-			static const ImageSizeDef sz_EXT_TITLE_SCREEN_H[] = {
-				{nullptr, 224, 144, 0},
-			};
-			static const ImageSizeDef sz_EXT_TITLE_SCREEN_V[] = {
-				{nullptr, 144, 224, 0},
-			};
-
 			RP_D(const WonderSwan);
 			if ((d->romFooter.flags & WS_FLAG_DISPLAY_MASK) == WS_FLAG_DISPLAY_VERTICAL) {
-				return {sz_EXT_TITLE_SCREEN_V,
-					sz_EXT_TITLE_SCREEN_V + ARRAY_SIZE(sz_EXT_TITLE_SCREEN_V)};
+				return {{nullptr, 144, 224, 0}};
 			} else {
-				return {sz_EXT_TITLE_SCREEN_H,
-					sz_EXT_TITLE_SCREEN_H + ARRAY_SIZE(sz_EXT_TITLE_SCREEN_H)};
+				return {{nullptr, 224, 144, 0}};
 			}
 		}
 		default:

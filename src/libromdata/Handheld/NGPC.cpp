@@ -238,13 +238,8 @@ vector<RomData::ImageSizeDef> NGPC::supportedImageSizes_static(ImageType imageTy
 	ASSERT_supportedImageSizes(imageType);
 
 	switch (imageType) {
-		case IMG_EXT_TITLE_SCREEN: {
-			static const ImageSizeDef sz_EXT_TITLE_SCREEN[] = {
-				{nullptr, 160, 152, 0},
-			};
-			return {sz_EXT_TITLE_SCREEN,
-				sz_EXT_TITLE_SCREEN + ARRAY_SIZE(sz_EXT_TITLE_SCREEN)};
-		}
+		case IMG_EXT_TITLE_SCREEN:
+			return {{nullptr, 160, 152, 0}};
 		default:
 			break;
 	}

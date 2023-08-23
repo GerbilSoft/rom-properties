@@ -1014,27 +1014,19 @@ vector<RomData::ImageSizeDef> DMG::supportedImageSizes(ImageType imageType) cons
 
 	switch (imageType) {
 		case IMG_EXT_TITLE_SCREEN: {
-			static const ImageSizeDef sz_EXT_TITLE_SCREEN_DMG[] = {
-				{nullptr, 160, 144, 0},
-			};
-			static const ImageSizeDef sz_EXT_TITLE_SCREEN_SGB[] = {
-				{nullptr, 256, 224, 0},
-			};
-
 			// If this game supports SGB but not CGB, we'll have an SGB border.
+			// TODO: Check user settings for DMG title screens.
 			RP_D(const DMG);
 			const uint32_t dmg_system = d->systemID();
 			if (dmg_system & DMGPrivate::DMG_SYSTEM_SGB) {
 				if (!(dmg_system & DMGPrivate::DMG_SYSTEM_CGB)) {
-					// SGB but not CGB.
-					return {sz_EXT_TITLE_SCREEN_SGB,
-						sz_EXT_TITLE_SCREEN_SGB + ARRAY_SIZE(sz_EXT_TITLE_SCREEN_SGB)};
+					// SGB, but not CGB.
+					return {{nullptr, 256, 224, 0}};
 				}
 			}
 
 			// Not SGB, or has CGB.
-			return {sz_EXT_TITLE_SCREEN_DMG,
-				sz_EXT_TITLE_SCREEN_DMG + ARRAY_SIZE(sz_EXT_TITLE_SCREEN_DMG)};
+			return {{nullptr, 160, 144, 0}};
 		}
 		default:
 			break;

@@ -372,12 +372,10 @@ vector<RomData::ImageSizeDef> Nintendo3DS_SMDH::supportedImageSizes_static(Image
 		return {};
 	}
 
-	static const ImageSizeDef sz_INT_ICON[] = {
+	return {
 		{nullptr, 24, 24, 0},
 		{nullptr, 48, 48, 1},
 	};
-	return {sz_INT_ICON,
-		sz_INT_ICON + ARRAY_SIZE(sz_INT_ICON)};
 }
 
 /**

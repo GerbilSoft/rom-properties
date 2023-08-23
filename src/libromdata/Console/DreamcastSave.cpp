@@ -1132,20 +1132,10 @@ vector<RomData::ImageSizeDef> DreamcastSave::supportedImageSizes_static(ImageTyp
 	ASSERT_supportedImageSizes(imageType);
 
 	switch (imageType) {
-		case IMG_INT_ICON: {
-			static const ImageSizeDef sz_INT_ICON[] = {
-				{nullptr, DC_VMS_ICON_W, DC_VMS_ICON_H, 0},
-			};
-			return {sz_INT_ICON,
-				sz_INT_ICON + ARRAY_SIZE(sz_INT_ICON)};
-		}
-		case IMG_INT_BANNER: {
-			static const ImageSizeDef sz_INT_BANNER[] = {
-				{nullptr, DC_VMS_EYECATCH_W, DC_VMS_EYECATCH_H, 0},
-			};
-			return {sz_INT_BANNER,
-				sz_INT_BANNER + ARRAY_SIZE(sz_INT_BANNER)};
-		}
+		case IMG_INT_ICON:
+			return {{nullptr, DC_VMS_ICON_W, DC_VMS_ICON_H, 0}};
+		case IMG_INT_BANNER:
+			return {{nullptr, DC_VMS_EYECATCH_W, DC_VMS_EYECATCH_H, 0}};
 		default:
 			break;
 	}
@@ -1172,11 +1162,7 @@ vector<RomData::ImageSizeDef> DreamcastSave::supportedImageSizes(ImageType image
 		case IMG_INT_ICON: {
 			if (d->vms_header.icon_count > 0 || (d->loaded_headers & DreamcastSavePrivate::DC_IS_ICONDATA_VMS)) {
 				// Icon is present.
-				static const ImageSizeDef sz_INT_ICON[] = {
-					{nullptr, DC_VMS_ICON_W, DC_VMS_ICON_H, 0},
-				};
-				return {sz_INT_ICON,
-					sz_INT_ICON + ARRAY_SIZE(sz_INT_ICON)};
+				return {{nullptr, DC_VMS_ICON_W, DC_VMS_ICON_H, 0}};
 			}
 			break;
 		}
@@ -1185,11 +1171,7 @@ vector<RomData::ImageSizeDef> DreamcastSave::supportedImageSizes(ImageType image
 			    d->vms_header.eyecatch_type <= DC_VMS_EYECATCH_CI4)
 			{
 				// Eyecatch (banner) is present.
-				static const ImageSizeDef sz_INT_BANNER[] = {
-					{nullptr, DC_VMS_EYECATCH_W, DC_VMS_EYECATCH_H, 0},
-				};
-				return {sz_INT_BANNER,
-					sz_INT_BANNER + ARRAY_SIZE(sz_INT_BANNER)};
+				return {{nullptr, DC_VMS_EYECATCH_W, DC_VMS_EYECATCH_H, 0}};
 			}
 			break;
 		}

@@ -334,42 +334,28 @@ vector<RomData::ImageSizeDef> WiiU::supportedImageSizes_static(ImageType imageTy
 	ASSERT_supportedImageSizes(imageType);
 
 	switch (imageType) {
-		case IMG_EXT_MEDIA: {
-			static const ImageSizeDef sz_EXT_MEDIA[] = {
+		case IMG_EXT_MEDIA:
+			return {
 				{nullptr, 160, 160, 0},
 				{"M", 500, 500, 1},
 			};
-			return {sz_EXT_MEDIA,
-				sz_EXT_MEDIA + ARRAY_SIZE(sz_EXT_MEDIA)};
-		}
 #ifdef HAVE_JPEG
-		case IMG_EXT_COVER: {
-			static const ImageSizeDef sz_EXT_COVER[] = {
+		case IMG_EXT_COVER:
+			return {
 				{nullptr, 160, 224, 0},
 				{"M", 350, 500, 1},
 				{"HQ", 768, 1080, 2},
 			};
-			return {sz_EXT_COVER,
-				sz_EXT_COVER + ARRAY_SIZE(sz_EXT_COVER)};
-		}
 #endif /* HAVE_JPEG */
-		case IMG_EXT_COVER_3D: {
-			static const ImageSizeDef sz_EXT_COVER_3D[] = {
-				{nullptr, 176, 248, 0},
-			};
-			return {sz_EXT_COVER_3D,
-				sz_EXT_COVER_3D + ARRAY_SIZE(sz_EXT_COVER_3D)};
-		}
+		case IMG_EXT_COVER_3D:
+			return {{nullptr, 176, 248, 0}};
 #ifdef HAVE_JPEG
-		case IMG_EXT_COVER_FULL: {
-			static const ImageSizeDef sz_EXT_COVER[] = {
+		case IMG_EXT_COVER_FULL:
+			return {
 				{nullptr, 340, 224, 0},
 				{"M", 752, 500, 1},
 				{"HQ", 1632, 1080, 2},
 			};
-			return {sz_EXT_COVER,
-				sz_EXT_COVER + ARRAY_SIZE(sz_EXT_COVER)};
-		}
 #endif /* HAVE_JPEG */
 		default:
 			break;

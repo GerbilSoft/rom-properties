@@ -683,56 +683,27 @@ vector<RomData::ImageSizeDef> WiiWAD::supportedImageSizes_static(ImageType image
 	// TODO: Use WiiWIBN::supportedImageSizes_static() if decryption is enabled?
 	switch (imageType) {
 #ifdef ENABLE_DECRYPTION
-		case IMG_INT_ICON: {
-			static const ImageSizeDef sz_INT_ICON[] = {
-				{nullptr, BANNER_WIBN_ICON_W, BANNER_WIBN_ICON_H, 0},
-			};
-			return {sz_INT_ICON,
-				sz_INT_ICON + ARRAY_SIZE(sz_INT_ICON)};
-		}
-		case IMG_INT_BANNER: {
-			static const ImageSizeDef sz_INT_BANNER[] = {
-				{nullptr, BANNER_WIBN_IMAGE_W, BANNER_WIBN_IMAGE_H, 0},
-			};
-			return {sz_INT_BANNER,
-				sz_INT_BANNER + ARRAY_SIZE(sz_INT_BANNER)};
-		}
+		case IMG_INT_ICON:
+			return {{nullptr, BANNER_WIBN_ICON_W, BANNER_WIBN_ICON_H, 0}};
+		case IMG_INT_BANNER:
+			return {{nullptr, BANNER_WIBN_IMAGE_W, BANNER_WIBN_IMAGE_H, 0}};
 #else /* !ENABLE_DECRYPTION */
 		case IMG_INT_ICON:
-		case IMG_INT_BANNER: {
+		case IMG_INT_BANNER:
 			return WiiWIBN::supportedImageSizes_static(imageType);
-		}
 #endif /* ENABLE_DECRYPTION */
 
-		case IMG_EXT_COVER: {
-			static const ImageSizeDef sz_EXT_COVER[] = {
-				{nullptr, 160, 224, 0},
-			};
-			return {sz_EXT_COVER,
-				sz_EXT_COVER + ARRAY_SIZE(sz_EXT_COVER)};
-		}
-		case IMG_EXT_COVER_3D: {
-			static const ImageSizeDef sz_EXT_COVER_3D[] = {
-				{nullptr, 176, 248, 0},
-			};
-			return {sz_EXT_COVER_3D,
-				sz_EXT_COVER_3D + ARRAY_SIZE(sz_EXT_COVER_3D)};
-		}
-		case IMG_EXT_COVER_FULL: {
-			static const ImageSizeDef sz_EXT_COVER_FULL[] = {
+		case IMG_EXT_COVER:
+			return {{nullptr, 160, 224, 0}};
+		case IMG_EXT_COVER_3D:
+			return {{nullptr, 176, 248, 0}};
+		case IMG_EXT_COVER_FULL:
+			return {
 				{nullptr, 512, 340, 0},
 				{"HQ", 1024, 680, 1},
 			};
-			return {sz_EXT_COVER_FULL,
-				sz_EXT_COVER_FULL + ARRAY_SIZE(sz_EXT_COVER_FULL)};
-		}
-		case IMG_EXT_TITLE_SCREEN: {
-			static const ImageSizeDef sz_EXT_TITLE_SCREEN[] = {
-				{nullptr, 192, 112, 0},
-			};
-			return {sz_EXT_TITLE_SCREEN,
-				sz_EXT_TITLE_SCREEN + ARRAY_SIZE(sz_EXT_TITLE_SCREEN)};
-		}
+		case IMG_EXT_TITLE_SCREEN:
+			return {{nullptr, 192, 112, 0}};
 		default:
 			break;
 	}
@@ -760,61 +731,32 @@ vector<RomData::ImageSizeDef> WiiWAD::supportedImageSizes(ImageType imageType) c
 		// TODO: Use d->mainContent->supportedImageSizes() if decryption is enabled?
 		switch (imageType) {
 #ifdef ENABLE_DECRYPTION
-			case IMG_INT_ICON: {
+			case IMG_INT_ICON:
 				if (d->mainContent) {
-					static const ImageSizeDef sz_INT_ICON[] = {
-						{nullptr, BANNER_WIBN_ICON_W, BANNER_WIBN_ICON_H, 0},
-					};
-					return {sz_INT_ICON,
-						sz_INT_ICON + ARRAY_SIZE(sz_INT_ICON)};
+					return {{nullptr, BANNER_WIBN_ICON_W, BANNER_WIBN_ICON_H, 0}};
 				}
 				break;
-			}
-			case IMG_INT_BANNER: {
+			case IMG_INT_BANNER:
 				if (d->mainContent) {
-					static const ImageSizeDef sz_INT_BANNER[] = {
-						{nullptr, BANNER_WIBN_IMAGE_W, BANNER_WIBN_IMAGE_H, 0},
-					};
-					return {sz_INT_BANNER,
-						sz_INT_BANNER + ARRAY_SIZE(sz_INT_BANNER)};
+					return {{nullptr, BANNER_WIBN_IMAGE_W, BANNER_WIBN_IMAGE_H, 0}};
 				}
 				break;
-			}
 #else /* !ENABLE_DECRYPTION */
 			case IMG_INT_ICON:
-			case IMG_INT_BANNER: {
+			case IMG_INT_BANNER:
 				return WiiWIBN::supportedImageSizes_static(imageType);
-			}
 #endif /* ENABLE_DECRYPTION */
-			case IMG_EXT_COVER: {
-				static const ImageSizeDef sz_EXT_COVER[] = {
-					{nullptr, 160, 224, 0},
-				};
-				return {sz_EXT_COVER,
-					sz_EXT_COVER + ARRAY_SIZE(sz_EXT_COVER)};
-			}
-			case IMG_EXT_COVER_3D: {
-				static const ImageSizeDef sz_EXT_COVER_3D[] = {
-					{nullptr, 176, 248, 0},
-				};
-				return {sz_EXT_COVER_3D,
-					sz_EXT_COVER_3D + ARRAY_SIZE(sz_EXT_COVER_3D)};
-			}
-			case IMG_EXT_COVER_FULL: {
-				static const ImageSizeDef sz_EXT_COVER_FULL[] = {
+			case IMG_EXT_COVER:
+				return {{nullptr, 160, 224, 0}};
+			case IMG_EXT_COVER_3D:
+				return {{nullptr, 176, 248, 0}};
+			case IMG_EXT_COVER_FULL:
+				return {
 					{nullptr, 512, 340, 0},
 					{"HQ", 1024, 680, 1},
 				};
-				return {sz_EXT_COVER_FULL,
-					sz_EXT_COVER_FULL + ARRAY_SIZE(sz_EXT_COVER_FULL)};
-			}
-			case IMG_EXT_TITLE_SCREEN: {
-				static const ImageSizeDef sz_EXT_TITLE_SCREEN[] = {
-					{nullptr, 192, 112, 0},
-				};
-				return {sz_EXT_TITLE_SCREEN,
-					sz_EXT_TITLE_SCREEN + ARRAY_SIZE(sz_EXT_TITLE_SCREEN)};
-			}
+			case IMG_EXT_TITLE_SCREEN:
+				return {{nullptr, 192, 112, 0}};
 			default:
 				break;
 		}
