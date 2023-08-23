@@ -164,7 +164,7 @@ string RomDataPrivate::getCacheKey_RPDB(
  * @param size Requested thumbnail dimension. (assuming a square thumbnail)
  * @return Image size definition, or nullptr on error.
  */
-const RomData::ImageSizeDef *RomDataPrivate::selectBestSize(const std::vector<RomData::ImageSizeDef> &sizeDefs, int size)
+const RomData::ImageSizeDef *RomDataPrivate::selectBestSize(const vector<RomData::ImageSizeDef> &sizeDefs, int size)
 {
 	if (sizeDefs.empty() || size < RomData::IMAGE_SIZE_MIN_VALUE) {
 		// No sizes, or invalid size value.
