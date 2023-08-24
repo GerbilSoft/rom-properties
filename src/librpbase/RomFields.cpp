@@ -220,11 +220,26 @@ RomFields::Field::Field(const Field &other)
  */
 RomFields::Field& RomFields::Field::operator=(Field other)
 {
-	// Swap the objects.
-	// References:
-	// - https://stackoverflow.com/questions/3279543/what-is-the-copy-and-swap-idiom
-	// - https://stackoverflow.com/a/3279550
-	std::swap(*this, other);
+	// NOTE: The previous implementation used copy-on-swap, which seemed
+	// to work fine on gcc and MSVC 2019/2022, but I just noticed a warning
+	// in MSVC 2022:
+	// warning C4717: 'std::swap<LibRpBase::RomFields::Field,0>': recursive on all control paths,
+	//     function will cause runtime stack overflow
+	// src\librpbase\RomFields.cpp(229): warning C4717: 'LibRpBase::RomFields::Field::operator=':
+	//     recursive on all control paths, function will cause runtime stack overflow
+	assert(other.name != nullptr);
+
+	// Copying data, but *without* strdup() or new, since
+	// the original Field will be set to RFT_INVALID.
+	// NOTE: Using memcpy() to simplify things, even if it
+	// results in slightly more memory copying than without it.
+	assert(other.type != RFT_INVALID);
+	memcpy(&this->desc, &other.desc, sizeof(this->desc));
+	memcpy(&this->data, &other.data, sizeof(this->data));
+
+	// Reset the other object.
+	other.name = nullptr;
+	other.type = RFT_INVALID;
 	return *this;
 }
 
@@ -249,54 +264,11 @@ RomFields::Field::Field(Field &&other) noexcept
 
 	// Copying data, but *without* strdup() or new, since
 	// the original Field will be set to RFT_INVALID.
-	switch (other.type) {
-		case RFT_INVALID:
-			assert(!"Field type is RFT_INVALID");
-			break;
-
-		case RFT_STRING:
-			this->data.str = other.data.str;
-			break;
-		case RFT_BITFIELD:
-			this->desc.bitfield.names = other.desc.bitfield.names;
-			this->desc.bitfield.elemsPerRow = other.desc.bitfield.elemsPerRow;
-			this->data.bitfield = other.data.bitfield;
-			break;
-		case RFT_LISTDATA:
-			this->desc.list_data.names = other.desc.list_data.names;
-			this->flags = other.flags;
-			this->desc.list_data.rows_visible = other.desc.list_data.rows_visible;
-			this->desc.list_data.col_attrs = other.desc.list_data.col_attrs;
-			if (other.flags & RFT_LISTDATA_MULTI) {
-				this->data.list_data.data.multi = other.data.list_data.data.multi;
-			} else {
-				this->data.list_data.data.single = other.data.list_data.data.single;
-			}
-			if (other.flags & RFT_LISTDATA_ICONS) {
-				// Icons: Copy the icon vector if set.
-				this->data.list_data.mxd.icons = other.data.list_data.mxd.icons;
-			} else {
-				// No icons. Copy checkboxes.
-				this->data.list_data.mxd.checkboxes = other.data.list_data.mxd.checkboxes;
-			}
-			break;
-		case RFT_DATETIME:
-			this->data.date_time = other.data.date_time;
-			break;
-		case RFT_AGE_RATINGS:
-			this->data.age_ratings = other.data.age_ratings;
-			break;
-		case RFT_DIMENSIONS:
-			memcpy(this->data.dimensions, other.data.dimensions, sizeof(other.data.dimensions));
-			break;
-		case RFT_STRING_MULTI:
-			this->data.str_multi = other.data.str_multi;
-			break;
-
-		default:
-			assert(!"Unsupported RomFields::RomFieldsType.");
-			break;
-	}
+	// NOTE: Using memcpy() to simplify things, even if it
+	// results in slightly more memory copying than without it.
+	assert(other.type != RFT_INVALID);
+	memcpy(&this->desc, &other.desc, sizeof(this->desc));
+	memcpy(&this->data, &other.data, sizeof(this->data));
 
 	// Reset the other object.
 	other.name = nullptr;
