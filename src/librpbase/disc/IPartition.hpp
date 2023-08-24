@@ -19,7 +19,7 @@ class NOVTABLE IPartition : public IDiscReader
 		explicit IPartition(const LibRpFile::IRpFilePtr &file) : super(file) { }
 		explicit IPartition(const IDiscReaderPtr &discReader) : super(discReader) { }
 	public:
-		~IPartition() = 0;
+		~IPartition() override = 0;
 
 	private:
 		typedef IDiscReader super;
