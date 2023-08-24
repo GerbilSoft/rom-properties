@@ -25,22 +25,30 @@ using namespace LibRpTexture::PixelConversion;
 #  pragma warning(disable: 4309)
 #endif
 
-// MSVC 2013+: Use __vectorcall for the templated functions.
+// MSVC 2013+, Clang 3.6+: Use __vectorcall for the templated functions.
+// - NOTE: Clang 3.6 (and gcc) already uses an equivalent to __vectorcall
+//   on Linux due to the standard Linux ABI.
 // Other i386: Pass __m128i by const ref.
 // Other AMD64: Pass __m128i by value.
 // MSVC 2015 on AppVeyor fails if 4 or more __m128i are passed by value on 32-bit:
 // error C2719: 'Bmask': formal parameter with requested alignment of 16 won't be aligned
 // I'm not 100% sure if it'll be aligned properly even if there's only three,
 // so for now, I'll force `const __m128i&` on 32-bit.
-#if defined(_MSC_VER) && _MSC_VER >= 1800
-#  define VECTORCALL __vectorcall
-#  define __M128I_ARG 	__m128i
-#else
-#  define VECTORCALL
-#  if defined(_M_X64) || defined(_M_AMD64) || defined(__amd64__) || defined(__x86_64__)
+#ifdef _WIN32
+#  if (defined(_MSC_VER) && _MSC_VER >= 1800) || \
+      ((defined(__clang__) && (__clang_major__ > 3 || (__clang_major__ == 3 && __clang_minor__ >= 6))))
+#    define VECTORCALL __vectorcall
 #    define __M128I_ARG 	__m128i
-#  else
+#  endif
+#endif
+
+// Only use `const __m128i&` on 32-bit Windows.
+#ifndef VECTORCALL
+#  define VECTORCALL
+#  if defined(_WIN32) && (defined(_M_X86) || defined(__i386__))
 #    define __M128I_ARG 	const __m128i&
+#  else
+#    define __M128I_ARG 	__m128i
 #  endif
 #endif
 
