@@ -70,7 +70,7 @@ class AchWin32Private
 		 * @param iconSize Icon size. (16, 24, 32, 64)
 		 * @return const rp_image*, or nullptr on error.
 		 */
-		const rp_image_const_ptr &loadSpriteSheet(int iconSize);
+		rp_image_const_ptr loadSpriteSheet(int iconSize);
 
 	public:
 		/**
@@ -187,7 +187,7 @@ AchWin32Private::~AchWin32Private()
  * @param iconSize Icon size. (16, 24, 32, 64)
  * @return const rp_image*, or nullptr on error.
  */
-const rp_image_const_ptr &AchWin32Private::loadSpriteSheet(int iconSize)
+rp_image_const_ptr AchWin32Private::loadSpriteSheet(int iconSize)
 {
 	assert(iconSize == 16 || iconSize == 24 || iconSize == 32 || iconSize == 64);
 	UINT resID;
@@ -206,7 +206,7 @@ const rp_image_const_ptr &AchWin32Private::loadSpriteSheet(int iconSize)
 			break;
 		default:
 			assert(!"Invalid icon size.");
-			return nullptr;
+			return {};
 	}
 
 	// Check if the sprite sheet is already loaded.
@@ -224,13 +224,13 @@ const rp_image_const_ptr &AchWin32Private::loadSpriteSheet(int iconSize)
 	assert(f_res->isOpen());
 	if (!f_res->isOpen()) {
 		// Unable to open the resource.
-		return nullptr;
+		return {};
 	}
 
 	rp_image_const_ptr imgAchSheet = RpPng::load(f_res);
 	if (!imgAchSheet) {
 		// Unable to load the achievements sprite sheet.
-		return nullptr;
+		return {};
 	}
 
 	// Make sure the bitmap has the expected size.
@@ -240,7 +240,7 @@ const rp_image_const_ptr &AchWin32Private::loadSpriteSheet(int iconSize)
 	    imgAchSheet->height() != (int)(iconSize * Achievements::ACH_SPRITE_SHEET_ROWS))
 	{
 		// Incorrect size. We can't use it.
-		return nullptr;
+		return {};
 	}
 
 	// Sprite sheet is correct.
