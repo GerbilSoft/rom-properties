@@ -189,8 +189,8 @@
 #endif
 
 // novtable: suppress vtable generation for abstract base classes.
-// NOTE: MSVC only!
-#ifdef _MSC_VER
+// NOTE: MSVC and Clang (MS ABI) only!
+#if defined(_WIN32) && (defined(_MSC_VER) || defined(__clang__))
 #  define NOVTABLE __declspec(novtable)
 #else
 #  define NOVTABLE
