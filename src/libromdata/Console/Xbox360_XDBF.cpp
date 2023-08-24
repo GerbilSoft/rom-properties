@@ -1432,9 +1432,11 @@ int Xbox360_XDBF_Private::addFields_achievements_GPD(void)
 
 		const uint32_t addr = be32_to_cpu(p.offset) + this->data_offset;
 		const uint32_t length = be32_to_cpu(p.length);
-		// Sanity check: Achievement shouldn't be more than sizeof(buf).
+		// Sanity check: Achievement should be at least sizeof(*pGPD),
+		// but shouldn't be more than sizeof(buf).
+		assert(length >= sizeof(*pGPD));
 		assert(length <= XACH_GPD_BUF_LEN);
-		if (length > XACH_GPD_BUF_LEN)
+		if (length < sizeof(*pGPD) || length > XACH_GPD_BUF_LEN)
 			continue;
 
 		// Read the achievement.
