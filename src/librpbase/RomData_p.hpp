@@ -40,14 +40,15 @@ struct RomDataInfo {
 
 class RomDataPrivate
 {
-	public:
+	protected:
 		/**
 		 * Initialize a RomDataPrivate storage class.
+		 * NOTE: Can only be called by a subclass's constructor.
 		 * @param file ROM file
 		 * @param pRomDataInfo RomData subclass information
 		 */
 		RomDataPrivate(const LibRpFile::IRpFilePtr &file, const RomDataInfo *pRomDataInfo);
-
+	public:
 		virtual ~RomDataPrivate();
 
 	private:

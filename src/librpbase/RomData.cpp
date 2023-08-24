@@ -27,6 +27,7 @@ namespace LibRpBase {
 
 /**
  * Initialize a RomDataPrivate storage class.
+ * NOTE: Can only be called by a subclass's constructor.
  * @param file ROM file
  * @param pRomDataInfo RomData subclass information
  */
