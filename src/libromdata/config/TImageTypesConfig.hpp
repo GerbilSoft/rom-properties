@@ -26,7 +26,7 @@
 namespace LibRomData {
 
 template<typename ComboBox>
-class TImageTypesConfig
+class NOVTABLE TImageTypesConfig
 {
 	public:
 		TImageTypesConfig();

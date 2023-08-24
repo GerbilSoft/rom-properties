@@ -38,7 +38,7 @@ struct RomDataInfo {
 	const char *const *mimeTypes;	// Supported MIME types
 };
 
-class RomDataPrivate
+class NOVTABLE RomDataPrivate
 {
 	protected:
 		/**

@@ -36,7 +36,7 @@ namespace LibRpBase {
 namespace LibRpTexture {
 
 class FileFormatPrivate;
-class FileFormat
+class NOVTABLE FileFormat
 {
 protected:
 	explicit FileFormat(FileFormatPrivate *d);

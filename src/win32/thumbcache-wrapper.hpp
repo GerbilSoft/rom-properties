@@ -12,11 +12,12 @@
 
 #ifdef HAVE_THUMBCACHE_H
 // System has thumbcache.h. Use it directly.
-#include <thumbcache.h>
+#  include <thumbcache.h>
 #else /* !HAVE_THUMBCACHE_H */
 
 // System does not have thumbcache.h.
 // Declare the required interfaces here.
+#include "common.h"
 
 typedef enum WTS_ALPHATYPE {
 	WTSAT_UNKNOWN	= 0,
@@ -27,7 +28,7 @@ typedef enum WTS_ALPHATYPE {
 static const IID IID_IThumbnailProvider =
 	{0xe357fccd, 0xa995, 0x4576, {0xb0, 0x1f, 0x23, 0x46, 0x30, 0x15, 0x4e, 0x96}};
 
-MIDL_INTERFACE("e357fccd-a995-4576-b01f-234630154e96")
+MIDL_INTERFACE("e357fccd-a995-4576-b01f-234630154e96") NOVTABLE
 IThumbnailProvider : public IUnknown
 {
 	public:

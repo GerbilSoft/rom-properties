@@ -24,7 +24,7 @@ namespace LibRpFile {
 namespace LibRomData {
 
 class KeyStoreUIPrivate;
-class RP_LIBROMDATA_PUBLIC KeyStoreUI
+class RP_LIBROMDATA_PUBLIC NOVTABLE KeyStoreUI
 {
 	public:
 		KeyStoreUI();

@@ -23,7 +23,7 @@
 
 namespace LibRpBase {
 
-class IFst
+class NOVTABLE IFst
 {
 	protected:
 		IFst() = default;

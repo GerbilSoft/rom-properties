@@ -22,7 +22,7 @@
 
 namespace LibRpBase {
 
-class IDiscReader
+class NOVTABLE IDiscReader
 {
 	protected:
 		explicit IDiscReader(const LibRpFile::IRpFilePtr &file);

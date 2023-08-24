@@ -16,7 +16,7 @@
 
 namespace LibRpBase {
 
-class IAesCipher
+class NOVTABLE IAesCipher
 {
 	protected:
 		explicit IAesCipher() = default;

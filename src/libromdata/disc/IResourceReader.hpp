@@ -20,7 +20,7 @@
 
 namespace LibRomData {
 
-class IResourceReader : public LibRpBase::IPartition
+class NOVTABLE IResourceReader : public LibRpBase::IPartition
 {
 	protected:
 		IResourceReader(const LibRpFile::IRpFilePtr &file)

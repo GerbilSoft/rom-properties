@@ -16,7 +16,7 @@ namespace LibRpTexture {
  * rp_image data storage class.
  * This can be overridden for e.g. QImage or GDI+.
  */
-class RP_LIBROMDATA_PUBLIC rp_image_backend
+class RP_LIBROMDATA_PUBLIC NOVTABLE rp_image_backend
 {
 	public:
 		rp_image_backend(int width, int height, rp_image::Format format);

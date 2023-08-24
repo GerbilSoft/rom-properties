@@ -27,7 +27,7 @@
 
 namespace RpDownload {
 
-class IDownloader
+class NOVTABLE IDownloader
 {
 	public:
 		explicit IDownloader();

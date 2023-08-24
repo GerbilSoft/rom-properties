@@ -187,3 +187,11 @@
 #else
 #  define ATTR_GCC_NO_VECTORIZE
 #endif
+
+// novtable: suppress vtable generation for abstract base classes.
+// NOTE: MSVC only!
+#ifdef _MSC_VER
+#  define NOVTABLE __declspec(novtable)
+#else
+#  define NOVTABLE
+#endif

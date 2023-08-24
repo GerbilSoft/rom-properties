@@ -101,7 +101,7 @@ typedef int (RP_C_API *PFN_RP_CREATE_THUMBNAIL)(const char *source_file, const c
 namespace LibRomData {
 
 template<typename ImgClass>
-class TCreateThumbnail
+class NOVTABLE TCreateThumbnail
 {
 	public:
 		TCreateThumbnail() = default;

@@ -13,7 +13,7 @@
 
 namespace LibRpBase {
 
-class IPartition : public IDiscReader
+class NOVTABLE IPartition : public IDiscReader
 {
 	protected:
 		explicit IPartition(const LibRpFile::IRpFilePtr &file) : super(file) { }

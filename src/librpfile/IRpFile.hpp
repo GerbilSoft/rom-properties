@@ -27,7 +27,7 @@
 
 namespace LibRpFile {
 
-class RP_LIBROMDATA_PUBLIC IRpFile
+class RP_LIBROMDATA_PUBLIC NOVTABLE IRpFile
 {
 	protected:
 		explicit IRpFile();

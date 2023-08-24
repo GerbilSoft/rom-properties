@@ -14,7 +14,7 @@
 namespace LibRpBase {
 
 class SparseDiscReaderPrivate;
-class SparseDiscReader : public IDiscReader
+class NOVTABLE SparseDiscReader : public IDiscReader
 {
 	protected:
 		explicit SparseDiscReader(SparseDiscReaderPrivate *d, const LibRpFile::IRpFilePtr &file);

@@ -30,7 +30,7 @@ extern "C" {
 
 class IOwnerDataCallback;
 
-class UUID_ATTR("{2FFE2979-5928-4386-9CDB-8E1F15B72FB4}")
+class UUID_ATTR("{2FFE2979-5928-4386-9CDB-8E1F15B72FB4}") NOVTABLE
 IListView_WinVista : public IOleWindow
 {
 	public:

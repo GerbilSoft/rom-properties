@@ -23,7 +23,7 @@
 namespace LibRpBase {
 
 class ConfReader;
-class ConfReaderPrivate
+class NOVTABLE ConfReaderPrivate
 {
 	public:
 		/**

@@ -33,7 +33,7 @@ class RomFields;
 class RomMetaData;
 
 class RomDataPrivate;
-class RomData
+class NOVTABLE RomData
 {
 protected:
 	/**
