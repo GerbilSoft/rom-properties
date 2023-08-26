@@ -191,12 +191,12 @@ int WinInetDownloader::download(void)
 	if (dwContentLength > 0) {
 		// Content-Length is known.
 		// Start with the full Content-Length.
-		m_data.reserve(dwContentLength + BUF_SIZE_INCREMENT);
+		m_data.reserve(dwContentLength);
 		cur_increment = dwContentLength;
 	} else {
 		// Content-Length is unknown.
-		// Start with 256 KB.
-		m_data.reserve((256*1024) + BUF_SIZE_INCREMENT);
+		// Start with 64 KB.
+		m_data.reserve(BUF_SIZE_INCREMENT);
 		cur_increment = BUF_SIZE_INCREMENT;
 	}
 
