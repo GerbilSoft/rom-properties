@@ -333,16 +333,15 @@ rp_image_ptr fromGcnCI4(int width, int height,
 		return nullptr;
 	}
 
-	// GameCube CI4 uses 8x4 tiles.
-	// (TODO: 16x4 for CI4?)
+	// GameCube CI4 uses 8x8 tiles.
 	assert(width % 8 == 0);
-	assert(height % 4 == 0);
-	if (width % 8 != 0 || height % 4 != 0)
+	assert(height % 8 == 0);
+	if (width % 8 != 0 || height % 8 != 0)
 		return nullptr;
 
 	// Calculate the total number of tiles.
 	const int tilesX = (width / 8);
-	const int tilesY = (height / 4);
+	const int tilesY = (height / 8);
 
 	// Create an rp_image.
 	const rp_image_ptr img = std::make_shared<rp_image>(width, height, rp_image::Format::CI8);
@@ -375,12 +374,12 @@ rp_image_ptr fromGcnCI4(int width, int height,
 	// so we don't need to clear the remaining colors.
 
 	// Tile pointer
-	const array<uint8_t, 8*4/2> *pTileBuf = reinterpret_cast<const array<uint8_t, 8*4/2>*>(img_buf);
+	const array<uint8_t, 8*8/2> *pTileBuf = reinterpret_cast<const array<uint8_t, 8*8/2>*>(img_buf);
 
 	for (int y = 0; y < tilesY; y++) {
 		for (int x = 0; x < tilesX; x++) {
 			// Decode the current tile.
-			ImageDecoderPrivate::BlitTile_CI4_LeftMSN<8, 4>(img.get(), *pTileBuf, x, y);
+			ImageDecoderPrivate::BlitTile_CI4_LeftMSN<8, 8>(img.get(), *pTileBuf, x, y);
 			pTileBuf++;
 		}
 	}

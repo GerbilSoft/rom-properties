@@ -979,7 +979,6 @@ rp_image_const_ptr SegaPVRPrivate::loadGvrImage(void)
 			for (unsigned int i = 0; i < 16; i++) {
 				rgb5a3[i] = cpu_to_be16(0x8000 | (i*2) | ((i*2)<<5) | ((i*2)<<10));
 			}
-			// FIXME: Not working correctly...
 			img = ImageDecoder::fromGcnCI4(
 				pvrHeader.width, pvrHeader.height,
 				buf.get(), expected_size,
