@@ -12,7 +12,7 @@
 #include <QSettings>
 #include <QWidget>
 
-class NOVTABLE ITab : public QWidget
+class ITab : public QWidget
 {
 	Q_OBJECT
 	Q_PROPERTY(bool defaults READ hasDefaults)
