@@ -965,13 +965,6 @@ rp_image_const_ptr SegaPVRPrivate::loadGvrImage(void)
 				reinterpret_cast<uint16_t*>(buf.get()), expected_size);
 			break;
 
-		case GVR_IMG_DXT1:
-			// TODO: Determine if color 3 should be black or transparent.
-			img = ImageDecoder::fromDXT1_GCN(
-				pvrHeader.width, pvrHeader.height,
-				buf.get(), expected_size);
-			break;
-
 		case GVR_IMG_CI4: {
 			// TODO: Figure out the palette location.
 			// For now, use a grayscale RGB5A3 palette.
@@ -985,6 +978,13 @@ rp_image_const_ptr SegaPVRPrivate::loadGvrImage(void)
 				rgb5a3, sizeof(rgb5a3));
 			break;
 		}
+
+		case GVR_IMG_DXT1:
+			// TODO: Determine if color 3 should be black or transparent.
+			img = ImageDecoder::fromDXT1_GCN(
+				pvrHeader.width, pvrHeader.height,
+				buf.get(), expected_size);
+			break;
 
 		default:
 			// TODO: Other types.
