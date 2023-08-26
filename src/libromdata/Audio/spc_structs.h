@@ -8,6 +8,7 @@
 
 // References:
 // - http://vspcplay.raphnet.net/spc_file_format.txt
+// - https://ocremix.org/info/SPC_Format_Specification
 
 #pragma once
 
@@ -29,6 +30,8 @@ extern "C" {
  *
  * NOTE: The ID666 tag is always located at 0x02E.
  * Both the relative and absolute addresses are listed.
+ *
+ * uint32_t fields are little-endian.
  */
 // Some compilers pad this structure to a multiple of 4 bytes
 #pragma pack(1)
@@ -41,21 +44,21 @@ typedef struct PACKED _SPC_ID666 {
 	union PACKED {
 		struct {
 			char dump_date[11];		// [0x070, 0x09E] Date SPC was dumped. (MM/DD/YYYY)
-			char seconds_before_fade[3];	// [0x07B, 0x0A9] Seconds to play before fading out.
-			char fadeout_length_ms[5];	// [0x07E, 0x0AC] Length of fade-out, in milliseconds.
-			char artist[32];		// [0x083, 0x0B1] Artist.
-			uint8_t channel_disables;	// [0x0A3, 0x0D1] Default channel disables. (0 = enable, 1 = disable)
-			uint8_t emulator_used;		// [0x0A4, 0x0D2] Emulator used to dump the SPC. (See SPC_Emulator_e.)
+			char seconds_before_fade[3];	// [0x07B, 0x0A9] Seconds to play before fading out (24-bit!)
+			char fadeout_length_ms[5];	// [0x07E, 0x0AC] Length of fade-out, in milliseconds
+			char artist[32];		// [0x083, 0x0B1] Artist
+			uint8_t channel_disables;	// [0x0A3, 0x0D1] Default channel disables (0 = enable, 1 = disable)
+			uint8_t emulator_used;		// [0x0A4, 0x0D2] Emulator used to dump the SPC (See SPC_Emulator_e.)
 			uint8_t reserved[45];		// [0x0A5, 0x0D3]
 		} text;
 		struct {
 			uint8_t dump_date[4];		// [0x070, 0x09E] Date SPC was dumped. (BCD: YY YY MM DD)
 			uint8_t unused[7];		// [0x074, 0x0A2]
-			uint8_t seconds_before_fade[3];	// [0x07B, 0x0A9] Seconds to play before fading out. (24-bit!)
-			uint32_t fadeout_length_ms;	// [0x07E, 0x0AC] Length of fade-out, in milliseconds.
-			char artist[32];		// [0x082, 0x0B0] Artist.
-			uint8_t channel_disables;	// [0x0A2, 0x0D0] Default channel disables. (0 = enable, 1 = disable)
-			uint8_t emulator_used;		// [0x0A3, 0x0D1] Emulator used to dump the SPC. (See SPC_Emulator_e.)
+			uint8_t seconds_before_fade[3];	// [0x07B, 0x0A9] Seconds to play before fading out (24-bit!)
+			uint32_t fadeout_length_ms;	// [0x07E, 0x0AC] Length of fade-out, in milliseconds
+			char artist[32];		// [0x082, 0x0B0] Artist
+			uint8_t channel_disables;	// [0x0A2, 0x0D0] Default channel disables (0 = enable, 1 = disable)
+			uint8_t emulator_used;		// [0x0A3, 0x0D1] Emulator used to dump the SPC (See SPC_Emulator_e.)
 			uint8_t reserved[46];		// [0x0A4, 0x0D2]
 		} bin;
 		struct {

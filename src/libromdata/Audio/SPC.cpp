@@ -264,30 +264,47 @@ SPCPrivate::spc_tags_t SPCPrivate::parseTags(void)
 
 	// Parse the remaining fields.
 	if (isBinary) {
-		// Binary version.
+		// Binary version
 
-		// Dump date. (YYYYMMDD)
+		// Dump date (YYYYMMDD)
 		// TODO: Untested.
 		kv.insertTimestamp(SPC_xID6_ITEM_DUMP_DATE,
 			bcd_to_unix_time(id666->bin.dump_date, sizeof(id666->bin.dump_date)));
 
-		// Artist.
+		// Artist
 		if (id666->bin.artist[0] != '\0') {
 			kv.insertStr(SPC_xID6_ITEM_ARTIST_NAME,
 				cp1252_to_utf8(id666->bin.artist, sizeof(id666->bin.artist)));
 		}
 
-		// TODO: Duration.
-		// Need to convert to ID666 format somehow...
+		// Duration
+		// TODO: Find binary SPCs and verify this.
+
+		// Main loop duration (in seconds)
+		// NOTE: 3-byte value, little-endian
+		const unsigned int duration = (id666->bin.seconds_before_fade[0]) |
+		                              (id666->bin.seconds_before_fade[1] << 8) |
+		                              (id666->bin.seconds_before_fade[2] << 16);
+
+		// Fadeout duration (in milliseconds)
+		const unsigned int fadeout_ms = le32_to_cpu(id666->bin.fadeout_length_ms);
+
+		// Convert to xID6. (measured in 1/64000ths of a second)
+		// FIXME: May overflow?
+		const uint64_t duration_xid6 = static_cast<uint64_t>(duration) * 64000ULL;
+		const uint64_t fadeout_xid6 = static_cast<uint64_t>(fadeout_ms) * 64ULL;
+		kv.insertInt(SPC_xID6_ITEM_LOOP_COUNT, -1);	// special value for "from ID666"
+		kv.insertUInt(SPC_xID6_ITEM_LOOP_LENGTH, static_cast<unsigned int>(duration_xid6));
+		kv.insertUInt(SPC_xID6_ITEM_FADE_LENGTH, static_cast<unsigned int>(fadeout_xid6));
 
 		// TODO: Channel disables?
 
-		// Emulator used.
+		// Emulator used
 		kv.insertUInt(SPC_xID6_ITEM_EMULATOR_USED, id666->bin.emulator_used);
 	} else {
-		// Text version.
+		// Text version
 
-		// Dump date. (MM/DD/YYYY; also allowing MM-DD-YYYY)
+		// Dump date (MM/DD/YYYY; also allowing MM-DD-YYYY)
 		// Convert to UNIX time.
 		// NOTE: Might not be NULL-terminated...
 		// TODO: Untested.
@@ -319,14 +336,45 @@ SPCPrivate::spc_tags_t SPCPrivate::parseTags(void)
 			kv.insertTimestamp(SPC_xID6_ITEM_DUMP_DATE, timegm(&ymdtime));
 		}
 
-		// Artist.
+		// Artist
 		if (id666->text.artist[0] != '\0') {
 			kv.insertStr(SPC_xID6_ITEM_ARTIST_NAME,
 				cp1252_to_utf8(id666->text.artist, sizeof(id666->text.artist)));
 		}
 
-		// TODO: Duration.
-		// Need to convert to ID666 format somehow...
+		// Duration
+
+		// Main loop duration (in seconds)
+		// TODO: 2-byte + NULL or 3-byte? Allowing both.
+		unsigned int duration = 0, fadeout_ms = 0;
+		for (size_t i = 0; i < sizeof(id666->text.seconds_before_fade); i++) {
+			const char chr = id666->text.seconds_before_fade[i];
+			if (chr >= '0' && chr <= '9') {
+				duration *= 10;
+				duration += (chr - '0');
+			} else {
+				// Invalid character.
+				break;
+			}
+		}
+		for (size_t i = 0; i < sizeof(id666->text.fadeout_length_ms); i++) {
+			const char chr = id666->text.fadeout_length_ms[i];
+			if (chr >= '0' && chr <= '9') {
+				fadeout_ms *= 10;
+				fadeout_ms += (chr - '0');
+			} else {
+				// Invalid character.
+				break;
+			}
+		}
+
+		// Convert to xID6. (measured in 1/64000ths of a second)
+		// FIXME: May overflow?
+		duration *= 64000U;
+		fadeout_ms *= 64U;
+		kv.insertInt(SPC_xID6_ITEM_LOOP_COUNT, -1);	// special value for "from ID666"
+		kv.insertUInt(SPC_xID6_ITEM_LOOP_LENGTH, duration);
+		kv.insertUInt(SPC_xID6_ITEM_FADE_LENGTH, fadeout_ms);
 
 		// TODO: Channel disables?
 
@@ -631,13 +679,13 @@ int SPC::loadFieldData(void)
 		return 0;
 	}
 
-	// SPC header.
+	// SPC header
 	d->fields.reserve(11);	// Maximum of 11 fields.
 
 	// TODO: Add more tags.
 	// TODO: Duration.
 
-	// Song name.
+	// Song name
 	auto iter = kv.find(SPC_xID6_ITEM_SONG_NAME);
 	if (iter != kv.end()) {
 		const auto &data = iter->second;
@@ -647,7 +695,7 @@ int SPC::loadFieldData(void)
 		}
 	}
 
-	// Game name.
+	// Game name
 	iter = kv.find(SPC_xID6_ITEM_GAME_NAME);
 	if (iter != kv.end()) {
 		const auto &data = iter->second;
@@ -657,7 +705,7 @@ int SPC::loadFieldData(void)
 		}
 	}
 
-	// Artist.
+	// Artist
 	iter = kv.find(SPC_xID6_ITEM_ARTIST_NAME);
 	if (iter != kv.end()) {
 		const auto &data = iter->second;
@@ -667,7 +715,7 @@ int SPC::loadFieldData(void)
 		}
 	}
 
-	// Copyright year.
+	// Copyright year
 	iter = kv.find(SPC_xID6_ITEM_COPYRIGHT_YEAR);
 	if (iter != kv.end()) {
 		const auto &data = iter->second;
@@ -677,7 +725,64 @@ int SPC::loadFieldData(void)
 		}
 	}
 
-	// Dumper.
+	// Duration
+	iter = kv.find(SPC_xID6_ITEM_LOOP_COUNT);
+	if (iter != kv.end()) {
+		const auto &data = iter->second;
+		assert(!data.isStrIdx);
+		if (!data.isStrIdx) {
+			// If loop count is < 0, this is ID666.
+			// Otherwise, it's Extended ID666.
+			// NOTE: Extended ID666 tags will usually not set loop duration unless
+			// loop count is also set, in which case, the song length will be in
+			// the intro field. Hence, we'll handle all of them the same way.
+			const int loopCount = data.ivalue;
+
+#define FIELD_DATA_GET_xID6_DURATION(var, tag) do { \
+			const auto leniter = kv.find(tag); \
+			if (leniter != kv.end()) { \
+				const auto &lendata = leniter->second; \
+				assert(!lendata.isStrIdx); \
+				if (!lendata.isStrIdx) { \
+					var = lendata.uvalue; \
+				} \
+			} \
+} while (0)
+
+			// Get the durations.
+			unsigned int intro = 0, loop = 0, end = 0, fadeout = 0;
+			FIELD_DATA_GET_xID6_DURATION(intro, SPC_xID6_ITEM_INTRO_LENGTH);
+			FIELD_DATA_GET_xID6_DURATION(loop, SPC_xID6_ITEM_LOOP_LENGTH);
+			FIELD_DATA_GET_xID6_DURATION(end, SPC_xID6_ITEM_END_LENGTH);
+			FIELD_DATA_GET_xID6_DURATION(fadeout, SPC_xID6_ITEM_FADE_LENGTH);
+
+			uint64_t total_duration = static_cast<uint64_t>(intro) + static_cast<uint64_t>(end);
+			if (loopCount < 0) {
+				// Regular ID666: Add the loop duration as-is,
+				// but only if the other values aren't present.
+				if (total_duration == 0) {
+					total_duration = static_cast<uint64_t>(loop);
+				}
+			} else if (loopCount > 0) {
+				// Extended ID666: Multiply by the loop count.
+				total_duration += (static_cast<uint64_t>(loop) * static_cast<uint64_t>(loopCount));
+			}
+
+			// Add fadeout after loop handling.
+			total_duration += static_cast<uint64_t>(fadeout);
+
+			// Divide by 640 to get centiseconds.
+			total_duration /= 640;
+
+			const unsigned int cs = static_cast<unsigned int>(total_duration % 100);
+			const unsigned int sec = static_cast<unsigned int>(total_duration / 100) % 60;
+			const unsigned int min = static_cast<unsigned int>(total_duration / 100 / 60);
+			d->fields.addField_string(C_("SPC", "Duration"),
+				rp_sprintf("%u:%02u.%02u", min, sec, cs));
+		}
+	}
+
+	// Dumper
 	iter = kv.find(SPC_xID6_ITEM_DUMPER_NAME);
 	if (iter != kv.end()) {
 		const auto &data = iter->second;
@@ -687,7 +792,7 @@ int SPC::loadFieldData(void)
 		}
 	}
 
-	// Dump date.
+	// Dump date
 	iter = kv.find(SPC_xID6_ITEM_DUMP_DATE);
 	if (iter != kv.end()) {
 		const auto &data = iter->second;
@@ -701,7 +806,7 @@ int SPC::loadFieldData(void)
 		}
 	}
 
-	// Comments.
+	// Comments
 	iter = kv.find(SPC_xID6_ITEM_COMMENTS);
 	if (iter != kv.end()) {
 		const auto &data = iter->second;
@@ -711,7 +816,7 @@ int SPC::loadFieldData(void)
 		}
 	}
 
-	// Emulator used.
+	// Emulator used
 	iter = kv.find(SPC_xID6_ITEM_EMULATOR_USED);
 	if (iter != kv.end()) {
 		const auto &data = iter->second;
@@ -743,7 +848,7 @@ int SPC::loadFieldData(void)
 		}
 	}
 
-	// OST title.
+	// OST title
 	iter = kv.find(SPC_xID6_ITEM_OST_TITLE);
 	if (iter != kv.end()) {
 		const auto &data = iter->second;
@@ -753,7 +858,7 @@ int SPC::loadFieldData(void)
 		}
 	}
 
-	// OST disc number.
+	// OST disc number
 	iter = kv.find(SPC_xID6_ITEM_OST_DISC);
 	if (iter != kv.end()) {
 		const auto &data = iter->second;
@@ -763,7 +868,7 @@ int SPC::loadFieldData(void)
 		}
 	}
 
-	// OST track number.
+	// OST track number
 	iter = kv.find(SPC_xID6_ITEM_OST_TRACK);
 	if (iter != kv.end()) {
 		const auto &data = iter->second;
@@ -825,7 +930,7 @@ int SPC::loadMetaData(void)
 	// TODO: Add more tags.
 	// TODO: Duration.
 
-	// Song name.
+	// Song name
 	auto iter = kv.find(SPC_xID6_ITEM_SONG_NAME);
 	if (iter != kv.end()) {
 		const auto &data = iter->second;
@@ -835,7 +940,7 @@ int SPC::loadMetaData(void)
 		}
 	}
 
-	// Game name.
+	// Game name
 	iter = kv.find(SPC_xID6_ITEM_GAME_NAME);
 	if (iter != kv.end()) {
 		const auto &data = iter->second;
@@ -845,7 +950,7 @@ int SPC::loadMetaData(void)
 		}
 	}
 
-	// Artist.
+	// Artist
 	iter = kv.find(SPC_xID6_ITEM_ARTIST_NAME);
 	if (iter != kv.end()) {
 		const auto &data = iter->second;
@@ -855,7 +960,7 @@ int SPC::loadMetaData(void)
 		}
 	}
 
-	// Copyright year. (Release year.)
+	// Copyright year (Release year)
 	iter = kv.find(SPC_xID6_ITEM_COPYRIGHT_YEAR);
 	if (iter != kv.end()) {
 		const auto &data = iter->second;
@@ -866,7 +971,7 @@ int SPC::loadMetaData(void)
 	}
 
 #if 0
-	// Dumper.
+	// Dumper
 	// TODO: No "Dumper" property...
 	iter = kv.find(SPC_xID6_ITEM_DUMPER_NAME);
 	if (iter != kv.end()) {
@@ -878,7 +983,7 @@ int SPC::loadMetaData(void)
 	}
 #endif
 
-	// Dump date.
+	// Dump date
 	iter = kv.find(SPC_xID6_ITEM_DUMP_DATE);
 	if (iter != kv.end()) {
 		const auto &data = iter->second;
@@ -888,7 +993,7 @@ int SPC::loadMetaData(void)
 		}
 	}
 
-	// Comments.
+	// Comments
 	iter = kv.find(SPC_xID6_ITEM_COMMENTS);
 	if (iter != kv.end()) {
 		const auto &data = iter->second;
@@ -901,11 +1006,11 @@ int SPC::loadMetaData(void)
 	}
 
 #if 0
-	// Emulator used.
+	// Emulator used
 	// TODO: No property...
 #endif
 
-	// OST title.
+	// OST title
 	// NOTE: Using "Compilation" as the property.
 	iter = kv.find(SPC_xID6_ITEM_OST_TITLE);
 	if (iter != kv.end()) {
@@ -916,7 +1021,7 @@ int SPC::loadMetaData(void)
 		}
 	}
 
-	// OST disc number.
+	// OST disc number
 	iter = kv.find(SPC_xID6_ITEM_OST_DISC);
 	if (iter != kv.end()) {
 		const auto &data = iter->second;
@@ -927,7 +1032,7 @@ int SPC::loadMetaData(void)
 		}
 	}
 
-	// OST track number.
+	// OST track number
 	iter = kv.find(SPC_xID6_ITEM_OST_TRACK);
 	if (iter != kv.end()) {
 		const auto &data = iter->second;
