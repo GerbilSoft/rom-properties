@@ -247,8 +247,7 @@ SPCPrivate::spc_tags_t SPCPrivate::parseTags(void)
 	// Based on bsnes-plus:
 	// https://github.com/devinacker/bsnes-plus/blob/master/snesmusic/snesmusic.cpp#L90
 	bool isBinary = false;
-	for (size_t i = 0; i < sizeof(id666->test.length_fields); i++) {
-		const uint8_t chr = id666->test.length_fields[i];
+	for (const uint8_t chr : id666->test.length_fields) {
 		if ((chr > 0 && chr < 0x20) || chr > 0x7E) {
 			// Probably binary format.
 			isBinary = true;

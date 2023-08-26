@@ -822,8 +822,8 @@ SNES::SNES(const IRpFilePtr &file)
 		static const uint8_t bsx_mempack_magic[6] = {'M', 0, 'P', 0, 0, 0};
 		uint8_t buf[7];
 
-		for (unsigned int i = 0; i < 2; i++) {
-			size_t size = d->file->seekAndRead(bsx_addrs[i], buf, sizeof(buf));
+		for (const uint16_t bsx_addr : bsx_addrs) {
+			size_t size = d->file->seekAndRead(bsx_addr, buf, sizeof(buf));
 			if (size != sizeof(buf)) {
 				// Read error.
 				d->file.reset();

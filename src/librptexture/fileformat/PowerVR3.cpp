@@ -426,11 +426,11 @@ rp_image_const_ptr PowerVR3Private::loadImage(int mip)
 
 		// Make sure the channel type is correct.
 		bool isOK = false;
-		for (unsigned int i = 0; i < ARRAY_SIZE(fmts); i++) {
-			if (fmts[i] < 0)
+		for (const int fmt : fmts) {
+			if (fmt < 0)
 				break;
 
-			if (pvr3Header.channel_type == (uint8_t)fmts[i]) {
+			if (pvr3Header.channel_type == static_cast<uint8_t>(fmt)) {
 				// Found a match.
 				isOK = true;
 				break;
