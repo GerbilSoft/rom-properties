@@ -21,6 +21,7 @@
     * 256 KiB M161 ROMs are not supported yet.
     * Fixes #394: GameBoy multicarts: MBC1M and MMM01
       * Requested by @DankRank.
+  * SPC: Parse duration and export it as both field data and metadata.
 
 * Bug fixes:
   * Windows: Truncate ListView strings to a maximum of 259+1 characters. (259
