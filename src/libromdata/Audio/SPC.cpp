@@ -100,6 +100,10 @@ class SPCPrivate final : public RomDataPrivate
 			{
 				return map.end();
 			}
+			inline map_t::const_iterator find(SPC_xID6_Item_e key) const
+			{
+				return map.find(key);
+			}
 			inline map_t::const_iterator cbegin(void) const
 			{
 				return map.cbegin();
@@ -172,6 +176,13 @@ class SPCPrivate final : public RomDataPrivate
 		 * @return Map containing key/value entries.
 		 */
 		spc_tags_t parseTags(void);
+
+		/**
+		 * Get the duration from the SPC tags.
+		 * @param kv spc_tags_t
+		 * @return Duration (in milliseconds), or 0 if not found.
+		 */
+		static unsigned int getDurationMs(const spc_tags_t &kv);
 };
 
 ROMDATA_IMPL(SPC)
@@ -549,6 +560,69 @@ SPCPrivate::spc_tags_t SPCPrivate::parseTags(void)
 	return kv;
 }
 
+/**
+ * Get the duration from the SPC tags.
+ * @param kv spc_tags_t
+ * @return Duration (in milliseconds), or 0 if not found.
+ */
+unsigned int SPCPrivate::getDurationMs(const SPCPrivate::spc_tags_t &kv)
+{
+	const auto iter = kv.find(SPC_xID6_ITEM_LOOP_COUNT);
+	if (iter == kv.cend())
+		return 0;
+
+	const auto &data = iter->second;
+	assert(!data.isStrIdx);
+	if (data.isStrIdx)
+		return 0;
+
+	// If loop count is < 0, this is ID666.
+	// Otherwise, it's Extended ID666.
+	// NOTE: Extended ID666 tags will usually not set loop duration unless
+	// loop count is also set, in which case, the song length will be in
+	// the intro field. Hence, we'll handle all of them the same way.
+	const int loopCount = data.ivalue;
+
+#define FIELD_DATA_GET_xID6_DURATION(var, tag) do { \
+	const auto leniter = kv.find(tag); \
+	if (leniter != kv.cend()) { \
+		const auto &lendata = leniter->second; \
+		assert(!lendata.isStrIdx); \
+		if (!lendata.isStrIdx) { \
+			var = lendata.uvalue; \
+		} \
+	} \
+} while (0)
+
+	// Get the durations.
+	unsigned int intro = 0, loop = 0, end = 0, fadeout = 0;
+	FIELD_DATA_GET_xID6_DURATION(intro, SPC_xID6_ITEM_INTRO_LENGTH);
+	FIELD_DATA_GET_xID6_DURATION(loop, SPC_xID6_ITEM_LOOP_LENGTH);
+	FIELD_DATA_GET_xID6_DURATION(end, SPC_xID6_ITEM_END_LENGTH);
+	FIELD_DATA_GET_xID6_DURATION(fadeout, SPC_xID6_ITEM_FADE_LENGTH);
+
+	uint64_t total_duration = static_cast<uint64_t>(intro) + static_cast<uint64_t>(end);
+	if (loopCount < 0) {
+		// Regular ID666: Add the loop duration as-is,
+		// but only if the other values aren't present.
+		if (total_duration == 0) {
+			total_duration = static_cast<uint64_t>(loop);
+		}
+	} else if (loopCount > 0) {
+		// Extended ID666: Multiply by the loop count.
+		total_duration += (static_cast<uint64_t>(loop) * static_cast<uint64_t>(loopCount));
+	}
+
+	// Add fadeout after loop handling.
+	total_duration += static_cast<uint64_t>(fadeout);
+
+	// Divide by 64 to get milliseconds.
+	total_duration /= 64;
+
+	// We're done here.
+	return static_cast<unsigned int>(total_duration);
+}
+
 /** SPC **/
 
 /**
@@ -726,60 +800,17 @@ int SPC::loadFieldData(void)
 	}
 
 	// Duration
-	iter = kv.find(SPC_xID6_ITEM_LOOP_COUNT);
-	if (iter != kv.end()) {
-		const auto &data = iter->second;
-		assert(!data.isStrIdx);
-		if (!data.isStrIdx) {
-			// If loop count is < 0, this is ID666.
-			// Otherwise, it's Extended ID666.
-			// NOTE: Extended ID666 tags will usually not set loop duration unless
-			// loop count is also set, in which case, the song length will be in
-			// the intro field. Hence, we'll handle all of them the same way.
-			const int loopCount = data.ivalue;
+	unsigned int duration = d->getDurationMs(kv);
+	if (duration > 0) {
+		// Convert from milliseconds to centiseconds.
+		duration /= 10;
 
-#define FIELD_DATA_GET_xID6_DURATION(var, tag) do { \
-			const auto leniter = kv.find(tag); \
-			if (leniter != kv.end()) { \
-				const auto &lendata = leniter->second; \
-				assert(!lendata.isStrIdx); \
-				if (!lendata.isStrIdx) { \
-					var = lendata.uvalue; \
-				} \
-			} \
-} while (0)
-
-			// Get the durations.
-			unsigned int intro = 0, loop = 0, end = 0, fadeout = 0;
-			FIELD_DATA_GET_xID6_DURATION(intro, SPC_xID6_ITEM_INTRO_LENGTH);
-			FIELD_DATA_GET_xID6_DURATION(loop, SPC_xID6_ITEM_LOOP_LENGTH);
-			FIELD_DATA_GET_xID6_DURATION(end, SPC_xID6_ITEM_END_LENGTH);
-			FIELD_DATA_GET_xID6_DURATION(fadeout, SPC_xID6_ITEM_FADE_LENGTH);
-
-			uint64_t total_duration = static_cast<uint64_t>(intro) + static_cast<uint64_t>(end);
-			if (loopCount < 0) {
-				// Regular ID666: Add the loop duration as-is,
-				// but only if the other values aren't present.
-				if (total_duration == 0) {
-					total_duration = static_cast<uint64_t>(loop);
-				}
-			} else if (loopCount > 0) {
-				// Extended ID666: Multiply by the loop count.
-				total_duration += (static_cast<uint64_t>(loop) * static_cast<uint64_t>(loopCount));
-			}
-
-			// Add fadeout after loop handling.
-			total_duration += static_cast<uint64_t>(fadeout);
-
-			// Divide by 640 to get centiseconds.
-			total_duration /= 640;
-
-			const unsigned int cs = static_cast<unsigned int>(total_duration % 100);
-			const unsigned int sec = static_cast<unsigned int>(total_duration / 100) % 60;
-			const unsigned int min = static_cast<unsigned int>(total_duration / 100 / 60);
-			d->fields.addField_string(C_("SPC", "Duration"),
-				rp_sprintf("%u:%02u.%02u", min, sec, cs));
-		}
+		// Split minutes, seconds, and centiseconds for display purposes.
+		const unsigned int cs = static_cast<unsigned int>(duration % 100);
+		const unsigned int sec = static_cast<unsigned int>(duration / 100) % 60;
+		const unsigned int min = static_cast<unsigned int>(duration / 100 / 60);
+		d->fields.addField_string(C_("SPC", "Duration"),
+			rp_sprintf("%u:%02u.%02u", min, sec, cs));
 	}
 
 	// Dumper
@@ -968,6 +999,13 @@ int SPC::loadMetaData(void)
 		if (!data.isStrIdx) {
 			d->metaData->addMetaData_uint(Property::ReleaseYear, data.uvalue);
 		}
+	}
+
+	// Duration
+	const unsigned int duration = d->getDurationMs(kv);
+	if (duration > 0) {
+		// NOTE: Property::Duration uses int, not unsigned int.
+		d->metaData->addMetaData_integer(Property::Duration, static_cast<int>(duration));
 	}
 
 #if 0
