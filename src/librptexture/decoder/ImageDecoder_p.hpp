@@ -105,12 +105,12 @@ static inline void BlitTile(
  * Blit a CI4 tile to a CI8 rp_image.
  * NOTE: Left pixel is the least significant nybble.
  * NOTE: No bounds checking is done.
- * @tparam tileW	[in] Tile width.
- * @tparam tileH	[in] Tile height.
- * @param img		[out] rp_image.
- * @param tileBuf	[in] Tile buffer.
- * @param tileX		[in] Horizontal tile number.
- * @param tileY		[in] Vertical tile number.
+ * @tparam tileW	[in] Tile width
+ * @tparam tileH	[in] Tile height
+ * @param img		[out] rp_image
+ * @param tileBuf	[in] Tile buffer
+ * @param tileX		[in] Horizontal tile number
+ * @param tileY		[in] Vertical tile number
  */
 template<unsigned int tileW, unsigned int tileH>
 static inline void BlitTile_CI4_LeftLSN(
@@ -134,6 +134,48 @@ static inline void BlitTile_CI4_LeftLSN(
 		for (unsigned int x = tileW; x > 0; x -= 2) {
 			pImgBuf[0] = (*pTileBuf & 0x0F);
 			pImgBuf[1] = (*pTileBuf >> 4);
+			pImgBuf += 2;
+			pTileBuf++;
+		}
+
+		// Next line.
+		pImgBuf += stride_px_adj;
+	}
+}
+
+/**
+ * Blit a CI4 tile to a CI8 rp_image.
+ * NOTE: Left pixel is the most significant nybble.
+ * NOTE: No bounds checking is done.
+ * @tparam tileW	[in] Tile width
+ * @tparam tileH	[in] Tile height
+ * @param img		[out] rp_image
+ * @param tileBuf	[in] Tile buffer
+ * @param tileX		[in] Horizontal tile number
+ * @param tileY		[in] Vertical tile number
+ */
+template<unsigned int tileW, unsigned int tileH>
+static inline void BlitTile_CI4_LeftMSN(
+	rp_image *RESTRICT img, const std::array<uint8_t, tileW*tileH/2> &tileBuf,
+	unsigned int tileX, unsigned int tileY)
+{
+	static_assert(tileW % 2 == 0, "Tile width must be a multiple of 2.");
+	assert(img->format() == rp_image::Format::CI8);
+	assert(img->width() % 2 == 0);
+
+	// Go to the first pixel for this tile.
+	const int stride_px = img->stride();
+	uint8_t *pImgBuf = static_cast<uint8_t*>(img->bits());
+	pImgBuf += (tileY * tileH) * stride_px;
+	pImgBuf += (tileX * tileW);
+
+	const uint8_t *pTileBuf = tileBuf.data();
+	const int stride_px_adj = stride_px - tileW;
+	for (unsigned int y = tileH; y > 0; y--) {
+		// Expand CI4 pixels to CI8 before writing.
+		for (unsigned int x = tileW; x > 0; x -= 2) {
+			pImgBuf[0] = (*pTileBuf >> 4);
+			pImgBuf[1] = (*pTileBuf & 0x0F);
 			pImgBuf += 2;
 			pTileBuf++;
 		}
