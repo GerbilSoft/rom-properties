@@ -22,6 +22,12 @@
     * Fixes #394: GameBoy multicarts: MBC1M and MMM01
       * Requested by @DankRank.
   * SPC: Parse duration and export it as both field data and metadata.
+  * SegaPVR: Handle GVR CI4 and CI8 textures. Note that these textures don't
+    have a built-in palette (they expect a palette to be provided elsewhere),
+    so a grayscale palette is used.
+    * CI8 is untested due to a lack of test images. If you have any original
+      (i.e. from a licensed game) GVR CI8 textures, please submit them in a
+      GitHub issue.
 
 * Bug fixes:
   * Windows: Truncate ListView strings to a maximum of 259+1 characters. (259
