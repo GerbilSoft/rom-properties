@@ -488,7 +488,7 @@ rp_key_manager_tab_handle_menu_action(RpKeyManagerTab *tab, gint id)
 		NOP_C_("KeyManagerTab", "Select 3DS aeskeydb.bin File"),
 	};
 
-	static const char file_filters_tbl[][88] = {
+	static const char file_filters_tbl[][64] = {
 		// tr: Wii keys.bin file filter (RP format)
 		NOP_C_("KeyManagerTab", "keys.bin|keys.bin|-|Binary Files|*.bin|-|All Files|*|-"),
 		// tr: Wii U otp.bin file filter (RP format)
@@ -726,7 +726,7 @@ action_triggered_signal_handler(GSimpleAction *action, GVariant *parameter, RpKe
 }
 #else /* !USE_G_MENU_MODEL */
 /**
- * An "Options" menu action was triggered.
+ * An "Import" menu action was triggered.
  * @param menuItem Menu item (Get the "menuImport_id" data.)
  * @param tab KeyManagerTab
  */
