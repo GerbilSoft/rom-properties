@@ -2,13 +2,15 @@
  * ROM Properties Page shell extension. (libwin32common)                   *
  * DelayLoadHelper.c: DelayLoad helper functions and macros.               *
  *                                                                         *
- * Copyright (c) 2017-2022 by David Korth.                                 *
+ * Copyright (c) 2017-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 // Reference: http://otb.manusoft.com/2013/01/using-delayload-to-specify-dependent-dll-path.htm
 #include "stdafx.h"
 #include "DelayLoadHelper.h"
+#include "tcharx.h"
+
 #include "libromdata/config.libromdata.h"
 
 // C includes.

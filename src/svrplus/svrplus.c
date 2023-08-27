@@ -25,6 +25,7 @@
 // libwin32common
 #include "libwin32common/RpWin32_sdk.h"
 #include "libwin32common/rp_versionhelpers.h"
+#include "tcharx.h"
 
 // librpsecure
 #include "librpsecure/os-secure.h"

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * APNG_dlopen.c: APNG dlopen()'d function pointers.                       *
  *                                                                         *
- * Copyright (c) 2014-2021 by David Korth.                                 *
+ * Copyright (c) 2014-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -22,6 +22,7 @@
 #else
 // Windows LoadLibrary()
 #  include "libwin32common/RpWin32_sdk.h"
+#  include "tcharx.h"
 #  define dlsym(handle, symbol)	((void*)GetProcAddress(handle, symbol))
 #  define dlclose(handle)	FreeLibrary(handle)
 #endif

@@ -15,6 +15,7 @@
 
 // Windows SDK
 #include "RpWin32_sdk.h"
+#include "tcharx.h"
 
 namespace LibWin32UI {
 

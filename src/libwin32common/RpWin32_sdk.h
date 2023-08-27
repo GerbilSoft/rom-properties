@@ -77,7 +77,6 @@
 #define NOMCX 1
 
 #include <windows.h>
-#include "tcharx.h"
 
 #ifndef WM_DPICHANGED
 #  define WM_DPICHANGED 0x2E0

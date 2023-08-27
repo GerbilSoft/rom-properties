@@ -24,6 +24,7 @@ using std::wstring;
 
 #ifdef _WIN32
 #  include "libwin32common/RpWin32_sdk.h"
+#  include "tcharx.h"
 #endif /* _WIN32 */
 
 namespace LibRpBase { namespace SystemRegion {
