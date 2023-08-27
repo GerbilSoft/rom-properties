@@ -363,8 +363,8 @@ int ELFPrivate::checkProgramHeaders(void)
 
 				// Sanity check: Interpreter must be 256 characters or less.
 				// NOTE: Interpreter should be NULL-terminated.
-				size_t len = phdr.p_filesz;
-				if (len <= 256) {
+				if (phdr.p_filesz <= 256) {
+					unsigned int len = static_cast<unsigned int>(phdr.p_filesz);
 					char buf[256];
 					const off64_t prevoff = file->tell();
 					size = file->seekAndRead(phdr.p_offset, buf, len);
@@ -535,17 +535,17 @@ int ELFPrivate::checkSectionHeaders(void)
 		if (shdr.sh_type != SHT_NOTE)
 			continue;
 
-		// Get the note address and size.
-		const off64_t int_addr = shdr.sh_offset;
-		const uint64_t int_size = shdr.sh_size;
-
 		// Sanity check: Note must be 256 bytes or less,
 		// and must be greater than sizeof(Elf32_Nhdr).
 		// NOTE: Elf32_Nhdr and Elf64_Nhdr are identical.
-		if (int_size < sizeof(Elf32_Nhdr) || int_size > 256) {
+		if (shdr.sh_size < sizeof(Elf32_Nhdr) || shdr.sh_size > 256) {
 			// Out of range. Ignore it.
 			continue;
 		}
+
+		// Get the note address and size.
+		const off64_t int_addr = shdr.sh_offset;
+		const unsigned int int_size = static_cast<unsigned int>(shdr.sh_size);
 
 		uint8_t buf[256];
 		const off64_t prevoff = file->tell();
@@ -850,7 +850,7 @@ int ELFPrivate::addPtDynamicFields(void)
 	span<const char> strtab;
 	assert(val_dtag[DT_STRSZ] < 1*1024*1024);
 	if (has_dtag[DT_STRTAB] && has_dtag[DT_STRSZ] && val_dtag[DT_STRSZ] < 1*1024*1024) {
-		strtab_buf.resize(val_dtag[DT_STRSZ]);
+		strtab_buf.resize(static_cast<size_t>(val_dtag[DT_STRSZ]));
 		if (readDataAtVA(val_dtag[DT_STRTAB], strtab_buf) == 0) {
 			// The first the last byte of the string table MUST be zero.
 			// This is pretty nice, because it simplifies the checks later on.
@@ -1008,12 +1008,12 @@ int ELFPrivate::addSymbolFields(span<const char> dynsym_strtab)
 			return;
 		if (info.entsize < (Elf_Header.primary.e_class == ELFCLASS64 ? sizeof(Elf64_Sym) : sizeof(Elf32_Sym)))
 			return;
-		buf.resize(info.size/info.entsize*info.entsize);
+		buf.resize(static_cast<size_t>(info.size / info.entsize * info.entsize));
 		size_t nread = file->seekAndRead(info.offset, buf.data(), buf.size());
 		assert(nread == buf.size());
 		if (nread != buf.size())
 			return;
-		out.reserve(buf.size()/info.entsize);
+		out.reserve(static_cast<size_t>(buf.size() / info.entsize));
 		for (uint8_t *p = buf.data(); p < buf.data() + buf.size(); p += info.entsize)
 			out.push_back(readSymbol(p));
 	};
@@ -1111,7 +1111,7 @@ int ELFPrivate::addSymbolFields(span<const char> dynsym_strtab)
 	auto read_strtab = [this](ao::uvector<uint8_t> &buf, const symtab_info_t &info) -> span<const char> {
 		if (info.strtab_size == 0 || info.strtab_size > 1*1024*1024)
 			return span<const char>();
-		buf.resize(info.strtab_size);
+		buf.resize(static_cast<size_t>(info.strtab_size));
 		size_t nread = file->seekAndRead(info.strtab_offset, buf.data(), buf.size());
 		assert(nread == buf.size());
 		if (nread == buf.size()) {

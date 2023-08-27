@@ -144,7 +144,7 @@ int VectorFile::truncate(off64_t size)
 		return -1;
 	}
 
-	m_pVector->resize(size);
+	m_pVector->resize(static_cast<size_t>(size));
 	return 0;
 }
 
