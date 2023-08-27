@@ -62,6 +62,10 @@ const char *const EXEPrivate::mimeTypes[] = {
 	// Reference: https://technet.microsoft.com/en-us/library/cc995276.aspx?f=255&MSPPError=-2147217396
 	"application/x-msdownload",
 
+	// Vendor-specific MIME types, not on FreeDesktop.org.
+	// Reference: https://en.wikipedia.org/wiki/Media_type#Common_examples
+	"application/vnd.microsoft.portable-executable",
+
 	nullptr
 };
 const RomDataInfo EXEPrivate::romDataInfo = {
