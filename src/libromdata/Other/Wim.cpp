@@ -200,7 +200,7 @@ int WimPrivate::addFields_XML()
 
 	// the xml inside wims are utf-16 but tinyxml only supports utf-8
 	// this means we have to do some conversion
-	string utf8_xml = LibRpText::utf16le_to_utf8(xml_data, static_cast<size_t>(size / 2));
+	string utf8_xml = LibRpText::utf16le_to_utf8(xml_data, static_cast<int>(size / 2));
 	delete[] xml_data;
 
 	XMLDocument document;
