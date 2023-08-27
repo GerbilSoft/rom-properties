@@ -686,7 +686,7 @@ int SAP::loadFieldData(void)
 
 		static const char *const song_list_hdr[3] = {
 			NOP_C_("SAP|SongList", "#"),
-			NOP_C_("SAP|SongList", "Duration"),
+			NOP_C_("RomData|Audio", "Duration"),
 			NOP_C_("SAP|SongList", "Looping"),
 		};
 		vector<string> *const v_song_list_hdr = RomFields::strArrayToVector_i18n(

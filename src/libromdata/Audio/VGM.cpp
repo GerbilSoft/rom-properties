@@ -412,7 +412,7 @@ int VGM::loadFieldData(void)
 	}
 
 	// Duration [1.00]
-	d->fields.addField_string(C_("VGM", "Duration"),
+	d->fields.addField_string(C_("RomData|Audio", "Duration"),
 		formatSampleAsTime(le32_to_cpu(vgmHeader->sample_count), VGM_SAMPLE_RATE));
 
 	// Loop point [1.00]

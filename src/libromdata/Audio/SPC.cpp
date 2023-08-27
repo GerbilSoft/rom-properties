@@ -809,7 +809,7 @@ int SPC::loadFieldData(void)
 		const unsigned int cs = static_cast<unsigned int>(duration % 100);
 		const unsigned int sec = static_cast<unsigned int>(duration / 100) % 60;
 		const unsigned int min = static_cast<unsigned int>(duration / 100 / 60);
-		d->fields.addField_string(C_("SPC", "Duration"),
+		d->fields.addField_string(C_("RomData|Audio", "Duration"),
 			rp_sprintf("%u:%02u.%02u", min, sec, cs));
 	}
 

@@ -912,11 +912,11 @@ int SNDH::loadFieldData(void)
 			};
 			if (has_SN && has_TIME) {
 				subtune_list_hdr[1] = NOP_C_("SNDH|SubtuneList", "Name");
-				subtune_list_hdr[2] = NOP_C_("SNDH|SubtuneList", "Duration");
+				subtune_list_hdr[2] = NOP_C_("RomData|Audio", "Duration");
 			} else if (has_SN) {
 				subtune_list_hdr[1] = NOP_C_("SNDH|SubtuneList", "Name");
 			} else if (has_TIME) {
-				subtune_list_hdr[1] = NOP_C_("SNDH|SubtuneList", "Duration");
+				subtune_list_hdr[1] = NOP_C_("RomData|Audio", "Duration");
 			} else {
 				assert(!"Invalid combination of has_SN and has_TIME.");
 				col_count = 1;
