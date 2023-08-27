@@ -12,6 +12,7 @@
 #include <errno.h>
 #include <locale.h>
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <wchar.h>
 // MSVCRT-specific

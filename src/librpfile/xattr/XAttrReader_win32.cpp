@@ -24,8 +24,8 @@ using std::unique_ptr;
 // XAttrReader isn't used by libromdata directly,
 // so use some linker hax to force linkage.
 extern "C" {
-	extern uint8_t RP_LibRpFile_XAttrReader_impl_ForceLinkage;
-	uint8_t RP_LibRpFile_XAttrReader_impl_ForceLinkage;
+	extern unsigned char RP_LibRpFile_XAttrReader_impl_ForceLinkage;
+	unsigned char RP_LibRpFile_XAttrReader_impl_ForceLinkage;
 }
 
 // ADS functions (Windows Vista and later)

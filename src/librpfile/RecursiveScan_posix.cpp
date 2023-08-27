@@ -26,8 +26,8 @@ using std::tstring;
 // RecursiveScan isn't used by libromdata directly,
 // so use some linker hax to force linkage.
 extern "C" {
-	extern uint8_t RP_LibRpFile_RecursiveScan_ForceLinkage;
-	uint8_t RP_LibRpFile_RecursiveScan_ForceLinkage;
+	extern unsigned char RP_LibRpFile_RecursiveScan_ForceLinkage;
+	unsigned char RP_LibRpFile_RecursiveScan_ForceLinkage;
 }
 
 namespace LibRpFile {

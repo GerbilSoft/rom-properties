@@ -40,8 +40,8 @@ using LibRpTexture::rp_image;
 // TextOut_text isn't used by libromdata directly,
 // so use some linker hax to force linkage.
 extern "C" {
-	extern uint8_t RP_LibRpBase_TextOut_text_ForceLinkage;
-	uint8_t RP_LibRpBase_TextOut_text_ForceLinkage;
+	extern unsigned char RP_LibRpBase_TextOut_text_ForceLinkage;
+	unsigned char RP_LibRpBase_TextOut_text_ForceLinkage;
 }
 
 namespace LibRpBase {

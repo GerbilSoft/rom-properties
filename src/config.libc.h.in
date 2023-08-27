@@ -8,7 +8,7 @@
 
 #pragma once
 
-// needed by c++11-compat.h
+// needed by compiler-compat.h
 #define __ROMPROPERTIES_CONFIG_LIBC_H__ 1
 
 /* Define to the size of `off_t` if it's available. */

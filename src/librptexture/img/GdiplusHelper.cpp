@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * GdiplusHelper.cpp: GDI+ helper class. (Win32)                           *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -22,8 +22,8 @@ namespace Gdiplus {
 // GdiplusHelper isn't used by libromdata directly,
 // so use some linker hax to force linkage.
 extern "C" {
-	extern uint8_t RP_LibRpTexture_GdiplusHelper_ForceLinkage;
-	uint8_t RP_LibRpTexture_GdiplusHelper_ForceLinkage;
+	extern unsigned char RP_LibRpTexture_GdiplusHelper_ForceLinkage;
+	unsigned char RP_LibRpTexture_GdiplusHelper_ForceLinkage;
 }
 
 namespace GdiplusHelper {
