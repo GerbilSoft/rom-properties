@@ -26,7 +26,7 @@
 #    define snprintf _snprintf
 #  elif _MSC_VER < 1900
 /* MSVC 2005 through MSVC 2013. Use variadic macros. */
-#    define snprintf(str, size, format, ...) _snprintf(str, size, format, __VA_ARGS__)
+#    define snprintf(str, size, format, ...) _snprintf((str), (size), (format), __VA_ARGS__)
 #  endif
 #endif /* _MSC_VER */
 
@@ -53,7 +53,7 @@
 // (NOTE 2: MinGW-w64 redirects to _fseeki64() and _ftelli64() when
 //  building with MSVCRT 14.0 [2015] or later.)
 #ifdef _MSC_VER
-#  define fseeko(stream, offset, origin) _fseeki64(stream, offset, origin)
+#  define fseeko(stream, offset, origin) _fseeki64((stream), (offset), (origin))
 #  define ftello(stream) _ftelli64(stream)
 #endif /* _MSC_VER */
 
@@ -76,10 +76,10 @@
  * the equivalent functions _strtoi64() and _strtoui64().
  */
 #if defined(_MSC_VER) && _MSC_VER < 1800
-#  define strtoll(nptr, endptr, base)  _strtoi64(nptr, endptr, base)
-#  define strtoull(nptr, endptr, base) _strtoui64(nptr, endptr, base)
-#  define wcstoll(nptr, endptr, base)  _wcstoi64(nptr, endptr, base)
-#  define wcstoull(nptr, endptr, base) _wcstoui64(nptr, endptr, base)
+#  define strtoll(nptr, endptr, base)  _strtoi64((nptr), (endptr), (base))
+#  define strtoull(nptr, endptr, base) _strtoui64((nptr), (endptr), (base))
+#  define wcstoll(nptr, endptr, base)  _wcstoi64((nptr), (endptr), (base))
+#  define wcstoull(nptr, endptr, base) _wcstoui64((nptr), (endptr), (base))
 #endif /* defined(_MSC_VER) && _MSC_VER < 1800 */
 
 /** strcasecmp() and related **/
@@ -90,24 +90,24 @@
  */
 #ifdef _MSC_VER
 #  ifndef strcasecmp
-#    define strcasecmp(s1, s2) _stricmp(s1, s2)
+#    define strcasecmp(s1, s2) _stricmp((s1), (s2))
 #  endif
 #  ifndef strncasecmp
-#    define strncasecmp(s1, s2, n) _strnicmp(s1, s2, n)
+#    define strncasecmp(s1, s2, n) _strnicmp((s1), (s2), (n))
 #  endif
 #endif /* _MSC_VER */
 #ifndef wcscasecmp
-#  define wcscasecmp(s1, s2) _wcsicmp(s1, s2)
+#  define wcscasecmp(s1, s2) _wcsicmp((s1), (s2))
 #endif
 #ifndef wcsncasecmp
-#  define wcsncasecmp(s1, s2, n) _wcsnicmp(s1, s2, n)
+#  define wcsncasecmp(s1, s2, n) _wcsnicmp((s1), (s2), (n))
 #endif
 
 /** strtok_r() **/
 
 // MSVC has strtok_s(), which is basically the same as strtok_r().
 #ifdef _MSC_VER
-#  define strtok_r(str, delim, saveptr) strtok_s(str, delim, saveptr)
+#  define strtok_r(str, delim, saveptr) strtok_s((str), (delim), (saveptr))
 #endif
 
 /** ssize_t **/
