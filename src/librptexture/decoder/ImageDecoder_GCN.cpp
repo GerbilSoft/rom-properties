@@ -206,7 +206,7 @@ rp_image_ptr fromGcnCI8(int width, int height,
 	const unsigned int tilesX = static_cast<unsigned int>(width / 8);
 	const unsigned int tilesY = static_cast<unsigned int>(height / 4);
 
-	// Tile pointer.
+	// Tile pointer
 	const array<uint8_t, 8*4> *pTileBuf = reinterpret_cast<const array<uint8_t, 8*4>*>(img_buf);
 
 	for (unsigned int y = 0; y < tilesY; y++) {
@@ -301,6 +301,88 @@ rp_image_ptr fromGcnI8(int width, int height,
 	// TODO: Use grayscale instead of RGB.
 	static const rp_image::sBIT_t sBIT = {8,8,8,0,0};
 	img->set_sBIT(&sBIT);
+
+	// Image has been converted.
+	return img;
+}
+
+/**
+ * Convert a GameCube CI4 image to rp_image.
+ * @param width Image width.
+ * @param height Image height.
+ * @param img_buf CI8 image buffer.
+ * @param img_siz Size of image data. [must be >= (w*h)/2]
+ * @param pal_buf Palette buffer.
+ * @param pal_siz Size of palette data. [must be >= 16*2]
+ * @return rp_image, or nullptr on error.
+ */
+rp_image_ptr fromGcnCI4(int width, int height,
+	const uint8_t *RESTRICT img_buf, int img_siz,
+	const uint16_t *RESTRICT pal_buf, int pal_siz)
+{
+	// Verify parameters.
+	assert(img_buf != nullptr);
+	assert(pal_buf != nullptr);
+	assert(width > 0);
+	assert(height > 0);
+	assert(img_siz >= ((width * height) / 2));
+	assert(pal_siz >= 16*2);
+	if (!img_buf || !pal_buf || width <= 0 || height <= 0 ||
+	    img_siz < ((width * height) / 2) || pal_siz < 16*2)
+	{
+		return nullptr;
+	}
+
+	// GameCube CI4 uses 8x8 tiles.
+	assert(width % 8 == 0);
+	assert(height % 8 == 0);
+	if (width % 8 != 0 || height % 8 != 0)
+		return nullptr;
+
+	// Calculate the total number of tiles.
+	const int tilesX = (width / 8);
+	const int tilesY = (height / 8);
+
+	// Create an rp_image.
+	const rp_image_ptr img = std::make_shared<rp_image>(width, height, rp_image::Format::CI8);
+	if (!img->isValid()) {
+		// Could not allocate the image.
+		return nullptr;
+	}
+
+	// Convert the palette.
+	// TODO: Optimize using pointers instead of indexes?
+	uint32_t *palette = img->palette();
+	assert(img->palette_len() >= 16);
+	if (img->palette_len() < 16) {
+		// Not enough colors...
+		return nullptr;
+	}
+
+	int tr_idx = -1;
+	for (int i = 0; i < 16; i++) {
+		// GCN color format is RGB5A3.
+		palette[i] = RGB5A3_to_ARGB32(be16_to_cpu(pal_buf[i]));
+		if (tr_idx < 0 && ((palette[i] >> 24) == 0)) {
+			// Found the transparent color.
+			tr_idx = i;
+		}
+	}
+	img->set_tr_idx(tr_idx);
+
+	// NOTE: rp_image initializes the palette to 0,
+	// so we don't need to clear the remaining colors.
+
+	// Tile pointer
+	const array<uint8_t, 8*8/2> *pTileBuf = reinterpret_cast<const array<uint8_t, 8*8/2>*>(img_buf);
+
+	for (int y = 0; y < tilesY; y++) {
+		for (int x = 0; x < tilesX; x++) {
+			// Decode the current tile.
+			ImageDecoderPrivate::BlitTile_CI4_LeftMSN<8, 8>(img.get(), *pTileBuf, x, y);
+			pTileBuf++;
+		}
+	}
 
 	// Image has been converted.
 	return img;

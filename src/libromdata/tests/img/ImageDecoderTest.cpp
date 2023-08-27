@@ -761,6 +761,32 @@ INSTANTIATE_TEST_SUITE_P(GVR_RGB5A3, ImageDecoderTest,
 		GVR_IMAGE_TEST("zanki_sonic", "IA8"))
 	, ImageDecoderTest::test_case_suffix_generator);
 
+// GVR tests (CI4, external palette; using grayscale RGB5A3 palette for now)
+#define GVR_CI4_IMAGE_TEST(file) ImageDecoderTest_mode( \
+			"GVR/CI4/" file ".gvr.gz", \
+			"GVR/CI4/" file ".png", "RGB5A3")
+INSTANTIATE_TEST_SUITE_P(GVR_CI4, ImageDecoderTest,
+	::testing::Values(
+		GVR_CI4_IMAGE_TEST("al_child02"),
+		GVR_CI4_IMAGE_TEST("al_child03"),
+		GVR_CI4_IMAGE_TEST("al_child04"),
+		GVR_CI4_IMAGE_TEST("al_hf00"),
+		GVR_CI4_IMAGE_TEST("al_hf01"),
+		GVR_CI4_IMAGE_TEST("al_hf02"),
+		GVR_CI4_IMAGE_TEST("al_hn00"),
+		GVR_CI4_IMAGE_TEST("al_hn01"),
+		GVR_CI4_IMAGE_TEST("al_hn02"),
+		GVR_CI4_IMAGE_TEST("al_hp00"),
+		GVR_CI4_IMAGE_TEST("al_hp01"),
+		GVR_CI4_IMAGE_TEST("al_hp02"),
+		GVR_CI4_IMAGE_TEST("al_hr00"),
+		GVR_CI4_IMAGE_TEST("al_hr01"),
+		GVR_CI4_IMAGE_TEST("al_hr02"),
+		GVR_CI4_IMAGE_TEST("al_hs00"),
+		GVR_CI4_IMAGE_TEST("al_hs01"),
+		GVR_CI4_IMAGE_TEST("al_hs02"))
+	, ImageDecoderTest::test_case_suffix_generator);
+
 // GVR tests (DXT1, S3TC)
 #define GVR_S3TC_IMAGE_TEST(file, format) ImageDecoderTest_mode( \
 			"GVR/" file ".gvr.gz", \

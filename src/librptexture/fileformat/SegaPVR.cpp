@@ -877,10 +877,10 @@ rp_image_const_ptr SegaPVRPrivate::loadGvrImage(void)
 	if (file->size() > 16*1024*1024) {
 		return nullptr;
 	}
-	const uint32_t file_sz = static_cast<uint32_t>(file->size());
+	const unsigned int file_sz = static_cast<unsigned int>(file->size());
 
 	const unsigned int pvrDataStart = gbix_len + sizeof(PVR_Header);
-	size_t expected_size = ((size_t)pvrHeader.width * (size_t)pvrHeader.height);
+	unsigned int expected_size = ((unsigned int)pvrHeader.width * (unsigned int)pvrHeader.height);
 
 	switch (pvrHeader.gvr.img_data_type) {
 		case GVR_IMG_I4:
@@ -903,8 +903,15 @@ rp_image_const_ptr SegaPVRPrivate::loadGvrImage(void)
 			expected_size *= 4;
 			break;
 
+		case GVR_IMG_CI4:
+			expected_size /= 2;
+			//expected_size += 16;	// palette?
+			break;
+		case GVR_IMG_CI8:
+			// 8bpp; no adjustments needed.
+			break;
+
 		default:
-			// TODO: CI4, CI8
 			return nullptr;
 	}
 
@@ -957,6 +964,36 @@ rp_image_const_ptr SegaPVRPrivate::loadGvrImage(void)
 				pvrHeader.width, pvrHeader.height,
 				reinterpret_cast<uint16_t*>(buf.get()), expected_size);
 			break;
+
+		case GVR_IMG_CI4: {
+			// TODO: Figure out the palette location.
+			// For now, use a grayscale RGB5A3 palette.
+			uint16_t rgb5a3[16];
+			for (unsigned int i = 0; i < 16; i++) {
+				rgb5a3[i] = cpu_to_be16(0x8000 | (i*2) | ((i*2)<<5) | ((i*2)<<10));
+			}
+			img = ImageDecoder::fromGcnCI4(
+				pvrHeader.width, pvrHeader.height,
+				buf.get(), expected_size,
+				rgb5a3, sizeof(rgb5a3));
+			break;
+		}
+
+		case GVR_IMG_CI8: {
+			// TODO: Figure out the palette location.
+			// For now, use a grayscale RGB5A3 palette.
+			uint16_t rgb5a3[256];
+			for (unsigned int i = 0; i < 256; i++) {
+				const unsigned int val = (i >> 3);
+				rgb5a3[i] = cpu_to_be16(0x8000 | val | (val<<5) | (val<<10));
+			}
+			// FIXME: Untested.
+			img = ImageDecoder::fromGcnCI8(
+				pvrHeader.width, pvrHeader.height,
+				buf.get(), expected_size,
+				rgb5a3, sizeof(rgb5a3));
+			break;
+		}
 
 		case GVR_IMG_DXT1:
 			// TODO: Determine if color 3 should be black or transparent.
