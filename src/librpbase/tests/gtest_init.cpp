@@ -93,6 +93,9 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 		SCMP_SYS(statx),
 #endif /* __SNR_statx || __NR_statx */
 
+		// for posix_fadvise()
+		SCMP_SYS(fadvise64), SCMP_SYS(fadvise64_64),
+
 		-1	// End of whitelist
 	};
 	param.syscall_wl = syscall_wl;

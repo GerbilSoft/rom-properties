@@ -1,0 +1,12 @@
+/***************************************************************************
+ * ROM Properties Page shell extension. (libromdata)                       *
+ * config.libromdata-tests.h.in: LibRomData tests config. (source file)    *
+ *                                                                         *
+ * Copyright (c) 2023 by David Korth.                                      *
+ * SPDX-License-Identifier: GPL-2.0-or-later                               *
+ ***************************************************************************/
+
+#pragma once
+
+/* Define to 1 if you have the `posix_fadvise` function declared in <fcntl.h>. */
+#cmakedefine HAVE_POSIX_FADVISE 1

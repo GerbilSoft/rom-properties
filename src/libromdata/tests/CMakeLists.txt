@@ -7,9 +7,21 @@ IF(POLICY CMP0063)
 ENDIF(POLICY CMP0063)
 PROJECT(libromdata-tests LANGUAGES C CXX)
 
+# Current binary directory for config.libromdata-tests.h
+INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR})
+
 # Top-level src directory
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/../..)
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR}/../..)
+
+IF(NOT WIN32)
+	INCLUDE(CheckSymbolExists)
+	CHECK_SYMBOL_EXISTS(posix_fadvise "fcntl.h" HAVE_POSIX_FADVISE)
+ENDIF(NOT WIN32)
+
+# Write the config.h file.
+CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.${PROJECT_NAME}.h.in"
+	"${CMAKE_CURRENT_BINARY_DIR}/config.${PROJECT_NAME}.h")
 
 IF(ENABLE_DECRYPTION)
 	# CtrKeyScrambler test.

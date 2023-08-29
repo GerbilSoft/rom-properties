@@ -7,6 +7,7 @@
  ***************************************************************************/
 
 #include "microtar_zstd.h"
+#include "config.libromdata-tests.h"
 
 #include <zstd.h>
 
@@ -15,6 +16,10 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+
+#ifdef HAVE_POSIX_FADVISE
+#  include <fcntl.h>
+#endif /* HAVE_POSIX_FADVISE */
 
 static inline size_t min_sz(size_t a, size_t b)
 {
@@ -259,5 +264,11 @@ int mtar_zstd_open_ro(mtar_t *tar, const char *filename)
 	tar->seek = mtar_zstd_seek;
 	tar->close = mtar_zstd_close;
 	tar->stream = ctx;
+
+#ifdef HAVE_POSIX_FADVISE
+	// Advise the kernel that we will be doing sequential access.
+	// This may improve performance in some cases.
+	posix_fadvise(fileno(ctx->f), 0, 0, POSIX_FADV_SEQUENTIAL);
+#endif /* HAVE_POSIX_FADVISE */
 	return MTAR_ESUCCESS;
 }
