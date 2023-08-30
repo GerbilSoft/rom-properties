@@ -22,6 +22,14 @@
 
 namespace LibRpTexture {
 
+// Using file extensions on Windows,
+// and MIME types on other platforms.
+#ifdef _WIN32
+#  define FILEFORMATFACTORY_USE_FILE_EXTENSIONS 1
+#else /* !_WIN32 */
+#  define FILEFORMATFACTORY_USE_MIME_TYPES 1
+#endif
+
 class FileFormatFactory
 {
 public:
@@ -48,6 +56,7 @@ public:
 	 */
 	static FileFormatPtr create(const LibRpFile::IRpFilePtr &file);
 
+#ifdef FILEFORMATFACTORY_USE_FILE_EXTENSIONS
 	/**
 	 * Get all supported file extensions.
 	 * Used for Win32 COM registration.
@@ -56,7 +65,9 @@ public:
 	 */
 	RP_LIBROMDATA_PUBLIC	/* TODO: Export on Windows only? */
 	static const std::vector<const char*> &supportedFileExtensions(void);
+#endif /* FILEFORMATFACTORY_USE_FILE_EXTENSIONS */
 
+#ifdef FILEFORMATFACTORY_USE_MIME_TYPES
 	/**
 	 * Get all supported MIME types.
 	 * Used for KFileMetaData.
@@ -64,6 +75,7 @@ public:
 	 * @return All supported MIME types.
 	 */
 	static std::vector<const char*> supportedMimeTypes(void);
+#endif /* FILEFORMATFACTORY_USE_MIME_TYPES */
 };
 
 } //namespace LibRpTexture

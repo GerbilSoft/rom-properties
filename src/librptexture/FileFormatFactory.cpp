@@ -94,13 +94,12 @@ class FileFormatFactoryPrivate
 		// This array is for file extensions and MIME types only.
 		static const FileFormatFns FileFormatFns_mime[];
 
-		// Vectors for file extensions.
-		// We want to collect them once per session instead of
-		// repeatedly collecting them, since the caller might
-		// not cache them.
+#ifdef FILEFORMATFACTORY_USE_FILE_EXTENSIONS
+		/** Supported file extensions **/
+		// NOTE: Cached, using pthread_once().
 		static vector<const char*> vec_exts;
-		// pthread_once() control variables
 		static pthread_once_t once_exts;
+#endif /* FILEFORMATFACTORY_USE_FILE_EXTENSIONS */
 
 		/**
 		 * Initialize the vector of supported file extensions.
@@ -116,9 +115,10 @@ class FileFormatFactoryPrivate
 
 /** FileFormatFactoryPrivate **/
 
+#ifdef FILEFORMATFACTORY_USE_FILE_EXTENSIONS
 vector<const char*> FileFormatFactoryPrivate::vec_exts;
-// pthread_once() control variables
 pthread_once_t FileFormatFactoryPrivate::once_exts = PTHREAD_ONCE_INIT;
+#endif /* FILEFORMATFACTORY_USE_FILE_EXTENSIONS */
 
 // FileFormat subclasses that use a header at 0 and
 // definitely have a 32-bit magic number at address 0.
@@ -314,6 +314,7 @@ FileFormatPtr FileFormatFactory::create(const IRpFilePtr &file)
 	return nullptr;
 }
 
+#ifdef FILEFORMATFACTORY_USE_FILE_EXTENSIONS
 /**
  * Initialize the vector of supported file extensions.
  * Used for Win32 COM registration.
@@ -382,7 +383,9 @@ const vector<const char*> &FileFormatFactory::supportedFileExtensions(void)
 	pthread_once(&FileFormatFactoryPrivate::once_exts, FileFormatFactoryPrivate::init_supportedFileExtensions);
 	return FileFormatFactoryPrivate::vec_exts;
 }
+#endif /* FILEFORMATFACTORY_USE_FILE_EXTENSIONS */
 
+#ifdef FILEFORMATFACTORY_USE_MIME_TYPES
 /**
  * Get all supported MIME types.
  * Used for KFileMetaData.
@@ -440,5 +443,6 @@ vector<const char*> FileFormatFactory::supportedMimeTypes(void)
 
 	return vec_mimeTypes;
 }
+#endif /* FILEFORMATFACTORY_USE_MIME_TYPES */
 
 }

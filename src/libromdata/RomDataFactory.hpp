@@ -21,6 +21,14 @@
 
 namespace LibRomData {
 
+// Using file extensions on Windows,
+// and MIME types on other platforms.
+#ifdef _WIN32
+#  define ROMDATAFACTORY_USE_FILE_EXTENSIONS 1
+#else /* !_WIN32 */
+#  define ROMDATAFACTORY_USE_MIME_TYPES 1
+#endif
+
 class RomDataFactory
 {
 public:
@@ -121,6 +129,7 @@ public:
 	static LibRpBase::RomDataPtr create(const wchar_t *filenameW, unsigned int attrs = 0);
 #endif /* _WIN32 */
 
+#ifdef ROMDATAFACTORY_USE_FILE_EXTENSIONS
 	struct ExtInfo {
 		const char *ext;
 		unsigned int attrs;
@@ -141,9 +150,11 @@ public:
 	 *
 	 * @return All supported file extensions, including the leading dot.
 	 */
-	RP_LIBROMDATA_PUBLIC	/* TODO: Export on Windows only? */
+	RP_LIBROMDATA_PUBLIC
 	static const std::vector<ExtInfo> &supportedFileExtensions(void);
+#endif /* ROMDATAFACTORY_USE_FILE_EXTENSIONS */
 
+#ifdef ROMDATAFACTORY_USE_MIME_TYPES
 	/**
 	 * Get all supported MIME types.
 	 * Used for KFileMetaData.
@@ -152,6 +163,7 @@ public:
 	 */
 	RP_LIBROMDATA_PUBLIC
 	static const std::vector<const char*> &supportedMimeTypes(void);
+#endif /* ROMDATAFACTORY_USE_MIME_TYPES */
 };
 
 } //namespace LibRomData

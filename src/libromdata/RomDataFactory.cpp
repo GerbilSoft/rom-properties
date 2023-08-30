@@ -112,9 +112,9 @@ namespace LibRomData {
 
 class RomDataFactoryPrivate
 {
-	private:
-		RomDataFactoryPrivate();
-		~RomDataFactoryPrivate();
+	public:
+		RomDataFactoryPrivate() = delete;
+		~RomDataFactoryPrivate() = delete;
 
 	private:
 		RP_DISABLE_COPY(RomDataFactoryPrivate)
@@ -184,15 +184,11 @@ class RomDataFactoryPrivate
 		 */
 		static RomDataPtr openDreamcastVMSandVMI(const IRpFilePtr &file);
 
-		// Vectors for file extensions and MIME types.
-		// We want to collect them once per session instead of
-		// repeatedly collecting them, since the caller might
-		// not cache them.
+#ifdef ROMDATAFACTORY_USE_FILE_EXTENSIONS
+		/** Supported file extensions **/
+		// NOTE: Cached, using pthread_once().
 		static vector<RomDataFactory::ExtInfo> vec_exts;
-		static vector<const char*> vec_mimeTypes;
-		// pthread_once() control variables
 		static pthread_once_t once_exts;
-		static pthread_once_t once_mimeTypes;
 
 		/**
 		 * Initialize the vector of supported file extensions.
@@ -204,6 +200,13 @@ class RomDataFactoryPrivate
 		 * indicating if the file type handler supports thumbnails.
 		 */
 		static void init_supportedFileExtensions(void);
+#endif /* ROMDATAFACTORY_USE_FILE_EXTENSIONS */
+
+#ifdef ROMDATAFACTORY_USE_MIME_TYPES
+		/** Supported MIME types **/
+		// NOTE: Cached, using pthread_once().
+		static vector<const char*> vec_mimeTypes;
+		static pthread_once_t once_mimeTypes;
 
 		/**
 		 * Initialize the vector of supported MIME types.
@@ -212,6 +215,7 @@ class RomDataFactoryPrivate
 		 * Internal function; must be called using pthread_once().
 		 */
 		static void init_supportedMimeTypes(void);
+#endif /* ROMDATAFACTORY_USE_MIME_TYPES */
 
 		/**
 		 * Check an ISO-9660 disc image for a game-specific file system.
@@ -230,10 +234,14 @@ class RomDataFactoryPrivate
 
 /** RomDataFactoryPrivate **/
 
+#ifdef ROMDATAFACTORY_USE_FILE_EXTENSIONS
 vector<RomDataFactory::ExtInfo> RomDataFactoryPrivate::vec_exts;
-vector<const char*> RomDataFactoryPrivate::vec_mimeTypes;
 pthread_once_t RomDataFactoryPrivate::once_exts = PTHREAD_ONCE_INIT;
+#endif /* ROMDATAFACTORY_USE_FILE_EXTENSIONS */
+#ifdef ROMDATAFACTORY_USE_MIME_TYPES
+vector<const char*> RomDataFactoryPrivate::vec_mimeTypes;
 pthread_once_t RomDataFactoryPrivate::once_mimeTypes = PTHREAD_ONCE_INIT;
+#endif /* ROMDATAFACTORY_USE_MIME_TYPES */
 
 #define ATTR_NONE		RomDataFactory::RDA_NONE
 #define ATTR_HAS_THUMBNAIL	RomDataFactory::RDA_HAS_THUMBNAIL
@@ -938,6 +946,7 @@ RomDataPtr RomDataFactory::create(const wchar_t *filenameW, unsigned int attrs)
 }
 #endif /* _WIN32 */
 
+#ifdef ROMDATAFACTORY_USE_FILE_EXTENSIONS
 /**
  * Initialize the vector of supported file extensions.
  * Used for Win32 COM registration.
@@ -1028,7 +1037,9 @@ const vector<RomDataFactory::ExtInfo> &RomDataFactory::supportedFileExtensions(v
 	pthread_once(&RomDataFactoryPrivate::once_exts, RomDataFactoryPrivate::init_supportedFileExtensions);
 	return RomDataFactoryPrivate::vec_exts;
 }
+#endif /* ROMDATAFACTORY_USE_FILE_EXTENSIONS */
 
+#ifdef ROMDATAFACTORY_USE_MIME_TYPES
 /**
  * Initialize the vector of supported MIME types.
  * Used for KFileMetaData.
@@ -1095,5 +1106,6 @@ const vector<const char*> &RomDataFactory::supportedMimeTypes(void)
 	pthread_once(&RomDataFactoryPrivate::once_mimeTypes, RomDataFactoryPrivate::init_supportedMimeTypes);
 	return RomDataFactoryPrivate::vec_mimeTypes;
 }
+#endif /* ROMDATAFACTORY_USE_MIME_TYPES */
 
 }
