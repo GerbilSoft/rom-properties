@@ -90,6 +90,7 @@ char *mz_os_utf8_string_create(const char *string, int32_t encoding) {
 }
 #else
 char *mz_os_utf8_string_create(const char *string, int32_t encoding) {
+    ((void)encoding);
     return strdup(string);
 }
 #endif
