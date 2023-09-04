@@ -1,9 +1,9 @@
-This copy of minizip-ng 4.0.0 is a modified version of the original.
+This copy of minizip-ng 4.0.1 is a modified version of the original.
 
-commit a1f568d60135079881ef2be08d1758013ebbb542
-Version 4.0.0.
+commit 680d6f1dcf9de99fc033b54975a1dfff10be2b6b
+Version 4.0.1.
 
-Tag: 4.0.0
+Tag: 4.0.1
 
 The following changes have been made to the original:
 
@@ -23,7 +23,7 @@ The following changes have been made to the original:
 - project(): Disabled DESCRIPTION and HOMEPAGE_URL due to requiring
   newer versions of CMake than what's available in Ubuntu 16.04.
 
-To obtain the original minizip-ng 4.0.0, visit:
+To obtain the original minizip-ng 4.0.1, visit:
 https://github.com/zlib-ng/minizip-ng
 
 To obtain the original minizip-1.1, visit:

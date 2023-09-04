@@ -8,15 +8,15 @@
 #cmake_minimum_required(VERSION 3.13)
 
 # Library version
-set(VERSION "4.0.0")
+set(VERSION "4.0.1")
 # API version
 set(SOVERSION "4")
 
 project(minizip-ng
     VERSION ${VERSION}
-    LANGUAGES C)
-#    DESCRIPTION "Zip manipulation library"
-#	HOMEPAGE_URL https://github.com/zlib-ng/minizip-ng/)
+    LANGUAGES C
+    DESCRIPTION "Zip manipulation library"
+	HOMEPAGE_URL https://github.com/zlib-ng/minizip-ng/)
 
 include(CMakeDependentOption)
 include(CheckLibraryExists)
@@ -24,11 +24,13 @@ include(CheckSymbolExists)
 include(CheckFunctionExists)
 include(CheckIncludeFile)
 include(CheckIncludeFiles)
-#include(CheckSourceCompiles)
+include(CheckCSourceCompiles)
 include(CheckTypeSize)
 include(GNUInstallDirs)
 # rom-properties: Disabled FeatureSummary.
 #include(FeatureSummary)
+
+include(cmake/detect-sanitizer.cmake)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
@@ -62,6 +64,10 @@ option(MZ_BUILD_TESTS "Builds minizip test executable" OFF)
 option(MZ_BUILD_UNIT_TESTS "Builds minizip unit test project" OFF)
 option(MZ_BUILD_FUZZ_TESTS "Builds minizip fuzzer executables" OFF)
 option(MZ_CODE_COVERAGE "Builds with code coverage flags" OFF)
+
+# Multi-choice code sanitizer option
+set(MZ_SANITIZER AUTO CACHE STRING "Enable sanitizer support")
+set_property(CACHE MZ_SANITIZER PROPERTY STRINGS "Memory" "Address" "Undefined" "Thread")
 ENDIF(0)
 
 # rom-properties: Using ZLIB and (optionally) ZSTD.
@@ -480,7 +486,7 @@ if(WIN32)
     set(MZ_LIBBSD OFF)
     set(MZ_ICONV OFF)
 else()
-    list(APPEND STDLIB_DEF -D_POSIX_C_SOURCE=200809L)
+    list(APPEND STDLIB_DEF -D_POSIX_C_SOURCE=200809L -D_BSD_SOURCE)
     list(APPEND MINIZIP_SRC mz_os_posix.c mz_strm_os_posix.c)
 
     if(MZ_PKCRYPT OR MZ_WZAES)
@@ -632,6 +638,8 @@ endif()
 
 # Include compatibility layer
 if(MZ_COMPAT)
+    set(SOVERSION "1")
+
     set(FILE_H "zip.h")
     set(MZ_COMPAT_FILE "MZ_COMPAT_ZIP")
     configure_file(mz_compat_shim.h.in zip.h)
@@ -645,6 +653,17 @@ if(MZ_COMPAT)
     endif()
     list(APPEND MINIZIP_SRC mz_compat.c)
     list(APPEND MINIZIP_HDR mz_compat.h ${CMAKE_CURRENT_BINARY_DIR}/zip.h ${CMAKE_CURRENT_BINARY_DIR}/unzip.h)
+endif()
+
+# Detect available sanitizers
+if(MZ_SANITIZER STREQUAL "Address")
+    add_address_sanitizer()
+elseif(MZ_SANITIZER STREQUAL "Memory")
+    add_memory_sanitizer()
+elseif(MZ_SANITIZER STREQUAL "Thread")
+    add_thread_sanitizer()
+elseif(MZ_SANITIZER STREQUAL "Undefined")
+    add_undefined_sanitizer()
 endif()
 
 # Set compiler options
@@ -697,15 +716,12 @@ if(MSVC)
     # VS debugger has problems when executable and static library are named the same
     set_target_properties(${MINIZIP_TARGET} PROPERTIES OUTPUT_NAME lib${MINIZIP_TARGET})
 endif()
-if(NOT RISCOS AND NOT PSP)
-    set_target_properties(${MINIZIP_TARGET} PROPERTIES POSITION_INDEPENDENT_CODE 1)
-endif()
 if(MZ_LZMA)
     set_target_properties(${MINIZIP_TARGET} PROPERTIES C_STANDARD 99)
 endif()
 
 target_link_libraries(${MINIZIP_TARGET} PUBLIC ${MINIZIP_LIB} ${MINIZIP_DEP})
-#target_link_directories(${MINIZIP_TARGET} PUBLIC ${MINIZIP_LBD})
+target_link_directories(${MINIZIP_TARGET} PUBLIC ${MINIZIP_LBD})
 target_compile_definitions(${MINIZIP_TARGET} PRIVATE ${STDLIB_DEF} ${MINIZIP_DEF})
 target_include_directories(${MINIZIP_TARGET} PRIVATE ${MINIZIP_INC})
 target_include_directories(${MINIZIP_TARGET} PUBLIC
@@ -727,7 +743,7 @@ if(NOT SKIP_INSTALL_LIBRARIES AND NOT SKIP_INSTALL_ALL)
             ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
             LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}")
     install(EXPORT ${MINIZIP_TARGET}
-            DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake"
+            DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${MINIZIP_TARGET}"
             NAMESPACE "MINIZIP::")
 
     # Create and install CMake package config version file to allow find_package()
@@ -748,11 +764,11 @@ if(NOT SKIP_INSTALL_LIBRARIES AND NOT SKIP_INSTALL_ALL)
     configure_package_config_file(
         ${CMAKE_CURRENT_BINARY_DIR}/minizip-config.cmake.in
         ${MINIZIP_TARGET}-config.cmake
-        INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake")
+        INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${MINIZIP_TARGET}")
 
     install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${MINIZIP_TARGET}-config-version.cmake
                   ${CMAKE_CURRENT_BINARY_DIR}/${MINIZIP_TARGET}-config.cmake
-            DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake")
+            DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${MINIZIP_TARGET}")
 endif()
 if(NOT SKIP_INSTALL_HDR AND NOT SKIP_INSTALL_ALL)
     install(FILES ${MINIZIP_HDR} DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/${MINIZIP_TARGET}")
