@@ -307,11 +307,13 @@ tstring IDownloader::getOSRelease(void)
 	}
 	if (!ctx.field_name) {
 		// No field name...
+		fclose(f_in);
 		return {};
 	}
 
 	// Find the requested field.
 	ini_parse_file(f_in, parse_os_release, &ctx);
+	fclose(f_in);
 	if (ctx.ret_value[0] == '\0') {
 		// Field not found.
 		return {};
