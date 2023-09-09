@@ -480,8 +480,8 @@ rp_rom_data_view_doRomOp_stdop(RpRomDataView *page, int id)
 	int ret = rpGtk_getSaveFileName(&gfndata);
 	if (ret != 0) {
 		// rpGtk_getSaveFileName() failed.
-		// free() the save_data_t because the callback won't be run.
-		free(save_data);
+		// g_free() the save_data_t because the callback won't be run.
+		g_free(save_data);
 	}
 
 	// rpGtk_getSaveFileName() will call rp_rom_data_view_doRomOp_stdop_callback()
@@ -567,8 +567,8 @@ btnOptions_triggered_signal_handler(RpOptionsMenuButton *menuButton,
 		int ret = rpGtk_getSaveFileName(&gfndata);
 		if (ret != 0) {
 			// rpGtk_getSaveFileName() failed.
-			// free() the save_data_t because the callback won't be run.
-			free(save_data);
+			// g_free() the save_data_t because the callback won't be run.
+			g_free(save_data);
 		}
 	} else {
 		// No filename is needed.

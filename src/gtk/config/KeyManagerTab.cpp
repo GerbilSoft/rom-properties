@@ -521,8 +521,8 @@ rp_key_manager_tab_handle_menu_action(RpKeyManagerTab *tab, gint id)
 	int ret = rpGtk_getOpenFileName(&gfndata);
 	if (ret != 0) {
 		// rpGtk_getOpenFileName() failed.
-		// free() the open_data_t because the callback won't be run.
-		free(open_data);
+		// g_free() the open_data_t because the callback won't be run.
+		g_free(open_data);
 	}
 
 	// rpGtk_getOpenFileName() will call rp_key_manager_getOpenFileDialog_callback()
