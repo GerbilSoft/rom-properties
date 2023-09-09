@@ -1,24 +1,29 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (Win32)                            *
- * ITab.cpp: Property sheet base class for rp-config.                      *
+ * ROM Properties Page shell extension. (libwin32ui)                       *
+ * LoadResource_i18n.hpp: LoadResource() for the specified locale.         *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
-#include "ITab.hpp"
+#include "LoadResource_i18n.hpp"
 
 #include "librpbase/SystemRegion.hpp"
 using namespace LibRpBase;
 
+// C++ includes
+#include <algorithm>
+
+namespace LibWin32UI {
+
 /**
  * Load a resource using the current i18n settings.
- * @param lpType Resource type.
- * @param dwResId Resource ID.
+ * @param hModule Module handle
+ * @param lpType Resource type
+ * @param dwResId Resource ID
  * @return Pointer to resource, or nullptr if not found.
  */
-LPVOID ITab::LoadResource_i18n(LPCTSTR lpType, DWORD dwResId)
+LPVOID LoadResource_i18n(HMODULE hModule, LPCTSTR lpType, DWORD dwResId)
 {
 	// NOTE: This function should be updated whenever
 	// a new translation is added.
@@ -57,12 +62,12 @@ LPVOID ITab::LoadResource_i18n(LPCTSTR lpType, DWORD dwResId)
 
 	// Search for the requested language.
 	if (wLanguage != 0) {
-		hRsrc = FindResourceEx(HINST_THISCOMPONENT, lpType,
+		hRsrc = FindResourceEx(hModule, lpType,
 				MAKEINTRESOURCE(dwResId),
 				wLanguage);
 		if (!hRsrc && wLanguageFallback != 0) {
 			// Try the fallback language.
-			hRsrc = FindResourceEx(HINST_THISCOMPONENT, lpType,
+			hRsrc = FindResourceEx(hModule, lpType,
 					MAKEINTRESOURCE(dwResId),
 					wLanguageFallback);
 		}
@@ -70,14 +75,14 @@ LPVOID ITab::LoadResource_i18n(LPCTSTR lpType, DWORD dwResId)
 
 	if (!hRsrc) {
 		// Try en_US.
-		hRsrc = FindResourceEx(HINST_THISCOMPONENT, lpType,
+		hRsrc = FindResourceEx(hModule, lpType,
 				MAKEINTRESOURCE(dwResId),
 				MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US));
 	}
 
 	if (!hRsrc) {
 		// Try without specifying a language ID.
-		hRsrc = FindResourceEx(HINST_THISCOMPONENT, lpType,
+		hRsrc = FindResourceEx(hModule, lpType,
 				MAKEINTRESOURCE(dwResId),
 				MAKELANGID(LANG_NEUTRAL, SUBLANG_NEUTRAL));
 	}
@@ -91,11 +96,13 @@ LPVOID ITab::LoadResource_i18n(LPCTSTR lpType, DWORD dwResId)
 	// NOTE: Resource locking doesn't actually lock anything,
 	// so we don't have to unlock or free the resource later.
 	// (Win16 legacy functionality.)
-	hGlobal = LoadResource(HINST_THISCOMPONENT, hRsrc);
+	hGlobal = LoadResource(hModule, hRsrc);
 	if (!hGlobal) {
 		// Unable to load the resource.
 		return nullptr;
 	}
 
 	return LockResource(hGlobal);
+}
+
 }

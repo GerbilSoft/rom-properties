@@ -24,14 +24,16 @@ using namespace LibRpTexture;
 #include "file/RpFile_windres.hpp"
 using LibRpFile::IRpFile;
 
+// libwin32ui
+#include "libwin32ui/AutoGetDC.hpp"
+#include "libwin32ui/LoadResource_i18n.hpp"
+using LibWin32UI::AutoGetDC_font;
+using LibWin32UI::LoadDialog_i18n;
+
 // C++ STL classes
 using std::shared_ptr;
 using std::tstring;
 using std::unique_ptr;
-
-// libwin32ui
-#include "libwin32ui/AutoGetDC.hpp"
-using LibWin32UI::AutoGetDC_font;
 
 class AchievementsTabPrivate
 {
@@ -554,7 +556,7 @@ HPROPSHEETPAGE AchievementsTab::getHPropSheetPage(void)
 	psp.dwSize = sizeof(psp);
 	psp.dwFlags = PSP_USECALLBACK | PSP_USETITLE | PSP_DLGINDIRECT;
 	psp.hInstance = HINST_THISCOMPONENT;
-	psp.pResource = LoadDialog_i18n(IDD_CONFIG_ACHIEVEMENTS);
+	psp.pResource = LoadDialog_i18n(HINST_THISCOMPONENT, IDD_CONFIG_ACHIEVEMENTS);
 	psp.pszIcon = nullptr;
 	psp.pszTitle = tsTabTitle.c_str();
 	psp.pfnDlgProc = AchievementsTabPrivate::dlgProc;

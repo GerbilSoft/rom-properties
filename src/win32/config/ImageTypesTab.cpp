@@ -14,6 +14,10 @@
 using namespace LibRpBase;
 using namespace LibRpFile;
 
+// libwin32ui
+#include "libwin32ui/LoadResource_i18n.hpp"
+using LibWin32UI::LoadDialog_i18n;
+
 // C++ STL classes.
 using std::tstring;
 using std::vector;
@@ -718,7 +722,7 @@ HPROPSHEETPAGE ImageTypesTab::getHPropSheetPage(void)
 	psp.dwSize = sizeof(psp);
 	psp.dwFlags = PSP_USECALLBACK | PSP_USETITLE | PSP_DLGINDIRECT;
 	psp.hInstance = HINST_THISCOMPONENT;
-	psp.pResource = LoadDialog_i18n(IDD_CONFIG_IMAGETYPES);
+	psp.pResource = LoadDialog_i18n(HINST_THISCOMPONENT, IDD_CONFIG_IMAGETYPES);
 	psp.pszIcon = nullptr;
 	psp.pszTitle = tsTabTitle.c_str();
 	psp.pfnDlgProc = ImageTypesTabPrivate::dlgProc;

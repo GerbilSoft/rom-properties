@@ -9,9 +9,13 @@
 #pragma once
 
 #include "common.h"
+#include "dll-macros.h"	// for RP_LIBROMDATA_PUBLIC
 
-// C includes.
+// C includes
 #include <stdint.h>
+
+// C++ includes
+#include <string>
 
 namespace LibRpBase { namespace SystemRegion {
 

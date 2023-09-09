@@ -21,37 +21,6 @@ class NOVTABLE ITab
 	private:
 		RP_DISABLE_COPY(ITab)
 
-	protected:
-		/**
-		 * Load a resource using the current i18n settings.
-		 * @param lpType Resource type.
-		 * @param dwResId Resource ID.
-		 * @return Pointer to resource, or nullptr if not found.
-		 */
-		static LPVOID LoadResource_i18n(LPCTSTR lpType, DWORD dwResId);
-
-		/**
-		 * Load a dialog resource using the current i18n settings.
-		 * @param dwResId Dialog resource ID.
-		 * @return Pointer to dialog resource, or nullptr if not found.
-		 */
-		static inline LPCDLGTEMPLATE LoadDialog_i18n(DWORD dwResId)
-		{
-			return reinterpret_cast<LPCDLGTEMPLATE>(LoadResource_i18n(RT_DIALOG, dwResId));
-		}
-
-		/**
-		 * Load a menu resource using the current i18n settings.
-		 * @param dwResId Menu resource ID.
-		 * @return HMENU created from the menu resource, or nullptr if not found.
-		 */
-		static inline HMENU LoadMenu_i18n(DWORD dwResId)
-		{
-			const MENUTEMPLATE *lpcMenuTemplate =
-				reinterpret_cast<const MENUTEMPLATE*>(LoadResource_i18n(RT_MENU, dwResId));
-			return (lpcMenuTemplate ? LoadMenuIndirect(lpcMenuTemplate) : nullptr);
-		}
-
 	public:
 		/**
 		 * Create the HPROPSHEETPAGE for this tab.

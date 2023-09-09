@@ -12,9 +12,11 @@
 
 // Other rom-properties libraries
 #include "librpfile/RecursiveScan.hpp"
+#include "libwin32ui/LoadResource_i18n.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;
+using LibWin32UI::LoadDialog_i18n;
 using LibWin32UI::RegKey;
 using LibWin32UI::WTSSessionNotification;
 
@@ -945,11 +947,8 @@ HPROPSHEETPAGE CacheTab::getHPropSheetPage(void)
 	psp.pcRefParent = nullptr;
 	psp.pfnCallback = CacheTabPrivate::callbackProc;
 
-	if (d->isVista) {
-		psp.pResource = LoadDialog_i18n(IDD_CONFIG_CACHE);
-	} else {
-		psp.pResource = LoadDialog_i18n(IDD_CONFIG_CACHE_XP);
-	}
+	const unsigned int resId = likely(d->isVista) ? IDD_CONFIG_CACHE : IDD_CONFIG_CACHE_XP;
+	psp.pResource = LoadDialog_i18n(HINST_THISCOMPONENT, resId);
 
 	d->hPropSheetPage = CreatePropertySheetPage(&psp);
 	return d->hPropSheetPage;

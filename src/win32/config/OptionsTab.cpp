@@ -18,6 +18,10 @@
 using namespace LibRpBase;
 using namespace LibRpFile;
 
+// libwin32ui
+#include "libwin32ui/LoadResource_i18n.hpp"
+using LibWin32UI::LoadDialog_i18n;
+
 // Netowrk status
 #include "NetworkStatus.h"
 
@@ -591,7 +595,7 @@ HPROPSHEETPAGE OptionsTab::getHPropSheetPage(void)
 	psp.dwSize = sizeof(psp);
 	psp.dwFlags = PSP_USECALLBACK | PSP_USETITLE | PSP_DLGINDIRECT;
 	psp.hInstance = HINST_THISCOMPONENT;
-	psp.pResource = LoadDialog_i18n(IDD_CONFIG_OPTIONS);
+	psp.pResource = LoadDialog_i18n(HINST_THISCOMPONENT, IDD_CONFIG_OPTIONS);
 	psp.pszIcon = nullptr;
 	psp.pszTitle = tsTabTitle.c_str();
 	psp.pfnDlgProc = OptionsTabPrivate::dlgProc;

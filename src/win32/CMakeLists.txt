@@ -78,7 +78,6 @@ SET(${PROJECT_NAME}_SRCS
 	config/ConfigDialog.cpp
 	config/PropSheetIcon.cpp
 	config/RP_EmptyVolumeCacheCallback.cpp
-	config/ITab.cpp
 	config/ImageTypesTab.cpp
 	config/SystemsTab.cpp
 	config/OptionsTab.cpp

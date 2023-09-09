@@ -14,7 +14,11 @@
 using namespace LibRpBase;
 using namespace LibRpFile;
 
-// C++ STL classes.
+// libwin32ui
+#include "libwin32ui/LoadResource_i18n.hpp"
+using LibWin32UI::LoadDialog_i18n;
+
+// C++ STL classes
 using std::tstring;
 
 class SystemsTabPrivate
@@ -392,7 +396,7 @@ HPROPSHEETPAGE SystemsTab::getHPropSheetPage(void)
 	psp.dwSize = sizeof(psp);
 	psp.dwFlags = PSP_USECALLBACK | PSP_USETITLE | PSP_DLGINDIRECT;
 	psp.hInstance = HINST_THISCOMPONENT;
-	psp.pResource = LoadDialog_i18n(IDD_CONFIG_SYSTEMS);
+	psp.pResource = LoadDialog_i18n(HINST_THISCOMPONENT, IDD_CONFIG_SYSTEMS);
 	psp.pszIcon = nullptr;
 	psp.pszTitle = tsTabTitle.c_str();
 	psp.pfnDlgProc = SystemsTabPrivate::dlgProc;
