@@ -23,6 +23,10 @@
 using LibRpBase::Config;
 using LibRpFile::XAttrReader;
 
+// libwin32ui
+#include "libwin32ui/LoadResource_i18n.hpp"
+using LibWin32UI::LoadDialog_i18n;
+
 // MS-DOS and Windows attributes
 // NOTE: Does not depend on the Windows SDK.
 #include "librpfile/xattr/dos_attrs.h"
@@ -428,9 +432,9 @@ IFACEMETHODIMP RP_XAttrView::AddPages(_In_ LPFNADDPROPSHEETPAGE pfnAddPage, LPAR
 	// Create an XAttrView page.
 	PROPSHEETPAGE psp;
 	psp.dwSize = sizeof(psp);
-	psp.dwFlags = PSP_USECALLBACK | PSP_USETITLE;
+	psp.dwFlags = PSP_USECALLBACK | PSP_USETITLE | PSP_DLGINDIRECT;
 	psp.hInstance = HINST_THISCOMPONENT;
-	psp.pszTemplate = MAKEINTRESOURCE(IDD_XATTRVIEW);
+	psp.pResource = LoadDialog_i18n(HINST_THISCOMPONENT, IDD_XATTRVIEW);
 	psp.pszIcon = nullptr;
 	psp.pszTitle = tsTabTitle;
 	psp.pfnDlgProc = RP_XAttrView_Private::DlgProc;

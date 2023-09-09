@@ -81,6 +81,8 @@
     previously used by RomData, IRpFile, and many other base classes, has been
     removed in favor of std::shared_ptr<>. shared_ptr does have a bit more
     overhead for both code and RAM, but it significantly simplifies the code.
+  * Windows: The "xattr" tab now respects the LC_ALL and/or LC_MESSAGES
+    environment variable to allow for easier multi-language testing.
 
 ## v2.2.1 (released 2023/07/30)
 
