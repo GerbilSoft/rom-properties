@@ -217,6 +217,7 @@ RomFields::Field::Field(const Field &other)
  * It will not handle map index updates.
  *
  * @param other Other RomFields::Field object
+ * @return *this
  */
 RomFields::Field& RomFields::Field::operator=(Field other)
 {
@@ -273,6 +274,39 @@ RomFields::Field::Field(Field &&other) noexcept
 	// Reset the other object.
 	other.name = nullptr;
 	other.type = RFT_INVALID;
+}
+
+/**
+ * Move assignemnt constructor
+ *
+ * NOTE: This only ensures that the string data is copied correctly.
+ * It will not handle map index updates.
+ *
+ * @param other Other RomFields::Field object
+ * @return *this
+ */
+RomFields::Field& RomFields::Field::operator=(Field &&other) noexcept
+{
+	assert(other.name != nullptr);
+
+	// Copying data, but *without* strdup() or new, since
+	// the original Field will be set to RFT_INVALID.
+	// NOTE: Using memcpy() to simplify things, even if it
+	// results in slightly more memory copying than without it.
+	this->name = other.name;
+	this->type = other.type;
+	this->tabIdx = other.tabIdx;
+	this->flags = other.flags;
+
+	assert(other.type != RFT_INVALID);
+	memcpy(&this->desc, &other.desc, sizeof(this->desc));
+	memcpy(&this->data, &other.data, sizeof(this->data));
+
+	// Reset the other object.
+	// TODO: Is this needed for move assignment?
+	other.name = nullptr;
+	other.type = RFT_INVALID;
+	return *this;
 }
 
 /** RomFields **/

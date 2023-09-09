@@ -312,11 +312,12 @@ RomMetaData::MetaData::MetaData(const MetaData &other)
  */
 RomMetaData::MetaData& RomMetaData::MetaData::operator=(MetaData other)
 {
-	// Swap the objects.
-	// References:
-	// - https://stackoverflow.com/questions/3279543/what-is-the-copy-and-swap-idiom
-	// - https://stackoverflow.com/a/3279550
-	std::swap(*this, other);
+	// Copy data, then reset the other MetaData object.
+	this->name = other.name;
+	this->type = other.type;
+	memcpy(&this->data, &other.data, sizeof(this->data));
+	other.name = Property::Invalid;
+	other.type = PropertyType::Invalid;
 	return *this;
 }
 
@@ -336,6 +337,25 @@ RomMetaData::MetaData::MetaData(MetaData &&other) noexcept
 	memcpy(&this->data, &other.data, sizeof(this->data));
 	other.name = Property::Invalid;
 	other.type = PropertyType::Invalid;
+}
+
+/**
+ * Move assignment operator
+ *
+ * NOTE: This only ensures that the string data is copied correctly.
+ * It will not handle map index updates.
+ *
+ * @param other Other RomMetaData::MetaData object
+ */
+RomMetaData::MetaData& RomMetaData::MetaData::operator=(MetaData &&other) noexcept
+{
+	// Copy data, then reset the other MetaData object.
+	this->name = other.name;
+	this->type = other.type;
+	memcpy(&this->data, &other.data, sizeof(this->data));
+	other.name = Property::Invalid;
+	other.type = PropertyType::Invalid;
+	return *this;
 }
 
 /** RomMetaData **/

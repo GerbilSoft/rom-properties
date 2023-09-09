@@ -186,9 +186,10 @@ class RomMetaData
 			// Destructor to handle automatic string deletion.
 			~MetaData();
 
-			MetaData(const MetaData &other);	// copy constructor
-			MetaData& operator=(MetaData other);	// assignment operator
-			MetaData(MetaData &&other) noexcept;	// move constructor
+			MetaData(const MetaData &other);		// copy constructor
+			MetaData& operator=(MetaData other);		// assignment operator
+			MetaData(MetaData &&other) noexcept;		// move constructor
+			MetaData& operator=(MetaData &&other) noexcept;	// move assignment operator
 
 			/** Fields **/
 
