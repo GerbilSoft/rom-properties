@@ -38,7 +38,7 @@ namespace LibRpTexture {
 class rp_image_backend;
 
 class rp_image_private;
-class rp_image final
+class rp_image
 {
 	public:
 		enum class Format {
@@ -72,7 +72,7 @@ class rp_image final
 		explicit rp_image(rp_image_backend *backend);
 
 		RP_LIBROMDATA_PUBLIC
-		virtual ~rp_image() final;
+		~rp_image();
 
 	private:
 		RP_DISABLE_COPY(rp_image)
