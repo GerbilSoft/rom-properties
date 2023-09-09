@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2023-08-27 15:54-0400\n"
-"PO-Revision-Date: 2023-08-27 20:09\n"
+"PO-Revision-Date: 2023-09-09 14:51\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
 "Language: de_DE\n"
@@ -81,7 +81,7 @@ msgstr "ROM Properties Seite unterhält einen eigenen Download-Cache für extern
 #: ../src/gtk/config/CacheTab.cpp:171
 msgctxt "CacheTab"
 msgid "Clear the ROM Properties Page Download Cache"
-msgstr "Löschen Sie den Download Cache der ROM Properties Seite"
+msgstr "Löschen Sie den Download Cache der ROM-Eigenschaften Seite"
 
 #. tr: Dialog title.
 #: ../build/src/kde/kf5/ui_ConfigDialog.h:90
@@ -387,7 +387,8 @@ msgstr "Erfolg Freigeschaltet"
 msgctxt "AboutTab"
 msgid "<b>ROM Properties Page</b>\n"
 "Shell Extension"
-msgstr ""
+msgstr "<b>ROM-Eigenschaften Seite</b>\n"
+"Shell-Erweiterung"
 
 #: ../src/gtk/config/AboutTab.cpp:451 ../src/kde/config/AboutTab.cpp:173
 #: ../src/win32/config/AboutTab.cpp:740
@@ -576,7 +577,7 @@ msgstr "Löschen des System Vorschaubilder Caches..."
 #: ../src/gtk/config/CacheTab.cpp:366 ../src/kde/config/CacheTab.cpp:128
 msgctxt "CacheTab"
 msgid "Clearing the ROM Properties Page cache..."
-msgstr "Löschen des Cache der ROM Properties Seite..."
+msgstr "Löschen des Cache der ROM-Eigenschaften Seite..."
 
 #: ../src/gtk/config/CacheTab.cpp:488 ../src/kde/config/CacheTab.cpp:280
 msgctxt "CacheTab"
@@ -1153,7 +1154,7 @@ msgstr "Erweiterte Eigenschaften"
 #: ../src/kde/config/AboutTab.cpp:171
 msgctxt "AboutTab"
 msgid "<b>ROM Properties Page</b><br>Shell Extension"
-msgstr "Shell-Erweiterung für<br><b>ROM Eigenschaften</b>"
+msgstr "<b>ROM-Eigenschaften Seite</b><br>Shell-Erweiterung"
 
 #. tr: Error message template. (Qt version, with formatting)
 #: ../src/kde/config/AboutTab.cpp:658 ../src/kde/config/CacheTab.cpp:262
