@@ -91,7 +91,7 @@ BEGIN
     LTEXT           "", IDC_CACHE_DESCRIPTION, 7, 7, 397, 8, SS_LEFT, WS_EX_TRANSPARENT
     PUSHBUTTON      "Vorschaubilder Cache löschen", IDC_CACHE_CLEAR_SYS_THUMBS, 7, 20, 398, 28, 0, WS_EX_LEFT
     LTEXT           "Die Seite für ROM-Eigenschaften verwaltet einen eigenen Download-Cache für externe Bilder.\nDas Leeren diesen Caches führt dazu, dass externe Bilder erneut heruntergeladen werden müssen.", IDC_STATIC, 7, 55, 397, 17, SS_LEFT, WS_EX_TRANSPARENT
-    PUSHBUTTON      "Lösche den Cache für ROM-Eigenschaften", IDC_CACHE_CLEAR_RP_DL, 7, 75, 398, 28, 0, WS_EX_LEFT
+    PUSHBUTTON      "Löschen Sie den Cache der ROM-Eigenschaften Seite", IDC_CACHE_CLEAR_RP_DL, 7, 75, 398, 28, 0, WS_EX_LEFT
     LTEXT           "", IDC_CACHE_STATUS, 7, 205, 397, 9, NOT WS_VISIBLE | SS_LEFT, WS_EX_LEFT
     CONTROL         "", IDC_CACHE_PROGRESS, PROGRESS_CLASS, NOT WS_VISIBLE, 7, 216, 397, 16, WS_EX_LEFT
 END
@@ -160,7 +160,7 @@ EXSTYLE WS_EX_NOPARENTNOTIFY | WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", FW_NORMAL, 0, 0
 BEGIN
     CONTROL         "", IDC_ABOUT_ICON, WC_STATIC, SS_ICON, 7, 7, 16, 16, WS_EX_LEFT
-    CTEXT           "ROM-Eigenschaften", IDC_ABOUT_LINE1, 7, 7, 398, 9, SS_CENTER, WS_EX_LEFT
+    CTEXT           "ROM-Eigenschaften Seite", IDC_ABOUT_LINE1, 7, 7, 398, 9, SS_CENTER, WS_EX_LEFT
     CTEXT           "Shell-Erweiterung", IDC_ABOUT_LINE2, 7, 16, 398, 9, SS_CENTER, WS_EX_LEFT
     CTEXT           "", IDC_ABOUT_VERSION, 7, 28, 398, 32, SS_CENTER, WS_EX_LEFT
     CONTROL         "", IDC_ABOUT_UPDATE_CHECK, RICHEDIT_CLASS, ES_MULTILINE | ES_READONLY, 310, 7, 96, 64, SS_RIGHT, WS_EX_RIGHT | WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT
@@ -183,7 +183,7 @@ BEGIN
     GROUPBOX        "MS-DOS-Attribute", IDC_STATIC, 5, 7, 215, 35, 0, WS_EX_LEFT
     CHECKBOX        "&Schreibgeschützt", IDC_XATTRVIEW_DOS_READONLY, 14, 17, 49, 8, 0, WS_EX_LEFT
     CHECKBOX        "&Versteckt", IDC_XATTRVIEW_DOS_HIDDEN, 63, 17, 35, 8, 0, WS_EX_LEFT
-    CHECKBOX        "&Archiviert", IDC_XATTRVIEW_DOS_ARCHIVE, 105, 17, 35, 8, 0, WS_EX_LEFT
+    CHECKBOX        "&Archiv", IDC_XATTRVIEW_DOS_ARCHIVE, 105, 17, 35, 8, 0, WS_EX_LEFT
     CHECKBOX        "&System", IDC_XATTRVIEW_DOS_SYSTEM, 147, 17, 42, 8, 0, WS_EX_LEFT
     CHECKBOX        "&Komprimiert", IDC_XATTRVIEW_NTFS_COMPRESSED, 14, 28, 55, 8, 0, WS_EX_LEFT
     CHECKBOX        "&Verschlüsselt", IDC_XATTRVIEW_NTFS_ENCRYPTED, 70, 28, 48, 8, 0, WS_EX_LEFT
