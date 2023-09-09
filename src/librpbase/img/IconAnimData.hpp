@@ -66,11 +66,7 @@ struct IconAnimData final
 	{
 		seq_index.fill(0);
 		frames.fill(nullptr);
-
-		// MSVC 2010 doesn't support initializer lists,
-		// so create a dummy struct.
-		static const delay_t zero_delay = {0, 0, 0};
-		delays.fill(zero_delay);
+		delays.fill({0, 0, 0});
 	}
 
 private:
