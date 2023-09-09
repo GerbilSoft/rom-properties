@@ -117,6 +117,7 @@ int VerifyKeys(void)
 		}
 	}
 
+	delete keyStore;
 	cout.flush();
 	return ret;
 }
