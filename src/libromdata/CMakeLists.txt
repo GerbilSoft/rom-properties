@@ -457,6 +457,7 @@ int main(void) {
 ENDIF(ENABLE_XML)
 
 # Write the config.h file.
+INCLUDE(DirInstallPaths)
 CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.lib${PROJECT_NAME}.h.in"
 	"${CMAKE_CURRENT_BINARY_DIR}/config.lib${PROJECT_NAME}.h")
 
@@ -730,7 +731,6 @@ ENDIF(BUILD_TESTING)
 ######################################
 
 IF(${PROJECT_NAME}_LINKAGE STREQUAL SHARED)
-	INCLUDE(DirInstallPaths)
 	IF(WIN32)
 		# NOTE: Don't install libraries.
 		# That installs the import library, which we don't
