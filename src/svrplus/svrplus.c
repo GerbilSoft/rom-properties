@@ -593,15 +593,13 @@ static unsigned int WINAPI ThreadProc(LPVOID lpParameter)
 		res[i] = TryInstallServer(params->hWnd, params->isUninstall, g_archs[i], msg_ret, _countof(msg_ret));
 		if (res[i] != ISR_OK) {
 			// Append the error message.
-			// TODO: Use _sntprintf() to a temporary buffer?
+			TCHAR arch_msg[384];
 			const s_arch_tbl_t *const s_arch = &s_arch_tbl[g_archs[i]];
 			if (msg2[0] != _T('\0')) {
 				_tcscat_s(msg2, _countof(msg2), _T("\n"));
 			}
-			_tcscat_s(msg2, _countof(msg2), BULLET _T(" "));
-			_tcscat_s(msg2, _countof(msg2), s_arch->name);
-			_tcscat_s(msg2, _countof(msg2), _T(": "));
-			_tcscat_s(msg2, _countof(msg2), msg_ret);
+			_sntprintf(arch_msg, _countof(arch_msg), BULLET _T(" %s: %s"), s_arch->name, msg_ret);
+			_tcscat_s(msg2, _countof(msg2), arch_msg);
 		}
 	}
 
