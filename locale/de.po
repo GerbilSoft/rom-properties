@@ -72,7 +72,7 @@ msgid ""
 "ROM Properties Page maintains its own download cache for external images.\n"
 "Clearing this cache will force external images to be redownloaded."
 msgstr ""
-"ROM Properties Seite unterhält einen eigenen Download-Cache für externe "
+"ROM-Eigenschaften Seite unterhält einen eigenen Download-Cache für externe "
 "Bilder.\n"
 "Wenn Sie diesen Cache löschen, müssen die externen Bilder erneut "
 "heruntergeladen werden."
@@ -80,7 +80,7 @@ msgstr ""
 #: ../build/src/kde/kf5/ui_CacheTab.h:103 ../src/gtk/config/CacheTab.cpp:171
 msgctxt "CacheTab"
 msgid "Clear the ROM Properties Page Download Cache"
-msgstr "Löschen Sie den Download Cache der ROM Properties Seite"
+msgstr "Löschen Sie den Download Cache der ROM-Eigenschaften Seite"
 
 #. tr: Dialog title.
 #: ../build/src/kde/kf5/ui_ConfigDialog.h:90
@@ -88,7 +88,7 @@ msgstr "Löschen Sie den Download Cache der ROM Properties Seite"
 #: ../src/win32/config/ConfigDialog.cpp:238
 msgctxt "ConfigDialog"
 msgid "ROM Properties Page configuration"
-msgstr "Konfiguration der ROM Properties Seite"
+msgstr "Konfiguration der ROM-Eigenschaften Seite"
 
 #: ../build/src/kde/kf5/ui_ConfigDialog.h:91
 #: ../src/gtk/config/ConfigDialog.cpp:239
@@ -395,6 +395,8 @@ msgid ""
 "<b>ROM Properties Page</b>\n"
 "Shell Extension"
 msgstr ""
+"<b>ROM-Eigenschaften Seite</b>"
+"Shell-Erweiterung"
 
 #: ../src/gtk/config/AboutTab.cpp:451 ../src/kde/config/AboutTab.cpp:173
 #: ../src/win32/config/AboutTab.cpp:740
@@ -587,7 +589,7 @@ msgstr "Löschen des System Vorschaubilder Caches..."
 #: ../src/gtk/config/CacheTab.cpp:366 ../src/kde/config/CacheTab.cpp:128
 msgctxt "CacheTab"
 msgid "Clearing the ROM Properties Page cache..."
-msgstr "Löschen des Cache der ROM Properties Seite..."
+msgstr "Löschen des Cache der ROM-Eigenschaften Seite..."
 
 #: ../src/gtk/config/CacheTab.cpp:488 ../src/kde/config/CacheTab.cpp:280
 msgctxt "CacheTab"
@@ -1187,7 +1189,7 @@ msgstr "Erweiterte Eigenschaften"
 #: ../src/kde/config/AboutTab.cpp:171
 msgctxt "AboutTab"
 msgid "<b>ROM Properties Page</b><br>Shell Extension"
-msgstr "Shell-Erweiterung für<br><b>ROM Eigenschaften</b>"
+msgstr "<b>ROM-Eigenschaften Seite</b><br>Shell-Erweiterung"
 
 #. tr: Error message template. (Qt version, with formatting)
 #: ../src/kde/config/AboutTab.cpp:658 ../src/kde/config/CacheTab.cpp:262

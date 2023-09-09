@@ -17,6 +17,7 @@ SET(${PROJECT_NAME}_H resource.h)
 SET(${PROJECT_NAME}_RC
 	resource.rc
 	res-en_US.rc
+	res-de_DE.rc
 	res-fr_FR.rc
 	)
 
