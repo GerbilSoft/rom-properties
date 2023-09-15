@@ -91,10 +91,19 @@ CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.version.h.in" "${CMAKE_CURREN
 CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/stdboolx.h.in" "${CMAKE_CURRENT_BINARY_DIR}/stdboolx.h")
 
 # Build certain libraries as shared libraries on Linux and Windows.
+STRING(TOUPPER "${CMAKE_BUILD_TYPE}" BUILD_TYPE_UCASE)
 IF(CMAKE_C_COMPILER MATCHES afl)
 	# Don't enable libromdata.so when building with afl/afl++.
 	# afl-fuzz crashes when trying to load libromdata.so for some reason.
 	MESSAGE(WARNING "Disabling libromdata.so due to afl")
+ELSEIF(CMAKE_C_FLAGS MATCHES "-fsanitize" OR CMAKE_CXX_FLAGS MATCHES "-fsanitize")
+	# Don't enable libromdata.so when using a sanitizer.
+	# The sanitizer requires typeinfo, which isn't exported for some classes.
+	MESSAGE(WARNING "Disabling libromdata.so due to -fsanitize")
+ELSEIF(CMAKE_C_FLAGS_${BUILD_TYPE_UCASE} MATCHES "-fsanitize" OR CMAKE_CXX_FLAGS_${BUILD_TYPE_UCASE} MATCHES "-fsanitize")
+	# Don't enable libromdata.so when using a sanitizer.
+	# The sanitizer requires typeinfo, which isn't exported for some classes.
+	MESSAGE(WARNING "Disabling libromdata.so due to -fsanitize")
 ELSEIF(WIN32 OR (UNIX AND NOT APPLE))
 	SET(RP_LIBROMDATA_IS_DLL 1)
 	SET(RP_LIBROMDATA_IS_DLL 1 PARENT_SCOPE)
@@ -102,6 +111,7 @@ ELSEIF(WIN32 OR (UNIX AND NOT APPLE))
 ELSE()
 	MESSAGE(WARNING "Disabling libromdata.so due to unsupported OS")
 ENDIF()
+UNSET(BUILD_TYPE_UCASE)
 
 # FIXME: gcc-5's libgcc.a doesn't get linked in for some reason,
 # resulting in the following error:
