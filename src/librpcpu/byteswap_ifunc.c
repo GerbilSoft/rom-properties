@@ -20,7 +20,8 @@
  * IFUNC resolver function for rp_byte_swap_16_array().
  * @return Function pointer.
  */
-static __typeof__(&rp_byte_swap_16_array_c) rp_byte_swap_16_array_resolve(void)
+NO_SANITIZE_ADDRESS
+__typeof__(&rp_byte_swap_16_array_c) rp_byte_swap_16_array_resolve(void)
 {
 #if defined(BYTESWAP_HAS_SSSE3) || defined(BYTESWAP_HAS_SSE2) || defined(BYTESWAP_HAS_MMX)
 	__builtin_cpu_init();
@@ -56,6 +57,7 @@ static __typeof__(&rp_byte_swap_16_array_c) rp_byte_swap_16_array_resolve(void)
  * IFUNC resolver function for rp_byte_swap_32_array().
  * @return Function pointer.
  */
+NO_SANITIZE_ADDRESS
 __typeof__(&rp_byte_swap_32_array_c) rp_byte_swap_32_array_resolve(void)
 {
 	// NOTE: Since libromdata is a shared library now, IFUNC resolvers

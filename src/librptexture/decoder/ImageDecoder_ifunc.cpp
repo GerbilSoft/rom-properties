@@ -26,6 +26,7 @@ extern "C" {
  * IFUNC resolver function for fromLinear16().
  * @return Function pointer.
  */
+NO_SANITIZE_ADDRESS
 __typeof__(&ImageDecoder::fromLinear16_cpp) fromLinear16_resolve(void)
 {
 	// NOTE: Since libromdata is a shared library now, IFUNC resolvers
@@ -48,6 +49,7 @@ __typeof__(&ImageDecoder::fromLinear16_cpp) fromLinear16_resolve(void)
  * IFUNC resolver function for fromLinear24().
  * @return Function pointer.
  */
+NO_SANITIZE_ADDRESS
 __typeof__(&ImageDecoder::fromLinear24_cpp) fromLinear24_resolve(void)
 {
 #ifdef IMAGEDECODER_HAS_SSSE3
@@ -65,10 +67,12 @@ __typeof__(&ImageDecoder::fromLinear24_cpp) fromLinear24_resolve(void)
  * IFUNC resolver function for fromLinear32().
  * @return Function pointer.
  */
+NO_SANITIZE_ADDRESS
 __typeof__(&ImageDecoder::fromLinear32_cpp) fromLinear32_resolve(void)
 {
 #ifdef IMAGEDECODER_HAS_SSSE3
-	if (RP_CPU_HasSSSE3()) {
+	__builtin_cpu_init();
+	if (__builtin_cpu_supports("ssse3")) {
 		return &ImageDecoder::fromLinear32_ssse3;
 	} else
 #endif /* IMAGEDECODER_HAS_SSSE3 */

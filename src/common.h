@@ -195,3 +195,16 @@
 #else
 #  define NOVTABLE
 #endif
+
+// no_address_sanitize: Disable AddressSanitizer on a given function.
+// Needed for IFUNC functions on gcc due to a bug.
+// Reference: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=110442
+#ifdef __SANITIZE_ADDRESS__
+#  ifdef _MSC_VER
+#    define NO_SANITIZE_ADDRESS __declspec(no_sanitize_address)
+#  else /* !_MSC_VER */
+#    define NO_SANITIZE_ADDRESS __attribute__((no_sanitize_address))
+#  endif /* _MSC_VER */
+#else /* !__SANITIZE_ADDRESS__ */
+#  define NO_SANITIZE_ADDRESS
+#endif /* __SANITIZE_ADDRESS__ */

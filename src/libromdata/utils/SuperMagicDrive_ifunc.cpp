@@ -28,6 +28,7 @@ extern "C" {
  * IFUNC resolver function for decodeBlock().
  * @return Function pointer.
  */
+NO_SANITIZE_ADDRESS
 __typeof__(&SuperMagicDrive::decodeBlock_cpp) decodeBlock_resolve(void)
 {
 	// NOTE: Since libromdata is a shared library now, IFUNC resolvers
