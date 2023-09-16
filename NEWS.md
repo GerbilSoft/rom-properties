@@ -66,6 +66,9 @@
     * Affects: v1.8 - v2.2.1
   * GTK: Fixed dragging the main icon from RomDataView to the file browser.
     * Affects: v1.8 - v2.2.1
+  * ImageDecoder: fromLinear32_resolve() might not have been selecting SSSE3
+    in some cases because it was using RP_CPU_HasSSSE3() instead of gcc's
+    __builtin_cpu_supports(), which isn't available during IFUNC resolution.
 
 * Other changes:
   * Nintendo3DS: The "Options" menu no longer shows a grayed-out "Extract SRL"
