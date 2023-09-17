@@ -1074,9 +1074,9 @@ int NES::loadFieldData(void)
 			{
 				chr_ram_battery_size = 128 << ((d->header.ines.nes2.vram_size >> 4) - 1);
 			}
-			// PRG RAM size. (TODO: Needs testing.)
+			// PRG RAM size (TODO: Needs testing.)
 			if (d->header.ines.nes2.prg_ram_size & 0x0F) {
-				prg_ram_size = 128 << ((d->header.ines.nes2.prg_ram_size >> 4) - 1);
+				prg_ram_size = 128 << ((d->header.ines.nes2.prg_ram_size & 0x0F) - 1);
 			}
 			// TODO: Require INES_F6_BATTERY?
 			if (d->header.ines.nes2.prg_ram_size & 0xF0) {
@@ -1226,15 +1226,6 @@ int NES::loadFieldData(void)
 	}
 
 	// RAM sizes
-	if (chr_ram_size > 0) {
-		d->fields.addField_string(C_("NES", "CHR RAM Size"),
-			formatFileSizeKiB(chr_ram_size));
-	}
-	if (chr_ram_battery_size > 0) {
-		// tr: CHR RAM with a battery backup.
-		d->fields.addField_string(C_("NES", "CHR RAM (backed up)"),
-			formatFileSizeKiB(chr_ram_battery_size));
-	}
 	if (prg_ram_size > 0) {
 		d->fields.addField_string(C_("NES", "PRG RAM Size"),
 			formatFileSizeKiB(prg_ram_size));
@@ -1243,6 +1234,15 @@ int NES::loadFieldData(void)
 		// tr: Save RAM with a battery backup.
 		d->fields.addField_string(C_("NES", "Save RAM (backed up)"),
 			formatFileSizeKiB(prg_ram_battery_size));
+	}
+	if (chr_ram_size > 0) {
+		d->fields.addField_string(C_("NES", "CHR RAM Size"),
+			formatFileSizeKiB(chr_ram_size));
+	}
+	if (chr_ram_battery_size > 0) {
+		// tr: CHR RAM with a battery backup.
+		d->fields.addField_string(C_("NES", "CHR RAM (backed up)"),
+			formatFileSizeKiB(chr_ram_battery_size));
 	}
 
 	// Check for FDS fields.
