@@ -69,6 +69,9 @@
   * ImageDecoder: fromLinear32_resolve() might not have been selecting SSSE3
     in some cases because it was using RP_CPU_HasSSSE3() instead of gcc's
     __builtin_cpu_supports(), which isn't available during IFUNC resolution.
+  * MegaDrive: Fix incorrect shift values that broke reporting for five I/O
+    devices: Team Player, Light Gun, Activator, Tablet, Paddle
+    * Affects: v2.0 - v2.2.1
 
 * Other changes:
   * Nintendo3DS: The "Options" menu no longer shows a grayed-out "Extract SRL"

@@ -284,15 +284,15 @@ uint32_t MegaDrivePrivate::parseIOSupport(const char *io_support, int size)
 	// Value: Bitfield value, or -1 if not applicable.
 	static const int8_t md_io_chr_map[0x30] = {
 		// 0x30 ['0'-'9']
-		MD_IOSH_JOYPAD_SMS, -1, -1, -1, MD_IO_TEAM_PLAYER, -1, MD_IOSH_JOYPAD_6, -1,
+		MD_IOSH_JOYPAD_SMS, -1, -1, -1, MD_IOSH_TEAM_PLAYER, -1, MD_IOSH_JOYPAD_6, -1,
 		-1, -1, -1, -1, -1, -1, -1 ,-1,
 
 		// 0x40 ['@','A'-'O']
-		-1, MD_IOSH_ANALOG, MD_IOSH_TRACKBALL, MD_IOSH_CDROM, -1, -1, MD_IOSH_FDD, MD_IO_LIGHT_GUN,
-		-1, -1, MD_IOSH_JOYPAD_3, MD_IOSH_KEYBOARD, MD_IO_ACTIVATOR, MD_IOSH_MEGA_MOUSE, -1, -1,
+		-1, MD_IOSH_ANALOG, MD_IOSH_TRACKBALL, MD_IOSH_CDROM, -1, -1, MD_IOSH_FDD, MD_IOSH_LIGHT_GUN,
+		-1, -1, MD_IOSH_JOYPAD_3, MD_IOSH_KEYBOARD, MD_IOSH_ACTIVATOR, MD_IOSH_MEGA_MOUSE, -1, -1,
 
 		// 0x50 ['P'-'Z']
-		MD_IOSH_PRINTER, -1, MD_IOSH_SERIAL, -1, MD_IO_TABLET, -1, MD_IO_PADDLE, -1,
+		MD_IOSH_PRINTER, -1, MD_IOSH_SERIAL, -1, MD_IOSH_TABLET, -1, MD_IOSH_PADDLE, -1,
 		-1, -1, -1, -1, -1, -1, -1, -1,
 	};
 
