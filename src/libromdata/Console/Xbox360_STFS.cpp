@@ -109,7 +109,7 @@ class Xbox360_STFS_Private final : public RomDataPrivate
 		Xbox360_XEX *xex;
 
 		// File table.
-		ao::uvector<STFS_DirEntry_t> fileTable;
+		rp::uvector<STFS_DirEntry_t> fileTable;
 
 		/**
 		 * Convert a block number to an offset.

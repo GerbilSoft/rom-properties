@@ -45,7 +45,7 @@ class NEResourceReaderPrivate
 			uint32_t addr;	// Address of the resource data. (0 = start of EXE)
 			uint32_t len;	// Length of the resource data.
 		};
-		typedef ao::uvector<ResTblEntry> rsrc_dir_t;
+		typedef rp::uvector<ResTblEntry> rsrc_dir_t;
 
 		// Resource types.
 		unordered_map<uint16_t, rsrc_dir_t> res_types;

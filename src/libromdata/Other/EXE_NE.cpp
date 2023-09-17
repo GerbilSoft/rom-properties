@@ -20,6 +20,7 @@ using namespace LibRpText;
 // C++ STL classes
 using std::string;
 using std::vector;
+
 using vhvc::span;
 using vhvc::reinterpret_span;
 using vhvc::reinterpret_span_limit;
@@ -798,7 +799,7 @@ int EXEPrivate::addFields_NE_Import(void)
 			return -EIO; // Short read
 		rel_count = le16_to_cpu(rel_count);
 
-		ao::uvector<uint8_t> rel_buf;
+		rp::uvector<uint8_t> rel_buf;
 		rel_buf.resize(rel_count*sizeof(NE_Reloc));
 		nread = file->seekAndRead(seg_offset + seg_size + 2, rel_buf.data(), rel_buf.size());
 		if (nread != rel_buf.size())

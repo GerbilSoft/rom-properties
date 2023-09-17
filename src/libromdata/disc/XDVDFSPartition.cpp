@@ -47,7 +47,7 @@ class XDVDFSPartitionPrivate
 		// - Value: Raw directory table from the disc.
 		// NOTE: Directory entries are variable-length, so this
 		// is a byte array, not an ISO_DirEntry array.
-		unordered_map<std::string, ao::uvector<uint8_t> > dirTables;
+		unordered_map<std::string, rp::uvector<uint8_t> > dirTables;
 
 		/**
 		 * Get an entry within a specified directory table.
@@ -55,15 +55,15 @@ class XDVDFSPartitionPrivate
 		 * @param filename Filename to find, without subdirectories.
 		 * @return Pointer to XDVDFS_DirEntry within dirTable, or nullptr if not found.
 		 */
-		const XDVDFS_DirEntry *getDirEntry(const ao::uvector<uint8_t> *dirTable, const char *filename);
+		const XDVDFS_DirEntry *getDirEntry(const rp::uvector<uint8_t> *dirTable, const char *filename);
 
 		/**
 		 * Get the specified directory.
 		 * This should *only* be the directory, not a filename.
 		 * @param path Directory path.
-		 * @return Pointer to directory table (ao::uvector), or nullptr if not found.
+		 * @return Pointer to directory table (rp::uvector), or nullptr if not found.
 		 */
-		const ao::uvector<uint8_t> *getDirectory(const char *path);
+		const rp::uvector<uint8_t> *getDirectory(const char *path);
 
 		/**
 		 * XDVDFS strcasecmp() implementation.
@@ -164,7 +164,7 @@ int XDVDFSPartitionPrivate::xdvdfs_strcasecmp(const char *s1, const char *s2)
  * @param filename Filename to find, without subdirectories.
  * @return Pointer to XDVDFS_DirEntry within dirTable, or nullptr if not found.
  */
-const XDVDFS_DirEntry *XDVDFSPartitionPrivate::getDirEntry(const ao::uvector<uint8_t> *dirTable, const char *filename)
+const XDVDFS_DirEntry *XDVDFSPartitionPrivate::getDirEntry(const rp::uvector<uint8_t> *dirTable, const char *filename)
 {
 	assert(dirTable != nullptr);
 	assert(filename != nullptr);
@@ -244,9 +244,9 @@ const XDVDFS_DirEntry *XDVDFSPartitionPrivate::getDirEntry(const ao::uvector<uin
  * Get the specified directory.
  * This should *only* be the directory, not a filename.
  * @param path Directory path.
- * @return Pointer to directory table (ao::uvector), or nullptr if not found.
+ * @return Pointer to directory table (rp::uvector), or nullptr if not found.
  */
-const ao::uvector<uint8_t> *XDVDFSPartitionPrivate::getDirectory(const char *path)
+const rp::uvector<uint8_t> *XDVDFSPartitionPrivate::getDirectory(const char *path)
 {
 	RP_Q(XDVDFSPartition);
 	if (unlikely(!path || path[0] != '/')) {
@@ -300,7 +300,7 @@ const ao::uvector<uint8_t> *XDVDFSPartitionPrivate::getDirectory(const char *pat
 	}
 
 	// Read the directory.
-	ao::uvector<uint8_t> dirTable(dir_size);
+	rp::uvector<uint8_t> dirTable(dir_size);
 	size_t size = q->m_discReader->seekAndRead(dir_addr, dirTable.data(), dirTable.size());
 	if (size != dirTable.size()) {
 		// Seek and/or read error.
@@ -543,7 +543,7 @@ IRpFilePtr XDVDFSPartition::open(const char *filename)
 	// TODO: Handle subdirectories.
 	// For now, assuming the file is in the root directory.
 	RP_D(XDVDFSPartition);
-	const ao::uvector<uint8_t> *const dirTable = d->getDirectory("/");
+	const rp::uvector<uint8_t> *const dirTable = d->getDirectory("/");
 	if (!dirTable) {
 		// Directory not found.
 		// getDirectory() has already set m_lastError.

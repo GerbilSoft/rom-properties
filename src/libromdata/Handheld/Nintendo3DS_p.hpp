@@ -27,8 +27,7 @@ namespace LibRpFile {
 	class IRpFile;
 }
 
-// Uninitialized vector class.
-// Reference: http://andreoffringa.org/?q=uvector
+// Uninitialized vector class
 #include "uvector.h"
 
 namespace LibRomData {
@@ -131,7 +130,7 @@ class Nintendo3DSPrivate final : public LibRpBase::RomDataPrivate
 
 		// Content chunk records. (CIA only)
 		// Loaded by loadTicketAndTMD().
-		ao::uvector<N3DS_Content_Chunk_Record_t> content_chunks;
+		rp::uvector<N3DS_Content_Chunk_Record_t> content_chunks;
 
 		// TODO: Move the pointers to the union?
 		// That requires careful memory management...

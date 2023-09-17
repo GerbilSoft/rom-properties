@@ -26,8 +26,8 @@
     (ZLIB_VER_MAJOR == 1 && ZLIB_VER_MINOR == 2 && ZLIB_VER_REVISION >= 4)
 // zlib-1.2.4 or later
 #else
-#define gzclose_r(file) gzclose(file)
-#define gzclose_w(file) gzclose(file)
+#  define gzclose_r(file) gzclose(file)
+#  define gzclose_w(file) gzclose(file)
 #endif
 
 // librpbase, librpfile
@@ -69,8 +69,7 @@ using std::shared_ptr;
 using std::string;
 using std::unique_ptr;
 
-// Uninitialized vector class.
-// Reference: http://andreoffringa.org/?q=uvector
+// Uninitialized vector class
 #include "uvector.h"
 
 namespace LibRomData { namespace Tests {
@@ -164,8 +163,8 @@ class ImageDecoderTest : public ::testing::TestWithParam<ImageDecoderTest_mode>
 
 	public:
 		// Image buffers.
-		ao::uvector<uint8_t> m_dds_buf;
-		ao::uvector<uint8_t> m_png_buf;
+		rp::uvector<uint8_t> m_dds_buf;
+		rp::uvector<uint8_t> m_png_buf;
 
 		// gzip file handle for .dds.gz.
 		// Placed here so it can be freed by TearDown() if necessary.

@@ -36,8 +36,7 @@ using namespace LibRpTexture;
 #include <string>
 using std::string;
 
-// Uninitialized vector class.
-// Reference: http://andreoffringa.org/?q=uvector
+// Uninitialized vector class
 #include "uvector.h"
 
 namespace LibRpTexture { namespace Tests {
@@ -115,8 +114,8 @@ class ImageDecoderLinearTest : public ::testing::TestWithParam<ImageDecoderLinea
 	public:
 		// Temporary image buffer
 		// 128x128 24-bit or 32-bit image data.
-		// FIXME: Use an aligned Allocator with ao::uvector<>.
-		//ao::uvector<uint8_t> m_img_buf;
+		// FIXME: Use an aligned Allocator with rp::uvector<>.
+		//rp::uvector<uint8_t> m_img_buf;
 		uint8_t *m_img_buf;
 		size_t m_img_buf_len;
 

@@ -24,13 +24,15 @@
     (ZLIB_VER_MAJOR == 1 && ZLIB_VER_MINOR == 2 && ZLIB_VER_REVISION >= 4)
 // zlib-1.2.4 or later
 #else
-#define gzclose_r(file) gzclose(file)
-#define gzclose_w(file) gzclose(file)
+#  define gzclose_r(file) gzclose(file)
+#  define gzclose_w(file) gzclose(file)
 #endif
 
 #include "common.h"
-#include "uvector.h"
 #include "tcharx.h"	// for DIR_SEP_CHR
+
+// Uninitialized vector class
+#include "uvector.h"
 
 // Other rom-properties libraries
 #include "librpcpu/byteswap_rp.h"
@@ -176,7 +178,7 @@ class RpPngFormatTest : public ::testing::TestWithParam<RpPngFormatTest_mode>
 		static void Load_Verify_BMP_headers(
 			BITMAPFILEHEADER *pBfh,
 			BITMAPINFOHEADER *pBih,
-			const ao::uvector<uint8_t> &bmp_buf);
+			const rp::uvector<uint8_t> &bmp_buf);
 
 		/**
 		 * Compare an ARGB32 rp_image to a 24-bit RGB bitmap.
@@ -268,8 +270,8 @@ class RpPngFormatTest : public ::testing::TestWithParam<RpPngFormatTest_mode>
 
 	public:
 		// Image buffers.
-		ao::uvector<uint8_t> m_png_buf;
-		ao::uvector<uint8_t> m_bmp_buf;
+		rp::uvector<uint8_t> m_png_buf;
+		rp::uvector<uint8_t> m_bmp_buf;
 
 		// gzip file handle for .bmp.gz.
 		// Placed here so it can be freed by TearDown() if necessary.
@@ -430,7 +432,7 @@ void RpPngFormatTest::Load_Verify_IHDR(PNG_IHDR_t *ihdr, const uint8_t *ihdr_src
 void RpPngFormatTest::Load_Verify_BMP_headers(
 	BITMAPFILEHEADER *pBfh,
 	BITMAPINFOHEADER *pBih,
-	const ao::uvector<uint8_t> &bmp_buf)
+	const rp::uvector<uint8_t> &bmp_buf)
 {
 	static_assert(sizeof(BITMAPFILEHEADER) == BITMAPFILEHEADER_SIZE,
 		"BITMAPFILEHEADER size is incorrect. (should be 14 bytes)");

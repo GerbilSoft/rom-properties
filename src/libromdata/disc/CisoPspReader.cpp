@@ -91,18 +91,18 @@ class CisoPspReaderPrivate : public SparseDiscReaderPrivate {
 		// High bit interpretation depends on CISO version.
 		// - v0/v1: If set, block is not compressed.
 		// - v2: If set, block is compressed using LZ4; otherwise, deflate.
-		ao::uvector<uint32_t> indexEntries;
+		rp::uvector<uint32_t> indexEntries;
 
 		// Block cache.
-		ao::uvector<uint8_t> blockCache;
+		rp::uvector<uint8_t> blockCache;
 		uint32_t blockCacheIdx;
 
 		// Decompression buffer.
 		// (Same size as blockCache.)
-		ao::uvector<uint8_t> z_buffer;
+		rp::uvector<uint8_t> z_buffer;
 
 		// DAX: Size and NC area tables.
-		ao::uvector<uint16_t> daxSizeTable;
+		rp::uvector<uint16_t> daxSizeTable;
 		std::vector<uint8_t> daxNCTable;	// 0 = compressed; 1 = not compressed
 
 		uint8_t index_shift;		// Index shift value.
@@ -432,7 +432,7 @@ CisoPspReader::CisoPspReader(const IRpFilePtr &file)
 		if (d->header.dax.nc_areas > 0) {
 			// Handle the NC (non-compressed) areas.
 			// This table is stored immediately after the index entry table.
-			ao::uvector<DaxNCArea> nc_areas;
+			rp::uvector<DaxNCArea> nc_areas;
 			nc_areas.resize(d->header.dax.nc_areas);
 			expected_size = d->header.dax.nc_areas * sizeof(DaxNCArea);
 			size = m_file->read(nc_areas.data(), expected_size);

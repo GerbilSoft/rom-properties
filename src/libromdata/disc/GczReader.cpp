@@ -50,15 +50,15 @@ class GczReaderPrivate : public SparseDiscReaderPrivate {
 		// Block pointers and hashes (NOTE: Byteswapped on demand)
 		// If bit 63 of the block pointer is set, it's not compressed.
 		// Hashes are Adler32.
-		ao::uvector<uint64_t> blockPointers;
-		ao::uvector<uint32_t> hashes;
+		rp::uvector<uint64_t> blockPointers;
+		rp::uvector<uint32_t> hashes;
 
 		// Decompression buffer
 		// (Same size as blockCache)
-		ao::uvector<uint8_t> z_buffer;
+		rp::uvector<uint8_t> z_buffer;
 
 		// Block cache
-		ao::uvector<uint8_t> blockCache;
+		rp::uvector<uint8_t> blockCache;
 		uint32_t blockCacheIdx;
 
 		// Starting offset of the data area

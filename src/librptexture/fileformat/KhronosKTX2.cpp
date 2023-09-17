@@ -43,8 +43,7 @@ using std::string;
 using std::unique_ptr;
 using std::vector;
 
-// Uninitialized vector class.
-// Reference: http://andreoffringa.org/?q=uvector
+// Uninitialized vector class
 #include "uvector.h"
 
 namespace LibRpTexture {
@@ -76,7 +75,7 @@ class KhronosKTX2Private final : public FileFormatPrivate
 		rp_image::FlipOp flipOp;
 
 		// Mipmap offsets
-		ao::uvector<KTX2_Mipmap_Index> mipmap_data;
+		rp::uvector<KTX2_Mipmap_Index> mipmap_data;
 
 		// Decoded mipmaps
 		// Mipmap 0 is the full image.

@@ -18,8 +18,7 @@
 #include <cstddef>
 #include <ctime>
 
-// Uninitialized vector class.
-// Reference: http://andreoffringa.org/?q=uvector
+// Uninitialized vector class
 #include "uvector.h"
 
 // tcharx
@@ -139,7 +138,7 @@ class NOVTABLE IDownloader
 
 		// Uninitialized vector class.
 		// Reference: http://andreoffringa.org/?q=uvector
-		ao::uvector<uint8_t> m_data;
+		rp::uvector<uint8_t> m_data;
 
 		time_t m_mtime;			// Last-Modified response
 		time_t m_if_modified_since;	// If-Modified-Since request

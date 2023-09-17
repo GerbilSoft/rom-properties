@@ -67,8 +67,7 @@
 #include "librpbase/RomData.hpp"
 #include "librpbase/img/IconAnimData.hpp"
 
-// Uninitialized vector class.
-// Reference: http://andreoffringa.org/?q=uvector
+// Uninitialized vector class
 #include "uvector.h"
 
 // librpbase DiscReader

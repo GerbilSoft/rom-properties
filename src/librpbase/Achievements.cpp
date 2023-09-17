@@ -20,8 +20,7 @@ using std::string;
 using std::unique_ptr;
 using std::unordered_map;
 
-// Uninitialized vector class.
-// Reference: http://andreoffringa.org/?q=uvector
+// Uninitialized vector class
 #include "uvector.h"
 
 // zlib for CRC32.
@@ -154,11 +153,11 @@ class AchievementsPrivate
 		// - 0x0FFFFFFF -> FF FF FF 7F
 
 		/**
-		 * Append a uint64_t to an ao::uvector<> using varlenint format.
-		 * @param vec ao::uvector<>
+		 * Append a uint64_t to an rp::uvector<> using varlenint format.
+		 * @param vec rp::uvector<>
 		 * @param val Value
 		 */
-		static void appendVarlenInt(ao::uvector<uint8_t> &vec, uint64_t val);
+		static void appendVarlenInt(rp::uvector<uint8_t> &vec, uint64_t val);
 
 		/**
 		 * Parse a varlenint value.
@@ -252,11 +251,11 @@ AchievementsPrivate::AchievementsPrivate()
 { }
 
 /**
- * Append a uint64_t to an ao::uvector<> using varlenint format.
- * @param vec ao::uvector<>
+ * Append a uint64_t to an rp::uvector<> using varlenint format.
+ * @param vec rp::uvector<>
  * @param val Value
  */
-void AchievementsPrivate::appendVarlenInt(ao::uvector<uint8_t> &vec, uint64_t val)
+void AchievementsPrivate::appendVarlenInt(rp::uvector<uint8_t> &vec, uint64_t val)
 {
 	vec.reserve(vec.size() + 8);
 
@@ -366,7 +365,7 @@ int AchievementsPrivate::save(void) const
 #endif /* defined(_MSC_VER) && defined(ZLIB_IS_DLL) */
 
 	// Create the achievements file in memory.
-	ao::uvector<uint8_t> buf;
+	rp::uvector<uint8_t> buf;
 	buf.reserve(sizeof(AchBinHeader) + ((int)Achievements::ID::Max * 12));
 	buf.resize(sizeof(AchBinHeader));
 
@@ -536,7 +535,7 @@ int AchievementsPrivate::load(void)
 		return -ENOMEM;
 	}
 
-	ao::uvector<uint8_t> buf;
+	rp::uvector<uint8_t> buf;
 	buf.resize(static_cast<size_t>(fileSize));
 	size_t size = file->read(buf.data(), buf.size());
 	if (size != buf.size()) {

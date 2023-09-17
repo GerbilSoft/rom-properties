@@ -474,8 +474,8 @@ rp_image_const_ptr SegaPVRPrivate::loadPvrImage(void)
 			break;
 	}
 
-	// SVR palette buffer.
-	ao::uvector<uint8_t> svr_pal_buf;
+	// SVR palette buffer
+	rp::uvector<uint8_t> svr_pal_buf;
 
 	// Determine the image size.
 	switch (pvrHeader.pvr.img_data_type) {

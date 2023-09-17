@@ -31,8 +31,7 @@
 #  include "librpbase/disc/CBCReader.hpp"
 #endif /* ENABLE_DECRYPTION */
 
-// Uninitialized vector class.
-// Reference: http://andreoffringa.org/?q=uvector
+// Uninitialized vector class
 #include "uvector.h"
 
 namespace LibRpBase {
@@ -88,7 +87,7 @@ class WiiWADPrivate final : public LibRpBase::RomDataPrivate
 		std::string wadName;
 
 		// TMD contents table.
-		ao::uvector<RVL_Content_Entry> tmdContentsTbl;
+		rp::uvector<RVL_Content_Entry> tmdContentsTbl;
 		const RVL_Content_Entry *pIMETContent;
 		uint32_t imetContentOffset;	// relative to start of data area
 

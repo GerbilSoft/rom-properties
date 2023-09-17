@@ -34,7 +34,7 @@ class WuxReaderPrivate : public SparseDiscReaderPrivate {
 
 		// Index table.
 		// Starts immediately after wuxHeader.
-		ao::uvector<uint32_t> idxTbl;
+		rp::uvector<uint32_t> idxTbl;
 
 		// Data start position.
 		// Starts immediately after the index table.

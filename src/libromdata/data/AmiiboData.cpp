@@ -37,8 +37,7 @@ using std::unique_ptr;
 #  define U82T_s(u8str) (u8str)
 #endif /* _WIN32 */
 
-// Uninitialized vector class.
-// Reference: http://andreoffringa.org/?q=uvector
+// Uninitialized vector class
 #include "uvector.h"
 
 namespace LibRomData {
@@ -83,7 +82,7 @@ class AmiiboDataPrivate {
 
 	public:
 		// amiibo.bin data
-		ao::uvector<uint8_t> amiibo_bin_data;
+		rp::uvector<uint8_t> amiibo_bin_data;
 
 		// Convenience pointers to amiibo.bin structs.
 		const AmiiboBinHeader *pHeader;

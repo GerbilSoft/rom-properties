@@ -50,7 +50,7 @@ class NASOSReaderPrivate : public SparseDiscReaderPrivate {
 		// Block map.
 		// Values are absolute block addresses, possibly with a shift amount.
 		// Special value: 0xFFFFFFFF == empty block
-		ao::uvector<uint32_t> blockMap;
+		rp::uvector<uint32_t> blockMap;
 
 		// Block address shift.
 		// - GCML: 0

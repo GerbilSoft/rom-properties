@@ -20,8 +20,7 @@ using namespace LibRpText;
 using std::string;
 using std::vector;
 
-// Uninitialized vector class.
-// Reference: http://andreoffringa.org/?q=uvector
+// Uninitialized vector class
 #include "uvector.h"
 
 namespace LibRomData {
@@ -84,7 +83,7 @@ class MachOPrivate final : public RomDataPrivate
 
 		// Mach-O formats and headers.
 		vector<Mach_Format> machFormats;
-		ao::uvector<mach_header> machHeaders;
+		rp::uvector<mach_header> machHeaders;
 
 		/**
 		 * Check the Mach-O magic number.

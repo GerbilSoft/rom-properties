@@ -40,8 +40,7 @@ using std::ostringstream;
 using std::shared_ptr;
 using std::string;
 
-// Uninitialized vector class.
-// Reference: http://andreoffringa.org/?q=uvector
+// Uninitialized vector class
 #include "uvector.h"
 
 namespace LibRomData { namespace Tests {
@@ -97,9 +96,9 @@ class RomHeaderTest : public ::testing::TestWithParam<RomHeaderTest_mode>
 		// NOTE: Not storing the source .tar filename.
 		// There shouldn't be any conflicts, though...
 		static string last_bin_filename;
-		static ao::uvector<uint8_t> last_bin_data;
-		static ao::uvector<uint8_t> last_txt_data;
-		static ao::uvector<uint8_t> last_json_data;
+		static rp::uvector<uint8_t> last_bin_data;
+		static rp::uvector<uint8_t> last_txt_data;
+		static rp::uvector<uint8_t> last_json_data;
 
 		/**
 		 * Read the next set of files from the .tar files.
@@ -136,9 +135,9 @@ forward_list<tar_files_t> RomHeaderTest::all_tar_files;
 // NOTE: Not storing the source .tar filename.
 // There shouldn't be any conflicts, though...
 string RomHeaderTest::last_bin_filename;
-ao::uvector<uint8_t> RomHeaderTest::last_bin_data;
-ao::uvector<uint8_t> RomHeaderTest::last_txt_data;
-ao::uvector<uint8_t> RomHeaderTest::last_json_data;
+rp::uvector<uint8_t> RomHeaderTest::last_bin_data;
+rp::uvector<uint8_t> RomHeaderTest::last_txt_data;
+rp::uvector<uint8_t> RomHeaderTest::last_json_data;
 
 /**
  * Read the next set of files from the .tar files.

@@ -44,7 +44,7 @@ size_t CurlDownloader::write_data(char *ptr, size_t size, size_t nmemb, void *us
 	// - http://stackoverflow.com/a/1636415
 	// - https://curl.haxx.se/libcurl/c/CURLOPT_WRITEFUNCTION.html
 	CurlDownloader *curlDL = static_cast<CurlDownloader*>(userdata);
-	ao::uvector<uint8_t> *vec = &curlDL->m_data;
+	rp::uvector<uint8_t> *vec = &curlDL->m_data;
 	const size_t len = size * nmemb;
 
 	if (curlDL->m_maxSize > 0) {
@@ -84,7 +84,7 @@ size_t CurlDownloader::parse_header(char *ptr, size_t size, size_t nitems, void 
 
 	// TODO: Add support for non-HTTP protocols?
 	CurlDownloader *curlDL = static_cast<CurlDownloader*>(userdata);
-	ao::uvector<uint8_t> *vec = &curlDL->m_data;
+	rp::uvector<uint8_t> *vec = &curlDL->m_data;
 	const size_t len = size * nitems;
 
 	// Supported headers.

@@ -76,7 +76,7 @@ class Xbox360_XDBF_Private final : public RomDataPrivate
 
 		// Entry table.
 		// NOTE: Data is *not* byteswapped on load.
-		ao::uvector<XDBF_Entry> entryTable;
+		rp::uvector<XDBF_Entry> entryTable;
 
 		// Data start offset within the file.
 		uint32_t data_offset;
@@ -94,8 +94,8 @@ class Xbox360_XDBF_Private final : public RomDataPrivate
 		array<int16_t, XDBF_LANGUAGE_MAX> strTblIndexes;
 
 		// String tables.
-		// NOTE: These are *pointers* to ao::uvector<>.
-		array<ao::uvector<char>*, XDBF_LANGUAGE_MAX> strTbls;
+		// NOTE: These are *pointers* to rp::uvector<>.
+		array<rp::uvector<char>*, XDBF_LANGUAGE_MAX> strTbls;
 
 		// If true, this XDBF section is in an XEX executable.
 		// Some fields shouldn't be displayed.
@@ -122,7 +122,7 @@ class Xbox360_XDBF_Private final : public RomDataPrivate
 		 * @param langID Language ID.
 		 * @return Pointer to string table on success; nullptr on error.
 		 */
-		const ao::uvector<char> *loadStringTable_SPA(XDBF_Language_e langID);
+		const rp::uvector<char> *loadStringTable_SPA(XDBF_Language_e langID);
 
 	public:
 		/**
@@ -306,7 +306,7 @@ Xbox360_XDBF_Private::Xbox360_XDBF_Private(const IRpFilePtr &file, bool xex)
 Xbox360_XDBF_Private::~Xbox360_XDBF_Private()
 {
 	// Delete any allocated string tables.
-	for (ao::uvector<char> *pStrTbl : strTbls) {
+	for (rp::uvector<char> *pStrTbl : strTbls) {
 		delete pStrTbl;
 	}
 }
@@ -393,7 +393,7 @@ int Xbox360_XDBF_Private::initStrTblIndexes(void)
  * @param langID Language ID.
  * @return Pointer to string table on success; nullptr on error.
  */
-const ao::uvector<char> *Xbox360_XDBF_Private::loadStringTable_SPA(XDBF_Language_e langID)
+const rp::uvector<char> *Xbox360_XDBF_Private::loadStringTable_SPA(XDBF_Language_e langID)
 {
 	assert(langID >= 0);
 	assert(langID < XDBF_LANGUAGE_MAX);
@@ -434,7 +434,7 @@ const ao::uvector<char> *Xbox360_XDBF_Private::loadStringTable_SPA(XDBF_Language
 		// Size is out of range.
 		return nullptr;
 	}
-	ao::uvector<char> *vec = new ao::uvector<char>(str_tbl_sz);
+	rp::uvector<char> *vec = new rp::uvector<char>(str_tbl_sz);
 
 	const unsigned int str_tbl_addr = be32_to_cpu(entry->offset) + this->data_offset;
 	size_t size = file->seekAndRead(str_tbl_addr, vec->data(), str_tbl_sz);
@@ -477,7 +477,7 @@ string Xbox360_XDBF_Private::loadString_SPA(XDBF_Language_e langID, uint16_t str
 		return ret;
 
 	// Get the string table.
-	const ao::uvector<char> *vec = strTbls[langID];
+	const rp::uvector<char> *vec = strTbls[langID];
 	if (!vec) {
 		vec = loadStringTable_SPA(langID);
 		if (!vec) {

@@ -64,7 +64,7 @@ class KeyManagerPrivate : public ConfReaderPrivate
 		// Encryption key data.
 		// Managed as a single block in order to reduce
 		// memory allocations.
-		ao::uvector<uint8_t> vKeys;
+		rp::uvector<uint8_t> vKeys;
 
 		/**
 		 * Map of key names to vKeys indexes.

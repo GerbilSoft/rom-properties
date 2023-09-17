@@ -18,9 +18,9 @@
 
 #include "disc/PEResourceReader.hpp"
 
-// Uninitialized vector class.
-// Reference: http://andreoffringa.org/?q=uvector
+// Uninitialized vector class
 #include "uvector.h"
+
 #include "span.hh"
 
 // TinyXML2
@@ -123,7 +123,7 @@ class EXEPrivate final : public LibRpBase::RomDataPrivate
 		int loadNEResident(void);
 
 		// Resident portion of NE header (up to the end of entry table)
-		ao::uvector<uint8_t> ne_resident;
+		rp::uvector<uint8_t> ne_resident;
 		bool ne_resident_loaded = false;
 		vhvc::span<const NE_Segment> ne_segment_table;
 		vhvc::span<const uint8_t> ne_resource_table;
@@ -139,7 +139,7 @@ class EXEPrivate final : public LibRpBase::RomDataPrivate
 		int loadNENonResidentNames(void);
 
 		// Contents of the non-resident name table (NE)
-		ao::uvector<char> ne_nonresident_name_table;
+		rp::uvector<char> ne_nonresident_name_table;
 		bool ne_nonresident_name_table_loaded = false;
 
 		/**
@@ -188,7 +188,7 @@ class EXEPrivate final : public LibRpBase::RomDataPrivate
 		uint16_t pe_subsystem;
 
 		// PE section headers.
-		ao::uvector<IMAGE_SECTION_HEADER> pe_sections;
+		rp::uvector<IMAGE_SECTION_HEADER> pe_sections;
 
 		/**
 		 * Load the PE section table.
@@ -225,7 +225,7 @@ class EXEPrivate final : public LibRpBase::RomDataPrivate
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
 		int readPEImpExpDir(IMAGE_DATA_DIRECTORY &dataDir, int type,
-			size_t minSize, size_t maxSize, ao::uvector<uint8_t> &dirTbl);
+			size_t minSize, size_t maxSize, rp::uvector<uint8_t> &dirTbl);
 
 		/**
 		 * Read a block of null-terminated strings, where the length of the

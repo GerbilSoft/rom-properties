@@ -31,7 +31,7 @@ using LibRomData::GcnFst;
 
 // libwin32common
 #ifdef _WIN32
-#include "libwin32common/RpWin32_sdk.h"
+#  include "libwin32common/RpWin32_sdk.h"
 #endif
 
 // FST printer
@@ -52,8 +52,7 @@ using std::stringstream;
 using std::unordered_set;
 using std::vector;
 
-// Uninitialized vector class.
-// Reference: http://andreoffringa.org/?q=uvector
+// Uninitialized vector class
 #include "uvector.h"
 
 namespace LibRomData { namespace Tests {
@@ -117,12 +116,12 @@ class GcnFstTest : public ::testing::TestWithParam<GcnFstTest_mode>
 		 */
 		static int getFileFromZip(const char *zip_filename,
 			const char *int_filename,
-			ao::uvector<uint8_t>& buf,
+			rp::uvector<uint8_t>& buf,
 			uint64_t max_filesize = MAX_GCN_FST_BIN_FILESIZE);
 
 	public:
 		// FST data.
-		ao::uvector<uint8_t> m_fst_buf;
+		rp::uvector<uint8_t> m_fst_buf;
 		IFst *m_fst;
 
 		/**
@@ -232,7 +231,7 @@ unzFile GcnFstTest::openZip(const char *filename)
  */
 int GcnFstTest::getFileFromZip(const char *zip_filename,
 	const char *int_filename,
-	ao::uvector<uint8_t>& buf,
+	rp::uvector<uint8_t>& buf,
 	uint64_t max_filesize)
 {
 	// Open the Zip file.
@@ -428,7 +427,7 @@ TEST_P(GcnFstTest, FstPrint)
 	fst_txt_filename.replace(fst_txt_filename.size() - 8, 8, ".fst.txt");
 
 	// Get the known-good FST printout.
-	ao::uvector<uint8_t> fst_txt_buf;
+	rp::uvector<uint8_t> fst_txt_buf;
 	ASSERT_GT(getFileFromZip(zip_filename, fst_txt_filename.c_str(), fst_txt_buf, MAX_GCN_FST_TXT_FILESIZE), 0);
 
 	// Import the FST text into an istringstream.

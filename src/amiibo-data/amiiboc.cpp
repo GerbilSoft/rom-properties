@@ -83,7 +83,7 @@ static uint32_t getStringTableOffset(const char *str)
 	}
 
 	// Not found. Add the string
-	// TODO: Check generated assembly; maybe memcmp() with ao::uvector<> is faster?
+	// TODO: Check generated assembly; maybe memcmp() with rp::uvector<> is faster?
 	const uint32_t offset = static_cast<uint32_t>(stringTable.size());
 	string entry(str);
 	stringTable.insert(stringTable.end(), entry.c_str(), entry.c_str() + entry.size() + 1);

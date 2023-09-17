@@ -24,8 +24,7 @@ using namespace LibRpTexture;
 using std::string;
 using std::vector;
 
-// Uninitialized vector class.
-// Reference: http://andreoffringa.org/?q=uvector
+// Uninitialized vector class
 #include "uvector.h"
 
 namespace LibRomData {
@@ -67,7 +66,7 @@ class GameCubeBNRPrivate final : public RomDataPrivate
 		// Banner comments
 		// - If BNR1: 1 item.
 		// - If BNR2: 6 items.
-		ao::uvector<gcn_banner_comment_t> comments;
+		rp::uvector<gcn_banner_comment_t> comments;
 
 	public:
 		/**

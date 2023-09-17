@@ -21,8 +21,7 @@ using std::string;
 using std::unique_ptr;
 using std::unordered_map;
 
-// Uninitialized vector class.
-// Reference: http://andreoffringa.org/?q=uvector
+// Uninitialized vector class
 #include "uvector.h"
 
 namespace LibRomData {
@@ -54,7 +53,7 @@ class PEResourceReaderPrivate
 					// IMAGE_RESOURCE_DATA_ENTRY, relative to rsrc_addr.
 					// NOTE: If the high bit is set, this is a subdirectory.
 		};
-		typedef ao::uvector<ResDirEntry> rsrc_dir_t;
+		typedef rp::uvector<ResDirEntry> rsrc_dir_t;
 
 		// Resource types. (Top-level directory.)
 		rsrc_dir_t res_types;

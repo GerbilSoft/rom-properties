@@ -32,9 +32,9 @@ using namespace LibRpText;
 using std::string;
 using std::vector;
 
-// Uninitialized vector class.
-// Reference: http://andreoffringa.org/?q=uvector
+// Uninitialized vector class
 #include "uvector.h"
+
 #include "span.hh"
 using vhvc::span;
 using vhvc::reinterpret_span;
@@ -138,7 +138,7 @@ class ELFPrivate final : public RomDataPrivate
 		// Section Header information
 		string osVersion;	// Operating system version.
 
-		ao::uvector<uint8_t> build_id;	// GNU `ld` build ID. (raw data)
+		rp::uvector<uint8_t> build_id;	// GNU `ld` build ID. (raw data)
 		const char *build_id_type;	// Build ID type.
 
 		/**
@@ -195,7 +195,7 @@ class ELFPrivate final : public RomDataPrivate
 		 * @param out The output vector. Its size determines how much data is read.
 		 * @return 0 on success; non-zero on error.
 		 */
-		int readDataAtVA(uint64_t vaddr, ao::uvector<uint8_t> &out);
+		int readDataAtVA(uint64_t vaddr, rp::uvector<uint8_t> &out);
 
 		/**
 		 * Add PT_DYNAMIC fields.
@@ -744,7 +744,7 @@ int ELFPrivate::checkSectionHeaders(void)
  * @param out The output vector. Its size determines how much data is read.
  * @return 0 on success; non-zero on error.
  */
-int ELFPrivate::readDataAtVA(uint64_t vaddr, ao::uvector<uint8_t> &out)
+int ELFPrivate::readDataAtVA(uint64_t vaddr, rp::uvector<uint8_t> &out)
 {
 	// Find the segment
 	const uint64_t vend = vaddr + out.size();
@@ -793,7 +793,7 @@ int ELFPrivate::addPtDynamicFields(void)
 	}
 
 	// Read the header.
-	ao::uvector<uint8_t> pt_dyn_buf;
+	rp::uvector<uint8_t> pt_dyn_buf;
 	pt_dyn_buf.resize(static_cast<unsigned int>(pt_dynamic.p_filesz));
 	size_t size = file->seekAndRead(pt_dynamic.p_offset, pt_dyn_buf.data(), pt_dyn_buf.size());
 	if (size != pt_dyn_buf.size()) {
@@ -846,7 +846,7 @@ int ELFPrivate::addPtDynamicFields(void)
 				break;
 	}
 
-	ao::uvector<uint8_t> strtab_buf;
+	rp::uvector<uint8_t> strtab_buf;
 	span<const char> strtab;
 	assert(val_dtag[DT_STRSZ] < 1*1024*1024);
 	if (has_dtag[DT_STRTAB] && has_dtag[DT_STRSZ] && val_dtag[DT_STRSZ] < 1*1024*1024) {
@@ -1003,7 +1003,7 @@ int ELFPrivate::addSymbolFields(span<const char> dynsym_strtab)
 	 */
 
 	auto parse_symtab = [this](vector<Elf64_Sym> &out, const symtab_info_t &info) -> void {
-		ao::uvector<uint8_t> buf;
+		rp::uvector<uint8_t> buf;
 		if (info.size == 0 || info.size > 1*1024*1024)
 			return;
 		if (info.entsize < (Elf_Header.primary.e_class == ELFCLASS64 ? sizeof(Elf64_Sym) : sizeof(Elf32_Sym)))
@@ -1108,7 +1108,7 @@ int ELFPrivate::addSymbolFields(span<const char> dynsym_strtab)
 		fields.addField_listData(name, &params);
 	};
 
-	auto read_strtab = [this](ao::uvector<uint8_t> &buf, const symtab_info_t &info) -> span<const char> {
+	auto read_strtab = [this](rp::uvector<uint8_t> &buf, const symtab_info_t &info) -> span<const char> {
 		if (info.strtab_size == 0 || info.strtab_size > 1*1024*1024)
 			return span<const char>();
 		buf.resize(static_cast<size_t>(info.strtab_size));
@@ -1125,7 +1125,7 @@ int ELFPrivate::addSymbolFields(span<const char> dynsym_strtab)
 		return span<const char>();
 	};
 
-	ao::uvector<uint8_t> symtab_buf, dynsym_buf;
+	rp::uvector<uint8_t> symtab_buf, dynsym_buf;
 	add_symbol_tab("SHT_SYMTAB", sht_symtab, read_strtab(symtab_buf, sht_symtab));
 	if (dynsym_strtab.size() == 0) {
 		dynsym_strtab = read_strtab(dynsym_buf, sht_dynsym);

@@ -45,7 +45,7 @@ class IsoPartitionPrivate
 		// - Value: Directory entries.
 		// NOTE: Directory entries are variable-length, so this
 		// is a byte array, not an ISO_DirEntry array.
-		typedef ao::uvector<uint8_t> DirData_t;
+		typedef rp::uvector<uint8_t> DirData_t;
 		unordered_map<string, DirData_t> dir_data;
 
 		// ISO start offset. (in blocks)

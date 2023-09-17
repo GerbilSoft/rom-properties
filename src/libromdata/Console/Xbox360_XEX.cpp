@@ -88,7 +88,7 @@ class Xbox360_XEX_Private final : public RomDataPrivate
 
 		// Optional header table.
 		// NOTE: This array of structs **IS NOT** byteswapped!
-		ao::uvector<XEX2_Optional_Header_Tbl> optHdrTbl;
+		rp::uvector<XEX2_Optional_Header_Tbl> optHdrTbl;
 
 		// Execution ID. (XEX2_OPTHDR_EXECUTION_ID)
 		// Initialized by getXdbfResInfo().
@@ -124,7 +124,7 @@ class Xbox360_XEX_Private final : public RomDataPrivate
 			uint32_t physaddr;	// Physical address in the PE executable
 			uint32_t length;	// Length of segment
 		};
-		ao::uvector<BasicZDataSeg_t> basicZDataSegments;
+		rp::uvector<BasicZDataSeg_t> basicZDataSegments;
 
 		// Amount of data we'll read for the PE header.
 		// NOTE: Changed from `static const unsigned int` to #define
@@ -133,9 +133,9 @@ class Xbox360_XEX_Private final : public RomDataPrivate
 
 #ifdef ENABLE_LIBMSPACK
 		// Decompressed EXE header.
-		ao::uvector<uint8_t> lzx_peHeader;
+		rp::uvector<uint8_t> lzx_peHeader;
 		// Decompressed XDBF section.
-		ao::uvector<uint8_t> lzx_xdbfSection;
+		rp::uvector<uint8_t> lzx_xdbfSection;
 #endif /* ENABLE_LIBMSPACK */
 
 		/**
@@ -166,10 +166,10 @@ class Xbox360_XEX_Private final : public RomDataPrivate
 		 * at the beginning of the data (low byte == 0xFF).
 		 *
 		 * @param header_id	[in] Optional header ID.
-		 * @param pVec		[out] ao::uvector<uint8_t>&
+		 * @param pVec		[out] rp::uvector<uint8_t>&
 		 * @return Number of bytes read on success; 0 on error.
 		 */
-		size_t getOptHdrData(uint32_t header_id, ao::uvector<uint8_t> &pVec);
+		size_t getOptHdrData(uint32_t header_id, rp::uvector<uint8_t> &pVec);
 
 		/**
 		 * Get the resource information.
@@ -400,10 +400,10 @@ size_t Xbox360_XEX_Private::getOptHdrData(uint32_t header_id, uint32_t *pOut32)
  * at the beginning of the data (low byte == 0xFF).
  *
  * @param header_id	[in] Optional header ID.
- * @param pVec		[out] ao::uvector<uint8_t>&
+ * @param pVec		[out] rp::uvector<uint8_t>&
  * @return Number of bytes read on success; 0 on error.
  */
-size_t Xbox360_XEX_Private::getOptHdrData(uint32_t header_id, ao::uvector<uint8_t> &pVec)
+size_t Xbox360_XEX_Private::getOptHdrData(uint32_t header_id, rp::uvector<uint8_t> &pVec)
 {
 	assert((header_id & 0xFF) > 0x01);
 	if ((header_id & 0xFF) <= 0x01) {
@@ -463,7 +463,7 @@ const XEX2_Resource_Info *Xbox360_XEX_Private::getXdbfResInfo(const char *resour
 	}
 
 	// General data buffer for loading optional headers.
-	ao::uvector<uint8_t> u8_data;
+	rp::uvector<uint8_t> u8_data;
 
 	// Title ID is part of the execution ID, so load it if it
 	// hasn't been loaded already.
@@ -578,7 +578,7 @@ int Xbox360_XEX_Private::initPeReader(void)
 	}
 
 	// Get the file format info.
-	ao::uvector<uint8_t> u8_ffi;
+	rp::uvector<uint8_t> u8_ffi;
 	size_t size = getOptHdrData(XEX2_OPTHDR_FILE_FORMAT_INFO, u8_ffi);
 	if (size < sizeof(fileFormatInfo)) {
 		// Seek and/or read error.
@@ -1134,7 +1134,7 @@ Xbox360_Version_t Xbox360_XEX_Private::getMinKernelVersion(void)
 
 	// Minimum kernel version is determined by checking the
 	// import libraries and taking the maximum version.
-	ao::uvector<uint8_t> u8_implib;
+	rp::uvector<uint8_t> u8_implib;
 	size_t size = getOptHdrData(XEX2_OPTHDR_IMPORT_LIBRARIES, u8_implib);
 	if (size < sizeof(XEX2_Import_Libraries_Header) + (sizeof(XEX2_Import_Library_Entry) * 2)) {
 		// Too small...
@@ -1639,7 +1639,7 @@ int Xbox360_XEX::loadFieldData(void)
 	}
 
 	// Original executable name
-	ao::uvector<uint8_t> u8_data;
+	rp::uvector<uint8_t> u8_data;
 	size_t size = d->getOptHdrData(XEX2_OPTHDR_ORIGINAL_PE_NAME, u8_data);
 	if (size > sizeof(uint32_t)) {
 		// Sanity check: Must be less than 260 bytes. (PATH_MAX)

@@ -67,8 +67,7 @@ struct fsxattr {
 #  define O_LARGEFILE 0
 #endif /* !O_LARGEFILE */
 
-// Uninitialized vector class.
-// Reference: http://andreoffringa.org/?q=uvector
+// Uninitialized vector class
 #include "uvector.h"
 
 // C++ STL classes
@@ -371,7 +370,7 @@ int XAttrReaderPrivate::loadGenericXattrs(void)
 	// Partially based on KIO's FileProtocol::copyXattrs().
 	// Reference: https://invent.kde.org/frameworks/kio/-/blob/584a81fd453858db432a573c011a1433bc6947e1/src/kioworkers/file/file_unix.cpp#L521
 	ssize_t listlen = 0;
-	ao::uvector<char> keylist;
+	rp::uvector<char> keylist;
 	keylist.reserve(256);
 	while (true) {
 		keylist.resize(listlen);
@@ -416,7 +415,7 @@ int XAttrReaderPrivate::loadGenericXattrs(void)
 #endif /* HAVE_SYS_XATTR_H */
 
 	// Value buffer
-	ao::uvector<char> value;
+	rp::uvector<char> value;
 	value.reserve(256);
 
 	// Linux, macOS: List contains NULL-terminated strings.

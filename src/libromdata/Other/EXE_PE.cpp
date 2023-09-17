@@ -203,7 +203,7 @@ int EXEPrivate::loadPEResourceTypes(void)
  * @return 0 on success; negative POSIX error code on error.
  */
 int EXEPrivate::readPEImpExpDir(IMAGE_DATA_DIRECTORY &dataDir, int type,
-	size_t minSize, size_t maxSize, ao::uvector<uint8_t> &dirTbl)
+	size_t minSize, size_t maxSize, rp::uvector<uint8_t> &dirTbl)
 {
 	if (!file || !file->isOpen()) {
 		// File isn't open.
@@ -329,7 +329,7 @@ int EXEPrivate::readPEImportDir(void)
 	// IMAGE_IMPORT_DIRECTORY in the former case.
 
 	IMAGE_DATA_DIRECTORY dataDir;
-	ao::uvector<uint8_t> impDirTbl;
+	rp::uvector<uint8_t> impDirTbl;
 	int res = readPEImpExpDir(dataDir, IMAGE_DATA_DIRECTORY_IMPORT_TABLE,
 		sizeof(IMAGE_IMPORT_DIRECTORY), 4*1024*1024, impDirTbl);
 	if (res)
@@ -771,7 +771,7 @@ void EXEPrivate::addFields_PE(void)
 int EXEPrivate::addFields_PE_Export(void)
 {
 	IMAGE_DATA_DIRECTORY dataDir;
-	ao::uvector<uint8_t> expDirTbl;
+	rp::uvector<uint8_t> expDirTbl;
 
 	int res = readPEImpExpDir(dataDir, IMAGE_DATA_DIRECTORY_EXPORT_TABLE,
 		sizeof(IMAGE_EXPORT_DIRECTORY), 4*1024*1024, expDirTbl);

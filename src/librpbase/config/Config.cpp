@@ -66,7 +66,7 @@ class ConfigPrivate : public ConfReaderPrivate
 		// Image type priority data.
 		// Managed as a single block in order to reduce
 		// memory allocations.
-		ao::uvector<uint8_t> vImgTypePrio;
+		rp::uvector<uint8_t> vImgTypePrio;
 
 		/**
 		 * Map of RomData subclass names to vImgTypePrio indexes.
