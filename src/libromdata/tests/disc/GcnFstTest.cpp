@@ -41,6 +41,7 @@ using LibRomData::GcnFst;
 #include "ctypex.h"
 
 // C++ includes
+#include <algorithm>
 #include <sstream>
 #include <string>
 #include <unordered_set>
