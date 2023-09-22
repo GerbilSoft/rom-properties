@@ -352,4 +352,43 @@ int RpTextureWrapper::loadInternalImage(ImageType imageType, rp_image_const_ptr 
 		d->texture->image);	// func
 }
 
+/**
+ * Load an internal mipmap level for IMG_INT_IMAGE.
+ * Called by RomData::mipmap().
+ * @param mipmapLevel	[in] Mipmap level.
+ * @param pImage	[out] Reference to rp_image_const_ptr to store the image in.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int RpTextureWrapper::loadInternalMipmap(int mipmapLevel, LibRpTexture::rp_image_const_ptr &pImage)
+{
+	assert(mipmapLevel >= 0);
+	if (mipmapLevel < 0) {
+		// mipmapLevel is out of range.
+		pImage.reset();
+		return -EINVAL;
+	}
+
+	if (mipmapLevel == 0) {
+		// Same as the internal image.
+		return loadInternalImage(IMG_INT_IMAGE, pImage);
+	}
+
+	// Check if the FileFormat object has mipmaps.
+	RP_D(RpTextureWrapper);
+	if (!d->texture) {
+		// No texture is loaded...
+		return -ENOENT;
+	}
+
+	const int mipmapCount = d->texture->mipmapCount();
+	if (mipmapLevel >= mipmapCount) {
+		// Specified mipmap level is out of range.
+		return -ENOENT;
+	}
+
+	// Get the mipmap.
+	pImage = d->texture->mipmap(mipmapLevel);
+	return ((bool)pImage ? 0 : -EIO);
+}
+
 }

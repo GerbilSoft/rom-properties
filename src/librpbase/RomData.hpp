@@ -429,6 +429,18 @@ public:
 	virtual int loadInternalImage(ImageType imageType, LibRpTexture::rp_image_const_ptr &pImage);
 
 public:
+	// NOTE: This function needs to be public because it might be
+	// called by RomData subclasses that own other RomData subclasses.
+	/**
+	 * Load an internal mipmap level for IMG_INT_IMAGE.
+	 * Called by RomData::mipmap().
+	 * @param mipmapLevel	[in] Mipmap level.
+	 * @param pImage	[out] Reference to rp_image_const_ptr to store the image in.
+	 * @return 0 on success; negative POSIX error code on error.
+	 */
+	virtual int loadInternalMipmap(int mipmapLevel, LibRpTexture::rp_image_const_ptr &pImage);
+
+public:
 	/**
 	 * Get the ROM Fields object.
 	 * @return ROM Fields object.
@@ -454,15 +466,27 @@ private:
 public:
 	/**
 	 * Get an internal image from the ROM.
-	 *
-	 * The retrieved image must be ref()'d by the caller if the
-	 * caller stores it instead of using it immediately.
-	 *
 	 * @param imageType Image type to load.
 	 * @return Internal image, or nullptr if the ROM doesn't have one.
 	 */
 	RP_LIBROMDATA_PUBLIC
 	LibRpTexture::rp_image_const_ptr image(ImageType imageType) const;
+
+	/**
+	 * Get an internal image mipmap from the texture.
+	 *
+	 * This always refers to IMG_INT_IMAGE.
+	 *
+	 * This is mostly used for texture files to retrieve mipmaps
+	 * other than the full image.
+	 *
+	 * NOTE: For mipmap level 0, this is identical to image(IMG_INT_IMAGE).
+	 *
+	 * @param mipmapLevel Mipmap level to load.
+	 * @return Internal image at the specified mipmap level, or nullptr if the ROM doesn't have one.
+	 */
+	RP_LIBROMDATA_PUBLIC
+	LibRpTexture::rp_image_const_ptr mipmap(int mipmapLevel) const;
 
 	/**
 	 * External URLs for a media type.
