@@ -1606,13 +1606,13 @@ INSTANTIATE_TEST_SUITE_P(TGA, ImageDecoderTest,
 		//ImageDecoderTest_mode("TGA/tga-go/ctc32.tga.gz", "TGA/tga-go/ctc32-TODO.png", "ARGB8888"),
 		ImageDecoderTest_mode("TGA/tga-go/monochrome8_bottom_left_rle.tga.gz", "TGA/tga-go/monochrome8.png", "8bpp grayscale"),
 		ImageDecoderTest_mode("TGA/tga-go/monochrome8_bottom_left.tga.gz", "TGA/tga-go/monochrome8.png", "8bpp grayscale"),
-		//ImageDecoderTest_mode("TGA/tga-go/monochrome16_bottom_left_rle.tga.gz", "TGA/tga-go/monochrome16.png", "IA8"),
-		//ImageDecoderTest_mode("TGA/tga-go/monochrome16_bottom_left.tga.gz", "TGA/tga-go/monochrome16.png", "IA8"),
+		//ImageDecoderTest_mode("TGA/tga-go/monochrome16_top_left_rle.tga.gz", "TGA/tga-go/monochrome16.png", "IA8"),
+		//ImageDecoderTest_mode("TGA/tga-go/monochrome16_top_left.tga.gz", "TGA/tga-go/monochrome16.png", "IA8"),
 		ImageDecoderTest_mode("TGA/tga-go/rgb24_bottom_left_rle.tga.gz", "TGA/tga-go/rgb24.0.png", "RGB888"),
 		ImageDecoderTest_mode("TGA/tga-go/rgb24_top_left_colormap.tga.gz", "TGA/tga-go/rgb24.1.png", "8bpp with RGB888 palette"),
 		ImageDecoderTest_mode("TGA/tga-go/rgb24_top_left.tga.gz", "TGA/tga-go/rgb24.0.png", "RGB888"),
 		ImageDecoderTest_mode("TGA/tga-go/rgb32_bottom_left.tga.gz", "TGA/tga-go/rgb32.0.png", "ARGB8888"),
-		//ImageDecoderTest_mode("TGA/tga-go/rgb32_top_left_rle_colormap.tga.gz", "TGA/tga-go/rgb32.1.png", "8bpp with xRGB8888 palette"),
+		ImageDecoderTest_mode("TGA/tga-go/rgb32_top_left_rle_colormap.tga.gz", "TGA/tga-go/rgb32.1.png", "8bpp with ARGB8888 palette"),
 		ImageDecoderTest_mode("TGA/tga-go/rgb32_top_left_rle.tga.gz", "TGA/tga-go/rgb32.0.png", "ARGB8888"))
 	, ImageDecoderTest::test_case_suffix_generator);
 
