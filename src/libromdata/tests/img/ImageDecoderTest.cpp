@@ -1008,17 +1008,36 @@ INSTANTIATE_TEST_SUITE_P(VTF, ImageDecoderTest,
 		VTF_MIPMAP_TEST("RGBA8888", "ABGR8888", 8, "RGBA8888"),
 
 		// 32-bit xRGB
-		ImageDecoderTest_mode(
-			"VTF/BGRx8888.vtf.gz",
-			"rgb-reference.png", "BGRx8888"),
+		ImageDecoderTest_mode("VTF/BGRx8888.vtf.gz", "rgb-reference.png", "BGRx8888", RomData::IMG_INT_IMAGE, 0),
+		VTF_MIPMAP_TEST("BGRx8888", "BGRx8888", 1, "BGRx8888"),
+		VTF_MIPMAP_TEST("BGRx8888", "BGRx8888", 2, "BGRx8888"),
+		VTF_MIPMAP_TEST("BGRx8888", "BGRx8888", 3, "BGRx8888"),
+		VTF_MIPMAP_TEST("BGRx8888", "BGRx8888", 4, "BGRx8888"),
+		VTF_MIPMAP_TEST("BGRx8888", "BGRx8888", 5, "BGRx8888"),
+		VTF_MIPMAP_TEST("BGRx8888", "BGRx8888", 6, "BGRx8888"),
+		VTF_MIPMAP_TEST("BGRx8888", "BGRx8888", 7, "BGRx8888"),
+		VTF_MIPMAP_TEST("BGRx8888", "BGRx8888", 8, "BGRx8888"),
 
 		// 24-bit RGB
-		ImageDecoderTest_mode(
-			"VTF/BGR888.vtf.gz",
-			"rgb-reference.png", "BGR888"),
-		ImageDecoderTest_mode(
-			"VTF/RGB888.vtf.gz",
-			"rgb-reference.png", "RGB888"),
+		ImageDecoderTest_mode("VTF/BGR888.vtf.gz", "rgb-reference.png", "BGR888", RomData::IMG_INT_IMAGE, 0),
+		VTF_MIPMAP_TEST("BGR888", "BGRx8888", 1, "BGR888"),
+		VTF_MIPMAP_TEST("BGR888", "BGRx8888", 2, "BGR888"),
+		VTF_MIPMAP_TEST("BGR888", "BGRx8888", 3, "BGR888"),
+		VTF_MIPMAP_TEST("BGR888", "BGRx8888", 4, "BGR888"),
+		VTF_MIPMAP_TEST("BGR888", "BGRx8888", 5, "BGR888"),
+		VTF_MIPMAP_TEST("BGR888", "BGRx8888", 6, "BGR888"),
+		VTF_MIPMAP_TEST("BGR888", "BGRx8888", 7, "BGR888"),
+		VTF_MIPMAP_TEST("BGR888", "BGRx8888", 8, "BGR888"),
+
+		ImageDecoderTest_mode("VTF/RGB888.vtf.gz", "rgb-reference.png", "RGB888", RomData::IMG_INT_IMAGE, 0),
+		VTF_MIPMAP_TEST("RGB888", "BGRx8888", 1, "RGB888"),
+		VTF_MIPMAP_TEST("RGB888", "BGRx8888", 2, "RGB888"),
+		VTF_MIPMAP_TEST("RGB888", "BGRx8888", 3, "RGB888"),
+		VTF_MIPMAP_TEST("RGB888", "BGRx8888", 4, "RGB888"),
+		VTF_MIPMAP_TEST("RGB888", "BGRx8888", 5, "RGB888"),
+		VTF_MIPMAP_TEST("RGB888", "BGRx8888", 6, "RGB888"),
+		VTF_MIPMAP_TEST("RGB888", "BGRx8888", 7, "RGB888"),
+		VTF_MIPMAP_TEST("RGB888", "BGRx8888", 8, "RGB888"),
 
 		// 24-bit RGB + bluescreen
 		VTF_MIPMAP_TEST("BGR888_bluescreen", "BGR888_bluescreen", 0, "BGR888 (Bluescreen)"),
