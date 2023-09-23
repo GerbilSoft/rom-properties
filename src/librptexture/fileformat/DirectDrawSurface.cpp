@@ -1025,34 +1025,42 @@ DirectDrawSurface::DirectDrawSurface(const IRpFilePtr &file)
 		d->texDataStartAddr = 4+sizeof(DDS_HEADER);
 	}
 
-	// Save the DDS header.
+#if SYS_BYTEORDER == SYS_BIG_ENDIAN
+	// Byteswap and copy the DDS header fields.
+	d->ddsHeader.dwSize			= le32_to_cpu(pSrcHeader->dwSize);
+	d->ddsHeader.dwFlags			= le32_to_cpu(pSrcHeader->dwFlags);
+	d->ddsHeader.dwHeight			= le32_to_cpu(pSrcHeader->dwHeight);
+	d->ddsHeader.dwWidth			= le32_to_cpu(pSrcHeader->dwWidth);
+	d->ddsHeader.dwPitchOrLinearSize	= le32_to_cpu(pSrcHeader->dwPitchOrLinearSize);
+	d->ddsHeader.dwDepth			= le32_to_cpu(pSrcHeader->dwDepth);
+	d->ddsHeader.dwMipMapCount		= le32_to_cpu(pSrcHeader->dwMipMapCount);
+
+	// NOTE: Not byteswapping NVTT or GIMP headers. Copy as-is.
+	// These fields are byteswapped when needed.
+	memcpy(&d->ddsHeader.dwReserved1, &pSrcHeader->dwReserved1, sizeof(d->ddsHeader.dwReserved1));
+
+	// Copy the DDS pixel format.
+	// NOTE: FourCC is NOT byteswapped here; it's handled separately.
+	DDS_PIXELFORMAT &ddspf = d->ddsHeader.ddspf;
+	const DDS_PIXELFORMAT &ddspf_src = pSrcHeader->ddspf;
+	ddspf.dwSize		= le32_to_cpu(ddspf_src.dwSize);
+	ddspf.dwFlags		= le32_to_cpu(ddspf_src.dwFlags);
+	ddspf.dwFourCC		= ddspf_src.dwFourCC;	// NO byteswap!
+	ddspf.dwRGBBitCount	= le32_to_cpu(ddspf_src.dwRGBBitCount);
+	ddspf.dwRBitMask	= le32_to_cpu(ddspf_src.dwRBitMask);
+	ddspf.dwGBitMask	= le32_to_cpu(ddspf_src.dwGBitMask);
+	ddspf.dwBBitMask	= le32_to_cpu(ddspf_src.dwBBitMask);
+	ddspf.dwABitMask	= le32_to_cpu(ddspf_src.dwABitMask);
+
+	// Copy the capabilities values.
+	d->ddsHeader.dwCaps			= le32_to_cpu(pSrcHeader->dwCaps);
+	d->ddsHeader.dwCaps2			= le32_to_cpu(pSrcHeader->dwCaps2);
+	d->ddsHeader.dwCaps3			= le32_to_cpu(pSrcHeader->dwCaps3);
+	d->ddsHeader.dwCaps4			= le32_to_cpu(pSrcHeader->dwCaps4);
+#else /* SYS_BYTEORDER == SYS_LIL_ENDIAN */
+	// Copy the DDS header without byteswapping.
 	memcpy(&d->ddsHeader, pSrcHeader, sizeof(d->ddsHeader));
 
-#if SYS_BYTEORDER == SYS_BIG_ENDIAN
-	// Byteswap the DDS header.
-	d->ddsHeader.dwSize		= le32_to_cpu(d->ddsHeader.dwSize);
-	d->ddsHeader.dwFlags		= le32_to_cpu(d->ddsHeader.dwFlags);
-	d->ddsHeader.dwHeight		= le32_to_cpu(d->ddsHeader.dwHeight);
-	d->ddsHeader.dwWidth		= le32_to_cpu(d->ddsHeader.dwWidth);
-	d->ddsHeader.dwPitchOrLinearSize	= le32_to_cpu(d->ddsHeader.dwPitchOrLinearSize);
-	d->ddsHeader.dwDepth		= le32_to_cpu(d->ddsHeader.dwDepth);
-	d->ddsHeader.dwMipMapCount	= le32_to_cpu(d->ddsHeader.dwMipMapCount);
-	d->ddsHeader.dwCaps	= le32_to_cpu(d->ddsHeader.dwCaps);
-	d->ddsHeader.dwCaps2	= le32_to_cpu(d->ddsHeader.dwCaps2);
-	d->ddsHeader.dwCaps3	= le32_to_cpu(d->ddsHeader.dwCaps3);
-	d->ddsHeader.dwCaps4	= le32_to_cpu(d->ddsHeader.dwCaps4);
-
-	// Byteswap the DDS pixel format.
-	// NOTE: FourCC is handled separately.
-	DDS_PIXELFORMAT &ddspf = d->ddsHeader.ddspf;
-	ddspf.dwSize		= le32_to_cpu(ddspf.dwSize);
-	ddspf.dwFlags		= le32_to_cpu(ddspf.dwFlags);
-	ddspf.dwRGBBitCount	= le32_to_cpu(ddspf.dwRGBBitCount);
-	ddspf.dwRBitMask	= le32_to_cpu(ddspf.dwRBitMask);
-	ddspf.dwGBitMask	= le32_to_cpu(ddspf.dwGBitMask);
-	ddspf.dwBBitMask	= le32_to_cpu(ddspf.dwBBitMask);
-	ddspf.dwABitMask	= le32_to_cpu(ddspf.dwABitMask);
-#else /* SYS_BYTEORDER == SYS_LIL_ENDIAN */
 	// FourCC is considered to be big-endian.
 	d->ddsHeader.ddspf.dwFourCC = be32_to_cpu(d->ddsHeader.ddspf.dwFourCC);
 #endif
