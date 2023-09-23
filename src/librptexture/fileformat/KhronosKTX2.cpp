@@ -79,7 +79,7 @@ class KhronosKTX2Private final : public FileFormatPrivate
 
 		// Decoded mipmaps
 		// Mipmap 0 is the full image.
-		vector<rp_image_ptr > mipmaps;
+		vector<rp_image_ptr> mipmaps;
 
 		// Invalid pixel format message
 		char invalid_pixel_format[24];
@@ -1078,7 +1078,7 @@ rp_image_const_ptr KhronosKTX2::mipmap(int mip) const
 		return nullptr;
 	}
 
-	// Load the image.
+	// Load the image at the specified mipmap level.
 	return const_cast<KhronosKTX2Private*>(d)->loadImage(mip);
 }
 
