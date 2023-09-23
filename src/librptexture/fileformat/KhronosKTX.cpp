@@ -76,8 +76,9 @@ class KhronosKTXPrivate final : public FileFormatPrivate
 		// Texture data start address
 		unsigned int texDataStartAddr;
 
-		// Decoded image
-		rp_image_ptr img;
+		// Decoded mipmaps
+		// Mipmap 0 is the full image.
+		vector<rp_image_ptr> mipmaps;
 
 		// Invalid pixel format message
 		char invalid_pixel_format[24];
@@ -90,9 +91,10 @@ class KhronosKTXPrivate final : public FileFormatPrivate
 
 		/**
 		 * Load the image.
+		 * @param mip Mipmap number. (0 == full image)
 		 * @return Image, or nullptr on error.
 		 */
-		rp_image_const_ptr loadImage(void);
+		rp_image_const_ptr loadImage(int mip);
 
 		/**
 		 * Load key/value data.
@@ -125,7 +127,6 @@ KhronosKTXPrivate::KhronosKTXPrivate(KhronosKTX *q, const IRpFilePtr &file)
 	, isByteswapNeeded(false)
 	, flipOp(rp_image::FLIP_V)
 	, texDataStartAddr(0)
-	, img(nullptr)
 {
 	// Clear the KTX header struct.
 	memset(&ktxHeader, 0, sizeof(ktxHeader));
@@ -134,13 +135,27 @@ KhronosKTXPrivate::KhronosKTXPrivate(KhronosKTX *q, const IRpFilePtr &file)
 
 /**
  * Load the image.
+ * @param mip Mipmap number. (0 == full image)
  * @return Image, or nullptr on error.
  */
-rp_image_const_ptr KhronosKTXPrivate::loadImage(void)
+rp_image_const_ptr KhronosKTXPrivate::loadImage(int mip)
 {
-	if (img) {
+	int mipmapCount = ktxHeader.numberOfMipmapLevels;
+	if (mipmapCount <= 0) {
+		// No mipmaps == one image.
+		mipmapCount = 1;
+	}
+
+	assert(mip >= 0);
+	assert(mip < mipmapCount);
+	if (mip < 0 || mip >= mipmapCount) {
+		// Invalid mipmap number.
+		return nullptr;
+	}
+
+	if (!mipmaps.empty() && mipmaps[mip] != nullptr) {
 		// Image has already been loaded.
-		return img;
+		return mipmaps[mip];
 	} else if (!this->file || !this->isValid) {
 		// Can't load the image.
 		return nullptr;
@@ -171,19 +186,19 @@ rp_image_const_ptr KhronosKTXPrivate::loadImage(void)
 	}
 	const uint32_t file_sz = static_cast<uint32_t>(file->size());
 
-	// Seek to the start of the texture data.
-	int ret = file->seek(texDataStartAddr);
-	if (ret != 0) {
-		// Seek error.
-		return nullptr;
-	}
-
 	// NOTE: Mipmaps are stored *after* the main image.
 	// Hence, no mipmap processing is necessary.
 
 	// Handle a 1D texture as a "width x 1" 2D texture.
 	// NOTE: Handling a 3D texture as a single 2D texture.
-	const int height = (ktxHeader.pixelHeight > 0 ? ktxHeader.pixelHeight : 1);
+	int width = ktxHeader.pixelWidth;
+	int height = (ktxHeader.pixelHeight > 0 ? ktxHeader.pixelHeight : 1);
+
+	// Adjust width/height for the mipmap level.
+	if (mip > 0) {
+		width >>= mip;
+		height >>= mip;
+	}
 
 	// Calculate the expected size.
 	// NOTE: Scanlines are 4-byte aligned.
@@ -192,26 +207,26 @@ rp_image_const_ptr KhronosKTXPrivate::loadImage(void)
 	switch (ktxHeader.glFormat) {
 		case GL_RGB:
 			// 24-bit RGB
-			stride = ALIGN_BYTES(4, ktxHeader.pixelWidth * 3);
+			stride = ALIGN_BYTES(4, width * 3);
 			expected_size = static_cast<unsigned int>(stride * height);
 			break;
 
 		case GL_RGBA:
 			// 32-bit RGBA
-			stride = ktxHeader.pixelWidth * 4;
+			stride = width * 4;
 			expected_size = static_cast<unsigned int>(stride * height);
 			break;
 
 		case GL_LUMINANCE:
 			// 8-bit luminance
-			stride = ALIGN_BYTES(4, ktxHeader.pixelWidth);
+			stride = ALIGN_BYTES(4, width);
 			expected_size = static_cast<unsigned int>(stride * height);
 			break;
 
 		case GL_RGB9_E5:
 			// Uncompressed "special" 32bpp formats
 			// TODO: Does KTX handle GL_RGB9_E5 as compressed?
-			stride = ktxHeader.pixelWidth * 4;
+			stride = width * 4;
 			expected_size = static_cast<unsigned int>(stride * height);
 			break;
 
@@ -222,19 +237,19 @@ rp_image_const_ptr KhronosKTXPrivate::loadImage(void)
 			switch (ktxHeader.glInternalFormat) {
 				case GL_RGB8:
 					// 24-bit RGB
-					stride = ALIGN_BYTES(4, ktxHeader.pixelWidth * 3);
+					stride = ALIGN_BYTES(4, width * 3);
 					expected_size = static_cast<unsigned int>(stride * height);
 					break;
 
 				case GL_RGBA8:
 					// 32-bit RGBA
-					stride = ktxHeader.pixelWidth * 4;
+					stride = width * 4;
 					expected_size = static_cast<unsigned int>(stride * height);
 					break;
 
 				case GL_R8:
 					// 8-bit "Red"
-					stride = ktxHeader.pixelWidth;
+					stride = ALIGN_BYTES(4, width);
 					expected_size = static_cast<unsigned int>(stride * height);
 					break;
 
@@ -244,17 +259,17 @@ rp_image_const_ptr KhronosKTXPrivate::loadImage(void)
 					// 32 pixels compressed into 64 bits. (2bpp)
 					// NOTE: Image dimensions must be a power of 2 for PVRTC-I.
 					expected_size = ImageSizeCalc::T_calcImageSizePVRTC_PoT<true>(
-						ktxHeader.pixelWidth, height);
+						width, height);
 					break;
 
 				case GL_COMPRESSED_RGBA_PVRTC_2BPPV2_IMG:
 					// 32 pixels compressed into 64 bits. (2bpp)
 					// NOTE: Width and height must be rounded to the nearest tile. (8x4)
 					// FIXME: Our PVRTC-II decoder requires power-of-2 textures right now.
-					//expected_size = ALIGN_BYTES(8, ktxHeader.pixelWidth) *
+					//expected_size = ALIGN_BYTES(8, width) *
 					//                ALIGN_BYTES(4, (int)height) / 4;
 					expected_size = ImageSizeCalc::T_calcImageSizePVRTC_PoT<true>
-						(ktxHeader.pixelWidth, height);
+						(width, height);
 					break;
 
 				case GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG:
@@ -262,17 +277,17 @@ rp_image_const_ptr KhronosKTXPrivate::loadImage(void)
 					// 16 pixels compressed into 64 bits. (4bpp)
 					// NOTE: Image dimensions must be a power of 2 for PVRTC-I.
 					expected_size = ImageSizeCalc::T_calcImageSizePVRTC_PoT<false>(
-						ktxHeader.pixelWidth, height);
+						width, height);
 					break;
 
 				case GL_COMPRESSED_RGBA_PVRTC_4BPPV2_IMG:
 					// 16 pixels compressed into 64 bits. (4bpp)
 					// NOTE: Width and height must be rounded to the nearest tile. (4x4)
 					// FIXME: Our PVRTC-II decoder requires power-of-2 textures right now.
-					//expected_size = ALIGN_BYTES(4, ktxHeader.pixelWidth) *
+					//expected_size = ALIGN_BYTES(4, width) *
 					//                ALIGN_BYTES(4, (int)height) / 2;
 					expected_size = ImageSizeCalc::T_calcImageSizePVRTC_PoT<false>
-						(ktxHeader.pixelWidth, height);
+						(width, height);
 					break;
 #endif /* ENABLE_PVRTC */
 
@@ -294,7 +309,7 @@ rp_image_const_ptr KhronosKTXPrivate::loadImage(void)
 					// 16 pixels compressed into 64 bits. (4bpp)
 					// NOTE: Width and height must be rounded to the nearest tile. (4x4)
 					expected_size = ImageSizeCalc::T_calcImageSize(
-						ALIGN_BYTES(4, ktxHeader.pixelWidth), ALIGN_BYTES(4, height)) / 2;
+						ALIGN_BYTES(4, width), ALIGN_BYTES(4, height)) / 2;
 					break;
 
 				//case GL_RGBA_S3TC:	// TODO
@@ -316,13 +331,13 @@ rp_image_const_ptr KhronosKTXPrivate::loadImage(void)
 					// 16 pixels compressed into 128 bits. (8bpp)
 					// NOTE: Width and height must be rounded to the nearest tile. (4x4)
 					expected_size = ImageSizeCalc::T_calcImageSize(
-						ALIGN_BYTES(4, ktxHeader.pixelWidth), ALIGN_BYTES(4, height));
+						ALIGN_BYTES(4, width), ALIGN_BYTES(4, height));
 					break;
 
 				case GL_RGB9_E5:
 					// Uncompressed "special" 32bpp formats.
 					// TODO: Does KTX handle GL_RGB9_E5 as compressed?
-					expected_size = ImageSizeCalc::T_calcImageSize(ktxHeader.pixelWidth, height, sizeof(uint32_t));
+					expected_size = ImageSizeCalc::T_calcImageSize(width, height, sizeof(uint32_t));
 					break;
 
 				default: {
@@ -347,7 +362,7 @@ rp_image_const_ptr KhronosKTXPrivate::loadImage(void)
 					}
 
 					expected_size = ImageSizeCalc::calcImageSizeASTC(
-						ktxHeader.pixelWidth, height,
+						width, height,
 						ImageDecoder::astc_lkup_tbl[astc_idx][0],
 						ImageDecoder::astc_lkup_tbl[astc_idx][1]);
 					break;
@@ -366,17 +381,30 @@ rp_image_const_ptr KhronosKTXPrivate::loadImage(void)
 		return nullptr;
 	}
 
-	// Read the image size field.
-	// NOTE: Divide image size by # of layers to get the expected size.
-	uint32_t imageSize;
-	size_t size = file->read(&imageSize, sizeof(imageSize));
-	if (size != sizeof(imageSize)) {
-		// Unable to read the image size field.
-		return nullptr;
+	// Image size field.
+	// This is stored directly before each mipmap level.
+	uint32_t imageSize = 0;
+
+	// Adjust starting address and image size for the mipmap level.
+	unsigned int mip_texDataStartAddr = texDataStartAddr;
+	for (int adjmip = mip; adjmip >= 0; adjmip--) {
+		size_t size = file->seekAndRead(mip_texDataStartAddr, &imageSize, sizeof(imageSize));
+		if (size != sizeof(imageSize)) {
+			// Unable to read the image size field.
+			return nullptr;
+		}
+		if (isByteswapNeeded) {
+			imageSize = __swab32(imageSize);
+		}
+
+		if (adjmip > 0) {
+			// Adjust the starting address for the next mipmap level.
+			mip_texDataStartAddr += imageSize;
+			mip_texDataStartAddr += sizeof(imageSize);
+		}
 	}
-	if (isByteswapNeeded) {
-		imageSize = __swab32(imageSize);
-	}
+
+	// Divide image size by # of layers to get the expected size.
 	if (ktxHeader.numberOfArrayElements <= 1) {
 		// Single array element.
 		if (imageSize != expected_size) {
@@ -393,7 +421,7 @@ rp_image_const_ptr KhronosKTXPrivate::loadImage(void)
 
 	// Read the texture data.
 	auto buf = aligned_uptr<uint8_t>(16, expected_size);
-	size = file->read(buf.get(), expected_size);
+	size_t size = file->read(buf.get(), expected_size);
 	if (size != expected_size) {
 		// Read error.
 		return nullptr;
@@ -402,12 +430,13 @@ rp_image_const_ptr KhronosKTXPrivate::loadImage(void)
 	// TODO: Byteswapping.
 	// TODO: Handle variants. Check for channel sizes in glInternalFormat?
 	// TODO: Handle sRGB post-processing? (for e.g. GL_SRGB8)
+	rp_image_ptr img;
 	switch (ktxHeader.glFormat) {
 		case GL_RGB:
 			// 24-bit RGB
 			img = ImageDecoder::fromLinear24(
 				ImageDecoder::PixelFormat::BGR888,
-				ktxHeader.pixelWidth, height,
+				width, height,
 				buf.get(), expected_size, stride);
 			break;
 
@@ -415,7 +444,7 @@ rp_image_const_ptr KhronosKTXPrivate::loadImage(void)
 			// 32-bit RGBA
 			img = ImageDecoder::fromLinear32(
 				ImageDecoder::PixelFormat::ABGR8888,
-				ktxHeader.pixelWidth, height,
+				width, height,
 				reinterpret_cast<const uint32_t*>(buf.get()), expected_size, stride);
 			break;
 
@@ -423,7 +452,7 @@ rp_image_const_ptr KhronosKTXPrivate::loadImage(void)
 			// 8-bit Luminance
 			img = ImageDecoder::fromLinear8(
 				ImageDecoder::PixelFormat::L8,
-				ktxHeader.pixelWidth, height,
+				width, height,
 				buf.get(), expected_size, stride);
 			break;
 
@@ -432,7 +461,7 @@ rp_image_const_ptr KhronosKTXPrivate::loadImage(void)
 			// TODO: Does KTX handle GL_RGB9_E5 as compressed?
 			img = ImageDecoder::fromLinear32(
 				ImageDecoder::PixelFormat::RGB9_E5,
-				ktxHeader.pixelWidth, height,
+				width, height,
 				reinterpret_cast<const uint32_t*>(buf.get()), expected_size, stride);
 			break;
 
@@ -445,7 +474,7 @@ rp_image_const_ptr KhronosKTXPrivate::loadImage(void)
 					// 24-bit RGB
 					img = ImageDecoder::fromLinear24(
 						ImageDecoder::PixelFormat::BGR888,
-						ktxHeader.pixelWidth, height,
+						width, height,
 						buf.get(), expected_size, stride);
 					break;
 
@@ -453,7 +482,7 @@ rp_image_const_ptr KhronosKTXPrivate::loadImage(void)
 					// 32-bit RGBA
 					img = ImageDecoder::fromLinear32(
 						ImageDecoder::PixelFormat::ABGR8888,
-						ktxHeader.pixelWidth, height,
+						width, height,
 						reinterpret_cast<const uint32_t*>(buf.get()), expected_size, stride);
 					break;
 
@@ -461,7 +490,7 @@ rp_image_const_ptr KhronosKTXPrivate::loadImage(void)
 					// 8-bit "Red"
 					img = ImageDecoder::fromLinear8(
 						ImageDecoder::PixelFormat::R8,
-						ktxHeader.pixelWidth, height,
+						width, height,
 						buf.get(), expected_size, stride);
 					break;
 
@@ -470,21 +499,21 @@ rp_image_const_ptr KhronosKTXPrivate::loadImage(void)
 				case GL_COMPRESSED_RGB_S3TC_DXT1_EXT:
 					// DXT1-compressed texture.
 					img = ImageDecoder::fromDXT1(
-						ktxHeader.pixelWidth, height,
+						width, height,
 						buf.get(), expected_size);
 					break;
 
 				case GL_COMPRESSED_RGBA_S3TC_DXT1_EXT:
 					// DXT1-compressed texture with 1-bit alpha.
 					img = ImageDecoder::fromDXT1_A1(
-						ktxHeader.pixelWidth, height,
+						width, height,
 						buf.get(), expected_size);
 					break;
 
 				case GL_COMPRESSED_RGBA_S3TC_DXT3_EXT:
 					// DXT3-compressed texture.
 					img = ImageDecoder::fromDXT3(
-						ktxHeader.pixelWidth, height,
+						width, height,
 						buf.get(), expected_size);
 					break;
 
@@ -493,14 +522,14 @@ rp_image_const_ptr KhronosKTXPrivate::loadImage(void)
 				case GL_COMPRESSED_RGBA_S3TC_DXT5_EXT:
 					// DXT5-compressed texture.
 					img = ImageDecoder::fromDXT5(
-						ktxHeader.pixelWidth, height,
+						width, height,
 						buf.get(), expected_size);
 					break;
 
 				case GL_ETC1_RGB8_OES:
 					// ETC1-compressed texture.
 					img = ImageDecoder::fromETC1(
-						ktxHeader.pixelWidth, height,
+						width, height,
 						buf.get(), expected_size);
 					break;
 
@@ -509,7 +538,7 @@ rp_image_const_ptr KhronosKTXPrivate::loadImage(void)
 					// ETC2-compressed RGB texture.
 					// TODO: Handle sRGB.
 					img = ImageDecoder::fromETC2_RGB(
-						ktxHeader.pixelWidth, height,
+						width, height,
 						buf.get(), expected_size);
 					break;
 
@@ -519,7 +548,7 @@ rp_image_const_ptr KhronosKTXPrivate::loadImage(void)
 					// with punchthrough alpha.
 					// TODO: Handle sRGB.
 					img = ImageDecoder::fromETC2_RGB_A1(
-						ktxHeader.pixelWidth, height,
+						width, height,
 						buf.get(), expected_size);
 					break;
 
@@ -529,7 +558,7 @@ rp_image_const_ptr KhronosKTXPrivate::loadImage(void)
 					// with EAC-compressed alpha channel.
 					// TODO: Handle sRGB.
 					img = ImageDecoder::fromETC2_RGBA(
-						ktxHeader.pixelWidth, height,
+						width, height,
 						buf.get(), expected_size);
 					break;
 
@@ -538,7 +567,7 @@ rp_image_const_ptr KhronosKTXPrivate::loadImage(void)
 					// EAC-compressed R11 texture.
 					// TODO: Does the signed version get decoded differently?
 					img = ImageDecoder::fromEAC_R11(
-						ktxHeader.pixelWidth, height,
+						width, height,
 						buf.get(), expected_size);
 					break;
 
@@ -547,7 +576,7 @@ rp_image_const_ptr KhronosKTXPrivate::loadImage(void)
 					// EAC-compressed RG11 texture.
 					// TODO: Does the signed version get decoded differently?
 					img = ImageDecoder::fromEAC_RG11(
-						ktxHeader.pixelWidth, height,
+						width, height,
 						buf.get(), expected_size);
 					break;
 
@@ -556,7 +585,7 @@ rp_image_const_ptr KhronosKTXPrivate::loadImage(void)
 					// RGTC, one component. (BC4)
 					// TODO: Handle signed properly.
 					img = ImageDecoder::fromBC4(
-						ktxHeader.pixelWidth, height,
+						width, height,
 						buf.get(), expected_size);
 					break;
 
@@ -565,7 +594,7 @@ rp_image_const_ptr KhronosKTXPrivate::loadImage(void)
 					// RGTC, two components. (BC5)
 					// TODO: Handle signed properly.
 					img = ImageDecoder::fromBC5(
-						ktxHeader.pixelWidth, height,
+						width, height,
 						buf.get(), expected_size);
 					break;
 
@@ -574,7 +603,7 @@ rp_image_const_ptr KhronosKTXPrivate::loadImage(void)
 					// LATC, one component. (BC4)
 					// TODO: Handle signed properly.
 					img = ImageDecoder::fromBC4(
-						ktxHeader.pixelWidth, height,
+						width, height,
 						buf.get(), expected_size);
 					// TODO: If this fails, return it anyway or return nullptr?
 					ImageDecoder::fromRed8ToL8(img);
@@ -585,7 +614,7 @@ rp_image_const_ptr KhronosKTXPrivate::loadImage(void)
 					// LATC, two components. (BC5)
 					// TODO: Handle signed properly.
 					img = ImageDecoder::fromBC5(
-						ktxHeader.pixelWidth, height,
+						width, height,
 						buf.get(), expected_size);
 					// TODO: If this fails, return it anyway or return nullptr?
 					ImageDecoder::fromRG8ToLA8(img);
@@ -595,35 +624,35 @@ rp_image_const_ptr KhronosKTXPrivate::loadImage(void)
 				case GL_COMPRESSED_SRGB_ALPHA_BPTC_UNORM:
 					// BPTC-compressed RGBA texture. (BC7)
 					img = ImageDecoder::fromBC7(
-						ktxHeader.pixelWidth, height,
+						width, height,
 						buf.get(), expected_size);
 					break;
 
 #ifdef ENABLE_PVRTC
 				case GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG:
 					// PVRTC, 2bpp, no alpha.
-					img = ImageDecoder::fromPVRTC(ktxHeader.pixelWidth, height,
+					img = ImageDecoder::fromPVRTC(width, height,
 						buf.get(), expected_size,
 						ImageDecoder::PVRTC_2BPP | ImageDecoder::PVRTC_ALPHA_NONE);
 					break;
 
 				case GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG:
 					// PVRTC, 2bpp, has alpha.
-					img = ImageDecoder::fromPVRTC(ktxHeader.pixelWidth, height,
+					img = ImageDecoder::fromPVRTC(width, height,
 						buf.get(), expected_size,
 						ImageDecoder::PVRTC_2BPP | ImageDecoder::PVRTC_ALPHA_YES);
 					break;
 
 				case GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG:
 					// PVRTC, 4bpp, no alpha.
-					img = ImageDecoder::fromPVRTC(ktxHeader.pixelWidth, height,
+					img = ImageDecoder::fromPVRTC(width, height,
 						buf.get(), expected_size,
 						ImageDecoder::PVRTC_4BPP | ImageDecoder::PVRTC_ALPHA_NONE);
 					break;
 
 				case GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG:
 					// PVRTC, 4bpp, has alpha.
-					img = ImageDecoder::fromPVRTC(ktxHeader.pixelWidth, height,
+					img = ImageDecoder::fromPVRTC(width, height,
 						buf.get(), expected_size,
 						ImageDecoder::PVRTC_4BPP | ImageDecoder::PVRTC_ALPHA_YES);
 					break;
@@ -631,7 +660,7 @@ rp_image_const_ptr KhronosKTXPrivate::loadImage(void)
 				case GL_COMPRESSED_RGBA_PVRTC_2BPPV2_IMG:
 					// PVRTC-II, 2bpp.
 					// NOTE: Assuming this has alpha.
-					img = ImageDecoder::fromPVRTCII(ktxHeader.pixelWidth, height,
+					img = ImageDecoder::fromPVRTCII(width, height,
 						buf.get(), expected_size,
 						ImageDecoder::PVRTC_2BPP | ImageDecoder::PVRTC_ALPHA_YES);
 					break;
@@ -639,7 +668,7 @@ rp_image_const_ptr KhronosKTXPrivate::loadImage(void)
 				case GL_COMPRESSED_RGBA_PVRTC_4BPPV2_IMG:
 					// PVRTC-II, 4bpp.
 					// NOTE: Assuming this has alpha.
-					img = ImageDecoder::fromPVRTCII(ktxHeader.pixelWidth, height,
+					img = ImageDecoder::fromPVRTCII(width, height,
 						buf.get(), expected_size,
 						ImageDecoder::PVRTC_4BPP | ImageDecoder::PVRTC_ALPHA_YES);
 					break;
@@ -650,7 +679,7 @@ rp_image_const_ptr KhronosKTXPrivate::loadImage(void)
 					// TODO: Does KTX handle GL_RGB9_E5 as compressed?
 					img = ImageDecoder::fromLinear32(
 						ImageDecoder::PixelFormat::RGB9_E5,
-						ktxHeader.pixelWidth, height,
+						width, height,
 						reinterpret_cast<const uint32_t*>(buf.get()), expected_size);
 					break;
 
@@ -677,7 +706,7 @@ rp_image_const_ptr KhronosKTXPrivate::loadImage(void)
 
 					// TODO: sRGB handling?
 					img = ImageDecoder::fromASTC(
-						ktxHeader.pixelWidth, height,
+						width, height,
 						buf.get(), expected_size,
 						ImageDecoder::astc_lkup_tbl[astc_idx][0],
 						ImageDecoder::astc_lkup_tbl[astc_idx][1]);
@@ -696,6 +725,7 @@ rp_image_const_ptr KhronosKTXPrivate::loadImage(void)
 		}
 	}
 
+	mipmaps[mip] = img;
 	return img;
 }
 
@@ -887,6 +917,19 @@ KhronosKTX::KhronosKTX(const IRpFilePtr &file)
 		// Convenience flag.
 		d->isByteswapNeeded = true;
 	}
+
+	// Resize the mipmaps vector.
+	int mipmapCount = d->ktxHeader.numberOfMipmapLevels;
+	if (mipmapCount <= 0) {
+		// No mipmaps == one image.
+		mipmapCount = 1;
+	} else if (mipmapCount > 128) {
+		// Too many mipmaps.
+		d->isValid = false;
+		d->file.reset();
+		return;
+	}
+	d->mipmaps.resize(mipmapCount);
 
 	// Texture data start address.
 	// NOTE: Always 4-byte aligned.
@@ -1144,11 +1187,8 @@ rp_image_const_ptr KhronosKTX::mipmap(int mip) const
 		return nullptr;
 	}
 
-	// FIXME: Support decoding mipmaps.
-	if (mip == 0) {
-		return const_cast<KhronosKTXPrivate*>(d)->loadImage();
-	}
-	return nullptr;
+	// Load the image at the specified mipmap level.
+	return const_cast<KhronosKTXPrivate*>(d)->loadImage(mip);
 }
 
 }
