@@ -171,7 +171,7 @@ public:
 	 * @param mip Mipmap number.
 	 * @return Image, or nullptr on error.
 	 */
-	virtual rp_image_const_ptr mipmap(int mip) const = 0;
+	virtual rp_image_const_ptr mipmap(int mip) const;
 };
 
 typedef std::shared_ptr<FileFormat> FileFormatPtr;

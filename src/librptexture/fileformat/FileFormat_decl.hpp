@@ -87,14 +87,6 @@ public: \
 	 * @return Image, or nullptr on error. \
 	 */ \
 	LibRpTexture::rp_image_const_ptr image(void) const final; \
-\
-	/** \
-	 * Get the image for the specified mipmap. \
-	 * Mipmap 0 is the largest image. \
-	 * @param mip Mipmap number. \
-	 * @return Image, or nullptr on error. \
-	 */ \
-	LibRpTexture::rp_image_const_ptr mipmap(int mip) const final;
 
 /**
  * FileFormat subclass function declaration for closing the internal file handle.
@@ -106,6 +98,21 @@ public: \
 	 * Close the opened file. \
 	 */ \
 	void close(void) final;
+
+/**
+ * FileFormat subclass function declaration for retrieving a mipmap level.
+ * Only needed if the FileFormat supports mipmaps. The default implementation
+ * returns image() for mip == 0, and nullptr for anything else.
+ */
+#define FILEFORMAT_DECL_MIPMAP() \
+public: \
+	/** \
+	 * Get the image for the specified mipmap. \
+	 * Mipmap 0 is the largest image. \
+	 * @param mip Mipmap number. \
+	 * @return Image, or nullptr on error. \
+	 */ \
+	LibRpTexture::rp_image_const_ptr mipmap(int mip) const final;
 
 /**
  * End of FileFormat subclass declaration.

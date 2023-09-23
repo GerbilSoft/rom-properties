@@ -781,19 +781,4 @@ rp_image_const_ptr XboxXPR::image(void) const
 	return const_cast<XboxXPRPrivate*>(d)->loadXboxXPR0Image();
 }
 
-/**
- * Get the image for the specified mipmap.
- * Mipmap 0 is the largest image.
- * @param mip Mipmap number.
- * @return Image, or nullptr on error.
- */
-rp_image_const_ptr XboxXPR::mipmap(int mip) const
-{
-	// Allowing mipmap 0 for compatibility.
-	if (mip == 0) {
-		return image();
-	}
-	return nullptr;
-}
-
 }

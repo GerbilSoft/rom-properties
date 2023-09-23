@@ -173,4 +173,20 @@ int FileFormat::mipmapCount(void) const
 	return d->mipmapCount;
 }
 
+/**
+ * Get the image for the specified mipmap.
+ * Mipmap 0 is the largest image.
+ * @param mip Mipmap number.
+ * @return Image, or nullptr on error.
+ */
+rp_image_const_ptr FileFormat::mipmap(int mip) const
+{
+	// The base implementation doesn't support mipmaps.
+	// Mipmap 0 is the same as the main image, so we'll allow that.
+	if (mip == 0) {
+		return image();
+	}
+	return nullptr;
+}
+
 }
