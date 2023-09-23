@@ -80,27 +80,32 @@ struct ImageDecoderTest_mode
 	string png_filename;
 	string expected_pixel_format;	// for RpTextureWrapper only
 	RomData::ImageType imgType;
+	int mipmapLevel;		// for RpTextureWrapper only
 
 	ImageDecoderTest_mode(
 		const char *dds_gz_filename,
 		const char *png_filename,
-		RomData::ImageType imgType = RomData::IMG_INT_IMAGE
+		RomData::ImageType imgType = RomData::IMG_INT_IMAGE,
+		int mipmapLevel = -1
 		)
 		: dds_gz_filename(dds_gz_filename)
 		, png_filename(png_filename)
 		, imgType(imgType)
+		, mipmapLevel(mipmapLevel)
 	{ }
 
 	ImageDecoderTest_mode(
 		const char *dds_gz_filename,
 		const char *png_filename,
 		const char *expected_pixel_format,
-		RomData::ImageType imgType = RomData::IMG_INT_IMAGE
+		RomData::ImageType imgType = RomData::IMG_INT_IMAGE,
+		int mipmapLevel = -1
 		)
 		: dds_gz_filename(dds_gz_filename)
 		, png_filename(png_filename)
 		, expected_pixel_format(expected_pixel_format)
 		, imgType(imgType)
+		, mipmapLevel(mipmapLevel)
 	{ }
 
 	// May be required for MSVC 2010?
@@ -109,6 +114,7 @@ struct ImageDecoderTest_mode
 		, png_filename(other.png_filename)
 		, expected_pixel_format(other.expected_pixel_format)
 		, imgType(other.imgType)
+		, mipmapLevel(other.mipmapLevel)
 	{ }
 
 	// Required for MSVC 2010.
@@ -119,6 +125,7 @@ struct ImageDecoderTest_mode
 			png_filename = other.png_filename;
 			expected_pixel_format = other.expected_pixel_format;
 			imgType = other.imgType;
+			mipmapLevel = other.mipmapLevel;
 		}
 		return *this;
 	}
@@ -241,11 +248,10 @@ void ImageDecoderTest::SetUp(void)
 	const ImageDecoderTest_mode &mode = GetParam();
 
 	// Open the gzipped DDS texture file being tested.
-	string path;
-	path += mode.dds_gz_filename;
+	string path = mode.dds_gz_filename;
 	replace_slashes(path);
 	m_gzDds = gzopen(path.c_str(), "rb");
-	ASSERT_TRUE(m_gzDds != nullptr) << "gzopen() failed to open the test file.";
+	ASSERT_TRUE(m_gzDds != nullptr) << "Error loading DDS file '" << path << "': gzopen() failed.";
 
 	// Get the decompressed file size.
 	// gzseek() does not support SEEK_END.
@@ -257,7 +263,7 @@ void ImageDecoderTest::SetUp(void)
 	uint32_t ddsSize = 0;
 	while (!gzeof(m_gzDds)) {
 		int sz_read = gzread(m_gzDds, buf, sizeof(buf));
-		ASSERT_NE(sz_read, -1) << "gzread() failed.";
+		ASSERT_NE(sz_read, -1) << "Error loading DDS file '" << path << "': gzread() failed.";
 		ddsSize += sz_read;
 	}
 	gzrewind(m_gzDds);
@@ -277,14 +283,13 @@ void ImageDecoderTest::SetUp(void)
 	gzclose_r(m_gzDds);
 	m_gzDds = nullptr;
 
-	ASSERT_EQ(ddsSize, (uint32_t)sz) << "Error loading DDS image file: short read";
+	ASSERT_EQ(ddsSize, (uint32_t)sz) << "Error loading DDS file '" << path << "': short read";
 
 	// Open the PNG image file being tested.
-	path.clear();
-	path += mode.png_filename;
+	path = mode.png_filename;
 	replace_slashes(path);
 	shared_ptr<RpFile> file = std::make_shared<RpFile>(path, RpFile::FM_OPEN_READ);
-	ASSERT_TRUE(file->isOpen()) << "Error loading PNG image file: " << strerror(file->lastError());
+	ASSERT_TRUE(file->isOpen()) << "Error loading PNG file '" << path << "': " << strerror(file->lastError());
 
 	// Maximum image size.
 	ASSERT_LE(file->size(), MAX_PNG_IMAGE_FILESIZE) << "PNG image is too big.";
@@ -294,7 +299,7 @@ void ImageDecoderTest::SetUp(void)
 	m_png_buf.resize(pngSize);
 	ASSERT_EQ(pngSize, m_png_buf.size());
 	size_t readSize = file->read(m_png_buf.data(), pngSize);
-	ASSERT_EQ(pngSize, readSize) << "Error loading PNG image file: short read";
+	ASSERT_EQ(pngSize, readSize) << "Error loading PNG file '" << path << "': short read";
 }
 
 /**
@@ -418,13 +423,29 @@ void ImageDecoderTest::decodeTest_internal(void)
 	ASSERT_TRUE(m_romData->isOpen()) << "Could not load the DDS image.";
 
 	// Get the DDS image as an rp_image.
-	const rp_image_const_ptr img_dds = m_romData->image(mode.imgType);
+	rp_image_const_ptr img_dds;
+	if (likely(mode.mipmapLevel < 0)) {
+		img_dds = m_romData->image(mode.imgType);
+	} else {
+		img_dds = m_romData->mipmap(mode.mipmapLevel);
+	}
 	ASSERT_NE(img_dds, nullptr) << "Could not load the DDS image as rp_image.";
 
 	// Get the image again.
 	// The pointer should be identical to the first one.
-	const rp_image_const_ptr img_dds_2 = m_romData->image(mode.imgType);
+	rp_image_const_ptr img_dds_2;
+	if (likely(mode.mipmapLevel < 0)) {
+		img_dds_2 = m_romData->image(mode.imgType);
+	} else {
+		img_dds_2 = m_romData->mipmap(mode.mipmapLevel);
+	}
 	EXPECT_EQ(img_dds.get(), img_dds_2.get()) << "Retrieving the image twice resulted in a different rp_image object.";
+
+	// If this is mipmap level 0, it should be the same object as IMG_INT_IMAGE.
+	if (unlikely(mode.mipmapLevel == 0)) {
+		const rp_image_const_ptr img_base = m_romData->image(RomData::IMG_INT_IMAGE);
+		EXPECT_EQ(img_dds.get(), img_base.get()) << "Mipmap level 0 is *not* the same object as the base image.";
+	}
 
 	// Verify the pixel format.
 	if (!mode.expected_pixel_format.empty()) {
@@ -556,6 +577,7 @@ void ImageDecoderTest::decodeBenchmark_internal(void)
 		max_iterations *= 10;
 	}
 
+	rp_image_const_ptr img_dds;
 	for (unsigned int i = max_iterations; i > 0; i--) {
 		m_romData = fn_ctor(m_f_dds);
 		ASSERT_TRUE((bool)m_romData) << "Could not load the DDS image.";
@@ -564,7 +586,11 @@ void ImageDecoderTest::decodeBenchmark_internal(void)
 
 		// Get the DDS image as an rp_image.
 		// TODO: imgType to string?
-		const rp_image_const_ptr img_dds = m_romData->image(mode.imgType);
+		if (likely(mode.mipmapLevel < 0)) {
+			img_dds = m_romData->image(mode.imgType);
+		} else {
+			img_dds = m_romData->mipmap(mode.mipmapLevel);
+		}
 		ASSERT_TRUE(img_dds != nullptr) << "Could not load the DDS image as rp_image.";
 
 		m_romData.reset();
@@ -595,15 +621,23 @@ string ImageDecoderTest::test_case_suffix_generator(const ::testing::TestParamIn
 
 	// Append the image type to allow checking multiple types
 	// of images in the same file.
-	static const char s_imgType[][8] = {
-		"_Icon", "_Banner", "_Media", "_Image"
-	};
-	static_assert(ARRAY_SIZE(s_imgType) == RomData::IMG_INT_MAX - RomData::IMG_INT_MIN + 1,
-		"s_imgType[] needs to be updated.");
-	assert(info.param.imgType >= RomData::IMG_INT_MIN);
-	assert(info.param.imgType <= RomData::IMG_INT_MAX);
-	if (info.param.imgType >= RomData::IMG_INT_MIN && info.param.imgType <= RomData::IMG_INT_MAX) {
-		suffix += s_imgType[info.param.imgType - RomData::IMG_INT_MIN];
+	if (likely(info.param.mipmapLevel < 0)) {
+		static const char s_imgType[][8] = {
+			"_Icon", "_Banner", "_Media", "_Image"
+		};
+		static_assert(ARRAY_SIZE(s_imgType) == RomData::IMG_INT_MAX - RomData::IMG_INT_MIN + 1,
+			"s_imgType[] needs to be updated.");
+		assert(info.param.imgType >= RomData::IMG_INT_MIN);
+		assert(info.param.imgType <= RomData::IMG_INT_MAX);
+		if (info.param.imgType >= RomData::IMG_INT_MIN && info.param.imgType <= RomData::IMG_INT_MAX) {
+			suffix += s_imgType[info.param.imgType - RomData::IMG_INT_MIN];
+		}
+	} else {
+		// Mipmap
+		char buf[16];
+		snprintf(buf, sizeof(buf), "%d", info.param.mipmapLevel);
+		suffix += "_Mipmap";
+		suffix += buf;
 	}
 
 	// TODO: Convert to ASCII?
@@ -858,19 +892,53 @@ INSTANTIATE_TEST_SUITE_P(KTX, ImageDecoderTest,
 #define KTX2_IMAGE_TEST(file, format) ImageDecoderTest_mode( \
 			"KTX2/" file ".ktx2.gz", \
 			"KTX2/" file ".png", (format))
+#define KTX2_MIPMAP_TEST(file, mipmapLevel, format) ImageDecoderTest_mode( \
+			"KTX2/" file ".ktx2.gz", \
+			"KTX2/" file "." #mipmapLevel ".png", (format), \
+			RomData::IMG_INT_IMAGE, (mipmapLevel))
 INSTANTIATE_TEST_SUITE_P(KTX2, ImageDecoderTest,
 	::testing::Values(
-		KTX2_IMAGE_TEST("cubemap_yokohama_bc3_unorm", "BC3_UNORM_BLOCK"),
 		KTX2_IMAGE_TEST("cubemap_yokohama_etc2_unorm", "ETC2_R8G8B8_UNORM_BLOCK"),
 		KTX2_IMAGE_TEST("luminance_alpha_reference_u", "R8G8_UNORM"),
 		KTX2_IMAGE_TEST("orient-down-metadata-u", "R8G8B8_SRGB"),
 		KTX2_IMAGE_TEST("orient-up-metadata-u", "R8G8B8_SRGB"),
-		KTX2_IMAGE_TEST("pattern_02_bc2", "BC2_UNORM_BLOCK"),
 		KTX2_IMAGE_TEST("rg_reference_u", "R8G8_UNORM"),
 		KTX2_IMAGE_TEST("rgba-reference-u", "R8G8B8A8_SRGB"),
-		KTX2_IMAGE_TEST("rgb-mipmap-reference-u", "R8G8B8_SRGB"),
 		KTX2_IMAGE_TEST("texturearray_bc3_unorm", "BC3_UNORM_BLOCK"),
-		KTX2_IMAGE_TEST("texturearray_etc2_unorm", "ETC2_R8G8B8_UNORM_BLOCK"))
+		KTX2_IMAGE_TEST("texturearray_etc2_unorm", "ETC2_R8G8B8_UNORM_BLOCK"),
+
+		// Mipmaps
+		KTX2_MIPMAP_TEST("cubemap_yokohama_bc3_unorm",  0, "BC3_UNORM_BLOCK"),
+		KTX2_MIPMAP_TEST("cubemap_yokohama_bc3_unorm",  1, "BC3_UNORM_BLOCK"),
+		KTX2_MIPMAP_TEST("cubemap_yokohama_bc3_unorm",  2, "BC3_UNORM_BLOCK"),
+		KTX2_MIPMAP_TEST("cubemap_yokohama_bc3_unorm",  3, "BC3_UNORM_BLOCK"),
+		KTX2_MIPMAP_TEST("cubemap_yokohama_bc3_unorm",  4, "BC3_UNORM_BLOCK"),
+		KTX2_MIPMAP_TEST("cubemap_yokohama_bc3_unorm",  5, "BC3_UNORM_BLOCK"),
+		KTX2_MIPMAP_TEST("cubemap_yokohama_bc3_unorm",  6, "BC3_UNORM_BLOCK"),
+		KTX2_MIPMAP_TEST("cubemap_yokohama_bc3_unorm",  7, "BC3_UNORM_BLOCK"),
+		KTX2_MIPMAP_TEST("cubemap_yokohama_bc3_unorm",  8, "BC3_UNORM_BLOCK"),
+		KTX2_MIPMAP_TEST("cubemap_yokohama_bc3_unorm",  9, "BC3_UNORM_BLOCK"),
+		KTX2_MIPMAP_TEST("cubemap_yokohama_bc3_unorm", 10, "BC3_UNORM_BLOCK"),
+
+		KTX2_MIPMAP_TEST("pattern_02_bc2",  0, "BC2_UNORM_BLOCK"),
+		KTX2_MIPMAP_TEST("pattern_02_bc2",  1, "BC2_UNORM_BLOCK"),
+		KTX2_MIPMAP_TEST("pattern_02_bc2",  2, "BC2_UNORM_BLOCK"),
+		KTX2_MIPMAP_TEST("pattern_02_bc2",  3, "BC2_UNORM_BLOCK"),
+		KTX2_MIPMAP_TEST("pattern_02_bc2",  4, "BC2_UNORM_BLOCK"),
+		KTX2_MIPMAP_TEST("pattern_02_bc2",  5, "BC2_UNORM_BLOCK"),
+		KTX2_MIPMAP_TEST("pattern_02_bc2",  6, "BC2_UNORM_BLOCK"),
+		KTX2_MIPMAP_TEST("pattern_02_bc2",  7, "BC2_UNORM_BLOCK"),
+		KTX2_MIPMAP_TEST("pattern_02_bc2",  8, "BC2_UNORM_BLOCK"),
+		KTX2_MIPMAP_TEST("pattern_02_bc2",  9, "BC2_UNORM_BLOCK"),
+		KTX2_MIPMAP_TEST("pattern_02_bc2", 10, "BC2_UNORM_BLOCK"),
+
+		KTX2_MIPMAP_TEST("rgb-mipmap-reference-u", 0, "R8G8B8_SRGB"),
+		KTX2_MIPMAP_TEST("rgb-mipmap-reference-u", 1, "R8G8B8_SRGB"),
+		KTX2_MIPMAP_TEST("rgb-mipmap-reference-u", 2, "R8G8B8_SRGB"),
+		KTX2_MIPMAP_TEST("rgb-mipmap-reference-u", 3, "R8G8B8_SRGB"),
+		KTX2_MIPMAP_TEST("rgb-mipmap-reference-u", 4, "R8G8B8_SRGB"),
+		KTX2_MIPMAP_TEST("rgb-mipmap-reference-u", 5, "R8G8B8_SRGB"),
+		KTX2_MIPMAP_TEST("rgb-mipmap-reference-u", 6, "R8G8B8_SRGB"))
 	, ImageDecoderTest::test_case_suffix_generator);
 
 // Valve VTF tests (all formats)
