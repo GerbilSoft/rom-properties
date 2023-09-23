@@ -234,7 +234,7 @@ rp_image_const_ptr KhronosKTX2Private::loadImage(int mip)
 	}
 
 	// Calculate the expected size.
-	// NOTE: Scanlines are 4-byte aligned.
+	// NOTE: Scanlines are ***NOT*** necessarily 4-byte aligned.
 	// TODO: Differences between UNORM, UINT, SRGB; handle SNORM, SINT.
 	size_t expected_size;
 	int stride = 0;
@@ -246,7 +246,7 @@ rp_image_const_ptr KhronosKTX2Private::loadImage(int mip)
 		case VK_FORMAT_B8G8R8_UINT:
 		case VK_FORMAT_B8G8R8_SRGB:
 			// 24-bit RGB
-			stride = ALIGN_BYTES(4, width * 3);
+			stride = width * 3;
 			expected_size = ImageSizeCalc::T_calcImageSize(stride, height);
 			break;
 
@@ -265,7 +265,7 @@ rp_image_const_ptr KhronosKTX2Private::loadImage(int mip)
 		case VK_FORMAT_R8_UINT:
 		case VK_FORMAT_R8_SRGB:
 			// 8-bit (red)
-			stride = ALIGN_BYTES(4, width);
+			stride = width;
 			expected_size = ImageSizeCalc::T_calcImageSize(stride, height);
 			break;
 
@@ -273,7 +273,7 @@ rp_image_const_ptr KhronosKTX2Private::loadImage(int mip)
 		case VK_FORMAT_R8G8_UINT:
 		case VK_FORMAT_R8G8_SRGB:
 			// 16-bit (red/green; may also be luminance/alpha)
-			stride = ALIGN_BYTES(4, width * 2);
+			stride = width * 2;
 			expected_size = ImageSizeCalc::T_calcImageSize(stride, height);
 			break;
 
