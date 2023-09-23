@@ -219,12 +219,6 @@ PowerVR3Private::PowerVR3Private(PowerVR3 *q, const IRpFilePtr &file)
  */
 rp_image_const_ptr PowerVR3Private::loadImage(int mip)
 {
-	int mipmapCount = pvr3Header.mipmap_count;
-	if (mipmapCount <= 0) {
-		// No mipmaps == one image.
-		mipmapCount = 1;
-	}
-
 	assert(mip >= 0);
 	assert(mip < mipmapCount);
 	if (mip < 0 || mip >= mipmapCount) {
@@ -861,16 +855,16 @@ PowerVR3::PowerVR3(const IRpFilePtr &file)
 
 	// Initialize the mipmap vector.
 	assert(d->pvr3Header.mipmap_count <= 128);
-	unsigned int mipmapCount = d->pvr3Header.mipmap_count;
-	if (mipmapCount == 0) {
-		mipmapCount = 1;
-	} else if (mipmapCount > 128) {
+	d->mipmapCount = static_cast<int>(d->pvr3Header.mipmap_count);
+	if (d->mipmapCount == 0) {
+		d->mipmapCount = 1;
+	} else if (d->mipmapCount > 128) {
 		// Too many mipmaps...
 		// NOTE: PowerVR3 stores mipmaps in descending order,
 		// so clamp it to 128 mipmaps.
-		mipmapCount = 128;
+		d->mipmapCount = 128;
 	}
-	d->mipmaps.resize(mipmapCount);
+	d->mipmaps.resize(d->mipmapCount);
 
 	// Texture data start address.
 	d->texDataStartAddr = sizeof(d->pvr3Header) + d->pvr3Header.metadata_size;
@@ -996,20 +990,6 @@ const char *PowerVR3::pixelFormat(void) const
 			 "%s", (C_("RomData", "Unknown")));
 	}
 	return d->invalid_pixel_format;
-}
-
-/**
- * Get the mipmap count.
- * @return Number of mipmaps. (0 if none; -1 if format doesn't support mipmaps)
- */
-int PowerVR3::mipmapCount(void) const
-{
-	RP_D(const PowerVR3);
-	if (!d->isValid)
-		return -1;
-
-	// Mipmap count.
-	return d->pvr3Header.mipmap_count;
 }
 
 #ifdef ENABLE_LIBRPBASE_ROMFIELDS

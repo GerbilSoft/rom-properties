@@ -757,16 +757,6 @@ const char *TGA::pixelFormat(void) const
 	return fmt;
 }
 
-/**
- * Get the mipmap count.
- * @return Number of mipmaps. (0 if none; -1 if format doesn't support mipmaps)
- */
-int TGA::mipmapCount(void) const
-{
-	// Not supported.
-	return -1;
-}
-
 #ifdef ENABLE_LIBRPBASE_ROMFIELDS
 /**
  * Get property fields for rom-properties.

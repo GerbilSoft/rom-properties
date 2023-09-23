@@ -281,20 +281,6 @@ const char *ValveVTF3::pixelFormat(void) const
 	return (d->vtf3Header.flags & VTF3_FLAG_ALPHA) ? "DXT5" : "DXT1";
 }
 
-/**
- * Get the mipmap count.
- * @return Number of mipmaps. (0 if none; -1 if format doesn't support mipmaps)
- */
-int ValveVTF3::mipmapCount(void) const
-{
-	RP_D(const ValveVTF3);
-	if (!d->isValid)
-		return -1;
-
-	// TODO: Does this format support mipmaps?
-	return -1;
-}
-
 #ifdef ENABLE_LIBRPBASE_ROMFIELDS
 /**
  * Get property fields for rom-properties.

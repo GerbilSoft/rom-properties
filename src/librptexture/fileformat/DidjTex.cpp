@@ -400,6 +400,8 @@ DidjTex::DidjTex(const IRpFilePtr &file)
 	d->dimensions[0] = le32_to_cpu(d->texHeader.width);
 	d->dimensions[1] = le32_to_cpu(d->texHeader.height);
 	d->dimensions[2] = 0;
+
+	// TODO: Does .tex support mipmaps?
 }
 
 /** Property accessors **/
@@ -456,16 +458,6 @@ const char *DidjTex::pixelFormat(void) const
 			"Unknown (0x%08X)", d->texHeader.px_format);
 	}
 	return d->invalid_pixel_format;
-}
-
-/**
- * Get the mipmap count.
- * @return Number of mipmaps. (0 if none; -1 if format doesn't support mipmaps)
- */
-int DidjTex::mipmapCount(void) const
-{
-	// TODO: Does .tex support mipmaps?
-	return -1;
 }
 
 #ifdef ENABLE_LIBRPBASE_ROMFIELDS

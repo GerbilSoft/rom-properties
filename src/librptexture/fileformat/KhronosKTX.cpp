@@ -140,12 +140,6 @@ KhronosKTXPrivate::KhronosKTXPrivate(KhronosKTX *q, const IRpFilePtr &file)
  */
 rp_image_const_ptr KhronosKTXPrivate::loadImage(int mip)
 {
-	int mipmapCount = ktxHeader.numberOfMipmapLevels;
-	if (mipmapCount <= 0) {
-		// No mipmaps == one image.
-		mipmapCount = 1;
-	}
-
 	assert(mip >= 0);
 	assert(mip < mipmapCount);
 	if (mip < 0 || mip >= mipmapCount) {
@@ -919,17 +913,17 @@ KhronosKTX::KhronosKTX(const IRpFilePtr &file)
 	}
 
 	// Resize the mipmaps vector.
-	int mipmapCount = d->ktxHeader.numberOfMipmapLevels;
-	if (mipmapCount <= 0) {
+	d->mipmapCount = d->ktxHeader.numberOfMipmapLevels;
+	if (d->mipmapCount <= 0) {
 		// No mipmaps == one image.
-		mipmapCount = 1;
-	} else if (mipmapCount > 128) {
+		d->mipmapCount = 1;
+	} else if (d->mipmapCount > 128) {
 		// Too many mipmaps.
 		d->isValid = false;
 		d->file.reset();
 		return;
 	}
-	d->mipmaps.resize(mipmapCount);
+	d->mipmaps.resize(d->mipmapCount);
 
 	// Texture data start address.
 	// NOTE: Always 4-byte aligned.
@@ -1025,19 +1019,6 @@ const char *KhronosKTX::pixelFormat(void) const
 			"Unknown (0x%04X)", d->ktxHeader.glInternalFormat);
 	}
 	return d->invalid_pixel_format;
-}
-
-/**
- * Get the mipmap count.
- * @return Number of mipmaps. (0 if none; -1 if format doesn't support mipmaps)
- */
-int KhronosKTX::mipmapCount(void) const
-{
-	RP_D(const KhronosKTX);
-	if (!d->isValid)
-		return -1;
-
-	return d->ktxHeader.numberOfMipmapLevels;
 }
 
 #ifdef ENABLE_LIBRPBASE_ROMFIELDS

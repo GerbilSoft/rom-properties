@@ -267,15 +267,6 @@ int ValveVTFPrivate::getMipmapInfo(void)
 	}
 
 	// Resize based on mipmap count.
-	unsigned int mipmapCount = vtfHeader.mipmapCount;
-	assert(mipmapCount <= 128);
-	if (mipmapCount == 0) {
-		// No mipmaps == one image.
-		mipmapCount = 1;
-	} else if (mipmapCount > 128) {
-		// Too many mipmaps...
-		return -ENOMEM;
-	}
 
 	// Starting address.
 	uint32_t addr = texDataStartAddr;
@@ -327,7 +318,7 @@ int ValveVTFPrivate::getMipmapInfo(void)
 	// Calculate mipmap sizes and width/height first.
 	int w = vtfHeader.width, h = height;
 	int rw = row_width;
-	for (unsigned int mip = 0; mip < mipmapCount; mip++) {
+	for (int mip = 0; mip < mipmapCount; mip++) {
 		auto &mdata = mipmap_data[mip];
 		mdata.size = mipmap_size;
 		mdata.width = w;
@@ -365,12 +356,6 @@ int ValveVTFPrivate::getMipmapInfo(void)
 rp_image_const_ptr ValveVTFPrivate::loadImage(int mip)
 {
 	// TODO: Option to load the low-res image instead?
-	int mipmapCount = vtfHeader.mipmapCount;
-	if (mipmapCount <= 0) {
-		// No mipmaps == one image.
-		mipmapCount = 1;
-	}
-
 	assert(mip >= 0);
 	assert(mip < mipmapCount);
 	if (mip < 0 || mip >= mipmapCount) {
@@ -716,6 +701,19 @@ ValveVTF::ValveVTF(const IRpFilePtr &file)
 			d->dimensions[2] = d->vtfHeader.depth;
 		}
 	}
+
+	// Save the mipmap count.
+	// TODO: Differentiate between files that have 0 vs. 1?
+	d->mipmapCount = d->vtfHeader.mipmapCount;
+	assert(d->mipmapCount <= 128);
+	if (d->mipmapCount == 0) {
+		// No mipmaps == one image.
+		d->mipmapCount = 1;
+	} else if (d->mipmapCount > 128) {
+		// Too many mipmaps...
+		// Clamp it to 128.
+		d->mipmapCount = 128;
+	}
 }
 
 /** Property accessors **/
@@ -762,19 +760,6 @@ const char *ValveVTF::pixelFormat(void) const
 			"Unknown (%d)", fmt);
 	}
 	return d->invalid_pixel_format;
-}
-
-/**
- * Get the mipmap count.
- * @return Number of mipmaps. (0 if none; -1 if format doesn't support mipmaps)
- */
-int ValveVTF::mipmapCount(void) const
-{
-	RP_D(const ValveVTF);
-	if (!d->isValid)
-		return -1;
-
-	return d->vtfHeader.mipmapCount;
 }
 
 #ifdef ENABLE_LIBRPBASE_ROMFIELDS

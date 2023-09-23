@@ -267,20 +267,6 @@ const char *ASTC::pixelFormat(void) const
 	return d->pixel_format;
 }
 
-/**
- * Get the mipmap count.
- * @return Number of mipmaps. (0 if none; -1 if format doesn't support mipmaps)
- */
-int ASTC::mipmapCount(void) const
-{
-	RP_D(const ASTC);
-	if (!d->isValid)
-		return -1;
-
-	// The ASTC file format does not support mipmaps.
-	return -1;
-}
-
 #ifdef ENABLE_LIBRPBASE_ROMFIELDS
 /**
  * Get property fields for rom-properties.

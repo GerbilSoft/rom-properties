@@ -619,6 +619,8 @@ XboxXPR::XboxXPR(const IRpFilePtr &file)
 		d->dimensions[1] = (d->xpr0Header.height_npot + 1) * 16;
 	}
 	d->dimensions[2] = 0;
+
+	// TODO: Does XPR0 support mipmaps?
 }
 
 /** Property accessors **/
@@ -718,16 +720,6 @@ const char *XboxXPR::pixelFormat(void) const
 			"Unknown (0x%02X)", d->xpr0Header.pixel_format);
 	}
 	return d->invalid_pixel_format;
-}
-
-/**
- * Get the mipmap count.
- * @return Number of mipmaps. (0 if none; -1 if format doesn't support mipmaps)
- */
-int XboxXPR::mipmapCount(void) const
-{
-	// TODO: Does XPR0 support mipmaps?
-	return -1;
 }
 
 #ifdef ENABLE_LIBRPBASE_ROMFIELDS

@@ -1333,6 +1333,9 @@ SegaPVR::SegaPVR(const IRpFilePtr &file)
 	if ((int)d->pvrType < ARRAY_SIZE_I(d->mimeTypes)-1) {
 		d->mimeType = d->mimeTypes[(int)d->pvrType];
 	}
+
+	// TODO: Calculate the number of mipmaps.
+	d->mipmapCount = 0;
 }
 
 /**
@@ -1496,20 +1499,6 @@ const char *SegaPVR::pixelFormat(void) const
 			"Unknown (0x%02X)", val);
 	}
 	return d->invalid_pixel_format;
-}
-
-/**
- * Get the mipmap count.
- * @return Number of mipmaps. (0 if none; -1 if format doesn't support mipmaps)
- */
-int SegaPVR::mipmapCount(void) const
-{
-	RP_D(const SegaPVR);
-	if (!d->isValid)
-		return -1;
-
-	// TODO: Calculate the number of mipmaps.
-	return 0;
 }
 
 #ifdef ENABLE_LIBRPBASE_ROMFIELDS

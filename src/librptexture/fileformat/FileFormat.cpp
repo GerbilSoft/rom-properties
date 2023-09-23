@@ -33,6 +33,7 @@ FileFormatPrivate::FileFormatPrivate(FileFormat *q, const IRpFilePtr &file, cons
 	, file(file)
 	, pTextureInfo(pTextureInfo)
 	, mimeType(nullptr)
+	, mipmapCount(-1)
 {
 	assert(pTextureInfo != nullptr);
 
@@ -160,6 +161,16 @@ int FileFormat::getRescaleDimensions(int pBuf[2]) const
 
 	memcpy(pBuf, d->rescale_dimensions, sizeof(d->rescale_dimensions));
 	return 0;
+}
+
+/**
+ * Get the mipmap count.
+ * @return Number of mipmaps. (0 if none; -1 if format doesn't support mipmaps)
+ */
+int FileFormat::mipmapCount(void) const
+{
+	RP_D(const FileFormat);
+	return d->mipmapCount;
 }
 
 }

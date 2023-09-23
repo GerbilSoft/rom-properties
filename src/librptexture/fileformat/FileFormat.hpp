@@ -142,7 +142,7 @@ public:
 	 * Get the mipmap count.
 	 * @return Number of mipmaps. (0 if none; -1 if format doesn't support mipmaps)
 	 */
-	virtual int mipmapCount(void) const = 0;
+	int mipmapCount(void) const;
 
 #ifdef ENABLE_LIBRPBASE_ROMFIELDS
 public:

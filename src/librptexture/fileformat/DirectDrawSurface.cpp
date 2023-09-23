@@ -1066,6 +1066,9 @@ DirectDrawSurface::DirectDrawSurface(const IRpFilePtr &file)
 	if (d->ddsHeader.dwFlags & DDSD_DEPTH) {
 		d->dimensions[2] = d->ddsHeader.dwDepth;
 	}
+
+	// Save the mipmap count.
+	d->mipmapCount = d->ddsHeader.dwMipMapCount;
 }
 
 /**
@@ -1190,21 +1193,6 @@ const char *DirectDrawSurface::pixelFormat(void) const
 	}
 
 	return d->pixel_format;
-}
-
-/**
- * Get the mipmap count.
- * @return Number of mipmaps. (0 if none; -1 if format doesn't support mipmaps)
- */
-int DirectDrawSurface::mipmapCount(void) const
-{
-	RP_D(const DirectDrawSurface);
-	if (!d->isValid)
-		return -1;
-
-	// Mipmap count.
-	// NOTE: DDSD_MIPMAPCOUNT might not be accurate, so ignore it.
-	return d->ddsHeader.dwMipMapCount;
 }
 
 #ifdef ENABLE_LIBRPBASE_ROMFIELDS
