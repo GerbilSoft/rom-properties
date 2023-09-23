@@ -1540,15 +1540,31 @@ INSTANTIATE_TEST_SUITE_P(DidjTex, ImageDecoderTest,
 #define PowerVR3_IMAGE_TEST(file, format) ImageDecoderTest_mode( \
 			"PowerVR3/" file ".pvr.gz", \
 			"PowerVR3/" file ".pvr.png", (format))
+#define PowerVR3_MIPMAP_TEST(file, mipmapLevel, format) ImageDecoderTest_mode( \
+			"PowerVR3/" file ".pvr.gz", \
+			"PowerVR3/" file ".pvr." #mipmapLevel ".png", (format), \
+			RomData::IMG_INT_IMAGE, (mipmapLevel))
 INSTANTIATE_TEST_SUITE_P(PowerVR3, ImageDecoderTest,
 	::testing::Values(
 		//PowerVR3_IMAGE_TEST("brdfLUT", "RG1616"),					// TODO: R16fG16f
 		//PowerVR3_IMAGE_TEST("GnomeHorde-bigMushroom_texture", "PVRTC 4bpp RGB"),	// FIXME: Failing (PVRTC-I 4bpp RGB)
 		//PowerVR3_IMAGE_TEST("GnomeHorde-fern", "PVRTC 4bpp RGBA"),			// FIXME: Failing (PVRTC-I 4bpp RGBA)
-		PowerVR3_IMAGE_TEST("Navigation3D-font", "A8"),
 		//PowerVR3_IMAGE_TEST("Navigation3D-Road", "LA88"),				// FIXME: Failing (LA88)
 		//PowerVR3_IMAGE_TEST("Satyr-Table", "RGBA8888"),				// FIXME: Failing (RGBA8888)
-		PowerVR3_IMAGE_TEST("text-fri", "RGBA8888"))					// 32x16, caused rp_image::flip(FLIP_V) to break
+		PowerVR3_IMAGE_TEST("text-fri", "RGBA8888"),					// 32x16, caused rp_image::flip(FLIP_V) to break
+
+		// Mipmaps
+		PowerVR3_MIPMAP_TEST("Navigation3D-font",  0, "A8"),
+		PowerVR3_MIPMAP_TEST("Navigation3D-font",  1, "A8"),
+		PowerVR3_MIPMAP_TEST("Navigation3D-font",  2, "A8"),
+		PowerVR3_MIPMAP_TEST("Navigation3D-font",  3, "A8"),
+		PowerVR3_MIPMAP_TEST("Navigation3D-font",  4, "A8"),
+		PowerVR3_MIPMAP_TEST("Navigation3D-font",  5, "A8"),
+		PowerVR3_MIPMAP_TEST("Navigation3D-font",  6, "A8"),
+		PowerVR3_MIPMAP_TEST("Navigation3D-font",  7, "A8"),
+		PowerVR3_MIPMAP_TEST("Navigation3D-font",  8, "A8"),
+		PowerVR3_MIPMAP_TEST("Navigation3D-font",  9, "A8"),
+		PowerVR3_MIPMAP_TEST("Navigation3D-font", 10, "A8"))
 	, ImageDecoderTest::test_case_suffix_generator);
 #endif /* ENABLE_PVRTC */
 
