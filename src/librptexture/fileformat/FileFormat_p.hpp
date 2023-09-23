@@ -52,6 +52,7 @@ class FileFormatPrivate
 		/** These fields must be set by FileFormat subclasses in their constructors. **/
 		const TextureInfo *pTextureInfo;// FileFormat subclass information
 		const char *mimeType;		// MIME type (ASCII) (default is nullptr)
+		const char *textureFormatName;	// Texture format name
 		int dimensions[3];		// Dimensions (width, height, depth)
 						// 2D textures have depth=0
 		int rescale_dimensions[2];	// Rescale dimensions, (width, height)

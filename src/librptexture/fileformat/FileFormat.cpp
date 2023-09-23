@@ -33,6 +33,7 @@ FileFormatPrivate::FileFormatPrivate(FileFormat *q, const IRpFilePtr &file, cons
 	, file(file)
 	, pTextureInfo(pTextureInfo)
 	, mimeType(nullptr)
+	, textureFormatName(nullptr)
 	, mipmapCount(-1)
 {
 	assert(pTextureInfo != nullptr);
@@ -87,6 +88,16 @@ void FileFormat::close(void)
 }
 
 /** Property accessors **/
+
+/**
+ * Get the texture format name.
+ * @return Texture format name, or nullptr on error.
+ */
+const char *FileFormat::textureFormatName(void) const
+{
+	RP_D(const FileFormat);
+	return d->textureFormatName;
+}
 
 /**
  * Get the file's MIME type.

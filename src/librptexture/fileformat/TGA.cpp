@@ -525,6 +525,7 @@ TGA::TGA(const IRpFilePtr &file)
 {
 	RP_D(TGA);
 	d->mimeType = "image/x-tga";	// unofficial
+	d->textureFormatName = "TrueVision TGA";
 
 	if (!d->file) {
 		// Could not ref() the file handle.
@@ -633,19 +634,6 @@ TGA::TGA(const IRpFilePtr &file)
 }
 
 /** Property accessors **/
-
-/**
- * Get the texture format name.
- * @return Texture format name, or nullptr on error.
- */
-const char *TGA::textureFormatName(void) const
-{
-	RP_D(const TGA);
-	if (!d->isValid || (int)d->texType < 0)
-		return nullptr;
-
-	return "TrueVision TGA";
-}
 
 /**
  * Get the pixel format, e.g. "RGB888" or "DXT1".

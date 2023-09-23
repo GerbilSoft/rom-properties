@@ -64,12 +64,6 @@ public: \
 	/** Property accessors **/ \
 \
 	/** \
-	 * Get the texture format name. \
-	 * @return Texture format name, or nullptr on error. \
-	 */ \
-	const char *textureFormatName(void) const final; \
-\
-	/** \
 	 * Get the pixel format, e.g. "RGB888" or "DXT1". \
 	 * @return Pixel format, or nullptr if unavailable. \
 	 */ \

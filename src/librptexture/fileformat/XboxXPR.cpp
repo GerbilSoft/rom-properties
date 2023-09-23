@@ -562,7 +562,9 @@ XboxXPR::XboxXPR(const IRpFilePtr &file)
 	: super(new XboxXPRPrivate(this, file))
 {
 	RP_D(XboxXPR);
-	d->mimeType = "image/x-xbox-xpr0";	// unofficial, not on fd.o [TODO: xpr1/xpr2?]
+	// TODO: XPR1/XPR2?
+	d->mimeType = "image/x-xbox-xpr0";	// unofficial, not on fd.o
+	d->textureFormatName = "Microsoft Xbox XPR0";
 
 	if (!d->file) {
 		// Could not ref() the file handle.
@@ -624,20 +626,6 @@ XboxXPR::XboxXPR(const IRpFilePtr &file)
 }
 
 /** Property accessors **/
-
-/**
- * Get the texture format name.
- * @return Texture format name, or nullptr on error.
- */
-const char *XboxXPR::textureFormatName(void) const
-{
-	RP_D(const XboxXPR);
-	if (!d->isValid)
-		return nullptr;
-
-	// TODO: XPR1/XPR2?
-	return "Microsoft Xbox XPR0";
-}
 
 /**
  * Get the pixel format, e.g. "RGB888" or "DXT1".

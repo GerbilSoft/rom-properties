@@ -383,6 +383,7 @@ DidjTex::DidjTex(const IRpFilePtr &file)
 			return;
 		}
 		d->texType = DidjTexPrivate::TexType::TEXS;
+		d->textureFormatName = "Leapster Didj .texs";
 	} else {
 		// .tex - total filesize must be equal to compressed size plus header size.
 		if (our_size != filesize) {
@@ -391,6 +392,7 @@ DidjTex::DidjTex(const IRpFilePtr &file)
 			return;
 		}
 		d->texType = DidjTexPrivate::TexType::TEX;
+		d->textureFormatName = "Leapster Didj .tex";
 	}
 
 	// Looks like it's valid.
@@ -405,22 +407,6 @@ DidjTex::DidjTex(const IRpFilePtr &file)
 }
 
 /** Property accessors **/
-
-/**
- * Get the texture format name.
- * @return Texture format name, or nullptr on error.
- */
-const char *DidjTex::textureFormatName(void) const
-{
-	RP_D(const DidjTex);
-	if (!d->isValid || (int)d->texType < 0)
-		return nullptr;
-
-	// TODO: Use an array?
-	return (d->texType == DidjTexPrivate::TexType::TEXS
-		? "Leapster Didj .texs"
-		: "Leapster Didj .tex");
-}
 
 /**
  * Get the pixel format, e.g. "RGB888" or "DXT1".

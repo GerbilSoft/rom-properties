@@ -863,6 +863,7 @@ KhronosKTX::KhronosKTX(const IRpFilePtr &file)
 {
 	RP_D(KhronosKTX);
 	d->mimeType = "image/ktx";	// official
+	d->textureFormatName = "Khronos KTX";
 
 	if (!d->file) {
 		// Could not ref() the file handle.
@@ -980,19 +981,6 @@ int KhronosKTX::isRomSupported_static(const DetectInfo *info)
 }
 
 /** Property accessors **/
-
-/**
- * Get the texture format name.
- * @return Texture format name, or nullptr on error.
- */
-const char *KhronosKTX::textureFormatName(void) const
-{
-	RP_D(const KhronosKTX);
-	if (!d->isValid)
-		return nullptr;
-
-	return "Khronos KTX";
-}
 
 /**
  * Get the pixel format, e.g. "RGB888" or "DXT1".

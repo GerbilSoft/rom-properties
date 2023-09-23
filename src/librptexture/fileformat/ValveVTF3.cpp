@@ -214,6 +214,7 @@ ValveVTF3::ValveVTF3(const IRpFilePtr &file)
 {
 	RP_D(ValveVTF3);
 	d->mimeType = "image/x-vtf3";	// unofficial, not on fd.o
+	d->textureFormatName = "Valve VTF3 (PS3)";
 
 	if (!d->file) {
 		// Could not ref() the file handle.
@@ -253,19 +254,6 @@ ValveVTF3::ValveVTF3(const IRpFilePtr &file)
 }
 
 /** Property accessors **/
-
-/**
- * Get the texture format name.
- * @return Texture format name, or nullptr on error.
- */
-const char *ValveVTF3::textureFormatName(void) const
-{
-	RP_D(const ValveVTF3);
-	if (!d->isValid)
-		return nullptr;
-
-	return "Valve VTF3 (PS3)";
-}
 
 /**
  * Get the pixel format, e.g. "RGB888" or "DXT1".

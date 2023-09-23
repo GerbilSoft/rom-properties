@@ -90,7 +90,7 @@ public:
 	 * Get the texture format name.
 	 * @return Texture format name, or nullptr on error.
 	 */
-	virtual const char *textureFormatName(void) const = 0;
+	const char *textureFormatName(void) const;
 
 	/**
 	 * Get the file's MIME type.

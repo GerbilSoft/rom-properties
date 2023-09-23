@@ -789,6 +789,7 @@ PowerVR3::PowerVR3(const IRpFilePtr &file)
 {
 	RP_D(PowerVR3);
 	d->mimeType = "image/x-pvr";	// unofficial, not on fd.o
+	d->textureFormatName = "PowerVR 3.0.0";
 
 	if (!d->file) {
 		// Could not ref() the file handle.
@@ -884,19 +885,6 @@ PowerVR3::PowerVR3(const IRpFilePtr &file)
 }
 
 /** Property accessors **/
-
-/**
- * Get the texture format name.
- * @return Texture format name, or nullptr on error.
- */
-const char *PowerVR3::textureFormatName(void) const
-{
-	RP_D(const PowerVR3);
-	if (!d->isValid)
-		return nullptr;
-
-	return "PowerVR";
-}
 
 /**
  * Get the pixel format, e.g. "RGB888" or "DXT1".

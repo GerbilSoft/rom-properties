@@ -932,6 +932,7 @@ DirectDrawSurface::DirectDrawSurface(const IRpFilePtr &file)
 {
 	RP_D(DirectDrawSurface);
 	d->mimeType = "image/x-dds";	// unofficial
+	d->textureFormatName = "DirectDraw Surface";
 
 	if (!d->file) {
 		// Could not ref() the file handle.
@@ -1119,19 +1120,6 @@ int DirectDrawSurface::isRomSupported_static(const DetectInfo *info)
 }
 
 /** Property accessors **/
-
-/**
- * Get the texture format name.
- * @return Texture format name, or nullptr on error.
- */
-const char *DirectDrawSurface::textureFormatName(void) const
-{
-	RP_D(const DirectDrawSurface);
-	if (!d->isValid)
-		return nullptr;
-
-	return "DirectDraw Surface";
-}
 
 /**
  * Get the pixel format, e.g. "RGB888" or "DXT1".

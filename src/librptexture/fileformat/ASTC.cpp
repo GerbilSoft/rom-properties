@@ -186,6 +186,7 @@ ASTC::ASTC(const IRpFilePtr &file)
 {
 	RP_D(ASTC);
 	d->mimeType = "image/astc";	// official
+	d->textureFormatName = "ASTC";
 
 	if (!d->file) {
 		// Could not ref() the file handle.
@@ -227,19 +228,6 @@ ASTC::ASTC(const IRpFilePtr &file)
 }
 
 /** Property accessors **/
-
-/**
- * Get the texture format name.
- * @return Texture format name, or nullptr on error.
- */
-const char *ASTC::textureFormatName(void) const
-{
-	RP_D(const ASTC);
-	if (!d->isValid)
-		return nullptr;
-
-	return "ASTC";
-}
 
 /**
  * Get the pixel format, e.g. "RGB888" or "DXT1".

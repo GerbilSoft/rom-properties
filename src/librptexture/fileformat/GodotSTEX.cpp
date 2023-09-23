@@ -882,7 +882,6 @@ GodotSTEX::GodotSTEX(const IRpFilePtr &file)
 	: super(new GodotSTEXPrivate(this, file))
 {
 	RP_D(GodotSTEX);
-	d->mimeType = "image/x-godot-stex";	// unofficial, not on fd.o
 
 	if (!d->file) {
 		// Could not ref() the file handle.
@@ -1001,7 +1000,11 @@ GodotSTEX::GodotSTEX(const IRpFilePtr &file)
 			assert(!"Invalid STEX version.");
 			d->file.reset();
 			return;
+
 		case 3:
+			d->mimeType = "image/x-godot-stex";	// unofficial, not on fd.o
+			d->textureFormatName = "Godot STEX";
+
 			d->pixelFormat = static_cast<STEX_Format_e>(d->stexHeader.v3.format & STEX_FORMAT_MASK);
 			d->format_flags = (d->stexHeader.v3.format & ~STEX_FORMAT_MASK);
 			d->dimensions[0] = d->stexHeader.v3.width;
@@ -1027,6 +1030,9 @@ GodotSTEX::GodotSTEX(const IRpFilePtr &file)
 			break;
 
 		case 4:
+			d->mimeType = "image/x-godot-ctex";	// unofficial, not on fd.o
+			d->textureFormatName = "Godot CTEX";
+
 			// FIXME: Verify rescale dimensions.
 			d->pixelFormat = static_cast<STEX_Format_e>(d->stexHeader.v4.pixel_format);
 			d->format_flags = d->stexHeader.v4.format_flags;
@@ -1065,20 +1071,6 @@ GodotSTEX::GodotSTEX(const IRpFilePtr &file)
 }
 
 /** Property accessors **/
-
-/**
- * Get the texture format name.
- * @return Texture format name, or nullptr on error.
- */
-const char *GodotSTEX::textureFormatName(void) const
-{
-	RP_D(const GodotSTEX);
-	if (!d->isValid)
-		return nullptr;
-
-	// TODO: Version disambiguation when Godot 4.0 is released.
-	return "Godot STEX";
-}
 
 /**
  * Get the pixel format, e.g. "RGB888" or "DXT1".
