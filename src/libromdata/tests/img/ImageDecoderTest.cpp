@@ -957,6 +957,10 @@ INSTANTIATE_TEST_SUITE_P(KTX2, ImageDecoderTest,
 #define VTF_IMAGE_TEST(file, format) ImageDecoderTest_mode( \
 			"VTF/" file ".vtf.gz", \
 			"VTF/" file ".png", (format))
+#define VTF_MIPMAP_TEST(file_vtf, file_png, mipmapLevel, format) ImageDecoderTest_mode( \
+			"VTF/" file_vtf ".vtf.gz", \
+			"VTF/" file_png "." #mipmapLevel ".png", (format), \
+			RomData::IMG_INT_IMAGE, (mipmapLevel))
 INSTANTIATE_TEST_SUITE_P(VTF, ImageDecoderTest,
 	::testing::Values(
 		// NOTE: VTF channel ordering is usually backwards from ImageDecoder.
@@ -989,10 +993,25 @@ INSTANTIATE_TEST_SUITE_P(VTF, ImageDecoderTest,
 			"rgb-reference.png", "RGB888"),
 
 		// 24-bit RGB + bluescreen
-		VTF_IMAGE_TEST("BGR888_bluescreen", "BGR888 (Bluescreen)"),
-		ImageDecoderTest_mode(
-			"VTF/RGB888_bluescreen.vtf.gz",
-			"VTF/BGR888_bluescreen.png", "RGB888 (Bluescreen)"),
+		VTF_MIPMAP_TEST("BGR888_bluescreen", "BGR888_bluescreen", 0, "BGR888 (Bluescreen)"),
+		VTF_MIPMAP_TEST("BGR888_bluescreen", "BGR888_bluescreen", 1, "BGR888 (Bluescreen)"),
+		VTF_MIPMAP_TEST("BGR888_bluescreen", "BGR888_bluescreen", 2, "BGR888 (Bluescreen)"),
+		VTF_MIPMAP_TEST("BGR888_bluescreen", "BGR888_bluescreen", 3, "BGR888 (Bluescreen)"),
+		VTF_MIPMAP_TEST("BGR888_bluescreen", "BGR888_bluescreen", 4, "BGR888 (Bluescreen)"),
+		VTF_MIPMAP_TEST("BGR888_bluescreen", "BGR888_bluescreen", 5, "BGR888 (Bluescreen)"),
+		VTF_MIPMAP_TEST("BGR888_bluescreen", "BGR888_bluescreen", 6, "BGR888 (Bluescreen)"),
+		VTF_MIPMAP_TEST("BGR888_bluescreen", "BGR888_bluescreen", 7, "BGR888 (Bluescreen)"),
+		VTF_MIPMAP_TEST("BGR888_bluescreen", "BGR888_bluescreen", 8, "BGR888 (Bluescreen)"),
+
+		VTF_MIPMAP_TEST("RGB888_bluescreen", "BGR888_bluescreen", 0, "RGB888 (Bluescreen)"),
+		VTF_MIPMAP_TEST("RGB888_bluescreen", "BGR888_bluescreen", 1, "RGB888 (Bluescreen)"),
+		VTF_MIPMAP_TEST("RGB888_bluescreen", "BGR888_bluescreen", 2, "RGB888 (Bluescreen)"),
+		VTF_MIPMAP_TEST("RGB888_bluescreen", "BGR888_bluescreen", 3, "RGB888 (Bluescreen)"),
+		VTF_MIPMAP_TEST("RGB888_bluescreen", "BGR888_bluescreen", 4, "RGB888 (Bluescreen)"),
+		VTF_MIPMAP_TEST("RGB888_bluescreen", "BGR888_bluescreen", 5, "RGB888 (Bluescreen)"),
+		VTF_MIPMAP_TEST("RGB888_bluescreen", "BGR888_bluescreen", 6, "RGB888 (Bluescreen)"),
+		VTF_MIPMAP_TEST("RGB888_bluescreen", "BGR888_bluescreen", 7, "RGB888 (Bluescreen)"),
+		VTF_MIPMAP_TEST("RGB888_bluescreen", "BGR888_bluescreen", 8, "RGB888 (Bluescreen)"),
 
 		// 16-bit RGB (565)
 		// FIXME: Tests are failing.
