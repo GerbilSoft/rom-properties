@@ -19,6 +19,7 @@ extern "C" {
 // - https://en.wikipedia.org/wiki/Truevision_TGA
 // - https://www.ludorg.net/amnesia/TGA_File_Format_Spec.html
 // - http://www.paulbourke.net/dataformats/tga/
+// - https://www.dca.fee.unicamp.br/~martino/disciplinas/ea978/tgaffs.pdf
 
 // NOTE: 16-bit color is 15-bit RGB + 1-bit transparency.
 
@@ -171,10 +172,11 @@ ASSERT_STRUCT(TGA_ExtArea, 495);
  * TGA alpha channel type.
  */
 typedef enum {
-	TGA_ALPHATYPE_UNDEFINED_IGNORE	= 0,
-	TGA_ALPHATYPE_UNDEFINED_RETAIN	= 1,
-	TGA_ALPHATYPE_PRESENT		= 2,	// Standard alpha
-	TGA_ALPHATYPE_PREMULTIPLIED	= 3,	// Premultiplied alpha
+	TGA_ALPHATYPE_NONE		= 0,
+	TGA_ALPHATYPE_UNDEFINED_IGNORE	= 1,
+	TGA_ALPHATYPE_UNDEFINED_RETAIN	= 2,
+	TGA_ALPHATYPE_PRESENT		= 3,	// Standard alpha
+	TGA_ALPHATYPE_PREMULTIPLIED	= 4,	// Premultiplied alpha
 } TGA_AlphaType_e;
 
 /**
