@@ -63,7 +63,7 @@ class PowerVR3Private final : public FileFormatPrivate
 
 		// Decoded mipmaps
 		// Mipmap 0 is the full image.
-		vector<rp_image_ptr > mipmaps;
+		vector<rp_image_ptr> mipmaps;
 
 		// Invalid pixel format message
 		char invalid_pixel_format[40];
@@ -446,7 +446,7 @@ rp_image_const_ptr PowerVR3Private::loadImage(int mip)
 	// If we're requesting a mipmap level higher than 0 (full image),
 	// adjust the start address, expected size, and dimensions.
 	unsigned int start_addr = texDataStartAddr;
-	for (; mip > 0; mip--) {
+	for (int adjmip = mip; adjmip > 0; adjmip--) {
 		width /= 2;
 		height /= 2;
 
