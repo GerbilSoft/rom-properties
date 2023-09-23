@@ -836,6 +836,10 @@ INSTANTIATE_TEST_SUITE_P(GVR_DXT1_S3TC, ImageDecoderTest,
 #define KTX_IMAGE_TEST(file, format) ImageDecoderTest_mode( \
 			"KTX/" file ".ktx.gz", \
 			"KTX/" file ".png", (format))
+#define KTX_MIPMAP_TEST(file, mipmapLevel, format) ImageDecoderTest_mode( \
+			"KTX/" file ".ktx.gz", \
+			"KTX/" file "." #mipmapLevel ".png", (format), \
+			RomData::IMG_INT_IMAGE, (mipmapLevel))
 INSTANTIATE_TEST_SUITE_P(KTX, ImageDecoderTest,
 	::testing::Values(
 		// RGB reference image.
@@ -884,8 +888,16 @@ INSTANTIATE_TEST_SUITE_P(KTX, ImageDecoderTest,
 		// RGBA reference image
 		ImageDecoderTest_mode(
 			"KTX/rgba-reference.ktx.gz",
-			"KTX/rgba.png", "RGBA"))
+			"KTX/rgba.png", "RGBA"),
 
+		// Mipmaps
+		KTX_MIPMAP_TEST("rgb-mipmap-reference", 0, "RGB"),
+		KTX_MIPMAP_TEST("rgb-mipmap-reference", 1, "RGB"),
+		KTX_MIPMAP_TEST("rgb-mipmap-reference", 2, "RGB"),
+		KTX_MIPMAP_TEST("rgb-mipmap-reference", 3, "RGB"),
+		KTX_MIPMAP_TEST("rgb-mipmap-reference", 4, "RGB"),
+		KTX_MIPMAP_TEST("rgb-mipmap-reference", 5, "RGB"),
+		KTX_MIPMAP_TEST("rgb-mipmap-reference", 6, "RGB"))
 	, ImageDecoderTest::test_case_suffix_generator);
 
 // KTX2 tests
