@@ -149,8 +149,8 @@ KhronosKTX2Private::KhronosKTX2Private(KhronosKTX2 *q, const IRpFilePtr &file)
 rp_image_const_ptr KhronosKTX2Private::loadImage(int mip)
 {
 	assert(mip >= 0);
-	assert(mip < mipmapCount);
-	if (mip < 0 || mip >= mipmapCount) {
+	assert(mip < static_cast<int>(mipmaps.size()));
+	if (mip < 0 || mip >= static_cast<int>(mipmaps.size())) {
 		// Invalid mipmap number.
 		return nullptr;
 	}
@@ -834,18 +834,17 @@ KhronosKTX2::KhronosKTX2(const IRpFilePtr &file)
 
 	// Read the mipmap info.
 	d->mipmapCount = d->ktx2Header.levelCount;
-	if (d->mipmapCount <= 0) {
-		// No mipmaps == one image.
-		d->mipmapCount = 1;
-	} else if (d->mipmapCount > 128) {
+	assert(d->mipmapCount >= 0);
+	assert(d->mipmapCount <= 128);
+	if (d->mipmapCount > 128) {
 		// Too many mipmaps.
 		d->isValid = false;
 		d->file.reset();
 		return;
 	}
-	d->mipmaps.resize(d->mipmapCount);
-	d->mipmap_data.resize(d->mipmapCount);
-	const size_t mipdata_size = d->mipmapCount * sizeof(KTX2_Mipmap_Index);
+	d->mipmaps.resize(d->mipmapCount > 0 ? d->mipmapCount : 1);
+	d->mipmap_data.resize(d->mipmaps.size());
+	const size_t mipdata_size = d->mipmap_data.size() * sizeof(KTX2_Mipmap_Index);
 	size = d->file->read(d->mipmap_data.data(), mipdata_size);
 	if (size != mipdata_size) {
 		d->isValid = false;

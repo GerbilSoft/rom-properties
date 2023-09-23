@@ -141,8 +141,8 @@ KhronosKTXPrivate::KhronosKTXPrivate(KhronosKTX *q, const IRpFilePtr &file)
 rp_image_const_ptr KhronosKTXPrivate::loadImage(int mip)
 {
 	assert(mip >= 0);
-	assert(mip < mipmapCount);
-	if (mip < 0 || mip >= mipmapCount) {
+	assert(mip < static_cast<int>(mipmaps.size()));
+	if (mip < 0 || mip >= static_cast<int>(mipmaps.size())) {
 		// Invalid mipmap number.
 		return nullptr;
 	}
@@ -914,16 +914,15 @@ KhronosKTX::KhronosKTX(const IRpFilePtr &file)
 
 	// Resize the mipmaps vector.
 	d->mipmapCount = d->ktxHeader.numberOfMipmapLevels;
-	if (d->mipmapCount <= 0) {
-		// No mipmaps == one image.
-		d->mipmapCount = 1;
-	} else if (d->mipmapCount > 128) {
+	assert(d->mipmapCount >= 0);
+	assert(d->mipmapCount <= 128);
+	if (d->mipmapCount > 128) {
 		// Too many mipmaps.
 		d->isValid = false;
 		d->file.reset();
 		return;
 	}
-	d->mipmaps.resize(d->mipmapCount);
+	d->mipmaps.resize(d->mipmapCount > 0 ? d->mipmapCount : 1);
 
 	// Texture data start address.
 	// NOTE: Always 4-byte aligned.

@@ -311,14 +311,14 @@ int ValveVTFPrivate::getMipmapInfo(void)
 	}
 
 	// Set up mipmap arrays.
-	mipmaps.resize(mipmapCount);
-	mipmap_data.resize(mipmapCount);
+	mipmaps.resize(mipmapCount > 0 ? mipmapCount : 1);
+	mipmap_data.resize(mipmaps.size());
 
 	// Mipmaps are stored from smallest to largest.
 	// Calculate mipmap sizes and width/height first.
 	int w = vtfHeader.width, h = height;
 	int rw = row_width;
-	for (int mip = 0; mip < mipmapCount; mip++) {
+	for (int mip = 0; mip < static_cast<int>(mipmaps.size()); mip++) {
 		auto &mdata = mipmap_data[mip];
 		mdata.size = mipmap_size;
 		mdata.width = w;
@@ -338,7 +338,7 @@ int ValveVTFPrivate::getMipmapInfo(void)
 	}
 
 	// Calculate the addresses.
-	for (int mip = mipmapCount-1; mip >= 0; mip--) {
+	for (int mip = static_cast<int>(mipmaps.size())-1; mip >= 0; mip--) {
 		auto &mdata = mipmap_data[mip];
 		mdata.addr = addr;
 		addr += mdata.size;
@@ -356,9 +356,22 @@ int ValveVTFPrivate::getMipmapInfo(void)
 rp_image_const_ptr ValveVTFPrivate::loadImage(int mip)
 {
 	// TODO: Option to load the low-res image instead?
+
+	// Make sure the mipmap info is loaded.
+	if (mipmap_data.empty()) {
+		int ret = getMipmapInfo();
+		assert(ret == 0);
+		assert(!mipmap_data.empty());
+		assert(mipmaps.size() == mipmap_data.size());
+		if (ret != 0 || mipmap_data.empty()) {
+			// Error getting the mipmap info.
+			return nullptr;
+		}
+	}
+
 	assert(mip >= 0);
-	assert(mip < mipmapCount);
-	if (mip < 0 || mip >= mipmapCount) {
+	assert(mip < static_cast<int>(mipmaps.size()));
+	if (mip < 0 || mip >= static_cast<int>(mipmaps.size())) {
 		// Invalid mipmap number.
 		return nullptr;
 	}
@@ -389,14 +402,7 @@ rp_image_const_ptr ValveVTFPrivate::loadImage(int mip)
 	}
 	const uint32_t file_sz = static_cast<uint32_t>(file->size());
 
-	// Make sure the mipmap info is loaded.
-	int ret = getMipmapInfo();
-	assert(ret == 0);
-	assert(!mipmap_data.empty());
-	if (ret != 0 || mipmap_data.empty()) {
-		// Error getting the mipmap info.
-		return nullptr;
-	}
+	// Mipmap data for this mipmap level
 	const auto &mdata = mipmap_data[mip];
 
 	// TODO: Handle environment maps (6-faced cube map) and volumetric textures.
@@ -705,11 +711,9 @@ ValveVTF::ValveVTF(const IRpFilePtr &file)
 	// Save the mipmap count.
 	// TODO: Differentiate between files that have 0 vs. 1?
 	d->mipmapCount = d->vtfHeader.mipmapCount;
+	assert(d->mipmapCount >= 0);
 	assert(d->mipmapCount <= 128);
-	if (d->mipmapCount == 0) {
-		// No mipmaps == one image.
-		d->mipmapCount = 1;
-	} else if (d->mipmapCount > 128) {
+	if (d->mipmapCount > 128) {
 		// Too many mipmaps...
 		// Clamp it to 128.
 		d->mipmapCount = 128;
