@@ -7,7 +7,7 @@
     available and any are set. This includes the project ID for project quotas.
   * rpcli can now extract mipmap levels from supported texture files.
     * The following parsers support mipmaps: GodotSTEX, KhronosKTX, KhronosKTX2,
-      PowerVR3, ValveVTF.
+      PowerVR3, ValveVTF, and DirectDrawSurface.
     * The following parsers don't support mipmaps yet, but the format does:
       DirectDrawSurface, SegaPVR
   * ImageDecoderTest now has mipmap tests for various formats.
@@ -34,7 +34,9 @@
     * CI8 is untested due to a lack of test images. If you have any original
       (i.e. from a licensed game) GVR CI8 textures, please submit them in a
       GitHub issue.
-  * KhronosKTX: Mipmap support has been added.
+  * Added mipmap support to the following texture format parsers:
+    * KhronosKTX
+    * DirectDrawSurface
 
 * Bug fixes:
   * Windows: Truncate ListView strings to a maximum of 259+1 characters. (259
