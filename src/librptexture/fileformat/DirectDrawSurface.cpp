@@ -61,8 +61,9 @@ class DirectDrawSurfacePrivate final : public FileFormatPrivate
 		// Texture data start address
 		unsigned int texDataStartAddr;
 
-		// Decoded image
-		rp_image_ptr img;
+		// Decoded mipmaps
+		// Mipmap 0 is the full image.
+		vector<rp_image_ptr> mipmaps;
 
 		// Pixel format message
 		// NOTE: Used for both valid and invalid pixel formats
@@ -70,10 +71,25 @@ class DirectDrawSurfacePrivate final : public FileFormatPrivate
 		char pixel_format[32];
 
 		/**
+		 * Calculate the expected image size.
+		 *
+		 * Width/height must be specified here for mipmap support.
+		 * Other values are determined from the DDS header.
+		 *
+		 * @param width		[in]
+		 * @param height	[in]
+		 * @param mip		[in] Mipmap level (for stride calculation)
+		 * @param pStride	[out] Stride (for uncompressed formats)
+		 * @return Expected image size, or 0 on error
+		 */
+		unsigned int calcExpectedSize(int width, int height, int mip, unsigned int *pStride);
+
+		/**
 		 * Load the image.
+		 * @param mip Mipmap number. (0 == full image)
 		 * @return Image, or nullptr on error.
 		 */
-		rp_image_const_ptr loadImage(void);
+		rp_image_const_ptr loadImage(int mip);
 
 	public:
 		// Supported uncompressed RGB formats.
@@ -523,7 +539,6 @@ int DirectDrawSurfacePrivate::updatePixelFormat(void)
 DirectDrawSurfacePrivate::DirectDrawSurfacePrivate(DirectDrawSurface *q, const IRpFilePtr &file)
 	: super(q, file, &textureInfo)
 	, texDataStartAddr(0)
-	, img(nullptr)
 	, pxf_uncomp(ImageDecoder::PixelFormat::Unknown)
 	, bytespp(0)
 	, dxgi_format(0)
@@ -537,14 +552,151 @@ DirectDrawSurfacePrivate::DirectDrawSurfacePrivate(DirectDrawSurface *q, const I
 }
 
 /**
+ * Calculate the expected image size.
+ *
+ * Width/height must be specified here for mipmap support.
+ * Other values are determined from the DDS header.
+ *
+ * @param width		[in]
+ * @param height	[in]
+ * @param mip		[in] Mipmap level (for stride calculation)
+ * @param pStride	[out] Stride (for uncompressed formats)
+ * @return Expected image size, or 0 on error
+ */
+unsigned int DirectDrawSurfacePrivate::calcExpectedSize(int width, int height, int mip, unsigned int *pStride)
+{
+	if (pxf_uncomp != ImageDecoder::PixelFormat::Unknown) {
+		// Uncompressed linear image data.
+		assert(pxf_uncomp != ImageDecoder::PixelFormat::Unknown);
+		assert(bytespp != 0);
+		if (pxf_uncomp == ImageDecoder::PixelFormat::Unknown || bytespp == 0) {
+			// Pixel format wasn't updated...
+			return 0;
+		}
+
+		// If DDSD_LINEARSIZE is set, the field is linear size,
+		// so it needs to be divided by the image height.
+		unsigned int stride = 0;
+		if (ddsHeader.dwFlags & DDSD_LINEARSIZE) {
+			if (ddsHeader.dwHeight != 0) {
+				stride = ddsHeader.dwPitchOrLinearSize / ddsHeader.dwHeight;
+			}
+		} else {
+			stride = ddsHeader.dwPitchOrLinearSize;
+		}
+		if (stride == 0) {
+			// Invalid stride. Assume stride == width * bytespp.
+			// TODO: Check for stride is too small but non-zero?
+			stride = width * bytespp;
+		} else if (mip > 0) {
+			// Adjust the stride for mipmaps.
+			stride >>= static_cast<unsigned int>(mip * 2);
+		}
+
+		if (stride > (ddsHeader.dwWidth * 16)) {
+			// Stride is too large.
+			return 0;
+		}
+
+		if (pStride) {
+			*pStride = stride;
+		}
+		return static_cast<unsigned int>(height) * stride;
+	}
+
+	// Compressed RGB data.
+
+	// NOTE: dwPitchOrLinearSize is not necessarily correct.
+	// Calculate the expected size.
+	unsigned int expected_size = 0;
+	if (pStride) {
+		*pStride = 0;
+	}
+	switch (dxgi_format) {
+#ifdef ENABLE_PVRTC
+		case DXGI_FORMAT_FAKE_PVRTC_2bpp:
+			// 32 pixels compressed into 64 bits. (2bpp)
+			// NOTE: Image dimensions must be a power of 2 for PVRTC-I.
+			expected_size = ImageSizeCalc::T_calcImageSizePVRTC_PoT<true>(width, height);
+			break;
+
+		case DXGI_FORMAT_FAKE_PVRTC_4bpp:
+			// 16 pixels compressed into 64 bits. (4bpp)
+			// NOTE: Image dimensions must be a power of 2 for PVRTC-I.
+			expected_size = ImageSizeCalc::T_calcImageSizePVRTC_PoT<false>(width, height);
+			break;
+#endif /* ENABLE_PVRTC */
+
+		case DXGI_FORMAT_BC1_TYPELESS:
+		case DXGI_FORMAT_BC1_UNORM:
+		case DXGI_FORMAT_BC1_UNORM_SRGB:
+		case DXGI_FORMAT_BC4_TYPELESS:
+		case DXGI_FORMAT_BC4_UNORM:
+		//case DXGI_FORMAT_BC4_SNORM:
+			// 16 pixels compressed into 64 bits. (4bpp)
+			// NOTE: Width and height must be rounded to the nearest tile. (4x4)
+			expected_size = ImageSizeCalc::T_calcImageSize(ALIGN_BYTES(4, width), ALIGN_BYTES(4, height)) / 2;
+			break;
+
+		case DXGI_FORMAT_BC2_TYPELESS:
+		case DXGI_FORMAT_BC2_UNORM:
+		case DXGI_FORMAT_BC2_UNORM_SRGB:
+		case DXGI_FORMAT_BC3_TYPELESS:
+		case DXGI_FORMAT_BC3_UNORM:
+		case DXGI_FORMAT_BC3_UNORM_SRGB:
+		case DXGI_FORMAT_BC5_TYPELESS:
+		case DXGI_FORMAT_BC5_UNORM:
+		//case DXGI_FORMAT_BC5_SNORM:
+		case DXGI_FORMAT_BC7_TYPELESS:
+		case DXGI_FORMAT_BC7_UNORM:
+		case DXGI_FORMAT_BC7_UNORM_SRGB:
+			// 16 pixels compressed into 128 bits. (8bpp)
+			// NOTE: Width and height must be rounded to the nearest tile. (4x4)
+			expected_size = ImageSizeCalc::T_calcImageSize(ALIGN_BYTES(4, width), ALIGN_BYTES(4, height));
+			break;
+
+		case DXGI_FORMAT_R9G9B9E5_SHAREDEXP:
+			// Uncompressed "special" 32bpp formats.
+			expected_size = ImageSizeCalc::T_calcImageSize(width, height, sizeof(uint32_t));
+			break;
+
+		default:
+#ifdef ENABLE_ASTC
+			if (dxgi_format >= DXGI_FORMAT_ASTC_4X4_TYPELESS &&
+			    dxgi_format <= DXGI_FORMAT_ASTC_12X12_UNORM_SRGB)
+			{
+				static_assert(((DXGI_FORMAT_ASTC_12X12_TYPELESS - DXGI_FORMAT_ASTC_4X4_TYPELESS) / 4) + 1 ==
+					ARRAY_SIZE(ImageDecoder::astc_lkup_tbl), "ASTC lookup table size is wrong!");
+				const unsigned int astc_idx = (dxgi_format - DXGI_FORMAT_ASTC_4X4_TYPELESS) / 4;
+				expected_size = ImageSizeCalc::calcImageSizeASTC(
+					width, height,
+					ImageDecoder::astc_lkup_tbl[astc_idx][0],
+					ImageDecoder::astc_lkup_tbl[astc_idx][1]);
+			}
+#endif /* ENABLE_ASTC */
+			break;
+	}
+
+	return expected_size;
+}
+
+/**
  * Load the image.
+ * @param mip Mipmap number. (0 == full image)
  * @return Image, or nullptr on error.
  */
-rp_image_const_ptr DirectDrawSurfacePrivate::loadImage(void)
+rp_image_const_ptr DirectDrawSurfacePrivate::loadImage(int mip)
 {
-	if (img) {
+	assert(mip >= 0);
+	assert(mip < static_cast<int>(mipmaps.size()));
+	if (mip < 0 || mip >= static_cast<int>(mipmaps.size())) {
+		// Invalid mipmap number.
+		return nullptr;
+	}
+
+	if (!mipmaps.empty() && mipmaps[mip] != nullptr) {
 		// Image has already been loaded.
-		return img;
+		return mipmaps[mip];
 	} else if (!this->file || !this->isValid) {
 		// Can't load the image.
 		return nullptr;
@@ -577,8 +729,38 @@ rp_image_const_ptr DirectDrawSurfacePrivate::loadImage(void)
 	}
 	const uint32_t file_sz = static_cast<uint32_t>(file->size());
 
+	int width = ddsHeader.dwWidth;
+	int height = ddsHeader.dwHeight;
+
+	// If we're requesting a mipmap level higher than 0 (full image),
+	// adjust the start address, expected size, and dimensions.
+	// FIXME: Do cubemaps affect anything?
+	unsigned int stride = 0;
+	unsigned int start_addr = texDataStartAddr;
+	unsigned int expected_size = calcExpectedSize(width, height, 0, &stride);
+	assert(expected_size != 0);
+	if (expected_size == 0) {
+		// Could not calculate the expected size.
+		return nullptr;
+	}
+
+	for (int adjmip = 1; adjmip <= mip; adjmip++) {
+		width /= 2;
+		height /= 2;
+
+		assert(width > 0);
+		assert(height > 0);
+		if (width <= 0 || height <= 0) {
+			// Mipmap size calculation error...
+			return nullptr;
+		}
+
+		start_addr += expected_size;
+		expected_size = calcExpectedSize(width, height, mip, &stride);
+	}
+
 	// Seek to the start of the texture data.
-	int ret = file->seek(texDataStartAddr);
+	int ret = file->seek(start_addr);
 	if (ret != 0) {
 		// Seek error.
 		return nullptr;
@@ -594,84 +776,9 @@ rp_image_const_ptr DirectDrawSurfacePrivate::loadImage(void)
 
 	// NOTE: Mipmaps are stored *after* the main image.
 	// Hence, no mipmap processing is necessary.
+	rp_image_ptr img;
 	if (pxf_uncomp == ImageDecoder::PixelFormat::Unknown) {
 		// Compressed RGB data.
-
-		// NOTE: dwPitchOrLinearSize is not necessarily correct.
-		// Calculate the expected size.
-		size_t expected_size;
-		switch (dxgi_format) {
-#ifdef ENABLE_PVRTC
-			case DXGI_FORMAT_FAKE_PVRTC_2bpp:
-				// 32 pixels compressed into 64 bits. (2bpp)
-				// NOTE: Image dimensions must be a power of 2 for PVRTC-I.
-				expected_size = ImageSizeCalc::T_calcImageSizePVRTC_PoT<true>(
-					ddsHeader.dwWidth, ddsHeader.dwHeight);
-				break;
-
-			case DXGI_FORMAT_FAKE_PVRTC_4bpp:
-				// 16 pixels compressed into 64 bits. (4bpp)
-				// NOTE: Image dimensions must be a power of 2 for PVRTC-I.
-				expected_size = ImageSizeCalc::T_calcImageSizePVRTC_PoT<false>(
-					ddsHeader.dwWidth, ddsHeader.dwHeight);
-				break;
-#endif /* ENABLE_PVRTC */
-
-			case DXGI_FORMAT_BC1_TYPELESS:
-			case DXGI_FORMAT_BC1_UNORM:
-			case DXGI_FORMAT_BC1_UNORM_SRGB:
-			case DXGI_FORMAT_BC4_TYPELESS:
-			case DXGI_FORMAT_BC4_UNORM:
-			//case DXGI_FORMAT_BC4_SNORM:
-				// 16 pixels compressed into 64 bits. (4bpp)
-				// NOTE: Width and height must be rounded to the nearest tile. (4x4)
-				expected_size = ImageSizeCalc::T_calcImageSize(
-					ALIGN_BYTES(4, ddsHeader.dwWidth), ALIGN_BYTES(4, ddsHeader.dwHeight)) / 2;
-				break;
-
-			case DXGI_FORMAT_BC2_TYPELESS:
-			case DXGI_FORMAT_BC2_UNORM:
-			case DXGI_FORMAT_BC2_UNORM_SRGB:
-			case DXGI_FORMAT_BC3_TYPELESS:
-			case DXGI_FORMAT_BC3_UNORM:
-			case DXGI_FORMAT_BC3_UNORM_SRGB:
-			case DXGI_FORMAT_BC5_TYPELESS:
-			case DXGI_FORMAT_BC5_UNORM:
-			//case DXGI_FORMAT_BC5_SNORM:
-			case DXGI_FORMAT_BC7_TYPELESS:
-			case DXGI_FORMAT_BC7_UNORM:
-			case DXGI_FORMAT_BC7_UNORM_SRGB:
-				// 16 pixels compressed into 128 bits. (8bpp)
-				// NOTE: Width and height must be rounded to the nearest tile. (4x4)
-				expected_size = ImageSizeCalc::T_calcImageSize(
-					ALIGN_BYTES(4, ddsHeader.dwWidth), ALIGN_BYTES(4, ddsHeader.dwHeight));
-				break;
-
-			case DXGI_FORMAT_R9G9B9E5_SHAREDEXP:
-				// Uncompressed "special" 32bpp formats.
-				expected_size = ImageSizeCalc::T_calcImageSize(
-					ddsHeader.dwWidth, ddsHeader.dwHeight, sizeof(uint32_t));
-				break;
-
-			default:
-#ifdef ENABLE_ASTC
-				if (dxgi_format >= DXGI_FORMAT_ASTC_4X4_TYPELESS &&
-				    dxgi_format <= DXGI_FORMAT_ASTC_12X12_UNORM_SRGB)
-				{
-					static_assert(((DXGI_FORMAT_ASTC_12X12_TYPELESS - DXGI_FORMAT_ASTC_4X4_TYPELESS) / 4) + 1 ==
-						ARRAY_SIZE(ImageDecoder::astc_lkup_tbl), "ASTC lookup table size is wrong!");
-					const unsigned int astc_idx = (dxgi_format - DXGI_FORMAT_ASTC_4X4_TYPELESS) / 4;
-					expected_size = ImageSizeCalc::calcImageSizeASTC(
-						ddsHeader.dwWidth, ddsHeader.dwHeight,
-						ImageDecoder::astc_lkup_tbl[astc_idx][0],
-						ImageDecoder::astc_lkup_tbl[astc_idx][1]);
-					break;
-				}
-#endif /* ENABLE_ASTC */
-
-				// Not supported.
-				return nullptr;
-		}
 
 		// Verify file size.
 		if (expected_size >= file_sz + texDataStartAddr) {
@@ -695,12 +802,12 @@ rp_image_const_ptr DirectDrawSurfacePrivate::loadImage(void)
 				if (likely(dxgi_alpha != DDS_ALPHA_MODE_OPAQUE)) {
 					// 1-bit alpha.
 					img = ImageDecoder::fromDXT1_A1(
-						ddsHeader.dwWidth, ddsHeader.dwHeight,
+						width, height,
 						buf.get(), expected_size);
 				} else {
 					// No alpha channel.
 					img = ImageDecoder::fromDXT1(
-						ddsHeader.dwWidth, ddsHeader.dwHeight,
+						width, height,
 						buf.get(), expected_size);
 				}
 				break;
@@ -711,12 +818,12 @@ rp_image_const_ptr DirectDrawSurfacePrivate::loadImage(void)
 				if (likely(dxgi_alpha != DDS_ALPHA_MODE_PREMULTIPLIED)) {
 					// Standard alpha: DXT3
 					img = ImageDecoder::fromDXT3(
-						ddsHeader.dwWidth, ddsHeader.dwHeight,
+						width, height,
 						buf.get(), expected_size);
 				} else {
 					// Premultiplied alpha: DXT2
 					img = ImageDecoder::fromDXT2(
-						ddsHeader.dwWidth, ddsHeader.dwHeight,
+						width, height,
 						buf.get(), expected_size);
 				}
 				break;
@@ -727,7 +834,7 @@ rp_image_const_ptr DirectDrawSurfacePrivate::loadImage(void)
 				if (likely(dxgi_alpha != DDS_ALPHA_MODE_PREMULTIPLIED)) {
 					// Standard alpha: DXT5
 					img = ImageDecoder::fromDXT5(
-						ddsHeader.dwWidth, ddsHeader.dwHeight,
+						width, height,
 						buf.get(), expected_size);
 					if (ddsHeader.ddspf.dwFourCC == DDPF_FOURCC_RXGB) {
 						// RxGB -> xRGB
@@ -736,7 +843,7 @@ rp_image_const_ptr DirectDrawSurfacePrivate::loadImage(void)
 				} else {
 					// Premultiplied alpha: DXT4
 					img = ImageDecoder::fromDXT4(
-						ddsHeader.dwWidth, ddsHeader.dwHeight,
+						width, height,
 						buf.get(), expected_size);
 				}
 				break;
@@ -745,7 +852,7 @@ rp_image_const_ptr DirectDrawSurfacePrivate::loadImage(void)
 			case DXGI_FORMAT_BC4_UNORM:
 			//case DXGI_FORMAT_BC4_SNORM:
 				img = ImageDecoder::fromBC4(
-					ddsHeader.dwWidth, ddsHeader.dwHeight,
+					width, height,
 					buf.get(), expected_size);
 				break;
 
@@ -753,7 +860,7 @@ rp_image_const_ptr DirectDrawSurfacePrivate::loadImage(void)
 			case DXGI_FORMAT_BC5_UNORM:
 			//case DXGI_FORMAT_BC5_SNORM:
 				img = ImageDecoder::fromBC5(
-					ddsHeader.dwWidth, ddsHeader.dwHeight,
+					width, height,
 					buf.get(), expected_size);
 				break;
 
@@ -761,7 +868,7 @@ rp_image_const_ptr DirectDrawSurfacePrivate::loadImage(void)
 			case DXGI_FORMAT_BC7_UNORM:
 			case DXGI_FORMAT_BC7_UNORM_SRGB:
 				img = ImageDecoder::fromBC7(
-					ddsHeader.dwWidth, ddsHeader.dwHeight,
+					width, height,
 					buf.get(), expected_size);
 				break;
 
@@ -769,7 +876,7 @@ rp_image_const_ptr DirectDrawSurfacePrivate::loadImage(void)
 			case DXGI_FORMAT_FAKE_PVRTC_2bpp:
 				// PVRTC, 2bpp, has alpha.
 				img = ImageDecoder::fromPVRTC(
-					ddsHeader.dwWidth, ddsHeader.dwHeight,
+					width, height,
 					buf.get(), expected_size,
 					ImageDecoder::PVRTC_2BPP | ImageDecoder::PVRTC_ALPHA_YES);
 				break;
@@ -777,7 +884,7 @@ rp_image_const_ptr DirectDrawSurfacePrivate::loadImage(void)
 			case DXGI_FORMAT_FAKE_PVRTC_4bpp:
 				// PVRTC, 4bpp, has alpha.
 				img = ImageDecoder::fromPVRTC(
-					ddsHeader.dwWidth, ddsHeader.dwHeight,
+					width, height,
 					buf.get(), expected_size,
 					ImageDecoder::PVRTC_4BPP | ImageDecoder::PVRTC_ALPHA_YES);
 				break;
@@ -787,7 +894,7 @@ rp_image_const_ptr DirectDrawSurfacePrivate::loadImage(void)
 				// RGB9_E5 (technically uncompressed...)
 				img = ImageDecoder::fromLinear32(
 					ImageDecoder::PixelFormat::RGB9_E5,
-					ddsHeader.dwWidth, ddsHeader.dwHeight,
+					width, height,
 					reinterpret_cast<const uint32_t*>(buf.get()),
 					expected_size);
 				break;
@@ -801,7 +908,7 @@ rp_image_const_ptr DirectDrawSurfacePrivate::loadImage(void)
 						ARRAY_SIZE(ImageDecoder::astc_lkup_tbl), "ASTC lookup table size is wrong!");
 					const unsigned int astc_idx = (dxgi_format - DXGI_FORMAT_ASTC_4X4_TYPELESS) / 4;
 					img = ImageDecoder::fromASTC(
-						ddsHeader.dwWidth, ddsHeader.dwHeight,
+						width, height,
 						buf.get(), expected_size,
 						ImageDecoder::astc_lkup_tbl[astc_idx][0],
 						ImageDecoder::astc_lkup_tbl[astc_idx][1]);
@@ -821,26 +928,6 @@ rp_image_const_ptr DirectDrawSurfacePrivate::loadImage(void)
 			return nullptr;
 		}
 
-		// If DDSD_LINEARSIZE is set, the field is linear size,
-		// so it needs to be divided by the image height.
-		unsigned int stride = 0;
-		if (ddsHeader.dwFlags & DDSD_LINEARSIZE) {
-			if (ddsHeader.dwHeight != 0) {
-				stride = ddsHeader.dwPitchOrLinearSize / ddsHeader.dwHeight;
-			}
-		} else {
-			stride = ddsHeader.dwPitchOrLinearSize;
-		}
-		if (stride == 0) {
-			// Invalid stride. Assume stride == width * bytespp.
-			// TODO: Check for stride is too small but non-zero?
-			stride = ddsHeader.dwWidth * bytespp;
-		} else if (stride > (ddsHeader.dwWidth * 16)) {
-			// Stride is too large.
-			return nullptr;
-		}
-		const size_t expected_size = (size_t)ddsHeader.dwHeight * stride;
-
 		// Verify file size.
 		if (expected_size >= file_sz + texDataStartAddr) {
 			// File is too small.
@@ -859,14 +946,14 @@ rp_image_const_ptr DirectDrawSurfacePrivate::loadImage(void)
 			case sizeof(uint8_t):
 				// 8-bit image. (Usually luminance or alpha.)
 				img = ImageDecoder::fromLinear8(
-					pxf_uncomp, ddsHeader.dwWidth, ddsHeader.dwHeight,
+					pxf_uncomp, width, height,
 					buf.get(), expected_size, stride);
 				break;
 
 			case sizeof(uint16_t):
 				// 16-bit RGB image.
 				img = ImageDecoder::fromLinear16(
-					pxf_uncomp, ddsHeader.dwWidth, ddsHeader.dwHeight,
+					pxf_uncomp, width, height,
 					reinterpret_cast<const uint16_t*>(buf.get()),
 					expected_size, stride);
 				break;
@@ -874,14 +961,14 @@ rp_image_const_ptr DirectDrawSurfacePrivate::loadImage(void)
 			case 24/8:
 				// 24-bit RGB image.
 				img = ImageDecoder::fromLinear24(
-					pxf_uncomp, ddsHeader.dwWidth, ddsHeader.dwHeight,
+					pxf_uncomp, width, height,
 					buf.get(), expected_size, stride);
 				break;
 
 			case sizeof(uint32_t):
 				// 32-bit RGB image.
 				img = ImageDecoder::fromLinear32(
-					pxf_uncomp, ddsHeader.dwWidth, ddsHeader.dwHeight,
+					pxf_uncomp, width, height,
 					reinterpret_cast<const uint32_t*>(buf.get()),
 					expected_size, stride);
 				break;
@@ -917,6 +1004,7 @@ rp_image_const_ptr DirectDrawSurfacePrivate::loadImage(void)
 	}
 
 	// TODO: Untile textures for XBOX format.
+	mipmaps[mip] = img;
 	return img;
 }
 
@@ -1086,6 +1174,15 @@ DirectDrawSurface::DirectDrawSurface(const IRpFilePtr &file)
 
 	// Save the mipmap count.
 	d->mipmapCount = d->ddsHeader.dwMipMapCount;
+	assert(d->mipmapCount >= 0);
+	assert(d->mipmapCount <= 128);
+	if (d->mipmapCount > 128) {
+		// Too many mipmaps.
+		d->isValid = false;
+		d->file.reset();
+		return;
+	}
+	d->mipmaps.resize(d->mipmapCount > 0 ? d->mipmapCount : 1);
 }
 
 /**
@@ -1382,11 +1479,8 @@ rp_image_const_ptr DirectDrawSurface::mipmap(int mip) const
 		return nullptr;
 	}
 
-	// FIXME: Support decoding mipmaps.
-	if (mip == 0) {
-		return const_cast<DirectDrawSurfacePrivate*>(d)->loadImage();
-	}
-	return nullptr;
+	// Load the image at the specified mipmap level.
+	return const_cast<DirectDrawSurfacePrivate*>(d)->loadImage(mip);
 }
 
 }
