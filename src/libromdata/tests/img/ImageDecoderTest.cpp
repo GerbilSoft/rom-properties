@@ -1819,6 +1819,41 @@ INSTANTIATE_TEST_SUITE_P(XPR, ImageDecoderTest,
 		XPR_IMAGE_TEST("SplashScreen_JunkieXl", "Linear ARGB8888"))
 	, ImageDecoderTest::test_case_suffix_generator);
 
+// Test images from MAME's 3rdparty/bgfx/examples/runtime/textures/ directory.
+#define MAME_IMAGE_TEST(file, format) ImageDecoderTest_mode( \
+			"MAME/" file ".gz", \
+			"MAME/" file ".png", (format))
+INSTANTIATE_TEST_SUITE_P(MAME, ImageDecoderTest,
+	::testing::Values(
+		MAME_IMAGE_TEST("bark1.dds", "DXT1"),
+		MAME_IMAGE_TEST("fieldstone-n.dds", "ATI2"),
+		MAME_IMAGE_TEST("texture_compression_astc_4x4.dds", "AS44"),
+		MAME_IMAGE_TEST("texture_compression_astc_5x4.dds", "AS54"),
+		MAME_IMAGE_TEST("texture_compression_astc_5x5.dds", "AS55"),
+		MAME_IMAGE_TEST("texture_compression_astc_6x5.dds", "AS65"),
+		MAME_IMAGE_TEST("texture_compression_astc_6x6.dds", "AS66"),
+		MAME_IMAGE_TEST("texture_compression_astc_8x5.dds", "AS85"),
+		MAME_IMAGE_TEST("texture_compression_astc_8x6.dds", "AS86"),
+		MAME_IMAGE_TEST("texture_compression_astc_8x8.dds", "AS88"),
+		MAME_IMAGE_TEST("texture_compression_astc_10x5.dds", "AS:5"),
+		MAME_IMAGE_TEST("texture_compression_astc_10x6.dds", "AS:6"),
+		MAME_IMAGE_TEST("texture_compression_astc_10x8.dds", "AS:8"),
+		MAME_IMAGE_TEST("texture_compression_astc_10x10.dds", "AS::"),
+		MAME_IMAGE_TEST("texture_compression_astc_12x10.dds", "AS<:"),
+		MAME_IMAGE_TEST("texture_compression_astc_12x12.dds", "AS<<"),
+		MAME_IMAGE_TEST("texture_compression_bc1.ktx", "COMPRESSED_RGBA_S3TC_DXT1_EXT"),
+		MAME_IMAGE_TEST("texture_compression_bc2.ktx", "COMPRESSED_RGBA_S3TC_DXT3_EXT"),
+		MAME_IMAGE_TEST("texture_compression_bc3.ktx", "COMPRESSED_RGBA_S3TC_DXT5_EXT"),
+		MAME_IMAGE_TEST("texture_compression_bc7.ktx", "COMPRESSED_RGBA_BPTC_UNORM"),
+		MAME_IMAGE_TEST("texture_compression_etc1.ktx", "ETC1_RGB8_OES"),
+		MAME_IMAGE_TEST("texture_compression_etc2.ktx", "COMPRESSED_RGB8_ETC2"),
+		MAME_IMAGE_TEST("texture_compression_ptc12.pvr", "PVRTC 2bpp RGBA"),
+		MAME_IMAGE_TEST("texture_compression_ptc14.pvr", "PVRTC 4bpp RGBA"),
+		MAME_IMAGE_TEST("texture_compression_ptc22.pvr", "PVRTC-II 2bpp"),
+		MAME_IMAGE_TEST("texture_compression_ptc24.pvr", "PVRTC-II 4bpp"),
+		MAME_IMAGE_TEST("texture_compression_rgba8.dds", "ABGR8888"))
+	, ImageDecoderTest::test_case_suffix_generator);
+
 // TODO: NPOT tests for compressed formats. (partial block sizes)
 
 } }
