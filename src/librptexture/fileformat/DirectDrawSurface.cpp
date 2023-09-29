@@ -781,7 +781,7 @@ rp_image_const_ptr DirectDrawSurfacePrivate::loadImage(int mip)
 		// Compressed RGB data.
 
 		// Verify file size.
-		if (expected_size >= file_sz + texDataStartAddr) {
+		if (expected_size >= file_sz + start_addr) {
 			// File is too small.
 			return nullptr;
 		}
@@ -929,7 +929,7 @@ rp_image_const_ptr DirectDrawSurfacePrivate::loadImage(int mip)
 		}
 
 		// Verify file size.
-		if (expected_size >= file_sz + texDataStartAddr) {
+		if (expected_size >= file_sz + start_addr) {
 			// File is too small.
 			return nullptr;
 		}
