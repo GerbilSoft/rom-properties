@@ -82,10 +82,12 @@ IF(SPLIT_OK)
 	# - .strtab: String table.
 	# These sections are split into the .debug file, so there's
 	# no reason to keep them in the executable.
+	# NOTE 2: `mold-2.2.0` adds a bogus .gnu_debuglink section.
+	# Make sure we explicitly remove it with `strip`.
 	ADD_CUSTOM_COMMAND(TARGET ${_target} POST_BUILD
 		COMMAND ${CMAKE_OBJCOPY} --only-keep-debug ${OBJCOPY_COMPRESS_DEBUG_SECTIONS_PARAM}
 			${SPLITDEBUG_SOURCE} ${SPLITDEBUG_TARGET}
-		COMMAND ${CMAKE_STRIP}
+		COMMAND ${CMAKE_STRIP} -R .gnu_debuglink
 			${SPLITDEBUG_SOURCE}
 		COMMAND ${CMAKE_OBJCOPY} --add-gnu-debuglink="${SPLITDEBUG_TARGET}"
 			${SPLITDEBUG_SOURCE}

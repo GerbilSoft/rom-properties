@@ -13,6 +13,7 @@
 namespace LibRpTexture {
 
 FILEFORMAT_DECL_BEGIN(SegaPVR)
+FILEFORMAT_DECL_MIPMAP()
 
 	public:
 		static int isRomSupported_static(const DetectInfo *info);

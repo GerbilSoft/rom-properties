@@ -214,6 +214,7 @@ ValveVTF3::ValveVTF3(const IRpFilePtr &file)
 {
 	RP_D(ValveVTF3);
 	d->mimeType = "image/x-vtf3";	// unofficial, not on fd.o
+	d->textureFormatName = "Valve VTF3 (PS3)";
 
 	if (!d->file) {
 		// Could not ref() the file handle.
@@ -255,19 +256,6 @@ ValveVTF3::ValveVTF3(const IRpFilePtr &file)
 /** Property accessors **/
 
 /**
- * Get the texture format name.
- * @return Texture format name, or nullptr on error.
- */
-const char *ValveVTF3::textureFormatName(void) const
-{
-	RP_D(const ValveVTF3);
-	if (!d->isValid)
-		return nullptr;
-
-	return "Valve VTF3 (PS3)";
-}
-
-/**
  * Get the pixel format, e.g. "RGB888" or "DXT1".
  * @return Pixel format, or nullptr if unavailable.
  */
@@ -279,20 +267,6 @@ const char *ValveVTF3::pixelFormat(void) const
 
 	// Only two formats are supported.
 	return (d->vtf3Header.flags & VTF3_FLAG_ALPHA) ? "DXT5" : "DXT1";
-}
-
-/**
- * Get the mipmap count.
- * @return Number of mipmaps. (0 if none; -1 if format doesn't support mipmaps)
- */
-int ValveVTF3::mipmapCount(void) const
-{
-	RP_D(const ValveVTF3);
-	if (!d->isValid)
-		return -1;
-
-	// TODO: Does this format support mipmaps?
-	return -1;
 }
 
 #ifdef ENABLE_LIBRPBASE_ROMFIELDS
@@ -336,21 +310,6 @@ rp_image_const_ptr ValveVTF3::image(void) const
 
 	// Load the image.
 	return const_cast<ValveVTF3Private*>(d)->loadImage();
-}
-
-/**
- * Get the image for the specified mipmap.
- * Mipmap 0 is the largest image.
- * @param mip Mipmap number.
- * @return Image, or nullptr on error.
- */
-rp_image_const_ptr ValveVTF3::mipmap(int mip) const
-{
-	// Allowing mipmap 0 for compatibility.
-	if (mip == 0) {
-		return image();
-	}
-	return nullptr;
 }
 
 }

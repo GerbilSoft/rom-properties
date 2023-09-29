@@ -562,7 +562,9 @@ XboxXPR::XboxXPR(const IRpFilePtr &file)
 	: super(new XboxXPRPrivate(this, file))
 {
 	RP_D(XboxXPR);
-	d->mimeType = "image/x-xbox-xpr0";	// unofficial, not on fd.o [TODO: xpr1/xpr2?]
+	// TODO: XPR1/XPR2?
+	d->mimeType = "image/x-xbox-xpr0";	// unofficial, not on fd.o
+	d->textureFormatName = "Microsoft Xbox XPR0";
 
 	if (!d->file) {
 		// Could not ref() the file handle.
@@ -619,23 +621,11 @@ XboxXPR::XboxXPR(const IRpFilePtr &file)
 		d->dimensions[1] = (d->xpr0Header.height_npot + 1) * 16;
 	}
 	d->dimensions[2] = 0;
+
+	// TODO: Does XPR0 support mipmaps?
 }
 
 /** Property accessors **/
-
-/**
- * Get the texture format name.
- * @return Texture format name, or nullptr on error.
- */
-const char *XboxXPR::textureFormatName(void) const
-{
-	RP_D(const XboxXPR);
-	if (!d->isValid)
-		return nullptr;
-
-	// TODO: XPR1/XPR2?
-	return "Microsoft Xbox XPR0";
-}
 
 /**
  * Get the pixel format, e.g. "RGB888" or "DXT1".
@@ -720,16 +710,6 @@ const char *XboxXPR::pixelFormat(void) const
 	return d->invalid_pixel_format;
 }
 
-/**
- * Get the mipmap count.
- * @return Number of mipmaps. (0 if none; -1 if format doesn't support mipmaps)
- */
-int XboxXPR::mipmapCount(void) const
-{
-	// TODO: Does XPR0 support mipmaps?
-	return -1;
-}
-
 #ifdef ENABLE_LIBRPBASE_ROMFIELDS
 /**
  * Get property fields for rom-properties.
@@ -787,21 +767,6 @@ rp_image_const_ptr XboxXPR::image(void) const
 
 	// Load the image.
 	return const_cast<XboxXPRPrivate*>(d)->loadXboxXPR0Image();
-}
-
-/**
- * Get the image for the specified mipmap.
- * Mipmap 0 is the largest image.
- * @param mip Mipmap number.
- * @return Image, or nullptr on error.
- */
-rp_image_const_ptr XboxXPR::mipmap(int mip) const
-{
-	// Allowing mipmap 0 for compatibility.
-	if (mip == 0) {
-		return image();
-	}
-	return nullptr;
 }
 
 }

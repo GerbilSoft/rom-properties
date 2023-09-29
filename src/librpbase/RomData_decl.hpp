@@ -82,7 +82,7 @@ protected: \
 protected: \
 	/** \
 	 * Load metadata properties. \
-	 * Called by RomData::metaData() if the field data hasn't been loaded yet. \
+	 * Called by RomData::metaData() if the metadata hasn't been loaded yet. \
 	 * @return Number of metadata properties read on success; negative POSIX error code on error. \
 	 */ \
 	RP_LIBROMDATA_LOCAL \
@@ -159,7 +159,25 @@ public: \
 	 * @param pImage	[out] Reference to rp_image_const_ptr to store the image in. \
 	 * @return 0 on success; negative POSIX error code on error. \
 	 */ \
-	int loadInternalImage(ImageType imageType, LibRpTexture::rp_image_const_ptr &pImage) final; \
+	int loadInternalImage(ImageType imageType, LibRpTexture::rp_image_const_ptr &pImage) final;
+
+/**
+ * RomData subclass function declaration for loading internal image mipmaps.
+ *
+ * NOTE: This function needs to be public because it might be
+ * called by RomData subclasses that own other RomData subclasses.
+ *
+ */
+#define ROMDATA_DECL_IMGINTMIPMAP() \
+public: \
+	/** \
+	 * Load an internal mipmap level for IMG_INT_IMAGE. \
+	 * Called by RomData::mipmap(). \
+	 * @param mipmapLevel	[in] Mipmap level. \
+	 * @param pImage	[out] Reference to rp_image_const_ptr to store the image in. \
+	 * @return 0 on success; negative POSIX error code on error. \
+	 */ \
+	int loadInternalMipmap(int mipmapLevel, LibRpTexture::rp_image_const_ptr &pImage) final;
 
 /**
  * RomData subclass function declaration for obtaining URLs for external images.

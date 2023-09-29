@@ -80,27 +80,32 @@ struct ImageDecoderTest_mode
 	string png_filename;
 	string expected_pixel_format;	// for RpTextureWrapper only
 	RomData::ImageType imgType;
+	int mipmapLevel;		// for RpTextureWrapper only
 
 	ImageDecoderTest_mode(
 		const char *dds_gz_filename,
 		const char *png_filename,
-		RomData::ImageType imgType = RomData::IMG_INT_IMAGE
+		RomData::ImageType imgType = RomData::IMG_INT_IMAGE,
+		int mipmapLevel = -1
 		)
 		: dds_gz_filename(dds_gz_filename)
 		, png_filename(png_filename)
 		, imgType(imgType)
+		, mipmapLevel(mipmapLevel)
 	{ }
 
 	ImageDecoderTest_mode(
 		const char *dds_gz_filename,
 		const char *png_filename,
 		const char *expected_pixel_format,
-		RomData::ImageType imgType = RomData::IMG_INT_IMAGE
+		RomData::ImageType imgType = RomData::IMG_INT_IMAGE,
+		int mipmapLevel = -1
 		)
 		: dds_gz_filename(dds_gz_filename)
 		, png_filename(png_filename)
 		, expected_pixel_format(expected_pixel_format)
 		, imgType(imgType)
+		, mipmapLevel(mipmapLevel)
 	{ }
 
 	// May be required for MSVC 2010?
@@ -109,6 +114,7 @@ struct ImageDecoderTest_mode
 		, png_filename(other.png_filename)
 		, expected_pixel_format(other.expected_pixel_format)
 		, imgType(other.imgType)
+		, mipmapLevel(other.mipmapLevel)
 	{ }
 
 	// Required for MSVC 2010.
@@ -119,6 +125,7 @@ struct ImageDecoderTest_mode
 			png_filename = other.png_filename;
 			expected_pixel_format = other.expected_pixel_format;
 			imgType = other.imgType;
+			mipmapLevel = other.mipmapLevel;
 		}
 		return *this;
 	}
@@ -241,11 +248,10 @@ void ImageDecoderTest::SetUp(void)
 	const ImageDecoderTest_mode &mode = GetParam();
 
 	// Open the gzipped DDS texture file being tested.
-	string path;
-	path += mode.dds_gz_filename;
+	string path = mode.dds_gz_filename;
 	replace_slashes(path);
 	m_gzDds = gzopen(path.c_str(), "rb");
-	ASSERT_TRUE(m_gzDds != nullptr) << "gzopen() failed to open the test file.";
+	ASSERT_TRUE(m_gzDds != nullptr) << "Error loading DDS file '" << path << "': gzopen() failed.";
 
 	// Get the decompressed file size.
 	// gzseek() does not support SEEK_END.
@@ -257,7 +263,7 @@ void ImageDecoderTest::SetUp(void)
 	uint32_t ddsSize = 0;
 	while (!gzeof(m_gzDds)) {
 		int sz_read = gzread(m_gzDds, buf, sizeof(buf));
-		ASSERT_NE(sz_read, -1) << "gzread() failed.";
+		ASSERT_NE(sz_read, -1) << "Error loading DDS file '" << path << "': gzread() failed.";
 		ddsSize += sz_read;
 	}
 	gzrewind(m_gzDds);
@@ -277,14 +283,13 @@ void ImageDecoderTest::SetUp(void)
 	gzclose_r(m_gzDds);
 	m_gzDds = nullptr;
 
-	ASSERT_EQ(ddsSize, (uint32_t)sz) << "Error loading DDS image file: short read";
+	ASSERT_EQ(ddsSize, (uint32_t)sz) << "Error loading DDS file '" << path << "': short read";
 
 	// Open the PNG image file being tested.
-	path.clear();
-	path += mode.png_filename;
+	path = mode.png_filename;
 	replace_slashes(path);
 	shared_ptr<RpFile> file = std::make_shared<RpFile>(path, RpFile::FM_OPEN_READ);
-	ASSERT_TRUE(file->isOpen()) << "Error loading PNG image file: " << strerror(file->lastError());
+	ASSERT_TRUE(file->isOpen()) << "Error loading PNG file '" << path << "': " << strerror(file->lastError());
 
 	// Maximum image size.
 	ASSERT_LE(file->size(), MAX_PNG_IMAGE_FILESIZE) << "PNG image is too big.";
@@ -294,7 +299,7 @@ void ImageDecoderTest::SetUp(void)
 	m_png_buf.resize(pngSize);
 	ASSERT_EQ(pngSize, m_png_buf.size());
 	size_t readSize = file->read(m_png_buf.data(), pngSize);
-	ASSERT_EQ(pngSize, readSize) << "Error loading PNG image file: short read";
+	ASSERT_EQ(pngSize, readSize) << "Error loading PNG file '" << path << "': short read";
 }
 
 /**
@@ -418,13 +423,29 @@ void ImageDecoderTest::decodeTest_internal(void)
 	ASSERT_TRUE(m_romData->isOpen()) << "Could not load the DDS image.";
 
 	// Get the DDS image as an rp_image.
-	const rp_image_const_ptr img_dds = m_romData->image(mode.imgType);
+	rp_image_const_ptr img_dds;
+	if (likely(mode.mipmapLevel < 0)) {
+		img_dds = m_romData->image(mode.imgType);
+	} else {
+		img_dds = m_romData->mipmap(mode.mipmapLevel);
+	}
 	ASSERT_NE(img_dds, nullptr) << "Could not load the DDS image as rp_image.";
 
 	// Get the image again.
 	// The pointer should be identical to the first one.
-	const rp_image_const_ptr img_dds_2 = m_romData->image(mode.imgType);
+	rp_image_const_ptr img_dds_2;
+	if (likely(mode.mipmapLevel < 0)) {
+		img_dds_2 = m_romData->image(mode.imgType);
+	} else {
+		img_dds_2 = m_romData->mipmap(mode.mipmapLevel);
+	}
 	EXPECT_EQ(img_dds.get(), img_dds_2.get()) << "Retrieving the image twice resulted in a different rp_image object.";
+
+	// If this is mipmap level 0, it should be the same object as IMG_INT_IMAGE.
+	if (unlikely(mode.mipmapLevel == 0)) {
+		const rp_image_const_ptr img_base = m_romData->image(RomData::IMG_INT_IMAGE);
+		EXPECT_EQ(img_dds.get(), img_base.get()) << "Mipmap level 0 is *not* the same object as the base image.";
+	}
 
 	// Verify the pixel format.
 	if (!mode.expected_pixel_format.empty()) {
@@ -556,6 +577,7 @@ void ImageDecoderTest::decodeBenchmark_internal(void)
 		max_iterations *= 10;
 	}
 
+	rp_image_const_ptr img_dds;
 	for (unsigned int i = max_iterations; i > 0; i--) {
 		m_romData = fn_ctor(m_f_dds);
 		ASSERT_TRUE((bool)m_romData) << "Could not load the DDS image.";
@@ -564,7 +586,11 @@ void ImageDecoderTest::decodeBenchmark_internal(void)
 
 		// Get the DDS image as an rp_image.
 		// TODO: imgType to string?
-		const rp_image_const_ptr img_dds = m_romData->image(mode.imgType);
+		if (likely(mode.mipmapLevel < 0)) {
+			img_dds = m_romData->image(mode.imgType);
+		} else {
+			img_dds = m_romData->mipmap(mode.mipmapLevel);
+		}
 		ASSERT_TRUE(img_dds != nullptr) << "Could not load the DDS image as rp_image.";
 
 		m_romData.reset();
@@ -595,15 +621,23 @@ string ImageDecoderTest::test_case_suffix_generator(const ::testing::TestParamIn
 
 	// Append the image type to allow checking multiple types
 	// of images in the same file.
-	static const char s_imgType[][8] = {
-		"_Icon", "_Banner", "_Media", "_Image"
-	};
-	static_assert(ARRAY_SIZE(s_imgType) == RomData::IMG_INT_MAX - RomData::IMG_INT_MIN + 1,
-		"s_imgType[] needs to be updated.");
-	assert(info.param.imgType >= RomData::IMG_INT_MIN);
-	assert(info.param.imgType <= RomData::IMG_INT_MAX);
-	if (info.param.imgType >= RomData::IMG_INT_MIN && info.param.imgType <= RomData::IMG_INT_MAX) {
-		suffix += s_imgType[info.param.imgType - RomData::IMG_INT_MIN];
+	if (likely(info.param.mipmapLevel < 0)) {
+		static const char s_imgType[][8] = {
+			"_Icon", "_Banner", "_Media", "_Image"
+		};
+		static_assert(ARRAY_SIZE(s_imgType) == RomData::IMG_INT_MAX - RomData::IMG_INT_MIN + 1,
+			"s_imgType[] needs to be updated.");
+		assert(info.param.imgType >= RomData::IMG_INT_MIN);
+		assert(info.param.imgType <= RomData::IMG_INT_MAX);
+		if (info.param.imgType >= RomData::IMG_INT_MIN && info.param.imgType <= RomData::IMG_INT_MAX) {
+			suffix += s_imgType[info.param.imgType - RomData::IMG_INT_MIN];
+		}
+	} else {
+		// Mipmap
+		char buf[16];
+		snprintf(buf, sizeof(buf), "%d", info.param.mipmapLevel);
+		suffix += "_Mipmap";
+		suffix += buf;
 	}
 
 	// TODO: Convert to ASCII?
@@ -802,6 +836,10 @@ INSTANTIATE_TEST_SUITE_P(GVR_DXT1_S3TC, ImageDecoderTest,
 #define KTX_IMAGE_TEST(file, format) ImageDecoderTest_mode( \
 			"KTX/" file ".ktx.gz", \
 			"KTX/" file ".png", (format))
+#define KTX_MIPMAP_TEST(file, mipmapLevel, format) ImageDecoderTest_mode( \
+			"KTX/" file ".ktx.gz", \
+			"KTX/" file "." #mipmapLevel ".png", (format), \
+			RomData::IMG_INT_IMAGE, (mipmapLevel))
 INSTANTIATE_TEST_SUITE_P(KTX, ImageDecoderTest,
 	::testing::Values(
 		// RGB reference image.
@@ -850,69 +888,177 @@ INSTANTIATE_TEST_SUITE_P(KTX, ImageDecoderTest,
 		// RGBA reference image
 		ImageDecoderTest_mode(
 			"KTX/rgba-reference.ktx.gz",
-			"KTX/rgba.png", "RGBA"))
+			"KTX/rgba.png", "RGBA"),
 
+		// Mipmaps
+		KTX_MIPMAP_TEST("rgb-mipmap-reference", 0, "RGB"),
+		KTX_MIPMAP_TEST("rgb-mipmap-reference", 1, "RGB"),
+		KTX_MIPMAP_TEST("rgb-mipmap-reference", 2, "RGB"),
+		KTX_MIPMAP_TEST("rgb-mipmap-reference", 3, "RGB"),
+		KTX_MIPMAP_TEST("rgb-mipmap-reference", 4, "RGB"),
+		KTX_MIPMAP_TEST("rgb-mipmap-reference", 5, "RGB"),
+		KTX_MIPMAP_TEST("rgb-mipmap-reference", 6, "RGB"))
 	, ImageDecoderTest::test_case_suffix_generator);
 
 // KTX2 tests
 #define KTX2_IMAGE_TEST(file, format) ImageDecoderTest_mode( \
 			"KTX2/" file ".ktx2.gz", \
 			"KTX2/" file ".png", (format))
+#define KTX2_MIPMAP_TEST(file, mipmapLevel, format) ImageDecoderTest_mode( \
+			"KTX2/" file ".ktx2.gz", \
+			"KTX2/" file "." #mipmapLevel ".png", (format), \
+			RomData::IMG_INT_IMAGE, (mipmapLevel))
 INSTANTIATE_TEST_SUITE_P(KTX2, ImageDecoderTest,
 	::testing::Values(
-		KTX2_IMAGE_TEST("cubemap_yokohama_bc3_unorm", "BC3_UNORM_BLOCK"),
 		KTX2_IMAGE_TEST("cubemap_yokohama_etc2_unorm", "ETC2_R8G8B8_UNORM_BLOCK"),
 		KTX2_IMAGE_TEST("luminance_alpha_reference_u", "R8G8_UNORM"),
 		KTX2_IMAGE_TEST("orient-down-metadata-u", "R8G8B8_SRGB"),
 		KTX2_IMAGE_TEST("orient-up-metadata-u", "R8G8B8_SRGB"),
-		KTX2_IMAGE_TEST("pattern_02_bc2", "BC2_UNORM_BLOCK"),
 		KTX2_IMAGE_TEST("rg_reference_u", "R8G8_UNORM"),
 		KTX2_IMAGE_TEST("rgba-reference-u", "R8G8B8A8_SRGB"),
-		KTX2_IMAGE_TEST("rgb-mipmap-reference-u", "R8G8B8_SRGB"),
 		KTX2_IMAGE_TEST("texturearray_bc3_unorm", "BC3_UNORM_BLOCK"),
-		KTX2_IMAGE_TEST("texturearray_etc2_unorm", "ETC2_R8G8B8_UNORM_BLOCK"))
+		KTX2_IMAGE_TEST("texturearray_etc2_unorm", "ETC2_R8G8B8_UNORM_BLOCK"),
+
+		// Mipmaps
+		KTX2_MIPMAP_TEST("cubemap_yokohama_bc3_unorm",  0, "BC3_UNORM_BLOCK"),
+		KTX2_MIPMAP_TEST("cubemap_yokohama_bc3_unorm",  1, "BC3_UNORM_BLOCK"),
+		KTX2_MIPMAP_TEST("cubemap_yokohama_bc3_unorm",  2, "BC3_UNORM_BLOCK"),
+		KTX2_MIPMAP_TEST("cubemap_yokohama_bc3_unorm",  3, "BC3_UNORM_BLOCK"),
+		KTX2_MIPMAP_TEST("cubemap_yokohama_bc3_unorm",  4, "BC3_UNORM_BLOCK"),
+		KTX2_MIPMAP_TEST("cubemap_yokohama_bc3_unorm",  5, "BC3_UNORM_BLOCK"),
+		KTX2_MIPMAP_TEST("cubemap_yokohama_bc3_unorm",  6, "BC3_UNORM_BLOCK"),
+		KTX2_MIPMAP_TEST("cubemap_yokohama_bc3_unorm",  7, "BC3_UNORM_BLOCK"),
+		KTX2_MIPMAP_TEST("cubemap_yokohama_bc3_unorm",  8, "BC3_UNORM_BLOCK"),
+		KTX2_MIPMAP_TEST("cubemap_yokohama_bc3_unorm",  9, "BC3_UNORM_BLOCK"),
+		KTX2_MIPMAP_TEST("cubemap_yokohama_bc3_unorm", 10, "BC3_UNORM_BLOCK"),
+
+		KTX2_MIPMAP_TEST("pattern_02_bc2",  0, "BC2_UNORM_BLOCK"),
+		KTX2_MIPMAP_TEST("pattern_02_bc2",  1, "BC2_UNORM_BLOCK"),
+		KTX2_MIPMAP_TEST("pattern_02_bc2",  2, "BC2_UNORM_BLOCK"),
+		KTX2_MIPMAP_TEST("pattern_02_bc2",  3, "BC2_UNORM_BLOCK"),
+		KTX2_MIPMAP_TEST("pattern_02_bc2",  4, "BC2_UNORM_BLOCK"),
+		KTX2_MIPMAP_TEST("pattern_02_bc2",  5, "BC2_UNORM_BLOCK"),
+		KTX2_MIPMAP_TEST("pattern_02_bc2",  6, "BC2_UNORM_BLOCK"),
+		KTX2_MIPMAP_TEST("pattern_02_bc2",  7, "BC2_UNORM_BLOCK"),
+		KTX2_MIPMAP_TEST("pattern_02_bc2",  8, "BC2_UNORM_BLOCK"),
+		KTX2_MIPMAP_TEST("pattern_02_bc2",  9, "BC2_UNORM_BLOCK"),
+		KTX2_MIPMAP_TEST("pattern_02_bc2", 10, "BC2_UNORM_BLOCK"),
+
+		KTX2_MIPMAP_TEST("rgb-mipmap-reference-u", 0, "R8G8B8_SRGB"),
+		KTX2_MIPMAP_TEST("rgb-mipmap-reference-u", 1, "R8G8B8_SRGB"),
+		KTX2_MIPMAP_TEST("rgb-mipmap-reference-u", 2, "R8G8B8_SRGB"),
+		KTX2_MIPMAP_TEST("rgb-mipmap-reference-u", 3, "R8G8B8_SRGB"),
+		KTX2_MIPMAP_TEST("rgb-mipmap-reference-u", 4, "R8G8B8_SRGB"),
+		KTX2_MIPMAP_TEST("rgb-mipmap-reference-u", 5, "R8G8B8_SRGB"),
+		KTX2_MIPMAP_TEST("rgb-mipmap-reference-u", 6, "R8G8B8_SRGB"))
 	, ImageDecoderTest::test_case_suffix_generator);
 
 // Valve VTF tests (all formats)
 #define VTF_IMAGE_TEST(file, format) ImageDecoderTest_mode( \
 			"VTF/" file ".vtf.gz", \
 			"VTF/" file ".png", (format))
+#define VTF_MIPMAP_TEST(file_vtf, file_png, mipmapLevel, format) ImageDecoderTest_mode( \
+			"VTF/" file_vtf ".vtf.gz", \
+			"VTF/" file_png "." #mipmapLevel ".png", (format), \
+			RomData::IMG_INT_IMAGE, (mipmapLevel))
 INSTANTIATE_TEST_SUITE_P(VTF, ImageDecoderTest,
 	::testing::Values(
 		// NOTE: VTF channel ordering is usually backwards from ImageDecoder.
 
 		// 32-bit ARGB
-		ImageDecoderTest_mode(
-			"VTF/ABGR8888.vtf.gz",
-			"argb-reference.png", "ABGR8888"),
-		ImageDecoderTest_mode(
-			"VTF/ARGB8888.vtf.gz",	// NOTE: Actually RABG8888.
-			"argb-reference.png", "ARGB8888"),
-		ImageDecoderTest_mode(
-			"VTF/BGRA8888.vtf.gz",
-			"argb-reference.png", "BGRA8888"),
-		ImageDecoderTest_mode(
-			"VTF/RGBA8888.vtf.gz",
-			"argb-reference.png", "RGBA8888"),
+		ImageDecoderTest_mode("VTF/ABGR8888.vtf.gz", "argb-reference.png", "ABGR8888", RomData::IMG_INT_IMAGE, 0),
+		VTF_MIPMAP_TEST("ABGR8888", "ABGR8888", 1, "ABGR8888"),
+		VTF_MIPMAP_TEST("ABGR8888", "ABGR8888", 2, "ABGR8888"),
+		VTF_MIPMAP_TEST("ABGR8888", "ABGR8888", 3, "ABGR8888"),
+		VTF_MIPMAP_TEST("ABGR8888", "ABGR8888", 4, "ABGR8888"),
+		VTF_MIPMAP_TEST("ABGR8888", "ABGR8888", 5, "ABGR8888"),
+		VTF_MIPMAP_TEST("ABGR8888", "ABGR8888", 6, "ABGR8888"),
+		VTF_MIPMAP_TEST("ABGR8888", "ABGR8888", 7, "ABGR8888"),
+		VTF_MIPMAP_TEST("ABGR8888", "ABGR8888", 8, "ABGR8888"),
+
+		// NOTE: Actually RABG8888.
+		ImageDecoderTest_mode("VTF/ARGB8888.vtf.gz", "argb-reference.png", "ARGB8888", RomData::IMG_INT_IMAGE, 0),
+		VTF_MIPMAP_TEST("ARGB8888", "ABGR8888", 1, "ARGB8888"),
+		VTF_MIPMAP_TEST("ARGB8888", "ABGR8888", 2, "ARGB8888"),
+		VTF_MIPMAP_TEST("ARGB8888", "ABGR8888", 3, "ARGB8888"),
+		VTF_MIPMAP_TEST("ARGB8888", "ABGR8888", 4, "ARGB8888"),
+		VTF_MIPMAP_TEST("ARGB8888", "ABGR8888", 5, "ARGB8888"),
+		VTF_MIPMAP_TEST("ARGB8888", "ABGR8888", 6, "ARGB8888"),
+		VTF_MIPMAP_TEST("ARGB8888", "ABGR8888", 7, "ARGB8888"),
+		VTF_MIPMAP_TEST("ARGB8888", "ABGR8888", 8, "ARGB8888"),
+
+		ImageDecoderTest_mode("VTF/BGRA8888.vtf.gz", "argb-reference.png", "BGRA8888", RomData::IMG_INT_IMAGE, 0),
+		VTF_MIPMAP_TEST("BGRA8888", "ABGR8888", 1, "BGRA8888"),
+		VTF_MIPMAP_TEST("BGRA8888", "ABGR8888", 2, "BGRA8888"),
+		VTF_MIPMAP_TEST("BGRA8888", "ABGR8888", 3, "BGRA8888"),
+		VTF_MIPMAP_TEST("BGRA8888", "ABGR8888", 4, "BGRA8888"),
+		VTF_MIPMAP_TEST("BGRA8888", "ABGR8888", 5, "BGRA8888"),
+		VTF_MIPMAP_TEST("BGRA8888", "ABGR8888", 6, "BGRA8888"),
+		VTF_MIPMAP_TEST("BGRA8888", "ABGR8888", 7, "BGRA8888"),
+		VTF_MIPMAP_TEST("BGRA8888", "ABGR8888", 8, "BGRA8888"),
+
+		ImageDecoderTest_mode("VTF/RGBA8888.vtf.gz", "argb-reference.png", "RGBA8888", RomData::IMG_INT_IMAGE, 0),
+		VTF_MIPMAP_TEST("RGBA8888", "ABGR8888", 1, "RGBA8888"),
+		VTF_MIPMAP_TEST("RGBA8888", "ABGR8888", 2, "RGBA8888"),
+		VTF_MIPMAP_TEST("RGBA8888", "ABGR8888", 3, "RGBA8888"),
+		VTF_MIPMAP_TEST("RGBA8888", "ABGR8888", 4, "RGBA8888"),
+		VTF_MIPMAP_TEST("RGBA8888", "ABGR8888", 5, "RGBA8888"),
+		VTF_MIPMAP_TEST("RGBA8888", "ABGR8888", 6, "RGBA8888"),
+		VTF_MIPMAP_TEST("RGBA8888", "ABGR8888", 7, "RGBA8888"),
+		VTF_MIPMAP_TEST("RGBA8888", "ABGR8888", 8, "RGBA8888"),
 
 		// 32-bit xRGB
-		ImageDecoderTest_mode(
-			"VTF/BGRx8888.vtf.gz",
-			"rgb-reference.png", "BGRx8888"),
+		ImageDecoderTest_mode("VTF/BGRx8888.vtf.gz", "rgb-reference.png", "BGRx8888", RomData::IMG_INT_IMAGE, 0),
+		VTF_MIPMAP_TEST("BGRx8888", "BGRx8888", 1, "BGRx8888"),
+		VTF_MIPMAP_TEST("BGRx8888", "BGRx8888", 2, "BGRx8888"),
+		VTF_MIPMAP_TEST("BGRx8888", "BGRx8888", 3, "BGRx8888"),
+		VTF_MIPMAP_TEST("BGRx8888", "BGRx8888", 4, "BGRx8888"),
+		VTF_MIPMAP_TEST("BGRx8888", "BGRx8888", 5, "BGRx8888"),
+		VTF_MIPMAP_TEST("BGRx8888", "BGRx8888", 6, "BGRx8888"),
+		VTF_MIPMAP_TEST("BGRx8888", "BGRx8888", 7, "BGRx8888"),
+		VTF_MIPMAP_TEST("BGRx8888", "BGRx8888", 8, "BGRx8888"),
 
 		// 24-bit RGB
-		ImageDecoderTest_mode(
-			"VTF/BGR888.vtf.gz",
-			"rgb-reference.png", "BGR888"),
-		ImageDecoderTest_mode(
-			"VTF/RGB888.vtf.gz",
-			"rgb-reference.png", "RGB888"),
+		ImageDecoderTest_mode("VTF/BGR888.vtf.gz", "rgb-reference.png", "BGR888", RomData::IMG_INT_IMAGE, 0),
+		VTF_MIPMAP_TEST("BGR888", "BGRx8888", 1, "BGR888"),
+		VTF_MIPMAP_TEST("BGR888", "BGRx8888", 2, "BGR888"),
+		VTF_MIPMAP_TEST("BGR888", "BGRx8888", 3, "BGR888"),
+		VTF_MIPMAP_TEST("BGR888", "BGRx8888", 4, "BGR888"),
+		VTF_MIPMAP_TEST("BGR888", "BGRx8888", 5, "BGR888"),
+		VTF_MIPMAP_TEST("BGR888", "BGRx8888", 6, "BGR888"),
+		VTF_MIPMAP_TEST("BGR888", "BGRx8888", 7, "BGR888"),
+		VTF_MIPMAP_TEST("BGR888", "BGRx8888", 8, "BGR888"),
+
+		ImageDecoderTest_mode("VTF/RGB888.vtf.gz", "rgb-reference.png", "RGB888", RomData::IMG_INT_IMAGE, 0),
+		VTF_MIPMAP_TEST("RGB888", "BGRx8888", 1, "RGB888"),
+		VTF_MIPMAP_TEST("RGB888", "BGRx8888", 2, "RGB888"),
+		VTF_MIPMAP_TEST("RGB888", "BGRx8888", 3, "RGB888"),
+		VTF_MIPMAP_TEST("RGB888", "BGRx8888", 4, "RGB888"),
+		VTF_MIPMAP_TEST("RGB888", "BGRx8888", 5, "RGB888"),
+		VTF_MIPMAP_TEST("RGB888", "BGRx8888", 6, "RGB888"),
+		VTF_MIPMAP_TEST("RGB888", "BGRx8888", 7, "RGB888"),
+		VTF_MIPMAP_TEST("RGB888", "BGRx8888", 8, "RGB888"),
 
 		// 24-bit RGB + bluescreen
-		VTF_IMAGE_TEST("BGR888_bluescreen", "BGR888 (Bluescreen)"),
-		ImageDecoderTest_mode(
-			"VTF/RGB888_bluescreen.vtf.gz",
-			"VTF/BGR888_bluescreen.png", "RGB888 (Bluescreen)"),
+		VTF_MIPMAP_TEST("BGR888_bluescreen", "BGR888_bluescreen", 0, "BGR888 (Bluescreen)"),
+		VTF_MIPMAP_TEST("BGR888_bluescreen", "BGR888_bluescreen", 1, "BGR888 (Bluescreen)"),
+		VTF_MIPMAP_TEST("BGR888_bluescreen", "BGR888_bluescreen", 2, "BGR888 (Bluescreen)"),
+		VTF_MIPMAP_TEST("BGR888_bluescreen", "BGR888_bluescreen", 3, "BGR888 (Bluescreen)"),
+		VTF_MIPMAP_TEST("BGR888_bluescreen", "BGR888_bluescreen", 4, "BGR888 (Bluescreen)"),
+		VTF_MIPMAP_TEST("BGR888_bluescreen", "BGR888_bluescreen", 5, "BGR888 (Bluescreen)"),
+		VTF_MIPMAP_TEST("BGR888_bluescreen", "BGR888_bluescreen", 6, "BGR888 (Bluescreen)"),
+		VTF_MIPMAP_TEST("BGR888_bluescreen", "BGR888_bluescreen", 7, "BGR888 (Bluescreen)"),
+		VTF_MIPMAP_TEST("BGR888_bluescreen", "BGR888_bluescreen", 8, "BGR888 (Bluescreen)"),
+
+		VTF_MIPMAP_TEST("RGB888_bluescreen", "BGR888_bluescreen", 0, "RGB888 (Bluescreen)"),
+		VTF_MIPMAP_TEST("RGB888_bluescreen", "BGR888_bluescreen", 1, "RGB888 (Bluescreen)"),
+		VTF_MIPMAP_TEST("RGB888_bluescreen", "BGR888_bluescreen", 2, "RGB888 (Bluescreen)"),
+		VTF_MIPMAP_TEST("RGB888_bluescreen", "BGR888_bluescreen", 3, "RGB888 (Bluescreen)"),
+		VTF_MIPMAP_TEST("RGB888_bluescreen", "BGR888_bluescreen", 4, "RGB888 (Bluescreen)"),
+		VTF_MIPMAP_TEST("RGB888_bluescreen", "BGR888_bluescreen", 5, "RGB888 (Bluescreen)"),
+		VTF_MIPMAP_TEST("RGB888_bluescreen", "BGR888_bluescreen", 6, "RGB888 (Bluescreen)"),
+		VTF_MIPMAP_TEST("RGB888_bluescreen", "BGR888_bluescreen", 7, "RGB888 (Bluescreen)"),
+		VTF_MIPMAP_TEST("RGB888_bluescreen", "BGR888_bluescreen", 8, "RGB888 (Bluescreen)"),
 
 		// 16-bit RGB (565)
 		// FIXME: Tests are failing.
@@ -955,13 +1101,52 @@ INSTANTIATE_TEST_SUITE_P(VTF, ImageDecoderTest,
 // Valve VTF tests (S3TC)
 #define VTF_S3TC_IMAGE_TEST(file, format) ImageDecoderTest_mode( \
 			"VTF/" file ".vtf.gz", \
-			"VTF/" file ".s3tc.png", (format))
+			"VTF/" file ".png", (format))
+#define VTF_S3TC_MIPMAP_TEST(file, mipmapLevel, format) ImageDecoderTest_mode( \
+			"VTF/" file ".vtf.gz", \
+			"VTF/" file "." #mipmapLevel ".png", (format), \
+			RomData::IMG_INT_IMAGE, (mipmapLevel))
 INSTANTIATE_TEST_SUITE_P(VTF_S3TC, ImageDecoderTest,
 	::testing::Values(
-		VTF_S3TC_IMAGE_TEST("DXT1", "DXT1"),
-		VTF_S3TC_IMAGE_TEST("DXT1_A1", "DXT1_A1"),
-		VTF_S3TC_IMAGE_TEST("DXT3", "DXT3"),
-		VTF_S3TC_IMAGE_TEST("DXT5", "DXT5"))
+		VTF_S3TC_MIPMAP_TEST("DXT1", 0, "DXT1"),
+		VTF_S3TC_MIPMAP_TEST("DXT1", 1, "DXT1"),
+		VTF_S3TC_MIPMAP_TEST("DXT1", 2, "DXT1"),
+		VTF_S3TC_MIPMAP_TEST("DXT1", 3, "DXT1"),
+		VTF_S3TC_MIPMAP_TEST("DXT1", 4, "DXT1"),
+		VTF_S3TC_MIPMAP_TEST("DXT1", 5, "DXT1"),
+		VTF_S3TC_MIPMAP_TEST("DXT1", 6, "DXT1"),
+		VTF_S3TC_MIPMAP_TEST("DXT1", 7, "DXT1"),
+		VTF_S3TC_MIPMAP_TEST("DXT1", 8, "DXT1"),
+
+		VTF_S3TC_MIPMAP_TEST("DXT1_A1", 0, "DXT1_A1"),
+		VTF_S3TC_MIPMAP_TEST("DXT1_A1", 1, "DXT1_A1"),
+		VTF_S3TC_MIPMAP_TEST("DXT1_A1", 2, "DXT1_A1"),
+		VTF_S3TC_MIPMAP_TEST("DXT1_A1", 3, "DXT1_A1"),
+		VTF_S3TC_MIPMAP_TEST("DXT1_A1", 4, "DXT1_A1"),
+		VTF_S3TC_MIPMAP_TEST("DXT1_A1", 5, "DXT1_A1"),
+		VTF_S3TC_MIPMAP_TEST("DXT1_A1", 6, "DXT1_A1"),
+		VTF_S3TC_MIPMAP_TEST("DXT1_A1", 7, "DXT1_A1"),
+		VTF_S3TC_MIPMAP_TEST("DXT1_A1", 8, "DXT1_A1"),
+
+		VTF_S3TC_MIPMAP_TEST("DXT3", 0, "DXT3"),
+		VTF_S3TC_MIPMAP_TEST("DXT3", 1, "DXT3"),
+		VTF_S3TC_MIPMAP_TEST("DXT3", 2, "DXT3"),
+		VTF_S3TC_MIPMAP_TEST("DXT3", 3, "DXT3"),
+		VTF_S3TC_MIPMAP_TEST("DXT3", 4, "DXT3"),
+		VTF_S3TC_MIPMAP_TEST("DXT3", 5, "DXT3"),
+		VTF_S3TC_MIPMAP_TEST("DXT3", 6, "DXT3"),
+		VTF_S3TC_MIPMAP_TEST("DXT3", 7, "DXT3"),
+		VTF_S3TC_MIPMAP_TEST("DXT3", 8, "DXT3"),
+
+		VTF_S3TC_MIPMAP_TEST("DXT5", 0, "DXT5"),
+		VTF_S3TC_MIPMAP_TEST("DXT5", 1, "DXT5"),
+		VTF_S3TC_MIPMAP_TEST("DXT5", 2, "DXT5"),
+		VTF_S3TC_MIPMAP_TEST("DXT5", 3, "DXT5"),
+		VTF_S3TC_MIPMAP_TEST("DXT5", 4, "DXT5"),
+		VTF_S3TC_MIPMAP_TEST("DXT5", 5, "DXT5"),
+		VTF_S3TC_MIPMAP_TEST("DXT5", 6, "DXT5"),
+		VTF_S3TC_MIPMAP_TEST("DXT5", 7, "DXT5"),
+		VTF_S3TC_MIPMAP_TEST("DXT5", 8, "DXT5"))
 	, ImageDecoderTest::test_case_suffix_generator);
 
 // Valve VTF3 tests (S3TC)
@@ -1472,15 +1657,31 @@ INSTANTIATE_TEST_SUITE_P(DidjTex, ImageDecoderTest,
 #define PowerVR3_IMAGE_TEST(file, format) ImageDecoderTest_mode( \
 			"PowerVR3/" file ".pvr.gz", \
 			"PowerVR3/" file ".pvr.png", (format))
+#define PowerVR3_MIPMAP_TEST(file, mipmapLevel, format) ImageDecoderTest_mode( \
+			"PowerVR3/" file ".pvr.gz", \
+			"PowerVR3/" file ".pvr." #mipmapLevel ".png", (format), \
+			RomData::IMG_INT_IMAGE, (mipmapLevel))
 INSTANTIATE_TEST_SUITE_P(PowerVR3, ImageDecoderTest,
 	::testing::Values(
 		//PowerVR3_IMAGE_TEST("brdfLUT", "RG1616"),					// TODO: R16fG16f
 		//PowerVR3_IMAGE_TEST("GnomeHorde-bigMushroom_texture", "PVRTC 4bpp RGB"),	// FIXME: Failing (PVRTC-I 4bpp RGB)
 		//PowerVR3_IMAGE_TEST("GnomeHorde-fern", "PVRTC 4bpp RGBA"),			// FIXME: Failing (PVRTC-I 4bpp RGBA)
-		PowerVR3_IMAGE_TEST("Navigation3D-font", "A8"),
 		//PowerVR3_IMAGE_TEST("Navigation3D-Road", "LA88"),				// FIXME: Failing (LA88)
 		//PowerVR3_IMAGE_TEST("Satyr-Table", "RGBA8888"),				// FIXME: Failing (RGBA8888)
-		PowerVR3_IMAGE_TEST("text-fri", "RGBA8888"))					// 32x16, caused rp_image::flip(FLIP_V) to break
+		PowerVR3_IMAGE_TEST("text-fri", "RGBA8888"),					// 32x16, caused rp_image::flip(FLIP_V) to break
+
+		// Mipmaps
+		PowerVR3_MIPMAP_TEST("Navigation3D-font",  0, "A8"),
+		PowerVR3_MIPMAP_TEST("Navigation3D-font",  1, "A8"),
+		PowerVR3_MIPMAP_TEST("Navigation3D-font",  2, "A8"),
+		PowerVR3_MIPMAP_TEST("Navigation3D-font",  3, "A8"),
+		PowerVR3_MIPMAP_TEST("Navigation3D-font",  4, "A8"),
+		PowerVR3_MIPMAP_TEST("Navigation3D-font",  5, "A8"),
+		PowerVR3_MIPMAP_TEST("Navigation3D-font",  6, "A8"),
+		PowerVR3_MIPMAP_TEST("Navigation3D-font",  7, "A8"),
+		PowerVR3_MIPMAP_TEST("Navigation3D-font",  8, "A8"),
+		PowerVR3_MIPMAP_TEST("Navigation3D-font",  9, "A8"),
+		PowerVR3_MIPMAP_TEST("Navigation3D-font", 10, "A8"))
 	, ImageDecoderTest::test_case_suffix_generator);
 #endif /* ENABLE_PVRTC */
 
@@ -1522,13 +1723,13 @@ INSTANTIATE_TEST_SUITE_P(TGA, ImageDecoderTest,
 		//ImageDecoderTest_mode("TGA/tga-go/ctc32.tga.gz", "TGA/tga-go/ctc32-TODO.png", "ARGB8888"),
 		ImageDecoderTest_mode("TGA/tga-go/monochrome8_bottom_left_rle.tga.gz", "TGA/tga-go/monochrome8.png", "8bpp grayscale"),
 		ImageDecoderTest_mode("TGA/tga-go/monochrome8_bottom_left.tga.gz", "TGA/tga-go/monochrome8.png", "8bpp grayscale"),
-		//ImageDecoderTest_mode("TGA/tga-go/monochrome16_bottom_left_rle.tga.gz", "TGA/tga-go/monochrome16.png", "IA8"),
-		//ImageDecoderTest_mode("TGA/tga-go/monochrome16_bottom_left.tga.gz", "TGA/tga-go/monochrome16.png", "IA8"),
+		//ImageDecoderTest_mode("TGA/tga-go/monochrome16_top_left_rle.tga.gz", "TGA/tga-go/monochrome16.png", "IA8"),
+		//ImageDecoderTest_mode("TGA/tga-go/monochrome16_top_left.tga.gz", "TGA/tga-go/monochrome16.png", "IA8"),
 		ImageDecoderTest_mode("TGA/tga-go/rgb24_bottom_left_rle.tga.gz", "TGA/tga-go/rgb24.0.png", "RGB888"),
 		ImageDecoderTest_mode("TGA/tga-go/rgb24_top_left_colormap.tga.gz", "TGA/tga-go/rgb24.1.png", "8bpp with RGB888 palette"),
 		ImageDecoderTest_mode("TGA/tga-go/rgb24_top_left.tga.gz", "TGA/tga-go/rgb24.0.png", "RGB888"),
 		ImageDecoderTest_mode("TGA/tga-go/rgb32_bottom_left.tga.gz", "TGA/tga-go/rgb32.0.png", "ARGB8888"),
-		//ImageDecoderTest_mode("TGA/tga-go/rgb32_top_left_rle_colormap.tga.gz", "TGA/tga-go/rgb32.1.png", "8bpp with xRGB8888 palette"),
+		ImageDecoderTest_mode("TGA/tga-go/rgb32_top_left_rle_colormap.tga.gz", "TGA/tga-go/rgb32.1.png", "8bpp with ARGB8888 palette"),
 		ImageDecoderTest_mode("TGA/tga-go/rgb32_top_left_rle.tga.gz", "TGA/tga-go/rgb32.0.png", "ARGB8888"))
 	, ImageDecoderTest::test_case_suffix_generator);
 
@@ -1616,6 +1817,231 @@ INSTANTIATE_TEST_SUITE_P(XPR, ImageDecoderTest,
 		XPR_IMAGE_TEST("bkgd_title", "Linear ARGB8888"),
 		XBX_IMAGE_TEST("SE-043.TitleImage", "DXT1"),
 		XPR_IMAGE_TEST("SplashScreen_JunkieXl", "Linear ARGB8888"))
+	, ImageDecoderTest::test_case_suffix_generator);
+
+// Test images from MAME's 3rdparty/bgfx/examples/runtime/textures/ directory.
+#define MAME_IMAGE_TEST(file, format) ImageDecoderTest_mode( \
+			"MAME/" file ".gz", \
+			"MAME/" file ".png", (format))
+#define MAME_MIPMAP_TEST(file, mipmapLevel, format) ImageDecoderTest_mode( \
+			"MAME/" file ".gz", \
+			"MAME/" file "." #mipmapLevel ".png", (format), \
+			RomData::IMG_INT_IMAGE, (mipmapLevel))
+#define MAME_MIPMAP2_TEST(file_dds, file_png, mipmapLevel, format) ImageDecoderTest_mode( \
+			"MAME/" file_dds ".gz", \
+			"MAME/" file_png "." #mipmapLevel ".png", (format), \
+			RomData::IMG_INT_IMAGE, (mipmapLevel))
+INSTANTIATE_TEST_SUITE_P(MAME, ImageDecoderTest,
+	::testing::Values(
+		MAME_IMAGE_TEST("texture_compression_ptc12.pvr", "PVRTC 2bpp RGBA"),
+		MAME_IMAGE_TEST("texture_compression_ptc14.pvr", "PVRTC 4bpp RGBA"),
+		MAME_IMAGE_TEST("texture_compression_ptc22.pvr", "PVRTC-II 2bpp"),
+		MAME_IMAGE_TEST("texture_compression_ptc24.pvr", "PVRTC-II 4bpp"),
+		MAME_IMAGE_TEST("texture_compression_rgba8.dds", "ABGR8888"),
+
+		// Mipmaps
+		MAME_MIPMAP_TEST("bark1.dds", 0, "DXT1"),
+		MAME_MIPMAP_TEST("bark1.dds", 1, "DXT1"),
+		MAME_MIPMAP_TEST("bark1.dds", 2, "DXT1"),
+		MAME_MIPMAP_TEST("bark1.dds", 3, "DXT1"),
+		MAME_MIPMAP_TEST("bark1.dds", 4, "DXT1"),
+		MAME_MIPMAP_TEST("bark1.dds", 5, "DXT1"),
+		MAME_MIPMAP_TEST("bark1.dds", 6, "DXT1"),
+		MAME_MIPMAP_TEST("bark1.dds", 7, "DXT1"),
+		MAME_MIPMAP_TEST("bark1.dds", 8, "DXT1"),
+		MAME_MIPMAP_TEST("bark1.dds", 9, "DXT1"),
+
+		MAME_MIPMAP_TEST("fieldstone-n.dds", 0, "ATI2"),
+		MAME_MIPMAP_TEST("fieldstone-n.dds", 1, "ATI2"),
+		MAME_MIPMAP_TEST("fieldstone-n.dds", 2, "ATI2"),
+		MAME_MIPMAP_TEST("fieldstone-n.dds", 3, "ATI2"),
+		MAME_MIPMAP_TEST("fieldstone-n.dds", 4, "ATI2"),
+		MAME_MIPMAP_TEST("fieldstone-n.dds", 5, "ATI2"),
+		MAME_MIPMAP_TEST("fieldstone-n.dds", 6, "ATI2"),
+		MAME_MIPMAP_TEST("fieldstone-n.dds", 7, "ATI2"),
+		// FIXME: These two tests are broken?
+		//MAME_MIPMAP_TEST("fieldstone-n.dds", 8, "ATI2"),
+		//MAME_MIPMAP_TEST("fieldstone-n.dds", 9, "ATI2"),
+
+		MAME_MIPMAP_TEST("texture_compression_astc_4x4.dds", 0, "AS44"),
+		MAME_MIPMAP_TEST("texture_compression_astc_4x4.dds", 1, "AS44"),
+		MAME_MIPMAP_TEST("texture_compression_astc_4x4.dds", 2, "AS44"),
+		MAME_MIPMAP_TEST("texture_compression_astc_4x4.dds", 3, "AS44"),
+		MAME_MIPMAP_TEST("texture_compression_astc_4x4.dds", 4, "AS44"),
+		MAME_MIPMAP_TEST("texture_compression_astc_4x4.dds", 5, "AS44"),
+		MAME_MIPMAP_TEST("texture_compression_astc_4x4.dds", 6, "AS44"),
+		MAME_MIPMAP_TEST("texture_compression_astc_4x4.dds", 7, "AS44"),
+
+		MAME_MIPMAP_TEST("texture_compression_astc_5x4.dds", 0, "AS54"),
+		MAME_MIPMAP_TEST("texture_compression_astc_5x4.dds", 1, "AS54"),
+		MAME_MIPMAP_TEST("texture_compression_astc_5x4.dds", 2, "AS54"),
+		MAME_MIPMAP_TEST("texture_compression_astc_5x4.dds", 3, "AS54"),
+		MAME_MIPMAP_TEST("texture_compression_astc_5x4.dds", 4, "AS54"),
+		MAME_MIPMAP_TEST("texture_compression_astc_5x4.dds", 5, "AS54"),
+		MAME_MIPMAP_TEST("texture_compression_astc_5x4.dds", 6, "AS54"),
+		MAME_MIPMAP_TEST("texture_compression_astc_5x4.dds", 7, "AS54"),
+
+		MAME_MIPMAP_TEST("texture_compression_astc_5x5.dds", 0, "AS55"),
+		MAME_MIPMAP_TEST("texture_compression_astc_5x5.dds", 1, "AS55"),
+		MAME_MIPMAP_TEST("texture_compression_astc_5x5.dds", 2, "AS55"),
+		MAME_MIPMAP_TEST("texture_compression_astc_5x5.dds", 3, "AS55"),
+		MAME_MIPMAP_TEST("texture_compression_astc_5x5.dds", 4, "AS55"),
+		MAME_MIPMAP_TEST("texture_compression_astc_5x5.dds", 5, "AS55"),
+		MAME_MIPMAP_TEST("texture_compression_astc_5x5.dds", 6, "AS55"),
+		MAME_MIPMAP_TEST("texture_compression_astc_5x5.dds", 7, "AS55"),
+
+		MAME_MIPMAP_TEST("texture_compression_astc_6x5.dds", 0, "AS65"),
+		MAME_MIPMAP_TEST("texture_compression_astc_6x5.dds", 1, "AS65"),
+		MAME_MIPMAP_TEST("texture_compression_astc_6x5.dds", 2, "AS65"),
+		MAME_MIPMAP_TEST("texture_compression_astc_6x5.dds", 3, "AS65"),
+		MAME_MIPMAP_TEST("texture_compression_astc_6x5.dds", 4, "AS65"),
+		MAME_MIPMAP_TEST("texture_compression_astc_6x5.dds", 5, "AS65"),
+		MAME_MIPMAP_TEST("texture_compression_astc_6x5.dds", 6, "AS65"),
+		MAME_MIPMAP_TEST("texture_compression_astc_6x5.dds", 7, "AS65"),
+
+		MAME_MIPMAP_TEST("texture_compression_astc_6x6.dds", 0, "AS66"),
+		MAME_MIPMAP_TEST("texture_compression_astc_6x6.dds", 1, "AS66"),
+		MAME_MIPMAP_TEST("texture_compression_astc_6x6.dds", 2, "AS66"),
+		MAME_MIPMAP_TEST("texture_compression_astc_6x6.dds", 3, "AS66"),
+		MAME_MIPMAP_TEST("texture_compression_astc_6x6.dds", 4, "AS66"),
+		MAME_MIPMAP_TEST("texture_compression_astc_6x6.dds", 5, "AS66"),
+		MAME_MIPMAP_TEST("texture_compression_astc_6x6.dds", 6, "AS66"),
+		MAME_MIPMAP_TEST("texture_compression_astc_6x6.dds", 7, "AS66"),
+
+		MAME_MIPMAP_TEST("texture_compression_astc_8x5.dds", 0, "AS85"),
+		MAME_MIPMAP_TEST("texture_compression_astc_8x5.dds", 1, "AS85"),
+		MAME_MIPMAP_TEST("texture_compression_astc_8x5.dds", 2, "AS85"),
+		MAME_MIPMAP_TEST("texture_compression_astc_8x5.dds", 3, "AS85"),
+		MAME_MIPMAP_TEST("texture_compression_astc_8x5.dds", 4, "AS85"),
+		MAME_MIPMAP_TEST("texture_compression_astc_8x5.dds", 5, "AS85"),
+		MAME_MIPMAP_TEST("texture_compression_astc_8x5.dds", 6, "AS85"),
+		MAME_MIPMAP_TEST("texture_compression_astc_8x5.dds", 7, "AS85"),
+
+		MAME_MIPMAP_TEST("texture_compression_astc_8x6.dds", 0, "AS86"),
+		MAME_MIPMAP_TEST("texture_compression_astc_8x6.dds", 1, "AS86"),
+		MAME_MIPMAP_TEST("texture_compression_astc_8x6.dds", 2, "AS86"),
+		MAME_MIPMAP_TEST("texture_compression_astc_8x6.dds", 3, "AS86"),
+		MAME_MIPMAP_TEST("texture_compression_astc_8x6.dds", 4, "AS86"),
+		MAME_MIPMAP_TEST("texture_compression_astc_8x6.dds", 5, "AS86"),
+		MAME_MIPMAP_TEST("texture_compression_astc_8x6.dds", 6, "AS86"),
+		MAME_MIPMAP_TEST("texture_compression_astc_8x6.dds", 7, "AS86"),
+
+		MAME_MIPMAP_TEST("texture_compression_astc_8x8.dds", 0, "AS88"),
+		MAME_MIPMAP_TEST("texture_compression_astc_8x8.dds", 1, "AS88"),
+		MAME_MIPMAP_TEST("texture_compression_astc_8x8.dds", 2, "AS88"),
+		MAME_MIPMAP_TEST("texture_compression_astc_8x8.dds", 3, "AS88"),
+		MAME_MIPMAP_TEST("texture_compression_astc_8x8.dds", 4, "AS88"),
+		MAME_MIPMAP_TEST("texture_compression_astc_8x8.dds", 5, "AS88"),
+		MAME_MIPMAP_TEST("texture_compression_astc_8x8.dds", 6, "AS88"),
+		MAME_MIPMAP_TEST("texture_compression_astc_8x8.dds", 7, "AS88"),
+
+		MAME_MIPMAP_TEST("texture_compression_astc_10x5.dds", 0, "AS:5"),
+		MAME_MIPMAP_TEST("texture_compression_astc_10x5.dds", 1, "AS:5"),
+		MAME_MIPMAP_TEST("texture_compression_astc_10x5.dds", 2, "AS:5"),
+		MAME_MIPMAP_TEST("texture_compression_astc_10x5.dds", 3, "AS:5"),
+		MAME_MIPMAP_TEST("texture_compression_astc_10x5.dds", 4, "AS:5"),
+		MAME_MIPMAP_TEST("texture_compression_astc_10x5.dds", 5, "AS:5"),
+		MAME_MIPMAP_TEST("texture_compression_astc_10x5.dds", 6, "AS:5"),
+		MAME_MIPMAP_TEST("texture_compression_astc_10x5.dds", 7, "AS:5"),
+
+		MAME_MIPMAP_TEST("texture_compression_astc_10x6.dds", 0, "AS:6"),
+		MAME_MIPMAP_TEST("texture_compression_astc_10x6.dds", 1, "AS:6"),
+		MAME_MIPMAP_TEST("texture_compression_astc_10x6.dds", 2, "AS:6"),
+		MAME_MIPMAP_TEST("texture_compression_astc_10x6.dds", 3, "AS:6"),
+		MAME_MIPMAP_TEST("texture_compression_astc_10x6.dds", 4, "AS:6"),
+		MAME_MIPMAP_TEST("texture_compression_astc_10x6.dds", 5, "AS:6"),
+		MAME_MIPMAP_TEST("texture_compression_astc_10x6.dds", 6, "AS:6"),
+		MAME_MIPMAP_TEST("texture_compression_astc_10x6.dds", 7, "AS:6"),
+
+		MAME_MIPMAP_TEST("texture_compression_astc_10x8.dds", 0, "AS:8"),
+		MAME_MIPMAP_TEST("texture_compression_astc_10x8.dds", 1, "AS:8"),
+		MAME_MIPMAP_TEST("texture_compression_astc_10x8.dds", 2, "AS:8"),
+		MAME_MIPMAP_TEST("texture_compression_astc_10x8.dds", 3, "AS:8"),
+		MAME_MIPMAP_TEST("texture_compression_astc_10x8.dds", 4, "AS:8"),
+		MAME_MIPMAP_TEST("texture_compression_astc_10x8.dds", 5, "AS:8"),
+		MAME_MIPMAP_TEST("texture_compression_astc_10x8.dds", 6, "AS:8"),
+		MAME_MIPMAP_TEST("texture_compression_astc_10x8.dds", 7, "AS:8"),
+
+		MAME_MIPMAP_TEST("texture_compression_astc_10x10.dds", 0, "AS::"),
+		MAME_MIPMAP_TEST("texture_compression_astc_10x10.dds", 1, "AS::"),
+		MAME_MIPMAP_TEST("texture_compression_astc_10x10.dds", 2, "AS::"),
+		MAME_MIPMAP_TEST("texture_compression_astc_10x10.dds", 3, "AS::"),
+		MAME_MIPMAP_TEST("texture_compression_astc_10x10.dds", 4, "AS::"),
+		MAME_MIPMAP_TEST("texture_compression_astc_10x10.dds", 5, "AS::"),
+		MAME_MIPMAP_TEST("texture_compression_astc_10x10.dds", 6, "AS::"),
+		MAME_MIPMAP_TEST("texture_compression_astc_10x10.dds", 7, "AS::"),
+
+		MAME_MIPMAP_TEST("texture_compression_astc_12x10.dds", 0, "AS<:"),
+		MAME_MIPMAP_TEST("texture_compression_astc_12x10.dds", 1, "AS<:"),
+		MAME_MIPMAP_TEST("texture_compression_astc_12x10.dds", 2, "AS<:"),
+		MAME_MIPMAP_TEST("texture_compression_astc_12x10.dds", 3, "AS<:"),
+		MAME_MIPMAP_TEST("texture_compression_astc_12x10.dds", 4, "AS<:"),
+		MAME_MIPMAP_TEST("texture_compression_astc_12x10.dds", 5, "AS<:"),
+		MAME_MIPMAP_TEST("texture_compression_astc_12x10.dds", 6, "AS<:"),
+		MAME_MIPMAP_TEST("texture_compression_astc_12x10.dds", 7, "AS<:"),
+
+		MAME_MIPMAP_TEST("texture_compression_astc_12x12.dds", 0, "AS<<"),
+		MAME_MIPMAP_TEST("texture_compression_astc_12x12.dds", 1, "AS<<"),
+		MAME_MIPMAP_TEST("texture_compression_astc_12x12.dds", 2, "AS<<"),
+		MAME_MIPMAP_TEST("texture_compression_astc_12x12.dds", 3, "AS<<"),
+		MAME_MIPMAP_TEST("texture_compression_astc_12x12.dds", 4, "AS<<"),
+		MAME_MIPMAP_TEST("texture_compression_astc_12x12.dds", 5, "AS<<"),
+		MAME_MIPMAP_TEST("texture_compression_astc_12x12.dds", 6, "AS<<"),
+		MAME_MIPMAP_TEST("texture_compression_astc_12x12.dds", 7, "AS<<"),
+
+		MAME_MIPMAP_TEST("texture_compression_bc1.ktx", 0, "COMPRESSED_RGBA_S3TC_DXT1_EXT"),
+		MAME_MIPMAP_TEST("texture_compression_bc1.ktx", 1, "COMPRESSED_RGBA_S3TC_DXT1_EXT"),
+		MAME_MIPMAP_TEST("texture_compression_bc1.ktx", 2, "COMPRESSED_RGBA_S3TC_DXT1_EXT"),
+		MAME_MIPMAP_TEST("texture_compression_bc1.ktx", 3, "COMPRESSED_RGBA_S3TC_DXT1_EXT"),
+		MAME_MIPMAP_TEST("texture_compression_bc1.ktx", 4, "COMPRESSED_RGBA_S3TC_DXT1_EXT"),
+		MAME_MIPMAP_TEST("texture_compression_bc1.ktx", 5, "COMPRESSED_RGBA_S3TC_DXT1_EXT"),
+		MAME_MIPMAP_TEST("texture_compression_bc1.ktx", 6, "COMPRESSED_RGBA_S3TC_DXT1_EXT"),
+		MAME_MIPMAP_TEST("texture_compression_bc1.ktx", 7, "COMPRESSED_RGBA_S3TC_DXT1_EXT"),
+
+		MAME_MIPMAP2_TEST("texture_compression_bc2.ktx", "texture_compression_bc1.ktx", 0, "COMPRESSED_RGBA_S3TC_DXT3_EXT"),
+		MAME_MIPMAP2_TEST("texture_compression_bc2.ktx", "texture_compression_bc1.ktx", 1, "COMPRESSED_RGBA_S3TC_DXT3_EXT"),
+		MAME_MIPMAP2_TEST("texture_compression_bc2.ktx", "texture_compression_bc1.ktx", 2, "COMPRESSED_RGBA_S3TC_DXT3_EXT"),
+		MAME_MIPMAP2_TEST("texture_compression_bc2.ktx", "texture_compression_bc1.ktx", 3, "COMPRESSED_RGBA_S3TC_DXT3_EXT"),
+		MAME_MIPMAP2_TEST("texture_compression_bc2.ktx", "texture_compression_bc1.ktx", 4, "COMPRESSED_RGBA_S3TC_DXT3_EXT"),
+		MAME_MIPMAP2_TEST("texture_compression_bc2.ktx", "texture_compression_bc1.ktx", 5, "COMPRESSED_RGBA_S3TC_DXT3_EXT"),
+		MAME_MIPMAP2_TEST("texture_compression_bc2.ktx", "texture_compression_bc1.ktx", 6, "COMPRESSED_RGBA_S3TC_DXT3_EXT"),
+		MAME_MIPMAP2_TEST("texture_compression_bc2.ktx", "texture_compression_bc1.ktx", 7, "COMPRESSED_RGBA_S3TC_DXT3_EXT"),
+
+		MAME_MIPMAP2_TEST("texture_compression_bc3.ktx", "texture_compression_bc1.ktx", 0, "COMPRESSED_RGBA_S3TC_DXT5_EXT"),
+		MAME_MIPMAP2_TEST("texture_compression_bc3.ktx", "texture_compression_bc1.ktx", 1, "COMPRESSED_RGBA_S3TC_DXT5_EXT"),
+		MAME_MIPMAP2_TEST("texture_compression_bc3.ktx", "texture_compression_bc1.ktx", 2, "COMPRESSED_RGBA_S3TC_DXT5_EXT"),
+		MAME_MIPMAP2_TEST("texture_compression_bc3.ktx", "texture_compression_bc1.ktx", 3, "COMPRESSED_RGBA_S3TC_DXT5_EXT"),
+		MAME_MIPMAP2_TEST("texture_compression_bc3.ktx", "texture_compression_bc1.ktx", 4, "COMPRESSED_RGBA_S3TC_DXT5_EXT"),
+		MAME_MIPMAP2_TEST("texture_compression_bc3.ktx", "texture_compression_bc1.ktx", 5, "COMPRESSED_RGBA_S3TC_DXT5_EXT"),
+		MAME_MIPMAP2_TEST("texture_compression_bc3.ktx", "texture_compression_bc1.ktx", 6, "COMPRESSED_RGBA_S3TC_DXT5_EXT"),
+		MAME_MIPMAP2_TEST("texture_compression_bc3.ktx", "texture_compression_bc1.ktx", 7, "COMPRESSED_RGBA_S3TC_DXT5_EXT"),
+
+		MAME_MIPMAP_TEST("texture_compression_bc7.ktx", 0, "COMPRESSED_RGBA_BPTC_UNORM"),
+		MAME_MIPMAP_TEST("texture_compression_bc7.ktx", 1, "COMPRESSED_RGBA_BPTC_UNORM"),
+		MAME_MIPMAP_TEST("texture_compression_bc7.ktx", 2, "COMPRESSED_RGBA_BPTC_UNORM"),
+		MAME_MIPMAP_TEST("texture_compression_bc7.ktx", 3, "COMPRESSED_RGBA_BPTC_UNORM"),
+		MAME_MIPMAP_TEST("texture_compression_bc7.ktx", 4, "COMPRESSED_RGBA_BPTC_UNORM"),
+		MAME_MIPMAP_TEST("texture_compression_bc7.ktx", 5, "COMPRESSED_RGBA_BPTC_UNORM"),
+		MAME_MIPMAP_TEST("texture_compression_bc7.ktx", 6, "COMPRESSED_RGBA_BPTC_UNORM"),
+		MAME_MIPMAP_TEST("texture_compression_bc7.ktx", 7, "COMPRESSED_RGBA_BPTC_UNORM"),
+
+		MAME_MIPMAP_TEST("texture_compression_etc1.ktx", 0, "ETC1_RGB8_OES"),
+		MAME_MIPMAP_TEST("texture_compression_etc1.ktx", 1, "ETC1_RGB8_OES"),
+		MAME_MIPMAP_TEST("texture_compression_etc1.ktx", 2, "ETC1_RGB8_OES"),
+		MAME_MIPMAP_TEST("texture_compression_etc1.ktx", 3, "ETC1_RGB8_OES"),
+		MAME_MIPMAP_TEST("texture_compression_etc1.ktx", 4, "ETC1_RGB8_OES"),
+		MAME_MIPMAP_TEST("texture_compression_etc1.ktx", 5, "ETC1_RGB8_OES"),
+		MAME_MIPMAP_TEST("texture_compression_etc1.ktx", 6, "ETC1_RGB8_OES"),
+		MAME_MIPMAP_TEST("texture_compression_etc1.ktx", 7, "ETC1_RGB8_OES"),
+
+		MAME_MIPMAP_TEST("texture_compression_etc2.ktx", 0, "COMPRESSED_RGB8_ETC2"),
+		MAME_MIPMAP_TEST("texture_compression_etc2.ktx", 1, "COMPRESSED_RGB8_ETC2"),
+		MAME_MIPMAP_TEST("texture_compression_etc2.ktx", 2, "COMPRESSED_RGB8_ETC2"),
+		MAME_MIPMAP_TEST("texture_compression_etc2.ktx", 3, "COMPRESSED_RGB8_ETC2"),
+		MAME_MIPMAP_TEST("texture_compression_etc2.ktx", 4, "COMPRESSED_RGB8_ETC2"),
+		MAME_MIPMAP_TEST("texture_compression_etc2.ktx", 5, "COMPRESSED_RGB8_ETC2"),
+		MAME_MIPMAP_TEST("texture_compression_etc2.ktx", 6, "COMPRESSED_RGB8_ETC2"),
+		MAME_MIPMAP_TEST("texture_compression_etc2.ktx", 7, "COMPRESSED_RGB8_ETC2"))
 	, ImageDecoderTest::test_case_suffix_generator);
 
 // TODO: NPOT tests for compressed formats. (partial block sizes)

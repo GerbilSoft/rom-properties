@@ -322,7 +322,7 @@ rp_image_ptr fromLinear32_ssse3(PixelFormat px_format,
 			break;
 
 		default:
-			assert(!"Unsupported 32-bit pixel format.");
+			assert(!"Main pixels: Unsupported 32-bit pixel format.");
 			return nullptr;
 	}
 
@@ -387,8 +387,35 @@ rp_image_ptr fromLinear32_ssse3(PixelFormat px_format,
 					}
 					break;
 
+				case PixelFormat::G16R16:
+					// NOTE: Truncates to G8R8.
+					for (; x > 0; x--) {
+						*px_dest = G16R16_to_ARGB32(*img_buf);
+						img_buf++;
+						px_dest++;
+					}
+					break;
+
+				case PixelFormat::RABG8888:
+					// VTF "ARGB8888", which is actually RABG.
+					// TODO: This might be a VTFEdit bug. (Tested versions: 1.2.5, 1.3.3)
+					// TODO: Verify on big-endian.
+					// TODO: Use argb32_t?
+					for (; x > 0; x--) {
+						const uint32_t px = le32_to_cpu(*img_buf);
+
+						*px_dest  = (px >> 8) & 0xFF;
+						*px_dest |= (px & 0xFF) << 8;
+						*px_dest |= (px << 8) & 0xFF000000;
+						*px_dest |= (px >> 8) & 0x00FF0000;
+
+						img_buf++;
+						px_dest++;
+					}
+					break;
+
 				default:
-					assert(!"Unsupported 32-bit alpha pixel format.");
+					assert(!"Remaining pixels: Unsupported 32-bit alpha pixel format.");
 					return nullptr;
 			} }
 

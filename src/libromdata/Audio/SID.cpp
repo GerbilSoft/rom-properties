@@ -270,7 +270,7 @@ int SID::loadFieldData(void)
 
 /**
  * Load metadata properties.
- * Called by RomData::metaData() if the field data hasn't been loaded yet.
+ * Called by RomData::metaData() if the metadata hasn't been loaded yet.
  * @return Number of metadata properties read on success; negative POSIX error code on error.
  */
 int SID::loadMetaData(void)

@@ -90,7 +90,7 @@ public:
 	 * Get the texture format name.
 	 * @return Texture format name, or nullptr on error.
 	 */
-	virtual const char *textureFormatName(void) const = 0;
+	const char *textureFormatName(void) const;
 
 	/**
 	 * Get the file's MIME type.
@@ -142,7 +142,7 @@ public:
 	 * Get the mipmap count.
 	 * @return Number of mipmaps. (0 if none; -1 if format doesn't support mipmaps)
 	 */
-	virtual int mipmapCount(void) const = 0;
+	int mipmapCount(void) const;
 
 #ifdef ENABLE_LIBRPBASE_ROMFIELDS
 public:
@@ -171,7 +171,7 @@ public:
 	 * @param mip Mipmap number.
 	 * @return Image, or nullptr on error.
 	 */
-	virtual rp_image_const_ptr mipmap(int mip) const = 0;
+	virtual rp_image_const_ptr mipmap(int mip) const;
 };
 
 typedef std::shared_ptr<FileFormat> FileFormatPtr;

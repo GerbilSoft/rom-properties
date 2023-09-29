@@ -748,21 +748,42 @@ uint32_t RomData::imgpf(ImageType imageType) const
  */
 int RomData::loadInternalImage(ImageType imageType, rp_image_const_ptr &pImage)
 {
+	pImage.reset();
+
 	assert(imageType >= IMG_INT_MIN && imageType <= IMG_INT_MAX);
 	if (imageType < IMG_INT_MIN || imageType > IMG_INT_MAX) {
 		// ImageType is out of range.
-		pImage.reset();
 		return -EINVAL;
 	}
 
-	// No images supported by the base class.
+	// No images are supported by the base class.
+	return -ENOENT;
+}
+
+/**
+ * Load an internal mipmap level for IMG_INT_IMAGE.
+ * Called by RomData::mipmap().
+ * @param mipmapLevel	[in] Mipmap level.
+ * @param pImage	[out] Reference to rp_image_const_ptr to store the image in.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int RomData::loadInternalMipmap(int mipmapLevel, LibRpTexture::rp_image_const_ptr &pImage)
+{
 	pImage.reset();
+
+	assert(mipmapLevel >= 0);
+	if (mipmapLevel < 0) {
+		// mipmapLevel is out of range.
+		return -EINVAL;
+	}
+
+	// No mipmaps are supported by the base class.
 	return -ENOENT;
 }
 
 /**
  * Load metadata properties.
- * Called by RomData::metaData() if the field data hasn't been loaded yet.
+ * Called by RomData::metaData() if the metadata hasn't been loaded yet.
  * @return Number of metadata properties read on success; negative POSIX error code on error.
  */
 int RomData::loadMetaData(void)
@@ -807,10 +828,6 @@ const RomMetaData *RomData::metaData(void) const
 
 /**
  * Get an internal image from the ROM.
- *
- * The retrieved image must be ref()'d by the caller if the
- * caller stores it instead of using it immediately.
- *
  * @param imageType Image type to load.
  * @return Internal image, or nullptr if the ROM doesn't have one.
  */
@@ -832,7 +849,45 @@ rp_image_const_ptr RomData::image(ImageType imageType) const
 	assert((ret == 0 && (bool)img) ||
 	       (ret != 0 && !img));
 
-	return (ret == 0 ? img : nullptr);
+	return img;
+}
+
+/**
+ * Get an internal image mipmap from the texture.
+ *
+ * This always refers to IMG_INT_IMAGE.
+ *
+ * This is mostly used for texture files to retrieve mipmaps
+ * other than the full image.
+ *
+ * NOTE: For mipmap level 0, this is identical to image(IMG_INT_IMAGE).
+ *
+ * @param mipmapLevel Mipmap level to load.
+ * @return Internal image at the specified mipmap level, or nullptr if the ROM doesn't have one.
+ */
+rp_image_const_ptr RomData::mipmap(int mipmapLevel) const
+{
+	assert(mipmapLevel >= 0);
+	if (mipmapLevel < 0)
+		return nullptr;
+
+	// TODO: Check supportedImageTypes()?
+
+	if (mipmapLevel == 0) {
+		// Mipmap level 0 is identical to the regular image.
+		return this->image(IMG_INT_IMAGE);
+	}
+
+	// Load the internal image mipmap.
+	rp_image_const_ptr img;
+	int ret = const_cast<RomData*>(this)->loadInternalMipmap(mipmapLevel, img);
+
+	// SANITY CHECK: If loadInternalMipmap() returns 0,
+	// img *must* be valid. Otherwise, it must be nullptr.
+	assert((ret == 0 && (bool)img) ||
+	       (ret != 0 && !img));
+
+	return img;
 }
 
 /**

@@ -9,6 +9,7 @@
 #pragma once
 
 #include "librpbase/RomData.hpp"
+#include "librptexture/fileformat/FileFormat.hpp"
 
 namespace LibRomData {
 
@@ -18,6 +19,7 @@ ROMDATA_DECL_METADATA()
 ROMDATA_DECL_IMGSUPPORT()
 ROMDATA_DECL_IMGPF()
 ROMDATA_DECL_IMGINT()
+ROMDATA_DECL_IMGINTMIPMAP()
 ROMDATA_DECL_END()
 
 }

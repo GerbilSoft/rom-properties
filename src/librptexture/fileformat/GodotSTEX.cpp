@@ -882,7 +882,6 @@ GodotSTEX::GodotSTEX(const IRpFilePtr &file)
 	: super(new GodotSTEXPrivate(this, file))
 {
 	RP_D(GodotSTEX);
-	d->mimeType = "image/x-godot-stex";	// unofficial, not on fd.o
 
 	if (!d->file) {
 		// Could not ref() the file handle.
@@ -993,7 +992,7 @@ GodotSTEX::GodotSTEX(const IRpFilePtr &file)
 #endif /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
 
 	// Cache the dimensions for the FileFormat base class.
-	// Also cache the pixel format.
+	// Also cache the pixel format and mipmap count.
 	// TODO: 3D textures?
 	// TODO: Don't set rescale dimensions if they match the regular dimensions.
 	switch (d->stexVersion) {
@@ -1001,7 +1000,11 @@ GodotSTEX::GodotSTEX(const IRpFilePtr &file)
 			assert(!"Invalid STEX version.");
 			d->file.reset();
 			return;
+
 		case 3:
+			d->mimeType = "image/x-godot-stex";	// unofficial, not on fd.o
+			d->textureFormatName = "Godot STEX";
+
 			d->pixelFormat = static_cast<STEX_Format_e>(d->stexHeader.v3.format & STEX_FORMAT_MASK);
 			d->format_flags = (d->stexHeader.v3.format & ~STEX_FORMAT_MASK);
 			d->dimensions[0] = d->stexHeader.v3.width;
@@ -1013,8 +1016,23 @@ GodotSTEX::GodotSTEX(const IRpFilePtr &file)
 				d->rescale_dimensions[0] = d->stexHeader.v3.width_rescale;
 				d->rescale_dimensions[1] = d->stexHeader.v3.height_rescale;
 			}
+
+			if (d->stexHeader.v3.format & STEX_FORMAT_FLAG_HAS_MIPMAPS) {
+				// Make sure the mipmap info is loaded.
+				// TODO: Some way to get the mipmap count without loading mipmap info.
+				int ret = const_cast<GodotSTEXPrivate*>(d)->getMipmapInfo();
+				assert(ret == 0);
+				assert(!d->mipmap_data.empty());
+				if (ret == 0 && !d->mipmap_data.empty()) {
+					d->mipmapCount = static_cast<int>(d->mipmap_data.size());
+				}
+			}
 			break;
+
 		case 4:
+			d->mimeType = "image/x-godot-ctex";	// unofficial, not on fd.o
+			d->textureFormatName = "Godot CTEX";
+
 			// FIXME: Verify rescale dimensions.
 			d->pixelFormat = static_cast<STEX_Format_e>(d->stexHeader.v4.pixel_format);
 			d->format_flags = d->stexHeader.v4.format_flags;
@@ -1027,6 +1045,9 @@ GodotSTEX::GodotSTEX(const IRpFilePtr &file)
 				d->rescale_dimensions[0] = d->stexHeader.v4.width;
 				d->rescale_dimensions[1] = d->stexHeader.v4.height;
 			}
+
+			// NOTE: STEX_FORMAT_FLAG_HAS_MIPMAPS isn't used.
+			d->mipmapCount = d->stexHeader.v4.mipmap_count;
 			break;
 	}
 
@@ -1050,20 +1071,6 @@ GodotSTEX::GodotSTEX(const IRpFilePtr &file)
 }
 
 /** Property accessors **/
-
-/**
- * Get the texture format name.
- * @return Texture format name, or nullptr on error.
- */
-const char *GodotSTEX::textureFormatName(void) const
-{
-	RP_D(const GodotSTEX);
-	if (!d->isValid)
-		return nullptr;
-
-	// TODO: Version disambiguation when Godot 4.0 is released.
-	return "Godot STEX";
-}
 
 /**
  * Get the pixel format, e.g. "RGB888" or "DXT1".
@@ -1107,47 +1114,6 @@ const char *GodotSTEX::pixelFormat(void) const
 			"Unknown (%d)", d->pixelFormat);
 	}
 	return d->invalid_pixel_format;
-}
-
-/**
- * Get the mipmap count.
- * @return Number of mipmaps. (0 if none; -1 if format doesn't support mipmaps)
- */
-int GodotSTEX::mipmapCount(void) const
-{
-	RP_D(const GodotSTEX);
-	if (!d->isValid)
-		return -1;
-
-	int mipmap_count = 0;
-	switch (d->stexVersion) {
-		default:
-			assert(!"Invalid STEX version.");
-			mipmap_count = -1;
-			break;
-		case 3: {
-			if (!(d->stexHeader.v3.format & STEX_FORMAT_FLAG_HAS_MIPMAPS))
-				break;
-
-			// Make sure the mipmap info is loaded.
-			int ret = const_cast<GodotSTEXPrivate*>(d)->getMipmapInfo();
-			assert(ret == 0);
-			assert(!d->mipmap_data.empty());
-			if (ret == 0 && !d->mipmap_data.empty()) {
-				mipmap_count = static_cast<int>(d->mipmap_data.size());
-			} else {
-				// Unable to load the mipmap info.
-				mipmap_count = -1;
-			}
-			break;
-		}
-		case 4:
-			// NOTE: STEX_FORMAT_FLAG_HAS_MIPMAPS isn't used.
-			mipmap_count = d->stexHeader.v4.mipmap_count;
-			break;
-	}
-
-	return mipmap_count;
 }
 
 #ifdef ENABLE_LIBRPBASE_ROMFIELDS

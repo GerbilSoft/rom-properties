@@ -326,10 +326,11 @@ rp_image_const_ptr TGAPrivate::loadImage(void)
 	}
 
 	// Decode the image.
-	// TODO: attr_dir number of bits for alpha?
+	// NOTE: gdk-pixbuf assumes alpha is present if:
+	// - Truecolor: bpp == 16 or bpp == 32
+	// - Colormap: cmap_bpp == 32
+	// QtImageFormats assumes alpha is always present.
 	// TODO: Handle premultiplied alpha.
-	const bool hasAlpha = (alphaType >= TGA_ALPHATYPE_PRESENT) &&
-			      ((tgaHeader.img.attr_dir & 0x0F) > 0);
 	rp_image_ptr imgtmp;
 	switch (tgaHeader.image_type & ~TGA_IMAGETYPE_RLE_FLAG) {
 		case TGA_IMAGETYPE_COLORMAP:
@@ -342,13 +343,13 @@ rp_image_const_ptr TGAPrivate::loadImage(void)
 			ImageDecoder::PixelFormat px_fmt;
 			switch (tgaHeader.cmap.bpp) {
 				case 15:	px_fmt = ImageDecoder::PixelFormat::RGB555; break;
-				case 16:	px_fmt = hasAlpha
-							? ImageDecoder::PixelFormat::ARGB1555
-							: ImageDecoder::PixelFormat::RGB555; break;
+				case 16:
+					// FIXME: Is ARGB1555 supported? We have some 16bpp cmap test images
+					// that are expecting the high bit to be ignored.
+					px_fmt = ImageDecoder::PixelFormat::RGB555;
+					break;
 				case 24:	px_fmt = ImageDecoder::PixelFormat::RGB888; break;
-				case 32:	px_fmt = hasAlpha
-							? ImageDecoder::PixelFormat::ARGB8888
-							: ImageDecoder::PixelFormat::xRGB8888; break;
+				case 32:	px_fmt = ImageDecoder::PixelFormat::ARGB8888; break;
 				default:	px_fmt = ImageDecoder::PixelFormat::Unknown; break;
 			}
 			assert(px_fmt != ImageDecoder::PixelFormat::Unknown);
@@ -366,11 +367,18 @@ rp_image_const_ptr TGAPrivate::loadImage(void)
 			// TODO: attr_dir number of bits for alpha?
 			switch (tgaHeader.img.bpp) {
 				case 15:
-				case 16:
-					// RGB555/ARGB1555
+					// RGB555
 					imgtmp = ImageDecoder::fromLinear16(
-						hasAlpha ? ImageDecoder::PixelFormat::ARGB1555
-						         : ImageDecoder::PixelFormat::RGB555,
+						ImageDecoder::PixelFormat::RGB555,
+						tgaHeader.img.width, tgaHeader.img.height,
+						reinterpret_cast<const uint16_t*>(img_data.get()), img_siz);
+					break;
+
+				case 16:
+					// ARGB1555
+					// TODO: Verify that it's ARGB1555 and not RGB565.
+					imgtmp = ImageDecoder::fromLinear16(
+						ImageDecoder::PixelFormat::ARGB1555,
 						tgaHeader.img.width, tgaHeader.img.height,
 						reinterpret_cast<const uint16_t*>(img_data.get()), img_siz);
 					break;
@@ -384,11 +392,9 @@ rp_image_const_ptr TGAPrivate::loadImage(void)
 					break;
 
 				case 32:
-					// xRGB8888/ARGB8888
-					// TODO: Verify alpha channel depth.
+					// ARGB8888
 					imgtmp = ImageDecoder::fromLinear32(
-						hasAlpha ? ImageDecoder::PixelFormat::ARGB8888
-						         : ImageDecoder::PixelFormat::xRGB8888,
+						ImageDecoder::PixelFormat::ARGB8888,
 						tgaHeader.img.width, tgaHeader.img.height,
 						reinterpret_cast<const uint32_t*>(img_data.get()), img_siz);
 					break;
@@ -403,8 +409,10 @@ rp_image_const_ptr TGAPrivate::loadImage(void)
 			// Grayscale
 			switch (tgaHeader.img.bpp) {
 				case 8: {
-					assert(!hasAlpha);
-					if (hasAlpha)
+					assert(alphaType < TGA_ALPHATYPE_PRESENT);
+					assert((tgaHeader.img.attr_dir & 0x0F) == 0);
+					const bool ok = ((alphaType < TGA_ALPHATYPE_PRESENT) && ((tgaHeader.img.attr_dir & 0x0F) == 0));
+					if (!ok)
 						break;
 
 					// Create a grayscale palette.
@@ -424,13 +432,14 @@ rp_image_const_ptr TGAPrivate::loadImage(void)
 				}
 
 				case 16: {
-					assert(hasAlpha);
-					assert((tgaHeader.img.attr_dir & 0x0F) == 8);
-					const bool ok = (hasAlpha && ((tgaHeader.img.attr_dir & 0x0F) == 8));
+					assert(alphaType >= TGA_ALPHATYPE_PRESENT);
+					assert((tgaHeader.img.attr_dir & 0x0F) == 0);
+					const bool ok = ((alphaType >= TGA_ALPHATYPE_PRESENT) && ((tgaHeader.img.attr_dir & 0x0F) == 8));
 					if (!ok)
 						break;
 
 					// Decode the image.
+					// TODO: Verify; handle premultiplied alpha.
 					imgtmp = ImageDecoder::fromLinear16(
 						ImageDecoder::PixelFormat::IA8,
 						tgaHeader.img.width, tgaHeader.img.height,
@@ -516,6 +525,7 @@ TGA::TGA(const IRpFilePtr &file)
 {
 	RP_D(TGA);
 	d->mimeType = "image/x-tga";	// unofficial
+	d->textureFormatName = "TrueVision TGA";
 
 	if (!d->file) {
 		// Could not ref() the file handle.
@@ -563,6 +573,14 @@ TGA::TGA(const IRpFilePtr &file)
 		return;
 	}
 
+	// Assume alpha may be present unless the TGA2 extension area says otherwise.
+	// (...except for 8-bit grayscale)
+	if (unlikely(((d->tgaHeader.image_type & ~TGA_IMAGETYPE_RLE_FLAG) == TGA_IMAGETYPE_GRAYSCALE) && d->tgaHeader.img.bpp == 8)) {
+		d->alphaType = TGA_ALPHATYPE_NONE;
+	} else {
+		d->alphaType = TGA_ALPHATYPE_PRESENT;
+	}
+
 	if (d->texType == TGAPrivate::TexType::TGA2) {
 		// Check for an extension area.
 		const uint32_t ext_offset = le32_to_cpu(d->tgaFooter.ext_offset);
@@ -579,17 +597,10 @@ TGA::TGA(const IRpFilePtr &file)
 			} else {
 				// Error reading the extension area.
 				d->tgaExtArea.size = 0;
-				d->alphaType = TGA_ALPHATYPE_PRESENT;
 			}
-		} else {
-			// No extension area. Assume transparency is prsent.
-			d->alphaType = TGA_ALPHATYPE_PRESENT;
 		}
 
 		// TODO: Developer area?
-	} else {
-		// Not TGA2. Assume no transparency.
-		d->alphaType = TGA_ALPHATYPE_UNDEFINED_IGNORE;
 	}
 
 	// Looks like it's valid.
@@ -625,19 +636,6 @@ TGA::TGA(const IRpFilePtr &file)
 /** Property accessors **/
 
 /**
- * Get the texture format name.
- * @return Texture format name, or nullptr on error.
- */
-const char *TGA::textureFormatName(void) const
-{
-	RP_D(const TGA);
-	if (!d->isValid || (int)d->texType < 0)
-		return nullptr;
-
-	return "TrueVision TGA";
-}
-
-/**
  * Get the pixel format, e.g. "RGB888" or "DXT1".
  * @return Pixel format, or nullptr if unavailable.
  */
@@ -649,10 +647,10 @@ const char *TGA::pixelFormat(void) const
 		return nullptr;
 	}
 
-	// TODO: attr_dir number of bits for alpha?
-	const bool hasAlpha = (d->alphaType >= TGA_ALPHATYPE_PRESENT) &&
-			      ((d->tgaHeader.img.attr_dir & 0x0F) > 0);
-
+	// NOTE: gdk-pixbuf assumes alpha is present if:
+	// - Truecolor: bpp == 16 or bpp == 32
+	// - Colormap: cmap_bpp == 32
+	// QtImageFormats assumes alpha is always present.
 	const char *fmt = nullptr;
 	switch (d->tgaHeader.image_type) {
 		case TGA_IMAGETYPE_COLORMAP:
@@ -665,15 +663,15 @@ const char *TGA::pixelFormat(void) const
 						fmt = "8bpp with RGB555 palette";
 						break;
 					case 16:
-						fmt = hasAlpha ? "8bpp with ARGB1555 palette"
-						               : "8bpp with RGB555 palette";
+						// FIXME: Is ARGB1555 supported? We have some 16bpp cmap test images
+						// that are expecting the high bit to be ignored.
+						fmt = "8bpp with RGB555 palette";
 						break;
 					case 24:
 						fmt = "8bpp with RGB888 palette";
 						break;
 					case 32:
-						fmt = hasAlpha ? "8bpp with ARGB8888 palette"
-						               : "8bpp with xRGB8888 palette";
+						fmt = "8bpp with ARGB8888 palette";
 						break;
 					default:
 						break;
@@ -685,15 +683,15 @@ const char *TGA::pixelFormat(void) const
 						fmt = "16bpp with RGB555 palette";
 						break;
 					case 16:
-						fmt = hasAlpha ? "16bpp with ARGB1555 palette"
-						               : "16bpp with RGB555 palette";
+						// FIXME: Is ARGB1555 supported? We have some 16bpp cmap test images
+						// that are expecting the high bit to be ignored.
+						fmt = "16bpp with RGB555 palette";
 						break;
 					case 24:
 						fmt = "16bpp with RGB888 palette";
 						break;
 					case 32:
-						fmt = hasAlpha ? "16bpp with ARGB8888 palette"
-						               : "16bpp with xRGB8888 palette";
+						fmt = "16bpp with ARGB8888 palette";
 						break;
 					default:
 						break;
@@ -705,14 +703,17 @@ const char *TGA::pixelFormat(void) const
 		case TGA_IMAGETYPE_RLE_TRUECOLOR:
 			// True color
 			switch (d->tgaHeader.img.bpp) {
+				case 15:
+					fmt = "RGB555";
+					break;
 				case 16:
-					fmt = hasAlpha ? "ARGB1555" : "RGB555";
+					fmt = "ARGB1555";
 					break;
 				case 24:
 					fmt = "RGB888";
 					break;
 				case 32:
-					fmt = hasAlpha ? "ARGB8888" : "xRGB8888";
+					fmt = "ARGB8888";
 					break;
 				default:
 					break;
@@ -742,16 +743,6 @@ const char *TGA::pixelFormat(void) const
 
 	// TODO: Indicate invalid formats?
 	return fmt;
-}
-
-/**
- * Get the mipmap count.
- * @return Number of mipmaps. (0 if none; -1 if format doesn't support mipmaps)
- */
-int TGA::mipmapCount(void) const
-{
-	// Not supported.
-	return -1;
 }
 
 #ifdef ENABLE_LIBRPBASE_ROMFIELDS
@@ -802,13 +793,14 @@ int TGA::getFields(RomFields *fields) const
 	// Alpha channel
 	// TODO: dpgettext_expr()
 	const char *s_alphaType;
-	static const char *const alphaType_tbl[4] = {
+	static const char *const alphaType_tbl[] = {
+		NOP_C_("TGA|AlphaType", "None"),
 		NOP_C_("TGA|AlphaType", "Undefined (ignore)"),
 		NOP_C_("TGA|AlphaType", "Undefined (retain)"),
 		NOP_C_("TGA|AlphaType", "Present"),
 		NOP_C_("TGA|AlphaType", "Premultiplied"),
 	};
-	s_alphaType = alphaType_tbl[d->alphaType >= 0 && (int)d->alphaType < 4
+	s_alphaType = alphaType_tbl[d->alphaType >= 0 && (int)d->alphaType < 5
 		? d->alphaType : TGA_ALPHATYPE_UNDEFINED_IGNORE];
 	fields->addField_string(C_("TGA", "Alpha Type"), s_alphaType);
 
@@ -934,21 +926,6 @@ rp_image_const_ptr TGA::image(void) const
 
 	// Load the image.
 	return const_cast<TGAPrivate*>(d)->loadImage();
-}
-
-/**
- * Get the image for the specified mipmap.
- * Mipmap 0 is the largest image.
- * @param mip Mipmap number.
- * @return Image, or nullptr on error.
- */
-rp_image_const_ptr TGA::mipmap(int mip) const
-{
-	// Allowing mipmap 0 for compatibility.
-	if (mip == 0) {
-		return image();
-	}
-	return nullptr;
 }
 
 }

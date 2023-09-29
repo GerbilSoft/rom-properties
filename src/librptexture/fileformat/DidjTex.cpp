@@ -383,6 +383,7 @@ DidjTex::DidjTex(const IRpFilePtr &file)
 			return;
 		}
 		d->texType = DidjTexPrivate::TexType::TEXS;
+		d->textureFormatName = "Leapster Didj .texs";
 	} else {
 		// .tex - total filesize must be equal to compressed size plus header size.
 		if (our_size != filesize) {
@@ -391,6 +392,7 @@ DidjTex::DidjTex(const IRpFilePtr &file)
 			return;
 		}
 		d->texType = DidjTexPrivate::TexType::TEX;
+		d->textureFormatName = "Leapster Didj .tex";
 	}
 
 	// Looks like it's valid.
@@ -400,25 +402,11 @@ DidjTex::DidjTex(const IRpFilePtr &file)
 	d->dimensions[0] = le32_to_cpu(d->texHeader.width);
 	d->dimensions[1] = le32_to_cpu(d->texHeader.height);
 	d->dimensions[2] = 0;
+
+	// TODO: Does .tex support mipmaps?
 }
 
 /** Property accessors **/
-
-/**
- * Get the texture format name.
- * @return Texture format name, or nullptr on error.
- */
-const char *DidjTex::textureFormatName(void) const
-{
-	RP_D(const DidjTex);
-	if (!d->isValid || (int)d->texType < 0)
-		return nullptr;
-
-	// TODO: Use an array?
-	return (d->texType == DidjTexPrivate::TexType::TEXS
-		? "Leapster Didj .texs"
-		: "Leapster Didj .tex");
-}
 
 /**
  * Get the pixel format, e.g. "RGB888" or "DXT1".
@@ -456,16 +444,6 @@ const char *DidjTex::pixelFormat(void) const
 			"Unknown (0x%08X)", d->texHeader.px_format);
 	}
 	return d->invalid_pixel_format;
-}
-
-/**
- * Get the mipmap count.
- * @return Number of mipmaps. (0 if none; -1 if format doesn't support mipmaps)
- */
-int DidjTex::mipmapCount(void) const
-{
-	// TODO: Does .tex support mipmaps?
-	return -1;
 }
 
 #ifdef ENABLE_LIBRPBASE_ROMFIELDS
@@ -517,21 +495,6 @@ rp_image_const_ptr DidjTex::image(void) const
 
 	// Load the image.
 	return const_cast<DidjTexPrivate*>(d)->loadDidjTexImage();
-}
-
-/**
- * Get the image for the specified mipmap.
- * Mipmap 0 is the largest image.
- * @param mip Mipmap number.
- * @return Image, or nullptr on error.
- */
-rp_image_const_ptr DidjTex::mipmap(int mip) const
-{
-	// Allowing mipmap 0 for compatibility.
-	if (mip == 0) {
-		return image();
-	}
-	return nullptr;
 }
 
 }

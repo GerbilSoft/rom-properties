@@ -33,6 +33,8 @@ FileFormatPrivate::FileFormatPrivate(FileFormat *q, const IRpFilePtr &file, cons
 	, file(file)
 	, pTextureInfo(pTextureInfo)
 	, mimeType(nullptr)
+	, textureFormatName(nullptr)
+	, mipmapCount(-1)
 {
 	assert(pTextureInfo != nullptr);
 
@@ -86,6 +88,16 @@ void FileFormat::close(void)
 }
 
 /** Property accessors **/
+
+/**
+ * Get the texture format name.
+ * @return Texture format name, or nullptr on error.
+ */
+const char *FileFormat::textureFormatName(void) const
+{
+	RP_D(const FileFormat);
+	return d->textureFormatName;
+}
 
 /**
  * Get the file's MIME type.
@@ -160,6 +172,32 @@ int FileFormat::getRescaleDimensions(int pBuf[2]) const
 
 	memcpy(pBuf, d->rescale_dimensions, sizeof(d->rescale_dimensions));
 	return 0;
+}
+
+/**
+ * Get the mipmap count.
+ * @return Number of mipmaps. (0 if none; -1 if format doesn't support mipmaps)
+ */
+int FileFormat::mipmapCount(void) const
+{
+	RP_D(const FileFormat);
+	return d->mipmapCount;
+}
+
+/**
+ * Get the image for the specified mipmap.
+ * Mipmap 0 is the largest image.
+ * @param mip Mipmap number.
+ * @return Image, or nullptr on error.
+ */
+rp_image_const_ptr FileFormat::mipmap(int mip) const
+{
+	// The base implementation doesn't support mipmaps.
+	// Mipmap 0 is the same as the main image, so we'll allow that.
+	if (mip == 0) {
+		return image();
+	}
+	return nullptr;
 }
 
 }

@@ -40,10 +40,14 @@ using namespace LibRpFile;
 #include "libromdata/RomDataFactory.hpp"
 using namespace LibRomData;
 
+// librptexture
+#include "librptexture/fileformat/FileFormat.hpp"
+#include "librptexture/img/rp_image.hpp"
 #ifdef _WIN32
 #  include "libwin32common/RpWin32_sdk.h"
 #  include "librptexture/img/GdiplusHelper.hpp"
 #endif /* _WIN32 */
+using namespace LibRpTexture;
 
 #ifdef ENABLE_DECRYPTION
 #  include "verifykeys.hpp"
@@ -123,9 +127,13 @@ DELAYLOAD_TEST_FUNCTION_IMPL1(textdomain, nullptr);
 struct ExtractParam {
 	const TCHAR *filename;	// Target filename. Can be null due to argv[argc]
 	int imageType;		// Image Type. -1 = iconAnimData, MUST be between -1 and IMG_INT_MAX
+	int mipmapLevel;	// Mipmap level. (IMG_INT_IMAGE only) -1 = use default; 0 or higher = mipmap level
 
-	ExtractParam(const TCHAR *filename, int imageType)
-		: filename(filename), imageType(imageType) { }
+	ExtractParam(const TCHAR *filename, int imageType, int mipmapLevel = -1)
+		: filename(filename)
+		, imageType(imageType)
+		, mipmapLevel(mipmapLevel)
+	{}
 };
 
 /**
@@ -139,18 +147,35 @@ static void ExtractImages(const RomData *romData, const vector<ExtractParam>& ex
 		if (!p.filename) continue;
 		bool found = false;
 		
-		if (p.imageType >= 0 && supported & (1U << p.imageType)) {
+		if (p.imageType >= 0 && (supported & (1U << p.imageType))) {
 			// normal image
+			bool isMipmap = (unlikely(p.mipmapLevel >= 0));
 			const RomData::ImageType imageType =
 				static_cast<RomData::ImageType>(p.imageType);
-			auto image = romData->image(imageType);
+			rp_image_const_ptr image;
+
+			if (likely(!isMipmap)) {
+				// normal image
+				image = romData->image(imageType);
+			} else {
+				// mipmap level for IMG_INT_IMAGE
+				image = romData->mipmap(p.mipmapLevel);
+			}
+
 			if (image && image->isValid()) {
 				found = true;
-				cerr << "-- " <<
-					// tr: %1$s == image type name, %2$s == output filename
-					rp_sprintf_p(C_("rpcli", "Extracting %1$s into '%2$s'"),
-						RomData::getImageTypeName(imageType),
-						T2U8c(p.filename)) << endl;
+				if (likely(!isMipmap)) {
+					cerr << "-- " <<
+						// tr: %1$s == image type name, %2$s == output filename
+						rp_sprintf_p(C_("rpcli", "Extracting %1$s into '%2$s'"),
+							RomData::getImageTypeName(imageType),
+							T2U8c(p.filename)) << endl;
+				} else {
+					cerr << "-- " <<
+						// tr: %s == output filename
+						rp_sprintf_p(C_("rpcli", "Extracting mipmap level %d into '%s'"),
+							p.mipmapLevel, T2U8c(p.filename)) << endl;
+				}
 				int errcode = RpPng::save(p.filename, image);
 				if (errcode != 0) {
 					// tr: %1$s == filename, %2%s == error message
@@ -182,10 +207,14 @@ static void ExtractImages(const RomData *romData, const vector<ExtractParam>& ex
 				}
 			}
 		}
+
 		if (!found) {
 			// TODO: Return an error code?
 			if (p.imageType == -1) {
 				cerr << "-- " << C_("rpcli", "Animated icon not found") << endl;
+			} else if (p.mipmapLevel >= 0) {
+				cerr << "-- " <<
+					rp_sprintf(C_("rpcli", "Mipmap level %d not found"), p.mipmapLevel) << endl;
 			} else {
 				const RomData::ImageType imageType =
 					static_cast<RomData::ImageType>(p.imageType);
@@ -425,10 +454,10 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 
 	if(argc < 2){
 #ifdef ENABLE_DECRYPTION
-		cerr << C_("rpcli", "Usage: rpcli [-k] [-c] [-p] [-j] [-l lang] [[-x[b]N outfile]... [-a apngoutfile] filename]...") << '\n';
+		cerr << C_("rpcli", "Usage: rpcli [-k] [-c] [-p] [-j] [-l lang] [[-xN outfile]... [-mN outfile]... [-a apngoutfile] filename]...") << '\n';
 		cerr << "  -k:   " << C_("rpcli", "Verify encryption keys in keys.conf.") << '\n';
 #else /* !ENABLE_DECRYPTION */
-		cerr << C_("rpcli", "Usage: rpcli [-c] [-p] [-j] [-l lang] [[-x[b]N outfile]... [-a apngoutfile] filename]...") << '\n';
+		cerr << C_("rpcli", "Usage: rpcli [-c] [-p] [-j] [-l lang] [[-xN outfile]... [-mN outfile]... [-a apngoutfile] filename]...") << '\n';
 #endif /* ENABLE_DECRYPTION */
 		cerr << "  -c:   " << C_("rpcli", "Print system region information.") << '\n';
 		cerr << "  -p:   " << C_("rpcli", "Print system path information.") << '\n';
@@ -436,6 +465,7 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 		cerr << "  -j:   " << C_("rpcli", "Use JSON output format.") << '\n';
 		cerr << "  -l:   " << C_("rpcli", "Retrieve the specified language from the ROM image.") << '\n';
 		cerr << "  -xN:  " << C_("rpcli", "Extract image N to outfile in PNG format.") << '\n';
+		cerr << "  -mN:  " << C_("rpcli", "Extract mipmap level N to outfile in PNG format.") << '\n';
 		cerr << "  -a:   " << C_("rpcli", "Extract the animated icon to outfile in APNG format.") << '\n';
 		cerr << '\n';
 #ifdef RP_OS_SCSI_SUPPORTED
@@ -565,6 +595,16 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 					i++; continue;
 				}
 				extract.emplace_back(argv[++i], num);
+				break;
+			}
+			case _T('m'): {
+				// TODO: Switch from _ttol() to _tcstol() and implement better error checking?
+				const long num = _ttol(argv[i] + 2);
+				if (num < -1 || num > 1024) {
+					cerr << rp_sprintf(C_("rpcli", "Warning: skipping invalid mipmap level %ld"), num) << endl;
+					i++; continue;
+				}
+				extract.emplace_back(argv[++i], RomData::IMG_INT_IMAGE, num);
 				break;
 			}
 			case _T('a'):

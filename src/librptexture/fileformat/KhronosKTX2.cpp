@@ -79,7 +79,7 @@ class KhronosKTX2Private final : public FileFormatPrivate
 
 		// Decoded mipmaps
 		// Mipmap 0 is the full image.
-		vector<rp_image_ptr > mipmaps;
+		vector<rp_image_ptr> mipmaps;
 
 		// Invalid pixel format message
 		char invalid_pixel_format[24];
@@ -148,15 +148,9 @@ KhronosKTX2Private::KhronosKTX2Private(KhronosKTX2 *q, const IRpFilePtr &file)
  */
 rp_image_const_ptr KhronosKTX2Private::loadImage(int mip)
 {
-	int mipmapCount = ktx2Header.levelCount;
-	if (mipmapCount <= 0) {
-		// No mipmaps == one image.
-		mipmapCount = 1;
-	}
-
 	assert(mip >= 0);
-	assert(mip < mipmapCount);
-	if (mip < 0 || mip >= mipmapCount) {
+	assert(mip < static_cast<int>(mipmaps.size()));
+	if (mip < 0 || mip >= static_cast<int>(mipmaps.size())) {
 		// Invalid mipmap number.
 		return nullptr;
 	}
@@ -234,7 +228,7 @@ rp_image_const_ptr KhronosKTX2Private::loadImage(int mip)
 	}
 
 	// Calculate the expected size.
-	// NOTE: Scanlines are 4-byte aligned.
+	// NOTE: Scanlines are ***NOT*** necessarily 4-byte aligned.
 	// TODO: Differences between UNORM, UINT, SRGB; handle SNORM, SINT.
 	size_t expected_size;
 	int stride = 0;
@@ -246,7 +240,7 @@ rp_image_const_ptr KhronosKTX2Private::loadImage(int mip)
 		case VK_FORMAT_B8G8R8_UINT:
 		case VK_FORMAT_B8G8R8_SRGB:
 			// 24-bit RGB
-			stride = ALIGN_BYTES(4, width * 3);
+			stride = width * 3;
 			expected_size = ImageSizeCalc::T_calcImageSize(stride, height);
 			break;
 
@@ -265,7 +259,7 @@ rp_image_const_ptr KhronosKTX2Private::loadImage(int mip)
 		case VK_FORMAT_R8_UINT:
 		case VK_FORMAT_R8_SRGB:
 			// 8-bit (red)
-			stride = ALIGN_BYTES(4, width);
+			stride = width;
 			expected_size = ImageSizeCalc::T_calcImageSize(stride, height);
 			break;
 
@@ -273,7 +267,7 @@ rp_image_const_ptr KhronosKTX2Private::loadImage(int mip)
 		case VK_FORMAT_R8G8_UINT:
 		case VK_FORMAT_R8G8_SRGB:
 			// 16-bit (red/green; may also be luminance/alpha)
-			stride = ALIGN_BYTES(4, width * 2);
+			stride = width * 2;
 			expected_size = ImageSizeCalc::T_calcImageSize(stride, height);
 			break;
 
@@ -791,6 +785,7 @@ KhronosKTX2::KhronosKTX2(const IRpFilePtr &file)
 {
 	RP_D(KhronosKTX2);
 	d->mimeType = "image/ktx2";	// official
+	d->textureFormatName = "Khronos KTX2";
 
 	if (!d->file) {
 		// Could not ref() the file handle.
@@ -839,19 +834,18 @@ KhronosKTX2::KhronosKTX2(const IRpFilePtr &file)
 #endif /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
 
 	// Read the mipmap info.
-	int mipmapCount = d->ktx2Header.levelCount;
-	if (mipmapCount <= 0) {
-		// No mipmaps == one image.
-		mipmapCount = 1;
-	} else if (mipmapCount > 128) {
+	d->mipmapCount = d->ktx2Header.levelCount;
+	assert(d->mipmapCount >= 0);
+	assert(d->mipmapCount <= 128);
+	if (d->mipmapCount > 128) {
 		// Too many mipmaps.
 		d->isValid = false;
 		d->file.reset();
 		return;
 	}
-	d->mipmaps.resize(mipmapCount);
-	d->mipmap_data.resize(mipmapCount);
-	const size_t mipdata_size = mipmapCount * sizeof(KTX2_Mipmap_Index);
+	d->mipmaps.resize(d->mipmapCount > 0 ? d->mipmapCount : 1);
+	d->mipmap_data.resize(d->mipmaps.size());
+	const size_t mipdata_size = d->mipmap_data.size() * sizeof(KTX2_Mipmap_Index);
 	size = d->file->read(d->mipmap_data.data(), mipdata_size);
 	if (size != mipdata_size) {
 		d->isValid = false;
@@ -913,19 +907,6 @@ int KhronosKTX2::isRomSupported_static(const DetectInfo *info)
 /** Property accessors **/
 
 /**
- * Get the texture format name.
- * @return Texture format name, or nullptr on error.
- */
-const char *KhronosKTX2::textureFormatName(void) const
-{
-	RP_D(const KhronosKTX2);
-	if (!d->isValid)
-		return nullptr;
-
-	return "Khronos KTX2";
-}
-
-/**
  * Get the pixel format, e.g. "RGB888" or "DXT1".
  * @return Pixel format, or nullptr if unavailable.
  */
@@ -949,19 +930,6 @@ const char *KhronosKTX2::pixelFormat(void) const
 			"Unknown (%u)", d->ktx2Header.vkFormat);
 	}
 	return d->invalid_pixel_format;
-}
-
-/**
- * Get the mipmap count.
- * @return Number of mipmaps. (0 if none; -1 if format doesn't support mipmaps)
- */
-int KhronosKTX2::mipmapCount(void) const
-{
-	RP_D(const KhronosKTX2);
-	if (!d->isValid)
-		return -1;
-
-	return d->ktx2Header.levelCount;
 }
 
 #ifdef ENABLE_LIBRPBASE_ROMFIELDS
@@ -1078,7 +1046,7 @@ rp_image_const_ptr KhronosKTX2::mipmap(int mip) const
 		return nullptr;
 	}
 
-	// Load the image.
+	// Load the image at the specified mipmap level.
 	return const_cast<KhronosKTX2Private*>(d)->loadImage(mip);
 }
 

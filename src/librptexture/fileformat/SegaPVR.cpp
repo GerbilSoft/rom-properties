@@ -1329,10 +1329,22 @@ SegaPVR::SegaPVR(const IRpFilePtr &file)
 	d->dimensions[0] = d->pvrHeader.width;
 	d->dimensions[1] = d->pvrHeader.height;
 
-	// Set the MIME type.
+	// Set the MIME type and texture format name.
+	static const char *const sysNames[(int)SegaPVRPrivate::PVRType::Max] = {
+		"Sega Dreamcast PVR",
+		"Sega GVR for GameCube",
+		"Sega SVR for PlayStation 2",
+		"Sega PVRX for Xbox",
+	};
+
+	static_assert(ARRAY_SIZE(d->mimeTypes)-1 == ARRAY_SIZE(sysNames), "d->mimeTypes[] and sysNames[] are out of sync");
 	if ((int)d->pvrType < ARRAY_SIZE_I(d->mimeTypes)-1) {
 		d->mimeType = d->mimeTypes[(int)d->pvrType];
+		d->textureFormatName = sysNames[(int)d->pvrType];
 	}
+
+	// TODO: Calculate the number of mipmaps.
+	d->mipmapCount = 0;
 }
 
 /**
@@ -1423,32 +1435,6 @@ int SegaPVR::isRomSupported_static(const DetectInfo *info)
 /** Property accessors **/
 
 /**
- * Get the texture format name.
- * @return Texture format name, or nullptr on error.
- */
-const char *SegaPVR::textureFormatName(void) const
-{
-	RP_D(const SegaPVR);
-	if (!d->isValid)
-		return nullptr;
-
-	static const char *const sysNames[(int)SegaPVRPrivate::PVRType::Max] = {
-		"Sega Dreamcast PVR",
-		"Sega GVR for GameCube",
-		"Sega SVR for PlayStation 2",
-		"Sega PVRX for Xbox",
-	};
-
-	unsigned int idx = static_cast<unsigned int>(d->pvrType);
-	if (idx >= ARRAY_SIZE(sysNames)) {
-		// Invalid index...
-		idx = 0;
-	}
-
-	return sysNames[idx];
-}
-
-/**
  * Get the pixel format, e.g. "RGB888" or "DXT1".
  * @return Pixel format, or nullptr if unavailable.
  */
@@ -1496,20 +1482,6 @@ const char *SegaPVR::pixelFormat(void) const
 			"Unknown (0x%02X)", val);
 	}
 	return d->invalid_pixel_format;
-}
-
-/**
- * Get the mipmap count.
- * @return Number of mipmaps. (0 if none; -1 if format doesn't support mipmaps)
- */
-int SegaPVR::mipmapCount(void) const
-{
-	RP_D(const SegaPVR);
-	if (!d->isValid)
-		return -1;
-
-	// TODO: Calculate the number of mipmaps.
-	return 0;
 }
 
 #ifdef ENABLE_LIBRPBASE_ROMFIELDS
