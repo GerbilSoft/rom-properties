@@ -593,7 +593,7 @@ unsigned int DirectDrawSurfacePrivate::calcExpectedSize(int width, int height, i
 			stride >>= static_cast<unsigned int>(mip * 2);
 		}
 
-		if (stride > (ddsHeader.dwWidth * 16)) {
+		if (stride > static_cast<unsigned int>(width * 16)) {
 			// Stride is too large.
 			return 0;
 		}
