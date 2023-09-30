@@ -595,6 +595,15 @@ INSTANTIATE_TEST_SUITE_P(GameBoyAdvance, RomHeaderTest,
 		"Handheld/GameBoyAdvance.json.tar.zst"))
 	, RomHeaderTest::test_case_suffix_generator);
 
+/* Other */
+
+INSTANTIATE_TEST_SUITE_P(Amiibo, RomHeaderTest,
+	testing::ValuesIn(RomHeaderTest::ReadTestCasesFromDisk(
+		"Other/Amiibo.bin.tar.zst",
+		"Other/Amiibo.txt.tar.zst",
+		"Other/Amiibo.json.tar.zst"))
+	, RomHeaderTest::test_case_suffix_generator);
+
 } }
 
 extern "C" int gtest_main(int argc, TCHAR *argv[])
