@@ -2057,6 +2057,11 @@ A:0x0413:0:0:E.M.M.I.
 # The Legend of Zelda: Skyward Sword Series [0x414]
 A:0x0414:0:0:Zelda & Loftwing
 
+# The Legend of Zelda: Tears of the Kingdom Series [0x0418]
+A:0x0418:0:5:Link (Tears of the Kingdom)
+A:0x0419:0:5:Zelda (Tears of the Kingdom)
+A:0x041A:0:5:Ganondorf (Tears of the Kingdom)
+
 # SSBU: Wave 15 (Ultimate Fighter Pass 2) [0x041D,0x0422-0x0423]
 A:0x041D:88:15:Min Min
 A:0x0420:92:15:Kazuya
