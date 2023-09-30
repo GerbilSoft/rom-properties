@@ -97,7 +97,7 @@ class N3DSVerifyKeys
 		static LibRpBase::KeyManager::VerifyResult loadNCCHKeys(u128_t pKeyOut[2],
 			const N3DS_NCCH_Header_t *pNcchHeader, uint8_t issuer);
 
-		// Encryption key indexes.
+		// Encryption key indexes
 		enum EncryptionKeys {
 			// Retail
 			Key_Retail_SpiBoot,
@@ -142,12 +142,6 @@ class N3DSVerifyKeys
 
 			Key_Max
 		};
-
-		// Verification key names.
-		static const char *const EncryptionKeyNames[Key_Max];
-
-		// Verification key data.
-		static const uint8_t EncryptionKeyVerifyData[Key_Max][16];
 
 	public:
 		/** Public access functions used by rpcli and others. **/
