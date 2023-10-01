@@ -628,13 +628,16 @@ extern "C" int gtest_main(int argc, TCHAR *argv[])
 		if (_tcslen(amiibo_data_bin_path) < (ARRAY_SIZE(amiibo_data_bin_path) - 32)) {
 			_tcscat(amiibo_data_bin_path, DIR_SEP_STR _T("bin") DIR_SEP_STR _T("amiibo-data.bin"));
 		}
-	} else if (!_taccess(_T("..") DIR_SEP_STR _T("..") DIR_SEP_STR _T("..") DIR_SEP_STR _T("bin") DIR_SEP_STR _T("amiibo-data.bin"), R_OK)) {
+	}
+#ifndef _WIN32
+	else if (!_taccess(_T("..") DIR_SEP_STR _T("..") DIR_SEP_STR _T("..") DIR_SEP_STR _T("bin") DIR_SEP_STR _T("amiibo-data.bin"), R_OK)) {
 		// We're in ${CMAKE_CURRENT_BINARY_DIR}.
 		_tgetcwd(amiibo_data_bin_path, ARRAY_SIZE(amiibo_data_bin_path));
 		if (_tcslen(amiibo_data_bin_path) < (ARRAY_SIZE(amiibo_data_bin_path) - 32)) {
 			_tcscat(amiibo_data_bin_path, DIR_SEP_STR _T("..") DIR_SEP_STR _T("..") DIR_SEP_STR _T("..") DIR_SEP_STR _T("bin") DIR_SEP_STR _T("amiibo-data.bin"));
 		}
 	}
+#endif /* !_WIN32 */
 	if (amiibo_data_bin_path[0] != _T('\0')) {
 		fputs("Setting amiibo-data.bin override to:\n", stderr);
 		_fputts(amiibo_data_bin_path, stderr);
