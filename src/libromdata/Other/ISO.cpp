@@ -461,7 +461,7 @@ void ISOPrivate::addPVDCommon(const T *pvd)
 		RomFields::STRF_TRIM_END);
 
 	// Publisher
-	fields.addField_string(C_("ISO", "Publisher"),
+	fields.addField_string(C_("RomData", "Publisher"),
 		latin1_to_utf8(pvd->publisher, sizeof(pvd->publisher)),
 		RomFields::STRF_TRIM_END);
 
