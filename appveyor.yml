@@ -60,8 +60,6 @@ build_script:
 test_script:
   - cmd: cd %APPVEYOR_BUILD_FOLDER%\build
   - cmd: ctest -V -C %CONFIGURATION%
-  - sh: mkdir -p ~/.config/rom-properties
-  - sh: cp "${APPVEYOR_BUILD_FOLDER}/build/bin/amiibo-data.bin" ~/.config/rom-properties/
   - sh: cd ${APPVEYOR_BUILD_FOLDER}/build
   - sh: LD_LIBRARY_PATH=${APPVEYOR_BUILD_FOLDER}/build/lib ctest -V -C ${CONFIGURATION}
 
