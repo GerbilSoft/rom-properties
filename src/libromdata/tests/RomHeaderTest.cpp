@@ -616,25 +616,28 @@ extern "C" int gtest_main(int argc, TCHAR *argv[])
 	// If found, set the AmiiboData override.
 	TCHAR amiibo_data_bin_path[4096];
 	amiibo_data_bin_path[0] = _T('\0');
-	if (!_taccess(_T("amiibo-data.bin"), R_OK)) {
+#define AMIIBO_DATA_BIN_BASE _T("amiibo-data.bin")
+#define AMIIBO_DATA_BIN_WITH_BIN_DIR _T("bin") DIR_SEP_STR AMIIBO_DATA_BIN_BASE
+#define AMIIBO_DATA_BIN_WITH_DOTDOT_DOTDOT_DOTDOT_BIN_DIR _T("..") DIR_SEP_STR _T("..") DIR_SEP_STR _T("..") DIR_SEP_STR AMIIBO_DATA_BIN_WITH_BIN_DIR
+	if (!_taccess(AMIIBO_DATA_BIN_BASE, R_OK)) {
 		// Found in the current directory.
 		_tgetcwd(amiibo_data_bin_path, ARRAY_SIZE(amiibo_data_bin_path));
 		if (_tcslen(amiibo_data_bin_path) < (ARRAY_SIZE(amiibo_data_bin_path) - 32)) {
-			_tcscat(amiibo_data_bin_path, DIR_SEP_STR _T("amiibo-data.bin"));
+			_tcscat(amiibo_data_bin_path, DIR_SEP_STR AMIIBO_DATA_BIN_BASE);
 		}
-	} else if (!_taccess(_T("bin") DIR_SEP_STR _T("amiibo-data.bin"), R_OK)) {
+	} else if (!_taccess(AMIIBO_DATA_BIN_WITH_BIN_DIR, R_OK)) {
 		// Found in the current directory.
 		_tgetcwd(amiibo_data_bin_path, ARRAY_SIZE(amiibo_data_bin_path));
 		if (_tcslen(amiibo_data_bin_path) < (ARRAY_SIZE(amiibo_data_bin_path) - 32)) {
-			_tcscat(amiibo_data_bin_path, DIR_SEP_STR _T("bin") DIR_SEP_STR _T("amiibo-data.bin"));
+			_tcscat(amiibo_data_bin_path, DIR_SEP_STR AMIIBO_DATA_BIN_WITH_BIN_DIR);
 		}
 	}
 #ifndef _WIN32
-	else if (!_taccess(_T("..") DIR_SEP_STR _T("..") DIR_SEP_STR _T("..") DIR_SEP_STR _T("bin") DIR_SEP_STR _T("amiibo-data.bin"), R_OK)) {
+	else if (!_taccess(AMIIBO_DATA_BIN_WITH_DOTDOT_DOTDOT_DOTDOT_BIN_DIR, R_OK)) {
 		// We're in ${CMAKE_CURRENT_BINARY_DIR}.
 		_tgetcwd(amiibo_data_bin_path, ARRAY_SIZE(amiibo_data_bin_path));
 		if (_tcslen(amiibo_data_bin_path) < (ARRAY_SIZE(amiibo_data_bin_path) - 32)) {
-			_tcscat(amiibo_data_bin_path, DIR_SEP_STR _T("..") DIR_SEP_STR _T("..") DIR_SEP_STR _T("..") DIR_SEP_STR _T("bin") DIR_SEP_STR _T("amiibo-data.bin"));
+			_tcscat(amiibo_data_bin_path, DIR_SEP_STR AMIIBO_DATA_BIN_WITH_DOTDOT_DOTDOT_DOTDOT_BIN_DIR);
 		}
 	}
 #endif /* !_WIN32 */
