@@ -11,7 +11,6 @@
 #include "AmiiboData.hpp"
 
 #include "byteswap_rp.h"
-#include "tcharx.h"
 #include "../../amiibo-data/amiibo_bin_structs.h"
 
 // OS-specific includes
@@ -69,6 +68,7 @@ namespace LibRomData {
 class AmiiboDataPrivate {
 	public:
 		AmiiboDataPrivate();
+		~AmiiboDataPrivate();
 
 	private:
 		RP_DISABLE_COPY(AmiiboDataPrivate)
@@ -101,6 +101,11 @@ class AmiiboDataPrivate {
 		uint32_t charVarTbl_count;
 		uint32_t aseriesTbl_count;
 		uint32_t amiiboIdTbl_count;
+
+	public:
+		// Overriden amiibo-data.bin filename
+		// NOTE: This is static so we don't have to export the entire class.
+		static TCHAR *amiibo_data_bin_override_filename;
 
 		// amiibo.bin timestamps
 		time_t amiibo_bin_check_ts;	// Last check timestamp
@@ -146,6 +151,10 @@ class AmiiboDataPrivate {
 // amiibo-data.bin filename
 #define AMIIBO_BIN_FILENAME "amiibo-data.bin"
 
+// Overriden amiibo-data.bin filename
+// NOTE: This is static so we don't have to export the entire class.
+TCHAR *AmiiboDataPrivate::amiibo_data_bin_override_filename = nullptr;
+
 AmiiboDataPrivate::AmiiboDataPrivate()
 	: pHeader(nullptr)
 	, pStrTbl(nullptr)
@@ -167,6 +176,13 @@ AmiiboDataPrivate::AmiiboDataPrivate()
 	// Loading amiibo-data.bin will be delayed until it's needed.
 }
 
+AmiiboDataPrivate::~AmiiboDataPrivate()
+{
+	// Clearing amiibo_data_bin_override_filename on unload.
+	free(amiibo_data_bin_override_filename);
+	amiibo_data_bin_override_filename = nullptr;
+}
+
 /**
  * Get an amiibo-data.bin filename.
  * @param amiiboBinFileType AmiiboBinFileType
@@ -174,6 +190,12 @@ AmiiboDataPrivate::AmiiboDataPrivate()
  */
 tstring AmiiboDataPrivate::getAmiiboBinFilename(AmiiboBinFileType amiiboBinFileType) const
 {
+	if (amiibo_data_bin_override_filename) {
+		// Overriding the filename.
+		// NOTE: amiiboBinFileType is ignored here.
+		return {amiibo_data_bin_override_filename};
+	}
+
 	tstring tfilename;
 
 	switch (amiiboBinFileType) {
@@ -253,9 +275,6 @@ tstring AmiiboDataPrivate::getAmiiboBinFilename(AmiiboBinFileType amiiboBinFileT
  */
 int AmiiboDataPrivate::loadIfNeeded(void)
 {
-	// Determine the amiibo-data.bin file to load.
-	tstring tfilename;
-
 	const time_t now = time(nullptr);
 	if (!amiibo_bin_data.empty()) {
 		// amiibo data is already loaded.
@@ -264,6 +283,8 @@ int AmiiboDataPrivate::loadIfNeeded(void)
 			return 0;
 		}
 	}
+
+	// Determine the amiibo-data.bin file to load.
 
 	// Check the following paths:
 	// - ~/.config/rom-properties/amiibo-data.bin (user override)
@@ -276,7 +297,7 @@ int AmiiboDataPrivate::loadIfNeeded(void)
 	bool ok = false;	// Set to true once a valid file is found.
 
 	// Check the user filename.
-	tfilename = getAmiiboBinFilename(AmiiboBinFileType::User);
+	tstring tfilename = getAmiiboBinFilename(AmiiboBinFileType::User);
 	if (!tfilename.empty()) {
 		// Check the mtime to see if we need to reload it.
 		int ret = FileSystem::get_mtime(tfilename, &mtime);
@@ -473,6 +494,8 @@ int AmiiboDataPrivate::loadIfNeeded(void)
  */
 void AmiiboDataPrivate::clear(void)
 {
+	// NOTE: amiibo_data_bin_override_filename is *not* cleared here.
+
 	amiibo_bin_check_ts = -1;
 	amiibo_bin_file_ts = -1;
 	amiiboBinFileType = AmiiboBinFileType::None;
@@ -542,6 +565,23 @@ AmiiboData *AmiiboData::instance(void)
 
 	// Return the singleton instance.
 	return q;
+}
+
+/**
+ * Override the amiibo-data.bin filename.
+ * Used for unit testing.
+ * @param filename amiibo-data.bin filename to use
+ */
+void AmiiboData::overrideAmiiboDataBinFilename(const TCHAR *filename)
+{
+	if (AmiiboDataPrivate::amiibo_data_bin_override_filename) {
+		free(AmiiboDataPrivate::amiibo_data_bin_override_filename);
+		AmiiboDataPrivate::amiibo_data_bin_override_filename = nullptr;
+	}
+
+	if (filename) {
+		AmiiboDataPrivate::amiibo_data_bin_override_filename = _tcsdup(filename);
+	}
 }
 
 /**

@@ -66,6 +66,7 @@ typedef char TCHAR;
 #define _ttol(nptr)			atol(nptr)
 
 // string.h
+#define _tcscat(dst, src)		strcat((dst), (src))
 #define _tcschr(s, c)			strchr((s), (c))
 #define _tcscmp(s1, s2)			strcmp((s1), (s2))
 #define _tcsdup(s)			strdup(s)
@@ -73,6 +74,9 @@ typedef char TCHAR;
 #define _tcslen(s)			strlen(s)
 #define _tcsncmp(s1, s2, n)		strncmp((s1), (s2), (n))
 #define _tcsrchr(s, c)			strrchr((s), (c))
+
+// direct.h (unistd.h)
+#define _tgetcwd(buf, size)		getcwd((buf), (size))
 
 #endif /* _WIN32 */
 

@@ -17,6 +17,7 @@
 #include "microtar_zstd.h"
 
 // Other rom-properties libraries
+#include "libromdata/data/AmiiboData.hpp"
 #include "libromdata/RomDataFactory.hpp"
 #include "librpbase/RomData.hpp"
 #include "librpbase/TextOut.hpp"
@@ -610,6 +611,31 @@ extern "C" int gtest_main(int argc, TCHAR *argv[])
 {
 	fprintf(stderr, "LibRomData test suite: RomHeader tests.\n\n");
 	fflush(nullptr);
+
+	// Check for amiibo-data.bin in the current directory or bin/.
+	// If found, set the AmiiboData override.
+	TCHAR amiibo_data_bin_path[4096];
+	amiibo_data_bin_path[0] = _T('\0');
+	if (!_taccess(_T("amiibo-data.bin"), R_OK)) {
+		// Found in the current directory.
+		_tgetcwd(amiibo_data_bin_path, ARRAY_SIZE(amiibo_data_bin_path));
+		if (_tcslen(amiibo_data_bin_path) < (ARRAY_SIZE(amiibo_data_bin_path) - 32)) {
+			_tcscat(amiibo_data_bin_path, DIR_SEP_STR _T("amiibo-data.bin"));
+		}
+	} else if (!_taccess(_T("bin") DIR_SEP_STR _T("amiibo-data.bin"), R_OK)) {
+		// Found in the current directory.
+		_tgetcwd(amiibo_data_bin_path, ARRAY_SIZE(amiibo_data_bin_path));
+		if (_tcslen(amiibo_data_bin_path) < (ARRAY_SIZE(amiibo_data_bin_path) - 32)) {
+			_tcscat(amiibo_data_bin_path, DIR_SEP_STR _T("bin") DIR_SEP_STR _T("amiibo-data.bin"));
+		}
+	}
+	if (amiibo_data_bin_path[0] != _T('\0')) {
+		fputs("Setting amiibo-data.bin override to:\n", stderr);
+		_fputts(amiibo_data_bin_path, stderr);
+		fputs("\n\n", stderr);
+
+		LibRomData::AmiiboData::overrideAmiiboDataBinFilename(amiibo_data_bin_path);
+	}
 
 	// Check for the RomHeaders directory and chdir() into it.
 #ifdef _WIN32
