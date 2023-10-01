@@ -347,6 +347,7 @@ https://github.com/GerbilSoft/rom-properties/issues
 * @TheOneGoofAli: Russian
 * @NotaInutilis: French
 * @xxmichibxx: German
+* @ThePBone: German
 
 ### Other Contributions
 

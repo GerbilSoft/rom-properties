@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties 2.2+\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2023-08-27 15:54-0400\n"
-"PO-Revision-Date: 2023-07-23 20:06\n"
+"PO-Revision-Date: 2023-09-14 13:28\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
 "Language: de\n"
@@ -72,7 +72,7 @@ msgid ""
 "ROM Properties Page maintains its own download cache for external images.\n"
 "Clearing this cache will force external images to be redownloaded."
 msgstr ""
-"ROM-Eigenschaften Seite unterhält einen eigenen Download-Cache für externe "
+"ROM Properties Seite unterhält einen eigenen Download-Cache für externe "
 "Bilder.\n"
 "Wenn Sie diesen Cache löschen, müssen die externen Bilder erneut "
 "heruntergeladen werden."
@@ -88,7 +88,7 @@ msgstr "Löschen Sie den Download Cache der ROM-Eigenschaften Seite"
 #: ../src/win32/config/ConfigDialog.cpp:238
 msgctxt "ConfigDialog"
 msgid "ROM Properties Page configuration"
-msgstr "Konfiguration der ROM-Eigenschaften Seite"
+msgstr "Konfiguration der ROM Properties Seite"
 
 #: ../build/src/kde/kf5/ui_ConfigDialog.h:91
 #: ../src/gtk/config/ConfigDialog.cpp:239
@@ -395,7 +395,7 @@ msgid ""
 "<b>ROM Properties Page</b>\n"
 "Shell Extension"
 msgstr ""
-"<b>ROM-Eigenschaften Seite</b>"
+"<b>ROM-Eigenschaften Seite</b>\n"
 "Shell-Erweiterung"
 
 #: ../src/gtk/config/AboutTab.cpp:451 ../src/kde/config/AboutTab.cpp:173
@@ -968,7 +968,7 @@ msgctxt "ServiceMenu"
 msgid "Convert the selected texture file to PNG format."
 msgid_plural "Convert the selected texture files to PNG format."
 msgstr[0] ""
-msgstr[1] ""
+msgstr[1] "Konvertiere die ausgewählten Textur-Dateien in das PNG Format."
 
 #. tr: Tab title.
 #. tr: RomDataView tab title
@@ -1178,7 +1178,7 @@ msgstr "Alle Dateien|*|-"
 #, c-format
 msgctxt "Ext2AttrView"
 msgid "%c: %s"
-msgstr ""
+msgstr "%c: %s"
 
 #: ../src/gtk/xattr/XAttrView.cpp:149
 msgctxt "XAttrView"
@@ -2680,7 +2680,7 @@ msgstr "FEHLER: Ungültiger Common Key Index."
 #: ../src/libromdata/Console/GameCube.cpp:673
 msgctxt "Wii"
 msgid "Incrementing values"
-msgstr ""
+msgstr "Inkrementiere Werte"
 
 #: ../src/libromdata/Console/GameCube.cpp:678
 msgctxt "GameCube"
@@ -3318,7 +3318,7 @@ msgstr "Format"
 #, c-format
 msgctxt "NES|Format"
 msgid "%s (Wii U Virtual Console)"
-msgstr ""
+msgstr "%s (Wii U Virtual Console)"
 
 #: ../src/libromdata/Console/NES.cpp:1142
 msgctxt "NES"
@@ -3718,22 +3718,22 @@ msgstr ""
 #: ../src/libromdata/Console/NES.cpp:1486
 msgctxt "NES"
 msgid "Internal Name"
-msgstr ""
+msgstr "Interner Name"
 
 #: ../src/libromdata/Console/NES.cpp:1491
 msgctxt "NES"
 msgid "PRG Checksum"
-msgstr ""
+msgstr "PRG-Prüfsumme"
 
 #: ../src/libromdata/Console/NES.cpp:1496
 msgctxt "NES"
 msgid "CHR Checksum"
-msgstr ""
+msgstr "CHR-Prüfsumme"
 
 #: ../src/libromdata/Console/NES.cpp:1560
 msgctxt "NES"
 msgid "Board Type"
-msgstr ""
+msgstr "Boardtyp"
 
 #: ../src/libromdata/Console/PlayStationDisc.cpp:721
 msgctxt "PlayStationDisc"
@@ -3743,17 +3743,17 @@ msgstr "Boot Dateiname"
 #: ../src/libromdata/Console/PlayStationDisc.cpp:725
 msgctxt "PlayStationDisc"
 msgid "Boot Argument"
-msgstr ""
+msgstr "Startargument"
 
 #: ../src/libromdata/Console/PlayStationDisc.cpp:735
 msgctxt "PlayStationDisc"
 msgid "Max Thread Count"
-msgstr ""
+msgstr "Max. Thread-Anzahl"
 
 #: ../src/libromdata/Console/PlayStationDisc.cpp:741
 msgctxt "PlayStationDisc"
 msgid "Max Event Count"
-msgstr ""
+msgstr "Max. Event-Anzahl"
 
 #: ../src/libromdata/Console/PlayStationDisc.cpp:750
 msgctxt "PlayStationDisc"
@@ -3788,17 +3788,17 @@ msgstr ""
 #: ../src/libromdata/Console/PlayStationDisc.cpp:817
 msgctxt "PlayStationDisc"
 msgid "Copyright Holder"
-msgstr ""
+msgstr "Urheberrechtsinhaber"
 
 #: ../src/libromdata/Console/PlayStationDisc.cpp:823
 msgctxt "PlayStationDisc"
 msgid "Creation Date"
-msgstr ""
+msgstr "Erstellungsdatum"
 
 #: ../src/libromdata/Console/PlayStationDisc.cpp:832
 msgctxt "PlayStationDisc"
 msgid "Drive Vendor"
-msgstr ""
+msgstr "Laufwerkshersteller"
 
 #: ../src/libromdata/Console/PlayStationDisc.cpp:835
 msgctxt "PlayStationDisc"
@@ -3908,7 +3908,7 @@ msgstr ""
 #: ../src/libromdata/Console/Sega8Bit.cpp:444
 msgctxt "Sega8Bit"
 msgid "Build Time"
-msgstr ""
+msgstr "Build-Zeit"
 
 #: ../src/libromdata/Console/Sega8Bit.cpp:451
 msgctxt "Sega8Bit"
@@ -3933,7 +3933,7 @@ msgstr ""
 #: ../src/libromdata/Console/Sega8Bit.cpp:480
 msgctxt "Sega8Bit"
 msgid "Build Date"
-msgstr ""
+msgstr "Build-Datum"
 
 #: ../src/libromdata/Console/Sega8Bit.cpp:486
 #: ../src/librptexture/fileformat/TGA.cpp:821
@@ -4126,22 +4126,22 @@ msgstr ""
 #: ../src/libromdata/Console/SNES.cpp:1487
 msgctxt "SNES"
 msgid "Unlimited"
-msgstr ""
+msgstr "Unbegrenzt"
 
 #: ../src/libromdata/Console/SufamiTurbo.cpp:383
 msgctxt "SufamiTurbo"
 msgid "Features"
-msgstr ""
+msgstr "Funktionen"
 
 #: ../src/libromdata/Console/SufamiTurbo.cpp:387
 msgctxt "SufamiTurbo"
 msgid "ROM Size"
-msgstr ""
+msgstr "ROM-Größe"
 
 #: ../src/libromdata/Console/SufamiTurbo.cpp:391
 msgctxt "SufamiTurbo"
 msgid "SRAM Size"
-msgstr ""
+msgstr "SRAM-Größe"
 
 #: ../src/libromdata/Console/WiiSave.cpp:457
 msgctxt "WiiSave"
@@ -4151,12 +4151,12 @@ msgstr ""
 #: ../src/libromdata/Console/WiiSave.cpp:498
 msgctxt "WiiSave"
 msgid "Permissions"
-msgstr ""
+msgstr "Berechtigungen"
 
 #: ../src/libromdata/Console/WiiSave.cpp:507
 msgctxt "WiiSave|Flags"
 msgid "No Copy from NAND"
-msgstr ""
+msgstr "Keine Kopie vom NAND"
 
 #: ../src/libromdata/Console/WiiSave.cpp:512
 msgctxt "WiiSave"
@@ -4172,13 +4172,13 @@ msgstr "MAC-Adresse"
 #, c-format
 msgctxt "RomData"
 msgid "Unknown (%.4s)"
-msgstr ""
+msgstr "Unbekannt (%.4s)"
 
 #: ../src/libromdata/Console/WiiU.cpp:419
 #, c-format
 msgctxt "RomData"
 msgid "Unknown (%02X %02X %02X %02X)"
-msgstr ""
+msgstr "Unbekannt (%02X %02X %02X %02X)"
 
 #: ../src/libromdata/Console/WiiU.cpp:440
 msgctxt "WiiU"
@@ -4193,17 +4193,17 @@ msgstr ""
 #: ../src/libromdata/Console/WiiWAD.cpp:835
 msgctxt "WiiWAD"
 msgid "Warning"
-msgstr ""
+msgstr "Warnung"
 
 #: ../src/libromdata/Console/WiiWAD.cpp:866
 msgctxt "WiiWAD"
 msgid "BroadOn WAD Format"
-msgstr ""
+msgstr "BroadOn WAD Format"
 
 #: ../src/libromdata/Console/WiiWAD.cpp:873
 msgctxt "WiiWAD"
 msgid "Type"
-msgstr ""
+msgstr "Typ"
 
 #: ../src/libromdata/Console/WiiWAD.cpp:904
 msgctxt "Nintendo"
@@ -4238,7 +4238,7 @@ msgstr ""
 #: ../src/libromdata/Console/WiiWAD.cpp:1075
 msgctxt "WiiWAD"
 msgid "Console ID"
-msgstr ""
+msgstr "Konsolen-ID"
 
 #: ../src/libromdata/Console/WiiWAD.cpp:1102
 msgctxt "WiiWAD"
@@ -4248,7 +4248,7 @@ msgstr "Spiel Info"
 #: ../src/libromdata/Console/WiiWAD_ops.cpp:46
 msgctxt "WiiWAD|RomOps"
 msgid "Extract Nintendo DS SRL File"
-msgstr ""
+msgstr "Nintendo DS SRL-Datei extrahieren"
 
 #: ../src/libromdata/Console/WiiWAD_ops.cpp:47
 msgctxt "WiiWAD|RomOps"
@@ -4256,6 +4256,8 @@ msgid ""
 "Nintendo DS SRL Files|*.nds;*.srl|application/x-nintendo-ds-rom;application/"
 "x-nintendo-dsi-rom"
 msgstr ""
+"Nintendo DS SRL-Dateien|*.nds;*.srl|application/x-nintendo-ds-rom;"
+"application/x-nintendo-dsi-rom"
 
 #: ../src/libromdata/Console/WiiWAD_ops.cpp:71
 #: ../src/libromdata/Console/WiiWAD_ops.cpp:100
@@ -4264,7 +4266,7 @@ msgstr ""
 #: ../src/libromdata/Handheld/NintendoDS_ops.cpp:598
 msgctxt "RomData"
 msgid "ROM operation ID is invalid for this object."
-msgstr ""
+msgstr "ROM-Operation-ID ist für dieses Objekt ungültig."
 
 #: ../src/libromdata/Console/WiiWAD_ops.cpp:78
 #: ../src/libromdata/Handheld/Nintendo3DS_ops.cpp:79
@@ -4426,7 +4428,7 @@ msgstr ""
 #: ../src/libromdata/Console/Xbox360_XDBF.cpp:838
 msgctxt "Xbox360_XDBF|TitleType"
 msgid "Full Game"
-msgstr ""
+msgstr "Komplettes Spiel"
 
 #: ../src/libromdata/Console/Xbox360_XDBF.cpp:839
 msgctxt "Xbox360_XDBF|TitleType"
@@ -5153,27 +5155,27 @@ msgstr ""
 #: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:82
 msgctxt "Nintendo3DSSysTitles"
 msgid "amiibo Settings"
-msgstr ""
+msgstr "amiibo Einstellungen"
 
 #: ../src/libromdata/data/Xbox360_STFS_ContentType.cpp:25
 msgctxt "Xbox360_STFS|ContentType"
 msgid "Saved Game"
-msgstr ""
+msgstr "Gespeichertes Spiel"
 
 #: ../src/libromdata/data/Xbox360_STFS_ContentType.cpp:26
 msgctxt "Xbox360_STFS|ContentType"
 msgid "Marketplace Content"
-msgstr ""
+msgstr "Marktplatz-Inhalt"
 
 #: ../src/libromdata/data/Xbox360_STFS_ContentType.cpp:27
 msgctxt "Xbox360_STFS|ContentType"
 msgid "Publisher"
-msgstr ""
+msgstr "Herausgeber"
 
 #: ../src/libromdata/data/Xbox360_STFS_ContentType.cpp:28
 msgctxt "Xbox360_STFS|ContentType"
 msgid "Xbox 360 Game"
-msgstr ""
+msgstr "Xbox 360 Spiel"
 
 #: ../src/libromdata/data/Xbox360_STFS_ContentType.cpp:29
 msgctxt "Xbox360_STFS|ContentType"
@@ -5188,12 +5190,12 @@ msgstr "Installiertes Spiel"
 #: ../src/libromdata/data/Xbox360_STFS_ContentType.cpp:31
 msgctxt "Xbox360_STFS|ContentType"
 msgid "Original Xbox Game"
-msgstr ""
+msgstr "Originales Xbox Spiel"
 
 #: ../src/libromdata/data/Xbox360_STFS_ContentType.cpp:32
 msgctxt "Xbox360_STFS|ContentType"
 msgid "Avatar Item"
-msgstr ""
+msgstr "Avatar-Artikel"
 
 #: ../src/libromdata/data/Xbox360_STFS_ContentType.cpp:33
 msgctxt "Xbox360_STFS|ContentType"
@@ -5203,17 +5205,17 @@ msgstr "Profil"
 #: ../src/libromdata/data/Xbox360_STFS_ContentType.cpp:34
 msgctxt "Xbox360_STFS|ContentType"
 msgid "Gamer Picture"
-msgstr ""
+msgstr "Spielerbild"
 
 #: ../src/libromdata/data/Xbox360_STFS_ContentType.cpp:35
 msgctxt "Xbox360_STFS|ContentType"
 msgid "Theme"
-msgstr ""
+msgstr "Design"
 
 #: ../src/libromdata/data/Xbox360_STFS_ContentType.cpp:36
 msgctxt "Xbox360_STFS|ContentType"
 msgid "Cache File"
-msgstr ""
+msgstr "Cachedatei"
 
 #: ../src/libromdata/data/Xbox360_STFS_ContentType.cpp:37
 msgctxt "Xbox360_STFS|ContentType"
@@ -7962,10 +7964,9 @@ msgid "Mipmap Count"
 msgstr ""
 
 #: ../src/libromdata/Other/Wim.cpp:229
-#, fuzzy
 msgctxt "Wim"
 msgid "(unknown)"
-msgstr "Unbekannt"
+msgstr "(unbekannt)"
 
 #: ../src/libromdata/Other/Wim.cpp:313
 msgctxt "Wim"
@@ -7975,12 +7976,12 @@ msgstr "(keine)"
 #: ../src/libromdata/Other/Wim.cpp:406
 msgctxt "Wim|Images"
 msgid "#"
-msgstr "#"
+msgstr ""
 
 #: ../src/libromdata/Other/Wim.cpp:407
 msgctxt "Wim|Images"
 msgid "Name"
-msgstr "Name"
+msgstr ""
 
 #: ../src/libromdata/Other/Wim.cpp:408
 msgctxt "Wim|Images"
@@ -8005,7 +8006,7 @@ msgstr "Zuletzt bearbeitet"
 #: ../src/libromdata/Other/Wim.cpp:412
 msgctxt "Wim|Images"
 msgid "OS Version"
-msgstr "OS Version"
+msgstr ""
 
 #: ../src/libromdata/Other/Wim.cpp:413
 msgctxt "Wim|Images"
@@ -8030,7 +8031,7 @@ msgstr ""
 #: ../src/libromdata/Other/Wim.cpp:609
 msgctxt "Wim"
 msgid "WIM Version"
-msgstr "WIM Version"
+msgstr ""
 
 #: ../src/libromdata/Other/Wim.cpp:618
 msgctxt "Wim|Flags"
@@ -8798,7 +8799,7 @@ msgstr ""
 #: ../src/librpfile/xattr/Ext2AttrData.c:80
 msgctxt "Ext2AttrView"
 msgid "DAX"
-msgstr "DAX"
+msgstr ""
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:81
 msgctxt "Ext2AttrView"
@@ -8808,7 +8809,7 @@ msgstr "Direkter Zugang"
 #: ../src/librpfile/xattr/Ext2AttrData.c:83
 msgctxt "Ext2AttrView"
 msgid "fs-verity"
-msgstr "fs-verity"
+msgstr ""
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:84
 msgctxt "Ext2AttrView"
