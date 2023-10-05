@@ -18,6 +18,13 @@
 // C++ STL classes
 using std::string;
 
+// Simple struct for passing multiple values to the rpGtk_getFileName_int() callback functions.
+typedef struct _rpGtk_getFileName_int_callback_data_t {
+	rpGtk_fileDialogCallback callback;
+	gpointer user_data;
+	bool bSave;
+} rpGtk_getFileName_int_callback_data_t;
+
 /**
  * Convert an RP file dialog filter to GtkFileFilter objects.
  *
@@ -70,6 +77,7 @@ static GtkFileFilter *rpFileFilterToGtk_int(const gchar *const *pStrv)
 	return fileFilter;
 }
 
+#ifndef USE_GTK4_FILE_DIALOG
 /**
  * Convert an RP file dialog filter to GTK2/GTK3 for GtkFileChooser.
  *
@@ -129,8 +137,9 @@ static int rpFileFilterToGtkFileChooser(GtkFileChooser *fileChooser, const char 
 	g_strfreev(strv);
 	return ret;
 }
+#endif /* !USE_GTK4_FILE_DIALOG */
 
-#if GTK_CHECK_VERSION(4,9,1)
+#if USE_GTK4_FILE_DIALOG
 /**
  * Convert an RP file dialog filter to GTK4 for GtkFileDialog.
  *
@@ -200,16 +209,7 @@ static int rpFileFilterToGtkFileDialog(GtkFileDialog *fileDialog, const char *fi
 	g_strfreev(strv);
 	return ret;
 }
-#endif /* GTK_CHECK_VERSION(4,9,1) */
 
-// Simple struct for passing multiple values to the rpGtk_getFileName_int() callback functions.
-typedef struct _rpGtk_getFileName_int_callback_data_t {
-	rpGtk_fileDialogCallback callback;
-	gpointer user_data;
-	bool bSave;
-} rpGtk_getFileName_int_callback_data_t;
-
-#if USE_GTK4_FILE_DIALOG
 /**
  * Callback from rpGtk_getFileName_int(). (GtkFileDialog version)
  * @param fileDialog GtkFileDialog
@@ -313,10 +313,6 @@ static int rpGtk_getFileName_int(const rpGtk_getFileName_t *gfndata, bool bSave)
 #  endif /* !USE_GTK4_FILE_DIALOG */
                         g_object_unref(set_file);
 		}
-	}
-
-	// Set the initial name.
-	if (gfndata->init_name) {
 	}
 #else /* !GTK_CHECK_VERSION(4,0,0) */
 	// GTK2/GTK3: Require overwrite confirmation. (save dialogs only)
