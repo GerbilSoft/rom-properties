@@ -59,7 +59,7 @@ class ListDataModelPrivate
 		// NOTE: References to rp_image* are kept in case
 		// the icon size is changed.
 		vector<QPixmap> icons;
-		vector<rp_image_const_ptr > icons_rp;
+		vector<rp_image_const_ptr> icons_rp;
 		QSize iconSize;
 
 		// Qt::ItemFlags
@@ -228,7 +228,11 @@ vector<QString> ListDataModelPrivate::convertListDataToVector(const RomFields::L
 
 				QString str = formatDateTime(time_string.time,
 					listDataDesc.col_attrs.dtflags);
-				data.emplace_back(likely(!str.isEmpty()) ? str : U82Q(C_("RomData", "Unknown")));
+				if (likely(!str.isEmpty())) {
+					data.emplace_back(std::move(str));
+				} else {
+					data.emplace_back(U82Q(C_("RomData", "Unknown")));
+				}
 			} else {
 				data.emplace_back(U82Q(u8_str));
 			}
@@ -383,7 +387,6 @@ QVariant ListDataModel::data(const QModelIndex& index, int role) const
 	if (row < 0 || row >= d->rowCount || column < 0 || column >= d->columnCount)
 		return {};
 
-	// TODO: Icon/checkbox.
 	switch (role) {
 		case Qt::DisplayRole:
 			return d->pData->at((row * d->columnCount) + column);
@@ -429,6 +432,7 @@ Qt::ItemFlags ListDataModel::flags(const QModelIndex& index) const
 	Q_D(const ListDataModel);
 	if (!index.isValid() || !d->pData)
 		return Qt::NoItemFlags;
+
 	const int row = index.row();
 	const int column = index.column();
 	if (row < 0 || row >= d->rowCount || column < 0 || column >= d->columnCount)
@@ -574,13 +578,13 @@ void ListDataModel::setField(const RomFields::Field *pField)
 	d->columnCount = columnCount;
 	endInsertColumns();
 
-	// Checkboxes.
+	// Checkboxes
 	if (hasCheckboxes) {
 		d->checkboxes = pField->data.list_data.mxd.checkboxes;
 		d->hasCheckboxes = true;
 	}
 
-	// Set Qt::ItemFlags.
+	// Set Qt::ItemFlags
 	if (hasIcons) {
 		d->itemFlags = Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsDragEnabled;
 	} else {

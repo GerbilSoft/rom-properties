@@ -767,7 +767,11 @@ void RomDataViewPrivate::updateMulti(uint32_t user_lc)
 		// Get the string and update the text.
 		const string *const pStr = RomFields::getFromStringMulti(pStr_multi, def_lc, user_lc);
 		assert(pStr != nullptr);
-		lblString->setText(pStr ? U82Q(*pStr) : QString());
+		if (pStr) {
+			lblString->setText(U82Q(*pStr));
+		} else {
+			lblString->clear();
+		}
 	}
 
 	// RFT_LISTDATA_MULTI
@@ -905,7 +909,7 @@ void RomDataViewPrivate::initDisplayWidgets(void)
 		ui.tabWidget->show();
 		for (int i = 0; i < tabCount; i++) {
 			// Create a tab.
-			const char *name = pFields->tabName(i);
+			const char *const name = pFields->tabName(i);
 			if (!name) {
 				// Skip this tab.
 				continue;
@@ -1217,7 +1221,7 @@ bool RomDataView::eventFilter(QObject *object, QEvent *event)
 	return false;
 }
 
-/** Widget slots. **/
+/** Widget slots **/
 
 /**
  * Disable user modification of RFT_BITFIELD checkboxes.
