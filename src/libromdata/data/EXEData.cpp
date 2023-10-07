@@ -51,7 +51,7 @@ static const MachineType machineTypes_PE[] = {
 	{IMAGE_FILE_MACHINE_MIPSFPU,	"MIPS with FPU"},
 	{IMAGE_FILE_MACHINE_MIPSFPU16,	"MIPS16 with FPU"},
 	{IMAGE_FILE_MACHINE_TRICORE,	"Infineon TriCore"},
-	{IMAGE_FILE_MACHINE_POWERPCBE,	"PowerPC (big-endian)"},
+	{IMAGE_FILE_MACHINE_MPPC_601,	"PowerPC (big-endian)"},
 	{IMAGE_FILE_MACHINE_CEF,	"Common Executable Format"},
 	{IMAGE_FILE_MACHINE_EBC,	"EFI Byte Code"},
 	{IMAGE_FILE_MACHINE_RISCV32,	"RISC-V (32-bit address space)"},

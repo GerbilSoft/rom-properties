@@ -908,7 +908,7 @@ const char *EXE::systemName(unsigned int type) const
 						case IMAGE_FILE_MACHINE_I386:
 							// TODO: Verify for original Xbox.
 							return sysNames_Xbox[0][type & SYSNAME_TYPE_MASK];
-						case IMAGE_FILE_MACHINE_POWERPCBE:
+						case IMAGE_FILE_MACHINE_POWERPCBEX:
 							return sysNames_Xbox[1][type & SYSNAME_TYPE_MASK];
 						case IMAGE_FILE_MACHINE_AMD64:
 							// TODO: Verify for Xbox One.
@@ -1088,12 +1088,12 @@ int EXE::checkViewedAchievements(void) const
 	}
 
 	// Machine type should NOT be x86, amd64, CIL (.NET),
-	// or big-endian PPC (Xbox 360).
+	// or PowerPC big-endian (Xenon).
 	switch (le16_to_cpu(d->hdr.pe.FileHeader.Machine)) {
 		case IMAGE_FILE_MACHINE_I386:
 		case IMAGE_FILE_MACHINE_AMD64:
 		case IMAGE_FILE_MACHINE_CEE:
-		case IMAGE_FILE_MACHINE_POWERPCBE:
+		case IMAGE_FILE_MACHINE_POWERPCBEX:
 			return 0;
 		default:
 			break;

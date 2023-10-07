@@ -93,7 +93,7 @@ typedef enum {
 	IMAGE_FILE_MACHINE_MIPSFPU16	= 0x0466, /* MIPS16 with FPU */
 	IMAGE_FILE_MACHINE_AXP64	= IMAGE_FILE_MACHINE_ALPHA64, /* Alpha AXP (64-bit) */
 	IMAGE_FILE_MACHINE_TRICORE	= 0x0520, /* Infineon TriCore */
-	IMAGE_FILE_MACHINE_POWERPCBE	= 0x0601, /* PowerPC big-endian (MSVC for Mac) */
+	IMAGE_FILE_MACHINE_MPPC_601	= 0x0601, /* PowerPC big-endian (MSVC for Mac) */
 	IMAGE_FILE_MACHINE_CEF		= 0x0CEF, /* Common Executable Format (Windows CE) */
 	IMAGE_FILE_MACHINE_EBC		= 0x0EBC, /* EFI byte code */
 	IMAGE_FILE_MACHINE_RISCV32	= 0x5032, /* RISC-V 32-bit address space */
