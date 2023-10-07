@@ -37,6 +37,10 @@
   * Added mipmap support to the following texture format parsers:
     * KhronosKTX
     * DirectDrawSurface
+  * EXE: Add CPU type 0x0601 for PowerPC big-endian. (MSVC for Mac)
+    * Xbox 360 CPU is now "PowerPC (big-endian; Xenon)".
+    * Fixes #396: PE machine value 0x0601 == PowerPC big-endian (classic Mac)
+      * Reported by @Wack0.
 
 * Bug fixes:
   * Windows: Truncate ListView strings to a maximum of 259+1 characters. (259
