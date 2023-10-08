@@ -15,7 +15,6 @@
 // C++ includes
 #include <memory>
 using std::forward_list;
-using std::list;
 using std::unique_ptr;
 using std::tstring;
 
