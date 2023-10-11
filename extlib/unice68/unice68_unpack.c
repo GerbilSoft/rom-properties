@@ -142,7 +142,8 @@ static inline int get_1_bit(all_regs_t *R)
   r = (R->d7 & 255) << 1;
   B_CC(r & 255, bitfound);
 
-  chk_src_range(R,R->a5-1,R->a5-1);
+  if (chk_src_range(R,R->a5-1,R->a5-1))
+    return 0;
 
   r = (r>>8) + (*(--R->a5) << 1);
 bitfound:
