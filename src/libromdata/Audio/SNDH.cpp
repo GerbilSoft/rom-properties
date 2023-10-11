@@ -237,9 +237,14 @@ SNDHPrivate::TagData SNDHPrivate::parseTags(void)
 		if (sz != (size_t)fileSize) {
 			return tags;
 		}
-		int inbufsz = static_cast<int>(sz);
+
+		// unice68 uses a margin of 16 bytes.
+		static const int SNDH_SIZE_MARGIN = 16;
+		int inbufsz = static_cast<int>(fileSize);
 		int reqSize = unice68_depacked_size(inbuf.get(), &inbufsz);
-		if (reqSize <= 0) {
+		assert(reqSize > 0);
+		assert(abs(inbufsz - static_cast<int>(fileSize)) < SNDH_SIZE_MARGIN);
+		if (reqSize <= 0 || abs(inbufsz - static_cast<int>(fileSize)) >= SNDH_SIZE_MARGIN) {
 			return tags;
 		}
 		header.reset(new uint8_t[reqSize+1]);
