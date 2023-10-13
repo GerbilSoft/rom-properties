@@ -33,6 +33,8 @@
 # include <stdint.h>
 #endif
 
+#include <assert.h>
+
 typedef uint8_t u8;
 typedef  int8_t s8;
 typedef int16_t s16;
@@ -142,7 +144,10 @@ static inline int get_1_bit(all_regs_t *R)
   r = (R->d7 & 255) << 1;
   B_CC(r & 255, bitfound);
 
-  chk_src_range(R,R->a5-1,R->a5-1);
+  if (chk_src_range(R,R->a5-1,R->a5-1)) {
+    assert(!"chk_dst_range() failed");
+    return 0;
+  }
 
   r = (r>>8) + (*(--R->a5) << 1);
 bitfound:
@@ -488,7 +493,14 @@ less_40:
 
 depack_bytes:
   R->a1 = R->a6 + 2 + (s16)R->d4 + (s16)R->d1;
-  chk_dst_range(R, R->a6 - DBF_COUNT(R->d4) - 1, R->a6-1);
+  if (chk_dst_range(R, R->a6 - DBF_COUNT(R->d4) - 1, R->a6-1)) {
+    assert(!"chk_dst_range() failed");
+    return;
+  }
+  if (chk_src_range(R, R->a1 - DBF_COUNT(R->d4) - 1, R->a1-1)) {
+    assert(!"chk_dst_range() failed");
+    return;
+  }
   if (R->a6>R->a4) *(--R->a6) = *(--R->a1);
 dep_b:
   if (R->a6>R->a4) *(--R->a6) = *(--R->a1);

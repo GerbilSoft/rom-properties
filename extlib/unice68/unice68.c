@@ -179,8 +179,8 @@ static int print_usage(void)
       "Visit <" PACKAGE_URL ">\n"
       "Report bugs to <" PACKAGE_BUGREPORT ">\n",
       prg,
-      ice_d_version>>8, ice_d_version&255,
-      ice_p_version>>8, ice_p_version&255
+      (unsigned int)(ice_d_version>>8), (unsigned int)(ice_d_version&255),
+      (unsigned int)(ice_p_version>>8), (unsigned int)(ice_p_version&255)
       );
   return 0;
 }
@@ -643,7 +643,7 @@ int UNICE68_CDECL main(int argc, char *argv[])
     /* fall-through */
   case 'd':
     message(V, "ice depacking \"%s\" (%d bytes) ...\n", finp, ilen);
-    err = unice68_depacker(obuffer, ibuffer);
+    err = unice68_depacker(obuffer, olen, ibuffer, ilen);
     message(D, "depacking returns with %d\n", err);
     if (!err && mode =='s') {
       unsigned int hash2 = hash_buffer(obuffer, olen);
