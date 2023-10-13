@@ -11,8 +11,9 @@
 #include "common.h"
 #include "PIMGTYPE.hpp"
 
-// librpbase
+// librpbase, librptexture
 #include "librpbase/Achievements.hpp"
+#include "librptexture/img/rp_image.hpp"
 
 class AchSpritesheet {
 public:
@@ -21,8 +22,6 @@ public:
 	 * @param iconSize Icon size
 	 */
 	AchSpritesheet(int iconSize);
-
-	~AchSpritesheet();
 
 private:
 	RP_DISABLE_COPY(AchSpritesheet)
@@ -37,7 +36,7 @@ public:
 	PIMGTYPE getIcon(LibRpBase::Achievements::ID id, bool gray = false);
 
 private:
-	PIMGTYPE m_img;
-	PIMGTYPE m_imgGray;
+	LibRpTexture::rp_image_ptr m_img;
+	LibRpTexture::rp_image_ptr m_imgGray;
 	int m_iconSize;
 };

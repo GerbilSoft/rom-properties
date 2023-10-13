@@ -41,12 +41,12 @@ GdkTexture *GdkTextureConv::rp_image_to_GdkTexture(const rp_image *img)
 			// Create a GdkMemoryTexture using the original image data directly.
 			// NOTE: The data here technically isn't static, but we don't want to do *two* copies.
 			const int stride = img->stride();
-			GBytes *const bytes = g_bytes_new_static(img->bits(), img->data_len());
-			assert(bytes != nullptr);
-			if (bytes) {
+			GBytes *const pBytes = g_bytes_new_static(img->bits(), img->data_len());
+			assert(pBytes != nullptr);
+			if (pBytes) {
 				// TODO: Verify format.
-				texture = gdk_memory_texture_new(width, height, GDK_MEMORY_A8R8G8B8, bytes, stride);
-				g_bytes_unref(bytes);
+				texture = gdk_memory_texture_new(width, height, GDK_MEMORY_B8G8R8A8, pBytes, stride);
+				g_bytes_unref(pBytes);
 			}
 			break;
 		}
@@ -114,12 +114,12 @@ GdkTexture *GdkTextureConv::rp_image_to_GdkTexture(const rp_image *img)
 			}
 
 			// NOTE: The data here technically isn't static, but we don't want to do *two* copies.
-			GBytes *const bytes = g_bytes_new_static(dest_buf, data_len);
-			assert(bytes != nullptr);
-			if (bytes) {
+			GBytes *const pBytes = g_bytes_new_static(dest_buf, data_len);
+			assert(pBytes != nullptr);
+			if (pBytes) {
 				// TODO: Verify format.
-				texture = gdk_memory_texture_new(width, height, GDK_MEMORY_A8R8G8B8, bytes, width * sizeof(argb32_t));
-				g_bytes_unref(bytes);
+				texture = gdk_memory_texture_new(width, height, GDK_MEMORY_B8G8R8A8, pBytes, width * sizeof(argb32_t));
+				g_bytes_unref(pBytes);
 			}
 			free(dest_buf);
 			break;

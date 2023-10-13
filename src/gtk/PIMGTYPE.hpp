@@ -334,10 +334,21 @@ static inline PIMGTYPE PIMGTYPE_scale(PIMGTYPE pImgType, int width, int height, 
 
 /**
  * Load a PNG image from our glibresources.
+ * This version returns PIMGTYPE.
  * @param filename Filename within glibresources.
  * @return PIMGTYPE, or nullptr if not found.
  */
 PIMGTYPE PIMGTYPE_load_png_from_gresource(const char *filename);
+
+#ifdef __cplusplus
+/**
+ * Load a PNG image from our glibresources.
+ * This version returns rp_image_ptr.
+ * @param filename Filename within glibresources.
+ * @return rp_image_ptr, or nullptr if not found.
+ */
+LibRpTexture::rp_image_ptr rp_image_load_png_from_gresource(const char *filename);
+#endif /* __cplusplus */
 
 /**
  * Copy a subsurface from another PIMGTYPE.

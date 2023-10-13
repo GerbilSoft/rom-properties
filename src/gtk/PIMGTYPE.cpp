@@ -9,6 +9,17 @@
 #include "stdafx.h"
 #include "PIMGTYPE.hpp"
 
+// librpbase, librpfile, librptexture
+#include "librpbase/img/RpPng.hpp"
+#include "librpfile/MemFile.hpp"
+using namespace LibRpBase;
+using LibRpFile::IRpFile;
+using LibRpFile::MemFile;
+using LibRpTexture::rp_image_ptr;
+
+// C++ STL classes
+using std::shared_ptr;
+
 // glib resources
 // NOTE: glib-compile-resources doesn't have extern "C".
 G_BEGIN_DECLS
@@ -114,6 +125,7 @@ static void gbytes_destroy_notify(gpointer data)
 
 /**
  * Load a PNG image from our glibresources.
+ * This version returns PIMGTYPE.
  * @param filename Filename within glibresources.
  * @return PIMGTYPE, or nullptr if not found.
  */
@@ -158,6 +170,28 @@ PIMGTYPE PIMGTYPE_load_png_from_gresource(const char *filename)
 	g_object_unref(stream);
 	return pixbuf;
 #endif /* RP_GTK_USE_CAIRO */
+}
+
+/**
+ * Load a PNG image from our glibresources.
+ * This version returns rp_image.
+ * @param filename Filename within glibresources.
+ * @return rp_imgae_ptr, or nullptr if not found.
+ */
+rp_image_ptr rp_image_load_png_from_gresource(const char *filename)
+{
+	GBytes *const pBytes = g_resource_lookup_data(_get_resource(), filename,
+		G_RESOURCE_LOOKUP_FLAGS_NONE, nullptr);
+	if (!pBytes) {
+		// Not found.
+		return nullptr;
+	}
+
+	gsize size = 0;
+	gconstpointer data = g_bytes_get_data(pBytes, &size);
+	shared_ptr<IRpFile> memFile = std::make_shared<MemFile>(data, size);
+
+	return RpPng::load(memFile);
 }
 
 /**
