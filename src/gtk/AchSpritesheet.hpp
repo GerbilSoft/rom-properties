@@ -8,17 +8,36 @@
 
 #pragma once
 
+#include "common.h"
 #include "PIMGTYPE.hpp"
 
-namespace AchSpritesheet {
+// librpbase
+#include "librpbase/Achievements.hpp"
 
-/**
- * Load the specified Achievements icon sprite sheet.
- * Caller must free it after use.
- * @param gray If true, load the grayscale version.
- * @param iconSize Icon size. (16, 24, 32, 64)
- * @return PIMGTYPE, or nullptr on error.
- */
-PIMGTYPE load(int iconSize, bool gray = false);
+class AchSpritesheet {
+public:
+	/**
+	 * Achievements spritesheet
+	 * @param iconSize Icon size
+	 */
+	AchSpritesheet(int iconSize);
 
+	~AchSpritesheet();
+
+private:
+	RP_DISABLE_COPY(AchSpritesheet)
+
+public:
+	/**
+	 * Get an Achievements icon.
+	 * @param id Achievement ID
+	 * @param gray If true, load the grayscale version
+	 * @return Achievements icon, or nullptr on error. (caller must free the icon)
+	 */
+	PIMGTYPE getIcon(LibRpBase::Achievements::ID id, bool gray = false);
+
+private:
+	PIMGTYPE m_img;
+	PIMGTYPE m_imgGray;
+	int m_iconSize;
 };
