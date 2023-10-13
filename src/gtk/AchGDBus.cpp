@@ -18,7 +18,7 @@ using LibRpBase::Achievements;
 #include "Notifications.h"
 
 // Achievement spritesheets
-#include "AchSpritesheet.hpp"
+#include "AchSpriteSheet.hpp"
 
 // C++ STL classes.
 using std::string;
@@ -147,7 +147,7 @@ int AchGDBusPrivate::notifyFunc(Achievements::ID id)
 	// Get the icon.
 	// FIXME: Icon size. Using 32px for now.
 	static const gint iconSize = 32;
-	AchSpritesheet achSpritesheet(iconSize);
+	AchSpriteSheet achSpritesheet(iconSize);
 	PIMGTYPE icon = achSpritesheet.getIcon(id);
 	assert(icon != nullptr);
 	if (!icon) {

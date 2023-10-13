@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (GTK+)                             *
- * AchSpritesheet.hpp: Achievement spritesheets loader.                    *
+ * AchSpriteSheet.hpp: Achievement sprite sheets loader.                   *
  *                                                                         *
  * Copyright (c) 2020-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
@@ -15,16 +15,16 @@
 #include "librpbase/Achievements.hpp"
 #include "librptexture/img/rp_image.hpp"
 
-class AchSpritesheet {
+class AchSpriteSheet {
 public:
 	/**
 	 * Achievements spritesheet
 	 * @param iconSize Icon size
 	 */
-	AchSpritesheet(int iconSize);
+	AchSpriteSheet(int iconSize);
 
 private:
-	RP_DISABLE_COPY(AchSpritesheet)
+	RP_DISABLE_COPY(AchSpriteSheet)
 
 public:
 	/**

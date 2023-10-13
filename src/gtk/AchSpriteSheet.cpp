@@ -1,13 +1,13 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (GTK+)                             *
- * AchSpritesheet.hpp: Achievement spritesheets loader.                    *
+ * AchSpriteSheet.hpp: Achievement sprite sheets loader.                   *
  *                                                                         *
  * Copyright (c) 2020-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "stdafx.h"
-#include "AchSpritesheet.hpp"
+#include "AchSpriteSheet.hpp"
 
 // librpbase, librptexture
 using LibRpBase::Achievements;
@@ -19,7 +19,7 @@ using LibRpTexture::rp_image_ptr;
  * Achievements spritesheet
  * @param iconSize Icon size
  */
-AchSpritesheet::AchSpritesheet(int iconSize)
+AchSpriteSheet::AchSpriteSheet(int iconSize)
 	: m_iconSize(iconSize)
 {
 	assert(iconSize == 16 || iconSize == 24 || iconSize == 32 || iconSize == 64);
@@ -31,7 +31,7 @@ AchSpritesheet::AchSpritesheet(int iconSize)
  * @param gray If true, load the grayscale version
  * @return Achievements icon, or nullptr on error. (caller must free the icon)
  */
-PIMGTYPE AchSpritesheet::getIcon(Achievements::ID id, bool gray)
+PIMGTYPE AchSpriteSheet::getIcon(Achievements::ID id, bool gray)
 {
 	assert((int)id >= 0);
 	assert(id < Achievements::ID::Max);

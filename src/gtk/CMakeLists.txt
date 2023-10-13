@@ -98,7 +98,7 @@ SET(${PROJECT_NAME}_SRCS
 	gtk-compat.c
 	LanguageComboBox.cpp
 	OptionsMenuButton.cpp
-	AchSpritesheet.cpp
+	AchSpriteSheet.cpp
 	config/stub-export.c
 	config/ConfigDialog.cpp
 	config/RpConfigTab.c
@@ -129,7 +129,7 @@ SET(${PROJECT_NAME}_H
 	LanguageComboBox.hpp
 	OptionsMenuButton.hpp
 	check-uid.h
-	AchSpritesheet.hpp
+	AchSpriteSheet.hpp
 	gtk-i18n.h
 	config/ConfigDialog.hpp
 	config/RpConfigTab.h
