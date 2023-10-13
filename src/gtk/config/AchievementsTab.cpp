@@ -379,6 +379,9 @@ rp_achievements_tab_reset(RpAchievementsTab *tab)
 		}
 #endif /* USE_GTK_COLUMN_VIEW */
 	}
+
+	PIMGTYPE_unref(imgAchSheet);
+	PIMGTYPE_unref(imgAchGraySheet);
 }
 
 static void
