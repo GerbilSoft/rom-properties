@@ -908,7 +908,7 @@ const char *EXE::systemName(unsigned int type) const
 						case IMAGE_FILE_MACHINE_I386:
 							// TODO: Verify for original Xbox.
 							return sysNames_Xbox[0][type & SYSNAME_TYPE_MASK];
-						case IMAGE_FILE_MACHINE_POWERPCBEX:
+						case IMAGE_FILE_MACHINE_POWERPCBE:
 							return sysNames_Xbox[1][type & SYSNAME_TYPE_MASK];
 						case IMAGE_FILE_MACHINE_AMD64:
 							// TODO: Verify for Xbox One.
@@ -1093,7 +1093,7 @@ int EXE::checkViewedAchievements(void) const
 		case IMAGE_FILE_MACHINE_I386:
 		case IMAGE_FILE_MACHINE_AMD64:
 		case IMAGE_FILE_MACHINE_CEE:
-		case IMAGE_FILE_MACHINE_POWERPCBEX:
+		case IMAGE_FILE_MACHINE_POWERPCBE:
 			return 0;
 		default:
 			break;

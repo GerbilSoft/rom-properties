@@ -83,7 +83,7 @@ typedef enum {
 	IMAGE_FILE_MACHINE_AM33		= 0x01D3, /* Matsushita AM33 */
 	IMAGE_FILE_MACHINE_POWERPC	= 0x01F0, /* PowerPC little-endian */
 	IMAGE_FILE_MACHINE_POWERPCFP	= 0x01F1, /* PowerPC with floating point support */
-	IMAGE_FILE_MACHINE_POWERPCBEX	= 0x01F2, /* PowerPC big-endian (Xbox 360) */
+	IMAGE_FILE_MACHINE_POWERPCBE	= 0x01F2, /* PowerPC big-endian (Xbox 360) */
 	IMAGE_FILE_MACHINE_IA64		= 0x0200, /* Intel Itanium processor family */
 	IMAGE_FILE_MACHINE_MIPS16	= 0x0266, /* MIPS16 */
 	IMAGE_FILE_MACHINE_M68K		= 0x0268, /* Motorola 68000 */
