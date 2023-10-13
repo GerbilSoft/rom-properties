@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (GTK+)                             *
- * AchSpriteSheet.hpp: Achievement sprite sheets loader.                   *
+ * ISpriteSheet.hpp: Generic sprite sheets loader.                         *
  *                                                                         *
  * Copyright (c) 2020-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
@@ -11,22 +11,22 @@
 #include "common.h"
 #include "PIMGTYPE.hpp"
 
-// librpbase, librptexture
-#include "librpbase/Achievements.hpp"
+// librptexture
 #include "librptexture/img/rp_image.hpp"
 
-#include "ISpriteSheet.hpp"
-class AchSpriteSheet : public ISpriteSheet {
-public:
+class ISpriteSheet {
+protected:
 	/**
-	 * Achievements spritesheet
-	 * @param iconSize Icon size
+	 * Sprite sheet loader
+	 * @param cols Number of columns
+	 * @param rows Number of rows
+	 * @param width Icon width
+	 * @param height Icon height
 	 */
-	AchSpriteSheet(int iconSize);
+	ISpriteSheet(int cols, int rows, int width, int height);
 
 private:
-	typedef ISpriteSheet super;
-	RP_DISABLE_COPY(AchSpriteSheet)
+	RP_DISABLE_COPY(ISpriteSheet)
 
 protected:
 	/**
@@ -38,19 +38,20 @@ protected:
 	 * @param gray		If true, load the grayscale version
 	 * @return 0 on success; non-zero on error.
 	 */
-	int getFilename(char *buf, size_t size, int width, int height, bool gray = false) final;
+	virtual int getFilename(char *buf, size_t size, int width, int height, bool gray = false) = 0;
 
-public:
 	/**
-	 * Get an Achievements icon.
-	 * @param id Achievement ID
+	 * Get an icon from the sprite sheet.
+	 * @param col Column
+	 * @param row Row
 	 * @param gray If true, load the grayscale version
-	 * @return Achievements icon, or nullptr on error. (caller must free the icon)
+	 * @return Icon, or nullptr on error. (caller must free the icon)
 	 */
-	PIMGTYPE getIcon(LibRpBase::Achievements::ID id, bool gray = false);
+	PIMGTYPE getIcon(int col, int row, bool gray = false);
 
 private:
 	LibRpTexture::rp_image_ptr m_img;
 	LibRpTexture::rp_image_ptr m_imgGray;
-	int m_iconSize;
+	int m_cols, m_rows;
+	int m_width, m_height;
 };
