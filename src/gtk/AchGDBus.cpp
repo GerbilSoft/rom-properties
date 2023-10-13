@@ -147,8 +147,8 @@ int AchGDBusPrivate::notifyFunc(Achievements::ID id)
 	// Get the icon.
 	// FIXME: Icon size. Using 32px for now.
 	static const gint iconSize = 32;
-	AchSpriteSheet achSpritesheet(iconSize);
-	PIMGTYPE icon = achSpritesheet.getIcon(id);
+	AchSpriteSheet achSpriteSheet(iconSize);
+	PIMGTYPE icon = achSpriteSheet.getIcon(id);
 	assert(icon != nullptr);
 	if (!icon) {
 		// Unable to get the icon.

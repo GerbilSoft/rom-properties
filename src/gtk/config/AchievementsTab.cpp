@@ -314,7 +314,7 @@ rp_achievements_tab_reset(RpAchievementsTab *tab)
 	// NOTE: Assuming 32x32 icons for now.
 	// TODO: Check DPI and adjust on DPI changes?
 	static const gint iconSize = 32;
-	AchSpriteSheet achSpritesheet(iconSize);
+	AchSpriteSheet achSpriteSheet(iconSize);
 
 	// Pango 1.49.0 [2021/08/22] added percentage sizes.
 	// For older versions, we'll need to use 'smaller' instead.
@@ -332,7 +332,7 @@ rp_achievements_tab_reset(RpAchievementsTab *tab)
 		const bool unlocked = (timestamp != -1);
 
 		// Get the achievement icon.
-		PIMGTYPE icon = achSpritesheet.getIcon(id, !unlocked);
+		PIMGTYPE icon = achSpriteSheet.getIcon(id, !unlocked);
 		assert(icon != nullptr);
 
 		// Get the name and description.
