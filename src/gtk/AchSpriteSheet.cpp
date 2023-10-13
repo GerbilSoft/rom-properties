@@ -13,7 +13,7 @@
 using LibRpBase::Achievements;
 
 /**
- * Achievements spritesheet
+ * Achievements sprite sheet
  * @param iconSize Icon size
  */
 AchSpriteSheet::AchSpriteSheet(int iconSize)

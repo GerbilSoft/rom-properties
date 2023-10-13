@@ -19,7 +19,7 @@
 class AchSpriteSheet : public ISpriteSheet {
 public:
 	/**
-	 * Achievements spritesheet
+	 * Achievements sprite sheet
 	 * @param iconSize Icon size
 	 */
 	AchSpriteSheet(int iconSize);
