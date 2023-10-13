@@ -14,9 +14,8 @@ FIND_PACKAGE(GLib2 ${REQUIRE_GTK4} ${GLIB_MIN_VERSION})
 FIND_PACKAGE(GObject2 ${REQUIRE_GTK4} ${GLIB_MIN_VERSION})
 FIND_PACKAGE(GIO ${REQUIRE_GTK4} ${GLIB_MIN_VERSION})
 FIND_PACKAGE(GIO-UNIX ${REQUIRE_GTK4} ${GLIB_MIN_VERSION})
-FIND_PACKAGE(GdkPixbuf2 ${REQUIRE_GTK})	# GTK4 doesn't support Cairo. (TODO: GdkTexture)
 FIND_PACKAGE(GTK4 ${REQUIRE_GTK4})
-IF(GLib2_FOUND AND GObject2_FOUND AND GIO_FOUND AND GIO-UNIX_FOUND AND GdkPixbuf2_FOUND AND GTK4_FOUND)
+IF(GLib2_FOUND AND GObject2_FOUND AND GIO_FOUND AND GIO-UNIX_FOUND AND GTK4_FOUND)
 	# We're not going to have an explicit dependency on libnautilus-extension.
 	# It will be dlopen()'d at runtime based on which
 	# initialization function is called.
@@ -62,41 +61,15 @@ STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}_H    "${rom-properties-g
 STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}_GTK4MIN_SRCS "${rom-properties-gtk_GTK4MIN_SRCS}")
 STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}_GTK4MIN_H    "${rom-properties-gtk_GTK4MIN_H}")
 
-# GdkImageConv (GTK+ 2.x; TODO: Switch to GdkTexture)
-SET(${PROJECT_NAME}_SRCS ${${PROJECT_NAME}_SRCS} ../xfce/GdkImageConv.cpp)
-SET(${PROJECT_NAME}_H    ${${PROJECT_NAME}_H}    ../xfce/GdkImageConv.hpp)
+# GdkTextureConv (GTK 4.x)
+SET(${PROJECT_NAME}_SRCS ${${PROJECT_NAME}_SRCS} GdkTextureConv.cpp)
+SET(${PROJECT_NAME}_H    ${${PROJECT_NAME}_H}    GdkTextureConv.hpp)
 
 IF(ENABLE_ACHIEVEMENTS)
 	STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}-notify_SRCS "${rom-properties-gtk-notify_SRCS}")
 	STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}-notify_H    "${rom-properties-gtk-notify_H}")
 	SET(${PROJECT_NAME}-notify_SRCS ${${PROJECT_NAME}-notify_SRCS})
 ENDIF(ENABLE_ACHIEVEMENTS)
-
-# CPU-specific and optimized sources.
-INCLUDE(CPUInstructionSetFlags)
-IF(CPU_i386 OR CPU_amd64)
-	# IFUNC functionality
-	INCLUDE(CheckIfuncSupport)
-	CHECK_IFUNC_SUPPORT()
-	IF(HAVE_IFUNC)
-		SET(${PROJECT_NAME}_IFUNC_SRCS ../xfce/GdkImageConv_ifunc.cpp)
-	ENDIF(HAVE_IFUNC)
-
-	# NOTE: SSSE3 flags are set in subprojects, not here.
-	SET(${PROJECT_NAME}_SSSE3_SRCS ../xfce/GdkImageConv_ssse3.cpp)
-
-	IF(MSVC AND NOT CMAKE_CL_64)
-		SET(SSSE3_FLAG "/arch:SSE2")
-	ELSEIF(NOT MSVC)
-		# TODO: Other compilers?
-		SET(SSSE3_FLAG "-mssse3")
-	ENDIF()
-	IF(SSSE3_FLAG)
-		SET_SOURCE_FILES_PROPERTIES(${${PROJECT_NAME}_SSSE3_SRCS}
-			APPEND_STRING PROPERTIES COMPILE_FLAGS " ${SSSE3_FLAG} ")
-	ENDIF(SSSE3_FLAG)
-ENDIF()
-UNSET(arch)
 
 # Sources and headers. (GTK4-specific)
 SET(${PROJECT_NAME}_SRCS
@@ -156,7 +129,6 @@ IF(BUILD_GTK4)
 		)
 	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE rom-properties-glib)
 	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE romdata)
-	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE GdkPixbuf2::gdkpixbuf2)
 	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC GTK4::gtk GTK4::pango)
 	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC GLib2::gio-unix GLib2::gio GLib2::gobject GLib2::glib)
 	IF(HAVE_GSOUND)

@@ -126,7 +126,13 @@ PIMGTYPE PIMGTYPE_load_png_from_gresource(const char *filename)
 		return nullptr;
 	}
 
-#ifdef RP_GTK_USE_CAIRO
+#if defined(RP_GTK_USE_GDKTEXTURE)
+	// NOTE: GdkTexture does have return gdk_texture_new_from_resource(),
+	// but it isn't working with our internal resources.
+	PIMGTYPE texture = gdk_texture_new_from_bytes(pBytes, nullptr);
+	g_bytes_unref(pBytes);
+	return texture;
+#elif defined(RP_GTK_USE_CAIRO)
 	PIMGTYPE_CairoReadFunc_State_t state;
 	state.buf = static_cast<const uint8_t*>(g_bytes_get_data(pBytes, &state.size));
 	state.pos = 0;
@@ -140,7 +146,7 @@ PIMGTYPE PIMGTYPE_load_png_from_gresource(const char *filename)
 
 	g_bytes_unref(pBytes);
 	return surface;
-#else /* !RP_GTK_USE_CAIRO */
+#else /* GdkPixbuf */
 	// glib-2.34.0 has g_memory_input_stream_new_from_bytes().
 	// We'll use g_memory_input_stream_new_from_data() for compatibility.
 	gsize size;
@@ -165,7 +171,10 @@ PIMGTYPE PIMGTYPE_load_png_from_gresource(const char *filename)
  */
 PIMGTYPE PIMGTYPE_get_subsurface(PIMGTYPE pImgType, int x, int y, int width, int height)
 {
-#ifdef RP_GTK_USE_CAIRO
+#if defined(RP_GTK_USE_GDKTEXTURE)
+#  warning NOT SUPPORTED for GdkTexture right now...
+	return (PIMGTYPE)g_object_ref(pImgType);
+#elif defined(RP_GTK_USE_CAIRO)
 	// NOTE: cairo_surface_create_for_rectangle() creates a *view* within
 	// the original surface. This sort-of worked for flag icons, but it
 	// fails for achievement icons because we can't get the raw data.
@@ -192,7 +201,9 @@ PIMGTYPE PIMGTYPE_get_subsurface(PIMGTYPE pImgType, int x, int y, int width, int
 
 	cairo_destroy(cr);
 	return surface;
-#else /* !RP_GTK_USE_CAIRO */
+#else /* GdkPixbuf */
+	// NOTE: gdk_pixbuf_new_subpixbuf() creates a shallow copy,
+	// which we can't use here due to achievement icons.
 	PIMGTYPE surface = gdk_pixbuf_new(
 		gdk_pixbuf_get_colorspace(pImgType),
 		gdk_pixbuf_get_has_alpha(pImgType),
@@ -202,5 +213,5 @@ PIMGTYPE PIMGTYPE_get_subsurface(PIMGTYPE pImgType, int x, int y, int width, int
 		gdk_pixbuf_copy_area(pImgType, x, y, width, height, surface, 0, 0);
 	}
 	return surface;
-#endif /* RP_GTK_USE_CAIRO */
+#endif
 }

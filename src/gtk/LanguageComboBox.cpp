@@ -180,7 +180,7 @@ bind_listitem_cb(GtkListItemFactory	*factory,
 		return;
 	}
 
-	gtk_image_set_from_pixbuf(GTK_IMAGE(icon), rp_language_combo_box_item_get_icon(item));
+	gtk_image_set_from_paintable(GTK_IMAGE(icon), GDK_PAINTABLE(rp_language_combo_box_item_get_icon(item)));
 	gtk_label_set_text(GTK_LABEL(label), rp_language_combo_box_item_get_name(item));
 }
 #endif /* USE_GTK_DROP_DOWN */

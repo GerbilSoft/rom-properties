@@ -138,7 +138,7 @@ bind_listitem_cb(GtkListItemFactory *factory, GtkListItem *list_item, gpointer u
 	switch (GPOINTER_TO_INT(user_data)) {
 		case ACH_COL_ICON:
 			// Icon
-			gtk_image_set_from_pixbuf(GTK_IMAGE(widget), rp_achievement_item_get_icon(item));
+			gtk_image_set_from_paintable(GTK_IMAGE(widget), GDK_PAINTABLE(rp_achievement_item_get_icon(item)));
 			break;
 
 		case ACH_COL_DESCRIPTION:
