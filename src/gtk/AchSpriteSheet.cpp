@@ -9,11 +9,8 @@
 #include "stdafx.h"
 #include "AchSpriteSheet.hpp"
 
-// librpbase, librptexture
+// librpbase
 using LibRpBase::Achievements;
-using LibRpTexture::argb32_t;
-using LibRpTexture::rp_image;
-using LibRpTexture::rp_image_ptr;
 
 /**
  * Achievements spritesheet
