@@ -350,17 +350,6 @@ PIMGTYPE PIMGTYPE_load_png_from_gresource(const char *filename);
 LibRpTexture::rp_image_ptr rp_image_load_png_from_gresource(const char *filename);
 #endif /* __cplusplus */
 
-/**
- * Copy a subsurface from another PIMGTYPE.
- * @param pImgType	[in] PIMGTYPE
- * @param x		[in] X position
- * @param y		[in] Y position
- * @param width		[in] Width
- * @param height	[in] Height
- * @return Subsurface, or nullptr on error.
- */
-PIMGTYPE PIMGTYPE_get_subsurface(PIMGTYPE pImgType, int x, int y, int width, int height);
-
 #ifdef __cplusplus
 }
 #endif
