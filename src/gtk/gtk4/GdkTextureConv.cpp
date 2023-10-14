@@ -45,6 +45,7 @@ GdkTexture *GdkTextureConv::rp_image_to_GdkTexture(const rp_image *img)
 			assert(pBytes != nullptr);
 			if (pBytes) {
 				// gdk_memory_texture_new() creates a copy of pBytes.
+				// TODO: Verify format on big-endian.
 				texture = gdk_memory_texture_new(width, height, GDK_MEMORY_B8G8R8A8, pBytes, stride);
 				g_bytes_unref(pBytes);
 			}
@@ -117,7 +118,7 @@ GdkTexture *GdkTextureConv::rp_image_to_GdkTexture(const rp_image *img)
 			GBytes *const pBytes = g_bytes_new_static(dest_buf, data_len);
 			assert(pBytes != nullptr);
 			if (pBytes) {
-				// TODO: Verify format.
+				// TODO: Verify format on big-endian.
 				texture = gdk_memory_texture_new(width, height, GDK_MEMORY_B8G8R8A8, pBytes, width * sizeof(argb32_t));
 				g_bytes_unref(pBytes);
 			}
