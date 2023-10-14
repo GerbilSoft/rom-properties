@@ -471,7 +471,7 @@ G_MODULE_EXPORT int RP_C_API rp_create_thumbnail2(const char *source_file, const
 	//rowstride = outParams.thumbSize.width * sizeof(uint32_t);
 	//pixels = static_cast<guchar*>(malloc(rowstride * outParams.thumbSize.height));
 	rowstride = outParams.fullSize.width * sizeof(uint32_t);
-	texdownload = static_cast<guchar*>(g_malloc(rowstride * outParams.fullSize.height * 16));
+	texdownload = static_cast<guchar*>(g_malloc(rowstride * outParams.fullSize.height));
 	// Download the texture data in the correct format.
 	// TODO: Use GdkTextureDownloader to ensure it's not premultiplied
 	// and to swap the channels.
