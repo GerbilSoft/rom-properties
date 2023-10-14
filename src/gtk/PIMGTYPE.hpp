@@ -222,54 +222,6 @@ static inline bool PIMGTYPE_size_check(PIMGTYPE pImgType, int width, int height)
 #  define PIMGTYPE_EQ_NULLPTR
 #endif /* __cplusplus */
 
-/**
- * Get a pointer to the raw image data of a PIMGTYPE.
- * @param pImgType	[in] PIMGTYPE
- * @param pLen		[out,opt] Length of the image data.
- * @return Pointer to the raw image data.
- */
-static inline uint8_t *PIMGTYPE_get_image_data(PIMGTYPE pImgType, size_t *pLen PIMGTYPE_EQ_NULLPTR)
-{
-	// TODO: Verify if the last row is a complete row.
-
-#if defined(RP_GTK_USE_GDKTEXTURE)
-#  warning FIXME: not easily supported with GdkTexture; inline it into rp_create_thumbnail2
-	RP_UNUSED(pImgType);
-	RP_UNUSED(pLen);
-	return NULL;
-#elif defined(RP_GTK_USE_CAIRO)
-	cairo_surface_flush(pImgType);
-	if (pLen) {
-		*pLen = (size_t)cairo_image_surface_get_stride(pImgType) *
-		        (size_t)cairo_image_surface_get_height(pImgType);
-	}
-	return cairo_image_surface_get_data(pImgType);
-#else /* GdkPixbuf */
-	if (pLen) {
-		*pLen = gdk_pixbuf_get_byte_length(pImgType);
-	}
-	return gdk_pixbuf_get_pixels(pImgType);
-#endif
-}
-
-/**
- * Get the row stride of a PIMGTYPE.
- * @param pImgType PIMGTYPE
- * @return Row stride. (bytes per line)
- */
-static inline int PIMGTYPE_get_rowstride(PIMGTYPE pImgType)
-{
-#if defined(RP_GTK_USE_GDKTEXTURE)
-#  warning Not supported for GdkTexture...
-	RP_UNUSED(pImgType);
-	return 0;
-#elif defined(RP_GTK_USE_CAIRO)
-	return cairo_image_surface_get_stride(pImgType);
-#else /* GdkPixbuf */
-	return gdk_pixbuf_get_rowstride(pImgType);
-#endif
-}
-
 // https://discourse.gnome.org/t/scaling-images-with-cairo-is-much-slower-in-gtk4/7701/2 - gtk4-demo menu demo?
 #if defined(RP_GTK_USE_GDKTEXTURE) || defined(RP_GTK_USE_CAIRO)
 /**
