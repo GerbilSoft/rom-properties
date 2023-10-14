@@ -472,6 +472,7 @@ G_MODULE_EXPORT int RP_C_API rp_create_thumbnail2(const char *source_file, const
 	//pixels = static_cast<guchar*>(malloc(rowstride * outParams.thumbSize.height));
 	rowstride = outParams.fullSize.width * sizeof(uint32_t);
 	texdownload = static_cast<guchar*>(g_malloc(rowstride * outParams.fullSize.height * 16));
+	// Download the texture data in the correct format.
 	// TODO: Use GdkTextureDownloader to ensure it's not premultiplied
 	// and to swap the channels.
 	gdk_texture_download(outParams.retImg, texdownload, rowstride);
@@ -491,12 +492,12 @@ G_MODULE_EXPORT int RP_C_API rp_create_thumbnail2(const char *source_file, const
 	}
 
 	// Write the IDAT section.
-#ifdef RP_GTK_USE_CAIRO
-	// Cairo uses ARGB32.
-	// FIXME: Need to un-premultiply alpha?
+#if defined(RP_GTK_USE_GDKTEXTURE) || defined(RP_GTK_USE_CAIRO)
+	// GdkTexture and Cairo uses ARGB32.
+	// FIXME: Need to un-premultiply alpha on Cairo?
 	static const bool is_abgr = false;
 #else /* !RP_GTK_USE_CAIRO */
-	// GdkPixbuf uses ABGR32.
+	// GdkPixbuf use ABGR32.
 	static const bool is_abgr = true;
 #endif
 	pwRet = pngWriter->write_IDAT(row_pointers.get(), is_abgr);
