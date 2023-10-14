@@ -128,7 +128,9 @@ PIMGTYPE PIMGTYPE_scale(PIMGTYPE pImgType, int width, int height, bool bilinear)
 }
 #endif /* RP_GTK_USE_GDKTEXTURE || RP_GTK_USE_CAIRO */
 
-#ifdef RP_GTK_USE_CAIRO
+#if defined(RP_GTK_USE_GDKTEXTURE)
+// nothing special here
+#elif defined(RP_GTK_USE_CAIRO)
 typedef struct _PIMGTYPE_CairoReadFunc_State_t {
 	const uint8_t *buf;
 	size_t size;
@@ -154,7 +156,7 @@ static cairo_status_t PIMGTYPE_CairoReadFunc(void *closure, unsigned char *data,
 	d->pos += length;
 	return CAIRO_STATUS_SUCCESS;
 }
-#else /* !RP_GTK_USE_CAIRO */
+#else /* GdkPixbuf */
 // Mapping of data pointers to GBytes* objects for unreference.
 static std::unordered_map<const void*, GBytes*> map_gbytes_unref;
 
@@ -171,7 +173,7 @@ static void gbytes_destroy_notify(gpointer data)
 		g_bytes_unref(pBytes);
 	}
 }
-#endif /* RP_GTK_USE_CAIRO */
+#endif
 
 /**
  * Load a PNG image from our glibresources.
