@@ -28,6 +28,48 @@ G_END_DECLS
 
 #if defined(RP_GTK_USE_GDKTEXTURE) || defined(RP_GTK_USE_CAIRO)
 /**
+ * Internal Cairo surface scaling function.
+ * @param src_surface Source surface
+ * @param width New width
+ * @param height New height
+ * @param bilinear If true, use bilinear interpolation.
+ * @return Scaled surface, or nullptr on error.
+ */
+static cairo_surface_t *rp_cairo_scale_int(cairo_surface_t *src_surface, int width, int height, bool bilinear)
+{
+	cairo_surface_t *const dest_surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
+	assert(dest_surface != nullptr);
+	assert(cairo_surface_status(dest_surface) == CAIRO_STATUS_SUCCESS);
+	if (unlikely(!dest_surface)) {
+		return nullptr;
+	} else if (cairo_surface_status(dest_surface) != CAIRO_STATUS_SUCCESS) {
+		cairo_surface_destroy(dest_surface);
+		return nullptr;
+	}
+
+	cairo_t *const cr = cairo_create(dest_surface);
+	assert(cr != nullptr);
+	assert(cairo_status(cr) == CAIRO_STATUS_SUCCESS);
+	if (unlikely(!cr)) {
+		cairo_surface_destroy(dest_surface);
+		return nullptr;
+	} else if (cairo_status(cr) != CAIRO_STATUS_SUCCESS) {
+		cairo_destroy(cr);
+		cairo_surface_destroy(dest_surface);
+		return nullptr;
+	}
+
+	cairo_pattern_set_filter(cairo_get_source(cr),
+		(bilinear ? CAIRO_FILTER_BILINEAR : CAIRO_FILTER_NEAREST));
+	cairo_scale(cr, (double)width / (double)cairo_image_surface_get_width(src_surface),
+		(double)height / (double)cairo_image_surface_get_height(src_surface));
+	cairo_set_source_surface(cr, src_surface, 0, 0);
+	cairo_paint(cr);
+	cairo_destroy(cr);
+	return dest_surface;
+}
+
+/**
  * PIMGTYPE scaling function.
  * @param pImgType PIMGTYPE
  * @param width New width
@@ -53,35 +95,11 @@ PIMGTYPE PIMGTYPE_scale(PIMGTYPE pImgType, int width, int height, bool bilinear)
 		cairo_image_surface_get_stride(src_surface));
 	cairo_surface_mark_dirty(src_surface);
 
-	cairo_surface_t *const dest_surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
-	assert(dest_surface != nullptr);
-	assert(cairo_surface_status(dest_surface) == CAIRO_STATUS_SUCCESS);
+	cairo_surface_t *const dest_surface = rp_cairo_scale_int(src_surface, width, height, bilinear);
+	cairo_surface_destroy(src_surface);
 	if (unlikely(!dest_surface)) {
 		return PIMGTYPE_ref(pImgType);
-	} else if (cairo_surface_status(dest_surface) != CAIRO_STATUS_SUCCESS) {
-		cairo_surface_destroy(dest_surface);
-		return PIMGTYPE_ref(pImgType);
 	}
-
-	cairo_t *const cr = cairo_create(dest_surface);
-	assert(cr != nullptr);
-	assert(cairo_status(cr) == CAIRO_STATUS_SUCCESS);
-	if (unlikely(!cr)) {
-		cairo_surface_destroy(dest_surface);
-		return PIMGTYPE_ref(pImgType);
-	} else if (cairo_status(cr) != CAIRO_STATUS_SUCCESS) {
-		cairo_destroy(cr);
-		cairo_surface_destroy(dest_surface);
-		return PIMGTYPE_ref(pImgType);
-	}
-
-	cairo_pattern_set_filter(cairo_get_source(cr),
-		(bilinear ? CAIRO_FILTER_BILINEAR : CAIRO_FILTER_NEAREST));
-	cairo_scale(cr, (double)width / (double)srcWidth, (double)height / (double)srcHeight);
-	cairo_set_source_surface(cr, src_surface, 0, 0);
-	cairo_paint(cr);
-	cairo_destroy(cr);
-	cairo_surface_destroy(src_surface);
 
 	// Create a GdkMemoryTexture using the cairo_surface_t image data directly.
 	// NOTE: The data here technically isn't static, but we don't want to do *two* copies.
@@ -102,35 +120,8 @@ PIMGTYPE PIMGTYPE_scale(PIMGTYPE pImgType, int width, int height, bool bilinear)
 		return PIMGTYPE_ref(pImgType);
 	}
 
-	cairo_surface_t *const dest_surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
-	assert(dest_surface != nullptr);
-	assert(cairo_surface_status(dest_surface) == CAIRO_STATUS_SUCCESS);
-	if (unlikely(!dest_surface)) {
-		return PIMGTYPE_ref(pImgType);
-	} else if (cairo_surface_status(dest_surface) != CAIRO_STATUS_SUCCESS) {
-		cairo_surface_destroy(dest_surface);
-		return PIMGTYPE_ref(pImgType);
-	}
-
-	cairo_t *const cr = cairo_create(dest_surface);
-	assert(cr != nullptr);
-	assert(cairo_status(cr) == CAIRO_STATUS_SUCCESS);
-	if (unlikely(!cr)) {
-		cairo_surface_destroy(dest_surface);
-		return PIMGTYPE_ref(pImgType);
-	} else if (cairo_status(cr) != CAIRO_STATUS_SUCCESS) {
-		cairo_destroy(cr);
-		cairo_surface_destroy(dest_surface);
-		return PIMGTYPE_ref(pImgType);
-	}
-
-	cairo_pattern_set_filter(cairo_get_source(cr),
-		(bilinear ? CAIRO_FILTER_BILINEAR : CAIRO_FILTER_NEAREST));
-	cairo_scale(cr, (double)width / (double)srcWidth, (double)height / (double)srcHeight);
-	cairo_set_source_surface(cr, pImgType, 0, 0);
-	cairo_paint(cr);
-	cairo_destroy(cr);
-	return dest_surface;
+	cairo_surface_t *const dest_surface = rp_cairo_scale_int(pImgType, width, height, bilinear);
+	return (dest_surface) ? dest_surface : PIMGTYPE_ref(pImgType);
 #else
 #  error Invalid condition
 #endif
