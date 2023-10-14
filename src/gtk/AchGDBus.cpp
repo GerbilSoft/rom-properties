@@ -161,10 +161,11 @@ int AchGDBusPrivate::notifyFunc(Achievements::ID id)
 	// TODO: SSSE3-optimized version?
 	using LibRpTexture::argb32_t;
 
-	int width, height;
-	PIMGTYPE_get_size(icon, &width, &height);
-	argb32_t *bits = reinterpret_cast<argb32_t*>(PIMGTYPE_get_image_data(icon));
-	const int strideDiff = (PIMGTYPE_get_rowstride(icon) / sizeof(argb32_t)) - width;
+	const int width = cairo_image_surface_get_width(icon);
+	const int height = cairo_image_surface_get_height(icon);
+	cairo_surface_flush(icon);
+	argb32_t *bits = reinterpret_cast<argb32_t*>(cairo_image_surface_get_data(icon));
+	const int strideDiff = (cairo_image_surface_get_stride(icon) / sizeof(argb32_t)) - width;
 	for (unsigned int y = (unsigned int)height; y > 0; y--) {
 		unsigned int x;
 		for (x = (unsigned int)width; x > 1; x -= 2) {
@@ -182,7 +183,7 @@ int AchGDBusPrivate::notifyFunc(Achievements::ID id)
 		// Next line.
 		bits += strideDiff;
 	}
-	PIMGTYPE_mark_dirty(icon);
+	cairo_surface_mark_dirty(icon);
 #endif /* RP_GTK_USE_CAIRO */
 
 	size_t imgDataLen = 0;
