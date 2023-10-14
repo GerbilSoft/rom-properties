@@ -206,6 +206,7 @@ class rp_image
 		 * This is height * stride.
 		 * @return Image data size, in bytes.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		size_t data_len(void) const;
 
 		/**

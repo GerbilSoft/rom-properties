@@ -10,6 +10,8 @@
 #include "LanguageComboBox.hpp"
 #include "PIMGTYPE.hpp"
 
+#include "FlagSpriteSheet.hpp"
+
 #ifdef USE_GTK_DROP_DOWN
 #  include "LanguageComboBoxItem.h"
 #endif /* USE_GTK_DROP_DOWN */
@@ -180,7 +182,7 @@ bind_listitem_cb(GtkListItemFactory	*factory,
 		return;
 	}
 
-	gtk_image_set_from_pixbuf(GTK_IMAGE(icon), rp_language_combo_box_item_get_icon(item));
+	gtk_image_set_from_paintable(GTK_IMAGE(icon), GDK_PAINTABLE(rp_language_combo_box_item_get_icon(item)));
 	gtk_label_set_text(GTK_LABEL(label), rp_language_combo_box_item_get_name(item));
 }
 #endif /* USE_GTK_DROP_DOWN */
@@ -336,7 +338,7 @@ rp_language_combo_box_rebuild_icons(RpLanguageComboBox *widget)
 	// - Fractional scaling
 	// - Runtime adjustment via "configure" event
 	// Reference: https://developer.gnome.org/gdk3/stable/gdk3-Windows.html#gdk-window-get-scale-factor
-	const unsigned int iconSize = 16;
+	static const int iconSize = 16;
 #if GTK_CHECK_VERSION(3,10,0)
 #  if 0
 	// FIXME: gtk_widget_get_window() doesn't work unless the window is realized.
@@ -354,13 +356,8 @@ rp_language_combo_box_rebuild_icons(RpLanguageComboBox *widget)
 #  endif /* 0 */
 #endif /* GTK_CHECK_VERSION(3,10,0) */
 
-	// Load the flags sprite sheet.
-	char flags_filename[64];
-	snprintf(flags_filename, sizeof(flags_filename),
-		"/com/gerbilsoft/rom-properties/flags/flags-%ux%u.png",
-		iconSize, iconSize);
-	PIMGTYPE flags_spriteSheet = PIMGTYPE_load_png_from_gresource(flags_filename);
-	assert(flags_spriteSheet != nullptr);
+	// Flag sprite sheet
+	FlagSpriteSheet flagSpriteSheet(iconSize);
 
 #ifdef USE_GTK_DROP_DOWN
 	const guint n_items = g_list_model_get_n_items(G_LIST_MODEL(widget->listStore));
@@ -371,22 +368,14 @@ rp_language_combo_box_rebuild_icons(RpLanguageComboBox *widget)
 		if (!item)
 			continue;
 
-		if (flags_spriteSheet) {
-			const uint32_t lc = rp_language_combo_box_item_get_lc(item);
-
-			int col, row;
-			if (!SystemRegion::getFlagPosition(lc, &col, &row, widget->forcePAL)) {
-				// Found a matching icon.
-				PIMGTYPE icon = PIMGTYPE_get_subsurface(flags_spriteSheet,
-					col*iconSize, row*iconSize, iconSize, iconSize);
-				rp_language_combo_box_item_set_icon(item, icon);
-				PIMGTYPE_unref(icon);
-			} else {
-				// No icon. Clear it.
-				rp_language_combo_box_item_set_icon(item, nullptr);
-			}
+		const uint32_t lc = rp_language_combo_box_item_get_lc(item);
+		PIMGTYPE icon = flagSpriteSheet.getIcon(lc, widget->forcePAL);
+		if (icon) {
+			// Found a matching icon.
+			rp_language_combo_box_item_set_icon(item, icon);
+			PIMGTYPE_unref(icon);
 		} else {
-			// Clear the icon.
+			// No icon. Clear it.
 			rp_language_combo_box_item_set_icon(item, nullptr);
 		}
 	}
@@ -400,23 +389,15 @@ rp_language_combo_box_rebuild_icons(RpLanguageComboBox *widget)
 	}
 
 	do {
-		if (flags_spriteSheet) {
-			uint32_t lc = 0;
-			gtk_tree_model_get(treeModel, &iter, SM_COL_LC, &lc, -1);
-
-			int col, row;
-			if (!SystemRegion::getFlagPosition(lc, &col, &row, widget->forcePAL)) {
-				// Found a matching icon.
-				PIMGTYPE icon = PIMGTYPE_get_subsurface(flags_spriteSheet,
-					col*iconSize, row*iconSize, iconSize, iconSize);
-				gtk_list_store_set(widget->listStore, &iter, SM_COL_ICON, icon, -1);
-				PIMGTYPE_unref(icon);
-			} else {
-				// No icon. Clear it.
-				gtk_list_store_set(widget->listStore, &iter, SM_COL_ICON, nullptr, -1);
-			}
+		uint32_t lc = 0;
+		gtk_tree_model_get(treeModel, &iter, SM_COL_LC, &lc, -1);
+		PIMGTYPE icon = flagSpriteSheet.getIcon(lc, widget->forcePAL);
+		if (icon) {
+			// Found a matching icon.
+			gtk_list_store_set(widget->listStore, &iter, SM_COL_ICON, icon, -1);
+			PIMGTYPE_unref(icon);
 		} else {
-			// Clear the icon.
+			// No icon. Clear it.
 			gtk_list_store_set(widget->listStore, &iter, SM_COL_ICON, nullptr, -1);
 		}
 
@@ -424,10 +405,6 @@ rp_language_combo_box_rebuild_icons(RpLanguageComboBox *widget)
 		ok = gtk_tree_model_iter_next(treeModel, &iter);
 	} while (ok);
 #endif /* USE_GTK_DROP_DOWN */
-
-	if (flags_spriteSheet) {
-		PIMGTYPE_unref(flags_spriteSheet);
-	}
 }
 
 /**

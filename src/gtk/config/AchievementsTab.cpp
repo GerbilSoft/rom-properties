@@ -10,7 +10,7 @@
 #include "AchievementsTab.hpp"
 #include "RpConfigTab.h"
 
-#include "../AchSpritesheet.hpp"
+#include "../AchSpriteSheet.hpp"
 
 #include "gtk-compat.h"
 #include "RpGtk.hpp"
@@ -138,7 +138,7 @@ bind_listitem_cb(GtkListItemFactory *factory, GtkListItem *list_item, gpointer u
 	switch (GPOINTER_TO_INT(user_data)) {
 		case ACH_COL_ICON:
 			// Icon
-			gtk_image_set_from_pixbuf(GTK_IMAGE(widget), rp_achievement_item_get_icon(item));
+			gtk_image_set_from_paintable(GTK_IMAGE(widget), GDK_PAINTABLE(rp_achievement_item_get_icon(item)));
 			break;
 
 		case ACH_COL_DESCRIPTION:
@@ -313,9 +313,8 @@ rp_achievements_tab_reset(RpAchievementsTab *tab)
 	// Load the Achievements icon sprite sheet.
 	// NOTE: Assuming 32x32 icons for now.
 	// TODO: Check DPI and adjust on DPI changes?
-	const gint iconSize = 32;
-	PIMGTYPE imgAchSheet = AchSpritesheet::load(iconSize, false);
-	PIMGTYPE imgAchGraySheet = AchSpritesheet::load(iconSize, true);
+	static const gint iconSize = 32;
+	AchSpriteSheet achSpriteSheet(iconSize);
 
 	// Pango 1.49.0 [2021/08/22] added percentage sizes.
 	// For older versions, we'll need to use 'smaller' instead.
@@ -332,15 +331,9 @@ rp_achievements_tab_reset(RpAchievementsTab *tab)
 		const time_t timestamp = pAch->isUnlocked(id);
 		const bool unlocked = (timestamp != -1);
 
-		// Determine row and column.
-		const int col = i % Achievements::ACH_SPRITE_SHEET_COLS;
-		const int row = i / Achievements::ACH_SPRITE_SHEET_COLS;
-
-		// Extract the sub-icon.
-		PIMGTYPE subIcon = PIMGTYPE_get_subsurface(
-			(unlocked ? imgAchSheet : imgAchGraySheet),
-			col*iconSize, row*iconSize, iconSize, iconSize);
-		assert(subIcon != nullptr);
+		// Get the achievement icon.
+		PIMGTYPE icon = achSpriteSheet.getIcon(id, !unlocked);
+		assert(icon != nullptr);
 
 		// Get the name and description.
 		gchar *const s_ach_name = g_markup_escape_text(pAch->getName(id), -1);
@@ -355,14 +348,16 @@ rp_achievements_tab_reset(RpAchievementsTab *tab)
 
 		// Add the list item.
 #ifdef USE_GTK_COLUMN_VIEW
-		g_list_store_append(tab->listStore, rp_achievement_item_new(subIcon, s_ach.c_str(), timestamp));
-		PIMGTYPE_unref(subIcon);
+		g_list_store_append(tab->listStore, rp_achievement_item_new(icon, s_ach.c_str(), timestamp));
+		PIMGTYPE_unref(icon);
+
+		// TODO: Unlock time.
 #else /* !USE_GTK_COLUMN_VIEW */
 		GtkTreeIter treeIter;
 		gtk_list_store_append(tab->listStore, &treeIter);
 		gtk_list_store_set(tab->listStore, &treeIter,
-			0, subIcon, 1, s_ach.c_str(), -1);
-		PIMGTYPE_unref(subIcon);
+			0, icon, 1, s_ach.c_str(), -1);
+		PIMGTYPE_unref(icon);
 
 		if (unlocked) {
 			// Format the unlock time.
