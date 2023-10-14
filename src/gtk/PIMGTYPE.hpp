@@ -270,25 +270,8 @@ static inline int PIMGTYPE_get_rowstride(PIMGTYPE pImgType)
 #endif
 }
 
-#if defined(RP_GTK_USE_GDKTEXTURE)
-/**
- * PIMGTYPE scaling function.
- * @param pImgType PIMGTYPE
- * @param width New width
- * @param height New height
- * @param bilinear If true, use bilinear interpolation.
- * @return Rescaled image. (If unable to rescale, returns a new reference to pImgType.)
- */
-static inline PIMGTYPE PIMGTYPE_scale(PIMGTYPE pImgType, int width, int height, bool bilinear)
-{
-#  warning NOT SUPPORTED for GdkTexture - check for better scaling method
-	RP_UNUSED(width);
-	RP_UNUSED(height);
-	RP_UNUSED(bilinear);
-	return (PIMGTYPE)g_object_ref(pImgType);
-}
 // https://discourse.gnome.org/t/scaling-images-with-cairo-is-much-slower-in-gtk4/7701/2 - gtk4-demo menu demo?
-#elif defined(RP_GTK_USE_CAIRO)
+#if defined(RP_GTK_USE_GDKTEXTURE) || defined(RP_GTK_USE_CAIRO)
 /**
  * PIMGTYPE scaling function.
  * @param pImgType PIMGTYPE

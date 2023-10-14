@@ -26,7 +26,7 @@ G_BEGIN_DECLS
 #include "glibresources.h"
 G_END_DECLS
 
-#ifdef RP_GTK_USE_CAIRO
+#if defined(RP_GTK_USE_GDKTEXTURE) || defined(RP_GTK_USE_CAIRO)
 /**
  * PIMGTYPE scaling function.
  * @param pImgType PIMGTYPE
@@ -37,6 +37,13 @@ G_END_DECLS
  */
 PIMGTYPE PIMGTYPE_scale(PIMGTYPE pImgType, int width, int height, bool bilinear)
 {
+#if defined(RP_GTK_USE_GDKTEXTURE)
+#  warning NOT SUPPORTED for GdkTexture - check for better scaling method
+	RP_UNUSED(width);
+	RP_UNUSED(height);
+	RP_UNUSED(bilinear);
+	return (PIMGTYPE)g_object_ref(pImgType);
+#elif defined(RP_GTK_USE_CAIRO)
 	// TODO: Maintain aspect ratio, and use nearest-neighbor
 	// when scaling up from small sizes.
 	const int srcWidth = cairo_image_surface_get_width(pImgType);
@@ -75,8 +82,11 @@ PIMGTYPE PIMGTYPE_scale(PIMGTYPE pImgType, int width, int height, bool bilinear)
 	cairo_paint(cr);
 	cairo_destroy(cr);
 	return surface;
+#else
+#  error Invalid condition
+#endif
 }
-#endif /* RP_GTK_USE_CAIRO */
+#endif /* RP_GTK_USE_GDKTEXTURE || RP_GTK_USE_CAIRO */
 
 #ifdef RP_GTK_USE_CAIRO
 typedef struct _PIMGTYPE_CairoReadFunc_State_t {
