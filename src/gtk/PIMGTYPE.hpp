@@ -68,6 +68,8 @@ G_END_DECLS
 static inline PIMGTYPE rp_image_to_PIMGTYPE(const LibRpTexture::rp_image *img, bool premultiply = true)
 {
 #if defined(RP_GTK_USE_GDKTEXTURE)
+	// TODO: Handle premultiply?
+	((void)premultiply);
 	return GdkTextureConv::rp_image_to_GdkTexture(img);
 #elif defined(RP_GTK_USE_CAIRO)
 	return CairoImageConv::rp_image_to_cairo_surface_t(img, premultiply);

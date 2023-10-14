@@ -38,11 +38,60 @@ G_END_DECLS
 PIMGTYPE PIMGTYPE_scale(PIMGTYPE pImgType, int width, int height, bool bilinear)
 {
 #if defined(RP_GTK_USE_GDKTEXTURE)
-#  warning NOT SUPPORTED for GdkTexture - check for better scaling method
-	RP_UNUSED(width);
-	RP_UNUSED(height);
-	RP_UNUSED(bilinear);
-	return (PIMGTYPE)g_object_ref(pImgType);
+	const int srcWidth = gdk_texture_get_width(pImgType);
+	const int srcHeight = gdk_texture_get_height(pImgType);
+	assert(srcWidth > 0 && srcHeight > 0);
+	if (unlikely(srcWidth <= 0 || srcHeight <= 0)) {
+		return PIMGTYPE_ref(pImgType);
+	}
+
+	// Use Cairo to scale the GdkTexture.
+	// Reference: https://docs.gtk.org/gdk4/method.Texture.download.html
+	cairo_surface_t *const src_surface = cairo_image_surface_create(
+		CAIRO_FORMAT_ARGB32, srcWidth, srcHeight);
+	gdk_texture_download(pImgType, cairo_image_surface_get_data(src_surface),
+		cairo_image_surface_get_stride(src_surface));
+	cairo_surface_mark_dirty(src_surface);
+
+	cairo_surface_t *const dest_surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
+	assert(dest_surface != nullptr);
+	assert(cairo_surface_status(dest_surface) == CAIRO_STATUS_SUCCESS);
+	if (unlikely(!dest_surface)) {
+		return PIMGTYPE_ref(pImgType);
+	} else if (cairo_surface_status(dest_surface) != CAIRO_STATUS_SUCCESS) {
+		cairo_surface_destroy(dest_surface);
+		return PIMGTYPE_ref(pImgType);
+	}
+
+	cairo_t *const cr = cairo_create(dest_surface);
+	assert(cr != nullptr);
+	assert(cairo_status(cr) == CAIRO_STATUS_SUCCESS);
+	if (unlikely(!cr)) {
+		cairo_surface_destroy(dest_surface);
+		return PIMGTYPE_ref(pImgType);
+	} else if (cairo_status(cr) != CAIRO_STATUS_SUCCESS) {
+		cairo_destroy(cr);
+		cairo_surface_destroy(dest_surface);
+		return PIMGTYPE_ref(pImgType);
+	}
+
+	cairo_pattern_set_filter(cairo_get_source(cr),
+		(bilinear ? CAIRO_FILTER_BILINEAR : CAIRO_FILTER_NEAREST));
+	cairo_scale(cr, (double)width / (double)srcWidth, (double)height / (double)srcHeight);
+	cairo_set_source_surface(cr, src_surface, 0, 0);
+	cairo_paint(cr);
+	cairo_destroy(cr);
+	cairo_surface_destroy(src_surface);
+
+	// Create a GdkMemoryTexture using the cairo_surface_t image data directly.
+	// NOTE: The data here technically isn't static, but we don't want to do *two* copies.
+	const int dest_stride = cairo_image_surface_get_stride(dest_surface);
+	GBytes *const pBytes = g_bytes_new_static(cairo_image_surface_get_data(dest_surface), height * dest_stride);
+	// FIXME: GDK_MEMORY_DEFAULT (GDK_MEMORY_B8G8R8A8_PREMULTIPLIED) causes a heap overflow here...
+	GdkTexture *const texture = gdk_memory_texture_new(width, height, GDK_MEMORY_B8G8R8A8, pBytes, dest_stride);
+	g_bytes_unref(pBytes);
+	cairo_surface_destroy(dest_surface);
+	return texture;
 #elif defined(RP_GTK_USE_CAIRO)
 	// TODO: Maintain aspect ratio, and use nearest-neighbor
 	// when scaling up from small sizes.
@@ -50,29 +99,29 @@ PIMGTYPE PIMGTYPE_scale(PIMGTYPE pImgType, int width, int height, bool bilinear)
 	const int srcHeight = cairo_image_surface_get_height(pImgType);
 	assert(srcWidth > 0 && srcHeight > 0);
 	if (unlikely(srcWidth <= 0 || srcHeight <= 0)) {
-		return cairo_surface_reference(pImgType);
+		return PIMGTYPE_ref(pImgType);
 	}
 
-	cairo_surface_t *const surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
-	assert(surface != nullptr);
-	assert(cairo_surface_status(surface) == CAIRO_STATUS_SUCCESS);
-	if (unlikely(!surface)) {
-		return cairo_surface_reference(pImgType);
-	} else if (cairo_surface_status(surface) != CAIRO_STATUS_SUCCESS) {
-		cairo_surface_destroy(surface);
-		return cairo_surface_reference(pImgType);
+	cairo_surface_t *const dest_surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
+	assert(dest_surface != nullptr);
+	assert(cairo_surface_status(dest_surface) == CAIRO_STATUS_SUCCESS);
+	if (unlikely(!dest_surface)) {
+		return PIMGTYPE_ref(pImgType);
+	} else if (cairo_surface_status(dest_surface) != CAIRO_STATUS_SUCCESS) {
+		cairo_surface_destroy(dest_surface);
+		return PIMGTYPE_ref(pImgType);
 	}
 
-	cairo_t *const cr = cairo_create(surface);
+	cairo_t *const cr = cairo_create(dest_surface);
 	assert(cr != nullptr);
 	assert(cairo_status(cr) == CAIRO_STATUS_SUCCESS);
 	if (unlikely(!cr)) {
-		cairo_surface_destroy(surface);
-		return cairo_surface_reference(pImgType);
+		cairo_surface_destroy(dest_surface);
+		return PIMGTYPE_ref(pImgType);
 	} else if (cairo_status(cr) != CAIRO_STATUS_SUCCESS) {
 		cairo_destroy(cr);
-		cairo_surface_destroy(surface);
-		return cairo_surface_reference(pImgType);
+		cairo_surface_destroy(dest_surface);
+		return PIMGTYPE_ref(pImgType);
 	}
 
 	cairo_pattern_set_filter(cairo_get_source(cr),
@@ -81,7 +130,7 @@ PIMGTYPE PIMGTYPE_scale(PIMGTYPE pImgType, int width, int height, bool bilinear)
 	cairo_set_source_surface(cr, pImgType, 0, 0);
 	cairo_paint(cr);
 	cairo_destroy(cr);
-	return surface;
+	return dest_surface;
 #else
 #  error Invalid condition
 #endif
