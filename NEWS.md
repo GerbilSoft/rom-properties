@@ -11,6 +11,8 @@
     * The following parsers don't support mipmaps yet, but the format does:
       DirectDrawSurface, SegaPVR
   * ImageDecoderTest now has mipmap tests for various formats.
+  * The GTK4 UI frontend now uses GdkTexture instead of GdkPixbuf, which has
+    been deprecated. Cairo is also used for certain image transformations.
 
 * New parsers:
   * Wim: Microsoft Windows Images, used by the Windows installer starting with
