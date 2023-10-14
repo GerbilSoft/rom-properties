@@ -44,7 +44,7 @@ GdkTexture *GdkTextureConv::rp_image_to_GdkTexture(const rp_image *img)
 			GBytes *const pBytes = g_bytes_new_static(img->bits(), img->data_len());
 			assert(pBytes != nullptr);
 			if (pBytes) {
-				// TODO: Verify format.
+				// gdk_memory_texture_new() creates a copy of pBytes.
 				texture = gdk_memory_texture_new(width, height, GDK_MEMORY_B8G8R8A8, pBytes, stride);
 				g_bytes_unref(pBytes);
 			}
