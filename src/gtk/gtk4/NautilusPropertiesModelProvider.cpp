@@ -123,6 +123,16 @@ rp_nautilus_properties_model_provider_get_models(NautilusPropertiesModelProvider
 
 	// Create the RpNautilusPropertiesModel and return it in a GList.
 	NautilusPropertiesModel *const model = rp_nautilus_properties_model_new(romData);
+	assert(model != nullptr);
 	g_free(uri);
-	return g_list_prepend(nullptr, model);
+	if (model) {
+		// Check for achievements here.
+		// NOTE: We can't determine when the NautilusPropertiesModel is actually
+		// displayed, since it's an abstract model and not a GtkWidget.
+		romData->checkViewedAchievements();
+		return g_list_prepend(nullptr, model);
+	}
+
+	// No model...
+	return nullptr;
 }

@@ -13,6 +13,10 @@
   * ImageDecoderTest now has mipmap tests for various formats.
   * The GTK4 UI frontend now uses GdkTexture instead of GdkPixbuf, which has
     been deprecated. Cairo is also used for certain image transformations.
+  * GTK4: Achievements are now checked when the Nautilus properties page is
+    opened. There's no way to wait for the user to select the "ROM Properties"
+    section, since NautilusPropertiesModel is an abstract model, not an actual
+    GtkWidget.
 
 * New parsers:
   * Wim: Microsoft Windows Images, used by the Windows installer starting with
