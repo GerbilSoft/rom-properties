@@ -100,6 +100,7 @@ SET(${PROJECT_NAME}_SRCS
 	OptionsMenuButton.cpp
 	AchSpriteSheet.cpp
 	ISpriteSheet.cpp
+	FlagSpriteSheet.cpp
 	config/stub-export.c
 	config/ConfigDialog.cpp
 	config/RpConfigTab.c
@@ -132,6 +133,7 @@ SET(${PROJECT_NAME}_H
 	check-uid.h
 	AchSpriteSheet.hpp
 	ISpriteSheet.hpp
+	FlagSpriteSheet.hpp
 	gtk-i18n.h
 	config/ConfigDialog.hpp
 	config/RpConfigTab.h
