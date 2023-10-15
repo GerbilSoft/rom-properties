@@ -9,11 +9,6 @@
 #pragma once
 
 #include "common.h"
-#include "PIMGTYPE.hpp"
-
-// librpbase, librptexture
-#include "librpbase/Achievements.hpp"
-#include "librptexture/img/rp_image.hpp"
 
 #include "ISpriteSheet.hpp"
 class FlagSpriteSheet : public ISpriteSheet {
