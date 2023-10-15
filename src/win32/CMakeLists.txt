@@ -75,6 +75,9 @@ SET(${PROJECT_NAME}_SRCS
 	OptionsMenuButton.cpp
 	NetworkStatus.c
 	RomDataFormat.cpp
+	ISpriteSheet.cpp
+	AchSpriteSheet.cpp
+	FlagSpriteSheet.cpp
 	config/ConfigDialog.cpp
 	config/PropSheetIcon.cpp
 	config/RP_EmptyVolumeCacheCallback.cpp
@@ -115,6 +118,9 @@ SET(${PROJECT_NAME}_H
 	OptionsMenuButton.hpp
 	NetworkStatus.h
 	RomDataFormat.hpp
+	ISpriteSheet.hpp
+	AchSpriteSheet.hpp
+	FlagSpriteSheet.hpp
 	config/ConfigDialog.hpp
 	config/PropSheetIcon.hpp
 	config/RP_EmptyVolumeCacheCallback.hpp

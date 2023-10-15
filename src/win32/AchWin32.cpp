@@ -10,26 +10,18 @@
 #include "AchWin32.hpp"
 
 #include "RpImageWin32.hpp"
-#include "res/resource.h"
+#include "AchSpriteSheet.hpp"
 #include "dll-macros.h"
 
 // Other rom-properties libraries
 #include "librpbase/Achievements.hpp"
-#include "librpbase/img/RpPng.hpp"
 #include "librptext/wchar.hpp"
-#include "librptexture/img/rp_image.hpp"
 using namespace LibRpBase;
-using namespace LibRpTexture;
-
-// RpFile_windres
-#include "file/RpFile_windres.hpp"
-using LibRpFile::IRpFile;
 
 // ROM icon
 #include "config/PropSheetIcon.hpp"
 
 // C++ STL classes
-using std::shared_ptr;
 using std::string;
 using std::tstring;
 using std::unordered_map;
@@ -63,14 +55,6 @@ class AchWin32Private
 
 		// Icon ID high word.
 		static const DWORD ACHWIN32_NID_UID_HI = 0x19840000;
-
-	public:
-		/**
-		 * Load the specified sprite sheet.
-		 * @param iconSize Icon size. (16, 24, 32, 64)
-		 * @return const rp_image*, or nullptr on error.
-		 */
-		rp_image_const_ptr loadSpriteSheet(int iconSize);
 
 	public:
 		/**
@@ -115,11 +99,6 @@ class AchWin32Private
 		// need to use a map with thread IDs.
 		unordered_map<DWORD, HWND> map_tidToHWND;
 		unordered_map<HWND, DWORD> map_hWndToTID;
-
-		// Sprite sheets.
-		// - Key: Icon size
-		// - Value: rp_image*
-		unordered_map<int, rp_image_const_ptr > map_imgAchSheet;
 };
 
 // Property for "NotifyIconData uID".
@@ -180,71 +159,6 @@ AchWin32Private::~AchWin32Private()
 	if (atomWindowClass > 0) {
 		UnregisterClass(MAKEINTATOM(atomWindowClass), HINST_THISCOMPONENT);
 	}
-}
-
-/**
- * Load the specified sprite sheet.
- * @param iconSize Icon size. (16, 24, 32, 64)
- * @return const rp_image*, or nullptr on error.
- */
-rp_image_const_ptr AchWin32Private::loadSpriteSheet(int iconSize)
-{
-	assert(iconSize == 16 || iconSize == 24 || iconSize == 32 || iconSize == 64);
-	UINT resID;
-	switch (iconSize) {
-		case 16:
-			resID = IDP_ACH_16x16;
-			break;
-		case 24:
-			resID = IDP_ACH_24x24;
-			break;
-		case 32:
-			resID = IDP_ACH_32x32;
-			break;
-		case 64:
-			resID = IDP_ACH_64x64;
-			break;
-		default:
-			assert(!"Invalid icon size.");
-			return {};
-	}
-
-	// Check if the sprite sheet is already loaded.
-	auto iter = map_imgAchSheet.find(iconSize);
-	if (iter != map_imgAchSheet.end()) {
-		// Sprite sheet is already loaded.
-		return iter->second;
-	}
-
-	// Load the achievements sprite sheet.
-	// TODO: Is premultiplied alpha needed?
-	// Reference: https://stackoverflow.com/questions/307348/how-to-draw-32-bit-alpha-channel-bitmaps
-	shared_ptr<RpFile_windres> f_res = std::make_shared<RpFile_windres>(
-		HINST_THISCOMPONENT, MAKEINTRESOURCE(resID), MAKEINTRESOURCE(RT_PNG));
-	assert(f_res->isOpen());
-	if (!f_res->isOpen()) {
-		// Unable to open the resource.
-		return {};
-	}
-
-	rp_image_const_ptr imgAchSheet = RpPng::load(f_res);
-	if (!imgAchSheet) {
-		// Unable to load the achievements sprite sheet.
-		return {};
-	}
-
-	// Make sure the bitmap has the expected size.
-	assert(imgAchSheet->width() == (int)(iconSize * Achievements::ACH_SPRITE_SHEET_COLS));
-	assert(imgAchSheet->height() == (int)(iconSize * Achievements::ACH_SPRITE_SHEET_ROWS));
-	if (imgAchSheet->width() != (int)(iconSize * Achievements::ACH_SPRITE_SHEET_COLS) ||
-	    imgAchSheet->height() != (int)(iconSize * Achievements::ACH_SPRITE_SHEET_ROWS))
-	{
-		// Incorrect size. We can't use it.
-		return {};
-	}
-
-	// Sprite sheet is correct.
-	return map_imgAchSheet.emplace(iconSize, imgAchSheet).first->second;
 }
 
 /**
@@ -367,21 +281,16 @@ int AchWin32Private::notifyFunc(Achievements::ID id)
 		iconSize = 16;
 	}
 
-	// FIXME: Icon size. Using 32px for now.
+	// Load the achievements sprite sheet.
 	HICON hBalloonIcon = nullptr;
-	const rp_image_const_ptr imgspr = loadSpriteSheet(iconSize);
-	if (imgspr) {
-		// Determine row and column.
-		const int col = ((int)id % Achievements::ACH_SPRITE_SHEET_COLS);
-		const int row = ((int)id / Achievements::ACH_SPRITE_SHEET_COLS);
+	AchSpriteSheet achSpriteSheet(iconSize);
 
-		// Extract the sub-icon.
-		HBITMAP hbmIcon = RpImageWin32::getSubBitmap(imgspr, col*iconSize, row*iconSize, iconSize, iconSize, dpi);
-		assert(hbmIcon != nullptr);
-		if (hbmIcon) {
-			hBalloonIcon = RpImageWin32::toHICON(hbmIcon);
-			DeleteBitmap(hbmIcon);
-		}
+	// Get the icon.
+	HBITMAP hbmIcon = achSpriteSheet.getIcon(id, false, dpi);
+	assert(hbmIcon != nullptr);
+	if (hbmIcon) {
+		hBalloonIcon = RpImageWin32::toHICON(hbmIcon);
+		DeleteBitmap(hbmIcon);
 	}
 	nid.hBalloonIcon = hBalloonIcon;
 

@@ -8,18 +8,11 @@
 
 #include "stdafx.h"
 #include "LanguageComboBox.hpp"
-#include "RpImageWin32.hpp"
-#include "res/resource.h"
+#include "FlagSpriteSheet.hpp"
 
 // Other rom-properties libraries
 #include "librpbase/SystemRegion.hpp"
-#include "librpbase/img/RpPng.hpp"
 using namespace LibRpBase;
-using namespace LibRpTexture;
-
-// RpFile_windres
-#include "file/RpFile_windres.hpp"
-using LibRpFile::IRpFile;
 
 // C++ STL classes
 using std::shared_ptr;
@@ -118,71 +111,34 @@ LRESULT LanguageComboBoxPrivate::setLCs(const uint32_t *lcs_array)
 	const UINT dpi = rp_GetDpiForWindow(hWnd);
 	unsigned int iconSize;
 	unsigned int iconMargin;
-	uint16_t resID;
 	if (dpi < 120) {
 		// [96,120) dpi: Use 16x16.
 		iconSize = 16;
 		iconMargin = 2;
-		resID = IDP_FLAGS_16x16;
 	} else if (dpi <= 144) {
 		// [120,144] dpi: Use 24x24.
 		// TODO: Maybe needs to be slightly higher?
 		iconSize = 24;
 		iconMargin = 3;
-		resID = IDP_FLAGS_24x24;
 	} else {
 		// >144dpi: Use 32x32.
 		iconSize = 32;
 		iconMargin = 4;
-		resID = IDP_FLAGS_32x32;
 	}
+
+	// Create the ImageList.
+	himglFlags = ImageList_Create(iconSize, iconSize, ILC_COLOR32, 13, 16);
+	assert(himglFlags != nullptr);
 
 	// Load the flags sprite sheet.
 	// TODO: Is premultiplied alpha needed?
 	// Reference: https://stackoverflow.com/questions/307348/how-to-draw-32-bit-alpha-channel-bitmaps
-	rp_image_const_ptr imgFlagsSheet;
-	shared_ptr<RpFile_windres> f_res = std::make_shared<RpFile_windres>(
-		HINST_THISCOMPONENT, MAKEINTRESOURCE(resID), MAKEINTRESOURCE(RT_PNG));
-	assert(f_res->isOpen());
-	if (f_res->isOpen()) do {
-		imgFlagsSheet = RpPng::load(f_res);
-		if (!imgFlagsSheet)
-			break;
-
-		// Make sure the bitmap has the expected size.
-		assert(imgFlagsSheet->width() == (iconSize * SystemRegion::FLAGS_SPRITE_SHEET_COLS));
-		assert(imgFlagsSheet->height() == (iconSize * SystemRegion::FLAGS_SPRITE_SHEET_ROWS));
-		if (imgFlagsSheet->width() != (iconSize * SystemRegion::FLAGS_SPRITE_SHEET_COLS) ||
-		    imgFlagsSheet->height() != (iconSize * SystemRegion::FLAGS_SPRITE_SHEET_ROWS))
-		{
-			// Incorrect size. We can't use it.
-			imgFlagsSheet.reset();
-			break;
-		}
-
-		if (dwExStyleRTL != 0) {
-			// WS_EX_LAYOUTRTL will flip bitmaps in the dropdown box.
-			// ILC_MIRROR mirrors the bitmaps if the process is mirrored,
-			// but we can't rely on that being the case, and this option
-			// was first introduced in Windows XP.
-			// We'll flip the image here to counteract it.
-			const rp_image_const_ptr flipimg = imgFlagsSheet->flip(rp_image::FLIP_H);
-			assert((bool)flipimg);
-			if (flipimg) {
-				imgFlagsSheet = flipimg;
-			}
-		}
-	} while (0);
-
-	// Create the ImageList.
-	if (imgFlagsSheet) {
-		himglFlags = ImageList_Create(iconSize, iconSize, ILC_COLOR32, 13, 16);
-		assert(himglFlags != nullptr);
-		if (!himglFlags) {
-			// Unable to create the ImageList.
-			imgFlagsSheet.reset();
-		}
-	}
+	// NOTE: WS_EX_LAYOUTRTL will flip bitmaps in the dropdown box.
+	// ILC_MIRROR mirrors the bitmaps if the process is mirrored,
+	// but we can't rely on that being the case, and this option
+	// was first introduced in Windows XP.
+	// We'll flip the image here to counteract it. (flipH == true)
+	FlagSpriteSheet flagSpriteSheet(iconSize, (dwExStyleRTL != 0));
 
 	// Initialize the minimum size.
 	HFONT hFont = GetWindowFont(hWnd);
@@ -193,7 +149,7 @@ LRESULT LanguageComboBoxPrivate::setLCs(const uint32_t *lcs_array)
 	COMBOBOXEXITEM cbItem;
 	cbItem.iItem = 0;
 	int iImage = 0;
-	if (imgFlagsSheet) {
+	if (himglFlags) {
 		// We have images.
 		cbItem.mask = CBEIF_TEXT | CBEIF_LPARAM | CBEIF_IMAGE | CBEIF_SELECTEDIMAGE;
 	} else {
@@ -222,24 +178,9 @@ LRESULT LanguageComboBoxPrivate::setLCs(const uint32_t *lcs_array)
 			minSize.cy = std::max(minSize.cy, size.cy);
 		}
 
-		if (imgFlagsSheet) {
-			// Add the image.
-			int col, row;
-			int ret = SystemRegion::getFlagPosition(lc, &col, &row, forcePAL);
-			assert(ret == 0);
-			if (ret != 0) {
-				// Icon not found. Use a blank icon to prevent issues.
-				col = 3;
-				row = 3;
-			}
-
-			if (dwExStyleRTL != 0) {
-				// Flag sprite sheet is flipped for RTL.
-				col = 3 - col;
-			}
-
-			// Extract the sub-icon.
-			HBITMAP hbmIcon = RpImageWin32::getSubBitmap(imgFlagsSheet, col*iconSize, row*iconSize, iconSize, iconSize, dpi);
+		if (himglFlags) {
+			// Get the flag icon.
+			HBITMAP hbmIcon = flagSpriteSheet.getIcon(lc, forcePAL, dpi);
 			assert(hbmIcon != nullptr);
 			if (hbmIcon) {
 				// Add the icon to the ImageList.

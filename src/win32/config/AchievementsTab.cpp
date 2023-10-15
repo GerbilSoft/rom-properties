@@ -8,21 +8,16 @@
 
 #include "stdafx.h"
 #include "AchievementsTab.hpp"
+#include "RomDataFormat.hpp"
 #include "RpImageWin32.hpp"
 #include "res/resource.h"
-#include "RomDataFormat.hpp"
+#include "../AchSpriteSheet.hpp"
 
 // Other rom-properties libraries
 #include "librpbase/Achievements.hpp"
 #include "librpbase/RomFields.hpp"
 #include "librpbase/img/RpPng.hpp"
-#include "librptexture/img/rp_image.hpp"
 using namespace LibRpBase;
-using namespace LibRpTexture;
-
-// RpFile_windres
-#include "file/RpFile_windres.hpp"
-using LibRpFile::IRpFile;
 
 // libwin32ui
 #include "libwin32ui/AutoGetDC.hpp"
@@ -31,7 +26,6 @@ using LibWin32UI::AutoGetDC_font;
 using LibWin32UI::LoadDialog_i18n;
 
 // C++ STL classes
-using std::shared_ptr;
 using std::tstring;
 using std::unique_ptr;
 
@@ -267,64 +261,23 @@ void AchievementsTabPrivate::updateImageList(void)
 	// TODO: Handle WM_DPICHANGED.
 	const UINT dpi = rp_GetDpiForWindow(hWndPropSheet);
 	unsigned int iconSize;
-	uint16_t resID, resID_gray;
 	if (dpi < 144) {
 		// [96,144) dpi: Use 32x32.
 		iconSize = 32;
-		resID = IDP_ACH_32x32;
-		resID_gray = IDP_ACH_GRAY_32x32;
 	} else {
 		// >144dpi: Use 64x64.
 		iconSize = 64;
-		resID = IDP_ACH_64x64;
-		resID_gray = IDP_ACH_GRAY_64x64;
-	}
-
-	// Load the sprite sheets.
-	shared_ptr<RpFile_windres> f_res = std::make_shared<RpFile_windres>(
-		HINST_THISCOMPONENT, MAKEINTRESOURCE(resID), MAKEINTRESOURCE(RT_PNG));
-	assert(f_res->isOpen());
-	if (!f_res->isOpen()) {
-		// Unable to open the resource.
-		return;
-	}
-
-	const rp_image_const_ptr imgAchSheet = RpPng::load(f_res);
-	assert((bool)imgAchSheet);
-	if (!imgAchSheet)
-		return;
-	assert(imgAchSheet->width() == (int)(iconSize * Achievements::ACH_SPRITE_SHEET_COLS));
-	assert(imgAchSheet->height() == (int)(iconSize * Achievements::ACH_SPRITE_SHEET_ROWS));
-	if (imgAchSheet->width() != (int)(iconSize * Achievements::ACH_SPRITE_SHEET_COLS) ||
-	    imgAchSheet->height() != (int)(iconSize * Achievements::ACH_SPRITE_SHEET_ROWS))
-	{
-		return;
-	}
-
-	f_res = std::make_shared<RpFile_windres>(HINST_THISCOMPONENT, MAKEINTRESOURCE(resID_gray), MAKEINTRESOURCE(RT_PNG));
-	assert(f_res->isOpen());
-	if (!f_res->isOpen()) {
-		// Unable to open the resource.
-		return;
-	}
-
-	const rp_image_const_ptr imgAchGraySheet = RpPng::load(f_res);
-	assert((bool)imgAchGraySheet);
-	if (!imgAchGraySheet) {
-		return;
-	}
-	assert(imgAchGraySheet->width() == (int)(iconSize * Achievements::ACH_SPRITE_SHEET_COLS));
-	assert(imgAchGraySheet->height() == (int)(iconSize * Achievements::ACH_SPRITE_SHEET_ROWS));
-	if (imgAchGraySheet->width() != (int)(iconSize * Achievements::ACH_SPRITE_SHEET_COLS) ||
-	    imgAchGraySheet->height() != (int)(iconSize * Achievements::ACH_SPRITE_SHEET_ROWS))
-	{
-		return;
 	}
 
 	// Create the image list.
 	himglAch = ImageList_Create(iconSize, iconSize, ILC_COLOR32,
 		(int)Achievements::ID::Max, (int)Achievements::ID::Max);
 	assert(himglAch != nullptr);
+	if (!himglAch)
+		return;
+
+	// Load the achievements sprite sheet.
+	AchSpriteSheet achSpriteSheet(iconSize);
 
 	// Add icons.
 	const Achievements *const pAch = Achievements::instance();
@@ -333,13 +286,8 @@ void AchievementsTabPrivate::updateImageList(void)
 		const time_t timestamp = pAch->isUnlocked(id);
 		const bool unlocked = (timestamp != -1);
 
-		const int col = i % Achievements::ACH_SPRITE_SHEET_COLS;
-		const int row = i / Achievements::ACH_SPRITE_SHEET_COLS;
-
-		// Extract the sub-icon.
-		HBITMAP hbmIcon = RpImageWin32::getSubBitmap(
-			unlocked ? imgAchSheet : imgAchGraySheet,
-			col*iconSize, row*iconSize, iconSize, iconSize, dpi);
+		// Get the achievement icon.
+		HBITMAP hbmIcon = achSpriteSheet.getIcon(id, !unlocked, dpi);
 		assert(hbmIcon != nullptr);
 
 		// FIXME: Handle highlighting of alpha-transparent areas correctly.
