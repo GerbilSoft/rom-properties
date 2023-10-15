@@ -139,8 +139,8 @@ rp_options_tab_init(RpOptionsTab *tab)
 	// Image bandwidth options
 	tab->fraExtImgDownloads = gtk_frame_new(nullptr);
 	gtk_widget_set_name(tab->fraExtImgDownloads, "fraExtImgDownloads");
-	tab->chkExtImgDownloadEnabled = gtk_check_button_new_with_mnemonic(
-		convert_accel_to_gtk(C_("OptionsTab", "E&xternal Image Downloads")).c_str());
+	tab->chkExtImgDownloadEnabled = rp_gtk_check_button_new_with_mnemonic(
+		C_("OptionsTab", "E&xternal Image Downloads"));
 	gtk_widget_set_name(tab->chkExtImgDownloadEnabled, "chkExtImgDownloadEnabled");
 	gtk_frame_set_label_widget(GTK_FRAME(tab->fraExtImgDownloads), tab->chkExtImgDownloadEnabled);
 
