@@ -60,7 +60,7 @@ PIMGTYPE ISpriteSheet::getIcon(int col, int row, bool gray) const
 		}
 
 		imgSpriteSheet = rp_image_load_png_from_gresource(gres_filename);
-		assert(imgSpriteSheet != nullptr);
+		assert((bool)imgSpriteSheet);
 		if (!imgSpriteSheet) {
 			// Unable to load the sprite sheet.
 			return nullptr;
