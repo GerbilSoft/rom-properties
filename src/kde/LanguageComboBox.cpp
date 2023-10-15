@@ -9,6 +9,8 @@
 #include "stdafx.h"
 #include "LanguageComboBox.hpp"
 
+#include "FlagSpriteSheet.hpp"
+
 // librpbase
 using namespace LibRpBase;
 
@@ -33,25 +35,17 @@ void LanguageComboBox::updateIcons(void)
 		return;
 
 	// Sprite sheets. (32x32, 24x24, 16x16)
-	const QPixmap spriteSheets[3] = {
-		QPixmap(QLatin1String(":/flags/flags-32x32.png")),
-		QPixmap(QLatin1String(":/flags/flags-24x24.png")),
-		QPixmap(QLatin1String(":/flags/flags-16x16.png")),
-	};
+	const FlagSpriteSheet flagSpriteSheet32(32);
+	const FlagSpriteSheet flagSpriteSheet24(24);
+	const FlagSpriteSheet flagSpriteSheet16(16);
 
 	for (int i = 0; i < count; i++) {
-		int col, row;
 		const uint32_t lc = this->itemData(i).toUInt();
-		if (SystemRegion::getFlagPosition(lc, &col, &row, m_forcePAL) != 0) {
-			// No icon available.
-			this->setItemIcon(i, QIcon());
-		}
 
-		// Found a matching icon.
 		QIcon flag_icon;
-		flag_icon.addPixmap(spriteSheets[0].copy(col*32, row*32, 32, 32));
-		flag_icon.addPixmap(spriteSheets[1].copy(col*24, row*24, 24, 24));
-		flag_icon.addPixmap(spriteSheets[2].copy(col*16, row*16, 16, 16));
+		flag_icon.addPixmap(flagSpriteSheet32.getIcon(lc, m_forcePAL));
+		flag_icon.addPixmap(flagSpriteSheet24.getIcon(lc, m_forcePAL));
+		flag_icon.addPixmap(flagSpriteSheet16.getIcon(lc, m_forcePAL));
 		this->setItemIcon(i, flag_icon);
 	}
 }

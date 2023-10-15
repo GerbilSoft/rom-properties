@@ -22,7 +22,10 @@ using LibRpTexture::argb32_t;
 #  include <QtGui/QTextDocument>
 #endif /* QT_VERSION < QT_VERSION_CHECK(5,0,0) */
 
-// C++ STL classes.
+// Achievement spritesheets
+#include "AchSpriteSheet.hpp"
+
+// C++ STL classes
 using std::unordered_map;
 
 class AchQtDBusPrivate
@@ -44,14 +47,6 @@ class AchQtDBusPrivate
 
 	public:
 		/**
-		 * Load the specified sprite sheet.
-		 * @param iconSize Icon size. (16, 24, 32, 64)
-		 * @return QImage, or null QImage on error.
-		 */
-		QImage loadSpriteSheet(int iconSize);
-
-	public:
-		/**
 		 * Notification function. (static)
 		 * @param user_data	[in] User data. (this)
 		 * @param id		[in] Achievement ID.
@@ -65,12 +60,6 @@ class AchQtDBusPrivate
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
 		int notifyFunc(Achievements::ID id);
-
-	public:
-		// Sprite sheets.
-		// - Key: Icon size
-		// - Value: QImage
-		unordered_map<int, QImage> map_imgAchSheet;
 };
 
 struct NotifyIconStruct {
@@ -136,78 +125,6 @@ AchQtDBusPrivate::~AchQtDBusPrivate()
 }
 
 /**
- * Load the specified sprite sheet.
- * @param iconSize Icon size. (16, 24, 32, 64)
- * @return QImage, or invalid QImage on error.
- */
-QImage AchQtDBusPrivate::loadSpriteSheet(int iconSize)
-{
-	assert(iconSize == 16 || iconSize == 24 || iconSize == 32 || iconSize == 64);
-
-	// Check if the sprite sheet is already loaded.
-	auto iter = map_imgAchSheet.find(iconSize);
-	if (iter != map_imgAchSheet.end()) {
-		// Sprite sheet is already loaded.
-		return iter->second;
-	}
-
-	char ach_filename[32];
-	snprintf(ach_filename, sizeof(ach_filename), ":/ach/ach-%dx%d.png", iconSize, iconSize);
-	QImage imgAchSheet(QString::fromLatin1(ach_filename));
-	if (imgAchSheet.isNull()) {
-		// Invalid...
-		return imgAchSheet;
-	}
-
-	// Make sure it's ARGB32.
-	if (imgAchSheet.format() != QImage::Format_ARGB32) {
-		imgAchSheet = imgAchSheet.convertToFormat(QImage::Format_ARGB32);
-		if (imgAchSheet.isNull()) {
-			// Invalid...
-			return imgAchSheet;
-		}
-	}
-
-	// Make sure the bitmap has the expected size.
-	assert(imgAchSheet.width() == (int)(iconSize * Achievements::ACH_SPRITE_SHEET_COLS));
-	assert(imgAchSheet.height() == (int)(iconSize * Achievements::ACH_SPRITE_SHEET_ROWS));
-	if (imgAchSheet.width() != (int)(iconSize * Achievements::ACH_SPRITE_SHEET_COLS) ||
-	    imgAchSheet.height() != (int)(iconSize * Achievements::ACH_SPRITE_SHEET_ROWS))
-	{
-		// Incorrect size. We can't use it.
-		return {};
-	}
-
-	// NOTE: The R and B channels need to be swapped for XDG notifications.
-	// Swap the R and B channels in place.
-	// TODO: Qt 6.0 will have an in-place rgbSwap() function.
-	// TODO: SSSE3-optimized version?
-	argb32_t *bits = reinterpret_cast<argb32_t*>(imgAchSheet.bits());
-	const int strideDiff = imgAchSheet.bytesPerLine() - (imgAchSheet.width() * sizeof(uint32_t));
-	for (unsigned int y = (unsigned int)imgAchSheet.height(); y > 0; y--) {
-		unsigned int x;
-		for (x = (unsigned int)imgAchSheet.width(); x > 1; x -= 2) {
-			// Swap the R and B channels
-			std::swap(bits[0].r, bits[0].b);
-			std::swap(bits[1].r, bits[1].b);
-			bits += 2;
-		}
-		if (x == 1) {
-			// Last pixel
-			std::swap(bits->r, bits->b);
-			bits++;
-		}
-
-		// Next line.
-		bits += strideDiff;
-	}
-
-	// Sprite sheet is correct.
-	map_imgAchSheet.emplace(iconSize, imgAchSheet);
-	return imgAchSheet;
-}
-
-/**
  * Notification function. (static)
  * @param user_data	[in] User data. (this)
  * @param id		[in] Achievement ID.
@@ -262,29 +179,57 @@ int AchQtDBusPrivate::notifyFunc(Achievements::ID id)
 	// Hints, including image data.
 	// FIXME: Icon size. Using 32px for now.
 	static const int iconSize = 32;
-	const QImage imgspr = loadSpriteSheet(iconSize);
+	const AchSpriteSheet achSpriteSheet(iconSize);
 	QVariantMap hints;
-	QImage subIcon;
-	if (!imgspr.isNull()) {
-		// Determine row and column.
-		const int col = ((int)id % Achievements::ACH_SPRITE_SHEET_COLS);
-		const int row = ((int)id / Achievements::ACH_SPRITE_SHEET_COLS);
 
-		// Extract the sub-icon.
-		subIcon = imgspr.copy(col*iconSize, row*iconSize, iconSize, iconSize);
+	// Get the icon.
+	QImage icon = achSpriteSheet.getIcon(id).toImage();
+	if (!icon.isNull()) {
+		if (icon.format() != QImage::Format_ARGB32) {
+			// Need to use ARGB32 format.
+#if QT_VERSION >= QT_VERSION_CHECK(5,13,0)
+			icon.convertTo(QImage::Format_ARGB32);
+#else /* QT_VERSION < QT_VERSION_CHECK(5,13,0) */
+			icon = icon.convertToFormat(QImage::Format_ARGB32);
+#endif /* QT_VERSION >= QT_VERSION_CHECK(5,13,0) */
+		}
+
+		// NOTE: The R and B channels need to be swapped for XDG notifications.
+		// Swap the R and B channels in place.
+		// TODO: Qt 6.0 will have an in-place rgbSwap() function.
+		// TODO: SSSE3-optimized version?
+		argb32_t *bits = reinterpret_cast<argb32_t*>(icon.bits());
+		const int strideDiff = icon.bytesPerLine() - (icon.width() * sizeof(uint32_t));
+		for (unsigned int y = (unsigned int)icon.height(); y > 0; y--) {
+			unsigned int x;
+			for (x = (unsigned int)icon.width(); x > 1; x -= 2) {
+				// Swap the R and B channels
+				std::swap(bits[0].r, bits[0].b);
+				std::swap(bits[1].r, bits[1].b);
+				bits += 2;
+			}
+			if (x == 1) {
+				// Last pixel
+				std::swap(bits->r, bits->b);
+				bits++;
+			}
+
+			// Next line.
+			bits += strideDiff;
+		}
 
 		// Set up the NotifyIconStruct.
 		NotifyIconStruct nis;
-		nis.width = subIcon.width();
-		nis.height = subIcon.height();
-		nis.rowstride = subIcon.bytesPerLine();
+		nis.width = icon.width();
+		nis.height = icon.height();
+		nis.rowstride = icon.bytesPerLine();
 		nis.has_alpha = true;
 		nis.bits_per_sample = 8;	// 8 bits per *channel*.
 		nis.channels = 4;
 		// TODO: constBits(), sizeInBytes()
 		// NOTE: byteCount() doesn't work with deprecated functions disabled.
-		nis.data = QByteArray::fromRawData((const char*)subIcon.bits(),
-			subIcon.bytesPerLine() * subIcon.height());
+		nis.data = QByteArray::fromRawData((const char*)icon.bits(),
+			icon.bytesPerLine() * icon.height());
 
 		// NOTE: The hint name changed in various versions of the specification.
 		// We'll use the oldest version for compatibility purposes.

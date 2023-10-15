@@ -9,6 +9,7 @@
 #include "stdafx.h"
 #include "AchievementsTab.hpp"
 #include "AchievementsItemDelegate.hpp"
+#include "../AchSpriteSheet.hpp"
 
 // librpbase
 #include "librpbase/Achievements.hpp"
@@ -77,31 +78,8 @@ void AchievementsTab::reset(void)
 	// TODO: Ideal icon size?
 	// Using 32x32 for now.
 	static const int iconSize = 32;
+	const AchSpriteSheet achSpriteSheet(iconSize);
 	treeWidget->setIconSize(QSize(iconSize, iconSize));
-
-	char ach_filename[32];
-	snprintf(ach_filename, sizeof(ach_filename), ":/ach/ach-%dx%d.png", iconSize, iconSize);
-	const QPixmap pxmAchSheet(QString::fromLatin1(ach_filename));
-	if (pxmAchSheet.isNull())
-		return;
-	snprintf(ach_filename, sizeof(ach_filename), ":/ach/ach-gray-%dx%d.png", iconSize, iconSize);
-	const QPixmap pxmAchGraySheet(QString::fromLatin1(ach_filename));
-	if (pxmAchGraySheet.isNull())
-		return;
-
-	// Make sure the bitmaps have the expected size.
-	assert(pxmAchSheet.width() == (int)(iconSize * Achievements::ACH_SPRITE_SHEET_COLS));
-	assert(pxmAchSheet.height() == (int)(iconSize * Achievements::ACH_SPRITE_SHEET_ROWS));
-	assert(pxmAchGraySheet.width() == (int)(iconSize * Achievements::ACH_SPRITE_SHEET_COLS));
-	assert(pxmAchGraySheet.height() == (int)(iconSize * Achievements::ACH_SPRITE_SHEET_ROWS));
-	if (pxmAchSheet.width() != (int)(iconSize * Achievements::ACH_SPRITE_SHEET_COLS) ||
-	    pxmAchSheet.height() != (int)(iconSize * Achievements::ACH_SPRITE_SHEET_ROWS) ||
-	    pxmAchGraySheet.width() != (int)(iconSize * Achievements::ACH_SPRITE_SHEET_COLS) ||
-	    pxmAchGraySheet.height() != (int)(iconSize * Achievements::ACH_SPRITE_SHEET_ROWS))
-	{
-		// Incorrect size. We can't use it.
-		return;
-	}
 
 	const Achievements *const pAch = Achievements::instance();
 	for (int i = 0; i < (int)Achievements::ID::Max; i++) {
@@ -110,15 +88,8 @@ void AchievementsTab::reset(void)
 		const time_t timestamp = pAch->isUnlocked(id);
 		const bool unlocked = (timestamp != -1);
 
-		// Determine row and column.
-		const int col = i % Achievements::ACH_SPRITE_SHEET_COLS;
-		const int row = i / Achievements::ACH_SPRITE_SHEET_COLS;
-
-		// Extract the sub-icon.
-		const QRect subRect(col*iconSize, row*iconSize, iconSize, iconSize);
-		const QPixmap pxmSubIcon = unlocked
-			? pxmAchSheet.copy(subRect)
-			: pxmAchGraySheet.copy(subRect);
+		// Get the icon.
+		QPixmap icon = achSpriteSheet.getIcon(id, !unlocked);
 
 		// Get the name and description.
 		QString s_ach = U82Q(pAch->getName(id)) + QChar(L'\n');
@@ -127,7 +98,7 @@ void AchievementsTab::reset(void)
 
 		// Add the list item.
 		QTreeWidgetItem *const treeWidgetItem = new QTreeWidgetItem(treeWidget);
-		treeWidgetItem->setIcon(0, QIcon(pxmSubIcon));
+		treeWidgetItem->setIcon(0, QIcon(icon));
 		treeWidgetItem->setData(1, Qt::DisplayRole, s_ach);
 		treeWidgetItem->setData(1, Qt::UserRole, unlocked);
 		if (unlocked) {

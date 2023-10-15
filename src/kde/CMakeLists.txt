@@ -28,6 +28,9 @@ SET(${PROJECT_NAME}_SRCS
 	OptionsMenuButton.cpp
 	ProxyForUrl.cpp
 	RomDataFormat.cpp
+	ISpriteSheet.cpp
+	AchSpriteSheet.cpp
+	FlagSpriteSheet.cpp
 	config/stub-export.cpp
 	config/ConfigDialog.cpp
 	config/ITab.cpp
@@ -62,6 +65,9 @@ SET(${PROJECT_NAME}_H
 	ProxyForUrl.hpp
 	check-uid.hpp
 	RomDataFormat.hpp
+	ISpriteSheet.hpp
+	AchSpriteSheet.hpp
+	FlagSpriteSheet.hpp
 	config/ConfigDialog.hpp
 	config/ITab.hpp
 	config/ImageTypesTab.hpp
