@@ -226,7 +226,7 @@ rp_options_menu_button_init(RpOptionsMenuButton *widget)
 
 	GtkWidget *const lblOptions = gtk_label_new(nullptr);
 	gtk_widget_set_name(lblOptions, "lblOptions");
-	gtk_label_set_markup_with_mnemonic(GTK_LABEL(lblOptions), s_title.c_str());
+	gtk_label_set_text_with_mnemonic(GTK_LABEL(lblOptions), s_title.c_str());
 	gtk_widget_show(lblOptions);
 	GtkWidget *const hboxOptions = rp_gtk_hbox_new(4);
 	gtk_widget_set_name(hboxOptions, "hboxOptions");

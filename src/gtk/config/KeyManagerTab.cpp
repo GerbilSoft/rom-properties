@@ -158,7 +158,7 @@ rp_key_manager_tab_init(RpKeyManagerTab *tab)
 	// This will also be used for the non-GtkMenuButton version.
 	GtkWidget *const lblImport = gtk_label_new(nullptr);
 	gtk_widget_set_name(lblImport, "lblImport");
-	gtk_label_set_markup_with_mnemonic(GTK_LABEL(lblImport), s_import.c_str());
+	gtk_label_set_text_with_mnemonic(GTK_LABEL(lblImport), s_import.c_str());
 	GtkWidget *const imgImport = gtk_image_new_from_icon_name("pan-up-symbolic", GTK_ICON_SIZE_BUTTON);
 	gtk_widget_set_name(imgImport, "imgImport");
 
