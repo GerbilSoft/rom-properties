@@ -159,12 +159,8 @@ int AchGDBusPrivate::notifyFunc(Achievements::ID id)
 	unsigned int rowstride = 0;
 	uint8_t *pImgData;
 
-	// Get the image data.
-#if defined(RP_GTK_USE_GDKTEXTURE)
-	// GdkTexture doesn't allow direct access to pixels.
-	// We'll need to download it to a local memory buffer.
-	const int width = gdk_texture_get_width(icon);
-	const int height = gdk_texture_get_height(icon);
+	int width, height;
+	PIMGTYPE_get_size(icon, &width, &height);
 	assert(width == iconSize);
 	assert(height == iconSize);
 	if (width != iconSize || height != iconSize) {
@@ -172,37 +168,23 @@ int AchGDBusPrivate::notifyFunc(Achievements::ID id)
 		return -EIO;
 	}
 
+	// Get the image data.
+#if defined(RP_GTK_USE_GDKTEXTURE)
+	// GdkTexture doesn't allow direct access to pixels.
+	// We'll need to download it to a local memory buffer.
 	rowstride = iconSize * sizeof(uint32_t);
 	imgDataLen = rowstride * iconSize;
-	uint8_t *texdata = static_cast<uint8_t*>(g_malloc(imgDataLen));
+	uint8_t *const texdata = static_cast<uint8_t*>(g_malloc(imgDataLen));
 	// FIXME: Using GdkTextureDownloader to convert to GDK_MEMORY_B8G8R8A8
 	// causes a heap overflow. (R8G8B8A8 works, as does B8G8R8A8_PREMULTIPLIED.)
 	// TODO: Un-premultiply the texture.
 	gdk_texture_download(icon, texdata, rowstride);
 	pImgData = texdata;
 #elif defined(RP_GTK_USE_CAIRO)
-	const int width = cairo_image_surface_get_width(icon);
-	const int height = cairo_image_surface_get_height(icon);
-	assert(width == iconSize);
-	assert(height == iconSize);
-	if (width != iconSize || height != iconSize) {
-		PIMGTYPE_unref(icon);
-		return -EIO;
-	}
-
 	pImgData = cairo_image_surface_get_data(icon);
 	rowstride = cairo_image_surface_get_stride(icon);
 	imgDataLen = rowstride * iconSize;
 #else /* GdkPixbuf */
-	const int width = gdk_pixbuf_get_width(icon);
-	const int height = gdk_pixbuf_get_height(icon);
-	assert(width == iconSize);
-	assert(height == iconSize);
-	if (width != iconSize || height != iconSize) {
-		PIMGTYPE_unref(icon);
-		return -EIO;
-	}
-
 	pImgData = gdk_pixbuf_get_pixels(icon);
 	rowstride = gdk_pixbuf_get_rowstride(icon);
 	imgDataLen = gdk_pixbuf_get_byte_length(icon);
