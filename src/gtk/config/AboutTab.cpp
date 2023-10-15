@@ -284,16 +284,13 @@ rp_about_tab_init(RpAboutTab *tab)
 #endif /* GTK_CHECK_VERSION(3,0,0) */
 
 	// Create the tabs.
-	GtkWidget *lblTab = gtk_label_new_with_mnemonic(
-		convert_accel_to_gtk(C_("AboutTab", "C&redits")).c_str());
+	GtkWidget *lblTab = rp_gtk_label_new_with_mnemonic(C_("AboutTab", "C&redits"));
 	gtk_notebook_append_page(GTK_NOTEBOOK(tabWidget), scrlCredits, lblTab);
 	gtk_widget_set_name(lblTab, "lblCreditsTab");
-	lblTab = gtk_label_new_with_mnemonic(
-		convert_accel_to_gtk(C_("AboutTab", "&Libraries")).c_str());
+	lblTab = rp_gtk_label_new_with_mnemonic(C_("AboutTab", "&Libraries"));
 	gtk_widget_set_name(lblTab, "lblLibrariesTab");
 	gtk_notebook_append_page(GTK_NOTEBOOK(tabWidget), scrlLibraries, lblTab);
-	lblTab = gtk_label_new_with_mnemonic(
-		convert_accel_to_gtk(C_("AboutTab", "&Support")).c_str());
+	lblTab = rp_gtk_label_new_with_mnemonic(C_("AboutTab", "&Support"));
 	gtk_widget_set_name(lblTab, "lblSupportTab");
 	gtk_notebook_append_page(GTK_NOTEBOOK(tabWidget), scrlSupport, lblTab);
 

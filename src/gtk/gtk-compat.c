@@ -58,6 +58,16 @@ void rp_gtk_main_clipboard_set_text(const char *text)
 
 /** rom-properties GTK function wrappers **/
 
+static inline char *label_mnemonic_convert(const char *label)
+{
+	char *const str = strdup(label);
+	char *const p = strchr(str, '&');
+	if (p) {
+		*p = '_';
+	}
+	return str;
+}
+
 /**
  * gtk_check_button_new_with_mnemonic() wrapper that uses '&' for mnemonics.
  * @param label Label with '&' mnemonic.
@@ -70,13 +80,26 @@ GtkWidget *rp_gtk_check_button_new_with_mnemonic(const char *label)
 		return gtk_check_button_new_with_mnemonic(NULL);
 	}
 
-	char *const str = strdup(label);
-	char *const p = strchr(str, '&');
-	if (p) {
-		*p = '_';
-	}
-
+	char *const str = label_mnemonic_convert(label);
 	GtkWidget *const checkButton = gtk_check_button_new_with_mnemonic(str);
 	free(str);
 	return checkButton;
+}
+
+/**
+ * gtk_label_new_with_mnemonic() wrapper that uses '&' for mnemonics.
+ * @param label Label with '&' mnemonic.
+ * @return GtkLabel
+ */
+GtkWidget *rp_gtk_label_new_with_mnemonic(const char *label)
+{
+	assert(label != NULL);
+	if (!label) {
+		return gtk_label_new_with_mnemonic(NULL);
+	}
+
+	char *const str = label_mnemonic_convert(label);
+	GtkWidget *const gtkLabel = gtk_label_new_with_mnemonic(str);
+	free(str);
+	return gtkLabel;
 }

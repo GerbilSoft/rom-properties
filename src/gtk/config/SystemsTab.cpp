@@ -117,12 +117,9 @@ rp_systems_tab_init(RpSystemsTab *tab)
 	GTK_LABEL_XALIGN_LEFT(lblDMGDescription);
 	gtk_label_set_wrap(GTK_LABEL(lblDMGDescription), TRUE);
 
-	GtkWidget *const lblDMG = gtk_label_new_with_mnemonic(
-		convert_accel_to_gtk(C_("SystemsTab", "Game &Boy:")).c_str());
-	GtkWidget *const lblSGB = gtk_label_new_with_mnemonic(
-		convert_accel_to_gtk(C_("SystemsTab", "&Super Game Boy:")).c_str());
-	GtkWidget *const lblCGB = gtk_label_new_with_mnemonic(
-		convert_accel_to_gtk(C_("SystemsTab", "Game Boy &Color:")).c_str());
+	GtkWidget *const lblDMG = rp_gtk_label_new_with_mnemonic(C_("SystemsTab", "Game &Boy:"));
+	GtkWidget *const lblSGB = rp_gtk_label_new_with_mnemonic(C_("SystemsTab", "&Super Game Boy:"));
+	GtkWidget *const lblCGB = rp_gtk_label_new_with_mnemonic(C_("SystemsTab", "Game Boy &Color:"));
 
 	gtk_widget_set_name(lblDMG, "lblDMG");
 	gtk_widget_set_name(lblSGB, "lblSGB");

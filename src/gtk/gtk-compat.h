@@ -387,4 +387,11 @@ typedef GtkComboBox OurComboBox;
  */
 GtkWidget *rp_gtk_check_button_new_with_mnemonic(const char *label);
 
+/**
+ * gtk_label_new_with_mnemonic() wrapper that uses '&' for mnemonics.
+ * @param label Label with '&' mnemonic.
+ * @return GtkLabel
+ */
+GtkWidget *rp_gtk_label_new_with_mnemonic(const char *label);
+
 G_END_DECLS

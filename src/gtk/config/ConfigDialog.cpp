@@ -249,8 +249,8 @@ rp_config_dialog_init(RpConfigDialog *dialog)
 
 	// Create the tabs.
 	for (const auto &tabInfo : tabInfo_tbl) {
-		GtkWidget *const tab_label = gtk_label_new_with_mnemonic(
-			convert_accel_to_gtk(dpgettext_expr(RP_I18N_DOMAIN, "ConfigDialog", tabInfo.title)).c_str());
+		GtkWidget *const tab_label = rp_gtk_label_new_with_mnemonic(
+			dpgettext_expr(RP_I18N_DOMAIN, "ConfigDialog", tabInfo.title));
 		gtk_widget_set_name(tab_label, tabInfo.lbl_name);
 		GTK_WIDGET_SHOW_GTK3(tab_label);
 
