@@ -18,9 +18,8 @@ using namespace LibRpBase;
  * @param iconSize Icon size
  */
 FlagSpriteSheet::FlagSpriteSheet(int iconSize)
-	: super(4, 4, iconSize, iconSize)
+	: super(SystemRegion::FLAGS_SPRITE_SHEET_COLS, SystemRegion::FLAGS_SPRITE_SHEET_ROWS, iconSize, iconSize)
 {
-	// FIXME: Hard-coded flag cols/rows values...
 	assert(iconSize == 16 || iconSize == 24 || iconSize == 32);
 }
 
