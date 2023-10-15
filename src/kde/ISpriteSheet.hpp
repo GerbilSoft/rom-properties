@@ -28,7 +28,7 @@ private:
 
 protected:
 	/**
-	 * Get the gresource filename for a sprite sheet.
+	 * Get the qresource filename for a sprite sheet.
 	 * @param buf		[out] Filename buffer
 	 * @param size		[in] Size of buf
 	 * @param width		[in] Icon width
