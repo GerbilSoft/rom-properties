@@ -33,7 +33,7 @@ protected:
 	 * @param gray		[in] If true, load the grayscale version
 	 * @return 0 on success; non-zero on error.
 	 */
-	int getFilename(char *buf, size_t size, int width, int height, bool gray = false) final;
+	int getFilename(char *buf, size_t size, int width, int height, bool gray = false) const final;
 
 public:
 	/**
@@ -42,5 +42,5 @@ public:
 	* @param forcePAL	[in,opt] If true, force PAL regions, e.g. always use the 'gb' flag for English.
 	* @return Flag icon, or nullptr on error. (caller must free the icon)
 	*/
-	PIMGTYPE getIcon(uint32_t lc, bool forcePAL = false);
+	PIMGTYPE getIcon(uint32_t lc, bool forcePAL = false) const;
 };

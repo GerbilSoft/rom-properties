@@ -33,7 +33,7 @@ FlagSpriteSheet::FlagSpriteSheet(int iconSize)
  * @param gray		[in] If true, load the grayscale version
  * @return 0 on success; non-zero on error.
  */
-int FlagSpriteSheet::getFilename(char *buf, size_t size, int width, int height, bool gray)
+int FlagSpriteSheet::getFilename(char *buf, size_t size, int width, int height, bool gray) const
 {
 	// NOTE: Gray is not used for flags.
 	RP_UNUSED(gray);
@@ -49,7 +49,7 @@ int FlagSpriteSheet::getFilename(char *buf, size_t size, int width, int height, 
  * @param forcePAL	[in,opt] If true, force PAL regions, e.g. always use the 'gb' flag for English.
  * @return Flag icon, or nullptr on error. (caller must free the icon)
  */
-PIMGTYPE FlagSpriteSheet::getIcon(uint32_t lc, bool forcePAL)
+PIMGTYPE FlagSpriteSheet::getIcon(uint32_t lc, bool forcePAL) const
 {
 	assert(lc != 0);
 	if (lc == 0) {

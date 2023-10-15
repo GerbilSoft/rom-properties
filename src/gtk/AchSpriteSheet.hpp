@@ -36,7 +36,7 @@ protected:
 	 * @param gray		[in] If true, load the grayscale version
 	 * @return 0 on success; non-zero on error.
 	 */
-	int getFilename(char *buf, size_t size, int width, int height, bool gray = false) final;
+	int getFilename(char *buf, size_t size, int width, int height, bool gray = false) const final;
 
 public:
 	/**
@@ -45,5 +45,5 @@ public:
 	 * @param gray If true, load the grayscale version
 	 * @return Achievements icon, or nullptr on error. (caller must free the icon)
 	 */
-	PIMGTYPE getIcon(LibRpBase::Achievements::ID id, bool gray = false);
+	PIMGTYPE getIcon(LibRpBase::Achievements::ID id, bool gray = false) const;
 };

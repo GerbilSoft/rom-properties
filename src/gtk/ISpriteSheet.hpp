@@ -38,7 +38,7 @@ protected:
 	 * @param gray		[in] If true, load the grayscale version
 	 * @return 0 on success; non-zero on error.
 	 */
-	virtual int getFilename(char *buf, size_t size, int width, int height, bool gray = false) = 0;
+	virtual int getFilename(char *buf, size_t size, int width, int height, bool gray = false) const = 0;
 
 	/**
 	 * Get an icon from the sprite sheet.
@@ -47,11 +47,10 @@ protected:
 	 * @param gray If true, load the grayscale version
 	 * @return Icon, or nullptr on error. (caller must free the icon)
 	 */
-	PIMGTYPE getIcon(int col, int row, bool gray = false);
+	PIMGTYPE getIcon(int col, int row, bool gray = false) const;
 
 private:
-	LibRpTexture::rp_image_ptr m_img;
-	LibRpTexture::rp_image_ptr m_imgGray;
+	LibRpTexture::rp_image_ptr m_img, m_imgGray;
 	int m_cols, m_rows;
 	int m_width, m_height;
 };

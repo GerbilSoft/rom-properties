@@ -20,7 +20,7 @@ using LibRpBase::Achievements;
 // Achievement spritesheets
 #include "AchSpriteSheet.hpp"
 
-// C++ STL classes.
+// C++ STL classes
 using std::string;
 using std::unordered_map;
 

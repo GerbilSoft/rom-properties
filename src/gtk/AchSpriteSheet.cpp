@@ -31,7 +31,7 @@ AchSpriteSheet::AchSpriteSheet(int iconSize)
  * @param gray		[in] If true, load the grayscale version
  * @return 0 on success; non-zero on error.
  */
-int AchSpriteSheet::getFilename(char *buf, size_t size, int width, int height, bool gray)
+int AchSpriteSheet::getFilename(char *buf, size_t size, int width, int height, bool gray) const
 {
 	snprintf(buf, size,
 		"/com/gerbilsoft/rom-properties/ach/ach%s-%dx%d.png",
@@ -45,7 +45,7 @@ int AchSpriteSheet::getFilename(char *buf, size_t size, int width, int height, b
  * @param gray If true, load the grayscale version
  * @return Achievements icon, or nullptr on error. (caller must free the icon)
  */
-PIMGTYPE AchSpriteSheet::getIcon(Achievements::ID id, bool gray)
+PIMGTYPE AchSpriteSheet::getIcon(Achievements::ID id, bool gray) const
 {
 	assert((int)id >= 0);
 	assert(id < Achievements::ID::Max);

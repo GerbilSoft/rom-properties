@@ -35,7 +35,7 @@ ISpriteSheet::ISpriteSheet(int cols, int rows, int width, int height)
  * @param gray If true, load the grayscale version
  * @return Icon, or nullptr on error. (caller must free the icon)
  */
-PIMGTYPE ISpriteSheet::getIcon(int col, int row, bool gray)
+PIMGTYPE ISpriteSheet::getIcon(int col, int row, bool gray) const
 {
 	assert(col >= 0);
 	assert(col < m_cols);
@@ -47,7 +47,9 @@ PIMGTYPE ISpriteSheet::getIcon(int col, int row, bool gray)
 	}
 
 	// Do we need to load the sprite sheet?
-	rp_image_ptr &imgSpriteSheet = gray ? m_imgGray : m_img;
+	rp_image_ptr &imgSpriteSheet = gray
+		? const_cast<ISpriteSheet*>(this)->m_imgGray
+		: const_cast<ISpriteSheet*>(this)->m_img;
 	if (!imgSpriteSheet) {
 		// Load the sprite sheet.
 		char gres_filename[64];
