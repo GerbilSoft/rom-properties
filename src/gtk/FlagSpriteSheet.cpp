@@ -9,12 +9,9 @@
 #include "stdafx.h"
 #include "FlagSpriteSheet.hpp"
 
-// librpbase, librptexture
+// librpbase
 #include "librpbase/SystemRegion.hpp"
 using namespace LibRpBase;
-using LibRpTexture::argb32_t;
-using LibRpTexture::rp_image;
-using LibRpTexture::rp_image_ptr;
 
 /**
  * Flags sprite sheet
