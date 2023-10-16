@@ -23,80 +23,80 @@ namespace LibRpBase {
 
 class ConfigPrivate : public ConfReaderPrivate
 {
-	public:
-		ConfigPrivate();
+public:
+	ConfigPrivate();
 
-	private:
-		typedef ConfReaderPrivate super;
-		RP_DISABLE_COPY(ConfigPrivate)
+private:
+	typedef ConfReaderPrivate super;
+	RP_DISABLE_COPY(ConfigPrivate)
 
-	public:
-		// Static Config instance.
-		// TODO: Q_GLOBAL_STATIC() equivalent, though we
-		// may need special initialization if the compiler
-		// doesn't support thread-safe statics.
-		static Config instance;
+public:
+	// Static Config instance.
+	// TODO: Q_GLOBAL_STATIC() equivalent, though we
+	// may need special initialization if the compiler
+	// doesn't support thread-safe statics.
+	static Config instance;
 
-	public:
-		/**
-		 * Reset the configuration to the default values.
-		 */
-		void reset(void) final;
+public:
+	/**
+	 * Reset the configuration to the default values.
+	 */
+	void reset(void) final;
 
-		/**
-		 * Process a configuration line.
-		 * Virtual function; must be reimplemented by subclasses.
-		 *
-		 * @param section Section.
-		 * @param name Key.
-		 * @param value Value.
-		 * @return 1 on success; 0 on error.
-		 */
-		int processConfigLine(const char *section,
-			const char *name, const char *value) final;
+	/**
+	 * Process a configuration line.
+	 * Virtual function; must be reimplemented by subclasses.
+	 *
+	 * @param section Section.
+	 * @param name Key.
+	 * @param value Value.
+	 * @return 1 on success; 0 on error.
+	 */
+	int processConfigLine(const char *section,
+		const char *name, const char *value) final;
 
-	public:
-		/**
-		 * Default image type priority.
-		 * Used if a custom configuration is not defined
-		 * for a given system.
-		 */
-		static const uint8_t defImgTypePrio[];
+public:
+	/**
+	 * Default image type priority.
+	 * Used if a custom configuration is not defined
+	 * for a given system.
+	 */
+	static const uint8_t defImgTypePrio[];
 
-		// Image type priority data.
-		// Managed as a single block in order to reduce
-		// memory allocations.
-		rp::uvector<uint8_t> vImgTypePrio;
+	// Image type priority data.
+	// Managed as a single block in order to reduce
+	// memory allocations.
+	rp::uvector<uint8_t> vImgTypePrio;
 
-		/**
-		 * Map of RomData subclass names to vImgTypePrio indexes.
-		 * - Key: RomData subclass name.
-		 * - Value: vImgTypePrio information.
-		 *   - High byte: Data length.
-		 *   - Low 3 bytes: Data offset.
-		 */
-		unordered_map<string, uint32_t> mapImgTypePrio;
+	/**
+	 * Map of RomData subclass names to vImgTypePrio indexes.
+	 * - Key: RomData subclass name.
+	 * - Value: vImgTypePrio information.
+	 *   - High byte: Data length.
+	 *   - Low 3 bytes: Data offset.
+	 */
+	unordered_map<string, uint32_t> mapImgTypePrio;
 
-		// Download options
-		uint32_t palLanguageForGameTDB;
-		bool extImgDownloadEnabled;
-		bool useIntIconForSmallSizes;
-		bool storeFileOriginInfo;
+	// Download options
+	uint32_t palLanguageForGameTDB;
+	bool extImgDownloadEnabled;
+	bool useIntIconForSmallSizes;
+	bool storeFileOriginInfo;
 
-		// Image bandwidth options
-		Config::ImgBandwidth imgBandwidthUnmetered;
-		Config::ImgBandwidth imgBandwidthMetered;
-		// Compatibility with older settings
-		bool isNewBandwidthOptionSet;
-		bool downloadHighResScans;
+	// Image bandwidth options
+	Config::ImgBandwidth imgBandwidthUnmetered;
+	Config::ImgBandwidth imgBandwidthMetered;
+	// Compatibility with older settings
+	bool isNewBandwidthOptionSet;
+	bool downloadHighResScans;
 
-		// DMG title screen mode. [index is ROM type]
-		Config::DMG_TitleScreen_Mode dmgTSMode[Config::DMG_TitleScreen_Mode::DMG_TS_MAX];
+	// DMG title screen mode. [index is ROM type]
+	Config::DMG_TitleScreen_Mode dmgTSMode[Config::DMG_TitleScreen_Mode::DMG_TS_MAX];
 
-		// Other options.
-		bool showDangerousPermissionsOverlayIcon;
-		bool enableThumbnailOnNetworkFS;
-		bool showXAttrView;
+	// Other options.
+	bool showDangerousPermissionsOverlayIcon;
+	bool enableThumbnailOnNetworkFS;
+	bool showXAttrView;
 };
 
 /** ConfigPrivate **/
