@@ -41,7 +41,7 @@ class rp_image_private;
 class rp_image
 {
 	public:
-		enum class Format {
+		enum class Format : uint8_t {
 			None,	// No image.
 			CI8,	// Color index, 8-bit palette.
 			ARGB32,	// 32-bit ARGB.

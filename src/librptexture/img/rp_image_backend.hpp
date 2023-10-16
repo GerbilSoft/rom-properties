@@ -56,16 +56,16 @@ class RP_LIBROMDATA_PUBLIC NOVTABLE rp_image_backend
 		int stride;
 		rp_image::Format format;
 
-		// Image data.
+		// Image data
 		virtual void *data(void) = 0;
 		virtual const void *data(void) const = 0;
 		virtual size_t data_len(void) const = 0;
 
-		// Image palette.
+		// Image palette
 		virtual uint32_t *palette(void) = 0;
 		virtual const uint32_t *palette(void) const = 0;
 		virtual unsigned int palette_len(void) const = 0;
-		int tr_idx;
+		int16_t tr_idx;
 
 	public:
 		// Subclasses can have other stuff here.
