@@ -90,8 +90,8 @@ rp_image_backend_default::rp_image_backend_default(int width, int height, rp_ima
 		return;
 	}
 
-	// Maximum image size (128 MB)
-	static const size_t MAX_IMAGE_SIZE = 128U * 1024 * 1024;
+	// Maximum image size (1024 MB)
+	static const size_t MAX_IMAGE_SIZE = 1024U * 1024U * 1024U;
 
 	// Allocate memory for the image.
 	// We're using the full stride for the last row
