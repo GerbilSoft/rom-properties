@@ -44,7 +44,7 @@ class rp_image_backend_default final : public rp_image_backend
 
 		size_t data_len(void) const final
 		{
-			return m_data_len;
+			return static_cast<size_t>(m_data_len);
 		}
 
 		uint32_t *palette(void) final
@@ -73,17 +73,15 @@ class rp_image_backend_default final : public rp_image_backend
 
 	private:
 		void *m_data;
-		size_t m_data_len;
-
 		uint32_t *m_palette;
-		unsigned int m_palette_len;
+		unsigned int m_data_len, m_palette_len;
 };
 
 rp_image_backend_default::rp_image_backend_default(int width, int height, rp_image::Format format)
 	: super(width, height, format)
 	, m_data(nullptr)
-	, m_data_len(0)
 	, m_palette(nullptr)
+	, m_data_len(0)
 	, m_palette_len(0U)
 {
 	if (width == 0 || height == 0) {
@@ -92,18 +90,24 @@ rp_image_backend_default::rp_image_backend_default(int width, int height, rp_ima
 		return;
 	}
 
+	// Maximum image size (128 MB)
+	static const size_t MAX_IMAGE_SIZE = 128U * 1024 * 1024;
+
 	// Allocate memory for the image.
 	// We're using the full stride for the last row
 	// to make it easier to manage.
-	m_data_len = ImageSizeCalc::T_calcImageSize(height, stride);
-	assert(m_data_len > 0);
-	if (m_data_len == 0) {
-		// Somehow we have a 0-length image...
+	size_t data_len = ImageSizeCalc::T_calcImageSize(height, stride);
+	assert(data_len > 0);
+	assert(data_len <= MAX_IMAGE_SIZE);
+	if (data_len == 0 || data_len > MAX_IMAGE_SIZE) {
+		// Somehow we have a 0-length image,
+		// or the image is larger than 128 MB.
 		clear_properties();
 		return;
 	}
+	m_data_len = static_cast<unsigned int>(data_len);
 
-	m_data = aligned_malloc(16, m_data_len);
+	m_data = aligned_malloc(16, data_len);
 	assert(m_data != nullptr);
 	if (!m_data) {
 		// Failed to allocate memory.
