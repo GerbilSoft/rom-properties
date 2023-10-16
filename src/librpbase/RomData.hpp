@@ -183,7 +183,7 @@ public:
 	RP_LIBROMDATA_PUBLIC
 	const char *className(void) const;
 
-	enum class FileType {
+	enum class FileType : uint8_t {
 		Unknown = 0,
 
 		ROM_Image,		// ROM image
