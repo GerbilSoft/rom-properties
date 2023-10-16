@@ -201,49 +201,4 @@ LibRpTexture::rp_image_ptr fromHBITMAP(HBITMAP hBitmap);
  */
 HICON toHICON(HBITMAP hBitmap);
 
-/**
- * Extract an HBITMAP sprite from an rp_image sprite sheet.
- * Caller must delete the HBITMAP after use.
- * @param imgSpriteSheet	[in] rp_image sprite sheet
- * @param x			[in] X pos
- * @param y			[in] Y pos
- * @param width			[in] Width
- * @param height		[in] Height
- * @param dpi			[in,opt] DPI value.
- * @return Sub-bitmap, or nullptr on error.
- */
-HBITMAP getSubBitmap(const LibRpTexture::rp_image *img, int x, int y, int w, int h, UINT dpi = 96);
-
-/**
- * Extract an HBITMAP sprite from an rp_image sprite sheet.
- * Caller must delete the HBITMAP after use.
- * @param imgSpriteSheet	[in] rp_image sprite sheet
- * @param x			[in] X pos
- * @param y			[in] Y pos
- * @param width			[in] Width
- * @param height		[in] Height
- * @param dpi			[in,opt] DPI value.
- * @return Sub-bitmap, or nullptr on error.
- */
-static inline HBITMAP getSubBitmap(const LibRpTexture::rp_image_ptr &img, int x, int y, int w, int h, UINT dpi = 96)
-{
-	return getSubBitmap(img.get(), x, y, w, h, dpi);
-}
-
-/**
- * Extract an HBITMAP sprite from an rp_image sprite sheet.
- * Caller must delete the HBITMAP after use.
- * @param imgSpriteSheet	[in] rp_image sprite sheet
- * @param x			[in] X pos
- * @param y			[in] Y pos
- * @param width			[in] Width
- * @param height		[in] Height
- * @param dpi			[in,opt] DPI value.
- * @return Sub-bitmap, or nullptr on error.
- */
-static inline HBITMAP getSubBitmap(const LibRpTexture::rp_image_const_ptr &img, int x, int y, int w, int h, UINT dpi = 96)
-{
-	return getSubBitmap(img.get(), x, y, w, h, dpi);
-}
-
 }
