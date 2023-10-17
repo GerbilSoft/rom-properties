@@ -36,12 +36,12 @@ RomDataPrivate::RomDataPrivate(const IRpFilePtr &file, const RomDataInfo *pRomDa
 	, mimeType(nullptr)
 	, fileType(RomData::FileType::ROM_Image)
 	, isValid(false)
+	, isCompressed(false)
 	, file(file)
 	, filename(nullptr)
 #ifdef _WIN32
 	, filenameW(nullptr)
 #endif /* _WIN32 */
-	, isCompressed(false)
 	, metaData(nullptr)
 {
 	assert(pRomDataInfo != nullptr);
