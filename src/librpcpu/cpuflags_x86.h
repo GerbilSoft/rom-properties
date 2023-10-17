@@ -55,7 +55,7 @@ static FORCEINLINE int RP_CPU_HasMMX(void)
 	if (unlikely(!RP_CPU_Flags_Init)) {
 		RP_CPU_InitCPUFlags();
 	}
-	return (RP_CPU_Flags & RP_CPUFLAG_X86_MMX);
+	return (int)(RP_CPU_Flags & RP_CPUFLAG_X86_MMX);
 #endif
 }
 
@@ -72,7 +72,7 @@ static FORCEINLINE int RP_CPU_HasSSE2(void)
 	if (unlikely(!RP_CPU_Flags_Init)) {
 		RP_CPU_InitCPUFlags();
 	}
-	return (RP_CPU_Flags & RP_CPUFLAG_X86_SSE2);
+	return (int)(RP_CPU_Flags & RP_CPUFLAG_X86_SSE2);
 #endif
 }
 
@@ -85,7 +85,7 @@ static FORCEINLINE int RP_CPU_HasSSSE3(void)
 	if (unlikely(!RP_CPU_Flags_Init)) {
 		RP_CPU_InitCPUFlags();
 	}
-	return (RP_CPU_Flags & RP_CPUFLAG_X86_SSSE3);
+	return (int)(RP_CPU_Flags & RP_CPUFLAG_X86_SSSE3);
 }
 
 /**
@@ -97,7 +97,7 @@ static FORCEINLINE int RP_CPU_HasSSE41(void)
 	if (unlikely(!RP_CPU_Flags_Init)) {
 		RP_CPU_InitCPUFlags();
 	}
-	return (RP_CPU_Flags & RP_CPUFLAG_X86_SSE41);
+	return (int)(RP_CPU_Flags & RP_CPUFLAG_X86_SSE41);
 }
 
 #ifdef __cplusplus

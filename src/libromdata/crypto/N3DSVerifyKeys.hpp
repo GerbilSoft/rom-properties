@@ -49,7 +49,7 @@ union u128_t {
 
 class N3DSVerifyKeys
 {
-	private:
+	public:
 		// Static class
 		N3DSVerifyKeys() = delete;
 		~N3DSVerifyKeys() = delete;

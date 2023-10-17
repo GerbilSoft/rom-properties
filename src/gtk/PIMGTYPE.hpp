@@ -260,6 +260,10 @@ static inline PIMGTYPE PIMGTYPE_scale(PIMGTYPE pImgType, int width, int height, 
 PIMGTYPE PIMGTYPE_load_png_from_gresource(const char *filename);
 
 #ifdef __cplusplus
+}
+#endif
+
+#ifdef __cplusplus
 /**
  * Load a PNG image from our glibresources.
  * This version returns rp_image_ptr.
@@ -268,7 +272,3 @@ PIMGTYPE PIMGTYPE_load_png_from_gresource(const char *filename);
  */
 LibRpTexture::rp_image_ptr rp_image_load_png_from_gresource(const char *filename);
 #endif /* __cplusplus */
-
-#ifdef __cplusplus
-}
-#endif

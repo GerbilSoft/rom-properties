@@ -330,7 +330,7 @@ rp_rom_data_view_getSaveFileDialog_callback(GFile *file, save_data_t *save_data)
 	// Run the ROM operation.
 	RomData::RomOpParams params;
 	params.save_filename = filename;
-	int ret = romData->doRomOp(id, &params);
+	const int ret = romData->doRomOp(id, &params);
 	g_free(filename);
 
 	GtkMessageType messageType;

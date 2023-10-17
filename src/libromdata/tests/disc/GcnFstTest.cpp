@@ -86,8 +86,8 @@ inline ::std::ostream& operator<<(::std::ostream& os, const GcnFstTest_mode& mod
 };
 
 // Maximum file size for FST files.
-static const uint64_t MAX_GCN_FST_BIN_FILESIZE = 1024*1024;	// 1.0 MB
-static const uint64_t MAX_GCN_FST_TXT_FILESIZE = 1536*1024;	// 1.5 MB
+static const uint64_t MAX_GCN_FST_BIN_FILESIZE = 1024UL*1024UL;	// 1.0 MB
+static const uint64_t MAX_GCN_FST_TXT_FILESIZE = 1536UL*1024UL;	// 1.5 MB
 
 class GcnFstTest : public ::testing::TestWithParam<GcnFstTest_mode>
 {

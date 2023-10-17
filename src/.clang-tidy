@@ -12,6 +12,7 @@ Checks: >
   -clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling,
   clang-diagnostic-*,
   misc-*,
+  -misc-include-cleaner,
   -misc-non-private-member-variables-in-classes,
   -misc-use-anonymous-namespace,
   modernize-*,

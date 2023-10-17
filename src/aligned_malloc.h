@@ -86,7 +86,7 @@ static FORCEINLINE void aligned_free(void *memptr)
 static FORCEINLINE void *aligned_malloc(size_t alignment, size_t size)
 {
 	void *ptr;
-	int ret = posix_memalign(&ptr, alignment, size);
+	const int ret = posix_memalign(&ptr, alignment, size);
 	if (ret != 0) {
 		// posix_memalign() returns errno instead of setting it.
 		errno = ret;

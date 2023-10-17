@@ -134,9 +134,9 @@ rp_image_const_ptr DidjTexPrivate::loadDidjTexImage(void)
 	// - Uncompressed size shouldn't be more than 4 MB.
 	// TODO: Reduce back to 128 KB / 1 MB once full .texs support is implemented.
 	const unsigned int uncompr_size = le32_to_cpu(texHeader.uncompr_size);
-	assert(file->size() <= 1*1024*1024);
-	assert(uncompr_size <= 4*1024*1024);
-	if (file->size() > 1*1024*1024 || uncompr_size > 4*1024*1024) {
+	assert(file->size() <= 1L*1024*1024);
+	assert(uncompr_size <= 4U*1024*1024);
+	if (file->size() > 1L*1024*1024 || uncompr_size > 4U*1024*1024) {
 		return nullptr;
 	}
 
@@ -208,8 +208,8 @@ rp_image_const_ptr DidjTexPrivate::loadDidjTexImage(void)
 
 	// Decode the image.
 	rp_image_ptr imgtmp;
-	const unsigned int width = le32_to_cpu(texHeader.width);
-	const unsigned int height = le32_to_cpu(texHeader.height);
+	const int width = static_cast<int>(le32_to_cpu(texHeader.width));
+	const int height = static_cast<int>(le32_to_cpu(texHeader.height));
 	switch (le32_to_cpu(texHeader.px_format)) {
 		case DIDJ_PIXEL_FORMAT_RGB565: {
 			// RGB565

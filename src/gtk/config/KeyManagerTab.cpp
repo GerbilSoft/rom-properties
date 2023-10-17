@@ -518,7 +518,7 @@ rp_key_manager_tab_handle_menu_action(RpKeyManagerTab *tab, gint id)
 		(rpGtk_fileDialogCallback)rp_key_manager_getOpenFileDialog_callback,	// callback
 		open_data,		// user_data
 	};
-	int ret = rpGtk_getOpenFileName(&gfndata);
+	const int ret = rpGtk_getOpenFileName(&gfndata);
 	if (ret != 0) {
 		// rpGtk_getOpenFileName() failed.
 		// g_free() the open_data_t because the callback won't be run.

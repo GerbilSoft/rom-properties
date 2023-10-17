@@ -505,7 +505,7 @@ void RP_ShellPropSheetExt_Private::btnOptions_action_triggered(int menuId)
 		params.save_filename = s_save_filename.c_str();
 	}
 
-	int ret = romData->doRomOp(id, &params);
+	const int ret = romData->doRomOp(id, &params);
 	unsigned int messageType;
 	if (ret == 0) {
 		// ROM operation completed.

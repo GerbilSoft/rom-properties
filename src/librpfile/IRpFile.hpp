@@ -230,7 +230,7 @@ class RP_LIBROMDATA_PUBLIC NOVTABLE IRpFile
 		ATTR_ACCESS_SIZE(write_only, 3, 4)
 		inline size_t seekAndRead(off64_t pos, void *ptr, size_t size)
 		{
-			int ret = this->seek(pos);
+			const int ret = this->seek(pos);
 			if (ret != 0) {
 				// Seek error.
 				return 0;
@@ -248,7 +248,7 @@ class RP_LIBROMDATA_PUBLIC NOVTABLE IRpFile
 		ATTR_ACCESS_SIZE(read_only, 3, 4)
 		inline size_t seekAndWrite(off64_t pos, const void *ptr, size_t size)
 		{
-			int ret = this->seek(pos);
+			const int ret = this->seek(pos);
 			if (ret != 0) {
 				// Seek error.
 				return 0;

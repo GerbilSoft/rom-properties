@@ -331,7 +331,7 @@ void RomDataView::btnOptions_triggered(int id)
 		params.save_filename = ba_save_filename.constData();
 	}
 
-	int ret = d->romData->doRomOp(id, &params);
+	const int ret = d->romData->doRomOp(id, &params);
 	const QString qs_msg = U82Q(params.msg);
 	QMessageBox::Icon messageType;
 	if (ret == 0) {
