@@ -355,6 +355,7 @@ typedef GtkComboBox OurComboBox;
 #endif /* GTK_CHECK_VERSION(3,99,0) */
 
 #ifdef USE_GTK_DROP_DOWN
+typedef guint gtk_cbo_index_t;
 #  define COMPARE_CBO(widget, defval) \
 	(gtk_drop_down_get_selected(GTK_DROP_DOWN(widget)) != (defval))
 #  define SET_CBO(widget, value) \
@@ -362,6 +363,7 @@ typedef GtkComboBox OurComboBox;
 #  define GET_CBO(widget) \
 	gtk_drop_down_get_selected(GTK_DROP_DOWN(widget))
 #else /* !USE_GTK_DROP_DOWN */
+typedef gint gtk_cbo_index_t;
 #  define COMPARE_CBO(widget, defval) \
 	(gtk_combo_box_get_active(GTK_COMBO_BOX(widget)) != (defval))
 #  define SET_CBO(widget, value) \

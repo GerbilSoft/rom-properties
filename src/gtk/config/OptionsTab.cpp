@@ -24,7 +24,6 @@ using namespace LibRpBase;
 // TODO: Combine with the KDE version.
 // NOTE: GTK LanguageComboBox uses a NULL-terminated pal_lc[] array.
 static const uint32_t pal_lc[] = {'au', 'de', 'en', 'es', 'fr', 'it', 'nl', 'pt', 'ru', 0};
-static const int pal_lc_def = 'en';
 
 #if GTK_CHECK_VERSION(3,0,0)
 typedef GtkBoxClass superclass;
@@ -406,78 +405,60 @@ rp_options_tab_load_defaults(RpOptionsTab *tab)
 	g_return_if_fail(RP_IS_OPTIONS_TAB(tab));
 	tab->inhibit = true;
 
-	// TODO: Get the defaults from Config.
-	// For now, hard-coding everything here.
-
-	// Downloads
-	static const bool extImgDownloadEnabled_default = true;
-	static const bool useIntIconForSmallSizes_default = true;
-	static const bool storeFileOriginInfo_default = true;
-	static const uint32_t palLanguageForGameTDB_default = pal_lc_def;
-
-	// Image bandwidth options
-	static const Config::ImgBandwidth imgBandwidthUnmetered_default = Config::ImgBandwidth::HighRes;
-	static const Config::ImgBandwidth imgBandwidthMetered_default = Config::ImgBandwidth::NormalRes;
-
-	// Options
-	static const bool showDangerousPermissionsOverlayIcon_default = true;
-	static const bool enableThumbnailOnNetworkFS_default = false;
-	static const bool showXAttrView_default = true;
+	// Has any value changed due to resetting to defaults?
 	bool isDefChanged = false;
 
 	// Downloads
-	if (COMPARE_CHK(tab->chkExtImgDownloadEnabled, extImgDownloadEnabled_default)) {
-		SET_CHK(tab->chkExtImgDownloadEnabled, extImgDownloadEnabled_default);
+	bool bdef = Config::extImgDownloadEnabled_default();
+	if (COMPARE_CHK(tab->chkExtImgDownloadEnabled, bdef)) {
+		SET_CHK(tab->chkExtImgDownloadEnabled, bdef);
 		isDefChanged = true;
 		// Update sensitivity
 		rp_options_tab_chkExtImgDownloadEnabled_toggled(GTK_CHECK_BUTTON(tab->chkExtImgDownloadEnabled), tab);
 	}
-	if (COMPARE_CHK(tab->chkUseIntIconForSmallSizes, useIntIconForSmallSizes_default)) {
-		SET_CHK(tab->chkUseIntIconForSmallSizes, extImgDownloadEnabled_default);
+	bdef = Config::useIntIconForSmallSizes_default();
+	if (COMPARE_CHK(tab->chkUseIntIconForSmallSizes, bdef)) {
+		SET_CHK(tab->chkUseIntIconForSmallSizes, bdef);
 		isDefChanged = true;
 	}
-	if (COMPARE_CHK(tab->chkUseIntIconForSmallSizes, useIntIconForSmallSizes_default)) {
-		SET_CHK(tab->chkUseIntIconForSmallSizes, useIntIconForSmallSizes_default);
+	bdef = Config::storeFileOriginInfo_default();
+	if (COMPARE_CHK(tab->chkStoreFileOriginInfo, bdef)) {
+		SET_CHK(tab->chkStoreFileOriginInfo, bdef);
 		isDefChanged = true;
 	}
-	if (COMPARE_CHK(tab->chkStoreFileOriginInfo, storeFileOriginInfo_default)) {
-		SET_CHK(tab->chkStoreFileOriginInfo, storeFileOriginInfo_default);
-		isDefChanged = true;
-	}
-	if (rp_language_combo_box_get_selected_lc(RP_LANGUAGE_COMBO_BOX(tab->cboGameTDBPAL)) != palLanguageForGameTDB_default) {
+	const uint32_t u32def = Config::palLanguageForGameTDB_default();
+	if (rp_language_combo_box_get_selected_lc(RP_LANGUAGE_COMBO_BOX(tab->cboGameTDBPAL)) != u32def) {
 		rp_language_combo_box_set_selected_lc(
-			RP_LANGUAGE_COMBO_BOX(tab->cboGameTDBPAL),
-			palLanguageForGameTDB_default);
+			RP_LANGUAGE_COMBO_BOX(tab->cboGameTDBPAL), u32def);
 		isDefChanged = true;
 	}
 
 	// Image bandwidth options
-	if (COMPARE_CBO(tab->cboUnmeteredConnection, static_cast<int>(imgBandwidthUnmetered_default))) {
-		SET_CBO(tab->cboUnmeteredConnection, static_cast<int>(imgBandwidthUnmetered_default));
+	gtk_cbo_index_t idxdef = static_cast<gtk_cbo_index_t>(Config::imgBandwidthUnmetered_default());
+	if (COMPARE_CBO(tab->cboUnmeteredConnection, idxdef)) {
+		SET_CBO(tab->cboUnmeteredConnection, idxdef);
 		isDefChanged = true;
 	}
-	if (COMPARE_CBO(tab->cboMeteredConnection, static_cast<int>(imgBandwidthMetered_default))) {
-		SET_CBO(tab->cboMeteredConnection, static_cast<int>(imgBandwidthMetered_default));
+	idxdef = static_cast<gtk_cbo_index_t>(Config::imgBandwidthMetered_default());
+	if (COMPARE_CBO(tab->cboMeteredConnection, idxdef)) {
+		SET_CBO(tab->cboMeteredConnection, idxdef);
 		isDefChanged = true;
 	}
 
 	// Options
-	if (COMPARE_CHK(tab->chkShowDangerousPermissionsOverlayIcon, showDangerousPermissionsOverlayIcon_default)) {
-		gtk_check_button_set_active(
-			GTK_CHECK_BUTTON(tab->chkShowDangerousPermissionsOverlayIcon),
-			showDangerousPermissionsOverlayIcon_default);
+	bdef = Config::showDangerousPermissionsOverlayIcon_default();
+	if (COMPARE_CHK(tab->chkShowDangerousPermissionsOverlayIcon, bdef)) {
+		gtk_check_button_set_active(GTK_CHECK_BUTTON(tab->chkShowDangerousPermissionsOverlayIcon), bdef);
 		isDefChanged = true;
 	}
-	if (COMPARE_CHK(tab->chkEnableThumbnailOnNetworkFS, enableThumbnailOnNetworkFS_default)) {
-		gtk_check_button_set_active(
-			GTK_CHECK_BUTTON(tab->chkEnableThumbnailOnNetworkFS),
-			enableThumbnailOnNetworkFS_default);
+	bdef = Config::enableThumbnailOnNetworkFS_default();
+	if (COMPARE_CHK(tab->chkEnableThumbnailOnNetworkFS, bdef)) {
+		gtk_check_button_set_active(GTK_CHECK_BUTTON(tab->chkEnableThumbnailOnNetworkFS), bdef);
 		isDefChanged = true;
 	}
-	if (COMPARE_CHK(tab->chkShowXAttrView, showXAttrView_default)) {
-		gtk_check_button_set_active(
-			GTK_CHECK_BUTTON(tab->chkShowXAttrView),
-			showXAttrView_default);
+	bdef = Config::showXAttrView_default();
+	if (COMPARE_CHK(tab->chkShowXAttrView, bdef)) {
+		gtk_check_button_set_active(GTK_CHECK_BUTTON(tab->chkShowXAttrView), bdef);
 		isDefChanged = true;
 	}
 

@@ -174,6 +174,84 @@ public:
 	 * @return True if we should enable; false if not.
 	 */
 	bool showXAttrView(void) const;
+
+public:
+	/**** Default values ****/
+
+	/** Download options **/
+
+	/**
+	 * Should we download images from external databases? (default value)
+	 * @return True if downloads are enabled; false if not.
+	 */
+	static bool extImgDownloadEnabled_default(void);
+
+	/**
+	 * Always use the internal icon (if present) for small sizes. (default value)
+	 * TODO: Clarify "small sizes".
+	 * @return True if we should use the internal icon for small sizes; false if not.
+	 */
+	static bool useIntIconForSmallSizes_default(void);
+
+	/**
+	 * Store file origin information? (default value)
+	 * @return True if we should; false if not.
+	 */
+	static bool storeFileOriginInfo_default(void);
+
+	/**
+	 * Language code for PAL titles on GameTDB. (default value)
+	 * @return Language code.
+	 */
+	static uint32_t palLanguageForGameTDB_default(void);
+
+	/* Image bandwidth options */
+
+	/**
+	 * What type of images should be downloaded on unmetered connections? (default value)
+	 * These connections do not charge for usage.
+	 * @return ImgBandwidth for unmetered connections
+	 */
+	static ImgBandwidth imgBandwidthUnmetered_default(void);
+
+	/**
+	 * What type of images should be downloaded on metered connections? (default value)
+	 * These connections may charge for usage.
+	 * @return ImgBandwidth for metered connections
+	 */
+	static ImgBandwidth imgBandwidthMetered_default(void);
+
+	/** DMG title screen mode **/
+
+	/**
+	 * Which title screen should we use for the specified DMG ROM type? (default value)
+	 * @param romType DMG ROM type.
+	 * @return Title screen to use.
+	 */
+	static DMG_TitleScreen_Mode dmgTitleScreenMode_default(DMG_TitleScreen_Mode romType);
+
+	/** Other options **/
+
+	/**
+	 * Show an overlay icon for "dangerous" permissions?
+	 * NOTE: Call load() before using this function.
+	 * @return True if we should show the overlay icon; false if not.
+	 */
+	static bool showDangerousPermissionsOverlayIcon_default(void);
+
+	/**
+	 * Enable thumbnailing and metadata on network filesystems?
+	 * NOTE: Call load() before using this function.
+	 * @return True if we should enable; false if not.
+	 */
+	static bool enableThumbnailOnNetworkFS_default(void);
+
+	/**
+	 * Show the Extended Attributes tab? (default value)
+	 * NOTE: Call load() before using this function.
+	 * @return True if we should enable; false if not.
+	 */
+	static bool showXAttrView_default(void);
 };
 
 }

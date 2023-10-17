@@ -30,7 +30,6 @@ class OptionsTabPrivate
 
 		// PAL language codes for GameTDB.
 		static const uint32_t pal_lc[];
-		static const int pal_lc_idx_def;	// Default index in pal_lc[].
 };
 
 /** OptionsTabPrivate **/
@@ -39,7 +38,6 @@ class OptionsTabPrivate
 // NOTE: 'au' is technically not a language code, but
 // GameTDB handles it as a separate language.
 const uint32_t OptionsTabPrivate::pal_lc[] = {'au', 'de', 'en', 'es', 'fr', 'it', 'nl', 'pt', 'ru'};
-const int OptionsTabPrivate::pal_lc_idx_def = 2;
 
 OptionsTabPrivate::OptionsTabPrivate()
 	: changed(false)
@@ -108,17 +106,7 @@ void OptionsTab::reset(void)
 	d->ui.chkShowXAttrView->setChecked(config->showXAttrView());
 
 	// PAL language code
-	const uint32_t lc = config->palLanguageForGameTDB();
-	int idx = 0;
-	for (; idx < ARRAY_SIZE_I(d->pal_lc); idx++) {
-		if (d->pal_lc[idx] == lc)
-			break;
-	}
-	if (idx >= ARRAY_SIZE_I(d->pal_lc)) {
-		// Out of range. Default to 'en'.
-		idx = d->pal_lc_idx_def;
-	}
-	d->ui.cboGameTDBPAL->setCurrentIndex(idx);
+	d->ui.cboGameTDBPAL->setSelectedLC(config->palLanguageForGameTDB());
 
 	d->changed = false;
 }
@@ -130,70 +118,59 @@ void OptionsTab::reset(void)
  */
 void OptionsTab::loadDefaults(void)
 {
-	// TODO: Get the defaults from Config.
-	// For now, hard-coding everything here.
-
-	// Downloads
-	static const bool extImgDownloadEnabled_default = true;
-	static const bool useIntIconForSmallSizes_default = true;
-	static const bool storeFileOriginInfo_default = true;
-	static const int palLanguageForGameTDB_default =
-		OptionsTabPrivate::pal_lc_idx_def;	// cboGameTDBPAL index ('en')
-
-	// Image bandwidth options
-	static const Config::ImgBandwidth imgBandwidthUnmetered_default = Config::ImgBandwidth::HighRes;
-	static const Config::ImgBandwidth imgBandwidthMetered_default = Config::ImgBandwidth::NormalRes;
-
-	// Options
-	static const bool showDangerousPermissionsOverlayIcon_default = true;
-	static const bool enableThumbnailOnNetworkFS_default = false;
-	static const bool showXAttrView_default = true;
+	// Has any value changed due to resetting to defaults?
 	bool isDefChanged = false;
 
 	Q_D(OptionsTab);
 
 	// Downloads
-	if (d->ui.grpExtImgDownloads->isChecked() != extImgDownloadEnabled_default) {
-		d->ui.grpExtImgDownloads->setChecked(extImgDownloadEnabled_default);
+	bool bdef = Config::enableThumbnailOnNetworkFS_default();
+	if (d->ui.grpExtImgDownloads->isChecked() != bdef) {
+		d->ui.grpExtImgDownloads->setChecked(bdef);
 		isDefChanged = true;
 	}
-	if (d->ui.chkUseIntIconForSmallSizes->isChecked() != useIntIconForSmallSizes_default) {
-		d->ui.chkUseIntIconForSmallSizes->setChecked(useIntIconForSmallSizes_default);
+	bdef = Config::useIntIconForSmallSizes_default();
+	if (d->ui.chkUseIntIconForSmallSizes->isChecked() != bdef) {
+		d->ui.chkUseIntIconForSmallSizes->setChecked(bdef);
 		isDefChanged = true;
 	}
-	if (d->ui.chkStoreFileOriginInfo->isChecked() != storeFileOriginInfo_default) {
-		d->ui.chkStoreFileOriginInfo->setChecked(storeFileOriginInfo_default);
+	bdef = Config::storeFileOriginInfo_default();
+	if (d->ui.chkStoreFileOriginInfo->isChecked() != bdef) {
+		d->ui.chkStoreFileOriginInfo->setChecked(bdef);
 		isDefChanged = true;
 	}
-	if (d->ui.cboGameTDBPAL->currentIndex() != palLanguageForGameTDB_default) {
-		d->ui.cboGameTDBPAL->setCurrentIndex(palLanguageForGameTDB_default);
+	const uint32_t u32def = Config::palLanguageForGameTDB_default();
+	if (d->ui.cboGameTDBPAL->selectedLC() != u32def) {
+		d->ui.cboGameTDBPAL->setSelectedLC(u32def);
 		isDefChanged = true;
 	}
 
 	// Image bandwidth options
-	if (d->ui.cboUnmeteredConnection->currentIndex() != static_cast<int>(imgBandwidthUnmetered_default)) {
-		d->ui.cboUnmeteredConnection->setCurrentIndex(static_cast<int>(imgBandwidthUnmetered_default));
+	int idef = static_cast<int>(Config::imgBandwidthUnmetered_default());
+	if (d->ui.cboUnmeteredConnection->currentIndex() != idef) {
+		d->ui.cboUnmeteredConnection->setCurrentIndex(idef);
 		isDefChanged = true;
 	}
-	if (d->ui.cboMeteredConnection->currentIndex() != static_cast<int>(imgBandwidthMetered_default)) {
-		d->ui.cboMeteredConnection->setCurrentIndex(static_cast<int>(imgBandwidthMetered_default));
+	idef = static_cast<int>(Config::imgBandwidthMetered_default());
+	if (d->ui.cboMeteredConnection->currentIndex() != idef) {
+		d->ui.cboMeteredConnection->setCurrentIndex(idef);
 		isDefChanged = true;
 	}
 
 	// Options
-	if (d->ui.chkShowDangerousPermissionsOverlayIcon->isChecked() !=
-		showDangerousPermissionsOverlayIcon_default)
-	{
-		d->ui.chkShowDangerousPermissionsOverlayIcon->setChecked(
-			showDangerousPermissionsOverlayIcon_default);
+	bdef = Config::showDangerousPermissionsOverlayIcon_default();
+	if (d->ui.chkShowDangerousPermissionsOverlayIcon->isChecked() != bdef) {
+		d->ui.chkShowDangerousPermissionsOverlayIcon->setChecked(bdef);
 		isDefChanged = true;
 	}
-	if (d->ui.chkEnableThumbnailOnNetworkFS->isChecked() != enableThumbnailOnNetworkFS_default) {
-		d->ui.chkEnableThumbnailOnNetworkFS->setChecked(enableThumbnailOnNetworkFS_default);
+	bdef = Config::enableThumbnailOnNetworkFS_default();
+	if (d->ui.chkEnableThumbnailOnNetworkFS->isChecked() != bdef) {
+		d->ui.chkEnableThumbnailOnNetworkFS->setChecked(bdef);
 		isDefChanged = true;
 	}
-	if (d->ui.chkShowXAttrView->isChecked() != showXAttrView_default) {
-		d->ui.chkShowXAttrView->setChecked(showXAttrView_default);
+	bdef = Config::showXAttrView_default();
+	if (d->ui.chkShowXAttrView->isChecked() != bdef) {
+		d->ui.chkShowXAttrView->setChecked(bdef);
 		isDefChanged = true;
 	}
 
