@@ -96,7 +96,7 @@ rp_image_ptr fromDreamcastSquareTwiddled16(PixelFormat px_format,
 	const unsigned int *const p_tmap = dc_tmap.get();
 
 	// Create an rp_image.
-	const rp_image_ptr img = std::make_shared<rp_image>(width, height, rp_image::Format::ARGB32);
+	rp_image_ptr img = std::make_shared<rp_image>(width, height, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
 		return nullptr;
@@ -220,7 +220,7 @@ rp_image_ptr fromDreamcastVQ16(PixelFormat px_format,
 	const unsigned int *const p_tmap = dc_tmap.get();
 
 	// Create an rp_image.
-	const rp_image_ptr img = std::make_shared<rp_image>(width, height, rp_image::Format::ARGB32);
+	rp_image_ptr img = std::make_shared<rp_image>(width, height, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
 		return nullptr;

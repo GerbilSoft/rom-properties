@@ -58,7 +58,7 @@ rp_image_ptr fromN3DSTiledRGB565(int width, int height,
 		return nullptr;
 
 	// Create an rp_image.
-	const rp_image_ptr img = std::make_shared<rp_image>(width, height, rp_image::Format::ARGB32);
+	rp_image_ptr img = std::make_shared<rp_image>(width, height, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
 		return nullptr;
@@ -131,7 +131,7 @@ rp_image_ptr fromN3DSTiledRGB565_A4(int width, int height,
 	const unsigned int tilesY = static_cast<unsigned int>(height / 8);
 
 	// Create an rp_image.
-	const rp_image_ptr img = std::make_shared<rp_image>(width, height, rp_image::Format::ARGB32);
+	rp_image_ptr img = std::make_shared<rp_image>(width, height, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
 		return nullptr;

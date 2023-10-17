@@ -74,7 +74,7 @@ rp_image_ptr fromASTC(int width, int height,
 	ImageSizeCalc::alignImageSizeASTC(physWidth, physHeight, block_x, block_y);
 
 	// Create an rp_image.
-	const rp_image_ptr img = std::make_shared<rp_image>(physWidth, physHeight, rp_image::Format::ARGB32);
+	rp_image_ptr img = std::make_shared<rp_image>(physWidth, physHeight, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
 		return nullptr;

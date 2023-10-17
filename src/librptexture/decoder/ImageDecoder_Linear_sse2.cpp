@@ -297,7 +297,7 @@ rp_image_ptr fromLinear16_sse2(PixelFormat px_format,
 	}
 
 	// Create an rp_image.
-	const rp_image_ptr img = std::make_shared<rp_image>(width, height, rp_image::Format::ARGB32);
+	rp_image_ptr img = std::make_shared<rp_image>(width, height, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
 		return nullptr;

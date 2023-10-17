@@ -49,7 +49,7 @@ rp_image_ptr fromGcn16(PixelFormat px_format,
 		return nullptr;
 
 	// Create an rp_image.
-	const rp_image_ptr img = std::make_shared<rp_image>(width, height, rp_image::Format::ARGB32);
+	rp_image_ptr img = std::make_shared<rp_image>(width, height, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
 		return nullptr;
@@ -171,7 +171,7 @@ rp_image_ptr fromGcnCI8(int width, int height,
 		return nullptr;
 
 	// Create an rp_image.
-	const rp_image_ptr img = std::make_shared<rp_image>(width, height, rp_image::Format::CI8);
+	rp_image_ptr img = std::make_shared<rp_image>(width, height, rp_image::Format::CI8);
 	if (!img->isValid()) {
 		// Could not allocate the image.
 		return nullptr;
@@ -264,7 +264,7 @@ rp_image_ptr fromGcnI8(int width, int height,
 	const unsigned int tilesY = (unsigned int)(height / 4);
 
 	// Create an rp_image.
-	const rp_image_ptr img = std::make_shared<rp_image>(width, height, rp_image::Format::CI8);
+	rp_image_ptr img = std::make_shared<rp_image>(width, height, rp_image::Format::CI8);
 	if (!img->isValid()) {
 		// Could not allocate the image.
 		return nullptr;
@@ -344,7 +344,7 @@ rp_image_ptr fromGcnCI4(int width, int height,
 	const int tilesY = (height / 8);
 
 	// Create an rp_image.
-	const rp_image_ptr img = std::make_shared<rp_image>(width, height, rp_image::Format::CI8);
+	rp_image_ptr img = std::make_shared<rp_image>(width, height, rp_image::Format::CI8);
 	if (!img->isValid()) {
 		// Could not allocate the image.
 		return nullptr;

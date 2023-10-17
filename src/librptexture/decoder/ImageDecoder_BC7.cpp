@@ -676,7 +676,7 @@ rp_image_ptr fromBC7(int width, int height,
 	const unsigned int bytesPerTileRow = tilesX * sizeof(bc7_block);	// for OpenMP
 
 	// Create an rp_image.
-	const rp_image_ptr img = std::make_shared<rp_image>(physWidth, physHeight, rp_image::Format::ARGB32);
+	rp_image_ptr img = std::make_shared<rp_image>(physWidth, physHeight, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
 		return nullptr;

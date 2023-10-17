@@ -449,7 +449,7 @@ RomDataPtr RomDataFactoryPrivate::openDreamcastVMSandVMI(const IRpFilePtr &file)
 
 	// Attempt to create a DreamcastSave using both the
 	// VMS and VMI files.
-	const RomDataPtr dcSave = std::make_shared<DreamcastSave>(vms_file, vmi_file);
+	RomDataPtr dcSave = std::make_shared<DreamcastSave>(vms_file, vmi_file);
 	if (!dcSave->isValid()) {
 		// Not valid.
 		return nullptr;

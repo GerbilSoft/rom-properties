@@ -68,7 +68,7 @@ rp_image_ptr fromLinearCI4(PixelFormat px_format, bool msn_left,
 		return nullptr;
 
 	// Create an rp_image.
-	const rp_image_ptr img = std::make_shared<rp_image>(width, height, rp_image::Format::CI8);
+	rp_image_ptr img = std::make_shared<rp_image>(width, height, rp_image::Format::CI8);
 	if (!img->isValid()) {
 		// Could not allocate the image.
 		return nullptr;
@@ -311,7 +311,7 @@ rp_image_ptr fromLinearCI8(PixelFormat px_format,
 	}
 
 	// Create an rp_image.
-	const rp_image_ptr img = std::make_shared<rp_image>(width, height, rp_image::Format::CI8);
+	rp_image_ptr img = std::make_shared<rp_image>(width, height, rp_image::Format::CI8);
 	if (!img->isValid()) {
 		// Could not allocate the image.
 		return nullptr;
@@ -606,7 +606,7 @@ rp_image_ptr fromLinearMono(int width, int height,
 		return nullptr;
 
 	// Create an rp_image.
-	const rp_image_ptr img = std::make_shared<rp_image>(width, height, rp_image::Format::CI8);
+	rp_image_ptr img = std::make_shared<rp_image>(width, height, rp_image::Format::CI8);
 	if (!img->isValid()) {
 		// Could not allocate the image.
 		return nullptr;
@@ -691,7 +691,7 @@ rp_image_ptr fromLinear8(PixelFormat px_format,
 	}
 
 	// Create an rp_image.
-	const rp_image_ptr img = std::make_shared<rp_image>(width, height, rp_image::Format::ARGB32);
+	rp_image_ptr img = std::make_shared<rp_image>(width, height, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
 		return nullptr;
@@ -791,7 +791,7 @@ rp_image_ptr fromLinear16_cpp(PixelFormat px_format,
 	}
 
 	// Create an rp_image.
-	const rp_image_ptr img = std::make_shared<rp_image>(width, height, rp_image::Format::ARGB32);
+	rp_image_ptr img = std::make_shared<rp_image>(width, height, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
 		return nullptr;
@@ -907,7 +907,7 @@ rp_image_ptr fromLinear24_cpp(PixelFormat px_format,
 	}
 
 	// Create an rp_image.
-	const rp_image_ptr img = std::make_shared<rp_image>(width, height, rp_image::Format::ARGB32);
+	rp_image_ptr img = std::make_shared<rp_image>(width, height, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
 		return nullptr;
@@ -1006,7 +1006,7 @@ rp_image_ptr fromLinear32_cpp(PixelFormat px_format,
 	}
 
 	// Create an rp_image
-	const rp_image_ptr img = std::make_shared<rp_image>(width, height, rp_image::Format::ARGB32);
+	rp_image_ptr img = std::make_shared<rp_image>(width, height, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
 		return nullptr;

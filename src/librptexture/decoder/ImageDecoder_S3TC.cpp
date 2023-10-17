@@ -216,7 +216,7 @@ rp_image_ptr fromDXT1_GCN(int width, int height,
 		return nullptr;
 
 	// Create an rp_image.
-	const rp_image_ptr img = std::make_shared<rp_image>(width, height, rp_image::Format::ARGB32);
+	rp_image_ptr img = std::make_shared<rp_image>(width, height, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
 		return nullptr;
@@ -304,7 +304,7 @@ static rp_image_ptr T_fromDXT1(int width, int height,
 	}
 
 	// Create an rp_image.
-	const rp_image_ptr img = std::make_shared<rp_image>(physWidth, physHeight, rp_image::Format::ARGB32);
+	rp_image_ptr img = std::make_shared<rp_image>(physWidth, physHeight, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
 		return nullptr;
@@ -396,7 +396,7 @@ rp_image_ptr fromDXT2(int width, int height,
 
 	// Use fromDXT3(), then convert from premultiplied alpha
 	// to standard alpha.
-	const rp_image_ptr img = fromDXT3(width, height, img_buf, img_siz);
+	rp_image_ptr img = fromDXT3(width, height, img_buf, img_siz);
 	if (!img) {
 		return nullptr;
 	}
@@ -439,7 +439,7 @@ rp_image_ptr fromDXT3(int width, int height,
 	}
 
 	// Create an rp_image.
-	const rp_image_ptr img = std::make_shared<rp_image>(physWidth, physHeight, rp_image::Format::ARGB32);
+	rp_image_ptr img = std::make_shared<rp_image>(physWidth, physHeight, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
 		return nullptr;
@@ -512,7 +512,7 @@ rp_image_ptr fromDXT4(int width, int height,
 
 	// Use fromDXT5(), then convert from premultiplied alpha
 	// to standard alpha.
-	const rp_image_ptr img = fromDXT5(width, height, img_buf, img_siz);
+	rp_image_ptr img = fromDXT5(width, height, img_buf, img_siz);
 	if (!img) {
 		return nullptr;
 	}
@@ -555,7 +555,7 @@ rp_image_ptr fromDXT5(int width, int height,
 	}
 
 	// Create an rp_image.
-	const rp_image_ptr img = std::make_shared<rp_image>(physWidth, physHeight, rp_image::Format::ARGB32);
+	rp_image_ptr img = std::make_shared<rp_image>(physWidth, physHeight, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
 		return nullptr;
@@ -645,7 +645,7 @@ rp_image_ptr fromBC4(int width, int height,
 	}
 
 	// Create an rp_image.
-	const rp_image_ptr img = std::make_shared<rp_image>(physWidth, physHeight, rp_image::Format::ARGB32);
+	rp_image_ptr img = std::make_shared<rp_image>(physWidth, physHeight, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
 		return nullptr;
@@ -735,7 +735,7 @@ rp_image_ptr fromBC5(int width, int height,
 	}
 
 	// Create an rp_image.
-	const rp_image_ptr img = std::make_shared<rp_image>(physWidth, physHeight, rp_image::Format::ARGB32);
+	rp_image_ptr img = std::make_shared<rp_image>(physWidth, physHeight, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
 		return nullptr;

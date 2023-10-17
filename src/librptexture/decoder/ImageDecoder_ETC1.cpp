@@ -631,7 +631,7 @@ rp_image_ptr fromETC1(int width, int height,
 	const int physHeight = ALIGN_BYTES(4, height);
 
 	// Create an rp_image.
-	const rp_image_ptr img = std::make_shared<rp_image>(physWidth, physHeight, rp_image::Format::ARGB32);
+	rp_image_ptr img = std::make_shared<rp_image>(physWidth, physHeight, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
 		return nullptr;
@@ -697,7 +697,7 @@ rp_image_ptr fromETC2_RGB(int width, int height,
 	const int physHeight = ALIGN_BYTES(4, height);
 
 	// Create an rp_image.
-	const rp_image_ptr img = std::make_shared<rp_image>(physWidth, physHeight, rp_image::Format::ARGB32);
+	rp_image_ptr img = std::make_shared<rp_image>(physWidth, physHeight, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
 		return nullptr;
@@ -807,7 +807,7 @@ rp_image_ptr fromETC2_RGBA(int width, int height,
 	const int physHeight = ALIGN_BYTES(4, height);
 
 	// Create an rp_image.
-	const rp_image_ptr img = std::make_shared<rp_image>(physWidth, physHeight, rp_image::Format::ARGB32);
+	rp_image_ptr img = std::make_shared<rp_image>(physWidth, physHeight, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
 		return nullptr;
@@ -877,7 +877,7 @@ rp_image_ptr fromETC2_RGB_A1(int width, int height,
 	const int physHeight = ALIGN_BYTES(4, height);
 
 	// Create an rp_image.
-	const rp_image_ptr img = std::make_shared<rp_image>(physWidth, physHeight, rp_image::Format::ARGB32);
+	rp_image_ptr img = std::make_shared<rp_image>(physWidth, physHeight, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
 		return nullptr;
@@ -943,7 +943,7 @@ rp_image_ptr fromEAC_R11(int width, int height,
 	const int physHeight = ALIGN_BYTES(4, height);
 
 	// Create an rp_image.
-	const rp_image_ptr img = std::make_shared<rp_image>(physWidth, physHeight, rp_image::Format::ARGB32);
+	rp_image_ptr img = std::make_shared<rp_image>(physWidth, physHeight, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
 		return nullptr;
@@ -1013,7 +1013,7 @@ rp_image_ptr fromEAC_RG11(int width, int height,
 	const int physHeight = ALIGN_BYTES(4, height);
 
 	// Create an rp_image.
-	const rp_image_ptr img = std::make_shared<rp_image>(physWidth, physHeight, rp_image::Format::ARGB32);
+	rp_image_ptr img = std::make_shared<rp_image>(physWidth, physHeight, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
 		return nullptr;

@@ -109,7 +109,7 @@ rp_image_ptr rp_image::dup_ARGB32(void) const
 		return nullptr;
 	}
 
-	const rp_image_ptr img = std::make_shared<rp_image>(width, height, Format::ARGB32);
+	rp_image_ptr img = std::make_shared<rp_image>(width, height, Format::ARGB32);
 	if (!img->isValid()) {
 		// Image is invalid. Something went wrong.
 		return nullptr;
@@ -195,7 +195,7 @@ rp_image_ptr rp_image::squared(void) const
 
 	// Create the squared image.
 	const int max_dim = std::max(width, height);
-	const rp_image_ptr sq_img = std::make_shared<rp_image>(max_dim, max_dim, rp_image::Format::ARGB32);
+	rp_image_ptr sq_img = std::make_shared<rp_image>(max_dim, max_dim, rp_image::Format::ARGB32);
 	if (!sq_img->isValid()) {
 		// Could not allocate the image.
 		return nullptr;
@@ -326,7 +326,7 @@ rp_image_ptr rp_image::resized(int width, int height, Alignment alignment, uint3
 	}
 
 	const rp_image::Format format = backend->format;
-	const rp_image_ptr img = std::make_shared<rp_image>(width, height, format);
+	rp_image_ptr img = std::make_shared<rp_image>(width, height, format);
 	if (!img->isValid()) {
 		// Image is invalid.
 		return nullptr;
@@ -587,7 +587,7 @@ rp_image_ptr rp_image::flip(FlipOp op) const
 	}
 
 	const int row_bytes = this->row_bytes();
-	const rp_image_ptr flipimg = std::make_shared<rp_image>(width, height, backend->format);
+	rp_image_ptr flipimg = std::make_shared<rp_image>(width, height, backend->format);
 	const uint8_t *src = static_cast<const uint8_t*>(backend->data());
 	uint8_t *dest;
 	if (op & FLIP_V) {

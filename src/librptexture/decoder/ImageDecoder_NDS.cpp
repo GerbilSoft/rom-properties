@@ -52,7 +52,7 @@ rp_image_ptr fromNDS_CI4(int width, int height,
 		return nullptr;
 
 	// Create an rp_image.
-	const rp_image_ptr img = std::make_shared<rp_image>(width, height, rp_image::Format::CI8);
+	rp_image_ptr img = std::make_shared<rp_image>(width, height, rp_image::Format::CI8);
 	if (!img->isValid()) {
 		// Could not allocate the image.
 		return nullptr;

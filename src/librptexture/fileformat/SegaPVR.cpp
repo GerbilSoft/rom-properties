@@ -1060,7 +1060,7 @@ rp_image_ptr SegaPVRPrivate::svr_unswizzle_4or8(const rp_image_const_ptr &img_sw
 		return nullptr;
 	}
 
-	const rp_image_ptr img = std::make_shared<rp_image>(width, height, img_swz->format());
+	rp_image_ptr img = std::make_shared<rp_image>(width, height, img_swz->format());
 	if (!img->isValid()) {
 		// Could not allocate the image.
 		return nullptr;
@@ -1160,7 +1160,7 @@ rp_image_ptr SegaPVRPrivate::svr_unswizzle_16(const rp_image_const_ptr &img_swz)
 		return nullptr;
 	}
 
-	const rp_image_ptr img = std::make_shared<rp_image>(width, height, img_swz->format());
+	rp_image_ptr img = std::make_shared<rp_image>(width, height, img_swz->format());
 	if (!img->isValid()) {
 		// Could not allocate the image.
 		return nullptr;
