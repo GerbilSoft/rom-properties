@@ -562,7 +562,7 @@ static inline uint32_t RGB9_E5_to_ARGB32(uint32_t px32)
 #define RGB9E5_MANTISSA_BITS 9
 	union { float f; uint32_t u; } scale;
 
-	const int e = (px32 >> 27) - RGB9E5_EXP_BIAS - RGB9E5_MANTISSA_BITS;
+	const int e = static_cast<int>(px32 >> 27) - RGB9E5_EXP_BIAS - RGB9E5_MANTISSA_BITS;
 	scale.u = (e + 127) << 23;
 
 	// Process as float.
