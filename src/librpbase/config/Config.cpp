@@ -112,6 +112,7 @@ public:
 	static const constexpr Config::ImgBandwidth imgBandwidthMetered_default = Config::ImgBandwidth::NormalRes;
 
 	// DMG title screen mode [index is ROM type]
+	// NOTE: Can't use constexpr here because it breaks on gcc-7.5.0. (Ubuntu 18.04)
 	static const Config::DMG_TitleScreen_Mode dmgTSMode_default[Config::DMG_TitleScreen_Mode::DMG_TS_MAX];
 
 	// Other options
