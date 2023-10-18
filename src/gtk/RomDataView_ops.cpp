@@ -306,15 +306,17 @@ rp_rom_data_view_getSaveFileDialog_callback(GFile *file, save_data_t *save_data)
 					? rp_language_combo_box_get_selected_lc(RP_LANGUAGE_COMBO_BOX(page->cboLanguage))
 					: 0;
 
-				ofs << "== " << rp_sprintf(C_("RomDataView", "File: '%s'"), romData->filename()) << std::endl;
+				ofs << "== " << rp_sprintf(C_("RomDataView", "File: '%s'"), romData->filename()) << '\n';
 				ROMOutput ro(romData, sel_lc);
 				ofs << ro;
+				ofs.flush();
 				break;
 			}
 
 			case OPTION_EXPORT_JSON: {
 				JSONROMOutput jsro(romData);
-				ofs << jsro << std::endl;
+				ofs << jsro << '\n';
+				ofs.flush();
 				break;
 			}
 
@@ -414,9 +416,10 @@ rp_rom_data_view_doRomOp_stdop(RpRomDataView *page, int id)
 				: 0;
 
 			ostringstream oss;
-			oss << "== " << rp_sprintf(C_("RomDataView", "File: '%s'"), rom_filename) << std::endl;
+			oss << "== " << rp_sprintf(C_("RomDataView", "File: '%s'"), rom_filename) << '\n';
 			ROMOutput ro(romData, sel_lc);
 			oss << ro;
+			oss.flush();
 			rp_gtk_main_clipboard_set_text(oss.str().c_str());
 			// Nothing else to do here.
 			return;
@@ -425,7 +428,8 @@ rp_rom_data_view_doRomOp_stdop(RpRomDataView *page, int id)
 		case OPTION_COPY_JSON: {
 			ostringstream oss;
 			JSONROMOutput jsro(romData);
-			oss << jsro << std::endl;
+			oss << jsro << '\n';
+			oss.flush();
 			rp_gtk_main_clipboard_set_text(oss.str().c_str());
 			// Nothing else to do here.
 			return;
