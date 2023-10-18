@@ -112,11 +112,7 @@ public:
 	static const constexpr Config::ImgBandwidth imgBandwidthMetered_default = Config::ImgBandwidth::NormalRes;
 
 	// DMG title screen mode [index is ROM type]
-	static const constexpr Config::DMG_TitleScreen_Mode dmgTSMode_default[Config::DMG_TitleScreen_Mode::DMG_TS_MAX] = {
-		Config::DMG_TitleScreen_Mode::DMG_TS_DMG,
-		Config::DMG_TitleScreen_Mode::DMG_TS_SGB,
-		Config::DMG_TitleScreen_Mode::DMG_TS_CGB
-	};
+	static const Config::DMG_TitleScreen_Mode dmgTSMode_default[Config::DMG_TitleScreen_Mode::DMG_TS_MAX];
 
 	// Other options
 	static const constexpr bool showDangerousPermissionsOverlayIcon_default = true;
@@ -147,6 +143,13 @@ const uint8_t ConfigPrivate::defImgTypePrio[] = {
 	RomData::IMG_INT_MEDIA,
 	RomData::IMG_INT_ICON,
 	RomData::IMG_INT_BANNER,
+};
+
+// DMG title screen mode [index is ROM type]
+const Config::DMG_TitleScreen_Mode ConfigPrivate::dmgTSMode_default[Config::DMG_TitleScreen_Mode::DMG_TS_MAX] = {
+	Config::DMG_TitleScreen_Mode::DMG_TS_DMG,
+	Config::DMG_TitleScreen_Mode::DMG_TS_SGB,
+	Config::DMG_TitleScreen_Mode::DMG_TS_CGB
 };
 
 ConfigPrivate::ConfigPrivate()
