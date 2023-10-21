@@ -22,6 +22,9 @@ The following changes have been made to the original:
 - rapidjson.h: Set endianness for MSVC/ARM64.
   Upstream commit: f91405801f88533c609d95f2fcc2d88811544d35
 
+- document.h: Avoid inheritance from std::iterator
+  Upstream commit: d75bb90a5dd8c5946ce7496748d1cea842aabc0f
+
 To obtain the original rapidjson-1.1.0, visit:
 https://rapidjson.org/
 https://github.com/Tencent/rapidjson
