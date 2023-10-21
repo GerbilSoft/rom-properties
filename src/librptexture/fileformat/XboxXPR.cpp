@@ -348,12 +348,12 @@ rp_image_const_ptr XboxXPRPrivate::loadXboxXPR0Image(void)
 		return nullptr;
 	}
 
-	// Mode table.
+	// Mode table
 	// Index is XPR0_Pixel_Format_e.
 	// Reference: https://github.com/Cxbx-Reloaded/Cxbx-Reloaded/blob/c709f9e3054ad8e1dae62816f25bef06248415c4/src/core/hle/D3D8/XbConvert.cpp#L871
 	// TODO: Test these formats.
 	// Tested formats: ARGB4444, ARGB8888, DXT1, DXT2
-	static const struct {
+	struct xpr_mode_t {
 		uint8_t bpp;	// Bits per pixel (4, 8, 16, 32; 0 for invalid)
 				// TODO: Use a shift amount instead?
 		ImageDecoder::PixelFormat pxf;	// ImageDecoder::PixelFormat
@@ -361,7 +361,8 @@ rp_image_const_ptr XboxXPRPrivate::loadXboxXPR0Image(void)
 		bool swizzled;	// True if the format needs to be unswizzled
 				// DXTn is automatically unswizzled by the DXTn
 				// functions, so those should be false.
-	} mode_tbl[] = {
+	};
+	static const std::array<xpr_mode_t, 0x42> xpr_mode_tbl = {{
 		{ 8, ImageDecoder::PixelFormat::L8,		0, true},	// 0x00: L8
 		{ 0, ImageDecoder::PixelFormat::Unknown,	0, true},	// 0x01: AL8 (TODO)
 		{16, ImageDecoder::PixelFormat::ARGB1555, 	0, true},	// 0x02: ARGB1555
@@ -432,15 +433,15 @@ rp_image_const_ptr XboxXPRPrivate::loadXboxXPR0Image(void)
 
 		{32, ImageDecoder::PixelFormat::BGRA8888,	0, false},	// 0x40: Linear BGRA8888
 		{32, ImageDecoder::PixelFormat::RGBA8888,	0, false},	// 0x41: Linear RGBA8888
-	};
+	}};
 
-	if (xpr0Header.pixel_format >= ARRAY_SIZE(mode_tbl)) {
+	if (xpr0Header.pixel_format >= xpr_mode_tbl.size()) {
 		// Invalid pixel format.
 		return nullptr;
 	}
 
 	// Determine the expected size based on the pixel format.
-	const auto &mode = mode_tbl[xpr0Header.pixel_format];
+	const auto &mode = xpr_mode_tbl[xpr0Header.pixel_format];
 	const size_t expected_size = width * height * mode.bpp / 8U;
 
 	if (expected_size > file_sz - data_offset) {
@@ -639,7 +640,7 @@ const char *XboxXPR::pixelFormat(void) const
 		return nullptr;
 	}
 
-	static const char *const pxfmt_tbl[] = {
+	static const std::array<const char*, 0x65> pxfmt_tbl = {
 		// 0x00
 		"L8", "AL8", "ARGB1555", "RGB555",
 		"ARGB4444", "RGB565", "ARGB8888", "xRGB8888",
@@ -695,7 +696,7 @@ const char *XboxXPR::pixelFormat(void) const
 		"Index16",
 	};
 
-	if (d->xpr0Header.pixel_format < ARRAY_SIZE(pxfmt_tbl)) {
+	if (d->xpr0Header.pixel_format < pxfmt_tbl.size()) {
 		return pxfmt_tbl[d->xpr0Header.pixel_format];
 	}
 

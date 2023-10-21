@@ -145,13 +145,13 @@ void rp_key_manager_tab_init_keys(RpKeyManagerTab *tab)
 
 /** KeyStoreGTK signal handlers **/
 
-static const char *const is_valid_icon_name_tbl[] = {
+static const std::array<const char*, 5> is_valid_icon_name_tbl = {{
 	nullptr,		// Empty
 	"dialog-question",	// Unknown
 	"dialog-error",		// NotAKey
 	"dialog-error",		// Incorrect
 	"dialog-ok-apply",	// OK
-};
+}};
 
 /**
  * A key in the KeyStore has changed.
@@ -182,7 +182,7 @@ void keyStore_key_changed_signal_handler(RpKeyStoreGTK *keyStore, int sectIdx, i
 		return;
 
 	const char *icon_name = nullptr;
-	if (/*(int)key->status >= 0 &&*/ (int)key->status < ARRAY_SIZE_I(is_valid_icon_name_tbl)) {
+	if (/*(int)key->status >= 0 &&*/ (int)key->status < static_cast<int>(is_valid_icon_name_tbl.size())) {
 		icon_name = is_valid_icon_name_tbl[(int)key->status];
 	}
 
@@ -225,7 +225,7 @@ void keyStore_all_keys_changed_signal_handler(RpKeyStoreGTK *keyStore, RpKeyMana
 				}
 
 				const char *icon_name = nullptr;
-				if (/*(int)key->status >= 0 &&*/ (int)key->status < ARRAY_SIZE_I(is_valid_icon_name_tbl)) {
+				if (/*(int)key->status >= 0 &&*/ (int)key->status < static_cast<int>(is_valid_icon_name_tbl.size())) {
 					icon_name = is_valid_icon_name_tbl[(int)key->status];
 				}
 

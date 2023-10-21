@@ -299,12 +299,12 @@ void EXEPrivate::addFields_NE(void)
 		hasKernel = true;
 	}
 
-	// Target OS.
+	// Target OS
 	const char *targetOS = nullptr;
 	if (hdr.ne.targOS == NE_OS_UNKNOWN) {
 		// Either old OS/2 or Windows 1.x/2.x.
 		targetOS = (hasKernel ? "Windows 1.x/2.x" : "Old OS/2");
-	} else if (hdr.ne.targOS < ARRAY_SIZE(NE_TargetOSes)) {
+	} else if (hdr.ne.targOS < NE_TargetOSes.size()) {
 		targetOS = NE_TargetOSes[hdr.ne.targOS];
 	}
 	if (!targetOS) {
@@ -325,7 +325,7 @@ void EXEPrivate::addFields_NE(void)
 	}
 
 	// DGroup type.
-	static const char *const dgroupTypes[] = {
+	static const std::array<const char*, 4> dgroupTypes = {
 		NOP_C_("EXE|DGroupType", "None"),
 		NOP_C_("EXE|DGroupType", "Single Shared"),
 		NOP_C_("EXE|DGroupType", "Multiple"),
@@ -334,7 +334,7 @@ void EXEPrivate::addFields_NE(void)
 	fields.addField_string(C_("EXE", "DGroup Type"),
 		dpgettext_expr(RP_I18N_DOMAIN, "EXE|DGroupType", dgroupTypes[hdr.ne.ProgFlags & 3]));
 
-	// Program flags.
+	// Program flags
 	static const char *const ProgFlags_names[] = {
 		nullptr, nullptr,	// DGroup Type
 		NOP_C_("EXE|ProgFlags", "Global Init"),
@@ -349,11 +349,11 @@ void EXEPrivate::addFields_NE(void)
 	fields.addField_bitfield("Program Flags",
 		v_ProgFlags_names, 2, hdr.ne.ProgFlags);
 
-	// Application type.
+	// Application type
 	const char *applType;
 	if (hdr.ne.targOS == NE_OS_OS2) {
 		// Only mentioning Presentation Manager for OS/2 executables.
-		static const char *const applTypes_OS2[] = {
+		static const std::array<const char*, 4> applTypes_OS2 = {
 			NOP_C_("EXE|ApplType", "None"),
 			NOP_C_("EXE|ApplType", "Full Screen (not aware of Presentation Manager)"),
 			NOP_C_("EXE|ApplType", "Presentation Manager compatible"),
@@ -362,7 +362,7 @@ void EXEPrivate::addFields_NE(void)
 		applType = applTypes_OS2[hdr.ne.ApplFlags & 3];
 	} else {
 		// Assume Windows for everything else.
-		static const char *const applTypes_Win[] = {
+		static const std::array<const char*, 4> applTypes_Win = {
 			NOP_C_("EXE|ApplType", "None"),
 			NOP_C_("EXE|ApplType", "Full Screen (not aware of Windows)"),
 			NOP_C_("EXE|ApplType", "Windows compatible"),
@@ -373,7 +373,7 @@ void EXEPrivate::addFields_NE(void)
 	fields.addField_string(C_("EXE", "Application Type"),
 		dpgettext_expr(RP_I18N_DOMAIN, "EXE|ApplType", applType));
 
-	// Application flags.
+	// Application flags
 	static const char *const ApplFlags_names[] = {
 		nullptr, nullptr,	// Application type
 		nullptr,
@@ -388,7 +388,7 @@ void EXEPrivate::addFields_NE(void)
 	fields.addField_bitfield(C_("EXE", "Application Flags"),
 		v_ApplFlags_names, 2, hdr.ne.ApplFlags);
 
-	// Other flags.
+	// Other flags
 	// NOTE: Indicated as OS/2 flags by OSDev Wiki,
 	// but may be set on Windows programs too.
 	// References:
@@ -441,21 +441,21 @@ void EXEPrivate::addFields_NE(void)
 		}
 	}
 
-	// Expected Windows version.
+	// Expected Windows version
 	// TODO: Is this used in OS/2 executables?
 	if (hdr.ne.targOS == NE_OS_WIN || hdr.ne.targOS == NE_OS_WIN386) {
 		fields.addField_string(C_("EXE", "Windows Version"),
 			rp_sprintf("%u.%u", hdr.ne.expctwinver[1], hdr.ne.expctwinver[0]));
 	}
 
-	// Runtime DLL.
+	// Runtime DLL
 	// NOTE: Strings were obtained earlier.
 	if (hdr.ne.targOS == NE_OS_WIN && !runtime_dll.empty()) {
 		// TODO: Show the link?
 		fields.addField_string(C_("EXE", "Runtime DLL"), runtime_dll);
 	}
 
-	// Module Name and Module Description.
+	// Module Name and Module Description
 	auto get_first_string = [](span<const char> sp, string &out) -> bool {
 		if (sp.size() == 0)
 			return false;

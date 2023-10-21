@@ -282,7 +282,7 @@ uint32_t MegaDrivePrivate::parseIOSupport(const char *io_support, int size)
 	// NOTE: Only 48 entries; starts at 0x30, ends at 0x5F.
 	// Index: Character
 	// Value: Bitfield value, or -1 if not applicable.
-	static const int8_t md_io_chr_map[0x30] = {
+	static const std::array<int8_t, 0x30> md_io_chr_map = {
 		// 0x30 ['0'-'9']
 		MD_IOSH_JOYPAD_SMS, -1, -1, -1, MD_IOSH_TEAM_PLAYER, -1, MD_IOSH_JOYPAD_6, -1,
 		-1, -1, -1, -1, -1, -1, -1 ,-1,

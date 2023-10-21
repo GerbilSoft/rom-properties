@@ -40,7 +40,7 @@ class RomMetaDataPrivate
 		std::array<Property, (int)Property::PropertyCount> map_metaData;
 
 		// Property type mapping
-		static const PropertyType PropertyTypeMap[];
+		static const std::array<PropertyType, (int)Property::PropertyCount> PropertyTypeMap;
 
 		/**
 		 * Add or overwrite a Property.
@@ -53,7 +53,7 @@ class RomMetaDataPrivate
 /** RomMetaDataPrivate **/
 
 // Property type mapping
-const PropertyType RomMetaDataPrivate::PropertyTypeMap[] = {
+const std::array<PropertyType, (int)Property::PropertyCount> RomMetaDataPrivate::PropertyTypeMap = {
 	PropertyType::FirstPropertyType,	// first type is invalid
 
 	// Audio

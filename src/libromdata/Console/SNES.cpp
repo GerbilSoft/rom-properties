@@ -818,7 +818,7 @@ SNES::SNES(const IRpFilePtr &file)
 
 	if (d->romType == SNESPrivate::RomType::Unknown) {
 		// Check for BS-X "Memory Pack" headers.
-		static const uint16_t bsx_addrs[2] = {0x7F00, 0xFF00};
+		static const std::array<uint16_t, 2> bsx_addrs = {0x7F00, 0xFF00};
 		static const uint8_t bsx_mempack_magic[6] = {'M', 0, 'P', 0, 0, 0};
 		uint8_t buf[7];
 
@@ -1205,9 +1205,9 @@ int SNES::loadFieldData(void)
 	const SNES_RomHeader *const romHeader = &d->romHeader;
 	d->fields.reserve(8); // Maximum of 8 fields.
 
-	// Cartridge HW.
+	// Cartridge HW
 	// TODO: Make this translatable.
-	static const char *const hw_base_tbl[16] = {
+	static const std::array<const char*, 16> hw_base_tbl = {
 		// 0
 		"ROM", "ROM, RAM", "ROM, RAM, Battery", "ROM, ",
 		"ROM, RAM, ", "ROM, RAM, Battery, ", "ROM, Battery, ", nullptr,
@@ -1219,7 +1219,7 @@ int SNES::loadFieldData(void)
 		nullptr,
 		nullptr, nullptr, nullptr, nullptr
 	};
-	static const char *const hw_enh_tbl[16] = {
+	static const std::array<const char*, 16> hw_enh_tbl = {
 		"DSP-1", "Super FX", "OBC-1", "SA-1",
 		"S-DD1", "S-RTC", "Unknown", "Unknown",
 		"Unknown", "Unknown", "Unknown", "Unknown",
@@ -1356,7 +1356,7 @@ int SNES::loadFieldData(void)
 
 	// Region
 	// NOTE: Not listed for BS-X because BS-X is Japan only.
-	static const char *const region_tbl[0x15] = {
+	static const std::array<const char*, 0x15> RegionCode_str_tbl = {
 		NOP_C_("Region", "Japan"),
 		NOP_C_("Region", "North America"),
 		NOP_C_("Region", "Europe"),
@@ -1378,9 +1378,9 @@ int SNES::loadFieldData(void)
 		NOP_C_("Region", "Other"),
 		NOP_C_("Region", "Other"),
 	};
-	const char *const region_lkup = (romHeader->snes.destination_code < ARRAY_SIZE(region_tbl)
-					? region_tbl[romHeader->snes.destination_code]
-					: nullptr);
+	const char *const region_lkup = (romHeader->snes.destination_code < RegionCode_str_tbl.size())
+					? RegionCode_str_tbl[romHeader->snes.destination_code]
+					: nullptr;
 
 	switch (d->romType) {
 		case SNESPrivate::RomType::SNES: {
@@ -1573,7 +1573,7 @@ int SNES::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 
 	// Determine the region code based on the destination code.
 	char region_code[4] = {'\0', '\0', '\0', '\0'};
-	static const char RegionCode_tbl[] = {
+	static const std::array<char, 0x15> RegionCode_chr_tbl = {
 		'J', 'E', 'P', 'X', '\0', '\0', 'F', 'H',
 		'S', 'D', 'I', 'C', '\0',  'K', 'A', 'N',
 		'B', 'U', 'X', 'Y', 'Z'
@@ -1582,9 +1582,9 @@ int SNES::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 		// BS-X. Use a separate "region".
 		region_code[0] = 'B';
 		region_code[1] = 'S';
-	} else if (romHeader->snes.destination_code < ARRAY_SIZE(RegionCode_tbl)) {
+	} else if (romHeader->snes.destination_code < RegionCode_chr_tbl.size()) {
 		// SNES region code is in range.
-		region_code[0] = RegionCode_tbl[romHeader->snes.destination_code];
+		region_code[0] = RegionCode_chr_tbl[romHeader->snes.destination_code];
 	}
 
 	if (region_code[0] == '\0') {

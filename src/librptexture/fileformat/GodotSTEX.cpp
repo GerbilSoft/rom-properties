@@ -90,12 +90,12 @@ class GodotSTEXPrivate final : public FileFormatPrivate
 
 	public:
 		// Image format tables
-		static const char *const img_format_tbl_v3[];
-		static const char *const img_format_tbl_v4[];
+		static const std::array<const char*, 0x26> img_format_tbl_v3;
+		static const std::array<const char*, 0x27> img_format_tbl_v4;
 
 		// ImageSizeCalc opcode tables
-		static const ImageSizeCalc::OpCode op_tbl_v3[];
-		static const ImageSizeCalc::OpCode op_tbl_v4[];
+		static const std::array<ImageSizeCalc::OpCode, 0x26> op_tbl_v3;
+		static const std::array<ImageSizeCalc::OpCode, 0x27> op_tbl_v4;
 
 	public:
 		/**
@@ -136,7 +136,7 @@ const TextureInfo GodotSTEXPrivate::textureInfo = {
 };
 
 // Image format table (STEX v3)
-const char *const GodotSTEXPrivate::img_format_tbl_v3[] = {
+const std::array<const char*, 0x26> GodotSTEXPrivate::img_format_tbl_v3 = {
 	// 0x00
 	"L8", "LA8", "R8", "RG8",
 	"RGB8", "RGBA8", "RGBA4444", "RGB565",
@@ -165,7 +165,7 @@ const char *const GodotSTEXPrivate::img_format_tbl_v3[] = {
 };
 
 // Image format table (STEX v4)
-const char *const GodotSTEXPrivate::img_format_tbl_v4[] = {
+const std::array<const char*, 0x27> GodotSTEXPrivate::img_format_tbl_v4 = {
 	// 0x00
 	"L8", "LA8", "R8", "RG8",
 	"RGB8", "RGBA8", "RGBA4444", "RGB565",
@@ -188,7 +188,7 @@ const char *const GodotSTEXPrivate::img_format_tbl_v4[] = {
 };
 
 // ImageSizeCalc opcode table (STEX v3)
-const ImageSizeCalc::OpCode GodotSTEXPrivate::op_tbl_v3[] = {
+const std::array<ImageSizeCalc::OpCode, 0x26> GodotSTEXPrivate::op_tbl_v3 = {
 	// 0x00
 	OpCode::None,		// STEX_FORMAT_L8
 	OpCode::Multiply2,	// STEX_FORMAT_LA8
@@ -241,7 +241,7 @@ const ImageSizeCalc::OpCode GodotSTEXPrivate::op_tbl_v3[] = {
 };
 
 // ImageSizeCalc opcode table (STEX v3)
-const ImageSizeCalc::OpCode GodotSTEXPrivate::op_tbl_v4[] = {
+const std::array<ImageSizeCalc::OpCode, 0x27> GodotSTEXPrivate::op_tbl_v4 = {
 	// 0x00
 	OpCode::None,		// STEX_FORMAT_L8
 	OpCode::Multiply2,	// STEX_FORMAT_LA8
@@ -299,14 +299,14 @@ GodotSTEXPrivate::GodotSTEXPrivate(GodotSTEX *q, const IRpFilePtr &file)
 	, format_flags(~0U)
 	, hasEmbeddedFile(false)
 {
-	static_assert(ARRAY_SIZE(GodotSTEXPrivate::img_format_tbl_v3) == STEX3_FORMAT_MAX,
+	static_assert(GodotSTEXPrivate::img_format_tbl_v3.size() == STEX3_FORMAT_MAX,
 		"GodotSTEXPrivate::img_format_tbl_v3[] is not the correct size.");
-	static_assert(ARRAY_SIZE(GodotSTEXPrivate::img_format_tbl_v4) == STEX4_FORMAT_MAX,
+	static_assert(GodotSTEXPrivate::img_format_tbl_v4.size() == STEX4_FORMAT_MAX,
 		"GodotSTEXPrivate::img_format_tbl_v4[] is not the correct size.");
 
-	static_assert(ARRAY_SIZE(GodotSTEXPrivate::op_tbl_v3) == STEX3_FORMAT_MAX,
+	static_assert(GodotSTEXPrivate::op_tbl_v3.size() == STEX3_FORMAT_MAX,
 		"GodotSTEXPrivate::op_tbl_v3[] is not the correct size.");
-	static_assert(ARRAY_SIZE(GodotSTEXPrivate::op_tbl_v4) == STEX4_FORMAT_MAX,
+	static_assert(GodotSTEXPrivate::op_tbl_v4.size() == STEX4_FORMAT_MAX,
 		"GodotSTEXPrivate::op_tbl_v4[] is not the correct size.");
 
 	// Clear the structs and arrays.
@@ -410,12 +410,12 @@ int GodotSTEXPrivate::getMipmapInfo(void)
 			assert(!"Invalid STEX version.");
 			return -EIO;
 		case 3:
-			op_tbl = op_tbl_v3;
-			op_tbl_sz = ARRAY_SIZE(op_tbl_v3);
+			op_tbl = op_tbl_v3.data();
+			op_tbl_sz = op_tbl_v3.size();
 			break;
 		case 4:
-			op_tbl = op_tbl_v4;
-			op_tbl_sz = ARRAY_SIZE(op_tbl_v4);
+			op_tbl = op_tbl_v4.data();
+			op_tbl_sz = op_tbl_v4.size();
 			break;
 	}
 	unsigned int expected_size = ImageSizeCalc::calcImageSize_tbl(
@@ -1093,11 +1093,11 @@ const char *GodotSTEX::pixelFormat(void) const
 			// PNG or WebP image is present.
 			if (d->hasEmbeddedFile)
 				return nullptr;
-			img_format_tbl = d->img_format_tbl_v3;
+			img_format_tbl = d->img_format_tbl_v3.data();
 			pixelFormatMax = STEX3_FORMAT_MAX;
 			break;
 		case 4:
-			img_format_tbl = d->img_format_tbl_v4;
+			img_format_tbl = d->img_format_tbl_v4.data();
 			pixelFormatMax = STEX4_FORMAT_MAX;
 			break;
 	}

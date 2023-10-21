@@ -79,10 +79,10 @@ class ValveVTFPrivate final : public FileFormatPrivate
 
 	public:
 		// Image format table
-		static const char *const img_format_tbl[];
+		static const std::array<const char*, VTF_IMAGE_FORMAT_MAX> img_format_tbl;
 
 		// ImageSizeCalc opcode table
-		static const ImageSizeCalc::OpCode op_tbl[];
+		static const std::array<ImageSizeCalc::OpCode, VTF_IMAGE_FORMAT_MAX> op_tbl;
 
 	public:
 		/**
@@ -133,7 +133,7 @@ const TextureInfo ValveVTFPrivate::textureInfo = {
 };
 
 // Image format table
-const char *const ValveVTFPrivate::img_format_tbl[] = {
+const std::array<const char*, VTF_IMAGE_FORMAT_MAX> ValveVTFPrivate::img_format_tbl = {
 	"RGBA8888",
 	"ABGR8888",
 	"RGB888",
@@ -164,7 +164,7 @@ const char *const ValveVTFPrivate::img_format_tbl[] = {
 };
 
 // ImageSizeCalc opcode table
-const ImageSizeCalc::OpCode ValveVTFPrivate::op_tbl[] = {
+const std::array<ImageSizeCalc::OpCode, VTF_IMAGE_FORMAT_MAX> ValveVTFPrivate::op_tbl = {
 	OpCode::Multiply4,	// VTF_IMAGE_FORMAT_RGBA8888
 	OpCode::Multiply4,	// VTF_IMAGE_FORMAT_ABGR8888
 	OpCode::Multiply3,	// VTF_IMAGE_FORMAT_RGB888
@@ -194,9 +194,6 @@ const ImageSizeCalc::OpCode ValveVTFPrivate::op_tbl[] = {
 	OpCode::Multiply4,	// VTF_IMAGE_FORMAT_UVLX8888
 };
 
-static_assert(ARRAY_SIZE(ValveVTFPrivate::img_format_tbl) == VTF_IMAGE_FORMAT_MAX,
-	"Missing VTF image formats.");
-
 ValveVTFPrivate::ValveVTFPrivate(ValveVTF *q, const IRpFilePtr &file)
 	: super(q, file, &textureInfo)
 	, texDataStartAddr(0)
@@ -213,7 +210,7 @@ ValveVTFPrivate::ValveVTFPrivate(ValveVTF *q, const IRpFilePtr &file)
 */
 unsigned int ValveVTFPrivate::getMinBlockSize(VTF_IMAGE_FORMAT format)
 {
-	static const uint8_t block_size_tbl[] = {
+	static const std::array<uint8_t, VTF_IMAGE_FORMAT_MAX> block_size_tbl = {
 		4,	// VTF_IMAGE_FORMAT_RGBA8888
 		4,	// VTF_IMAGE_FORMAT_ABGR8888
 		3,	// VTF_IMAGE_FORMAT_RGB888
@@ -242,11 +239,9 @@ unsigned int ValveVTFPrivate::getMinBlockSize(VTF_IMAGE_FORMAT format)
 		8,	// VTF_IMAGE_FORMAT_RGBA16161616
 		4,	// VTF_IMAGE_FORMAT_UVLX8888
 	};
-	static_assert(ARRAY_SIZE(block_size_tbl) == VTF_IMAGE_FORMAT_MAX,
-		"block_size_tbl[] is not the correct size.");
 
-	assert(format >= 0 && format < ARRAY_SIZE_I(block_size_tbl));
-	if (format < 0 || format >= ARRAY_SIZE_I(block_size_tbl)) {
+	assert(format >= 0 && format < static_cast<int>(block_size_tbl.size()));
+	if (format < 0 || format >= static_cast<int>(block_size_tbl.size())) {
 		// Invalid format.
 		return 0;
 	}
@@ -273,7 +268,7 @@ int ValveVTFPrivate::getMipmapInfo(void)
 	// Skip the low-resolution image.
 	if (vtfHeader.lowResImageFormat >= 0) {
 		addr += ImageSizeCalc::calcImageSize_tbl(
-			op_tbl, ARRAY_SIZE(op_tbl), vtfHeader.lowResImageFormat,
+			op_tbl.data(), op_tbl.size(), vtfHeader.lowResImageFormat,
 			vtfHeader.lowResImageWidth,
 			(vtfHeader.lowResImageHeight > 0 ? vtfHeader.lowResImageHeight : 1));
 	}
@@ -295,7 +290,7 @@ int ValveVTFPrivate::getMipmapInfo(void)
 
 	// Calculate the size of the full image.
 	unsigned int mipmap_size = ImageSizeCalc::calcImageSize_tbl(
-		op_tbl, ARRAY_SIZE(op_tbl), vtfHeader.highResImageFormat,
+		op_tbl.data(), op_tbl.size(), vtfHeader.highResImageFormat,
 		row_width, height);
 	if (mipmap_size == 0) {
 		// Invalid image size.
@@ -734,7 +729,7 @@ const char *ValveVTF::pixelFormat(void) const
 
 	const int fmt = d->vtfHeader.highResImageFormat;
 
-	if (fmt >= 0 && fmt < ARRAY_SIZE_I(d->img_format_tbl)) {
+	if (fmt >= 0 && fmt < static_cast<int>(d->img_format_tbl.size())) {
 		return d->img_format_tbl[fmt];
 	} else if (fmt < 0) {
 		// Negative == none (usually -1)
@@ -872,7 +867,7 @@ int ValveVTF::getFields(RomFields *fields) const
 	// Low-resolution image format.
 	const char *img_format;
 	if (vtfHeader->lowResImageFormat >= 0 &&
-	    vtfHeader->lowResImageFormat < ARRAY_SIZE_I(d->img_format_tbl))
+	    vtfHeader->lowResImageFormat < static_cast<int>(d->img_format_tbl.size()))
 	{
 		img_format = d->img_format_tbl[vtfHeader->lowResImageFormat];
 	} else if (vtfHeader->lowResImageFormat < 0) {

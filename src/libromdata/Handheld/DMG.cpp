@@ -132,9 +132,9 @@ class DMGPrivate final : public RomDataPrivate
 
 	public:
 		/**
-		 * DMG RAM size array.
+		 * DMG RAM size array
 		 */
-		static const uint8_t dmg_ram_size[];
+		static const std::array<uint8_t, 6> dmg_ram_size;
 
 		/**
 		 * Nintendo's logo which is checked by bootrom.
@@ -389,9 +389,9 @@ inline int DMGPrivate::RomSize(uint8_t type)
 }
 
 /**
- * DMG RAM size array.
+ * DMG RAM size array
  */
-const uint8_t DMGPrivate::dmg_ram_size[] = {
+const std::array<uint8_t, 6> DMGPrivate::dmg_ram_size = {
 	0, 2, 8, 32, 128, 64
 };
 
@@ -688,9 +688,7 @@ void DMGPrivate::addFields_romHeader(const DMG_RomHeader *pRomHeader)
 
 	// RAM Size
 	const char *const ram_size_title = C_("DMG", "RAM Size");
-	if (pRomHeader->ram_size >= ARRAY_SIZE(DMGPrivate::dmg_ram_size)) {
-		fields.addField_string(ram_size_title, C_("RomData", "Unknown"));
-	} else {
+	if (pRomHeader->ram_size < DMGPrivate::dmg_ram_size.size()) {
 		const uint8_t ram_size = DMGPrivate::dmg_ram_size[pRomHeader->ram_size];
 		if (ram_size == 0 && cart_type.hardware == DMGPrivate::DMG_Hardware::MBC2) {
 			fields.addField_string(ram_size_title,
@@ -710,6 +708,8 @@ void DMGPrivate::addFields_romHeader(const DMG_RomHeader *pRomHeader)
 					rp_sprintf(C_("DMG", "%u KiB"), static_cast<unsigned int>(ram_size)));
 			}
 		}
+	} else {
+		fields.addField_string(ram_size_title, C_("RomData", "Unknown"));
 	}
 
 	// Region Code

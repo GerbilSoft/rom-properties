@@ -120,10 +120,10 @@ class NESPrivate final : public RomDataPrivate
 		int get_iNES_mapper_number(void) const;
 
 		// Internal footer: PRG ROM sizes (as powers of two)
-		static const uint8_t footer_prg_rom_size_shift_lkup[];
+		static const std::array<uint8_t, 6> footer_prg_rom_size_shift_lkup;
 
 		// Internal footer: CHR ROM/RAM sizes (as powers of two)
-		static const uint8_t footer_chr_rom_size_shift_lkup[];
+		static const std::array<uint8_t, 6> footer_chr_rom_size_shift_lkup;
 
 		/**
 		 * Load the internal footer.
@@ -171,7 +171,7 @@ const RomDataInfo NESPrivate::romDataInfo = {
 };
 
 // Internal footer: PRG ROM sizes (as powers of two)
-const uint8_t NESPrivate::footer_prg_rom_size_shift_lkup[] = {
+const std::array<uint8_t, 6> NESPrivate::footer_prg_rom_size_shift_lkup = {
 	16,	// 0 (64 KB)
 	14,	// 1 (16 KB)
 	15,	// 2 (32 KB)
@@ -181,7 +181,7 @@ const uint8_t NESPrivate::footer_prg_rom_size_shift_lkup[] = {
 };
 
 // Internal footer: CHR ROM sizes (as powers of two)
-const uint8_t NESPrivate::footer_chr_rom_size_shift_lkup[] = {
+const std::array<uint8_t, 6> NESPrivate::footer_chr_rom_size_shift_lkup = {
 	13,	// 0 (8 KB)
 	14,	// 1 (16 KB)
 	15,	// 2 (32 KB)
@@ -443,8 +443,8 @@ int NESPrivate::loadInternalFooter(void)
 	// The ROM size field *must* be valid and match the iNES header.
 	const uint8_t prg_sz_idx = footer.rom_size >> 4;
 	const uint8_t chr_sz_idx = footer.rom_size & 0x07;
-	if (prg_sz_idx >= ARRAY_SIZE(footer_prg_rom_size_shift_lkup) ||
-	    chr_sz_idx >= ARRAY_SIZE(footer_chr_rom_size_shift_lkup))
+	if (prg_sz_idx >= footer_prg_rom_size_shift_lkup.size() ||
+	    chr_sz_idx >= footer_chr_rom_size_shift_lkup.size())
 	{
 		// Invalid ROM size.
 		intFooterErrno = ENOENT;
@@ -1500,10 +1500,10 @@ int NES::loadFieldData(void)
 			const uint8_t prg_sz_idx = footer.rom_size >> 4;
 			const uint8_t chr_sz_idx = footer.rom_size & 0x07;
 			unsigned int prg_size = 0, chr_size = 0;
-			if (prg_sz_idx < ARRAY_SIZE(d->footer_prg_rom_size_shift_lkup)) {
+			if (prg_sz_idx < d->footer_prg_rom_size_shift_lkup.size()) {
 				prg_size = (1U << d->footer_prg_rom_size_shift_lkup[prg_sz_idx]);
 			}
-			if (chr_sz_idx < ARRAY_SIZE(d->footer_chr_rom_size_shift_lkup)) {
+			if (chr_sz_idx < d->footer_chr_rom_size_shift_lkup.size()) {
 				chr_size = (1U << d->footer_chr_rom_size_shift_lkup[chr_sz_idx]);
 			}
 

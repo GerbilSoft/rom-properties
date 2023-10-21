@@ -114,7 +114,7 @@ class EXEPrivate final : public LibRpBase::RomDataPrivate
 
 		// NE target OSes.
 		// Also used for LE.
-		static const char *const NE_TargetOSes[6];
+		static const std::array<const char*, 6> NE_TargetOSes;
 
 		/**
 		 * Load the redisent portion of NE header

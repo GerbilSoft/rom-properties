@@ -176,13 +176,13 @@ bind_listitem_cb(GtkListItemFactory *factory, GtkListItem *list_item, gpointer u
 {
 	RP_UNUSED(factory);
 
-	static const char *const is_valid_icon_name_tbl[] = {
+	static const std::array<const char*, 5> is_valid_icon_name_tbl = {{
 		nullptr,		// Empty
 		"dialog-question",	// Unknown
 		"dialog-error",		// NotAKey
 		"dialog-error",		// Incorrect
 		"dialog-ok-apply",	// OK
-	};
+	}};
 
 	GtkWidget *const widget = gtk_list_item_get_child(list_item);
 	assert(widget != nullptr);
@@ -234,7 +234,7 @@ bind_listitem_cb(GtkListItemFactory *factory, GtkListItem *list_item, gpointer u
 		case KEY_COL_VALID: {
 			// Valid?
 			const uint8_t status = rp_key_store_item_get_status(ksitem);
-			const char *const icon_name = likely(status < ARRAY_SIZE(is_valid_icon_name_tbl))
+			const char *const icon_name = likely(status < is_valid_icon_name_tbl.size())
 				? is_valid_icon_name_tbl[status]
 				: nullptr;
 			gtk_image_set_from_icon_name(GTK_IMAGE(widget), icon_name);

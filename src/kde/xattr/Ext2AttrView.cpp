@@ -33,7 +33,7 @@ class Ext2AttrViewPrivate
 		int flags;
 
 		// See Ext2AttrData.h
-		QCheckBox *checkBoxes[EXT2_ATTR_CHECKBOX_MAX];
+		std::array<QCheckBox*, EXT2_ATTR_CHECKBOX_MAX> checkBoxes;
 
 	public:
 		/**
@@ -71,7 +71,7 @@ void Ext2AttrViewPrivate::retranslateUi_nonDesigner(void)
 	// tr: format string for Ext2 attribute checkbox labels (%c == lsattr character)
 	const char *const s_lsattr_fmt = C_("Ext2AttrView", "%c: %s");
 
-	for (size_t i = 0; i < ARRAY_SIZE(checkBoxes); i++) {
+	for (size_t i = 0; i < checkBoxes.size(); i++) {
 		const Ext2AttrCheckboxInfo_t *const p = ext2AttrCheckboxInfo(static_cast<Ext2AttrCheckboxID>(i));
 
 		// Prepend the lsattr character to the checkbox label.
@@ -98,16 +98,19 @@ void Ext2AttrViewPrivate::updateFlagsString(void)
 		uint8_t bit;
 		char chr;
 	};
-	static const struct flags_name flags_array[] = {
+	static const std::array<flags_name, 22> flags_array = {{
 		{  0, 's' }, {  1, 'u' }, {  3, 'S' }, { 16, 'D' },
 		{  4, 'i' }, {  5, 'a' }, {  6, 'd' }, {  7, 'A' },
 		{  2, 'c' }, { 11, 'E' }, { 14, 'j' }, { 12, 'I' },
 		{ 15, 't' }, { 17, 'T' }, { 19, 'e' }, { 23, 'C' },
 		{ 25, 'x' }, { 30, 'F' }, { 28, 'N' }, { 29, 'P' },
 		{ 20, 'V' }, { 10, 'm' }
-	};
+	}};
+	// FIXME: checkBoxes.size() can't be used here because it's this->checkBoxes.
+	static_assert(flags_array.size() == EXT2_ATTR_CHECKBOX_MAX, "flags_array[] and checkBoxes[] are out of sync!");
 
-	for (int i = 0; i < ARRAY_SIZE_I(flags_array); i++) {
+	// NOTE: Need to use `unsigned int` because `size_t` results in an ambiguous overload error.
+	for (unsigned int i = 0; i < static_cast<unsigned int>(flags_array.size()); i++) {
 		if (flags & (1U << flags_array[i].bit)) {
 			str[i] = QLatin1Char(flags_array[i].chr);
 		}
@@ -126,13 +129,15 @@ void Ext2AttrViewPrivate::updateFlagsCheckboxes(void)
 
 	// Flag order, relative to checkboxes
 	// NOTE: Uses bit indexes.
-	static const uint8_t flag_order[] = {
+	static const std::array<uint8_t, 22> flag_order = {
 		 5,  7,  2, 23,  6, 16, 19, 11,
 		30,  4, 12, 14, 10, 28, 29,  0,
 		 3, 15, 17,  1, 25, 20
 	};
+	// FIXME: checkBoxes.size() can't be used here because it's this->checkBoxes.
+	static_assert(flag_order.size() == EXT2_ATTR_CHECKBOX_MAX, "flag_order[] and checkBoxes[] are out of sync!");
 
-	for (size_t i = 0; i < ARRAY_SIZE(checkBoxes); i++) {
+	for (size_t i = 0; i < checkBoxes.size(); i++) {
 		bool val = !!(flags & (1U << flag_order[i]));
 		checkBoxes[i]->setChecked(val);
 		checkBoxes[i]->setProperty("Ext2AttrView.value", val);
@@ -151,7 +156,7 @@ Ext2AttrView::Ext2AttrView(QWidget *parent)
 	// Create the checkboxes.
 	static const int col_count = 4;
 	int col = 0, row = 0;
-	for (size_t i = 0; i < ARRAY_SIZE(d->checkBoxes); i++) {
+	for (size_t i = 0; i < d->checkBoxes.size(); i++) {
 		const Ext2AttrCheckboxInfo_t *const p = ext2AttrCheckboxInfo(static_cast<Ext2AttrCheckboxID>(i));
 
 		QCheckBox *const checkBox = new QCheckBox();

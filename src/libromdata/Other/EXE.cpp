@@ -74,7 +74,7 @@ const RomDataInfo EXEPrivate::romDataInfo = {
 
 // NE target OSes.
 // Also used for LE.
-const char *const EXEPrivate::NE_TargetOSes[6] = {
+const std::array<const char*, 6> EXEPrivate::NE_TargetOSes = {
 	nullptr,			// NE_OS_UNKNOWN
 	"IBM OS/2",			// NE_OS_OS2
 	"Microsoft Windows",		// NE_OS_WIN
@@ -188,7 +188,7 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 	}
 
 	// File type
-	static const char *const fileTypes_tbl[] = {
+	static const std::array<const char*, 8> fileTypes_tbl = {
 		// VFT_UNKNOWN
 		nullptr,
 		// tr: VFT_APP
@@ -207,7 +207,7 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 		NOP_C_("EXE|FileType", "Static Library"),
 	};
 	const char *const fileType_title = C_("EXE", "File Type");
-	if (pVsFfi->dwFileType < ARRAY_SIZE(fileTypes_tbl) &&
+	if (pVsFfi->dwFileType < fileTypes_tbl.size() &&
 	    fileTypes_tbl[pVsFfi->dwFileType] != nullptr)
 	{
 		fields.addField_string(fileType_title,
@@ -227,7 +227,7 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 	switch (pVsFfi->dwFileType) {
 		case VFT_DRV: {
 			hasSubtype = true;
-			static const char *const fileSubtypes_DRV[] = {
+			static const std::array<const char*, 13> fileSubtypes_DRV = {
 				// VFT2_UNKNOWN
 				nullptr,
 				// tr: VFT2_DRV_PRINTER
@@ -255,7 +255,7 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 				// tr: VFT2_DRV_VERSIONED_PRINTER
 				NOP_C_("EXE|FileSubType", "Versioned Printer"),
 			};
-			if (pVsFfi->dwFileSubtype < ARRAY_SIZE(fileSubtypes_DRV)) {
+			if (pVsFfi->dwFileSubtype < fileSubtypes_DRV.size()) {
 				fileSubtype = fileSubtypes_DRV[pVsFfi->dwFileSubtype];
 			}
 			break;
@@ -263,7 +263,7 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 
 		case VFT_FONT: {
 			hasSubtype = true;
-			static const char *const fileSubtypes_FONT[] = {
+			static const std::array<const char*, 4> fileSubtypes_FONT = {
 				// VFT2_UNKNOWN
 				nullptr,
 				// tr: VFT2_FONT_RASTER
@@ -273,7 +273,7 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 				// tr: VFT2_FONT_TRUETYPE
 				NOP_C_("EXE|FileSubType", "TrueType"),
 			};
-			if (pVsFfi->dwFileSubtype < ARRAY_SIZE(fileSubtypes_FONT)) {
+			if (pVsFfi->dwFileSubtype < fileSubtypes_FONT.size()) {
 				fileSubtype = fileSubtypes_FONT[pVsFfi->dwFileSubtype];
 			}
 			break;
@@ -449,7 +449,7 @@ void EXEPrivate::addFields_LE(void)
 	fields.setTabName(0, "LE");
 	fields.setTabIndex(0);
 
-	// CPU.
+	// CPU
 	const char *const cpu_title = C_("EXE", "CPU");
 	const uint16_t cpu_type = le16_to_cpu(hdr.le.cpu_type);
 	const char *const cpu = EXEData::lookup_le_cpu(cpu_type);
@@ -460,11 +460,11 @@ void EXEPrivate::addFields_LE(void)
 			rp_sprintf(C_("RomData", "Unknown (0x%04X)"), cpu_type));
 	}
 
-	// Target OS.
+	// Target OS
 	// NOTE: Same as NE.
 	const char *const targetOS_title = C_("EXE", "Target OS");
 	const uint16_t targOS = le16_to_cpu(hdr.le.targOS);
-	if (targOS < ARRAY_SIZE(NE_TargetOSes)) {
+	if (targOS < NE_TargetOSes.size()) {
 		fields.addField_string(targetOS_title, NE_TargetOSes[targOS]);
 	} else {
 		fields.addField_string(targetOS_title,
@@ -959,7 +959,7 @@ int EXE::loadFieldData(void)
 
 	// Executable type.
 	// NOTE: Not translatable.
-	static const char exeTypes_strtbl[] = {
+	static const std::array<char, 189> exeTypes_strtbl = {
 		"MS-DOS Executable\0"			// ExeType::MZ
 		"16-bit New Executable\0"		// ExeType::NE
 		"16-bit COM/NE Hybrid\0"		// ExeType::COM_NE
@@ -969,10 +969,10 @@ int EXE::loadFieldData(void)
 		"32-bit Portable Executable\0"		// ExeType::PE
 		"64-bit Portable Executable\0"		// ExeType::PE32PLUS
 	};
-	static const uint8_t exeTypes_offtbl[] = {
+	static const std::array<uint8_t, 8> exeTypes_offtbl = {
 		0, 18, 40, 61, 90, 109, 134, 161
 	};
-	static_assert(ARRAY_SIZE(exeTypes_offtbl) == (int)EXEPrivate::ExeType::Max, "Update exeTypes[]!");
+	static_assert(exeTypes_offtbl.size() == static_cast<size_t>(EXEPrivate::ExeType::Max), "Update exeTypes[]!");
 
 	const char *const type_title = C_("EXE", "Type");
 	if (d->exeType >= EXEPrivate::ExeType::MZ && d->exeType < EXEPrivate::ExeType::Max) {

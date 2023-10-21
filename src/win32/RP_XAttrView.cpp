@@ -79,18 +79,17 @@ int RP_XAttrView_Private::loadDosAttrs(void)
 		uint16_t id;
 		uint16_t attr;
 	};
-	static const res_map_t res_map[] = {
+	static const std::array<res_map_t, 6> res_map = {{
 		{IDC_XATTRVIEW_DOS_READONLY, FILE_ATTRIBUTE_READONLY},
 		{IDC_XATTRVIEW_DOS_HIDDEN, FILE_ATTRIBUTE_HIDDEN},
 		{IDC_XATTRVIEW_DOS_ARCHIVE, FILE_ATTRIBUTE_ARCHIVE},
 		{IDC_XATTRVIEW_DOS_SYSTEM, FILE_ATTRIBUTE_SYSTEM},
 		{IDC_XATTRVIEW_NTFS_COMPRESSED, FILE_ATTRIBUTE_COMPRESSED},
 		{IDC_XATTRVIEW_NTFS_ENCRYPTED, FILE_ATTRIBUTE_ENCRYPTED},
-	};
+	}};
 
-	for (size_t i = 0; i < ARRAY_SIZE(res_map); i++) {
-		const res_map_t *const p = &res_map[i];
-		Button_SetCheck(GetDlgItem(hDlgSheet, p->id), (attrs & p->attr) ? BST_CHECKED : BST_UNCHECKED);
+	for (const auto &p : res_map) {
+		Button_SetCheck(GetDlgItem(hDlgSheet, p.id), (attrs & p.attr) ? BST_CHECKED : BST_UNCHECKED);
 	}
 
 	return (likely(hasDosAttributes)) ? 0 : -ENOENT;

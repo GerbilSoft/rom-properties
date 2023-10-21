@@ -62,7 +62,7 @@ int getGcnPalLanguage(void)
 uint32_t getGcnPalLanguageCode(int langID)
 {
 	// GCN_PAL_Language_ID system language code mapping.
-	static const uint32_t langID_to_lc[GCN_PAL_LANG_MAX] = {
+	static const std::array<uint16_t, GCN_PAL_LANG_MAX> langID_to_lc = {
 		'en',	// GCN_PAL_LANG_ENGLISH
 		'de',	// GCN_PAL_LANG_GERMAN
 		'fr',	// GCN_PAL_LANG_FRENCH
@@ -72,13 +72,13 @@ uint32_t getGcnPalLanguageCode(int langID)
 	};
 
 	assert(langID >= 0);
-	assert(langID < ARRAY_SIZE_I(langID_to_lc));
-	if (langID < 0 || langID >= ARRAY_SIZE_I(langID_to_lc)) {
+	assert(langID <  static_cast<int>(langID_to_lc.size()));
+	if (langID < 0 || langID >= static_cast<int>(langID_to_lc.size())) {
 		// Out of range.
 		return 0;
 	}
 
-	return langID_to_lc[langID];
+	return static_cast<uint32_t>(langID_to_lc[langID]);
 }
 
 /**
@@ -123,7 +123,7 @@ int getWiiLanguage(void)
 uint32_t getWiiLanguageCode(int langID)
 {
 	// Wii_Language_ID system language code mapping.
-	static const uint32_t langID_to_lc[WII_LANG_MAX] = {
+	static const std::array<uint16_t, WII_LANG_MAX> langID_to_lc = {
 		'ja',	// WII_LANG_JAPANESE
 		'en',	// WII_LANG_ENGLISH
 		'de',	// WII_LANG_GERMAN
@@ -137,12 +137,13 @@ uint32_t getWiiLanguageCode(int langID)
 	};
 
 	assert(langID >= 0);
-	if (langID < 0 || langID >= ARRAY_SIZE_I(langID_to_lc)) {
+	assert(langID <  static_cast<int>(langID_to_lc.size()));
+	if (langID < 0 || langID >= static_cast<int>(langID_to_lc.size())) {
 		// Out of range.
 		return 0;
 	}
 
-	return langID_to_lc[langID];
+	return static_cast<uint32_t>(langID_to_lc[langID]);
 }
 
 /**
@@ -244,7 +245,7 @@ int getN3DSLanguage(void)
 uint32_t getNDSLanguageCode(int langID, int maxID)
 {
 	// N3DS_Language_ID system language code mapping.
-	static const uint32_t langID_to_lc[N3DS_LANG_MAX] = {
+	static const std::array<uint32_t, N3DS_LANG_MAX> langID_to_lc = {
 		// 0-7 are the same as Nintendo DS.
 		'ja',	// N3DS_LANG_JAPANESE
 		'en',	// N3DS_LANG_ENGLISH
@@ -263,10 +264,11 @@ uint32_t getNDSLanguageCode(int langID, int maxID)
 	};
 
 	assert(langID >= 0);
-	assert(maxID < ARRAY_SIZE_I(langID_to_lc));
-	if (maxID >= ARRAY_SIZE_I(langID_to_lc)) {
-		maxID = ARRAY_SIZE_I(langID_to_lc)-1;
+	assert(maxID < static_cast<int>(langID_to_lc.size()));
+	if (maxID >= static_cast<int>(langID_to_lc.size())) {
+		maxID = static_cast<int>(langID_to_lc.size())-1;
 	}
+	assert(langID <= maxID);
 	if (langID < 0 || langID > maxID) {
 		// Out of range.
 		return 0;

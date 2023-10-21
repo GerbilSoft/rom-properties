@@ -36,7 +36,7 @@ class XfsAttrViewPrivate
 		uint32_t projectId;
 
 		// See XfsAttrData.h
-		QCheckBox *checkBoxes[XFS_ATTR_CHECKBOX_MAX];
+		std::array<QCheckBox*, XFS_ATTR_CHECKBOX_MAX> checkBoxes;
 
 	public:
 		/**
@@ -70,7 +70,7 @@ class XfsAttrViewPrivate
  */
 void XfsAttrViewPrivate::retranslateUi_nonDesigner(void)
 {
-	for (size_t i = 0; i < ARRAY_SIZE(checkBoxes); i++) {
+	for (size_t i = 0; i < checkBoxes.size(); i++) {
 		const XfsAttrCheckboxInfo_t *const p = xfsAttrCheckboxInfo(static_cast<XfsAttrCheckboxID>(i));
 		checkBoxes[i]->setText(U82Q(dpgettext_expr(RP_I18N_DOMAIN, "XfsAttrView", p->label)));
 		checkBoxes[i]->setToolTip(U82Q(dpgettext_expr(RP_I18N_DOMAIN, "XfsAttrView", p->tooltip)));
@@ -87,7 +87,7 @@ void XfsAttrViewPrivate::updateXFlagsCheckboxes(void)
 
 	// NOTE: Bit 2 is skipped, and the last attribute is 0x80000000.
 	uint32_t tmp_xflags = xflags;
-	for (size_t i = 0; i < ARRAY_SIZE(checkBoxes); i++, tmp_xflags >>= 1) {
+	for (size_t i = 0; i < checkBoxes.size(); i++, tmp_xflags >>= 1) {
 		if (i == 2)
 			tmp_xflags >>= 1;
 		bool val = (tmp_xflags & 1);
@@ -121,7 +121,7 @@ XfsAttrView::XfsAttrView(QWidget *parent)
 	// Create the checkboxes.
 	static const int col_count = 4;
 	int col = 0, row = 0;
-	for (size_t i = 0; i < ARRAY_SIZE(d->checkBoxes); i++) {
+	for (size_t i = 0; i < d->checkBoxes.size(); i++) {
 		const XfsAttrCheckboxInfo_t *const p = xfsAttrCheckboxInfo(static_cast<XfsAttrCheckboxID>(i));
 
 		QCheckBox *const checkBox = new QCheckBox();
