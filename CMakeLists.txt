@@ -52,6 +52,27 @@ SET(CMAKE_LINK_DEPENDS_NO_SHARED ON)
 # enough tests are added.
 ENABLE_TESTING()
 
+# Set the standards versions: C11, C++17
+# C17 was added in CMake 3.21; for older versions, use C11.
+# C++17 was added in CMake 3.8; for older versions, use C++14.
+# NOTE: These aren't set as hard requirements, though if the compiler
+# doesn't support them, code will either be less optimal or will fail
+# to compile.
+SET(CMAKE_C_STANDARD_REQUIRED OFF)
+SET(CMAKE_C_EXTENSIONS ON)
+SET(CMAKE_CXX_STANDARD_REQUIRED OFF)
+SET(CMAKE_CXX_EXTENSIONS ON)
+IF(CMAKE_VERSION VERSION_GREATER_EQUAL 3.21)
+	SET(CMAKE_C_STANDARD 17)
+	SET(CMAKE_CXX_STANDARD 17)
+ELSEIF(CMAKE_VERSION VERSION_GREATER_EQUAL 3.8)
+	SET(CMAKE_C_STANDARD 11)
+	SET(CMAKE_CXX_STANDARD 17)
+ELSE()
+	SET(CMAKE_C_STANDARD 11)
+	SET(CMAKE_CXX_STANDARD 14)
+ENDIF()
+
 # Set default build options.
 INCLUDE(cmake/options.cmake)
 # Check for platform-specific functionality.

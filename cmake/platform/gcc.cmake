@@ -14,23 +14,12 @@ ENDIF()
 INCLUDE(CheckCCompilerFlag)
 INCLUDE(CheckCXXCompilerFlag)
 
-# Check what flag is needed for C11 and/or C99 support.
-INCLUDE(CheckC11C99CompilerFlag)
-CHECK_C11_C99_COMPILER_FLAG(RP_C11_CFLAG)
-
-# Check what flag is needed for C++ 2011 support.
-INCLUDE(CheckCXX11CompilerFlag)
-CHECK_CXX11_COMPILER_FLAG(RP_CXX11_CXXFLAG)
-
-SET(RP_C_FLAGS_COMMON "${RP_C11_CFLAG}")
-SET(RP_CXX_FLAGS_COMMON "${RP_CXX11_CXXFLAG}")
+SET(RP_C_FLAGS_COMMON "")
+SET(RP_CXX_FLAGS_COMMON "")
 SET(RP_EXE_LINKER_FLAGS_COMMON "")
 
 # _GNU_SOURCE is needed for memmem() and statx().
 ADD_DEFINITIONS(-D_GNU_SOURCE=1)
-
-UNSET(RP_C11_CFLAG)
-UNSET(RP_CXX11_CXXFLAG)
 
 # Test for common CFLAGS and CXXFLAGS.
 # NOTE: Not adding -Werror=format-nonliteral because there are some
