@@ -1,9 +1,9 @@
-This copy of zlib-ng 2.1.3 is a modified version of the original.
+This copy of zlib-ng 2.1.4 is a modified version of the original.
 
-commit cf89cf35037f152ce7adfeca864656de5d33ea1e
-2.1.3 Release
+commit 9fb955b8ba734b6519fe1a35704a4bc0ef01a22d
+2.1.4 Release
     
-Tag: 2.1.3
+Tag: 2.1.4
 
 The following changes have been made to the original:
 
@@ -21,6 +21,8 @@ The following changes have been made to the original:
   policies set by the main build infrastructure.
 
 - C17 has been added to the allowed standards list.
+
+- Disabled CPack.
 
 - Some other functionality not needed by rom-properties has been disabled.
 

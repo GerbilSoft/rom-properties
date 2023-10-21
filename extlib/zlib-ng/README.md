@@ -22,7 +22,7 @@ Features
   * Adler32 implementation using SSSE3, AVX2, AVX512, AVX512-VNNI, Neon, VMX & VSX
   * CRC32-B implementation using PCLMULQDQ, VPCLMULQDQ, ACLE, & IBM Z
   * Hash table implementation using CRC32-C intrinsics on x86 and ARM
-  * Slide hash implementations using SSE2, AVX2, Neon, VMX & VSX
+  * Slide hash implementations using SSE2, AVX2, ARMv6, Neon, VMX & VSX
   * Compare256 implementations using SSE2, AVX2, Neon, POWER9 & RVV
   * Inflate chunk copying using SSE2, SSSE3, AVX, Neon & VSX
   * Support for hardware-accelerated deflate using IBM Z DFLTCC
@@ -131,7 +131,7 @@ LD_PRELOAD=/opt/zlib-ng/libz.so.1.2.13.zlib-ng /usr/bin/program
 
 To install zlib-ng system-wide using cmake:
 
-```
+```sh or powershell
 cmake --build . --target install
 ```
 
@@ -139,8 +139,20 @@ cmake --build . --target install
 
 To install zlib-ng system-wide using the configure script:
 
-```
+```sh
 make install
+```
+
+### CPack
+
+After building with cmake, an installation package can be created using cpack. By default a tgz package is created,
+but you can append `-G <format>` to each command to generate alternative packages types (TGZ, ZIP, RPM, DEB). To easily
+create a rpm or deb package, you would use `-G RPM` or `-G DEB` respectively.
+
+```sh or powershell
+cd build
+cpack --config CPackConfig.cmake
+cpack --config CPackSourceConfig.cmake
 ```
 
 ### Vcpkg
@@ -194,6 +206,7 @@ Advanced Build Options
 | WITH_VPCLMULQDQ                 | --without-vpclmulqdq  | Build with VPCLMULQDQ intrinsics                                    | ON                     |
 | WITH_ACLE                       | --without-acle        | Build with ACLE intrinsics                                          | ON                     |
 | WITH_NEON                       | --without-neon        | Build with NEON intrinsics                                          | ON                     |
+| WITH_ARMV6                      | --without-armv6       | Build with ARMv6 intrinsics                                         | ON                     |
 | WITH_ALTIVEC                    | --without-altivec     | Build with AltiVec (VMX) intrinsics                                 | ON                     |
 | WITH_POWER8                     | --without-power8      | Build with POWER8 optimisations                                     | ON                     |
 | WITH_RVV                        |                       | Build with RVV intrinsics                                           | ON                     |

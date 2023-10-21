@@ -50,6 +50,9 @@ extern uint32_t adler32_neon(uint32_t adler, const uint8_t *buf, size_t len);
 #ifdef PPC_VMX
 extern uint32_t adler32_vmx(uint32_t adler, const uint8_t *buf, size_t len);
 #endif
+#ifdef RISCV_RVV
+extern uint32_t adler32_rvv(uint32_t adler, const uint8_t *buf, size_t len);
+#endif
 #ifdef X86_SSSE3
 extern uint32_t adler32_ssse3(uint32_t adler, const uint8_t *buf, size_t len);
 #endif
@@ -118,6 +121,10 @@ extern uint8_t* chunkmemset_safe_neon(uint8_t *out, unsigned dist, unsigned len,
 extern uint32_t chunksize_power8(void);
 extern uint8_t* chunkmemset_safe_power8(uint8_t *out, unsigned dist, unsigned len, unsigned left);
 #endif
+#ifdef RISCV_RVV
+extern uint32_t chunksize_rvv(void);
+extern uint8_t* chunkmemset_safe_rvv(uint8_t *out, unsigned dist, unsigned len, unsigned left);
+#endif
 
 #ifdef ZLIB_COMPAT
 typedef struct z_stream_s z_stream;
@@ -141,6 +148,9 @@ extern void inflate_fast_neon(PREFIX3(stream) *strm, uint32_t start);
 #endif
 #ifdef POWER8_VSX
 extern void inflate_fast_power8(PREFIX3(stream) *strm, uint32_t start);
+#endif
+#ifdef RISCV_RVV
+extern void inflate_fast_rvv(PREFIX3(stream) *strm, uint32_t start);
 #endif
 
 /* CRC32 */
@@ -258,7 +268,11 @@ typedef void (*slide_hash_func)(deflate_state *s);
 
 #ifdef X86_SSE2
 extern void slide_hash_sse2(deflate_state *s);
-#elif defined(ARM_NEON)
+#endif
+#if defined(ARM_SIMD)
+extern void slide_hash_armv6(deflate_state *s);
+#endif
+#if defined(ARM_NEON)
 extern void slide_hash_neon(deflate_state *s);
 #endif
 #if defined(PPC_VMX)
