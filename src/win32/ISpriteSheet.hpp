@@ -24,6 +24,8 @@ protected:
 	 * @param flipH If true, flip horizontally for RTL.
 	 */
 	ISpriteSheet(int cols, int rows, int width, int height, bool flipH = false);
+public:
+	virtual ~ISpriteSheet() = default;
 
 private:
 	RP_DISABLE_COPY(ISpriteSheet)

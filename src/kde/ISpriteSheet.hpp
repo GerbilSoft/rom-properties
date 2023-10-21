@@ -22,6 +22,8 @@ protected:
 	 * @param height Icon height
 	 */
 	ISpriteSheet(int cols, int rows, int width, int height);
+public:
+	virtual ~ISpriteSheet() = default;
 
 private:
 	RP_DISABLE_COPY(ISpriteSheet)
