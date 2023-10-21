@@ -228,7 +228,7 @@ KeyManager::KeyManager()
  */
 const char *KeyManager::verifyResultToString(VerifyResult res)
 {
-	static const char *const errTbl[] = {
+	static const std::array<const char*, (int)KeyManager::VerifyResult::Max> errTbl = {{
 		// tr: VerifyResult::OK
 		NOP_C_("KeyManager|VerifyResult", "Something happened."),
 		// tr: VerifyResult::InvalidParams
@@ -251,14 +251,13 @@ const char *KeyManager::verifyResultToString(VerifyResult res)
 		NOP_C_("KeyManager|VerifyResult", "The key in keys.conf is incorrect."),
 		// tr: VerifyResult::IncrementingValues
 		NOP_C_("KeyManager|VerifyResult", "The partition contains incrementing values."),
-	};
-	static_assert(ARRAY_SIZE(errTbl) == (int)KeyManager::VerifyResult::Max, "Update errTbl[].");
+	}};
 
 	assert(res >= (KeyManager::VerifyResult)0);
-	assert(res < (KeyManager::VerifyResult)ARRAY_SIZE(errTbl));
-	return ((res >= (KeyManager::VerifyResult)0 && res < (KeyManager::VerifyResult)ARRAY_SIZE(errTbl))
+	assert(res < (KeyManager::VerifyResult)errTbl.size());
+	return (res >= (KeyManager::VerifyResult)0 && res < (KeyManager::VerifyResult)errTbl.size())
 		? dpgettext_expr(RP_I18N_DOMAIN, "KeyManager|VerifyResult", errTbl[(int)res])
-		: nullptr);
+		: nullptr;
 }
 
 #ifdef ENABLE_DECRYPTION

@@ -21,10 +21,10 @@ using LibRpBase::KeyManager;
 namespace LibRomData { namespace CtrKeyScrambler {
 
 // Verification key names.
-static const char *const EncryptionKeyNames[Key_Max] = {
+static const std::array<const char*, Key_Max> EncryptionKeyNames = {{
 	"twl-scrambler",
 	"ctr-scrambler",
-};
+}};
 
 static const uint8_t EncryptionKeyVerifyData[Key_Max][16] = {
 	// twl-scrambler

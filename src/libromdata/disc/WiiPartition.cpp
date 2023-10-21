@@ -115,7 +115,7 @@ class WiiPartitionPrivate final : public GcnPartitionPrivate
 
 	public:
 		// Verification key names.
-		static const char *const EncryptionKeyNames[WiiPartition::Key_Max];
+		static const std::array<const char*, WiiPartition::Key_Max> EncryptionKeyNames;
 
 		// Verification key data.
 		static const uint8_t EncryptionKeyVerifyData[WiiPartition::Key_Max][16];
@@ -127,7 +127,7 @@ class WiiPartitionPrivate final : public GcnPartitionPrivate
 #ifdef ENABLE_DECRYPTION
 
 // Verification key names.
-const char *const WiiPartitionPrivate::EncryptionKeyNames[WiiPartition::Key_Max] = {
+const std::array<const char*, WiiPartition::Key_Max> WiiPartitionPrivate::EncryptionKeyNames = {{
 	// Retail
 	"rvl-common",
 	"rvl-korean",
@@ -142,7 +142,7 @@ const char *const WiiPartitionPrivate::EncryptionKeyNames[WiiPartition::Key_Max]
 	"rvl-sd-aes",
 	"rvl-sd-iv",
 	"rvl-sd-md5",
-};
+}};
 
 const uint8_t WiiPartitionPrivate::EncryptionKeyVerifyData[WiiPartition::Key_Max][16] = {
 	/** Retail **/

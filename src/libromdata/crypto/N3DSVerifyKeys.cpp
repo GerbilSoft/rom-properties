@@ -35,7 +35,7 @@ class N3DSVerifyKeysPrivate
 
 	public:
 		// Verification key names
-		static const char *const EncryptionKeyNames[N3DSVerifyKeys::Key_Max];
+		static const std::array<const char*, N3DSVerifyKeys::Key_Max> EncryptionKeyNames;
 
 		// Verification key data
 		static const uint8_t EncryptionKeyVerifyData[N3DSVerifyKeys::Key_Max][16];
@@ -43,7 +43,7 @@ class N3DSVerifyKeysPrivate
 
 /** N3DSVerifyKeysPrivate **/
 
-const char *const N3DSVerifyKeysPrivate::EncryptionKeyNames[N3DSVerifyKeys::Key_Max] = {
+const std::array<const char*, N3DSVerifyKeys::Key_Max> N3DSVerifyKeysPrivate::EncryptionKeyNames = {{
 	// Retail
 	"ctr-spi-boot",
 	"ctr-Slot0x18KeyX",
@@ -84,7 +84,7 @@ const char *const N3DSVerifyKeysPrivate::EncryptionKeyNames[N3DSVerifyKeys::Key_
 	"ctr-dev-Slot0x3DKeyNormal-3",
 	"ctr-dev-Slot0x3DKeyNormal-4",
 	"ctr-dev-Slot0x3DKeyNormal-5",
-};
+}};
 
 // Verification key data
 const uint8_t N3DSVerifyKeysPrivate::EncryptionKeyVerifyData[N3DSVerifyKeys::Key_Max][16] = {

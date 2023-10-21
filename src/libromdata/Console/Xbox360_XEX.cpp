@@ -237,7 +237,7 @@ class Xbox360_XEX_Private final : public RomDataPrivate
 #ifdef ENABLE_DECRYPTION
 	public:
 		// Verification key names.
-		static const char *const EncryptionKeyNames[Xbox360_XEX::Key_Max];
+		static const std::array<const char*, Xbox360_XEX::Key_Max> EncryptionKeyNames;
 
 		// Verification key data.
 		static const uint8_t EncryptionKeyVerifyData[Xbox360_XEX::Key_Max][16];
@@ -269,15 +269,15 @@ const RomDataInfo Xbox360_XEX_Private::romDataInfo = {
 
 #ifdef ENABLE_DECRYPTION
 // Verification key names.
-const char *const Xbox360_XEX_Private::EncryptionKeyNames[Xbox360_XEX::Key_Max] = {
+const std::array<const char*, Xbox360_XEX::Key_Max> Xbox360_XEX_Private::EncryptionKeyNames = {{
 	// XEX1
 	"xbox360-xex1",
 
 	// XEX2 (retail only; debug uses an all-zero key)
 	"xbox360-xex2",
-};
+}};
 
-const uint8_t Xbox360_XEXPrivate::EncryptionKeyVerifyData[Xbox360_XEX::Key_Max][16] = {
+const uint8_t Xbox360_XEX_Private::EncryptionKeyVerifyData[Xbox360_XEX::Key_Max][16] = {
 	// xbox360-xex1
 	{0xB9,0x41,0x44,0x80,0xA4,0xE1,0x94,0x82,
 	 0xA2,0x9B,0xCD,0x7E,0xC4,0x68,0xB8,0xF0},
