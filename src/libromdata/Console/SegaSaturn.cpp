@@ -189,44 +189,43 @@ uint32_t SegaSaturnPrivate::parsePeripherals(const char *peripherals, int size)
 	if (!peripherals || size <= 0)
 		return 0;
 
+	// TODO: Sort by character and use bsearch()?
+	#define SATURN_IO_SUPPORT_ENTRY(entry) {SATURN_IO_##entry, SATURN_IOBIT_##entry}
+	struct saturn_io_tbl_t {
+		char io_chr;	// Character in the Peripherals field
+		uint8_t io_bit;	// Bit number in the returned bitfield
+	};
+	static const std::array<saturn_io_tbl_t, 17> saturn_io_tbl = {{
+		{' ', 0},	// quick exit for empty entries
+		SATURN_IO_SUPPORT_ENTRY(CONTROL_PAD),
+		SATURN_IO_SUPPORT_ENTRY(ANALOG_CONTROLLER),
+		SATURN_IO_SUPPORT_ENTRY(MOUSE),
+		SATURN_IO_SUPPORT_ENTRY(KEYBOARD),
+		SATURN_IO_SUPPORT_ENTRY(STEERING),
+		SATURN_IO_SUPPORT_ENTRY(MULTITAP),
+		SATURN_IO_SUPPORT_ENTRY(LIGHT_GUN),
+		SATURN_IO_SUPPORT_ENTRY(RAM_CARTRIDGE),
+		SATURN_IO_SUPPORT_ENTRY(3D_CONTROLLER),
+
+		// TODO: Are these actually the same thing?
+		{SATURN_IO_LINK_CABLE_JPN, SATURN_IOBIT_LINK_CABLE},
+		{SATURN_IO_LINK_CABLE_USA, SATURN_IOBIT_LINK_CABLE},
+
+		SATURN_IO_SUPPORT_ENTRY(NETLINK),
+		SATURN_IO_SUPPORT_ENTRY(PACHINKO),
+		SATURN_IO_SUPPORT_ENTRY(FDD),
+		SATURN_IO_SUPPORT_ENTRY(ROM_CARTRIDGE),
+		SATURN_IO_SUPPORT_ENTRY(MPEG_CARD),
+	}};
+
 	uint32_t ret = 0;
 	for (int i = size-1; i >= 0; i--) {
-		// TODO: Sort by character and use bsearch()?
-		#define SATURN_IO_SUPPORT_ENTRY(entry) {SATURN_IO_##entry, SATURN_IOBIT_##entry}
-		struct saturn_io_tbl_t {
-			char io_chr;	// Character in the Peripherals field
-			uint8_t io_bit;	// Bit number in the returned bitfield
-		};
-		static const saturn_io_tbl_t saturn_io_tbl[] = {
-			{' ', 0},	// quick exit for empty entries
-			SATURN_IO_SUPPORT_ENTRY(CONTROL_PAD),
-			SATURN_IO_SUPPORT_ENTRY(ANALOG_CONTROLLER),
-			SATURN_IO_SUPPORT_ENTRY(MOUSE),
-			SATURN_IO_SUPPORT_ENTRY(KEYBOARD),
-			SATURN_IO_SUPPORT_ENTRY(STEERING),
-			SATURN_IO_SUPPORT_ENTRY(MULTITAP),
-			SATURN_IO_SUPPORT_ENTRY(LIGHT_GUN),
-			SATURN_IO_SUPPORT_ENTRY(RAM_CARTRIDGE),
-			SATURN_IO_SUPPORT_ENTRY(3D_CONTROLLER),
-
-			// TODO: Are these actually the same thing?
-			{SATURN_IO_LINK_CABLE_JPN, SATURN_IOBIT_LINK_CABLE},
-			{SATURN_IO_LINK_CABLE_USA, SATURN_IOBIT_LINK_CABLE},
-
-			SATURN_IO_SUPPORT_ENTRY(NETLINK),
-			SATURN_IO_SUPPORT_ENTRY(PACHINKO),
-			SATURN_IO_SUPPORT_ENTRY(FDD),
-			SATURN_IO_SUPPORT_ENTRY(ROM_CARTRIDGE),
-			SATURN_IO_SUPPORT_ENTRY(MPEG_CARD),
-		};
-
-		static const saturn_io_tbl_t *const p_saturn_io_tbl_end = &saturn_io_tbl[ARRAY_SIZE(saturn_io_tbl)];
 		const char io_chr = peripherals[i];
-		auto iter = std::find_if(saturn_io_tbl, p_saturn_io_tbl_end,
+		auto iter = std::find_if(saturn_io_tbl.cbegin(), saturn_io_tbl.cend(),
 			[io_chr](const saturn_io_tbl_t &p) noexcept -> bool {
 				return (p.io_chr == io_chr);
 			});
-		if (iter != p_saturn_io_tbl_end) {
+		if (iter != saturn_io_tbl.cend()) {
 			ret |= (1U << iter->io_bit);
 		}
 	}

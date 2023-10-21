@@ -63,7 +63,7 @@ class RP_PropertyStore_Private
 			const PROPERTYKEY *pkey;
 			LONG vtype;
 		};
-		static const MetaDataConv metaDataConv[];
+		static const std::array<MetaDataConv, 79> metaDataConv;
 
 	public:
 		/**

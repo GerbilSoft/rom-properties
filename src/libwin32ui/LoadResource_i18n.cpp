@@ -42,21 +42,20 @@ LPVOID LoadResource_i18n(HMODULE hModule, LPCTSTR lpType, DWORD dwResId)
 		uint32_t lc;
 		WORD wLanguage;
 	};
-	static const struct lc_mapping_t lc_mappings[] = {
+	static const std::array<lc_mapping_t, 6> lc_mappings = {{
 		{'de', MAKELANGID(LANG_GERMAN, SUBLANG_GERMAN)},
 		{'es', MAKELANGID(LANG_SPANISH, SUBLANG_SPANISH)},
 		{'fr', MAKELANGID(LANG_FRENCH, SUBLANG_FRENCH)},
 		{'pt', MAKELANGID(LANG_PORTUGUESE, SUBLANG_PORTUGUESE_BRAZILIAN)},
 		{'ru', MAKELANGID(LANG_RUSSIAN, SUBLANG_DEFAULT)},
 		{'uk', MAKELANGID(LANG_UKRAINIAN, SUBLANG_DEFAULT)},
-	};
-	static const struct lc_mapping_t *const p_lc_mappings_end = &lc_mappings[ARRAY_SIZE(lc_mappings)];
+	}};
 
-	auto iter = std::find_if(lc_mappings, p_lc_mappings_end,
-		[lc](const struct lc_mapping_t lc_mapping) {
+	auto iter = std::find_if(lc_mappings.cbegin(), lc_mappings.cend(),
+		[lc](const lc_mapping_t lc_mapping) {
 			return (lc == lc_mapping.lc);
 		});
-	if (iter != p_lc_mappings_end) {
+	if (iter != lc_mappings.cend()) {
 		wLanguage = iter->wLanguage;
 	}
 

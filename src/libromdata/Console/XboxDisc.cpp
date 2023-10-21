@@ -513,7 +513,7 @@ int XboxDisc::isRomSupported_static(
 		int32_t btime;	// Creation time.
 	};
 
-	static const xgd_pvd_t xgd_tbl[] = {
+	static const std::array<xgd_pvd_t, 21> xgd_tbl = {{
 		// XGD1
 		{1,  0, 1000334575},	// XGD1: 2001-09-13 10:42:55.00 '0' (+12:00)
 
@@ -546,15 +546,14 @@ int XboxDisc::isRomSupported_static(
 		// - Hour and TZ:
 		//   - 17, -07:00
 		//   - 16, -08:00
-	};
-	static const xgd_pvd_t *const p_xgd_tbl_end = &xgd_tbl[ARRAY_SIZE(xgd_tbl)];
+	}};
 
 	// TODO: Use std::lower_bound() instead?
-	auto iter = std::find_if(xgd_tbl, p_xgd_tbl_end,
+	auto iter = std::find_if(xgd_tbl.cbegin(), xgd_tbl.cend(),
 		[btime](const xgd_pvd_t &p) noexcept -> bool {
 			return (p.btime == btime);
 		});
-	if (iter != p_xgd_tbl_end) {
+	if (iter != xgd_tbl.cend()) {
 		// Found a match!
 		if (pWave) {
 			*pWave = iter->wave;

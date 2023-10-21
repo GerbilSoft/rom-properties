@@ -45,7 +45,7 @@ const CLSID CLSID_RP_PropertyStore =
  *   - pkey: PROPERTYKEY (if nullptr, not implemented)
  *   - vtype: Expected variant type.
  */
-const RP_PropertyStore_Private::MetaDataConv RP_PropertyStore_Private::metaDataConv[] = {
+const std::array<RP_PropertyStore_Private::MetaDataConv, 79> RP_PropertyStore_Private::metaDataConv[] = {{
 	{nullptr, VT_EMPTY},			// Empty
 
 	// Audio
@@ -147,7 +147,7 @@ const RP_PropertyStore_Private::MetaDataConv RP_PropertyStore_Private::metaDataC
 
 	// Added in KF5 5.53
 	{&PKEY_FileDescription, VT_BSTR},	// Description
-};
+}};
 
 // Win32 SDK doesn't have this.
 // TODO: Move to libwin32common.
@@ -266,7 +266,7 @@ IFACEMETHODIMP RP_PropertyStore::Initialize(_In_ IStream *pstream, DWORD grfMode
 	for (auto iter = metaData->cbegin(); iter != iter_end; ++iter) {
 		const RomMetaData::MetaData &prop = *iter;
 
-		if (prop.name <= Property::Invalid || (int)prop.name >= ARRAY_SIZE(d->metaDataConv)) {
+		if (prop.name <= Property::Invalid || static_cast<size_t>(prop.name) >= d->metaDataConv.size()) {
 			// FIXME: Should assert here, but Windows doesn't support
 			// certain properties...
 			continue;

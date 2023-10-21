@@ -370,7 +370,7 @@ int Nintendo3DSFirm::loadFieldData(void)
 			uint32_t first4;
 			char status[12];
 		};
-		static const sighaxStatus_tbl_t sighaxStatus_tbl[] = {
+		static const std::array<sighaxStatus_tbl_t, 7> sighaxStatus_tbl = {{
 			{0xB6724531,	"NAND retail"},		// SciresM
 			{0x6EFF209C,	"NAND retail"},		// sighax.com
 			{0x88697CDC,	"NAND devkit"},		// SciresM
@@ -380,15 +380,14 @@ int Nintendo3DSFirm::loadFieldData(void)
 
 			{0x37E96B10,	"SPI retail"},
 			{0x18722BC7,	"SPI devkit"},
-		};
-		static const sighaxStatus_tbl_t *const p_sighaxStatus_tbl_end = &sighaxStatus_tbl[ARRAY_SIZE(sighaxStatus_tbl)];
+		}};
 
 		const char *s_sighax_status = nullptr;
-		auto iter = std::find_if(sighaxStatus_tbl, p_sighaxStatus_tbl_end,
+		auto iter = std::find_if(sighaxStatus_tbl.cbegin(), sighaxStatus_tbl.cend(),
 			[first4](const sighaxStatus_tbl_t &p) noexcept -> bool {
 				return (p.first4 == first4);
 			});
-		if (iter != p_sighaxStatus_tbl_end) {
+		if (iter != sighaxStatus_tbl.cend()) {
 			s_sighax_status = iter->status;
 		}
 

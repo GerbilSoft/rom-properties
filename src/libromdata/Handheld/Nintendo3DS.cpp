@@ -788,7 +788,7 @@ void Nintendo3DSPrivate::addTitleIdAndProductCodeFields(bool showContentType)
 		uint32_t crc;
 		const char *name;
 	};
-	static const logo_crc_tbl_t logo_crc_tbl[] = {
+	static const std::array<logo_crc_tbl_t, 7> logo_crc_tbl = {{
 		// Official logos
 		// NOTE: Not translatable!
 		{0xCFD0EB8BU,	"Nintendo"},
@@ -808,19 +808,18 @@ void Nintendo3DSPrivate::addTitleIdAndProductCodeFields(bool showContentType)
 		// Uses the Homebrew Launcher theme.
 		// Reference: https://gbatemp.net/threads/release-default-homebrew-custom-logo-bin.457611/
 		{0xF257BD67U,	"Homebrew (animated)"},
-	};
+	}};
 
 	// If CRC is zero, we don't have a valid logo section.
 	// Otherwise, search for a matching logo.
 	const char *logo_name = nullptr;
 	if (crc != 0) {
 		// Search for a matching logo.
-		static const logo_crc_tbl_t *const p_logo_crc_tbl_end = &logo_crc_tbl[ARRAY_SIZE(logo_crc_tbl)];
-		auto iter = std::find_if(logo_crc_tbl, p_logo_crc_tbl_end,
+		auto iter = std::find_if(logo_crc_tbl.cbegin(), logo_crc_tbl.cend(),
 			[crc](const logo_crc_tbl_t &p) noexcept -> bool {
 				return (p.crc == crc);
 			});
-		if (iter != p_logo_crc_tbl_end) {
+		if (iter != logo_crc_tbl.cend()) {
 			// Found a matching logo.
 			logo_name = iter->name;
 		}

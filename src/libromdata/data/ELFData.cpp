@@ -22,7 +22,7 @@ struct ELFMachineType {
 
 // ELF machine types. (other IDs)
 // Reference: https://github.com/file/file/blob/master/magic/Magdir/elf
-static const ELFMachineType ELFMachineTypes_other[] = {
+static const std::array<ELFMachineType, 30> ELFMachineTypes_other = {{
 	// The following are unofficial and/or obsolete types.
 	// TODO: Indicate unofficial/obsolete using a separate flag?
 	{0x1057,	"AVR (unofficial)"},
@@ -55,7 +55,7 @@ static const ELFMachineType ELFMachineTypes_other[] = {
 	{0xFEBA,	"Vitesse IQ2000 (unofficial)"},
 	{0xFEBB,	"NIOS (unofficial)"},
 	{0xFEED,	"Moxie (unofficial)"},
-};
+}};
 
 /** Public functions **/
 
@@ -73,13 +73,11 @@ const char *lookup_cpu(uint16_t cpu)
 
 	// CPU ID is in the "other" IDs array.
 	// Do a binary search.
-	static const ELFMachineType *const pELFMachineTypes_other_end =
-		&ELFMachineTypes_other[ARRAY_SIZE(ELFMachineTypes_other)];
-	auto pELF = std::lower_bound(ELFMachineTypes_other, pELFMachineTypes_other_end, cpu,
+	auto pELF = std::lower_bound(ELFMachineTypes_other.cbegin(), ELFMachineTypes_other.cend(), cpu,
 		[](const ELFMachineType &elf, uint16_t cpu) noexcept -> bool {
 			return (elf.cpu < cpu);
 		});
-	if (pELF == pELFMachineTypes_other_end || pELF->cpu != cpu) {
+	if (pELF == ELFMachineTypes_other.cend() || pELF->cpu != cpu) {
 		return nullptr;
 	}
 	return pELF->name;

@@ -15,7 +15,7 @@ namespace LibRomData { namespace Nintendo3DSFirmData {
  * Firmware binary version information.
  * NOTE: Sorted by CRC32 for bsearch().
  */
-static const FirmBin_t firmBins[] = {
+static const std::array<FirmBin_t, 48> firmBins = {{
 	{0x0FD41774, {2,27, 0}, { 1, 0}, false},
 	{0x104F1A22, {2,50, 9}, {10, 2}, true},
 	{0x11A9A4BA, {2,36, 0}, { 5, 1}, false},
@@ -64,7 +64,7 @@ static const FirmBin_t firmBins[] = {
 	{0xF5D833A2, {2,51, 2}, {11, 1}, true},
 	{0xFA7997F7, {2,56, 0}, {11,12}, false},
 	{0xFFA6777A, {2,48, 3}, { 9, 3}, true},
-};
+}};
 
 /** Public functions **/
 
@@ -76,13 +76,11 @@ static const FirmBin_t firmBins[] = {
 const FirmBin_t *lookup_firmBin(const uint32_t crc)
 {
 	// Do a binary search.
-	static const FirmBin_t *const pFirmBins_end =
-		&firmBins[ARRAY_SIZE(firmBins)];
-	auto pFirmBin = std::lower_bound(firmBins, pFirmBins_end, crc,
+	auto pFirmBin = std::lower_bound(firmBins.cbegin(), firmBins.cend(), crc,
 		[](const FirmBin_t &firmBin, uint32_t crc) noexcept -> bool {
 			return (firmBin.crc < crc);
 		});
-	if (pFirmBin == pFirmBins_end || pFirmBin->crc != crc) {
+	if (pFirmBin == firmBins.cend() || pFirmBin->crc != crc) {
 		return nullptr;
 	}
 	return pFirmBin;

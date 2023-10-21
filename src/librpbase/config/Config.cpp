@@ -61,7 +61,7 @@ public:
 	 * Used if a custom configuration is not defined
 	 * for a given system.
 	 */
-	static const uint8_t defImgTypePrio[];
+	static const std::array<uint8_t, 8> defImgTypePrio;
 
 	// Image type priority data.
 	// Managed as a single block in order to reduce
@@ -91,7 +91,7 @@ public:
 	bool downloadHighResScans;
 
 	// DMG title screen mode [index is ROM type]
-	Config::DMG_TitleScreen_Mode dmgTSMode[Config::DMG_TitleScreen_Mode::DMG_TS_MAX];
+	std::array<Config::DMG_TitleScreen_Mode, Config::DMG_TitleScreen_Mode::DMG_TS_MAX> dmgTSMode;
 
 	// Other options
 	bool showDangerousPermissionsOverlayIcon;
@@ -113,7 +113,7 @@ public:
 
 	// DMG title screen mode [index is ROM type]
 	// NOTE: Can't use constexpr here because it breaks on gcc-7.5.0. (Ubuntu 18.04)
-	static const Config::DMG_TitleScreen_Mode dmgTSMode_default[Config::DMG_TitleScreen_Mode::DMG_TS_MAX];
+	static const std::array<Config::DMG_TitleScreen_Mode, Config::DMG_TitleScreen_Mode::DMG_TS_MAX> dmgTSMode_default;
 
 	// Other options
 	static const constexpr bool showDangerousPermissionsOverlayIcon_default = true;
@@ -135,7 +135,7 @@ Config ConfigPrivate::instance;
  *
  * TODO: Per-system defaults?
  */
-const uint8_t ConfigPrivate::defImgTypePrio[] = {
+const std::array<uint8_t, 8> ConfigPrivate::defImgTypePrio = {
 	RomData::IMG_EXT_TITLE_SCREEN,	// WiiWare only
 	RomData::IMG_EXT_MEDIA,
 	RomData::IMG_EXT_COVER,
@@ -147,7 +147,7 @@ const uint8_t ConfigPrivate::defImgTypePrio[] = {
 };
 
 // DMG title screen mode [index is ROM type]
-const Config::DMG_TitleScreen_Mode ConfigPrivate::dmgTSMode_default[Config::DMG_TitleScreen_Mode::DMG_TS_MAX] = {
+const std::array<Config::DMG_TitleScreen_Mode, Config::DMG_TitleScreen_Mode::DMG_TS_MAX> ConfigPrivate::dmgTSMode_default = {
 	Config::DMG_TitleScreen_Mode::DMG_TS_DMG,
 	Config::DMG_TitleScreen_Mode::DMG_TS_SGB,
 	Config::DMG_TitleScreen_Mode::DMG_TS_CGB
@@ -174,7 +174,7 @@ ConfigPrivate::ConfigPrivate()
 	, showXAttrView(showXAttrView_default)
 {
 	// NOTE: Configuration is also initialized in the reset() function.
-	memcpy(dmgTSMode, dmgTSMode_default, sizeof(dmgTSMode));
+	dmgTSMode = dmgTSMode_default;
 }
 
 /**
@@ -206,7 +206,7 @@ void ConfigPrivate::reset(void)
 	downloadHighResScans = false;
 
 	// DMG title screen mode
-	memcpy(dmgTSMode, dmgTSMode_default, sizeof(dmgTSMode));
+	dmgTSMode = dmgTSMode_default;
 
 	// Overlay icon
 	showDangerousPermissionsOverlayIcon = showDangerousPermissionsOverlayIcon_default;
@@ -553,8 +553,8 @@ Config::ImgTypeResult Config::getImgTypePrio(const char *className, ImgTypePrio_
 	if (iter == d->mapImgTypePrio.end()) {
 		// Class name not found.
 		// Use the global defaults.
-		imgTypePrio->imgTypes = d->defImgTypePrio;
-		imgTypePrio->length = ARRAY_SIZE(d->defImgTypePrio);
+		imgTypePrio->imgTypes = d->defImgTypePrio.data();
+		imgTypePrio->length = d->defImgTypePrio.size();
 		return ImgTypeResult::SuccessDefaults;
 	}
 
@@ -595,8 +595,8 @@ void Config::getDefImgTypePrio(ImgTypePrio_t *imgTypePrio) const
 	assert(imgTypePrio != nullptr);
 	if (imgTypePrio) {
 		RP_D(const Config);
-		imgTypePrio->imgTypes = d->defImgTypePrio;
-		imgTypePrio->length = ARRAY_SIZE(d->defImgTypePrio);
+		imgTypePrio->imgTypes = d->defImgTypePrio.data();
+		imgTypePrio->length = d->defImgTypePrio.size();
 	}
 }
 

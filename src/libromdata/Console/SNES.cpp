@@ -1318,7 +1318,7 @@ int SNES::loadFieldData(void)
 		uint8_t rom_mapping;
 		const char *s_rom_mapping;
 	};
-	static const rom_mapping_tbl_t rom_mapping_tbl[] = {
+	static const std::array<rom_mapping_tbl_t, 10> rom_mapping_tbl = {{
 		{SNES_ROMMAPPING_LoROM,			"LoROM"},
 		{SNES_ROMMAPPING_HiROM,			"HiROM"},
 		{SNES_ROMMAPPING_LoROM_S_DD1,		"LoROM + S-DD1"},
@@ -1329,15 +1329,14 @@ int SNES::loadFieldData(void)
 		{SNES_ROMMAPPING_ExLoROM_FastROM,	"ExLoROM + FastROM"},
 		{SNES_ROMMAPPING_ExHiROM_FastROM,	"ExHiROM + FastROM"},
 		{SNES_ROMMAPPING_HiROM_FastROM_SPC7110,	"HiROM + SPC7110"},
-	};
+	}};
 
 	const char *s_rom_mapping = nullptr;
-	static const rom_mapping_tbl_t *const p_rom_mapping_tbl_end = &rom_mapping_tbl[ARRAY_SIZE(rom_mapping_tbl)];
-	auto iter = std::find_if(rom_mapping_tbl, p_rom_mapping_tbl_end,
+	auto iter = std::find_if(rom_mapping_tbl.cbegin(), rom_mapping_tbl.cend(),
 		[rom_mapping](const rom_mapping_tbl_t &p) noexcept -> bool {
 			return (p.rom_mapping == rom_mapping);
 		});
-	if (iter != p_rom_mapping_tbl_end) {
+	if (iter != rom_mapping_tbl.cend()) {
 		s_rom_mapping = iter->s_rom_mapping;
 	}
 

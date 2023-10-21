@@ -820,19 +820,18 @@ void KhronosKTXPrivate::loadKeyValueData(void)
 				char str[7];
 				rp_image::FlipOp flipOp;
 			};
-			static const orientation_tbl_t orientation_tbl[] = {
+			static const std::array<orientation_tbl_t, 4> orientation_tbl = {{
 				{{'S','=','r',',','T','=','d'}, rp_image::FLIP_NONE},
 				{{'S','=','r',',','T','=','u'}, rp_image::FLIP_V},
 				{{'S','=','l',',','T','=','d'}, rp_image::FLIP_H},
 				{{'S','=','l',',','T','=','u'}, rp_image::FLIP_VH},
-			};
-			static const orientation_tbl_t *const p_orientation_tbl_end = &orientation_tbl[ARRAY_SIZE(orientation_tbl)];
+			}};
 
-			auto iter = std::find_if(orientation_tbl, p_orientation_tbl_end,
+			auto iter = std::find_if(orientation_tbl.cbegin(), orientation_tbl.cend(),
 				[v](const orientation_tbl_t &p) noexcept -> bool {
 					return !strncmp(p.str, v, 7);
 				});
-			if (iter != p_orientation_tbl_end) {
+			if (iter != orientation_tbl.cend()) {
 				// Found a match.
 				flipOp = iter->flipOp;
 			}

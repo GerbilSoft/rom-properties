@@ -183,7 +183,7 @@ class KeyStoreUIPrivate
 			klass::encryptionVerifyData_static \
 		}
 
-		static const EncKeyFns_t encKeyFns[];
+		static const std::array<EncKeyFns_t, 4> encKeyFns;
 
 	public:
 		// Hexadecimal lookup table.
@@ -231,12 +231,12 @@ class KeyStoreUIPrivate
 
 /** KeyStoreUIPrivate **/
 
-const KeyStoreUIPrivate::EncKeyFns_t KeyStoreUIPrivate::encKeyFns[] = {
+const std::array<KeyStoreUIPrivate::EncKeyFns_t, 4> KeyStoreUIPrivate::encKeyFns = {{
 	ENCKEYFNS(WiiPartition),
 	ENCKEYFNS(CtrKeyScrambler),
 	ENCKEYFNS(N3DSVerifyKeys),
 	ENCKEYFNS(Xbox360_XEX),
-};
+}};
 
 // Hexadecimal lookup table.
 const std::array<char, 16> KeyStoreUIPrivate::hex_lookup = {
@@ -263,14 +263,14 @@ KeyStoreUIPrivate::KeyStoreUIPrivate(KeyStoreUI *q)
 	// Load the key names from the various classes.
 	// Values will be loaded later.
 	sections.clear();
-	sections.resize(ARRAY_SIZE(encKeyFns));
+	sections.resize(encKeyFns.size());
 	keys.clear();
 
 	int keyIdxStart = 0;
 	auto sectIter = sections.begin();
-	const EncKeyFns_t *const encKeyFns_end = &encKeyFns[ARRAY_SIZE(encKeyFns)];
-	for (const EncKeyFns_t *encSys = &encKeyFns[0]; encSys < encKeyFns_end; encSys++, ++sectIter) {
-		const int keyCount = encSys->pfnKeyCount();
+	for (auto encSysIter = encKeyFns.cbegin(); encSysIter != encKeyFns.cend(); ++encSysIter, ++sectIter) {
+		const EncKeyFns_t &encSys = *encSysIter;
+		const int keyCount = encSys.pfnKeyCount();
 		assert(keyCount > 0);
 		if (keyCount <= 0)
 			continue;
@@ -290,7 +290,7 @@ KeyStoreUIPrivate::KeyStoreUIPrivate(KeyStoreUI *q)
 		auto keyIter = keys.begin() + prevKeyCount;
 		for (int i = 0; i < keyCount; i++, ++keyIter) {
 			// Key name (ASCII)
-			const char *const keyName = encSys->pfnKeyName(i);
+			const char *const keyName = encSys.pfnKeyName(i);
 			assert(keyName != nullptr);
 			if (!keyName) {
 				// Skip NULL key names. (This shouldn't happen...)
@@ -345,9 +345,9 @@ void KeyStoreUIPrivate::reset(void)
 
 	int keyIdxStart = 0;
 	KeyManager::KeyData_t keyData;
-	for (int encSysNum = 0; encSysNum < ARRAY_SIZE_I(encKeyFns); encSysNum++) {
-		const KeyStoreUIPrivate::EncKeyFns_t *const encSys = &encKeyFns[encSysNum];
-		const int keyCount = encSys->pfnKeyCount();
+	for (int encSysNum = 0; encSysNum < static_cast<int>(encKeyFns.size()); encSysNum++) {
+		const KeyStoreUIPrivate::EncKeyFns_t &encSys = encKeyFns[encSysNum];
+		const int keyCount = encSys.pfnKeyCount();
 		assert(keyCount > 0);
 		if (keyCount <= 0)
 			continue;
@@ -360,7 +360,7 @@ void KeyStoreUIPrivate::reset(void)
 		// Get the keys.
 		for (int i = 0; i < keyCount; i++, pKey++) {
 			// Key name.
-			const char *const keyName = encSys->pfnKeyName(i);
+			const char *const keyName = encSys.pfnKeyName(i);
 			assert(keyName != nullptr);
 			if (!keyName) {
 				// Skip NULL key names. (This shouldn't happen...)
@@ -867,21 +867,21 @@ const char *KeyStoreUI::sectName(int sectIdx) const
 {
 	RP_D(const KeyStoreUI);
 	assert(sectIdx >= 0);
-	assert(sectIdx < (int)d->sections.size());
-	assert(sectIdx < ARRAY_SIZE_I(d->encKeyFns));
+	assert(sectIdx < static_cast<int>(d->sections.size()));
+	assert(sectIdx < static_cast<int>(d->encKeyFns.size()));
 	if (sectIdx < 0 || sectIdx >= static_cast<int>(d->sections.size()) ||
-		sectIdx >= ARRAY_SIZE_I(d->encKeyFns))
+		sectIdx >= static_cast<int>(d->encKeyFns.size()))
 	{
 		return nullptr;
 	}
 
-	static const char *const sectNames[] = {
+	static const std::array<const char*, 4> sectNames = {
 		NOP_C_("KeyStoreUI|Section", "Nintendo Wii AES Keys"),
 		NOP_C_("KeyStoreUI|Section", "Nintendo 3DS Key Scrambler Constants"),
 		NOP_C_("KeyStoreUI|Section", "Nintendo 3DS AES Keys"),
 		NOP_C_("KeyStoreUI|Section", "Microsoft Xbox 360 AES Keys"),
 	};
-	static_assert(ARRAY_SIZE(sectNames) == ARRAY_SIZE(d->encKeyFns),
+	static_assert(sectNames.size() == d->encKeyFns.size(),
 		"sectNames[] is out of sync with d->encKeyFns[].");
 
 	return dpgettext_expr(RP_I18N_DOMAIN, "KeyStoreUI|Section", sectNames[sectIdx]);

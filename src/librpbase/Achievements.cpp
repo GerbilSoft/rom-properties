@@ -90,7 +90,7 @@ class AchievementsPrivate
 						// AT_BITFIELD: Number of bits. (up to 64)
 						//              All bits must be 1 to unlock.
 		};
-		static const AchInfo_t achInfo[];
+		static const std::array<AchInfo_t, 5> achInfo;
 
 		// C++14 adds support for enum classes as unordered_map keys.
 		// C++11 needs an explicit hash functor.
@@ -210,8 +210,7 @@ class AchievementsPrivate
 /** AchievementsPrivate **/
 
 // Achievement information.
-const struct AchievementsPrivate::AchInfo_t AchievementsPrivate::achInfo[] =
-{
+const std::array<AchievementsPrivate::AchInfo_t, 5> AchievementsPrivate::achInfo = {{
 	{
 		NOP_C_("Achievements", "You are now a developer!"),
 		NOP_C_("Achievements", "Viewed a debug-encrypted file."),
@@ -237,7 +236,7 @@ const struct AchievementsPrivate::AchInfo_t AchievementsPrivate::achInfo[] =
 		NOP_C_("Achievements", "Viewed a CD-i disc image."),
 		AT_COUNT, 1
 	},
-};
+}};
 
 // Singleton instance.
 // Using a static non-pointer variable in order to
@@ -377,6 +376,7 @@ int AchievementsPrivate::save(void) const
 	header->count = cpu_to_le32(static_cast<uint32_t>(mapAchData.size()));
 
 	// Process all achievements in order of ID.
+	static_assert(achInfo.size() == static_cast<size_t>(Achievements::ID::Max), "achInfo[] is the wrong size");
 	for (unsigned int i = 0; i < (int)Achievements::ID::Max; i++) {
 		auto iter = mapAchData.find((Achievements::ID)i);
 		if (iter == mapAchData.end())

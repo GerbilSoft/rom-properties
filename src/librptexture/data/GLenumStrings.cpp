@@ -26,7 +26,7 @@ struct OffTbl_t {
 /**
  * OpenGL enumerations.
  */
-static const char glEnum_strtbl[] = {
+static const std::array<char, 4081> glEnum_strtbl = {
 	"\0"
 
 	"BYTE\0"
@@ -273,7 +273,7 @@ static const char glEnum_strtbl[] = {
 	"COMPRESSED_SRGB_ALPHA_PVRTC_4BPPV2_IMG\0"
 };
 
-static const OffTbl_t glEnum_offtbl[] = {
+static const std::array<OffTbl_t, 227> glEnum_offtbl = {{
 	{GL_BYTE, 1},
 	{GL_UNSIGNED_BYTE, 6},
 	{GL_SHORT, 20},
@@ -516,7 +516,7 @@ static const OffTbl_t glEnum_offtbl[] = {
 	// PVRTC-II
 	{GL_COMPRESSED_SRGB_ALPHA_PVRTC_2BPPV2_IMG, 4002},
 	{GL_COMPRESSED_SRGB_ALPHA_PVRTC_4BPPV2_IMG, 4041},
-};
+}};
 
 /** Public functions **/
 
@@ -534,13 +534,11 @@ const char *lookup_glEnum(unsigned int glEnum)
 	}
 
 	// Do a binary search.
-	static const OffTbl_t *const pGlEnum_offtbl_end =
-		&glEnum_offtbl[ARRAY_SIZE(glEnum_offtbl)];
-	auto pEntry = std::lower_bound(glEnum_offtbl, pGlEnum_offtbl_end, glEnum,
+	auto pEntry = std::lower_bound(glEnum_offtbl.cbegin(), glEnum_offtbl.cend(), glEnum,
 		[](const OffTbl_t &entry, unsigned int glEnum) noexcept -> bool {
 			return (entry.id < glEnum);
 		});
-	if (pEntry == pGlEnum_offtbl_end || pEntry->id != glEnum || pEntry->offset == 0) {
+	if (pEntry == glEnum_offtbl.cend() || pEntry->id != glEnum || pEntry->offset == 0) {
 		return nullptr;
 	}
 	return &glEnum_strtbl[pEntry->offset];

@@ -21,7 +21,7 @@ struct ContentTypeEntry {
  * Xbox 360 STFS content type list.
  * Reference: https://github.com/Free60Project/wiki/blob/master/STFS.md
  */
-static const ContentTypeEntry contentTypeList[] = {
+static const std::array<ContentTypeEntry, 30> contentTypeList = {{
 	{STFS_CONTENT_TYPE_SAVED_GAME,		NOP_C_("Xbox360_STFS|ContentType", "Saved Game")},
 	{STFS_CONTENT_TYPE_MARKETPLACE_CONTENT,	NOP_C_("Xbox360_STFS|ContentType", "Marketplace Content")},
 	{STFS_CONTENT_TYPE_PUBLISHER,		NOP_C_("Xbox360_STFS|ContentType", "Publisher")},
@@ -54,7 +54,7 @@ static const ContentTypeEntry contentTypeList[] = {
 	{STFS_CONTENT_TYPE_PODCAST_VIDEO,	NOP_C_("Xbox360_STFS|ContentType", "Podcast Video")},
 	{STFS_CONTENT_TYPE_VIRAL_VIDEO,		NOP_C_("Xbox360_STFS|ContentType", "Viral Video")},
 	{STFS_CONTENT_TYPE_COMMUNITY_GAME,	NOP_C_("Xbox360_STFS|ContentType", "Community Game")},
-};
+}};
 
 /** Public functions **/
 
@@ -66,13 +66,11 @@ static const ContentTypeEntry contentTypeList[] = {
 const char *lookup(uint32_t contentType)
 {
 	// Do a binary search.
-	static const ContentTypeEntry *const pContentTypeList_end =
-		&contentTypeList[ARRAY_SIZE(contentTypeList)];
-	auto pContentType = std::lower_bound(contentTypeList, pContentTypeList_end, contentType,
+	auto pContentType = std::lower_bound(contentTypeList.cbegin(), contentTypeList.cend(), contentType,
 		[](const ContentTypeEntry &cte, uint32_t contentType) noexcept -> bool {
 			return (cte.id < contentType);
 		});
-	if (pContentType == pContentTypeList_end || pContentType->id != contentType) {
+	if (pContentType == contentTypeList.cend() || pContentType->id != contentType) {
 		return nullptr;
 	}
 	return dpgettext_expr(RP_I18N_DOMAIN, "Xbox360_STFS|ContentType", pContentType->contentType);

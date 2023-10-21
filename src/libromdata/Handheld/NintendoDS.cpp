@@ -1106,7 +1106,7 @@ int NintendoDS::loadFieldData(void)
 		uint8_t dsi_filetype;
 		const char *s_dsi_filetype;
 	};
-	static const dsi_filetype_tbl_t dsi_filetype_tbl[] = {
+	static const std::array<dsi_filetype_tbl_t, 6> dsi_filetype_tbl = {{
 		// tr: DSi-enhanced or DSi-exclusive cartridge.
 		{DSi_FTYPE_CARTRIDGE,		NOP_C_("NintendoDS|DSiFileType", "Cartridge")},
 		// tr: DSiWare (download-only title)
@@ -1119,15 +1119,14 @@ int NintendoDS::loadFieldData(void)
 		{DSi_FTYPE_SYSTEM_BASE_TOOL,	NOP_C_("NintendoDS|DSiFileType", "System Base Tool")},
 		// tr: System Menu
 		{DSi_FTYPE_SYSTEM_MENU,		NOP_C_("NintendoDS|DSiFileType", "System Menu")},
-	};
+	}};
 
 	const char *s_dsi_filetype = nullptr;
-	static const dsi_filetype_tbl_t *const p_dsi_filetype_tbl_end = &dsi_filetype_tbl[ARRAY_SIZE(dsi_filetype_tbl)];
-	auto iter = std::find_if(dsi_filetype_tbl, p_dsi_filetype_tbl_end,
+	auto iter = std::find_if(dsi_filetype_tbl.cbegin(), dsi_filetype_tbl.cend(),
 		[dsi_filetype](const dsi_filetype_tbl_t &p) noexcept -> bool {
 			return (p.dsi_filetype == dsi_filetype);
 		});
-	if (iter != p_dsi_filetype_tbl_end) {
+	if (iter != dsi_filetype_tbl.cend()) {
 		// Found a match.
 		s_dsi_filetype = iter->s_dsi_filetype;
 	}

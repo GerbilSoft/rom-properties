@@ -145,7 +145,7 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 		uint32_t dwFileOS;
 		const char *s_fileOS;
 	};
-	static const fileOS_tbl_t fileOS_tbl[] = {
+	static const std::array<fileOS_tbl_t, 14> fileOS_tbl = {{
 		// TODO: Reorder based on how common each OS is?
 		// VOS_NT_WINDOWS32 is probably the most common nowadays.
 
@@ -165,17 +165,16 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 		{VOS_OS216_PM16,	"OS/2 with Presentation Manager (16-bit)"},
 		{VOS_OS232_PM32,	"OS/2 with Presentation Manager (32-bit)"},
 		{VOS_NT_WINDOWS32,	"Windows NT"},
-	};
+	}};
 
 	const uint32_t dwFileOS = pVsFfi->dwFileOS;
 	const char *s_fileOS = nullptr;
 
-	static const fileOS_tbl_t *const p_fileOS_tbl_end = &fileOS_tbl[ARRAY_SIZE(fileOS_tbl)];
-	auto iter = std::find_if(fileOS_tbl, p_fileOS_tbl_end,
+	auto iter = std::find_if(fileOS_tbl.cbegin(), fileOS_tbl.cend(),
 		[dwFileOS](const fileOS_tbl_t &p) noexcept -> bool {
 			return (p.dwFileOS == dwFileOS);
 		});
-	if (iter != p_fileOS_tbl_end) {
+	if (iter != fileOS_tbl.cend()) {
 		// Found a match.
 		s_fileOS = iter->s_fileOS;
 	}

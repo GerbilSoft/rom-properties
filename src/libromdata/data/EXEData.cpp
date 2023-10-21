@@ -23,7 +23,7 @@ struct MachineType {
 
 // PE machine types.
 // NOTE: The cpu field *must* be sorted in ascending order.
-static const MachineType machineTypes_PE[] = {
+static const std::array<MachineType, 40> machineTypes_PE = {{
 	{IMAGE_FILE_MACHINE_I386,	"Intel i386"},
 	{IMAGE_FILE_MACHINE_R3000_BE,	"MIPS R3000 (big-endian)"},
 	{IMAGE_FILE_MACHINE_R3000,	"MIPS R3000"},
@@ -64,11 +64,11 @@ static const MachineType machineTypes_PE[] = {
 	{IMAGE_FILE_MACHINE_ARM64EC,	"ARM (64-bit) (emulation-compatible)"},
 	{IMAGE_FILE_MACHINE_ARM64,	"ARM (64-bit)"},
 	{IMAGE_FILE_MACHINE_CEE,	"MSIL"},
-};
+}};
 
 // LE machine types.
 // NOTE: The cpu field *must* be sorted in ascending order.
-static const MachineType machineTypes_LE[] = {
+static const std::array<MachineType, 9> machineTypes_LE = {{
 	{LE_CPU_80286,		"Intel i286"},
 	{LE_CPU_80386,		"Intel i386"},
 	{LE_CPU_80486,		"Intel i486"},
@@ -78,10 +78,10 @@ static const MachineType machineTypes_LE[] = {
 	{LE_CPU_MIPS_I,		"MIPS Mark I (R2000, R3000"},
 	{LE_CPU_MIPS_II,	"MIPS Mark II (R6000)"},
 	{LE_CPU_MIPS_III,	"MIPS Mark III (R4000)"},
-};
+}};
 
 // Subsystem names
-static const char *const subsystemNames[IMAGE_SUBSYSTEM_WINDOWS_BOOT_APPLICATION+1] = {
+static const std::array<const char*, IMAGE_SUBSYSTEM_WINDOWS_BOOT_APPLICATION+1> subsystemNames = {
 	// IMAGE_SUBSYSTEM_UNKNOWN
 	nullptr,
 	// tr: IMAGE_SUBSYSTEM_NATIVE
@@ -128,13 +128,11 @@ static const char *const subsystemNames[IMAGE_SUBSYSTEM_WINDOWS_BOOT_APPLICATION
 const char *lookup_pe_cpu(uint16_t cpu)
 {
 	// Do a binary search.
-	static const MachineType *const pMachineTypes_PE_end =
-		&machineTypes_PE[ARRAY_SIZE(machineTypes_PE)];
-	auto pPE = std::lower_bound(machineTypes_PE, pMachineTypes_PE_end, cpu,
+	auto pPE = std::lower_bound(machineTypes_PE.cbegin(), machineTypes_PE.cend(), cpu,
 		[](const MachineType &pe, uint16_t cpu) noexcept -> bool {
 			return (pe.cpu < cpu);
 		});
-	if (pPE == pMachineTypes_PE_end || pPE->cpu != cpu) {
+	if (pPE == machineTypes_PE.cend() || pPE->cpu != cpu) {
 		return nullptr;
 	}
 	return pPE->name;
@@ -148,13 +146,11 @@ const char *lookup_pe_cpu(uint16_t cpu)
 const char *lookup_le_cpu(uint16_t cpu)
 {
 	// Do a binary search.
-	static const MachineType *const pMachineTypes_LE_end =
-		&machineTypes_LE[ARRAY_SIZE(machineTypes_LE)];
-	auto pLE = std::lower_bound(machineTypes_LE, pMachineTypes_LE_end, cpu,
+	auto pLE = std::lower_bound(machineTypes_LE.cbegin(), machineTypes_LE.cend(), cpu,
 		[](const MachineType &pe, uint16_t cpu) noexcept -> bool {
 			return (pe.cpu < cpu);
 		});
-	if (pLE == pMachineTypes_LE_end || pLE->cpu != cpu) {
+	if (pLE == machineTypes_LE.cend() || pLE->cpu != cpu) {
 		return nullptr;
 	}
 	return pLE->name;
@@ -168,7 +164,7 @@ const char *lookup_le_cpu(uint16_t cpu)
  */
 const char *lookup_pe_subsystem(uint16_t subsystem)
 {
-	if (subsystem >= ARRAY_SIZE(subsystemNames))
+	if (subsystem >= subsystemNames.size())
 		return nullptr;
 
 	return dpgettext_expr(RP_I18N_DOMAIN, "EXE|Subsystem", subsystemNames[subsystem]);

@@ -23,7 +23,7 @@ struct SysVersionEntry_t {
  * - https://wiiubrew.org/wiki/Title_database
  * - https://yls8.mtheall.com/ninupdates/reports.php
  */
-static const SysVersionEntry_t sysVersionList[] = {
+static const std::array<SysVersionEntry_t, 46> sysVersionList = {{
 	// Wii
 	// Reference: https://wiibrew.org/wiki/System_Menu
 	{ 33, "1.0"},
@@ -49,7 +49,7 @@ static const SysVersionEntry_t sysVersionList[] = {
 	// NOTE 2: vWii also has 512, 513, and 514.
 	{544, "4.3J"}, {545, "4.3U"}, {546, "4.3E"},
 	{608, "4.3J"}, {609, "4.3U"}, {610, "4.3E"},
-};
+}};
 
 /** Public functions **/
 
@@ -61,13 +61,11 @@ static const SysVersionEntry_t sysVersionList[] = {
 const char *lookup(unsigned int version)
 {
 	// Do a binary search.
-	static const SysVersionEntry_t *const pSysVersionList_end =
-		&sysVersionList[ARRAY_SIZE(sysVersionList)];
-	auto pVer = std::lower_bound(sysVersionList, pSysVersionList_end, version,
-		[](const SysVersionEntry_t &sysVersion, unsigned int version) noexcept -> bool {
+	auto pVer = std::lower_bound(sysVersionList.cbegin(), sysVersionList.cend(), version,
+		[](const SysVersionEntry_t &sysVersion, unsigned int version) noexcept -> bool {{
 			return (sysVersion.version < version);
-		});
-	if (pVer == pSysVersionList_end || pVer->version != version) {
+		}});
+	if (pVer == sysVersionList.cend() || pVer->version != version) {
 		return nullptr;
 	}
 	return pVer->str;

@@ -369,7 +369,7 @@ bool isOnBadFS(const char *filename, bool allowNetFS)
 	const uint32_t f_type = static_cast<uint32_t>(sfbuf.f_type);
 
 	// Virtual file systems; ignore these completely
-	static const uint32_t vfs_types[] = {
+	static const std::array<uint32_t, 23> vfs_types = {{
 		ANON_INODE_FS_MAGIC,
 		BDEVFS_MAGIC,
 		BPF_FS_MAGIC,
@@ -393,11 +393,10 @@ bool isOnBadFS(const char *filename, bool allowNetFS)
 		SYSV4_SUPER_MAGIC,
 		TRACEFS_MAGIC,
 		USBDEVICE_SUPER_MAGIC,
-	};
-	static const uint32_t *const p_vfs_types_end = &vfs_types[ARRAY_SIZE(vfs_types)];
+	}};
 
 	// Network file systems; ignore only if !netFS
-	static const uint32_t netfs_types[] = {
+	static const std::array<uint32_t, 9> netfs_types = {{
 		AFS_SUPER_MAGIC,
 		CIFS_MAGIC_NUMBER,
 		CODA_SUPER_MAGIC,
@@ -407,12 +406,11 @@ bool isOnBadFS(const char *filename, bool allowNetFS)
 		OCFS2_SUPER_MAGIC,
 		SMB_SUPER_MAGIC,
 		V9FS_MAGIC,
-	};
-	static const uint32_t *const p_netfs_types_end = &netfs_types[ARRAY_SIZE(netfs_types)];
+	}};
 
 	// Search for a virtual file system.
-	auto vfs_iter = std::find(vfs_types, p_vfs_types_end, f_type);
-	if (vfs_iter != p_vfs_types_end) {
+	auto vfs_iter = std::find(vfs_types.cbegin(), vfs_types.cend(), f_type);
+	if (vfs_iter != vfs_types.cend()) {
 		// Found a virtual file system. Ignore it.
 		return true;
 	}
@@ -420,8 +418,8 @@ bool isOnBadFS(const char *filename, bool allowNetFS)
 	// If network file systems are prohibited, check if this is one.
 	if (!allowNetFS) {
 		// Search for a network file system.
-		auto netfs_iter = std::find(netfs_types, p_netfs_types_end, f_type);
-		if (netfs_iter != p_netfs_types_end) {
+		auto netfs_iter = std::find(netfs_types.cbegin(), netfs_types.cend(), f_type);
+		if (netfs_iter != netfs_types.cend()) {
 			// Found a network file system. Ignore it.
 			return true;
 		}

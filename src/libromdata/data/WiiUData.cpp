@@ -23,7 +23,7 @@ struct WiiUDiscPublisher {
  *
  * Reference: https://www.gametdb.com/WiiU/List
  */
-static const WiiUDiscPublisher disc_publishers_noregion[] = {
+static const std::array<WiiUDiscPublisher, 199> disc_publishers_noregion = {{
 	{'AAFx', '0001'},	// Bayonetta
 	{'AALx', '0001'},	// Animal Crossing: amiibo Festival
 	{'ABAx', '0001'},	// Mario Party 10
@@ -227,7 +227,7 @@ static const WiiUDiscPublisher disc_publishers_noregion[] = {
 	{'WGSx', '00CX'},	// Giana Sisters: Twisted Dreams - Director's Cut
 	{'WKNx', '00AY'},	// Shovel Knight
 	{'WTBx', '00EY'},	// Shakedown: Hawaii
-};
+}};
 
 /**
  * Wii U retail disc publisher list. (region-specific)
@@ -236,7 +236,7 @@ static const WiiUDiscPublisher disc_publishers_noregion[] = {
  *
  * Reference: https://www.gametdb.com/WiiU/List
  */
-static const WiiUDiscPublisher disc_publishers_region[] = {
+static const std::array<WiiUDiscPublisher, 37> disc_publishers_region = {{
 	{'ABEE', '00G9'},	// Ben 10: Omniverse (NTSC-U)
 	{'ABEP', '00AF'},	// Ben 10: Omniverse (PAL)
 	{'ABVE', '00G9'},	// Ben 10: Omniverse 2 (NTSC-U)
@@ -274,7 +274,7 @@ static const WiiUDiscPublisher disc_publishers_region[] = {
 	{'BWPE', '0001'},	// Hyrule Warriors (NTSC-U)
 	{'BWPJ', '00C8'},	// Zelda Musou (NTSC-J)
 	{'BWPP', '0001'},	// Hyrule Warriors (PAL)
-};
+}};
 
 /** Public functions **/
 
@@ -296,13 +296,11 @@ uint32_t lookup_disc_publisher(const char *id4)
 	                   (static_cast<uint8_t>(id4[2]) << 8) | 'x';
 
 	// Do a binary search.
-	static const WiiUDiscPublisher *const p_disc_publishers_noregion_end =
-		&disc_publishers_noregion[ARRAY_SIZE(disc_publishers_noregion)];
-	auto pPubNoRegion = std::lower_bound(disc_publishers_noregion, p_disc_publishers_noregion_end, id4_u32,
+	auto pPubNoRegion = std::lower_bound(disc_publishers_noregion.cbegin(), disc_publishers_noregion.cend(), id4_u32,
 		[](const WiiUDiscPublisher &pub, const uint32_t id4_u32) noexcept -> bool {
 			return (pub.id4 < id4_u32);
 		});
-	if (pPubNoRegion != p_disc_publishers_noregion_end && pPubNoRegion->id4 == id4_u32) {
+	if (pPubNoRegion != disc_publishers_noregion.cend() && pPubNoRegion->id4 == id4_u32) {
 		// Found a publisher in the region-independent list.
 		return pPubNoRegion->publisher;
 	}
@@ -312,13 +310,11 @@ uint32_t lookup_disc_publisher(const char *id4)
 	id4_u32 |= static_cast<uint8_t>(id4[3]);
 
 	// Do a binary search.
-	static const WiiUDiscPublisher *const p_disc_publishers_region_end =
-		&disc_publishers_region[ARRAY_SIZE(disc_publishers_region)];
-	auto pPubRegion = std::lower_bound(disc_publishers_region, p_disc_publishers_region_end, id4_u32,
+	auto pPubRegion = std::lower_bound(disc_publishers_region.cbegin(), disc_publishers_region.cend(), id4_u32,
 		[](const WiiUDiscPublisher &pub, uint32_t id4_u32) noexcept -> bool {
 			return (pub.id4 < id4_u32);
 		});
-	if (pPubRegion != p_disc_publishers_region_end && pPubRegion->id4 == id4_u32) {
+	if (pPubRegion != disc_publishers_region.cend() && pPubRegion->id4 == id4_u32) {
 		// Found a publisher in the region-dependent list.
 		return pPubRegion->publisher;
 	}

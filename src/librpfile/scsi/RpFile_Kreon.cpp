@@ -87,19 +87,18 @@ bool RpFile::isKreonDriveModel(void)
 		char vendor_id[8];
 		const char *const *product_id_tbl;
 	};
-	static const vendor_tbl_t vendor_tbl[] = {
+	static const std::array<vendor_tbl_t, 3> vendor_tbl = {{
 		{{'T','S','S','T','c','o','r','p'}, TSSTcorp_product_tbl},
 		{{'P','B','D','S',' ',' ',' ',' '}, PBDS_product_tbl},
 		{{'H','L','-','D','T','-','S','T'}, HLDTST_product_tbl},
-	};
-	static const vendor_tbl_t *const p_vendor_tbl_end = &vendor_tbl[ARRAY_SIZE(vendor_tbl)];
+	}};
 
 	// Find the vendor.
-	auto vendor_iter = std::find_if(vendor_tbl, p_vendor_tbl_end,
+	auto vendor_iter = std::find_if(vendor_tbl.cbegin(), vendor_tbl.cend(),
 		[&resp](const vendor_tbl_t &p) noexcept -> bool {
 			return !memcmp(p.vendor_id, resp.vendor_id, 8);
 		});
-	if (vendor_iter == p_vendor_tbl_end) {
+	if (vendor_iter == vendor_tbl.cend()) {
 		// Not found.
 		return false;
 	}

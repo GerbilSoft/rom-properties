@@ -50,8 +50,7 @@ class PSFPrivate final : public RomDataPrivate
 			char tag_name[7];	// psfby
 			const char *sys_name;	// system name (localizable)
 		};
-		static const psf_type_tbl_t psf_type_tbl[];
-		static const psf_type_tbl_t *const p_psf_type_tbl_end;
+		static const std::array<psf_type_tbl_t, 9> psf_type_tbl;
 
 		/**
 		 * Parse the tag section.
@@ -111,7 +110,7 @@ const RomDataInfo PSFPrivate::romDataInfo = {
 };
 
 // PSF types
-const PSFPrivate::psf_type_tbl_t PSFPrivate::psf_type_tbl[] = {
+const std::array<PSFPrivate::psf_type_tbl_t, 9> PSFPrivate::psf_type_tbl = {{
 	{PSF_VERSION_PLAYSTATION,	"psfby",	NOP_C_("PSF|System", "Sony PlayStation")},
 	{PSF_VERSION_PLAYSTATION_2,	"psfby",	NOP_C_("PSF|System", "Sony PlayStation 2")},
 	{PSF_VERSION_SATURN,		"ssfby",	NOP_C_("PSF|System", "Sega Saturn")},
@@ -121,8 +120,7 @@ const PSFPrivate::psf_type_tbl_t PSFPrivate::psf_type_tbl[] = {
 	{PSF_VERSION_GBA,		"gsfby",	NOP_C_("PSF|System", "Game Boy Advance")},
 	{PSF_VERSION_SNES,		"snsfby",	NOP_C_("PSF|System", "Super NES")},
 	{PSF_VERSION_QSOUND,		"qsfby",	NOP_C_("PSF|System", "Capcom QSound")},
-};
-const PSFPrivate::psf_type_tbl_t *const PSFPrivate::p_psf_type_tbl_end = &psf_type_tbl[ARRAY_SIZE(psf_type_tbl)];
+}};
 
 PSFPrivate::PSFPrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
@@ -236,17 +234,17 @@ unordered_map<string, string> PSFPrivate::parseTags(off64_t tag_addr)
  */
 const char *PSFPrivate::getRippedByTagName(uint8_t version)
 {
-	auto iter = std::find_if(psf_type_tbl, p_psf_type_tbl_end,
+	auto iter = std::find_if(psf_type_tbl.cbegin(), psf_type_tbl.cend(),
 		[version](const psf_type_tbl_t &p) noexcept -> bool{
 			return (p.version == version);
 		});
-	if (iter != p_psf_type_tbl_end) {
+	if (iter != psf_type_tbl.cend()) {
 		// Found a match.
 		return iter->tag_name;
 	}
 
 	// No match. Assume it's PSF.
-	return psf_type_tbl->tag_name;
+	return psf_type_tbl[0].tag_name;
 }
 
 /**
@@ -515,11 +513,11 @@ int PSF::loadFieldData(void)
 	// System
 	const char *sys_name = nullptr;
 	const uint8_t psf_version = psfHeader->version;
-	auto iter = std::find_if(PSFPrivate::psf_type_tbl, PSFPrivate::p_psf_type_tbl_end,
+	auto iter = std::find_if(PSFPrivate::psf_type_tbl.cbegin(), PSFPrivate::psf_type_tbl.cend(),
 		[psf_version](const PSFPrivate::psf_type_tbl_t &p) noexcept -> bool {
 			return (p.version == psf_version);
 		});
-	if (iter != PSFPrivate::p_psf_type_tbl_end) {
+	if (iter != PSFPrivate::psf_type_tbl.cend()) {
 		// Found a match.
 		sys_name = iter->sys_name;
 	}
