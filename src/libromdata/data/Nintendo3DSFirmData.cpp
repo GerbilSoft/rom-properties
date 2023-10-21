@@ -83,7 +83,7 @@ const FirmBin_t *lookup_firmBin(const uint32_t crc)
 	if (pFirmBin == firmBins.cend() || pFirmBin->crc != crc) {
 		return nullptr;
 	}
-	return pFirmBin;
+	return &(*pFirmBin);
 }
 
 } }
