@@ -19,7 +19,7 @@ endif()
 if(NOT CMAKE_C_EXTENSIONS)
     set(CMAKE_C_EXTENSIONS OFF)       # Boolean specifying whether compiler specific extensions are requested
 endif()
-set(VALID_C_STANDARDS "99" "11")
+set(VALID_C_STANDARDS "99" "11" "17")
 if(NOT CMAKE_C_STANDARD IN_LIST VALID_C_STANDARDS)
     MESSAGE(FATAL_ERROR "CMAKE_C_STANDARD:STRING=${CMAKE_C_STANDARD} not in known standards list\n ${VALID_C_STANDARDS}")
 endif()

@@ -20,6 +20,8 @@ The following changes have been made to the original:
 - cmake_minimum_required() is disabled, since it interfered with
   policies set by the main build infrastructure.
 
+- C17 has been added to the allowed standards list.
+
 - Some other functionality not needed by rom-properties has been disabled.
 
 To obtain the original zlib-ng v2.1.3, visit:
