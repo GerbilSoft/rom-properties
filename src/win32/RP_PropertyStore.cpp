@@ -45,7 +45,7 @@ const CLSID CLSID_RP_PropertyStore =
  *   - pkey: PROPERTYKEY (if nullptr, not implemented)
  *   - vtype: Expected variant type.
  */
-const std::array<RP_PropertyStore_Private::MetaDataConv, 79> RP_PropertyStore_Private::metaDataConv[] = {{
+const std::array<RP_PropertyStore_Private::MetaDataConv, 79> RP_PropertyStore_Private::metaDataConv = {{
 	{nullptr, VT_EMPTY},			// Empty
 
 	// Audio
