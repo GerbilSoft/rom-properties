@@ -2310,10 +2310,10 @@ int Nintendo3DS::loadFieldData(void)
 		if (old3ds_sys_mode < ARRAY_SIZE(old3ds_sys_mode_tbl) &&
 		    old3ds_sys_mode_tbl[old3ds_sys_mode].name[0] != '\0')
 		{
-			const auto &ptbl = &old3ds_sys_mode_tbl[old3ds_sys_mode];
+			const auto &ptbl = old3ds_sys_mode_tbl[old3ds_sys_mode];
 			d->fields.addField_string(old3ds_sys_mode_title,
 				// tr: %1$s == Old3DS system mode; %2$u == RAM allocation, in megabytes
-				rp_sprintf_p(C_("Nintendo3DS", "%1$s (%2$u MiB)"), ptbl->name, ptbl->mb));
+				rp_sprintf_p(C_("Nintendo3DS", "%1$s (%2$u MiB)"), ptbl.name, ptbl.mb));
 		} else {
 			d->fields.addField_string(old3ds_sys_mode_title,
 				rp_sprintf(C_("Nintendo3DS", "Invalid (0x%02X)"), old3ds_sys_mode));
@@ -2331,10 +2331,10 @@ int Nintendo3DS::loadFieldData(void)
 		const uint8_t new3ds_sys_mode = ncch_exheader->aci.arm11_local.flags[1] &
 			N3DS_NCCH_EXHEADER_ACI_FLAG1_New3DS_SysMode_Mask;
 		if (new3ds_sys_mode < ARRAY_SIZE(new3ds_sys_mode_tbl)) {
-			const auto &ptbl = &new3ds_sys_mode_tbl[new3ds_sys_mode];
+			const auto &ptbl = new3ds_sys_mode_tbl[new3ds_sys_mode];
 			d->fields.addField_string(new3ds_sys_mode_title,
 				// tr: %1$s == New3DS system mode; %2$u == RAM allocation, in megabytes
-				rp_sprintf_p(C_("Nintendo3DS", "%1$s (%2$u MiB)"), ptbl->name, ptbl->mb));
+				rp_sprintf_p(C_("Nintendo3DS", "%1$s (%2$u MiB)"), ptbl.name, ptbl.mb));
 		} else {
 			d->fields.addField_string(new3ds_sys_mode_title,
 				rp_sprintf(C_("Nintendo3DS", "Invalid (0x%02X)"), new3ds_sys_mode));
