@@ -13,6 +13,7 @@ using namespace LibRpBase;
 
 // C++ includes
 #include <algorithm>
+#include <array>
 
 namespace LibWin32UI {
 
