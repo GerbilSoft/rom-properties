@@ -161,7 +161,6 @@ const char *const ValveVTFPrivate::img_format_tbl[] = {
 	"RGBA16161616F",
 	"RGBA16161616",
 	"UVLX8888",
-	nullptr
 };
 
 // ImageSizeCalc opcode table
@@ -195,7 +194,7 @@ const ImageSizeCalc::OpCode ValveVTFPrivate::op_tbl[] = {
 	OpCode::Multiply4,	// VTF_IMAGE_FORMAT_UVLX8888
 };
 
-static_assert(ARRAY_SIZE(ValveVTFPrivate::img_format_tbl)-1 == VTF_IMAGE_FORMAT_MAX,
+static_assert(ARRAY_SIZE(ValveVTFPrivate::img_format_tbl) == VTF_IMAGE_FORMAT_MAX,
 	"Missing VTF image formats.");
 
 ValveVTFPrivate::ValveVTFPrivate(ValveVTF *q, const IRpFilePtr &file)
@@ -736,9 +735,7 @@ const char *ValveVTF::pixelFormat(void) const
 	const int fmt = d->vtfHeader.highResImageFormat;
 
 	if (fmt >= 0 && fmt < ARRAY_SIZE_I(d->img_format_tbl)) {
-		if (d->img_format_tbl[fmt] != nullptr) {
-			return d->img_format_tbl[fmt];
-		}
+		return d->img_format_tbl[fmt];
 	} else if (fmt < 0) {
 		// Negative == none (usually -1)
 		return C_("ValveVTF|ImageFormat", "None");
