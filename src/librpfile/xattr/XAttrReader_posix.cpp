@@ -314,11 +314,11 @@ int XAttrReaderPrivate::loadDosAttrs(void)
 		const char name[23];
 		bool be32;
 	};
-	static const DosAttrName dosAttrNames[] = {
+	static const std::array<DosAttrName, 3> dosAttrNames = {{
 		{"system.ntfs_attrib_be", true},
 		{"system.ntfs_attrib", false},
 		{"system.dos_attrib", false},
-	};
+	}};
 	for (const auto &p : dosAttrNames) {
 		ssize_t sz = fgetxattr(fd, p.name, buf.u8, sizeof(buf.u8));
 		if (sz == 4) {

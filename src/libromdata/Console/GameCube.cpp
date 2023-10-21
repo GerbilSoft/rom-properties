@@ -1828,14 +1828,14 @@ int GameCube::loadFieldData(void)
 
 			// Partition type.
 			string s_ptype;
-			static const char *const part_type_tbl[3] = {
+			static const std::array<const char*, 3> part_type_tbl = {{
 				// tr: GameCubePrivate::RVL_PT_GAME (Game partition)
 				NOP_C_("Wii|Partition", "Game"),
 				// tr: GameCubePrivate::RVL_PT_UPDATE (Update partition)
 				NOP_C_("Wii|Partition", "Update"),
 				// tr: GameCubePrivate::RVL_PT_CHANNEL (Channel partition)
 				NOP_C_("Wii|Partition", "Channel"),
-			};
+			}};
 			if (entry.type <= RVL_PT_CHANNEL) {
 				s_ptype = dpgettext_expr(RP_I18N_DOMAIN, "Wii|Partition", part_type_tbl[entry.type]);
 			} else {
@@ -1874,7 +1874,7 @@ int GameCube::loadFieldData(void)
 				encKey = entry.partition->encKey();
 			}
 
-			static const char *const wii_key_tbl[] = {
+			static const std::array<const char*, (int)WiiPartition::EncKey::Max> wii_key_tbl = {{
 				// tr: WiiPartition::EncKey::RVL_Common - Retail encryption key.
 				NOP_C_("Wii|EncKey", "Retail"),
 				// tr: WiiPartition::EncKey::RVL_Korean - Korean encryption key.
@@ -1891,12 +1891,10 @@ int GameCube::loadFieldData(void)
 
 				// tr: WiiPartition::EncKey::None - No encryption.
 				NOP_C_("Wii|EncKey", "None"),
-			};
-			static_assert(ARRAY_SIZE(wii_key_tbl) == (int)WiiPartition::EncKey::Max,
-				"wii_key_tbl[] size is incorrect.");
+			}};
 
 			const char *s_key_name;
-			if ((int)encKey >= 0 && (int)encKey < ARRAY_SIZE_I(wii_key_tbl)) {
+			if ((int)encKey >= 0 && (int)encKey < static_cast<int>(wii_key_tbl.size())) {
 				s_key_name = dpgettext_expr(RP_I18N_DOMAIN, "Wii|KeyIdx", wii_key_tbl[(int)encKey]);
 			} else {
 				// WiiPartition::EncKey::Unknown

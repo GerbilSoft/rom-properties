@@ -525,10 +525,10 @@ int GameBoyAdvance::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int s
 	// multi-character constants.
 	string name;
 	name.reserve(12);
-	static const uint32_t common_ID4[] = {
+	static const std::array<uint32_t, 7> common_ID4 = {{
 		'AGBJ', '    ', '____', 'RARE',
 		'0000', 'XXXX', 'XXXE',
-	};
+	}};
 	if (romHeader->id4[0] == '\0') {
 		// Empty ID4. Use the title.
 		name.assign(romHeader->title, sizeof(romHeader->title));
@@ -540,7 +540,7 @@ int GameBoyAdvance::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int s
 		memcpy(region_code, "NoID", 5);
 	} else {
 		const uint32_t id4_32 = be32_to_cpu(romHeader->id4_32);
-		if (std::any_of(common_ID4, &common_ID4[ARRAY_SIZE(common_ID4)],
+		if (std::any_of(common_ID4.cbegin(), common_ID4.cend(),
 			[id4_32](uint32_t id4_chk) noexcept -> bool {
 				return (id4_chk == id4_32);
 			}))

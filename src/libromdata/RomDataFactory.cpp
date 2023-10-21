@@ -490,7 +490,7 @@ RomData *RomDataFactoryPrivate::checkISO(const IRpFilePtr &file)
 		is2048 = true;
 	} else {
 		// Check for a PVD with 2352-byte or 2448-byte sectors.
-		static const unsigned int sector_sizes[] = {2352, 2448};
+		static const std::array<uint16_t, 2> sector_sizes = {{2352, 2448}};
 		is2048 = false;
 
 		for (const unsigned int p : sector_sizes) {

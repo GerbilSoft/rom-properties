@@ -424,12 +424,13 @@ int EXEPrivate::findPERuntimeDLL(string &refDesc, string &refLink)
 	// Reference: https://matthew-brett.github.io/pydagogue/python_msvc.html
 	// NOTE: MSVC debug runtimes are NOT redistributable.
 	// TODO: Move somewhere else?
-	static const struct {
+	struct msvc_dll_t {
 		uint16_t dll_name_version;	// e.g. 140, 120
 		const char display_version[6];
 		const char *url_i386;	// i386 download link
 		const char *url_amd64;	// amd64 download link
-	} msvc_dll_tbl[] = {
+	};
+	static const std::array<msvc_dll_t, 13> msvc_dll_tbl = {{
 		{120,	"2013", "https://aka.ms/highdpimfc2013x86enu", "https://aka.ms/highdpimfc2013x64enu"},
 		{110,	"2012", "https://download.microsoft.com/download/1/6/B/16B06F60-3B20-4FF2-B699-5E9B7962F9AE/VSU_4/vcredist_x86.exe", "https://download.microsoft.com/download/1/6/B/16B06F60-3B20-4FF2-B699-5E9B7962F9AE/VSU_4/vcredist_x64.exe"},
 		{100,	"2010", "https://download.microsoft.com/download/1/6/5/165255E7-1014-4D0A-B094-B6A430A6BFFC/vcredist_x86.exe", "https://download.microsoft.com/download/1/6/5/165255E7-1014-4D0A-B094-B6A430A6BFFC/vcredist_x64.exe"},
@@ -443,15 +444,16 @@ int EXEPrivate::findPERuntimeDLL(string &refDesc, string &refLink)
 		{ 40,	 "4.0", nullptr, nullptr},
 		{ 20,	 "2.0", nullptr, nullptr},
 		{ 10,	 "1.0", nullptr, nullptr},
-	};
+	}};
 
 	// Visual Basic DLL version to display version table.
-	static const struct {
+	struct msvb_dll_t {
 		uint8_t ver_major;
 		uint8_t ver_minor;
 		const char dll_name[14];
 		const char *url;
-	} msvb_dll_tbl[] = {
+	};
+	static const std::array<msvb_dll_t, 4> msvb_dll_tbl = {{
 		{6,0, "msvbvm60.dll", "https://download.microsoft.com/download/5/a/d/5ad868a0-8ecd-4bb0-a882-fe53eb7ef348/VB6.0-KB290887-X86.exe"},
 		{5,0, "msvbvm50.dll", "https://download.microsoft.com/download/vb50pro/utility/1/win98/en-us/msvbvm50.exe"},
 
@@ -459,7 +461,7 @@ int EXEPrivate::findPERuntimeDLL(string &refDesc, string &refLink)
 		// TODO: Find a download link.
 		{4,0, "vbrun400.dll", nullptr},
 		{4,0, "vbrun432.dll", nullptr},
-	};
+	}};
 
 	// Check all of the DLL names.
 	bool found = false;
@@ -883,10 +885,10 @@ int EXEPrivate::addFields_PE_Export(void)
 	 * ...unless your names aren't sorted, in which case your DLL is broken.
 	 * NOTE: ExportEntry is 80 bytes on 64-bit, so we'll use a sort index map. */
 	std::unique_ptr<unsigned int[]> sortIndexMap(new unsigned int[ents.size()]);
-	const auto sortIndexMap_end = sortIndexMap.get() + ents.size();
-	std::iota(sortIndexMap.get(), sortIndexMap_end, 0);
+	const auto p_sortIndexMap_end = sortIndexMap.get() + ents.size();
+	std::iota(sortIndexMap.get(), p_sortIndexMap_end, 0);
 
-	std::sort(sortIndexMap.get(), sortIndexMap_end,
+	std::sort(sortIndexMap.get(), p_sortIndexMap_end,
 		[&ents](unsigned int idx_lhs, unsigned int idx_rhs) -> bool {
 			const ExportEntry &lhs = ents[idx_lhs];
 			const ExportEntry &rhs = ents[idx_rhs];

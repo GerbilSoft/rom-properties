@@ -514,10 +514,10 @@ void DMGPrivate::getTitleAndGameID(const DMG_RomHeader *pRomHeader, string &s_ti
 			// Old publisher code.
 			// NOTE: This probably won't ever happen,
 			// since Game ID was added *after* CGB.
-			static const char hex_lookup[16] = {
+			static const std::array<char, 16> hex_lookup = {{
 				'0','1','2','3','4','5','6','7',
 				'8','9','A','B','C','D','E','F'
-			};
+			}};
 			s_gameID[4] = hex_lookup[pRomHeader->old_publisher_code >> 4];
 			s_gameID[5] = hex_lookup[pRomHeader->old_publisher_code & 0x0F];
 		}

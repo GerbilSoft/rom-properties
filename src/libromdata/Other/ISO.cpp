@@ -604,7 +604,7 @@ ISO::ISO(const IRpFilePtr &file)
 		d->sector_offset = ISO_DATA_OFFSET_MODE1_COOKED;
 	} else {
 		// Try again using raw sectors: 2352, 2448
-		static const unsigned int sector_sizes[] = {2352, 2448};
+		static const std::array<uint16_t, 2> sector_sizes = {{2352, 2448}};
 		CDROM_2352_Sector_t sector;
 
 		for (const unsigned int p : sector_sizes) {

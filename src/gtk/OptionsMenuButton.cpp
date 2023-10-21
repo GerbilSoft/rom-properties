@@ -138,12 +138,12 @@ struct option_menu_action_t {
 	const char *desc;
 	int id;
 };
-static const option_menu_action_t stdacts[] = {
+static const std::array<option_menu_action_t, 4> stdacts = {{
 	{NOP_C_("OptionsMenuButton|StdActs", "Export to Text..."),	OPTION_EXPORT_TEXT},
 	{NOP_C_("OptionsMenuButton|StdActs", "Export to JSON..."),	OPTION_EXPORT_JSON},
 	{NOP_C_("OptionsMenuButton|StdActs", "Copy as Text"),		OPTION_COPY_TEXT},
 	{NOP_C_("OptionsMenuButton|StdActs", "Copy as JSON"),		OPTION_COPY_JSON},
-};
+}};
 
 static void
 rp_options_menu_button_class_init(RpOptionsMenuButtonClass *klass)
@@ -699,7 +699,7 @@ rp_options_menu_button_update_op(RpOptionsMenuButton *widget,
 	GList *l = gtk_container_get_children(GTK_CONTAINER(widget->menuOptions));
 
 	// Skip the standard actions and separator.
-	for (size_t i = 0; i < (ARRAY_SIZE(stdacts)+1) && l != nullptr; i++) {
+	for (size_t i = 0; i < (stdacts.size()+1) && l != nullptr; i++) {
 		l = l->next;
 	}
 

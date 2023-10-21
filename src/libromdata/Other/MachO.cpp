@@ -306,7 +306,7 @@ MachO::MachO(const IRpFilePtr &file)
 
 	// Determine the file and MIME types.
 	// NOTE: This assumes all architectures have the same file type.
-	static const uint8_t fileTypes_tbl[] = {
+	static const std::array<uint8_t, 12> fileTypes_tbl = {{
 		(uint8_t)FileType::Unknown,		// 0
 		(uint8_t)FileType::RelocatableObject,	// MH_OBJECT
 		(uint8_t)FileType::Executable,		// MH_EXECUTE
@@ -319,8 +319,8 @@ MachO::MachO(const IRpFilePtr &file)
 		(uint8_t)FileType::Unknown,		// MH_DYLIB_STUB (TODO)
 		(uint8_t)FileType::Unknown,		// MH_DSYM (TODO)
 		(uint8_t)FileType::Unknown,		// MH_KEXT_BUNDLE (TODO)
-	};
-	static const char *const mimeTypes_tbl[] = {
+	}};
+	static const std::array<const char*, 12> mimeTypes_tbl = {{
 		nullptr,				// 0
 		"application/x-mach-object",		// MH_OBJECT
 		"application/x-mach-executable",	// MH_EXECUTE
@@ -333,7 +333,8 @@ MachO::MachO(const IRpFilePtr &file)
 		nullptr,				// MH_DYLIB_STUB (TODO)
 		nullptr,				// MH_DSYM (TODO)
 		nullptr,				// MH_KEXT_BUNDLE (TODO)
-	};
+	}};
+	static_assert(fileTypes_tbl.size() == mimeTypes_tbl.size(), "fileTypes_tbl[] and mimeTypes_tbl[] are out of sync!");
 
 	// d->fileType is set to FileType::Unknown above, so only set it
 	// if the filetype is known.
@@ -343,7 +344,7 @@ MachO::MachO(const IRpFilePtr &file)
 		d->mimeType = "application/x-mach-fat-binary";
 		mimeIsSet = true;
 	}
-	if (d->machHeaders[0].filetype < ARRAY_SIZE(fileTypes_tbl)) {
+	if (d->machHeaders[0].filetype < fileTypes_tbl.size()) {
 		d->fileType = static_cast<RomData::FileType>(fileTypes_tbl[d->machHeaders[0].filetype]);
 		if (!mimeIsSet) {
 			d->mimeType = mimeTypes_tbl[d->machHeaders[0].filetype];
@@ -485,15 +486,15 @@ int MachO::loadFieldData(void)
 		}
 
 		// Executable format.
-		static const char *const exec_type_tbl[] = {
+		static const std::array<const char*, 4> exec_type_tbl = {{
 			NOP_C_("RomData|ExecType", "32-bit Little-Endian"),
 			NOP_C_("RomData|ExecType", "64-bit Little-Endian"),
 			NOP_C_("RomData|ExecType", "32-bit Big-Endian"),
 			NOP_C_("RomData|ExecType", "64-bit Big-Endian"),
-		};
+		}};
 		const char *const format_title = C_("MachO", "Format");
 		if (machFormat > MachOPrivate::Mach_Format::Unknown &&
-		    (int)machFormat < ARRAY_SIZE_I(exec_type_tbl))
+		    (int)machFormat < static_cast<int>(exec_type_tbl.size()))
 		{
 			d->fields.addField_string(format_title,
 				dpgettext_expr(RP_I18N_DOMAIN, "RomData|ExecType", exec_type_tbl[(int)machFormat]));

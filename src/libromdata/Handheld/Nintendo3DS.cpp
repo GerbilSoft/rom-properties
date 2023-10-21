@@ -452,7 +452,7 @@ int Nintendo3DSPrivate::loadTicketAndTMD(void)
 	}
 
 	// Skip over the signature and padding.
-	static const unsigned int sig_len_tbl[8] = {
+	static const std::array<uint16_t, 8> sig_len_tbl = {{
 		0x200 + 0x3C,	// N3DS_SIGTYPE_RSA_4096_SHA1
 		0x100 + 0x3C,	// N3DS_SIGTYPE_RSA_2048_SHA1,
 		0x3C  + 0x40,	// N3DS_SIGTYPE_EC_SHA1
@@ -463,7 +463,7 @@ int Nintendo3DSPrivate::loadTicketAndTMD(void)
 
 		0,		// invalid
 		0,		// invalid
-	};
+	}};
 
 	uint32_t sig_len = sig_len_tbl[signature_type & 0x07];
 	if (sig_len == 0) {
@@ -1097,7 +1097,7 @@ int Nintendo3DSPrivate::addFields_permissions(void)
 #endif
 
 	// FS access.
-	static const char *const perm_fs_access[] = {
+	static const std::array<const char*, 22> perm_fs_access = {{
 		"CategorySysApplication",
 		"CategoryHardwareCheck",
 		"CategoryFileSystemTool",
@@ -1120,11 +1120,11 @@ int Nintendo3DSPrivate::addFields_permissions(void)
 		"Shell",
 		"CategoryHomeMenu",
 		"SeedDB",
-	};
+	}};
 
 	// Convert to vector<vector<string> > for RFT_LISTDATA.
-	auto vv_fs = new RomFields::ListData_t(ARRAY_SIZE(perm_fs_access));
-	for (int i = ARRAY_SIZE(perm_fs_access)-1; i >= 0; i--) {
+	auto vv_fs = new RomFields::ListData_t(perm_fs_access.size());
+	for (int i = static_cast<int>(perm_fs_access.size())-1; i >= 0; i--) {
 		auto &data_row = vv_fs->at(i);
 		data_row.emplace_back(perm_fs_access[i]);
 	}
@@ -1136,7 +1136,7 @@ int Nintendo3DSPrivate::addFields_permissions(void)
 	fields.addField_listData(C_("Nintendo3DS", "FS Access"), &params);
 
 	// ARM9 access.
-	static const char *const perm_arm9_access[] = {
+	static const std::array<const char*, 10> perm_arm9_access = {{
 		"FsMountNand",
 		"FsMountNandRoWrite",
 		"FsMountTwln",
@@ -1147,7 +1147,7 @@ int Nintendo3DSPrivate::addFields_permissions(void)
 		"UseCardSpi",
 		"SDApplication",
 		"FsMountSdmcWrite",	// implied by DirectSdmc
-	};
+	}};
 
 	// TODO: Other descriptor versions?
 	// v2 is standard; may be v3 on 9.3.0-X.
@@ -1156,8 +1156,8 @@ int Nintendo3DSPrivate::addFields_permissions(void)
 	    perm.ioAccessVersion == 3)
 	{
 		// Convert to RomFields::ListData_t for RFT_LISTDATA.
-		auto vv_arm9 = new RomFields::ListData_t(ARRAY_SIZE(perm_arm9_access));
-		for (int i = ARRAY_SIZE(perm_arm9_access)-1; i >= 0; i--) {
+		auto vv_arm9 = new RomFields::ListData_t(perm_arm9_access.size());
+		for (int i = static_cast<int>(perm_arm9_access.size())-1; i >= 0; i--) {
 			auto &data_row = vv_arm9->at(i);
 			data_row.emplace_back(perm_arm9_access[i]);
 		}
@@ -1474,6 +1474,7 @@ const char *Nintendo3DS::systemName(unsigned int type) const
 	// Bits 0-1: Type. (long, short, abbreviation)
 	// Bit 2: *New* Nintendo 3DS
 	// Bit 3: iQue
+	// TODO: Compare code gen for 2D vs. 1D arrays.
 	static const char *const sysNames[4*4] = {
 		"Nintendo 3DS", "Nintendo 3DS", "3DS", nullptr,
 		"*New* Nintendo 3DS", "*New* Nintendo 3DS", "N3DS", nullptr,

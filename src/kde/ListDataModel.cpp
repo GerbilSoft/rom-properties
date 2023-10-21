@@ -111,19 +111,19 @@ class ListDataModelPrivate
 
 	public:
 		// Column data alignment table.
-		static const uint8_t align_tbl[4];
+		static const std::array<uint8_t, 4> align_tbl;
 };
 
 // Format table.
 // All values are known to fit in uint8_t.
 // NOTE: Need to include AlignVCenter.
-const uint8_t ListDataModelPrivate::align_tbl[4] = {
+const std::array<uint8_t, 4> ListDataModelPrivate::align_tbl = {{
 	// Order: TXA_D, TXA_L, TXA_C, TXA_R
 	Qt::AlignLeft | Qt::AlignVCenter,
 	Qt::AlignLeft | Qt::AlignVCenter,
 	Qt::AlignCenter,
 	Qt::AlignRight | Qt::AlignVCenter,
-};
+}};
 
 ListDataModelPrivate::ListDataModelPrivate(ListDataModel *q)
 	: q_ptr(q)

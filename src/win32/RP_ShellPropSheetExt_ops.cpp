@@ -316,7 +316,7 @@ void RP_ShellPropSheetExt_Private::btnOptions_action_triggered(int menuId)
 			TCHAR default_ext[7];
 			bool toClipboard;
 		};
-		static const StdActsInfo_t stdActsInfo[] = {
+		static const std::array<StdActsInfo_t, 4> stdActsInfo = {{
 			// OPTION_EXPORT_TEXT
 			{NOP_C_("RomDataView", "Export to Text File"),
 			 // tr: "Text Files" filter (RP format)
@@ -334,15 +334,15 @@ void RP_ShellPropSheetExt_Private::btnOptions_action_triggered(int menuId)
 
 			// OPTION_COPY_JSON
 			{nullptr, nullptr, _T(""), true},
-		};
+		}};
 
 		// Standard Actions information for this action
-		const StdActsInfo_t *const info = &stdActsInfo[id2];
+		const StdActsInfo_t &info = stdActsInfo[id2];
 
 		ofstream ofs;
 		tstring ts_out;
 
-		if (!info->toClipboard) {
+		if (!info.toClipboard) {
 			if (ts_prevExportDir.empty()) {
 				ts_prevExportDir = U82T_c(rom_filename);
 
@@ -376,13 +376,13 @@ void RP_ShellPropSheetExt_Private::btnOptions_action_triggered(int menuId)
 				rom_basename.resize(extpos);
 			}
 			defaultFileName += rom_basename;
-			if (info->default_ext[0] != _T('\0')) {
-				defaultFileName += info->default_ext;
+			if (info.default_ext[0] != _T('\0')) {
+				defaultFileName += info.default_ext;
 			}
 
 			const tstring tfilename = LibWin32UI::getSaveFileName(hDlgSheet,
-				U82T_c(dpgettext_expr(RP_I18N_DOMAIN, "RomDataView", info->title)),
-				U82T_c(dpgettext_expr(RP_I18N_DOMAIN, "RomDataView", info->filter)),
+				U82T_c(dpgettext_expr(RP_I18N_DOMAIN, "RomDataView", info.title)),
+				U82T_c(dpgettext_expr(RP_I18N_DOMAIN, "RomDataView", info.filter)),
 				defaultFileName.c_str());
 			if (tfilename.empty())
 				return;
@@ -452,7 +452,7 @@ void RP_ShellPropSheetExt_Private::btnOptions_action_triggered(int menuId)
 				return;
 		}
 
-		if (info->toClipboard && OpenClipboard(hDlgSheet)) {
+		if (info.toClipboard && OpenClipboard(hDlgSheet)) {
 			EmptyClipboard();
 			HGLOBAL hglbCopy = GlobalAlloc(GMEM_MOVEABLE, (ts_out.size() + 1) * sizeof(TCHAR));
 			if (hglbCopy) {

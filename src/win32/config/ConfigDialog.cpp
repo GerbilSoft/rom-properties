@@ -21,8 +21,7 @@ using namespace LibRpBase;
 // Controls for registration.
 #include "LanguageComboBox.hpp"
 
-// C++ STL classes.
-using std::array;
+// C++ STL classes
 using std::tstring;
 
 #include "libi18n/config.libi18n.h"
@@ -65,8 +64,8 @@ class ConfigDialogPrivate
 #else
 		static const unsigned int TAB_COUNT = 6;
 #endif
-		array<ITab*, TAB_COUNT> tabs;
-		array<HPROPSHEETPAGE, TAB_COUNT> hpsp;
+		std::array<ITab*, TAB_COUNT> tabs;
+		std::array<HPROPSHEETPAGE, TAB_COUNT> hpsp;
 		PROPSHEETHEADER psh;
 
 		// Property Sheet callback.

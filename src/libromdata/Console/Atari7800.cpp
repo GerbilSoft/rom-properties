@@ -220,7 +220,7 @@ int Atari7800::loadFieldData(void)
 	}
 
 	// Controllers
-	static const char *const controller_tbl[] = {
+	static const std::array<const char*, 12> controller_tbl = {{
 		// 0
 		NOP_C_("Atari7800|ControllerType", "None"),
 		NOP_C_("Atari7800|ControllerType", "Joystick (7800)"),
@@ -236,12 +236,12 @@ int Atari7800::loadFieldData(void)
 		// 10
 		"AtariVox / SaveKey",
 		"SNES2Atari"
-	};
+	}};
 	for (unsigned int i = 0; i < 2; i++) {
 		const string control_title = rp_sprintf(C_("Atari7800", "Controller %u"), i+1);
 		const uint8_t control_type = romHeader->control_types[i];
 
-		if (control_type < ARRAY_SIZE(controller_tbl)) {
+		if (control_type < controller_tbl.size()) {
 			d->fields.addField_string(control_title.c_str(),
 				dpgettext_expr(RP_I18N_DOMAIN, "Atari7800|ControllerType",
 					controller_tbl[control_type]));

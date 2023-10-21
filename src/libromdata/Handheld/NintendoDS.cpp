@@ -696,12 +696,12 @@ int NintendoDS::isRomSupported_static(const DetectInfo *info)
 	if (!memcmp(romHeader->nintendo_logo, nintendo_gba_logo, sizeof(nintendo_gba_logo)) &&
 	    romHeader->nintendo_logo_checksum == cpu_to_le16(0xCF56)) {
 		// Nintendo logo is valid. (Slot-1)
-		static const int8_t nds_romType[] = {
+		static const std::array<int8_t, 4> nds_romType = {{
 			(int8_t)NintendoDSPrivate::RomType::NDS,		// 0x00 == Nintendo DS
 			(int8_t)NintendoDSPrivate::RomType::NDS,		// 0x01 == invalid (assuming DS)
 			(int8_t)NintendoDSPrivate::RomType::DSi_Enhanced,	// 0x02 == DSi-enhanced
 			(int8_t)NintendoDSPrivate::RomType::DSi_Exclusive,	// 0x03 == DSi-only
-		};
+		}};
 		return nds_romType[romHeader->unitcode & 3];
 	} else if (!memcmp(romHeader->nintendo_logo, nintendo_ds_logo_slot2, sizeof(nintendo_ds_logo_slot2)) &&
 		   romHeader->nintendo_logo_checksum == cpu_to_le16(0x9E1A)) {

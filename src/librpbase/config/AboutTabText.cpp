@@ -37,7 +37,7 @@ uint64_t getProgramVersion(void)
 
 /** Program information strings **/
 
-static const char *const ProgramInfoString_tbl[] = {
+static const std::array<const char*, (int)ProgramInfoStringID::Max> ProgramInfoString_tbl = {{
 	"rom-properties",				// ProgramName
 	"ROM Properties Page Shell Extension",		// ProgramFullName
 	"Copyright (c) 2016-2023 by David Korth.",	// Copyright
@@ -61,7 +61,7 @@ static const char *const ProgramInfoString_tbl[] = {
 	"https://rpdb.gerbilsoft.com/sys/version.txt",
 	// UpdateVersionCacheKey
 	"sys/version.txt",
-};
+}};
 
 /**
  * Get a program information string.

@@ -315,11 +315,12 @@ int Nintendo3DSFirm::loadFieldData(void)
 		// Check for ARM9 homebrew.
 
 		// Version strings.
-		static const struct {
+		struct arm9VerStr_t {
 			const char *title;	// Application title.
 			const char *searchstr;	// Search string.
 			unsigned int searchlen;	// Search string length, without the NULL terminator.
-		} arm9VerStr_tbl[] = {
+		};
+		static const std::array<arm9VerStr_t, 9> arm9VerStr_tbl = {{
 			{"Luma3DS",		"Luma3DS v", 9},
 			{"GodMode9",		"GodMode9 Explorer v", 19},	// Older versions
 			{"GodMode9",		"GodMode9 v", 10},		// Newer versions (v1.9.1; TODO check for first one?)
@@ -329,7 +330,7 @@ int Nintendo3DSFirm::loadFieldData(void)
 			{"SafeB9SInstaller",	"SafeB9SInstaller v", 18},
 			{"OpenFirmInstaller",	"OpenFirmInstaller v", 19},
 			{"fastboot3DS",		"fastboot3DS v", 13},
-		};
+		}};
 
 		const char *arm9VerStr_title = nullptr;
 		string s_verstr;

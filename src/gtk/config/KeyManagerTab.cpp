@@ -19,12 +19,12 @@ using LibRomData::KeyStoreUI;
 using std::string;
 
 // KeyStoreUI::ImportFileID
-static const char *const import_menu_actions[] = {
+static const std::array<const char*, 4> import_menu_actions = {{
 	"Wii keys.bin",
 	"Wii U otp.bin",
 	"3DS boot9.bin",
 	"3DS aeskeydb.bin",
-};
+}};
 
 static GQuark menuImport_id_quark;
 static GQuark KeyManagerTab_fileID_quark;

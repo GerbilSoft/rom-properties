@@ -232,7 +232,7 @@ int PokemonMini::loadFieldData(void)
 	d->fields.addField_string(C_("RomData", "Game ID"), latin1_to_utf8(id4, 4));
 
 	// Vector table.
-	static const char *const vectors_names[PokemonMini_IRQ_MAX] = {
+	static const std::array<const char*, PokemonMini_IRQ_MAX> vectors_names = {{
 		// 0
 		"Reset",
 		"PRC Frame Copy",
@@ -267,7 +267,7 @@ int PokemonMini::loadFieldData(void)
 		"Vector #24",	// undefined
 		"Vector #25",	// undefined
 		"Cartridge",
-	};
+	}};
 
 	// Vector format: CE C4 00 F3 nn nn
 	// - MOV U, #00
@@ -282,7 +282,7 @@ int PokemonMini::loadFieldData(void)
 
 	auto vv_vectors = new RomFields::ListData_t(ARRAY_SIZE(vectors_names));
 	uint32_t pc = 0x2100 + offsetof(PokemonMini_RomHeader, irqs);
-	for (unsigned int i = 0; i < ARRAY_SIZE(vectors_names); i++, pc += 6) {
+	for (unsigned int i = 0; i < vectors_names.size(); i++, pc += 6) {
 		auto &data_row = vv_vectors->at(i);
 		data_row.reserve(3);
 

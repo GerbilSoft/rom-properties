@@ -360,10 +360,10 @@ int Amiibo::loadFieldData(void)
 	// Serial number
 
 	// Convert the 7-byte serial number to ASCII.
-	static const char hex_lookup[16] = {
+	static const std::array<char, 16> hex_lookup = {{
 		'0','1','2','3','4','5','6','7',
 		'8','9','A','B','C','D','E','F'
-	};
+	}};
 	char buf[32]; char *pBuf = buf;
 	for (unsigned int i = 0; i < 8; i++, pBuf += 2) {
 		if (i == 3) {
@@ -390,7 +390,7 @@ int Amiibo::loadFieldData(void)
 		RomFields::STRF_MONOSPACE);
 
 	// tr: amiibo type.
-	static const char *const amiibo_type_tbl[4] = {
+	static const std::array<const char*, 4> amiibo_type_tbl = {{
 		// tr: NFP_TYPE_FIGURINE == standard amiibo
 		NOP_C_("Amiibo|Type", "Figurine"),
 		// tr: NFP_TYPE_CARD == amiibo card
@@ -399,9 +399,9 @@ int Amiibo::loadFieldData(void)
 		NOP_C_("Amiibo|Type", "Yarn"),
 		// tr: NFP_TYPE_BAND == Power-Up Band
 		NOP_C_("Amiibo|Type", "Power-Up Band"),
-	};
+	}};
 	const char *const amiibo_type_title = C_("Amiibo", "amiibo Type");
-	if ((char_id & 0xFF) < ARRAY_SIZE(amiibo_type_tbl)) {
+	if ((char_id & 0xFF) < amiibo_type_tbl.size()) {
 		d->fields.addField_string(amiibo_type_title,
 			dpgettext_expr(RP_I18N_DOMAIN, "Amiibo|Type", amiibo_type_tbl[char_id & 0xFF]));
 	} else {

@@ -311,7 +311,7 @@ SAPPrivate::sap_tags_t SAPPrivate::parseTags(void)
 			void *ptr;		// Data pointer.
 		};
 
-		const KeywordDef kwds[] = {
+		const std::array<KeywordDef, 14> kwds = {{
 			{"AUTHOR",	KeywordType::String,		&tags.author},
 			{"NAME",	KeywordType::String,		&tags.name},
 			{"DATE",	KeywordType::String,		&tags.date},
@@ -327,7 +327,7 @@ SAPPrivate::sap_tags_t SAPPrivate::parseTags(void)
 			{"COVOX",	KeywordType::UInt16_Hex,	&tags.covox_addr},
 			// TIME is handled separately.
 			{"TIME",	KeywordType::TimeLoop,		nullptr},
-		};
+		}};
 
 		// TODO: Show errors for unsupported tags?
 		// TODO: Print errors?

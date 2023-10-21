@@ -21,7 +21,7 @@ struct ThirdPartyEntry {
  * Array index is the publisher ID.
  * Reference: http://daifukkat.su/docs/wsman/#cart_meta_publist
  */
-static const ThirdPartyEntry thirdPartyList[] = {
+static const std::array<ThirdPartyEntry, 0x41> thirdPartyList = {{
 	// 0x00
 	{"",	"<unlicensed>"},
 	{"BAN",	"Bandai"},
@@ -96,7 +96,7 @@ static const ThirdPartyEntry thirdPartyList[] = {
 
 	// 0x40
 	{"DDJ",	"Digital Dream"},	// FIXME: Not the actual publisher ID. (Cart has 0x00)
-};
+}};
 
 /** Public functions **/
 
@@ -107,7 +107,7 @@ static const ThirdPartyEntry thirdPartyList[] = {
  */
 const char *lookup_name(uint8_t id)
 {
-	if (id >= ARRAY_SIZE(thirdPartyList))
+	if (id >= thirdPartyList.size())
 		return nullptr;
 
 	return thirdPartyList[id].publisher;
@@ -120,7 +120,7 @@ const char *lookup_name(uint8_t id)
  */
 const char *lookup_code(uint8_t id)
 {
-	if (id >= ARRAY_SIZE(thirdPartyList))
+	if (id >= thirdPartyList.size())
 		return nullptr;
 
 	const char *code = thirdPartyList[id].code;

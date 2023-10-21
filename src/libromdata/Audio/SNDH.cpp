@@ -716,16 +716,17 @@ int SNDH::isRomSupported_static(const DetectInfo *info)
 			// Check for fragments of known SNDH tags.
 			// FIXME: The following ICE-compressed files are not being detected:
 			// - Kauling_Andy/Infinity_One.sndh
-			static const struct _sndh_fragment_t {
+			struct sndh_fragment_t {
 				uint8_t len;
 				char data[4];
-			} fragments[] = {
+			};
+			static const std::array<sndh_fragment_t, 5> fragments = {{
 				{3, {'N','D','H',0}},
 				{4, {'T','I','T','L'}},
 				{4, {'C','O','N','V'}},
 				{4, {'R','I','P','P'}},
 				{4, {'H','D','N','S'}},
-			};
+			}};
 
 			for (const auto &fragment : fragments) {
 				void *p = memmem(&info->header.pData[12], sz, fragment.data, fragment.len);

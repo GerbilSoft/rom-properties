@@ -466,13 +466,13 @@ int BCSTM::loadFieldData(void)
 	}
 
 	// Codec
-	static const char *const codec_tbl[] = {
+	static const std::array<const char*, 4> codec_tbl = {{
 		NOP_C_("BCSTM|Codec", "Signed 8-bit PCM"),
 		NOP_C_("BCSTM|Codec", "Signed 16-bit PCM"),
 		"DSP ADPCM", "IMA ADPCM",
-	};
+	}};
 	const char *const codec_title = C_("BCSTM", "Codec");
-	if (codec < ARRAY_SIZE(codec_tbl)) {
+	if (codec < codec_tbl.size()) {
 		d->fields.addField_string(codec_title,
 			dpgettext_expr(RP_I18N_DOMAIN, "BCSTM|Codec", codec_tbl[codec]));
 	} else {

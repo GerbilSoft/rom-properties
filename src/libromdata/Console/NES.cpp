@@ -1191,13 +1191,13 @@ int NES::loadFieldData(void)
 	}
 
 	// TV mode
-	static const char *const tv_mode_tbl[] = {
+	static const std::array<const char*, 4> tv_mode_tbl = {{
 		"NTSC (RP2C02)",
 		"PAL (RP2C07)",
 		NOP_C_("NES|TVMode", "Dual (NTSC/PAL)"),
 		"Dendy (UMC 6527P)",
-	};
-	if (tv_mode < ARRAY_SIZE(tv_mode_tbl)) {
+	}};
+	if (tv_mode < tv_mode_tbl.size()) {
 		d->fields.addField_string(C_("NES", "TV Mode"),
 			dpgettext_expr(RP_I18N_DOMAIN, "NES|TVMode", tv_mode_tbl[tv_mode]));
 	}
@@ -1316,7 +1316,7 @@ int NES::loadFieldData(void)
 
 					// Check the Vs. hardware type.
 					// NOTE: Not translatable!
-					static const char *const vs_hw_types[] = {
+					static const std::array<const char*, 7> vs_hw_types = {{
 						"Vs. Unisystem",
 						"Vs. Unisystem (RBI Baseball)",
 						"Vs. Unisystem (TKO Boxing)",
@@ -1324,9 +1324,9 @@ int NES::loadFieldData(void)
 						"Vs. Unisystem (Vs. Ice Climber Japan)",
 						"Vs. Dualsystem",
 						"Vs. Dualsystem (Raid on Bungeling Bay)",
-					};
+					}};
 					const unsigned int vs_hw = (d->header.ines.nes2.vs_hw >> 4);
-					if (vs_hw < ARRAY_SIZE(vs_hw_types)) {
+					if (vs_hw < vs_hw_types.size()) {
 						s_vs_hw = vs_hw_types[vs_hw];
 					}
 				}

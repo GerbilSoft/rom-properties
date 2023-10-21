@@ -998,10 +998,10 @@ int Xbox360_XEX_Private::initPeReader(void)
  */
 string Xbox360_XEX_Private::formatMediaID(const uint8_t *pId)
 {
-	static const char hex_lookup[16] = {
+	static const std::array<char, 16> hex_lookup = {{
 		'0','1','2','3','4','5','6','7',
 		'8','9','A','B','C','D','E','F',
-	};
+	}};
 
 	// TODO: Use a string here?
 	char buf[(16*2)+2];
@@ -1704,7 +1704,7 @@ int Xbox360_XEX::loadFieldData(void)
 			C_("Xbox360_XEX", "Xbox Game Disc only"));
 	} else {
 		// Other types.
-		static const char *const media_type_tbl[] = {
+		static const std::array<const char*, 29> media_type_tbl = {{
 			// 0
 			NOP_C_("Xbox360_XEX", "Hard Disk"),
 			NOP_C_("Xbox360_XEX", "XGD1"),
@@ -1734,7 +1734,7 @@ int Xbox360_XEX::loadFieldData(void)
 			NOP_C_("Xbox360_XEX", "Xbox Live Signed Package"),
 			// 28
 			NOP_C_("Xbox360_XEX", "Xbox Package"),
-		};
+		}};
 
 		uint32_t media_types = be32_to_cpu(
 			(d->xexType != Xbox360_XEX_Private::XexType::XEX1
@@ -1743,7 +1743,7 @@ int Xbox360_XEX::loadFieldData(void)
 
 		ostringstream oss;
 		unsigned int found = 0;
-		for (unsigned int i = 0; i < ARRAY_SIZE(media_type_tbl); i++, media_types >>= 1) {
+		for (unsigned int i = 0; i < media_type_tbl.size(); i++, media_types >>= 1) {
 			if (!(media_types & 1))
 				continue;
 
@@ -1907,13 +1907,13 @@ int Xbox360_XEX::loadFieldData(void)
 	d->fields.addField_string(C_("Xbox360_XEX", "Encryption Key"), s_encryption_key);
 
 	// Compression
-	static const char *const compression_tbl[] = {
+	static const std::array<const char*, 4> compression_tbl = {{
 		NOP_C_("Xbox360_XEX|Compression", "None"),
 		NOP_C_("Xbox360_XEX|Compression", "Basic (Sparse)"),
 		NOP_C_("Xbox360_XEX|Compression", "Normal (LZX)"),
 		NOP_C_("Xbox360_XEX|Compression", "Delta"),
-	};
-	if (d->fileFormatInfo.compression_type < ARRAY_SIZE(compression_tbl)) {
+	}};
+	if (d->fileFormatInfo.compression_type < compression_tbl.size()) {
 		d->fields.addField_string(C_("Xbox360_XEX", "Compression"),
 			dpgettext_expr(RP_I18N_DOMAIN, "Xbox360_XEX|Compression",
 				compression_tbl[d->fileFormatInfo.compression_type]));

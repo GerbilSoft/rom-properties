@@ -83,10 +83,10 @@ const char *lookup(const char *code)
  */
 const char *lookup_old(uint8_t code)
 {
-	static const char hex_lookup[16] = {
+	static const std::array<char, 16> hex_lookup = {{
 		'0','1','2','3','4','5','6','7',
 		'8','9','A','B','C','D','E','F'
-	};
+	}};
 	const char s_code[3] = {
 		hex_lookup[code >> 4],
 		hex_lookup[code & 0x0F],

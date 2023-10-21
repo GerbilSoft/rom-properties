@@ -34,7 +34,7 @@ static const char regions[6][4] = {
 /**
  * System applications (tid hi == 0x00040010)
  */
-static const SysTitle sys_title_00040010[] = {
+static const std::array<SysTitle, 19> sys_title_00040010 = {{
 	/** Common titles **/
 	{{0x00020000, 0x00021000, 0x00022000, 0x00026000, 0x00027000, 0x00028000}, NOP_C_("Nintendo3DSSysTitles", "System Settings")},
 	{{0x00020100, 0x00021100, 0x00022100, 0x00026100, 0x00027100, 0x00028100}, NOP_C_("Nintendo3DSSysTitles", "Download Play")},
@@ -57,12 +57,12 @@ static const SysTitle sys_title_00040010[] = {
 	{{0x20020300, 0x20021300, 0x20022300,          0, 0x20027300,          0}, NOP_C_("Nintendo3DSSysTitles", "Health and Safety Information")},
 	{{0x20020D00, 0x20021D00, 0x20022D00,          0, 0x20027D00,          0}, NOP_C_("Nintendo3DSSysTitles", "Face Raiders")},
 	{{0x20023100, 0x20024100, 0x20025100,          0,          0,          0}, NOP_C_("Nintendo3DSSysTitles", "microSD Management")},
-};
+}};
 
 /**
  * System applets (tid hi == 0x00040030)
  */
-static const SysTitle sys_title_00040030[] = {
+static const std::array<SysTitle, 18> sys_title_00040030 = {{
 	/** Common titles **/
 	{{0x00008202, 0x00008F02, 0x00009802, 0x0000A102, 0x0000A902, 0x0000B102}, NOP_C_("Nintendo3DSSysTitles", "HOME Menu")},
 	{{0x00008402, 0x00009002, 0x00009902, 0x0000A202, 0x0000AA02, 0x0000B202}, NOP_C_("Nintendo3DSSysTitles", "Camera")},
@@ -84,7 +84,7 @@ static const SysTitle sys_title_00040030[] = {
 	/** New 3DS exclusive **/
 	{{0x20008802, 0x20009402, 0x20009D02,          0, 0x2000AE02,          0}, NOP_C_("Nintendo3DSSysTitles", "Internet Browser")},
 	{{0x2000C003, 0x2000C803, 0x2000D003,          0, 0x2000DE03,          0}, NOP_C_("Nintendo3DSSysTitles", "Software Keyboard (SAFE_MODE)")},
-};
+}};
 
 /** Public functions **/
 
@@ -111,11 +111,11 @@ const char *lookup_sys_title(uint32_t tid_hi, uint32_t tid_lo, const char **pReg
 	}
 
 	if (tid_hi == 0x00040010) {
-		titles = sys_title_00040010;
-		title_count = ARRAY_SIZE(sys_title_00040010);
+		titles = sys_title_00040010.data();
+		title_count = static_cast<int>(sys_title_00040010.size());
 	} else if (tid_hi == 0x00040030) {
-		titles = sys_title_00040030;
-		title_count = ARRAY_SIZE(sys_title_00040030);
+		titles = sys_title_00040030.data();
+		title_count = static_cast<int>(sys_title_00040030.size());
 	} else {
 		// tid_hi not supported.
 		if (pRegion) {

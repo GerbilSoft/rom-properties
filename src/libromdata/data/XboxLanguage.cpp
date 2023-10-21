@@ -69,7 +69,7 @@ int getXbox360Language(void)
 uint32_t getXbox360LanguageCode(int langID)
 {
 	// GCN_PAL_Language_ID system language code mapping.
-	static const uint32_t langID_to_lc[XDBF_LANGUAGE_MAX] = {
+	static const std::array<uint32_t, 12+1> langID_to_lc = {{
 		0,	// XDBF_LANGUAGE_UNKNOWN
 		'en',	// XDBF_LANGUAGE_ENGLISH
 		'ja',	// XDBF_LANGUAGE_JAPANESE
@@ -83,11 +83,11 @@ uint32_t getXbox360LanguageCode(int langID)
 		'hans',	// XDBF_LANGUAGE_CHINESE_SIMP
 		'pl',	// XDBF_LANGUAGE_POLISH
 		'ru',	// XDBF_LANGUAGE_RUSSIAN
-	};
+	}};
 
 	assert(langID >= 0);
-	assert(langID < ARRAY_SIZE_I(langID_to_lc));
-	if (langID < 0 || langID >= ARRAY_SIZE_I(langID_to_lc)) {
+	assert(langID < static_cast<int>(langID_to_lc.size()));
+	if (langID < 0 || langID >= static_cast<int>(langID_to_lc.size())) {
 		// Out of range.
 		return 0;
 	}

@@ -329,13 +329,13 @@ int BRSTM::loadFieldData(void)
 			: C_("RomData", "Little-Endian"));
 
 	// Codec
-	static const char *const codec_tbl[] = {
+	static const std::array<const char*, 3> codec_tbl = {{
 		NOP_C_("BRSTM|Codec", "Signed 8-bit PCM"),
 		NOP_C_("BRSTM|Codec", "Signed 16-bit PCM"),
 		"4-bit THP ADPCM",
-	};
+	}};
 	const char *const codec_title = C_("BRSTM", "Codec");
-	if (headChunk1->codec < ARRAY_SIZE(codec_tbl)) {
+	if (headChunk1->codec < codec_tbl.size()) {
 		d->fields.addField_string(codec_title,
 			dpgettext_expr(RP_I18N_DOMAIN, "BRSTM|Codec", codec_tbl[headChunk1->codec]));
 	} else {

@@ -90,7 +90,7 @@ unsigned int imageTypeCount(void)
 const char *imageTypeName(unsigned int imageType)
 {
 	// Image type names.
-	static const char *const imageType_names[] = {
+	static const std::array<const char*, IMG_TYPE_COUNT> imageType_names = {{
 		/** Internal **/
 
 		// tr: IMG_INT_ICON
@@ -116,12 +116,10 @@ const char *imageTypeName(unsigned int imageType)
 		NOP_C_("ImageTypesConfig|ImageTypeDisp", "External\nBox"),
 		// tr: IMG_EXT_TITLE_SCREEN
 		NOP_C_("ImageTypesConfig|ImageTypeDisp", "External\nTitle Screen"),
-	};
-	static_assert(ARRAY_SIZE(imageType_names) == IMG_TYPE_COUNT,
-		"imageType_names[] needs to be updated.");
+	}};
 
-	assert(imageType < IMG_TYPE_COUNT);
-	if (imageType >= IMG_TYPE_COUNT)
+	assert(imageType < imageType_names.size());
+	if (imageType >= imageType_names.size())
 		return nullptr;
 	return dpgettext_expr(RP_I18N_DOMAIN, "ImageTypesConfig|ImageTypeDisp", imageType_names[imageType]);
 }
@@ -143,7 +141,7 @@ unsigned int sysCount(void)
 const char *sysName(unsigned int sys)
 {
 	// System names.
-	static const char *const sysNames[] = {
+	static const std::array<const char*, SYS_COUNT> sysNames = {{
 		// tr: amiibo
 		NOP_C_("ImageTypesConfig|SysName", "amiibo"),
 		// tr: NintendoBadge
@@ -166,12 +164,10 @@ const char *sysName(unsigned int sys)
 		NOP_C_("ImageTypesConfig|SysName", "Wii U"),
 		// tr: WiiWAD
 		NOP_C_("ImageTypesConfig|SysName", "Wii WAD Files"),
-	};
-	static_assert(ARRAY_SIZE(sysNames) == SYS_COUNT,
-		"sysNames[] needs to be updated.");
+	}};
 
-	assert(sys < SYS_COUNT);
-	if (sys >= SYS_COUNT)
+	assert(sys < sysNames.size());
+	if (sys >= sysNames.size())
 		return nullptr;
 	return dpgettext_expr(RP_I18N_DOMAIN, "ImageTypesConfig|SysName", sysNames[sys]);
 }

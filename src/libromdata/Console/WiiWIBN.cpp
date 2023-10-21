@@ -166,7 +166,7 @@ rp_image_const_ptr WiiWIBNPrivate::loadIcon(void)
 		// Icon delay.
 		// Using 62ms for the fastest speed.
 		// TODO: Verify this?
-		static const uint16_t ms_tbl[4] = {0, 62/*.5*/, 125, 250};
+		static const std::array<uint8_t, 4> ms_tbl = {{0, 62/*.5*/, 125, 250}};
 		iconAnimData->delays[i].numer = static_cast<uint16_t>(delay);
 		iconAnimData->delays[i].denom = 8;
 		iconAnimData->delays[i].ms = ms_tbl[delay];

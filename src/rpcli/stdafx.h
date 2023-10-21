@@ -24,6 +24,7 @@
 #  include <cstring>
 // C++ includes
 #  include <algorithm>
+#  include <array>
 #  include <fstream>
 #  include <iomanip>
 #  include <iostream>

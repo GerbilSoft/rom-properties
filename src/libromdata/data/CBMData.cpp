@@ -15,14 +15,14 @@ namespace LibRomData { namespace CBMData {
 #include "CBM_C64_Cartridge_Type_data.h"
 
 // VIC-20 cartridge types
-static const char *const crt_types_vic20[] = {
+static const std::array<const char*, 6> crt_types_vic20 = {{
 	"generic cartridge",
 	"Mega-Cart",
 	"Behr Bonz",
 	"Vic Flash Plugin",
 	"UltiMem",
 	"Final Expansion",
-};
+}};
 
 /** Public functions **/
 
@@ -48,7 +48,7 @@ const char *lookup_C64_cart_type(uint16_t type)
  */
 const char *lookup_VIC20_cart_type(uint16_t type)
 {
-	if (unlikely(type >= ARRAY_SIZE(crt_types_vic20))) {
+	if (unlikely(type >= crt_types_vic20.size())) {
 		return nullptr;
 	}
 	return crt_types_vic20[type];

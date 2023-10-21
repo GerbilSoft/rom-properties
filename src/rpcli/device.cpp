@@ -78,7 +78,7 @@ std::ostream& operator<<(std::ostream& os, const ScsiInquiry& si)
 	StreamStateSaver state(os);
 	os << "-- SCSI INQUIRY data for: " << si.file->filename() << '\n';
 
-	static const char *const pdt_tbl[0x20] = {
+	static const std::array<const char*, 0x20> pdt_tbl = {{
 		"Direct-access block device",		// 0x00
 		"Sequential-access device",		// 0x01
 		"Printer",				// 0x02
@@ -105,21 +105,21 @@ std::ostream& operator<<(std::ostream& os, const ScsiInquiry& si)
 		nullptr, nullptr, nullptr,		// 0x1B-0x1D
 		"Well-known logical unit",		// 0x1E
 		"Unknown or no device type",		// 0x1F
-	};
+	}};
 	os << "Peripheral device type: ";
 	const char *const pdt = pdt_tbl[resp.PeripheralDeviceType & 0x1F];
 	os << (pdt ? pdt : rp_sprintf("0x%02X",
 		static_cast<unsigned int>(resp.PeripheralDeviceType) & 0x1F)) << '\n';
 
 	os << "Peripheral qualifier:   ";
-	static const char *const pq_tbl[8] = {
+	static const std::array<const char*, 8> pq_tbl = {{
 		"Connected",		// 000b
 		"Not connected",	// 001b
 		"010b",			// 010b
 		"Not supported",	// 011b
 		"100b", "101b",		// 100b,101b
 		"110b", "111b",		// 110b,111b
-	};
+	}};
 	os << pq_tbl[resp.PeripheralDeviceType >> 5] << '\n';
 
 	os << "Removable media:        " << (resp.RMB_DeviceTypeModifier & 0x80 ? "Yes" : "No") << '\n';

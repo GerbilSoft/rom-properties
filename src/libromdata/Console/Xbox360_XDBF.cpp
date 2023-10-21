@@ -833,15 +833,15 @@ const char *Xbox360_XDBF_Private::getTitleType(void) const
 		return nullptr;
 	}
 
-	static const char *const title_type_tbl[] = {
+	static const std::array<const char*, 4> title_type_tbl = {{
 		NOP_C_("Xbox360_XDBF|TitleType", "System Title"),
 		NOP_C_("Xbox360_XDBF|TitleType", "Full Game"),
 		NOP_C_("Xbox360_XDBF|TitleType", "Demo"),
 		NOP_C_("Xbox360_XDBF|TitleType", "Download"),
-	};
+	}};
 
 	const uint32_t title_type = be32_to_cpu(xthd.title_type);
-	if (title_type < ARRAY_SIZE(title_type_tbl)) {
+	if (title_type < title_type_tbl.size()) {
 		return dpgettext_expr(RP_I18N_DOMAIN, "Xbox360_XDBF|TitleType",
 			title_type_tbl[title_type]);
 	}

@@ -600,27 +600,27 @@ void MegaDrivePrivate::addFields_vectorTable(const M68K_VectorTable *pVectors)
 		"IRQ7 (NMI)\0"
 	};
 	// Just under 255 (uint8_t max). Nice.
-	static const uint8_t vectors_offtbl[] = {
+	static const std::array<uint8_t, 20> vectors_offtbl = {{
 		0, 11, 23, 33, 47, 67, 84, 98,	// $00-$1C
 		114, 134, 150, 166,			// $20-$2C
 		182, 201, 206, 216, 221, 235, 240, 254,	// $60-$7C
-	};
+	}};
 
 	// Map of displayed vectors to actual vectors.
 	// This uses vector indees, *not* byte addresses.
-	static const int8_t vectors_map[] = {
+	static const std::array<int8_t, 20> vectors_map = {{
 		 0,  1,  2,  3,  4,  5,  6,  7,	// $00-$1C
 		 8,  9, 10, 11,			// $20-$2C
 		24, 25, 26, 27, 28, 29, 30, 31,	// $60-$7C
-	};
+	}};
 
-	static_assert(ARRAY_SIZE(vectors_offtbl) == ARRAY_SIZE(vectors_map),
+	static_assert(vectors_offtbl.size() == vectors_map.size(),
 		"vectors_offtbl[] and vectors_map[] are out of sync.");
 
-	auto vv_vectors = new RomFields::ListData_t(ARRAY_SIZE(vectors_offtbl));
+	auto vv_vectors = new RomFields::ListData_t(vectors_offtbl.size());
 	auto iter = vv_vectors->begin();
 	const auto vv_vectors_end = vv_vectors->end();
-	for (size_t i = 0; i < ARRAY_SIZE(vectors_offtbl) && iter != vv_vectors_end; ++i, ++iter) {
+	for (size_t i = 0; i < vectors_offtbl.size() && iter != vv_vectors_end; ++i, ++iter) {
 		auto &data_row = *iter;
 		data_row.reserve(3);
 
@@ -1652,10 +1652,10 @@ int MegaDrive::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) 
 		}
 	} else {
 		// Using the MD hex region code.
-		static const char dec_to_hex[] = {
+		static const std::array<char, 16> dec_to_hex = {{
 			'0', '1', '2', '3', '4', '5', '6', '7',
 			'8', '9', 'A', 'B', 'C', 'D', 'E', 'F',
-		};
+		}};
 		region_code[0] = dec_to_hex[d->md_region & 0x0F];
 		region_code[1] = '\0';
 
@@ -1711,7 +1711,7 @@ int MegaDrive::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) 
 				uint8_t md_region;
 				char serial[15];
 			};
-			static const struct MDRomSerialData_t md_rom_serial_data[] = {
+			static const std::array<MDRomSerialData_t, 26> md_rom_serial_data = {{
 				{0x0F, "GM 00004039-00"},	// Arrow Flash
 				{0x04, "GM T-24016 -00"},	// Atomic Robo-Kid
 				{0x08, "GM T-120146-50"},	// Brian Lara Cricket 96 / Shane Warne Cricket (EUR)
@@ -1741,13 +1741,12 @@ int MegaDrive::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) 
 				{0x08, "GM MK-1043 -00"},	// ToeJam & Earl in Panic on Funkotron (EUR)
 				{0x03, "GM T-22033 -00"},	// Caesar no Yabou / Warrior of Rome
 				//{0x03, "GM T-22056 -00"},	// Caesar no Yabou II / Warrior of Rome II (FIXME: Checksums are identical...)
-			};
+			}};
 
-			const auto *const p_end = &md_rom_serial_data[ARRAY_SIZE(md_rom_serial_data)];
-			for (const auto *p = &md_rom_serial_data[0]; p < p_end; p++) {
-				if (p->md_region != d->md_region)
+			for (const auto &p : md_rom_serial_data) {
+				if (p.md_region != d->md_region)
 					continue;
-				if (memcmp(p->serial, pRomHeader->serial_number, 14) != 0)
+				if (memcmp(p.serial, pRomHeader->serial_number, 14) != 0)
 					continue;
 
 				// Found a match! Append the checksum.

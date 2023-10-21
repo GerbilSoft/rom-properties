@@ -41,19 +41,19 @@ using std::wostringstream;
 using std::wstring;
 
 // KeyStoreUI::ImportFileID
-static const LPCTSTR import_menu_actions[] = {
+static const std::array<LPCTSTR, 4> import_menu_actions = {{
 	_T("Wii keys.bin"),
 	_T("Wii U otp.bin"),
 	_T("3DS boot9.bin"),
 	_T("3DS aeskeydb.bin"),
-};
+}};
 
-static const uint16_t import_menu_actions_ids[] = {
+static const std::array<uint16_t, 4> import_menu_actions_ids = {{
 	IDM_KEYMANAGER_IMPORT_WII_KEYS_BIN,
 	IDM_KEYMANAGER_IMPORT_WIIU_OTP_BIN,
 	IDM_KEYMANAGER_IMPORT_3DS_BOOT9_BIN,
 	IDM_KEYMANAGER_IMPORT_3DS_AESKEYDB,
-};
+}};
 
 class KeyManagerTabPrivate
 {

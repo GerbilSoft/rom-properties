@@ -10,14 +10,15 @@
 #include "CacheKeys.hpp"
 #include "CacheDir.hpp"
 
-// C includes. (C++ namespace)
+// C includes (C++ namespace)
 #include <cassert>
 #include <cerrno>
 #include <cstdio>
 #include <cstring>
 #include <stdint.h>
 
-// C++ STL classes.
+// C++ STL classes
+#include <array>
 using std::string;
 #ifdef _WIN32
 using std::wstring;
@@ -46,7 +47,7 @@ namespace LibCacheCommon {
 // - 2: Dot
 // - 3: Slash
 // - 4: Backslash or colon (error)
-static const uint8_t valid_ascii_tbl[0x80] = {
+static const std::array<uint8_t, 0x80> valid_ascii_tbl = {{
 	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 0x00
 	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 0x10
 	1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 2, 3, // 0x20 (", *, ., /)
@@ -55,7 +56,7 @@ static const uint8_t valid_ascii_tbl[0x80] = {
 	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 4, 1, 1, 1, // 0x50 (\\)
 	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, // 0x70
 	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, // 0x80 (|)
-};
+}};
 
 /**
  * Filter invalid characters from a cache key.
@@ -281,10 +282,10 @@ int filterCacheKey(wchar_t *pCacheKey)
 
 				case 3:
 					// Slash.
-	#ifdef _WIN32
+#ifdef _WIN32
 					// Convert to backslash on Windows.
 					*p = L'\\';
-	#endif /* _WIN32 */
+#endif /* _WIN32 */
 					foundSlash = true;
 					dotCount = 0;
 					break;

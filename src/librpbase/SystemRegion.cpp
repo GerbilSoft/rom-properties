@@ -62,10 +62,11 @@ static const char languages_strtbl[] =
 	"Русский\0"		// 'ru'
 	"简体中文\0"		// 'hans'
 	"繁體中文\0";		// 'hant'
+static_assert(sizeof(languages_strtbl) == 0x93+1, "languages_strtbl[] size has changed!");
 
 // Language name mapping.
 // NOTE: This MUST be sorted by 'lc'!
-static const LanguageOffTbl_t languages_offtbl[] = {
+static const std::array<LanguageOffTbl_t, 14> languages_offtbl = {{
 	{'au',	0}, // GameTDB only
 	{'de',	13},
 	{'en',	21},
@@ -80,8 +81,7 @@ static const LanguageOffTbl_t languages_offtbl[] = {
 	{'ru',	106},
 	{'hans', 121},
 	{'hant', 134},
-};
-static_assert(sizeof(languages_strtbl) == 0x93+1, "languages_strtbl[] size has changed!");
+}};
 
 /**
  * Get the LC_MESSAGES or LC_ALL environment variable.
@@ -365,13 +365,11 @@ uint32_t getLanguageCode(void)
 const char *getLocalizedLanguageName(uint32_t lc)
 {
 	// Do a binary search.
-	static const LanguageOffTbl_t *const p_languages_offtbl_end =
-		&languages_offtbl[ARRAY_SIZE(languages_offtbl)];
-	auto pLangOffTbl = std::lower_bound(languages_offtbl, p_languages_offtbl_end, lc,
+	auto pLangOffTbl = std::lower_bound(languages_offtbl.cbegin(), languages_offtbl.cend(), lc,
 		[](const LanguageOffTbl_t &langOffTbl, uint32_t lc) noexcept -> bool {
 			return (langOffTbl.lc < lc);
 		});
-	if (pLangOffTbl == p_languages_offtbl_end || pLangOffTbl->lc != lc) {
+	if (pLangOffTbl == languages_offtbl.cend() || pLangOffTbl->lc != lc) {
 		return nullptr;
 	}
 	return &languages_strtbl[pLangOffTbl->offset];
@@ -396,7 +394,7 @@ int getFlagPosition(uint32_t lc, int *pCol, int *pRow, bool forcePAL)
 		uint16_t col;
 		uint16_t row;
 	};
-	static const flagpos_tbl_t flagpos_tbl[] = {
+	static const std::array<flagpos_tbl_t, 13> flagpos_tbl = {{
 		{'hans',	0, 0},
 		{'hant',	0, 0},
 		{'au',		1, 3},	// GameTDB only
@@ -412,7 +410,7 @@ int getFlagPosition(uint32_t lc, int *pCol, int *pRow, bool forcePAL)
 		{'pt',		1, 2},
 		{'ru',		2, 2},
 		//{'us',		3, 0},
-	};
+	}};
 
 	if (lc == 'en') {
 		// Special case for English:

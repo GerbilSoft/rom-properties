@@ -20,12 +20,12 @@ struct option_menu_action_t {
 	const char *desc;
 	int id;
 };
-static const option_menu_action_t stdacts[] = {
+static const std::array<option_menu_action_t, 4> stdacts = {{
 	{NOP_C_("OptionsMenuButton|StdActs", "Export to Text..."),	OPTION_EXPORT_TEXT},
 	{NOP_C_("OptionsMenuButton|StdActs", "Export to JSON..."),	OPTION_EXPORT_JSON},
 	{NOP_C_("OptionsMenuButton|StdActs", "Copy as Text"),		OPTION_COPY_TEXT},
 	{NOP_C_("OptionsMenuButton|StdActs", "Copy as JSON"),		OPTION_COPY_JSON},
-};
+}};
 
 OptionsMenuButton::OptionsMenuButton(QWidget *parent)
 	: super(parent)

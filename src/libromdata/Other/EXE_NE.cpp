@@ -198,18 +198,19 @@ int EXEPrivate::findNERuntimeDLL(string &refDesc, string &refLink, bool &refHasK
 	}
 
 	// Visual Basic DLL version to display version table.
-	static const struct {
+	struct msvb_dll_t {
 		uint8_t ver_major;
 		uint8_t ver_minor;
 		const char dll_name[8];	// NOT NULL-terminated!
 		const char *url;
-	} msvb_dll_tbl[] = {
+	};
+	static const std::array<msvb_dll_t, 5> msvb_dll_tbl = {{
 		{4,0, {'V','B','R','U','N','4','0','0'}, nullptr},
 		{4,0, {'V','B','R','U','N','4','1','6'}, nullptr},	// TODO: Is this a thing?
 		{3,0, {'V','B','R','U','N','3','0','0'}, nullptr},
 		{2,0, {'V','B','R','U','N','2','0','0'}, nullptr},
 		{1,0, {'V','B','R','U','N','1','0','0'}, "https://download.microsoft.com/download/vb30/sampleaa/1/w9xnt4/en-us/vbrun100.exe"},
-	};
+	}};
 
 	// FIXME: Alignment?
 	for (const uint16_t modRef : ne_modref_table) {

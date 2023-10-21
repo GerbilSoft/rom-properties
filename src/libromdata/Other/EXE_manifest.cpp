@@ -88,10 +88,11 @@ int EXEPrivate::loadWin32ManifestResource(XMLDocument &doc, const char **ppResNa
 	}
 
 	// Manifest resource IDs
-	static const struct {
+	struct resource_id_t {
 		uint16_t id;
 		const char *name;
-	} resource_ids[] = {
+	};
+	static const std::array<resource_id_t, 4> resource_id_tbl = {{
 		{CREATEPROCESS_MANIFEST_RESOURCE_ID, "CreateProcess"},
 		{ISOLATIONAWARE_MANIFEST_RESOURCE_ID, "Isolation-Aware"},
 		{ISOLATIONAWARE_NOSTATICIMPORT_MANIFEST_RESOURCE_ID, "Isolation-Aware, No Static Import"},
@@ -99,13 +100,13 @@ int EXEPrivate::loadWin32ManifestResource(XMLDocument &doc, const char **ppResNa
 		// Windows XP's explorer.exe uses resource ID 123.
 		// Reference: https://docs.microsoft.com/en-us/windows/desktop/Controls/cookbook-overview
 		{XP_VISUAL_STYLE_MANIFEST_RESOURCE_ID, "Visual Style"},
-	};
+	}};
 
 	// Search for a PE manifest resource.
 	IRpFilePtr f_manifest;
 	unsigned int id_idx;
-	for (id_idx = 0; id_idx < ARRAY_SIZE(resource_ids); id_idx++) {
-		f_manifest = rsrcReader->open(RT_MANIFEST, resource_ids[id_idx].id, -1);
+	for (id_idx = 0; id_idx < resource_id_tbl.size(); id_idx++) {
+		f_manifest = rsrcReader->open(RT_MANIFEST, resource_id_tbl[id_idx].id, -1);
 		if (f_manifest)
 			break;
 	}
@@ -186,7 +187,7 @@ int EXEPrivate::loadWin32ManifestResource(XMLDocument &doc, const char **ppResNa
 
 	// XML document loaded.
 	if (ppResName) {
-		*ppResName = resource_ids[id_idx].name;
+		*ppResName = resource_id_tbl[id_idx].name;
 	}
 	return 0;
 }
