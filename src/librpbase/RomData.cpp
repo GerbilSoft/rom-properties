@@ -849,7 +849,7 @@ rp_image_const_ptr RomData::image(ImageType imageType) const
 	assert((ret == 0 && (bool)img) ||
 	       (ret != 0 && !img));
 
-	return img;
+	return (ret == 0) ? img : nullptr;
 }
 
 /**
@@ -887,7 +887,7 @@ rp_image_const_ptr RomData::mipmap(int mipmapLevel) const
 	assert((ret == 0 && (bool)img) ||
 	       (ret != 0 && !img));
 
-	return img;
+	return (ret == 0) ? img : nullptr;
 }
 
 /**
