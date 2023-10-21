@@ -26,7 +26,7 @@ struct OffTbl_t {
 /**
  * OpenGL enumerations.
  */
-static const std::array<char, 4081> glEnum_strtbl = {
+static const char glEnum_strtbl[] =
 	"\0"
 
 	"BYTE\0"
@@ -270,8 +270,7 @@ static const std::array<char, 4081> glEnum_strtbl = {
 
 	// PVRTC-II
 	"COMPRESSED_SRGB_ALPHA_PVRTC_2BPPV2_IMG\0"
-	"COMPRESSED_SRGB_ALPHA_PVRTC_4BPPV2_IMG\0"
-};
+	"COMPRESSED_SRGB_ALPHA_PVRTC_4BPPV2_IMG\0";
 
 static const std::array<OffTbl_t, 227> glEnum_offtbl = {{
 	{GL_BYTE, 1},
@@ -527,6 +526,8 @@ static const std::array<OffTbl_t, 227> glEnum_offtbl = {{
  */
 const char *lookup_glEnum(unsigned int glEnum)
 {
+	static_assert(sizeof(glEnum_strtbl) == 4081, "glEnum_offtbl[] needs to be recalculated");
+
 	// Offset table uses uint16_t for glEnum.
 	assert(glEnum <= std::numeric_limits<uint16_t>::max());
 	if (glEnum > std::numeric_limits<uint16_t>::max()) {

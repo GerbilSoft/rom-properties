@@ -959,7 +959,7 @@ int EXE::loadFieldData(void)
 
 	// Executable type.
 	// NOTE: Not translatable.
-	static const std::array<char, 189> exeTypes_strtbl = {
+	static const char exeTypes_strtbl[] =
 		"MS-DOS Executable\0"			// ExeType::MZ
 		"16-bit New Executable\0"		// ExeType::NE
 		"16-bit COM/NE Hybrid\0"		// ExeType::COM_NE
@@ -967,11 +967,11 @@ int EXE::loadFieldData(void)
 		"Windows/386 Kernel\0"			// ExeType::W3
 		"32-bit Linear Executable\0"		// ExeType::LX
 		"32-bit Portable Executable\0"		// ExeType::PE
-		"64-bit Portable Executable\0"		// ExeType::PE32PLUS
-	};
+		"64-bit Portable Executable\0";		// ExeType::PE32PLUS
 	static const std::array<uint8_t, 8> exeTypes_offtbl = {
 		0, 18, 40, 61, 90, 109, 134, 161
 	};
+	static_assert(sizeof(exeTypes_strtbl) == 189, "exeTypes_offtbl[] needs to be recalculated");
 	static_assert(exeTypes_offtbl.size() == static_cast<size_t>(EXEPrivate::ExeType::Max), "Update exeTypes[]!");
 
 	const char *const type_title = C_("EXE", "Type");

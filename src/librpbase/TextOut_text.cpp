@@ -290,7 +290,7 @@ static int formatDateTime(char *buf, size_t size, time_t timestamp, RomFields::D
 
 	if (likely(SystemRegion::getLanguageCode() != 0)) {
 		// Localized time format
-		static const std::array<char, 33> formats_strtbl = {
+		static const char formats_strtbl[] =
 			"\0"		// [0] No date or time
 			"%x\0"		// [1] Date
 			"%X\0"		// [4] Time
@@ -300,9 +300,9 @@ static int formatDateTime(char *buf, size_t size, time_t timestamp, RomFields::D
 			"\0"		// [13] No date or time
 			"%b %d\0"	// [14] Date (no year)
 			"%X\0"		// [20] Time
-			"%b %d %X\0"	// [23] Date Time (no year)
-		};
+			"%b %d %X\0";	// [23] Date Time (no year)
 		static const std::array<uint8_t, 8> formats_offtbl = {0, 1, 4, 7, 13, 14, 20, 23};
+		static_assert(sizeof(formats_strtbl) == 33, "formats_offtbl[] needs to be recalculated");
 
 		const unsigned int offset = (dtflags & RomFields::RFT_DATETIME_HAS_DATETIME_NO_YEAR_MASK);
 		const char *format = &formats_strtbl[formats_offtbl[offset]];
