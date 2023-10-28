@@ -133,7 +133,7 @@ for c in string_table:
 		i += 1
 f_out.write("\");\n\n")
 
-f_out.write(f"typedef struct _HttpStatusMsg_t {{\n\tuint16_t code;\n\t{idx_type} offset;\n}} HttpStatusMsg_t;\n\n");
+f_out.write(f"typedef struct _HttpStatusMsg_t {{\n\tuint16_t code;\n\t{idx_type} offset;\n}} HttpStatusMsg_t;\n\n")
 
 f_out.write(f"static const HttpStatusMsg_t {prefix}_offtbl[] = {{\n")
 
