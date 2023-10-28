@@ -10,6 +10,8 @@
 
 // NOLINTBEGIN(misc-definitions-in-headers)
 
+#include <array>
+
 /**
  * Original test data
  */
