@@ -50,14 +50,15 @@ using std::u16string;
 // Reference: https://docs.microsoft.com/en-us/archive/blogs/murrays/richedit-colors
 #define MSFTEDIT_USE_41 1
 
-// Other libraries.
-#ifdef HAVE_ZLIB
-#  include <zlib.h>
-#endif
-#ifdef HAVE_PNG
-#  include <png.h>	// PNG_LIBPNG_VER_STRING
-#  include "librpbase/img/RpPng.hpp"
-#endif
+/** Libraries **/
+
+// zlib and libpng
+// TODO: Make ZLIBNG_VERSION and ZLIB_VERSION accessible via RpPng.
+// TODO: Make PNG_LIBPNG_VER_STRING accessible via RpPng.
+#include <zlib.h>
+#include <png.h>
+#include "librpbase/img/RpPng.hpp"
+// TODO: JPEG
 #ifdef ENABLE_XML
 #  include "tinyxml2.h"
 #endif

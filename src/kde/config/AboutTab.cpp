@@ -32,14 +32,14 @@ using std::string;
 #  include <kdeversion.h>
 #endif
 
-// Other libraries.
-#ifdef HAVE_ZLIB
-#  include <zlib.h>
-#endif /* HAVE_ZLIB */
-#ifdef HAVE_PNG
-#  include <png.h>	// PNG_LIBPNG_VER_STRING
-#  include "librpbase/img/RpPng.hpp"
-#endif /* HAVE_PNG */
+/** Libraries **/
+
+// zlib and libpng
+// TODO: Make ZLIBNG_VERSION and ZLIB_VERSION accessible via RpPng.
+// TODO: Make PNG_LIBPNG_VER_STRING accessible via RpPng.
+#include <zlib.h>
+#include <png.h>
+#include "librpbase/img/RpPng.hpp"
 // TODO: JPEG
 #if defined(ENABLE_DECRYPTION) && defined(HAVE_NETTLE)
 #  include "librpbase/crypto/AesNettle.hpp"
