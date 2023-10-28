@@ -8,6 +8,7 @@ video game ROM and disc images.
 [![Coverity Scan Build Status](https://scan.coverity.com/projects/10146/badge.svg)](https://scan.coverity.com/projects/10146)<br>
 [![CodeQL](https://github.com/GerbilSoft/rom-properties/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/GerbilSoft/rom-properties/actions/workflows/codeql-analysis.yml)
 [![Crowdin](https://badges.crowdin.net/rom-properties/localized.svg)](https://crowdin.com/project/rom-properties)
+[![CodeFactor](https://www.codefactor.io/repository/github/gerbilsoft/rom-properties/badge)](https://www.codefactor.io/repository/github/gerbilsoft/rom-properties/overview)
 
 ## v2.2.1
 
