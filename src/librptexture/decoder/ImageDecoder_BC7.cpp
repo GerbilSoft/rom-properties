@@ -125,18 +125,20 @@ static uint8_t interpolate_component(unsigned int bits, unsigned int index, uint
  */
 static inline int get_mode(uint32_t dword0)
 {
-	// TODO: ctz/_BitScanForward?
-	// Benchmarks showed it was *slower* than this function...
-	for (unsigned int i = 0; i < 8; i++, dword0 >>= 1) {
-		if (dword0 & 1) {
-			// Found the mode number.
-			return i;
-		}
+#ifdef _MSC_VER
+	unsigned long index;
+	if (!_BitScanForward(&index, dword0)) {
+		assert(!"BC7 block has an invalid mode.");
+		return -1;
 	}
-
-	// Invalid mode.
-	assert(!"BC7 block has an invalid mode.");
-	return -1;
+	return index;
+#else /* !_MSC_VER */
+	if (!dword0) {
+		assert(!"BC7 block has an invalid mode.");
+		return -1;
+	}
+	return __builtin_ctz(dword0);
+#endif
 }
 
 // Anchor indexes for the second subset (idx == 1) in 2-subset modes.
