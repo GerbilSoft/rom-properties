@@ -14,8 +14,13 @@
 #include "librpcpu/byteswap_rp.h"
 #include "aligned_malloc.h"
 
-// C includes. (C++ namespace)
+// C includes (C++ namespace)
 #include <cstdio>
+
+// C++ includes
+// NOTE: This must be here and *not* in ByteswapTest_data.hpp because
+// ByteswapTest_data.hpp is contained within the LibRpCpu::Tests namespace.
+#include <array>
 
 namespace LibRpCpu { namespace Tests {
 
