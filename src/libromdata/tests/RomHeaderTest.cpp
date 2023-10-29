@@ -596,6 +596,13 @@ INSTANTIATE_TEST_SUITE_P(GameBoyAdvance, RomHeaderTest,
 		"Handheld/GameBoyAdvance.json.tar.zst"))
 	, RomHeaderTest::test_case_suffix_generator);
 
+INSTANTIATE_TEST_SUITE_P(Nintendo3DS_3DSident, RomHeaderTest,
+	testing::ValuesIn(RomHeaderTest::ReadTestCasesFromDisk(
+		"Handheld/Nintendo3DS-3DSident.bin.tar.zst",
+		"Handheld/Nintendo3DS-3DSident.txt.tar.zst",
+		"Handheld/Nintendo3DS-3DSident.json.tar.zst"))
+	, RomHeaderTest::test_case_suffix_generator);
+
 INSTANTIATE_TEST_SUITE_P(NintendoDS, RomHeaderTest,
 	testing::ValuesIn(RomHeaderTest::ReadTestCasesFromDisk(
 		"Handheld/NintendoDS.bin.tar.zst",
