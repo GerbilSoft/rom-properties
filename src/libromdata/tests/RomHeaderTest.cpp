@@ -626,6 +626,13 @@ INSTANTIATE_TEST_SUITE_P(Amiibo, RomHeaderTest,
 		"Other/Amiibo.json.tar.zst"))
 	, RomHeaderTest::test_case_suffix_generator);
 
+INSTANTIATE_TEST_SUITE_P(DirectDrawSurface, RomHeaderTest,
+	testing::ValuesIn(RomHeaderTest::ReadTestCasesFromDisk(
+		"Other/DirectDrawSurface.bin.tar.zst",
+		"Other/DirectDrawSurface.txt.tar.zst",
+		"Other/DirectDrawSurface.json.tar.zst"))
+	, RomHeaderTest::test_case_suffix_generator);
+
 } }
 
 extern "C" int gtest_main(int argc, TCHAR *argv[])

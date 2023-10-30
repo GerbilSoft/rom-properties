@@ -47,6 +47,9 @@
     * Xbox 360 CPU is now "PowerPC (big-endian; Xenon)".
     * Fixes #396: PE machine value 0x0601 == PowerPC big-endian (classic Mac)
       * Reported by @Wack0.
+  * DirectDrawSurface: Detect DXT5nm (normal map) and swizzle the Red and Alpha
+    channels for proper display. Also show both sRGB and Normal Map attributes
+    as set by various nVidia tools.
 
 * Bug fixes:
   * Windows: Truncate ListView strings to a maximum of 259+1 characters. (259

@@ -645,6 +645,9 @@ unsigned int DirectDrawSurfacePrivate::calcExpectedSize(int width, int height, i
 		case DXGI_FORMAT_BC5_TYPELESS:
 		case DXGI_FORMAT_BC5_UNORM:
 		//case DXGI_FORMAT_BC5_SNORM:
+		case DXGI_FORMAT_BC6H_TYPELESS:
+		case DXGI_FORMAT_BC6H_UF16:
+		//case DXGI_FORMAT_BC6H_SF16:
 		case DXGI_FORMAT_BC7_TYPELESS:
 		case DXGI_FORMAT_BC7_UNORM:
 		case DXGI_FORMAT_BC7_UNORM_SRGB:
@@ -834,9 +837,20 @@ rp_image_const_ptr DirectDrawSurfacePrivate::loadImage(int mip)
 					img = ImageDecoder::fromDXT5(
 						width, height,
 						buf.get(), expected_size);
-					if (ddsHeader.ddspf.dwFourCC == DDPF_FOURCC_RXGB) {
-						// RxGB -> xRGB
-						img->swizzle("agb1");
+					switch (ddsHeader.ddspf.dwFourCC) {
+						default:
+							break;
+						case DDPF_FOURCC_RXGB:
+							// RxGB -> xRGB
+							img->swizzle("agb1");
+							break;
+						case DDPF_FOURCC_DXT5:
+							if (ddsHeader.ddspf.dwFlags & DDPF_NORMAL) {
+								// DXT5nm (nVidia-specific)
+								// Swap the Red and Alpha channels.
+								img->swizzle("agbr");
+							}
+							break;
 					}
 				} else {
 					// Premultiplied alpha: DXT4
@@ -860,6 +874,12 @@ rp_image_const_ptr DirectDrawSurfacePrivate::loadImage(int mip)
 				img = ImageDecoder::fromBC5(
 					width, height,
 					buf.get(), expected_size);
+				break;
+
+			case DXGI_FORMAT_BC6H_TYPELESS:
+			case DXGI_FORMAT_BC6H_UF16:
+			//case DXGI_FORMAT_BC6H_SF16:
+				// TODO
 				break;
 
 			case DXGI_FORMAT_BC7_TYPELESS:
@@ -1313,7 +1333,7 @@ int DirectDrawSurface::getFields(RomFields *fields) const
 	}
 
 	const int initial_count = fields->count();
-	fields->reserve(initial_count + 10);	// Maximum of 10 fields
+	fields->reserve(initial_count + 11);	// Maximum of 11 fields
 
 	// DDS header
 	const DDS_HEADER *const ddsHeader = &d->ddsHeader;
@@ -1384,6 +1404,17 @@ int DirectDrawSurface::getFields(RomFields *fields) const
 		"DirectDrawSurface|dwFlags", dwFlags_names, ARRAY_SIZE(dwFlags_names));
 	fields->addField_bitfield(C_("DirectDrawSurface", "Flags"),
 		v_dwFlags_names, 3, ddsHeader->dwFlags);
+
+	// ddspf.dwFlags (high bits; nVidia-specific)
+	const uint32_t pf_flags_high = (ddsHeader->ddspf.dwFlags >> 30);
+	static const char *const ddspf_dwFlags_names[] = {
+		"sRGB",
+		NOP_C_("DirectDrawSurface|ddspf", "Normal Map"),
+	};
+	vector<string> *const v_ddspf_dwFlags_names = RomFields::strArrayToVector_i18n(
+		"DirectDrawSurface|ddspf", ddspf_dwFlags_names, ARRAY_SIZE(ddspf_dwFlags_names));
+	fields->addField_bitfield(C_("DirectDrawSurface", "PF Flags"),
+		v_ddspf_dwFlags_names, 4, pf_flags_high);
 
 	// dwCaps
 	static const char *const dwCaps_names[] = {
