@@ -665,23 +665,13 @@ INSTANTIATE_TEST_SUITE_P(DDS_S3TC, ImageDecoderTest,
 		S3TC_IMAGE_TEST("dxt5-rgb", "DXT5"),
 		S3TC_IMAGE_TEST("dxt5-argb", "DXT5"),
 		S3TC_IMAGE_TEST("bc4", "ATI1"),
-		S3TC_IMAGE_TEST("bc5", "ATI2"),
-
-		// from Blender T101405
-		// https://developer.blender.org/T101405
-		S3TC_IMAGE_TEST2("tex_cmp_bc3rxgb", "RXGB"))
-	, ImageDecoderTest::test_case_suffix_generator);
-
-// DirectDrawSurface tests (Uncompressed 8-bit RGB)
-#define RGB_IMAGE_TEST(file, format) ImageDecoderTest_mode( \
-			"RGB/" file ".dds.gz", \
-			"RGB/" file ".png", (format))
-INSTANTIATE_TEST_SUITE_P(DDS_RGB8, ImageDecoderTest,
-	::testing::Values(
-		RGB_IMAGE_TEST("tex_dds_rgb332", "RGB332"))
+		S3TC_IMAGE_TEST("bc5", "ATI2"))
 	, ImageDecoderTest::test_case_suffix_generator);
 
 // DirectDrawSurface tests (Uncompressed 16-bit RGB)
+#define RGB_IMAGE_TEST(file, format) ImageDecoderTest_mode( \
+			"RGB/" file ".dds.gz", \
+			"RGB/" file ".png", (format))
 INSTANTIATE_TEST_SUITE_P(DDS_RGB16, ImageDecoderTest,
 	::testing::Values(
 		RGB_IMAGE_TEST("RGB565", "RGB565"),
@@ -763,6 +753,7 @@ INSTANTIATE_TEST_SUITE_P(DDS_Alpha, ImageDecoderTest,
 	, ImageDecoderTest::test_case_suffix_generator);
 
 // DirectDrawSurface tests (Blender DDS tests)
+// From Blender T101405: https://developer.blender.org/T101405
 #define DDS_Blender_TEST(file, format) ImageDecoderTest_mode( \
 			"DDS_Blender/" file ".dds.gz", \
 			"DDS_Blender/" file ".dds.png", (format))
