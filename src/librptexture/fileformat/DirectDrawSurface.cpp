@@ -645,6 +645,9 @@ unsigned int DirectDrawSurfacePrivate::calcExpectedSize(int width, int height, i
 		case DXGI_FORMAT_BC5_TYPELESS:
 		case DXGI_FORMAT_BC5_UNORM:
 		//case DXGI_FORMAT_BC5_SNORM:
+		case DXGI_FORMAT_BC6H_TYPELESS:
+		case DXGI_FORMAT_BC6H_UF16:
+		//case DXGI_FORMAT_BC6H_SF16:
 		case DXGI_FORMAT_BC7_TYPELESS:
 		case DXGI_FORMAT_BC7_UNORM:
 		case DXGI_FORMAT_BC7_UNORM_SRGB:
@@ -860,6 +863,12 @@ rp_image_const_ptr DirectDrawSurfacePrivate::loadImage(int mip)
 				img = ImageDecoder::fromBC5(
 					width, height,
 					buf.get(), expected_size);
+				break;
+
+			case DXGI_FORMAT_BC6H_TYPELESS:
+			case DXGI_FORMAT_BC6H_UF16:
+			//case DXGI_FORMAT_BC6H_SF16:
+				// TODO
 				break;
 
 			case DXGI_FORMAT_BC7_TYPELESS:
