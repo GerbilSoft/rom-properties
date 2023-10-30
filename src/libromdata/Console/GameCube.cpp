@@ -1272,19 +1272,23 @@ int GameCube::isRomSupported_static(const DetectInfo *info)
 	// Check for WIA or RVZ.
 	static const uint32_t wia_magic = 'WIA\x01';
 	static const uint32_t rvz_magic = 'RVZ\x01';
-	if (pData32[0] == cpu_to_be32(wia_magic) ||
-	    pData32[0] == cpu_to_be32(rvz_magic))
+	if (pData32[0] == cpu_to_be32(rvz_magic) ||
+	    unlikely(pData32[0] == cpu_to_be32(wia_magic)))
 	{
-		// This is a WIA image.
+		// This is a WIA or RVZ image.
+		const uint32_t disc_format = (likely(pData32[0] == cpu_to_be32(rvz_magic)))
+			? GameCubePrivate::DISC_FORMAT_RVZ
+			: GameCubePrivate::DISC_FORMAT_WIA;
+
 		// NOTE: We're using the WIA system ID if it's valid.
 		// Otherwise, fall back to GCN/Wii magic.
 		switch (be32_to_cpu(pData32[0x48/sizeof(uint32_t)])) {
 			case 1:
 				// GameCube disc image. (WIA format)
-				return (GameCubePrivate::DISC_SYSTEM_GCN | GameCubePrivate::DISC_FORMAT_WIA);
+				return (GameCubePrivate::DISC_SYSTEM_GCN | disc_format);
 			case 2:
 				// Wii disc image. (WIA format)
-				return (GameCubePrivate::DISC_SYSTEM_WII | GameCubePrivate::DISC_FORMAT_WIA);
+				return (GameCubePrivate::DISC_SYSTEM_WII | disc_format);
 			default:
 				break;
 		}
@@ -1294,14 +1298,14 @@ int GameCube::isRomSupported_static(const DetectInfo *info)
 		gcn_header = reinterpret_cast<const GCN_DiscHeader*>(&info->header.pData[0x58]);
 		if (gcn_header->magic_wii == cpu_to_be32(WII_MAGIC)) {
 			// Wii disc image. (WIA format)
-			return (GameCubePrivate::DISC_SYSTEM_WII | GameCubePrivate::DISC_FORMAT_WIA);
+			return (GameCubePrivate::DISC_SYSTEM_WII | disc_format);
 		} else if (gcn_header->magic_gcn == cpu_to_be32(GCN_MAGIC)) {
 			// GameCube disc image. (WIA format)
-			return (GameCubePrivate::DISC_SYSTEM_GCN | GameCubePrivate::DISC_FORMAT_WIA);
+			return (GameCubePrivate::DISC_SYSTEM_GCN | disc_format);
 		}
 
 		// Unrecognized WIA image...
-		return (GameCubePrivate::DISC_SYSTEM_UNKNOWN | GameCubePrivate::DISC_FORMAT_WIA);
+		return (GameCubePrivate::DISC_SYSTEM_UNKNOWN | disc_format);
 	}
 
 	// Check for a standalone Wii partition.
