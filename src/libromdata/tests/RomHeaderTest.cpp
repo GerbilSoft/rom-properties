@@ -488,6 +488,13 @@ INSTANTIATE_TEST_SUITE_P(ADX_SADX, RomHeaderTest,
 
 /* Console */
 
+INSTANTIATE_TEST_SUITE_P(DreamcastSave, RomHeaderTest,
+	testing::ValuesIn(RomHeaderTest::ReadTestCasesFromDisk(
+		"Console/DreamcastSave.bin.tar.zst",
+		"Console/DreamcastSave.txt.tar.zst",
+		"Console/DreamcastSave.json.tar.zst"))
+	, RomHeaderTest::test_case_suffix_generator);
+
 // GameCube: A few WIA/RVZ headers to ensure they don't break again.
 INSTANTIATE_TEST_SUITE_P(GameCubeWiaRvz, RomHeaderTest,
 	testing::ValuesIn(RomHeaderTest::ReadTestCasesFromDisk(
