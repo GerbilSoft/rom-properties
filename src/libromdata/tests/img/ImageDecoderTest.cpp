@@ -762,6 +762,42 @@ INSTANTIATE_TEST_SUITE_P(DDS_Alpha, ImageDecoderTest,
 		Alpha_IMAGE_TEST("A8", "A8"))
 	, ImageDecoderTest::test_case_suffix_generator);
 
+// DirectDrawSurface tests (Blender DDS tests)
+#define DDS_Blender_TEST(file, format) ImageDecoderTest_mode( \
+			"DDS_Blender/" file ".dds.gz", \
+			"DDS_Blender/" file ".dds.png", (format))
+INSTANTIATE_TEST_SUITE_P(DDS_Blender, ImageDecoderTest,
+	::testing::Values(
+		DDS_Blender_TEST("tex_cmp_bc1", "DXT1"),
+		DDS_Blender_TEST("tex_cmp_bc2", "DXT3"),
+		DDS_Blender_TEST("tex_cmp_bc3", "DXT5"),
+		DDS_Blender_TEST("tex_cmp_bc3_mips", "DXT5"),	// TODO: Mipmaps
+		//DDS_Blender_TEST("tex_cmp_bc3nm", "DXT5"),	// FIXME: Not converted to PNG properly.
+		//DDS_Blender_TEST("tex_cmp_bc3rxgb", "RXGB"),	// FIXME: Not converted to PNG properly.
+		//DDS_Blender_TEST("tex_cmp_bc3ycocg", "DXT5"),	// FIXME: Not converted to PNG properly.
+		//DDS_Blender_TEST("tex_cmp_bc4_ati1", "ATI1"),	// FIXME: Not converted to PNG properly.
+		//DDS_Blender_TEST("tex_cmp_bc4", "BC4_UNORM"),	// FIXME: Not converted to PNG properly.
+		//DDS_Blender_TEST("tex_cmp_bc5_ati2", "ATI1"),	// FIXME: Not converted to PNG properly.
+		//DDS_Blender_TEST("tex_cmp_bc5", "BC4_UNORM"),	// FIXME: Not converted to PNG properly.
+		//DDS_Blender_TEST("tex_cmp_bc6u_hdr", "BC6H_UF16"),	// TODO: BC6H isn't implemented.
+		//DDS_Blender_TEST("tex_cmp_bc6u_ldr", "BC6H_UF16"),	// TODO: BC6H isn't implemented.
+		DDS_Blender_TEST("tex_cmp_bc7", "BC7_UNORM"),
+		//DDS_Blender_TEST("tex_dds_a8", "A8"),		// FIXME: Not converted to PNG properly.
+		DDS_Blender_TEST("tex_dds_abgr8", "ABGR8888"),
+		//DDS_Blender_TEST("tex_dds_bgr8", "BGR888"),	// FIXME: Not converted to PNG properly.
+		DDS_Blender_TEST("tex_dds_l8a8", "A8L8"),
+		DDS_Blender_TEST("tex_dds_l8", "L8"),
+		//DDS_Blender_TEST("tex_dds_rgb10a2", "A2B10G10R10"),	// FIXME: Not converted to PNG properly.
+		//DDS_Blender_TEST("tex_dds_rgb332", "RGB332"),		// FIXME: Not converted to PNG properly.
+		//DDS_Blender_TEST("tex_dds_rgb565", "RGB565"),		// FIXME: Not converted to PNG properly.
+		//DDS_Blender_TEST("tex_dds_rgb5a1", "ARGB1555"),	// FIXME: Not converted to PNG properly.
+		DDS_Blender_TEST("tex_dds_rgb8", "RGB888"),
+		DDS_Blender_TEST("tex_dds_rgba4", "ARGB4444"),
+		DDS_Blender_TEST("tex_dds_rgba8", "ARGB8888"),
+		DDS_Blender_TEST("tex_dds_rgba8_mips", "ARGB8888"))	// TODO: Mipmaps
+		//DDS_Blender_TEST("tex_dds_ycocg", "ARGB8888"))	// FIXME: Not converted to PNG properly.
+	, ImageDecoderTest::test_case_suffix_generator);
+
 // PVR tests (square twiddled)
 #define PVR_IMAGE_TEST(file, format) ImageDecoderTest_mode( \
 			"PVR/" file ".pvr.gz", \
