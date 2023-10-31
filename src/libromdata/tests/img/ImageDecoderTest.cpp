@@ -455,33 +455,13 @@ void ImageDecoderTest::decodeTest_internal(void)
 		const RpTextureWrapper *const rptw = static_cast<RpTextureWrapper*>(m_romData.get());
 		EXPECT_NE(rptw, nullptr);
 		if (rptw) {
-			// To avoid having to add test-only functions to RpTextureWrapper,
-			// we'll search the RomFields for the matching fields.
+			const char *actual_pixel_format = rptw->pixelFormat();
 
-			// NOTE: The string is localized, but our Google Test initializer
-			// sets LC_ALL=C, which disables localization.
-			const char *actual_pixel_format = nullptr;
-			const RomFields *const fields = rptw->fields();
-			for (auto iter = fields->cbegin(); iter != fields->cend(); ++iter) {
-				if (iter->type == RomFields::RFT_STRING && !strcmp(iter->name, "Pixel Format")) {
-					// Found the DX10 format.
-					actual_pixel_format = iter->data.str;
-					break;
-				}
-			}
-
-			if (actual_pixel_format && !strcmp(actual_pixel_format, "DX10")) {
-				// Find "DX10 Format".
-				for (auto iter = fields->cbegin(); iter != fields->cend(); ++iter) {
-					if (iter->type == RomFields::RFT_STRING && !strcmp(iter->name, "DX10 Format")) {
-						// Found the DX10 format.
-						actual_pixel_format = iter->data.str;
-						break;
-					}
-				}
-
-				// NOTE: If the DX10 format wasn't found, then actual_pixel_format
-				// will stay as "DX10".
+			// NOTE: If this is a DX10 format, but the format name wasn't found.
+			// then actual_pixel_format will stay as "DX10".
+			const char *const dx10Format = rptw->dx10Format();
+			if (dx10Format) {
+				actual_pixel_format = dx10Format;
 			}
 
 			EXPECT_NE(actual_pixel_format, nullptr);

@@ -391,4 +391,52 @@ int RpTextureWrapper::loadInternalMipmap(int mipmapLevel, LibRpTexture::rp_image
 	return ((bool)pImage ? 0 : -EIO);
 }
 
+/** Pixel format **/
+
+/**
+ * Get the pixel format, e.g. "RGB888" or "DXT1".
+ * @return Pixel format, or nullptr if unavailable.
+ */
+const char *RpTextureWrapper::pixelFormat(void) const
+{
+	RP_D(const RpTextureWrapper);
+	return (d->texture) ? d->texture->pixelFormat() : nullptr;
+}
+
+/**
+ * Get the DX10 pixel format, if applicable.
+ * @return DX10 pixel format, or nullptr if not applicable.
+ */
+const char *RpTextureWrapper::dx10Format(void) const
+{
+	// FIXME: Add a way to get the raw DX10 pixel format from FileFormat.
+	// For now, we'll check Fields.
+	RP_D(const RpTextureWrapper);
+	if (!d->texture)
+		return nullptr;
+
+	const char *const pxf = d->texture->pixelFormat();
+	if (!pxf || strcmp(pxf, "DX10") != 0) {
+		// Not a DX10 format.
+		return nullptr;
+	}
+
+	const_cast<RpTextureWrapper*>(this)->loadFieldData();
+
+	// Find "DX10 Format".
+	// NOTE: The string is localized, but our Google Test initializer
+	// sets LC_ALL=C, which disables localization.
+	// NOTE 2: This should not be used outside of tests for now!
+	const auto fields_cend = d->fields.cend();
+	for (auto iter = d->fields.cbegin(); iter != fields_cend; ++iter) {
+		if (iter->type == RomFields::RFT_STRING && !strcmp(iter->name, "DX10 Format")) {
+			// Found the DX10 format.
+			return iter->data.str;
+		}
+	}
+
+	// Not found...
+	return nullptr;
+}
+
 }
