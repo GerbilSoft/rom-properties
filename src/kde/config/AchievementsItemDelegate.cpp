@@ -21,40 +21,21 @@ using std::array;
 
 #define LINE_COUNT 2
 
-class AchievementsItemDelegatePrivate
-{
-public:
-	explicit AchievementsItemDelegatePrivate(AchievementsItemDelegate *q);
-
-protected:
-	AchievementsItemDelegate *const q_ptr;
-	Q_DECLARE_PUBLIC(AchievementsItemDelegate)
-private:
-	Q_DISABLE_COPY(AchievementsItemDelegatePrivate)
-
-public:
-	// Font retrieval
-	QFont fontName(const QWidget *widget = nullptr) const;
-	QFont fontDesc(const QWidget *widget = nullptr) const;
-};
-
-/** AchievementsItemDelegatePrivate **/
-
-AchievementsItemDelegatePrivate::AchievementsItemDelegatePrivate(AchievementsItemDelegate *q)
-	: q_ptr(q)
+AchievementsItemDelegate::AchievementsItemDelegate(QObject *parent)
+	: super(parent)
 {}
 
-QFont AchievementsItemDelegatePrivate::fontName(const QWidget *widget) const
+QFont AchievementsItemDelegate::fontName(const QWidget *widget)
 {
 	// TODO: This should be cached, but we don't have a
 	// reasonable way to update it if the system font
 	// is changed...
-	return (widget != nullptr
+	return (widget != nullptr)
 		? widget->font()
-		: QApplication::font());
+		: QApplication::font();
 }
 
-QFont AchievementsItemDelegatePrivate::fontDesc(const QWidget *widget) const
+QFont AchievementsItemDelegate::fontDesc(const QWidget *widget)
 {
 	// TODO: This should be cached, but we don't have a
 	// reasonable way to update it if the system font
@@ -67,19 +48,6 @@ QFont AchievementsItemDelegatePrivate::fontDesc(const QWidget *widget) const
 		pointSize--;
 	font.setPointSize(pointSize);
 	return font;
-}
-
-/** AchievementsItemDelegate **/
-
-AchievementsItemDelegate::AchievementsItemDelegate(QObject *parent)
-	: super(parent)
-	, d_ptr(new AchievementsItemDelegatePrivate(this))
-{}
-
-AchievementsItemDelegate::~AchievementsItemDelegate()
-{
-	Q_D(AchievementsItemDelegate);
-	delete d;
 }
 
 void AchievementsItemDelegate::paint(QPainter *painter,
@@ -153,9 +121,8 @@ void AchievementsItemDelegate::paint(QPainter *painter,
 	//textRect.adjust(hmargin, 0, -hmargin, 0);
 
 	// Get the fonts.
-	Q_D(const AchievementsItemDelegate);
-	const QFont fontName = d->fontName(bgOption.widget);
-	const QFont fontDesc = d->fontDesc(bgOption.widget);
+	const QFont fontName = this->fontName(bgOption.widget);
+	const QFont fontDesc = this->fontDesc(bgOption.widget);
 
 	// Total text height.
 	int textHeight = 0;
@@ -273,9 +240,8 @@ QSize AchievementsItemDelegate::sizeHint(const QStyleOptionViewItem &option,
 	// TODO: initStyleOption()?
 
 	// Get the fonts.
-	Q_D(const AchievementsItemDelegate);
-	const QFont fontName = d->fontName(bgOption.widget);
-	const QFont fontDesc = d->fontDesc(bgOption.widget);
+	const QFont fontName = this->fontName(bgOption.widget);
+	const QFont fontDesc = this->fontDesc(bgOption.widget);
 
 	QFontMetrics fm(fontName);
 	QSize sz;
