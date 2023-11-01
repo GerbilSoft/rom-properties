@@ -22,37 +22,37 @@ namespace LibRomData {
 
 class GBSPrivate : public RomDataPrivate
 {
-	public:
-		GBSPrivate(const IRpFilePtr &file);
+public:
+	GBSPrivate(const IRpFilePtr &file);
 
-	private:
-		typedef RomDataPrivate super;
-		RP_DISABLE_COPY(GBSPrivate)
+private:
+	typedef RomDataPrivate super;
+	RP_DISABLE_COPY(GBSPrivate)
 
-	public:
-		// Audio format.
-		enum class AudioFormat {
-			Unknown = -1,
+public:
+	// Audio format
+	enum class AudioFormat {
+		Unknown = -1,
 
-			GBS = 0,
-			GBR = 1,
+		GBS = 0,
+		GBR = 1,
 
-			Max
-		};
-		AudioFormat audioFormat;
+		Max
+	};
+	AudioFormat audioFormat;
 
-		/** RomDataInfo **/
-		static const char *const exts[];
-		static const char *const mimeTypes[];
-		static const RomDataInfo romDataInfo;
+	/** RomDataInfo **/
+	static const char *const exts[];
+	static const char *const mimeTypes[];
+	static const RomDataInfo romDataInfo;
 
-	public:
-		// GBS header.
-		// NOTE: **NOT** byteswapped in memory.
-		union {
-			GBS_Header gbs;
-			GBR_Header gbr;
-		} header;
+public:
+	// GBS header
+	// NOTE: **NOT** byteswapped in memory.
+	union {
+		GBS_Header gbs;
+		GBR_Header gbr;
+	} header;
 };
 
 ROMDATA_IMPL(GBS)

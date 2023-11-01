@@ -37,77 +37,77 @@ namespace LibRomData {
 
 class DreamcastPrivate final : public RomDataPrivate
 {
-	public:
-		DreamcastPrivate(const IRpFilePtr &file);
-		~DreamcastPrivate() final = default;
+public:
+	DreamcastPrivate(const IRpFilePtr &file);
+	~DreamcastPrivate() final = default;
 
-	private:
-		typedef RomDataPrivate super;
-		RP_DISABLE_COPY(DreamcastPrivate)
+private:
+	typedef RomDataPrivate super;
+	RP_DISABLE_COPY(DreamcastPrivate)
 
-	public:
-		/** RomDataInfo **/
-		static const char *const exts[];
-		static const char *const mimeTypes[];
-		static const RomDataInfo romDataInfo;
+public:
+	/** RomDataInfo **/
+	static const char *const exts[];
+	static const char *const mimeTypes[];
+	static const RomDataInfo romDataInfo;
 
-	public:
-		enum class DiscType {
-			Unknown	= -1,
+public:
+	enum class DiscType {
+		Unknown	= -1,
 
-			Iso2048	= 0,	// ISO-9660, 2048-byte sectors.
-			Iso2352	= 1,	// ISO-9660, 2352-byte sectors.
-			GDI	= 2,	// GD-ROM cuesheet
+		Iso2048	= 0,	// ISO-9660, 2048-byte sectors.
+		Iso2352	= 1,	// ISO-9660, 2352-byte sectors.
+		GDI	= 2,	// GD-ROM cuesheet
 
-			Max
-		};
-		DiscType discType;
+		Max
+	};
+	DiscType discType;
 
-		// Disc reader
-		// TODO: Before shared_ptr<>, discReader and gdiReader were in a union{}.
-		// TODO: Use std::variant<>?
-		IDiscReaderPtr discReader;
-		GdiReaderPtr gdiReader;
+	// Disc reader
+	// TODO: Before shared_ptr<>, discReader and gdiReader were in a union{}.
+	// TODO: Use std::variant<>?
+	IDiscReaderPtr discReader;
+	GdiReaderPtr gdiReader;
 
-		IsoPartitionPtr isoPartition;
+	IsoPartitionPtr isoPartition;
 
-		// Disc header.
-		DC_IP0000_BIN_t discHeader;
+	// Disc header
+	DC_IP0000_BIN_t discHeader;
 
-		// 0GDTEX.PVR image.
-		shared_ptr<SegaPVR> pvrData;	// SegaPVR object
+	// 0GDTEX.PVR image
+	shared_ptr<SegaPVR> pvrData;	// SegaPVR object
 
-		// Track 03 start address.
-		// ISO-9660 directories use physical offsets,
-		// not offsets relative to the start of the track.
-		// NOTE: Not used for GDI.
-		int iso_start_offset;
+	// Track 03 start address.
+	// ISO-9660 directories use physical offsets,
+	// not offsets relative to the start of the track.
+	// NOTE: Not used for GDI.
+	int iso_start_offset;
 
-		/**
-		 * Calculate the Product CRC16.
-		 * @param ip0000_bin IP0000.bin struct.
-		 * @return Product CRC16.
-		 */
-		static uint16_t calcProductCRC16(const DC_IP0000_BIN_t *ip0000_bin);
+	/**
+	 * Calculate the Product CRC16.
+	 * @param ip0000_bin IP0000.bin struct.
+	 * @return Product CRC16.
+	 */
+	static uint16_t calcProductCRC16(const DC_IP0000_BIN_t *ip0000_bin);
 
-		/**
-		 * Load 0GDTEX.PVR.
-		 * @return 0GDTEX.PVR as rp_image, or nullptr on error.
-		 */
-		rp_image_const_ptr load0GDTEX(void);
+	/**
+	 * Load 0GDTEX.PVR.
+	 * @return 0GDTEX.PVR as rp_image, or nullptr on error.
+	 */
+	rp_image_const_ptr load0GDTEX(void);
 
-		/**
-		 * Get the disc publisher.
-		 * @return Disc publisher.
-		 */
-		string getPublisher(void) const;
+	/**
+	 * Get the disc publisher.
+	 * @return Disc publisher.
+	 */
+	string getPublisher(void) const;
 
-		/**
-		 * Parse the disc number portion of the device information field.
-		 * @param disc_num	[out] Disc number.
-		 * @param disc_total	[out] Total number of discs.
-		 */
-		void parseDiscNumber(uint8_t &disc_num, uint8_t &disc_total) const;
+	/**
+	 * Parse the disc number portion of the device information field.
+	 * @param disc_num	[out] Disc number.
+	 * @param disc_total	[out] Total number of discs.
+	 */
+	void parseDiscNumber(uint8_t &disc_num, uint8_t &disc_total) const;
 };
 
 ROMDATA_IMPL(Dreamcast)

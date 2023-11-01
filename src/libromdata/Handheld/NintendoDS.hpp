@@ -14,28 +14,28 @@ namespace LibRomData {
 
 ROMDATA_DECL_BEGIN(NintendoDS)
 
-	public:
-		/**
-		 * Read a Nintendo DS ROM image.
-		 *
-		 * A ROM image must be opened by the caller. The file handle
-		 * will be ref()'d and must be kept open in order to load
-		 * data from the ROM image.
-		 *
-		 * To close the file, either delete this object or call close().
-		 *
-		 * NOTE: Check isValid() to determine if this is a valid ROM.
-		 *
-		 * @param file Open ROM image.
-		 * @param cia If true, hide fields that aren't relevant to DSiWare in 3DS CIA packages.
-		 */
-		explicit NintendoDS(const LibRpFile::IRpFilePtr &file, bool cia);
+public:
+	/**
+	 * Read a Nintendo DS ROM image.
+	 *
+	 * A ROM image must be opened by the caller. The file handle
+	 * will be ref()'d and must be kept open in order to load
+	 * data from the ROM image.
+	 *
+	 * To close the file, either delete this object or call close().
+	 *
+	 * NOTE: Check isValid() to determine if this is a valid ROM.
+	 *
+	 * @param file Open ROM image.
+	 * @param cia If true, hide fields that aren't relevant to DSiWare in 3DS CIA packages.
+	 */
+	explicit NintendoDS(const LibRpFile::IRpFilePtr &file, bool cia);
 
-	private:
-		/**
-		 * Common initialization function for the constructors.
-		 */
-		void init(void);
+private:
+	/**
+	 * Common initialization function for the constructors.
+	 */
+	void init(void);
 
 ROMDATA_DECL_DANGEROUS()
 ROMDATA_DECL_METADATA()

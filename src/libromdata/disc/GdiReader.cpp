@@ -30,70 +30,71 @@ using std::vector;
 
 namespace LibRomData {
 
-class GdiReaderPrivate final : public SparseDiscReaderPrivate {
-	public:
-		explicit GdiReaderPrivate(GdiReader *q);
-		~GdiReaderPrivate() final;
+class GdiReaderPrivate final : public SparseDiscReaderPrivate
+{
+public:
+	explicit GdiReaderPrivate(GdiReader *q);
+	~GdiReaderPrivate() final;
 
-	private:
-		typedef SparseDiscReaderPrivate super;
-		RP_DISABLE_COPY(GdiReaderPrivate)
+private:
+	typedef SparseDiscReaderPrivate super;
+	RP_DISABLE_COPY(GdiReaderPrivate)
 
-	public:
-		// GDI filename.
-		string filename;
+public:
+	// GDI filename
+	string filename;
 
-		// Block range mapping.
-		// NOTE: This currently *only* contains data tracks.
-		struct BlockRange {
-			unsigned int blockStart;	// First LBA.
-			unsigned int blockEnd;		// Last LBA. (inclusive) (0 if the file hasn't been opened yet)
-			uint16_t sectorSize;		// 2048 or 2352 (TODO: Make this a bool?)
-			uint8_t trackNumber;		// 01 through 99
-			uint8_t reserved;
-			// TODO: Data vs. audio?
-			string filename;		// Relative to the .gdi file. Cleared on error.
-			IRpFile *file;			// Internal only; not using shared_ptr here.
-		};
-		vector<BlockRange> blockRanges;
+	// Block range mapping
+	// NOTE: This currently *only* contains data tracks.
+	struct BlockRange {
+		unsigned int blockStart;	// First LBA
+		unsigned int blockEnd;		// Last LBA (inclusive) (0 if the file hasn't been opened yet)
+		uint16_t sectorSize;		// 2048 or 2352 (TODO: Make this a bool?)
+		uint8_t trackNumber;		// 01 through 99
+		uint8_t reserved;
+		// TODO: Data vs. audio?
+		string filename;		// Relative to the .gdi file. Cleared on error.
+		IRpFile *file;			// Internal only; not using shared_ptr here.
+	};
+	vector<BlockRange> blockRanges;
 
-		// Track to blockRanges mappings.
-		// Index = track# (minus 1)
-		// Value = pointer to BlockRange in blockRanges.
-		vector<BlockRange*> trackMappings;
+	// Track to blockRanges mappings.
+	// Index = track# (minus 1)
+	// Value = pointer to BlockRange in blockRanges.
+	vector<BlockRange*> trackMappings;
 
-		// Number of logical 2048-byte blocks.
-		// Determined by the highest data track.
-		unsigned int blockCount;
+	// Number of logical 2048-byte blocks.
+	// Determined by the highest data track.
+	unsigned int blockCount;
 
-		/**
-		 * Close all opened files.
-		 */
-		void close(void);
+	/**
+	 * Close all opened files.
+	 */
+	void close(void);
 
-		/**
-		 * Parse a GDI file.
-		 * @param gdibuf NULL-terminated string containing the GDI file. (Must be writable!)
-		 * NOTE: gdibuf is modified by strtok_r().
-		 * @return 0 on success; negative POSIX error code on error.
-		 */
-		int parseGdiFile(char *gdibuf);
+	/**
+	 * Parse a GDI file.
+	 * @param gdibuf NULL-terminated string containing the GDI file. (Must be writable!)
+	 * NOTE: gdibuf is modified by strtok_r().
+	 * @return 0 on success; negative POSIX error code on error.
+	 */
+	int parseGdiFile(char *gdibuf);
 
-		/**
-		 * Open a track.
-		 * @param trackNumber Track number. (starts with 1)
-		 * @return 0 on success; negative POSIX error code on error.
-		 */
-		int openTrack(int trackNumber);
+	/**
+	 * Open a track.
+	 * @param trackNumber Track number. (starts with 1)
+	 * @return 0 on success; negative POSIX error code on error.
+	 */
+	int openTrack(int trackNumber);
 
-		/**
-		 * Get the starting LBA and size of the specified track number.
-		 * @param trackNumber	[in] Track number (1-based)
-		 * @param lba_start	[out] Starting LBA
-		 * @param lba_size	[out] Length of track, in LBAs
-		 * @return 0 on success; non-zero on error.
-		 */
-		int getTrackLBAInfo(int trackNumber, unsigned int &lba_start, unsigned int &lba_size);
+	/**
+	 * Get the starting LBA and size of the specified track number.
+	 * @param trackNumber	[in] Track number (1-based)
+	 * @param lba_start	[out] Starting LBA
+	 * @param lba_size	[out] Length of track, in LBAs
+	 * @return 0 on success; non-zero on error.
+	 */
+	int getTrackLBAInfo(int trackNumber, unsigned int &lba_start, unsigned int &lba_size);
 };
 
 /** GdiReaderPrivate **/
@@ -488,7 +489,7 @@ int GdiReader::isDiscSupported(const uint8_t *pHeader, size_t szHeader) const
 	return isDiscSupported_static(pHeader, szHeader);
 }
 
-/** SparseDiscReader functions. **/
+/** SparseDiscReader functions **/
 
 /**
  * Get the physical address of the specified logical block index.
@@ -605,7 +606,7 @@ int GdiReader::readBlock(uint32_t blockIdx, int pos, void *ptr, size_t size)
 	return (sz_read > 0 ? static_cast<int>(sz_read) : -1);
 }
 
-/** GDI-specific functions. **/
+/** GDI-specific functions **/
 // TODO: "CdromReader" class?
 
 /**

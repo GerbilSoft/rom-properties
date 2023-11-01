@@ -23,22 +23,22 @@ namespace LibRomData {
 
 class PokemonMiniPrivate final : public RomDataPrivate
 {
-	public:
-		PokemonMiniPrivate(const IRpFilePtr &file);
+public:
+	PokemonMiniPrivate(const IRpFilePtr &file);
 
-	private:
-		typedef RomDataPrivate super;
-		RP_DISABLE_COPY(PokemonMiniPrivate)
+private:
+	typedef RomDataPrivate super;
+	RP_DISABLE_COPY(PokemonMiniPrivate)
 
-	public:
-		/** RomDataInfo **/
-		static const char *const exts[];
-		static const char *const mimeTypes[];
-		static const RomDataInfo romDataInfo;
+public:
+	/** RomDataInfo **/
+	static const char *const exts[];
+	static const char *const mimeTypes[];
+	static const RomDataInfo romDataInfo;
 
-	public:
-		// ROM header.
-		PokemonMini_RomHeader romHeader;
+public:
+	// ROM header
+	PokemonMini_RomHeader romHeader;
 };
 
 ROMDATA_IMPL(PokemonMini)

@@ -24,42 +24,42 @@ namespace LibRomData {
 
 class WonderSwanPrivate final : public RomDataPrivate
 {
-	public:
-		WonderSwanPrivate(const IRpFilePtr &file);
+public:
+	WonderSwanPrivate(const IRpFilePtr &file);
 
-	private:
-		typedef RomDataPrivate super;
-		RP_DISABLE_COPY(WonderSwanPrivate)
+private:
+	typedef RomDataPrivate super;
+	RP_DISABLE_COPY(WonderSwanPrivate)
 
-	public:
-		/** RomDataInfo **/
-		static const char *const exts[];
-		static const char *const mimeTypes[];
-		static const RomDataInfo romDataInfo;
+public:
+	/** RomDataInfo **/
+	static const char *const exts[];
+	static const char *const mimeTypes[];
+	static const RomDataInfo romDataInfo;
 
-	public:
-		enum class RomType {
-			Unknown	= -1,
+public:
+	enum class RomType {
+		Unknown	= -1,
 
-			Original	= 0,	// WonderSwan
-			Color		= 1,	// WonderSwan Color
+		Original	= 0,	// WonderSwan
+		Color		= 1,	// WonderSwan Color
 
-			Max
-		};
-		RomType romType;
+		Max
+	};
+	RomType romType;
 
-		// ROM footer.
-		WS_RomFooter romFooter;
+	// ROM footer
+	WS_RomFooter romFooter;
 
-		// Force the game ID's system ID character to '0'?
-		bool forceGameIDSysIDTo0;
+	// Force the game ID's system ID character to '0'?
+	bool forceGameIDSysIDTo0;
 
-	public:
-		/**
-		 * Get the game ID. (SWJ-PUBx01)
-		 * @return Game ID, or empty string on error.
-		 */
-		string getGameID(void) const;
+public:
+	/**
+	 * Get the game ID. (SWJ-PUBx01)
+	 * @return Game ID, or empty string on error.
+	 */
+	string getGameID(void) const;
 };
 
 ROMDATA_IMPL(WonderSwan)

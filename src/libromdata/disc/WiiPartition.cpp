@@ -32,93 +32,93 @@ namespace LibRomData {
 
 class WiiPartitionPrivate final : public GcnPartitionPrivate
 {
-	public:
-		WiiPartitionPrivate(WiiPartition *q, off64_t data_size,
-			off64_t partition_offset, WiiPartition::CryptoMethod cryptoMethod);
-		~WiiPartitionPrivate() final;
+public:
+	WiiPartitionPrivate(WiiPartition *q, off64_t data_size,
+		off64_t partition_offset, WiiPartition::CryptoMethod cryptoMethod);
+	~WiiPartitionPrivate() final;
 
-	private:
-		typedef GcnPartitionPrivate super;
-		RP_DISABLE_COPY(WiiPartitionPrivate)
+private:
+	typedef GcnPartitionPrivate super;
+	RP_DISABLE_COPY(WiiPartitionPrivate)
 
-	public:
-		// Partition header.
-		RVL_PartitionHeader partitionHeader;
+public:
+	// Partition header
+	RVL_PartitionHeader partitionHeader;
 
-		// Encryption key verification result.
-		KeyManager::VerifyResult verifyResult;
+	// Encryption key verification result
+	KeyManager::VerifyResult verifyResult;
 
-	public:
-		/**
-		 * Determine the encryption key used by this partition.
-		 * This initializes encKey and encKeyReal.
-		 */
-		void getEncKey(void);
+public:
+	/**
+	 * Determine the encryption key used by this partition.
+	 * This initializes encKey and encKeyReal.
+	 */
+	void getEncKey(void);
 
-		// Encryption key in use.
-		WiiPartition::EncKey encKey;
-		// Encryption key that would be used if the partition was encrypted.
-		WiiPartition::EncKey encKeyReal;
+	// Encryption key in use
+	WiiPartition::EncKey encKey;
+	// Encryption key that would be used if the partition was encrypted
+	WiiPartition::EncKey encKeyReal;
 
-		// Crypto method.
-		WiiPartition::CryptoMethod cryptoMethod;
+	// Crypto method
+	WiiPartition::CryptoMethod cryptoMethod;
 
-	public:
-		// Decrypted read position. (0x7C00 bytes out of 0x8000)
-		// NOTE: Actual read position if ((cryptoMethod & CM_MASK_SECTOR) == CM_32K).
-		off64_t pos_7C00;
+public:
+	// Decrypted read position. (0x7C00 bytes out of 0x8000)
+	// NOTE: Actual read position if ((cryptoMethod & CM_MASK_SECTOR) == CM_32K).
+	off64_t pos_7C00;
 
-		// Decrypted sector cache.
-		// NOTE: Actual data starts at 0x400.
-		// Hashes and the sector IV are stored first.
-		uint32_t sector_num;				// Sector number.
-		union EncSector_t {
+	// Decrypted sector cache.
+	// NOTE: Actual data starts at 0x400.
+	// Hashes and the sector IV are stored first.
+	uint32_t sector_num;				// Sector number.
+	union EncSector_t {
+		struct {
+			// NOTE: &hashes.H2[7][4], when encrypted, is the sector IV.
 			struct {
-				// NOTE: &hashes.H2[7][4], when encrypted, is the sector IV.
-				struct {
-					uint8_t H0[31][20];
-					uint8_t pad_H0[20];
-					uint8_t H1[8][20];
-					uint8_t pad_H1[32];
-					uint8_t H2[8][20];
-					uint8_t pad_H2[32];
-				} hashes;
-				uint8_t data[SECTOR_SIZE_DECRYPTED];
-			};
-			uint8_t fulldata[SECTOR_SIZE_ENCRYPTED];
+				uint8_t H0[31][20];
+				uint8_t pad_H0[20];
+				uint8_t H1[8][20];
+				uint8_t pad_H1[32];
+				uint8_t H2[8][20];
+				uint8_t pad_H2[32];
+			} hashes;
+			uint8_t data[SECTOR_SIZE_DECRYPTED];
 		};
-		ASSERT_STRUCT(EncSector_t, SECTOR_SIZE_ENCRYPTED);
-		static_assert(offsetof(EncSector_t, hashes.H2) + (7*20) + 4 == 0x3D0, "IV location is wrong");
-		EncSector_t sector_buf;	// Decrypted sector data.
+		uint8_t fulldata[SECTOR_SIZE_ENCRYPTED];
+	};
+	ASSERT_STRUCT(EncSector_t, SECTOR_SIZE_ENCRYPTED);
+	static_assert(offsetof(EncSector_t, hashes.H2) + (7*20) + 4 == 0x3D0, "IV location is wrong");
+	EncSector_t sector_buf;	// Decrypted sector data.
 
-		/**
-		 * Read and decrypt a sector.
-		 * The decrypted sector is stored in sector_buf.
-		 *
-		 * @param sector_num Sector number. (address / 0x7C00)
-		 * @return 0 on success; negative POSIX error code on error.
-		 */
-		int readSector(uint32_t sector_num);
+	/**
+	 * Read and decrypt a sector.
+	 * The decrypted sector is stored in sector_buf.
+	 *
+	 * @param sector_num Sector number. (address / 0x7C00)
+	 * @return 0 on success; negative POSIX error code on error.
+	 */
+	int readSector(uint32_t sector_num);
 
 #ifdef ENABLE_DECRYPTION
-	public:
-		// AES cipher for this partition's title key.
-		IAesCipher *aes_title;
-		// Decrypted title key.
-		uint8_t title_key[16];
+public:
+	// AES cipher for this partition's title key
+	IAesCipher *aes_title;
+	// Decrypted title key
+	uint8_t title_key[16];
 
-		/**
-		 * Initialize decryption.
-		 * @return VerifyResult.
-		 */
-		KeyManager::VerifyResult initDecryption(void);
+	/**
+	 * Initialize decryption.
+	 * @return VerifyResult.
+	 */
+	KeyManager::VerifyResult initDecryption(void);
 
-	public:
-		// Verification key names.
-		static const std::array<const char*, WiiPartition::Key_Max> EncryptionKeyNames;
+public:
+	// Verification key names
+	static const std::array<const char*, WiiPartition::Key_Max> EncryptionKeyNames;
 
-		// Verification key data.
-		static const uint8_t EncryptionKeyVerifyData[WiiPartition::Key_Max][16];
+	// Verification key data
+	static const uint8_t EncryptionKeyVerifyData[WiiPartition::Key_Max][16];
 #endif
 };
 

@@ -23,47 +23,47 @@ namespace LibRomData {
 
 class BRSTMPrivate final : public RomDataPrivate
 {
-	public:
-		BRSTMPrivate(const IRpFilePtr &file);
+public:
+	BRSTMPrivate(const IRpFilePtr &file);
 
-	private:
-		typedef RomDataPrivate super;
-		RP_DISABLE_COPY(BRSTMPrivate)
+private:
+	typedef RomDataPrivate super;
+	RP_DISABLE_COPY(BRSTMPrivate)
 
-	public:
-		/** RomDataInfo **/
-		static const char *const exts[];
-		static const char *const mimeTypes[];
-		static const RomDataInfo romDataInfo;
+public:
+	/** RomDataInfo **/
+	static const char *const exts[];
+	static const char *const mimeTypes[];
+	static const RomDataInfo romDataInfo;
 
-	public:
-		// BRSTM headers.
-		// NOTE: Uses the endianness specified by the byte-order mark.
-		BRSTM_Header brstmHeader;
-		BRSTM_HEAD_Chunk1 headChunk1;
+public:
+	// BRSTM headers
+	// NOTE: Uses the endianness specified by the byte-order mark.
+	BRSTM_Header brstmHeader;
+	BRSTM_HEAD_Chunk1 headChunk1;
 
-		// Is byteswapping needed?
-		bool needsByteswap;
+	// Is byteswapping needed?
+	bool needsByteswap;
 
-		/**
-		 * Byteswap a uint16_t value from BRSTM to CPU.
-		 * @param x Value to swap.
-		 * @return Swapped value.
-		 */
-		inline uint16_t brstm16_to_cpu(uint16_t x)
-		{
-			return (needsByteswap ? __swab16(x) : x);
-		}
+	/**
+	 * Byteswap a uint16_t value from BRSTM to CPU.
+	 * @param x Value to swap.
+	 * @return Swapped value.
+	 */
+	inline uint16_t brstm16_to_cpu(uint16_t x)
+	{
+		return (needsByteswap ? __swab16(x) : x);
+	}
 
-		/**
-		 * Byteswap a uint32_t value from BRSTM to CPU.
-		 * @param x Value to swap.
-		 * @return Swapped value.
-		 */
-		inline uint32_t brstm32_to_cpu(uint32_t x)
-		{
-			return (needsByteswap ? __swab32(x) : x);
-		}
+	/**
+	 * Byteswap a uint32_t value from BRSTM to CPU.
+	 * @param x Value to swap.
+	 * @return Swapped value.
+	 */
+	inline uint32_t brstm32_to_cpu(uint32_t x)
+	{
+		return (needsByteswap ? __swab32(x) : x);
+	}
 };
 
 ROMDATA_IMPL(BRSTM)

@@ -22,146 +22,146 @@ namespace LibRomData {
 
 class LuaPrivate final : public RomDataPrivate
 {
-	public:
-		LuaPrivate(const IRpFilePtr &file);
+public:
+	LuaPrivate(const IRpFilePtr &file);
 
-	public:
-		/** RomDataInfo **/
-		static const char *const exts[];
-		static const char *const mimeTypes[];
-		static const RomDataInfo romDataInfo;
+public:
+	/** RomDataInfo **/
+	static const char *const exts[];
+	static const char *const mimeTypes[];
+	static const RomDataInfo romDataInfo;
 
-	private:
-		typedef RomDataPrivate super;
-		RP_DISABLE_COPY(LuaPrivate)
+private:
+	typedef RomDataPrivate super;
+	RP_DISABLE_COPY(LuaPrivate)
 
-	protected:
-		/**
-		 * Reset the Lua identification variables.
-		 */
-		void reset_lua(void);
+protected:
+	/**
+	 * Reset the Lua identification variables.
+	 */
+	void reset_lua(void);
 
-	public:
-		enum class LuaVersion {
-			Unknown = -1,
-			Lua2_4 = 0,
-			Lua2_5 = 1,
-			Lua3_1 = 2,
-			Lua3_2 = 3,
-			Lua4_0 = 4,
-			Lua5_0 = 5,
-			Lua5_1 = 6,
-			Lua5_2 = 7,
-			Lua5_3 = 8,
-			Lua5_4 = 9,
-			Max
-		};
-		LuaVersion luaVersion;
+public:
+	enum class LuaVersion {
+		Unknown = -1,
+		Lua2_4 = 0,
+		Lua2_5 = 1,
+		Lua3_1 = 2,
+		Lua3_2 = 3,
+		Lua4_0 = 4,
+		Lua5_0 = 5,
+		Lua5_1 = 6,
+		Lua5_2 = 7,
+		Lua5_3 = 8,
+		Lua5_4 = 9,
+		Max
+	};
+	LuaVersion luaVersion;
 
-		/**
-		 * Converts version byte to Version enum
-		 */
-		static LuaVersion to_version(uint8_t version);
+	/**
+	 * Converts version byte to Version enum.
+	 */
+	static LuaVersion to_version(uint8_t version);
 
-	public:
-		// Lua header.
-		uint8_t header[LUA_HEADERSIZE];
+public:
+	// Lua header
+	uint8_t header[LUA_HEADERSIZE];
 
-		enum class Endianness : int8_t {
-			Unknown = -1,
-			BE = 0,
-			LE = 1,
-		};
-		Endianness endianness;
+	enum class Endianness : int8_t {
+		Unknown = -1,
+		BE = 0,
+		LE = 1,
+	};
+	Endianness endianness;
 
-		/**
-		 * Flip endianness from BE to LE or vice-versa.
-		 * @param endianness Endianness
-		 * @return Flipped endianness
-		 */
-		static inline Endianness FlipEndianness(Endianness endianness)
-		{
-			switch (endianness) {
-				case Endianness::BE:	return Endianness::LE;
-				case Endianness::LE:	return Endianness::BE;
-				default:		assert(!"Invalid endianness."); break;
-			}
-			return Endianness::Unknown;
+	/**
+	 * Flip endianness from BE to LE or vice-versa.
+	 * @param endianness Endianness
+	 * @return Flipped endianness
+	 */
+	static inline Endianness FlipEndianness(Endianness endianness)
+	{
+		switch (endianness) {
+			case Endianness::BE:	return Endianness::LE;
+			case Endianness::LE:	return Endianness::BE;
+			default:		assert(!"Invalid endianness."); break;
 		}
+		return Endianness::Unknown;
+	}
 
-		int8_t int_size = -1;		// sizeof(int)
-		int8_t size_t_size = -1;	// sizeof(size_t)
-		int8_t instruction_size = -1;	// sizeof(lua_Instruction)
-		bool weird_layout = false;	// weird layout of the bits within lua_Instruction
-		int8_t integer_size = -1;	// sizeof(lua_Integer)
-		int8_t number_size = -1;	// sizeof(lua_Number), has a slightly different meaning for 3.x
+	int8_t int_size = -1;		// sizeof(int)
+	int8_t size_t_size = -1;	// sizeof(size_t)
+	int8_t instruction_size = -1;	// sizeof(lua_Instruction)
+	bool weird_layout = false;	// weird layout of the bits within lua_Instruction
+	int8_t integer_size = -1;	// sizeof(lua_Integer)
+	int8_t number_size = -1;	// sizeof(lua_Number), has a slightly different meaning for 3.x
 
-		enum class IntegralType : int8_t {
-			Unknown = -1,
-			Float = 0,
-			Integer = 1,
-			String = 2,	// Lua 3.2
-		};
-		IntegralType is_integral;	// lua_Number
+	enum class IntegralType : int8_t {
+		Unknown = -1,
+		Float = 0,
+		Integer = 1,
+		String = 2,	// Lua 3.2
+	};
+	IntegralType is_integral;	// lua_Number
 
-		bool is_float_swapped;		// float endianness is swapped compared to integer
-		bool corrupted;			// the LUA_TAIL is corrupted
+	bool is_float_swapped;		// float endianness is swapped compared to integer
+	bool corrupted;			// the LUA_TAIL is corrupted
 
-	private:
-		/**
-		 * Compares two byte ranges.
-		 * @param lhs buffer to be compared
-		 * @param rhs buffer to compare with
-		 * @param len size of the buffers
-		 * @param endianness when set to LE, one of the buffers is reversed (used for comparing LE number to BE constant)
-		 * @return true if equal
-		 */
-		static bool compare(const uint8_t *lhs, const uint8_t *rhs, size_t len, Endianness endianness);
+private:
+	/**
+	 * Compares two byte ranges.
+	 * @param lhs buffer to be compared
+	 * @param rhs buffer to compare with
+	 * @param len size of the buffers
+	 * @param endianness when set to LE, one of the buffers is reversed (used for comparing LE number to BE constant)
+	 * @return true if equal
+	 */
+	static bool compare(const uint8_t *lhs, const uint8_t *rhs, size_t len, Endianness endianness);
 
-		/**
-		 * Figures out endianness by comparing an integer with a magic constant
-		 * @param test_int64 int64 big endian representation of magic
-		 * @param p number to check
-		 * @param len length of the number
-		 * @return the endianness
-		 */
-		static Endianness detect_endianness_int(const char *test_int64, const uint8_t *p, size_t len);
+	/**
+	 * Figures out endianness by comparing an integer with a magic constant
+	 * @param test_int64 int64 big endian representation of magic
+	 * @param p number to check
+	 * @param len length of the number
+	 * @return the endianness
+	 */
+	static Endianness detect_endianness_int(const char *test_int64, const uint8_t *p, size_t len);
 
-		/**
-		 * Figures out endianness and type by comparing a number with a magic constant
-		 * @param test_int64 int64 big endian representation of magic
-		 * @param test_float32 float32 big endian representation of magic
-		 * @param test_float64 float64 big endian representation of magic
-		 * @param p number to check
-		 * @param len length of the number
-		 * @param is_integral (out) whether number is int or float
-		 * @return the endianness
-		 */
-		static Endianness detect_endianness(const char *test_int64,
-			const char *test_float32, const char *test_float64,
-			const uint8_t *p, size_t len, IntegralType *is_integral);
+	/**
+	 * Figures out endianness and type by comparing a number with a magic constant
+	 * @param test_int64 int64 big endian representation of magic
+	 * @param test_float32 float32 big endian representation of magic
+	 * @param test_float64 float64 big endian representation of magic
+	 * @param p number to check
+	 * @param len length of the number
+	 * @param is_integral (out) whether number is int or float
+	 * @return the endianness
+	 */
+	static Endianness detect_endianness(const char *test_int64,
+		const char *test_float32, const char *test_float64,
+		const uint8_t *p, size_t len, IntegralType *is_integral);
 
-	public:
-		/**
-		 * Parses lua header into individual fields.
-		 */
-		void parse();
+public:
+	/**
+	 * Parses lua header into individual fields.
+	 */
+	void parse(void);
 
-	private:
-		/**
-		 * Parses lua 2.x header into individual fields.
-		 */
-		void parse2(uint8_t version, const uint8_t *p);
+private:
+	/**
+	 * Parses lua 2.x header into individual fields.
+	 */
+	void parse2(uint8_t version, const uint8_t *p);
 
-		/**
-		 * Parses lua 3.x header into individual fields.
-		 */
-		void parse3(uint8_t version, const uint8_t *p);
+	/**
+	 * Parses lua 3.x header into individual fields.
+	 */
+	void parse3(uint8_t version, const uint8_t *p);
 
-		/**
-		 * Parses lua 4.x/5.x header into individual fields.
-		 */
-		void parse4(uint8_t version, const uint8_t *p);
+	/**
+	 * Parses lua 4.x/5.x header into individual fields.
+	 */
+	void parse4(uint8_t version, const uint8_t *p);
 };
 
 ROMDATA_IMPL(Lua)
@@ -216,7 +216,7 @@ void LuaPrivate::reset_lua(void)
 }
 
 /**
- * Converts version byte to Version enum
+ * Converts version byte to Version enum.
  */
 LuaPrivate::LuaVersion LuaPrivate::to_version(uint8_t version)
 {
@@ -341,7 +341,7 @@ LuaPrivate::Endianness LuaPrivate::detect_endianness(const char *test_int64,
 /**
  * Parses lua header into individual fields.
  */
-void LuaPrivate::parse()
+void LuaPrivate::parse(void)
 {
 	reset_lua();
 

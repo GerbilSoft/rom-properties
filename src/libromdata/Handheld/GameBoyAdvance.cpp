@@ -24,40 +24,40 @@ namespace LibRomData {
 
 class GameBoyAdvancePrivate final : public RomDataPrivate
 {
-	public:
-		GameBoyAdvancePrivate(const IRpFilePtr &file);
+public:
+	GameBoyAdvancePrivate(const IRpFilePtr &file);
 
-	private:
-		typedef RomDataPrivate super;
-		RP_DISABLE_COPY(GameBoyAdvancePrivate)
+private:
+	typedef RomDataPrivate super;
+	RP_DISABLE_COPY(GameBoyAdvancePrivate)
 
-	public:
-		/** RomDataInfo **/
-		static const char *const exts[];
-		static const char *const mimeTypes[];
-		static const RomDataInfo romDataInfo;
+public:
+	/** RomDataInfo **/
+	static const char *const exts[];
+	static const char *const mimeTypes[];
+	static const RomDataInfo romDataInfo;
 
-	public:
-		enum class RomType {
-			Unknown	= -1,
+public:
+	enum class RomType {
+		Unknown	= -1,
 
-			GBA		= 0,	// Standard GBA ROM.
-			GBA_PassThru	= 1,	// Unlicensed GBA pass-through cartridge.
-			NDS_Expansion	= 2,	// Non-bootable NDS expansion ROM.
+		GBA		= 0,	// Standard GBA ROM.
+		GBA_PassThru	= 1,	// Unlicensed GBA pass-through cartridge.
+		NDS_Expansion	= 2,	// Non-bootable NDS expansion ROM.
 
-			Max
-		};
-		RomType romType;
+		Max
+	};
+	RomType romType;
 
-		// ROM header.
-		GBA_RomHeader romHeader;
+	// ROM header
+	GBA_RomHeader romHeader;
 
-	public:
-		/**
-		 * Get the publisher.
-		 * @return Publisher, or "Unknown (xxx)" if unknown.
-		 */
-		string getPublisher(void) const;
+public:
+	/**
+	 * Get the publisher.
+	 * @return Publisher, or "Unknown (xxx)" if unknown.
+	 */
+	string getPublisher(void) const;
 };
 
 ROMDATA_IMPL(GameBoyAdvance)

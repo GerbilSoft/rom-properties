@@ -22,22 +22,22 @@ namespace LibRomData {
 
 class Atari7800Private final : public RomDataPrivate
 {
-	public:
-		Atari7800Private(const IRpFilePtr &file);
+public:
+	Atari7800Private(const IRpFilePtr &file);
 
-	private:
-		typedef RomDataPrivate super;
-		RP_DISABLE_COPY(Atari7800Private)
+private:
+	typedef RomDataPrivate super;
+	RP_DISABLE_COPY(Atari7800Private)
 
-	public:
-		/** RomDataInfo **/
-		static const char *const exts[];
-		static const char *const mimeTypes[];
-		static const RomDataInfo romDataInfo;
+public:
+	/** RomDataInfo **/
+	static const char *const exts[];
+	static const char *const mimeTypes[];
+	static const RomDataInfo romDataInfo;
 
-	public:
-		// ROM header
-		Atari_A78Header romHeader;
+public:
+	// ROM header
+	Atari_A78Header romHeader;
 };
 
 ROMDATA_IMPL(Atari7800)

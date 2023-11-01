@@ -24,55 +24,55 @@ namespace LibRomData {
 
 class XDVDFSPartitionPrivate
 {
-	public:
-		XDVDFSPartitionPrivate(XDVDFSPartition *q,
-			off64_t partition_offset, off64_t partition_size);
+public:
+	XDVDFSPartitionPrivate(XDVDFSPartition *q,
+		off64_t partition_offset, off64_t partition_size);
 
-	private:
-		RP_DISABLE_COPY(XDVDFSPartitionPrivate)
-	protected:
-		XDVDFSPartition *const q_ptr;
+private:
+	RP_DISABLE_COPY(XDVDFSPartitionPrivate)
+protected:
+	XDVDFSPartition *const q_ptr;
 
-	public:
-		// Partition start offset. (in bytes)
-		off64_t partition_offset;
-		off64_t partition_size;		// Calculated partition size.
+public:
+	// Partition start offset (in bytes)
+	off64_t partition_offset;
+	off64_t partition_size;		// Calculated partition size.
 
-		// XDVDFS header.
-		// All fields are byteswapped in the constructor.
-		XDVDFS_Header xdvdfsHeader;
+	// XDVDFS header
+	// All fields are byteswapped in the constructor.
+	XDVDFS_Header xdvdfsHeader;
 
-		// Cached directories.
-		// - Key: Directory. ("/" for root)
-		// - Value: Raw directory table from the disc.
-		// NOTE: Directory entries are variable-length, so this
-		// is a byte array, not an ISO_DirEntry array.
-		unordered_map<std::string, rp::uvector<uint8_t> > dirTables;
+	// Cached directories
+	// - Key: Directory ("/" for root)
+	// - Value: Raw directory table from the disc.
+	// NOTE: Directory entries are variable-length, so this
+	// is a byte array, not an ISO_DirEntry array.
+	unordered_map<std::string, rp::uvector<uint8_t> > dirTables;
 
-		/**
-		 * Get an entry within a specified directory table.
-		 * @param dirTable Directory table.
-		 * @param filename Filename to find, without subdirectories.
-		 * @return Pointer to XDVDFS_DirEntry within dirTable, or nullptr if not found.
-		 */
-		const XDVDFS_DirEntry *getDirEntry(const rp::uvector<uint8_t> *dirTable, const char *filename);
+	/**
+	 * Get an entry within a specified directory table.
+	 * @param dirTable Directory table.
+	 * @param filename Filename to find, without subdirectories.
+	 * @return Pointer to XDVDFS_DirEntry within dirTable, or nullptr if not found.
+	 */
+	const XDVDFS_DirEntry *getDirEntry(const rp::uvector<uint8_t> *dirTable, const char *filename);
 
-		/**
-		 * Get the specified directory.
-		 * This should *only* be the directory, not a filename.
-		 * @param path Directory path.
-		 * @return Pointer to directory table (rp::uvector), or nullptr if not found.
-		 */
-		const rp::uvector<uint8_t> *getDirectory(const char *path);
+	/**
+	 * Get the specified directory.
+	 * This should *only* be the directory, not a filename.
+	 * @param path Directory path.
+	 * @return Pointer to directory table (rp::uvector), or nullptr if not found.
+	 */
+	const rp::uvector<uint8_t> *getDirectory(const char *path);
 
-		/**
-		 * XDVDFS strcasecmp() implementation.
-		 * Uses generic ASCII handling instead of locale-specific case folding.
-		 * @param s1 String 1
-		 * @param s2 String 2
-		 * @return 0 (==), negative (<), or positive (>).
-		 */
-		static int xdvdfs_strcasecmp(const char *s1, const char *s2);
+	/**
+	 * XDVDFS strcasecmp() implementation.
+	 * Uses generic ASCII handling instead of locale-specific case folding.
+	 * @param s1 String 1
+	 * @param s2 String 2
+	 * @return 0 (==), negative (<), or positive (>).
+	 */
+	static int xdvdfs_strcasecmp(const char *s1, const char *s2);
 };
 
 /** XDVDFSPartitionPrivate **/
@@ -451,7 +451,7 @@ off64_t XDVDFSPartition::partition_size_used(void) const
 
 /** XDVDFSPartition **/
 
-/** IFst wrapper functions. **/
+/** IFst wrapper functions**/
 
 // TODO
 

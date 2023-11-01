@@ -51,196 +51,196 @@ namespace LibRomData {
 
 class Xbox360_XEX_Private final : public RomDataPrivate
 {
-	public:
-		Xbox360_XEX_Private(const IRpFilePtr &file);
-		~Xbox360_XEX_Private() final;
+public:
+	Xbox360_XEX_Private(const IRpFilePtr &file);
+	~Xbox360_XEX_Private() final;
 
-	private:
-		typedef RomDataPrivate super;
-		RP_DISABLE_COPY(Xbox360_XEX_Private)
+private:
+	typedef RomDataPrivate super;
+	RP_DISABLE_COPY(Xbox360_XEX_Private)
 
-	public:
-		/** RomDataInfo **/
-		static const char *const exts[];
-		static const char *const mimeTypes[];
-		static const RomDataInfo romDataInfo;
+public:
+	/** RomDataInfo **/
+	static const char *const exts[];
+	static const char *const mimeTypes[];
+	static const RomDataInfo romDataInfo;
 
-	public:
-		// XEX type.
-		enum class XexType {
-			Unknown = -1,
+public:
+	// XEX type.
+	enum class XexType {
+		Unknown = -1,
 
-			XEX1	= 0,	// XEX1
-			XEX2	= 1,	// XEX2
+		XEX1	= 0,	// XEX1
+		XEX2	= 1,	// XEX2
 
-			Max
-		};
-		XexType xexType;
+		Max
+	};
+	XexType xexType;
 
-	public:
-		// XEX headers.
-		// NOTE: Only xex2Header is byteswapped, except for the magic number.
-		XEX2_Header xex2Header;
-		union {
-			XEX1_Security_Info xex1;
-			XEX2_Security_Info xex2;
-		} secInfo;
+public:
+	// XEX headers.
+	// NOTE: Only xex2Header is byteswapped, except for the magic number.
+	XEX2_Header xex2Header;
+	union {
+		XEX1_Security_Info xex1;
+		XEX2_Security_Info xex2;
+	} secInfo;
 
-		// Optional header table.
-		// NOTE: This array of structs **IS NOT** byteswapped!
-		rp::uvector<XEX2_Optional_Header_Tbl> optHdrTbl;
+	// Optional header table.
+	// NOTE: This array of structs **IS NOT** byteswapped!
+	rp::uvector<XEX2_Optional_Header_Tbl> optHdrTbl;
 
-		// Execution ID. (XEX2_OPTHDR_EXECUTION_ID)
-		// Initialized by getXdbfResInfo().
-		// NOTE: This struct **IS** byteswapped,
-		// except for the title ID.
-		bool isExecutionIDLoaded;
-		XEX2_Execution_ID executionID;
+	// Execution ID. (XEX2_OPTHDR_EXECUTION_ID)
+	// Initialized by getXdbfResInfo().
+	// NOTE: This struct **IS** byteswapped,
+	// except for the title ID.
+	bool isExecutionIDLoaded;
+	XEX2_Execution_ID executionID;
 
-		// Resource information. (XEX2_OPTHDR_RESOURCE_INFO)
-		// Initialized by getXdbfResInfo().
-		// NOTE: These structs **ARE** byteswapped.
-		// - Key: Resource ID. (Title ID for normal resources; "HASHSEC" for SHA-1 hashes.)
-		// - Value: XEX2_Resource_Info
-		unordered_map<std::string, XEX2_Resource_Info> mapResInfo;
+	// Resource information. (XEX2_OPTHDR_RESOURCE_INFO)
+	// Initialized by getXdbfResInfo().
+	// NOTE: These structs **ARE** byteswapped.
+	// - Key: Resource ID. (Title ID for normal resources; "HASHSEC" for SHA-1 hashes.)
+	// - Value: XEX2_Resource_Info
+	unordered_map<std::string, XEX2_Resource_Info> mapResInfo;
 
-		// File format info. (XEX2_OPTHDR_FILE_FORMAT_INFO)
-		// Initialized by initPeReader().
-		// NOTE: This struct **IS** byteswapped.
-		XEX2_File_Format_Info fileFormatInfo;
+	// File format info. (XEX2_OPTHDR_FILE_FORMAT_INFO)
+	// Initialized by initPeReader().
+	// NOTE: This struct **IS** byteswapped.
+	XEX2_File_Format_Info fileFormatInfo;
 
-		// Encryption key in use.
-		// If fileFormatInfo indicates the PE is encrypted:
-		// - -1: Unknown
-		// -  0: Retail (may be either XEX1 or XEX2)
-		// -  1: Debug
-		// NOTE: We can't use EncryptionKeys because the debug key
-		// is all zeroes, so we're not handling it here.
-		int keyInUse;
+	// Encryption key in use.
+	// If fileFormatInfo indicates the PE is encrypted:
+	// - -1: Unknown
+	// -  0: Retail (may be either XEX1 or XEX2)
+	// -  1: Debug
+	// NOTE: We can't use EncryptionKeys because the debug key
+	// is all zeroes, so we're not handling it here.
+	int keyInUse;
 
-		// Basic compression: Data segments.
-		struct BasicZDataSeg_t {
-			uint32_t vaddr;		// Virtual address in memory (base address is 0)
-			uint32_t physaddr;	// Physical address in the PE executable
-			uint32_t length;	// Length of segment
-		};
-		rp::uvector<BasicZDataSeg_t> basicZDataSegments;
+	// Basic compression: Data segments.
+	struct BasicZDataSeg_t {
+		uint32_t vaddr;		// Virtual address in memory (base address is 0)
+		uint32_t physaddr;	// Physical address in the PE executable
+		uint32_t length;	// Length of segment
+	};
+	rp::uvector<BasicZDataSeg_t> basicZDataSegments;
 
-		// Amount of data we'll read for the PE header.
-		// NOTE: Changed from `static const unsigned int` to #define
-		// due to shared_ptr causing problems in debug builds.
+	// Amount of data we'll read for the PE header.
+	// NOTE: Changed from `static const unsigned int` to #define
+	// due to shared_ptr causing problems in debug builds.
 #define PE_HEADER_SIZE 8192U
 
 #ifdef ENABLE_LIBMSPACK
-		// Decompressed EXE header.
-		rp::uvector<uint8_t> lzx_peHeader;
-		// Decompressed XDBF section.
-		rp::uvector<uint8_t> lzx_xdbfSection;
+	// Decompressed EXE header.
+	rp::uvector<uint8_t> lzx_peHeader;
+	// Decompressed XDBF section.
+	rp::uvector<uint8_t> lzx_xdbfSection;
 #endif /* ENABLE_LIBMSPACK */
 
-		/**
-		 * Get the specified optional header table entry.
-		 * @param header_id Optional header ID.
-		 * @return Optional header table entry, or nullptr if not found.
-		 */
-		const XEX2_Optional_Header_Tbl *getOptHdrTblEntry(uint32_t header_id) const;
+	/**
+	 * Get the specified optional header table entry.
+	 * @param header_id Optional header ID.
+	 * @return Optional header table entry, or nullptr if not found.
+	 */
+	const XEX2_Optional_Header_Tbl *getOptHdrTblEntry(uint32_t header_id) const;
 
-		/**
-		 * Get data from an optional header.
-		 *
-		 * This function is for headers that either have a 32-bit value
-		 * stored as the offset (low byte == 0x00), or have a single
-		 * DWORD stored in the file (low byte == 0x01).
-		 *
-		 * @param header_id	[in] Optional header ID.
-		 * @param pOut32	[out] Pointer to uint32_t to store the DWORD.
-		 * @return Number of bytes read on success; 0 on error.
-		 */
-		size_t getOptHdrData(uint32_t header_id, uint32_t *pOut32);
+	/**
+	 * Get data from an optional header.
+	 *
+	 * This function is for headers that either have a 32-bit value
+	 * stored as the offset (low byte == 0x00), or have a single
+	 * DWORD stored in the file (low byte == 0x01).
+	 *
+	 * @param header_id	[in] Optional header ID.
+	 * @param pOut32	[out] Pointer to uint32_t to store the DWORD.
+	 * @return Number of bytes read on success; 0 on error.
+	 */
+	size_t getOptHdrData(uint32_t header_id, uint32_t *pOut32);
 
-		/**
-		 * Get data from an optional header.
-		 *
-		 * This function is for headers that have either a fixed size
-		 * (low byte is between 0x02 and 0xFE), or have a size stored
-		 * at the beginning of the data (low byte == 0xFF).
-		 *
-		 * @param header_id	[in] Optional header ID.
-		 * @param pVec		[out] rp::uvector<uint8_t>&
-		 * @return Number of bytes read on success; 0 on error.
-		 */
-		size_t getOptHdrData(uint32_t header_id, rp::uvector<uint8_t> &pVec);
+	/**
+	 * Get data from an optional header.
+	 *
+	 * This function is for headers that have either a fixed size
+	 * (low byte is between 0x02 and 0xFE), or have a size stored
+	 * at the beginning of the data (low byte == 0xFF).
+	 *
+	 * @param header_id	[in] Optional header ID.
+	 * @param pVec		[out] rp::uvector<uint8_t>&
+	 * @return Number of bytes read on success; 0 on error.
+	 */
+	size_t getOptHdrData(uint32_t header_id, rp::uvector<uint8_t> &pVec);
 
-		/**
-		 * Get the resource information.
-		 * @param resource_id Resource ID. (If not specified, use the title ID.)
-		 * @return Resource information, or nullptr on error.
-		 */
-		const XEX2_Resource_Info *getXdbfResInfo(const char *resource_id = nullptr);
+	/**
+	 * Get the resource information.
+	 * @param resource_id Resource ID. (If not specified, use the title ID.)
+	 * @return Resource information, or nullptr on error.
+	 */
+	const XEX2_Resource_Info *getXdbfResInfo(const char *resource_id = nullptr);
 
-		/**
-		 * Format a media ID or disc profile ID.
-		 *
-		 * The last four bytes are separated from the rest of the ID.
-		 * This format is used by abgx360.
-		 *
-		 * @param pId Media ID or disc profile ID. (16 bytes)
-		 * @return Formatted ID.
-		 */
-		static string formatMediaID(const uint8_t *pId);
+	/**
+	 * Format a media ID or disc profile ID.
+	 *
+	 * The last four bytes are separated from the rest of the ID.
+	 * This format is used by abgx360.
+	 *
+	 * @param pId Media ID or disc profile ID. (16 bytes)
+	 * @return Formatted ID.
+	 */
+	static string formatMediaID(const uint8_t *pId);
 
-		/**
-		 * Convert game ratings from Xbox 360 format to RomFields format.
-		 * @param age_ratings RomFields::age_ratings_t
-		 * @param game_ratings XEX2_Game_Ratings
-		 */
-		static void convertGameRatings(RomFields::age_ratings_t &age_ratings,
-			const XEX2_Game_Ratings &game_ratings);
+	/**
+	 * Convert game ratings from Xbox 360 format to RomFields format.
+	 * @param age_ratings RomFields::age_ratings_t
+	 * @param game_ratings XEX2_Game_Ratings
+	 */
+	static void convertGameRatings(RomFields::age_ratings_t &age_ratings,
+		const XEX2_Game_Ratings &game_ratings);
 
-		/**
-		 * Get the minimum kernel version required for this XEX.
-		 * @return Minimum kernel version, or 0 on error.
-		 */
-		Xbox360_Version_t getMinKernelVersion(void);
+	/**
+	 * Get the minimum kernel version required for this XEX.
+	 * @return Minimum kernel version, or 0 on error.
+	 */
+	Xbox360_Version_t getMinKernelVersion(void);
 
-	public:
-		// CBC reader for encrypted PE executables.
-		// Also used for unencrypted executables.
-		CBCReaderPtr peReader;
-		EXE *pe_exe;
-		Xbox360_XDBF *pe_xdbf;
+public:
+	// CBC reader for encrypted PE executables.
+	// Also used for unencrypted executables.
+	CBCReaderPtr peReader;
+	EXE *pe_exe;
+	Xbox360_XDBF *pe_xdbf;
 
-		/**
-		 * Initialize the PE executable reader.
-		 * @return 0 on success (saved in this->peReader); negative POSIX error code on error.
-		 */
-		int initPeReader(void);
+	/**
+	 * Initialize the PE executable reader.
+	 * @return 0 on success (saved in this->peReader); negative POSIX error code on error.
+	 */
+	int initPeReader(void);
 
-		/**
-		 * Initialize the EXE object.
-		 * @return EXE object on success; nullptr on error.
-		 */
-		const EXE *initEXE(void);
+	/**
+	 * Initialize the EXE object.
+	 * @return EXE object on success; nullptr on error.
+	 */
+	const EXE *initEXE(void);
 
-		/**
-		 * Initialize the Xbox360_XDBF object.
-		 * @return Xbox360_XDBF object on success; nullptr on error.
-		 */
-		const Xbox360_XDBF *initXDBF(void);
+	/**
+	 * Initialize the Xbox360_XDBF object.
+	 * @return Xbox360_XDBF object on success; nullptr on error.
+	 */
+	const Xbox360_XDBF *initXDBF(void);
 
-		/**
-		 * Get the publisher.
-		 * @return Publisher.
-		 */
-		string getPublisher(void) const;
+	/**
+	 * Get the publisher.
+	 * @return Publisher.
+	 */
+	string getPublisher(void) const;
 
 #ifdef ENABLE_DECRYPTION
-	public:
-		// Verification key names.
-		static const std::array<const char*, Xbox360_XEX::Key_Max> EncryptionKeyNames;
+public:
+	// Verification key names.
+	static const std::array<const char*, Xbox360_XEX::Key_Max> EncryptionKeyNames;
 
-		// Verification key data.
-		static const uint8_t EncryptionKeyVerifyData[Xbox360_XEX::Key_Max][16];
+	// Verification key data.
+	static const uint8_t EncryptionKeyVerifyData[Xbox360_XEX::Key_Max][16];
 #endif
 };
 

@@ -28,95 +28,95 @@ namespace LibRomData {
 
 class PEResourceReaderPrivate
 {
-	public:
-		PEResourceReaderPrivate(PEResourceReader *q,
-			uint32_t rsrc_addr, uint32_t rsrc_size, uint32_t rsrc_va);
+public:
+	PEResourceReaderPrivate(PEResourceReader *q,
+		uint32_t rsrc_addr, uint32_t rsrc_size, uint32_t rsrc_va);
 
-	private:
-		RP_DISABLE_COPY(PEResourceReaderPrivate)
-	protected:
-		PEResourceReader *const q_ptr;
+private:
+	RP_DISABLE_COPY(PEResourceReaderPrivate)
+protected:
+	PEResourceReader *const q_ptr;
 
-	public:
-		// Read position
-		off64_t pos;
+public:
+	// Read position
+	off64_t pos;
 
-		// .rsrc section
-		uint32_t rsrc_addr;
-		uint32_t rsrc_size;
-		uint32_t rsrc_va;
+	// .rsrc section
+	uint32_t rsrc_addr;
+	uint32_t rsrc_size;
+	uint32_t rsrc_va;
 
-		// Resource directory entry.
-		struct ResDirEntry {
-			uint16_t id;	// Resource ID.
-			uint32_t addr;	// Address of the IMAGE_RESOURCE_DIRECTORY or
-					// IMAGE_RESOURCE_DATA_ENTRY, relative to rsrc_addr.
-					// NOTE: If the high bit is set, this is a subdirectory.
-		};
-		typedef rp::uvector<ResDirEntry> rsrc_dir_t;
+	// Resource directory entry
+	struct ResDirEntry {
+		uint16_t id;	// Resource ID
+		uint32_t addr;	// Address of the IMAGE_RESOURCE_DIRECTORY or
+				// IMAGE_RESOURCE_DATA_ENTRY, relative to rsrc_addr.
+				// NOTE: If the high bit is set, this is a subdirectory.
+	};
+	typedef rp::uvector<ResDirEntry> rsrc_dir_t;
 
-		// Resource types. (Top-level directory.)
-		rsrc_dir_t res_types;
+	// Resource types (Top-level directory)
+	rsrc_dir_t res_types;
 
-		// Cached top-level directories. (type)
-		// Key: type
-		// Value: Resources contained within the directory.
-		unordered_map<uint16_t, rsrc_dir_t> type_dirs;
+	// Cached top-level directories (type)
+	// Key: type
+	// Value: Resources contained within the directory.
+	unordered_map<uint16_t, rsrc_dir_t> type_dirs;
 
-		// Cached second-level directories. (type and ID)
-		// Key: LOWORD == type, HIWORD == id
-		// Value: Resources contained within the directory.
-		unordered_map<uint32_t, rsrc_dir_t> type_and_id_dirs;
+	// Cached second-level directories (type and ID)
+	// Key: LOWORD == type, HIWORD == id
+	// Value: Resources contained within the directory.
+	unordered_map<uint32_t, rsrc_dir_t> type_and_id_dirs;
 
-		/**
-		 * Load a resource directory.
-		 *
-		 * NOTE: Only numeric resources and/or subdirectories are loaded.
-		 * Named resources and/or subdirectores are ignored.
-		 *
-		 * @param addr	[in] Starting address of the directory. (relative to the start of .rsrc)
-		 * @param dir	[out] Resource directory.
-		 * @return Number of entries loaded, or negative POSIX error code on error.
-		 */
-		int loadResDir(uint32_t addr, rsrc_dir_t &dir);
+	/**
+	 * Load a resource directory.
+	 *
+	 * NOTE: Only numeric resources and/or subdirectories are loaded.
+	 * Named resources and/or subdirectores are ignored.
+	 *
+	 * @param addr	[in] Starting address of the directory. (relative to the start of .rsrc)
+	 * @param dir	[out] Resource directory.
+	 * @return Number of entries loaded, or negative POSIX error code on error.
+	 */
+	int loadResDir(uint32_t addr, rsrc_dir_t &dir);
 
-		/**
-		 * Get the resource directory for the specified type.
-		 * @param type Resource type.
-		 * @return Resource directory, or nullptr if not found.
-		 */
-		const rsrc_dir_t *getTypeDir(uint16_t type);
+	/**
+	 * Get the resource directory for the specified type.
+	 * @param type Resource type.
+	 * @return Resource directory, or nullptr if not found.
+	 */
+	const rsrc_dir_t *getTypeDir(uint16_t type);
 
-		/**
-		 * Get the resource directory for the specified type and ID.
-		 * @param type Resource type.
-		 * @param id Resource ID.
-		 * @return Resource directory, or nullptr if not found.
-		 */
-		const rsrc_dir_t *getTypeIdDir(uint16_t type, uint16_t id);
+	/**
+	 * Get the resource directory for the specified type and ID.
+	 * @param type Resource type.
+	 * @param id Resource ID.
+	 * @return Resource directory, or nullptr if not found.
+	 */
+	const rsrc_dir_t *getTypeIdDir(uint16_t type, uint16_t id);
 
-		/**
-		 * Read the section header in a PE version resource.
-		 *
-		 * The file pointer will be advanced past the header.
-		 *
-		 * @param file		[in] PE version resource.
-		 * @param key		[in] Expected header name.
-		 * @param type		[in] Expected data type. (0 == binary, 1 == text)
-		 * @param pChildLen	[out,opt] Total length of the section.
-		 * @param pValueLen	[out,opt] Value length.
-		 * @return 0 if the header matches; non-zero on error.
-		 */
-		static int load_VS_VERSION_INFO_header(IRpFile *file, const char16_t *key, uint16_t type, uint16_t *pLen, uint16_t *pValueLen);
+	/**
+	 * Read the section header in a PE version resource.
+	 *
+	 * The file pointer will be advanced past the header.
+	 *
+	 * @param file		[in] PE version resource.
+	 * @param key		[in] Expected header name.
+	 * @param type		[in] Expected data type. (0 == binary, 1 == text)
+	 * @param pChildLen	[out,opt] Total length of the section.
+	 * @param pValueLen	[out,opt] Value length.
+	 * @return 0 if the header matches; non-zero on error.
+	 */
+	static int load_VS_VERSION_INFO_header(IRpFile *file, const char16_t *key, uint16_t type, uint16_t *pLen, uint16_t *pValueLen);
 
-		/**
-		 * Load a string table.
-		 * @param file		[in] PE version resource.
-		 * @param st		[out] String Table.
-		 * @param langID	[out] Language ID.
-		 * @return 0 on success; non-zero on error.
-		 */
-		static int load_StringTable(IRpFile *file, IResourceReader::StringTable &st, uint32_t *langID);
+	/**
+	 * Load a string table.
+	 * @param file		[in] PE version resource.
+	 * @param st		[out] String Table.
+	 * @param langID	[out] Language ID.
+	 * @return 0 on success; non-zero on error.
+	 */
+	static int load_StringTable(IRpFile *file, IResourceReader::StringTable &st, uint32_t *langID);
 };
 
 /** PEResourceReaderPrivate **/
@@ -685,7 +685,7 @@ off64_t PEResourceReader::partition_size_used(void) const
 	return static_cast<off64_t>(d->rsrc_size);
 }
 
-/** Resource access functions. **/
+/** Resource access functions **/
 
 /**
  * Open a resource.

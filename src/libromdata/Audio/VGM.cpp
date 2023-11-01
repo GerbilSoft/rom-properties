@@ -25,49 +25,49 @@ namespace LibRomData {
 
 class VGMPrivate final : public RomDataPrivate
 {
-	public:
-		VGMPrivate(const IRpFilePtr &file);
+public:
+	VGMPrivate(const IRpFilePtr &file);
 
-	private:
-		typedef RomDataPrivate super;
-		RP_DISABLE_COPY(VGMPrivate)
+private:
+	typedef RomDataPrivate super;
+	RP_DISABLE_COPY(VGMPrivate)
 
-	public:
-		/** RomDataInfo **/
-		static const char *const exts[];
-		static const char *const mimeTypes[];
-		static const RomDataInfo romDataInfo;
+public:
+	/** RomDataInfo **/
+	static const char *const exts[];
+	static const char *const mimeTypes[];
+	static const RomDataInfo romDataInfo;
 
-	public:
-		// VGM header.
-		// NOTE: **NOT** byteswapped in memory.
-		VGM_Header vgmHeader;
+public:
+	// VGM header
+	// NOTE: **NOT** byteswapped in memory.
+	VGM_Header vgmHeader;
 
-		// Translated strings for addCommonSoundChip().
-		const char *s_clockrate;
-		const char *s_dualchip;
-		const char *s_yes;
-		const char *s_no;
+	// Translated strings for addCommonSoundChip().
+	const char *s_clockrate;
+	const char *s_dualchip;
+	const char *s_yes;
+	const char *s_no;
 
-	public:
-		// GD3 tags.
-		// All strings must be in UTF-8 format.
-		typedef array<string, GD3_TAG_MAX> gd3_tags_t;
+public:
+	// GD3 tags
+	// All strings must be in UTF-8 format.
+	typedef array<string, GD3_TAG_MAX> gd3_tags_t;
 
-		/**
-		 * Load GD3 tags.
-		 * @param addr Starting address of the GD3 tag block.
-		 * @return Allocated GD3 tags, or nullptr on error.
-		 */
-		gd3_tags_t *loadGD3(unsigned int addr);
+	/**
+	 * Load GD3 tags.
+	 * @param addr Starting address of the GD3 tag block.
+	 * @return Allocated GD3 tags, or nullptr on error.
+	 */
+	gd3_tags_t *loadGD3(unsigned int addr);
 
-		/**
-		 * Add a common sound chip field.
-		 * @param clk Clock value. (top two bits are DUAL and )
-		 * @param display Display name.
-		 * @param dual If true, dual-chip mode is supported.
-		 */
-		void addCommonSoundChip(unsigned int clk, const char *display, bool dual = false);
+	/**
+	 * Add a common sound chip field.
+	 * @param clk Clock value. (top two bits are DUAL and )
+	 * @param display Display name.
+	 * @param dual If true, dual-chip mode is supported.
+	 */
+	void addCommonSoundChip(unsigned int clk, const char *display, bool dual = false);
 };
 
 ROMDATA_IMPL(VGM)

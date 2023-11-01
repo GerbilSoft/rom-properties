@@ -35,42 +35,43 @@ namespace LibRomData {
 DELAYLOAD_TEST_FUNCTION_IMPL0(get_crc_table);
 #endif /* _MSC_VER */
 
-class GczReaderPrivate : public SparseDiscReaderPrivate {
-	public:
-		explicit GczReaderPrivate(GczReader *q);
+class GczReaderPrivate : public SparseDiscReaderPrivate
+{
+public:
+	explicit GczReaderPrivate(GczReader *q);
 
-	private:
-		typedef SparseDiscReaderPrivate super;
-		RP_DISABLE_COPY(GczReaderPrivate)
+private:
+	typedef SparseDiscReaderPrivate super;
+	RP_DISABLE_COPY(GczReaderPrivate)
 
-	public:
-		// GCZ header
-		GczHeader gczHeader;
+public:
+	// GCZ header
+	GczHeader gczHeader;
 
-		// Block pointers and hashes (NOTE: Byteswapped on demand)
-		// If bit 63 of the block pointer is set, it's not compressed.
-		// Hashes are Adler32.
-		rp::uvector<uint64_t> blockPointers;
-		rp::uvector<uint32_t> hashes;
+	// Block pointers and hashes (NOTE: Byteswapped on demand)
+	// If bit 63 of the block pointer is set, it's not compressed.
+	// Hashes are Adler32.
+	rp::uvector<uint64_t> blockPointers;
+	rp::uvector<uint32_t> hashes;
 
-		// Decompression buffer
-		// (Same size as blockCache)
-		rp::uvector<uint8_t> z_buffer;
+	// Decompression buffer
+	// (Same size as blockCache)
+	rp::uvector<uint8_t> z_buffer;
 
-		// Block cache
-		rp::uvector<uint8_t> blockCache;
-		uint32_t blockCacheIdx;
+	// Block cache
+	rp::uvector<uint8_t> blockCache;
+	uint32_t blockCacheIdx;
 
-		// Starting offset of the data area
-		// This offset must be added to the blockPointers value
-		uint32_t dataOffset;
+	// Starting offset of the data area
+	// This offset must be added to the blockPointers value
+	uint32_t dataOffset;
 
-		/**
-		 * Get the compressed size of a block.
-		 * @param blockNum Block number
-		 * @return Block's compressed size, or 0 on error
-		 */
-		uint32_t getBlockCompressedSize(uint32_t blockNum) const;
+	/**
+	 * Get the compressed size of a block.
+	 * @param blockNum Block number
+	 * @return Block's compressed size, or 0 on error
+	 */
+	uint32_t getBlockCompressedSize(uint32_t blockNum) const;
 };
 
 /** GczReaderPrivate **/
@@ -347,7 +348,7 @@ int GczReader::isDiscSupported(const uint8_t *pHeader, size_t szHeader) const
 	return isDiscSupported_static(pHeader, szHeader);
 }
 
-/** SparseDiscReader functions. **/
+/** SparseDiscReader functions **/
 
 /**
  * Get the physical address of the specified logical block index.

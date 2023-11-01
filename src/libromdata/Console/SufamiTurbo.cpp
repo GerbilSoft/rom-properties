@@ -23,33 +23,33 @@ namespace LibRomData {
 
 class SufamiTurboPrivate final : public RomDataPrivate
 {
-	public:
-		SufamiTurboPrivate(const IRpFilePtr &file);
+public:
+	SufamiTurboPrivate(const IRpFilePtr &file);
 
-	private:
-		typedef RomDataPrivate super;
-		RP_DISABLE_COPY(SufamiTurboPrivate)
+private:
+	typedef RomDataPrivate super;
+	RP_DISABLE_COPY(SufamiTurboPrivate)
 
-	public:
-		/** RomDataInfo **/
-		static const char *const exts[];
-		static const char *const mimeTypes[];
-		static const RomDataInfo romDataInfo;
+public:
+	/** RomDataInfo **/
+	static const char *const exts[];
+	static const char *const mimeTypes[];
+	static const RomDataInfo romDataInfo;
 
-	public:
-		// ROM header.
-		// NOTE: Must be byteswapped on access.
-		ST_RomHeader romHeader;
+public:
+	// ROM header
+	// NOTE: Must be byteswapped on access.
+	ST_RomHeader romHeader;
 
-		/**
-		 * Get the ROM title.
-		 *
-		 * The ROM title length depends on type, and encoding
-		 * depends on type and region.
-		 *
-		 * @return ROM title.
-		 */
-		string getRomTitle(void) const;
+	/**
+	 * Get the ROM title.
+	 *
+	 * The ROM title length depends on type, and encoding
+	 * depends on type and region.
+	 *
+	 * @return ROM title.
+	 */
+	string getRomTitle(void) const;
 };
 
 ROMDATA_IMPL(SufamiTurbo)

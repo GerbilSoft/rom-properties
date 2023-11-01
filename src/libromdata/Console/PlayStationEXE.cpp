@@ -22,26 +22,26 @@ namespace LibRomData {
 
 class PlayStationEXEPrivate final : public RomDataPrivate
 {
-	public:
-		PlayStationEXEPrivate(const IRpFilePtr &file, uint32_t sp_override);
+public:
+	PlayStationEXEPrivate(const IRpFilePtr &file, uint32_t sp_override);
 
-	private:
-		typedef RomDataPrivate super;
-		RP_DISABLE_COPY(PlayStationEXEPrivate)
+private:
+	typedef RomDataPrivate super;
+	RP_DISABLE_COPY(PlayStationEXEPrivate)
 
-	public:
-		/** RomDataInfo **/
-		static const char *const exts[];
-		static const char *const mimeTypes[];
-		static const RomDataInfo romDataInfo;
+public:
+	/** RomDataInfo **/
+	static const char *const exts[];
+	static const char *const mimeTypes[];
+	static const RomDataInfo romDataInfo;
 
-	public:
-		// PS-X EXE header.
-		// NOTE: **NOT** byteswapped.
-		PS1_EXE_Header psxHeader;
+public:
+	// PS-X EXE header
+	// NOTE: **NOT** byteswapped.
+	PS1_EXE_Header psxHeader;
 
-		// Stack pointer override
-		uint32_t sp_override;
+	// Stack pointer override
+	uint32_t sp_override;
 };
 
 ROMDATA_IMPL(PlayStationEXE)

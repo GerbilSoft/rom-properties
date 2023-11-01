@@ -21,41 +21,42 @@ using namespace LibRpFile;
 
 namespace LibRomData {
 
-class NASOSReaderPrivate : public SparseDiscReaderPrivate {
-	public:
-		explicit NASOSReaderPrivate(NASOSReader *q);
+class NASOSReaderPrivate : public SparseDiscReaderPrivate
+{
+public:
+	explicit NASOSReaderPrivate(NASOSReader *q);
 
-	private:
-		typedef SparseDiscReaderPrivate super;
-		RP_DISABLE_COPY(NASOSReaderPrivate)
+private:
+	typedef SparseDiscReaderPrivate super;
+	RP_DISABLE_COPY(NASOSReaderPrivate)
 
-	public:
-		// NASOS header.
-		union {
-			NASOSHeader nasos;
-			NASOSHeader_GCML gcml;
-			NASOSHeader_WIIx wiix;
-		} header;
+public:
+	// NASOS header
+	union {
+		NASOSHeader nasos;
+		NASOSHeader_GCML gcml;
+		NASOSHeader_WIIx wiix;
+	} header;
 
-		enum class DiscType {
-			Unknown	= -1,
+	enum class DiscType {
+		Unknown	= -1,
 
-			GCML	= 0,
-			WIIx	= 1,
+		GCML	= 0,
+		WIIx	= 1,
 
-			Max
-		};
-		DiscType discType;
+		Max
+	};
+	DiscType discType;
 
-		// Block map.
-		// Values are absolute block addresses, possibly with a shift amount.
-		// Special value: 0xFFFFFFFF == empty block
-		rp::uvector<uint32_t> blockMap;
+	// Block map
+	// Values are absolute block addresses, possibly with a shift amount.
+	// Special value: 0xFFFFFFFF == empty block
+	rp::uvector<uint32_t> blockMap;
 
-		// Block address shift.
-		// - GCML: 0
-		// - WIIx: 8
-		uint8_t blockMapShift;
+	// Block address shift
+	// - GCML: 0
+	// - WIIx: 8
+	uint8_t blockMapShift;
 };
 
 /** NASOSReaderPrivate **/
@@ -179,7 +180,7 @@ int NASOSReader::isDiscSupported(const uint8_t *pHeader, size_t szHeader) const
 	return isDiscSupported_static(pHeader, szHeader);
 }
 
-/** SparseDiscReader functions. **/
+/** SparseDiscReader functions **/
 
 /**
  * Get the physical address of the specified logical block index.

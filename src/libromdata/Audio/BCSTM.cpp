@@ -23,63 +23,63 @@ namespace LibRomData {
 
 class BCSTMPrivate final : public RomDataPrivate
 {
-	public:
-		BCSTMPrivate(const IRpFilePtr &file);
+public:
+	BCSTMPrivate(const IRpFilePtr &file);
 
-	private:
-		typedef RomDataPrivate super;
-		RP_DISABLE_COPY(BCSTMPrivate)
+private:
+	typedef RomDataPrivate super;
+	RP_DISABLE_COPY(BCSTMPrivate)
 
-	public:
-		/** RomDataInfo **/
-		static const char *const exts[];
-		static const char *const mimeTypes[];
-		static const RomDataInfo romDataInfo;
+public:
+	/** RomDataInfo **/
+	static const char *const exts[];
+	static const char *const mimeTypes[];
+	static const RomDataInfo romDataInfo;
 
-	public:
-		// Audio format.
-		enum class AudioFormat {
-			Unknown = -1,
+public:
+	// Audio format
+	enum class AudioFormat {
+		Unknown = -1,
 
-			BCSTM = 0,
-			BFSTM = 1,
-			BCWAV = 2,
+		BCSTM = 0,
+		BFSTM = 1,
+		BCWAV = 2,
 
-			Max
-		};
-		AudioFormat audioFormat;
+		Max
+	};
+	AudioFormat audioFormat;
 
-	public:
-		// BCSTM headers.
-		// NOTE: Uses the endianness specified by the byte-order mark.
-		BCSTM_Header bcstmHeader;
-		union {
-			BCSTM_INFO_Block cstm;
-			BCWAV_INFO_Block cwav;
-		} infoBlock;
+public:
+	// BCSTM headers
+	// NOTE: Uses the endianness specified by the byte-order mark.
+	BCSTM_Header bcstmHeader;
+	union {
+		BCSTM_INFO_Block cstm;
+		BCWAV_INFO_Block cwav;
+	} infoBlock;
 
-		// Is byteswapping needed?
-		bool needsByteswap;
+	// Is byteswapping needed?
+	bool needsByteswap;
 
-		/**
-		 * Byteswap a uint16_t value from BCSTM to CPU.
-		 * @param x Value to swap.
-		 * @return Swapped value.
-		 */
-		inline uint16_t bcstm16_to_cpu(uint16_t x)
-		{
-			return (needsByteswap ? __swab16(x) : x);
-		}
+	/**
+	 * Byteswap a uint16_t value from BCSTM to CPU.
+	 * @param x Value to swap.
+	 * @return Swapped value.
+	 */
+	inline uint16_t bcstm16_to_cpu(uint16_t x)
+	{
+		return (needsByteswap ? __swab16(x) : x);
+	}
 
-		/**
-		 * Byteswap a uint32_t value from BCSTM to CPU.
-		 * @param x Value to swap.
-		 * @return Swapped value.
-		 */
-		inline uint32_t bcstm32_to_cpu(uint32_t x)
-		{
-			return (needsByteswap ? __swab32(x) : x);
-		}
+	/**
+	 * Byteswap a uint32_t value from BCSTM to CPU.
+	 * @param x Value to swap.
+	 * @return Swapped value.
+	 */
+	inline uint32_t bcstm32_to_cpu(uint32_t x)
+	{
+		return (needsByteswap ? __swab32(x) : x);
+	}
 };
 
 ROMDATA_IMPL(BCSTM)

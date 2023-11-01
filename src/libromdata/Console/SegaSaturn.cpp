@@ -31,115 +31,115 @@ namespace LibRomData {
 
 class SegaSaturnPrivate final : public RomDataPrivate
 {
-	public:
-		SegaSaturnPrivate(const IRpFilePtr &file);
+public:
+	SegaSaturnPrivate(const IRpFilePtr &file);
 
-	private:
-		typedef RomDataPrivate super;
-		RP_DISABLE_COPY(SegaSaturnPrivate)
+private:
+	typedef RomDataPrivate super;
+	RP_DISABLE_COPY(SegaSaturnPrivate)
 
-	public:
-		/** RomDataInfo **/
-		static const char *const exts[];
-		static const char *const mimeTypes[];
-		static const RomDataInfo romDataInfo;
+public:
+	/** RomDataInfo **/
+	static const char *const exts[];
+	static const char *const mimeTypes[];
+	static const RomDataInfo romDataInfo;
 
-	public:
-		/** RomFields **/
+public:
+	/** RomFields **/
 
-		// Peripherals (RFT_BITFIELD) [bit values]
-		enum Saturn_Peripherals_Bitfield : unsigned int {
-			SATURN_IOBF_CONTROL_PAD		= (1U <<  0),	// Standard control pad
-			SATURN_IOBF_ANALOG_CONTROLLER	= (1U <<  1),	// Analog controller
-			SATURN_IOBF_MOUSE		= (1U <<  2),	// Mouse
-			SATURN_IOBF_KEYBOARD		= (1U <<  3),	// Keyboard
-			SATURN_IOBF_STEERING		= (1U <<  4),	// Steering controller
-			SATURN_IOBF_MULTITAP		= (1U <<  5),	// Multi-Tap
-			SATURN_IOBF_LIGHT_GUN		= (1U <<  6),	// Light Gun
-			SATURN_IOBF_RAM_CARTRIDGE	= (1U <<  7),	// RAM Cartridge
-			SATURN_IOBF_3D_CONTROLLER	= (1U <<  8),	// 3D Controller
-			SATURN_IOBF_LINK_CABLE		= (1U <<  9),	// Link Cable
-			SATURN_IOBF_NETLINK		= (1U << 10),	// NetLink
-			SATURN_IOBF_PACHINKO		= (1U << 11),	// Pachinko Controller
-			SATURN_IOBF_FDD			= (1U << 12),	// Floppy Disk Drive
-			SATURN_IOBF_ROM_CARTRIDGE	= (1U << 13),	// ROM Cartridge
-			SATURN_IOBF_MPEG_CARD		= (1U << 14),	// MPEG Card
-		};
+	// Peripherals (RFT_BITFIELD) [bit values]
+	enum Saturn_Peripherals_Bitfield : unsigned int {
+		SATURN_IOBF_CONTROL_PAD		= (1U <<  0),	// Standard control pad
+		SATURN_IOBF_ANALOG_CONTROLLER	= (1U <<  1),	// Analog controller
+		SATURN_IOBF_MOUSE		= (1U <<  2),	// Mouse
+		SATURN_IOBF_KEYBOARD		= (1U <<  3),	// Keyboard
+		SATURN_IOBF_STEERING		= (1U <<  4),	// Steering controller
+		SATURN_IOBF_MULTITAP		= (1U <<  5),	// Multi-Tap
+		SATURN_IOBF_LIGHT_GUN		= (1U <<  6),	// Light Gun
+		SATURN_IOBF_RAM_CARTRIDGE	= (1U <<  7),	// RAM Cartridge
+		SATURN_IOBF_3D_CONTROLLER	= (1U <<  8),	// 3D Controller
+		SATURN_IOBF_LINK_CABLE		= (1U <<  9),	// Link Cable
+		SATURN_IOBF_NETLINK		= (1U << 10),	// NetLink
+		SATURN_IOBF_PACHINKO		= (1U << 11),	// Pachinko Controller
+		SATURN_IOBF_FDD			= (1U << 12),	// Floppy Disk Drive
+		SATURN_IOBF_ROM_CARTRIDGE	= (1U << 13),	// ROM Cartridge
+		SATURN_IOBF_MPEG_CARD		= (1U << 14),	// MPEG Card
+	};
 
-		// Peripherals (RFT_BITFIELD) [bit numbers]
-		enum Saturn_Peripherals_Bits : uint8_t {
-			SATURN_IOBIT_CONTROL_PAD	=  0U,	// Standard control pad
-			SATURN_IOBIT_ANALOG_CONTROLLER	=  1U,	// Analog controller
-			SATURN_IOBIT_MOUSE		=  2U,	// Mouse
-			SATURN_IOBIT_KEYBOARD		=  3U,	// Keyboard
-			SATURN_IOBIT_STEERING		=  4U,	// Steering controller
-			SATURN_IOBIT_MULTITAP		=  5U,	// Multi-Tap
-			SATURN_IOBIT_LIGHT_GUN		=  6U,	// Light Gun
-			SATURN_IOBIT_RAM_CARTRIDGE	=  7U,	// RAM Cartridge
-			SATURN_IOBIT_3D_CONTROLLER	=  8U,	// 3D Controller
-			SATURN_IOBIT_LINK_CABLE		=  9U,	// Link Cable
-			SATURN_IOBIT_NETLINK		= 10U,	// NetLink
-			SATURN_IOBIT_PACHINKO		= 11U,	// Pachinko Controller
-			SATURN_IOBIT_FDD		= 12U,	// Floppy Disk Drive
-			SATURN_IOBIT_ROM_CARTRIDGE	= 13U,	// ROM Cartridge
-			SATURN_IOBIT_MPEG_CARD		= 14U,	// MPEG Card
-		};
+	// Peripherals (RFT_BITFIELD) [bit numbers]
+	enum Saturn_Peripherals_Bits : uint8_t {
+		SATURN_IOBIT_CONTROL_PAD	=  0U,	// Standard control pad
+		SATURN_IOBIT_ANALOG_CONTROLLER	=  1U,	// Analog controller
+		SATURN_IOBIT_MOUSE		=  2U,	// Mouse
+		SATURN_IOBIT_KEYBOARD		=  3U,	// Keyboard
+		SATURN_IOBIT_STEERING		=  4U,	// Steering controller
+		SATURN_IOBIT_MULTITAP		=  5U,	// Multi-Tap
+		SATURN_IOBIT_LIGHT_GUN		=  6U,	// Light Gun
+		SATURN_IOBIT_RAM_CARTRIDGE	=  7U,	// RAM Cartridge
+		SATURN_IOBIT_3D_CONTROLLER	=  8U,	// 3D Controller
+		SATURN_IOBIT_LINK_CABLE		=  9U,	// Link Cable
+		SATURN_IOBIT_NETLINK		= 10U,	// NetLink
+		SATURN_IOBIT_PACHINKO		= 11U,	// Pachinko Controller
+		SATURN_IOBIT_FDD		= 12U,	// Floppy Disk Drive
+		SATURN_IOBIT_ROM_CARTRIDGE	= 13U,	// ROM Cartridge
+		SATURN_IOBIT_MPEG_CARD		= 14U,	// MPEG Card
+	};
 
-		// Region code
-		enum SaturnRegion {
-			SATURN_REGION_JAPAN	= (1U << 0),
-			SATURN_REGION_TAIWAN	= (1U << 1),
-			SATURN_REGION_USA	= (1U << 2),
-			SATURN_REGION_EUROPE	= (1U << 3),
-		};
+	// Region code
+	enum SaturnRegion {
+		SATURN_REGION_JAPAN	= (1U << 0),
+		SATURN_REGION_TAIWAN	= (1U << 1),
+		SATURN_REGION_USA	= (1U << 2),
+		SATURN_REGION_EUROPE	= (1U << 3),
+	};
 
-		/** Internal ROM data. **/
+	/** Internal ROM data **/
 
-		/**
-		 * Parse the peripherals field.
-		 * @param peripherals Peripherals field.
-		 * @param size Size of peripherals.
-		 * @return peripherals bitfield.
-		 */
-		static uint32_t parsePeripherals(const char *peripherals, int size);
+	/**
+	 * Parse the peripherals field.
+	 * @param peripherals Peripherals field.
+	 * @param size Size of peripherals.
+	 * @return peripherals bitfield.
+	 */
+	static uint32_t parsePeripherals(const char *peripherals, int size);
 
-		/**
-		 * Parse the region codes field from a Sega Saturn disc header.
-		 * @param region_codes Region codes field. (area_symbols)
-		 * @param size Size of region_codes.
-		 * @return SaturnRegion bitfield.
-		 */
-		static unsigned int parseRegionCodes(const char *region_codes, int size);
+	/**
+	 * Parse the region codes field from a Sega Saturn disc header.
+	 * @param region_codes Region codes field. (area_symbols)
+	 * @param size Size of region_codes.
+	 * @return SaturnRegion bitfield.
+	 */
+	static unsigned int parseRegionCodes(const char *region_codes, int size);
 
-	public:
-		enum class DiscType {
-			Unknown	= -1,
+public:
+	enum class DiscType {
+		Unknown	= -1,
 
-			Iso2048	= 0,	// ISO-9660, 2048-byte sectors.
-			Iso2352	= 1,	// ISO-9660, 2352-byte sectors.
+		Iso2048	= 0,	// ISO-9660, 2048-byte sectors.
+		Iso2352	= 1,	// ISO-9660, 2352-byte sectors.
 
-			Max
-		};
-		DiscType discType;
+		Max
+	};
+	DiscType discType;
 
-		// Disc header.
-		Saturn_IP0000_BIN_t discHeader;
+	// Disc header
+	Saturn_IP0000_BIN_t discHeader;
 
-		// Region code. (Saturn_Region)
-		unsigned int saturn_region;
+	// Region code (Saturn_Region)
+	unsigned int saturn_region;
 
-		/**
-		 * Get the disc publisher.
-		 * @return Disc publisher.
-		 */
-		string getPublisher(void) const;
+	/**
+	 * Get the disc publisher.
+	 * @return Disc publisher.
+	 */
+	string getPublisher(void) const;
 
-		/**
-		 * Parse the disc number portion of the device information field.
-		 * @param disc_num	[out] Disc number.
-		 * @param disc_total	[out] Total number of discs.
-		 */
-		void parseDiscNumber(uint8_t &disc_num, uint8_t &disc_total) const;
+	/**
+	 * Parse the disc number portion of the device information field.
+	 * @param disc_num	[out] Disc number.
+	 * @param disc_total	[out] Total number of discs.
+	 */
+	void parseDiscNumber(uint8_t &disc_num, uint8_t &disc_total) const;
 };
 
 /** SegaSaturnPrivate **/

@@ -53,158 +53,158 @@ namespace LibRomData {
 
 class GameCubePrivate final : public RomDataPrivate
 {
-	public:
-		GameCubePrivate(const IRpFilePtr &file);
-		~GameCubePrivate() final;
+public:
+	GameCubePrivate(const IRpFilePtr &file);
+	~GameCubePrivate() final;
 
-	private:
-		typedef RomDataPrivate super;
-		RP_DISABLE_COPY(GameCubePrivate)
+private:
+	typedef RomDataPrivate super;
+	RP_DISABLE_COPY(GameCubePrivate)
 
-	public:
-		/** RomDataInfo **/
-		static const char *const exts[];
-		static const char *const mimeTypes[];
-		static const RomDataInfo romDataInfo;
+public:
+	/** RomDataInfo **/
+	static const char *const exts[];
+	static const char *const mimeTypes[];
+	static const RomDataInfo romDataInfo;
 
-	public:
-		// NDDEMO header.
-		static const uint8_t nddemo_header[64];
+public:
+	// NDDEMO header
+	static const uint8_t nddemo_header[64];
 
-		enum DiscType {
-			DISC_UNKNOWN = -1,	// Unknown disc type.
+	enum DiscType {
+		DISC_UNKNOWN = -1,	// Unknown disc type
 
-			// Low byte: System ID.
-			DISC_SYSTEM_GCN = 0,		// GameCube disc image
-			DISC_SYSTEM_TRIFORCE = 1,	// Triforce disc/ROM image [TODO]
-			DISC_SYSTEM_WII = 2,		// Wii disc image
-			DISC_SYSTEM_UNKNOWN = 0xFF,
-			DISC_SYSTEM_MASK = 0xFF,
+		// Low byte: System ID.
+		DISC_SYSTEM_GCN = 0,		// GameCube disc image
+		DISC_SYSTEM_TRIFORCE = 1,	// Triforce disc/ROM image [TODO]
+		DISC_SYSTEM_WII = 2,		// Wii disc image
+		DISC_SYSTEM_UNKNOWN = 0xFF,
+		DISC_SYSTEM_MASK = 0xFF,
 
-			// High byte: Image format.
-			DISC_FORMAT_RAW   = (0U << 8),		// Raw image (ISO, GCM)
-			DISC_FORMAT_SDK   = (1U << 8),		// Raw image with SDK header
-			DISC_FORMAT_TGC   = (2U << 8),		// TGC (embedded disc image) (GCN only?)
-			DISC_FORMAT_WBFS  = (3U << 8),		// WBFS image (Wii only)
-			DISC_FORMAT_CISO  = (4U << 8),		// CISO image
-			DISC_FORMAT_NASOS = (5U << 8),		// NASOS image
-			DISC_FORMAT_GCZ   = (6U << 8),		// GCZ image
+		// High byte: Image format.
+		DISC_FORMAT_RAW   = (0U << 8),		// Raw image (ISO, GCM)
+		DISC_FORMAT_SDK   = (1U << 8),		// Raw image with SDK header
+		DISC_FORMAT_TGC   = (2U << 8),		// TGC (embedded disc image) (GCN only?)
+		DISC_FORMAT_WBFS  = (3U << 8),		// WBFS image (Wii only)
+		DISC_FORMAT_CISO  = (4U << 8),		// CISO image
+		DISC_FORMAT_NASOS = (5U << 8),		// NASOS image
+		DISC_FORMAT_GCZ   = (6U << 8),		// GCZ image
 
-			// WIA and RVZ formats are similar.
-			DISC_FORMAT_WIA   = (7U << 8),		// WIA image (Header only!)
-			DISC_FORMAT_RVZ   = (8U << 8),		// RVZ image (Header only!)
+		// WIA and RVZ formats are similar.
+		DISC_FORMAT_WIA   = (7U << 8),		// WIA image (Header only!)
+		DISC_FORMAT_RVZ   = (8U << 8),		// RVZ image (Header only!)
 
-			DISC_FORMAT_PARTITION = (0xFEU << 8),	// Standalone Wii partition
-			DISC_FORMAT_UNKNOWN = (0xFFU << 8),
-			DISC_FORMAT_MASK = (0xFFU << 8),
+		DISC_FORMAT_PARTITION = (0xFEU << 8),	// Standalone Wii partition
+		DISC_FORMAT_UNKNOWN = (0xFFU << 8),
+		DISC_FORMAT_MASK = (0xFFU << 8),
+	};
+
+	// Disc type and reader
+	int discType;
+	IDiscReaderPtr discReader;
+
+	// Disc header
+	GCN_DiscHeader discHeader;
+	RVL_RegionSetting regionSetting;
+
+	// opening.bnr
+	struct {
+		// FIXME: gcn_partition used to be in the 'gcn' union.
+		// Can't do that with shared_ptr...
+		GcnPartitionPtr gcn_partition;	// GcnPartition for opening.bnr
+		union {
+			struct {
+				// GameCube opening.bnr object
+				// NOTE: Not turning this into a shared_ptr<>.
+				GameCubeBNR *data;
+			} gcn;
+			struct {
+				// Wii opening.bnr (IMET section)
+				Wii_IMET_t *imet;
+			} wii;
 		};
+	} opening_bnr;
 
-		// Disc type and reader.
-		int discType;
-		IDiscReaderPtr discReader;
+	// Do we have certain things loaded?
+	bool hasRegionCode;
+	bool wiiPtblLoaded;
+	bool hasDiscHeader;	// true most of the time, except inc values update partitions
 
-		// Disc header.
-		GCN_DiscHeader discHeader;
-		RVL_RegionSetting regionSetting;
+	// Region code. (bi2.bin for GCN, RVL_RegionSetting for Wii.)
+	uint32_t gcnRegion;
 
-		// opening.bnr
-		struct {
-			// FIXME: gcn_partition used to be in the 'gcn' union.
-			// Can't do that with shared_ptr...
-			GcnPartitionPtr gcn_partition;	// GcnPartition for opening.bnr
-			union {
-				struct {
-					// GameCube opening.bnr object
-					// NOTE: Not turning this into a shared_ptr<>.
-					GameCubeBNR *data;
-				} gcn;
-				struct {
-					// Wii opening.bnr (IMET section)
-					Wii_IMET_t *imet;
-				} wii;
-			};
-		} opening_bnr;
+	/**
+		* Wii partition tables.
+		* Decoded from the actual on-disc tables.
+		*/
+	struct WiiPartEntry {
+		off64_t start;		// Starting address, in bytes
+		off64_t size;		// Estimated partition size, in bytes
 
-		// Do we have certain things loaded?
-		bool hasRegionCode;
-		bool wiiPtblLoaded;
-		bool hasDiscHeader;	// true most of the time, except inc values update partitions
+		WiiPartitionPtr partition;	// Partition object
+		uint32_t type;		// Partition type (See WiiPartitionType.)
+		uint8_t vg;		// Volume group number
+		uint8_t pt;		// Partition number
+	};
+	vector<WiiPartEntry> wiiPtbl;
 
-		// Region code. (bi2.bin for GCN, RVL_RegionSetting for Wii.)
-		uint32_t gcnRegion;
+	// Pointers to specific partitions within wiiPtbl.
+	WiiPartition *updatePartition;
+	WiiPartition *gamePartition;
 
-		/**
-		 * Wii partition tables.
-		 * Decoded from the actual on-disc tables.
-		 */
-		struct WiiPartEntry {
-			off64_t start;		// Starting address, in bytes
-			off64_t size;		// Estimated partition size, in bytes
+	/**
+	 * Load the Wii volume group and partition tables.
+	 * Partition tables are loaded into wiiPtbl.
+	 * @return 0 on success; negative POSIX error code on error.
+	 */
+	int loadWiiPartitionTables(void);
 
-			WiiPartitionPtr partition;	// Partition object
-			uint32_t type;		// Partition type (See WiiPartitionType.)
-			uint8_t vg;		// Volume group number
-			uint8_t pt;		// Partition number
-		};
-		vector<WiiPartEntry> wiiPtbl;
+public:
+	/**
+	 * Get the disc publisher.
+	 * @return Disc publisher.
+	 */
+	string getPublisher(void) const;
 
-		// Pointers to specific partitions within wiiPtbl.
-		WiiPartition *updatePartition;
-		WiiPartition *gamePartition;
+	/**
+	 * Load opening.bnr. (GameCube only)
+	 * @return 0 on success; negative POSIX error code on error.
+	 */
+	int gcn_loadOpeningBnr(void);
 
-		/**
-		 * Load the Wii volume group and partition tables.
-		 * Partition tables are loaded into wiiPtbl.
-		 * @return 0 on success; negative POSIX error code on error.
-		 */
-		int loadWiiPartitionTables(void);
+	/**
+	 * Load opening.bnr. (Wii only)
+	 * @return 0 on success; negative POSIX error code on error.
+	 */
+	int wii_loadOpeningBnr(void);
 
-	public:
-		/**
-		 * Get the disc publisher.
-		 * @return Disc publisher.
-		 */
-		string getPublisher(void) const;
+	/**
+	 * [GameCube] Add the game information field from opening.bnr.
+	 *
+	 * This adds an RFT_STRING field for BNR1, and
+	 * RFT_STRING_MULTI for BNR2.
+	 *
+	 * @return 0 on success; negative POSIX error code on error.
+	 */
+	int gcn_addGameInfo(void);
 
-		/**
-		 * Load opening.bnr. (GameCube only)
-		 * @return 0 on success; negative POSIX error code on error.
-		 */
-		int gcn_loadOpeningBnr(void);
+	/**
+	 * [Wii] Add the game name from opening.bnr.
+	 * This adds an RFT_STRING_MULTI field with all available languages.
+	 * @return 0 on success; negative POSIX error code on error.
+	 */
+	int wii_addBannerName(void);
 
-		/**
-		 * Load opening.bnr. (Wii only)
-		 * @return 0 on success; negative POSIX error code on error.
-		 */
-		int wii_loadOpeningBnr(void);
-
-		/**
-		 * [GameCube] Add the game information field from opening.bnr.
-		 *
-		 * This adds an RFT_STRING field for BNR1, and
-		 * RFT_STRING_MULTI for BNR2.
-		 *
-		 * @return 0 on success; negative POSIX error code on error.
-		 */
-		int gcn_addGameInfo(void);
-
-		/**
-		 * [Wii] Add the game name from opening.bnr.
-		 * This adds an RFT_STRING_MULTI field with all available languages.
-		 * @return 0 on success; negative POSIX error code on error.
-		 */
-		int wii_addBannerName(void);
-
-		/**
-		 * Get the encryption status of a partition.
-		 *
-		 * This is used to check if the encryption keys are available
-		 * for a partition, or if not, why not.
-		 *
-		 * @param partition Partition to check.
-		 * @return nullptr if partition is readable; error message if not.
-		 */
-		const char *wii_getCryptoStatus(const WiiPartition *partition);
+	/**
+	 * Get the encryption status of a partition.
+	 *
+	 * This is used to check if the encryption keys are available
+	 * for a partition, or if not, why not.
+	 *
+	 * @param partition Partition to check.
+	 * @return nullptr if partition is readable; error message if not.
+	 */
+	const char *wii_getCryptoStatus(const WiiPartition *partition);
 };
 
 ROMDATA_IMPL(GameCube)

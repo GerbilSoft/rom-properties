@@ -35,231 +35,231 @@ namespace LibRomData {
 
 class Xbox360_XDBF_Private final : public RomDataPrivate
 {
-	public:
-		Xbox360_XDBF_Private(const IRpFilePtr &file, bool xex);
-		~Xbox360_XDBF_Private() final;
+public:
+	Xbox360_XDBF_Private(const IRpFilePtr &file, bool xex);
+	~Xbox360_XDBF_Private() final;
 
-	private:
-		typedef RomDataPrivate super;
-		RP_DISABLE_COPY(Xbox360_XDBF_Private)
+private:
+	typedef RomDataPrivate super;
+	RP_DISABLE_COPY(Xbox360_XDBF_Private)
 
-	public:
-		/** RomDataInfo **/
-		static const char *const exts[];
-		static const char *const mimeTypes[];
-		static const RomDataInfo romDataInfo;
+public:
+	/** RomDataInfo **/
+	static const char *const exts[];
+	static const char *const mimeTypes[];
+	static const RomDataInfo romDataInfo;
 
-	public:
-		// XDBF type
-		enum class XDBFType {
-			Unknown	= -1,	// Unknown XDBF type.
+public:
+	// XDBF type
+	enum class XDBFType {
+		Unknown	= -1,	// Unknown XDBF type.
 
-			SPA	= 0,	// XEX resource
-			GPD	= 1,	// Game Profile Data
+		SPA	= 0,	// XEX resource
+		GPD	= 1,	// Game Profile Data
 
-			Max
-		};
-		XDBFType xdbfType;
+		Max
+	};
+	XDBFType xdbfType;
 
-		// Internal icon
-		// Points to an rp_image within map_images.
-		rp_image_const_ptr img_icon;
+	// Internal icon
+	// Points to an rp_image within map_images.
+	rp_image_const_ptr img_icon;
 
-		// Loaded images.
-		// - Key: resource_id
-		// - Value: rp_image*
-		unordered_map<uint64_t, rp_image_ptr > map_images;
+	// Loaded images.
+	// - Key: resource_id
+	// - Value: rp_image*
+	unordered_map<uint64_t, rp_image_ptr > map_images;
 
-	public:
-		// XDBF header.
-		XDBF_Header xdbfHeader;
+public:
+	// XDBF header.
+	XDBF_Header xdbfHeader;
 
-		// Entry table.
-		// NOTE: Data is *not* byteswapped on load.
-		rp::uvector<XDBF_Entry> entryTable;
+	// Entry table.
+	// NOTE: Data is *not* byteswapped on load.
+	rp::uvector<XDBF_Entry> entryTable;
 
-		// Data start offset within the file.
-		uint32_t data_offset;
+	// Data start offset within the file.
+	uint32_t data_offset;
 
-		// Cached language ID.
-		XDBF_Language_e m_langID;
+	// Cached language ID.
+	XDBF_Language_e m_langID;
 
-		// String table indexes.
-		// These are indexes into entryTable that indicate
-		// where a language table entry is located.
-		// If -1, the string table is not present.
-		// Note that we're using 16-bit indexes instead of pointers
-		// in order to save memory. Also, there shouldn't be more
-		// than 32,767 entries in the table.
-		array<int16_t, XDBF_LANGUAGE_MAX> strTblIndexes;
+	// String table indexes.
+	// These are indexes into entryTable that indicate
+	// where a language table entry is located.
+	// If -1, the string table is not present.
+	// Note that we're using 16-bit indexes instead of pointers
+	// in order to save memory. Also, there shouldn't be more
+	// than 32,767 entries in the table.
+	array<int16_t, XDBF_LANGUAGE_MAX> strTblIndexes;
 
-		// String tables.
-		// NOTE: These are *pointers* to rp::uvector<>.
-		array<rp::uvector<char>*, XDBF_LANGUAGE_MAX> strTbls;
+	// String tables.
+	// NOTE: These are *pointers* to rp::uvector<>.
+	array<rp::uvector<char>*, XDBF_LANGUAGE_MAX> strTbls;
 
-		// If true, this XDBF section is in an XEX executable.
-		// Some fields shouldn't be displayed.
-		bool xex;
+	// If true, this XDBF section is in an XEX executable.
+	// Some fields shouldn't be displayed.
+	bool xex;
 
-		/**
-		 * Find a resource in the entry table.
-		 * @param namespace_id Namespace ID.
-		 * @param resource_id Resource ID.
-		 * @return XDBF_Entry*, or nullptr if not found.
-		 */
-		const XDBF_Entry *findResource(uint16_t namespace_id, uint64_t resource_id) const;
+	/**
+	 * Find a resource in the entry table.
+	 * @param namespace_id Namespace ID.
+	 * @param resource_id Resource ID.
+	 * @return XDBF_Entry*, or nullptr if not found.
+	 */
+	const XDBF_Entry *findResource(uint16_t namespace_id, uint64_t resource_id) const;
 
-		/**
-		 * Determine what languages are available.
-		 * This initializes the strTblIndexes array.
-		 * @return 0 on success; negative POSIX error code on error.
-		 */
-		int initStrTblIndexes(void);
+	/**
+	 * Determine what languages are available.
+	 * This initializes the strTblIndexes array.
+	 * @return 0 on success; negative POSIX error code on error.
+	 */
+	int initStrTblIndexes(void);
 
-	private:
-		/**
-		 * Load a string table. (SPA only)
-		 * @param langID Language ID.
-		 * @return Pointer to string table on success; nullptr on error.
-		 */
-		const rp::uvector<char> *loadStringTable_SPA(XDBF_Language_e langID);
+private:
+	/**
+	 * Load a string table. (SPA only)
+	 * @param langID Language ID.
+	 * @return Pointer to string table on success; nullptr on error.
+	 */
+	const rp::uvector<char> *loadStringTable_SPA(XDBF_Language_e langID);
 
-	public:
-		/**
-		 * Get a string from a string table. (SPA)
-		 * @param langID Language ID.
-		 * @param string_id String ID.
-		 * @return String, or empty string on error.
-		 */
-		string loadString_SPA(XDBF_Language_e langID, uint16_t string_id);
+public:
+	/**
+	 * Get a string from a string table. (SPA)
+	 * @param langID Language ID.
+	 * @param string_id String ID.
+	 * @return String, or empty string on error.
+	 */
+	string loadString_SPA(XDBF_Language_e langID, uint16_t string_id);
 
-		/**
-		 * Get a string from the resource table. (GPD)
-		 * @param string_id String ID.
-		 * @return String, or empty string on error.
-		 */
-		string loadString_GPD(uint16_t string_id);
+	/**
+	 * Get a string from the resource table. (GPD)
+	 * @param string_id String ID.
+	 * @return String, or empty string on error.
+	 */
+	string loadString_GPD(uint16_t string_id);
 
-		/**
-		 * Get the language ID to use for the title fields.
-		 * @return XDBF language ID.
-		 */
-		XDBF_Language_e getLanguageID(void) const;
+	/**
+	 * Get the language ID to use for the title fields.
+	 * @return XDBF language ID.
+	 */
+	XDBF_Language_e getLanguageID(void) const;
 
-		/**
-		 * Get the default language code for the multi-string fields.
-		 * @return Language code, e.g. 'en' or 'es'.
-		 */
-		inline uint32_t getDefaultLC(void) const;
+	/**
+	 * Get the default language code for the multi-string fields.
+	 * @return Language code, e.g. 'en' or 'es'.
+	 */
+	inline uint32_t getDefaultLC(void) const;
 
-		/**
-		 * Load an image resource.
-		 * @param image_id Image ID.
-		 * @return Decoded image, or nullptr on error.
-		 */
-		rp_image_const_ptr loadImage(uint64_t image_id);
+	/**
+	 * Load an image resource.
+	 * @param image_id Image ID.
+	 * @return Decoded image, or nullptr on error.
+	 */
+	rp_image_const_ptr loadImage(uint64_t image_id);
 
-		/**
-		 * Load the main title icon.
-		 * @return Icon, or nullptr on error.
-		 */
-		rp_image_const_ptr loadIcon(void);
+	/**
+	 * Load the main title icon.
+	 * @return Icon, or nullptr on error.
+	 */
+	rp_image_const_ptr loadIcon(void);
 
-	public:
-		/**
-		 * Get the title type as a string.
-		 * @return Title type, or nullptr if not found.
-		 */
-		const char *getTitleType(void) const;
+public:
+	/**
+	 * Get the title type as a string.
+	 * @return Title type, or nullptr if not found.
+	 */
+	const char *getTitleType(void) const;
 
-	private:
-		/**
-		 * Add string fields. (SPA)
-		 * @param fields RomFields*
-		 * @return 0 on success; non-zero on error.
-		 */
-		int addFields_strings_SPA(RomFields *fields) const;
+private:
+	/**
+	 * Add string fields. (SPA)
+	 * @param fields RomFields*
+	 * @return 0 on success; non-zero on error.
+	 */
+	int addFields_strings_SPA(RomFields *fields) const;
 
-		/**
-		 * Add the Achievements RFT_LISTDATA field. (SPA)
-		 * @return 0 on success; non-zero on error.
-		 */
-		int addFields_achievements_SPA(void);
+	/**
+	 * Add the Achievements RFT_LISTDATA field. (SPA)
+	 * @return 0 on success; non-zero on error.
+	 */
+	int addFields_achievements_SPA(void);
 
-		/**
-		 * Add the Avatar Awards RFT_LISTDATA field. (SPA)
-		 * @return 0 on success; non-zero on error.
-		 */
-		int addFields_avatarAwards_SPA(void);
+	/**
+	 * Add the Avatar Awards RFT_LISTDATA field. (SPA)
+	 * @return 0 on success; non-zero on error.
+	 */
+	int addFields_avatarAwards_SPA(void);
 
-	private:
-		/**
-		 * Add string fields. (GPD)
-		 * @param fields RomFields*
-		 * @return 0 on success; non-zero on error.
-		 */
-		int addFields_strings_GPD(RomFields *fields) const;
+private:
+	/**
+	 * Add string fields. (GPD)
+	 * @param fields RomFields*
+	 * @return 0 on success; non-zero on error.
+	 */
+	int addFields_strings_GPD(RomFields *fields) const;
 
-		/**
-		 * Add the Achievements RFT_LISTDATA field. (GPD)
-		 * @return 0 on success; non-zero on error.
-		 */
-		int addFields_achievements_GPD(void);
+	/**
+	 * Add the Achievements RFT_LISTDATA field. (GPD)
+	 * @return 0 on success; non-zero on error.
+	 */
+	int addFields_achievements_GPD(void);
 
-	public:
-		/**
-		 * Add string fields. (SPA)
-		 * @param fields RomFields*
-		 * @return 0 on success; non-zero on error.
-		 */
-		inline int addFields_strings(RomFields *fields) const
-		{
-			int ret = 0;
-			switch (xdbfType) {
-				case XDBFType::SPA:
-					ret = addFields_strings_SPA(fields);
-					break;
-				case XDBFType::GPD:
-					ret = addFields_strings_GPD(fields);
-					break;
-				default:
-					break;
-			}
-			return ret;
+public:
+	/**
+	 * Add string fields. (SPA)
+	 * @param fields RomFields*
+	 * @return 0 on success; non-zero on error.
+	 */
+	inline int addFields_strings(RomFields *fields) const
+	{
+		int ret = 0;
+		switch (xdbfType) {
+			case XDBFType::SPA:
+				ret = addFields_strings_SPA(fields);
+				break;
+			case XDBFType::GPD:
+				ret = addFields_strings_GPD(fields);
+				break;
+			default:
+				break;
 		}
+		return ret;
+	}
 
-		/**
-		 * Add the Achievements RFT_LISTDATA field. (SPA)
-		 * @return 0 on success; non-zero on error.
-		 */
-		inline int addFields_achievements(void)
-		{
-			int ret = 0;
-			switch (xdbfType) {
-				case XDBFType::SPA:
-					ret = addFields_achievements_SPA();
-					break;
-				case XDBFType::GPD:
-					ret = addFields_achievements_GPD();
-					break;
-				default:
-					break;
-			}
-			return ret;
+	/**
+	 * Add the Achievements RFT_LISTDATA field. (SPA)
+	 * @return 0 on success; non-zero on error.
+	 */
+	inline int addFields_achievements(void)
+	{
+		int ret = 0;
+		switch (xdbfType) {
+			case XDBFType::SPA:
+				ret = addFields_achievements_SPA();
+				break;
+			case XDBFType::GPD:
+				ret = addFields_achievements_GPD();
+				break;
+			default:
+				break;
 		}
+		return ret;
+	}
 
-		/**
-		 * Add the Avatar Awards RFT_LISTDATA field. (SPA)
-		 * @return 0 on success; non-zero on error.
-		 */
-		inline int addFields_avatarAwards(void)
-		{
-			if (xdbfType == XDBFType::SPA) {
-				return addFields_avatarAwards_SPA();
-			}
-			// TODO: Find a GPD file with avatar awards.
-			return 0;
+	/**
+	 * Add the Avatar Awards RFT_LISTDATA field. (SPA)
+	 * @return 0 on success; non-zero on error.
+	 */
+	inline int addFields_avatarAwards(void)
+	{
+		if (xdbfType == XDBFType::SPA) {
+			return addFields_avatarAwards_SPA();
 		}
+		// TODO: Find a GPD file with avatar awards.
+		return 0;
+	}
 };
 
 ROMDATA_IMPL(Xbox360_XDBF)
@@ -1942,7 +1942,7 @@ int Xbox360_XDBF::loadInternalImage(ImageType imageType, rp_image_const_ptr &pIm
 	return ((bool)pImage ? 0 : -EIO);
 }
 
-/** Special XDBF accessor functions. **/
+/** Special XDBF accessor functions **/
 
 /**
  * Add the various XDBF string fields.

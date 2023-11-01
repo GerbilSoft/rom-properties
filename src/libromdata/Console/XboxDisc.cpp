@@ -34,90 +34,90 @@ namespace LibRomData {
 
 class XboxDiscPrivate final : public RomDataPrivate
 {
-	public:
-		XboxDiscPrivate(const IRpFilePtr &file);
-		~XboxDiscPrivate() final;
+public:
+	XboxDiscPrivate(const IRpFilePtr &file);
+	~XboxDiscPrivate() final;
 
-	private:
-		typedef RomDataPrivate super;
-		RP_DISABLE_COPY(XboxDiscPrivate)
+private:
+	typedef RomDataPrivate super;
+	RP_DISABLE_COPY(XboxDiscPrivate)
 
-	public:
-		/** RomDataInfo **/
-		static const char *const exts[];
-		static const char *const mimeTypes[];
-		static const RomDataInfo romDataInfo;
+public:
+	/** RomDataInfo **/
+	static const char *const exts[];
+	static const char *const mimeTypes[];
+	static const RomDataInfo romDataInfo;
 
-	public:
-		// Disc type.
-		enum class DiscType {
-			Unknown	= -1,
+public:
+	// Disc type
+	enum class DiscType {
+		Unknown	= -1,
 
-			Extracted	= 0,	// Extracted XDVDFS
-			XGD1		= 1,	// XGD1 (Original Xbox)
-			XGD2		= 2,	// XGD2 (Xbox 360)
-			XGD3		= 3,	// XGD3 (Xbox 360)
+		Extracted	= 0,	// Extracted XDVDFS
+		XGD1		= 1,	// XGD1 (Original Xbox)
+		XGD2		= 2,	// XGD2 (Xbox 360)
+		XGD3		= 3,	// XGD3 (Xbox 360)
 
-			Max
-		};
-		DiscType discType;
-		uint8_t wave;	// XGD2: Wave number
-		bool isKreon;	// Are we using a Kreon drive?
+		Max
+	};
+	DiscType discType;
+	uint8_t wave;	// XGD2: Wave number
+	bool isKreon;	// Are we using a Kreon drive?
 
-		// XDVDFS starting address.
-		off64_t xdvdfs_addr;
+	// XDVDFS starting address
+	off64_t xdvdfs_addr;
 
-		// XDVDFSPartition
-		XDVDFSPartitionPtr xdvdfsPartition;
+	// XDVDFSPartition
+	XDVDFSPartitionPtr xdvdfsPartition;
 
-		// default.xbe / default.xex
-		RomData *defaultExeData;
+	// default.xbe / default.xex
+	RomData *defaultExeData;
 
-		enum class ExeType {
-			Unknown	= -1,
+	enum class ExeType {
+		Unknown	= -1,
 
-			XBE	= 0,	// Xbox XBE
-			XEX	= 1,	// Xbox 360 XEX
+		XBE	= 0,	// Xbox XBE
+		XEX	= 1,	// Xbox 360 XEX
 
-			Max
-		};
-		ExeType exeType;
+		Max
+	};
+	ExeType exeType;
 
-		/**
-		 * Open default.xbe / default.xex.
-		 * @param pExeType	[out] EXE type.
-		 * @return RomData* on success; nullptr on error.
-		 */
-		RomData *openDefaultExe(ExeType *pExeType = nullptr);
+	/**
+	 * Open default.xbe / default.xex.
+	 * @param pExeType	[out] EXE type.
+	 * @return RomData* on success; nullptr on error.
+	 */
+	RomData *openDefaultExe(ExeType *pExeType = nullptr);
 
-		enum class ConsoleType {
-			Unknown	= -1,
+	enum class ConsoleType {
+		Unknown	= -1,
 
-			Xbox	= 0,	// Xbox
-			Xbox360	= 1,	// Xbox 360
+		Xbox	= 0,	// Xbox
+		Xbox360	= 1,	// Xbox 360
 
-			Max
-		};
+		Max
+	};
 
-		/**
-		 * Get the console type.
-		 *
-		 * This is based on the EXE type, or disc type
-		 * if the EXE cannot be loaded for some reason.
-		 *
-		 * @return Console type.
-		 */
-		ConsoleType getConsoleType(void) const;
+	/**
+	 * Get the console type.
+	 *
+	 * This is based on the EXE type, or disc type
+	 * if the EXE cannot be loaded for some reason.
+	 *
+	 * @return Console type.
+	 */
+	ConsoleType getConsoleType(void) const;
 
-		/**
-		 * Unlock the Kreon drive.
-		 */
-		inline void unlockKreonDrive(void);
+	/**
+	 * Unlock the Kreon drive.
+	 */
+	inline void unlockKreonDrive(void);
 
-		/**
-		 * Lock the Kreon drive.
-		 */
-		inline void lockKreonDrive(void);
+	/**
+	 * Lock the Kreon drive.
+	 */
+	inline void lockKreonDrive(void);
 };
 
 ROMDATA_IMPL(XboxDisc)

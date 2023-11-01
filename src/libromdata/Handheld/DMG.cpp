@@ -32,190 +32,190 @@ namespace LibRomData {
 
 class DMGPrivate final : public RomDataPrivate
 {
-	public:
-		DMGPrivate(const IRpFilePtr &file);
+public:
+	DMGPrivate(const IRpFilePtr &file);
 
-	private:
-		typedef RomDataPrivate super;
-		RP_DISABLE_COPY(DMGPrivate)
+private:
+	typedef RomDataPrivate super;
+	RP_DISABLE_COPY(DMGPrivate)
 
-	public:
-		/** RomDataInfo **/
-		static const char *const exts[];
-		static const char *const mimeTypes[];
-		static const RomDataInfo romDataInfo;
+public:
+	/** RomDataInfo **/
+	static const char *const exts[];
+	static const char *const mimeTypes[];
+	static const RomDataInfo romDataInfo;
 
-	public:
-		/** RomFields **/
+public:
+	/** RomFields **/
 
-		// System. (RFT_BITFIELD)
-		enum DMG_System {
-			DMG_SYSTEM_DMG		= (1U << 0),
-			DMG_SYSTEM_SGB		= (1U << 1),
-			DMG_SYSTEM_CGB		= (1U << 2),
-		};
+	// System. (RFT_BITFIELD)
+	enum DMG_System {
+		DMG_SYSTEM_DMG		= (1U << 0),
+		DMG_SYSTEM_SGB		= (1U << 1),
+		DMG_SYSTEM_CGB		= (1U << 2),
+	};
 
-		// Cartridge hardware features. (RFT_BITFIELD)
-		enum DMG_Feature {
-			DMG_FEATURE_RAM		= (1U << 0),
-			DMG_FEATURE_BATTERY	= (1U << 1),
-			DMG_FEATURE_TIMER	= (1U << 2),
-			DMG_FEATURE_RUMBLE	= (1U << 3),
-			DMG_FEATURE_TILT	= (1U << 4),
-		};
+	// Cartridge hardware features. (RFT_BITFIELD)
+	enum DMG_Feature {
+		DMG_FEATURE_RAM		= (1U << 0),
+		DMG_FEATURE_BATTERY	= (1U << 1),
+		DMG_FEATURE_TIMER	= (1U << 2),
+		DMG_FEATURE_RUMBLE	= (1U << 3),
+		DMG_FEATURE_TILT	= (1U << 4),
+	};
 
-		/** Internal ROM data. **/
+	/** Internal ROM data **/
 
-		// Cartridge hardware.
-		enum class DMG_Hardware : uint8_t {
-			Unknown = 0,
+	// Cartridge hardware
+	enum class DMG_Hardware : uint8_t {
+		Unknown = 0,
 
-			ROM,
-			MBC1,
-			MBC2,
-			MBC3,
-			MBC4,
-			MBC5,
-			MBC6,
-			MBC7,
-			MMM01,	// multicart: real header is in the last 32 KB
-			HUC1,
-			HUC3,
-			TAMA5,
-			Camera,
+		ROM,
+		MBC1,
+		MBC2,
+		MBC3,
+		MBC4,
+		MBC5,
+		MBC6,
+		MBC7,
+		MMM01,	// multicart: real header is in the last 32 KB
+		HUC1,
+		HUC3,
+		TAMA5,
+		Camera,
 
-			Max
-		};
-		static const std::array<const char*, 14> dmg_hardware_names;
+		Max
+	};
+	static const std::array<const char*, 14> dmg_hardware_names;
 
-		struct dmg_cart_type {
-			DMG_Hardware hardware;
-			uint8_t features;	// DMG_Feature
-		};
+	struct dmg_cart_type {
+		DMG_Hardware hardware;
+		uint8_t features;	// DMG_Feature
+	};
 
-	private:
-		// Sparse array setup:
-		// - "start" starts at 0x00.
-		// - "end" ends at 0xFF.
-		static const std::array<dmg_cart_type, 35> dmg_cart_types_start;
-		static const std::array<dmg_cart_type,  4> dmg_cart_types_end;
+private:
+	// Sparse array setup:
+	// - "start" starts at 0x00.
+	// - "end" ends at 0xFF.
+	static const std::array<dmg_cart_type, 35> dmg_cart_types_start;
+	static const std::array<dmg_cart_type,  4> dmg_cart_types_end;
 
-	public:
-		/**
-		 * Get the system ID for the specified ROM header.
-		 * @return System ID (DMG_System bitfield)
-		 */
-		static uint32_t systemID(const DMG_RomHeader *pRomHeader);
+public:
+	/**
+	 * Get the system ID for the specified ROM header.
+	 * @return System ID (DMG_System bitfield)
+	 */
+	static uint32_t systemID(const DMG_RomHeader *pRomHeader);
 
-		/**
-		 * Get the system ID for the main ROM header.
-		 * @return System ID (DMG_System bitfield)
-		 */
-		inline uint32_t systemID(void) const
-		{
-			return systemID(&romHeader);
-		}
+	/**
+	 * Get the system ID for the main ROM header.
+	 * @return System ID (DMG_System bitfield)
+	 */
+	inline uint32_t systemID(void) const
+	{
+		return systemID(&romHeader);
+	}
 
-		/**
-		 * Get a dmg_cart_type struct describing a cartridge type byte.
-		 * @param type Cartridge type byte
-		 * @return dmg_cart_type struct
-		 */
-		static inline dmg_cart_type CartType(uint8_t type);
+	/**
+	 * Get a dmg_cart_type struct describing a cartridge type byte.
+	 * @param type Cartridge type byte
+	 * @return dmg_cart_type struct
+	 */
+	static inline dmg_cart_type CartType(uint8_t type);
 
-		/**
-		 * Convert the ROM size value to an actual size.
-		 * @param type ROM size value.
-		 * @return ROM size, in kilobytes. (-1 on error)
-		 */
-		static inline int RomSize(uint8_t type);
+	/**
+	 * Convert the ROM size value to an actual size.
+	 * @param type ROM size value.
+	 * @return ROM size, in kilobytes. (-1 on error)
+	 */
+	static inline int RomSize(uint8_t type);
 
-	public:
-		/**
-		 * DMG RAM size array
-		 */
-		static const std::array<uint8_t, 6> dmg_ram_size;
+public:
+	/**
+	 * DMG RAM size array
+	 */
+	static const std::array<uint8_t, 6> dmg_ram_size;
 
-		/**
-		 * Nintendo's logo which is checked by bootrom.
-		 * (Top half only.)
-		 * 
-		 * NOTE: CGB bootrom only checks the top half of the logo.
-		 * (see 0x00D1 of CGB IPL)
-		 */
-		static const uint8_t dmg_nintendo[0x18];
+	/**
+	 * Nintendo's logo which is checked by bootrom.
+	 * (Top half only.)
+	 * 
+	 * NOTE: CGB bootrom only checks the top half of the logo.
+	 * (see 0x00D1 of CGB IPL)
+	 */
+	static const uint8_t dmg_nintendo[0x18];
 
-	public:
-		enum class RomType {
-			Unknown	= -1,
+public:
+	enum class RomType {
+		Unknown	= -1,
 
-			DMG	= 0,	// Game Boy
-			CGB	= 1,	// Game Boy Color
+		DMG	= 0,	// Game Boy
+		CGB	= 1,	// Game Boy Color
 
-			Max
-		};
-		RomType romType;
+		Max
+	};
+	RomType romType;
 
-	public:
-		// ROM header
-		DMG_RomHeader romHeader;
-		// GBX footer
-		GBX_Footer gbxFooter;
+public:
+	// ROM header
+	DMG_RomHeader romHeader;
+	// GBX footer
+	GBX_Footer gbxFooter;
 
-		// ROM copier header offset
-		unsigned int copier_offset;
+	// ROM copier header offset
+	unsigned int copier_offset;
 
-		// Is this an MMM01 multicart?
-		// Some MMM01 multicarts, e.g. "Mani 4 in 1 - Takahashi Meijin no Bouken-jima II",
-		// don't have the cart_type flag set to MMM01. The only way to detect it is
-		// by checking for the 32 KB menu at the end of the ROM.
-		bool is_mmm01_multicart;
+	// Is this an MMM01 multicart?
+	// Some MMM01 multicarts, e.g. "Mani 4 in 1 - Takahashi Meijin no Bouken-jima II",
+	// don't have the cart_type flag set to MMM01. The only way to detect it is
+	// by checking for the 32 KB menu at the end of the ROM.
+	bool is_mmm01_multicart;
 
-		/**
-		 * Get the title and game ID.
-		 *
-		 * NOTE: These have to be handled at the same time because
-		 * later games take bytes away from the title field to use
-		 * for the CGB flag and the game ID.
-		 *
-		 * @param pRomHeader	[in] ROM header
-		 * @param s_title	[out] Title
-		 * @param s_gameID	[out] Game ID, or empty string if not available
-		 */
-		static void getTitleAndGameID(const DMG_RomHeader *pRomHeader, string &s_title, string &s_gameID);
+	/**
+	 * Get the title and game ID.
+	 *
+	 * NOTE: These have to be handled at the same time because
+	 * later games take bytes away from the title field to use
+	 * for the CGB flag and the game ID.
+	 *
+	 * @param pRomHeader	[in] ROM header
+	 * @param s_title	[out] Title
+	 * @param s_gameID	[out] Game ID, or empty string if not available
+	 */
+	static void getTitleAndGameID(const DMG_RomHeader *pRomHeader, string &s_title, string &s_gameID);
 
-		/**
-		 * Get the title and game ID for the main ROM header.
-		 *
-		 * NOTE: These have to be handled at the same time because
-		 * later games take bytes away from the title field to use
-		 * for the CGB flag and the game ID.
-		 *
-		 * @param s_title	[out] Title
-		 * @param s_gameID	[out] Game ID, or empty string if not available
-		 */
-		inline void getTitleAndGameID(string &s_title, string &s_gameID) const
-		{
-			getTitleAndGameID(&romHeader, s_title, s_gameID);
-		}
+	/**
+	 * Get the title and game ID for the main ROM header.
+	 *
+	 * NOTE: These have to be handled at the same time because
+	 * later games take bytes away from the title field to use
+	 * for the CGB flag and the game ID.
+	 *
+	 * @param s_title	[out] Title
+	 * @param s_gameID	[out] Game ID, or empty string if not available
+	 */
+	inline void getTitleAndGameID(string &s_title, string &s_gameID) const
+	{
+		getTitleAndGameID(&romHeader, s_title, s_gameID);
+	}
 
-		/**
-		 * Get the publisher.
-		 * @return Publisher, or "Unknown (xxx)" if unknown.
-		 */
-		string getPublisher(void) const;
+	/**
+	 * Get the publisher.
+	 * @return Publisher, or "Unknown (xxx)" if unknown.
+	 */
+	string getPublisher(void) const;
 
-	public:
-		/**
-		 * Add fields for the ROM header.
-		 *
-		 * This function will not create a new tab.
-		 * If one is desired, it should be created
-		 * before calling this function.
-		 *
-		 * @param pRomHeader ROM header
-		 */
-		void addFields_romHeader(const DMG_RomHeader *pRomHeader);
+public:
+	/**
+	 * Add fields for the ROM header.
+	 *
+	 * This function will not create a new tab.
+	 * If one is desired, it should be created
+	 * before calling this function.
+	 *
+	 * @param pRomHeader ROM header
+	 */
+	void addFields_romHeader(const DMG_RomHeader *pRomHeader);
 };
 
 ROMDATA_IMPL(DMG)
@@ -243,7 +243,7 @@ const RomDataInfo DMGPrivate::romDataInfo = {
 	"DMG", exts, mimeTypes
 };
 
-/** Internal ROM data. **/
+/** Internal ROM data **/
 
 // Cartridge hardware
 const std::array<const char*, 14> DMGPrivate::dmg_hardware_names = {

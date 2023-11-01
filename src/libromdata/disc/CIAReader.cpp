@@ -25,25 +25,25 @@ namespace LibRomData {
 
 class CIAReaderPrivate
 {
-	public:
-		CIAReaderPrivate(CIAReader *q,
-			off64_t content_offset, uint32_t content_length,
-			const N3DS_Ticket_t *ticket,
-			uint16_t tmd_content_index);
+public:
+	CIAReaderPrivate(CIAReader *q,
+		off64_t content_offset, uint32_t content_length,
+		const N3DS_Ticket_t *ticket,
+		uint16_t tmd_content_index);
 
-	private:
-		RP_DISABLE_COPY(CIAReaderPrivate)
-	protected:
-		CIAReader *const q_ptr;
+private:
+	RP_DISABLE_COPY(CIAReaderPrivate)
+protected:
+	CIAReader *const q_ptr;
 
-	public:
-		CBCReaderPtr cbcReader;
+public:
+	CBCReaderPtr cbcReader;
 
 #ifdef ENABLE_DECRYPTION
-		// KeyY index for title key encryption.
-		uint8_t titleKeyEncIdx;
-		// TMD content index.
-		uint16_t tmd_content_index;
+	// KeyY index for title key encryption
+	uint8_t titleKeyEncIdx;
+	// TMD content index
+	uint16_t tmd_content_index;
 #endif /* ENABLE_DECRYPTION */
 };
 

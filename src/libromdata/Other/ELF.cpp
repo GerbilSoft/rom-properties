@@ -43,178 +43,178 @@ namespace LibRomData {
 
 class ELFPrivate final : public RomDataPrivate
 {
-	public:
-		ELFPrivate(const IRpFilePtr &file);
+public:
+	ELFPrivate(const IRpFilePtr &file);
 
-	private:
-		typedef RomDataPrivate super;
-		RP_DISABLE_COPY(ELFPrivate)
+private:
+	typedef RomDataPrivate super;
+	RP_DISABLE_COPY(ELFPrivate)
 
-	public:
-		/** RomDataInfo **/
-		static const char *const exts[];
-		static const char *const mimeTypes[];
-		static const RomDataInfo romDataInfo;
+public:
+	/** RomDataInfo **/
+	static const char *const exts[];
+	static const char *const mimeTypes[];
+	static const RomDataInfo romDataInfo;
 
-	public:
-		// ELF format.
-		enum class Elf_Format {
-			Unknown	= -1,
+public:
+	// ELF format
+	enum class Elf_Format {
+		Unknown	= -1,
 
-			_32LSB	= 0,
-			_64LSB	= 1,
-			_32MSB	= 2,
-			_64MSB	= 3,
+		_32LSB	= 0,
+		_64LSB	= 1,
+		_32MSB	= 2,
+		_64MSB	= 3,
 
-			Max,
+		Max,
 
-			// Host/swap endian formats.
+		// Host/swap endian formats.
 
 #if SYS_BYTEORDER == SYS_LIL_ENDIAN
-			#define ELFDATAHOST ELFDATA2LSB
-			_32HOST	= _32LSB,
-			_64HOST	= _64LSB,
-			_32SWAP	= _32MSB,
-			_64SWAP	= _64MSB,
+		#define ELFDATAHOST ELFDATA2LSB
+		_32HOST	= _32LSB,
+		_64HOST	= _64LSB,
+		_32SWAP	= _32MSB,
+		_64SWAP	= _64MSB,
 #else /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
-			#define ELFDATAHOST ELFDATA2MSB
-			_32HOST	= _32MSB,
-			_64HOST	= _64MSB,
-			_32SWAP	= _32LSB,
-			_64SWAP	= _64LSB,
+		#define ELFDATAHOST ELFDATA2MSB
+		_32HOST	= _32MSB,
+		_64HOST	= _64MSB,
+		_32SWAP	= _32LSB,
+		_64SWAP	= _64LSB,
 #endif
-		};
-		Elf_Format elfFormat;
+	};
+	Elf_Format elfFormat;
 
-		bool hasCheckedPH;	// Have we checked program headers yet?
-		bool hasCheckedSH;	// Have we checked section headers yet?
+	bool hasCheckedPH;	// Have we checked program headers yet?
+	bool hasCheckedSH;	// Have we checked section headers yet?
 
-		// Basic Program Header information
-		bool isPie;		// Is this a position-independent executable?
-		bool isWiiU;		// Is this a Wii U executable?
+	// Basic Program Header information
+	bool isPie;		// Is this a position-independent executable?
+	bool isWiiU;		// Is this a Wii U executable?
 
-		// ELF header.
-		union {
-			Elf_PrimaryEhdr primary;
-			Elf32_Ehdr elf32;
-			Elf64_Ehdr elf64;
-		} Elf_Header;
+	// ELF header
+	union {
+		Elf_PrimaryEhdr primary;
+		Elf32_Ehdr elf32;
+		Elf64_Ehdr elf64;
+	} Elf_Header;
 
-		/**
-		 * Read an ELF program header.
-		 * @param phbuf	[in] Pointer to program header.
-		 * @return Header information.
-		 */
-		Elf64_Phdr readProgramHeader(const uint8_t *phbuf);
+	/**
+	 * Read an ELF program header.
+	 * @param phbuf	[in] Pointer to program header.
+	 * @return Header information.
+	 */
+	Elf64_Phdr readProgramHeader(const uint8_t *phbuf);
 
-		// Program Header information
-		string interpreter;	// PT_INTERP value
+	// Program Header information
+	string interpreter;	// PT_INTERP value
 
-		// PT_LOAD
-		vector<Elf64_Phdr> pt_load;
+	// PT_LOAD
+	vector<Elf64_Phdr> pt_load;
 
-		// PT_DYNAMIC
-		Elf64_Phdr pt_dynamic;	// If p_offset == 0, not dynamic.
+	// PT_DYNAMIC
+	Elf64_Phdr pt_dynamic;	// If p_offset == 0, not dynamic.
 
-		/**
-		 * Read an ELF section header.
-		 * @param phbuf	[in] Pointer to section header.
-		 * @return Header information.
-		 */
-		Elf64_Shdr readSectionHeader(const uint8_t *phbuf);
+	/**
+	 * Read an ELF section header.
+	 * @param phbuf	[in] Pointer to section header.
+	 * @return Header information.
+	 */
+	Elf64_Shdr readSectionHeader(const uint8_t *phbuf);
 
-		struct symtab_info_t {
-			uint64_t offset;
-			uint64_t size;
-			uint64_t entsize;
-			uint64_t strtab_offset;
-			uint64_t strtab_size;
-		};
-		// SHT_SYMTAB
-		symtab_info_t sht_symtab;
-		// SHT_DYNSYM
-		symtab_info_t sht_dynsym;
+	struct symtab_info_t {
+		uint64_t offset;
+		uint64_t size;
+		uint64_t entsize;
+		uint64_t strtab_offset;
+		uint64_t strtab_size;
+	};
+	// SHT_SYMTAB
+	symtab_info_t sht_symtab;
+	// SHT_DYNSYM
+	symtab_info_t sht_dynsym;
 
-		// Section Header information
-		string osVersion;	// Operating system version.
+	// Section Header information
+	string osVersion;	// Operating system version.
 
-		rp::uvector<uint8_t> build_id;	// GNU `ld` build ID. (raw data)
-		const char *build_id_type;	// Build ID type.
+	rp::uvector<uint8_t> build_id;	// GNU `ld` build ID. (raw data)
+	const char *build_id_type;	// Build ID type.
 
-		/**
-		 * Byteswap a uint16_t value from ELF to CPU.
-		 * @param x Value to swap.
-		 * @return Swapped value.
-		 */
-		inline uint16_t elf16_to_cpu(uint16_t x)
-		{
-			return (Elf_Header.primary.e_data == ELFDATAHOST)
-				? x
-				: __swab16(x);
-		}
+	/**
+	 * Byteswap a uint16_t value from ELF to CPU.
+	 * @param x Value to swap.
+	 * @return Swapped value.
+	 */
+	inline uint16_t elf16_to_cpu(uint16_t x)
+	{
+		return (Elf_Header.primary.e_data == ELFDATAHOST)
+			? x
+			: __swab16(x);
+	}
 
-		/**
-		 * Byteswap a uint32_t value from ELF to CPU.
-		 * @param x Value to swap.
-		 * @return Swapped value.
-		 */
-		inline uint32_t elf32_to_cpu(uint32_t x)
-		{
-			return (Elf_Header.primary.e_data == ELFDATAHOST)
-				? x
-				: __swab32(x);
-		}
+	/**
+	 * Byteswap a uint32_t value from ELF to CPU.
+	 * @param x Value to swap.
+	 * @return Swapped value.
+	 */
+	inline uint32_t elf32_to_cpu(uint32_t x)
+	{
+		return (Elf_Header.primary.e_data == ELFDATAHOST)
+			? x
+			: __swab32(x);
+	}
 
-		/**
-		 * Byteswap a uint64_t value from ELF to CPU.
-		 * @param x Value to swap.
-		 * @return Swapped value.
-		 */
-		inline uint64_t elf64_to_cpu(uint64_t x)
-		{
-			return (Elf_Header.primary.e_data == ELFDATAHOST)
-				? x
-				: __swab64(x);
-		}
+	/**
+	 * Byteswap a uint64_t value from ELF to CPU.
+	 * @param x Value to swap.
+	 * @return Swapped value.
+	 */
+	inline uint64_t elf64_to_cpu(uint64_t x)
+	{
+		return (Elf_Header.primary.e_data == ELFDATAHOST)
+			? x
+			: __swab64(x);
+	}
 
-		/**
-		 * Check program headers.
-		 * @return 0 on success; non-zero on error.
-		 */
-		int checkProgramHeaders(void);
+	/**
+	 * Check program headers.
+	 * @return 0 on success; non-zero on error.
+	 */
+	int checkProgramHeaders(void);
 
-		/**
-		 * Check section headers.
-		 * @return 0 on success; non-zero on error.
-		 */
-		int checkSectionHeaders(void);
+	/**
+	 * Check section headers.
+	 * @return 0 on success; non-zero on error.
+	 */
+	int checkSectionHeaders(void);
 
-		/**
-		 * Read data at a given VA. The data must be in a single PT_LOAD segment.
-		 * @param vaddr The virtual address
-		 * @param out The output vector. Its size determines how much data is read.
-		 * @return 0 on success; non-zero on error.
-		 */
-		int readDataAtVA(uint64_t vaddr, rp::uvector<uint8_t> &out);
+	/**
+	 * Read data at a given VA. The data must be in a single PT_LOAD segment.
+	 * @param vaddr The virtual address
+	 * @param out The output vector. Its size determines how much data is read.
+	 * @return 0 on success; non-zero on error.
+	 */
+	int readDataAtVA(uint64_t vaddr, rp::uvector<uint8_t> &out);
 
-		/**
-		 * Add PT_DYNAMIC fields.
-		 * @return 0 on success; non-zero on error.
-		 */
-		int addPtDynamicFields(void);
+	/**
+	 * Add PT_DYNAMIC fields.
+	 * @return 0 on success; non-zero on error.
+	 */
+	int addPtDynamicFields(void);
 
-		/**
-		 * Read an ELF symbol.
-		 * @param sbuf	[in] Pointer to symbol.
-		 * @return Symbol information.
-		 */
-		Elf64_Sym readSymbol(const uint8_t *sbuf);
+	/**
+	 * Read an ELF symbol.
+	 * @param sbuf	[in] Pointer to symbol.
+	 * @return Symbol information.
+	 */
+	Elf64_Sym readSymbol(const uint8_t *sbuf);
 
-		/**
-		 * Add SYMTAB fields.
-		 * @return 0 on success; non-zero on error.
-		 */
-		int addSymbolFields(span<const char> dynsym_strtab);
+	/**
+	 * Add SYMTAB fields.
+	 * @return 0 on success; non-zero on error.
+	 */
+	int addSymbolFields(span<const char> dynsym_strtab);
 };
 
 ROMDATA_IMPL(ELF)

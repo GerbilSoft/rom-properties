@@ -20,22 +20,22 @@ namespace LibRomData {
 
 class LynxPrivate final : public RomDataPrivate
 {
-	public:
-		LynxPrivate(const IRpFilePtr &file);
+public:
+	LynxPrivate(const IRpFilePtr &file);
 
-	private:
-		typedef RomDataPrivate super;
-		RP_DISABLE_COPY(LynxPrivate)
+private:
+	typedef RomDataPrivate super;
+	RP_DISABLE_COPY(LynxPrivate)
 
-	public:
-		/** RomDataInfo **/
-		static const char *const exts[];
-		static const char *const mimeTypes[];
-		static const RomDataInfo romDataInfo;
+public:
+	/** RomDataInfo **/
+	static const char *const exts[];
+	static const char *const mimeTypes[];
+	static const RomDataInfo romDataInfo;
 
-	public:
-		// ROM header.
-		Lynx_RomHeader romHeader;
+public:
+	// ROM header
+	Lynx_RomHeader romHeader;
 };
 
 ROMDATA_IMPL(Lynx)

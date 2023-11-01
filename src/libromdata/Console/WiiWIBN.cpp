@@ -26,46 +26,46 @@ namespace LibRomData {
 
 class WiiWIBNPrivate final : public RomDataPrivate
 {
-	public:
-		WiiWIBNPrivate(const IRpFilePtr &file);
-		~WiiWIBNPrivate() final = default;
+public:
+	WiiWIBNPrivate(const IRpFilePtr &file);
+	~WiiWIBNPrivate() final = default;
 
-	private:
-		typedef RomDataPrivate super;
-		RP_DISABLE_COPY(WiiWIBNPrivate)
+private:
+	typedef RomDataPrivate super;
+	RP_DISABLE_COPY(WiiWIBNPrivate)
 
-	public:
-		/** RomDataInfo **/
-		static const char *const exts[];
-		static const char *const mimeTypes[];
-		static const RomDataInfo romDataInfo;
+public:
+	/** RomDataInfo **/
+	static const char *const exts[];
+	static const char *const mimeTypes[];
+	static const RomDataInfo romDataInfo;
 
-	public:
-		// Internal images
-		rp_image_ptr img_banner;
+public:
+	// Internal images
+	rp_image_ptr img_banner;
 
-		// Animated icon data
-		IconAnimDataPtr iconAnimData;
+	// Animated icon data
+	IconAnimDataPtr iconAnimData;
 
-	public:
-		// File header.
-		Wii_WIBN_Header_t wibnHeader;
+public:
+	// File header.
+	Wii_WIBN_Header_t wibnHeader;
 
-		/**
-		 * Load the save file's icons.
-		 *
-		 * This will load all of the animated icon frames,
-		 * though only the first frame will be returned.
-		 *
-		 * @return Icon, or nullptr on error.
-		 */
-		rp_image_const_ptr loadIcon(void);
+	/**
+	 * Load the save file's icons.
+	 *
+	 * This will load all of the animated icon frames,
+	 * though only the first frame will be returned.
+	 *
+	 * @return Icon, or nullptr on error.
+	 */
+	rp_image_const_ptr loadIcon(void);
 
-		/**
-		 * Load the save file's banner.
-		 * @return Banner, or nullptr on error.
-		 */
-		rp_image_const_ptr loadBanner(void);
+	/**
+	 * Load the save file's banner.
+	 * @return Banner, or nullptr on error.
+	 */
+	rp_image_const_ptr loadBanner(void);
 };
 
 ROMDATA_IMPL(WiiWIBN)

@@ -66,86 +66,86 @@ namespace LibRomData {
  */
 
 class AmiiboDataPrivate {
-	public:
-		AmiiboDataPrivate();
-		~AmiiboDataPrivate();
+public:
+	AmiiboDataPrivate();
+	~AmiiboDataPrivate();
 
-	private:
-		RP_DISABLE_COPY(AmiiboDataPrivate)
+private:
+	RP_DISABLE_COPY(AmiiboDataPrivate)
 
-	public:
-		// Static AmiiboData instance.
-		// TODO: Q_GLOBAL_STATIC() equivalent, though we
-		// may need special initialization if the compiler
-		// doesn't support thread-safe statics.
-		static AmiiboData instance;
+public:
+	// Static AmiiboData instance.
+	// TODO: Q_GLOBAL_STATIC() equivalent, though we
+	// may need special initialization if the compiler
+	// doesn't support thread-safe statics.
+	static AmiiboData instance;
 
-	public:
-		// amiibo.bin data
-		rp::uvector<uint8_t> amiibo_bin_data;
+public:
+	// amiibo.bin data
+	rp::uvector<uint8_t> amiibo_bin_data;
 
-		// Convenience pointers to amiibo.bin structs.
-		const AmiiboBinHeader *pHeader;
-		const char *pStrTbl;
-		const uint32_t *pCSeriesTbl;
-		const CharTableEntry *pCharTbl;
-		const CharVariantTableEntry *pCharVarTbl;
-		const uint32_t *pASeriesTbl;
-		const AmiiboIDTableEntry *pAmiiboIDTbl;
+	// Convenience pointers to amiibo.bin structs.
+	const AmiiboBinHeader *pHeader;
+	const char *pStrTbl;
+	const uint32_t *pCSeriesTbl;
+	const CharTableEntry *pCharTbl;
+	const CharVariantTableEntry *pCharVarTbl;
+	const uint32_t *pASeriesTbl;
+	const AmiiboIDTableEntry *pAmiiboIDTbl;
 
-		// Cached table lengths.
-		uint32_t strTbl_len;
-		// Cached table counts. (divided by sizeof each element)
-		uint32_t cseriesTbl_count;
-		uint32_t charTbl_count;
-		uint32_t charVarTbl_count;
-		uint32_t aseriesTbl_count;
-		uint32_t amiiboIdTbl_count;
+	// Cached table lengths
+	uint32_t strTbl_len;
+	// Cached table counts (divided by sizeof each element)
+	uint32_t cseriesTbl_count;
+	uint32_t charTbl_count;
+	uint32_t charVarTbl_count;
+	uint32_t aseriesTbl_count;
+	uint32_t amiiboIdTbl_count;
 
-	public:
-		// Overriden amiibo-data.bin filename
-		// NOTE: This is static so we don't have to export the entire class.
-		static TCHAR *amiibo_data_bin_override_filename;
+public:
+	// Overriden amiibo-data.bin filename
+	// NOTE: This is static so we don't have to export the entire class.
+	static TCHAR *amiibo_data_bin_override_filename;
 
-		// amiibo.bin timestamps
-		time_t amiibo_bin_check_ts;	// Last check timestamp
-		time_t amiibo_bin_file_ts;	// File mtime
+	// amiibo.bin timestamps
+	time_t amiibo_bin_check_ts;	// Last check timestamp
+	time_t amiibo_bin_file_ts;	// File mtime
 
-		enum class AmiiboBinFileType : uint8_t {
-			None = 0,
-			System = 1,
-			User = 2,
-		};
-		AmiiboBinFileType amiiboBinFileType;
+	enum class AmiiboBinFileType : uint8_t {
+		None = 0,
+		System = 1,
+		User = 2,
+	};
+	AmiiboBinFileType amiiboBinFileType;
 
-	private:
-		/**
-		 * Get an amiibo-data.bin filename.
-		 * @param amiiboBinFileType AmiiboBinFileType
-		 * @return amiibo-data.bin filename, or empty string on error.
-		 */
-		tstring getAmiiboBinFilename(AmiiboBinFileType amiiboBinFileType) const;
+private:
+	/**
+	 * Get an amiibo-data.bin filename.
+	 * @param amiiboBinFileType AmiiboBinFileType
+	 * @return amiibo-data.bin filename, or empty string on error.
+	 */
+	tstring getAmiiboBinFilename(AmiiboBinFileType amiiboBinFileType) const;
 
-	public:
-		/**
-		 * Load amiibo-data.bin if it's needed.
-		 * @return 0 on success or if load isn't needed; negative POSIX error code on error.
-		 */
-		int loadIfNeeded(void);
+public:
+	/**
+	 * Load amiibo-data.bin if it's needed.
+	 * @return 0 on success or if load isn't needed; negative POSIX error code on error.
+	 */
+	int loadIfNeeded(void);
 
-	private:
-		/**
-		 * Clear the loaded data.
-		 */
-		void clear(void);
+private:
+	/**
+	 * Clear the loaded data.
+	 */
+	void clear(void);
 
-	public:
-		/**
-		 * String table lookup.
-		 * @param idx String table index.
-		 * @return String, or nullptr on error.
-		 */
-		inline const char *strTbl_lookup(uint32_t idx) const;
+public:
+	/**
+	 * String table lookup.
+	 * @param idx String table index.
+	 * @return String, or nullptr on error.
+	 */
+	inline const char *strTbl_lookup(uint32_t idx) const;
 };
 
 // amiibo-data.bin filename

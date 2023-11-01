@@ -103,170 +103,170 @@ namespace LibRomData {
 template<typename ImgClass>
 class NOVTABLE TCreateThumbnail
 {
-	public:
-		TCreateThumbnail() = default;
-		virtual ~TCreateThumbnail() = default;
-	private:
-		RP_DISABLE_COPY(TCreateThumbnail)
+public:
+	TCreateThumbnail() = default;
+	virtual ~TCreateThumbnail() = default;
+private:
+	RP_DISABLE_COPY(TCreateThumbnail)
 
-	public:
-		/**
-		 * Image size struct.
-		 */
-		struct ImgSize {
-			int width;
-			int height;
-		};
+public:
+	/**
+	 * Image size struct.
+	 */
+	struct ImgSize {
+		int width;
+		int height;
+	};
 
-		/**
-		 * Get an internal image.
-		 * @param romData	[in] RomData object
-		 * @param imageType	[in] Image type
-		 * @param pOutSize	[out,opt] Pointer to ImgSize to store the image's size
-		 * @param sBIT		[out,opt] sBIT metadata
-		 * @return Internal image, or null ImgClass on error.
-		 */
-		ImgClass getInternalImage(const LibRpBase::RomDataPtr &romData,
-			LibRpBase::RomData::ImageType imageType,
-			ImgSize *pOutSize = nullptr,
-			LibRpTexture::rp_image::sBIT_t *sBIT = nullptr);
+	/**
+	 * Get an internal image.
+	 * @param romData	[in] RomData object
+	 * @param imageType	[in] Image type
+	 * @param pOutSize	[out,opt] Pointer to ImgSize to store the image's size
+	 * @param sBIT		[out,opt] sBIT metadata
+	 * @return Internal image, or null ImgClass on error.
+	 */
+	ImgClass getInternalImage(const LibRpBase::RomDataPtr &romData,
+		LibRpBase::RomData::ImageType imageType,
+		ImgSize *pOutSize = nullptr,
+		LibRpTexture::rp_image::sBIT_t *sBIT = nullptr);
 
-		/**
-		 * Get an external image.
-		 * @param romData	[in] RomData object
-		 * @param imageType	[in] Image type
-		 * @param reqSize	[in] Requested image size. [0 for largest]
-		 * @param pOutSize	[out,opt] Pointer to ImgSize to store the image's size
-		 * @param sBIT		[out,opt] sBIT metadata
-		 * @return External image, or null ImgClass on error.
-		 */
-		ImgClass getExternalImage(const LibRpBase::RomDataPtr &romData,
-			LibRpBase::RomData::ImageType imageType,
-			int reqSize = 0, ImgSize *pOutSize = nullptr,
-			LibRpTexture::rp_image::sBIT_t *sBIT = nullptr);
+	/**
+	 * Get an external image.
+	 * @param romData	[in] RomData object
+	 * @param imageType	[in] Image type
+	 * @param reqSize	[in] Requested image size. [0 for largest]
+	 * @param pOutSize	[out,opt] Pointer to ImgSize to store the image's size
+	 * @param sBIT		[out,opt] sBIT metadata
+	 * @return External image, or null ImgClass on error.
+	 */
+	ImgClass getExternalImage(const LibRpBase::RomDataPtr &romData,
+		LibRpBase::RomData::ImageType imageType,
+		int reqSize = 0, ImgSize *pOutSize = nullptr,
+		LibRpTexture::rp_image::sBIT_t *sBIT = nullptr);
 
-		/**
-		 * getThumbnail() output parameters
-		 */
-		struct GetThumbnailOutParams_t {
-			ImgClass retImg;			// [out] Returned image
-			ImgSize thumbSize;			// [out] Thumbnail size
-			ImgSize fullSize;			// [out] Full image size
-			LibRpTexture::rp_image::sBIT_t sBIT;	// [out] sBIT metadata
-		};
+	/**
+	 * getThumbnail() output parameters
+	 */
+	struct GetThumbnailOutParams_t {
+		ImgClass retImg;			// [out] Returned image
+		ImgSize thumbSize;			// [out] Thumbnail size
+		ImgSize fullSize;			// [out] Full image size
+		LibRpTexture::rp_image::sBIT_t sBIT;	// [out] sBIT metadata
+	};
 
-		/**
-		 * Create a thumbnail for the specified ROM file.
-		 * @param romData	[in] RomData object
-		 * @param reqSize	[in] Requested image size (single dimension; assuming square image) [0 for full size or largest]
-		 * @param pOutParams	[out] Output parameters (If an error occurs, pOutParams->retImg will be null)
-		 * @return 0 on success; non-zero on error.
-		 */
-		int getThumbnail(const LibRpBase::RomDataPtr &romData, int reqSize, GetThumbnailOutParams_t *pOutParams);
+	/**
+	 * Create a thumbnail for the specified ROM file.
+	 * @param romData	[in] RomData object
+	 * @param reqSize	[in] Requested image size (single dimension; assuming square image) [0 for full size or largest]
+	 * @param pOutParams	[out] Output parameters (If an error occurs, pOutParams->retImg will be null)
+	 * @return 0 on success; non-zero on error.
+	 */
+	int getThumbnail(const LibRpBase::RomDataPtr &romData, int reqSize, GetThumbnailOutParams_t *pOutParams);
 
-		/**
-		 * Create a thumbnail for the specified ROM file.
-		 * @param file		[in] Open IRpFile object
-		 * @param reqSize	[in] Requested image size (single dimension; assuming square image) [0 for full size or largest]
-		 * @param pOutParams	[out] Output parameters (If an error occurs, pOutParams->retImg will be null)
-		 * @return 0 on success; non-zero on error.
-		 */
-		int getThumbnail(const LibRpFile::IRpFilePtr &file, int reqSize, GetThumbnailOutParams_t *pOutParams);
+	/**
+	 * Create a thumbnail for the specified ROM file.
+	 * @param file		[in] Open IRpFile object
+	 * @param reqSize	[in] Requested image size (single dimension; assuming square image) [0 for full size or largest]
+	 * @param pOutParams	[out] Output parameters (If an error occurs, pOutParams->retImg will be null)
+	 * @return 0 on success; non-zero on error.
+	 */
+	int getThumbnail(const LibRpFile::IRpFilePtr &file, int reqSize, GetThumbnailOutParams_t *pOutParams);
 
-		/**
-		 * Create a thumbnail for the specified ROM file.
-		 * @param filename	[in] ROM file
-		 * @param reqSize	[in] Requested image size (single dimension; assuming square image) [0 for full size or largest]
-		 * @param pOutParams	[out] Output parameters (If an error occurs, pOutParams->retImg will be null)
-		 * @return 0 on success; non-zero on error.
-		 */
-		int getThumbnail(const char *filename, int reqSize, GetThumbnailOutParams_t *pOutParams);
+	/**
+	 * Create a thumbnail for the specified ROM file.
+	 * @param filename	[in] ROM file
+	 * @param reqSize	[in] Requested image size (single dimension; assuming square image) [0 for full size or largest]
+	 * @param pOutParams	[out] Output parameters (If an error occurs, pOutParams->retImg will be null)
+	 * @return 0 on success; non-zero on error.
+	 */
+	int getThumbnail(const char *filename, int reqSize, GetThumbnailOutParams_t *pOutParams);
 
-	protected:
-		/**
-		 * Rescale a size while maintaining the aspect ratio.
-		 * Based on Qt 4.8's QSize::scale().
-		 * @param rs_size	[in,out] Original size, which will be rescaled.
-		 * @param tgt_size	[in] Target size.
-		 */
-		static inline void rescale_aspect(ImgSize &rs_size, ImgSize tgt_size);
+protected:
+	/**
+	 * Rescale a size while maintaining the aspect ratio.
+	 * Based on Qt 4.8's QSize::scale().
+	 * @param rs_size	[in,out] Original size, which will be rescaled.
+	 * @param tgt_size	[in] Target size.
+	 */
+	static inline void rescale_aspect(ImgSize &rs_size, ImgSize tgt_size);
 
-	protected:
-		/** Pure virtual functions. **/
+protected:
+	/** Pure virtual functions **/
 
-		/**
-		 * Wrapper function to convert rp_image* to ImgClass.
-		 * @param img rp_image
-		 * @return ImgClass
-		 */
-		virtual ImgClass rpImageToImgClass(const LibRpTexture::rp_image_const_ptr &img) const = 0;
+	/**
+	 * Wrapper function to convert rp_image* to ImgClass.
+	 * @param img rp_image
+	 * @return ImgClass
+	 */
+	virtual ImgClass rpImageToImgClass(const LibRpTexture::rp_image_const_ptr &img) const = 0;
 
-		/**
-		 * Wrapper function to check if an ImgClass is valid.
-		 * @param imgClass ImgClass
-		 * @return True if valid; false if not.
-		 */
-		virtual bool isImgClassValid(const ImgClass &imgClass) const = 0;
+	/**
+	 * Wrapper function to check if an ImgClass is valid.
+	 * @param imgClass ImgClass
+	 * @return True if valid; false if not.
+	 */
+	virtual bool isImgClassValid(const ImgClass &imgClass) const = 0;
 
-		/**
-		 * Wrapper function to get a "null" ImgClass.
-		 * @return "Null" ImgClass.
-		 */
-		virtual ImgClass getNullImgClass(void) const = 0;
+	/**
+	 * Wrapper function to get a "null" ImgClass.
+	 * @return "Null" ImgClass.
+	 */
+	virtual ImgClass getNullImgClass(void) const = 0;
 
-		/**
-		 * Free an ImgClass object.
-		 *
-		 * This function may be a no-op in cases where ImgClass
-		 * is not a pointer, e.g. QImage in Qt frontends.
-		 *
-		 * @param imgClass ImgClass object.
-		 */
-		virtual void freeImgClass(ImgClass &imgClass) const = 0;
+	/**
+	 * Free an ImgClass object.
+	 *
+	 * This function may be a no-op in cases where ImgClass
+	 * is not a pointer, e.g. QImage in Qt frontends.
+	 *
+	 * @param imgClass ImgClass object.
+	 */
+	virtual void freeImgClass(ImgClass &imgClass) const = 0;
 
-		enum class ScalingMethod {
-			Nearest = 0,
-			Bilinear = 1,
-		};
+	enum class ScalingMethod {
+		Nearest = 0,
+		Bilinear = 1,
+	};
 
-		/**
-		 * Rescale an ImgClass using the specified scaling method.
-		 * @param imgClass ImgClass object.
-		 * @param sz New size.
-		 * @param method Scaling method.
-		 * @return Rescaled ImgClass.
-		 */
-		virtual ImgClass rescaleImgClass(const ImgClass &imgClass, ImgSize sz, ScalingMethod method = ScalingMethod::Nearest) const = 0;
+	/**
+	 * Rescale an ImgClass using the specified scaling method.
+	 * @param imgClass ImgClass object.
+	 * @param sz New size.
+	 * @param method Scaling method.
+	 * @return Rescaled ImgClass.
+	 */
+	virtual ImgClass rescaleImgClass(const ImgClass &imgClass, ImgSize sz, ScalingMethod method = ScalingMethod::Nearest) const = 0;
 
-		/**
-		 * Get the size of the specified ImgClass.
-		 * @param imgClass	[in] ImgClass object.
-		 * @param pOutSize	[out] Pointer to ImgSize to store the image size.
-		 * @return 0 on success; non-zero on error.
-		 */
-		virtual int getImgClassSize(const ImgClass &imgClass, ImgSize *pOutSize) const = 0;
+	/**
+	 * Get the size of the specified ImgClass.
+	 * @param imgClass	[in] ImgClass object.
+	 * @param pOutSize	[out] Pointer to ImgSize to store the image size.
+	 * @return 0 on success; non-zero on error.
+	 */
+	virtual int getImgClassSize(const ImgClass &imgClass, ImgSize *pOutSize) const = 0;
 
-		/**
-		 * Get the proxy for the specified URL.
-		 * @param url URL
-		 * @return Proxy, or empty string if no proxy is needed.
-		 */
-		virtual std::string proxyForUrl(const char *url) const = 0;
+	/**
+	 * Get the proxy for the specified URL.
+	 * @param url URL
+	 * @return Proxy, or empty string if no proxy is needed.
+	 */
+	virtual std::string proxyForUrl(const char *url) const = 0;
 
-		/**
-		 * Is the system using a metered connection?
-		 *
-		 * Note that if the system doesn't support identifying if the
-		 * connection is metered, it will be assumed that the network
-		 * connection is unmetered.
-		 *
-		 * @return True if metered; false if not.
-		 */
-		virtual bool isMetered(void)
-		{
-			// Default is unmetered.
-			return false;
-		}
+	/**
+	 * Is the system using a metered connection?
+	 *
+	 * Note that if the system doesn't support identifying if the
+	 * connection is metered, it will be assumed that the network
+	 * connection is unmetered.
+	 *
+	 * @return True if metered; false if not.
+	 */
+	virtual bool isMetered(void)
+	{
+		// Default is unmetered.
+		return false;
+	}
 };
 
 }

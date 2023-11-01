@@ -42,7 +42,7 @@ class DiscReader final : public IDiscReader
 		RP_DISABLE_COPY(DiscReader)
 
 	public:
-		/** Disc image detection functions. **/
+		/** Disc image detection functions **/
 
 		/**
 		 * Is a disc image supported by this class?

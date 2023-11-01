@@ -102,7 +102,7 @@ int EXEPrivate::loadNEResident(void)
 
 
 /**
- * Load the non-resident name table
+ * Load the non-resident name table. (NE)
  * @return 0 on success; negative POSIX error code on error.
  */
 int EXEPrivate::loadNENonResidentNames(void)

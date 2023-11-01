@@ -36,71 +36,71 @@ namespace LibRomData {
 
 class SNDHPrivate final : public RomDataPrivate
 {
-	public:
-		SNDHPrivate(const IRpFilePtr &file);
+public:
+	SNDHPrivate(const IRpFilePtr &file);
 
-	private:
-		typedef RomDataPrivate super;
-		RP_DISABLE_COPY(SNDHPrivate)
+private:
+	typedef RomDataPrivate super;
+	RP_DISABLE_COPY(SNDHPrivate)
 
-	public:
-		/** RomDataInfo **/
-		static const char *const exts[];
-		static const char *const mimeTypes[];
-		static const RomDataInfo romDataInfo;
+public:
+	/** RomDataInfo **/
+	static const char *const exts[];
+	static const char *const mimeTypes[];
+	static const RomDataInfo romDataInfo;
 
-	public:
-		// Parsed tags.
-		struct TagData {
-			bool tags_read;		// True if tags were read successfully.
+public:
+	// Parsed tags
+	struct TagData {
+		bool tags_read;		// True if tags were read successfully.
 
-			string title;		// Song title.
-			string composer;	// Composer name.
-			string ripper;		// Ripper name.
-			string converter;	// Converter name.
+		string title;		// Song title
+		string composer;	// Composer name
+		string ripper;		// Ripper name
+		string converter;	// Converter name
 
-			unsigned int subtunes;		// Subtune count. (If 0 or 1, entire file is one song.)
-							// NOTE: 0 (or missing) means SNDHv1; 1 means SNDHv2.
-			unsigned int vblank_freq;	// VBlank frequency. (50/60)
-			unsigned int timer_freq[4];	// Timer frequencies. (A, B, C, D) [0 if not specified]
-			unsigned int year;		// Year of release.
-			unsigned int def_subtune;	// Default subtune.
+		unsigned int subtunes;		// Subtune count (If 0 or 1, entire file is one song.)
+						// NOTE: 0 (or missing) means SNDHv1; 1 means SNDHv2.
+		unsigned int vblank_freq;	// VBlank frequency (50/60)
+		unsigned int timer_freq[4];	// Timer frequencies (A, B, C, D) [0 if not specified]
+		unsigned int year;		// Year of release
+		unsigned int def_subtune;	// Default subtune
 
-			// TODO: Use std::pair<>?
-			// The SNDH format uses separate tags for each, though...
-			vector<string> subtune_names;		// Subtune names.
-			vector<unsigned int> subtune_lengths;	// Subtune lengths, in seconds.
+		// TODO: Use std::pair<>?
+		// The SNDH format uses separate tags for each, though...
+		vector<string> subtune_names;		// Subtune names.
+		vector<unsigned int> subtune_lengths;	// Subtune lengths, in seconds.
 
-			TagData() : tags_read(false), subtunes(0), vblank_freq(0), year(0), def_subtune(0)
-			{
-				// Clear the timer frequencies.
-				memset(&timer_freq, 0, sizeof(timer_freq));
-			}
-		};
+		TagData() : tags_read(false), subtunes(0), vblank_freq(0), year(0), def_subtune(0)
+		{
+			// Clear the timer frequencies.
+			memset(&timer_freq, 0, sizeof(timer_freq));
+		}
+	};
 
-		/**
-		 * Read a NULL-terminated ASCII string from an arbitrary binary buffer.
-		 * @param p	[in/out] String pointer. (will be adjusted to point after the NULL terminator)
-		 * @param p_end	[in] End of buffer pointer.
-		 * @param p_err	[out] Set to true if the string is out of bounds.
-		 * @return ASCII string.
-		 */
-		static string readStrFromBuffer(const uint8_t **p, const uint8_t *p_end, bool *p_err);
+	/**
+	 * Read a NULL-terminated ASCII string from an arbitrary binary buffer.
+	 * @param p	[in/out] String pointer. (will be adjusted to point after the NULL terminator)
+	 * @param p_end	[in] End of buffer pointer.
+	 * @param p_err	[out] Set to true if the string is out of bounds.
+	 * @return ASCII string.
+	 */
+	static string readStrFromBuffer(const uint8_t **p, const uint8_t *p_end, bool *p_err);
 
-		/**
-		 * Read a NULL-terminated unsigned ASCII number from an arbitrary binary buffer.
-		 * @param p	[in/out] String pointer. (will be adjusted to point after the NULL terminator)
-		 * @param p_end	[in] End of buffer pointer.
-		 * @param p_err	[out] Set to true if the string is out of bounds.
-		 * @return Unsigned ASCII number.
-		 */
-		static unsigned int readAsciiNumberFromBuffer(const uint8_t **p, const uint8_t *p_end, bool *p_err);
+	/**
+	 * Read a NULL-terminated unsigned ASCII number from an arbitrary binary buffer.
+	 * @param p	[in/out] String pointer. (will be adjusted to point after the NULL terminator)
+	 * @param p_end	[in] End of buffer pointer.
+	 * @param p_err	[out] Set to true if the string is out of bounds.
+	 * @return Unsigned ASCII number.
+	 */
+	static unsigned int readAsciiNumberFromBuffer(const uint8_t **p, const uint8_t *p_end, bool *p_err);
 
-		/**
-		 * Parse the tags from the open SNDH file.
-		 * @return TagData object.
-		 */
-		TagData parseTags(void);
+	/**
+	 * Parse the tags from the open SNDH file.
+	 * @return TagData object.
+	 */
+	TagData parseTags(void);
 };
 
 ROMDATA_IMPL(SNDH)

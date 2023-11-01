@@ -22,50 +22,50 @@ namespace LibRomData {
 
 class Sega8BitPrivate final : public RomDataPrivate
 {
-	public:
-		Sega8BitPrivate(const IRpFilePtr &file);
+public:
+	Sega8BitPrivate(const IRpFilePtr &file);
 
-	private:
-		typedef RomDataPrivate super;
-		RP_DISABLE_COPY(Sega8BitPrivate)
+private:
+	typedef RomDataPrivate super;
+	RP_DISABLE_COPY(Sega8BitPrivate)
 
-	public:
-		/** RomDataInfo **/
-		static const char *const exts[];
-		static const char *const mimeTypes[];
-		static const RomDataInfo romDataInfo;
+public:
+	/** RomDataInfo **/
+	static const char *const exts[];
+	static const char *const mimeTypes[];
+	static const RomDataInfo romDataInfo;
 
-	public:
-		// ROM header. (0x7FE0-0x7FFF)
-		struct {
-			union {
-				char m404_copyright[16];
-				Sega8_Codemasters_RomHeader codemasters;
-				Sega8_SDSC_RomHeader sdsc;
-			};
-			Sega8_RomHeader tmr;
-		} romHeader;
+public:
+	// ROM header (0x7FE0-0x7FFF)
+	struct {
+		union {
+			char m404_copyright[16];
+			Sega8_Codemasters_RomHeader codemasters;
+			Sega8_SDSC_RomHeader sdsc;
+		};
+		Sega8_RomHeader tmr;
+	} romHeader;
 
-		/**
-		 * Get an SDSC string field.
-		 * @param ptr SDSC string pointer.
-		 * @return SDSC string on success; empty string on error.
-		 */
-		string getSdscString(uint16_t ptr);
+	/**
+	 * Get an SDSC string field.
+	 * @param ptr SDSC string pointer.
+	 * @return SDSC string on success; empty string on error.
+	 */
+	string getSdscString(uint16_t ptr);
 
-		/**
-		 * Convert a Codemasters timestamp to a Unix timestamp.
-		 * @param timestamp Codemasters timestamp.
-		 * @return Unix timestamp, or -1 on error.
-		 */
-		static time_t codemasters_timestamp_to_unix_time(const Sega8_Codemasters_Timestamp *timestamp);
+	/**
+	 * Convert a Codemasters timestamp to a Unix timestamp.
+	 * @param timestamp Codemasters timestamp.
+	 * @return Unix timestamp, or -1 on error.
+	 */
+	static time_t codemasters_timestamp_to_unix_time(const Sega8_Codemasters_Timestamp *timestamp);
 
-		/**
-		 * Convert an SDSC build date to a Unix timestamp.
-		 * @param date SDSC build date.
-		 * @return Unix timestamp, or -1 on error.
-		 */
-		static time_t sdsc_date_to_unix_time(const Sega8_SDSC_Date *date);
+	/**
+	 * Convert an SDSC build date to a Unix timestamp.
+	 * @param date SDSC build date.
+	 * @return Unix timestamp, or -1 on error.
+	 */
+	static time_t sdsc_date_to_unix_time(const Sega8_SDSC_Date *date);
 };
 
 ROMDATA_IMPL(Sega8Bit)

@@ -27,81 +27,81 @@ namespace LibRomData {
 
 class GameCubeSavePrivate final : public RomDataPrivate
 {
-	public:
-		GameCubeSavePrivate(const IRpFilePtr &file);
-		~GameCubeSavePrivate() final = default;
+public:
+	GameCubeSavePrivate(const IRpFilePtr &file);
+	~GameCubeSavePrivate() final = default;
 
-	private:
-		typedef RomDataPrivate super;
-		RP_DISABLE_COPY(GameCubeSavePrivate)
+private:
+	typedef RomDataPrivate super;
+	RP_DISABLE_COPY(GameCubeSavePrivate)
 
-	public:
-		/** RomDataInfo **/
-		static const char *const exts[];
-		static const char *const mimeTypes[];
-		static const RomDataInfo romDataInfo;
+public:
+	/** RomDataInfo **/
+	static const char *const exts[];
+	static const char *const mimeTypes[];
+	static const RomDataInfo romDataInfo;
 
-	public:
-		// Internal images
-		rp_image_ptr img_banner;
+public:
+	// Internal images
+	rp_image_ptr img_banner;
 
-		// Animated icon data
-		IconAnimDataPtr iconAnimData;
+	// Animated icon data
+	IconAnimDataPtr iconAnimData;
 
-	public:
-		// RomFields data
+public:
+	// RomFields data
 
-		// Directory entry from the GCI header.
-		card_direntry direntry;
+	// Directory entry from the GCI header.
+	card_direntry direntry;
 
-		// Save file type.
-		enum class SaveType {
-			Unknown	= -1,
+	// Save file type.
+	enum class SaveType {
+		Unknown	= -1,
 
-			GCI	= 0,	// USB Memory Adapter
-			GCS	= 1,	// GameShark
-			SAV	= 2,	// MaxDrive
+		GCI	= 0,	// USB Memory Adapter
+		GCS	= 1,	// GameShark
+		SAV	= 2,	// MaxDrive
 
-			Max
-		};
-		SaveType saveType;
+		Max
+	};
+	SaveType saveType;
 
-		/**
-		 * Byteswap a card_direntry struct.
-		 * @param direntry card_direntry struct.
-		 * @param saveType Apply quirks for a specific save type.
-		 */
-		static void byteswap_direntry(card_direntry *direntry, SaveType saveType);
+	/**
+	 * Byteswap a card_direntry struct.
+	 * @param direntry card_direntry struct.
+	 * @param saveType Apply quirks for a specific save type.
+	 */
+	static void byteswap_direntry(card_direntry *direntry, SaveType saveType);
 
-		// Data offset. This is the actual starting address
-		// of the game data, past the file-specific headers
-		// and the CARD directory entry.
-		int dataOffset;
+	// Data offset. This is the actual starting address
+	// of the game data, past the file-specific headers
+	// and the CARD directory entry.
+	int dataOffset;
 
-		/**
-		 * Is the specified buffer a valid CARD directory entry?
-		 * @param buffer CARD directory entry. (Must be 64 bytes.)
-		 * @param data_size Data area size. (no headers)
-		 * @param saveType Apply quirks for a specific save type.
-		 * @return True if this appears to be a valid CARD directory entry; false if not.
-		 */
-		static bool isCardDirEntry(const uint8_t *buffer, uint32_t data_size, SaveType saveType);
+	/**
+	 * Is the specified buffer a valid CARD directory entry?
+	 * @param buffer CARD directory entry. (Must be 64 bytes.)
+	 * @param data_size Data area size. (no headers)
+	 * @param saveType Apply quirks for a specific save type.
+	 * @return True if this appears to be a valid CARD directory entry; false if not.
+	 */
+	static bool isCardDirEntry(const uint8_t *buffer, uint32_t data_size, SaveType saveType);
 
-		/**
-		 * Load the save file's icons.
-		 *
-		 * This will load all of the animated icon frames,
-		 * though only the first frame will be returned.
-		 *
-		 * @return Icon, or nullptr on error.
-		 */
-		rp_image_const_ptr loadIcon(void);
+	/**
+	 * Load the save file's icons.
+	 *
+	 * This will load all of the animated icon frames,
+	 * though only the first frame will be returned.
+	 *
+	 * @return Icon, or nullptr on error.
+	 */
+	rp_image_const_ptr loadIcon(void);
 
-		/**
-		 * Load the save file's banner.
-		 * @return Banner, or nullptr on error.
-		 */
-		rp_image_const_ptr loadBanner(void);
+	/**
+	 * Load the save file's banner.
+	 * @return Banner, or nullptr on error.
+	 */
+	rp_image_const_ptr loadBanner(void);
 };
 
 ROMDATA_IMPL(GameCubeSave)

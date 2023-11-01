@@ -18,12 +18,12 @@ ROMDATA_DECL_IMGPF()
 ROMDATA_DECL_IMGINT()
 ROMDATA_DECL_ICONANIM()
 
-	public:
-		/**
-		 * Is the NoCopy flag set?
-		 * @return True if set; false if not.
-		 */
-		bool isNoCopyFlagSet(void) const;
+public:
+	/**
+	 * Is the NoCopy flag set?
+	 * @return True if set; false if not.
+	 */
+	bool isNoCopyFlagSet(void) const;
 
 ROMDATA_DECL_END()
 

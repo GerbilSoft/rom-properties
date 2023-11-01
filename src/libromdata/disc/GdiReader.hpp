@@ -19,99 +19,99 @@ namespace LibRomData {
 class GdiReaderPrivate;
 class GdiReader : public LibRpBase::SparseDiscReader
 {
-	public:
-		/**
-		 * Construct a GdiReader with the specified file.
-		 * The file is ref()'d, so the original file can be
-		 * unref()'d by the caller afterwards.
-		 * @param file File to read from.
-		 */
-		explicit GdiReader(const LibRpFile::IRpFilePtr &file);
+public:
+	/**
+	 * Construct a GdiReader with the specified file.
+	 * The file is ref()'d, so the original file can be
+	 * unref()'d by the caller afterwards.
+	 * @param file File to read from.
+	 */
+	explicit GdiReader(const LibRpFile::IRpFilePtr &file);
 
-	private:
-		typedef SparseDiscReader super;
-		RP_DISABLE_COPY(GdiReader)
-	private:
-		friend class GdiReaderPrivate;
+private:
+	typedef SparseDiscReader super;
+	RP_DISABLE_COPY(GdiReader)
+private:
+	friend class GdiReaderPrivate;
 
-	public:
-		/** Disc image detection functions. **/
+public:
+	/** Disc image detection functions **/
 
-		/**
-		 * Is a disc image supported by this class?
-		 * @param pHeader Disc image header.
-		 * @param szHeader Size of header.
-		 * @return Class-specific disc format ID (>= 0) if supported; -1 if not.
-		 */
-		ATTR_ACCESS_SIZE(read_only, 1, 2)
-		static int isDiscSupported_static(const uint8_t *pHeader, size_t szHeader);
+	/**
+	 * Is a disc image supported by this class?
+	 * @param pHeader Disc image header.
+	 * @param szHeader Size of header.
+	 * @return Class-specific disc format ID (>= 0) if supported; -1 if not.
+	 */
+	ATTR_ACCESS_SIZE(read_only, 1, 2)
+	static int isDiscSupported_static(const uint8_t *pHeader, size_t szHeader);
 
-		/**
-		 * Is a disc image supported by this object?
-		 * @param pHeader Disc image header.
-		 * @param szHeader Size of header.
-		 * @return Class-specific disc format ID (>= 0) if supported; -1 if not.
-		 */
-		ATTR_ACCESS_SIZE(read_only, 2, 3)
-		int isDiscSupported(const uint8_t *pHeader, size_t szHeader) const final;
+	/**
+	 * Is a disc image supported by this object?
+	 * @param pHeader Disc image header.
+	 * @param szHeader Size of header.
+	 * @return Class-specific disc format ID (>= 0) if supported; -1 if not.
+	 */
+	ATTR_ACCESS_SIZE(read_only, 2, 3)
+	int isDiscSupported(const uint8_t *pHeader, size_t szHeader) const final;
 
-	protected:
-		/** SparseDiscReader functions. **/
+protected:
+	/** SparseDiscReader functions **/
 
-		/**
-		 * Get the physical address of the specified logical block index.
-		 *
-		 * NOTE: Not implemented in this subclass.
-		 *
-		 * @param blockIdx	[in] Block index.
-		 * @return Physical block address. (-1 due to not being implemented)
-		 */
-		off64_t getPhysBlockAddr(uint32_t blockIdx) const final;
+	/**
+	 * Get the physical address of the specified logical block index.
+	 *
+	 * NOTE: Not implemented in this subclass.
+	 *
+	 * @param blockIdx	[in] Block index.
+	 * @return Physical block address. (-1 due to not being implemented)
+	 */
+	off64_t getPhysBlockAddr(uint32_t blockIdx) const final;
 
-		/**
-		 * Read the specified block.
-		 *
-		 * This can read either a full block or a partial block.
-		 * For a full block, set pos = 0 and size = block_size.
-		 *
-		 * @param blockIdx	[in] Block index.
-		 * @param pos		[in] Starting position. (Must be >= 0 and <= the block size!)
-		 * @param ptr		[out] Output data buffer.
-		 * @param size		[in] Amount of data to read, in bytes. (Must be <= the block size!)
-		 * @return Number of bytes read, or -1 if the block index is invalid.
-		 */
-		ATTR_ACCESS_SIZE(write_only, 4, 5)
-		int readBlock(uint32_t blockIdx, int pos, void *ptr, size_t size) final;
+	/**
+	 * Read the specified block.
+	 *
+	 * This can read either a full block or a partial block.
+	 * For a full block, set pos = 0 and size = block_size.
+	 *
+	 * @param blockIdx	[in] Block index.
+	 * @param pos		[in] Starting position. (Must be >= 0 and <= the block size!)
+	 * @param ptr		[out] Output data buffer.
+	 * @param size		[in] Amount of data to read, in bytes. (Must be <= the block size!)
+	 * @return Number of bytes read, or -1 if the block index is invalid.
+	 */
+	ATTR_ACCESS_SIZE(write_only, 4, 5)
+	int readBlock(uint32_t blockIdx, int pos, void *ptr, size_t size) final;
 
-	public:
-		/** GDI-specific functions. **/
+public:
+	/** GDI-specific functions **/
 
-		/**
-		 * Get the track count.
-		 * @return Track count.
-		 */
-		int trackCount(void) const;
+	/**
+	 * Get the track count.
+	 * @return Track count.
+	 */
+	int trackCount(void) const;
 
-		/**
-		 * Get the starting LBA of the specified track number.
-		 * @param trackNumber Track number. (1-based)
-		 * @return Starting LBA, or -1 if the track number is invalid.
-		 */
-		int startingLBA(int trackNumber) const;
+	/**
+	 * Get the starting LBA of the specified track number.
+	 * @param trackNumber Track number. (1-based)
+	 * @return Starting LBA, or -1 if the track number is invalid.
+	 */
+	int startingLBA(int trackNumber) const;
 
-		/**
-		 * Open a track using IsoPartition.
-		 * @param trackNumber Track number. (1-based)
-		 * @return IsoPartition, or nullptr on error.
-		 */
-		IsoPartitionPtr openIsoPartition(int trackNumber);
+	/**
+	 * Open a track using IsoPartition.
+	 * @param trackNumber Track number. (1-based)
+	 * @return IsoPartition, or nullptr on error.
+	 */
+	IsoPartitionPtr openIsoPartition(int trackNumber);
 
-		/**
-		 * Create an ISO RomData object for a given track number.
-		 * @param trackNumber Track number. (1-based)
-		 * @return ISO object, or nullptr on error.
-		 */
-		ISOPtr openIsoRomData(int trackNumber);
+	/**
+	 * Create an ISO RomData object for a given track number.
+	 * @param trackNumber Track number. (1-based)
+	 * @return ISO object, or nullptr on error.
+	 */
+	ISOPtr openIsoRomData(int trackNumber);
 };
 
 typedef std::shared_ptr<GdiReader> GdiReaderPtr;

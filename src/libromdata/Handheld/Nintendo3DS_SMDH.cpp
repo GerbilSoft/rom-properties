@@ -32,51 +32,51 @@ namespace LibRomData {
 
 class Nintendo3DS_SMDH_Private final : public RomDataPrivate
 {
-	public:
-		Nintendo3DS_SMDH_Private(const IRpFilePtr &file);
-		~Nintendo3DS_SMDH_Private() final = default;
+public:
+	Nintendo3DS_SMDH_Private(const IRpFilePtr &file);
+	~Nintendo3DS_SMDH_Private() final = default;
 
-	private:
-		typedef RomDataPrivate super;
-		RP_DISABLE_COPY(Nintendo3DS_SMDH_Private)
+private:
+	typedef RomDataPrivate super;
+	RP_DISABLE_COPY(Nintendo3DS_SMDH_Private)
 
-	public:
-		/** RomDataInfo **/
-		static const char *const exts[];
-		static const char *const mimeTypes[];
-		static const RomDataInfo romDataInfo;
+public:
+	/** RomDataInfo **/
+	static const char *const exts[];
+	static const char *const mimeTypes[];
+	static const RomDataInfo romDataInfo;
 
-	public:
-		// Internal images.
-		// 0 == 24x24; 1 == 48x48
-		array<rp_image_ptr, 2> img_icon;
+public:
+	// Internal images
+	// 0 == 24x24; 1 == 48x48
+	array<rp_image_ptr, 2> img_icon;
 
-	public:
-		// SMDH headers.
-		// NOTE: *NOT* byteswapped!
-		struct {
-			N3DS_SMDH_Header_t header;
-			N3DS_SMDH_Icon_t icon;
-		} smdh;
+public:
+	// SMDH headers
+	// NOTE: *NOT* byteswapped!
+	struct {
+		N3DS_SMDH_Header_t header;
+		N3DS_SMDH_Icon_t icon;
+	} smdh;
 
-		/**
-		 * Load the ROM image's icon.
-		 * @param idx Image index. (0 == 24x24; 1 == 48x48)
-		 * @return Icon, or nullptr on error.
-		 */
-		rp_image_const_ptr loadIcon(int idx = 1);
+	/**
+	 * Load the ROM image's icon.
+	 * @param idx Image index. (0 == 24x24; 1 == 48x48)
+	 * @return Icon, or nullptr on error.
+	 */
+	rp_image_const_ptr loadIcon(int idx = 1);
 
-		/**
-		 * Get the language ID to use for the title fields.
-		 * @return N3DS language ID.
-		 */
-		N3DS_Language_ID getLanguageID(void) const;
+	/**
+	 * Get the language ID to use for the title fields.
+	 * @return N3DS language ID.
+	 */
+	N3DS_Language_ID getLanguageID(void) const;
 
-		/**
-		 * Get the default language code for the multi-string fields.
-		 * @return Language code, e.g. 'en' or 'es'.
-		 */
-		inline uint32_t getDefaultLC(void) const;
+	/**
+	 * Get the default language code for the multi-string fields.
+	 * @return Language code, e.g. 'en' or 'es'.
+	 */
+	inline uint32_t getDefaultLC(void) const;
 };
 
 ROMDATA_IMPL(Nintendo3DS_SMDH)
@@ -709,7 +709,7 @@ int Nintendo3DS_SMDH::loadInternalImage(ImageType imageType, rp_image_const_ptr 
 	return ((bool)pImage ? 0 : -EIO);
 }
 
-/** Special SMDH accessor functions. **/
+/** Special SMDH accessor functions **/
 
 /**
  * Get the SMDH region code.

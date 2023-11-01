@@ -53,180 +53,180 @@ DELAYLOAD_TEST_FUNCTION_IMPL0(get_crc_table);
 
 class KeyStoreUIPrivate
 {
-	public:
-		explicit KeyStoreUIPrivate(KeyStoreUI *q);
-		~KeyStoreUIPrivate();
+public:
+	explicit KeyStoreUIPrivate(KeyStoreUI *q);
+	~KeyStoreUIPrivate();
 
-	private:
-		KeyStoreUI *const q_ptr;
-		RP_DISABLE_COPY(KeyStoreUIPrivate)
+private:
+	KeyStoreUI *const q_ptr;
+	RP_DISABLE_COPY(KeyStoreUIPrivate)
 
-	public:
-		// Has the user changed anything?
-		// This specifically refers to *user* settings.
-		// reset() will emit dataChanged(), but changed
-		// will be set back to false.
-		bool changed;
+public:
+	// Has the user changed anything?
+	// This specifically refers to *user* settings.
+	// reset() will emit dataChanged(), but changed
+	// will be set back to false.
+	bool changed;
 
-	public:
-		// Keys.
-		vector<KeyStoreUI::Key> keys;
+public:
+	// Keys
+	vector<KeyStoreUI::Key> keys;
 
-		// Sections.
-		struct Section {
-			//string name;		// NOTE: Not actually used...
-			int keyIdxStart;	// Starting index in keys.
-			int keyCount;		// Number of keys.
-		};
-		vector<Section> sections;
+	// Sections
+	struct Section {
+		//string name;		// NOTE: Not actually used...
+		int keyIdxStart;	// Starting index in keys
+		int keyCount;		// Number of keys
+	};
+	vector<Section> sections;
 
-		// IAesCipher for verifying keys.
-		IAesCipher *cipher;
+	// IAesCipher for verifying keys
+	IAesCipher *cipher;
 
-	public:
-		/**
-		 * (Re-)Load the keys from keys.conf.
-		 */
-		void reset(void);
+public:
+	/**
+	 * (Re-)Load the keys from keys.conf.
+	 */
+	void reset(void);
 
-	public:
-		/**
-		 * Convert a sectIdx/keyIdx pair to a flat key index.
-		 * @param sectIdx	[in] Section index.
-		 * @param keyIdx	[in] Key index.
-		 * @return Flat key index, or -1 if invalid.
-		 */
-		inline int sectKeyToIdx(int sectIdx, int keyIdx) const;
+public:
+	/**
+	 * Convert a sectIdx/keyIdx pair to a flat key index.
+	 * @param sectIdx	[in] Section index.
+	 * @param keyIdx	[in] Key index.
+	 * @return Flat key index, or -1 if invalid.
+	 */
+	inline int sectKeyToIdx(int sectIdx, int keyIdx) const;
 
-		/**
-		 * Convert a flat key index to sectIdx/keyIdx.
-		 * @param idx		[in] Flat key index.
-		 * @param pSectIdx	[out] Section index.
-		 * @param pKeyIdx	[out] Key index.
-		 * @return 0 on success; negative POSIX error code on error.
-		 */
-		inline int idxToSectKey(int idx, int *pSectIdx, int *pKeyIdx) const;
+	/**
+	 * Convert a flat key index to sectIdx/keyIdx.
+	 * @param idx		[in] Flat key index.
+	 * @param pSectIdx	[out] Section index.
+	 * @param pKeyIdx	[out] Key index.
+	 * @return 0 on success; negative POSIX error code on error.
+	 */
+	inline int idxToSectKey(int idx, int *pSectIdx, int *pKeyIdx) const;
 
-	public:
-		/**
-		 * Convert a string that may contain kanji to hexadecimal.
-		 * @param str UTF-8 string [NULL-terminated]
-		 * @return Converted string [ASCII], or empty string on error.
-		 */
-		static string convertKanjiToHex(const char *str);
+public:
+	/**
+	 * Convert a string that may contain kanji to hexadecimal.
+	 * @param str UTF-8 string [NULL-terminated]
+	 * @return Converted string [ASCII], or empty string on error.
+	 */
+	static string convertKanjiToHex(const char *str);
 
-	public:
-		/**
-		 * Verify a key.
-		 * @param keyData	[in] Key data. (16 bytes)
-		 * @param verifyData	[in] Key verification data. (16 bytes)
-		 * @param len		[in] Length of keyData and verifyData. (must be 16)
-		 * @return 0 if the key is verified; non-zero if not.
-		 */
-		int verifyKeyData(const uint8_t *keyData, const uint8_t *verifyData, int len);
+public:
+	/**
+	 * Verify a key.
+	 * @param keyData	[in] Key data. (16 bytes)
+	 * @param verifyData	[in] Key verification data. (16 bytes)
+	 * @param len		[in] Length of keyData and verifyData. (must be 16)
+	 * @return 0 if the key is verified; non-zero if not.
+	 */
+	int verifyKeyData(const uint8_t *keyData, const uint8_t *verifyData, int len);
 
-		/**
-		 * Verify a key and update its status.
-		 * @param sectIdx Section index.
-		 * @param keyIdx Key index.
-		 */
-		void verifyKey(int sectIdx, int keyIdx);
+	/**
+	 * Verify a key and update its status.
+	 * @param sectIdx Section index.
+	 * @param keyIdx Key index.
+	 */
+	void verifyKey(int sectIdx, int keyIdx);
 
-	public:
-		// Section enumeration.
-		enum class SectionID {
-			WiiPartition	= 0,
-			CtrKeyScrambler	= 1,
-			N3DSVerifyKeys	= 2,
-			Xbox360_XEX	= 3,
-		};
+public:
+	// Section enumeration
+	enum class SectionID {
+		WiiPartition	= 0,
+		CtrKeyScrambler	= 1,
+		N3DSVerifyKeys	= 2,
+		Xbox360_XEX	= 3,
+	};
 
-		struct KeyBinAddress {
-			uint32_t address;
-			int keyIdx;		// -1 for end of list.
-		};
+	struct KeyBinAddress {
+		uint32_t address;
+		int keyIdx;		// -1 for end of list.
+	};
 
-		/**
-		 * Import keys from a binary blob.
-		 * @param sectIdx	[in] Section index
-		 * @param kba		[in] KeyBinAddress array
-		 * @param buf		[in] Key buffer
-		 * @param len		[in] Length of buf
-		 * @return Key import status
-		 */
-		KeyStoreUI::ImportReturn importKeysFromBlob(SectionID sectIdx,
-			const KeyBinAddress *kba, const uint8_t *buf, unsigned int len);
+	/**
+	 * Import keys from a binary blob.
+	 * @param sectIdx	[in] Section index
+	 * @param kba		[in] KeyBinAddress array
+	 * @param buf		[in] Key buffer
+	 * @param len		[in] Length of buf
+	 * @return Key import status
+	 */
+	KeyStoreUI::ImportReturn importKeysFromBlob(SectionID sectIdx,
+		const KeyBinAddress *kba, const uint8_t *buf, unsigned int len);
 
-		/**
-		 * Get the encryption key required for aeskeydb.bin.
-		 * @param pKey	[out] Key output.
-		 * @return 0 on success; non-zero on error.
-		 */
-		int getAesKeyDB_key(u128_t *pKey) const;
+	/**
+	 * Get the encryption key required for aeskeydb.bin.
+	 * @param pKey	[out] Key output.
+	 * @return 0 on success; non-zero on error.
+	 */
+	int getAesKeyDB_key(u128_t *pKey) const;
 
-	public:
-		// TODO: Share with rpcli/verifykeys.cpp.
-		// TODO: Central registration of key verification functions?
-		typedef int (*pfnKeyCount_t)(void);
-		typedef const char* (*pfnKeyName_t)(int keyIdx);
-		typedef const uint8_t* (*pfnVerifyData_t)(int keyIdx);
+public:
+	// TODO: Share with rpcli/verifykeys.cpp.
+	// TODO: Central registration of key verification functions?
+	typedef int (*pfnKeyCount_t)(void);
+	typedef const char* (*pfnKeyName_t)(int keyIdx);
+	typedef const uint8_t* (*pfnVerifyData_t)(int keyIdx);
 
-		struct EncKeyFns_t {
-			pfnKeyCount_t pfnKeyCount;
-			pfnKeyName_t pfnKeyName;
-			pfnVerifyData_t pfnVerifyData;
-		};
+	struct EncKeyFns_t {
+		pfnKeyCount_t pfnKeyCount;
+		pfnKeyName_t pfnKeyName;
+		pfnVerifyData_t pfnVerifyData;
+	};
 
-		#define ENCKEYFNS(klass) { \
-			klass::encryptionKeyCount_static, \
-			klass::encryptionKeyName_static, \
-			klass::encryptionVerifyData_static \
-		}
+	#define ENCKEYFNS(klass) { \
+		klass::encryptionKeyCount_static, \
+		klass::encryptionKeyName_static, \
+		klass::encryptionVerifyData_static \
+	}
 
-		static const std::array<EncKeyFns_t, 4> encKeyFns;
+	static const std::array<EncKeyFns_t, 4> encKeyFns;
 
-	public:
-		// Hexadecimal lookup table.
-		static const std::array<char, 16> hex_lookup;
+public:
+	// Hexadecimal lookup table.
+	static const std::array<char, 16> hex_lookup;
 
-		/**
-		 * Convert a binary key to a hexadecimal string.
-		 * @param data	[in] Binary key
-		 * @param len	[in] Length of binary key, in bytes
-		 * @return Hexadecimal string
-		 */
-		static string binToHexStr(const uint8_t *data, unsigned int len);
+	/**
+	 * Convert a binary key to a hexadecimal string.
+	 * @param data	[in] Binary key
+	 * @param len	[in] Length of binary key, in bytes
+	 * @return Hexadecimal string
+	 */
+	static string binToHexStr(const uint8_t *data, unsigned int len);
 
-	public:
-		/** Key import functions **/
+public:
+	/** Key import functions **/
 
-		/**
-		 * Import keys from Wii keys.bin. (BootMii format)
-		 * @param file Opened keys.bin file
-		 * @return Key import status
-		 */
-		KeyStoreUI::ImportReturn importWiiKeysBin(IRpFile *file);
+	/**
+	 * Import keys from Wii keys.bin. (BootMii format)
+	 * @param file Opened keys.bin file
+	 * @return Key import status
+	 */
+	KeyStoreUI::ImportReturn importWiiKeysBin(IRpFile *file);
 
-		/**
-		 * Import keys from Wii U otp.bin.
-		 * @param file Opened otp.bin file
-		 * @return Key import status
-		 */
-		KeyStoreUI::ImportReturn importWiiUOtpBin(IRpFile *file);
+	/**
+	 * Import keys from Wii U otp.bin.
+	 * @param file Opened otp.bin file
+	 * @return Key import status
+	 */
+	KeyStoreUI::ImportReturn importWiiUOtpBin(IRpFile *file);
 
-		/**
-		 * Import keys from 3DS boot9.bin.
-		 * @param file Opened boot9.bin file
-		 * @return Key import status
-		 */
-		KeyStoreUI::ImportReturn importN3DSboot9bin(IRpFile *file);
+	/**
+	 * Import keys from 3DS boot9.bin.
+	 * @param file Opened boot9.bin file
+	 * @return Key import status
+	 */
+	KeyStoreUI::ImportReturn importN3DSboot9bin(IRpFile *file);
 
-		/**
-		 * Import keys from 3DS aeskeydb.bin.
-		 * @param file Opened aeskeydb.bin file
-		 * @return Key import status
-		 */
-		KeyStoreUI::ImportReturn importN3DSaeskeydb(IRpFile *file);
+	/**
+	 * Import keys from 3DS aeskeydb.bin.
+	 * @param file Opened aeskeydb.bin file
+	 * @return Key import status
+	 */
+	KeyStoreUI::ImportReturn importN3DSaeskeydb(IRpFile *file);
 };
 
 /** KeyStoreUIPrivate **/

@@ -17,61 +17,62 @@ using namespace LibRpFile;
 
 namespace LibRomData {
 
-class WbfsReaderPrivate final : public SparseDiscReaderPrivate {
-	public:
-		explicit WbfsReaderPrivate(WbfsReader *q);
-		~WbfsReaderPrivate() final;
+class WbfsReaderPrivate final : public SparseDiscReaderPrivate
+{
+public:
+	explicit WbfsReaderPrivate(WbfsReader *q);
+	~WbfsReaderPrivate() final;
 
-	private:
-		typedef SparseDiscReaderPrivate super;
-		RP_DISABLE_COPY(WbfsReaderPrivate)
+private:
+	typedef SparseDiscReaderPrivate super;
+	RP_DISABLE_COPY(WbfsReaderPrivate)
 
-	public:
-		// WBFS structs.
-		wbfs_t *m_wbfs;			// WBFS image.
-		wbfs_disc_t *m_wbfs_disc;	// Current disc.
+public:
+	// WBFS structs
+	wbfs_t *m_wbfs;			// WBFS image
+	wbfs_disc_t *m_wbfs_disc;	// Current disc
 
-		const be16_t *wlba_table;	// Pointer to m_wbfs_disc->disc->header->wlba_table.
+	const be16_t *wlba_table;	// Pointer to m_wbfs_disc->disc->header->wlba_table
 
-		/** WBFS functions. **/
+	/** WBFS functions **/
 
-		/**
-		 * Read the WBFS header.
-		 * @return Allocated wbfs_t on success; nullptr on error.
-		 */
-		wbfs_t *readWbfsHeader(void);
+	/**
+	 * Read the WBFS header.
+	 * @return Allocated wbfs_t on success; nullptr on error.
+	 */
+	wbfs_t *readWbfsHeader(void);
 
-		/**
-		 * Free an allocated WBFS header.
-		 * This frees all associated structs.
-		 * All opened discs *must* be closed.
-		 * @param p wbfs_t struct.
-		 */
-		void freeWbfsHeader(wbfs_t *p);
+	/**
+	 * Free an allocated WBFS header.
+	 * This frees all associated structs.
+	 * All opened discs *must* be closed.
+	 * @param p wbfs_t struct.
+	 */
+	void freeWbfsHeader(wbfs_t *p);
 
-		/**
-		 * Open a disc from the WBFS image.
-		 * @param p wbfs_t struct.
-		 * @param index Disc index.
-		 * @return Allocated wbfs_disc_t on success; nullptr on error.
-		 */
-		wbfs_disc_t *openWbfsDisc(wbfs_t *p, uint32_t index);
+	/**
+	 * Open a disc from the WBFS image.
+	 * @param p wbfs_t struct.
+	 * @param index Disc index.
+	 * @return Allocated wbfs_disc_t on success; nullptr on error.
+	 */
+	wbfs_disc_t *openWbfsDisc(wbfs_t *p, uint32_t index);
 
-		/**
-		 * Close a WBFS disc.
-		 * This frees all associated structs.
-		 * @param disc wbfs_disc_t.
-		 */
-		void closeWbfsDisc(wbfs_disc_t *disc);
+	/**
+	 * Close a WBFS disc.
+	 * This frees all associated structs.
+	 * @param disc wbfs_disc_t.
+	 */
+	void closeWbfsDisc(wbfs_disc_t *disc);
 
-		/**
-		 * Get the non-sparse size of an open WBFS disc, in bytes.
-		 * This scans the block table to find the first block
-		 * from the end of wlba_table[] that has been allocated.
-		 * @param disc wbfs_disc_t struct.
-		 * @return Non-sparse size, in bytes.
-		 */
-		off64_t getWbfsDiscSize(const wbfs_disc_t *disc) const;
+	/**
+	 * Get the non-sparse size of an open WBFS disc, in bytes.
+	 * This scans the block table to find the first block
+	 * from the end of wlba_table[] that has been allocated.
+	 * @param disc wbfs_disc_t struct.
+	 * @return Non-sparse size, in bytes.
+	 */
+	off64_t getWbfsDiscSize(const wbfs_disc_t *disc) const;
 };
 
 /** WbfsReaderPrivate **/
@@ -410,7 +411,7 @@ int WbfsReader::isDiscSupported(const uint8_t *pHeader, size_t szHeader) const
 	return isDiscSupported_static(pHeader, szHeader);
 }
 
-/** SparseDiscReader functions. **/
+/** SparseDiscReader functions **/
 
 /**
  * Get the physical address of the specified logical block index.

@@ -31,94 +31,94 @@ namespace LibRomData {
 
 class GameCubeBNRPrivate final : public RomDataPrivate
 {
-	public:
-		GameCubeBNRPrivate(const IRpFilePtr &file, uint32_t gcnRegion = ~0U);
-		~GameCubeBNRPrivate() final = default;
+public:
+	GameCubeBNRPrivate(const IRpFilePtr &file, uint32_t gcnRegion = ~0U);
+	~GameCubeBNRPrivate() final = default;
 
-	private:
-		typedef RomDataPrivate super;
-		RP_DISABLE_COPY(GameCubeBNRPrivate)
+private:
+	typedef RomDataPrivate super;
+	RP_DISABLE_COPY(GameCubeBNRPrivate)
 
-	public:
-		/** RomDataInfo **/
-		static const char *const exts[];
-		static const char *const mimeTypes[];
-		static const RomDataInfo romDataInfo;
+public:
+	/** RomDataInfo **/
+	static const char *const exts[];
+	static const char *const mimeTypes[];
+	static const RomDataInfo romDataInfo;
 
-	public:
-		// Banner type.
-		enum class BannerType {
-			Unknown	= -1,
+public:
+	// Banner type
+	enum class BannerType {
+		Unknown	= -1,
 
-			BNR1	= 0,	// BNR1 (US/JP)
-			BNR2	= 1,	// BNR2 (EU)
+		BNR1	= 0,	// BNR1 (US/JP)
+		BNR2	= 1,	// BNR2 (EU)
 
-			Max
-		};
-		BannerType bannerType;
+		Max
+	};
+	BannerType bannerType;
 
-		// GameCube region for BNR1 encoding
-		uint32_t gcnRegion;
+	// GameCube region for BNR1 encoding
+	uint32_t gcnRegion;
 
-		// Internal images
-		rp_image_ptr img_banner;
+	// Internal images
+	rp_image_ptr img_banner;
 
-		// Banner comments
-		// - If BNR1: 1 item.
-		// - If BNR2: 6 items.
-		rp::uvector<gcn_banner_comment_t> comments;
+	// Banner comments
+	// - If BNR1: 1 item.
+	// - If BNR2: 6 items.
+	rp::uvector<gcn_banner_comment_t> comments;
 
-	public:
-		/**
-		 * Load the banner.
-		 * @return Banner, or nullptr on error.
-		 */
-		rp_image_const_ptr loadBanner(void);
+public:
+	/**
+	 * Load the banner.
+	 * @return Banner, or nullptr on error.
+	 */
+	rp_image_const_ptr loadBanner(void);
 
-		/**
-		 * Should the string be handled as Shift-JIS?
-		 * @param hasCopyrightSymbol True if the first character is '\xA9'.
-		 * @return True if it should be handled as Shift-JIS; false if not.
-		 */
-		bool shouldHandleStringAsShiftJIS(bool hasCopyrightSymbol) const;
+	/**
+	 * Should the string be handled as Shift-JIS?
+	 * @param hasCopyrightSymbol True if the first character is '\xA9'.
+	 * @return True if it should be handled as Shift-JIS; false if not.
+	 */
+	bool shouldHandleStringAsShiftJIS(bool hasCopyrightSymbol) const;
 
-		/**
-		 * Get the game name string for the specified comment.
-		 * The character set is converted before returning the string.
-		 *
-		 * @param comment gcn_banner_comment_t*
-		 * @return Game name string (UTF-8), or empty string on error.
-		 */
-		string getGameNameString(const gcn_banner_comment_t *comment) const;
+	/**
+	 * Get the game name string for the specified comment.
+	 * The character set is converted before returning the string.
+	 *
+	 * @param comment gcn_banner_comment_t*
+	 * @return Game name string (UTF-8), or empty string on error.
+	 */
+	string getGameNameString(const gcn_banner_comment_t *comment) const;
 
-		/**
-		 * Get the company string for the specified comment.
-		 * The character set is converted before returning the string.
-		 *
-		 * @param comment gcn_banner_comment_t*
-		 * @return Company string (UTF-8), or empty string on error.
-		 */
-		string getCompanyString(const gcn_banner_comment_t *comment) const;
+	/**
+	 * Get the company string for the specified comment.
+	 * The character set is converted before returning the string.
+	 *
+	 * @param comment gcn_banner_comment_t*
+	 * @return Company string (UTF-8), or empty string on error.
+	 */
+	string getCompanyString(const gcn_banner_comment_t *comment) const;
 
-		/**
-		 * Get the game description string for the specified comment.
-		 * The character set is converted before returning the string.
-		 *
-		 * @param comment gcn_banner_comment_t*
-		 * @return Game description string (UTF-8), or empty string on error.
-		 */
-		string getGameDescriptionString(const gcn_banner_comment_t *comment) const;
+	/**
+	 * Get the game description string for the specified comment.
+	 * The character set is converted before returning the string.
+	 *
+	 * @param comment gcn_banner_comment_t*
+	 * @return Game description string (UTF-8), or empty string on error.
+	 */
+	string getGameDescriptionString(const gcn_banner_comment_t *comment) const;
 
-		/**
-		 * Get a game information string for the specified comment.
-		 * The string is automatically converted to UTF-8.
-		 *
-		 * This is used for addField_gameInfo().
-		 *
-		 * @param comment gcn_banner_comment_t*
-		 * @return Game information string, or empty string on error.
-		 */
-		string getGameInfoString(const gcn_banner_comment_t *comment) const;
+	/**
+	 * Get a game information string for the specified comment.
+	 * The string is automatically converted to UTF-8.
+	 *
+	 * This is used for addField_gameInfo().
+	 *
+	 * @param comment gcn_banner_comment_t*
+	 * @return Game information string, or empty string on error.
+	 */
+	string getGameInfoString(const gcn_banner_comment_t *comment) const;
 };
 
 ROMDATA_IMPL(GameCubeBNR)
@@ -843,7 +843,7 @@ int GameCubeBNR::loadInternalImage(ImageType imageType, rp_image_const_ptr &pIma
 		d->loadBanner);	// func
 }
 
-/** GameCubeBNR accessors. **/
+/** GameCubeBNR accessors **/
 
 /**
  * Add a field for the GameCube banner.

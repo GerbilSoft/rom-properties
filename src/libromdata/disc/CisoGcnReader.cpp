@@ -24,25 +24,26 @@ using std::array;
 
 namespace LibRomData {
 
-class CisoGcnReaderPrivate : public SparseDiscReaderPrivate {
-	public:
-		explicit CisoGcnReaderPrivate(CisoGcnReader *q);
+class CisoGcnReaderPrivate : public SparseDiscReaderPrivate
+{
+public:
+	explicit CisoGcnReaderPrivate(CisoGcnReader *q);
 
-	private:
-		typedef SparseDiscReaderPrivate super;
-		RP_DISABLE_COPY(CisoGcnReaderPrivate)
+private:
+	typedef SparseDiscReaderPrivate super;
+	RP_DISABLE_COPY(CisoGcnReaderPrivate)
 
-	public:
-		// CISO header.
-		CISOHeader cisoHeader;
+public:
+	// CISO header
+	CISOHeader cisoHeader;
 
-		// Block map.
-		// 0x0000 == first block after CISO header.
-		// 0xFFFF == empty block.
-		array<uint16_t, CISO_MAP_SIZE> blockMap;
+	// Block map
+	// 0x0000 == first block after CISO header.
+	// 0xFFFF == empty block.
+	array<uint16_t, CISO_MAP_SIZE> blockMap;
 
-		// Index of the last used block.
-		int maxLogicalBlockUsed;
+	// Index of the last used block.
+	int maxLogicalBlockUsed;
 };
 
 /** CisoGcnReaderPrivate **/
@@ -181,7 +182,7 @@ int CisoGcnReader::isDiscSupported(const uint8_t *pHeader, size_t szHeader) cons
 	return isDiscSupported_static(pHeader, szHeader);
 }
 
-/** SparseDiscReader functions. **/
+/** SparseDiscReader functions **/
 
 /**
  * Get the physical address of the specified logical block index.

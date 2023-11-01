@@ -37,50 +37,50 @@ namespace LibRomData {
 
 class WiiSavePrivate final : public RomDataPrivate
 {
-	public:
-		WiiSavePrivate(const IRpFilePtr &file);
-		~WiiSavePrivate() final;
+public:
+	WiiSavePrivate(const IRpFilePtr &file);
+	~WiiSavePrivate() final;
 
-	private:
-		typedef RomDataPrivate super;
-		RP_DISABLE_COPY(WiiSavePrivate)
+private:
+	typedef RomDataPrivate super;
+	RP_DISABLE_COPY(WiiSavePrivate)
 
-	public:
-		/** RomDataInfo **/
-		static const char *const exts[];
-		static const char *const mimeTypes[];
-		static const RomDataInfo romDataInfo;
+public:
+	/** RomDataInfo **/
+	static const char *const exts[];
+	static const char *const mimeTypes[];
+	static const RomDataInfo romDataInfo;
 
-	public:
-		// Save game structs.
-		Wii_SaveGame_Header_t svHeader;	// Only if encryption keys are available.
-		Wii_Bk_Header_t bkHeader;
+public:
+	// Save game structs
+	Wii_SaveGame_Header_t svHeader;	// Only if encryption keys are available.
+	Wii_Bk_Header_t bkHeader;
 
-		bool svLoaded;	// True if svHeader was read.
+	bool svLoaded;	// True if svHeader was read.
 
-		// Wii_Bk_Header_t magic.
-		static const uint8_t bk_header_magic[8];
+	// Wii_Bk_Header_t magic
+	static const uint8_t bk_header_magic[8];
 
-		/**
-		 * Round a value to the next highest multiple of 64.
-		 * @param value Value.
-		 * @return Next highest multiple of 64.
-		 */
-		template<typename T>
-		static inline T toNext64(T val)
-		{
-			return (val + (T)63) & ~((T)63);
-		}
+	/**
+	 * Round a value to the next highest multiple of 64.
+	 * @param value Value.
+	 * @return Next highest multiple of 64.
+	 */
+	template<typename T>
+	static inline T toNext64(T val)
+	{
+		return (val + (T)63) & ~((T)63);
+	}
 
 #ifdef ENABLE_DECRYPTION
-		// CBC reader for the main data area.
-		CBCReaderPtr cbcReader;
-		WiiWIBN *wibnData;
+	// CBC reader for the main data area.
+	CBCReaderPtr cbcReader;
+	WiiWIBN *wibnData;
 
-		// Key indexes. (0 == AES, 1 == IV)
-		std::array<WiiPartition::EncryptionKeys, 2> key_idx;
-		// Key status.
-		std::array<KeyManager::VerifyResult, 2> key_status;
+	// Key indexes (0 == AES, 1 == IV)
+	std::array<WiiPartition::EncryptionKeys, 2> key_idx;
+	// Key status
+	std::array<KeyManager::VerifyResult, 2> key_status;
 #endif /* ENABLE_DECRYPTION */
 };
 

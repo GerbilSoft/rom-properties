@@ -23,23 +23,23 @@ namespace LibRomData {
 
 class RpTextureWrapperPrivate final : public RomDataPrivate
 {
-	public:
-		RpTextureWrapperPrivate(const IRpFilePtr &file);
-		~RpTextureWrapperPrivate() final = default;
+public:
+	RpTextureWrapperPrivate(const IRpFilePtr &file);
+	~RpTextureWrapperPrivate() final = default;
 
-	private:
-		typedef RomDataPrivate super;
-		RP_DISABLE_COPY(RpTextureWrapperPrivate)
+private:
+	typedef RomDataPrivate super;
+	RP_DISABLE_COPY(RpTextureWrapperPrivate)
 
-	public:
-		/** RomDataInfo **/
-		static const char *const exts[];
-		static const char *const mimeTypes[];
-		static const RomDataInfo romDataInfo;
+public:
+	/** RomDataInfo **/
+	static const char *const exts[];
+	static const char *const mimeTypes[];
+	static const RomDataInfo romDataInfo;
 
-	public:
-		// librptexture file format object.
-		FileFormatPtr texture;
+public:
+	// librptexture file format object
+	FileFormatPtr texture;
 };
 
 ROMDATA_IMPL(RpTextureWrapper)

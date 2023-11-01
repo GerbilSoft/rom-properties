@@ -22,23 +22,23 @@ namespace LibRomData {
 
 class SIDPrivate final : public RomDataPrivate
 {
-	public:
-		SIDPrivate(const IRpFilePtr &file);
+public:
+	SIDPrivate(const IRpFilePtr &file);
 
-	private:
-		typedef RomDataPrivate super;
-		RP_DISABLE_COPY(SIDPrivate)
+private:
+	typedef RomDataPrivate super;
+	RP_DISABLE_COPY(SIDPrivate)
 
-	public:
-		/** RomDataInfo **/
-		static const char *const exts[];
-		static const char *const mimeTypes[];
-		static const RomDataInfo romDataInfo;
+public:
+	/** RomDataInfo **/
+	static const char *const exts[];
+	static const char *const mimeTypes[];
+	static const RomDataInfo romDataInfo;
 
-	public:
-		// SID header.
-		// NOTE: **NOT** byteswapped in memory.
-		SID_Header sidHeader;
+public:
+	// SID header
+	// NOTE: **NOT** byteswapped in memory.
+	SID_Header sidHeader;
 };
 
 ROMDATA_IMPL(SID)

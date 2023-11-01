@@ -27,70 +27,70 @@ namespace LibRomData {
 
 class MachOPrivate final : public RomDataPrivate
 {
-	public:
-		MachOPrivate(const IRpFilePtr &file);
+public:
+	MachOPrivate(const IRpFilePtr &file);
 
-	private:
-		typedef RomDataPrivate super;
-		RP_DISABLE_COPY(MachOPrivate)
+private:
+	typedef RomDataPrivate super;
+	RP_DISABLE_COPY(MachOPrivate)
 
-	public:
-		/** RomDataInfo **/
-		static const char *const exts[];
-		static const char *const mimeTypes[];
-		static const RomDataInfo romDataInfo;
+public:
+	/** RomDataInfo **/
+	static const char *const exts[];
+	static const char *const mimeTypes[];
+	static const RomDataInfo romDataInfo;
 
-	public:
-		// Executable format.
-		enum class Exec_Format {
-			Unknown	= -1,
+public:
+	// Executable format
+	enum class Exec_Format {
+		Unknown	= -1,
 
-			Mach	= 0,
-			Fat	= 1,
+		Mach	= 0,
+		Fat	= 1,
 
-			Max
-		};
-		Exec_Format execFormat;
+		Max
+	};
+	Exec_Format execFormat;
 
-		// Mach-O format.
-		enum class Mach_Format : int8_t {
-			Unknown = -1,
+	// Mach-O format
+	enum class Mach_Format : int8_t {
+		Unknown = -1,
 
-			_32LSB	= 0,
-			_64LSB	= 1,
-			_32MSB	= 2,
-			_64MSB	= 3,
+		_32LSB	= 0,
+		_64LSB	= 1,
+		_32MSB	= 2,
+		_64MSB	= 3,
 
-			Max,
+		Max,
 
-			// Host/swap endian formats.
+		// Host/swap endian formats.
 
 #if SYS_BYTEORDER == SYS_LIL_ENDIAN
-			_32HOST	= _32LSB,
-			_64HOST	= _64LSB,
-			_32SWAP	= _32MSB,
-			_64SWAP	= _64MSB,
+		_32HOST	= _32LSB,
+		_64HOST	= _64LSB,
+		_32SWAP	= _32MSB,
+		_64SWAP	= _64MSB,
 #else /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
-			_32HOST	= _32MSB,
-			_64HOST	= _64MSB,
-			_32SWAP	= _32LSB,
-			_64SWAP	= _64LSB,
+		_32HOST	= _32MSB,
+		_64HOST	= _64MSB,
+		_32SWAP	= _32LSB,
+		_64SWAP	= _64LSB,
 #endif
-		};
+	};
 
-		// Maximum number of Mach-O headers to read.
-		#define MAX_MACH_HEADERS 16U
+	// Maximum number of Mach-O headers to read.
+	#define MAX_MACH_HEADERS 16U
 
-		// Mach-O formats and headers.
-		vector<Mach_Format> machFormats;
-		rp::uvector<mach_header> machHeaders;
+	// Mach-O formats and headers.
+	vector<Mach_Format> machFormats;
+	rp::uvector<mach_header> machHeaders;
 
-		/**
-		 * Check the Mach-O magic number.
-		 * @param magic Magic number as read directly from disk.
-		 * @return Mach_Format value.
-		 */
-		static Mach_Format checkMachMagicNumber(uint32_t magic);
+	/**
+	 * Check the Mach-O magic number.
+	 * @param magic Magic number as read directly from disk.
+	 * @return Mach_Format value.
+	 */
+	static Mach_Format checkMachMagicNumber(uint32_t magic);
 };
 
 ROMDATA_IMPL(MachO)

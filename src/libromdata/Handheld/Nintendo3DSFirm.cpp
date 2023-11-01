@@ -39,23 +39,23 @@ DELAYLOAD_TEST_FUNCTION_IMPL0(get_crc_table);
 
 class Nintendo3DSFirmPrivate final : public RomDataPrivate
 {
-	public:
-		Nintendo3DSFirmPrivate(const IRpFilePtr &file);
+public:
+	Nintendo3DSFirmPrivate(const IRpFilePtr &file);
 
-	private:
-		typedef RomDataPrivate super;
-		RP_DISABLE_COPY(Nintendo3DSFirmPrivate)
+private:
+	typedef RomDataPrivate super;
+	RP_DISABLE_COPY(Nintendo3DSFirmPrivate)
 
-	public:
-		/** RomDataInfo **/
-		static const char *const exts[];
-		static const char *const mimeTypes[];
-		static const RomDataInfo romDataInfo;
+public:
+	/** RomDataInfo **/
+	static const char *const exts[];
+	static const char *const mimeTypes[];
+	static const RomDataInfo romDataInfo;
 
-	public:
-		// Firmware header.
-		// NOTE: Must be byteswapped on access.
-		N3DS_FIRM_Header_t firmHeader;
+public:
+	// Firmware header
+	// NOTE: Must be byteswapped on access.
+	N3DS_FIRM_Header_t firmHeader;
 };
 
 ROMDATA_IMPL(Nintendo3DSFirm)

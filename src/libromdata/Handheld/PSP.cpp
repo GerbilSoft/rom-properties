@@ -37,54 +37,54 @@ namespace LibRomData {
 
 class PSPPrivate final : public LibRpBase::RomDataPrivate
 {
-	public:
-		PSPPrivate(const IRpFilePtr &file);
-		~PSPPrivate() final = default;
+public:
+	PSPPrivate(const IRpFilePtr &file);
+	~PSPPrivate() final = default;
 
-	private:
-		typedef RomDataPrivate super;
-		RP_DISABLE_COPY(PSPPrivate)
+private:
+	typedef RomDataPrivate super;
+	RP_DISABLE_COPY(PSPPrivate)
 
-	public:
-		/** RomDataInfo **/
-		static const char *const exts[];
-		static const char *const mimeTypes[];
-		static const RomDataInfo romDataInfo;
+public:
+	/** RomDataInfo **/
+	static const char *const exts[];
+	static const char *const mimeTypes[];
+	static const RomDataInfo romDataInfo;
 
-	public:
-		enum class DiscType {
-			Unknown	= -1,
+public:
+	enum class DiscType {
+		Unknown	= -1,
 
-			PspGame		= 0,	// PSP game
-			UmdVideo	= 1,	// UMD video
+		PspGame		= 0,	// PSP game
+		UmdVideo	= 1,	// UMD video
 
-			Max
-		};
-		DiscType discType;
+		Max
+	};
+	DiscType discType;
 
-		ISO_Primary_Volume_Descriptor pvd;
+	ISO_Primary_Volume_Descriptor pvd;
 
-		// IsoPartition
-		IDiscReaderPtr discReader;
-		IsoPartitionPtr isoPartition;
+	// IsoPartition
+	IDiscReaderPtr discReader;
+	IsoPartitionPtr isoPartition;
 
-		// Icon
-		rp_image_ptr img_icon;
+	// Icon
+	rp_image_ptr img_icon;
 
-		/**
-		 * Load the icon.
-		 * @return Icon, or nullptr on error.
-		 */
-		rp_image_const_ptr loadIcon(void);
+	/**
+	 * Load the icon.
+	 * @return Icon, or nullptr on error.
+	 */
+	rp_image_const_ptr loadIcon(void);
 
-		// Boot executable (EBOOT.BIN)
-		RomDataPtr bootExeData;
+	// Boot executable (EBOOT.BIN)
+	RomDataPtr bootExeData;
 
-		/**
-		 * Open the boot executable.
-		 * @return RomData* on success; nullptr on error.
-		 */
-		RomDataPtr openBootExe(void);
+	/**
+	 * Open the boot executable.
+	 * @return RomData* on success; nullptr on error.
+	 */
+	RomDataPtr openBootExe(void);
 };
 
 ROMDATA_IMPL(PSP)

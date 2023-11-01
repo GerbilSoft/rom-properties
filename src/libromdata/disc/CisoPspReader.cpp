@@ -56,64 +56,65 @@ DELAYLOAD_TEST_FUNCTION_IMPL0(lzo_version);
 #  endif /* HAVE_LZO */
 #endif /* _MSC_VER */
 
-class CisoPspReaderPrivate : public SparseDiscReaderPrivate {
-	public:
-		CisoPspReaderPrivate(CisoPspReader *q);
+class CisoPspReaderPrivate : public SparseDiscReaderPrivate
+{
+public:
+	CisoPspReaderPrivate(CisoPspReader *q);
 
-	private:
-		typedef SparseDiscReaderPrivate super;
-		RP_DISABLE_COPY(CisoPspReaderPrivate)
+private:
+	typedef SparseDiscReaderPrivate super;
+	RP_DISABLE_COPY(CisoPspReaderPrivate)
 
-	public:
-		enum class CisoType {
-			Unknown	= -1,
+public:
+	enum class CisoType {
+		Unknown	= -1,
 
-			CISO	= 0,
+		CISO	= 0,
 #ifdef HAVE_LZ4
-			ZISO	= 1,
+		ZISO	= 1,
 #endif /* HAVE_LZ4 */
-			JISO	= 2,
+		JISO	= 2,
 
-			DAX	= 3,
+		DAX	= 3,
 
-			Max
-		};
-		CisoType cisoType;
+		Max
+	};
+	CisoType cisoType;
 
-		// Header.
-		union {
-			CisoPspHeader cisoPsp;
-			JisoHeader jiso;
-			DaxHeader dax;
-		} header;
+	// Header
+	union {
+		CisoPspHeader cisoPsp;
+		JisoHeader jiso;
+		DaxHeader dax;
+	} header;
 
-		// Index entries. These are *absolute* offsets.
-		// High bit interpretation depends on CISO version.
-		// - v0/v1: If set, block is not compressed.
-		// - v2: If set, block is compressed using LZ4; otherwise, deflate.
-		rp::uvector<uint32_t> indexEntries;
+	// Index entries. These are *absolute* offsets.
+	// High bit interpretation depends on CISO version.
+	// - v0/v1: If set, block is not compressed.
+	// - v2: If set, block is compressed using LZ4; otherwise, deflate.
+	rp::uvector<uint32_t> indexEntries;
 
-		// Block cache.
-		rp::uvector<uint8_t> blockCache;
-		uint32_t blockCacheIdx;
+	// Block cache
+	rp::uvector<uint8_t> blockCache;
+	uint32_t blockCacheIdx;
 
-		// Decompression buffer.
-		// (Same size as blockCache.)
-		rp::uvector<uint8_t> z_buffer;
+	// Decompression buffer
+	// (Same size as blockCache.)
+	rp::uvector<uint8_t> z_buffer;
 
-		// DAX: Size and NC area tables.
-		rp::uvector<uint16_t> daxSizeTable;
-		std::vector<uint8_t> daxNCTable;	// 0 = compressed; 1 = not compressed
+	// DAX: Size and NC area tables
+	rp::uvector<uint16_t> daxSizeTable;
+	std::vector<uint8_t> daxNCTable;	// 0 = compressed; 1 = not compressed
 
-		uint8_t index_shift;		// Index shift value.
-		bool isDaxWithoutNCTable;	// Convenience variable.
+	uint8_t index_shift;		// Index shift value
+	bool isDaxWithoutNCTable;	// Convenience variable
 
-		/**
-		 * Get the compressed size of a block.
-		 * @param blockNum Block number.
-		 * @return Block's compressed size, or 0 on error.
-		 */
-		uint32_t getBlockCompressedSize(uint32_t blockNum) const;
+	/**
+	 * Get the compressed size of a block.
+	 * @param blockNum Block number.
+	 * @return Block's compressed size, or 0 on error.
+	 */
+	uint32_t getBlockCompressedSize(uint32_t blockNum) const;
 };
 
 /** CisoPspReaderPrivate **/
@@ -662,7 +663,7 @@ int CisoPspReader::isDiscSupported(const uint8_t *pHeader, size_t szHeader) cons
 	return isDiscSupported_static(pHeader, szHeader);
 }
 
-/** SparseDiscReader functions. **/
+/** SparseDiscReader functions **/
 
 /**
  * Get the physical address of the specified logical block index.

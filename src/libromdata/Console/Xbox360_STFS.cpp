@@ -37,117 +37,117 @@ namespace LibRomData {
 
 class Xbox360_STFS_Private final : public RomDataPrivate
 {
-	public:
-		Xbox360_STFS_Private(const IRpFilePtr &file);
-		~Xbox360_STFS_Private() final;
+public:
+	Xbox360_STFS_Private(const IRpFilePtr &file);
+	~Xbox360_STFS_Private() final;
 
-	private:
-		typedef RomDataPrivate super;
-		RP_DISABLE_COPY(Xbox360_STFS_Private)
+private:
+	typedef RomDataPrivate super;
+	RP_DISABLE_COPY(Xbox360_STFS_Private)
 
-	public:
-		/** RomDataInfo **/
-		static const char *const exts[];
-		static const char *const mimeTypes[];
-		static const RomDataInfo romDataInfo;
+public:
+	/** RomDataInfo **/
+	static const char *const exts[];
+	static const char *const mimeTypes[];
+	static const RomDataInfo romDataInfo;
 
-	public:
-		// STFS type
-		enum class StfsType {
-			Unknown	= -1,
+public:
+	// STFS type
+	enum class StfsType {
+		Unknown	= -1,
 
-			CON	= 0,	// Console-signed
-			PIRS	= 1,	// MS-signed for non-Xbox Live
-			LIVE	= 2,	// MS-signed for Xbox Live
+		CON	= 0,	// Console-signed
+		PIRS	= 1,	// MS-signed for non-Xbox Live
+		LIVE	= 2,	// MS-signed for Xbox Live
 
-			Max
-		};
-		StfsType stfsType;
+		Max
+	};
+	StfsType stfsType;
 
-		// Icon
-		// NOTE: Currently using Title Thumbnail.
-		// Should we make regular Thumbnail available too?
-		rp_image_ptr img_icon;
+	// Icon
+	// NOTE: Currently using Title Thumbnail.
+	// Should we make regular Thumbnail available too?
+	rp_image_ptr img_icon;
 
-		/**
-		 * Load the icon.
-		 * @return Icon, or nullptr on error.
-		 */
-		rp_image_const_ptr loadIcon(void);
+	/**
+	 * Load the icon.
+	 * @return Icon, or nullptr on error.
+	 */
+	rp_image_const_ptr loadIcon(void);
 
-		/**
-		 * Get the default language code for the multi-string fields.
-		 * @return Language code, e.g. 'en' or 'es'.
-		 */
-		inline uint32_t getDefaultLC(void) const;
+	/**
+	 * Get the default language code for the multi-string fields.
+	 * @return Language code, e.g. 'en' or 'es'.
+	 */
+	inline uint32_t getDefaultLC(void) const;
 
-	public:
-		// STFS headers.
-		// NOTE: These are **NOT** byteswapped!
-		STFS_Package_Header stfsHeader;
+public:
+	// STFS headers
+	// NOTE: These are **NOT** byteswapped!
+	STFS_Package_Header stfsHeader;
 
-		// Load-on-demand headers.
-		STFS_Package_Metadata stfsMetadata;
-		STFS_Package_Thumbnails stfsThumbnails;
+	// Load-on-demand headers
+	STFS_Package_Metadata stfsMetadata;
+	STFS_Package_Thumbnails stfsThumbnails;
 
-		enum StfsPresent_e {
-			STFS_PRESENT_HEADER	= (1U << 0),
-			STFS_PRESENT_METADATA	= (1U << 1),
-			STFS_PRESENT_THUMBNAILS	= (1U << 2),
-		};
-		uint32_t headers_loaded;	// StfsPresent_e
+	enum StfsPresent_e {
+		STFS_PRESENT_HEADER	= (1U << 0),
+		STFS_PRESENT_METADATA	= (1U << 1),
+		STFS_PRESENT_THUMBNAILS	= (1U << 2),
+	};
+	uint32_t headers_loaded;	// StfsPresent_e
 
-		/**
-		 * Ensure the specified header is loaded.
-		 * @param header Header ID. (See StfsPresent_e.)
-		 * @return 0 on success; negative POSIX error code on error.
-		 */
-		int loadHeader(unsigned int header);
+	/**
+	 * Ensure the specified header is loaded.
+	 * @param header Header ID. (See StfsPresent_e.)
+	 * @return 0 on success; negative POSIX error code on error.
+	 */
+	int loadHeader(unsigned int header);
 
-	public:
-		// XEX executable.
-		Xbox360_XEX *xex;
+public:
+	// XEX executable
+	Xbox360_XEX *xex;
 
-		// File table.
-		rp::uvector<STFS_DirEntry_t> fileTable;
+	// File table
+	rp::uvector<STFS_DirEntry_t> fileTable;
 
-		/**
-		 * Convert a block number to an offset.
-		 * @param blockNumber Block number.
-		 * @return Offset, or -1 on error.
-		 */
-		inline int32_t blockNumberToOffset(int blockNumber)
-		{
-			// Reference: https://github.com/Free60Project/wiki/blob/master/STFS.md
-			int ret;
-			if (blockNumber > 0xFFFFFF) {
-				ret = -1;
-			} else {
-				ret = (((be32_to_cpu(stfsMetadata.header_size) + 0xFFF) & 0xF000) +
-				        (blockNumber * STFS_BLOCK_SIZE));
-			}
-			return ret;
+	/**
+	 * Convert a block number to an offset.
+	 * @param blockNumber Block number.
+	 * @return Offset, or -1 on error.
+	 */
+	inline int32_t blockNumberToOffset(int blockNumber)
+	{
+		// Reference: https://github.com/Free60Project/wiki/blob/master/STFS.md
+		int ret;
+		if (blockNumber > 0xFFFFFF) {
+			ret = -1;
+		} else {
+			ret = (((be32_to_cpu(stfsMetadata.header_size) + 0xFFF) & 0xF000) +
+			        (blockNumber * STFS_BLOCK_SIZE));
 		}
+		return ret;
+	}
 
-		/**
-		 * Convert a data block number to a physical block number.
-		 * Data block numbers don't include hash blocks.
-		 * @param dataBlockNumber Data block number.
-		 * @return physBlockNumber Physical block number.
-		 */
-		int32_t dataBlockNumberToPhys(int dataBlockNumber);
+	/**
+	 * Convert a data block number to a physical block number.
+	 * Data block numbers don't include hash blocks.
+	 * @param dataBlockNumber Data block number.
+	 * @return physBlockNumber Physical block number.
+	 */
+	int32_t dataBlockNumberToPhys(int dataBlockNumber);
 
-		/**
-		 * Load the file table.
-		 * @return 0 on success; negative POSIX error code on error.
-		 */
-		int loadFileTable(void);
+	/**
+	 * Load the file table.
+	 * @return 0 on success; negative POSIX error code on error.
+	 */
+	int loadFileTable(void);
 
-		/**
-		 * Open the default executable.
-		 * @return Default executable on success; nullptr on error.
-		 */
-		Xbox360_XEX *openDefaultXex(void);
+	/**
+	 * Open the default executable.
+	 * @return Default executable on success; nullptr on error.
+	 */
+	Xbox360_XEX *openDefaultXex(void);
 };
 
 ROMDATA_IMPL(Xbox360_STFS)

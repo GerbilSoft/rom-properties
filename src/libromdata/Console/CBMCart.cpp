@@ -37,47 +37,47 @@ DELAYLOAD_TEST_FUNCTION_IMPL0(get_crc_table);
 
 class CBMCartPrivate final : public RomDataPrivate
 {
-	public:
-		CBMCartPrivate(const IRpFilePtr &file);
+public:
+	CBMCartPrivate(const IRpFilePtr &file);
 
-	private:
-		typedef RomDataPrivate super;
-		RP_DISABLE_COPY(CBMCartPrivate)
+private:
+	typedef RomDataPrivate super;
+	RP_DISABLE_COPY(CBMCartPrivate)
 
-	public:
-		/** RomDataInfo **/
-		static const char *const exts[];
-		static const char *const mimeTypes[];
-		static const RomDataInfo romDataInfo;
+public:
+	/** RomDataInfo **/
+	static const char *const exts[];
+	static const char *const mimeTypes[];
+	static const RomDataInfo romDataInfo;
 
-	public:
-		enum class RomType {
-			Unknown	= -1,
+public:
+	enum class RomType {
+		Unknown	= -1,
 
-			C64	= 0,
-			C128	= 1,
-			CBM2	= 2,
-			VIC20	= 3,
-			Plus4	= 4,
+		C64	= 0,
+		C128	= 1,
+		CBM2	= 2,
+		VIC20	= 3,
+		Plus4	= 4,
 
-			Max
-		};
-		RomType romType;
+		Max
+	};
+	RomType romType;
 
-		// ROM header.
-		CBM_CRTHeader romHeader;
+	// ROM header
+	CBM_CRTHeader romHeader;
 
-		// CRC32 of the first 16 KB of ROM data.
-		// Used for the external image URL.
-		// NOTE: Calculated by extURLs() on demand.
-		uint32_t rom_16k_crc32;
+	// CRC32 of the first 16 KB of ROM data.
+	// Used for the external image URL.
+	// NOTE: Calculated by extURLs() on demand.
+	uint32_t rom_16k_crc32;
 
-	public:
-		/**
-		 * Initialize zlib.
-		 * @return 0 on success; non-zero on error.
-		 */
-		static int zlibInit(void);
+public:
+	/**
+	 * Initialize zlib.
+	 * @return 0 on success; non-zero on error.
+	 */
+	static int zlibInit(void);
 };
 
 ROMDATA_IMPL(CBMCart)

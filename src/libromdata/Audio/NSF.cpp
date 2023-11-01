@@ -23,23 +23,23 @@ namespace LibRomData {
 
 class NSFPrivate final : public RomDataPrivate
 {
-	public:
-		NSFPrivate(const IRpFilePtr &file);
+public:
+	NSFPrivate(const IRpFilePtr &file);
 
-	private:
-		typedef RomDataPrivate super;
-		RP_DISABLE_COPY(NSFPrivate)
+private:
+	typedef RomDataPrivate super;
+	RP_DISABLE_COPY(NSFPrivate)
 
-	public:
-		/** RomDataInfo **/
-		static const char *const exts[];
-		static const char *const mimeTypes[];
-		static const RomDataInfo romDataInfo;
+public:
+	/** RomDataInfo **/
+	static const char *const exts[];
+	static const char *const mimeTypes[];
+	static const RomDataInfo romDataInfo;
 
-	public:
-		// NSF header.
-		// NOTE: **NOT** byteswapped in memory.
-		NSF_Header nsfHeader;
+public:
+	// NSF header
+	// NOTE: **NOT** byteswapped in memory.
+	NSF_Header nsfHeader;
 };
 
 ROMDATA_IMPL(NSF)

@@ -23,36 +23,36 @@ namespace LibRomData {
 
 class NGPCPrivate final : public RomDataPrivate
 {
-	public:
-		NGPCPrivate(const IRpFilePtr &file);
+public:
+	NGPCPrivate(const IRpFilePtr &file);
 
-	private:
-		typedef RomDataPrivate super;
-		RP_DISABLE_COPY(NGPCPrivate)
+private:
+	typedef RomDataPrivate super;
+	RP_DISABLE_COPY(NGPCPrivate)
 
-	public:
-		/** RomDataInfo **/
-		static const char *const exts[];
-		static const char *const mimeTypes[];
-		static const RomDataInfo romDataInfo;
+public:
+	/** RomDataInfo **/
+	static const char *const exts[];
+	static const char *const mimeTypes[];
+	static const RomDataInfo romDataInfo;
 
-	public:
-		/** RomFields **/
+public:
+	/** RomFields **/
 
-		// ROM type.
-		enum class RomType {
-			Unknown	= -1,
+	// ROM type.
+	enum class RomType {
+		Unknown	= -1,
 
-			NGP	= 0,	// Neo Geo Pocket
-			NGPC	= 1,	// Neo Geo Pocket Color
+		NGP	= 0,	// Neo Geo Pocket
+		NGPC	= 1,	// Neo Geo Pocket Color
 
-			Max
-		};
-		RomType romType;
+		Max
+	};
+	RomType romType;
 
-	public:
-		// ROM header.
-		NGPC_RomHeader romHeader;
+public:
+	// ROM header
+	NGPC_RomHeader romHeader;
 };
 
 ROMDATA_IMPL(NGPC)

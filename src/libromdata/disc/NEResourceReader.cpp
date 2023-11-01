@@ -25,58 +25,58 @@ namespace LibRomData {
 
 class NEResourceReaderPrivate
 {
-	public:
-		NEResourceReaderPrivate(NEResourceReader *q,
-			uint32_t rsrc_tbl_addr, uint32_t rsrc_tbl_size);
+public:
+	NEResourceReaderPrivate(NEResourceReader *q,
+		uint32_t rsrc_tbl_addr, uint32_t rsrc_tbl_size);
 
-	private:
-		RP_DISABLE_COPY(NEResourceReaderPrivate)
-	protected:
-		NEResourceReader *const q_ptr;
+private:
+	RP_DISABLE_COPY(NEResourceReaderPrivate)
+protected:
+	NEResourceReader *const q_ptr;
 
-	public:
-		// Resource segment table.
-		uint32_t rsrc_tbl_addr;
-		uint32_t rsrc_tbl_size;
+public:
+	// Resource segment table
+	uint32_t rsrc_tbl_addr;
+	uint32_t rsrc_tbl_size;
 
-		// Resource table entry.
-		struct ResTblEntry {
-			uint16_t id;	// Resource ID.
-			uint32_t addr;	// Address of the resource data. (0 = start of EXE)
-			uint32_t len;	// Length of the resource data.
-		};
-		typedef rp::uvector<ResTblEntry> rsrc_dir_t;
+	// Resource table entry
+	struct ResTblEntry {
+		uint16_t id;	// Resource ID
+		uint32_t addr;	// Address of the resource data (0 = start of EXE)
+		uint32_t len;	// Length of the resource data
+	};
+	typedef rp::uvector<ResTblEntry> rsrc_dir_t;
 
-		// Resource types.
-		unordered_map<uint16_t, rsrc_dir_t> res_types;
+	// Resource types
+	unordered_map<uint16_t, rsrc_dir_t> res_types;
 
-		/**
-		 * Load the resource table.
-		 * @return 0 on success; non-zero on error.
-		 */
-		int loadResTbl(void);
+	/**
+	 * Load the resource table.
+	 * @return 0 on success; non-zero on error.
+	 */
+	int loadResTbl(void);
 
-		/**
-		 * Read the section header in an NE version resource.
-		 *
-		 * The file pointer will be advanced past the header.
-		 *
-		 * @param file		[in] PE version resource.
-		 * @param key		[in] Expected header name.
-		 * @param pChildLen	[out,opt] Total length of the section.
-		 * @param pValueLen	[out,opt] Value length.
-		 * @return 0 if the header matches; non-zero on error.
-		 */
-		static int load_VS_VERSION_INFO_header(IRpFile *file, const char *key, uint16_t *pLen, uint16_t *pValueLen);
+	/**
+	 * Read the section header in an NE version resource.
+	 *
+	 * The file pointer will be advanced past the header.
+	 *
+	 * @param file		[in] PE version resource.
+	 * @param key		[in] Expected header name.
+	 * @param pChildLen	[out,opt] Total length of the section.
+	 * @param pValueLen	[out,opt] Value length.
+	 * @return 0 if the header matches; non-zero on error.
+	 */
+	static int load_VS_VERSION_INFO_header(IRpFile *file, const char *key, uint16_t *pLen, uint16_t *pValueLen);
 
-		/**
-		 * Load a string table.
-		 * @param file		[in] PE version resource.
-		 * @param st		[out] String Table.
-		 * @param langID	[out] Language ID.
-		 * @return 0 on success; non-zero on error.
-		 */
-		static int load_StringTable(IRpFile *file, IResourceReader::StringTable &st, uint32_t *langID);
+	/**
+	 * Load a string table.
+	 * @param file		[in] PE version resource.
+	 * @param st		[out] String Table.
+	 * @param langID	[out] Language ID.
+	 * @return 0 on success; non-zero on error.
+	 */
+	static int load_StringTable(IRpFile *file, IResourceReader::StringTable &st, uint32_t *langID);
 };
 
 /** NEResourceReaderPrivate **/
@@ -620,7 +620,7 @@ off64_t NEResourceReader::partition_size_used(void) const
 	return static_cast<off64_t>(m_file->size());
 }
 
-/** Resource access functions. **/
+/** Resource access functions **/
 
 /**
  * Open a resource.

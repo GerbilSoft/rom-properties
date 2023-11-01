@@ -34,7 +34,7 @@ class NOVTABLE IDiscReader
 		RP_DISABLE_COPY(IDiscReader)
 
 	public:
-		/** Disc image detection functions. **/
+		/** Disc image detection functions **/
 
 		// TODO: Move RomData::DetectInfo somewhere else and use it here?
 		/**

@@ -34,36 +34,36 @@ namespace LibRomData {
 
 class WiiUPrivate final : public RomDataPrivate
 {
-	public:
-		WiiUPrivate(const IRpFilePtr &file);
-		~WiiUPrivate() final = default;
+public:
+	WiiUPrivate(const IRpFilePtr &file);
+	~WiiUPrivate() final = default;
 
-	private:
-		typedef RomDataPrivate super;
-		RP_DISABLE_COPY(WiiUPrivate)
+private:
+	typedef RomDataPrivate super;
+	RP_DISABLE_COPY(WiiUPrivate)
 
-	public:
-		/** RomDataInfo **/
-		static const char *const exts[];
-		static const char *const mimeTypes[];
-		static const RomDataInfo romDataInfo;
+public:
+	/** RomDataInfo **/
+	static const char *const exts[];
+	static const char *const mimeTypes[];
+	static const RomDataInfo romDataInfo;
 
-	public:
-		enum class DiscType {
-			Unknown	= -1,
+public:
+	enum class DiscType {
+		Unknown	= -1,
 
-			WUD	= 0,	// Wii U disc image (uncompressed)
-			WUX	= 1,	// WUX (compressed)
+		WUD	= 0,	// Wii U disc image (uncompressed)
+		WUX	= 1,	// WUX (compressed)
 
-			Max
-		};
-		DiscType discType;
+		Max
+	};
+	DiscType discType;
 
-		// Disc reader
-		IDiscReaderPtr discReader;
+	// Disc reader
+	IDiscReaderPtr discReader;
 
-		// Disc header
-		WiiU_DiscHeader discHeader;
+	// Disc header
+	WiiU_DiscHeader discHeader;
 };
 
 ROMDATA_IMPL(WiiU)

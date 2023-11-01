@@ -44,173 +44,173 @@ DELAYLOAD_TEST_FUNCTION_IMPL0(get_crc_table);
 
 class MegaDrivePrivate final : public RomDataPrivate
 {
-	public:
-		MegaDrivePrivate(const IRpFilePtr &file);
-		~MegaDrivePrivate() final;
+public:
+	MegaDrivePrivate(const IRpFilePtr &file);
+	~MegaDrivePrivate() final;
 
-	private:
-		typedef RomDataPrivate super;
-		RP_DISABLE_COPY(MegaDrivePrivate)
+private:
+	typedef RomDataPrivate super;
+	RP_DISABLE_COPY(MegaDrivePrivate)
 
-	public:
-		/** RomDataInfo **/
-		static const char *const exts[];
-		static const char *const mimeTypes[];
-		static const RomDataInfo romDataInfo;
+public:
+	/** RomDataInfo **/
+	static const char *const exts[];
+	static const char *const mimeTypes[];
+	static const RomDataInfo romDataInfo;
 
-	public:
-		/** RomFields **/
+public:
+	/** RomFields **/
 
-		// I/O support. (RFT_BITFIELD)
-		// NOTE: These are bitshift values.
-		enum MD_IO_Support_Bitshift {
-			MD_IOSH_UNKNOWN		= -1,
+	// I/O support. (RFT_BITFIELD)
+	// NOTE: These are bitshift values.
+	enum MD_IO_Support_Bitshift {
+		MD_IOSH_UNKNOWN		= -1,
 
-			MD_IOSH_JOYPAD_3	=  0,	// 3-button joypad
-			MD_IOSH_JOYPAD_6	=  1,	// 6-button joypad
-			MD_IOSH_JOYPAD_SMS	=  2,	// 2-button joypad (SMS)
-			MD_IOSH_ANALOG		=  3,	// Analog (XE-1 AP)
-			MD_IOSH_TEAM_PLAYER	=  4,	// Team Player
-			MD_IOSH_LIGHT_GUN	=  5,	// Light Gun (Menacer)
-			MD_IOSH_KEYBOARD	=  6,	// Keyboard
-			MD_IOSH_SERIAL		=  7,	// Serial (RS-232C)
-			MD_IOSH_PRINTER		=  8,	// Printer
-			MD_IOSH_TABLET		=  9,	// Tablet
-			MD_IOSH_TRACKBALL	= 10,	// Trackball
-			MD_IOSH_PADDLE		= 11,	// Paddle
-			MD_IOSH_FDD		= 12,	// Floppy Drive
-			MD_IOSH_CDROM		= 13,	// CD-ROM
-			MD_IOSH_ACTIVATOR	= 14,	// Activator
-			MD_IOSH_MEGA_MOUSE	= 15,	// Mega Mouse
-		};
+		MD_IOSH_JOYPAD_3	=  0,	// 3-button joypad
+		MD_IOSH_JOYPAD_6	=  1,	// 6-button joypad
+		MD_IOSH_JOYPAD_SMS	=  2,	// 2-button joypad (SMS)
+		MD_IOSH_ANALOG		=  3,	// Analog (XE-1 AP)
+		MD_IOSH_TEAM_PLAYER	=  4,	// Team Player
+		MD_IOSH_LIGHT_GUN	=  5,	// Light Gun (Menacer)
+		MD_IOSH_KEYBOARD	=  6,	// Keyboard
+		MD_IOSH_SERIAL		=  7,	// Serial (RS-232C)
+		MD_IOSH_PRINTER		=  8,	// Printer
+		MD_IOSH_TABLET		=  9,	// Tablet
+		MD_IOSH_TRACKBALL	= 10,	// Trackball
+		MD_IOSH_PADDLE		= 11,	// Paddle
+		MD_IOSH_FDD		= 12,	// Floppy Drive
+		MD_IOSH_CDROM		= 13,	// CD-ROM
+		MD_IOSH_ACTIVATOR	= 14,	// Activator
+		MD_IOSH_MEGA_MOUSE	= 15,	// Mega Mouse
+	};
 
-		/** Internal ROM data. **/
+	/** Internal ROM data **/
 
-		/**
-		 * Parse the I/O support field.
-		 * @param io_support I/O support field.
-		 * @param size Size of io_support.
-		 * @return io_support bitfield.
-		 */
-		static uint32_t parseIOSupport(const char *io_support, int size);
+	/**
+	 * Parse the I/O support field.
+	 * @param io_support I/O support field.
+	 * @param size Size of io_support.
+	 * @return io_support bitfield.
+	 */
+	static uint32_t parseIOSupport(const char *io_support, int size);
 
-	public:
-		enum MD_RomType {
-			ROM_UNKNOWN = -1,		// Unknown ROM type.
+public:
+	enum MD_RomType {
+		ROM_UNKNOWN = -1,		// Unknown ROM type.
 
-			// Low byte: System ID
-			// (TODO: MCD Boot ROMs, other specialized types?)
-			ROM_SYSTEM_MD		= 0,	// Mega Drive
-			ROM_SYSTEM_MCD		= 1,	// Mega CD
-			ROM_SYSTEM_32X		= 2,	// Sega 32X
-			ROM_SYSTEM_MCD32X	= 3,	// Sega CD 32X
-			ROM_SYSTEM_PICO		= 4,	// Sega Pico
-			ROM_SYSTEM_TERADRIVE	= 5,	// Sega Teradrive
-			ROM_SYSTEM_MAX		= ROM_SYSTEM_TERADRIVE,
-			ROM_SYSTEM_UNKNOWN	= 0xFF,
-			ROM_SYSTEM_MASK		= 0xFF,
+		// Low byte: System ID
+		// (TODO: MCD Boot ROMs, other specialized types?)
+		ROM_SYSTEM_MD		= 0,	// Mega Drive
+		ROM_SYSTEM_MCD		= 1,	// Mega CD
+		ROM_SYSTEM_32X		= 2,	// Sega 32X
+		ROM_SYSTEM_MCD32X	= 3,	// Sega CD 32X
+		ROM_SYSTEM_PICO		= 4,	// Sega Pico
+		ROM_SYSTEM_TERADRIVE	= 5,	// Sega Teradrive
+		ROM_SYSTEM_MAX		= ROM_SYSTEM_TERADRIVE,
+		ROM_SYSTEM_UNKNOWN	= 0xFF,
+		ROM_SYSTEM_MASK		= 0xFF,
 
-			// Mid byte: Image format
-			ROM_FORMAT_CART_BIN	= (0 << 8),	// Cartridge: Binary format.
-			ROM_FORMAT_CART_SMD	= (1 << 8),	// Cartridge: SMD format.
-			ROM_FORMAT_DISC_2048	= (2 << 8),	// Disc: 2048-byte sectors. (ISO)
-			ROM_FORMAT_DISC_2352	= (3 << 8),	// Disc: 2352-byte sectors. (BIN)
-			ROM_FORMAT_MAX		= ROM_FORMAT_DISC_2352,
-			ROM_FORMAT_UNKNOWN	= (0xFF << 8),
-			ROM_FORMAT_MASK		= (0xFF << 8),
+		// Mid byte: Image format
+		ROM_FORMAT_CART_BIN	= (0 << 8),	// Cartridge: Binary format.
+		ROM_FORMAT_CART_SMD	= (1 << 8),	// Cartridge: SMD format.
+		ROM_FORMAT_DISC_2048	= (2 << 8),	// Disc: 2048-byte sectors. (ISO)
+		ROM_FORMAT_DISC_2352	= (3 << 8),	// Disc: 2352-byte sectors. (BIN)
+		ROM_FORMAT_MAX		= ROM_FORMAT_DISC_2352,
+		ROM_FORMAT_UNKNOWN	= (0xFF << 8),
+		ROM_FORMAT_MASK		= (0xFF << 8),
 
-			// High byte: Special MD extensions
-			ROM_EXT_SSF2		= (1 << 16),	// SSF2 mapper
-			ROM_EXT_EVERDRIVE	= (2 << 16),	// Everdrive extensions
-			ROM_EXT_MEGAWIFI	= (3 << 16),	// Mega Wifi extensions
-			ROM_EXT_TERADRIVE_68k	= (4 << 16),	// Sega Teradrive: Boot from 68000
-			ROM_EXT_TERADRIVE_x86	= (5 << 16),	// Sega Teradrive: Boot from x86
-			ROM_EXT_MASK		= (0xFF << 16),
-		};
+		// High byte: Special MD extensions
+		ROM_EXT_SSF2		= (1 << 16),	// SSF2 mapper
+		ROM_EXT_EVERDRIVE	= (2 << 16),	// Everdrive extensions
+		ROM_EXT_MEGAWIFI	= (3 << 16),	// Mega Wifi extensions
+		ROM_EXT_TERADRIVE_68k	= (4 << 16),	// Sega Teradrive: Boot from 68000
+		ROM_EXT_TERADRIVE_x86	= (5 << 16),	// Sega Teradrive: Boot from x86
+		ROM_EXT_MASK		= (0xFF << 16),
+	};
 
-		int romType;		// ROM type.
-		unsigned int md_region;	// MD hexadecimal region code.
+	int romType;		// ROM type.
+	unsigned int md_region;	// MD hexadecimal region code.
 
-		/**
-		 * Is this a disc?
-		 * Discs don't have a vector table.
-		 * @return True if this is a disc; false if not.
-		 */
-		inline bool isDisc(void) const
-		{
-			const int rfmt = (romType & ROM_FORMAT_MASK);
-			return (rfmt == ROM_FORMAT_DISC_2048 ||
-				rfmt == ROM_FORMAT_DISC_2352);
-		}
+	/**
+	 * Is this a disc?
+	 * Discs don't have a vector table.
+	 * @return True if this is a disc; false if not.
+	 */
+	inline bool isDisc(void) const
+	{
+		const int rfmt = (romType & ROM_FORMAT_MASK);
+		return (rfmt == ROM_FORMAT_DISC_2048 ||
+			rfmt == ROM_FORMAT_DISC_2352);
+	}
 
-		/**
-		 * Parse region codes.
-		 *
-		 * Wrapper function to handle some games that don't have
-		 * the region code in the correct location.
-		 *
-		 * @param pRomHeader ROM header.
-		 */
-		static uint32_t parseRegionCodes(const MD_RomHeader *pRomHeader);
+	/**
+	 * Parse region codes.
+	 *
+	 * Wrapper function to handle some games that don't have
+	 * the region code in the correct location.
+	 *
+	 * @param pRomHeader ROM header.
+	 */
+	static uint32_t parseRegionCodes(const MD_RomHeader *pRomHeader);
 
-	public:
-		/**
-		 * Determine if a ROM header is using the 'early' format.
-		 * @param pRomHeader ROM header.
-		 * @return True if 'early'; false if standard.
-		 */
-		static bool checkIfEarlyRomHeader(const MD_RomHeader *pRomHeader);
+public:
+	/**
+	 * Determine if a ROM header is using the 'early' format.
+	 * @param pRomHeader ROM header.
+	 * @return True if 'early'; false if standard.
+	 */
+	static bool checkIfEarlyRomHeader(const MD_RomHeader *pRomHeader);
 
-		/**
-		 * Add fields for the ROM header.
-		 *
-		 * This function will not create a new tab.
-		 * If one is desired, it should be created
-		 * before calling this function.
-		 *
-		 * @param pRomHeader ROM header.
-		 * @param bRedetectRegion If true, re-detect the MD region. (i.e. don't use the one parsed in the constructor)
-		 */
-		void addFields_romHeader(const MD_RomHeader *pRomHeader, bool bRedetectRegion = false);
+	/**
+	 * Add fields for the ROM header.
+	 *
+	 * This function will not create a new tab.
+	 * If one is desired, it should be created
+	 * before calling this function.
+	 *
+	 * @param pRomHeader ROM header.
+	 * @param bRedetectRegion If true, re-detect the MD region. (i.e. don't use the one parsed in the constructor)
+	 */
+	void addFields_romHeader(const MD_RomHeader *pRomHeader, bool bRedetectRegion = false);
 
-		/**
-		 * Add fields for the vector table.
-		 *
-		 * This function will not create a new tab.
-		 * If one is desired, it should be created
-		 * before calling this function.
-		 *
-		 * @param pVectors Vector table.
-		 */
-		void addFields_vectorTable(const M68K_VectorTable *pVectors);
+	/**
+	 * Add fields for the vector table.
+	 *
+	 * This function will not create a new tab.
+	 * If one is desired, it should be created
+	 * before calling this function.
+	 *
+	 * @param pVectors Vector table.
+	 */
+	void addFields_vectorTable(const M68K_VectorTable *pVectors);
 
-	public:
-		// ROM header.
-		// NOTE: Must be byteswapped on access.
-		union {
-			M68K_VectorTable vectors;	// Interrupt vectors.
-			uint8_t mcd_hdr[256];		// TODO: MCD-specific header struct.
-		};
-		MD_RomHeader romHeader;		// ROM header.
-		uint32_t gt_crc;		// Game Toshokan: CRC32 of $20000-$200FF.
+public:
+	// ROM header
+	// NOTE: Must be byteswapped on access.
+	union {
+		M68K_VectorTable vectors;	// Interrupt vectors.
+		uint8_t mcd_hdr[256];		// TODO: MCD-specific header struct.
+	};
+	MD_RomHeader romHeader;		// ROM header.
+	uint32_t gt_crc;		// Game Toshokan: CRC32 of $20000-$200FF.
 
-		// Extra headers.
-		SMD_Header *pSmdHeader;		// SMD header.
-		MD_RomHeader *pRomHeaderLockOn;	// Locked-on ROM header.
+	// Extra headers
+	SMD_Header *pSmdHeader;		// SMD header.
+	MD_RomHeader *pRomHeaderLockOn;	// Locked-on ROM header.
 
-	public:
-		/**
-		 * Get the publisher.
-		 * @param pRomHeader ROM header to check.
-		 * @return Publisher, or "Unknown" if unknown.
-		 */
-		static string getPublisher(const MD_RomHeader *pRomHeader);
+public:
+	/**
+	 * Get the publisher.
+	 * @param pRomHeader ROM header to check.
+	 * @return Publisher, or "Unknown" if unknown.
+	 */
+	static string getPublisher(const MD_RomHeader *pRomHeader);
 
-		/**
-		 * Initialize zlib.
-		 * @return 0 on success; non-zero on error.
-		 */
-		static int zlibInit(void);
+	/**
+	 * Initialize zlib.
+	 * @return 0 on success; non-zero on error.
+	 */
+	static int zlibInit(void);
 };
 
 ROMDATA_IMPL(MegaDrive)
@@ -268,7 +268,7 @@ MegaDrivePrivate::~MegaDrivePrivate()
 	delete pRomHeaderLockOn;
 }
 
-/** Internal ROM data. **/
+/** Internal ROM data **/
 
 /**
  * Parse the I/O support field.

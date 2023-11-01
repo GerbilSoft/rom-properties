@@ -26,52 +26,52 @@ namespace LibRomData {
 
 class PSFPrivate final : public RomDataPrivate
 {
-	public:
-		PSFPrivate(const IRpFilePtr &file);
+public:
+	PSFPrivate(const IRpFilePtr &file);
 
-	private:
-		typedef RomDataPrivate super;
-		RP_DISABLE_COPY(PSFPrivate)
+private:
+	typedef RomDataPrivate super;
+	RP_DISABLE_COPY(PSFPrivate)
 
-	public:
-		/** RomDataInfo **/
-		static const char *const exts[];
-		static const char *const mimeTypes[];
-		static const RomDataInfo romDataInfo;
+public:
+	/** RomDataInfo **/
+	static const char *const exts[];
+	static const char *const mimeTypes[];
+	static const RomDataInfo romDataInfo;
 
-	public:
-		// PSF header
-		// NOTE: **NOT** byteswapped in memory.
-		PSF_Header psfHeader;
+public:
+	// PSF header
+	// NOTE: **NOT** byteswapped in memory.
+	PSF_Header psfHeader;
 
-		// PSF types
-		struct psf_type_tbl_t {
-			uint8_t version;
-			char tag_name[7];	// psfby
-			const char *sys_name;	// system name (localizable)
-		};
-		static const std::array<psf_type_tbl_t, 9> psf_type_tbl;
+	// PSF types
+	struct psf_type_tbl_t {
+		uint8_t version;
+		char tag_name[7];	// psfby
+		const char *sys_name;	// system name (localizable)
+	};
+	static const std::array<psf_type_tbl_t, 9> psf_type_tbl;
 
-		/**
-		 * Parse the tag section.
-		 * @param tag_addr Tag section starting address.
-		 * @return Map containing key/value entries.
-		 */
-		unordered_map<string, string> parseTags(off64_t tag_addr);
+	/**
+	 * Parse the tag section.
+	 * @param tag_addr Tag section starting address.
+	 * @return Map containing key/value entries.
+	 */
+	unordered_map<string, string> parseTags(off64_t tag_addr);
 
-		/**
-		 * Get the "ripped by" tag name for the specified PSF version.
-		 * @param version PSF version.
-		 * @return "Ripped by" tag name.
-		 */
-		const char *getRippedByTagName(uint8_t version);
+	/**
+	 * Get the "ripped by" tag name for the specified PSF version.
+	 * @param version PSF version.
+	 * @return "Ripped by" tag name.
+	 */
+	const char *getRippedByTagName(uint8_t version);
 
-		/**
-		 * Convert a PSF length string to milliseconds.
-		 * @param str PSF length string.
-		 * @return Milliseconds.
-		 */
-		static unsigned int lengthToMs(const char *str);
+	/**
+	 * Convert a PSF length string to milliseconds.
+	 * @param str PSF length string.
+	 * @return Milliseconds.
+	 */
+	static unsigned int lengthToMs(const char *str);
 };
 
 ROMDATA_IMPL(PSF)

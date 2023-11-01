@@ -23,24 +23,25 @@ using namespace LibRpFile;
 
 namespace LibRomData {
 
-class Cdrom2352ReaderPrivate : public SparseDiscReaderPrivate {
-	public:
-		explicit Cdrom2352ReaderPrivate(Cdrom2352Reader *q, unsigned int physBlockSize = 2352);
+class Cdrom2352ReaderPrivate : public SparseDiscReaderPrivate
+{
+public:
+	explicit Cdrom2352ReaderPrivate(Cdrom2352Reader *q, unsigned int physBlockSize = 2352);
 
-	private:
-		typedef SparseDiscReaderPrivate super;
-		RP_DISABLE_COPY(Cdrom2352ReaderPrivate)
+private:
+	typedef SparseDiscReaderPrivate super;
+	RP_DISABLE_COPY(Cdrom2352ReaderPrivate)
 
-	public:
-		// CD-ROM sync magic.
-		static const uint8_t CDROM_2352_MAGIC[12];
+public:
+	// CD-ROM sync magic
+	static const uint8_t CDROM_2352_MAGIC[12];
 
-		// Physical block size.
-		// Supported block sizes: 2352 (raw), 2448 (raw+subchan)
-		unsigned int physBlockSize;
+	// Physical block size
+	// Supported block sizes: 2352 (raw), 2448 (raw+subchan)
+	unsigned int physBlockSize;
 
-		// Number of 2352-byte blocks.
-		unsigned int blockCount;
+	// Number of 2352-byte blocks
+	unsigned int blockCount;
 };
 
 /** Cdrom2352ReaderPrivate **/
@@ -137,7 +138,7 @@ int Cdrom2352Reader::isDiscSupported(const uint8_t *pHeader, size_t szHeader) co
 	return isDiscSupported_static(pHeader, szHeader);
 }
 
-/** SparseDiscReader functions. **/
+/** SparseDiscReader functions **/
 
 /**
  * Get the physical address of the specified logical block index.

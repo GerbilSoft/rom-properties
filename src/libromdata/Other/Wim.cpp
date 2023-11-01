@@ -43,34 +43,34 @@ namespace LibRomData {
 
 class WimPrivate final : public RomDataPrivate
 {
-	public:
-		WimPrivate(const IRpFilePtr &file);  
-	private:
-		typedef RomDataPrivate super;
-		RP_DISABLE_COPY(WimPrivate)
+public:
+	WimPrivate(const IRpFilePtr &file);  
+private:
+	typedef RomDataPrivate super;
+	RP_DISABLE_COPY(WimPrivate)
 
-	public:
-		/** RomDataInfo **/
-		static const char *const exts[];
-		static const char *const mimeTypes[];
-		static const RomDataInfo romDataInfo;
+public:
+	/** RomDataInfo **/
+	static const char *const exts[];
+	static const char *const mimeTypes[];
+	static const RomDataInfo romDataInfo;
 
-	public:
-		// ROM header
-		WIM_Header wimHeader;
+public:
+	// WIM header
+	WIM_Header wimHeader;
 
-		// WIM version
-		// NOTE: WIMs pre-1.13 are being detected but won't
-		// be read due to the format being different.
-		WIM_Version_Type versionType;
+	// WIM version
+	// NOTE: WIMs pre-1.13 are being detected but won't
+	// be read due to the format being different.
+	WIM_Version_Type versionType;
 
 #ifdef ENABLE_XML
-	public:
-		/**
-		 * Add fields from the WIM image's XML manifest.
-		 * @return 0 on success; non-zero on error.
-		 */
-		int addFields_XML();
+public:
+	/**
+	 * Add fields from the WIM image's XML manifest.
+	 * @return 0 on success; non-zero on error.
+	 */
+	int addFields_XML();
 #endif /* ENABLE_XML */
 };
 

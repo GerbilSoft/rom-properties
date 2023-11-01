@@ -23,37 +23,37 @@ namespace LibRomData {
 
 class N64Private final : public RomDataPrivate
 {
-	public:
-		N64Private(const IRpFilePtr &file);
+public:
+	N64Private(const IRpFilePtr &file);
 
-	private:
-		typedef RomDataPrivate super;
-		RP_DISABLE_COPY(N64Private)
+private:
+	typedef RomDataPrivate super;
+	RP_DISABLE_COPY(N64Private)
 
-	public:
-		/** RomDataInfo **/
-		static const char *const exts[];
-		static const char *const mimeTypes[];
-		static const RomDataInfo romDataInfo;
+public:
+	/** RomDataInfo **/
+	static const char *const exts[];
+	static const char *const mimeTypes[];
+	static const RomDataInfo romDataInfo;
 
-	public:
-		// ROM image type.
-		enum class RomType {
-			Unknown	= -1,
+public:
+	// ROM image type
+	enum class RomType {
+		Unknown	= -1,
 
-			Z64	= 0,	// Z64 format
-			V64	= 1,	// V64 format
-			SWAP2	= 2,	// swap2 format
-			LE32	= 3,	// LE32 format
+		Z64	= 0,	// Z64 format
+		V64	= 1,	// V64 format
+		SWAP2	= 2,	// swap2 format
+		LE32	= 3,	// LE32 format
 
-			Max
-		};
-		RomType romType;
+		Max
+	};
+	RomType romType;
 
-	public:
-		// ROM header.
-		// NOTE: Fields have been byteswapped in the constructor.
-		N64_RomHeader romHeader;
+public:
+	// ROM header.
+	// NOTE: Fields have been byteswapped in the constructor.
+	N64_RomHeader romHeader;
 };
 
 ROMDATA_IMPL(N64)

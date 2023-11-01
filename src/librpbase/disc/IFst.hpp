@@ -49,7 +49,7 @@ class NOVTABLE IFst
 		virtual bool hasErrors(void) const = 0;
 
 	public:
-		/** opendir() interface. **/
+		/** opendir() interface **/
 
 		struct DirEnt {
 			off64_t offset;		// Starting address.

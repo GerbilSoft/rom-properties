@@ -21,7 +21,6 @@ using namespace LibRpText;
 using namespace LibRpTexture;
 
 // C++ STL classes
-using std::array;
 using std::string;
 using std::vector;
 
@@ -29,73 +28,73 @@ namespace LibRomData {
 
 class NintendoBadgePrivate final : public RomDataPrivate
 {
-	public:
-		NintendoBadgePrivate(const IRpFilePtr &file);
-		~NintendoBadgePrivate() final = default;
+public:
+	NintendoBadgePrivate(const IRpFilePtr &file);
+	~NintendoBadgePrivate() final = default;
 
-	private:
-		typedef RomDataPrivate super;
-		RP_DISABLE_COPY(NintendoBadgePrivate)
+private:
+	typedef RomDataPrivate super;
+	RP_DISABLE_COPY(NintendoBadgePrivate)
 
-	public:
-		/** RomDataInfo **/
-		static const char *const exts[];
-		static const char *const mimeTypes[];
-		static const RomDataInfo romDataInfo;
+public:
+	/** RomDataInfo **/
+	static const char *const exts[];
+	static const char *const mimeTypes[];
+	static const RomDataInfo romDataInfo;
 
-	public:
-		enum class BadgeType {
-			Unknown = -1,
+public:
+	enum class BadgeType {
+		Unknown = -1,
 
-			PRBS	= 0,	// PRBS (individual badge)
-			CABS	= 1,	// CABS (set badge)
+		PRBS	= 0,	// PRBS (individual badge)
+		CABS	= 1,	// CABS (set badge)
 
-			Max
-		};
-		BadgeType badgeType;
+		Max
+	};
+	BadgeType badgeType;
 
-		// PRBS badge index
-		enum class BadgeIndex_PRBS {
-			Small		= 0,	// 32x32
-			Large		= 1,	// 64x64
-			MegaSmall	= 2,	// Mega Badge: 32x32 tiles
-			MegaLarge	= 3,	// Mega Badge: 64x64 tiles
+	// PRBS badge index
+	enum class BadgeIndex_PRBS {
+		Small		= 0,	// 32x32
+		Large		= 1,	// 64x64
+		MegaSmall	= 2,	// Mega Badge: 32x32 tiles
+		MegaLarge	= 3,	// Mega Badge: 64x64 tiles
 
-			Max
-		};
+		Max
+	};
 
-		// Is this a mega badge? (>1x1)
-		bool megaBadge;
+	// Is this a mega badge? (>1x1)
+	bool megaBadge;
 
-	public:
-		// Badge header
-		// Byteswapped to host-endian on load, except `magic` and `title_id`.
-		union {
-			Badge_PRBS_Header prbs;
-			Badge_CABS_Header cabs;
-		} badgeHeader;
+public:
+	// Badge header
+	// Byteswapped to host-endian on load, except `magic` and `title_id`.
+	union {
+		Badge_PRBS_Header prbs;
+		Badge_CABS_Header cabs;
+	} badgeHeader;
 
-		// Decoded images
-		array<rp_image_ptr, static_cast<unsigned int>(BadgeIndex_PRBS::Max)> img_badges;
+	// Decoded images
+	std::array<rp_image_ptr, static_cast<unsigned int>(BadgeIndex_PRBS::Max)> img_badges;
 
-		/**
-		 * Load the badge image.
-		 * @param idx Image index.
-		 * @return Image, or nullptr on error.
-		 */
-		rp_image_const_ptr loadImage(int idx);
+	/**
+	 * Load the badge image.
+	 * @param idx Image index.
+	 * @return Image, or nullptr on error.
+	 */
+	rp_image_const_ptr loadImage(int idx);
 
-		/**
-		 * Get the language ID to use for the title fields.
-		 * @return N3DS language ID.
-		 */
-		N3DS_Language_ID getLanguageID(void) const;
+	/**
+	 * Get the language ID to use for the title fields.
+	 * @return N3DS language ID.
+	 */
+	N3DS_Language_ID getLanguageID(void) const;
 
-		/**
-		 * Get the default language code for the multi-string fields.
-		 * @return Language code, e.g. 'en' or 'es'.
-		 */
-		inline uint32_t getDefaultLC(void) const;
+	/**
+	 * Get the default language code for the multi-string fields.
+	 * @return Language code, e.g. 'en' or 'es'.
+	 */
+	inline uint32_t getDefaultLC(void) const;
 };
 
 ROMDATA_IMPL(NintendoBadge)

@@ -26,19 +26,19 @@ namespace LibRomData {
 
 class N3DSVerifyKeysPrivate
 {
-	public:
-		// Static class
-		N3DSVerifyKeysPrivate() = delete;
-		~N3DSVerifyKeysPrivate() = delete;
-		N3DSVerifyKeysPrivate(const N3DSVerifyKeysPrivate &) = delete;
-		N3DSVerifyKeysPrivate& operator=(const N3DSVerifyKeysPrivate &) = delete;
+public:
+	// Static class
+	N3DSVerifyKeysPrivate() = delete;
+	~N3DSVerifyKeysPrivate() = delete;
+	N3DSVerifyKeysPrivate(const N3DSVerifyKeysPrivate &) = delete;
+	N3DSVerifyKeysPrivate& operator=(const N3DSVerifyKeysPrivate &) = delete;
 
-	public:
-		// Verification key names
-		static const std::array<const char*, N3DSVerifyKeys::Key_Max> EncryptionKeyNames;
+public:
+	// Verification key names
+	static const std::array<const char*, N3DSVerifyKeys::Key_Max> EncryptionKeyNames;
 
-		// Verification key data
-		static const uint8_t EncryptionKeyVerifyData[N3DSVerifyKeys::Key_Max][16];
+	// Verification key data
+	static const uint8_t EncryptionKeyVerifyData[N3DSVerifyKeys::Key_Max][16];
 };
 
 /** N3DSVerifyKeysPrivate **/

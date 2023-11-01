@@ -24,157 +24,157 @@ namespace LibRomData {
 
 class DreamcastSavePrivate final : public RomDataPrivate
 {
-	public:
-		DreamcastSavePrivate(const IRpFilePtr &file);
-		~DreamcastSavePrivate() final = default;
+public:
+	DreamcastSavePrivate(const IRpFilePtr &file);
+	~DreamcastSavePrivate() final = default;
 
-	private:
-		typedef RomDataPrivate super;
-		RP_DISABLE_COPY(DreamcastSavePrivate)
+private:
+	typedef RomDataPrivate super;
+	RP_DISABLE_COPY(DreamcastSavePrivate)
 
-	public:
-		/** RomDataInfo **/
-		static const char *const exts[];
-		static const char *const mimeTypes[];
-		static const RomDataInfo romDataInfo;
+public:
+	/** RomDataInfo **/
+	static const char *const exts[];
+	static const char *const mimeTypes[];
+	static const RomDataInfo romDataInfo;
 
-	public:
-		// Internal images
-		rp_image_ptr img_banner;
+public:
+	// Internal images
+	rp_image_ptr img_banner;
 
-		// Animated icon data
-		IconAnimDataPtr iconAnimData;
+	// Animated icon data
+	IconAnimDataPtr iconAnimData;
 
-	public:
-		// Save file type.
-		// Applies to the main file, e.g. VMS or DCI.
-		enum class SaveType {
-			Unknown	= -1,
+public:
+	// Save file type.
+	// Applies to the main file, e.g. VMS or DCI.
+	enum class SaveType {
+		Unknown	= -1,
 
-			VMS	= 0,	// VMS file (also .VMI+.VMS)
-			VMI	= 1,	// VMI file (standalone)
-			DCI	= 2,	// DCI (Nexus)
+		VMS	= 0,	// VMS file (also .VMI+.VMS)
+		VMI	= 1,	// VMI file (standalone)
+		DCI	= 2,	// DCI (Nexus)
 
-			Max
-		};
-		SaveType saveType;
+		Max
+	};
+	SaveType saveType;
 
-	public:
-		// Which headers do we have loaded?
-		enum DC_LoadedHeaders {
-			DC_HAVE_UNKNOWN = 0,
+public:
+	// Which headers do we have loaded?
+	enum DC_LoadedHeaders {
+		DC_HAVE_UNKNOWN = 0,
 
-			// VMS data. Present in .VMS and .DCI files.
-			DC_HAVE_VMS = (1U << 0),
+		// VMS data. Present in .VMS and .DCI files.
+		DC_HAVE_VMS = (1U << 0),
 
-			// VMI header. Present in .VMI files only.
-			DC_HAVE_VMI = (1U << 1),
+		// VMI header. Present in .VMI files only.
+		DC_HAVE_VMI = (1U << 1),
 
-			// Directory entry. Present in .VMI and .DCI files.
-			DC_HAVE_DIR_ENTRY = (1U << 2),
+		// Directory entry. Present in .VMI and .DCI files.
+		DC_HAVE_DIR_ENTRY = (1U << 2),
 
-			// ICONDATA_VMS.
-			DC_IS_ICONDATA_VMS = (1U << 3),
-		};
-		uint32_t loaded_headers;
+		// ICONDATA_VMS.
+		DC_IS_ICONDATA_VMS = (1U << 3),
+	};
+	uint32_t loaded_headers;
 
-		// VMI save file. (for .VMI+.VMS)
-		// NOTE: Standalone VMI uses this->file.
-		IRpFilePtr vmi_file;
+	// VMI save file (for .VMI+.VMS)
+	// NOTE: Standalone VMI uses this->file.
+	IRpFilePtr vmi_file;
 
-		// Offset in the main file to the data area.
-		// - VMS: 0
-		// - DCI: 32
-		uint32_t data_area_offset;
-		static const uint32_t DATA_AREA_OFFSET_VMS = 0;
-		static const uint32_t DATA_AREA_OFFSET_DCI = 32;
+	// Offset in the main file to the data area.
+	// - VMS: 0
+	// - DCI: 32
+	uint32_t data_area_offset;
+	static const uint32_t DATA_AREA_OFFSET_VMS = 0;
+	static const uint32_t DATA_AREA_OFFSET_DCI = 32;
 
-		/** NOTE: Fields have been byteswapped when loaded. **/
-		// VMS header.
-		DC_VMS_Header vms_header;
-		// Header offset. (0 for standard save files; 0x200 for game files.)
-		uint32_t vms_header_offset;
-		// VMI header.
-		DC_VMI_Header vmi_header;
-		// Directory entry.
-		DC_VMS_DirEnt vms_dirent;
+	/** NOTE: Fields have been byteswapped when loaded. **/
+	// VMS header
+	DC_VMS_Header vms_header;
+	// Header offset (0 for standard save files; 0x200 for game files.)
+	uint32_t vms_header_offset;
+	// VMI header
+	DC_VMI_Header vmi_header;
+	// Directory entry
+	DC_VMS_DirEnt vms_dirent;
 
-		// Creation time. Converted from binary or BCD,
-		// depending on if we loaded a VMI or DCI.
-		// If the original value is invalid, this will
-		// be set to -1.
-		time_t ctime;
+	// Creation time. Converted from binary or BCD,
+	// depending on if we loaded a VMI or DCI.
+	// If the original value is invalid, this will
+	// be set to -1.
+	time_t ctime;
 
-		// Time conversion functions.
-		static time_t vmi_to_unix_time(const DC_VMI_Timestamp *vmi_tm);
+	// Time conversion functions
+	static time_t vmi_to_unix_time(const DC_VMI_Timestamp *vmi_tm);
 
-		// Is this a VMS game file?
-		bool isGameFile;
+	// Is this a VMS game file?
+	bool isGameFile;
 
-		/**
-		 * Read and verify the VMS header.
-		 * This function sets vms_header and vms_header_offset.
-		 * @param address Address to check.
-		 * @return DC_LoadedHeaders flag if read and verified; 0 if not.
-		 */
-		unsigned int readAndVerifyVmsHeader(uint32_t address);
+	/**
+	 * Read and verify the VMS header.
+	 * This function sets vms_header and vms_header_offset.
+	 * @param address Address to check.
+	 * @return DC_LoadedHeaders flag if read and verified; 0 if not.
+	 */
+	unsigned int readAndVerifyVmsHeader(uint32_t address);
 
-		/**
-		 * Read the VMI header from the specified file.
-		 * @param vmi_file VMI file.
-		 * @return 0 on success; negative POSIX error code on error.
-		 */
-		int readVmiHeader(const IRpFilePtr &vmi_file);
+	/**
+	 * Read the VMI header from the specified file.
+	 * @param vmi_file VMI file.
+	 * @return 0 on success; negative POSIX error code on error.
+	 */
+	int readVmiHeader(const IRpFilePtr &vmi_file);
 
-		// Graphic eyecatch sizes.
-		static const uint32_t eyecatch_sizes[4];
+	// Graphic eyecatch sizes
+	static const uint32_t eyecatch_sizes[4];
 
-		// VMS icon struct.
-		// For processing VMS icons only;
-		// do not use directly for saving!
-		// NOTE: If using `icon_mono`, don't use `palette` or `icon_color`.
-		union VmsIcon_buf_t {
-			struct {
-				union {
-					uint16_t u16[DC_VMS_ICON_PALETTE_SIZE >> 1];
-					uint32_t u32[DC_VMS_ICON_PALETTE_SIZE >> 2];
-				} palette;
-				union {
-					uint8_t   u8[DC_VMS_ICON_DATA_SIZE];
-					uint32_t u32[DC_VMS_ICON_DATA_SIZE >> 2];
-				} icon_color;
-			};
+	// VMS icon struct
+	// For processing VMS icons only;
+	// do not use directly for saving!
+	// NOTE: If using `icon_mono`, don't use `palette` or `icon_color`.
+	union VmsIcon_buf_t {
+		struct {
 			union {
-				uint8_t   u8[DC_VMS_ICONDATA_MONO_ICON_SIZE];
-				uint32_t u32[DC_VMS_ICONDATA_MONO_ICON_SIZE >> 2];
-			} icon_mono;
+				uint16_t u16[DC_VMS_ICON_PALETTE_SIZE >> 1];
+				uint32_t u32[DC_VMS_ICON_PALETTE_SIZE >> 2];
+			} palette;
+			union {
+				uint8_t   u8[DC_VMS_ICON_DATA_SIZE];
+				uint32_t u32[DC_VMS_ICON_DATA_SIZE >> 2];
+			} icon_color;
 		};
+		union {
+			uint8_t   u8[DC_VMS_ICONDATA_MONO_ICON_SIZE];
+			uint32_t u32[DC_VMS_ICONDATA_MONO_ICON_SIZE >> 2];
+		} icon_mono;
+	};
 
-		/**
-		 * Load the save file's icons.
-		 *
-		 * This will load all of the animated icon frames,
-		 * though only the first frame will be returned.
-		 *
-		 * @return Icon, or nullptr on error.
-		 */
-		rp_image_const_ptr loadIcon(void);
+	/**
+	 * Load the save file's icons.
+	 *
+	 * This will load all of the animated icon frames,
+	 * though only the first frame will be returned.
+	 *
+	 * @return Icon, or nullptr on error.
+	 */
+	rp_image_const_ptr loadIcon(void);
 
-		/**
-		 * Load the icon from an ICONDATA_VMS file.
-		 *
-		 * If a color icon is present, that will be loaded.
-		 * Otherwise, the monochrome icon will be loaded.
-		 *
-		 * @return Icon, or nullptr on error.
-		 */
-		rp_image_const_ptr loadIcon_ICONDATA_VMS(void);
+	/**
+	 * Load the icon from an ICONDATA_VMS file.
+	 *
+	 * If a color icon is present, that will be loaded.
+	 * Otherwise, the monochrome icon will be loaded.
+	 *
+	 * @return Icon, or nullptr on error.
+	 */
+	rp_image_const_ptr loadIcon_ICONDATA_VMS(void);
 
-		/**
-		 * Load the save file's banner.
-		 * @return Banner, or nullptr on error.
-		 */
-		rp_image_const_ptr loadBanner(void);
+	/**
+	 * Load the save file's banner.
+	 * @return Banner, or nullptr on error.
+	 */
+	rp_image_const_ptr loadBanner(void);
 };
 
 ROMDATA_IMPL(DreamcastSave)

@@ -38,71 +38,71 @@ namespace LibRomData {
 
 class Xbox_XBE_Private final : public RomDataPrivate
 {
-	public:
-		Xbox_XBE_Private(const IRpFilePtr &file);
-		~Xbox_XBE_Private() final;
+public:
+	Xbox_XBE_Private(const IRpFilePtr &file);
+	~Xbox_XBE_Private() final;
 
-	private:
-		typedef RomDataPrivate super;
-		RP_DISABLE_COPY(Xbox_XBE_Private)
+private:
+	typedef RomDataPrivate super;
+	RP_DISABLE_COPY(Xbox_XBE_Private)
 
-	public:
-		/** RomDataInfo **/
-		static const char *const exts[];
-		static const char *const mimeTypes[];
-		static const RomDataInfo romDataInfo;
+public:
+	/** RomDataInfo **/
+	static const char *const exts[];
+	static const char *const mimeTypes[];
+	static const RomDataInfo romDataInfo;
 
-	public:
-		// XBE header
-		// NOTE: **NOT** byteswapped.
-		XBE_Header xbeHeader;
+public:
+	// XBE header
+	// NOTE: **NOT** byteswapped.
+	XBE_Header xbeHeader;
 
-		// XBE certificate
-		// NOTE: **NOT** byteswapped.
-		XBE_Certificate xbeCertificate;
+	// XBE certificate
+	// NOTE: **NOT** byteswapped.
+	XBE_Certificate xbeCertificate;
 
-		// RomData subclasses.
-		// TODO: Also get the save image? ($$XSIMAGE)
-		EXE *pe_exe;		// PE executable
+	// RomData subclasses
+	// TODO: Also get the save image? ($$XSIMAGE)
+	EXE *pe_exe;		// PE executable
 
-		// Title image.
-		// NOTE: May be a PNG image on some discs.
-		struct {
-			// TODO: Union of XboxXPR and rp_image, or std::variant<>?
-			shared_ptr<XboxXPR> xpr0;
-			rp_image_ptr png;
+	// Title image.
+	// NOTE: May be a PNG image on some discs.
+	struct {
+		// TODO: Union of XboxXPR and rp_image, or std::variant<>?
+		shared_ptr<XboxXPR> xpr0;
+		rp_image_ptr png;
 
-			bool isInit;
-			bool isPng;
-		} xtImage;
+		bool isInit;
+		bool isPng;
+	} xtImage;
 
-	public:
-		/**
-		 * Find an XBE section header.
-		 * @param name		[in] Section header name.
-		 * @param pOutHeader	[out] Buffer to store the header. (Byteswapped to host-endian.)
-		 * @return 0 on success; negative POSIX error code on error.
-		 */
-		int findXbeSectionHeader(const char *name, XBE_Section_Header *pOutHeader);
+public:
+	/**
+	 * Find an XBE section header.
+	 * @param name		[in] Section header name.
+	 * @param pOutHeader	[out] Buffer to store the header. (Byteswapped to host-endian.)
+	 * @return 0 on success; negative POSIX error code on error.
+	 */
+	int findXbeSectionHeader(const char *name, XBE_Section_Header *pOutHeader);
 
-		/**
-		 * Initialize the title image object.
-		 * NOTE: Check xtImage's union after initializing.
-		 * @return 0 if initialized; negative POSIX error code on error.
-		 */
-		int initXPR0_xtImage(void);
+	/**
+	 * Initialize the title image object.
+	 * NOTE: Check xtImage's union after initializing.
+	 * @return 0 if initialized; negative POSIX error code on error.
+	 */
+	int initXPR0_xtImage(void);
 
-		/**
-		 * Initialize the PE executable object.
-		 * @return EXE object on success; nullptr on error.
-		 */
-		const EXE *initEXE(void);
+	/**
+	 * Initialize the PE executable object.
+	 * @return EXE object on success; nullptr on error.
+	 */
+	const EXE *initEXE(void);
 
-		/**
-		 * Get the publisher.
-		 * @return Publisher.
-		 */
-		string getPublisher(void) const;
+	/**
+	 * Get the publisher.
+	 * @return Publisher.
+	 */
+	string getPublisher(void) const;
 };
 
 ROMDATA_IMPL(Xbox_XBE)

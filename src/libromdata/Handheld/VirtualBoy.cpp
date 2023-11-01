@@ -24,44 +24,44 @@ namespace LibRomData {
 
 class VirtualBoyPrivate final : public RomDataPrivate
 {
-	public:
-		VirtualBoyPrivate(const IRpFilePtr &file);
+public:
+	VirtualBoyPrivate(const IRpFilePtr &file);
 
-	private:
-		typedef RomDataPrivate super;
-		RP_DISABLE_COPY(VirtualBoyPrivate)
+private:
+	typedef RomDataPrivate super;
+	RP_DISABLE_COPY(VirtualBoyPrivate)
 
-	public:
-		/** RomDataInfo **/
-		static const char *const exts[];
-		static const char *const mimeTypes[];
-		static const RomDataInfo romDataInfo;
+public:
+	/** RomDataInfo **/
+	static const char *const exts[];
+	static const char *const mimeTypes[];
+	static const RomDataInfo romDataInfo;
 
-	public:
-		/**
-		 * Is character a valid JIS X 0201 codepoint?
-		 * @param c The character
-		 * @return Wether or not character is valid
-		 */
-		static bool inline isJISX0201(unsigned char c);
+public:
+	/**
+	 * Is character a valid JIS X 0201 codepoint?
+	 * @param c The character
+	 * @return Wether or not character is valid
+	 */
+	static bool inline isJISX0201(unsigned char c);
 		
-		/**
-		 * Is character a valid Publisher ID character?
-		 * @param c The character
-		 * @return Wether or not character is valid
-		 */
-		static bool inline isPublisherID(char c);
+	/**
+	 * Is character a valid Publisher ID character?
+	 * @param c The character
+	 * @return Wether or not character is valid
+	 */
+	static bool inline isPublisherID(char c);
 
-		/**
-		 * Is character a valid Game ID character?
-		 * @param c The character
-		 * @return Wether or not character is valid
-		 */
-		static bool inline isGameID(char c);
+	/**
+	 * Is character a valid Game ID character?
+	 * @param c The character
+	 * @return Wether or not character is valid
+	 */
+	static bool inline isGameID(char c);
 	
-	public:
-		// ROM footer.
-		VB_RomFooter romFooter;
+public:
+	// ROM footer
+	VB_RomFooter romFooter;
 };
 
 ROMDATA_IMPL(VirtualBoy)

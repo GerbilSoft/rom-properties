@@ -40,75 +40,75 @@ namespace LibRomData {
 
 class PlayStationDiscPrivate final : public RomDataPrivate
 {
-	public:
-		PlayStationDiscPrivate(const IRpFilePtr &file);
-		~PlayStationDiscPrivate() final = default;
+public:
+	PlayStationDiscPrivate(const IRpFilePtr &file);
+	~PlayStationDiscPrivate() final = default;
 
-	private:
-		typedef RomDataPrivate super;
-		RP_DISABLE_COPY(PlayStationDiscPrivate)
+private:
+	typedef RomDataPrivate super;
+	RP_DISABLE_COPY(PlayStationDiscPrivate)
 
-	public:
-		/** RomDataInfo **/
-		static const char *const exts[];
-		static const char *const mimeTypes[];
-		static const RomDataInfo romDataInfo;
+public:
+	/** RomDataInfo **/
+	static const char *const exts[];
+	static const char *const mimeTypes[];
+	static const RomDataInfo romDataInfo;
 
-	public:
-		ISO_Primary_Volume_Descriptor pvd;
+public:
+	ISO_Primary_Volume_Descriptor pvd;
 
-		// SYSTEM.CNF contents
-		// Keys are stored in upper-case.
-		unordered_map<string, string> system_cnf;
+	// SYSTEM.CNF contents
+	// Keys are stored in upper-case.
+	unordered_map<string, string> system_cnf;
 
-		/**
-		 * ini.h callback for parsing SYSTEM.CNF.
-		 * @param user		[in] User data parameter (this)
-		 * @param section	[in] Section name
-		 * @param name		[in] Value name
-		 * @param value		[in] Value
-		 * @return 0 to continue; 1 to stop.
-		 */
-		static int parse_system_cnf(void *user, const char *section, const char *name, const char *value);
+	/**
+	 * ini.h callback for parsing SYSTEM.CNF.
+	 * @param user		[in] User data parameter (this)
+	 * @param section	[in] Section name
+	 * @param name		[in] Value name
+	 * @param value		[in] Value
+	 * @return 0 to continue; 1 to stop.
+	 */
+	static int parse_system_cnf(void *user, const char *section, const char *name, const char *value);
 
-		/**
-		 * Load SYSTEM.CNF.
-		 * @param pt IPartition containing SYSTEM.CNF.
-		 * @return 0 on success; negative POSIX error code on error.
-		 */
-		int loadSystemCnf(const IsoPartitionPtr &pt);
+	/**
+	 * Load SYSTEM.CNF.
+	 * @param pt IPartition containing SYSTEM.CNF.
+	 * @return 0 on success; negative POSIX error code on error.
+	 */
+	int loadSystemCnf(const IsoPartitionPtr &pt);
 
-		// IsoPartition
-		IDiscReaderPtr discReader;
-		IsoPartitionPtr isoPartition;
+	// IsoPartition
+	IDiscReaderPtr discReader;
+	IsoPartitionPtr isoPartition;
 
-		// Boot executable
-		RomDataPtr bootExeData;
+	// Boot executable
+	RomDataPtr bootExeData;
 
-		// Boot filename.
-		// Normalized:
-		// - "cdrom:\" (PS1) or "cdrom0:\" (PS2) removed.
-		// - ISO version number removed.
-		string boot_filename;
+	// Boot filename
+	// Normalized:
+	// - "cdrom:\" (PS1) or "cdrom0:\" (PS2) removed.
+	// - ISO version number removed.
+	string boot_filename;
 
-		// Optional boot argument.
-		string boot_argument;
+	// Optional boot argument
+	string boot_argument;
 
-		/**
-		 * Open the boot executable.
-		 * @return RomData* on success; nullptr on error.
-		 */
-		RomDataPtr openBootExe(void);
+	/**
+	 * Open the boot executable.
+	 * @return RomData* on success; nullptr on error.
+	 */
+	RomDataPtr openBootExe(void);
 
-		enum class ConsoleType {
-			Unknown	= -1,
+	enum class ConsoleType {
+		Unknown	= -1,
 
-			PS1	= 0,	// PlayStation
-			PS2	= 1,	// PlayStation 2
+		PS1	= 0,	// PlayStation
+		PS2	= 1,	// PlayStation 2
 
-			Max
-		};
-		ConsoleType consoleType;
+		Max
+	};
+	ConsoleType consoleType;
 };
 
 ROMDATA_IMPL(PlayStationDisc)

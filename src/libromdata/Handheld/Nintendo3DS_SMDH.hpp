@@ -20,14 +20,14 @@ ROMDATA_DECL_IMGSUPPORT()
 ROMDATA_DECL_IMGPF()
 ROMDATA_DECL_IMGINT()
 
-	public:
-		/** Special SMDH accessor functions. **/
+public:
+	/** Special SMDH accessor functions **/
 
-		/**
-		 * Get the SMDH region code.
-		 * @return SMDH region code, or 0 on error.
-		 */
-		uint32_t getRegionCode(void) const;
+	/**
+	 * Get the SMDH region code.
+	 * @return SMDH region code, or 0 on error.
+	 */
+	uint32_t getRegionCode(void) const;
 
 ROMDATA_DECL_END()
 

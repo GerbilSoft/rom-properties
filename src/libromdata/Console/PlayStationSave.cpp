@@ -28,56 +28,56 @@ namespace LibRomData {
 
 class PlayStationSavePrivate final : public RomDataPrivate
 {
-	public:
-		PlayStationSavePrivate(const IRpFilePtr &file);
-		~PlayStationSavePrivate() final = default;
+public:
+	PlayStationSavePrivate(const IRpFilePtr &file);
+	~PlayStationSavePrivate() final = default;
 
-	private:
-		typedef RomDataPrivate super;
-		RP_DISABLE_COPY(PlayStationSavePrivate)
+private:
+	typedef RomDataPrivate super;
+	RP_DISABLE_COPY(PlayStationSavePrivate)
 
-	public:
-		/** RomDataInfo **/
-		static const char *const exts[];
-		static const char *const mimeTypes[];
-		static const RomDataInfo romDataInfo;
+public:
+	/** RomDataInfo **/
+	static const char *const exts[];
+	static const char *const mimeTypes[];
+	static const RomDataInfo romDataInfo;
 
-	public:
-		// Animated icon data.
-		IconAnimDataPtr iconAnimData;
+public:
+	// Animated icon data
+	IconAnimDataPtr iconAnimData;
 
-	public:
-		// Save file type.
-		enum class SaveType {
-			Unknown	= -1,
+public:
+	// Save file type
+	enum class SaveType {
+		Unknown	= -1,
 
-			PSV = 0,	// PS1 on PS3 individual save file.
-			Raw,		// Raw blocks without header information
-			Block,		// Prefixed by header of the first block (*.mcs, *.ps1)
-			_54,		// Prefixed by 54-byte header (*.mcb, *.mcx, *.pda, *.psx)
+		PSV = 0,	// PS1 on PS3 individual save file.
+		Raw,		// Raw blocks without header information
+		Block,		// Prefixed by header of the first block (*.mcs, *.ps1)
+		_54,		// Prefixed by 54-byte header (*.mcb, *.mcx, *.pda, *.psx)
 
-			Max
-		};
-		SaveType saveType;
+		Max
+	};
+	SaveType saveType;
 
-	public:
-		// Save file header.
-		union {
-			PS1_PSV_Header psvHeader;
-			PS1_Block_Entry blockHeader;
-			PS1_54_Header ps54Header;
-		} mxh;
-		PS1_SC_Struct scHeader;
+public:
+	// Save file header
+	union {
+		PS1_PSV_Header psvHeader;
+		PS1_Block_Entry blockHeader;
+		PS1_54_Header ps54Header;
+	} mxh;
+	PS1_SC_Struct scHeader;
 
-		/**
-		 * Load the save file's icons.
-		 *
-		 * This will load all of the animated icon frames,
-		 * though only the first frame will be returned.
-		 *
-		 * @return Icon, or nullptr on error.
-		 */
-		rp_image_const_ptr loadIcon(void);
+	/**
+	 * Load the save file's icons.
+	 *
+	 * This will load all of the animated icon frames,
+	 * though only the first frame will be returned.
+	 *
+	 * @return Icon, or nullptr on error.
+	 */
+	rp_image_const_ptr loadIcon(void);
 };
 
 ROMDATA_IMPL(PlayStationSave)

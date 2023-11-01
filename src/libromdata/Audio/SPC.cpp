@@ -25,164 +25,164 @@ namespace LibRomData {
 
 class SPCPrivate final : public RomDataPrivate
 {
-	public:
-		SPCPrivate(const IRpFilePtr &file);
+public:
+	SPCPrivate(const IRpFilePtr &file);
 
-	private:
-		typedef RomDataPrivate super;
-		RP_DISABLE_COPY(SPCPrivate)
+private:
+	typedef RomDataPrivate super;
+	RP_DISABLE_COPY(SPCPrivate)
 
-	public:
-		/** RomDataInfo **/
-		static const char *const exts[];
-		static const char *const mimeTypes[];
-		static const RomDataInfo romDataInfo;
+public:
+	/** RomDataInfo **/
+	static const char *const exts[];
+	static const char *const mimeTypes[];
+	static const RomDataInfo romDataInfo;
 
-	public:
-		// SPC header.
-		// NOTE: **NOT** byteswapped in memory.
-		SPC_Header spcHeader;
+public:
+	// SPC header
+	// NOTE: **NOT** byteswapped in memory.
+	SPC_Header spcHeader;
 
-		// Tag struct.
-		struct spc_tags_t {
-			// Vector of strings.
-			// Contains all string data.
-			vector<string> strs;
+	// Tag struct
+	struct spc_tags_t {
+		// Vector of strings.
+		// Contains all string data.
+		vector<string> strs;
 
-			// Value struct.
-			// Contains an integer value, and a boolean
-			// indicating if it's a numeric value or an
-			// index into the strs vector.
-			struct val_t {
-				union {
-					int ivalue;
-					unsigned int uvalue;
-					time_t timestamp;
-				}; 
-				bool isStrIdx;
+		// Value struct.
+		// Contains an integer value, and a boolean
+		// indicating if it's a numeric value or an
+		// index into the strs vector.
+		struct val_t {
+			union {
+				int ivalue;
+				unsigned int uvalue;
+				time_t timestamp;
+			}; 
+			bool isStrIdx;
 
-				explicit val_t() : timestamp(0), isStrIdx(false) { }
-				explicit val_t(int ivalue) : ivalue(ivalue), isStrIdx(false) { }
-				explicit val_t(unsigned int uvalue) : uvalue(uvalue), isStrIdx(false) { }
-			};
-
-			// Map of ID666 tags.
-			// - Key: Extended ID666 tag index.
-			// - Value: struct val_t.
-			// NOTE: gcc-6.1 added support for using enums as keys for unordered_map.
-			// Older gcc requires uint8_t instead.
-			// References:
-			// - https://stackoverflow.com/questions/18837857/cant-use-enum-class-as-unordered-map-key
-			// - https://github.com/dropbox/djinni/issues/213
-			// - https://gcc.gnu.org/bugzilla/show_bug.cgi?id=60970
-			typedef unordered_map<uint8_t, val_t> map_t;
-			map_t map;
-
-			/**
-			 * Is the tag data empty?
-			 * @return True if empty; false if not.
-			 */
-			inline bool empty(void) const
-			{
-				return map.empty();
-			}
-
-			// Wrapper find/begin/end functions for the map.
-			inline map_t::iterator find(SPC_xID6_Item_e key)
-			{
-				return map.find(key);
-			}
-			inline map_t::iterator begin(void)
-			{
-				return map.begin();
-			}
-			inline map_t::iterator end(void)
-			{
-				return map.end();
-			}
-			inline map_t::const_iterator find(SPC_xID6_Item_e key) const
-			{
-				return map.find(key);
-			}
-			inline map_t::const_iterator cbegin(void) const
-			{
-				return map.cbegin();
-			}
-			inline map_t::const_iterator cend(void) const
-			{
-				return map.cend();
-			}
-
-			/**
-			 * Insert an integer value.
-			 * @param key Extended ID666 tag index.
-			 * @param ivalue Integer value.
-			 */
-			inline void insertInt(SPC_xID6_Item_e key, int ivalue)
-			{
-				map.emplace(key, val_t(ivalue));
-			}
-
-			/**
-			 * Insert an unsigned integer value.
-			 * @param key Extended ID666 tag index.
-			 * @param ivalue Unsigned integer value.
-			 */
-			inline void insertUInt(SPC_xID6_Item_e key, unsigned int uvalue)
-			{
-				map.emplace(key, val_t(uvalue));
-			}
-
-			/**
-			 * Insert a timestamp value.
-			 * @param key Extended ID666 tag index.
-			 * @param timestamp Timestamp value.
-			 */
-			inline void insertTimestamp(SPC_xID6_Item_e key, time_t timestamp)
-			{
-				val_t val;
-				val.timestamp = timestamp;
-				map.emplace(key, val);
-			}
-
-			/**
-			 * Insert a string value.
-			 * @param key Extended ID666 tag index.
-			 * @param str String value.
-			 */
-			inline void insertStr(SPC_xID6_Item_e key, const string &str)
-			{
-				val_t val((unsigned int)strs.size());
-				val.isStrIdx = true;
-				strs.emplace_back(str);
-				map.emplace(key, val);
-			}
-
-			/**
-			 * Get a string.
-			 * @param data val_t struct.
-			 * @return String.
-			 */
-			inline const string &getStr(const val_t &val) const
-			{
-				// NOTE: This will throw an exception if out of range.
-				assert(val.isStrIdx);
-				return strs[val.uvalue];
-			}
+			explicit val_t() : timestamp(0), isStrIdx(false) { }
+			explicit val_t(int ivalue) : ivalue(ivalue), isStrIdx(false) { }
+			explicit val_t(unsigned int uvalue) : uvalue(uvalue), isStrIdx(false) { }
 		};
 
-		/**
-		 * Parse the ID666 tags for the open SPC file.
-		 * @return Map containing key/value entries.
-		 */
-		spc_tags_t parseTags(void);
+		// Map of ID666 tags.
+		// - Key: Extended ID666 tag index.
+		// - Value: struct val_t.
+		// NOTE: gcc-6.1 added support for using enums as keys for unordered_map.
+		// Older gcc requires uint8_t instead.
+		// References:
+		// - https://stackoverflow.com/questions/18837857/cant-use-enum-class-as-unordered-map-key
+		// - https://github.com/dropbox/djinni/issues/213
+		// - https://gcc.gnu.org/bugzilla/show_bug.cgi?id=60970
+		typedef unordered_map<uint8_t, val_t> map_t;
+		map_t map;
 
 		/**
-		 * Get the duration from the SPC tags.
-		 * @param kv spc_tags_t
-		 * @return Duration (in milliseconds), or 0 if not found.
+		 * Is the tag data empty?
+		 * @return True if empty; false if not.
 		 */
-		static unsigned int getDurationMs(const spc_tags_t &kv);
+		inline bool empty(void) const
+		{
+			return map.empty();
+		}
+
+		// Wrapper find/begin/end functions for the map.
+		inline map_t::iterator find(SPC_xID6_Item_e key)
+		{
+			return map.find(key);
+		}
+		inline map_t::iterator begin(void)
+		{
+			return map.begin();
+		}
+		inline map_t::iterator end(void)
+		{
+			return map.end();
+		}
+		inline map_t::const_iterator find(SPC_xID6_Item_e key) const
+		{
+			return map.find(key);
+		}
+		inline map_t::const_iterator cbegin(void) const
+		{
+			return map.cbegin();
+		}
+		inline map_t::const_iterator cend(void) const
+		{
+			return map.cend();
+		}
+
+		/**
+		 * Insert an integer value.
+		 * @param key Extended ID666 tag index.
+		 * @param ivalue Integer value.
+		 */
+		inline void insertInt(SPC_xID6_Item_e key, int ivalue)
+		{
+			map.emplace(key, val_t(ivalue));
+		}
+
+		/**
+		 * Insert an unsigned integer value.
+		 * @param key Extended ID666 tag index.
+		 * @param ivalue Unsigned integer value.
+		 */
+		inline void insertUInt(SPC_xID6_Item_e key, unsigned int uvalue)
+		{
+			map.emplace(key, val_t(uvalue));
+		}
+
+		/**
+		 * Insert a timestamp value.
+		 * @param key Extended ID666 tag index.
+		 * @param timestamp Timestamp value.
+		 */
+		inline void insertTimestamp(SPC_xID6_Item_e key, time_t timestamp)
+		{
+			val_t val;
+			val.timestamp = timestamp;
+			map.emplace(key, val);
+		}
+
+		/**
+		 * Insert a string value.
+		 * @param key Extended ID666 tag index.
+		 * @param str String value.
+		 */
+		inline void insertStr(SPC_xID6_Item_e key, const string &str)
+		{
+			val_t val((unsigned int)strs.size());
+			val.isStrIdx = true;
+			strs.emplace_back(str);
+			map.emplace(key, val);
+		}
+
+		/**
+		 * Get a string.
+		 * @param data val_t struct.
+		 * @return String.
+		 */
+		inline const string &getStr(const val_t &val) const
+		{
+			// NOTE: This will throw an exception if out of range.
+			assert(val.isStrIdx);
+			return strs[val.uvalue];
+		}
+	};
+
+	/**
+	 * Parse the ID666 tags for the open SPC file.
+	 * @return Map containing key/value entries.
+	 */
+	spc_tags_t parseTags(void);
+
+	/**
+	 * Get the duration from the SPC tags.
+	 * @param kv spc_tags_t
+	 * @return Duration (in milliseconds), or 0 if not found.
+	 */
+	static unsigned int getDurationMs(const spc_tags_t &kv);
 };
 
 ROMDATA_IMPL(SPC)

@@ -24,62 +24,62 @@ namespace LibRomData {
 
 class GcnFstPrivate
 {
-	public:
-		GcnFstPrivate(const uint8_t *fstData, uint32_t len, uint8_t offsetShift);
-		~GcnFstPrivate();
+public:
+	GcnFstPrivate(const uint8_t *fstData, uint32_t len, uint8_t offsetShift);
+	~GcnFstPrivate();
 
-	private:
-		RP_DISABLE_COPY(GcnFstPrivate)
+private:
+	RP_DISABLE_COPY(GcnFstPrivate)
 
-	public:
-		bool hasErrors;
-		uint8_t offsetShift;	// offset shift (0 for GCN, 2 for Wii)
+public:
+	bool hasErrors;
+	uint8_t offsetShift;	// offset shift (0 for GCN, 2 for Wii)
 
-		// IFst::Dir* reference counter.
-		int fstDirCount;
+	// IFst::Dir* reference counter
+	int fstDirCount;
 
-		GCN_FST_Entry *fstData;
-		const char *string_table_ptr;	// pointer into fstData
+	GCN_FST_Entry *fstData;
+	const char *string_table_ptr;	// pointer into fstData
 
-		uint32_t fstData_sz;
-		uint32_t string_table_sz;
+	uint32_t fstData_sz;
+	uint32_t string_table_sz;
 
-		// String table, converted to Unicode.
-		// - Key: String offset in the FST string table.
-		// - Value: string.
-		mutable unordered_map<uint32_t, string> u8_string_table;
+	// String table, converted to Unicode.
+	// - Key: String offset in the FST string table.
+	// - Value: string.
+	mutable unordered_map<uint32_t, string> u8_string_table;
 
-		/**
-		 * Check if an fst_entry is a directory.
-		 * @return True if this is a directory; false if it's a regular file.
-		 */
-		static inline bool is_dir(const GCN_FST_Entry *fst_entry);
+	/**
+	 * Check if an fst_entry is a directory.
+	 * @return True if this is a directory; false if it's a regular file.
+	 */
+	static inline bool is_dir(const GCN_FST_Entry *fst_entry);
 
-		/**
-		 * Get an FST entry's name.
-		 * @param fst_entry FST entry.
-		 * @return Name, or nullptr if an error occurred.
-		 */
-		inline const char *entry_name(const GCN_FST_Entry *fst_entry) const;
+	/**
+	 * Get an FST entry's name.
+	 * @param fst_entry FST entry.
+	 * @return Name, or nullptr if an error occurred.
+	 */
+	inline const char *entry_name(const GCN_FST_Entry *fst_entry) const;
 
-		/**
-		 * Get an FST entry.
-		 *
-		 * NOTE: FST entries have NOT been byteswapped.
-		 * Use be32_to_cpu() when reading.
-		 *
-		 * @param idx		[in] FST entry index.
-		 * @param ppszName	[out, opt] Entry name. (Do not free this!)
-		 * @return FST entry, or nullptr on error.
-		 */
-		const GCN_FST_Entry *entry(int idx, const char **ppszName = nullptr) const;
+	/**
+	 * Get an FST entry.
+	 *
+	 * NOTE: FST entries have NOT been byteswapped.
+	 * Use be32_to_cpu() when reading.
+	 *
+	 * @param idx		[in] FST entry index.
+	 * @param ppszName	[out, opt] Entry name. (Do not free this!)
+	 * @return FST entry, or nullptr on error.
+	 */
+	const GCN_FST_Entry *entry(int idx, const char **ppszName = nullptr) const;
 
-		/**
-		 * Find a path.
-		 * @param path Path. (Absolute paths only!)
-		 * @return fst_entry if found, or nullptr if not.
-		 */
-		const GCN_FST_Entry *find_path(const char *path) const;
+	/**
+	 * Find a path.
+	 * @param path Path. (Absolute paths only!)
+	 * @return fst_entry if found, or nullptr if not.
+	 */
+	const GCN_FST_Entry *find_path(const char *path) const;
 };
 
 /** GcnFstPrivate **/
@@ -379,7 +379,7 @@ bool GcnFst::hasErrors(void) const
 	return d->hasErrors;
 }
 
-/** opendir() interface. **/
+/** opendir() interface **/
 
 /**
  * Open a directory.

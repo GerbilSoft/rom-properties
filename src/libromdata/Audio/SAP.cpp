@@ -27,67 +27,67 @@ namespace LibRomData {
 
 class SAPPrivate final : public RomDataPrivate
 {
-	public:
-		SAPPrivate(const IRpFilePtr &file);
+public:
+	SAPPrivate(const IRpFilePtr &file);
 
-	private:
-		typedef RomDataPrivate super;
-		RP_DISABLE_COPY(SAPPrivate)
+private:
+	typedef RomDataPrivate super;
+	RP_DISABLE_COPY(SAPPrivate)
 
-	public:
-		/** RomDataInfo **/
-		static const char *const exts[];
-		static const char *const mimeTypes[];
-		static const RomDataInfo romDataInfo;
+public:
+	/** RomDataInfo **/
+	static const char *const exts[];
+	static const char *const mimeTypes[];
+	static const RomDataInfo romDataInfo;
 
-	public:
-		// Parsed tags.
-		struct sap_tags_t {
-			bool tags_read;		// True if tags were read successfully.
+public:
+	// Parsed tags.
+	struct sap_tags_t {
+		bool tags_read;		// True if tags were read successfully.
 
-			string author;		// Author
-			string name;		// Song title
-			string date;		// Date (TODO: Disambiguate year vs. date.)
+		string author;		// Author
+		string name;		// Song title
+		string date;		// Date (TODO: Disambiguate year vs. date.)
 
-			uint16_t songs;		// Number of songs in the file (Default is 1)
-			uint16_t def_song;	// Default song (zero-based; default is 0)
+		uint16_t songs;		// Number of songs in the file (Default is 1)
+		uint16_t def_song;	// Default song (zero-based; default is 0)
 
-			// TODO: Use a bitfield for flags?
-			bool ntsc;		// True if NTSC tag is present.
-			bool stereo;		// True if STEREO tag is present. (dual POKEY)
+		// TODO: Use a bitfield for flags?
+		bool ntsc;		// True if NTSC tag is present.
+		bool stereo;		// True if STEREO tag is present. (dual POKEY)
 
-			char type;		// B, C, D, S
-			uint16_t fastplay;	// Number of scanlines between calls of the player routine.
-						// Default is one frame: 312 lines for PAL, 262 lines for NTSC.
-			uint16_t init_addr;	// Init address (Required for Types B, D, and S; invalid for others)
-			uint16_t music_addr;	// Music data address (Required for Type C; invalid for others)
-			uint16_t player_addr;	// Player address
-			uint16_t covox_addr;	// COVOX hardware address (If not specified, set to 0)
+		char type;		// B, C, D, S
+		uint16_t fastplay;	// Number of scanlines between calls of the player routine.
+					// Default is one frame: 312 lines for PAL, 262 lines for NTSC.
+		uint16_t init_addr;	// Init address (Required for Types B, D, and S; invalid for others)
+		uint16_t music_addr;	// Music data address (Required for Type C; invalid for others)
+		uint16_t player_addr;	// Player address
+		uint16_t covox_addr;	// COVOX hardware address (If not specified, set to 0)
 
-			// TIME tags.
-			// - first: Duration, in milliseconds.
-			// - second: Loop flag.
-			vector<pair<uint32_t, bool> > durations;
+		// TIME tags.
+		// - first: Duration, in milliseconds.
+		// - second: Loop flag.
+		vector<pair<uint32_t, bool> > durations;
 
-			sap_tags_t() : tags_read(false), songs(1), def_song(0), ntsc(false), stereo(false)
-				  , type('\0'), fastplay(0), init_addr(0), music_addr(0), player_addr(0)
-				  , covox_addr(0) { }
-		};
+		sap_tags_t() : tags_read(false), songs(1), def_song(0), ntsc(false), stereo(false)
+				, type('\0'), fastplay(0), init_addr(0), music_addr(0), player_addr(0)
+				, covox_addr(0) { }
+	};
 
-		/**
-		 * Convert a duration to milliseconds + loop flag.
-		 * @param str	[in] Duration string.
-		 * @param pMs	[out] Milliseconds.
-		 * @param pLoop	[out] Loop flag.
-		 * @return 0 on success; non-zero on error.
-		 */
-		static int durationToMsLoop(const char *str, uint32_t *pMs, bool *pLoop);
+	/**
+	 * Convert a duration to milliseconds + loop flag.
+	 * @param str	[in] Duration string.
+	 * @param pMs	[out] Milliseconds.
+	 * @param pLoop	[out] Loop flag.
+	 * @return 0 on success; non-zero on error.
+	 */
+	static int durationToMsLoop(const char *str, uint32_t *pMs, bool *pLoop);
 
-		/**
-		 * Parse the tags from the open SAP file.
-		 * @return TagData object.
-		 */
-		sap_tags_t parseTags(void);
+	/**
+	 * Parse the tags from the open SAP file.
+	 * @return TagData object.
+	 */
+	sap_tags_t parseTags(void);
 };
 
 ROMDATA_IMPL(SAP)

@@ -29,157 +29,157 @@ namespace LibRomData {
 
 class ISOPrivate final : public RomDataPrivate
 {
-	public:
-		ISOPrivate(const IRpFilePtr &file);
+public:
+	ISOPrivate(const IRpFilePtr &file);
 
-	private:
-		typedef RomDataPrivate super;
-		RP_DISABLE_COPY(ISOPrivate)
+private:
+	typedef RomDataPrivate super;
+	RP_DISABLE_COPY(ISOPrivate)
 
-	public:
-		/** RomDataInfo **/
-		static const char *const exts[];
-		static const char *const mimeTypes[];
-		static const RomDataInfo romDataInfo;
+public:
+	/** RomDataInfo **/
+	static const char *const exts[];
+	static const char *const mimeTypes[];
+	static const RomDataInfo romDataInfo;
 
-	public:
-		// Disc type.
-		enum class DiscType {
-			Unknown = -1,
+public:
+	// Disc type
+	enum class DiscType {
+		Unknown = -1,
 
-			ISO9660 = 0,
-			HighSierra = 1,
-			CDi = 2,
+		ISO9660 = 0,
+		HighSierra = 1,
+		CDi = 2,
 
-			Max
-		};
-		DiscType discType;
+		Max
+	};
+	DiscType discType;
 
-		// Primary volume descriptor.
-		union {
-			ISO_Primary_Volume_Descriptor iso;	// ISO-9660
-			HSFS_Primary_Volume_Descriptor hsfs;	// High Sierra
-			uint8_t data[ISO_SECTOR_SIZE_MODE1_COOKED];
-		} pvd;
+	// Primary volume descriptor
+	union {
+		ISO_Primary_Volume_Descriptor iso;	// ISO-9660
+		HSFS_Primary_Volume_Descriptor hsfs;	// High Sierra
+		uint8_t data[ISO_SECTOR_SIZE_MODE1_COOKED];
+	} pvd;
 
-		// Sector size.
-		// Usually 2048 or 2352. (2448 if subchannels are present)
-		unsigned int sector_size;
+	// Sector size
+	// Usually 2048 or 2352. (2448 if subchannels are present)
+	unsigned int sector_size;
 
-		// Sector offset.
-		// Usually 0 (for 2048) or 16 (for 2352 or 2448).
-		unsigned int sector_offset;
+	// Sector offset
+	// Usually 0 (for 2048) or 16 (for 2352 or 2448).
+	unsigned int sector_offset;
 
-		// UDF version.
-		// TODO: Descriptors?
-		const char *s_udf_version;
+	// UDF version
+	// TODO: Descriptors?
+	const char *s_udf_version;
 
-	public:
-		// El Torito boot catalog LBA. (present if non-zero)
-		uint32_t boot_catalog_LBA;
+public:
+	// El Torito boot catalog LBA. (present if non-zero)
+	uint32_t boot_catalog_LBA;
 
-		// TODO: Print more comprehensive boot information?
-		// For now, just listing boot image types. (x86, EFI)
-		enum BootPlatform {
-			BOOT_PLATFORM_x86	= (1U << 0),
-			BOOT_PLATFORM_EFI	= (1U << 1),
-		};
-		uint32_t boot_platforms;
+	// TODO: Print more comprehensive boot information?
+	// For now, just listing boot image types. (x86, EFI)
+	enum BootPlatform {
+		BOOT_PLATFORM_x86	= (1U << 0),
+		BOOT_PLATFORM_EFI	= (1U << 1),
+	};
+	uint32_t boot_platforms;
 
-	public:
-		/**
-		 * Check additional volume descirptors.
-		 */
-		void checkVolumeDescriptors(void);
+public:
+	/**
+	 * Check additional volume descirptors.
+	 */
+	void checkVolumeDescriptors(void);
 
-		/**
-		 * Read the El Torito boot catalog.
-		 * @param lba Boot catalog LBA
-		 */
-		void readBootCatalog(uint32_t lba);
+	/**
+	 * Read the El Torito boot catalog.
+	 * @param lba Boot catalog LBA
+	 */
+	void readBootCatalog(uint32_t lba);
 
-		/**
-		 * Convert an ISO PVD timestamp to UNIX time.
-		 * @param pvd_time PVD timestamp
-		 * @return UNIX time, or -1 if invalid or not set.
-		 */
-		static inline time_t pvd_time_to_unix_time(const ISO_PVD_DateTime_t *pvd_time)
-		{
-			// Wrapper for RomData::pvd_time_to_unix_time(),
-			// which doesn't take an ISO_PVD_DateTime_t struct.
-			return RomDataPrivate::pvd_time_to_unix_time(pvd_time->full, pvd_time->tz_offset);
-		}
+	/**
+	 * Convert an ISO PVD timestamp to UNIX time.
+	 * @param pvd_time PVD timestamp
+	 * @return UNIX time, or -1 if invalid or not set.
+	 */
+	static inline time_t pvd_time_to_unix_time(const ISO_PVD_DateTime_t *pvd_time)
+	{
+		// Wrapper for RomData::pvd_time_to_unix_time(),
+		// which doesn't take an ISO_PVD_DateTime_t struct.
+		return RomDataPrivate::pvd_time_to_unix_time(pvd_time->full, pvd_time->tz_offset);
+	}
 
-		/**
-		 * Convert an HSFS PVD timestamp to UNIX time.
-		 * @param pvd_time PVD timestamp
-		 * @return UNIX time, or -1 if invalid or not set.
-		 */
-		static inline time_t pvd_time_to_unix_time(const HSFS_PVD_DateTime_t *pvd_time)
-		{
-			// Wrapper for RomData::pvd_time_to_unix_time(),
-			// which doesn't take an HSFS_PVD_DateTime_t struct.
-			return RomDataPrivate::pvd_time_to_unix_time(pvd_time->full, 0);
-		}
+	/**
+	 * Convert an HSFS PVD timestamp to UNIX time.
+	 * @param pvd_time PVD timestamp
+	 * @return UNIX time, or -1 if invalid or not set.
+	 */
+	static inline time_t pvd_time_to_unix_time(const HSFS_PVD_DateTime_t *pvd_time)
+	{
+		// Wrapper for RomData::pvd_time_to_unix_time(),
+		// which doesn't take an HSFS_PVD_DateTime_t struct.
+		return RomDataPrivate::pvd_time_to_unix_time(pvd_time->full, 0);
+	}
 
-		/**
-		 * Add fields common to HSFS and ISO-9660 (except timestamps)
-		 * @param pvd PVD
-		 */
-		template<typename T>
-		void addPVDCommon(const T *pvd);
+	/**
+	 * Add fields common to HSFS and ISO-9660 (except timestamps)
+	 * @param pvd PVD
+	 */
+	template<typename T>
+	void addPVDCommon(const T *pvd);
 
-		/**
-		 * Add timestamp fields from PVD
-		 * @param pvd PVD
-		 */
-		template<typename T>
-		void addPVDTimestamps(const T *pvd);
+	/**
+	 * Add timestamp fields from PVD
+	 * @param pvd PVD
+	 */
+	template<typename T>
+	void addPVDTimestamps(const T *pvd);
 
-		/**
-		 * Add metadata properties common to HSFS and ISO-9660 (except timestamps)
-		 * @param metaData RomMetaData object.
-		 * @param pvd PVD
-		 */
-		template<typename T>
-		static void addPVDCommon_metaData(RomMetaData *metaData, const T *pvd);
+	/**
+	 * Add metadata properties common to HSFS and ISO-9660 (except timestamps)
+	 * @param metaData RomMetaData object.
+	 * @param pvd PVD
+	 */
+	template<typename T>
+	static void addPVDCommon_metaData(RomMetaData *metaData, const T *pvd);
 
-		/**
-		 * Add timestamp metadata properties from PVD
-		 * @param metaData RomMetaData object.
-		 * @param pvd PVD
-		 */
-		template<typename T>
-		static void addPVDTimestamps_metaData(RomMetaData *metaData, const T *pvd);
+	/**
+	 * Add timestamp metadata properties from PVD
+	 * @param metaData RomMetaData object.
+	 * @param pvd PVD
+	 */
+	template<typename T>
+	static void addPVDTimestamps_metaData(RomMetaData *metaData, const T *pvd);
 
-		/**
-		 * Check the PVD and determine its type.
-		 * @return DiscType value. (DiscType::Unknown if not valid)
-		 */
-		inline DiscType checkPVD(void) const
-		{
-			return static_cast<DiscType>(ISO::checkPVD(pvd.data));
-		}
+	/**
+	 * Check the PVD and determine its type.
+	 * @return DiscType value. (DiscType::Unknown if not valid)
+	 */
+	inline DiscType checkPVD(void) const
+	{
+		return static_cast<DiscType>(ISO::checkPVD(pvd.data));
+	}
 
-		/**
-		 * Get the host-endian version of an LSB/MSB 16-bit value.
-		 * @param lm16 LSB/MSB 16-bit value.
-		 * @return Host-endian value.
-		 */
-		inline uint16_t host16(const uint16_lsb_msb_t &lm16)
-		{
-			return (likely(discType != DiscType::CDi) ? lm16.he : be16_to_cpu(lm16.be));
-		}
+	/**
+	 * Get the host-endian version of an LSB/MSB 16-bit value.
+	 * @param lm16 LSB/MSB 16-bit value.
+	 * @return Host-endian value.
+	 */
+	inline uint16_t host16(const uint16_lsb_msb_t &lm16)
+	{
+		return (likely(discType != DiscType::CDi) ? lm16.he : be16_to_cpu(lm16.be));
+	}
 
-		/**
-		 * Get the host-endian version of an LSB/MSB 32-bit value.
-		 * @param lm32 LSB/MSB 32-bit value.
-		 * @return Host-endian value.
-		 */
-		inline uint32_t host32(const uint32_lsb_msb_t &lm32)
-		{
-			return (likely(discType != DiscType::CDi) ? lm32.he : be16_to_cpu(lm32.be));
-		}
+	/**
+	 * Get the host-endian version of an LSB/MSB 32-bit value.
+	 * @param lm32 LSB/MSB 32-bit value.
+	 * @return Host-endian value.
+	 */
+	inline uint32_t host32(const uint32_lsb_msb_t &lm32)
+	{
+		return (likely(discType != DiscType::CDi) ? lm32.he : be16_to_cpu(lm32.be));
+	}
 };
 
 ROMDATA_IMPL(ISO)

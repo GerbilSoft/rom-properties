@@ -20,25 +20,26 @@ using namespace LibRpFile;
 
 namespace LibRomData {
 
-class WuxReaderPrivate : public SparseDiscReaderPrivate {
-	public:
-		explicit WuxReaderPrivate(WuxReader *q);
+class WuxReaderPrivate : public SparseDiscReaderPrivate
+{
+public:
+	explicit WuxReaderPrivate(WuxReader *q);
 
-	private:
-		typedef SparseDiscReaderPrivate super;
-		RP_DISABLE_COPY(WuxReaderPrivate)
+private:
+	typedef SparseDiscReaderPrivate super;
+	RP_DISABLE_COPY(WuxReaderPrivate)
 
-	public:
-		// .wux header.
-		wuxHeader_t wuxHeader;
+public:
+	// .wux header
+	wuxHeader_t wuxHeader;
 
-		// Index table.
-		// Starts immediately after wuxHeader.
-		rp::uvector<uint32_t> idxTbl;
+	// Index table
+	// Starts immediately after wuxHeader.
+	rp::uvector<uint32_t> idxTbl;
 
-		// Data start position.
-		// Starts immediately after the index table.
-		off64_t dataOffset;
+	// Data start position
+	// Starts immediately after the index table.
+	off64_t dataOffset;
 };
 
 /** WuxReaderPrivate **/
@@ -175,7 +176,7 @@ int WuxReader::isDiscSupported(const uint8_t *pHeader, size_t szHeader) const
 	return isDiscSupported_static(pHeader, szHeader);
 }
 
-/** SparseDiscReader functions. **/
+/** SparseDiscReader functions **/
 
 /**
  * Get the physical address of the specified logical block index.

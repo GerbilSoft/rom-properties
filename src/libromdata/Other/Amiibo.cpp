@@ -24,31 +24,31 @@ namespace LibRomData {
 
 class AmiiboPrivate final : public RomDataPrivate
 {
-	public:
-		AmiiboPrivate(const IRpFilePtr &file);
+public:
+	AmiiboPrivate(const IRpFilePtr &file);
 
-	private:
-		typedef RomDataPrivate super;
-		RP_DISABLE_COPY(AmiiboPrivate)
+private:
+	typedef RomDataPrivate super;
+	RP_DISABLE_COPY(AmiiboPrivate)
 
-	public:
-		/** RomDataInfo **/
-		static const char *const exts[];
-		static const char *const mimeTypes[];
-		static const RomDataInfo romDataInfo;
+public:
+	/** RomDataInfo **/
+	static const char *const exts[];
+	static const char *const mimeTypes[];
+	static const RomDataInfo romDataInfo;
 
-	public:
-		// NFC data.
-		// TODO: Use nfpSize to determine an "nfpType" value?
-		int nfpSize;		// NFP_File_Size
-		NFP_Data_t nfpData;
+public:
+	// NFC data
+	// TODO: Use nfpSize to determine an "nfpType" value?
+	int nfpSize;		// NFP_File_Size
+	NFP_Data_t nfpData;
 
-		/**
-		 * Verify the check bytes in an NTAG215 serial number.
-		 * @param serial	[in] NTAG215 serial number. (9 bytes)
-		 * @return True if the serial number has valid check bytes; false if not.
-		 */
-		static bool verifyCheckBytes(const uint8_t *serial);
+	/**
+	 * Verify the check bytes in an NTAG215 serial number.
+	 * @param serial	[in] NTAG215 serial number. (9 bytes)
+	 * @return True if the serial number has valid check bytes; false if not.
+	 */
+	static bool verifyCheckBytes(const uint8_t *serial);
 };
 
 ROMDATA_IMPL(Amiibo)

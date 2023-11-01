@@ -41,78 +41,78 @@ DELAYLOAD_TEST_FUNCTION_IMPL0(get_crc_table);
 
 class iQuePlayerPrivate final : public RomDataPrivate
 {
-	public:
-		iQuePlayerPrivate(const IRpFilePtr &file);
-		~iQuePlayerPrivate() final = default;
+public:
+	iQuePlayerPrivate(const IRpFilePtr &file);
+	~iQuePlayerPrivate() final = default;
 
-	private:
-		typedef RomDataPrivate super;
-		RP_DISABLE_COPY(iQuePlayerPrivate)
+private:
+	typedef RomDataPrivate super;
+	RP_DISABLE_COPY(iQuePlayerPrivate)
 
-	public:
-		/** RomDataInfo **/
-		static const char *const exts[];
-		static const char *const mimeTypes[];
-		static const RomDataInfo romDataInfo;
+public:
+	/** RomDataInfo **/
+	static const char *const exts[];
+	static const char *const mimeTypes[];
+	static const RomDataInfo romDataInfo;
 
-	public:
-		// File type
-		enum class IQueFileType {
-			Unknown	= -1,	// Unknown ROM type.
+public:
+	// File type
+	enum class IQueFileType {
+		Unknown	= -1,	// Unknown ROM type.
 
-			CMD	= 0,	// .cmd file (content metadata)
-			DAT	= 1,	// .dat file (ticket)
+		CMD	= 0,	// .cmd file (content metadata)
+		DAT	= 1,	// .dat file (ticket)
 
-			Max
-		};
-		IQueFileType iQueFileType;
+		Max
+	};
+	IQueFileType iQueFileType;
 
-		// .cmd structs
-		iQuePlayer_contentDesc contentDesc;
-		iQuePlayer_BbContentMetaDataHead bbContentMetaDataHead;
-		iQuePlayer_BbTicketHead bbTicketHead;
+	// .cmd structs
+	iQuePlayer_contentDesc contentDesc;
+	iQuePlayer_BbContentMetaDataHead bbContentMetaDataHead;
+	iQuePlayer_BbTicketHead bbTicketHead;
 
-		// Internal images
-		rp_image_ptr img_thumbnail;	// handled as icon
-		rp_image_ptr img_title;		// handled as banner
+	// Internal images
+	rp_image_ptr img_thumbnail;	// handled as icon
+	rp_image_ptr img_title;		// handled as banner
 
-	public:
-		/**
-		 * Get the ROM title and ISBN.
-		 * @param title Output string for title.
-		 * @param isbn Output string for ISBN.
-		 * @return 0 on success; non-zero on error.
-		 */
-		int getTitleAndISBN(string &title, string &isbn);
+public:
+	/**
+	 * Get the ROM title and ISBN.
+	 * @param title Output string for title.
+	 * @param isbn Output string for ISBN.
+	 * @return 0 on success; non-zero on error.
+	 */
+	int getTitleAndISBN(string &title, string &isbn);
 
-	private:
-		/**
-		 * Load an image. (internal function)
-		 * @param address	[in] Starting address.
-		 * @param z_size	[in] Compressed size.
-		 * @param unz_size	[in] Expected decompressed size.
-		 * @param px_format	[in] 16-bit pixel format.
-		 * @param w		[in] Image width.
-		 * @param h		[in] Image height.
-		 * @param byteswap	[in] If true, byteswap before decoding if needed.
-		 * @return Image, or nullptr on error.
-		 */
-		rp_image_ptr loadImage(off64_t address, size_t z_size, size_t unz_size,
-			ImageDecoder::PixelFormat px_format, int w, int h, bool byteswap);
+private:
+	/**
+	 * Load an image. (internal function)
+	 * @param address	[in] Starting address.
+	 * @param z_size	[in] Compressed size.
+	 * @param unz_size	[in] Expected decompressed size.
+	 * @param px_format	[in] 16-bit pixel format.
+	 * @param w		[in] Image width.
+	 * @param h		[in] Image height.
+	 * @param byteswap	[in] If true, byteswap before decoding if needed.
+	 * @return Image, or nullptr on error.
+	 */
+	rp_image_ptr loadImage(off64_t address, size_t z_size, size_t unz_size,
+		ImageDecoder::PixelFormat px_format, int w, int h, bool byteswap);
 
-	public:
-		/**
-		 * Load the thumbnail image.
-		 * @return Thumbnail image, or nullptr on error.
-		 */
-		rp_image_const_ptr loadThumbnailImage(void);
+public:
+	/**
+	 * Load the thumbnail image.
+	 * @return Thumbnail image, or nullptr on error.
+	 */
+	rp_image_const_ptr loadThumbnailImage(void);
 
-		/**
-		 * Load the title image.
-		 * This is the game title in Chinese.
-		 * @return Title image, or nullptr on error.
-		 */
-		rp_image_const_ptr loadTitleImage(void);
+	/**
+	 * Load the title image.
+	 * This is the game title in Chinese.
+	 * @return Title image, or nullptr on error.
+	 */
+	rp_image_const_ptr loadTitleImage(void);
 };
 
 ROMDATA_IMPL(iQuePlayer)

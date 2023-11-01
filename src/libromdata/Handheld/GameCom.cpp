@@ -25,57 +25,57 @@ namespace LibRomData {
 
 class GameComPrivate final : public RomDataPrivate
 {
-	public:
-		GameComPrivate(const IRpFilePtr &file);
-		~GameComPrivate() final = default;
+public:
+	GameComPrivate(const IRpFilePtr &file);
+	~GameComPrivate() final = default;
 
-	private:
-		typedef RomDataPrivate super;
-		RP_DISABLE_COPY(GameComPrivate)
+private:
+	typedef RomDataPrivate super;
+	RP_DISABLE_COPY(GameComPrivate)
 
-	public:
-		/** RomDataInfo **/
-		static const char *const exts[];
-		static const char *const mimeTypes[];
-		static const RomDataInfo romDataInfo;
+public:
+	/** RomDataInfo **/
+	static const char *const exts[];
+	static const char *const mimeTypes[];
+	static const RomDataInfo romDataInfo;
 
-	public:
-		// ROM header
-		Gcom_RomHeader romHeader;
+public:
+	// ROM header
+	Gcom_RomHeader romHeader;
 
-		// Icon
-		rp_image_ptr img_icon;
+	// Icon
+	rp_image_ptr img_icon;
 
-		/**
-		 * Load the icon.
-		 * @return Icon, or nullptr on error.
-		 */
-		rp_image_const_ptr loadIcon(void);
+	/**
+	 * Load the icon.
+	 * @return Icon, or nullptr on error.
+	 */
+	rp_image_const_ptr loadIcon(void);
 
-	protected:
-		static const uint32_t gcom_palette[4];
+protected:
+	static const uint32_t gcom_palette[4];
 
-		/**
-		 * Decompress game.com RLE data.
-		 *
-		 * NOTE: The ROM header does *not* indicate how much data is
-		 * available, so we'll keep going until we're out of either
-		 * output or input buffer.
-		 *
-		 * @param pOut		[out] Output buffer.
-		 * @param out_len	[in] Output buffer length.
-		 * @param pIn		[in] Input buffer.
-		 * @param in_len	[in] Input buffer length.
-		 * @return Decoded data length on success; negative POSIX error code on error.
-		 */
-		static ssize_t rle_decompress(uint8_t *pOut, size_t out_len, const uint8_t *pIn, size_t in_len);
+	/**
+	 * Decompress game.com RLE data.
+	 *
+	 * NOTE: The ROM header does *not* indicate how much data is
+	 * available, so we'll keep going until we're out of either
+	 * output or input buffer.
+	 *
+	 * @param pOut		[out] Output buffer.
+	 * @param out_len	[in] Output buffer length.
+	 * @param pIn		[in] Input buffer.
+	 * @param in_len	[in] Input buffer length.
+	 * @return Decoded data length on success; negative POSIX error code on error.
+	 */
+	static ssize_t rle_decompress(uint8_t *pOut, size_t out_len, const uint8_t *pIn, size_t in_len);
 
-		/**
-		 * Load an RLE-compressed icon.
-		 * This is called from loadIcon().
-		 * @return Icon, or nullptr on error.
-		 */
-		rp_image_const_ptr loadIconRLE(void);
+	/**
+	 * Load an RLE-compressed icon.
+	 * This is called from loadIcon().
+	 * @return Icon, or nullptr on error.
+	 */
+	rp_image_const_ptr loadIconRLE(void);
 };
 
 ROMDATA_IMPL(GameCom)

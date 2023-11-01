@@ -23,82 +23,82 @@ namespace LibRomData {
 
 class IsoPartitionPrivate
 {
-	public:
-		IsoPartitionPrivate(IsoPartition *q,
-			off64_t partition_offset, int iso_start_offset);
+public:
+	IsoPartitionPrivate(IsoPartition *q,
+		off64_t partition_offset, int iso_start_offset);
 
-	private:
-		RP_DISABLE_COPY(IsoPartitionPrivate)
-	protected:
-		IsoPartition *const q_ptr;
+private:
+	RP_DISABLE_COPY(IsoPartitionPrivate)
+protected:
+	IsoPartition *const q_ptr;
 
-	public:
-		// Partition start offset. (in bytes)
-		off64_t partition_offset;
-		off64_t partition_size;		// Calculated partition size.
+public:
+	// Partition start offset (in bytes)
+	off64_t partition_offset;
+	off64_t partition_size;		// Calculated partition size
 
-		// ISO primary volume descriptor.
-		ISO_Primary_Volume_Descriptor pvd;
+	// ISO primary volume descriptor
+	ISO_Primary_Volume_Descriptor pvd;
 
-		// Directories.
-		// - Key: Directory name, WITHOUT leading slash. (Root == empty string) [cp1252]
-		// - Value: Directory entries.
-		// NOTE: Directory entries are variable-length, so this
-		// is a byte array, not an ISO_DirEntry array.
-		typedef rp::uvector<uint8_t> DirData_t;
-		unordered_map<string, DirData_t> dir_data;
+	// Directories
+	// - Key: Directory name, WITHOUT leading slash. (Root == empty string) [cp1252]
+	// - Value: Directory entries.
+	// NOTE: Directory entries are variable-length, so this
+	// is a byte array, not an ISO_DirEntry array.
+	typedef rp::uvector<uint8_t> DirData_t;
+	unordered_map<string, DirData_t> dir_data;
 
-		// ISO start offset. (in blocks)
-		// -1 == unknown
-		int iso_start_offset;
+	// ISO start offset (in blocks)
+	// -1 == unknown
+	int iso_start_offset;
 
-		/**
-		 * Find the last slash or backslash in a path.
-		 * @param path Path.
-		 * @return Last slash or backslash, or nullptr if not found.
-		 */
-		inline const char *findLastSlash(const char *path)
-		{
-			const char *sl = strrchr(path, '/');
-			const char *const bs = strrchr(path, '\\');
-			if (sl && bs) {
-				if (bs > sl) {
-					sl = bs;
-				}
+	/**
+	 * Find the last slash or backslash in a path.
+	 * @param path Path.
+	 * @return Last slash or backslash, or nullptr if not found.
+	 */
+	inline const char *findLastSlash(const char *path)
+	{
+		const char *sl = strrchr(path, '/');
+		const char *const bs = strrchr(path, '\\');
+		if (sl && bs) {
+			if (bs > sl) {
+				sl = bs;
 			}
-			return (sl ? sl : bs);
 		}
+		return (sl ? sl : bs);
+	}
 
-		/**
-		 * Look up a directory entry from a base filename and directory.
-		 * @param pDir		[in] Directory
-		 * @param filename	[in] Base filename [cp1252]
-		 * @param bFindDir	[in] True to find a subdirectory; false to find a file.
-		 * @return ISO directory entry.
-		 */
-		const ISO_DirEntry *lookup_int(const DirData_t *pDir, const char *filename, bool bFindDir);
+	/**
+	 * Look up a directory entry from a base filename and directory.
+	 * @param pDir		[in] Directory
+	 * @param filename	[in] Base filename [cp1252]
+	 * @param bFindDir	[in] True to find a subdirectory; false to find a file.
+	 * @return ISO directory entry.
+	 */
+	const ISO_DirEntry *lookup_int(const DirData_t *pDir, const char *filename, bool bFindDir);
 
-		/**
-		 * Get a directory.
-		 * @param path		[in] Pathname [cp1252] (For root, specify "" or "/".)
-		 * @param pError	[out] POSIX error code on error.
-		 * @return Directory on success; nullptr on error.
-		 */
-		const DirData_t *getDirectory(const char *path, int *pError = nullptr);
+	/**
+	 * Get a directory.
+	 * @param path		[in] Pathname [cp1252] (For root, specify "" or "/".)
+	 * @param pError	[out] POSIX error code on error.
+	 * @return Directory on success; nullptr on error.
+	 */
+	const DirData_t *getDirectory(const char *path, int *pError = nullptr);
 
-		/**
-		 * Look up a directory entry from a filename.
-		 * @param filename Filename [UTF-8]
-		 * @return ISO directory entry.
-		 */
-		const ISO_DirEntry *lookup(const char *filename);
+	/**
+	 * Look up a directory entry from a filename.
+	 * @param filename Filename [UTF-8]
+	 * @return ISO directory entry.
+	 */
+	const ISO_DirEntry *lookup(const char *filename);
 
-		/**
-		 * Parse an ISO-9660 timestamp.
-		 * @param isofiletime File timestamp.
-		 * @return Unix time.
-		 */
-		time_t parseTimestamp(const ISO_Dir_DateTime_t *isofiletime);
+	/**
+	 * Parse an ISO-9660 timestamp.
+	 * @param isofiletime File timestamp.
+	 * @return Unix time.
+	 */
+	time_t parseTimestamp(const ISO_Dir_DateTime_t *isofiletime);
 };
 
 /** IsoPartitionPrivate **/

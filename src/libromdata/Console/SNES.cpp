@@ -26,92 +26,92 @@ namespace LibRomData {
 
 class SNESPrivate final : public RomDataPrivate
 {
-	public:
-		SNESPrivate(const IRpFilePtr &file);
+public:
+	SNESPrivate(const IRpFilePtr &file);
 
-	private:
-		typedef RomDataPrivate super;
-		RP_DISABLE_COPY(SNESPrivate)
+private:
+	typedef RomDataPrivate super;
+	RP_DISABLE_COPY(SNESPrivate)
 
-	public:
-		/** RomDataInfo **/
-		static const char *const exts[];
-		static const char *const mimeTypes[];
-		static const RomDataInfo romDataInfo;
+public:
+	/** RomDataInfo **/
+	static const char *const exts[];
+	static const char *const mimeTypes[];
+	static const RomDataInfo romDataInfo;
 
-	public:
-		/**
-		 * Get the SNES ROM mapping and validate it.
-		 * @param romHeader	[in] SNES/SFC ROM header to check.
-		 * @param pIsHiROM	[out,opt] Set to true if the valid ROM mapping byte is HiROM.
-		 * @param pHasExtraChr	[out,opt] Set to true if the title extends into the mapping byte.
-		 * @return SNES ROM mapping, or 0 if not valid.
-		 */
-		static uint8_t getSnesRomMapping(const SNES_RomHeader *romHeader, bool *pIsHiROM = nullptr, bool *pHasExtraChr = nullptr);
+public:
+	/**
+	 * Get the SNES ROM mapping and validate it.
+	 * @param romHeader	[in] SNES/SFC ROM header to check.
+	 * @param pIsHiROM	[out,opt] Set to true if the valid ROM mapping byte is HiROM.
+	 * @param pHasExtraChr	[out,opt] Set to true if the title extends into the mapping byte.
+	 * @return SNES ROM mapping, or 0 if not valid.
+	 */
+	static uint8_t getSnesRomMapping(const SNES_RomHeader *romHeader, bool *pIsHiROM = nullptr, bool *pHasExtraChr = nullptr);
 
-		/**
-		 * Is the specified SNES/SFC ROM header valid?
-		 * @param romHeader SNES/SFC ROM header to check.
-		 * @param isHiROM True if the header was read from a HiROM address; false if not.
-		 * @return True if the SNES/SFC ROM header is valid; false if not.
-		 */
-		static bool isSnesRomHeaderValid(const SNES_RomHeader *romHeader, bool isHiROM);
+	/**
+	 * Is the specified SNES/SFC ROM header valid?
+	 * @param romHeader SNES/SFC ROM header to check.
+	 * @param isHiROM True if the header was read from a HiROM address; false if not.
+	 * @return True if the SNES/SFC ROM header is valid; false if not.
+	 */
+	static bool isSnesRomHeaderValid(const SNES_RomHeader *romHeader, bool isHiROM);
 
-		/**
-		 * Is the specified BS-X ROM header valid?
-		 * @param romHeader BS-X ROM header to check.
-		 * @param isHiROM True if the header was read from a HiROM address; false if not.
-		 * @return True if the BS-X ROM header is valid; false if not.
-		 */
-		static bool isBsxRomHeaderValid(const SNES_RomHeader *romHeader, bool isHiROM);
+	/**
+	 * Is the specified BS-X ROM header valid?
+	 * @param romHeader BS-X ROM header to check.
+	 * @param isHiROM True if the header was read from a HiROM address; false if not.
+	 * @return True if the BS-X ROM header is valid; false if not.
+	 */
+	static bool isBsxRomHeaderValid(const SNES_RomHeader *romHeader, bool isHiROM);
 
-	public:
-		enum class RomType {
-			Unknown	= -1,
+public:
+	enum class RomType {
+		Unknown	= -1,
 
-			SNES	= 0,	// SNES/SFC ROM image.
-			BSX	= 1,	// BS-X ROM image.
+		SNES	= 0,	// SNES/SFC ROM image.
+		BSX	= 1,	// BS-X ROM image.
 
-			Max
-		};
-		RomType romType;
+		Max
+	};
+	RomType romType;
 
-		// ROM header.
-		// NOTE: Must be byteswapped on access.
-		SNES_RomHeader romHeader;
-		uint32_t header_address;
+	// ROM header
+	// NOTE: Must be byteswapped on access.
+	SNES_RomHeader romHeader;
+	uint32_t header_address;
 
-		/**
-		 * Get the ROM title.
-		 *
-		 * The ROM title length depends on type, and encoding
-		 * depends on type and region.
-		 *
-		 * @return ROM title.
-		 */
-		string getRomTitle(void) const;
+	/**
+	 * Get the ROM title.
+	 *
+	 * The ROM title length depends on type, and encoding
+	 * depends on type and region.
+	 *
+	 * @return ROM title.
+	 */
+	string getRomTitle(void) const;
 
-		/**
-		 * Get the publisher.
-		 * @return Publisher, or "Unknown (xxx)" if unknown.
-		 */
-		string getPublisher(void) const;
+	/**
+	 * Get the publisher.
+	 * @return Publisher, or "Unknown (xxx)" if unknown.
+	 */
+	string getPublisher(void) const;
 
-		/**
-		 * Is a character a valid game ID character?
-		 * @return True if it is; false if it isn't.
-		 */
-		static inline bool isValidGameIDChar(char x)
-		{
-			return (x >= '0' && x <= '9') || (x >= 'A' && x <= 'Z');
-		}
+	/**
+	 * Is a character a valid game ID character?
+	 * @return True if it is; false if it isn't.
+	 */
+	static inline bool isValidGameIDChar(char x)
+	{
+		return (x >= '0' && x <= '9') || (x >= 'A' && x <= 'Z');
+	}
 
-		/**
-		 * Get the game ID.
-		 * @param doFake If true, return a fake ID using the ROM's title.
-		 * @return Game ID if available; empty string if not.
-		 */
-		string getGameID(bool doFake = false) const;
+	/**
+	 * Get the game ID.
+	 * @param doFake If true, return a fake ID using the ROM's title.
+	 * @return Game ID if available; empty string if not.
+	 */
+	string getGameID(bool doFake = false) const;
 };
 
 ROMDATA_IMPL(SNES)

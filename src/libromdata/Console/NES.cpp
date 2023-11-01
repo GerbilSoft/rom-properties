@@ -26,115 +26,115 @@ namespace LibRomData {
 
 class NESPrivate final : public RomDataPrivate
 {
-	public:
-		NESPrivate(const IRpFilePtr &file);
+public:
+	NESPrivate(const IRpFilePtr &file);
 
-	private:
-		typedef RomDataPrivate super;
-		RP_DISABLE_COPY(NESPrivate)
+private:
+	typedef RomDataPrivate super;
+	RP_DISABLE_COPY(NESPrivate)
 
-	public:
-		/** RomDataInfo **/
-		static const char *const exts[];
-		static const char *const mimeTypes[];
-		static const RomDataInfo romDataInfo;
+public:
+	/** RomDataInfo **/
+	static const char *const exts[];
+	static const char *const mimeTypes[];
+	static const RomDataInfo romDataInfo;
 
-	public:
-		/** RomFields **/
+public:
+	/** RomFields **/
 
-		// ROM image type.
-		enum RomType {
-			ROM_UNKNOWN = -1,		// Unknown ROM type.
+	// ROM image type
+	enum RomType {
+		ROM_UNKNOWN = -1,		// Unknown ROM type
 
-			ROM_FORMAT_OLD_INES = 0,	// Archaic iNES format
-			ROM_FORMAT_INES = 1,		// iNES format
-			ROM_FORMAT_NES2 = 2,		// NES 2.0 format
-			ROM_FORMAT_TNES = 3,		// TNES (Nintendo 3DS Virtual Console)
-			ROM_FORMAT_FDS = 4,		// Famicom Disk System
-			ROM_FORMAT_FDS_FWNES = 5,	// Famicom Disk System (with fwNES header)
-			ROM_FORMAT_FDS_TNES = 6,	// Famicom Disk System (TNES / TDS)
-			ROM_FORMAT_UNKNOWN = 0xFF,
-			ROM_FORMAT_MASK = 0xFF,
+		ROM_FORMAT_OLD_INES = 0,	// Archaic iNES format
+		ROM_FORMAT_INES = 1,		// iNES format
+		ROM_FORMAT_NES2 = 2,		// NES 2.0 format
+		ROM_FORMAT_TNES = 3,		// TNES (Nintendo 3DS Virtual Console)
+		ROM_FORMAT_FDS = 4,		// Famicom Disk System
+		ROM_FORMAT_FDS_FWNES = 5,	// Famicom Disk System (with fwNES header)
+		ROM_FORMAT_FDS_TNES = 6,	// Famicom Disk System (TNES / TDS)
+		ROM_FORMAT_UNKNOWN = 0xFF,
+		ROM_FORMAT_MASK = 0xFF,
 
-			ROM_SYSTEM_NES = (0U << 8),	// NES / Famicom
-			ROM_SYSTEM_FDS = (1U << 8),	// Famicom Disk System
-			ROM_SYSTEM_VS = (2U << 8),	// VS. System
-			ROM_SYSTEM_PC10 = (3U << 8),	// PlayChoice-10
-			ROM_SYSTEM_UNKNOWN = (0xFFU << 8),
-			ROM_SYSTEM_MASK = (0xFFU << 8),
+		ROM_SYSTEM_NES = (0U << 8),	// NES / Famicom
+		ROM_SYSTEM_FDS = (1U << 8),	// Famicom Disk System
+		ROM_SYSTEM_VS = (2U << 8),	// VS. System
+		ROM_SYSTEM_PC10 = (3U << 8),	// PlayChoice-10
+		ROM_SYSTEM_UNKNOWN = (0xFFU << 8),
+		ROM_SYSTEM_MASK = (0xFFU << 8),
 
-			// Special flags. (bitfield)
-			ROM_SPECIAL_WIIU_VC = (1U << 16),	// Wii U VC (modified iNES)
-			// TODO: Other VC formats, maybe UNIF?
-		};
-		int romType;
+		// Special flags. (bitfield)
+		ROM_SPECIAL_WIIU_VC = (1U << 16),	// Wii U VC (modified iNES)
+		// TODO: Other VC formats, maybe UNIF?
+	};
+	int romType;
 
-	public:
-		// ROM header
-		struct {
-			// iNES and FDS are mutually exclusive.
-			// TNES + FDS is possible, though.
-			union {
-				INES_RomHeader ines;
-				struct {
-					FDS_DiskHeader_fwNES fds_fwNES;
-					FDS_DiskHeader fds;
-				};
+public:
+	// ROM header
+	struct {
+		// iNES and FDS are mutually exclusive.
+		// TNES + FDS is possible, though.
+		union {
+			INES_RomHeader ines;
+			struct {
+				FDS_DiskHeader_fwNES fds_fwNES;
+				FDS_DiskHeader fds;
 			};
-			TNES_RomHeader tnes;
-		} header;
+		};
+		TNES_RomHeader tnes;
+	} header;
 
-		// ROM footer (optional)
-		NES_IntFooter footer;
-		string s_footerName;		// Name from the footer.
-		bool hasCheckedIntFooter;	// True if we already checked.
-		uint8_t intFooterErrno;		// If checked: 0 if valid, positive errno on error.
+	// ROM footer (optional)
+	NES_IntFooter footer;
+	string s_footerName;		// Name from the footer.
+	bool hasCheckedIntFooter;	// True if we already checked.
+	uint8_t intFooterErrno;		// If checked: 0 if valid, positive errno on error.
 
-		/**
-		 * Convert an FDS BCD datestamp to Unix time.
-		 * @param fds_bcd_ds FDS BCD datestamp.
-		 * @return Unix time, or -1 if an error occurred.
-		 *
-		 * NOTE: -1 is a valid Unix timestamp (1970/01/01), but is
-		 * not likely to be valid for NES/Famicom, since the Famicom
-		 * was released in 1983.
-		 */
-		static time_t fds_bcd_datestamp_to_unix_time(const FDS_BCD_DateStamp *fds_bcd_ds);
+	/**
+	 * Convert an FDS BCD datestamp to Unix time.
+	 * @param fds_bcd_ds FDS BCD datestamp.
+	 * @return Unix time, or -1 if an error occurred.
+	 *
+	 * NOTE: -1 is a valid Unix timestamp (1970/01/01), but is
+	 * not likely to be valid for NES/Famicom, since the Famicom
+	 * was released in 1983.
+	 */
+	static time_t fds_bcd_datestamp_to_unix_time(const FDS_BCD_DateStamp *fds_bcd_ds);
 
-		/**
-		 * Get the PRG ROM size.
-		 * @return PRG ROM size.
-		 */
-		unsigned int get_prg_rom_size(void) const;
+	/**
+	 * Get the PRG ROM size.
+	 * @return PRG ROM size.
+	 */
+	unsigned int get_prg_rom_size(void) const;
 
-		/**
-		 * Get the CHR ROM size.
-		 * @return CHR ROM size.
-		 */
-		unsigned int get_chr_rom_size(void) const;
+	/**
+	 * Get the CHR ROM size.
+	 * @return CHR ROM size.
+	 */
+	unsigned int get_chr_rom_size(void) const;
 
-		/**
-		 * Get the iNES mapper number.
-		 * @return iNES mapper number.
-		 */
-		int get_iNES_mapper_number(void) const;
+	/**
+	 * Get the iNES mapper number.
+	 * @return iNES mapper number.
+	 */
+	int get_iNES_mapper_number(void) const;
 
-		// Internal footer: PRG ROM sizes (as powers of two)
-		static const std::array<uint8_t, 6> footer_prg_rom_size_shift_lkup;
+	// Internal footer: PRG ROM sizes (as powers of two)
+	static const std::array<uint8_t, 6> footer_prg_rom_size_shift_lkup;
 
-		// Internal footer: CHR ROM/RAM sizes (as powers of two)
-		static const std::array<uint8_t, 6> footer_chr_rom_size_shift_lkup;
+	// Internal footer: CHR ROM/RAM sizes (as powers of two)
+	static const std::array<uint8_t, 6> footer_chr_rom_size_shift_lkup;
 
-		/**
-		 * Load the internal footer.
-		 * This is present at the end of the last PRG bank in some ROMs.
-		 *
-		 * NOTE: The NES header must have already been loaded, since we
-		 * need to know how many PRG ROM banks are present.
-		 *
-		 * @return 0 if found; negative POSIX error code on error.
-		 */
-		int loadInternalFooter(void);
+	/**
+	 * Load the internal footer.
+	 * This is present at the end of the last PRG bank in some ROMs.
+	 *
+	 * NOTE: The NES header must have already been loaded, since we
+	 * need to know how many PRG ROM banks are present.
+	 *
+	 * @return 0 if found; negative POSIX error code on error.
+	 */
+	int loadInternalFooter(void);
 };
 
 ROMDATA_IMPL(NES)

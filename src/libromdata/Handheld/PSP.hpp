@@ -16,14 +16,13 @@ namespace LibRomData {
 ROMDATA_DECL_BEGIN(PSP)
 ROMDATA_DECL_CLOSE()
 
-	public:
-		/**
-		 * Is a ROM image supported by this class?
-		 * @param pvd ISO-9660 Primary Volume Descriptor.
-		 * @return Class-specific system ID (>= 0) if supported; -1 if not.
-		 */
-		static int isRomSupported_static(
-			const ISO_Primary_Volume_Descriptor *pvd);
+public:
+	/**
+	 * Is a ROM image supported by this class?
+	 * @param pvd ISO-9660 Primary Volume Descriptor.
+	 * @return Class-specific system ID (>= 0) if supported; -1 if not.
+	 */
+	static int isRomSupported_static(const ISO_Primary_Volume_Descriptor *pvd);
 
 ROMDATA_DECL_METADATA()
 ROMDATA_DECL_IMGSUPPORT()

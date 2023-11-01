@@ -23,24 +23,24 @@ namespace LibRomData {
 
 class ADXPrivate final : public RomDataPrivate
 {
-	public:
-		ADXPrivate(const IRpFilePtr &file);
+public:
+	ADXPrivate(const IRpFilePtr &file);
 
-	private:
-		typedef RomDataPrivate super;
-		RP_DISABLE_COPY(ADXPrivate)
+private:
+	typedef RomDataPrivate super;
+	RP_DISABLE_COPY(ADXPrivate)
 
-	public:
-		/** RomDataInfo **/
-		static const char *const exts[];
-		static const char *const mimeTypes[];
-		static const RomDataInfo romDataInfo;
+public:
+	/** RomDataInfo **/
+	static const char *const exts[];
+	static const char *const mimeTypes[];
+	static const RomDataInfo romDataInfo;
 
-	public:
-		// ADX header.
-		// NOTE: **NOT** byteswapped in memory.
-		ADX_Header adxHeader;
-		const ADX_LoopData *pLoopData;
+public:
+	// ADX header
+	// NOTE: **NOT** byteswapped in memory.
+	ADX_Header adxHeader;
+	const ADX_LoopData *pLoopData;
 };
 
 ROMDATA_IMPL(ADX)
