@@ -40,46 +40,46 @@ using std::string;
 #include "ui_KeyManagerTab.h"
 class KeyManagerTabPrivate
 {
-	public:
-		explicit KeyManagerTabPrivate(KeyManagerTab *q);
-		~KeyManagerTabPrivate();
+public:
+	explicit KeyManagerTabPrivate(KeyManagerTab *q);
+	~KeyManagerTabPrivate();
 
-	private:
-		KeyManagerTab *const q_ptr;
-		Q_DECLARE_PUBLIC(KeyManagerTab)
-		Q_DISABLE_COPY(KeyManagerTabPrivate)
+private:
+	KeyManagerTab *const q_ptr;
+	Q_DECLARE_PUBLIC(KeyManagerTab)
+	Q_DISABLE_COPY(KeyManagerTabPrivate)
 
-	public:
-		Ui::KeyManagerTab ui;
+public:
+	Ui::KeyManagerTab ui;
 
-	public:
-		// KeyStore
-		KeyStoreQt *keyStore;
-		// KeyStoreModel
-		KeyStoreModel *keyStoreModel;
+public:
+	// KeyStore
+	KeyStoreQt *keyStore;
+	// KeyStoreModel
+	KeyStoreModel *keyStoreModel;
 
 #ifdef HAVE_KMESSAGEWIDGET
-		// KMessageWidget for key import
-		KMessageWidget *messageWidget;
+	// KMessageWidget for key import
+	KMessageWidget *messageWidget;
 #endif /* HAVE_KMESSAGEWIDGET */
 
-		// Starting directory for importing keys.
-		// TODO: Save this in the configuration file?
-		QString keyFileDir;
+	// Starting directory for importing keys.
+	// TODO: Save this in the configuration file?
+	QString keyFileDir;
 
-		/**
-		 * Resize the QTreeView's columns to fit their contents.
-		 */
-		void resizeColumnsToContents(void);
+	/**
+	 * Resize the QTreeView's columns to fit their contents.
+	 */
+	void resizeColumnsToContents(void);
 
-		/**
-		 * Show key import return status.
-		 * @param filename Filename
-		 * @param keyType Key type
-		 * @param iret ImportReturn
-		 */
-		void showKeyImportReturnStatus(const QString &filename,
-			const QString &keyType, const KeyStoreUI::ImportReturn &iret);
+	/**
+	 * Show key import return status.
+	 * @param filename Filename
+	 * @param keyType Key type
+	 * @param iret ImportReturn
+	 */
+	void showKeyImportReturnStatus(const QString &filename,
+		const QString &keyType, const KeyStoreUI::ImportReturn &iret);
 };
 
 /** KeyManagerTabPrivate **/

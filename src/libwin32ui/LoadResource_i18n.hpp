@@ -45,4 +45,4 @@ static inline HMENU LoadMenu_i18n(HMODULE hModule, DWORD dwResId)
 	return (lpcMenuTemplate ? LoadMenuIndirect(lpcMenuTemplate) : nullptr);
 }
 
-}
+} //namespace LibWin32UI

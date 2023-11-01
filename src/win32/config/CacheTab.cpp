@@ -47,77 +47,77 @@ using std::wstring;
 
 class CacheTabPrivate
 {
-	public:
-		CacheTabPrivate();
+public:
+	CacheTabPrivate();
 
-	private:
-		RP_DISABLE_COPY(CacheTabPrivate)
+private:
+	RP_DISABLE_COPY(CacheTabPrivate)
 
-	public:
-		/**
-		 * Initialize the dialog.
-		 */
-		void initDialog(void);
+public:
+	/**
+	 * Initialize the dialog.
+	 */
+	void initDialog(void);
 
-		/**
-		 * Enumerate all drives. (XP version)
-		 */
-		void enumDrivesXP(void);
+	/**
+	 * Enumerate all drives. (XP version)
+	 */
+	void enumDrivesXP(void);
 
-		/**
-		 * Update drives in the drive list.
-		 * @param unitmask Drive mask. (may have multiple bits set)
-		 */
-		void updateDrivesXP(DWORD unitmask);
+	/**
+	 * Update drives in the drive list.
+	 * @param unitmask Drive mask. (may have multiple bits set)
+	 */
+	void updateDrivesXP(DWORD unitmask);
 
-		/**
-		 * Clear the Thumbnail Cache. (Windows Vista and later.)
-		 * @return 0 on success; non-zero on error.
-		 */
-		int clearThumbnailCacheVista(void);
+	/**
+	 * Clear the Thumbnail Cache. (Windows Vista and later.)
+	 * @return 0 on success; non-zero on error.
+	 */
+	int clearThumbnailCacheVista(void);
 
-		/**
-		 * Clear the rom-properties cache.
-		 * @return 0 on success; non-zero on error.
-		 */
-		int clearRomPropertiesCache(void);
+	/**
+	 * Clear the rom-properties cache.
+	 * @return 0 on success; non-zero on error.
+	 */
+	int clearRomPropertiesCache(void);
 
-	public:
-		/**
-		 * Dialog procedure.
-		 * @param hDlg
-		 * @param uMsg
-		 * @param wParam
-		 * @param lParam
-		 */
-		static INT_PTR CALLBACK dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+public:
+	/**
+	 * Dialog procedure.
+	 * @param hDlg
+	 * @param uMsg
+	 * @param wParam
+	 * @param lParam
+	 */
+	static INT_PTR CALLBACK dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
-		/**
-		 * Property sheet callback procedure.
-		 * @param hWnd
-		 * @param uMsg
-		 * @param ppsp
-		 */
-		static UINT CALLBACK callbackProc(HWND hWnd, UINT uMsg, LPPROPSHEETPAGE ppsp);
+	/**
+	 * Property sheet callback procedure.
+	 * @param hWnd
+	 * @param uMsg
+	 * @param ppsp
+	 */
+	static UINT CALLBACK callbackProc(HWND hWnd, UINT uMsg, LPPROPSHEETPAGE ppsp);
 
-	public:
-		// Property sheet.
-		HPROPSHEETPAGE hPropSheetPage;
-		HWND hWndPropSheet;
+public:
+	// Property sheet
+	HPROPSHEETPAGE hPropSheetPage;
+	HWND hWndPropSheet;
 
-		// Function pointer for SHGetImageList.
-		// This function is not exported by name prior to Windows XP.
-		typedef HRESULT (STDAPICALLTYPE *PFNSHGETIMAGELIST)(
-			_In_ int iImageList, _In_ REFIID riid, _Outptr_result_nullonfailure_ void **ppvObj);
+	// Function pointer for SHGetImageList.
+	// This function is not exported by name prior to Windows XP.
+	typedef HRESULT (STDAPICALLTYPE *PFNSHGETIMAGELIST)(
+		_In_ int iImageList, _In_ REFIID riid, _Outptr_result_nullonfailure_ void **ppvObj);
 
-		// Image list for the XP drive list.
-		IImageListPtr pImageList;
+	// Image list for the XP drive list.
+	IImageListPtr pImageList;
 
-		// wtsapi32.dll for Remote Desktop status. (WinXP and later)
-		WTSSessionNotification wts;
+	// wtsapi32.dll for Remote Desktop status. (WinXP and later)
+	WTSSessionNotification wts;
 
-		DWORD dwUnitmaskXP;	// XP drive update mask
-		bool isVista;		// Is this Windows Vista or later?
+	DWORD dwUnitmaskXP;	// XP drive update mask
+	bool isVista;		// Is this Windows Vista or later?
 };
 
 /** CacheTabPrivate **/
@@ -909,7 +909,7 @@ UINT CALLBACK CacheTabPrivate::callbackProc(HWND hWnd, UINT uMsg, LPPROPSHEETPAG
 
 CacheTab::CacheTab(void)
 	: d_ptr(new CacheTabPrivate())
-{ }
+{}
 
 CacheTab::~CacheTab()
 {

@@ -31,11 +31,11 @@ static const IID IID_IThumbnailProvider =
 MIDL_INTERFACE("e357fccd-a995-4576-b01f-234630154e96") NOVTABLE
 IThumbnailProvider : public IUnknown
 {
-	public:
-		virtual HRESULT STDMETHODCALLTYPE GetThumbnail(
-			/* [in] */ UINT cx,
-			/* [out] */ __RPC__deref_out_opt HBITMAP *phbmp,
-			/* [out] */ __RPC__out WTS_ALPHATYPE *pdwAlpha) = 0;
+public:
+	virtual HRESULT STDMETHODCALLTYPE GetThumbnail(
+		/* [in] */ UINT cx,
+		/* [out] */ __RPC__deref_out_opt HBITMAP *phbmp,
+		/* [out] */ __RPC__out WTS_ALPHATYPE *pdwAlpha) = 0;
 };
 
 // Required for MinGW-w64 __uuidof() emulation.

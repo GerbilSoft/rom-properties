@@ -22,69 +22,69 @@ using std::string;
 #include "ui_XAttrView.h"
 class XAttrViewPrivate
 {
-	public:
-		// TODO: Reomve localizeQUrl() once non-local QUrls are supported.
-		explicit XAttrViewPrivate(const QUrl &filename)
-			: filename(localizeQUrl(filename))
-			, xattrReader(nullptr)
-			, hasAttributes(false)
-		{ }
+public:
+	// TODO: Reomve localizeQUrl() once non-local QUrls are supported.
+	explicit XAttrViewPrivate(const QUrl &filename)
+		: filename(localizeQUrl(filename))
+		, xattrReader(nullptr)
+		, hasAttributes(false)
+	{}
 
-		~XAttrViewPrivate()
-		{
-			delete xattrReader;
-		}
+	~XAttrViewPrivate()
+	{
+		delete xattrReader;
+	}
 
-	private:
-		Q_DISABLE_COPY(XAttrViewPrivate)
+private:
+	Q_DISABLE_COPY(XAttrViewPrivate)
 
-	public:
-		Ui::XAttrView ui;
-		QUrl filename;
+public:
+	Ui::XAttrView ui;
+	QUrl filename;
 
-		// XAttrReader
-		XAttrReader *xattrReader;
+	// XAttrReader
+	XAttrReader *xattrReader;
 
-		// Do we have attributes for this file?
-		bool hasAttributes;
+	// Do we have attributes for this file?
+	bool hasAttributes;
 
-	private:
-		/**
-		 * Load Ext2 attributes, if available.
-		 * @return 0 on success; negative POSIX error code on error.
-		 */
-		int loadExt2Attrs(void);
+private:
+	/**
+	 * Load Ext2 attributes, if available.
+	 * @return 0 on success; negative POSIX error code on error.
+	 */
+	int loadExt2Attrs(void);
 
-		/**
-		 * Load XFS attributes, if available.
-		 * @return 0 on success; negative POSIX error code on error.
-		 */
-		int loadXfsAttrs(void);
+	/**
+	 * Load XFS attributes, if available.
+	 * @return 0 on success; negative POSIX error code on error.
+	 */
+	int loadXfsAttrs(void);
 
-		/**
-		 * Load MS-DOS attributes, if available.
-		 * @return 0 on success; negative POSIX error code on error.
-		 */
-		int loadDosAttrs(void);
+	/**
+	 * Load MS-DOS attributes, if available.
+	 * @return 0 on success; negative POSIX error code on error.
+	 */
+	int loadDosAttrs(void);
 
-		/**
-		 * Load POSIX xattrs, if available.
-		 * @return 0 on success; negative POSIX error code on error.
-		 */
-		int loadPosixXattrs(void);
+	/**
+	 * Load POSIX xattrs, if available.
+	 * @return 0 on success; negative POSIX error code on error.
+	 */
+	int loadPosixXattrs(void);
 
-	public:
-		/**
-		 * Load the attributes from the specified file.
-		 * The attributes will be loaded into the display widgets.
-		 * @return 0 on success; negative POSIX error code on error.
-		 */
-		int loadAttributes(void);
+public:
+	/**
+	 * Load the attributes from the specified file.
+	 * The attributes will be loaded into the display widgets.
+	 * @return 0 on success; negative POSIX error code on error.
+	 */
+	int loadAttributes(void);
 
-		/**
-		 * Clear the display widgets.
-		 */
-		void clearDisplayWidgets();
+	/**
+	 * Clear the display widgets.
+	 */
+	void clearDisplayWidgets();
 };
 
 /**

@@ -646,7 +646,7 @@ int RpFile_IStream::flush(void)
 	return 0;
 }
 
-/** File properties. **/
+/** File properties **/
 
 /**
  * Get the file size.

@@ -13,72 +13,75 @@
 class AboutTabPrivate;
 class AboutTab : public ITab
 {
-	Q_OBJECT
+Q_OBJECT
 
-	public:
-		explicit AboutTab(QWidget *parent = nullptr);
-		~AboutTab() override;
+public:
+	explicit AboutTab(QWidget *parent = nullptr);
+	~AboutTab() override;
 
-	private:
-		typedef ITab super;
-		AboutTabPrivate *const d_ptr;
-		Q_DECLARE_PRIVATE(AboutTab);
-		Q_DISABLE_COPY(AboutTab)
+private:
+	typedef ITab super;
+	AboutTabPrivate *const d_ptr;
+	Q_DECLARE_PRIVATE(AboutTab);
+	Q_DISABLE_COPY(AboutTab)
 
-	public:
-		/**
-		 * Does this tab have defaults available?
-		 * If so, the "Defaults" button will be enabled.
-		 * Otherwise, it will be disabled.
-		 *
-		 * AboutTab sets this to false.
-		 *
-		 * @return True to enable; false to disable.
-		 */
-		bool hasDefaults(void) const final { return false; }
+public:
+	/**
+	 * Does this tab have defaults available?
+	 * If so, the "Defaults" button will be enabled.
+	 * Otherwise, it will be disabled.
+	 *
+	 * AboutTab sets this to false.
+	 *
+	 * @return True to enable; false to disable.
+	 */
+	bool hasDefaults(void) const final
+	{
+		return false;
+	}
 
-	protected:
-		/**
-		 * Widget state has changed.
-		 * @param event State change event
-		 */
-		void changeEvent(QEvent *event) final;
+protected:
+	/**
+	 * Widget state has changed.
+	 * @param event State change event
+	 */
+	void changeEvent(QEvent *event) final;
 
-		/**
-		 * Widget is now visible.
-		 * @param event Show event
-		 */
-		void showEvent(QShowEvent *event) final;
+	/**
+	 * Widget is now visible.
+	 * @param event Show event
+	 */
+	void showEvent(QShowEvent *event) final;
 
-	public slots:
-		/**
-		 * Reset the configuration.
-		 */
-		void reset(void) final { }		// Nothing to do here.
+public slots:
+	/**
+	 * Reset the configuration.
+	 */
+	void reset(void) final {}		// Nothing to do here.
 
-		/**
-		 * Save the configuration.
-		 * @param pSettings QSettings object.
-		 */
-		void save(QSettings *pSettings) final
-		{
-			// Nothing to do here.
-			Q_UNUSED(pSettings)
-		}
+	/**
+	 * Save the configuration.
+	 * @param pSettings QSettings object.
+	 */
+	void save(QSettings *pSettings) final
+	{
+		// Nothing to do here.
+		Q_UNUSED(pSettings)
+	}
 
-	protected slots:
-		/** UpdateChecker slots **/
+protected slots:
+	/** UpdateChecker slots **/
 
-		/**
-		 * An error occurred while trying to retrieve the update version.
-		 * TODO: Error code?
-		 * @param error Error message
-		 */
-		void updChecker_error(const QString &error);
+	/**
+	 * An error occurred while trying to retrieve the update version.
+	 * TODO: Error code?
+	 * @param error Error message
+	 */
+	void updChecker_error(const QString &error);
 
-		/**
-		 * Update version retrieved.
-		 * @param updateVersion Update version (64-bit format)
-		 */
-		void updChecker_retrieved(quint64 updateVersion);
+	/**
+	 * Update version retrieved.
+	 * @param updateVersion Update version (64-bit format)
+	 */
+	void updChecker_retrieved(quint64 updateVersion);
 };

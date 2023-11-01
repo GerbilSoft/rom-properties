@@ -49,7 +49,8 @@ struct LvData {
 	LvData()
 		: hListView(nullptr), pField(nullptr)
 		, col0sizeadj(0), checkboxes(0)
-		, sortingMethods(0), hasCheckboxes(false) { }
+		, sortingMethods(0), hasCheckboxes(false)
+	{}
 
 public:
 	/** Strings **/

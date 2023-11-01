@@ -16,17 +16,17 @@
 
 class DragImageTreeView : public QTreeView
 {
-	Q_OBJECT
+Q_OBJECT
 
-	public:
-		explicit DragImageTreeView(QWidget *parent = nullptr)
-			: super(parent) { }
+public:
+	explicit DragImageTreeView(QWidget *parent = nullptr)
+		: super(parent) { }
 
-	private:
-		typedef QTreeView super;
-		Q_DISABLE_COPY(DragImageTreeView)
+private:
+	typedef QTreeView super;
+	Q_DISABLE_COPY(DragImageTreeView)
 
-	protected:
-		/** Overridden QWidget functions **/
-		void startDrag(Qt::DropActions supportedActions) override;
+protected:
+	/** Overridden QWidget functions **/
+	void startDrag(Qt::DropActions supportedActions) override;
 };

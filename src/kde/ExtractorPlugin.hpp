@@ -30,29 +30,29 @@ namespace RomPropertiesKDE {
 
 class ExtractorPlugin : public ::KFileMetaData::ExtractorPlugin
 {
-	Q_OBJECT
-	Q_INTERFACES(KFileMetaData::ExtractorPlugin)
+Q_OBJECT
+Q_INTERFACES(KFileMetaData::ExtractorPlugin)
 
-	public:
-		explicit ExtractorPlugin(QObject *parent = nullptr);
+public:
+	explicit ExtractorPlugin(QObject *parent = nullptr);
 
-	private:
-		typedef KFileMetaData::ExtractorPlugin super;
-		Q_DISABLE_COPY(ExtractorPlugin);
+private:
+	typedef KFileMetaData::ExtractorPlugin super;
+	Q_DISABLE_COPY(ExtractorPlugin);
 
-	public:
-		QStringList mimetypes(void) const final;
+public:
+	QStringList mimetypes(void) const final;
 
-	private:
-		static void extract_properties(KFileMetaData::ExtractionResult *result, LibRpBase::RomData *romData);
+private:
+	static void extract_properties(KFileMetaData::ExtractionResult *result, LibRpBase::RomData *romData);
 #if KCOREADDONS_VERSION >= QT_VERSION_CHECK(5,76,0)
-		static void extract_image(KFileMetaData::ExtractionResult *result, LibRpBase::RomData *romData);
+	static void extract_image(KFileMetaData::ExtractionResult *result, LibRpBase::RomData *romData);
 #endif /* KCOREADDONS_VERSION <= QT_VERSION_CHECK(5,76,0) */
-	public:
-		void extract(KFileMetaData::ExtractionResult *result) final;
+public:
+	void extract(KFileMetaData::ExtractionResult *result) final;
 };
 
 // Exported function pointer to create a new RpExtractorPlugin.
 typedef ExtractorPlugin* (*pfn_createExtractorPluginKDE_t)(QObject *parent);
 
-}
+} //namespace RomPropertiesKDE

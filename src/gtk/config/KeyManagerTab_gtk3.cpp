@@ -249,7 +249,8 @@ renderer_edited_signal_handler(GtkCellRendererText *self, gchar *path, gchar *ne
 	KeyStoreUI *const keyStoreUI = rp_key_store_gtk_get_key_store_ui(tab->keyStore);
 
 	// Convert the path to sectIdx/keyIdx.
-	int sectIdx, keyIdx; char dummy;
+	int sectIdx, keyIdx;
+	char dummy;
 	int ret = sscanf(path, "%d:%d%c", &sectIdx, &keyIdx, &dummy);
 	assert(ret == 2);
 	if (ret != 2) {

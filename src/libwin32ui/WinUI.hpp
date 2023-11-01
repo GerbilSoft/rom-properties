@@ -241,4 +241,4 @@ LRESULT CALLBACK ListViewNoDividerDblClickSubclassProc(
 	WPARAM wParam, LPARAM lParam,
 	UINT_PTR uIdSubclass, DWORD_PTR dwRefData);
 
-}
+} //namespace LibWin32UI

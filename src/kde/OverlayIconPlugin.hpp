@@ -24,21 +24,21 @@ namespace RomPropertiesKDE {
 
 class OverlayIconPlugin : public ::KOverlayIconPlugin
 {
-	Q_OBJECT
-	//Q_INTERFACES(KOverlayIconPlugin)
+Q_OBJECT
+//Q_INTERFACES(KOverlayIconPlugin)
 
-	public:
-		explicit OverlayIconPlugin(QObject *parent = nullptr);
+public:
+	explicit OverlayIconPlugin(QObject *parent = nullptr);
 
-	private:
-		typedef KOverlayIconPlugin super;
-		Q_DISABLE_COPY(OverlayIconPlugin);
+private:
+	typedef KOverlayIconPlugin super;
+	Q_DISABLE_COPY(OverlayIconPlugin);
 
-	public:
-		QStringList getOverlays(const QUrl &item) final;
+public:
+	QStringList getOverlays(const QUrl &item) final;
 };
 
 // Exported function pointer to create a new RpExtractorPlugin.
 typedef OverlayIconPlugin* (*pfn_createOverlayIconPluginKDE_t)(QObject *parent);
 
-}
+} //namespace RomPropertiesKDE

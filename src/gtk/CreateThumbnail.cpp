@@ -9,8 +9,8 @@
 #include "stdafx.h"
 #include "CreateThumbnail.hpp"
 
-#include "check-uid.h"
 #include "ProxyForUrl.hpp"
+#include "check-uid.h"
 
 // Other rom-properties libraries
 using namespace LibRpBase;
@@ -52,132 +52,132 @@ using std::unique_ptr;
 
 class CreateThumbnailPrivate : public TCreateThumbnail<PIMGTYPE>
 {
-	public:
-		CreateThumbnailPrivate() = default;
+public:
+	CreateThumbnailPrivate() = default;
 
-	private:
-		typedef TCreateThumbnail<PIMGTYPE> super;
-		RP_DISABLE_COPY(CreateThumbnailPrivate)
+private:
+	typedef TCreateThumbnail<PIMGTYPE> super;
+	RP_DISABLE_COPY(CreateThumbnailPrivate)
 
-	public:
-		/** TCreateThumbnail functions. **/
+public:
+	/** TCreateThumbnail functions. **/
 
-		/**
-		 * Wrapper function to convert rp_image* to ImgClass.
-		 * @param img rp_image
-		 * @return ImgClass
-		 */
-		inline PIMGTYPE rpImageToImgClass(const rp_image_const_ptr &img) const final
-		{
-			// NOTE: Don't premultiply the image when using Cairo,
-			// since the image data is going directly to PNG.
-			return rp_image_to_PIMGTYPE(img, false);
+	/**
+	 * Wrapper function to convert rp_image* to ImgClass.
+	 * @param img rp_image
+	 * @return ImgClass
+	 */
+	inline PIMGTYPE rpImageToImgClass(const rp_image_const_ptr &img) const final
+	{
+		// NOTE: Don't premultiply the image when using Cairo,
+		// since the image data is going directly to PNG.
+		return rp_image_to_PIMGTYPE(img, false);
+	}
+
+	/**
+	 * Wrapper function to check if an ImgClass is valid.
+	 * @param imgClass ImgClass
+	 * @return True if valid; false if not.
+	 */
+	bool isImgClassValid(const PIMGTYPE &imgClass) const final
+	{
+		return (imgClass != nullptr);
+	}
+
+	/**
+	 * Wrapper function to get a "null" ImgClass.
+	 * @return "Null" ImgClass.
+	 */
+	inline PIMGTYPE getNullImgClass(void) const final
+	{
+		return nullptr;
+	}
+
+	/**
+	 * Free an ImgClass object.
+	 * @param imgClass ImgClass object.
+	 */
+	inline void freeImgClass(PIMGTYPE &imgClass) const final
+	{
+		PIMGTYPE_unref(imgClass);
+	}
+
+	/**
+	 * Rescale an ImgClass using the specified scaling method.
+	 * @param imgClass ImgClass object.
+	 * @param sz New size.
+	 * @param method Scaling method.
+	 * @return Rescaled ImgClass.
+	 */
+	inline PIMGTYPE rescaleImgClass(const PIMGTYPE &imgClass, ImgSize sz, ScalingMethod method = ScalingMethod::Nearest) const final
+	{
+		return PIMGTYPE_scale(imgClass, sz.width, sz.height, (method == ScalingMethod::Bilinear));
+	}
+
+	/**
+	 * Get the size of the specified ImgClass.
+	 * @param imgClass	[in] ImgClass object.
+	 * @param pOutSize	[out] Pointer to ImgSize to store the image size.
+	 * @return 0 on success; non-zero on error.
+	 */
+	inline int getImgClassSize(const PIMGTYPE &imgClass, ImgSize *pOutSize) const final
+	{
+		return PIMGTYPE_get_size(imgClass, &pOutSize->width, &pOutSize->height);
+	}
+
+	/**
+	 * Get the proxy for the specified URL.
+	 * @param url URL
+	 * @return Proxy, or empty string if no proxy is needed.
+	 */
+	inline string proxyForUrl(const char *url) const final
+	{
+		return ::proxyForUrl(url);
+	}
+
+	/**
+	 * Is the system using a metered connection?
+	 *
+	 * Note that if the system doesn't support identifying if the
+	 * connection is metered, it will be assumed that the network
+	 * connection is unmetered.
+	 *
+	 * @return True if metered; false if not.
+	 */
+	bool isMetered(void) final
+	{
+		// TODO: Keep a persistent NetworkManager connection?
+
+		// Connect to the service using gdbus-codegen's generated code.
+		Manager *proxy = nullptr;
+		GError *error = nullptr;
+
+		proxy = manager_proxy_new_for_bus_sync(
+			G_BUS_TYPE_SYSTEM,
+			G_DBUS_PROXY_FLAGS_NONE,
+			"org.freedesktop.NetworkManager",	// bus name
+			"/org/freedesktop/NetworkManager",	// object path
+			nullptr,				// GCancellable
+			&error);				// GError
+		if (!proxy) {
+			// Unable to connect.
+			// Assume unmetered.
+			g_error_free(error);
+			return false;
 		}
 
-		/**
-		 * Wrapper function to check if an ImgClass is valid.
-		 * @param imgClass ImgClass
-		 * @return True if valid; false if not.
-		 */
-		bool isImgClassValid(const PIMGTYPE &imgClass) const final
-		{
-			return (imgClass != nullptr);
-		}
-
-		/**
-		 * Wrapper function to get a "null" ImgClass.
-		 * @return "Null" ImgClass.
-		 */
-		inline PIMGTYPE getNullImgClass(void) const final
-		{
-			return nullptr;
-		}
-
-		/**
-		 * Free an ImgClass object.
-		 * @param imgClass ImgClass object.
-		 */
-		inline void freeImgClass(PIMGTYPE &imgClass) const final
-		{
-			PIMGTYPE_unref(imgClass);
-		}
-
-		/**
-		 * Rescale an ImgClass using the specified scaling method.
-		 * @param imgClass ImgClass object.
-		 * @param sz New size.
-		 * @param method Scaling method.
-		 * @return Rescaled ImgClass.
-		 */
-		inline PIMGTYPE rescaleImgClass(const PIMGTYPE &imgClass, ImgSize sz, ScalingMethod method = ScalingMethod::Nearest) const final
-		{
-			return PIMGTYPE_scale(imgClass, sz.width, sz.height, (method == ScalingMethod::Bilinear));
-		}
-
-		/**
-		 * Get the size of the specified ImgClass.
-		 * @param imgClass	[in] ImgClass object.
-		 * @param pOutSize	[out] Pointer to ImgSize to store the image size.
-		 * @return 0 on success; non-zero on error.
-		 */
-		inline int getImgClassSize(const PIMGTYPE &imgClass, ImgSize *pOutSize) const final
-		{
-			return PIMGTYPE_get_size(imgClass, &pOutSize->width, &pOutSize->height);
-		}
-
-		/**
-		 * Get the proxy for the specified URL.
-		 * @param url URL
-		 * @return Proxy, or empty string if no proxy is needed.
-		 */
-		inline string proxyForUrl(const char *url) const final
-		{
-			return ::proxyForUrl(url);
-		}
-
-		/**
-		 * Is the system using a metered connection?
-		 *
-		 * Note that if the system doesn't support identifying if the
-		 * connection is metered, it will be assumed that the network
-		 * connection is unmetered.
-		 *
-		 * @return True if metered; false if not.
-		 */
-		bool isMetered(void) final
-		{
-			// TODO: Keep a persistent NetworkManager connection?
-
-			// Connect to the service using gdbus-codegen's generated code.
-			Manager *proxy = nullptr;
-			GError *error = nullptr;
-
-			proxy = manager_proxy_new_for_bus_sync(
-				G_BUS_TYPE_SYSTEM,
-				G_DBUS_PROXY_FLAGS_NONE,
-				"org.freedesktop.NetworkManager",	// bus name
-				"/org/freedesktop/NetworkManager",	// object path
-				nullptr,				// GCancellable
-				&error);				// GError
-			if (!proxy) {
-				// Unable to connect.
-				// Assume unmetered.
-				g_error_free(error);
-				return false;
-			}
-
-			// https://developer-old.gnome.org/NetworkManager/stable/nm-dbus-types.html#NMMetered
-			enum NMMetered : uint32_t {
-				NM_METERED_UNKNOWN	= 0,
-				NM_METERED_YES		= 1,
-				NM_METERED_NO		= 2,
-				NM_METERED_GUESS_YES	= 3,
-				NM_METERED_GUESS_NO	= 4,
-			};
-			const NMMetered metered = static_cast<NMMetered>(manager_get_metered(proxy));
-			g_object_unref(proxy);
-			return (metered == NM_METERED_YES || metered == NM_METERED_GUESS_YES);
-		}
+		// https://developer-old.gnome.org/NetworkManager/stable/nm-dbus-types.html#NMMetered
+		enum NMMetered : uint32_t {
+			NM_METERED_UNKNOWN	= 0,
+			NM_METERED_YES		= 1,
+			NM_METERED_NO		= 2,
+			NM_METERED_GUESS_YES	= 3,
+			NM_METERED_GUESS_NO	= 4,
+		};
+		const NMMetered metered = static_cast<NMMetered>(manager_get_metered(proxy));
+		g_object_unref(proxy);
+		return (metered == NM_METERED_YES || metered == NM_METERED_GUESS_YES);
+	}
 };
 
 /** CreateThumbnail **/
@@ -295,7 +295,8 @@ static IRpFilePtr openFromFilenameOrURI(const char *source_file, string &s_uri, 
  * @return 0 on success; non-zero on error.
  */
 extern "C"
-G_MODULE_EXPORT int RP_C_API rp_create_thumbnail2(const char *source_file, const char *output_file, int maximum_size, unsigned int flags)
+G_MODULE_EXPORT int RP_C_API rp_create_thumbnail2(
+	const char *source_file, const char *output_file, int maximum_size, unsigned int flags)
 {
 	// Some of this is based on the GNOME Thumbnailer skeleton project.
 	// https://github.com/hadess/gnome-thumbnailer-skeleton/blob/master/gnome-thumbnailer-skeleton.c
@@ -525,7 +526,8 @@ cleanup:
  * @return 0 on success; non-zero on error.
  */
 extern "C"
-G_MODULE_EXPORT int RP_C_API rp_create_thumbnail(const char *source_file, const char *output_file, int maximum_size)
+G_MODULE_EXPORT int RP_C_API rp_create_thumbnail(
+	const char *source_file, const char *output_file, int maximum_size)
 {
 	// Wrapper function that calls rp_create_thumbnail2()
 	// with flags == 0.

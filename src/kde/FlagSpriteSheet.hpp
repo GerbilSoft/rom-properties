@@ -11,7 +11,8 @@
 #include "common.h"
 
 #include "ISpriteSheet.hpp"
-class FlagSpriteSheet : public ISpriteSheet {
+class FlagSpriteSheet : public ISpriteSheet
+{
 public:
 	/**
 	 * Flags sprite sheet
@@ -37,10 +38,10 @@ protected:
 
 public:
 	/**
-	* Get a flag icon.
-	* @param lc		[in]  Language code
-	* @param forcePAL	[in,opt] If true, force PAL regions, e.g. always use the 'gb' flag for English.
-	* @return Flag icon, or nullptr on error.
-	*/
+	 * Get a flag icon.
+	 * @param lc		[in]  Language code
+	 * @param forcePAL	[in,opt] If true, force PAL regions, e.g. always use the 'gb' flag for English.
+	 * @return Flag icon, or nullptr on error.
+	 */
 	QPixmap getIcon(uint32_t lc, bool forcePAL = false) const;
 };

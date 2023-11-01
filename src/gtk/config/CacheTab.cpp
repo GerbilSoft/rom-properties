@@ -168,7 +168,7 @@ rp_cache_tab_init(RpCacheTab *tab)
 	GTK_LABEL_XALIGN_LEFT(tab->lblRpCache);
 	gtk_label_set_wrap(GTK_LABEL(tab->lblRpCache), TRUE);
 
-	tab->btnRpCache  = gtk_button_new_with_label(C_("CacheTab", "Clear the ROM Properties Page Download Cache"));
+	tab->btnRpCache = gtk_button_new_with_label(C_("CacheTab", "Clear the ROM Properties Page Download Cache"));
 	gtk_widget_set_name(tab->btnRpCache, "btnRpCache");
 
 	tab->lblCacheStatus = gtk_label_new(nullptr);

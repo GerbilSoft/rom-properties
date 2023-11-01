@@ -14,7 +14,8 @@
 #include "librpbase/Achievements.hpp"
 
 #include "ISpriteSheet.hpp"
-class AchSpriteSheet : public ISpriteSheet {
+class AchSpriteSheet : public ISpriteSheet
+{
 public:
 	/**
 	 * Achievements sprite sheet

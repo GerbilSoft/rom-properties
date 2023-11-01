@@ -30,92 +30,95 @@ using std::tstring;
 
 class OptionsTabPrivate
 {
-	public:
-		OptionsTabPrivate();
+public:
+	OptionsTabPrivate();
 
-	private:
-		RP_DISABLE_COPY(OptionsTabPrivate)
+private:
+	RP_DISABLE_COPY(OptionsTabPrivate)
 
-	protected:
-		/**
-		 * Convert a bool value to BST_CHCEKED or BST_UNCHECKED.
-		 * @param value Bool value.
-		 * @return BST_CHECKED or BST_UNCHECKED.
-		 */
-		static inline int boolToBstChecked(bool value) {
-			return (value ? BST_CHECKED : BST_UNCHECKED);
-		}
+protected:
+	/**
+	 * Convert a bool value to BST_CHCEKED or BST_UNCHECKED.
+	 * @param value Bool value.
+	 * @return BST_CHECKED or BST_UNCHECKED.
+	 */
+	static inline int boolToBstChecked(bool value)
+	{
+		return (value ? BST_CHECKED : BST_UNCHECKED);
+	}
 
-		/**
-		 * Convert BST_CHECKED or BST_UNCHECKED to a bool string.
-		 * @param value BST_CHECKED or BST_UNCHECKED.
-		 * @return Bool string.
-		 */
-		static inline const TCHAR *bstCheckedToBoolString(unsigned int value) {
-			return (value == BST_CHECKED ? _T("true") : _T("false"));
-		}
+	/**
+	 * Convert BST_CHECKED or BST_UNCHECKED to a bool string.
+	 * @param value BST_CHECKED or BST_UNCHECKED.
+	 * @return Bool string.
+	 */
+	static inline const TCHAR *bstCheckedToBoolString(unsigned int value)
+	{
+		return (value == BST_CHECKED ? _T("true") : _T("false"));
+	}
 
-		/**
-		 * Convert BST_CHECKED or BST_UNCHECKED to a bool.
-		 * @param value BST_CHECKED or BST_UNCHECKED.
-		 * @return bool.
-		 */
-		static inline bool bstCheckedToBool(unsigned int value) {
-			return (value == BST_CHECKED);
-		}
+	/**
+	 * Convert BST_CHECKED or BST_UNCHECKED to a bool.
+	 * @param value BST_CHECKED or BST_UNCHECKED.
+	 * @return bool.
+	 */
+	static inline bool bstCheckedToBool(unsigned int value)
+	{
+		return (value == BST_CHECKED);
+	}
 
-	public:
-		/**
-		 * Reset the configuration.
-		 */
-		void reset(void);
+public:
+	/**
+	 * Reset the configuration.
+	 */
+	void reset(void);
 
-		/**
-		 * Load the default configuration.
-		 * This does NOT save, and will only emit modified()
-		 * if it's different from the current configuration.
-		 */
-		void loadDefaults(void);
+	/**
+	 * Load the default configuration.
+	 * This does NOT save, and will only emit modified()
+	 * if it's different from the current configuration.
+	 */
+	void loadDefaults(void);
 
-		/**
-		 * Save the configuration.
-		 */
-		void save(void);
+	/**
+	 * Save the configuration.
+	 */
+	void save(void);
 
-	public:
-		/**
-		 * Update grpExtImgDl's control sensitivity.
-		 */
-		void updateGrpExtImgDl(void);
+public:
+	/**
+	 * Update grpExtImgDl's control sensitivity.
+	 */
+	void updateGrpExtImgDl(void);
 
-	public:
-		/**
-		 * Dialog procedure.
-		 * @param hDlg
-		 * @param uMsg
-		 * @param wParam
-		 * @param lParam
-		 */
-		static INT_PTR CALLBACK dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+public:
+	/**
+	 * Dialog procedure.
+	 * @param hDlg
+	 * @param uMsg
+	 * @param wParam
+	 * @param lParam
+	 */
+	static INT_PTR CALLBACK dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
-		/**
-		 * Property sheet callback procedure.
-		 * @param hWnd
-		 * @param uMsg
-		 * @param ppsp
-		 */
-		static UINT CALLBACK callbackProc(HWND hWnd, UINT uMsg, LPPROPSHEETPAGE ppsp);
+	/**
+	 * Property sheet callback procedure.
+	 * @param hWnd
+	 * @param uMsg
+	 * @param ppsp
+	 */
+	static UINT CALLBACK callbackProc(HWND hWnd, UINT uMsg, LPPROPSHEETPAGE ppsp);
 
-	public:
-		// Property sheet.
-		HPROPSHEETPAGE hPropSheetPage;
-		HWND hWndPropSheet;
+public:
+	// Property sheet.
+	HPROPSHEETPAGE hPropSheetPage;
+	HWND hWndPropSheet;
 
-		// Has the user changed anything?
-		bool changed;
+	// Has the user changed anything?
+	bool changed;
 
-		// PAL language codes for GameTDB.
-		static const uint32_t pal_lc[];
+	// PAL language codes for GameTDB.
+	static const uint32_t pal_lc[];
 };
 
 /** OptionsTabPrivate **/
@@ -131,7 +134,7 @@ OptionsTabPrivate::OptionsTabPrivate()
 	: hPropSheetPage(nullptr)
 	, hWndPropSheet(nullptr)
 	, changed(false)
-{ }
+{}
 
 /**
  * Reset the configuration.
@@ -537,7 +540,7 @@ UINT CALLBACK OptionsTabPrivate::callbackProc(HWND hWnd, UINT uMsg, LPPROPSHEETP
 
 OptionsTab::OptionsTab(void)
 	: d_ptr(new OptionsTabPrivate())
-{ }
+{}
 
 OptionsTab::~OptionsTab()
 {

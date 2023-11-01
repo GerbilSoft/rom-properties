@@ -12,7 +12,7 @@
 RP_EmptyVolumeCacheCallback::RP_EmptyVolumeCacheCallback(HWND hProgressBar)
 	: m_hProgressBar(hProgressBar)
 	, m_baseProgress(0)
-{ }
+{}
 
 /** IUnknown **/
 // Reference: https://docs.microsoft.com/en-us/office/client-developer/outlook/mapi/implementing-iunknown-in-c-plus-plus

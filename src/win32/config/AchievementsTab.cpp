@@ -31,64 +31,64 @@ using std::unique_ptr;
 
 class AchievementsTabPrivate
 {
-	public:
-		AchievementsTabPrivate();
-		~AchievementsTabPrivate();
+public:
+	AchievementsTabPrivate();
+	~AchievementsTabPrivate();
 
-	private:
-		RP_DISABLE_COPY(AchievementsTabPrivate)
+private:
+	RP_DISABLE_COPY(AchievementsTabPrivate)
 
-	public:
-		/**
-		 * Dialog procedure.
-		 * @param hDlg
-		 * @param uMsg
-		 * @param wParam
-		 * @param lParam
-		 */
-		static INT_PTR CALLBACK dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+public:
+	/**
+	 * Dialog procedure.
+	 * @param hDlg
+	 * @param uMsg
+	 * @param wParam
+	 * @param lParam
+	 */
+	static INT_PTR CALLBACK dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
-		/**
-		 * Property sheet callback procedure.
-		 * @param hWnd
-		 * @param uMsg
-		 * @param ppsp
-		 */
-		static UINT CALLBACK callbackProc(HWND hWnd, UINT uMsg, LPPROPSHEETPAGE ppsp);
+	/**
+	 * Property sheet callback procedure.
+	 * @param hWnd
+	 * @param uMsg
+	 * @param ppsp
+	 */
+	static UINT CALLBACK callbackProc(HWND hWnd, UINT uMsg, LPPROPSHEETPAGE ppsp);
 
-	public:
-		// Property sheet.
-		HPROPSHEETPAGE hPropSheetPage;
-		HWND hWndPropSheet;
+public:
+	// Property sheet.
+	HPROPSHEETPAGE hPropSheetPage;
+	HWND hWndPropSheet;
 
-		// Image list for achievement icons.
-		HIMAGELIST himglAch;
+	// Image list for achievement icons.
+	HIMAGELIST himglAch;
 
-		// Alternate row color.
-		COLORREF colorAltRow;
+	// Alternate row color.
+	COLORREF colorAltRow;
 
-	public:
-		/**
-		 * Update the ListView style.
-		 */
-		void updateListViewStyle(void);
+public:
+	/**
+	 * Update the ListView style.
+	 */
+	void updateListViewStyle(void);
 
-		/**
-		 * Update the ListView ImageList.
-		 */
-		void updateImageList(void);
+	/**
+	 * Update the ListView ImageList.
+	 */
+	void updateImageList(void);
 
-		/**
-		 * ListView CustomDraw function.
-		 * @param plvcd	[in/out] NMLVCUSTOMDRAW
-		 * @return Return value.
-		 */
-		int ListView_CustomDraw(NMLVCUSTOMDRAW *plvcd) const;
+	/**
+	 * ListView CustomDraw function.
+	 * @param plvcd	[in/out] NMLVCUSTOMDRAW
+	 * @return Return value.
+	 */
+	int ListView_CustomDraw(NMLVCUSTOMDRAW *plvcd) const;
 
-		/**
-		 * Reset the configuration.
-		 */
-		void reset(void);
+	/**
+	 * Reset the configuration.
+	 */
+	void reset(void);
 };
 
 /** AchievementsTabPrivate **/
@@ -98,7 +98,7 @@ AchievementsTabPrivate::AchievementsTabPrivate()
 	, hWndPropSheet(nullptr)
 	, himglAch(nullptr)
 	, colorAltRow(0)
-{ }
+{}
 
 AchievementsTabPrivate::~AchievementsTabPrivate()
 {
@@ -473,7 +473,7 @@ void AchievementsTabPrivate::reset(void)
 
 AchievementsTab::AchievementsTab(void)
 	: d_ptr(new AchievementsTabPrivate())
-{ }
+{}
 
 AchievementsTab::~AchievementsTab()
 {

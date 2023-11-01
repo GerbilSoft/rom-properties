@@ -15,21 +15,21 @@ using LibRpBase::Config;
 #include "ui_OptionsTab.h"
 class OptionsTabPrivate
 {
-	public:
-		explicit OptionsTabPrivate();
+public:
+	explicit OptionsTabPrivate();
 
-	private:
-		Q_DISABLE_COPY(OptionsTabPrivate)
+private:
+	Q_DISABLE_COPY(OptionsTabPrivate)
 
-	public:
-		Ui::OptionsTab ui;
+public:
+	Ui::OptionsTab ui;
 
-	public:
-		// Has the user changed anything?
-		bool changed;
+public:
+	// Has the user changed anything?
+	bool changed;
 
-		// PAL language codes for GameTDB.
-		static const uint32_t pal_lc[];
+	// PAL language codes for GameTDB.
+	static const uint32_t pal_lc[];
 };
 
 /** OptionsTabPrivate **/

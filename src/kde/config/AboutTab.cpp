@@ -51,57 +51,57 @@ using std::string;
 #include "ui_AboutTab.h"
 class AboutTabPrivate
 {
-	public:
-		explicit AboutTabPrivate(AboutTab *q);
-		~AboutTabPrivate();
+public:
+	explicit AboutTabPrivate(AboutTab *q);
+	~AboutTabPrivate();
 
-	private:
-		AboutTab *const q_ptr;
-		Q_DECLARE_PUBLIC(AboutTab)
-		Q_DISABLE_COPY(AboutTabPrivate)
+private:
+	AboutTab *const q_ptr;
+	Q_DECLARE_PUBLIC(AboutTab)
+	Q_DISABLE_COPY(AboutTabPrivate)
 
-	public:
-		Ui::AboutTab ui;
+public:
+	Ui::AboutTab ui;
 
-	protected:
-		/**
-		 * Initialize the program title text.
-		 */
-		void initProgramTitleText(void);
+protected:
+	/**
+	 * Initialize the program title text.
+	 */
+	void initProgramTitleText(void);
 
-		/**
-		 * Initialize the "Credits" tab.
-		 */
-		void initCreditsTab(void);
+	/**
+	 * Initialize the "Credits" tab.
+	 */
+	void initCreditsTab(void);
 
-		/**
-		 * Initialize the "Libraries" tab.
-		 */
-		void initLibrariesTab(void);
+	/**
+	 * Initialize the "Libraries" tab.
+	 */
+	void initLibrariesTab(void);
 
-		/**
-		 * Initialize the "Support" tab.
-		 */
-		void initSupportTab(void);
+	/**
+	 * Initialize the "Support" tab.
+	 */
+	void initSupportTab(void);
 
-	public:
-		/**
-		 * Initialize the dialog.
-		 */
-		void init(void);
+public:
+	/**
+	 * Initialize the dialog.
+	 */
+	void init(void);
 
-		/**
-		 * Check for updates.
-		 */
-		void checkForUpdates(void);
+	/**
+	 * Check for updates.
+	 */
+	void checkForUpdates(void);
 
-	public:
-		// Update checker object and thread.
-		QThread *thrUpdate;
-		UpdateChecker *updChecker;
+public:
+	// Update checker object and thread.
+	QThread *thrUpdate;
+	UpdateChecker *updChecker;
 
-		// Checked for updates yet?
-		bool checkedForUpdates;
+	// Checked for updates yet?
+	bool checkedForUpdates;
 };
 
 /** AboutTabPrivate **/

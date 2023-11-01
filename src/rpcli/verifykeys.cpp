@@ -37,11 +37,11 @@ using std::cout;
  */
 class KeyStoreCLI final : public KeyStoreUI
 {
-	protected: /*signals:*/
-		void keyChanged_int(int, int) final { }
-		void keyChanged_int(int) final { }
-		void allKeysChanged_int(void) final { }
-		void modified_int(void) final { }
+protected: /*signals:*/
+	void keyChanged_int(int, int) final {}
+	void keyChanged_int(int) final {}
+	void allKeysChanged_int(void) final {}
+	void modified_int(void) final {}
 };
 
 /**

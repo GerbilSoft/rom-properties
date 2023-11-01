@@ -32,33 +32,33 @@ class RP_ContextMenu_Private;
 class UUID_ATTR("{150715EA-6843-472C-9709-2CFA56690501}")
 RP_ContextMenu final : public LibWin32Common::ComBase2<IShellExtInit, IContextMenu>
 {
-	public:
-		RP_ContextMenu();
-	protected:
-		~RP_ContextMenu() final;
+public:
+	RP_ContextMenu();
+protected:
+	~RP_ContextMenu() final;
 
-	private:
-		typedef LibWin32Common::ComBase2<IPersistFile, IContextMenu> super;
-		RP_DISABLE_COPY(RP_ContextMenu)
-	private:
-		friend class RP_ContextMenu_Private;
-		RP_ContextMenu_Private *const d_ptr;
+private:
+	typedef LibWin32Common::ComBase2<IPersistFile, IContextMenu> super;
+	RP_DISABLE_COPY(RP_ContextMenu)
+private:
+	friend class RP_ContextMenu_Private;
+	RP_ContextMenu_Private *const d_ptr;
 
-	public:
-		CLSID_DECL(RP_ContextMenu)
-		FILETYPE_HANDLER_DECL(RP_ContextMenu)
+public:
+	CLSID_DECL(RP_ContextMenu)
+	FILETYPE_HANDLER_DECL(RP_ContextMenu)
 
-	public:
-		// IUnknown
-		IFACEMETHODIMP QueryInterface(_In_ REFIID riid, _Outptr_ LPVOID *ppvObj) final;
+public:
+	// IUnknown
+	IFACEMETHODIMP QueryInterface(_In_ REFIID riid, _Outptr_ LPVOID *ppvObj) final;
 
-		// IShellExtInit
-		IFACEMETHODIMP Initialize(_In_ LPCITEMIDLIST pidlFolder, _In_ LPDATAOBJECT pDataObj, _In_ HKEY hKeyProgID) final;
+	// IShellExtInit
+	IFACEMETHODIMP Initialize(_In_ LPCITEMIDLIST pidlFolder, _In_ LPDATAOBJECT pDataObj, _In_ HKEY hKeyProgID) final;
 
-		// IContextMenu
-		IFACEMETHODIMP QueryContextMenu(_In_ HMENU hMenu, _In_ UINT indexMenu, _In_ UINT idCmdFirst, _In_ UINT idCmdLast, _In_ UINT uFlags) final;
-		IFACEMETHODIMP InvokeCommand(_In_ CMINVOKECOMMANDINFO *pici) final;
-		IFACEMETHODIMP GetCommandString(_In_ UINT_PTR idCmd, _In_ UINT uType, _Reserved_ UINT *pReserved, _Out_ CHAR *pszName, _In_  UINT cchMax) final;
+	// IContextMenu
+	IFACEMETHODIMP QueryContextMenu(_In_ HMENU hMenu, _In_ UINT indexMenu, _In_ UINT idCmdFirst, _In_ UINT idCmdLast, _In_ UINT uFlags) final;
+	IFACEMETHODIMP InvokeCommand(_In_ CMINVOKECOMMANDINFO *pici) final;
+	IFACEMETHODIMP GetCommandString(_In_ UINT_PTR idCmd, _In_ UINT uType, _Reserved_ UINT *pReserved, _Out_ CHAR *pszName, _In_  UINT cchMax) final;
 };
 
 #ifdef __CRT_UUID_DECL

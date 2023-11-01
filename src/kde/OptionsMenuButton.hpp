@@ -32,42 +32,42 @@ enum StandardOptionID {
 
 class OptionsMenuButton : public QPushButton
 {
-	Q_OBJECT
+Q_OBJECT
 
-	public:
-		explicit OptionsMenuButton(QWidget *parent = nullptr);
+public:
+	explicit OptionsMenuButton(QWidget *parent = nullptr);
 
-	private:
-		typedef QPushButton super;
-		Q_DISABLE_COPY(OptionsMenuButton)
+private:
+	typedef QPushButton super;
+	Q_DISABLE_COPY(OptionsMenuButton)
 
-	public:
-		/**
-		 * Reset the menu items using the specified RomData object.
-		 * @param widget OptionsMenuButton
-		 * @param romData RomData object
-		 */
-		void reinitMenu(const LibRpBase::RomData *romData);
+public:
+	/**
+	 * Reset the menu items using the specified RomData object.
+	 * @param widget OptionsMenuButton
+	 * @param romData RomData object
+	 */
+	void reinitMenu(const LibRpBase::RomData *romData);
 
-		/**
-		 * Update a ROM operation menu item.
-		 * @param widget OptionsMenuButton
-		 * @param id ROM operation ID
-		 * @param op ROM operation
-		 */
-		void updateOp(int id, const LibRpBase::RomData::RomOp *op);
+	/**
+	 * Update a ROM operation menu item.
+	 * @param widget OptionsMenuButton
+	 * @param id ROM operation ID
+	 * @param op ROM operation
+	 */
+	void updateOp(int id, const LibRpBase::RomData::RomOp *op);
 
-	signals:
-		/**
-		 * Menu item was triggered.
-		 * @param id ROM operation ID
-		 */
-		void triggered(int id);
+signals:
+	/**
+	 * Menu item was triggered.
+	 * @param id ROM operation ID
+	 */
+	void triggered(int id);
 
-	private:
-		QMenu *menuOptions;
+private:
+	QMenu *menuOptions;
 #ifndef RP_OMB_USE_LAMBDA_FUNCTIONS
-		QSignalMapper *mapperOptionsMenu;
+	QSignalMapper *mapperOptionsMenu;
 #endif /* RP_OMB_USE_LAMBDA_FUNCTIONS */
-		int romOps_firstActionIndex;
+	int romOps_firstActionIndex;
 };

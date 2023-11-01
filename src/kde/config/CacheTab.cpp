@@ -28,38 +28,38 @@ using std::string;
 #include "ui_CacheTab.h"
 class CacheTabPrivate
 {
-	public:
-		explicit CacheTabPrivate(CacheTab *q)
-			: q_ptr(q)
-			, thrCleaner(nullptr)
-			, ccCleaner(nullptr)
-		{ };
-		~CacheTabPrivate();
+public:
+	explicit CacheTabPrivate(CacheTab *q)
+		: q_ptr(q)
+		, thrCleaner(nullptr)
+		, ccCleaner(nullptr)
+	{};
+	~CacheTabPrivate();
 
-	private:
-		CacheTab *const q_ptr;
-		Q_DECLARE_PUBLIC(CacheTab)
-		Q_DISABLE_COPY(CacheTabPrivate)
+private:
+	CacheTab *const q_ptr;
+	Q_DECLARE_PUBLIC(CacheTab)
+	Q_DISABLE_COPY(CacheTabPrivate)
 
-	public:
-		Ui::CacheTab ui;
+public:
+	Ui::CacheTab ui;
 
-		// Cache cleaner object and thread.
-		QThread *thrCleaner;
-		CacheCleaner *ccCleaner;
+	// Cache cleaner object and thread.
+	QThread *thrCleaner;
+	CacheCleaner *ccCleaner;
 
-	public:
-		/**
-		 * Enable/disable the UI controls.
-		 * @param enable True to enable; false to disable.
-		 */
-		void enableUiControls(bool enable);
+public:
+	/**
+	 * Enable/disable the UI controls.
+	 * @param enable True to enable; false to disable.
+	 */
+	void enableUiControls(bool enable);
 
-		/**
-		 * Clear the specified cache directory.
-		 * @param cacheDir Cache directory.
-		 */
-		void clearCacheDir(CacheCleaner::CacheDir cacheDir);
+	/**
+	 * Clear the specified cache directory.
+	 * @param cacheDir Cache directory.
+	 */
+	void clearCacheDir(CacheCleaner::CacheDir cacheDir);
 };
 
 /** CacheTabPrivate **/

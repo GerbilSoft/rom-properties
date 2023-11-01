@@ -59,7 +59,7 @@ public:
 
 ScsiInquiry::ScsiInquiry(RpFile *file)
 	: file(file)
-{ }
+{}
 
 std::ostream& operator<<(std::ostream& os, const ScsiInquiry& si)
 {
@@ -161,7 +161,7 @@ std::ostream& operator<<(std::ostream& os, const ScsiInquiry& si)
 AtaIdentifyDevice::AtaIdentifyDevice(RpFile *file, bool packet)
 	: file(file)
 	, packet(packet)
-{ }
+{}
 
 std::ostream& operator<<(std::ostream& os, const AtaIdentifyDevice& si)
 {

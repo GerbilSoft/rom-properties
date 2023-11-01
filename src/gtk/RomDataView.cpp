@@ -360,10 +360,8 @@ rp_rom_data_view_init(RpRomDataView *page)
 
 	// Connect the "map" and "unmap" signals.
 	// These are needed in order to start and stop the animation.
-	g_signal_connect(page, "map",
-		G_CALLBACK(rp_rom_data_view_map_signal_handler), nullptr);
-	g_signal_connect(page, "unmap",
-		G_CALLBACK(rp_rom_data_view_unmap_signal_handler), nullptr);
+	g_signal_connect(page, "map", G_CALLBACK(rp_rom_data_view_map_signal_handler), nullptr);
+	g_signal_connect(page, "unmap", G_CALLBACK(rp_rom_data_view_unmap_signal_handler), nullptr);
 
 	// Table layout is created in rp_rom_data_view_update_display().
 }
@@ -651,7 +649,8 @@ rp_rom_data_view_init_header_row(RpRomDataView *page)
 	gtk_widget_set_visible(page->imgBanner, false);
 	if (imgbf & RomData::IMGBF_INT_BANNER) {
 		// Get the banner.
-		bool ok = rp_drag_image_set_rp_image(RP_DRAG_IMAGE(page->imgBanner), romData->image(RomData::IMG_INT_BANNER));
+		bool ok = rp_drag_image_set_rp_image(
+			RP_DRAG_IMAGE(page->imgBanner), romData->image(RomData::IMG_INT_BANNER));
 		if (ok) {
 			gtk_widget_set_visible(page->imgBanner, true);
 		}
@@ -741,10 +740,8 @@ rp_rom_data_view_init_string(RpRomDataView *page,
 
 		// "Warning" font?
 		if (field.flags & RomFields::STRF_WARNING) {
-			pango_attr_list_insert(attr_lst,
-				pango_attr_weight_new(PANGO_WEIGHT_BOLD));
-			pango_attr_list_insert(attr_lst,
-				pango_attr_foreground_new(65535, 0, 0));
+			pango_attr_list_insert(attr_lst, pango_attr_weight_new(PANGO_WEIGHT_BOLD));
+			pango_attr_list_insert(attr_lst, pango_attr_foreground_new(65535, 0, 0));
 		}
 
 		gtk_label_set_attributes(GTK_LABEL(widget), attr_lst);
@@ -841,15 +838,13 @@ rp_rom_data_view_init_bitfield(RpRomDataView *page,
 #endif /* !GTK_CHECK_VERSION(4,0,0) */
 
 		// Save the bitfield checkbox's value in the GObject.
-		g_object_set_qdata(G_OBJECT(checkBox), RFT_BITFIELD_value_quark,
-			GUINT_TO_POINTER((guint)value));
+		g_object_set_qdata(G_OBJECT(checkBox), RFT_BITFIELD_value_quark, GUINT_TO_POINTER((guint)value));
 
 		// Disable user modifications.
 		// NOTE: Unlike Qt, both the "clicked" and "toggled" signals are
 		// emitted for both user and program modifications, so we have to
 		// connect this signal *after* setting the initial value.
-		g_signal_connect(checkBox, "toggled",
-			G_CALLBACK(checkbox_no_toggle_signal_handler), page);
+		g_signal_connect(checkBox, "toggled", G_CALLBACK(checkbox_no_toggle_signal_handler), page);
 
 #if USE_GTK_GRID
 		// TODO: GTK_FILL
@@ -1020,8 +1015,8 @@ rp_rom_data_view_init_listdata(RpRomDataView *page,
 					RomFields::TimeString_t time_string;
 					memcpy(time_string.str, str.data(), 8);
 
-					gchar *const str = rom_data_format_datetime(time_string.time,
-						listDataDesc.col_attrs.dtflags);
+					gchar *const str = rom_data_format_datetime(
+						time_string.time, listDataDesc.col_attrs.dtflags);
 					gtk_list_store_set(listStore, &treeIter, col,
 						(likely(str != nullptr) ? str : C_("RomData", "Unknown")), -1);
 					g_free(str);
@@ -1217,8 +1212,7 @@ rp_rom_data_view_init_listdata(RpRomDataView *page,
 	// and/or the system theme is changed.
 	// TODO: Set an actual default number of rows, or let GTK+ handle it?
 	// (Windows uses 5.)
-	g_object_set_qdata(G_OBJECT(treeView), RFT_LISTDATA_rows_visible_quark,
-		GINT_TO_POINTER(listDataDesc.rows_visible));
+	g_object_set_qdata(G_OBJECT(treeView), RFT_LISTDATA_rows_visible_quark, GINT_TO_POINTER(listDataDesc.rows_visible));
 	if (listDataDesc.rows_visible > 0) {
 		g_signal_connect(treeView, "realize", G_CALLBACK(tree_view_realize_signal_handler), page);
 	}
@@ -1404,8 +1398,8 @@ rp_rom_data_view_update_multi(RpRomDataView *page, uint32_t user_lc)
 						RomFields::TimeString_t time_string;
 						memcpy(time_string.str, str.data(), 8);
 
-						gchar *const str = rom_data_format_datetime(time_string.time,
-							listDataDesc.col_attrs.dtflags);
+						gchar *const str = rom_data_format_datetime(
+							time_string.time, listDataDesc.col_attrs.dtflags);
 						gtk_list_store_set(listStore, &treeIter, col,
 							(likely(str != nullptr) ? str : C_("RomData", "Unknown")), -1);
 						g_free(str);
@@ -1618,8 +1612,7 @@ rp_rom_data_view_create_options_button(RpRomDataView *page)
 		GtkWidget *const gtkBox = gtk_widget_get_first_child(parent);
 		if (gtkBox && GTK_IS_BOX(gtkBox)) {
 			GtkWidget *const adwHeaderBar = gtk_widget_get_first_child(gtkBox);
-			if (adwHeaderBar && G_OBJECT_TYPE(adwHeaderBar) == pfn_adw_header_bar_get_type())
-			{
+			if (adwHeaderBar && G_OBJECT_TYPE(adwHeaderBar) == pfn_adw_header_bar_get_type()) {
 				// Found the HdyHeaderBar.
 				// Pack the Options button at the end.
 				// NOTE: No type checking here...
@@ -1648,8 +1641,7 @@ rp_rom_data_view_create_options_button(RpRomDataView *page)
 #if !GTK_CHECK_VERSION(4,0,0)
 		GtkWidget *const btnBox = gtk_widget_get_parent(page->btnOptions);
 		//assert(GTK_IS_BUTTON_BOX(btnBox));
-		if (GTK_IS_BUTTON_BOX(btnBox))
-		{
+		if (GTK_IS_BUTTON_BOX(btnBox)) {
 			gtk_button_box_set_child_secondary(GTK_BUTTON_BOX(btnBox), page->btnOptions, TRUE);
 		}
 #endif /* !GTK_CHECK_VERSION(4,0,0) */
@@ -1893,8 +1885,7 @@ rp_rom_data_view_update_display(RpRomDataView *page)
 		// If it is, set the "RFT_STRING_warning" flag.
 		const guint is_warning = ((field.type == RomFields::RFT_STRING) &&
 		                          (field.flags & RomFields::STRF_WARNING));
-		g_object_set_qdata(G_OBJECT(lblDesc), RFT_STRING_warning_quark,
-			GUINT_TO_POINTER((guint)is_warning));
+		g_object_set_qdata(G_OBJECT(lblDesc), RFT_STRING_warning_quark, GUINT_TO_POINTER((guint)is_warning));
 
 		// Value widget.
 		int &row = tabRowCount[tabIdx];
@@ -1937,8 +1928,7 @@ rp_rom_data_view_update_display(RpRomDataView *page)
 
 				// Unset this property to prevent the event filter from
 				// setting a fixed height.
-				g_object_set_qdata(G_OBJECT(widget), RFT_LISTDATA_rows_visible_quark,
-					GINT_TO_POINTER(0));
+				g_object_set_qdata(G_OBJECT(widget), RFT_LISTDATA_rows_visible_quark, GINT_TO_POINTER(0));
 
 #if USE_GTK_GRID
 				// Set expand and fill properties.

@@ -35,76 +35,76 @@ typedef GtkVBox super;
 
 class RpImageTypesTabPrivate final : public TImageTypesConfig<OurComboBox*>
 {
-	public:
-		explicit RpImageTypesTabPrivate(RpImageTypesTab *q);
-		~RpImageTypesTabPrivate() final;
+public:
+	explicit RpImageTypesTabPrivate(RpImageTypesTab *q);
+	~RpImageTypesTabPrivate() final;
 
-	private:
-		RpImageTypesTab *const q;
-		RP_DISABLE_COPY(RpImageTypesTabPrivate)
+private:
+	RpImageTypesTab *const q;
+	RP_DISABLE_COPY(RpImageTypesTabPrivate)
 
-	protected:
-		/** TImageTypesConfig functions (protected) **/
+protected:
+	/** TImageTypesConfig functions (protected) **/
 
-		/**
-		 * Create the labels in the grid.
-		 */
-		void createGridLabels(void) final;
+	/**
+	 * Create the labels in the grid.
+	 */
+	void createGridLabels(void) final;
 
-		/**
-		 * Create a ComboBox in the grid.
-		 * @param cbid ComboBox ID.
-		 */
-		void createComboBox(unsigned int cbid) final;
+	/**
+	 * Create a ComboBox in the grid.
+	 * @param cbid ComboBox ID.
+	 */
+	void createComboBox(unsigned int cbid) final;
 
-		/**
-		 * Add strings to a ComboBox in the grid.
-		 * @param cbid ComboBox ID.
-		 * @param max_prio Maximum priority value. (minimum is 1)
-		 */
-		void addComboBoxStrings(unsigned int cbid, int max_prio) final;
+	/**
+	 * Add strings to a ComboBox in the grid.
+	 * @param cbid ComboBox ID.
+	 * @param max_prio Maximum priority value. (minimum is 1)
+	 */
+	void addComboBoxStrings(unsigned int cbid, int max_prio) final;
 
-		/**
-		 * Finish adding the ComboBoxes.
-		 */
-		void finishComboBoxes(void) final;
+	/**
+	 * Finish adding the ComboBoxes.
+	 */
+	void finishComboBoxes(void) final;
 
-		/**
-		 * Write an ImageType configuration entry.
-		 * @param sysName System name.
-		 * @param imageTypeList Image type list, comma-separated.
-		 * @return 0 on success; negative POSIX error code on error.
-		 */
-		int saveWriteEntry(const char *sysName, const char *imageTypeList) final;
+	/**
+	 * Write an ImageType configuration entry.
+	 * @param sysName System name.
+	 * @param imageTypeList Image type list, comma-separated.
+	 * @return 0 on success; negative POSIX error code on error.
+	 */
+	int saveWriteEntry(const char *sysName, const char *imageTypeList) final;
 
-	protected:
-		/** TImageTypesConfig functions (public) **/
+protected:
+	/** TImageTypesConfig functions (public) **/
 
-		/**
-		 * Set a ComboBox's current index.
-		 * This will not trigger cboImageType_priorityValueChanged().
-		 * @param cbid ComboBox ID.
-		 * @param prio New priority value. (0xFF == no)
-		 */
-		void cboImageType_setPriorityValue(unsigned int cbid, unsigned int prio) final;
+	/**
+	 * Set a ComboBox's current index.
+	 * This will not trigger cboImageType_priorityValueChanged().
+	 * @param cbid ComboBox ID.
+	 * @param prio New priority value. (0xFF == no)
+	 */
+	void cboImageType_setPriorityValue(unsigned int cbid, unsigned int prio) final;
 
-	public:
-		/** Other RpImageTypesTabPrivate functions **/
+public:
+	/** Other RpImageTypesTabPrivate functions **/
 
-		/**
-		 * Initialize strings.
-		 */
-		void initStrings(void);
+	/**
+	 * Initialize strings.
+	 */
+	void initStrings(void);
 
-	public:
-		// Last ComboBox added.
-		// Needed in order to set the correct
-		// tab order for the credits label.
-		OurComboBox *cboImageType_lastAdded;
+public:
+	// Last ComboBox added.
+	// Needed in order to set the correct
+	// tab order for the credits label.
+	OurComboBox *cboImageType_lastAdded;
 
-		// Temporary GKeyFile object.
-		// Set and cleared by ImageTypesTab::save();
-		GKeyFile *keyFile;
+	// Temporary GKeyFile object.
+	// Set and cleared by ImageTypesTab::save();
+	GKeyFile *keyFile;
 };
 
 // ImageTypesTab class

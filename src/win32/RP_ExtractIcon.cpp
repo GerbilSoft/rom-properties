@@ -50,7 +50,7 @@ RP_ExtractIcon_Private::~RP_ExtractIcon_Private()
 
 RP_ExtractIcon::RP_ExtractIcon()
 	: d_ptr(new RP_ExtractIcon_Private())
-{ }
+{}
 
 RP_ExtractIcon::~RP_ExtractIcon()
 {

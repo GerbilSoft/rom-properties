@@ -49,7 +49,7 @@ const CLSID CLSID_RP_ContextMenu =
 RP_ContextMenu_Private::RP_ContextMenu_Private()
 	: tfilenames(nullptr)
 	, hbmPng(nullptr)
-{ }
+{}
 
 RP_ContextMenu_Private::~RP_ContextMenu_Private()
 {
@@ -340,7 +340,7 @@ HBITMAP RP_ContextMenu_Private::getPngIcon(void)
 
 RP_ContextMenu::RP_ContextMenu()
 	: d_ptr(new RP_ContextMenu_Private())
-{ }
+{}
 
 RP_ContextMenu::~RP_ContextMenu()
 {

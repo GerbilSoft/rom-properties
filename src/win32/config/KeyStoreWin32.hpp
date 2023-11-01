@@ -13,50 +13,50 @@
 
 class KeyStoreWin32 final : public LibRomData::KeyStoreUI
 {
-	public:
-		explicit KeyStoreWin32(HWND hWnd);
-		~KeyStoreWin32() final = default;
+public:
+	explicit KeyStoreWin32(HWND hWnd);
+	~KeyStoreWin32() final = default;
 
-	private:
-		RP_DISABLE_COPY(KeyStoreWin32)
-		HWND m_hWnd;
+private:
+	RP_DISABLE_COPY(KeyStoreWin32)
+	HWND m_hWnd;
 
-	public:
-		/**
-		 * Get the window.
-		 * @return Window.
-		 */
-		inline HWND hWnd(void) const { return m_hWnd; }
+public:
+	/**
+	 * Get the window.
+	 * @return Window.
+	 */
+	inline HWND hWnd(void) const { return m_hWnd; }
 
-		/**
-		 * Set the window.
-		 * @param hWnd Window.
-		 */
-		inline void setHWnd(HWND hWnd) { m_hWnd = hWnd; }
+	/**
+	 * Set the window.
+	 * @param hWnd Window.
+	 */
+	inline void setHWnd(HWND hWnd) { m_hWnd = hWnd; }
 
-	protected:
-		/** Pure virtual functions for base class signals. **/
+protected:
+	/** Pure virtual functions for base class signals **/
 
-		/**
-		 * A key has changed.
-		 * @param sectIdx Section index.
-		 * @param keyIdx Key index.
-		 */
-		void keyChanged_int(int sectIdx, int keyIdx) final;
+	/**
+	 * A key has changed.
+	 * @param sectIdx Section index.
+	 * @param keyIdx Key index.
+	 */
+	void keyChanged_int(int sectIdx, int keyIdx) final;
 
-		/**
-		 * A key has changed.
-		 * @param idx Flat key index.
-		 */
-		void keyChanged_int(int idx) final;
+	/**
+	 * A key has changed.
+	 * @param idx Flat key index.
+	 */
+	void keyChanged_int(int idx) final;
 
-		/**
-		 * All keys have changed.
-		 */
-		void allKeysChanged_int(void) final;
+	/**
+	 * All keys have changed.
+	 */
+	void allKeysChanged_int(void) final;
 
-		/**
-		 * KeyStore has been changed by the user.
-		 */
-		void modified_int(void) final;
+	/**
+	 * KeyStore has been changed by the user.
+	 */
+	void modified_int(void) final;
 };

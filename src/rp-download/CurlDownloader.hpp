@@ -14,42 +14,42 @@ namespace RpDownload {
 
 class CurlDownloader final : public IDownloader
 {
-	public:
-		CurlDownloader();
-		explicit CurlDownloader(const TCHAR *url);
-		explicit CurlDownloader(const std::tstring &url);
+public:
+	CurlDownloader();
+	explicit CurlDownloader(const TCHAR *url);
+	explicit CurlDownloader(const std::tstring &url);
 
-	private:
-		typedef IDownloader super;
-		RP_DISABLE_COPY(CurlDownloader)
+private:
+	typedef IDownloader super;
+	RP_DISABLE_COPY(CurlDownloader)
 
-	protected:
-		/**
-		 * Internal cURL data write function.
-		 * @param ptr Data to write.
-		 * @param size Element size.
-		 * @param nmemb Number of elements.
-		 * @param userdata m_data pointer.
-		 * @return Number of bytes written.
-		 */
-		static size_t write_data(char *ptr, size_t size, size_t nmemb, void *userdata);
+protected:
+	/**
+	 * Internal cURL data write function.
+	 * @param ptr Data to write.
+	 * @param size Element size.
+	 * @param nmemb Number of elements.
+	 * @param userdata m_data pointer.
+	 * @return Number of bytes written.
+	 */
+	static size_t write_data(char *ptr, size_t size, size_t nmemb, void *userdata);
 
-		/**
-		 * Internal cURL header parsing function.
-		 * @param ptr Pointer to header data. (NOT necessarily null-terminated!)
-		 * @param size Element size.
-		 * @param nitems Number of elements.
-		 * @param userdata m_data pointer.
-		 * @return Amount of data processed, or 0 on error.
-		 */
-		static size_t parse_header(char *ptr, size_t size, size_t nitems, void *userdata);
+	/**
+	 * Internal cURL header parsing function.
+	 * @param ptr Pointer to header data. (NOT necessarily null-terminated!)
+	 * @param size Element size.
+	 * @param nitems Number of elements.
+	 * @param userdata m_data pointer.
+	 * @return Amount of data processed, or 0 on error.
+	 */
+	static size_t parse_header(char *ptr, size_t size, size_t nitems, void *userdata);
 
-	public:
-		/**
-		 * Download the file.
-		 * @return 0 on success; negative POSIX error code, positive HTTP status code on error.
-		 */
-		int download(void) final;
+public:
+	/**
+	 * Download the file.
+	 * @return 0 on success; negative POSIX error code, positive HTTP status code on error.
+	 */
+	int download(void) final;
 };
 
-}
+} //namespace RpDownload

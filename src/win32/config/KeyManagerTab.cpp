@@ -57,183 +57,183 @@ static const std::array<uint16_t, 4> import_menu_actions_ids = {{
 
 class KeyManagerTabPrivate
 {
-	public:
-		KeyManagerTabPrivate();
-		~KeyManagerTabPrivate();
+public:
+	KeyManagerTabPrivate();
+	~KeyManagerTabPrivate();
 
-	private:
-		RP_DISABLE_COPY(KeyManagerTabPrivate)
+private:
+	RP_DISABLE_COPY(KeyManagerTabPrivate)
 
-	public:
-		/**
-		 * Initialize the UI.
-		 */
-		void initUI(void);
+public:
+	/**
+	 * Initialize the UI.
+	 */
+	void initUI(void);
 
-	public:
-		/**
-		 * Reset the configuration.
-		 */
-		void reset(void);
+public:
+	/**
+	 * Reset the configuration.
+	 */
+	void reset(void);
 
-		/**
-		 * Save the configuration.
-		 */
-		void save(void);
+	/**
+	 * Save the configuration.
+	 */
+	void save(void);
 
-	public:
-		/**
-		 * Dialog procedure.
-		 * @param hDlg
-		 * @param uMsg
-		 * @param wParam
-		 * @param lParam
-		 */
-		static INT_PTR CALLBACK dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+public:
+	/**
+	 * Dialog procedure.
+	 * @param hDlg
+	 * @param uMsg
+	 * @param wParam
+	 * @param lParam
+	 */
+	static INT_PTR CALLBACK dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
-		/**
-		 * Property sheet callback procedure.
-		 * @param hWnd
-		 * @param uMsg
-		 * @param ppsp
-		 */
-		static UINT CALLBACK callbackProc(HWND hWnd, UINT uMsg, LPPROPSHEETPAGE ppsp);
+	/**
+	 * Property sheet callback procedure.
+	 * @param hWnd
+	 * @param uMsg
+	 * @param ppsp
+	 */
+	static UINT CALLBACK callbackProc(HWND hWnd, UINT uMsg, LPPROPSHEETPAGE ppsp);
 
-		/**
-		 * ListView subclass procedure.
-		 * @param hWnd		Control handle.
-		 * @param uMsg		Message.
-		 * @param wParam	WPARAM
-		 * @param lParam	LPARAM
-		 * @param uIdSubclass	Subclass ID. (usually the control ID)
-		 * @param dwRefData	KeyManagerTabPrivate*
-		 * @return
-		 */
-		static LRESULT CALLBACK ListViewSubclassProc(
-			HWND hWnd, UINT uMsg,
-			WPARAM wParam, LPARAM lParam,
-			UINT_PTR uIdSubclass, DWORD_PTR dwRefData);
+	/**
+	 * ListView subclass procedure.
+	 * @param hWnd		Control handle.
+	 * @param uMsg		Message.
+	 * @param wParam	WPARAM
+	 * @param lParam	LPARAM
+	 * @param uIdSubclass	Subclass ID. (usually the control ID)
+	 * @param dwRefData	KeyManagerTabPrivate*
+	 * @return
+	 */
+	static LRESULT CALLBACK ListViewSubclassProc(
+		HWND hWnd, UINT uMsg,
+		WPARAM wParam, LPARAM lParam,
+		UINT_PTR uIdSubclass, DWORD_PTR dwRefData);
 
-		/**
-		 * ListView EDIT control subclass procedure.
-		 * @param hWnd		Control handle.
-		 * @param uMsg		Message.
-		 * @param wParam	WPARAM
-		 * @param lParam	LPARAM
-		 * @param uIdSubclass	Subclass ID. (usually the control ID)
-		 * @param dwRefData	KeyManagerTabPrivate*
-		 * @return
-		 */
-		static LRESULT CALLBACK ListViewEditSubclassProc(
-			HWND hWnd, UINT uMsg,
-			WPARAM wParam, LPARAM lParam,
-			UINT_PTR uIdSubclass, DWORD_PTR dwRefData);
+	/**
+	 * ListView EDIT control subclass procedure.
+	 * @param hWnd		Control handle.
+	 * @param uMsg		Message.
+	 * @param wParam	WPARAM
+	 * @param lParam	LPARAM
+	 * @param uIdSubclass	Subclass ID. (usually the control ID)
+	 * @param dwRefData	KeyManagerTabPrivate*
+	 * @return
+	 */
+	static LRESULT CALLBACK ListViewEditSubclassProc(
+		HWND hWnd, UINT uMsg,
+		WPARAM wParam, LPARAM lParam,
+		UINT_PTR uIdSubclass, DWORD_PTR dwRefData);
 
-	public:
-		// Property sheet.
-		HPROPSHEETPAGE hPropSheetPage;
-		HWND hWndPropSheet;
+public:
+	// Property sheet.
+	HPROPSHEETPAGE hPropSheetPage;
+	HWND hWndPropSheet;
 
-	public:
-		// "Import" popup menu.
-		HMENU hMenuImport;	// Must be deleted using DestroyMenu().
+public:
+	// "Import" popup menu
+	HMENU hMenuImport;	// Must be deleted using DestroyMenu().
 
-		// KeyStore.
-		KeyStoreWin32 *keyStore;
-		KeyStore_OwnerDataCallback *keyStore_ownerDataCallback;
+	// KeyStore
+	KeyStoreWin32 *keyStore;
+	KeyStore_OwnerDataCallback *keyStore_ownerDataCallback;
 
-		// Font Handler.
-		FontHandler fontHandler;
+	// Font Handler
+	FontHandler fontHandler;
 
-		// wtsapi32.dll for Remote Desktop status. (WinXP and later)
-		WTSSessionNotification wts;
+	// wtsapi32.dll for Remote Desktop status. (WinXP and later)
+	WTSSessionNotification wts;
 
-		// MessageWidget for ROM operation notifications.
-		HWND hMessageWidget;
-		POINT ptListView;	// Original ListView position
-		SIZE szListView;	// Original ListView size
+	// MessageWidget for ROM operation notifications.
+	HWND hMessageWidget;
+	POINT ptListView;	// Original ListView position
+	SIZE szListView;	// Original ListView size
 
-		// EDIT box for ListView.
-		HWND hEditBox;
-		int iEditItem;		// Item being edited. (-1 for none)
-		bool bCancelEdit;	// True if the edit is being cancelled.
-		bool bAllowKanji;	// Allow kanji in the editor.
+	// EDIT box for ListView.
+	HWND hEditBox;
+	int iEditItem;		// Item being edited. (-1 for none)
+	bool bCancelEdit;	// True if the edit is being cancelled.
+	bool bAllowKanji;	// Allow kanji in the editor.
 
-		// Is this COMCTL32.dll v6.10 or later?
-		bool isComCtl32_v610;
+	// Is this COMCTL32.dll v6.10 or later?
+	bool isComCtl32_v610;
 
-		// Icons for the "Valid?" column.
-		// NOTE: "?" and "X" are copies from User32.
-		// Checkmark is a PNG image loaded from a resource.
-		int iconSize;		// NOTE: Needs to be SIGNED to prevent issues with negative coordinates.
-		HICON hIconUnknown;	// "?" (USER32.dll,-102)
-		HICON hIconInvalid;	// "X" (USER32.dll,-103)
-		HICON hIconGood;	// Checkmark
+	// Icons for the "Valid?" column.
+	// NOTE: "?" and "X" are copies from User32.
+	// Checkmark is a PNG image loaded from a resource.
+	int iconSize;		// NOTE: Needs to be SIGNED to prevent issues with negative coordinates.
+	HICON hIconUnknown;	// "?" (USER32.dll,-102)
+	HICON hIconInvalid;	// "X" (USER32.dll,-103)
+	HICON hIconGood;	// Checkmark
 
-		// Alternate row color.
-		COLORREF colorAltRow;
-		HBRUSH hbrAltRow;
+	// Alternate row color
+	COLORREF colorAltRow;
+	HBRUSH hbrAltRow;
 
-		/**
-		 * ListView GetDispInfo function.
-		 * @param plvdi	[in/out] NMLVDISPINFO
-		 * @return True if handled; false if not.
-		 */
-		inline BOOL ListView_GetDispInfo(NMLVDISPINFO *plvdi);
+	/**
+	 * ListView GetDispInfo function.
+	 * @param plvdi	[in/out] NMLVDISPINFO
+	 * @return True if handled; false if not.
+	 */
+	inline BOOL ListView_GetDispInfo(NMLVDISPINFO *plvdi);
 
-		/**
-		 * ListView CustomDraw function.
-		 * @param plvcd	[in/out] NMLVCUSTOMDRAW
-		 * @return Return value.
-		 */
-		inline int ListView_CustomDraw(NMLVCUSTOMDRAW *plvcd);
+	/**
+	 * ListView CustomDraw function.
+	 * @param plvcd	[in/out] NMLVCUSTOMDRAW
+	 * @return Return value.
+	 */
+	inline int ListView_CustomDraw(NMLVCUSTOMDRAW *plvcd);
 
-		/**
-		 * Load images.
-		 */
-		void loadImages(void);
+	/**
+	 * Load images.
+	 */
+	void loadImages(void);
 
-	public:
-		/** "Import" menu actions. **/
+public:
+	/** "Import" menu actions **/
 
-		// Starting directory for importing keys.
-		// TODO: Save this in the configuration file?
-		tstring ts_keyFileDir;
+	// Starting directory for importing keys.
+	// TODO: Save this in the configuration file?
+	tstring ts_keyFileDir;
 
-		/**
-		 * Update ts_keyFileDir.
-		 * @param tfilename New filename.
-		 */
-		inline void updateKeyFileDir(const tstring &tfilename)
-		{
-			// Remove everything after the first backslash.
-			// NOTE: If this is the root directory, the backslash is left intact.
-			// Otherwise, the backslash is removed.
-			ts_keyFileDir = tfilename;
-			const size_t bspos = ts_keyFileDir.rfind(_T('\\'));
-			if (bspos != string::npos) {
-				if (bspos > 2) {
-					ts_keyFileDir.resize(bspos);
-				} else if (bspos == 2) {
-					ts_keyFileDir.resize(3);
-				}
+	/**
+	 * Update ts_keyFileDir.
+	 * @param tfilename New filename.
+	 */
+	inline void updateKeyFileDir(const tstring &tfilename)
+	{
+		// Remove everything after the first backslash.
+		// NOTE: If this is the root directory, the backslash is left intact.
+		// Otherwise, the backslash is removed.
+		ts_keyFileDir = tfilename;
+		const size_t bspos = ts_keyFileDir.rfind(_T('\\'));
+		if (bspos != string::npos) {
+			if (bspos > 2) {
+				ts_keyFileDir.resize(bspos);
+			} else if (bspos == 2) {
+				ts_keyFileDir.resize(3);
 			}
 		}
+	}
 
-		/**
-		 * Show key import return status.
-		 * @param filename Filename
-		 * @param keyType Key type
-		 * @param iret ImportReturn
-		 */
-		void showKeyImportReturnStatus(const tstring &filename,
-			const TCHAR *keyType, const KeyStoreUI::ImportReturn &iret);
+	/**
+	 * Show key import return status.
+	 * @param filename Filename
+	 * @param keyType Key type
+	 * @param iret ImportReturn
+	 */
+	void showKeyImportReturnStatus(const tstring &filename,
+		const TCHAR *keyType, const KeyStoreUI::ImportReturn &iret);
 
-		/**
-		 * Import keys from a binary file.
-		 * @param fileID Type of file
-		 */
-		void importKeysFromBin(KeyStoreUI::ImportFileID id);
+	/**
+	 * Import keys from a binary file.
+	 * @param fileID Type of file
+	 */
+	void importKeysFromBin(KeyStoreUI::ImportFileID id);
 };
 
 /** KeyManagerTabPrivate **/
@@ -1727,7 +1727,7 @@ void KeyManagerTabPrivate::importKeysFromBin(KeyStoreUI::ImportFileID id)
 
 KeyManagerTab::KeyManagerTab(void)
 	: d_ptr(new KeyManagerTabPrivate())
-{ }
+{}
 
 KeyManagerTab::~KeyManagerTab()
 {

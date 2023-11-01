@@ -25,62 +25,62 @@ extern const CLSID CLSID_RP_PropertyStore;
 
 class RP_PropertyStore_Private
 {
-	public:
-		RP_PropertyStore_Private();
-		~RP_PropertyStore_Private();
+public:
+	RP_PropertyStore_Private();
+	~RP_PropertyStore_Private();
 
-	private:
-		RP_DISABLE_COPY(RP_PropertyStore_Private)
+private:
+	RP_DISABLE_COPY(RP_PropertyStore_Private)
 
-	public:
-		// Set by IInitializeWithStream::Initialize().
-		LibRpFile::IRpFilePtr file;
+public:
+	// Set by IInitializeWithStream::Initialize().
+	LibRpFile::IRpFilePtr file;
 
-		// RomData object
-		LibRpBase::RomDataPtr romData;
+	// RomData object
+	LibRpBase::RomDataPtr romData;
 
-		// NOTE: prop_key.pid == index + 2,
-		// since pids 0 and 1 are reserved.
+	// NOTE: prop_key.pid == index + 2,
+	// since pids 0 and 1 are reserved.
 
-		// Property keys.
-		std::vector<const PROPERTYKEY*> prop_key;
-		// Property values.
-		std::vector<PROPVARIANT> prop_val;
+	// Property keys
+	std::vector<const PROPERTYKEY*> prop_key;
+	// Property values
+	std::vector<PROPVARIANT> prop_val;
 
-		// IStream* used by the IRpFile.
-		// NOTE: Do NOT Release() this; RpFile_IStream handles it.
-		IStream *pstream;
-		DWORD grfMode;
+	// IStream* used by the IRpFile.
+	// NOTE: Do NOT Release() this; RpFile_IStream handles it.
+	IStream *pstream;
+	DWORD grfMode;
 
-		/**
-		 * Metadata conversion table.
-		 * - Index: LibRpBase::Property
-		 * - Value:
-		 *   - pkey: PROPERTYKEY (if nullptr, not implemented)
-		 *   - vtype: Expected variant type.
-		 */
-		struct MetaDataConv {
-			const PROPERTYKEY *pkey;
-			LONG vtype;
-		};
-		static const std::array<MetaDataConv, 79> metaDataConv;
+	/**
+	 * Metadata conversion table.
+	 * - Index: LibRpBase::Property
+	 * - Value:
+	 *   - pkey: PROPERTYKEY (if nullptr, not implemented)
+	 *   - vtype: Expected variant type.
+	 */
+	struct MetaDataConv {
+		const PROPERTYKEY *pkey;
+		LONG vtype;
+	};
+	static const std::array<MetaDataConv, 79> metaDataConv;
 
-	public:
-		/**
-		 * Get the PreviewDetails string.
-		 * @return PreviewDetails string.
-		 */
-		static std::tstring GetPreviewDetailsString();
+public:
+	/**
+	 * Get the PreviewDetails string.
+	 * @return PreviewDetails string.
+	 */
+	static std::tstring GetPreviewDetailsString();
 
-		/**
-		 * Get the InfoTip string.
-		 * @return InfoTip string.
-		 */
-		static std::tstring GetInfoTipString();
+	/**
+	 * Get the InfoTip string.
+	 * @return InfoTip string.
+	 */
+	static std::tstring GetInfoTipString();
 
-		/**
-		 * Get the FullDetails string.
-		 * @return FullDetails string.
-		 */
-		static std::tstring GetFullDetailsString();
+	/**
+	 * Get the FullDetails string.
+	 * @return FullDetails string.
+	 */
+	static std::tstring GetFullDetailsString();
 };

@@ -15,8 +15,8 @@
 // C++ includes
 #include <memory>
 using std::forward_list;
-using std::unique_ptr;
 using std::tstring;
+using std::unique_ptr;
 
 // Windows SDK
 #include <objbase.h>
@@ -57,7 +57,7 @@ RegKey::RegKey(HKEY hKeyRoot, LPCTSTR path, REGSAM samDesired, bool create)
  * @param samDesired Desired access rights.
  * @param create If true, create the key if it doesn't exist.
  */
-RegKey::RegKey(const RegKey& root, LPCTSTR path, REGSAM samDesired, bool create)
+RegKey::RegKey(const RegKey &root, LPCTSTR path, REGSAM samDesired, bool create)
 	: m_hKey(nullptr)
 	, m_lOpenRes(ERROR_SUCCESS)
 	, m_samDesired(samDesired)
@@ -95,7 +95,7 @@ void RegKey::close(void)
 	}
 }
 
-/** Basic registry access functions. **/
+/** Basic registry access functions **/
 
 /**
  * Read a string value from a key. (REG_SZ, REG_EXPAND_SZ)
@@ -571,7 +571,7 @@ bool RegKey::isKeyEmpty(void)
 	return true;
 }
 
-/** COM registration convenience functions. **/
+/** COM registration convenience functions **/
 
 /**
  * Register a file type.
@@ -759,4 +759,4 @@ LONG RegKey::UnregisterComObject(REFCLSID rclsid, LPCTSTR progID)
 	return ERROR_SUCCESS;
 }
 
-}
+} //namespace LibWin32UI

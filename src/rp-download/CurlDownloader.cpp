@@ -19,15 +19,15 @@ namespace RpDownload {
 
 CurlDownloader::CurlDownloader()
 	: super()
-{ }
+{}
 
 CurlDownloader::CurlDownloader(const TCHAR *url)
 	: super(url)
-{ }
+{}
 
 CurlDownloader::CurlDownloader(const tstring &url)
 	: super(url)
-{ }
+{}
 
 /**
  * Internal cURL data write function.
@@ -273,4 +273,4 @@ int CurlDownloader::download(void)
 	return 0;
 }
 
-}
+} //namespace RpDownload

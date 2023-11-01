@@ -26,92 +26,92 @@ using std::vector;
 
 class ListDataModelPrivate
 {
-	public:
-		explicit ListDataModelPrivate(ListDataModel *q);
+public:
+	explicit ListDataModelPrivate(ListDataModel *q);
 
-	protected:
-		ListDataModel *const q_ptr;
-		Q_DECLARE_PUBLIC(ListDataModel)
-	private:
-		Q_DISABLE_COPY(ListDataModelPrivate)
+protected:
+	ListDataModel *const q_ptr;
+	Q_DECLARE_PUBLIC(ListDataModel)
+private:
+	Q_DISABLE_COPY(ListDataModelPrivate)
 
-	public:
-		// Row/column count.
-		int columnCount;
-		int rowCount;
+public:
+	// Row/column count
+	int columnCount;
+	int rowCount;
 
-		// Header strings.
-		vector<QString> headers;
+	// Header strings
+	vector<QString> headers;
 
-		// Map of language codes to string arrays.
-		// If this is RFT_LISTDATA, only one language code is present: 0
-		// - Key: LC
-		// - Value: Array of QStrings
-		unordered_map<uint32_t, vector<QString> > map_data;
+	// Map of language codes to string arrays.
+	// If this is RFT_LISTDATA, only one language code is present: 0
+	// - Key: LC
+	// - Value: Array of QStrings
+	unordered_map<uint32_t, vector<QString> > map_data;
 
-		// Flat array of QStrings.
-		// Size should always be columnCount*rowCount.
-		// Ordering is per-row. (row0, col0; row0, col1; row0, col2; row1, col0; etc)
-		// Points to an element in map_data.
-		const vector<QString> *pData;
+	// Flat array of QStrings.
+	// Size should always be columnCount*rowCount.
+	// Ordering is per-row. (row0, col0; row0, col1; row0, col2; row1, col0; etc)
+	// Points to an element in map_data.
+	const vector<QString> *pData;
 
-		// Icons.
-		// NOTE: References to rp_image* are kept in case
-		// the icon size is changed.
-		vector<QPixmap> icons;
-		vector<rp_image_const_ptr> icons_rp;
-		QSize iconSize;
+	// Icons
+	// NOTE: References to rp_image* are kept in case
+	// the icon size is changed.
+	vector<QPixmap> icons;
+	vector<rp_image_const_ptr> icons_rp;
+	QSize iconSize;
 
-		// Qt::ItemFlags
-		Qt::ItemFlags itemFlags;
+	// Qt::ItemFlags
+	Qt::ItemFlags itemFlags;
 
-		// Text alignment
-		uint16_t align_headers;
-		uint16_t align_data;
+	// Text alignment
+	uint16_t align_headers;
+	uint16_t align_data;
 
-		// Checkboxes
-		uint32_t checkboxes;
-		bool hasCheckboxes;
+	// Checkboxes
+	uint32_t checkboxes;
+	bool hasCheckboxes;
 
-		// Current language code
-		uint32_t lc;
+	// Current language code
+	uint32_t lc;
 
-	public:
-		/**
-		 * Clear all internal data.
-		 */
-		void clearData(void);
+public:
+	/**
+	 * Clear all internal data.
+	 */
+	void clearData(void);
 
-		/**
-		 * Update the icons pixmap vector.
-		 */
-		void updateIconPixmaps(void);
+	/**
+	 * Update the icons pixmap vector.
+	 */
+	void updateIconPixmaps(void);
 
-		/**
-		 * Convert a single language from RFT_LISTDATA or RFT_LISTDATA_MULTI to vector<QString>.
-		 * @param list_data Single language RFT_LISTDATA data.
-		 * @param pField Field
-		 * @return vector<QString>.
-		 */
-		static vector<QString> convertListDataToVector(const RomFields::ListData_t *list_data, const RomFields::Field *pField);
+	/**
+	 * Convert a single language from RFT_LISTDATA or RFT_LISTDATA_MULTI to vector<QString>.
+	 * @param list_data Single language RFT_LISTDATA data.
+	 * @param pField Field
+	 * @return vector<QString>.
+	 */
+	static vector<QString> convertListDataToVector(const RomFields::ListData_t *list_data, const RomFields::Field *pField);
 
-	public:
-		/**
-		 * Update the current language code.
-		 * @param lc New language code.
-		 */
-		void updateLC(uint32_t lc);
+public:
+	/**
+	 * Update the current language code.
+	 * @param lc New language code.
+	 */
+	void updateLC(uint32_t lc);
 
-		/**
-		 * Update the current language code.
-		 * @param def_lc ROM default language code.
-		 * @param user_lc User-specified language code.
-		 */
-		void updateLC(uint32_t def_lc, uint32_t user_lc);
+	/**
+	 * Update the current language code.
+	 * @param def_lc ROM default language code.
+	 * @param user_lc User-specified language code.
+	 */
+	void updateLC(uint32_t def_lc, uint32_t user_lc);
 
-	public:
-		// Column data alignment table.
-		static const std::array<uint8_t, 4> align_tbl;
+public:
+	// Column data alignment table.
+	static const std::array<uint8_t, 4> align_tbl;
 };
 
 // Format table.
@@ -356,28 +356,28 @@ void ListDataModelPrivate::updateLC(uint32_t def_lc, uint32_t user_lc)
 ListDataModel::ListDataModel(QObject *parent)
 	: super(parent)
 	, d_ptr(new ListDataModelPrivate(this))
-{ }
+{}
 
 ListDataModel::~ListDataModel()
 {
 	delete d_ptr;
 }
 
-int ListDataModel::rowCount(const QModelIndex& parent) const
+int ListDataModel::rowCount(const QModelIndex &parent) const
 {
 	Q_UNUSED(parent);
 	Q_D(const ListDataModel);
 	return d->rowCount;
 }
 
-int ListDataModel::columnCount(const QModelIndex& parent) const
+int ListDataModel::columnCount(const QModelIndex &parent) const
 {
 	Q_UNUSED(parent);
 	Q_D(const ListDataModel);
 	return d->columnCount;
 }
 
-QVariant ListDataModel::data(const QModelIndex& index, int role) const
+QVariant ListDataModel::data(const QModelIndex &index, int role) const
 {
 	Q_D(const ListDataModel);
 	if (!index.isValid() || !d->pData)
@@ -427,7 +427,7 @@ QVariant ListDataModel::data(const QModelIndex& index, int role) const
 	return {};
 }
 
-Qt::ItemFlags ListDataModel::flags(const QModelIndex& index) const
+Qt::ItemFlags ListDataModel::flags(const QModelIndex &index) const
 {
 	Q_D(const ListDataModel);
 	if (!index.isValid() || !d->pData)

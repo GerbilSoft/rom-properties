@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * sort_funcs.h: GtkTreeSortable sort functions.                           *
  *                                                                         *
- * Copyright (c) 2017-2020 by David Korth.                                 *
+ * Copyright (c) 2017-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -25,7 +25,7 @@ gint sort_RFT_LISTDATA_nocase(GtkTreeModel *model, GtkTreeIter *a, GtkTreeIter *
 	// Reference: https://en.wikibooks.org/wiki/GTK%2B_By_Example/Tree_View/Sorting
 	gtk_tree_model_get(model, a, GPOINTER_TO_INT(userdata), &strA, -1);
 	gtk_tree_model_get(model, b, GPOINTER_TO_INT(userdata), &strB, -1);
-        if (!strA || !strB) {
+	if (!strA || !strB) {
 		if (!strA && !strB) {
 			// Both strings are NULL.
 			// Handle this as if they're equal.

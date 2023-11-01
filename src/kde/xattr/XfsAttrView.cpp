@@ -21,48 +21,48 @@
 #include "ui_XfsAttrView.h"
 class XfsAttrViewPrivate
 {
-	public:
-		XfsAttrViewPrivate()
-			: xflags(0)
-			, projectId(0)
-		{}
+public:
+	XfsAttrViewPrivate()
+		: xflags(0)
+		, projectId(0)
+	{}
 
-	private:
-		Q_DISABLE_COPY(XfsAttrViewPrivate)
+private:
+	Q_DISABLE_COPY(XfsAttrViewPrivate)
 
-	public:
-		Ui::XfsAttrView ui;
-		uint32_t xflags;
-		uint32_t projectId;
+public:
+	Ui::XfsAttrView ui;
+	uint32_t xflags;
+	uint32_t projectId;
 
-		// See XfsAttrData.h
-		std::array<QCheckBox*, XFS_ATTR_CHECKBOX_MAX> checkBoxes;
+	// See XfsAttrData.h
+	std::array<QCheckBox*, XFS_ATTR_CHECKBOX_MAX> checkBoxes;
 
-	public:
-		/**
-		 * Retranslate parts of the UI that aren't present in the .ui file.
-		 */
-		void retranslateUi_nonDesigner(void);
+public:
+	/**
+	 * Retranslate parts of the UI that aren't present in the .ui file.
+	 */
+	void retranslateUi_nonDesigner(void);
 
-	public:
-		/**
-		 * Update the xflags checkboxes.
-		 */
-		void updateXFlagsCheckboxes(void);
+public:
+	/**
+	 * Update the xflags checkboxes.
+	 */
+	void updateXFlagsCheckboxes(void);
 
-		/**
-		 * Update the project ID.
-		 */
-		void updateProjectId(void);
+	/**
+	 * Update the project ID.
+	 */
+	void updateProjectId(void);
 
-		/**
-		 * Update the display.
-		 */
-		inline void updateDisplay(void)
-		{
-			updateXFlagsCheckboxes();
-			updateProjectId();
-		}
+	/**
+	 * Update the display.
+	 */
+	inline void updateDisplay(void)
+	{
+		updateXFlagsCheckboxes();
+		updateProjectId();
+	}
 };
 
 /**

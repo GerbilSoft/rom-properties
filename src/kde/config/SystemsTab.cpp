@@ -15,18 +15,18 @@ using LibRpBase::Config;
 #include "ui_SystemsTab.h"
 class SystemsTabPrivate
 {
-	public:
-		explicit SystemsTabPrivate();
+public:
+	explicit SystemsTabPrivate();
 
-	private:
-		Q_DISABLE_COPY(SystemsTabPrivate)
+private:
+	Q_DISABLE_COPY(SystemsTabPrivate)
 
-	public:
-		Ui::SystemsTab ui;
+public:
+	Ui::SystemsTab ui;
 
-	public:
-		// Has the user changed anything?
-		bool changed;
+public:
+	// Has the user changed anything?
+	bool changed;
 };
 
 /** SystemsTabPrivate **/

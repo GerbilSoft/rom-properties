@@ -44,4 +44,4 @@ int setFileOriginInfo(FILE *file, const TCHAR *url, time_t mtime);
 int setFileOriginInfo(FILE *file, const TCHAR *filename, const TCHAR *url, time_t mtime);
 #endif /* _WIN32 */
 
-}
+} //namespace RpDownload

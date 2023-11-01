@@ -25,37 +25,37 @@ using LibRpBase::KeyManager;
 #include "ui_ConfigDialog.h"
 class ConfigDialogPrivate
 {
-	public:
-		explicit ConfigDialogPrivate(ConfigDialog *q);
-		~ConfigDialogPrivate() = default;
+public:
+	explicit ConfigDialogPrivate(ConfigDialog *q);
+	~ConfigDialogPrivate() = default;
 
-	private:
-		ConfigDialog *const q_ptr;
-		Q_DECLARE_PUBLIC(ConfigDialog)
-		Q_DISABLE_COPY(ConfigDialogPrivate)
+private:
+	ConfigDialog *const q_ptr;
+	Q_DECLARE_PUBLIC(ConfigDialog)
+	Q_DISABLE_COPY(ConfigDialogPrivate)
 
-	public:
-		Ui::ConfigDialog ui;
+public:
+	Ui::ConfigDialog ui;
 #ifdef ENABLE_DECRYPTION
-		KeyManagerTab *tabKeyManager;
-		/**
-		 * Retranslate parts of the UI that aren't present in the .ui file.
-		 */
-		void retranslateUi_nonDesigner(void);
+	KeyManagerTab *tabKeyManager;
+	/**
+	 * Retranslate parts of the UI that aren't present in the .ui file.
+	 */
+	void retranslateUi_nonDesigner(void);
 #else /* !ENABLE_DECRYPTION */
-		/**
-		 * Retranslate parts of the UI that aren't present in the .ui file.
-		 */
-		inline void retranslateUi_nonDesigner(void) { }
+	/**
+	 * Retranslate parts of the UI that aren't present in the .ui file.
+	 */
+	inline void retranslateUi_nonDesigner(void) {}
 #endif /* ENABLE_DECRYPTION */
 
-		// "Apply", "Reset", and "Defaults" buttons.
-		QPushButton *btnApply;
-		QPushButton *btnReset;
-		QPushButton *btnDefaults;
+	// "Apply", "Reset", and "Defaults" buttons.
+	QPushButton *btnApply;
+	QPushButton *btnReset;
+	QPushButton *btnDefaults;
 
-		// Last focused QWidget.
-		QWidget *lastFocus;
+	// Last focused QWidget.
+	QWidget *lastFocus;
 };
 
 ConfigDialogPrivate::ConfigDialogPrivate(ConfigDialog* q)
@@ -67,7 +67,7 @@ ConfigDialogPrivate::ConfigDialogPrivate(ConfigDialog* q)
 	, btnReset(nullptr)
 	, btnDefaults(nullptr)
 	, lastFocus(nullptr)
-{ }
+{}
 
 #ifdef ENABLE_DECRYPTION
 /**

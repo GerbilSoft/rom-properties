@@ -212,4 +212,4 @@ int setFileOriginInfo(FILE *file, const TCHAR *url, time_t mtime)
 	return -err;
 }
 
-}
+} //namespace RpDownload

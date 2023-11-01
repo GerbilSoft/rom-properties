@@ -13,71 +13,74 @@
 class KeyManagerTabPrivate;
 class KeyManagerTab : public ITab
 {
-	Q_OBJECT
+Q_OBJECT
 
-	public:
-		explicit KeyManagerTab(QWidget *parent = nullptr);
-		~KeyManagerTab() override;
+public:
+	explicit KeyManagerTab(QWidget *parent = nullptr);
+	~KeyManagerTab() override;
 
-	private:
-		typedef ITab super;
-		KeyManagerTabPrivate *const d_ptr;
-		Q_DECLARE_PRIVATE(KeyManagerTab);
-		Q_DISABLE_COPY(KeyManagerTab)
+private:
+	typedef ITab super;
+	KeyManagerTabPrivate *const d_ptr;
+	Q_DECLARE_PRIVATE(KeyManagerTab);
+	Q_DISABLE_COPY(KeyManagerTab)
 
-	public:
-		/**
-		 * Does this tab have defaults available?
-		 * If so, the "Defaults" button will be enabled.
-		 * Otherwise, it will be disabled.
-		 *
-		 * KeyManagerTab sets this to false.
-		 *
-		 * @return True to enable; false to disable.
-		 */
-		bool hasDefaults(void) const final { return false; }
+public:
+	/**
+	 * Does this tab have defaults available?
+	 * If so, the "Defaults" button will be enabled.
+	 * Otherwise, it will be disabled.
+	 *
+	 * KeyManagerTab sets this to false.
+	 *
+	 * @return True to enable; false to disable.
+	 */
+	bool hasDefaults(void) const final
+	{
+		return false;
+	}
 
-	protected:
-		// State change event. (Used for switching the UI language at runtime.)
-		void changeEvent(QEvent *event) final;
+protected:
+	// State change event. (Used for switching the UI language at runtime.)
+	void changeEvent(QEvent *event) final;
 
-	public slots:
-		/**
-		 * Reset the configuration.
-		 */
-		void reset(void) final;
+public slots:
+	/**
+	 * Reset the configuration.
+	 */
+	void reset(void) final;
 
-		/**
-		 * Load the default configuration.
-		 * This does NOT save, and will only emit modified()
-		 * if it's different from the current configuration.
-		 */
-		void loadDefaults(void) final;
+	/**
+	 * Load the default configuration.
+	 * This does NOT save, and will only emit modified()
+	 * if it's different from the current configuration.
+	 */
+	void loadDefaults(void) final;
 
-		/**
-		 * Save the configuration.
-		 * @param pSettings QSettings object.
-		 */
-		void save(QSettings *pSettings) final;
+	/**
+	 * Save the configuration.
+	 * @param pSettings QSettings object.
+	 */
+	void save(QSettings *pSettings) final;
 
-	protected slots:
-		/**
-		 * Import keys from Wii keys.bin. (BootMii format)
-		 */
-		void on_actionImportWiiKeysBin_triggered(void);
+protected slots:
+	/**
+	 * Import keys from Wii keys.bin. (BootMii format)
+	 */
+	void on_actionImportWiiKeysBin_triggered(void);
 
-		/**
-		 * Import keys from Wii U otp.bin.
-		 */
-		void on_actionImportWiiUOtpBin_triggered(void);
+	/**
+	 * Import keys from Wii U otp.bin.
+	 */
+	void on_actionImportWiiUOtpBin_triggered(void);
 
-		/**
-		 * Import keys from 3DS boot9.bin.
-		 */
-		void on_actionImport3DSboot9bin_triggered(void);
+	/**
+	 * Import keys from 3DS boot9.bin.
+	 */
+	void on_actionImport3DSboot9bin_triggered(void);
 
-		/**
-		 * Import keys from 3DS aeskeydb.bin.
-		 */
-		void on_actionImport3DSaeskeydb_triggered(void);
+	/**
+	 * Import keys from 3DS aeskeydb.bin.
+	 */
+	void on_actionImport3DSaeskeydb_triggered(void);
 };

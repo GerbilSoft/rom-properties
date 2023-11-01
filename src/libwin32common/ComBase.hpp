@@ -91,4 +91,4 @@ template<class I1, class I2, class I3>
 class ComBase3 : public I1, public I2, public I3
 	RP_COMBASE_IMPL(ComBase3);
 
-}
+} //namespace LibWin32Common

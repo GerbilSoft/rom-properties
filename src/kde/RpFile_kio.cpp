@@ -20,37 +20,37 @@ using std::string;
 
 class RpFileKioPrivate
 {
-	public:
-		RpFileKioPrivate(RpFileKio *q, const char *uri);
-		RpFileKioPrivate(RpFileKio *q, const QUrl &uri)
-			: q_ptr(q), uri(uri), lastResult(0), pos(0) { }
+public:
+	RpFileKioPrivate(RpFileKio *q, const char *uri);
+	RpFileKioPrivate(RpFileKio *q, const QUrl &uri)
+		: q_ptr(q), uri(uri), lastResult(0), pos(0) { }
 
-		~RpFileKioPrivate();
+	~RpFileKioPrivate();
 
-	private:
-		RP_DISABLE_COPY(RpFileKioPrivate)
-		RpFileKio *const q_ptr;
+private:
+	RP_DISABLE_COPY(RpFileKioPrivate)
+	RpFileKio *const q_ptr;
 
-	public:
-		KIO::FileJob *fileJob;	// File job.
-		QUrl uri;		// KIO URI.
+public:
+	KIO::FileJob *fileJob;	// File job.
+	QUrl uri;		// KIO URI.
 
-		// Last read data.
-		QByteArray lastData;
+	// Last read data.
+	QByteArray lastData;
 
-		// Last result.
-		int lastResult;
+	// Last result.
+	int lastResult;
 
-		// Current file position.
-		// There doesn't seem to be an easy way to
-		// retrieve this from KIO::FileJob...
-		off64_t pos;
+	// Current file position.
+	// There doesn't seem to be an easy way to
+	// retrieve this from KIO::FileJob...
+	off64_t pos;
 
-		/**
-		 * Enter a QEventLoop while waiting for a KJob to complete.
-		 * Reference: https://github.com/KDE/kio/blob/master/autotests/jobremotetest.cpp
-		 */
-		void enterLoop(void);
+	/**
+	 * Enter a QEventLoop while waiting for a KJob to complete.
+	 * Reference: https://github.com/KDE/kio/blob/master/autotests/jobremotetest.cpp
+	 */
+	void enterLoop(void);
 };
 
 /** RpFileKioPrivate **/
@@ -166,7 +166,7 @@ void RpFileKio::init(void)
 		emit exitLoop();
 	});
 	// read(): Data has been read.
-	QObject::connect(d->fileJob, &KIO::FileJob::data, [d, this](KIO::Job*, const QByteArray& data) {
+	QObject::connect(d->fileJob, &KIO::FileJob::data, [d, this](KIO::Job*, const QByteArray &data) {
 		d->lastData = data;
 		d->pos += data.size();
 		emit exitLoop();

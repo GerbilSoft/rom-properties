@@ -105,4 +105,4 @@ LPVOID LoadResource_i18n(HMODULE hModule, LPCTSTR lpType, DWORD dwResId)
 	return LockResource(hGlobal);
 }
 
-}
+} //namespace LibWin32UI

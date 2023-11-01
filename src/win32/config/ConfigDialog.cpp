@@ -50,32 +50,32 @@ using namespace LibRpTexture;
 
 class ConfigDialogPrivate
 {
-	public:
-		ConfigDialogPrivate();
-		~ConfigDialogPrivate();
+public:
+	ConfigDialogPrivate();
+	~ConfigDialogPrivate();
 
-	private:
-		RP_DISABLE_COPY(ConfigDialogPrivate)
+private:
+	RP_DISABLE_COPY(ConfigDialogPrivate)
 
-	public:
-		// Property sheet variables.
+public:
+	// Property sheet variables.
 #ifdef ENABLE_DECRYPTION
-		static const unsigned int TAB_COUNT = 7;
+	static const unsigned int TAB_COUNT = 7;
 #else
-		static const unsigned int TAB_COUNT = 6;
+	static const unsigned int TAB_COUNT = 6;
 #endif
-		std::array<ITab*, TAB_COUNT> tabs;
-		std::array<HPROPSHEETPAGE, TAB_COUNT> hpsp;
-		PROPSHEETHEADER psh;
+	std::array<ITab*, TAB_COUNT> tabs;
+	std::array<HPROPSHEETPAGE, TAB_COUNT> hpsp;
+	PROPSHEETHEADER psh;
 
-		// Property Sheet callback.
-		static int CALLBACK callbackProc(HWND hDlg, UINT uMsg, LPARAM lParam);
+	// Property Sheet callback.
+	static int CALLBACK callbackProc(HWND hDlg, UINT uMsg, LPARAM lParam);
 
-		// Subclass procedure for the Property Sheet.
-		static LRESULT CALLBACK subclassProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData);
+	// Subclass procedure for the Property Sheet.
+	static LRESULT CALLBACK subclassProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData);
 
-		// Create Property Sheet.
-		static INT_PTR CreatePropertySheet(void);
+	// Create Property Sheet.
+	static INT_PTR CreatePropertySheet(void);
 };
 
 /** ConfigDialogPrivate **/
@@ -399,7 +399,7 @@ LRESULT CALLBACK ConfigDialogPrivate::subclassProc(
 
 ConfigDialog::ConfigDialog()
 	: d_ptr(new ConfigDialogPrivate())
-{ }
+{}
 
 ConfigDialog::~ConfigDialog()
 {

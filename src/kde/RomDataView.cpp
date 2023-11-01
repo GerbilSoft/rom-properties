@@ -1250,7 +1250,7 @@ void RomDataView::cboLanguage_lcChanged_slot(uint32_t lc)
 	d->updateMulti(lc);
 }
 
-/** Properties. **/
+/** Properties **/
 
 /**
  * Get the current RomData object.

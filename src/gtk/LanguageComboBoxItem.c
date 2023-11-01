@@ -93,10 +93,7 @@ RpLanguageComboBoxItem*
 rp_language_combo_box_item_new(PIMGTYPE icon, const char *name, uint32_t lc)
 {
 	return g_object_new(RP_TYPE_LANGUAGE_COMBO_BOX_ITEM,
-			"icon", icon,
-			"name", name,
-			"lc", lc,
-			NULL);
+		"icon", icon, "name", name, "lc", lc, NULL);
 }
 
 /** Properties **/

@@ -21,26 +21,26 @@
 
 class RP_EmptyVolumeCacheCallback final : public LibWin32Common::ComBase<IEmptyVolumeCacheCallBack>
 {
-	public:
-		explicit RP_EmptyVolumeCacheCallback(HWND hProgressBar);
+public:
+	explicit RP_EmptyVolumeCacheCallback(HWND hProgressBar);
 
-	private:
-		typedef LibWin32Common::ComBase<RP_EmptyVolumeCacheCallback> super;
-		RP_DISABLE_COPY(RP_EmptyVolumeCacheCallback)
+private:
+	typedef LibWin32Common::ComBase<RP_EmptyVolumeCacheCallback> super;
+	RP_DISABLE_COPY(RP_EmptyVolumeCacheCallback)
 
-	public:
-		// IUnknown
-		IFACEMETHODIMP QueryInterface(REFIID riid, LPVOID *ppvObj) final;
+public:
+	// IUnknown
+	IFACEMETHODIMP QueryInterface(REFIID riid, LPVOID *ppvObj) final;
 
-	public:
-		// IEmptyVolumeCacheCallBack
-		IFACEMETHODIMP ScanProgress(DWORDLONG dwlSpaceUsed, DWORD dwFlags, LPCWSTR pcwszStatus) final;
-		IFACEMETHODIMP PurgeProgress(DWORDLONG dwlSpaceFreed, DWORDLONG dwlSpaceToFree, DWORD dwFlags, LPCWSTR pcwszStatus) final;
+public:
+	// IEmptyVolumeCacheCallBack
+	IFACEMETHODIMP ScanProgress(DWORDLONG dwlSpaceUsed, DWORD dwFlags, LPCWSTR pcwszStatus) final;
+	IFACEMETHODIMP PurgeProgress(DWORDLONG dwlSpaceFreed, DWORDLONG dwlSpaceToFree, DWORD dwFlags, LPCWSTR pcwszStatus) final;
 
-	private:
-		HWND m_hProgressBar;		// Progress bar to update.
-	public:
-		unsigned int m_baseProgress;	// Base progress value.
+private:
+	HWND m_hProgressBar;		// Progress bar to update.
+public:
+	unsigned int m_baseProgress;	// Base progress value.
 };
 
 #ifdef __CRT_UUID_DECL

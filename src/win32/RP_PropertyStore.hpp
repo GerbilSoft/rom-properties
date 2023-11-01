@@ -32,38 +32,38 @@ class RP_PropertyStore_Private;
 class UUID_ATTR("{4A1E3510-50BD-4B03-A801-E4C954F43B96}")
 RP_PropertyStore final : public LibWin32Common::ComBase3<IInitializeWithStream, IPropertyStore, IPropertyStoreCapabilities>
 {
-	public:
-		RP_PropertyStore();
-	protected:
-		~RP_PropertyStore() final;
+public:
+	RP_PropertyStore();
+protected:
+	~RP_PropertyStore() final;
 
-	private:
-		typedef LibWin32Common::ComBase3<IInitializeWithStream, IPropertyStore, IPropertyStoreCapabilities> super;
-		RP_DISABLE_COPY(RP_PropertyStore)
-	private:
-		friend class RP_PropertyStore_Private;
-		RP_PropertyStore_Private *const d_ptr;
+private:
+	typedef LibWin32Common::ComBase3<IInitializeWithStream, IPropertyStore, IPropertyStoreCapabilities> super;
+	RP_DISABLE_COPY(RP_PropertyStore)
+private:
+	friend class RP_PropertyStore_Private;
+	RP_PropertyStore_Private *const d_ptr;
 
-	public:
-		CLSID_DECL(RP_PropertyStore)
-		FILETYPE_HANDLER_HKLM_DECL(RP_PropertyStore)
+public:
+	CLSID_DECL(RP_PropertyStore)
+	FILETYPE_HANDLER_HKLM_DECL(RP_PropertyStore)
 
-	public:
-		// IUnknown
-		IFACEMETHODIMP QueryInterface(_In_ REFIID riid, _Outptr_ LPVOID *ppvObj) final;
+public:
+	// IUnknown
+	IFACEMETHODIMP QueryInterface(_In_ REFIID riid, _Outptr_ LPVOID *ppvObj) final;
 
-		// IInitializeWithStream
-		IFACEMETHODIMP Initialize(_In_ IStream *pstream, DWORD grfMode) final;
+	// IInitializeWithStream
+	IFACEMETHODIMP Initialize(_In_ IStream *pstream, DWORD grfMode) final;
 
-		// IPropertyStore
-		IFACEMETHODIMP Commit(void) final;
-		IFACEMETHODIMP GetAt(_In_ DWORD iProp, _Out_ PROPERTYKEY *pkey) final;
-		IFACEMETHODIMP GetCount(_Out_ DWORD *cProps) final;
-		IFACEMETHODIMP GetValue(_In_ REFPROPERTYKEY key, _Out_ PROPVARIANT *pv) final;
-		IFACEMETHODIMP SetValue(_In_ REFPROPERTYKEY key, _In_ REFPROPVARIANT propvar) final;
+	// IPropertyStore
+	IFACEMETHODIMP Commit(void) final;
+	IFACEMETHODIMP GetAt(_In_ DWORD iProp, _Out_ PROPERTYKEY *pkey) final;
+	IFACEMETHODIMP GetCount(_Out_ DWORD *cProps) final;
+	IFACEMETHODIMP GetValue(_In_ REFPROPERTYKEY key, _Out_ PROPVARIANT *pv) final;
+	IFACEMETHODIMP SetValue(_In_ REFPROPERTYKEY key, _In_ REFPROPVARIANT propvar) final;
 
-		// IPropertyStoreCapabilities
-		IFACEMETHODIMP IsPropertyWritable(REFPROPERTYKEY key) final;
+	// IPropertyStoreCapabilities
+	IFACEMETHODIMP IsPropertyWritable(REFPROPERTYKEY key) final;
 };
 
 #ifdef __CRT_UUID_DECL

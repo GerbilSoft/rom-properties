@@ -21,7 +21,8 @@ G_BEGIN_DECLS
  * @param flags Flags (see RpCreateThumbnailFlags)
  * @return 0 on success; non-zero on error.
  */
-typedef int (*PFN_RP_CREATE_THUMBNAIL2)(const char *source_file, const char *output_file, int maximum_size, unsigned int flags);
+typedef int (*PFN_RP_CREATE_THUMBNAIL2)(
+	const char *source_file, const char *output_file, int maximum_size, unsigned int flags);
 
 #define RP_TYPE_THUMBNAILER (rp_thumbnailer_get_type())
 G_DECLARE_FINAL_TYPE(RpThumbnailer, rp_thumbnailer, RP, THUMBNAILER, GObject)

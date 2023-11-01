@@ -39,7 +39,7 @@ ISpriteSheet::ISpriteSheet(int cols, int rows, int width, int height, bool flipH
 	, m_width(width)
 	, m_height(height)
 	, m_flipH(flipH)
-{ }
+{}
 
 /**
  * Extract an HBITMAP sprite from an rp_image sprite sheet.

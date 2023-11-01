@@ -38,55 +38,55 @@ class RP_ShellPropSheetExt_Private;
 class UUID_ATTR("{2443C158-DF7C-4352-B435-BC9F885FFD52}")
 RP_ShellPropSheetExt final : public LibWin32Common::ComBase2<IShellExtInit, IShellPropSheetExt>
 {
-	public:
-		RP_ShellPropSheetExt();
-	protected:
-		~RP_ShellPropSheetExt() final;
+public:
+	RP_ShellPropSheetExt();
+protected:
+	~RP_ShellPropSheetExt() final;
 
-	private:
-		typedef LibWin32Common::ComBase2<IShellExtInit, IShellPropSheetExt> super;
-		RP_DISABLE_COPY(RP_ShellPropSheetExt)
-	private:
-		friend class RP_ShellPropSheetExt_Private;
-		RP_ShellPropSheetExt_Private *d_ptr;
+private:
+	typedef LibWin32Common::ComBase2<IShellExtInit, IShellPropSheetExt> super;
+	RP_DISABLE_COPY(RP_ShellPropSheetExt)
+private:
+	friend class RP_ShellPropSheetExt_Private;
+	RP_ShellPropSheetExt_Private *d_ptr;
 
-	public:
-		CLSID_DECL(RP_ShellPropSheetExt)
-		FILETYPE_HANDLER_DECL(RP_ShellPropSheetExt)
+public:
+	CLSID_DECL(RP_ShellPropSheetExt)
+	FILETYPE_HANDLER_DECL(RP_ShellPropSheetExt)
 
-	private:
-		/**
-		 * Register the file type handler.
-		 *
-		 * Internal version; this only registers for a single Classes key.
-		 * Called by the public version multiple times if a ProgID is registered.
-		 *
-		 * @param hkey_Assoc File association key to register under.
-		 * @return ERROR_SUCCESS on success; Win32 error code on error.
-		 */
-		static LONG RegisterFileType_int(LibWin32UI::RegKey &hkey_Assoc);
+private:
+	/**
+	 * Register the file type handler.
+	 *
+	 * Internal version; this only registers for a single Classes key.
+	 * Called by the public version multiple times if a ProgID is registered.
+	 *
+	 * @param hkey_Assoc File association key to register under.
+	 * @return ERROR_SUCCESS on success; Win32 error code on error.
+	 */
+	static LONG RegisterFileType_int(LibWin32UI::RegKey &hkey_Assoc);
 
-		/**
-		 * Unregister the file type handler.
-		 *
-		 * Internal version; this only unregisters for a single Classes key.
-		 * Called by the public version multiple times if a ProgID is registered.
-		 *
-		 * @param hkey_Assoc File association key to unregister under.
-		 * @return ERROR_SUCCESS on success; Win32 error code on error.
-		 */
-		static LONG UnregisterFileType_int(LibWin32UI::RegKey &hkey_Assoc);
+	/**
+	 * Unregister the file type handler.
+	 *
+	 * Internal version; this only unregisters for a single Classes key.
+	 * Called by the public version multiple times if a ProgID is registered.
+	 *
+	 * @param hkey_Assoc File association key to unregister under.
+	 * @return ERROR_SUCCESS on success; Win32 error code on error.
+	 */
+	static LONG UnregisterFileType_int(LibWin32UI::RegKey &hkey_Assoc);
 
-	public:
-		// IUnknown
-		IFACEMETHODIMP QueryInterface(_In_ REFIID riid, _Outptr_ LPVOID *ppvObj) final;
+public:
+	// IUnknown
+	IFACEMETHODIMP QueryInterface(_In_ REFIID riid, _Outptr_ LPVOID *ppvObj) final;
 
-		// IShellExtInit
-		IFACEMETHODIMP Initialize(_In_ LPCITEMIDLIST pidlFolder, _In_ LPDATAOBJECT pDataObj, _In_ HKEY hKeyProgID) final;
+	// IShellExtInit
+	IFACEMETHODIMP Initialize(_In_ LPCITEMIDLIST pidlFolder, _In_ LPDATAOBJECT pDataObj, _In_ HKEY hKeyProgID) final;
 
-		// IShellPropSheetExt
-		IFACEMETHODIMP AddPages(_In_ LPFNADDPROPSHEETPAGE pfnAddPage, LPARAM lParam) final;
-		IFACEMETHODIMP ReplacePage(UINT uPageID, _In_ LPFNADDPROPSHEETPAGE pfnReplaceWith, LPARAM lParam) final;
+	// IShellPropSheetExt
+	IFACEMETHODIMP AddPages(_In_ LPFNADDPROPSHEETPAGE pfnAddPage, LPARAM lParam) final;
+	IFACEMETHODIMP ReplacePage(UINT uPageID, _In_ LPFNADDPROPSHEETPAGE pfnReplaceWith, LPARAM lParam) final;
 };
 
 #ifdef __CRT_UUID_DECL

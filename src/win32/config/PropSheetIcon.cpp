@@ -11,33 +11,33 @@
 
 class PropSheetIconPrivate
 {
-	public:
-		PropSheetIconPrivate();
-		~PropSheetIconPrivate();
+public:
+	PropSheetIconPrivate();
+	~PropSheetIconPrivate();
 
-	private:
-		RP_DISABLE_COPY(PropSheetIconPrivate)
+private:
+	RP_DISABLE_COPY(PropSheetIconPrivate)
 
-	public:
-		// Static PropSheetIcon instance.
-		// TODO: Q_GLOBAL_STATIC() equivalent, though we
-		// may need special initialization if the compiler
-		// doesn't support thread-safe statics.
-		static PropSheetIcon instance;
+public:
+	// Static PropSheetIcon instance.
+	// TODO: Q_GLOBAL_STATIC() equivalent, though we
+	// may need special initialization if the compiler
+	// doesn't support thread-safe statics.
+	static PropSheetIcon instance;
 
-	public:
-		// Property sheet icons.
-		HICON hIcon;
-		HICON hIconSmall;
+public:
+	// Property sheet icons
+	HICON hIcon;
+	HICON hIconSmall;
 
-		// 96x96 icon for the About tab.
-		HICON hIcon96;
+	// 96x96 icon for the About tab.
+	HICON hIcon96;
 
-		/**
-		 * Get the property sheet icons.
-		 * NOTE: This function should be called with pthread_once().
-		 */
-		void getPropSheetIcons(void);
+	/**
+	 * Get the property sheet icons.
+	 * NOTE: This function should be called with pthread_once().
+	 */
+	void getPropSheetIcons(void);
 };
 
 /** PropSheetIconPrivate **/
@@ -114,7 +114,7 @@ PropSheetIconPrivate::~PropSheetIconPrivate()
 
 PropSheetIcon::PropSheetIcon()
 	: d_ptr(new PropSheetIconPrivate())
-{ }
+{}
 
 PropSheetIcon::~PropSheetIcon()
 {

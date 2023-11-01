@@ -38,31 +38,31 @@ class RP_ThumbnailProvider_Private;
 class UUID_ATTR("{4723DF58-463E-4590-8F4A-8D9DD4F4355A}")
 RP_ThumbnailProvider final : public LibWin32Common::ComBase2<IInitializeWithStream, IThumbnailProvider>
 {
-	public:
-		RP_ThumbnailProvider();
-	protected:
-		~RP_ThumbnailProvider() final;
+public:
+	RP_ThumbnailProvider();
+protected:
+	~RP_ThumbnailProvider() final;
 
-	private:
-		typedef LibWin32Common::ComBase2<IInitializeWithStream, IThumbnailProvider> super;
-		RP_DISABLE_COPY(RP_ThumbnailProvider)
-	private:
-		friend class RP_ThumbnailProvider_Private;
-		RP_ThumbnailProvider_Private *const d_ptr;
+private:
+	typedef LibWin32Common::ComBase2<IInitializeWithStream, IThumbnailProvider> super;
+	RP_DISABLE_COPY(RP_ThumbnailProvider)
+private:
+	friend class RP_ThumbnailProvider_Private;
+	RP_ThumbnailProvider_Private *const d_ptr;
 
-	public:
-		CLSID_DECL(RP_ThumbnailProvider)
-		FILETYPE_HANDLER_DECL(RP_ThumbnailProvider)
+public:
+	CLSID_DECL(RP_ThumbnailProvider)
+	FILETYPE_HANDLER_DECL(RP_ThumbnailProvider)
 
-	public:
-		// IUnknown
-		IFACEMETHODIMP QueryInterface(_In_ REFIID riid, _Outptr_ LPVOID *ppvObj) final;
+public:
+	// IUnknown
+	IFACEMETHODIMP QueryInterface(_In_ REFIID riid, _Outptr_ LPVOID *ppvObj) final;
 
-		// IInitializeWithStream
-		IFACEMETHODIMP Initialize(_In_ IStream *pstream, DWORD grfMode) final;
+	// IInitializeWithStream
+	IFACEMETHODIMP Initialize(_In_ IStream *pstream, DWORD grfMode) final;
 
-		// IThumbnailProvider
-		IFACEMETHODIMP GetThumbnail(UINT cx, _Outptr_ HBITMAP *phbmp, _Out_ WTS_ALPHATYPE *pdwAlpha) final;
+	// IThumbnailProvider
+	IFACEMETHODIMP GetThumbnail(UINT cx, _Outptr_ HBITMAP *phbmp, _Out_ WTS_ALPHATYPE *pdwAlpha) final;
 };
 
 #ifdef __CRT_UUID_DECL

@@ -10,11 +10,11 @@
 #cmakedefine HAVE_STDBOOL_H 1
 
 #ifndef __cplusplus
-# ifdef HAVE_STDBOOL_H
-#  include <stdbool.h>
-# else /* !HAVE_STDBOOL_H */
+#  ifdef HAVE_STDBOOL_H
+#    include <stdbool.h>
+#  else /* !HAVE_STDBOOL_H */
 typedef unsigned char bool;
-#  define true 1
-#  define false 0
-# endif /* HAVE_STDBOOL_H */
+#    define true 1
+#    define false 0
+#  endif /* HAVE_STDBOOL_H */
 #endif /* __cplusplus */

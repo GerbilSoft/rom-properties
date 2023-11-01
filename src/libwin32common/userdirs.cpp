@@ -167,4 +167,4 @@ string getConfigDirectory(void)
 	return getCSIDLPath(CSIDL_APPDATA);
 }
 
-}
+} //namespace LibWin32Common

@@ -102,7 +102,8 @@ struct _RpDragImageCxx {
 		{
 			iconFrames.fill(nullptr);
 		}
-		~anim_vars() {
+		~anim_vars()
+		{
 			g_clear_handle_id(&tmrIconAnim, g_source_remove);
 
 			for (PIMGTYPE frame : iconFrames) {
@@ -183,10 +184,8 @@ rp_drag_image_init(RpDragImage *image)
 
 // FIXME: GTK4 has a new Drag & Drop API.
 #if !GTK_CHECK_VERSION(4,0,0)
-	g_signal_connect(G_OBJECT(image), "drag-begin",
-		G_CALLBACK(rp_drag_image_drag_begin), nullptr);
-	g_signal_connect(G_OBJECT(image), "drag-data-get",
-		G_CALLBACK(rp_drag_image_drag_data_get), nullptr);
+	g_signal_connect(G_OBJECT(image), "drag-begin", G_CALLBACK(rp_drag_image_drag_begin), nullptr);
+	g_signal_connect(G_OBJECT(image), "drag-data-get", G_CALLBACK(rp_drag_image_drag_data_get), nullptr);
 #endif /* !GTK_CHECK_VERSION(4,0,0) */
 }
 

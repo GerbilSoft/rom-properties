@@ -20,74 +20,74 @@ using std::vector;
 
 class FontHandlerPrivate
 {
-	public:
-		explicit FontHandlerPrivate(HWND hWnd);
-		~FontHandlerPrivate();
+public:
+	explicit FontHandlerPrivate(HWND hWnd);
+	~FontHandlerPrivate();
 
-	private:
-		RP_DISABLE_COPY(FontHandlerPrivate)
+private:
+	RP_DISABLE_COPY(FontHandlerPrivate)
 
-	public:
-		// Window used for the dialog font.
-		HWND hWnd;
+public:
+	// Window used for the dialog font.
+	HWND hWnd;
 
-		// Fonts
-		HFONT hFontBold;
-		HFONT hFontMono;
+	// Fonts
+	HFONT hFontBold;
+	HFONT hFontMono;
 
-		// Controls.
-		vector<HWND> vecMonoControls;	// Controls using the monospaced font.
+	// Controls
+	vector<HWND> vecMonoControls;	// Controls using the monospaced font.
 
-		// Previous ClearType setting.
-		bool bPrevIsClearType;
+	// Previous ClearType setting
+	bool bPrevIsClearType;
 
-	private:
-		/**
-		 * Monospaced font enumeration procedure.
-		 * @param lpelfe Enumerated font information.
-		 * @param lpntme Font metrics.
-		 * @param FontType Font type.
-		 * @param lParam Pointer to RP_ShellPropSheetExt_Private.
-		 */
-		static int CALLBACK MonospacedFontEnumProc(
-			_In_ const LOGFONT *lpelfe,
-			_In_ const TEXTMETRIC *lpntme,
-			_In_ DWORD FontType,
-			_In_ LPARAM lParam);
+private:
+	/**
+	 * Monospaced font enumeration procedure.
+	 * @param lpelfe Enumerated font information.
+	 * @param lpntme Font metrics.
+	 * @param FontType Font type.
+	 * @param lParam Pointer to RP_ShellPropSheetExt_Private.
+	 */
+	static int CALLBACK MonospacedFontEnumProc(
+		_In_ const LOGFONT *lpelfe,
+		_In_ const TEXTMETRIC *lpntme,
+		_In_ DWORD FontType,
+		_In_ LPARAM lParam);
 
-	public:
-		/**
-		 * Determine the monospaced font to use.
-		 * @param plfFontMono Pointer to LOGFONT to store the font name in.
-		 * @return 0 on success; negative POSIX error code on error.
-		 */
-		static int findMonospacedFont(LOGFONT *plfFontMono);
+public:
+	/**
+	 * Determine the monospaced font to use.
+	 * @param plfFontMono Pointer to LOGFONT to store the font name in.
+	 * @return 0 on success; negative POSIX error code on error.
+	 */
+	static int findMonospacedFont(LOGFONT *plfFontMono);
 
-		/**
-		 * Get the current ClearType setting.
-		 * @return Current ClearType setting.
-		 */
-		static bool isClearTypeEnabled(void);
+	/**
+	 * Get the current ClearType setting.
+	 * @return Current ClearType setting.
+	 */
+	static bool isClearTypeEnabled(void);
 
-		/**
-		 * (Re)Initialize the bold font.
-		 * @return 0 on success; negative POSIX error code on error.
-		 */
-		int initBoldFont(void);
+	/**
+	 * (Re)Initialize the bold font.
+	 * @return 0 on success; negative POSIX error code on error.
+	 */
+	int initBoldFont(void);
 
-		/**
-		 * (Re)Initialize the monospaced font.
-		 * @return 0 on success; negative POSIX error code on error.
-		 */
-		int initMonospacedFont(void);
+	/**
+	 * (Re)Initialize the monospaced font.
+	 * @return 0 on success; negative POSIX error code on error.
+	 */
+	int initMonospacedFont(void);
 
-	public:
-		/**
-		 * Update fonts.
-		 * @param force Force update. (Use for WM_THEMECHANGED.)
-		 * @return 0 on success; negative POSIX error code on error.
-		 */
-		int updateFonts(bool force = false);
+public:
+	/**
+	 * Update fonts.
+	 * @param force Force update. (Use for WM_THEMECHANGED.)
+	 * @return 0 on success; negative POSIX error code on error.
+	 */
+	int updateFonts(bool force = false);
 };
 
 /** FontHandlerPrivate **/
@@ -97,7 +97,7 @@ FontHandlerPrivate::FontHandlerPrivate(HWND hWnd)
 	, hFontBold(nullptr)
 	, hFontMono(nullptr)
 	, bPrevIsClearType(false)
-{ }
+{}
 
 FontHandlerPrivate::~FontHandlerPrivate()
 {
@@ -393,7 +393,7 @@ int FontHandlerPrivate::updateFonts(bool force)
 
 FontHandler::FontHandler(HWND hWnd)
 	: d_ptr(new FontHandlerPrivate(hWnd))
-{ }
+{}
 
 FontHandler::~FontHandler()
 {

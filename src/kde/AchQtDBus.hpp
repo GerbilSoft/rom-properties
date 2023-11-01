@@ -13,31 +13,31 @@
 class AchQtDBusPrivate;
 class AchQtDBus
 {
-	protected:
-		/**
-		 * AchQtDBus class.
-		 *
-		 * This class is a Singleton, so the caller must obtain a
-		 * pointer to the class using instance().
-		 */
-		AchQtDBus();
-		~AchQtDBus();
+protected:
+	/**
+	 * AchQtDBus class.
+	 *
+	 * This class is a Singleton, so the caller must obtain a
+	 * pointer to the class using instance().
+	 */
+	AchQtDBus();
+	~AchQtDBus();
 
-	private:
-		RP_DISABLE_COPY(AchQtDBus);
-	private:
-		friend class AchQtDBusPrivate;
-		AchQtDBusPrivate *const d_ptr;
+private:
+	RP_DISABLE_COPY(AchQtDBus);
+private:
+	friend class AchQtDBusPrivate;
+	AchQtDBusPrivate *const d_ptr;
 
-	public:
-		/**
-		 * Get the AchQtDBus instance.
-		 *
-		 * This automatically initializes librpbase's Achievement
-		 * object and reloads the achievements data if it has been
-		 * modified.
-		 *
-		 * @return AchQtDBus instance.
-		 */
-		static AchQtDBus *instance(void);
+public:
+	/**
+	 * Get the AchQtDBus instance.
+	 *
+	 * This automatically initializes librpbase's Achievement
+	 * object and reloads the achievements data if it has been
+	 * modified.
+	 *
+	 * @return AchQtDBus instance.
+	 */
+	static AchQtDBus *instance(void);
 };

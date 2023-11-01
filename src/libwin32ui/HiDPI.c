@@ -34,7 +34,7 @@ typedef enum MONITOR_DPI_TYPE {
 	MDT_RAW_DPI = 2,
 	MDT_DEFAULT = MDT_EFFECTIVE_DPI
 } MONITOR_DPI_TYPE;
-#define DPI_ENUMS_DECLARED
+#  define DPI_ENUMS_DECLARED
 #endif /* !DPI_ENUMS_DECLARED */
 
 /** DPI functions. **/

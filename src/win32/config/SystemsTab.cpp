@@ -23,55 +23,55 @@ using std::tstring;
 
 class SystemsTabPrivate
 {
-	public:
-		SystemsTabPrivate();
+public:
+	SystemsTabPrivate();
 
-	private:
-		RP_DISABLE_COPY(SystemsTabPrivate)
+private:
+	RP_DISABLE_COPY(SystemsTabPrivate)
 
-	public:
-		/**
-		 * Reset the configuration.
-		 */
-		void reset(void);
+public:
+	/**
+	 * Reset the configuration.
+	 */
+	void reset(void);
 
-		/**
-		 * Load the default configuration.
-		 * This does NOT save, and will only emit modified()
-		 * if it's different from the current configuration.
-		 */
-		void loadDefaults(void);
+	/**
+	 * Load the default configuration.
+	 * This does NOT save, and will only emit modified()
+	 * if it's different from the current configuration.
+	 */
+	void loadDefaults(void);
 
-		/**
-		 * Save the configuration.
-		 */
-		void save(void);
+	/**
+	 * Save the configuration.
+	 */
+	void save(void);
 
-	public:
-		/**
-		 * Dialog procedure.
-		 * @param hDlg
-		 * @param uMsg
-		 * @param wParam
-		 * @param lParam
-		 */
-		static INT_PTR CALLBACK dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+public:
+	/**
+	 * Dialog procedure.
+	 * @param hDlg
+	 * @param uMsg
+	 * @param wParam
+	 * @param lParam
+	 */
+	static INT_PTR CALLBACK dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
-		/**
-		 * Property sheet callback procedure.
-		 * @param hWnd
-		 * @param uMsg
-		 * @param ppsp
-		 */
-		static UINT CALLBACK callbackProc(HWND hWnd, UINT uMsg, LPPROPSHEETPAGE ppsp);
+	/**
+	 * Property sheet callback procedure.
+	 * @param hWnd
+	 * @param uMsg
+	 * @param ppsp
+	 */
+	static UINT CALLBACK callbackProc(HWND hWnd, UINT uMsg, LPPROPSHEETPAGE ppsp);
 
-	public:
-		// Property sheet.
-		HPROPSHEETPAGE hPropSheetPage;
-		HWND hWndPropSheet;
+public:
+	// Property sheet.
+	HPROPSHEETPAGE hPropSheetPage;
+	HWND hWndPropSheet;
 
-		// Has the user changed anything?
-		bool changed;
+	// Has the user changed anything?
+	bool changed;
 };
 
 /** SystemsTabPrivate **/
@@ -80,7 +80,7 @@ SystemsTabPrivate::SystemsTabPrivate()
 	: hPropSheetPage(nullptr)
 	, hWndPropSheet(nullptr)
 	, changed(false)
-{ }
+{}
 
 /**
  * Reset the configuration.
@@ -365,7 +365,7 @@ UINT CALLBACK SystemsTabPrivate::callbackProc(HWND hWnd, UINT uMsg, LPPROPSHEETP
 
 SystemsTab::SystemsTab(void)
 	: d_ptr(new SystemsTabPrivate())
-{ }
+{}
 
 SystemsTab::~SystemsTab()
 {

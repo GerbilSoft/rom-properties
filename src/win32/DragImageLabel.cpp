@@ -27,95 +27,95 @@ namespace Gdiplus {
 
 class DragImageLabelPrivate
 {
-	public:
-		explicit DragImageLabelPrivate(HWND hwndParent);
-		~DragImageLabelPrivate();
+public:
+	explicit DragImageLabelPrivate(HWND hwndParent);
+	~DragImageLabelPrivate();
 
-	private:
-		RP_DISABLE_COPY(DragImageLabelPrivate)
+private:
+	RP_DISABLE_COPY(DragImageLabelPrivate)
 
-	public:
-		HWND hwndParent;
+public:
+	HWND hwndParent;
 
-		// Position
-		POINT position;
+	// Position
+	POINT position;
 
-		// Icon sizes
-		SIZE requiredSize;	// Required size.
-		SIZE actualSize;	// Actual size.
+	// Icon sizes
+	SIZE requiredSize;	// Required size.
+	SIZE actualSize;	// Actual size.
 
-		// Calculated RECT based on position and size
-		RECT rect;
+	// Calculated RECT based on position and size
+	RECT rect;
 
-		bool ecksBawks;
-		HMENU hMenuEcksBawks;
+	bool ecksBawks;
+	HMENU hMenuEcksBawks;
 
-		// rp_image
-		rp_image_const_ptr img;
-		HBITMAP hbmpImg;	// for non-animated only
+	// rp_image
+	rp_image_const_ptr img;
+	HBITMAP hbmpImg;	// for non-animated only
 
-		// Animated icon data.
-		struct anim_vars {
-			IconAnimDataConstPtr iconAnimData;
-			std::array<HBITMAP, IconAnimData::MAX_FRAMES> iconFrames;
-			IconAnimHelper iconAnimHelper;
-			HWND m_hwndParent;
-			UINT_PTR animTimerID;
-			int last_frame_number;		// Last frame number.
+	// Animated icon data.
+	struct anim_vars {
+		IconAnimDataConstPtr iconAnimData;
+		std::array<HBITMAP, IconAnimData::MAX_FRAMES> iconFrames;
+		IconAnimHelper iconAnimHelper;
+		HWND m_hwndParent;
+		UINT_PTR animTimerID;
+		int last_frame_number;		// Last frame number.
 
-			explicit anim_vars(HWND hwndParent)
-				: m_hwndParent(hwndParent)
-				, animTimerID(0)
-				, last_frame_number(0)
-			{
-				iconFrames.fill(nullptr);
+		explicit anim_vars(HWND hwndParent)
+			: m_hwndParent(hwndParent)
+			, animTimerID(0)
+			, last_frame_number(0)
+		{
+			iconFrames.fill(nullptr);
+		}
+		~anim_vars()
+		{
+			if (animTimerID) {
+				KillTimer(m_hwndParent, animTimerID);
 			}
-			~anim_vars()
-			{
-				if (animTimerID) {
-					KillTimer(m_hwndParent, animTimerID);
-				}
-				for (HBITMAP hbmp : iconFrames) {
-					if (hbmp) {
-						DeleteBitmap(hbmp);
-					}
+			for (HBITMAP hbmp : iconFrames) {
+				if (hbmp) {
+					DeleteBitmap(hbmp);
 				}
 			}
-		};
-		anim_vars *anim;
+		}
+	};
+	anim_vars *anim;
 
-		// Use nearest-neighbor scaling?
-		bool useNearestNeighbor;
+	// Use nearest-neighbor scaling?
+	bool useNearestNeighbor;
 
-	public:
-		/**
-		 * Rescale an image to be as close to the required size as possible.
-		 * @param req_sz	[in] Required size.
-		 * @param sz		[in/out] Image size.
-		 * @return True if nearest-neighbor scaling should be used (size was kept the same or enlarged); false if shrunken (so use interpolation).
-		 */
-		static bool rescaleImage(SIZE req_sz, SIZE &sz);
+public:
+	/**
+	 * Rescale an image to be as close to the required size as possible.
+	 * @param req_sz	[in] Required size.
+	 * @param sz		[in/out] Image size.
+	 * @return True if nearest-neighbor scaling should be used (size was kept the same or enlarged); false if shrunken (so use interpolation).
+	 */
+	static bool rescaleImage(SIZE req_sz, SIZE &sz);
 
-		/**
-		 * Update the bitmap(s).
-		 * @return True on success; false on error.
-		 */
-		bool updateBitmaps(void);
+	/**
+	 * Update the bitmap(s).
+	 * @return True on success; false on error.
+	 */
+	bool updateBitmaps(void);
 
-		/**
-		 * Update the bitmap rect.
-		 * Called when position and/or size changes.
-		 */
-		void updateRect(void);
+	/**
+	 * Update the bitmap rect.
+	 * Called when position and/or size changes.
+	 */
+	void updateRect(void);
 
-		/**
-		 * Animated icon timer.
-		 * @param hWnd
-		 * @param uMsg
-		 * @param idEvent
-		 * @param dwTime
-		 */
-		static void CALLBACK AnimTimerProc(HWND hWnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime);
+	/**
+	 * Animated icon timer.
+	 * @param hWnd
+	 * @param uMsg
+	 * @param idEvent
+	 * @param dwTime
+	 */
+	static void CALLBACK AnimTimerProc(HWND hWnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime);
 };
 
 /** DragImageLabelPrivate **/
@@ -356,7 +356,7 @@ void CALLBACK DragImageLabelPrivate::AnimTimerProc(HWND hWnd, UINT uMsg, UINT_PT
 
 DragImageLabel::DragImageLabel(HWND hwndParent)
 	: d_ptr(new DragImageLabelPrivate(hwndParent))
-{ }
+{}
 
 DragImageLabel::~DragImageLabel()
 {

@@ -11,7 +11,8 @@
 #include "common.h"
 
 #include "ISpriteSheet.hpp"
-class FlagSpriteSheet : public ISpriteSheet {
+class FlagSpriteSheet : public ISpriteSheet
+{
 public:
 	/**
 	 * Flags sprite sheet

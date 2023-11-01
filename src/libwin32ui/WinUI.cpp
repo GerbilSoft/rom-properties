@@ -21,8 +21,8 @@
 #include <string>
 #include <vector>
 using std::string;
-using std::unique_ptr;
 using std::tstring;
+using std::unique_ptr;
 using std::vector;
 
 // COM smart pointer typedefs
@@ -957,4 +957,4 @@ LRESULT CALLBACK ListViewNoDividerDblClickSubclassProc(
 	return DefSubclassProc(hWnd, uMsg, wParam, lParam);
 }
 
-}
+} //namespace LibWin32UI

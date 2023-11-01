@@ -50,4 +50,4 @@ std::string getCacheDirectory(void);
 RP_LIBROMDATA_PUBLIC
 std::string getConfigDirectory(void);
 
-}
+} //namespace LibWin32Common

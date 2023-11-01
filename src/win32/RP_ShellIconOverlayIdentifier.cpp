@@ -53,7 +53,7 @@ RP_ShellIconOverlayIdentifier_Private::~RP_ShellIconOverlayIdentifier_Private()
 
 RP_ShellIconOverlayIdentifier::RP_ShellIconOverlayIdentifier()
 	: d_ptr(new RP_ShellIconOverlayIdentifier_Private())
-{ }
+{}
 
 RP_ShellIconOverlayIdentifier::~RP_ShellIconOverlayIdentifier()
 {

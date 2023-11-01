@@ -13,31 +13,31 @@
 class AchGDBusPrivate;
 class AchGDBus
 {
-	protected:
-		/**
-		 * AchGDBus class.
-		 *
-		 * This class is a Singleton, so the caller must obtain a
-		 * pointer to the class using instance().
-		 */
-		AchGDBus();
-		~AchGDBus();
+protected:
+	/**
+	 * AchGDBus class.
+	 *
+	 * This class is a Singleton, so the caller must obtain a
+	 * pointer to the class using instance().
+	 */
+	AchGDBus();
+	~AchGDBus();
 
-	private:
-		RP_DISABLE_COPY(AchGDBus);
-	private:
-		friend class AchGDBusPrivate;
-		AchGDBusPrivate *const d_ptr;
+private:
+	RP_DISABLE_COPY(AchGDBus);
+private:
+	friend class AchGDBusPrivate;
+	AchGDBusPrivate *const d_ptr;
 
-	public:
-		/**
-		 * Get the AchGDBus instance.
-		 *
-		 * This automatically initializes librpbase's Achievement
-		 * object and reloads the achievements data if it has been
-		 * modified.
-		 *
-		 * @return AchGDBus instance.
-		 */
-		static AchGDBus *instance(void);
+public:
+	/**
+	 * Get the AchGDBus instance.
+	 *
+	 * This automatically initializes librpbase's Achievement
+	 * object and reloads the achievements data if it has been
+	 * modified.
+	 *
+	 * @return AchGDBus instance.
+	 */
+	static AchGDBus *instance(void);
 };

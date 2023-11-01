@@ -268,4 +268,4 @@ void ExtractorPlugin::extract(ExtractionResult *result)
 	// Finished extracting metadata.
 }
 
-}
+} //namespace RomPropertiesKDE

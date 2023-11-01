@@ -57,7 +57,7 @@ RP_XAttrView_Private::RP_XAttrView_Private(RP_XAttrView *q, LPTSTR tfilename)
 	, dwExStyleRTL(LibWin32UI::isSystemRTL())
 	, colorAltRow(LibWin32UI::getAltRowColor())
 	, isFullyInit(false)
-{ }
+{}
 
 RP_XAttrView_Private::~RP_XAttrView_Private()
 {

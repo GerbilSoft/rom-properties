@@ -514,7 +514,7 @@ static LONG UnregisterFromApplications(RegKey& hkcr)
  * @param subKey Subkey name.
  * @return True to remove; false to keep.
  */
-static inline bool process_HKU_subkey(const tstring& subKey)
+static inline bool process_HKU_subkey(const tstring &subKey)
 {
 	if (subKey.size() <= 16) {
 		// Subkey name is too small.

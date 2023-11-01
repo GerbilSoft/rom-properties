@@ -28,7 +28,7 @@ UpdateChecker::UpdateChecker()
 	, m_hWnd(nullptr)
 	, m_errorMessage(nullptr)
 	, m_updateVersion(0)
-{ }
+{}
 
 UpdateChecker::~UpdateChecker()
 {

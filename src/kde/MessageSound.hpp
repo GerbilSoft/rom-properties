@@ -12,19 +12,19 @@
 
 class MessageSound
 {
-	public:
-		// Static class
-		MessageSound() = delete;
-		~MessageSound() = delete;
-	private:
-		Q_DISABLE_COPY(MessageSound);
+public:
+	// Static class
+	MessageSound() = delete;
+	~MessageSound() = delete;
+private:
+	Q_DISABLE_COPY(MessageSound);
 
-	public:
-		/**
-		 * Play a message sound effect.
-		 * @param notificationType Notification type.
-		 * @param message Message for logging.
-		 * @param parent Parent window.
-		 */
-		static void play(QMessageBox::Icon notificationType, const QString &message = QString(), QWidget *parent = nullptr);
+public:
+	/**
+	 * Play a message sound effect.
+	 * @param notificationType Notification type.
+	 * @param message Message for logging.
+	 * @param parent Parent window.
+	 */
+	static void play(QMessageBox::Icon notificationType, const QString &message = QString(), QWidget *parent = nullptr);
 };

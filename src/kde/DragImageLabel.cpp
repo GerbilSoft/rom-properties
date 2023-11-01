@@ -27,7 +27,7 @@ DragImageLabel::DragImageLabel(const QString &text, QWidget *parent, Qt::WindowF
 	, m_ecksBawks(false)
 	, m_img(nullptr)
 	, m_anim(nullptr)
-{ }
+{}
 
 DragImageLabel::DragImageLabel(QWidget *parent, Qt::WindowFlags f)
 	: super(parent, f)
@@ -35,7 +35,7 @@ DragImageLabel::DragImageLabel(QWidget *parent, Qt::WindowFlags f)
 	, m_ecksBawks(false)
 	, m_img(nullptr)
 	, m_anim(nullptr)
-{ }
+{}
 
 DragImageLabel::~DragImageLabel()
 {
@@ -51,16 +51,14 @@ void DragImageLabel::setEcksBawks(bool newEcksBawks)
 		// Need to initialize Ecks Bawks actions.
 		// NOTE: Only supporting Qt 5 for lambda functions.
 		QAction *const actMenu1 = new QAction(QLatin1String("ermahgerd! an ecks bawks ISO!"), this);
-		connect(actMenu1, &QAction::triggered,
-			[](bool) {
-				QDesktopServices::openUrl(QUrl(QLatin1String("https://twitter.com/DeaThProj/status/1684469412978458624")));
-			});
+		connect(actMenu1, &QAction::triggered, [](bool) {
+			QDesktopServices::openUrl(QUrl(QLatin1String("https://twitter.com/DeaThProj/status/1684469412978458624")));
+		});
 
 		QAction *const actMenu2 = new QAction(QLatin1String("Yar, har, fiddle dee dee"), this);
-		connect(actMenu2, &QAction::triggered,
-			[](bool) {
-				QDesktopServices::openUrl(QUrl(QLatin1String("https://github.com/xenia-canary/xenia-canary/pull/180")));
-			});
+		connect(actMenu2, &QAction::triggered, [](bool) {
+			QDesktopServices::openUrl(QUrl(QLatin1String("https://github.com/xenia-canary/xenia-canary/pull/180")));
+		});
 
 		addAction(actMenu1);
 		addAction(actMenu2);

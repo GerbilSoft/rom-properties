@@ -32,29 +32,29 @@ class RP_ShellIconOverlayIdentifier_Private;
 class UUID_ATTR("{02C6AF01-3C99-497D-B3FC-E38CE526786B}")
 RP_ShellIconOverlayIdentifier final : public LibWin32Common::ComBase<IShellIconOverlayIdentifier>
 {
-	public:
-		RP_ShellIconOverlayIdentifier();
-	protected:
-		~RP_ShellIconOverlayIdentifier() final;
+public:
+	RP_ShellIconOverlayIdentifier();
+protected:
+	~RP_ShellIconOverlayIdentifier() final;
 
-	private:
-		typedef LibWin32Common::ComBase<IShellIconOverlayIdentifier> super;
-		RP_DISABLE_COPY(RP_ShellIconOverlayIdentifier)
-	private:
-		friend class RP_ShellIconOverlayIdentifier_Private;
-		RP_ShellIconOverlayIdentifier_Private *const d_ptr;
+private:
+	typedef LibWin32Common::ComBase<IShellIconOverlayIdentifier> super;
+	RP_DISABLE_COPY(RP_ShellIconOverlayIdentifier)
+private:
+	friend class RP_ShellIconOverlayIdentifier_Private;
+	RP_ShellIconOverlayIdentifier_Private *const d_ptr;
 
-	public:
-		CLSID_DECL_NOINLINE(RP_ShellIconOverlayIdentifier)
+public:
+	CLSID_DECL_NOINLINE(RP_ShellIconOverlayIdentifier)
 
-	public:
-		// IUnknown
-		IFACEMETHODIMP QueryInterface(_In_ REFIID riid, _Outptr_ LPVOID *ppvObj) final;
+public:
+	// IUnknown
+	IFACEMETHODIMP QueryInterface(_In_ REFIID riid, _Outptr_ LPVOID *ppvObj) final;
 
-		// IShellIconOverlayIdentifier
-		IFACEMETHODIMP IsMemberOf(_In_ PCWSTR pwszPath, DWORD dwAttrib) final;
-		IFACEMETHODIMP GetOverlayInfo(_Out_writes_(cchMax) PWSTR pwszIconFile, int cchMax, _Out_ int *pIndex, _Out_ DWORD *pdwFlags) final;
-		IFACEMETHODIMP GetPriority(_Out_ int *pPriority) final;
+	// IShellIconOverlayIdentifier
+	IFACEMETHODIMP IsMemberOf(_In_ PCWSTR pwszPath, DWORD dwAttrib) final;
+	IFACEMETHODIMP GetOverlayInfo(_Out_writes_(cchMax) PWSTR pwszIconFile, int cchMax, _Out_ int *pIndex, _Out_ DWORD *pdwFlags) final;
+	IFACEMETHODIMP GetPriority(_Out_ int *pPriority) final;
 };
 
 #ifdef __CRT_UUID_DECL

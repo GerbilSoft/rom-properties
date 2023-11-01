@@ -23,26 +23,26 @@ using std::array;
 
 class AchievementsItemDelegatePrivate
 {
-	public:
-		explicit AchievementsItemDelegatePrivate(AchievementsItemDelegate *q);
+public:
+	explicit AchievementsItemDelegatePrivate(AchievementsItemDelegate *q);
 
-	protected:
-		AchievementsItemDelegate *const q_ptr;
-		Q_DECLARE_PUBLIC(AchievementsItemDelegate)
-	private:
-		Q_DISABLE_COPY(AchievementsItemDelegatePrivate)
+protected:
+	AchievementsItemDelegate *const q_ptr;
+	Q_DECLARE_PUBLIC(AchievementsItemDelegate)
+private:
+	Q_DISABLE_COPY(AchievementsItemDelegatePrivate)
 
-	public:
-		// Font retrieval
-		QFont fontName(const QWidget *widget = nullptr) const;
-		QFont fontDesc(const QWidget *widget = nullptr) const;
+public:
+	// Font retrieval
+	QFont fontName(const QWidget *widget = nullptr) const;
+	QFont fontDesc(const QWidget *widget = nullptr) const;
 };
 
 /** AchievementsItemDelegatePrivate **/
 
 AchievementsItemDelegatePrivate::AchievementsItemDelegatePrivate(AchievementsItemDelegate *q)
 	: q_ptr(q)
-{ }
+{}
 
 QFont AchievementsItemDelegatePrivate::fontName(const QWidget *widget) const
 {
@@ -74,7 +74,7 @@ QFont AchievementsItemDelegatePrivate::fontDesc(const QWidget *widget) const
 AchievementsItemDelegate::AchievementsItemDelegate(QObject *parent)
 	: super(parent)
 	, d_ptr(new AchievementsItemDelegatePrivate(this))
-{ }
+{}
 
 AchievementsItemDelegate::~AchievementsItemDelegate()
 {

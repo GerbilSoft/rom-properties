@@ -110,4 +110,4 @@ void OverlayIconPluginForwarder::fwd_plugin_destroyed(QObject *obj)
 	}
 }
 
-}
+} //namespace RomPropertiesKF5

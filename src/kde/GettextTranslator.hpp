@@ -12,22 +12,22 @@
 
 class GettextTranslator : public QTranslator
 {
-	Q_OBJECT
+Q_OBJECT
 
-	public:
-		explicit GettextTranslator(QObject *parent = nullptr);
+public:
+	explicit GettextTranslator(QObject *parent = nullptr);
 
-	private:
-		typedef QTranslator super;
-		Q_DISABLE_COPY(GettextTranslator);
+private:
+	typedef QTranslator super;
+	Q_DISABLE_COPY(GettextTranslator);
 
-	public:
+public:
 #if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
-		// Qt5: Single virtual function that takes a plural parameter.
-		QString translate(const char *context, const char *sourceText, const char *disambiguation = nullptr, int n = -1) const final;
+	// Qt5: Single virtual function that takes a plural parameter.
+	QString translate(const char *context, const char *sourceText, const char *disambiguation = nullptr, int n = -1) const final;
 #else
-		// Qt4: Virtual function with no plurals; non-virtual function with plurals.
-		QString translate(const char *context, const char *sourceText, const char *disambiguation, int n) const;
-		QString translate(const char *context, const char *sourceText, const char *disambiguation = nullptr) const final;
+	// Qt4: Virtual function with no plurals; non-virtual function with plurals.
+	QString translate(const char *context, const char *sourceText, const char *disambiguation, int n) const;
+	QString translate(const char *context, const char *sourceText, const char *disambiguation = nullptr) const final;
 #endif
 };

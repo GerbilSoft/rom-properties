@@ -152,4 +152,4 @@ static inline std::wstring urlencode(const std::wstring &url)
 }
 #endif /* _WIN32 */
 
-}
+} //namespace LibCacheCommon

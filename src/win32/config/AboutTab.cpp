@@ -79,152 +79,152 @@ using std::u16string;
 
 class AboutTabPrivate
 {
-	public:
-		AboutTabPrivate();
-		~AboutTabPrivate();
+public:
+	AboutTabPrivate();
+	~AboutTabPrivate();
 
-	private:
-		RP_DISABLE_COPY(AboutTabPrivate)
+private:
+	RP_DISABLE_COPY(AboutTabPrivate)
 
-	public:
-		/**
-		 * Dialog procedure.
-		 * @param hDlg
-		 * @param uMsg
-		 * @param wParam
-		 * @param lParam
-		 */
-		static INT_PTR CALLBACK dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+public:
+	/**
+	 * Dialog procedure.
+	 * @param hDlg
+	 * @param uMsg
+	 * @param wParam
+	 * @param lParam
+	 */
+	static INT_PTR CALLBACK dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
-		/**
-		 * Property sheet callback procedure.
-		 * @param hWnd
-		 * @param uMsg
-		 * @param ppsp
-		 */
-		static UINT CALLBACK callbackProc(HWND hWnd, UINT uMsg, LPPROPSHEETPAGE ppsp);
+	/**
+	 * Property sheet callback procedure.
+	 * @param hWnd
+	 * @param uMsg
+	 * @param ppsp
+	 */
+	static UINT CALLBACK callbackProc(HWND hWnd, UINT uMsg, LPPROPSHEETPAGE ppsp);
 
-	public:
-		// Property sheet.
-		HPROPSHEETPAGE hPropSheetPage;
-		HWND hWndPropSheet;
+public:
+	// Property sheet
+	HPROPSHEETPAGE hPropSheetPage;
+	HWND hWndPropSheet;
 
-		// Bold font.
-		HFONT hFontBold;
+	// Bold font
+	HFONT hFontBold;
 
-		/**
-		 * Initialize the bold font.
-		 * @param hFont Base font.
-		 */
-		void initBoldFont(HFONT hFont);
+	/**
+	 * Initialize the bold font.
+	 * @param hFont Base font.
+	 */
+	void initBoldFont(HFONT hFont);
 
-		// RichEdit DLLs.
-		HMODULE hRichEd20_dll;
+	// RichEdit DLLs.
+	HMODULE hRichEd20_dll;
 #ifdef MSFTEDIT_USE_41
-		HMODULE hMsftEdit_dll;
+	HMODULE hMsftEdit_dll;
 #endif /* MSFTEDIT_USE_41 */
-		bool bUseFriendlyLinks;
+	bool bUseFriendlyLinks;
 
-	public:
-		/**
-		 * Check for updates.
-		 */
-		void checkForUpdates(void);
+public:
+	/**
+	 * Check for updates.
+	 */
+	void checkForUpdates(void);
 
-		bool bCheckedForUpdates;	// Checked for updates yet?
-		UpdateChecker *updChecker;
+	bool bCheckedForUpdates;	// Checked for updates yet?
+	UpdateChecker *updChecker;
 
-		/**
-		 * An error occurred while trying to retrieve the update version.
-		 * Called by the WM_UPD_ERROR handler.
-		 * TODO: Error code?
-		 */
-		void updChecker_error();
+	/**
+	 * An error occurred while trying to retrieve the update version.
+	 * Called by the WM_UPD_ERROR handler.
+	 * TODO: Error code?
+	 */
+	void updChecker_error();
 
-		/**
-		 * Update version retrieved.
-		 * Called by the WM_UPD_RETRIEVED handler.
-		 */
-		void updChecker_retrieved(void);
+	/**
+	 * Update version retrieved.
+	 * Called by the WM_UPD_RETRIEVED handler.
+	 */
+	void updChecker_retrieved(void);
 
-	protected:
-		// Current RichText streaming context.
-		struct RTF_CTX {
-			const string *str;
-			size_t pos;
-		};
-		RTF_CTX rtfCtx_main;
-		RTF_CTX rtfCtx_upd;
+protected:
+	// Current RichText streaming context
+	struct RTF_CTX {
+		const string *str;
+		size_t pos;
+	};
+	RTF_CTX rtfCtx_main;
+	RTF_CTX rtfCtx_upd;
 
-		/**
-		 * RTF EditStream callback.
-		 * @param dwCookie	[in] Pointer to RTF_CTX.
-		 * @param lpBuff	[out] Output buffer.
-		 * @param cb		[in] Number of bytes to write.
-		 * @param pcb		[out] Number of bytes actually written.
-		 * @return 0 on success; non-zero on error.
-		 */
-		static DWORD CALLBACK EditStreamCallback(_In_ DWORD_PTR dwCookie,
-			_Out_ LPBYTE pbBuff, _In_ LONG cb, _Out_ LONG *pcb);
+	/**
+	 * RTF EditStream callback
+	 * @param dwCookie	[in] Pointer to RTF_CTX.
+	 * @param lpBuff	[out] Output buffer.
+	 * @param cb		[in] Number of bytes to write.
+	 * @param pcb		[out] Number of bytes actually written.
+	 * @return 0 on success; non-zero on error.
+	 */
+	static DWORD CALLBACK EditStreamCallback(_In_ DWORD_PTR dwCookie,
+		_Out_ LPBYTE pbBuff, _In_ LONG cb, _Out_ LONG *pcb);
 
-		/**
-		 * Convert a UTF-8 string to RTF-escaped text.
-		 * @param str UTF-8 string.
-		 * @return RTF-escaped text.
-		 */
-		static string rtfEscape(const char *str);
+	/**
+	 * Convert a UTF-8 string to RTF-escaped text.
+	 * @param str UTF-8 string.
+	 * @return RTF-escaped text.
+	 */
+	static string rtfEscape(const char *str);
 
-		/**
-		 * Create an RTF "friendly link" if supported.
-		 * If not supported, returns the escaped link title.
-		 * @param link	[in] Link address.
-		 * @param title	[in] Link title.
-		 * @return RTF "friendly link", or title only.
-		 */
-		string rtfFriendlyLink(const char *link, const char *title);
+	/**
+	 * Create an RTF "friendly link" if supported.
+	 * If not supported, returns the escaped link title.
+	 * @param link	[in] Link address.
+	 * @param title	[in] Link title.
+	 * @return RTF "friendly link", or title only.
+	 */
+	string rtfFriendlyLink(const char *link, const char *title);
 
-	protected:
-		// Tab text (RichText format)
-		string sVersionLabel;	// UpdateCheck
-		string sCredits;
-		string sLibraries;
-		string sSupport;
+protected:
+	// Tab text (RichText format)
+	string sVersionLabel;	// UpdateCheck
+	string sCredits;
+	string sLibraries;
+	string sSupport;
 
-		// RichEdit controls
-		HWND hRichEdit;		// Main RichEdit control
-		HWND hUpdateCheck;	// UpdateCheck label
+	// RichEdit controls
+	HWND hRichEdit;		// Main RichEdit control
+	HWND hUpdateCheck;	// UpdateCheck label
 
-		/**
-		 * Initialize the program title text.
-		 */
-		void initProgramTitleText(void);
+	/**
+	 * Initialize the program title text.
+	 */
+	void initProgramTitleText(void);
 
-		/**
-		 * Initialize the "Credits" tab.
-		 */
-		void initCreditsTab(void);
+	/**
+	 * Initialize the "Credits" tab.
+	 */
+	void initCreditsTab(void);
 
-		/**
-		 * Initialize the "Libraries" tab.
-		 */
-		void initLibrariesTab(void);
+	/**
+	 * Initialize the "Libraries" tab.
+	 */
+	void initLibrariesTab(void);
 
-		/**
-		 * Initialize the "Support" tab.
-		 */
-		void initSupportTab(void);
+	/**
+	 * Initialize the "Support" tab.
+	 */
+	void initSupportTab(void);
 
-		/**
-		 * Set tab contents.
-		 * @param index Tab index.
-		 */
-		void setTabContents(int index);
+	/**
+	 * Set tab contents.
+	 * @param index Tab index.
+	 */
+	void setTabContents(int index);
 
-	public:
-		/**
-		 * Initialize the dialog.
-		 */
-		void initDialog(void);
+public:
+	/**
+	 * Initialize the dialog.
+	 */
+	void initDialog(void);
 };
 
 /** AboutTabPrivate **/
@@ -1313,7 +1313,7 @@ void AboutTabPrivate::initDialog(void)
 
 AboutTab::AboutTab(void)
 	: d_ptr(new AboutTabPrivate())
-{ }
+{}
 
 AboutTab::~AboutTab()
 {

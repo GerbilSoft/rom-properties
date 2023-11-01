@@ -9,8 +9,8 @@
 #include "stdafx.h"
 #include "AchWin32.hpp"
 
-#include "RpImageWin32.hpp"
 #include "AchSpriteSheet.hpp"
+#include "RpImageWin32.hpp"
 #include "dll-macros.h"
 
 // Other rom-properties libraries
@@ -28,77 +28,77 @@ using std::unordered_map;
 
 class AchWin32Private
 {
-	public:
-		AchWin32Private();
-		~AchWin32Private();
+public:
+	AchWin32Private();
+	~AchWin32Private();
 
-	private:
-		RP_DISABLE_COPY(AchWin32Private)
+private:
+	RP_DISABLE_COPY(AchWin32Private)
 
-	public:
-		// Static AchWin32 instance.
-		// TODO: Q_GLOBAL_STATIC() equivalent, though we
-		// may need special initialization if the compiler
-		// doesn't support thread-safe statics.
-		static AchWin32 instance;
-		bool hasRegistered;
+public:
+	// Static AchWin32 instance.
+	// TODO: Q_GLOBAL_STATIC() equivalent, though we
+	// may need special initialization if the compiler
+	// doesn't support thread-safe statics.
+	static AchWin32 instance;
+	bool hasRegistered;
 
-		// Property for "NotifyIconData uID".
-		// This contains the uID set in NotifyIconData.
-		static const TCHAR NID_UID_PTR_PROP[];
+	// Property for "NotifyIconData uID".
+	// This contains the uID set in NotifyIconData.
+	static const TCHAR NID_UID_PTR_PROP[];
 
-		// Timeout for the achievement popup. (in ms)
-		static const unsigned int ACHWIN32_TIMEOUT = 10U * 1000U;
+	// Timeout for the achievement popup. (in ms)
+	static const unsigned int ACHWIN32_TIMEOUT = 10U * 1000U;
 
-		// Window message for NOTIFYICONDATA.
-		static const unsigned int WM_ACHWIN32_NOTIFY = WM_USER + 69;	// nice
+	// Window message for NOTIFYICONDATA.
+	static const unsigned int WM_ACHWIN32_NOTIFY = WM_USER + 69;	// nice
 
-		// Icon ID high word.
-		static const DWORD ACHWIN32_NID_UID_HI = 0x19840000;
+	// Icon ID high word.
+	static const DWORD ACHWIN32_NID_UID_HI = 0x19840000;
 
-	public:
-		/**
-		 * Notification function. (static)
-		 * @param user_data	[in] User data. (this)
-		 * @param id		[in] Achievement ID.
-		 * @return 0 on success; negative POSIX error code on error.
-		 */
-		static int RP_C_API notifyFunc(intptr_t user_data, Achievements::ID id);
+public:
+	/**
+	 * Notification function. (static)
+	 * @param user_data	[in] User data. (this)
+	 * @param id		[in] Achievement ID.
+	 * @return 0 on success; negative POSIX error code on error.
+	 */
+	static int RP_C_API notifyFunc(intptr_t user_data, Achievements::ID id);
 
-		/**
-		 * Notification function. (non-static)
-		 * @param id	[in] Achievement ID.
-		 * @return 0 on success; negative POSIX error code on error.
-		 */
-		int notifyFunc(Achievements::ID id);
+	/**
+	 * Notification function. (non-static)
+	 * @param id	[in] Achievement ID.
+	 * @return 0 on success; negative POSIX error code on error.
+	 */
+	int notifyFunc(Achievements::ID id);
 
-	private:
-		/**
-		 * Remove a window from tracking.
-		 * This also removes the notification icon.
-		 * @param hWnd
-		 */
-		static void removeWindowFromTracking(HWND hWnd);
+private:
+	/**
+	 * Remove a window from tracking.
+	 * This also removes the notification icon.
+	 * @param hWnd
+	 */
+	static void removeWindowFromTracking(HWND hWnd);
 
-		/**
-		 * RpAchNotifyWnd window procedure.
-		 * @param hWnd
-		 * @param uMsg
-		 * @param wParam
-		 * @param lParam
-		 */
-		static LRESULT CALLBACK RpAchNotifyWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	/**
+	 * RpAchNotifyWnd window procedure.
+	 * @param hWnd
+	 * @param uMsg
+	 * @param wParam
+	 * @param lParam
+	 */
+	static LRESULT CALLBACK RpAchNotifyWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
-	public:
-		// Window class. (registered once)
-		ATOM atomWindowClass;
+public:
+	// Window class. (registered once)
+	ATOM atomWindowClass;
 
-		// NOTE: Windows Explorer appears to create a new thread per
-		// properties dialog, and the thread (and this window) disappears
-		// when the associated properties dialog is closed. Hence, we'll
-		// need to use a map with thread IDs.
-		unordered_map<DWORD, HWND> map_tidToHWND;
-		unordered_map<HWND, DWORD> map_hWndToTID;
+	// NOTE: Windows Explorer appears to create a new thread per
+	// properties dialog, and the thread (and this window) disappears
+	// when the associated properties dialog is closed. Hence, we'll
+	// need to use a map with thread IDs.
+	unordered_map<DWORD, HWND> map_tidToHWND;
+	unordered_map<HWND, DWORD> map_hWndToTID;
 };
 
 // Property for "NotifyIconData uID".
@@ -393,7 +393,7 @@ LRESULT CALLBACK AchWin32Private::RpAchNotifyWndProc(HWND hWnd, UINT uMsg, WPARA
 
 AchWin32::AchWin32()
 	: d_ptr(new AchWin32Private())
-{ }
+{}
 
 AchWin32::~AchWin32()
 {

@@ -22,123 +22,123 @@ struct z_stream_s;
 
 class RpFile_IStream final : public LibRpFile::IRpFile
 {
-	public:
-		/**
-		 * Create an IRpFile using IStream* as the underlying storage mechanism.
-		 * @param pStream	[in] IStream*.
-		 * @param gzip		[in] If true, handle gzipped files automatically.
-		 */
-		explicit RpFile_IStream(IStream *pStream, bool gzip = false);
-	public:
-		~RpFile_IStream() final;
+public:
+	/**
+	 * Create an IRpFile using IStream* as the underlying storage mechanism.
+	 * @param pStream	[in] IStream*.
+	 * @param gzip		[in] If true, handle gzipped files automatically.
+	 */
+	explicit RpFile_IStream(IStream *pStream, bool gzip = false);
+public:
+	~RpFile_IStream() final;
 
-	private:
-		typedef LibRpFile::IRpFile super;
-		RP_DISABLE_COPY(RpFile_IStream)
+private:
+	typedef LibRpFile::IRpFile super;
+	RP_DISABLE_COPY(RpFile_IStream)
 
-	public:
-		/**
-		 * Is the file open?
-		 * This usually only returns false if an error occurred.
-		 * @return True if the file is open; false if it isn't.
-		 */
-		bool isOpen(void) const final;
+public:
+	/**
+	 * Is the file open?
+	 * This usually only returns false if an error occurred.
+	 * @return True if the file is open; false if it isn't.
+	 */
+	bool isOpen(void) const final;
 
-		/**
-		 * Close the file.
-		 */
-		void close(void) final;
+	/**
+	 * Close the file.
+	 */
+	void close(void) final;
 
-		/**
-		 * Read data from the file.
-		 * @param ptr Output data buffer.
-		 * @param size Amount of data to read, in bytes.
-		 * @return Number of bytes read.
-		 */
-		size_t read(void *ptr, size_t size) final;
+	/**
+	 * Read data from the file.
+	 * @param ptr Output data buffer.
+	 * @param size Amount of data to read, in bytes.
+	 * @return Number of bytes read.
+	 */
+	size_t read(void *ptr, size_t size) final;
 
-		/**
-		 * Write data to the file.
-		 * @param ptr Input data buffer.
-		 * @param size Amount of data to read, in bytes.
-		 * @return Number of bytes written.
-		 */
-		size_t write(const void *ptr, size_t size) final;
+	/**
+	 * Write data to the file.
+	 * @param ptr Input data buffer.
+	 * @param size Amount of data to read, in bytes.
+	 * @return Number of bytes written.
+	 */
+	size_t write(const void *ptr, size_t size) final;
 
-		/**
-		 * Set the file position.
-		 * @param pos File position.
-		 * @return 0 on success; -1 on error.
-		 */
-		int seek(off64_t pos) final;
+	/**
+	 * Set the file position.
+	 * @param pos File position.
+	 * @return 0 on success; -1 on error.
+	 */
+	int seek(off64_t pos) final;
 
-		/**
-		 * Get the file position.
-		 * @return File position, or -1 on error.
-		 */
-		off64_t tell(void) final;
+	/**
+	 * Get the file position.
+	 * @return File position, or -1 on error.
+	 */
+	off64_t tell(void) final;
 
-		/**
-		 * Truncate the file.
-		 * @param size New size. (default is 0)
-		 * @return 0 on success; negative POSIX error code on error.
-		 */
-		int truncate(off64_t size = 0) final;
+	/**
+	 * Truncate the file.
+	 * @param size New size. (default is 0)
+	 * @return 0 on success; negative POSIX error code on error.
+	 */
+	int truncate(off64_t size = 0) final;
 
-		/**
-		 * Flush buffers.
-		 * This operation only makes sense on writable files.
-		 * @return 0 on success; negative POSIX error code on error.
-		 */
-		int flush(void) final;
+	/**
+	 * Flush buffers.
+	 * This operation only makes sense on writable files.
+	 * @return 0 on success; negative POSIX error code on error.
+	 */
+	int flush(void) final;
 
-	public:
-		/** File properties. **/
+public:
+	/** File properties **/
 
-		/**
-		 * Get the file size.
-		 * @return File size, or negative on error.
-		 */
-		off64_t size(void) final;
+	/**
+	 * Get the file size.
+	 * @return File size, or negative on error.
+	 */
+	off64_t size(void) final;
 
-		/**
-		 * Get the filename.
-		 * @return Filename. (May be nullptr if the filename is not available.)
-		 */
-		const char *filename(void) const final;
+	/**
+	 * Get the filename.
+	 * @return Filename. (May be nullptr if the filename is not available.)
+	 */
+	const char *filename(void) const final;
 
-	public:
-		/** Extra functions **/
+public:
+	/** Extra functions **/
 
-		/**
-		 * Make the file writable.
-		 * @return 0 on success; negative POSIX error code on error.
-		 */
-		int makeWritable(void) final
-		{
-			// TODO: Actually do something here...
-			// For now, return 0 if writable; -ENOTSUP if not.
-			return (isWritable() ? 0 : -ENOTSUP);
-		}
+	/**
+	 * Make the file writable.
+	 * @return 0 on success; negative POSIX error code on error.
+	 */
+	int makeWritable(void) final
+	{
+		// TODO: Actually do something here...
+		// For now, return 0 if writable; -ENOTSUP if not.
+		return (isWritable() ? 0 : -ENOTSUP);
+	}
 
-	protected:
-		IStreamPtr m_pStream;
-		char *m_filename;
+protected:
+	IStreamPtr m_pStream;
+	char *m_filename;
 
-		// zlib
-		unsigned int m_z_uncomp_sz;
-		unsigned int m_z_filepos;	// position in compressed file
-		off64_t m_z_realpos;		// position in real file
-		struct z_stream_s *m_pZstm;
-		// zlib buffer
-		uint8_t *m_pZbuf;
-		ULONG m_zbufLen;
-		ULONG m_zcurPos;
+	// zlib
+	unsigned int m_z_uncomp_sz;
+	unsigned int m_z_filepos;	// position in compressed file
+	off64_t m_z_realpos;		// position in real file
+	struct z_stream_s *m_pZstm;
+	// zlib buffer
+	uint8_t *m_pZbuf;
+	ULONG m_zbufLen;
+	ULONG m_zcurPos;
 
-		/**
-		 * Copy the zlib stream from another RpFile_IStream.
-		 * @param other
-		 * @return 0 on success; non-zero on error.
-		 */
-		int copyZlibStream(const RpFile_IStream &other);
+	/**
+	 * Copy the zlib stream from another RpFile_IStream.
+	 * @param other
+	 * @return 0 on success; non-zero on error.
+	 */
+	int copyZlibStream(const RpFile_IStream &other);
 };

@@ -39,39 +39,39 @@ static const std::array<option_menu_action_t, 4> stdacts = {{
 
 class OptionsMenuButtonPrivate
 {
-	public:
-		explicit OptionsMenuButtonPrivate(HWND hWnd);
-		~OptionsMenuButtonPrivate();
+public:
+	explicit OptionsMenuButtonPrivate(HWND hWnd);
+	~OptionsMenuButtonPrivate();
 
-	public:
-		HWND hWnd;		// OptionsMenuButton control
-		HMENU hMenuOptions;	// Popup menu
+public:
+	HWND hWnd;		// OptionsMenuButton control
+	HMENU hMenuOptions;	// Popup menu
 
-		// Is the UI locale right-to-left?
-		// If so, this will be set to WS_EX_LAYOUTRTL.
-		DWORD dwExStyleRTL;
+	// Is the UI locale right-to-left?
+	// If so, this will be set to WS_EX_LAYOUTRTL.
+	DWORD dwExStyleRTL;
 
-	public:
-		/**
-		* Reset the menu items using the specified RomData object.
-		 * @param hWnd OptionsMenuButton
-		 * @param romData RomData object
-		 */
-		void reinitMenu(const RomData *romData);
+public:
+	/**
+	* Reset the menu items using the specified RomData object.
+	 * @param hWnd OptionsMenuButton
+	 * @param romData RomData object
+	 */
+	void reinitMenu(const RomData *romData);
 
-		/**
-		 * Update a ROM operation menu item.
-		 * @param hWnd OptionsMenuButton
-		 * @param id ROM operation ID
-		 * @param op ROM operation
-		 */
-		void updateOp(int id, const RomData::RomOp *op);
+	/**
+	 * Update a ROM operation menu item.
+	 * @param hWnd OptionsMenuButton
+	 * @param id ROM operation ID
+	 * @param op ROM operation
+	 */
+	void updateOp(int id, const RomData::RomOp *op);
 
-		/**
-		 * Popup the menu.
-		 * @return Selected menu item ID (+IDM_OPTIONS_MENU_BASE), or 0 if none.
-		 */
-		int popupMenu(void);
+	/**
+	 * Popup the menu.
+	 * @return Selected menu item ID (+IDM_OPTIONS_MENU_BASE), or 0 if none.
+	 */
+	int popupMenu(void);
 };
 
 OptionsMenuButtonPrivate::OptionsMenuButtonPrivate(HWND hWnd)

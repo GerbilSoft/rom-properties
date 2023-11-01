@@ -19,22 +19,23 @@
 #include "ui_DosAttrView.h"
 class DosAttrViewPrivate
 {
-	public:
-		DosAttrViewPrivate()
-			: attrs(0) { }
+public:
+	DosAttrViewPrivate()
+		: attrs(0)
+	{}
 
-	private:
-		Q_DISABLE_COPY(DosAttrViewPrivate)
+private:
+	Q_DISABLE_COPY(DosAttrViewPrivate)
 
-	public:
-		Ui::DosAttrView ui;
-		unsigned int attrs;
+public:
+	Ui::DosAttrView ui;
+	unsigned int attrs;
 
-	public:
-		/**
-		 * Update the attributes display.
-		 */
-		void updateAttrsDisplay(void);
+public:
+	/**
+	 * Update the attributes display.
+	 */
+	void updateAttrsDisplay(void);
 };
 
 /**

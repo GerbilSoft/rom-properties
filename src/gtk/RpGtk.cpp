@@ -311,7 +311,7 @@ static int rpGtk_getFileName_int(const rpGtk_getFileName_t *gfndata, bool bSave)
 #  else /* !USE_GTK4_FILE_DIALOG */
 			gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(fileDialog), set_file, nullptr);
 #  endif /* !USE_GTK4_FILE_DIALOG */
-                        g_object_unref(set_file);
+			g_object_unref(set_file);
 		}
 	}
 #else /* !GTK_CHECK_VERSION(4,0,0) */

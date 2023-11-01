@@ -16,58 +16,58 @@ static ATOM atom_messageWidget;
 
 class MessageWidgetPrivate
 {
-	public:
-		explicit MessageWidgetPrivate(HWND hWnd);
-		~MessageWidgetPrivate();
+public:
+	explicit MessageWidgetPrivate(HWND hWnd);
+	~MessageWidgetPrivate();
 
-	public:
-		void setMessageType(unsigned int messageType)
-		{
-			messageType &= 0x70;
-			if (this->messageType == messageType || messageType > 0x40)
-				return;
+public:
+	void setMessageType(unsigned int messageType)
+	{
+		messageType &= 0x70;
+		if (this->messageType == messageType || messageType > 0x40)
+			return;
 
-			this->messageType = messageType;
-			updateIcon();
-		}
+		this->messageType = messageType;
+		updateIcon();
+	}
 
-	private:
-		/**
-		 * Update the icon and brushes.
-		 */
-		void updateIcon();
+private:
+	/**
+	 * Update the icon and brushes.
+	 */
+	void updateIcon();
 
-	public:
-		/** Window Message functions **/
+public:
+	/** Window Message functions **/
 
-		/**
-		 * WM_PAINT handler.
-		 */
-		void paint(void);
+	/**
+	 * WM_PAINT handler.
+	 */
+	void paint(void);
 
-	public:
-		HWND hWnd;			// MessageWidget control
-		HFONT hFont;			// set by the parent window
-		HICON hIcon;			// loaded with LR_SHARED
+public:
+	HWND hWnd;			// MessageWidget control
+	HFONT hFont;			// set by the parent window
+	HICON hIcon;			// loaded with LR_SHARED
 
-		HFONT hFontMarlett;
-		HFONT hFontMarlettBold;
+	HFONT hFontMarlett;
+	HFONT hFontMarlettBold;
 
-		HBRUSH hbrBorder;		// Border brush
-		HBRUSH hbrBg;			// Background brush
-		COLORREF colorBg;		// Background color
-		unsigned int messageType;	// MB_ICON*
-		SIZE szIcon;			// Icon size
+	HBRUSH hbrBorder;		// Border brush
+	HBRUSH hbrBg;			// Background brush
+	COLORREF colorBg;		// Background color
+	unsigned int messageType;	// MB_ICON*
+	SIZE szIcon;			// Icon size
 
-		enum CloseButtonState {
-			CLSBTN_NORMAL = 0,
-			CLSBTN_HOVER,
-			CLSBTN_PRESSED,
-		};
-		CloseButtonState closeButtonState;
-		RECT rectBtnClose;		// Close button rect
-		bool bBtnCloseEntered;		// True if the mouse cursor entered the Close button area.
-		bool bBtnCloseDown;		// True if WM_LBUTTONDOWN received while over the Close button.
+	enum CloseButtonState {
+		CLSBTN_NORMAL = 0,
+		CLSBTN_HOVER,
+		CLSBTN_PRESSED,
+	};
+	CloseButtonState closeButtonState;
+	RECT rectBtnClose;		// Close button rect
+	bool bBtnCloseEntered;		// True if the mouse cursor entered the Close button area.
+	bool bBtnCloseDown;		// True if WM_LBUTTONDOWN received while over the Close button.
 };
 
 MessageWidgetPrivate::MessageWidgetPrivate(HWND hWnd)

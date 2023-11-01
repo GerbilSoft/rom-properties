@@ -21,7 +21,7 @@ ISpriteSheet::ISpriteSheet(int cols, int rows, int width, int height)
 	, m_rows(rows)
 	, m_width(width)
 	, m_height(height)
-{ }
+{}
 
 /**
  * Get an icon from the sprite sheet.

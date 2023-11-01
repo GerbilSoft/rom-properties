@@ -18,29 +18,29 @@ class QValidator;
 
 class KeyStoreItemDelegate : public QStyledItemDelegate
 {
-	Q_OBJECT
+Q_OBJECT
 
-	public:
-		explicit KeyStoreItemDelegate(QObject *parent);
+public:
+	explicit KeyStoreItemDelegate(QObject *parent);
 
-	private:
-		typedef QStyledItemDelegate super;
-		Q_DISABLE_COPY(KeyStoreItemDelegate)
+private:
+	typedef QStyledItemDelegate super;
+	Q_DISABLE_COPY(KeyStoreItemDelegate)
 
-	public:
-		QWidget* createEditor(QWidget *parent, const QStyleOptionViewItem &option,
-			const QModelIndex &index) const final;
-		void setEditorData(QWidget *editor, const QModelIndex &index) const final;
-		void setModelData(QWidget *editor, QAbstractItemModel *model,
-			const QModelIndex &index) const final;
-		void updateEditorGeometry(QWidget *editor, const QStyleOptionViewItem &option,
-			const QModelIndex &index) const final;
+public:
+	QWidget* createEditor(QWidget *parent, const QStyleOptionViewItem &option,
+		const QModelIndex &index) const final;
+	void setEditorData(QWidget *editor, const QModelIndex &index) const final;
+	void setModelData(QWidget *editor, QAbstractItemModel *model,
+		const QModelIndex &index) const final;
+	void updateEditorGeometry(QWidget *editor, const QStyleOptionViewItem &option,
+		const QModelIndex &index) const final;
 
-		void paint(QPainter *painter, const QStyleOptionViewItem &option,
-			const QModelIndex &index) const final;
+	void paint(QPainter *painter, const QStyleOptionViewItem &option,
+		const QModelIndex &index) const final;
 
-	protected:
-		// Validators.
-		QValidator *m_validHexKey;
-		QValidator *m_validHexKeyOrKanji;
+protected:
+	// Validators.
+	QValidator *m_validHexKey;
+	QValidator *m_validHexKeyOrKanji;
 };

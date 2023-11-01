@@ -35,13 +35,13 @@ const CLSID CLSID_RP_ThumbnailProvider =
 RP_ThumbnailProvider_Private::RP_ThumbnailProvider_Private()
 	: pstream(nullptr)
 	, grfMode(0)
-{ }
+{}
 
 /** RP_ThumbnailProvider **/
 
 RP_ThumbnailProvider::RP_ThumbnailProvider()
 	: d_ptr(new RP_ThumbnailProvider_Private())
-{ }
+{}
 
 RP_ThumbnailProvider::~RP_ThumbnailProvider()
 {

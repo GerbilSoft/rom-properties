@@ -13,42 +13,42 @@
 class SystemsTabPrivate;
 class SystemsTab final : public ITab
 {
-	public:
-		SystemsTab();
-		~SystemsTab() final;
+public:
+	SystemsTab();
+	~SystemsTab() final;
 
-	private:
-		typedef ITab super;
-		RP_DISABLE_COPY(SystemsTab)
-	private:
-		friend class SystemsTabPrivate;
-		SystemsTabPrivate *const d_ptr;
+private:
+	typedef ITab super;
+	RP_DISABLE_COPY(SystemsTab)
+private:
+	friend class SystemsTabPrivate;
+	SystemsTabPrivate *const d_ptr;
 
-	public:
-		/**
-		 * Create the HPROPSHEETPAGE for this tab.
-		 *
-		 * NOTE: This function can only be called once.
-		 * Subsequent invocations will return nullptr.
-		 *
-		 * @return HPROPSHEETPAGE.
-		 */
-		HPROPSHEETPAGE getHPropSheetPage(void) final;
+public:
+	/**
+	 * Create the HPROPSHEETPAGE for this tab.
+	 *
+	 * NOTE: This function can only be called once.
+	 * Subsequent invocations will return nullptr.
+	 *
+	 * @return HPROPSHEETPAGE.
+	 */
+	HPROPSHEETPAGE getHPropSheetPage(void) final;
 
-		/**
-		 * Reset the contents of this tab.
-		 */
-		void reset(void) final;
+	/**
+	 * Reset the contents of this tab.
+	 */
+	void reset(void) final;
 
-		/**
-		 * Load the default configuration.
-		 * This does NOT save, and will only emit modified()
-		 * if it's different from the current configuration.
-		 */
-		void loadDefaults(void) final;
+	/**
+	 * Load the default configuration.
+	 * This does NOT save, and will only emit modified()
+	 * if it's different from the current configuration.
+	 */
+	void loadDefaults(void) final;
 
-		/**
-		 * Save the contents of this tab.
-		 */
-		void save(void) final;
+	/**
+	 * Save the contents of this tab.
+	 */
+	void save(void) final;
 };

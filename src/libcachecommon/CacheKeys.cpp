@@ -509,4 +509,4 @@ wstring urlencode(const wchar_t *url)
 }
 #endif /* _WIN32 */
 
-}
+} //namespace LibCacheCommon

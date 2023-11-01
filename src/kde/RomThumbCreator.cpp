@@ -66,155 +66,155 @@ extern "C" {
 
 class RomThumbCreatorPrivate final : public TCreateThumbnail<QImage>
 {
-	public:
-		RomThumbCreatorPrivate() = default;
+public:
+	RomThumbCreatorPrivate() = default;
 
-	private:
-		typedef TCreateThumbnail<QImage> super;
-		Q_DISABLE_COPY(RomThumbCreatorPrivate)
+private:
+	typedef TCreateThumbnail<QImage> super;
+	Q_DISABLE_COPY(RomThumbCreatorPrivate)
 
-	public:
-		/** TCreateThumbnail functions. **/
+public:
+	/** TCreateThumbnail functions. **/
 
-		/**
-		 * Wrapper function to convert rp_image* to ImgClass.
-		 * @param img rp_image
-		 * @return ImgClass
-		 */
-		inline QImage rpImageToImgClass(const rp_image_const_ptr &img) const final
-		{
-			return rpToQImage(img);
+	/**
+	 * Wrapper function to convert rp_image* to ImgClass.
+	 * @param img rp_image
+	 * @return ImgClass
+	 */
+	inline QImage rpImageToImgClass(const rp_image_const_ptr &img) const final
+	{
+		return rpToQImage(img);
+	}
+
+	/**
+	 * Wrapper function to check if an ImgClass is valid.
+	 * @param imgClass ImgClass
+	 * @return True if valid; false if not.
+	 */
+	inline bool isImgClassValid(const QImage &imgClass) const final
+	{
+		return !imgClass.isNull();
+	}
+
+	/**
+	 * Wrapper function to get a "null" ImgClass.
+	 * @return "Null" ImgClass.
+	 */
+	inline QImage getNullImgClass(void) const final
+	{
+		return {};
+	}
+
+	/**
+	 * Free an ImgClass object.
+	 * @param imgClass ImgClass object.
+	 */
+	inline void freeImgClass(QImage &imgClass) const final
+	{
+		// Nothing to do here...
+		Q_UNUSED(imgClass)
+	}
+
+	/**
+	 * Rescale an ImgClass using the specified scaling method.
+	 * @param imgClass ImgClass object.
+	 * @param sz New size.
+	 * @param method Scaling method.
+	 * @return Rescaled ImgClass.
+	 */
+	inline QImage rescaleImgClass(const QImage &imgClass, ImgSize sz, ScalingMethod method = ScalingMethod::Nearest) const final
+	{
+		Qt::TransformationMode mode;
+		switch (method) {
+			case ScalingMethod::Nearest:
+				mode = Qt::FastTransformation;
+				break;
+			case ScalingMethod::Bilinear:
+				mode = Qt::SmoothTransformation;
+				break;
+			default:
+				assert(!"Invalid scaling method.");
+				mode = Qt::FastTransformation;
+				break;
 		}
 
-		/**
-		 * Wrapper function to check if an ImgClass is valid.
-		 * @param imgClass ImgClass
-		 * @return True if valid; false if not.
-		 */
-		inline bool isImgClassValid(const QImage &imgClass) const final
-		{
-			return !imgClass.isNull();
-		}
+		QImage img = imgClass.scaled(sz.width, sz.height, Qt::IgnoreAspectRatio, mode);
 
-		/**
-		 * Wrapper function to get a "null" ImgClass.
-		 * @return "Null" ImgClass.
-		 */
-		inline QImage getNullImgClass(void) const final
-		{
-			return {};
-		}
-
-		/**
-		 * Free an ImgClass object.
-		 * @param imgClass ImgClass object.
-		 */
-		inline void freeImgClass(QImage &imgClass) const final
-		{
-			// Nothing to do here...
-			Q_UNUSED(imgClass)
-		}
-
-		/**
-		 * Rescale an ImgClass using the specified scaling method.
-		 * @param imgClass ImgClass object.
-		 * @param sz New size.
-		 * @param method Scaling method.
-		 * @return Rescaled ImgClass.
-		 */
-		inline QImage rescaleImgClass(const QImage &imgClass, ImgSize sz, ScalingMethod method = ScalingMethod::Nearest) const final
-		{
-			Qt::TransformationMode mode;
-			switch (method) {
-				case ScalingMethod::Nearest:
-					mode = Qt::FastTransformation;
-					break;
-				case ScalingMethod::Bilinear:
-					mode = Qt::SmoothTransformation;
-					break;
-				default:
-					assert(!"Invalid scaling method.");
-					mode = Qt::FastTransformation;
-					break;
-			}
-
-			QImage img = imgClass.scaled(sz.width, sz.height, Qt::IgnoreAspectRatio, mode);
-
-			// NOTE: Rescaling an ARGB32 image sometimes results in the format
-			// being changes to QImage::Format_ARGB32_Premultiplied.
-			// Convert it back to plain ARGB32 if that happens.
-			if (img.format() == QImage::Format_ARGB32_Premultiplied) {
+		// NOTE: Rescaling an ARGB32 image sometimes results in the format
+		// being changes to QImage::Format_ARGB32_Premultiplied.
+		// Convert it back to plain ARGB32 if that happens.
+		if (img.format() == QImage::Format_ARGB32_Premultiplied) {
 #if QT_VERSION >= QT_VERSION_CHECK(5,13,0)
-				img.convertTo(QImage::Format_ARGB32);
+			img.convertTo(QImage::Format_ARGB32);
 #else /* QT_VERSION < QT_VERSION_CHECK(5,13,0) */
-				img = img.convertToFormat(QImage::Format_ARGB32);
+			img = img.convertToFormat(QImage::Format_ARGB32);
 #endif /* QT_VERSION >= QT_VERSION_CHECK(5,13,0) */
-			}
-
-			return img;
 		}
 
-		/**
-		 * Get the size of the specified ImgClass.
-		 * @param imgClass	[in] ImgClass object.
-		 * @param pOutSize	[out] Pointer to ImgSize to store the image size.
-		 * @return 0 on success; non-zero on error.
-		 */
-		int getImgClassSize(const QImage &imgClass, ImgSize *pOutSize) const final
-		{
-			pOutSize->width = imgClass.width();
-			pOutSize->height = imgClass.height();
-			return 0;
-		}
+		return img;
+	}
 
-		/**
-		 * Get the proxy for the specified URL.
-		 * @param url URL
-		 * @return Proxy, or empty string if no proxy is needed.
-		 */
-		inline string proxyForUrl(const char *url) const final
-		{
-			return ::proxyForUrl(url);
-		}
+	/**
+	 * Get the size of the specified ImgClass.
+	 * @param imgClass	[in] ImgClass object.
+	 * @param pOutSize	[out] Pointer to ImgSize to store the image size.
+	 * @return 0 on success; non-zero on error.
+	 */
+	int getImgClassSize(const QImage &imgClass, ImgSize *pOutSize) const final
+	{
+		pOutSize->width = imgClass.width();
+		pOutSize->height = imgClass.height();
+		return 0;
+	}
 
-		/**
-		 * Is the system using a metered connection?
-		 *
-		 * Note that if the system doesn't support identifying if the
-		 * connection is metered, it will be assumed that the network
-		 * connection is unmetered.
-		 *
-		 * @return True if metered; false if not.
-		 */
-		bool isMetered(void) final
-		{
+	/**
+	 * Get the proxy for the specified URL.
+	 * @param url URL
+	 * @return Proxy, or empty string if no proxy is needed.
+	 */
+	inline string proxyForUrl(const char *url) const final
+	{
+		return ::proxyForUrl(url);
+	}
+
+	/**
+	 * Is the system using a metered connection?
+	 *
+	 * Note that if the system doesn't support identifying if the
+	 * connection is metered, it will be assumed that the network
+	 * connection is unmetered.
+	 *
+	 * @return True if metered; false if not.
+	 */
+	bool isMetered(void) final
+	{
 #if QT_VERSION >= QT_VERSION_CHECK(5,0,0) && defined(HAVE_QtDBus)
-			// TODO: Keep a persistent NetworkManager connection?
-			org::freedesktop::NetworkManager iface(
-				QLatin1String("org.freedesktop.NetworkManager"),
-				QLatin1String("/org/freedesktop/NetworkManager"),
-				QDBusConnection::systemBus());
-			if (!iface.isValid()) {
-				// Invalid interface.
-				// Assume unmetered.
-				return false;
-			}
-
-			// https://developer-old.gnome.org/NetworkManager/stable/nm-dbus-types.html#NMMetered
-			enum NMMetered : uint32_t {
-				NM_METERED_UNKNOWN	= 0,
-				NM_METERED_YES		= 1,
-				NM_METERED_NO		= 2,
-				NM_METERED_GUESS_YES	= 3,
-				NM_METERED_GUESS_NO	= 4,
-			};
-			const NMMetered metered = static_cast<NMMetered>(iface.metered());
-			return (metered == NM_METERED_YES || metered == NM_METERED_GUESS_YES);
-#else
-			// FIXME: Broken on Qt4.
+		// TODO: Keep a persistent NetworkManager connection?
+		org::freedesktop::NetworkManager iface(
+			QLatin1String("org.freedesktop.NetworkManager"),
+			QLatin1String("/org/freedesktop/NetworkManager"),
+			QDBusConnection::systemBus());
+		if (!iface.isValid()) {
+			// Invalid interface.
+			// Assume unmetered.
 			return false;
-#endif /* QT_VERSION >= QT_VERSION_CHECK(5,0,0) && HAVE_QtDBus */
 		}
+
+		// https://developer-old.gnome.org/NetworkManager/stable/nm-dbus-types.html#NMMetered
+		enum NMMetered : uint32_t {
+			NM_METERED_UNKNOWN	= 0,
+			NM_METERED_YES		= 1,
+			NM_METERED_NO		= 2,
+			NM_METERED_GUESS_YES	= 3,
+			NM_METERED_GUESS_NO	= 4,
+		};
+		const NMMetered metered = static_cast<NMMetered>(iface.metered());
+		return (metered == NM_METERED_YES || metered == NM_METERED_GUESS_YES);
+#else
+		// FIXME: Broken on Qt4.
+		return false;
+#endif /* QT_VERSION >= QT_VERSION_CHECK(5,0,0) && HAVE_QtDBus */
+	}
 };
 
 /** RomThumbCreator (KDE4 and KF5 only) **/

@@ -23,4 +23,4 @@ namespace LibCacheCommon {
  */
 const std::string &getCacheDirectory(void);
 
-}
+} //namespace LibCacheCommon

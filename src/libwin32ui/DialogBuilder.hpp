@@ -28,73 +28,73 @@ namespace LibWin32UI {
 
 class DialogBuilder
 {
-	public:
-		DialogBuilder();
+public:
+	DialogBuilder();
 
-		// Disable copy/assignment constructors.
+	// Disable copy/assignment constructors.
 #if __cplusplus >= 201103L
-	public:
-		DialogBuilder(const DialogBuilder &) = delete;
-		DialogBuilder &operator=(const DialogBuilder &) = delete;
+public:
+	DialogBuilder(const DialogBuilder &) = delete;
+	DialogBuilder &operator=(const DialogBuilder &) = delete;
 #else /* __cplusplus < 201103L */
-	private:
-		DialogBuilder(const DialogBuilder &);
-		DialogBuilder &operator=(const DialogBuilder &);
+private:
+	DialogBuilder(const DialogBuilder &);
+	DialogBuilder &operator=(const DialogBuilder &);
 #endif /* __cplusplus */
 
-	private:
-		/** DLGTEMPLATEEX helper functions. **/
-		inline void write_word(WORD w);
-		inline void write_wstr(LPCWSTR wstr);
-		inline void write_wstr_ord(LPCWSTR wstr);
+private:
+	/** DLGTEMPLATEEX helper functions. **/
+	inline void write_word(WORD w);
+	inline void write_wstr(LPCWSTR wstr);
+	inline void write_wstr_ord(LPCWSTR wstr);
 
-		inline void align_dword(void);
+	inline void align_dword(void);
 
-	public:
-		/**
-		 * Initialize the DLGTEMPLATEEX.
-		 *
-		 * DS_SETFONT will always be added to dwStyle,
-		 * and the appropriate dialog font will be
-		 * added to the dialog structure.
-		 *
-		 * NOTE: Help ID, menu, and custom dialog classes
-		 * are not supported.
-		 *
-		 * @param lpTemplate	[in] DLGTEMPLATE.
-		 * @param lpszTitle	[in, opt] Dialog title.
-		 */
-		void init(LPCDLGTEMPLATE lpTemplate, LPCWSTR lpszTitle);
+public:
+	/**
+	 * Initialize the DLGTEMPLATEEX.
+	 *
+	 * DS_SETFONT will always be added to dwStyle,
+	 * and the appropriate dialog font will be
+	 * added to the dialog structure.
+	 *
+	 * NOTE: Help ID, menu, and custom dialog classes
+	 * are not supported.
+	 *
+	 * @param lpTemplate	[in] DLGTEMPLATE.
+	 * @param lpszTitle	[in, opt] Dialog title.
+	 */
+	void init(LPCDLGTEMPLATE lpTemplate, LPCWSTR lpszTitle);
 
-		/**
-		 * Add a control to the dialog.
-		 * @param lpItemTemplate	[in] DLGITEMTEMPLATE.
-		 * @param lpszWindowClass	[in] Window class. (May be an ordinal value.)
-		 * @param lpszWindowText	[in, opt] Window text. (May be an ordinal value.)
-		 */
-		void add(const DLGITEMTEMPLATE *lpItemTemplate, LPCWSTR lpszWindowClass, LPCWSTR lpszWindowText);
+	/**
+	 * Add a control to the dialog.
+	 * @param lpItemTemplate	[in] DLGITEMTEMPLATE.
+	 * @param lpszWindowClass	[in] Window class. (May be an ordinal value.)
+	 * @param lpszWindowText	[in, opt] Window text. (May be an ordinal value.)
+	 */
+	void add(const DLGITEMTEMPLATE *lpItemTemplate, LPCWSTR lpszWindowClass, LPCWSTR lpszWindowText);
 
-		/**
-		 * Get a pointer to the created DLGTEMPLATEEX.
-		 * @return DLGTEMPLATE.
-		 */
-		LPCDLGTEMPLATE get(void) const;
+	/**
+	 * Get a pointer to the created DLGTEMPLATEEX.
+	 * @return DLGTEMPLATE.
+	 */
+	LPCDLGTEMPLATE get(void) const;
 
-		/**
-		 * Clear the dialog template.
-		 */
-		void clear(void);
+	/**
+	 * Clear the dialog template.
+	 */
+	void clear(void);
 
-	protected:
-		// DLGTEMPLATEEX data.
-		// TODO: Smaller maximum size and/or dynamic allocation?
-		uint8_t m_DlgBuf[1024];
+protected:
+	// DLGTEMPLATEEX data.
+	// TODO: Smaller maximum size and/or dynamic allocation?
+	uint8_t m_DlgBuf[1024];
 
-		// Current pointer into m_DlgBuf.
-		uint8_t *m_pDlgBuf;
+	// Current pointer into m_DlgBuf.
+	uint8_t *m_pDlgBuf;
 
-		// Pointer to DLGTEMPLATEEX's cDlgItems.
-		LPWORD m_pcDlgItems;
+	// Pointer to DLGTEMPLATEEX's cDlgItems.
+	LPWORD m_pcDlgItems;
 };
 
-}
+} //namespace LibWin32UI

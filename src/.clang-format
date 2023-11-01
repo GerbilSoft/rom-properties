@@ -51,6 +51,7 @@ AlignTrailingComments: true
 AlwaysBreakTemplateDeclarations: Yes
 ColumnLimit: 120
 CompactNamespaces: true
+IndentCaseLabels: true
 SpaceAfterTemplateKeyword: false
 SpacesInLineCommentPrefix:
   Minimum: 0

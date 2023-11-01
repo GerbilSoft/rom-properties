@@ -26,4 +26,4 @@ namespace GdkTextureConv {
  */
 GdkTexture *rp_image_to_GdkTexture(const LibRpTexture::rp_image *img);
 
-}
+} //namespace GdkTextureConv

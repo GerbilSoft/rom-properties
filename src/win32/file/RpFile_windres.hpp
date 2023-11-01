@@ -13,29 +13,29 @@
 
 class RpFile_windres final : public LibRpFile::MemFile
 {
-	public:
-		/**
-		 * Open an IRpFile backed by a Win32 resource.
-		 * The resulting IRpFile is read-only.
-		 *
-		 * @param hModule Module handle.
-		 * @param lpName Resource name.
-		 * @param lpType Resource type.
-		 */
-		RpFile_windres(HMODULE hModule, LPCTSTR lpName, LPCTSTR lpType);
-	public:
-		~RpFile_windres() final;
+public:
+	/**
+	 * Open an IRpFile backed by a Win32 resource.
+	 * The resulting IRpFile is read-only.
+	 *
+	 * @param hModule Module handle.
+	 * @param lpName Resource name.
+	 * @param lpType Resource type.
+	 */
+	RpFile_windres(HMODULE hModule, LPCTSTR lpName, LPCTSTR lpType);
+public:
+	~RpFile_windres() final;
 
-	private:
-		typedef LibRpFile::MemFile super;
-		RP_DISABLE_COPY(RpFile_windres)
+private:
+	typedef LibRpFile::MemFile super;
+	RP_DISABLE_COPY(RpFile_windres)
 
-	public:
-		/**
-		 * Close the file.
-		 */
-		void close(void) final;
+public:
+	/**
+	 * Close the file.
+	 */
+	void close(void) final;
 
-	protected:
-		HGLOBAL m_hGlobal;	// Resource handle.
+protected:
+	HGLOBAL m_hGlobal;	// Resource handle.
 };

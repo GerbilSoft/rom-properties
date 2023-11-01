@@ -29,118 +29,118 @@ using namespace LibRomData;
 
 class ImageTypesTabPrivate final : public TImageTypesConfig<HWND>
 {
-	public:
-		ImageTypesTabPrivate();
-		~ImageTypesTabPrivate() final;
+public:
+	ImageTypesTabPrivate();
+	~ImageTypesTabPrivate() final;
 
-	private:
-		typedef TImageTypesConfig<HWND> super;
-		RP_DISABLE_COPY(ImageTypesTabPrivate)
+private:
+	typedef TImageTypesConfig<HWND> super;
+	RP_DISABLE_COPY(ImageTypesTabPrivate)
 
-	protected:
-		/** TImageTypesConfig functions (protected) **/
+protected:
+	/** TImageTypesConfig functions (protected) **/
 
-		/**
-		 * Create the labels in the grid.
-		 */
-		void createGridLabels(void) final;
+	/**
+	 * Create the labels in the grid.
+	 */
+	void createGridLabels(void) final;
 
-		/**
-		 * Create a ComboBox in the grid.
-		 * @param cbid ComboBox ID.
-		 */
-		void createComboBox(unsigned int cbid) final;
+	/**
+	 * Create a ComboBox in the grid.
+	 * @param cbid ComboBox ID.
+	 */
+	void createComboBox(unsigned int cbid) final;
 
-		/**
-		 * Add strings to a ComboBox in the grid.
-		 * @param cbid ComboBox ID.
-		 * @param max_prio Maximum priority value. (minimum is 1)
-		 */
-		void addComboBoxStrings(unsigned int cbid, int max_prio) final;
+	/**
+	 * Add strings to a ComboBox in the grid.
+	 * @param cbid ComboBox ID.
+	 * @param max_prio Maximum priority value. (minimum is 1)
+	 */
+	void addComboBoxStrings(unsigned int cbid, int max_prio) final;
 
-		/**
-		 * Finish adding the ComboBoxes.
-		 */
-		void finishComboBoxes(void) final;
+	/**
+	 * Finish adding the ComboBoxes.
+	 */
+	void finishComboBoxes(void) final;
 
-		/**
-		 * Initialize the Save subsystem.
-		 * This is needed on platforms where the configuration file
-		 * must be opened with an appropriate writer class.
-		 * @return 0 on success; negative POSIX error code on error.
-		 */
-		int saveStart(void) final;
+	/**
+	 * Initialize the Save subsystem.
+	 * This is needed on platforms where the configuration file
+	 * must be opened with an appropriate writer class.
+	 * @return 0 on success; negative POSIX error code on error.
+	 */
+	int saveStart(void) final;
 
-		/**
-		 * Write an ImageType configuration entry.
-		 * @param sysName System name.
-		 * @param imageTypeList Image type list, comma-separated.
-		 * @return 0 on success; negative POSIX error code on error.
-		 */
-		int saveWriteEntry(const char *sysName, const char *imageTypeList) final;
+	/**
+	 * Write an ImageType configuration entry.
+	 * @param sysName System name.
+	 * @param imageTypeList Image type list, comma-separated.
+	 * @return 0 on success; negative POSIX error code on error.
+	 */
+	int saveWriteEntry(const char *sysName, const char *imageTypeList) final;
 
-		/**
-		 * Close the Save subsystem.
-		 * This is needed on platforms where the configuration file
-		 * must be opened with an appropriate writer class.
-		 * @return 0 on success; negative POSIX error code on error.
-		 */
-		int saveFinish(void) final;
+	/**
+	 * Close the Save subsystem.
+	 * This is needed on platforms where the configuration file
+	 * must be opened with an appropriate writer class.
+	 * @return 0 on success; negative POSIX error code on error.
+	 */
+	int saveFinish(void) final;
 
-	protected:
-		/** TImageTypesConfig functions (public) **/
+protected:
+	/** TImageTypesConfig functions (public) **/
 
-		/**
-		 * Set a ComboBox's current index.
-		 * This will not trigger cboImageType_priorityValueChanged().
-		 * @param cbid ComboBox ID.
-		 * @param prio New priority value. (0xFF == no)
-		 */
-		void cboImageType_setPriorityValue(unsigned int cbid, unsigned int prio) final;
+	/**
+	 * Set a ComboBox's current index.
+	 * This will not trigger cboImageType_priorityValueChanged().
+	 * @param cbid ComboBox ID.
+	 * @param prio New priority value. (0xFF == no)
+	 */
+	void cboImageType_setPriorityValue(unsigned int cbid, unsigned int prio) final;
 
-	public:
-		/** Other ImageTypesTabPrivate functions **/
+public:
+	/** Other ImageTypesTabPrivate functions **/
 
-		/**
-		 * Initialize strings.
-		 */
-		void initStrings(void);
+	/**
+	 * Initialize strings.
+	 */
+	void initStrings(void);
 
-		/**
-		 * Dialog procedure.
-		 * @param hDlg
-		 * @param uMsg
-		 * @param wParam
-		 * @param lParam
-		 */
-		static INT_PTR CALLBACK dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	/**
+	 * Dialog procedure.
+	 * @param hDlg
+	 * @param uMsg
+	 * @param wParam
+	 * @param lParam
+	 */
+	static INT_PTR CALLBACK dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
-		/**
-		 * Property sheet callback procedure.
-		 * @param hWnd
-		 * @param uMsg
-		 * @param ppsp
-		 */
-		static UINT CALLBACK callbackProc(HWND hWnd, UINT uMsg, LPPROPSHEETPAGE ppsp);
+	/**
+	 * Property sheet callback procedure.
+	 * @param hWnd
+	 * @param uMsg
+	 * @param ppsp
+	 */
+	static UINT CALLBACK callbackProc(HWND hWnd, UINT uMsg, LPPROPSHEETPAGE ppsp);
 
-	public:
-		// Property sheet.
-		HPROPSHEETPAGE hPropSheetPage;
-		HWND hWndPropSheet;
+public:
+	// Property sheet.
+	HPROPSHEETPAGE hPropSheetPage;
+	HWND hWndPropSheet;
 
-		// Last ComboBox added.
-		// Needed in order to set the correct
-		// tab order for the credits label.
-		HWND cboImageType_lastAdded;
+	// Last ComboBox added.
+	// Needed in order to set the correct
+	// tab order for the credits label.
+	HWND cboImageType_lastAdded;
 
-		// Temporary configuration filename.
-		// Set by saveStart(); cleared by saveFinish().
-		tstring tmp_conf_filename;
+	// Temporary configuration filename.
+	// Set by saveStart(); cleared by saveFinish().
+	tstring tmp_conf_filename;
 
-		// Grid parameters.
-		POINT pt_cboImageType;	// Starting point for the ComboBoxes.
-		SIZE sz_cboImageType;	// ComboBox size.
-		unsigned int cy_cboImageType_list;	// ComboBox list height.
+	// Grid parameters.
+	POINT pt_cboImageType;	// Starting point for the ComboBoxes.
+	SIZE sz_cboImageType;	// ComboBox size.
+	unsigned int cy_cboImageType_list;	// ComboBox list height.
 };
 
 // Control base ID.
@@ -689,7 +689,7 @@ UINT CALLBACK ImageTypesTabPrivate::callbackProc(HWND hWnd, UINT uMsg, LPPROPSHE
 
 ImageTypesTab::ImageTypesTab(void)
 	: d_ptr(new ImageTypesTabPrivate())
-{ }
+{}
 
 ImageTypesTab::~ImageTypesTab()
 {

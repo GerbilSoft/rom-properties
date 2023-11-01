@@ -12,7 +12,8 @@
 
 #include <QPixmap>
 
-class ISpriteSheet {
+class ISpriteSheet
+{
 protected:
 	/**
 	 * Sprite sheet loader

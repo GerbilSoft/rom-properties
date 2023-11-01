@@ -17,55 +17,55 @@ using std::array;
 
 class KeyStoreModelPrivate
 {
-	public:
-		explicit KeyStoreModelPrivate(KeyStoreModel *q);
+public:
+	explicit KeyStoreModelPrivate(KeyStoreModel *q);
 
-	protected:
-		KeyStoreModel *const q_ptr;
-		Q_DECLARE_PUBLIC(KeyStoreModel)
-	private:
-		Q_DISABLE_COPY(KeyStoreModelPrivate)
+protected:
+	KeyStoreModel *const q_ptr;
+	Q_DECLARE_PUBLIC(KeyStoreModel)
+private:
+	Q_DISABLE_COPY(KeyStoreModelPrivate)
 
-	public:
-		KeyStoreQt *keyStore;
+public:
+	KeyStoreQt *keyStore;
 
-		// Style variables.
-		struct style_t {
-			style_t() { init_fonts(); init_icons(); }
-
-			/**
-			 * Initialize the fonts.
-			 */
-			void init_fonts(void);
-
-			/**
-			 * Initialize the icons.
-			 */
-			void init_icons(void);
-
-			// Monospace font.
-			QFont fntMonospace;
-			QSize szValueHint;	// Size hint for the value column.
-
-			// Pixmaps for Column::IsValid.
-			// TODO: Hi-DPI support.
-			static const int pxmIsValid_size = 16;
-			QPixmap pxmIsValid_unknown;
-			QPixmap pxmIsValid_invalid;
-			QPixmap pxmIsValid_good;
-		};
-		style_t style;
-
-		// Translated column names.
-		array<QString, 3> columnNames;
+	// Style variables.
+	struct style_t {
+		style_t() { init_fonts(); init_icons(); }
 
 		/**
-		 * Cached copy of keyStore->sectCount().
-		 * This value is needed after the KeyStore is destroyed,
-		 * so we need to cache it here, since the destroyed()
-		 * slot might be run *after* the KeyStore is deleted.
+		 * Initialize the fonts.
 		 */
-		int sectCount;
+		void init_fonts(void);
+
+		/**
+		 * Initialize the icons.
+		 */
+		void init_icons(void);
+
+		// Monospace font.
+		QFont fntMonospace;
+		QSize szValueHint;	// Size hint for the value column.
+
+		// Pixmaps for Column::IsValid.
+		// TODO: Hi-DPI support.
+		static const int pxmIsValid_size = 16;
+		QPixmap pxmIsValid_unknown;
+		QPixmap pxmIsValid_invalid;
+		QPixmap pxmIsValid_good;
+	};
+	style_t style;
+
+	// Translated column names.
+	array<QString, 3> columnNames;
+
+	/**
+	 * Cached copy of keyStore->sectCount().
+	 * This value is needed after the KeyStore is destroyed,
+	 * so we need to cache it here, since the destroyed()
+	 * slot might be run *after* the KeyStore is deleted.
+	 */
+	int sectCount;
 };
 
 // Windows-style LOWORD()/HIWORD()/MAKELONG() functions.

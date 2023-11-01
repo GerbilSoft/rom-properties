@@ -13,7 +13,8 @@
 // librptexture
 #include "librptexture/img/rp_image.hpp"
 
-class ISpriteSheet {
+class ISpriteSheet
+{
 protected:
 	/**
 	 * Sprite sheet loader

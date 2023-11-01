@@ -13,44 +13,44 @@
 class OptionsTabPrivate;
 class OptionsTab : public ITab
 {
-	Q_OBJECT
+Q_OBJECT
 
-	public:
-		explicit OptionsTab(QWidget *parent = nullptr);
-		~OptionsTab() override;
+public:
+	explicit OptionsTab(QWidget *parent = nullptr);
+	~OptionsTab() override;
 
-	private:
-		typedef ITab super;
-		OptionsTabPrivate *const d_ptr;
-		Q_DECLARE_PRIVATE(OptionsTab);
-		Q_DISABLE_COPY(OptionsTab)
+private:
+	typedef ITab super;
+	OptionsTabPrivate *const d_ptr;
+	Q_DECLARE_PRIVATE(OptionsTab);
+	Q_DISABLE_COPY(OptionsTab)
 
-	protected:
-		// State change event. (Used for switching the UI language at runtime.)
-		void changeEvent(QEvent *event) final;
+protected:
+	// State change event. (Used for switching the UI language at runtime.)
+	void changeEvent(QEvent *event) final;
 
-	public slots:
-		/**
-		 * Reset the configuration.
-		 */
-		void reset(void) final;
+public slots:
+	/**
+	 * Reset the configuration.
+	 */
+	void reset(void) final;
 
-		/**
-		 * Load the default configuration.
-		 * This does NOT save, and will only emit modified()
-		 * if it's different from the current configuration.
-		 */
-		void loadDefaults(void) final;
+	/**
+	 * Load the default configuration.
+	 * This does NOT save, and will only emit modified()
+	 * if it's different from the current configuration.
+	 */
+	void loadDefaults(void) final;
 
-		/**
-		 * Save the configuration.
-		 * @param pSettings QSettings object.
-		 */
-		void save(QSettings *pSettings) final;
+	/**
+	 * Save the configuration.
+	 * @param pSettings QSettings object.
+	 */
+	void save(QSettings *pSettings) final;
 
-	protected slots:
-		/**
-		 * An option was changed.
-		 */
-		void optionChanged_slot(void);
+protected slots:
+	/**
+	 * An option was changed.
+	 */
+	void optionChanged_slot(void);
 };

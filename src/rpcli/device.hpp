@@ -20,14 +20,16 @@ namespace LibRpFile {
 	class RpFile;
 }
 
-class ScsiInquiry {
+class ScsiInquiry
+{
 	LibRpFile::RpFile *const file;
 public:
 	explicit ScsiInquiry(LibRpFile::RpFile *file);
 	friend std::ostream& operator<<(std::ostream& os, const ScsiInquiry& si);
 };
 
-class AtaIdentifyDevice {
+class AtaIdentifyDevice
+{
 	LibRpFile::RpFile *const file;
 	const bool packet;
 public:

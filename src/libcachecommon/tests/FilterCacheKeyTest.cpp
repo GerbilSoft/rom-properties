@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libcachecommon/tests)             *
  * FilterCacheKeyTest.cpp: CacheManager::filterCacheKey() test.            *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -227,7 +227,7 @@ INSTANTIATE_TEST_SUITE_P(CacheManagerTest, FilterCacheKeyTest,
 
 		// TODO: UTF-16 test for invalid surrogate pairs.
 	));
-} }
+} } //namespace LibCacheCommon::Tests
 
 /**
  * Test suite main function.

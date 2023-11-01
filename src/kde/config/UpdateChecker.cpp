@@ -23,7 +23,7 @@ using std::string;
 
 UpdateChecker::UpdateChecker(QObject *parent)
 	: super(parent)
-{ }
+{}
 
 /**
  * Run the task.

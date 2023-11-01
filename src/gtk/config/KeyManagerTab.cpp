@@ -720,8 +720,7 @@ action_triggered_signal_handler(GSimpleAction *action, GVariant *parameter, RpKe
 	RP_UNUSED(parameter);
 	g_return_if_fail(RP_IS_KEY_MANAGER_TAB(tab));
 
-	const gint id = (gboolean)GPOINTER_TO_INT(
-		g_object_get_qdata(G_OBJECT(action), menuImport_id_quark));
+	const gint id = (gboolean)GPOINTER_TO_INT(g_object_get_qdata(G_OBJECT(action), menuImport_id_quark));
 	rp_key_manager_tab_handle_menu_action(tab, id);
 }
 #else /* !USE_G_MENU_MODEL */
@@ -735,8 +734,7 @@ menuImport_triggered_signal_handler(GtkMenuItem *menuItem, RpKeyManagerTab *tab)
 {
 	g_return_if_fail(RP_IS_KEY_MANAGER_TAB(tab));
 
-	const gint id = (gboolean)GPOINTER_TO_INT(
-		g_object_get_qdata(G_OBJECT(menuItem), menuImport_id_quark));
+	const gint id = (gboolean)GPOINTER_TO_INT(g_object_get_qdata(G_OBJECT(menuItem), menuImport_id_quark));
 	rp_key_manager_tab_handle_menu_action(tab, id);
 }
 #endif /* USE_G_MENU_MODEL */

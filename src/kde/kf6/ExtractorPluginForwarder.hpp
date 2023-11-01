@@ -20,37 +20,37 @@ namespace RomPropertiesKF6 {
 
 class ExtractorPluginForwarder final : public ::KFileMetaData::ExtractorPlugin
 {
-	Q_OBJECT
-	// FIXME: "kf5" -> "kf6" once it's updated upstream.
-	// https://invent.kde.org/frameworks/kfilemetadata/-/blob/master/src/extractorplugin.h
-	Q_PLUGIN_METADATA(IID "org.kde.kf5.kfilemetadata.ExtractorPlugin" FILE "ExtractorPluginForwarder.json")
-	Q_INTERFACES(KFileMetaData::ExtractorPlugin)
+Q_OBJECT
+// FIXME: "kf5" -> "kf6" once it's updated upstream.
+// https://invent.kde.org/frameworks/kfilemetadata/-/blob/master/src/extractorplugin.h
+Q_PLUGIN_METADATA(IID "org.kde.kf5.kfilemetadata.ExtractorPlugin" FILE "ExtractorPluginForwarder.json")
+Q_INTERFACES(KFileMetaData::ExtractorPlugin)
 
-	public:
-		explicit ExtractorPluginForwarder(QObject *parent = nullptr);
-		~ExtractorPluginForwarder() final;
+public:
+	explicit ExtractorPluginForwarder(QObject *parent = nullptr);
+	~ExtractorPluginForwarder() final;
 
-	private:
-		typedef KFileMetaData::ExtractorPlugin super;
-		Q_DISABLE_COPY(ExtractorPluginForwarder);
+private:
+	typedef KFileMetaData::ExtractorPlugin super;
+	Q_DISABLE_COPY(ExtractorPluginForwarder);
 
-	public:
-		QStringList mimetypes(void) const final;
-		void extract(KFileMetaData::ExtractionResult *result) final;
+public:
+	QStringList mimetypes(void) const final;
+	void extract(KFileMetaData::ExtractionResult *result) final;
 
-	private:
-		// rom-properties-kf5.so handle.
-		void *hRpKdeSo;
+private:
+	// rom-properties-kf5.so handle
+	void *hRpKdeSo;
 
-		// Actual ExtractorPlugin.
-		KFileMetaData::ExtractorPlugin *fwd_plugin;
+	// Actual ExtractorPlugin
+	KFileMetaData::ExtractorPlugin *fwd_plugin;
 
-	private slots:
-		/**
-		 * fwd_plugin was destroyed.
-		 * @param obj
-		 */
-		void fwd_plugin_destroyed(QObject *obj = nullptr);
+private slots:
+	/**
+	 * fwd_plugin was destroyed.
+	 * @param obj
+	 */
+	void fwd_plugin_destroyed(QObject *obj = nullptr);
 };
 
-}
+} //namespace RomPropertiesKF6

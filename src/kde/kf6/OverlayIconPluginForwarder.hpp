@@ -19,35 +19,36 @@ namespace RomPropertiesKF6 {
 
 class OverlayIconPluginForwarder final : public KOverlayIconPlugin
 {
-	Q_OBJECT
-	// NOTE: KDE doesn't have a standard IID for KOverlayIconPlugin...
-	Q_PLUGIN_METADATA(IID "com.gerbilsoft.rom-properties.KOverlayIconPlugin" FILE "OverlayIconPluginForwarder.json")
-	//Q_INTERFACES(KOverlayIconPlugin)
+Q_OBJECT
+// NOTE: KF5 doesn't have a standard IID for KOverlayIconPlugin...
+// TODO: Check KF6.
+Q_PLUGIN_METADATA(IID "com.gerbilsoft.rom-properties.KOverlayIconPlugin" FILE "OverlayIconPluginForwarder.json")
+//Q_INTERFACES(KOverlayIconPlugin)
 
-	public:
-		explicit OverlayIconPluginForwarder(QObject *parent = nullptr);
-		~OverlayIconPluginForwarder() final;
+public:
+	explicit OverlayIconPluginForwarder(QObject *parent = nullptr);
+	~OverlayIconPluginForwarder() final;
 
-	private:
-		typedef KOverlayIconPlugin super;
-		Q_DISABLE_COPY(OverlayIconPluginForwarder);
+private:
+	typedef KOverlayIconPlugin super;
+	Q_DISABLE_COPY(OverlayIconPluginForwarder);
 
-	public:
-		QStringList getOverlays(const QUrl &item) final;
+public:
+	QStringList getOverlays(const QUrl &item) final;
 
-	private:
-		// rom-properties-kf6.so handle.
-		void *hRpKdeSo;
+private:
+	// rom-properties-kf6.so handle
+	void *hRpKdeSo;
 
-		// Actual OverlayPlugin.
-		KOverlayIconPlugin *fwd_plugin;
+	// Actual OverlayPlugin
+	KOverlayIconPlugin *fwd_plugin;
 
-	private slots:
-		/**
-		 * fwd_plugin was destroyed.
-		 * @param obj
-		 */
-		void fwd_plugin_destroyed(QObject *obj = nullptr);
+private slots:
+	/**
+	 * fwd_plugin was destroyed.
+	 * @param obj
+	 */
+	void fwd_plugin_destroyed(QObject *obj = nullptr);
 };
 
-}
+} //namespace RomPropertiesKF6

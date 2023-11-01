@@ -61,49 +61,50 @@ static void	rp_key_store_gtk_finalize		(GObject	*object);
  */
 class RpKeyStoreGTKPrivate final : public LibRomData::KeyStoreUI
 {
-	public:
-		explicit RpKeyStoreGTKPrivate(RpKeyStoreGTK *q)
-			: q(q) { }
+public:
+	explicit RpKeyStoreGTKPrivate(RpKeyStoreGTK *q)
+		: q(q)
+	{}
 
-	private:
-		RpKeyStoreGTK *const q;
-		RP_DISABLE_COPY(RpKeyStoreGTKPrivate);
+private:
+	RpKeyStoreGTK *const q;
+	RP_DISABLE_COPY(RpKeyStoreGTKPrivate);
 
-	protected: /*signals:*/
-		/**
-		 * A key has changed.
-		 * @param sectIdx Section index.
-		 * @param keyIdx Key index.
-		 */
-		void keyChanged_int(int sectIdx, int keyIdx) final
-		{
-			g_signal_emit(q, signals[SIGNAL_KEY_CHANGED], 0, sectIdx, keyIdx);
-		}
+protected: /*signals:*/
+	/**
+	 * A key has changed.
+	 * @param sectIdx Section index.
+	 * @param keyIdx Key index.
+	 */
+	void keyChanged_int(int sectIdx, int keyIdx) final
+	{
+		g_signal_emit(q, signals[SIGNAL_KEY_CHANGED], 0, sectIdx, keyIdx);
+	}
 
-		/**
-		 * A key has changed.
-		 * @param idx Flat key index.
-		 */
-		void keyChanged_int(int idx) final
-		{
-			g_signal_emit(q, signals[SIGNAL_KEY_CHANGED_FLAT], 0, idx);
-		}
+	/**
+	 * A key has changed.
+	 * @param idx Flat key index.
+	 */
+	void keyChanged_int(int idx) final
+	{
+		g_signal_emit(q, signals[SIGNAL_KEY_CHANGED_FLAT], 0, idx);
+	}
 
-		/**
-		 * All keys have changed.
-		 */
-		void allKeysChanged_int(void) final
-		{
-			g_signal_emit(q, signals[SIGNAL_ALL_KEYS_CHANGED], 0);
-		}
+	/**
+	 * All keys have changed.
+	 */
+	void allKeysChanged_int(void) final
+	{
+		g_signal_emit(q, signals[SIGNAL_ALL_KEYS_CHANGED], 0);
+	}
 
-		/**
-		 * KeyStore has been changed by the user.
-		 */
-		void modified_int(void) final
-		{
-			g_signal_emit(q, signals[SIGNAL_MODIFIED], 0);
-		}
+	/**
+	 * KeyStore has been changed by the user.
+	 */
+	void modified_int(void) final
+	{
+		g_signal_emit(q, signals[SIGNAL_MODIFIED], 0);
+	}
 };
 
 // NOTE: G_DEFINE_TYPE() doesn't work in C++ mode with gcc-6.2

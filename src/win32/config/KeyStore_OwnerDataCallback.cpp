@@ -13,7 +13,7 @@
 
 KeyStore_OwnerDataCallback::KeyStore_OwnerDataCallback(const KeyStoreWin32 *keyStore)
 	: m_keyStore(keyStore)
-{ }
+{}
 
 /** IUnknown **/
 // Reference: https://docs.microsoft.com/en-us/office/client-developer/outlook/mapi/implementing-iunknown-in-c-plus-plus

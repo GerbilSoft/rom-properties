@@ -24,58 +24,58 @@ static WNDPROC pfnComboBoxExWndProc;
 
 class LanguageComboBoxPrivate
 {
-	public:
-		explicit LanguageComboBoxPrivate(HWND hWnd)
-			: hWnd(hWnd)
-			, himglFlags(nullptr)
-			, dwExStyleRTL(LibWin32UI::isSystemRTL())
-			, forcePAL(false)
-		{
-			minSize.cx = 0;
-			minSize.cy = 0;
+public:
+	explicit LanguageComboBoxPrivate(HWND hWnd)
+		: hWnd(hWnd)
+		, himglFlags(nullptr)
+		, dwExStyleRTL(LibWin32UI::isSystemRTL())
+		, forcePAL(false)
+	{
+		minSize.cx = 0;
+		minSize.cy = 0;
+	}
+
+	~LanguageComboBoxPrivate()
+	{
+		if (himglFlags) {
+			ImageList_Destroy(himglFlags);
 		}
+	}
 
-		~LanguageComboBoxPrivate()
-		{
-			if (himglFlags) {
-				ImageList_Destroy(himglFlags);
-			}
-		}
+	/**
+	 * Set the language codes.
+	 * @param lcs_array 0-terminated array of language codes.
+	 * @return TRUE on success; FALSE on error.
+	 */
+	LRESULT setLCs(const uint32_t *lcs_array);
 
-		/**
-		 * Set the language codes.
-		 * @param lcs_array 0-terminated array of language codes.
-		 * @return TRUE on success; FALSE on error.
-		 */
-		LRESULT setLCs(const uint32_t *lcs_array);
+	/**
+	 * Set the selected language code.
+	 *
+	 * NOTE: This function will return true if the LC was found,
+	 * even if it was already selected.
+	 *
+	 * @param lc Language code. (0 to unselect)
+	 * @return TRUE if set; FALSE if LC was not found.
+	 */
+	LRESULT setSelectedLC(uint32_t lc);
 
-		/**
-		 * Set the selected language code.
-		 *
-		 * NOTE: This function will return true if the LC was found,
-		 * even if it was already selected.
-		 *
-		 * @param lc Language code. (0 to unselect)
-		 * @return TRUE if set; FALSE if LC was not found.
-		 */
-		LRESULT setSelectedLC(uint32_t lc);
+	/**
+	 * Set the selected language code.
+	 * @return Selected language code. (0 if none)
+	 */
+	uint32_t getSelectedLC(void) const;
 
-		/**
-		 * Set the selected language code.
-		 * @return Selected language code. (0 if none)
-		 */
-		uint32_t getSelectedLC(void) const;
+public:
+	HWND hWnd;		// LanguageComboBox control
+	HIMAGELIST himglFlags;	// ImageList for flag icons
 
-	public:
-		HWND hWnd;		// LanguageComboBox control
-		HIMAGELIST himglFlags;	// ImageList for flag icons
+	// Is the UI locale right-to-left?
+	// If so, this will be set to WS_EX_LAYOUTRTL.
+	DWORD dwExStyleRTL;
 
-		// Is the UI locale right-to-left?
-		// If so, this will be set to WS_EX_LAYOUTRTL.
-		DWORD dwExStyleRTL;
-
-		SIZE minSize;		// Minimum size required
-		bool forcePAL;		// Force PAL region flags?
+	SIZE minSize;		// Minimum size required
+	bool forcePAL;		// Force PAL region flags?
 };
 
 /**

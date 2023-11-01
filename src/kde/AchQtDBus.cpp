@@ -30,36 +30,36 @@ using std::unordered_map;
 
 class AchQtDBusPrivate
 {
-	public:
-		AchQtDBusPrivate();
-		~AchQtDBusPrivate();
+public:
+	AchQtDBusPrivate();
+	~AchQtDBusPrivate();
 
-	private:
-		RP_DISABLE_COPY(AchQtDBusPrivate)
+private:
+	RP_DISABLE_COPY(AchQtDBusPrivate)
 
-	public:
-		// Static AchQtDBus instance.
-		// TODO: Q_GLOBAL_STATIC() equivalent, though we
-		// may need special initialization if the compiler
-		// doesn't support thread-safe statics.
-		static AchQtDBus instance;
-		bool hasRegistered;
+public:
+	// Static AchQtDBus instance.
+	// TODO: Q_GLOBAL_STATIC() equivalent, though we
+	// may need special initialization if the compiler
+	// doesn't support thread-safe statics.
+	static AchQtDBus instance;
+	bool hasRegistered;
 
-	public:
-		/**
-		 * Notification function. (static)
-		 * @param user_data	[in] User data. (this)
-		 * @param id		[in] Achievement ID.
-		 * @return 0 on success; negative POSIX error code on error.
-		 */
-		static int RP_C_API notifyFunc(intptr_t user_data, Achievements::ID id);
+public:
+	/**
+	 * Notification function. (static)
+	 * @param user_data	[in] User data. (this)
+	 * @param id		[in] Achievement ID.
+	 * @return 0 on success; negative POSIX error code on error.
+	 */
+	static int RP_C_API notifyFunc(intptr_t user_data, Achievements::ID id);
 
-		/**
-		 * Notification function. (non-static)
-		 * @param id	[in] Achievement ID.
-		 * @return 0 on success; negative POSIX error code on error.
-		 */
-		int notifyFunc(Achievements::ID id);
+	/**
+	 * Notification function. (non-static)
+	 * @param id	[in] Achievement ID.
+	 * @return 0 on success; negative POSIX error code on error.
+	 */
+	int notifyFunc(Achievements::ID id);
 };
 
 struct NotifyIconStruct {
@@ -260,7 +260,7 @@ int AchQtDBusPrivate::notifyFunc(Achievements::ID id)
 
 AchQtDBus::AchQtDBus()
 	: d_ptr(new AchQtDBusPrivate())
-{ }
+{}
 
 AchQtDBus::~AchQtDBus()
 {

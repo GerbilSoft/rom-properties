@@ -46,7 +46,7 @@ RP_ExtractImage_Private::~RP_ExtractImage_Private()
 
 RP_ExtractImage::RP_ExtractImage()
 	: d_ptr(new RP_ExtractImage_Private())
-{ }
+{}
 
 RP_ExtractImage::~RP_ExtractImage()
 {

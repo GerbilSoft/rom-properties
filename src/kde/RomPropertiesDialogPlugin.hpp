@@ -14,31 +14,31 @@ class RomDataView;
 
 class RomPropertiesDialogPlugin : public KPropertiesDialogPlugin
 {
-	Q_OBJECT
+Q_OBJECT
 
-	public:
-		/**
-		 * Instantiate RomDataView for the given KPropertiesDialog.
-		 * @param parent KPropertiesDialog (NOTE: QObject* is used for registerPlugin() compatibility.)
-		 * @param args
-		 */
-		explicit RomPropertiesDialogPlugin(QObject *parent, const QVariantList &args = QVariantList());
+public:
+	/**
+	 * Instantiate RomDataView for the given KPropertiesDialog.
+	 * @param parent KPropertiesDialog (NOTE: QObject* is used for registerPlugin() compatibility.)
+	 * @param args
+	 */
+	explicit RomPropertiesDialogPlugin(QObject *parent, const QVariantList &args = QVariantList());
 
-	private:
-		// Disable these constructors.
-		explicit RomPropertiesDialogPlugin(QObject *parent);
-		explicit RomPropertiesDialogPlugin(KPropertiesDialog *_props);
+private:
+	// Disable these constructors.
+	explicit RomPropertiesDialogPlugin(QObject *parent);
+	explicit RomPropertiesDialogPlugin(KPropertiesDialog *_props);
 
-	private:
-		typedef KPropertiesDialogPlugin super;
-		Q_DISABLE_COPY(RomPropertiesDialogPlugin)
+private:
+	typedef KPropertiesDialogPlugin super;
+	Q_DISABLE_COPY(RomPropertiesDialogPlugin)
 
-	private:
-		/**
-		 * Instantiate a RomDataView object for the given KFileItem.
-		 * @param fileItem KFileItem
-		 * @param props KPropertiesDialog
-		 * @return RomDataView object, or nullptr if the file is not supported.
-		 */
-		RomDataView *createRomDataView(const KFileItem &fileItem, KPropertiesDialog *props = nullptr);
+private:
+	/**
+	 * Instantiate a RomDataView object for the given KFileItem.
+	 * @param fileItem KFileItem
+	 * @param props KPropertiesDialog
+	 * @return RomDataView object, or nullptr if the file is not supported.
+	 */
+	RomDataView *createRomDataView(const KFileItem &fileItem, KPropertiesDialog *props = nullptr);
 };

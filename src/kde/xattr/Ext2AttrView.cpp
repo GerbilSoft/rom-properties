@@ -21,46 +21,47 @@
 #include "ui_Ext2AttrView.h"
 class Ext2AttrViewPrivate
 {
-	public:
-		Ext2AttrViewPrivate()
-			: flags(0) { }
+public:
+	Ext2AttrViewPrivate()
+		: flags(0)
+	{}
 
-	private:
-		Q_DISABLE_COPY(Ext2AttrViewPrivate)
+private:
+	Q_DISABLE_COPY(Ext2AttrViewPrivate)
 
-	public:
-		Ui::Ext2AttrView ui;
-		int flags;
+public:
+	Ui::Ext2AttrView ui;
+	int flags;
 
-		// See Ext2AttrData.h
-		std::array<QCheckBox*, EXT2_ATTR_CHECKBOX_MAX> checkBoxes;
+	// See Ext2AttrData.h
+	std::array<QCheckBox*, EXT2_ATTR_CHECKBOX_MAX> checkBoxes;
 
-	public:
-		/**
-		 * Retranslate parts of the UI that aren't present in the .ui file.
-		 */
-		void retranslateUi_nonDesigner(void);
+public:
+	/**
+	 * Retranslate parts of the UI that aren't present in the .ui file.
+	 */
+	void retranslateUi_nonDesigner(void);
 
-	public:
-		/**
-		 * Update the flags string display.
-		 * This uses the same format as e2fsprogs lsattr.
-		 */
-		void updateFlagsString(void);
+public:
+	/**
+	 * Update the flags string display.
+	 * This uses the same format as e2fsprogs lsattr.
+	 */
+	void updateFlagsString(void);
 
-		/**
-		 * Update the flags checkboxes.
-		 */
-		void updateFlagsCheckboxes(void);
+	/**
+	 * Update the flags checkboxes.
+	 */
+	void updateFlagsCheckboxes(void);
 
-		/**
-		 * Update the flags display.
-		 */
-		inline void updateFlagsDisplay(void)
-		{
-			updateFlagsString();
-			updateFlagsCheckboxes();
-		}
+	/**
+	 * Update the flags display.
+	 */
+	inline void updateFlagsDisplay(void)
+	{
+		updateFlagsString();
+		updateFlagsCheckboxes();
+	}
 };
 
 /**

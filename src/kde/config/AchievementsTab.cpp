@@ -18,14 +18,14 @@ using LibRpBase::Achievements;
 #include "ui_AchievementsTab.h"
 class AchievementsTabPrivate
 {
-	public:
-		explicit AchievementsTabPrivate() = default;
+public:
+	explicit AchievementsTabPrivate() = default;
 
-	private:
-		Q_DISABLE_COPY(AchievementsTabPrivate)
+private:
+	Q_DISABLE_COPY(AchievementsTabPrivate)
 
-	public:
-		Ui::AchievementsTab ui;
+public:
+	Ui::AchievementsTab ui;
 };
 
 /** AchievementsTab **/

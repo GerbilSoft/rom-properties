@@ -14,20 +14,20 @@
 class ConfigDialogPrivate;
 class ConfigDialog
 {
-	public:
-		ConfigDialog();
-		~ConfigDialog();
+public:
+	ConfigDialog();
+	~ConfigDialog();
 
-	private:
-		RP_DISABLE_COPY(ConfigDialog)
-	private:
-		friend class ConfigDialogPrivate;
-		ConfigDialogPrivate *const d_ptr;
+private:
+	RP_DISABLE_COPY(ConfigDialog)
+private:
+	friend class ConfigDialogPrivate;
+	ConfigDialogPrivate *const d_ptr;
 
-	public:
-		/**
-		 * Run the property sheet.
-		 * @return PropertySheet() return value.
-		 */
-		INT_PTR exec(void);
+public:
+	/**
+	 * Run the property sheet.
+	 * @return PropertySheet() return value.
+	 */
+	INT_PTR exec(void);
 };

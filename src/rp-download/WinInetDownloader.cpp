@@ -26,15 +26,15 @@ namespace RpDownload {
 
 WinInetDownloader::WinInetDownloader()
 	: super()
-{ }
+{}
 
 WinInetDownloader::WinInetDownloader(const TCHAR *url)
 	: super(url)
-{ }
+{}
 
 WinInetDownloader::WinInetDownloader(const tstring &url)
 	: super(url)
-{ }
+{}
 
 /**
  * Download the file.
@@ -256,4 +256,4 @@ int WinInetDownloader::download(void)
 	return (m_data.empty() ? -ENOENT : 0);
 }
 
-}
+} //namespace RpDownload

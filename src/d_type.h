@@ -26,7 +26,7 @@ extern "C" {
 #  define S_IFMT 0170000
 #endif
 #ifndef IFTODT
-#  define IFTODT(mode)    (((mode) & S_IFMT) >> 12)
+#  define IFTODT(mode) (((mode) & S_IFMT) >> 12)
 #endif
 #ifndef DTTOIF
 #  define DTTOIF(dirtype) ((dirtype) << 12)
@@ -36,44 +36,44 @@ extern "C" {
 // From glibc-2.23's dirent.h.
 enum {
 #ifndef DT_UNKNOWN
-    DT_UNKNOWN = 0,
+	DT_UNKNOWN = 0,
 #  define DT_UNKNOWN DT_UNKNOWN
 #endif
 #ifndef DT_FIFO
-    DT_FIFO = 1,
+	DT_FIFO = 1,
 #  define DT_FIFO DT_FIFO
 #endif
 #ifndef DT_CHR
-    DT_CHR = 2,
+	DT_CHR = 2,
 #  define DT_CHR DT_CHR
 #endif
 #ifndef DT_DIR
-    DT_DIR = 4,
+	DT_DIR = 4,
 #  define DT_DIR DT_DIR
 #endif
 #ifndef DT_BLK
-    DT_BLK = 6,
+	DT_BLK = 6,
 #  define DT_BLK DT_BLK
 #endif
 #ifndef DT_REG
-    DT_REG = 8,
+	DT_REG = 8,
 #  define DT_REG DT_REG
 #endif
 #ifndef DT_LNK
-    DT_LNK = 10,
+	DT_LNK = 10,
 #  define DT_LNK DT_LNK
 #endif
 #ifndef DT_SOCK
-    DT_SOCK = 12,
+	DT_SOCK = 12,
 #  define DT_SOCK DT_SOCK
 #endif
 #ifndef DT_WHT
-    DT_WHT = 14,
+	DT_WHT = 14,
 #  define DT_WHT DT_WHT
 #endif
 
-    // Dummy entry to suppress warnings.
-    DT_DUMMY = 12345,
+	// Dummy entry to suppress warnings.
+	DT_DUMMY = 12345,
 };
 
 #ifdef __cplusplus

@@ -114,4 +114,4 @@ void ExtractorPluginForwarder::fwd_plugin_destroyed(QObject *obj)
 	}
 }
 
-}
+} //namespace RomPropertiesKF6

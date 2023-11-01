@@ -19,98 +19,98 @@
 
 class LanguageComboBox : public QComboBox
 {
-	Q_OBJECT
+Q_OBJECT
 
-	Q_PROPERTY(uint32_t selectedLC READ selectedLC WRITE setSelectedLC NOTIFY lcChanged)
-	Q_PROPERTY(bool forcePAL READ isForcePAL WRITE setForcePAL)
+Q_PROPERTY(uint32_t selectedLC READ selectedLC WRITE setSelectedLC NOTIFY lcChanged)
+Q_PROPERTY(bool forcePAL READ isForcePAL WRITE setForcePAL)
 
-	public:
-		explicit LanguageComboBox(QWidget *parent = nullptr);
+public:
+	explicit LanguageComboBox(QWidget *parent = nullptr);
 
-	private:
-		typedef QComboBox super;
-		Q_DISABLE_COPY(LanguageComboBox)
+private:
+	typedef QComboBox super;
+	Q_DISABLE_COPY(LanguageComboBox)
 
-	protected:
-		/**
-		 * Update all icons.
-		 */
-		void updateIcons(void);
+protected:
+	/**
+	 * Update all icons.
+	 */
+	void updateIcons(void);
 
-	public:
-		/** Language codes **/
+public:
+	/** Language codes **/
 
-		/**
-		 * Set the language codes.
-		 * @param set_lc Set of language codes.
-		 */
-		void setLCs(const std::set<uint32_t> &set_lc);
+	/**
+	 * Set the language codes.
+	 * @param set_lc Set of language codes.
+	 */
+	void setLCs(const std::set<uint32_t> &set_lc);
 
-		/**
-		 * Set the language codes.
-		 * @param p_lc Array of language codes.
-		 * @param len Number of language codes.
-		 */
-		ATTR_ACCESS_SIZE(read_only, 2, 3)
-		void setLCs(const uint32_t *p_lc, size_t len);
+	/**
+	 * Set the language codes.
+	 * @param p_lc Array of language codes.
+	 * @param len Number of language codes.
+	 */
+	ATTR_ACCESS_SIZE(read_only, 2, 3)
+	void setLCs(const uint32_t *p_lc, size_t len);
 
-		/**
-		 * Get the set of language codes.
-		 * @return Set of language codes.
-		 */
-		std::set<uint32_t> lcs(void) const;
+	/**
+	 * Get the set of language codes.
+	 * @return Set of language codes.
+	 */
+	std::set<uint32_t> lcs(void) const;
 
-		/**
-		 * Clear the language codes.
-		 */
-		void clearLCs();
+	/**
+	 * Clear the language codes.
+	 */
+	void clearLCs();
 
-		/**
-		 * Set the selected language code.
-		 *
-		 * NOTE: This function will return true if the LC was found,
-		 * even if it was already selected.
-		 *
-		 * @param lc Language code. (0 to unselect)
-		 * @return True if set; false if LC was not found.
-		 */
-		bool setSelectedLC(uint32_t lc);
+	/**
+	 * Set the selected language code.
+	 *
+	 * NOTE: This function will return true if the LC was found,
+	 * even if it was already selected.
+	 *
+	 * @param lc Language code. (0 to unselect)
+	 * @return True if set; false if LC was not found.
+	 */
+	bool setSelectedLC(uint32_t lc);
 
-		/**
-		 * Get the selected language code.
-		 * @return Selected language code (0 if none)
-		 */
-		uint32_t selectedLC(void) const;
+	/**
+	 * Get the selected language code.
+	 * @return Selected language code (0 if none)
+	 */
+	uint32_t selectedLC(void) const;
 
-		/**
-		 * Set the Force PAL setting.
-		 * @param forcePAL Force PAL setting
-		 */
-		void setForcePAL(bool forcePAL);
+	/**
+	 * Set the Force PAL setting.
+	 * @param forcePAL Force PAL setting
+	 */
+	void setForcePAL(bool forcePAL);
 
-		/**
-		 * Get the Force PAL setting.
-		 * @return Force PAL setting
-		 */
-		inline bool isForcePAL(void) const
-		{
-			return m_forcePAL;
-		}
+	/**
+	 * Get the Force PAL setting.
+	 * @return Force PAL setting
+	 */
+	inline bool isForcePAL(void) const
+	{
+		return m_forcePAL;
+	}
 
-	signals:
-		/**
-		 * Selected language code has been changed.
-		 * @param lc New language code. (0 if none)
-		 */
-		void lcChanged(uint32_t lc);
+signals:
+	/**
+	 * Selected language code has been changed.
+	 * @param lc New language code. (0 if none)
+	 */
+	void lcChanged(uint32_t lc);
 
-	private slots:
-		/**
-		 * Emit lcChanged() on currentIndexChanged().
-		 * @param index Current index.
-		 */
-		void this_currentIndexChanged_slot(int index);
+private slots:
+	/**
+	 * Emit lcChanged() on currentIndexChanged().
+	 * @param index Current index.
+	 */
+	void this_currentIndexChanged_slot(int index);
 
-	protected:
-		bool m_forcePAL;
+protected:
+	bool m_forcePAL;
 };

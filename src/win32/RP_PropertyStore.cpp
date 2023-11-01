@@ -169,7 +169,7 @@ RP_PropertyStore_Private::RP_PropertyStore_Private()
 	: file(nullptr)
 	, pstream(nullptr)
 	, grfMode(0)
-{ }
+{}
 
 RP_PropertyStore_Private::~RP_PropertyStore_Private()
 {
@@ -183,7 +183,7 @@ RP_PropertyStore_Private::~RP_PropertyStore_Private()
 
 RP_PropertyStore::RP_PropertyStore()
 	: d_ptr(new RP_PropertyStore_Private())
-{ }
+{}
 
 RP_PropertyStore::~RP_PropertyStore()
 {

@@ -32,50 +32,50 @@ class RP_ExtractIcon_Private;
 class UUID_ATTR("{E51BC107-E491-4B29-A6A3-2A4309259802}")
 RP_ExtractIcon final : public LibWin32Common::ComBase3<IPersistFile, IExtractIconW, IExtractIconA>
 {
-	public:
-		RP_ExtractIcon();
-	protected:
-		~RP_ExtractIcon() final;
+public:
+	RP_ExtractIcon();
+protected:
+	~RP_ExtractIcon() final;
 
-	private:
-		typedef LibWin32Common::ComBase3<IPersistFile, IExtractIconW, IExtractIconA> super;
-		RP_DISABLE_COPY(RP_ExtractIcon)
-	private:
-		friend class RP_ExtractIcon_Private;
-		RP_ExtractIcon_Private *const d_ptr;
+private:
+	typedef LibWin32Common::ComBase3<IPersistFile, IExtractIconW, IExtractIconA> super;
+	RP_DISABLE_COPY(RP_ExtractIcon)
+private:
+	friend class RP_ExtractIcon_Private;
+	RP_ExtractIcon_Private *const d_ptr;
 
-	public:
-		CLSID_DECL(RP_ExtractIcon)
-		FILETYPE_HANDLER_DECL(RP_ExtractIcon)
+public:
+	CLSID_DECL(RP_ExtractIcon)
+	FILETYPE_HANDLER_DECL(RP_ExtractIcon)
 
-	public:
-		// IUnknown
-		IFACEMETHODIMP QueryInterface(_In_ REFIID riid, _Outptr_ LPVOID *ppvObj) final;
+public:
+	// IUnknown
+	IFACEMETHODIMP QueryInterface(_In_ REFIID riid, _Outptr_ LPVOID *ppvObj) final;
 
-		// IPersist (IPersistFile base class)
-		IFACEMETHODIMP GetClassID(_Out_ CLSID *pClassID) final;
-		// IPersistFile
-		IFACEMETHODIMP IsDirty(void) final;
-		IFACEMETHODIMP Load(_In_ LPCOLESTR pszFileName, DWORD dwMode) final;
-		IFACEMETHODIMP Save(_In_ LPCOLESTR pszFileName, BOOL fRemember) final;
-		IFACEMETHODIMP SaveCompleted(_In_ LPCOLESTR pszFileName) final;
-		IFACEMETHODIMP GetCurFile(_In_ LPOLESTR *ppszFileName) final;
+	// IPersist (IPersistFile base class)
+	IFACEMETHODIMP GetClassID(_Out_ CLSID *pClassID) final;
+	// IPersistFile
+	IFACEMETHODIMP IsDirty(void) final;
+	IFACEMETHODIMP Load(_In_ LPCOLESTR pszFileName, DWORD dwMode) final;
+	IFACEMETHODIMP Save(_In_ LPCOLESTR pszFileName, BOOL fRemember) final;
+	IFACEMETHODIMP SaveCompleted(_In_ LPCOLESTR pszFileName) final;
+	IFACEMETHODIMP GetCurFile(_In_ LPOLESTR *ppszFileName) final;
 
-		// IExtractIconW
-		IFACEMETHODIMP GetIconLocation(UINT uFlags,
-			_Out_writes_(cchMax) LPWSTR pszIconFile, UINT cchMax,
-			_Out_ int *piIndex, _Out_ UINT *pwFlags) final;
-		IFACEMETHODIMP Extract(_In_ LPCWSTR pszFile, UINT nIconIndex,
-			_Outptr_opt_ HICON *phiconLarge, _Outptr_opt_ HICON *phiconSmall,
-			UINT nIconSize) final;
+	// IExtractIconW
+	IFACEMETHODIMP GetIconLocation(UINT uFlags,
+		_Out_writes_(cchMax) LPWSTR pszIconFile, UINT cchMax,
+		_Out_ int *piIndex, _Out_ UINT *pwFlags) final;
+	IFACEMETHODIMP Extract(_In_ LPCWSTR pszFile, UINT nIconIndex,
+		_Outptr_opt_ HICON *phiconLarge, _Outptr_opt_ HICON *phiconSmall,
+		UINT nIconSize) final;
 
-		// IExtractIconA
-		IFACEMETHODIMP GetIconLocation(UINT uFlags,
-			_Out_writes_(cchMax) LPSTR pszIconFile, UINT cchMax,
-			_Out_ int *piIndex, _Out_ UINT *pwFlags) final;
-		IFACEMETHODIMP Extract(_In_ LPCSTR pszFile, UINT nIconIndex,
-			_Outptr_opt_ HICON *phiconLarge, _Outptr_opt_ HICON *phiconSmall,
-			UINT nIconSize) final;
+	// IExtractIconA
+	IFACEMETHODIMP GetIconLocation(UINT uFlags,
+		_Out_writes_(cchMax) LPSTR pszIconFile, UINT cchMax,
+		_Out_ int *piIndex, _Out_ UINT *pwFlags) final;
+	IFACEMETHODIMP Extract(_In_ LPCSTR pszFile, UINT nIconIndex,
+		_Outptr_opt_ HICON *phiconLarge, _Outptr_opt_ HICON *phiconSmall,
+		UINT nIconSize) final;
 };
 
 #ifdef __CRT_UUID_DECL

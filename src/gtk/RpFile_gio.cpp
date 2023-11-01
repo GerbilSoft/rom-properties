@@ -17,25 +17,25 @@ using std::string;
 
 class RpFileGioPrivate
 {
-	public:
-		explicit RpFileGioPrivate(const char *uri);
-		explicit RpFileGioPrivate(const string &uri);
-		~RpFileGioPrivate();
+public:
+	explicit RpFileGioPrivate(const char *uri);
+	explicit RpFileGioPrivate(const string &uri);
+	~RpFileGioPrivate();
 
-	private:
-		RP_DISABLE_COPY(RpFileGioPrivate)
+private:
+	RP_DISABLE_COPY(RpFileGioPrivate)
 
-	public:
-		GFileInputStream *stream;	// File input stream.
-		char *uri;			// GVfs URI.
+public:
+	GFileInputStream *stream;	// File input stream.
+	char *uri;			// GVfs URI.
 
-	public:
-		/**
-		 * Convert a GIO error code to POSIX.
-		 * @param gioerr GIO error code.
-		 * @return POSIX error code.
-		 */
-		static int gioerr_to_posix(gint gioerr);
+public:
+	/**
+	 * Convert a GIO error code to POSIX.
+	 * @param gioerr GIO error code.
+	 * @return POSIX error code.
+	 */
+	static int gioerr_to_posix(gint gioerr);
 };
 
 /** RpFileGioPrivate **/

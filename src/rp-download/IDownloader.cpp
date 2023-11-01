@@ -7,8 +7,8 @@
  ***************************************************************************/
 
 #include "stdafx.h"
-#include "IDownloader.hpp"
 #include "config.version.h"
+#include "IDownloader.hpp"
 
 // C includes (C++ namespace)
 #include <cstdio>
@@ -56,7 +56,7 @@ IDownloader::IDownloader(const tstring &url)
 	createUserAgent();
 }
 
-/** Properties. **/
+/** Properties **/
 
 /**
  * Is a download in progress?
@@ -138,7 +138,7 @@ void IDownloader::setIfModifiedSince(time_t timestamp)
 	m_if_modified_since = timestamp;
 }
 
-/** Data accessors. **/
+/** Data accessors **/
 
 /**
  * Get the size of the data.
@@ -150,9 +150,9 @@ size_t IDownloader::dataSize(void) const
 }
 
 /**
-* Get a pointer to the start of the data.
-* @return Pointer to the start of the data.
-*/
+ * Get a pointer to the start of the data.
+ * @return Pointer to the start of the data.
+ */
 const uint8_t *IDownloader::data(void) const
 {
 	return m_data.data();
@@ -439,4 +439,4 @@ void IDownloader::createUserAgent(void)
 #endif
 }
 
-}
+} //namespace RpDownload

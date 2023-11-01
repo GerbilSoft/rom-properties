@@ -28,51 +28,51 @@
 
 class UpdateChecker
 {
-	public:
-		UpdateChecker();
-		~UpdateChecker();
+public:
+	UpdateChecker();
+	~UpdateChecker();
 
-	private:
-		RP_DISABLE_COPY(UpdateChecker)
+private:
+	RP_DISABLE_COPY(UpdateChecker)
 
-	public:
-		/**
-		 * Check for updates.
-		 * This will start a new thread and return immediately.
-		 * @param hWnd HWND to receive notification messages
-		 * @return True if successful; false if failed or the thread is already running.
-		 */
-		bool run(HWND hWnd);
-
-	private:
-		/**
-		* Update check thread procedure.
-		* @param lpParameter Thread parameter (UpdateChecker object)
-		* @return Error code.
+public:
+	/**
+		* Check for updates.
+		* This will start a new thread and return immediately.
+		* @param hWnd HWND to receive notification messages
+		* @return True if successful; false if failed or the thread is already running.
 		*/
-		static unsigned int WINAPI ThreadProc(LPVOID lpParameter);
+	bool run(HWND hWnd);
 
-	public:
-		inline const char *errorMessage(void) const
-		{
-			return m_errorMessage;
-		}
+private:
+	/**
+	* Update check thread procedure.
+	* @param lpParameter Thread parameter (UpdateChecker object)
+	* @return Error code.
+	*/
+	static unsigned int WINAPI ThreadProc(LPVOID lpParameter);
 
-		inline uint64_t updateVersion(void) const
-		{
-			return m_updateVersion;
-		}
+public:
+	inline const char *errorMessage(void) const
+	{
+		return m_errorMessage;
+	}
 
-	protected:
-		// Active thread
-		HANDLE m_hThread;
+	inline uint64_t updateVersion(void) const
+	{
+		return m_updateVersion;
+	}
 
-		// hWnd to send messages to
-		HWND m_hWnd;
+protected:
+	// Active thread
+	HANDLE m_hThread;
 
-		// Error message for WM_UPD_ERROR
-		const char *m_errorMessage;
+	// hWnd to send messages to
+	HWND m_hWnd;
 
-		// Update version
-		uint64_t m_updateVersion;
+	// Error message for WM_UPD_ERROR
+	const char *m_errorMessage;
+
+	// Update version
+	uint64_t m_updateVersion;
 };

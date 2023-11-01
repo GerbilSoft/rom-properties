@@ -89,4 +89,4 @@ HRESULT WINAPI rp_QISearch(_Inout_ void *that, _In_ LPCQITAB pqit, _In_ REFIID r
 	return E_NOINTERFACE;
 }
 
-}
+} //namespace LibWin32Common

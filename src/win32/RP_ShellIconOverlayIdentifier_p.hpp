@@ -23,16 +23,16 @@ extern const CLSID CLSID_RP_ShellIconOverlayIdentifier;
 
 class RP_ShellIconOverlayIdentifier_Private
 {
-	public:
-		RP_ShellIconOverlayIdentifier_Private();
-		~RP_ShellIconOverlayIdentifier_Private();
+public:
+	RP_ShellIconOverlayIdentifier_Private();
+	~RP_ShellIconOverlayIdentifier_Private();
 
-	private:
-		RP_DISABLE_COPY(RP_ShellIconOverlayIdentifier_Private)
+private:
+	RP_DISABLE_COPY(RP_ShellIconOverlayIdentifier_Private)
 
-	public:
-		// SHGetStockIconInfo() for the UAC shield icon.
-		typedef HRESULT (STDAPICALLTYPE *PFNSHGETSTOCKICONINFO)(_In_ SHSTOCKICONID siid, _In_ UINT uFlags, _Out_ SHSTOCKICONINFO *psii);
-		HMODULE hShell32_dll;
-		PFNSHGETSTOCKICONINFO pfnSHGetStockIconInfo;
+public:
+	// SHGetStockIconInfo() for the UAC shield icon.
+	typedef HRESULT (STDAPICALLTYPE *PFNSHGETSTOCKICONINFO)(_In_ SHSTOCKICONID siid, _In_ UINT uFlags, _Out_ SHSTOCKICONINFO *psii);
+	HMODULE hShell32_dll;
+	PFNSHGETSTOCKICONINFO pfnSHGetStockIconInfo;
 };

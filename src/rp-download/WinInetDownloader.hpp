@@ -14,21 +14,21 @@ namespace RpDownload {
 
 class WinInetDownloader final : public IDownloader
 {
-	public:
-		WinInetDownloader();
-		explicit WinInetDownloader(const TCHAR *url);
-		explicit WinInetDownloader(const std::tstring &url);
+public:
+	WinInetDownloader();
+	explicit WinInetDownloader(const TCHAR *url);
+	explicit WinInetDownloader(const std::tstring &url);
 
-	private:
-		typedef IDownloader super;
-		RP_DISABLE_COPY(WinInetDownloader)
+private:
+	typedef IDownloader super;
+	RP_DISABLE_COPY(WinInetDownloader)
 
-	public:
-		/**
-		 * Download the file.
-		 * @return 0 on success; negative POSIX error code, positive HTTP status code on error.
-		 */
-		int download(void) final;
+public:
+	/**
+	 * Download the file.
+	 * @return 0 on success; negative POSIX error code, positive HTTP status code on error.
+	 */
+	int download(void) final;
 };
 
-}
+} //namespace RpDownload

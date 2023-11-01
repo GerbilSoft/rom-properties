@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libwin32ui)                       *
  * DialogBuilder.cpp: DLGTEMPLATEEX builder class.                         *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -32,7 +32,7 @@ namespace LibWin32UI {
 DialogBuilder::DialogBuilder()
 	: m_pDlgBuf(m_DlgBuf)
 	, m_pcDlgItems(nullptr)
-{ }
+{}
 
 /**
  * DLGTEMPLATEEX helper structs.
@@ -259,4 +259,4 @@ void DialogBuilder::clear(void)
 	m_pDlgBuf = m_DlgBuf;
 }
 
-}
+} //namespace LibWin32UI
