@@ -1,9 +1,9 @@
 This copy of minizip-ng 4.0.1 is a modified version of the original.
 
-commit 680d6f1dcf9de99fc033b54975a1dfff10be2b6b
-Version 4.0.1.
+commit 4f670cc7d7ad3a7a27ac3ed5e6c5ddf20956654b
+Version 4.0.2.
 
-Tag: 4.0.1
+Tag: 4.0.2
 
 The following changes have been made to the original:
 
