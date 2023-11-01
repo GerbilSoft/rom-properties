@@ -17,7 +17,7 @@ using LibRpBase::Config;
 // C++ STL classes.
 using std::vector;
 
-namespace LibRomData {
+namespace LibRomData { namespace GameCubeRegions {
 
 /**
  * Convert a GCN region value (from GCN_Boot_Info or RVL_RegionSetting) to a string.
@@ -26,7 +26,7 @@ namespace LibRomData {
  * @param pIsDefault	[out,opt] Set to True if the region string represents the default region for the ID4.
  * @return String, or nullptr if the region value is invalid.
  */
-const char *GameCubeRegions::gcnRegionToString(unsigned int gcnRegion, char idRegion, bool *pIsDefault)
+const char *gcnRegionToString(unsigned int gcnRegion, char idRegion, bool *pIsDefault)
 {
 	/**
 	 * There are two region codes for GCN/Wii games:
@@ -167,7 +167,7 @@ const char *GameCubeRegions::gcnRegionToString(unsigned int gcnRegion, char idRe
  * @param gcnRegion	[in] GCN region value.
  * @return Abbreviation string, or nullptr if the region value is invalid.
  */
-const char *GameCubeRegions::gcnRegionToAbbrevString(unsigned int gcnRegion)
+const char *gcnRegionToAbbrevString(unsigned int gcnRegion)
 {
 	static const char region_tbl[7][4] = {
 		"JPN", "USA", "EUR", "ALL",
@@ -191,7 +191,7 @@ const char *GameCubeRegions::gcnRegionToAbbrevString(unsigned int gcnRegion)
  * @return GameTDB language code(s), or empty vector if the region value is invalid.
  * NOTE: The language code may need to be converted to uppercase!
  */
-vector<uint16_t> GameCubeRegions::gcnRegionToGameTDB(unsigned int gcnRegion, char idRegion)
+vector<uint16_t> gcnRegionToGameTDB(unsigned int gcnRegion, char idRegion)
 {
 	/**
 	 * There are two region codes for GCN/Wii games:
@@ -436,4 +436,4 @@ vector<uint16_t> GameCubeRegions::gcnRegionToGameTDB(unsigned int gcnRegion, cha
 	return ret;
 }
 
-}
+} } //namespace LibRomData::GameCubeRegions

@@ -10,7 +10,7 @@
 #include "MegaDriveRegions.hpp"
 #include "librpbase/SystemRegion.hpp"
 
-namespace LibRomData {
+namespace LibRomData { namespace MegaDriveRegions {
 
 // TODO: Separate parser function for Pico,
 // since Pico doesn't have worldwide releases.
@@ -21,7 +21,7 @@ namespace LibRomData {
  * @param size Size of region_codes.
  * @return MD hexadecimal region code. (See MD_RegionCode.)
  */
-unsigned int MegaDriveRegions::parseRegionCodes(const char *region_codes, int size)
+unsigned int parseRegionCodes(const char *region_codes, int size)
 {
 	// Make sure the region codes field is valid.
 	assert(region_codes != nullptr);
@@ -133,7 +133,7 @@ unsigned int MegaDriveRegions::parseRegionCodes(const char *region_codes, int si
  * @param md_region MD hexadecimal region code.
  * @return MD branding region.
  */
-MegaDriveRegions::MD_BrandingRegion MegaDriveRegions::getBrandingRegion(unsigned int md_region)
+MD_BrandingRegion getBrandingRegion(unsigned int md_region)
 {
 	if (md_region == 0) {
 		// No region code. Assume "all regions".
@@ -276,4 +276,4 @@ MegaDriveRegions::MD_BrandingRegion MegaDriveRegions::getBrandingRegion(unsigned
 	return MD_BrandingRegion::Japan;
 }
 
-}
+} } //namespace LibRomData::MegaDriveRegions
