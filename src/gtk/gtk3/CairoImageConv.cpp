@@ -16,13 +16,15 @@ using std::array;
 #include "librptexture/ImageSizeCalc.hpp"
 using namespace LibRpTexture;
 
+namespace CairoImageConv {
+
 /**
  * Convert an rp_image to cairo_surface_t.
  * @param img		[in] rp_image.
  * @param premultiply	[in] If true, premultiply. Needed for display; NOT needed for PNG.
  * @return GdkPixbuf, or nullptr on error.
  */
-cairo_surface_t *CairoImageConv::rp_image_to_cairo_surface_t(const rp_image *img, bool premultiply)
+cairo_surface_t *rp_image_to_cairo_surface_t(const rp_image *img, bool premultiply)
 {
 	assert(img != nullptr);
 	if (unlikely(!img || !img->isValid()))
@@ -158,3 +160,5 @@ cairo_surface_t *CairoImageConv::rp_image_to_cairo_surface_t(const rp_image *img
 
 	return surface;
 }
+
+} //namespace CairoImageConv

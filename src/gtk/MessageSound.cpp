@@ -25,6 +25,8 @@
 #  error Neither GSound nor LibCanberra GTK are available
 #endif
 
+namespace MessageSound {
+
 #ifdef HAVE_GSOUND
 /**
  * GSound playback callback.
@@ -47,7 +49,7 @@ static void _gsound_play_callback(GObject *source_object, GAsyncResult *res, gpo
  * @param message Message for logging.
  * @param parent Parent window.
  */
-void MessageSound::play(GtkMessageType notificationType, const char *message, GtkWidget *parent)
+void play(GtkMessageType notificationType, const char *message, GtkWidget *parent)
 {
 	// Check if event sounds are enabled.
 	GtkSettings *const settings = gtk_settings_get_default();
@@ -138,3 +140,5 @@ void MessageSound::play(GtkMessageType notificationType, const char *message, Gt
 	}
 #endif
 }
+
+} //namespace MessageSound

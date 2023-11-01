@@ -18,13 +18,15 @@
 #  include <knotification.h>
 #endif
 
+namespace MessageSound {
+
 /**
  * Play a message sound effect.
  * @param notificationType Notification type.
  * @param message Message for logging.
  * @param parent Parent window.
  */
-void MessageSound::play(QMessageBox::Icon notificationType, const QString &message, QWidget *parent)
+void play(QMessageBox::Icon notificationType, const QString &message, QWidget *parent)
 {
 #if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
 	QPluginLoader lib(QStringLiteral("kf5/FrameworkIntegrationPlugin"));
@@ -58,3 +60,5 @@ void MessageSound::play(QMessageBox::Icon notificationType, const QString &messa
 	KNotification::event(messageType, message, QPixmap(), parent);
 #endif
 }
+
+} //namespace MessageSound
