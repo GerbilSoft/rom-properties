@@ -25,6 +25,9 @@ The following changes have been made to the original:
 - document.h: Avoid inheritance from std::iterator
   Upstream commit: d75bb90a5dd8c5946ce7496748d1cea842aabc0f
 
+- document.h: Remove non-compiling assignment operator.
+  Upstream commit: 3b2441b87f99ab65f37b141a7b548ebadb607b96
+
 To obtain the original rapidjson-1.1.0, visit:
 https://rapidjson.org/
 https://github.com/Tencent/rapidjson
