@@ -9,6 +9,9 @@
 
 #include <stdint.h>
 
+// for PIMAGE_DELAYLOAD_DESCRIPTOR
+#include <winnt.h>
+
 template <typename T, typename T1, typename T2>
 constexpr T RVA2VA(T1 base, T2 rva)
 {
