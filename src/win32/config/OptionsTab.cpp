@@ -435,6 +435,34 @@ INT_PTR CALLBACK OptionsTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam,
 				LanguageComboBox_SetLCs(cboLanguage, pal_lc);
 			}
 
+			// Set window themes for Win10's dark mode.
+			// FIXME: Not working for BS_GROUPBOX or BS_AUTOCHECKBOX.
+			if (g_darkModeSupported) {
+#define SET_DARK_MODE_ID_BUTTON(hDlg, id) do { \
+	HWND hWnd = GetDlgItem((hDlg), (id)); \
+	assert(hWnd != nullptr); \
+	_SetWindowTheme(hWnd, L"Explorer", NULL); \
+	_AllowDarkModeForWindow((hWnd), true); \
+	SendMessage((hWnd), WM_THEMECHANGED, 0, 0); \
+} while (0)
+#define SET_DARK_MODE_COMBOBOX(hWnd) do { \
+	_SetWindowTheme(hWnd, L"CFD", NULL); \
+	_AllowDarkModeForWindow((hWnd), true); \
+	SendMessage((hWnd), WM_THEMECHANGED, 0, 0); \
+} while (0)
+				SET_DARK_MODE_ID_BUTTON(hDlg, IDC_OPTIONS_GRPDOWNLOADS);
+				SET_DARK_MODE_ID_BUTTON(hDlg, IDC_OPTIONS_GRPEXTIMGDL);
+				SET_DARK_MODE_ID_BUTTON(hDlg, IDC_OPTIONS_CHKEXTIMGDL);
+				SET_DARK_MODE_COMBOBOX(cboUnmeteredDL);
+				SET_DARK_MODE_COMBOBOX(cboMeteredDL);
+				SET_DARK_MODE_ID_BUTTON(hDlg, IDC_OPTIONS_INTICONSMALL);
+				SET_DARK_MODE_ID_BUTTON(hDlg, IDC_OPTIONS_STOREFILEORIGININFO);
+				SET_DARK_MODE_COMBOBOX(cboLanguage);
+				SET_DARK_MODE_ID_BUTTON(hDlg, IDC_OPTIONS_GRPOPTIONS);
+				SET_DARK_MODE_ID_BUTTON(hDlg, IDC_OPTIONS_DANGEROUSPERMISSIONS);
+				SET_DARK_MODE_ID_BUTTON(hDlg, IDC_OPTIONS_ENABLETHUMBNAILONNETWORKFS);
+			}
+
 			// Reset the configuration. 338
 			d->reset();
 			return TRUE;

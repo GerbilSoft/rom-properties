@@ -753,7 +753,26 @@ INT_PTR CALLBACK CacheTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, L
 			// Store the D object pointer with this particular page dialog.
 			SetWindowLongPtr(hDlg, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(d));
 
-			// Initialize the dialog..
+			// Set window themes for Win10's dark mode.
+			// FIXME: Not working for BS_GROUPBOX or BS_AUTOCHECKBOX.
+			if (g_darkModeSupported) {
+#define SET_DARK_MODE_ID_BUTTON(hDlg, id) do { \
+	HWND hWnd = GetDlgItem((hDlg), (id)); \
+	assert(hWnd != nullptr); \
+	_SetWindowTheme(hWnd, L"Explorer", NULL); \
+	_AllowDarkModeForWindow((hWnd), true); \
+	SendMessage((hWnd), WM_THEMECHANGED, 0, 0); \
+} while (0)
+
+				// NOTE: If Dark Mode is supported, then we're definitely
+				// running on Windows 10 or later, so this will have the
+				// Windows Vista layout.
+				// TODO: Progress bar?
+				SET_DARK_MODE_ID_BUTTON(hDlg, IDC_CACHE_CLEAR_SYS_THUMBS);
+				SET_DARK_MODE_ID_BUTTON(hDlg, IDC_CACHE_CLEAR_RP_DL);
+			}
+
+			// Initialize the dialog.
 			d->initDialog();
 			return TRUE;
 		}

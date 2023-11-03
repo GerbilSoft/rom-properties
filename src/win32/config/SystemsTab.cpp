@@ -270,6 +270,29 @@ INT_PTR CALLBACK SystemsTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam,
 			ComboBox_AddString(hwndDmgTs, _T("Super Game Boy"));
 			ComboBox_AddString(hwndDmgTs, _T("Game Boy Color"));
 
+			// Set window themes for Win10's dark mode.
+			// FIXME: Not working for BS_GROUPBOX.
+			if (g_darkModeSupported) {
+#define SET_DARK_MODE_ID_BUTTON(hDlg, id) do { \
+	HWND hWnd = GetDlgItem((hDlg), (id)); \
+	assert(hWnd != nullptr); \
+	_SetWindowTheme(hWnd, L"Explorer", NULL); \
+	_AllowDarkModeForWindow((hWnd), true); \
+	SendMessage((hWnd), WM_THEMECHANGED, 0, 0); \
+} while (0)
+#define SET_DARK_MODE_ID_COMBOBOX(hDlg, id) do { \
+	HWND hWnd = GetDlgItem((hDlg), (id)); \
+	assert(hWnd != nullptr); \
+	_SetWindowTheme(hWnd, L"CFD", NULL); \
+	_AllowDarkModeForWindow((hWnd), true); \
+	SendMessage((hWnd), WM_THEMECHANGED, 0, 0); \
+} while (0)
+				SET_DARK_MODE_ID_BUTTON(hDlg, IDC_SYSTEMS_DMGTS_GROUPBOX);
+				SET_DARK_MODE_ID_COMBOBOX(hDlg, IDC_SYSTEMS_DMGTS_DMG);
+				SET_DARK_MODE_ID_COMBOBOX(hDlg, IDC_SYSTEMS_DMGTS_SGB);
+				SET_DARK_MODE_ID_COMBOBOX(hDlg, IDC_SYSTEMS_DMGTS_CGB);
+			}
+
 			// Reset the configuration.
 			d->reset();
 			return TRUE;
