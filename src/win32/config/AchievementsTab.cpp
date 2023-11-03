@@ -25,6 +25,9 @@ using namespace LibRpBase;
 using LibWin32UI::AutoGetDC_font;
 using LibWin32UI::LoadDialog_i18n;
 
+// Win32 dark mode
+#include "libwin32darkmode/DarkMode.hpp"
+
 // C++ STL classes
 using std::tstring;
 using std::unique_ptr;
@@ -89,6 +92,12 @@ public:
 	 * Reset the configuration.
 	 */
 	void reset(void);
+
+public:
+	// Dark Mode colors (TODO: Get from the OS?)
+	static constexpr COLORREF darkBkColor = 0x383838;
+	static constexpr COLORREF darkTextColor = 0xFFFFFF;
+	HBRUSH hbrBkgnd;
 };
 
 /** AchievementsTabPrivate **/
@@ -98,12 +107,18 @@ AchievementsTabPrivate::AchievementsTabPrivate()
 	, hWndPropSheet(nullptr)
 	, himglAch(nullptr)
 	, colorAltRow(0)
+	, hbrBkgnd(nullptr)
 {}
 
 AchievementsTabPrivate::~AchievementsTabPrivate()
 {
 	if (himglAch) {
 		ImageList_Destroy(himglAch);
+	}
+
+	// Dark mode background brush
+	if (hbrBkgnd) {
+		DeleteBrush(hbrBkgnd);
 	}
 }
 
@@ -176,6 +191,33 @@ INT_PTR CALLBACK AchievementsTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wP
 			d->updateListViewStyle();
 			break;
 		}
+
+		/** Dark Mode **/
+
+		case WM_CTLCOLORDLG:
+		case WM_CTLCOLORSTATIC:
+			if (g_darkModeSupported && g_darkModeEnabled) {
+				auto *const d = reinterpret_cast<AchievementsTabPrivate*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
+				if (!d) {
+					// No AchievementsTabPrivate. Can't do anything...
+					return FALSE;
+				}
+
+				HDC hdc = reinterpret_cast<HDC>(wParam);
+				SetTextColor(hdc, darkTextColor);
+				SetBkColor(hdc, darkBkColor);
+				if (!d->hbrBkgnd) {
+					d->hbrBkgnd = CreateSolidBrush(darkBkColor);
+				}
+				return reinterpret_cast<INT_PTR>(d->hbrBkgnd);
+			}
+			break;
+
+		case WM_SETTINGCHANGE:
+			if (g_darkModeSupported && IsColorSchemeChangeMessage(lParam)) {
+				SendMessageW(hDlg, WM_THEMECHANGED, 0, 0);
+			}
+			break;
 
 		default:
 			break;

@@ -12,13 +12,18 @@
 
 // Other rom-properties libraries
 #include "librpfile/RecursiveScan.hpp"
-#include "libwin32ui/LoadResource_i18n.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;
+
+// libwin32ui
+#include "libwin32ui/LoadResource_i18n.hpp"
 using LibWin32UI::LoadDialog_i18n;
 using LibWin32UI::RegKey;
 using LibWin32UI::WTSSessionNotification;
+
+// Win32 dark mode
+#include "libwin32darkmode/DarkMode.hpp"
 
 // IEmptyVolumeCacheCallBack implementation.
 #include "RP_EmptyVolumeCacheCallback.hpp"
@@ -49,6 +54,7 @@ class CacheTabPrivate
 {
 public:
 	CacheTabPrivate();
+	~CacheTabPrivate();
 
 private:
 	RP_DISABLE_COPY(CacheTabPrivate)
@@ -118,6 +124,12 @@ public:
 
 	DWORD dwUnitmaskXP;	// XP drive update mask
 	bool isVista;		// Is this Windows Vista or later?
+
+public:
+	// Dark Mode colors (TODO: Get from the OS?)
+	static constexpr COLORREF darkBkColor = 0x383838;
+	static constexpr COLORREF darkTextColor = 0xFFFFFF;
+	HBRUSH hbrBkgnd;
 };
 
 /** CacheTabPrivate **/
@@ -127,6 +139,7 @@ CacheTabPrivate::CacheTabPrivate()
 	, hWndPropSheet(nullptr)
 	, dwUnitmaskXP(0)
 	, isVista(false)
+	, hbrBkgnd(nullptr)
 {
 	// Determine which dialog we should use.
 	RegKey hKey(HKEY_LOCAL_MACHINE, _T("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\VolumeCaches\\Thumbnail Cache"), KEY_READ, false);
@@ -142,6 +155,14 @@ CacheTabPrivate::CacheTabPrivate()
 		// "There is no disk in the drive." message when
 		// a CD-ROM is removed and we call SHGetFileInfo().
 		SetErrorMode(SEM_FAILCRITICALERRORS);
+	}
+}
+
+CacheTabPrivate::~CacheTabPrivate()
+{
+	// Dark mode background brush
+	if (hbrBkgnd) {
+		DeleteBrush(hbrBkgnd);
 	}
 }
 
@@ -867,6 +888,33 @@ INT_PTR CALLBACK CacheTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, L
 			}
 			break;
 		}
+
+		/** Dark Mode **/
+
+		case WM_CTLCOLORDLG:
+		case WM_CTLCOLORSTATIC:
+			if (g_darkModeSupported && g_darkModeEnabled) {
+				auto *const d = reinterpret_cast<CacheTabPrivate*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
+				if (!d) {
+					// No CacheTabPrivate. Can't do anything...
+					return FALSE;
+				}
+
+				HDC hdc = reinterpret_cast<HDC>(wParam);
+				SetTextColor(hdc, darkTextColor);
+				SetBkColor(hdc, darkBkColor);
+				if (!d->hbrBkgnd) {
+					d->hbrBkgnd = CreateSolidBrush(darkBkColor);
+				}
+				return reinterpret_cast<INT_PTR>(d->hbrBkgnd);
+			}
+			break;
+
+		case WM_SETTINGCHANGE:
+			if (g_darkModeSupported && IsColorSchemeChangeMessage(lParam)) {
+				SendMessageW(hDlg, WM_THEMECHANGED, 0, 0);
+			}
+			break;
 
 		default:
 			break;

@@ -22,6 +22,9 @@ using namespace LibRpFile;
 #include "libwin32ui/LoadResource_i18n.hpp"
 using LibWin32UI::LoadDialog_i18n;
 
+// Win32 dark mode
+#include "libwin32darkmode/DarkMode.hpp"
+
 // Netowrk status
 #include "NetworkStatus.h"
 
@@ -32,6 +35,7 @@ class OptionsTabPrivate
 {
 public:
 	OptionsTabPrivate();
+	~OptionsTabPrivate();
 
 private:
 	RP_DISABLE_COPY(OptionsTabPrivate)
@@ -119,6 +123,12 @@ public:
 
 	// PAL language codes for GameTDB.
 	static const uint32_t pal_lc[];
+
+public:
+	// Dark Mode colors (TODO: Get from the OS?)
+	static constexpr COLORREF darkBkColor = 0x383838;
+	static constexpr COLORREF darkTextColor = 0xFFFFFF;
+	HBRUSH hbrBkgnd;
 };
 
 /** OptionsTabPrivate **/
@@ -134,7 +144,16 @@ OptionsTabPrivate::OptionsTabPrivate()
 	: hPropSheetPage(nullptr)
 	, hWndPropSheet(nullptr)
 	, changed(false)
+	, hbrBkgnd(nullptr)
 {}
+
+OptionsTabPrivate::~OptionsTabPrivate()
+{
+	// Dark mode background brush
+	if (hbrBkgnd) {
+		DeleteBrush(hbrBkgnd);
+	}
+}
 
 /**
  * Reset the configuration.
@@ -498,6 +517,33 @@ INT_PTR CALLBACK OptionsTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam,
 			d->loadDefaults();
 			break;
 		}
+
+		/** Dark Mode **/
+
+		case WM_CTLCOLORDLG:
+		case WM_CTLCOLORSTATIC:
+			if (g_darkModeSupported && g_darkModeEnabled) {
+				auto *const d = reinterpret_cast<OptionsTabPrivate*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
+				if (!d) {
+					// No OptionsTabPrivate. Can't do anything...
+					return FALSE;
+				}
+
+				HDC hdc = reinterpret_cast<HDC>(wParam);
+				SetTextColor(hdc, darkTextColor);
+				SetBkColor(hdc, darkBkColor);
+				if (!d->hbrBkgnd) {
+					d->hbrBkgnd = CreateSolidBrush(darkBkColor);
+				}
+				return reinterpret_cast<INT_PTR>(d->hbrBkgnd);
+			}
+			break;
+
+		case WM_SETTINGCHANGE:
+			if (g_darkModeSupported && IsColorSchemeChangeMessage(lParam)) {
+				SendMessageW(hDlg, WM_THEMECHANGED, 0, 0);
+			}
+			break;
 
 		default:
 			break;

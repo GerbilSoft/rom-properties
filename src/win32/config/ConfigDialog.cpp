@@ -533,7 +533,7 @@ int CALLBACK rp_show_config_dialog(
 	INT_PTR ret = cfg->exec();
 	delete cfg;
 
-	// Dark mode brush
+	// Dark mode background brush
 	if (hbrBkgnd) {
 		DeleteBrush(hbrBkgnd);
 		hbrBkgnd = nullptr;

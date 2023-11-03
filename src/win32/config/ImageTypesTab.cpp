@@ -181,6 +181,7 @@ ImageTypesTabPrivate::~ImageTypesTabPrivate()
 	// since it's only used when saving.
 	assert(tmp_conf_filename.empty());
 
+	// Dark mode background brush
 	if (hbrBkgnd) {
 		DeleteBrush(hbrBkgnd);
 	}

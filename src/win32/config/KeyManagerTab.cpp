@@ -24,6 +24,9 @@
 using LibWin32UI::LoadDialog_i18n;
 using LibWin32UI::WTSSessionNotification;
 
+// Win32 dark mode
+#include "libwin32darkmode/DarkMode.hpp"
+
 // Other rom-properties libraries
 #include "librpbase/crypto/KeyManager.hpp"
 using namespace LibRpBase;
@@ -234,6 +237,12 @@ public:
 	 * @param fileID Type of file
 	 */
 	void importKeysFromBin(KeyStoreUI::ImportFileID id);
+
+public:
+	// Dark Mode colors (TODO: Get from the OS?)
+	static constexpr COLORREF darkBkColor = 0x383838;
+	static constexpr COLORREF darkTextColor = 0xFFFFFF;
+	HBRUSH hbrBkgnd;
 };
 
 /** KeyManagerTabPrivate **/
@@ -257,6 +266,7 @@ KeyManagerTabPrivate::KeyManagerTabPrivate()
 	, hIconGood(nullptr)
 	, colorAltRow(0)
 	, hbrAltRow(nullptr)
+	, hbrBkgnd(nullptr)
 {
 	// Load images.
 	loadImages();
@@ -280,7 +290,7 @@ KeyManagerTabPrivate::~KeyManagerTabPrivate()
 		keyStore_ownerDataCallback->Release();
 	}
 
-	// Icons.
+	// Icons
 	if (hIconUnknown) {
 		DestroyIcon(hIconUnknown);
 	}
@@ -291,9 +301,14 @@ KeyManagerTabPrivate::~KeyManagerTabPrivate()
 		DestroyIcon(hIconGood);
 	}
 
-	// Alternate row color.
+	// Alternate row color
 	if (hbrAltRow) {
 		DeleteBrush(hbrAltRow);
+	}
+
+	// Dark mode background brush
+	if (hbrBkgnd) {
+		DeleteBrush(hbrBkgnd);
 	}
 }
 
@@ -834,6 +849,33 @@ INT_PTR CALLBACK KeyManagerTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 			d->loadImages();
 			break;
 		}
+
+		/** Dark Mode **/
+
+		case WM_CTLCOLORDLG:
+		case WM_CTLCOLORSTATIC:
+			if (g_darkModeSupported && g_darkModeEnabled) {
+				auto *const d = reinterpret_cast<KeyManagerTabPrivate*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
+				if (!d) {
+					// No KeyManagerTabPrivate. Can't do anything...
+					return FALSE;
+				}
+
+				HDC hdc = reinterpret_cast<HDC>(wParam);
+				SetTextColor(hdc, darkTextColor);
+				SetBkColor(hdc, darkBkColor);
+				if (!d->hbrBkgnd) {
+					d->hbrBkgnd = CreateSolidBrush(darkBkColor);
+				}
+				return reinterpret_cast<INT_PTR>(d->hbrBkgnd);
+			}
+			break;
+
+		case WM_SETTINGCHANGE:
+			if (g_darkModeSupported && IsColorSchemeChangeMessage(lParam)) {
+				SendMessageW(hDlg, WM_THEMECHANGED, 0, 0);
+			}
+			break;
 
 		default:
 			break;
