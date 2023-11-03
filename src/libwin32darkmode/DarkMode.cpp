@@ -1,15 +1,18 @@
 // https://github.com/ysc3839/win32-darkmode
 
 #include "libwin32common/RpWin32_sdk.h"
+
 #include "DarkMode.hpp"
 #include "IatHook.hpp"
 
-// for OpenNcThemeData()
-#include <uxtheme.h>
+// for HTHEME
 
 // 1809 17763
 typedef HTHEME (WINAPI *fnOpenNcThemeData)(HWND hWnd, LPCWSTR pszClassList); // ordinal 49
 
+fnSetWindowTheme _SetWindowTheme = nullptr;
+fnGetThemeColor _GetThemeColor = nullptr;
+fnCloseThemeData _CloseThemeData = nullptr;
 fnSetWindowCompositionAttribute _SetWindowCompositionAttribute = nullptr;
 fnShouldAppsUseDarkMode _ShouldAppsUseDarkMode = nullptr;
 fnAllowDarkModeForWindow _AllowDarkModeForWindow = nullptr;
@@ -18,6 +21,7 @@ fnFlushMenuThemes _FlushMenuThemes = nullptr;
 fnRefreshImmersiveColorPolicyState _RefreshImmersiveColorPolicyState = nullptr;
 fnIsDarkModeAllowedForWindow _IsDarkModeAllowedForWindow = nullptr;
 fnGetIsImmersiveColorUsingHighContrast _GetIsImmersiveColorUsingHighContrast = nullptr;
+fnOpenThemeData _OpenThemeData = nullptr;
 static fnOpenNcThemeData _OpenNcThemeData = nullptr;
 // 1903 18362
 fnShouldSystemUseDarkMode _ShouldSystemUseDarkMode = nullptr;
@@ -122,6 +126,10 @@ int InitDarkMode(void)
 	if (!hUxtheme)
 		return 3;
 
+	_SetWindowTheme = reinterpret_cast<fnSetWindowTheme>(GetProcAddress(hUxtheme, "SetWindowTheme"));
+	_GetThemeColor = reinterpret_cast<fnGetThemeColor>(GetProcAddress(hUxtheme, "GetThemeColor"));
+	_CloseThemeData = reinterpret_cast<fnCloseThemeData>(GetProcAddress(hUxtheme, "CloseThemeData"));
+	_OpenThemeData = reinterpret_cast<fnOpenThemeData>(GetProcAddress(hUxtheme, "OpenThemeData"));
 	_OpenNcThemeData = reinterpret_cast<fnOpenNcThemeData>(GetProcAddress(hUxtheme, MAKEINTRESOURCEA(49)));
 	_RefreshImmersiveColorPolicyState = reinterpret_cast<fnRefreshImmersiveColorPolicyState>(GetProcAddress(hUxtheme, MAKEINTRESOURCEA(104)));
 	_GetIsImmersiveColorUsingHighContrast = reinterpret_cast<fnGetIsImmersiveColorUsingHighContrast>(GetProcAddress(hUxtheme, MAKEINTRESOURCEA(106)));
@@ -140,7 +148,11 @@ int InitDarkMode(void)
 
 	_SetWindowCompositionAttribute = reinterpret_cast<fnSetWindowCompositionAttribute>(GetProcAddress(GetModuleHandleW(L"user32.dll"), "SetWindowCompositionAttribute"));
 
-	if (_OpenNcThemeData &&
+	if (_SetWindowTheme &&
+		_GetThemeColor &&
+		_CloseThemeData &&
+		_OpenThemeData &&
+		_OpenNcThemeData &&
 		_RefreshImmersiveColorPolicyState &&
 		_ShouldAppsUseDarkMode &&
 		_AllowDarkModeForWindow &&
@@ -161,6 +173,9 @@ int InitDarkMode(void)
 	}
 
 	// Dark mode is not supported.
+	_SetWindowTheme = nullptr;
+	_GetThemeColor = nullptr;
+	_CloseThemeData = nullptr;
 	_OpenNcThemeData = nullptr;
 	_RefreshImmersiveColorPolicyState = nullptr;
 	_GetIsImmersiveColorUsingHighContrast = nullptr;

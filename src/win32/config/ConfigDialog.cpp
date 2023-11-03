@@ -48,11 +48,8 @@ using namespace LibRpTexture;
 #endif /* ENABLE_DECRYPTION */
 #include "AboutTab.hpp"
 
-// Win32 dark mode TESTING
-// TODO: Add uxtheme.h wrapper to DarkMode.h.
+// Win32 dark mode
 #include "libwin32darkmode/DarkMode.hpp"
-#include <uxtheme.h>
-#pragma comment(lib, "uxtheme.lib")
 
 class ConfigDialogPrivate
 {
@@ -233,7 +230,7 @@ LRESULT CALLBACK ConfigDialogPrivate::subclassProc(
 		case WM_SHOWWINDOW: {
 			//  NOTE: This should be in WM_CREATE, but we don't receive WM_CREATE here.
 			if (g_darkModeSupported) {
-				SetWindowTheme(hWnd, L"CFD", NULL);
+				_SetWindowTheme(hWnd, L"CFD", NULL);
 				_AllowDarkModeForWindow(hWnd, true);
 				RefreshTitleBarThemeColor(hWnd);
 			}

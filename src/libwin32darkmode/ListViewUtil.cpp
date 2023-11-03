@@ -1,14 +1,10 @@
 // https://github.com/ysc3839/win32-darkmode
 
 #include "libwin32common/RpWin32_sdk.h"
+#include <commctrl.h>	// SubclassProc()
+
 #include "ListViewUtil.hpp"
 #include "DarkMode.hpp"
-
-// DefSubclassProc()
-#include <commctrl.h>
-
-// SetWindowTheme() [TODO: Dynamically open uxtheme.dll]
-#include <uxtheme.h>
 
 // Theming constants
 #if _WIN32_WINNT >= 0x0600
@@ -60,24 +56,24 @@ static LRESULT CALLBACK ListView_DarkMode_SubclassProc(
 				AllowDarkModeForWindow(hWnd, g_darkModeEnabled);
 				AllowDarkModeForWindow(hHeader, g_darkModeEnabled);
 
-				HTHEME hTheme = OpenThemeData(nullptr, L"ItemsView");
+				HTHEME hTheme = _OpenThemeData(nullptr, L"ItemsView");
 				if (hTheme) {
 					COLORREF color;
-					if (SUCCEEDED(GetThemeColor(hTheme, 0, 0, TMT_TEXTCOLOR, &color))) {
+					if (SUCCEEDED(_GetThemeColor(hTheme, 0, 0, TMT_TEXTCOLOR, &color))) {
 						ListView_SetTextColor(hWnd, color);
 					}
-					if (SUCCEEDED(GetThemeColor(hTheme, 0, 0, TMT_FILLCOLOR, &color))) {
+					if (SUCCEEDED(_GetThemeColor(hTheme, 0, 0, TMT_FILLCOLOR, &color))) {
 						ListView_SetTextBkColor(hWnd, color);
 						ListView_SetBkColor(hWnd, color);
 					}
-					CloseThemeData(hTheme);
+					_CloseThemeData(hTheme);
 				}
 
-				hTheme = OpenThemeData(hHeader, L"Header");
+				hTheme = _OpenThemeData(hHeader, L"Header");
 				if (hTheme) {
 					auto info = reinterpret_cast<SubclassInfo*>(dwRefData);
-					GetThemeColor(hTheme, HP_HEADERITEM, 0, TMT_TEXTCOLOR, &(info->headerTextColor));
-					CloseThemeData(hTheme);
+					_GetThemeColor(hTheme, HP_HEADERITEM, 0, TMT_TEXTCOLOR, &(info->headerTextColor));
+					_CloseThemeData(hTheme);
 				}
 
 				SendMessageW(hHeader, WM_THEMECHANGED, wParam, lParam);
@@ -107,6 +103,8 @@ void InitListView(HWND hListView)
 	// Hide focus dots
 	SendMessage(hListView, WM_CHANGEUISTATE, MAKELONG(UIS_SET, UISF_HIDEFOCUS), 0);
 
-	SetWindowTheme(hHeader, L"ItemsView", nullptr); // DarkMode
-	SetWindowTheme(hListView, L"ItemsView", nullptr); // DarkMode
+	if (g_darkModeSupported) {
+		_SetWindowTheme(hHeader, L"ItemsView", nullptr); // DarkMode
+		_SetWindowTheme(hListView, L"ItemsView", nullptr); // DarkMode
+	}
 }
