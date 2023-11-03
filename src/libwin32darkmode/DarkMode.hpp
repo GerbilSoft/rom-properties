@@ -110,7 +110,12 @@ bool IsColorSchemeChangeMessage(LPARAM lParam);
 
 void AllowDarkModeForApp(bool allow);
 void FixDarkScrollBar(void);
-void InitDarkMode(void);
+
+/**
+ * Initialize Dark Mode.
+ * @return 0 if Dark Mode functionality is available; non-zero if not or an error occurred.
+ */
+int InitDarkMode(void);
 
 #ifdef __cplusplus
 }
