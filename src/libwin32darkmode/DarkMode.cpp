@@ -98,10 +98,16 @@ void FixDarkScrollBar(void)
 
 static constexpr bool CheckBuildNumber(DWORD buildNumber)
 {
+	/*
 	return (buildNumber == 17763 || // 1809
 		buildNumber == 18362 || // 1903
 		buildNumber == 18363 || // 1909
 		buildNumber == 19041); // 2004
+	*/
+
+	// Assume all versions of Windows 10 1809+,
+	// and Windows 11, support these Dark Mode functions.
+	return (buildNumber >= 17763);
 }
 
 /**
