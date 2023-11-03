@@ -233,6 +233,7 @@ LRESULT CALLBACK ConfigDialogPrivate::subclassProc(
 				_SetWindowTheme(hWnd, L"CFD", NULL);
 				_AllowDarkModeForWindow(hWnd, true);
 				RefreshTitleBarThemeColor(hWnd);
+				SendMessageW(hWnd, WM_THEMECHANGED, 0, 0);
 			}
 
 			// Check for RTL.
@@ -402,7 +403,9 @@ LRESULT CALLBACK ConfigDialogPrivate::subclassProc(
 			if (IsColorSchemeChangeMessage(lParam)) {
 				g_darkModeEnabled = _ShouldAppsUseDarkMode() && !IsHighContrast();
 				RefreshTitleBarThemeColor(hWnd);
+				SendMessageW(hWnd, WM_THEMECHANGED, 0, 0);
 			}
+			break;
 
 		default:
 			break;

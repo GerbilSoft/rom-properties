@@ -18,6 +18,9 @@ using namespace LibRpFile;
 #include "libwin32ui/LoadResource_i18n.hpp"
 using LibWin32UI::LoadDialog_i18n;
 
+// Win32 dark mode
+#include "libwin32darkmode/DarkMode.hpp"
+
 // C++ STL classes.
 using std::tstring;
 using std::vector;
@@ -355,6 +358,11 @@ void ImageTypesTabPrivate::createComboBox(unsigned int cbid)
 		hWndPropSheet, (HMENU)(INT_PTR)(IDC_IMAGETYPES_CBOIMAGETYPE_BASE + cbid),
 		nullptr, nullptr);
 	SetWindowFont(hComboBox, hFontDlg, FALSE);
+	if (g_darkModeSupported) {
+		_SetWindowTheme(hComboBox, L"CFD", NULL);
+		_AllowDarkModeForWindow(hComboBox, true);
+		SendMessage(hComboBox, WM_THEMECHANGED, 0, 0);
+	}
 	sysData.cboImageType[imageType] = hComboBox;
 
 	SetWindowPos(hComboBox,
@@ -544,6 +552,13 @@ INT_PTR CALLBACK ImageTypesTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 			// Store the D object pointer with this particular page dialog.
 			SetWindowLongPtr(hDlg, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(d));
 
+			//  NOTE: This should be in WM_CREATE, but we don't receive WM_CREATE here.
+			if (g_darkModeSupported) {
+				_SetWindowTheme(hDlg, L"CFD", NULL);
+				_AllowDarkModeForWindow(hDlg, true);
+				SendMessageW(hDlg, WM_THEMECHANGED, 0, 0);
+			}
+
 			// Initialize strings.
 			d->initStrings();
 
@@ -647,6 +662,12 @@ INT_PTR CALLBACK ImageTypesTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 			}
 			break;
 		}
+
+		case WM_SETTINGCHANGE:
+			if (g_darkModeSupported && IsColorSchemeChangeMessage(lParam)) {
+				SendMessageW(hDlg, WM_THEMECHANGED, 0, 0);
+			}
+			break;
 
 		default:
 			break;
