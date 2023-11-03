@@ -1,4 +1,21 @@
-#pragma once
+// https://github.com/ysc3839/win32-darkmode
+
+#include "libwin32common/RpWin32_sdk.h"
+#include "ListViewUtil.hpp"
+#include "DarkMode.hpp"
+
+// DefSubclassProc()
+#include <commctrl.h>
+
+// SetWindowTheme() [TODO: Dynamically open uxtheme.dll]
+#include <uxtheme.h>
+
+// Theming constants
+#if _WIN32_WINNT >= 0x0600
+#  include <vssym32.h>
+#else
+#  include <tmschema.h>
+#endif
 
 struct SubclassInfo
 {

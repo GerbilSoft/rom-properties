@@ -50,7 +50,7 @@ using namespace LibRpTexture;
 
 // Win32 dark mode TESTING
 // TODO: Add uxtheme.h wrapper to DarkMode.h.
-#include "libwin32darkmode/DarkMode.h"
+#include "libwin32darkmode/DarkMode.hpp"
 #include <uxtheme.h>
 #pragma comment(lib, "uxtheme.lib")
 
