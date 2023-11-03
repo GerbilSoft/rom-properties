@@ -37,7 +37,7 @@ DELAYLOAD_TEST_FUNCTION_IMPL1(textdomain, nullptr);
 #include "librptexture/img/RpGdiplusBackend.hpp"
 using namespace LibRpTexture;
 
-// Property sheet tabs.
+// Property sheet tabs
 #include "ImageTypesTab.hpp"
 #include "SystemsTab.hpp"
 #include "OptionsTab.hpp"
@@ -47,6 +47,12 @@ using namespace LibRpTexture;
 #  include "KeyManagerTab.hpp"
 #endif /* ENABLE_DECRYPTION */
 #include "AboutTab.hpp"
+
+// Win32 dark mode TESTING
+// TODO: Add uxtheme.h wrapper to DarkMode.h.
+#include "../../../extlib/libwin32darkmode/DarkMode.h"
+#include <uxtheme.h>
+#pragma comment(lib, "uxtheme.lib")
 
 class ConfigDialogPrivate
 {
@@ -225,6 +231,13 @@ LRESULT CALLBACK ConfigDialogPrivate::subclassProc(
 			break;
 
 		case WM_SHOWWINDOW: {
+			//  NOTE: This should be in WM_CREATE, but we don't receive WM_CREATE here.
+			if (g_darkModeSupported) {
+				SetWindowTheme(hWnd, L"CFD", NULL);
+				_AllowDarkModeForWindow(hWnd, true);
+				RefreshTitleBarThemeColor(hWnd);
+			}
+
 			// Check for RTL.
 			if (LibWin32UI::isSystemRTL() != 0) {
 				// Set the dialog to allow automatic right-to-left adjustment.
@@ -388,6 +401,12 @@ LRESULT CALLBACK ConfigDialogPrivate::subclassProc(
 			EnableWindow(GetDlgItem(hWnd, IDC_RP_DEFAULTS), (BOOL)wParam);
 			break;
 
+		case WM_SETTINGCHANGE:
+			if (IsColorSchemeChangeMessage(lParam)) {
+				g_darkModeEnabled = _ShouldAppsUseDarkMode() && !IsHighContrast();
+				RefreshTitleBarThemeColor(hWnd);
+			}
+
 		default:
 			break;
 	}
@@ -468,6 +487,9 @@ int CALLBACK rp_show_config_dialog(
 
 	// Initialize i18n.
 	rp_i18n_init();
+
+	// Enable dark mode if it's available.
+	InitDarkMode();
 
 	ConfigDialog *cfg = new ConfigDialog();
 	INT_PTR ret = cfg->exec();
