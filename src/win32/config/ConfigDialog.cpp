@@ -265,6 +265,9 @@ LRESULT CALLBACK ConfigDialogPrivate::subclassProc(
 			HWND hBtnOK = GetDlgItem(hWnd, IDOK);
 			HWND hBtnCancel = GetDlgItem(hWnd, IDCANCEL);
 			HWND hTabControl = PropSheet_GetTabControl(hWnd);
+			assert(hBtnOK != nullptr);
+			assert(hBtnCancel != nullptr);
+			assert(hTabControl != nullptr);
 			if (!hBtnOK || !hBtnCancel || !hTabControl)
 				break;
 
@@ -297,10 +300,9 @@ LRESULT CALLBACK ConfigDialogPrivate::subclassProc(
 
 			// Fix up the tab order. ("Reset" should be after "Apply".)
 			HWND hBtnApply = GetDlgItem(hWnd, IDC_APPLY_BUTTON);
-			if (hBtnApply) {
-				SetWindowPos(hBtnReset, hBtnApply,
-					0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
-			}
+			assert(hBtnApply != nullptr);
+			SetWindowPos(hBtnReset, hBtnApply,
+				0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
 
 			// Create the "Defaults" button.
 			ptBtn.x += szBtn.cx + (rect_btnCancel.left - rect_btnOK.right);
@@ -315,6 +317,20 @@ LRESULT CALLBACK ConfigDialogPrivate::subclassProc(
 			// Fix up the tab order. ("Defaults" should be after "Reset".)
 			SetWindowPos(hBtnDefaults, hBtnReset,
 				0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+
+			// Set window themes for Win10's dark mode.
+			if (g_darkModeSupported) {
+#define SET_DARK_MODE_BUTTON(hWnd) do { \
+	_SetWindowTheme(hWnd, L"Explorer", NULL); \
+	_AllowDarkModeForWindow((hWnd), true); \
+	SendMessage((hWnd), WM_THEMECHANGED, 0, 0); \
+} while (0)
+				SET_DARK_MODE_BUTTON(hBtnOK);
+				SET_DARK_MODE_BUTTON(hBtnCancel);
+				SET_DARK_MODE_BUTTON(hBtnApply);
+				SET_DARK_MODE_BUTTON(hBtnReset);
+				SET_DARK_MODE_BUTTON(hBtnDefaults);
+			}
 			break;
 		}
 
