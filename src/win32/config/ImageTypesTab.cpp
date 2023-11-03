@@ -144,6 +144,12 @@ public:
 	POINT pt_cboImageType;	// Starting point for the ComboBoxes.
 	SIZE sz_cboImageType;	// ComboBox size.
 	unsigned int cy_cboImageType_list;	// ComboBox list height.
+
+public:
+	// Dark Mode colors (TODO: Get from the OS?)
+	static constexpr COLORREF darkBkColor = 0x383838;
+	static constexpr COLORREF darkTextColor = 0xFFFFFF;
+	HBRUSH hbrBkgnd;
 };
 
 // Control base ID.
@@ -155,6 +161,7 @@ ImageTypesTabPrivate::ImageTypesTabPrivate()
 	: hPropSheetPage(nullptr)
 	, hWndPropSheet(nullptr)
 	, cboImageType_lastAdded(nullptr)
+	, hbrBkgnd(nullptr)
 {
 	// Clear the grid parameters.
 	pt_cboImageType.x = 0;
@@ -173,6 +180,10 @@ ImageTypesTabPrivate::~ImageTypesTabPrivate()
 	// tmp_conf_filename should be empty,
 	// since it's only used when saving.
 	assert(tmp_conf_filename.empty());
+
+	if (hbrBkgnd) {
+		DeleteBrush(hbrBkgnd);
+	}
 }
 
 /** TImageTypesConfig functions (protected) **/
@@ -662,6 +673,27 @@ INT_PTR CALLBACK ImageTypesTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 			}
 			break;
 		}
+
+		/** Dark Mode **/
+
+		case WM_CTLCOLORDLG:
+		case WM_CTLCOLORSTATIC:
+			if (g_darkModeSupported && g_darkModeEnabled) {
+				auto *const d = reinterpret_cast<ImageTypesTabPrivate*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
+				if (!d) {
+					// No ImageTypesTabPrivate. Can't do anything...
+					return FALSE;
+				}
+
+				HDC hdc = reinterpret_cast<HDC>(wParam);
+				SetTextColor(hdc, darkTextColor);
+				SetBkColor(hdc, darkBkColor);
+				if (!d->hbrBkgnd) {
+					d->hbrBkgnd = CreateSolidBrush(darkBkColor);
+				}
+				return reinterpret_cast<INT_PTR>(d->hbrBkgnd);
+			}
+			break;
 
 		case WM_SETTINGCHANGE:
 			if (g_darkModeSupported && IsColorSchemeChangeMessage(lParam)) {

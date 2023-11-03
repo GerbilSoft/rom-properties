@@ -51,6 +51,12 @@ using namespace LibRpTexture;
 // Win32 dark mode
 #include "libwin32darkmode/DarkMode.hpp"
 
+// Dark Mode colors (TODO: Get from the OS?)
+static constexpr COLORREF darkBkColor = 0x383838;
+static constexpr COLORREF darkTextColor = 0xFFFFFF;
+// FIXME: Cannot access ConfigDialogPrivate member variants from subclassProc().
+static HBRUSH hbrBkgnd = nullptr;
+
 class ConfigDialogPrivate
 {
 public:
@@ -140,7 +146,7 @@ ConfigDialogPrivate::ConfigDialogPrivate()
 
 ConfigDialogPrivate::~ConfigDialogPrivate()
 {
-	// Delete the tabs.
+	// Delete the tabs
 	for (ITab *pTab : tabs) {
 		delete pTab;
 	}
@@ -325,6 +331,7 @@ LRESULT CALLBACK ConfigDialogPrivate::subclassProc(
 	_AllowDarkModeForWindow((hWnd), true); \
 	SendMessage((hWnd), WM_THEMECHANGED, 0, 0); \
 } while (0)
+				// FIXME: Dark mode for hTabControl.
 				SET_DARK_MODE_BUTTON(hBtnOK);
 				SET_DARK_MODE_BUTTON(hBtnCancel);
 				SET_DARK_MODE_BUTTON(hBtnApply);
@@ -413,6 +420,21 @@ LRESULT CALLBACK ConfigDialogPrivate::subclassProc(
 		case WM_RP_PROP_SHEET_ENABLE_DEFAULTS:
 			// Enable/disable the "Defaults" button.
 			EnableWindow(GetDlgItem(hWnd, IDC_RP_DEFAULTS), (BOOL)wParam);
+			break;
+
+		/** Dark Mode **/
+
+		case WM_CTLCOLORDLG:
+		case WM_CTLCOLORSTATIC:
+			if (g_darkModeSupported && g_darkModeEnabled) {
+				HDC hdc = reinterpret_cast<HDC>(wParam);
+				SetTextColor(hdc, darkTextColor);
+				SetBkColor(hdc, darkBkColor);
+				if (!hbrBkgnd) {
+					hbrBkgnd = CreateSolidBrush(darkBkColor);
+				}
+				return reinterpret_cast<INT_PTR>(hbrBkgnd);
+			}
 			break;
 
 		case WM_SETTINGCHANGE:
@@ -510,6 +532,12 @@ int CALLBACK rp_show_config_dialog(
 	ConfigDialog *cfg = new ConfigDialog();
 	INT_PTR ret = cfg->exec();
 	delete cfg;
+
+	// Dark mode brush
+	if (hbrBkgnd) {
+		DeleteBrush(hbrBkgnd);
+		hbrBkgnd = nullptr;
+	}
 
 	// Shut down GDI+.
 	GdiplusHelper::ShutdownGDIPlus(gdipToken);
