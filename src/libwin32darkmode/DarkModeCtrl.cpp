@@ -3,6 +3,7 @@
 #include "DarkMode.hpp"
 #include "TGDarkMode.hpp"	// TortoiseGit dark mode subclasses
 
+#include <richedit.h>
 #include <tchar.h>
 
 // gcc branch prediction hints.
@@ -15,10 +16,13 @@
 #  define unlikely(x)	(x)
 #endif
 
+// Dark Mode colors (TODO: Get from the OS?)
+static constexpr const COLORREF darkBkColor = 0x383838;
+static constexpr const COLORREF darkTextColor = 0xFFFFFF;
+
 // Dark background color brush
 // Used by the ComboBox(Ex) subclass.
 // NOTE: Not destroyed on exit?
-static constexpr const COLORREF darkBkColor = 0x383838;
 static HBRUSH hbrBkgnd = nullptr;
 
 /**
@@ -146,4 +150,36 @@ void DarkMode_InitEdit(HWND hWnd)
 	_SetWindowTheme(hWnd, L"CFD", NULL);
 	_AllowDarkModeForWindow(hWnd, true);
 	SendMessage(hWnd, WM_THEMECHANGED, 0, 0);
+}
+
+/**
+ * Initialize dark mode for a RichEdit control.
+ * @param hWnd RichEdit control handle
+ */
+void DarkMode_InitRichEdit(HWND hWnd)
+{
+	if (unlikely(!g_darkModeSupported))
+		return;
+
+	_SetWindowTheme(hWnd, L"Explorer", nullptr);
+	_AllowDarkModeForWindow(hWnd, true);
+
+	// RichEdit doesn't support dark mode per se, but we can
+	// adjust its background and text colors.
+	// NOTE: Must be called again on theme change!
+	CHARFORMAT2 format = { 0 };
+	format.cbSize = sizeof(CHARFORMAT2);
+	format.dwMask = CFM_COLOR | CFM_BACKCOLOR;
+
+	if (g_darkModeEnabled) {
+		format.crTextColor = darkTextColor;
+		format.crBackColor = darkBkColor;
+		SendMessage(hWnd, EM_SETCHARFORMAT, SCF_ALL, reinterpret_cast<LPARAM>(&format));
+		SendMessage(hWnd, EM_SETBKGNDCOLOR, 0, static_cast<LPARAM>(format.crBackColor));
+	} else {
+		format.crTextColor = GetSysColor(COLOR_WINDOWTEXT);
+		format.crBackColor = GetSysColor(COLOR_WINDOW);
+		SendMessage(hWnd, EM_SETCHARFORMAT, SCF_ALL, reinterpret_cast<LPARAM>(&format));
+		SendMessage(hWnd, EM_SETBKGNDCOLOR, 1, 0);
+	}
 }

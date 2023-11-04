@@ -28,6 +28,7 @@ using LibWin32UI::LoadDialog_i18n;
 
 // Win32 dark mode
 #include "libwin32darkmode/DarkMode.hpp"
+#include "libwin32darkmode/DarkModeCtrl.hpp"
 
 // C++ STL classes
 using std::string;
@@ -448,6 +449,14 @@ INT_PTR CALLBACK AboutTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, L
 			if (g_darkModeSupported && IsColorSchemeChangeMessage(lParam)) {
 				SendMessageW(hDlg, WM_THEMECHANGED, 0, 0);
 			}
+			break;
+
+		case WM_THEMECHANGED:
+			// RichEdit doesn't support dark mode per se, but we can
+			// adjust its background and text colors.
+			// NOTE: Must be called again on theme change!
+			DarkMode_InitRichEdit_Dlg(hDlg, IDC_ABOUT_RICHEDIT);
+			DarkMode_InitRichEdit_Dlg(hDlg, IDC_ABOUT_UPDATE_CHECK);
 			break;
 
 		default:
@@ -1216,6 +1225,13 @@ void AboutTabPrivate::setTabContents(int index)
 	rtfCtx_main.pos = 0;
 	EDITSTREAM es = { (DWORD_PTR)&rtfCtx_main, 0, EditStreamCallback };
 	SendMessage(hRichEdit, EM_STREAMIN, SF_RTF, (LPARAM)&es);
+
+	// FIXME: Due to the removal of WS_EX_TRANSPARENT for proper dark mode
+	// handling, the scroll bar doesn't show up properly sometimes.
+	// We'll need to invalidate the full control.
+	// FIXME: The scrollbar isn't redrawn properly if switching from
+	// a tab with no scrollbar to a tab that has one...
+	InvalidateRect(hRichEdit, nullptr, true);
 }
 
 /**
@@ -1269,10 +1285,13 @@ void AboutTabPrivate::initDialog(void)
 	// Attempt to switch to RichEdit 4.1 if it's available.
 #ifdef MSFTEDIT_USE_41
 	if (hMsftEdit_dll) {
+		// FIXME: Re-add WS_EX_TRANSPARENT once the tab control has a dark background.
+		// Also remove InvalidateRect from setTabContents().
 		HWND hRichEdit41 = CreateWindowEx(
-			WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT | WS_EX_LEFT | WS_EX_CLIENTEDGE,
+			WS_EX_LEFT | WS_EX_NOPARENTNOTIFY | WS_EX_CLIENTEDGE,
 			MSFTEDIT_CLASS, _T(""),
-			WS_TABSTOP | ES_MULTILINE | ES_READONLY | WS_VSCROLL | ES_AUTOVSCROLL | WS_VISIBLE | WS_CHILD,
+			WS_TABSTOP | WS_VISIBLE | WS_CHILD | WS_VSCROLL |
+				ES_MULTILINE | ES_READONLY | ES_AUTOVSCROLL,
 			0, 0, 0, 0,
 			hWndPropSheet, nullptr, nullptr, nullptr);
 		if (hRichEdit41) {
@@ -1290,9 +1309,9 @@ void AboutTabPrivate::initDialog(void)
 		MapWindowPoints(hUpdateCheck, hWndPropSheet, (LPPOINT)&rectUpdateCheck, 2);
 
 		HWND hUpdateCheck41 = CreateWindowEx(
-			WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT | WS_EX_RIGHT,
+			WS_EX_RIGHT | WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT,
 			MSFTEDIT_CLASS, _T(""),
-			ES_MULTILINE | ES_READONLY | WS_VISIBLE | WS_CHILD,
+			WS_VISIBLE | WS_CHILD | ES_MULTILINE | ES_READONLY,
 			rectUpdateCheck.left, rectUpdateCheck.top,
 			rectUpdateCheck.right - rectUpdateCheck.left,
 			rectUpdateCheck.bottom - rectUpdateCheck.top,
@@ -1347,6 +1366,15 @@ void AboutTabPrivate::initDialog(void)
 	// Remove the dummy tab.
 	TabCtrl_DeleteItem(hTabControl, MAX_TABS);
 	TabCtrl_SetCurSel(hTabControl, 0);
+
+	if (g_darkModeSupported && g_darkModeEnabled) {
+		// RichEdit doesn't support dark mode per se, but we can
+		// adjust its background and text colors.
+		// NOTE: Must be called again on theme change!
+		DarkMode_InitRichEdit(hRichEdit);
+		DarkMode_InitRichEdit(hUpdateCheck);
+	}
+
 	// Set tab contents to Credits.
 	setTabContents(0);
 }

@@ -21,6 +21,7 @@ void DarkMode_InitButton(HWND hWnd);
 void DarkMode_InitComboBox(HWND hWnd);
 void DarkMode_InitComboBoxEx(HWND hWnd);
 void DarkMode_InitEdit(HWND hWnd);
+void DarkMode_InitRichEdit(HWND hWnd);
 
 /** Same as above, but with GetDlgItem wrappers **/
 
@@ -36,6 +37,7 @@ DARKMODE_GETDLGITEM_WRAPPER(Button)
 DARKMODE_GETDLGITEM_WRAPPER(ComboBox)
 DARKMODE_GETDLGITEM_WRAPPER(ComboBoxEx)
 DARKMODE_GETDLGITEM_WRAPPER(Edit)
+DARKMODE_GETDLGITEM_WRAPPER(RichEdit)
 
 #ifdef __cplusplus
 }
