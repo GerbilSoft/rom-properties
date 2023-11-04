@@ -15,77 +15,27 @@ extern "C" {
  */
 void DarkMode_InitDialog(HWND hDlg);
 
-/**
- * Initialize dark mode for a Button control.
- * @param hWnd Button control handle
- */
+/** Initialize dark mode for specific types of controls **/
+
 void DarkMode_InitButton(HWND hWnd);
-
-/**
- * Initialize dark mode for a Button control in a dialog.
- * @param hDlg Dialog handle
- * @param id Button control ID
- */
-static inline void DarkMode_InitButton_Dlg(HWND hDlg, WORD id)
-{
-	HWND hWnd = GetDlgItem(hDlg, id);
-	assert(hWnd != nullptr);
-	DarkMode_InitButton(hWnd);
-}
-
-/**
- * Initialize dark mode for a ComboBox control.
- * @param hWnd ComboBox control handle
- */
 void DarkMode_InitComboBox(HWND hWnd);
-
-/**
- * Initialize dark mode for a ComboBox control in a dialog.
- * @param hDlg Dialog handle
- * @param id ComboBox control ID
- */
-static inline void DarkMode_InitComboBox_Dlg(HWND hDlg, WORD id)
-{
-	HWND hWnd = GetDlgItem(hDlg, id);
-	assert(hWnd != nullptr);
-	DarkMode_InitComboBox(hWnd);
-}
-
-/**
- * Initialize dark mode for a ComboBoxEx control.
- * @param hWnd ComboBox control handle
- */
 void DarkMode_InitComboBoxEx(HWND hWnd);
-
-/**
- * Initialize dark mode for a ComboBoxEx control in a dialog.
- * @param hDlg Dialog handle
- * @param id ComboBox control ID
- */
-static inline void DarkMode_InitComboBoxEx_Dlg(HWND hDlg, WORD id)
-{
-	HWND hWnd = GetDlgItem(hDlg, id);
-	assert(hWnd != nullptr);
-	DarkMode_InitComboBoxEx(hWnd);
-}
-
-/**
- * Initialize dark mode for an Edit control.
- * @param hWnd Edit control handle
- */
 void DarkMode_InitEdit(HWND hWnd);
 
-/**
- * Initialize dark mode for an Edit control in a dialog.
- * @param hDlg Dialog handle
- * @param id Edit control ID
- */
-static inline void DarkMode_InitEdit_Dlg(HWND hDlg, WORD id)
-{
-	HWND hWnd = GetDlgItem(hDlg, id);
-	assert(hWnd != nullptr);
-	DarkMode_InitEdit(hWnd);
+/** Same as above, but with GetDlgItem wrappers **/
+
+#define DARKMODE_GETDLGITEM_WRAPPER(ControlName) \
+static inline void DarkMode_Init##ControlName##_Dlg(HWND hDlg, WORD id) \
+{ \
+	HWND hWnd = GetDlgItem(hDlg, id); \
+	assert(hWnd != nullptr); \
+	DarkMode_Init##ControlName(hWnd); \
 }
+
+DARKMODE_GETDLGITEM_WRAPPER(Button)
+DARKMODE_GETDLGITEM_WRAPPER(ComboBox)
+DARKMODE_GETDLGITEM_WRAPPER(ComboBoxEx)
+DARKMODE_GETDLGITEM_WRAPPER(Edit)
 
 #ifdef __cplusplus
 }
