@@ -5,15 +5,25 @@
 #include "DarkMode.hpp"
 #include "IatHook.hpp"
 
-// for HTHEME
+typedef void (WINAPI *fnRtlGetNtVersionNumbers)(LPDWORD major, LPDWORD minor, LPDWORD build);
 
 // 1809 17763
 typedef HTHEME (WINAPI *fnOpenNcThemeData)(HWND hWnd, LPCWSTR pszClassList); // ordinal 49
 
+// Standard theming functions (uxtheme)
 fnSetWindowTheme _SetWindowTheme = nullptr;
 fnGetThemeColor _GetThemeColor = nullptr;
+fnOpenThemeData _OpenThemeData = nullptr;
+static fnOpenNcThemeData _OpenNcThemeData = nullptr;
 fnCloseThemeData _CloseThemeData = nullptr;
-fnSetWindowCompositionAttribute _SetWindowCompositionAttribute = nullptr;
+// Theming functions used by TGDarkMode
+fnBeginBufferedPaint _BeginBufferedPaint;
+fnBufferedPaintSetAlpha _BufferedPaintSetAlpha;
+fnDrawThemeBackground _DrawThemeBackground;
+fnEndBufferedPaint _EndBufferedPaint;
+fnGetThemeBackgroundContentRect _GetThemeBackgroundContentRect;
+fnGetThemeInt _GetThemeInt;
+// 1809 17763
 fnShouldAppsUseDarkMode _ShouldAppsUseDarkMode = nullptr;
 fnAllowDarkModeForWindow _AllowDarkModeForWindow = nullptr;
 fnAllowDarkModeForApp _AllowDarkModeForApp = nullptr;
@@ -21,9 +31,8 @@ fnFlushMenuThemes _FlushMenuThemes = nullptr;
 fnRefreshImmersiveColorPolicyState _RefreshImmersiveColorPolicyState = nullptr;
 fnIsDarkModeAllowedForWindow _IsDarkModeAllowedForWindow = nullptr;
 fnGetIsImmersiveColorUsingHighContrast _GetIsImmersiveColorUsingHighContrast = nullptr;
-fnOpenThemeData _OpenThemeData = nullptr;
-static fnOpenNcThemeData _OpenNcThemeData = nullptr;
 // 1903 18362
+fnSetWindowCompositionAttribute _SetWindowCompositionAttribute = nullptr;
 fnShouldSystemUseDarkMode _ShouldSystemUseDarkMode = nullptr;
 fnSetPreferredAppMode _SetPreferredAppMode = nullptr;
 
@@ -132,15 +141,26 @@ int InitDarkMode(void)
 	if (!hUxtheme)
 		return 3;
 
+	// Standard theming functions (uxtheme)
 	_SetWindowTheme = reinterpret_cast<fnSetWindowTheme>(GetProcAddress(hUxtheme, "SetWindowTheme"));
 	_GetThemeColor = reinterpret_cast<fnGetThemeColor>(GetProcAddress(hUxtheme, "GetThemeColor"));
-	_CloseThemeData = reinterpret_cast<fnCloseThemeData>(GetProcAddress(hUxtheme, "CloseThemeData"));
 	_OpenThemeData = reinterpret_cast<fnOpenThemeData>(GetProcAddress(hUxtheme, "OpenThemeData"));
 	_OpenNcThemeData = reinterpret_cast<fnOpenNcThemeData>(GetProcAddress(hUxtheme, MAKEINTRESOURCEA(49)));
-	_RefreshImmersiveColorPolicyState = reinterpret_cast<fnRefreshImmersiveColorPolicyState>(GetProcAddress(hUxtheme, MAKEINTRESOURCEA(104)));
-	_GetIsImmersiveColorUsingHighContrast = reinterpret_cast<fnGetIsImmersiveColorUsingHighContrast>(GetProcAddress(hUxtheme, MAKEINTRESOURCEA(106)));
+	_CloseThemeData = reinterpret_cast<fnCloseThemeData>(GetProcAddress(hUxtheme, "CloseThemeData"));
+
+	// Theming functions used by TGDarkMode
+	_BeginBufferedPaint = reinterpret_cast<fnBeginBufferedPaint>(GetProcAddress(hUxtheme, "BeginBufferedPaint"));
+	_BufferedPaintSetAlpha = reinterpret_cast<fnBufferedPaintSetAlpha>(GetProcAddress(hUxtheme, "BufferedPaintSetAlpha"));
+	_DrawThemeBackground = reinterpret_cast<fnDrawThemeBackground>(GetProcAddress(hUxtheme, "DrawThemeBackground"));
+	_EndBufferedPaint = reinterpret_cast<fnEndBufferedPaint>(GetProcAddress(hUxtheme, "EndBufferedPaint"));
+	_GetThemeBackgroundContentRect = reinterpret_cast<fnGetThemeBackgroundContentRect>(GetProcAddress(hUxtheme, "GetThemeBackgroundContentRect"));
+	_GetThemeInt = reinterpret_cast<fnGetThemeInt>(GetProcAddress(hUxtheme, "GetThemeInt"));
+
+	// 1809 17763
 	_ShouldAppsUseDarkMode = reinterpret_cast<fnShouldAppsUseDarkMode>(GetProcAddress(hUxtheme, MAKEINTRESOURCEA(132)));
 	_AllowDarkModeForWindow = reinterpret_cast<fnAllowDarkModeForWindow>(GetProcAddress(hUxtheme, MAKEINTRESOURCEA(133)));
+	_RefreshImmersiveColorPolicyState = reinterpret_cast<fnRefreshImmersiveColorPolicyState>(GetProcAddress(hUxtheme, MAKEINTRESOURCEA(104)));
+	_GetIsImmersiveColorUsingHighContrast = reinterpret_cast<fnGetIsImmersiveColorUsingHighContrast>(GetProcAddress(hUxtheme, MAKEINTRESOURCEA(106)));
 
 	auto ord135 = GetProcAddress(hUxtheme, MAKEINTRESOURCEA(135));
 	if (g_buildNumber < 18362) {
@@ -154,17 +174,16 @@ int InitDarkMode(void)
 
 	_SetWindowCompositionAttribute = reinterpret_cast<fnSetWindowCompositionAttribute>(GetProcAddress(GetModuleHandleW(L"user32.dll"), "SetWindowCompositionAttribute"));
 
-	if (_SetWindowTheme &&
-		_GetThemeColor &&
-		_CloseThemeData &&
-		_OpenThemeData &&
-		_OpenNcThemeData &&
-		_RefreshImmersiveColorPolicyState &&
-		_ShouldAppsUseDarkMode &&
-		_AllowDarkModeForWindow &&
-		(_AllowDarkModeForApp || _SetPreferredAppMode) &&
-		//_FlushMenuThemes &&
-		_IsDarkModeAllowedForWindow)
+	if (_SetWindowTheme && _GetThemeColor && _OpenThemeData && _OpenNcThemeData &&
+	    _CloseThemeData &&
+	    // 1809 17763
+	    _ShouldAppsUseDarkMode && _AllowDarkModeForWindow &&
+	    (_AllowDarkModeForApp || _SetPreferredAppMode) &&
+	    //_FlushMenuThemes &&
+	    _RefreshImmersiveColorPolicyState && _IsDarkModeAllowedForWindow &&
+	    // Theming functions used by TGDarkMode
+	    _BeginBufferedPaint && _BufferedPaintSetAlpha && _DrawThemeBackground &&
+	    _EndBufferedPaint && _GetThemeBackgroundContentRect && _GetThemeInt)
 	{
 		// Dark mode is supported.
 		g_darkModeSupported = true;
@@ -178,19 +197,31 @@ int InitDarkMode(void)
 		return 0;
 	}
 
-	// Dark mode is not supported.
+	// Dark mode is not supported. NULL out all the function pointers.
 	_SetWindowTheme = nullptr;
 	_GetThemeColor = nullptr;
-	_CloseThemeData = nullptr;
+	_OpenThemeData = nullptr;
 	_OpenNcThemeData = nullptr;
-	_RefreshImmersiveColorPolicyState = nullptr;
-	_GetIsImmersiveColorUsingHighContrast = nullptr;
+	_CloseThemeData = nullptr;
+	// Theming functions used by TGDarkMode
+	_BeginBufferedPaint = nullptr;
+	_BufferedPaintSetAlpha = nullptr;
+	_DrawThemeBackground = nullptr;
+	_EndBufferedPaint = nullptr;
+	_GetThemeBackgroundContentRect = nullptr;
+	_GetThemeInt = nullptr;
+	// 1809 17763
 	_ShouldAppsUseDarkMode = nullptr;
 	_AllowDarkModeForWindow = nullptr;
 	_AllowDarkModeForApp = nullptr;
-	_SetPreferredAppMode = nullptr;
+	_FlushMenuThemes = nullptr;
+	_RefreshImmersiveColorPolicyState = nullptr;
 	_IsDarkModeAllowedForWindow = nullptr;
+	_GetIsImmersiveColorUsingHighContrast = nullptr;
+	// 1903 18362
 	_SetWindowCompositionAttribute = nullptr;
+	_ShouldSystemUseDarkMode = nullptr;
+	_SetPreferredAppMode = nullptr;
 	FreeLibrary(hUxtheme);
 	return 4;
 }

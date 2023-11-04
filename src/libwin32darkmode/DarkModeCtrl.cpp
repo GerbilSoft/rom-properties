@@ -1,8 +1,7 @@
-#pragma once
-
 /** DarkMode control helpers **/
 #include "DarkModeCtrl.hpp"
 #include "DarkMode.hpp"
+#include "TGDarkMode.hpp"	// TortoiseGit dark mode subclasses
 
 // gcc branch prediction hints.
 // Should be used in combination with profile-guided optimization.
@@ -48,6 +47,24 @@ void DarkMode_InitButton(HWND hWnd)
 	// FIXME: Not working for BS_GROUPBOX or BS_AUTOCHECKBOX.
 	_SetWindowTheme(hWnd, L"Explorer", NULL);
 	_AllowDarkModeForWindow((hWnd), true);
+
+	const LONG_PTR lpStyle = GetWindowLongPtr(hWnd, GWL_STYLE);
+	switch (lpStyle & BS_TYPEMASK) {
+		default:
+			break;
+		case BS_GROUPBOX:
+		case BS_CHECKBOX:
+		case BS_AUTOCHECKBOX:
+		case BS_3STATE:
+		case BS_AUTO3STATE:
+		case BS_RADIOBUTTON:
+		case BS_AUTORADIOBUTTON:
+			// Groupbox, checkbox, or radio button.
+			// Need to subclass it for proper text colors.
+			SetWindowSubclass(hWnd, TGDarkMode_ButtonSubclassProc, TGDarkMode_SubclassID, 0);
+			break;
+	}
+
 	SendMessage((hWnd), WM_THEMECHANGED, 0, 0);
 }
 
