@@ -167,7 +167,7 @@ void DarkMode_InitRichEdit(HWND hWnd)
 	// RichEdit doesn't support dark mode per se, but we can
 	// adjust its background and text colors.
 	// NOTE: Must be called again on theme change!
-	CHARFORMAT2 format = { 0 };
+	CHARFORMAT2 format;
 	format.cbSize = sizeof(CHARFORMAT2);
 	format.dwMask = CFM_COLOR | CFM_BACKCOLOR;
 
