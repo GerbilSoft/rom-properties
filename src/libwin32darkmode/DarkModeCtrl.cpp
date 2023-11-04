@@ -46,7 +46,7 @@ void DarkMode_InitButton(HWND hWnd)
 
 	// FIXME: Not working for BS_GROUPBOX or BS_AUTOCHECKBOX.
 	_SetWindowTheme(hWnd, L"Explorer", NULL);
-	_AllowDarkModeForWindow((hWnd), true);
+	_AllowDarkModeForWindow(hWnd, true);
 
 	const LONG_PTR lpStyle = GetWindowLongPtr(hWnd, GWL_STYLE);
 	switch (lpStyle & BS_TYPEMASK) {
@@ -65,7 +65,7 @@ void DarkMode_InitButton(HWND hWnd)
 			break;
 	}
 
-	SendMessage((hWnd), WM_THEMECHANGED, 0, 0);
+	SendMessage(hWnd, WM_THEMECHANGED, 0, 0);
 }
 
 /**
@@ -78,9 +78,27 @@ void DarkMode_InitComboBox(HWND hWnd)
 		return;
 
 	// FIXME: Not working for ComboBoxEx.
-	_SetWindowTheme(hWnd, L"CFD", NULL);
-	_AllowDarkModeForWindow((hWnd), true);
-	SendMessage((hWnd), WM_THEMECHANGED, 0, 0);
+	_SetWindowTheme(hWnd, L"Explorer", NULL);
+	_AllowDarkModeForWindow(hWnd, true);
+	SendMessage(hWnd, WM_THEMECHANGED, 0, 0);
+
+	// Set the theme for sub-controls.
+	// Reference: https://gitlab.com/tortoisegit/tortoisegit/-/blob/HEAD/src/Utils/Theme.cpp
+	COMBOBOXINFO info;
+	info.cbSize = sizeof(info);
+	if (SendMessage(hWnd, CB_GETCOMBOBOXINFO, 0, reinterpret_cast<LPARAM>(&info))) {
+		_AllowDarkModeForWindow(info.hwndList, true);
+		_AllowDarkModeForWindow(info.hwndItem, true);
+		_AllowDarkModeForWindow(info.hwndCombo, true);
+
+		_SetWindowTheme(info.hwndList, L"Explorer", nullptr);
+		_SetWindowTheme(info.hwndItem, L"Explorer", nullptr);
+		_SetWindowTheme(info.hwndCombo, L"CFD", nullptr);
+
+		SendMessage(info.hwndList, WM_THEMECHANGED, 0, 0);
+		SendMessage(info.hwndItem, WM_THEMECHANGED, 0, 0);
+		SendMessage(info.hwndCombo, WM_THEMECHANGED, 0, 0);
+	}
 }
 
 /**
@@ -93,6 +111,6 @@ void DarkMode_InitEdit(HWND hWnd)
 		return;
 
 	_SetWindowTheme(hWnd, L"CFD", NULL);
-	_AllowDarkModeForWindow((hWnd), true);
-	SendMessage((hWnd), WM_THEMECHANGED, 0, 0);
+	_AllowDarkModeForWindow(hWnd, true);
+	SendMessage(hWnd, WM_THEMECHANGED, 0, 0);
 }
