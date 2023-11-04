@@ -27,6 +27,7 @@ using LibWin32UI::LoadDialog_i18n;
 
 // Win32 dark mode
 #include "libwin32darkmode/DarkMode.hpp"
+#include "libwin32darkmode/ListViewUtil.hpp"
 
 // C++ STL classes
 using std::tstring;
@@ -151,6 +152,14 @@ INT_PTR CALLBACK AchievementsTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wP
 
 			// Store the D object pointer with this particular page dialog.
 			SetWindowLongPtr(hDlg, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(d));
+
+			// Set window themes for Win10's dark mode.
+			if (g_darkModeSupported) {
+				// Initialize Dark Mode in the ListView.
+				HWND hListView = GetDlgItem(hDlg, IDC_ACHIEVEMENTS_LIST);
+				assert(hListView != nullptr);
+				InitListView(hListView);
+			}
 
 			// Reset the configuration.
 			d->reset();
