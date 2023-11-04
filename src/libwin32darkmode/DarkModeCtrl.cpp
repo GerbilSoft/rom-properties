@@ -85,15 +85,9 @@ void DarkMode_InitComboBox(HWND hWnd)
 	if (unlikely(!g_darkModeSupported))
 		return;
 
-	// FIXME: Not working for ComboBoxEx.
 	_SetWindowTheme(hWnd, L"Explorer", NULL);
 	_AllowDarkModeForWindow(hWnd, true);
 	SendMessage(hWnd, WM_THEMECHANGED, 0, 0);
-
-	// If this is a ComboBoxEx, get the actual ComboBox.
-	// FIXME: Not working; on LanguageComboBox, it returns 0x0001.
-	//SendMessage(hWnd, CBEM_SETWINDOWTHEME, 0, reinterpret_cast<LPARAM>(_T("Explorer")));
-	//HWND hCombo = reinterpret_cast<HWND>(SendMessage(hWnd, CBEM_GETCOMBOCONTROL, 0, 0));
 
 	// Set the ComboBox subclass.
 	// NOTE: hbrBkgnd creation is handled by TGDarkMode_ComboBoxSubclassProc().
@@ -116,6 +110,28 @@ void DarkMode_InitComboBox(HWND hWnd)
 		SendMessage(info.hwndItem, WM_THEMECHANGED, 0, 0);
 		SendMessage(info.hwndCombo, WM_THEMECHANGED, 0, 0);
 	}
+}
+
+/**
+ * Initialize dark mode for a ComboBoxEx control.
+ * @param hWnd ComboBox control handle
+ */
+void DarkMode_InitComboBoxEx(HWND hWnd)
+{
+	if (unlikely(!g_darkModeSupported))
+		return;
+
+	// Set ComboBoxEx stuff first.
+	_SetWindowTheme(hWnd, L"Explorer", NULL);
+	_AllowDarkModeForWindow(hWnd, true);
+	SendMessage(hWnd, CBEM_SETWINDOWTHEME, 0, reinterpret_cast<LPARAM>(_T("Explorer")));
+	SendMessage(hWnd, WM_THEMECHANGED, 0, 0);
+
+	// Get the actual ComboBox.
+	HWND hCombo = reinterpret_cast<HWND>(SendMessage(hWnd, CBEM_GETCOMBOCONTROL, 0, 0));
+
+	// Initialize the actual ComboBox.
+	DarkMode_InitComboBox(hCombo);
 }
 
 /**

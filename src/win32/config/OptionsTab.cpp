@@ -448,7 +448,7 @@ INT_PTR CALLBACK OptionsTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam,
 				DarkMode_InitComboBox(cboMeteredDL);
 				DarkMode_InitButton_Dlg(hDlg, IDC_OPTIONS_INTICONSMALL);
 				DarkMode_InitButton_Dlg(hDlg, IDC_OPTIONS_STOREFILEORIGININFO);
-				DarkMode_InitComboBox(cboLanguage);
+				DarkMode_InitComboBoxEx(cboLanguage);
 				DarkMode_InitButton_Dlg(hDlg, IDC_OPTIONS_GRPOPTIONS);
 				DarkMode_InitButton_Dlg(hDlg, IDC_OPTIONS_DANGEROUSPERMISSIONS);
 				DarkMode_InitButton_Dlg(hDlg, IDC_OPTIONS_ENABLETHUMBNAILONNETWORKFS);

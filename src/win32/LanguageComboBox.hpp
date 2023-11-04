@@ -19,13 +19,16 @@ extern "C" {
 void LanguageComboBoxRegister(void);
 void LanguageComboBoxUnregister(void);
 
-#define WM_LCB_SET_LCS			(WM_USER + 1)	// lParam == 0-terminated uint32_t array of LCs
-//#define WM_LCB_GET_LCS			(WM_USER + 2)	// lParam == ???? [TODO: Figure out how to implement this.]
-#define WM_LCB_SET_SELECTED_LC		(WM_USER + 3)	// wParam == lc
-#define WM_LCB_GET_SELECTED_LC		(WM_USER + 4)	// return == selected LC
-#define WM_LCB_GET_MIN_SIZE		(WM_USER + 5)	// return == packed width/height (use GET_?_LPARAM)
-#define WM_LCB_SET_FORCE_PAL		(WM_USER + 6)	// wParam == forcePAL (must set LCs afterwards)
-#define WM_LCB_GET_FORCE_PAL		(WM_USER + 7)	// return == forcePAL
+// NOTE: ComboBoxEx uses WM_USER+1 through WM_USER+14.
+#define WM_LCB_BASE			(WM_USER + 20)
+
+#define WM_LCB_SET_LCS			(WM_LCB_BASE + 1)	// lParam == 0-terminated uint32_t array of LCs
+//#define WM_LCB_GET_LCS			(WM_LCB_BASE + 2)	// lParam == ???? [TODO: Figure out how to implement this.]
+#define WM_LCB_SET_SELECTED_LC		(WM_LCB_BASE + 3)	// wParam == lc
+#define WM_LCB_GET_SELECTED_LC		(WM_LCB_BASE + 4)	// return == selected LC
+#define WM_LCB_GET_MIN_SIZE		(WM_LCB_BASE + 5)	// return == packed width/height (use GET_?_LPARAM)
+#define WM_LCB_SET_FORCE_PAL		(WM_LCB_BASE + 6)	// wParam == forcePAL (must set LCs afterwards)
+#define WM_LCB_GET_FORCE_PAL		(WM_LCB_BASE + 7)	// return == forcePAL
 
 // TODO: Intercept ComboBoxEx's WM_NOTIFY somehow.
 //#define LCBN_FIRST			(NM_LAST - 2600U)

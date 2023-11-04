@@ -52,6 +52,24 @@ static inline void DarkMode_InitComboBox_Dlg(HWND hDlg, WORD id)
 }
 
 /**
+ * Initialize dark mode for a ComboBoxEx control.
+ * @param hWnd ComboBox control handle
+ */
+void DarkMode_InitComboBoxEx(HWND hWnd);
+
+/**
+ * Initialize dark mode for a ComboBoxEx control in a dialog.
+ * @param hDlg Dialog handle
+ * @param id ComboBox control ID
+ */
+static inline void DarkMode_InitComboBoxEx_Dlg(HWND hDlg, WORD id)
+{
+	HWND hWnd = GetDlgItem(hDlg, id);
+	assert(hWnd != nullptr);
+	DarkMode_InitComboBoxEx(hWnd);
+}
+
+/**
  * Initialize dark mode for an Edit control.
  * @param hWnd Edit control handle
  */
