@@ -25,3 +25,17 @@ LRESULT WINAPI TGDarkMode_ButtonSubclassProc(
 	HWND hWnd, UINT uMsg,
 	WPARAM wParam, LPARAM lParam,
 	UINT_PTR uIdSubclass, DWORD_PTR dwRefData);
+
+/**
+ * Subclass procedure for ComboBox(Ex) controls.
+ * @param hWnd
+ * @param uMsg
+ * @param wParam
+ * @param lParam
+ * @param uIdSubclass
+ * @param dwRefData Dark background color brush
+ */
+LRESULT WINAPI TGDarkMode_ComboBoxSubclassProc(
+	HWND hWnd, UINT uMsg,
+	WPARAM wParam, LPARAM lParam,
+	UINT_PTR uIdSubclass, DWORD_PTR dwRefData);

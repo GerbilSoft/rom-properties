@@ -3,6 +3,8 @@
 #include "DarkMode.hpp"
 #include "TGDarkMode.hpp"	// TortoiseGit dark mode subclasses
 
+#include <tchar.h>
+
 // gcc branch prediction hints.
 // Should be used in combination with profile-guided optimization.
 #ifdef __GNUC__
@@ -12,6 +14,12 @@
 #  define likely(x)	(x)
 #  define unlikely(x)	(x)
 #endif
+
+// Dark background color brush
+// Used by the ComboBox(Ex) subclass.
+// NOTE: Not destroyed on exit?
+static constexpr const COLORREF darkBkColor = 0x383838;
+static HBRUSH hbrBkgnd = nullptr;
 
 /**
  * Initialize dark mode for a Dialog control.
@@ -81,6 +89,15 @@ void DarkMode_InitComboBox(HWND hWnd)
 	_SetWindowTheme(hWnd, L"Explorer", NULL);
 	_AllowDarkModeForWindow(hWnd, true);
 	SendMessage(hWnd, WM_THEMECHANGED, 0, 0);
+
+	// If this is a ComboBoxEx, get the actual ComboBox.
+	// FIXME: Not working; on LanguageComboBox, it returns 0x0001.
+	//SendMessage(hWnd, CBEM_SETWINDOWTHEME, 0, reinterpret_cast<LPARAM>(_T("Explorer")));
+	//HWND hCombo = reinterpret_cast<HWND>(SendMessage(hWnd, CBEM_GETCOMBOCONTROL, 0, 0));
+
+	// Set the ComboBox subclass.
+	// NOTE: hbrBkgnd creation is handled by TGDarkMode_ComboBoxSubclassProc().
+	SetWindowSubclass(hWnd, TGDarkMode_ComboBoxSubclassProc, TGDarkMode_SubclassID, reinterpret_cast<DWORD_PTR>(&hbrBkgnd));
 
 	// Set the theme for sub-controls.
 	// Reference: https://gitlab.com/tortoisegit/tortoisegit/-/blob/HEAD/src/Utils/Theme.cpp

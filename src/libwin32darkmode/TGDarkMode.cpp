@@ -659,3 +659,83 @@ LRESULT WINAPI TGDarkMode_ButtonSubclassProc(
 
 	return DefSubclassProc(hWnd, uMsg, wParam, lParam);
 }
+
+/**
+ * Subclass procedure for ComboBox(Ex) controls.
+ * @param hWnd
+ * @param uMsg
+ * @param wParam
+ * @param lParam
+ * @param uIdSubclass
+ * @param dwRefData
+ */
+LRESULT WINAPI TGDarkMode_ComboBoxSubclassProc(
+	HWND hWnd, UINT uMsg,
+	WPARAM wParam, LPARAM lParam,
+	UINT_PTR uIdSubclass, DWORD_PTR dwRefData)
+{
+	switch (uMsg) {
+		case WM_CTLCOLORDLG:
+		case WM_CTLCOLORSTATIC:
+		case WM_CTLCOLOREDIT:
+		case WM_CTLCOLORLISTBOX:
+		case WM_CTLCOLORBTN:
+		case WM_CTLCOLORSCROLLBAR: {
+			auto pHbrBkgnd = reinterpret_cast<HBRUSH*>(dwRefData);
+			HDC hdc = reinterpret_cast<HDC>(wParam);
+			SetBkMode(hdc, TRANSPARENT);
+			SetTextColor(hdc, darkTextColor);
+			SetBkColor(hdc, darkBkColor);
+			if (!*pHbrBkgnd)
+				*pHbrBkgnd = CreateSolidBrush(darkBkColor);
+			return reinterpret_cast<LRESULT>(*pHbrBkgnd);
+		}
+
+		case WM_DRAWITEM: {
+			auto pDIS = reinterpret_cast<LPDRAWITEMSTRUCT>(lParam);
+			HDC hDC = pDIS->hDC;
+			RECT rc = pDIS->rcItem;
+			wchar_t itemText[1024] = { 0 };
+
+			COMBOBOXEXITEM cbi = { 0 };
+			cbi.mask = CBEIF_TEXT | CBEIF_IMAGE | CBEIF_SELECTEDIMAGE | CBEIF_OVERLAY | CBEIF_INDENT;
+			cbi.iItem = pDIS->itemID;
+			cbi.cchTextMax = _countof(itemText);
+			cbi.pszText = itemText;
+
+			auto cwnd = GetParent(hWnd);
+			if (SendMessage(cwnd, CBEM_GETITEM, 0, reinterpret_cast<LPARAM>(&cbi))) {
+				rc.left += (cbi.iIndent * 10);
+				auto img = (pDIS->itemState & LVIS_SELECTED) ? cbi.iSelectedImage : cbi.iImage;
+				if (pDIS->itemState & LVIS_FOCUSED)
+					::SetBkColor(hDC, darkDisabledTextColor);
+				else
+					::SetBkColor(hDC, darkBkColor);
+				::ExtTextOut(hDC, 0, 0, ETO_OPAQUE, &rc, nullptr, 0, nullptr);
+
+				if (img) {
+					auto imglist = reinterpret_cast<HIMAGELIST>(SendMessage(cwnd, CBEM_GETIMAGELIST, 0, 0));
+					if (imglist) {
+						int iconX(0), iconY(0);
+						ImageList_GetIconSize(imglist, &iconX, &iconY);
+						ImageList_Draw(imglist, img, hDC, rc.left, rc.top, ILD_TRANSPARENT | INDEXTOOVERLAYMASK(cbi.iOverlay));
+						rc.left += (iconX + 2);
+					}
+				}
+
+				SetTextColor(pDIS->hDC, darkTextColor);
+				SetBkMode(hDC, TRANSPARENT);
+				DrawText(hDC, cbi.pszText, -1, &rc, DT_SINGLELINE | DT_VCENTER | DT_NOPREFIX | DT_END_ELLIPSIS);
+				return TRUE;
+			}
+			break;
+		}
+
+		case WM_DESTROY:
+		case WM_NCDESTROY:
+			RemoveWindowSubclass(hWnd, TGDarkMode_ComboBoxSubclassProc, uIdSubclass);
+			break;
+	}
+
+	return DefSubclassProc(hWnd, uMsg, wParam, lParam);
+}
