@@ -273,7 +273,7 @@ void AchievementsTabPrivate::updateListViewStyle(void)
 	ListView_SetExtendedListViewStyle(hListView, lvsExStyle);
 
 	// If the alt row color changed, redo the ImageList.
-	const COLORREF colorAltRow = LibWin32UI::getAltRowColor();
+	const COLORREF colorAltRow = LibWin32UI::ListView_GetBkColor_AltRow(hListView);
 	if (colorAltRow != this->colorAltRow) {
 		this->colorAltRow = colorAltRow;
 		updateImageList();

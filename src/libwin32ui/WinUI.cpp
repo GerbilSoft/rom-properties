@@ -174,9 +174,10 @@ int measureTextSizeLink(HWND hWnd, HFONT hFont, const TCHAR *tstr, LPSIZE lpSize
  * This function should be called on ListView creation
  * and if the system theme is changed.
  *
- * @return Alternate row color for ListViews.
+ * @param hListView ListView handle
+ * @return Alternate row color
  */
-COLORREF getAltRowColor(void)
+COLORREF ListView_GetBkColor_AltRow(HWND hListView)
 {
 	union {
 		COLORREF color;
@@ -187,7 +188,7 @@ COLORREF getAltRowColor(void)
 			uint8_t a;
 		};
 	} rgb;
-	rgb.color = GetSysColor(COLOR_WINDOW);
+	rgb.color = ListView_GetBkColor(hListView);
 
 	// TODO: Better "convert to grayscale" and brighten/darken algorithms?
 	// TODO: Handle color component overflow.

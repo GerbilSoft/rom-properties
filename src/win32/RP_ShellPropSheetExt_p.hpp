@@ -169,9 +169,9 @@ public:
 	// If so, this will be set to WS_EX_LAYOUTRTL.
 	DWORD dwExStyleRTL;
 
-	// Alternate row color.
-	COLORREF colorAltRow;
-	bool isFullyInit;		// True if the window is fully initialized.
+	// True if the window is fully initialized.
+	// (Used to disable modification of ListView checkboxes while initializing.)
+	bool isFullyInit;
 
 public:
 	/**

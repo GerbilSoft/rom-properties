@@ -26,6 +26,7 @@ using LibWin32UI::WTSSessionNotification;
 
 // Win32 dark mode
 #include "libwin32darkmode/DarkMode.hpp"
+#include "libwin32darkmode/ListViewUtil.hpp"
 
 // Other rom-properties libraries
 #include "librpbase/crypto/KeyManager.hpp"
@@ -271,10 +272,6 @@ KeyManagerTabPrivate::KeyManagerTabPrivate()
 	// Load images.
 	loadImages();
 
-	// Initialize the alternate row color.
-	colorAltRow = LibWin32UI::getAltRowColor();
-	hbrAltRow = CreateSolidBrush(colorAltRow);
-
 	// Check the COMCTL32.DLL version.
 	isComCtl32_v610 = LibWin32UI::isComCtl32_v610();
 }
@@ -497,11 +494,6 @@ void KeyManagerTabPrivate::initUI(void)
 	szListView.cx = rectListView.right - rectListView.left;
 	szListView.cy = rectListView.bottom - rectListView.top;
 
-	// Subclass the ListView.
-	// TODO: Error handling?
-	SetWindowSubclass(hListView, ListViewSubclassProc,
-		IDC_KEYMANAGER_LIST, reinterpret_cast<DWORD_PTR>(this));
-
 	// Create the EDIT box.
 	hEditBox = CreateWindowEx(WS_EX_LEFT,
 		WC_EDIT, nullptr,
@@ -514,6 +506,35 @@ void KeyManagerTabPrivate::initUI(void)
 
 	// Set the KeyStore's window.
 	keyStore->setHWnd(hWndPropSheet);
+
+	// Set window themes for Win10's dark mode.
+	// NOTE: This must be done before subclassing the ListView
+	// because this initializes the alternate row color and brush.
+	if (g_darkModeSupported) {
+#define SET_DARK_MODE_BUTTON(hWnd) do { \
+	_SetWindowTheme(hWnd, L"Explorer", NULL); \
+	_AllowDarkModeForWindow((hWnd), true); \
+	SendMessage((hWnd), WM_THEMECHANGED, 0, 0); \
+} while (0)
+#define SET_DARK_MODE_EDIT(hWnd) do { \
+	_SetWindowTheme(hWnd, L"CFD", NULL); \
+	_AllowDarkModeForWindow((hWnd), true); \
+	SendMessage((hWnd), WM_THEMECHANGED, 0, 0); \
+} while (0)
+		SET_DARK_MODE_BUTTON(hBtnImport);
+		SET_DARK_MODE_BUTTON(hEditBox);
+
+		// Initialize Dark Mode in the ListView.
+		InitListView(hListView);
+	}
+	// Initialize the alternate row color and brush.
+	colorAltRow = LibWin32UI::ListView_GetBkColor_AltRow(hListView);
+	hbrAltRow = CreateSolidBrush(colorAltRow);
+
+	// Subclass the ListView.
+	// TODO: Error handling?
+	SetWindowSubclass(hListView, ListViewSubclassProc,
+		IDC_KEYMANAGER_LIST, reinterpret_cast<DWORD_PTR>(this));
 
 	// Register for WTS session notifications. (Remote Desktop)
 	wts.registerSessionNotification(hWndPropSheet, NOTIFY_FOR_THIS_SESSION);
@@ -738,16 +759,21 @@ INT_PTR CALLBACK KeyManagerTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 			// Reinitialize the alternate row color.
 			auto *const d = reinterpret_cast<KeyManagerTabPrivate*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
 			if (d) {
-				// Reinitialize the alternate row color.
-				d->colorAltRow = LibWin32UI::getAltRowColor();
-				if (d->hbrAltRow) {
-					DeleteBrush(d->hbrAltRow);
-				}
-				d->hbrAltRow = CreateSolidBrush(d->colorAltRow);
-
-				// Update the fonts.
-				d->fontHandler.updateFonts(true);
+				// No KeyManagerTabPrivate. Can't do anything...
+				return false;
 			}
+
+			// Reinitialize the alternate row color.
+			HWND hListView = GetDlgItem(hDlg, IDC_KEYMANAGER_LIST);
+			assert(hListView != nullptr);
+			d->colorAltRow = LibWin32UI::ListView_GetBkColor_AltRow(hListView);
+			if (d->hbrAltRow) {
+				DeleteBrush(d->hbrAltRow);
+			}
+			d->hbrAltRow = CreateSolidBrush(d->colorAltRow);
+
+			// Update the fonts.
+			d->fontHandler.updateFonts(true);
 			break;
 		}
 
