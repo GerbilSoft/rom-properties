@@ -706,16 +706,16 @@ LRESULT WINAPI TGDarkMode_ComboBoxSubclassProc(
 			auto cwnd = GetParent(hWnd);
 			if (SendMessage(cwnd, CBEM_GETITEM, 0, reinterpret_cast<LPARAM>(&cbi))) {
 				rc.left += (cbi.iIndent * 10);
-				auto img = (pDIS->itemState & LVIS_SELECTED) ? cbi.iSelectedImage : cbi.iImage;
 				if (pDIS->itemState & LVIS_FOCUSED)
 					::SetBkColor(hDC, darkDisabledTextColor);
 				else
 					::SetBkColor(hDC, darkBkColor);
 				::ExtTextOut(hDC, 0, 0, ETO_OPAQUE, &rc, nullptr, 0, nullptr);
 
-				if (img) {
+				if (cbi.mask & CBEIF_IMAGE) {
 					auto imglist = reinterpret_cast<HIMAGELIST>(SendMessage(cwnd, CBEM_GETIMAGELIST, 0, 0));
 					if (imglist) {
+						const int img = (pDIS->itemState & LVIS_SELECTED) ? cbi.iSelectedImage : cbi.iImage;
 						int iconX(0), iconY(0);
 						ImageList_GetIconSize(imglist, &iconX, &iconY);
 						ImageList_Draw(imglist, img, hDC, rc.left, rc.top, ILD_TRANSPARENT | INDEXTOOVERLAYMASK(cbi.iOverlay));
