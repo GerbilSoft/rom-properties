@@ -41,8 +41,14 @@ constexpr T RVA2VA(T1 base, T2 rva)
 	return reinterpret_cast<T>(reinterpret_cast<ULONG_PTR>(base) + rva);
 }
 
+// MSVC 2015 doesn't like this function being declared as constexpr.
+#if defined(_MSC_VER) && _MSC_VER < 1910
+template <typename T>
+T DataDirectoryFromModuleBase(void *moduleBase, size_t entryID)
+#else
 template <typename T>
 constexpr T DataDirectoryFromModuleBase(void *moduleBase, size_t entryID)
+#endif
 {
 	auto dosHdr = reinterpret_cast<PIMAGE_DOS_HEADER>(moduleBase);
 	auto ntHdr = RVA2VA<PIMAGE_NT_HEADERS>(moduleBase, dosHdr->e_lfanew);
