@@ -24,6 +24,7 @@ using LibWin32UI::LoadDialog_i18n;
 
 // Win32 dark mode
 #include "libwin32darkmode/DarkMode.hpp"
+#include "libwin32darkmode/DarkModeCtrl.hpp"
 
 // Netowrk status
 #include "NetworkStatus.h"
@@ -413,6 +414,9 @@ INT_PTR CALLBACK OptionsTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam,
 			// Store the D object pointer with this particular page dialog.
 			SetWindowLongPtr(hDlg, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(d));
 
+			//  NOTE: This should be in WM_CREATE, but we don't receive WM_CREATE here.
+			DarkMode_InitDialog(hDlg);
+
 			// Populate the combo boxes.
 			const tstring s_dl_None = U82T_c(C_("OptionsTab", "Don't download any images"));
 			const tstring s_dl_NormalRes = U82T_c(C_("OptionsTab", "Download normal-resolution images"));
@@ -436,31 +440,18 @@ INT_PTR CALLBACK OptionsTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam,
 			}
 
 			// Set window themes for Win10's dark mode.
-			// FIXME: Not working for BS_GROUPBOX or BS_AUTOCHECKBOX.
 			if (g_darkModeSupported) {
-#define SET_DARK_MODE_ID_BUTTON(hDlg, id) do { \
-	HWND hWnd = GetDlgItem((hDlg), (id)); \
-	assert(hWnd != nullptr); \
-	_SetWindowTheme(hWnd, L"Explorer", NULL); \
-	_AllowDarkModeForWindow((hWnd), true); \
-	SendMessage((hWnd), WM_THEMECHANGED, 0, 0); \
-} while (0)
-#define SET_DARK_MODE_COMBOBOX(hWnd) do { \
-	_SetWindowTheme(hWnd, L"CFD", NULL); \
-	_AllowDarkModeForWindow((hWnd), true); \
-	SendMessage((hWnd), WM_THEMECHANGED, 0, 0); \
-} while (0)
-				SET_DARK_MODE_ID_BUTTON(hDlg, IDC_OPTIONS_GRPDOWNLOADS);
-				SET_DARK_MODE_ID_BUTTON(hDlg, IDC_OPTIONS_GRPEXTIMGDL);
-				SET_DARK_MODE_ID_BUTTON(hDlg, IDC_OPTIONS_CHKEXTIMGDL);
-				SET_DARK_MODE_COMBOBOX(cboUnmeteredDL);
-				SET_DARK_MODE_COMBOBOX(cboMeteredDL);
-				SET_DARK_MODE_ID_BUTTON(hDlg, IDC_OPTIONS_INTICONSMALL);
-				SET_DARK_MODE_ID_BUTTON(hDlg, IDC_OPTIONS_STOREFILEORIGININFO);
-				SET_DARK_MODE_COMBOBOX(cboLanguage);
-				SET_DARK_MODE_ID_BUTTON(hDlg, IDC_OPTIONS_GRPOPTIONS);
-				SET_DARK_MODE_ID_BUTTON(hDlg, IDC_OPTIONS_DANGEROUSPERMISSIONS);
-				SET_DARK_MODE_ID_BUTTON(hDlg, IDC_OPTIONS_ENABLETHUMBNAILONNETWORKFS);
+				DarkMode_InitButton_Dlg(hDlg, IDC_OPTIONS_GRPDOWNLOADS);
+				DarkMode_InitButton_Dlg(hDlg, IDC_OPTIONS_GRPEXTIMGDL);
+				DarkMode_InitButton_Dlg(hDlg, IDC_OPTIONS_CHKEXTIMGDL);
+				DarkMode_InitComboBox(cboUnmeteredDL);
+				DarkMode_InitComboBox(cboMeteredDL);
+				DarkMode_InitButton_Dlg(hDlg, IDC_OPTIONS_INTICONSMALL);
+				DarkMode_InitButton_Dlg(hDlg, IDC_OPTIONS_STOREFILEORIGININFO);
+				DarkMode_InitComboBox(cboLanguage);
+				DarkMode_InitButton_Dlg(hDlg, IDC_OPTIONS_GRPOPTIONS);
+				DarkMode_InitButton_Dlg(hDlg, IDC_OPTIONS_DANGEROUSPERMISSIONS);
+				DarkMode_InitButton_Dlg(hDlg, IDC_OPTIONS_ENABLETHUMBNAILONNETWORKFS);
 			}
 
 			// Reset the configuration. 338

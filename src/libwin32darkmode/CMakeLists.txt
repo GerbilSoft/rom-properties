@@ -12,10 +12,12 @@ PROJECT(win32darkmode LANGUAGES CXX)
 # Sources and headers.
 SET(${PROJECT_NAME}_SRCS
 	DarkMode.cpp
+	DarkModeCtrl.cpp
 	ListViewUtil.cpp
 	)
 SET(${PROJECT_NAME}_H
 	DarkMode.hpp
+	DarkModeCtrl.hpp
 	IatHook.hpp
 	ListViewUtil.hpp
 	)

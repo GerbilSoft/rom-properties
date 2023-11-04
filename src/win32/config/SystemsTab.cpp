@@ -20,6 +20,7 @@ using LibWin32UI::LoadDialog_i18n;
 
 // Win32 dark mode
 #include "libwin32darkmode/DarkMode.hpp"
+#include "libwin32darkmode/DarkModeCtrl.hpp"
 
 // C++ STL classes
 using std::tstring;
@@ -257,6 +258,9 @@ INT_PTR CALLBACK SystemsTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam,
 			// Store the D object pointer with this particular page dialog.
 			SetWindowLongPtr(hDlg, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(d));
 
+			//  NOTE: This should be in WM_CREATE, but we don't receive WM_CREATE here.
+			DarkMode_InitDialog(hDlg);
+
 			// Populate the combo boxes.
 			HWND hwndDmgTs = GetDlgItem(hDlg, IDC_SYSTEMS_DMGTS_DMG);
 			ComboBox_AddString(hwndDmgTs, _T("Game Boy"));
@@ -273,24 +277,10 @@ INT_PTR CALLBACK SystemsTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam,
 			// Set window themes for Win10's dark mode.
 			// FIXME: Not working for BS_GROUPBOX.
 			if (g_darkModeSupported) {
-#define SET_DARK_MODE_ID_BUTTON(hDlg, id) do { \
-	HWND hWnd = GetDlgItem((hDlg), (id)); \
-	assert(hWnd != nullptr); \
-	_SetWindowTheme(hWnd, L"Explorer", NULL); \
-	_AllowDarkModeForWindow((hWnd), true); \
-	SendMessage((hWnd), WM_THEMECHANGED, 0, 0); \
-} while (0)
-#define SET_DARK_MODE_ID_COMBOBOX(hDlg, id) do { \
-	HWND hWnd = GetDlgItem((hDlg), (id)); \
-	assert(hWnd != nullptr); \
-	_SetWindowTheme(hWnd, L"CFD", NULL); \
-	_AllowDarkModeForWindow((hWnd), true); \
-	SendMessage((hWnd), WM_THEMECHANGED, 0, 0); \
-} while (0)
-				SET_DARK_MODE_ID_BUTTON(hDlg, IDC_SYSTEMS_DMGTS_GROUPBOX);
-				SET_DARK_MODE_ID_COMBOBOX(hDlg, IDC_SYSTEMS_DMGTS_DMG);
-				SET_DARK_MODE_ID_COMBOBOX(hDlg, IDC_SYSTEMS_DMGTS_SGB);
-				SET_DARK_MODE_ID_COMBOBOX(hDlg, IDC_SYSTEMS_DMGTS_CGB);
+				DarkMode_InitButton_Dlg(hDlg, IDC_SYSTEMS_DMGTS_GROUPBOX);
+				DarkMode_InitComboBox_Dlg(hDlg, IDC_SYSTEMS_DMGTS_DMG);
+				DarkMode_InitComboBox_Dlg(hDlg, IDC_SYSTEMS_DMGTS_SGB);
+				DarkMode_InitComboBox_Dlg(hDlg, IDC_SYSTEMS_DMGTS_CGB);
 			}
 
 			// Reset the configuration.

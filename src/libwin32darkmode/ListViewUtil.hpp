@@ -5,7 +5,7 @@
 extern "C" {
 #endif
 
-void InitListView(HWND hListView);
+void DarkMode_InitListView(HWND hListView);
 
 #ifdef __cplusplus
 }

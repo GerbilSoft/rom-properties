@@ -20,6 +20,7 @@ using LibWin32UI::LoadDialog_i18n;
 
 // Win32 dark mode
 #include "libwin32darkmode/DarkMode.hpp"
+#include "libwin32darkmode/DarkModeCtrl.hpp"
 
 // C++ STL classes.
 using std::tstring;
@@ -370,11 +371,7 @@ void ImageTypesTabPrivate::createComboBox(unsigned int cbid)
 		hWndPropSheet, (HMENU)(INT_PTR)(IDC_IMAGETYPES_CBOIMAGETYPE_BASE + cbid),
 		nullptr, nullptr);
 	SetWindowFont(hComboBox, hFontDlg, FALSE);
-	if (g_darkModeSupported) {
-		_SetWindowTheme(hComboBox, L"CFD", NULL);
-		_AllowDarkModeForWindow(hComboBox, true);
-		SendMessage(hComboBox, WM_THEMECHANGED, 0, 0);
-	}
+	DarkMode_InitComboBox(hComboBox);
 	sysData.cboImageType[imageType] = hComboBox;
 
 	SetWindowPos(hComboBox,
@@ -565,11 +562,7 @@ INT_PTR CALLBACK ImageTypesTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 			SetWindowLongPtr(hDlg, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(d));
 
 			//  NOTE: This should be in WM_CREATE, but we don't receive WM_CREATE here.
-			if (g_darkModeSupported) {
-				_SetWindowTheme(hDlg, L"CFD", NULL);
-				_AllowDarkModeForWindow(hDlg, true);
-				SendMessageW(hDlg, WM_THEMECHANGED, 0, 0);
-			}
+			DarkMode_InitDialog(hDlg);
 
 			// Initialize strings.
 			d->initStrings();

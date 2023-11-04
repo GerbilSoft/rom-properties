@@ -26,6 +26,7 @@ using LibWin32UI::WTSSessionNotification;
 
 // Win32 dark mode
 #include "libwin32darkmode/DarkMode.hpp"
+#include "libwin32darkmode/DarkModeCtrl.hpp"
 #include "libwin32darkmode/ListViewUtil.hpp"
 
 // Other rom-properties libraries
@@ -511,21 +512,11 @@ void KeyManagerTabPrivate::initUI(void)
 	// NOTE: This must be done before subclassing the ListView
 	// because this initializes the alternate row color and brush.
 	if (g_darkModeSupported) {
-#define SET_DARK_MODE_BUTTON(hWnd) do { \
-	_SetWindowTheme(hWnd, L"Explorer", NULL); \
-	_AllowDarkModeForWindow((hWnd), true); \
-	SendMessage((hWnd), WM_THEMECHANGED, 0, 0); \
-} while (0)
-#define SET_DARK_MODE_EDIT(hWnd) do { \
-	_SetWindowTheme(hWnd, L"CFD", NULL); \
-	_AllowDarkModeForWindow((hWnd), true); \
-	SendMessage((hWnd), WM_THEMECHANGED, 0, 0); \
-} while (0)
-		SET_DARK_MODE_BUTTON(hBtnImport);
-		SET_DARK_MODE_BUTTON(hEditBox);
+		DarkMode_InitButton(hBtnImport);
+		DarkMode_InitEdit(hEditBox);
 
 		// Initialize Dark Mode in the ListView.
-		InitListView(hListView);
+		DarkMode_InitListView(hListView);
 	}
 	// Initialize the alternate row color and brush.
 	colorAltRow = LibWin32UI::ListView_GetBkColor_AltRow(hListView);
@@ -627,6 +618,9 @@ INT_PTR CALLBACK KeyManagerTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 
 			// Store the D object pointer with this particular page dialog.
 			SetWindowLongPtr(hDlg, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(d));
+
+			//  NOTE: This should be in WM_CREATE, but we don't receive WM_CREATE here.
+			DarkMode_InitDialog(hDlg);
 
 			// Initialize the UI.
 			d->initUI();

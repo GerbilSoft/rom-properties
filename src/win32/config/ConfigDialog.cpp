@@ -50,6 +50,7 @@ using namespace LibRpTexture;
 
 // Win32 dark mode
 #include "libwin32darkmode/DarkMode.hpp"
+#include "libwin32darkmode/DarkModeCtrl.hpp"
 
 // Dark Mode colors (TODO: Get from the OS?)
 static constexpr COLORREF darkBkColor = 0x383838;
@@ -235,12 +236,7 @@ LRESULT CALLBACK ConfigDialogPrivate::subclassProc(
 
 		case WM_SHOWWINDOW: {
 			//  NOTE: This should be in WM_CREATE, but we don't receive WM_CREATE here.
-			if (g_darkModeSupported) {
-				_SetWindowTheme(hWnd, L"CFD", NULL);
-				_AllowDarkModeForWindow(hWnd, true);
-				RefreshTitleBarThemeColor(hWnd);
-				SendMessageW(hWnd, WM_THEMECHANGED, 0, 0);
-			}
+			DarkMode_InitDialog(hWnd);
 
 			// Check for RTL.
 			if (LibWin32UI::isSystemRTL() != 0) {
@@ -326,17 +322,12 @@ LRESULT CALLBACK ConfigDialogPrivate::subclassProc(
 
 			// Set window themes for Win10's dark mode.
 			if (g_darkModeSupported) {
-#define SET_DARK_MODE_BUTTON(hWnd) do { \
-	_SetWindowTheme(hWnd, L"Explorer", NULL); \
-	_AllowDarkModeForWindow((hWnd), true); \
-	SendMessage((hWnd), WM_THEMECHANGED, 0, 0); \
-} while (0)
 				// FIXME: Dark mode for hTabControl.
-				SET_DARK_MODE_BUTTON(hBtnOK);
-				SET_DARK_MODE_BUTTON(hBtnCancel);
-				SET_DARK_MODE_BUTTON(hBtnApply);
-				SET_DARK_MODE_BUTTON(hBtnReset);
-				SET_DARK_MODE_BUTTON(hBtnDefaults);
+				DarkMode_InitButton(hBtnOK);
+				DarkMode_InitButton(hBtnCancel);
+				DarkMode_InitButton(hBtnApply);
+				DarkMode_InitButton(hBtnReset);
+				DarkMode_InitButton(hBtnDefaults);
 			}
 			break;
 		}

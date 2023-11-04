@@ -90,7 +90,7 @@ static LRESULT CALLBACK ListView_DarkMode_SubclassProc(
 	return DefSubclassProc(hWnd, uMsg, wParam, lParam);
 }
 
-void InitListView(HWND hListView)
+void DarkMode_InitListView(HWND hListView)
 {
 	HWND hHeader = ListView_GetHeader(hListView);
 

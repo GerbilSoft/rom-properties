@@ -24,6 +24,7 @@ using LibWin32UI::WTSSessionNotification;
 
 // Win32 dark mode
 #include "libwin32darkmode/DarkMode.hpp"
+#include "libwin32darkmode/DarkModeCtrl.hpp"
 
 // IEmptyVolumeCacheCallBack implementation.
 #include "RP_EmptyVolumeCacheCallback.hpp"
@@ -217,6 +218,16 @@ void CacheTabPrivate::initDialog(void)
 	// Enable double-buffering if not using RDP.
 	if (!GetSystemMetrics(SM_REMOTESESSION)) {
 		ListView_SetExtendedListViewStyle(hListView, LVS_EX_DOUBLEBUFFER);
+	}
+
+	// Set window themes for Win10's dark mode.
+	if (g_darkModeSupported) {
+		// NOTE: If Dark Mode is supported, then we're definitely
+		// running on Windows 10 or later, so this will have the
+		// Windows Vista layout.
+		// TODO: Progress bar?
+		DarkMode_InitButton_Dlg(hWndPropSheet, IDC_CACHE_CLEAR_SYS_THUMBS);
+		DarkMode_InitButton_Dlg(hWndPropSheet, IDC_CACHE_CLEAR_RP_DL);
 	}
 
 	// Register for WTS session notifications. (Remote Desktop)
@@ -753,24 +764,8 @@ INT_PTR CALLBACK CacheTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, L
 			// Store the D object pointer with this particular page dialog.
 			SetWindowLongPtr(hDlg, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(d));
 
-			// Set window themes for Win10's dark mode.
-			// FIXME: Not working for BS_GROUPBOX or BS_AUTOCHECKBOX.
-			if (g_darkModeSupported) {
-#define SET_DARK_MODE_ID_BUTTON(hDlg, id) do { \
-	HWND hWnd = GetDlgItem((hDlg), (id)); \
-	assert(hWnd != nullptr); \
-	_SetWindowTheme(hWnd, L"Explorer", NULL); \
-	_AllowDarkModeForWindow((hWnd), true); \
-	SendMessage((hWnd), WM_THEMECHANGED, 0, 0); \
-} while (0)
-
-				// NOTE: If Dark Mode is supported, then we're definitely
-				// running on Windows 10 or later, so this will have the
-				// Windows Vista layout.
-				// TODO: Progress bar?
-				SET_DARK_MODE_ID_BUTTON(hDlg, IDC_CACHE_CLEAR_SYS_THUMBS);
-				SET_DARK_MODE_ID_BUTTON(hDlg, IDC_CACHE_CLEAR_RP_DL);
-			}
+			//  NOTE: This should be in WM_CREATE, but we don't receive WM_CREATE here.
+			DarkMode_InitDialog(hDlg);
 
 			// Initialize the dialog.
 			d->initDialog();
