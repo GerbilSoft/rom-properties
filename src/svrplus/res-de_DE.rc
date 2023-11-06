@@ -21,7 +21,7 @@ LANGUAGE LANG_GERMAN, SUBLANG_GERMAN
 IDD_SVRPLUS DIALOGEX 0, 0, 273, 157
 STYLE DS_3DLOOK | DS_CENTER | DS_MODALFRAME | DS_SHELLFONT | WS_CAPTION | WS_VISIBLE | WS_POPUPWINDOW | WS_MINIMIZEBOX | WS_SYSMENU
 EXSTYLE WS_EX_CONTROLPARENT
-CAPTION "ROM-Properties Tab Installer"
+CAPTION "Installer für die ROM-Properties Seite"
 FONT 8, "MS Shell Dlg"
 BEGIN
     LTEXT           "", IDC_STATIC_DESC, 7, 7, 260, 81, SS_LEFT, WS_EX_LEFT | WS_EX_TRANSPARENT
@@ -71,8 +71,8 @@ BEGIN
 	IDSF_ISR_FILE_NOT_FOUND, L"%s\\%s fehlt.\0"
 	IDSF_ISR_CREATEPROCESS_FAILED, L"Konnte REGSVR32.exe nicht starten. (Fehler: %u)\0"
 	IDSF_ISR_REGSVR32_FAIL_LOAD, L"REGSVR32 ist fehlgeschlagen: %s\\%s ist keine gültige DLL.\0"
-	IDSF_ISR_REGSVR32_FAIL_ENTRY, L"REGSVR32 failed: %s\\%s is missing %s().\0"
+	IDSF_ISR_REGSVR32_FAIL_ENTRY, L"REGSVR32 ist fehlgeschlagen: %s\\%s fehlt %s().\0"
 	IDSF_ISR_REGSVR32_FAIL_REG, L"REGSVR32 ist fehlgeschlagen: %s() hat einen Fehler zurückgegeben.\0"
-	IDSF_ISR_REGSVR32_UNKNOWN_EXIT_CODE, L"REGSVR32 failed: Unknown exit code: %u\0"
+	IDSF_ISR_REGSVR32_UNKNOWN_EXIT_CODE, L"REGSVR32 ist fehlgeschlagen: Unbekannter Exit-Code: %u\0"
 	IDSF_ERROR_COULD_NOT_OPEN_URL, L"Die URL konnte nicht geöffnet werden.\n\nWin32 Fehlercode: %d\0"
 END
