@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2023-09-30 23:21-0400\n"
-"PO-Revision-Date: 2023-11-06 19:55\n"
+"PO-Revision-Date: 2023-11-06 21:24\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
 "Language: de_DE\n"
@@ -7262,7 +7262,7 @@ msgstr "80386 insns"
 #: ../src/libromdata/Other/EXE_NE.cpp:345
 msgctxt "EXE|ProgFlags"
 msgid "FPU insns"
-msgstr ""
+msgstr "FPU insns"
 
 #: ../src/libromdata/Other/EXE_NE.cpp:357
 #: ../src/libromdata/Other/EXE_NE.cpp:366
@@ -7308,7 +7308,7 @@ msgstr ""
 #: ../src/libromdata/Other/EXE_NE.cpp:380
 msgctxt "EXE|ApplFlags"
 msgid "OS/2 Application"
-msgstr ""
+msgstr "OS/2 Anwendung"
 
 #: ../src/libromdata/Other/EXE_NE.cpp:382
 msgctxt "EXE|ApplFlags"
@@ -7343,12 +7343,12 @@ msgstr ""
 #: ../src/libromdata/Other/EXE_NE.cpp:400
 msgctxt "EXE|OtherFlags"
 msgid "Proportional Fonts"
-msgstr ""
+msgstr "Proportionale Schriftarten"
 
 #: ../src/libromdata/Other/EXE_NE.cpp:401
 msgctxt "EXE|OtherFlags"
 msgid "Gangload Area"
-msgstr ""
+msgstr "Gangload Area"
 
 #: ../src/libromdata/Other/EXE_NE.cpp:405
 msgctxt "EXE"
@@ -7495,17 +7495,17 @@ msgstr ""
 #: ../src/libromdata/Other/EXE_PE.cpp:679
 msgctxt "EXE|PEFlags"
 msgid "Executable"
-msgstr ""
+msgstr "Ausführbar"
 
 #: ../src/libromdata/Other/EXE_PE.cpp:681
 msgctxt "EXE|PEFlags"
 msgid ">2GB addressing"
-msgstr ""
+msgstr ">2 GB Adressierung"
 
 #: ../src/libromdata/Other/EXE_PE.cpp:685
 msgctxt "EXE|PEFlags"
 msgid "DLL"
-msgstr ""
+msgstr "DLL"
 
 #: ../src/libromdata/Other/EXE_PE.cpp:690
 msgctxt "EXE"
@@ -7515,57 +7515,57 @@ msgstr ""
 #: ../src/libromdata/Other/EXE_PE.cpp:696
 msgctxt "EXE|DLLFlags"
 msgid "High Entropy VA"
-msgstr ""
+msgstr "Hohe Entropie VA"
 
 #: ../src/libromdata/Other/EXE_PE.cpp:697
 msgctxt "EXE|DLLFlags"
 msgid "Dynamic Base"
-msgstr ""
+msgstr "Dynamische Basis"
 
 #: ../src/libromdata/Other/EXE_PE.cpp:698
 msgctxt "EXE|DLLFlags"
 msgid "Force Integrity"
-msgstr ""
+msgstr "Integrität erzwingen"
 
 #: ../src/libromdata/Other/EXE_PE.cpp:699
 msgctxt "EXE|DLLFlags"
 msgid "NX Compatible"
-msgstr ""
+msgstr "NX kompatibel"
 
 #: ../src/libromdata/Other/EXE_PE.cpp:700
 msgctxt "EXE|DLLFlags"
 msgid "No Isolation"
-msgstr ""
+msgstr "Keine Isolation"
 
 #: ../src/libromdata/Other/EXE_PE.cpp:701
 msgctxt "EXE|DLLFlags"
 msgid "No SEH"
-msgstr ""
+msgstr "Kein SEH"
 
 #: ../src/libromdata/Other/EXE_PE.cpp:702
 msgctxt "EXE|DLLFlags"
 msgid "No Bind"
-msgstr ""
+msgstr "Keine Bindung"
 
 #: ../src/libromdata/Other/EXE_PE.cpp:703
 msgctxt "EXE|DLLFlags"
 msgid "AppContainer"
-msgstr ""
+msgstr "AppContainer"
 
 #: ../src/libromdata/Other/EXE_PE.cpp:704
 msgctxt "EXE|DLLFlags"
 msgid "WDM Driver"
-msgstr ""
+msgstr "WDM Treiber"
 
 #: ../src/libromdata/Other/EXE_PE.cpp:705
 msgctxt "EXE|DLLFlags"
 msgid "Control Flow Guard"
-msgstr ""
+msgstr "Control Flow Guard"
 
 #: ../src/libromdata/Other/EXE_PE.cpp:706
 msgctxt "EXE|DLLFlags"
 msgid "TS Aware"
-msgstr ""
+msgstr "TS Aware"
 
 #: ../src/libromdata/Other/EXE_PE.cpp:710
 msgctxt "EXE"
