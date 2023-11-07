@@ -1390,7 +1390,7 @@ int NES::loadFieldData(void)
 						NOP_C_("NES|Expansion", "Oeka Kids Tablet"),
 						NOP_C_("NES|Expansion", "Sunsoft Barcode Battler"),
 						NOP_C_("NES|Expansion", "Miracle Piano Keyboard"),
-						NOP_C_("NES|Expansion", "Pokkun Moguraa"),
+						NOP_C_("NES|Expansion", "Pokkun Mogura"),
 						NOP_C_("NES|Expansion", "Top Rider"),
 						NOP_C_("NES|Expansion", "Double-Fisted"),
 						NOP_C_("NES|Expansion", "Famicom 3D System"),

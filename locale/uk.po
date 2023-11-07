@@ -3538,7 +3538,7 @@ msgstr ""
 
 #: ../src/libromdata/Console/NES.cpp:1393
 msgctxt "NES|Expansion"
-msgid "Pokkun Moguraa"
+msgid "Pokkun Mogura"
 msgstr ""
 
 #: ../src/libromdata/Console/NES.cpp:1394

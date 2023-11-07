@@ -3576,8 +3576,8 @@ msgstr "Teclado Miracle Piano"
 
 #: ../src/libromdata/Console/NES.cpp:1393
 msgctxt "NES|Expansion"
-msgid "Pokkun Moguraa"
-msgstr "Pokkun Moguraa"
+msgid "Pokkun Mogura"
+msgstr "Pokkun Mogura"
 
 #: ../src/libromdata/Console/NES.cpp:1394
 msgctxt "NES|Expansion"
