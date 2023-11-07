@@ -9482,7 +9482,7 @@ msgid "Premultipled Alpha"
 msgstr ""
 
 #: ../src/librptexture/fileformat/PowerVR3.cpp:1036
-msgctxt "PowerVR"
+msgctxt "PowerVR3"
 msgid "Flags"
 msgstr "Atributos"
 

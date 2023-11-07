@@ -1033,7 +1033,7 @@ int PowerVR3::getFields(RomFields *fields) const
 	// TODO: i18n
 	vector<string> *const v_flags_names = RomFields::strArrayToVector(
 		/*"PowerVR3|Flags",*/ flags_names, ARRAY_SIZE(flags_names));
-	fields->addField_bitfield(C_("PowerVR", "Flags"),
+	fields->addField_bitfield(C_("PowerVR3", "Flags"),
 		v_flags_names, 3, pvr3Header->flags);
 
 	// Color space.
