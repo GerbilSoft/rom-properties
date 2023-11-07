@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2023-09-30 23:21-0400\n"
-"PO-Revision-Date: 2023-11-06 21:24\n"
+"PO-Revision-Date: 2023-11-07 23:26\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
 "Language: de_DE\n"
@@ -40,7 +40,7 @@ msgstr "&Unterstützung"
 #: ../src/win32/config/AchievementsTab.cpp:448
 msgctxt "AchievementsTab"
 msgid "Unlock Time"
-msgstr "Zeit Freischalten"
+msgstr "Freigeschaltet am"
 
 #: ../build/src/kde/kf5/ui_AchievementsTab.h:52
 #: ../src/gtk/config/AchievementsTab.cpp:212
