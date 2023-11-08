@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2023-09-30 23:21-0400\n"
-"PO-Revision-Date: 2023-11-08 00:29\n"
+"PO-Revision-Date: 2023-11-08 04:09\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
 "Language: de_DE\n"
@@ -3500,8 +3500,8 @@ msgstr "Miracle Piano Keyboard"
 
 #: ../src/libromdata/Console/NES.cpp:1393
 msgctxt "NES|Expansion"
-msgid "Pokkun Moguraa"
-msgstr "Pokkun Mogura"
+msgid "Pokkun Mogura"
+msgstr ""
 
 #: ../src/libromdata/Console/NES.cpp:1394
 msgctxt "NES|Expansion"
