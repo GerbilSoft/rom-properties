@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2023-09-30 23:21-0400\n"
-"PO-Revision-Date: 2023-11-07 23:26\n"
+"PO-Revision-Date: 2023-11-08 00:29\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
 "Language: de_DE\n"
@@ -4463,7 +4463,7 @@ msgstr ""
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1683
 msgctxt "Xbox360_XEX"
 msgid "DLL"
-msgstr ""
+msgstr "DLL"
 
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1684
 msgctxt "Xbox360_XEX"
@@ -5457,7 +5457,7 @@ msgstr ""
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:708
 msgctxt "Nintendo3DS"
 msgid "Product Code"
-msgstr ""
+msgstr "Produkt-Code"
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:716
 msgctxt "Nintendo3DS"
@@ -6334,12 +6334,12 @@ msgstr ""
 #: ../src/libromdata/Handheld/WonderSwan.cpp:546
 msgctxt "WonderSwan|Orientation"
 msgid "Vertical"
-msgstr ""
+msgstr "Vertikal"
 
 #: ../src/libromdata/Handheld/WonderSwan.cpp:547
 msgctxt "WonderSwan|Orientation"
 msgid "Horizontal"
-msgstr ""
+msgstr "Horizontal"
 
 #: ../src/libromdata/Handheld/WonderSwan.cpp:550
 msgctxt "WonderSwan"
@@ -6846,7 +6846,7 @@ msgstr ""
 #: ../src/libromdata/Other/EXE.cpp:198
 msgctxt "EXE|FileType"
 msgid "DLL"
-msgstr ""
+msgstr "DLL"
 
 #. tr: VFT_DRV
 #: ../src/libromdata/Other/EXE.cpp:200
@@ -7323,7 +7323,7 @@ msgstr ""
 #: ../src/libromdata/Other/EXE_NE.cpp:384
 msgctxt "EXE|ApplFlags"
 msgid "DLL"
-msgstr ""
+msgstr "DLL"
 
 #: ../src/libromdata/Other/EXE_NE.cpp:388
 msgctxt "EXE"
