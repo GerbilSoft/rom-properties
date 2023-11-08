@@ -37,7 +37,7 @@ msgstr "&Unterstützung"
 #: ../src/win32/config/AchievementsTab.cpp:448
 msgctxt "AchievementsTab"
 msgid "Unlock Time"
-msgstr "Zeit Freischalten"
+msgstr "Freigeschaltet am"
 
 #: ../build/src/kde/kf5/ui_AchievementsTab.h:52
 #: ../src/gtk/config/AchievementsTab.cpp:212
@@ -1635,7 +1635,7 @@ msgstr "Stereo"
 #: ../src/libromdata/Audio/SAP.cpp:608
 msgctxt "SAP"
 msgid "Flags"
-msgstr "Flaggen"
+msgstr "Flags"
 
 #: ../src/libromdata/Audio/SAP.cpp:613
 msgctxt "SAP"
@@ -1885,7 +1885,7 @@ msgstr "%s Dual-Chip"
 #, c-format
 msgctxt "VGM"
 msgid "%s Flags"
-msgstr "%s Flaggen"
+msgstr "%s Flags"
 
 #: ../src/libromdata/Audio/VGM.cpp:480
 #, c-format
@@ -3341,7 +3341,7 @@ msgstr ""
 #: ../src/libromdata/Console/NES.cpp:1164
 msgctxt "NES"
 msgid "[Missing TNES mapping!]"
-msgstr ""
+msgstr "[Fehlendes TNES Mapping!]"
 
 #: ../src/libromdata/Console/NES.cpp:1183
 msgctxt "NES"
@@ -3576,7 +3576,7 @@ msgstr "Famicom 3D System"
 #: ../src/libromdata/Console/NES.cpp:1397
 msgctxt "NES|Expansion"
 msgid "Doremikko Keyboard"
-msgstr ""
+msgstr "Doremikko Tastatur"
 
 #: ../src/libromdata/Console/NES.cpp:1398
 msgctxt "NES|Expansion"
@@ -3586,7 +3586,7 @@ msgstr "R.O.B. Gyro Set"
 #: ../src/libromdata/Console/NES.cpp:1401
 msgctxt "NES|Expansion"
 msgid "Famicom Data Recorder (no keyboard)"
-msgstr ""
+msgstr "Famicom Data Recorder (keine Tastatur)"
 
 #: ../src/libromdata/Console/NES.cpp:1402
 msgctxt "NES|Expansion"
@@ -3601,32 +3601,32 @@ msgstr ""
 #: ../src/libromdata/Console/NES.cpp:1404
 msgctxt "NES|Expansion"
 msgid "Family BASIC Keyboard plus Famicom Data Recorder"
-msgstr ""
+msgstr "Familie BASIC Tastatur mit Famicom Data Recorder"
 
 #: ../src/libromdata/Console/NES.cpp:1405
 msgctxt "NES|Expansion"
 msgid "Dongda PEC-586 Keyboard"
-msgstr ""
+msgstr "Dongda PEC-586 Tastatur"
 
 #: ../src/libromdata/Console/NES.cpp:1406
 msgctxt "NES|Expansion"
 msgid "Bit Corp. Bit-79 Keyboard"
-msgstr ""
+msgstr "Bit Corp. Bit-79 Tastatur"
 
 #: ../src/libromdata/Console/NES.cpp:1407
 msgctxt "NES|Expansion"
 msgid "Subor Keyboard"
-msgstr ""
+msgstr "Subor Tastatur"
 
 #: ../src/libromdata/Console/NES.cpp:1408
 msgctxt "NES|Expansion"
 msgid "Subor Keyboard plus mouse (3x8-bit protocol)"
-msgstr ""
+msgstr "Subor Tastatur mit Maus (3x8-Bit Protokoll)"
 
 #: ../src/libromdata/Console/NES.cpp:1409
 msgctxt "NES|Expansion"
 msgid "Subor Keyboard plus mouse (24-bit protocol)"
-msgstr ""
+msgstr "Subor Tastatur mit Maus (24-Bit Protokoll)"
 
 #: ../src/libromdata/Console/NES.cpp:1410
 msgctxt "NES|Expansion"
@@ -3646,7 +3646,7 @@ msgstr "SNES Controller"
 #: ../src/libromdata/Console/NES.cpp:1413
 msgctxt "NES|Expansion"
 msgid "RacerMate Bicycle"
-msgstr ""
+msgstr "RacerMate Fahrrad"
 
 #: ../src/libromdata/Console/NES.cpp:1414
 msgctxt "NES|Expansion"
@@ -3666,31 +3666,31 @@ msgstr "City Patrolman Lightgun"
 #: ../src/libromdata/Console/NES.cpp:1433
 msgctxt "NES|Mirroring"
 msgid "One Screen"
-msgstr ""
+msgstr "Ein Bildschirm"
 
 #: ../src/libromdata/Console/NES.cpp:1435
 msgctxt "NES|Mirroring"
 msgid "Programmable"
-msgstr ""
+msgstr "Programmierbar"
 
 #: ../src/libromdata/Console/NES.cpp:1439
 #: ../src/libromdata/Console/NES.cpp:1540
 #: ../src/libromdata/data/NESMappers.cpp:601
 msgctxt "NES|Mirroring"
 msgid "Horizontal"
-msgstr ""
+msgstr "Horizontal"
 
 #: ../src/libromdata/Console/NES.cpp:1442
 #: ../src/libromdata/Console/NES.cpp:1542
 #: ../src/libromdata/data/NESMappers.cpp:601
 msgctxt "NES|Mirroring"
 msgid "Vertical"
-msgstr ""
+msgstr "Vertikal"
 
 #: ../src/libromdata/Console/NES.cpp:1454
 msgctxt "NES"
 msgid "Mirroring"
-msgstr ""
+msgstr "Spiegelung"
 
 #: ../src/libromdata/Console/NES.cpp:1459
 msgctxt "NES"
@@ -3710,12 +3710,12 @@ msgstr "Konsolen Typ"
 #: ../src/libromdata/Console/NES.cpp:1471
 msgctxt "NES"
 msgid "Misc. ROM Count"
-msgstr ""
+msgstr "Verschied. ROM Anzahl"
 
 #: ../src/libromdata/Console/NES.cpp:1475
 msgctxt "NES"
 msgid "Default Expansion"
-msgstr ""
+msgstr "Standarderweiterung"
 
 #: ../src/libromdata/Console/NES.cpp:1486
 msgctxt "NES"
@@ -3765,12 +3765,12 @@ msgstr "Version"
 #: ../src/libromdata/Console/PlayStationDisc.cpp:757
 msgctxt "PlayStationDisc"
 msgid "Video Mode"
-msgstr ""
+msgstr "Video Modus"
 
 #: ../src/libromdata/Console/PlayStationDisc.cpp:769
 msgctxt "PlayStationDisc"
 msgid "Boot File Time"
-msgstr ""
+msgstr "Boot-Datei Zeitstempel"
 
 #: ../src/libromdata/Console/PlayStationDisc.cpp:802
 msgctxt "PlayStationDisc"
@@ -3780,7 +3780,7 @@ msgstr "CDVDGEN Version"
 #: ../src/libromdata/Console/PlayStationDisc.cpp:807
 msgctxt "PlayStationDisc"
 msgid "Disc Name"
-msgstr ""
+msgstr "Disk Name"
 
 #: ../src/libromdata/Console/PlayStationDisc.cpp:812
 msgctxt "PlayStationDisc"
@@ -3805,49 +3805,49 @@ msgstr "Laufwerkshersteller"
 #: ../src/libromdata/Console/PlayStationDisc.cpp:835
 msgctxt "PlayStationDisc"
 msgid "Drive Model"
-msgstr ""
+msgstr "Laufwerksmodell"
 
 #: ../src/libromdata/Console/PlayStationDisc.cpp:838
 msgctxt "PlayStationDisc"
 msgid "Drive Firmware"
-msgstr ""
+msgstr "Laufwerksfirmware"
 
 #: ../src/libromdata/Console/PlayStationDisc.cpp:841
 msgctxt "PlayStationDisc"
 msgid "Drive Notes"
-msgstr ""
+msgstr "Laufwerkshinweise"
 
 #: ../src/libromdata/Console/PlayStationEXE.cpp:250
 msgctxt "PlayStationEXE"
 msgid "RAM Address"
-msgstr ""
+msgstr "RAM Adresse"
 
 #: ../src/libromdata/Console/PlayStationEXE.cpp:255
 msgctxt "PlayStationEXE"
 msgid "Initial PC"
-msgstr ""
+msgstr "Initialer PC"
 
 #: ../src/libromdata/Console/PlayStationEXE.cpp:260
 msgctxt "PlayStationEXE"
 msgid "Initial GP"
-msgstr ""
+msgstr "Initialer GP"
 
 #: ../src/libromdata/Console/PlayStationEXE.cpp:266
 msgctxt "PlayStationEXE"
 msgid "Initial SP/FP"
-msgstr ""
+msgstr "Initialer SP/FP"
 
 #: ../src/libromdata/Console/PlayStationEXE.cpp:271
 msgctxt "PlayStationEXE"
 msgid "Initial SP Offset"
-msgstr ""
+msgstr "Initialer SP Offset"
 
 #: ../src/libromdata/Console/PlayStationEXE.cpp:287
 #: ../src/libromdata/Console/SNES.cpp:1362
 #: ../src/libromdata/Console/Xbox_XBE.cpp:796
 msgctxt "Region"
 msgid "North America"
-msgstr ""
+msgstr "Nordamerika"
 
 #: ../src/libromdata/Console/PlayStationEXE.cpp:294
 msgctxt "RomData"
@@ -3867,33 +3867,33 @@ msgstr "Beschreibung"
 #: ../src/libromdata/Console/Sega8Bit.cpp:375
 msgctxt "Sega8Bit"
 msgid "Product Code"
-msgstr ""
+msgstr "Produkt-Code"
 
 #: ../src/libromdata/Console/Sega8Bit.cpp:394
 #: ../src/libromdata/Console/Sega8Bit.cpp:398
 msgctxt "Sega8Bit|SysID"
 msgid "Sega Master System"
-msgstr ""
+msgstr "Sega Master System"
 
 #. tr: Any region that isn't Japan. (used for Sega 8-bit)
 #: ../src/libromdata/Console/Sega8Bit.cpp:400
 #: ../src/libromdata/Console/Sega8Bit.cpp:409
 msgctxt "Region"
 msgid "Export"
-msgstr ""
+msgstr "Exportieren"
 
 #: ../src/libromdata/Console/Sega8Bit.cpp:403
 #: ../src/libromdata/Console/Sega8Bit.cpp:407
 #: ../src/libromdata/Console/Sega8Bit.cpp:412
 msgctxt "Sega8Bit|SysID"
 msgid "Game Gear"
-msgstr ""
+msgstr "Game Gear"
 
 #. tr: Effectively region-free.
 #: ../src/libromdata/Console/Sega8Bit.cpp:414
 msgctxt "Region"
 msgid "Worldwide"
-msgstr ""
+msgstr "Weltweit"
 
 #: ../src/libromdata/Console/Sega8Bit.cpp:420
 msgctxt "Sega8Bit"
@@ -3905,7 +3905,7 @@ msgstr "System"
 #: ../src/libromdata/Console/Sega8Bit.cpp:496
 msgctxt "Sega8Bit"
 msgid "Extra Header"
-msgstr ""
+msgstr "Zusätzlicher Header"
 
 #: ../src/libromdata/Console/Sega8Bit.cpp:444
 msgctxt "Sega8Bit"
@@ -4326,7 +4326,7 @@ msgstr "Titel"
 #: ../src/libromdata/Console/WiiWIBN.cpp:461
 msgctxt "WiiWIBN"
 msgid "Subtitle"
-msgstr ""
+msgstr "Untertitel"
 
 #: ../src/libromdata/Console/WiiWIBN.cpp:467
 msgctxt "WiiWIBN|Flags"
@@ -4336,7 +4336,7 @@ msgstr ""
 #: ../src/libromdata/Console/WiiWIBN.cpp:471
 msgctxt "WiiWIBN"
 msgid "Flags"
-msgstr ""
+msgstr "Flags"
 
 #: ../src/libromdata/Console/Xbox360_STFS.cpp:918
 msgctxt "Xbox360_STFS|FileType"
@@ -4522,7 +4522,7 @@ msgstr ""
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1683
 msgctxt "Xbox360_XEX"
 msgid "DLL"
-msgstr ""
+msgstr "DLL"
 
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1684
 msgctxt "Xbox360_XEX"
@@ -4825,22 +4825,22 @@ msgstr ""
 #: ../src/libromdata/Console/Xbox_XBE.cpp:777
 msgctxt "Xbox_XBE|InitFlags"
 msgid "Mount Utility Drive"
-msgstr ""
+msgstr "Utility Laufwerk einbinden"
 
 #: ../src/libromdata/Console/Xbox_XBE.cpp:778
 msgctxt "Xbox_XBE|InitFlags"
 msgid "Format Utility Drive"
-msgstr ""
+msgstr "Utility Laufwerk formatieren"
 
 #: ../src/libromdata/Console/Xbox_XBE.cpp:779
 msgctxt "Xbox_XBE|InitFlags"
 msgid "Limit RAM to 64 MB"
-msgstr ""
+msgstr "RAM auf 64 MB begrenzen"
 
 #: ../src/libromdata/Console/Xbox_XBE.cpp:780
 msgctxt "Xbox_XBE|InitFlags"
 msgid "Don't Setup HDD"
-msgstr ""
+msgstr "HDD nicht einrichten"
 
 #: ../src/libromdata/Console/Xbox_XBE.cpp:784
 msgctxt "Xbox_XBE"
@@ -5516,7 +5516,7 @@ msgstr ""
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:708
 msgctxt "Nintendo3DS"
 msgid "Product Code"
-msgstr ""
+msgstr "Produkt-Code"
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:716
 msgctxt "Nintendo3DS"
@@ -5934,13 +5934,13 @@ msgstr ""
 #: ../src/libromdata/Handheld/NintendoDS.cpp:547
 msgctxt "NintendoDS|DSi_Flags"
 msgid "Require EULA"
-msgstr ""
+msgstr "Erfordert EULA"
 
 #. tr: Custom icon is used from the save file.
 #: ../src/libromdata/Handheld/NintendoDS.cpp:549
 msgctxt "NintendoDS|DSi_Flags"
 msgid "Custom Icon"
-msgstr ""
+msgstr "Benutzerdefiniertes Icon"
 
 #. tr: Game supports Nintendo Wi-Fi Connection.
 #: ../src/libromdata/Handheld/NintendoDS.cpp:551
@@ -6397,12 +6397,12 @@ msgstr ""
 #: ../src/libromdata/Handheld/WonderSwan.cpp:546
 msgctxt "WonderSwan|Orientation"
 msgid "Vertical"
-msgstr ""
+msgstr "Vertikal"
 
 #: ../src/libromdata/Handheld/WonderSwan.cpp:547
 msgctxt "WonderSwan|Orientation"
 msgid "Horizontal"
-msgstr ""
+msgstr "Horizontal"
 
 #: ../src/libromdata/Handheld/WonderSwan.cpp:550
 msgctxt "WonderSwan"
@@ -6645,7 +6645,7 @@ msgstr ""
 #: ../src/libromdata/Other/ELF.cpp:1587
 msgctxt "ELF|SPARCFlags"
 msgid "LE Data"
-msgstr ""
+msgstr "LE-Daten"
 
 #: ../src/libromdata/Other/ELF.cpp:1591 ../src/libromdata/Other/ELF.cpp:1637
 #: ../src/libromdata/Other/ELF.cpp:1678 ../src/libromdata/Other/ELF.cpp:1728
@@ -6669,12 +6669,12 @@ msgstr ""
 #: ../src/libromdata/Other/ELF.cpp:1624
 msgctxt "ELF|MIPSFlags"
 msgid "No Reorder"
-msgstr ""
+msgstr "Keine Neuordnung"
 
 #: ../src/libromdata/Other/ELF.cpp:1628
 msgctxt "ELF|MIPSFlags"
 msgid "Options First"
-msgstr ""
+msgstr "Optionen zuerst"
 
 #: ../src/libromdata/Other/ELF.cpp:1663
 msgctxt "ELF"
@@ -6689,7 +6689,7 @@ msgstr ""
 #: ../src/libromdata/Other/ELF.cpp:1670
 msgctxt "ELF|PARISCFlags"
 msgid "Wide"
-msgstr ""
+msgstr "Breit"
 
 #: ../src/libromdata/Other/ELF.cpp:1672
 msgctxt "ELF|PARISCFlags"
@@ -6863,22 +6863,22 @@ msgstr ""
 #: ../src/libromdata/Other/EXE.cpp:130
 msgctxt "EXE|FileFlags"
 msgid "Debug"
-msgstr ""
+msgstr "Debug"
 
 #: ../src/libromdata/Other/EXE.cpp:131
 msgctxt "EXE|FileFlags"
 msgid "Prerelease"
-msgstr ""
+msgstr "Vorabveröffentlichung"
 
 #: ../src/libromdata/Other/EXE.cpp:132
 msgctxt "EXE|FileFlags"
 msgid "Patched"
-msgstr ""
+msgstr "Gepatched"
 
 #: ../src/libromdata/Other/EXE.cpp:133
 msgctxt "EXE|FileFlags"
 msgid "Private Build"
-msgstr ""
+msgstr "Privater Build"
 
 #: ../src/libromdata/Other/EXE.cpp:134
 msgctxt "EXE|FileFlags"
@@ -6910,7 +6910,7 @@ msgstr ""
 #: ../src/libromdata/Other/EXE.cpp:198
 msgctxt "EXE|FileType"
 msgid "DLL"
-msgstr ""
+msgstr "DLL"
 
 #. tr: VFT_DRV
 #: ../src/libromdata/Other/EXE.cpp:200
@@ -7372,7 +7372,7 @@ msgstr ""
 #: ../src/libromdata/Other/EXE_NE.cpp:380
 msgctxt "EXE|ApplFlags"
 msgid "OS/2 Application"
-msgstr ""
+msgstr "OS/2 Anwendung"
 
 #: ../src/libromdata/Other/EXE_NE.cpp:382
 msgctxt "EXE|ApplFlags"
@@ -7387,7 +7387,7 @@ msgstr ""
 #: ../src/libromdata/Other/EXE_NE.cpp:384
 msgctxt "EXE|ApplFlags"
 msgid "DLL"
-msgstr ""
+msgstr "DLL"
 
 #: ../src/libromdata/Other/EXE_NE.cpp:388
 msgctxt "EXE"
@@ -7407,12 +7407,12 @@ msgstr ""
 #: ../src/libromdata/Other/EXE_NE.cpp:400
 msgctxt "EXE|OtherFlags"
 msgid "Proportional Fonts"
-msgstr ""
+msgstr "Proportionale Schriftarten"
 
 #: ../src/libromdata/Other/EXE_NE.cpp:401
 msgctxt "EXE|OtherFlags"
 msgid "Gangload Area"
-msgstr ""
+msgstr "Gangload Area"
 
 #: ../src/libromdata/Other/EXE_NE.cpp:405
 msgctxt "EXE"
@@ -7559,17 +7559,17 @@ msgstr ""
 #: ../src/libromdata/Other/EXE_PE.cpp:679
 msgctxt "EXE|PEFlags"
 msgid "Executable"
-msgstr ""
+msgstr "Ausführbar"
 
 #: ../src/libromdata/Other/EXE_PE.cpp:681
 msgctxt "EXE|PEFlags"
 msgid ">2GB addressing"
-msgstr ""
+msgstr ">2 GB Adressierung"
 
 #: ../src/libromdata/Other/EXE_PE.cpp:685
 msgctxt "EXE|PEFlags"
 msgid "DLL"
-msgstr ""
+msgstr "DLL"
 
 #: ../src/libromdata/Other/EXE_PE.cpp:690
 msgctxt "EXE"
@@ -7579,47 +7579,47 @@ msgstr ""
 #: ../src/libromdata/Other/EXE_PE.cpp:696
 msgctxt "EXE|DLLFlags"
 msgid "High Entropy VA"
-msgstr ""
+msgstr "Hohe Entropie VA"
 
 #: ../src/libromdata/Other/EXE_PE.cpp:697
 msgctxt "EXE|DLLFlags"
 msgid "Dynamic Base"
-msgstr ""
+msgstr "Dynamische Basis"
 
 #: ../src/libromdata/Other/EXE_PE.cpp:698
 msgctxt "EXE|DLLFlags"
 msgid "Force Integrity"
-msgstr ""
+msgstr "Integrität erzwingen"
 
 #: ../src/libromdata/Other/EXE_PE.cpp:699
 msgctxt "EXE|DLLFlags"
 msgid "NX Compatible"
-msgstr ""
+msgstr "NX kompatibel"
 
 #: ../src/libromdata/Other/EXE_PE.cpp:700
 msgctxt "EXE|DLLFlags"
 msgid "No Isolation"
-msgstr ""
+msgstr "Keine Isolation"
 
 #: ../src/libromdata/Other/EXE_PE.cpp:701
 msgctxt "EXE|DLLFlags"
 msgid "No SEH"
-msgstr ""
+msgstr "Kein SEH"
 
 #: ../src/libromdata/Other/EXE_PE.cpp:702
 msgctxt "EXE|DLLFlags"
 msgid "No Bind"
-msgstr ""
+msgstr "Keine Bindung"
 
 #: ../src/libromdata/Other/EXE_PE.cpp:703
 msgctxt "EXE|DLLFlags"
 msgid "AppContainer"
-msgstr ""
+msgstr "AppContainer"
 
 #: ../src/libromdata/Other/EXE_PE.cpp:704
 msgctxt "EXE|DLLFlags"
 msgid "WDM Driver"
-msgstr ""
+msgstr "WDM Treiber"
 
 #: ../src/libromdata/Other/EXE_PE.cpp:705
 msgctxt "EXE|DLLFlags"
@@ -8058,7 +8058,7 @@ msgstr ""
 #: ../src/libromdata/Other/Wim.cpp:630
 msgctxt "Wim"
 msgid "Flags"
-msgstr "Flaggen"
+msgstr "Flags"
 
 #: ../src/libromdata/Other/Wim.cpp:659
 msgctxt "RomData"
@@ -9457,7 +9457,7 @@ msgstr ""
 #: ../src/librptexture/fileformat/PowerVR3.cpp:1036
 msgctxt "PowerVR3"
 msgid "Flags"
-msgstr ""
+msgstr "Flags"
 
 #: ../src/librptexture/fileformat/PowerVR3.cpp:1041
 msgctxt "PowerVR3|ColorSpace"
@@ -9830,7 +9830,7 @@ msgstr ""
 #: ../src/librptexture/fileformat/ValveVTF.cpp:856
 msgctxt "ValveVTF"
 msgid "Flags"
-msgstr ""
+msgstr "Flags"
 
 #: ../src/librptexture/fileformat/ValveVTF.cpp:859
 msgctxt "ValveVTF"
