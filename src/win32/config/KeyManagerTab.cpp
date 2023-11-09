@@ -71,9 +71,9 @@ private:
 
 public:
 	/**
-	 * Initialize the UI.
+	 * Initialize the dialog.
 	 */
-	void initUI(void);
+	void initDialog(void);
 
 public:
 	/**
@@ -276,9 +276,6 @@ KeyManagerTabPrivate::KeyManagerTabPrivate()
 	, hbrBkgnd(nullptr)
 	, lastDarkModeEnabled(false)
 {
-	// Load images.
-	loadImages();
-
 	// Check the COMCTL32.DLL version.
 	isComCtl32_v610 = LibWin32UI::isComCtl32_v610();
 }
@@ -317,9 +314,9 @@ KeyManagerTabPrivate::~KeyManagerTabPrivate()
 }
 
 /**
- * Initialize the UI.
+ * Initialize the dialog.
  */
-void KeyManagerTabPrivate::initUI(void)
+void KeyManagerTabPrivate::initDialog(void)
 {
 	assert(hWndPropSheet != nullptr);
 	if (!hWndPropSheet)
@@ -352,6 +349,11 @@ void KeyManagerTabPrivate::initUI(void)
 		// Maybe we *should* use ownerdraw...
 		SetWindowText(hBtnImport, U82T_c(C_("KeyManagerTab", "I&mport...")));
 	}
+
+	// Ensure the images are loaded before initializing the ListView.
+	// NOTE: The ListView control is created at this point, which is
+	// required by loadImages() in order to determine the DPI.
+	loadImages();
 
 	// Initialize the ListView.
 
@@ -525,6 +527,9 @@ void KeyManagerTabPrivate::initUI(void)
 
 	// Register for WTS session notifications. (Remote Desktop)
 	wts.registerSessionNotification(hWndPropSheet, NOTIFY_FOR_THIS_SESSION);
+
+	// Reset the configuration.
+	reset();
 }
 
 /**
@@ -619,11 +624,8 @@ INT_PTR CALLBACK KeyManagerTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 			DarkMode_InitDialog(hDlg);
 			d->lastDarkModeEnabled = g_darkModeEnabled;
 
-			// Initialize the UI.
-			d->initUI();
-
-			// Reset the configuration.
-			d->reset();
+			// Initialize the dialog.
+			d->initDialog();
 			return true;
 		}
 
@@ -1459,7 +1461,10 @@ inline int KeyManagerTabPrivate::ListView_CustomDraw(NMLVCUSTOMDRAW *plvcd)
 void KeyManagerTabPrivate::loadImages(void)
 {
 	// Get the current DPI.
-	const UINT dpi = rp_GetDpiForWindow(hWndPropSheet);
+	HWND hListView = GetDlgItem(hWndPropSheet, IDC_KEYMANAGER_LIST);
+	const UINT dpi = rp_GetDpiForWindow(hListView);
+	assert(dpi != 0);
+
 	int iconSize_new;
 	if (dpi < 120) {
 		// [96,120) dpi: Use 16x16.
