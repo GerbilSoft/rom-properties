@@ -233,6 +233,7 @@ public:
 public:
 	// Dark Mode background brush
 	HBRUSH hbrBkgnd;
+	bool lastDarkModeEnabled;
 };
 
 /** AboutTabPrivate **/
@@ -247,6 +248,7 @@ AboutTabPrivate::AboutTabPrivate()
 	, hRichEdit(nullptr)
 	, hUpdateCheck(nullptr)
 	, hbrBkgnd(nullptr)
+	, lastDarkModeEnabled(false)
 {
 	memset(&rtfCtx_main, 0, sizeof(rtfCtx_main));
 	memset(&rtfCtx_upd, 0, sizeof(rtfCtx_upd));
@@ -445,16 +447,29 @@ INT_PTR CALLBACK AboutTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, L
 
 		case WM_SETTINGCHANGE:
 			if (g_darkModeSupported && IsColorSchemeChangeMessage(lParam)) {
-				SendMessageW(hDlg, WM_THEMECHANGED, 0, 0);
+				SendMessage(hDlg, WM_THEMECHANGED, 0, 0);
 			}
 			break;
 
 		case WM_THEMECHANGED:
-			// RichEdit doesn't support dark mode per se, but we can
-			// adjust its background and text colors.
-			// NOTE: Must be called again on theme change!
-			DarkMode_InitRichEdit_Dlg(hDlg, IDC_ABOUT_RICHEDIT);
-			DarkMode_InitRichEdit_Dlg(hDlg, IDC_ABOUT_UPDATE_CHECK);
+			if (g_darkModeSupported) {
+				auto *const d = reinterpret_cast<AboutTabPrivate*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
+				if (!d) {
+					// No ImageTypesTabPrivate. Can't do anything...
+					return FALSE;
+				}
+
+				UpdateDarkModeEnabled();
+				if (d->lastDarkModeEnabled != g_darkModeEnabled) {
+					d->lastDarkModeEnabled = g_darkModeEnabled;
+					InvalidateRect(hDlg, NULL, true);
+
+					// RichEdit doesn't support dark mode per se, but we can
+					// adjust its background and text colors.
+					DarkMode_InitRichEdit_Dlg(hDlg, IDC_ABOUT_RICHEDIT);
+					DarkMode_InitRichEdit_Dlg(hDlg, IDC_ABOUT_UPDATE_CHECK);
+				}
+			}
 			break;
 
 		default:
@@ -1237,6 +1252,10 @@ void AboutTabPrivate::setTabContents(int index)
  */
 void AboutTabPrivate::initDialog(void)
 {
+	//  NOTE: This should be in WM_CREATE, but we don't receive WM_CREATE here.
+	DarkMode_InitDialog(hWndPropSheet);
+	lastDarkModeEnabled = g_darkModeEnabled;
+
 	// Initialize the program title text.
 	initProgramTitleText();
 
