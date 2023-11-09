@@ -357,6 +357,19 @@ void AchievementsTabPrivate::updateImageList(void)
 		// >144dpi: Use 64x64.
 		iconSize = 64;
 	}
+#if 0
+	// TODO: Add 48x48 versions of the Achievements icons.
+	if (dpi <= 96) {
+		// [0,96] dpi: Use 32x32.
+		iconSize = 32;
+	} else if (dpi <= 144) {
+		// (96,144] dpi: Use 48x48.
+		iconSize = 48;
+	} else {
+		// >144dpi: Use 64x64.
+		iconSize = 64;
+	}
+#endif
 
 	// Create the image list.
 	himglAch = ImageList_Create(iconSize, iconSize, ILC_COLOR32,
