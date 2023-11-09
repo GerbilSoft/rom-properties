@@ -97,6 +97,7 @@
   * NES: Fix NES 2.0 PRG RAM size. (non-battery-backed)
     * This was apparently broken since it was originally implemented in v1.1.
     * Affects: v1.1 - v2.2.1
+  * Fix a crash when decoding PNGs or other zlib-encoded data on Windows XP.
 
 * Other changes:
   * Nintendo3DS: The "Options" menu no longer shows a grayed-out "Extract SRL"
