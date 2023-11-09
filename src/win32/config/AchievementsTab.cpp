@@ -19,6 +19,9 @@
 #include "librpbase/img/RpPng.hpp"
 using namespace LibRpBase;
 
+// libwin32common
+#include "libwin32common/rp_versionhelpers.h"
+
 // libwin32ui
 #include "libwin32ui/AutoGetDC.hpp"
 #include "libwin32ui/LoadResource_i18n.hpp"
@@ -100,6 +103,9 @@ public:
 	// Dark Mode background brush
 	HBRUSH hbrBkgnd;
 	bool lastDarkModeEnabled;
+
+	// Is this Windows 10 or later?
+	bool isWin10;
 };
 
 /** AchievementsTabPrivate **/
@@ -112,7 +118,10 @@ AchievementsTabPrivate::AchievementsTabPrivate()
 	, hbrAltRow(nullptr)
 	, hbrBkgnd(nullptr)
 	, lastDarkModeEnabled(false)
-{}
+{
+	// Is this Windows 10 or later?
+	isWin10 = IsWindows10OrGreater();
+}
 
 AchievementsTabPrivate::~AchievementsTabPrivate()
 {
@@ -426,41 +435,87 @@ inline int AchievementsTabPrivate::ListView_CustomDraw(NMLVCUSTOMDRAW *plvcd)
 				// - Standard row colors are 19px high.
 				// - Alternate row colors are 17px high. (top and bottom lines ignored?)
 				plvcd->clrTextBk = colorAltRow;
-				result = CDRF_NOTIFYSUBITEMDRAW | CDRF_NEWFONT;
 			}
+			result = CDRF_NOTIFYSUBITEMDRAW | CDRF_NEWFONT;
 			break;
 
-		case CDDS_SUBITEM | CDDS_ITEMPREPAINT:
+		case CDDS_SUBITEM | CDDS_ITEMPREPAINT: {
 			// Leave the background color as-is, except for unselected alternate rows.
 			// This allows for proper icon transparency on Win10 (1809, 21H2).
 			// Still doesn't work on Windows 7, though...
-			if (plvcd->iSubItem == 0 && plvcd->nmcd.dwItemSpec % 2 != 0) {
-				// NOTE: We need to draw the background color if not highlighted or selected.
-				// NOTE 2: Need to check highlighted row ID because uItemState
-				// will be 0 if the user mouses over another column on the same row.
-				if (plvcd->nmcd.uItemState == 0 &&
-				    ListView_GetHotItem(plvcd->nmcd.hdr.hwndFrom) != plvcd->nmcd.dwItemSpec)
-				{
+			const bool isOdd = !!(plvcd->nmcd.dwItemSpec % 2);
+			if (isWin10) {
+				if (plvcd->iSubItem == 0 && isOdd) {
+					// Windows 10 method. (Tested on 1809 and 21H2.)
+					// TODO: Check Windows 8?
+
+					// NOTE: We need to draw the background color if not highlighted or selected.
+					// NOTE 2: Need to check highlighted row ID because uItemState
+					// will be 0 if the user mouses over another column on the same row.
+					if (plvcd->nmcd.uItemState == 0 &&
+					    ListView_GetHotItem(plvcd->nmcd.hdr.hwndFrom) != plvcd->nmcd.dwItemSpec)
+					{
+						if (!hbrAltRow) {
+							hbrAltRow = CreateSolidBrush(colorAltRow);
+						}
+
+						// FIXME: On Win10 21H2, plvcd->nmcd.rc leaves a small border
+						// on the left side of the icon for subitem 0.
+						// On Windows XP: plvcd->nmcd.rc isn't initialized.
+						// Get the subitem RECT manually.
+						// TODO: Increase row height, or decrease icon size?
+						// The icon is slightly too big for the default row
+						// height on XP.
+						RECT rectSubItem;
+						BOOL bRet = ListView_GetSubItemRect(plvcd->nmcd.hdr.hwndFrom,
+							(int)plvcd->nmcd.dwItemSpec, plvcd->iSubItem, LVIR_BOUNDS, &rectSubItem);
+						if (bRet) {
+							FillRect(plvcd->nmcd.hdc, &rectSubItem, hbrAltRow);
+						}
+					}
+				}
+			} else {
+				// Windows XP/7 method.
+
+				// Set the row background color.
+				// TODO: "Disabled" state?
+				// NOTE: plvcd->clrTextBk is set to 0xFF000000 here,
+				// not the actual default background color.
+				HBRUSH hbr;
+				if (plvcd->nmcd.uItemState & CDIS_SELECTED) {
+					// Row is selected.
+					hbr = (HBRUSH)(COLOR_HIGHLIGHT+1);
+				} else if (isOdd) {
+					// FIXME: On Windows 7:
+					// - Standard row colors are 19px high.
+					// - Alternate row colors are 17px high. (top and bottom lines ignored?)
 					if (!hbrAltRow) {
 						hbrAltRow = CreateSolidBrush(colorAltRow);
 					}
+					hbr = hbrAltRow;
+				} else {
+					// Standard row color. Draw it anyway in case
+					// the theme was changed, since ListView only
+					// partially recognizes theme changes.
+					hbr = (HBRUSH)(COLOR_WINDOW+1);
+				}
 
-					// FIXME: On Win10 21H2, plvcd->nmcd.rc leaves a small border
-					// on the left side of the icon for subitem 0.
-					// On Windows XP: plvcd->nmcd.rc isn't initialized.
-					// Get the subitem RECT manually.
-					// TODO: Increase row height, or decrease icon size?
-					// The icon is slightly too big for the default row
-					// height on XP.
-					RECT rectSubItem;
-					BOOL bRet = ListView_GetSubItemRect(plvcd->nmcd.hdr.hwndFrom,
-						(int)plvcd->nmcd.dwItemSpec, plvcd->iSubItem, LVIR_BOUNDS, &rectSubItem);
-					if (bRet) {
-						FillRect(plvcd->nmcd.hdc, &rectSubItem, hbrAltRow);
-					}
+				// FIXME: On Win10 21H2, plvcd->nmcd.rc leaves a small border
+				// on the left side of the icon for subitem 0.
+				// On Windows XP: plvcd->nmcd.rc isn't initialized.
+				// Get the subitem RECT manually.
+				// TODO: Increase row height, or decrease icon size?
+				// The icon is slightly too big for the default row
+				// height on XP.
+				RECT rectSubItem;
+				BOOL bRet = ListView_GetSubItemRect(plvcd->nmcd.hdr.hwndFrom,
+					(int)plvcd->nmcd.dwItemSpec, plvcd->iSubItem, LVIR_BOUNDS, &rectSubItem);
+				if (bRet) {
+					FillRect(plvcd->nmcd.hdc, &rectSubItem, hbr);
 				}
 			}
 			break;
+		}
 
 		default:
 			break;
