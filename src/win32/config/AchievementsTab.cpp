@@ -443,38 +443,39 @@ inline int AchievementsTabPrivate::ListView_CustomDraw(NMLVCUSTOMDRAW *plvcd)
 			// Leave the background color as-is, except for unselected alternate rows.
 			// This allows for proper icon transparency on Win10 (1809, 21H2).
 			// Still doesn't work on Windows 7, though...
+			if (plvcd->iSubItem != 0)
+				break;
+
 			const bool isOdd = !!(plvcd->nmcd.dwItemSpec % 2);
-			if (isWin10) {
-				if (plvcd->iSubItem == 0 && isOdd) {
-					// Windows 10 method. (Tested on 1809 and 21H2.)
-					// TODO: Check Windows 8?
+			if (isWin10) { if (isOdd) {
+				// Windows 10 method. (Tested on 1809 and 21H2.)
+				// TODO: Check Windows 8?
 
-					// NOTE: We need to draw the background color if not highlighted or selected.
-					// NOTE 2: Need to check highlighted row ID because uItemState
-					// will be 0 if the user mouses over another column on the same row.
-					if (plvcd->nmcd.uItemState == 0 &&
-					    ListView_GetHotItem(plvcd->nmcd.hdr.hwndFrom) != plvcd->nmcd.dwItemSpec)
-					{
-						if (!hbrAltRow) {
-							hbrAltRow = CreateSolidBrush(colorAltRow);
-						}
+				// NOTE: We need to draw the background color if not highlighted or selected.
+				// NOTE 2: Need to check highlighted row ID because uItemState
+				// will be 0 if the user mouses over another column on the same row.
+				if (plvcd->nmcd.uItemState == 0 &&
+				    ListView_GetHotItem(plvcd->nmcd.hdr.hwndFrom) != plvcd->nmcd.dwItemSpec)
+				{
+					if (!hbrAltRow) {
+						hbrAltRow = CreateSolidBrush(colorAltRow);
+					}
 
-						// FIXME: On Win10 21H2, plvcd->nmcd.rc leaves a small border
-						// on the left side of the icon for subitem 0.
-						// On Windows XP: plvcd->nmcd.rc isn't initialized.
-						// Get the subitem RECT manually.
-						// TODO: Increase row height, or decrease icon size?
-						// The icon is slightly too big for the default row
-						// height on XP.
-						RECT rectSubItem;
-						BOOL bRet = ListView_GetSubItemRect(plvcd->nmcd.hdr.hwndFrom,
-							(int)plvcd->nmcd.dwItemSpec, plvcd->iSubItem, LVIR_BOUNDS, &rectSubItem);
-						if (bRet) {
-							FillRect(plvcd->nmcd.hdc, &rectSubItem, hbrAltRow);
-						}
+					// FIXME: On Win10 21H2, plvcd->nmcd.rc leaves a small border
+					// on the left side of the icon for subitem 0.
+					// On Windows XP: plvcd->nmcd.rc isn't initialized.
+					// Get the subitem RECT manually.
+					// TODO: Increase row height, or decrease icon size?
+					// The icon is slightly too big for the default row
+					// height on XP.
+					RECT rectSubItem;
+					BOOL bRet = ListView_GetSubItemRect(plvcd->nmcd.hdr.hwndFrom,
+						(int)plvcd->nmcd.dwItemSpec, plvcd->iSubItem, LVIR_BOUNDS, &rectSubItem);
+					if (bRet) {
+						FillRect(plvcd->nmcd.hdc, &rectSubItem, hbrAltRow);
 					}
 				}
-			} else {
+			} } else {
 				// Windows XP/7 method.
 
 				// Set the row background color.
