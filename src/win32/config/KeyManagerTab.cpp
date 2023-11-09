@@ -1423,26 +1423,15 @@ inline int KeyManagerTabPrivate::ListView_CustomDraw(NMLVCUSTOMDRAW *plvcd)
 					// Custom drawing this subitem.
 					result = CDRF_SKIPDEFAULT;
 
-					// Set the row background color.
-					// TODO: "Disabled" state?
-					// NOTE: plvcd->clrTextBk is set to 0xFF000000 here,
-					// not the actual default background color.
-					HBRUSH hbr;
-					if (plvcd->nmcd.uItemState & CDIS_SELECTED) {
-						// Row is selected.
-						hbr = (HBRUSH)(COLOR_HIGHLIGHT+1);
-					} else if (isOdd) {
-						// FIXME: On Windows 7:
-						// - Standard row colors are 19px high.
-						// - Alternate row colors are 17px high. (top and bottom lines ignored?)
-						hbr = hbrAltRow;
-					} else {
-						// Standard row color. Draw it anyway in case
-						// the theme was changed, since ListView only
-						// partially recognizes theme changes.
-						hbr = (HBRUSH)(COLOR_WINDOW+1);
+					// Alternate row color, if necessary.
+					// NOTE: Only if not highlighted or selected.
+					// NOTE 2: Need to check highlighted row ID because uItemState
+					// will be 0 if the user mouses over another column on the same row.
+					if (isOdd && plvcd->nmcd.uItemState == 0 &&
+					    ListView_GetHotItem(plvcd->nmcd.hdr.hwndFrom) != plvcd->nmcd.dwItemSpec)
+					{
+						FillRect(plvcd->nmcd.hdc, pRcSubItem, hbrAltRow);
 					}
-					FillRect(plvcd->nmcd.hdc, pRcSubItem, hbr);
 
 					const int x = pRcSubItem->left + (((pRcSubItem->right - pRcSubItem->left) - iconSize) / 2);
 					const int y = pRcSubItem->top + (((pRcSubItem->bottom - pRcSubItem->top) - iconSize) / 2);
