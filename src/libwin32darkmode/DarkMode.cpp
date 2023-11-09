@@ -92,7 +92,7 @@ void FixDarkScrollBar(void)
 		return;
 
 	auto MyOpenThemeData = [](HWND hWnd, LPCWSTR classList) -> HTHEME {
-		if (wcscmp(classList, L"ScrollBar") == 0) {
+		if (lstrcmpW(classList, L"ScrollBar") == 0) {
 			hWnd = nullptr;
 			classList = L"Explorer::ScrollBar";
 		}
