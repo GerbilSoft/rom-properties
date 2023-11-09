@@ -31,7 +31,7 @@ void DarkMode_InitDialog(HWND hDlg)
 	if (unlikely(!g_darkModeSupported))
 		return;
 
-	_SetWindowTheme(hDlg, L"CFD", NULL);
+	SetWindowTheme(hDlg, L"CFD", NULL);
 	_AllowDarkModeForWindow(hDlg, true);
 
 	const LONG_PTR lpStyle = GetWindowLongPtr(hDlg, GWL_STYLE);
@@ -53,7 +53,7 @@ void DarkMode_InitButton(HWND hWnd)
 		return;
 
 	// FIXME: Not working for BS_GROUPBOX or BS_AUTOCHECKBOX.
-	_SetWindowTheme(hWnd, L"Explorer", NULL);
+	SetWindowTheme(hWnd, L"Explorer", NULL);
 	_AllowDarkModeForWindow(hWnd, true);
 
 	const LONG_PTR lpStyle = GetWindowLongPtr(hWnd, GWL_STYLE);
@@ -85,7 +85,7 @@ void DarkMode_InitComboBox(HWND hWnd)
 	if (unlikely(!g_darkModeSupported))
 		return;
 
-	_SetWindowTheme(hWnd, L"Explorer", NULL);
+	SetWindowTheme(hWnd, L"Explorer", NULL);
 	_AllowDarkModeForWindow(hWnd, true);
 	SendMessage(hWnd, WM_THEMECHANGED, 0, 0);
 
@@ -102,9 +102,9 @@ void DarkMode_InitComboBox(HWND hWnd)
 		_AllowDarkModeForWindow(info.hwndItem, true);
 		_AllowDarkModeForWindow(info.hwndCombo, true);
 
-		_SetWindowTheme(info.hwndList, L"Explorer", nullptr);
-		_SetWindowTheme(info.hwndItem, L"Explorer", nullptr);
-		_SetWindowTheme(info.hwndCombo, L"CFD", nullptr);
+		SetWindowTheme(info.hwndList, L"Explorer", nullptr);
+		SetWindowTheme(info.hwndItem, L"Explorer", nullptr);
+		SetWindowTheme(info.hwndCombo, L"CFD", nullptr);
 
 		SendMessage(info.hwndList, WM_THEMECHANGED, 0, 0);
 		SendMessage(info.hwndItem, WM_THEMECHANGED, 0, 0);
@@ -122,7 +122,7 @@ void DarkMode_InitComboBoxEx(HWND hWnd)
 		return;
 
 	// Set ComboBoxEx stuff first.
-	_SetWindowTheme(hWnd, L"Explorer", NULL);
+	SetWindowTheme(hWnd, L"Explorer", NULL);
 	_AllowDarkModeForWindow(hWnd, true);
 	SendMessage(hWnd, CBEM_SETWINDOWTHEME, 0, reinterpret_cast<LPARAM>(_T("Explorer")));
 	SendMessage(hWnd, WM_THEMECHANGED, 0, 0);
@@ -143,7 +143,7 @@ void DarkMode_InitEdit(HWND hWnd)
 	if (unlikely(!g_darkModeSupported))
 		return;
 
-	_SetWindowTheme(hWnd, L"CFD", NULL);
+	SetWindowTheme(hWnd, L"CFD", NULL);
 	_AllowDarkModeForWindow(hWnd, true);
 	SendMessage(hWnd, WM_THEMECHANGED, 0, 0);
 }
@@ -157,7 +157,7 @@ void DarkMode_InitRichEdit(HWND hWnd)
 	if (unlikely(!g_darkModeSupported))
 		return;
 
-	_SetWindowTheme(hWnd, L"Explorer", nullptr);
+	SetWindowTheme(hWnd, L"Explorer", nullptr);
 	_AllowDarkModeForWindow(hWnd, true);
 
 	// RichEdit doesn't support dark mode per se, but we can

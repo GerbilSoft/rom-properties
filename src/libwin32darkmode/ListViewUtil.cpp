@@ -56,24 +56,24 @@ static LRESULT CALLBACK ListView_DarkMode_SubclassProc(
 				AllowDarkModeForWindow(hWnd, g_darkModeEnabled);
 				AllowDarkModeForWindow(hHeader, g_darkModeEnabled);
 
-				HTHEME hTheme = _OpenThemeData(nullptr, L"ItemsView");
+				HTHEME hTheme = OpenThemeData(nullptr, L"ItemsView");
 				if (hTheme) {
 					COLORREF color;
-					if (SUCCEEDED(_GetThemeColor(hTheme, 0, 0, TMT_TEXTCOLOR, &color))) {
+					if (SUCCEEDED(GetThemeColor(hTheme, 0, 0, TMT_TEXTCOLOR, &color))) {
 						ListView_SetTextColor(hWnd, color);
 					}
-					if (SUCCEEDED(_GetThemeColor(hTheme, 0, 0, TMT_FILLCOLOR, &color))) {
+					if (SUCCEEDED(GetThemeColor(hTheme, 0, 0, TMT_FILLCOLOR, &color))) {
 						ListView_SetTextBkColor(hWnd, color);
 						ListView_SetBkColor(hWnd, color);
 					}
-					_CloseThemeData(hTheme);
+					CloseThemeData(hTheme);
 				}
 
-				hTheme = _OpenThemeData(hHeader, L"Header");
+				hTheme = OpenThemeData(hHeader, L"Header");
 				if (hTheme) {
 					auto info = reinterpret_cast<SubclassInfo*>(dwRefData);
-					_GetThemeColor(hTheme, HP_HEADERITEM, 0, TMT_TEXTCOLOR, &(info->headerTextColor));
-					_CloseThemeData(hTheme);
+					GetThemeColor(hTheme, HP_HEADERITEM, 0, TMT_TEXTCOLOR, &(info->headerTextColor));
+					CloseThemeData(hTheme);
 				}
 
 				SendMessageW(hHeader, WM_THEMECHANGED, wParam, lParam);
@@ -104,7 +104,7 @@ void DarkMode_InitListView(HWND hListView)
 	SendMessage(hListView, WM_CHANGEUISTATE, MAKELONG(UIS_SET, UISF_HIDEFOCUS), 0);
 
 	if (g_darkModeSupported) {
-		_SetWindowTheme(hHeader, L"ItemsView", nullptr); // DarkMode
-		_SetWindowTheme(hListView, L"ItemsView", nullptr); // DarkMode
+		SetWindowTheme(hHeader, L"ItemsView", nullptr); // DarkMode
+		SetWindowTheme(hListView, L"ItemsView", nullptr); // DarkMode
 	}
 }

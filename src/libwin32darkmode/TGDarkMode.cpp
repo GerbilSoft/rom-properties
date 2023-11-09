@@ -256,13 +256,13 @@ static void PaintControl(HWND hWnd, HDC hdc, RECT* prc, bool bDrawBorder)
 	if (bDrawBorder)
 		InflateRect(prc, 1, 1);
 
-	HPAINTBUFFER hBufferedPaint = _BeginBufferedPaint(hdc, prc, BPBF_TOPDOWNDIB, nullptr, &hdcPaint);
+	HPAINTBUFFER hBufferedPaint = BeginBufferedPaint(hdc, prc, BPBF_TOPDOWNDIB, nullptr, &hdcPaint);
 	if (hdcPaint && hBufferedPaint) {
 		RECT rc;
 		GetWindowRect(hWnd, &rc);
 
 		PatBlt(hdcPaint, 0, 0, RECTWIDTH(rc), RECTHEIGHT(rc), BLACKNESS);
-		_BufferedPaintSetAlpha(hBufferedPaint, &rc, 0x00);
+		BufferedPaintSetAlpha(hBufferedPaint, &rc, 0x00);
 
 		///
 		/// first blit white so list ctrls don't look ugly:
@@ -282,8 +282,8 @@ static void PaintControl(HWND hWnd, HDC hdc, RECT* prc, bool bDrawBorder)
 		// don't make a possible border opaque, only the inner part of the control
 		InflateRect(prc, -2, -2);
 		// Make every pixel opaque
-		_BufferedPaintSetAlpha(hBufferedPaint, prc, 255);
-		_EndBufferedPaint(hBufferedPaint, TRUE);
+		BufferedPaintSetAlpha(hBufferedPaint, prc, 255);
+		EndBufferedPaint(hBufferedPaint, TRUE);
 	}
 }
 
@@ -302,9 +302,9 @@ static BOOL DetermineGlowSize(int* piSize, LPCWSTR pszClassIdList = nullptr)
 	if (!pszClassIdList)
 		pszClassIdList = L"CompositedWindow::Window";
 
-	if (HTHEME hThemeWindow = _OpenThemeData(nullptr, pszClassIdList)) {
-		SUCCEEDED(_GetThemeInt(hThemeWindow, 0, 0, TMT_TEXTGLOWSIZE, piSize));
-		_CloseThemeData(hThemeWindow);
+	if (HTHEME hThemeWindow = OpenThemeData(nullptr, pszClassIdList)) {
+		SUCCEEDED(GetThemeInt(hThemeWindow, 0, 0, TMT_TEXTGLOWSIZE, piSize));
+		CloseThemeData(hThemeWindow);
 		return TRUE;
 	}
 
@@ -321,9 +321,9 @@ static BOOL GetEditBorderColor(HWND hWnd, COLORREF* pClr)
 {
 	assert(pClr);
 
-	if (HTHEME hTheme = _OpenThemeData(hWnd, L"Edit")) {
-		_GetThemeColor(hTheme, EP_BACKGROUNDWITHBORDER, EBWBS_NORMAL, TMT_BORDERCOLOR, pClr);
-		_CloseThemeData(hTheme);
+	if (HTHEME hTheme = OpenThemeData(hWnd, L"Edit")) {
+		GetThemeColor(hTheme, EP_BACKGROUNDWITHBORDER, EBWBS_NORMAL, TMT_BORDERCOLOR, pClr);
+		CloseThemeData(hTheme);
 		return TRUE;
 	}
 
@@ -373,7 +373,7 @@ LRESULT WINAPI TGDarkMode_ButtonSubclassProc(
 			GetClientRect(hWnd, &rcClient);
 
 			if ((dwButtonType & BS_GROUPBOX) == BS_GROUPBOX) {
-				if (HTHEME hTheme = _OpenThemeData(hWnd, L"Button")) {
+				if (HTHEME hTheme = OpenThemeData(hWnd, L"Button")) {
 					BP_PAINTPARAMS params = { sizeof(BP_PAINTPARAMS) };
 					params.dwFlags = BPPF_ERASE;
 
@@ -405,7 +405,7 @@ LRESULT WINAPI TGDarkMode_ButtonSubclassProc(
 					rcExclusion.bottom -= 2;
 
 					HDC hdcPaint = nullptr;
-					HPAINTBUFFER hBufferedPaint = _BeginBufferedPaint(hdc, &rcClient, BPBF_TOPDOWNDIB, &params, &hdcPaint);
+					HPAINTBUFFER hBufferedPaint = BeginBufferedPaint(hdc, &rcClient, BPBF_TOPDOWNDIB, &params, &hdcPaint);
 					if (hdcPaint) {
 						// now we again retrieve the font, but this time we select it into
 						// the buffered DC:
@@ -416,7 +416,7 @@ LRESULT WINAPI TGDarkMode_ButtonSubclassProc(
 						::SetBkColor(hdcPaint, g_darkBkColor);
 						::ExtTextOut(hdcPaint, 0, 0, ETO_OPAQUE, &rcClient, nullptr, 0, nullptr);
 
-						_BufferedPaintSetAlpha(hBufferedPaint, &ps.rcPaint, 0x00);
+						BufferedPaintSetAlpha(hBufferedPaint, &ps.rcPaint, 0x00);
 
 						DTTOPTS DttOpts = { sizeof(DTTOPTS) };
 						DttOpts.dwFlags = DTT_COMPOSITED | DTT_GLOWSIZE;
@@ -468,25 +468,25 @@ LRESULT WINAPI TGDarkMode_ButtonSubclassProc(
 							hFontOld = nullptr;
 						}
 
-						_EndBufferedPaint(hBufferedPaint, TRUE);
+						EndBufferedPaint(hBufferedPaint, TRUE);
 					}
-					_CloseThemeData(hTheme);
+					CloseThemeData(hTheme);
 				}
 			}
 
 			else if (dwButtonType == BS_CHECKBOX || dwButtonType == BS_AUTOCHECKBOX ||
 				 dwButtonType == BS_3STATE || dwButtonType == BS_AUTO3STATE || dwButtonType == BS_RADIOBUTTON || dwButtonType == BS_AUTORADIOBUTTON)
 			{
-				if (HTHEME hTheme = _OpenThemeData(hWnd, L"Button")) {
+				if (HTHEME hTheme = OpenThemeData(hWnd, L"Button")) {
 					HDC hdcPaint = nullptr;
 					BP_PAINTPARAMS params = { sizeof(BP_PAINTPARAMS) };
 					params.dwFlags = BPPF_ERASE;
-					HPAINTBUFFER hBufferedPaint = _BeginBufferedPaint(hdc, &rcClient, BPBF_TOPDOWNDIB, &params, &hdcPaint);
+					HPAINTBUFFER hBufferedPaint = BeginBufferedPaint(hdc, &rcClient, BPBF_TOPDOWNDIB, &params, &hdcPaint);
 					if (hdcPaint && hBufferedPaint) {
 						::SetBkColor(hdcPaint, g_darkBkColor);
 						::ExtTextOut(hdcPaint, 0, 0, ETO_OPAQUE, &rcClient, nullptr, 0, nullptr);
 
-						_BufferedPaintSetAlpha(hBufferedPaint, &ps.rcPaint, 0x00);
+						BufferedPaintSetAlpha(hBufferedPaint, &ps.rcPaint, 0x00);
 
 						LRESULT dwCheckState = SendMessage(hWnd, BM_GETCHECK, 0, 0);
 						POINT pt;
@@ -537,10 +537,10 @@ LRESULT WINAPI TGDarkMode_ButtonSubclassProc(
 							rcPaint.bottom = rcPaint.top + bmWidth;
 						}
 
-						_DrawThemeBackground(hTheme, hdcPaint, iPartId, iState, &rcPaint, nullptr);
+						DrawThemeBackground(hTheme, hdcPaint, iPartId, iState, &rcPaint, nullptr);
 						rcPaint = rcClient;
 
-						_GetThemeBackgroundContentRect(hTheme, hdcPaint, iPartId, iState, &rcPaint, &rc);
+						GetThemeBackgroundContentRect(hTheme, hdcPaint, iPartId, iState, &rcPaint, &rc);
 
 						if (dwButtonStyle & BS_LEFTTEXT)
 							rc.right -= bmWidth + 2 * GetSystemMetrics(SM_CXEDGE);
@@ -636,9 +636,9 @@ LRESULT WINAPI TGDarkMode_ButtonSubclassProc(
 							hFontOld = nullptr;
 						}
 
-						_EndBufferedPaint(hBufferedPaint, TRUE);
+						EndBufferedPaint(hBufferedPaint, TRUE);
 					}
-					_CloseThemeData(hTheme);
+					CloseThemeData(hTheme);
 				}
 			}
 			else if (BS_PUSHBUTTON == dwButtonType || BS_DEFPUSHBUTTON == dwButtonType) {

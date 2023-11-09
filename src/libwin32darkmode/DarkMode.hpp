@@ -62,18 +62,6 @@ typedef struct _WINDOWCOMPOSITIONATTRIBDATA {
 	SIZE_T cbData;
 } WINDOWCOMPOSITIONATTRIBDATA;
 
-// Standard theming functions (uxtheme)
-typedef HRESULT (WINAPI *fnSetWindowTheme)(HWND hWnd, LPCWSTR pszSubAppName, LPCWSTR pszSubIdList);
-typedef HRESULT (WINAPI *fnGetThemeColor)(HTHEME hTheme, int iPartId, int iStateId, int iPropId, COLORREF *pColor);
-typedef HTHEME (WINAPI *fnOpenThemeData)(HWND hWnd, LPCWSTR pszClassList);
-typedef HRESULT (WINAPI *fnCloseThemeData)(HTHEME hTheme);
-// Theming functions used by TGDarkMode
-typedef HPAINTBUFFER (WINAPI *fnBeginBufferedPaint)(HDC hdcTarget, const RECT *prcTarget, BP_BUFFERFORMAT dwFormat, BP_PAINTPARAMS *pPaintParams, HDC *phdc);
-typedef HRESULT (WINAPI *fnBufferedPaintSetAlpha)(HPAINTBUFFER hBufferedPaint, const RECT *prc, BYTE alpha);
-typedef HRESULT (WINAPI *fnDrawThemeBackground)(HTHEME hTheme, HDC hdc, int iPartId, int iStateId, const RECT *pRect, const RECT *pClipRect);
-typedef HRESULT (WINAPI *fnEndBufferedPaint)(HPAINTBUFFER hBufferedPaint, BOOL fUpdateTarget);
-typedef HRESULT (WINAPI *fnGetThemeBackgroundContentRect)(HTHEME hTheme, HDC hdc, int iPartId, int iStateId, const RECT *pBoundingRect, RECT *pContentRect);
-typedef HRESULT (WINAPI *fnGetThemeInt)(HTHEME hTheme, int iPartId, int iStateId, int iPropId, int *piVal);
 // 1809 17763
 typedef bool (WINAPI *fnShouldAppsUseDarkMode)(void); // ordinal 132
 typedef bool (WINAPI *fnAllowDarkModeForWindow)(HWND hWnd, bool allow); // ordinal 133
@@ -88,18 +76,6 @@ typedef bool (WINAPI *fnShouldSystemUseDarkMode)(void); // ordinal 138
 typedef PreferredAppMode (WINAPI *fnSetPreferredAppMode)(PreferredAppMode appMode); // ordinal 135, in 1903
 typedef bool (WINAPI *fnIsDarkModeAllowedForApp)(void); // ordinal 139
 
-// Standard theming functions (uxtheme)
-extern fnSetWindowTheme _SetWindowTheme;
-extern fnGetThemeColor _GetThemeColor;
-extern fnOpenThemeData _OpenThemeData;
-extern fnCloseThemeData _CloseThemeData;
-// Theming functions used by TGDarkMode
-extern fnBeginBufferedPaint _BeginBufferedPaint;
-extern fnBufferedPaintSetAlpha _BufferedPaintSetAlpha;
-extern fnDrawThemeBackground _DrawThemeBackground;
-extern fnEndBufferedPaint _EndBufferedPaint;
-extern fnGetThemeBackgroundContentRect _GetThemeBackgroundContentRect;
-extern fnGetThemeInt _GetThemeInt;
 // 1809 17763
 extern fnShouldAppsUseDarkMode _ShouldAppsUseDarkMode;
 extern fnAllowDarkModeForWindow _AllowDarkModeForWindow;

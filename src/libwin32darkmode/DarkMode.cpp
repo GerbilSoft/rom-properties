@@ -19,18 +19,7 @@ typedef HTHEME (WINAPI *fnOpenNcThemeData)(HWND hWnd, LPCWSTR pszClassList); // 
 // Functions added in Windows Vista
 static fnCompareStringOrdinal _CompareStringOrdinal = nullptr;
 // Standard theming functions (uxtheme)
-fnSetWindowTheme _SetWindowTheme = nullptr;
-fnGetThemeColor _GetThemeColor = nullptr;
-fnOpenThemeData _OpenThemeData = nullptr;
 static fnOpenNcThemeData _OpenNcThemeData = nullptr;
-fnCloseThemeData _CloseThemeData = nullptr;
-// Theming functions used by TGDarkMode
-fnBeginBufferedPaint _BeginBufferedPaint;
-fnBufferedPaintSetAlpha _BufferedPaintSetAlpha;
-fnDrawThemeBackground _DrawThemeBackground;
-fnEndBufferedPaint _EndBufferedPaint;
-fnGetThemeBackgroundContentRect _GetThemeBackgroundContentRect;
-fnGetThemeInt _GetThemeInt;
 // 1809 17763
 fnShouldAppsUseDarkMode _ShouldAppsUseDarkMode = nullptr;
 fnAllowDarkModeForWindow _AllowDarkModeForWindow = nullptr;
@@ -164,19 +153,7 @@ int InitDarkMode(void)
 		return 5;
 
 	// Standard theming functions (uxtheme)
-	_SetWindowTheme = reinterpret_cast<fnSetWindowTheme>(GetProcAddress(hUxtheme, "SetWindowTheme"));
-	_GetThemeColor = reinterpret_cast<fnGetThemeColor>(GetProcAddress(hUxtheme, "GetThemeColor"));
-	_OpenThemeData = reinterpret_cast<fnOpenThemeData>(GetProcAddress(hUxtheme, "OpenThemeData"));
 	_OpenNcThemeData = reinterpret_cast<fnOpenNcThemeData>(GetProcAddress(hUxtheme, MAKEINTRESOURCEA(49)));
-	_CloseThemeData = reinterpret_cast<fnCloseThemeData>(GetProcAddress(hUxtheme, "CloseThemeData"));
-
-	// Theming functions used by TGDarkMode
-	_BeginBufferedPaint = reinterpret_cast<fnBeginBufferedPaint>(GetProcAddress(hUxtheme, "BeginBufferedPaint"));
-	_BufferedPaintSetAlpha = reinterpret_cast<fnBufferedPaintSetAlpha>(GetProcAddress(hUxtheme, "BufferedPaintSetAlpha"));
-	_DrawThemeBackground = reinterpret_cast<fnDrawThemeBackground>(GetProcAddress(hUxtheme, "DrawThemeBackground"));
-	_EndBufferedPaint = reinterpret_cast<fnEndBufferedPaint>(GetProcAddress(hUxtheme, "EndBufferedPaint"));
-	_GetThemeBackgroundContentRect = reinterpret_cast<fnGetThemeBackgroundContentRect>(GetProcAddress(hUxtheme, "GetThemeBackgroundContentRect"));
-	_GetThemeInt = reinterpret_cast<fnGetThemeInt>(GetProcAddress(hUxtheme, "GetThemeInt"));
 
 	// 1809 17763
 	_ShouldAppsUseDarkMode = reinterpret_cast<fnShouldAppsUseDarkMode>(GetProcAddress(hUxtheme, MAKEINTRESOURCEA(132)));
@@ -196,16 +173,12 @@ int InitDarkMode(void)
 
 	_SetWindowCompositionAttribute = reinterpret_cast<fnSetWindowCompositionAttribute>(GetProcAddress(GetModuleHandleW(L"user32.dll"), "SetWindowCompositionAttribute"));
 
-	if (_SetWindowTheme && _GetThemeColor && _OpenThemeData && _OpenNcThemeData &&
-	    _CloseThemeData &&
+	if (_OpenNcThemeData &&
 	    // 1809 17763
 	    _ShouldAppsUseDarkMode && _AllowDarkModeForWindow &&
 	    (_AllowDarkModeForApp || _SetPreferredAppMode) &&
 	    //_FlushMenuThemes &&
-	    _RefreshImmersiveColorPolicyState && _IsDarkModeAllowedForWindow &&
-	    // Theming functions used by TGDarkMode
-	    _BeginBufferedPaint && _BufferedPaintSetAlpha && _DrawThemeBackground &&
-	    _EndBufferedPaint && _GetThemeBackgroundContentRect && _GetThemeInt)
+	    _RefreshImmersiveColorPolicyState && _IsDarkModeAllowedForWindow)
 	{
 		// Dark mode is supported.
 		g_darkModeSupported = true;
@@ -220,18 +193,7 @@ int InitDarkMode(void)
 	}
 
 	// Dark mode is not supported. NULL out all the function pointers.
-	_SetWindowTheme = nullptr;
-	_GetThemeColor = nullptr;
-	_OpenThemeData = nullptr;
 	_OpenNcThemeData = nullptr;
-	_CloseThemeData = nullptr;
-	// Theming functions used by TGDarkMode
-	_BeginBufferedPaint = nullptr;
-	_BufferedPaintSetAlpha = nullptr;
-	_DrawThemeBackground = nullptr;
-	_EndBufferedPaint = nullptr;
-	_GetThemeBackgroundContentRect = nullptr;
-	_GetThemeInt = nullptr;
 	// 1809 17763
 	_ShouldAppsUseDarkMode = nullptr;
 	_AllowDarkModeForWindow = nullptr;
