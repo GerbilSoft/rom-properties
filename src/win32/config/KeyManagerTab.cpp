@@ -1466,15 +1466,14 @@ void KeyManagerTabPrivate::loadImages(void)
 	assert(dpi != 0);
 
 	int iconSize_new;
-	if (dpi < 120) {
-		// [96,120) dpi: Use 16x16.
+	if (dpi <= 144) {
+		// [0,144] dpi: Use 16x16.
 		iconSize_new = 16;
-	} else if (dpi <= 144) {
-		// [120,144] dpi: Use 24x24.
-		// TODO: Maybe needs to be slightly higher?
+	} else if (dpi <= 192) {
+		// (144,192] dpi: Use 24x24.
 		iconSize_new = 24;
 	} else {
-		// >144dpi: Use 32x32.
+		// >192dpi: Use 32x32.
 		iconSize_new = 32;
 	}
 
