@@ -1,15 +1,23 @@
 // https://github.com/ysc3839/win32-darkmode
 
 #include "libwin32common/RpWin32_sdk.h"
+#include <tchar.h>
 
 #include "DarkMode.hpp"
 #include "IatHook.hpp"
 
+// C includes (C++ namespace)
+#include <cassert>
+
 typedef void (WINAPI *fnRtlGetNtVersionNumbers)(LPDWORD major, LPDWORD minor, LPDWORD build);
 
+// Functions added in Windows Vista
+typedef int (WINAPI *fnCompareStringOrdinal)(LPCWCH lpString1, int cchCount1, LPCWCH lpString2, int cchCount2, BOOL bIgnoreCase);
 // 1809 17763
 typedef HTHEME (WINAPI *fnOpenNcThemeData)(HWND hWnd, LPCWSTR pszClassList); // ordinal 49
 
+// Functions added in Windows Vista
+static fnCompareStringOrdinal _CompareStringOrdinal = nullptr;
 // Standard theming functions (uxtheme)
 fnSetWindowTheme _SetWindowTheme = nullptr;
 fnGetThemeColor _GetThemeColor = nullptr;
@@ -62,7 +70,8 @@ void RefreshTitleBarThemeColor(HWND hWnd)
 bool IsColorSchemeChangeMessage(LPARAM lParam)
 {
 	bool is = false;
-	if (lParam && CompareStringOrdinal(reinterpret_cast<LPCWCH>(lParam), -1, L"ImmersiveColorSet", -1, TRUE) == CSTR_EQUAL)
+	if (lParam && _CompareStringOrdinal != nullptr &&
+	    _CompareStringOrdinal(reinterpret_cast<LPCWCH>(lParam), -1, L"ImmersiveColorSet", -1, TRUE) == CSTR_EQUAL)
 	{
 		_RefreshImmersiveColorPolicyState();
 		is = true;
@@ -137,9 +146,22 @@ int InitDarkMode(void)
 		return 2;
 	}
 
-	HMODULE hUxtheme = LoadLibraryExW(L"uxtheme.dll", nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
-	if (!hUxtheme)
+	HMODULE hKernel32 = GetModuleHandle(_T("kernel32.dll"));
+	assert(hKernel32 != nullptr);
+	if (!hKernel32)
 		return 3;
+
+	// Functions added in Windows Vista
+	_CompareStringOrdinal = reinterpret_cast<fnCompareStringOrdinal>(GetProcAddress(hKernel32, "CompareStringOrdinal"));
+	if (!_CompareStringOrdinal) {
+		// If we don't even have a function from Vista,
+		// we definitely won't have any Dark Mode functions.
+		return 4;
+	}
+
+	HMODULE hUxtheme = LoadLibraryEx(_T("uxtheme.dll"), nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
+	if (!hUxtheme)
+		return 5;
 
 	// Standard theming functions (uxtheme)
 	_SetWindowTheme = reinterpret_cast<fnSetWindowTheme>(GetProcAddress(hUxtheme, "SetWindowTheme"));
@@ -223,5 +245,5 @@ int InitDarkMode(void)
 	_ShouldSystemUseDarkMode = nullptr;
 	_SetPreferredAppMode = nullptr;
 	FreeLibrary(hUxtheme);
-	return 4;
+	return 6;
 }
