@@ -55,6 +55,7 @@ using namespace LibRpTexture;
 // Dark Mode background brush
 // FIXME: Cannot access ConfigDialogPrivate member variants from subclassProc().
 static HBRUSH hbrBkgnd = nullptr;
+static bool lastDarkModeEnabled = false;
 
 class ConfigDialogPrivate
 {
@@ -427,10 +428,28 @@ LRESULT CALLBACK ConfigDialogPrivate::subclassProc(
 			break;
 
 		case WM_SETTINGCHANGE:
-			if (IsColorSchemeChangeMessage(lParam)) {
-				g_darkModeEnabled = _ShouldAppsUseDarkMode() && !IsHighContrast();
-				RefreshTitleBarThemeColor(hWnd);
-				SendMessageW(hWnd, WM_THEMECHANGED, 0, 0);
+			if (g_darkModeSupported && IsColorSchemeChangeMessage(lParam)) {
+				SendMessage(hWnd, WM_THEMECHANGED, 0, 0);
+			}
+			break;
+
+		case WM_THEMECHANGED:
+			if (g_darkModeSupported) {
+				UpdateDarkModeEnabled();
+				if (lastDarkModeEnabled != g_darkModeEnabled) {
+					lastDarkModeEnabled = g_darkModeEnabled;
+					RefreshTitleBarThemeColor(hWnd);
+					InvalidateRect(hWnd, NULL, true);
+
+					// Propagate WM_THEMECHANGED to all window controls.
+					SendMessage(GetDlgItem(hWnd, IDOK), WM_THEMECHANGED, 0, 0);
+					SendMessage(GetDlgItem(hWnd, IDCANCEL), WM_THEMECHANGED, 0, 0);
+					SendMessage(GetDlgItem(hWnd, IDC_APPLY_BUTTON), WM_THEMECHANGED, 0, 0);
+					SendMessage(GetDlgItem(hWnd, IDC_RP_RESET), WM_THEMECHANGED, 0, 0);
+					SendMessage(GetDlgItem(hWnd, IDC_RP_DEFAULTS), WM_THEMECHANGED, 0, 0);
+
+					// Each tab will receive WM_SETTINGCHANGE / WM_THEMECHANGED directly.
+				}
 			}
 			break;
 
@@ -517,6 +536,7 @@ int CALLBACK rp_show_config_dialog(
 
 	// Enable dark mode if it's available.
 	InitDarkMode();
+	lastDarkModeEnabled = g_darkModeEnabled;
 
 	ConfigDialog *cfg = new ConfigDialog();
 	INT_PTR ret = cfg->exec();

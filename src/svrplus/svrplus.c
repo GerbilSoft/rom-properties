@@ -140,6 +140,7 @@ static RECT rectStatus1_icon;
 
 // Dark Mode background brush
 static HBRUSH hbrBkgnd = NULL;
+static bool lastDarkModeEnabled = false;
 
 /**
  * Show a status message.
@@ -1013,13 +1014,17 @@ static INT_PTR CALLBACK DialogProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM l
 			break;
 
 		case WM_THEMECHANGED:
-			if (g_darkModeSupported && UpdateDarkModeEnabled()) {
-				RefreshTitleBarThemeColor(hDlg);
-				InvalidateRect(hDlg, NULL, true);
+			if (g_darkModeSupported) {
+				UpdateDarkModeEnabled();
+				if (lastDarkModeEnabled != g_darkModeEnabled) {
+					lastDarkModeEnabled = g_darkModeEnabled;
+					RefreshTitleBarThemeColor(hDlg);
+					InvalidateRect(hDlg, NULL, true);
 
-				// Propagate WM_THEMECHANGED to all window controls.
-				SendMessage(GetDlgItem(hDlg, IDC_BUTTON_UNINSTALL), WM_THEMECHANGED, 0, 0);
-				SendMessage(GetDlgItem(hDlg, IDC_BUTTON_INSTALL), WM_THEMECHANGED, 0, 0);
+					// Propagate WM_THEMECHANGED to all window controls.
+					SendMessage(GetDlgItem(hDlg, IDC_BUTTON_UNINSTALL), WM_THEMECHANGED, 0, 0);
+					SendMessage(GetDlgItem(hDlg, IDC_BUTTON_INSTALL), WM_THEMECHANGED, 0, 0);
+				}
 			}
 			break;
 
@@ -1215,6 +1220,7 @@ int CALLBACK _tWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstanc
 
 	// Enable dark mode if it's available.
 	InitDarkMode();
+	lastDarkModeEnabled = g_darkModeEnabled;
 
 	// Load the icon.
 	hIconDialog = (HICON)LoadImage(

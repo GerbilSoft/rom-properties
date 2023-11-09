@@ -146,13 +146,10 @@ int InitDarkMode(void);
 /**
  * Update g_darkModeEnabled.
  * Should be called from WM_THEMECHANGED.
- * @return True if g_darkModeEnabled has changed; false if it hasn't.
  */
-static inline bool UpdateDarkModeEnabled(void)
+static inline void UpdateDarkModeEnabled(void)
 {
-	const bool old_g_darkModeEnabled = g_darkModeEnabled;
 	g_darkModeEnabled = _ShouldAppsUseDarkMode() && !IsHighContrast();
-	return (old_g_darkModeEnabled != g_darkModeEnabled);
 }
 
 #ifdef __cplusplus

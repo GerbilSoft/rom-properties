@@ -149,6 +149,7 @@ public:
 public:
 	// Dark Mode background brush
 	HBRUSH hbrBkgnd;
+	bool lastDarkModeEnabled;
 };
 
 // Control base ID.
@@ -161,6 +162,7 @@ ImageTypesTabPrivate::ImageTypesTabPrivate()
 	, hWndPropSheet(nullptr)
 	, cboImageType_lastAdded(nullptr)
 	, hbrBkgnd(nullptr)
+	, lastDarkModeEnabled(false)
 {
 	// Clear the grid parameters.
 	pt_cboImageType.x = 0;
@@ -561,6 +563,7 @@ INT_PTR CALLBACK ImageTypesTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 
 			//  NOTE: This should be in WM_CREATE, but we don't receive WM_CREATE here.
 			DarkMode_InitDialog(hDlg);
+			d->lastDarkModeEnabled = g_darkModeEnabled;
 
 			// Initialize strings.
 			d->initStrings();
@@ -689,7 +692,33 @@ INT_PTR CALLBACK ImageTypesTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 
 		case WM_SETTINGCHANGE:
 			if (g_darkModeSupported && IsColorSchemeChangeMessage(lParam)) {
-				SendMessageW(hDlg, WM_THEMECHANGED, 0, 0);
+				SendMessage(hDlg, WM_THEMECHANGED, 0, 0);
+			}
+			break;
+
+		case WM_THEMECHANGED:
+			if (g_darkModeSupported) {
+				auto *const d = reinterpret_cast<ImageTypesTabPrivate*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
+				if (!d) {
+					// No ImageTypesTabPrivate. Can't do anything...
+					return FALSE;
+				}
+
+				UpdateDarkModeEnabled();
+				if (d->lastDarkModeEnabled != g_darkModeEnabled) {
+					d->lastDarkModeEnabled = g_darkModeEnabled;
+					InvalidateRect(hDlg, NULL, true);
+
+					// Propagate WM_THEMECHANGED to all window controls.
+					for (int sys = ImageTypesConfig::sysCount() - 1; sys >= 0; sys--) {
+						for (int imageType = ImageTypesConfig::imageTypeCount() - 1; imageType >= 0; imageType--) {
+							HWND hComboBox = GetDlgItem(hDlg, IDC_IMAGETYPES_CBOIMAGETYPE_BASE + sysAndImageTypeToCbid(sys, imageType));
+							if (hComboBox) {
+								SendMessage(hComboBox, WM_THEMECHANGED, 0, 0);
+							}
+						}
+					}
+				}
 			}
 			break;
 
