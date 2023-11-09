@@ -7,6 +7,7 @@
 
 #include "TGDarkMode.hpp"
 #include "DarkMode.hpp"
+#include "DarkModeCtrl.hpp"	// for dark mode colors
 
 #include <tchar.h>
 
@@ -41,11 +42,6 @@ using std::make_unique;
 #ifndef RECTHEIGHT
 #  define RECTHEIGHT(rc) ((rc).bottom - (rc).top)
 #endif
-
-// Dark Mode colors (TODO: Get from the OS?)
-static constexpr const COLORREF darkBkColor = 0x383838;
-static constexpr const COLORREF darkTextColor = 0xFFFFFF;
-static constexpr const COLORREF darkDisabledTextColor = 0x808080;	// TODO
 
 // DPI-aware functions.
 typedef UINT (WINAPI *fnGetDpiForWindow)(HWND hWnd);
@@ -412,19 +408,19 @@ LRESULT WINAPI TGDarkMode_ButtonSubclassProc(
 						if (hFontOld)
 							hFontOld = static_cast<HFONT>(SelectObject(hdcPaint, hFontOld));
 
-						::SetBkColor(hdcPaint, darkBkColor);
+						::SetBkColor(hdcPaint, g_darkBkColor);
 						::ExtTextOut(hdcPaint, 0, 0, ETO_OPAQUE, &rcClient, nullptr, 0, nullptr);
 
 						_BufferedPaintSetAlpha(hBufferedPaint, &ps.rcPaint, 0x00);
 
 						DTTOPTS DttOpts = { sizeof(DTTOPTS) };
 						DttOpts.dwFlags = DTT_COMPOSITED | DTT_GLOWSIZE;
-						DttOpts.crText = darkTextColor;
+						DttOpts.crText = g_darkTextColor;
 						DttOpts.iGlowSize = 12; // Default value
 
 						DetermineGlowSize(&DttOpts.iGlowSize);
 
-						COLORREF cr = darkBkColor;
+						COLORREF cr = g_darkBkColor;
 						GetEditBorderColor(hWnd, &cr);
 						cr |= 0xff000000;
 
@@ -449,13 +445,13 @@ LRESULT WINAPI TGDarkMode_ButtonSubclassProc(
 									rcDraw = rcClient;
 									rcDraw.left += iX;
 									DrawTextW(hdcPaint, szText, -1, &rcDraw, dwFlags | DT_CALCRECT);
-									::SetBkColor(hdcPaint, darkBkColor);
+									::SetBkColor(hdcPaint, g_darkBkColor);
 									::ExtTextOut(hdcPaint, 0, 0, ETO_OPAQUE, &rcDraw, nullptr, 0, nullptr);
 									++rcDraw.left;
 									++rcDraw.right;
 
 									SetBkMode(hdcPaint, TRANSPARENT);
-									SetTextColor(hdcPaint, darkTextColor);
+									SetTextColor(hdcPaint, g_darkTextColor);
 									DrawText(hdcPaint, szText, -1, &rcDraw, dwFlags);
 								}
 								LocalFree(szText);
@@ -482,7 +478,7 @@ LRESULT WINAPI TGDarkMode_ButtonSubclassProc(
 					params.dwFlags = BPPF_ERASE;
 					HPAINTBUFFER hBufferedPaint = _BeginBufferedPaint(hdc, &rcClient, BPBF_TOPDOWNDIB, &params, &hdcPaint);
 					if (hdcPaint && hBufferedPaint) {
-						::SetBkColor(hdcPaint, darkBkColor);
+						::SetBkColor(hdcPaint, g_darkBkColor);
 						::ExtTextOut(hdcPaint, 0, 0, ETO_OPAQUE, &rcClient, nullptr, 0, nullptr);
 
 						_BufferedPaintSetAlpha(hBufferedPaint, &ps.rcPaint, 0x00);
@@ -548,7 +544,7 @@ LRESULT WINAPI TGDarkMode_ButtonSubclassProc(
 
 						DTTOPTS DttOpts = { sizeof(DTTOPTS) };
 						DttOpts.dwFlags = DTT_COMPOSITED | DTT_GLOWSIZE;
-						DttOpts.crText = darkTextColor;
+						DttOpts.crText = g_darkTextColor;
 						DttOpts.iGlowSize = 12; // Default value
 
 						DetermineGlowSize(&DttOpts.iGlowSize);
@@ -597,9 +593,9 @@ LRESULT WINAPI TGDarkMode_ButtonSubclassProc(
 									}
 									SetBkMode(hdcPaint, TRANSPARENT);
 									if (dwStyle & WS_DISABLED)
-										SetTextColor(hdcPaint, darkDisabledTextColor);
+										SetTextColor(hdcPaint, g_darkDisabledTextColor);
 									else
-										SetTextColor(hdcPaint, darkTextColor);
+										SetTextColor(hdcPaint, g_darkTextColor);
 									DrawText(hdcPaint, szText, -1, &rc, dwFlags);
 
 									// draw the focus rectangle if neccessary:
@@ -684,10 +680,10 @@ LRESULT WINAPI TGDarkMode_ComboBoxSubclassProc(
 			auto pHbrBkgnd = reinterpret_cast<HBRUSH*>(dwRefData);
 			HDC hdc = reinterpret_cast<HDC>(wParam);
 			SetBkMode(hdc, TRANSPARENT);
-			SetTextColor(hdc, darkTextColor);
-			SetBkColor(hdc, darkBkColor);
+			SetTextColor(hdc, g_darkTextColor);
+			SetBkColor(hdc, g_darkBkColor);
 			if (!*pHbrBkgnd)
-				*pHbrBkgnd = CreateSolidBrush(darkBkColor);
+				*pHbrBkgnd = CreateSolidBrush(g_darkBkColor);
 			return reinterpret_cast<LRESULT>(*pHbrBkgnd);
 		}
 
@@ -707,9 +703,9 @@ LRESULT WINAPI TGDarkMode_ComboBoxSubclassProc(
 			if (SendMessage(cwnd, CBEM_GETITEM, 0, reinterpret_cast<LPARAM>(&cbi))) {
 				rc.left += (cbi.iIndent * 10);
 				if (pDIS->itemState & LVIS_FOCUSED)
-					::SetBkColor(hDC, darkDisabledTextColor);
+					::SetBkColor(hDC, g_darkDisabledTextColor);
 				else
-					::SetBkColor(hDC, darkBkColor);
+					::SetBkColor(hDC, g_darkBkColor);
 				::ExtTextOut(hDC, 0, 0, ETO_OPAQUE, &rc, nullptr, 0, nullptr);
 
 				if (cbi.mask & CBEIF_IMAGE) {
@@ -723,7 +719,7 @@ LRESULT WINAPI TGDarkMode_ComboBoxSubclassProc(
 					}
 				}
 
-				SetTextColor(pDIS->hDC, darkTextColor);
+				SetTextColor(pDIS->hDC, g_darkTextColor);
 				SetBkMode(hDC, TRANSPARENT);
 				DrawText(hDC, cbi.pszText, -1, &rc, DT_SINGLELINE | DT_VCENTER | DT_NOPREFIX | DT_END_ELLIPSIS);
 				return TRUE;

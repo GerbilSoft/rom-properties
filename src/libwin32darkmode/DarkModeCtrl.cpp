@@ -16,10 +16,6 @@
 #  define unlikely(x)	(x)
 #endif
 
-// Dark Mode colors (TODO: Get from the OS?)
-static constexpr const COLORREF darkBkColor = 0x383838;
-static constexpr const COLORREF darkTextColor = 0xFFFFFF;
-
 // Dark background color brush
 // Used by the ComboBox(Ex) subclass.
 // NOTE: Not destroyed on exit?
@@ -172,8 +168,8 @@ void DarkMode_InitRichEdit(HWND hWnd)
 	format.dwMask = CFM_COLOR | CFM_BACKCOLOR;
 
 	if (g_darkModeEnabled) {
-		format.crTextColor = darkTextColor;	// FIXME: Not working on Win10 21H2.
-		format.crBackColor = darkBkColor;
+		format.crTextColor = g_darkTextColor;	// FIXME: Not working on Win10 21H2.
+		format.crBackColor = g_darkBkColor;
 		SendMessage(hWnd, EM_SETCHARFORMAT, SCF_ALL, reinterpret_cast<LPARAM>(&format));
 		SendMessage(hWnd, EM_SETBKGNDCOLOR, 0, static_cast<LPARAM>(format.crBackColor));
 	} else {

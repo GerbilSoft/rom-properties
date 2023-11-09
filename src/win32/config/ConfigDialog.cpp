@@ -52,9 +52,7 @@ using namespace LibRpTexture;
 #include "libwin32darkmode/DarkMode.hpp"
 #include "libwin32darkmode/DarkModeCtrl.hpp"
 
-// Dark Mode colors (TODO: Get from the OS?)
-static constexpr COLORREF darkBkColor = 0x383838;
-static constexpr COLORREF darkTextColor = 0xFFFFFF;
+// Dark Mode background brush
 // FIXME: Cannot access ConfigDialogPrivate member variants from subclassProc().
 static HBRUSH hbrBkgnd = nullptr;
 
@@ -419,10 +417,10 @@ LRESULT CALLBACK ConfigDialogPrivate::subclassProc(
 		case WM_CTLCOLORSTATIC:
 			if (g_darkModeSupported && g_darkModeEnabled) {
 				HDC hdc = reinterpret_cast<HDC>(wParam);
-				SetTextColor(hdc, darkTextColor);
-				SetBkColor(hdc, darkBkColor);
+				SetTextColor(hdc, g_darkTextColor);
+				SetBkColor(hdc, g_darkBkColor);
 				if (!hbrBkgnd) {
-					hbrBkgnd = CreateSolidBrush(darkBkColor);
+					hbrBkgnd = CreateSolidBrush(g_darkBkColor);
 				}
 				return reinterpret_cast<INT_PTR>(hbrBkgnd);
 			}

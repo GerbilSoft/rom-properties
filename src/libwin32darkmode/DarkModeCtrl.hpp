@@ -8,6 +8,11 @@
 extern "C" {
 #endif
 
+// Dark mode colors (TODO: Get from the OS?)
+static const COLORREF g_darkBkColor = 0x383838;
+static const COLORREF g_darkTextColor = 0xFFFFFF;
+static const COLORREF g_darkDisabledTextColor = 0x808080;	// TODO: Improve this.
+
 /**
  * Initialize dark mode for a Dialog control.
  * If top-level, the title bar will be initialized as well.

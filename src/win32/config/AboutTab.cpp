@@ -231,9 +231,7 @@ public:
 	void initDialog(void);
 
 public:
-	// Dark Mode colors (TODO: Get from the OS?)
-	static constexpr COLORREF darkBkColor = 0x383838;
-	static constexpr COLORREF darkTextColor = 0xFFFFFF;
+	// Dark Mode background brush
 	HBRUSH hbrBkgnd;
 };
 
@@ -436,10 +434,10 @@ INT_PTR CALLBACK AboutTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, L
 				}
 
 				HDC hdc = reinterpret_cast<HDC>(wParam);
-				SetTextColor(hdc, darkTextColor);
-				SetBkColor(hdc, darkBkColor);
+				SetTextColor(hdc, g_darkTextColor);
+				SetBkColor(hdc, g_darkBkColor);
 				if (!d->hbrBkgnd) {
-					d->hbrBkgnd = CreateSolidBrush(darkBkColor);
+					d->hbrBkgnd = CreateSolidBrush(g_darkBkColor);
 				}
 				return reinterpret_cast<INT_PTR>(d->hbrBkgnd);
 			}

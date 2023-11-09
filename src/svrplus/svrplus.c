@@ -138,9 +138,7 @@ static HICON hIconInfo = NULL;		// USER32.dll,-104
 static RECT rectStatus1_noIcon;
 static RECT rectStatus1_icon;
 
-// Dark Mode colors (TODO: Get from the OS?)
-static const COLORREF darkBkColor = 0x383838;
-static const COLORREF darkTextColor = 0xFFFFFF;
+// Dark Mode background brush
 static HBRUSH hbrBkgnd = NULL;
 
 /**
@@ -996,10 +994,10 @@ static INT_PTR CALLBACK DialogProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM l
 		case WM_CTLCOLORSTATIC:
 			if (g_darkModeSupported && g_darkModeEnabled) {
 				HDC hdc = (HDC)wParam;
-				SetTextColor(hdc, darkTextColor);
-				SetBkColor(hdc, darkBkColor);
+				SetTextColor(hdc, g_darkTextColor);
+				SetBkColor(hdc, g_darkBkColor);
 				if (!hbrBkgnd) {
-					hbrBkgnd = CreateSolidBrush(darkBkColor);
+					hbrBkgnd = CreateSolidBrush(g_darkBkColor);
 				}
 				return (INT_PTR)hbrBkgnd;
 			}
