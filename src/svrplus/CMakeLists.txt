@@ -52,7 +52,7 @@ IF(MSVC)
 	# Delay-load gdiplus.dll and uxtheme.dll.
 	SET(CMAKE_EXE_LINKER_FLAGS_DEBUG	"${CMAKE_EXE_LINKER_FLAGS_DEBUG} /DELAYLOAD:gdiplus.dll /DELAYLOAD:uxtheme.dll")
 	SET(CMAKE_EXE_LINKER_FLAGS_RELEASE	"${CMAKE_EXE_LINKER_FLAGS_RELEASE} /DELAYLOAD:gdiplus.dll /DELAYLOAD:uxtheme.dll")
-ENDIF(RP_LIBROMDATA_IS_DLL AND MSVC)
+ENDIF(MSVC)
 
 # Make sure git_version.h is created before compiling this target.
 IF(TARGET git_version)
