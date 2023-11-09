@@ -172,7 +172,7 @@ void DarkMode_InitRichEdit(HWND hWnd)
 	format.dwMask = CFM_COLOR | CFM_BACKCOLOR;
 
 	if (g_darkModeEnabled) {
-		format.crTextColor = darkTextColor;
+		format.crTextColor = darkTextColor;	// FIXME: Not working on Win10 21H2.
 		format.crBackColor = darkBkColor;
 		SendMessage(hWnd, EM_SETCHARFORMAT, SCF_ALL, reinterpret_cast<LPARAM>(&format));
 		SendMessage(hWnd, EM_SETBKGNDCOLOR, 0, static_cast<LPARAM>(format.crBackColor));

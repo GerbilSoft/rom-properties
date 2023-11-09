@@ -4,28 +4,28 @@
 // for HTHEME
 #include <uxtheme.h>
 
+// for bool in C (FIXME: Functions are probably returning HRESULT...)
+#include "stdboolx.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-enum IMMERSIVE_HC_CACHE_MODE
-{
+typedef enum {
 	IHCM_USE_CACHED_VALUE,
 	IHCM_REFRESH
-};
+} IMMERSIVE_HC_CACHE_MODE;
 
 // 1903 18362
-enum PreferredAppMode
-{
+typedef enum {
 	Default,
 	AllowDark,
 	ForceDark,
 	ForceLight,
 	Max
-};
+} PreferredAppMode;
 
-enum WINDOWCOMPOSITIONATTRIB
-{
+typedef enum {
 	WCA_UNDEFINED = 0,
 	WCA_NCRENDERING_ENABLED = 1,
 	WCA_NCRENDERING_POLICY = 2,
@@ -54,14 +54,13 @@ enum WINDOWCOMPOSITIONATTRIB
 	WCA_PASSIVEUPDATEMODE = 25,
 	WCA_USEDARKMODECOLORS = 26,
 	WCA_LAST = 27
-};
+} WINDOWCOMPOSITIONATTRIB;
 
-struct WINDOWCOMPOSITIONATTRIBDATA
-{
+typedef struct _WINDOWCOMPOSITIONATTRIBDATA {
 	WINDOWCOMPOSITIONATTRIB Attrib;
 	PVOID pvData;
 	SIZE_T cbData;
-};
+} WINDOWCOMPOSITIONATTRIBDATA;
 
 // Standard theming functions (uxtheme)
 typedef HRESULT (WINAPI *fnSetWindowTheme)(HWND hWnd, LPCWSTR pszSubAppName, LPCWSTR pszSubIdList);

@@ -29,7 +29,7 @@ void DarkMode_InitRichEdit(HWND hWnd);
 static inline void DarkMode_Init##ControlName##_Dlg(HWND hDlg, WORD id) \
 { \
 	HWND hWnd = GetDlgItem(hDlg, id); \
-	assert(hWnd != nullptr); \
+	assert(hWnd); \
 	DarkMode_Init##ControlName(hWnd); \
 }
 

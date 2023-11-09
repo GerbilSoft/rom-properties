@@ -86,7 +86,7 @@ PIMAGE_THUNK_DATA FindIatThunkInModule(void *moduleBase, const char *dllName, co
 	auto imports = DataDirectoryFromModuleBase<PIMAGE_IMPORT_DESCRIPTOR>(moduleBase, IMAGE_DIRECTORY_ENTRY_IMPORT);
 	for (; imports->Name; ++imports)
 	{
-		if (_stricmp(RVA2VA<LPCSTR>(moduleBase, imports->Name), dllName) != 0)
+		if (lstrcmpiA(RVA2VA<LPCSTR>(moduleBase, imports->Name), dllName) != 0)
 			continue;
 
 		auto origThunk = RVA2VA<PIMAGE_THUNK_DATA>(moduleBase, imports->OriginalFirstThunk);
@@ -101,7 +101,7 @@ PIMAGE_THUNK_DATA FindDelayLoadThunkInModule(void *moduleBase, const char *dllNa
 	auto imports = DataDirectoryFromModuleBase<PIMAGE_DELAYLOAD_DESCRIPTOR>(moduleBase, IMAGE_DIRECTORY_ENTRY_DELAY_IMPORT);
 	for (; imports->DllNameRVA; ++imports)
 	{
-		if (_stricmp(RVA2VA<LPCSTR>(moduleBase, imports->DllNameRVA), dllName) != 0)
+		if (lstrcmpiA(RVA2VA<LPCSTR>(moduleBase, imports->DllNameRVA), dllName) != 0)
 			continue;
 
 		auto impName = RVA2VA<PIMAGE_THUNK_DATA>(moduleBase, imports->ImportNameTableRVA);
@@ -116,7 +116,7 @@ PIMAGE_THUNK_DATA FindDelayLoadThunkInModule(void *moduleBase, const char *dllNa
 	auto imports = DataDirectoryFromModuleBase<PIMAGE_DELAYLOAD_DESCRIPTOR>(moduleBase, IMAGE_DIRECTORY_ENTRY_DELAY_IMPORT);
 	for (; imports->DllNameRVA; ++imports)
 	{
-		if (_stricmp(RVA2VA<LPCSTR>(moduleBase, imports->DllNameRVA), dllName) != 0)
+		if (lstrcmpiA(RVA2VA<LPCSTR>(moduleBase, imports->DllNameRVA), dllName) != 0)
 			continue;
 
 		auto impName = RVA2VA<PIMAGE_THUNK_DATA>(moduleBase, imports->ImportNameTableRVA);

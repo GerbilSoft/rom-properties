@@ -27,6 +27,10 @@
 #include "libwin32common/rp_versionhelpers.h"
 #include "tcharx.h"
 
+// Win32 dark mode
+#include "libwin32darkmode/DarkMode.hpp"
+#include "libwin32darkmode/DarkModeCtrl.hpp"
+
 // librpsecure
 #include "librpsecure/os-secure.h"
 #include "librpsecure/restrict-dll.h"
@@ -133,6 +137,11 @@ static HICON hIconInfo = NULL;		// USER32.dll,-104
 // IDC_STATIC_STATUS1 rectangles with and without the exclamation point icon.
 static RECT rectStatus1_noIcon;
 static RECT rectStatus1_icon;
+
+// Dark Mode colors (TODO: Get from the OS?)
+static const COLORREF darkBkColor = 0x383838;
+static const COLORREF darkTextColor = 0xFFFFFF;
+static HBRUSH hbrBkgnd = NULL;
 
 /**
  * Show a status message.
@@ -672,6 +681,12 @@ static void InitDialog(HWND hDlg)
 
 	static_assert(ARRAY_SIZE(g_archs) == ARRAY_SIZE(bHasMsvcForArch), "bHasMsvcForArch[] is out of sync with g_archs[]!");
 
+	// Set window themes for Win10's dark mode.
+	if (g_darkModeSupported) {
+		DarkMode_InitButton_Dlg(hDlg, IDC_BUTTON_UNINSTALL);
+		DarkMode_InitButton_Dlg(hDlg, IDC_BUTTON_INSTALL);
+	}
+
 	// Clear the lines.
 	line1[0] = _T('\0');
 	line2[0] = _T('\0');
@@ -975,6 +990,27 @@ static INT_PTR CALLBACK DialogProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM l
 			}
 			return TRUE;
 
+		/** Dark Mode **/
+
+		case WM_CTLCOLORDLG:
+		case WM_CTLCOLORSTATIC:
+			if (g_darkModeSupported && g_darkModeEnabled) {
+				HDC hdc = (HDC)wParam;
+				SetTextColor(hdc, darkTextColor);
+				SetBkColor(hdc, darkBkColor);
+				if (!hbrBkgnd) {
+					hbrBkgnd = CreateSolidBrush(darkBkColor);
+				}
+				return (INT_PTR)hbrBkgnd;
+			}
+			break;
+
+		case WM_SETTINGCHANGE:
+			if (g_darkModeSupported && IsColorSchemeChangeMessage(lParam)) {
+				SendMessageW(hDlg, WM_THEMECHANGED, 0, 0);
+			}
+			break;
+
 		default:
 			break;
 	}
@@ -1165,6 +1201,9 @@ int CALLBACK _tWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstanc
 		return EXIT_FAILURE;
 	}
 
+	// Enable dark mode if it's available.
+	InitDarkMode();
+
 	// Load the icon.
 	hIconDialog = (HICON)LoadImage(
 		hInstance, MAKEINTRESOURCE(IDI_SVRPLUS), IMAGE_ICON,
@@ -1185,6 +1224,11 @@ int CALLBACK _tWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstanc
 	}
 	if (hIconDialogSmall) {
 		DestroyIcon(hIconDialogSmall);
+	}
+
+	// Delete the dark mode brush if it was allocated.
+	if (hbrBkgnd) {
+		DeleteBrush(hbrBkgnd);
 	}
 
 	CloseHandle(g_hSingleInstanceMutex);
