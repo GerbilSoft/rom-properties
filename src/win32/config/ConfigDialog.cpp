@@ -441,7 +441,8 @@ LRESULT CALLBACK ConfigDialogPrivate::subclassProc(
 					RefreshTitleBarThemeColor(hWnd);
 					InvalidateRect(hWnd, NULL, true);
 
-					// Propagate WM_THEMECHANGED to all window controls.
+					// Propagate WM_THEMECHANGED to window controls that don't
+					// automatically handle Dark Mode changes, e.g. ComboBox and Button.
 					SendMessage(GetDlgItem(hWnd, IDOK), WM_THEMECHANGED, 0, 0);
 					SendMessage(GetDlgItem(hWnd, IDCANCEL), WM_THEMECHANGED, 0, 0);
 					SendMessage(GetDlgItem(hWnd, IDC_APPLY_BUTTON), WM_THEMECHANGED, 0, 0);

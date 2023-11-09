@@ -1021,7 +1021,8 @@ static INT_PTR CALLBACK DialogProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM l
 					RefreshTitleBarThemeColor(hDlg);
 					InvalidateRect(hDlg, NULL, true);
 
-					// Propagate WM_THEMECHANGED to all window controls.
+					// Propagate WM_THEMECHANGED to window controls that don't
+					// automatically handle Dark Mode changes, e.g. ComboBox and Button.
 					SendMessage(GetDlgItem(hDlg, IDC_BUTTON_UNINSTALL), WM_THEMECHANGED, 0, 0);
 					SendMessage(GetDlgItem(hDlg, IDC_BUTTON_INSTALL), WM_THEMECHANGED, 0, 0);
 				}

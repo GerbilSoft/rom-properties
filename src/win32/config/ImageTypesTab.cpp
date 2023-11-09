@@ -709,7 +709,8 @@ INT_PTR CALLBACK ImageTypesTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 					d->lastDarkModeEnabled = g_darkModeEnabled;
 					InvalidateRect(hDlg, NULL, true);
 
-					// Propagate WM_THEMECHANGED to all window controls.
+					// Propagate WM_THEMECHANGED to window controls that don't
+					// automatically handle Dark Mode changes, e.g. ComboBox and Button.
 					for (int sys = ImageTypesConfig::sysCount() - 1; sys >= 0; sys--) {
 						for (int imageType = ImageTypesConfig::imageTypeCount() - 1; imageType >= 0; imageType--) {
 							HWND hComboBox = GetDlgItem(hDlg, IDC_IMAGETYPES_CBOIMAGETYPE_BASE + sysAndImageTypeToCbid(sys, imageType));

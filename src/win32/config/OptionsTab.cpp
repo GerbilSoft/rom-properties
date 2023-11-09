@@ -128,6 +128,7 @@ public:
 public:
 	// Dark Mode background brush
 	HBRUSH hbrBkgnd;
+	bool lastDarkModeEnabled;
 };
 
 /** OptionsTabPrivate **/
@@ -144,6 +145,7 @@ OptionsTabPrivate::OptionsTabPrivate()
 	, hWndPropSheet(nullptr)
 	, changed(false)
 	, hbrBkgnd(nullptr)
+	, lastDarkModeEnabled(false)
 {}
 
 OptionsTabPrivate::~OptionsTabPrivate()
@@ -414,6 +416,7 @@ INT_PTR CALLBACK OptionsTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam,
 
 			//  NOTE: This should be in WM_CREATE, but we don't receive WM_CREATE here.
 			DarkMode_InitDialog(hDlg);
+			d->lastDarkModeEnabled = g_darkModeEnabled;
 
 			// Populate the combo boxes.
 			const tstring s_dl_None = U82T_c(C_("OptionsTab", "Don't download any images"));
@@ -558,7 +561,36 @@ INT_PTR CALLBACK OptionsTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam,
 
 		case WM_SETTINGCHANGE:
 			if (g_darkModeSupported && IsColorSchemeChangeMessage(lParam)) {
-				SendMessageW(hDlg, WM_THEMECHANGED, 0, 0);
+				SendMessage(hDlg, WM_THEMECHANGED, 0, 0);
+			}
+			break;
+
+		case WM_THEMECHANGED:
+			if (g_darkModeSupported) {
+				auto *const d = reinterpret_cast<OptionsTabPrivate*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
+				if (!d) {
+					// No OptionsTabPrivate. Can't do anything...
+					return FALSE;
+				}
+
+				UpdateDarkModeEnabled();
+				if (d->lastDarkModeEnabled != g_darkModeEnabled) {
+					d->lastDarkModeEnabled = g_darkModeEnabled;
+					InvalidateRect(hDlg, NULL, true);
+
+					// Propagate WM_THEMECHANGED to window controls that don't
+					// automatically handle Dark Mode changes, e.g. ComboBox and Button.
+					SendMessage(GetDlgItem(hDlg, IDC_OPTIONS_CBO_UNMETERED_DL), WM_THEMECHANGED, 0, 0);
+					SendMessage(GetDlgItem(hDlg, IDC_OPTIONS_CBO_METERED_DL), WM_THEMECHANGED, 0, 0);
+
+					// ComboBoxEx needs extra handling.
+					// TODO: Move this to LanguageComboBox's window procedure?
+					HWND cboGameTDBPAL = GetDlgItem(hDlg, IDC_OPTIONS_PALLANGUAGEFORGAMETDB);
+					assert(cboGameTDBPAL != nullptr);
+					SendMessage(cboGameTDBPAL, WM_THEMECHANGED, 0, 0);
+					HWND hCombo = reinterpret_cast<HWND>(SendMessage(cboGameTDBPAL, CBEM_GETCOMBOCONTROL, 0, 0));
+					SendMessage(hCombo, WM_THEMECHANGED, 0, 0);
+				}
 			}
 			break;
 

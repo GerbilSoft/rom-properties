@@ -81,6 +81,7 @@ public:
 public:
 	// Dark Mode background brush
 	HBRUSH hbrBkgnd;
+	bool lastDarkModeEnabled;
 };
 
 /** SystemsTabPrivate **/
@@ -90,6 +91,7 @@ SystemsTabPrivate::SystemsTabPrivate()
 	, hWndPropSheet(nullptr)
 	, changed(false)
 	, hbrBkgnd(nullptr)
+	, lastDarkModeEnabled(false)
 {}
 
 SystemsTabPrivate::~SystemsTabPrivate()
@@ -258,6 +260,7 @@ INT_PTR CALLBACK SystemsTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam,
 
 			//  NOTE: This should be in WM_CREATE, but we don't receive WM_CREATE here.
 			DarkMode_InitDialog(hDlg);
+			d->lastDarkModeEnabled = g_darkModeEnabled;
 
 			// Populate the combo boxes.
 			HWND hwndDmgTs = GetDlgItem(hDlg, IDC_SYSTEMS_DMGTS_DMG);
@@ -377,7 +380,29 @@ INT_PTR CALLBACK SystemsTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam,
 
 		case WM_SETTINGCHANGE:
 			if (g_darkModeSupported && IsColorSchemeChangeMessage(lParam)) {
-				SendMessageW(hDlg, WM_THEMECHANGED, 0, 0);
+				SendMessage(hDlg, WM_THEMECHANGED, 0, 0);
+			}
+			break;
+
+		case WM_THEMECHANGED:
+			if (g_darkModeSupported) {
+				auto *const d = reinterpret_cast<SystemsTabPrivate*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
+				if (!d) {
+					// No SystemsTabPrivate. Can't do anything...
+					return FALSE;
+				}
+
+				UpdateDarkModeEnabled();
+				if (d->lastDarkModeEnabled != g_darkModeEnabled) {
+					d->lastDarkModeEnabled = g_darkModeEnabled;
+					InvalidateRect(hDlg, NULL, true);
+
+					// Propagate WM_THEMECHANGED to window controls that don't
+					// automatically handle Dark Mode changes, e.g. ComboBox and Button.
+					SendMessage(GetDlgItem(hDlg, IDC_SYSTEMS_DMGTS_DMG), WM_THEMECHANGED, 0, 0);
+					SendMessage(GetDlgItem(hDlg, IDC_SYSTEMS_DMGTS_SGB), WM_THEMECHANGED, 0, 0);
+					SendMessage(GetDlgItem(hDlg, IDC_SYSTEMS_DMGTS_CGB), WM_THEMECHANGED, 0, 0);
+				}
 			}
 			break;
 
