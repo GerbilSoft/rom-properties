@@ -25,6 +25,9 @@ namespace Gdiplus {
 }
 #include <gdiplus.h>
 
+// for IsThemeActive()
+#include <uxtheme.h>
+
 class DragImageLabelPrivate
 {
 public:
@@ -213,7 +216,7 @@ bool DragImageLabelPrivate::updateBitmaps(void)
 	// - http://www.codeproject.com/Articles/5978/Correctly-drawn-themed-dialogs-in-WinXP
 	// - https://docs.microsoft.com/en-us/archive/blogs/dsui_team/using-theme-apis-to-draw-the-border-of-a-control
 	// - https://docs.microsoft.com/en-us/archive/blogs/pareshj/draw-the-background-of-static-control-with-gradient-fill-when-theme-is-enabled
-	const int colorIndex = LibWin32UI::isThemeActive()
+	const int colorIndex = IsThemeActive()
 		? COLOR_WINDOW	// active theme
 		: COLOR_3DFACE;	// no theme
 	const Gdiplus::ARGB gdipBgColor = LibWin32UI::GetSysColor_ARGB32(colorIndex);

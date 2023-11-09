@@ -204,37 +204,6 @@ COLORREF ListView_GetBkColor_AltRow(HWND hListView)
 }
 
 /**
- * IsThemeActive() [wrapper function for uxtheme.dll!IsThemeActive]
- * @return True if a theme is active; false if not.
- */
-bool isThemeActive(void)
-{
-	// NOTE: isThemeActive() is rarely used.
-	// (only by DragImageLabel)
-	// Hence, we're not going to cache the module handle.
-
-	// uxtheme.dll!IsThemeActive
-	typedef BOOL (STDAPICALLTYPE* PFNISTHEMEACTIVE)(void);
-
-	HMODULE hUxTheme_dll = LoadLibraryEx(_T("uxtheme.dll"), nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
-	assert(hUxTheme_dll != nullptr);
-	if (!hUxTheme_dll)
-		return false;
-
-	PFNISTHEMEACTIVE pfnIsThemeActive =
-		reinterpret_cast<PFNISTHEMEACTIVE>(GetProcAddress(hUxTheme_dll, "IsThemeActive"));
-	assert(pfnIsThemeActive != nullptr);
-	if (!pfnIsThemeActive) {
-		FreeLibrary(hUxTheme_dll);
-		return false;
-	}
-
-	const bool bRet = !!pfnIsThemeActive();
-	FreeLibrary(hUxTheme_dll);
-	return bRet;
-}
-
-/**
  * Are we using COMCTL32.DLL v6.10 or later?
  * @return True if it's v6.10 or later; false if not.
  */

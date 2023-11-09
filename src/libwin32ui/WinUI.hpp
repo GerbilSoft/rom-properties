@@ -119,12 +119,6 @@ static inline uint32_t GetSysColor_ARGB32(int nIndex)
 }
 
 /**
- * IsThemeActive() [wrapper function for uxtheme.dll!IsThemeActive]
- * @return True if a theme is active; false if not.
- */
-bool isThemeActive(void);
-
-/**
  * Are we using COMCTL32.DLL v6.10 or later?
  * @return True if it's v6.10 or later; false if not.
  */
