@@ -71,6 +71,7 @@ public:
 
 	// Alternate row color.
 	COLORREF colorAltRow;
+	HBRUSH hbrAltRow;
 
 public:
 	/**
@@ -88,7 +89,7 @@ public:
 	 * @param plvcd	[in/out] NMLVCUSTOMDRAW
 	 * @return Return value.
 	 */
-	int ListView_CustomDraw(NMLVCUSTOMDRAW *plvcd) const;
+	inline int ListView_CustomDraw(NMLVCUSTOMDRAW *plvcd);
 
 	/**
 	 * Reset the configuration.
@@ -108,6 +109,7 @@ AchievementsTabPrivate::AchievementsTabPrivate()
 	, hWndPropSheet(nullptr)
 	, himglAch(nullptr)
 	, colorAltRow(0)
+	, hbrAltRow(nullptr)
 	, hbrBkgnd(nullptr)
 	, lastDarkModeEnabled(false)
 {}
@@ -116,6 +118,9 @@ AchievementsTabPrivate::~AchievementsTabPrivate()
 {
 	if (himglAch) {
 		ImageList_Destroy(himglAch);
+	}
+	if (hbrAltRow) {
+		DeleteBrush(hbrAltRow);
 	}
 
 	// Dark mode background brush
@@ -314,6 +319,10 @@ void AchievementsTabPrivate::updateListViewStyle(void)
 	const COLORREF colorAltRow = LibWin32UI::ListView_GetBkColor_AltRow(hListView);
 	if (colorAltRow != this->colorAltRow) {
 		this->colorAltRow = colorAltRow;
+		if (hbrAltRow) {
+			DeleteBrush(hbrAltRow);
+			hbrAltRow = nullptr;
+		}
 		updateImageList();
 	}
 }
@@ -370,30 +379,9 @@ void AchievementsTabPrivate::updateImageList(void)
 		HBITMAP hbmIcon = achSpriteSheet.getIcon(id, !unlocked, dpi);
 		assert(hbmIcon != nullptr);
 
-		// FIXME: Handle highlighting of alpha-transparent areas correctly.
-		bool bIconWasAdded = false;
-		if (hbmIcon) {
-			HICON hIcon = RpImageWin32::toHICON(hbmIcon);
-			assert(hIcon != nullptr);
-			if (hIcon) {
-				ImageList_AddIcon(himglAch, hIcon);
-				DestroyIcon(hIcon);
-				bIconWasAdded = true;
-			}
-			DeleteBitmap(hbmIcon);
-		}
-		if (!bIconWasAdded) {
-			// Add an empty icon.
-			const size_t icon_byte_count = iconSize * iconSize * sizeof(uint32_t);
-			unique_ptr<uint8_t[]> iconData(new uint8_t[icon_byte_count * 2]);
-			memset(&iconData[0], 0xFF, icon_byte_count);
-			memset(&iconData[icon_byte_count], 0xFF, icon_byte_count);
-			HICON hIcon = CreateIcon(HINST_THISCOMPONENT, iconSize, iconSize, 1, 1,
-				&iconData[0], &iconData[icon_byte_count]);
-			assert(hIcon != nullptr);
-			ImageList_AddIcon(himglAch, hIcon);
-			DestroyIcon(hIcon);
-		}
+		// Add the bitmap to the ImageList. (no mask needed)
+		ImageList_Add(himglAch, hbmIcon, nullptr);
+		DeleteBitmap(hbmIcon);
 	}
 
 	// NOTE: ListView uses LVSIL_SMALL for LVS_REPORT.
@@ -407,7 +395,7 @@ void AchievementsTabPrivate::updateImageList(void)
  * @param plvcd	[in/out] NMLVCUSTOMDRAW
  * @return Return value.
  */
-int AchievementsTabPrivate::ListView_CustomDraw(NMLVCUSTOMDRAW *plvcd) const
+inline int AchievementsTabPrivate::ListView_CustomDraw(NMLVCUSTOMDRAW *plvcd)
 {
 	int result = CDRF_DODEFAULT;
 	switch (plvcd->nmcd.dwDrawStage) {
@@ -425,7 +413,39 @@ int AchievementsTabPrivate::ListView_CustomDraw(NMLVCUSTOMDRAW *plvcd) const
 				// - Standard row colors are 19px high.
 				// - Alternate row colors are 17px high. (top and bottom lines ignored?)
 				plvcd->clrTextBk = colorAltRow;
-				result = CDRF_NEWFONT;
+				result = CDRF_NOTIFYSUBITEMDRAW | CDRF_NEWFONT;
+			}
+			break;
+
+		case CDDS_SUBITEM | CDDS_ITEMPREPAINT:
+			// Leave the background color as-is, except for unselected alternate rows.
+			// This allows for proper icon transparency on Win10 (1809, 21H2).
+			// Still doesn't work on Windows 7, though...
+			if (plvcd->iSubItem == 0 && plvcd->nmcd.dwItemSpec % 2 != 0) {
+				// NOTE: We need to draw the background color if not highlighted or selected.
+				// NOTE 2: Need to check highlighted row ID because uItemState
+				// will be 0 if the user mouses over another column on the same row.
+				if (plvcd->nmcd.uItemState == 0 &&
+				    ListView_GetHotItem(plvcd->nmcd.hdr.hwndFrom) != plvcd->nmcd.dwItemSpec)
+				{
+					if (!hbrAltRow) {
+						hbrAltRow = CreateSolidBrush(colorAltRow);
+					}
+
+					// FIXME: On Win10 21H2, plvcd->nmcd.rc leaves a small border
+					// on the left side of the icon for subitem 0.
+					// On Windows XP: plvcd->nmcd.rc isn't initialized.
+					// Get the subitem RECT manually.
+					// TODO: Increase row height, or decrease icon size?
+					// The icon is slightly too big for the default row
+					// height on XP.
+					RECT rectSubItem;
+					BOOL bRet = ListView_GetSubItemRect(plvcd->nmcd.hdr.hwndFrom,
+						(int)plvcd->nmcd.dwItemSpec, plvcd->iSubItem, LVIR_BOUNDS, &rectSubItem);
+					if (bRet) {
+						FillRect(plvcd->nmcd.hdc, &rectSubItem, hbrAltRow);
+					}
+				}
 			}
 			break;
 
