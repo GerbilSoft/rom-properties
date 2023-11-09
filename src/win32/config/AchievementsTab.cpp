@@ -98,6 +98,7 @@ public:
 public:
 	// Dark Mode background brush
 	HBRUSH hbrBkgnd;
+	bool lastDarkModeEnabled;
 };
 
 /** AchievementsTabPrivate **/
@@ -108,6 +109,7 @@ AchievementsTabPrivate::AchievementsTabPrivate()
 	, himglAch(nullptr)
 	, colorAltRow(0)
 	, hbrBkgnd(nullptr)
+	, lastDarkModeEnabled(false)
 {}
 
 AchievementsTabPrivate::~AchievementsTabPrivate()
@@ -154,6 +156,7 @@ INT_PTR CALLBACK AchievementsTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wP
 
 			//  NOTE: This should be in WM_CREATE, but we don't receive WM_CREATE here.
 			DarkMode_InitDialog(hDlg);
+			d->lastDarkModeEnabled = g_darkModeEnabled;
 
 			// Set window themes for Win10's dark mode.
 			if (g_darkModeSupported) {
@@ -190,8 +193,7 @@ INT_PTR CALLBACK AchievementsTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wP
 			break;
 		}
 
-		case WM_SYSCOLORCHANGE:
-		case WM_THEMECHANGED: {
+		case WM_SYSCOLORCHANGE: {
 			auto *const d = reinterpret_cast<AchievementsTabPrivate*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
 			if (!d) {
 				// No AchievementsTabPrivate. Can't do anything...
@@ -226,9 +228,33 @@ INT_PTR CALLBACK AchievementsTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wP
 
 		case WM_SETTINGCHANGE:
 			if (g_darkModeSupported && IsColorSchemeChangeMessage(lParam)) {
-				SendMessageW(hDlg, WM_THEMECHANGED, 0, 0);
+				SendMessage(hDlg, WM_THEMECHANGED, 0, 0);
 			}
 			break;
+
+		case WM_THEMECHANGED: {
+			auto *const d = reinterpret_cast<AchievementsTabPrivate*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
+			if (!d) {
+				// No AchievementsTabPrivate. Can't do anything...
+				return FALSE;
+			}
+
+			if (g_darkModeSupported) {
+				UpdateDarkModeEnabled();
+				if (d->lastDarkModeEnabled != g_darkModeEnabled) {
+					d->lastDarkModeEnabled = g_darkModeEnabled;
+					InvalidateRect(hDlg, NULL, true);
+
+					// Propagate WM_THEMECHANGED to window controls that don't
+					// automatically handle Dark Mode changes, e.g. ComboBox and Button.
+					SendMessage(GetDlgItem(hDlg, IDC_ACHIEVEMENTS_LIST), WM_THEMECHANGED, 0, 0);
+				}
+			}
+
+			// Update the ListView style.
+			d->updateListViewStyle();
+			break;
+		}
 
 		default:
 			break;
@@ -278,9 +304,10 @@ void AchievementsTabPrivate::updateListViewStyle(void)
 		return;
 
 	// Set extended ListView styles.
+	// Double-buffering is enabled if using RDP or RemoteFX.
 	const DWORD lvsExStyle = likely(!GetSystemMetrics(SM_REMOTESESSION))
 		? LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER
-		: LVS_EX_DOUBLEBUFFER;
+		: LVS_EX_FULLROWSELECT;
 	ListView_SetExtendedListViewStyle(hListView, lvsExStyle);
 
 	// If the alt row color changed, redo the ImageList.

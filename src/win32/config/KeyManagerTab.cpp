@@ -179,6 +179,12 @@ public:
 	COLORREF colorAltRow;
 	HBRUSH hbrAltRow;
 
+public:
+	/**
+	 * Update the ListView style.
+	 */
+	void updateListViewStyle(void);
+
 	/**
 	 * ListView GetDispInfo function.
 	 * @param plvdi	[in/out] NMLVDISPINFO
@@ -243,6 +249,7 @@ public:
 public:
 	// Dark Mode background brush
 	HBRUSH hbrBkgnd;
+	bool lastDarkModeEnabled;
 };
 
 /** KeyManagerTabPrivate **/
@@ -267,6 +274,7 @@ KeyManagerTabPrivate::KeyManagerTabPrivate()
 	, colorAltRow(0)
 	, hbrAltRow(nullptr)
 	, hbrBkgnd(nullptr)
+	, lastDarkModeEnabled(false)
 {
 	// Load images.
 	loadImages();
@@ -346,16 +354,6 @@ void KeyManagerTabPrivate::initUI(void)
 	}
 
 	// Initialize the ListView.
-	// Set full row selection.
-	DWORD dwExStyle;
-	if (!GetSystemMetrics(SM_REMOTESESSION)) {
-		// Not RDP (or is RemoteFX): Enable double buffering.
-		dwExStyle = LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER;
-	} else {
-		// RDP: Disable double buffering to reduce bandwidth usage.
-		dwExStyle = LVS_EX_FULLROWSELECT;
-	}
-	ListView_SetExtendedListViewStyle(hListView, dwExStyle);
 
 	// Set the virtual list item count.
 	ListView_SetItemCountEx(hListView, keyStore->totalKeyCount(),
@@ -516,9 +514,9 @@ void KeyManagerTabPrivate::initUI(void)
 		// Initialize Dark Mode in the ListView.
 		DarkMode_InitListView(hListView);
 	}
-	// Initialize the alternate row color and brush.
-	colorAltRow = LibWin32UI::ListView_GetBkColor_AltRow(hListView);
-	hbrAltRow = CreateSolidBrush(colorAltRow);
+
+	// Update the ListView style.
+	updateListViewStyle();
 
 	// Subclass the ListView.
 	// TODO: Error handling?
@@ -619,6 +617,7 @@ INT_PTR CALLBACK KeyManagerTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 
 			//  NOTE: This should be in WM_CREATE, but we don't receive WM_CREATE here.
 			DarkMode_InitDialog(hDlg);
+			d->lastDarkModeEnabled = g_darkModeEnabled;
 
 			// Initialize the UI.
 			d->initUI();
@@ -746,29 +745,6 @@ INT_PTR CALLBACK KeyManagerTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 			break;
 		}
 
-		case WM_SYSCOLORCHANGE:
-		case WM_THEMECHANGED: {
-			// Reinitialize the alternate row color.
-			auto *const d = reinterpret_cast<KeyManagerTabPrivate*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
-			if (d) {
-				// No KeyManagerTabPrivate. Can't do anything...
-				return false;
-			}
-
-			// Reinitialize the alternate row color.
-			HWND hListView = GetDlgItem(hDlg, IDC_KEYMANAGER_LIST);
-			assert(hListView != nullptr);
-			d->colorAltRow = LibWin32UI::ListView_GetBkColor_AltRow(hListView);
-			if (d->hbrAltRow) {
-				DeleteBrush(d->hbrAltRow);
-			}
-			d->hbrAltRow = CreateSolidBrush(d->colorAltRow);
-
-			// Update the fonts.
-			d->fontHandler.updateFonts(true);
-			break;
-		}
-
 		case WM_NCPAINT: {
 			// Update the monospaced font.
 			// NOTE: This should be WM_SETTINGCHANGE with
@@ -868,6 +844,22 @@ INT_PTR CALLBACK KeyManagerTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 			break;
 		}
 
+		case WM_SYSCOLORCHANGE: {
+			auto *const d = reinterpret_cast<KeyManagerTabPrivate*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
+			if (!d) {
+				// No KeyManagerTabPrivate. Can't do anything...
+				return false;
+			}
+
+			// Update the fonts. (TODO: Might not be needed here?)
+			if (d->fontHandler.window()) {
+				d->fontHandler.updateFonts(true);
+			}
+			// Update the ListView style.
+			d->updateListViewStyle();
+			break;
+		}
+
 		/** Dark Mode **/
 
 		case WM_CTLCOLORDLG:
@@ -891,9 +883,38 @@ INT_PTR CALLBACK KeyManagerTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 
 		case WM_SETTINGCHANGE:
 			if (g_darkModeSupported && IsColorSchemeChangeMessage(lParam)) {
-				SendMessageW(hDlg, WM_THEMECHANGED, 0, 0);
+				SendMessage(hDlg, WM_THEMECHANGED, 0, 0);
 			}
 			break;
+
+		case WM_THEMECHANGED: {
+			auto *const d = reinterpret_cast<KeyManagerTabPrivate*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
+			if (!d) {
+				// No KeyManagerTabPrivate. Can't do anything...
+				return FALSE;
+			}
+
+			if (g_darkModeSupported) {
+				UpdateDarkModeEnabled();
+				if (d->lastDarkModeEnabled != g_darkModeEnabled) {
+					d->lastDarkModeEnabled = g_darkModeEnabled;
+					InvalidateRect(hDlg, NULL, true);
+
+					// Propagate WM_THEMECHANGED to window controls that don't
+					// automatically handle Dark Mode changes, e.g. ComboBox and Button.
+					SendMessage(GetDlgItem(hDlg, IDC_KEYMANAGER_LIST), WM_THEMECHANGED, 0, 0);
+					SendMessage(GetDlgItem(hDlg, IDC_KEYMANAGER_IMPORT), WM_THEMECHANGED, 0, 0);
+				}
+			}
+
+			// Update the fonts.
+			if (d->fontHandler.window()) {
+				d->fontHandler.updateFonts(true);
+			}
+			// Update the ListView style.
+			d->updateListViewStyle();
+			break;
+		}
 
 		default:
 			break;
@@ -1217,6 +1238,31 @@ LRESULT CALLBACK KeyManagerTabPrivate::ListViewEditSubclassProc(
 	}
 
 	return DefSubclassProc(hWnd, uMsg, wParam, lParam);
+}
+
+/**
+ * Update the ListView style.
+ */
+void KeyManagerTabPrivate::updateListViewStyle(void)
+{
+	HWND hListView = GetDlgItem(hWndPropSheet, IDC_KEYMANAGER_LIST);
+	assert(hListView != nullptr);
+	if (!hListView)
+		return;
+
+	// Set extended ListView styles.
+	// Double-buffering is enabled if using RDP or RemoteFX.
+	const DWORD lvsExStyle = likely(!GetSystemMetrics(SM_REMOTESESSION))
+		? LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER
+		: LVS_EX_FULLROWSELECT;
+	ListView_SetExtendedListViewStyle(hListView, lvsExStyle);
+
+	// Update the alternate row color.
+	colorAltRow = LibWin32UI::ListView_GetBkColor_AltRow(hListView);
+	if (hbrAltRow) {
+		DeleteBrush(hbrAltRow);
+	}
+	hbrAltRow = CreateSolidBrush(colorAltRow);
 }
 
 /**
