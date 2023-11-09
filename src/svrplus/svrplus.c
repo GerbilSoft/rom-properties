@@ -216,8 +216,8 @@ static void ShowStatusMessage(HWND hDlg, const TCHAR *line1, const TCHAR *line2,
  */
 static inline void EnableButtons(HWND hDlg, bool enable)
 {
-	EnableWindow(GetDlgItem(hDlg, IDC_BUTTON_INSTALL), enable);
 	EnableWindow(GetDlgItem(hDlg, IDC_BUTTON_UNINSTALL), enable);
+	EnableWindow(GetDlgItem(hDlg, IDC_BUTTON_INSTALL), enable);
 }
 
 /**
@@ -681,6 +681,9 @@ static void InitDialog(HWND hDlg)
 
 	// Set window themes for Win10's dark mode.
 	if (g_darkModeSupported) {
+		//  NOTE: This should be in WM_CREATE, but we don't receive WM_CREATE here.
+		DarkMode_InitDialog(hDlg);
+
 		DarkMode_InitButton_Dlg(hDlg, IDC_BUTTON_UNINSTALL);
 		DarkMode_InitButton_Dlg(hDlg, IDC_BUTTON_INSTALL);
 	}
@@ -1005,7 +1008,18 @@ static INT_PTR CALLBACK DialogProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM l
 
 		case WM_SETTINGCHANGE:
 			if (g_darkModeSupported && IsColorSchemeChangeMessage(lParam)) {
-				SendMessageW(hDlg, WM_THEMECHANGED, 0, 0);
+				SendMessage(hDlg, WM_THEMECHANGED, 0, 0);
+			}
+			break;
+
+		case WM_THEMECHANGED:
+			if (g_darkModeSupported && UpdateDarkModeEnabled()) {
+				RefreshTitleBarThemeColor(hDlg);
+				InvalidateRect(hDlg, NULL, true);
+
+				// Propagate WM_THEMECHANGED to all window controls.
+				SendMessage(GetDlgItem(hDlg, IDC_BUTTON_UNINSTALL), WM_THEMECHANGED, 0, 0);
+				SendMessage(GetDlgItem(hDlg, IDC_BUTTON_INSTALL), WM_THEMECHANGED, 0, 0);
 			}
 			break;
 

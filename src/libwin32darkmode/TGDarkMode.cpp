@@ -345,6 +345,11 @@ LRESULT WINAPI TGDarkMode_ButtonSubclassProc(
 	WPARAM wParam, LPARAM lParam,
 	UINT_PTR uIdSubclass, DWORD_PTR dwRefData)
 {
+	if (!g_darkModeEnabled) {
+		// Using light mode. Don't bother with any of this.
+		return DefSubclassProc(hWnd, uMsg, wParam, lParam);
+	}
+
 	switch (uMsg)
 	{
 		case WM_SETTEXT:
@@ -670,6 +675,11 @@ LRESULT WINAPI TGDarkMode_ComboBoxSubclassProc(
 	WPARAM wParam, LPARAM lParam,
 	UINT_PTR uIdSubclass, DWORD_PTR dwRefData)
 {
+	if (!g_darkModeEnabled) {
+		// Using light mode. Don't bother with any of this.
+		return DefSubclassProc(hWnd, uMsg, wParam, lParam);
+	}
+
 	switch (uMsg) {
 		case WM_CTLCOLORDLG:
 		case WM_CTLCOLORSTATIC:

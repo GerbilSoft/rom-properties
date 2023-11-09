@@ -191,7 +191,7 @@ int InitDarkMode(void)
 		AllowDarkModeForApp(true);
 		_RefreshImmersiveColorPolicyState();
 
-		g_darkModeEnabled = _ShouldAppsUseDarkMode() && !IsHighContrast();
+		UpdateDarkModeEnabled();
 
 		FixDarkScrollBar();
 		return 0;
