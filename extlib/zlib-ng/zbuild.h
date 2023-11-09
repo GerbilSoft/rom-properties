@@ -45,6 +45,12 @@
 #  endif
 #endif
 
+/* rom-properties: Disable TLS when building for Windows on i386. WinXP has problems with it. */
+#if defined(Z_TLS) && defined(_WIN32) && (defined(__i386__) || defined(_M_IX86))
+#  undef Z_TLS
+#  define Z_TLS
+#endif
+
 #ifndef Z_HAS_ATTRIBUTE
 #  if defined(__has_attribute)
 #    define Z_HAS_ATTRIBUTE(a) __has_attribute(a)
