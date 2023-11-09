@@ -129,6 +129,7 @@ public:
 public:
 	// Dark Mode background brush
 	HBRUSH hbrBkgnd;
+	bool lastDarkModeEnabled;
 };
 
 /** CacheTabPrivate **/
@@ -139,6 +140,7 @@ CacheTabPrivate::CacheTabPrivate()
 	, dwUnitmaskXP(0)
 	, isVista(false)
 	, hbrBkgnd(nullptr)
+	, lastDarkModeEnabled(false)
 {
 	// Determine which dialog we should use.
 	RegKey hKey(HKEY_LOCAL_MACHINE, _T("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\VolumeCaches\\Thumbnail Cache"), KEY_READ, false);
@@ -764,6 +766,7 @@ INT_PTR CALLBACK CacheTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, L
 
 			//  NOTE: This should be in WM_CREATE, but we don't receive WM_CREATE here.
 			DarkMode_InitDialog(hDlg);
+			d->lastDarkModeEnabled = g_darkModeEnabled;
 
 			// Initialize the dialog.
 			d->initDialog();
@@ -924,7 +927,32 @@ INT_PTR CALLBACK CacheTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, L
 
 		case WM_SETTINGCHANGE:
 			if (g_darkModeSupported && IsColorSchemeChangeMessage(lParam)) {
-				SendMessageW(hDlg, WM_THEMECHANGED, 0, 0);
+				SendMessage(hDlg, WM_THEMECHANGED, 0, 0);
+			}
+			break;
+
+		case WM_THEMECHANGED:
+			if (g_darkModeSupported) {
+				auto *const d = reinterpret_cast<CacheTabPrivate*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
+				if (!d) {
+					// No ImageTypesTabPrivate. Can't do anything...
+					return FALSE;
+				}
+
+				UpdateDarkModeEnabled();
+				if (d->lastDarkModeEnabled != g_darkModeEnabled) {
+					d->lastDarkModeEnabled = g_darkModeEnabled;
+					InvalidateRect(hDlg, NULL, true);
+
+					// Propagate WM_THEMECHANGED to window controls that don't
+					// automatically handle Dark Mode changes, e.g. ComboBox and Button.
+					// NOTE: If Dark Mode is supported, then we're definitely
+					// running on Windows 10 or later, so this will have the
+					// Windows Vista layout.
+					SendMessage(GetDlgItem(hDlg, IDC_CACHE_CLEAR_SYS_THUMBS), WM_THEMECHANGED, 0, 0);
+					SendMessage(GetDlgItem(hDlg, IDC_CACHE_CLEAR_RP_DL), WM_THEMECHANGED, 0, 0);
+					// TODO: Progress bar?
+				}
 			}
 			break;
 
