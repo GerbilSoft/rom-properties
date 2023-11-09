@@ -76,7 +76,7 @@ static LRESULT CALLBACK ListView_DarkMode_SubclassProc(
 					CloseThemeData(hTheme);
 				}
 
-				SendMessageW(hHeader, WM_THEMECHANGED, wParam, lParam);
+				SendMessage(hHeader, WM_THEMECHANGED, wParam, lParam);
 				RedrawWindow(hWnd, nullptr, nullptr, RDW_FRAME | RDW_INVALIDATE);
 			}
 			break;

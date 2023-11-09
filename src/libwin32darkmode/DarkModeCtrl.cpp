@@ -40,7 +40,7 @@ void DarkMode_InitDialog(HWND hDlg)
 		RefreshTitleBarThemeColor(hDlg);
 	}
 
-	SendMessageW(hDlg, WM_THEMECHANGED, 0, 0);
+	SendMessage(hDlg, WM_THEMECHANGED, 0, 0);
 }
 
 /**

@@ -48,7 +48,7 @@ void RefreshTitleBarThemeColor(HWND hWnd)
 	}
 
 	if (g_buildNumber < 18362)
-		SetPropW(hWnd, L"UseImmersiveDarkModeColors", reinterpret_cast<HANDLE>(static_cast<INT_PTR>(dark)));
+		SetProp(hWnd, _T("UseImmersiveDarkModeColors"), reinterpret_cast<HANDLE>(static_cast<INT_PTR>(dark)));
 	else if (_SetWindowCompositionAttribute)
 	{
 		WINDOWCOMPOSITIONATTRIBDATA data = { WCA_USEDARKMODECOLORS, &dark, sizeof(dark) };
@@ -79,7 +79,7 @@ void AllowDarkModeForApp(bool allow)
 
 void FixDarkScrollBar(void)
 {
-	HMODULE hComctl = LoadLibraryExW(L"comctl32.dll", nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
+	HMODULE hComctl = LoadLibraryEx(_T("comctl32.dll"), nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
 	if (!hComctl)
 		return;
 
@@ -123,7 +123,8 @@ static constexpr bool CheckBuildNumber(DWORD buildNumber)
  */
 int InitDarkMode(void)
 {
-	auto RtlGetNtVersionNumbers = reinterpret_cast<fnRtlGetNtVersionNumbers>(GetProcAddress(GetModuleHandleW(L"ntdll.dll"), "RtlGetNtVersionNumbers"));
+	auto RtlGetNtVersionNumbers = reinterpret_cast<fnRtlGetNtVersionNumbers>(
+		GetProcAddress(GetModuleHandle(_T("ntdll.dll")), "RtlGetNtVersionNumbers"));
 	if (!RtlGetNtVersionNumbers)
 		return 1;
 
@@ -169,9 +170,11 @@ int InitDarkMode(void)
 	}
 
 	//_FlushMenuThemes = reinterpret_cast<fnFlushMenuThemes>(GetProcAddress(hUxtheme, MAKEINTRESOURCEA(136)));
-	_IsDarkModeAllowedForWindow = reinterpret_cast<fnIsDarkModeAllowedForWindow>(GetProcAddress(hUxtheme, MAKEINTRESOURCEA(137)));
+	_IsDarkModeAllowedForWindow = reinterpret_cast<fnIsDarkModeAllowedForWindow>(
+		GetProcAddress(hUxtheme, MAKEINTRESOURCEA(137)));
 
-	_SetWindowCompositionAttribute = reinterpret_cast<fnSetWindowCompositionAttribute>(GetProcAddress(GetModuleHandleW(L"user32.dll"), "SetWindowCompositionAttribute"));
+	_SetWindowCompositionAttribute = reinterpret_cast<fnSetWindowCompositionAttribute>(
+		GetProcAddress(GetModuleHandle(_T("user32.dll")), "SetWindowCompositionAttribute"));
 
 	if (_OpenNcThemeData &&
 	    // 1809 17763

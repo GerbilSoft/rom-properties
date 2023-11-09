@@ -102,7 +102,7 @@ static inline bool AllowDarkModeForWindow(HWND hWnd, bool allow)
 static inline bool IsHighContrast(void)
 {
 	HIGHCONTRASTW highContrast = { sizeof(highContrast) };
-	if (SystemParametersInfoW(SPI_GETHIGHCONTRAST, sizeof(highContrast), &highContrast, FALSE))
+	if (SystemParametersInfo(SPI_GETHIGHCONTRAST, sizeof(highContrast), &highContrast, FALSE))
 		return highContrast.dwFlags & HCF_HIGHCONTRASTON;
 	return false;
 }

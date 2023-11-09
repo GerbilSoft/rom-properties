@@ -392,7 +392,7 @@ LRESULT WINAPI TGDarkMode_ButtonSubclassProc(
 
 					// we use uppercase A to determine the height of text, so we
 					// can draw the upper line of the groupbox:
-					DrawTextW(hdc, L"A", -1, &rcDraw, dwFlags | DT_CALCRECT);
+					DrawText(hdc, _T("A"), -1, &rcDraw, dwFlags | DT_CALCRECT);
 
 					if (hFontOld) {
 						SelectObject(hdc, hFontOld);
@@ -442,14 +442,14 @@ LRESULT WINAPI TGDarkMode_ButtonSubclassProc(
 						int iLen = GetWindowTextLength(hWnd);
 						if (iLen) {
 							iLen += 5; // 1 for terminating zero, 4 for DT_MODIFYSTRING
-							auto szText = static_cast<LPWSTR>(LocalAlloc(LPTR, sizeof(WCHAR) * iLen));
+							LPTSTR szText = static_cast<LPTSTR>(LocalAlloc(LPTR, sizeof(TCHAR) * iLen));
 							if (szText) {
-								iLen = GetWindowTextW(hWnd, szText, iLen);
+								iLen = GetWindowText(hWnd, szText, iLen);
 								if (iLen) {
 									int iX = RECTWIDTH(rcDraw);
 									rcDraw = rcClient;
 									rcDraw.left += iX;
-									DrawTextW(hdcPaint, szText, -1, &rcDraw, dwFlags | DT_CALCRECT);
+									DrawText(hdcPaint, szText, -1, &rcDraw, dwFlags | DT_CALCRECT);
 									::SetBkColor(hdcPaint, g_darkBkColor);
 									::ExtTextOut(hdcPaint, 0, 0, ETO_OPAQUE, &rcDraw, nullptr, 0, nullptr);
 									++rcDraw.left;
@@ -561,9 +561,9 @@ LRESULT WINAPI TGDarkMode_ButtonSubclassProc(
 						int iLen = GetWindowTextLength(hWnd);
 						if (iLen) {
 							iLen += 5; // 1 for terminating zero, 4 for DT_MODIFYSTRING
-							LPWSTR szText = static_cast<LPWSTR>(LocalAlloc(LPTR, sizeof(WCHAR) * iLen));
+							LPTSTR szText = static_cast<LPTSTR>(LocalAlloc(LPTR, sizeof(TCHAR) * iLen));
 							if (szText) {
-								iLen = GetWindowTextW(hWnd, szText, iLen);
+								iLen = GetWindowText(hWnd, szText, iLen);
 								if (iLen) {
 									DWORD dwFlags = DT_SINGLELINE /*|DT_VCENTER*/;
 									if (dwButtonStyle & BS_MULTILINE) {
@@ -607,11 +607,11 @@ LRESULT WINAPI TGDarkMode_ButtonSubclassProc(
 									if (bFocus) {
 										RECT rcDraw = rc;
 
-										DrawTextW(hdcPaint, szText, -1, &rcDraw, dwFlags | DT_CALCRECT);
+										DrawText(hdcPaint, szText, -1, &rcDraw, dwFlags | DT_CALCRECT);
 										if (dwFlags & DT_SINGLELINE) {
 											dwFlags &= ~DT_VCENTER;
 											RECT rcDrawTop;
-											DrawTextW(hdcPaint, szText, -1, &rcDrawTop, dwFlags | DT_CALCRECT);
+											DrawText(hdcPaint, szText, -1, &rcDrawTop, dwFlags | DT_CALCRECT);
 											rcDraw.top = rcDraw.bottom - RECTHEIGHT(rcDrawTop);
 										}
 
