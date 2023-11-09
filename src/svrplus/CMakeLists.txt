@@ -12,7 +12,7 @@ CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/${PROJECT_NAME}.exe.manifest.in" "${
 
 # Sources and headers.
 SET(${PROJECT_NAME}_SRCS svrplus.c)
-SET(${PROJECT_NAME}_H resource.h)
+SET(${PROJECT_NAME}_H resource.h gdipmini.h)
 
 SET(${PROJECT_NAME}_RC
 	resource.rc

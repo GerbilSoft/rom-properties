@@ -30,6 +30,7 @@
 // Win32 dark mode
 #include "libwin32darkmode/DarkMode.hpp"
 #include "libwin32darkmode/DarkModeCtrl.hpp"
+#include "gdipmini.h"	// needed for GDI+ init
 
 // librpsecure
 #include "librpsecure/os-secure.h"
@@ -1221,6 +1222,22 @@ int CALLBACK _tWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstanc
 
 	// Enable dark mode if it's available.
 	InitDarkMode();
+	ULONG_PTR gdipToken = 0;
+	if (g_darkModeSupported) {
+		// Dark mode is supported. Initialize GDI+.
+		GdiplusStartupInput gdipSI;
+		gdipSI.GdiplusVersion = 1;
+		gdipSI.DebugEventCallback = NULL;
+		gdipSI.SuppressBackgroundThread = FALSE;
+		gdipSI.SuppressExternalCodecs = FALSE;
+		int status = GdiplusStartup(&gdipToken, &gdipSI, NULL);
+		if (status != 0) {
+			// Failed to initialize GDI+. Disable Dark Mode.
+			gdipToken = 0;
+			g_darkModeSupported = false;
+			g_darkModeEnabled = false;
+		}
+	}
 	lastDarkModeEnabled = g_darkModeEnabled;
 
 	// Load the icon.
@@ -1248,6 +1265,11 @@ int CALLBACK _tWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstanc
 	// Delete the dark mode brush if it was allocated.
 	if (hbrBkgnd) {
 		DeleteBrush(hbrBkgnd);
+	}
+
+	if (gdipToken) {
+		// Shut down GDI+.
+		GdiplusShutdown(gdipToken);
 	}
 
 	CloseHandle(g_hSingleInstanceMutex);
