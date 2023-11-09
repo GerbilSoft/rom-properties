@@ -19,6 +19,9 @@
 #include "libwin32common/sdk/IListView.hpp"
 #include "KeyStore_OwnerDataCallback.hpp"
 
+// libwin32common
+#include "libwin32common/rp_versionhelpers.h"
+
 // libwin32ui
 #include "libwin32ui/LoadResource_i18n.hpp"
 using LibWin32UI::LoadDialog_i18n;
@@ -164,8 +167,8 @@ public:
 	bool bCancelEdit;	// True if the edit is being cancelled.
 	bool bAllowKanji;	// Allow kanji in the editor.
 
-	// Is this COMCTL32.dll v6.10 or later?
-	bool isComCtl32_v610;
+	bool isComCtl32_v610;	// Is this COMCTL32.dll v6.10 or later?
+	bool isWin10;		// Is this Windows 10 or later?
 
 	// Icons for the "Valid?" column.
 	// NOTE: "?" and "X" are copies from User32.
@@ -267,6 +270,7 @@ KeyManagerTabPrivate::KeyManagerTabPrivate()
 	, bCancelEdit(false)
 	, bAllowKanji(false)
 	, isComCtl32_v610(false)
+	, isWin10(false)
 	, iconSize(0)
 	, hIconUnknown(nullptr)
 	, hIconInvalid(nullptr)
@@ -278,6 +282,9 @@ KeyManagerTabPrivate::KeyManagerTabPrivate()
 {
 	// Check the COMCTL32.DLL version.
 	isComCtl32_v610 = LibWin32UI::isComCtl32_v610();
+
+	// Is this Windows 10 or later?
+	isWin10 = IsWindows10OrGreater();
 }
 
 KeyManagerTabPrivate::~KeyManagerTabPrivate()
@@ -1425,14 +1432,43 @@ inline int KeyManagerTabPrivate::ListView_CustomDraw(NMLVCUSTOMDRAW *plvcd)
 					// Custom drawing this subitem.
 					result = CDRF_SKIPDEFAULT;
 
-					// Alternate row color, if necessary.
-					// NOTE: Only if not highlighted or selected.
-					// NOTE 2: Need to check highlighted row ID because uItemState
-					// will be 0 if the user mouses over another column on the same row.
-					if (isOdd && plvcd->nmcd.uItemState == 0 &&
-					    ListView_GetHotItem(plvcd->nmcd.hdr.hwndFrom) != plvcd->nmcd.dwItemSpec)
-					{
-						FillRect(plvcd->nmcd.hdc, pRcSubItem, hbrAltRow);
+					if (isWin10) {
+						// Windows 10 method. (Tested on 1809 and 21H2.)
+						// TODO: Check Windows 8?
+
+						// Alternate row color, if necessary.
+						// NOTE: Only if not highlighted or selected.
+						// NOTE 2: Need to check highlighted row ID because uItemState
+						// will be 0 if the user mouses over another column on the same row.
+						if (isOdd && plvcd->nmcd.uItemState == 0 &&
+						    ListView_GetHotItem(plvcd->nmcd.hdr.hwndFrom) != plvcd->nmcd.dwItemSpec)
+						{
+							FillRect(plvcd->nmcd.hdc, pRcSubItem, hbrAltRow);
+						}
+					} else {
+						// Windows XP/7 method.
+
+						// Set the row background color.
+						// TODO: "Disabled" state?
+						// NOTE: plvcd->clrTextBk is set to 0xFF000000 here,
+						// not the actual default background color.
+						HBRUSH hbr;
+						if (plvcd->nmcd.uItemState & CDIS_SELECTED) {
+							// Row is selected.
+							hbr = (HBRUSH)(COLOR_HIGHLIGHT+1);
+						} else if (isOdd) {
+							// FIXME: On Windows 7:
+							// - Standard row colors are 19px high.
+							// - Alternate row colors are 17px high. (top and bottom lines ignored?)
+							hbr = hbrAltRow;
+						} else {
+							// Standard row color. Draw it anyway in case
+							// the theme was changed, since ListView only
+							// partially recognizes theme changes.
+							hbr = (HBRUSH)(COLOR_WINDOW+1);
+						}
+
+						FillRect(plvcd->nmcd.hdc, pRcSubItem, hbr);
 					}
 
 					const int x = pRcSubItem->left + (((pRcSubItem->right - pRcSubItem->left) - iconSize) / 2);
