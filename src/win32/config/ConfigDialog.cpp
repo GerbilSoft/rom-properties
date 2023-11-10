@@ -82,9 +82,6 @@ public:
 
 	// Subclass procedure for the Property Sheet.
 	static LRESULT CALLBACK subclassProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData);
-
-	// Create Property Sheet.
-	static INT_PTR CreatePropertySheet(void);
 };
 
 /** ConfigDialogPrivate **/
