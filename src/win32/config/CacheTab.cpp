@@ -764,7 +764,7 @@ INT_PTR CALLBACK CacheTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, L
 			// Store the D object pointer with this particular page dialog.
 			SetWindowLongPtr(hDlg, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(d));
 
-			//  NOTE: This should be in WM_CREATE, but we don't receive WM_CREATE here.
+			// NOTE: This should be in WM_CREATE, but we don't receive WM_CREATE here.
 			DarkMode_InitDialog(hDlg);
 			d->lastDarkModeEnabled = g_darkModeEnabled;
 

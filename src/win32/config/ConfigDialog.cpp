@@ -234,7 +234,7 @@ LRESULT CALLBACK ConfigDialogPrivate::subclassProc(
 			break;
 
 		case WM_SHOWWINDOW: {
-			//  NOTE: This should be in WM_CREATE, but we don't receive WM_CREATE here.
+			// NOTE: This should be in WM_CREATE, but we don't receive WM_CREATE here.
 			DarkMode_InitDialog(hWnd);
 
 			// Check for RTL.
