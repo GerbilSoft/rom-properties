@@ -199,6 +199,9 @@ const char *const ISOPrivate::exts[] = {
 	nullptr
 };
 const char *const ISOPrivate::mimeTypes[] = {
+	// Vendor-specific MIME types from FreeDesktop.org.
+	"application/vnd.efi.iso",
+
 	// Unofficial MIME types from FreeDesktop.org.
 	"application/x-cd-image",
 	"application/x-iso9660-image",

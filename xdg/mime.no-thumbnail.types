@@ -7,10 +7,6 @@
 # - model/x.stl-binary and image/x-3ds are listed for Nintendo 3DS files.
 # - Non-thumbnailable MIME types are only listed in KDE .desktop files.
 
-# Generic
-application/x-cd-image
-application/x-iso9660-image
-
 # Audio
 audio/x-adx				# ADX
 audio/x-bcstm				# BCSTM

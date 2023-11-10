@@ -1,6 +1,6 @@
 # MIME types for rom-properties.
 # These MIME types *do* have thumbnails, so they should be included
-# in all of the .desktop and .thumbnailer files. files.
+# in all of the .desktop and .thumbnailer files.
 
 # NOTES:
 # - MS CAB is listed for Nintendo Badge Arcade .cab files.
@@ -8,6 +8,7 @@
 # - Non-thumbnailable MIME types are only listed in KDE .desktop files.
 
 # Generic
+application/vnd.efi.iso
 application/x-cd-image
 application/x-iso9660-image
 application/x-raw-disk-image
