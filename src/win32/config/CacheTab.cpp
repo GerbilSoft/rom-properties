@@ -179,6 +179,16 @@ void CacheTabPrivate::initDialog(void)
 		// tr: Windows XP or earlier. Has Thumbs.db scattered throughout the system.
 		: C_("CacheTab", "If any image type settings were changed, you will need to clear the thumbnail cache files.\nThis version of Windows does not have a centralized thumbnail database, so it may take a while for all Thumbs.db files to be located and deleted.")));
 
+	// Set window themes for Win10's dark mode.
+	if (g_darkModeSupported) {
+		// NOTE: If Dark Mode is supported, then we're definitely
+		// running on Windows 10 or later, so this will have the
+		// Windows Vista layout.
+		// TODO: Progress bar?
+		DarkMode_InitButton_Dlg(hWndPropSheet, IDC_CACHE_CLEAR_SYS_THUMBS);
+		DarkMode_InitButton_Dlg(hWndPropSheet, IDC_CACHE_CLEAR_RP_DL);
+	}
+
 	if (isVista) {
 		// System is Vista or later.
 		// XP initialization is not needed.
@@ -218,16 +228,6 @@ void CacheTabPrivate::initDialog(void)
 	// Enable double-buffering if not using RDP.
 	if (!GetSystemMetrics(SM_REMOTESESSION)) {
 		ListView_SetExtendedListViewStyle(hListView, LVS_EX_DOUBLEBUFFER);
-	}
-
-	// Set window themes for Win10's dark mode.
-	if (g_darkModeSupported) {
-		// NOTE: If Dark Mode is supported, then we're definitely
-		// running on Windows 10 or later, so this will have the
-		// Windows Vista layout.
-		// TODO: Progress bar?
-		DarkMode_InitButton_Dlg(hWndPropSheet, IDC_CACHE_CLEAR_SYS_THUMBS);
-		DarkMode_InitButton_Dlg(hWndPropSheet, IDC_CACHE_CLEAR_RP_DL);
 	}
 
 	// Register for WTS session notifications. (Remote Desktop)
