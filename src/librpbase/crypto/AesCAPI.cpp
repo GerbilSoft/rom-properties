@@ -375,7 +375,7 @@ size_t AesCAPI::decrypt(uint8_t *RESTRICT pData, size_t size)
 			bRet = CryptEncrypt(hMyKey, 0, FALSE, 0, ctr_crypt.u8, &dwTempLen, sizeof(ctr_crypt.u8));
 			if (!bRet) {
 				// Encryption failed.
-				return 0;
+				break;
 			}
 			dwLen += dwTempLen;
 
@@ -392,12 +392,12 @@ size_t AesCAPI::decrypt(uint8_t *RESTRICT pData, size_t size)
 			}
 		}
 	} else {
-		// EBC and/or CBC.
+		// ECB and/or CBC.
 		dwLen = static_cast<DWORD>(size);
 		bRet = CryptDecrypt(hMyKey, 0, FALSE, 0, pData, &dwLen);
-		CryptDestroyKey(hMyKey);
 	}
 
+	CryptDestroyKey(hMyKey);
 	return (bRet ? dwLen : 0);
 }
 
