@@ -238,9 +238,10 @@ static int rmkdir(const tstring &path, int mode)
 #ifdef _WIN32
 	RP_UNUSED(mode);
 
-	// Check if "\\\\?\\" is at the beginning of path.
+	// Check if "\\\\?\\" or "\\??\\" is at the beginning of path.
+	// Reference: https://groups.google.com/g/golang-announce/c/4tU8LZfBFkY?pli=1
 	tstring tpath;
-	if (path.size() >= 4 && !_tcsncmp(path.data(), _T("\\\\?\\"), 4)) {
+	if (path.size() >= 4 && (!_tcsncmp(path.data(), _T("\\\\?\\"), 4) || !_tcsncmp(path.data(), _T("\\??\\"), 4))) {
 		// It's at the beginning of the path.
 		// We don't want to use it here, though.
 		tpath = path.substr(4);
