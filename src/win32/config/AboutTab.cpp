@@ -874,7 +874,6 @@ void AboutTabPrivate::initProgramTitleText(void)
 	assert(hStaticIcon != nullptr);
 	assert(hStaticLine1 != nullptr);
 	assert(hStaticVersion != nullptr);
-	assert(hStaticUpdateCheck != nullptr);
 	assert(hTabControl != nullptr);
 	if (unlikely(!hStaticIcon || !hStaticLine1 || !hStaticVersion || !hTabControl)) {
 		// Something went wrong...
