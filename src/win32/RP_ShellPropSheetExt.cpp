@@ -1040,10 +1040,6 @@ int RP_ShellPropSheetExt_Private::initListData(_In_ HWND hWndTab,
 		if (himl) {
 			// NOTE: ListView uses LVSIL_SMALL for LVS_REPORT.
 			ListView_SetImageList(hListView, himl, LVSIL_SMALL);
-			const uint32_t lvBgColor[2] = {
-				ListView_GetBkColor(hListView),
-				LibWin32UI::ListView_GetBkColor_AltRow(hListView)
-			};
 
 			// Add icons.
 			uint8_t rowColorIdx = 0;
@@ -1096,8 +1092,7 @@ int RP_ShellPropSheetExt_Private::initListData(_In_ HWND hWndTab,
 
 					// Resize the icon.
 					const rp_image_const_ptr icon_resized = icon->resized(
-						szResize.cx, szResize.cy,
-						rp_image::AlignVCenter, lvBgColor[rowColorIdx]);
+						szResize.cx, szResize.cy, rp_image::AlignVCenter);
 					assert((bool)icon_resized);
 					if (icon_resized) {
 						icon = icon_resized;
@@ -1105,16 +1100,16 @@ int RP_ShellPropSheetExt_Private::initListData(_In_ HWND hWndTab,
 				}
 
 				int iImage = -1;
-				HICON hIcon = RpImageWin32::toHICON(icon);
-				assert(hIcon != nullptr);
-				if (hIcon) {
-					const int idx = ImageList_AddIcon(himl, hIcon);
+				HBITMAP hbmIcon = RpImageWin32::toHBITMAP_alpha(icon);
+				assert(hbmIcon != nullptr);
+				if (hbmIcon) {
+					const int idx = ImageList_Add(himl, hbmIcon, nullptr);
 					if (idx >= 0) {
 						// Icon added.
 						iImage = idx;
 					}
 					// ImageList makes a copy of the icon.
-					DestroyIcon(hIcon);
+					DeleteBitmap(hbmIcon);
 				}
 
 				// Save the ImageList index for later.
