@@ -17,6 +17,10 @@
     opened. There's no way to wait for the user to select the "ROM Properties"
     section, since NautilusPropertiesModel is an abstract model, not an actual
     GtkWidget.
+  * Windows: Dark Mode is now supported on Windows 10 1809 and later in the
+    installation program and rp-config.
+    * Note that tab controls are not properly themed yet, and RichEdit controls
+      have some minor glitches.
 
 * New parsers:
   * Wim: Microsoft Windows Images, used by the Windows installer starting with
