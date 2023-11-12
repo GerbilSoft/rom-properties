@@ -1193,7 +1193,7 @@ void AboutTabPrivate::initDialog(void)
 	}
 	TCITEM tcItem;
 	tcItem.mask = TCIF_TEXT;
-	tcItem.pszText = _T("DUMMY");
+	tcItem.pszText = const_cast<LPTSTR>(_T("DUMMY"));
 	TabCtrl_InsertItem(hTabControl, MAX_TABS, &tcItem);
 
 	// Adjust the RichEdit position.

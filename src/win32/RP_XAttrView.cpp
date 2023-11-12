@@ -260,9 +260,9 @@ void RP_XAttrView_Private::initDialog(void)
 	LVCOLUMN lvColumn;
 	lvColumn.mask = LVCF_TEXT | LVCF_FMT;
 	lvColumn.fmt = LVCFMT_LEFT;
-	lvColumn.pszText = _T("Name");
+	lvColumn.pszText = const_cast<LPTSTR>(_T("Name"));
 	ListView_InsertColumn(hListViewADS, 0, &lvColumn);
-	lvColumn.pszText = _T("Value");
+	lvColumn.pszText = const_cast<LPTSTR>(_T("Value"));
 	ListView_InsertColumn(hListViewADS, 1, &lvColumn);
 
 	// Auto-size columns

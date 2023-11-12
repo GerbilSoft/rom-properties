@@ -888,7 +888,7 @@ int RP_ShellPropSheetExt_Private::initListData(_In_ HWND hWndTab,
 			} else {
 				// Don't show this column.
 				// FIXME: Zero-width column is a bad hack...
-				lvColumn.pszText = _T("");
+				lvColumn.pszText = const_cast<LPTSTR>(_T(""));
 				lvColumn.mask |= LVCF_WIDTH;
 				lvColumn.cx = 0;
 				ListView_InsertColumn(hListView, col, &lvColumn);
