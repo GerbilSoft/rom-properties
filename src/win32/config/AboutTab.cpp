@@ -874,6 +874,7 @@ void AboutTabPrivate::initProgramTitleText(void)
 	assert(hStaticIcon != nullptr);
 	assert(hStaticLine1 != nullptr);
 	assert(hStaticVersion != nullptr);
+	assert(hStaticUpdateCheck != nullptr);
 	assert(hTabControl != nullptr);
 	if (unlikely(!hStaticIcon || !hStaticLine1 || !hStaticVersion || !hTabControl)) {
 		// Something went wrong...
@@ -925,6 +926,17 @@ void AboutTabPrivate::initProgramTitleText(void)
 		SetWindowPos(hStaticVersion, nullptr, 0, 0,
 			rectStaticVersion.right - rectStaticVersion.left, sz_hStaticVersion.cy,
 			SWP_NOZORDER | SWP_NOOWNERZORDER | SWP_NOMOVE);
+
+		// Also adjust the update check static control.
+		HWND hStaticUpdateCheck = GetDlgItem(hWndPropSheet, IDC_ABOUT_UPDATE_CHECK);
+		assert(hStaticUpdateCheck != nullptr);
+		if (hStaticUpdateCheck) {
+			RECT rectStaticUpdateCheck;
+			GetWindowRect(hStaticUpdateCheck, &rectStaticUpdateCheck);
+			SetWindowPos(hStaticUpdateCheck, nullptr, 0, 0,
+				rectStaticUpdateCheck.right - rectStaticUpdateCheck.left, sz_hStaticVersion.cy,
+				SWP_NOZORDER | SWP_NOOWNERZORDER | SWP_NOMOVE);
+		}
 	}
 
 	// Set the icon.
