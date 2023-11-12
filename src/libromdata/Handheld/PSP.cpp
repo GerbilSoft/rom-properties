@@ -551,9 +551,7 @@ int PSP::loadFieldData(void)
 	// TODO: Parse firmware update PARAM.SFO and EBOOT.BIN?
 
 	// ISO object for ISO-9660 PVD
-	// TODO: DiscReader overload for ISO.
-	const PartitionFilePtr ptFile = std::make_shared<PartitionFile>(d->discReader.get(), 0, d->discReader->size());
-	ISO *const isoData = new ISO(ptFile);
+	ISO *const isoData = new ISO(d->discReader);
 	if (isoData->isOpen()) {
 		// Add the fields.
 		const RomFields *const isoFields = isoData->fields();
