@@ -240,7 +240,7 @@ namespace vhvc {
 	span(R&&) -> span<std::remove_reference_t<decltype(*std::declval<R>().data())>>;
 #endif
 
-#if __cpp_lib_byte >= 201603L
+#if __cpp_lib_byte >= 201603L && (!defined(_MSC_VER) || _MSC_VER >= 1920)
 	template<class ElementType, size_t Extent>
 	span<const std::byte, Extent == dynamic_extent ? dynamic_extent : sizeof(ElementType) * Extent>
 	as_bytes(span<ElementType, Extent> s) {

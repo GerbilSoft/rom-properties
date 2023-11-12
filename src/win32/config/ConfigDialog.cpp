@@ -37,7 +37,7 @@ DELAYLOAD_TEST_FUNCTION_IMPL1(textdomain, nullptr);
 #include "librptexture/img/RpGdiplusBackend.hpp"
 using namespace LibRpTexture;
 
-// Property sheet tabs.
+// Property sheet tabs
 #include "ImageTypesTab.hpp"
 #include "SystemsTab.hpp"
 #include "OptionsTab.hpp"
@@ -47,6 +47,15 @@ using namespace LibRpTexture;
 #  include "KeyManagerTab.hpp"
 #endif /* ENABLE_DECRYPTION */
 #include "AboutTab.hpp"
+
+// Win32 dark mode
+#include "libwin32darkmode/DarkMode.hpp"
+#include "libwin32darkmode/DarkModeCtrl.hpp"
+
+// Dark Mode background brush
+// FIXME: Cannot access ConfigDialogPrivate member variants from subclassProc().
+static HBRUSH hbrBkgnd = nullptr;
+static bool lastDarkModeEnabled = false;
 
 class ConfigDialogPrivate
 {
@@ -73,9 +82,6 @@ public:
 
 	// Subclass procedure for the Property Sheet.
 	static LRESULT CALLBACK subclassProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData);
-
-	// Create Property Sheet.
-	static INT_PTR CreatePropertySheet(void);
 };
 
 /** ConfigDialogPrivate **/
@@ -137,7 +143,7 @@ ConfigDialogPrivate::ConfigDialogPrivate()
 
 ConfigDialogPrivate::~ConfigDialogPrivate()
 {
-	// Delete the tabs.
+	// Delete the tabs
 	for (ITab *pTab : tabs) {
 		delete pTab;
 	}
@@ -225,6 +231,9 @@ LRESULT CALLBACK ConfigDialogPrivate::subclassProc(
 			break;
 
 		case WM_SHOWWINDOW: {
+			// NOTE: This should be in WM_CREATE, but we don't receive WM_CREATE here.
+			DarkMode_InitDialog(hWnd);
+
 			// Check for RTL.
 			if (LibWin32UI::isSystemRTL() != 0) {
 				// Set the dialog to allow automatic right-to-left adjustment.
@@ -254,6 +263,9 @@ LRESULT CALLBACK ConfigDialogPrivate::subclassProc(
 			HWND hBtnOK = GetDlgItem(hWnd, IDOK);
 			HWND hBtnCancel = GetDlgItem(hWnd, IDCANCEL);
 			HWND hTabControl = PropSheet_GetTabControl(hWnd);
+			assert(hBtnOK != nullptr);
+			assert(hBtnCancel != nullptr);
+			assert(hTabControl != nullptr);
 			if (!hBtnOK || !hBtnCancel || !hTabControl)
 				break;
 
@@ -286,10 +298,9 @@ LRESULT CALLBACK ConfigDialogPrivate::subclassProc(
 
 			// Fix up the tab order. ("Reset" should be after "Apply".)
 			HWND hBtnApply = GetDlgItem(hWnd, IDC_APPLY_BUTTON);
-			if (hBtnApply) {
-				SetWindowPos(hBtnReset, hBtnApply,
-					0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
-			}
+			assert(hBtnApply != nullptr);
+			SetWindowPos(hBtnReset, hBtnApply,
+				0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
 
 			// Create the "Defaults" button.
 			ptBtn.x += szBtn.cx + (rect_btnCancel.left - rect_btnOK.right);
@@ -304,6 +315,16 @@ LRESULT CALLBACK ConfigDialogPrivate::subclassProc(
 			// Fix up the tab order. ("Defaults" should be after "Reset".)
 			SetWindowPos(hBtnDefaults, hBtnReset,
 				0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+
+			// Set window themes for Win10's dark mode.
+			if (g_darkModeSupported) {
+				// FIXME: Dark mode for hTabControl.
+				DarkMode_InitButton(hBtnOK);
+				DarkMode_InitButton(hBtnCancel);
+				DarkMode_InitButton(hBtnApply);
+				DarkMode_InitButton(hBtnReset);
+				DarkMode_InitButton(hBtnDefaults);
+			}
 			break;
 		}
 
@@ -388,6 +409,48 @@ LRESULT CALLBACK ConfigDialogPrivate::subclassProc(
 			EnableWindow(GetDlgItem(hWnd, IDC_RP_DEFAULTS), (BOOL)wParam);
 			break;
 
+		/** Dark Mode **/
+
+		case WM_CTLCOLORDLG:
+		case WM_CTLCOLORSTATIC:
+			if (g_darkModeSupported && g_darkModeEnabled) {
+				HDC hdc = reinterpret_cast<HDC>(wParam);
+				SetTextColor(hdc, g_darkTextColor);
+				SetBkColor(hdc, g_darkBkColor);
+				if (!hbrBkgnd) {
+					hbrBkgnd = CreateSolidBrush(g_darkBkColor);
+				}
+				return reinterpret_cast<INT_PTR>(hbrBkgnd);
+			}
+			break;
+
+		case WM_SETTINGCHANGE:
+			if (g_darkModeSupported && IsColorSchemeChangeMessage(lParam)) {
+				SendMessage(hWnd, WM_THEMECHANGED, 0, 0);
+			}
+			break;
+
+		case WM_THEMECHANGED:
+			if (g_darkModeSupported) {
+				UpdateDarkModeEnabled();
+				if (lastDarkModeEnabled != g_darkModeEnabled) {
+					lastDarkModeEnabled = g_darkModeEnabled;
+					RefreshTitleBarThemeColor(hWnd);
+					InvalidateRect(hWnd, NULL, true);
+
+					// Propagate WM_THEMECHANGED to window controls that don't
+					// automatically handle Dark Mode changes, e.g. ComboBox and Button.
+					SendMessage(GetDlgItem(hWnd, IDOK), WM_THEMECHANGED, 0, 0);
+					SendMessage(GetDlgItem(hWnd, IDCANCEL), WM_THEMECHANGED, 0, 0);
+					SendMessage(GetDlgItem(hWnd, IDC_APPLY_BUTTON), WM_THEMECHANGED, 0, 0);
+					SendMessage(GetDlgItem(hWnd, IDC_RP_RESET), WM_THEMECHANGED, 0, 0);
+					SendMessage(GetDlgItem(hWnd, IDC_RP_DEFAULTS), WM_THEMECHANGED, 0, 0);
+
+					// Each tab will receive WM_SETTINGCHANGE / WM_THEMECHANGED directly.
+				}
+			}
+			break;
+
 		default:
 			break;
 	}
@@ -469,9 +532,19 @@ int CALLBACK rp_show_config_dialog(
 	// Initialize i18n.
 	rp_i18n_init();
 
+	// Enable dark mode if it's available.
+	InitDarkMode();
+	lastDarkModeEnabled = g_darkModeEnabled;
+
 	ConfigDialog *cfg = new ConfigDialog();
 	INT_PTR ret = cfg->exec();
 	delete cfg;
+
+	// Dark mode background brush
+	if (hbrBkgnd) {
+		DeleteBrush(hbrBkgnd);
+		hbrBkgnd = nullptr;
+	}
 
 	// Shut down GDI+.
 	GdiplusHelper::ShutdownGDIPlus(gdipToken);

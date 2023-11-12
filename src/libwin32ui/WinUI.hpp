@@ -83,17 +83,19 @@ static inline int measureTextSizeLink(HWND hWnd, HFONT hFont, const std::tstring
  * This function should be called on ListView creation
  * and if the system theme is changed.
  *
- * @return Alternate row color for ListViews.
+ * @param hListView ListView handle
+ * @return Alternate row color
  */
-COLORREF getAltRowColor(void);
+COLORREF ListView_GetBkColor_AltRow(HWND hListView);
 
 /**
  * Get the alternate row color for ListViews in ARGB32 format.
+ * @param hWnd ListView handle
  * @return Alternate row color for ListViews in ARGB32 format.
  */
-static inline uint32_t getAltRowColor_ARGB32(void)
+static inline uint32_t ListView_GetBkColor_AltRow_ARGB32(HWND hListView)
 {
-	const COLORREF color = getAltRowColor();
+	const COLORREF color = ListView_GetBkColor_AltRow(hListView);
 	return  (color & 0x00FF00) | 0xFF000000 |
 	       ((color & 0xFF) << 16) |
 	       ((color >> 16) & 0xFF);
@@ -115,12 +117,6 @@ static inline uint32_t GetSysColor_ARGB32(int nIndex)
 	       ((color & 0xFF) << 16) |
 	       ((color >> 16) & 0xFF);
 }
-
-/**
- * IsThemeActive() [wrapper function for uxtheme.dll!IsThemeActive]
- * @return True if a theme is active; false if not.
- */
-bool isThemeActive(void);
 
 /**
  * Are we using COMCTL32.DLL v6.10 or later?

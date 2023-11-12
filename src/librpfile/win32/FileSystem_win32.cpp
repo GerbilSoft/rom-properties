@@ -86,11 +86,11 @@ static inline wstring makeWinPath(const string &filename)
 	if (ISASCII(filename[0]) && ISALPHA(filename[0]) &&
 	    filename[1] == ':' && filename[2] == '\\')
 	{
-		// Absolute path. Prepend "\\?\" to the path.
+		// Absolute path. Prepend "\\\\?\\" to the path.
 		filenameW = L"\\\\?\\";
 		filenameW += U82W_s(filename);
 	} else {
-		// Not an absolute path, or "\\?\" is already
+		// Not an absolute path, or "\\\\?\\" is already
 		// prepended. Use it as-is.
 		filenameW = U82W_s(filename);
 	}
@@ -145,11 +145,11 @@ static inline wstring makeWinPath(const wstring &filename)
 	if (ISASCII(filename[0]) && ISALPHA(filename[0]) &&
 	    filename[1] == ':' && filename[2] == '\\')
 	{
-		// Absolute path. Prepend "\\?\" to the path.
+		// Absolute path. Prepend "\\\\?\\" to the path.
 		filenameW = L"\\\\?\\";
 		filenameW += filename;
 	} else {
-		// Not an absolute path, or "\\?\" is already
+		// Not an absolute path, or "\\\\?\\" is already
 		// prepended. Use it as-is.
 		filenameW = filename;
 	}

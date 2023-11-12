@@ -19,11 +19,19 @@
 #include "librpbase/img/RpPng.hpp"
 using namespace LibRpBase;
 
+// libwin32common
+#include "libwin32common/rp_versionhelpers.h"
+
 // libwin32ui
 #include "libwin32ui/AutoGetDC.hpp"
 #include "libwin32ui/LoadResource_i18n.hpp"
 using LibWin32UI::AutoGetDC_font;
 using LibWin32UI::LoadDialog_i18n;
+
+// Win32 dark mode
+#include "libwin32darkmode/DarkMode.hpp"
+#include "libwin32darkmode/DarkModeCtrl.hpp"
+#include "libwin32darkmode/ListViewUtil.hpp"
 
 // C++ STL classes
 using std::tstring;
@@ -66,6 +74,7 @@ public:
 
 	// Alternate row color.
 	COLORREF colorAltRow;
+	HBRUSH hbrAltRow;
 
 public:
 	/**
@@ -83,12 +92,20 @@ public:
 	 * @param plvcd	[in/out] NMLVCUSTOMDRAW
 	 * @return Return value.
 	 */
-	int ListView_CustomDraw(NMLVCUSTOMDRAW *plvcd) const;
+	inline int ListView_CustomDraw(NMLVCUSTOMDRAW *plvcd);
 
 	/**
 	 * Reset the configuration.
 	 */
 	void reset(void);
+
+public:
+	// Dark Mode background brush
+	HBRUSH hbrBkgnd;
+	bool lastDarkModeEnabled;
+
+	// Is this Windows 10 or later?
+	bool isWin10;
 };
 
 /** AchievementsTabPrivate **/
@@ -98,12 +115,26 @@ AchievementsTabPrivate::AchievementsTabPrivate()
 	, hWndPropSheet(nullptr)
 	, himglAch(nullptr)
 	, colorAltRow(0)
-{}
+	, hbrAltRow(nullptr)
+	, hbrBkgnd(nullptr)
+	, lastDarkModeEnabled(false)
+{
+	// Is this Windows 10 or later?
+	isWin10 = IsWindows10OrGreater();
+}
 
 AchievementsTabPrivate::~AchievementsTabPrivate()
 {
 	if (himglAch) {
 		ImageList_Destroy(himglAch);
+	}
+	if (hbrAltRow) {
+		DeleteBrush(hbrAltRow);
+	}
+
+	// Dark mode background brush
+	if (hbrBkgnd) {
+		DeleteBrush(hbrBkgnd);
 	}
 }
 
@@ -137,6 +168,18 @@ INT_PTR CALLBACK AchievementsTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wP
 			// Store the D object pointer with this particular page dialog.
 			SetWindowLongPtr(hDlg, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(d));
 
+			// NOTE: This should be in WM_CREATE, but we don't receive WM_CREATE here.
+			DarkMode_InitDialog(hDlg);
+			d->lastDarkModeEnabled = g_darkModeEnabled;
+
+			// Set window themes for Win10's dark mode.
+			if (g_darkModeSupported) {
+				// Initialize Dark Mode in the ListView.
+				HWND hListView = GetDlgItem(hDlg, IDC_ACHIEVEMENTS_LIST);
+				assert(hListView != nullptr);
+				DarkMode_InitListView(hListView);
+			}
+
 			// Reset the configuration.
 			d->reset();
 			return TRUE;
@@ -164,12 +207,62 @@ INT_PTR CALLBACK AchievementsTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wP
 			break;
 		}
 
-		case WM_SYSCOLORCHANGE:
-		case WM_THEMECHANGED: {
+		case WM_SYSCOLORCHANGE: {
 			auto *const d = reinterpret_cast<AchievementsTabPrivate*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
 			if (!d) {
 				// No AchievementsTabPrivate. Can't do anything...
 				return false;
+			}
+
+			// Update the ListView style.
+			d->updateListViewStyle();
+			break;
+		}
+
+		/** Dark Mode **/
+
+		case WM_CTLCOLORDLG:
+		case WM_CTLCOLORSTATIC:
+			if (g_darkModeSupported && g_darkModeEnabled) {
+				auto *const d = reinterpret_cast<AchievementsTabPrivate*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
+				if (!d) {
+					// No AchievementsTabPrivate. Can't do anything...
+					return FALSE;
+				}
+
+				HDC hdc = reinterpret_cast<HDC>(wParam);
+				SetTextColor(hdc, g_darkTextColor);
+				SetBkColor(hdc, g_darkBkColor);
+				if (!d->hbrBkgnd) {
+					d->hbrBkgnd = CreateSolidBrush(g_darkBkColor);
+				}
+				return reinterpret_cast<INT_PTR>(d->hbrBkgnd);
+			}
+			break;
+
+		case WM_SETTINGCHANGE:
+			if (g_darkModeSupported && IsColorSchemeChangeMessage(lParam)) {
+				SendMessage(hDlg, WM_THEMECHANGED, 0, 0);
+			}
+			break;
+
+		case WM_THEMECHANGED: {
+			auto *const d = reinterpret_cast<AchievementsTabPrivate*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
+			if (!d) {
+				// No AchievementsTabPrivate. Can't do anything...
+				return FALSE;
+			}
+
+			if (g_darkModeSupported) {
+				UpdateDarkModeEnabled();
+				if (d->lastDarkModeEnabled != g_darkModeEnabled) {
+					d->lastDarkModeEnabled = g_darkModeEnabled;
+					InvalidateRect(hDlg, NULL, true);
+
+					// Propagate WM_THEMECHANGED to window controls that don't
+					// automatically handle Dark Mode changes, e.g. ComboBox and Button.
+					SendMessage(GetDlgItem(hDlg, IDC_ACHIEVEMENTS_LIST), WM_THEMECHANGED, 0, 0);
+				}
 			}
 
 			// Update the ListView style.
@@ -225,15 +318,20 @@ void AchievementsTabPrivate::updateListViewStyle(void)
 		return;
 
 	// Set extended ListView styles.
+	// Double-buffering is enabled if using RDP or RemoteFX.
 	const DWORD lvsExStyle = likely(!GetSystemMetrics(SM_REMOTESESSION))
 		? LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER
-		: LVS_EX_DOUBLEBUFFER;
+		: LVS_EX_FULLROWSELECT;
 	ListView_SetExtendedListViewStyle(hListView, lvsExStyle);
 
 	// If the alt row color changed, redo the ImageList.
-	const COLORREF colorAltRow = LibWin32UI::getAltRowColor();
+	const COLORREF colorAltRow = LibWin32UI::ListView_GetBkColor_AltRow(hListView);
 	if (colorAltRow != this->colorAltRow) {
 		this->colorAltRow = colorAltRow;
+		if (hbrAltRow) {
+			DeleteBrush(hbrAltRow);
+			hbrAltRow = nullptr;
+		}
 		updateImageList();
 	}
 }
@@ -268,6 +366,19 @@ void AchievementsTabPrivate::updateImageList(void)
 		// >144dpi: Use 64x64.
 		iconSize = 64;
 	}
+#if 0
+	// TODO: Add 48x48 versions of the Achievements icons.
+	if (dpi <= 96) {
+		// [0,96] dpi: Use 32x32.
+		iconSize = 32;
+	} else if (dpi <= 144) {
+		// (96,144] dpi: Use 48x48.
+		iconSize = 48;
+	} else {
+		// >144dpi: Use 64x64.
+		iconSize = 64;
+	}
+#endif
 
 	// Create the image list.
 	himglAch = ImageList_Create(iconSize, iconSize, ILC_COLOR32,
@@ -290,30 +401,9 @@ void AchievementsTabPrivate::updateImageList(void)
 		HBITMAP hbmIcon = achSpriteSheet.getIcon(id, !unlocked, dpi);
 		assert(hbmIcon != nullptr);
 
-		// FIXME: Handle highlighting of alpha-transparent areas correctly.
-		bool bIconWasAdded = false;
-		if (hbmIcon) {
-			HICON hIcon = RpImageWin32::toHICON(hbmIcon);
-			assert(hIcon != nullptr);
-			if (hIcon) {
-				ImageList_AddIcon(himglAch, hIcon);
-				DestroyIcon(hIcon);
-				bIconWasAdded = true;
-			}
-			DeleteBitmap(hbmIcon);
-		}
-		if (!bIconWasAdded) {
-			// Add an empty icon.
-			const size_t icon_byte_count = iconSize * iconSize * sizeof(uint32_t);
-			unique_ptr<uint8_t[]> iconData(new uint8_t[icon_byte_count * 2]);
-			memset(&iconData[0], 0xFF, icon_byte_count);
-			memset(&iconData[icon_byte_count], 0xFF, icon_byte_count);
-			HICON hIcon = CreateIcon(HINST_THISCOMPONENT, iconSize, iconSize, 1, 1,
-				&iconData[0], &iconData[icon_byte_count]);
-			assert(hIcon != nullptr);
-			ImageList_AddIcon(himglAch, hIcon);
-			DestroyIcon(hIcon);
-		}
+		// Add the bitmap to the ImageList. (no mask needed)
+		ImageList_Add(himglAch, hbmIcon, nullptr);
+		DeleteBitmap(hbmIcon);
 	}
 
 	// NOTE: ListView uses LVSIL_SMALL for LVS_REPORT.
@@ -327,7 +417,7 @@ void AchievementsTabPrivate::updateImageList(void)
  * @param plvcd	[in/out] NMLVCUSTOMDRAW
  * @return Return value.
  */
-int AchievementsTabPrivate::ListView_CustomDraw(NMLVCUSTOMDRAW *plvcd) const
+inline int AchievementsTabPrivate::ListView_CustomDraw(NMLVCUSTOMDRAW *plvcd)
 {
 	int result = CDRF_DODEFAULT;
 	switch (plvcd->nmcd.dwDrawStage) {
@@ -345,9 +435,88 @@ int AchievementsTabPrivate::ListView_CustomDraw(NMLVCUSTOMDRAW *plvcd) const
 				// - Standard row colors are 19px high.
 				// - Alternate row colors are 17px high. (top and bottom lines ignored?)
 				plvcd->clrTextBk = colorAltRow;
-				result = CDRF_NEWFONT;
+			}
+			result = CDRF_NOTIFYSUBITEMDRAW | CDRF_NEWFONT;
+			break;
+
+		case CDDS_SUBITEM | CDDS_ITEMPREPAINT: {
+			// Leave the background color as-is, except for unselected alternate rows.
+			// This allows for proper icon transparency on Win10 (1809, 21H2).
+			// Still doesn't work on Windows 7, though...
+			if (plvcd->iSubItem != 0)
+				break;
+
+			const bool isOdd = !!(plvcd->nmcd.dwItemSpec % 2);
+			if (isWin10) { if (isOdd) {
+				// Windows 10 method. (Tested on 1809 and 21H2.)
+				// TODO: Check Windows 8?
+
+				// NOTE: We need to draw the background color if not highlighted or selected.
+				// NOTE 2: Need to check highlighted row ID because uItemState
+				// will be 0 if the user mouses over another column on the same row.
+				if (plvcd->nmcd.uItemState == 0 &&
+				    ListView_GetHotItem(plvcd->nmcd.hdr.hwndFrom) != plvcd->nmcd.dwItemSpec)
+				{
+					if (!hbrAltRow) {
+						hbrAltRow = CreateSolidBrush(colorAltRow);
+					}
+
+					// FIXME: On Win10 21H2, plvcd->nmcd.rc leaves a small border
+					// on the left side of the icon for subitem 0.
+					// On Windows XP: plvcd->nmcd.rc isn't initialized.
+					// Get the subitem RECT manually.
+					// TODO: Increase row height, or decrease icon size?
+					// The icon is slightly too big for the default row
+					// height on XP.
+					RECT rectSubItem;
+					BOOL bRet = ListView_GetSubItemRect(plvcd->nmcd.hdr.hwndFrom,
+						(int)plvcd->nmcd.dwItemSpec, plvcd->iSubItem, LVIR_BOUNDS, &rectSubItem);
+					if (bRet) {
+						FillRect(plvcd->nmcd.hdc, &rectSubItem, hbrAltRow);
+					}
+				}
+			} } else {
+				// Windows XP/7 method.
+
+				// Set the row background color.
+				// TODO: "Disabled" state?
+				// NOTE: plvcd->clrTextBk is set to 0xFF000000 here,
+				// not the actual default background color.
+				HBRUSH hbr;
+				if (plvcd->nmcd.uItemState & CDIS_SELECTED) {
+					// Row is selected.
+					hbr = (HBRUSH)(COLOR_HIGHLIGHT+1);
+				} else if (isOdd) {
+					// FIXME: On Windows 7:
+					// - Standard row colors are 19px high.
+					// - Alternate row colors are 17px high. (top and bottom lines ignored?)
+					if (!hbrAltRow) {
+						hbrAltRow = CreateSolidBrush(colorAltRow);
+					}
+					hbr = hbrAltRow;
+				} else {
+					// Standard row color. Draw it anyway in case
+					// the theme was changed, since ListView only
+					// partially recognizes theme changes.
+					hbr = (HBRUSH)(COLOR_WINDOW+1);
+				}
+
+				// FIXME: On Win10 21H2, plvcd->nmcd.rc leaves a small border
+				// on the left side of the icon for subitem 0.
+				// On Windows XP: plvcd->nmcd.rc isn't initialized.
+				// Get the subitem RECT manually.
+				// TODO: Increase row height, or decrease icon size?
+				// The icon is slightly too big for the default row
+				// height on XP.
+				RECT rectSubItem;
+				BOOL bRet = ListView_GetSubItemRect(plvcd->nmcd.hdr.hwndFrom,
+					(int)plvcd->nmcd.dwItemSpec, plvcd->iSubItem, LVIR_BOUNDS, &rectSubItem);
+				if (bRet) {
+					FillRect(plvcd->nmcd.hdc, &rectSubItem, hbr);
+				}
 			}
 			break;
+		}
 
 		default:
 			break;

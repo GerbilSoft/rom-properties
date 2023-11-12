@@ -26,6 +26,10 @@ using namespace LibRpText;
 #include "libwin32ui/LoadResource_i18n.hpp"
 using LibWin32UI::LoadDialog_i18n;
 
+// Win32 dark mode
+#include "libwin32darkmode/DarkMode.hpp"
+#include "libwin32darkmode/DarkModeCtrl.hpp"
+
 // C++ STL classes
 using std::string;
 using std::wstring;
@@ -64,9 +68,12 @@ using std::u16string;
 #endif
 
 // Useful RTF strings.
-// TODO: Custom color table for links is only needed on Win7 and earlier.
 #define RTF_START "{\\rtf1\\ansi\\ansicpg1252\\deff0\\deflang1033\n"
-#define RTF_COLOR_TABLE "{\\colortbl ;\\red0\\green102\\blue204;}\n"
+// Color table:
+// - cf1: Main text color (COLOR_WINDOWTEXT in light mode, g_darkTextColor in dark mode)
+// - cf2: Link color (Technically not needed on Win8+...)
+// The color table may be automatically updated on theme change.
+#define RTF_COLOR_TABLE "{\\colortbl ;\\red%03d\\green%03d\\blue%03d;\\red%03d\\green%03d\\blue%03d;}\n\\cf1"
 #define RTF_BR "\\par\n"
 #define RTF_TAB "\\tab "
 #define RTF_BULLET "\\bullet "
@@ -76,6 +83,14 @@ using std::u16string;
 #define RTF_ALIGN_CENTER "\\qc "
 #define RTF_BOLD_ON "\\b "
 #define RTF_BOLD_OFF "\\b0 "
+
+// RichEdit extended styles for light and dark modes
+// FIXME: Disabling WS_EX_TRANSPARENT is needed for a proper background
+// in dark mode, but it causes scroll bar and border shenanigans.
+#define RICHEDIT_EX_STYLE_LIGHT (WS_EX_LEFT | WS_EX_NOPARENTNOTIFY | WS_EX_CLIENTEDGE | WS_EX_TRANSPARENT)
+#define RICHEDIT_EX_STYLE_DARK  (WS_EX_LEFT | WS_EX_NOPARENTNOTIFY | WS_EX_CLIENTEDGE)
+#define UPDATE_CHECK_EX_STYLE_LIGHT (WS_EX_RIGHT | WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT)
+#define UPDATE_CHECK_EX_STYLE_DARK  (WS_EX_RIGHT | WS_EX_NOPARENTNOTIFY)
 
 class AboutTabPrivate
 {
@@ -195,6 +210,13 @@ protected:
 	HWND hUpdateCheck;	// UpdateCheck label
 
 	/**
+	 * Initialize the RTF color table.
+	 * @param buf Buffer for the RTF color table
+	 * @param size Size of buf
+	 */
+	void initRtfColorTable(char *buf, size_t size);
+
+	/**
 	 * Initialize the program title text.
 	 */
 	void initProgramTitleText(void);
@@ -220,11 +242,21 @@ protected:
 	 */
 	void setTabContents(int index);
 
+	/**
+	 * Update RTF color tables in existing RTF strings for the system theme.
+	 */
+	void updateRtfColorTablesInRtfStrings(void);
+
 public:
 	/**
 	 * Initialize the dialog.
 	 */
 	void initDialog(void);
+
+public:
+	// Dark Mode background brush
+	HBRUSH hbrBkgnd;
+	bool lastDarkModeEnabled;
 };
 
 /** AboutTabPrivate **/
@@ -238,6 +270,8 @@ AboutTabPrivate::AboutTabPrivate()
 	, updChecker(nullptr)
 	, hRichEdit(nullptr)
 	, hUpdateCheck(nullptr)
+	, hbrBkgnd(nullptr)
+	, lastDarkModeEnabled(false)
 {
 	memset(&rtfCtx_main, 0, sizeof(rtfCtx_main));
 	memset(&rtfCtx_upd, 0, sizeof(rtfCtx_upd));
@@ -266,6 +300,11 @@ AboutTabPrivate::~AboutTabPrivate()
 
 	if (updChecker) {
 		delete updChecker;
+	}
+
+	// Dark mode background brush
+	if (hbrBkgnd) {
+		DeleteBrush(hbrBkgnd);
 	}
 }
 
@@ -298,6 +337,10 @@ INT_PTR CALLBACK AboutTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, L
 
 			// Store the D object pointer with this particular page dialog.
 			SetWindowLongPtr(hDlg, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(d));
+
+			// NOTE: This should be in WM_CREATE, but we don't receive WM_CREATE here.
+			DarkMode_InitDialog(hDlg);
+			d->lastDarkModeEnabled = g_darkModeEnabled;
 
 			// Initialize the dialog.
 			d->initDialog();
@@ -374,7 +417,7 @@ INT_PTR CALLBACK AboutTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, L
 					assert(hTabControl != nullptr);
 					if (likely(hTabControl)) {
 						// Set the tab contents.
-						int index = TabCtrl_GetCurSel(hTabControl);
+						const int index = TabCtrl_GetCurSel(hTabControl);
 						d->setTabContents(index);
 					}
 					break;
@@ -407,6 +450,71 @@ INT_PTR CALLBACK AboutTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, L
 			d->updChecker_retrieved();
 			return TRUE;
 		}
+
+		/** Dark Mode **/
+
+		case WM_CTLCOLORDLG:
+		case WM_CTLCOLORSTATIC:
+			if (g_darkModeSupported && g_darkModeEnabled) {
+				auto *const d = reinterpret_cast<AboutTabPrivate*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
+				if (!d) {
+					// No AboutTabPrivate. Can't do anything...
+					return FALSE;
+				}
+
+				HDC hdc = reinterpret_cast<HDC>(wParam);
+				SetTextColor(hdc, g_darkTextColor);
+				SetBkColor(hdc, g_darkBkColor);
+				if (!d->hbrBkgnd) {
+					d->hbrBkgnd = CreateSolidBrush(g_darkBkColor);
+				}
+				return reinterpret_cast<INT_PTR>(d->hbrBkgnd);
+			}
+			break;
+
+		case WM_SETTINGCHANGE:
+			if (g_darkModeSupported && IsColorSchemeChangeMessage(lParam)) {
+				SendMessage(hDlg, WM_THEMECHANGED, 0, 0);
+			}
+			break;
+
+		case WM_THEMECHANGED:
+			if (g_darkModeSupported) {
+				auto *const d = reinterpret_cast<AboutTabPrivate*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
+				if (!d) {
+					// No ImageTypesTabPrivate. Can't do anything...
+					return FALSE;
+				}
+
+				UpdateDarkModeEnabled();
+				if (d->lastDarkModeEnabled != g_darkModeEnabled) {
+					d->lastDarkModeEnabled = g_darkModeEnabled;
+					// FIXME: InvalidateRect shouldn't be needed, but if it isn't
+					// used, it causes weird issues if WS_EX_TRANSPARENT is missing.
+					InvalidateRect(hDlg, NULL, true);
+
+					// RichEdit doesn't support dark mode per se, but we can
+					// adjust its background and text colors.
+
+					// Adjust the extended style to add/remove WS_EX_TRANSPARENT.
+					if (g_darkModeEnabled) {
+						SetWindowLongPtr(d->hRichEdit, GWL_EXSTYLE, RICHEDIT_EX_STYLE_DARK);
+						SetWindowLongPtr(d->hUpdateCheck, GWL_EXSTYLE, UPDATE_CHECK_EX_STYLE_DARK);
+					} else {
+						SetWindowLongPtr(d->hRichEdit, GWL_EXSTYLE, RICHEDIT_EX_STYLE_LIGHT);
+						SetWindowLongPtr(d->hUpdateCheck, GWL_EXSTYLE, UPDATE_CHECK_EX_STYLE_LIGHT);
+					}
+
+					// Set the RichEdit colors.
+					DarkMode_InitRichEdit(d->hRichEdit);
+					DarkMode_InitRichEdit(d->hUpdateCheck);
+
+					// Update the RTF color tables.
+					// This fixes text colors on Win10 21H2. (On 1809, it worked without this.)
+					d->updateRtfColorTablesInRtfStrings();
+				}
+			}
+			break;
 
 		default:
 			break;
@@ -475,8 +583,14 @@ void AboutTabPrivate::checkForUpdates(void)
 {
 	sVersionLabel.clear();
 	sVersionLabel.reserve(64);
+	sVersionLabel = RTF_START;
 
-	sVersionLabel = RTF_START RTF_ALIGN_RIGHT;
+	// Color table
+	char rtfColorTable[sizeof(RTF_COLOR_TABLE) + 16];
+	initRtfColorTable(rtfColorTable, sizeof(rtfColorTable));
+	sVersionLabel += rtfColorTable;
+
+	sVersionLabel += RTF_ALIGN_RIGHT;
 	sVersionLabel += rtfEscape(C_("AboutTab", "Checking for updates..."));
 
 	// NOTE: EM_SETTEXTEX doesn't seem to work.
@@ -494,8 +608,10 @@ void AboutTabPrivate::checkForUpdates(void)
 		// Failed to run the Update Checker.
 		sVersionLabel.clear();
 		sVersionLabel.reserve(64);
+		sVersionLabel = RTF_START;
+		sVersionLabel += rtfColorTable;
 
-		sVersionLabel = RTF_START RTF_ALIGN_RIGHT;
+		sVersionLabel += RTF_ALIGN_RIGHT;
 		sVersionLabel += rtfEscape(C_("AboutTab", "Update check failed!"));
 
 		// NOTE: EM_SETTEXTEX doesn't seem to work.
@@ -524,8 +640,14 @@ void AboutTabPrivate::updChecker_error(void)
 
 	sVersionLabel.clear();
 	sVersionLabel.reserve(128);
+	sVersionLabel = RTF_START;
 
-	sVersionLabel = RTF_START RTF_ALIGN_RIGHT RTF_BOLD_ON;
+	// Color table
+	char rtfColorTable[sizeof(RTF_COLOR_TABLE) + 16];
+	initRtfColorTable(rtfColorTable, sizeof(rtfColorTable));
+	sVersionLabel += rtfColorTable;
+
+	sVersionLabel += RTF_ALIGN_RIGHT RTF_BOLD_ON;
 	// tr: Error message template. (Windows version, without formatting)
 	sVersionLabel += rtfEscape(C_("AboutTab", "ERROR:"));
 	sVersionLabel += RTF_BOLD_OFF " ";
@@ -571,10 +693,13 @@ void AboutTabPrivate::updChecker_retrieved(void)
 
 	sVersionLabel.clear();
 	sVersionLabel.reserve(384);
-
-	// RTF starting sequence
 	sVersionLabel = RTF_START;
-	sVersionLabel += RTF_COLOR_TABLE;	// TODO: Skip on Win8+?
+
+	// Color table
+	char rtfColorTable[sizeof(RTF_COLOR_TABLE) + 16];
+	initRtfColorTable(rtfColorTable, sizeof(rtfColorTable));
+	sVersionLabel += rtfColorTable;
+
 	sVersionLabel += RTF_ALIGN_RIGHT;
 
 	char s_latest_version[128];
@@ -696,13 +821,44 @@ string AboutTabPrivate::rtfFriendlyLink(const char *link, const char *title)
 		// Friendly links are available.
 		// Reference: https://docs.microsoft.com/en-us/archive/blogs/murrays/richedit-friendly-name-hyperlinks
 		// TODO: Get the "proper" link color.
-		// TODO: Don't include cf1/cf0 on Win8+?
-		return rp_sprintf("{\\field{\\*\\fldinst{HYPERLINK \"%s\"}}{\\fldrslt{\\cf1\\ul %s\\ul0\\cf0 }}}",
+		// TODO: Don't include cf2/cf1 on Win8+?
+		return rp_sprintf("{\\field{\\*\\fldinst{HYPERLINK \"%s\"}}{\\fldrslt{\\cf2\\ul %s\\ul0\\cf1 }}}",
 			rtfEscape(link).c_str(), rtfEscape(title).c_str());
 	} else {
 		// No friendly links.
 		return rtfEscape(title);
 	}
+}
+
+/**
+ * Initialize the RTF color table.
+ * @param buf Buffer for the RTF color table
+ * @param size Size of buf
+ */
+void AboutTabPrivate::initRtfColorTable(char *buf, size_t size)
+{
+	union COLORREF_t {
+		struct {
+			uint8_t r;
+			uint8_t g;
+			uint8_t b;
+			uint8_t a;
+		};
+		COLORREF color;
+	};
+
+	COLORREF_t ctext, clink;
+	if (g_darkModeSupported && g_darkModeEnabled) {
+		ctext.color = g_darkTextColor;
+		clink.color = 0x00CC6600;	// TODO: Dark mode version.
+	} else {
+		ctext.color = GetSysColor(COLOR_WINDOWTEXT);
+		clink.color = 0x00CC6600;
+	}
+
+	snprintf(buf, size, RTF_COLOR_TABLE,
+		ctext.r, ctext.g, ctext.b,
+		clink.r, clink.g, clink.b);
 }
 
 /**
@@ -835,10 +991,12 @@ void AboutTabPrivate::initCreditsTab(void)
 {
 	sCredits.clear();
 	sCredits.reserve(4096);
-
-	// RTF starting sequence
 	sCredits = RTF_START;
-	sCredits += RTF_COLOR_TABLE;	// TODO: Skip on Win8+?
+
+	// Color table
+	char rtfColorTable[sizeof(RTF_COLOR_TABLE) + 16];
+	initRtfColorTable(rtfColorTable, sizeof(rtfColorTable));
+	sCredits += rtfColorTable;
 
 	// FIXME: Figure out how to get links to work without
 	// resorting to manually adding CFE_LINK data...
@@ -928,9 +1086,12 @@ void AboutTabPrivate::initLibrariesTab(void)
 
 	sLibraries.clear();
 	sLibraries.reserve(8192);
-
-	// RTF starting sequence
 	sLibraries = RTF_START;
+
+	// Color table
+	char rtfColorTable[sizeof(RTF_COLOR_TABLE) + 16];
+	initRtfColorTable(rtfColorTable, sizeof(rtfColorTable));
+	sLibraries += rtfColorTable;
 
 	// NOTE: These strings can NOT be static.
 	// Otherwise, they won't be retranslated if the UI language
@@ -1098,10 +1259,12 @@ void AboutTabPrivate::initSupportTab(void)
 {
 	sSupport.clear();
 	sSupport.reserve(4096);
-
-	// RTF starting sequence
 	sSupport = RTF_START;
-	sSupport += RTF_COLOR_TABLE;	// TODO: Skip on Win8+?
+
+	// Color table
+	char rtfColorTable[sizeof(RTF_COLOR_TABLE) + 16];
+	initRtfColorTable(rtfColorTable, sizeof(rtfColorTable));
+	sSupport += rtfColorTable;
 
 	sSupport += rtfEscape(C_("AboutTab|Support",
 		"For technical support, you can visit the following websites:"));
@@ -1174,6 +1337,68 @@ void AboutTabPrivate::setTabContents(int index)
 	rtfCtx_main.pos = 0;
 	EDITSTREAM es = { (DWORD_PTR)&rtfCtx_main, 0, EditStreamCallback };
 	SendMessage(hRichEdit, EM_STREAMIN, SF_RTF, (LPARAM)&es);
+
+	// FIXME: Due to the removal of WS_EX_TRANSPARENT for proper dark mode
+	// handling, the scroll bar doesn't show up properly sometimes.
+	// We'll need to invalidate the full control.
+	// FIXME: The scrollbar isn't redrawn properly if switching from
+	// a tab with no scrollbar to a tab that has one...
+	InvalidateRect(hRichEdit, nullptr, true);
+}
+
+/**
+ * Update RTF color tables for the system theme.
+ */
+void AboutTabPrivate::updateRtfColorTablesInRtfStrings(void)
+{
+	// Color table
+	char rtfColorTable[sizeof(RTF_COLOR_TABLE) + 16];
+	initRtfColorTable(rtfColorTable, sizeof(rtfColorTable));
+
+	// Update the strings, assuming the color table is present.
+	const size_t pos = sizeof(RTF_START) - 1;
+	const size_t len = strlen(rtfColorTable);
+
+	if (!sVersionLabel.empty()) {
+		sVersionLabel.replace(pos, len, rtfColorTable);
+	}
+
+	bool areTabsEmpty = true;
+	if (!sCredits.empty()) {
+		sCredits.replace(pos, len, rtfColorTable);
+		areTabsEmpty = false;
+	}
+	if (!sLibraries.empty()) {
+		sLibraries.replace(pos, len, rtfColorTable);
+		areTabsEmpty = false;
+	}
+	if (!sSupport.empty()) {
+		sSupport.replace(pos, len, rtfColorTable);
+		areTabsEmpty = false;
+	}
+
+	// Update the current tab contents.
+	if (!areTabsEmpty) {
+		HWND hTabControl = GetDlgItem(hWndPropSheet, IDC_ABOUT_TABCONTROL);
+		assert(hTabControl != nullptr);
+		if (likely(hTabControl)) {
+			// Set the tab contents.
+			const int index = TabCtrl_GetCurSel(hTabControl);
+			setTabContents(index);
+		}
+	}
+
+	// Update the version label.
+	// FIXME: Only if we're not currently checking for updates?
+	if (!sVersionLabel.empty()) {
+		// NOTE: EM_SETTEXTEX doesn't seem to work.
+		// We'll need to stream in the text instead.
+		// Reference: https://devblogs.microsoft.com/oldnewthing/20070110-13/?p=28463
+		rtfCtx_upd.str = &sVersionLabel;
+		rtfCtx_upd.pos = 0;
+		EDITSTREAM es = { (DWORD_PTR)&rtfCtx_upd, 0, EditStreamCallback };
+		SendMessage(hUpdateCheck, EM_STREAMIN, SF_RTF, (LPARAM)&es);
+	}
 }
 
 /**
@@ -1228,9 +1453,10 @@ void AboutTabPrivate::initDialog(void)
 #ifdef MSFTEDIT_USE_41
 	if (hMsftEdit_dll) {
 		HWND hRichEdit41 = CreateWindowEx(
-			WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT | WS_EX_LEFT | WS_EX_CLIENTEDGE,
+			RICHEDIT_EX_STYLE_LIGHT,	// if dark mode is enabled, this is updated later
 			MSFTEDIT_CLASS, _T(""),
-			WS_TABSTOP | ES_MULTILINE | ES_READONLY | WS_VSCROLL | ES_AUTOVSCROLL | WS_VISIBLE | WS_CHILD,
+			WS_TABSTOP | WS_VISIBLE | WS_CHILD | WS_VSCROLL |
+				ES_MULTILINE | ES_READONLY | ES_AUTOVSCROLL,
 			0, 0, 0, 0,
 			hWndPropSheet, nullptr, nullptr, nullptr);
 		if (hRichEdit41) {
@@ -1248,9 +1474,9 @@ void AboutTabPrivate::initDialog(void)
 		MapWindowPoints(hUpdateCheck, hWndPropSheet, (LPPOINT)&rectUpdateCheck, 2);
 
 		HWND hUpdateCheck41 = CreateWindowEx(
-			WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT | WS_EX_RIGHT,
+			UPDATE_CHECK_EX_STYLE_LIGHT,	// if dark mode is enabled, this is updated later
 			MSFTEDIT_CLASS, _T(""),
-			ES_MULTILINE | ES_READONLY | WS_VISIBLE | WS_CHILD,
+			WS_VISIBLE | WS_CHILD | ES_MULTILINE | ES_READONLY,
 			rectUpdateCheck.left, rectUpdateCheck.top,
 			rectUpdateCheck.right - rectUpdateCheck.left,
 			rectUpdateCheck.bottom - rectUpdateCheck.top,
@@ -1305,6 +1531,20 @@ void AboutTabPrivate::initDialog(void)
 	// Remove the dummy tab.
 	TabCtrl_DeleteItem(hTabControl, MAX_TABS);
 	TabCtrl_SetCurSel(hTabControl, 0);
+
+	if (g_darkModeSupported && g_darkModeEnabled) {
+		// RichEdit doesn't support dark mode per se, but we can
+		// adjust its background and text colors.
+
+		// Remove WS_EX_TRANSPARENT for proper background color display.
+		SetWindowLongPtr(hRichEdit, GWL_EXSTYLE, RICHEDIT_EX_STYLE_DARK);
+		SetWindowLongPtr(hUpdateCheck, GWL_EXSTYLE, UPDATE_CHECK_EX_STYLE_DARK);
+
+		// NOTE: These functions must be called again on theme change!
+		DarkMode_InitRichEdit(hRichEdit);
+		DarkMode_InitRichEdit(hUpdateCheck);
+	}
+
 	// Set tab contents to Credits.
 	setTabContents(0);
 }

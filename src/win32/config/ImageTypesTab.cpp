@@ -18,6 +18,10 @@ using namespace LibRpFile;
 #include "libwin32ui/LoadResource_i18n.hpp"
 using LibWin32UI::LoadDialog_i18n;
 
+// Win32 dark mode
+#include "libwin32darkmode/DarkMode.hpp"
+#include "libwin32darkmode/DarkModeCtrl.hpp"
+
 // C++ STL classes.
 using std::tstring;
 using std::vector;
@@ -141,6 +145,11 @@ public:
 	POINT pt_cboImageType;	// Starting point for the ComboBoxes.
 	SIZE sz_cboImageType;	// ComboBox size.
 	unsigned int cy_cboImageType_list;	// ComboBox list height.
+
+public:
+	// Dark Mode background brush
+	HBRUSH hbrBkgnd;
+	bool lastDarkModeEnabled;
 };
 
 // Control base ID.
@@ -152,6 +161,8 @@ ImageTypesTabPrivate::ImageTypesTabPrivate()
 	: hPropSheetPage(nullptr)
 	, hWndPropSheet(nullptr)
 	, cboImageType_lastAdded(nullptr)
+	, hbrBkgnd(nullptr)
+	, lastDarkModeEnabled(false)
 {
 	// Clear the grid parameters.
 	pt_cboImageType.x = 0;
@@ -170,6 +181,11 @@ ImageTypesTabPrivate::~ImageTypesTabPrivate()
 	// tmp_conf_filename should be empty,
 	// since it's only used when saving.
 	assert(tmp_conf_filename.empty());
+
+	// Dark mode background brush
+	if (hbrBkgnd) {
+		DeleteBrush(hbrBkgnd);
+	}
 }
 
 /** TImageTypesConfig functions (protected) **/
@@ -355,6 +371,7 @@ void ImageTypesTabPrivate::createComboBox(unsigned int cbid)
 		hWndPropSheet, (HMENU)(INT_PTR)(IDC_IMAGETYPES_CBOIMAGETYPE_BASE + cbid),
 		nullptr, nullptr);
 	SetWindowFont(hComboBox, hFontDlg, FALSE);
+	DarkMode_InitComboBox(hComboBox);
 	sysData.cboImageType[imageType] = hComboBox;
 
 	SetWindowPos(hComboBox,
@@ -544,6 +561,10 @@ INT_PTR CALLBACK ImageTypesTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 			// Store the D object pointer with this particular page dialog.
 			SetWindowLongPtr(hDlg, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(d));
 
+			// NOTE: This should be in WM_CREATE, but we don't receive WM_CREATE here.
+			DarkMode_InitDialog(hDlg);
+			d->lastDarkModeEnabled = g_darkModeEnabled;
+
 			// Initialize strings.
 			d->initStrings();
 
@@ -647,6 +668,60 @@ INT_PTR CALLBACK ImageTypesTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 			}
 			break;
 		}
+
+		/** Dark Mode **/
+
+		case WM_CTLCOLORDLG:
+		case WM_CTLCOLORSTATIC:
+			if (g_darkModeSupported && g_darkModeEnabled) {
+				auto *const d = reinterpret_cast<ImageTypesTabPrivate*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
+				if (!d) {
+					// No ImageTypesTabPrivate. Can't do anything...
+					return FALSE;
+				}
+
+				HDC hdc = reinterpret_cast<HDC>(wParam);
+				SetTextColor(hdc, g_darkTextColor);
+				SetBkColor(hdc, g_darkBkColor);
+				if (!d->hbrBkgnd) {
+					d->hbrBkgnd = CreateSolidBrush(g_darkBkColor);
+				}
+				return reinterpret_cast<INT_PTR>(d->hbrBkgnd);
+			}
+			break;
+
+		case WM_SETTINGCHANGE:
+			if (g_darkModeSupported && IsColorSchemeChangeMessage(lParam)) {
+				SendMessage(hDlg, WM_THEMECHANGED, 0, 0);
+			}
+			break;
+
+		case WM_THEMECHANGED:
+			if (g_darkModeSupported) {
+				auto *const d = reinterpret_cast<ImageTypesTabPrivate*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
+				if (!d) {
+					// No ImageTypesTabPrivate. Can't do anything...
+					return FALSE;
+				}
+
+				UpdateDarkModeEnabled();
+				if (d->lastDarkModeEnabled != g_darkModeEnabled) {
+					d->lastDarkModeEnabled = g_darkModeEnabled;
+					InvalidateRect(hDlg, NULL, true);
+
+					// Propagate WM_THEMECHANGED to window controls that don't
+					// automatically handle Dark Mode changes, e.g. ComboBox and Button.
+					for (int sys = ImageTypesConfig::sysCount() - 1; sys >= 0; sys--) {
+						for (int imageType = ImageTypesConfig::imageTypeCount() - 1; imageType >= 0; imageType--) {
+							HWND hComboBox = GetDlgItem(hDlg, IDC_IMAGETYPES_CBOIMAGETYPE_BASE + sysAndImageTypeToCbid(sys, imageType));
+							if (hComboBox) {
+								SendMessage(hComboBox, WM_THEMECHANGED, 0, 0);
+							}
+						}
+					}
+				}
+			}
+			break;
 
 		default:
 			break;

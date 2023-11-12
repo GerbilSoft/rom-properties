@@ -174,9 +174,10 @@ int measureTextSizeLink(HWND hWnd, HFONT hFont, const TCHAR *tstr, LPSIZE lpSize
  * This function should be called on ListView creation
  * and if the system theme is changed.
  *
- * @return Alternate row color for ListViews.
+ * @param hListView ListView handle
+ * @return Alternate row color
  */
-COLORREF getAltRowColor(void)
+COLORREF ListView_GetBkColor_AltRow(HWND hListView)
 {
 	union {
 		COLORREF color;
@@ -187,7 +188,7 @@ COLORREF getAltRowColor(void)
 			uint8_t a;
 		};
 	} rgb;
-	rgb.color = GetSysColor(COLOR_WINDOW);
+	rgb.color = ListView_GetBkColor(hListView);
 
 	// TODO: Better "convert to grayscale" and brighten/darken algorithms?
 	// TODO: Handle color component overflow.
@@ -200,37 +201,6 @@ COLORREF getAltRowColor(void)
 	}
 
 	return rgb.color;
-}
-
-/**
- * IsThemeActive() [wrapper function for uxtheme.dll!IsThemeActive]
- * @return True if a theme is active; false if not.
- */
-bool isThemeActive(void)
-{
-	// NOTE: isThemeActive() is rarely used.
-	// (only by DragImageLabel)
-	// Hence, we're not going to cache the module handle.
-
-	// uxtheme.dll!IsThemeActive
-	typedef BOOL (STDAPICALLTYPE* PFNISTHEMEACTIVE)(void);
-
-	HMODULE hUxTheme_dll = LoadLibraryEx(_T("uxtheme.dll"), nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
-	assert(hUxTheme_dll != nullptr);
-	if (!hUxTheme_dll)
-		return false;
-
-	PFNISTHEMEACTIVE pfnIsThemeActive =
-		reinterpret_cast<PFNISTHEMEACTIVE>(GetProcAddress(hUxTheme_dll, "IsThemeActive"));
-	assert(pfnIsThemeActive != nullptr);
-	if (!pfnIsThemeActive) {
-		FreeLibrary(hUxTheme_dll);
-		return false;
-	}
-
-	const bool bRet = !!pfnIsThemeActive();
-	FreeLibrary(hUxTheme_dll);
-	return bRet;
 }
 
 /**

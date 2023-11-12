@@ -22,6 +22,10 @@ using namespace LibRpFile;
 #include "libwin32ui/LoadResource_i18n.hpp"
 using LibWin32UI::LoadDialog_i18n;
 
+// Win32 dark mode
+#include "libwin32darkmode/DarkMode.hpp"
+#include "libwin32darkmode/DarkModeCtrl.hpp"
+
 // Netowrk status
 #include "NetworkStatus.h"
 
@@ -32,6 +36,7 @@ class OptionsTabPrivate
 {
 public:
 	OptionsTabPrivate();
+	~OptionsTabPrivate();
 
 private:
 	RP_DISABLE_COPY(OptionsTabPrivate)
@@ -119,6 +124,11 @@ public:
 
 	// PAL language codes for GameTDB.
 	static const uint32_t pal_lc[];
+
+public:
+	// Dark Mode background brush
+	HBRUSH hbrBkgnd;
+	bool lastDarkModeEnabled;
 };
 
 /** OptionsTabPrivate **/
@@ -134,7 +144,17 @@ OptionsTabPrivate::OptionsTabPrivate()
 	: hPropSheetPage(nullptr)
 	, hWndPropSheet(nullptr)
 	, changed(false)
+	, hbrBkgnd(nullptr)
+	, lastDarkModeEnabled(false)
 {}
+
+OptionsTabPrivate::~OptionsTabPrivate()
+{
+	// Dark mode background brush
+	if (hbrBkgnd) {
+		DeleteBrush(hbrBkgnd);
+	}
+}
 
 /**
  * Reset the configuration.
@@ -394,6 +414,10 @@ INT_PTR CALLBACK OptionsTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam,
 			// Store the D object pointer with this particular page dialog.
 			SetWindowLongPtr(hDlg, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(d));
 
+			// NOTE: This should be in WM_CREATE, but we don't receive WM_CREATE here.
+			DarkMode_InitDialog(hDlg);
+			d->lastDarkModeEnabled = g_darkModeEnabled;
+
 			// Populate the combo boxes.
 			const tstring s_dl_None = U82T_c(C_("OptionsTab", "Don't download any images"));
 			const tstring s_dl_NormalRes = U82T_c(C_("OptionsTab", "Download normal-resolution images"));
@@ -414,6 +438,21 @@ INT_PTR CALLBACK OptionsTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam,
 			if (cboLanguage) {
 				LanguageComboBox_SetForcePAL(cboLanguage, true);
 				LanguageComboBox_SetLCs(cboLanguage, pal_lc);
+			}
+
+			// Set window themes for Win10's dark mode.
+			if (g_darkModeSupported) {
+				DarkMode_InitButton_Dlg(hDlg, IDC_OPTIONS_GRPDOWNLOADS);
+				DarkMode_InitButton_Dlg(hDlg, IDC_OPTIONS_GRPEXTIMGDL);
+				DarkMode_InitButton_Dlg(hDlg, IDC_OPTIONS_CHKEXTIMGDL);
+				DarkMode_InitComboBox(cboUnmeteredDL);
+				DarkMode_InitComboBox(cboMeteredDL);
+				DarkMode_InitButton_Dlg(hDlg, IDC_OPTIONS_INTICONSMALL);
+				DarkMode_InitButton_Dlg(hDlg, IDC_OPTIONS_STOREFILEORIGININFO);
+				DarkMode_InitComboBoxEx(cboLanguage);
+				DarkMode_InitButton_Dlg(hDlg, IDC_OPTIONS_GRPOPTIONS);
+				DarkMode_InitButton_Dlg(hDlg, IDC_OPTIONS_DANGEROUSPERMISSIONS);
+				DarkMode_InitButton_Dlg(hDlg, IDC_OPTIONS_ENABLETHUMBNAILONNETWORKFS);
 			}
 
 			// Reset the configuration. 338
@@ -498,6 +537,62 @@ INT_PTR CALLBACK OptionsTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam,
 			d->loadDefaults();
 			break;
 		}
+
+		/** Dark Mode **/
+
+		case WM_CTLCOLORDLG:
+		case WM_CTLCOLORSTATIC:
+			if (g_darkModeSupported && g_darkModeEnabled) {
+				auto *const d = reinterpret_cast<OptionsTabPrivate*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
+				if (!d) {
+					// No OptionsTabPrivate. Can't do anything...
+					return FALSE;
+				}
+
+				HDC hdc = reinterpret_cast<HDC>(wParam);
+				SetTextColor(hdc, g_darkTextColor);
+				SetBkColor(hdc, g_darkBkColor);
+				if (!d->hbrBkgnd) {
+					d->hbrBkgnd = CreateSolidBrush(g_darkBkColor);
+				}
+				return reinterpret_cast<INT_PTR>(d->hbrBkgnd);
+			}
+			break;
+
+		case WM_SETTINGCHANGE:
+			if (g_darkModeSupported && IsColorSchemeChangeMessage(lParam)) {
+				SendMessage(hDlg, WM_THEMECHANGED, 0, 0);
+			}
+			break;
+
+		case WM_THEMECHANGED:
+			if (g_darkModeSupported) {
+				auto *const d = reinterpret_cast<OptionsTabPrivate*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
+				if (!d) {
+					// No OptionsTabPrivate. Can't do anything...
+					return FALSE;
+				}
+
+				UpdateDarkModeEnabled();
+				if (d->lastDarkModeEnabled != g_darkModeEnabled) {
+					d->lastDarkModeEnabled = g_darkModeEnabled;
+					InvalidateRect(hDlg, NULL, true);
+
+					// Propagate WM_THEMECHANGED to window controls that don't
+					// automatically handle Dark Mode changes, e.g. ComboBox and Button.
+					SendMessage(GetDlgItem(hDlg, IDC_OPTIONS_CBO_UNMETERED_DL), WM_THEMECHANGED, 0, 0);
+					SendMessage(GetDlgItem(hDlg, IDC_OPTIONS_CBO_METERED_DL), WM_THEMECHANGED, 0, 0);
+
+					// ComboBoxEx needs extra handling.
+					// TODO: Move this to LanguageComboBox's window procedure?
+					HWND cboGameTDBPAL = GetDlgItem(hDlg, IDC_OPTIONS_PALLANGUAGEFORGAMETDB);
+					assert(cboGameTDBPAL != nullptr);
+					SendMessage(cboGameTDBPAL, WM_THEMECHANGED, 0, 0);
+					HWND hCombo = reinterpret_cast<HWND>(SendMessage(cboGameTDBPAL, CBEM_GETCOMBOCONTROL, 0, 0));
+					SendMessage(hCombo, WM_THEMECHANGED, 0, 0);
+				}
+			}
+			break;
 
 		default:
 			break;

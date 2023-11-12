@@ -27,6 +27,11 @@
 #include "libwin32common/rp_versionhelpers.h"
 #include "tcharx.h"
 
+// Win32 dark mode
+#include "libwin32darkmode/DarkMode.hpp"
+#include "libwin32darkmode/DarkModeCtrl.hpp"
+#include "gdipmini.h"	// needed for GDI+ init
+
 // librpsecure
 #include "librpsecure/os-secure.h"
 #include "librpsecure/restrict-dll.h"
@@ -134,6 +139,10 @@ static HICON hIconInfo = NULL;		// USER32.dll,-104
 static RECT rectStatus1_noIcon;
 static RECT rectStatus1_icon;
 
+// Dark Mode background brush
+static HBRUSH hbrBkgnd = NULL;
+static bool lastDarkModeEnabled = false;
+
 /**
  * Show a status message.
  * @param hDlg Dialog.
@@ -209,8 +218,8 @@ static void ShowStatusMessage(HWND hDlg, const TCHAR *line1, const TCHAR *line2,
  */
 static inline void EnableButtons(HWND hDlg, bool enable)
 {
-	EnableWindow(GetDlgItem(hDlg, IDC_BUTTON_INSTALL), enable);
 	EnableWindow(GetDlgItem(hDlg, IDC_BUTTON_UNINSTALL), enable);
+	EnableWindow(GetDlgItem(hDlg, IDC_BUTTON_INSTALL), enable);
 }
 
 /**
@@ -672,6 +681,15 @@ static void InitDialog(HWND hDlg)
 
 	static_assert(ARRAY_SIZE(g_archs) == ARRAY_SIZE(bHasMsvcForArch), "bHasMsvcForArch[] is out of sync with g_archs[]!");
 
+	// Set window themes for Win10's dark mode.
+	if (g_darkModeSupported) {
+		//  NOTE: This should be in WM_CREATE, but we don't receive WM_CREATE here.
+		DarkMode_InitDialog(hDlg);
+
+		DarkMode_InitButton_Dlg(hDlg, IDC_BUTTON_UNINSTALL);
+		DarkMode_InitButton_Dlg(hDlg, IDC_BUTTON_INSTALL);
+	}
+
 	// Clear the lines.
 	line1[0] = _T('\0');
 	line2[0] = _T('\0');
@@ -975,6 +993,43 @@ static INT_PTR CALLBACK DialogProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM l
 			}
 			return TRUE;
 
+		/** Dark Mode **/
+
+		case WM_CTLCOLORDLG:
+		case WM_CTLCOLORSTATIC:
+			if (g_darkModeSupported && g_darkModeEnabled) {
+				HDC hdc = (HDC)wParam;
+				SetTextColor(hdc, g_darkTextColor);
+				SetBkColor(hdc, g_darkBkColor);
+				if (!hbrBkgnd) {
+					hbrBkgnd = CreateSolidBrush(g_darkBkColor);
+				}
+				return (INT_PTR)hbrBkgnd;
+			}
+			break;
+
+		case WM_SETTINGCHANGE:
+			if (g_darkModeSupported && IsColorSchemeChangeMessage(lParam)) {
+				SendMessage(hDlg, WM_THEMECHANGED, 0, 0);
+			}
+			break;
+
+		case WM_THEMECHANGED:
+			if (g_darkModeSupported) {
+				UpdateDarkModeEnabled();
+				if (lastDarkModeEnabled != g_darkModeEnabled) {
+					lastDarkModeEnabled = g_darkModeEnabled;
+					RefreshTitleBarThemeColor(hDlg);
+					InvalidateRect(hDlg, NULL, true);
+
+					// Propagate WM_THEMECHANGED to window controls that don't
+					// automatically handle Dark Mode changes, e.g. ComboBox and Button.
+					SendMessage(GetDlgItem(hDlg, IDC_BUTTON_UNINSTALL), WM_THEMECHANGED, 0, 0);
+					SendMessage(GetDlgItem(hDlg, IDC_BUTTON_INSTALL), WM_THEMECHANGED, 0, 0);
+				}
+			}
+			break;
+
 		default:
 			break;
 	}
@@ -1165,6 +1220,26 @@ int CALLBACK _tWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstanc
 		return EXIT_FAILURE;
 	}
 
+	// Enable dark mode if it's available.
+	InitDarkMode();
+	ULONG_PTR gdipToken = 0;
+	if (g_darkModeSupported) {
+		// Dark mode is supported. Initialize GDI+.
+		GdiplusStartupInput gdipSI;
+		gdipSI.GdiplusVersion = 1;
+		gdipSI.DebugEventCallback = NULL;
+		gdipSI.SuppressBackgroundThread = FALSE;
+		gdipSI.SuppressExternalCodecs = FALSE;
+		int status = GdiplusStartup(&gdipToken, &gdipSI, NULL);
+		if (status != 0) {
+			// Failed to initialize GDI+. Disable Dark Mode.
+			gdipToken = 0;
+			g_darkModeSupported = false;
+			g_darkModeEnabled = false;
+		}
+	}
+	lastDarkModeEnabled = g_darkModeEnabled;
+
 	// Load the icon.
 	hIconDialog = (HICON)LoadImage(
 		hInstance, MAKEINTRESOURCE(IDI_SVRPLUS), IMAGE_ICON,
@@ -1185,6 +1260,16 @@ int CALLBACK _tWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstanc
 	}
 	if (hIconDialogSmall) {
 		DestroyIcon(hIconDialogSmall);
+	}
+
+	// Delete the dark mode brush if it was allocated.
+	if (hbrBkgnd) {
+		DeleteBrush(hbrBkgnd);
+	}
+
+	if (gdipToken) {
+		// Shut down GDI+.
+		GdiplusShutdown(gdipToken);
 	}
 
 	CloseHandle(g_hSingleInstanceMutex);

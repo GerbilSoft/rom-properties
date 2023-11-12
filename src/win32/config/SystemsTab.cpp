@@ -18,6 +18,10 @@ using namespace LibRpFile;
 #include "libwin32ui/LoadResource_i18n.hpp"
 using LibWin32UI::LoadDialog_i18n;
 
+// Win32 dark mode
+#include "libwin32darkmode/DarkMode.hpp"
+#include "libwin32darkmode/DarkModeCtrl.hpp"
+
 // C++ STL classes
 using std::tstring;
 
@@ -25,6 +29,7 @@ class SystemsTabPrivate
 {
 public:
 	SystemsTabPrivate();
+	~SystemsTabPrivate();
 
 private:
 	RP_DISABLE_COPY(SystemsTabPrivate)
@@ -72,6 +77,11 @@ public:
 
 	// Has the user changed anything?
 	bool changed;
+
+public:
+	// Dark Mode background brush
+	HBRUSH hbrBkgnd;
+	bool lastDarkModeEnabled;
 };
 
 /** SystemsTabPrivate **/
@@ -80,7 +90,17 @@ SystemsTabPrivate::SystemsTabPrivate()
 	: hPropSheetPage(nullptr)
 	, hWndPropSheet(nullptr)
 	, changed(false)
+	, hbrBkgnd(nullptr)
+	, lastDarkModeEnabled(false)
 {}
+
+SystemsTabPrivate::~SystemsTabPrivate()
+{
+	// Dark mode background brush
+	if (hbrBkgnd) {
+		DeleteBrush(hbrBkgnd);
+	}
+}
 
 /**
  * Reset the configuration.
@@ -238,6 +258,10 @@ INT_PTR CALLBACK SystemsTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam,
 			// Store the D object pointer with this particular page dialog.
 			SetWindowLongPtr(hDlg, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(d));
 
+			// NOTE: This should be in WM_CREATE, but we don't receive WM_CREATE here.
+			DarkMode_InitDialog(hDlg);
+			d->lastDarkModeEnabled = g_darkModeEnabled;
+
 			// Populate the combo boxes.
 			HWND hwndDmgTs = GetDlgItem(hDlg, IDC_SYSTEMS_DMGTS_DMG);
 			ComboBox_AddString(hwndDmgTs, _T("Game Boy"));
@@ -250,6 +274,15 @@ INT_PTR CALLBACK SystemsTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam,
 			ComboBox_AddString(hwndDmgTs, _T("Game Boy"));
 			ComboBox_AddString(hwndDmgTs, _T("Super Game Boy"));
 			ComboBox_AddString(hwndDmgTs, _T("Game Boy Color"));
+
+			// Set window themes for Win10's dark mode.
+			// FIXME: Not working for BS_GROUPBOX.
+			if (g_darkModeSupported) {
+				DarkMode_InitButton_Dlg(hDlg, IDC_SYSTEMS_DMGTS_GROUPBOX);
+				DarkMode_InitComboBox_Dlg(hDlg, IDC_SYSTEMS_DMGTS_DMG);
+				DarkMode_InitComboBox_Dlg(hDlg, IDC_SYSTEMS_DMGTS_SGB);
+				DarkMode_InitComboBox_Dlg(hDlg, IDC_SYSTEMS_DMGTS_CGB);
+			}
 
 			// Reset the configuration.
 			d->reset();
@@ -323,6 +356,55 @@ INT_PTR CALLBACK SystemsTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam,
 			d->loadDefaults();
 			break;
 		}
+
+		/** Dark Mode **/
+
+		case WM_CTLCOLORDLG:
+		case WM_CTLCOLORSTATIC:
+			if (g_darkModeSupported && g_darkModeEnabled) {
+				auto *const d = reinterpret_cast<SystemsTabPrivate*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
+				if (!d) {
+					// No SystemsTabPrivate. Can't do anything...
+					return FALSE;
+				}
+
+				HDC hdc = reinterpret_cast<HDC>(wParam);
+				SetTextColor(hdc, g_darkTextColor);
+				SetBkColor(hdc, g_darkBkColor);
+				if (!d->hbrBkgnd) {
+					d->hbrBkgnd = CreateSolidBrush(g_darkBkColor);
+				}
+				return reinterpret_cast<INT_PTR>(d->hbrBkgnd);
+			}
+			break;
+
+		case WM_SETTINGCHANGE:
+			if (g_darkModeSupported && IsColorSchemeChangeMessage(lParam)) {
+				SendMessage(hDlg, WM_THEMECHANGED, 0, 0);
+			}
+			break;
+
+		case WM_THEMECHANGED:
+			if (g_darkModeSupported) {
+				auto *const d = reinterpret_cast<SystemsTabPrivate*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
+				if (!d) {
+					// No SystemsTabPrivate. Can't do anything...
+					return FALSE;
+				}
+
+				UpdateDarkModeEnabled();
+				if (d->lastDarkModeEnabled != g_darkModeEnabled) {
+					d->lastDarkModeEnabled = g_darkModeEnabled;
+					InvalidateRect(hDlg, NULL, true);
+
+					// Propagate WM_THEMECHANGED to window controls that don't
+					// automatically handle Dark Mode changes, e.g. ComboBox and Button.
+					SendMessage(GetDlgItem(hDlg, IDC_SYSTEMS_DMGTS_DMG), WM_THEMECHANGED, 0, 0);
+					SendMessage(GetDlgItem(hDlg, IDC_SYSTEMS_DMGTS_SGB), WM_THEMECHANGED, 0, 0);
+					SendMessage(GetDlgItem(hDlg, IDC_SYSTEMS_DMGTS_CGB), WM_THEMECHANGED, 0, 0);
+				}
+			}
+			break;
 
 		default:
 			break;

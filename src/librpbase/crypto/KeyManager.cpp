@@ -174,15 +174,17 @@ int KeyManagerPrivate::processConfigLine(const char *section, const char *name, 
 
 	// Parse the value.
 	const uint32_t vKeys_start_pos = static_cast<uint32_t>(vKeys.size());
-	const uint32_t vKeys_pos = vKeys_start_pos;
-	// Reserve space for half of the key string.
-	// Key string is ASCII hex, so two characters make up one byte.
-	vKeys.resize(vKeys.size() + len);
-	int ret = KeyManager::hexStringToBytes(value, &vKeys[vKeys_pos], len);
-	if (ret != 0) {
-		// Invalid character(s) encountered.
-		vKeys.resize(vKeys_start_pos);
-		return 1;
+	const uint32_t vKeys_pos = vKeys_start_pos;	// FIXME: Not needed?
+	if (len > 0) {
+		// Reserve space for half of the key string.
+		// Key string is ASCII hex, so two characters make up one byte.
+		vKeys.resize(vKeys.size() + len);
+		int ret = KeyManager::hexStringToBytes(value, &vKeys[vKeys_pos], len);
+		if (ret != 0) {
+			// Invalid character(s) encountered.
+			vKeys.resize(vKeys_start_pos);
+			return 1;
+		}
 	}
 	if (is_odd_len) {
 		// Odd length. Parse the last nybble and append a 0.
@@ -191,7 +193,7 @@ int KeyManagerPrivate::processConfigLine(const char *section, const char *name, 
 		buf[0] = value[value_len-1];
 		buf[1] = '0';
 		vKeys.resize(vKeys.size() + 2);
-		ret = KeyManager::hexStringToBytes(buf, &vKeys[vKeys_pos+len], 1);
+		int ret = KeyManager::hexStringToBytes(buf, &vKeys[vKeys_pos+len], 1);
 		if (ret != 0) {
 			// Invalid character(s) encountered.
 			vKeys.resize(vKeys_start_pos);

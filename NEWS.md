@@ -17,6 +17,10 @@
     opened. There's no way to wait for the user to select the "ROM Properties"
     section, since NautilusPropertiesModel is an abstract model, not an actual
     GtkWidget.
+  * Windows: Dark Mode is now supported on Windows 10 1809 and later in the
+    installation program and rp-config.
+    * Note that tab controls are not properly themed yet, and RichEdit controls
+      have some minor glitches.
 
 * New parsers:
   * Wim: Microsoft Windows Images, used by the Windows installer starting with
@@ -99,6 +103,8 @@
     * Affects: v1.1 - v2.2.1
   * Windows: Fix a memory leak when decrypting AES-CTR data (e.g. Nintendo 3DS
     ROM images) on Windows XP.
+  * Fix a crash when decoding PNGs or other zlib-encoded data on Windows XP.
+    * Affects: v2.2 - v2.2.1
 
 * Other changes:
   * Nintendo3DS: The "Options" menu no longer shows a grayed-out "Extract SRL"
