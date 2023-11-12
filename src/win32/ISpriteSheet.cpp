@@ -80,19 +80,15 @@ HBITMAP ISpriteSheet::getSubBitmap(const rp_image *imgSpriteSheet, int x, int y,
 
 	// Create a DIB section for the sub-icon.
 	void *pvBits;
-	HDC hDC = GetDC(nullptr);
 	HBITMAP hbmIcon = CreateDIBSection(
-		hDC,		// hdc
+		nullptr,	// hdc
 		reinterpret_cast<const BITMAPINFO*>(&bmihDIBSection),	// pbmi
 		DIB_RGB_COLORS,	// usage
 		&pvBits,	// ppvBits
 		nullptr,	// hSection
 		0);		// offset
-
-	GdiFlush();	// TODO: Not sure if needed here...
 	assert(hbmIcon != nullptr);
 	if (!hbmIcon) {
-		ReleaseDC(nullptr, hDC);
 		return nullptr;
 	}
 
@@ -108,7 +104,6 @@ HBITMAP ISpriteSheet::getSubBitmap(const rp_image *imgSpriteSheet, int x, int y,
 		pSrc += srcStride;
 	}
 
-	ReleaseDC(nullptr, hDC);
 	return hbmIcon;
 }
 
