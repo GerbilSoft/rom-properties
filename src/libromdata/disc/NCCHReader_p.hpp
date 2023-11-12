@@ -177,9 +177,6 @@ protected:
 	inline void closeFileOrDiscReader(void)
 	{
 		RP_Q(NCCHReader);
-		if (q->m_hasDiscReader) {
-			q->m_discReader.reset();
-		}
 		if (q->m_file) {
 			q->m_file.reset();
 		}

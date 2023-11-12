@@ -382,15 +382,10 @@ size_t NCCHReaderPrivate::readFromROM(uint32_t offset, void *ptr, size_t size)
 
 	// Seek to the start of the data and read it.
 	const off64_t phys_addr = ncch_offset + offset;
-	size_t sz_read;
-	if (q->m_hasDiscReader) {
-		sz_read = q->m_discReader->seekAndRead(phys_addr, ptr, size);
-	} else {
-		sz_read = q->m_file->seekAndRead(phys_addr, ptr, size);
-	}
+	size_t sz_read = q->m_file->seekAndRead(phys_addr, ptr, size);
 	if (sz_read != size) {
 		// Seek and/or read error.
-		q->m_lastError = (q->m_hasDiscReader ? q->m_discReader->lastError() : q->m_file->lastError());
+		q->m_lastError = q->m_file->lastError();
 		if (q->m_lastError == 0) {
 			q->m_lastError = EIO;
 		}

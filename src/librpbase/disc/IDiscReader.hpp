@@ -22,11 +22,10 @@
 
 namespace LibRpBase {
 
-class NOVTABLE IDiscReader
+class NOVTABLE IDiscReader : public LibRpFile::IRpFile
 {
 	protected:
 		explicit IDiscReader(const LibRpFile::IRpFilePtr &file);
-		explicit IDiscReader(const std::shared_ptr<IDiscReader> &discReader);
 	public:
 		virtual ~IDiscReader() = default;
 
@@ -47,104 +46,45 @@ class NOVTABLE IDiscReader
 
 	public:
 		/**
-		 * Is the disc image open?
+		 * Is the file open?
 		 * This usually only returns false if an error occurred.
-		 * @return True if the disc image is open; false if it isn't.
+		 * @return True if the file is open; false if it isn't.
 		 */
-		bool isOpen(void) const;
-
-		/**
-		 * Get the last error.
-		 * @return Last POSIX error, or 0 if no error.
-		 */
-		inline int lastError(void) const
+		bool isOpen(void) const final
 		{
-			return m_lastError;
+			return (m_file && m_file->isOpen());
 		}
-
-		/**
-		 * Clear the last error.
-		 */
-		inline void clearError(void)
-		{
-			m_lastError = 0;
-		}
-
-		/**
-		 * Read data from the disc image.
-		 * @param ptr Output data buffer.
-		 * @param size Amount of data to read, in bytes.
-		 * @return Number of bytes read.
-		 */
-		ATTR_ACCESS_SIZE(write_only, 2, 3)
-		virtual size_t read(void *ptr, size_t size) = 0;
-
-		/**
-		 * Set the disc image position.
-		 * @param pos Disc image position
-		 * @return 0 on success; -1 on error
-		 */
-		virtual int seek(off64_t pos) = 0;
-
-		/**
-		 * Seek to the beginning of the file.
-		 */
-		inline void rewind(void)
-		{
-			this->seek(0);
-		}
-
-		/**
-		 * Get the disc image position.
-		 * @return Disc image position on success; -1 on error.
-		 */
-		virtual off64_t tell(void) = 0;
-
-		/**
-		 * Get the disc image size.
-		 * @return Disc image size, or -1 on error.
-		 */
-		virtual off64_t size(void) = 0;
 
 	public:
-		/** Convenience functions implemented for all IDiscReader subclasses. **/
+		/**
+		 * Close the underlying file.
+		 */
+		void close(void) final
+		{
+			if (m_file) {
+				m_file->close();
+			}
+		}
 
 		/**
-		 * Seek to the specified address, then read data.
-		 * @param pos	[in] Requested seek address.
-		 * @param ptr	[out] Output data buffer.
-		 * @param size	[in] Amount of data to read, in bytes.
-		 * @return Number of bytes read on success; 0 on seek or read error.
+		 * Write data to the file.
+		 * @param ptr	[in] Input data buffer.
+		 * @param size	[in] Amount of data to write, in bytes.
+		 * @return Number of bytes written.
 		 */
-		ATTR_ACCESS_SIZE(write_only, 3, 4)
-		size_t seekAndRead(off64_t pos, void *ptr, size_t size);
-
-		/**
-		 * Seek to a relative offset. (SEEK_CUR)
-		 * @param pos Relative offset
-		 * @return 0 on success; -1 on error
-		 */
-		int seek_cur(off64_t offset);
-
-	public:
-		/** Device file functions **/
-
-		/**
-		 * Is the underlying file a device file?
-		 * @return True if the underlying file is a device file; false if not.
-		 */
-		bool isDevice(void) const;
+		ATTR_ACCESS_SIZE(read_only, 2, 3)
+		size_t write(const void *ptr, size_t size) final
+		{
+			// Not implemented for IDiscReader.
+			RP_UNUSED(ptr);
+			RP_UNUSED(size);
+			return 0;
+		}
 
 	protected:
-		int m_lastError;
-		bool m_hasDiscReader;
-
-		// Subclasses may have an underlying file, or may
-		// stack another IDiscReader object.
-		// NOTE: This used to be a union{} prior to the std::shared_ptr<> conversion.
-		// TODO: Convert to std::variant<>?
+		// The underlying file for this IDiscReader.
+		// May also be another IDiscReader for layering.
 		LibRpFile::IRpFilePtr m_file;
-		std::shared_ptr<IDiscReader> m_discReader;
 };
 
 typedef std::shared_ptr<IDiscReader> IDiscReaderPtr;

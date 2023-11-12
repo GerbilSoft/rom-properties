@@ -86,26 +86,26 @@ XDVDFSPartitionPrivate::XDVDFSPartitionPrivate(XDVDFSPartition *q,
 	// Clear the XDVDFS header struct.
 	memset(&xdvdfsHeader, 0, sizeof(xdvdfsHeader));
 
-	if (!q->m_discReader) {
+	if (!q->m_file) {
 		q->m_lastError = EIO;
 		return;
-	} else if (!q->m_discReader->isOpen()) {
-		q->m_lastError = q->m_discReader->lastError();
+	} else if (!q->m_file->isOpen()) {
+		q->m_lastError = q->m_file->lastError();
 		if (q->m_lastError == 0) {
 			q->m_lastError = EIO;
 		}
-		q->m_discReader.reset();
+		q->m_file.reset();
 		return;
 	}
 
 	// Load the XDVDFS header.
-	size_t size = q->m_discReader->seekAndRead(
+	size_t size = q->m_file->seekAndRead(
 		partition_offset + (XDVDFS_HEADER_LBA_OFFSET * XDVDFS_BLOCK_SIZE),
 		&xdvdfsHeader, sizeof(xdvdfsHeader));
 	if (size != sizeof(xdvdfsHeader)) {
 		// Seek and/or read error.
 		memset(&xdvdfsHeader, 0, sizeof(xdvdfsHeader));
-		q->m_discReader.reset();
+		q->m_file.reset();
 		return;
 	}
 
@@ -115,7 +115,7 @@ XDVDFSPartitionPrivate::XDVDFSPartitionPrivate(XDVDFSPartition *q,
 	{
 		// Invalid XDVDFS header.
 		memset(&xdvdfsHeader, 0, sizeof(xdvdfsHeader));
-		q->m_discReader.reset();
+		q->m_file.reset();
 		return;
 	}
 
@@ -269,7 +269,7 @@ const rp::uvector<uint8_t> *XDVDFSPartitionPrivate::getDirectory(const char *pat
 	}
 
 	// DiscReader must be available now.
-	if (unlikely(!q->m_discReader)) {
+	if (unlikely(!q->m_file)) {
 		// DiscReader isn't open.
 		q->m_lastError = EIO;
 		return nullptr;
@@ -301,10 +301,10 @@ const rp::uvector<uint8_t> *XDVDFSPartitionPrivate::getDirectory(const char *pat
 
 	// Read the directory.
 	rp::uvector<uint8_t> dirTable(dir_size);
-	size_t size = q->m_discReader->seekAndRead(dir_addr, dirTable.data(), dirTable.size());
+	size_t size = q->m_file->seekAndRead(dir_addr, dirTable.data(), dirTable.size());
 	if (size != dirTable.size()) {
 		// Seek and/or read error.
-		q->m_lastError = q->m_discReader->lastError();
+		q->m_lastError = q->m_file->lastError();
 		if (q->m_lastError == 0) {
 			q->m_lastError = EIO;
 		}
@@ -350,16 +350,16 @@ XDVDFSPartition::~XDVDFSPartition()
  */
 size_t XDVDFSPartition::read(void *ptr, size_t size)
 {
-	assert(m_discReader != nullptr);
-	assert(m_discReader->isOpen());
-	if (!m_discReader || !m_discReader->isOpen()) {
+	assert(m_file != nullptr);
+	assert(m_file->isOpen());
+	if (!m_file || !m_file->isOpen()) {
 		m_lastError = EBADF;
 		return 0;
 	}
 
 	// XDVDFS partitions are stored as-is.
 	// TODO: data_size checks?
-	return m_discReader->read(ptr, size);
+	return m_file->read(ptr, size);
 }
 
 /**
@@ -370,16 +370,16 @@ size_t XDVDFSPartition::read(void *ptr, size_t size)
 int XDVDFSPartition::seek(off64_t pos)
 {
 	RP_D(XDVDFSPartition);
-	assert(m_discReader != nullptr);
-	assert(m_discReader->isOpen());
-	if (!m_discReader ||  !m_discReader->isOpen()) {
+	assert(m_file != nullptr);
+	assert(m_file->isOpen());
+	if (!m_file ||  !m_file->isOpen()) {
 		m_lastError = EBADF;
 		return -1;
 	}
 
-	int ret = m_discReader->seek(d->partition_offset + pos);
+	int ret = m_file->seek(d->partition_offset + pos);
 	if (ret != 0) {
-		m_lastError = m_discReader->lastError();
+		m_lastError = m_file->lastError();
 	}
 	return ret;
 }
@@ -391,16 +391,16 @@ int XDVDFSPartition::seek(off64_t pos)
 off64_t XDVDFSPartition::tell(void)
 {
 	RP_D(XDVDFSPartition);
-	assert(m_discReader != nullptr);
-	assert(m_discReader->isOpen());
-	if (!m_discReader ||  !m_discReader->isOpen()) {
+	assert(m_file != nullptr);
+	assert(m_file->isOpen());
+	if (!m_file ||  !m_file->isOpen()) {
 		m_lastError = EBADF;
 		return -1;
 	}
 
-	off64_t ret = m_discReader->tell() - d->partition_offset;
+	off64_t ret = m_file->tell() - d->partition_offset;
 	if (ret < 0) {
-		m_lastError = m_discReader->lastError();
+		m_lastError = m_file->lastError();
 	}
 	return ret;
 }
@@ -415,7 +415,7 @@ off64_t XDVDFSPartition::size(void)
 {
 	// TODO: Restrict partition size?
 	RP_D(const XDVDFSPartition);
-	if (!m_discReader)
+	if (!m_file)
 		return -1;
 	return d->partition_size;
 }
@@ -431,7 +431,7 @@ off64_t XDVDFSPartition::partition_size(void) const
 {
 	// TODO: Restrict partition size?
 	RP_D(const XDVDFSPartition);
-	if (!m_discReader)
+	if (!m_file)
 		return -1;
 	return d->partition_size;
 }
@@ -585,9 +585,9 @@ IRpFilePtr XDVDFSPartition::open(const char *filename)
 time_t XDVDFSPartition::xdvdfsTimestamp(void) const
 {
 	RP_D(const XDVDFSPartition);
-	assert(m_discReader != nullptr);
-	assert(m_discReader->isOpen());
-	if (!m_discReader ||  !m_discReader->isOpen()) {
+	assert(m_file != nullptr);
+	assert(m_file->isOpen());
+	if (!m_file ||  !m_file->isOpen()) {
 		// XDVDFS isn't loaded.
 		const_cast<XDVDFSPartition*>(this)->m_lastError = EBADF;
 		return -1;
