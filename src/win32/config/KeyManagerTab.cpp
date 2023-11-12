@@ -168,7 +168,6 @@ public:
 	bool bAllowKanji;	// Allow kanji in the editor.
 
 	bool isComCtl32_v610;	// Is this COMCTL32.dll v6.10 or later?
-	bool isWin10;		// Is this Windows 10 or later?
 
 	// Icons for the "Valid?" column.
 	// NOTE: "?" and "X" are copies from User32.
@@ -280,9 +279,6 @@ KeyManagerTabPrivate::KeyManagerTabPrivate()
 {
 	// Check the COMCTL32.DLL version.
 	isComCtl32_v610 = LibWin32UI::isComCtl32_v610();
-
-	// Is this Windows 10 or later?
-	isWin10 = IsWindows10OrGreater();
 }
 
 KeyManagerTabPrivate::~KeyManagerTabPrivate()
@@ -1430,8 +1426,8 @@ inline int KeyManagerTabPrivate::ListView_CustomDraw(NMLVCUSTOMDRAW *plvcd)
 					// Custom drawing this subitem.
 					result = CDRF_SKIPDEFAULT;
 
-					if (isWin10) {
-						// Windows 10 method. (Tested on 1809 and 21H2.)
+					if (g_darkModeEnabled) {
+						// Windows 10 Dark Mode method. (Tested on 1809 and 21H2.)
 						// TODO: Check Windows 8?
 
 						// Alternate row color, if necessary.
@@ -1444,7 +1440,9 @@ inline int KeyManagerTabPrivate::ListView_CustomDraw(NMLVCUSTOMDRAW *plvcd)
 							FillRect(plvcd->nmcd.hdc, pRcSubItem, hbrAltRow);
 						}
 					} else {
-						// Windows XP/7 method.
+						// Windows XP/7 method. (Also Windows 10 Light Mode.)
+						// FIXME: May have been changed to the Dark Mode method
+						// in 21H2, or sometime after 1809.
 
 						// Set the row background color.
 						// TODO: "Disabled" state?

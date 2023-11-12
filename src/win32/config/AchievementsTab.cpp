@@ -103,9 +103,6 @@ public:
 	// Dark Mode background brush
 	HBRUSH hbrBkgnd;
 	bool lastDarkModeEnabled;
-
-	// Is this Windows 10 or later?
-	bool isWin10;
 };
 
 /** AchievementsTabPrivate **/
@@ -119,8 +116,6 @@ AchievementsTabPrivate::AchievementsTabPrivate()
 	, hbrBkgnd(nullptr)
 	, lastDarkModeEnabled(false)
 {
-	// Is this Windows 10 or later?
-	isWin10 = IsWindows10OrGreater();
 }
 
 AchievementsTabPrivate::~AchievementsTabPrivate()
@@ -447,8 +442,8 @@ inline int AchievementsTabPrivate::ListView_CustomDraw(NMLVCUSTOMDRAW *plvcd)
 				break;
 
 			const bool isOdd = !!(plvcd->nmcd.dwItemSpec % 2);
-			if (isWin10) { if (isOdd) {
-				// Windows 10 method. (Tested on 1809 and 21H2.)
+			if (g_darkModeEnabled) { if (isOdd) {
+				// Windows 10 Dark Mode method. (Tested on 1809 and 21H2.)
 				// TODO: Check Windows 8?
 
 				// NOTE: We need to draw the background color if not highlighted or selected.
@@ -476,7 +471,9 @@ inline int AchievementsTabPrivate::ListView_CustomDraw(NMLVCUSTOMDRAW *plvcd)
 					}
 				}
 			} } else {
-				// Windows XP/7 method.
+				// Windows XP/7 method. (Also Windows 10 Light Mode.)
+				// FIXME: May have been changed to the Dark Mode method
+				// in 21H2, or sometime after 1809.
 
 				// Set the row background color.
 				// TODO: "Disabled" state?
