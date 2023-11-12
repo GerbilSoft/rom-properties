@@ -25,11 +25,11 @@ public:
 	 * NOTE: The IDiscReader *must* remain valid while this
 	 * XDVDFSPartition is open.
 	 *
-	 * @param discReader IDiscReader.
-	 * @param partition_offset Partition start offset.
-	 * @param partition_size Partition size.
+	 * @param discReader IDiscReader (or IRpFile)
+	 * @param partition_offset Partition start offset
+	 * @param partition_size Partition size
 	 */
-	XDVDFSPartition(const LibRpBase::IDiscReaderPtr &discReader, off64_t partition_offset, off64_t partition_size);
+	XDVDFSPartition(const LibRpFile::IRpFilePtr &discReader, off64_t partition_offset, off64_t partition_size);
 public:
 	~XDVDFSPartition() final;
 

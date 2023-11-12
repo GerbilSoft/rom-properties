@@ -24,8 +24,7 @@ namespace LibRomData {
 class IsoPartitionPrivate
 {
 public:
-	IsoPartitionPrivate(IsoPartition *q,
-		off64_t partition_offset, int iso_start_offset);
+	IsoPartitionPrivate(IsoPartition *q, off64_t partition_offset, int iso_start_offset);
 
 private:
 	RP_DISABLE_COPY(IsoPartitionPrivate)
@@ -479,13 +478,13 @@ time_t IsoPartitionPrivate::parseTimestamp(const ISO_Dir_DateTime_t *isofiletime
 /** IsoPartition **/
 
 /**
- * Construct an IsoPartition with the specified IDiscReader.
+ * Construct an IsoPartition with the specified IDiscReader (or IRpFile).
  *
- * @param discReader IDiscReader
+ * @param discReader IDiscReader (or IRpFile)
  * @param partition_offset Partition start offset.
  * @param iso_start_offset ISO start offset, in blocks. (If -1, uses heuristics.)
  */
-IsoPartition::IsoPartition(const IDiscReaderPtr &discReader, off64_t partition_offset, int iso_start_offset)
+IsoPartition::IsoPartition(const IRpFilePtr &discReader, off64_t partition_offset, int iso_start_offset)
 	: super(discReader)
 	, d_ptr(new IsoPartitionPrivate(this, partition_offset, iso_start_offset))
 {}

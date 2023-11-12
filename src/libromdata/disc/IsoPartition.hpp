@@ -18,23 +18,13 @@ class IsoPartition final : public LibRpBase::IPartition
 {
 public:
 	/**
-	 * Construct an IsoPartition with the specified IRpFile.
-	 * *** EXPLICITLY DELETED ***
+	 * Construct an IsoPartition with the specified IDiscReader (or IRpFile).
 	 *
-	 * @param file IRpFile
+	 * @param discReader IDiscReader (or IRpFile)
 	 * @param partition_offset Partition start offset.
 	 * @param iso_start_offset ISO start offset, in blocks. (If -1, uses heuristics.)
 	 */
-	IsoPartition(const LibRpFile::IRpFilePtr &file, off64_t partition_offset, int iso_start_offset = -1) = delete;
-
-	/**
-	 * Construct an IsoPartition with the specified IDiscReader.
-	 *
-	 * @param discReader IDiscReader
-	 * @param partition_offset Partition start offset.
-	 * @param iso_start_offset ISO start offset, in blocks. (If -1, uses heuristics.)
-	 */
-	IsoPartition(const LibRpBase::IDiscReaderPtr &discReader, off64_t partition_offset, int iso_start_offset = -1);
+	IsoPartition(const LibRpFile::IRpFilePtr &discReader, off64_t partition_offset, int iso_start_offset = -1);
 public:
 	~IsoPartition() final;
 

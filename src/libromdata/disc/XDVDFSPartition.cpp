@@ -326,11 +326,11 @@ const rp::uvector<uint8_t> *XDVDFSPartitionPrivate::getDirectory(const char *pat
  * NOTE: The IDiscReader *must* remain valid while this
  * XDVDFSPartition is open.
  *
- * @param discReader IDiscReader.
- * @param partition_offset Partition start offset.
- * @param partition_size Partition size.
+ * @param discReader IDiscReader (or IRpFile)
+ * @param partition_offset Partition start offset
+ * @param partition_size Partition size
  */
-XDVDFSPartition::XDVDFSPartition(const IDiscReaderPtr &discReader, off64_t partition_offset, off64_t partition_size)
+XDVDFSPartition::XDVDFSPartition(const IRpFilePtr &discReader, off64_t partition_offset, off64_t partition_size)
 	: super(discReader)
 	, d_ptr(new XDVDFSPartitionPrivate(this, partition_offset, partition_size))
 { }

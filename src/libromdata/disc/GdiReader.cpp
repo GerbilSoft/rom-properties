@@ -655,8 +655,8 @@ IsoPartitionPtr GdiReader::openIsoPartition(int trackNumber)
 		return nullptr;
 	}
 
-	// FIXME: IsoPartition's constructor requires an IDiscReaderPtr,
-	// but we don't have our own shared_ptr<> available.
+	// FIXME: IsoPartition's constructor requires an IDiscReaderPtr
+	// or IRpFilePtr, but we don't have our own shared_ptr<> available.
 	// Workaround: Create a PartitionFile and use that.
 	PartitionFilePtr isoFile = std::make_shared<PartitionFile>(this,
 		static_cast<off64_t>(lba_start) * 2048,
@@ -666,17 +666,9 @@ IsoPartitionPtr GdiReader::openIsoPartition(int trackNumber)
 		return nullptr;
 	}
 
-	// NOTE: IsoPartition *only* works properly with IDiscReader.
-	IDiscReaderPtr discReader = std::make_shared<DiscReader>(isoFile);
-	if (!discReader->isOpen()) {
-		// Unable to open the DiscReader.
-		return nullptr;
-	}
-
 	// Logical block size is 2048.
 	// ISO starting offset is the LBA.
-	// FIXME BEFORE COMMIT: Verify that this works correctly.
-	return std::make_shared<IsoPartition>(discReader, 0, lba_start);
+	return std::make_shared<IsoPartition>(isoFile, 0, lba_start);
 }
 
 /**
