@@ -1040,6 +1040,10 @@ int RP_ShellPropSheetExt_Private::initListData(_In_ HWND hWndTab,
 		if (himl) {
 			// NOTE: ListView uses LVSIL_SMALL for LVS_REPORT.
 			ListView_SetImageList(hListView, himl, LVSIL_SMALL);
+			const uint32_t lvBgColor[2] = {
+				ListView_GetBkColor(hListView) | 0xFF000000,
+				LibWin32UI::ListView_GetBkColor_AltRow(hListView) | 0xFF000000
+			};
 
 			// Add icons.
 			uint8_t rowColorIdx = 0;
@@ -1092,7 +1096,8 @@ int RP_ShellPropSheetExt_Private::initListData(_In_ HWND hWndTab,
 
 					// Resize the icon.
 					const rp_image_const_ptr icon_resized = icon->resized(
-						szResize.cx, szResize.cy, rp_image::AlignVCenter);
+						szResize.cx, szResize.cy,
+						rp_image::AlignVCenter, lvBgColor[rowColorIdx]);
 					assert((bool)icon_resized);
 					if (icon_resized) {
 						icon = icon_resized;
