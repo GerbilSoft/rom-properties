@@ -105,8 +105,16 @@ using std::vector;
 #include "Other/Lua.hpp"
 #include "Other/Wim.hpp"
 
-// Special case for Dreamcast save files.
+// Special case for Dreamcast save files
 #include "Console/dc_structs.h"
+
+// Sparse disc image formats
+#include "disc/CisoGcnReader.hpp"
+#include "disc/CisoPspReader.hpp"
+#include "disc/GczReader.hpp"
+#include "disc/NASOSReader.hpp"
+#include "disc/WbfsReader.hpp"
+#include "disc/WuxReader.hpp"
 
 namespace LibRomData {
 
@@ -120,6 +128,8 @@ private:
 	RP_DISABLE_COPY(RomDataFactoryPrivate)
 
 public:
+	/** RomData subclass check arrays **/
+
 	typedef int (*pfnIsRomSupported_t)(const RomData::DetectInfo *info);
 	typedef const RomDataInfo * (*pfnRomDataInfo_t)(void);
 	typedef RomData* (*pfnNewRomData_t)(const IRpFilePtr &file);
@@ -141,7 +151,7 @@ public:
 	 * @param klass Class name.
 	 */
 	template<typename klass>
-	static LibRpBase::RomData *RomData_ctor(const IRpFilePtr &file)
+	static RomData *RomData_ctor(const IRpFilePtr &file)
 	{
 		return new klass(file);
 	}
@@ -177,6 +187,7 @@ public:
 	// in each function.
 	static const RomDataFns *const romDataFns_tbl[];
 
+public:
 	/**
 	 * Attempt to open the other file in a Dreamcast .VMI+.VMS pair.
 	 * @param file One opened file in the .VMI+.VMS pair.
@@ -184,6 +195,40 @@ public:
 	 */
 	static RomDataPtr openDreamcastVMSandVMI(const IRpFilePtr &file);
 
+public:
+	/** Sparse disc image check arrays **/
+
+	typedef int (*pfnSparseIsDiscSupported)(const uint8_t *pHeader, size_t szHeader);
+	typedef SparseDiscReader* (*pfnNewSparseDiscReader_t)(const IRpFilePtr &file);
+
+	struct SparseDiscReaderFns {
+		pfnSparseIsDiscSupported isDiscSupported;
+		pfnNewSparseDiscReader_t newSparseDiscReader;
+
+		// Magic numbers to check.
+		// Up to 4 magic numbers can be specified for multiple formats.
+		// 0 == end of magic list
+		uint32_t magic[4];
+	};
+
+	/**
+	 * Templated function to construct a new SparseDiscReader subclass.
+	 * @param klass Class name.
+	 */
+	template<typename klass>
+	static SparseDiscReader *SparseDiscReader_ctor(const IRpFilePtr &file)
+	{
+		return new klass(file);
+	}
+
+#define GetSparseDiscReaderFns(discType, magic) \
+	{discType::isDiscSupported_static, \
+	 RomDataFactoryPrivate::SparseDiscReader_ctor<discType>, \
+	 magic}
+
+	static const SparseDiscReaderFns sparseDiscReaderFns[];
+
+public:
 #ifdef ROMDATAFACTORY_USE_FILE_EXTENSIONS
 	/** Supported file extensions **/
 	// NOTE: Cached, using pthread_once().
@@ -395,6 +440,19 @@ const RomDataFactoryPrivate::RomDataFns *const RomDataFactoryPrivate::romDataFns
 	romDataFns_header,
 	romDataFns_footer,
 	nullptr
+};
+
+// Sparse Disc Reader functions
+#define P99_PROTECT(...) __VA_ARGS__	/* Reference: https://stackoverflow.com/a/5504336 */
+const RomDataFactoryPrivate::SparseDiscReaderFns RomDataFactoryPrivate::sparseDiscReaderFns[] = {
+	GetSparseDiscReaderFns(CisoGcnReader,	P99_PROTECT({'CISO'})),
+	GetSparseDiscReaderFns(CisoPspReader,	P99_PROTECT({'CISO', 'ZISO', 0x44415800, 'JISO'})),
+	GetSparseDiscReaderFns(GczReader,	P99_PROTECT({0xB10BC001})),
+	GetSparseDiscReaderFns(NASOSReader,	P99_PROTECT({'GCML', 'GCMM', 'WII5', 'WII9'})),
+	GetSparseDiscReaderFns(WbfsReader,	P99_PROTECT({'WBFS'})),
+	GetSparseDiscReaderFns(WuxReader,	P99_PROTECT({'WUX0'})),	// NOTE: Not checking second magic here.
+
+	{nullptr, nullptr, 0}
 };
 
 /**
@@ -653,6 +711,48 @@ RomDataPtr RomDataFactory::create(const IRpFilePtr &file, unsigned int attrs)
 		}
 	}
 
+	// The actual file reader we're using.
+	// If a sparse disc image format is detected, this will be
+	// a SparseDiscReader. Otherwise, it'll be the same as `file`.
+	IRpFilePtr reader;
+
+	// Check for a supported sparse disc image format.
+	const uint32_t magic32_0 = be32_to_cpu(header.u32[0]);
+	if (magic32_0 != 0) {
+		const RomDataFactoryPrivate::SparseDiscReaderFns *sdfns =
+			RomDataFactoryPrivate::sparseDiscReaderFns;
+		for (; sdfns->isDiscSupported != nullptr && !reader; sdfns++) {
+			// Check all four magic numbers.
+			for (unsigned int i = 0; i < ARRAY_SIZE(sdfns->magic) && !reader; i++) {
+				if (sdfns->magic[i] == 0) {
+					// End of the magic list.
+					break;
+				} else if (sdfns->magic[i] == magic32_0) {
+					// Found a matching magic.
+					IRpFile *const sd = sdfns->newSparseDiscReader(file);
+					if (sd->isOpen()) {
+						// SparseDiscReader obtained.
+						reader = IRpFilePtr(sd);
+						break;
+					}
+				}
+			}
+		}
+	}
+
+	if (reader) {
+		// SparseDiscReader obtained. Re-read the header.
+		reader->rewind();
+		info.header.size = static_cast<uint32_t>(reader->read(header.u8, sizeof(header.u8)));
+		if (info.header.size == 0) {
+			// Read error.
+			return nullptr;
+		}
+	} else {
+		// No SparseDiscReader. Use the original file.
+		reader = file;
+	}
+
 	// Check RomData subclasses that take a header at 0
 	// and definitely have a 32-bit magic number in the header.
 	const RomDataFactoryPrivate::RomDataFns *fns =
@@ -668,11 +768,11 @@ RomDataPtr RomDataFactory::create(const IRpFilePtr &file, unsigned int attrs)
 		// TODO: Verify alignment restrictions.
 		assert(fns->address % 4 == 0);
 		assert(fns->address + sizeof(uint32_t) <= sizeof(header.u32));
-		const uint32_t magic = header.u32[fns->address/4];
-		if (be32_to_cpu(magic) == fns->size) {
+		const uint32_t magic = be32_to_cpu(header.u32[fns->address/4]);
+		if (magic == fns->size) {
 			// Found a matching magic number.
 			if (fns->isRomSupported(&info) >= 0) {
-				RomData *const romData = fns->newRomData(file);
+				RomData *const romData = fns->newRomData(reader);
 				if (romData->isValid()) {
 					// RomData subclass obtained.
 					return RomDataPtr(romData);
@@ -687,7 +787,7 @@ RomDataPtr RomDataFactory::create(const IRpFilePtr &file, unsigned int attrs)
 	// Check for supported textures.
 	{
 		// TODO: RpTextureWrapper::isRomSupported()?
-		RomData *const romData = new RpTextureWrapper(file);
+		RomData *const romData = new RpTextureWrapper(reader);
 		if (romData->isValid()) {
 			// RomData subclass obtained.
 			return RomDataPtr(romData);
@@ -767,10 +867,10 @@ RomDataPtr RomDataFactory::create(const IRpFilePtr &file, unsigned int attrs)
 
 			// Read the header data.
 			info.header.addr = fns->address;
-			int ret = file->seek(info.header.addr);
+			int ret = reader->seek(info.header.addr);
 			if (ret != 0)
 				continue;
-			info.header.size = static_cast<uint32_t>(file->read(header.u8, fns->size));
+			info.header.size = static_cast<uint32_t>(reader->read(header.u8, fns->size));
 			if (info.header.size != fns->size)
 				continue;
 		}
@@ -779,10 +879,10 @@ RomDataPtr RomDataFactory::create(const IRpFilePtr &file, unsigned int attrs)
 			RomData *romData;
 			if (fns->attrs & RDA_CHECK_ISO) {
 				// Check for a game-specific ISO subclass.
-				romData = RomDataFactoryPrivate::checkISO(file);
+				romData = RomDataFactoryPrivate::checkISO(reader);
 			} else {
 				// Standard RomData subclass.
-				romData = fns->newRomData(file);
+				romData = fns->newRomData(reader);
 			}
 
 			if (romData && romData->isValid()) {
@@ -843,7 +943,7 @@ RomDataPtr RomDataFactory::create(const IRpFilePtr &file, unsigned int attrs)
 			static const int footer_size = 1024;
 			if (info.szFile > footer_size) {
 				info.header.addr = static_cast<uint32_t>(info.szFile - footer_size);
-				info.header.size = static_cast<uint32_t>(file->seekAndRead(info.header.addr, header.u8, footer_size));
+				info.header.size = static_cast<uint32_t>(reader->seekAndRead(info.header.addr, header.u8, footer_size));
 				if (info.header.size == 0) {
 					// Seek and/or read error.
 					return nullptr;
@@ -853,7 +953,7 @@ RomDataPtr RomDataFactory::create(const IRpFilePtr &file, unsigned int attrs)
 		}
 
 		if (fns->isRomSupported(&info) >= 0) {
-			RomData *const romData = fns->newRomData(file);
+			RomData *const romData = fns->newRomData(reader);
 			if (romData->isValid()) {
 				// RomData subclass obtained.
 				return RomDataPtr(romData);

@@ -21,6 +21,14 @@
     installation program and rp-config.
     * Note that tab controls are not properly themed yet, and RichEdit controls
       have some minor glitches.
+  * Sparse disc images, e.g. CISO and GCZ, are now handled by the RomDataFactory
+    class instead of requiring each RomData subclass to handle it. This means
+    that all supported sparse disc images can be used for any console.
+    * This was originally implemented to support ZISO and PSP CISO for PS2 disc
+      images, but it also allows unusual combinations like DAX and JISO for
+      GameCube disc images.
+    * Fixes #397: Could you add support for PS2 ISO's compressed to zso and cso?
+      * Reported by @60fpshacksrock.
 
 * New parsers:
   * Wim: Microsoft Windows Images, used by the Windows installer starting with
