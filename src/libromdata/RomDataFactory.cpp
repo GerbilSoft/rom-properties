@@ -112,39 +112,39 @@ namespace LibRomData {
 
 class RomDataFactoryPrivate
 {
-	public:
-		RomDataFactoryPrivate() = delete;
-		~RomDataFactoryPrivate() = delete;
+public:
+	RomDataFactoryPrivate() = delete;
+	~RomDataFactoryPrivate() = delete;
 
-	private:
-		RP_DISABLE_COPY(RomDataFactoryPrivate)
+private:
+	RP_DISABLE_COPY(RomDataFactoryPrivate)
 
-	public:
-		typedef int (*pfnIsRomSupported_t)(const RomData::DetectInfo *info);
-		typedef const RomDataInfo * (*pfnRomDataInfo_t)(void);
-		typedef RomData* (*pfnNewRomData_t)(const IRpFilePtr &file);
+public:
+	typedef int (*pfnIsRomSupported_t)(const RomData::DetectInfo *info);
+	typedef const RomDataInfo * (*pfnRomDataInfo_t)(void);
+	typedef RomData* (*pfnNewRomData_t)(const IRpFilePtr &file);
 
-		struct RomDataFns {
-			pfnIsRomSupported_t isRomSupported;
-			pfnNewRomData_t newRomData;
-			pfnRomDataInfo_t romDataInfo;
-			unsigned int attrs;
+	struct RomDataFns {
+		pfnIsRomSupported_t isRomSupported;
+		pfnNewRomData_t newRomData;
+		pfnRomDataInfo_t romDataInfo;
+		unsigned int attrs;
 
-			// Extra fields for files whose headers
-			// appear at specific addresses.
-			uint32_t address;
-			uint32_t size;	// Contains magic number for fast 32-bit magic checking.
-		};
+		// Extra fields for files whose headers
+		// appear at specific addresses.
+		uint32_t address;
+		uint32_t size;	// Contains magic number for fast 32-bit magic checking.
+	};
 
-		/**
-		 * Templated function to construct a new RomData subclass.
-		 * @param klass Class name.
-		 */
-		template<typename klass>
-		static LibRpBase::RomData *RomData_ctor(const IRpFilePtr &file)
-		{
-			return new klass(file);
-		}
+	/**
+	 * Templated function to construct a new RomData subclass.
+	 * @param klass Class name.
+	 */
+	template<typename klass>
+	static LibRpBase::RomData *RomData_ctor(const IRpFilePtr &file)
+	{
+		return new klass(file);
+	}
 
 #define GetRomDataFns(sys, attrs) \
 	{sys::isRomSupported_static, \
@@ -158,78 +158,78 @@ class RomDataFactoryPrivate
 	 sys::romDataInfo, \
 	 (attrs), (address), (size)}
 
-		// RomData subclasses that use a header at 0 and
-		// definitely have a 32-bit magic number in the header.
-		// - address: Address of magic number within the header.
-		// - size: 32-bit magic number.
-		static const RomDataFns romDataFns_magic[];
+	// RomData subclasses that use a header at 0 and
+	// definitely have a 32-bit magic number in the header.
+	// - address: Address of magic number within the header.
+	// - size: 32-bit magic number.
+	static const RomDataFns romDataFns_magic[];
 
-		// RomData subclasses that use a header.
-		// Headers with addresses other than 0 should be
-		// placed at the end of this array.
-		static const RomDataFns romDataFns_header[];
+	// RomData subclasses that use a header.
+	// Headers with addresses other than 0 should be
+	// placed at the end of this array.
+	static const RomDataFns romDataFns_header[];
 
-		// RomData subclasses that use a footer.
-		static const RomDataFns romDataFns_footer[];
+	// RomData subclasses that use a footer.
+	static const RomDataFns romDataFns_footer[];
 
-		// Table of pointers to tables.
-		// This reduces duplication by only requiring a single loop
-		// in each function.
-		static const RomDataFns *const romDataFns_tbl[];
+	// Table of pointers to tables.
+	// This reduces duplication by only requiring a single loop
+	// in each function.
+	static const RomDataFns *const romDataFns_tbl[];
 
-		/**
-		 * Attempt to open the other file in a Dreamcast .VMI+.VMS pair.
-		 * @param file One opened file in the .VMI+.VMS pair.
-		 * @return DreamcastSave if valid; nullptr if not.
-		 */
-		static RomDataPtr openDreamcastVMSandVMI(const IRpFilePtr &file);
+	/**
+	 * Attempt to open the other file in a Dreamcast .VMI+.VMS pair.
+	 * @param file One opened file in the .VMI+.VMS pair.
+	 * @return DreamcastSave if valid; nullptr if not.
+	 */
+	static RomDataPtr openDreamcastVMSandVMI(const IRpFilePtr &file);
 
 #ifdef ROMDATAFACTORY_USE_FILE_EXTENSIONS
-		/** Supported file extensions **/
-		// NOTE: Cached, using pthread_once().
-		static vector<RomDataFactory::ExtInfo> vec_exts;
-		static pthread_once_t once_exts;
+	/** Supported file extensions **/
+	// NOTE: Cached, using pthread_once().
+	static vector<RomDataFactory::ExtInfo> vec_exts;
+	static pthread_once_t once_exts;
 
-		/**
-		 * Initialize the vector of supported file extensions.
-		 * Used for Win32 COM registration.
-		 *
-		 * Internal function; must be called using pthread_once().
-		 *
-		 * NOTE: The return value is a struct that includes a flag
-		 * indicating if the file type handler supports thumbnails.
-		 */
-		static void init_supportedFileExtensions(void);
+	/**
+	 * Initialize the vector of supported file extensions.
+	 * Used for Win32 COM registration.
+	 *
+	 * Internal function; must be called using pthread_once().
+	 *
+	 * NOTE: The return value is a struct that includes a flag
+	 * indicating if the file type handler supports thumbnails.
+	 */
+	static void init_supportedFileExtensions(void);
 #endif /* ROMDATAFACTORY_USE_FILE_EXTENSIONS */
 
 #ifdef ROMDATAFACTORY_USE_MIME_TYPES
-		/** Supported MIME types **/
-		// NOTE: Cached, using pthread_once().
-		static vector<const char*> vec_mimeTypes;
-		static pthread_once_t once_mimeTypes;
+	/** Supported MIME types **/
+	// NOTE: Cached, using pthread_once().
+	static vector<const char*> vec_mimeTypes;
+	static pthread_once_t once_mimeTypes;
 
-		/**
-		 * Initialize the vector of supported MIME types.
-		 * Used for KFileMetaData.
-		 *
-		 * Internal function; must be called using pthread_once().
-		 */
-		static void init_supportedMimeTypes(void);
+	/**
+	 * Initialize the vector of supported MIME types.
+	 * Used for KFileMetaData.
+	 *
+	 * Internal function; must be called using pthread_once().
+	 */
+	static void init_supportedMimeTypes(void);
 #endif /* ROMDATAFACTORY_USE_MIME_TYPES */
 
-		/**
-		 * Check an ISO-9660 disc image for a game-specific file system.
-		 *
-		 * If this is a valid ISO-9660 disc image, but no game-specific
-		 * RomData subclasses support it, an ISO object will be returned.
-		 *
-		 * NOTE: This function returns a raw RomData* pointer.
-		 * It should be wrapped in RomDataPtr before returning it outside of RomDataFactory.
-		 *
-		 * @param file ISO-9660 disc image
-		 * @return Game-specific RomData subclass, or nullptr if none are supported.
-		 */
-		static RomData *checkISO(const IRpFilePtr &file);
+	/**
+	 * Check an ISO-9660 disc image for a game-specific file system.
+	 *
+	 * If this is a valid ISO-9660 disc image, but no game-specific
+	 * RomData subclasses support it, an ISO object will be returned.
+	 *
+	 * NOTE: This function returns a raw RomData* pointer.
+	 * It should be wrapped in RomDataPtr before returning it outside of RomDataFactory.
+	 *
+	 * @param file ISO-9660 disc image
+	 * @return Game-specific RomData subclass, or nullptr if none are supported.
+	 */
+	static RomData *checkISO(const IRpFilePtr &file);
 };
 
 /** RomDataFactoryPrivate **/
