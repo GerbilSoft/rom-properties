@@ -455,7 +455,7 @@ const RomDataFactoryPrivate::SparseDiscReaderFns RomDataFactoryPrivate::sparseDi
 	//GetSparseDiscReaderFns(WbfsReader,	P99_PROTECT({'WBFS'})),	// Handled separately
 	GetSparseDiscReaderFns(WuxReader,	P99_PROTECT({'WUX0'})),	// NOTE: Not checking second magic here.
 
-	{nullptr, nullptr, 0}
+	{nullptr, nullptr, {0}}
 };
 
 /**
