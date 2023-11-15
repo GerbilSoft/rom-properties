@@ -100,4 +100,6 @@ class DualFile final : public IRpFile
 		off64_t m_pos;		// Current position.
 };
 
+typedef std::shared_ptr<DualFile> DualFilePtr;
+
 }

@@ -14,6 +14,7 @@
 #include "RomData_p.hpp"	// for RomDataInfo
 
 // librpbase, librpfile
+#include "librpfile/DualFile.hpp"
 #include "librpfile/RelatedFile.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
@@ -230,8 +231,8 @@ public:
 
 	/**
 	 * Attempt to open a SparseDiscReader for this file.
-	 * @param file IRpFilePtr
-	 * @param magic0 First 32-bit value from the file (original format from the file)
+	 * @param file		[in] IRpFilePtr
+	 * @param magic0	[in] First 32-bit value from the file (original format from the file)
 	 * @return SparseDiscReader*, or nullptr if not applicable.
 	 */
 	static SparseDiscReader *openSparseDiscReader(const IRpFilePtr &file, uint32_t magic0);
@@ -457,7 +458,7 @@ const RomDataFactoryPrivate::SparseDiscReaderFns RomDataFactoryPrivate::sparseDi
 	GetSparseDiscReaderFns(CisoPspReader,	P99_PROTECT({'CISO', 'ZISO', 0x44415800, 'JISO'})),
 	GetSparseDiscReaderFns(GczReader,	P99_PROTECT({0xB10BC001})),
 	GetSparseDiscReaderFns(NASOSReader,	P99_PROTECT({'GCML', 'GCMM', 'WII5', 'WII9'})),
-	GetSparseDiscReaderFns(WbfsReader,	P99_PROTECT({'WBFS'})),	// TODO: Split-file WBFS
+	//GetSparseDiscReaderFns(WbfsReader,	P99_PROTECT({'WBFS'})),	// Handled separately
 	GetSparseDiscReaderFns(WuxReader,	P99_PROTECT({'WUX0'})),	// NOTE: Not checking second magic here.
 
 	{nullptr, nullptr, 0}
@@ -527,8 +528,8 @@ RomDataPtr RomDataFactoryPrivate::openDreamcastVMSandVMI(const IRpFilePtr &file)
 
 /**
  * Attempt to open a SparseDiscReader for this file.
- * @param file IRpFilePtr
- * @param magic0 First 32-bit value from the file (original format from the file)
+ * @param file		[in] IRpFilePtr
+ * @param magic0	[in] First 32-bit value from the file (original format from the file)
  * @return SparseDiscReader*, or nullptr if not applicable.
  */
 SparseDiscReader *RomDataFactoryPrivate::openSparseDiscReader(const IRpFilePtr &file, uint32_t magic0)
@@ -536,6 +537,57 @@ SparseDiscReader *RomDataFactoryPrivate::openSparseDiscReader(const IRpFilePtr &
 	if (magic0 == 0)
 		return nullptr;
 	magic0 = be32_to_cpu(magic0);
+
+	if (magic0 == 'WBFS') {
+		// WBFS: Check for split format.
+		const char *const filename = file->filename();
+		if (!filename)
+			return nullptr;
+		const char *const ext = FileSystem::file_ext(filename);
+		if (ext) do {
+			// TODO: Make .wbf1 support optional. Disabled for now.
+			static const bool enable_wbf1 = false;
+			if (unlikely(enable_wbf1 && !strcasecmp(ext, ".wbf1"))) {
+				// Second part of split WBFS.
+				IRpFilePtr wbfs0 = FileSystem::openRelatedFile(filename, nullptr, ".wbfs");
+				if (unlikely(!wbfs0) || !wbfs0->isOpen()) {
+					// Unable to open the .wbfs file.
+					break;
+				}
+
+				// Split .wbfs/.wbf1: Use DualFile.
+				DualFilePtr dualFile = std::make_shared<DualFile>(wbfs0, file);
+				if (!dualFile->isOpen()) {
+					// Unable to open DualFile.
+					break;
+				}
+
+				// Open the WbfsReader.
+				return new WbfsReader(dualFile);
+			} else {
+				// First part of split WBFS.
+				// Check for a WBF1 file.
+				IRpFilePtr wbfs1 = FileSystem::openRelatedFile(filename, nullptr, ".wbf1");
+				if (unlikely(!wbfs1) || !wbfs1->isOpen()) {
+					// No .wbf1 file. Assume it's a single .wbfs file.
+					return new WbfsReader(file);
+				}
+
+				// Split .wbfs/.wbf1: Use DualFile.
+				DualFilePtr dualFile = std::make_shared<DualFile>(file, wbfs1);
+				if (!dualFile->isOpen()) {
+					// Unable to open DualFile.
+					break;
+				}
+
+				// Open the WbfsReader.
+				return new WbfsReader(dualFile);
+			}
+		} while (0);
+
+		// No file extension. Assume it's a single .wbfs file.
+		return new WbfsReader(file);
+	}
 
 	const RomDataFactoryPrivate::SparseDiscReaderFns *sdfns =
 		RomDataFactoryPrivate::sparseDiscReaderFns;

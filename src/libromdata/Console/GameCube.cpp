@@ -19,7 +19,6 @@
 #include "WiiCommon.hpp"
 
 // Other rom-properties libraries
-#include "librpfile/DualFile.hpp"
 #include "librpfile/RelatedFile.hpp"
 #include "librpbase/Achievements.hpp"
 #include "librpbase/SystemRegion.hpp"
