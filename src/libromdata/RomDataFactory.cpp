@@ -818,6 +818,7 @@ RomDataPtr RomDataFactory::create(const IRpFilePtr &file, unsigned int attrs)
 	// The actual file reader we're using.
 	// If a sparse disc image format is detected, this will be
 	// a SparseDiscReader. Otherwise, it'll be the same as `file`.
+	bool isSparseDiscReader = false;
 	IRpFilePtr reader(RomDataFactoryPrivate::openSparseDiscReader(file, header.u32[0]));
 	if (reader) {
 		// SparseDiscReader obtained. Re-read the header.
@@ -827,6 +828,7 @@ RomDataPtr RomDataFactory::create(const IRpFilePtr &file, unsigned int attrs)
 			// Read error.
 			return nullptr;
 		}
+		isSparseDiscReader = true;
 	} else {
 		// No SparseDiscReader. Use the original file.
 		reader = file;
@@ -1041,6 +1043,19 @@ RomDataPtr RomDataFactory::create(const IRpFilePtr &file, unsigned int attrs)
 			// Not actually supported.
 			delete romData;
 		}
+	}
+
+	// Last chance: If a SparseDiscReader is in use, check for ISO.
+	// Needed for PSP disc images, among others.
+	if (isSparseDiscReader) {
+		RomData *const romData = RomDataFactoryPrivate::checkISO(reader);
+		if (romData->isValid()) {
+			// RomData subclass obtained.
+			return RomDataPtr(romData);
+		}
+
+		// Not actually supported.
+		delete romData;
 	}
 
 	// Not supported.
