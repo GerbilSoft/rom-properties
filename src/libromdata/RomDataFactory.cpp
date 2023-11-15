@@ -449,7 +449,7 @@ const RomDataFactoryPrivate::SparseDiscReaderFns RomDataFactoryPrivate::sparseDi
 	GetSparseDiscReaderFns(CisoPspReader,	P99_PROTECT({'CISO', 'ZISO', 0x44415800, 'JISO'})),
 	GetSparseDiscReaderFns(GczReader,	P99_PROTECT({0xB10BC001})),
 	GetSparseDiscReaderFns(NASOSReader,	P99_PROTECT({'GCML', 'GCMM', 'WII5', 'WII9'})),
-	GetSparseDiscReaderFns(WbfsReader,	P99_PROTECT({'WBFS'})),
+	GetSparseDiscReaderFns(WbfsReader,	P99_PROTECT({'WBFS'})),	// TODO: Split-file WBFS
 	GetSparseDiscReaderFns(WuxReader,	P99_PROTECT({'WUX0'})),	// NOTE: Not checking second magic here.
 
 	{nullptr, nullptr, 0}

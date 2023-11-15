@@ -28,13 +28,10 @@ using namespace LibRpFile;
 using namespace LibRpText;
 using namespace LibRpTexture;
 
-// DiscReader
-#include "disc/WbfsReader.hpp"
-#include "disc/CisoGcnReader.hpp"
-#include "disc/GczReader.hpp"
-#include "disc/NASOSReader.hpp"
-#include "disc/nasos_gcn.h"	// for magic numbers
+// WiiPartition reader
 #include "disc/WiiPartition.hpp"
+// NASOSReader to check if it's a NASOS format disc image
+#include "disc/NASOSReader.hpp"
 
 // For sections delegated to other RomData subclasses.
 #include "GameCubeBNR.hpp"
@@ -74,25 +71,22 @@ public:
 	enum DiscType {
 		DISC_UNKNOWN = -1,	// Unknown disc type
 
-		// Low byte: System ID.
+		// Low byte: System ID
 		DISC_SYSTEM_GCN = 0,		// GameCube disc image
 		DISC_SYSTEM_TRIFORCE = 1,	// Triforce disc/ROM image [TODO]
 		DISC_SYSTEM_WII = 2,		// Wii disc image
 		DISC_SYSTEM_UNKNOWN = 0xFF,
 		DISC_SYSTEM_MASK = 0xFF,
 
-		// High byte: Image format.
+		// High byte: Image format
 		DISC_FORMAT_RAW   = (0U << 8),		// Raw image (ISO, GCM)
 		DISC_FORMAT_SDK   = (1U << 8),		// Raw image with SDK header
 		DISC_FORMAT_TGC   = (2U << 8),		// TGC (embedded disc image) (GCN only?)
-		DISC_FORMAT_WBFS  = (3U << 8),		// WBFS image (Wii only)
-		DISC_FORMAT_CISO  = (4U << 8),		// CISO image
-		DISC_FORMAT_NASOS = (5U << 8),		// NASOS image
-		DISC_FORMAT_GCZ   = (6U << 8),		// GCZ image
 
-		// WIA and RVZ formats are similar.
-		DISC_FORMAT_WIA   = (7U << 8),		// WIA image (Header only!)
-		DISC_FORMAT_RVZ   = (8U << 8),		// RVZ image (Header only!)
+		// WIA and RVZ formats are similar
+		// TODO: Remove this once proper SparseDiscReader subclasses are added.
+		DISC_FORMAT_WIA   = (3U << 8),		// WIA image (Header only!)
+		DISC_FORMAT_RVZ   = (4U << 8),		// RVZ image (Header only!)
 
 		DISC_FORMAT_PARTITION = (0xFEU << 8),	// Standalone Wii partition
 		DISC_FORMAT_UNKNOWN = (0xFFU << 8),
@@ -151,6 +145,20 @@ public:
 	// Pointers to specific partitions within wiiPtbl.
 	WiiPartition *updatePartition;
 	WiiPartition *gamePartition;
+
+	/**
+	 * Is this a NASOS format disc image?
+	 *
+	 * RomDataFactory handles SparseDiscReader subclasses itself now,
+	 * so this works by checking if d->file is a NASOSReader.
+	 *
+	 * @return True if this is a NASOS format disc image.
+	 */
+	bool isNASOSFormatDiscImage(void) const
+	{
+		const NASOSReader *const nasos = dynamic_cast<NASOSReader*>(file.get());
+		return (nasos != nullptr);
+	}
 
 	/**
 	 * Load the Wii volume group and partition tables.
@@ -357,7 +365,7 @@ int GameCubePrivate::loadWiiPartitionTables(void)
 	// Check the crypto and hash method.
 	// TODO: Lookup table instead of branches?
 	unsigned int cryptoMethod = 0;
-	if (discHeader.disc_noCrypto != 0 || (discType & DISC_FORMAT_MASK) == DISC_FORMAT_NASOS) {
+	if (discHeader.disc_noCrypto != 0 || isNASOSFormatDiscImage()) {
 		// No encryption.
 		cryptoMethod |= WiiPartition::CM_UNENCRYPTED;
 	}
@@ -754,98 +762,6 @@ GameCube::GameCube(const IRpFilePtr &file)
 			break;
 		}
 
-		case GameCubePrivate::DISC_FORMAT_WBFS: {
-			d->mimeType = "application/x-wbfs";
-			// Check for split WBFS.
-			// TODO: Make .wbf1 support optional. Disabled for now.
-			/*if (info.ext && !strcasecmp(info.ext, ".wbf1")) {
-				// Second part of split WBFS.
-				const char *const filename = file->filename();
-				if (!filename) {
-					// No filename...
-					d->discType = GameCubePrivate::DISC_UNKNOWN;
-					break;
-				}
-
-				IRpFilePtr wbfs0 = FileSystem::openRelatedFile(filename, nullptr, ".wbfs");
-				if (unlikely(!wbfs0) || !wbfs0->isOpen()) {
-					// Unable to open the .wbfs file.
-					d->discType = GameCubePrivate::DISC_UNKNOWN;
-					break;
-				}
-
-				// Split .wbfs/.wbf1.
-				DualFile *const dualFile = std::make_shared<DualFile>(wbfs0, d->file);
-				if (!dualFile->isOpen()) {
-					// Unable to open DualFile.
-					delete dualFile;
-					d->discType = GameCubePrivate::DISC_UNKNOWN;
-					break;
-				}
-
-				// DualFile maintains its own references, so unreference
-				// d->file and replace it with the DualFile.
-				d->file.reset(dualFile);
-
-				// Open the WbfsReader.
-				d->discReader = std::make_shared<WbfsReader>(d->file);
-			} else*/ if ((d->discType & GameCubePrivate::DISC_FORMAT_MASK) == GameCubePrivate::DISC_FORMAT_WBFS) {
-				// First part of split WBFS.
-				// Check for a WBF1 file.
-				IRpFilePtr wbfs1;
-				const char *const filename = file->filename();
-				if (filename) {
-					wbfs1 = FileSystem::openRelatedFile(file->filename(), nullptr, ".wbf1");
-					if (unlikely(!wbfs1 || !wbfs1->isOpen())) {
-						// Unable to open the .wbf1 file.
-						// Assume it's a single .wbfs file.
-						wbfs1.reset();
-					}
-				}
-
-				if (likely(!wbfs1)) {
-					// Single .wbfs file.
-					d->discReader = std::make_shared<WbfsReader>(d->file);
-					break;
-				}
-
-				// Split .wbfs/.wbf1.
-				DualFile *const dualFile = new DualFile(d->file, wbfs1);
-				if (!dualFile->isOpen()) {
-					// Unable to open DualFile.
-					delete dualFile;
-					d->discType = GameCubePrivate::DISC_UNKNOWN;
-					break;
-				}
-
-				// DualFile maintains its own references,
-				// so replace d->file with the DualFile.
-				// FIXME BEFORE COMMIT: Do testing!
-				d->file.reset(dualFile);
-
-				// Open the WbfsReader.
-				d->discReader = std::make_shared<WbfsReader>(d->file);
-			} else {
-				// Not supported.
-				d->discType = GameCubePrivate::DISC_UNKNOWN;
-			}
-
-			break;
-		}
-
-		case GameCubePrivate::DISC_FORMAT_CISO:
-			d->mimeType = "application/x-cso";
-			d->discReader = std::make_shared<CisoGcnReader>(d->file);
-			break;
-		case GameCubePrivate::DISC_FORMAT_NASOS:
-			d->mimeType = "application/x-nasos-image";
-			d->discReader = std::make_shared<NASOSReader>(d->file);
-			break;
-		case GameCubePrivate::DISC_FORMAT_GCZ:
-			d->mimeType = "application/x-gcz-image";
-			d->discReader = std::make_shared<GczReader>(d->file);
-			break;
-
 		case GameCubePrivate::DISC_FORMAT_WIA:
 			// TODO: Implement WiaReader.
 			// For now, only the header will be readable.
@@ -979,8 +895,8 @@ GameCube::GameCube(const IRpFilePtr &file)
 		d->hasRegionCode = false;
 	}
 
-	if (((d->discType & GameCubePrivate::DISC_FORMAT_MASK) == GameCubePrivate::DISC_FORMAT_NASOS) &&
-	    ((d->discType & GameCubePrivate::DISC_SYSTEM_MASK) != GameCubePrivate::DISC_SYSTEM_UNKNOWN))
+	if (((d->discType & GameCubePrivate::DISC_SYSTEM_MASK) != GameCubePrivate::DISC_SYSTEM_UNKNOWN) ||
+	      d->isNASOSFormatDiscImage())
 	{
 		// Verify that the NASOS header matches the disc format.
 		bool isOK = true;
@@ -1214,62 +1130,8 @@ int GameCube::isRomSupported_static(const DetectInfo *info)
 		return (GameCubePrivate::DISC_SYSTEM_UNKNOWN | GameCubePrivate::DISC_FORMAT_TGC);
 	}
 
-	// Check for sparse/compressed disc formats.
-	// These are checked after the magic numbers in case some joker
-	// decides to make a GCN or Wii disc image with the game ID "WBFS".
-
-	// Check for WBFS.
-	if (WbfsReader::isDiscSupported_static(info->header.pData, info->header.size) >= 0) {
-		// Disc image is stored in "HDD" sector 1.
-		const unsigned int hdd_sector_size = (1U << info->header.pData[8]);
-		if (info->header.size >= hdd_sector_size + 0x200) {
-			// Check for magic numbers.
-			gcn_header = reinterpret_cast<const GCN_DiscHeader*>(&info->header.pData[hdd_sector_size]);
-			if (gcn_header->magic_wii == cpu_to_be32(WII_MAGIC)) {
-				// Wii disc image. (WBFS format)
-				return (GameCubePrivate::DISC_SYSTEM_WII | GameCubePrivate::DISC_FORMAT_WBFS);
-			} else if (gcn_header->magic_gcn == cpu_to_be32(GCN_MAGIC)) {
-				// GameCube disc image. (WBFS format)
-				// NOTE: Not really useful, but `wit` supports
-				// converting GameCube disc images to WBFS format.
-				return (GameCubePrivate::DISC_SYSTEM_GCN | GameCubePrivate::DISC_FORMAT_WBFS);
-			}
-		}
-	}
-	// TODO: Make .wbf1 support optional. Disabled for now.
-	/*// Check for WBF1. (second file of WBFS split files)
-	if (info->ext && !strcasecmp(info->ext, ".wbf1")) {
-		// WBF1 file.
-		// We'll need to check the first file for the system information later.
-		return (GameCubePrivate::DISC_SYSTEM_UNKNOWN | GameCubePrivate::DISC_FORMAT_WBFS);
-	}*/
-
-	// Check for CISO.
-	if (CisoGcnReader::isDiscSupported_static(info->header.pData, info->header.size) >= 0) {
-		// CISO format doesn't store a copy of the disc header
-		// at the beginning of the disc, so we can't check the
-		// system format here.
-		return (GameCubePrivate::DISC_SYSTEM_UNKNOWN | GameCubePrivate::DISC_FORMAT_CISO);
-	}
-
-	// Check for NASOS.
-	// TODO: WII9?
-	if (pData32[0] == cpu_to_be32(NASOS_MAGIC_GCML)) {
-		// GameCube NASOS image.
-		return (GameCubePrivate::DISC_SYSTEM_GCN | GameCubePrivate::DISC_FORMAT_NASOS);
-	} else if (pData32[0] == cpu_to_be32(NASOS_MAGIC_WII5)) {
-		// Wii NASOS image. (single-layer)
-		return (GameCubePrivate::DISC_SYSTEM_WII | GameCubePrivate::DISC_FORMAT_NASOS);
-	}
-
-	// Check for GCZ.
-	if (GczReader::isDiscSupported_static(info->header.pData, info->header.size) >= 0) {
-		// GCZ has a "disc type" field in the header, but it shouldn't
-		// be relied upon as correct. (NKit has a weird value there.)
-		return (GameCubePrivate::DISC_SYSTEM_UNKNOWN | GameCubePrivate::DISC_FORMAT_GCZ);
-	}
-
 	// Check for WIA or RVZ.
+	// TODO: Remove this when a proper SparseDiscReader subclass is added.
 	static const uint32_t wia_magic = 'WIA\x01';
 	static const uint32_t rvz_magic = 'RVZ\x01';
 	if (pData32[0] == cpu_to_be32(rvz_magic) ||
@@ -1867,7 +1729,7 @@ int GameCube::loadFieldData(void)
 			// Encryption key.
 			// TODO: Use a string table?
 			WiiPartition::EncKey encKey;
-			if ((d->discType & GameCubePrivate::DISC_FORMAT_MASK) == GameCubePrivate::DISC_FORMAT_NASOS) {
+			if (d->isNASOSFormatDiscImage()) {
 				// NASOS disc image.
 				// If this would normally be an encrypted image, use encKeyReal().
 				encKey = (d->discHeader.disc_noCrypto == 0
@@ -2299,7 +2161,7 @@ int GameCube::checkViewedAchievements(void) const
 
 	int ret = 0;
 	WiiPartition::EncKey encKey;
-	if ((d->discType & GameCubePrivate::DISC_FORMAT_MASK) == GameCubePrivate::DISC_FORMAT_NASOS) {
+	if (d->isNASOSFormatDiscImage()) {
 		// NASOS disc image.
 		// If this would normally be an encrypted image, use encKeyReal().
 		encKey = (d->discHeader.disc_noCrypto == 0)
