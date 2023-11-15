@@ -113,6 +113,7 @@
     ROM images) on Windows XP.
   * Fix a crash when decoding PNGs or other zlib-encoded data on Windows XP.
     * Affects: v2.2 - v2.2.1
+  * NASOSReader: Fix detection of dual-layer Wii NASOS images.
 
 * Other changes:
   * Nintendo3DS: The "Options" menu no longer shows a grayed-out "Extract SRL"

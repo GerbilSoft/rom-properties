@@ -157,7 +157,8 @@ int NASOSReader::isDiscSupported_static(const uint8_t *pHeader, size_t szHeader)
 	const NASOSHeader *const nasosHeader =
 		reinterpret_cast<const NASOSHeader*>(pHeader);
 	if (nasosHeader->magic != cpu_to_be32(NASOS_MAGIC_GCML) &&
-	    nasosHeader->magic != cpu_to_be32(NASOS_MAGIC_WII5))
+	    nasosHeader->magic != cpu_to_be32(NASOS_MAGIC_WII5) &&
+	    nasosHeader->magic != cpu_to_be32(NASOS_MAGIC_WII9))
 	{
 		// Invalid magic.
 		return -1;
