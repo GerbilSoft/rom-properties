@@ -228,6 +228,14 @@ public:
 
 	static const SparseDiscReaderFns sparseDiscReaderFns[];
 
+	/**
+	 * Attempt to open a SparseDiscReader for this file.
+	 * @param file IRpFilePtr
+	 * @param magic0 First 32-bit value from the file (original format from the file)
+	 * @return SparseDiscReader*, or nullptr if not applicable.
+	 */
+	static SparseDiscReader *openSparseDiscReader(const IRpFilePtr &file, uint32_t magic0);
+
 public:
 #ifdef ROMDATAFACTORY_USE_FILE_EXTENSIONS
 	/** Supported file extensions **/
@@ -518,6 +526,41 @@ RomDataPtr RomDataFactoryPrivate::openDreamcastVMSandVMI(const IRpFilePtr &file)
 }
 
 /**
+ * Attempt to open a SparseDiscReader for this file.
+ * @param file IRpFilePtr
+ * @param magic0 First 32-bit value from the file (original format from the file)
+ * @return SparseDiscReader*, or nullptr if not applicable.
+ */
+SparseDiscReader *RomDataFactoryPrivate::openSparseDiscReader(const IRpFilePtr &file, uint32_t magic0)
+{
+	if (magic0 == 0)
+		return nullptr;
+	magic0 = be32_to_cpu(magic0);
+
+	const RomDataFactoryPrivate::SparseDiscReaderFns *sdfns =
+		RomDataFactoryPrivate::sparseDiscReaderFns;
+	for (; sdfns->newSparseDiscReader != nullptr; sdfns++) {
+		// Check all four magic numbers.
+		for (unsigned int i = 0; i < ARRAY_SIZE(sdfns->magic); i++) {
+			if (sdfns->magic[i] == 0) {
+				// End of the magic list.
+				break;
+			} else if (sdfns->magic[i] == magic0) {
+				// Found a matching magic.
+				SparseDiscReader *const sd = sdfns->newSparseDiscReader(file);
+				if (sd->isOpen()) {
+					// SparseDiscReader obtained.
+					return sd;
+				}
+			}
+		}
+	}
+
+	// No SparseDiscReader is available for this file.
+	return nullptr;
+}
+
+/**
  * Check an ISO-9660 disc image for a game-specific file system.
  *
  * If this is a valid ISO-9660 disc image, but no game-specific
@@ -714,32 +757,7 @@ RomDataPtr RomDataFactory::create(const IRpFilePtr &file, unsigned int attrs)
 	// The actual file reader we're using.
 	// If a sparse disc image format is detected, this will be
 	// a SparseDiscReader. Otherwise, it'll be the same as `file`.
-	IRpFilePtr reader;
-
-	// Check for a supported sparse disc image format.
-	const uint32_t magic32_0 = be32_to_cpu(header.u32[0]);
-	if (magic32_0 != 0) {
-		const RomDataFactoryPrivate::SparseDiscReaderFns *sdfns =
-			RomDataFactoryPrivate::sparseDiscReaderFns;
-		for (; sdfns->newSparseDiscReader != nullptr && !reader; sdfns++) {
-			// Check all four magic numbers.
-			for (unsigned int i = 0; i < ARRAY_SIZE(sdfns->magic) && !reader; i++) {
-				if (sdfns->magic[i] == 0) {
-					// End of the magic list.
-					break;
-				} else if (sdfns->magic[i] == magic32_0) {
-					// Found a matching magic.
-					IRpFile *const sd = sdfns->newSparseDiscReader(file);
-					if (sd->isOpen()) {
-						// SparseDiscReader obtained.
-						reader = IRpFilePtr(sd);
-						break;
-					}
-				}
-			}
-		}
-	}
-
+	IRpFilePtr reader(RomDataFactoryPrivate::openSparseDiscReader(file, header.u32[0]));
 	if (reader) {
 		// SparseDiscReader obtained. Re-read the header.
 		reader->rewind();
