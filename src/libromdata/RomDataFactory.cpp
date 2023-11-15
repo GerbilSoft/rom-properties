@@ -455,7 +455,16 @@ const RomDataFactoryPrivate::RomDataFns *const RomDataFactoryPrivate::romDataFns
 #define P99_PROTECT(...) __VA_ARGS__	/* Reference: https://stackoverflow.com/a/5504336 */
 const RomDataFactoryPrivate::SparseDiscReaderFns RomDataFactoryPrivate::sparseDiscReaderFns[] = {
 	GetSparseDiscReaderFns(CisoGcnReader,	P99_PROTECT({'CISO'})),
-	GetSparseDiscReaderFns(CisoPspReader,	P99_PROTECT({'CISO', 'ZISO', 0x44415800, 'JISO'})),
+	GetSparseDiscReaderFns(CisoPspReader,	P99_PROTECT({
+		'CISO',
+#ifdef HAVE_LZ4
+		'ZISO',
+#endif /* HAVE_LZ4 */
+		0x44415800,
+#ifdef HAVE_LZO
+		'JISO',
+#endif /* HAVE_LZO */
+	})),
 	GetSparseDiscReaderFns(GczReader,	P99_PROTECT({0xB10BC001})),
 	GetSparseDiscReaderFns(NASOSReader,	P99_PROTECT({'GCML', 'GCMM', 'WII5', 'WII9'})),
 	//GetSparseDiscReaderFns(WbfsReader,	P99_PROTECT({'WBFS'})),	// Handled separately
