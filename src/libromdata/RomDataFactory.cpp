@@ -721,7 +721,7 @@ RomDataPtr RomDataFactory::create(const IRpFilePtr &file, unsigned int attrs)
 	if (magic32_0 != 0) {
 		const RomDataFactoryPrivate::SparseDiscReaderFns *sdfns =
 			RomDataFactoryPrivate::sparseDiscReaderFns;
-		for (; sdfns->isDiscSupported != nullptr && !reader; sdfns++) {
+		for (; sdfns->newSparseDiscReader != nullptr && !reader; sdfns++) {
 			// Check all four magic numbers.
 			for (unsigned int i = 0; i < ARRAY_SIZE(sdfns->magic) && !reader; i++) {
 				if (sdfns->magic[i] == 0) {
