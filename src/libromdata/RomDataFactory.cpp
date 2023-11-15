@@ -315,7 +315,6 @@ const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_magic[
 	GetRomDataFns_addr(PlayStationEXE, 0, 0, 'PS-X'),
 	GetRomDataFns_addr(SufamiTurbo, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 8, 'FC-A'),	// Less common than "BAND"
 	GetRomDataFns_addr(WiiU, ATTR_HAS_THUMBNAIL | ATTR_SUPPORTS_DEVICES, 0, 'WUP-'),
-	GetRomDataFns_addr(WiiU, ATTR_HAS_THUMBNAIL | ATTR_SUPPORTS_DEVICES, 0, 'WUX0'),
 	GetRomDataFns_addr(WiiWIBN, ATTR_HAS_THUMBNAIL, 0, 'WIBN'),
 	GetRomDataFns_addr(Xbox_XBE, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'XBEH'),
 	GetRomDataFns_addr(Xbox360_XDBF, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'XDBF'),
