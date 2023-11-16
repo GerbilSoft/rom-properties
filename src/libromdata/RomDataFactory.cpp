@@ -768,8 +768,7 @@ RomDataPtr RomDataFactory::create(const IRpFilePtr &file, unsigned int attrs)
 		return nullptr;
 	}
 
-	// File extension.
-	string file_ext;	// temporary storage
+	// File extension
 	info.ext = nullptr;
 	if (file->isDevice()) {
 		// Device file. Assume it's a CD-ROM.
@@ -781,8 +780,8 @@ RomDataPtr RomDataFactory::create(const IRpFilePtr &file, unsigned int attrs)
 		const char *const filename = file->filename();
 		const char *const ext = FileSystem::file_ext(filename);
 		if (ext) {
-			file_ext = ext;
-			info.ext = file_ext.c_str();
+			// ext points into filename, which is owned by file.
+			info.ext = ext;
 		}
 	}
 
