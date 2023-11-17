@@ -13,9 +13,9 @@ message(STATUS "Using CMake version ${CMAKE_VERSION}")
 if(NOT CMAKE_C_STANDARD)
     set(CMAKE_C_STANDARD 11)          # The C standard whose features are requested to build this target
 endif()
-if(NOT CMAKE_C_STANDARD_REQUIRED)
-    set(CMAKE_C_STANDARD_REQUIRED ON) # Boolean describing whether the value of C_STANDARD is a requirement
-endif()
+#if(NOT CMAKE_C_STANDARD_REQUIRED)
+#    set(CMAKE_C_STANDARD_REQUIRED ON) # Boolean describing whether the value of C_STANDARD is a requirement
+#endif()
 if(NOT CMAKE_C_EXTENSIONS)
     set(CMAKE_C_EXTENSIONS OFF)       # Boolean specifying whether compiler specific extensions are requested
 endif()
