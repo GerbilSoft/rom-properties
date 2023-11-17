@@ -106,9 +106,11 @@ public:
 
 	int lastError;
 
+	// TODO: Convert to bitfield or bitset? (check assembly code)
 	bool hasExt2Attributes;
 	bool hasXfsAttributes;
 	bool hasDosAttributes;
+	bool canWriteDosAttributes;
 	bool hasGenericXAttrs;
 
 	int ext2Attributes;

@@ -28,4 +28,7 @@ void		rp_dos_attr_view_set_attrs	(RpDosAttrView *widget, unsigned int attrs);
 unsigned int 	rp_dos_attr_view_get_attrs	(RpDosAttrView *widget);
 void		rp_dos_attr_view_clear_attrs	(RpDosAttrView *widget);
 
+void		rp_dos_attr_view_set_can_write_attrs	(RpDosAttrView *widget, gboolean can_write);
+gboolean	rp_dos_attr_view_get_can_write_attrs	(RpDosAttrView *widget);
+
 G_END_DECLS

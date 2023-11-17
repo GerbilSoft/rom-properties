@@ -84,6 +84,16 @@ public:
 	bool hasDosAttributes(void) const;
 
 	/**
+	 * Can we write MS-DOS attributes to this file?
+	 *
+	 * NOTE: setDosAttributes() is a *static* function.
+	 * This is merely used as an advisory for the GUI.
+	 *
+	 * @return True if we can; false if we can't.
+	 */
+	bool canWriteDosAttributes(void) const;
+
+	/**
 	 * Get this file's MS-DOS attributes.
 	 * @return MS-DOS attributes.
 	 */
@@ -108,6 +118,20 @@ public:
 	 * @return Extended attributes
 	 */
 	const XAttrList &genericXAttrs(void) const;
+
+public:
+	/** Attribute setters **/
+
+	/**
+	 * Set the MS-DOS attributes for the file.
+	 *
+	 * NOTE: Only the RHAS attributes will be written.
+	 * Other attributes will be preserved.
+	 *
+	 * @param attrs MS-DOS attributes to set.
+	 * @return 0 on success; negative POSIX error code on error.
+	 */
+	int setDosAttributes(uint32_t attrs);
 };
 
 }

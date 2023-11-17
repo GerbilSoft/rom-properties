@@ -107,6 +107,20 @@ bool XAttrReader::hasDosAttributes(void) const
 }
 
 /**
+ * Can we write MS-DOS attributes to this file?
+ *
+ * NOTE: setDosAttributes() is a *static* function.
+ * This is merely used as an advisory for the GUI.
+ *
+ * @return True if we can; false if we can't.
+ */
+bool XAttrReader::canWriteDosAttributes(void) const
+{
+	RP_D(const XAttrReader);
+	return d->canWriteDosAttributes;
+}
+
+/**
  * Get this file's MS-DOS attributes.
  * @return MS-DOS attributes.
  */

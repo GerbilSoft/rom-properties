@@ -41,6 +41,12 @@ static void	rp_xattr_view_finalize    (GObject	*object);
 static int	rp_xattr_view_load_attributes(RpXAttrView *widget);
 static void	rp_xattr_view_clear_display_widgets(RpXAttrView *widget);
 
+/** Signal handlers **/
+static void	rp_dos_attr_view_modified_signal_handler(RpDosAttrView	*dosAttrView,
+		                                         uint32_t	 old_attrs,
+		                                         uint32_t	 new_attrs,
+		                                         RpXAttrView	*xattrView);
+
 static GParamSpec *props[PROP_LAST];
 
 /* Column identifiers */
@@ -144,6 +150,7 @@ rp_xattr_view_init(RpXAttrView *widget)
 	gtk_widget_set_name(vboxDosAttributes, "vboxDosAttributes");
 	widget->dosAttrView = rp_dos_attr_view_new();
 	gtk_widget_set_name(widget->dosAttrView, "dosAttrView");
+	g_signal_connect(widget->dosAttrView, "modified", G_CALLBACK(rp_dos_attr_view_modified_signal_handler), widget);
 
 	// Extended attributes
 	widget->fraXAttr = gtk_frame_new(C_("XAttrView", "Extended Attributes"));
@@ -471,6 +478,8 @@ rp_xattr_view_load_dos_attrs(RpXAttrView *widget)
 	// We have MS-DOS attributes.
 	rp_dos_attr_view_set_attrs(RP_DOS_ATTR_VIEW(widget->dosAttrView),
 		widget->xattrReader->dosAttributes());
+	rp_dos_attr_view_set_can_write_attrs(RP_DOS_ATTR_VIEW(widget->dosAttrView),
+		widget->xattrReader->canWriteDosAttributes());
 	gtk_widget_set_visible(widget->fraDosAttributes, true);
 	return 0;
 }
@@ -634,3 +643,43 @@ rp_xattr_view_has_attributes(RpXAttrView *widget)
 	g_return_val_if_fail(RP_IS_XATTR_VIEW(widget), FALSE);
 	return widget->has_attributes;
 }
+
+/** Signal handlers **/
+
+/**
+ * MS-DOS attributes have been modified.
+ * (Usually only RHAS attributes.)
+ *
+ * Attempt to write the attributes to the file.
+ *
+ * @param dosAttrView RpDosAttrView
+ * @param old_attrs Old attributes
+ * @param new_attrs New attributes
+ * @param xattrView RpXAttrView
+ */
+static void
+rp_dos_attr_view_modified_signal_handler(RpDosAttrView	*dosAttrView,
+                                         uint32_t	 old_attrs,
+                                         uint32_t	 new_attrs,
+                                         RpXAttrView	*xattrView)
+{
+	assert(old_attrs != new_attrs);
+	if (old_attrs == new_attrs)
+		return;
+
+	if (!xattrView->xattrReader) {
+		// No XAttrReader. Can't do anything.
+		// Restore the old attributes in the UI.
+		rp_dos_attr_view_set_attrs(dosAttrView, old_attrs);
+		return;
+	}
+
+	// Attempt to write the new attributes.
+	int ret = xattrView->xattrReader->setDosAttributes(new_attrs);
+	if (ret != 0) {
+		// Error writing the new attributes.
+		// Restore the old attributes in the UI.
+		rp_dos_attr_view_set_attrs(dosAttrView, old_attrs);
+	}
+}
+

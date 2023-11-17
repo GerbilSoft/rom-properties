@@ -12,6 +12,7 @@
 
 // Windows SDK
 #include "libwin32common/RpWin32_sdk.h"
+#include "libwin32common/w32err.hpp"
 
 // librptext
 #include "librptext/wchar.hpp"
@@ -42,6 +43,7 @@ XAttrReaderPrivate::XAttrReaderPrivate(const char *filename)
 	, hasExt2Attributes(false)
 	, hasXfsAttributes(false)
 	, hasDosAttributes(false)
+	, canWriteDosAttributes(false)
 	, hasGenericXAttrs(false)
 	, ext2Attributes(0)
 	, xfsXFlags(0)
@@ -51,6 +53,7 @@ XAttrReaderPrivate::XAttrReaderPrivate(const char *filename)
 	init();
 }
 
+#ifdef _UNICODE
 XAttrReaderPrivate::XAttrReaderPrivate(const wchar_t *filename)
 	: filename(filename)
 	, lastError(0)
@@ -65,6 +68,7 @@ XAttrReaderPrivate::XAttrReaderPrivate(const wchar_t *filename)
 {
 	init();
 }
+#endif /* _UNICODE */
 
 /**
  * Initialize attributes.
@@ -119,6 +123,10 @@ int XAttrReaderPrivate::loadXfsAttrs(void)
  */
 int XAttrReaderPrivate::loadDosAttrs(void)
 {
+	// FIXME: Figure out how to check if a volume is read-only.
+	// access() only checks if it doesn't have the read-only bit set.
+	canWriteDosAttributes = true;
+
 	dosAttributes = GetFileAttributes(filename.c_str());
 	hasDosAttributes = (dosAttributes != INVALID_FILE_ATTRIBUTES);
 	return (hasDosAttributes ? 0 : -ENOTSUP);
@@ -290,6 +298,47 @@ int XAttrReaderPrivate::loadGenericXattrs(void)
 
 	// Try BackupRead().
 	return loadGenericXattrs_BackupRead();
+}
+
+/** Attribute setters **/
+
+/**
+ * Set the MS-DOS attributes for the file.
+ *
+ * NOTE: Only the RHAS attributes will be written.
+ * Other attributes will be preserved.
+ *
+ * @param attrs MS-DOS attributes to set.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int XAttrReader::setDosAttributes(uint32_t attrs)
+{
+	// Get the current file attributes first.
+	RP_D(XAttrReader);
+	DWORD cur_attrs = GetFileAttributes(d->filename.c_str());
+	if (cur_attrs == INVALID_FILE_ATTRIBUTES) {
+		// Error...
+		return w32err_to_posix(GetLastError());
+	}
+
+	// Replace the RHAS attributes.
+	static const DWORD RHAS_MASK = FILE_ATTRIBUTE_READONLY |
+	                               FILE_ATTRIBUTE_HIDDEN |
+	                               FILE_ATTRIBUTE_ARCHIVE |
+	                               FILE_ATTRIBUTE_SYSTEM;
+
+	// Do the new RHAS attributes match the current RHAS attributes?
+	attrs &= RHAS_MASK;
+	if ((cur_attrs & RHAS_MASK) == attrs) {
+		// Attributes match. Nothing to do here.
+		return 0;
+	}
+
+	// Update the RHAS attributes.
+	cur_attrs &= ~RHAS_MASK;
+	cur_attrs |= attrs;
+	BOOL bRet = SetFileAttributes(d->filename.c_str(), cur_attrs);
+	return (bRet ? 0 : w32err_to_posix(GetLastError()));
 }
 
 }

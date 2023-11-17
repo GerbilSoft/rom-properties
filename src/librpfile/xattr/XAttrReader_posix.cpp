@@ -13,8 +13,9 @@
 
 #include "librpcpu/byteswap_rp.h"
 
-#include <fcntl.h>	// AT_FDCWD
-#include <sys/stat.h>	// stat(), statx()
+#include <fcntl.h>		// AT_FDCWD
+#include <sys/stat.h>		// stat(), statx()
+#include <sys/statvfs.h>	// fstatvfs()
 #include <sys/ioctl.h>
 #include <unistd.h>
 
@@ -28,6 +29,10 @@
 
 // Ext2 flags (also used for Ext3, Ext4, and other Linux file systems)
 #include "ext2_flags.h"
+
+// MS-DOS and Windows attributes
+// NOTE: Does not depend on the Windows SDK.
+#include "dos_attrs.h"
 
 #ifdef __linux__
 // for the following ioctls:
@@ -91,6 +96,7 @@ XAttrReaderPrivate::XAttrReaderPrivate(const char *filename)
 	, hasExt2Attributes(false)
 	, hasXfsAttributes(false)
 	, hasDosAttributes(false)
+	, canWriteDosAttributes(false)
 	, hasGenericXAttrs(false)
 	, ext2Attributes(0)
 	, xfsXFlags(0)
@@ -133,8 +139,7 @@ XAttrReaderPrivate::XAttrReaderPrivate(const char *filename)
 	}
 
 	// Open the file to get attributes.
-	// TODO: Move this to librpbase or libromdata,
-	// and add configure checks for FAT_IOCTL_GET_ATTRIBUTES.
+	// TODO: Add configure checks for FAT_IOCTL_GET_ATTRIBUTES.
 #define OPEN_FLAGS (O_RDONLY|O_NONBLOCK|O_LARGEFILE)
 	errno = 0;
 	fd = open(filename, OPEN_FLAGS);
@@ -149,8 +154,12 @@ XAttrReaderPrivate::XAttrReaderPrivate(const char *filename)
 
 	// Initialize attributes.
 	lastError = init();
-	close(fd);
-	fd = -1;
+
+	// NOTE: If attributes are writable, keep the file open.
+	if (!canWriteDosAttributes) {
+		close(fd);
+		fd = -1;
+	}
 }
 
 XAttrReaderPrivate::~XAttrReaderPrivate()
@@ -295,41 +304,56 @@ int XAttrReaderPrivate::loadDosAttrs(void)
 
 #ifdef __linux__
 	// ioctl (Linux vfat only)
-	if (!ioctl(fd, FAT_IOCTL_GET_ATTRIBUTES, &dosAttributes)) {
-		// ioctl() succeeded. We have MS-DOS attributes.
-		hasDosAttributes = true;
-		return 0;
-	}
-
-	// Try system xattrs:
-	// ntfs3 has: system.dos_attrib, system.ntfs_attrib
-	// ntfs-3g has: system.ntfs_attrib, system.ntfs_attrib_be
-	// Attribute is stored as a 32-bit DWORD.
-	union {
-		uint8_t u8[16];
-		uint32_t u32;
-	} buf;
-
-	struct DosAttrName {
-		const char name[23];
-		bool be32;
-	};
-	static const std::array<DosAttrName, 3> dosAttrNames = {{
-		{"system.ntfs_attrib_be", true},
-		{"system.ntfs_attrib", false},
-		{"system.dos_attrib", false},
-	}};
-	for (const auto &p : dosAttrNames) {
-		ssize_t sz = fgetxattr(fd, p.name, buf.u8, sizeof(buf.u8));
-		if (sz == 4) {
-			dosAttributes = (p.be32) ? be32_to_cpu(buf.u32) : le32_to_cpu(buf.u32);
+	do {
+		if (!ioctl(fd, FAT_IOCTL_GET_ATTRIBUTES, &dosAttributes)) {
+			// ioctl() succeeded. We have MS-DOS attributes.
 			hasDosAttributes = true;
-			return 0;
+			break;
 		}
+
+		// Try system xattrs:
+		// ntfs3 has: system.dos_attrib, system.ntfs_attrib
+		// ntfs-3g has: system.ntfs_attrib, system.ntfs_attrib_be
+		// Attribute is stored as a 32-bit DWORD.
+		union {
+			uint8_t u8[16];
+			uint32_t u32;
+		} buf;
+
+		struct DosAttrName {
+			const char name[23];
+			bool be32;
+		};
+		static const std::array<DosAttrName, 3> dosAttrNames = {{
+			{"system.ntfs_attrib_be", true},
+			{"system.ntfs_attrib", false},
+			{"system.dos_attrib", false},
+		}};
+		for (const auto &p : dosAttrNames) {
+			ssize_t sz = fgetxattr(fd, p.name, buf.u8, sizeof(buf.u8));
+			if (sz == 4) {
+				dosAttributes = (p.be32) ? be32_to_cpu(buf.u32) : le32_to_cpu(buf.u32);
+				hasDosAttributes = true;
+				break;
+			}
+		}
+	} while (0);
+
+	if (!hasDosAttributes) {
+		// No valid attributes found.
+		return -ENOENT;
 	}
 
-	// No valid attributes found.
-	return -ENOENT;
+	// Check if the file system is writable.
+	// NOTE: access() won't work here. Use fstatvfs().
+	// TODO: That might not be enough...
+	struct statvfs svbuf;
+	int ret = fstatvfs(fd, &svbuf);
+	if (!ret) {
+		canWriteDosAttributes = !(svbuf.f_flag & ST_RDONLY);
+	}
+
+	return 0;
 #else /* !__linux__ */
 	// Not supported.
 	return -ENOTSUP;
@@ -496,6 +520,61 @@ int XAttrReaderPrivate::loadGenericXattrs(void)
 
 	// Extended attributes retrieved.
 	hasGenericXAttrs = true;
+	return 0;
+}
+
+/** Attribute setters **/
+
+/**
+ * Set the MS-DOS attributes for a file.
+ *
+ * NOTE: Only the RHAS attributes will be written.
+ * Other attributes will be preserved.
+ *
+ * @param attrs MS-DOS attributes to set.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int XAttrReader::setDosAttributes(uint32_t attrs)
+{
+	RP_D(XAttrReader);
+	if (!d->canWriteDosAttributes) {
+		// FIXME: Better error code?
+		return -EROFS;
+	} else if (d->fd < 0) {
+		// File was closed.
+		return -EBADF;
+	}
+
+	// Get the current file attributes first.
+	// TODO: Try the NTFS attributes if this fails.
+	uint32_t cur_attrs = 0;
+	if (ioctl(d->fd, FAT_IOCTL_GET_ATTRIBUTES, &cur_attrs) != 0) {
+		// Failed to get the current attributes.
+		return -errno;
+	}
+
+	// Replace the RHAS attributes.
+	static const uint32_t RHAS_MASK = FILE_ATTRIBUTE_READONLY |
+	                                  FILE_ATTRIBUTE_HIDDEN |
+	                                  FILE_ATTRIBUTE_ARCHIVE |
+	                                  FILE_ATTRIBUTE_SYSTEM;
+
+	// Do the new RHAS attributes match the current RHAS attributes?
+	attrs &= RHAS_MASK;
+	if ((cur_attrs & RHAS_MASK) == attrs) {
+		// Attributes match. Nothing to do here.
+		return 0;
+	}
+
+	// Update the RHAS attributes.
+	cur_attrs &= ~RHAS_MASK;
+	cur_attrs |= attrs;
+	if (ioctl(d->fd, FAT_IOCTL_SET_ATTRIBUTES, &cur_attrs) != 0) {
+		// Failed to set the new attributes.
+		return -errno;
+	}
+
+	// Attributes have been set.
 	return 0;
 }
 

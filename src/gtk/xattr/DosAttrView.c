@@ -18,9 +18,17 @@ typedef enum {
 	PROP_0,
 
 	PROP_ATTRS,
+	PROP_CAN_WRITE,
 
 	PROP_LAST
-} RpDosAttrViewPropID;
+} DosAttrViewPropID;
+
+/* Signal identifiers */
+typedef enum {
+	SIGNAL_MODIFIED,
+
+	SIGNAL_LAST
+} DosAttrViewSignalID;
 
 static void	rp_dos_attr_view_set_property(GObject		*object,
 					      guint		 prop_id,
@@ -32,6 +40,8 @@ static void	rp_dos_attr_view_get_property(GObject		*object,
 					      GParamSpec	*pspec);
 
 /** Signal handlers **/
+static void	checkbox_writable_signal_handler (GtkCheckButton	*checkbutton,
+						  RpDosAttrView		*widget);
 static void	checkbox_no_toggle_signal_handler(GtkCheckButton	*checkbutton,
 						  RpDosAttrView		*widget);
 
@@ -39,8 +49,10 @@ static void	checkbox_no_toggle_signal_handler(GtkCheckButton	*checkbutton,
 static void	rp_dos_attr_view_update_attrs_display(RpDosAttrView *widget);
 
 static GParamSpec *props[PROP_LAST];
+static guint signals[SIGNAL_LAST];
 
-static GQuark DosAttrView_value_quark;
+static GQuark DosAttrView_bitIndex_quark;	// stores the attribute bit index
+static GQuark DosAttrView_value_quark;		// stores the current attribute value
 
 #if GTK_CHECK_VERSION(3,0,0)
 typedef GtkBoxClass superclass;
@@ -63,6 +75,7 @@ struct _RpDosAttrView {
 	super __parent__;
 
 	unsigned int attrs;
+	gboolean can_write;
 
 	// Inhibit checkbox toggling while updating.
 	gboolean inhibit_checkbox_no_toggle;
@@ -81,6 +94,13 @@ struct _RpDosAttrView {
 	};
 };
 
+// Flag order, relative to checkboxes
+// NOTE: Uses bit indexes.
+static const uint8_t flag_order[6] = {
+	 0,  1,  5,  2,	// RHAS
+	11, 14,		// CE
+};
+
 // NOTE: G_DEFINE_TYPE() doesn't work in C++ mode with gcc-6.2
 // due to an implicit int to GTypeFlags conversion.
 G_DEFINE_TYPE_EXTENDED(RpDosAttrView, rp_dos_attr_view,
@@ -97,6 +117,7 @@ rp_dos_attr_view_class_init(RpDosAttrViewClass *klass)
 
 	// NOTE: Not using g_quark_from_static_string()
 	// because the extension can be unloaded.
+	DosAttrView_bitIndex_quark = g_quark_from_string("DosAttrValue.bitIndex");
 	DosAttrView_value_quark = g_quark_from_string("DosAttrValue.value");
 
 	/** Properties **/
@@ -106,8 +127,23 @@ rp_dos_attr_view_class_init(RpDosAttrViewClass *klass)
 		0U, ~0U, 0U,
 		(GParamFlags)(G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
+	props[PROP_CAN_WRITE] = g_param_spec_boolean(
+		"can-write", "can-write", "Can write MS-DOS file attributes",
+		FALSE, (GParamFlags)(G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+
 	// Install the properties.
 	g_object_class_install_properties(gobject_class, PROP_LAST, props);
+
+	/** Signals **/
+
+	signals[SIGNAL_MODIFIED] = g_signal_new("modified",
+		G_OBJECT_CLASS_TYPE(gobject_class),
+		(GSignalFlags)(G_SIGNAL_RUN_FIRST | G_SIGNAL_ACTION),
+		0, NULL, NULL, NULL,
+		G_TYPE_NONE, 2,
+		G_TYPE_UINT,	// old-attrs
+		G_TYPE_UINT	// new-attrs
+	);
 }
 
 static void
@@ -166,11 +202,16 @@ rp_dos_attr_view_init(RpDosAttrView *widget)
 	gtk_widget_show_all(hboxNTFSAttrs);
 #endif /* GTK_CHECK_VERSION(4,0,0) */
 
-	// Disable user modifications.
+	// The first four attributes (RHAS) *may* be writable.
+	// Compressed and Encrypted are *not* writable here.
+	// Set the appropriate signal handler for each of them.
 	// NOTE: Unlike Qt, both the "clicked" and "toggled" signals are
 	// emitted for both user and program modifications, so we have to
 	// connect this signal *after* setting the initial value.
-	for (size_t i = 0; i < ARRAY_SIZE(widget->checkBoxes); i++) {
+	for (size_t i = 0; i < 4; i++) {
+		g_signal_connect(widget->checkBoxes[i], "toggled", G_CALLBACK(checkbox_writable_signal_handler), widget);
+	}
+	for (size_t i = 4; i < ARRAY_SIZE(widget->checkBoxes); i++) {
 		g_signal_connect(widget->checkBoxes[i], "toggled", G_CALLBACK(checkbox_no_toggle_signal_handler), widget);
 	}
 }
@@ -201,6 +242,10 @@ rp_dos_attr_view_set_property(GObject		*object,
 			break;
 		}
 
+		case PROP_CAN_WRITE:
+			widget->can_write = g_value_get_boolean(value);
+			break;
+
 		default:
 			G_OBJECT_WARN_INVALID_PROPERTY_ID(object, prop_id, pspec);
 			break;
@@ -220,6 +265,10 @@ rp_dos_attr_view_get_property(GObject		*object,
 			g_value_set_uint(value, widget->attrs);
 			break;
 
+		case PROP_CAN_WRITE:
+			g_value_set_boolean(value, widget->can_write);
+			break;
+
 		default:
 			G_OBJECT_WARN_INVALID_PROPERTY_ID(object, prop_id, pspec);
 			break;
@@ -237,16 +286,10 @@ rp_dos_attr_view_update_attrs_display(RpDosAttrView *widget)
 {
 	widget->inhibit_checkbox_no_toggle = TRUE;
 
-	// Flag order, relative to checkboxes
-	// NOTE: Uses bit indexes.
-	static const uint8_t flag_order[] = {
-		 0,  1,  5,  2,	// RHAS
-		11, 14,		// CE
-	};
-
 	for (size_t i = 0; i < ARRAY_SIZE(widget->checkBoxes); i++) {
 		gboolean val = !!(widget->attrs & (1U << flag_order[i]));
 		gtk_check_button_set_active(GTK_CHECK_BUTTON(widget->checkBoxes[i]), val);
+		g_object_set_qdata(G_OBJECT(widget->checkBoxes[i]), DosAttrView_bitIndex_quark, GUINT_TO_POINTER(flag_order[i]));
 		g_object_set_qdata(G_OBJECT(widget->checkBoxes[i]), DosAttrView_value_quark, GUINT_TO_POINTER((guint)val));
 	}
 
@@ -298,7 +341,72 @@ rp_dos_attr_view_clear_attrs(RpDosAttrView *widget)
 	}
 }
 
+/**
+ * Set if MS-DOS attributes can be written.
+ * This controls if the RHAS checkboxes can be edited by the user.
+ * @param widget DosAttrView
+ * @param can_write True if they can; false if they can't.
+ */
+void
+rp_dos_attr_view_set_can_write_attrs(RpDosAttrView *widget, gboolean can_write)
+{
+	g_return_if_fail(RP_IS_DOS_ATTR_VIEW(widget));
+	widget->can_write = can_write;
+}
+
+/**
+ * Can MS-DOS attributes be written?
+ * This controls if the RHAS checkboxes can be edited by the user.
+ * @param widget DosAttrView
+ * @return True if they can; false if they can't.
+ */
+gboolean
+rp_dos_attr_view_get_can_write_attrs(RpDosAttrView *widget)
+{
+	g_return_val_if_fail(RP_IS_DOS_ATTR_VIEW(widget), FALSE);
+	return widget->can_write;
+}
+
 /** Signal handlers **/
+
+/**
+ * Allow writable bitfield checkboxes to be toggled.
+ * @param checkbutton Bitfield checkbox
+ * @param page DosAttrView
+ */
+static void
+checkbox_writable_signal_handler (GtkCheckButton	*checkbutton,
+				  RpDosAttrView		*widget)
+{
+	if (widget->inhibit_checkbox_no_toggle) {
+		// Inhibiting the no-toggle handler.
+		return;
+	}
+
+	if (!widget->can_write) {
+		// Cannot write to this file. Use the no-toggle signal handler.
+		checkbox_no_toggle_signal_handler(checkbutton, widget);
+		return;
+	}
+
+	// Update the attributes bitfield and the qdata in the checkbox widget.
+	const gboolean checked = gtk_check_button_get_active(checkbutton);
+	const uint8_t bitIndex = GPOINTER_TO_UINT(g_object_get_qdata(G_OBJECT(checkbutton), DosAttrView_bitIndex_quark));
+	g_object_set_qdata(G_OBJECT(checkbutton), DosAttrView_value_quark, GINT_TO_POINTER(checked));
+
+	const uint32_t old_attrs = widget->attrs;
+	if (checked) {
+		widget->attrs |= (1U << bitIndex);
+	} else {
+		widget->attrs &= ~(1U << bitIndex);
+	}
+
+	// Emit a signal so the parent widget can actually set the attributes.
+	// The parent can reset the old attributes if setting fails.
+	if (likely(old_attrs != widget->attrs)) {
+		g_signal_emit(G_OBJECT(widget), signals[SIGNAL_MODIFIED], 0, old_attrs, widget->attrs);
+	}
+}
 
 /**
  * Prevent bitfield checkboxes from being toggled.
