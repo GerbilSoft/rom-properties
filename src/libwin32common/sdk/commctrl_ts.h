@@ -254,45 +254,53 @@ static FORCEINLINE BOOL ListView_GetItemRect(_In_ HWND hwnd, _In_ int i, _Out_ R
 	return STATIC_CAST(BOOL)(STATIC_CAST(DWORD)(SNDMSG(hwnd, LVM_GETITEMRECT, STATIC_CAST(WPARAM)(i), REINTERPRET_CAST(LPARAM)(prc))));
 }
 
-#if 0 /* TODO */
-#define ListView_SetItemPosition(hwndLV, i, x, y) \
-    (BOOL)SNDMSG((hwndLV), LVM_SETITEMPOSITION, (WPARAM)(int)(i), MAKELPARAM((x), (y)))
+#undef ListView_SetItemPosition
+static FORCEINLINE BOOL ListView_SetItemPosition(_In_ HWND hwndLV, _In_ int i, _In_ int x, _In_ int y)
+	{ return STATIC_CAST(BOOL)(SNDMSG(hwndLV, LVM_SETITEMPOSITION, STATIC_CAST(WPARAM)(i), MAKELPARAM(x, y))); }
 
-#define ListView_GetItemPosition(hwndLV, i, ppt) \
-    (BOOL)SNDMSG((hwndLV), LVM_GETITEMPOSITION, (WPARAM)(int)(i), (LPARAM)(POINT *)(ppt))
+#undef ListView_GetItemPosition
+static FORCEINLINE BOOL ListView_GetItemPosition(_In_ HWND hwndLV, _In_ int i, _Out_ LPPOINT ppt)
+	{ return STATIC_CAST(BOOL)(SNDMSG(hwndLV, LVM_GETITEMPOSITION, STATIC_CAST(WPARAM)(i), REINTERPRET_CAST(LPARAM)(ppt))); }
 
-#define ListView_GetStringWidth(hwndLV, psz) \
-    (int)SNDMSG((hwndLV), LVM_GETSTRINGWIDTH, 0, (LPARAM)(LPCTSTR)(psz))
+#undef ListView_GetStringWidth
+static FORCEINLINE int ListView_GetStringWidth(_In_ HWND hwndLV, _In_ LPCTSTR psz)
+	{ return STATIC_CAST(int)(SNDMSG(hwndLV, LVM_GETSTRINGWIDTH, 0, REINTERPRET_CAST(LPARAM)(psz))); }
 
-#define ListView_HitTest(hwndLV, pinfo) \
-    (int)SNDMSG((hwndLV), LVM_HITTEST, 0, (LPARAM)(LV_HITTESTINFO *)(pinfo))
-#define ListView_HitTestEx(hwndLV, pinfo) \
-    (int)SNDMSG((hwndLV), LVM_HITTEST, (WPARAM)-1, (LPARAM)(LV_HITTESTINFO *)(pinfo))
+#undef ListView_HitTest
+static FORCEINLINE int ListView_HitTest(_In_ HWND hwndLV, _Inout_ LV_HITTESTINFO *pinfo)
+	{ return STATIC_CAST(int)(SNDMSG(hwndLV, LVM_HITTEST, 0, REINTERPRET_CAST(LPARAM)(pinfo))); }
 
-#define ListView_EnsureVisible(hwndLV, i, fPartialOK) \
-    (BOOL)SNDMSG((hwndLV), LVM_ENSUREVISIBLE, (WPARAM)(int)(i), MAKELPARAM((fPartialOK), 0))
+#undef ListView_HitTestEx
+static FORCEINLINE int ListView_HitTestEx(_In_ HWND hwndLV, _Inout_ LV_HITTESTINFO *pinfo)
+	{ return STATIC_CAST(int)(SNDMSG(hwndLV, LVM_HITTEST, -1, REINTERPRET_CAST(LPARAM)(pinfo))); }
 
-#define ListView_Scroll(hwndLV, dx, dy) \
-    (BOOL)SNDMSG((hwndLV), LVM_SCROLL, (WPARAM)(int)(dx), (LPARAM)(int)(dy))
-#endif /* TODO */
+#undef ListView_EnsureVisible
+static FORCEINLINE BOOL ListView_EnsureVisible(_In_ HWND hwndLV, _In_ int i, _In_ BOOL fPartialOK)
+	{ return STATIC_CAST(BOOL)(SNDMSG(hwndLV, LVM_ENSUREVISIBLE, STATIC_CAST(WPARAM)(i), MAKELPARAM(fPartialOK, 0))); }
+
+#undef ListView_Scroll
+static FORCEINLINE BOOL ListView_Scroll(_In_ HWND hwndLV, _In_ int dx, _In_ int dy)
+	{ return STATIC_CAST(BOOL)(SNDMSG(hwndLV, LVM_SCROLL, STATIC_CAST(WPARAM)(dx), STATIC_CAST(LPARAM)(dy))); }
 
 #undef ListView_RedrawItems
 static FORCEINLINE BOOL ListView_RedrawItems(_In_ HWND hwndLV, _In_ int iFirst, _In_ int iLast)
 	{ return STATIC_CAST(BOOL)(STATIC_CAST(DWORD)(SNDMSG(hwndLV, LVM_REDRAWITEMS, STATIC_CAST(WPARAM)(iFirst), STATIC_CAST(LPARAM)(iLast)))); }
 
-#if 0 /* TODO */
-#define ListView_Arrange(hwndLV, code) \
-    (BOOL)SNDMSG((hwndLV), LVM_ARRANGE, (WPARAM)(UINT)(code), 0L)
+#undef ListView_Arrange
+static FORCEINLINE BOOL ListView_Arrange(_In_ HWND hwndLV, _In_ UINT code)
+	{ return STATIC_CAST(BOOL)(SNDMSG(hwndLV, LVM_ARRANGE, STATIC_CAST(WPARAM)(code), 0L)); }
 
-#define ListView_EditLabel(hwndLV, i) \
-    (HWND)SNDMSG((hwndLV), LVM_EDITLABEL, (WPARAM)(int)(i), 0L)
+#undef ListView_EditLabel
+static FORCEINLINE HWND ListView_EditLabel(_In_ HWND hwndLV, _In_ int i)
+	{ return REINTERPRET_CAST(HWND)(SNDMSG(hwndLV, LVM_EDITLABEL, STATIC_CAST(WPARAM)(i), 0L)); }
 
-#define ListView_GetEditControl(hwndLV) \
-    (HWND)SNDMSG((hwndLV), LVM_GETEDITCONTROL, 0, 0L)
+#undef ListView_GetEditControl
+static FORCEINLINE HWND ListView_GetEditControl(_In_ HWND hwndLV)
+	{ return REINTERPRET_CAST(HWND)(SNDMSG(hwndLV, LVM_GETEDITCONTROL, 0, 0L)); }
 
-#define ListView_GetColumn(hwnd, iCol, pcol) \
-    (BOOL)SNDMSG((hwnd), LVM_GETCOLUMN, (WPARAM)(int)(iCol), (LPARAM)(LV_COLUMN *)(pcol))
-#endif /* TODO */
+#undef ListView_GetColumn
+static FORCEINLINE BOOL ListView_GetColumn(_In_ HWND hwnd, _In_ int iCol, _Inout_ LV_COLUMN *pcol)
+	{ return STATIC_CAST(BOOL)(SNDMSG(hwnd, LVM_GETCOLUMN, STATIC_CAST(WPARAM)(iCol), REINTERPRET_CAST(LPARAM)(pcol))); }
 
 #undef ListView_SetColumn
 static FORCEINLINE BOOL ListView_SetColumn(_In_ HWND hwnd, _In_ int iCol, _In_ const LPLVCOLUMN pcol)
@@ -728,19 +736,21 @@ static FORCEINLINE BOOL ListView_GetBkImage(_In_ HWND hwndLV, _Inout_ LPLVBKIMAG
 //====== TREEVIEW CONTROL =====================================================
 #ifndef NOTREEVIEW
 
-#if 0 /* TODO */
-#define TreeView_InsertItem(hwnd, lpis) \
-    (HTREEITEM)SNDMSG((hwnd), TVM_INSERTITEM, 0, (LPARAM)(LPTV_INSERTSTRUCT)(lpis))
+#undef TreeView_InsertItem
+static FORCEINLINE HTREEITEM TreeView_InsertItem(_In_ HWND hwnd, _In_ LPTV_INSERTSTRUCT lpis)
+	{ return REINTERPRET_CAST(HTREEITEM)(SNDMSG(hwnd, TVM_INSERTITEM, 0, REINTERPRET_CAST(LPARAM)(lpis))); }
 
-#define TreeView_DeleteItem(hwnd, hitem) \
-    (BOOL)SNDMSG((hwnd), TVM_DELETEITEM, 0, (LPARAM)(HTREEITEM)(hitem))
+#undef TreeView_DeleteItem
+static FORCEINLINE BOOL TreeView_DeleteItem(_In_ HWND hwnd, _In_ HTREEITEM hitem)
+	{ return STATIC_CAST(BOOL)(SNDMSG(hwnd, TVM_DELETEITEM, 0, REINTERPRET_CAST(LPARAM)(hitem))); }
 
-#define TreeView_DeleteAllItems(hwnd) \
-    (BOOL)SNDMSG((hwnd), TVM_DELETEITEM, 0, (LPARAM)TVI_ROOT)
+#undef TreeView_DeleteAllItems
+static FORCEINLINE BOOL TreeView_DeleteAllItems(_In_ HWND hwnd)
+	{ return STATIC_CAST(BOOL)(SNDMSG(hwnd, TVM_DELETEITEM, 0, REINTERPRET_CAST(LPARAM)(TVI_ROOT))); }
 
-#define TreeView_Expand(hwnd, hitem, code) \
-    (BOOL)SNDMSG((hwnd), TVM_EXPAND, (WPARAM)(code), (LPARAM)(HTREEITEM)(hitem))
-#endif /* TODO */
+#undef TreeView_Expand
+static FORCEINLINE BOOL TreeView_Expand(_In_ HWND hwnd, _In_ HTREEITEM hitem, _In_ UINT code)
+	{ return STATIC_CAST(BOOL)(SNDMSG(hwnd, TVM_EXPAND, STATIC_CAST(WPARAM)(code), REINTERPRET_CAST(LPARAM)(hitem))); }
 
 #undef TreeView_GetItemRect
 static FORCEINLINE BOOL TreeView_GetItemRect(_In_ HWND hwnd, _In_ HTREEITEM hitem, _Out_ RECT *prc, _In_ BOOL fItemRect)
@@ -749,28 +759,35 @@ static FORCEINLINE BOOL TreeView_GetItemRect(_In_ HWND hwnd, _In_ HTREEITEM hite
 	return STATIC_CAST(BOOL)(STATIC_CAST(DWORD)(SNDMSG(hwnd, TVM_GETITEMRECT, STATIC_CAST(WPARAM)(fItemRect), REINTERPRET_CAST(LPARAM)(prc))));
 }
 
+#undef TreeView_GetCount
+static FORCEINLINE UINT TreeView_GetCount(_In_ HWND hwnd)
+	{ return STATIC_CAST(UINT)(SNDMSG(hwnd, TVM_GETCOUNT, 0, 0)); }
+
+#undef TreeView_GetIndent
+static FORCEINLINE UINT TreeView_GetIndent(_In_ HWND hwnd)
+	{ return STATIC_CAST(UINT)(SNDMSG(hwnd, TVM_GETINDENT, 0, 0)); }
+
+#undef TreeView_SetIndent
+static FORCEINLINE BOOL TreeView_SetIndent(_In_ HWND hwnd, _In_ UINT indent)
+	{ return STATIC_CAST(BOOL)(SNDMSG(hwnd, TVM_SETINDENT, STATIC_CAST(WPARAM)(indent), 0)); }
+
+#undef TreeView_GetImageList
+static FORCEINLINE HIMAGELIST TreeView_GetImageList(_In_ HWND hwnd, _In_ int iImage)
+	{ return REINTERPRET_CAST(HIMAGELIST)(SNDMSG(hwnd, TVM_GETIMAGELIST, iImage, 0)); }
+
+#undef TreeView_SetImageList
+static FORCEINLINE HIMAGELIST TreeView_SetImageList(_In_ HWND hwnd, _In_ HIMAGELIST himl, _In_ int iImage)
+	{ return REINTERPRET_CAST(HIMAGELIST)(SNDMSG(hwnd, TVM_SETIMAGELIST, iImage, REINTERPRET_CAST(LPARAM)(himl))); }
+
+#undef TreeView_GetNextItem
+static FORCEINLINE HTREEITEM TreeView_GetNextItem(_In_ HWND hwnd, _In_ HTREEITEM hitem, _In_ UINT code)
+	{ return REINTERPRET_CAST(HTREEITEM)(SNDMSG(hwnd, TVM_GETNEXTITEM, STATIC_CAST(WPARAM)(code), REINTERPRET_CAST(LPARAM)(hitem))); }
+
+#undef TreeView_Select
+static FORCEINLINE BOOL TreeView_Select(_In_ HWND hwnd, _In_ HTREEITEM hitem, _In_ UINT code)
+	{ return STATIC_CAST(BOOL)(SNDMSG(hwnd, TVM_SELECTITEM, STATIC_CAST(WPARAM)(code), REINTERPRET_CAST(LPARAM)(hitem))); }
+
 #if 0 /* TODO */
-#define TreeView_GetCount(hwnd) \
-    (UINT)SNDMSG((hwnd), TVM_GETCOUNT, 0, 0)
-
-#define TreeView_GetIndent(hwnd) \
-    (UINT)SNDMSG((hwnd), TVM_GETINDENT, 0, 0)
-
-#define TreeView_SetIndent(hwnd, indent) \
-    (BOOL)SNDMSG((hwnd), TVM_SETINDENT, (WPARAM)(indent), 0)
-
-#define TreeView_GetImageList(hwnd, iImage) \
-    (HIMAGELIST)SNDMSG((hwnd), TVM_GETIMAGELIST, iImage, 0)
-
-#define TreeView_SetImageList(hwnd, himl, iImage) \
-    (HIMAGELIST)SNDMSG((hwnd), TVM_SETIMAGELIST, iImage, (LPARAM)(HIMAGELIST)(himl))
-
-#define TreeView_GetNextItem(hwnd, hitem, code) \
-    (HTREEITEM)SNDMSG((hwnd), TVM_GETNEXTITEM, (WPARAM)(code), (LPARAM)(HTREEITEM)(hitem))
-
-#define TreeView_Select(hwnd, hitem, code) \
-    (BOOL)SNDMSG((hwnd), TVM_SELECTITEM, (WPARAM)(code), (LPARAM)(HTREEITEM)(hitem))
-
 #define TreeView_GetItem(hwnd, pitem) \
     (BOOL)SNDMSG((hwnd), TVM_GETITEM, 0, (LPARAM)(TV_ITEM *)(pitem))
 
@@ -949,83 +966,107 @@ static FORCEINLINE BOOL TreeView_GetItemPartRect(_In_ HWND hwnd, _In_ HTREEITEM 
 
 #define TabCtrl_SetItem(hwnd, iItem, pitem) \
     (BOOL)SNDMSG((hwnd), TCM_SETITEM, (WPARAM)(int)(iItem), (LPARAM)(TC_ITEM *)(pitem))
+#endif
 
-#define TabCtrl_InsertItem(hwnd, iItem, pitem)   \
-    (int)SNDMSG((hwnd), TCM_INSERTITEM, (WPARAM)(int)(iItem), (LPARAM)(const TC_ITEM *)(pitem))
+#undef TabCtrl_InsertItem
+static FORCEINLINE int TabCtrl_InsertItem(_In_ HWND hwnd, _In_ int iItem, _In_ const TC_ITEM *pitem)
+	{ return STATIC_CAST(int)(SNDMSG(hwnd, TCM_INSERTITEM, STATIC_CAST(WPARAM)(iItem), REINTERPRET_CAST(LPARAM)(pitem))); }
 
-#define TabCtrl_DeleteItem(hwnd, i) \
-    (BOOL)SNDMSG((hwnd), TCM_DELETEITEM, (WPARAM)(int)(i), 0L)
+#undef TabCtrl_DeleteItem
+static FORCEINLINE BOOL TabCtrl_DeleteItem(_In_ HWND hwnd, _In_ int i)
+	{ return STATIC_CAST(BOOL)(SNDMSG(hwnd, TCM_DELETEITEM, STATIC_CAST(WPARAM)(i), 0L)); }
 
-#define TabCtrl_DeleteAllItems(hwnd) \
-    (BOOL)SNDMSG((hwnd), TCM_DELETEALLITEMS, 0, 0L)
+#undef TabCtrl_DeleteAllItems
+static FORCEINLINE BOOL TabCtrl_DeleteAllItems(_In_ HWND hwnd)
+	{ return STATIC_CAST(BOOL)(SNDMSG(hwnd, TCM_DELETEALLITEMS, 0, 0L)); }
 
-#define TabCtrl_GetItemRect(hwnd, i, prc) \
-    (BOOL)SNDMSG((hwnd), TCM_GETITEMRECT, (WPARAM)(int)(i), (LPARAM)(RECT *)(prc))
+#undef TabCtrl_GetItemRect
+static FORCEINLINE BOOL TabCtrl_GetItemRect(_In_ HWND hwnd, _In_ int i, _Out_ LPRECT prc)
+	{ return STATIC_CAST(BOOL)(SNDMSG(hwnd, TCM_GETITEMRECT, STATIC_CAST(WPARAM)(i), REINTERPRET_CAST(LPARAM)(prc))); }
 
-#define TabCtrl_GetCurSel(hwnd) \
-    (int)SNDMSG((hwnd), TCM_GETCURSEL, 0, 0)
+#undef TabCtrl_GetCurSel
+static FORCEINLINE int TabCtrl_GetCurSel(_In_ HWND hwnd)
+	{ return STATIC_CAST(int)(SNDMSG(hwnd, TCM_GETCURSEL, 0, 0)); }
 
-#define TabCtrl_SetCurSel(hwnd, i) \
-    (int)SNDMSG((hwnd), TCM_SETCURSEL, (WPARAM)(i), 0)
+#undef TabCtrl_SetCurSel
+static FORCEINLINE int TabCtrl_SetCurSel(_In_ HWND hwnd, _In_ int i)
+	{ return STATIC_CAST(int)(SNDMSG(hwnd, TCM_SETCURSEL, STATIC_CAST(WPARAM)(i), 0)); }
 
-#define TabCtrl_HitTest(hwndTC, pinfo) \
-    (int)SNDMSG((hwndTC), TCM_HITTEST, 0, (LPARAM)(TC_HITTESTINFO *)(pinfo))
+#undef TabCtrl_HitTest
+static FORCEINLINE int TabCtrl_HitTest(_In_ HWND hwndTC, _In_ TC_HITTESTINFO *pinfo)
+	{ return STATIC_CAST(int)(SNDMSG(hwndTC, TCM_HITTEST, 0, REINTERPRET_CAST(LPARAM)(pinfo))); }
 
-#define TabCtrl_SetItemExtra(hwndTC, cb) \
-    (BOOL)SNDMSG((hwndTC), TCM_SETITEMEXTRA, (WPARAM)(cb), 0L)
+#undef TabCtrl_SetItemExtra
+static FORCEINLINE BOOL TabCtrl_SetItemExtra(_In_ HWND hwndTC, _In_ DWORD cb)
+	{ return STATIC_CAST(BOOL)(SNDMSG((hwndTC), TCM_SETITEMEXTRA, STATIC_CAST(WPARAM)(cb), 0L)); }
 
-#define TabCtrl_AdjustRect(hwnd, bLarger, prc) \
-    (int)SNDMSG(hwnd, TCM_ADJUSTRECT, (WPARAM)(BOOL)(bLarger), (LPARAM)(RECT *)(prc))
+#undef TabCtrl_AdjustRect
+static FORCEINLINE int TabCtrl_AdjustRect(_In_ HWND hwnd, _In_ BOOL bLarger, _Inout_ LPRECT prc)
+	{ return STATIC_CAST(int)(SNDMSG(hwnd, TCM_ADJUSTRECT, STATIC_CAST(WPARAM)(bLarger), REINTERPRET_CAST(LPARAM)(prc))); }
 
-#define TabCtrl_SetItemSize(hwnd, x, y) \
-    (DWORD)SNDMSG((hwnd), TCM_SETITEMSIZE, 0, MAKELPARAM(x,y))
+#undef TabCtrl_SetItemSize
+static FORCEINLINE DWORD TabCtrl_SetItemSize(_In_ HWND hwnd, _In_ int x, _In_ int y)
+	{ return STATIC_CAST(DWORD)(SNDMSG(hwnd, TCM_SETITEMSIZE, 0, MAKELPARAM(x,y))); }
 
-#define TabCtrl_RemoveImage(hwnd, i) \
-        (void)SNDMSG((hwnd), TCM_REMOVEIMAGE, i, 0L)
+#undef TabCtrl_RemoveImage
+static FORCEINLINE void TabCtrl_RemoveImage(_In_ HWND hwnd, _In_ int i)
+	{ (void)SNDMSG(hwnd, TCM_REMOVEIMAGE, i, 0L); }
 
-#define TabCtrl_SetPadding(hwnd,  cx, cy) \
-        (void)SNDMSG((hwnd), TCM_SETPADDING, 0, MAKELPARAM(cx, cy))
+#undef TabCtrl_SetPadding
+static FORCEINLINE void TabCtrl_SetPadding(_In_ HWND hwnd, _In_ int cx, _In_ int cy)
+	{ (void)SNDMSG(hwnd, TCM_SETPADDING, 0, MAKELPARAM(cx, cy)); }
 
-#define TabCtrl_GetRowCount(hwnd) \
-        (int)SNDMSG((hwnd), TCM_GETROWCOUNT, 0, 0L)
+#undef TabCtrl_GetRowCount
+static FORCEINLINE int TabCtrl_GetRowCount(_In_ HWND hwnd)
+	{ return STATIC_CAST(int)(SNDMSG(hwnd, TCM_GETROWCOUNT, 0, 0L)); }
 
-#define TabCtrl_GetToolTips(hwnd) \
-        (HWND)SNDMSG((hwnd), TCM_GETTOOLTIPS, 0, 0L)
+#undef TabCtrl_GetToolTips
+static FORCEINLINE HWND TabCtrl_GetToolTips(_In_ HWND hwnd)
+	{ return REINTERPRET_CAST(HWND)(SNDMSG(hwnd, TCM_GETTOOLTIPS, 0, 0L)); }
 
-#define TabCtrl_SetToolTips(hwnd, hwndTT) \
-        (void)SNDMSG((hwnd), TCM_SETTOOLTIPS, (WPARAM)(hwndTT), 0L)
+#undef TabCtrl_SetToolTips
+static FORCEINLINE void TabCtrl_SetToolTips(_In_ HWND hwnd, _In_ HWND hwndTT)
+	{ (void)SNDMSG(hwnd, TCM_SETTOOLTIPS, REINTERPRET_CAST(WPARAM)(hwndTT), 0L); }
 
-#define TabCtrl_GetCurFocus(hwnd) \
-    (int)SNDMSG((hwnd), TCM_GETCURFOCUS, 0, 0)
+#undef TabCtrl_GetCurFocus
+static FORCEINLINE int TabCtrl_GetCurFocus(_In_ HWND hwnd)
+	{ return STATIC_CAST(int)(SNDMSG(hwnd, TCM_GETCURFOCUS, 0, 0)); }
 
-#define TabCtrl_SetCurFocus(hwnd, i) \
-    SNDMSG((hwnd),TCM_SETCURFOCUS, i, 0)
+#undef TabCtrl_SetCurFocus
+static FORCEINLINE void TabCtrl_SetCurFocus(_In_ HWND hwnd, _In_ int i)
+	{ SNDMSG(hwnd, TCM_SETCURFOCUS, i, 0); }
 
 #if (_WIN32_IE >= 0x0300)
-#define TabCtrl_SetMinTabWidth(hwnd, x) \
-        (int)SNDMSG((hwnd), TCM_SETMINTABWIDTH, 0, x)
+#undef TabCtrl_SetMinTabWidth
+static FORCEINLINE int TabCtrl_SetMinTabWidth(_In_ HWND hwnd, _In_ int x)
+	{ return STATIC_CAST(int)(SNDMSG(hwnd, TCM_SETMINTABWIDTH, 0, x)); }
 
-#define TabCtrl_DeselectAll(hwnd, fExcludeFocus)\
-        (void)SNDMSG((hwnd), TCM_DESELECTALL, fExcludeFocus, 0)
+#undef TabCtrl_DeselectAll
+static FORCEINLINE void TabCtrl_DeselectAll(_In_ HWND hwnd, _In_ BOOL fExcludeFocus)
+	{ (void)SNDMSG(hwnd, TCM_DESELECTALL, fExcludeFocus, 0); }
 #endif /* _WIN32_IE >= 0x0300 */
 
 #if (_WIN32_IE >= 0x0400)
-#define TabCtrl_HighlightItem(hwnd, i, fHighlight) \
-    (BOOL)SNDMSG((hwnd), TCM_HIGHLIGHTITEM, (WPARAM)(i), (LPARAM)MAKELONG (fHighlight, 0))
+#undef TabCtrl_HighlightItem
+static FORCEINLINE BOOL TabCtrl_HighlightItem(_In_ HWND hwnd, _In_ int i, _In_ BOOL fHighlight)
+	{ return STATIC_CAST(BOOL)(SNDMSG(hwnd, TCM_HIGHLIGHTITEM, STATIC_CAST(WPARAM)(i), MAKELONG(fHighlight, 0))); }
 
-#define TabCtrl_SetExtendedStyle(hwnd, dw)\
-        (DWORD)SNDMSG((hwnd), TCM_SETEXTENDEDSTYLE, 0, dw)
+#undef TabCtrl_SetExtendedStyle
+static FORCEINLINE DWORD TabCtrl_SetExtendedStyle(_In_ HWND hwnd, _In_ DWORD dw)
+	{ return STATIC_CAST(DWORD)(SNDMSG(hwnd, TCM_SETEXTENDEDSTYLE, 0, dw)); }
 
-#define TabCtrl_GetExtendedStyle(hwnd)\
-        (DWORD)SNDMSG((hwnd), TCM_GETEXTENDEDSTYLE, 0, 0)
+#undef TabCtrl_GetExtendedStyle
+static FORCEINLINE DWORD TabCtrl_GetExtendedStyle(_In_ HWND hwnd)
+	{ return STATIC_CAST(DWORD)(SNDMSG(hwnd, TCM_GETEXTENDEDSTYLE, 0, 0)); }
 
-#define TabCtrl_SetUnicodeFormat(hwnd, fUnicode)  \
-    (BOOL)SNDMSG((hwnd), TCM_SETUNICODEFORMAT, (WPARAM)(fUnicode), 0)
+#undef TabCtrl_SetUnicodeFormat
+static FORCEINLINE BOOL TabCtrl_SetUnicodeFormat(_In_ HWND hwnd, _In_ BOOL fUnicode)
+	{ return STATIC_CAST(BOOL)(SNDMSG(hwnd, TCM_SETUNICODEFORMAT, STATIC_CAST(WPARAM)(fUnicode), 0)); }
 
-#define TabCtrl_GetUnicodeFormat(hwnd)  \
-    (BOOL)SNDMSG((hwnd), TCM_GETUNICODEFORMAT, 0, 0)
+#undef TabCtrl_GetUnicodeFormat
+static FORCEINLINE BOOL TabCtrl_GetUnicodeFormat(_In_ HWND hwnd)
+	{ return STATIC_CAST(BOOL)(SNDMSG(hwnd, TCM_GETUNICODEFORMAT, 0, 0)); }
 #endif /* _WIN32_IE >= 0x0400 */
-#endif /* TODO */
 
 #endif /* NOTABCONTROL */
 

@@ -124,7 +124,7 @@ static FORCEINLINE UINT Button_SetState(_In_ HWND hwndCtl, _In_ int state)
 
 #undef Button_SetStyle
 static FORCEINLINE void Button_SetStyle(_In_ HWND hwndCtl, _In_ DWORD style, _In_ BOOL fRedraw)
-	{ (void)SNDMSG(hwndCtl, BM_SETSTYLE, STATIC_CAST(WPARAM)(LOWORD(style)), MAKELPARAM((fRedraw ? TRUE : FALSE), 0)); }
+	{ (void)SNDMSG(hwndCtl, BM_SETSTYLE, STATIC_CAST(WPARAM)(LOWORD(style)), MAKELPARAM(!!fRedraw, 0)); }
 
 /****** Edit control message APIs ********************************************/
 
