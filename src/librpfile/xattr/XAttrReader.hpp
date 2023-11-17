@@ -27,9 +27,9 @@ class RP_LIBROMDATA_PUBLIC XAttrReader
 {
 public:
 	explicit XAttrReader(const char *filename);
-#if defined(_WIN32) && defined(_UNICODE)
+#if defined(_WIN32)
 	explicit XAttrReader(const wchar_t *filename);
-#endif /* _WIN32 && _UNICODE */
+#endif /* _WIN32 */
 public:
 	~XAttrReader();
 
