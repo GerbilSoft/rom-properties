@@ -49,10 +49,22 @@ public:
 	 */
 	bool hasAttributes(void) const;
 
+public:
+	/**
+	 * Apply changes to attributes.
+	 * @return 0 on success; non-zero on error.
+	 */
+	void applyChanges(void);
+
 signals:
 	/**
 	 * The filename has been changed.
 	 * @param url New filename
 	 */
 	void filenameChanged(const QUrl &url);
+
+	/**
+	 * The user has modified attributes.
+	 */
+	void modified(void);
 };

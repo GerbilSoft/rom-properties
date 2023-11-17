@@ -158,6 +158,7 @@ int XAttrViewPrivate::loadDosAttrs(void)
 
 	// We have MS-DOS attributes.
 	ui.dosAttrView->setAttrs(xattrReader->dosAttributes());
+	ui.dosAttrView->setCanWriteAttrs(xattrReader->canWriteDosAttributes());
 	ui.grpDosAttributes->show();
 	return 0;
 }
@@ -293,6 +294,15 @@ XAttrView::XAttrView(QWidget *parent)
 {
 	Q_D(XAttrView);
 	d->ui.setupUi(this);
+
+	// Connect DosAttrView's modified() signal to our modified() signal.
+#if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
+	connect(d->ui.dosAttrView, &DosAttrView::modified,
+	        this, &XAttrView::modified);
+#else /* QT_VERSION < QT_VERSION_CHECK(5,0,0) */
+	connect(d->ui.dosAttrView, SIGNAL(modified()),
+	        this, SIGNAL(modified()));
+#endif /* QT_VERSION >= QT_VERSION_CHECK(5,0,0) */
 }
 
 XAttrView::XAttrView(const QUrl &filename, QWidget *parent)
@@ -301,6 +311,15 @@ XAttrView::XAttrView(const QUrl &filename, QWidget *parent)
 {
 	Q_D(XAttrView);
 	d->ui.setupUi(this);
+
+	// Connect DosAttrView's modified() signal to our modified() signal.
+#if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
+	connect(d->ui.dosAttrView, &DosAttrView::modified,
+	        this, &XAttrView::modified);
+#else /* QT_VERSION < QT_VERSION_CHECK(5,0,0) */
+	connect(d->ui.dosAttrView, SIGNAL(modified()),
+	        this, SIGNAL(modified()));
+#endif /* QT_VERSION >= QT_VERSION_CHECK(5,0,0) */
 
 	// Load the attributes.
 	d->loadAttributes();
@@ -343,3 +362,25 @@ bool XAttrView::hasAttributes(void) const
 	Q_D(const XAttrView);
 	return d->hasAttributes;
 }
+
+/**
+ * Apply changes to attributes.
+ * @return 0 on success; non-zero on error.
+ */
+void XAttrView::applyChanges(void)
+{
+	Q_D(XAttrView);
+	if (!d->xattrReader) {
+		// No XAttrReader. Can't do anything.
+		// TODO: Show an error and/or restore the old attributes.
+		return;
+	}
+
+	// Attempt to write the new attributes.
+	int ret = d->xattrReader->setDosAttributes(d->ui.dosAttrView->attrs());
+	if (ret != 0) {
+		// Error writing the new attributes.
+		// TODO: Show an error and/or restore the old attributes.
+	}
+}
+

@@ -17,6 +17,7 @@ class DosAttrView : public QWidget
 Q_OBJECT
 
 Q_PROPERTY(unsigned int attrs READ attrs WRITE setAttrs RESET clearAttrs)
+Q_PROPERTY(bool canWriteAttrs READ canWriteAttrs WRITE setCanWriteAttrs)
 
 public:
 	explicit DosAttrView(QWidget *parent = nullptr);
@@ -45,9 +46,40 @@ public:
 	 */
 	void clearAttrs(void);
 
+	/**
+	 * Set if MS-DOS attributes can be written.
+	 * This controls if the RHAS checkboxes can be edited by the user.
+	 * @param widget DosAttrView
+	 * @param can_write True if they can; false if they can't.
+	 */
+	void setCanWriteAttrs(bool canWriteAttrs);
+
+	/**
+	 * Can MS-DOS attributes be written?
+	 * This controls if the RHAS checkboxes can be edited by the user.
+	 * @param widget DosAttrView
+	 * @return True if they can; false if they can't.
+	 */
+	bool canWriteAttrs(void) const;
+
 protected slots:
 	/**
-	 * Disable user modifications of checkboxes.
+	 * Allow writable bitfield checkboxes to be toggled.
+	 * @param checked New check state
 	 */
-	void checkBox_clicked_slot(bool checked);
+	void checkBox_writable_clicked_slot(bool checked);
+
+	/**
+	 * Prevent bitfield checkboxes from being toggled.
+	 * @param checked New check state
+	 */
+	void checkBox_noToggle_clicked_slot(bool checked);
+
+signals:
+	/**
+	 * An attribute was modified by the user.
+	 * @param old_attrs Old attributes
+	 * @param new_attrs New attributes
+	 */
+	void modified(uint32_t old_attrs, uint32_t new_attrs);
 };

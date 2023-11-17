@@ -8,7 +8,11 @@
 
 #pragma once
 
+// KDE
 #include <kpropertiesdialog.h>
+
+// C++ STL classes
+#include <set>
 
 class XAttrView;
 
@@ -41,4 +45,30 @@ protected:
 	 * @return XAttrView object, or nullptr if the file is not supported.
 	 */
 	XAttrView *createXAttrView(const KFileItem &fileItem, KPropertiesDialog *props = nullptr);
+
+protected:
+	/** KPropertiesDialogPlugin overrides **/
+
+	/**
+	 * Apply changes to the file(s).
+	 */
+	void applyChanges(void) override;
+
+protected:
+	/** Signal handlers from XAttrView widgets **/
+
+	/**
+	 * An XAttrView widget was modified.
+	 */
+	void xattrView_modified_slot(void);
+
+	/**
+	 * An XAttrView widget was destroyed.
+	 * @param obj XAttrView widget
+	 */
+	void xattrView_destroyed_slot(QObject *obj = nullptr);
+
+private:
+	// Set of XAttrView objects to manage for attribute modification signals.
+	std::set<XAttrView*> m_xattrView;
 };

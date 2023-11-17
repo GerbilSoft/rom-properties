@@ -81,5 +81,53 @@ XAttrViewPropertiesDialogPlugin::XAttrViewPropertiesDialogPlugin(QObject *parent
 	if (xattrView) {
 		// tr: XAttrView tab title
 		props->addPage(xattrView, U82Q(C_("XAttrView", "xattrs")));
+
+		// Monitor this XAttrView for changes.
+		m_xattrView.insert(xattrView);
+#if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
+		connect(xattrView, &XAttrView::modified,
+		        this, &XAttrViewPropertiesDialogPlugin::xattrView_modified_slot);
+#else /* QT_VERSION < QT_VERSION_CHECK(5,0,0) */
+		connect(xattrView, SIGNAL(modified()),
+		        this, SLOT(xattrView_modified_slot()));
+#endif /* QT_VERSION >= QT_VERSION_CHECK(5,0,0) */
 	}
 }
+
+/** KPropertiesDialogPlugin overrides **/
+
+/**
+ * Apply changes to the file(s).
+ */
+void XAttrViewPropertiesDialogPlugin::applyChanges(void)
+{
+	// Apply changes to all XAttrView objects.
+	for (XAttrView *xattrView : m_xattrView) {
+		xattrView->applyChanges();
+	}
+	setDirty(false);
+}
+
+/** Signal handlers from XAttrView widgets **/
+
+/**
+ * An XAttrView widget was modified.
+ */
+void XAttrViewPropertiesDialogPlugin::xattrView_modified_slot(void)
+{
+	setDirty(true);
+}
+
+/**
+ * An XAttrView widget was destroyed.
+ * @param obj XAttrView widget
+ */
+void XAttrViewPropertiesDialogPlugin::xattrView_destroyed_slot(QObject *obj)
+{
+	if (!obj)
+		return;
+
+	// Remove this object from the set.
+	m_xattrView.erase(reinterpret_cast<XAttrView*>(obj));
+}
+
