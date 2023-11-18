@@ -277,6 +277,19 @@ LRESULT WINAPI NppDarkMode_TabControlSubclassProc(
 				Polyline(hDC, edges, _countof(edges));
 			}
 
+			// Draw the tab control border.
+			RECT rcFrame, rcItem;
+			GetClientRect(hWnd, &rcFrame);
+			TabCtrl_GetItemRect(hWnd, 0, &rcItem);
+			rcFrame.top += (rcItem.bottom - rcItem.top);
+			rcFrame.left += rcItem.left;	// to match light mode
+			rcFrame.right -= rcItem.left;	// to match light mode
+			rcFrame.top += paddingDynamicTwoY;
+			if (!hbrEdge) {
+				hbrEdge = CreateSolidBrush(colorEdge);
+			}
+			FrameRect(hDC, &rcFrame, hbrEdge);
+
 			SelectClipRgn(hDC, holdClip);
 			if (holdClip) {
 				DeleteObject(holdClip);
