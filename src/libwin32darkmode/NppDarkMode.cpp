@@ -16,6 +16,9 @@
 #include "libwin32common/sdk/windowsx_ts.h"
 #include <tchar.h>
 
+// High DPI support
+#include "libwin32ui/HiDPI.h"
+
 static const COLORREF colorEdge = RGB(100,100,100);
 static HPEN hpenEdge = nullptr;
 static HBRUSH hbrEdge = nullptr;
@@ -58,17 +61,18 @@ static void NppDarkMode_TabControl_drawItem(HWND hWnd, const DRAWITEMSTRUCT *pDr
 	DeleteBrush(hBrush);
 
 	// equalize drawing areas of active and inactive tabs
-	// TODO: DPI manager
-	int paddingDynamicTwoX = 2;
-	int paddingDynamicTwoY = 2;
+	// NOTE: Notepad++ had separate X and Y values, since Windows
+	// technically supports non-square pixels (e.g. Hercules on
+	// 16-bit Windows), but modern Windows only supports square.
+	const int paddingDynamicTwo = rp_AdjustSizeForWindow(hWnd, 2);
 	// Based on the Dark Mode path; for Light Mode, we use regular tabs.
-	rect.left -= paddingDynamicTwoX;
-	rect.right += paddingDynamicTwoX;
-	//rect.top += paddingDynamicTwoY;	// NOTE: Cancelled out below.
-	rect.bottom += paddingDynamicTwoY;
+	rect.left -= paddingDynamicTwo;
+	rect.right += paddingDynamicTwo;
+	//rect.top += paddingDynamicTwo;	// NOTE: Cancelled out below.
+	rect.bottom += paddingDynamicTwo;
 
 	// No multiple lines support.
-	//rect.top -= paddingDynamicTwoY;	// NOTE: Cancels out the above, so just commented out.
+	//rect.top -= paddingDynamicTwo;	// NOTE: Cancels out the above, so just commented out.
 
 	// Draw highlights on tabs.
 	if (isSelected) {
@@ -82,12 +86,11 @@ static void NppDarkMode_TabControl_drawItem(HWND hWnd, const DRAWITEMSTRUCT *pDr
 	// (using the edge color)
 	{
 		RECT barRect = rect;
-		// TODO: DPI adjustments
 		if (isSelected) {
-			barRect.bottom = barRect.top + 2;
+			barRect.bottom = barRect.top + paddingDynamicTwo;
 		} else {
-			barRect.top += 2;
-			barRect.bottom = barRect.top + 1;
+			barRect.top += paddingDynamicTwo;
+			barRect.bottom = barRect.top + (paddingDynamicTwo / 2);
 		}
 
 		if (!hbrEdge) {
@@ -126,15 +129,15 @@ static void NppDarkMode_TabControl_drawItem(HWND hWnd, const DRAWITEMSTRUCT *pDr
 	*out = '\0';
 
 	// Center text vertically and horizontally
-	// TODO: DPI adjustments?
 	const int Flags = DT_SINGLELINE | DT_NOPREFIX | DT_CENTER | DT_TOP;
 	const int paddingText = ((pDrawItemStruct->rcItem.bottom - pDrawItemStruct->rcItem.top) - (textHeight + textDescent)) / 2;
-	const int paddingDescent = (textDescent / 2) - (isSelected ? 2 : 0);	// NOTE: Changed from NPP.
+	const int paddingDescent = (textDescent / 2) - (isSelected ? paddingDynamicTwo : 0);	// NOTE: Changed from NPP.
 	rect.top = pDrawItemStruct->rcItem.top + paddingText + paddingDescent;
 	rect.bottom = pDrawItemStruct->rcItem.bottom - paddingText + paddingDescent;
+	rect.bottom -= (paddingDynamicTwo / 2);	// text is too low...
 
 	// isDarkMode || !isSelected || _drawTopBar
-	rect.top += paddingDynamicTwoY;
+	rect.top += paddingDynamicTwo;
 
 	const COLORREF textColor = isSelected ? colorActiveText : colorInactiveText;
 	SetTextColor(hDC, textColor);
@@ -212,25 +215,28 @@ LRESULT WINAPI NppDarkMode_TabControlSubclassProc(
 			// Clipping region
 			HRGN holdClip = CreateRectRgn(0, 0, 0, 0);
 			if (GetClipRgn(hDC, holdClip) != 1) {
-					// Unable to get the clipping region.
-					DeleteObject(holdClip);
-					holdClip = nullptr;
+				// Unable to get the clipping region.
+				DeleteObject(holdClip);
+				holdClip = nullptr;
 			}
 
-			// TODO: DPI handling
-			int paddingDynamicTwoX = 2;
-			int paddingDynamicTwoY = 2;
+			// NOTE: Notepad++ had separate X and Y values, since Windows
+			// technically supports non-square pixels (e.g. Hercules on
+			// 16-bit Windows), but modern Windows only supports square.
+			const int paddingDynamicTwo = rp_AdjustSizeForWindow(hWnd, 2);
 
 			const int nTabs = TabCtrl_GetItemCount(hWnd);
 			const int nFocusTab = TabCtrl_GetCurFocus(hWnd);
 			const int nSelTab = TabCtrl_GetCurSel(hWnd);
 
+			// Draw the right edge lines of each tab.
+			// TODO: Adjust edge line width for DPI?
 			for (int i = 0; i < nTabs; i++) {
 				DRAWITEMSTRUCT dis = { ODT_TAB, id, static_cast<UINT>(i), ODA_DRAWENTIRE, ODS_DEFAULT, hWnd, hDC, {}, 0 };
 				TabCtrl_GetItemRect(hWnd, i, &dis.rcItem);
 				// FIXME: GetItemRect is slightly too small.
-				// TODO: Adjust for DPI.
-				dis.rcItem.top -= 2;
+				dis.rcItem.top = 0;	// may be 2; subtracting paddingDynamicTwo only works at 96dpi
+				dis.rcItem.bottom += (paddingDynamicTwo / 2);
 
 				// Determine if this tab is focused and/or selected.
 				if (i == nFocusTab) {
@@ -245,11 +251,11 @@ LRESULT WINAPI NppDarkMode_TabControlSubclassProc(
 				if (IntersectRect(&rcIntersect, &ps.rcPaint, &dis.rcItem)) {
 					// Rectangles intersect.
 					POINT edges[] = {
-						{dis.rcItem.right - 1, dis.rcItem.top},		// left edge
-						{dis.rcItem.right - 1, dis.rcItem.bottom}	// right edge
+						{dis.rcItem.right - 1, dis.rcItem.top},
+						{dis.rcItem.right - 1, dis.rcItem.bottom}
 					};
 					if (i != nSelTab && (i != nSelTab - 1)) {
-						edges[0].y += paddingDynamicTwoY;
+						edges[0].y += paddingDynamicTwo;
 					}
 
 					Polyline(hDC, edges, _countof(edges));
@@ -263,15 +269,18 @@ LRESULT WINAPI NppDarkMode_TabControlSubclassProc(
 				SelectClipRgn(hDC, holdClip);
 			}
 
+			// Left edge of the first tab.
 			{
 				RECT rcFirstTab;
 				TabCtrl_GetItemRect(hWnd, 0, &rcFirstTab);
+				rcFirstTab.top = 0;	// may be 2; subtracting paddingDynamicTwo only works at 96dpi
+				rcFirstTab.bottom += (paddingDynamicTwo / 2);
 				POINT edges[] = {
 					{rcFirstTab.left, rcFirstTab.top},
 					{rcFirstTab.left, rcFirstTab.bottom}
 				};
 				if (nSelTab != 0) {
-					edges[0].y += paddingDynamicTwoY;
+					edges[0].y += paddingDynamicTwo;
 				}
 
 				Polyline(hDC, edges, _countof(edges));
@@ -284,10 +293,11 @@ LRESULT WINAPI NppDarkMode_TabControlSubclassProc(
 			rcFrame.top += (rcItem.bottom - rcItem.top);
 			rcFrame.left += rcItem.left;	// to match light mode
 			rcFrame.right -= rcItem.left;	// to match light mode
-			rcFrame.top += paddingDynamicTwoY;
+			rcFrame.top += paddingDynamicTwo;
 			if (!hbrEdge) {
 				hbrEdge = CreateSolidBrush(colorEdge);
 			}
+			// TODO: Adjust frame width for DPI?
 			FrameRect(hDC, &rcFrame, hbrEdge);
 
 			SelectClipRgn(hDC, holdClip);
