@@ -86,7 +86,7 @@ static void NppDarkMode_TabControl_drawItem(HWND hWnd, const DRAWITEMSTRUCT *pDr
 		if (isSelected) {
 			barRect.bottom = barRect.top + 2;
 		} else {
-			barRect.top += 1;
+			barRect.top += 2;
 			barRect.bottom = barRect.top + 1;
 		}
 
@@ -126,9 +126,10 @@ static void NppDarkMode_TabControl_drawItem(HWND hWnd, const DRAWITEMSTRUCT *pDr
 	*out = '\0';
 
 	// Center text vertically and horizontally
+	// TODO: DPI adjustments?
 	const int Flags = DT_SINGLELINE | DT_NOPREFIX | DT_CENTER | DT_TOP;
 	const int paddingText = ((pDrawItemStruct->rcItem.bottom - pDrawItemStruct->rcItem.top) - (textHeight + textDescent)) / 2;
-	const int paddingDescent = (textDescent / 2) - 1;	// NOTE: Changed from NPP.
+	const int paddingDescent = (textDescent / 2) - (isSelected ? 2 : 0);	// NOTE: Changed from NPP.
 	rect.top = pDrawItemStruct->rcItem.top + paddingText + paddingDescent;
 	rect.bottom = pDrawItemStruct->rcItem.bottom - paddingText + paddingDescent;
 
@@ -203,6 +204,7 @@ LRESULT WINAPI NppDarkMode_TabControlSubclassProc(
 			const UINT id = GetDlgCtrlID(hWnd);
 
 			if (!hpenEdge) {
+				// TODO: DPI adjustments?
 				hpenEdge = CreatePen(PS_SOLID, 1, colorEdge);
 			}
 			HPEN holdPen = static_cast<HPEN>(SelectObject(hDC, hpenEdge));
@@ -226,6 +228,9 @@ LRESULT WINAPI NppDarkMode_TabControlSubclassProc(
 			for (int i = 0; i < nTabs; i++) {
 				DRAWITEMSTRUCT dis = { ODT_TAB, id, static_cast<UINT>(i), ODA_DRAWENTIRE, ODS_DEFAULT, hWnd, hDC, {}, 0 };
 				TabCtrl_GetItemRect(hWnd, i, &dis.rcItem);
+				// FIXME: GetItemRect is slightly too small.
+				// TODO: Adjust for DPI.
+				dis.rcItem.top -= 2;
 
 				// Determine if this tab is focused and/or selected.
 				if (i == nFocusTab) {
