@@ -84,14 +84,6 @@ using std::u16string;
 #define RTF_BOLD_ON "\\b "
 #define RTF_BOLD_OFF "\\b0 "
 
-// RichEdit extended styles for light and dark modes
-// FIXME: Disabling WS_EX_TRANSPARENT is needed for a proper background
-// in dark mode, but it causes scroll bar and border shenanigans.
-#define RICHEDIT_EX_STYLE_LIGHT (WS_EX_LEFT | WS_EX_NOPARENTNOTIFY | WS_EX_CLIENTEDGE | WS_EX_TRANSPARENT)
-#define RICHEDIT_EX_STYLE_DARK  (WS_EX_LEFT | WS_EX_NOPARENTNOTIFY | WS_EX_CLIENTEDGE)
-#define UPDATE_CHECK_EX_STYLE_LIGHT (WS_EX_RIGHT | WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT)
-#define UPDATE_CHECK_EX_STYLE_DARK  (WS_EX_RIGHT | WS_EX_NOPARENTNOTIFY)
-
 class AboutTabPrivate
 {
 public:
@@ -489,21 +481,9 @@ INT_PTR CALLBACK AboutTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, L
 				UpdateDarkModeEnabled();
 				if (d->lastDarkModeEnabled != g_darkModeEnabled) {
 					d->lastDarkModeEnabled = g_darkModeEnabled;
-					// FIXME: InvalidateRect shouldn't be needed, but if it isn't
-					// used, it causes weird issues if WS_EX_TRANSPARENT is missing.
-					InvalidateRect(hDlg, NULL, true);
 
 					// RichEdit doesn't support dark mode per se, but we can
 					// adjust its background and text colors.
-
-					// Adjust the extended style to add/remove WS_EX_TRANSPARENT.
-					if (g_darkModeEnabled) {
-						SetWindowLongPtr(d->hRichEdit, GWL_EXSTYLE, RICHEDIT_EX_STYLE_DARK);
-						SetWindowLongPtr(d->hUpdateCheck, GWL_EXSTYLE, UPDATE_CHECK_EX_STYLE_DARK);
-					} else {
-						SetWindowLongPtr(d->hRichEdit, GWL_EXSTYLE, RICHEDIT_EX_STYLE_LIGHT);
-						SetWindowLongPtr(d->hUpdateCheck, GWL_EXSTYLE, UPDATE_CHECK_EX_STYLE_LIGHT);
-					}
 
 					// Set the RichEdit colors.
 					DarkMode_InitRichEdit(d->hRichEdit);
@@ -1348,13 +1328,6 @@ void AboutTabPrivate::setTabContents(int index)
 	rtfCtx_main.pos = 0;
 	EDITSTREAM es = { (DWORD_PTR)&rtfCtx_main, 0, EditStreamCallback };
 	SendMessage(hRichEdit, EM_STREAMIN, SF_RTF, (LPARAM)&es);
-
-	// FIXME: Due to the removal of WS_EX_TRANSPARENT for proper dark mode
-	// handling, the scroll bar doesn't show up properly sometimes.
-	// We'll need to invalidate the full control.
-	// FIXME: The scrollbar isn't redrawn properly if switching from
-	// a tab with no scrollbar to a tab that has one...
-	InvalidateRect(hRichEdit, nullptr, true);
 }
 
 /**
@@ -1464,7 +1437,7 @@ void AboutTabPrivate::initDialog(void)
 #ifdef MSFTEDIT_USE_41
 	if (hMsftEdit_dll) {
 		HWND hRichEdit41 = CreateWindowEx(
-			RICHEDIT_EX_STYLE_LIGHT,	// if dark mode is enabled, this is updated later
+			WS_EX_LEFT | WS_EX_NOPARENTNOTIFY | WS_EX_CLIENTEDGE | WS_EX_TRANSPARENT,
 			MSFTEDIT_CLASS, _T(""),
 			WS_TABSTOP | WS_VISIBLE | WS_CHILD | WS_VSCROLL |
 				ES_MULTILINE | ES_READONLY | ES_AUTOVSCROLL,
@@ -1485,7 +1458,7 @@ void AboutTabPrivate::initDialog(void)
 		MapWindowPoints(hUpdateCheck, hWndPropSheet, (LPPOINT)&rectUpdateCheck, 2);
 
 		HWND hUpdateCheck41 = CreateWindowEx(
-			UPDATE_CHECK_EX_STYLE_LIGHT,	// if dark mode is enabled, this is updated later
+			WS_EX_RIGHT | WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT,
 			MSFTEDIT_CLASS, _T(""),
 			WS_VISIBLE | WS_CHILD | ES_MULTILINE | ES_READONLY,
 			rectUpdateCheck.left, rectUpdateCheck.top,
@@ -1546,10 +1519,6 @@ void AboutTabPrivate::initDialog(void)
 	if (g_darkModeSupported && g_darkModeEnabled) {
 		// RichEdit doesn't support dark mode per se, but we can
 		// adjust its background and text colors.
-
-		// Remove WS_EX_TRANSPARENT for proper background color display.
-		SetWindowLongPtr(hRichEdit, GWL_EXSTYLE, RICHEDIT_EX_STYLE_DARK);
-		SetWindowLongPtr(hUpdateCheck, GWL_EXSTYLE, UPDATE_CHECK_EX_STYLE_DARK);
 
 		// NOTE: These functions must be called again on theme change!
 		DarkMode_InitRichEdit(hRichEdit);
