@@ -470,7 +470,7 @@ INT_PTR CALLBACK AboutTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, L
 			}
 			break;
 
-		case WM_THEMECHANGED:
+		case WM_THEMECHANGED: {
 			if (g_darkModeSupported) {
 				auto *const d = reinterpret_cast<AboutTabPrivate*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
 				if (!d) {
@@ -481,6 +481,10 @@ INT_PTR CALLBACK AboutTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, L
 				UpdateDarkModeEnabled();
 				if (d->lastDarkModeEnabled != g_darkModeEnabled) {
 					d->lastDarkModeEnabled = g_darkModeEnabled;
+
+					// Tab control isn't getting WM_THEMECHANGED, even though it should...
+					HWND hTabControl = GetDlgItem(hDlg, IDC_ABOUT_TABCONTROL);
+					SendMessage(hTabControl, WM_THEMECHANGED, 0, 0);
 
 					// RichEdit doesn't support dark mode per se, but we can
 					// adjust its background and text colors.
@@ -495,6 +499,7 @@ INT_PTR CALLBACK AboutTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, L
 				}
 			}
 			break;
+		}
 
 		default:
 			break;
@@ -1516,7 +1521,8 @@ void AboutTabPrivate::initDialog(void)
 	TabCtrl_DeleteItem(hTabControl, MAX_TABS);
 	TabCtrl_SetCurSel(hTabControl, 0);
 
-	if (g_darkModeSupported && g_darkModeEnabled) {
+	// Set window themes for Win10's dark mode.
+	if (g_darkModeSupported) {
 		// RichEdit doesn't support dark mode per se, but we can
 		// adjust its background and text colors.
 

@@ -155,13 +155,10 @@ LRESULT WINAPI NppDarkMode_TabControlSubclassProc(
 	WPARAM wParam, LPARAM lParam,
 	UINT_PTR uIdSubclass, DWORD_PTR dwRefData)
 {
-	if (!g_darkModeEnabled) {
-		// Using light mode. Don't bother with any of this.
-		return DefSubclassProc(hWnd, uMsg, wParam, lParam);
-	}
-
 	switch (uMsg) {
 		case WM_DRAWITEM: {
+			if (!g_darkModeEnabled)
+				break;
 			if (!(GetWindowLongPtr(hWnd, GWL_STYLE) & TCS_OWNERDRAWFIXED))
 				break;
 
@@ -170,6 +167,8 @@ LRESULT WINAPI NppDarkMode_TabControlSubclassProc(
 		}
 
 		case WM_ERASEBKGND: {
+			if (!g_darkModeEnabled)
+				break;
 			if (!(GetWindowLongPtr(hWnd, GWL_STYLE) & TCS_OWNERDRAWFIXED))
 				break;
 
@@ -185,9 +184,10 @@ LRESULT WINAPI NppDarkMode_TabControlSubclassProc(
 		}
 
 		case WM_PAINT: {
-			if (!(GetWindowLongPtr(hWnd, GWL_STYLE) & TCS_OWNERDRAWFIXED)) {
+			if (!g_darkModeEnabled)
 				break;
-			}
+			if (!(GetWindowLongPtr(hWnd, GWL_STYLE) & TCS_OWNERDRAWFIXED))
+				break;
 
 			// NOTE: Not handling anything fancy like multiple lines.
 
