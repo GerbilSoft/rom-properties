@@ -1,6 +1,7 @@
 /** DarkMode control helpers **/
 #include "DarkModeCtrl.hpp"
 #include "DarkMode.hpp"
+#include "NppDarkMode.hpp"	// Notepad++ dark mode subclasses
 #include "TGDarkMode.hpp"	// TortoiseGit dark mode subclasses
 
 #include <richedit.h>
@@ -145,6 +146,27 @@ void DarkMode_InitEdit(HWND hWnd)
 
 	SetWindowTheme(hWnd, L"CFD", NULL);
 	_AllowDarkModeForWindow(hWnd, true);
+	SendMessage(hWnd, WM_THEMECHANGED, 0, 0);
+}
+
+/**
+ * Initialize dark mode for a Tab control.
+ * @param hWnd Tab control handle
+ */
+void DarkMode_InitTabControl(HWND hWnd)
+{
+	if (unlikely(!g_darkModeSupported))
+		return;
+
+	// Windows doesn't have a built-in dark mode theme for Tab controls,
+	// so don't bother calling SetWindowTheme().
+	_AllowDarkModeForWindow(hWnd, true);
+
+	// Set the Tab control subclass.
+	// NOTE: hbrBkgnd creation is handled by NppDarkMode_TabControlSubclassProc().
+	SetWindowSubclass(hWnd, NppDarkMode_TabControlSubclassProc, NppDarkMode_SubclassID, reinterpret_cast<DWORD_PTR>(&hbrBkgnd));
+
+	// WM_THEMECHANGED will set TCS_OWNERDRAWFIXED if Dark Mode is enabled.
 	SendMessage(hWnd, WM_THEMECHANGED, 0, 0);
 }
 

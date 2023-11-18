@@ -668,7 +668,7 @@ LRESULT WINAPI TGDarkMode_ButtonSubclassProc(
  * @param wParam
  * @param lParam
  * @param uIdSubclass
- * @param dwRefData
+ * @param dwRefData Pointer to Dark Mode background brush.
  */
 LRESULT WINAPI TGDarkMode_ComboBoxSubclassProc(
 	HWND hWnd, UINT uMsg,
@@ -687,7 +687,7 @@ LRESULT WINAPI TGDarkMode_ComboBoxSubclassProc(
 		case WM_CTLCOLORLISTBOX:
 		case WM_CTLCOLORBTN:
 		case WM_CTLCOLORSCROLLBAR: {
-			auto pHbrBkgnd = reinterpret_cast<HBRUSH*>(dwRefData);
+			HBRUSH *pHbrBkgnd = reinterpret_cast<HBRUSH*>(dwRefData);
 			HDC hdc = reinterpret_cast<HDC>(wParam);
 			SetBkMode(hdc, TRANSPARENT);
 			SetTextColor(hdc, g_darkTextColor);

@@ -1554,6 +1554,8 @@ void AboutTabPrivate::initDialog(void)
 		// NOTE: These functions must be called again on theme change!
 		DarkMode_InitRichEdit(hRichEdit);
 		DarkMode_InitRichEdit(hUpdateCheck);
+		// ...but not this function.
+		DarkMode_InitTabControl(hTabControl);
 	}
 
 	// Set tab contents to Credits.

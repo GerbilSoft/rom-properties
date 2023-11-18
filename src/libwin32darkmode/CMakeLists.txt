@@ -14,6 +14,7 @@ SET(${PROJECT_NAME}_SRCS
 	DarkMode.cpp
 	DarkModeCtrl.cpp
 	ListViewUtil.cpp
+	NppDarkMode.cpp
 	TGDarkMode.cpp
 	)
 SET(${PROJECT_NAME}_H
@@ -21,6 +22,7 @@ SET(${PROJECT_NAME}_H
 	DarkModeCtrl.hpp
 	IatHook.hpp
 	ListViewUtil.hpp
+	NppDarkMode.hpp
 	TGDarkMode.hpp
 	)
 

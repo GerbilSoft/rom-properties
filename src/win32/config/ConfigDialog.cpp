@@ -318,12 +318,12 @@ LRESULT CALLBACK ConfigDialogPrivate::subclassProc(
 
 			// Set window themes for Win10's dark mode.
 			if (g_darkModeSupported) {
-				// FIXME: Dark mode for hTabControl.
 				DarkMode_InitButton(hBtnOK);
 				DarkMode_InitButton(hBtnCancel);
 				DarkMode_InitButton(hBtnApply);
 				DarkMode_InitButton(hBtnReset);
 				DarkMode_InitButton(hBtnDefaults);
+				DarkMode_InitTabControl(hTabControl);
 			}
 			break;
 		}
