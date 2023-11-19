@@ -3,6 +3,8 @@
  *
  * Based on Notepad++'s controls:
  * https://github.com/notepad-plus-plus/notepad-plus-plus/tree/master/PowerEditor/src/WinControls
+ * Copyright (C)2021 Don HO <don.h@free.fr>
+ * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
 #include "NppDarkMode.hpp"

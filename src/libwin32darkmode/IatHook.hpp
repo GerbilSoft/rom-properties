@@ -1,9 +1,13 @@
-// https://github.com/ysc3839/win32-darkmode
-
-// This file contains code from
-// https://github.com/stevemk14ebr/PolyHook_2_0/blob/master/sources/IatHook.cpp
-// which is licensed under the MIT License.
-// See PolyHook_2_0-LICENSE for more information.
+/**
+ * Undocumented Win32 APIs for Dark Mode functionality.
+ *
+ * Based on ysc3839's win32-darkmode example application:
+ * https://github.com/stevemk14ebr/PolyHook_2_0/blob/master/sources/IatHook.cpp
+ * Copyright (c) 2018 Stephen Eckels
+ * SPDX-License-Identifier: MIT
+ *
+ * See LICENSE.PolyHook_2_0 for more information.
+ */
 
 #pragma once
 

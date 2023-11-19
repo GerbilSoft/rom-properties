@@ -3,6 +3,9 @@
  *
  * Based on TortoiseGit's dark mode theme:
  * https://gitlab.com/tortoisegit/tortoisegit/-/blob/HEAD/src/Utils/Theme.cpp
+ * Copyright (C) 2020, 2023 - TortoiseGit
+ * Copyright (C) 2020-2021 - TortoiseSVN
+ * SPDX-License-Identifier: GPL-2.0-or-later
  */
 
 #include "TGDarkMode.hpp"

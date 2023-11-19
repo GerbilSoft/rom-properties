@@ -19,8 +19,12 @@
     GtkWidget.
   * Windows: Dark Mode is now supported on Windows 10 1809 and later in the
     installation program and rp-config.
-    * Note that tab controls are not properly themed yet, and RichEdit controls
-      have some minor glitches.
+    * Portions of the Dark Mode functionality were taken from:
+      * win32-darkmode: https://github.com/ysc3839/win32-darkmode [MIT license]
+      * TortoiseGit: https://gitlab.com/tortoisegit/tortoisegit/-/blob/HEAD/src/Utils/Theme.cpp [GPLv2]
+      * Notepad++: https://github.com/notepad-plus-plus/notepad-plus-plus/tree/master/PowerEditor/src/WinControls [GPLv3]
+    * Due to Notepad++ using GPLv3, any Windows builds that use Dark Mode
+      will also be considered GPLv3.
 
 * New parsers:
   * Wim: Microsoft Windows Images, used by the Windows installer starting with
