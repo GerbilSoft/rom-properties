@@ -134,7 +134,6 @@ static void NppDarkMode_TabControl_drawItem(HWND hWnd, const DRAWITEMSTRUCT *pDr
 	const int paddingDescent = (textDescent / 2) - (isSelected ? paddingDynamicTwo : 0);	// NOTE: Changed from NPP.
 	rect.top = pDrawItemStruct->rcItem.top + paddingText + paddingDescent;
 	rect.bottom = pDrawItemStruct->rcItem.bottom - paddingText + paddingDescent;
-	rect.bottom -= (paddingDynamicTwo / 2);	// text is too low...
 
 	// isDarkMode || !isSelected || _drawTopBar
 	rect.top += paddingDynamicTwo;
