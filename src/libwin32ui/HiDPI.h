@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "RpWin32_sdk.h"
+#include "libwin32common/RpWin32_sdk.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -29,9 +29,9 @@ UINT rp_GetDpiForWindow(HWND hWnd);
 
 /**
  * Adjust any size for DPI.
- * @param px Size, in pixels.
- * @param dpi DPI. (96dpi == 1x)
- * @return Adjusted size.
+ * @param px Size, in pixels
+ * @param dpi DPI (96dpi == 1x)
+ * @return Adjusted size
  */
 static inline int rp_AdjustSizeForDpi(int px, UINT dpi)
 {
@@ -41,6 +41,17 @@ static inline int rp_AdjustSizeForDpi(int px, UINT dpi)
 		return px;
 	}
 	return (px * dpi) / 96;
+}
+
+/**
+ * Adjust any size for the specified window's DPI.
+ * @param px Size, in pixels
+ * @param hWnd Window
+ * @return Adjusted size
+ */
+static inline int rp_AdjustSizeForWindow(HWND hWnd, int px)
+{
+	return rp_AdjustSizeForDpi(px, rp_GetDpiForWindow(hWnd));
 }
 
 /**

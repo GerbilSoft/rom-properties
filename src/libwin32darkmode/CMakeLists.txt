@@ -14,6 +14,7 @@ SET(${PROJECT_NAME}_SRCS
 	DarkMode.cpp
 	DarkModeCtrl.cpp
 	ListViewUtil.cpp
+	NppDarkMode.cpp
 	TGDarkMode.cpp
 	)
 SET(${PROJECT_NAME}_H
@@ -21,6 +22,7 @@ SET(${PROJECT_NAME}_H
 	DarkModeCtrl.hpp
 	IatHook.hpp
 	ListViewUtil.hpp
+	NppDarkMode.hpp
 	TGDarkMode.hpp
 	)
 
@@ -36,6 +38,7 @@ INCLUDE(SetMSVCDebugPath)
 SET_MSVC_DEBUG_PATH(${PROJECT_NAME})
 # Exclude from ALL builds.
 SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES EXCLUDE_FROM_ALL TRUE)
+TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE win32ui)
 TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE gdiplus comctl32 uxtheme)
 
 IF(RP_LIBROMDATA_IS_DLL AND MSVC)

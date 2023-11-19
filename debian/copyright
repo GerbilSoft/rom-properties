@@ -214,6 +214,30 @@ Files:
 Copyright: Copyright (c) 2017 rxi
 License: MIT
 
+Files:
+ src/libwin32darkmode/DarkMode.?pp
+ src/libwin32darkmode/ListViewUtil.?pp
+Copyright: Copyright (c) 2019 Richard Yu
+License: MIT
+
+Files:
+ src/libwin32darkmode/IatHook.hpp
+Copyright: Copyright (c) 2018 Stephen Eckels
+License: MIT
+
+Files:
+ src/libwin32darkmode/TGDarkMode.cpp
+Copyright:
+ Copyright (C) 2020, 2023 - TortoiseGit
+ Copyright (C) 2020-2021 - TortoiseSVN
+License: GPL-2+
+
+Files:
+ src/libwin32darkmode/NppDarkMode.cpp
+Copyright:
+ Copyright (C)2021 Don HO <don.h@free.fr>
+License: GPL-3+
+
 License: BSD-2-clause
  All rights reserved.
  .
