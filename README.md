@@ -329,6 +329,42 @@ If you have a file that you believe should be supported by ROM Propeties, or
 would like to see support added for a new type, file an issue on GitHub:
 https://github.com/GerbilSoft/rom-properties/issues
 
+## License
+
+ROM Properties is licensed under the GNU General Public License v2.
+Some bundled components have other licenses:
+
+* basisu_astc: Apache License 2.0
+* googletest: BSD 3-clause
+* GCR_CMake: GPL-3
+* inih: BSD-3-clause
+* libmspack-xenia: LGPL-2.1
+* lz4: BSD 2-clause for lib/; GPLv2 for others
+* microtar: MIT
+* minizip-ng: zlib
+* PowerVR: MIT
+* rapidjson: MIT
+* TinyXML2: BSD 3-clause
+* unice68: GPL-3
+* uniwidth: LPGL-2.1+
+* zlib-ng: zlib
+* zstd: BSD 3-clause
+
+GCR_CMake is only used at build time, and is only necessary for the GTK builds,
+so I believe it does not make the entire program GPL-3 licensed.
+
+unice68 *is* linked in during compile time, but can be disabled. All builds with
+unice68 are therefore GPL-3+. unice68 is only used for Atari ST SNDH files, so
+this can be disabled if a GPL-2+ build is desired: -DENABLE_UNICE68=OFF
+
+On Windows, the following bundled components are also used:
+
+* GNU gettext: GPL-3+
+* libwin32darkmode: GPL-3+
+
+While the use of gettext can be disabled with -DENABLE_NLS=OFF, libwin32darkmode
+is currently always enabled, so Windows builds are always GPL-3+ at the moment.
+
 ## Credits
 
 ### Developers
