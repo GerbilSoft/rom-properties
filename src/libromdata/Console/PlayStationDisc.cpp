@@ -604,9 +604,9 @@ const char *PlayStationDisc::systemName(unsigned int type) const
 uint32_t PlayStationDisc::supportedImageTypes_static(void)
 {
 #ifdef HAVE_JPEG
-	return IMGBF_EXT_COVER;
+	return IMGBF_EXT_COVER | IMGBF_EXT_COVER_3D;
 #else /* !HAVE_JPEG */
-	return 0;
+	return IMGBF_EXT_COVER_3D;
 #endif /* HAVE_JPEG */
 }
 
@@ -639,6 +639,8 @@ vector<RomData::ImageSizeDef> PlayStationDisc::supportedImageSizes_static(ImageT
 		case IMG_EXT_COVER:
 			return {{nullptr, 500, 500, 0}};
 #endif /* HAVE_JPEG */
+		case IMG_EXT_COVER_3D:
+			return {{nullptr, 226, 226, 0}};
 		default:
 			break;
 	}
@@ -676,6 +678,19 @@ vector<RomData::ImageSizeDef> PlayStationDisc::supportedImageSizes(ImageType ima
 			break;
 		}
 #endif /* HAVE_JPEG */
+		case IMG_EXT_COVER_3D: {
+			RP_D(const PlayStationDisc);
+			switch (d->consoleType) {
+				default:
+					assert(!"Invalid ConsoleType.");
+					break;
+				case PlayStationDiscPrivate::ConsoleType::PS1:
+					return {{nullptr, 226, 226, 0}};
+				case PlayStationDiscPrivate::ConsoleType::PS2:
+					return {{nullptr, 567, 878, 0}};
+			}
+			break;
+		}
 		default:
 			break;
 	}
@@ -975,6 +990,10 @@ int PlayStationDisc::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int 
 			ext = ".jpg";
 			break;
 #endif /* HAVE_JPEG */
+		case IMG_EXT_COVER_3D:
+			imageTypeName = "cover3D";
+			ext = ".png";
+			break;
 		default:
 			// Unsupported image type.
 			return -ENOENT;
