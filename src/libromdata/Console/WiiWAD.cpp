@@ -1007,7 +1007,7 @@ int WiiWAD::loadFieldData(void)
 		if (sys_id == NINTENDO_SYSID_RVL) {
 			// Get age rating(s).
 			// TODO: Combine with GameCube::addFieldData()'s code.
-			// Note that not all 16 fields are present on GCN,
+			// Note that not all 16 fields are present on Wii,
 			// though the fields do match exactly, so no
 			// mapping is necessary.
 			RomFields::age_ratings_t age_ratings;
@@ -1016,12 +1016,12 @@ int WiiWAD::loadFieldData(void)
 
 			for (int i = static_cast<int>(age_ratings.size())-1; i >= 0; i--) {
 				if (!(valid_ratings & (1U << i))) {
-					// Rating is not applicable for GCN.
+					// Rating is not applicable for Wii.
 					age_ratings[i] = 0;
 					continue;
 				}
 
-				// GCN ratings field:
+				// Wii ratings field:
 				// - 0x1F: Age rating.
 				// - 0x20: Has online play if set.
 				// - 0x80: Unused if set.
