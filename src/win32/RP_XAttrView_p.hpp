@@ -69,6 +69,12 @@ public:
 
 private:
 	/**
+	 * Update the MS-DOS attribute widgets.
+	 * dosAttrs must be set to the current attributes.
+	 */
+	void updateDosAttrWidgets(void);
+
+	/**
 	 * Load MS-DOS attributes, if available.
 	 * @return 0 on success; negative POSIX error code on error.
 	 */
@@ -101,8 +107,29 @@ public:
 	void initDialog(void);
 
 private:
+	/**
+	 * Convert a bool value to BST_CHCEKED or BST_UNCHECKED.
+	 * @param value Bool value.
+	 * @return BST_CHECKED or BST_UNCHECKED.
+	 */
+	static inline int boolToBstChecked(bool value)
+	{
+		return (value ? BST_CHECKED : BST_UNCHECKED);
+	}
+
+	/**
+	 * Convert BST_CHECKED or BST_UNCHECKED to a bool.
+	 * @param value BST_CHECKED or BST_UNCHECKED.
+	 * @return bool.
+	 */
+	static inline bool bstCheckedToBool(unsigned int value)
+	{
+		return (value == BST_CHECKED);
+	}
+
 	// Internal functions used by the callback functions.
 	INT_PTR DlgProc_WM_NOTIFY(HWND hDlg, NMHDR *pHdr);
+	INT_PTR DlgProc_WM_COMMAND(HWND hDlg, WPARAM wParam, LPARAM lParam);
 
 public:
 	// Property sheet callback functions.
@@ -117,4 +144,13 @@ public:
 	 * @param lParam
 	 */
 	static INT_PTR CALLBACK SubtabDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+
+private:
+	// Resource map: Maps control IDs to attribute values.
+	// Base controL ID is: IDC_XATTRVIEW_DOS_READONLY
+	static const std::array<uint16_t, 6> res_map;
+
+private:
+	/** Attributes **/
+	uint32_t dosAttrs;	// MS-DOS attributes as currently displayed by the checkboxes
 };

@@ -44,6 +44,18 @@ const CLSID CLSID_RP_XAttrView =
 // This points to the RP_XAttrView_Private::tab object.
 const TCHAR RP_XAttrView_Private::TAB_PTR_PROP[] = _T("RP_XAttrView_Private::tab");
 
+// Resource map: Maps control IDs to attribute values.
+// Base control ID is: IDC_XATTRVIEW_DOS_READONLY
+static const uint16_t CheckboxBaseID = IDC_XATTRVIEW_DOS_READONLY;
+const std::array<uint16_t, 6> RP_XAttrView_Private::res_map = {{
+	FILE_ATTRIBUTE_READONLY,
+	FILE_ATTRIBUTE_HIDDEN,
+	FILE_ATTRIBUTE_ARCHIVE,
+	FILE_ATTRIBUTE_SYSTEM,
+	FILE_ATTRIBUTE_COMPRESSED,
+	FILE_ATTRIBUTE_ENCRYPTED,
+}};
+
 /**
  * RP_XAttrView_Private constructor
  * @param q
@@ -57,6 +69,7 @@ RP_XAttrView_Private::RP_XAttrView_Private(RP_XAttrView *q, LPTSTR tfilename)
 	, dwExStyleRTL(LibWin32UI::isSystemRTL())
 	, colorAltRow(0)	// initialized later
 	, isFullyInit(false)
+	, dosAttrs(0)
 {}
 
 RP_XAttrView_Private::~RP_XAttrView_Private()
@@ -66,32 +79,26 @@ RP_XAttrView_Private::~RP_XAttrView_Private()
 }
 
 /**
+ * Update the MS-DOS attribute widgets.
+ * dosAttrs must be set to the current attributes.
+ */
+void RP_XAttrView_Private::updateDosAttrWidgets(void)
+{
+	for (unsigned int i = 0; i < res_map.size(); i++) {
+		Button_SetCheck(GetDlgItem(hDlgSheet, CheckboxBaseID + i),
+			boolToBstChecked(dosAttrs & res_map[i]));
+	}
+}
+
+/**
  * Load MS-DOS attributes, if available.
  * @return 0 on success; negative POSIX error code on error.
  */
 int RP_XAttrView_Private::loadDosAttrs(void)
 {
 	const bool hasDosAttributes = xattrReader->hasDosAttributes();
-	const unsigned int attrs = (likely(hasDosAttributes)) ? xattrReader->dosAttributes() : 0;
-
-	// TODO: Use a "starting resource ID" instead of specifying each one?
-	struct res_map_t {
-		uint16_t id;
-		uint16_t attr;
-	};
-	static const std::array<res_map_t, 6> res_map = {{
-		{IDC_XATTRVIEW_DOS_READONLY, FILE_ATTRIBUTE_READONLY},
-		{IDC_XATTRVIEW_DOS_HIDDEN, FILE_ATTRIBUTE_HIDDEN},
-		{IDC_XATTRVIEW_DOS_ARCHIVE, FILE_ATTRIBUTE_ARCHIVE},
-		{IDC_XATTRVIEW_DOS_SYSTEM, FILE_ATTRIBUTE_SYSTEM},
-		{IDC_XATTRVIEW_NTFS_COMPRESSED, FILE_ATTRIBUTE_COMPRESSED},
-		{IDC_XATTRVIEW_NTFS_ENCRYPTED, FILE_ATTRIBUTE_ENCRYPTED},
-	}};
-
-	for (const auto &p : res_map) {
-		Button_SetCheck(GetDlgItem(hDlgSheet, p.id), (attrs & p.attr) ? BST_CHECKED : BST_UNCHECKED);
-	}
-
+	dosAttrs = (likely(hasDosAttributes)) ? xattrReader->dosAttributes() : 0;
+	updateDosAttrWidgets();
 	return (likely(hasDosAttributes)) ? 0 : -ENOENT;
 }
 
@@ -226,10 +233,8 @@ int RP_XAttrView_Private::loadAttributes(void)
  */
 void RP_XAttrView_Private::clearDisplayWidgets()
 {
-	// NOTE: Assuming contiguous resource IDs.
-	for (uint16_t id = IDC_XATTRVIEW_DOS_READONLY; id <= IDC_XATTRVIEW_NTFS_ENCRYPTED; id++) {
-		Button_SetCheck(GetDlgItem(hDlgSheet, id), BST_UNCHECKED);
-	}
+	dosAttrs = 0;
+	updateDosAttrWidgets();
 
 	ListView_DeleteAllItems(GetDlgItem(hDlgSheet, IDC_XATTRVIEW_LISTVIEW_ADS));
 }
@@ -519,9 +524,9 @@ inline int RP_XAttrView_Private::ListView_CustomDraw(NMLVCUSTOMDRAW *plvcd) cons
 
 /**
  * WM_NOTIFY handler for the property sheet.
- * @param hDlg Dialog window.
+ * @param hDlg Dialog
  * @param pHdr NMHDR
- * @return Return value.
+ * @return Return value
  */
 INT_PTR RP_XAttrView_Private::DlgProc_WM_NOTIFY(HWND hDlg, NMHDR *pHdr)
 {
@@ -529,7 +534,7 @@ INT_PTR RP_XAttrView_Private::DlgProc_WM_NOTIFY(HWND hDlg, NMHDR *pHdr)
 
 	switch (pHdr->code) {
 		case NM_CUSTOMDRAW: {
-			// Custom drawing notification.
+			// Custom drawing notification
 			if (pHdr->idFrom != IDC_XATTRVIEW_LISTVIEW_ADS)
 				break;
 
@@ -544,11 +549,67 @@ INT_PTR RP_XAttrView_Private::DlgProc_WM_NOTIFY(HWND hDlg, NMHDR *pHdr)
 			break;
 		}
 
+		case PSN_KILLACTIVE:
+			// Returning FALSE to allow for PSN_APPLY processing.
+			break;
+
+		case PSN_APPLY: {
+			// Apply the attribute changes.
+			// TODO: Only if actually changed?
+			if (!xattrReader)
+				break;
+
+			int ret = xattrReader->setDosAttributes(dosAttrs);
+			if (ret != 0) {
+				// Error writing the new attributes.
+				// TODO: Show an error and/or restore the old attributes.
+			}
+			break;
+		}
+
 		default:
 			break;
 	}
 
 	return ret;
+}
+
+/**
+ * WM_COMMAND handler for the property sheet.
+ * @param hDlg Dialog window
+ * @param wParam
+ * @param lParam
+ * @return Return value
+ */
+INT_PTR RP_XAttrView_Private::DlgProc_WM_COMMAND(HWND hDlg, WPARAM wParam, LPARAM lParam)
+{
+	// Allow adjustment of the RHAS attributes only.
+	const uint16_t id = LOWORD(wParam);
+	if (HIWORD(wParam) != BN_CLICKED || (id < IDC_XATTRVIEW_DOS_READONLY || id > IDC_XATTRVIEW_DOS_SYSTEM))
+		return FALSE;
+
+	if (!xattrReader || !xattrReader->canWriteDosAttributes()) {
+		// Not writable. Can't do anything.
+		return FALSE;
+	}
+
+	// NOTE: We're using BS_CHECKBOX, not BS_AUTOCHECKBOX.
+	// We'll have to adjust the checkbox value first before adjusting dosAttrs.
+	HWND hCheckBox = GetDlgItem(hDlg, id);
+	const bool new_checked = !bstCheckedToBool(Button_GetCheck(hCheckBox));
+	Button_SetCheck(hCheckBox, boolToBstChecked(new_checked));
+
+	// Adjust dosAttrs for this checkbox.
+	if (new_checked) {
+		dosAttrs |= res_map[id - CheckboxBaseID];
+	} else {
+		dosAttrs &= ~res_map[id - CheckboxBaseID];
+	}
+
+	// TODO: Type-safe macros for prsht.h.
+	// TODO: Verify that this works.
+	PropSheet_Changed(GetParent(hDlg), hDlg);
+	return TRUE;
 }
 
 //
@@ -618,6 +679,16 @@ INT_PTR CALLBACK RP_XAttrView_Private::DlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 			}
 
 			return d->DlgProc_WM_NOTIFY(hDlg, reinterpret_cast<NMHDR*>(lParam));
+		}
+
+		case WM_COMMAND: {
+			auto *const d = reinterpret_cast<RP_XAttrView_Private*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
+			if (!d) {
+				// No RP_XAttrView_Private. Can't do anything...
+				return false;
+			}
+
+			return d->DlgProc_WM_COMMAND(hDlg, wParam, lParam);
 		}
 
 		case WM_SYSCOLORCHANGE:
