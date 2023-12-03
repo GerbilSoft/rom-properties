@@ -92,6 +92,27 @@ VERSIONHELPERAPI IsWindows10OrGreater(void) {
     return IsWindowsThresholdOrGreater();
 }
 
+VERSIONHELPERAPI IsWindowsVersionOrGreater_BuildNumberCheck(WORD major, WORD minor, DWORD buildnumber)
+{
+    OSVERSIONINFOEXW vi = {sizeof(vi),major,minor,buildnumber,0,{0},0};
+    return VerifyVersionInfoW(&vi, VER_MAJORVERSION|VER_MINORVERSION|VER_BUILDNUMBER,
+        VerSetConditionMask(VerSetConditionMask(VerSetConditionMask(0,
+            VER_MAJORVERSION,VER_GREATER_EQUAL),
+            VER_MINORVERSION,VER_GREATER_EQUAL),
+            VER_BUILDNUMBER, VER_GREATER_EQUAL));
+}
+
+VERSIONHELPERAPI IsWindows10Build21277OrGreater(void) {
+    // Windows 10 Build 21277 on ARM added amd64 emulation.
+    // https://blogs.windows.com/windows-insider/2020/12/10/introducing-x64-emulation-in-preview-for-windows-10-on-arm-pcs-to-the-windows-insider-program/
+    IsWindowsVersionOrGreater_BuildNumberCheck(HIBYTE(0x0A00), LOBYTE(0x0A00), 21277);
+}
+
+VERSIONHELPERAPI IsWindows11OrGreater(void) {
+    // Windows 11 shows up as "Windows 10 build 22000".
+    IsWindowsVersionOrGreater_BuildNumberCheck(HIBYTE(0x0A00), LOBYTE(0x0A00), 22000);
+}
+
 VERSIONHELPERAPI IsWindowsServer(void) {
     OSVERSIONINFOEXW vi = {sizeof(vi),0,0,0,0,{0},0,0,0,VER_NT_WORKSTATION};
     return !VerifyVersionInfoW(&vi, VER_PRODUCT_TYPE, VerSetConditionMask(0, VER_PRODUCT_TYPE, VER_EQUAL));

@@ -54,6 +54,9 @@
 #ifndef IMAGE_FILE_MACHINE_ARM64
 #  define IMAGE_FILE_MACHINE_ARM64 0xAA64
 #endif
+#ifndef IMAGE_FILE_MACHINE_ARM64EC
+#  define IMAGE_FILE_MACHINE_ARM64EC 0xA641
+#endif
 
 // Application resources.
 #include "resource.h"
@@ -95,6 +98,7 @@ typedef enum {
 	CPU_ia64	= 3,
 	CPU_arm		= 4,
 	CPU_arm64	= 5,
+	CPU_arm64ec	= 6,
 
 	CPU_MAX
 } SysArch;
@@ -111,6 +115,7 @@ static const s_arch_tbl_t s_arch_tbl[] = {
 	{_T("ia64"),	NULL},		// CPU_ia64
 	{_T("arm"),	NULL},		// CPU_arm
 	{_T("arm64"),	_T("arm64")},	// CPU_arm64
+	{_T("arm64ec"),	_T("arm64ec")},	// CPU_arm64ec
 };
 
 // Array of architectures to check
@@ -277,6 +282,7 @@ static int GetSystemDirFilePath(TCHAR *pszPath, size_t cchPath, const TCHAR *fil
 		HOST_ARCH_DIR(_T("Sysnative"), _T("System32")),	// CPU_ia64
 		HOST_ARCH_DIR(_T("System32"), _T("SysWOW64")),	// CPU_arm [TODO: Verify]
 		HOST_ARCH_DIR(_T("Sysnative"), _T("System32")),	// CPU_arm64 [TODO: Verify]
+		HOST_ARCH_DIR(_T("Sysnative"), _T("System32")),	// CPU_arm64ec [TODO: Verify]
 	};
 	static_assert(ARRAY_SIZE(system32_dir_tbl) == CPU_MAX, "system32_dir_tbl[] is out of sync with g_archs[]!");
 	system32_dir = system32_dir_tbl[arch];
@@ -1057,6 +1063,7 @@ static SysArch ifm_to_SysArch(USHORT ifm)
 		{IMAGE_FILE_MACHINE_THUMB,	CPU_arm},	// TODO: Verify
 		{IMAGE_FILE_MACHINE_ARMNT,	CPU_arm},	// TODO: Verify
 		{IMAGE_FILE_MACHINE_ARM64,	CPU_arm64},
+		{IMAGE_FILE_MACHINE_ARM64EC,	CPU_arm64ec},
 	};
 	static const ifm_to_cpu_tbl_t *const p_end = &ifm_to_cpu_tbl[ARRAY_SIZE(ifm_to_cpu_tbl)];
 	for (const ifm_to_cpu_tbl_t *p = ifm_to_cpu_tbl; p < p_end; p++) {
@@ -1134,11 +1141,26 @@ static int check_system_architectures(void)
 				g_archs[g_arch_count++] = CPU_arm;
 				break;
 			case CPU_arm64:
-				// NOTE: amd64 was added starting with Windows 10 Build 21277.
+				// Windows 10 on ARM RTM only supports i386 emulation.
+				// - Build 21277: Added amd64 emulation.
+				// - Build 22000 (Win11): Added arm64ec.
 				// https://blogs.windows.com/windows-insider/2020/12/10/introducing-x64-emulation-in-preview-for-windows-10-on-arm-pcs-to-the-windows-insider-program/
-				// TODO: Check for it!
-				g_archs[g_arch_count++] = CPU_amd64;
-				g_archs[g_arch_count++] = CPU_arm64;
+				if (IsWindows11OrGreater()) {
+					// Add arm64 and arm64ec.
+					g_archs[g_arch_count++] = CPU_arm64;
+					g_archs[g_arch_count++] = CPU_arm64ec;
+				} else if (IsWindows10Build21277OrGreater()) {
+					// Add amd64 and arm64.
+					g_archs[g_arch_count++] = CPU_amd64;
+					g_archs[g_arch_count++] = CPU_arm64;
+				} else {
+					// Just add arm64.
+					g_archs[g_arch_count++] = CPU_arm64;
+				}
+				break;
+			case CPU_arm64ec:
+				// Should not happen...
+				assert(!"System native architecture cannot be ARM64EC.");
 				break;
 		}
 		return 0;
