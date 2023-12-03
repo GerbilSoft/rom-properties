@@ -240,7 +240,7 @@ gleich_ende:
   /* sub.l      a0,d1 */
   /* subq.l     #2,d1 */
   /* move.l     d1,maxgleich */
-  R->maxgleich = R->d1 = R->a3 - R->a0 - 2;
+  R->maxgleich = R->d1 = (dreg_t)(R->a3 - R->a0 - 2);
 
   /* cmp.l      #$409,d1 */
   /* beq        gleich_ablegen */
@@ -316,13 +316,13 @@ string_zu_ende:
   /* move.l     a5,d1 */
   /* sub.l      a0,d1 */
   /* subq.l     #1,d1 */
-  R->d1 = R->a5 - R->a0 - 1;
+  R->d1 = (dreg_t)(R->a5 - R->a0 - 1);
 
   /* move.l     a6,d2 */
   /* sub.l      a5,d2 */
   /* sub.l      d1,d2 */
   /* addq.l     #1,d2 */
-  R->d2 = R->a6 - R->a5 - R->d1 + 1;
+  R->d2 = (dreg_t)(R->a6 - R->a5 - R->d1 + 1);
 
   /* move.l     #$409,d0 */
   R->d0 = 0x409;                        /* max string length */
@@ -453,7 +453,7 @@ kein_byte_ablegen:
   /* sub.l      a0,d0 */
   /* subq.l     #3,d0 */
   /* bpl        mainloop */
-  if ( ( R->d0 = R->srcend - R->a0 - 3 ) >= 0 )
+  if ( ( R->d0 = (dreg_t)(R->srcend - R->a0 - 3) ) >= 0 )
     goto mainloop;
 
 still_packing:
@@ -485,7 +485,7 @@ all_packed:
   /* sub.l   packed_data(pc),a1 */
   /* move.l  a1,d0 */
   /* move.l  d0,d7 */
-  R->d7 = R->d0 = R->a1 - R->dstbuf;
+  R->d7 = R->d0 = (dreg_t)(R->a1 - R->dstbuf);
   /* move.l  packed_data,a1 */
   /* addq.l  #4,a1 */
   /* bsr     longword_store */
