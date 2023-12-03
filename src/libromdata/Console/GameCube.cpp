@@ -378,7 +378,7 @@ int GameCubePrivate::loadWiiPartitionTables(void)
 		}
 
 		// Read the partition table entries.
-		const off64_t pt_addr = static_cast<off64_t>(be32_to_cpu(vgtbl.vg[i].addr)) << 2;
+		const off64_t pt_addr = vgtbl.vg[i].addr.geto_be();
 		static constexpr size_t pt_size = pt.size() * sizeof(pt[0]);
 		size = discReader->seekAndRead(pt_addr, pt.data(), pt_size);
 		if (size != pt_size) {
@@ -394,7 +394,7 @@ int GameCubePrivate::loadWiiPartitionTables(void)
 
 			entry.vg = static_cast<uint8_t>(i);
 			entry.pt = static_cast<uint8_t>(j);
-			entry.start = static_cast<off64_t>(be32_to_cpu(pt[j].addr)) << 2;
+			entry.start = pt[j].addr.geto_be();
 			entry.type = be32_to_cpu(pt[j].type);
 		}
 	}

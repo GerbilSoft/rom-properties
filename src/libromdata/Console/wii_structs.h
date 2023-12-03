@@ -16,12 +16,77 @@
 #include "nintendo_system_id.h"
 
 #ifdef __cplusplus
+// for uint34_rshift2_t's inline helper functions
+#  include <cassert>
+#  include "byteswap_rp.h"
+#endif /* __cplusplus */
+
+#ifdef __cplusplus
 extern "C" {
 #endif
 
 // 34-bit value stored in uint32_t.
 // The value must be lshifted by 2.
-typedef uint32_t uint34_rshift2_t;
+typedef struct _uint34_rshift2_t {
+	uint32_t val;
+#ifdef __cplusplus
+	/**
+	 * Get this uint34_rshift2_t as uint64_t.
+	 * No byteswapping in this version.
+	 * @return uint64_t
+	 */
+	uint64_t get(void) const {
+		return (static_cast<uint64_t>(val) << 2);
+	}
+
+	/**
+	 * Get this uint34_rshift2_t as uint64_t.
+	 * Byteswapped from big-endian, if necessary.
+	 * @return uint64_t
+	 */
+	uint64_t get_be(void) const {
+		return (static_cast<uint64_t>(val) << 2);
+	}
+
+	/**
+	 * Get this uint34_rshift2_t as off64_t.
+	 * No byteswapping in this version.
+	 * @return off64_t
+	 */
+	off64_t geto(void) const {
+		return (static_cast<off64_t>(val) << 2);
+	}
+
+	/**
+	 * Get this uint34_rshift2_t as off64_t.
+	 * Byteswapped from big-endian, if necessary.
+	 * @return uint64_t
+	 */
+	off64_t geto_be(void) const {
+		return (static_cast<off64_t>(val) << 2);
+	}
+
+	/**
+	 * Save a uint64_t in this uint34_rshift2_t.
+	 * No byteswapping in this version.
+	 * @param val34 34-bit value (2 low bits must be 0)
+	 */
+	void set(uint64_t val34) {
+		assert((val34 & 0xFFFFFFFC00000003ULL) == 0);
+		val = static_cast<uint32_t>(val34 >> 2);
+	}
+
+	/**
+	 * Save a uint64_t in this uint34_rshift2_t.
+	 * No byteswapping in this version.
+	 * @param val34 34-bit value (2 low bits must be 0)
+	 */
+	void seto(off64_t val34) {
+		assert((val34 & 0xFFFFFFFC00000003ULL) == 0);
+		val = static_cast<uint32_t>(val34 >> 2);
+	}
+#endif /* __cplusplus */
+} uint34_rshift2_t;
 
 /**
  * Wii volume group table.

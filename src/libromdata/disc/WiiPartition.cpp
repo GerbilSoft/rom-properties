@@ -535,8 +535,8 @@ WiiPartition::WiiPartition(const IDiscReaderPtr &discReader, off64_t partition_o
 	}
 
 	// Save important data.
-	d->data_offset = static_cast<off64_t>(be32_to_cpu(d->partitionHeader.data_offset)) << 2;
-	d->data_size   = static_cast<off64_t>(be32_to_cpu(d->partitionHeader.data_size)) << 2;
+	d->data_offset = d->partitionHeader.data_offset.geto_be();
+	d->data_size   = d->partitionHeader.data_size.geto_be();
 	if (d->data_size == 0) {
 		// NoCrypto RVT-H images sometimes have this set to 0.
 		// Use the calculated partition size.
@@ -819,7 +819,7 @@ off64_t WiiPartition::partition_size_used(void) const
 
 	// Add the data offset from the partition header.
 	RP_D(const WiiPartition);
-	size += (static_cast<off64_t>(be32_to_cpu(d->partitionHeader.data_offset)) << 2);
+	size += d->partitionHeader.data_offset.geto_be();
 
 	// Are sectors hashed?
 	if ((d->cryptoMethod & WiiPartition::CM_MASK_SECTOR) == CM_1K_31K) {
