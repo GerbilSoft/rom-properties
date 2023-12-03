@@ -200,7 +200,7 @@ class RP_LIBROMDATA_PUBLIC NOVTABLE IRpFile
 		}
 
 	public:
-		/** Convenience functions implemented for all IRpFile subclasses. **/
+		/** Convenience functions implemented for all IRpFile subclasses **/
 
 		/**
 		 * Get a single character (byte) from the file
@@ -254,6 +254,20 @@ class RP_LIBROMDATA_PUBLIC NOVTABLE IRpFile
 				return 0;
 			}
 			return this->write(ptr, size);
+		}
+
+		/**
+		 * Seek to a relative offset. (SEEK_CUR)
+		 * @param pos Relative offset
+		 * @return 0 on success; -1 on error
+		 */
+		inline int seek_cur(off64_t offset)
+		{
+			off64_t pos = this->tell();
+			if (pos < 0) {
+				return -1;
+			}
+			return this->seek(pos + offset);
 		}
 
 		/**

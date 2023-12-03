@@ -22,7 +22,6 @@ using namespace LibRpTexture;
 #include "cdrom_structs.h"
 #include "iso_structs.h"
 #include "disc/IsoPartition.hpp"
-#include "disc/CisoPspReader.hpp"
 #include "disc/PartitionFile.hpp"
 
 // Other RomData subclasses
@@ -65,7 +64,6 @@ public:
 	ISO_Primary_Volume_Descriptor pvd;
 
 	// IsoPartition
-	IDiscReaderPtr discReader;
 	IsoPartitionPtr isoPartition;
 
 	// Icon
@@ -100,10 +98,11 @@ const char *const PSPPrivate::exts[] = {
 	".ciso", ".cso",	// CISO
 
 #ifdef HAVE_LZ4
-	".ziso", ".zso",		// ZISO
+	".ziso", ".zso",	// ZISO
 #endif /* HAVE_LZ4 */
-
-	".jiso", ".jso",	// JISO (TODO)
+#ifdef HAVE_LZO
+	".jiso", ".jso",	// JISO
+#endif /* HAVE_LZO */
 
 	nullptr
 };
@@ -233,39 +232,11 @@ PSP::PSP(const IRpFilePtr &file)
 	}
 
 	// UMD is based on the DVD specification and therefore only has 2048-byte sectors.
-	IDiscReaderPtr discReader;
-
-	// Check if this is a supported compressed disc image.
-	uint8_t header[256];
-	d->file->rewind();
-	size_t size = d->file->read(header, sizeof(header));
-	if (size != sizeof(header)) {
-		// Read error.
-		d->file.reset();
-		return;
-	}
-	if (CisoPspReader::isDiscSupported_static(header, sizeof(header)) >= 0) {
-		discReader = std::make_shared<CisoPspReader>(d->file);
-		if (!discReader->isOpen()) {
-			// Not CISO.
-			discReader.reset();
-		}
-	}
-
-	if (!discReader) {
-		// Not a supported compressed disc image.
-		// Try opening as uncompressed.
-		discReader = std::make_shared<DiscReader>(d->file);
-	}
-
-	if (!discReader->isOpen()) {
-		// Error opening the DiscReader.
-		d->file.reset();
-		return;
-	}
+	// In addition, compressed disc formats are now handled by RomDataFactory, so
+	// we can use d->file directly.
 
 	// Check the ISO PVD and system ID.
-	size = discReader->seekAndRead(ISO_PVD_ADDRESS_2048, &d->pvd, sizeof(d->pvd));
+	size_t size = d->file->seekAndRead(ISO_PVD_ADDRESS_2048, &d->pvd, sizeof(d->pvd));
 	if (size != sizeof(d->pvd)) {
 		d->file.reset();
 		return;
@@ -285,7 +256,7 @@ PSP::PSP(const IRpFilePtr &file)
 	}
 
 	// Try to open the ISO partition.
-	IsoPartitionPtr isoPartition = std::make_shared<IsoPartition>(discReader, 0, 0);
+	IsoPartitionPtr isoPartition = std::make_shared<IsoPartition>(d->file, 0, 0);
 	if (!isoPartition->isOpen()) {
 		// Error opening the ISO partition.
 		d->file.reset();
@@ -293,7 +264,6 @@ PSP::PSP(const IRpFilePtr &file)
 	}
 
 	// Disc image is ready.
-	d->discReader = std::move(discReader);
 	d->isoPartition = std::move(isoPartition);
 	d->isValid = true;
 }
@@ -312,7 +282,6 @@ void PSP::close(void)
 	}
 
 	d->isoPartition.reset();
-	d->discReader.reset();
 
 	// Call the superclass function.
 	super::close();
@@ -327,29 +296,9 @@ void PSP::close(void)
  */
 int PSP::isRomSupported_static(const DetectInfo *info)
 {
-	// NOTE: This version is only supported for compressed disc images.
-	assert(info != nullptr);
-	assert(info->header.pData != nullptr);
-	assert(info->header.addr == 0);
-	if (!info || !info->header.pData ||
-	    info->header.addr != 0 ||
-	    info->header.size < 256)
-	{
-		// Either no detection information was specified,
-		// or the header is too small.
-		return (int)PSPPrivate::DiscType::Unknown;
-	}
-
-	// Check if it's supported by the CISO reader.
-	if (CisoPspReader::isDiscSupported_static(
-		info->header.pData, info->header.size) >= 0)
-	{
-		// Supported by CISO.
-		// NOTE: The constructor will determine the actual disc type.
-		return (int)PSPPrivate::DiscType::PspGame;
-	}
-
-	// Not a supported compressed disc image.
+	RP_UNUSED(info);
+	// NOTE: Cannot check the PVD here, and compressed disc images are
+	// handled by RomDataFactory.
 	return (int)PSPPrivate::DiscType::Unknown;
 }
 
@@ -551,9 +500,7 @@ int PSP::loadFieldData(void)
 	// TODO: Parse firmware update PARAM.SFO and EBOOT.BIN?
 
 	// ISO object for ISO-9660 PVD
-	// TODO: DiscReader overload for ISO.
-	const PartitionFilePtr ptFile = std::make_shared<PartitionFile>(d->discReader.get(), 0, d->discReader->size());
-	ISO *const isoData = new ISO(ptFile);
+	ISO *const isoData = new ISO(d->file);
 	if (isoData->isOpen()) {
 		// Add the fields.
 		const RomFields *const isoFields = isoData->fields();

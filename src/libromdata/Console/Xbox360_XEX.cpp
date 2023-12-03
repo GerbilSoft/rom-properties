@@ -1188,18 +1188,21 @@ const EXE *Xbox360_XEX_Private::initEXE(void)
 	// PE section, so we don't have to look anything up.
 
 	// Attempt to open the EXE section.
-	// Assuming a maximum of 8 KB for the PE headers.
-	IRpFilePtr peFile_tmp;
 #ifdef ENABLE_LIBMSPACK
 	if (!lzx_peHeader.empty()) {
-		peFile_tmp = std::make_shared<MemFile>(lzx_peHeader.data(), lzx_peHeader.size());
+		IRpFilePtr peFile_tmp = std::make_shared<MemFile>(lzx_peHeader.data(), lzx_peHeader.size());
+		if (peFile_tmp->isOpen()) {
+			EXE *const pe_exe_tmp = new EXE(peFile_tmp);
+			if (pe_exe_tmp->isOpen()) {
+				pe_exe = pe_exe_tmp;
+			} else {
+				delete pe_exe_tmp;
+			}
+		}
 	} else
 #endif /* ENABLE_LIBMSPACK */
 	{
-		peFile_tmp = std::make_shared<PartitionFile>(peReader.get(), 0, PE_HEADER_SIZE);
-	}
-	if (peFile_tmp->isOpen()) {
-		EXE *const pe_exe_tmp = new EXE(peFile_tmp);
+		EXE *const pe_exe_tmp = new EXE(peReader);
 		if (pe_exe_tmp->isOpen()) {
 			pe_exe = pe_exe_tmp;
 		} else {

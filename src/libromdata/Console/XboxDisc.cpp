@@ -386,15 +386,7 @@ XboxDisc::XboxDisc(const IRpFilePtr &file)
 	}
 
 	// Open the XDVDFSPartition.
-	IDiscReaderPtr discReader = std::make_shared<DiscReader>(d->file);
-	if (!discReader->isOpen()) {
-		// Unable to open the discReader.
-		d->file.reset();
-		d->lockKreonDrive();
-		d->isKreon = false;
-		return;
-	}
-	d->xdvdfsPartition = std::make_shared<XDVDFSPartition>(discReader, d->xdvdfs_addr, d->file->size() - d->xdvdfs_addr);
+	d->xdvdfsPartition = std::make_shared<XDVDFSPartition>(d->file, d->xdvdfs_addr, d->file->size() - d->xdvdfs_addr);
 	if (!d->xdvdfsPartition->isOpen()) {
 		// Unable to open the XDVDFSPartition.
 		d->xdvdfsPartition.reset();
@@ -405,7 +397,7 @@ XboxDisc::XboxDisc(const IRpFilePtr &file)
 		if (d->discType == XboxDiscPrivate::DiscType::XGD2) {
 			static const off64_t xgd3_offset = XDVDFS_LBA_OFFSET_XGD3 * XDVDFS_BLOCK_SIZE;
 			d->xdvdfs_addr = XDVDFS_LBA_OFFSET_XGD3 * XDVDFS_BLOCK_SIZE;
-			d->xdvdfsPartition = std::make_shared<XDVDFSPartition>(discReader,
+			d->xdvdfsPartition = std::make_shared<XDVDFSPartition>(d->file,
 				xgd3_offset, d->file->size() - xgd3_offset);
 			if (d->xdvdfsPartition->isOpen()) {
 				// It's an XGD3.

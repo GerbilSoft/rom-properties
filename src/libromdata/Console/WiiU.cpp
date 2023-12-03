@@ -22,10 +22,6 @@ using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;
 
-// DiscReader
-#include "librpbase/disc/DiscReader.hpp"
-#include "disc/WuxReader.hpp"
-
 // C++ STL classes
 using std::string;
 using std::vector;
@@ -49,19 +45,6 @@ public:
 	static const RomDataInfo romDataInfo;
 
 public:
-	enum class DiscType {
-		Unknown	= -1,
-
-		WUD	= 0,	// Wii U disc image (uncompressed)
-		WUX	= 1,	// WUX (compressed)
-
-		Max
-	};
-	DiscType discType;
-
-	// Disc reader
-	IDiscReaderPtr discReader;
-
 	// Disc header
 	WiiU_DiscHeader discHeader;
 };
@@ -94,7 +77,6 @@ const RomDataInfo WiiUPrivate::romDataInfo = {
 
 WiiUPrivate::WiiUPrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
-	, discType(DiscType::Unknown)
 {
 	// Clear the discHeader struct.
 	memset(&discHeader, 0, sizeof(discHeader));
@@ -147,54 +129,19 @@ WiiU::WiiU(const IRpFilePtr &file)
 		nullptr,	// ext (not needed for WiiU)
 		d->file->size()	// szFile
 	};
-	d->discType = static_cast<WiiUPrivate::DiscType>(isRomSupported_static(&info));
-
-	// Create an IDiscReader.
-	switch (d->discType) {
-		case WiiUPrivate::DiscType::WUD:
-			d->discReader = std::make_shared<DiscReader>(d->file);
-			break;
-		case WiiUPrivate::DiscType::WUX:
-			d->discReader = std::make_shared<WuxReader>(d->file);
-			break;
-		case WiiUPrivate::DiscType::Unknown:
-		default:
-			// Disc image is invalid.
-			d->fileType = FileType::Unknown;
-			d->discType = WiiUPrivate::DiscType::Unknown;
-			d->file.reset();
-			return;
-	}
-
-	if (!d->discReader || !d->discReader->isOpen()) {
-		// Error opening the DiscReader.
-		d->discReader.reset();
+	d->isValid = (isRomSupported_static(&info) >= 0);
+	if (!d->isValid) {
 		d->file.reset();
-		d->fileType = FileType::Unknown;
-		d->discType = WiiUPrivate::DiscType::Unknown;
 		return;
-	}
-
-	// Re-read the disc header for WUX.
-	if (d->discType > WiiUPrivate::DiscType::WUD) {
-		size = d->discReader->seekAndRead(0, header, sizeof(header));
-		if (size != sizeof(header)) {
-			// Seek and/or read error.
-			d->discReader.reset();
-			d->file.reset();
-			d->discType = WiiUPrivate::DiscType::Unknown;
-			return;
-		}
 	}
 
 	// Verify the secondary magic number at 0x10000.
 	uint32_t disc_magic;
-	size = d->discReader->seekAndRead(0x10000, &disc_magic, sizeof(disc_magic));
+	size = d->file->seekAndRead(0x10000, &disc_magic, sizeof(disc_magic));
 	if (size != sizeof(disc_magic)) {
 		// Seek and/or read error.
-		d->discReader.reset();
 		d->file.reset();
-		d->discType = WiiUPrivate::DiscType::Unknown;
+		d->file.reset();
 		return;
 	}
 
@@ -206,9 +153,7 @@ WiiU::WiiU(const IRpFilePtr &file)
 		memcpy(&d->discHeader, header, sizeof(d->discHeader));
 	} else {
 		// No match.
-		d->discReader.reset();
 		d->file.reset();
-		d->discType = WiiUPrivate::DiscType::Unknown;
 		return;
 	}
 }
@@ -234,15 +179,7 @@ int WiiU::isRomSupported_static(const DetectInfo *info)
 		// or the header is too small.
 		// szFile: Partition table is at 0x18000, so we
 		// need to have at least 0x20000.
-		return static_cast<int>(WiiUPrivate::DiscType::Unknown);
-	}
-
-	// Check if this is disc is in WUX format.
-	if (WuxReader::isDiscSupported_static(info->header.pData, info->header.size) >= 0) {
-		// Disc image is in WUX format.
-		// TODO: Also check for other Wii U magic numbers if WUX is found.
-		// TODO: Verify block size?
-		return static_cast<int>(WiiUPrivate::DiscType::WUX);
+		return -1;
 	}
 
 	// Game ID must start with "WUP-".
@@ -252,7 +189,7 @@ int WiiU::isRomSupported_static(const DetectInfo *info)
 	const WiiU_DiscHeader *const wiiu_header = reinterpret_cast<const WiiU_DiscHeader*>(info->header.pData);
 	if (wiiu_header->magic != cpu_to_be32(WIIU_MAGIC)) {
 		// Not Wii U.
-		return static_cast<int>(WiiUPrivate::DiscType::Unknown);
+		return -1;
 	}
 
 	// Check hyphens.
@@ -264,7 +201,7 @@ int WiiU::isRomSupported_static(const DetectInfo *info)
 	    wiiu_header->hyphen5 != '-')
 	{
 		// Missing hyphen.
-		return static_cast<int>(WiiUPrivate::DiscType::Unknown);
+		return -1;
 	}
 
 	// Check for GCN/Wii magic numbers.
@@ -274,11 +211,11 @@ int WiiU::isRomSupported_static(const DetectInfo *info)
 	{
 		// GameCube and/or Wii magic is present.
 		// This is not a Wii U disc image.
-		return static_cast<int>(WiiUPrivate::DiscType::Unknown);
+		return -1;
 	}
 
 	// Disc header is valid.
-	return static_cast<int>(WiiUPrivate::DiscType::WUD);
+	return 0;
 }
 
 /**
@@ -379,7 +316,7 @@ int WiiU::loadFieldData(void)
 	} else if (!d->file || !d->file->isOpen()) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!d->isValid || (int)d->discType < 0) {
+	} else if (!d->isValid) {
 		// Disc image isn't valid.
 		return -EIO;
 	}
@@ -469,7 +406,7 @@ int WiiU::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 	pExtURLs->clear();
 
 	RP_D(const WiiU);
-	if (!d->isValid || (int)d->discType < 0) {
+	if (!d->isValid) {
 		// Disc image isn't valid.
 		return -EIO;
 	}

@@ -396,6 +396,21 @@ int WbfsReader::isDiscSupported_static(const uint8_t *pHeader, size_t szHeader)
 		return -1;
 	}
 
+	// Make sure the GCN and Wii magic numbers aren't present in the WBFS header.
+	// This may happen if someone decided to make a game with ID "WBFS" for some reason.
+	if (szHeader >= 32) {
+#define GCN_MAGIC 0xC2339F3D
+#define WII_MAGIC 0x5D1C9EA3
+		const uint32_t *const pHeader32 = reinterpret_cast<const uint32_t*>(pHeader);
+		if (be32_to_cpu(pHeader32[0x18/4]) == GCN_MAGIC ||
+		    be32_to_cpu(pHeader32[0x1C/4]) == WII_MAGIC)
+		{
+			// GCN and/or Wii magic numbers are present.
+			// Not a valid WBFS image.
+			return -1;
+		}
+	}
+
 	// This is a valid WBFS image.
 	return 0;
 }

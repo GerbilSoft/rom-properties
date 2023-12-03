@@ -772,11 +772,7 @@ int Dreamcast::loadFieldData(void)
 		isoData = d->gdiReader->openIsoRomData(3);
 	} else {
 		// ISO object for ISO-9660 PVD
-		PartitionFilePtr isoFile = std::make_shared<PartitionFile>(
-			d->discReader.get(), 0, d->discReader->size());
-		if (isoFile->isOpen()) {
-			isoData = std::make_shared<ISO>(isoFile);
-		}
+		isoData = std::make_shared<ISO>(d->discReader);
 	}
 
 	if (isoData && isoData->isOpen()) {

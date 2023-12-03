@@ -455,13 +455,13 @@ int WiiPartitionPrivate::readSector(uint32_t sector_num)
 	off64_t sector_addr = partition_offset + data_offset;
 	sector_addr += (static_cast<off64_t>(sector_num) * SECTOR_SIZE_ENCRYPTED);
 
-	int ret = q->m_discReader->seek(sector_addr);
+	int ret = q->m_file->seek(sector_addr);
 	if (ret != 0) {
-		q->m_lastError = q->m_discReader->lastError();
+		q->m_lastError = q->m_file->lastError();
 		return ret;
 	}
 
-	size_t sz = q->m_discReader->read(&sector_buf, sizeof(sector_buf));
+	size_t sz = q->m_file->read(&sector_buf, sizeof(sector_buf));
 	if (sz != sizeof(sector_buf)) {
 		// sector_buf may be invalid.
 		this->sector_num = ~0;
@@ -507,22 +507,22 @@ WiiPartition::WiiPartition(const IDiscReaderPtr &discReader, off64_t partition_o
 		partition_offset, cryptoMethod), discReader)
 {
 	// q->m_lastError is handled by GcnPartitionPrivate's constructor.
-	if (!m_discReader || !m_discReader->isOpen()) {
-		m_discReader.reset();
+	if (!m_file || !m_file->isOpen()) {
+		m_file.reset();
 		return;
 	}
 
 	// Read the partition header.
 	RP_D(WiiPartition);
-	if (m_discReader->seek(partition_offset) != 0) {
-		m_lastError = m_discReader->lastError();
-		m_discReader.reset();
+	if (m_file->seek(partition_offset) != 0) {
+		m_lastError = m_file->lastError();
+		m_file.reset();
 		return;
 	}
-	size_t size = m_discReader->read(&d->partitionHeader, sizeof(d->partitionHeader));
+	size_t size = m_file->read(&d->partitionHeader, sizeof(d->partitionHeader));
 	if (size != sizeof(d->partitionHeader)) {
 		m_lastError = EIO;
-		m_discReader.reset();
+		m_file.reset();
 		return;
 	}
 
@@ -530,7 +530,7 @@ WiiPartition::WiiPartition(const IDiscReaderPtr &discReader, off64_t partition_o
 	if (d->partitionHeader.ticket.signature_type != cpu_to_be32(RVL_SIGNATURE_TYPE_RSA2048)) {
 		// TODO: Better error?
 		m_lastError = EIO;
-		m_discReader.reset();
+		m_file.reset();
 		return;
 	}
 
@@ -561,7 +561,7 @@ WiiPartition::WiiPartition(const IDiscReaderPtr &discReader, off64_t partition_o
 		};
 
 		uint8_t data[32];
-		size_t size = m_discReader->seekAndRead(d->partition_offset + d->data_offset, data, sizeof(data));
+		size_t size = m_file->seekAndRead(d->partition_offset + d->data_offset, data, sizeof(data));
 		if (size == sizeof(incr_vals) && !memcmp(data, incr_vals, sizeof(incr_vals))) {
 			// Found incrementing values.
 			d->verifyResult = KeyManager::VerifyResult::IncrementingValues;
@@ -587,9 +587,9 @@ WiiPartition::WiiPartition(const IDiscReaderPtr &discReader, off64_t partition_o
 size_t WiiPartition::read(void *ptr, size_t size)
 {
 	RP_D(WiiPartition);
-	assert(m_discReader != nullptr);
-	assert(m_discReader->isOpen());
-	if (!m_discReader || !m_discReader->isOpen()) {
+	assert(m_file != nullptr);
+	assert(m_file->isOpen());
+	if (!m_file || !m_file->isOpen()) {
 		m_lastError = EBADF;
 		return 0;
 	}
@@ -765,9 +765,9 @@ size_t WiiPartition::read(void *ptr, size_t size)
 int WiiPartition::seek(off64_t pos)
 {
 	RP_D(WiiPartition);
-	assert(m_discReader != nullptr);
-	assert(m_discReader->isOpen());
-	if (!m_discReader ||  !m_discReader->isOpen()) {
+	assert(m_file != nullptr);
+	assert(m_file->isOpen());
+	if (!m_file ||  !m_file->isOpen()) {
 		m_lastError = EBADF;
 		return -1;
 	}
@@ -792,9 +792,9 @@ int WiiPartition::seek(off64_t pos)
 off64_t WiiPartition::tell(void)
 {
 	RP_D(const WiiPartition);
-	assert(m_discReader != nullptr);
-	assert(m_discReader->isOpen());
-	if (!m_discReader ||  !m_discReader->isOpen()) {
+	assert(m_file != nullptr);
+	assert(m_file->isOpen());
+	if (!m_file ||  !m_file->isOpen()) {
 		m_lastError = EBADF;
 		return -1;
 	}

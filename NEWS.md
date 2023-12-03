@@ -25,6 +25,14 @@
       * Notepad++: https://github.com/notepad-plus-plus/notepad-plus-plus/tree/master/PowerEditor/src/WinControls [GPLv3]
     * Due to Notepad++ using GPLv3, any Windows builds that use Dark Mode
       will also be considered GPLv3.
+  * Sparse disc images, e.g. CISO and GCZ, are now handled by the RomDataFactory
+    class instead of requiring each RomData subclass to handle it. This means
+    that all supported sparse disc images can be used for any console.
+    * This was originally implemented to support ZISO and PSP CISO for PS2 disc
+      images, but it also allows unusual combinations like DAX and JISO for
+      GameCube disc images.
+    * Fixes #397: Could you add support for PS2 ISO's compressed to zso and cso?
+      * Reported by @60fpshacksrock.
 
 * New parsers:
   * Wim: Microsoft Windows Images, used by the Windows installer starting with
@@ -109,6 +117,7 @@
     ROM images) on Windows XP.
   * Fix a crash when decoding PNGs or other zlib-encoded data on Windows XP.
     * Affects: v2.2 - v2.2.1
+  * NASOSReader: Fix detection of dual-layer Wii NASOS images.
 
 * Other changes:
   * Nintendo3DS: The "Options" menu no longer shows a grayed-out "Extract SRL"

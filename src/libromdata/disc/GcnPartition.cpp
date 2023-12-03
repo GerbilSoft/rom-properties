@@ -58,16 +58,16 @@ GcnPartition::GcnPartition(GcnPartitionPrivate *d, const IDiscReaderPtr &discRea
  */
 size_t GcnPartition::read(void *ptr, size_t size)
 {
-	assert(m_discReader != nullptr);
-	assert(m_discReader->isOpen());
-	if (!m_discReader || !m_discReader->isOpen()) {
+	assert(m_file != nullptr);
+	assert(m_file->isOpen());
+	if (!m_file || !m_file->isOpen()) {
 		m_lastError = EBADF;
 		return 0;
 	}
 
 	// GCN partitions are stored as-is.
 	// TODO: data_size checks?
-	return m_discReader->read(ptr, size);
+	return m_file->read(ptr, size);
 }
 
 /**
@@ -78,17 +78,17 @@ size_t GcnPartition::read(void *ptr, size_t size)
 int GcnPartition::seek(off64_t pos)
 {
 	RP_D(GcnPartition);
-	assert(m_discReader != nullptr);
-	assert(m_discReader->isOpen());
-	if (!m_discReader ||  !m_discReader->isOpen()) {
+	assert(m_file != nullptr);
+	assert(m_file->isOpen());
+	if (!m_file ||  !m_file->isOpen()) {
 		m_lastError = EBADF;
 		return -1;
 	}
 
 	// Use the IDiscReader directly for GCN partitions.
-	int ret = m_discReader->seek(d->data_offset + pos);
+	int ret = m_file->seek(d->data_offset + pos);
 	if (ret != 0) {
-		m_lastError = m_discReader->lastError();
+		m_lastError = m_file->lastError();
 	}
 	return ret;
 }
@@ -99,17 +99,17 @@ int GcnPartition::seek(off64_t pos)
  */
 off64_t GcnPartition::tell(void)
 {
-	assert(m_discReader != nullptr);
-	assert(m_discReader->isOpen());
-	if (!m_discReader || !m_discReader->isOpen()) {
+	assert(m_file != nullptr);
+	assert(m_file->isOpen());
+	if (!m_file || !m_file->isOpen()) {
 		m_lastError = EBADF;
 		return -1;
 	}
 
 	// Use the IDiscReader directly for GCN partitions.
-	off64_t ret = m_discReader->tell();
+	off64_t ret = m_file->tell();
 	if (ret < 0) {
-		m_lastError = m_discReader->lastError();
+		m_lastError = m_file->lastError();
 	}
 	return ret;
 }

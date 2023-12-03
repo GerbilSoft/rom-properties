@@ -595,8 +595,6 @@ int Nintendo3DSPrivate::openSRL(void)
 	}
 
 	// Attempt to open the SRL as if it's a new file.
-	// TODO: IRpFile implementation with offset/length, so we don't
-	// have to use both DiscReader and PartitionFile.
 
 	// Check if this content is encrypted.
 	// If it is, we'll need to create a CIAReader.
@@ -615,15 +613,8 @@ int Nintendo3DSPrivate::openSRL(void)
 		return -EIO;
 	}
 
-	// TODO: Make IDiscReader derive from IRpFile.
-	// May need to add reference counting to IRpFile...
-	RomDataPtr srlData;
-	PartitionFilePtr srlFile = std::make_shared<PartitionFile>(srlReader.get(), 0, length);
-	if (srlFile->isOpen()) {
-		// Create the NintendoDS object.
-		srlData = std::make_shared<NintendoDS>(srlFile, true);
-	}
-
+	// Create the NintendoDS object.
+	RomDataPtr srlData = std::make_shared<NintendoDS>(srlReader, true);
 	if (srlData && srlData->isOpen() && srlData->isValid()) {
 		// SRL opened successfully.
 		this->mainContent = std::move(srlData);

@@ -106,7 +106,7 @@ public:
 	rp::uvector<uint16_t> daxSizeTable;
 	std::vector<uint8_t> daxNCTable;	// 0 = compressed; 1 = not compressed
 
-	uint8_t index_shift;		// Index shift value
+	uint8_t index_shift;		// Index shift value (CISO/ZISO only)
 	bool isDaxWithoutNCTable;	// Convenience variable
 
 	/**
@@ -176,8 +176,6 @@ uint32_t CisoPspReaderPrivate::getBlockCompressedSize(uint32_t blockNum) const
 			if (blockNum < indexEntries.size()-1) {
 				off64_t idxStart = le32_to_cpu(indexEntries[blockNum]);
 				off64_t idxEnd = le32_to_cpu(indexEntries[blockNum + 1]);
-				idxStart <<= index_shift;
-				idxEnd <<= index_shift;
 				size = static_cast<uint32_t>(idxEnd - idxStart);
 			}
 			break;
@@ -307,7 +305,8 @@ CisoPspReader::CisoPspReader(const IRpFilePtr &file)
 
 			d->block_size = d->header.jiso.block_size;
 			d->disc_size = d->header.jiso.uncompressed_size;
-			// TODO: index_shift field?
+			// TODO: Does JISO have an index_shift field? Assuming it doesn't for now...
+			d->index_shift = 0;
 			indexEntryTblPos = static_cast<off64_t>(sizeof(d->header.jiso));
 			break;
 
@@ -323,6 +322,7 @@ CisoPspReader::CisoPspReader(const IRpFilePtr &file)
 
 			d->block_size = DAX_BLOCK_SIZE;
 			d->disc_size = d->header.dax.uncompressed_size;
+			// TODO: Does DAX have an index_shift field? Assuming it doesn't for now...
 			d->index_shift = 0;
 			indexEntryTblPos = static_cast<off64_t>(sizeof(d->header.dax));
 			break;
@@ -702,13 +702,13 @@ off64_t CisoPspReader::getPhysBlockAddr(uint32_t blockIdx) const
 
 #ifdef HAVE_LZO
 		case CisoPspReaderPrivate::CisoType::JISO:
-			// TODO: Is index_shift actually supported by JISO?
+			// TODO: Does JISO have an index_shift field? Assuming it doesn't for now...
 			addr = static_cast<off64_t>(d->indexEntries[blockIdx]);
-			addr <<= d->index_shift;
 			break;
 #endif /* HAVE_LZO */
 
 		case CisoPspReaderPrivate::CisoType::DAX:
+			// TODO: Does DAX have an index_shift field? Assuming it doesn't for now...
 			addr = static_cast<off64_t>(d->indexEntries[blockIdx]);
 			break;
 	}
@@ -835,6 +835,7 @@ int CisoPspReader::readBlock(uint32_t blockIdx, int pos, void *ptr, size_t size)
 		case CisoPspReaderPrivate::CisoType::JISO:
 			// JISO uses LZO or zlib.
 			// TODO: Verify the rest of this.
+			// TODO: Does JISO have an index_shift field? Assuming it doesn't for now...
 
 			// JISO does *not* indicate compression using the high bit.
 			// Instead, the compressed block size will match the uncompressed
@@ -876,6 +877,7 @@ int CisoPspReader::readBlock(uint32_t blockIdx, int pos, void *ptr, size_t size)
 #endif /* HAVE_LZO */
 
 		case CisoPspReaderPrivate::CisoType::DAX:
+			// TODO: Does DAX have an index_shift field? Assuming it doesn't for now...
 			physBlockAddr = static_cast<off64_t>(indexEntry);
 			if (d->header.dax.nc_areas > 0 && d->daxNCTable[blockIdx]) {
 				// Uncompressed block.
