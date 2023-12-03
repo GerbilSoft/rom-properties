@@ -127,8 +127,10 @@
   * Windows: The "xattr" tab now respects the LC_ALL and/or LC_MESSAGES
     environment variable to allow for easier multi-language testing.
   * Windows: On ARM64 Windows 11, register for i386, arm64, and arm64ec.
-    * On ARM64 Windows 10, only register amd64 if using build 21277 or later.
-    * Fixes Fixes #398: Installing on ARM64 shows an error that the AMD64 version of the DLL couldn't be registered
+    * Only if using build 21262 or later. (RTM is 22000)
+    * On earlier versions, only arm64 will be registered, since ARM64EC
+      was added at the same time as amd64 emulation.
+    * Fixes #398: Installing on ARM64 shows an error that the AMD64 version of the DLL couldn't be registered
       * Reported by @kristibektashi.
 
 ## v2.2.1 (released 2023/07/30)

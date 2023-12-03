@@ -1141,20 +1141,15 @@ static int check_system_architectures(void)
 				g_archs[g_arch_count++] = CPU_arm;
 				break;
 			case CPU_arm64:
-				// Windows 10 on ARM RTM only supports i386 emulation.
-				// - Build 21277: Added amd64 emulation.
-				// - Build 22000 (Win11): Added arm64ec.
+				// Windows 10 on ARM only supports i386 emulation.
+				// Windows 11 added amd64 emulation and arm64ec.
 				// https://blogs.windows.com/windows-insider/2020/12/10/introducing-x64-emulation-in-preview-for-windows-10-on-arm-pcs-to-the-windows-insider-program/
-				if (IsWindows11OrGreater()) {
-					// Add arm64 and arm64ec.
+				if (IsWindows11Build21262OrGreater()) {
+					// Windows 11 with amd64 emulation: Add arm64 and arm64ec.
 					g_archs[g_arch_count++] = CPU_arm64;
 					g_archs[g_arch_count++] = CPU_arm64ec;
-				} else if (IsWindows10Build21277OrGreater()) {
-					// Add amd64 and arm64.
-					g_archs[g_arch_count++] = CPU_amd64;
-					g_archs[g_arch_count++] = CPU_arm64;
 				} else {
-					// Just add arm64.
+					// Windows 10 with i386 emulation only: Just add arm64.
 					g_archs[g_arch_count++] = CPU_arm64;
 				}
 				break;

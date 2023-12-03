@@ -102,10 +102,11 @@ VERSIONHELPERAPI IsWindowsVersionOrGreater_BuildNumberCheck(WORD major, WORD min
             VER_BUILDNUMBER, VER_GREATER_EQUAL));
 }
 
-VERSIONHELPERAPI IsWindows10Build21277OrGreater(void) {
-    // Windows 10 Build 21277 on ARM added amd64 emulation.
+VERSIONHELPERAPI IsWindows11Build21262OrGreater(void) {
+    // Windows 11 pre-release Build 21262 on ARM added amd64 emulation.
+    // NOTE: Officially it was 21277, but 21262 was leaked and supports it too.
     // https://blogs.windows.com/windows-insider/2020/12/10/introducing-x64-emulation-in-preview-for-windows-10-on-arm-pcs-to-the-windows-insider-program/
-    IsWindowsVersionOrGreater_BuildNumberCheck(HIBYTE(0x0A00), LOBYTE(0x0A00), 21277);
+    IsWindowsVersionOrGreater_BuildNumberCheck(HIBYTE(0x0A00), LOBYTE(0x0A00), 21262);
 }
 
 VERSIONHELPERAPI IsWindows11OrGreater(void) {
