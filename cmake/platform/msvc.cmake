@@ -1,7 +1,12 @@
 # Microsoft Visual C++
-IF(MSVC_VERSION LESS 1600)
-	MESSAGE(FATAL_ERROR "MSVC 2010 (10.0) or later is required.")
+IF(MSVC_VERSION LESS 1800)
+	MESSAGE(FATAL_ERROR "MSVC 2013 (12.0) or later is required.")
 ENDIF()
+
+# If an SDK version isn't specified by the user, set it to 10.0.
+IF(NOT CMAKE_SYSTEM_VERSION)
+	SET(CMAKE_SYSTEM_VERSION 10.0)
+ENDIF(NOT CMAKE_SYSTEM_VERSION)
 
 # Disable useless warnings:
 # - MSVC "logo" messages
