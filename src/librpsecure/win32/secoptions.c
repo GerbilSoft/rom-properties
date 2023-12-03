@@ -59,13 +59,6 @@ typedef BOOL (WINAPI *PFNSETPROCESSDEPPOLICY)(_In_ DWORD dwFlags);
 
 #endif /* _WIN64 */
 
-// HeapSetInformation() (WinXP)
-typedef BOOL (WINAPI *PFNHEAPSETINFORMATION)
-	(_In_opt_ HANDLE HeapHandle,
-	 _In_ int HeapInformationClass,
-	 _In_ PVOID HeapInformation,
-	 _In_ SIZE_T HeapInformationLength);
-
 // SetProcessMitigationPolicy (Win8)
 // Reference: https://git.videolan.org/?p=vlc/vlc-2.2.git;a=commitdiff;h=054cf24557164f79045d773efe7da87c4fe357de;hp=52e4b740ad47574bdff7b80aba4949311e1b88f1
 #include "secoptions_win8.h"
@@ -197,7 +190,6 @@ out:
 int rp_secure_win32_secoptions_init(int bHighSec)
 {
 	HMODULE hKernel32;
-	PFNHEAPSETINFORMATION pfnHeapSetInformation;
 #ifndef _WIN64
 	PFNSETPROCESSDEPPOLICY pfnSetProcessDEPPolicy;
 #endif /* _WIN64 */
@@ -226,12 +218,9 @@ int rp_secure_win32_secoptions_init(int bHighSec)
 	// NOTE: Parameter 2 is usually type enum HEAP_INFORMATION_CLASS,
 	// but this type isn't present in older versions of MinGW, so we're
 	// using int instead.
-	pfnHeapSetInformation = (PFNHEAPSETINFORMATION)
-		GetProcAddress(hKernel32, "HeapSetInformation");
-	if (pfnHeapSetInformation) {
-		// HeapEnableTerminationOnCorruption == 1
-		pfnHeapSetInformation(NULL, 1, NULL, 0);
-	}
+
+	// HeapEnableTerminationOnCorruption == 1
+	HeapSetInformation(NULL, 1, NULL, 0);
 
 	// Enable DEP on 32-bit.
 	// DEP is always enabled on 64-bit for 64-bit programs,
