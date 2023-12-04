@@ -1138,17 +1138,19 @@ static int check_system_architectures(void)
 				g_archs[g_arch_count++] = CPU_ia64;
 				break;
 			case CPU_arm:
+				g_archs[g_arch_count++] = CPU_arm;
+				break;
+			case CPU_arm64:
 				// NOTE: Support for 32-bit ARM applications was dropped as of Windows 11 build 25905.
 				// https://blogs.windows.com/windows-insider/2023/07/12/announcing-windows-11-insider-preview-build-25905/
+				// For earlier versions, register 32-bit ARM.
 				if (!IsWindows11Build25905OrGreater()) {
 					g_archs[g_arch_count++] = CPU_arm;
 				}
-				break;
-			case CPU_arm64:
+
 				// Windows 10 on ARM only supports i386 emulation.
 				// Windows 11 added amd64 emulation and arm64ec.
 				// https://blogs.windows.com/windows-insider/2020/12/10/introducing-x64-emulation-in-preview-for-windows-10-on-arm-pcs-to-the-windows-insider-program/
-				// TODO: Also ensure CPU_arm is registered if not build 25905 or later?
 				if (IsWindows11Build21262OrGreater()) {
 					// Windows 11 with amd64 emulation: Add arm64 and arm64ec.
 					g_archs[g_arch_count++] = CPU_arm64;
@@ -1163,6 +1165,8 @@ static int check_system_architectures(void)
 				assert(!"System native architecture cannot be ARM64EC.");
 				break;
 		}
+
+		assert(g_arch_count <= _countof(g_archs));
 		return 0;
 	}
 
