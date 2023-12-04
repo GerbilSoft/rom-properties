@@ -1148,6 +1148,7 @@ static int check_system_architectures(void)
 				// Windows 10 on ARM only supports i386 emulation.
 				// Windows 11 added amd64 emulation and arm64ec.
 				// https://blogs.windows.com/windows-insider/2020/12/10/introducing-x64-emulation-in-preview-for-windows-10-on-arm-pcs-to-the-windows-insider-program/
+				// TODO: Also ensure CPU_arm is registered if not build 25905 or later?
 				if (IsWindows11Build21262OrGreater()) {
 					// Windows 11 with amd64 emulation: Add arm64 and arm64ec.
 					g_archs[g_arch_count++] = CPU_arm64;
