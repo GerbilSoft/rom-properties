@@ -116,6 +116,8 @@ RpGdiplusBackend::RpGdiplusBackend(Gdiplus::Bitmap *pGdipBmp)
 	, m_pImgBuf(nullptr)
 	, m_pGdipPalette(nullptr)
 {
+	memset(&m_gdipBmpData, 0, sizeof(m_gdipBmpData));
+
 	assert(pGdipBmp != nullptr);
 	if (!pGdipBmp)
 		return;
