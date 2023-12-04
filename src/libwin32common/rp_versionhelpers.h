@@ -114,6 +114,12 @@ VERSIONHELPERAPI IsWindows11OrGreater(void) {
     IsWindowsVersionOrGreater_BuildNumberCheck(HIBYTE(0x0A00), LOBYTE(0x0A00), 22000);
 }
 
+VERSIONHELPERAPI IsWindows11Build25905OrGreater(void) {
+    // Windows 11 Build 25905 dropped support for 32-bit ARM applications.
+    // https://blogs.windows.com/windows-insider/2023/07/12/announcing-windows-11-insider-preview-build-25905/
+    IsWindowsVersionOrGreater_BuildNumberCheck(HIBYTE(0x0A00), LOBYTE(0x0A00), 25905);
+}
+
 VERSIONHELPERAPI IsWindowsServer(void) {
     OSVERSIONINFOEXW vi = {sizeof(vi),0,0,0,0,{0},0,0,0,VER_NT_WORKSTATION};
     return !VerifyVersionInfoW(&vi, VER_PRODUCT_TYPE, VerSetConditionMask(0, VER_PRODUCT_TYPE, VER_EQUAL));

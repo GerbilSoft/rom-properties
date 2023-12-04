@@ -139,6 +139,7 @@
     * Only if using build 21262 or later. (RTM is 22000)
     * On earlier versions, only arm64 will be registered, since ARM64EC
       was added at the same time as amd64 emulation.
+    * Also, support for 32-bit ARM applications was dropped in build 25905.
     * Fixes #398: Installing on ARM64 shows an error that the AMD64 version of the DLL couldn't be registered
       * Reported by @kristibektashi.
 

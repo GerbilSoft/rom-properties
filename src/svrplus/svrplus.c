@@ -1138,7 +1138,11 @@ static int check_system_architectures(void)
 				g_archs[g_arch_count++] = CPU_ia64;
 				break;
 			case CPU_arm:
-				g_archs[g_arch_count++] = CPU_arm;
+				// NOTE: Support for 32-bit ARM applications was dropped as of Windows 11 build 25905.
+				// https://blogs.windows.com/windows-insider/2023/07/12/announcing-windows-11-insider-preview-build-25905/
+				if (!IsWindows11Build25905OrGreater()) {
+					g_archs[g_arch_count++] = CPU_arm;
+				}
 				break;
 			case CPU_arm64:
 				// Windows 10 on ARM only supports i386 emulation.
