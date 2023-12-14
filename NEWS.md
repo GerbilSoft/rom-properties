@@ -118,6 +118,8 @@
   * Fix a crash when decoding PNGs or other zlib-encoded data on Windows XP.
     * Affects: v2.2 - v2.2.1
   * NASOSReader: Fix detection of dual-layer Wii NASOS images.
+  * GameCubeSave: Allow files with no icon or comment. (address == 0xFFFFFFFF)
+    * Reported by RedBees.
 
 * Other changes:
   * Nintendo3DS: The "Options" menu no longer shows a grayed-out "Extract SRL"

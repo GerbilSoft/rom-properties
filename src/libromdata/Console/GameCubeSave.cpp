@@ -102,6 +102,12 @@ public:
 	 * @return Banner, or nullptr on error.
 	 */
 	rp_image_const_ptr loadBanner(void);
+
+	/**
+	 * Get the comment from the save file.
+	 * @return Comment, or empty string on error.
+	 */
+	string getComment(void);
 };
 
 ROMDATA_IMPL(GameCubeSave)
@@ -252,8 +258,10 @@ bool GameCubeSavePrivate::isCardDirEntry(const uint8_t *buffer, uint32_t data_si
 			break;
 	}
 
-	// Comment and icon addresses should both be less than the file size,
+	// Icon and comment addresses should both be less than the file size,
 	// minus 64 bytes for the GCI header.
+	// NOTE: 0xFFFFFFFF indicates "no icon" or "no comment".
+	// Used by some SDK tools.
 #define PDP_SWAP(dest, src) \
 	do { \
 		union { uint16_t w[2]; uint32_t d; } tmp; \
@@ -270,7 +278,9 @@ bool GameCubeSavePrivate::isCardDirEntry(const uint8_t *buffer, uint32_t data_si
 		PDP_SWAP(iconaddr, direntry->iconaddr);
 		PDP_SWAP(commentaddr, direntry->commentaddr);
 	}
-	if (iconaddr >= data_size || commentaddr >= data_size) {
+	if ((iconaddr >= data_size && iconaddr != 0xFFFFFFFFU) ||
+	    (commentaddr >= data_size && commentaddr != 0xFFFFFFFFU))
+	{
 		// Comment and/or icon are out of bounds.
 		return false;
 	}
@@ -300,6 +310,10 @@ rp_image_const_ptr GameCubeSavePrivate::loadIcon(void)
 	// Calculate the icon start address.
 	// The icon is located directly after the banner.
 	uint32_t iconaddr = direntry.iconaddr;
+	if (unlikely(iconaddr == 0xFFFFFFFFU)) {
+		// No icon.
+		return nullptr;
+	}
 	switch (direntry.bannerfmt & CARD_BANNER_MASK) {
 		case CARD_BANNER_CI:
 			// CI8 banner.
@@ -525,6 +539,66 @@ rp_image_const_ptr GameCubeSavePrivate::loadBanner(void)
 	return img_banner;
 }
 
+/**
+ * Get the comment from the save file.
+ * @return Comment, or empty string on error.
+ */
+string GameCubeSavePrivate::getComment(void)
+{
+	if (unlikely(direntry.commentaddr == 0xFFFFFFFFU)) {
+		// No comment.
+		return {};
+	}
+
+	union {
+		struct {
+			char desc[32];
+			char file[32];
+		};
+		char full[64];
+	} comment;
+	size_t size = file->seekAndRead(dataOffset + direntry.commentaddr,
+					&comment, sizeof(comment));
+	if (size != sizeof(comment)) {
+		// Failed to read the comment.
+		return {};
+	}
+
+	// Get the comment.
+	// NOTE: Some games have garbage after the first NULL byte
+	// in the two description fields, which prevents the rest
+	// of the field from being displayed.
+
+	// Check for a NULL byte in the game description.
+	size_t desc_len = sizeof(comment.desc);
+	const char *null_pos = static_cast<const char*>(memchr(comment.desc, 0, desc_len));
+	if (null_pos) {
+		// Found a NULL byte.
+		desc_len = null_pos - comment.desc;
+	}
+	string desc = cp1252_sjis_to_utf8(comment.desc, static_cast<int>(desc_len));
+	// NOTE: Some games (e.g. TMNT Mutant Melee [GE5EA4]) end the field with CR.
+	if (!desc.empty() && desc[desc.size()-1] == '\r') {
+		desc.resize(desc.size()-1);
+	}
+	desc += '\n';
+
+	// Check for a NULL byte in the file description.
+	desc_len = sizeof(comment.file);
+	null_pos = static_cast<const char*>(memchr(comment.file, 0, desc_len));
+	if (null_pos) {
+		// Found a NULL byte.
+		desc_len = null_pos - comment.file;
+	}
+	desc += cp1252_sjis_to_utf8(comment.file, static_cast<int>(desc_len));
+	// NOTE: Some games (e.g. TMNT Mutant Melee [GE5EA4]) end the field with CR.
+	if (!desc.empty() && desc[desc.size()-1] == '\r') {
+		desc.resize(desc.size()-1);
+	}
+
+	return desc;
+}
+
 /** GameCubeSave **/
 
 /**
@@ -532,13 +606,13 @@ rp_image_const_ptr GameCubeSavePrivate::loadBanner(void)
  *
  * A save file must be opened by the caller. The file handle
  * will be ref()'d and must be kept open in order to load
- * data from the disc image.
+ * data from the save file.
  *
  * To close the file, either delete this object or call close().
  *
  * NOTE: Check isValid() to determine if this is a valid ROM.
  *
- * @param file Open disc image.
+ * @param file Open save file.
  */
 GameCubeSave::GameCubeSave(const IRpFilePtr &file)
 	: super(new GameCubeSavePrivate(file))
@@ -562,7 +636,7 @@ GameCubeSave::GameCubeSave(const IRpFilePtr &file)
 		return;
 	}
 
-	// Check if this disc image is supported.
+	// Check if this save file is supported.
 	const DetectInfo info = {
 		{0, sizeof(header), header},
 		nullptr,	// ext (not needed for GameCubeSave)
@@ -820,7 +894,7 @@ int GameCubeSave::loadFieldData(void)
 	const card_direntry *const direntry = &d->direntry;
 	d->fields.reserve(8);	// Maximum of 8 fields.
 
-	// Game ID.
+	// Game ID
 	// Replace any non-printable characters with underscores.
 	// (NDDEMO has ID6 "00\0E01".)
 	char id6[7];
@@ -837,7 +911,7 @@ int GameCubeSave::loadFieldData(void)
 	d->fields.addField_string(C_("RomData", "Publisher"),
 		publisher ? publisher : C_("RomData", "Unknown"));
 
-	// Filename.
+	// Filename
 	// TODO: Remove trailing spaces.
 	// NOTE: Some games (e.g. TMNT Mutant Melee [GE5EA4]) end the field with CR.
 	string filename = cp1252_sjis_to_utf8(direntry->filename, sizeof(direntry->filename));
@@ -846,53 +920,13 @@ int GameCubeSave::loadFieldData(void)
 	}
 	d->fields.addField_string(C_("GameCubeSave", "Filename"), filename);
 
-	// Description.
-	union {
-		struct {
-			char desc[32];
-			char file[32];
-		};
-		char full[64];
-	} comment;
-	size_t size = d->file->seekAndRead(d->dataOffset + direntry->commentaddr,
-					   &comment, sizeof(comment));
-	if (size == sizeof(comment)) {
-		// Add the description.
-		// NOTE: Some games have garbage after the first NULL byte
-		// in the two description fields, which prevents the rest
-		// of the field from being displayed.
-
-		// Check for a NULL byte in the game description.
-		size_t desc_len = sizeof(comment.desc);
-		const char *null_pos = static_cast<const char*>(memchr(comment.desc, 0, desc_len));
-		if (null_pos) {
-			// Found a NULL byte.
-			desc_len = null_pos - comment.desc;
-		}
-		string desc = cp1252_sjis_to_utf8(comment.desc, static_cast<int>(desc_len));
-		// NOTE: Some games (e.g. TMNT Mutant Melee [GE5EA4]) end the field with CR.
-		if (!desc.empty() && desc[desc.size()-1] == '\r') {
-			desc.resize(desc.size()-1);
-		}
-		desc += '\n';
-
-		// Check for a NULL byte in the file description.
-		desc_len = sizeof(comment.file);
-		null_pos = static_cast<const char*>(memchr(comment.file, 0, desc_len));
-		if (null_pos) {
-			// Found a NULL byte.
-			desc_len = null_pos - comment.file;
-		}
-		desc += cp1252_sjis_to_utf8(comment.file, static_cast<int>(desc_len));
-		// NOTE: Some games (e.g. TMNT Mutant Melee [GE5EA4]) end the field with CR.
-		if (!desc.empty() && desc[desc.size()-1] == '\r') {
-			desc.resize(desc.size()-1);
-		}
-
-		d->fields.addField_string(C_("GameCubeSave", "Description"), desc);
+	// Description
+	string description = d->getComment();
+	if (likely(!description.empty())) {
+		d->fields.addField_string(C_("GameCubeSave", "Description"), description);
 	}
 
-	// Last Modified timestamp.
+	// Last Modified timestamp
 	d->fields.addField_dateTime(C_("GameCubeSave", "Last Modified"),
 		static_cast<time_t>(direntry->lastmodified) + GC_UNIX_TIME_DIFF,
 		RomFields::RFT_DATETIME_HAS_DATE |
@@ -900,7 +934,7 @@ int GameCubeSave::loadFieldData(void)
 		RomFields::RFT_DATETIME_IS_UTC	// GameCube doesn't support timezones.
 		);
 
-	// File mode.
+	// File mode
 	char file_mode[5];
 	file_mode[0] = ((direntry->permission & CARD_ATTRIB_GLOBAL) ? 'G' : '-');
 	file_mode[1] = ((direntry->permission & CARD_ATTRIB_NOMOVE) ? 'M' : '-');
@@ -909,9 +943,9 @@ int GameCubeSave::loadFieldData(void)
 	file_mode[4] = 0;
 	d->fields.addField_string(C_("GameCubeSave", "Mode"), file_mode, RomFields::STRF_MONOSPACE);
 
-	// Copy count.
+	// Copy count
 	d->fields.addField_string_numeric(C_("GameCubeSave", "Copy Count"), direntry->copytimes);
-	// Blocks.
+	// Blocks
 	d->fields.addField_string_numeric(C_("GameCubeSave", "Blocks"), direntry->length);
 
 	// Finished reading the field data.
@@ -933,7 +967,7 @@ int GameCubeSave::loadMetaData(void)
 		// File isn't open.
 		return -EBADF;
 	} else if (!d->isValid || (int)d->saveType < 0 || d->dataOffset < 0) {
-		// Unknown disc image type.
+		// Unknown save file type.
 		return -EIO;
 	}
 
@@ -950,47 +984,13 @@ int GameCubeSave::loadMetaData(void)
 		d->metaData->addMetaData_string(Property::Publisher, publisher);
 	}
 
-	// Description. (using this as the Title)
-	// TODO: Consolidate with loadFieldData()?
-	char desc_buf[64];
-	size_t size = d->file->seekAndRead(d->dataOffset + direntry->commentaddr,
-					   desc_buf, sizeof(desc_buf));
-	if (size == sizeof(desc_buf)) {
-		// Add the description.
-		// NOTE: Some games have garbage after the first NULL byte
-		// in the two description fields, which prevents the rest
-		// of the field from being displayed.
-
-		// Check for a NULL byte in the game description.
-		int desc_len = 32;
-		const char *null_pos = static_cast<const char*>(memchr(desc_buf, 0, 32));
-		if (null_pos) {
-			// Found a NULL byte.
-			desc_len = static_cast<int>(null_pos - desc_buf);
-		}
-		string desc = cp1252_sjis_to_utf8(desc_buf, desc_len);
-		// NOTE: Some games (e.g. TMNT Mutant Melee [GE5EA4]) end the field with CR.
-		if (!desc.empty() && desc[desc.size()-1] == '\r') {
-			desc.resize(desc.size()-1);
-		}
-		desc += '\n';
-
-		// Check for a NULL byte in the file description.
-		null_pos = static_cast<const char*>(memchr(&desc_buf[32], 0, 32));
-		if (null_pos) {
-			// Found a NULL byte.
-			desc_len = static_cast<int>(null_pos - desc_buf - 32);
-		}
-		desc += cp1252_sjis_to_utf8(&desc_buf[32], desc_len);
-		// NOTE: Some games (e.g. TMNT Mutant Melee [GE5EA4]) end the field with CR.
-		if (!desc.empty() && desc[desc.size()-1] == '\r') {
-			desc.resize(desc.size()-1);
-		}
-
-		d->metaData->addMetaData_string(Property::Title, desc);
+	// Description (using this as the Title)
+	string description = d->getComment();
+	if (likely(!description.empty())) {
+		d->metaData->addMetaData_string(Property::Title, description);
 	}
 
-	// Last Modified timestamp.
+	// Last Modified timestamp
 	// NOTE: Using "CreationDate".
 	// TODO: Adjust for local timezone, since it's UTC.
 	d->metaData->addMetaData_timestamp(Property::CreationDate,
