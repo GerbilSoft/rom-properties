@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2023-09-30 23:21-0400\n"
-"PO-Revision-Date: 2023-12-14 22:47\n"
+"PO-Revision-Date: 2023-12-15 00:01\n"
 "Last-Translator: \n"
 "Language-Team: French\n"
 "Language: fr_FR\n"
@@ -2346,27 +2346,27 @@ msgstr ""
 #: ../src/libromdata/Console/Dreamcast.cpp:733
 msgctxt "Dreamcast|ReqCtrl"
 msgid "C Button"
-msgstr ""
+msgstr "Bouton C"
 
 #: ../src/libromdata/Console/Dreamcast.cpp:734
 msgctxt "Dreamcast|ReqCtrl"
 msgid "D Button"
-msgstr ""
+msgstr "Bouton D"
 
 #: ../src/libromdata/Console/Dreamcast.cpp:735
 msgctxt "Dreamcast|ReqCtrl"
 msgid "X Button"
-msgstr ""
+msgstr "Bouton X"
 
 #: ../src/libromdata/Console/Dreamcast.cpp:736
 msgctxt "Dreamcast|ReqCtrl"
 msgid "Y Button"
-msgstr ""
+msgstr "Bouton Y"
 
 #: ../src/libromdata/Console/Dreamcast.cpp:737
 msgctxt "Dreamcast|ReqCtrl"
 msgid "Z Button"
-msgstr ""
+msgstr "Bouton Z"
 
 #: ../src/libromdata/Console/Dreamcast.cpp:738
 msgctxt "Dreamcast|ReqCtrl"
@@ -9958,7 +9958,7 @@ msgstr ""
 #: ../src/rpcli/rpcli.cpp:478
 msgctxt "rpcli"
 msgid "Examples:"
-msgstr ""
+msgstr "Exemples :"
 
 #: ../src/rpcli/rpcli.cpp:480
 msgctxt "rpcli"
@@ -10046,7 +10046,7 @@ msgstr ""
 #: ../src/rpcli/verifykeys.cpp:106
 msgctxt "rpcli|KeyVerifyStatus"
 msgid "OK"
-msgstr ""
+msgstr "OK"
 
 #: ../src/rpcli/verifykeys.cpp:114
 #, c-format
@@ -10062,7 +10062,7 @@ msgstr ""
 #: ../src/rp-stub/rp-stub.c:73
 msgctxt "rp-stub"
 msgid "Copyright (c) 2016-2023 by David Korth."
-msgstr ""
+msgstr "Copyright © 2016-2023 par David Korth."
 
 #: ../src/rp-stub/rp-stub.c:75
 #, c-format
@@ -10116,7 +10116,7 @@ msgstr ""
 #: ../src/rp-stub/rp-stub.c:111
 msgctxt "rp-stub|Help"
 msgid "Other options:"
-msgstr ""
+msgstr "Autres options :"
 
 #: ../src/rp-stub/rp-stub.c:113
 msgctxt "rp-stub|Help"
