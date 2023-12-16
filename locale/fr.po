@@ -47,7 +47,7 @@ msgstr ""
 #: ../src/win32/config/AchievementsTab.cpp:442
 msgctxt "AchievementsTab"
 msgid "Achievement"
-msgstr "Succès"
+msgstr "Réalisation"
 
 #: ../build/src/kde/kf5/ui_AchievementsTab.h:53
 #: ../src/gtk/config/AchievementsTab.cpp:211
@@ -115,7 +115,7 @@ msgstr ""
 #: ../src/gtk/config/ConfigDialog.cpp:243
 msgctxt "ConfigDialog"
 msgid "&Achievements"
-msgstr "&Succès"
+msgstr "&Réalisations"
 
 #: ../build/src/kde/kf5/ui_ConfigDialog.h:96
 #: ../src/gtk/config/ConfigDialog.cpp:247
@@ -453,7 +453,7 @@ msgstr ""
 #, c-format
 msgctxt "AboutTab|Libraries"
 msgid "License: %s"
-msgstr ""
+msgstr "Licence : %s"
 
 #. tr: Licenses: (libraries with multiple licenses)
 #: ../src/gtk/config/AboutTab.cpp:569 ../src/kde/config/AboutTab.cpp:287
@@ -461,7 +461,7 @@ msgstr ""
 #, c-format
 msgctxt "AboutTab|Libraries"
 msgid "Licenses: %s"
-msgstr ""
+msgstr "Licences : %s"
 
 #: ../src/gtk/config/AboutTab.cpp:677 ../src/kde/config/AboutTab.cpp:420
 #: ../src/win32/config/AboutTab.cpp:1037
@@ -493,7 +493,7 @@ msgstr ""
 #, c-format
 msgctxt "ConfigDialog"
 msgid "<b>ERROR:</b> %s"
-msgstr ""
+msgstr "<b>ERREUR :</b> %s"
 
 #: ../src/gtk/config/AboutTab.cpp:873 ../src/kde/config/AboutTab.cpp:690
 #: ../src/win32/config/AboutTab.cpp:580
@@ -1280,7 +1280,7 @@ msgstr ""
 #: ../src/libromdata/Audio/BCSTM.cpp:474
 msgctxt "BCSTM"
 msgid "Codec"
-msgstr ""
+msgstr "Codec"
 
 #: ../src/libromdata/Audio/BCSTM.cpp:480 ../src/libromdata/Audio/BRSTM.cpp:343
 #: ../src/libromdata/Console/Atari7800.cpp:250
@@ -1339,7 +1339,7 @@ msgstr ""
 #: ../src/libromdata/Audio/BRSTM.cpp:337
 msgctxt "BRSTM"
 msgid "Codec"
-msgstr ""
+msgstr "Codec"
 
 #: ../src/libromdata/Audio/BRSTM.cpp:364
 msgctxt "BRSTM"
@@ -1511,7 +1511,7 @@ msgstr ""
 #: ../src/libromdata/Audio/PSF.cpp:552 ../src/libromdata/Audio/SPC.cpp:788
 msgctxt "RomData|Audio"
 msgid "Artist"
-msgstr ""
+msgstr "Artiste"
 
 #: ../src/libromdata/Audio/PSF.cpp:558
 msgctxt "PSF"
@@ -1528,7 +1528,7 @@ msgstr ""
 #: ../src/libromdata/Audio/PSF.cpp:571
 msgctxt "RomData|Audio"
 msgid "Genre"
-msgstr ""
+msgstr "Genre"
 
 #: ../src/libromdata/Audio/PSF.cpp:583
 msgctxt "PSF"
@@ -1538,7 +1538,7 @@ msgstr ""
 #: ../src/libromdata/Audio/PSF.cpp:598
 msgctxt "PSF"
 msgid "Volume"
-msgstr ""
+msgstr "Volume"
 
 #: ../src/libromdata/Audio/PSF.cpp:612 ../src/libromdata/Audio/SAP.cpp:689
 #: ../src/libromdata/Audio/SNDH.cpp:915 ../src/libromdata/Audio/SNDH.cpp:919
@@ -1586,7 +1586,7 @@ msgstr ""
 #: ../src/libromdata/Audio/SAP.cpp:600
 msgctxt "SAP|Flags"
 msgid "Stereo"
-msgstr ""
+msgstr "Stéréo"
 
 #: ../src/libromdata/Audio/SAP.cpp:608
 msgctxt "SAP"
@@ -1626,7 +1626,7 @@ msgstr ""
 #: ../src/libromdata/Audio/SAP.cpp:688
 msgctxt "SAP|SongList"
 msgid "#"
-msgstr ""
+msgstr "#"
 
 #: ../src/libromdata/Audio/SAP.cpp:690
 msgctxt "SAP|SongList"
@@ -1868,7 +1868,7 @@ msgstr ""
 #: ../src/libromdata/Audio/VGM.cpp:498
 msgctxt "VGM|PSGFlags"
 msgid "Stereo"
-msgstr ""
+msgstr "Stéréo"
 
 #: ../src/libromdata/Audio/VGM.cpp:499
 msgctxt "VGM|PSGFlags"
@@ -2166,7 +2166,7 @@ msgstr ""
 #: ../src/libromdata/Console/Xbox360_XDBF.cpp:918
 msgctxt "RomData"
 msgid "Type"
-msgstr ""
+msgstr "Type"
 
 #: ../src/libromdata/Console/Dreamcast.cpp:591
 msgctxt "Dreamcast"
@@ -2362,27 +2362,27 @@ msgstr ""
 #: ../src/libromdata/Console/Dreamcast.cpp:733
 msgctxt "Dreamcast|ReqCtrl"
 msgid "C Button"
-msgstr ""
+msgstr "Bouton C"
 
 #: ../src/libromdata/Console/Dreamcast.cpp:734
 msgctxt "Dreamcast|ReqCtrl"
 msgid "D Button"
-msgstr ""
+msgstr "Bouton D"
 
 #: ../src/libromdata/Console/Dreamcast.cpp:735
 msgctxt "Dreamcast|ReqCtrl"
 msgid "X Button"
-msgstr ""
+msgstr "Bouton X"
 
 #: ../src/libromdata/Console/Dreamcast.cpp:736
 msgctxt "Dreamcast|ReqCtrl"
 msgid "Y Button"
-msgstr ""
+msgstr "Bouton Y"
 
 #: ../src/libromdata/Console/Dreamcast.cpp:737
 msgctxt "Dreamcast|ReqCtrl"
 msgid "Z Button"
-msgstr ""
+msgstr "Bouton Z"
 
 #: ../src/libromdata/Console/Dreamcast.cpp:738
 msgctxt "Dreamcast|ReqCtrl"
@@ -2661,7 +2661,7 @@ msgstr ""
 #, c-format
 msgctxt "Wii"
 msgid "%1$s (%2$s)"
-msgstr ""
+msgstr "%1$s (%2$s)"
 
 #: ../src/libromdata/Console/GameCube.cpp:1554
 #: ../src/libromdata/Console/SNES.cpp:1466
@@ -3129,7 +3129,7 @@ msgstr ""
 #: ../src/libromdata/Console/MegaDrive.cpp:507
 msgctxt "MegaDrive|SRAM"
 msgid "(16-bit)"
-msgstr ""
+msgstr "(16-bit)"
 
 #: ../src/libromdata/Console/MegaDrive.cpp:516
 msgctxt "MegaDrive"
@@ -4037,7 +4037,7 @@ msgstr ""
 #: ../src/libromdata/Console/SNES.cpp:1438
 msgctxt "SNES"
 msgid "Date"
-msgstr ""
+msgstr "Date"
 
 #: ../src/libromdata/Console/SNES.cpp:1451
 msgctxt "SNES|ProgramType"
@@ -5255,7 +5255,7 @@ msgstr "RAM"
 #: ../src/libromdata/Handheld/DMG.cpp:1262
 msgctxt "DMG|Features"
 msgid "Battery"
-msgstr ""
+msgstr "Pile"
 
 #: ../src/libromdata/Handheld/DMG.cpp:662
 #: ../src/libromdata/Handheld/DMG.cpp:1264
@@ -6018,7 +6018,7 @@ msgstr ""
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1227
 msgctxt "NintendoDS|DSi_Permissions"
 msgid "SD Card"
-msgstr ""
+msgstr "Carte SD"
 
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1228
 msgctxt "NintendoDS|DSi_Permissions"
@@ -6840,7 +6840,7 @@ msgstr ""
 #: ../src/libromdata/Other/EXE.cpp:198
 msgctxt "EXE|FileType"
 msgid "DLL"
-msgstr ""
+msgstr "DLL"
 
 #. tr: VFT_DRV
 #: ../src/libromdata/Other/EXE.cpp:200
@@ -7317,7 +7317,7 @@ msgstr ""
 #: ../src/libromdata/Other/EXE_NE.cpp:384
 msgctxt "EXE|ApplFlags"
 msgid "DLL"
-msgstr ""
+msgstr "DLL"
 
 #: ../src/libromdata/Other/EXE_NE.cpp:388
 msgctxt "EXE"
@@ -7499,7 +7499,7 @@ msgstr ""
 #: ../src/libromdata/Other/EXE_PE.cpp:685
 msgctxt "EXE|PEFlags"
 msgid "DLL"
-msgstr ""
+msgstr "DLL"
 
 #: ../src/libromdata/Other/EXE_PE.cpp:690
 msgctxt "EXE"
@@ -7834,21 +7834,21 @@ msgstr ""
 #, c-format
 msgctxt "NintendoBadge"
 msgid "%1$s (New3DS) (%2$s)"
-msgstr ""
+msgstr "%1$s (New3DS) (%2$s)"
 
 #. tr: Title name
 #: ../src/libromdata/Other/NintendoBadge.cpp:743
 #, c-format
 msgctxt "NintendoBadge"
 msgid "%s (New3DS)"
-msgstr ""
+msgstr "%s (New3DS)"
 
 #. tr: %1$s == Title name, %2$s == Region
 #: ../src/libromdata/Other/NintendoBadge.cpp:748
 #, c-format
 msgctxt "NintendoBadge"
 msgid "%1$s (%2$s)"
-msgstr ""
+msgstr "%1$s (%2$s)"
 
 #: ../src/libromdata/Other/NintendoBadge.cpp:753
 msgctxt "NintendoBadge"
@@ -8118,7 +8118,7 @@ msgstr ""
 #: ../src/librpbase/Achievements.cpp:236
 msgctxt "Achievements"
 msgid "Link, mah boi..."
-msgstr ""
+msgstr "Link, mon petit..."
 
 #: ../src/librpbase/Achievements.cpp:237
 msgctxt "Achievements"
@@ -8135,7 +8135,7 @@ msgstr ""
 #: ../src/librpbase/crypto/KeyManager.cpp:235
 msgctxt "KeyManager|VerifyResult"
 msgid "Invalid parameters. (THIS IS A BUG!)"
-msgstr ""
+msgstr "Paramètres invalides. (CECI EST UN BUG !)"
 
 #. tr: VerifyResult::NoSupport
 #: ../src/librpbase/crypto/KeyManager.cpp:237
@@ -8350,7 +8350,7 @@ msgstr ""
 #: ../src/librpbase/RomData.cpp:622
 msgctxt "RomData|FileType"
 msgid "Partition"
-msgstr ""
+msgstr "Partition"
 
 #. tr: FileType::MetadataFile
 #: ../src/librpbase/RomData.cpp:624
@@ -9094,37 +9094,37 @@ msgstr ""
 #: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1418
 msgctxt "DirectDrawSurface|dwCaps2"
 msgid "+X"
-msgstr ""
+msgstr "+X"
 
 #: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1419
 msgctxt "DirectDrawSurface|dwCaps2"
 msgid "-X"
-msgstr ""
+msgstr "-X"
 
 #: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1421
 msgctxt "DirectDrawSurface|dwCaps2"
 msgid "+Y"
-msgstr ""
+msgstr "+Y"
 
 #: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1422
 msgctxt "DirectDrawSurface|dwCaps2"
 msgid "-Y"
-msgstr ""
+msgstr "-Y"
 
 #: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1423
 msgctxt "DirectDrawSurface|dwCaps2"
 msgid "+Z"
-msgstr ""
+msgstr "+Z"
 
 #: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1424
 msgctxt "DirectDrawSurface|dwCaps2"
 msgid "-Z"
-msgstr ""
+msgstr "-Z"
 
 #: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1429
 msgctxt "DirectDrawSurface|dwCaps2"
 msgid "Volume"
-msgstr ""
+msgstr "Volume"
 
 #: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1433
 msgctxt "DirectDrawSurface"
@@ -9383,7 +9383,7 @@ msgstr ""
 #: ../src/librptexture/fileformat/PowerVR3.cpp:1042
 msgctxt "PowerVR3|ColorSpace"
 msgid "sRGB"
-msgstr ""
+msgstr "sRGB"
 
 #: ../src/librptexture/fileformat/PowerVR3.cpp:1046
 #: ../src/librptexture/fileformat/PowerVR3.cpp:1050
@@ -9989,7 +9989,7 @@ msgstr ""
 #: ../src/rpcli/rpcli.cpp:478
 msgctxt "rpcli"
 msgid "Examples:"
-msgstr ""
+msgstr "Exemples :"
 
 #: ../src/rpcli/rpcli.cpp:480
 msgctxt "rpcli"
@@ -10077,7 +10077,7 @@ msgstr ""
 #: ../src/rpcli/verifykeys.cpp:106
 msgctxt "rpcli|KeyVerifyStatus"
 msgid "OK"
-msgstr ""
+msgstr "OK"
 
 #: ../src/rpcli/verifykeys.cpp:114
 #, c-format
@@ -10093,7 +10093,7 @@ msgstr ""
 #: ../src/rp-stub/rp-stub.c:73
 msgctxt "rp-stub"
 msgid "Copyright (c) 2016-2023 by David Korth."
-msgstr ""
+msgstr "Copyright (c) 2016-2023 par David Korth."
 
 #: ../src/rp-stub/rp-stub.c:75
 #, c-format
@@ -10150,7 +10150,7 @@ msgstr ""
 #: ../src/rp-stub/rp-stub.c:111
 msgctxt "rp-stub|Help"
 msgid "Other options:"
-msgstr ""
+msgstr "Autres options :"
 
 #: ../src/rp-stub/rp-stub.c:113
 msgctxt "rp-stub|Help"
