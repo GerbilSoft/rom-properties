@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties 2.2+\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2023-12-16 13:47-0500\n"
+"POT-Creation-Date: 2023-12-16 13:50-0500\n"
 "PO-Revision-Date: 2023-07-14 18:16\n"
 "Last-Translator: \n"
 "Language-Team: French\n"
@@ -9389,11 +9389,6 @@ msgstr ""
 msgctxt "PowerVR3|ColorSpace"
 msgid "Linear RGB"
 msgstr ""
-
-#: ../src/librptexture/fileformat/PowerVR3.cpp:1042
-msgctxt "PowerVR3|ColorSpace"
-msgid "sRGB"
-msgstr "sRGB"
 
 #: ../src/librptexture/fileformat/PowerVR3.cpp:1046
 #: ../src/librptexture/fileformat/PowerVR3.cpp:1050

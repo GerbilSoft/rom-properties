@@ -1039,7 +1039,7 @@ int PowerVR3::getFields(RomFields *fields) const
 	// Color space.
 	static const char *const pvr3_colorspace_tbl[] = {
 		NOP_C_("PowerVR3|ColorSpace", "Linear RGB"),
-		NOP_C_("PowerVR3|ColorSpace", "sRGB"),
+		"sRGB",	// Not translatable
 	};
 	static_assert(ARRAY_SIZE(pvr3_colorspace_tbl) == PVR3_COLOR_SPACE_MAX, "pvr3_colorspace_tbl[] needs to be updated!");
 	if (pvr3Header->color_space < ARRAY_SIZE(pvr3_colorspace_tbl)) {

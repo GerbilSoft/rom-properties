@@ -1408,7 +1408,7 @@ int DirectDrawSurface::getFields(RomFields *fields) const
 	// ddspf.dwFlags (high bits; nVidia-specific)
 	const uint32_t pf_flags_high = (ddsHeader->ddspf.dwFlags >> 30);
 	static const char *const ddspf_dwFlags_names[] = {
-		"sRGB",
+		"sRGB",	// Not translatable
 		NOP_C_("DirectDrawSurface|ddspf", "Normal Map"),
 	};
 	vector<string> *const v_ddspf_dwFlags_names = RomFields::strArrayToVector_i18n(
