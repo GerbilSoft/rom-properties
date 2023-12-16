@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2023-09-30 23:21-0400\n"
-"PO-Revision-Date: 2023-12-15 00:01\n"
+"PO-Revision-Date: 2023-12-16 18:33\n"
 "Last-Translator: \n"
 "Language-Team: French\n"
 "Language: fr_FR\n"
@@ -47,7 +47,7 @@ msgstr ""
 #: ../src/win32/config/AchievementsTab.cpp:442
 msgctxt "AchievementsTab"
 msgid "Achievement"
-msgstr "Succès"
+msgstr "Réalisation"
 
 #: ../build/src/kde/kf5/ui_AchievementsTab.h:53
 #: ../src/gtk/config/AchievementsTab.cpp:211
@@ -117,7 +117,7 @@ msgstr ""
 #: ../src/gtk/config/ConfigDialog.cpp:243
 msgctxt "ConfigDialog"
 msgid "&Achievements"
-msgstr "&Succès"
+msgstr "&Réalisations"
 
 #: ../build/src/kde/kf5/ui_ConfigDialog.h:96
 #: ../src/gtk/config/ConfigDialog.cpp:247
