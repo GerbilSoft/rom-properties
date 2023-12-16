@@ -47,7 +47,7 @@ msgstr ""
 #: ../src/win32/config/AchievementsTab.cpp:556
 msgctxt "AchievementsTab"
 msgid "Achievement"
-msgstr "Réalisation"
+msgstr "Succès"
 
 #: ../build/src/kde/kf5/ui_AchievementsTab.h:53
 #: ../src/gtk/config/AchievementsTab.cpp:211
@@ -115,7 +115,7 @@ msgstr ""
 #: ../src/gtk/config/ConfigDialog.cpp:243
 msgctxt "ConfigDialog"
 msgid "&Achievements"
-msgstr "&Réalisations"
+msgstr "&Succès"
 
 #: ../build/src/kde/kf5/ui_ConfigDialog.h:96
 #: ../src/gtk/config/ConfigDialog.cpp:247
@@ -4396,7 +4396,7 @@ msgstr ""
 #: ../src/libromdata/Console/Xbox360_XDBF.cpp:1539
 msgctxt "Xbox360_XDBF"
 msgid "Achievements"
-msgstr ""
+msgstr "Succès"
 
 #: ../src/libromdata/Console/Xbox360_XDBF.cpp:1221
 msgctxt "Xbox360_XDBF|AvatarAwards"
