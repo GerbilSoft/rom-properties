@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: rom-properties 2.2+\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2023-12-16 13:50-0500\n"
-"PO-Revision-Date: 2023-07-14 18:16\n"
+"PO-Revision-Date: 2023-12-16 19:42\n"
 "Last-Translator: \n"
 "Language-Team: French\n"
 "Language: fr\n"
@@ -870,7 +870,7 @@ msgstr ""
 #: ../src/gtk/config/OptionsTab.cpp:123
 msgctxt "OptionsTab"
 msgid "Downloads"
-msgstr ""
+msgstr "Téléchargements"
 
 #. tr: Tab title.
 #: ../src/gtk/config/OptionsTab.cpp:245 ../src/win32/config/OptionsTab.cpp:663
@@ -979,7 +979,7 @@ msgstr ""
 #, c-format
 msgctxt "RomDataView"
 msgid "%1$s | %2$s"
-msgstr ""
+msgstr "%1$s | %2$s"
 
 #: ../src/gtk/gtk4/NautilusPropertiesModel.cpp:224
 msgctxt "RomDataView"
@@ -2149,12 +2149,12 @@ msgstr ""
 #: ../src/libromdata/Console/Atari7800.cpp:233
 msgctxt "Atari7800|ControllerType"
 msgid "Mouse (Atari ST)"
-msgstr ""
+msgstr "Souris (Atari ST)"
 
 #: ../src/libromdata/Console/Atari7800.cpp:234
 msgctxt "Atari7800|ControllerType"
 msgid "Mouse (Amiga)"
-msgstr ""
+msgstr "Souris (Amiga)"
 
 #: ../src/libromdata/Console/Atari7800.cpp:241
 #, c-format
@@ -2438,7 +2438,7 @@ msgstr ""
 #: ../src/libromdata/Console/Dreamcast.cpp:756
 msgctxt "Dreamcast|OptCtrl"
 msgid "Mouse"
-msgstr ""
+msgstr "Souris"
 
 #. tr: Optional controller features.
 #: ../src/libromdata/Console/Dreamcast.cpp:761
@@ -2776,7 +2776,7 @@ msgstr ""
 #: ../src/libromdata/Console/WiiWAD.cpp:1052
 msgctxt "Wii|EncKey"
 msgid "vWii"
-msgstr ""
+msgstr "vWii"
 
 #. tr: WiiPartition::EncKey::RVT_Debug - Debug encryption key.
 #: ../src/libromdata/Console/GameCube.cpp:1754
@@ -2852,7 +2852,7 @@ msgstr ""
 #: ../src/libromdata/Handheld/Nintendo3DS_SMDH.cpp:532
 msgctxt "Region"
 msgid "Taiwan"
-msgstr ""
+msgstr "Taïwan"
 
 #: ../src/libromdata/Console/GameCubeRegions.cpp:68
 #: ../src/libromdata/Console/GameCubeRegions.cpp:128
@@ -2862,7 +2862,7 @@ msgstr ""
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1174
 msgctxt "Region"
 msgid "South Korea"
-msgstr ""
+msgstr "Corée du Sud"
 
 #: ../src/libromdata/Console/GameCubeRegions.cpp:70
 #: ../src/libromdata/Console/GameCubeRegions.cpp:136
@@ -2873,18 +2873,18 @@ msgstr ""
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1173
 msgctxt "Region"
 msgid "China"
-msgstr ""
+msgstr "Chine"
 
 #: ../src/libromdata/Console/GameCubeRegions.cpp:88
 msgctxt "Region"
 msgid "Europe / Australia"
-msgstr ""
+msgstr "Europe / Australie"
 
 #: ../src/libromdata/Console/GameCubeRegions.cpp:91
 #: ../src/libromdata/Console/SNES.cpp:1368
 msgctxt "Region"
 msgid "Germany"
-msgstr ""
+msgstr "Allemagne"
 
 #: ../src/libromdata/Console/GameCubeRegions.cpp:93
 #: ../src/libromdata/Console/SNES.cpp:1365
@@ -2896,24 +2896,24 @@ msgstr "France"
 #: ../src/libromdata/Console/SNES.cpp:1366
 msgctxt "Region"
 msgid "Netherlands"
-msgstr ""
+msgstr "Pays-Bas"
 
 #: ../src/libromdata/Console/GameCubeRegions.cpp:97
 #: ../src/libromdata/Console/SNES.cpp:1369
 msgctxt "Region"
 msgid "Italy"
-msgstr ""
+msgstr "Italie"
 
 #: ../src/libromdata/Console/GameCubeRegions.cpp:99
 msgctxt "Region"
 msgid "Russia"
-msgstr ""
+msgstr "Russie"
 
 #: ../src/libromdata/Console/GameCubeRegions.cpp:101
 #: ../src/libromdata/Console/SNES.cpp:1367
 msgctxt "Region"
 msgid "Spain"
-msgstr ""
+msgstr "Espagne"
 
 #: ../src/libromdata/Console/GameCubeRegions.cpp:103
 #: ../src/libromdata/Console/SNES.cpp:1376
@@ -2922,7 +2922,7 @@ msgstr ""
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1172
 msgctxt "Region"
 msgid "Australia"
-msgstr ""
+msgstr "Australie"
 
 #: ../src/libromdata/Console/GameCubeRegions.cpp:152
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1069
@@ -2948,7 +2948,7 @@ msgstr ""
 #: ../src/libromdata/Console/GameCubeSave.cpp:944
 msgctxt "GameCubeSave"
 msgid "Mode"
-msgstr ""
+msgstr "Mode"
 
 #: ../src/libromdata/Console/GameCubeSave.cpp:947
 msgctxt "GameCubeSave"
@@ -3565,7 +3565,7 @@ msgstr ""
 #: ../src/libromdata/Console/NES.cpp:1410
 msgctxt "NES|Expansion"
 msgid "SNES Mouse"
-msgstr ""
+msgstr "Souris SNES"
 
 #: ../src/libromdata/Console/NES.cpp:1411
 msgctxt "NES|Expansion"
@@ -3612,14 +3612,14 @@ msgstr ""
 #: ../src/libromdata/data/NESMappers.cpp:599
 msgctxt "NES|Mirroring"
 msgid "Horizontal"
-msgstr ""
+msgstr "Horizontal"
 
 #: ../src/libromdata/Console/NES.cpp:1442
 #: ../src/libromdata/Console/NES.cpp:1542
 #: ../src/libromdata/data/NESMappers.cpp:599
 msgctxt "NES|Mirroring"
 msgid "Vertical"
-msgstr ""
+msgstr "Vertical"
 
 #: ../src/libromdata/Console/NES.cpp:1454
 msgctxt "NES"
@@ -3781,12 +3781,12 @@ msgstr ""
 #: ../src/libromdata/Console/Xbox_XBE.cpp:796
 msgctxt "Region"
 msgid "North America"
-msgstr ""
+msgstr "Amérique du Nord"
 
 #: ../src/libromdata/Console/PlayStationEXE.cpp:294
 msgctxt "RomData"
 msgid "Region"
-msgstr ""
+msgstr "Région"
 
 #: ../src/libromdata/Console/PlayStationSave.cpp:493
 msgctxt "PlayStationSave"
@@ -3898,7 +3898,7 @@ msgstr ""
 #: ../src/libromdata/Console/SegaSaturn.cpp:501
 msgctxt "SegaSaturn"
 msgid "Saturn"
-msgstr ""
+msgstr "Saturn"
 
 #: ../src/libromdata/Console/SegaSaturn.cpp:514
 msgctxt "SegaSaturn"
@@ -3918,12 +3918,12 @@ msgstr ""
 #: ../src/libromdata/Console/SegaSaturn.cpp:562
 msgctxt "SegaSaturn|Peripherals"
 msgid "Mouse"
-msgstr ""
+msgstr "Souris"
 
 #: ../src/libromdata/Console/SegaSaturn.cpp:563
 msgctxt "SegaSaturn|Peripherals"
 msgid "Keyboard"
-msgstr ""
+msgstr "Clavier"
 
 #: ../src/libromdata/Console/SegaSaturn.cpp:564
 msgctxt "SegaSaturn|Peripherals"
@@ -4020,7 +4020,7 @@ msgstr "Canada"
 #: ../src/libromdata/Console/SNES.cpp:1375
 msgctxt "Region"
 msgid "Brazil"
-msgstr ""
+msgstr "Brésil"
 
 #: ../src/libromdata/Console/SNES.cpp:1377
 #: ../src/libromdata/Console/SNES.cpp:1378
@@ -4124,7 +4124,7 @@ msgstr ""
 #: ../src/libromdata/Console/WiiWAD.cpp:833
 msgctxt "WiiWAD"
 msgid "Unknown error. (THIS IS A BUG!)"
-msgstr ""
+msgstr "Erreur inconnue. (CECI EST UN BUG!)"
 
 #: ../src/libromdata/Console/WiiWAD.cpp:835
 msgctxt "WiiWAD"
@@ -4293,7 +4293,7 @@ msgstr ""
 #: ../src/libromdata/Console/Xbox360_STFS.cpp:929
 msgctxt "Xbox360_STFS|RomData"
 msgid "Type"
-msgstr ""
+msgstr "Type"
 
 #: ../src/libromdata/Console/Xbox360_STFS.cpp:937
 #: ../src/libromdata/Console/Xbox360_STFS.cpp:939
@@ -4317,12 +4317,12 @@ msgstr ""
 #, c-format
 msgctxt "Xbox360_XEX"
 msgid "%1$08X (%2$s-%3$04u)"
-msgstr ""
+msgstr "%1$08X (%2$s-%3$04u)"
 
 #: ../src/libromdata/Console/Xbox360_STFS.cpp:983
 msgctxt "Xbox360_XEX"
 msgid "Version"
-msgstr ""
+msgstr "Version"
 
 #: ../src/libromdata/Console/Xbox360_STFS.cpp:989
 msgctxt "Xbox360_XEX"
@@ -4390,13 +4390,13 @@ msgstr "Description"
 #: ../src/libromdata/Console/Xbox360_XDBF.cpp:1403
 msgctxt "Xbox360_XDBF|Achievements"
 msgid "Gamerscore"
-msgstr ""
+msgstr "Gamerscore"
 
 #: ../src/libromdata/Console/Xbox360_XDBF.cpp:1129
 #: ../src/libromdata/Console/Xbox360_XDBF.cpp:1539
 msgctxt "Xbox360_XDBF"
 msgid "Achievements"
-msgstr "Succès"
+msgstr "&Succès"
 
 #: ../src/libromdata/Console/Xbox360_XDBF.cpp:1221
 msgctxt "Xbox360_XDBF|AvatarAwards"
@@ -4535,7 +4535,7 @@ msgstr ""
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1723
 msgctxt "Xbox360_XEX"
 msgid "Network"
-msgstr ""
+msgstr "Réseau"
 
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1724
 msgctxt "Xbox360_XEX"
@@ -4585,7 +4585,7 @@ msgstr ""
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1782
 msgctxt "Region"
 msgid "New Zealand"
-msgstr ""
+msgstr "Nouvelle-Zélande"
 
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1817
 msgctxt "Xbox360_XEX"
@@ -4825,7 +4825,7 @@ msgstr "Windows"
 #: ../src/libromdata/data/EXEData.cpp:92
 msgctxt "EXE|Subsystem"
 msgid "Console"
-msgstr ""
+msgstr "Console"
 
 #. tr: IMAGE_SUBSYSTEM_OS2_CUI
 #: ../src/libromdata/data/EXEData.cpp:96
@@ -5134,7 +5134,7 @@ msgstr ""
 #: ../src/libromdata/data/Xbox360_STFS_ContentType.cpp:33
 msgctxt "Xbox360_STFS|ContentType"
 msgid "Profile"
-msgstr ""
+msgstr "Profil"
 
 #: ../src/libromdata/data/Xbox360_STFS_ContentType.cpp:34
 msgctxt "Xbox360_STFS|ContentType"
@@ -5174,12 +5174,12 @@ msgstr ""
 #: ../src/libromdata/data/Xbox360_STFS_ContentType.cpp:43
 msgctxt "Xbox360_STFS|ContentType"
 msgid "Video"
-msgstr ""
+msgstr "Vidéo"
 
 #: ../src/libromdata/data/Xbox360_STFS_ContentType.cpp:44
 msgctxt "Xbox360_STFS|ContentType"
 msgid "Game"
-msgstr ""
+msgstr "Jeu"
 
 #: ../src/libromdata/data/Xbox360_STFS_ContentType.cpp:45
 msgctxt "Xbox360_STFS|ContentType"
@@ -5204,7 +5204,7 @@ msgstr ""
 #: ../src/libromdata/data/Xbox360_STFS_ContentType.cpp:50
 msgctxt "Xbox360_STFS|ContentType"
 msgid "Movie"
-msgstr ""
+msgstr "Film"
 
 #: ../src/libromdata/data/Xbox360_STFS_ContentType.cpp:51
 msgctxt "Xbox360_STFS|ContentType"
@@ -5327,7 +5327,7 @@ msgstr ""
 #: ../src/libromdata/Handheld/DMG.cpp:720
 msgctxt "Region|DMG"
 msgid "Japanese"
-msgstr ""
+msgstr "Japonais"
 
 #: ../src/libromdata/Handheld/DMG.cpp:724
 msgctxt "Region|DMG"
@@ -5546,7 +5546,7 @@ msgstr ""
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:1832
 msgctxt "Nintendo3DS|CCI"
 msgid "Version"
-msgstr ""
+msgstr "Version"
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:1833
 msgctxt "Nintendo3DS|CCI"
@@ -5597,7 +5597,7 @@ msgstr ""
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:1911
 msgctxt "Nintendo3DS|CDev"
 msgid "Bluetooth"
-msgstr ""
+msgstr "Bluetooth"
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:1913
 msgctxt "Nintendo3DS"
@@ -5623,7 +5623,7 @@ msgstr ""
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2062
 msgctxt "Nintendo3DS"
 msgid "Version"
-msgstr ""
+msgstr "Version"
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2093
 msgctxt "Nintendo3DS"
@@ -5876,7 +5876,7 @@ msgstr ""
 #: ../src/libromdata/Handheld/NintendoDS.cpp:551
 msgctxt "NintendoDS|DSi_Flags"
 msgid "Nintendo WFC"
-msgstr ""
+msgstr "CWF Nintendo"
 
 #: ../src/libromdata/Handheld/NintendoDS.cpp:552
 msgctxt "NintendoDS|DSi_Flags"
@@ -6899,7 +6899,7 @@ msgstr ""
 #: ../src/libromdata/Other/EXE.cpp:242
 msgctxt "EXE|FileSubType"
 msgid "Mouse"
-msgstr ""
+msgstr "Souris"
 
 #. tr: VFT2_DRV_NETWORK
 #: ../src/libromdata/Other/EXE.cpp:244
@@ -7069,7 +7069,7 @@ msgstr ""
 #: ../src/libromdata/Other/EXE.cpp:977
 msgctxt "EXE"
 msgid "Type"
-msgstr ""
+msgstr "Type"
 
 #: ../src/libromdata/Other/EXE.cpp:982
 msgctxt "EXE"
@@ -7104,7 +7104,7 @@ msgstr ""
 #: ../src/libromdata/Other/EXE_manifest.cpp:242
 msgctxt "EXE|Manifest"
 msgid "Version"
-msgstr ""
+msgstr "Version"
 
 #: ../src/libromdata/Other/EXE_manifest.cpp:244
 msgctxt "EXE|Manifest"
@@ -7380,7 +7380,7 @@ msgstr ""
 #: ../src/libromdata/Other/EXE_PE.cpp:747
 msgctxt "EXE"
 msgid "Version"
-msgstr ""
+msgstr "Version"
 
 #: ../src/libromdata/Other/EXE_NE.cpp:646
 #: ../src/libromdata/Other/EXE_NE.cpp:822
@@ -8108,7 +8108,7 @@ msgstr ""
 #: ../src/librpbase/Achievements.cpp:230
 msgctxt "Achievements"
 msgid "Knuckles & Knuckles"
-msgstr ""
+msgstr "Knuckles & Knuckles"
 
 #: ../src/librpbase/Achievements.cpp:231
 msgctxt "Achievements"
@@ -8641,7 +8641,7 @@ msgstr ""
 #: ../src/librpfile/xattr/Ext2AttrData.c:62
 msgctxt "Ext2AttrView"
 msgid "project"
-msgstr ""
+msgstr "projet"
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:63
 msgctxt "Ext2AttrView"
@@ -9084,7 +9084,7 @@ msgstr ""
 #: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1429
 msgctxt "DirectDrawSurface|dwCaps"
 msgid "Texture"
-msgstr ""
+msgstr "Texture"
 
 #: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1435
 msgctxt "DirectDrawSurface|dwCaps"
@@ -9893,7 +9893,7 @@ msgstr ""
 #: ../src/rpcli/rpcli.cpp:299 ../src/rpcli/rpcli.cpp:312
 msgctxt "rpcli"
 msgid "0 (this is a bug!)"
-msgstr ""
+msgstr "0 (ceci est un bug !)"
 
 #: ../src/rpcli/rpcli.cpp:311
 #, c-format
@@ -10298,7 +10298,7 @@ msgstr "À propos"
 #: ../src/win32/config/AchievementsTab.cpp:667
 msgctxt "AchievementsTab"
 msgid "Achievements"
-msgstr ""
+msgstr "Succès"
 
 #. tr: Windows Vista and later. Has a centralized thumbnails cache.
 #: ../src/win32/config/CacheTab.cpp:178
