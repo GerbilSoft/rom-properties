@@ -4396,7 +4396,7 @@ msgstr "Gamerscore"
 #: ../src/libromdata/Console/Xbox360_XDBF.cpp:1539
 msgctxt "Xbox360_XDBF"
 msgid "Achievements"
-msgstr "&Succès"
+msgstr "Succès"
 
 #: ../src/libromdata/Console/Xbox360_XDBF.cpp:1221
 msgctxt "Xbox360_XDBF|AvatarAwards"
