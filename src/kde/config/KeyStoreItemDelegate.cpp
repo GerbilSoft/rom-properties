@@ -129,7 +129,11 @@ void KeyStoreItemDelegate::paint(QPainter *painter,
 
 	// Center-align the image within the rectangle.
 	// TODO: Use Qt::TextAlignmentRole?
-	const int x = ((optionv4.rect.width() - pxm.width()) / 2) + optionv4.rect.left();
-	const int y = ((optionv4.rect.height() - pxm.height()) / 2) + optionv4.rect.top();
-	painter->drawPixmap(x, y, pxm);
+	// FIXME: Verify High DPI on Qt6.
+	const qreal dpm = pxm.devicePixelRatio();
+	const QPointF pointF(
+		((((optionv4.rect.width() * dpm) - pxm.width()) / 2) + (optionv4.rect.left() * dpm)) / dpm,
+		((((optionv4.rect.height() * dpm) - pxm.height()) / 2) + (optionv4.rect.top() * dpm)) / dpm
+	);
+	painter->drawPixmap(pointF, pxm);
 }
