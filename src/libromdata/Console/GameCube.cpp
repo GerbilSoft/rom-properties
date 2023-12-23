@@ -1396,8 +1396,19 @@ int GameCube::loadFieldData(void)
 	// and the region code is stored in d->gcnRegion.
 	if (d->hasRegionCode) {
 		bool isDefault;
-		const char *const region =
-			GameCubeRegions::gcnRegionToString(d->gcnRegion, discHeader->id4[3], &isDefault);
+		const char *region;
+		if ((d->discType & GameCubePrivate::DISC_SYSTEM_MASK) != GameCubePrivate::DISC_SYSTEM_WII) {
+			// GameCube: Only 0 (JPN), 1 (USA), and 2 (EUR) are valid.
+			if (d->gcnRegion <= GCN_REGION_EUR) {
+				region = GameCubeRegions::gcnRegionToString(d->gcnRegion, discHeader->id4[3], &isDefault);
+			} else {
+				// Not valid.
+				region = nullptr;
+			}
+		} else {
+			// Wii: All region codes are valid.
+			region = GameCubeRegions::gcnRegionToString(d->gcnRegion, discHeader->id4[3], &isDefault);
+		}
 		const char *const region_code_title = C_("RomData", "Region Code");
 		if (region) {
 			// Append the GCN region name (USA/JPN/EUR/KOR) if

@@ -120,6 +120,9 @@
   * NASOSReader: Fix detection of dual-layer Wii NASOS images.
   * GameCubeSave: Allow files with no icon or comment. (address == 0xFFFFFFFF)
     * Reported by RedBees.
+  * GameCube: The "Region-Free" region code isn't valid for GCN; only Wii.
+    * Fixes #400: Wrong region listed on a GameCube ISO?
+      * Reported by @loser2023sgyt.
 
 * Other changes:
   * Nintendo3DS: The "Options" menu no longer shows a grayed-out "Extract SRL"
