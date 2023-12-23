@@ -121,6 +121,7 @@
   * GameCubeSave: Allow files with no icon or comment. (address == 0xFFFFFFFF)
     * Reported by RedBees.
   * GameCube: The "Region-Free" region code isn't valid for GCN; only Wii.
+    * ...unless certain debugging hardware is connected.
     * Fixes #400: Wrong region listed on a GameCube ISO?
       * Reported by @loser2023sgyt.
 
