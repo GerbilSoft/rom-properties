@@ -45,7 +45,7 @@ typedef struct _uint34_rshift2_t {
 	 * @return uint64_t
 	 */
 	uint64_t get_be(void) const {
-		return (static_cast<uint64_t>(val) << 2);
+		return (static_cast<uint64_t>(be32_to_cpu(val)) << 2);
 	}
 
 	/**
@@ -63,7 +63,7 @@ typedef struct _uint34_rshift2_t {
 	 * @return uint64_t
 	 */
 	off64_t geto_be(void) const {
-		return (static_cast<off64_t>(val) << 2);
+		return (static_cast<off64_t>(be32_to_cpu(val)) << 2);
 	}
 
 	/**
