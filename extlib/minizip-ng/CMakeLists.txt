@@ -8,7 +8,7 @@
 #cmake_minimum_required(VERSION 3.13)
 
 # Library version
-set(VERSION "4.0.2")
+set(VERSION "4.0.4")
 # API version
 set(SOVERSION "4")
 
@@ -64,7 +64,6 @@ option(MZ_BUILD_TESTS "Builds minizip test executable" OFF)
 option(MZ_BUILD_UNIT_TESTS "Builds minizip unit test project" OFF)
 option(MZ_BUILD_FUZZ_TESTS "Builds minizip fuzzer executables" OFF)
 option(MZ_CODE_COVERAGE "Builds with code coverage flags" OFF)
-
 # Multi-choice code sanitizer option
 set(MZ_SANITIZER AUTO CACHE STRING "Enable sanitizer support")
 set_property(CACHE MZ_SANITIZER PROPERTY STRINGS "Memory" "Address" "Undefined" "Thread")

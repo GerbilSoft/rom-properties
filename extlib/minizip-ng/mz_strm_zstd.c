@@ -50,7 +50,7 @@ typedef struct mz_stream_zstd_s {
     int64_t         max_total_in;
     int64_t         max_total_out;
     int8_t          initialized;
-    uint32_t        preset;
+    int32_t         preset;
 } mz_stream_zstd;
 
 /***************************************************************************/
@@ -107,7 +107,6 @@ int32_t mz_stream_zstd_read(void *stream, void *buf, int32_t size) {
     uint64_t total_in_after = 0;
     uint64_t total_out_before = 0;
     uint64_t total_out_after = 0;
-    int32_t total_in = 0;
     int32_t total_out = 0;
     int32_t in_bytes = 0;
     int32_t out_bytes = 0;
@@ -154,7 +153,6 @@ int32_t mz_stream_zstd_read(void *stream, void *buf, int32_t size) {
         in_bytes = (int32_t)(total_in_after - total_in_before);
         out_bytes = (int32_t)(total_out_after - total_out_before);
 
-        total_in += in_bytes;
         total_out += out_bytes;
 
         zstd->total_in += in_bytes;
@@ -312,8 +310,8 @@ int32_t mz_stream_zstd_set_prop_int64(void *stream, int32_t prop, int64_t value)
     mz_stream_zstd *zstd = (mz_stream_zstd *)stream;
     switch (prop) {
     case MZ_STREAM_PROP_COMPRESS_LEVEL:
-        if (value < 0)
-            zstd->preset = 0; // Use zstd default.
+        if (value == MZ_COMPRESS_LEVEL_DEFAULT)
+            zstd->preset = ZSTD_CLEVEL_DEFAULT;
         else
             zstd->preset = (int16_t)value;
         return MZ_OK;
@@ -329,6 +327,7 @@ void *mz_stream_zstd_create(void) {
     if (zstd) {
         zstd->stream.vtbl = &mz_stream_zstd_vtbl;
         zstd->max_total_out = -1;
+        zstd->preset = ZSTD_CLEVEL_DEFAULT;
     }
     return zstd;
 }

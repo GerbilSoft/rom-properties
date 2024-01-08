@@ -463,6 +463,12 @@ int zipOpenNewFileInZip5(zipFile file, const char *filename, const zip_fileinfo 
     if (!compat)
         return ZIP_PARAMERROR;
 
+    /* The filename and comment length must fit in 16 bits. */
+    if (filename && strlen(filename) > 0xffff)
+        return ZIP_PARAMERROR;
+    if (comment && strlen(comment) > 0xffff)
+        return ZIP_PARAMERROR;
+
     memset(&file_info, 0, sizeof(file_info));
 
     if (zipfi) {
@@ -474,8 +480,8 @@ int zipOpenNewFileInZip5(zipFile file, const char *filename, const zip_fileinfo 
             dos_date = mz_zip_tm_to_dosdate(&zipfi->tmz_date);
 
         file_info.modified_date = mz_zip_dosdate_to_time_t(dos_date);
-        file_info.external_fa = zipfi->external_fa;
-        file_info.internal_fa = zipfi->internal_fa;
+        file_info.external_fa = (uint32_t)zipfi->external_fa;
+        file_info.internal_fa = (uint16_t)zipfi->internal_fa;
     }
 
     if (!filename)
@@ -1093,9 +1099,53 @@ int unzGoToNextFile(unzFile file) {
     return err;
 }
 
-int unzLocateFile(unzFile file, const char *filename, unzFileNameComparer filename_compare_func) {
+#if !defined(MZ_COMPAT_VERSION) || MZ_COMPAT_VERSION < 110
+#ifdef WIN32
+#  define UNZ_DEFAULT_IGNORE_CASE 1
+#else
+#  define UNZ_DEFAULT_IGNORE_CASE 0
+#endif
+
+int unzLocateFile(unzFile file, const char *filename, unzFileNameCase filename_case) {
     mz_compat *compat = (mz_compat *)file;
     mz_zip_file *file_info = NULL;
+    uint64_t preserve_index = 0;
+    int32_t err = MZ_OK;
+    int32_t result = 0;
+    uint8_t ignore_case = UNZ_DEFAULT_IGNORE_CASE;
+
+    if (!compat)
+        return UNZ_PARAMERROR;
+
+    if (filename_case == 1) {
+        ignore_case = 0;
+    } else if (filename_case > 1) {
+        ignore_case = 1;
+    }
+
+    preserve_index = compat->entry_index;
+
+    err = mz_zip_goto_first_entry(compat->handle);
+    while (err == MZ_OK) {
+        err = mz_zip_entry_get_info(compat->handle, &file_info);
+        if (err != MZ_OK)
+            break;
+
+        result = mz_path_compare_wc(filename, file_info->filename, !ignore_case);
+
+        if (result == 0)
+            return MZ_OK;
+
+        err = mz_zip_goto_next_entry(compat->handle);
+    }
+
+    compat->entry_index = preserve_index;
+    return err;
+}
+#else
+int unzLocateFile(unzFile file, const char* filename, unzFileNameComparer filename_compare_func) {
+    mz_compat* compat = (mz_compat*)file;
+    mz_zip_file* file_info = NULL;
     uint64_t preserve_index = 0;
     int32_t err = MZ_OK;
     int32_t result = 0;
@@ -1113,7 +1163,8 @@ int unzLocateFile(unzFile file, const char *filename, unzFileNameComparer filena
 
         if ((intptr_t)filename_compare_func > 2) {
             result = filename_compare_func(file, filename, file_info->filename);
-        } else {
+        }
+        else {
             int32_t case_sensitive = (int32_t)(intptr_t)filename_compare_func;
             result = mz_path_compare_wc(filename, file_info->filename, !case_sensitive);
         }
@@ -1127,6 +1178,7 @@ int unzLocateFile(unzFile file, const char *filename, unzFileNameComparer filena
     compat->entry_index = preserve_index;
     return err;
 }
+#endif
 
 /***************************************************************************/
 
