@@ -1,7 +1,7 @@
 #include <windows.h>
 
-#define TINYXML2_VERSION_NUMERIC 9,0,0,0
-#define TINYXML2_VERSION_STRING "9.0.0"
+#define TINYXML2_VERSION_NUMERIC 10,0,0,0
+#define TINYXML2_VERSION_STRING "10.0.0"
 
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 VS_VERSION_INFO		VERSIONINFO
@@ -29,7 +29,7 @@ BEGIN
 #else
       VALUE "InternalName",	"tinyxml2.dll\0"
 #endif
-      VALUE "LegalCopyright",	"(C) 2000-2021 Lee Thomason\0"
+      VALUE "LegalCopyright",	"(C) 2000-2023 Lee Thomason\0"
 #ifdef _DEBUG
       VALUE "OriginalFilename",	"tinyxml2d.dll\0"
 #else

@@ -1,6 +1,6 @@
 # rom-properties: Disable CMake version requirement.
 #cmake_minimum_required(VERSION 3.15)
-project(tinyxml2 VERSION 9.0.0)
+project(tinyxml2 VERSION 10.0.0)
 
 IF(0) # rom-properties: Disable tests.
 include(CTest)
@@ -60,6 +60,7 @@ target_compile_definitions(
     INTERFACE $<$<BOOL:${BUILD_SHARED_LIBS}>:TINYXML2_IMPORT>
     # rom-properties: This is already set in the platform configuration.
     #PRIVATE $<$<CXX_COMPILER_ID:MSVC>:_CRT_SECURE_NO_WARNINGS>
+    #PUBLIC _FILE_OFFSET_BITS=64
 )
 
 set_target_properties(

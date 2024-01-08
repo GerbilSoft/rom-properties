@@ -1,9 +1,11 @@
-This copy of tinyxml2-9.0.0 is a modified version of the original.
+This copy of tinyxml2-10.0.0 is a modified version of the original.
 
-commit 1dee28e51f9175a31955b9791c74c430fe13dc82
-setting the version to 9.0.0
+commit 321ea883b7190d4e85cae5512a12e5eaa8f8731f
+Merge pull request #965 from leethomason/v10.0.0
 
-Tag: 9.0.0
+V10.0.0
+
+Tag: 10.0.0
 
 The following changes have been made to the original:
 
@@ -19,7 +21,5 @@ The following changes have been made to the original:
 
 - Fixed several -Wformat warnings.
 
-- tinyxml2.h: Disable -Wsuggest-override warnings.
-
-To obtain the original tinyxml2-9.0.0, visit:
+To obtain the original tinyxml2-10.0.0, visit:
 https://github.com/leethomason/tinyxml2
