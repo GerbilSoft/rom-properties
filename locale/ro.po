@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2023-12-16 13:50-0500\n"
-"PO-Revision-Date: 2023-12-16 19:42\n"
+"PO-Revision-Date: 2024-01-08 23:10\n"
 "Last-Translator: \n"
 "Language-Team: Romanian\n"
 "Language: ro_RO\n"
@@ -21,65 +21,67 @@ msgstr ""
 #: ../src/gtk/config/AboutTab.cpp:287
 msgctxt "AboutTab"
 msgid "C&redits"
-msgstr ""
+msgstr "C&redits"
 
 #: ../build/src/kde/kf5/ui_AboutTab.h:277
 #: ../src/gtk/config/AboutTab.cpp:290
 msgctxt "AboutTab"
 msgid "&Libraries"
-msgstr ""
+msgstr "Biblioteci"
 
 #: ../build/src/kde/kf5/ui_AboutTab.h:278
 #: ../src/gtk/config/AboutTab.cpp:293
 msgctxt "AboutTab"
 msgid "&Support"
-msgstr ""
+msgstr "&Suport"
 
 #: ../build/src/kde/kf5/ui_AchievementsTab.h:51
 #: ../src/gtk/config/AchievementsTab.cpp:213
 #: ../src/win32/config/AchievementsTab.cpp:562
 msgctxt "AchievementsTab"
 msgid "Unlock Time"
-msgstr ""
+msgstr "Timp de deblocare"
 
 #: ../build/src/kde/kf5/ui_AchievementsTab.h:52
 #: ../src/gtk/config/AchievementsTab.cpp:212
 #: ../src/win32/config/AchievementsTab.cpp:556
 msgctxt "AchievementsTab"
 msgid "Achievement"
-msgstr ""
+msgstr "Realizări"
 
 #: ../build/src/kde/kf5/ui_AchievementsTab.h:53
 #: ../src/gtk/config/AchievementsTab.cpp:211
 msgctxt "AchievementsTab"
 msgid "Icon"
-msgstr ""
+msgstr "Pictogramă"
 
 #: ../build/src/kde/kf5/ui_CacheTab.h:98
 #: ../src/gtk/config/CacheTab.cpp:156
 msgctxt "CacheTab"
 msgid "If any image type settings were changed, you will need to\n"
 "clear the system thumbnail cache."
-msgstr ""
+msgstr "Dacă orice tip de imagine a fost modificat, va trebui să ştergeţi\n"
+"cache-ul de sistem miniatură."
 
 #: ../build/src/kde/kf5/ui_CacheTab.h:100
 #: ../src/gtk/config/CacheTab.cpp:161
 msgctxt "CacheTab"
 msgid "Clear the System Thumbnail Cache"
-msgstr ""
+msgstr "Ştergeţi Cache-ul de sistem Thumbnail"
 
 #: ../build/src/kde/kf5/ui_CacheTab.h:101
 #: ../src/gtk/config/CacheTab.cpp:165
 msgctxt "CacheTab"
 msgid "ROM Properties Page maintains its own download cache for external images.\n"
 "Clearing this cache will force external images to be redownloaded."
-msgstr ""
+msgstr "Pagina de Proprietăți ROM întreține propria geocutie pentru imaginile externe.\n"
+"Ștergerea acestei geocutii va forța redescărcarea imaginilor externe."
 
 #: ../build/src/kde/kf5/ui_CacheTab.h:103
 #: ../src/gtk/config/CacheTab.cpp:171
 msgctxt "CacheTab"
 msgid "Clear the ROM Properties Page Download Cache"
-msgstr ""
+msgstr "Curăță pagina de proprietăți ROM Download Cache"
 
 #. tr: Dialog title.
 #: ../build/src/kde/kf5/ui_ConfigDialog.h:90
@@ -87,85 +89,85 @@ msgstr ""
 #: ../src/win32/config/ConfigDialog.cpp:246
 msgctxt "ConfigDialog"
 msgid "ROM Properties Page configuration"
-msgstr ""
+msgstr "Configurare pagină proprietăți ROM"
 
 #: ../build/src/kde/kf5/ui_ConfigDialog.h:91
 #: ../src/gtk/config/ConfigDialog.cpp:239
 msgctxt "ConfigDialog"
 msgid "&Image Types"
-msgstr ""
+msgstr "Tip imagine"
 
 #: ../build/src/kde/kf5/ui_ConfigDialog.h:92
 #: ../src/gtk/config/ConfigDialog.cpp:240
 msgctxt "ConfigDialog"
 msgid "&Systems"
-msgstr ""
+msgstr "&Sistem"
 
 #: ../build/src/kde/kf5/ui_ConfigDialog.h:93
 #: ../src/gtk/config/ConfigDialog.cpp:241
 msgctxt "ConfigDialog"
 msgid "&Options"
-msgstr ""
+msgstr "&Opțiuni"
 
 #: ../build/src/kde/kf5/ui_ConfigDialog.h:94
 #: ../src/gtk/config/ConfigDialog.cpp:242
 msgctxt "ConfigDialog"
 msgid "Thumbnail Cache"
-msgstr ""
+msgstr "Thumbnail Cache"
 
 #: ../build/src/kde/kf5/ui_ConfigDialog.h:95
 #: ../src/gtk/config/ConfigDialog.cpp:243
 msgctxt "ConfigDialog"
 msgid "&Achievements"
-msgstr ""
+msgstr "Achievement-uri"
 
 #: ../build/src/kde/kf5/ui_ConfigDialog.h:96
 #: ../src/gtk/config/ConfigDialog.cpp:247
 msgctxt "ConfigDialog"
 msgid "Abou&t"
-msgstr ""
+msgstr "Desp&re"
 
 #: ../build/src/kde/kf5/ui_DosAttrView.h:100
 #: ../src/gtk/xattr/DosAttrView.c:125
 msgctxt "DosAttrView"
 msgid "&Read-only"
-msgstr ""
+msgstr "Doar citire"
 
 #: ../build/src/kde/kf5/ui_DosAttrView.h:101
 #: ../src/gtk/xattr/DosAttrView.c:127
 msgctxt "DosAttrView"
 msgid "&Hidden"
-msgstr ""
+msgstr "Ascuns"
 
 #: ../build/src/kde/kf5/ui_DosAttrView.h:102
 #: ../src/gtk/xattr/DosAttrView.c:129
 msgctxt "DosAttrView"
 msgid "&Archive"
-msgstr ""
+msgstr "&Arhivare"
 
 #: ../build/src/kde/kf5/ui_DosAttrView.h:103
 #: ../src/gtk/xattr/DosAttrView.c:131
 msgctxt "DosAttrView"
 msgid "&System"
-msgstr ""
+msgstr "&Sistem"
 
 #: ../build/src/kde/kf5/ui_DosAttrView.h:104
 #: ../src/gtk/xattr/DosAttrView.c:153
 msgctxt "DosAttrView"
 msgid "&Compressed"
-msgstr ""
+msgstr "&Comprimat"
 
 #: ../build/src/kde/kf5/ui_DosAttrView.h:105
 #: ../src/gtk/xattr/DosAttrView.c:155
 msgctxt "DosAttrView"
 msgid "&Encrypted"
-msgstr ""
+msgstr "&Criptat"
 
 #: ../build/src/kde/kf5/ui_Ext2AttrView.h:85
 #: ../src/gtk/xattr/Ext2AttrView.c:121
 msgctxt "Ext2AttrView"
 msgid "lsattr:"
-msgstr ""
+msgstr "lsattr:"
 
 #: ../build/src/kde/kf5/ui_ImageTypesTab.h:81
 #: ../src/gtk/config/ImageTypesTab.cpp:468
@@ -174,115 +176,120 @@ msgid "Select the image types you would like to use for each system as its thumb
 "Internal images are contained within the ROM file.\n"
 "External images are downloaded from an external image database.\n\n"
 "1 = highest priority; 2 = second highest priority; No = ignore"
-msgstr ""
+msgstr "Selectați tipurile de imagini pe care doriți să le utilizați pentru fiecare sistem ca imagine miniaturală.\n"
+"Imaginile interne sunt conţinute în fişierul ROM.\n"
+"Imaginile externe sunt descărcate dintr-o bază de date externă de imagini"
 
 #: ../build/src/kde/kf5/ui_KeyManagerTab.h:90
 #: ../src/gtk/config/KeyManagerTab.cpp:143
 #: ../src/kde/config/KeyManagerTab.cpp:326
 msgctxt "KeyManagerTab"
 msgid "I&mport"
-msgstr ""
+msgstr "I&mport"
 
 #: ../build/src/kde/kf5/ui_OptionsTab.h:177
 msgctxt "OptionsTab"
 msgid "&Downloads"
-msgstr ""
+msgstr "&Descarcari"
 
 #: ../build/src/kde/kf5/ui_OptionsTab.h:178
 #: ../src/gtk/config/OptionsTab.cpp:142
 msgctxt "OptionsTab"
 msgid "E&xternal Image Downloads"
-msgstr ""
+msgstr "&Descărcări imagine"
 
 #: ../build/src/kde/kf5/ui_OptionsTab.h:179
 #: ../src/gtk/config/OptionsTab.cpp:148
 msgctxt "OptionsTab"
 msgid "When using an unlimited\n"
 "network connection:"
-msgstr ""
+msgstr "Când se utilizează o conexiune nelimitată la rețea:"
 
 #: ../build/src/kde/kf5/ui_OptionsTab.h:181
 #: ../build/src/kde/kf5/ui_OptionsTab.h:187
 #: ../src/gtk/config/OptionsTab.cpp:154 ../src/win32/config/OptionsTab.cpp:422
 msgctxt "OptionsTab"
 msgid "Don't download any images"
-msgstr ""
+msgstr "Nu descărca imagini"
 
 #: ../build/src/kde/kf5/ui_OptionsTab.h:182
 #: ../build/src/kde/kf5/ui_OptionsTab.h:188
 #: ../src/gtk/config/OptionsTab.cpp:155 ../src/win32/config/OptionsTab.cpp:423
 msgctxt "OptionsTab"
 msgid "Download normal-resolution images"
-msgstr ""
+msgstr "Descarcă imaginile cu rezoluție normală"
 
 #: ../build/src/kde/kf5/ui_OptionsTab.h:183
 #: ../build/src/kde/kf5/ui_OptionsTab.h:189
 #: ../src/gtk/config/OptionsTab.cpp:156 ../src/win32/config/OptionsTab.cpp:424
 msgctxt "OptionsTab"
 msgid "Download high-resolution images"
-msgstr ""
+msgstr "Descarcă imaginile de înaltă rezoluție"
 
 #: ../build/src/kde/kf5/ui_OptionsTab.h:185
 #: ../src/gtk/config/OptionsTab.cpp:150
 msgctxt "OptionsTab"
 msgid "When using a metered\n"
 "network connection:"
-msgstr ""
+msgstr "Când se utilizează o conexiune contorizată la rețea:"
 
 #: ../build/src/kde/kf5/ui_OptionsTab.h:191
 #: ../src/gtk/config/OptionsTab.cpp:226
 msgctxt "OptionsTab"
 msgid "Always use the internal icon (if present) for small sizes."
-msgstr ""
+msgstr "Utilizaţi întotdeauna pictograma internă (dacă este prezentă) pentru dimensiuni mici."
 
 #: ../build/src/kde/kf5/ui_OptionsTab.h:192
 #: ../src/gtk/config/OptionsTab.cpp:229
 msgctxt "OptionsTab"
 msgid "Store cached file origin information using extended attributes.\n"
 "This helps to identify where cached files were downloaded from."
-msgstr ""
+msgstr "Stochează informaţii despre originea fişierului cache folosind atribute extinse.\n"
+"Acest lucru ajută la identificarea de unde au fost descărcate fişierele cache."
 
 #: ../build/src/kde/kf5/ui_OptionsTab.h:194
 #: ../src/gtk/config/OptionsTab.cpp:236
 msgctxt "OptionsTab"
 msgid "Language for PAL titles on GameTDB:"
-msgstr ""
+msgstr "Limba pentru titlurile PAL pe GameTDB:"
 
 #: ../build/src/kde/kf5/ui_OptionsTab.h:195
 msgctxt "OptionsTab"
 msgid "&Options"
-msgstr ""
+msgstr "&Opțiuni"
 
 #: ../build/src/kde/kf5/ui_OptionsTab.h:196
 #: ../src/gtk/config/OptionsTab.cpp:262
 msgctxt "OptionsTab"
 msgid "Show a security overlay icon for ROM images with\n"
 "\"dangerous\" permissions."
-msgstr ""
+msgstr "Arată o pictogramă suprapusă de securitate pentru imaginile ROM cu permisiunile de tip\n"
+"\"periculos\"."
 
 #: ../build/src/kde/kf5/ui_OptionsTab.h:198
 #: ../src/gtk/config/OptionsTab.cpp:265
 msgctxt "OptionsTab"
 msgid "Enable thumbnailing and metadata extraction on network\n"
 "file systems. This may slow down file browsing."
-msgstr ""
+msgstr "Activați extragerea miniaturilor și metadatelor în sistemele de fișiere de rețea\n"
+"Acest lucru poate încetini navigarea fișierelor."
 
 #: ../build/src/kde/kf5/ui_OptionsTab.h:200
 #: ../src/gtk/config/OptionsTab.cpp:269
 msgctxt "OptionsTab"
 msgid "Show the Extended Attributes tab."
-msgstr ""
+msgstr "Arată fila cu atribute extinse."
 
 #: ../build/src/kde/kf5/ui_SystemsTab.h:124
 msgctxt "SystemsTab"
 msgid "&Game Boy Title Screens"
-msgstr ""
+msgstr "&Game Boy Title Screens"
 
 #: ../build/src/kde/kf5/ui_SystemsTab.h:125
 #: ../src/gtk/config/SystemsTab.cpp:120
 msgctxt "SystemsTab"
 msgid "Game &Boy:"
-msgstr ""
+msgstr "Game Boy"
 
 #: ../build/src/kde/kf5/ui_SystemsTab.h:126
 #: ../build/src/kde/kf5/ui_SystemsTab.h:130
@@ -290,7 +297,7 @@ msgstr ""
 #: ../src/gtk/config/SystemsTab.cpp:128
 msgctxt "SystemsTab"
 msgid "Game Boy"
-msgstr ""
+msgstr "Game Boy"
 
 #: ../build/src/kde/kf5/ui_SystemsTab.h:127
 #: ../build/src/kde/kf5/ui_SystemsTab.h:132
@@ -298,45 +305,45 @@ msgstr ""
 #: ../src/gtk/config/SystemsTab.cpp:130
 msgctxt "SystemsTab"
 msgid "Game Boy Color"
-msgstr ""
+msgstr "Game Boy Color"
 
 #: ../build/src/kde/kf5/ui_SystemsTab.h:129
 #: ../src/gtk/config/SystemsTab.cpp:121
 msgctxt "SystemsTab"
 msgid "&Super Game Boy:"
-msgstr ""
+msgstr "&Super Game Boy:"
 
 #: ../build/src/kde/kf5/ui_SystemsTab.h:131
 #: ../build/src/kde/kf5/ui_SystemsTab.h:136
 #: ../src/gtk/config/SystemsTab.cpp:129
 msgctxt "SystemsTab"
 msgid "Super Game Boy"
-msgstr ""
+msgstr "Super Game Boy"
 
 #: ../build/src/kde/kf5/ui_SystemsTab.h:134
 #: ../src/gtk/config/SystemsTab.cpp:122
 msgctxt "SystemsTab"
 msgid "Game Boy &Color:"
-msgstr ""
+msgstr "Game Boy Color:"
 
 #: ../build/src/kde/kf5/ui_SystemsTab.h:139
 #: ../src/gtk/config/SystemsTab.cpp:115
 msgctxt "SystemsTab"
 msgid "Select the Game Boy model to use for title screens for different types of\n"
 "Game Boy ROM images."
-msgstr ""
+msgstr "Selectați modelul de Game Boy pentru a utiliza pentru ecranele de titlu pentru diferite tipuri de imagini de la Game Boy ROM."
 
 #: ../build/src/kde/kf5/ui_XAttrView.h:114
 #: ../src/gtk/xattr/XAttrView.cpp:125
 msgctxt "XAttrView"
 msgid "Ext2 Attributes"
-msgstr ""
+msgstr "Ext2 Atribute"
 
 #: ../build/src/kde/kf5/ui_XAttrView.h:115
 #: ../src/gtk/xattr/XAttrView.cpp:133
 msgctxt "XAttrView"
 msgid "XFS Attributes"
-msgstr ""
+msgstr "Atribute MS-DOS"
 
 #: ../build/src/kde/kf5/ui_XAttrView.h:116
 #: ../src/gtk/xattr/XAttrView.cpp:141
