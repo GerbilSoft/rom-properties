@@ -28,8 +28,8 @@ STYLE DS_3DLOOK | DS_CONTROL | DS_SHELLFONT | WS_CAPTION | WS_VISIBLE | WS_CHILD
 EXSTYLE WS_EX_NOPARENTNOTIFY | WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", FW_NORMAL, 0, 0
 BEGIN
-    LTEXT           "Select the image types you would like to use for each system as its thumbnail image.\nInternal images are contained within the ROM file.\nExternal images are downloaded from an external image database.", IDC_IMAGETYPES_DESC1, 7, 7, 397, 30, SS_LEFT, WS_EX_LEFT
-    LTEXT           "1 = highest priority; 2 = second highest priority; No = ignore", IDC_IMAGETYPES_DESC2, 7, 37, 397, 8, SS_LEFT, WS_EX_LEFT
+    LTEXT           "Selectați tipurile de imagini pe care doriți să le utilizați pentru fiecare sistem ca imagine miniaturală.\nImaginile interne sunt conţinute în fişierul ROM.\nImaginile externe sunt descărcate dintr-o bază de date externă de imagini.", IDC_IMAGETYPES_DESC1, 7, 7, 397, 30, SS_LEFT, WS_EX_LEFT
+    LTEXT           "1 = prioritatea cea mai mare; 2 = a doua prioritate principală; Nu = ignorară", IDC_IMAGETYPES_DESC2, 7, 37, 397, 8, SS_LEFT, WS_EX_LEFT
     CONTROL         "", IDC_IMAGETYPES_CREDITS, "SysLink", 0x50010000, 7, 221, 397, 24, 0x00000000
 END
 
@@ -43,8 +43,8 @@ EXSTYLE WS_EX_NOPARENTNOTIFY | WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     GROUPBOX        "Game Boy Title Screens", IDC_SYSTEMS_DMGTS_GROUPBOX, 7, 7, 397, 74
-    LTEXT           "Select the Game Boy model to use for title screens for different types of Game Boy ROM images.", IDC_STATIC, 15, 18, 381, 8
-    LTEXT           "Game Boy:", IDC_STATIC, 15, 30, 80, 9
+    LTEXT           "Selectați modelul de Game Boy pentru a utiliza pentru ecranele de titlu pentru diferite tipuri de imagini de la Game Boy ROM.", IDC_STATIC, 15, 18, 381, 8
+    LTEXT           "Game Boy", IDC_STATIC, 15, 30, 80, 9
     COMBOBOX        IDC_SYSTEMS_DMGTS_DMG, 77, 29, 69, 30, CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Super Game Boy:", IDC_STATIC, 15, 45, 80, 9
     COMBOBOX        IDC_SYSTEMS_DMGTS_SGB, 77, 44, 69, 30, CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
@@ -61,22 +61,22 @@ STYLE DS_3DLOOK | DS_CONTROL | DS_SHELLFONT | WS_VISIBLE | WS_CHILDWINDOW | WS_T
 EXSTYLE WS_EX_NOPARENTNOTIFY | WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", FW_NORMAL, 0, 0
 BEGIN
-    GROUPBOX        "&Downloads", IDC_OPTIONS_GRPDOWNLOADS, 7, 7, 397, 121, BS_GROUPBOX, WS_EX_TRANSPARENT
+    GROUPBOX        "&Descarcari", IDC_OPTIONS_GRPDOWNLOADS, 7, 7, 397, 121, BS_GROUPBOX, WS_EX_TRANSPARENT
     GROUPBOX        "", IDC_OPTIONS_GRPEXTIMGDL, 15, 19, 381, 47, 0, 0
-    AUTOCHECKBOX    "E&xternal Image Downloads", IDC_OPTIONS_CHKEXTIMGDL, 21, 19, 101, 8, 0, 0
-    RTEXT           "When using an unlimited network connection:", IDC_OPTIONS_LBL_UNMETERED_DL, 25, 31, 145, 8, 0, 0
+    AUTOCHECKBOX    "&Descărcări imagine", IDC_OPTIONS_CHKEXTIMGDL, 21, 19, 101, 8, 0, 0
+    RTEXT           "Când se utilizează o conexiune nelimitată la rețea:", IDC_OPTIONS_LBL_UNMETERED_DL, 25, 31, 145, 8, 0, 0
     COMBOBOX        IDC_OPTIONS_CBO_UNMETERED_DL, 174, 29, 132, 30, CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    RTEXT           "When using a metered network connection:", IDC_OPTIONS_LBL_METERED_DL, 25, 49, 145, 8, 0, 0
+    RTEXT           "Când se utilizează o conexiune contorizată la rețea:", IDC_OPTIONS_LBL_METERED_DL, 25, 49, 145, 8, 0, 0
     COMBOBOX        IDC_OPTIONS_CBO_METERED_DL, 174, 47, 132, 30, CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    AUTOCHECKBOX    "Always use the internal icon (if present) for small sizes.", IDC_OPTIONS_INTICONSMALL, 15, 73, 381, 8, 0, WS_EX_TRANSPARENT
-    AUTOCHECKBOX    "Store cached file origin information using extended attributes.\nThis helps to identify where cached files were downloaded from.", IDC_OPTIONS_STOREFILEORIGININFO, 15, 87, 381, 16, BS_MULTILINE, WS_EX_TRANSPARENT
-    LTEXT           "Language for PAL titles on GameTDB:", IDC_STATIC, 15, 111, 120, 8, 0, WS_EX_TRANSPARENT
+    AUTOCHECKBOX    "Utilizaţi întotdeauna pictograma internă (dacă este prezentă) pentru dimensiuni mici.", IDC_OPTIONS_INTICONSMALL, 15, 73, 381, 8, 0, WS_EX_TRANSPARENT
+    AUTOCHECKBOX    "Stochează informaţii despre originea fişierului cache folosind atribute extinse.\nAcest lucru ajută la identificarea de unde au fost descărcate fişierele cache", IDC_OPTIONS_STOREFILEORIGININFO, 15, 87, 381, 16, BS_MULTILINE, WS_EX_TRANSPARENT
+    LTEXT           "Limba pentru titlurile PAL pe GameTDB:", IDC_STATIC, 15, 111, 120, 8, 0, WS_EX_TRANSPARENT
     // FIXME: Determine best height. (Compare to RP_ShellPropSheetExt for multi-language.)
     CONTROL         "", IDC_OPTIONS_PALLANGUAGEFORGAMETDB, WC_LANGUAGECOMBOBOX, CBS_DROPDOWNLIST | WS_CHILD | WS_TABSTOP | WS_VISIBLE, 138, 108, 68, 128, WS_EX_LEFT
 
-    GROUPBOX        "&Options", IDC_OPTIONS_GRPOPTIONS, 7, 133, 397, 54, BS_GROUPBOX, WS_EX_TRANSPARENT
-    AUTOCHECKBOX    "Show a security overlay icon for ROM images with\n""dangerous"" permissions.", IDC_OPTIONS_DANGEROUSPERMISSIONS, 15, 144, 381, 16, BS_MULTILINE, WS_EX_TRANSPARENT
-    AUTOCHECKBOX    "Enable thumbnailing and metadata extraction on network\nfile systems. This may slow down file browsing.", IDC_OPTIONS_ENABLETHUMBNAILONNETWORKFS, 15, 165, 381, 16, BS_MULTILINE, WS_EX_TRANSPARENT
+    GROUPBOX        "Opţiuni", IDC_OPTIONS_GRPOPTIONS, 7, 133, 397, 54, BS_GROUPBOX, WS_EX_TRANSPARENT
+    AUTOCHECKBOX    "Arată o pictogramă suprapusă de securitate pentru imaginile ROM cu permisiunile de tip\n""periculos"".", IDC_OPTIONS_DANGEROUSPERMISSIONS, 15, 144, 381, 16, BS_MULTILINE, WS_EX_TRANSPARENT
+    AUTOCHECKBOX    "Activați extragerea miniaturilor și metadatelor în sistemele de fișiere de rețea\nAcest lucru poate încetini navigarea fișierelor.", IDC_OPTIONS_ENABLETHUMBNAILONNETWORKFS, 15, 165, 381, 16, BS_MULTILINE, WS_EX_TRANSPARENT
 END
 
 /**
@@ -89,9 +89,9 @@ EXSTYLE WS_EX_NOPARENTNOTIFY | WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", FW_NORMAL, 0, 0
 BEGIN
     LTEXT           "", IDC_CACHE_DESCRIPTION, 7, 7, 397, 8, SS_LEFT, WS_EX_TRANSPARENT
-    PUSHBUTTON      "Clear the System Thumbnail Cache", IDC_CACHE_CLEAR_SYS_THUMBS, 7, 20, 398, 28, 0, WS_EX_LEFT
-    LTEXT           "ROM Properties Page maintains its own download cache for external images.\nClearing this cache will force external images to be redownloaded.", IDC_STATIC, 7, 55, 397, 17, SS_LEFT, WS_EX_TRANSPARENT
-    PUSHBUTTON      "Clear the ROM Properties Page Download Cache", IDC_CACHE_CLEAR_RP_DL, 7, 75, 398, 28, 0, WS_EX_LEFT
+    PUSHBUTTON      "Ştergeţi Cache-ul de sistem Thumbnail", IDC_CACHE_CLEAR_SYS_THUMBS, 7, 20, 398, 28, 0, WS_EX_LEFT
+    LTEXT           "Pagina de Proprietăți ROM întreține propria geocutie pentru imaginile externe.\nȘtergerea acestei geocutii va forța redescărcarea imaginilor externe.", IDC_STATIC, 7, 55, 397, 17, SS_LEFT, WS_EX_TRANSPARENT
+    PUSHBUTTON      "Curăță pagina de proprietăți ROM Download Cache", IDC_CACHE_CLEAR_RP_DL, 7, 75, 398, 28, 0, WS_EX_LEFT
     LTEXT           "", IDC_CACHE_STATUS, 7, 205, 397, 9, NOT WS_VISIBLE | SS_LEFT, WS_EX_LEFT
     CONTROL         "", IDC_CACHE_PROGRESS, PROGRESS_CLASS, NOT WS_VISIBLE, 7, 216, 397, 16, WS_EX_LEFT
 END
@@ -106,13 +106,13 @@ EXSTYLE WS_EX_NOPARENTNOTIFY | WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", FW_NORMAL, 0, 0
 BEGIN
     LTEXT           "", IDC_CACHE_DESCRIPTION, 7, 7, 397, 25, SS_LEFT, WS_EX_TRANSPARENT
-    AUTORADIOBUTTON "Find all Thumbs.db files on the specified drive(s):", IDC_CACHE_XP_FIND_DRIVES, 7, 35, 168, 8, WS_GROUP, WS_EX_LEFT
-    AUTORADIOBUTTON "Specify a path", IDC_CACHE_XP_FIND_PATH, 180, 35, 61, 8, 0, WS_EX_LEFT
+    AUTORADIOBUTTON "Găsiţi toate fişierele Thumbs.db pe unitatea (drive) specificată.", IDC_CACHE_XP_FIND_DRIVES, 7, 35, 168, 8, WS_GROUP, WS_EX_LEFT
+    AUTORADIOBUTTON "Specifică calea", IDC_CACHE_XP_FIND_PATH, 180, 35, 61, 8, 0, WS_EX_LEFT
     CONTROL         "", IDC_CACHE_XP_DRIVES, WC_LISTVIEW, WS_TABSTOP | WS_BORDER | LVS_ALIGNLEFT | LVS_LIST | LVS_SINGLESEL, 7, 46, 397, 45, WS_EX_LEFT | WS_EX_CLIENTEDGE
     EDITTEXT        IDC_CACHE_XP_PATH, 7, 46, 343, 14, NOT WS_VISIBLE | ES_AUTOHSCROLL, WS_EX_LEFT
-    PUSHBUTTON      "Browse...", IDC_CACHE_XP_BROWSE, 355, 45, 50, 15, NOT WS_VISIBLE, WS_EX_LEFT
-    PUSHBUTTON      "Find and Remove Thumbs.db Files", IDC_CACHE_XP_CLEAR_SYS_THUMBS, 7, 95, 398, 20, WS_DISABLED | BS_MULTILINE, WS_EX_LEFT
-    LTEXT           "ROM Properties Page maintains its own download cache for external images. Clearing this cache will force external images to be redownloaded.", IDC_STATIC, 7, 125, 313, 20, SS_LEFT, WS_EX_TRANSPARENT
+    PUSHBUTTON      "Răsfoire...", IDC_CACHE_XP_BROWSE, 355, 45, 50, 15, NOT WS_VISIBLE, WS_EX_LEFT
+    PUSHBUTTON      "Găsește și șterge fișierele Thumbs.db", IDC_CACHE_XP_CLEAR_SYS_THUMBS, 7, 95, 398, 20, WS_DISABLED | BS_MULTILINE, WS_EX_LEFT
+    LTEXT           "Pagina de Proprietăți ROM întreține propria geocutie pentru imaginile externe. Ștergerea acestei geocutii va forța redescărcarea imaginilor externe.", IDC_STATIC, 7, 125, 313, 20, SS_LEFT, WS_EX_TRANSPARENT
     PUSHBUTTON      "Clear", IDC_CACHE_CLEAR_RP_DL, 323, 127, 82, 15, 0, WS_EX_LEFT
     LTEXT           "", IDC_CACHE_STATUS, 7, 205, 397, 9, NOT WS_VISIBLE | SS_LEFT, WS_EX_LEFT
     CONTROL         "", IDC_CACHE_PROGRESS, PROGRESS_CLASS, NOT WS_VISIBLE, 7, 216, 397, 16, WS_EX_LEFT
@@ -180,13 +180,13 @@ STYLE DS_3DLOOK | DS_CONTROL | DS_SHELLFONT | WS_VISIBLE | WS_CHILDWINDOW | WS_T
 CAPTION ""
 FONT 8, "Ms Shell Dlg"
 BEGIN
-    GROUPBOX        "MS-DOS Attributes", IDC_STATIC, 5, 7, 215, 35, 0, WS_EX_LEFT
-    CHECKBOX        "&Read-only", IDC_XATTRVIEW_DOS_READONLY, 14, 17, 49, 8, 0, WS_EX_LEFT
-    CHECKBOX        "&Hidden", IDC_XATTRVIEW_DOS_HIDDEN, 63, 17, 35, 8, 0, WS_EX_LEFT
-    CHECKBOX        "&Archive", IDC_XATTRVIEW_DOS_ARCHIVE, 105, 17, 35, 8, 0, WS_EX_LEFT
-    CHECKBOX        "&System", IDC_XATTRVIEW_DOS_SYSTEM, 147, 17, 42, 8, 0, WS_EX_LEFT
-    CHECKBOX        "&Compressed", IDC_XATTRVIEW_NTFS_COMPRESSED, 14, 28, 55, 8, 0, WS_EX_LEFT
-    CHECKBOX        "&Encrypted", IDC_XATTRVIEW_NTFS_ENCRYPTED, 70, 28, 48, 8, 0, WS_EX_LEFT
-    GROUPBOX        "Alternate Data Streams", IDC_XATTRVIEW_GRPADS, 7, 49, 213, 196, 0, WS_EX_LEFT
+    GROUPBOX        "Atribute MS-DOS", IDC_STATIC, 5, 7, 215, 35, 0, WS_EX_LEFT
+    CHECKBOX        "Doar citire", IDC_XATTRVIEW_DOS_READONLY, 14, 17, 49, 8, 0, WS_EX_LEFT
+    CHECKBOX        "Ascuns", IDC_XATTRVIEW_DOS_HIDDEN, 63, 17, 35, 8, 0, WS_EX_LEFT
+    CHECKBOX        "&Arhivare", IDC_XATTRVIEW_DOS_ARCHIVE, 105, 17, 35, 8, 0, WS_EX_LEFT
+    CHECKBOX        "&Sistem", IDC_XATTRVIEW_DOS_SYSTEM, 147, 17, 42, 8, 0, WS_EX_LEFT
+    CHECKBOX        "&Comprimat", IDC_XATTRVIEW_NTFS_COMPRESSED, 14, 28, 55, 8, 0, WS_EX_LEFT
+    CHECKBOX        "&Criptat", IDC_XATTRVIEW_NTFS_ENCRYPTED, 70, 28, 48, 8, 0, WS_EX_LEFT
+    GROUPBOX        "Fluxuri de date alternative", IDC_XATTRVIEW_GRPADS, 7, 49, 213, 196, 0, WS_EX_LEFT
     CONTROL         "", IDC_XATTRVIEW_LISTVIEW_ADS, WC_LISTVIEW, WS_TABSTOP | WS_BORDER | LVS_ALIGNLEFT | LVS_SINGLESEL | LVS_REPORT, 14, 60, 200, 179, WS_EX_LEFT
 END
