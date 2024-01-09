@@ -9,81 +9,16 @@ ENDIF(POLICY CMP0063)
 PROJECT(unixcommon LANGUAGES C CXX)
 
 IF(BUILD_KDE4)
-	# Find the framework libraries in order to determine plugin paths.
-	# FIXME: Remove prefix from KDE4's path.
-	# NOTE: Need to skip the uninstall rule due to conflicts
-	# with the actual KDE4 frontend.
-	SET(QT_SELECT_OLD $ENV{QT_SELECT})
-	SET(ENV{QT_SELECT} qt4)
-	SET(_kde4_uninstall_rule_created TRUE)
-	FIND_PACKAGE(KDE4)
-	IF(PLUGIN_INSTALL_DIR)
-		SET(KDE4_PLUGIN_INSTALL_DIR "${PLUGIN_INSTALL_DIR}")
-		UNSET(PLUGIN_INSTALL_DIR)
-		UNSET(PLUGIN_INSTALL_DIR CACHE)
-	ELSE(PLUGIN_INSTALL_DIR)
-		# PLUGIN_INSTALL_DIR might not be set in some cases.
-		# Use KDE4's documented default value.
-		SET(KDE4_PLUGIN_INSTALL_DIR "${KDE4_LIB_INSTALL_DIR}/kde4")
-	ENDIF(PLUGIN_INSTALL_DIR)
-	# Get rid of the explicit C90 setting. (set by KDE4)
-	STRING(REPLACE "-std=iso9899:1990" "" CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
+	INCLUDE(RP_FindQt4andKDE4)
+	FIND_QT4_AND_KDE4()
 ENDIF(BUILD_KDE4)
-
 IF(BUILD_KF5)
-	# Find the qtpaths5 executable for Qt5.
-	SET(QT_SELECT_OLD "$ENV{QT_SELECT}")
-	SET(ENV{QT_SELECT} qt5)
-	FIND_PROGRAM(QTPATHS5 NAMES qtpaths5 qtpaths
-		PATHS /usr/local/lib/qt5/bin	# FreeBSD
-		)
-	IF(NOT QTPATHS5)
-		MESSAGE(FATAL_ERROR "qtpaths5 not found. Install one of these packages:
-  - Debian/Ubuntu: qttools5-dev-tools
-  - Red Hat/Fedora: qt5-qttools")
-	ENDIF(NOT QTPATHS5)
-
-	# Get the plugin directory and Qt prefix.
-	# Prefix will be removed from the plugin directory if necessary.
-	EXEC_PROGRAM(${QTPATHS5} ARGS --plugin-dir OUTPUT_VARIABLE KF5_PLUGIN_INSTALL_DIR)
-	IF(NOT KF5_PLUGIN_INSTALL_DIR)
-		MESSAGE(FATAL_ERROR "`qtpaths5` is not working correctly.")
-	ENDIF(NOT KF5_PLUGIN_INSTALL_DIR)
-	EXEC_PROGRAM(${QTPATHS5} ARGS --install-prefix OUTPUT_VARIABLE QT5_INSTALL_PREFIX)
-	INCLUDE(ReplaceHardcodedPrefix)
-	REPLACE_HARDCODED_PREFIX(KF5_PLUGIN_INSTALL_DIR "${QT5_INSTALL_PREFIX}")
-	SET(ENV{QT_SELECT} "${QT_SELECT_OLD}")
-	UNSET(QT_SELECT_OLD)
-
-	SET(KF5_PRPD_PLUGIN_INSTALL_DIR "${KF5_PLUGIN_INSTALL_DIR}/kf5/propertiesdialog")
+	INCLUDE(RP_FindQt5andKF5)
+	FIND_QT5_AND_KF5()
 ENDIF(BUILD_KF5)
-
 IF(BUILD_KF6)
-	# Find the qtpaths6 executable for Qt6.
-	SET(QT_SELECT_OLD "$ENV{QT_SELECT}")
-	SET(ENV{QT_SELECT} qt6)
-	FIND_PROGRAM(QTPATHS6 NAMES qtpaths6 qtpaths
-		PATHS /usr/local/lib/qt6/bin	# FreeBSD
-		)
-	IF(NOT QTPATHS6)
-		MESSAGE(FATAL_ERROR "qtpaths6 not found. Install one of these packages:
-  - Debian/Ubuntu: qttools6-dev-tools
-  - Red Hat/Fedora: qt6-qttools")
-	ENDIF(NOT QTPATHS6)
-
-	# Get the plugin directory and Qt prefix.
-	# Prefix will be removed from the plugin directory if necessary.
-	EXEC_PROGRAM(${QTPATHS6} ARGS --plugin-dir OUTPUT_VARIABLE KF6_PLUGIN_INSTALL_DIR)
-	IF(NOT KF6_PLUGIN_INSTALL_DIR)
-		MESSAGE(FATAL_ERROR "`qtpaths6` is not working correctly.")
-	ENDIF(NOT KF6_PLUGIN_INSTALL_DIR)
-	EXEC_PROGRAM(${QTPATHS6} ARGS --install-prefix OUTPUT_VARIABLE QT6_INSTALL_PREFIX)
-	INCLUDE(ReplaceHardcodedPrefix)
-	REPLACE_HARDCODED_PREFIX(KF6_PLUGIN_INSTALL_DIR "${QT6_INSTALL_PREFIX}")
-	SET(ENV{QT_SELECT} "${QT_SELECT_OLD}")
-	UNSET(QT_SELECT_OLD)
-
-	SET(KF6_PRPD_PLUGIN_INSTALL_DIR "${KF6_PLUGIN_INSTALL_DIR}/kf6/propertiesdialog")
+	INCLUDE(RP_FindQt6andKF6)
+	FIND_QT6_AND_KF6()
 ENDIF(BUILD_KF6)
 
 # GTK+ UI frontends.
