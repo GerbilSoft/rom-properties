@@ -124,6 +124,9 @@
     * ...unless certain debugging hardware is connected.
     * Fixes #400: Wrong region listed on a GameCube ISO?
       * Reported by @loser2023sgyt.
+  * GTK UI frontend: Fix "standard sorting" in RFT_LISTDATA fields.
+    * GTK3 defaults to case-insensitive sorting, which doesn't match our
+      assumptions that "standard sorting" is case-sensitive.
 
 * Other changes:
   * Nintendo3DS: The "Options" menu no longer shows a grayed-out "Extract SRL"

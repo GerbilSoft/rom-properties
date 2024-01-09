@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * RomDataView.cpp: RomData viewer widget.                                 *
  *                                                                         *
- * Copyright (c) 2017-2023 by David Korth.                                 *
+ * Copyright (c) 2017-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -1161,6 +1161,9 @@ rp_rom_data_view_init_listdata(RpRomDataView *page,
 		// NOTE: We're setting the sorting functions on the proxy model.
 		// That way, it won't affect the underlying data, which ensures
 		// that RFT_LISTDATA_MULTI is still handled correctly.
+		// NOTE 2: On GTK3, "standard sorting" seems to be case-insensitive.
+		// Not sure if this will be changed, so we'll explicitly sort with
+		// case-sensitivity for that case.
 		switch (col_attrs.sorting & RomFields::COLSORT_MASK) {
 			default:
 				// Unsupported. We'll use standard sorting.
@@ -1168,6 +1171,9 @@ rp_rom_data_view_init_listdata(RpRomDataView *page,
 				// fall-through
 			case RomFields::COLSORT_STANDARD:
 				// Standard sorting.
+				gtk_tree_sortable_set_sort_func(GTK_TREE_SORTABLE(sortProxy),
+					listStore_col_idx, sort_RFT_LISTDATA_standard,
+					GINT_TO_POINTER(listStore_col_idx), nullptr);
 				break;
 			case RomFields::COLSORT_NOCASE:
 				// Case-insensitive sorting.

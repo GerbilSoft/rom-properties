@@ -2,11 +2,36 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * sort_funcs.h: GtkTreeSortable sort functions.                           *
  *                                                                         *
- * Copyright (c) 2017-2023 by David Korth.                                 *
+ * Copyright (c) 2017-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "sort_funcs.h"
+
+/**
+ * RFT_LISTDATA sorting function for COLSORT_STANDARD (case-sensitive).
+ * @param model
+ * @param a
+ * @param b
+ * @param userdata Column ID
+ * @return -1, 0, or 1.
+ */
+gint sort_RFT_LISTDATA_standard(GtkTreeModel *model, GtkTreeIter *a, GtkTreeIter *b, gpointer userdata)
+{
+	gint ret = 0;
+	gchar *strA, *strB;
+
+	// Get the text and do a case-insensitive string comparison.
+	// Reference: https://en.wikibooks.org/wiki/GTK%2B_By_Example/Tree_View/Sorting
+	gtk_tree_model_get(model, a, GPOINTER_TO_INT(userdata), &strA, -1);
+	gtk_tree_model_get(model, b, GPOINTER_TO_INT(userdata), &strB, -1);
+
+	ret = g_strcmp0(strA, strB);
+
+	g_free(strA);
+	g_free(strB);
+	return ret;
+}
 
 /**
  * RFT_LISTDATA sorting function for COLSORT_NOCASE (case-insensitive).
