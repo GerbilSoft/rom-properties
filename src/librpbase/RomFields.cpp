@@ -53,41 +53,6 @@ RomFieldsPrivate::RomFieldsPrivate()
 
 /** RomFields::Field **/
 
-/**
- * Initialize a RomFields::Field object.
- * Defaults to zero init.
- */
-RomFields::Field::Field()
-	: name(nullptr)
-	, type(RFT_INVALID)
-	, tabIdx(0)
-	, flags(0)
-{
-	// NOTE: desc/data are not zeroed here.
-	// They must be set afterwards.
-	// (Optimization; RomFields::Field should only be created by RomFields.)
-}
-
-/**
- * Initialize a RomFields::Field object.
- * Some values will be initialized here.
- * desc and data must be set afterwards.
- * @param name
- * @param type
- * @param tabIdx
- * @param flags
- */
-RomFields::Field::Field(const char *name, RomFieldType type, uint8_t tabIdx, unsigned int flags)
-	: name(name ? strdup(name) : nullptr)
-	, type(type)
-	, tabIdx(tabIdx)
-	, flags(flags)
-{
-	// NOTE: desc/data are not zeroed here.
-	// They must be set afterwards.
-	// (Optimization; RomFields::Field should only be created by RomFields.)
-}
-
 RomFields::Field::~Field()
 {
 	free(const_cast<char*>(name));

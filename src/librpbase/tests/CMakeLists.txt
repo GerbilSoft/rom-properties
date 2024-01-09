@@ -23,6 +23,9 @@ ENDIF(NOT WIN32)
 # librptest library
 ADD_LIBRARY(rptest STATIC gtest_init.cpp)
 TARGET_LINK_LIBRARIES(rptest PUBLIC rpsecure)
+# librptest doesn't use gtest directly, but all tests do,
+# so add it with interface linkage.
+TARGET_LINK_LIBRARIES(rptest INTERFACE gtest)
 IF(WIN32)
 	# rptest initializes GDI+, since it's used by rp_image.
 	TARGET_LINK_LIBRARIES(rptest PRIVATE gdiplus)
