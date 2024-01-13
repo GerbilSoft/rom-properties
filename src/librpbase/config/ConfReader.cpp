@@ -96,12 +96,12 @@ int ConfReader::load(bool force)
 	if (!force && d->conf_was_found) {
 		// Have we checked the timestamp recently?
 		// TODO: Define the threshold somewhere.
-		const time_t cur_time = time(nullptr);
-		if (llabs(cur_time - d->conf_last_checked) < 2) {
+		const time_t now = time(nullptr);
+		if (llabs(now - d->conf_last_checked) < 2) {
 			// We checked it recently. Assume it's up to date.
 			return 0;
 		}
-		d->conf_last_checked = cur_time;
+		d->conf_last_checked = now;
 
 		// Check if the keys.conf timestamp has changed.
 		// Initial check. (fast path)

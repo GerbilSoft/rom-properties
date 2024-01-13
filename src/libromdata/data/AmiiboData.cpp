@@ -278,8 +278,11 @@ int AmiiboDataPrivate::loadIfNeeded(void)
 	const time_t now = time(nullptr);
 	if (!amiibo_bin_data.empty()) {
 		// amiibo data is already loaded.
-		if (now == amiibo_bin_check_ts) {
-			// Same time as last time. (seconds resolution)
+
+		// Have we checked the timestamp recently?
+		// TODO: Define the threshold somewhere.
+		if (llabs(now - amiibo_bin_check_ts) < 2) {
+			// We checked it recently. Assume it's up to date.
 			return 0;
 		}
 	}
