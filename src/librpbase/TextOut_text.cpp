@@ -280,6 +280,7 @@ static int formatDateTime(char *buf, size_t size, time_t timestamp, RomFields::D
 		ret = gmtime_r(&timestamp, &tm_struct);
 	}
 	else {
+		tzset();
 		ret = localtime_r(&timestamp, &tm_struct);
 	}
 
