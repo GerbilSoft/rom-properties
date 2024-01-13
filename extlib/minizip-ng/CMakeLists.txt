@@ -12,11 +12,14 @@ set(VERSION "4.0.4")
 # API version
 set(SOVERSION "4")
 
+# rom-properties: Disabled DESCRIPTION and HOMEPAGE_URL for CMake 3.5 compatibility.
+# - DESCRIPTION: Added in CMake 3.9.
+# - HOMEPAGE_URL: Added in CMake 3.12.
 project(minizip-ng
     VERSION ${VERSION}
-    LANGUAGES C
-    DESCRIPTION "Zip manipulation library"
-	HOMEPAGE_URL https://github.com/zlib-ng/minizip-ng/)
+    LANGUAGES C)
+#    DESCRIPTION "Zip manipulation library"
+#	HOMEPAGE_URL https://github.com/zlib-ng/minizip-ng/)
 
 include(CMakeDependentOption)
 include(CheckLibraryExists)
@@ -728,7 +731,8 @@ if(MZ_LZMA)
 endif()
 
 target_link_libraries(${MINIZIP_TARGET} PUBLIC ${MINIZIP_LIB} ${MINIZIP_DEP})
-target_link_directories(${MINIZIP_TARGET} PUBLIC ${MINIZIP_LBD})
+# rom-properties: Disabled for CMake 3.5 compatibility. (added in CMake 3.13)
+#target_link_directories(${MINIZIP_TARGET} PUBLIC ${MINIZIP_LBD})
 target_compile_definitions(${MINIZIP_TARGET} PRIVATE ${STDLIB_DEF} ${MINIZIP_DEF})
 target_include_directories(${MINIZIP_TARGET} PRIVATE ${MINIZIP_INC})
 target_include_directories(${MINIZIP_TARGET} PUBLIC

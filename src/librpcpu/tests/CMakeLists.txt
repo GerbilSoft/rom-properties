@@ -16,7 +16,6 @@ ADD_EXECUTABLE(ByteswapTest
 	ByteswapTest.cpp
 	ByteswapTest_data.hpp)
 TARGET_LINK_LIBRARIES(ByteswapTest PRIVATE rptest rpcpu)
-TARGET_LINK_LIBRARIES(ByteswapTest PRIVATE gtest)
 DO_SPLIT_DEBUG(ByteswapTest)
 SET_WINDOWS_SUBSYSTEM(ByteswapTest CONSOLE)
 SET_WINDOWS_ENTRYPOINT(ByteswapTest wmain OFF)
@@ -25,7 +24,6 @@ ADD_TEST(NAME ByteswapTest COMMAND ByteswapTest --gtest_brief --gtest_filter=-*b
 # BitstuffTest
 ADD_EXECUTABLE(BitstuffTest BitstuffTest.cpp)
 TARGET_LINK_LIBRARIES(BitstuffTest PRIVATE rptest rpcpu)
-TARGET_LINK_LIBRARIES(BitstuffTest PRIVATE gtest)
 DO_SPLIT_DEBUG(BitstuffTest)
 SET_WINDOWS_SUBSYSTEM(BitstuffTest CONSOLE)
 SET_WINDOWS_ENTRYPOINT(BitstuffTest wmain OFF)

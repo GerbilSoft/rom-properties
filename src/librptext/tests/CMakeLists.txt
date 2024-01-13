@@ -17,7 +17,6 @@ ADD_EXECUTABLE(TextFuncsTest
 	TextFuncsTest_data.hpp
 	)
 TARGET_LINK_LIBRARIES(TextFuncsTest PRIVATE rptest rptext)
-TARGET_LINK_LIBRARIES(TextFuncsTest PRIVATE gtest)
 DO_SPLIT_DEBUG(TextFuncsTest)
 SET_WINDOWS_SUBSYSTEM(TextFuncsTest CONSOLE)
 SET_WINDOWS_ENTRYPOINT(TextFuncsTest wmain OFF)

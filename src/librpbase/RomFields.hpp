@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * RomFields.hpp: ROM fields class.                                        *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -16,6 +16,7 @@
 #include <stdint.h>
 
 // C includes (C++ namespace)
+#include <cstring>
 #include <ctime>
 
 // C++ includes
@@ -63,7 +64,7 @@ class RomFieldsPrivate;
 class RomFields
 {
 	public:
-		// ROM field types.
+		// ROM field types
 		enum RomFieldType : uint8_t {
 			RFT_INVALID,		// Invalid. (skips the field)
 			RFT_STRING,		// Basic string.
@@ -75,7 +76,7 @@ class RomFields
 			RFT_STRING_MULTI,	// Multi-language string.
 		};
 
-		// String format flags. (RFT_STRING)
+		// String format flags (RFT_STRING)
 		enum StringFormat : unsigned int {
 			// Print the string using a monospaced font.
 			STRF_MONOSPACE	= (1U << 0),
@@ -248,20 +249,29 @@ class RomFields
 			}
 		};
 
-		// Typedefs for various containers.
+		// Typedefs for various containers
 		typedef std::map<uint32_t, std::string> StringMultiMap_t;
 		typedef std::vector<std::vector<std::string> > ListData_t;
 		typedef std::map<uint32_t, ListData_t> ListDataMultiMap_t;
 		typedef std::vector<LibRpTexture::rp_image_const_ptr > ListDataIcons_t;
 
-		// ROM field struct.
-		// Dynamically allocated.
+		// ROM field struct
+		// Dynamically allocated
 		struct Field {
 			/**
 			 * Initialize a RomFields::Field object.
 			 * Defaults to zero init.
 			 */
-			Field();
+			Field()
+				: name(nullptr)
+				, type(RFT_INVALID)
+				, tabIdx(0)
+				, flags(0)
+			{
+				// NOTE: desc/data are not zeroed here.
+				// They must be set afterwards.
+				// (Optimization; RomFields::Field should only be created by RomFields.)
+			}
 
 			/**
 			 * Initialize a RomFields::Field object.
@@ -272,8 +282,23 @@ class RomFields
 			 * @param tabIdx
 			 * @param flags
 			 */
-			Field(const char *name, RomFieldType type, uint8_t tabIdx, unsigned int flags);
+			Field(const char *name, RomFieldType type, uint8_t tabIdx, unsigned int flags)
+				: name(name ? strdup(name) : nullptr)
+				, type(type)
+				, tabIdx(tabIdx)
+				, flags(flags)
+			{
+				// NOTE: desc/data are not zeroed here.
+				// They must be set afterwards.
+				// (Optimization; RomFields::Field should only be created by RomFields.)
+			}
 
+			/**
+			 * Destructor.
+			 *
+			 * NOTE: Exported for test case purposes.
+			 */
+			RP_LIBROMDATA_PUBLIC
 			~Field();
 
 			Field(const Field &other);			// copy constructor
