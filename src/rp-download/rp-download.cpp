@@ -422,6 +422,14 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 #endif
 	rp_secure_enable(param);
 
+#ifdef __GLIBC__
+	// Reduce /etc/localtime stat() calls.
+	// References:
+	// - https://lwn.net/Articles/944499/
+	// - https://gitlab.com/procps-ng/procps/-/merge_requests/119
+	setenv("TZ", ":/etc/localtime", 0);
+#endif /* __GLIBC__ */
+
 	// Store argv[0] globally.
 	argv0 = argv[0];
 

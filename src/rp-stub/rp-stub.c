@@ -323,6 +323,15 @@ int main(int argc, char *argv[])
 	}
 
 	if (!config) {
+#ifdef __GLIBC__
+		// Reduce /etc/localtime stat() calls.
+		// NOTE: Only for thumbnailing mode, since the process doesn't persist.
+		// References:
+		// - https://lwn.net/Articles/944499/
+		// - https://gitlab.com/procps-ng/procps/-/merge_requests/119
+		setenv("TZ", ":/etc/localtime", 0);
+#endif /* __GLIBC__ */
+
 		// Create the thumbnail.
 		const char *const source_file = argv[optind];
 		char *output_file;

@@ -435,6 +435,14 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 	// Enable security options.
 	rpcli_do_security_options();
 
+#ifdef __GLIBC__
+	// Reduce /etc/localtime stat() calls.
+	// References:
+	// - https://lwn.net/Articles/944499/
+	// - https://gitlab.com/procps-ng/procps/-/merge_requests/119
+	setenv("TZ", ":/etc/localtime", 0);
+#endif /* __GLIBC__ */
+
 	// Set the C and C++ locales.
 	locale::global(locale(""));
 #ifdef _WIN32

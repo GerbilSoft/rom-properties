@@ -133,6 +133,14 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 	// RpGdiplusBackend will be set up by tests that use it.
 #endif /* _WIN32 */
 
+#ifdef __GLIBC__
+	// Reduce /etc/localtime stat() calls.
+	// References:
+	// - https://lwn.net/Articles/944499/
+	// - https://gitlab.com/procps-ng/procps/-/merge_requests/119
+	setenv("TZ", ":/etc/localtime", 0);
+#endif /* __GLIBC__ */
+
 	// Set the C and C++ locales.
 	// NOTE: The variable needs to be static char[] because
 	// POSIX putenv() takes `char*` and the buffer becomes
