@@ -361,7 +361,7 @@ INT_PTR CALLBACK SystemsTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam,
 
 		case WM_CTLCOLORDLG:
 		case WM_CTLCOLORSTATIC:
-			if (g_darkModeSupported && g_darkModeEnabled) {
+			if (g_darkModeEnabled) {
 				auto *const d = reinterpret_cast<SystemsTabPrivate*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
 				if (!d) {
 					// No SystemsTabPrivate. Can't do anything...

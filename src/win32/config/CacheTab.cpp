@@ -908,7 +908,7 @@ INT_PTR CALLBACK CacheTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, L
 
 		case WM_CTLCOLORDLG:
 		case WM_CTLCOLORSTATIC:
-			if (g_darkModeSupported && g_darkModeEnabled) {
+			if (g_darkModeEnabled) {
 				auto *const d = reinterpret_cast<CacheTabPrivate*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
 				if (!d) {
 					// No CacheTabPrivate. Can't do anything...

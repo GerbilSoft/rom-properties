@@ -218,7 +218,7 @@ INT_PTR CALLBACK AchievementsTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wP
 
 		case WM_CTLCOLORDLG:
 		case WM_CTLCOLORSTATIC:
-			if (g_darkModeSupported && g_darkModeEnabled) {
+			if (g_darkModeEnabled) {
 				auto *const d = reinterpret_cast<AchievementsTabPrivate*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
 				if (!d) {
 					// No AchievementsTabPrivate. Can't do anything...

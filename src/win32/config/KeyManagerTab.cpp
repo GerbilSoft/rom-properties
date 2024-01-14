@@ -867,7 +867,7 @@ INT_PTR CALLBACK KeyManagerTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 
 		case WM_CTLCOLORDLG:
 		case WM_CTLCOLORSTATIC:
-			if (g_darkModeSupported && g_darkModeEnabled) {
+			if (g_darkModeEnabled) {
 				auto *const d = reinterpret_cast<KeyManagerTabPrivate*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
 				if (!d) {
 					// No KeyManagerTabPrivate. Can't do anything...

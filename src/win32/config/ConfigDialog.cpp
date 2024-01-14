@@ -413,7 +413,7 @@ LRESULT CALLBACK ConfigDialogPrivate::subclassProc(
 
 		case WM_CTLCOLORDLG:
 		case WM_CTLCOLORSTATIC:
-			if (g_darkModeSupported && g_darkModeEnabled) {
+			if (g_darkModeEnabled) {
 				HDC hdc = reinterpret_cast<HDC>(wParam);
 				SetTextColor(hdc, g_darkTextColor);
 				SetBkColor(hdc, g_darkBkColor);

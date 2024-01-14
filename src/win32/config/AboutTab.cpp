@@ -447,7 +447,7 @@ INT_PTR CALLBACK AboutTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, L
 
 		case WM_CTLCOLORDLG:
 		case WM_CTLCOLORSTATIC:
-			if (g_darkModeSupported && g_darkModeEnabled) {
+			if (g_darkModeEnabled) {
 				auto *const d = reinterpret_cast<AboutTabPrivate*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
 				if (!d) {
 					// No AboutTabPrivate. Can't do anything...
@@ -833,7 +833,7 @@ void AboutTabPrivate::initRtfColorTable(char *buf, size_t size)
 	};
 
 	COLORREF_t ctext, clink;
-	if (g_darkModeSupported && g_darkModeEnabled) {
+	if (g_darkModeEnabled) {
 		ctext.color = g_darkTextColor;
 		clink.color = 0x00CC6600;	// TODO: Dark mode version.
 	} else {
