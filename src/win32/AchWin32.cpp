@@ -16,6 +16,7 @@
 // Other rom-properties libraries
 #include "librpbase/Achievements.hpp"
 #include "librptext/wchar.hpp"
+#include "librpthreads/pthread_once.h"
 using namespace LibRpBase;
 
 // ROM icon
@@ -74,6 +75,12 @@ public:
 
 private:
 	/**
+	 * Register the window class.
+	 * NOTE: Must be called from pthread_once().
+	 */
+	static void registerWindowClass(void);
+
+	/**
 	 * Remove a window from tracking.
 	 * This also removes the notification icon.
 	 * @param hWnd
@@ -90,8 +97,9 @@ private:
 	static LRESULT CALLBACK RpAchNotifyWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 public:
-	// Window class. (registered once)
+	// Window class (registered once)
 	ATOM atomWindowClass;
+	pthread_once_t once_control;
 
 	// NOTE: Windows Explorer appears to create a new thread per
 	// properties dialog, and the thread (and this window) disappears
@@ -115,27 +123,10 @@ AchWin32 AchWin32Private::instance;
 AchWin32Private::AchWin32Private()
 	: hasRegistered(false)
 	, atomWindowClass(0)
+	, once_control(PTHREAD_ONCE_INIT)
 {
 	// NOTE: Cannot register with the Achievements class here because the
 	// static Achievements instance might not be fully initialized yet.
-
-	static const WNDCLASSEX wndClass = {
-		sizeof(WNDCLASSEX),		// cbSize
-		CS_HREDRAW | CS_VREDRAW,	// style
-		RpAchNotifyWndProc,		// lpfnWndProc
-		0,				// cbClsExtra
-		0,				// cbWndExtra
-		HINST_THISCOMPONENT,		// hInstance
-		nullptr,			// hIcon
-		nullptr,			// hCursor
-		nullptr,			// hbrBackground
-		nullptr,			// lpszMenuName
-		_T("RpAchNotifyWnd"),		// lpszClassName
-		nullptr				// hIconSm
-	};
-
-	// Register the window class.
-	atomWindowClass = RegisterClassEx(&wndClass);
 }
 
 AchWin32Private::~AchWin32Private()
@@ -199,14 +190,15 @@ int AchWin32Private::notifyFunc(Achievements::ID id)
 		return 0;
 	} else {
 		// No notification window. We'll need to create it.
+		pthread_once(&once_control, registerWindowClass);
 		hNotifyWnd = CreateWindow(
-			_T("RpAchNotifyWnd"),	// lpClassName
-			_T("RpAchNotifyWnd"),	// lpWindowName
-			0,			// dwStyle
-			0, 0,			// x, y
-			0, 0,			// nWidth, nHeight
-			nullptr, nullptr,	// hWndParent, hMenu
-			nullptr, this);		// hInstance, lpParam
+			MAKEINTATOM(atomWindowClass),	// lpClassName
+			_T("RpAchNotifyWnd"),		// lpWindowName
+			0,				// dwStyle
+			0, 0,				// x, y
+			0, 0,				// nWidth, nHeight
+			nullptr, nullptr,		// hWndParent, hMenu
+			nullptr, this);			// hInstance, lpParam
 		SetWindowLongPtr(hNotifyWnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(this));
 		map_tidToHWND.emplace(tid, hNotifyWnd);
 		map_hWndToTID.emplace(hNotifyWnd, tid);
@@ -316,6 +308,35 @@ int AchWin32Private::notifyFunc(Achievements::ID id)
 
 	// NOTE: Not waiting for a response.
 	return 0;
+}
+
+/**
+ * Register the window class.
+ * NOTE: Must be called from pthread_once().
+ */
+void AchWin32Private::registerWindowClass(void)
+{
+	// TODO: Maybe atomWindowClass should be static?
+	if (AchWin32Private::instance.d_ptr->atomWindowClass != 0)
+		return;
+
+	static const WNDCLASSEX wndClass = {
+		sizeof(WNDCLASSEX),		// cbSize
+		CS_HREDRAW | CS_VREDRAW,	// style
+		RpAchNotifyWndProc,		// lpfnWndProc
+		0,				// cbClsExtra
+		0,				// cbWndExtra
+		HINST_THISCOMPONENT,		// hInstance
+		nullptr,			// hIcon
+		nullptr,			// hCursor
+		nullptr,			// hbrBackground
+		nullptr,			// lpszMenuName
+		_T("RpAchNotifyWnd"),		// lpszClassName
+		nullptr				// hIconSm
+	};
+
+	// Register the window class.
+	AchWin32Private::instance.d_ptr->atomWindowClass = RegisterClassEx(&wndClass);
 }
 
 /**
