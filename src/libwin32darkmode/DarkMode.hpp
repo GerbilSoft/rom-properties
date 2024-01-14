@@ -140,7 +140,7 @@ int InitDarkMode(void);
  */
 static inline void UpdateDarkModeEnabled(void)
 {
-	g_darkModeEnabled = _ShouldAppsUseDarkMode() && !IsHighContrast();
+	g_darkModeEnabled = g_darkModeSupported && _ShouldAppsUseDarkMode() && !IsHighContrast();
 }
 
 #ifdef __cplusplus
