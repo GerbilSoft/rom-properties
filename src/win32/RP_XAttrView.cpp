@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * RP_XAttrView.cpp: Extended attribute viewer property page.              *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -669,6 +669,19 @@ INT_PTR CALLBACK RP_XAttrView_Private::DlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 					break;
 			}
 			break;
+		}
+
+		case WM_CTLCOLORMSGBOX:
+		case WM_CTLCOLOREDIT:
+		case WM_CTLCOLORLISTBOX:
+		case WM_CTLCOLORBTN:
+		case WM_CTLCOLORDLG:
+		case WM_CTLCOLORSCROLLBAR:
+		case WM_CTLCOLORSTATIC: {
+			// Forward WM_CTLCOLOR* to the parent window.
+			// This fixes issues when using StartAllBack on Windows 11
+			// to enforce Dark Mode schemes in Windows Explorer.
+			return SendMessage(GetParent(hDlg), uMsg, wParam, lParam);
 		}
 
 		default:
