@@ -123,6 +123,12 @@ void AllowDarkModeForApp(bool allow);
 void FixDarkScrollBar(void);
 
 /**
+ * Initialize Dark Mode function pointers.
+ * @return 0 if Dark Mode functionality is available; non-zero if not or an error occurred.
+ */
+int InitDarkModePFNs(void);
+
+/**
  * Initialize Dark Mode.
  * @return 0 if Dark Mode functionality is available; non-zero if not or an error occurred.
  */

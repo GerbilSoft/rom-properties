@@ -34,6 +34,9 @@ using LibWin32UI::LoadDialog_i18n;
 // C++ STL classes
 using std::tstring;
 
+// Win32 dark mode
+#include "libwin32darkmode/DarkMode.hpp"
+
 // CLSID
 const CLSID CLSID_RP_XAttrView =
 	{0xB0503F2E, 0xC4AE, 0x48DF, {0xA8,0x80, 0xE2, 0xB1, 0x22, 0xB5, 0x85, 0x71}};
@@ -678,10 +681,14 @@ INT_PTR CALLBACK RP_XAttrView_Private::DlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 		case WM_CTLCOLORDLG:
 		case WM_CTLCOLORSCROLLBAR:
 		case WM_CTLCOLORSTATIC: {
-			// Forward WM_CTLCOLOR* to the parent window.
+			// If using Dark Mode, forward WM_CTLCOLOR* to the parent window.
 			// This fixes issues when using StartAllBack on Windows 11
 			// to enforce Dark Mode schemes in Windows Explorer.
-			return SendMessage(GetParent(hDlg), uMsg, wParam, lParam);
+			// TODO: Handle color scheme changes?
+			if (g_darkModeEnabled) {
+				return SendMessage(GetParent(hDlg), uMsg, wParam, lParam);
+			}
+			break;
 		}
 
 		default:

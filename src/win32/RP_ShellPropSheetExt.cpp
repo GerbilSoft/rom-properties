@@ -49,6 +49,9 @@ using std::unique_ptr;
 using std::vector;
 using std::wstring;	// for tstring
 
+// Win32 dark mode
+#include "libwin32darkmode/DarkMode.hpp"
+
 // CLSID
 const CLSID CLSID_RP_ShellPropSheetExt =
 	{0x2443C158, 0xDF7C, 0x4352, {0xB4, 0x35, 0xBC, 0x9F, 0x88, 0x5F, 0xFD, 0x52}};
@@ -2224,6 +2227,10 @@ IFACEMETHODIMP RP_ShellPropSheetExt::Initialize(
 		tfilename = nullptr;
 	}
 
+	// Make sure the Dark Mode function pointers are initialized.
+	InitDarkModePFNs();
+
+	// Everything's good to go.
 	hr = S_OK;
 
 cleanup:
@@ -2918,10 +2925,14 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 		case WM_CTLCOLORDLG:
 		case WM_CTLCOLORSCROLLBAR:
 		case WM_CTLCOLORSTATIC: {
-			// Forward WM_CTLCOLOR* to the parent window.
+			// If using Dark Mode, forward WM_CTLCOLOR* to the parent window.
 			// This fixes issues when using StartAllBack on Windows 11
 			// to enforce Dark Mode schemes in Windows Explorer.
-			return SendMessage(GetParent(hDlg), uMsg, wParam, lParam);
+			// TODO: Handle color scheme changes?
+			if (g_darkModeEnabled) {
+				return SendMessage(GetParent(hDlg), uMsg, wParam, lParam);
+			}
+			break;
 		}
 
 		default:
@@ -3022,10 +3033,14 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::SubtabDlgProc(HWND hDlg, UINT uMs
 		case WM_CTLCOLORBTN:
 		case WM_CTLCOLORDLG:
 		case WM_CTLCOLORSCROLLBAR: {
-			// Forward WM_CTLCOLOR* to the parent window.
+			// If using Dark Mode, forward WM_CTLCOLOR* to the parent window.
 			// This fixes issues when using StartAllBack on Windows 11
 			// to enforce Dark Mode schemes in Windows Explorer.
-			return SendMessage(GetParent(hDlg), uMsg, wParam, lParam);
+			// TODO: Handle color scheme changes?
+			if (g_darkModeEnabled) {
+				return SendMessage(GetParent(hDlg), uMsg, wParam, lParam);
+			}
+			break;
 		}
 
 		case WM_CTLCOLORSTATIC: {
@@ -3039,7 +3054,10 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::SubtabDlgProc(HWND hDlg, UINT uMs
 				// No custom color. Forward the message to the parent window.
 				// This fixes issues when using StartAllBack on Windows 11
 				// to enforce Dark Mode schemes in Windows Explorer.
-				return SendMessage(GetParent(hDlg), uMsg, wParam, lParam);
+				// TODO: Handle color scheme changes?
+				if (g_darkModeEnabled) {
+					return SendMessage(GetParent(hDlg), uMsg, wParam, lParam);
+				}
 			}
 			break;
 		}

@@ -127,11 +127,14 @@ static constexpr bool CheckBuildNumber(DWORD buildNumber)
 }
 
 /**
- * Initialize Dark Mode.
+ * Initialize Dark Mode function pointers.
  * @return 0 if Dark Mode functionality is available; non-zero if not or an error occurred.
  */
-int InitDarkMode(void)
+int InitDarkModePFNs(void)
 {
+	if (g_darkModeSupported)
+		return 0;
+
 	auto RtlGetNtVersionNumbers = reinterpret_cast<fnRtlGetNtVersionNumbers>(
 		GetProcAddress(GetModuleHandle(_T("ntdll.dll")), "RtlGetNtVersionNumbers"));
 	if (!RtlGetNtVersionNumbers)
@@ -194,13 +197,7 @@ int InitDarkMode(void)
 	{
 		// Dark mode is supported.
 		g_darkModeSupported = true;
-
-		AllowDarkModeForApp(true);
-		_RefreshImmersiveColorPolicyState();
-
 		UpdateDarkModeEnabled();
-
-		FixDarkScrollBar();
 		return 0;
 	}
 
@@ -220,4 +217,22 @@ int InitDarkMode(void)
 	_SetPreferredAppMode = nullptr;
 	FreeLibrary(hUxtheme);
 	return 6;
+}
+
+/**
+ * Initialize Dark Mode.
+ * @return 0 if Dark Mode functionality is available; non-zero if not or an error occurred.
+ */
+int InitDarkMode(void)
+{
+	int ret = InitDarkModePFNs();
+	if (ret != 0)
+		return ret;
+
+	// Dark mode is supported.
+	AllowDarkModeForApp(true);
+	_RefreshImmersiveColorPolicyState();
+	UpdateDarkModeEnabled();
+	FixDarkScrollBar();
+	return 0;
 }
