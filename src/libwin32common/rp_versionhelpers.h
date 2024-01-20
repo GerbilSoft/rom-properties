@@ -106,18 +106,18 @@ VERSIONHELPERAPI IsWindows11Build21262OrGreater(void) {
     // Windows 11 pre-release Build 21262 on ARM added amd64 emulation.
     // NOTE: Officially it was 21277, but 21262 was leaked and supports it too.
     // https://blogs.windows.com/windows-insider/2020/12/10/introducing-x64-emulation-in-preview-for-windows-10-on-arm-pcs-to-the-windows-insider-program/
-    IsWindowsVersionOrGreater_BuildNumberCheck(HIBYTE(0x0A00), LOBYTE(0x0A00), 21262);
+    return IsWindowsVersionOrGreater_BuildNumberCheck(HIBYTE(0x0A00), LOBYTE(0x0A00), 21262);
 }
 
 VERSIONHELPERAPI IsWindows11OrGreater(void) {
     // Windows 11 shows up as "Windows 10 build 22000".
-    IsWindowsVersionOrGreater_BuildNumberCheck(HIBYTE(0x0A00), LOBYTE(0x0A00), 22000);
+    return IsWindowsVersionOrGreater_BuildNumberCheck(HIBYTE(0x0A00), LOBYTE(0x0A00), 22000);
 }
 
 VERSIONHELPERAPI IsWindows11Build25905OrGreater(void) {
     // Windows 11 Build 25905 dropped support for 32-bit ARM applications.
     // https://blogs.windows.com/windows-insider/2023/07/12/announcing-windows-11-insider-preview-build-25905/
-    IsWindowsVersionOrGreater_BuildNumberCheck(HIBYTE(0x0A00), LOBYTE(0x0A00), 25905);
+    return IsWindowsVersionOrGreater_BuildNumberCheck(HIBYTE(0x0A00), LOBYTE(0x0A00), 25905);
 }
 
 VERSIONHELPERAPI IsWindowsServer(void) {
