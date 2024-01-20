@@ -2820,13 +2820,17 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 
 		case WM_SYSCOLORCHANGE:
 		case WM_THEMECHANGED: {
-			// Reload the images.
-			auto *const d = reinterpret_cast<RP_ShellPropSheetExt_Private*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
+			auto* const d = reinterpret_cast<RP_ShellPropSheetExt_Private*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
 			if (!d) {
 				// No RP_ShellPropSheetExt_Private. Can't do anything...
 				return false;
 			}
 
+			UpdateDarkModeEnabled();
+			d->isDarkModeEnabled = VerifyDialogDarkMode(hDlg);
+			// TODO: Force a window update?
+
+			// Reload the images.
 			// Assuming the main background color may have changed.
 
 			// Reload images with the new background color.
@@ -2939,6 +2943,12 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 			}
 			break;
 		}
+
+		case WM_SETTINGCHANGE:
+			if (g_darkModeSupported && IsColorSchemeChangeMessage(lParam)) {
+				SendMessage(hDlg, WM_THEMECHANGED, 0, 0);
+			}
+			break;
 
 		default:
 			break;

@@ -629,12 +629,15 @@ INT_PTR CALLBACK RP_XAttrView_Private::DlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 
 		case WM_SYSCOLORCHANGE:
 		case WM_THEMECHANGED: {
-			// Reload the images.
-			auto *const d = reinterpret_cast<RP_XAttrView_Private*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
+			auto* const d = reinterpret_cast<RP_XAttrView_Private*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
 			if (!d) {
 				// No RP_XAttrView_Private. Can't do anything...
 				return false;
 			}
+
+			UpdateDarkModeEnabled();
+			d->isDarkModeEnabled = VerifyDialogDarkMode(hDlg);
+			// TODO: Force a window update?
 
 			// Update the alternate row color.
 			HWND hListViewADS = GetDlgItem(hDlg, IDC_XATTRVIEW_LISTVIEW_ADS);
@@ -695,6 +698,12 @@ INT_PTR CALLBACK RP_XAttrView_Private::DlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 			}
 			break;
 		}
+
+		case WM_SETTINGCHANGE:
+			if (g_darkModeSupported && IsColorSchemeChangeMessage(lParam)) {
+				SendMessage(hDlg, WM_THEMECHANGED, 0, 0);
+			}
+			break;
 
 		default:
 			break;
