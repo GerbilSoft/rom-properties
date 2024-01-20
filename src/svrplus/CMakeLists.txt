@@ -19,6 +19,7 @@ SET(${PROJECT_NAME}_RC
 	res-en_US.rc
 	res-de_DE.rc
 	res-fr_FR.rc
+	res-ro_RO.rc
 	)
 
 #########################

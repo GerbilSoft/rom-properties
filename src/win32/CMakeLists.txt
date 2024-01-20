@@ -143,6 +143,7 @@ SET(${PROJECT_NAME}_RC
 	res/rp-es_ES.rc
 	res/rp-fr_FR.rc
 	res/rp-pt_BR.rc
+	res/rp-ro_RO.rc
 	res/rp-ru_RU.rc
 	)
 

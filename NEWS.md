@@ -33,6 +33,7 @@
       GameCube disc images.
     * Fixes #397: Could you add support for PS2 ISO's compressed to zso and cso?
       * Reported by @60fpshacksrock.
+  * New Romanian translation (ro_RO), contributed by @ionuttbara.
 
 * New parsers:
   * Wim: Microsoft Windows Images, used by the Windows installer starting with

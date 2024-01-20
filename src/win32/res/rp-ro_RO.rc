@@ -1,0 +1,192 @@
+/***************************************************************************
+ * ROM Properties Page shell extension. (Win32)                            *
+ * rp-ro_RO.rc: Win32 resource script. (ro_RO)                             *
+ *                                                                         *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
+ * SPDX-License-Identifier: GPL-2.0-or-later                               *
+ ***************************************************************************/
+
+// UTF-8 encoding
+#pragma code_page(65001)
+
+#include "resource.h"
+#define WC_LANGUAGECOMBOBOX	"rp-LanguageComboBox"
+
+#define APSTUDIO_HIDDEN_SYMBOLS
+#include <windows.h>
+#include <wingdi.h>
+#include <commctrl.h>
+#include <richedit.h>
+#undef APSTUDIO_HIDDEN_SYMBOLS
+
+/**
+ * Configuration: Image type priorities
+ */
+LANGUAGE LANG_ROMANIAN, SUBLANG_ROMANIAN_ROMANIA
+IDD_CONFIG_IMAGETYPES DIALOGEX 0, 0, 413, 252
+STYLE DS_3DLOOK | DS_CONTROL | DS_SHELLFONT | WS_CAPTION | WS_VISIBLE | WS_CHILDWINDOW | WS_TABSTOP
+EXSTYLE WS_EX_NOPARENTNOTIFY | WS_EX_CONTROLPARENT
+FONT 8, "MS Shell Dlg", FW_NORMAL, 0, 0
+BEGIN
+    LTEXT           "Selectați tipurile de imagini pe care doriți să le utilizați pentru fiecare sistem ca imagine miniaturală.\nImaginile interne sunt conţinute în fişierul ROM.\nImaginile externe sunt descărcate dintr-o bază de date externă de imagini.", IDC_IMAGETYPES_DESC1, 7, 7, 397, 30, SS_LEFT, WS_EX_LEFT
+    LTEXT           "1 = prioritatea cea mai mare; 2 = a doua prioritate principală; Nu = ignorară", IDC_IMAGETYPES_DESC2, 7, 37, 397, 8, SS_LEFT, WS_EX_LEFT
+    CONTROL         "", IDC_IMAGETYPES_CREDITS, "SysLink", 0x50010000, 7, 221, 397, 24, 0x00000000
+END
+
+/**
+ * Configuration: Systems
+ */
+LANGUAGE LANG_ROMANIAN, SUBLANG_ROMANIAN_ROMANIA
+IDD_CONFIG_SYSTEMS DIALOGEX 0, 0, 413, 252
+STYLE DS_3DLOOK | DS_CONTROL | DS_SHELLFONT | WS_VISIBLE | WS_CHILDWINDOW | WS_TABSTOP
+EXSTYLE WS_EX_NOPARENTNOTIFY | WS_EX_CONTROLPARENT
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    GROUPBOX        "Game Boy Title Screens", IDC_SYSTEMS_DMGTS_GROUPBOX, 7, 7, 397, 74
+    LTEXT           "Selectați modelul de Game Boy pentru a utiliza pentru ecranele de titlu pentru diferite tipuri de imagini de la Game Boy ROM.", IDC_STATIC, 15, 18, 381, 8
+    LTEXT           "Game Boy", IDC_STATIC, 15, 30, 80, 9
+    COMBOBOX        IDC_SYSTEMS_DMGTS_DMG, 77, 29, 69, 30, CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Super Game Boy:", IDC_STATIC, 15, 45, 80, 9
+    COMBOBOX        IDC_SYSTEMS_DMGTS_SGB, 77, 44, 69, 30, CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Game Boy Color:", IDC_STATIC, 15, 60, 80, 9
+    COMBOBOX        IDC_SYSTEMS_DMGTS_CGB, 77, 59, 69, 30, CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+END
+
+/**
+ * Configuration: Options
+ */
+LANGUAGE LANG_ROMANIAN, SUBLANG_ROMANIAN_ROMANIA
+IDD_CONFIG_OPTIONS DIALOGEX 0, 0, 413, 252
+STYLE DS_3DLOOK | DS_CONTROL | DS_SHELLFONT | WS_VISIBLE | WS_CHILDWINDOW | WS_TABSTOP
+EXSTYLE WS_EX_NOPARENTNOTIFY | WS_EX_CONTROLPARENT
+FONT 8, "MS Shell Dlg", FW_NORMAL, 0, 0
+BEGIN
+    GROUPBOX        "&Descarcari", IDC_OPTIONS_GRPDOWNLOADS, 7, 7, 397, 121, BS_GROUPBOX, WS_EX_TRANSPARENT
+    GROUPBOX        "", IDC_OPTIONS_GRPEXTIMGDL, 15, 19, 381, 47, 0, 0
+    AUTOCHECKBOX    "&Descărcări imagine", IDC_OPTIONS_CHKEXTIMGDL, 21, 19, 101, 8, 0, 0
+    RTEXT           "Când se utilizează o conexiune nelimitată la rețea:", IDC_OPTIONS_LBL_UNMETERED_DL, 25, 31, 145, 8, 0, 0
+    COMBOBOX        IDC_OPTIONS_CBO_UNMETERED_DL, 174, 29, 132, 30, CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    RTEXT           "Când se utilizează o conexiune contorizată la rețea:", IDC_OPTIONS_LBL_METERED_DL, 25, 49, 145, 8, 0, 0
+    COMBOBOX        IDC_OPTIONS_CBO_METERED_DL, 174, 47, 132, 30, CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    AUTOCHECKBOX    "Utilizaţi întotdeauna pictograma internă (dacă este prezentă) pentru dimensiuni mici.", IDC_OPTIONS_INTICONSMALL, 15, 73, 381, 8, 0, WS_EX_TRANSPARENT
+    AUTOCHECKBOX    "Stochează informaţii despre originea fişierului cache folosind atribute extinse.\nAcest lucru ajută la identificarea de unde au fost descărcate fişierele cache", IDC_OPTIONS_STOREFILEORIGININFO, 15, 87, 381, 16, BS_MULTILINE, WS_EX_TRANSPARENT
+    LTEXT           "Limba pentru titlurile PAL pe GameTDB:", IDC_STATIC, 15, 111, 120, 8, 0, WS_EX_TRANSPARENT
+    // FIXME: Determine best height. (Compare to RP_ShellPropSheetExt for multi-language.)
+    CONTROL         "", IDC_OPTIONS_PALLANGUAGEFORGAMETDB, WC_LANGUAGECOMBOBOX, CBS_DROPDOWNLIST | WS_CHILD | WS_TABSTOP | WS_VISIBLE, 138, 108, 68, 128, WS_EX_LEFT
+
+    GROUPBOX        "Opţiuni", IDC_OPTIONS_GRPOPTIONS, 7, 133, 397, 54, BS_GROUPBOX, WS_EX_TRANSPARENT
+    AUTOCHECKBOX    "Arată o pictogramă suprapusă de securitate pentru imaginile ROM cu permisiunile de tip\n""periculos"".", IDC_OPTIONS_DANGEROUSPERMISSIONS, 15, 144, 381, 16, BS_MULTILINE, WS_EX_TRANSPARENT
+    AUTOCHECKBOX    "Activați extragerea miniaturilor și metadatelor în sistemele de fișiere de rețea\nAcest lucru poate încetini navigarea fișierelor.", IDC_OPTIONS_ENABLETHUMBNAILONNETWORKFS, 15, 165, 381, 16, BS_MULTILINE, WS_EX_TRANSPARENT
+END
+
+/**
+ * Configuration: Thumbnail cache (Windows Vista and later)
+ */
+LANGUAGE LANG_ROMANIAN, SUBLANG_ROMANIAN_ROMANIA
+IDD_CONFIG_CACHE DIALOGEX 0, 0, 413, 252
+STYLE DS_3DLOOK | DS_CONTROL | DS_SHELLFONT | WS_VISIBLE | WS_CHILDWINDOW | WS_TABSTOP
+EXSTYLE WS_EX_NOPARENTNOTIFY | WS_EX_CONTROLPARENT
+FONT 8, "MS Shell Dlg", FW_NORMAL, 0, 0
+BEGIN
+    LTEXT           "", IDC_CACHE_DESCRIPTION, 7, 7, 397, 8, SS_LEFT, WS_EX_TRANSPARENT
+    PUSHBUTTON      "Ştergeţi Cache-ul de sistem Thumbnail", IDC_CACHE_CLEAR_SYS_THUMBS, 7, 20, 398, 28, 0, WS_EX_LEFT
+    LTEXT           "Pagina de Proprietăți ROM întreține propria geocutie pentru imaginile externe.\nȘtergerea acestei geocutii va forța redescărcarea imaginilor externe.", IDC_STATIC, 7, 55, 397, 17, SS_LEFT, WS_EX_TRANSPARENT
+    PUSHBUTTON      "Curăță pagina de proprietăți ROM Download Cache", IDC_CACHE_CLEAR_RP_DL, 7, 75, 398, 28, 0, WS_EX_LEFT
+    LTEXT           "", IDC_CACHE_STATUS, 7, 205, 397, 9, NOT WS_VISIBLE | SS_LEFT, WS_EX_LEFT
+    CONTROL         "", IDC_CACHE_PROGRESS, PROGRESS_CLASS, NOT WS_VISIBLE, 7, 216, 397, 16, WS_EX_LEFT
+END
+
+/**
+ * Configuration: Thumbnail cache (Windows XP and earlier)
+ */
+LANGUAGE LANG_ROMANIAN, SUBLANG_ROMANIAN_ROMANIA
+IDD_CONFIG_CACHE_XP DIALOGEX 0, 0, 413, 252
+STYLE DS_3DLOOK | DS_CONTROL | DS_SHELLFONT | WS_VISIBLE | WS_CHILDWINDOW | WS_TABSTOP
+EXSTYLE WS_EX_NOPARENTNOTIFY | WS_EX_CONTROLPARENT
+FONT 8, "MS Shell Dlg", FW_NORMAL, 0, 0
+BEGIN
+    LTEXT           "", IDC_CACHE_DESCRIPTION, 7, 7, 397, 25, SS_LEFT, WS_EX_TRANSPARENT
+    AUTORADIOBUTTON "Găsiţi toate fişierele Thumbs.db pe unitatea (drive) specificată.", IDC_CACHE_XP_FIND_DRIVES, 7, 35, 168, 8, WS_GROUP, WS_EX_LEFT
+    AUTORADIOBUTTON "Specifică calea", IDC_CACHE_XP_FIND_PATH, 180, 35, 61, 8, 0, WS_EX_LEFT
+    CONTROL         "", IDC_CACHE_XP_DRIVES, WC_LISTVIEW, WS_TABSTOP | WS_BORDER | LVS_ALIGNLEFT | LVS_LIST | LVS_SINGLESEL, 7, 46, 397, 45, WS_EX_LEFT | WS_EX_CLIENTEDGE
+    EDITTEXT        IDC_CACHE_XP_PATH, 7, 46, 343, 14, NOT WS_VISIBLE | ES_AUTOHSCROLL, WS_EX_LEFT
+    PUSHBUTTON      "Răsfoire...", IDC_CACHE_XP_BROWSE, 355, 45, 50, 15, NOT WS_VISIBLE, WS_EX_LEFT
+    PUSHBUTTON      "Găsește și șterge fișierele Thumbs.db", IDC_CACHE_XP_CLEAR_SYS_THUMBS, 7, 95, 398, 20, WS_DISABLED | BS_MULTILINE, WS_EX_LEFT
+    LTEXT           "Pagina de Proprietăți ROM întreține propria geocutie pentru imaginile externe. Ștergerea acestei geocutii va forța redescărcarea imaginilor externe.", IDC_STATIC, 7, 125, 313, 20, SS_LEFT, WS_EX_TRANSPARENT
+    PUSHBUTTON      "Elimină", IDC_CACHE_CLEAR_RP_DL, 323, 127, 82, 15, 0, WS_EX_LEFT
+    LTEXT           "", IDC_CACHE_STATUS, 7, 205, 397, 9, NOT WS_VISIBLE | SS_LEFT, WS_EX_LEFT
+    CONTROL         "", IDC_CACHE_PROGRESS, PROGRESS_CLASS, NOT WS_VISIBLE, 7, 216, 397, 16, WS_EX_LEFT
+END
+
+/**
+ * Configuration: Achievements
+ */
+LANGUAGE LANG_ROMANIAN, SUBLANG_ROMANIAN_ROMANIA
+IDD_CONFIG_ACHIEVEMENTS DIALOGEX 0, 0, 413, 252
+STYLE DS_3DLOOK | DS_CONTROL | DS_SHELLFONT | WS_VISIBLE | WS_CHILDWINDOW | WS_TABSTOP
+EXSTYLE WS_EX_NOPARENTNOTIFY | WS_EX_CONTROLPARENT
+FONT 8, "MS Shell Dlg", FW_NORMAL, 0, 0
+BEGIN
+    CONTROL         "", IDC_ACHIEVEMENTS_LIST, WC_LISTVIEW, WS_TABSTOP | WS_BORDER | LVS_ALIGNLEFT | LVS_REPORT | LVS_SINGLESEL, 7, 7, 397, 238, WS_EX_LEFT | WS_EX_CLIENTEDGE
+    // Dummy control needed to fix an issue on Win7 where the
+    // tab background color is wrong.
+    LTEXT           "", IDC_STATIC, 7, 7, 1, 1, NOT WS_VISIBLE, WS_EX_TRANSPARENT
+END
+
+#ifdef ENABLE_DECRYPTION
+/**
+ * Configuration: Key Manager
+ */
+LANGUAGE LANG_ROMANIAN, SUBLANG_ROMANIAN_ROMANIA
+IDD_CONFIG_KEYMANAGER DIALOGEX 0, 0, 413, 252
+STYLE DS_3DLOOK | DS_CONTROL | DS_SHELLFONT | WS_VISIBLE | WS_CHILDWINDOW | WS_TABSTOP
+EXSTYLE WS_EX_NOPARENTNOTIFY | WS_EX_CONTROLPARENT
+FONT 8, "MS Shell Dlg", FW_NORMAL, 0, 0
+BEGIN
+    CONTROL         "", IDC_KEYMANAGER_LIST, WC_LISTVIEW, WS_TABSTOP | WS_BORDER | LVS_ALIGNLEFT | LVS_REPORT | LVS_OWNERDATA | LVS_SINGLESEL, 7, 7, 397, 220, WS_EX_LEFT | WS_EX_CLIENTEDGE
+    // EDIT control is created as a child control of the ListView.
+    //EDITTEXT        IDC_KEYMANAGER_EDIT, 0, 0, 0, 0, NOT WS_VISIBLE | ES_AUTOHSCROLL | ES_WANTRETURN, WS_EX_LEFT
+    PUSHBUTTON      "I&mport", IDC_KEYMANAGER_IMPORT, 7, 231, 50, 14, 0, WS_EX_LEFT
+END
+#endif /* ENABLE_DECRYPTION */
+
+/**
+ * Configuration: About
+ */
+LANGUAGE LANG_ROMANIAN, SUBLANG_ROMANIAN_ROMANIA
+IDD_CONFIG_ABOUT DIALOGEX 0, 0, 413, 252
+STYLE DS_3DLOOK | DS_CONTROL | DS_SHELLFONT | WS_VISIBLE | WS_CHILDWINDOW | WS_TABSTOP
+EXSTYLE WS_EX_NOPARENTNOTIFY | WS_EX_CONTROLPARENT
+FONT 8, "MS Shell Dlg", FW_NORMAL, 0, 0
+BEGIN
+    CONTROL         "", IDC_ABOUT_ICON, WC_STATIC, SS_ICON, 7, 7, 16, 16, WS_EX_LEFT
+    CTEXT           "Pagina de proprietăți ROM", IDC_ABOUT_LINE1, 7, 7, 398, 9, SS_CENTER, WS_EX_LEFT
+    CTEXT           "Extensie Shell", IDC_ABOUT_LINE2, 7, 16, 398, 9, SS_CENTER, WS_EX_LEFT
+    CTEXT           "", IDC_ABOUT_VERSION, 7, 28, 398, 32, SS_CENTER, WS_EX_LEFT
+    CONTROL         "", IDC_ABOUT_UPDATE_CHECK, RICHEDIT_CLASS, ES_MULTILINE | ES_READONLY, 310, 7, 96, 64, SS_RIGHT, WS_EX_RIGHT | WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT
+    CONTROL         "", IDC_ABOUT_TABCONTROL, WC_TABCONTROL, 0, 7, 63, 398, 180, WS_EX_LEFT
+    CONTROL         "", IDC_ABOUT_RICHEDIT, RICHEDIT_CLASS, WS_TABSTOP | WS_BORDER | WS_VSCROLL | ES_MULTILINE | ES_READONLY | ES_AUTOVSCROLL, 14, 84, 384, 152, WS_EX_LEFT | WS_EX_NOPARENTNOTIFY | WS_EX_CLIENTEDGE | WS_EX_TRANSPARENT
+END
+
+/**
+ * XAttrView
+ * FIXME: PROP_MED_CYDLG (215) is too small on Win7.
+ * 215 vertical DLUs = 349px
+ * Property sheet is ~404px, which is 249 DLUs.
+ */
+LANGUAGE LANG_ROMANIAN, SUBLANG_ROMANIAN_ROMANIA
+IDD_XATTRVIEW DIALOG 0, 0, PROP_MED_CXDLG, 249
+STYLE DS_3DLOOK | DS_CONTROL | DS_SHELLFONT | WS_VISIBLE | WS_CHILDWINDOW | WS_TABSTOP
+CAPTION ""
+FONT 8, "Ms Shell Dlg"
+BEGIN
+    GROUPBOX        "Atribute MS-DOS", IDC_STATIC, 5, 7, 215, 35, 0, WS_EX_LEFT
+    CHECKBOX        "Doar citire", IDC_XATTRVIEW_DOS_READONLY, 14, 17, 49, 8, 0, WS_EX_LEFT
+    CHECKBOX        "Ascuns", IDC_XATTRVIEW_DOS_HIDDEN, 63, 17, 35, 8, 0, WS_EX_LEFT
+    CHECKBOX        "&Arhivare", IDC_XATTRVIEW_DOS_ARCHIVE, 105, 17, 35, 8, 0, WS_EX_LEFT
+    CHECKBOX        "&Sistem", IDC_XATTRVIEW_DOS_SYSTEM, 147, 17, 42, 8, 0, WS_EX_LEFT
+    CHECKBOX        "&Comprimat", IDC_XATTRVIEW_NTFS_COMPRESSED, 14, 28, 55, 8, 0, WS_EX_LEFT
+    CHECKBOX        "&Criptat", IDC_XATTRVIEW_NTFS_ENCRYPTED, 70, 28, 48, 8, 0, WS_EX_LEFT
+    GROUPBOX        "Fluxuri de date alternative", IDC_XATTRVIEW_GRPADS, 7, 49, 213, 196, 0, WS_EX_LEFT
+    CONTROL         "", IDC_XATTRVIEW_LISTVIEW_ADS, WC_LISTVIEW, WS_TABSTOP | WS_BORDER | LVS_ALIGNLEFT | LVS_SINGLESEL | LVS_REPORT, 14, 60, 200, 179, WS_EX_LEFT
+END

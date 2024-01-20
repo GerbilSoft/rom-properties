@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libwin32ui)                       *
  * LoadResource_i18n.hpp: LoadResource() for the specified locale.         *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -43,11 +43,12 @@ LPVOID LoadResource_i18n(HMODULE hModule, LPCTSTR lpType, DWORD dwResId)
 		uint32_t lc;
 		WORD wLanguage;
 	};
-	static const std::array<lc_mapping_t, 6> lc_mappings = {{
+	static const std::array<lc_mapping_t, 7> lc_mappings = {{
 		{'de', MAKELANGID(LANG_GERMAN, SUBLANG_GERMAN)},
 		{'es', MAKELANGID(LANG_SPANISH, SUBLANG_SPANISH)},
 		{'fr', MAKELANGID(LANG_FRENCH, SUBLANG_FRENCH)},
 		{'pt', MAKELANGID(LANG_PORTUGUESE, SUBLANG_PORTUGUESE_BRAZILIAN)},
+		{'ro', MAKELANGID(LANG_ROMANIAN, SUBLANG_ROMANIAN_ROMANIA)},
 		{'ru', MAKELANGID(LANG_RUSSIAN, SUBLANG_DEFAULT)},
 		{'uk', MAKELANGID(LANG_UKRAINIAN, SUBLANG_DEFAULT)},
 	}};
