@@ -17,7 +17,7 @@
 #include "resource.h"
 
 /** Dialogs **/
-LANGUAGE LANG_ROMANIAN, SUBLANG_ROMANIAN_ROMANIA
+LANGUAGE LANG_ROMANIAN, SUBLANG_DEFAULT
 IDD_SVRPLUS DIALOGEX 0, 0, 273, 157
 STYLE DS_3DLOOK | DS_CENTER | DS_MODALFRAME | DS_SHELLFONT | WS_CAPTION | WS_VISIBLE | WS_POPUPWINDOW | WS_MINIMIZEBOX | WS_SYSMENU
 EXSTYLE WS_EX_CONTROLPARENT
@@ -39,7 +39,7 @@ END
 //            accept the "\0" here.
 // - MSVC rc: Ignores "\0", but has a "/n" option to automatically
 //            NULL-terminate strings.
-LANGUAGE LANG_ROMANIAN, SUBLANG_ROMANIAN_ROMANIA
+LANGUAGE LANG_ROMANIAN, SUBLANG_DEFAULT
 STRINGTABLE
 BEGIN
 	IDS_MAIN_DESCRIPTION, L"Această instalare va înregistra ROM Properties Page DLL cu sistemul, ceea ce va oferi funcționalitate suplimentară pentru fișierele acceptate în Windows Explorer.\n\nReţineţi că locaţiile DLL sunt bine codificate în registru. Dacă mutaţi DLL-urile, va trebui să reporniţi instalatorul. În plus, DLL-urile vor fi de obicei blocate de Explorer, astfel încât să trebuiască să folosești acest program pentru a dezinstala mai întâi DLL-urile și apoi să repornești Explorer pentru a muta DLL-urile.\n\nDezinstalarea va anula înregistrarea proprietăților ROM DLL, ceea ce va dezactiva funcțiile suplimentare oferite de DLL pentru fișierele ROM suportate.\0"
