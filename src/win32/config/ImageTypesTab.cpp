@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * ImageTypesTab.cpp: Image type priorities tab. (Part of ConfigDialog.)   *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -682,9 +682,9 @@ INT_PTR CALLBACK ImageTypesTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 
 				HDC hdc = reinterpret_cast<HDC>(wParam);
 				SetTextColor(hdc, g_darkTextColor);
-				SetBkColor(hdc, g_darkBkColor);
+				SetBkColor(hdc, g_darkSubDlgBkColor);
 				if (!d->hbrBkgnd) {
-					d->hbrBkgnd = CreateSolidBrush(g_darkBkColor);
+					d->hbrBkgnd = CreateSolidBrush(g_darkSubDlgBkColor);
 				}
 				return reinterpret_cast<INT_PTR>(d->hbrBkgnd);
 			}
