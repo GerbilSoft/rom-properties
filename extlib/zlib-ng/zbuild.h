@@ -31,28 +31,6 @@
 #  endif
 #endif
 
-/* Determine compiler support for TLS */
-#ifndef Z_TLS
-#  ifdef HAVE_THREAD_LOCAL
-#    define Z_TLS _Thread_local
-#  elif defined(__GNUC__) || defined(__SUNPRO_C)
-#    define Z_TLS __thread
-#  elif defined(_WIN32) && (defined(_MSC_VER) || defined(__ICL))
-#    define Z_TLS __declspec(thread)
-#  else
-#    warning Unable to detect Thread Local Storage support.
-#    define Z_TLS
-#  endif
-#endif
-
-/* rom-properties: Disable TLS when building for Windows on i386 or amd64. WinXP/2003 has problems with it. */
-#if defined(Z_TLS) && defined(_WIN32) && \
-    (defined(__i386__) || defined(_M_IX86) || \
-	    defined(__amd64__) || defined(__x86_64__) || defined(_M_AMD64))
-#  undef Z_TLS
-#  define Z_TLS
-#endif
-
 #ifndef Z_HAS_ATTRIBUTE
 #  if defined(__has_attribute)
 #    define Z_HAS_ATTRIBUTE(a) __has_attribute(a)
@@ -66,6 +44,14 @@
 #    define Z_FALLTHROUGH __attribute__((__fallthrough__))
 #  else
 #    define Z_FALLTHROUGH do {} while(0) /* fallthrough */
+#  endif
+#endif
+
+#ifndef Z_TARGET
+#  if Z_HAS_ATTRIBUTE(__target__)
+#    define Z_TARGET(x) __attribute__((__target__(x)))
+#  else
+#    define Z_TARGET(x)
 #  endif
 #endif
 

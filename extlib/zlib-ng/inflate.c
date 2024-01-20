@@ -139,6 +139,9 @@ int32_t ZNG_CONDEXPORT PREFIX(inflateInit2)(PREFIX3(stream) *strm, int32_t windo
     int32_t ret;
     struct inflate_state *state;
 
+    /* Initialize functable earlier. */
+    functable.force_init();
+
     if (strm == NULL)
         return Z_STREAM_ERROR;
     strm->msg = NULL;                   /* in case we return an error */
@@ -1347,8 +1350,8 @@ int32_t Z_EXPORT PREFIX(inflateCopy)(PREFIX3(stream) *dest, PREFIX3(stream) *sou
     copy->next = copy->codes + (state->next - state->codes);
 
     /* window */
+    copy->window = NULL;
     if (state->window != NULL) {
-        copy->window = NULL;
         if (PREFIX(inflate_ensure_window)(copy)) {
             ZFREE_STATE(source, copy);
             return Z_MEM_ERROR;

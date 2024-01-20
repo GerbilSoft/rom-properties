@@ -1,9 +1,9 @@
 This copy of zlib-ng 2.1.5 is a modified version of the original.
 
-commit 2bc66887ddc0c50776811a27be68e34430d665e1
-2.1.5 Release
+commit 74253725f884e2424a0dd8ae3f69896d5377f325
+2.1.6 Release
     
-Tag: 2.1.5
+Tag: 2.1.6
 
 The following changes have been made to the original:
 
@@ -23,8 +23,6 @@ The following changes have been made to the original:
 - C17 has been added to the allowed standards list.
 
 - Disabled CPack.
-
-- Disable TLS when building for Windows on i386. Windows XP has problems with it.
 
 - Some other functionality not needed by rom-properties has been disabled.
 
