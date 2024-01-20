@@ -69,7 +69,7 @@ BEGIN
     RTEXT           "Când se utilizează o conexiune contorizată la rețea:", IDC_OPTIONS_LBL_METERED_DL, 25, 49, 145, 8, 0, 0
     COMBOBOX        IDC_OPTIONS_CBO_METERED_DL, 174, 47, 132, 30, CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     AUTOCHECKBOX    "Utilizaţi întotdeauna pictograma internă (dacă este prezentă) pentru dimensiuni mici.", IDC_OPTIONS_INTICONSMALL, 15, 73, 381, 8, 0, WS_EX_TRANSPARENT
-    AUTOCHECKBOX    "Stochează informaţii despre originea fişierului cache folosind atribute extinse.\nAcest lucru ajută la identificarea de unde au fost descărcate fişierele cache", IDC_OPTIONS_STOREFILEORIGININFO, 15, 87, 381, 16, BS_MULTILINE, WS_EX_TRANSPARENT
+    AUTOCHECKBOX    "Stochează informaţii despre originea fişierului cache folosind atribute extinse.\nAcest lucru ajută la identificarea de unde au fost descărcate fişierele cache.", IDC_OPTIONS_STOREFILEORIGININFO, 15, 87, 381, 16, BS_MULTILINE, WS_EX_TRANSPARENT
     LTEXT           "Limba pentru titlurile PAL pe GameTDB:", IDC_STATIC, 15, 111, 120, 8, 0, WS_EX_TRANSPARENT
     // FIXME: Determine best height. (Compare to RP_ShellPropSheetExt for multi-language.)
     CONTROL         "", IDC_OPTIONS_PALLANGUAGEFORGAMETDB, WC_LANGUAGECOMBOBOX, CBS_DROPDOWNLIST | WS_CHILD | WS_TABSTOP | WS_VISIBLE, 138, 108, 68, 128, WS_EX_LEFT
@@ -106,7 +106,7 @@ EXSTYLE WS_EX_NOPARENTNOTIFY | WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", FW_NORMAL, 0, 0
 BEGIN
     LTEXT           "", IDC_CACHE_DESCRIPTION, 7, 7, 397, 25, SS_LEFT, WS_EX_TRANSPARENT
-    AUTORADIOBUTTON "Găsiţi toate fişierele Thumbs.db pe unitatea (drive) specificată.", IDC_CACHE_XP_FIND_DRIVES, 7, 35, 168, 8, WS_GROUP, WS_EX_LEFT
+    AUTORADIOBUTTON "Găsiţi toate fişierele Thumbs.db pe unitatea (drive) specificată:", IDC_CACHE_XP_FIND_DRIVES, 7, 35, 168, 8, WS_GROUP, WS_EX_LEFT
     AUTORADIOBUTTON "Specifică calea", IDC_CACHE_XP_FIND_PATH, 180, 35, 61, 8, 0, WS_EX_LEFT
     CONTROL         "", IDC_CACHE_XP_DRIVES, WC_LISTVIEW, WS_TABSTOP | WS_BORDER | LVS_ALIGNLEFT | LVS_LIST | LVS_SINGLESEL, 7, 46, 397, 45, WS_EX_LEFT | WS_EX_CLIENTEDGE
     EDITTEXT        IDC_CACHE_XP_PATH, 7, 46, 343, 14, NOT WS_VISIBLE | ES_AUTOHSCROLL, WS_EX_LEFT
