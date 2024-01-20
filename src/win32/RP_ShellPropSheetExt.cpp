@@ -84,6 +84,7 @@ RP_ShellPropSheetExt_Private::RP_ShellPropSheetExt_Private(RP_ShellPropSheetExt 
 	, def_lc(0)
 	, cboLanguage(nullptr)
 	, dwExStyleRTL(LibWin32UI::isSystemRTL())
+	, isDarkModeEnabled(false)
 	, isFullyInit(false)
 {
 	// Initialize structs.
@@ -1648,6 +1649,9 @@ void RP_ShellPropSheetExt_Private::initDialog(void)
 		SetWindowLongPtr(hDlgSheet, GWL_EXSTYLE, lpExStyle);
 	}
 
+	// Determine if Dark Mode is enabled.
+	isDarkModeEnabled = VerifyDialogDarkMode(hDlgSheet);
+
 	// Get the fields.
 	const RomFields *const pFields = romData->fields();
 	assert(pFields != nullptr);
@@ -2929,7 +2933,8 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 			// This fixes issues when using StartAllBack on Windows 11
 			// to enforce Dark Mode schemes in Windows Explorer.
 			// TODO: Handle color scheme changes?
-			if (g_darkModeEnabled) {
+			auto* const d = reinterpret_cast<RP_ShellPropSheetExt_Private*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
+			if (d && d->isDarkModeEnabled) {
 				return SendMessage(GetParent(hDlg), uMsg, wParam, lParam);
 			}
 			break;
@@ -3037,7 +3042,8 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::SubtabDlgProc(HWND hDlg, UINT uMs
 			// This fixes issues when using StartAllBack on Windows 11
 			// to enforce Dark Mode schemes in Windows Explorer.
 			// TODO: Handle color scheme changes?
-			if (g_darkModeEnabled) {
+			auto* const d = reinterpret_cast<RP_ShellPropSheetExt_Private*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
+			if (d && d->isDarkModeEnabled) {
 				return SendMessage(GetParent(hDlg), uMsg, wParam, lParam);
 			}
 			break;
@@ -3055,7 +3061,8 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::SubtabDlgProc(HWND hDlg, UINT uMs
 				// This fixes issues when using StartAllBack on Windows 11
 				// to enforce Dark Mode schemes in Windows Explorer.
 				// TODO: Handle color scheme changes?
-				if (g_darkModeEnabled) {
+				auto* const d = reinterpret_cast<RP_ShellPropSheetExt_Private*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
+				if (d && d->isDarkModeEnabled) {
 					return SendMessage(GetParent(hDlg), uMsg, wParam, lParam);
 				}
 			}

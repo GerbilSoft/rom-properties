@@ -59,6 +59,7 @@ RP_XAttrView_Private::RP_XAttrView_Private(RP_XAttrView *q, LPTSTR tfilename)
 	, xattrReader(nullptr)
 	, dwExStyleRTL(LibWin32UI::isSystemRTL())
 	, colorAltRow(0)	// initialized later
+	, isDarkModeEnabled(false)
 	, isFullyInit(false)
 {}
 
@@ -256,6 +257,9 @@ void RP_XAttrView_Private::initDialog(void)
 		lpExStyle |= WS_EX_LAYOUTRTL;
 		SetWindowLongPtr(hDlgSheet, GWL_EXSTYLE, lpExStyle);
 	}
+
+	// Determine if Dark Mode is enabled.
+	isDarkModeEnabled = VerifyDialogDarkMode(hDlgSheet);
 
 	// Initialize ADS ListView columns.
 	HWND hListViewADS = GetDlgItem(hDlgSheet, IDC_XATTRVIEW_LISTVIEW_ADS);
@@ -685,7 +689,8 @@ INT_PTR CALLBACK RP_XAttrView_Private::DlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 			// This fixes issues when using StartAllBack on Windows 11
 			// to enforce Dark Mode schemes in Windows Explorer.
 			// TODO: Handle color scheme changes?
-			if (g_darkModeEnabled) {
+			auto* const d = reinterpret_cast<RP_XAttrView_Private*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
+			if (d && d->isDarkModeEnabled) {
 				return SendMessage(GetParent(hDlg), uMsg, wParam, lParam);
 			}
 			break;

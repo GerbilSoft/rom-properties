@@ -65,7 +65,12 @@ public:
 
 	// Alternate row color.
 	COLORREF colorAltRow;
-	bool isFullyInit;		// True if the window is fully initialized.
+
+	// Is the dialog in Dark Mode? (requires something like StartAllBack)
+	bool isDarkModeEnabled;
+
+	// True if the window is fully initialized.
+	bool isFullyInit;
 
 private:
 	/**

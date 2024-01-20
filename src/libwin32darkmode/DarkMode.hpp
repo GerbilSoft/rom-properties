@@ -155,3 +155,12 @@ static inline bool IsColorSchemeChangeMessage(UINT message, LPARAM lParam)
 	return false;
 }
 #endif /* __cplusplus */
+
+/**
+ * Check if a dialog is really supposed to have a dark-colored background for Dark Mode.
+ * Needed on Windows in cases where Dark Mode is enabled, but something like
+ * StartAllBack isn't installed, resulting in properties dialogs using Light Mode.
+ * @param hDlg Dialog handle
+ * @return True if Dark Mode; false if not.
+ */
+bool VerifyDialogDarkMode(HWND hDlg);

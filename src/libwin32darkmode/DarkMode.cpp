@@ -236,3 +236,39 @@ int InitDarkMode(void)
 	FixDarkScrollBar();
 	return 0;
 }
+
+/**
+ * Check if a dialog is really supposed to have a dark-colored background for Dark Mode.
+ * Needed on Windows in cases where Dark Mode is enabled, but something like
+ * StartAllBack isn't installed, resulting in properties dialogs using Light Mode.
+ * @param hDlg Dialog handle
+ * @return True if Dark Mode; false if not.
+ */
+bool VerifyDialogDarkMode(HWND hDlg)
+{
+	if (!g_darkModeEnabled)
+		return false;
+
+	// Get the dialog's background brush.
+	HDC hDC = GetDC(hDlg);
+	if (!hDC)
+		return false;
+	HBRUSH hBrush = reinterpret_cast<HBRUSH>(SendMessage(hDlg, WM_CTLCOLORDLG, reinterpret_cast<WPARAM>(hDC), reinterpret_cast<LPARAM>(hDlg)));
+	ReleaseDC(hDlg, hDC);
+	if (!hBrush)
+		return false;
+
+	// Get the color from the background brush.
+	LOGBRUSH lbr;
+	if (GetObject(hBrush, sizeof(lbr), &lbr) != sizeof(lbr) ||
+		lbr.lbStyle != BS_SOLID)
+	{
+		// Failed to get the brush, or it's not a solid color brush.
+		return false;
+	}
+
+	// Quick and dirty: If (R+G+B)/3 >= 128, assume light mode.
+	unsigned int avg = GetRValue(lbr.lbColor) + GetGValue(lbr.lbColor) + GetBValue(lbr.lbColor);
+	avg /= 3;
+	return (avg < 0x80);
+}
