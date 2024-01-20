@@ -356,12 +356,12 @@ msgstr "Ext2 Atribute"
 #: ../build/src/kde/kf5/ui_XAttrView.h:115 ../src/gtk/xattr/XAttrView.cpp:133
 msgctxt "XAttrView"
 msgid "XFS Attributes"
-msgstr "Atribute MS-DOS"
+msgstr "XFS Atribute"
 
 #: ../build/src/kde/kf5/ui_XAttrView.h:116 ../src/gtk/xattr/XAttrView.cpp:141
 msgctxt "XAttrView"
 msgid "MS-DOS Attributes"
-msgstr ""
+msgstr "Atribute MS-DOS"
 
 #: ../build/src/kde/kf5/ui_XAttrView.h:117
 msgctxt "XAttrView"
