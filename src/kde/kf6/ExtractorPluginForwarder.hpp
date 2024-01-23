@@ -6,7 +6,7 @@
  * multiple plugins, so this file acts as a KFileMetaData ExtractorPlugin, *
  * and then forwards the request to the main library.                      *
  *                                                                         *
- * Copyright (c) 2018-2023 by David Korth.                                 *
+ * Copyright (c) 2018-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -14,6 +14,7 @@
 
 #include <QtCore/qglobal.h>
 #include <QtCore/QObject>	// missing in KF6 extractorplugin.h?
+#include <QtCore/QPointer>
 #include <kfilemetadata/extractorplugin.h>
 
 namespace RomPropertiesKF6 {
@@ -43,14 +44,7 @@ private:
 	void *hRpKdeSo;
 
 	// Actual ExtractorPlugin
-	KFileMetaData::ExtractorPlugin *fwd_plugin;
-
-private slots:
-	/**
-	 * fwd_plugin was destroyed.
-	 * @param obj
-	 */
-	void fwd_plugin_destroyed(QObject *obj = nullptr);
+	QPointer<KFileMetaData::ExtractorPlugin> fwd_plugin;
 };
 
 } //namespace RomPropertiesKF6

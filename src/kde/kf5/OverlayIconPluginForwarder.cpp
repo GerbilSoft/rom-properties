@@ -6,7 +6,7 @@
  * multiple plugins, so this file acts as a KOverlayIconPlugin,            *
  * and then forwards the request to the main library.                      *
  *                                                                         *
- * Copyright (c) 2018-2023 by David Korth.                                 *
+ * Copyright (c) 2018-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -33,7 +33,6 @@ namespace RomPropertiesKF5 {
 OverlayIconPluginForwarder::OverlayIconPluginForwarder(QObject *parent)
 	: super(parent)
 	, hRpKdeSo(nullptr)
-	, fwd_plugin(nullptr)
 {
 	CHECK_UID();
 
@@ -65,23 +64,17 @@ OverlayIconPluginForwarder::OverlayIconPluginForwarder(QObject *parent)
 
 	// Create an OverlayIconPlugin object.
 	fwd_plugin = pfn(this);
-	if (!fwd_plugin) {
+	if (fwd_plugin.isNull()) {
 		// Unable to create an OverlayIconPlugin object.
 		dlclose(hRpKdeSo);
 		hRpKdeSo = nullptr;
 		return;
 	}
-
-	// Make sure we know if the OverlayPlugin gets deleted.
-	// This *shouldn't* happen, but it's possible that our parent
-	// object enumerates child objects and does weird things.
-	connect(fwd_plugin, &QObject::destroyed,
-		this, &OverlayIconPluginForwarder::fwd_plugin_destroyed);
 }
 
 OverlayIconPluginForwarder::~OverlayIconPluginForwarder()
 {
-	delete fwd_plugin;
+	fwd_plugin.clear();
 
 	// NOTE: dlclose(nullptr) may crash, so we have to check for nullptr.
 	if (hRpKdeSo) {
@@ -91,23 +84,10 @@ OverlayIconPluginForwarder::~OverlayIconPluginForwarder()
 
 QStringList OverlayIconPluginForwarder::getOverlays(const QUrl &item)
 {
-	if (fwd_plugin) {
+	if (!fwd_plugin.isNull()) {
 		return fwd_plugin->getOverlays(item);
 	}
 	return {};
-}
-
-/**
- * fwd_plugin was destroyed.
- * @param obj
- */
-void OverlayIconPluginForwarder::fwd_plugin_destroyed(QObject *obj)
-{
-	if (obj == fwd_plugin) {
-		// Object matches.
-		// NULL it out so we don't have problems later.
-		fwd_plugin = nullptr;
-	}
 }
 
 } //namespace RomPropertiesKF5
