@@ -23,13 +23,13 @@ ENDIF(BUILD_KF6)
 
 # GTK+ UI frontends.
 # NOTE: Only checking for the main plugin, not symlinked plugins.
-IF(BUILD_GTK2)
+IF(BUILD_XFCE)
 	# Thunar (XFCE)
 	FIND_PACKAGE(ThunarX2)
 	IF(NOT ThunarX2_FOUND)
 		SET(ThunarX2_EXTENSIONS_DIR "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/thunarx-2")
 	ENDIF(NOT ThunarX2_FOUND)
-ENDIF(BUILD_GTK2)
+ENDIF(BUILD_XFCE)
 IF(BUILD_GTK3 OR BUILD_GTK4)
 	# Nautilus (GNOME)
 	FIND_PACKAGE(LibNautilusExtension)	# v3

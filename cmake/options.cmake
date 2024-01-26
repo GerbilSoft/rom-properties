@@ -30,10 +30,6 @@ IF(UNIX AND NOT APPLE)
 	OPTION_UI(GTK3 "Build the GTK+ 3.x plugin.")
 	OPTION_UI(GTK4 "Build the GTK 4.x plugin. (EXPERIMENTAL)")
 
-	# NOTE: The GTK+ 2.x plugin is XFCE only right now.
-	SET(BUILD_GTK2 "${BUILD_XFCE}")
-	SET(REQUIRE_GTK2 "${REQUIRE_XFCE}")
-
 	# QT_SELECT must be unset before compiling.
 	UNSET(ENV{QT_SELECT})
 ELSEIF(WIN32)

@@ -37,7 +37,7 @@ SET(SortFuncsTest_H
 	#../RpQt.hpp
 	)
 
-IF(BUILD_GTK2)
+IF(BUILD_XFCE)
 	ADD_EXECUTABLE(SortFuncsTest_gtk2
 		${SortFuncsTest_SRCS}
 		${SortFuncsTest_H}
@@ -47,7 +47,7 @@ IF(BUILD_GTK2)
 	TARGET_LINK_LIBRARIES(SortFuncsTest_gtk2 PUBLIC GTK2::gtk GTK2::gdk GTK2::pango)
 	TARGET_LINK_LIBRARIES(SortFuncsTest_gtk2 PUBLIC GLib2::gio-unix GLib2::gio GLib2::gobject GLib2::glib)
 	LIST(APPEND GTK_TESTS SortFuncsTest_gtk2)
-ENDIF(BUILD_GTK2)
+ENDIF(BUILD_XFCE)
 IF(BUILD_GTK3)
 	ADD_EXECUTABLE(SortFuncsTest_gtk3
 		${SortFuncsTest_SRCS}
