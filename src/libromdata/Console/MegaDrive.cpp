@@ -918,9 +918,9 @@ MegaDrive::MegaDrive(const IRpFilePtr &file)
 
 	const bool isEarlyRomHeader = d->checkIfEarlyRomHeader(&d->romHeader);
 	const off64_t fileSize = d->file->size();
-	const char *const s_serial_number = (isEarlyRomHeader
+	const char *const s_serial_number = (isEarlyRomHeader)
 		? d->romHeader.early.serial_number
-		: d->romHeader.serial_number);
+		: d->romHeader.serial_number;
 
 	// Check for Game Toshokan with a downloaded game.
 	if (fileSize == 256*1024 &&
@@ -935,8 +935,10 @@ MegaDrive::MegaDrive(const IRpFilePtr &file)
 		// Calculate the CRC32 of $20000-$200FF.
 		// TODO: SMD deinterleaving.
 		uint8_t buf[256];
-		d->file->seekAndRead(0x20000, buf, sizeof(buf));
-		d->gt_crc = crc32(0, buf, sizeof(buf));
+		size_t size = d->file->seekAndRead(0x20000, buf, sizeof(buf));
+		if (size == sizeof(buf)) {
+			d->gt_crc = crc32(0, buf, sizeof(buf));
+		}
 	}
 	// If this is S&K, try reading the locked-on ROM header.
 	else if (fileSize >= ((2*1024*1024)+512) &&
