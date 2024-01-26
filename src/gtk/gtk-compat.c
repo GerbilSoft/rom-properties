@@ -58,10 +58,10 @@ void rp_gtk_main_clipboard_set_text(const char *text)
 
 /** rom-properties GTK function wrappers **/
 
-static inline char *label_mnemonic_convert(const char *label)
+static inline gchar *label_mnemonic_convert(const char *label)
 {
-	char *const str = strdup(label);
-	char *const p = strchr(str, '&');
+	gchar *const str = g_strdup(label);
+	gchar *const p = strchr(str, '&');
 	if (p) {
 		*p = '_';
 	}
@@ -80,9 +80,9 @@ GtkWidget *rp_gtk_check_button_new_with_mnemonic(const char *label)
 		return gtk_check_button_new_with_mnemonic(NULL);
 	}
 
-	char *const str = label_mnemonic_convert(label);
+	gchar *const str = label_mnemonic_convert(label);
 	GtkWidget *const checkButton = gtk_check_button_new_with_mnemonic(str);
-	free(str);
+	g_free(str);
 	return checkButton;
 }
 
@@ -98,8 +98,8 @@ GtkWidget *rp_gtk_label_new_with_mnemonic(const char *label)
 		return gtk_label_new_with_mnemonic(NULL);
 	}
 
-	char *const str = label_mnemonic_convert(label);
+	gchar *const str = label_mnemonic_convert(label);
 	GtkWidget *const gtkLabel = gtk_label_new_with_mnemonic(str);
-	free(str);
+	g_free(str);
 	return gtkLabel;
 }
