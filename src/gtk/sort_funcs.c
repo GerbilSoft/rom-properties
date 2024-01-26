@@ -116,9 +116,13 @@ gint sort_RFT_LISTDATA_numeric(GtkTreeModel *model, GtkTreeIter *a, GtkTreeIter 
 				ret = (!strA ? -1 : 1);
 			}
 		} else {
-			// Use glib's string collation function.
+			// Casefold the strings, then use glib's string collation function.
 			// TODO: Maybe precompute collation values with g_utf8_collate_key()?
-			ret = g_utf8_collate(strA, strB);
+			gchar *strCF_A = g_utf8_casefold(strA, -1);
+			gchar *strCF_B = g_utf8_casefold(strB, -1);
+			ret = g_utf8_collate(strCF_A, strCF_B);
+			g_free(strCF_A);
+			g_free(strCF_B);
 		}
 	} else if (valA < valB) {
 		ret = -1;
