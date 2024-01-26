@@ -103,53 +103,30 @@ rp_image_ptr fromDreamcastSquareTwiddled16(PixelFormat px_format,
 	}
 
 	// Convert one line at a time. (16-bit -> ARGB32)
+#define DC_SQUARE_TWIDDLED_16(pxfmt, pxfunc, sBIT_val) \
+		case (pxfmt): { \
+			for (unsigned int y = 0; y < static_cast<unsigned int>(height); y++) { \
+				for (unsigned int x = 0; x < static_cast<unsigned int>(width); x++) { \
+					const unsigned int srcIdx = ((p_tmap[x] << 1) | p_tmap[y]); \
+					*px_dest = pxfunc(le16_to_cpu(img_buf[srcIdx])); \
+					px_dest++; \
+				} \
+				px_dest += dest_stride_adj; \
+			} \
+			/* Set the sBIT metadata. */ \
+			img->set_sBIT(sBIT_val); \
+			break; \
+		}
+	static const rp_image::sBIT_t sBIT_1555 = {5,5,5,0,1};
+	static const rp_image::sBIT_t sBIT_565  = {5,6,5,0,0};
+	static const rp_image::sBIT_t sBIT_4444 = {4,4,4,0,4};
+
 	uint32_t *px_dest = static_cast<uint32_t*>(img->bits());
 	const int dest_stride_adj = (img->stride() / sizeof(uint32_t)) - img->width();
 	switch (px_format) {
-		case PixelFormat::ARGB1555: {
-			for (unsigned int y = 0; y < static_cast<unsigned int>(height); y++) {
-				for (unsigned int x = 0; x < static_cast<unsigned int>(width); x++) {
-					const unsigned int srcIdx = ((p_tmap[x] << 1) | p_tmap[y]);
-					*px_dest = ARGB1555_to_ARGB32(le16_to_cpu(img_buf[srcIdx]));
-					px_dest++;
-				}
-				px_dest += dest_stride_adj;
-			}
-			// Set the sBIT metadata.
-			static const rp_image::sBIT_t sBIT = {5,5,5,0,1};
-			img->set_sBIT(&sBIT);
-			break;
-		}
-
-		case PixelFormat::RGB565: {
-			for (unsigned int y = 0; y < static_cast<unsigned int>(height); y++) {
-				for (unsigned int x = 0; x < static_cast<unsigned int>(width); x++) {
-					const unsigned int srcIdx = ((p_tmap[x] << 1) | p_tmap[y]);
-					*px_dest = RGB565_to_ARGB32(le16_to_cpu(img_buf[srcIdx]));
-					px_dest++;
-				}
-				px_dest += dest_stride_adj;
-			}
-			// Set the sBIT metadata.
-			static const rp_image::sBIT_t sBIT = {5,6,5,0,0};
-			img->set_sBIT(&sBIT);
-			break;
-		}
-
-		case PixelFormat::ARGB4444: {
-			for (unsigned int y = 0; y < static_cast<unsigned int>(height); y++) {
-				for (unsigned int x = 0; x < static_cast<unsigned int>(width); x++) {
-					const unsigned int srcIdx = ((p_tmap[x] << 1) | p_tmap[y]);
-					*px_dest = ARGB4444_to_ARGB32(le16_to_cpu(img_buf[srcIdx]));
-					px_dest++;
-				}
-				px_dest += dest_stride_adj;
-			}
-			// Set the sBIT metadata.
-			static const rp_image::sBIT_t sBIT = {4,4,4,0,4};
-			img->set_sBIT(&sBIT);
-			break;
-		}
+		DC_SQUARE_TWIDDLED_16(PixelFormat::ARGB1555, ARGB1555_to_ARGB32, &sBIT_1555)
+		DC_SQUARE_TWIDDLED_16(PixelFormat::RGB565,     RGB565_to_ARGB32, &sBIT_565)
+		DC_SQUARE_TWIDDLED_16(PixelFormat::ARGB4444, ARGB4444_to_ARGB32, &sBIT_4444)
 
 		default:
 			assert(!"Invalid pixel format for this function.");
@@ -227,40 +204,25 @@ rp_image_ptr fromDreamcastVQ16(PixelFormat px_format,
 	}
 
 	// Convert the palette.
+#define DC_VQ16_PALETTE(pxfmt, pxfunc, sBIT_val) \
+		case (pxfmt): { \
+			for (unsigned int i = 0; i < static_cast<unsigned int>(pal_entry_count); i += 2) { \
+				palette[i+0] = pxfunc(le16_to_cpu(pal_buf[i+0])); \
+				palette[i+1] = pxfunc(le16_to_cpu(pal_buf[i+1])); \
+			} \
+			/* Set the sBIT metadata. */ \
+			img->set_sBIT(sBIT_val); \
+			break; \
+		}
+	static const rp_image::sBIT_t sBIT_1555 = {5,5,5,0,1};
+	static const rp_image::sBIT_t sBIT_565  = {5,6,5,0,0};
+	static const rp_image::sBIT_t sBIT_4444 = {4,4,4,0,4};
+
 	unique_ptr<uint32_t[]> palette(new uint32_t[pal_entry_count]);
 	switch (px_format) {
-		case PixelFormat::ARGB1555: {
-			for (unsigned int i = 0; i < static_cast<unsigned int>(pal_entry_count); i += 2) {
-				palette[i+0] = ARGB1555_to_ARGB32(le16_to_cpu(pal_buf[i+0]));
-				palette[i+1] = ARGB1555_to_ARGB32(le16_to_cpu(pal_buf[i+1]));
-			}
-			// Set the sBIT metadata.
-			static const rp_image::sBIT_t sBIT = {5,5,5,0,1};
-			img->set_sBIT(&sBIT);
-			break;
-		}
-
-		case PixelFormat::RGB565: {
-			for (unsigned int i = 0; i < static_cast<unsigned int>(pal_entry_count); i += 2) {
-				palette[i+0] = RGB565_to_ARGB32(le16_to_cpu(pal_buf[i+0]));
-				palette[i+1] = RGB565_to_ARGB32(le16_to_cpu(pal_buf[i+1]));
-			}
-			// Set the sBIT metadata.
-			static const rp_image::sBIT_t sBIT = {5,6,5,0,0};
-			img->set_sBIT(&sBIT);
-			break;
-		}
-
-		case PixelFormat::ARGB4444: {
-			for (unsigned int i = 0; i < static_cast<unsigned int>(pal_entry_count); i += 2) {
-				palette[i+0] = ARGB4444_to_ARGB32(le16_to_cpu(pal_buf[i+0]));
-				palette[i+1] = ARGB4444_to_ARGB32(le16_to_cpu(pal_buf[i+1]));
-			}
-			// Set the sBIT metadata.
-			static const rp_image::sBIT_t sBIT = {4,4,4,0,4};
-			img->set_sBIT(&sBIT);
-			break;
-		}
+		DC_VQ16_PALETTE(PixelFormat::ARGB1555, ARGB1555_to_ARGB32, &sBIT_1555)
+		DC_VQ16_PALETTE(PixelFormat::RGB565,     RGB565_to_ARGB32, &sBIT_565)
+		DC_VQ16_PALETTE(PixelFormat::ARGB4444, ARGB4444_to_ARGB32, &sBIT_4444)
 
 		default:
 			assert(!"Invalid pixel format for this function.");

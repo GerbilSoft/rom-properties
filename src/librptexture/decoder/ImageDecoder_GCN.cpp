@@ -62,71 +62,38 @@ rp_image_ptr fromGcn16(PixelFormat px_format,
 	// Temporary tile buffer.
 	array<uint32_t, 4*4> tileBuf;
 
+#define GCN_16(pxfmt, pxfunc, sBIT_val) \
+		case (pxfmt): { \
+			for (unsigned int y = 0; y < tilesY; y++) { \
+				for (unsigned int x = 0; x < tilesX; x++) { \
+					/* Convert each tile to ARGB32 manually. */ \
+					/* TODO: Optimize using pointers instead of indexes? */ \
+					for (unsigned int i = 0; i < 4*4; i += 2, img_buf += 2) { \
+						tileBuf[i+0] = pxfunc(be16_to_cpu(img_buf[0])); \
+						tileBuf[i+1] = pxfunc(be16_to_cpu(img_buf[1])); \
+					} \
+					/* Blit the tile to the main image buffer. */ \
+					ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img.get(), tileBuf, x, y); \
+				} \
+			} \
+			/* Set the sBIT metadata. */ \
+			img->set_sBIT(sBIT_val); \
+			break; \
+		}
+	// NOTE: For RGB5A3, pixels may be RGB555 or ARGB4444.
+	// We'll use 555 for RGB, and 4 for alpha.
+	// TODO: Set alpha to 0 if no translucent pixels were found.
+	static const rp_image::sBIT_t sBIT_5A3 = {5,5,5,0,4};
+	static const rp_image::sBIT_t sBIT_565 = {5,6,5,0,0};
+
+	// NOTE: For IA8, setting the grayscale value, though we're
+	// not saving grayscale PNGs at the moment.
+	static const rp_image::sBIT_t sBIT_IA8 = {8,8,8,8,8};
+
 	switch (px_format) {
-		case PixelFormat::RGB5A3: {
-			for (unsigned int y = 0; y < tilesY; y++) {
-				for (unsigned int x = 0; x < tilesX; x++) {
-					// Convert each tile to ARGB32 manually.
-					// TODO: Optimize using pointers instead of indexes?
-					for (unsigned int i = 0; i < 4*4; i += 2, img_buf += 2) {
-						tileBuf[i+0] = RGB5A3_to_ARGB32(be16_to_cpu(img_buf[0]));
-						tileBuf[i+1] = RGB5A3_to_ARGB32(be16_to_cpu(img_buf[1]));
-					}
-
-					// Blit the tile to the main image buffer.
-					ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img.get(), tileBuf, x, y);
-				}
-			}
-			// Set the sBIT metadata.
-			// NOTE: Pixels may be RGB555 or ARGB4444.
-			// We'll use 555 for RGB, and 4 for alpha.
-			// TODO: Set alpha to 0 if no translucent pixels were found.
-			static const rp_image::sBIT_t sBIT = {5,5,5,0,4};
-			img->set_sBIT(&sBIT);
-			break;
-		}
-
-		case PixelFormat::RGB565: {
-			for (unsigned int y = 0; y < tilesY; y++) {
-				for (unsigned int x = 0; x < tilesX; x++) {
-					// Convert each tile to ARGB32 manually.
-					// TODO: Optimize using pointers instead of indexes?
-					for (unsigned int i = 0; i < 4*4; i += 2, img_buf += 2) {
-						tileBuf[i+0] = RGB565_to_ARGB32(be16_to_cpu(img_buf[0]));
-						tileBuf[i+1] = RGB565_to_ARGB32(be16_to_cpu(img_buf[1]));
-					}
-
-					// Blit the tile to the main image buffer.
-					ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img.get(), tileBuf, x, y);
-				}
-			}
-			// Set the sBIT metadata.
-			static const rp_image::sBIT_t sBIT = {5,6,5,0,0};
-			img->set_sBIT(&sBIT);
-			break;
-		}
-
-		case PixelFormat::IA8: {
-			for (unsigned int y = 0; y < tilesY; y++) {
-				for (unsigned int x = 0; x < tilesX; x++) {
-					// Convert each tile to ARGB32 manually.
-					// TODO: Optimize using pointers instead of indexes?
-					for (unsigned int i = 0; i < 4*4; i += 2, img_buf += 2) {
-						tileBuf[i+0] = IA8_to_ARGB32(be16_to_cpu(img_buf[0]));
-						tileBuf[i+1] = IA8_to_ARGB32(be16_to_cpu(img_buf[1]));
-					}
-
-					// Blit the tile to the main image buffer.
-					ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img.get(), tileBuf, x, y);
-				}
-			}
-			// Set the sBIT metadata.
-			// NOTE: Setting the grayscale value, though we're
-			// not saving grayscale PNGs at the moment.
-			static const rp_image::sBIT_t sBIT = {8,8,8,8,8};
-			img->set_sBIT(&sBIT);
-			break;
-		}
+		GCN_16(PixelFormat::RGB5A3, RGB5A3_to_ARGB32, &sBIT_5A3)
+		GCN_16(PixelFormat::RGB565, RGB565_to_ARGB32, &sBIT_565)
+		GCN_16(PixelFormat::IA8,    IA8_to_ARGB32,    &sBIT_IA8)
 
 		default:
 			assert(!"Invalid pixel format for this function.");
