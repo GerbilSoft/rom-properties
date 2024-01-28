@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * RP_ShellPropSheetExt.cpp: IShellPropSheetExt implementation.            *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -49,6 +49,9 @@ using std::unique_ptr;
 using std::vector;
 using std::wstring;	// for tstring
 
+// Win32 dark mode
+#include "libwin32darkmode/DarkMode.hpp"
+
 // CLSID
 const CLSID CLSID_RP_ShellPropSheetExt =
 	{0x2443C158, 0xDF7C, 0x4352, {0xB4, 0x35, 0xBC, 0x9F, 0x88, 0x5F, 0xFD, 0x52}};
@@ -81,6 +84,7 @@ RP_ShellPropSheetExt_Private::RP_ShellPropSheetExt_Private(RP_ShellPropSheetExt 
 	, def_lc(0)
 	, cboLanguage(nullptr)
 	, dwExStyleRTL(LibWin32UI::isSystemRTL())
+	, isDarkModeEnabled(false)
 	, isFullyInit(false)
 {
 	// Initialize structs.
@@ -1645,6 +1649,9 @@ void RP_ShellPropSheetExt_Private::initDialog(void)
 		SetWindowLongPtr(hDlgSheet, GWL_EXSTYLE, lpExStyle);
 	}
 
+	// Determine if Dark Mode is enabled.
+	isDarkModeEnabled = VerifyDialogDarkMode(GetParent(hDlgSheet));
+
 	// Get the fields.
 	const RomFields *const pFields = romData->fields();
 	assert(pFields != nullptr);
@@ -2224,6 +2231,10 @@ IFACEMETHODIMP RP_ShellPropSheetExt::Initialize(
 		tfilename = nullptr;
 	}
 
+	// Make sure the Dark Mode function pointers are initialized.
+	InitDarkModePFNs();
+
+	// Everything's good to go.
 	hr = S_OK;
 
 cleanup:
@@ -2809,13 +2820,17 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 
 		case WM_SYSCOLORCHANGE:
 		case WM_THEMECHANGED: {
-			// Reload the images.
-			auto *const d = reinterpret_cast<RP_ShellPropSheetExt_Private*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
+			auto* const d = reinterpret_cast<RP_ShellPropSheetExt_Private*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
 			if (!d) {
 				// No RP_ShellPropSheetExt_Private. Can't do anything...
 				return false;
 			}
 
+			UpdateDarkModeEnabled();
+			d->isDarkModeEnabled = VerifyDialogDarkMode(GetParent(hDlg));
+			// TODO: Force a window update?
+
+			// Reload the images.
 			// Assuming the main background color may have changed.
 
 			// Reload images with the new background color.
@@ -2911,6 +2926,30 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 			break;
 		}
 
+		case WM_CTLCOLORMSGBOX:
+		case WM_CTLCOLOREDIT:
+		case WM_CTLCOLORLISTBOX:
+		case WM_CTLCOLORBTN:
+		case WM_CTLCOLORDLG:
+		case WM_CTLCOLORSCROLLBAR:
+		case WM_CTLCOLORSTATIC: {
+			// If using Dark Mode, forward WM_CTLCOLOR* to the parent window.
+			// This fixes issues when using StartAllBack on Windows 11
+			// to enforce Dark Mode schemes in Windows Explorer.
+			// TODO: Handle color scheme changes?
+			auto* const d = reinterpret_cast<RP_ShellPropSheetExt_Private*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
+			if (d && d->isDarkModeEnabled) {
+				return SendMessage(GetParent(hDlg), uMsg, wParam, lParam);
+			}
+			break;
+		}
+
+		case WM_SETTINGCHANGE:
+			if (g_darkModeSupported && IsColorSchemeChangeMessage(lParam)) {
+				SendMessage(hDlg, WM_THEMECHANGED, 0, 0);
+			}
+			break;
+
 		default:
 			break;
 	}
@@ -3003,6 +3042,23 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::SubtabDlgProc(HWND hDlg, UINT uMs
 			break;
 		}
 
+		case WM_CTLCOLORMSGBOX:
+		case WM_CTLCOLOREDIT:
+		case WM_CTLCOLORLISTBOX:
+		case WM_CTLCOLORBTN:
+		case WM_CTLCOLORDLG:
+		case WM_CTLCOLORSCROLLBAR: {
+			// If using Dark Mode, forward WM_CTLCOLOR* to the parent window.
+			// This fixes issues when using StartAllBack on Windows 11
+			// to enforce Dark Mode schemes in Windows Explorer.
+			// TODO: Handle color scheme changes?
+			auto* const d = reinterpret_cast<RP_ShellPropSheetExt_Private*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
+			if (d && d->isDarkModeEnabled) {
+				return SendMessage(GetParent(hDlg), uMsg, wParam, lParam);
+			}
+			break;
+		}
+
 		case WM_CTLCOLORSTATIC: {
 			const COLORREF color = static_cast<COLORREF>(GetWindowLongPtr(
 				reinterpret_cast<HWND>(lParam), GWLP_USERDATA));
@@ -3010,6 +3066,15 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::SubtabDlgProc(HWND hDlg, UINT uMs
 				// Set the specified color.
 				HDC hdc = reinterpret_cast<HDC>(wParam);
 				SetTextColor(hdc, color);
+			} else {
+				// No custom color. Forward the message to the parent window.
+				// This fixes issues when using StartAllBack on Windows 11
+				// to enforce Dark Mode schemes in Windows Explorer.
+				// TODO: Handle color scheme changes?
+				auto* const d = reinterpret_cast<RP_ShellPropSheetExt_Private*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
+				if (d && d->isDarkModeEnabled) {
+					return SendMessage(GetParent(hDlg), uMsg, wParam, lParam);
+				}
 			}
 			break;
 		}

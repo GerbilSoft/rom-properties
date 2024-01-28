@@ -127,11 +127,14 @@ static constexpr bool CheckBuildNumber(DWORD buildNumber)
 }
 
 /**
- * Initialize Dark Mode.
+ * Initialize Dark Mode function pointers.
  * @return 0 if Dark Mode functionality is available; non-zero if not or an error occurred.
  */
-int InitDarkMode(void)
+int InitDarkModePFNs(void)
 {
+	if (g_darkModeSupported)
+		return 0;
+
 	auto RtlGetNtVersionNumbers = reinterpret_cast<fnRtlGetNtVersionNumbers>(
 		GetProcAddress(GetModuleHandle(_T("ntdll.dll")), "RtlGetNtVersionNumbers"));
 	if (!RtlGetNtVersionNumbers)
@@ -194,13 +197,7 @@ int InitDarkMode(void)
 	{
 		// Dark mode is supported.
 		g_darkModeSupported = true;
-
-		AllowDarkModeForApp(true);
-		_RefreshImmersiveColorPolicyState();
-
 		UpdateDarkModeEnabled();
-
-		FixDarkScrollBar();
 		return 0;
 	}
 
@@ -220,4 +217,58 @@ int InitDarkMode(void)
 	_SetPreferredAppMode = nullptr;
 	FreeLibrary(hUxtheme);
 	return 6;
+}
+
+/**
+ * Initialize Dark Mode.
+ * @return 0 if Dark Mode functionality is available; non-zero if not or an error occurred.
+ */
+int InitDarkMode(void)
+{
+	int ret = InitDarkModePFNs();
+	if (ret != 0)
+		return ret;
+
+	// Dark mode is supported.
+	AllowDarkModeForApp(true);
+	_RefreshImmersiveColorPolicyState();
+	UpdateDarkModeEnabled();
+	FixDarkScrollBar();
+	return 0;
+}
+
+/**
+ * Check if a dialog is really supposed to have a dark-colored background for Dark Mode.
+ * Needed on Windows in cases where Dark Mode is enabled, but something like
+ * StartAllBack isn't installed, resulting in properties dialogs using Light Mode.
+ * @param hDlg Dialog handle
+ * @return True if Dark Mode; false if not.
+ */
+bool VerifyDialogDarkMode(HWND hDlg)
+{
+	if (!g_darkModeEnabled)
+		return false;
+
+	// Get the dialog's background brush.
+	HDC hDC = GetDC(hDlg);
+	if (!hDC)
+		return false;
+	HBRUSH hBrush = reinterpret_cast<HBRUSH>(SendMessage(hDlg, WM_CTLCOLORDLG, reinterpret_cast<WPARAM>(hDC), reinterpret_cast<LPARAM>(hDlg)));
+	ReleaseDC(hDlg, hDC);
+	if (!hBrush)
+		return false;
+
+	// Get the color from the background brush.
+	LOGBRUSH lbr;
+	if (GetObject(hBrush, sizeof(lbr), &lbr) != sizeof(lbr) ||
+		lbr.lbStyle != BS_SOLID)
+	{
+		// Failed to get the brush, or it's not a solid color brush.
+		return false;
+	}
+
+	// Quick and dirty: If (R+G+B)/3 >= 128, assume light mode.
+	unsigned int avg = GetRValue(lbr.lbColor) + GetGValue(lbr.lbColor) + GetBValue(lbr.lbColor);
+	avg /= 3;
+	return (avg < 0x80);
 }

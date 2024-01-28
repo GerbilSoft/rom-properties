@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * AboutTab.cpp: About tab for rp-config.                                  *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -447,7 +447,7 @@ INT_PTR CALLBACK AboutTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, L
 
 		case WM_CTLCOLORDLG:
 		case WM_CTLCOLORSTATIC:
-			if (g_darkModeSupported && g_darkModeEnabled) {
+			if (g_darkModeEnabled) {
 				auto *const d = reinterpret_cast<AboutTabPrivate*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
 				if (!d) {
 					// No AboutTabPrivate. Can't do anything...
@@ -456,9 +456,9 @@ INT_PTR CALLBACK AboutTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, L
 
 				HDC hdc = reinterpret_cast<HDC>(wParam);
 				SetTextColor(hdc, g_darkTextColor);
-				SetBkColor(hdc, g_darkBkColor);
+				SetBkColor(hdc, g_darkSubDlgBkColor);
 				if (!d->hbrBkgnd) {
-					d->hbrBkgnd = CreateSolidBrush(g_darkBkColor);
+					d->hbrBkgnd = CreateSolidBrush(g_darkSubDlgBkColor);
 				}
 				return reinterpret_cast<INT_PTR>(d->hbrBkgnd);
 			}
@@ -833,7 +833,7 @@ void AboutTabPrivate::initRtfColorTable(char *buf, size_t size)
 	};
 
 	COLORREF_t ctext, clink;
-	if (g_darkModeSupported && g_darkModeEnabled) {
+	if (g_darkModeEnabled) {
 		ctext.color = g_darkTextColor;
 		clink.color = 0x00CC6600;	// TODO: Dark mode version.
 	} else {

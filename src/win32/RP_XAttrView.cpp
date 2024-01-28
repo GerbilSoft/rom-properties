@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * RP_XAttrView.cpp: Extended attribute viewer property page.              *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -34,6 +34,9 @@ using LibWin32UI::LoadDialog_i18n;
 // C++ STL classes
 using std::tstring;
 
+// Win32 dark mode
+#include "libwin32darkmode/DarkMode.hpp"
+
 // CLSID
 const CLSID CLSID_RP_XAttrView =
 	{0xB0503F2E, 0xC4AE, 0x48DF, {0xA8,0x80, 0xE2, 0xB1, 0x22, 0xB5, 0x85, 0x71}};
@@ -56,6 +59,7 @@ RP_XAttrView_Private::RP_XAttrView_Private(RP_XAttrView *q, LPTSTR tfilename)
 	, xattrReader(nullptr)
 	, dwExStyleRTL(LibWin32UI::isSystemRTL())
 	, colorAltRow(0)	// initialized later
+	, isDarkModeEnabled(false)
 	, isFullyInit(false)
 {}
 
@@ -253,6 +257,9 @@ void RP_XAttrView_Private::initDialog(void)
 		lpExStyle |= WS_EX_LAYOUTRTL;
 		SetWindowLongPtr(hDlgSheet, GWL_EXSTYLE, lpExStyle);
 	}
+
+	// Determine if Dark Mode is enabled.
+	isDarkModeEnabled = VerifyDialogDarkMode(GetParent(hDlgSheet));
 
 	// Initialize ADS ListView columns.
 	HWND hListViewADS = GetDlgItem(hDlgSheet, IDC_XATTRVIEW_LISTVIEW_ADS);
@@ -622,12 +629,15 @@ INT_PTR CALLBACK RP_XAttrView_Private::DlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 
 		case WM_SYSCOLORCHANGE:
 		case WM_THEMECHANGED: {
-			// Reload the images.
-			auto *const d = reinterpret_cast<RP_XAttrView_Private*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
+			auto* const d = reinterpret_cast<RP_XAttrView_Private*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
 			if (!d) {
 				// No RP_XAttrView_Private. Can't do anything...
 				return false;
 			}
+
+			UpdateDarkModeEnabled();
+			d->isDarkModeEnabled = VerifyDialogDarkMode(GetParent(hDlg));
+			// TODO: Force a window update?
 
 			// Update the alternate row color.
 			HWND hListViewADS = GetDlgItem(hDlg, IDC_XATTRVIEW_LISTVIEW_ADS);
@@ -670,6 +680,30 @@ INT_PTR CALLBACK RP_XAttrView_Private::DlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 			}
 			break;
 		}
+
+		case WM_CTLCOLORMSGBOX:
+		case WM_CTLCOLOREDIT:
+		case WM_CTLCOLORLISTBOX:
+		case WM_CTLCOLORBTN:
+		case WM_CTLCOLORDLG:
+		case WM_CTLCOLORSCROLLBAR:
+		case WM_CTLCOLORSTATIC: {
+			// If using Dark Mode, forward WM_CTLCOLOR* to the parent window.
+			// This fixes issues when using StartAllBack on Windows 11
+			// to enforce Dark Mode schemes in Windows Explorer.
+			// TODO: Handle color scheme changes?
+			auto* const d = reinterpret_cast<RP_XAttrView_Private*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
+			if (d && d->isDarkModeEnabled) {
+				return SendMessage(GetParent(hDlg), uMsg, wParam, lParam);
+			}
+			break;
+		}
+
+		case WM_SETTINGCHANGE:
+			if (g_darkModeSupported && IsColorSchemeChangeMessage(lParam)) {
+				SendMessage(hDlg, WM_THEMECHANGED, 0, 0);
+			}
+			break;
 
 		default:
 			break;

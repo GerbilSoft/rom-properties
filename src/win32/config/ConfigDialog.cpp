@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * ConfigDialog.cpp: Configuration dialog.                                 *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -413,12 +413,12 @@ LRESULT CALLBACK ConfigDialogPrivate::subclassProc(
 
 		case WM_CTLCOLORDLG:
 		case WM_CTLCOLORSTATIC:
-			if (g_darkModeSupported && g_darkModeEnabled) {
+			if (g_darkModeEnabled) {
 				HDC hdc = reinterpret_cast<HDC>(wParam);
 				SetTextColor(hdc, g_darkTextColor);
-				SetBkColor(hdc, g_darkBkColor);
+				SetBkColor(hdc, g_darkMainDlgBkColor);
 				if (!hbrBkgnd) {
-					hbrBkgnd = CreateSolidBrush(g_darkBkColor);
+					hbrBkgnd = CreateSolidBrush(g_darkMainDlgBkColor);
 				}
 				return reinterpret_cast<INT_PTR>(hbrBkgnd);
 			}

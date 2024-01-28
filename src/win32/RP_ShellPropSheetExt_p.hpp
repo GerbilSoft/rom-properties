@@ -169,6 +169,9 @@ public:
 	// If so, this will be set to WS_EX_LAYOUTRTL.
 	DWORD dwExStyleRTL;
 
+	// Is the dialog in Dark Mode? (requires something like StartAllBack)
+	bool isDarkModeEnabled;
+
 	// True if the window is fully initialized.
 	// (Used to disable modification of ListView checkboxes while initializing.)
 	bool isFullyInit;

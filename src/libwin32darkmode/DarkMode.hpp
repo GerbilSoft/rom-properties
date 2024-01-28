@@ -123,6 +123,12 @@ void AllowDarkModeForApp(bool allow);
 void FixDarkScrollBar(void);
 
 /**
+ * Initialize Dark Mode function pointers.
+ * @return 0 if Dark Mode functionality is available; non-zero if not or an error occurred.
+ */
+int InitDarkModePFNs(void);
+
+/**
  * Initialize Dark Mode.
  * @return 0 if Dark Mode functionality is available; non-zero if not or an error occurred.
  */
@@ -134,7 +140,7 @@ int InitDarkMode(void);
  */
 static inline void UpdateDarkModeEnabled(void)
 {
-	g_darkModeEnabled = _ShouldAppsUseDarkMode() && !IsHighContrast();
+	g_darkModeEnabled = g_darkModeSupported && _ShouldAppsUseDarkMode() && !IsHighContrast();
 }
 
 #ifdef __cplusplus
@@ -149,3 +155,12 @@ static inline bool IsColorSchemeChangeMessage(UINT message, LPARAM lParam)
 	return false;
 }
 #endif /* __cplusplus */
+
+/**
+ * Check if a dialog is really supposed to have a dark-colored background for Dark Mode.
+ * Needed on Windows in cases where Dark Mode is enabled, but something like
+ * StartAllBack isn't installed, resulting in properties dialogs using Light Mode.
+ * @param hDlg Dialog handle
+ * @return True if Dark Mode; false if not.
+ */
+bool VerifyDialogDarkMode(HWND hDlg);
