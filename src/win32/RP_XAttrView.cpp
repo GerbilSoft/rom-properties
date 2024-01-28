@@ -259,7 +259,7 @@ void RP_XAttrView_Private::initDialog(void)
 	}
 
 	// Determine if Dark Mode is enabled.
-	isDarkModeEnabled = VerifyDialogDarkMode(hDlgSheet);
+	isDarkModeEnabled = VerifyDialogDarkMode(GetParent(hDlgSheet));
 
 	// Initialize ADS ListView columns.
 	HWND hListViewADS = GetDlgItem(hDlgSheet, IDC_XATTRVIEW_LISTVIEW_ADS);
@@ -636,7 +636,7 @@ INT_PTR CALLBACK RP_XAttrView_Private::DlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 			}
 
 			UpdateDarkModeEnabled();
-			d->isDarkModeEnabled = VerifyDialogDarkMode(hDlg);
+			d->isDarkModeEnabled = VerifyDialogDarkMode(GetParent(hDlg));
 			// TODO: Force a window update?
 
 			// Update the alternate row color.

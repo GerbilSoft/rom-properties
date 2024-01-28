@@ -1650,7 +1650,7 @@ void RP_ShellPropSheetExt_Private::initDialog(void)
 	}
 
 	// Determine if Dark Mode is enabled.
-	isDarkModeEnabled = VerifyDialogDarkMode(hDlgSheet);
+	isDarkModeEnabled = VerifyDialogDarkMode(GetParent(hDlgSheet));
 
 	// Get the fields.
 	const RomFields *const pFields = romData->fields();
@@ -2827,7 +2827,7 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 			}
 
 			UpdateDarkModeEnabled();
-			d->isDarkModeEnabled = VerifyDialogDarkMode(hDlg);
+			d->isDarkModeEnabled = VerifyDialogDarkMode(GetParent(hDlg));
 			// TODO: Force a window update?
 
 			// Reload the images.
