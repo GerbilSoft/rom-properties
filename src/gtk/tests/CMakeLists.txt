@@ -69,7 +69,7 @@ IF(BUILD_GTK4)
 	TARGET_LINK_LIBRARIES(SortFuncsTest_gtk4 PUBLIC GTK4::gtk GTK4::pango)
 	TARGET_LINK_LIBRARIES(SortFuncsTest_gtk4 PUBLIC GLib2::gio-unix GLib2::gio GLib2::gobject GLib2::glib)
 	LIST(APPEND GTK_TESTS SortFuncsTest_gtk4)
-ENDIF(BUILD_KF6)
+ENDIF(BUILD_GTK4)
 
 FOREACH(_target ${GTK_TESTS})
 	DO_SPLIT_DEBUG(${_target})
