@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (rp-download)                      *
  * rp-download.cpp: Standalone cache downloader.                           *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -397,6 +397,11 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 
 		// FIXME: Manjaro is using these syscalls for some reason...
 		SCMP_SYS(prctl), SCMP_SYS(mremap), SCMP_SYS(ppoll),
+
+		// cURL's "easy" functions use multi internally, which uses pipe().
+		// Some update, either cURL 8.4.0 -> 8.5.0 or glibc 2.38 -> 2.39,
+		// is now using the pipe2() syscall.
+		SCMP_SYS(pipe2),
 
 		-1	// End of whitelist
 	};
