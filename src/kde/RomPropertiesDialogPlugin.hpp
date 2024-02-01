@@ -2,13 +2,19 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * RomPropertiesDialogPlugin.hpp: KPropertiesDialogPlugin implementation   *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #pragma once
 
-#include <kpropertiesdialog.h>
+#include <QtCore/qglobal.h>
+
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+#  include <kpropertiesdialogplugin.h>
+#else /* QT_VERSION < QT_VERSION_CHECK(6,0,0) */
+#  include <kpropertiesdialog.h>
+#endif /* QT_VERSION >= QT_VERSION_CHECK(6,0,0) */
 
 class RomDataView;
 

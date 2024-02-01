@@ -2,6 +2,7 @@
 # Find Qt6 and KF6.
 MACRO(FIND_QT6_AND_KF6)
 	SET(ENV{QT_SELECT} qt6)
+	SET(QT_DEFAULT_MAJOR_VERSION 6)
 
 	# FIXME: Search for Qt6 first instead of ECM?
 

@@ -2,6 +2,7 @@
 # Find Qt5 and KF5.
 MACRO(FIND_QT5_AND_KF5)
 	SET(ENV{QT_SELECT} qt5)
+	SET(QT_DEFAULT_MAJOR_VERSION 5)
 
 	# FIXME: Search for Qt5 first instead of ECM?
 
