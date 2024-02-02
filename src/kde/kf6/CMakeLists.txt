@@ -11,6 +11,9 @@ PROJECT(rom-properties-kf6 LANGUAGES CXX)
 INCLUDE(RP_FindQt6andKF6)
 FIND_QT6_AND_KF6()
 
+# Disable anything deprecated as of Qt 5.15.
+ADD_DEFINITIONS(-DQT_DISABLE_DEPRECATED_UP_TO=0x050F00)
+
 # Write the config.h file.
 CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.kf6.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.kf6.h")
 
