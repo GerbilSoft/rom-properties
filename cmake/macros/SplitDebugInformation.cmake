@@ -88,6 +88,7 @@ IF(SPLIT_OK)
 		COMMAND ${CMAKE_OBJCOPY} --only-keep-debug ${OBJCOPY_COMPRESS_DEBUG_SECTIONS_PARAM}
 			${SPLITDEBUG_SOURCE} ${SPLITDEBUG_TARGET}
 		COMMAND ${CMAKE_OBJCOPY}
+			--strip-all
 			--remove-section=.gnu_debuglink
 			--add-gnu-debuglink="${SPLITDEBUG_TARGET}"
 			${SPLITDEBUG_SOURCE}
