@@ -71,6 +71,7 @@ SET(${PROJECT_NAME}_GLib_SRCS
 	RpFile_gio.cpp
 	is-supported.cpp
 	ProxyForUrl.cpp
+	RpGtkCpp.cpp
 	)
 SET(${PROJECT_NAME}_GLib_H
 	RomDataFormat.hpp
@@ -78,6 +79,7 @@ SET(${PROJECT_NAME}_GLib_H
 	is-supported.hpp
 	ProxyForUrl.hpp
 	glib-compat.h
+	RpGtkCpp.hpp
 	)
 
 # Sources and headers
@@ -89,7 +91,7 @@ SET(${PROJECT_NAME}_SRCS
 	PIMGTYPE.cpp
 	rp-gtk-enums.c
 	MessageWidget.c
-	RpGtk.cpp
+	RpGtk.c
 	sort_funcs.c
 	gtk-compat.c
 	LanguageComboBox.cpp
@@ -121,7 +123,7 @@ SET(${PROJECT_NAME}_H
 	PIMGTYPE.hpp
 	rp-gtk-enums.h
 	MessageWidget.h
-	RpGtk.hpp
+	RpGtk.h
 	sort_funcs.h
 	gtk-compat.h
 	LanguageComboBox.hpp

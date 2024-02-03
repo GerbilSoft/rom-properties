@@ -1,8 +1,8 @@
-/**************************************************************************
+/***************************************************************************
  * ROM Properties Page shell extension. (GTK+ common)                      *
- * RpGtk.hpp: glib/gtk+ wrappers for some libromdata functionality.        *
+ * RpGtk.h: glib/gtk+ wrappers for some libromdata functionality.          *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -14,7 +14,7 @@ G_BEGIN_DECLS
 
 /**
  * File dialog callback function.
- * @param file (in) (transfer full): Selected file, or nullptr if no file was selected
+ * @param file (in) (transfer full): Selected file, or NULL if no file was selected
  * @param user_data (in) (transfer full): Specified user data when calling the original function
  */
 typedef void (*rpGtk_fileDialogCallback)(GFile *file, gpointer user_data);
@@ -67,14 +67,3 @@ int rpGtk_getOpenFileName(const rpGtk_getFileName_t *gfndata);
 int rpGtk_getSaveFileName(const rpGtk_getFileName_t *gfndata);
 
 G_END_DECLS
-
-#ifdef __cplusplus
-
-/**
- * Convert Win32/Qt-style accelerator notation ('&') to GTK-style ('_').
- * @param str String with '&' accelerator
- * @return String with '_' accelerator
- */
-std::string convert_accel_to_gtk(const char *str);
-
-#endif /* __cplusplus */

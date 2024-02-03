@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * ConfigDialog.hpp: Configuration dialog.                                 *
  *                                                                         *
- * Copyright (c) 2017-2023 by David Korth.                                 *
+ * Copyright (c) 2017-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -11,7 +11,8 @@
 #include "config.gtk.h"
 
 #include "ConfigDialog.hpp"
-#include "RpGtk.hpp"
+#include "RpGtk.h"
+#include "RpGtkCpp.hpp"
 #include "gtk-i18n.h"
 
 #include <gdk/gdkkeysyms.h>

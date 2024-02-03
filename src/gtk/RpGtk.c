@@ -1,22 +1,22 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (KDE4/KF5)                         *
- * RpQt.cpp: Qt wrappers for some libromdata functionality.                *
+ * ROM Properties Page shell extension. (GTK+ common)                      *
+ * RpGtk.c: glib/gtk+ wrappers for some libromdata functionality.          *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "stdafx.h"
-#include "RpGtk.hpp"
+#include "RpGtk.h"
 #include "gtk-i18n.h"
+
+// for bool
+#include "stdboolx.h"
 
 // Use the new GtkFileDialog class on GTK 4.10 and later.
 #if GTK_CHECK_VERSION(4,9,1)
 #  define USE_GTK4_FILE_DIALOG 1
 #endif /* GTK_CHECK_VERSION(4,9,1) */
-
-// C++ STL classes
-using std::string;
 
 // Simple struct for passing multiple values to the rpGtk_getFileName_int() callback functions.
 typedef struct _rpGtk_getFileName_int_callback_data_t {
@@ -34,7 +34,7 @@ typedef struct _rpGtk_getFileName_int_callback_data_t {
  * The RP file dialog filter must have been split using g_strsplit().
  *
  * @param pStrv Pointer to current position in strv
- * @return GtkFileFilter, or nullptr on error.
+ * @return GtkFileFilter, or NULL on error.
  */
 static GtkFileFilter *rpFileFilterToGtk_int(const gchar *const *pStrv)
 {
@@ -42,11 +42,11 @@ static GtkFileFilter *rpFileFilterToGtk_int(const gchar *const *pStrv)
 	// - 0: Display name
 	// - 1: Pattern
 	// - 2: MIME type (optional)
-	assert(pStrv[0] != nullptr);
-	assert(pStrv[1] != nullptr);
+	assert(pStrv[0] != NULL);
+	assert(pStrv[1] != NULL);
 	if (!pStrv[0] || !pStrv[1]) {
 		// Missing token...
-		return nullptr;
+		return NULL;
 	}
 
 	GtkFileFilter *const fileFilter = gtk_file_filter_new();
@@ -55,7 +55,7 @@ static GtkFileFilter *rpFileFilterToGtk_int(const gchar *const *pStrv)
 	// Split the pattern. (';'-separated)
 	gchar **const strv_ext = g_strsplit(pStrv[1], ";", 0);
 	if (strv_ext) {
-		for (const gchar *const *pStrvExt = strv_ext; *pStrvExt != nullptr; pStrvExt++) {
+		for (const gchar *const *pStrvExt = strv_ext; *pStrvExt != NULL; pStrvExt++) {
 			gtk_file_filter_add_pattern(fileFilter, *pStrvExt);
 		}
 		g_strfreev(strv_ext);
@@ -66,7 +66,7 @@ static GtkFileFilter *rpFileFilterToGtk_int(const gchar *const *pStrv)
 		// Split the pattern. (';'-separated)
 		gchar **const strv_mime = g_strsplit(pStrv[2], ";", 0);
 		if (strv_mime) {
-			for (const gchar *const *pStrvMime = strv_mime; *pStrvMime != nullptr; pStrvMime++) {
+			for (const gchar *const *pStrvMime = strv_mime; *pStrvMime != NULL; pStrvMime++) {
 				gtk_file_filter_add_mime_type(fileFilter, *pStrvMime);
 			}
 			g_strfreev(strv_mime);
@@ -98,8 +98,8 @@ static GtkFileFilter *rpFileFilterToGtk_int(const gchar *const *pStrv)
  */
 static int rpFileFilterToGtkFileChooser(GtkFileChooser *fileChooser, const char *filter)
 {
-	assert(fileChooser != nullptr);
-	assert(filter != nullptr && filter[0] != '\0');
+	assert(fileChooser != NULL);
+	assert(filter != NULL && filter[0] != '\0');
 	if (!fileChooser || !filter || filter[0] == '\0')
 		return -EINVAL;
 
@@ -132,7 +132,7 @@ static int rpFileFilterToGtkFileChooser(GtkFileChooser *fileChooser, const char 
 
 		// Next set of 3 tokens.
 		pStrv += 3;
-	} while (*pStrv != nullptr);
+	} while (*pStrv != NULL);
 
 	g_strfreev(strv);
 	return ret;
@@ -160,8 +160,8 @@ static int rpFileFilterToGtkFileChooser(GtkFileChooser *fileChooser, const char 
  */
 static int rpFileFilterToGtkFileDialog(GtkFileDialog *fileDialog, const char *filter)
 {
-	assert(fileDialog != nullptr);
-	assert(filter != nullptr && filter[0] != '\0');
+	assert(fileDialog != NULL);
+	assert(filter != NULL && filter[0] != '\0');
 	if (!fileDialog || !filter || filter[0] == '\0')
 		return -EINVAL;
 
@@ -199,7 +199,7 @@ static int rpFileFilterToGtkFileDialog(GtkFileDialog *fileDialog, const char *fi
 
 		// Next set of 3 tokens.
 		pStrv += 3;
-	} while (*pStrv != nullptr);
+	} while (*pStrv != NULL);
 
 	// Set the GtkFileDialog's filters.
 	gtk_file_dialog_set_filters(fileDialog, G_LIST_MODEL(listStore));
@@ -221,9 +221,9 @@ rpGtk_getFileName_AsyncReadyCallback(GtkFileDialog *fileDialog, GAsyncResult *re
 {
 	GFile *file;
 	if (gfncbdata->bSave) {
-		file = gtk_file_dialog_save_finish(fileDialog, res, nullptr);
+		file = gtk_file_dialog_save_finish(fileDialog, res, NULL);
 	} else {
-		file = gtk_file_dialog_open_finish(fileDialog, res, nullptr);
+		file = gtk_file_dialog_open_finish(fileDialog, res, NULL);
 	}
 	g_object_unref(fileDialog);
 
@@ -242,7 +242,7 @@ rpGtk_getFileName_AsyncReadyCallback(GtkFileDialog *fileDialog, GAsyncResult *re
 static void
 rpGtk_getFileName_fileDialog_response(GtkFileChooserDialog *fileDialog, gint response_id, rpGtk_getFileName_int_callback_data_t *gfncbdata)
 {
-	GFile *file = nullptr;
+	GFile *file = NULL;
 	if (response_id == GTK_RESPONSE_ACCEPT) {
 		// Get the GFile from the dialog.
 		file = gtk_file_chooser_get_file(GTK_FILE_CHOOSER(fileDialog));
@@ -296,7 +296,7 @@ static int rpGtk_getFileName_int(const rpGtk_getFileName_t *gfndata, bool bSave)
 		accept_action,			// action
 		GTK_I18N_STR_CANCEL, GTK_RESPONSE_CANCEL,
 		accept_text, GTK_RESPONSE_ACCEPT,
-		nullptr);
+		NULL);
 	gtk_widget_set_name(fileDialog, "rpGtk_getFileName");
 #endif /* USE_GTK4_FILE_DIALOG */
 
@@ -309,7 +309,7 @@ static int rpGtk_getFileName_int(const rpGtk_getFileName_t *gfndata, bool bSave)
 #  if USE_GTK4_FILE_DIALOG
 			gtk_file_dialog_set_initial_folder(fileDialog, set_file);
 #  else /* !USE_GTK4_FILE_DIALOG */
-			gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(fileDialog), set_file, nullptr);
+			gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(fileDialog), set_file, NULL);
 #  endif /* !USE_GTK4_FILE_DIALOG */
 			g_object_unref(set_file);
 		}
@@ -348,7 +348,7 @@ static int rpGtk_getFileName_int(const rpGtk_getFileName_t *gfndata, bool bSave)
 
 	// Data for the GtkFileChooserDialog/GtkFileDialog callback function.
 	rpGtk_getFileName_int_callback_data_t *const gfncbdata =
-		static_cast<rpGtk_getFileName_int_callback_data_t*>(g_malloc(sizeof(*gfncbdata)));
+		(rpGtk_getFileName_int_callback_data_t*)g_malloc(sizeof(*gfncbdata));
 	gfncbdata->callback = gfndata->callback;
 	gfncbdata->user_data = gfndata->user_data;
 	gfncbdata->bSave = bSave;
@@ -357,10 +357,10 @@ static int rpGtk_getFileName_int(const rpGtk_getFileName_t *gfndata, bool bSave)
 #if USE_GTK4_FILE_DIALOG
 	gtk_file_dialog_set_modal(fileDialog, true);
 	if (bSave) {
-		gtk_file_dialog_save(fileDialog, gfndata->parent, nullptr,
+		gtk_file_dialog_save(fileDialog, gfndata->parent, NULL,
 			(GAsyncReadyCallback)rpGtk_getFileName_AsyncReadyCallback, gfncbdata);
 	} else {
-		gtk_file_dialog_open(fileDialog, gfndata->parent, nullptr,
+		gtk_file_dialog_open(fileDialog, gfndata->parent, NULL,
 			(GAsyncReadyCallback)rpGtk_getFileName_AsyncReadyCallback, gfncbdata);
 	}
 #else /* !USE_GTK4_FILE_DIALOG */
@@ -411,20 +411,4 @@ int rpGtk_getOpenFileName(const rpGtk_getFileName_t *gfndata)
 int rpGtk_getSaveFileName(const rpGtk_getFileName_t *gfndata)
 {
 	return rpGtk_getFileName_int(gfndata, true);
-}
-
-/**
- * Convert Win32/Qt-style accelerator notation ('&') to GTK-style ('_').
- * @param str String with '&' accelerator
- * @return String with '_' accelerator
- */
-string convert_accel_to_gtk(const char *str)
-{
-	// GTK+ uses '_' for accelerators, not '&'.
-	string s_ret = str;
-	const size_t accel_pos = s_ret.find('&');
-	if (accel_pos != string::npos) {
-		s_ret[accel_pos] = '_';
-	}
-	return s_ret;
 }

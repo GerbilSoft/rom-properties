@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * AchievementsTab.cpp: Achievements tab for rp-config.                    *
  *                                                                         *
- * Copyright (c) 2017-2022 by David Korth.                                 *
+ * Copyright (c) 2017-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -13,7 +13,7 @@
 #include "../AchSpriteSheet.hpp"
 
 #include "gtk-compat.h"
-#include "RpGtk.hpp"
+#include "RpGtk.h"
 
 #ifdef USE_GTK_COLUMN_VIEW
 #  include "AchievementItem.h"

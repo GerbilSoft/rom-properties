@@ -2,14 +2,15 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * OptionsMenuButton.cpp: Options menu GtkMenuButton container.            *
  *                                                                         *
- * Copyright (c) 2017-2023 by David Korth.                                 *
+ * Copyright (c) 2017-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "stdafx.h"
 #include "OptionsMenuButton.hpp"
 #include "PIMGTYPE.hpp"
-#include "RpGtk.hpp"
+#include "RpGtk.h"
+#include "RpGtkCpp.hpp"
 
 // librpbase
 using LibRpBase::RomData;

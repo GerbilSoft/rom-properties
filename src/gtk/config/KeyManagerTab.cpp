@@ -2,13 +2,14 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * KeyManagerTab.cpp: Key Manager tab for rp-config.                       *
  *                                                                         *
- * Copyright (c) 2017-2023 by David Korth.                                 *
+ * Copyright (c) 2017-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "stdafx.h"
 #include "KeyManagerTab.hpp"
 #include "KeyManagerTab_p.hpp"
+#include "RpGtkCpp.hpp"
 
 // Other rom-properties libraries
 using namespace LibRpBase;
