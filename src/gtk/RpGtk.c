@@ -36,7 +36,7 @@ typedef struct _rpGtk_getFileName_int_callback_data_t {
  * @param pStrv Pointer to current position in strv
  * @return GtkFileFilter, or NULL on error.
  */
-static GtkFileFilter *rpFileFilterToGtk_int(const gchar *const *pStrv)
+static GtkFileFilter *rpFileFilterToGtk_int(gchar **pStrv)
 {
 	// String indexes:
 	// - 0: Display name
@@ -55,7 +55,7 @@ static GtkFileFilter *rpFileFilterToGtk_int(const gchar *const *pStrv)
 	// Split the pattern. (';'-separated)
 	gchar **const strv_ext = g_strsplit(pStrv[1], ";", 0);
 	if (strv_ext) {
-		for (const gchar *const *pStrvExt = strv_ext; *pStrvExt != NULL; pStrvExt++) {
+		for (gchar **pStrvExt = strv_ext; *pStrvExt != NULL; pStrvExt++) {
 			gtk_file_filter_add_pattern(fileFilter, *pStrvExt);
 		}
 		g_strfreev(strv_ext);
@@ -66,7 +66,7 @@ static GtkFileFilter *rpFileFilterToGtk_int(const gchar *const *pStrv)
 		// Split the pattern. (';'-separated)
 		gchar **const strv_mime = g_strsplit(pStrv[2], ";", 0);
 		if (strv_mime) {
-			for (const gchar *const *pStrvMime = strv_mime; *pStrvMime != NULL; pStrvMime++) {
+			for (gchar **pStrvMime = strv_mime; *pStrvMime != NULL; pStrvMime++) {
 				gtk_file_filter_add_mime_type(fileFilter, *pStrvMime);
 			}
 			g_strfreev(strv_mime);
@@ -109,7 +109,7 @@ static int rpFileFilterToGtkFileChooser(GtkFileChooser *fileChooser, const char 
 		return -EINVAL;
 
 	int ret = 0;
-	const gchar *const *pStrv = strv;
+	gchar **pStrv = strv;
 	do {
 		// String indexes:
 		// - 0: Display name
@@ -176,7 +176,7 @@ static int rpFileFilterToGtkFileDialog(GtkFileDialog *fileDialog, const char *fi
 	}
 
 	int ret = 0;
-	const gchar *const *pStrv = strv;
+	gchar **pStrv = strv;
 	do {
 		// String indexes:
 		// - 0: Display name
