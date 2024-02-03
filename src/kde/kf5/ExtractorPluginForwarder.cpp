@@ -6,7 +6,7 @@
  * multiple plugins, so this file acts as a KFileMetaData ExtractorPlugin, *
  * and then forwards the request to the main library.                      *
  *                                                                         *
- * Copyright (c) 2018-2023 by David Korth.                                 *
+ * Copyright (c) 2018-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -77,8 +77,13 @@ ExtractorPluginForwarder::ExtractorPluginForwarder(QObject *parent)
 	// Make sure we know if the ExtractorPlugin gets deleted.
 	// This *shouldn't* happen, but it's possible that our parent
 	// object enumerates child objects and does weird things.
-	connect(fwd_plugin, &QObject::destroyed,
-		this, &ExtractorPluginForwarder::fwd_plugin_destroyed);
+	connect(fwd_plugin, &QObject::destroyed, [this](QObject *obj) {
+		if (obj == fwd_plugin) {
+			// Object matches.
+			// NULL it out so we don't have problems later.
+			fwd_plugin = nullptr;
+		}
+	});
 }
 
 ExtractorPluginForwarder::~ExtractorPluginForwarder()
@@ -103,19 +108,6 @@ void ExtractorPluginForwarder::extract(ExtractionResult *result)
 {
 	if (fwd_plugin) {
 		fwd_plugin->extract(result);
-	}
-}
-
-/**
- * fwd_plugin was destroyed.
- * @param obj
- */
-void ExtractorPluginForwarder::fwd_plugin_destroyed(QObject *obj)
-{
-	if (obj == fwd_plugin) {
-		// Object matches.
-		// NULL it out so we don't have problems later.
-		fwd_plugin = nullptr;
 	}
 }
 
