@@ -6,14 +6,13 @@
  * multiple plugins, so this file acts as a KOverlayIconPlugin,            *
  * and then forwards the request to the main library.                      *
  *                                                                         *
- * Copyright (c) 2018-2024 by David Korth.                                 *
+ * Copyright (c) 2018-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #pragma once
 
 #include <QtCore/qglobal.h>
-#include <QtCore/QPointer>
 #include <KOverlayIconPlugin>
 
 namespace RomPropertiesKF5 {
@@ -41,7 +40,14 @@ private:
 	void *hRpKdeSo;
 
 	// Actual OverlayPlugin
-	QPointer<KOverlayIconPlugin> fwd_plugin;
+	KOverlayIconPlugin *fwd_plugin;
+
+private slots:
+	/**
+	 * fwd_plugin was destroyed.
+	 * @param obj
+	 */
+	void fwd_plugin_destroyed(QObject *obj = nullptr);
 };
 
 } //namespace RomPropertiesKF5

@@ -6,7 +6,7 @@
  * multiple plugins, so this file acts as a KFileMetaData ExtractorPlugin, *
  * and then forwards the request to the main library.                      *
  *                                                                         *
- * Copyright (c) 2018-2024 by David Korth.                                 *
+ * Copyright (c) 2018-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -35,6 +35,7 @@ namespace RomPropertiesKF6 {
 ExtractorPluginForwarder::ExtractorPluginForwarder(QObject *parent)
 	: super(parent)
 	, hRpKdeSo(nullptr)
+	, fwd_plugin(nullptr)
 {
 	CHECK_UID();
 
@@ -61,17 +62,23 @@ ExtractorPluginForwarder::ExtractorPluginForwarder(QObject *parent)
 
 	// Create an ExtractorPlugin object.
 	fwd_plugin = pfn(this);
-	if (fwd_plugin.isNull()) {
+	if (!fwd_plugin) {
 		// Unable to create an ExtractorPlugin object.
 		dlclose(hRpKdeSo);
 		hRpKdeSo = nullptr;
 		return;
 	}
+
+	// Make sure we know if the ExtractorPlugin gets deleted.
+	// This *shouldn't* happen, but it's possible that our parent
+	// object enumerates child objects and does weird things.
+	connect(fwd_plugin, &QObject::destroyed,
+		this, &ExtractorPluginForwarder::fwd_plugin_destroyed);
 }
 
 ExtractorPluginForwarder::~ExtractorPluginForwarder()
 {
-	fwd_plugin.clear();
+	delete fwd_plugin;
 
 	// NOTE: dlclose(nullptr) may crash, so we have to check for nullptr.
 	if (hRpKdeSo) {
@@ -81,7 +88,7 @@ ExtractorPluginForwarder::~ExtractorPluginForwarder()
 
 QStringList ExtractorPluginForwarder::mimetypes(void) const
 {
-	if (!fwd_plugin.isNull()) {
+	if (fwd_plugin) {
 		return fwd_plugin->mimetypes();
 	}
 	return {};
@@ -89,8 +96,21 @@ QStringList ExtractorPluginForwarder::mimetypes(void) const
 
 void ExtractorPluginForwarder::extract(ExtractionResult *result)
 {
-	if (!fwd_plugin.isNull()) {
+	if (fwd_plugin) {
 		fwd_plugin->extract(result);
+	}
+}
+
+/**
+ * fwd_plugin was destroyed.
+ * @param obj
+ */
+void ExtractorPluginForwarder::fwd_plugin_destroyed(QObject *obj)
+{
+	if (obj == fwd_plugin) {
+		// Object matches.
+		// NULL it out so we don't have problems later.
+		fwd_plugin = nullptr;
 	}
 }
 
