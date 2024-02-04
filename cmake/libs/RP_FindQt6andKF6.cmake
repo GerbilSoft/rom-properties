@@ -7,7 +7,7 @@ MACRO(FIND_QT6_AND_KF6)
 	# FIXME: Search for Qt6 first instead of ECM?
 
 	# Find KF6 Extra CMake Modules.
-	FIND_PACKAGE(ECM ${REQUIRE_KF6} 0.0.11 NO_MODULE)
+	FIND_PACKAGE(ECM ${REQUIRE_KF6} 5.248.0 NO_MODULE)
 	IF(ECM_MODULE_PATH AND ECM_KDE_MODULE_DIR)
 		# Make sure ECM's CMake files don't create an uninstall rule.
 		SET(KDE_SKIP_UNINSTALL_TARGET TRUE)
