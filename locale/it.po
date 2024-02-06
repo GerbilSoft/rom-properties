@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2023-12-16 13:50-0500\n"
-"PO-Revision-Date: 2024-02-06 16:15\n"
+"PO-Revision-Date: 2024-02-06 17:59\n"
 "Last-Translator: \n"
 "Language-Team: Italian\n"
 "Language: it_IT\n"
@@ -21,19 +21,19 @@ msgstr ""
 #: ../src/gtk/config/AboutTab.cpp:287
 msgctxt "AboutTab"
 msgid "C&redits"
-msgstr ""
+msgstr "C&rediti"
 
 #: ../build/src/kde/kf5/ui_AboutTab.h:277
 #: ../src/gtk/config/AboutTab.cpp:290
 msgctxt "AboutTab"
 msgid "&Libraries"
-msgstr ""
+msgstr "&Librerie"
 
 #: ../build/src/kde/kf5/ui_AboutTab.h:278
 #: ../src/gtk/config/AboutTab.cpp:293
 msgctxt "AboutTab"
 msgid "&Support"
-msgstr ""
+msgstr "&Supporto"
 
 #: ../build/src/kde/kf5/ui_AchievementsTab.h:51
 #: ../src/gtk/config/AchievementsTab.cpp:213
@@ -47,39 +47,40 @@ msgstr ""
 #: ../src/win32/config/AchievementsTab.cpp:556
 msgctxt "AchievementsTab"
 msgid "Achievement"
-msgstr ""
+msgstr "Obiettivi"
 
 #: ../build/src/kde/kf5/ui_AchievementsTab.h:53
 #: ../src/gtk/config/AchievementsTab.cpp:211
 msgctxt "AchievementsTab"
 msgid "Icon"
-msgstr ""
+msgstr "Icona"
 
 #: ../build/src/kde/kf5/ui_CacheTab.h:98
 #: ../src/gtk/config/CacheTab.cpp:156
 msgctxt "CacheTab"
 msgid "If any image type settings were changed, you will need to\n"
 "clear the system thumbnail cache."
-msgstr ""
+msgstr "Se l'impostazione del tipo dell'immagine sono state modificate, \n"
+"devi necessariamente svuotare la cache delle anteprime di sistema."
 
 #: ../build/src/kde/kf5/ui_CacheTab.h:100
 #: ../src/gtk/config/CacheTab.cpp:161
 msgctxt "CacheTab"
 msgid "Clear the System Thumbnail Cache"
-msgstr ""
+msgstr "Resetta la cache delle anteprime di sistema"
 
 #: ../build/src/kde/kf5/ui_CacheTab.h:101
 #: ../src/gtk/config/CacheTab.cpp:165
 msgctxt "CacheTab"
 msgid "ROM Properties Page maintains its own download cache for external images.\n"
 "Clearing this cache will force external images to be redownloaded."
-msgstr ""
+msgstr "La scheda di ROM Properties ha una cache dedicata per le immagini scaricate da terze parti. Resettare quest'ultima forzerà il riscaricamento delle immagini."
 
 #: ../build/src/kde/kf5/ui_CacheTab.h:103
 #: ../src/gtk/config/CacheTab.cpp:171
 msgctxt "CacheTab"
 msgid "Clear the ROM Properties Page Download Cache"
-msgstr ""
+msgstr "Resetta la cache dedicata per le immagini scaricate di terze parti"
 
 #. tr: Dialog title.
 #: ../build/src/kde/kf5/ui_ConfigDialog.h:90
@@ -87,85 +88,85 @@ msgstr ""
 #: ../src/win32/config/ConfigDialog.cpp:246
 msgctxt "ConfigDialog"
 msgid "ROM Properties Page configuration"
-msgstr ""
+msgstr "Tab di configurazione di ROM Properties"
 
 #: ../build/src/kde/kf5/ui_ConfigDialog.h:91
 #: ../src/gtk/config/ConfigDialog.cpp:239
 msgctxt "ConfigDialog"
 msgid "&Image Types"
-msgstr ""
+msgstr "&Tipi d'immagine"
 
 #: ../build/src/kde/kf5/ui_ConfigDialog.h:92
 #: ../src/gtk/config/ConfigDialog.cpp:240
 msgctxt "ConfigDialog"
 msgid "&Systems"
-msgstr ""
+msgstr "&Sistemi"
 
 #: ../build/src/kde/kf5/ui_ConfigDialog.h:93
 #: ../src/gtk/config/ConfigDialog.cpp:241
 msgctxt "ConfigDialog"
 msgid "&Options"
-msgstr ""
+msgstr "&Opzioni"
 
 #: ../build/src/kde/kf5/ui_ConfigDialog.h:94
 #: ../src/gtk/config/ConfigDialog.cpp:242
 msgctxt "ConfigDialog"
 msgid "Thumbnail Cache"
-msgstr ""
+msgstr "Cache anteprime"
 
 #: ../build/src/kde/kf5/ui_ConfigDialog.h:95
 #: ../src/gtk/config/ConfigDialog.cpp:243
 msgctxt "ConfigDialog"
 msgid "&Achievements"
-msgstr ""
+msgstr "&Obiettivi"
 
 #: ../build/src/kde/kf5/ui_ConfigDialog.h:96
 #: ../src/gtk/config/ConfigDialog.cpp:247
 msgctxt "ConfigDialog"
 msgid "Abou&t"
-msgstr ""
+msgstr "Circ&a"
 
 #: ../build/src/kde/kf5/ui_DosAttrView.h:100
 #: ../src/gtk/xattr/DosAttrView.c:125
 msgctxt "DosAttrView"
 msgid "&Read-only"
-msgstr ""
+msgstr "&Sola lettura"
 
 #: ../build/src/kde/kf5/ui_DosAttrView.h:101
 #: ../src/gtk/xattr/DosAttrView.c:127
 msgctxt "DosAttrView"
 msgid "&Hidden"
-msgstr ""
+msgstr "&Nascosto"
 
 #: ../build/src/kde/kf5/ui_DosAttrView.h:102
 #: ../src/gtk/xattr/DosAttrView.c:129
 msgctxt "DosAttrView"
 msgid "&Archive"
-msgstr ""
+msgstr "&Archivio"
 
 #: ../build/src/kde/kf5/ui_DosAttrView.h:103
 #: ../src/gtk/xattr/DosAttrView.c:131
 msgctxt "DosAttrView"
 msgid "&System"
-msgstr ""
+msgstr "&Sistema"
 
 #: ../build/src/kde/kf5/ui_DosAttrView.h:104
 #: ../src/gtk/xattr/DosAttrView.c:153
 msgctxt "DosAttrView"
 msgid "&Compressed"
-msgstr ""
+msgstr "&Compresso"
 
 #: ../build/src/kde/kf5/ui_DosAttrView.h:105
 #: ../src/gtk/xattr/DosAttrView.c:155
 msgctxt "DosAttrView"
 msgid "&Encrypted"
-msgstr ""
+msgstr "&Cifrato"
 
 #: ../build/src/kde/kf5/ui_Ext2AttrView.h:85
 #: ../src/gtk/xattr/Ext2AttrView.c:121
 msgctxt "Ext2AttrView"
 msgid "lsattr:"
-msgstr ""
+msgstr "lsattr:"
 
 #: ../build/src/kde/kf5/ui_ImageTypesTab.h:81
 #: ../src/gtk/config/ImageTypesTab.cpp:468
@@ -174,25 +175,28 @@ msgid "Select the image types you would like to use for each system as its thumb
 "Internal images are contained within the ROM file.\n"
 "External images are downloaded from an external image database.\n\n"
 "1 = highest priority; 2 = second highest priority; No = ignore"
-msgstr ""
+msgstr "Selezionare i tipi d'immagine che si desidera utilizzare per ogni sistema come immagine di anteprima.\n"
+"Le immagini interne sono contenute nel file ROM.\n"
+"Le immagini esterne vengono scaricate da un database d'immagini esterne.\n\n"
+"1 = priorità più elevata; 2 = priorità successiva; No = ignora"
 
 #: ../build/src/kde/kf5/ui_KeyManagerTab.h:90
 #: ../src/gtk/config/KeyManagerTab.cpp:143
 #: ../src/kde/config/KeyManagerTab.cpp:326
 msgctxt "KeyManagerTab"
 msgid "I&mport"
-msgstr ""
+msgstr "I&mporta"
 
 #: ../build/src/kde/kf5/ui_OptionsTab.h:177
 msgctxt "OptionsTab"
 msgid "&Downloads"
-msgstr ""
+msgstr "&Downloads"
 
 #: ../build/src/kde/kf5/ui_OptionsTab.h:178
 #: ../src/gtk/config/OptionsTab.cpp:142
 msgctxt "OptionsTab"
 msgid "E&xternal Image Downloads"
-msgstr ""
+msgstr "D&ownload d'immagini esterne"
 
 #: ../build/src/kde/kf5/ui_OptionsTab.h:179
 #: ../src/gtk/config/OptionsTab.cpp:148
