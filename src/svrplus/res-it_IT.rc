@@ -1,0 +1,78 @@
+/***************************************************************************
+ * ROM Properties Page shell extension installer. (svrplus)                *
+ * resource.rc: Win32 resource script. (en_US)                             *
+ *                                                                         *
+ * Copyright (c) 2017-2022 by Egor.                                        *
+ * Copyright (c) 2017-2023 by David Korth.                                 *
+ * SPDX-License-Identifier: GPL-2.0-or-later                               *
+ ***************************************************************************/
+
+// UTF-8 encoding
+#pragma code_page(65001)
+
+// Common rom-properties resource header
+#include "resource.common.inc.h"
+
+// svrplus resources
+#include "resource.h"
+
+/** Dialogs **/
+LANGUAGE LANG_ITALIAN, SUBLANG_ITALIAN
+IDD_SVRPLUS DIALOGEX 0, 0, 273, 157
+STYLE DS_3DLOOK | DS_CENTER | DS_MODALFRAME | DS_SHELLFONT | WS_CAPTION | WS_VISIBLE | WS_POPUPWINDOW | WS_MINIMIZEBOX | WS_SYSMENU
+EXSTYLE WS_EX_CONTROLPARENT
+CAPTION "ROM Properties Page Installer"
+FONT 8, "MS Shell Dlg"
+BEGIN
+    LTEXT           "", IDC_STATIC_DESC, 7, 7, 260, 81, SS_LEFT, WS_EX_LEFT | WS_EX_TRANSPARENT
+    LTEXT           "", IDC_STATIC_STATUS1, 7, 92, 259, 9, NOT WS_VISIBLE | SS_LEFT, WS_EX_LEFT | WS_EX_TRANSPARENT
+    CONTROL         "", IDC_STATIC_STATUS2, "SysLink", 0x50010000, 7, 102, 259, 33, WS_EX_LEFT | WS_EX_TRANSPARENT
+    PUSHBUTTON      "Uninstall", IDC_BUTTON_UNINSTALL, 139, 136, 50, 14, 0, WS_EX_LEFT
+    DEFPUSHBUTTON   "Install", IDC_BUTTON_INSTALL, 83, 136, 50, 14, 0, WS_EX_LEFT
+END
+
+/** String Table **/
+// NOTE: String table does NOT NULL-terminate strings by default.
+// All strings listed here must have a "\0" at the end of the string.
+// Toolchain-specific notes:
+// - windres: No option to automatically NULL-terminate, but will
+//            accept the "\0" here.
+// - MSVC rc: Ignores "\0", but has a "/n" option to automatically
+//            NULL-terminate strings.
+LANGUAGE LANG_ITALIAN, SUBLANG_ITALIAN
+STRINGTABLE
+BEGIN
+	IDS_MAIN_DESCRIPTION, L"This installer will register the ROM Properties Page DLL with the system, which will provide extra functionality for supported files in Windows Explorer.\n\nNote that the DLL locations are hard-coded in the registry. If you move the DLLs, you will have to rerun this installer. In addition, the DLLs will usually be locked by Explorer, so you will need to use this program to uninstall the DLLs first and then restart Explorer in order to move the DLLs.\n\nUninstalling will unregister the ROM Properties DLL, which will disable the extra functionality provided by the DLL for supported ROM files.\0"
+
+	IDS_ISR_FATAL_ERROR, L"An unknown fatal error occurred.\0"
+	IDS_ISR_PROCESS_STILL_ACTIVE, L"The REGSVR32 process never completed.\0"
+	IDS_ISR_REGSVR32_FAIL_ARGS, L"REGSVR32 failed: Invalid argument.\0"
+	IDS_ISR_REGSVR32_FAIL_OLE, L"REGSVR32 failed: OleInitialize() failed.\0"
+	IDS_DLLS_REGISTERING, L"Registering DLLs...\0"
+	IDS_DLL_REGISTERING, L"Registering DLL...\0"
+	IDS_DLLS_UNREGISTERING, L"Unregistering DLLs...\0"
+	IDS_DLL_UNREGISTERING, L"Unregistering DLL...\0"
+	IDS_DLLS_REG_OK, L"DLLs registered successfully.\0"
+	IDS_DLL_REG_OK, L"DLL registered successfully.\0"
+	IDS_DLLS_UNREG_OK, L"DLLs unregistered successfully.\0"
+	IDS_DLL_UNREG_OK, L"DLL unregistered successfully.\0"
+	IDS_DLLS_REG_ERROR, L"An error occurred while registering the DLLs:\0"
+	IDS_DLL_REG_ERROR, L"An error occurred while registering the DLL:\0"
+	IDS_DLLS_UNREG_ERROR, L"An error occurred while unregistering the DLLs:\0"
+	IDS_DLL_UNREG_ERROR, L"An error occurred while unregistering the DLL:\0"
+	IDS_ERROR_STARTING_WORKER_THREAD, L"An error occurred while starting the worker thread.\0"
+	IDS_ERROR_COULD_NOT_OPEN_URL_TITLE, L"Could not open URL\0"
+
+	IDSF_MSVCRT_DOWNLOAD_AT, L"You can download the MSVC 2015-%u runtime at:\0"
+	IDSF_MSVCRT_MISSING_ONE, L"The %s MSVC 2015-%u runtime is not installed.\0"
+	IDSF_MSVCRT_MISSING_MULTIPLE, L"The %s MSVC 2015-%u runtimes are not installed.\0"
+
+	IDSF_ISR_INVALID_ARCH, L"Invalid system architecture: %d\0"
+	IDSF_ISR_FILE_NOT_FOUND, L"%s\\%s is missing.\0"
+	IDSF_ISR_CREATEPROCESS_FAILED, L"Could not start REGSVR32.exe. (Err:%u)\0"
+	IDSF_ISR_REGSVR32_FAIL_LOAD, L"REGSVR32 failed: %s\\%s is not a valid DLL.\0"
+	IDSF_ISR_REGSVR32_FAIL_ENTRY, L"REGSVR32 failed: %s\\%s is missing %s().\0"
+	IDSF_ISR_REGSVR32_FAIL_REG, L"REGSVR32 failed: %s() returned an error.\0"
+	IDSF_ISR_REGSVR32_UNKNOWN_EXIT_CODE, L"REGSVR32 failed: Unknown exit code: %u\0"
+	IDSF_ERROR_COULD_NOT_OPEN_URL, L"Could not open the URL.\n\nWin32 error code: %d\0"
+END
