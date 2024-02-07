@@ -43,7 +43,7 @@ LPVOID LoadResource_i18n(HMODULE hModule, LPCTSTR lpType, DWORD dwResId)
 		uint32_t lc;
 		WORD wLanguage;
 	};
-	static const std::array<lc_mapping_t, 7> lc_mappings = {{
+	static const std::array<lc_mapping_t, 8> lc_mappings = {{
 		{'de', MAKELANGID(LANG_GERMAN, SUBLANG_GERMAN)},
 		{'es', MAKELANGID(LANG_SPANISH, SUBLANG_SPANISH)},
 		{'fr', MAKELANGID(LANG_FRENCH, SUBLANG_FRENCH)},
