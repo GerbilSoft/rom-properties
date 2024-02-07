@@ -15,7 +15,7 @@ FIND_PROGRAM(SED sed)
 SET(DOMAIN "rom-properties")
 SET(COPYRIGHT_HOLDER "David Korth")
 SET(MSGID_BUGS_ADDRESS "gerbilsoft@gerbilsoft.com")
-SET(LINGUAS de es fr pt ro ru uk)
+SET(LINGUAS de es fr it pt ro ru uk)
 
 # Installation.
 INCLUDE(DirInstallPaths)
