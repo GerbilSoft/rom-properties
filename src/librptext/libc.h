@@ -61,6 +61,7 @@ void *rp_memmem(const void *haystack, size_t haystacklen,
  * @param dst [in,out] Destination string
  * @param src [in] Source string
  * @param size [in] Size of destination string
+ * @return Total length of the string that was attempted to be created: strlen(dst) + strlen(src)
  */
 size_t rp_strlcat(char *dst, const char *src, size_t size);
 
