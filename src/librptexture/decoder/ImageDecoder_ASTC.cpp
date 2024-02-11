@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * ImageDecoder_ASTC.cpp: Image decoding functions: ASTC                   *
  *                                                                         *
- * Copyright (c) 2019-2023 by David Korth.                                 *
+ * Copyright (c) 2019-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -96,7 +96,7 @@ rp_image_ptr fromASTC(int width, int height,
 	bool bErr = false;
 #endif /* _OPENMP */
 
-#pragma omp parallel for
+#pragma omp parallel for default(none) shared(img_buf, pDestBits, bErr) firstprivate(block_x, block_y, tilesX, tilesY, bytesPerTileRow, stride_px)
 	for (int y = 0; y < tilesY; y++) {
 		const uint8_t *pSrc = &img_buf[y * bytesPerTileRow];
 		for (int x = 0; x < tilesX; x++, pSrc += 16) {

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * ImageDecoder_BC7.cpp: Image decoding functions: BC7                     *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -693,7 +693,7 @@ rp_image_ptr fromBC7(int width, int height,
 	bool bErr = false;
 #endif /* _OPENMP */
 
-#pragma omp parallel for
+#pragma omp parallel for default(none) shared(img_buf, img, bErr) firstprivate(tilesX, tilesY, bytesPerTileRow)
 	for (int y = 0; y < tilesY; y++) {
 		// BC7 has eight block modes with varying properties, including
 		// bitfields of different lengths. As such, the only guaranteed
