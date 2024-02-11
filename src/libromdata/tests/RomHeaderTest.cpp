@@ -288,7 +288,7 @@ TEST_P(RomHeaderTest, Text)
 	}
 
 	// Make sure the binary file isn't empty.
-	ASSERT_GT(last_bin_data.size(), 0) << "Binary file is empty.";
+	ASSERT_GT(last_bin_data.size(), 0U) << "Binary file is empty.";
 
 	// Get the text output for this binary file, e.g. as if we're running `rpcli`.
 	const shared_ptr<MemFile> memFile = std::make_shared<MemFile>(last_bin_data.data(), last_bin_data.size());
@@ -298,7 +298,7 @@ TEST_P(RomHeaderTest, Text)
 
 	if (romData) {
 		// RomData object was created.
-		ASSERT_GT(last_txt_data.size(), 0) << "Binary file is valid RomData, but text file is empty.";
+		ASSERT_GT(last_txt_data.size(), 0U) << "Binary file is valid RomData, but text file is empty.";
 
 		ostringstream oss;
 		oss << ROMOutput(romData.get(), 0, 0);
@@ -318,7 +318,7 @@ TEST_P(RomHeaderTest, Text)
 		ASSERT_EQ(reinterpret_cast<const char*>(last_txt_data.data()), str) << "Text output does not match the expected value.";
 	} else {
 		// No RomData object. Verify that the text file is empty.
-		ASSERT_EQ(last_txt_data.size(), 0) << "Binary file is not valid RomData, but text file is not empty.";
+		ASSERT_EQ(last_txt_data.size(), 0U) << "Binary file is not valid RomData, but text file is not empty.";
 	}
 }
 
@@ -334,7 +334,7 @@ TEST_P(RomHeaderTest, JSON)
 	}
 
 	// Make sure the binary file isn't empty.
-	ASSERT_GT(last_bin_data.size(), 0) << "Binary file is empty.";
+	ASSERT_GT(last_bin_data.size(), 0U) << "Binary file is empty.";
 
 	// Get the JSON output for this binary file, e.g. as if we're running `rpcli -j`.
 	const shared_ptr<MemFile> memFile = std::make_shared<MemFile>(last_bin_data.data(), last_bin_data.size());
@@ -344,7 +344,7 @@ TEST_P(RomHeaderTest, JSON)
 
 	if (romData) {
 		// RomData object was created.
-		ASSERT_GT(last_json_data.size(), 0) << "Binary file is valid RomData, but JSON file is empty.";
+		ASSERT_GT(last_json_data.size(), 0U) << "Binary file is valid RomData, but JSON file is empty.";
 
 		ostringstream oss;
 		oss << JSONROMOutput(romData.get(), 0, LibRpBase::OF_JSON_NoPrettyPrint);
@@ -358,7 +358,7 @@ TEST_P(RomHeaderTest, JSON)
 		ASSERT_EQ(expected_json, actual_json);
 	} else {
 		// No RomData object. Verify that the JSON file is correct.
-		ASSERT_EQ(last_json_data.size(), 33) << "Binary file is not valid RomData, but JSON file does not have an error message.";
+		ASSERT_EQ(last_json_data.size(), 33U) << "Binary file is not valid RomData, but JSON file does not have an error message.";
 		ASSERT_STREQ(reinterpret_cast<const char*>(last_json_data.data()), "{\"error\":\"rom is not supported\"}\n")
 			<< "Binary file is not valid RomData, but JSON file does not have an error message.";
 	}
