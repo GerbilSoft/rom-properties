@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * DragImage.cpp: Drag & Drop image.                                       *
  *                                                                         *
- * Copyright (c) 2017-2023 by David Korth.                                 *
+ * Copyright (c) 2017-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -15,9 +15,6 @@
 #include "librpfile/VectorFile.hpp"
 using namespace LibRpBase;
 using namespace LibRpTexture;
-
-// C++ STL classes
-using std::shared_ptr;
 
 // TODO: Adjust minimum image size based on DPI.
 #define DIL_MIN_IMAGE_SIZE 32
@@ -697,7 +694,7 @@ rp_drag_image_drag_data_get(RpDragImage *image, GdkDragContext *context, GtkSele
 	const bool isAnimated = (anim && anim->iconAnimData && anim->iconAnimHelper.isAnimated());
 
 	using LibRpFile::VectorFile;
-	shared_ptr<VectorFile> pngData = std::make_shared<VectorFile>();
+	std::shared_ptr<VectorFile> pngData = std::make_shared<VectorFile>();
 	RpPngWriter *pngWriter;
 	if (isAnimated) {
 		// Animated icon.

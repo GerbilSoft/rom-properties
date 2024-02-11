@@ -33,7 +33,6 @@ using namespace LibRpTexture;
 #include "disc/CIAReader.hpp"
 
 // C++ STL classes
-using std::shared_ptr;
 using std::string;
 using std::unique_ptr;
 using std::vector;

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpfile)                        *
  * XAttrReader_posix.cpp: Extended Attribute reader (POSIX version)        *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -72,7 +72,6 @@ struct fsxattr {
 
 // C++ STL classes
 using std::string;
-using std::unique_ptr;
 
 // XAttrReader isn't used by libromdata directly,
 // so use some linker hax to force linkage.

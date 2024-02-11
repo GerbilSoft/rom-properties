@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata/tests)                 *
  * ImageDecoderTest.cpp: ImageDecoder class test.                          *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -67,7 +67,6 @@ using namespace LibRpTexture;
 #include <string>
 using std::shared_ptr;
 using std::string;
-using std::unique_ptr;
 
 // Uninitialized vector class
 #include "uvector.h"

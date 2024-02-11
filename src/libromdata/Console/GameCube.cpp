@@ -40,7 +40,6 @@ using namespace LibRpTexture;
 
 // C++ STL classes
 using std::array;
-using std::shared_ptr;
 using std::string;
 using std::unique_ptr;
 using std::vector;

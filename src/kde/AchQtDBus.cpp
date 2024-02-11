@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * AchQtDBus.cpp: QtDBus notifications for achievements.                   *
  *                                                                         *
- * Copyright (c) 2020-2023 by David Korth.                                 *
+ * Copyright (c) 2020-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -24,9 +24,6 @@ using LibRpTexture::argb32_t;
 
 // Achievement spritesheets
 #include "AchSpriteSheet.hpp"
-
-// C++ STL classes
-using std::unordered_map;
 
 class AchQtDBusPrivate
 {

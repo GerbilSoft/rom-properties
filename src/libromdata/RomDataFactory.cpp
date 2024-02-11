@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * RomDataFactory.cpp: RomData factory class.                              *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -29,8 +29,6 @@ using LibRpTexture::FileFormatFactory;
 // C++ STL classes
 using std::shared_ptr;
 using std::string;
-using std::unordered_map;
-using std::unordered_set;
 using std::vector;
 
 // RomData subclasses: Consoles
@@ -1143,7 +1141,7 @@ void RomDataFactoryPrivate::init_supportedFileExtensions(void)
 	// then the thumbnail handlers will be registered.
 	//
 	// The actual data is stored in the vector<ExtInfo>.
-	unordered_map<string, unsigned int> map_exts;
+	std::unordered_map<string, unsigned int> map_exts;
 
 	static const size_t reserve_size =
 		(ARRAY_SIZE(romDataFns_magic) +
@@ -1232,7 +1230,7 @@ void RomDataFactoryPrivate::init_supportedMimeTypes(void)
 	// that support the same MIME types, we're using
 	// an unordered_set<string>. The actual data
 	// is stored in the vector<const char*>.
-	unordered_set<string> set_mimeTypes;
+	std::unordered_set<string> set_mimeTypes;
 
 	static const size_t reserve_size =
 		(ARRAY_SIZE(romDataFns_magic) +

@@ -5,7 +5,7 @@
  * Parses various sample ROM headers and compares them to reference        *
  * text and JSON files.                                                    *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -25,7 +25,6 @@
 #include "librpfile/MemFile.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
-using LibRomData::RomDataFactory;
 
 // C includes (C++ namespace)
 #include "ctypex.h"
