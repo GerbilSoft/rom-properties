@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpfile)                        *
  * IRpFile.hpp: File wrapper interface.                                    *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -263,7 +263,7 @@ class RP_LIBROMDATA_PUBLIC NOVTABLE IRpFile
 		 */
 		inline int seek_cur(off64_t offset)
 		{
-			off64_t pos = this->tell();
+			const off64_t pos = this->tell();
 			if (pos < 0) {
 				return -1;
 			}
