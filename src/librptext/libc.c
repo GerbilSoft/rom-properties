@@ -21,7 +21,7 @@
  * @param maxlen Maximum length of the string
  * @returns equivivalent to min(strlen(str), maxlen) without buffer overruns
  */
-size_t strnlen(const char *str, size_t maxlen)
+size_t rp_strnlen(const char *str, size_t maxlen)
 {
 	const char *ptr = memchr(str, 0, maxlen);
 	if (!ptr)
@@ -39,8 +39,8 @@ size_t strnlen(const char *str, size_t maxlen)
  * @param needlelen Length of needle.
  * @return Location of needle in haystack, or NULL if not found.
  */
-void *memmem(const void *haystack, size_t haystacklen,
-	     const void *needle, size_t needlelen)
+void *rp_memmem(const void *haystack, size_t haystacklen,
+	        const void *needle, size_t needlelen)
 {
 	// Reference: https://opensource.apple.com/source/Libc/Libc-1044.1.2/string/FreeBSD/memmem.c
 	// NOTE: haystack was originally 'l'; needle was originally 's'.
