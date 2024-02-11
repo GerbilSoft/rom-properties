@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * IFst.hpp: File System Table interface.                                  *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -113,6 +113,6 @@ class NOVTABLE IFst
  * an empty implementation, even though the function is
  * declared as pure-virtual.
  */
-inline IFst::~IFst() { }
+inline IFst::~IFst() = default;
 
 }

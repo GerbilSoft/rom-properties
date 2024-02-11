@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * IResourceReader.hpp: Interface for Windows resource readers.            *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -83,6 +83,6 @@ typedef std::shared_ptr<IResourceReader> IResourceReaderPtr;
  * an empty implementation, even though the function is
  * declared as pure-virtual.
  */
-inline IResourceReader::~IResourceReader() { }
+inline IResourceReader::~IResourceReader() = default;
 
 }
