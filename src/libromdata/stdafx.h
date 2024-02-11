@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * stdafx.h: Common definitions and includes.                              *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -83,7 +83,6 @@
 #include "librpfile/FileSystem.hpp"
 #include "librpfile/IRpFile.hpp"
 #include "librpfile/RpFile.hpp"
-#include "librpfile/SubFile.hpp"
 
 // librptexture C++ headers
 #include "librptexture/img/rp_image.hpp"

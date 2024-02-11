@@ -3,7 +3,7 @@
  * Nintendo3DS.hpp: Nintendo 3DS ROM reader.                               *
  * Handles CCI/3DS, CIA, and SMDH files.                                   *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -18,6 +18,7 @@
 #include "librpbase/config/Config.hpp"
 #include "librpbase/Achievements.hpp"
 #include "librpbase/SystemRegion.hpp"
+#include "librpfile/SubFile.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;

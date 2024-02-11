@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * Xbox360_STFS.cpp: Microsoft Xbox 360 package reader.                    *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -20,6 +20,7 @@
 // Other rom-properties libraries
 #include "librpbase/img/RpPng.hpp"
 #include "librpfile/MemFile.hpp"
+#include "librpfile/SubFile.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;
