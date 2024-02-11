@@ -13,10 +13,10 @@
  * function from the library.
  */
 #include "config.version.h"
-#include "config.librptext.h"
 #include "git.h"
 
 #include "libi18n/i18n.h"
+#include "librptext/libc.h"	// for strlcat()
 #include "libunixcommon/dll-search.h"
 #include "stdboolx.h"
 
