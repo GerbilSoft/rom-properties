@@ -94,7 +94,7 @@ size_t rp_strlcat(char *dst, const char *src, size_t size)
 	while (n-- != 0 && *d != '\0')
 		d++;
 	dlen = d - dst;
-	n = siz - dlen;
+	n = size - dlen;
 
 	if (n == 0)
 		return(dlen + strlen(s));
