@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (rp-stub)                          *
  * rp-stub.c: Stub program to invoke the rom-properties library.           *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
