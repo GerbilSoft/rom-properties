@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpfile)                        *
  * RpFile_p.hpp: Standard file object. (PRIVATE CLASS)                     *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -112,7 +112,7 @@ class RpFilePrivate
 				: device_pos(0)
 				, device_size(0)
 				, sector_size(0)
-				, isKreonUnlocked(0)
+				, isKreonUnlocked(false)
 				, sector_cache(nullptr)
 				, lba_cache(~0U)
 #ifdef USING_FREEBSD_CAMLIB
