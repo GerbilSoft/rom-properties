@@ -692,23 +692,10 @@ QLabel *RomDataViewPrivate::initAgeRatings(QLabel *lblDesc,
 QLabel *RomDataViewPrivate::initDimensions(QLabel *lblDesc,
 	const RomFields::Field &field)
 {
-	// Dimensions.
-	// TODO: 'x' or '×'? Using 'x' for now.
+	// Dimensions
 	const int *const dimensions = field.data.dimensions;
-	char buf[64];
-	if (dimensions[1] > 0) {
-		if (dimensions[2] > 0) {
-			snprintf(buf, sizeof(buf), "%dx%dx%d",
-				dimensions[0], dimensions[1], dimensions[2]);
-		} else {
-			snprintf(buf, sizeof(buf), "%dx%d",
-				dimensions[0], dimensions[1]);
-		}
-	} else {
-		snprintf(buf, sizeof(buf), "%d", dimensions[0]);
-	}
-
-	return initString(lblDesc, field, QString::fromLatin1(buf));
+	const QString str = formatDimensions(dimensions);
+	return initString(lblDesc, field, str);
 }
 
 /**

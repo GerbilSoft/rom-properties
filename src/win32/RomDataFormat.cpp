@@ -104,3 +104,27 @@ tstring formatDateTime(time_t date_time, unsigned int flags)
 
 	return tstr;
 }
+
+/**
+ * Format an RFT_DIMENSIONS.
+ * @param dimensions	[in] Dimensions
+ * @return Formatted RFT_DIMENSIONS, or nullptr on error. (allocated string; free with g_free)
+ */
+tstring formatDimensions(const int dimensions[3])
+{
+	// TODO: 'x' or '×'? Using 'x' for now.
+	TCHAR tbuf[64];
+	if (dimensions[1] > 0) {
+		if (dimensions[2] > 0) {
+			_sntprintf(tbuf, _countof(tbuf), _T("%dx%dx%d"),
+				dimensions[0], dimensions[1], dimensions[2]);
+		} else {
+			_sntprintf(tbuf, _countof(tbuf), _T("%dx%d"),
+				dimensions[0], dimensions[1]);
+		}
+	} else {
+		_sntprintf(tbuf, _countof(tbuf), _T("%d"), dimensions[0]);
+	}
+
+	return tbuf;
+}

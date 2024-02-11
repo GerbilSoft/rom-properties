@@ -21,3 +21,10 @@
  * @return Formatted RFT_DATETIME, or empty on error.
  */
 QString formatDateTime(time_t date_time, unsigned int flags);
+
+/**
+ * Format an RFT_DIMENSIONS.
+ * @param dimensions	[in] Dimensions
+ * @return Formatted RFT_DIMENSIONS, or nullptr on error. (allocated string; free with g_free)
+ */
+QString formatDimensions(const int dimensions[3]);

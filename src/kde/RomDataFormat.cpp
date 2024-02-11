@@ -72,3 +72,27 @@ QString formatDateTime(time_t date_time, unsigned int flags)
 
 	return str;
 }
+
+/**
+ * Format an RFT_DIMENSIONS.
+ * @param dimensions	[in] Dimensions
+ * @return Formatted RFT_DIMENSIONS, or nullptr on error. (allocated string; free with g_free)
+ */
+QString formatDimensions(const int dimensions[3])
+{
+	// TODO: 'x' or '×'? Using 'x' for now.
+	char buf[64];
+	if (dimensions[1] > 0) {
+		if (dimensions[2] > 0) {
+			snprintf(buf, sizeof(buf), "%dx%dx%d",
+				dimensions[0], dimensions[1], dimensions[2]);
+		} else {
+			snprintf(buf, sizeof(buf), "%dx%d",
+				dimensions[0], dimensions[1]);
+		}
+	} else {
+		snprintf(buf, sizeof(buf), "%d", dimensions[0]);
+	}
+
+	return QString::fromLatin1(buf);
+}

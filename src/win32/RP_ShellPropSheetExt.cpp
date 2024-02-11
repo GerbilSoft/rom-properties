@@ -1297,21 +1297,8 @@ int RP_ShellPropSheetExt_Private::initDimensions(_In_ HWND hWndTab,
 {
 	// TODO: 'x' or '×'? Using 'x' for now.
 	const int *const dimensions = field.data.dimensions;
-	TCHAR tbuf[64];
-	if (dimensions[1] > 0) {
-		if (dimensions[2] > 0) {
-			_sntprintf(tbuf, _countof(tbuf), _T("%dx%dx%d"),
-				dimensions[0], dimensions[1], dimensions[2]);
-		} else {
-			_sntprintf(tbuf, _countof(tbuf), _T("%dx%d"),
-				dimensions[0], dimensions[1]);
-		}
-	} else {
-		_sntprintf(tbuf, _countof(tbuf), _T("%d"), dimensions[0]);
-	}
-
-	// Initialize the string field.
-	return initString(hWndTab, pt_start, size, field, fieldIdx, tbuf);
+	const tstring tstr = formatDimensions(dimensions);
+	return initString(hWndTab, pt_start, size, field, fieldIdx, tstr.c_str());
 }
 
 /**
