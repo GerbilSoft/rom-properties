@@ -44,7 +44,8 @@ void *rp_memmem(const void *haystack, size_t haystacklen,
 {
 	// Reference: https://opensource.apple.com/source/Libc/Libc-1044.1.2/string/FreeBSD/memmem.c
 	// NOTE: haystack was originally 'l'; needle was originally 's'.
-	register const char *cur, *last;
+	// NOTE: 'register' keywords were removed.
+	const char *cur, *last;
 	const char *cl = (const char *)haystack;
 	const char *cs = (const char *)needle;
 
@@ -71,3 +72,41 @@ void *rp_memmem(const void *haystack, size_t haystacklen,
 	return NULL;
 }
 #endif /* HAVE_MEMMEM */
+
+#ifndef HAVE_STRLCAT
+/**
+ * strcat() but with a length parameter to prevent buffer overflows.
+ * @param dst [in,out] Destination string
+ * @param src [in] Source string
+ * @param size [in] Size of destination string
+ */
+size_t rp_strlcat(char *dst, const char *src, size_t size)
+{
+	// Reference: https://opensource.apple.com/source/Libc/Libc-262/string/strlcat.c.auto.html
+	// NOTE: 'size' was originally 'siz'.
+	// NOTE: 'register' keywords were removed.
+	register char *d = dst;
+	register const char *s = src;
+	register size_t n = size;
+	size_t dlen;
+
+	/* Find the end of dst and adjust bytes left but don't go past end */
+	while (n-- != 0 && *d != '\0')
+		d++;
+	dlen = d - dst;
+	n = siz - dlen;
+
+	if (n == 0)
+		return(dlen + strlen(s));
+	while (*s != '\0') {
+		if (n != 1) {
+			*d++ = *s;
+			n--;
+		}
+		s++;
+	}
+	*d = '\0';
+
+	return(dlen + (s - src));	/* count does not include NUL */
+}
+#endif /* HAVE_STRLCAT */

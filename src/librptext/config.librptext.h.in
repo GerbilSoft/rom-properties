@@ -17,6 +17,9 @@
 /* Define to 1 if you have the `memmem' function. */
 #cmakedefine HAVE_MEMMEM 1
 
+/* Define to 1 if yo uhave the `strlcat` function. */
+#cmakedefine HAVE_STRLCAT 1
+
 /* Define to 1 if you have the `nl_langinfo` function. */
 #cmakedefine HAVE_NL_LANGINFO 1
 

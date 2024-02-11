@@ -55,6 +55,21 @@ void *rp_memmem(const void *haystack, size_t haystacklen,
 #  define memmem(haystack, haystacklen, needle, needlelen) rp_memmem((haystack), (haystacklen), (needle), (needlelen))
 #endif /* !HAVE_MEMMEM */
 
+#ifndef HAVE_STRLCAT
+/**
+ * strcat() but with a length parameter to prevent buffer overflows.
+ * @param dst [in,out] Destination string
+ * @param src [in] Source string
+ * @param size [in] Size of destination string
+ */
+size_t rp_strlcat(char *dst, const char *src, size_t size);
+
+#  ifdef strlcat
+#    undef strlcat
+#  endif
+#  define strlcat(dst, src, size) rp_strlcat((dst), (src), (size))
+#endif /* !HAVE_STRLCAT */
+
 #ifdef __cplusplus
 }
 #endif

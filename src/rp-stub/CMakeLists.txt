@@ -24,7 +24,8 @@ IF(TARGET git_version)
 ENDIF(TARGET git_version)
 
 # dll-search.c is in libunixcommon.
-TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE unixcommon rpsecure)
+# strlcat() is in librptext.
+TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE unixcommon rptext rpsecure)
 
 IF(ENABLE_NLS)
 	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE i18n)

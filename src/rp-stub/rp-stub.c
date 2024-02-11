@@ -13,6 +13,7 @@
  * function from the library.
  */
 #include "config.version.h"
+#include "config.librptext.h"
 #include "git.h"
 
 #include "libi18n/i18n.h"
@@ -345,7 +346,7 @@ int main(int argc, char *argv[])
 			char *const dotpos = strrchr(output_file, '.');
 			if (!dotpos) {
 				// No file extension. Add it.
-				strcat(output_file, ".png");
+				strlcat(output_file, ".png", output_len + 16);
 			} else {
 				// If the dot is after the last slash, we already have a file extension.
 				// Otherwise, we don't have one, and need to add it.
@@ -355,7 +356,7 @@ int main(int argc, char *argv[])
 					strcpy(dotpos, ".png");
 				} else {
 					// No file extension.
-					strcat(output_file, ".png");
+					strlcat(output_file, ".png", output_len + 16);
 				}
 			}
 		} else {
