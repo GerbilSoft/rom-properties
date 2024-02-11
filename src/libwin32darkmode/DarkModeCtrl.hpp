@@ -2,7 +2,9 @@
 
 /** DarkMode control helpers **/
 #include "libwin32common/RpWin32_sdk.h"
-#include <assert.h>
+
+// C includes (C++ namespace)
+#include <cassert>
 
 #ifdef __cplusplus
 extern "C" {
