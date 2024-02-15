@@ -9,7 +9,7 @@
     * The following parsers support mipmaps: GodotSTEX, KhronosKTX, KhronosKTX2,
       PowerVR3, ValveVTF, and DirectDrawSurface.
     * The following parsers don't support mipmaps yet, but the format does:
-      DirectDrawSurface, SegaPVR
+      SegaPVR
   * ImageDecoderTest now has mipmap tests for various formats.
   * The GTK4 UI frontend now uses GdkTexture instead of GdkPixbuf, which has
     been deprecated. Cairo is also used for certain image transformations.
