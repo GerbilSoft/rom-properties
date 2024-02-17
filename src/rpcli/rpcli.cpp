@@ -488,7 +488,6 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 	// TODO: Skip this if not linked with /DELAYLOAD?
 	if (DelayLoad_test_textdomain() != 0) {
 		// Delay load failed.
-		// TODO: Use a CMake macro for the soversion?
 		_fputts(_T("*** ERROR: ") LIBGNUINTL_DLL _T(" could not be loaded.\n\n")
 			_T("This build of rom-properties has localization enabled,\n")
 			_T("which requires the use of GNU gettext.\n\n")
