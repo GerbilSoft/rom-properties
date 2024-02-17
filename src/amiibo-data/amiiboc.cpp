@@ -9,7 +9,7 @@
 #include "amiibo_bin_structs.h"
 
 // librpsecure
-// TODO: rp_secure_enable()?
+#include "librpsecure/os-secure.h"
 #include "librpsecure/restrict-dll.h"
 
 // Byteswapping
@@ -107,10 +107,59 @@ static void alignFileTo16Bytes(FILE *f)
 	fwrite(zerobytes, 1, count, f);
 }
 
-int main(int argc, char *argv[])
+/**
+ * Set security options.
+ * @return 0 on success; non-zero on error.
+ */
+static int set_security_options(void)
 {
 	// Restrict DLL lookups.
+	// NOTE: Not checking the return value.
 	rp_secure_restrict_dll_lookups();
+
+	// Set OS-specific security options.
+	rp_secure_param_t param;
+#if defined(_WIN32)
+	param.bHighSec = 1;	// Disable Win32k syscalls. (NTUser/GDI)
+#elif defined(HAVE_SECCOMP)
+	static const int syscall_wl[] = {
+		// Syscalls used by amiiboc.
+		SCMP_SYS(close),
+		SCMP_SYS(fstat),     SCMP_SYS(fstat64),		// __GI___fxstat() [printf()]
+		SCMP_SYS(fstatat64), SCMP_SYS(newfstatat),	// Ubuntu 19.10 (32-bit)
+		SCMP_SYS(gettimeofday),	// 32-bit only?
+		SCMP_SYS(lseek), SCMP_SYS(_llseek),
+		SCMP_SYS(open),		// Ubuntu 16.04
+		SCMP_SYS(openat),	// glibc-2.31
+#if defined(__SNR_openat2)
+		SCMP_SYS(openat2),	// Linux 5.6
+#elif defined(__NR_openat2)
+		__NR_openat2,		// Linux 5.6
+#endif /* __SNR_openat2 || __NR_openat2 */
+
+		-1	// End of whitelist
+	};
+	param.syscall_wl = syscall_wl;
+	param.threading = true;		// FIXME: Only if OpenMP is enabled?
+#elif defined(HAVE_PLEDGE)
+	// Promises:
+	// - stdio: General stdio functionality.
+	// - rpath: Read from the specified file.
+	// - wpath: Write to the specified file.
+	param.promises = "stdio rpath wpath";
+#elif defined(HAVE_TAME)
+	param.tame_flags = TAME_STDIO | TAME_RPATH | TAME_WPATH;
+#else
+	param.dummy = 0;
+#endif
+
+	return rp_secure_enable(param);
+}
+
+int main(int argc, char *argv[])
+{
+	// Set security options.
+	set_security_options();
 
 	// TODO: Better command line parsing.
 	if (argc < 3) {
