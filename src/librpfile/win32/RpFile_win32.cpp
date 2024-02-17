@@ -30,6 +30,14 @@ using std::wstring;
 #include "libwin32common/DelayLoadHelper.h"
 #endif /* _MSC_VER */
 
+#define ISDRIVELETTERA(x) ((x) >= 'A' && (x) <= 'Z')
+#define ISDRIVELETTERW(x) ((x) >= L'A' && (x) <= L'Z')
+#ifdef _UNICODE
+#  define ISDRIVELETTER(x) ISDRIVELETTERW(x)
+#else /* !_UNICODE */
+#  define ISDRIVELETTER(x) ISDRIVELETTERA(x)
+#endif /* _UNICODE */
+
 namespace LibRpFile {
 
 #ifdef _MSC_VER
@@ -128,7 +136,7 @@ int RpFilePrivate::reOpenFile(void)
 	}
 
 	// If the filename is "X:", change it to "X:\\".
-	if (ISASCII(filenameW[0]) && ISALPHA(filenameW[0]) &&
+	if (ISDRIVELETTERW(filenameW[0]) &&
 	    filenameW[1] == L':' && filenameW[2] == L'\0')
 	{
 		// Drive letter. Append '\\'.
@@ -150,9 +158,7 @@ int RpFilePrivate::reOpenFile(void)
 	tstring tfilename;
 
 	// Check if the path starts with a drive letter.
-	// NEXT COMMIT TODO: Add ISDRIVELETTER() because ISASCII/ISALPHA only
-	// handle 8-bit chars, and iswascii/iswalpha are affected by locale.
-	if (ISASCII(filenameW[0]) && ISALPHA(filenameW[0]) &&
+	if (ISDRIVELETTERW(filenameW[0]) &&
 	    filenameW[1] == L':' && filenameW[2] == L'\\')
 	{
 		// Is it only a drive letter?
