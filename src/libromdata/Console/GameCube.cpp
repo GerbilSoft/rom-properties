@@ -97,7 +97,6 @@ public:
 	// Do we have certain things loaded?
 	bool hasRegionCode;
 	bool hasRvlRegionSetting;
-	bool wiiPtblLoaded;
 	bool hasDiscHeader;	// true most of the time, except inc values update partitions
 
 	// Disc header
@@ -281,7 +280,6 @@ GameCubePrivate::GameCubePrivate(const IRpFilePtr &file)
 	, discType(DISC_UNKNOWN)
 	, hasRegionCode(false)
 	, hasRvlRegionSetting(false)
-	, wiiPtblLoaded(false)
 	, hasDiscHeader(false)
 	, gcnRegion(~0U)
 	, updatePartition(nullptr)
@@ -327,7 +325,7 @@ GameCubePrivate::~GameCubePrivate()
  */
 int GameCubePrivate::loadWiiPartitionTables(void)
 {
-	if (wiiPtblLoaded) {
+	if (!wiiPtbl.empty()) {
 		// Partition tables have already been loaded.
 		return 0;
 	} else if (!this->file || !this->file->isOpen() || !this->discReader) {
@@ -337,9 +335,6 @@ int GameCubePrivate::loadWiiPartitionTables(void)
 		// Unsupported disc type.
 		return -EIO;
 	}
-
-	// Clear the existing partition table vector.
-	wiiPtbl.clear();
 
 	// Assuming a maximum of 128 partitions per table.
 	// (This is a rather high estimate.)
@@ -447,7 +442,6 @@ int GameCubePrivate::loadWiiPartitionTables(void)
 	}
 
 	// Done reading the partition tables.
-	wiiPtblLoaded = true;
 	return 0;
 }
 
@@ -891,7 +885,6 @@ GameCube::GameCube(const IRpFilePtr &file)
 		// TODO: Only if actually encrypted?
 		d->discHeader.hash_verify = 0;
 		d->discHeader.disc_noCrypto = 0;
-		d->wiiPtblLoaded = true;
 
 		// TODO: Figure out region code for standalone partitions.
 		d->hasRegionCode = false;
