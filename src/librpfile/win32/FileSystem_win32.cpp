@@ -35,6 +35,14 @@ using std::wstring;
 // Windows includes.
 #include <direct.h>
 
+#define ISDRIVELETTERA(x) ((x) >= 'A' && (x) <= 'Z')
+#define ISDRIVELETTERW(x) ((x) >= L'A' && (x) <= L'Z')
+#ifdef _UNICODE
+#  define ISDRIVELETTER(x) ISDRIVELETTERW(x)
+#else /* !_UNICODE */
+#  define ISDRIVELETTER(x) ISDRIVELETTERA(x)
+#endif /* _UNICODE */
+
 namespace LibRpFile { namespace FileSystem {
 
 #ifdef UNICODE
@@ -54,7 +62,7 @@ static inline wstring makeWinPath(const char *filename)
 
 	// TODO: Don't bother if the filename is <= 240 characters?
 	wstring filenameW;
-	if (ISASCII(filename[0]) && ISALPHA(filename[0]) &&
+	if (ISDRIVELETTERA(filename[0]) &&
 	    filename[1] == ':' && filename[2] == '\\')
 	{
 		// Absolute path. Prepend "\\\\?\\" to the path.
@@ -83,7 +91,7 @@ static inline wstring makeWinPath(const string &filename)
 
 	// TODO: Don't bother if the filename is <= 240 characters?
 	wstring filenameW;
-	if (ISASCII(filename[0]) && ISALPHA(filename[0]) &&
+	if (ISDRIVELETTERA(filename[0]) &&
 	    filename[1] == ':' && filename[2] == '\\')
 	{
 		// Absolute path. Prepend "\\\\?\\" to the path.
@@ -113,7 +121,7 @@ static inline wstring makeWinPath(const wchar_t *filename)
 
 	// TODO: Don't bother if the filename is <= 240 characters?
 	wstring filenameW;
-	if (ISASCII(filename[0]) && ISALPHA(filename[0]) &&
+	if (ISDRIVELETTERA(filename[0]) &&
 	    filename[1] == ':' && filename[2] == '\\')
 	{
 		// Absolute path. Prepend "\\\\?\\" to the path.
@@ -142,7 +150,7 @@ static inline wstring makeWinPath(const wstring &filename)
 
 	// TODO: Don't bother if the filename is <= 240 characters?
 	wstring filenameW;
-	if (ISASCII(filename[0]) && ISALPHA(filename[0]) &&
+	if (ISDRIVELETTERA(filename[0]) &&
 	    filename[1] == ':' && filename[2] == '\\')
 	{
 		// Absolute path. Prepend "\\\\?\\" to the path.
