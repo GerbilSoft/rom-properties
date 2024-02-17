@@ -199,7 +199,6 @@ static void ExtractImages(const RomData *romData, const vector<ExtractParam> &ex
 					cerr << "   " << C_("rpcli", "APNG not supported, extracting only the first frame") << '\n';
 					cerr.flush();
 					// falling back to outputting the first frame
-					// FIXME: Add UTF-16 overload for Windows.
 					errcode = RpPng::save(p.filename, iconAnimData->frames[iconAnimData->seq_index[0]]);
 				}
 				if (errcode != 0) {
