@@ -1,7 +1,7 @@
 This copy of uniwidth is a modified subset of gnulib.
 
-commit 2118e7cf12997850652002b3af3c44511c98f4bc
-Update to Unicode 15.0.0.
+commit c8e351542405558d06af899761b30c3db6409486
+math: More clang -Winclude-next-absolute-path silencing.
 
 The following changes have been made to the original:
 
