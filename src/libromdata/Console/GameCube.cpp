@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * GameCube.cpp: Nintendo GameCube and Wii disc image reader.              *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -91,13 +91,24 @@ public:
 		DISC_FORMAT_MASK = (0xFFU << 8),
 	};
 
-	// Disc type and reader
+	// Disc type
 	int discType;
-	IDiscReaderPtr discReader;
+
+	// Do we have certain things loaded?
+	bool hasRegionCode;
+	bool hasRvlRegionSetting;
+	bool wiiPtblLoaded;
+	bool hasDiscHeader;	// true most of the time, except inc values update partitions
 
 	// Disc header
 	GCN_DiscHeader discHeader;
 	RVL_RegionSetting regionSetting;
+
+	// Region code (bi2.bin for GCN, RVL_RegionSetting for Wii.)
+	uint32_t gcnRegion;
+
+	// Disc reader
+	IDiscReaderPtr discReader;
 
 	// opening.bnr
 	struct {
@@ -117,19 +128,10 @@ public:
 		};
 	} opening_bnr;
 
-	// Do we have certain things loaded?
-	bool hasRegionCode;
-	bool hasRvlRegionSetting;
-	bool wiiPtblLoaded;
-	bool hasDiscHeader;	// true most of the time, except inc values update partitions
-
-	// Region code. (bi2.bin for GCN, RVL_RegionSetting for Wii.)
-	uint32_t gcnRegion;
-
 	/**
-		* Wii partition tables.
-		* Decoded from the actual on-disc tables.
-		*/
+	 * Wii partition tables.
+	 * Decoded from the actual on-disc tables.
+	 */
 	struct WiiPartEntry {
 		off64_t start;		// Starting address, in bytes
 		off64_t size;		// Estimated partition size, in bytes
