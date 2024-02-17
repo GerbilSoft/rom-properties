@@ -273,7 +273,6 @@ public:
  */
 static int formatDateTime(char *buf, size_t size, time_t timestamp, RomFields::DateTimeFlags dtflags)
 {
-	// FIXME: This may result in truncated times on 32-bit Linux.
 	struct tm tm_struct;
 	struct tm *ret;
 	if (dtflags & RomFields::RFT_DATETIME_IS_UTC) {

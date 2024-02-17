@@ -172,9 +172,6 @@ int set_mtime(const char *filename, time_t mtime)
 	if (!filename || filename[0] == '\0')
 		return -EINVAL;
 
-	// FIXME: time_t is 32-bit on 32-bit Linux.
-	// TODO: Add a static_warning() macro?
-	// - http://stackoverflow.com/questions/8936063/does-there-exist-a-static-warning
 	struct utimbuf utbuf;
 	utbuf.actime = time(nullptr);
 	utbuf.modtime = mtime;
@@ -195,10 +192,6 @@ int get_mtime(const char *filename, time_t *pMtime)
 	assert(pMtime != nullptr);
 	if (!filename || filename[0] == '\0' || !pMtime)
 		return -EINVAL;
-
-	// FIXME: time_t is 32-bit on 32-bit Linux.
-	// TODO: Add a static_warning() macro?
-	// - http://stackoverflow.com/questions/8936063/does-there-exist-a-static-warning
 
 #ifdef HAVE_STATX
 	struct statx sbx;
@@ -453,10 +446,6 @@ int get_file_size_and_mtime(const char *filename, off64_t *pFileSize, time_t *pM
 	if (unlikely(!filename || filename[0] == '\0' || !pFileSize || !pMtime)) {
 		return -EINVAL;
 	}
-
-	// FIXME: time_t is 32-bit on 32-bit Linux.
-	// TODO: Add a static_warning() macro?
-	// - http://stackoverflow.com/questions/8936063/does-there-exist-a-static-warning
 
 #ifdef HAVE_STATX
 	struct statx sbx;
