@@ -42,14 +42,14 @@ STYLE DS_3DLOOK | DS_CONTROL | DS_SHELLFONT | WS_VISIBLE | WS_CHILDWINDOW | WS_T
 EXSTYLE WS_EX_NOPARENTNOTIFY | WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    GROUPBOX        "Game Boy Title Screens", IDC_SYSTEMS_DMGTS_GROUPBOX, 7, 7, 397, 74
-    LTEXT           "Selectați modelul de Game Boy pentru a utiliza pentru ecranele de titlu pentru diferite tipuri de imagini de la Game Boy ROM.", IDC_STATIC, 15, 18, 381, 8
-    LTEXT           "Game Boy", IDC_STATIC, 15, 30, 80, 9
-    COMBOBOX        IDC_SYSTEMS_DMGTS_DMG, 77, 29, 69, 30, CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Super Game Boy:", IDC_STATIC, 15, 45, 80, 9
-    COMBOBOX        IDC_SYSTEMS_DMGTS_SGB, 77, 44, 69, 30, CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Game Boy Color:", IDC_STATIC, 15, 60, 80, 9
-    COMBOBOX        IDC_SYSTEMS_DMGTS_CGB, 77, 59, 69, 30, CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    GROUPBOX        "Game Boy Title Screens", IDC_SYSTEMS_DMGTS_GROUPBOX, 7, 7, 397, 82
+    LTEXT           "Selectați modelul de Game Boy pentru a utiliza pentru ecranele de titlu pentru diferite tipuri de imagini de la\nGame Boy ROM.", IDC_STATIC, 15, 18, 381, 16
+    LTEXT           "Game Boy", IDC_STATIC, 15, 38, 80, 9
+    COMBOBOX        IDC_SYSTEMS_DMGTS_DMG, 77, 37, 69, 30, CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Super Game Boy:", IDC_STATIC, 15, 53, 80, 9
+    COMBOBOX        IDC_SYSTEMS_DMGTS_SGB, 77, 52, 69, 30, CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Game Boy Color:", IDC_STATIC, 15, 68, 80, 9
+    COMBOBOX        IDC_SYSTEMS_DMGTS_CGB, 77, 67, 69, 30, CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
 END
 
 /**
