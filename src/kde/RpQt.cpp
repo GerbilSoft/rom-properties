@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * RpQt.cpp: Qt wrappers for some libromdata functionality.                *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -75,7 +75,10 @@ IRpFilePtr openQUrl(const QUrl &url, bool isThumbnail)
 	// TODO: https://cgit.kde.org/kdenetwork-filesharing.git/commit/?id=abf945afd4f08d80cdc53c650d80d300f245a73d
 	// (and other uses) [use mostLocalPath()]
 
-	// TODO: Handle "trash:/"; check KDE for other "local" URL schemes.
+	// NOTE: "trash:/" isn't handled, but Dolphin 23.08.3 attempts to
+	// thumbnail both the actual local filename in ~/.local/share/Trash/
+	// *and* the trash:/ URL, so it doesn't matter.
+	// TODO: Check KDE for other "local" URL schemes.
 
 	if (url.isEmpty()) {
 		// Empty URL. Nothing to do here.
