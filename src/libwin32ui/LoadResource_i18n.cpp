@@ -54,12 +54,16 @@ LPVOID LoadResource_i18n(HMODULE hModule, LPCTSTR lpType, DWORD dwResId)
 		{'uk', MAKELANGID(LANG_UKRAINIAN, SUBLANG_DEFAULT)},
 	}};
 
-	auto iter = std::find_if(lc_mappings.cbegin(), lc_mappings.cend(),
-		[lc](const lc_mapping_t lc_mapping) {
-			return (lc == lc_mapping.lc);
-		});
-	if (iter != lc_mappings.cend()) {
-		wLanguage = iter->wLanguage;
+	if (lc != 0 && lc != 'en') {
+		// Search for the specified language code.
+		// NOTE: 'en' is special-cased and skips this search.
+		auto iter = std::lower_bound(lc_mappings.cbegin(), lc_mappings.cend(), lc,
+			[lc](const lc_mapping_t lc_mapping, uint32_t lc) {
+				return (lc_mapping.lc < lc);
+			});
+		if (iter != lc_mappings.cend() && iter->lc == lc) {
+			wLanguage = iter->wLanguage;
+		}
 	}
 
 	// Search for the requested language.
