@@ -1,9 +1,9 @@
-This copy of inih-r56 is a modified version of the original.
+This copy of inih-r58 is a modified version of the original.
 
-commit 5e1d9e2625842dddb3f9c086a50f22e4f45dfc2b
-Bump up version to r56 for release
+commit 5cc5e2c24642513aaa5b19126aad42d0e4e0923e
+Merge pull request #164 from benhoyt/ini-prefix
 
-Tag: r56
+Tag: r58
 
 The following changes have been made to the original:
 
@@ -11,5 +11,5 @@ The following changes have been made to the original:
 
 - The Meson build scripts have been removed.
 
-To obtain the original inih-r56, visit:
+To obtain the original inih-r58, visit:
 https://github.com/benhoyt/inih

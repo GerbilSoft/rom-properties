@@ -56,6 +56,36 @@ long INIReader::GetInteger(const string& section, const string& name, long defau
     return end > value ? n : default_value;
 }
 
+INI_API int64_t INIReader::GetInteger64(const std::string& section, const std::string& name, int64_t default_value) const
+{
+    string valstr = Get(section, name, "");
+    const char* value = valstr.c_str();
+    char* end;
+    // This parses "1234" (decimal) and also "0x4D2" (hex)
+    int64_t n = strtoll(value, &end, 0);
+    return end > value ? n : default_value;
+}
+
+unsigned long INIReader::GetUnsigned(const string& section, const string& name, unsigned long default_value) const
+{
+    string valstr = Get(section, name, "");
+    const char* value = valstr.c_str();
+    char* end;
+    // This parses "1234" (decimal) and also "0x4D2" (hex)
+    unsigned long n = strtoul(value, &end, 0);
+    return end > value ? n : default_value;
+}
+
+INI_API uint64_t INIReader::GetUnsigned64(const std::string& section, const std::string& name, uint64_t default_value) const
+{
+    string valstr = Get(section, name, "");
+    const char* value = valstr.c_str();
+    char* end;
+    // This parses "1234" (decimal) and also "0x4D2" (hex)
+    uint64_t n = strtoull(value, &end, 0);
+    return end > value ? n : default_value;
+}
+
 double INIReader::GetReal(const string& section, const string& name, double default_value) const
 {
     string valstr = Get(section, name, "");
@@ -69,7 +99,8 @@ bool INIReader::GetBoolean(const string& section, const string& name, bool defau
 {
     string valstr = Get(section, name, "");
     // Convert to lower case to make string comparisons case-insensitive
-    std::transform(valstr.begin(), valstr.end(), valstr.begin(), ::tolower);
+    std::transform(valstr.begin(), valstr.end(), valstr.begin(),
+        [](const unsigned char& ch) { return static_cast<unsigned char>(::tolower(ch)); });
     if (valstr == "true" || valstr == "yes" || valstr == "on" || valstr == "1")
         return true;
     else if (valstr == "false" || valstr == "no" || valstr == "off" || valstr == "0")
@@ -98,7 +129,8 @@ string INIReader::MakeKey(const string& section, const string& name)
 {
     string key = section + "=" + name;
     // Convert to lower case to make section/name lookups case-insensitive
-    std::transform(key.begin(), key.end(), key.begin(), ::tolower);
+    std::transform(key.begin(), key.end(), key.begin(),
+        [](const unsigned char& ch) { return static_cast<unsigned char>(::tolower(ch)); });
     return key;
 }
 
