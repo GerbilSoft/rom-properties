@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (amiibo-data)                      *
  * amiiboc.cpp: Nintendo amiibo binary data compiler.                      *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -132,11 +132,8 @@ int main(int argc, char *argv[])
 	}
 
 	// Initialize the header and tables.
-	// TODO: Check map::reserve(), unordered_map::reserve()
 	memset(&binHeader, 0, sizeof(binHeader));
 	charSeriesTable.reserve(0x3A4/4);
-	//charTable.reserve(1024);
-	//charVarTable.reserve(128);
 	amiiboSeriesTable.reserve(32);
 	amiiboTable.reserve(0x1000);
 
