@@ -92,6 +92,8 @@ int rp_secure_enable(rp_secure_param_t param)
 #ifdef GCOV
 		SCMP_SYS(getpid),	// gcov uses getpid() in gcov_open() if GCOV_LOCKED
 					// is defined when compiling gcc.
+		SCMP_SYS(fcntl),	// for managing .gcda files
+		SCMP_SYS(access),	// for managing .gcda files
 #endif /* GCOV */
 
 		-1	// End of whitelist
