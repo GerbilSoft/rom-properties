@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (rpcli)                            *
  * rpcli_secure.c: Security options for rpcli.                             *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -57,11 +57,6 @@ int rpcli_do_security_options(void)
 #endif /* __SNR_openat2 || __NR_openat2 */
 		SCMP_SYS(readlink),	// realpath() [LibRpBase::FileSystem::resolve_symlink()]
 
-#ifndef NDEBUG
-		// Needed for assert() on some systems.
-		SCMP_SYS(uname),
-#endif /* NDEBUG */
-
 		// KeyManager (keys.conf)
 		SCMP_SYS(access),	// LibUnixCommon::isWritableDirectory()
 		SCMP_SYS(stat), SCMP_SYS(stat64),	// LibUnixCommon::isWritableDirectory()
@@ -78,11 +73,6 @@ int rpcli_do_security_options(void)
 		SCMP_SYS(getcwd),	// called by glibc's statx()
 		SCMP_SYS(statx),
 #endif /* __SNR_statx || __NR_statx */
-
-#ifdef GCOV
-		SCMP_SYS(getpid),	// gcov uses getpid() in gcov_open() if GCOV_LOCKED
-					// is defined when compiling gcc.
-#endif /* GCOV */
 
 		// glibc ncsd
 		// TODO: Restrict connect() to AF_UNIX.
