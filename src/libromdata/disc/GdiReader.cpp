@@ -172,8 +172,8 @@ int GdiReaderPrivate::parseGdiFile(char *gdibuf)
 
 		int trackNumber, blockStart, type, sectorSize;
 		int reserved;
-		char filename[65];	// Filenames shouldn't be that long...
-		int count = sscanf(linetoken, "%d %d %d %d %64s %d",
+		char filename[260+1];	// Filenames shouldn't be that long...
+		int count = sscanf(linetoken, "%d %d %d %d %260s %d",
 			&trackNumber, &blockStart, &type, &sectorSize, filename, &reserved);
 		if (count != 6) {
 			// Invalid line.
@@ -222,9 +222,10 @@ int GdiReaderPrivate::parseGdiFile(char *gdibuf)
 		blockRange.sectorSize = static_cast<uint16_t>(sectorSize);
 		blockRange.trackNumber = static_cast<uint8_t>(trackNumber);
 		blockRange.reserved = 0;
-		// FIXME: UTF-8 or Latin-1?
+		// Various Dreamcast emulators use the filename as-is with no
+		// encoding conversion. Assuming this means UTF-8.
 		filename[sizeof(filename)-1] = 0;
-		blockRange.filename = latin1_to_utf8(filename, -1);
+		blockRange.filename.assign(filename);
 		blockRange.file = nullptr;
 
 		// Save the track mapping.
