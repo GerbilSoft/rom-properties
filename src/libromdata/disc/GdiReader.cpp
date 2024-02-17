@@ -170,6 +170,7 @@ int GdiReaderPrivate::parseGdiFile(char *gdibuf)
 			continue;
 		}
 
+		// TODO: Filenames can contain spaces if they're quoted.
 		int trackNumber, blockStart, type, sectorSize;
 		int reserved;
 		char filename[260+1];	// Filenames shouldn't be that long...
