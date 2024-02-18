@@ -28,10 +28,6 @@ using namespace LibRomData;
 // C includes (C++ namespace)
 #include <cassert>
 
-// C++ includes
-#include <iostream>
-using std::cout;
-
 /**
  * Simple implementation of KeyStoreUI with no signal handling.
  */
@@ -61,23 +57,28 @@ int VerifyKeys(void)
 	const int sectCount = keyStore->sectCount();
 	for (int sectIdx = 0; sectIdx < sectCount; sectIdx++) {
 		if (printedOne) {
-			cout << '\n';
+			putchar('\n');
 		}
 		printedOne = true;
 
-		cout << "*** " << rp_sprintf(C_("rpcli", "Checking encryption keys: %s"), keyStore->sectName(sectIdx)) << '\n';
+		fputs("*** ", stdout);
+		printf(C_("rpcli", "Checking encryption keys: %s"), keyStore->sectName(sectIdx));
+		putchar('\n');
+
 		const int keyCount = keyStore->keyCount(sectIdx);
 		for (int keyIdx = 0; keyIdx < keyCount; keyIdx++) {
 			const KeyStoreUI::Key *const key = keyStore->getKey(sectIdx, keyIdx);
 			assert(key != nullptr);
 			if (!key) {
-				cout << rp_sprintf(C_("rpcli", "WARNING: Key [%d,%d] has no Key object. Skipping..."), sectIdx, keyIdx) << '\n';
+				printf(C_("rpcli", "WARNING: Key [%d,%d] has no Key object. Skipping..."), sectIdx, keyIdx);
+				putchar('\n');
 				ret = 1;
 				continue;
 			}
 			assert(!key->name.empty());
 			if (key->name.empty()) {
-				cout << rp_sprintf(C_("rpcli", "WARNING: Key [%d,%d] has no name. Skipping..."), sectIdx, keyIdx) << '\n';
+				printf(C_("rpcli", "WARNING: Key [%d,%d] has no name. Skipping..."), sectIdx, keyIdx);
+				putchar('\n');
 				ret = 1;
 				continue;
 			}
@@ -107,17 +108,18 @@ int VerifyKeys(void)
 					break;
 			}
 
-			cout << key->name << ": ";
+			printf("%s: ", key->name.c_str());
 			if (isOK) {
-				cout << s_err << '\n';
+				printf("%s\n", s_err);
 			} else {
-				cout << rp_sprintf(C_("rpcli", "ERROR: %s"), s_err) << '\n';
+				printf(C_("rpcli", "ERROR: %s"), s_err);
+				putchar('\n');
 				ret = 1;
 			}
 		}
 	}
 
 	delete keyStore;
-	cout.flush();
+	fflush(stdout);
 	return ret;
 }

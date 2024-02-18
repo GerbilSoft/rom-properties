@@ -243,16 +243,21 @@ static void DoFile(const TCHAR *filename, bool json, const vector<ExtractParam> 
 	uint32_t lc = 0, unsigned int flags = 0)
 {
 	// FIXME: Make T2U8c() unnecessary here.
-	cerr << "== " << rp_sprintf(C_("rpcli", "Reading file '%s'..."), T2U8c(filename)) << '\n';
-	cerr.flush();
+	fputs("== ", stderr);
+	fprintf(stderr, C_("rpcli", "Reading file '%s'..."), T2U8c(filename));
+	fputc('\n', stderr);
+	fflush(stderr);
+
 	shared_ptr<RpFile> file = std::make_shared<RpFile>(filename, RpFile::FM_OPEN_READ_GZ);
 	if (!file->isOpen()) {
 		// TODO: Return an error code?
-		cerr << "-- " << rp_sprintf(C_("rpcli", "Couldn't open file: %s"), strerror(file->lastError())) << '\n';
-		cerr.flush();
+		fputs("-- ", stderr);
+		fprintf(stderr, C_("rpcli", "Couldn't open file: %s"), strerror(file->lastError()));
+		fputc('\n', stderr);
+		fflush(stderr);
 		if (json) {
-			cout << "{\"error\":\"couldn't open file\",\"code\":" << file->lastError() << '}' << '\n';
-			cout.flush();
+			printf("{\"error\":\"couldn't open file\",\"code\":%d}\n", file->lastError());
+			fflush(stdout);
 		}
 		return;
 	}
@@ -260,8 +265,11 @@ static void DoFile(const TCHAR *filename, bool json, const vector<ExtractParam> 
 	const RomDataPtr romData = RomDataFactory::create(file);
 	if (romData) {
 		if (json) {
-			cerr << "-- " << C_("rpcli", "Outputting JSON data") << '\n';
-			cerr.flush();
+			fputs("-- ", stderr);
+			fputs(C_("rpcli", "Outputting JSON data"), stderr);
+			fputc('\n', stderr);
+			fflush(stderr);
+
 			cout << JSONROMOutput(romData.get(), lc, flags) << '\n';
 		} else {
 			cout << ROMOutput(romData.get(), lc, flags) << '\n';
@@ -269,11 +277,14 @@ static void DoFile(const TCHAR *filename, bool json, const vector<ExtractParam> 
 		cout.flush();
 		ExtractImages(romData.get(), extract);
 	} else {
-		cerr << "-- " << C_("rpcli", "ROM is not supported") << '\n';
-		cerr.flush();
+		fputs("-- ", stderr);
+		fputs(C_("rpcli", "ROM is not supported"), stderr);
+		fputc('\n', stderr);
+		fflush(stderr);
+
 		if (json) {
-			cout << "{\"error\":\"rom is not supported\"}" << '\n';
-			cout.flush();
+			fputs("{\"error\":\"rom is not supported\"}\n", stdout);
+			fflush(stdout);
 		}
 	}
 }
@@ -294,9 +305,9 @@ static void PrintSystemRegion(void)
 			buf += (char)(lc & 0xFF);
 		}
 	}
-	cout << rp_sprintf(C_("rpcli", "System language code: %s"),
+	printf(C_("rpcli", "System language code: %s"),
 		(!buf.empty() ? buf.c_str() : C_("rpcli", "0 (this is a bug!)")));
-	cout << '\n';
+	putchar('\n');
 
 	uint32_t cc = __swab32(SystemRegion::getCountryCode());
 	buf.clear();
@@ -307,13 +318,13 @@ static void PrintSystemRegion(void)
 			buf += (char)(cc & 0xFF);
 		}
 	}
-	cout << rp_sprintf(C_("rpcli", "System country code: %s"),
+	printf(C_("rpcli", "System country code: %s"),
 		(!buf.empty() ? buf.c_str() : C_("rpcli", "0 (this is a bug!)")));
-	cout << '\n';
+	putchar('\n');
 
 	// Extra line. (TODO: Only if multiple commands are specified.)
-	cout << '\n';
-	cout.flush();
+	putchar('\n');
+	fflush(stdout);
 }
 
 /**
@@ -322,16 +333,21 @@ static void PrintSystemRegion(void)
 static void PrintPathnames(void)
 {
 	// TODO: Localize these strings?
-	cout << "User's home directory:   " << OS_NAMESPACE::getHomeDirectory() << '\n';
-	cout << "User's cache directory:  " << OS_NAMESPACE::getCacheDirectory() << '\n';
-	cout << "User's config directory: " << OS_NAMESPACE::getConfigDirectory() << '\n';
-	cout << '\n';
-	cout << "RP cache directory:      " << FileSystem::getCacheDirectory() << '\n';
-	cout << "RP config directory:     " << FileSystem::getConfigDirectory() << '\n';
+	printf("User's home directory:   %s\n"
+	       "User's cache directory:  %s\n"
+	       "User's config directory: %s\n"
+	       "\n"
+	       "RP cache directory:      %s\n"
+	       "RP config directory:     %s\n",
+		OS_NAMESPACE::getHomeDirectory().c_str(),
+		OS_NAMESPACE::getCacheDirectory().c_str(),
+		OS_NAMESPACE::getConfigDirectory().c_str(),
+		FileSystem::getCacheDirectory().c_str(),
+		FileSystem::getConfigDirectory().c_str());
 
 	// Extra line. (TODO: Only if multiple commands are specified.)
-	cout << '\n';
-	cout.flush();
+	putchar('\n');
+	fflush(stdout);
 }
 
 #ifdef RP_OS_SCSI_SUPPORTED
@@ -343,16 +359,22 @@ static void PrintPathnames(void)
 static void DoScsiInquiry(const TCHAR *filename, bool json)
 {
 	// FIXME: Make T2U8c() unnecessary here.
-	cerr << "== " << rp_sprintf(C_("rpcli", "Opening device file '%s'..."), T2U8c(filename)) << '\n';
-	cerr.flush();
+	fputs("== ", stderr);
+	fprintf(stderr, C_("rpcli", "Opening device file '%s'..."), T2U8c(filename));
+	fputc('\n', stderr);
+	fflush(stderr);
+
 	unique_ptr<RpFile> file(new RpFile(filename, RpFile::FM_OPEN_READ_GZ));
 	if (!file->isOpen()) {
 		// TODO: Return an error code?
-		cerr << "-- " << rp_sprintf(C_("rpcli", "Couldn't open file: %s"), strerror(file->lastError())) << '\n';
-		cerr.flush();
+		fputs("-- ", stderr);
+		fprintf(stderr, C_("rpcli", "Couldn't open file: %s"), strerror(file->lastError()));
+		fputc('\n', stderr);
+		fflush(stderr);
+
 		if (json) {
-			cout << "{\"error\":\"couldn't open file\",\"code\":" << file->lastError() << '}' << '\n';
-			cout.flush();
+			printf("{\"error\":\"couldn't open file\",\"code\":%d}\n", file->lastError());
+			fflush(stdout);
 		}
 		return;
 	}
@@ -360,18 +382,24 @@ static void DoScsiInquiry(const TCHAR *filename, bool json)
 	// TODO: Check for unsupported devices? (Only CD-ROM is supported.)
 	if (file->isDevice()) {
 		// TODO: Return an error code?
-		cerr << "-- " << C_("rpcli", "Not a device file") << '\n';
-		cerr.flush();
+		fputs("-- ", stderr);
+		fputs(C_("rpcli", "Not a device file"), stderr);
+		fputc('\n', stderr);
+		fflush(stderr);
+
 		if (json) {
-			cout << "{\"error\":\"Not a device file\"}" << '\n';
-			cout.flush();
+			fputs("{\"error\":\"not a device file\"}\n", stdout);
+			fflush(stdout);
 		}
 		return;
 	}
 
 	if (json) {
-		cerr << "-- " << C_("rpcli", "Outputting JSON data") << '\n';
-		cerr.flush();
+		fputs("-- ", stderr);
+		fputs(C_("rpcli", "Outputting JSON data"), stderr);
+		fputc('\n', stderr);
+		fflush(stderr);
+
 		// TODO: JSONScsiInquiry
 		//cout << JSONScsiInquiry(file.get()) << '\n';
 		//cout.flush();
@@ -390,16 +418,22 @@ static void DoScsiInquiry(const TCHAR *filename, bool json)
 static void DoAtaIdentifyDevice(const TCHAR *filename, bool json, bool packet)
 {
 	// FIXME: Make T2U8c() unnecessary here.
-	cerr << "== " << rp_sprintf(C_("rpcli", "Opening device file '%s'..."), T2U8c(filename)) << '\n';
-	cerr.flush();
+	fputs("== ", stderr);
+	fprintf(stderr, C_("rpcli", "Opening device file '%s'..."), T2U8c(filename));
+	fputc('\n', stderr);
+	fflush(stderr);
+
 	unique_ptr<RpFile> file(new RpFile(filename, RpFile::FM_OPEN_READ_GZ));
 	if (!file->isOpen()) {
 		// TODO: Return an error code?
-		cerr << "-- " << rp_sprintf(C_("rpcli", "Couldn't open file: %s"), strerror(file->lastError())) << '\n';
-		cerr.flush();
+		fputs("-- ", stderr);
+		fprintf(stderr, C_("rpcli", "Couldn't open file: %s"), strerror(file->lastError()));
+		fputc('\n', stderr);
+		fflush(stderr);
+
 		if (json) {
-			cout << "{\"error\":\"couldn't open file\",\"code\":" << file->lastError() << '}' << '\n';
-			cout.flush();
+			printf("{\"error\":\"couldn't open file\",\"code\":%d}\n", file->lastError());
+			fflush(stdout);
 		}
 		return;
 	}
@@ -407,18 +441,24 @@ static void DoAtaIdentifyDevice(const TCHAR *filename, bool json, bool packet)
 	// TODO: Check for unsupported devices? (Only CD-ROM is supported.)
 	if (!file->isDevice()) {
 		// TODO: Return an error code?
-		cerr << "-- " << C_("rpcli", "Not a device file") << '\n';
-		cerr.flush();
+		fputs("-- ", stderr);
+		fputs(C_("rpcli", "Not a device file"), stderr);
+		fputc('\n', stderr);
+		fflush(stderr);
+
 		if (json) {
-			cout << "{\"error\":\"Not a device file\"}" << '\n';
-			cout.flush();
+			fputs("{\"error\":\"Not a device file\"}\n", stdout);
+			fflush(stdout);
 		}
 		return;
 	}
 
 	if (json) {
-		cerr << "-- " << C_("rpcli", "Outputting JSON data") << '\n';
-		cerr.flush();
+		fputs("-- ", stderr);
+		fputs(C_("rpcli", "Outputting JSON data"), stderr);
+		fputc('\n', stderr);
+		fflush(stderr);
+
 		// TODO: JSONAtaIdentifyDevice
 		//cout << JSONAtaIdentifyDevice(file.get(), packet) << '\n';
 		//cout.flush();
@@ -552,15 +592,19 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 			}
 		}
 	}
-	if (json) cout << "[\n";
+	if (json) {
+		cout << "[\n";
+		cout.flush();
+	}
 
 #ifdef _WIN32
 	// Initialize GDI+.
 	const ULONG_PTR gdipToken = GdiplusHelper::InitGDIPlus();
 	assert(gdipToken != 0);
 	if (gdipToken == 0) {
-		cerr << "*** ERROR: GDI+ initialization failed." << '\n';
-		cerr.flush();
+		fputs("*** ERROR: GDI+ initialization failed.", stderr);
+		fputc('\n', stderr);
+		fflush(stderr);
 		return -EIO;
 	}
 #endif /* _WIN32 */
@@ -620,8 +664,9 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 				}
 				if (pos == 4 && s_lang[pos] != _T('\0')) {
 					// Invalid language code.
-					cerr << rp_sprintf(C_("rpcli", "Warning: ignoring invalid language code '%s'"), T2U8c(s_lang)) << '\n';
-					cerr.flush();
+					fprintf(stderr, C_("rpcli", "Warning: ignoring invalid language code '%s'"), T2U8c(s_lang));
+					fputc('\n', stderr);
+					fflush(stderr);
 					break;
 				}
 
@@ -643,8 +688,9 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 				// TODO: Switch from _ttol() to _tcstol() and implement better error checking?
 				const long num = _ttol(argv[i] + 2);
 				if (num < RomData::IMG_INT_MIN || num > RomData::IMG_INT_MAX) {
-					cerr << rp_sprintf(C_("rpcli", "Warning: skipping unknown image type %ld"), num) << '\n';
-					cerr.flush();
+					fprintf(stderr, C_("rpcli", "Warning: skipping unknown image type %ld"), num);
+					fputc('\n', stderr);
+					fflush(stderr);
 					i++; continue;
 				}
 				extract.emplace_back(argv[++i], num);
@@ -654,8 +700,9 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 				// TODO: Switch from _ttol() to _tcstol() and implement better error checking?
 				const long num = _ttol(argv[i] + 2);
 				if (num < -1 || num > 1024) {
-					cerr << rp_sprintf(C_("rpcli", "Warning: skipping invalid mipmap level %ld"), num) << '\n';
-					cerr.flush();
+					fprintf(stderr, C_("rpcli", "Warning: skipping invalid mipmap level %ld"), num);
+					fputc('\n', stderr);
+					fflush(stderr);
 					i++; continue;
 				}
 				extract.emplace_back(argv[++i], RomData::IMG_INT_IMAGE, num);
@@ -685,20 +732,23 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 						break;
 					default:
 						if (argv[i][2] == _T('\0')) {
-							cerr << C_("rpcli", "Warning: no inquiry request specified for '-i'") << '\n';
+							fputs(C_("rpcli", "Warning: no inquiry request specified for '-i'"), stderr);
+							fputc('\n', stderr);
 						} else {
 							// FIXME: Unicode character on Windows.
-							cerr << rp_sprintf(C_("rpcli", "Warning: skipping unknown inquiry request '%c'"), argv[i][2]) << '\n';
+							fprintf(stderr, C_("rpcli", "Warning: skipping unknown inquiry request '%c'"), argv[i][2]);
+							fputc('\n', stderr);
 						}
-						cerr.flush();
+						fflush(stderr);
 						break;
 				}
 				break;
 #endif /* RP_OS_SCSI_SUPPORTED */
 			default:
 				// FIXME: Unicode character on Windows.
-				cerr << rp_sprintf(C_("rpcli", "Warning: skipping unknown switch '%c'"), argv[i][1]) << '\n';
-				cerr.flush();
+				fprintf(stderr, C_("rpcli", "Warning: skipping unknown switch '%c'"), argv[i][1]);
+				fputc('\n', stderr);
+				fflush(stderr);
 				break;
 			}
 		} else {
@@ -706,6 +756,7 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 				first = false;
 			} else if (json) {
 				cout << ",\n";
+				cout.flush();
 			}
 
 			// TODO: Return codes?
@@ -735,7 +786,7 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 		}
 	}
 	if (json) {
-		cout << ']' << '\n';
+		cout << "]\n";
 		cout.flush();
 	}
 
