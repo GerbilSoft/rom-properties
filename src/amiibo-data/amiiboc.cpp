@@ -83,7 +83,6 @@ static uint32_t getStringTableOffset(const char *str)
 	}
 
 	// Not found. Add the string
-	// TODO: Check generated assembly; maybe memcmp() with rp::uvector<> is faster?
 	const uint32_t offset = static_cast<uint32_t>(stringTable.size());
 	string entry(str);
 	stringTable.insert(stringTable.end(), entry.c_str(), entry.c_str() + entry.size() + 1);
@@ -188,8 +187,8 @@ int main(int argc, char *argv[])
 
 	// Initialize the string table.
 	// The string table always starts with a NULL byte. (empty string)
-	stringTable.reserve(32768);	// TODO: Optimal reservation?
-	stringTableMap.reserve(2048);	// TODO: Optimal reservation?
+	stringTable.reserve(32768);
+	stringTableMap.reserve(2048);
 	stringTable.push_back('\0');
 	stringTableMap.emplace("", 0);
 
@@ -587,6 +586,24 @@ int main(int argc, char *argv[])
 		return EXIT_FAILURE;
 	}
 
+	// Check if any tables are 0 bytes.
+	if (stringTable.empty()) {
+		fputs("*** ERROR: String table is empty.\n", stderr);
+		return EXIT_FAILURE;
+	} else if (charSeriesTable.empty()) {
+		fputs("*** ERROR: Character Series table is empty.\n", stderr);
+		return EXIT_FAILURE;
+	} else if (charTable.empty()) {
+		fputs("*** ERROR: Character table is empty.\n", stderr);
+		return EXIT_FAILURE;
+	} else if (amiiboSeriesTable.empty()) {
+		fputs("*** ERROR: amiibo Series table is empty.\n", stderr);
+		return EXIT_FAILURE;
+	} else if (amiiboTable.empty()) {
+		fputs("*** ERROR: amiibo table is empty.\n", stderr);
+		return EXIT_FAILURE;
+	}
+
 	// Write the binary data.
 	FILE *f_out = fopen(argv[optind++], "wb");
 	if (!f_out) {
@@ -595,7 +612,6 @@ int main(int argc, char *argv[])
 	}
 
 	// TODO: Check fwrite() return values.
-	// TODO: Check if any tables are 0 bytes.
 
 	// Write the initial header.
 	// It will be rewritten once everything is finalized.
