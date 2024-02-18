@@ -71,9 +71,21 @@ Description: ROM Properties Page shell extension
  .
  This package contains the KDE 4 version.
 
+Package: rom-properties-kio-servicemenus
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, libromdata4, rom-properties-utils
+Conflicts: rom-properties-kf5 (< 2.3)
+Replaces: rom-properties-kf5 (< 2.3)
+Description: ROM Properties Page shell extension
+ This shell extension provides thumbnailing and property page functionality
+ for ROM images, disc images, and save files for various game consoles,
+ including Nintendo GameCube and Wii.
+ .
+ This package contains the KIO service menus for KF5 and KF6.
+
 Package: rom-properties-kf5
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, libromdata4, rom-properties-utils, rom-properties-xdg
+Depends: ${shlibs:Depends}, ${misc:Depends}, libromdata4, rom-properties-utils, rom-properties-xdg, rom-properties-kio-servicemenus
 Recommends: rom-properties-lang
 Conflicts: rom-properties-kde5
 Replaces: rom-properties-kde5

@@ -252,13 +252,6 @@ IF(BUILD_KF6)
 		COMPONENT "plugin")
 	# FIXME: Run kbuildsycoca6?
 
-	# Service menus
-	# FIXME: Conflicts with KF6. Figure out how to fix this later.
-	#INSTALL(FILES ../servicemenus/rp-convert-to-png.desktop
-	#	DESTINATION "${CMAKE_INSTALL_PREFIX}/share/kio/servicemenus"
-	#	PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
-	#	COMPONENT "plugin")
-
 	# Check if a split debug file should be installed.
 	IF(INSTALL_DEBUG)
 		# FIXME: Generator expression $<TARGET_PROPERTY:${_target},PDB> didn't work with CPack-3.6.1.
