@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * RomThumbCreator.hpp: Thumbnail creator.                                 *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -14,7 +14,7 @@
 
 // KDE Frameworks 5.100 introduced a new ThumbnailCreator interface.
 // KDE Frameworks 5.101 deprecated the old ThumbCreator interface.
-// Assuming KDE Frameworks 6 will only have ThumbnailCreator.
+// KDE Frameworks 6 will only have ThumbnailCreator.
 class RomThumbCreatorPrivate;
 
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
