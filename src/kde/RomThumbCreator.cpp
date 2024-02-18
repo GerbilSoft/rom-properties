@@ -189,7 +189,6 @@ public:
 	bool isMetered(void) final
 	{
 #if QT_VERSION >= QT_VERSION_CHECK(5,0,0) && defined(HAVE_QtDBus)
-		// TODO: Keep a persistent NetworkManager connection?
 		org::freedesktop::NetworkManager iface(
 			QLatin1String("org.freedesktop.NetworkManager"),
 			QLatin1String("/org/freedesktop/NetworkManager"),

@@ -146,8 +146,6 @@ public:
 	 */
 	bool isMetered(void) final
 	{
-		// TODO: Keep a persistent NetworkManager connection?
-
 		// Connect to the service using gdbus-codegen's generated code.
 		Manager *proxy = nullptr;
 		GError *error = nullptr;
