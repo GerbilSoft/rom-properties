@@ -17,13 +17,13 @@
 // Unsigned ctype
 #include "ctypex.h"
 
-// C includes. (C++ namespace)
+// C includes (C++ namespace)
 #include <cassert>
 #include <cerrno>
 #include <cstdio>
 #include <cstring>
 
-// C++ includes.
+// C++ includes
 #include <map>
 #include <string>
 #include <unordered_map>
@@ -32,6 +32,9 @@ using std::map;
 using std::string;
 using std::unordered_map;
 using std::vector;
+
+// tchar
+#include "tcharx.h"
 
 static bool verbose = false;
 
@@ -155,27 +158,27 @@ static int set_security_options(void)
 	return rp_secure_enable(param);
 }
 
-int main(int argc, char *argv[])
+int _tmain(int argc, TCHAR *argv[])
 {
 	// Set security options.
 	set_security_options();
 
 	// TODO: Better command line parsing.
 	if (argc < 3) {
-		fprintf(stderr, "syntax: %s [-v] amiibo-data.txt amiibo.bin\n", argv[0]);
+		_ftprintf(stderr, _T("syntax: %s [-v] amiibo-data.txt amiibo.bin\n"), argv[0]);
 		return EXIT_FAILURE;
 	}
 
 	int optind = 1;
-	if (!strcmp(argv[optind], "-v")) {
+	if (!_tcscmp(argv[optind], _T("-v"))) {
 		// Verbose mode.
 		verbose = true;
 		optind++;
 	}
 
-	FILE *f_in = fopen(argv[optind++], "r");
+	FILE *f_in = _tfopen(argv[optind++], _T("r"));
 	if (!f_in) {
-		fprintf(stderr, "*** ERROR opening input file '%s': %s\n", argv[1], strerror(errno));
+		_ftprintf(stderr, _T("*** ERROR opening input file '%s': %s\n"), argv[1], _tcserror(errno));
 		return EXIT_FAILURE;
 	}
 
@@ -605,9 +608,9 @@ int main(int argc, char *argv[])
 	}
 
 	// Write the binary data.
-	FILE *f_out = fopen(argv[optind++], "wb");
+	FILE *f_out = _tfopen(argv[optind++], _T("wb"));
 	if (!f_out) {
-		fprintf(stderr, "*** ERROR opening output file '%s': %s\n", argv[2], strerror(errno));
+		_ftprintf(stderr, _T("*** ERROR opening output file '%s': %s\n"), argv[2], _tcserror(errno));
 		return EXIT_FAILURE;
 	}
 
