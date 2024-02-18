@@ -90,6 +90,8 @@ CS:0x3C8:Fatal Fury
 
 CS:0x3DC:Minecraft
 
+CS:0x3F0:Kingdom Hearts
+
 ### Character IDs (C) [p.21]
 # C Fields: ID, Name
 #
@@ -726,6 +728,9 @@ CV:0x0805:0x01:Octoling Girl
 CV:0x0805:0x02:Octoling Boy
 CV:0x0805:0x03:Octoling Octopus
 CV:0x0806:0x01:Smallfry
+C:0x0807:Shiver
+C:0x0808:Frye
+C:0x0809:Big Man
 
 # Mario Sports Superstars (character series == 0x09C)
 C:0x09C0:Mario
@@ -937,6 +942,10 @@ C:0x210B:Byleth
 
 # Xenoblade (character series == 0x224)
 C:0x2240:Shulk
+C:0x2241:Pyra
+C:0x2242:Mythra
+C:0x2243:Noah
+C:0x2244:Mio
 
 # Earthbound (character series == 0x228)
 C:0x2280:Ness
@@ -1032,10 +1041,10 @@ C:0x37C1:Richter
 # FIXME: All of these have character variant = 0x01.
 C:0x3800:Pawapuro
 C:0x3801:Ikari
-C:0x3802:Daijobu
+C:0x3802:Yabe
 C:0x3803:Hayakawa
-C:0x3804:Yabe
-C:0x3805:Ganda
+C:0x3804:Ganda
+C:0x3805:Daijobu
 
 # Yu-Gi-Oh! (character series == 0x384)
 C:0x3840:Yuga Oudou
@@ -1061,6 +1070,9 @@ C:0x3C80:Terry
 # Minecraft (character series == 0x3DC)
 C:0x3DC0:Steve
 C:0x3DC1:Alex
+
+# Kingdom Hearts (character series == 0x3F0)
+C:0x3F00:Sora
 
 ### amiibo series (AS) [p.22]
 # AS Fields: ID, Name
@@ -1105,7 +1117,8 @@ A:0x0007:8:1:Wii Fit Trainer
 A:0x0008:9:1:Villager
 A:0x0009:10:1:Pikachu
 A:0x000A:11:1:Kirby
-A:0x000B:12:1:Marth
+A:0x000B:12:1:Marth# Kingdom Hearts [0x
+
 
 # SSB: Wave 2 [0x000C-0x0012]
 A:0x000E:13:2:Zelda
@@ -1263,6 +1276,11 @@ A:0x0390:0:5:Octoling Octopus
 A:0x0415:0:6:Inkling (Yellow)
 A:0x041B:0:6:Octoling (Blue)
 A:0x041C:0:6:Smallfry
+
+# Splatoon: Wave 7 (Deep Cut) [0x0433-0x0435]
+A:0x0433:0:7:Shiver
+A:0x0434:0:7:Frye
+A:0x0435:0:7:Big Man
 
 # Diablo [0x0391]
 A:0x0391:0:0:Loot Goblin
@@ -1961,10 +1979,10 @@ A:0x0379:0:0:Mega Man
 # Jikkyou Powerful Pro Baseball [0x0393-0x0398]
 A:0x0393:1:0:Pawapuro
 A:0x0394:2:0:Ikari
-A:0x0397:3:0:Yabe
+A:0x0395:3:0:Yabe
 A:0x0396:4:0:Hayakawa
-A:0x0398:5:0:Ganda
-A:0x0395:6:0:Daijobu
+A:0x0397:5:0:Ganda
+A:0x0398:6:0:Daijobu
 
 # The Legend of Zelda: Link's Awakening Series [0x0399]
 A:0x0399:0:0:Link
@@ -2062,12 +2080,17 @@ A:0x0418:0:5:Link (Tears of the Kingdom)
 A:0x0419:0:5:Zelda (Tears of the Kingdom)
 A:0x041A:0:5:Ganondorf (Tears of the Kingdom)
 
-# SSBU: Wave 15 (Ultimate Fighter Pass 2) [0x041D,0x0422-0x0423]
+# SSBU: Wave 15 (Ultimate Fighter Pass 2) [0x041D-0x41F,0x0422-0x0423,0x42E]
 A:0x041D:88:15:Min Min
-A:0x0420:92:15:Kazuya
-A:0x0421:91:15:Sephiroth
+# NOTE: amiibo database lists 92 for both Pyra and Mythra.
+A:0x041E:92:15:Pyra
+A:0x041F:92:15:Mythra
+A:0x0420:91:15:Kazuya
+A:0x0421:90:15:Sephiroth
+# NOTE: amiibo database lists 89 for both Steve and Alex.
 A:0x0422:89:15:Steve
-A:0x0423:90:15:Alex
+A:0x0423:89:15:Alex
+A:0x042E:93:15:Sora
 
 # Yu-Gi-Oh! [0x424-0x42A]
 A:0x0424:0:0:Yuga Oudou
@@ -2082,3 +2105,7 @@ A:0x042A:0:0:Asana Mutsuba
 A:0x042B:0:2:Palico "Felyne Malzeno X"
 A:0x042C:0:2:Palamute "Canyne Malzeno X"
 A:0x042D:0:2:Malzeno
+
+# Xenoblade Chronicles 3 [0x043D-0x043E]
+A:0x043D:1:0:Noah
+A:0x043E:2:0:Mio
