@@ -1303,6 +1303,10 @@ if(NOT SKIP_INSTALL_FILES AND NOT SKIP_INSTALL_ALL)
         NAMESPACE ${EXPORT_NAME}::)
 endif()
 
+# rom-properties: Export the ZLIB target unconditionally.
+# Needed for libpng-1.6.42's CMakeLists.txt.
+add_library(ZLIB::ZLIB ALIAS zlib)
+
 #============================================================================
 # Example binaries
 #============================================================================
