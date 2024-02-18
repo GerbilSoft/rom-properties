@@ -241,7 +241,7 @@ static IRpFilePtr openFromFilenameOrURI(const char *source_file, string &s_uri, 
 			return nullptr;
 		}
 
-		// Check fi we have an absolute or relative path.
+		// Check if we have an absolute or relative path.
 		if (g_path_is_absolute(source_file)) {
 			// We have an absolute path.
 			gchar *const source_uri = g_filename_to_uri(source_file, nullptr, nullptr);
