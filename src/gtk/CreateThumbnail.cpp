@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * CreateThumbnail.cpp: Thumbnail creator for wrapper programs.            *
  *                                                                         *
- * Copyright (c) 2017-2023 by David Korth.                                 *
+ * Copyright (c) 2017-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -196,7 +196,7 @@ static IRpFilePtr openFromFilenameOrURI(const char *source_file, string &s_uri, 
 	s_uri.clear();
 	const bool enableThumbnailOnNetworkFS = Config::instance()->enableThumbnailOnNetworkFS();
 
-	IRpFile *file = nullptr;
+	IRpFilePtr file;
 	char *const uri_scheme = g_uri_parse_scheme(source_file);
 	if (uri_scheme != nullptr) {
 		// This is a URI.
@@ -215,7 +215,7 @@ static IRpFilePtr openFromFilenameOrURI(const char *source_file, string &s_uri, 
 			}
 
 			// Open the file using RpFile.
-			file = new RpFile(source_filename, RpFile::FM_OPEN_READ_GZ);
+			file = std::make_shared<RpFile>(source_filename, RpFile::FM_OPEN_READ_GZ);
 			g_free(source_filename);
 		} else {
 			// Not a local filename.
@@ -226,7 +226,7 @@ static IRpFilePtr openFromFilenameOrURI(const char *source_file, string &s_uri, 
 			}
 
 			// Open the file using RpFileGio.
-			file = new RpFileGio(source_file);
+			file = std::make_shared<RpFileGio>(source_file);
 		}
 	} else {
 		// This is a filename.
@@ -268,18 +268,17 @@ static IRpFilePtr openFromFilenameOrURI(const char *source_file, string &s_uri, 
 		}
 
 		// Open the file using RpFile.
-		file = new RpFile(source_file, RpFile::FM_OPEN_READ_GZ);
+		file = std::make_shared<RpFile>(source_file, RpFile::FM_OPEN_READ_GZ);
 	}
 
 	if (file && file->isOpen()) {
 		// File has been opened successfully.
 		*p_err = 0;
-		return IRpFilePtr(file);
+		return file;
 	}
 
 	// File was not opened.
 	// TODO: Actual error code?
-	delete file;
 	*p_err = RPCT_ERROR_CANNOT_OPEN_SOURCE_FILE;
 	return nullptr;
 }

@@ -116,28 +116,28 @@ IRpFilePtr openQUrl(const QUrl &url, bool isThumbnail)
 	}
 
 	// Attempt to open an IRpFile.
-	IRpFile *file;
+	IRpFilePtr file;
 	if (!s_local_filename.empty()) {
 		// Local filename. Use RpFile.
-		file = new RpFile(s_local_filename, RpFile::FM_OPEN_READ_GZ);
+		file = std::make_shared<RpFile>(s_local_filename, RpFile::FM_OPEN_READ_GZ);
 	} else {
 		// Remote filename. Use RpFile_kio.
 #ifdef HAVE_RPFILE_KIO
-		file = new RpFileKio(url);
+		file = std::make_shared<RpFileKio>(url);
 #else /* !HAVE_RPFILE_KIO */
 		// Not supported...
 		return nullptr;
 #endif
 	}
 
-	if (!file->isOpen()) {
-		// Unable to open the file...
-		// TODO: Return an error code?
-		delete file;
-		file = nullptr;
+	if (file && file->isOpen()) {
+		// File opened successfully.
+		return file;
 	}
 
-	return IRpFilePtr(file);
+	// Unable to open the file...
+	// TODO: Return an error code?
+	return nullptr;
 }
 
 /**
