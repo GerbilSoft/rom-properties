@@ -473,34 +473,65 @@ static void ShowUsage(void)
 {
 	// TODO: Use argv[0] instead of hard-coding 'rpcli'?
 
-#ifdef ENABLE_DECRYPTION
-	cerr << C_("rpcli", "Usage: rpcli [-k] [-c] [-p] [-j] [-l lang] [[-xN outfile]... [-mN outfile]... [-a apngoutfile] filename]...") << '\n';
-	cerr << "  -k:   " << C_("rpcli", "Verify encryption keys in keys.conf.") << '\n';
+#ifdef ENABLE_DECRYPTION	
+	fputs(C_("rpcli", "Usage: rpcli [-k] [-c] [-p] [-j] [-l lang] [[-xN outfile]... [-mN outfile]... [-a apngoutfile] filename]..."), stderr);
+	fputc('\n', stderr);
 #else /* !ENABLE_DECRYPTION */
-	cerr << C_("rpcli", "Usage: rpcli [-c] [-p] [-j] [-l lang] [[-xN outfile]... [-mN outfile]... [-a apngoutfile] filename]...") << '\n';
+	fputs(C_("rpcli", "Usage: rpcli [-c] [-p] [-j] [-l lang] [[-xN outfile]... [-mN outfile]... [-a apngoutfile] filename]..."), stderr);
+	fputc('\n', stderr);
 #endif /* ENABLE_DECRYPTION */
-	cerr << "  -c:   " << C_("rpcli", "Print system region information.") << '\n';
-	cerr << "  -p:   " << C_("rpcli", "Print system path information.") << '\n';
-	cerr << "  -d:   " << C_("rpcli", "Skip ListData fields with more than 10 items. [text only]") << '\n';
-	cerr << "  -j:   " << C_("rpcli", "Use JSON output format.") << '\n';
-	cerr << "  -l:   " << C_("rpcli", "Retrieve the specified language from the ROM image.") << '\n';
-	cerr << "  -xN:  " << C_("rpcli", "Extract image N to outfile in PNG format.") << '\n';
-	cerr << "  -mN:  " << C_("rpcli", "Extract mipmap level N to outfile in PNG format.") << '\n';
-	cerr << "  -a:   " << C_("rpcli", "Extract the animated icon to outfile in APNG format.") << '\n';
-	cerr << '\n';
+
+	struct cmd_t {
+		char opt[8];	// TODO: Automatic padding?
+		const char *desc;
+	};
+
+	// Normal commands
+	static const cmd_t cmds[] = {
+#ifdef ENABLE_DECRYPTION
+		{"  -k:  ", NOP_C_("rpcli", "Verify encryption keys in keys.conf.")},
+#endif /* ENABLE_DECRYPTION */
+		{"  -c:  ", NOP_C_("rpcli", "Print system region information.")},
+		{"  -p:  ", NOP_C_("rpcli", "Print system path information.")},
+		{"  -d:  ", NOP_C_("rpcli", "Skip ListData fields with more than 10 items. [text only]")},
+		{"  -j:  ", NOP_C_("rpcli", "Use JSON output format.")},
+		{"  -l:  ", NOP_C_("rpcli", "Retrieve the specified language from the ROM image.")},
+		{"  -xN: ", NOP_C_("rpcli", "Extract image N to outfile in PNG format.")},
+		{"  -mN: ", NOP_C_("rpcli", "Extract mipmap level N to outfile in PNG format.")},
+		{"  -a:  ", NOP_C_("rpcli", "Extract the animated icon to outfile in APNG format.")},
+	};
+
+	for (auto &p : cmds) {
+		fputs(p.opt, stderr);
+		fputs(dpgettext_expr(RP_I18N_DOMAIN, "rpcli", p.desc), stderr);
+		fputc('\n', stderr);
+	}
+	fputc('\n', stderr);
+
 #ifdef RP_OS_SCSI_SUPPORTED
-	cerr << C_("rpcli", "Special options for devices:") << '\n';
-	cerr << "  -is:   " << C_("rpcli", "Run a SCSI INQUIRY command.") << '\n';
-	cerr << "  -ia:   " << C_("rpcli", "Run an ATA IDENTIFY DEVICE command.") << '\n';
-	cerr << "  -ip:   " << C_("rpcli", "Run an ATA IDENTIFY PACKET DEVICE command.") << '\n';
-	cerr << '\n';
+	// Commands for devices
+	static const cmd_t cmds_dev[] = {
+		{"  -is: ", NOP_C_("rpcli", "Run a SCSI INQUIRY command.")},
+		{"  -ia: ", NOP_C_("rpcli", "Run an ATA IDENTIFY DEVICE command.")},
+		{"  -ip: ", NOP_C_("rpcli", "Run an ATA IDENTIFY PACKET DEVICE command.")},
+	};
+
+	fputs(C_("rpcli", "Special options for devices:"), stderr);
+	fputc('\n', stderr);
+	for (auto &p : cmds_dev) {
+		fputs(p.opt, stderr);
+		fputs(dpgettext_expr(RP_I18N_DOMAIN, "rpcli", p.desc), stderr);
+		fputc('\n', stderr);
+	}
+	fputc('\n', stderr);
 #endif /* RP_OS_SCSI_SUPPORTED */
-	cerr << C_("rpcli", "Examples:") << '\n';
-	cerr << "* rpcli s3.gen" << '\n';
-	cerr << "\t " << C_("rpcli", "displays info about s3.gen") << '\n';
-	cerr << "* rpcli -x0 icon.png pokeb2.nds" << '\n';
-	cerr << "\t " << C_("rpcli", "extracts icon from pokeb2.nds") << '\n';
-	cerr.flush();
+
+	fputs(C_("rpcli", "Examples:"), stderr); fputc('\n', stderr);
+	fputs("* rpcli s3.gen\n", stderr);
+	fputs("\t ", stderr); fputs(C_("rpcli", "displays info about s3.gen"), stderr); fputc('\n', stderr);
+	fputs("* rpcli -x0 icon.png pokeb2.nds\n", stderr);
+	fputs("\t ", stderr); fputs(C_("rpcli", "extracts icon from pokeb2.nds"), stderr); fputc('\n', stderr);
+	fflush(stderr);
 }
 
 int RP_C_API _tmain(int argc, TCHAR *argv[])
