@@ -469,6 +469,40 @@ static void DoAtaIdentifyDevice(const TCHAR *filename, bool json, bool packet)
 }
 #endif /* RP_OS_SCSI_SUPPORTED */
 
+static void ShowUsage(void)
+{
+	// TODO: Use argv[0] instead of hard-coding 'rpcli'?
+
+#ifdef ENABLE_DECRYPTION
+	cerr << C_("rpcli", "Usage: rpcli [-k] [-c] [-p] [-j] [-l lang] [[-xN outfile]... [-mN outfile]... [-a apngoutfile] filename]...") << '\n';
+	cerr << "  -k:   " << C_("rpcli", "Verify encryption keys in keys.conf.") << '\n';
+#else /* !ENABLE_DECRYPTION */
+	cerr << C_("rpcli", "Usage: rpcli [-c] [-p] [-j] [-l lang] [[-xN outfile]... [-mN outfile]... [-a apngoutfile] filename]...") << '\n';
+#endif /* ENABLE_DECRYPTION */
+	cerr << "  -c:   " << C_("rpcli", "Print system region information.") << '\n';
+	cerr << "  -p:   " << C_("rpcli", "Print system path information.") << '\n';
+	cerr << "  -d:   " << C_("rpcli", "Skip ListData fields with more than 10 items. [text only]") << '\n';
+	cerr << "  -j:   " << C_("rpcli", "Use JSON output format.") << '\n';
+	cerr << "  -l:   " << C_("rpcli", "Retrieve the specified language from the ROM image.") << '\n';
+	cerr << "  -xN:  " << C_("rpcli", "Extract image N to outfile in PNG format.") << '\n';
+	cerr << "  -mN:  " << C_("rpcli", "Extract mipmap level N to outfile in PNG format.") << '\n';
+	cerr << "  -a:   " << C_("rpcli", "Extract the animated icon to outfile in APNG format.") << '\n';
+	cerr << '\n';
+#ifdef RP_OS_SCSI_SUPPORTED
+	cerr << C_("rpcli", "Special options for devices:") << '\n';
+	cerr << "  -is:   " << C_("rpcli", "Run a SCSI INQUIRY command.") << '\n';
+	cerr << "  -ia:   " << C_("rpcli", "Run an ATA IDENTIFY DEVICE command.") << '\n';
+	cerr << "  -ip:   " << C_("rpcli", "Run an ATA IDENTIFY PACKET DEVICE command.") << '\n';
+	cerr << '\n';
+#endif /* RP_OS_SCSI_SUPPORTED */
+	cerr << C_("rpcli", "Examples:") << '\n';
+	cerr << "* rpcli s3.gen" << '\n';
+	cerr << "\t " << C_("rpcli", "displays info about s3.gen") << '\n';
+	cerr << "* rpcli -x0 icon.png pokeb2.nds" << '\n';
+	cerr << "\t " << C_("rpcli", "extracts icon from pokeb2.nds") << '\n';
+	cerr.flush();
+}
+
 int RP_C_API _tmain(int argc, TCHAR *argv[])
 {
 	// Enable security options.
@@ -542,34 +576,7 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 	rp_i18n_init();
 
 	if(argc < 2){
-#ifdef ENABLE_DECRYPTION
-		cerr << C_("rpcli", "Usage: rpcli [-k] [-c] [-p] [-j] [-l lang] [[-xN outfile]... [-mN outfile]... [-a apngoutfile] filename]...") << '\n';
-		cerr << "  -k:   " << C_("rpcli", "Verify encryption keys in keys.conf.") << '\n';
-#else /* !ENABLE_DECRYPTION */
-		cerr << C_("rpcli", "Usage: rpcli [-c] [-p] [-j] [-l lang] [[-xN outfile]... [-mN outfile]... [-a apngoutfile] filename]...") << '\n';
-#endif /* ENABLE_DECRYPTION */
-		cerr << "  -c:   " << C_("rpcli", "Print system region information.") << '\n';
-		cerr << "  -p:   " << C_("rpcli", "Print system path information.") << '\n';
-		cerr << "  -d:   " << C_("rpcli", "Skip ListData fields with more than 10 items. [text only]") << '\n';
-		cerr << "  -j:   " << C_("rpcli", "Use JSON output format.") << '\n';
-		cerr << "  -l:   " << C_("rpcli", "Retrieve the specified language from the ROM image.") << '\n';
-		cerr << "  -xN:  " << C_("rpcli", "Extract image N to outfile in PNG format.") << '\n';
-		cerr << "  -mN:  " << C_("rpcli", "Extract mipmap level N to outfile in PNG format.") << '\n';
-		cerr << "  -a:   " << C_("rpcli", "Extract the animated icon to outfile in APNG format.") << '\n';
-		cerr << '\n';
-#ifdef RP_OS_SCSI_SUPPORTED
-		cerr << C_("rpcli", "Special options for devices:") << '\n';
-		cerr << "  -is:   " << C_("rpcli", "Run a SCSI INQUIRY command.") << '\n';
-		cerr << "  -ia:   " << C_("rpcli", "Run an ATA IDENTIFY DEVICE command.") << '\n';
-		cerr << "  -ip:   " << C_("rpcli", "Run an ATA IDENTIFY PACKET DEVICE command.") << '\n';
-		cerr << '\n';
-#endif /* RP_OS_SCSI_SUPPORTED */
-		cerr << C_("rpcli", "Examples:") << '\n';
-		cerr << "* rpcli s3.gen" << '\n';
-		cerr << "\t " << C_("rpcli", "displays info about s3.gen") << '\n';
-		cerr << "* rpcli -x0 icon.png pokeb2.nds" << '\n';
-		cerr << "\t " << C_("rpcli", "extracts icon from pokeb2.nds") << '\n';
-		cerr.flush();
+		ShowUsage();
 
 		// Since we didn't do anything, return a failure code.
 		return EXIT_FAILURE;
