@@ -62,7 +62,7 @@ Description: ROM Properties Page shell extension
 
 Package: rom-properties-kde4
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, libromdata4, rom-properties-utils, rom-properties-xdg, rom-properties-utils
+Depends: ${shlibs:Depends}, ${misc:Depends}, libromdata4, rom-properties-utils, rom-properties-xdg
 Recommends: rom-properties-lang
 Description: ROM Properties Page shell extension
  This shell extension provides thumbnailing and property page functionality
@@ -73,7 +73,7 @@ Description: ROM Properties Page shell extension
 
 Package: rom-properties-kf5
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, libromdata4, rom-properties-utils, rom-properties-xdg, rom-properties-utils
+Depends: ${shlibs:Depends}, ${misc:Depends}, libromdata4, rom-properties-utils, rom-properties-xdg
 Recommends: rom-properties-lang
 Conflicts: rom-properties-kde5
 Replaces: rom-properties-kde5
