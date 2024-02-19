@@ -89,6 +89,7 @@ static void show_version(void)
 
 static void show_help(const char *argv0)
 {
+	// TODO: Print to stderr, similar to rpcli?
 	show_version();
 	putchar('\n');
 	if (!is_rp_config) {
@@ -99,25 +100,41 @@ static void show_help(const char *argv0)
 			"If source_file is a supported ROM image, a thumbnail is\n"
 			"extracted and saved as output_file."));
 		putchar('\n');
+
+		struct opt_t {
+			char opt[16];
+			const char *desc;
+		};
+		static const struct opt_t thumb_opts[] = {
+			{"  -s, --size",	NOP_C_("rp-stub|Help", "Maximum thumbnail size. (default is 256px) [0 for full image]")},
+			{"  -a, --autoext",	NOP_C_("rp-stub|Help", "Generate the output filename based on the source filename.")},
+			{"               ",	NOP_C_("rp-stub|Help", "(WARNING: May overwrite an existing file without prompting.)")},
+			{"  -n, --noxdg",	NOP_C_("rp-stub|Help", "Don't include XDG thumbnail metadata.")},
+		};
+		static const struct opt_t *const thumb_opts_end = &thumb_opts[ARRAY_SIZE(thumb_opts)];
+
 		puts(C_("rp-stub|Help", "Thumbnailing options:"));
-		fputs("  -s, --size\t\t", stdout);
-		puts(C_("rp-stub|Help", "Maximum thumbnail size. (default is 256px) [0 for full image]"));
-		fputs("  -a, --autoext\t\t", stdout);
-		puts(C_("rp-stub|Help", "Generate the output filename based on the source filename."));
-		fputs("               \t\t", stdout);
-		puts(C_("rp-stub|Help", "(WARNING: May overwrite an existing file without prompting.)"));
-		fputs("  -n, --noxdg\t\t", stdout);
-		puts(C_("rp-stub|Help", "Don't include XDG thumbnail metadata."));
+		for (const struct opt_t *p = thumb_opts; p != thumb_opts_end; p++) {
+			fputs(p->opt, stdout);
+			fputs("\t\t", stdout);
+			puts(dpgettext_expr(RP_I18N_DOMAIN, "rp-stub|Help", p->desc));
+		}
 		putchar('\n');
+
+		static const struct opt_t other_opts[] = {
+			{"  -c, --config",	NOP_C_("rp-stub|Help", "Show the configuration dialog instead of thumbnailing.")},
+			{"  -d, --debug",	NOP_C_("rp-stub|Help", "Show debug output when searching for rom-properties.")},
+			{"  -h, --help",	NOP_C_("rp-stub|Help", "Display this help and exit.")},
+			{"  -V, --version",	NOP_C_("rp-stub|Help", "Output version information and exit.")},
+		};
+		static const struct opt_t *const other_opts_end = &other_opts[ARRAY_SIZE(other_opts)];
+
 		puts(C_("rp-stub|Help", "Other options:"));
-		fputs("  -c, --config\t\t", stdout);
-		puts(C_("rp-stub|Help", "Show the configuration dialog instead of thumbnailing."));
-		fputs("  -d, --debug\t\t", stdout);
-		puts(C_("rp-stub|Help", "Show debug output when searching for rom-properties."));
-		fputs("  -h, --help\t\t", stdout);
-		puts(C_("rp-stub|Help", "Display this help and exit."));
-		fputs("  -V, --version\t\t", stdout);
-		puts(C_("rp-stub|Help", "Output version information and exit."));
+		for (const struct opt_t *p = other_opts; p != other_opts_end; p++) {
+			fputs(p->opt, stdout);
+			fputs("\t\t", stdout);
+			puts(dpgettext_expr(RP_I18N_DOMAIN, "rp-stub|Help", p->desc));
+		}
 	} else {
 		printf(C_("rp-stub|Help", "Usage: %s"), argv0);
 		putchar('\n');
