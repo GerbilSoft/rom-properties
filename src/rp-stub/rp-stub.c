@@ -71,7 +71,7 @@ static void show_version(void)
 {
 	puts(RP_DESCRIPTION);
 	puts(C_("rp_stub", "Shared library stub program."));
-	puts(C_("rp-stub", "Copyright (c) 2016-2023 by David Korth."));
+	puts(C_("rp-stub", "Copyright (c) 2016-2024 by David Korth."));
 	putchar('\n');
 	printf(C_("rp-stub", "rom-properties version: %s"), RP_VERSION_STRING);
 	putchar('\n');
