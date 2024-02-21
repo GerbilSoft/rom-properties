@@ -1,10 +1,4 @@
 # libromdata test suite
-CMAKE_POLICY(SET CMP0048 NEW)
-IF(POLICY CMP0063)
-	# CMake 3.3: Enable symbol visibility presets for all
-	# target types, including static libraries and executables.
-	CMAKE_POLICY(SET CMP0063 NEW)
-ENDIF(POLICY CMP0063)
 PROJECT(libromdata-tests LANGUAGES C CXX)
 
 # Current binary directory for config.libromdata-tests.h

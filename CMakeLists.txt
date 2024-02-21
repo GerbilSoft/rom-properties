@@ -1,6 +1,14 @@
 # ROM Properties Page Shell Extension
-CMAKE_MINIMUM_REQUIRED(VERSION 3.4)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.5)
+
+# CMP0048: Set VERSION variables based on the project version specified in PROJECT().
+# Introduced in CMake 3.0.
 CMAKE_POLICY(SET CMP0048 NEW)
+
+# CMP0063: Honor visibility properties for all target types,
+# including static libraries and executables.
+# Introduced in CMake 3.3.
+CMAKE_POLICY(SET CMP0063 NEW)
 
 # Read the project version.
 CONFIGURE_FILE(version.txt version.txt.tmp)
