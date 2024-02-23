@@ -475,7 +475,7 @@ int CBMDOS::loadFieldData(void)
 	// since it might be incorrect. Assuming 18/1.
 	bitset<64> sectors_read(1);	// Sector 0 is not allowed here, so mark it as 'read'.
 	vector<vector<string> > *const vv_dir = new vector<vector<string> >();
-	const unsigned int sector_count = d->track_offsets_C1541[d->dir_track].sector_count;
+	const unsigned int sector_count = d->track_offsets[d->dir_track].sector_count;
 	for (unsigned int i = 1; i < sector_count && !sectors_read.test(i); ) {
 		cbmdos_dir_sector_t entries;
 		size_t size = d->read_sector(&entries, sizeof(entries), d->dir_track, i);
