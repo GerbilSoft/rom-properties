@@ -21,6 +21,7 @@ FUNCTION(CHECK_64BIT_TIME_SUPPORT)
 		# NOTE: ${CMAKE_MODULE_PATH} has two directories, macros/ and libs/,
 		# so we have to configure this manually.
 		SET(TIME64_SOURCE_PATH "${CMAKE_SOURCE_DIR}/cmake/macros")
+		SET(TMP_TIME64_FOUND_TIME_BITS 0)
 
 		# Check for 64-bit time_t.
 		MESSAGE(STATUS "Checking if time_t is 64-bit")
@@ -74,7 +75,7 @@ FUNCTION(CHECK_64BIT_TIME_SUPPORT)
 						SET(TMP_TIME64_FOUND_TIME_BITS 1)
 					ELSE()
 						MESSAGE(STATUS "Checking if time_t is 64-bit - no, redirection is broken in C++")
-						SET(TMP_TIME64_FOUND_TIME_BITS 1)
+						UNSET(TMP_TIME64_DEFINITIONS)
 					ENDIF()
 				ELSE()
 					# TIME64 macros failed.
@@ -84,7 +85,7 @@ FUNCTION(CHECK_64BIT_TIME_SUPPORT)
 			ENDIF()
 		ENDIF()
 
-		SET(TIME64_FOUND ${TMP_TIME64_FOUND} CACHE INTERNAL "Is Large File Support available?")
+		SET(TIME64_FOUND ${TMP_TIME64_FOUND} CACHE INTERNAL "Is 64-bit time_t available?")
 		SET(TIME64_FOUND_MINGW ${TMP_TIME64_FOUND_TIME_BITS} CACHE INTERNAL "64-bit time_t is available using -D__MINGW_USE_VC2005_COMPAT")
 		SET(TIME64_FOUND_TIME_BITS ${TMP_TIME64_FOUND_TIME_BITS} CACHE INTERNAL "64-bit time_t is available using -D_TIME_BITS=64")
 		SET(TIME64_DEFINITIONS "${TMP_TIME64_DEFINITIONS}" CACHE INTERNAL "Definitions required for 64-bit time_t")
