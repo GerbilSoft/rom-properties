@@ -804,6 +804,7 @@
     <sub-class-of type="application/x-raw-disk-image"/>
     <!-- FIXME: KDE Breeze doesn't have an icon for application/x-raw-disk-image . -->
     <glob pattern="*.d64"/>
+    <glob pattern="*.d41"/>
   </mime-type>
 
   <!-- *** Other *** -->
