@@ -447,6 +447,12 @@ int CBMDOS::loadFieldData(void)
 	RomFields::AFLD_PARAMS params(0, 8);
 	params.headers = v_dir_headers;
 	params.data.single = vv_dir;
+	params.col_attrs.align_headers	= AFLD_ALIGN3(TXA_D, TXA_D, TXA_D);
+	params.col_attrs.align_data	= AFLD_ALIGN3(TXA_R, TXA_D, TXA_D);
+	params.col_attrs.sizing		= AFLD_ALIGN3(COLSZ_R, COLSZ_S, COLSZ_R);
+	params.col_attrs.sorting	= AFLD_ALIGN3(COLSORT_NUM, COLSORT_STD, COLSORT_STD);
+	params.col_attrs.sort_col	= -1;	// no sorting by default; show files as listed on disk
+	params.col_attrs.sort_dir	= RomFields::COLSORTORDER_ASCENDING;
 	d->fields.addField_listData(C_("CBMDOS", "Directory"), &params);
 
 	// Finished reading the field data.
