@@ -79,6 +79,13 @@ public:
 	 * @return Number of bytes read on success, or zero on error.
 	 */
 	size_t read_sector(void *buf, size_t siz, uint8_t track, uint8_t sector);
+
+	/**
+	 * Remove $A0 padding from a character buffer.
+	 * @param buf	[in/out] Character buffer
+	 * @param siz	[in] Size of buf
+	 */
+	void remove_A0_padding(char *buf, size_t siz);
 };
 
 ROMDATA_IMPL(CBMDOS)
@@ -166,6 +173,27 @@ size_t CBMDOSPrivate::read_sector(void *buf, size_t siz, uint8_t track, uint8_t 
 
 	// Read the sector.
 	return file->seekAndRead(start_pos, buf, siz);
+}
+
+/**
+ * Remove $A0 padding from a character buffer.
+ * @param buf	[in/out] Character buffer
+ * @param siz	[in] Size of buf
+ */
+void remove_A0_padding(char *buf, size_t siz)
+{
+	assert(siz != 0);
+	if (siz == 0)
+		return;
+
+	buf += (siz - 1);
+	for (; siz > 0; buf--, siz--) {
+		if ((uint8_t)*buf == 0xA0) {
+			*buf = 0;
+		} else {
+			break;
+		}
+	}
 }
 
 /** CBMDOS **/
@@ -303,7 +331,7 @@ int CBMDOS::loadFieldData(void)
 		return -EIO;
 	}
 
-	// TODO: PETSCII conversion and padding removal.
+	// TODO: PETSCII conversion.
 
 	d->fields.reserve(4);	// Maximum of 4 fields.
 
@@ -314,6 +342,7 @@ int CBMDOS::loadFieldData(void)
 		// BAM loaded.
 
 		// Disk name
+		remove_A0_padding(bam.disk_name, sizeof(bam.disk_name));
 		d->fields.addField_string(C_("CBMDOS", "Disk Name"),
 			latin1_to_utf8(bam.disk_name, sizeof(bam.disk_name)));
 
@@ -347,7 +376,7 @@ int CBMDOS::loadFieldData(void)
 		}
 
 		const cbmdos_dir_entry_t *const p_end = &entries.entry[ARRAY_SIZE(entries.entry)];
-		for (const cbmdos_dir_entry_t *p_dir = entries.entry; p_dir < p_end; p_dir++) {
+		for (cbmdos_dir_entry_t *p_dir = entries.entry; p_dir < p_end; p_dir++) {
 			// File type 0 ("*DEL") indicates an empty directory entry.
 			// TODO: Also check filename to see if it's a "scratched" file?
 			if (p_dir->file_type == 0)
@@ -366,7 +395,8 @@ int CBMDOS::loadFieldData(void)
 			snprintf(filesize, sizeof(filesize), "%u", le16_to_cpu(p_dir->sector_count));
 			p_list.emplace_back(filesize);
 
-			// Filename (TODO: Convert from PETSCII and remove $A0 padding)
+			// Filename (TODO: Convert from PETSCII)
+			remove_A0_padding(p_dir->filename, sizeof(p_dir->filename));
 			p_list.emplace_back(latin1_to_utf8(p_dir->filename, sizeof(p_dir->filename)));
 
 			// File type
