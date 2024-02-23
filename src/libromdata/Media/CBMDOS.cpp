@@ -76,14 +76,17 @@ public:
 		uint8_t sector_count;	// Sectors per track
 		uint16_t start_sector;	// Starting sector
 	};
-	// Track offsets arrays
-	static const track_offsets_t track_offsets_C1541[40];
-	static const track_offsets_t track_offsets_C1571[70];
+	track_offsets_t track_offsets[70];
 
-public:
-	// Track offsets array
-	// TODO: Needs to be redone for GCR support later.
-	const track_offsets_t *track_offsets;
+	/**
+	 * Initialize track offsets for C1541. (35/40 tracks)
+	 */
+	void init_track_offsets_C1541(void);
+
+	/**
+	 * Initialize track offsets for C1571. (70 tracks)
+	 */
+	void init_track_offsets_C1571(void);
 
 public:
 	/**
@@ -128,73 +131,133 @@ const RomDataInfo CBMDOSPrivate::romDataInfo = {
 	"CBMDOS", exts, mimeTypes
 };
 
-// Track offsets (C1541)
-const CBMDOSPrivate::track_offsets_t CBMDOSPrivate::track_offsets_C1541[40] = {
-	// Tracks 1-17 (21 sectors)
-	{21,   0}, {21,  21}, {21,  42}, {21,  63},
-	{21,  84}, {21, 105}, {21, 126}, {21, 147},
-	{21, 168}, {21, 189}, {21, 210}, {21, 231},
-	{21, 252}, {21, 273}, {21, 294}, {21, 315},
-	{21, 336},
+/**
+ * Initialize track offsets for C1541. (35/40 tracks)
+ */
+void CBMDOSPrivate::init_track_offsets_C1541(void)
+{
+	// C1541 zones:
+	// - Tracks  1-17: 21 sectors
+	// - Tracks 18-24: 19 sectors
+	// - Tracks 25-30: 18 sectors
+	// - Tracks 31-40: 17 sectors
+	unsigned int sector = 0;
 
-	// Tracks 18-24 (19 sectors)
-	{19, 357}, {19, 376}, {19, 395}, {19, 414},
-	{19, 433}, {19, 452}, {19, 471},
+	// Tracks 1-17: 21 sectors
+	for (unsigned int i = 1-1; i <= 17-1; i++) {
+		track_offsets[i].sector_count = 21;
+		track_offsets[i].start_sector = sector;
+		sector += 21;
+	}
 
-	// Tracks 25-30 (18 sectors)
-	{18, 490}, {18, 508}, {18, 526}, {18, 544},
-	{18, 562}, {18, 580},
-	
-	// Tracks 31-40 (17 sectors)
-	{17, 598}, {17, 615}, {17, 632}, {17, 649},
-	{17, 666}, {17, 683}, {17, 700}, {17, 717},
-	{17, 734}, {17, 751}
-};
+	// Tracks 18-24: 19 sectors
+	for (unsigned int i = 18-1; i <= 24-1; i++) {
+		track_offsets[i].sector_count = 19;
+		track_offsets[i].start_sector = sector;
+		sector += 19;
+	}
 
-// Track offsets (C1571)
-const CBMDOSPrivate::track_offsets_t CBMDOSPrivate::track_offsets_C1571[70] = {
-	/** Side 0 **/
+	// Tracks 25-30: 18 sectors
+	for (unsigned int i = 25-1; i <= 30-1; i++) {
+		track_offsets[i].sector_count = 18;
+		track_offsets[i].start_sector = sector;
+		sector += 18;
+	}
 
-	// Tracks 1-17 (21 sectors)
-	{21,   0}, {21,  21}, {21,  42}, {21,  63},
-	{21,  84}, {21, 105}, {21, 126}, {21, 147},
-	{21, 168}, {21, 189}, {21, 210}, {21, 231},
-	{21, 252}, {21, 273}, {21, 294}, {21, 315},
-	{21, 336},
+	// Tracks 31-40: 17 sectors
+	for (unsigned int i = 31-1; i <= 40-1; i++) {
+		track_offsets[i].sector_count = 17;
+		track_offsets[i].start_sector = sector;
+		sector += 17;
+	}
 
-	// Tracks 18-24 (19 sectors)
-	{19, 357}, {19, 376}, {19, 395}, {19, 414},
-	{19, 433}, {19, 452}, {19, 471},
+	// Zero out the rest of the tracks.
+	for (unsigned int i = 41-1; i < ARRAY_SIZE(track_offsets); i++) {
+		track_offsets[i].sector_count = 0;
+		track_offsets[i].start_sector = 0;
+	}
+}
 
-	// Tracks 25-30 (18 sectors)
-	{18, 490}, {18, 508}, {18, 526}, {18, 544},
-	{18, 562}, {18, 580},
-	
-	// Tracks 31-35 (17 sectors)
-	{17, 598}, {17, 615}, {17, 632}, {17, 649},
-	{17, 666},
+/**
+ * Initialize track offsets for C1571. (70 tracks)
+ */
+void CBMDOSPrivate::init_track_offsets_C1571(void)
+{
+	// C1571 zones:
 
-	/** Side 1 **/
+	/// Side A
+	// - Tracks  1-17: 21 sectors
+	// - Tracks 18-24: 19 sectors
+	// - Tracks 25-30: 18 sectors
+	// - Tracks 31-35: 17 sectors
 
-	// Tracks 36-52 (21 sectors)
-	{21, 683}, {21, 704}, {21, 725}, {21, 746},
-	{21, 767}, {21, 788}, {21, 809}, {21, 830},
-	{21, 851}, {21, 872}, {21, 893}, {21, 914},
-	{21, 935}, {21, 956}, {21, 977}, {21, 998},
-	{21, 1019},
+	/// Side B
+	// - Tracks 36-52: 21 sectors
+	// - Tracks 53-59: 19 sectors
+	// - Tracks 60-65: 18 sectors
+	// - Tracks 66-70: 17 sectors
+	unsigned int sector = 0;
 
-	// Tracks 53-59 (19 sectors)
-	{19, 1040}, {19, 1059}, {19, 1078}, {19, 1097},
-	{19, 1116}, {19, 1135}, {19, 1154},
+	/// Side A
 
-	// Tracks 60-65 (18 sectors)
-	{18, 1173}, {18, 1191}, {18, 1209}, {18, 1227},
-	{18, 1245}, {18, 1263},
-	
-	// Tracks 66-70 (17 sectors)
-	{17, 1281}, {17, 1298}, {17, 1315}, {17, 1332},
-	{17, 1349},
-};
+	// Tracks 1-17: 21 sectors
+	for (unsigned int i = 1-1; i <= 17-1; i++) {
+		track_offsets[i].sector_count = 21;
+		track_offsets[i].start_sector = sector;
+		sector += 21;
+	}
+
+	// Tracks 18-24: 19 sectors
+	for (unsigned int i = 18-1; i <= 24-1; i++) {
+		track_offsets[i].sector_count = 19;
+		track_offsets[i].start_sector = sector;
+		sector += 19;
+	}
+
+	// Tracks 25-30: 18 sectors
+	for (unsigned int i = 25-1; i <= 30-1; i++) {
+		track_offsets[i].sector_count = 18;
+		track_offsets[i].start_sector = sector;
+		sector += 18;
+	}
+
+	// Tracks 31-35: 17 sectors
+	for (unsigned int i = 31-1; i <= 35-1; i++) {
+		track_offsets[i].sector_count = 17;
+		track_offsets[i].start_sector = sector;
+		sector += 17;
+	}
+
+	/// Side B
+
+	// Tracks 36-52: 21 sectors
+	for (unsigned int i = 36-1; i <= 52-1; i++) {
+		track_offsets[i].sector_count = 21;
+		track_offsets[i].start_sector = sector;
+		sector += 21;
+	}
+
+	// Tracks 53-59: 19 sectors
+	for (unsigned int i = 53-1; i <= 59-1; i++) {
+		track_offsets[i].sector_count = 19;
+		track_offsets[i].start_sector = sector;
+		sector += 19;
+	}
+
+	// Tracks 60-65: 18 sectors
+	for (unsigned int i = 60-1; i <= 65-1; i++) {
+		track_offsets[i].sector_count = 18;
+		track_offsets[i].start_sector = sector;
+		sector += 18;
+	}
+
+	// Tracks 66-70: 17 sectors
+	for (unsigned int i = 66-1; i <= 70-1; i++) {
+		track_offsets[i].sector_count = 17;
+		track_offsets[i].start_sector = sector;
+		sector += 17;
+	}
+}
 
 CBMDOSPrivate::CBMDOSPrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
@@ -203,7 +266,6 @@ CBMDOSPrivate::CBMDOSPrivate(const IRpFilePtr &file)
 	, dir_track(0)
 	, err_bytes_count(0)
 	, err_bytes_offset(0)
-	, track_offsets(nullptr)
 {}
 
 /**
@@ -302,14 +364,14 @@ CBMDOS::CBMDOS(const IRpFilePtr &file)
 			d->diskType = CBMDOSPrivate::DiskType::D64;
 			d->track_count = 35;
 			d->dir_track = 18;
-			d->track_offsets = d->track_offsets_C1541;
+			d->init_track_offsets_C1541();
 			break;
 		case (683 * CBMDOS_SECTOR_SIZE) + 683:
 			// 35-track C1541 image, with error bytes
 			d->diskType = CBMDOSPrivate::DiskType::D64;
 			d->track_count = 35;
 			d->dir_track = 18;
-			d->track_offsets = d->track_offsets_C1541;
+			d->init_track_offsets_C1541();
 			d->err_bytes_count = 683;
 			d->err_bytes_offset = (683 * CBMDOS_SECTOR_SIZE);
 			break;
@@ -318,14 +380,14 @@ CBMDOS::CBMDOS(const IRpFilePtr &file)
 			d->diskType = CBMDOSPrivate::DiskType::D64;
 			d->track_count = 40;
 			d->dir_track = 18;
-			d->track_offsets = d->track_offsets_C1541;
+			d->init_track_offsets_C1541();
 			break;
 		case (768 * CBMDOS_SECTOR_SIZE) + 768:
 			// 40-track C1541 image, with error bytes
 			d->diskType = CBMDOSPrivate::DiskType::D64;
 			d->track_count = 40;
 			d->dir_track = 18;
-			d->track_offsets = d->track_offsets_C1541;
+			d->init_track_offsets_C1541();
 			d->err_bytes_count = 768;
 			d->err_bytes_offset = (768 * CBMDOS_SECTOR_SIZE);
 			break;
@@ -334,14 +396,14 @@ CBMDOS::CBMDOS(const IRpFilePtr &file)
 			d->diskType = CBMDOSPrivate::DiskType::D71;
 			d->track_count = 70;
 			d->dir_track = 18;
-			d->track_offsets = d->track_offsets_C1571;
+			d->init_track_offsets_C1571();
 			break;
 		case (1366 * CBMDOS_SECTOR_SIZE) + 1366:
 			// 70-track C1571 image, with error bytes
 			d->diskType = CBMDOSPrivate::DiskType::D71;
 			d->track_count = 70;
 			d->dir_track = 18;
-			d->track_offsets = d->track_offsets_C1571;
+			d->init_track_offsets_C1571();
 			d->err_bytes_count = 1366;
 			d->err_bytes_offset = (1366 * CBMDOS_SECTOR_SIZE);
 			break;
