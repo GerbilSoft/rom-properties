@@ -70,6 +70,7 @@ SET(${PROJECT_NAME}_SRCS
 	Audio/SPC.cpp
 	Audio/VGM.cpp
 
+	Media/CBMDOS.cpp
 	Media/ISO.cpp
 
 	Other/Amiibo.cpp
@@ -245,8 +246,10 @@ SET(${PROJECT_NAME}_H
 	Audio/spc_structs.h
 	Audio/vgm_structs.h
 
+	Media/CBMDOS.hpp
 	Media/ISO.hpp
 
+	Media/cbmdos_structs.h
 	Media/hsfs_structs.h
 
 	Other/Amiibo.hpp

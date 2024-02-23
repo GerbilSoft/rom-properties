@@ -94,6 +94,7 @@ using std::vector;
 #include "Audio/VGM.hpp"
 
 // RomData subclasses: Media
+#include "Media/CBMDOS.hpp"
 #include "Media/ISO.hpp"
 
 // RomData subclasses: Other
@@ -393,6 +394,9 @@ const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_header
 	GetRomDataFns(SAP, ATTR_HAS_METADATA),	// "SAP\r\n", "SAP\n"; maybe move to _magic[]?
 	GetRomDataFns(SNDH, ATTR_HAS_METADATA),	// "SNDH", or "ICE!" or "Ice!" if packed.
 	GetRomDataFns(SID, ATTR_HAS_METADATA),	// PSID/RSID; maybe move to _magic[]?
+
+	// Media
+	GetRomDataFns(CBMDOS, ATTR_NONE),
 
 	// Other
 	GetRomDataFns(Amiibo, ATTR_HAS_THUMBNAIL),
