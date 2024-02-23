@@ -796,6 +796,16 @@
     <glob pattern="*.pc2"/>
   </mime-type>
 
+  <!-- *** Media *** -->
+
+  <!-- CBMDOS -->
+  <mime-type type="application/x-d64">
+    <comment>Commodore 64 disk image</comment>
+    <sub-class-of type="application/x-raw-disk-image"/>
+    <!-- FIXME: KDE Breeze doesn't have an icon for application/x-raw-disk-image . -->
+    <glob pattern="*.d64"/>
+  </mime-type>
+
   <!-- *** Other *** -->
 
   <!-- Amiibo -->
