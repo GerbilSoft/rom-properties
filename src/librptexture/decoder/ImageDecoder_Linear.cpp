@@ -1307,7 +1307,7 @@ rp_image_ptr fromLinear32_cpp(PixelFormat px_format,
 				? (stride / bytespp)
 				: width;
 			const int dest_row_width = img->stride() / bytespp;
-#pragma omp parallel for default(none) shared(img_buf) firstprivate(width, height, src_row_width, dest_row_width)
+#pragma omp parallel for default(none) shared(img_buf, bits) firstprivate(width, height, src_row_width, dest_row_width)
 			for (int y = 0; y < height; y++) {
 				const uint32_t *px_src = &img_buf[y * src_row_width];
 				uint32_t *px_dest = &bits[y * dest_row_width];
