@@ -10,6 +10,7 @@
 // - http://unusedino.de/ec64/technical/formats/d64.html
 // - http://unusedino.de/ec64/technical/formats/d71.html
 // - http://unusedino.de/ec64/technical/formats/d80-d82.html
+// - https://area51.dev/c64/cbmdos/autoboot/
 
 #include "stdafx.h"
 #include "CBMDOS.hpp"
@@ -572,11 +573,13 @@ int CBMDOS::loadFieldData(void)
 
 	d->fields.reserve(4);	// Maximum of 4 fields.
 
-	// Get the BAM/header sector. (sector 0 of the directory track)
 	union {
 		cbmdos_C1541_BAM_t c1541_bam;
 		cbmdos_C8050_header_t c8050_header;
+		cbmdos_C128_autoboot_sector_t autoboot;
 	};
+
+	// Get the BAM/header sector. (sector 0 of the directory track)
 	size_t size = d->read_sector(&c1541_bam, sizeof(c1541_bam), d->dir_track, 0);
 	if (size == sizeof(c1541_bam)) {
 		// BAM loaded. Get the string addresses.
@@ -719,6 +722,64 @@ int CBMDOS::loadFieldData(void)
 	params.col_attrs.sort_col	= -1;	// no sorting by default; show files as listed on disk
 	params.col_attrs.sort_dir	= RomFields::COLSORTORDER_ASCENDING;
 	d->fields.addField_listData(C_("CBMDOS", "Directory"), &params);
+
+	// Check for a C128 autoboot sector.
+	if (d->diskType == CBMDOSPrivate::DiskType::D64 ||
+	    d->diskType == CBMDOSPrivate::DiskType::D71)
+	{
+		size = d->read_sector(&autoboot, sizeof(autoboot), 1, 0);
+		if (size == sizeof(autoboot) && !memcmp(autoboot.signature, "CBM", 3)) {
+			// We have an autoboot sector.
+			// TODO: Show other fields?
+
+			// Messages
+			autoboot.messages[ARRAY_SIZE(autoboot.messages)-1] = 0;	// ensure NULL termination
+			const char *const p_msg_start = autoboot.messages;
+			const char *const p_msg_end = &autoboot.messages[ARRAY_SIZE(autoboot.messages)];
+
+			// Find the message offsets.
+			const char *p_boot_msg = p_msg_start;
+			const char *p_boot_prg;
+			if (*p_boot_msg == '\0') {
+				// No custom boot message. Use the default.
+				p_boot_prg = p_boot_msg + 1;
+				p_boot_msg = nullptr;
+			} else {
+				// Find the first NULL after the boot message.
+				// This will be right before the start of the boot program name.
+				p_boot_prg = static_cast<const char*>(memchr(p_boot_msg, '\0', p_msg_end - p_boot_msg));
+				if (p_boot_prg && (p_boot_prg + 1 < p_msg_end)) {
+					p_boot_prg++;
+				}
+			}
+
+			// Track/sector to load from
+			if (autoboot.addl_sectors.track != 0 && autoboot.addl_sectors.sector != 0) {
+				d->fields.addField_string(C_("CBMDOS", "C128 boot T/S"),
+					rp_sprintf("%u/%u", autoboot.addl_sectors.track, autoboot.addl_sectors.sector));
+				// Bank
+				d->fields.addField_string_numeric(C_("CBMDOS", "C128 boot bank"), autoboot.bank);
+				// Load count
+				d->fields.addField_string_numeric(C_("CBMDOS", "C128 boot load count"), autoboot.load_count);
+			}
+
+			// Boot message
+			// NOTE: Assuming unshifted, since the system starts unshifted.
+			const char *const s_title_boot_msg = C_("CBMDOS", "C128 boot message");
+			if (p_boot_msg) {
+				d->fields.addField_string(s_title_boot_msg,
+					cpN_to_utf8(CP_RP_PETSCII_Unshifted, p_boot_msg, -1));
+			} else {
+				d->fields.addField_string(s_title_boot_msg, "BOOTING...");
+			}
+
+			// Boot program
+			if (p_boot_prg && *p_boot_prg != '\0') {
+				d->fields.addField_string(C_("CBMDOS", "C128 boot program"),
+					cpN_to_utf8(codepage, p_boot_prg, -1));
+			}
+		}
+	}
 
 	// Finished reading the field data.
 	return static_cast<int>(d->fields.count());

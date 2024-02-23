@@ -10,6 +10,7 @@
 // - http://unusedino.de/ec64/technical/formats/d64.html
 // - http://unusedino.de/ec64/technical/formats/d71.html
 // - http://unusedino.de/ec64/technical/formats/d80-d82.html
+// - https://area51.dev/c64/cbmdos/autoboot/
 
 #pragma once
 
@@ -149,6 +150,21 @@ typedef struct _cbmdos_C8050_header_t {
 	uint8_t unused_21[223];	// $21: Unused
 } cbmdos_C8050_header_t;
 ASSERT_STRUCT(cbmdos_C8050_header_t, CBMDOS_SECTOR_SIZE);
+
+/**
+ * CBMDOS: C128 autoboot sector (1/0)
+ */
+#define CBMDOS_C128_AUTOBOOT_SIGNATURE "CBM"
+typedef struct _cbmdos_C128_autoboot_sector_t {
+	char signature[3];		// $00: "CBM"
+	cbmdos_TS_ptr_t addl_sectors;	// $03: Start address of additional sectors to load. (0/0 for none)
+	uint8_t bank;			// $05: Bank for additional sectors. (default $00)
+	uint8_t load_count;		// $06: Number of sectors to load. (default $00)
+	char messages[249];		// $07: Contains two NULL-terminated strings, then a bootloader:
+	                                //      - String 1: Boot message. (if empty, uses "BOOTING...")
+	                                //      - String 2: Filename of program to load. (can be empty)
+} cbmdos_C128_autoboot_sector_t;
+ASSERT_STRUCT(cbmdos_C128_autoboot_sector_t, CBMDOS_SECTOR_SIZE);
 
 #ifdef __cplusplus
 }
