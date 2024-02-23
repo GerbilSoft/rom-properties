@@ -9,6 +9,7 @@
 // References:
 // - http://unusedino.de/ec64/technical/formats/d64.html
 // - http://unusedino.de/ec64/technical/formats/d71.html
+// - http://unusedino.de/ec64/technical/formats/d80-d82.html
 
 #pragma once
 
