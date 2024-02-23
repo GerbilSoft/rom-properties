@@ -141,7 +141,7 @@ const CBMDOSPrivate::track_offsets_t CBMDOSPrivate::track_offsets_C1541[40] = {
 	{19, 357}, {19, 376}, {19, 395}, {19, 414},
 	{19, 433}, {19, 452}, {19, 471},
 
-	// Tracks 25-31 (18 sectors)
+	// Tracks 25-30 (18 sectors)
 	{18, 490}, {18, 508}, {18, 526}, {18, 544},
 	{18, 562}, {18, 580},
 	
@@ -166,7 +166,7 @@ const CBMDOSPrivate::track_offsets_t CBMDOSPrivate::track_offsets_C1571[70] = {
 	{19, 357}, {19, 376}, {19, 395}, {19, 414},
 	{19, 433}, {19, 452}, {19, 471},
 
-	// Tracks 25-31 (18 sectors)
+	// Tracks 25-30 (18 sectors)
 	{18, 490}, {18, 508}, {18, 526}, {18, 544},
 	{18, 562}, {18, 580},
 	
@@ -187,11 +187,11 @@ const CBMDOSPrivate::track_offsets_t CBMDOSPrivate::track_offsets_C1571[70] = {
 	{19, 1040}, {19, 1059}, {19, 1078}, {19, 1097},
 	{19, 1116}, {19, 1135}, {19, 1154},
 
-	// Tracks 25-31 (18 sectors)
+	// Tracks 60-65 (18 sectors)
 	{18, 1173}, {18, 1191}, {18, 1209}, {18, 1227},
 	{18, 1245}, {18, 1263},
 	
-	// Tracks 31-35 (17 sectors)
+	// Tracks 66-70 (17 sectors)
 	{17, 1281}, {17, 1298}, {17, 1315}, {17, 1332},
 	{17, 1349},
 };
