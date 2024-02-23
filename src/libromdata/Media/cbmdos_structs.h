@@ -39,7 +39,7 @@ ASSERT_STRUCT(cbmdos_TS_ptr_t, 2);
 typedef struct _cbmdos_C1541_BAM_t {
 	cbmdos_TS_ptr_t next;	// $00: Location of the first directory sector
 	                        //      NOTE: Ignore this; it should always be 18/1.
-	uint8_t dos_version;	// $02: DOS version type. ("A" for C1541)
+	uint8_t dos_version;	// $02: DOS version type. ('A' for C1541)
 	uint8_t double_sided;	// $03: [C1571] Double-sided flag (see CBMDOS_C1571_DoubleSided_e)
 	uint8_t bam[35*4];	// $04: BAM entries for each track.
 	                        //      4 bytes per track; 35 tracks.
@@ -130,6 +130,24 @@ typedef enum {
 	// Bit 7: Closed flag (if unset, and Bits 0-3 are non-zero, results in a "*" (splat) file)
 	CBMDOS_FileType_Closed		= (1U << 7),
 } CBMDOS_FileType_e;
+
+/**
+ * CBMDOS: C8050/C8250 header sector (39/0)
+ */
+typedef struct _cbmdos_C8050_header_t {
+	cbmdos_TS_ptr_t bam0;	// $00: Location of the first BAM sector (38/0)
+	uint8_t dos_version;	// $02: DOS version type. ('C' for C8050/C8250)
+	uint8_t unused_03;	// $03: Reserved
+	uint8_t unused_04[2];	// $04: Unused
+	char disk_name[17];	// $06: Disk name (PETSCII, $A0-padded)
+	uint8_t unused_17;	// $17: $A0
+	char disk_id[2];	// $18: Disk ID (PETSCII)
+	uint8_t unused_1A;	// $1A: $A0
+	char dos_type[2];	// $1B: DOS type (usually "2C")
+	uint8_t unused_1D[4];	// $1D: $A0
+	uint8_t unused_21[223];	// $21: Unused
+} cbmdos_C8050_header_t;
+ASSERT_STRUCT(cbmdos_C8050_header_t, CBMDOS_SECTOR_SIZE);
 
 #ifdef __cplusplus
 }
