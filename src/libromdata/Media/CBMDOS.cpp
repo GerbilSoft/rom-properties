@@ -210,68 +210,39 @@ void CBMDOSPrivate::init_track_offsets_C1571(void)
 	// - Tracks 66-70: 17 sectors
 	unsigned int sector = 0;
 
-	/// Side A
+	int track_base = -1;	// track numbering starts at 1
+	for (unsigned int side = 0; side < 2; side++, track_base += 35) {
+		// Tracks 1-17: 21 sectors
+		for (int i = 1 + track_base; i <= 17 + track_base; i++) {
+			track_offsets[i].sector_count = 21;
+			track_offsets[i].start_sector = sector;
+			sector += 21;
+		}
 
-	// Tracks 1-17: 21 sectors
-	for (unsigned int i = 1-1; i <= 17-1; i++) {
-		track_offsets[i].sector_count = 21;
-		track_offsets[i].start_sector = sector;
-		sector += 21;
-	}
+		// Tracks 18-24: 19 sectors
+		for (int i = 18 + track_base; i <= 24 + track_base; i++) {
+			track_offsets[i].sector_count = 19;
+			track_offsets[i].start_sector = sector;
+			sector += 19;
+		}
 
-	// Tracks 18-24: 19 sectors
-	for (unsigned int i = 18-1; i <= 24-1; i++) {
-		track_offsets[i].sector_count = 19;
-		track_offsets[i].start_sector = sector;
-		sector += 19;
-	}
+		// Tracks 25-30: 18 sectors
+		for (int i = 25 + track_base; i <= 30 + track_base; i++) {
+			track_offsets[i].sector_count = 18;
+			track_offsets[i].start_sector = sector;
+			sector += 18;
+		}
 
-	// Tracks 25-30: 18 sectors
-	for (unsigned int i = 25-1; i <= 30-1; i++) {
-		track_offsets[i].sector_count = 18;
-		track_offsets[i].start_sector = sector;
-		sector += 18;
-	}
-
-	// Tracks 31-35: 17 sectors
-	for (unsigned int i = 31-1; i <= 35-1; i++) {
-		track_offsets[i].sector_count = 17;
-		track_offsets[i].start_sector = sector;
-		sector += 17;
-	}
-
-	/// Side B
-
-	// Tracks 36-52: 21 sectors
-	for (unsigned int i = 36-1; i <= 52-1; i++) {
-		track_offsets[i].sector_count = 21;
-		track_offsets[i].start_sector = sector;
-		sector += 21;
-	}
-
-	// Tracks 53-59: 19 sectors
-	for (unsigned int i = 53-1; i <= 59-1; i++) {
-		track_offsets[i].sector_count = 19;
-		track_offsets[i].start_sector = sector;
-		sector += 19;
-	}
-
-	// Tracks 60-65: 18 sectors
-	for (unsigned int i = 60-1; i <= 65-1; i++) {
-		track_offsets[i].sector_count = 18;
-		track_offsets[i].start_sector = sector;
-		sector += 18;
-	}
-
-	// Tracks 66-70: 17 sectors
-	for (unsigned int i = 66-1; i <= 70-1; i++) {
-		track_offsets[i].sector_count = 17;
-		track_offsets[i].start_sector = sector;
-		sector += 17;
+		// Tracks 31-35: 17 sectors
+		for (int i = 31 + track_base; i <= 35 + track_base; i++) {
+			track_offsets[i].sector_count = 17;
+			track_offsets[i].start_sector = sector;
+			sector += 17;
+		}
 	}
 
 	// Zero out the rest of the tracks.
-	for (unsigned int i = 71-1; i < ARRAY_SIZE(track_offsets); i++) {
+	for (int i = track_base + 1; i < ARRAY_SIZE_I(track_offsets); i++) {
 		track_offsets[i].sector_count = 0;
 		track_offsets[i].start_sector = 0;
 	}
