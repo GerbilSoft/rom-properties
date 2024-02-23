@@ -25,7 +25,7 @@ using namespace LibRpTexture;
 #include "disc/PartitionFile.hpp"
 
 // Other RomData subclasses
-#include "Other/ISO.hpp"
+#include "Media/ISO.hpp"
 #include "Other/ELF.hpp"
 
 // C++ STL classes

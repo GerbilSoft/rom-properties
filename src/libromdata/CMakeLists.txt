@@ -70,12 +70,13 @@ SET(${PROJECT_NAME}_SRCS
 	Audio/SPC.cpp
 	Audio/VGM.cpp
 
+	Media/ISO.cpp
+
 	Other/Amiibo.cpp
 	Other/ELF.cpp
 	Other/EXE.cpp
 	Other/EXE_NE.cpp
 	Other/EXE_PE.cpp
-	Other/ISO.cpp
 	Other/MachO.cpp
 	Other/NintendoBadge.cpp
 	Other/RpTextureWrapper.cpp
@@ -244,11 +245,14 @@ SET(${PROJECT_NAME}_H
 	Audio/spc_structs.h
 	Audio/vgm_structs.h
 
+	Media/ISO.hpp
+
+	Media/hsfs_structs.h
+
 	Other/Amiibo.hpp
 	Other/ELF.hpp
 	Other/EXE.hpp
 	Other/EXE_p.hpp
-	Other/ISO.hpp
 	Other/MachO.hpp
 	Other/NintendoBadge.hpp
 	Other/RpTextureWrapper.hpp

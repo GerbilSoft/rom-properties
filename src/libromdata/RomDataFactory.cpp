@@ -93,11 +93,13 @@ using std::vector;
 #include "Audio/SPC.hpp"
 #include "Audio/VGM.hpp"
 
+// RomData subclasses: Media
+#include "Media/ISO.hpp"
+
 // RomData subclasses: Other
 #include "Other/Amiibo.hpp"
 #include "Other/ELF.hpp"
 #include "Other/EXE.hpp"
-#include "Other/ISO.hpp"
 #include "Other/MachO.hpp"
 #include "Other/NintendoBadge.hpp"
 #include "Other/RpTextureWrapper.hpp"

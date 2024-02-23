@@ -24,8 +24,8 @@ using namespace LibRpText;
 #include "../disc/IsoPartition.hpp"
 
 // Other RomData subclasses
-#include "Other/ISO.hpp"
 #include "Console/PlayStationEXE.hpp"
+#include "Media/ISO.hpp"
 #include "Other/ELF.hpp"
 
 // inih for SYSTEM.CNF

@@ -22,7 +22,7 @@ using namespace LibRpFile;
 using namespace LibRpText;
 
 // Other RomData subclasses
-#include "Other/ISO.hpp"
+#include "Media/ISO.hpp"
 
 // C++ STL classes
 using std::string;

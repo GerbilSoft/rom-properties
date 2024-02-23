@@ -22,7 +22,7 @@ using namespace LibRpTexture;
 #include "../disc/XDVDFSPartition.hpp"
 
 // Other RomData subclasses
-#include "Other/ISO.hpp"
+#include "Media/ISO.hpp"
 #include "Xbox_XBE.hpp"
 #include "Xbox360_XEX.hpp"
 
