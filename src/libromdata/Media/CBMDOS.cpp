@@ -365,7 +365,7 @@ int CBMDOS::loadFieldData(void)
 	// Read the directory.
 	// NOTE: Ignoring the directory location in the BAM sector,
 	// since it might be incorrect. Assuming 18/1.
-	bitset<256> sectors_read(1);	// Sector 0 is not allowed here, so mark it as 'read'.
+	bitset<64> sectors_read(1);	// Sector 0 is not allowed here, so mark it as 'read'.
 	vector<vector<string> > *const vv_dir = new vector<vector<string> >();
 	const unsigned int sector_count = d->track_offsets_C1541[d->dir_track].sector_count;
 	for (unsigned int i = 1; i < sector_count && !sectors_read.test(i); ) {
