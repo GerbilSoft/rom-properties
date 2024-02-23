@@ -338,7 +338,8 @@ int CBMDOS::loadFieldData(void)
 		// ...if it's like that in Disk Name, use shifted for filenames.
 	// TODO: Default to shifted if this is a GEOS disk.
 	// TODO: Reverse video?
-	static const unsigned int codepage = CP_RP_PETSCII_Unshifted;
+	static const char uFFFD[] = "\xEF\xBF\xBD";
+	unsigned int codepage = CP_RP_PETSCII_Unshifted;
 
 	d->fields.reserve(4);	// Maximum of 4 fields.
 
@@ -350,16 +351,22 @@ int CBMDOS::loadFieldData(void)
 
 		// Disk name
 		remove_A0_padding(bam.disk_name, sizeof(bam.disk_name));
-		d->fields.addField_string(C_("CBMDOS", "Disk Name"),
-			cpN_to_utf8(codepage, bam.disk_name, sizeof(bam.disk_name)));
+		string disk_name = cpN_to_utf8(codepage, bam.disk_name, sizeof(bam.disk_name));
+		if (disk_name.find(uFFFD) != string::npos) {
+			// Disk name has invalid characters when using Unshifted.
+			// Try again with Shifted.
+			codepage = CP_RP_PETSCII_Shifted;
+			disk_name = cpN_to_utf8(codepage, bam.disk_name, sizeof(bam.disk_name));
+		}
+		d->fields.addField_string(C_("CBMDOS", "Disk Name"), disk_name);
 
 		// Disk ID
 		d->fields.addField_string(C_("CBMDOS", "Disk ID"),
 			cpN_to_utf8(codepage, bam.disk_id, sizeof(bam.disk_id)));
 
-		// DOS Type
+		// DOS Type (NOTE: Always unshifted)
 		d->fields.addField_string(C_("CBMDOS", "DOS Type"),
-			cpN_to_utf8(codepage, bam.dos_type, sizeof(bam.dos_type)));
+			cpN_to_utf8(CP_RP_PETSCII_Unshifted, bam.dos_type, sizeof(bam.dos_type)));
 	}
 
 	// Read the directory.
