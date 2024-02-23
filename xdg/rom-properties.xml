@@ -800,11 +800,17 @@
 
   <!-- CBMDOS -->
   <mime-type type="application/x-d64">
-    <comment>Commodore 64 disk image</comment>
+    <comment>Commodore 64 (1541) disk image</comment>
     <sub-class-of type="application/x-raw-disk-image"/>
     <!-- FIXME: KDE Breeze doesn't have an icon for application/x-raw-disk-image . -->
     <glob pattern="*.d64"/>
     <glob pattern="*.d41"/>
+  </mime-type>
+  <mime-type type="application/x-d71">
+    <comment>Commodore 1571 disk image</comment>
+    <sub-class-of type="application/x-raw-disk-image"/>
+    <!-- FIXME: KDE Breeze doesn't have an icon for application/x-raw-disk-image . -->
+    <glob pattern="*.d71"/>
   </mime-type>
 
   <!-- *** Other *** -->

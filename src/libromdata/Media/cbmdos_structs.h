@@ -6,7 +6,9 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-// Reference: http://unusedino.de/ec64/technical/formats/d64.html
+// References:
+// - http://unusedino.de/ec64/technical/formats/d64.html
+// - http://unusedino.de/ec64/technical/formats/d71.html
 
 #pragma once
 
@@ -38,7 +40,7 @@ typedef struct _cbmdos_C1541_BAM_t {
 	cbmdos_TS_ptr_t next;	// $00: Location of the first directory sector
 	                        //      NOTE: Ignore this; it should always be 18/1.
 	uint8_t dos_version;	// $02: DOS version type. ("A" for C1541)
-	uint8_t unused_03;	// $03
+	uint8_t double_sided;	// $03: [C1571] Double-sided flag (see CBMDOS_C1571_DoubleSided_e)
 	uint8_t bam[35*4];	// $04: BAM entries for each track.
 	                        //      4 bytes per track; 35 tracks.
 	char disk_name[16];	// $90: Disk name (PETSCII, $A0-padded)
@@ -48,8 +50,9 @@ typedef struct _cbmdos_C1541_BAM_t {
 	char dos_type[2];	// $A5: DOS type (usually "2A")
 	uint8_t unused_A7[4];	// $A7: Filled with $A0
 
-	// $AB-$FF is unused by CBM DOS, but may be
+	// C1541: $AB-$FF is unused by CBM DOS, but may be
 	// used by third-party enhancements.
+	// C1571: $DD-$FF is the free sector count for tracks 36-70.
 	union {
 		uint8_t unused_CBMDOS_AB[0x55];		// $AB
 		struct {
@@ -57,9 +60,23 @@ typedef struct _cbmdos_C1541_BAM_t {
 			uint8_t dolphin_dos_BAM[5*4];	// $AC: Dolphin DOS track 36-40 BAM entries
 			uint8_t speed_dos_BAM[5*4];	// $C0: Speed DOS track 36-40 BAM entries
 		};
+		struct {
+			uint8_t unused_C1571_AB[0x32];	// $AB
+			uint8_t free_sector_count[35];	// $DD: [C1571] Free sector count for tracks 36-70
+		};
 	};
 } cbmdos_C1541_BAM_t;
 ASSERT_STRUCT(cbmdos_C1541_BAM_t, CBMDOS_SECTOR_SIZE);
+
+/**
+ * CBMDOS: C1571 double-sided flag
+ */
+typedef enum {
+	CBMDOS_C1571_SingleSided = (0U << 7),
+	CBMDOS_C1571_DoubleSided = (1U << 7),
+
+	CBMDOS_C1571_DoubleSided_mask = (1U << 7),
+} CBMDOS_C1571_DoubleSided_e;
 
 /**
  * CBMDOS: Directory entry

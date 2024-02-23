@@ -6,7 +6,9 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-// Reference: http://unusedino.de/ec64/technical/formats/d64.html
+// References:
+// - http://unusedino.de/ec64/technical/formats/d64.html
+// - http://unusedino.de/ec64/technical/formats/d71.html
 
 #include "stdafx.h"
 #include "CBMDOS.hpp"
@@ -47,21 +49,23 @@ public:
 	enum class DiskType {
 		Unknown = -1,
 
-		D64 = 0,		// C1541 disk image (standard version)
+		D64 = 0,		// C1541 disk image (single-sided, standard version)
+		D71 = 1,		// C1571 disk image (double-sided, standard version)
 
 		Max
 	};
 	DiskType diskType;
 
 	// Track count
-	// Usually 35 for a standard 1541 disk; can be up to 40.
+	// Usually 35 for a standard C1541 disk; can be up to 40.
+	// Usually 70 for a double-sided C1571 disk.
 	uint8_t track_count;
 
 	// Directory track
-	// Usually 18 for C1541 disks.
+	// Usually 18 for C1541/C1571 disks.
 	uint8_t dir_track;
 
-	// Error bytes info (for certain D64 format images)
+	// Error bytes info (for certain D64/D71 format images)
 	unsigned int err_bytes_count;
 	unsigned int err_bytes_offset;
 
@@ -72,8 +76,14 @@ public:
 		uint8_t sector_count;	// Sectors per track
 		uint16_t start_sector;	// Starting sector
 	};
-	// Track offsets (C1541)
+	// Track offsets arrays
 	static const track_offsets_t track_offsets_C1541[40];
+	static const track_offsets_t track_offsets_C1571[70];
+
+public:
+	// Track offsets array
+	// TODO: Needs to be redone for GCR support later.
+	const track_offsets_t *track_offsets;
 
 public:
 	/**
@@ -101,6 +111,7 @@ ROMDATA_IMPL(CBMDOS)
 /* RomDataInfo */
 const char *const CBMDOSPrivate::exts[] = {
 	".d64",	".d41",	// Standard C1541 disk image
+	".d71",		// Standard C1571 disk image
 	// TODO: More?
 
 	nullptr
@@ -109,6 +120,7 @@ const char *const CBMDOSPrivate::mimeTypes[] = {
 	// Unofficial MIME types.
 	// TODO: Get these upstreamed on FreeDesktop.org.
 	"application/x-d64",
+	"application/x-d71",
 
 	nullptr
 };
@@ -139,6 +151,51 @@ const CBMDOSPrivate::track_offsets_t CBMDOSPrivate::track_offsets_C1541[40] = {
 	{17, 734}, {17, 751}
 };
 
+// Track offsets (C1571)
+const CBMDOSPrivate::track_offsets_t CBMDOSPrivate::track_offsets_C1571[70] = {
+	/** Side 0 **/
+
+	// Tracks 1-17 (21 sectors)
+	{21,   0}, {21,  21}, {21,  42}, {21,  63},
+	{21,  84}, {21, 105}, {21, 126}, {21, 147},
+	{21, 168}, {21, 189}, {21, 210}, {21, 231},
+	{21, 252}, {21, 273}, {21, 294}, {21, 315},
+	{21, 336},
+
+	// Tracks 18-24 (19 sectors)
+	{19, 357}, {19, 376}, {19, 395}, {19, 414},
+	{19, 433}, {19, 452}, {19, 471},
+
+	// Tracks 25-31 (18 sectors)
+	{18, 490}, {18, 508}, {18, 526}, {18, 544},
+	{18, 562}, {18, 580},
+	
+	// Tracks 31-35 (17 sectors)
+	{17, 598}, {17, 615}, {17, 632}, {17, 649},
+	{17, 666},
+
+	/** Side 1 **/
+
+	// Tracks 36-52 (21 sectors)
+	{21, 683}, {21, 704}, {21, 725}, {21, 746},
+	{21, 767}, {21, 788}, {21, 809}, {21, 830},
+	{21, 851}, {21, 872}, {21, 893}, {21, 914},
+	{21, 935}, {21, 956}, {21, 977}, {21, 998},
+	{21, 1019},
+
+	// Tracks 53-59 (19 sectors)
+	{19, 1040}, {19, 1059}, {19, 1078}, {19, 1097},
+	{19, 1116}, {19, 1135}, {19, 1154},
+
+	// Tracks 25-31 (18 sectors)
+	{18, 1173}, {18, 1191}, {18, 1209}, {18, 1227},
+	{18, 1245}, {18, 1263},
+	
+	// Tracks 31-35 (17 sectors)
+	{17, 1281}, {17, 1298}, {17, 1315}, {17, 1332},
+	{17, 1349},
+};
+
 CBMDOSPrivate::CBMDOSPrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
 	, diskType(DiskType::Unknown)
@@ -146,6 +203,7 @@ CBMDOSPrivate::CBMDOSPrivate(const IRpFilePtr &file)
 	, dir_track(0)
 	, err_bytes_count(0)
 	, err_bytes_offset(0)
+	, track_offsets(nullptr)
 {}
 
 /**
@@ -169,15 +227,15 @@ size_t CBMDOSPrivate::read_sector(void *buf, size_t siz, uint8_t track, uint8_t 
 		return 0;
 
 	// Get the track offsets.
-	const track_offsets_t track_offsets = track_offsets_C1541[track-1];
+	const track_offsets_t this_track = track_offsets[track-1];
 
-	assert(sector < track_offsets.sector_count);
-	if (sector >= track_offsets.sector_count)
+	assert(sector < this_track.sector_count);
+	if (sector >= this_track.sector_count)
 		return 0;
 
 	// Get the absolute starting address.
 	// TODO: Adjust for GCR formats.
-	const off64_t start_pos = (track_offsets.start_sector + sector) * CBMDOS_SECTOR_SIZE;
+	const off64_t start_pos = (this_track.start_sector + sector) * CBMDOS_SECTOR_SIZE;
 
 	// Read the sector.
 	return file->seekAndRead(start_pos, buf, siz);
@@ -240,32 +298,52 @@ CBMDOS::CBMDOS(const IRpFilePtr &file)
 	const off64_t filesize = d->file->size();
 	switch (filesize) {
 		case (683 * CBMDOS_SECTOR_SIZE):
-			// 35-track image
+			// 35-track C1541 image
 			d->diskType = CBMDOSPrivate::DiskType::D64;
 			d->track_count = 35;
 			d->dir_track = 18;
+			d->track_offsets = d->track_offsets_C1541;
 			break;
 		case (683 * CBMDOS_SECTOR_SIZE) + 683:
-			// 35-track image, with error bytes
+			// 35-track C1541 image, with error bytes
 			d->diskType = CBMDOSPrivate::DiskType::D64;
 			d->track_count = 35;
 			d->dir_track = 18;
+			d->track_offsets = d->track_offsets_C1541;
 			d->err_bytes_count = 683;
 			d->err_bytes_offset = (683 * CBMDOS_SECTOR_SIZE);
 			break;
 		case (768 * CBMDOS_SECTOR_SIZE):
-			// 40-track image
+			// 40-track C1541 image
 			d->diskType = CBMDOSPrivate::DiskType::D64;
 			d->track_count = 40;
 			d->dir_track = 18;
+			d->track_offsets = d->track_offsets_C1541;
 			break;
 		case (768 * CBMDOS_SECTOR_SIZE) + 768:
-			// 40-track image, with error bytes
+			// 40-track C1541 image, with error bytes
 			d->diskType = CBMDOSPrivate::DiskType::D64;
 			d->track_count = 40;
 			d->dir_track = 18;
+			d->track_offsets = d->track_offsets_C1541;
 			d->err_bytes_count = 768;
 			d->err_bytes_offset = (768 * CBMDOS_SECTOR_SIZE);
+			break;
+		case (1366 * CBMDOS_SECTOR_SIZE):
+			// 70-track C1571 image
+			d->diskType = CBMDOSPrivate::DiskType::D71;
+			d->track_count = 70;
+			d->dir_track = 18;
+			d->track_offsets = d->track_offsets_C1571;
+			break;
+		case (1366 * CBMDOS_SECTOR_SIZE) + 1366:
+			// 70-track C1571 image, with error bytes
+			d->diskType = CBMDOSPrivate::DiskType::D71;
+			d->track_count = 70;
+			d->dir_track = 18;
+			d->track_offsets = d->track_offsets_C1571;
+			d->err_bytes_count = 1366;
+			d->err_bytes_offset = (1366 * CBMDOS_SECTOR_SIZE);
 			break;
 		default:
 			// Not supported.
@@ -325,8 +403,9 @@ const char *CBMDOS::systemName(unsigned int type) const
 		"CBMDOS::systemName() array index optimization needs to be updated.");
 
 	// TODO: More types.
-	static const char *const sysNames[1][4] = {
+	static const char *const sysNames[2][4] = {
 		{"Commodore 1541", "C1541", "C1541", nullptr},
+		{"Commodore 1571", "C1571", "C1571", nullptr},
 	};
 
 	unsigned int sysID = 0;

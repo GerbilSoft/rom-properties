@@ -43,6 +43,7 @@ application/x-virtual-boy-rom		# VirtualBoy
 
 # Media
 application/x-d64			# CBMDOS
+application/x-d71			# CBMDOS
 
 # Other
 application/x-object			# ELF
