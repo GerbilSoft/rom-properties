@@ -20,6 +20,8 @@ using namespace LibRpFile;
 using namespace LibRpText;
 
 // C++ STL classes
+#include <bitset>
+using std::bitset;
 using std::string;
 using std::vector;
 
@@ -363,16 +365,17 @@ int CBMDOS::loadFieldData(void)
 	// Read the directory.
 	// NOTE: Ignoring the directory location in the BAM sector,
 	// since it might be incorrect. Assuming 18/1.
-	// TODO: Prevent infinite loops by not processing the same directory sector multiple times.
+	bitset<256> sectors_read(1);	// Sector 0 is not allowed here, so mark it as 'read'.
 	vector<vector<string> > *const vv_dir = new vector<vector<string> >();
 	const unsigned int sector_count = d->track_offsets_C1541[d->dir_track].sector_count;
-	for (unsigned int i = 1; i != 0 && i < sector_count; ) {
+	for (unsigned int i = 1; i < sector_count && !sectors_read.test(i); ) {
 		cbmdos_dir_sector_t entries;
 		size_t size = d->read_sector(&entries, sizeof(entries), d->dir_track, i);
 		if (size != sizeof(entries))
 			break;
 
 		// Update the next sector entry before processing any entries.
+		sectors_read.set(i);
 		if (entries.entry[0].next.track == d->dir_track) {
 			i = entries.entry[0].next.sector;
 		} else {
