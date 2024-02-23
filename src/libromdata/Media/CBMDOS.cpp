@@ -331,7 +331,12 @@ int CBMDOS::loadFieldData(void)
 		return -EIO;
 	}
 
-	// TODO: PETSCII conversion.
+	// TODO: Selectable unshifted vs. shifted PETSCII conversion. Using unshifted for now.
+	// TODO: If there's too many U+FFFD characters, try shifted instead.
+		// ...if it's like that in Disk Name, use shifted for filenames.
+	// TODO: Default to shifted if this is a GEOS disk.
+	// TODO: Reverse video?
+	static const unsigned int codepage = CP_RP_PETSCII_Unshifted;
 
 	d->fields.reserve(4);	// Maximum of 4 fields.
 
@@ -344,15 +349,15 @@ int CBMDOS::loadFieldData(void)
 		// Disk name
 		remove_A0_padding(bam.disk_name, sizeof(bam.disk_name));
 		d->fields.addField_string(C_("CBMDOS", "Disk Name"),
-			latin1_to_utf8(bam.disk_name, sizeof(bam.disk_name)));
+			cpN_to_utf8(codepage, bam.disk_name, sizeof(bam.disk_name)));
 
 		// Disk ID
 		d->fields.addField_string(C_("CBMDOS", "Disk ID"),
-			latin1_to_utf8(bam.disk_id, sizeof(bam.disk_id)));
+			cpN_to_utf8(codepage, bam.disk_id, sizeof(bam.disk_id)));
 
 		// DOS Type
 		d->fields.addField_string(C_("CBMDOS", "DOS Type"),
-			latin1_to_utf8(bam.dos_type, sizeof(bam.dos_type)));
+			cpN_to_utf8(codepage, bam.dos_type, sizeof(bam.dos_type)));
 	}
 
 	// Read the directory.
@@ -395,9 +400,9 @@ int CBMDOS::loadFieldData(void)
 			snprintf(filesize, sizeof(filesize), "%u", le16_to_cpu(p_dir->sector_count));
 			p_list.emplace_back(filesize);
 
-			// Filename (TODO: Convert from PETSCII)
+			// Filename
 			remove_A0_padding(p_dir->filename, sizeof(p_dir->filename));
-			p_list.emplace_back(latin1_to_utf8(p_dir->filename, sizeof(p_dir->filename)));
+			p_list.emplace_back(cpN_to_utf8(codepage, p_dir->filename, sizeof(p_dir->filename)));
 
 			// File type
 			string s_file_type;
