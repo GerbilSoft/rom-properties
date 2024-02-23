@@ -47,7 +47,7 @@ public:
 	enum class DiskType {
 		Unknown = -1,
 
-		D64 = 0,	// C1541 disk image (standard version)
+		D64 = 0,		// C1541 disk image (standard version)
 
 		Max
 	};
@@ -60,6 +60,10 @@ public:
 	// Directory track
 	// Usually 18 for C1541 disks.
 	uint8_t dir_track;
+
+	// Error bytes info (for certain D64 format images)
+	unsigned int err_bytes_count;
+	unsigned int err_bytes_offset;
 
 public:
 	// Track offsets
@@ -140,6 +144,8 @@ CBMDOSPrivate::CBMDOSPrivate(const IRpFilePtr &file)
 	, diskType(DiskType::Unknown)
 	, track_count(0)
 	, dir_track(0)
+	, err_bytes_count(0)
+	, err_bytes_offset(0)
 {}
 
 /**
@@ -239,11 +245,27 @@ CBMDOS::CBMDOS(const IRpFilePtr &file)
 			d->track_count = 35;
 			d->dir_track = 18;
 			break;
+		case (683 * CBMDOS_SECTOR_SIZE) + 683:
+			// 35-track image, with error bytes
+			d->diskType = CBMDOSPrivate::DiskType::D64;
+			d->track_count = 35;
+			d->dir_track = 18;
+			d->err_bytes_count = 683;
+			d->err_bytes_offset = (683 * CBMDOS_SECTOR_SIZE);
+			break;
 		case (768 * CBMDOS_SECTOR_SIZE):
 			// 40-track image
 			d->diskType = CBMDOSPrivate::DiskType::D64;
 			d->track_count = 40;
 			d->dir_track = 18;
+			break;
+		case (768 * CBMDOS_SECTOR_SIZE) + 768:
+			// 40-track image, with error bytes
+			d->diskType = CBMDOSPrivate::DiskType::D64;
+			d->track_count = 40;
+			d->dir_track = 18;
+			d->err_bytes_count = 768;
+			d->err_bytes_offset = (768 * CBMDOS_SECTOR_SIZE);
 			break;
 		default:
 			// Not supported.
