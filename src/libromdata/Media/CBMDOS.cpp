@@ -705,6 +705,9 @@ int CBMDOS::loadFieldData(void)
 			cpN_to_utf8(CP_RP_PETSCII_Unshifted, dos_type, sizeof(c1541_bam.dos_type)));
 	}
 
+	// C1581 has an additional file type, "CBM".
+	const uint8_t max_file_type = (d->diskType == CBMDOSPrivate::DiskType::D81) ? 6 : 5;
+
 	// Read the directory.
 	// NOTE: Ignoring the directory location in the BAM sector,
 	// since it might be incorrect. Assuming dir_track/dir_first_sector.
@@ -759,13 +762,19 @@ int CBMDOS::loadFieldData(void)
 			}
 
 			// Actual file type
-			static const char file_type_tbl[16][4] = {
+			static const char file_type_tbl[6][4] = {
 				"DEL", "SEQ", "PRG", "USR",
-				"REL",   "5",   "6",   "7",
-				  "8",   "9",  "10",  "11",
-				 "12",  "13",  "14",  "15",
+				"REL", "CBM",
 			};
-			s_file_type += file_type_tbl[p_dir->file_type & CBMDOS_FileType_Mask];
+			const uint8_t file_type = (p_dir->file_type & CBMDOS_FileType_Mask);
+			if (file_type < max_file_type) {
+				s_file_type += file_type_tbl[file_type];
+			} else {
+				// Print the numeric value instead.
+				char buf[16];
+				snprintf(buf, sizeof(buf), "%u", file_type);
+				s_file_type += buf;
+			}
 
 			// Append the other flags, if set.
 			if (p_dir->file_type & CBMDOS_FileType_SaveReplace) {
