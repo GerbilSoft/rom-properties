@@ -46,6 +46,7 @@ application/x-d64			# CBMDOS
 application/x-d71			# CBMDOS
 application/x-d80			# CBMDOS
 application/x-d82			# CBMDOS
+application/x-d81			# CBMDOS
 
 # Other
 application/x-object			# ELF

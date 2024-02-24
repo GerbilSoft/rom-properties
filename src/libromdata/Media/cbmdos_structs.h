@@ -10,6 +10,7 @@
 // - http://unusedino.de/ec64/technical/formats/d64.html
 // - http://unusedino.de/ec64/technical/formats/d71.html
 // - http://unusedino.de/ec64/technical/formats/d80-d82.html
+// - http://unusedino.de/ec64/technical/formats/d81.html
 // - https://area51.dev/c64/cbmdos/autoboot/
 
 #pragma once
@@ -41,7 +42,7 @@ ASSERT_STRUCT(cbmdos_TS_ptr_t, 2);
 typedef struct _cbmdos_C1541_BAM_t {
 	cbmdos_TS_ptr_t next;	// $00: Location of the first directory sector
 	                        //      NOTE: Ignore this; it should always be 18/1.
-	uint8_t dos_version;	// $02: DOS version type. ('A' for C1541)
+	uint8_t dos_version;	// $02: DOS version type ('A' for C1541)
 	uint8_t double_sided;	// $03: [C1571] Double-sided flag (see CBMDOS_C1571_DoubleSided_e)
 	uint8_t bam[35*4];	// $04: BAM entries for each track.
 	                        //      4 bytes per track; 35 tracks.
@@ -138,7 +139,7 @@ typedef enum {
  */
 typedef struct _cbmdos_C8050_header_t {
 	cbmdos_TS_ptr_t bam0;	// $00: Location of the first BAM sector (38/0)
-	uint8_t dos_version;	// $02: DOS version type. ('C' for C8050/C8250)
+	uint8_t dos_version;	// $02: DOS version type ('C' for C8050/C8250)
 	uint8_t unused_03;	// $03: Reserved
 	uint8_t unused_04[2];	// $04: Unused
 	char disk_name[17];	// $06: Disk name (PETSCII, $A0-padded)
@@ -150,6 +151,23 @@ typedef struct _cbmdos_C8050_header_t {
 	uint8_t unused_21[223];	// $21: Unused
 } cbmdos_C8050_header_t;
 ASSERT_STRUCT(cbmdos_C8050_header_t, CBMDOS_SECTOR_SIZE);
+
+/**
+ * CBMDOS: C1581 header sector (40/0)
+ */
+typedef struct _cbmdos_C1581_header_t {
+	cbmdos_TS_ptr_t dir0;	// $00: Location of the first directory sector (40/3)
+	uint8_t dos_version;	// $02: DOS version type ('D' for C1581)
+	uint8_t unused_03;	// $03: $00
+	char disk_name[16];	// $04: Disk name (PETSCII, $A0-padded)
+	uint8_t unused_14[2];	// $14: $A0
+	char disk_id[2];	// $16: Disk ID (PETSCII)
+	uint8_t unused_18;	// $18: $A0
+	char dos_type[2];	// $19: DOS type (usually "2D")
+	uint8_t unused_1B[2];	// $1B: $A0
+	uint8_t unused_1D[227];	// $1D: Unused
+} cbmdos_C1581_header_t;
+ASSERT_STRUCT(cbmdos_C1581_header_t, CBMDOS_SECTOR_SIZE);
 
 /**
  * CBMDOS: C128 autoboot sector (1/0)

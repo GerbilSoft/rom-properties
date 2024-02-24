@@ -830,6 +830,12 @@
     <!-- FIXME: KDE Breeze doesn't have an icon for application/x-raw-disk-image . -->
     <glob pattern="*.d82"/>
   </mime-type>
+  <mime-type type="application/x-d81">
+    <comment>Commodore 1581 disk image</comment>
+    <sub-class-of type="application/x-raw-disk-image"/>
+    <!-- FIXME: KDE Breeze doesn't have an icon for application/x-raw-disk-image . -->
+    <glob pattern="*.d81"/>
+  </mime-type>
 
   <!-- *** Other *** -->
 
