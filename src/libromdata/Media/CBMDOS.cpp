@@ -128,6 +128,10 @@ public:
 	};
 	GCR_track_buffer_t *GCR_track_buffer;
 
+	// GCR track size (usually 7,928; we'll allow up to 8,192)
+	unsigned int GCR_track_size;
+#define GCR_MAX_TRACK_SIZE 8192
+
 public:
 	/**
 	 * Decode 5 GCR bytes into 4 data bytes.
@@ -373,13 +377,19 @@ void CBMDOSPrivate::init_track_offsets_C1581(void)
 void CBMDOSPrivate::init_track_offsets_G64(const cbmdos_G64_header_t *header)
 {
 	// Up to 42 tracks. (84 half-tracks)
-	// TODO: Actually use the track count from the header,
-	// as well as the maximum track size.
-	track_offsets.reserve(42);
+	// NOTE: We'll use the value from the header if it's <= 84.
+	// Odd counts will be rounded up.
+	assert(header->track_count != 0);
+	assert(header->track_count <= 84);
+	assert(header->track_count % 2 == 0);
+
+	int track_count = std::min((uint8_t)84U, header->track_count);
+	track_count = (track_count / 2) + (track_count % 2);
+	track_offsets.reserve(track_count);
 
 	uint8_t sectors_this_track = 21;
 	const uint32_t *src_offsets = header->track_offsets;
-	for (int i = 1-1; i <= 42-1; i++, src_offsets += 2) {
+	for (int i = 1-1; i <= track_count-1; i++, src_offsets += 2) {
 		if (*src_offsets == 0) {
 			// Finished reading tracks.
 			break;
@@ -417,6 +427,7 @@ CBMDOSPrivate::CBMDOSPrivate(const IRpFilePtr &file)
 	, err_bytes_count(0)
 	, err_bytes_offset(0)
 	, GCR_track_buffer(nullptr)
+	, GCR_track_size(0)
 {}
 
 CBMDOSPrivate::~CBMDOSPrivate()
@@ -505,10 +516,11 @@ int CBMDOSPrivate::read_GCR_track(uint8_t track)
 	// Get the track offsets.
 	const track_offsets_t this_track = track_offsets[track-1];
 
-	// Read the GCR track. (up to 7928 bytes)
-	// TODO: Use the size value from the G64 header.
-	uint8_t gcr_buf[7928];
-	size_t gcr_len = file->seekAndRead(this_track.start_offset, gcr_buf, sizeof(gcr_buf));
+	// Read the GCR track. (usually 7,928; we'll allow up to 8,192)
+	assert(GCR_track_size > 0);
+	assert(GCR_track_size <= GCR_MAX_TRACK_SIZE);
+	uint8_t gcr_buf[GCR_MAX_TRACK_SIZE];
+	size_t gcr_len = file->seekAndRead(this_track.start_offset, gcr_buf, GCR_track_size);
 	if (gcr_len == 0) {
 		// Unable to read any GCR data...
 		return -EIO;
@@ -814,6 +826,13 @@ CBMDOS::CBMDOS(const IRpFilePtr &file)
 			size_t size = d->file->seekAndRead(0, &header, sizeof(header));
 			if (size == sizeof(header) && !memcmp(header.magic, CBMDOS_G64_MAGIC, sizeof(header.magic))) {
 				// This is a G64 image.
+				d->GCR_track_size = le16_to_cpu(header.track_size);
+				if (d->GCR_track_size == 0 || d->GCR_track_size > GCR_MAX_TRACK_SIZE) {
+					// Track size is out of range.
+					d->file.reset();
+					return;
+				}
+
 				d->diskType = CBMDOSPrivate::DiskType::G64;
 				d->dir_track = 18;
 				d->dir_first_sector = 1;
