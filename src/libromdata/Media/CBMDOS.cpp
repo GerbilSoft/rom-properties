@@ -117,7 +117,7 @@ public:
 	void init_track_offsets_C1581(void);
 
 	/**
-	 * Initialize track offsets for C2040. (35 tracks)
+	 * Initialize track offsets for C2040. (35/40 tracks)
 	 */
 	void init_track_offsets_C2040(void);
 
@@ -379,7 +379,7 @@ void CBMDOSPrivate::init_track_offsets_C1581(void)
 }
 
 /**
- * Initialize track offsets for C2040. (35 tracks)
+ * Initialize track offsets for C2040. (35/40 tracks)
  */
 void CBMDOSPrivate::init_track_offsets_C2040(void)
 {
@@ -878,13 +878,30 @@ CBMDOS::CBMDOS(const IRpFilePtr &file)
 			d->init_track_offsets_C2040();
 			break;
 		case (690 * CBMDOS_SECTOR_SIZE) + 690:
-			// 35-track C1541 image, with error bytes
+			// 35-track C2040 image, with error bytes
 			d->diskType = CBMDOSPrivate::DiskType::D67;
 			d->dir_track = 18;
 			d->dir_first_sector = 1;
 			d->init_track_offsets_C2040();
 			d->err_bytes_count = 690;
 			d->err_bytes_offset = (690 * CBMDOS_SECTOR_SIZE);
+			break;
+
+		case (775 * CBMDOS_SECTOR_SIZE):
+			// 40-track C2040 image
+			d->diskType = CBMDOSPrivate::DiskType::D67;
+			d->dir_track = 18;
+			d->dir_first_sector = 1;
+			d->init_track_offsets_C2040();
+			break;
+		case (775 * CBMDOS_SECTOR_SIZE) + 690:
+			// 40-track C2040 image, with error bytes
+			d->diskType = CBMDOSPrivate::DiskType::D67;
+			d->dir_track = 18;
+			d->dir_first_sector = 1;
+			d->init_track_offsets_C2040();
+			d->err_bytes_count = 775;
+			d->err_bytes_offset = (775 * CBMDOS_SECTOR_SIZE);
 			break;
 
 		default: {
