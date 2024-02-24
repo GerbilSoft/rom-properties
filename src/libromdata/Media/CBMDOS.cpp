@@ -81,8 +81,9 @@ public:
 	// Track offsets
 	// Index is track number, minus one.
 	struct track_offsets_t {
-		uint8_t sector_count;	// Sectors per track
-		uint16_t start_sector;	// Starting sector
+		uint8_t sector_count;		// Sectors per track
+		uint8_t reserved[3];
+		unsigned int start_offset;	// Starting offset (in bytes)
 	};
 	rp::uvector<track_offsets_t> track_offsets;
 
@@ -166,35 +167,35 @@ void CBMDOSPrivate::init_track_offsets_C1541(void)
 	// - Tracks 18-24: 19 sectors
 	// - Tracks 25-30: 18 sectors
 	// - Tracks 31-40: 17 sectors
-	unsigned int sector = 0;
+	unsigned int offset = 0;
 	track_offsets.resize(40);
 
 	// Tracks 1-17: 21 sectors
 	for (unsigned int i = 1-1; i <= 17-1; i++) {
 		track_offsets[i].sector_count = 21;
-		track_offsets[i].start_sector = sector;
-		sector += 21;
+		track_offsets[i].start_offset = offset;
+		offset += (21 * CBMDOS_SECTOR_SIZE);
 	}
 
 	// Tracks 18-24: 19 sectors
 	for (unsigned int i = 18-1; i <= 24-1; i++) {
 		track_offsets[i].sector_count = 19;
-		track_offsets[i].start_sector = sector;
-		sector += 19;
+		track_offsets[i].start_offset = offset;
+		offset += (19 * CBMDOS_SECTOR_SIZE);
 	}
 
 	// Tracks 25-30: 18 sectors
 	for (unsigned int i = 25-1; i <= 30-1; i++) {
 		track_offsets[i].sector_count = 18;
-		track_offsets[i].start_sector = sector;
-		sector += 18;
+		track_offsets[i].start_offset = offset;
+		offset += (18 * CBMDOS_SECTOR_SIZE);
 	}
 
 	// Tracks 31-40: 17 sectors
 	for (unsigned int i = 31-1; i <= 40-1; i++) {
 		track_offsets[i].sector_count = 17;
-		track_offsets[i].start_sector = sector;
-		sector += 17;
+		track_offsets[i].start_offset = offset;
+		offset += (17 * CBMDOS_SECTOR_SIZE);
 	}
 }
 
@@ -216,7 +217,7 @@ void CBMDOSPrivate::init_track_offsets_C1571(void)
 	// - Tracks 53-59: 19 sectors
 	// - Tracks 60-65: 18 sectors
 	// - Tracks 66-70: 17 sectors
-	unsigned int sector = 0;
+	unsigned int offset = 0;
 	track_offsets.resize(70);
 
 	int track_base = -1;	// track numbering starts at 1
@@ -224,29 +225,29 @@ void CBMDOSPrivate::init_track_offsets_C1571(void)
 		// Tracks 1-17: 21 sectors
 		for (int i = 1 + track_base; i <= 17 + track_base; i++) {
 			track_offsets[i].sector_count = 21;
-			track_offsets[i].start_sector = sector;
-			sector += 21;
+			track_offsets[i].start_offset = offset;
+			offset += (21 * CBMDOS_SECTOR_SIZE);
 		}
 
 		// Tracks 18-24: 19 sectors
 		for (int i = 18 + track_base; i <= 24 + track_base; i++) {
 			track_offsets[i].sector_count = 19;
-			track_offsets[i].start_sector = sector;
-			sector += 19;
+			track_offsets[i].start_offset = offset;
+			offset += (19 * CBMDOS_SECTOR_SIZE);
 		}
 
 		// Tracks 25-30: 18 sectors
 		for (int i = 25 + track_base; i <= 30 + track_base; i++) {
 			track_offsets[i].sector_count = 18;
-			track_offsets[i].start_sector = sector;
-			sector += 18;
+			track_offsets[i].start_offset = offset;
+			offset += (18 * CBMDOS_SECTOR_SIZE);
 		}
 
 		// Tracks 31-35: 17 sectors
 		for (int i = 31 + track_base; i <= 35 + track_base; i++) {
 			track_offsets[i].sector_count = 17;
-			track_offsets[i].start_sector = sector;
-			sector += 17;
+			track_offsets[i].start_offset = offset;
+			offset += (17 * CBMDOS_SECTOR_SIZE);
 		}
 	}
 }
@@ -270,7 +271,7 @@ void CBMDOSPrivate::init_track_offsets_C8050(bool isC8250)
 	// - Tracks 117-130: 17 sectors
 	// - Tracks 131-141: 25 sectors
 	// - Tracks 142-154: 23 sectors
-	unsigned int sector = 0;
+	unsigned int offset = 0;
 	track_offsets.resize(isC8250 ? 154 : 77);
 
 	int track_base = -1;	// track numbering starts at 1
@@ -279,29 +280,29 @@ void CBMDOSPrivate::init_track_offsets_C8050(bool isC8250)
 		// Tracks 1-39: 29 sectors
 		for (int i = 1 + track_base; i <= 39 + track_base; i++) {
 			track_offsets[i].sector_count = 29;
-			track_offsets[i].start_sector = sector;
-			sector += 29;
+			track_offsets[i].start_offset = offset;
+			offset += (29 * CBMDOS_SECTOR_SIZE);
 		}
 
 		// Tracks 40-53: 27 sectors
 		for (int i = 40 + track_base; i <= 53 + track_base; i++) {
 			track_offsets[i].sector_count = 27;
-			track_offsets[i].start_sector = sector;
-			sector += 27;
+			track_offsets[i].start_offset = offset;
+			offset += (27 * CBMDOS_SECTOR_SIZE);
 		}
 
 		// Tracks 54-64: 25 sectors
 		for (int i = 54 + track_base; i <= 64 + track_base; i++) {
 			track_offsets[i].sector_count = 25;
-			track_offsets[i].start_sector = sector;
-			sector += 25;
+			track_offsets[i].start_offset = offset;
+			offset += (25 * CBMDOS_SECTOR_SIZE);
 		}
 
 		// Tracks 65-77: 23 sectors
 		for (int i = 65 + track_base; i <= 77 + track_base; i++) {
 			track_offsets[i].sector_count = 23;
-			track_offsets[i].start_sector = sector;
-			sector += 23;
+			track_offsets[i].start_offset = offset;
+			offset += (23 * CBMDOS_SECTOR_SIZE);
 		}
 	}
 }
@@ -312,13 +313,13 @@ void CBMDOSPrivate::init_track_offsets_C8050(bool isC8250)
 void CBMDOSPrivate::init_track_offsets_C1581(void)
 {
 	// C1581 has 80 tracks, with 40 sectors per track.
-	unsigned int sector = 0;
+	unsigned int offset = 0;
 	track_offsets.resize(80);
 
 	for (int i = 1-1; i <= 80-1; i++) {
 		track_offsets[i].sector_count = 40;
-		track_offsets[i].start_sector = sector;
-		sector += 40;
+		track_offsets[i].start_offset = offset;
+		offset += (40 * CBMDOS_SECTOR_SIZE);
 	}
 }
 
@@ -360,7 +361,7 @@ size_t CBMDOSPrivate::read_sector(void *buf, size_t siz, uint8_t track, uint8_t 
 
 	// Get the absolute starting address.
 	// TODO: Adjust for GCR formats.
-	const off64_t start_pos = (this_track.start_sector + sector) * CBMDOS_SECTOR_SIZE;
+	const off64_t start_pos = this_track.start_offset + (sector * CBMDOS_SECTOR_SIZE);
 
 	// Read the sector.
 	return file->seekAndRead(start_pos, buf, siz);
