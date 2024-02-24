@@ -836,6 +836,12 @@
     <!-- FIXME: KDE Breeze doesn't have an icon for application/x-raw-disk-image . -->
     <glob pattern="*.d81"/>
   </mime-type>
+  <mime-type type="application/x-d67">
+    <comment>Commodore 2040 disk image</comment>
+    <sub-class-of type="application/x-raw-disk-image"/>
+    <!-- FIXME: KDE Breeze doesn't have an icon for application/x-raw-disk-image . -->
+    <glob pattern="*.d67"/>
+  </mime-type>
   <mime-type type="application/x-g64">
     <comment>Commodore 1541 GCR disk image</comment>
     <sub-class-of type="application/x-raw-disk-image"/>

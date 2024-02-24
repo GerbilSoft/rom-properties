@@ -62,8 +62,9 @@ public:
 		D80 = 2,		// C8050 disk image (single-sided, standard version)
 		D82 = 3,		// C8250 disk image (double-sided, standard version)
 		D81 = 4,		// C1581 disk image (double-sided, standard version)
+		D67 = 5,		// C2040/C3030 disk image (single-sided, standard version)
 
-		G64 = 5,		// C1541 disk image (single-sided, GCR format)
+		G64 = 6,		// C1541 disk image (single-sided, GCR format)
 
 		Max
 	};
@@ -114,6 +115,11 @@ public:
 	 * Initialize track offsets for C8050. (80 tracks)
 	 */
 	void init_track_offsets_C1581(void);
+
+	/**
+	 * Initialize track offsets for C2040. (35 tracks)
+	 */
+	void init_track_offsets_C2040(void);
 
 	/**
 	 * Initialize tracks for a G64 (GCR-1541) image. (up to 42 tracks)
@@ -178,6 +184,7 @@ const char *const CBMDOSPrivate::exts[] = {
 	".d80",		// Standard C8050 disk image
 	".d82",		// Standard C8250 disk image
 	".d81",		// Standard C1581 disk image
+	".d67",		// Standard C2040 disk image
 
 	".g64", ".g64",	// GCR-encoded C1541 disk imgae
 
@@ -195,6 +202,7 @@ const char *const CBMDOSPrivate::mimeTypes[] = {
 	"application/x-d80",
 	"application/x-d82",
 	"application/x-d81",
+	"application/x-d67",
 
 	"applicaiton/x-g64",
 
@@ -367,6 +375,48 @@ void CBMDOSPrivate::init_track_offsets_C1581(void)
 		track_offsets[i].sector_count = 40;
 		track_offsets[i].start_offset = offset;
 		offset += (40 * CBMDOS_SECTOR_SIZE);
+	}
+}
+
+/**
+ * Initialize track offsets for C2040. (35 tracks)
+ */
+void CBMDOSPrivate::init_track_offsets_C2040(void)
+{
+	// C1541 zones:
+	// - Tracks  1-17: 21 sectors
+	// - Tracks 18-24: 20 sectors [DOS 1.x; later DOS uses 19 sectors]
+	// - Tracks 25-30: 18 sectors
+	// - Tracks 31-40: 17 sectors
+	unsigned int offset = 0;
+	track_offsets.resize(40);
+
+	// Tracks 1-17: 21 sectors
+	for (unsigned int i = 1-1; i <= 17-1; i++) {
+		track_offsets[i].sector_count = 21;
+		track_offsets[i].start_offset = offset;
+		offset += (21 * CBMDOS_SECTOR_SIZE);
+	}
+
+	// Tracks 18-24: 20 sectors [DOS 1.x; later DOS uses 19 sectors]
+	for (unsigned int i = 18-1; i <= 24-1; i++) {
+		track_offsets[i].sector_count = 20;
+		track_offsets[i].start_offset = offset;
+		offset += (20 * CBMDOS_SECTOR_SIZE);
+	}
+
+	// Tracks 25-30: 18 sectors
+	for (unsigned int i = 25-1; i <= 30-1; i++) {
+		track_offsets[i].sector_count = 18;
+		track_offsets[i].start_offset = offset;
+		offset += (18 * CBMDOS_SECTOR_SIZE);
+	}
+
+	// Tracks 31-40: 17 sectors
+	for (unsigned int i = 31-1; i <= 40-1; i++) {
+		track_offsets[i].sector_count = 17;
+		track_offsets[i].start_offset = offset;
+		offset += (17 * CBMDOS_SECTOR_SIZE);
 	}
 }
 
@@ -820,6 +870,23 @@ CBMDOS::CBMDOS(const IRpFilePtr &file)
 			d->err_bytes_offset = (3200 * CBMDOS_SECTOR_SIZE);
 			break;
 
+		case (690 * CBMDOS_SECTOR_SIZE):
+			// 35-track C2040 image
+			d->diskType = CBMDOSPrivate::DiskType::D67;
+			d->dir_track = 18;
+			d->dir_first_sector = 1;
+			d->init_track_offsets_C2040();
+			break;
+		case (690 * CBMDOS_SECTOR_SIZE) + 690:
+			// 35-track C1541 image, with error bytes
+			d->diskType = CBMDOSPrivate::DiskType::D67;
+			d->dir_track = 18;
+			d->dir_first_sector = 1;
+			d->init_track_offsets_C2040();
+			d->err_bytes_count = 690;
+			d->err_bytes_offset = (690 * CBMDOS_SECTOR_SIZE);
+			break;
+
 		default: {
 			// Check for G64.
 			cbmdos_G64_header_t header;
@@ -901,12 +968,13 @@ const char *CBMDOS::systemName(unsigned int type) const
 		"CBMDOS::systemName() array index optimization needs to be updated.");
 
 	// TODO: More types.
-	static const char *const sysNames[6][4] = {
+	static const char *const sysNames[7][4] = {
 		{"Commodore 1541", "C1541", "C1541", nullptr},
 		{"Commodore 1571", "C1571", "C1571", nullptr},
 		{"Commodore 8050", "C8050", "C8050", nullptr},
 		{"Commodore 8250", "C8250", "C8250", nullptr},
 		{"Commodore 1581", "C1581", "C1581", nullptr},
+		{"Commodore 2040", "C2040", "C2040", nullptr},
 
 		{"Commodore 1541 (GCR)", "C1541 (GCR)", "C1541 (GCR)", nullptr},
 	};
@@ -964,8 +1032,9 @@ int CBMDOS::loadFieldData(void)
 		switch (d->diskType) {
 			case CBMDOSPrivate::DiskType::D64:
 			case CBMDOSPrivate::DiskType::D71:
+			case CBMDOSPrivate::DiskType::D67:
 			case CBMDOSPrivate::DiskType::G64:
-				// C1541/C1571
+				// C1541, C1571, C2040
 				disk_name = c1541_bam.disk_name;
 				disk_name_len = static_cast<int>(sizeof(c1541_bam.disk_name));
 				disk_id = c1541_bam.disk_id;
