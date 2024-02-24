@@ -182,6 +182,8 @@ const char *const CBMDOSPrivate::exts[] = {
 	nullptr
 };
 const char *const CBMDOSPrivate::mimeTypes[] = {
+	// NOTE: Ordering matches the DiskType enum.
+
 	// Unofficial MIME types.
 	// TODO: Get these upstreamed on FreeDesktop.org.
 	"application/x-d64",
@@ -709,7 +711,6 @@ CBMDOS::CBMDOS(const IRpFilePtr &file)
 {
 	// This class handles disk images.
 	RP_D(CBMDOS);
-	d->mimeType = "application/x-d64";	// unofficial [TODO: Others?]
 	d->fileType = FileType::DiskImage;
 
 	if (!d->file) {
@@ -827,6 +828,7 @@ CBMDOS::CBMDOS(const IRpFilePtr &file)
 	}
 
 	// This is a valid CBM DOS disk image.
+	d->mimeType = d->mimeTypes[(int)d->diskType];
 	d->isValid = true;
 }
 
