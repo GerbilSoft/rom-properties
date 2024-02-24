@@ -11,6 +11,7 @@
 // - http://unusedino.de/ec64/technical/formats/d71.html
 // - http://unusedino.de/ec64/technical/formats/d80-d82.html
 // - http://unusedino.de/ec64/technical/formats/d81.html
+// - http://unusedino.de/ec64/technical/formats/g64.html
 // - https://area51.dev/c64/cbmdos/autoboot/
 
 #include "stdafx.h"
@@ -39,6 +40,7 @@ class CBMDOSPrivate final : public RomDataPrivate
 {
 public:
 	CBMDOSPrivate(const IRpFilePtr &file);
+	~CBMDOSPrivate();
 
 private:
 	typedef RomDataPrivate super;
@@ -61,6 +63,8 @@ public:
 		D82 = 3,		// C8250 disk image (double-sided, standard version)
 		D81 = 4,		// C1581 disk image (double-sided, standard version)
 
+		G64 = 5,		// C1541 disk image (single-sided, GCR format)
+
 		Max
 	};
 	DiskType diskType;
@@ -72,6 +76,9 @@ public:
 	// First directory sector
 	// Usually 1, but may be 3 for C1581.
 	uint8_t dir_first_sector;
+
+	// Currently cached G64 track. (0 == none)
+	uint8_t GCR_track_cache_number;
 
 	// Error bytes info (for certain D64/D71 format images)
 	unsigned int err_bytes_count;
@@ -108,7 +115,36 @@ public:
 	 */
 	void init_track_offsets_C1581(void);
 
+	/**
+	 * Initialize tracks for a G64 (GCR-1541) image. (up to 42 tracks)
+	 * @param header G64 header
+	 */
+	void init_track_offsets_G64(const cbmdos_G64_header_t *header);
+
 public:
+	// GCR track buffer (up to 21 sectors for .g64)
+	struct GCR_track_buffer_t {
+		uint8_t sectors[21][CBMDOS_SECTOR_SIZE];
+	};
+	GCR_track_buffer_t *GCR_track_buffer;
+
+public:
+	/**
+	 * Decode 5 GCR bytes into 4 data bytes.
+	 * @param data	[out] Output buffer for 4 data bytes
+	 * @param gcr	[in] Input buffer with 5 GCR bytes
+	 * @return 0 on success; non-zero on error.
+	 */
+	static int decode_GCR_bytes(uint8_t *data, const uint8_t *gcr);
+
+	/**
+	 * Read and decode a GCR track from the disk image.
+	 * This will be cached into GCR_track_buffer.
+	 * @param track	[in] Track# (starts at 1)
+	 * @return 0 on success; negative POSIX error code on error.
+	 */
+	int read_GCR_track(uint8_t track);
+
 	/**
 	 * Read a 256-byte sector given track/sector addresses.
 	 * @param buf		[out] Output buffer
@@ -138,6 +174,9 @@ const char *const CBMDOSPrivate::exts[] = {
 	".d80",		// Standard C8050 disk image
 	".d82",		// Standard C8250 disk image
 	".d81",		// Standard C1581 disk image
+
+	".g64", ".g64",	// GCR-encoded C1541 disk imgae
+
 	// TODO: More?
 
 	nullptr
@@ -150,6 +189,8 @@ const char *const CBMDOSPrivate::mimeTypes[] = {
 	"application/x-d80",
 	"application/x-d82",
 	"application/x-d81",
+
+	"applicaiton/x-g64",
 
 	nullptr
 };
@@ -323,14 +364,255 @@ void CBMDOSPrivate::init_track_offsets_C1581(void)
 	}
 }
 
+/**
+ * Initialize tracks for a G64 (GCR-1541) image. (up to 42 tracks)
+ * @param header G64 header
+ */
+void CBMDOSPrivate::init_track_offsets_G64(const cbmdos_G64_header_t *header)
+{
+	// Up to 42 tracks. (84 half-tracks)
+	// TODO: Actually use the track count from the header,
+	// as well as the maximum track size.
+	track_offsets.reserve(42);
+
+	uint8_t sectors_this_track = 21;
+	const uint32_t *src_offsets = header->track_offsets;
+	for (int i = 1-1; i <= 42-1; i++, src_offsets += 2) {
+		if (*src_offsets == 0) {
+			// Finished reading tracks.
+			break;
+		}
+
+		// Have we reached the next zone?
+		switch (i) {
+			case 18-1:
+				sectors_this_track = 19;
+				break;
+			case 25-1:
+				sectors_this_track = 18;
+				break;
+			case 31-1:
+				sectors_this_track = 17;
+				break;
+			default:
+				break;
+		}
+
+		// Save the track offset.
+		track_offsets_t this_track;
+		this_track.sector_count = sectors_this_track;
+		this_track.start_offset = le32_to_cpu(*src_offsets);
+		track_offsets.push_back(this_track);
+	}
+}
+
 CBMDOSPrivate::CBMDOSPrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
 	, diskType(DiskType::Unknown)
 	, dir_track(0)
 	, dir_first_sector(0)
+	, GCR_track_cache_number(0)
 	, err_bytes_count(0)
 	, err_bytes_offset(0)
+	, GCR_track_buffer(nullptr)
 {}
+
+CBMDOSPrivate::~CBMDOSPrivate()
+{
+	delete GCR_track_buffer;
+}
+
+/**
+ * Decode 5 GCR bytes into 4 data bytes.
+ * @param data	[out] Output buffer for 4 data bytes
+ * @param gcr	[in] Input buffer with 5 GCR bytes
+ * @return 0 on success; non-zero on error.
+ */
+int CBMDOSPrivate::decode_GCR_bytes(uint8_t *data, const uint8_t *gcr)
+{
+	// Decode five bytes into four.
+	// 11111222 22333334 44445555 56666677 77788888
+	// GCR decode map:
+	// - index: GCR 5-bit value
+	// - value: Decoded 4-bit value
+	// NOTE: Invalid values will be -1.
+	static const int8_t gcr_decode_map[32] = {
+		// GCR: 00000, 00001, 00010, 00011
+		-1, -1, -1, -1,
+
+		// GCR: 00100, 00101, 00110, 00111
+		-1, -1, -1, -1,
+
+		// GCR: 01000, 01001, 01010, 01011
+		-1, 8, 0, 1,
+
+		// GCR: 01100, 01101, 01110, 01111
+		-1, 12, 4, 5,
+
+		// GCR: 10000, 10001, 10010, 10011
+		-1, -1, 2, 3,
+
+		// GCR: 10100, 10101, 10110, 10111
+		-1, 0xF, 6, 7,
+
+		// GCR: 11000, 11001, 11010, 11011
+		-1, 9, 0xA, 0xB,
+
+		// GCR: 11100, 11101, 11110, 11111
+		-1, 0xD, 0xE, -1,
+	};
+
+	// Combine five GCR bytes into a uint64_t.
+	uint64_t gcr_data = ((uint64_t)gcr[0] << 32) |
+	                    ((uint64_t)gcr[1] << 24) |
+	                    ((uint64_t)gcr[2] << 16) |
+	                    ((uint64_t)gcr[3] <<  8) |
+	                     (uint64_t)gcr[4];
+
+	// Decode GCR quintets into nybbles, backwards.
+	for (int i = 3; i >= 0; i--) {
+		// TODO: Check for errors.
+		const uint8_t gcr_dec_2 = gcr_decode_map[gcr_data & 0x1FU] & 0x0FU;
+		gcr_data >>= 5;
+		const uint8_t gcr_dec_1 = gcr_decode_map[gcr_data & 0x1FU] & 0x0FU;
+		gcr_data >>= 5;
+
+		data[i] = (gcr_dec_1 << 4) | gcr_dec_2;
+	}
+
+	return 0;
+}
+
+/**
+ * Read and decode a GCR track from the disk image.
+ * This will be cached into GCR_track_buffer.
+ * @param track	[in] Track# (starts at 1)
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int CBMDOSPrivate::read_GCR_track(uint8_t track)
+{
+	assert(diskType == DiskType::G64);
+	if (diskType != DiskType::G64)
+		return -EIO;
+
+	assert(track != 0);
+	assert(track <= track_offsets.size());
+	if (track == 0 || track >= track_offsets.size())
+		return -EINVAL;
+
+	// Get the track offsets.
+	const track_offsets_t this_track = track_offsets[track-1];
+
+	// Read the GCR track. (up to 7928 bytes)
+	// TODO: Use the size value from the G64 header.
+	uint8_t gcr_buf[7928];
+	size_t gcr_len = file->seekAndRead(this_track.start_offset, gcr_buf, sizeof(gcr_buf));
+	if (gcr_len == 0) {
+		// Unable to read any GCR data...
+		return -EIO;
+	}
+
+	// Make sure the GCR track buffer is allocated.
+	if (!GCR_track_buffer) {
+		GCR_track_buffer = new GCR_track_buffer_t;
+	}
+
+	// NOTE: C1541 normally writes 40 '1' bits (FF FF FF FF FF),
+	// but the drive controller only requires 10 or 12 minimum.
+	// We'll look for 16 '1' bits (FF FF).
+	// (Monopoly.g64 has FF FF FF at 18/11.)
+
+	// Attempt to read the total number of sectors in this track.
+	// TODO: Return an error if we read less than what's expected.
+	const uint8_t *p = gcr_buf;
+	const uint8_t *const p_end = &gcr_buf[ARRAY_SIZE(gcr_buf)];
+	for (uint8_t sector = 0; sector < this_track.sector_count && p < p_end; sector++) {
+		// TODO: Read bits, not bytes. Most G64s are byte-aligned, though...
+
+		// C1541 GCR encodes four raw bytes into five encoded bytes.
+
+		// Find the header sync. (at least 16 '1' bits, FF FF)
+		uint8_t sync_count = 0;
+		for (; sync_count < 2 && p < p_end; p++) {
+			if (*p == 0xFF)
+				sync_count++;
+			else
+				sync_count = 0;
+		}
+		if (sync_count < 2) {
+			// Out of sync...
+			// TODO: Return an error.
+			break;
+		}
+
+		// Find the sector header. (10 GCR bytes, starts with $52 encoded)
+		bool found_header = false;
+		for (; p + 10 < p_end; p++) {
+			if (*p != 0x52)
+				continue;
+
+			// Found the sector header.
+			// TODO: Decode and verify?
+			p += 10;
+			found_header = true;
+			break;
+		}
+		if (!found_header) {
+			// Sector header not found...
+			// TODO: Return an error.
+			break;
+		}
+
+		// NOTE: There's supposed to be a header gap of 8 $55 bytes
+		// (or 9 $55 bytes from early 1540/1541 ROMs), but some
+		// disk images don't have it.
+
+		// Find the data sync. (at least 16 '1' bits, FF FF)
+		sync_count = 0;
+		for (; sync_count < 2 && p < p_end; p++) {
+			if (*p == 0xFF)
+				sync_count++;
+			else
+				sync_count = 0;
+		}
+		if (sync_count < 2) {
+			// Out of sync...
+			// TODO: Return an error.
+			break;
+		}
+
+		// Find the data block. (325 GCR bytes decodes to 260 data bytes, starts with $55 encoded)
+		bool found_data = false;
+		for (; p + 325 < p_end; p++) {
+			if (*p != 0x55)
+				continue;
+
+			// Found the data header.
+			// Decode the GCR data.
+			cbmdos_GCR_data_block_t data;
+			uint8_t *p_data = data.raw;
+			uint8_t *const p_data_end = &data.raw[ARRAY_SIZE(data.raw)];
+			for (; p_data < p_data_end; p += 5, p_data += 4) {
+				// TODO: Return errors?
+				decode_GCR_bytes(p_data, p);
+			}
+
+			// Copy the data into the track buffer.
+			memcpy(GCR_track_buffer->sectors[sector], data.data, CBMDOS_SECTOR_SIZE);
+
+			found_data = true;
+			break;
+		}
+		if (!found_data) {
+			// Data block not found...
+			// TODO: Return an error.
+			break;
+		}
+	}
+
+	// TODO
+	return 0;
+}
 
 /**
  * Read a 256-byte sector given track/sector addresses.
@@ -359,12 +641,31 @@ size_t CBMDOSPrivate::read_sector(void *buf, size_t siz, uint8_t track, uint8_t 
 	if (sector >= this_track.sector_count)
 		return 0;
 
-	// Get the absolute starting address.
-	// TODO: Adjust for GCR formats.
-	const off64_t start_pos = this_track.start_offset + (sector * CBMDOS_SECTOR_SIZE);
+	size_t ret;
+	switch (diskType) {
+		case DiskType::G64:
+			// GCR
+			if (track != GCR_track_cache_number) {
+				// Need to cache the track.
+				// TODO: Check for errors.
+				read_GCR_track(track);
+			}
 
-	// Read the sector.
-	return file->seekAndRead(start_pos, buf, siz);
+			// Copy from the GCR track cache.
+			memcpy(buf, &GCR_track_buffer->sectors[sector], siz);
+			ret = siz;
+			break;
+
+		default:
+			// Standard disk image
+			// Get the absolute starting address.
+			const off64_t start_pos = this_track.start_offset + (sector * CBMDOS_SECTOR_SIZE);
+
+			// Read the sector.
+			ret = file->seekAndRead(start_pos, buf, siz);
+			break;
+	}
+	return ret;
 }
 
 /**
@@ -506,10 +807,23 @@ CBMDOS::CBMDOS(const IRpFilePtr &file)
 			d->err_bytes_offset = (3200 * CBMDOS_SECTOR_SIZE);
 			break;
 
-		default:
-			// Not supported.
-			d->file.reset();
-			return;
+		default: {
+			// Check for G64.
+			cbmdos_G64_header_t header;
+			size_t size = d->file->seekAndRead(0, &header, sizeof(header));
+			if (size == sizeof(header) && !memcmp(header.magic, CBMDOS_G64_MAGIC, sizeof(header.magic))) {
+				// This is a G64 image.
+				d->diskType = CBMDOSPrivate::DiskType::G64;
+				d->dir_track = 18;
+				d->dir_first_sector = 1;
+				d->init_track_offsets_G64(&header);
+			} else {
+				// Not a G64 image.
+				d->file.reset();
+				return;
+			}
+			break;
+		}
 	}
 
 	// This is a valid CBM DOS disk image.
@@ -541,6 +855,8 @@ int CBMDOS::isRomSupported_static(const DetectInfo *info)
 			return 0;
 		}
 	}
+
+	// TODO: Check for "GCR-1541".
 
 	// No match.
 	return -1;
@@ -625,6 +941,7 @@ int CBMDOS::loadFieldData(void)
 		switch (d->diskType) {
 			case CBMDOSPrivate::DiskType::D64:
 			case CBMDOSPrivate::DiskType::D71:
+			case CBMDOSPrivate::DiskType::G64:
 				// C1541/C1571
 				disk_name = c1541_bam.disk_name;
 				disk_name_len = static_cast<int>(sizeof(c1541_bam.disk_name));

@@ -836,6 +836,16 @@
     <!-- FIXME: KDE Breeze doesn't have an icon for application/x-raw-disk-image . -->
     <glob pattern="*.d81"/>
   </mime-type>
+  <mime-type type="application/x-g64">
+    <comment>Commodore 1541 GCR disk image</comment>
+    <sub-class-of type="application/x-raw-disk-image"/>
+    <!-- FIXME: KDE Breeze doesn't have an icon for application/x-raw-disk-image . -->
+    <glob pattern="*.g64"/>
+    <glob pattern="*.g41"/>
+    <magic priority="50">
+      <match value="GCR-1541" type="string" offset="0"/>
+    </magic>
+  </mime-type>
 
   <!-- *** Other *** -->
 

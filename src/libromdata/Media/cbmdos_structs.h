@@ -11,6 +11,7 @@
 // - http://unusedino.de/ec64/technical/formats/d71.html
 // - http://unusedino.de/ec64/technical/formats/d80-d82.html
 // - http://unusedino.de/ec64/technical/formats/d81.html
+// - http://unusedino.de/ec64/technical/formats/g64.html
 // - https://area51.dev/c64/cbmdos/autoboot/
 
 #pragma once
@@ -183,6 +184,35 @@ typedef struct _cbmdos_C128_autoboot_sector_t {
 	                                //      - String 2: Filename of program to load. (can be empty)
 } cbmdos_C128_autoboot_sector_t;
 ASSERT_STRUCT(cbmdos_C128_autoboot_sector_t, CBMDOS_SECTOR_SIZE);
+
+/**
+ * CBMDOS: GCR-1541 header (for .g64 disk images)
+ *
+ * All fields are in little-endian.
+ */
+#define CBMDOS_G64_MAGIC "GCR-1541"
+typedef struct _cbmdos_G64_header_t {
+	char magic[8];			// $00: "GCR-1541"
+	uint8_t version;		// $08: G64 version (usually 0)
+	uint8_t track_count;		// $09: Number of tracks (usually 84; 42 full + half tracks)
+	uint16_t track_size;		// $0A: Size of each track, in bytes (usually 7928)
+	uint32_t track_offsets[84];	// $0B: Track offsets (absolute)
+} cbmdos_G64_header_t;
+ASSERT_STRUCT(cbmdos_G64_header_t, 348);
+
+/**
+ * CBMDOS: GCR data block (decoded)
+ */
+typedef union _cbmdos_GCR_data_block_t {
+	struct {
+		uint8_t id;		// $000: Data block ID ($07)
+		uint8_t data[CBMDOS_SECTOR_SIZE];	// $001: Data
+		uint8_t checksum;	// $101: Checksum (XOR of all data bytes)
+		uint8_t reserved_00[2];	// $102: 00 bytes to make the sector size a multiple of 5
+	};
+	uint8_t raw[260];
+} cbmdos_GCR_data_block_t;
+ASSERT_STRUCT(cbmdos_GCR_data_block_t, 260);
 
 #ifdef __cplusplus
 }
