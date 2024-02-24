@@ -30,6 +30,9 @@ using std::bitset;
 using std::string;
 using std::vector;
 
+// Uninitialized vector class
+#include "uvector.h"
+
 namespace LibRomData {
 
 class CBMDOSPrivate final : public RomDataPrivate
@@ -62,11 +65,6 @@ public:
 	};
 	DiskType diskType;
 
-	// Track count
-	// Usually 35 for a standard C1541 disk; can be up to 40.
-	// Usually 70 for a double-sided C1571 disk.
-	uint8_t track_count;
-
 	// Directory track
 	// Usually 18 for C1541/C1571 disks.
 	uint8_t dir_track;
@@ -86,7 +84,7 @@ public:
 		uint8_t sector_count;	// Sectors per track
 		uint16_t start_sector;	// Starting sector
 	};
-	track_offsets_t track_offsets[154];
+	rp::uvector<track_offsets_t> track_offsets;
 
 	/**
 	 * Initialize track offsets for C1541. (35/40 tracks)
@@ -169,6 +167,7 @@ void CBMDOSPrivate::init_track_offsets_C1541(void)
 	// - Tracks 25-30: 18 sectors
 	// - Tracks 31-40: 17 sectors
 	unsigned int sector = 0;
+	track_offsets.resize(40);
 
 	// Tracks 1-17: 21 sectors
 	for (unsigned int i = 1-1; i <= 17-1; i++) {
@@ -197,12 +196,6 @@ void CBMDOSPrivate::init_track_offsets_C1541(void)
 		track_offsets[i].start_sector = sector;
 		sector += 17;
 	}
-
-	// Zero out the rest of the tracks.
-	for (unsigned int i = 41-1; i < ARRAY_SIZE(track_offsets); i++) {
-		track_offsets[i].sector_count = 0;
-		track_offsets[i].start_sector = 0;
-	}
 }
 
 /**
@@ -224,6 +217,7 @@ void CBMDOSPrivate::init_track_offsets_C1571(void)
 	// - Tracks 60-65: 18 sectors
 	// - Tracks 66-70: 17 sectors
 	unsigned int sector = 0;
+	track_offsets.resize(70);
 
 	int track_base = -1;	// track numbering starts at 1
 	for (unsigned int side = 0; side < 2; side++, track_base += 35) {
@@ -255,12 +249,6 @@ void CBMDOSPrivate::init_track_offsets_C1571(void)
 			sector += 17;
 		}
 	}
-
-	// Zero out the rest of the tracks.
-	for (int i = track_base + 1; i < ARRAY_SIZE_I(track_offsets); i++) {
-		track_offsets[i].sector_count = 0;
-		track_offsets[i].start_sector = 0;
-	}
 }
 
 /**
@@ -283,6 +271,7 @@ void CBMDOSPrivate::init_track_offsets_C8050(bool isC8250)
 	// - Tracks 131-141: 25 sectors
 	// - Tracks 142-154: 23 sectors
 	unsigned int sector = 0;
+	track_offsets.resize(isC8250 ? 154 : 77);
 
 	int track_base = -1;	// track numbering starts at 1
 	const unsigned int sides = (isC8250 ? 2 : 1);
@@ -315,12 +304,6 @@ void CBMDOSPrivate::init_track_offsets_C8050(bool isC8250)
 			sector += 23;
 		}
 	}
-
-	// Zero out the rest of the tracks.
-	for (int i = track_base + 1; i < ARRAY_SIZE_I(track_offsets); i++) {
-		track_offsets[i].sector_count = 0;
-		track_offsets[i].start_sector = 0;
-	}
 }
 
 /**
@@ -330,23 +313,18 @@ void CBMDOSPrivate::init_track_offsets_C1581(void)
 {
 	// C1581 has 80 tracks, with 40 sectors per track.
 	unsigned int sector = 0;
+	track_offsets.resize(80);
+
 	for (int i = 1-1; i <= 80-1; i++) {
 		track_offsets[i].sector_count = 40;
 		track_offsets[i].start_sector = sector;
 		sector += 40;
-	}
-
-	// Zero out the rest of the tracks.
-	for (int i = 81-1; i < ARRAY_SIZE_I(track_offsets); i++) {
-		track_offsets[i].sector_count = 0;
-		track_offsets[i].start_sector = 0;
 	}
 }
 
 CBMDOSPrivate::CBMDOSPrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
 	, diskType(DiskType::Unknown)
-	, track_count(0)
 	, dir_track(0)
 	, dir_first_sector(0)
 	, err_bytes_count(0)
@@ -369,8 +347,8 @@ size_t CBMDOSPrivate::read_sector(void *buf, size_t siz, uint8_t track, uint8_t 
 		return 0;
 
 	assert(track != 0);
-	assert(track <= track_count);
-	if (track == 0 || track >= track_count)
+	assert(track <= track_offsets.size());
+	if (track == 0 || track >= track_offsets.size())
 		return 0;
 
 	// Get the track offsets.
@@ -447,7 +425,6 @@ CBMDOS::CBMDOS(const IRpFilePtr &file)
 		case (683 * CBMDOS_SECTOR_SIZE):
 			// 35-track C1541 image
 			d->diskType = CBMDOSPrivate::DiskType::D64;
-			d->track_count = 35;
 			d->dir_track = 18;
 			d->dir_first_sector = 1;
 			d->init_track_offsets_C1541();
@@ -455,7 +432,6 @@ CBMDOS::CBMDOS(const IRpFilePtr &file)
 		case (683 * CBMDOS_SECTOR_SIZE) + 683:
 			// 35-track C1541 image, with error bytes
 			d->diskType = CBMDOSPrivate::DiskType::D64;
-			d->track_count = 35;
 			d->dir_track = 18;
 			d->dir_first_sector = 1;
 			d->init_track_offsets_C1541();
@@ -466,7 +442,6 @@ CBMDOS::CBMDOS(const IRpFilePtr &file)
 		case (768 * CBMDOS_SECTOR_SIZE):
 			// 40-track C1541 image
 			d->diskType = CBMDOSPrivate::DiskType::D64;
-			d->track_count = 40;
 			d->dir_track = 18;
 			d->dir_first_sector = 1;
 			d->init_track_offsets_C1541();
@@ -474,7 +449,6 @@ CBMDOS::CBMDOS(const IRpFilePtr &file)
 		case (768 * CBMDOS_SECTOR_SIZE) + 768:
 			// 40-track C1541 image, with error bytes
 			d->diskType = CBMDOSPrivate::DiskType::D64;
-			d->track_count = 40;
 			d->dir_track = 18;
 			d->dir_first_sector = 1;
 			d->init_track_offsets_C1541();
@@ -485,7 +459,6 @@ CBMDOS::CBMDOS(const IRpFilePtr &file)
 		case (1366 * CBMDOS_SECTOR_SIZE):
 			// 70-track C1571 image
 			d->diskType = CBMDOSPrivate::DiskType::D71;
-			d->track_count = 70;
 			d->dir_track = 18;
 			d->dir_first_sector = 1;
 			d->init_track_offsets_C1571();
@@ -493,7 +466,6 @@ CBMDOS::CBMDOS(const IRpFilePtr &file)
 		case (1366 * CBMDOS_SECTOR_SIZE) + 1366:
 			// 70-track C1571 image, with error bytes
 			d->diskType = CBMDOSPrivate::DiskType::D71;
-			d->track_count = 70;
 			d->dir_track = 18;
 			d->dir_first_sector = 1;
 			d->init_track_offsets_C1571();
@@ -504,7 +476,6 @@ CBMDOS::CBMDOS(const IRpFilePtr &file)
 		case (2083 * CBMDOS_SECTOR_SIZE):
 			// 77-track C8050 image
 			d->diskType = CBMDOSPrivate::DiskType::D80;
-			d->track_count = 77;
 			d->dir_track = 39;
 			d->dir_first_sector = 1;
 			d->init_track_offsets_C8050(false);
@@ -512,7 +483,6 @@ CBMDOS::CBMDOS(const IRpFilePtr &file)
 		case (4166 * CBMDOS_SECTOR_SIZE):
 			// 154-track C8250 image
 			d->diskType = CBMDOSPrivate::DiskType::D82;
-			d->track_count = 154;
 			d->dir_track = 39;
 			d->dir_first_sector = 1;
 			d->init_track_offsets_C8050(true);
@@ -521,7 +491,6 @@ CBMDOS::CBMDOS(const IRpFilePtr &file)
 		case (3200 * CBMDOS_SECTOR_SIZE):
 			// 80-track C1581 image
 			d->diskType = CBMDOSPrivate::DiskType::D81;
-			d->track_count = 80;
 			d->dir_track = 40;
 			d->dir_first_sector = 3;
 			d->init_track_offsets_C1581();
@@ -529,7 +498,6 @@ CBMDOS::CBMDOS(const IRpFilePtr &file)
 		case (3200 * CBMDOS_SECTOR_SIZE) + 3200:
 			// 80-track C1581 image, with error bytes
 			d->diskType = CBMDOSPrivate::DiskType::D81;
-			d->track_count = 80;
 			d->dir_track = 40;
 			d->dir_first_sector = 3;
 			d->init_track_offsets_C1581();
