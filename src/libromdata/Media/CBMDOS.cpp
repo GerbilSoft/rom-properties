@@ -1146,7 +1146,14 @@ int CBMDOS::loadFieldData(void)
 
 			// Filename
 			remove_A0_padding(p_dir->filename, sizeof(p_dir->filename));
-			p_list.emplace_back(cpN_to_utf8(codepage, p_dir->filename, sizeof(p_dir->filename)));
+			string s_filename = cpN_to_utf8(codepage, p_dir->filename, sizeof(p_dir->filename));
+			if (codepage == CP_RP_PETSCII_Unshifted && s_filename.find(uFFFD) != string::npos) {
+				// File name has invalid characters when using Unshifted.
+				// Try again with Shifted.
+				codepage = CP_RP_PETSCII_Shifted;
+				s_filename = cpN_to_utf8(codepage, p_dir->filename, sizeof(p_dir->filename));
+			}
+			p_list.emplace_back(std::move(s_filename));
 
 			// File type
 			string s_file_type;
