@@ -1138,7 +1138,7 @@ int CBMDOS::loadFieldData(void)
 		return static_cast<int>(d->fields.count());
 	}
 
-	const unsigned int sector_count = d->track_offsets[d->dir_track].sector_count;
+	const unsigned int sector_count = d->track_offsets[d->dir_track-1].sector_count;
 	for (unsigned int i = d->dir_first_sector; i < sector_count && !sectors_read.test(i); ) {
 		cbmdos_dir_sector_t entries;
 		size_t size = d->read_sector(&entries, sizeof(entries), d->dir_track, i);
