@@ -22,11 +22,11 @@
 
 // Other rom-properties libraries
 #include "libi18n/i18n.h"
+#include "librptexture/decoder/ImageDecoder_C64.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;
-using LibRpTexture::rp_image;
-using LibRpTexture::rp_image_ptr;
+using namespace LibRpTexture;
 
 // C++ STL classes
 #include <bitset>
@@ -1200,31 +1200,7 @@ int CBMDOS::loadFieldData(void)
 				cbmdos_GEOS_info_block_t geos_info;
 				size = d->read_sector(&geos_info, sizeof(geos_info), p_dir->geos.info_addr.track ,p_dir->geos.info_addr.sector);
 				if (size == sizeof(geos_info)) {
-					// TODO: Split icon code into librptexture.
-					icon = std::make_shared<rp_image>(24, 21, rp_image::Format::CI8);
-
-					// Set the palette.
-					uint32_t *const palette = icon->palette();
-					memset(palette, 0, icon->palette_len() * sizeof(uint32_t));
-					palette[0] = 0xFFFFFFFF;	// background (normally "transparent")
-					palette[1] = 0xFF000000;	// foreground
-
-					// Convert the icon data.
-					// - Source: 24x21 monochrome (3 bytes per line)
-					// - Destination: 24x21 8bpp
-					const int stride_diff = icon->stride() - icon->width();
-					uint8_t *p_dest = static_cast<uint8_t*>(icon->bits());
-					const uint8_t *p_src = geos_info.icon;
-					for (unsigned int y = 21; y > 0; y--) {
-						for (unsigned int x = 24; x > 0; x -= 8, p_src++) {
-							// NOTE: Left pixel is the MSB.
-							uint8_t src = *p_src;
-							for (unsigned int bit = 0; bit < 8; bit++, src <<= 1, p_dest++) {
-								*p_dest = ((src & 0x80) ? 1 : 0);
-							}
-						}
-						p_dest += stride_diff;
-					}
+					icon = ImageDecoder::fromC64_SingleColor_Sprite(geos_info.icon, sizeof(geos_info.icon));
 				}
 			}
 

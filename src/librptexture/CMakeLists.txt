@@ -36,6 +36,7 @@ SET(${PROJECT_NAME}_SRCS
 	decoder/ImageDecoder_DC.cpp
 	decoder/ImageDecoder_ETC1.cpp
 	decoder/ImageDecoder_BC7.cpp
+	decoder/ImageDecoder_C64.cpp
 
 	decoder/PixelConversion.cpp
 
@@ -77,6 +78,7 @@ SET(${PROJECT_NAME}_H
 	decoder/ImageDecoder_DC.hpp
 	decoder/ImageDecoder_ETC1.hpp
 	decoder/ImageDecoder_BC7.hpp
+	decoder/ImageDecoder_C64.hpp
 	decoder/PixelConversion.hpp
 
 	fileformat/FileFormat.hpp
