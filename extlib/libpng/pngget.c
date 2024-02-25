@@ -1111,11 +1111,12 @@ png_get_tRNS(png_const_structrp png_ptr, png_inforp info_ptr,
     png_bytep *trans_alpha, int *num_trans, png_color_16p *trans_color)
 {
    png_uint_32 retval = 0;
+
+   png_debug1(1, "in %s retrieval function", "tRNS");
+
    if (png_ptr != NULL && info_ptr != NULL &&
        (info_ptr->valid & PNG_INFO_tRNS) != 0)
    {
-      png_debug1(1, "in %s retrieval function", "tRNS");
-
       if (info_ptr->color_type == PNG_COLOR_TYPE_PALETTE)
       {
          if (trans_alpha != NULL)

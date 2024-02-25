@@ -29,7 +29,7 @@ ENDIF(UNIX AND NOT APPLE)
 
 set(PNGLIB_MAJOR 1)
 set(PNGLIB_MINOR 6)
-set(PNGLIB_REVISION 41)
+set(PNGLIB_REVISION 43)
 set(PNGLIB_SUBREVISION 0)
 #set(PNGLIB_SUBREVISION "git")
 set(PNGLIB_VERSION ${PNGLIB_MAJOR}.${PNGLIB_MINOR}.${PNGLIB_REVISION})
@@ -77,9 +77,18 @@ if(APPLE)
 endif()
 
 # Allow the users to switch on/off the auxiliary build and test artifacts.
-# NOTE: These artifacts are NOT part of libpng proper, and are subject to change at any time.
+# These artifacts are NOT part of libpng proper, and are subject to change
+# at any time.
 option(PNG_TESTS "Build the libpng tests" ON)
-option(PNG_TOOLS "Build the libpng tools" ON)
+
+# Same as above, but for the third-party tools.
+# Although these tools are targetted at development environments only,
+# the users are allowed to override the option to build by default.
+if (ANDROID OR IOS)
+  option(PNG_TOOLS "Build the libpng tools" OFF)
+else()
+  option(PNG_TOOLS "Build the libpng tools" ON)
+endif()
 
 # Maintain backwards compatibility with the deprecated option PNG_EXECUTABLES.
 option(PNG_EXECUTABLES "[Deprecated; please use PNG_TOOLS]" ON)
@@ -109,7 +118,6 @@ ENDIF(0) # rom-properties
 if(NOT PNG_BUILD_ZLIB)
   find_package(ZLIB REQUIRED)
 elseif(POLICY CMP0074)
-  # TODO: Remove the policy check if CMake version 3.12 or greater becomes the minimum required.
   if("x${ZLIB_ROOT}" STREQUAL "x")
     message(DEPRECATION
             "The option PNG_BUILD_ZLIB has been deprecated; please use ZLIB_ROOT instead")
@@ -298,6 +306,35 @@ if(TARGET_ARCH MATCHES "^(mipsel|mips64el)")
   endif()
 endif()
 
+# Set definitions and sources for LoongArch.
+if(TARGET_ARCH MATCHES "^(loongarch)")
+  include(CheckCCompilerFlag)
+  set(PNG_LOONGARCH_LSX_POSSIBLE_VALUES on off)
+  set(PNG_LOONGARCH_LSX "on"
+      CACHE STRING "Enable LOONGARCH_LSX optimizations: on|off; on is default")
+  set_property(CACHE PNG_LOONGARCH_LSX
+               PROPERTY STRINGS ${PNG_LOONGARCH_LSX_POSSIBLE_VALUES})
+  list(FIND PNG_LOONGARCH_LSX_POSSIBLE_VALUES ${PNG_LOONGARCH_LSX} index)
+  if(index EQUAL -1)
+    message(FATAL_ERROR "PNG_LOONGARCH_LSX must be one of [${PNG_LOONGARCH_LSX_POSSIBLE_VALUES}]")
+  elseif(NOT PNG_LOONGARCH_LSX STREQUAL "off")
+    CHECK_C_COMPILER_FLAG("-mlsx" COMPILER_SUPPORTS_LSX)
+    if(COMPILER_SUPPORTS_LSX)
+      set(libpng_loongarch_sources
+          loongarch/loongarch_lsx_init.c
+          loongarch/filter_lsx_intrinsics.c)
+      set_source_files_properties(${libpng_loongarch_sources}
+                                  PROPERTIES
+                                  COMPILE_FLAGS "-mlsx")
+      add_definitions(-DPNG_LOONGARCH_LSX_OPT=1)
+    else()
+      message(FATAL_ERROR "Compiler does not support -mlsx option")
+    endif()
+  else()
+    add_definitions(-DPNG_LOONGARCH_LSX_OPT=0)
+  endif()
+endif()
+
 else(PNG_HARDWARE_OPTIMIZATIONS)
 
 # Set definitions and sources for ARM.
@@ -318,6 +355,11 @@ endif()
 # Set definitions and sources for MIPS.
 if(TARGET_ARCH MATCHES "^(mipsel|mips64el)")
   add_definitions(-DPNG_MIPS_MSA_OPT=0)
+endif()
+
+# Set definitions and sources for LoongArch.
+if(TARGET_ARCH MATCHES "^(loongarch)")
+  add_definitions(-DPNG_LOONGARCH_LSX_OPT=0)
 endif()
 
 endif(PNG_HARDWARE_OPTIMIZATIONS)
@@ -359,7 +401,15 @@ int main(void) { return 0; }
   file(REMOVE "${CMAKE_CURRENT_BINARY_DIR}/conftest.map")
 endif()
 
-find_program(AWK NAMES gawk awk)
+# Find an AWK language processor.
+# Start with specific AWK implementations like gawk and nawk, which are
+# known to work with our scripts, then fall back to the system awk.
+find_program(AWK NAMES gawk nawk awk)
+if(AWK)
+  message(STATUS "Found AWK program: ${AWK}")
+else()
+  message(STATUS "Could not find an AWK-compatible program")
+endif()
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
@@ -401,7 +451,7 @@ else()
                        COMMAND "${CMAKE_COMMAND}"
                                "-DINPUT=${_GC_INPUT}"
                                "-DOUTPUT=${_GC_OUTPUT}"
-                               -P "${CMAKE_CURRENT_BINARY_DIR}/genchk.cmake"
+                               -P "${CMAKE_CURRENT_BINARY_DIR}/scripts/cmake/genchk.cmake"
                        DEPENDS "${_GC_INPUT}" ${_GC_DEPENDS}
                        WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
   endfunction()
@@ -424,7 +474,7 @@ else()
                        COMMAND "${CMAKE_COMMAND}"
                                "-DINPUT=${_GO_INPUT}"
                                "-DOUTPUT=${_GO_OUTPUT}"
-                               -P "${CMAKE_CURRENT_BINARY_DIR}/genout.cmake"
+                               -P "${CMAKE_CURRENT_BINARY_DIR}/scripts/cmake/genout.cmake"
                        DEPENDS "${_GO_INPUT}" ${_GO_DEPENDS}
                        WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
   endfunction()
@@ -443,7 +493,7 @@ else()
     add_custom_command(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${_GSO_OUTPUT}"
                        COMMAND "${CMAKE_COMMAND}"
                                "-DOUTPUT=${_GSO_OUTPUT}"
-                               -P "${CMAKE_CURRENT_BINARY_DIR}/gensrc.cmake"
+                               -P "${CMAKE_CURRENT_BINARY_DIR}/scripts/cmake/gensrc.cmake"
                        DEPENDS ${_GSO_DEPENDS}
                        WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
   endfunction()
@@ -573,7 +623,7 @@ else()
   add_custom_target(png_genprebuilt
                     COMMAND "${CMAKE_COMMAND}"
                             "-DOUTPUT=scripts/pnglibconf.h.prebuilt"
-                            -P "${CMAKE_CURRENT_BINARY_DIR}/gensrc.cmake"
+                            -P "${CMAKE_CURRENT_BINARY_DIR}/scripts/cmake/gensrc.cmake"
                     WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
 
   # A single target handles generation of all generated files.
@@ -630,6 +680,7 @@ set(libpng_sources
     ${libpng_intel_sources}
     ${libpng_mips_sources}
     ${libpng_powerpc_sources}
+    ${libpng_loongarch_sources}
 )
 set(pngtest_sources
     pngtest.c
@@ -734,10 +785,9 @@ if(PNG_SHARED)
       )
   endif()
   target_include_directories(png_shared
-                             PUBLIC
-                               $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/libpng${PNGLIB_ABI_VERSION}>
-                               $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-                             PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+                             PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
+  target_include_directories(png_shared SYSTEM
+                             INTERFACE $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/libpng${PNGLIB_ABI_VERSION}>)
   target_link_libraries(png_shared PUBLIC ZLIB::ZLIB ${M_LIBRARY})
 endif()
 
@@ -753,16 +803,21 @@ if(PNG_STATIC)
                         OUTPUT_NAME "${PNG_STATIC_OUTPUT_NAME}"
                         DEBUG_POSTFIX "${PNG_DEBUG_POSTFIX}")
   target_include_directories(png_static
-                             PUBLIC
-                               $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/libpng${PNGLIB_ABI_VERSION}>
-                               $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-                             PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+                             PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
+  target_include_directories(png_static SYSTEM
+                             INTERFACE $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/libpng${PNGLIB_ABI_VERSION}>)
   target_link_libraries(png_static PUBLIC ZLIB::ZLIB ${M_LIBRARY})
   # rom-properties: Set the MSVC debug path.
   SET_MSVC_DEBUG_PATH(png_static)
 endif()
 
-if(PNG_FRAMEWORK AND APPLE)
+if(PNG_FRAMEWORK AND NOT APPLE)
+  message(AUTHOR_WARNING
+          "Setting PNG_FRAMEWORK to OFF, as it only applies to Apple systems")
+  set(PNG_FRAMEWORK OFF)
+endif()
+
+if(PNG_FRAMEWORK)
   add_library(png_framework SHARED ${libpng_sources})
   add_dependencies(png_framework png_genfiles)
   list(APPEND PNG_LIBRARY_TARGETS png_framework)
@@ -779,10 +834,9 @@ if(PNG_FRAMEWORK AND APPLE)
   # Avoid CMake's implicit compile definition "-Dpng_framework_EXPORTS".
   set_target_properties(png_framework PROPERTIES DEFINE_SYMBOL "")
   target_include_directories(png_framework
-                             PUBLIC
-                               $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/libpng${PNGLIB_ABI_VERSION}>
-                               $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-                             PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+                             PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
+  target_include_directories(png_framework SYSTEM
+                             INTERFACE $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/libpng${PNGLIB_ABI_VERSION}>)
   target_link_libraries(png_framework PUBLIC ZLIB::ZLIB ${M_LIBRARY})
 endif()
 
@@ -1045,13 +1099,13 @@ endfunction()
 
 # Create source generation scripts.
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/scripts/cmake/genchk.cmake.in
-               ${CMAKE_CURRENT_BINARY_DIR}/genchk.cmake
+               ${CMAKE_CURRENT_BINARY_DIR}/scripts/cmake/genchk.cmake
                @ONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/scripts/cmake/genout.cmake.in
-               ${CMAKE_CURRENT_BINARY_DIR}/genout.cmake
+               ${CMAKE_CURRENT_BINARY_DIR}/scripts/cmake/genout.cmake
                @ONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/scripts/cmake/gensrc.cmake.in
-               ${CMAKE_CURRENT_BINARY_DIR}/gensrc.cmake
+               ${CMAKE_CURRENT_BINARY_DIR}/scripts/cmake/gensrc.cmake
                @ONLY)
 
 # libpng is a library so default to 'lib'

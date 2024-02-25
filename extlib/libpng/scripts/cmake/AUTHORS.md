@@ -5,8 +5,12 @@ Author List
 -----------
 
  * Alex Gaynor
+ * Alexey Petruchik
  * Andreas Franek
+ * Andrew Hundt
  * B. Scott Michel
+ * Benjamin Buch
+ * Bernd Kuhls
  * Cameron Cawley
  * Christian Ehrlicher
  * Christopher Sean Morrison
@@ -14,7 +18,9 @@ Author List
  * Clifford Yapp
  * Clinton Ingram
  * Cosmin Truta
+ * Dan Rosser
  * David Callu
+ * Gianfranco Costamagna
  * Gleb Mazovetskiy
  * Glenn Randers-Pehrson
  * Gunther Nikl
@@ -24,6 +30,7 @@ Author List
  * Kyle Bentley
  * Martin Storsjö
  * Owen Rudge
+ * Philip Lowman
  * Roger Leigh
  * Roger Lowman
  * Sam Serrels
