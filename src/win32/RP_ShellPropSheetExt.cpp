@@ -1028,11 +1028,13 @@ int RP_ShellPropSheetExt_Private::initListData(_In_ HWND hWndTab,
 
 		const SIZE sizeListIconOrig = {px, px};
 		SIZE sizeListIconPhys = {px, px};
+		float factor = 1.0f;
 		bool resizeNeeded = false;
 		if (nl_max >= 2) {
 			// Two or more newlines.
 			// Add half of the icon size per newline over 1.
 			sizeListIconPhys.cy += ((px/2) * (nl_max - 1));
+			factor = (float)sizeListIconPhys.cy / (float)px;
 			resizeNeeded = true;
 		}
 
@@ -1087,10 +1089,8 @@ int RP_ShellPropSheetExt_Private::initListData(_In_ HWND hWndTab,
 				}
 
 				// Resize the icon, if necessary.
-				// FIXME: If not resized, C64 monochrome icons show up as completely white.
-				if (resizeNeeded || icon->width() != sizeListIconPhys.cx || icon->height() != sizeListIconPhys.cy) {
-					// FIXME: Xbox 360 achievement icons are "too big"? (resized() doesn't scale...)
-					SIZE szResize = sizeListIconPhys;
+				if (resizeNeeded) {
+					SIZE szResize = {icon->width(), (LONG)(icon->height() * factor)};
 
 					// NOTE: We still need to specify a background color,
 					// since the ListView highlight won't show up on
@@ -1110,7 +1110,16 @@ int RP_ShellPropSheetExt_Private::initListData(_In_ HWND hWndTab,
 				}
 
 				int iImage = -1;
-				HBITMAP hbmIcon = RpImageWin32::toHBITMAP_alpha(icon);
+				HBITMAP hbmIcon;
+				// FIXME: If not rescaled, C64 monochrome icons show up as completely white.
+				if (icon->width() == sizeListIconPhys.cx || icon->height() == sizeListIconPhys.cy) {
+					// No rescaling is necessary.
+					hbmIcon = RpImageWin32::toHBITMAP_alpha(icon);
+				} else {
+					// Icon needs to be rescaled.
+					// TODO: Use nearest-neighbor scaling if it's an integer multiple?
+					hbmIcon = RpImageWin32::toHBITMAP_alpha(icon, sizeListIconPhys, false);
+				}
 				assert(hbmIcon != nullptr);
 				if (hbmIcon) {
 					const int idx = ImageList_Add(himl, hbmIcon, nullptr);
