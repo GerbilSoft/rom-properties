@@ -799,130 +799,127 @@ CBMDOS::CBMDOS(const IRpFilePtr &file)
 		return;
 	}
 
-	// NOTE: There's no magic number here.
-	// Assuming this image is valid if it has the correct filesize
-	// for either a 35-track or 40-track C1541 disk image.
-	// TODO: Other format images, and maybe validate the directory track?
-	// TODO: Use isRomSupported_static() for the diskType.
+	// Read the disk header for G64 detection.
+	cbmdos_G64_header_t g64_header;
+	size_t size = d->file->read(&g64_header, sizeof(g64_header));
+	if (size < sizeof(g64_header)) {
+		d->file.reset();
+		return;
+	}
+
+	// Check if this disk image is supported.
 	const off64_t filesize = d->file->size();
-	switch (filesize) {
-		case (683 * CBMDOS_SECTOR_SIZE) + 683:
-			// 35-track C1541 image, with error bytes
-			d->err_bytes_count = 683;
-			d->err_bytes_offset = (683 * CBMDOS_SECTOR_SIZE);
-			// fall-through
-		case (683 * CBMDOS_SECTOR_SIZE):
-			// 35-track C1541 image
-			d->diskType = CBMDOSPrivate::DiskType::D64;
+	const DetectInfo info = {
+		{0, static_cast<uint32_t>(size), reinterpret_cast<const uint8_t*>(&g64_header)},
+		nullptr,	// ext (TODO: May be needed?)
+		filesize	// szFile
+	};
+	d->diskType = static_cast<CBMDOSPrivate::DiskType>(isRomSupported_static(&info));
+	if (d->diskType <= CBMDOSPrivate::DiskType::Unknown) {
+		d->file.reset();
+		return;
+	}
+
+	// TODO: Other format images, and maybe validate the directory track?
+	switch (d->diskType) {
+		default:
+			// Not supported...
+			d->file.reset();
+			return;
+
+		case CBMDOSPrivate::DiskType::D64:
+			// C1541 image (35 or 40 tracks, single-sided)
 			d->dir_track = 18;
 			d->dir_first_sector = 1;
 			d->init_track_offsets_C1541();
+
+			// Check for error bytes.
+			if (filesize == (683 * CBMDOS_SECTOR_SIZE) + 683) {
+				// 35-track C1541 image, with error bytes
+				d->err_bytes_count = 683;
+				d->err_bytes_offset = (683 * CBMDOS_SECTOR_SIZE);
+			} else if (filesize == (768 * CBMDOS_SECTOR_SIZE) + 768) {
+				// 40-track C1541 image, with error bytes
+				d->err_bytes_count = 768;
+				d->err_bytes_offset = (768 * CBMDOS_SECTOR_SIZE);
+			}
 			break;
 
-		case (768 * CBMDOS_SECTOR_SIZE) + 768:
-			// 40-track C1541 image, with error bytes
-			d->err_bytes_count = 768;
-			d->err_bytes_offset = (768 * CBMDOS_SECTOR_SIZE);
-			// fall-through
-		case (768 * CBMDOS_SECTOR_SIZE):
-			// 40-track C1541 image
-			d->diskType = CBMDOSPrivate::DiskType::D64;
-			d->dir_track = 18;
-			d->dir_first_sector = 1;
-			d->init_track_offsets_C1541();
-			break;
-
-		case (1366 * CBMDOS_SECTOR_SIZE) + 1366:
-			// 70-track C1571 image, with error bytes
-			d->err_bytes_count = 1366;
-			d->err_bytes_offset = (1366 * CBMDOS_SECTOR_SIZE);
-			// fall-through
-		case (1366 * CBMDOS_SECTOR_SIZE):
-			// 70-track C1571 image
-			d->diskType = CBMDOSPrivate::DiskType::D71;
+		case CBMDOSPrivate::DiskType::D71:
+			// C1571 image (35 tracks, double-sided; 70 tracks total)
 			d->dir_track = 18;
 			d->dir_first_sector = 1;
 			d->init_track_offsets_C1571();
+
+			// Check for error bytes.
+			if (filesize == (1366 * CBMDOS_SECTOR_SIZE) + 1366) {
+				// 70-track C1571 image, with error bytes
+				d->err_bytes_count = 1366;
+				d->err_bytes_offset = (1366 * CBMDOS_SECTOR_SIZE);
+			}
 			break;
 
-		case (2083 * CBMDOS_SECTOR_SIZE):
-			// 77-track C8050 image
-			d->diskType = CBMDOSPrivate::DiskType::D80;
+		case CBMDOSPrivate::DiskType::D80:
+			// C8050 image (77 tracks, single-sided)
 			d->dir_track = 39;
 			d->dir_first_sector = 1;
 			d->init_track_offsets_C8050(false);
 			break;
-		case (4166 * CBMDOS_SECTOR_SIZE):
-			// 154-track C8250 image
-			d->diskType = CBMDOSPrivate::DiskType::D82;
+		case CBMDOSPrivate::DiskType::D82:
+			// C8250 image (77 tracks, double-sided; 154 tracks total)
 			d->dir_track = 39;
 			d->dir_first_sector = 1;
 			d->init_track_offsets_C8050(true);
 			break;
 
-		case (3200 * CBMDOS_SECTOR_SIZE) + 3200:
-			// 80-track C1581 image, with error bytes
-			d->err_bytes_count = 3200;
-			d->err_bytes_offset = (3200 * CBMDOS_SECTOR_SIZE);
-			// fall-through
-		case (3200 * CBMDOS_SECTOR_SIZE):
-			// 80-track C1581 image
-			d->diskType = CBMDOSPrivate::DiskType::D81;
+		case CBMDOSPrivate::DiskType::D81:
+			// C1581 image (80 tracks, double-sided)
 			d->dir_track = 40;
 			d->dir_first_sector = 3;
 			d->init_track_offsets_C1581();
+
+			// Check for error bytes.
+			if (filesize == (3200 * CBMDOS_SECTOR_SIZE) + 3200) {
+				// 80-track C1581 image, with error bytes
+				d->err_bytes_count = 3200;
+				d->err_bytes_offset = (3200 * CBMDOS_SECTOR_SIZE);
+			}
 			break;
 
-		case (690 * CBMDOS_SECTOR_SIZE) + 690:
-			// 35-track C2040 image, with error bytes
-			d->err_bytes_count = 690;
-			d->err_bytes_offset = (690 * CBMDOS_SECTOR_SIZE);
-			// fall-through
-		case (690 * CBMDOS_SECTOR_SIZE):
-			// 35-track C2040 image
-			d->diskType = CBMDOSPrivate::DiskType::D67;
+		case CBMDOSPrivate::DiskType::D67:
+			// C2040 image (35 or 40 tracks, single-sided)
+			// NOTE: DOS 1.x; similar to C1541, except speed zone 2 has 20 sectors instead of 19.
 			d->dir_track = 18;
 			d->dir_first_sector = 1;
 			d->init_track_offsets_C2040();
+
+			// Check for error bytes.
+			if (filesize == (690 * CBMDOS_SECTOR_SIZE) + 690) {
+				// 35-track C2040 image, with error bytes
+				d->err_bytes_count = 690;
+				d->err_bytes_offset = (690 * CBMDOS_SECTOR_SIZE);
+			} else if (filesize == (775 * CBMDOS_SECTOR_SIZE) + 775) {
+				// 40-track C2040 image, with error bytes
+				d->err_bytes_count = 775;
+				d->err_bytes_offset = (775 * CBMDOS_SECTOR_SIZE);
+			}
 			break;
 
-		case (775 * CBMDOS_SECTOR_SIZE) + 775:
-			// 40-track C2040 image, with error bytes
-			d->err_bytes_count = 775;
-			d->err_bytes_offset = (775 * CBMDOS_SECTOR_SIZE);
-			// fall-through
-		case (775 * CBMDOS_SECTOR_SIZE):
-			// 40-track C2040 image
-			d->diskType = CBMDOSPrivate::DiskType::D67;
-			d->dir_track = 18;
-			d->dir_first_sector = 1;
-			d->init_track_offsets_C2040();
-			break;
+		case CBMDOSPrivate::DiskType::G64:
+			// C1541 image, GCR-encoded.
+			// TODO: Save g64_header?
 
-		default: {
-			// Check for G64.
-			cbmdos_G64_header_t header;
-			size_t size = d->file->seekAndRead(0, &header, sizeof(header));
-			if (size == sizeof(header) && !memcmp(header.magic, CBMDOS_G64_MAGIC, sizeof(header.magic))) {
-				// This is a G64 image.
-				d->GCR_track_size = le16_to_cpu(header.track_size);
-				if (d->GCR_track_size == 0 || d->GCR_track_size > GCR_MAX_TRACK_SIZE) {
-					// Track size is out of range.
-					d->file.reset();
-					return;
-				}
-
-				d->diskType = CBMDOSPrivate::DiskType::G64;
-				d->dir_track = 18;
-				d->dir_first_sector = 1;
-				d->init_track_offsets_G64(&header);
-			} else {
-				// Not a G64 image.
+			d->GCR_track_size = le16_to_cpu(g64_header.track_size);
+			if (d->GCR_track_size == 0 || d->GCR_track_size > GCR_MAX_TRACK_SIZE) {
+				// Track size is out of range.
 				d->file.reset();
 				return;
 			}
+
+			d->dir_track = 18;
+			d->dir_first_sector = 1;
+			d->init_track_offsets_G64(&g64_header);
 			break;
-		}
 	}
 
 	// This is a valid CBM DOS disk image.
@@ -939,24 +936,53 @@ CBMDOS::CBMDOS(const IRpFilePtr &file)
  */
 int CBMDOS::isRomSupported_static(const DetectInfo *info)
 {
-	// NOTE: Only checking for supported file extensions.
-	assert(info->ext != nullptr);
-	if (!info->ext) {
-		// No file extension specified...
-		return -1;
+	// NOTE: Most of the Dxx images have no magic number.
+	// Assuming this image is valid if it has the correct filesize
+	// for one of the supported disk image formats.
+	switch (info->szFile) {
+		case (683 * CBMDOS_SECTOR_SIZE) + 683:
+		case (683 * CBMDOS_SECTOR_SIZE):
+		case (768 * CBMDOS_SECTOR_SIZE) + 768:
+		case (768 * CBMDOS_SECTOR_SIZE):
+			// C1541 disk image
+			return static_cast<int>(CBMDOSPrivate::DiskType::D64);
+
+		case (1366 * CBMDOS_SECTOR_SIZE) + 1366:
+		case (1366 * CBMDOS_SECTOR_SIZE):
+			// C1571 disk image (double-sided)
+			return static_cast<int>(CBMDOSPrivate::DiskType::D71);
+
+		case (2083 * CBMDOS_SECTOR_SIZE):
+			// C8050 disk image (single-sided)
+			return static_cast<int>(CBMDOSPrivate::DiskType::D80);
+		case (4166 * CBMDOS_SECTOR_SIZE):
+			// C8250 disk image (double-sided)
+			return static_cast<int>(CBMDOSPrivate::DiskType::D82);
+
+		case (3200 * CBMDOS_SECTOR_SIZE) + 3200:
+		case (3200 * CBMDOS_SECTOR_SIZE):
+			// C1581 disk image
+			return static_cast<int>(CBMDOSPrivate::DiskType::D81);
+
+		case (690 * CBMDOS_SECTOR_SIZE) + 690:
+		case (690 * CBMDOS_SECTOR_SIZE):
+		case (775 * CBMDOS_SECTOR_SIZE) + 775:
+		case (775 * CBMDOS_SECTOR_SIZE):
+			// C2040 disk image
+			return static_cast<int>(CBMDOSPrivate::DiskType::D67);
+
+		default:
+			break;
 	}
 
-	// TODO: Also check file sizes?
-	for (const char *const *ext = CBMDOSPrivate::exts;
-	     *ext != nullptr; ext++)
-	{
-		if (!strcasecmp(info->ext, *ext)) {
-			// Found a match.
-			return 0;
+	// Check for G64.
+	if (info->header.addr == 0 && info->header.size >= sizeof(cbmdos_G64_header_t)) {
+		const cbmdos_G64_header_t *pHeader = reinterpret_cast<const cbmdos_G64_header_t*>(info->header.pData);
+		if (!memcmp(pHeader->magic, CBMDOS_G64_MAGIC, sizeof(pHeader->magic))) {
+			// This is a G64 image.
+			return static_cast<int>(CBMDOSPrivate::DiskType::G64);
 		}
 	}
-
-	// TODO: Check for "GCR-1541".
 
 	// No match.
 	return -1;
