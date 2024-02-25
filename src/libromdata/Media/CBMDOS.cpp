@@ -137,7 +137,7 @@ public:
 
 	// GCR track size (usually 7,928; we'll allow up to 8,192)
 	unsigned int GCR_track_size;
-#define GCR_MAX_TRACK_SIZE 8192
+#define GCR_MAX_TRACK_SIZE 8192U
 
 public:
 	/**
@@ -562,7 +562,7 @@ int CBMDOSPrivate::read_GCR_track(uint8_t track)
 	assert(GCR_track_size > 0);
 	assert(GCR_track_size <= GCR_MAX_TRACK_SIZE);
 	uint8_t gcr_buf[GCR_MAX_TRACK_SIZE];
-	size_t gcr_len = file->seekAndRead(this_track.start_offset, gcr_buf, GCR_track_size);
+	size_t gcr_len = file->seekAndRead(this_track.start_offset, gcr_buf, std::min(GCR_track_size, GCR_MAX_TRACK_SIZE));
 	if (gcr_len == 0) {
 		// Unable to read any GCR data...
 		return -EIO;
