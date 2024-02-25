@@ -806,6 +806,11 @@ CBMDOS::CBMDOS(const IRpFilePtr &file)
 	// TODO: Use isRomSupported_static() for the diskType.
 	const off64_t filesize = d->file->size();
 	switch (filesize) {
+		case (683 * CBMDOS_SECTOR_SIZE) + 683:
+			// 35-track C1541 image, with error bytes
+			d->err_bytes_count = 683;
+			d->err_bytes_offset = (683 * CBMDOS_SECTOR_SIZE);
+			// fall-through
 		case (683 * CBMDOS_SECTOR_SIZE):
 			// 35-track C1541 image
 			d->diskType = CBMDOSPrivate::DiskType::D64;
@@ -813,16 +818,12 @@ CBMDOS::CBMDOS(const IRpFilePtr &file)
 			d->dir_first_sector = 1;
 			d->init_track_offsets_C1541();
 			break;
-		case (683 * CBMDOS_SECTOR_SIZE) + 683:
-			// 35-track C1541 image, with error bytes
-			d->diskType = CBMDOSPrivate::DiskType::D64;
-			d->dir_track = 18;
-			d->dir_first_sector = 1;
-			d->init_track_offsets_C1541();
-			d->err_bytes_count = 683;
-			d->err_bytes_offset = (683 * CBMDOS_SECTOR_SIZE);
-			break;
 
+		case (768 * CBMDOS_SECTOR_SIZE) + 768:
+			// 40-track C1541 image, with error bytes
+			d->err_bytes_count = 768;
+			d->err_bytes_offset = (768 * CBMDOS_SECTOR_SIZE);
+			// fall-through
 		case (768 * CBMDOS_SECTOR_SIZE):
 			// 40-track C1541 image
 			d->diskType = CBMDOSPrivate::DiskType::D64;
@@ -830,31 +831,18 @@ CBMDOS::CBMDOS(const IRpFilePtr &file)
 			d->dir_first_sector = 1;
 			d->init_track_offsets_C1541();
 			break;
-		case (768 * CBMDOS_SECTOR_SIZE) + 768:
-			// 40-track C1541 image, with error bytes
-			d->diskType = CBMDOSPrivate::DiskType::D64;
-			d->dir_track = 18;
-			d->dir_first_sector = 1;
-			d->init_track_offsets_C1541();
-			d->err_bytes_count = 768;
-			d->err_bytes_offset = (768 * CBMDOS_SECTOR_SIZE);
-			break;
 
+		case (1366 * CBMDOS_SECTOR_SIZE) + 1366:
+			// 70-track C1571 image, with error bytes
+			d->err_bytes_count = 1366;
+			d->err_bytes_offset = (1366 * CBMDOS_SECTOR_SIZE);
+			// fall-through
 		case (1366 * CBMDOS_SECTOR_SIZE):
 			// 70-track C1571 image
 			d->diskType = CBMDOSPrivate::DiskType::D71;
 			d->dir_track = 18;
 			d->dir_first_sector = 1;
 			d->init_track_offsets_C1571();
-			break;
-		case (1366 * CBMDOS_SECTOR_SIZE) + 1366:
-			// 70-track C1571 image, with error bytes
-			d->diskType = CBMDOSPrivate::DiskType::D71;
-			d->dir_track = 18;
-			d->dir_first_sector = 1;
-			d->init_track_offsets_C1571();
-			d->err_bytes_count = 1366;
-			d->err_bytes_offset = (1366 * CBMDOS_SECTOR_SIZE);
 			break;
 
 		case (2083 * CBMDOS_SECTOR_SIZE):
@@ -872,6 +860,11 @@ CBMDOS::CBMDOS(const IRpFilePtr &file)
 			d->init_track_offsets_C8050(true);
 			break;
 
+		case (3200 * CBMDOS_SECTOR_SIZE) + 3200:
+			// 80-track C1581 image, with error bytes
+			d->err_bytes_count = 3200;
+			d->err_bytes_offset = (3200 * CBMDOS_SECTOR_SIZE);
+			// fall-through
 		case (3200 * CBMDOS_SECTOR_SIZE):
 			// 80-track C1581 image
 			d->diskType = CBMDOSPrivate::DiskType::D81;
@@ -879,16 +872,12 @@ CBMDOS::CBMDOS(const IRpFilePtr &file)
 			d->dir_first_sector = 3;
 			d->init_track_offsets_C1581();
 			break;
-		case (3200 * CBMDOS_SECTOR_SIZE) + 3200:
-			// 80-track C1581 image, with error bytes
-			d->diskType = CBMDOSPrivate::DiskType::D81;
-			d->dir_track = 40;
-			d->dir_first_sector = 3;
-			d->init_track_offsets_C1581();
-			d->err_bytes_count = 3200;
-			d->err_bytes_offset = (3200 * CBMDOS_SECTOR_SIZE);
-			break;
 
+		case (690 * CBMDOS_SECTOR_SIZE) + 690:
+			// 35-track C2040 image, with error bytes
+			d->err_bytes_count = 690;
+			d->err_bytes_offset = (690 * CBMDOS_SECTOR_SIZE);
+			// fall-through
 		case (690 * CBMDOS_SECTOR_SIZE):
 			// 35-track C2040 image
 			d->diskType = CBMDOSPrivate::DiskType::D67;
@@ -896,31 +885,18 @@ CBMDOS::CBMDOS(const IRpFilePtr &file)
 			d->dir_first_sector = 1;
 			d->init_track_offsets_C2040();
 			break;
-		case (690 * CBMDOS_SECTOR_SIZE) + 690:
-			// 35-track C2040 image, with error bytes
-			d->diskType = CBMDOSPrivate::DiskType::D67;
-			d->dir_track = 18;
-			d->dir_first_sector = 1;
-			d->init_track_offsets_C2040();
-			d->err_bytes_count = 690;
-			d->err_bytes_offset = (690 * CBMDOS_SECTOR_SIZE);
-			break;
 
+		case (775 * CBMDOS_SECTOR_SIZE) + 690:
+			// 40-track C2040 image, with error bytes
+			d->err_bytes_count = 775;
+			d->err_bytes_offset = (775 * CBMDOS_SECTOR_SIZE);
+			// fall-through
 		case (775 * CBMDOS_SECTOR_SIZE):
 			// 40-track C2040 image
 			d->diskType = CBMDOSPrivate::DiskType::D67;
 			d->dir_track = 18;
 			d->dir_first_sector = 1;
 			d->init_track_offsets_C2040();
-			break;
-		case (775 * CBMDOS_SECTOR_SIZE) + 690:
-			// 40-track C2040 image, with error bytes
-			d->diskType = CBMDOSPrivate::DiskType::D67;
-			d->dir_track = 18;
-			d->dir_first_sector = 1;
-			d->init_track_offsets_C2040();
-			d->err_bytes_count = 775;
-			d->err_bytes_offset = (775 * CBMDOS_SECTOR_SIZE);
 			break;
 
 		default: {
