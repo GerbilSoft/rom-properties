@@ -799,6 +799,9 @@ CBMDOS::CBMDOS(const IRpFilePtr &file)
 		return;
 	}
 
+	// Seek to the beginning of the file.
+	d->file->rewind();
+
 	// Read the disk header for G64 detection.
 	cbmdos_G64_header_t g64_header;
 	size_t size = d->file->read(&g64_header, sizeof(g64_header));
