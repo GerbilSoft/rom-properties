@@ -2634,7 +2634,7 @@ msgstr ""
 #: ../src/libromdata/Other/NintendoBadge.cpp:701
 msgctxt "RomData"
 msgid "Filename"
-msgstr ""
+msgstr "Nume de fișier"
 
 #: ../src/libromdata/Console/DreamcastSave.cpp:1389
 msgctxt "DreamcastSave"
@@ -6480,7 +6480,7 @@ msgstr ""
 #: ../src/libromdata/Media/CBMDOS.cpp:1231
 msgctxt "CBMDOS|Directory"
 msgid "Filename"
-msgstr ""
+msgstr "Nume de fișier"
 
 #: ../src/libromdata/Media/CBMDOS.cpp:1232
 msgctxt "CBMDOS|Directory"
