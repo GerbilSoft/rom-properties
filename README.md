@@ -232,12 +232,18 @@ button.
 | Super NES SPC Format          |       Yes      |    Yes   |       N/A       |       N/A      |
 | Video Game Music              |       Yes      |    Yes   |       N/A       |       N/A      |
 
+### Media Formats
+
+|             System             | Properties Tab | Metadata | Internal Images | External Scans |
+|:------------------------------:|:--------------:|:--------:|:---------------:|:--------------:|
+| Commodore DOS Disk Images      |       Yes      |    No    |       N/A       |       N/A      |
+| ISO-9660 Disc Images           |       Yes      |   Yes    |        No       |       N/A      |
+
 ### Other
 
 |             System             | Properties Tab | Metadata | Internal Images | External Scans |
 |:------------------------------:|:--------------:|:--------:|:---------------:|:--------------:|
 | Executable and Linkable Format |       Yes      |    No    |       N/A       |       N/A      |
-| ISO-9660 Disc Images           |       Yes      |   Yes    |        No       |       N/A      |
 | PUC Lua binaries               |       Yes      |    No    |       N/A       |       N/A      |
 | Mach-O Binaries                |       Yes      |    No    |       N/A       |       N/A      |
 | Nintendo amiibo                |       Yes      |    No    |       N/A       |      Media     |
@@ -259,6 +265,8 @@ Notes:
 * Windows executables may contain multiple icon sizes. Support for Windows icons
   will be added once support for multiple image sizes is added.
 * Sega 8-bit only supports ROM images with a "TMR SEGA" header.
+* Commodore DOS currently includes the 2040, 3040, 4040, 8050, 8250, 1540/1541,
+  1571, and 1581 disk drives, in D64, D71, D80, D82, D81, G64, and G71 formats.
 
 A configuration program, `rp-config`, is available to configure rom-properties
 using a graphical interface. This program allows you to configure which images
