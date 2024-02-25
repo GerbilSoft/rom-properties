@@ -14,6 +14,7 @@
 // - http://unusedino.de/ec64/technical/formats/g64.html
 // - https://area51.dev/c64/cbmdos/autoboot/
 // - http://unusedino.de/ec64/technical/formats/geos.html
+// - https://sourceforge.net/p/vice-emu/patches/122/ (for .g71)
 
 #pragma once
 
@@ -233,18 +234,22 @@ ASSERT_STRUCT(cbmdos_C128_autoboot_sector_t, CBMDOS_SECTOR_SIZE);
 
 /**
  * CBMDOS: GCR-1541 header (for .g64 disk images)
+ * Also used for GCR-1571 (for .g71 disk images)
  *
  * All fields are in little-endian.
  */
 #define CBMDOS_G64_MAGIC "GCR-1541"
+#define CBMDOS_G71_MAGIC "GCR-1571"
 typedef struct _cbmdos_G64_header_t {
-	char magic[8];			// $00: "GCR-1541"
+	char magic[8];			// $00: "GCR-1541" or "GCR-1571"
 	uint8_t version;		// $08: G64 version (usually 0)
-	uint8_t track_count;		// $09: Number of tracks (usually 84; 42 full + half tracks)
+	uint8_t track_count;		// $09: Number of tracks
+	                                //      For G64: Usually  84 (42 full + half tracks)
+	                                //      For G71: Usually 168 (84 full + half tracks)
 	uint16_t track_size;		// $0A: Size of each track, in bytes (usually 7928)
-	uint32_t track_offsets[84];	// $0B: Track offsets (absolute)
+	uint32_t track_offsets[168];	// $0B: Track offsets (absolute)
 } cbmdos_G64_header_t;
-ASSERT_STRUCT(cbmdos_G64_header_t, 348);
+ASSERT_STRUCT(cbmdos_G64_header_t, 684);
 
 /**
  * CBMDOS: GCR data block (decoded)

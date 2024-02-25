@@ -14,6 +14,7 @@
 // - http://unusedino.de/ec64/technical/formats/g64.html
 // - https://area51.dev/c64/cbmdos/autoboot/
 // - http://unusedino.de/ec64/technical/formats/geos.html
+// - https://sourceforge.net/p/vice-emu/patches/122/ (for .g71)
 
 #include "stdafx.h"
 #include "CBMDOS.hpp"
@@ -68,6 +69,7 @@ public:
 		D67 = 5,		// C2040/C3030 disk image (single-sided, standard version)
 
 		G64 = 6,		// C1541 disk image (single-sided, GCR format)
+		G71 = 7,		// C1571 disk image (double-sided, GCR format)
 
 		Max
 	};
@@ -81,7 +83,7 @@ public:
 	// Usually 1, but may be 3 for C1581.
 	uint8_t dir_first_sector;
 
-	// Currently cached G64 track. (0 == none)
+	// Currently cached G64/G71 track. (0 == none)
 	uint8_t GCR_track_cache_number;
 
 	// Error bytes info (for certain D64/D71 format images)
@@ -125,13 +127,13 @@ public:
 	void init_track_offsets_C2040(void);
 
 	/**
-	 * Initialize tracks for a G64 (GCR-1541) image. (up to 42 tracks)
-	 * @param header G64 header
+	 * Initialize tracks for a G64/G71 (GCR-1541/GCR-1571) image. (up to 42 or 84 tracks)
+	 * @param header G64/G71 header
 	 */
 	void init_track_offsets_G64(const cbmdos_G64_header_t *header);
 
 public:
-	// GCR track buffer (up to 21 sectors for .g64)
+	// GCR track buffer (up to 21 sectors for .g64/.g71)
 	struct GCR_track_buffer_t {
 		uint8_t sectors[21][CBMDOS_SECTOR_SIZE];
 	};
@@ -190,6 +192,7 @@ const char *const CBMDOSPrivate::exts[] = {
 	".d67",		// Standard C2040 disk image
 
 	".g64", ".g41",	// GCR-encoded C1541 disk imgae
+	".g71",		// GCR-encoded C1571 disk image
 
 	// TODO: More?
 
@@ -208,6 +211,7 @@ const char *const CBMDOSPrivate::mimeTypes[] = {
 	"application/x-d67",
 
 	"application/x-g64",
+	"application/x-g71",
 
 	nullptr
 };
@@ -424,19 +428,28 @@ void CBMDOSPrivate::init_track_offsets_C2040(void)
 }
 
 /**
- * Initialize tracks for a G64 (GCR-1541) image. (up to 42 tracks)
- * @param header G64 header
+ * Initialize tracks for a G64/G71 (GCR-1541/GCR-1571) image. (up to 42 or 84 tracks)
+ * @param header G64/G71 header
  */
 void CBMDOSPrivate::init_track_offsets_G64(const cbmdos_G64_header_t *header)
 {
-	// Up to 42 tracks. (84 half-tracks)
+	// G64: Up to 42 tracks. (84 half-tracks)
+	// G71: Up to 84 tracks. (168 half-tracks)
 	// NOTE: We'll use the value from the header if it's <= 84.
 	// Odd counts will be rounded up.
 	assert(header->track_count != 0);
-	assert(header->track_count <= 84);
 	assert(header->track_count % 2 == 0);
 
-	int track_count = std::min((uint8_t)84U, header->track_count);
+	int track_count;
+	if (header->magic[6] == '7') {
+		// GCR-1571: Up to 84 tracks (168 half-tracks)
+		assert(header->track_count <= 168U);
+		track_count = std::min((uint8_t)168U, header->track_count);
+	} else /*if (header->magic[6] == '4')*/ {
+		// GCR-1541: Up to 42 tracks (84 half-tracks)
+		assert(header->track_count <= 84U);
+		track_count = std::min((uint8_t)84U, header->track_count);
+	}
 	track_count = (track_count / 2) + (track_count % 2);
 	track_offsets.reserve(track_count);
 
@@ -461,13 +474,20 @@ void CBMDOSPrivate::init_track_offsets_G64(const cbmdos_G64_header_t *header)
 
 		// Have we reached the next zone?
 		switch (i) {
+			//case 1-1:
+			case 1+84-1:
+				sectors_this_track = 21;
+				break;
 			case 18-1:
+			case 18+84-1:
 				sectors_this_track = 19;
 				break;
 			case 25-1:
+			case 25+84-1:
 				sectors_this_track = 18;
 				break;
 			case 31-1:
+			case 31+84-1:
 				sectors_this_track = 17;
 				break;
 			default:
@@ -569,8 +589,8 @@ int CBMDOSPrivate::decode_GCR_bytes(uint8_t *data, const uint8_t *gcr)
  */
 int CBMDOSPrivate::read_GCR_track(uint8_t track)
 {
-	assert(diskType == DiskType::G64);
-	if (diskType != DiskType::G64)
+	assert(diskType == DiskType::G64 || diskType == DiskType::G71);
+	if (diskType != DiskType::G64 && diskType != DiskType::G71)
 		return -EIO;
 
 	assert(track != 0);
@@ -723,6 +743,7 @@ size_t CBMDOSPrivate::read_sector(void *buf, size_t siz, uint8_t track, uint8_t 
 	size_t ret;
 	switch (diskType) {
 		case DiskType::G64:
+		case DiskType::G71:
 			// GCR
 			if (track != GCR_track_cache_number) {
 				// Need to cache the track.
@@ -802,7 +823,7 @@ CBMDOS::CBMDOS(const IRpFilePtr &file)
 	// Seek to the beginning of the file.
 	d->file->rewind();
 
-	// Read the disk header for G64 detection.
+	// Read the disk header for G64/G71 detection.
 	cbmdos_G64_header_t g64_header;
 	size_t size = d->file->read(&g64_header, sizeof(g64_header));
 	if (size < sizeof(g64_header)) {
@@ -909,7 +930,8 @@ CBMDOS::CBMDOS(const IRpFilePtr &file)
 			break;
 
 		case CBMDOSPrivate::DiskType::G64:
-			// C1541 image, GCR-encoded.
+		case CBMDOSPrivate::DiskType::G71:
+			// C1541/C1571 image, GCR-encoded.
 			// TODO: Save g64_header?
 
 			d->GCR_track_size = le16_to_cpu(g64_header.track_size);
@@ -978,12 +1000,15 @@ int CBMDOS::isRomSupported_static(const DetectInfo *info)
 			break;
 	}
 
-	// Check for G64.
+	// Check for G64/G71.
 	if (info->header.addr == 0 && info->header.size >= sizeof(cbmdos_G64_header_t)) {
 		const cbmdos_G64_header_t *pHeader = reinterpret_cast<const cbmdos_G64_header_t*>(info->header.pData);
 		if (!memcmp(pHeader->magic, CBMDOS_G64_MAGIC, sizeof(pHeader->magic))) {
 			// This is a G64 image.
 			return static_cast<int>(CBMDOSPrivate::DiskType::G64);
+		} else if (!memcmp(pHeader->magic, CBMDOS_G71_MAGIC, sizeof(pHeader->magic))) {
+			// This is a G71 image.
+			return static_cast<int>(CBMDOSPrivate::DiskType::G71);
 		}
 	}
 
@@ -1009,7 +1034,7 @@ const char *CBMDOS::systemName(unsigned int type) const
 		"CBMDOS::systemName() array index optimization needs to be updated.");
 
 	// TODO: More types.
-	static const char *const sysNames[7][4] = {
+	static const char *const sysNames[8][4] = {
 		{"Commodore 1541", "C1541", "C1541", nullptr},
 		{"Commodore 1571", "C1571", "C1571", nullptr},
 		{"Commodore 8050", "C8050", "C8050", nullptr},
@@ -1018,6 +1043,7 @@ const char *CBMDOS::systemName(unsigned int type) const
 		{"Commodore 2040", "C2040", "C2040", nullptr},
 
 		{"Commodore 1541 (GCR)", "C1541 (GCR)", "C1541 (GCR)", nullptr},
+		{"Commodore 1571 (GCR)", "C1571 (GCR)", "C1571 (GCR)", nullptr},
 	};
 
 	unsigned int sysID = 0;
@@ -1075,6 +1101,7 @@ int CBMDOS::loadFieldData(void)
 			case CBMDOSPrivate::DiskType::D71:
 			case CBMDOSPrivate::DiskType::D67:
 			case CBMDOSPrivate::DiskType::G64:
+			case CBMDOSPrivate::DiskType::G71:
 				// C1541, C1571, C2040
 				disk_name = c1541_bam.disk_name;
 				disk_name_len = static_cast<int>(sizeof(c1541_bam.disk_name));
