@@ -189,7 +189,7 @@ const char *const CBMDOSPrivate::exts[] = {
 	".d81",		// Standard C1581 disk image
 	".d67",		// Standard C2040 disk image
 
-	".g64", ".g64",	// GCR-encoded C1541 disk imgae
+	".g64", ".g41",	// GCR-encoded C1541 disk imgae
 
 	// TODO: More?
 
