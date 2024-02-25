@@ -102,8 +102,9 @@ public:
 
 	/**
 	 * Initialize track offsets for C1541. (35/40 tracks)
+	 * @param isDos1 If true, use 20 sectors instead of 19 in speed zone 2. (DOS 1.x, e.g. C2040)
 	 */
-	void init_track_offsets_C1541(void);
+	void init_track_offsets_C1541(bool isDos1);
 
 	/**
 	 * Initialize track offsets for C1571. (70 tracks)
@@ -120,11 +121,6 @@ public:
 	 * Initialize track offsets for C1581. (80 tracks)
 	 */
 	void init_track_offsets_C1581(void);
-
-	/**
-	 * Initialize track offsets for C2040. (35/40 tracks)
-	 */
-	void init_track_offsets_C2040(void);
 
 	/**
 	 * Initialize tracks for a G64/G71 (GCR-1541/GCR-1571) image. (up to 42 or 84 tracks)
@@ -221,12 +217,13 @@ const RomDataInfo CBMDOSPrivate::romDataInfo = {
 
 /**
  * Initialize track offsets for C1541. (35/40 tracks)
+ * @param isDos1 If true, use 20 sectors instead of 19 in speed zone 2. (DOS 1.x, e.g. C2040)
  */
-void CBMDOSPrivate::init_track_offsets_C1541(void)
+void CBMDOSPrivate::init_track_offsets_C1541(bool isDos1)
 {
 	// C1541 zones:
 	// - Tracks  1-17: 21 sectors
-	// - Tracks 18-24: 19 sectors
+	// - Tracks 18-24: 19 sectors (20 sectors for DOS 1.x)
 	// - Tracks 25-30: 18 sectors
 	// - Tracks 31-40: 17 sectors
 	unsigned int offset = 0;
@@ -239,11 +236,13 @@ void CBMDOSPrivate::init_track_offsets_C1541(void)
 		offset += (21 * CBMDOS_SECTOR_SIZE);
 	}
 
-	// Tracks 18-24: 19 sectors
+	// Tracks 18-24: 19 sectors (20 sectors for DOS 1.x)
+	const unsigned int zone2_sector_count = (unlikely(isDos1) ? 20 : 19);
+	const unsigned int zone2_offset_adj = zone2_sector_count * CBMDOS_SECTOR_SIZE;
 	for (unsigned int i = 18-1; i <= 24-1; i++) {
-		track_offsets[i].sector_count = 19;
+		track_offsets[i].sector_count = zone2_sector_count;
 		track_offsets[i].start_offset = offset;
-		offset += (19 * CBMDOS_SECTOR_SIZE);
+		offset += zone2_offset_adj;
 	}
 
 	// Tracks 25-30: 18 sectors
@@ -382,48 +381,6 @@ void CBMDOSPrivate::init_track_offsets_C1581(void)
 		track_offsets[i].sector_count = 40;
 		track_offsets[i].start_offset = offset;
 		offset += (40 * CBMDOS_SECTOR_SIZE);
-	}
-}
-
-/**
- * Initialize track offsets for C2040. (35/40 tracks)
- */
-void CBMDOSPrivate::init_track_offsets_C2040(void)
-{
-	// C1541 zones:
-	// - Tracks  1-17: 21 sectors
-	// - Tracks 18-24: 20 sectors [DOS 1.x; later DOS uses 19 sectors]
-	// - Tracks 25-30: 18 sectors
-	// - Tracks 31-40: 17 sectors
-	unsigned int offset = 0;
-	track_offsets.resize(40);
-
-	// Tracks 1-17: 21 sectors
-	for (unsigned int i = 1-1; i <= 17-1; i++) {
-		track_offsets[i].sector_count = 21;
-		track_offsets[i].start_offset = offset;
-		offset += (21 * CBMDOS_SECTOR_SIZE);
-	}
-
-	// Tracks 18-24: 20 sectors [DOS 1.x; later DOS uses 19 sectors]
-	for (unsigned int i = 18-1; i <= 24-1; i++) {
-		track_offsets[i].sector_count = 20;
-		track_offsets[i].start_offset = offset;
-		offset += (20 * CBMDOS_SECTOR_SIZE);
-	}
-
-	// Tracks 25-30: 18 sectors
-	for (unsigned int i = 25-1; i <= 30-1; i++) {
-		track_offsets[i].sector_count = 18;
-		track_offsets[i].start_offset = offset;
-		offset += (18 * CBMDOS_SECTOR_SIZE);
-	}
-
-	// Tracks 31-40: 17 sectors
-	for (unsigned int i = 31-1; i <= 40-1; i++) {
-		track_offsets[i].sector_count = 17;
-		track_offsets[i].start_offset = offset;
-		offset += (17 * CBMDOS_SECTOR_SIZE);
 	}
 }
 
@@ -855,7 +812,7 @@ CBMDOS::CBMDOS(const IRpFilePtr &file)
 			// C1541 image (35 or 40 tracks, single-sided)
 			d->dir_track = 18;
 			d->dir_first_sector = 1;
-			d->init_track_offsets_C1541();
+			d->init_track_offsets_C1541(false);
 
 			// Check for error bytes.
 			if (filesize == (683 * CBMDOS_SECTOR_SIZE) + 683) {
@@ -915,7 +872,7 @@ CBMDOS::CBMDOS(const IRpFilePtr &file)
 			// NOTE: DOS 1.x; similar to C1541, except speed zone 2 has 20 sectors instead of 19.
 			d->dir_track = 18;
 			d->dir_first_sector = 1;
-			d->init_track_offsets_C2040();
+			d->init_track_offsets_C1541(true);
 
 			// Check for error bytes.
 			if (filesize == (690 * CBMDOS_SECTOR_SIZE) + 690) {
