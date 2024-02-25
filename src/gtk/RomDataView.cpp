@@ -901,8 +901,7 @@ rp_rom_data_view_init_listdata(RpRomDataView *page,
 	}
 
 	assert(list_data != nullptr);
-	assert(!list_data->empty());
-	if (!list_data || list_data->empty()) {
+	if (!list_data) {
 		// No data...
 		return nullptr;
 	}

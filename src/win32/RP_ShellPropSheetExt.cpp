@@ -771,8 +771,7 @@ int RP_ShellPropSheetExt_Private::initListData(_In_ HWND hWndTab,
 	}
 
 	assert(list_data != nullptr);
-	assert(!list_data->empty());
-	if (!list_data || list_data->empty()) {
+	if (!list_data) {
 		// No list data...
 		return 0;
 	}
