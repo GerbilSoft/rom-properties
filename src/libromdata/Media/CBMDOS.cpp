@@ -651,7 +651,7 @@ int CBMDOSPrivate::read_GCR_track(uint8_t track)
 			uint8_t *const p_data_end = &data.raw[ARRAY_SIZE(data.raw)];
 			for (; p_data < p_data_end; p += 5, p_data += 4) {
 				// TODO: Return errors?
-				decode_GCR_bytes(p_data, p);
+				decode_GCR_bytes(p_data, &(*p));
 			}
 
 			// Copy the data into the track buffer.
