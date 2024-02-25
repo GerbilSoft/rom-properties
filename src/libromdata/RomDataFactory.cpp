@@ -395,9 +395,6 @@ const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_header
 	GetRomDataFns(SNDH, ATTR_HAS_METADATA),	// "SNDH", or "ICE!" or "Ice!" if packed.
 	GetRomDataFns(SID, ATTR_HAS_METADATA),	// PSID/RSID; maybe move to _magic[]?
 
-	// Media
-	GetRomDataFns(CBMDOS, ATTR_NONE),
-
 	// Other
 	GetRomDataFns(Amiibo, ATTR_HAS_THUMBNAIL),
 	GetRomDataFns(MachO, ATTR_NONE),
@@ -413,6 +410,10 @@ const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_header
 	// The 0x40000 address is checked below.
 	GetRomDataFns(GameCom, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA),
 
+	// CBM DOS is checked late because most of the disk image formats are
+	// only validated by file size. (no magic numbers)
+	GetRomDataFns(CBMDOS, ATTR_NONE),
+	
 	// Headers with non-zero addresses.
 	GetRomDataFns_addr(Sega8Bit, ATTR_HAS_METADATA, 0x7FE0, 0x20),
 	GetRomDataFns_addr(PokemonMini, ATTR_HAS_METADATA, 0x2100, 0xD0),
