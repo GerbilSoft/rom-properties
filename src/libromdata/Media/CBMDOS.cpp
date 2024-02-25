@@ -1131,8 +1131,8 @@ int CBMDOS::loadFieldData(void)
 	auto vv_icons = new RomFields::ListDataIcons_t;	// for GEOS files only
 	bool has_icons = false;
 
-	assert(d->dir_track-1 < d->track_offsets.size());
-	if (d->dir_track-1 >= d->track_offsets.size()) {
+	assert((size_t)d->dir_track-1 < d->track_offsets.size());
+	if ((size_t)d->dir_track-1 >= d->track_offsets.size()) {
 		// Unable to read the directory track...
 		// TODO: Show an error?
 		return static_cast<int>(d->fields.count());
