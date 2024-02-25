@@ -207,7 +207,7 @@ const char *const CBMDOSPrivate::mimeTypes[] = {
 	"application/x-d81",
 	"application/x-d67",
 
-	"applicaiton/x-g64",
+	"application/x-g64",
 
 	nullptr
 };
