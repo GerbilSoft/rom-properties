@@ -21,7 +21,7 @@ using namespace LibRpText;
 #include "disc/Cdrom2352Reader.hpp"
 
 // Other RomData subclasses
-#include "Other/ISO.hpp"
+#include "Media/ISO.hpp"
 
 // C++ STL classes
 using std::string;

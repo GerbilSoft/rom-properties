@@ -428,8 +428,7 @@ QTreeView *RomDataViewPrivate::initListData(QLabel *lblDesc,
 	}
 
 	assert(list_data != nullptr);
-	assert(!list_data->empty());
-	if (!list_data || list_data->empty()) {
+	if (!list_data) {
 		// No data...
 		delete lblDesc;
 		return nullptr;

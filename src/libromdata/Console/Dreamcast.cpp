@@ -26,7 +26,7 @@ using namespace LibRpTexture;
 #include "disc/GdiReader.hpp"
 
 // Other RomData subclasses
-#include "Other/ISO.hpp"
+#include "Media/ISO.hpp"
 
 // C++ STL classes
 using std::shared_ptr;

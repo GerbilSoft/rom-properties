@@ -48,7 +48,7 @@ static string str8_to_utf8(const char16_t tbl[256], const char *str, int len)
 		// This allows us to trim strings while preserving any
 		// embedded NULLs that might be graphics characters.
 		const char *end = str + len - 1;
-		for (; end > str; end--) {
+		for (; end >= str; end--) {
 			if (*end != 0x00)
 				break;
 		}
@@ -57,7 +57,7 @@ static string str8_to_utf8(const char16_t tbl[256], const char *str, int len)
 
 	if (len <= 0) {
 		// Nothing to do...
-		return {};
+		return s_utf8;
 	}
 
 	s_utf8.reserve(len + 8);

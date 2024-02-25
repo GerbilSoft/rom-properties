@@ -12,7 +12,7 @@
 #include "IsoPartition.hpp"
 
 // for ISOPtr
-#include "../Other/ISO.hpp"
+#include "../Media/ISO.hpp"
 
 namespace LibRomData {
 

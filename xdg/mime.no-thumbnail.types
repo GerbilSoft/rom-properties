@@ -41,6 +41,16 @@ application/x-nintendo-3ds-firm		# Nintendo3DSFirm
 application/x-pokemon-mini-rom		# PokemonMini
 application/x-virtual-boy-rom		# VirtualBoy
 
+# Media
+application/x-d64			# CBMDOS
+application/x-d71			# CBMDOS
+application/x-d80			# CBMDOS
+application/x-d82			# CBMDOS
+application/x-d81			# CBMDOS
+application/x-d67			# CBMDOS
+application/x-g64			# CBMDOS
+application/x-g71			# CBMDOS
+
 # Other
 application/x-object			# ELF
 application/x-executable		# ELF/EXE
