@@ -1166,12 +1166,19 @@ int CBMDOS::loadFieldData(void)
 
 			// Filename
 			remove_A0_padding(p_dir->filename, sizeof(p_dir->filename));
-			string s_filename = cpN_to_utf8(codepage, p_dir->filename, sizeof(p_dir->filename));
-			if (codepage == CP_RP_PETSCII_Unshifted && s_filename.find(uFFFD) != string::npos) {
-				// File name has invalid characters when using Unshifted.
-				// Try again with Shifted.
-				codepage = CP_RP_PETSCII_Shifted;
+			string s_filename;
+			if (unlikely(p_dir->geos.file_type != 0)) {
+				// GEOS file: The filename is encoded as ASCII.
+				// NOTE: Using Latin-1...
+				s_filename = latin1_to_utf8(p_dir->filename, sizeof(p_dir->filename));
+			} else {
 				s_filename = cpN_to_utf8(codepage, p_dir->filename, sizeof(p_dir->filename));
+				if (codepage == CP_RP_PETSCII_Unshifted && s_filename.find(uFFFD) != string::npos) {
+					// File name has invalid characters when using Unshifted.
+					// Try again with Shifted.
+					codepage = CP_RP_PETSCII_Shifted;
+					s_filename = cpN_to_utf8(codepage, p_dir->filename, sizeof(p_dir->filename));
+				}
 			}
 			p_list.emplace_back(std::move(s_filename));
 
@@ -1208,7 +1215,7 @@ int CBMDOS::loadFieldData(void)
 
 			// If this is a GEOS file, get the icon.
 			rp_image_ptr icon;
-			if (p_dir->geos.file_type != 0) {
+			if (unlikely(p_dir->geos.file_type != 0)) {
 				// Read the information sector.
 				cbmdos_GEOS_info_block_t geos_info;
 				size = d->read_sector(&geos_info, sizeof(geos_info), p_dir->geos.info_addr.track ,p_dir->geos.info_addr.sector);
