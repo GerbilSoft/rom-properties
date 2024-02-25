@@ -31,6 +31,7 @@ using namespace LibRpTexture;
 
 // C++ STL classes
 #include <bitset>
+using std::array;
 using std::bitset;
 using std::string;
 using std::vector;
@@ -561,8 +562,8 @@ int CBMDOSPrivate::read_GCR_track(uint8_t track)
 	// Read the GCR track. (usually 7,928; we'll allow up to 8,192)
 	assert(GCR_track_size > 0);
 	assert(GCR_track_size <= GCR_MAX_TRACK_SIZE);
-	uint8_t gcr_buf[GCR_MAX_TRACK_SIZE];
-	size_t gcr_len = file->seekAndRead(this_track.start_offset, gcr_buf, std::min(GCR_track_size, GCR_MAX_TRACK_SIZE));
+	array<uint8_t, GCR_MAX_TRACK_SIZE> gcr_buf;
+	size_t gcr_len = file->seekAndRead(this_track.start_offset, gcr_buf.data(), std::min((size_t)GCR_track_size, gcr_buf.size()));
 	if (gcr_len == 0) {
 		// Unable to read any GCR data...
 		return -EIO;
@@ -580,8 +581,8 @@ int CBMDOSPrivate::read_GCR_track(uint8_t track)
 
 	// Attempt to read the total number of sectors in this track.
 	// TODO: Return an error if we read less than what's expected.
-	const uint8_t *p = gcr_buf;
-	const uint8_t *const p_end = &gcr_buf[ARRAY_SIZE(gcr_buf)];
+	auto p = gcr_buf.begin();
+	const auto p_end = gcr_buf.end();
 	for (uint8_t sector = 0; sector < this_track.sector_count && p < p_end; sector++) {
 		// TODO: Read bits, not bytes. Most G64s are byte-aligned, though...
 
