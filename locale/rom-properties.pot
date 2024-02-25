@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties 2.2.1+\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2024-02-25 13:17-0500\n"
+"POT-Creation-Date: 2024-02-25 13:35-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -2617,7 +2617,10 @@ msgid "Copy Protect"
 msgstr ""
 
 #: ../src/libromdata/Console/DreamcastSave.cpp:1385
-msgctxt "DreamcastSave"
+#: ../src/libromdata/Console/GameCubeSave.cpp:921
+#: ../src/libromdata/Console/PlayStationSave.cpp:493
+#: ../src/libromdata/Other/NintendoBadge.cpp:701
+msgctxt "RomData"
 msgid "Filename"
 msgstr ""
 
@@ -3013,11 +3016,6 @@ msgstr ""
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1069
 msgctxt "Region"
 msgid "Region-Free"
-msgstr ""
-
-#: ../src/libromdata/Console/GameCubeSave.cpp:921
-msgctxt "GameCubeSave"
-msgid "Filename"
 msgstr ""
 
 #: ../src/libromdata/Console/GameCubeSave.cpp:926
@@ -3871,11 +3869,6 @@ msgstr ""
 #: ../src/libromdata/Console/PlayStationEXE.cpp:294
 msgctxt "RomData"
 msgid "Region"
-msgstr ""
-
-#: ../src/libromdata/Console/PlayStationSave.cpp:493
-msgctxt "PlayStationSave"
-msgid "Filename"
 msgstr ""
 
 #: ../src/libromdata/Console/PlayStationSave.cpp:498
@@ -7952,11 +7945,6 @@ msgstr ""
 #: ../src/libromdata/Other/NintendoBadge.cpp:697
 msgctxt "NintendoBadge"
 msgid "Badge ID"
-msgstr ""
-
-#: ../src/libromdata/Other/NintendoBadge.cpp:701
-msgctxt "NintendoBadge"
-msgid "Filename"
 msgstr ""
 
 #: ../src/libromdata/Other/NintendoBadge.cpp:710

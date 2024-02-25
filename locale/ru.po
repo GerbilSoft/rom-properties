@@ -37,7 +37,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties 2.1+\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2024-02-25 13:17-0500\n"
+"POT-Creation-Date: 2024-02-25 13:35-0500\n"
 "PO-Revision-Date: 2023-06-25 01:20\n"
 "Last-Translator: \n"
 "Language-Team: Russian\n"
@@ -2717,7 +2717,10 @@ msgid "Copy Protect"
 msgstr ""
 
 #: ../src/libromdata/Console/DreamcastSave.cpp:1385
-msgctxt "DreamcastSave"
+#: ../src/libromdata/Console/GameCubeSave.cpp:921
+#: ../src/libromdata/Console/PlayStationSave.cpp:493
+#: ../src/libromdata/Other/NintendoBadge.cpp:701
+msgctxt "RomData"
 msgid "Filename"
 msgstr "Имя файла"
 
@@ -3117,11 +3120,6 @@ msgstr "Австралия"
 msgctxt "Region"
 msgid "Region-Free"
 msgstr ""
-
-#: ../src/libromdata/Console/GameCubeSave.cpp:921
-msgctxt "GameCubeSave"
-msgid "Filename"
-msgstr "Имя файла"
 
 #: ../src/libromdata/Console/GameCubeSave.cpp:926
 msgctxt "GameCubeSave"
@@ -3980,11 +3978,6 @@ msgstr "Северная Америка"
 msgctxt "RomData"
 msgid "Region"
 msgstr "Регион"
-
-#: ../src/libromdata/Console/PlayStationSave.cpp:493
-msgctxt "PlayStationSave"
-msgid "Filename"
-msgstr "Имя файла"
 
 #: ../src/libromdata/Console/PlayStationSave.cpp:498
 msgctxt "PlayStationSave"
@@ -8076,11 +8069,6 @@ msgstr ""
 msgctxt "NintendoBadge"
 msgid "Badge ID"
 msgstr ""
-
-#: ../src/libromdata/Other/NintendoBadge.cpp:701
-msgctxt "NintendoBadge"
-msgid "Filename"
-msgstr "Имя файла"
 
 #: ../src/libromdata/Other/NintendoBadge.cpp:710
 msgctxt "NintendoBadge"

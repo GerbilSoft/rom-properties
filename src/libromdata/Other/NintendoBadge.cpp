@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * NintendoBadge.hpp: Nintendo Badge Arcade image reader.                  *
  *                                                                         *
- * Copyright (c) 2017-2023 by David Korth.                                 *
+ * Copyright (c) 2017-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -698,7 +698,7 @@ int NintendoBadge::loadFieldData(void)
 				le32_to_cpu(prbs->badge_id));
 
 			// Badge filename.
-			d->fields.addField_string(C_("NintendoBadge", "Filename"),
+			d->fields.addField_string(C_("RomData", "Filename"),
 				latin1_to_utf8(prbs->filename, sizeof(prbs->filename)));
 
 			// Set name.

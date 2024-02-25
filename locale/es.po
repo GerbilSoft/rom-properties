@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties 2.1+\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2024-02-25 13:17-0500\n"
+"POT-Creation-Date: 2024-02-25 13:35-0500\n"
 "PO-Revision-Date: 2021-04-02 22:56-0400\n"
 "Last-Translator: Amnesia1000\n"
 "Language-Team: \n"
@@ -2685,7 +2685,10 @@ msgid "Copy Protect"
 msgstr "Protección contra cópia"
 
 #: ../src/libromdata/Console/DreamcastSave.cpp:1385
-msgctxt "DreamcastSave"
+#: ../src/libromdata/Console/GameCubeSave.cpp:921
+#: ../src/libromdata/Console/PlayStationSave.cpp:493
+#: ../src/libromdata/Other/NintendoBadge.cpp:701
+msgctxt "RomData"
 msgid "Filename"
 msgstr "Nombre de Archivo"
 
@@ -3082,11 +3085,6 @@ msgstr "Australia"
 msgctxt "Region"
 msgid "Region-Free"
 msgstr "Todas las regiones"
-
-#: ../src/libromdata/Console/GameCubeSave.cpp:921
-msgctxt "GameCubeSave"
-msgid "Filename"
-msgstr "Nombre de Archivo"
 
 #: ../src/libromdata/Console/GameCubeSave.cpp:926
 msgctxt "GameCubeSave"
@@ -3947,11 +3945,6 @@ msgstr "América del Norte"
 msgctxt "RomData"
 msgid "Region"
 msgstr "Region"
-
-#: ../src/libromdata/Console/PlayStationSave.cpp:493
-msgctxt "PlayStationSave"
-msgid "Filename"
-msgstr "Nombre de Archivo"
 
 #: ../src/libromdata/Console/PlayStationSave.cpp:498
 msgctxt "PlayStationSave"
@@ -8067,11 +8060,6 @@ msgstr "Insígnia individual"
 msgctxt "NintendoBadge"
 msgid "Badge ID"
 msgstr "ID de insígnia"
-
-#: ../src/libromdata/Other/NintendoBadge.cpp:701
-msgctxt "NintendoBadge"
-msgid "Filename"
-msgstr "Nombre del archivo"
 
 #: ../src/libromdata/Other/NintendoBadge.cpp:710
 msgctxt "NintendoBadge"

@@ -7,11 +7,11 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2024-02-25 13:17-0500\n"
+"POT-Creation-Date: 2024-02-25 13:35-0500\n"
 "PO-Revision-Date: 2023-07-17 19:58\n"
 "Last-Translator: Null Magic\n"
 "Language-Team: \n"
-"Language: pt_BR\n"
+"Language: pt\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -2661,7 +2661,10 @@ msgid "Copy Protect"
 msgstr "Proteção contra cópia"
 
 #: ../src/libromdata/Console/DreamcastSave.cpp:1385
-msgctxt "DreamcastSave"
+#: ../src/libromdata/Console/GameCubeSave.cpp:921
+#: ../src/libromdata/Console/PlayStationSave.cpp:493
+#: ../src/libromdata/Other/NintendoBadge.cpp:701
+msgctxt "RomData"
 msgid "Filename"
 msgstr "Nome de arquivo"
 
@@ -3061,11 +3064,6 @@ msgstr "Austrália"
 msgctxt "Region"
 msgid "Region-Free"
 msgstr "Todas as regiões"
-
-#: ../src/libromdata/Console/GameCubeSave.cpp:921
-msgctxt "GameCubeSave"
-msgid "Filename"
-msgstr "Nome de arquivo"
 
 #: ../src/libromdata/Console/GameCubeSave.cpp:926
 msgctxt "GameCubeSave"
@@ -3848,8 +3846,8 @@ msgctxt "PlayStationDisc"
 msgid "CDVDGEN Version"
 msgstr "Versão CDVDGEN"
 
-#: ../src/libromdata/Console/PlayStationDisc.cpp:822
 #
+#: ../src/libromdata/Console/PlayStationDisc.cpp:822
 msgctxt "PlayStationDisc"
 msgid "Disc Name"
 msgstr "Nome de disco"
@@ -3925,11 +3923,6 @@ msgstr "América do Norte"
 msgctxt "RomData"
 msgid "Region"
 msgstr ""
-
-#: ../src/libromdata/Console/PlayStationSave.cpp:493
-msgctxt "PlayStationSave"
-msgid "Filename"
-msgstr "Nome de arquivo"
 
 #: ../src/libromdata/Console/PlayStationSave.cpp:498
 msgctxt "PlayStationSave"
@@ -6544,8 +6537,8 @@ msgctxt "CBMDOS"
 msgid "DOS Type"
 msgstr ""
 
-#: ../src/libromdata/Media/CBMDOS.cpp:1230
 #
+#: ../src/libromdata/Media/CBMDOS.cpp:1230
 msgctxt "CBMDOS|Directory"
 msgid "Blocks"
 msgstr "Blocos"
@@ -8037,11 +8030,6 @@ msgstr "Insígnia individual"
 msgctxt "NintendoBadge"
 msgid "Badge ID"
 msgstr "Código de insígnia"
-
-#: ../src/libromdata/Other/NintendoBadge.cpp:701
-msgctxt "NintendoBadge"
-msgid "Filename"
-msgstr "Nome de arquivo"
 
 #: ../src/libromdata/Other/NintendoBadge.cpp:710
 msgctxt "NintendoBadge"

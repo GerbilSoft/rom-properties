@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * DreamcastSave.cpp: Sega Dreamcast save file reader.                     *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -1382,7 +1382,7 @@ int DreamcastSave::loadFieldData(void)
 
 		// Filename
 		// TODO: Latin1 or Shift-JIS?
-		d->fields.addField_string(C_("DreamcastSave", "Filename"),
+		d->fields.addField_string(C_("RomData", "Filename"),
 			latin1_to_utf8(d->vms_dirent.filename, sizeof(d->vms_dirent.filename)));
 
 		// Creation time
