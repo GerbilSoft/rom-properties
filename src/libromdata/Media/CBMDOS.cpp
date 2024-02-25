@@ -442,8 +442,19 @@ void CBMDOSPrivate::init_track_offsets_G64(const cbmdos_G64_header_t *header)
 
 	uint8_t sectors_this_track = 21;
 	const uint32_t *src_offsets = header->track_offsets;
+	bool found_any_tracks = false;
 	for (int i = 1-1; i <= track_count-1; i++, src_offsets += 2) {
 		if (*src_offsets == 0) {
+			if (!found_any_tracks) {
+				// Haven't found any tracks yet...
+				// This track is missing from the disk!
+				track_offsets_t this_track;
+				this_track.sector_count = 0;
+				this_track.start_offset = 0;
+				track_offsets.push_back(this_track);
+				continue;
+			}
+
 			// Finished reading tracks.
 			break;
 		}
@@ -468,6 +479,7 @@ void CBMDOSPrivate::init_track_offsets_G64(const cbmdos_G64_header_t *header)
 		this_track.sector_count = sectors_this_track;
 		this_track.start_offset = le32_to_cpu(*src_offsets);
 		track_offsets.push_back(this_track);
+		found_any_tracks = true;
 	}
 }
 
@@ -1114,6 +1126,13 @@ int CBMDOS::loadFieldData(void)
 	vector<vector<string> > *const vv_dir = new vector<vector<string> >();
 	auto vv_icons = new RomFields::ListDataIcons_t;	// for GEOS files only
 	bool has_icons = false;
+
+	assert(d->dir_track-1 < d->track_offsets.size());
+	if (d->dir_track-1 >= d->track_offsets.size()) {
+		// Unable to read the directory track...
+		// TODO: Show an error?
+		return static_cast<int>(d->fields.count());
+	}
 
 	const unsigned int sector_count = d->track_offsets[d->dir_track].sector_count;
 	for (unsigned int i = d->dir_first_sector; i < sector_count && !sectors_read.test(i); ) {
