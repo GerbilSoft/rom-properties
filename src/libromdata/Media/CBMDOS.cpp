@@ -886,7 +886,7 @@ CBMDOS::CBMDOS(const IRpFilePtr &file)
 			d->init_track_offsets_C2040();
 			break;
 
-		case (775 * CBMDOS_SECTOR_SIZE) + 690:
+		case (775 * CBMDOS_SECTOR_SIZE) + 775:
 			// 40-track C2040 image, with error bytes
 			d->err_bytes_count = 775;
 			d->err_bytes_offset = (775 * CBMDOS_SECTOR_SIZE);
