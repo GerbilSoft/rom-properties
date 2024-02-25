@@ -13,6 +13,7 @@
 // - http://unusedino.de/ec64/technical/formats/d81.html
 // - http://unusedino.de/ec64/technical/formats/g64.html
 // - https://area51.dev/c64/cbmdos/autoboot/
+// - http://unusedino.de/ec64/technical/formats/geos.html
 
 #pragma once
 
@@ -96,9 +97,25 @@ typedef struct _cbmdos_dir_entry_t {
 	uint8_t file_type;	// $02: File type. (see CBMDOS_FileType_e)
 	cbmdos_TS_ptr_t start;	// $03: Location of first sector of the file.
 	char filename[16];	// $05: Filename (PETSCII, $A0-padded)
-	cbmdos_TS_ptr_t rel_side_sector;	// $15: Location of first side-sector block (REL files only)
-	uint8_t rel_record_len;	// $17: REL file record length (max 254)
-	uint8_t unused_18[6];	// $18: Unused (except by GEOS...)
+	union {
+		struct {
+			cbmdos_TS_ptr_t rel_side_sector;	// $15: Location of first side-sector block (REL files only)
+			uint8_t rel_record_len;	// $17: REL file record length (max 254)
+			uint8_t unused_18[6];	// $18: Unused (should be $00)
+		};
+		struct {
+			cbmdos_TS_ptr_t info_addr;	// $15: Location of GEOS info sector
+			uint8_t file_structure;		// $17: GEOS file structure (see GEOS_File_Structure_e)
+			uint8_t file_type;		// $18: GEOS file type (see GEOS_File_Type_e)
+			struct {
+				uint8_t year;		// $19: Year (1900 + value)
+				uint8_t month;		// $1A: Month (01-12)
+				uint8_t day;		// $1B: Day (01-31)
+				uint8_t hour;		// $1C: Hour (00-23)
+				uint8_t minute;		// $1D: Minute (00-59)
+			} timestamp;
+		} geos;
+	};
 	uint16_t sector_count;	// $1E: File size, in sectors.
 } cbmdos_dir_entry_t;
 ASSERT_STRUCT(cbmdos_dir_entry_t, 32);
@@ -134,6 +151,35 @@ typedef enum {
 	// Bit 7: Closed flag (if unset, and Bits 0-3 are non-zero, results in a "*" (splat) file)
 	CBMDOS_FileType_Closed		= (1U << 7),
 } CBMDOS_FileType_e;
+
+/**
+ * CBMDOS: GEOS file structure
+ */
+typedef enum {
+	GEOS_FILE_STRUCTURE_SEQ		= 0,
+	GEOS_FILE_STRUCTURE_VLIR	= 1,
+} GEOS_File_Structure_e;
+
+/**
+ * CBMDOS: GEOS file type
+ */
+typedef enum {
+	GEOS_FILE_TYPE_NON_GEOS		= 0x00,
+	GEOS_FILE_TYPE_BASIC		= 0x01,
+	GEOS_FILE_TYPE_ASSEMBLER	= 0x02,
+	GEOS_FILE_TYPE_DATA_FILE	= 0x03,
+	GEOS_FILE_TYPE_SYSTEM_FILE	= 0x04,
+	GEOS_FILE_TYPE_DESK_ACCESSORY	= 0x05,
+	GEOS_FILE_TYPE_APPLICATION	= 0x06,
+	GEOS_FILE_TYPE_APPLICATION_DATA	= 0x07,
+	GEOS_FILE_TYPE_FONT_FILE	= 0x08,
+	GEOS_FILE_TYPE_PRINTER_DRIVER	= 0x09,
+	GEOS_FILE_TYPE_INPUT_DRIVER	= 0x0A,
+	GEOS_FILE_TYPE_DISK_DRIVER	= 0x0B,
+	GEOS_FILE_TYPE_SYSTEM_BOOT_FILE	= 0x0C,
+	GEOS_FILE_TYPE_TEMPORARY	= 0x0D,
+	GEOS_FILE_TYPE_AUTO_EXEC_FILE	= 0x0E,
+} GEOS_File_Type_e;
 
 /**
  * CBMDOS: C8050/C8250 header sector (39/0)
@@ -213,6 +259,32 @@ typedef union _cbmdos_GCR_data_block_t {
 	uint8_t raw[260];
 } cbmdos_GCR_data_block_t;
 ASSERT_STRUCT(cbmdos_GCR_data_block_t, 260);
+
+/**
+ * CBMDOS: GEOS INFO block
+ *
+ * All fields are in little-endian.
+ * All strings are in ASCII, NULL-terminated.
+ */
+#pragma pack(1)
+typedef struct PACKED _cbmdos_GEOS_info_block_t {
+	cbmdos_TS_ptr_t next;		// $00: Next sector (usually 0/255 because it's only one block)
+	uint8_t id[3];			// $01: ID bytes (03 15 BF). 03 = icon width, 15 = icon height?
+	uint8_t icon[63];		// $02: Icon bitmap (C64 high-res sprite format)
+	uint8_t c64_file_type;		// $44: C64 file type
+	uint8_t geos_file_type;		// $45: GEOS file type (see GEOS_File_Type_e)
+	uint8_t geos_file_structure;	// $46: GEOS file structure (see GEOS_File_Structure_e)
+	uint16_t prg_load_addr;		// $47: Program load address
+	uint16_t prg_end_addr;		// $49: Program end address (only with accessories)
+	uint16_t prg_start_addr;	// $4B: Program start address
+	char class_text[20];		// $4D: Class text
+	char author[20];		// $61: Author
+	char creator[20];		// $75: For documents, the application that created this file
+	uint8_t for_appl[23];		// $89: Available for applications
+	char description[96];		// $A0: Description
+} cbmdos_GEOS_info_block_t;
+#pragma pack()
+ASSERT_STRUCT(cbmdos_GEOS_info_block_t, CBMDOS_SECTOR_SIZE);
 
 #ifdef __cplusplus
 }

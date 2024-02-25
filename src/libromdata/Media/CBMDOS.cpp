@@ -13,6 +13,7 @@
 // - http://unusedino.de/ec64/technical/formats/d81.html
 // - http://unusedino.de/ec64/technical/formats/g64.html
 // - https://area51.dev/c64/cbmdos/autoboot/
+// - http://unusedino.de/ec64/technical/formats/geos.html
 
 #include "stdafx.h"
 #include "CBMDOS.hpp"
@@ -24,6 +25,8 @@
 using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;
+using LibRpTexture::rp_image;
+using LibRpTexture::rp_image_ptr;
 
 // C++ STL classes
 #include <bitset>
@@ -1107,7 +1110,11 @@ int CBMDOS::loadFieldData(void)
 	// NOTE: Ignoring the directory location in the BAM sector,
 	// since it might be incorrect. Assuming dir_track/dir_first_sector.
 	bitset<64> sectors_read(1);	// Sector 0 is not allowed here, so mark it as 'read'.
+
 	vector<vector<string> > *const vv_dir = new vector<vector<string> >();
+	auto vv_icons = new RomFields::ListDataIcons_t;	// for GEOS files only
+	bool has_icons = false;
+
 	const unsigned int sector_count = d->track_offsets[d->dir_track].sector_count;
 	for (unsigned int i = d->dir_first_sector; i < sector_count && !sectors_read.test(i); ) {
 		cbmdos_dir_sector_t entries;
@@ -1186,6 +1193,46 @@ int CBMDOS::loadFieldData(void)
 				s_file_type += '>';
 			}
 
+			// If this is a GEOS file, get the icon.
+			rp_image_ptr icon;
+			if (p_dir->geos.file_type != 0) {
+				// Read the information sector.
+				cbmdos_GEOS_info_block_t geos_info;
+				size = d->read_sector(&geos_info, sizeof(geos_info), p_dir->geos.info_addr.track ,p_dir->geos.info_addr.sector);
+				if (size == sizeof(geos_info)) {
+					// TODO: Split icon code into librptexture.
+					icon = std::make_shared<rp_image>(24, 21, rp_image::Format::CI8);
+
+					// Set the palette.
+					uint32_t *const palette = icon->palette();
+					memset(palette, 0, icon->palette_len() * sizeof(uint32_t));
+					palette[0] = 0xFFFFFFFF;	// background (normally "transparent")
+					palette[1] = 0xFF000000;	// foreground
+
+					// Convert the icon data.
+					// - Source: 24x21 monochrome (3 bytes per line)
+					// - Destination: 24x21 8bpp
+					const int stride_diff = icon->stride() - icon->width();
+					uint8_t *p_dest = static_cast<uint8_t*>(icon->bits());
+					const uint8_t *p_src = geos_info.icon;
+					for (unsigned int y = 21; y > 0; y--) {
+						for (unsigned int x = 24; x > 0; x -= 8, p_src++) {
+							// NOTE: Left pixel is the MSB.
+							uint8_t src = *p_src;
+							for (unsigned int bit = 0; bit < 8; bit++, src <<= 1, p_dest++) {
+								*p_dest = ((src & 0x80) ? 1 : 0);
+							}
+						}
+						p_dest += stride_diff;
+					}
+				}
+			}
+
+			if (icon) {
+				has_icons = true;
+			}
+			vv_icons->emplace_back(std::move(icon));
+
 			p_list.emplace_back(std::move(s_file_type));
 		}
 	}
@@ -1198,7 +1245,7 @@ int CBMDOS::loadFieldData(void)
 	vector<string> *const v_dir_headers = RomFields::strArrayToVector_i18n(
 		"CBMDOS|Directory", dir_headers, ARRAY_SIZE(dir_headers));
 
-	RomFields::AFLD_PARAMS params(0, 8);
+	RomFields::AFLD_PARAMS params(has_icons ? (unsigned int)RomFields::RFT_LISTDATA_ICONS : 0, 8);
 	params.headers = v_dir_headers;
 	params.data.single = vv_dir;
 	params.col_attrs.align_headers	= AFLD_ALIGN3(TXA_D, TXA_D, TXA_D);
@@ -1207,6 +1254,14 @@ int CBMDOS::loadFieldData(void)
 	params.col_attrs.sorting	= AFLD_ALIGN3(COLSORT_NUM, COLSORT_STD, COLSORT_STD);
 	params.col_attrs.sort_col	= -1;	// no sorting by default; show files as listed on disk
 	params.col_attrs.sort_dir	= RomFields::COLSORTORDER_ASCENDING;
+
+	if (has_icons) {
+		params.mxd.icons = vv_icons;
+	} else {
+		// Not using the icons vector.
+		delete vv_icons;
+	}
+
 	d->fields.addField_listData(C_("CBMDOS", "Directory"), &params);
 
 	// Check for a C128 autoboot sector.
