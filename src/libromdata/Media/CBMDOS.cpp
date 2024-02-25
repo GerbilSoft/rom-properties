@@ -117,7 +117,7 @@ public:
 	void init_track_offsets_C8050(bool isC8250);
 
 	/**
-	 * Initialize track offsets for C8050. (80 tracks)
+	 * Initialize track offsets for C1581. (80 tracks)
 	 */
 	void init_track_offsets_C1581(void);
 
@@ -370,7 +370,7 @@ void CBMDOSPrivate::init_track_offsets_C8050(bool isC8250)
 }
 
 /**
- * Initialize track offsets for C8050. (80 tracks)
+ * Initialize track offsets for C1581. (80 tracks)
  */
 void CBMDOSPrivate::init_track_offsets_C1581(void)
 {
