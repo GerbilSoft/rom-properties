@@ -1026,18 +1026,17 @@ int RP_ShellPropSheetExt_Private::initListData(_In_ HWND hWndTab,
 		const int px = rp_AdjustSizeForDpi(32, rp_GetDpiForWindow(hDlgSheet));
 		lvData.col0sizeadj = px;
 
-		SIZE sizeListIcon = {px, px};
+		const SIZE sizeListIconOrig = {px, px};
+		SIZE sizeListIconPhys = {px, px};
 		bool resizeNeeded = false;
-		float factor = 1.0f;
 		if (nl_max >= 2) {
 			// Two or more newlines.
 			// Add half of the icon size per newline over 1.
-			sizeListIcon.cy += ((px/2) * (nl_max - 1));
+			sizeListIconPhys.cy += ((px/2) * (nl_max - 1));
 			resizeNeeded = true;
-			factor = (float)sizeListIcon.cy / (float)px;
 		}
 
-		HIMAGELIST himl = ImageList_Create(sizeListIcon.cx, sizeListIcon.cy,
+		HIMAGELIST himl = ImageList_Create(sizeListIconPhys.cx, sizeListIconPhys.cy,
 			ILC_COLOR32, static_cast<int>(list_data->size()), 0);
 		assert(himl != nullptr);
 		if (himl) {
@@ -1071,31 +1070,34 @@ int RP_ShellPropSheetExt_Private::initListData(_In_ HWND hWndTab,
 					const rp_image_const_ptr flipimg = icon->flip(rp_image::FLIP_H);
 					assert((bool)flipimg);
 					if (flipimg) {
-						icon = flipimg;
+						icon = std::move(flipimg);
+					}
+				}
+
+				// Convert the icon to ARGB32 if it's isn't already.
+				// If the original icon is CI8, it needs to be
+				// converted to ARGB32 first. Otherwise, when
+				// resizing, the "empty" background area will be black.
+				if (icon->format() != rp_image::Format::ARGB32) {
+					const rp_image_const_ptr icon32 = icon->dup_ARGB32();
+					assert((bool)icon32);
+					if (icon32) {
+						icon = std::move(icon32);
 					}
 				}
 
 				// Resize the icon, if necessary.
-				if (resizeNeeded) {
-					SIZE szResize = {icon->width(), icon->height()};
-					szResize.cy = static_cast<LONG>(szResize.cy * factor);
+				// FIXME: If not resized, C64 monochrome icons show up as completely white.
+				if (resizeNeeded || icon->width() != sizeListIconPhys.cx || icon->height() != sizeListIconPhys.cy) {
+					// FIXME: Xbox 360 achievement icons are "too big"? (resized() doesn't scale...)
+					SIZE szResize = sizeListIconPhys;
 
-					// If the original icon is CI8, it needs to be
-					// converted to ARGB32 first. Otherwise, the
-					// "empty" background area will be black.
 					// NOTE: We still need to specify a background color,
 					// since the ListView highlight won't show up on
 					// alpha-transparent pixels.
 					// TODO: Handle this in rp_image::resized()?
 					// TODO: Handle theme changes?
 					// TODO: Error handling.
-					if (icon->format() != rp_image::Format::ARGB32) {
-						const rp_image_const_ptr icon32 = icon->dup_ARGB32();
-						assert((bool)icon32);
-						if (icon32) {
-							icon = icon32;
-						}
-					}
 
 					// Resize the icon.
 					const rp_image_const_ptr icon_resized = icon->resized(
@@ -1103,7 +1105,7 @@ int RP_ShellPropSheetExt_Private::initListData(_In_ HWND hWndTab,
 						rp_image::AlignVCenter, lvBgColor[rowColorIdx]);
 					assert((bool)icon_resized);
 					if (icon_resized) {
-						icon = icon_resized;
+						icon = std::move(icon_resized);
 					}
 				}
 
