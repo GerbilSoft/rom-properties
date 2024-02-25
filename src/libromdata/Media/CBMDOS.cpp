@@ -729,6 +729,10 @@ size_t CBMDOSPrivate::read_sector(void *buf, size_t siz, uint8_t track, uint8_t 
 				// TODO: Check for errors.
 				read_GCR_track(track);
 			}
+			if (!GCR_track_buffer) {
+				// GCR track couldn't be loaded...
+				return 0;
+			}
 
 			// Copy from the GCR track cache.
 			memcpy(buf, &GCR_track_buffer->sectors[sector], siz);
