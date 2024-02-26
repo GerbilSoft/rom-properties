@@ -1231,6 +1231,7 @@ int CBMDOS::loadFieldData(void)
 			if (p_dir->file_type & CBMDOS_FileType_Locked) {
 				s_file_type += '>';
 			}
+			p_list.emplace_back(std::move(s_file_type));
 
 			// If this is a GEOS file, get the icon.
 			rp_image_ptr icon;
@@ -1250,8 +1251,6 @@ int CBMDOS::loadFieldData(void)
 				has_icons = true;
 			}
 			vv_icons->emplace_back(std::move(icon));
-
-			p_list.emplace_back(std::move(s_file_type));
 		}
 	}
 
