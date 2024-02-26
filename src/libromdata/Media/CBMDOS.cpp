@@ -1166,6 +1166,20 @@ int CBMDOS::loadFieldData(void)
 			// - Filename
 			// - File type
 
+			// Determine if this is a GEOS file.
+			bool is_geos_file = false;
+			const uint8_t file_type = (p_dir->file_type & CBMDOS_FileType_Mask);
+			// GEOS files can only be DEL, SEQ, PRG, or USR.
+			if (file_type < CBMDOS_FileType_REL) {
+				// GEOS file type and file structure cannot both be 0.
+				if (p_dir->geos.file_type != 0 || p_dir->geos.file_structure != 0) {
+					if (p_dir->geos.file_structure <= GEOS_FILE_STRUCTURE_VLIR) {
+						// This is a GEOS file.
+						is_geos_file = true;
+					}
+				}
+			}
+
 			// # of blocks (filesize)
 			char filesize[16];
 			snprintf(filesize, sizeof(filesize), "%u", le16_to_cpu(p_dir->sector_count));
@@ -1173,7 +1187,7 @@ int CBMDOS::loadFieldData(void)
 
 			// Filename
 			remove_A0_padding(p_dir->filename, sizeof(p_dir->filename));
-			if (unlikely(p_dir->geos.file_type != 0)) {
+			if (unlikely(is_geos_file)) {
 				// GEOS file: The filename is encoded as ASCII.
 				// NOTE: Using Latin-1...
 				p_list.emplace_back(latin1_to_utf8(p_dir->filename, sizeof(p_dir->filename)));
@@ -1201,7 +1215,6 @@ int CBMDOS::loadFieldData(void)
 				"DEL", "SEQ", "PRG", "USR",
 				"REL", "CBM",
 			};
-			const uint8_t file_type = (p_dir->file_type & CBMDOS_FileType_Mask);
 			if (file_type < max_file_type) {
 				s_file_type += file_type_tbl[file_type];
 			} else {
@@ -1221,7 +1234,7 @@ int CBMDOS::loadFieldData(void)
 
 			// If this is a GEOS file, get the icon.
 			rp_image_ptr icon;
-			if (unlikely(p_dir->geos.file_type != 0)) {
+			if (unlikely(is_geos_file) && likely(p_dir->geos.info_addr.track != 0)) {
 				// Read the information sector.
 				cbmdos_GEOS_info_block_t geos_info;
 				size = d->read_sector(&geos_info, sizeof(geos_info), p_dir->geos.info_addr.track ,p_dir->geos.info_addr.sector);
