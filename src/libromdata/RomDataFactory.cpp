@@ -1038,7 +1038,7 @@ RomDataPtr RomDataFactory::create(const IRpFilePtr &file, unsigned int attrs)
 	// Needed for PSP disc images, among others.
 	if (isSparseDiscReader) {
 		RomData *const romData = RomDataFactoryPrivate::checkISO(reader);
-		if (romData->isValid()) {
+		if (romData && romData->isValid()) {
 			// RomData subclass obtained.
 			return RomDataPtr(romData);
 		}
