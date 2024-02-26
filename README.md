@@ -396,6 +396,8 @@ is currently always enabled, so Windows builds are always GPL-3+ at the moment.
 * @NotaInutilis: French
 * @xxmichibxx: German
 * @ThePBone: German
+* @ionuttbara: Romanian
+* @MaRod92: Italian
 
 ### Other Contributions
 
