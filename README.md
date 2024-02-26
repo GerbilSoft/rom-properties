@@ -11,42 +11,40 @@ video game ROM and disc images.
 [![CodeFactor](https://www.codefactor.io/repository/github/gerbilsoft/rom-properties/badge)](https://www.codefactor.io/repository/github/gerbilsoft/rom-properties/overview)
 [![codecov](https://codecov.io/gh/GerbilSoft/rom-properties/graph/badge.svg?token=oIiL6oVPwZ)](https://codecov.io/gh/GerbilSoft/rom-properties)
 
-## v2.2.1
+## v2.3
 
-![KDE Dolphin showing some PS1 and PS2 cover art thumbnails.](doc/img/rp-v2.2-kde5.PlayStationDisc.cover-art.png)
+![KDE Dolphin showing a Commodore 1541 disk image from GEOS.](doc/img/rp-v2.3-kde5.CBMDOS.png)
 
-v2.2.1 is a bugfix release for v2.2. Major changes include:
+Major changes in v2.3 include:
 
-* Handle JPEG images using Exif containers. A good number of boxarts from the
-  PS1/PS2 section of RPDB use Exif containers, so this ensures they can be
-  loaded properly.
+* xattrs tab on Linux now shows XFS attributes.
 
-* Windows: Fix weird thumbnail aspect ratios for non-square images on current
-  Windows versions.
+* rpcli now supports extracting mipmap levels from most supported texture formats.
+  * Mipmaps are now supported for DirectDrawSurface and KhronosKTX.
 
-* KDE: Fix metadata extraction.
+* Windows: Dark Mode is now supported on Windows 10 1809 and later in the
+  installation program and rp-config.
+  * Dark Mode is also partially supported in the properties pages when using
+    tools such as StartAllBack, though it has some issues right now.
 
-* Preliminary support for Windows on ARM. The Windows distribution includes
-  DLLs compiled for ARM, ARM64, and ARM64EC, and svrplus has been updated
-  to register these DLLs if an ARM system is detected. Note that svrplus
-  has *not* been tested on any ARM systems yet.
+* Sparse disc images, e.g. CISO and GCZ, are now handled by the RomDataFactory
+  class instead of requiring each RomData subclass to handle it. This means
+  that all supported sparse disc images can be used for any console.
+  * This was originally implemented to support ZISO and PSP CISO for PS2 disc
+    images, but it also allows unusual combinations like DAX and JISO for
+    GameCube disc images.
 
-Major changes in v2.2 include:
+* Windows Image files (.wim) are now supported. Contributed by @ecumber.
 
-* PlayStation 1 and 2 cover art images using RPDB, mirrored from the following
-  GitHub repositories:
-  * https://github.com/xlenore/psx-covers
-  * https://github.com/xlenore/ps2-covers
+* Game Boy now has special handling MMC01 and MBC1M multicarts. The main header
+  is now detected correctly and used for the thumbnail image. All games in the
+  multicart are now shown as individual tabs.
 
-* Extended attribute viewer tab. Supports viewing MS-DOS and (on Linux)
-  EXT2 attributes on supported file systems, plus POSIX extended attributes.
-  * On Windows, alternate data streams are displayed as extended attributes.
-  * Windows xattr functionality currently does not work on Windows XP.
+* Commodore DOS disk images (e.g. for Commodore 1541) are now supported,
+  including icons for GEOS files. File formats supported currently include
+  D64, D71, D80, D82, D81, G64, and G71.
 
-* GodotSTEX: Update v4 support for changes in the final version of Godot 4.
-
-* New RomHeaderTest unit test to verify `rpcli` output against a set of known
-  ROM headers and reference text and JSON output.
+* New translations: Romanian and Italian
 
 Translators wanted; if you can translate rom-properties from English to another
 language, check out the [Crowdin project](https://crowdin.com/project/rom-properties).
@@ -54,7 +52,7 @@ language, check out the [Crowdin project](https://crowdin.com/project/rom-proper
 Crowdin project page, file an issue here on GitHub with the requested
 language.)
 
-See [`NEWS.md`](NEWS.md) for a full list of changes in v2.2.
+See [`NEWS.md`](NEWS.md) for a full list of changes in v2.3.
 
 ## Feedback
 

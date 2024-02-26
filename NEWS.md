@@ -63,8 +63,8 @@
       (i.e. from a licensed game) GVR CI8 textures, please submit them in a
       GitHub issue.
   * Added mipmap support to the following texture format parsers:
-    * KhronosKTX
     * DirectDrawSurface
+    * KhronosKTX
   * EXE: Add CPU type 0x0601 for PowerPC big-endian. (MSVC for Mac)
     * Xbox 360 CPU is now "PowerPC (big-endian; Xenon)".
     * Fixes #396: PE machine value 0x0601 == PowerPC big-endian (classic Mac)
