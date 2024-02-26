@@ -1234,7 +1234,10 @@ int CBMDOS::loadFieldData(void)
 
 			// If this is a GEOS file, get the icon.
 			rp_image_ptr icon;
-			if (unlikely(is_geos_file) && likely(p_dir->geos.info_addr.track != 0)) {
+			if (unlikely(is_geos_file) &&
+			    likely(p_dir->geos.file_type != GEOS_FILE_TYPE_NON_GEOS) &&
+			    likely(p_dir->geos.info_addr.track != 0))
+			{
 				// Read the information sector.
 				cbmdos_GEOS_info_block_t geos_info;
 				size = d->read_sector(&geos_info, sizeof(geos_info), p_dir->geos.info_addr.track ,p_dir->geos.info_addr.sector);
