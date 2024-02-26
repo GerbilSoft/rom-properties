@@ -161,6 +161,28 @@ DpfReader::DpfReader(const IRpFilePtr &file)
 			return (a.virt_offset < b.virt_offset);
 		});
 
+	// The first entry should be virt=0, phys=0.
+	// If it isn't, we'll need to adjust offsets in order to read the beginning of the disc.
+	// TODO: Currently only virt=0, phys!=0.
+	if (d->entries[0].virt_offset == 0 && d->entries[0].phys_offset != 0) {
+		// Need to add an extra entry.
+		const uint32_t entry_size = static_cast<uint32_t>(d->entries[0].phys_offset);
+		const RpfEntry first_entry = {
+			0,		// virt_offset
+			0,		// phys_offset
+			entry_size,	// size
+			0		// unknown_14
+		};
+		d->entries.insert(d->entries.begin(), first_entry);
+
+		// Adjust the virtual address for the remaining entries.
+		for (auto &iter = ++d->entries.begin(); iter != d->entries.end(); ++iter) {
+			//printf("BEFORE: virt == %08lX, phys == %08lX, size == %08X\n", iter->virt_offset, iter->phys_offset, iter->size);
+			iter->virt_offset += entry_size;
+			//printf("AFTER:  virt == %08lX, phys == %08lX, size == %08X\n", iter->virt_offset, iter->phys_offset, iter->size);
+		}
+	}
+
 	// Disc size is the highest virtual address, plus size.
 	const auto &last_entry = *(d->entries.crbegin());
 	d->disc_size = last_entry.virt_offset + last_entry.size;
@@ -227,7 +249,6 @@ int DpfReader::isDiscSupported(const uint8_t *pHeader, size_t szHeader) const
 size_t DpfReader::read(void *ptr, size_t size)
 {
 	RP_D(DpfReader);
-	//printf("read: d->disc_size == %ld, d->pos == %08lX, ptr == %p, size == %zX\n", d->disc_size, (size_t)d->pos, ptr, size);
 	assert(m_file != nullptr);
 	assert(d->disc_size > 0);
 	assert(d->pos >= 0);
@@ -262,31 +283,33 @@ size_t DpfReader::read(void *ptr, size_t size)
 		for (const auto &p : d->entries) {
 			if (p.size == 0)
 				continue;
-			if (d->pos < static_cast<int64_t>(p.virt_offset))
-				continue;
-			if (d->pos >= static_cast<int64_t>(p.virt_offset + p.size)) {
-				// No matching sparse entry found. This is a zero section.
-				// Set fake virt_start and virt_end, with phys_offset = -1.
+
+			const int64_t virt_end = static_cast<int64_t>(p.virt_offset) + p.size;
+			if (d->pos < (int64_t)p.virt_offset) {
+				// Requested position is before this entry. This means we don't have a valid entry...
 				virt_start = d->pos;
 				virt_size = static_cast<size_t>(p.size);
 				phys_offset = -1;
 				break;
+			} else if (d->pos >= (int64_t)p.virt_offset && d->pos < virt_end) {
+				// Requested position starts within this entry.
+				virt_start = p.virt_offset;
+				virt_size = static_cast<size_t>(p.size);
+				phys_offset = p.phys_offset;
+
+				// Seek to the current physical position.
+				m_file->seek(phys_offset + (d->pos - virt_start) + d->dpfHeader.data_offset);
+				break;
 			}
 
-			// Found the sparse entry for the current position.
-			virt_start = p.virt_offset;
-			virt_size = static_cast<size_t>(p.size);
-			phys_offset = p.phys_offset;
-
-			// Seek to the current physical position.
-			m_file->seek(phys_offset + (d->pos - virt_start) + d->dpfHeader.data_offset);
+			// Requested position is after this entry.
+			// Keep going.
 		}
 		if (virt_size == 0) {
 			// Section not found...
 			break;
 		}
 
-		//printf("*** d->pos == %ld; m_file->tell()_== %08lX, size = %zX\n", d->pos, (size_t)m_file->tell(), size);
 		// Read up to virt_size bytes.
 		if (phys_offset < 0) {
 			// Zero section
