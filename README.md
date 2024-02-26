@@ -470,3 +470,5 @@ is currently always enabled, so Windows builds are always GPL-3+ at the moment.
 * [NEZ Plug](https://nezplug.sourceforge.net/) for basic GBR specifications.
 * [xlenore](https://github.com/xlenore) for the PlayStation 1 and 2 cover art
   repository.
+* [unusedino.de](http://unusedino.de/ec64/technical3.html) for its archive of
+  C64 emulator file format documentation by Peter Schepers.
