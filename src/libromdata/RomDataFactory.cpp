@@ -96,6 +96,7 @@ using std::vector;
 // RomData subclasses: Media
 #include "Media/CBMDOS.hpp"
 #include "Media/ISO.hpp"
+#include "Media/Wim.hpp"
 
 // RomData subclasses: Other
 #include "Other/Amiibo.hpp"
@@ -105,7 +106,6 @@ using std::vector;
 #include "Other/NintendoBadge.hpp"
 #include "Other/RpTextureWrapper.hpp"
 #include "Other/Lua.hpp"
-#include "Other/Wim.hpp"
 
 // Special case for Dreamcast save files
 #include "Console/dc_structs.h"

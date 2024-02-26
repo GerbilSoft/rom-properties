@@ -236,8 +236,9 @@ button.
 
 |             System             | Properties Tab | Metadata | Internal Images | External Scans |
 |:------------------------------:|:--------------:|:--------:|:---------------:|:--------------:|
-| Commodore DOS Disk Images      |       Yes      |    No    |       GEOS*      |       N/A      |
+| Commodore DOS Disk Images      |       Yes      |    No    |       GEOS*     |       N/A      |
 | ISO-9660 Disc Images           |       Yes      |   Yes    |        No       |       N/A      |
+| Windows Image (.wim)           |       Yes      |    No    |       N/A       |       N/A      |
 
 Notes:
 * Commodore DOS currently includes the 2040, 3040, 4040, 8050, 8250, 1540/1541,
