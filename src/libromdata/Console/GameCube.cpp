@@ -228,6 +228,7 @@ const char *const GameCubePrivate::exts[] = {
 	".tgc",
 	".dec",	// .iso.dec
 	".gcz",
+	".dpf", ".rpf",
 
 	// Partially supported. (Header only!)
 	".wia",
@@ -255,6 +256,8 @@ const char *const GameCubePrivate::mimeTypes[] = {
 	"application/x-compressed-iso",	// KDE detects CISO as this
 	"application/x-nasos-image",
 	"application/x-gcz-image",
+	"application/x-dpf-image",
+	"application/x-rpf-image",
 	"application/x-rvz-image",
 
 	nullptr
