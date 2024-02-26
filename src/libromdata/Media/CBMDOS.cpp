@@ -1090,15 +1090,22 @@ int CBMDOS::loadFieldData(void)
 		}
 
 		// Disk name
+		const char *const s_disk_name_title = C_("CBMDOS", "Disk Name");
 		remove_A0_padding(disk_name, disk_name_len);
-		string s_disk_name = cpN_to_utf8(codepage, disk_name, disk_name_len);
-		if (s_disk_name.find(uFFFD) != string::npos) {
-			// Disk name has invalid characters when using Unshifted.
-			// Try again with Shifted.
-			codepage = CP_RP_PETSCII_Shifted;
-			s_disk_name = cpN_to_utf8(codepage, disk_name, disk_name_len);
+		if (unlikely(!memcmp(c1541_bam.geos.geos_id_string, "GEOS", 4))) {
+			// GEOS ID is present. Parse the disk name as ASCII. (well, Latin-1)
+			d->fields.addField_string(s_disk_name_title,
+				latin1_to_utf8(disk_name, disk_name_len));
+		} else {
+			string s_disk_name = cpN_to_utf8(codepage, disk_name, disk_name_len);
+			if (s_disk_name.find(uFFFD) != string::npos) {
+				// Disk name has invalid characters when using Unshifted.
+				// Try again with Shifted.
+				codepage = CP_RP_PETSCII_Shifted;
+				s_disk_name = cpN_to_utf8(codepage, disk_name, disk_name_len);
+			}
+			d->fields.addField_string(s_disk_name_title, s_disk_name);
 		}
-		d->fields.addField_string(C_("CBMDOS", "Disk Name"), s_disk_name);
 
 		// Disk ID
 		d->fields.addField_string(C_("CBMDOS", "Disk ID"),

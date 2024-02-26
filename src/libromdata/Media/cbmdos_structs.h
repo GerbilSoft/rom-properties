@@ -42,6 +42,7 @@ ASSERT_STRUCT(cbmdos_TS_ptr_t, 2);
 /**
  * CBMDOS: C1541 Block Allocation Map (18/0)
  */
+#define GEOS_ID_STRING "GEOS format V1.x"	// the 'x' may be 0 or 1; the '.' may be missing
 typedef struct _cbmdos_C1541_BAM_t {
 	cbmdos_TS_ptr_t next;	// $00: Location of the first directory sector
 	                        //      NOTE: Ignore this; it should always be 18/1.
@@ -70,6 +71,13 @@ typedef struct _cbmdos_C1541_BAM_t {
 			uint8_t unused_C1571_AB[0x32];	// $AB
 			uint8_t free_sector_count[35];	// $DD: [C1571] Free sector count for tracks 36-70
 		};
+		struct {
+			cbmdos_TS_ptr_t border_sector;	// $AB: Border sector location
+			char geos_id_string[16];	// $AC: GEOS ID string, in ASCII
+			                                // (check first 4 char for "GEOS" in ASCII)
+			uint8_t unused_other_BD[16];	// $BD
+			uint8_t free_sector_count[35];	// $DD: [C1571] Free sector count for tracks 36-70
+		} geos;
 	};
 } cbmdos_C1541_BAM_t;
 ASSERT_STRUCT(cbmdos_C1541_BAM_t, CBMDOS_SECTOR_SIZE);
