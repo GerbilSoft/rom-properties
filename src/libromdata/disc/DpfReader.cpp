@@ -176,7 +176,7 @@ DpfReader::DpfReader(const IRpFilePtr &file)
 		d->entries.insert(d->entries.begin(), first_entry);
 
 		// Adjust the virtual address for the remaining entries.
-		for (auto &iter = ++d->entries.begin(); iter != d->entries.end(); ++iter) {
+		for (auto iter = ++d->entries.begin(); iter != d->entries.end(); ++iter) {
 			//printf("BEFORE: virt == %08lX, phys == %08lX, size == %08X\n", iter->virt_offset, iter->phys_offset, iter->size);
 			iter->virt_offset += entry_size;
 			//printf("AFTER:  virt == %08lX, phys == %08lX, size == %08X\n", iter->virt_offset, iter->phys_offset, iter->size);
