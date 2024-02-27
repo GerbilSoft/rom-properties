@@ -163,26 +163,22 @@ rp_rom_data_view_class_init(RpRomDataViewClass *klass)
 	if (!has_checked_adw) {
 		has_checked_adw = true;
 #  if GTK_CHECK_VERSION(4,0,0)
-		// GTK4: libadwaita
-		pfn_adw_deck_get_type = (pfnGlibGetType_t)dlvsym(
-			RTLD_DEFAULT, "adw_deck_get_type", "LIBADWAITA_1_0");
-		if (pfn_adw_deck_get_type) {
-			pfn_adw_header_bar_get_type = (pfnGlibGetType_t)dlvsym(
-				RTLD_DEFAULT, "adw_header_bar_get_type", "LIBADWAITA_1_0");
-			pfn_adw_header_bar_pack_end = (pfnAdwHeaderBarPackEnd_t)dlvsym(
-				RTLD_DEFAULT, "adw_header_bar_pack_end", "LIBADWAITA_1_0");
-		}
+	// GTK4: libadwaita
+#    define ADW_SYM_PREFIX "adw_"
+#    define ADW_SYM_VERSION "LIBADWAITA_1_0"
 #  else /* !GTK_CHECK_VERSION(4,0,0) */
-		// GTK3: libhandy
+	// GTK3: libhandy
+#    define ADW_SYM_PREFIX "hdy_"
+#    define ADW_SYM_VERSION "LIBHANDY_1_0"
+#  endif
 		pfn_adw_deck_get_type = (pfnGlibGetType_t)dlvsym(
-			RTLD_DEFAULT, "hdy_deck_get_type", "LIBHANDY_1_0");
+			RTLD_DEFAULT, ADW_SYM_PREFIX "deck_get_type", ADW_SYM_VERSION);
 		if (pfn_adw_deck_get_type) {
 			pfn_adw_header_bar_get_type = (pfnGlibGetType_t)dlvsym(
-				RTLD_DEFAULT, "hdy_header_bar_get_type", "LIBHANDY_1_0");
+				RTLD_DEFAULT, ADW_SYM_PREFIX "header_bar_get_type", ADW_SYM_VERSION);
 			pfn_adw_header_bar_pack_end = (pfnAdwHeaderBarPackEnd_t)dlvsym(
-				RTLD_DEFAULT, "hdy_header_bar_pack_end", "LIBHANDY_1_0");
+				RTLD_DEFAULT, ADW_SYM_PREFIX "header_bar_pack_end", ADW_SYM_VERSION);
 		}
-#  endif /* GTK_CHECK_VERSION(4,0,0) */
 	}
 #endif /* GTK_CHECK_VERSION(3,0,0) */
 }
