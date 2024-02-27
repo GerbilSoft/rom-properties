@@ -430,7 +430,11 @@ int GameCubePrivate::loadWiiPartitionTables(void)
 	// Restore the original sorting order. (VG#, then PT#)
 	std::sort(wiiPtbl.begin(), wiiPtbl.end(),
 		[](const WiiPartEntry &a, const WiiPartEntry &b) noexcept -> bool {
-			return (a.vg < b.vg || a.pt < b.pt);
+			if (a.vg < b.vg) return true;
+			if (a.vg > b.vg) return false;
+
+			if (a.pt < b.pt) return true;
+			/*if (a.pt > b.pt)*/ return false;
 		}
 	);
 
