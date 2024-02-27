@@ -892,8 +892,12 @@ int EXEPrivate::addFields_PE_Export(void)
 		[&ents](unsigned int idx_lhs, unsigned int idx_rhs) -> bool {
 			const ExportEntry &lhs = ents[idx_lhs];
 			const ExportEntry &rhs = ents[idx_rhs];
-			return lhs.hint < rhs.hint
-				|| (lhs.hint == rhs.hint && lhs.ordinal < rhs.ordinal);
+
+			if (lhs.hint < rhs.hint) return true;
+			if (lhs.hint > rhs.hint) return false;
+
+			if (lhs.ordinal < rhs.ordinal) return true;
+			/*if (lhs.ordinal > rhs.ordinal)*/ return false;
 		});
 
 	// Convert to ListData
@@ -1121,16 +1125,12 @@ int EXEPrivate::addFields_PE_Import(void)
 			// Vector index 1: Hint
 			// Vector index 2: Module
 			int res = strcasecmp(lhs[2].c_str(), rhs[2].c_str());
-			if (res < 0)
-				return true;
-			else if (res > 0)
-				return false;
+			if (res < 0) return true;
+			if (res > 0) return false;
 
 			res = strcasecmp(lhs[0].c_str(), rhs[0].c_str());
-			if (res < 0)
-				return true;
-			else if (res > 0)
-				return false;
+			if (res < 0) return true;
+			if (res > 0) return false;
 
 			// Hint is numeric, so convert it to a number first.
 			unsigned long hint_lhs, hint_rhs;

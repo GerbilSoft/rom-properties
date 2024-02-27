@@ -860,16 +860,12 @@ int EXEPrivate::addFields_NE_Import(void)
 			// Vector index 2: Module
 
 			int res = strcasecmp(lhs[2].c_str(), rhs[2].c_str());
-			if (res < 0)
-				return true;
-			else if (res > 0)
-				return false;
+			if (res < 0) return true;
+			if (res > 0) return false;
 
 			res = strcasecmp(lhs[0].c_str(), rhs[0].c_str());
-			if (res < 0)
-				return true;
-			else if (res > 0)
-				return false;
+			if (res < 0) return true;
+			if (res > 0) return false;
 
 			// Numeric sort for ordinals.
 			const unsigned long ord1 = strtoul(lhs[1].c_str(), nullptr, 10);
