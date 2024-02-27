@@ -35,7 +35,6 @@ public:
 
 private:
 	RP_DISABLE_COPY(RP_XAttrView_Private)
-private:
 	RP_XAttrView *const q_ptr;
 
 public:
@@ -46,7 +45,7 @@ public:
 public:
 	HWND hDlgSheet;				// Property sheet
 	LPTSTR tfilename;			// Opened file
-	unique_ptr<LibRpFile::XAttrReader> xattrReader;	// XAttrReader
+	std::unique_ptr<LibRpFile::XAttrReader> xattrReader;	// XAttrReader
 
 	// wtsapi32.dll for Remote Desktop status. (WinXP and later)
 	LibWin32UI::WTSSessionNotification wts;
