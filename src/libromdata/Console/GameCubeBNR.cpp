@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * GameCubeBNR.cpp: Nintendo GameCube banner reader.                       *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -77,10 +77,10 @@ public:
 
 	/**
 	 * Should the string be handled as Shift-JIS?
-	 * @param hasCopyrightSymbol True if the first character is '\xA9'.
+	 * @param chr0 First character in the description.
 	 * @return True if it should be handled as Shift-JIS; false if not.
 	 */
-	bool shouldHandleStringAsShiftJIS(bool hasCopyrightSymbol) const;
+	bool shouldHandleStringAsShiftJIS(char chr0) const;
 
 	/**
 	 * Get the game name string for the specified comment.
@@ -184,10 +184,10 @@ rp_image_const_ptr GameCubeBNRPrivate::loadBanner(void)
 
 /**
  * Should the string be handled as Shift-JIS?
- * @param hasCopyrightSymbol True if the first character is '\xA9'.
+ * @param chr0 First character in the description.
  * @return True if it should be handled as Shift-JIS; false if not.
  */
-bool GameCubeBNRPrivate::shouldHandleStringAsShiftJIS(bool hasCopyrightSymbol) const
+bool GameCubeBNRPrivate::shouldHandleStringAsShiftJIS(char chr0) const
 {
 	if (bannerType == BannerType::BNR2) {
 		// BNR2 is always cp1252.
@@ -201,7 +201,15 @@ bool GameCubeBNRPrivate::shouldHandleStringAsShiftJIS(bool hasCopyrightSymbol) c
 		case GCN_REGION_USA:
 		case GCN_REGION_EUR:
 			// USA/PAL uses cp1252.
-			isShiftJIS = false;
+			// NOTE: Some RELSxx titles incorrectly use Shift-JIS.
+			// Check for Shift-JIS first bytes that aren't allocated in cp1252,
+			// or are rarely used in cp1252.
+			isShiftJIS = (chr0 == '\x81' ||
+			              chr0 == '\x83' ||	// 'ƒ'
+			              chr0 == '\x8D' ||
+			              chr0 == '\x8F' ||
+			              chr0 == '\x90' ||
+			              chr0 == '\x9D');
 			break;
 
 		case GCN_REGION_JPN:
@@ -215,9 +223,9 @@ bool GameCubeBNRPrivate::shouldHandleStringAsShiftJIS(bool hasCopyrightSymbol) c
 			break;
 
 		default:
-			// Use cp1252 if the first character is '\xA9' (©).
+			// Use cp1252 if the first character is '\xA9' ('©').
 			// Otherwise, use Shift-JIS with cp1252 fallback.
-			isShiftJIS = !hasCopyrightSymbol;
+			isShiftJIS = (chr0 != '\xA9');
 	}
 
 	return isShiftJIS;
@@ -233,23 +241,19 @@ bool GameCubeBNRPrivate::shouldHandleStringAsShiftJIS(bool hasCopyrightSymbol) c
 string GameCubeBNRPrivate::getGameNameString(const gcn_banner_comment_t *comment) const
 {
 	string s_ret;
-	bool hasCopyrightSymbol = false;
+	char chr0 = '\0';
 
 	if (comment->gamename_full[0] != '\0') {
 		const size_t field_len = strnlen(comment->gamename_full, sizeof(comment->gamename_full));
 		s_ret.assign(comment->gamename_full, field_len);
-		if ((uint8_t)comment->gamename_full[0] == 0xA9) {
-			hasCopyrightSymbol = true;
-		}
+		chr0 = s_ret[0];
 	} else if (comment->gamename[0] != '\0') {
 		const size_t field_len = strnlen(comment->gamename, sizeof(comment->gamename));
 		s_ret.assign(comment->gamename, field_len);
-		if ((uint8_t)comment->gamename[0] == 0xA9) {
-			hasCopyrightSymbol = true;
-		}
+		chr0 = s_ret[0];
 	}
 
-	return (shouldHandleStringAsShiftJIS(hasCopyrightSymbol))
+	return (shouldHandleStringAsShiftJIS(chr0))
 		? cp1252_sjis_to_utf8(s_ret)
 		: cp1252_to_utf8(s_ret);
 }
@@ -264,23 +268,19 @@ string GameCubeBNRPrivate::getGameNameString(const gcn_banner_comment_t *comment
 string GameCubeBNRPrivate::getCompanyString(const gcn_banner_comment_t *comment) const
 {
 	string s_ret;
-	bool hasCopyrightSymbol = false;
+	char chr0 = '\0';
 
 	if (comment->company_full[0] != '\0') {
 		const size_t field_len = strnlen(comment->company_full, sizeof(comment->company_full));
 		s_ret.assign(comment->company_full, field_len);
-		if ((uint8_t)comment->company_full[0] == 0xA9) {
-			hasCopyrightSymbol = true;
-		}
+		chr0 = s_ret[0];
 	} else if (comment->company[0] != '\0') {
 		const size_t field_len = strnlen(comment->company, sizeof(comment->company));
 		s_ret.assign(comment->company, field_len);
-		if ((uint8_t)comment->company[0] == 0xA9) {
-			hasCopyrightSymbol = true;
-		}
+		chr0 = s_ret[0];
 	}
 
-	return (shouldHandleStringAsShiftJIS(hasCopyrightSymbol))
+	return (shouldHandleStringAsShiftJIS(chr0))
 		? cp1252_sjis_to_utf8(s_ret)
 		: cp1252_to_utf8(s_ret);
 }
@@ -295,17 +295,15 @@ string GameCubeBNRPrivate::getCompanyString(const gcn_banner_comment_t *comment)
 string GameCubeBNRPrivate::getGameDescriptionString(const gcn_banner_comment_t *comment) const
 {
 	string s_ret;
-	bool hasCopyrightSymbol = false;
+	char chr0 = '\0';
 
 	if (comment->gamedesc[0] != '\0') {
 		const size_t field_len = strnlen(comment->gamedesc, sizeof(comment->gamedesc));
 		s_ret.assign(comment->gamedesc, field_len);
-		if ((uint8_t)comment->gamedesc[0] == 0xA9) {
-			hasCopyrightSymbol = true;
-		}
+		chr0 = s_ret[0];
 	}
 
-	return (shouldHandleStringAsShiftJIS(hasCopyrightSymbol))
+	return (shouldHandleStringAsShiftJIS(chr0))
 		? cp1252_sjis_to_utf8(s_ret)
 		: cp1252_to_utf8(s_ret);
 }
