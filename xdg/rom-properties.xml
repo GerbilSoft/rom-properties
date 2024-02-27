@@ -292,6 +292,24 @@
       <match value="0xb10bc001" type="big32" offset="0"/>
     </magic>
   </mime-type>
+  <mime-type type="application/x-dpf-image">
+    <comment>Sparse GameCube disc image</comment>
+    <sub-class-of type="application/x-gamecube-rom"/>
+    <generic-icon name="application-x-cd-image"/>
+    <glob pattern="*.dpf"/>
+    <magic priority="50">
+      <match value="0x23fc3e86" type="little32" offset="0"/>
+    </magic>
+  </mime-type>
+  <mime-type type="application/x-rpf-image">
+    <comment>Sparse Wii disc image</comment>
+    <sub-class-of type="application/x-wii-rom"/>
+    <generic-icon name="application-x-cd-image"/>
+    <glob pattern="*.rpf"/>
+    <magic priority="50">
+      <match value="0xe0f92b6a" type="little32" offset="0"/>
+    </magic>
+  </mime-type>
   <mime-type type="application/x-wia">
     <comment>Compressed GameCube/Wii disc image</comment>
     <sub-class-of type="application/x-wii-rom"/>

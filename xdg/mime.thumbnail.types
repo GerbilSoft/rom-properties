@@ -43,6 +43,8 @@ application/x-wia			# GameCube
 application/x-cso			# GameCube
 application/x-nasos-image		# GameCube
 application/x-gcz-image			# GameCube
+application/x-dpf-image			# GameCube
+application/x-rpf-image			# GameCube
 application/x-rvz-image			# GameCube
 application/x-gamecube-bnr		# GameCubeBNR
 application/x-gamecube-save		# GameCubeSave

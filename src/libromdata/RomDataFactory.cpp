@@ -113,6 +113,7 @@ using std::vector;
 // Sparse disc image formats
 #include "disc/CisoGcnReader.hpp"
 #include "disc/CisoPspReader.hpp"
+#include "disc/DpfReader.hpp"
 #include "disc/GczReader.hpp"
 #include "disc/NASOSReader.hpp"
 #include "disc/WbfsReader.hpp"
@@ -200,43 +201,44 @@ public:
 public:
 	/** Sparse disc image check arrays **/
 
-	typedef int (*pfnSparseIsDiscSupported)(const uint8_t *pHeader, size_t szHeader);
-	typedef SparseDiscReader* (*pfnNewSparseDiscReader_t)(const IRpFilePtr &file);
+	typedef int (*pfnIsDiscSupported)(const uint8_t *pHeader, size_t szHeader);
+	typedef IDiscReader* (*pfnNewIDiscReader_t)(const IRpFilePtr &file);
 
-	struct SparseDiscReaderFns {
-		pfnSparseIsDiscSupported isDiscSupported;
-		pfnNewSparseDiscReader_t newSparseDiscReader;
+	struct IDiscReaderFns {
+		pfnIsDiscSupported isDiscSupported;
+		pfnNewIDiscReader_t newIDiscReader;
 
 		// Magic numbers to check.
 		// Up to 4 magic numbers can be specified for multiple formats.
 		// 0 == end of magic list
+		// NOTE: Must be in Big-Endian format!
 		uint32_t magic[4];
 	};
 
 	/**
-	 * Templated function to construct a new SparseDiscReader subclass.
+	 * Templated function to construct a new IDiscReader subclass.
 	 * @param klass Class name.
 	 */
 	template<typename klass>
-	static SparseDiscReader *SparseDiscReader_ctor(const IRpFilePtr &file)
+	static IDiscReader *IDiscReader_ctor(const IRpFilePtr &file)
 	{
 		return new klass(file);
 	}
 
-#define GetSparseDiscReaderFns(discType, magic) \
+#define GetIDiscReaderFns(discType, magic) \
 	{discType::isDiscSupported_static, \
-	 RomDataFactoryPrivate::SparseDiscReader_ctor<discType>, \
+	 RomDataFactoryPrivate::IDiscReader_ctor<discType>, \
 	 magic}
 
-	static const SparseDiscReaderFns sparseDiscReaderFns[];
+	static const IDiscReaderFns iDiscReaderFns[];
 
 	/**
-	 * Attempt to open a SparseDiscReader for this file.
+	 * Attempt to open a IDiscReader for this file.
 	 * @param file		[in] IRpFilePtr
 	 * @param magic0	[in] First 32-bit value from the file (original format from the file)
-	 * @return SparseDiscReader*, or nullptr if not applicable.
+	 * @return IDiscReader*, or nullptr if not applicable.
 	 */
-	static SparseDiscReader *openSparseDiscReader(const IRpFilePtr &file, uint32_t magic0);
+	static IDiscReader *openIDiscReader(const IRpFilePtr &file, uint32_t magic0);
 
 public:
 #ifdef ROMDATAFACTORY_USE_FILE_EXTENSIONS
@@ -448,17 +450,18 @@ const RomDataFactoryPrivate::RomDataFns *const RomDataFactoryPrivate::romDataFns
 	nullptr
 };
 
-// Sparse Disc Reader functions
+// IDiscReader functions
 #define P99_PROTECT(...) __VA_ARGS__	/* Reference: https://stackoverflow.com/a/5504336 */
-const RomDataFactoryPrivate::SparseDiscReaderFns RomDataFactoryPrivate::sparseDiscReaderFns[] = {
-	GetSparseDiscReaderFns(CisoGcnReader,	P99_PROTECT({'CISO'})),
+const RomDataFactoryPrivate::IDiscReaderFns RomDataFactoryPrivate::iDiscReaderFns[] = {
+	GetIDiscReaderFns(CisoGcnReader,	P99_PROTECT({'CISO'})),
 	// NOTE: MSVC doesn't like putting #ifdef within the P99_PROTECT macro.
 	// TODO: Disable ZISO and JISO if LZ4 and LZO aren't available?
-	GetSparseDiscReaderFns(CisoPspReader,	P99_PROTECT({'CISO', 'ZISO', 0x44415800, 'JISO'})),
-	GetSparseDiscReaderFns(GczReader,	P99_PROTECT({0xB10BC001})),
-	GetSparseDiscReaderFns(NASOSReader,	P99_PROTECT({'GCML', 'GCMM', 'WII5', 'WII9'})),
-	//GetSparseDiscReaderFns(WbfsReader,	P99_PROTECT({'WBFS'})),	// Handled separately
-	GetSparseDiscReaderFns(WuxReader,	P99_PROTECT({'WUX0'})),	// NOTE: Not checking second magic here.
+	GetIDiscReaderFns(CisoPspReader,	P99_PROTECT({'CISO', 'ZISO', 0x44415800, 'JISO'})),
+	GetIDiscReaderFns(DpfReader,		P99_PROTECT({0x863EFC23, 0x6A2BF9E0})),
+	GetIDiscReaderFns(GczReader,		P99_PROTECT({0xB10BC001})),
+	GetIDiscReaderFns(NASOSReader,		P99_PROTECT({'GCML', 'GCMM', 'WII5', 'WII9'})),
+	//GetIDiscReaderFns(WbfsReader,		P99_PROTECT({'WBFS'})),	// Handled separately
+	GetIDiscReaderFns(WuxReader,		P99_PROTECT({'WUX0'})),	// NOTE: Not checking second magic here.
 
 	{nullptr, nullptr, {0}}
 };
@@ -526,12 +529,12 @@ RomDataPtr RomDataFactoryPrivate::openDreamcastVMSandVMI(const IRpFilePtr &file)
 }
 
 /**
- * Attempt to open a SparseDiscReader for this file.
+ * Attempt to open an IDiscReader for this file.
  * @param file		[in] IRpFilePtr
  * @param magic0	[in] First 32-bit value from the file (original format from the file)
- * @return SparseDiscReader*, or nullptr if not applicable.
+ * @return IDiscReader*, or nullptr if not applicable.
  */
-SparseDiscReader *RomDataFactoryPrivate::openSparseDiscReader(const IRpFilePtr &file, uint32_t magic0)
+IDiscReader *RomDataFactoryPrivate::openIDiscReader(const IRpFilePtr &file, uint32_t magic0)
 {
 	if (magic0 == 0)
 		return nullptr;
@@ -588,9 +591,12 @@ SparseDiscReader *RomDataFactoryPrivate::openSparseDiscReader(const IRpFilePtr &
 		return new WbfsReader(file);
 	}
 
-	const RomDataFactoryPrivate::SparseDiscReaderFns *sdfns =
-		RomDataFactoryPrivate::sparseDiscReaderFns;
-	for (; sdfns->newSparseDiscReader != nullptr; sdfns++) {
+	// NOTE: This was originally for SparseDiscReader subclasses.
+	// DpfReader does not derive from SparseDiscReader, so it was
+	// changed to IDiscReader subclasses.
+	const RomDataFactoryPrivate::IDiscReaderFns *sdfns =
+		RomDataFactoryPrivate::iDiscReaderFns;
+	for (; sdfns->newIDiscReader != nullptr; sdfns++) {
 		// Check all four magic numbers.
 		for (unsigned int i = 0; i < ARRAY_SIZE(sdfns->magic); i++) {
 			if (sdfns->magic[i] == 0) {
@@ -598,16 +604,16 @@ SparseDiscReader *RomDataFactoryPrivate::openSparseDiscReader(const IRpFilePtr &
 				break;
 			} else if (sdfns->magic[i] == magic0) {
 				// Found a matching magic.
-				SparseDiscReader *const sd = sdfns->newSparseDiscReader(file);
+				IDiscReader *const sd = sdfns->newIDiscReader(file);
 				if (sd->isOpen()) {
-					// SparseDiscReader obtained.
+					// IDiscReader obtained.
 					return sd;
 				}
 			}
 		}
 	}
 
-	// No SparseDiscReader is available for this file.
+	// No IDiscReader is available for this file.
 	return nullptr;
 }
 
@@ -808,7 +814,7 @@ RomDataPtr RomDataFactory::create(const IRpFilePtr &file, unsigned int attrs)
 	// If a sparse disc image format is detected, this will be
 	// a SparseDiscReader. Otherwise, it'll be the same as `file`.
 	bool isSparseDiscReader = false;
-	IRpFilePtr reader(RomDataFactoryPrivate::openSparseDiscReader(file, header.u32[0]));
+	IRpFilePtr reader(RomDataFactoryPrivate::openIDiscReader(file, header.u32[0]));
 	if (reader) {
 		// SparseDiscReader obtained. Re-read the header.
 		reader->rewind();
@@ -1038,7 +1044,7 @@ RomDataPtr RomDataFactory::create(const IRpFilePtr &file, unsigned int attrs)
 	// Needed for PSP disc images, among others.
 	if (isSparseDiscReader) {
 		RomData *const romData = RomDataFactoryPrivate::checkISO(reader);
-		if (romData->isValid()) {
+		if (romData && romData->isValid()) {
 			// RomData subclass obtained.
 			return RomDataPtr(romData);
 		}

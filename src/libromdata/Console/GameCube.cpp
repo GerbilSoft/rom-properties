@@ -228,6 +228,7 @@ const char *const GameCubePrivate::exts[] = {
 	".tgc",
 	".dec",	// .iso.dec
 	".gcz",
+	".dpf", ".rpf",
 
 	// Partially supported. (Header only!)
 	".wia",
@@ -255,6 +256,8 @@ const char *const GameCubePrivate::mimeTypes[] = {
 	"application/x-compressed-iso",	// KDE detects CISO as this
 	"application/x-nasos-image",
 	"application/x-gcz-image",
+	"application/x-dpf-image",
+	"application/x-rpf-image",
 	"application/x-rvz-image",
 
 	nullptr
@@ -401,6 +404,10 @@ int GameCubePrivate::loadWiiPartitionTables(void)
 			entry.type = be32_to_cpu(pt[j].type);
 		}
 	}
+	if (wiiPtbl.empty()) {
+		// No partitions...
+		return -ENOENT;
+	}
 
 	// Sort partitions by starting address in order to calculate the sizes.
 	std::sort(wiiPtbl.begin(), wiiPtbl.end(),
@@ -423,7 +430,11 @@ int GameCubePrivate::loadWiiPartitionTables(void)
 	// Restore the original sorting order. (VG#, then PT#)
 	std::sort(wiiPtbl.begin(), wiiPtbl.end(),
 		[](const WiiPartEntry &a, const WiiPartEntry &b) noexcept -> bool {
-			return (a.vg < b.vg || a.pt < b.pt);
+			if (a.vg < b.vg) return true;
+			if (a.vg > b.vg) return false;
+
+			if (a.pt < b.pt) return true;
+			/*if (a.pt > b.pt)*/ return false;
 		}
 	);
 

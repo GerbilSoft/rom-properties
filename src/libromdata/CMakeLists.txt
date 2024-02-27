@@ -108,6 +108,7 @@ SET(${PROJECT_NAME}_SRCS
 	disc/CIAReader.cpp
 	disc/CisoGcnReader.cpp
 	disc/CisoPspReader.cpp
+	disc/DpfReader.cpp
 	disc/GcnFst.cpp
 	disc/GcnPartition.cpp
 	disc/GcnPartition_p.cpp
@@ -304,6 +305,7 @@ SET(${PROJECT_NAME}_H
 	disc/CIAReader.hpp
 	disc/CisoGcnReader.hpp
 	disc/CisoPspReader.hpp
+	disc/DpfReader.hpp
 	disc/GcnFst.hpp
 	disc/GcnPartition.hpp
 	disc/GcnPartition_p.hpp
@@ -323,6 +325,7 @@ SET(${PROJECT_NAME}_H
 
 	disc/ciso_gcn.h
 	disc/ciso_psp_structs.h
+	disc/dpf_structs.h
 	disc/gcz_structs.h
 	disc/libwbfs.h
 	disc/nasos_gcn.h

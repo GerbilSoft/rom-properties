@@ -72,6 +72,7 @@
   * DirectDrawSurface: Detect DXT5nm (normal map) and swizzle the Red and Alpha
     channels for proper display. Also show both sRGB and Normal Map attributes
     as set by various nVidia tools.
+  * GameCube: DPF and RPF sparse disc images are now supported.
 
 * Bug fixes:
   * Windows: Truncate ListView strings to a maximum of 259+1 characters. (259
