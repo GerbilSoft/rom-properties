@@ -43,7 +43,7 @@
     Windows Vista. Contributed by @ecumber.
     * Pull requests: #391, #392
   * CBMDOS: Commodore DOS floppy disk images. Supports D64, D71, D80, D82, D81,
-    D67, and (mostly supports) G64 images, plus GEOS file icons.
+    D67, and (mostly supports) G64 and G71 images, plus GEOS file icons.
 
 * New parser features:
   * DMG: MMM01 and MBC1M multicarts are now detected, and the internal ROM
