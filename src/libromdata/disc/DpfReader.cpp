@@ -121,7 +121,7 @@ DpfReader::DpfReader(const IRpFilePtr &file)
 		// RPF: Load it directly.
 		const size_t load_size = d->dpfHeader.entry_count * sizeof(RpfEntry);
 		size_t size = m_file->seekAndRead(d->dpfHeader.entry_table_offset, d->entries.data(), load_size);
-		if (load_size != size) {
+		if (size != load_size) {
 			// Load error.
 			d->entries.clear();
 			m_file.reset();
@@ -132,12 +132,23 @@ DpfReader::DpfReader(const IRpFilePtr &file)
 		// FIXME: If the first entry has virt=0 and phys!=0,
 		// anything before that non-zero physical address should be
 		// the *real* virt=0. Mostly affects RPFs.
+
+#if SYS_BYTEORDER != SYS_LIL_ENDIAN
+		// Value are stored in little-endian on disk.
+		// Convert to host-endian.
+		for (auto &p : d->entries) {
+			p.virt_offset = le64_to_cpu(p.virt_offset);
+			p.phys_offset = le64_to_cpu(p.phys_offset);
+			p.size = le32_to_cpu(p.size);
+			p.unknown_14 = le32_to_cpu(p.unknown_14);
+		}
+#endif /* SYS_BYTEORDER != SYS_LIL_ENDIAN */
 	} else /*if (d->dpfHeader.magic == DPF_MAGIC)*/ {
 		// DPF: Load into a buffer, then convert from DPF to RPF.
 		unique_ptr<DpfEntry[]> dpf_entry_buf(new DpfEntry[d->dpfHeader.entry_count]);
 		const size_t load_size = d->dpfHeader.entry_count * sizeof(DpfEntry);
 		size_t size = m_file->seekAndRead(d->dpfHeader.entry_table_offset, dpf_entry_buf.get(), load_size);
-		if (load_size != size) {
+		if (size != load_size) {
 			// Load error.
 			d->entries.clear();
 			m_file.reset();
@@ -147,10 +158,10 @@ DpfReader::DpfReader(const IRpFilePtr &file)
 
 		// TODO: Use pointer arithmetic?
 		for (unsigned int i = 0; i < d->dpfHeader.entry_count; i++) {
-			d->entries[i].virt_offset = static_cast<uint64_t>(dpf_entry_buf[i].virt_offset);
-			d->entries[i].phys_offset = static_cast<uint64_t>(dpf_entry_buf[i].phys_offset);
-			d->entries[i].size = dpf_entry_buf[i].size;
-			d->entries[i].unknown_14 = dpf_entry_buf[i].unknown_0C;
+			d->entries[i].virt_offset = static_cast<uint64_t>(le32_to_cpu(dpf_entry_buf[i].virt_offset));
+			d->entries[i].phys_offset = static_cast<uint64_t>(le32_to_cpu(dpf_entry_buf[i].phys_offset));
+			d->entries[i].size = le32_to_cpu(dpf_entry_buf[i].size);
+			d->entries[i].unknown_14 = le32_to_cpu(dpf_entry_buf[i].unknown_0C);
 		}
 	}
 
@@ -177,9 +188,7 @@ DpfReader::DpfReader(const IRpFilePtr &file)
 
 		// Adjust the virtual address for the remaining entries.
 		for (auto iter = ++d->entries.begin(); iter != d->entries.end(); ++iter) {
-			//printf("BEFORE: virt == %08lX, phys == %08lX, size == %08X\n", iter->virt_offset, iter->phys_offset, iter->size);
 			iter->virt_offset += entry_size;
-			//printf("AFTER:  virt == %08lX, phys == %08lX, size == %08X\n", iter->virt_offset, iter->phys_offset, iter->size);
 		}
 	}
 
@@ -279,19 +288,20 @@ size_t DpfReader::read(void *ptr, size_t size)
 		size_t virt_size = 0;
 
 		// Find the sparse entry for the current position.
+		// NOTE: Sparse entries are sorted by virtual offset.
 		// TODO: Cache it for d->pos?
 		for (const auto &p : d->entries) {
 			if (p.size == 0)
 				continue;
 
-			const int64_t virt_end = static_cast<int64_t>(p.virt_offset) + p.size;
 			if (d->pos < (int64_t)p.virt_offset) {
 				// Requested position is before this entry. This means we don't have a valid entry...
-				virt_start = d->pos;
-				virt_size = static_cast<size_t>(p.size);
 				phys_offset = -1;
 				break;
-			} else if (d->pos >= (int64_t)p.virt_offset && d->pos < virt_end) {
+			}
+
+			const int64_t virt_end = static_cast<int64_t>(p.virt_offset) + p.size;
+			if (d->pos >= (int64_t)p.virt_offset && d->pos < virt_end) {
 				// Requested position starts within this entry.
 				virt_start = p.virt_offset;
 				virt_size = static_cast<size_t>(p.size);
