@@ -404,6 +404,10 @@ int GameCubePrivate::loadWiiPartitionTables(void)
 			entry.type = be32_to_cpu(pt[j].type);
 		}
 	}
+	if (wiiPtbl.empty()) {
+		// No partitions...
+		return -ENOENT;
+	}
 
 	// Sort partitions by starting address in order to calculate the sizes.
 	std::sort(wiiPtbl.begin(), wiiPtbl.end(),
