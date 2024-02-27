@@ -42,7 +42,7 @@ Major changes in v2.3 include:
 
 * Commodore DOS disk images (e.g. for Commodore 1541) are now supported,
   including icons for GEOS files. File formats supported currently include
-  D64, D71, D80, D82, D81, G64, and G71.
+  D64, D71, D80, D82, D81, D67, G64, and G71.
 
 * New translations: Romanian and Italian
 
@@ -240,7 +240,7 @@ button.
 
 Notes:
 * Commodore DOS currently includes the 2040, 3040, 4040, 8050, 8250, 1540/1541,
-  1571, and 1581 disk drives, in D64, D71, D80, D82, D81, G64, and G71 formats.
+  1571, and 1581 disk drives, in D64, D71, D80, D82, D81, D67, G64, and G71 formats.
   * File icons for GEOS files are supported.
 
 ### Other
