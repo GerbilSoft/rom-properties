@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * XAttrView.cpp: Extended attribute viewer property page.                 *
  *                                                                         *
- * Copyright (c) 2022-2023 by David Korth.                                 *
+ * Copyright (c) 2022-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -16,6 +16,7 @@ using LibRpFile::XAttrReader;
 
 // C++ STL classes
 using std::string;
+using std::unique_ptr;
 
 /** XAttrViewPrivate **/
 
@@ -26,14 +27,8 @@ public:
 	// TODO: Reomve localizeQUrl() once non-local QUrls are supported.
 	explicit XAttrViewPrivate(const QUrl &filename)
 		: filename(localizeQUrl(filename))
-		, xattrReader(nullptr)
 		, hasAttributes(false)
 	{}
-
-	~XAttrViewPrivate()
-	{
-		delete xattrReader;
-	}
 
 private:
 	Q_DISABLE_COPY(XAttrViewPrivate)
@@ -43,7 +38,7 @@ public:
 	QUrl filename;
 
 	// XAttrReader
-	XAttrReader *xattrReader;
+	unique_ptr<XAttrReader> xattrReader;
 
 	// Do we have attributes for this file?
 	bool hasAttributes;
@@ -232,16 +227,12 @@ int XAttrViewPrivate::loadAttributes(void)
 
 	const string s_local_filename = filename.toLocalFile().toUtf8().constData();
 
-	// Close the XAttrReader if it's already open.
-	delete xattrReader;
-
 	// Open an XAttrReader.
-	xattrReader = new XAttrReader(s_local_filename.c_str());
+	xattrReader.reset(new XAttrReader(s_local_filename.c_str()));
 	int err = xattrReader->lastError();
 	if (err != 0) {
 		// Error reading attributes.
-		delete xattrReader;
-		xattrReader = nullptr;
+		xattrReader.reset();
 		return err;
 	}
 

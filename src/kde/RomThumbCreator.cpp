@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * RomThumbCreator.cpp: Thumbnail creator.                                 *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -468,11 +468,10 @@ Q_DECL_EXPORT int RP_C_API rp_create_thumbnail2(const char *source_file, const c
 			return RPCT_ERROR_OUTPUT_FILE_FAILED;
 	}
 
-	RpPngWriter *pngWriter = new RpPngWriter(output_file,
-		outParams.retImg.width(), height, format);
+	unique_ptr<RpPngWriter> pngWriter(new RpPngWriter(output_file,
+		outParams.retImg.width(), height, format));
 	if (!pngWriter->isOpen()) {
 		// Could not open the PNG writer.
-		delete pngWriter;
 		return RPCT_ERROR_OUTPUT_FILE_FAILED;
 	}
 
@@ -545,11 +544,10 @@ Q_DECL_EXPORT int RP_C_API rp_create_thumbnail2(const char *source_file, const c
 	if (pwRet != 0) {
 		// Error writing IHDR.
 		// TODO: Unlink the PNG image.
-		delete pngWriter;
 		return RPCT_ERROR_OUTPUT_FILE_FAILED;
 	}
 
-	/** IDAT chunk. **/
+	/** IDAT chunk **/
 
 	// Initialize the row pointers.
 	unique_ptr<const uint8_t*[]> row_pointers(new const uint8_t*[height]);
@@ -567,7 +565,6 @@ Q_DECL_EXPORT int RP_C_API rp_create_thumbnail2(const char *source_file, const c
 		ret = RPCT_ERROR_OUTPUT_FILE_FAILED;
 	}
 
-	delete pngWriter;
 	return ret;
 }
 

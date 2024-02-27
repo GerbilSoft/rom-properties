@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * DragImageLabel.cpp: Drag & Drop image label.                            *
  *                                                                         *
- * Copyright (c) 2019-2023 by David Korth.                                 *
+ * Copyright (c) 2019-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -20,6 +20,7 @@ using namespace LibRpTexture;
 
 // C++ STL classes
 using std::shared_ptr;
+using std::unique_ptr;
 
 DragImageLabel::DragImageLabel(const QString &text, QWidget *parent, Qt::WindowFlags f)
 	: super(text, parent, f)
@@ -324,15 +325,15 @@ void DragImageLabel::mouseMoveEvent(QMouseEvent *event)
 	const bool isAnimated = (m_anim && m_anim->iconAnimData && m_anim->iconAnimHelper.isAnimated());
 
 	shared_ptr<RpQByteArrayFile> pngData = std::make_shared<RpQByteArrayFile>();
-	RpPngWriter *pngWriter;
+	unique_ptr<RpPngWriter> pngWriter;
 	if (isAnimated) {
 		// Animated icon.
-		pngWriter = new RpPngWriter(pngData, m_anim->iconAnimData);
+		pngWriter.reset(new RpPngWriter(pngData, m_anim->iconAnimData));
 	} else if (m_img) {
 		// Standard icon.
 		// NOTE: Using the source image because we want the original
 		// size, not the resized version.
-		pngWriter = new RpPngWriter(pngData, m_img);
+		pngWriter.reset(new RpPngWriter(pngData, m_img));
 	} else {
 		// No icon...
 		return;
@@ -340,7 +341,6 @@ void DragImageLabel::mouseMoveEvent(QMouseEvent *event)
 
 	if (!pngWriter->isOpen()) {
 		// Unable to open the PNG writer.
-		delete pngWriter;
 		return;
 	}
 
@@ -349,18 +349,16 @@ void DragImageLabel::mouseMoveEvent(QMouseEvent *event)
 	int pwRet = pngWriter->write_IHDR();
 	if (pwRet != 0) {
 		// Error writing the PNG image...
-		delete pngWriter;
 		return;
 	}
 	pwRet = pngWriter->write_IDAT();
 	if (pwRet != 0) {
 		// Error writing the PNG image...
-		delete pngWriter;
 		return;
 	}
 
 	// RpPngWriter will finalize the PNG on delete.
-	delete pngWriter;
+	pngWriter.reset();
 
 	QMimeData *const mimeData = new QMimeData;
 	mimeData->setObjectName(QLatin1String("mimeData"));

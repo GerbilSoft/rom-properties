@@ -33,6 +33,7 @@ using LibWin32UI::LoadDialog_i18n;
 
 // C++ STL classes
 using std::tstring;
+using std::unique_ptr;
 
 // Win32 dark mode
 #include "libwin32darkmode/DarkMode.hpp"
@@ -56,7 +57,6 @@ RP_XAttrView_Private::RP_XAttrView_Private(RP_XAttrView *q, LPTSTR tfilename)
 	: q_ptr(q)
 	, hDlgSheet(nullptr)
 	, tfilename(tfilename)
-	, xattrReader(nullptr)
 	, dwExStyleRTL(LibWin32UI::isSystemRTL())
 	, colorAltRow(0)	// initialized later
 	, isDarkModeEnabled(false)
@@ -66,7 +66,6 @@ RP_XAttrView_Private::RP_XAttrView_Private(RP_XAttrView *q, LPTSTR tfilename)
 RP_XAttrView_Private::~RP_XAttrView_Private()
 {
 	free(tfilename);
-	delete xattrReader;
 }
 
 /**
@@ -184,23 +183,19 @@ int RP_XAttrView_Private::loadADS(void)
  */
 int RP_XAttrView_Private::loadAttributes(void)
 {
-	// Close the XAttrReader if it's already open.
-	delete xattrReader;
-
 	if (!tfilename) {
 		// No filename.
-		xattrReader = nullptr;
+		xattrReader.reset();
 		return -EIO;
 	}
 
 	// Open an XAttrReader.
-	xattrReader = new XAttrReader(tfilename);
+	xattrReader.reset(new XAttrReader(tfilename));
 	int err = xattrReader->lastError();
 	if (err != 0) {
 		// Error reading attributes.
 		// TODO: Cancel tab loading?
-		delete xattrReader;
-		xattrReader = nullptr;
+		xattrReader.reset();
 		return err;
 	}
 

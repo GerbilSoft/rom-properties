@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * DragImageTreeView.cpp: Drag & Drop QTreeView subclass.                  *
  *                                                                         *
- * Copyright (c) 2019-2023 by David Korth.                                 *
+ * Copyright (c) 2019-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -22,6 +22,7 @@ using LibRpBase::RpPngWriter;
 
 // C++ STL classes
 using std::shared_ptr;
+using std::unique_ptr;
 
 void DragImageTreeView::startDrag(Qt::DropActions supportedActions)
 {
@@ -65,10 +66,9 @@ void DragImageTreeView::startDrag(Qt::DropActions supportedActions)
 
 		// Convert the rp_image to PNG.
 		shared_ptr<RpQByteArrayFile> pngData = std::make_shared<RpQByteArrayFile>();
-		RpPngWriter *const pngWriter = new RpPngWriter(pngData, *pImg);
+		unique_ptr<RpPngWriter> pngWriter(new RpPngWriter(pngData, *pImg));
 		if (!pngWriter->isOpen()) {
 			// Unable to open the PNG writer.
-			delete pngWriter;
 			continue;
 		}
 
@@ -77,18 +77,16 @@ void DragImageTreeView::startDrag(Qt::DropActions supportedActions)
 		int pwRet = pngWriter->write_IHDR();
 		if (pwRet != 0) {
 			// Error writing the PNG image...
-			delete pngWriter;
 			continue;
 		}
 		pwRet = pngWriter->write_IDAT();
 		if (pwRet != 0) {
 			// Error writing the PNG image...
-			delete pngWriter;
 			continue;
 		}
 
 		// RpPngWriter will finalize the PNG on delete.
-		delete pngWriter;
+		pngWriter.reset();
 
 		// Set the PNG data.
 		mimeData->setData(QLatin1String("image/png"), pngData->qByteArray());

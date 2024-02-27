@@ -3,7 +3,7 @@
  * RP_XAttrView_p.hpp: Extended attribute viewer property page.            *
  * (Private class)                                                         *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -46,7 +46,7 @@ public:
 public:
 	HWND hDlgSheet;				// Property sheet
 	LPTSTR tfilename;			// Opened file
-	LibRpFile::XAttrReader *xattrReader;	// XAttrReader
+	unique_ptr<LibRpFile::XAttrReader> xattrReader;	// XAttrReader
 
 	// wtsapi32.dll for Remote Desktop status. (WinXP and later)
 	LibWin32UI::WTSSessionNotification wts;

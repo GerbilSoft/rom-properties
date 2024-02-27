@@ -16,6 +16,9 @@
 using namespace LibRpBase;
 using namespace LibRpTexture;
 
+// C++ STL classes
+using std::unique_ptr;
+
 // TODO: Adjust minimum image size based on DPI.
 #define DIL_MIN_IMAGE_SIZE 32
 
@@ -695,15 +698,15 @@ rp_drag_image_drag_data_get(RpDragImage *image, GdkDragContext *context, GtkSele
 
 	using LibRpFile::VectorFile;
 	std::shared_ptr<VectorFile> pngData = std::make_shared<VectorFile>();
-	RpPngWriter *pngWriter;
+	unique_ptr<RpPngWriter> pngWriter;
 	if (isAnimated) {
 		// Animated icon.
-		pngWriter = new RpPngWriter(pngData, anim->iconAnimData);
+		pngWriter.reset(new RpPngWriter(pngData, anim->iconAnimData));
 	} else if (cxx->img) {
 		// Standard icon.
 		// NOTE: Using the source image because we want the original
 		// size, not the resized version.
-		pngWriter = new RpPngWriter(pngData, cxx->img);
+		pngWriter.reset(new RpPngWriter(pngData, cxx->img));
 	} else {
 		// No icon...
 		return;
@@ -711,7 +714,6 @@ rp_drag_image_drag_data_get(RpDragImage *image, GdkDragContext *context, GtkSele
 
 	if (!pngWriter->isOpen()) {
 		// Unable to open the PNG writer.
-		delete pngWriter;
 		return;
 	}
 
@@ -720,18 +722,16 @@ rp_drag_image_drag_data_get(RpDragImage *image, GdkDragContext *context, GtkSele
 	int pwRet = pngWriter->write_IHDR();
 	if (pwRet != 0) {
 		// Error writing the PNG image...
-		delete pngWriter;
 		return;
 	}
 	pwRet = pngWriter->write_IDAT();
 	if (pwRet != 0) {
 		// Error writing the PNG image...
-		delete pngWriter;
 		return;
 	}
 
 	// RpPngWriter will finalize the PNG on delete.
-	delete pngWriter;
+	pngWriter.reset();
 
 	// Set the selection data.
 	// NOTE: gtk_selection_data_set() copies the data.

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * RomData.cpp: ROM data base class.                                       *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth                                  *
+ * Copyright (c) 2016-2024 by David Korth                                  *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -1036,14 +1036,14 @@ int RomData::doRomOp(int id, RomOpParams *pParams)
 	} else {
 		// Reopen the file.
 		closeFileAfter = true;
-		RpFile *file;
+		IRpFilePtr file;
 #ifdef _WIN32
 		if (d->filenameW) {
-			file = new RpFile(d->filenameW, RpFile::FM_OPEN_WRITE);
+			file = std::make_shared<RpFile>(d->filenameW, RpFile::FM_OPEN_WRITE);
 		} else
 #endif /* _WIN32 */
 		{
-			file = new RpFile(d->filename, RpFile::FM_OPEN_WRITE);
+			file = std::make_shared<RpFile>(d->filename, RpFile::FM_OPEN_WRITE);
 		}
 
 		if (!file->isOpen()) {
@@ -1054,10 +1054,9 @@ int RomData::doRomOp(int id, RomOpParams *pParams)
 			}
 			pParams->status = ret;
 			pParams->msg = C_("RomData", "Unable to reopen the file for writing.");
-			delete file;
 			return ret;
 		}
-		d->file.reset(file);
+		d->file = std::move(file);
 	}
 
 	// If the ROM operation requires a writable file,
