@@ -51,10 +51,10 @@ public:
 	/**
 	 * Convert a texture file to PNG format.
 	 * Destination filename will be generated based on the source filename.
-	 * @param source_file Source filename
+	 * @param source_filename Source filename
 	 * @return 0 on success; non-zero on error.
 	 */
-	static int convert_to_png(LPCTSTR source_file);
+	static int convert_to_png(LPCTSTR source_filename);
 
 	/**
 	 * Convert texture file(s) to PNG format.

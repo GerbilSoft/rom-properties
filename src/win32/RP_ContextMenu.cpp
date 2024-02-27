@@ -78,40 +78,40 @@ void RP_ContextMenu_Private::clear_tfilenames_vector(std::vector<LPTSTR> *tfilen
 /**
  * Convert a texture file to PNG format.
  * Destination filename will be generated based on the source filename.
- * @param source_file Source filename
+ * @param source_filename Source filename
  * @return 0 on success; non-zero on error.
  */
-int RP_ContextMenu_Private::convert_to_png(LPCTSTR source_file)
+int RP_ContextMenu_Private::convert_to_png(LPCTSTR source_filename)
 {
-	const size_t source_len = _tcslen(source_file);
-	LPTSTR output_file = static_cast<LPTSTR>(malloc((source_len + 16) * sizeof(TCHAR)));
-	_tcscpy(output_file, source_file);
+	const size_t source_filename_len = _tcslen(source_filename);
+	const size_t output_filename_size = (source_filename_len + 16) * sizeof(TCHAR);
+	unique_ptr<TCHAR[]> output_filename(new TCHAR[output_filename_size]);
+	_tcscpy(output_filename.get(), source_filename);
 
 	// Find the current extension and replace it.
-	TCHAR *const dotpos = _tcsrchr(output_file, '.');
+	TCHAR *const dotpos = _tcsrchr(output_filename, '.');
 	if (!dotpos) {
 		// No file extension. Add it.
-		_tcscat(output_file, _T(".png"));
+		_tcscat_s(output_filename.get(), output_filename_size, _T(".png"));
 	} else {
 		// If the dot is after the last slash, we already have a file extension.
 		// Otherwise, we don't have one, and need to add it.
-		TCHAR *const slashpos = _tcsrchr(output_file, _T('\\'));
+		TCHAR *const slashpos = _tcsrchr(output_filename, _T('\\'));
 		if (slashpos < dotpos) {
 			// We already have a file extension.
 			_tcscpy(dotpos, _T(".png"));
 		} else {
 			// No file extension.
-			_tcscat(output_file, _T(".png"));
+			_tcscat_s(output_filename.get(), output_filename_size, _T(".png"));
 		}
 	}
 
 	// Get the appropriate RomData class for this ROM.
 	// RomData class *must* support at least one image type.
 	// TODO: Use FileFormatFactory from librptexture instead?
-	const RomDataPtr romData = RomDataFactory::create(source_file, RomDataFactory::RDA_HAS_THUMBNAIL);
+	const RomDataPtr romData = RomDataFactory::create(source_filename, RomDataFactory::RDA_HAS_THUMBNAIL);
 	if (!romData) {
 		// ROM is not supported.
-		free(output_file);
 		return RPCT_ERROR_SOURCE_FILE_NOT_SUPPORTED;
 	}
 
@@ -121,7 +121,6 @@ int RP_ContextMenu_Private::convert_to_png(LPCTSTR source_file)
 	const rp_image_const_ptr img = romData->image(RomData::IMG_INT_IMAGE);
 	if (!img) {
 		// No image.
-		free(output_file);
 		return RPCT_ERROR_SOURCE_FILE_NO_IMAGE;
 	}
 
@@ -131,9 +130,8 @@ int RP_ContextMenu_Private::convert_to_png(LPCTSTR source_file)
 	// tEXt chunks
 	RpPngWriter::kv_vector kv;
 
-	unique_ptr<RpPngWriter> pngWriter(new RpPngWriter(output_file,
+	unique_ptr<RpPngWriter> pngWriter(new RpPngWriter(output_filename.get(),
 		img->width(), height, img->format()));
-	free(output_file);
 	if (!pngWriter->isOpen()) {
 		// Could not open the PNG writer.
 		return RPCT_ERROR_OUTPUT_FILE_FAILED;
