@@ -186,6 +186,15 @@
     </magic>
   </mime-type>
 
+  <!-- ColecoVision -->
+  <mime-type type="application/x-colecovision-rom">
+    <comment>ColecoVision ROM image</comment>
+    <sub-class-of type="application/x-executable"/>
+    <generic-icon name="application-x-executable"/>
+    <glob pattern="*.col"/>
+    <!-- NOTE: Can't add the AA55/55AA magic because it's too generic. -->
+  </mime-type>
+
   <!-- Dreamcast -->
   <mime-type type="application/x-dreamcast-rom">
     <comment>Dreamcast disc image</comment>

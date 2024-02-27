@@ -12,6 +12,7 @@ SET(${PROJECT_NAME}_SRCS
 
 	Console/Atari7800.cpp
 	Console/CBMCart.cpp
+	Console/ColecoVision.cpp
 	Console/Dreamcast.cpp
 	Console/DreamcastSave.cpp
 	Console/GameCube.cpp
@@ -141,6 +142,7 @@ SET(${PROJECT_NAME}_H
 
 	Console/Atari7800.hpp
 	Console/CBMCart.hpp
+	Console/ColecoVision.hpp
 	Console/Dreamcast.hpp
 	Console/DreamcastSave.hpp
 	Console/GameCube.hpp
@@ -172,6 +174,7 @@ SET(${PROJECT_NAME}_H
 	Console/XboxDisc.hpp
 
 	Console/atari_7800_structs.h
+	Console/colecovision_structs.h
 	Console/cbm_cart_structs.h
 	Console/dc_structs.h
 	Console/gcn_structs.h
