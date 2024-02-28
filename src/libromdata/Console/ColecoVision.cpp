@@ -317,8 +317,8 @@ int ColecoVision::loadFieldData(void)
 		return -EIO;
 	}
 
-	//const ColecoVision_ROMHeader *const romHeader = &d->romHeader;
-	d->fields.reserve(2);	// Maximum of 1 field. (TODO: Add more)
+	const ColecoVision_ROMHeader *const romHeader = &d->romHeader;
+	d->fields.reserve(4);	// Maximum of 4 fields.
 
 	// Title
 	int year = -1;
@@ -332,7 +332,48 @@ int ColecoVision::loadFieldData(void)
 		d->fields.addField_string_numeric(C_("ColecoVision", "Copyright Year"), year);
 	}
 
-	// TODO: Other fields.
+	// TODO: Various table addresses?
+
+	// Entry point
+	d->fields.addField_string_numeric(C_("ColecoVision", "Entry Point"),
+		le16_to_cpu(romHeader->entry_point), RomFields::Base::Hex, 4,
+		RomFields::STRF_MONOSPACE);
+
+	// Interrupt vectors use Z80 assembly.
+	// We'll just decode absolute addresses and RETI.
+	// Anything else will be shown as a hexdump.
+	// TODO: Split into a separate function?
+	static const uint8_t Z80_RETI[2] = {0xED, 0x4D};
+
+	// IRQ vector
+	const char *s_title = C_("ColecoVision", "IRQ Vector");
+	if (romHeader->irq_int_vect[0] == 0xC3) {
+		// JP nnnn
+		uint16_t addr = romHeader->irq_int_vect[1] | (romHeader->irq_int_vect[2] << 8);
+		d->fields.addField_string_numeric(s_title, addr, RomFields::Base::Hex, 4,
+			RomFields::STRF_MONOSPACE);
+	} else if (!memcmp(romHeader->irq_int_vect, Z80_RETI, 2)) {
+		// RETI
+		d->fields.addField_string(s_title, "RETI");
+	} else {
+		// Something else
+		d->fields.addField_string_hexdump(s_title, romHeader->irq_int_vect, sizeof(romHeader->irq_int_vect));
+	}
+
+	// NMI vector
+	s_title = C_("ColecoVision", "NMI Vector");
+	if (romHeader->nmi_int_vect[0] == 0xC3) {
+		// JP nnnn
+		uint16_t addr = romHeader->nmi_int_vect[1] | (romHeader->nmi_int_vect[2] << 8);
+		d->fields.addField_string_numeric(s_title, addr, RomFields::Base::Hex, 4,
+			RomFields::STRF_MONOSPACE);
+	} else if (!memcmp(romHeader->nmi_int_vect, Z80_RETI, 2)) {
+		// RETI
+		d->fields.addField_string(s_title, "RETI");
+	} else {
+		// Something else
+		d->fields.addField_string_hexdump(s_title, romHeader->nmi_int_vect, sizeof(romHeader->nmi_int_vect));
+	}
 
 	// Finished reading the field data.
 	return static_cast<int>(d->fields.count());
