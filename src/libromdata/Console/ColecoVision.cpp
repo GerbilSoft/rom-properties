@@ -209,18 +209,54 @@ void ColecoVisionPrivate::addField_z80vec(const char *title, uint16_t pc, const 
 {
 	// Quick and dirty Z80 disassembly suitable for the
 	// interrupt vector fields.
-	static const uint8_t Z80_RETI[2] = {0xED, 0x4D};
+	bool ok = false;
 
-	if (p_ivec[0] == 0xC3) {
-		// JP nnnn
-		uint16_t addr = p_ivec[1] | (p_ivec[2] << 8);
-		fields.addField_string_numeric(title, addr, RomFields::Base::Hex, 4,
-			RomFields::STRF_MONOSPACE);
-	} else if (!memcmp(p_ivec, Z80_RETI, 2)) {
-		// RETI
-		fields.addField_string(title, "RETI");
-	} else {
-		// Something else
+	switch (p_ivec[0]) {
+		default:
+			// Not supported...
+			break;
+
+		case 0x00:
+			// NOP
+			fields.addField_string(title, "NOP");
+			ok = true;
+			break;
+
+		case 0x18: {
+			// JR dd
+			uint16_t addr = pc + p_ivec[1];
+			fields.addField_string_numeric(title, addr, RomFields::Base::Hex, 4,
+				RomFields::STRF_MONOSPACE);
+			ok = true;
+			break;
+		}
+
+		case 0xC3: {
+			// JP nnnn
+			uint16_t addr = p_ivec[1] | (p_ivec[2] << 8);
+			fields.addField_string_numeric(title, addr, RomFields::Base::Hex, 4,
+				RomFields::STRF_MONOSPACE);
+			ok = true;
+			break;
+		}
+
+		case 0xED:
+			if (p_ivec[1] == 0x4D) {
+				// RETI
+				fields.addField_string(title, "RETI");
+				ok = true;
+			}
+			break;
+
+		case 0xFF:
+			// RST 38h
+			fields.addField_string(title, "RST 38h");
+			ok = true;
+			break;
+	}
+
+	if (!ok) {
+		// Not supported...
 		fields.addField_string_hexdump(title, p_ivec, 3);
 	}
 }
