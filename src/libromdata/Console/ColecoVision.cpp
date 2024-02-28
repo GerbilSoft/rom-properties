@@ -44,9 +44,10 @@ public:
 public:
 	/**
 	 * Get the title from the ROM header.
-	 * @return Title, or empty string on error.
+	 * @param pOutYear	[out,opt] Release year, if set; otherwise, -1.
+	 * @return Title screen lines, or empty string on error.
 	 */
-	string getTitle(void) const;
+	string getTitle(int *pOutYear = nullptr) const;
 };
 
 ROMDATA_IMPL(ColecoVision)
@@ -79,13 +80,17 @@ ColecoVisionPrivate::ColecoVisionPrivate(const IRpFilePtr &file)
 
 /**
  * Get the title from the ROM header.
- * @return Title, or empty string on error.
+ * @param pOutYear	[out,opt] Release year, if set; otherwise, -1.
+ * @return Title screen lines, or empty string on error.
  */
-string ColecoVisionPrivate::getTitle(void) const
+string ColecoVisionPrivate::getTitle(int *pOutYear) const
 {
 	static const uint8_t magic_has_logo[2] = {0xAA, 0x55};
 	if (memcmp(romHeader.magic, magic_has_logo, sizeof(romHeader.magic)) != 0) {
 		// Not the correct magic. No title.
+		if (pOutYear) {
+			*pOutYear = -1;
+		}
 		return {};
 	}
 
@@ -103,64 +108,85 @@ string ColecoVisionPrivate::getTitle(void) const
 
 	// TODO: Return an "onscreen text" string (remove empty lines) and,
 	// if present, a copyright year.
-	string title;
-	title.reserve(sizeof(romHeader.game_name));
+	string lines[2];
+	lines[0].reserve(32);
+	lines[1].reserve(64+1);
 
 	// Game name should be ASCII, not Latin-1 or cp1252.
 	// Any bytes with the high bit set will be stripped for now.
 	// TODO: Check the rest of the ColecoVision system ROM font.
 	unsigned int line = 0;
+	const char *p = romHeader.game_name;
 	const char *const p_end = &romHeader.game_name[ARRAY_SIZE(romHeader.game_name)];
-	for (const char *p = romHeader.game_name; p < p_end; p++) {
+	for (; line < 2 && p < p_end; p++) {
 		const char chr = *p;
 		switch (chr) {
 			case '\x00':
 				// Skip NULL bytes.
-				continue;
+				break;
 			case '/':
 				// Next line
-				if (line == 2) {
-					p = p_end - 1;
-					break;
-				}
-				title += '\n';
 				line++;
 				break;
 			case '\x1D':
-				title += "©";
+				lines[line] += "©";
 				break;
 			case '\x1E':
 				// The next character should be '\x1F'.
 				if (p + 1 < p_end && p[1] == '\x1F') {
-					title += "™";
+					lines[line] += "™";
 				}
 				break;
 			case '\x1F':
 				// '\x1F' is ignored by itself.
 				break;
 			case ' ':
-				// Skip leading spaces on the first line.
-				if (!title.empty())
-					title += ' ';
+				// Skip leading spaces.
+				if (!lines[line].empty())
+					lines[line] += ' ';
 				break;
 			default:
-				if (line == 2 && !ISDIGIT(chr)) {
-					p = p_end - 1;
-					break;
-				}
 				if (!(chr & 0x80)) {
-					title += chr;
+					lines[line] += chr;
 				}
 				break;
 		}
 	}
 
-	// Make sure title doesn't end with a whitespace character.
-	while (!title.empty() && ISSPACE(title[title.size()-1])) {
-		title.resize(title.size()-1);
+	if (pOutYear && (p + 4 <= p_end)) {
+		// Check if the next four characters are a release year.
+		int year = 0;
+		for (unsigned int i = 0; i < 4; i++, p++) {
+			if (!ISDIGIT(*p)) {
+				// Not a digit.
+				year = -1;
+				break;
+			}
+
+			year *= 10;
+			year += (*p - '0');
+		}
+
+		*pOutYear = year;
 	}
 
-	return title;
+	// Trim the lines.
+	for (auto &p : lines) {
+		while (!p.empty() && ISSPACE(p[p.size()-1])) {
+			p.resize(p.size()-1);
+		}
+	}
+
+	// Combine the lines.
+	// NOTE: Second line is used as the top line.
+	if (lines[1].empty() && !lines[0].empty()) {
+		return lines[0];
+	} else if (!lines[1].empty() && !lines[0].empty()) {
+		lines[1] += '\n';
+		lines[1] += lines[0];
+	}
+
+	return lines[1];
 }
 
 /** ColecoVision **/
@@ -292,12 +318,18 @@ int ColecoVision::loadFieldData(void)
 	}
 
 	//const ColecoVision_ROMHeader *const romHeader = &d->romHeader;
-	d->fields.reserve(1);	// Maximum of 1 field. (TODO: Add more)
+	d->fields.reserve(2);	// Maximum of 1 field. (TODO: Add more)
 
 	// Title
-	const string title = d->getTitle();
+	int year = -1;
+	const string title = d->getTitle(&year);
 	if (!title.empty()) {
 		d->fields.addField_string(C_("RomData", "Title"), title);
+	}
+
+	// Copyright year
+	if (year >= 0) {
+		d->fields.addField_string_numeric(C_("ColecoVision", "Copyright Year"), year);
 	}
 
 	// TODO: Other fields.
@@ -327,14 +359,20 @@ int ColecoVision::loadMetaData(void)
 
 	// Create the metadata object.
 	d->metaData = new RomMetaData();
-	d->metaData->reserve(1);	// Maximum of 1 metadata property.
+	d->metaData->reserve(2);	// Maximum of 2 metadata properties.
 
 	//const ColecoVision_ROMHeader *const romHeader = &d->romHeader;
 
 	// Title
-	const string title = d->getTitle();
+	int year = -1;
+	const string title = d->getTitle(&year);
 	if (!title.empty()) {
 		d->metaData->addMetaData_string(Property::Title, title);
+	}
+
+	// Release year (actually copyright year)
+	if (year >= 0) {
+		d->metaData->addMetaData_uint(Property::ReleaseYear, static_cast<unsigned int>(year));
 	}
 
 	// Finished reading the metadata.
