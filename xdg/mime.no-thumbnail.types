@@ -43,6 +43,16 @@ application/x-pokemon-mini-rom		# PokemonMini
 application/x-virtual-boy-rom		# VirtualBoy
 
 # Media
+application/x-cbm-d64			# CBMDOS
+application/x-cbm-d71			# CBMDOS
+application/x-cbm-d80			# CBMDOS
+application/x-cbm-d82			# CBMDOS
+application/x-cbm-d81			# CBMDOS
+application/x-cbm-d67			# CBMDOS
+application/x-cbm-g64			# CBMDOS
+application/x-cbm-g71			# CBMDOS
+application/x-c64-datadisk		# CBMDOS (D64 alias)
+application/x-c64-rawdisk		# CBMDOS (G64 alias)
 application/x-d64			# CBMDOS
 application/x-d71			# CBMDOS
 application/x-d80			# CBMDOS

@@ -826,52 +826,55 @@
   <!-- *** Media *** -->
 
   <!-- CBMDOS -->
-  <mime-type type="application/x-d64">
+  <mime-type type="application/x-cbm-d64">
     <comment>Commodore 64 (1541) disk image</comment>
     <sub-class-of type="application/x-raw-disk-image"/>
+    <alias type="application/d64"/>
+    <alias type="application/x-c64-datadisk"/>
+    <alias type="application/x-d64"/>
     <!-- FIXME: KDE Breeze doesn't have an icon for application/x-raw-disk-image . -->
     <glob pattern="*.d64"/>
     <glob pattern="*.d41"/>
   </mime-type>
-  <mime-type type="application/x-d71">
+  <mime-type type="application/x-cbm-d71">
     <comment>Commodore 1571 disk image</comment>
     <sub-class-of type="application/x-raw-disk-image"/>
+    <alias type="application/x-d71"/>
     <!-- FIXME: KDE Breeze doesn't have an icon for application/x-raw-disk-image . -->
     <glob pattern="*.d71"/>
   </mime-type>
-  <mime-type type="application/x-d71">
-    <comment>Commodore 1571 disk image</comment>
-    <sub-class-of type="application/x-raw-disk-image"/>
-    <!-- FIXME: KDE Breeze doesn't have an icon for application/x-raw-disk-image . -->
-    <glob pattern="*.d71"/>
-  </mime-type>
-  <mime-type type="application/x-d80">
+  <mime-type type="application/x-cbm-d80">
     <comment>Commodore 8050 disk image</comment>
     <sub-class-of type="application/x-raw-disk-image"/>
+    <alias type="application/x-d80"/>
     <!-- FIXME: KDE Breeze doesn't have an icon for application/x-raw-disk-image . -->
     <glob pattern="*.d80"/>
   </mime-type>
-  <mime-type type="application/x-d82">
+  <mime-type type="application/x-cbm-d82">
     <comment>Commodore 8250 disk image</comment>
     <sub-class-of type="application/x-raw-disk-image"/>
+    <alias type="application/x-d82"/>
     <!-- FIXME: KDE Breeze doesn't have an icon for application/x-raw-disk-image . -->
     <glob pattern="*.d82"/>
   </mime-type>
-  <mime-type type="application/x-d81">
+  <mime-type type="application/x-cbm-d81">
     <comment>Commodore 1581 disk image</comment>
     <sub-class-of type="application/x-raw-disk-image"/>
+    <alias type="application/x-d81"/>
     <!-- FIXME: KDE Breeze doesn't have an icon for application/x-raw-disk-image . -->
     <glob pattern="*.d81"/>
   </mime-type>
-  <mime-type type="application/x-d67">
+  <mime-type type="application/x-cbm-d67">
     <comment>Commodore 2040 disk image</comment>
     <sub-class-of type="application/x-raw-disk-image"/>
     <!-- FIXME: KDE Breeze doesn't have an icon for application/x-raw-disk-image . -->
     <glob pattern="*.d67"/>
   </mime-type>
-  <mime-type type="application/x-g64">
+  <mime-type type="application/x-cbm-g64">
     <comment>Commodore 1541 GCR disk image</comment>
     <sub-class-of type="application/x-raw-disk-image"/>
+    <alias type="application/x-c64-rawdisk"/>
+    <alias type="application/x-g64"/>
     <!-- FIXME: KDE Breeze doesn't have an icon for application/x-raw-disk-image . -->
     <glob pattern="*.g64"/>
     <glob pattern="*.g41"/>
@@ -879,9 +882,10 @@
       <match value="GCR-1541" type="string" offset="0"/>
     </magic>
   </mime-type>
-  <mime-type type="application/x-g71">
+  <mime-type type="application/x-cbm-g71">
     <comment>Commodore 1571 GCR disk image</comment>
     <sub-class-of type="application/x-raw-disk-image"/>
+    <alias type="application/x-g71"/>
     <!-- FIXME: KDE Breeze doesn't have an icon for application/x-raw-disk-image . -->
     <glob pattern="*.g71"/>
     <magic priority="50">

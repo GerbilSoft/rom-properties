@@ -200,6 +200,17 @@ const char *const CBMDOSPrivate::mimeTypes[] = {
 
 	// Unofficial MIME types.
 	// TODO: Get these upstreamed on FreeDesktop.org.
+	"application/x-cbm-d64",
+	"application/x-cbm-d71",
+	"application/x-cbm-d80",
+	"application/x-cbm-d82",
+	"application/x-cbm-d81",
+	"application/x-cbm-d67",
+
+	"application/x-cbm-g64",
+	"application/x-cbm-g71",
+
+	// Alias types (not part of DiskType)
 	"application/x-d64",
 	"application/x-d71",
 	"application/x-d80",
@@ -209,6 +220,9 @@ const char *const CBMDOSPrivate::mimeTypes[] = {
 
 	"application/x-g64",
 	"application/x-g71",
+
+	"application/x-c64-datadisk",	// D64
+	"application/x-c64-rawdisk",	// G64
 
 	nullptr
 };
