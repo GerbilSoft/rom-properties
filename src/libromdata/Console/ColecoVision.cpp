@@ -48,6 +48,15 @@ public:
 	 * @return Title screen lines, or empty string on error.
 	 */
 	string getTitle(int *pOutYear = nullptr) const;
+
+	/**
+	 * Disassemble an interrupt vector field from the ROM header.
+	 * This field is added to our RomFields object.
+	 * @param title		[in] Field title
+	 * @param pc		[in] PC where this vector is located
+	 * @param p_ivec	[in] Pointer to the interrupt vector field (must be 3 bytes)
+	 */
+	void addField_z80vec(const char *title, uint16_t pc, const uint8_t *p_ivec);
 };
 
 ROMDATA_IMPL(ColecoVision)
@@ -187,6 +196,33 @@ string ColecoVisionPrivate::getTitle(int *pOutYear) const
 	}
 
 	return lines[1];
+}
+
+/**
+ * Disassemble an interrupt vector field from the ROM header.
+ * This field is added to our RomFields object.
+ * @param title		[in] Field title
+ * @param pc		[in] PC where this vector is located
+ * @param p_ivec	[in] Pointer to the interrupt vector field (must be 3 bytes)
+ */
+void ColecoVisionPrivate::addField_z80vec(const char *title, uint16_t pc, const uint8_t *p_ivec)
+{
+	// Quick and dirty Z80 disassembly suitable for the
+	// interrupt vector fields.
+	static const uint8_t Z80_RETI[2] = {0xED, 0x4D};
+
+	if (p_ivec[0] == 0xC3) {
+		// JP nnnn
+		uint16_t addr = p_ivec[1] | (p_ivec[2] << 8);
+		fields.addField_string_numeric(title, addr, RomFields::Base::Hex, 4,
+			RomFields::STRF_MONOSPACE);
+	} else if (!memcmp(p_ivec, Z80_RETI, 2)) {
+		// RETI
+		fields.addField_string(title, "RETI");
+	} else {
+		// Something else
+		fields.addField_string_hexdump(title, p_ivec, 3);
+	}
 }
 
 /** ColecoVision **/
@@ -339,41 +375,11 @@ int ColecoVision::loadFieldData(void)
 		le16_to_cpu(romHeader->entry_point), RomFields::Base::Hex, 4,
 		RomFields::STRF_MONOSPACE);
 
-	// Interrupt vectors use Z80 assembly.
-	// We'll just decode absolute addresses and RETI.
-	// Anything else will be shown as a hexdump.
-	// TODO: Split into a separate function?
-	static const uint8_t Z80_RETI[2] = {0xED, 0x4D};
-
 	// IRQ vector
-	const char *s_title = C_("ColecoVision", "IRQ Vector");
-	if (romHeader->irq_int_vect[0] == 0xC3) {
-		// JP nnnn
-		uint16_t addr = romHeader->irq_int_vect[1] | (romHeader->irq_int_vect[2] << 8);
-		d->fields.addField_string_numeric(s_title, addr, RomFields::Base::Hex, 4,
-			RomFields::STRF_MONOSPACE);
-	} else if (!memcmp(romHeader->irq_int_vect, Z80_RETI, 2)) {
-		// RETI
-		d->fields.addField_string(s_title, "RETI");
-	} else {
-		// Something else
-		d->fields.addField_string_hexdump(s_title, romHeader->irq_int_vect, sizeof(romHeader->irq_int_vect));
-	}
+	d->addField_z80vec(C_("ColecoVision", "IRQ Vector"), 0x801E, romHeader->irq_int_vect);
 
 	// NMI vector
-	s_title = C_("ColecoVision", "NMI Vector");
-	if (romHeader->nmi_int_vect[0] == 0xC3) {
-		// JP nnnn
-		uint16_t addr = romHeader->nmi_int_vect[1] | (romHeader->nmi_int_vect[2] << 8);
-		d->fields.addField_string_numeric(s_title, addr, RomFields::Base::Hex, 4,
-			RomFields::STRF_MONOSPACE);
-	} else if (!memcmp(romHeader->nmi_int_vect, Z80_RETI, 2)) {
-		// RETI
-		d->fields.addField_string(s_title, "RETI");
-	} else {
-		// Something else
-		d->fields.addField_string_hexdump(s_title, romHeader->nmi_int_vect, sizeof(romHeader->nmi_int_vect));
-	}
+	d->addField_z80vec(C_("ColecoVision", "IRQ Vector"), 0x8021, romHeader->nmi_int_vect);
 
 	// Finished reading the field data.
 	return static_cast<int>(d->fields.count());
