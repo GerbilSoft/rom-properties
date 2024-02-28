@@ -44,6 +44,8 @@
     * Pull requests: #391, #392
   * CBMDOS: Commodore DOS floppy disk images. Supports D64, D71, D80, D82, D81,
     D67, and (mostly supports) G64 and G71 images, plus GEOS file icons.
+  * ColecoVision: ColecoVision ROM images. Supports reading the title screen
+    message and copyright/release year from .col images, among other things.
 
 * New parser features:
   * DMG: MMM01 and MBC1M multicarts are now detected, and the internal ROM

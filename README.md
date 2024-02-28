@@ -123,6 +123,7 @@ button.
 
 |           System          | Properties Tab | Metadata | Internal Images | External Images |
 |:-------------------------:|:--------------:|:--------:|:---------------:|:---------------:|
+| ColecoVision              |       Yes      |    Yes   |       N/A       |        No       |
 | Commodore 64/128 .CRT     |       Yes      |    Yes   |       N/A       |      Title      |
 | iQue Player ticket files  |       Yes      |    Yes   |   Icon, Banner  |        No       |
 | Microsoft Xbox (XBE)      |       Yes      |    Yes   |       Icon      |        No       |
