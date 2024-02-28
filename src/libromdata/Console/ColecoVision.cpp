@@ -209,6 +209,7 @@ void ColecoVisionPrivate::addField_z80vec(const char *title, uint16_t pc, const 
 {
 	// Quick and dirty Z80 disassembly suitable for the
 	// interrupt vector fields.
+	const char *no_params = nullptr;
 	bool ok = false;
 
 	switch (p_ivec[0]) {
@@ -218,7 +219,7 @@ void ColecoVisionPrivate::addField_z80vec(const char *title, uint16_t pc, const 
 
 		case 0x00:
 			// NOP
-			fields.addField_string(title, "NOP");
+			no_params = "NOP";
 			ok = true;
 			break;
 
@@ -243,19 +244,22 @@ void ColecoVisionPrivate::addField_z80vec(const char *title, uint16_t pc, const 
 		case 0xED:
 			if (p_ivec[1] == 0x4D) {
 				// RETI
-				fields.addField_string(title, "RETI");
+				no_params = "RETI";
 				ok = true;
 			}
 			break;
 
 		case 0xFF:
 			// RST 38h
-			fields.addField_string(title, "RST 38h");
+			no_params = "RST 38h";
 			ok = true;
 			break;
 	}
 
-	if (!ok) {
+	if (no_params) {
+		// No-parameter opcode
+		fields.addField_string(title, no_params);
+	} else if (!ok) {
 		// Not supported...
 		fields.addField_string_hexdump(title, p_ivec, 3);
 	}
