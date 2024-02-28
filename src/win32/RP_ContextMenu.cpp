@@ -89,14 +89,14 @@ int RP_ContextMenu_Private::convert_to_png(LPCTSTR source_filename)
 	_tcscpy(output_filename.get(), source_filename);
 
 	// Find the current extension and replace it.
-	TCHAR *const dotpos = _tcsrchr(output_filename, '.');
+	TCHAR *const dotpos = _tcsrchr(output_filename.get(), '.');
 	if (!dotpos) {
 		// No file extension. Add it.
 		_tcscat_s(output_filename.get(), output_filename_size, _T(".png"));
 	} else {
 		// If the dot is after the last slash, we already have a file extension.
 		// Otherwise, we don't have one, and need to add it.
-		TCHAR *const slashpos = _tcsrchr(output_filename, _T('\\'));
+		TCHAR *const slashpos = _tcsrchr(output_filename.get(), _T('\\'));
 		if (slashpos < dotpos) {
 			// We already have a file extension.
 			_tcscpy(dotpos, _T(".png"));
