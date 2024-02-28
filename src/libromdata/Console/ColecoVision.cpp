@@ -223,8 +223,11 @@ void ColecoVisionPrivate::addField_z80vec(const char *title, uint16_t pc, const 
 			ok = true;
 			break;
 
-		case 0x18: {
-			// JR dd
+		case 0x18:
+		case 0x20: {
+			// NOTE: Ignoring flags...
+			// 0x18: JR dd
+			// 0x20: JR NZ, dd
 			uint16_t addr = pc + p_ivec[1];
 			fields.addField_string_numeric(title, addr, RomFields::Base::Hex, 4,
 				RomFields::STRF_MONOSPACE);
@@ -241,11 +244,27 @@ void ColecoVisionPrivate::addField_z80vec(const char *title, uint16_t pc, const 
 			break;
 		}
 
+		case 0xC9:
+			// RET
+			no_params = "RET";
+			ok = true;
+			break;
+
 		case 0xED:
-			if (p_ivec[1] == 0x4D) {
-				// RETI
-				no_params = "RETI";
-				ok = true;
+			switch (p_ivec[1]) {
+				default:
+					// Not supported...
+					break;
+				case 0x45:
+					// RETN
+					no_params = "RETN";
+					ok = true;
+					break;
+				case 0x4D:
+					// RETI
+					no_params = "RETI";
+					ok = true;
+					break;
 			}
 			break;
 
