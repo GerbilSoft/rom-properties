@@ -6,10 +6,7 @@
             "inode/directory"
         ],
         "Name": "xattrview-kf5",
-        "Description": "Extended Attributes Viewer for KDE Frameworks 6",
-        "ServiceTypes": [
-            "KPropertiesDialog/Plugin"
-        ]
+        "Description": "Extended Attributes Viewer for KDE Frameworks 6"
     },
     "MimeType": "application/octet-stream;inode/directory",
     "X-KDE-Protocols": [

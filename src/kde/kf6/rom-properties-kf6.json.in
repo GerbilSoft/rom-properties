@@ -5,11 +5,7 @@
 @MIMETYPES_ALL_JSON_ARRAY@
         ],
         "Name": "ROM Properties Page",
-        "Description": "ROM Properties Page for KDE Frameworks 6",
-        "ServiceTypes": [
-            "KPropertiesDialog/Plugin",
-            "ThumbnailCreator"
-        ]
+        "Description": "ROM Properties Page for KDE Frameworks 6"
     },
     "MimeType": "@MIMETYPES_ALL@",
     "X-KDE-Protocols": [
