@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2024-02-25 13:35-0500\n"
-"PO-Revision-Date: 2024-02-25 18:55\n"
+"PO-Revision-Date: 2024-02-29 17:42\n"
 "Last-Translator: \n"
 "Language-Team: Italian\n"
 "Language: it_IT\n"
@@ -413,60 +413,61 @@ msgstr "Attributi XFS"
 #: ../src/gtk/xattr/XAttrView.cpp:141
 msgctxt "XAttrView"
 msgid "MS-DOS Attributes"
-msgstr ""
+msgstr "Attributi MS-DOS"
 
 #: ../build/src/kde/kf5/ui_XAttrView.h:117
 #: ../build/src/kde/kf6/ui_XAttrView.h:117
 msgctxt "XAttrView"
 msgid "E&xtended Attributes"
-msgstr ""
+msgstr "A&ttributi estesi"
 
 #: ../build/src/kde/kf5/ui_XAttrView.h:119
 #: ../build/src/kde/kf6/ui_XAttrView.h:119
 #: ../src/gtk/xattr/XAttrView.cpp:174
 msgctxt "XAttrView"
 msgid "Value"
-msgstr ""
+msgstr "Valore"
 
 #: ../build/src/kde/kf5/ui_XAttrView.h:120
 #: ../build/src/kde/kf6/ui_XAttrView.h:120
 #: ../src/gtk/xattr/XAttrView.cpp:173
 msgctxt "XAttrView"
 msgid "Name"
-msgstr ""
+msgstr "Nome"
 
 #: ../build/src/kde/kf5/ui_XfsAttrView.h:85
 #: ../build/src/kde/kf6/ui_XfsAttrView.h:85
 #: ../src/gtk/xattr/XfsAttrView.c:170
 msgctxt "XfsAttrView"
 msgid "Project ID:"
-msgstr ""
+msgstr "ID del Progetto:"
 
 #: ../src/gtk/AchGDBus.cpp:251 ../src/kde/AchQtDBus.cpp:241
 #: ../src/win32/AchWin32.cpp:289
 msgctxt "Achievements"
 msgid "Achievement Unlocked"
-msgstr ""
+msgstr "Achievement sbloccato"
 
 #. tr: Uses Pango's HTML subset for formatting.
 #: ../src/gtk/config/AboutTab.cpp:446
 msgctxt "AboutTab"
 msgid "<b>ROM Properties Page</b>\n"
 "Shell Extension"
-msgstr ""
+msgstr "<b>Scheda ROM Properties</b>\n"
+"Estensione della shell"
 
 #: ../src/gtk/config/AboutTab.cpp:448 ../src/kde/config/AboutTab.cpp:173
 #: ../src/win32/config/AboutTab.cpp:886
 #, c-format
 msgctxt "AboutTab"
 msgid "Version %s"
-msgstr ""
+msgstr "Versione %s"
 
 #: ../src/gtk/config/AboutTab.cpp:472 ../src/kde/config/AboutTab.cpp:195
 #: ../src/win32/config/AboutTab.cpp:1007
 msgctxt "AboutTabl|Credits"
 msgid "GNU GPL v2"
-msgstr ""
+msgstr "GNU GPL v2"
 
 #. tr: %s is the name of the license.
 #: ../src/gtk/config/AboutTab.cpp:482 ../src/kde/config/AboutTab.cpp:205
@@ -474,25 +475,25 @@ msgstr ""
 #, c-format
 msgctxt "AboutTab|Credits"
 msgid "This program is licensed under the %s or later."
-msgstr ""
+msgstr "Questo programma è concesso in licenza sotto %s o successiva."
 
 #: ../src/gtk/config/AboutTab.cpp:497 ../src/kde/config/AboutTab.cpp:220
 #: ../src/win32/config/AboutTab.cpp:1025
 msgctxt "AboutTab|Credits"
 msgid "Developers:"
-msgstr ""
+msgstr "Sviluppatori:"
 
 #: ../src/gtk/config/AboutTab.cpp:500 ../src/kde/config/AboutTab.cpp:223
 #: ../src/win32/config/AboutTab.cpp:1028
 msgctxt "AboutTab|Credits"
 msgid "Contributors:"
-msgstr ""
+msgstr "Contributori:"
 
 #: ../src/gtk/config/AboutTab.cpp:503 ../src/kde/config/AboutTab.cpp:226
 #: ../src/win32/config/AboutTab.cpp:1031
 msgctxt "AboutTab|Credits"
 msgid "Translators:"
-msgstr ""
+msgstr "Traduttori:"
 
 #. tr: Sub-credit.
 #: ../src/gtk/config/AboutTab.cpp:532 ../src/kde/config/AboutTab.cpp:255
@@ -500,7 +501,7 @@ msgstr ""
 #, c-format
 msgctxt "AboutTab|Credits"
 msgid " (%s)"
-msgstr ""
+msgstr " (%s)"
 
 #. tr: Using an internal copy of a library.
 #: ../src/gtk/config/AboutTab.cpp:558 ../src/kde/config/AboutTab.cpp:279
@@ -508,7 +509,7 @@ msgstr ""
 #, c-format
 msgctxt "AboutTab|Libraries"
 msgid "Internal copy of %s."
-msgstr ""
+msgstr "Copia interna di %s."
 
 #. tr: Compiled with a specific version of an external library.
 #: ../src/gtk/config/AboutTab.cpp:560 ../src/kde/config/AboutTab.cpp:281
@@ -516,7 +517,7 @@ msgstr ""
 #, c-format
 msgctxt "AboutTab|Libraries"
 msgid "Compiled with %s."
-msgstr ""
+msgstr "Compilato con %s."
 
 #. tr: Using an external library, e.g. libpcre.so
 #: ../src/gtk/config/AboutTab.cpp:562 ../src/kde/config/AboutTab.cpp:283
@@ -524,7 +525,7 @@ msgstr ""
 #, c-format
 msgctxt "AboutTab|Libraries"
 msgid "Using %s."
-msgstr ""
+msgstr "Utilizzando %s."
 
 #. tr: License: (libraries with only a single license)
 #: ../src/gtk/config/AboutTab.cpp:564 ../src/kde/config/AboutTab.cpp:285
@@ -532,7 +533,7 @@ msgstr ""
 #, c-format
 msgctxt "AboutTab|Libraries"
 msgid "License: %s"
-msgstr ""
+msgstr "Licenza: %s"
 
 #. tr: Licenses: (libraries with multiple licenses)
 #: ../src/gtk/config/AboutTab.cpp:566 ../src/kde/config/AboutTab.cpp:287
@@ -540,31 +541,31 @@ msgstr ""
 #, c-format
 msgctxt "AboutTab|Libraries"
 msgid "Licenses: %s"
-msgstr ""
+msgstr "Licenze: %s"
 
 #: ../src/gtk/config/AboutTab.cpp:674 ../src/kde/config/AboutTab.cpp:420
 #: ../src/win32/config/AboutTab.cpp:1195
 msgctxt "AboutTab|Libraries"
 msgid "APNG patch:"
-msgstr ""
+msgstr "Patch APNG:"
 
 #: ../src/gtk/config/AboutTab.cpp:777 ../src/kde/config/AboutTab.cpp:522
 #: ../src/win32/config/AboutTab.cpp:1266
 msgctxt "AboutTab|Support"
 msgid "For technical support, you can visit the following websites:"
-msgstr ""
+msgstr "Per il supporto tecnico puoi visitare i seguenti siti web:"
 
 #: ../src/gtk/config/AboutTab.cpp:794 ../src/kde/config/AboutTab.cpp:539
 #: ../src/win32/config/AboutTab.cpp:1282
 msgctxt "AboutTab|Support"
 msgid "You can also email the developer directly:"
-msgstr ""
+msgstr "Puoi anche inviare un'email direttamente allo sviluppatore:"
 
 #: ../src/gtk/config/AboutTab.cpp:820 ../src/kde/config/AboutTab.cpp:590
 #: ../src/win32/config/AboutTab.cpp:579
 msgctxt "AboutTab"
 msgid "Checking for updates..."
-msgstr ""
+msgstr "Ricerca aggiornamenti..."
 
 #. tr: Error message template. (GTK version, with formatting)
 #: ../src/gtk/config/AboutTab.cpp:840 ../src/gtk/config/CacheTab.cpp:462
@@ -572,72 +573,72 @@ msgstr ""
 #, c-format
 msgctxt "ConfigDialog"
 msgid "<b>ERROR:</b> %s"
-msgstr ""
+msgstr "<b>ERRORE:</b> %s"
 
 #: ../src/gtk/config/AboutTab.cpp:870 ../src/kde/config/AboutTab.cpp:690
 #: ../src/win32/config/AboutTab.cpp:691
 #, c-format
 msgctxt "AboutTab"
 msgid "Latest version: %s"
-msgstr ""
+msgstr "Ultima versione: %s"
 
 #: ../src/gtk/config/AboutTab.cpp:873 ../src/kde/config/AboutTab.cpp:693
 msgctxt "AboutTab"
 msgid "<b>New version available!</b>"
-msgstr ""
+msgstr "<b>Nuova versione disponibile!</b>"
 
 #: ../src/gtk/config/AboutTab.cpp:876 ../src/kde/config/AboutTab.cpp:696
 #: ../src/win32/config/AboutTab.cpp:697
 msgctxt "AboutTab"
 msgid "Download at GitHub"
-msgstr ""
+msgstr "Scarica da GitHub"
 
 #: ../src/gtk/config/CacheCleaner.cpp:255
 #: ../src/gtk/config/CacheCleaner.cpp:313 ../src/kde/config/CacheCleaner.cpp:46
 #: ../src/kde/config/CacheCleaner.cpp:104
 msgctxt "CacheCleaner"
 msgid "Invalid cache directory specified."
-msgstr ""
+msgstr "Directory di cache specificata non valida."
 
 #: ../src/gtk/config/CacheCleaner.cpp:262 ../src/kde/config/CacheCleaner.cpp:53
 msgctxt "CacheCleaner"
 msgid "Unable to get the XDG cache directory."
-msgstr ""
+msgstr "Impossibile ottenere la directory di cache XDG."
 
 #: ../src/gtk/config/CacheCleaner.cpp:270 ../src/kde/config/CacheCleaner.cpp:61
 msgctxt "CacheCleaner"
 msgid "Thumbnails cache directory does not exist."
-msgstr ""
+msgstr "La directory della cache delle anteprime non esiste."
 
 #: ../src/gtk/config/CacheCleaner.cpp:279 ../src/kde/config/CacheCleaner.cpp:70
 #: ../src/win32/config/CacheTab.cpp:589
 msgctxt "CacheCleaner"
 msgid "Unable to get the rom-properties cache directory."
-msgstr ""
+msgstr "Impossibile ottenere la directory della cache di rom-properties."
 
 #: ../src/gtk/config/CacheCleaner.cpp:316
 #: ../src/kde/config/CacheCleaner.cpp:107
 msgctxt "CacheCleaner"
 msgid "System thumbnail cache has unexpected files. Not clearing it."
-msgstr ""
+msgstr "La cartella della cache delle anteprime di sistema contiene file sconosciuti. Non la svuoto."
 
 #: ../src/gtk/config/CacheCleaner.cpp:319
 #: ../src/kde/config/CacheCleaner.cpp:110 ../src/win32/config/CacheTab.cpp:644
 msgctxt "CacheCleaner"
 msgid "rom-properties cache has unexpected files. Not clearing it."
-msgstr ""
+msgstr "La cache di rom-properties ha file sconosciuti. Non la svuoto."
 
 #: ../src/gtk/config/CacheTab.cpp:360 ../src/gtk/config/CacheTab.cpp:485
 #: ../src/gtk/config/CacheTab.cpp:531 ../src/kde/config/CacheTab.cpp:122
 #: ../src/kde/config/CacheTab.cpp:277 ../src/kde/config/CacheTab.cpp:319
 msgctxt "CacheTab"
 msgid "Invalid cache directory specified."
-msgstr ""
+msgstr "Directory di cache specificata non valida."
 
 #: ../src/gtk/config/CacheTab.cpp:363 ../src/kde/config/CacheTab.cpp:125
 msgctxt "CacheTab"
 msgid "Clearing the system thumbnail cache..."
-msgstr ""
+msgstr "Resetta la cache delle anteprime di sistema..."
 
 #: ../src/gtk/config/CacheTab.cpp:366 ../src/kde/config/CacheTab.cpp:128
 msgctxt "CacheTab"
