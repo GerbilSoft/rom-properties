@@ -42,7 +42,7 @@ static QObject *createXAttrViewPropertiesPage(QWidget *w, QObject *parent, const
 }
 
 K_PLUGIN_FACTORY_WITH_JSON(XAttrViewPropertiesDialogFactory, "xattrview-kf5.json",
-	registerPlugin<XAttrViewPropertiesDialogFactory>(QString(), createXAttrViewPropertiesPage);
+	registerPlugin<XAttrViewPropertiesDialogPlugin>(QString(), createXAttrViewPropertiesPage);
 )
 #endif
 

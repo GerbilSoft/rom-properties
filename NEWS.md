@@ -136,6 +136,7 @@
   * GTK UI frontend: Fix "standard sorting" in RFT_LISTDATA fields.
     * GTK3 defaults to case-insensitive sorting, which doesn't match our
       assumptions that "standard sorting" is case-sensitive.
+  * KDE: XAttrView didn't show up on KF5 older than 5.89.0.
 
 * Other changes:
   * Nintendo3DS: The "Options" menu no longer shows a grayed-out "Extract SRL"
