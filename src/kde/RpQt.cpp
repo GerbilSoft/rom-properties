@@ -11,16 +11,7 @@
 #include "RpQImageBackend.hpp"
 
 // Other rom-properties libraries
-#include "librpbase/config/Config.hpp"
-using namespace LibRpBase;
-using namespace LibRpFile;
-using namespace LibRpTexture;
-
-// RpFileKio
-#include "RpFile_kio.hpp"
-
-// C++ STL classes
-using std::string;
+using LibRpTexture::rp_image;
 
 /** Image conversion **/
 
@@ -44,100 +35,6 @@ QImage rpToQImage(const rp_image *image)
 	}
 
 	return backend->getQImage();
-}
-
-/** QUrl **/
-
-/**
- * Open a QUrl as an IRpFile. (read-only)
- * This function automatically converts certain URL schemes, e.g. desktop:/, to local paths.
- *
- * @param qUrl QUrl.
- * @param isThumbnail If true, this file is being used for thumbnailing. Handle "bad FS" checking.
- *
- * @return IRpFile, or nullptr on error.
- */
-IRpFilePtr openQUrl(const QUrl &url, bool isThumbnail)
-{
-	// Some things work better with local paths than with remote.
-	// KDE uses some custom URL schemes, e.g. desktop:/, to represent
-	// files that are actually stored locally. Detect this and convert
-	// it to a file:/ URL instead.
-
-	// NOTE: KDE's KFileItem has a function to do this, but it only works
-	// if KIO::UDSEntry::UDS_LOCAL_PATH is set. This is the case with
-	// KPropertiesDialogPlugin, but not the various forwarding plugins
-	// when converting a URL from a string.
-
-	// References:
-	// - https://bugs.kde.org/show_bug.cgi?id=392100
-	// - https://cgit.kde.org/kio.git/commit/?id=7d6e4965dfcd7fc12e8cba7b1506dde22de5d2dd
-	// TODO: https://cgit.kde.org/kdenetwork-filesharing.git/commit/?id=abf945afd4f08d80cdc53c650d80d300f245a73d
-	// (and other uses) [use mostLocalPath()]
-
-	// NOTE: "trash:/" isn't handled, but Dolphin 23.08.3 attempts to
-	// thumbnail both the actual local filename in ~/.local/share/Trash/
-	// *and* the trash:/ URL, so it doesn't matter.
-	// TODO: Check KDE for other "local" URL schemes.
-
-	if (url.isEmpty()) {
-		// Empty URL. Nothing to do here.
-		return nullptr;
-	}
-
-	const QUrl localUrl = localizeQUrl(url);
-	if (localUrl.isEmpty()) {
-		// Unable to localize the URL.
-		return nullptr;
-	}
-
-	string s_local_filename;
-	if (localUrl.scheme().isEmpty() || localUrl.isLocalFile()) {
-		s_local_filename = localUrl.toLocalFile().toUtf8().constData();
-	}
-
-	if (isThumbnail) {
-		// We're thumbnailing the file. Check "bad FS" settings.
-		const Config *const config = Config::instance();
-		const bool enableThumbnailOnNetworkFS = config->enableThumbnailOnNetworkFS();
-		if (!s_local_filename.empty()) {
-			// This is a local file. Check if it's on a "bad" file system.
-			if (FileSystem::isOnBadFS(s_local_filename.c_str(), enableThumbnailOnNetworkFS)) {
-				// This file is on a "bad" file system.
-				return nullptr;
-			}
-		} else {
-			// This is a remote file. Assume it's a "bad" file system.
-			if (!enableThumbnailOnNetworkFS) {
-				// Thumbnailing on network file systems is disabled.
-				return nullptr;
-			}
-		}
-	}
-
-	// Attempt to open an IRpFile.
-	IRpFilePtr file;
-	if (!s_local_filename.empty()) {
-		// Local filename. Use RpFile.
-		file = std::make_shared<RpFile>(s_local_filename, RpFile::FM_OPEN_READ_GZ);
-	} else {
-		// Remote filename. Use RpFile_kio.
-#ifdef HAVE_RPFILE_KIO
-		file = std::make_shared<RpFileKio>(url);
-#else /* !HAVE_RPFILE_KIO */
-		// Not supported...
-		return nullptr;
-#endif
-	}
-
-	if (file && file->isOpen()) {
-		// File opened successfully.
-		return file;
-	}
-
-	// Unable to open the file...
-	// TODO: Return an error code?
-	return nullptr;
 }
 
 /**

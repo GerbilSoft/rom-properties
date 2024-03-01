@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * RomPropertiesDialogPlugin.cpp: KPropertiesDialogPlugin implementation   *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -15,9 +15,11 @@
  */
 
 #include "stdafx.h"
+#include "check-uid.hpp"
+
 #include "RomPropertiesDialogPlugin.hpp"
 #include "RomDataView.hpp"
-#include "check-uid.hpp"
+#include "RpQUrl.hpp"
 
 // Other rom-properties libraries
 using namespace LibRpBase;

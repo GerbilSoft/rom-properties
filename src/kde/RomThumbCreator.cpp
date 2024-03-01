@@ -10,10 +10,11 @@
 #include "config.kde.h"
 #include "check-uid.hpp"
 
+#include "RomThumbCreator.hpp"
 #include "AchQtDBus.hpp"
 #include "ProxyForUrl.hpp"
-#include "RomThumbCreator.hpp"
 #include "RpQImageBackend.hpp"
+#include "RpQUrl.hpp"
 
 // Other rom-properties libraries
 using namespace LibRpBase;

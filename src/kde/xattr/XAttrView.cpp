@@ -8,7 +8,9 @@
 
 // Reference: https://doc.qt.io/qt-5/dnd.html
 #include "stdafx.h"
+
 #include "XAttrView.hpp"
+#include "RpQUrl.hpp"
 
 // XAttrReader
 #include "librpfile/xattr/XAttrReader.hpp"

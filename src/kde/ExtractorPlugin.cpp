@@ -6,13 +6,15 @@
  * multiple plugins, so this file acts as a KFileMetaData ExtractorPlugin, *
  * and then forwards the request to the main library.                      *
  *                                                                         *
- * Copyright (c) 2018-2023 by David Korth.                                 *
+ * Copyright (c) 2018-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "stdafx.h"
-#include "ExtractorPlugin.hpp"
 #include "check-uid.hpp"
+
+#include "ExtractorPlugin.hpp"
+#include "RpQUrl.hpp"
 
 // Other rom-properties libraries
 using namespace LibRpBase;

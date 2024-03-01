@@ -2,24 +2,18 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * RpQt.hpp: Qt wrappers for some libromdata functionality.                *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #pragma once
-
-#include "RpQUrl.hpp"
 
 // Qt includes
 #include <QtCore/QObject>
 #include <QtCore/QString>
 #include <QtGui/QImage>
 
-// C++ includes
-#include <string>
-
-// librpfile, librptexture
-#include "librpfile/IRpFile.hpp"
+// librptexture
 #include "librptexture/img/rp_image.hpp"
 
 #define CONCAT_FN(fn, suffix)		CONCAT_FN_INT(fn, suffix)
@@ -155,19 +149,6 @@ static inline QImage rpToQImage(const LibRpTexture::rp_image_const_ptr &image)
 {
 	return rpToQImage(image.get());
 }
-
-/** QUrl **/
-
-/**
- * Open a QUrl as an IRpFile. (read-only)
- * This function automatically converts certain URL schemes, e.g. desktop:/, to local paths.
- *
- * @param qUrl QUrl.
- * @param isThumbnail If true, this file is being used for thumbnailing. Handle "bad FS" checking.
- *
- * @return IRpFile, or nullptr on error.
- */
-LibRpFile::IRpFilePtr openQUrl(const QUrl &url, bool isThumbnail = false);
 
 /**
  * Convert an RP file dialog filter to Qt.
