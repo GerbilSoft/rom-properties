@@ -3,8 +3,8 @@
 /** DarkMode control helpers **/
 #include "libwin32common/RpWin32_sdk.h"
 
-// C includes (C++ namespace)
-#include <cassert>
+// C includes
+#include <assert.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -35,7 +35,6 @@ void DarkMode_InitTabControl(HWND hWnd);
 void DarkMode_InitRichEdit(HWND hWnd);
 
 /** Same as above, but with GetDlgItem wrappers **/
-
 #define DARKMODE_GETDLGITEM_WRAPPER(ControlName) \
 static inline void DarkMode_Init##ControlName##_Dlg(HWND hDlg, WORD id) \
 { \
