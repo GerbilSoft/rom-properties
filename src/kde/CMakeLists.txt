@@ -5,10 +5,10 @@ PROJECT(rom-properties-kde LANGUAGES CXX)
 
 # Sources and headers.
 SET(${PROJECT_NAME}_SRCS
-	RomPropertiesDialogPlugin.cpp
+	plugins/RomPropertiesDialogPlugin.cpp
+	plugins/RomThumbCreator.cpp
 	RomDataView.cpp
 	RomDataView_ops.cpp
-	RomThumbCreator.cpp
 	RpQt.cpp
 	RpQUrl.cpp
 	RpQImageBackend.cpp
@@ -40,10 +40,10 @@ SET(${PROJECT_NAME}_SRCS
 	config/UpdateChecker.cpp
 	)
 SET(${PROJECT_NAME}_H
-	RomPropertiesDialogPlugin.hpp
+	plugins/RomPropertiesDialogPlugin.hpp
+	plugins/RomThumbCreator.hpp
 	RomDataView.hpp
 	RomDataView_p.hpp
-	RomThumbCreator.hpp
 	RpQt.hpp
 	RpQtNS.hpp
 	RpQUrl.hpp

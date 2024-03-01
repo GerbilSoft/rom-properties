@@ -31,7 +31,7 @@ class ExtractorPlugin : public ::KFileMetaData::ExtractorPlugin
 {
 Q_OBJECT
 Q_INTERFACES(KFileMetaData::ExtractorPlugin)
-Q_PLUGIN_METADATA(IID "org.kde.kf5.kfilemetadata.ExtractorPlugin" FILE "kf6/ExtractorPlugin.json")
+Q_PLUGIN_METADATA(IID "org.kde.kf5.kfilemetadata.ExtractorPlugin" FILE "../kf6/ExtractorPlugin.json")
 
 public:
 	explicit ExtractorPlugin(QObject *parent = nullptr);

@@ -144,10 +144,10 @@ IF(BUILD_KF6)
 
 	# ExtractorPlugin
 	ADD_LIBRARY(kfilemetadata_${PROJECT_NAME} MODULE
-		../ExtractorPlugin.cpp
+		../plugins/ExtractorPlugin.cpp
 		../RpQUrl.cpp
 
-		../ExtractorPluginKF6.hpp
+		../plugins/ExtractorPluginKF6.hpp
 		../RpQtNS.hpp
 		../RpQUrl.hpp
 		)
@@ -172,10 +172,10 @@ IF(BUILD_KF6)
 	# https://github.com/owncloud/client/blob/master/shell_integration/dolphin/CMakeLists.txt
 	# TODO: Better name.
 	ADD_LIBRARY(overlayiconplugin_${PROJECT_NAME} MODULE
-		../OverlayIconPlugin.cpp
+		../plugins/OverlayIconPlugin.cpp
 		../RpQUrl.cpp
 
-		../OverlayIconPluginKF6.hpp
+		../plugins/OverlayIconPluginKF6.hpp
 		../RpQtNS.hpp
 		../RpQUrl.hpp
 		)

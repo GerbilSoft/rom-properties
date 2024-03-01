@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE4)                             *
  * PluginFactoryKDE4.cpp: Plugin factory class.                            *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -25,8 +25,8 @@ using LibRpTexture::rp_image;
 #include "AchQtDBus.hpp"
 
 // Plugins
-#include "RomPropertiesDialogPlugin.hpp"
-#include "RomThumbCreator.hpp"
+#include "../plugins/RomPropertiesDialogPlugin.hpp"
+#include "../plugins/RomThumbCreator.hpp"
 
 // KDE
 #include <kpluginfactory.h>

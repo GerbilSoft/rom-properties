@@ -27,7 +27,7 @@ Q_OBJECT
 //Q_INTERFACES(KOverlayIconPlugin)
 
 // NOTE: KF5 doesn't have a standard IID for KOverlayIconPlugin...
-Q_PLUGIN_METADATA(IID "com.gerbilsoft.rom-properties.KOverlayIconPlugin" FILE "kf5/OverlayIconPlugin.json")
+Q_PLUGIN_METADATA(IID "com.gerbilsoft.rom-properties.KOverlayIconPlugin" FILE "../kf5/OverlayIconPlugin.json")
 
 public:
 	explicit OverlayIconPlugin(QObject *parent = nullptr);
