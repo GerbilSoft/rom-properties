@@ -5,6 +5,13 @@ PROJECT(rom-properties-kf5 LANGUAGES CXX)
 INCLUDE(RP_FindQt5andKF5)
 FIND_QT5_AND_KF5()
 
+# FIXME: On Ubuntu 16.04, ${SERVICES_INSTALL_DIR} is incorrectly
+# set to the KDE4 directory. Not sure if it's because kdelibs5
+# for KDE4 is also installed...
+IF(SERVICES_INSTALL_DIR MATCHES "kde4")
+	SET(SERVICES_INSTALL_DIR "share/kservices5")
+ENDIF()
+
 # Disable anything deprecated as of Qt 5.15.
 ADD_DEFINITIONS(-DQT_DISABLE_DEPRECATED_UP_TO=0x050F00)
 
@@ -281,6 +288,15 @@ IF(BUILD_KF5)
 			COMPONENT "plugin")
 	ENDIF(NOT HAVE_JSON_PLUGIN_LOADER)
 	# FIXME: Run kbuildsycoca5?
+
+	IF(HAVE_KF5_DEPRECATED_SERVICE_MENU_DIR)
+		# Service menus (deprecated install location)
+		# KF5 <5.85 uses ${SERVICES_INSTALL_DIR}.
+		INSTALL(FILES ../servicemenus/rp-convert-to-png.desktop
+			DESTINATION "${SERVICES_INSTALL_DIR}"
+			PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
+			COMPONENT "plugin")
+	ENDIF(HAVE_KF5_DEPRECATED_SERVICE_MENU_DIR)
 
 	# Check if a split debug file should be installed.
 	IF(INSTALL_DEBUG)

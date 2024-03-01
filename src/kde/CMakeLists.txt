@@ -193,6 +193,9 @@ ENDIF(BUILD_KF6)
 IF(BUILD_KF5 OR BUILD_KF6)
 	# Service menus
 	# KF5 and KF6 use the same servicemenus directory.
+	# NOTE: KF5 <5.85 uses ${SERVICES_INSTALL_DIR} instead.
+	# That will be handled by the KF5 subdirectory.
+	# TODO: How does KF5 handle it if the .desktop file is in both locations?
 	INSTALL(FILES servicemenus/rp-convert-to-png.desktop
 		DESTINATION "${CMAKE_INSTALL_PREFIX}/share/kio/servicemenus"
 		PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE

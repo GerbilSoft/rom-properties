@@ -73,6 +73,11 @@ MACRO(FIND_QT5_AND_KF5)
 				SET(BUILD_KF5 OFF CACHE INTERNAL "Build the KDE Frameworks 5 plugin." FORCE)
 			ENDIF(NOT KF5CoreAddons_FOUND OR NOT KF5KIO_FOUND OR NOT KF5WidgetsAddons_FOUND OR NOT KF5FileMetaData_FOUND)
 
+			# CoreAddons: If earlier than 5.85, install service menus in ${SERVICES_INSTALL_DIR}.
+			IF(TARGET KF5::CoreAddons AND KF5CoreAddons_VERSION VERSION_LESS 5.84.79)
+				SET(HAVE_KF5_DEPRECATED_SERVICE_MENU_DIR 1)
+			ENDIF(TARGET KF5::CoreAddons AND KF5CoreAddons_VERSION VERSION_LESS 5.84.79)
+
 			# CoreAddons: If 5.89 or later, use JSON installation instead of .desktop files.
 			IF(TARGET KF5::CoreAddons AND KF5CoreAddons_VERSION VERSION_GREATER 5.88.79)
 				SET(HAVE_JSON_PLUGIN_LOADER 1)
