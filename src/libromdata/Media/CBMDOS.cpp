@@ -141,6 +141,15 @@ public:
 #define GCR_MAX_TRACK_SIZE 8192U
 
 public:
+	// Disk header
+	// Includes the disk name.
+	union {
+		cbmdos_C1541_BAM_t c1541;	// also used for C1571
+		cbmdos_C8050_header_t c8050;
+		cbmdos_C1581_header_t c1581;
+	} diskHeader;
+
+public:
 	/**
 	 * Decode 5 GCR bytes into 4 data bytes.
 	 * @param data	[out] Output buffer for 4 data bytes
@@ -169,10 +178,11 @@ public:
 
 	/**
 	 * Remove $A0 padding from a character buffer.
-	 * @param buf	[in/out] Character buffer
+	 * @param buf	[in] Character buffer
 	 * @param siz	[in] Size of buf
+	 * @return String length with $A0 padding removed.
 	 */
-	static void remove_A0_padding(char *buf, size_t siz);
+	static size_t remove_A0_padding(const char *buf, size_t siz);
 };
 
 ROMDATA_IMPL(CBMDOS)
@@ -229,6 +239,26 @@ const char *const CBMDOSPrivate::mimeTypes[] = {
 const RomDataInfo CBMDOSPrivate::romDataInfo = {
 	"CBMDOS", exts, mimeTypes
 };
+
+CBMDOSPrivate::CBMDOSPrivate(const IRpFilePtr &file)
+	: super(file, &romDataInfo)
+	, diskType(DiskType::Unknown)
+	, dir_track(0)
+	, dir_first_sector(0)
+	, GCR_track_cache_number(0)
+	, err_bytes_count(0)
+	, err_bytes_offset(0)
+	, GCR_track_buffer(nullptr)
+	, GCR_track_size(0)
+{
+	// Clear the ROM header struct.
+	memset(&diskHeader, 0, sizeof(diskHeader));
+}
+
+CBMDOSPrivate::~CBMDOSPrivate()
+{
+	delete GCR_track_buffer;
+}
 
 /**
  * Initialize track offsets for C1541. (35/40 tracks)
@@ -473,23 +503,6 @@ void CBMDOSPrivate::init_track_offsets_G64(const cbmdos_G64_header_t *header)
 		track_offsets.push_back(this_track);
 		found_any_tracks = true;
 	}
-}
-
-CBMDOSPrivate::CBMDOSPrivate(const IRpFilePtr &file)
-	: super(file, &romDataInfo)
-	, diskType(DiskType::Unknown)
-	, dir_track(0)
-	, dir_first_sector(0)
-	, GCR_track_cache_number(0)
-	, err_bytes_count(0)
-	, err_bytes_offset(0)
-	, GCR_track_buffer(nullptr)
-	, GCR_track_size(0)
-{}
-
-CBMDOSPrivate::~CBMDOSPrivate()
-{
-	delete GCR_track_buffer;
 }
 
 /**
@@ -746,23 +759,23 @@ size_t CBMDOSPrivate::read_sector(void *buf, size_t siz, uint8_t track, uint8_t 
 
 /**
  * Remove $A0 padding from a character buffer.
- * @param buf	[in/out] Character buffer
+ * @param buf	[in] Character buffer
  * @param siz	[in] Size of buf
+ * @return String length with $A0 padding removed.
  */
-void CBMDOSPrivate::remove_A0_padding(char *buf, size_t siz)
+size_t CBMDOSPrivate::remove_A0_padding(const char *buf, size_t siz)
 {
 	assert(siz != 0);
 	if (siz == 0)
-		return;
+		return 0;
 
 	buf += (siz - 1);
 	for (; siz > 0; buf--, siz--) {
-		if ((uint8_t)*buf == 0xA0) {
-			*buf = 0;
-		} else {
+		if ((uint8_t)*buf != 0xA0)
 			break;
-		}
 	}
+
+	return siz;
 }
 
 /** CBMDOS **/
@@ -919,7 +932,15 @@ CBMDOS::CBMDOS(const IRpFilePtr &file)
 			break;
 	}
 
-	// This is a valid CBM DOS disk image.
+	// Get the BAM/header sector. (sector 0 of the directory track)
+	size = d->read_sector(&d->diskHeader, sizeof(d->diskHeader), d->dir_track, 0);
+	if (size != sizeof(d->diskHeader)) {
+		// Read error.
+		d->file.reset();
+		return;
+	}
+
+	// This is avalid CBM DOS disk image.
 	d->mimeType = d->mimeTypes[(int)d->diskType];
 	d->isValid = true;
 }
@@ -1052,83 +1073,74 @@ int CBMDOS::loadFieldData(void)
 	static const char uFFFD[] = "\xEF\xBF\xBD";
 	unsigned int codepage = CP_RP_PETSCII_Unshifted;
 
+	const auto *diskHeader = &d->diskHeader;
 	d->fields.reserve(4);	// Maximum of 4 fields.
 
-	union {
-		cbmdos_C1541_BAM_t c1541_bam;
-		cbmdos_C8050_header_t c8050_header;
-		cbmdos_C1581_header_t c1581_header;
-		cbmdos_C128_autoboot_sector_t autoboot;
-	};
+	// Get the string addresses from the BAM/header sector.
+	// TODO: Separate function for this?
+	const char *disk_name, *disk_id, *dos_type;
+	size_t disk_name_len;
 
-	// Get the BAM/header sector. (sector 0 of the directory track)
-	size_t size = d->read_sector(&c1541_bam, sizeof(c1541_bam), d->dir_track, 0);
-	if (size == sizeof(c1541_bam)) {
-		// BAM loaded. Get the string addresses.
-		char *disk_name, *disk_id, *dos_type;
-		int disk_name_len;
+	switch (d->diskType) {
+		case CBMDOSPrivate::DiskType::D64:
+		case CBMDOSPrivate::DiskType::D71:
+		case CBMDOSPrivate::DiskType::D67:
+		case CBMDOSPrivate::DiskType::G64:
+		case CBMDOSPrivate::DiskType::G71:
+			// C1541, C1571, C2040
+			disk_name = diskHeader->c1541.disk_name;
+			disk_name_len = sizeof(diskHeader->c1541.disk_name);
+			disk_id = diskHeader->c1541.disk_id;
+			dos_type = diskHeader->c1541.dos_type;
+			break;
 
-		switch (d->diskType) {
-			case CBMDOSPrivate::DiskType::D64:
-			case CBMDOSPrivate::DiskType::D71:
-			case CBMDOSPrivate::DiskType::D67:
-			case CBMDOSPrivate::DiskType::G64:
-			case CBMDOSPrivate::DiskType::G71:
-				// C1541, C1571, C2040
-				disk_name = c1541_bam.disk_name;
-				disk_name_len = static_cast<int>(sizeof(c1541_bam.disk_name));
-				disk_id = c1541_bam.disk_id;
-				dos_type = c1541_bam.dos_type;
-				break;
+		case CBMDOSPrivate::DiskType::D80:
+		case CBMDOSPrivate::DiskType::D82:
+			// C8050/C8250
+			disk_name = diskHeader->c8050.disk_name;
+			disk_name_len = sizeof(diskHeader->c8050.disk_name);
+			disk_id = diskHeader->c8050.disk_id;
+			dos_type = diskHeader->c8050.dos_type;
+			break;
 
-			case CBMDOSPrivate::DiskType::D80:
-			case CBMDOSPrivate::DiskType::D82:
-				// C8050/C8250
-				disk_name = c8050_header.disk_name;
-				disk_name_len = static_cast<int>(sizeof(c8050_header.disk_name));
-				disk_id = c8050_header.disk_id;
-				dos_type = c8050_header.dos_type;
-				break;
+		case CBMDOSPrivate::DiskType::D81:
+			// C1581
+			disk_name = diskHeader->c1581.disk_name;
+			disk_name_len = sizeof(diskHeader->c1581.disk_name);
+			disk_id = diskHeader->c1581.disk_id;
+			dos_type = diskHeader->c1581.dos_type;
+			break;
 
-			case CBMDOSPrivate::DiskType::D81:
-				// C1581
-				disk_name = c1581_header.disk_name;
-				disk_name_len = static_cast<int>(sizeof(c1581_header.disk_name));
-				disk_id = c1581_header.disk_id;
-				dos_type = c1581_header.dos_type;
-				break;
-
-			default:
-				assert(!"Unsupported CBM disk type?");
-				return 0;
-		}
-
-		// Disk name
-		const char *const s_disk_name_title = C_("CBMDOS", "Disk Name");
-		d->remove_A0_padding(disk_name, disk_name_len);
-		if (unlikely(!memcmp(c1541_bam.geos.geos_id_string, "GEOS", 4))) {
-			// GEOS ID is present. Parse the disk name as ASCII. (well, Latin-1)
-			d->fields.addField_string(s_disk_name_title,
-				latin1_to_utf8(disk_name, disk_name_len));
-		} else {
-			string s_disk_name = cpN_to_utf8(codepage, disk_name, disk_name_len);
-			if (s_disk_name.find(uFFFD) != string::npos) {
-				// Disk name has invalid characters when using Unshifted.
-				// Try again with Shifted.
-				codepage = CP_RP_PETSCII_Shifted;
-				s_disk_name = cpN_to_utf8(codepage, disk_name, disk_name_len);
-			}
-			d->fields.addField_string(s_disk_name_title, s_disk_name);
-		}
-
-		// Disk ID
-		d->fields.addField_string(C_("CBMDOS", "Disk ID"),
-			cpN_to_utf8(codepage, disk_id, sizeof(c1541_bam.disk_id)));
-
-		// DOS Type (NOTE: Always unshifted)
-		d->fields.addField_string(C_("CBMDOS", "DOS Type"),
-			cpN_to_utf8(CP_RP_PETSCII_Unshifted, dos_type, sizeof(c1541_bam.dos_type)));
+		default:
+			assert(!"Unsupported CBM disk type?");
+			return 0;
 	}
+
+	// Disk name
+	const char *const s_disk_name_title = C_("CBMDOS", "Disk Name");
+	disk_name_len = d->remove_A0_padding(disk_name, disk_name_len);
+	if (unlikely(!memcmp(diskHeader->c1541.geos.geos_id_string, "GEOS", 4))) {
+		// GEOS ID is present. Parse the disk name as ASCII. (well, Latin-1)
+		d->fields.addField_string(s_disk_name_title,
+			latin1_to_utf8(disk_name, disk_name_len));
+	} else {
+		string s_disk_name = cpN_to_utf8(codepage, disk_name, disk_name_len);
+		if (s_disk_name.find(uFFFD) != string::npos) {
+			// Disk name has invalid characters when using Unshifted.
+			// Try again with Shifted.
+			codepage = CP_RP_PETSCII_Shifted;
+			s_disk_name = cpN_to_utf8(codepage, disk_name, disk_name_len);
+		}
+		d->fields.addField_string(s_disk_name_title, s_disk_name);
+	}
+
+	// Disk ID
+	d->fields.addField_string(C_("CBMDOS", "Disk ID"),
+		cpN_to_utf8(codepage, disk_id, sizeof(diskHeader->c1541.disk_id)));
+
+	// DOS Type (NOTE: Always unshifted)
+	d->fields.addField_string(C_("CBMDOS", "DOS Type"),
+		cpN_to_utf8(CP_RP_PETSCII_Unshifted, dos_type, sizeof(diskHeader->c1541.dos_type)));
 
 	// C1581 has an additional file type, "CBM".
 	const uint8_t max_file_type = (d->diskType == CBMDOSPrivate::DiskType::D81) ? 6 : 5;
@@ -1200,18 +1212,18 @@ int CBMDOS::loadFieldData(void)
 			p_list.emplace_back(filesize);
 
 			// Filename
-			d->remove_A0_padding(p_dir->filename, sizeof(p_dir->filename));
+			const size_t filename_len = d->remove_A0_padding(p_dir->filename, sizeof(p_dir->filename));
 			if (unlikely(is_geos_file)) {
 				// GEOS file: The filename is encoded as ASCII.
 				// NOTE: Using Latin-1...
-				p_list.emplace_back(latin1_to_utf8(p_dir->filename, sizeof(p_dir->filename)));
+				p_list.emplace_back(latin1_to_utf8(p_dir->filename, filename_len));
 			} else {
-				string s_filename = cpN_to_utf8(codepage, p_dir->filename, sizeof(p_dir->filename));
+				string s_filename = cpN_to_utf8(codepage, p_dir->filename, filename_len);
 				if (codepage == CP_RP_PETSCII_Unshifted && s_filename.find(uFFFD) != string::npos) {
 					// File name has invalid characters when using Unshifted.
 					// Try again with Shifted.
 					codepage = CP_RP_PETSCII_Shifted;
-					s_filename = cpN_to_utf8(codepage, p_dir->filename, sizeof(p_dir->filename));
+					s_filename = cpN_to_utf8(codepage, p_dir->filename, filename_len);
 				}
 				p_list.emplace_back(std::move(s_filename));
 			}
@@ -1299,7 +1311,8 @@ int CBMDOS::loadFieldData(void)
 	if (d->diskType == CBMDOSPrivate::DiskType::D64 ||
 	    d->diskType == CBMDOSPrivate::DiskType::D71)
 	{
-		size = d->read_sector(&autoboot, sizeof(autoboot), 1, 0);
+		cbmdos_C128_autoboot_sector_t autoboot;
+		size_t size = d->read_sector(&autoboot, sizeof(autoboot), 1, 0);
 		if (size == sizeof(autoboot) && !memcmp(autoboot.signature, "CBM", 3)) {
 			// We have an autoboot sector.
 			// TODO: Show other fields?
