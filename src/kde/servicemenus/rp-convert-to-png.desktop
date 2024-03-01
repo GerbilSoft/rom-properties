@@ -1,8 +1,10 @@
 [Desktop Entry]
+Encoding=UTF-8
 Type=Service
-X-KDE-ServiceTypes=KonqPopupMenu/Plugin
 MimeType=image/astc;image/x-didj-texture;image/vnd.ms-dds;image/x-dds;image/x-godot-stex;image/ktx;image/ktx2;image/x-sega-pvr;image/x-sega-gvr;image/x-sega-svr;image/x-sega-pvrx;image/vnd.valve.source.texture;image/x-vtf;image/x-vtf3;image/x-xbox-xpr0
 Actions=rpConvertToPng;
+ServiceTypes=KonqPopupMenu/Plugin
+X-KDE-ServiceTypes=KonqPopupMenu/Plugin
 
 [Desktop Action rpConvertToPng]
 TryExec=rp-stub
