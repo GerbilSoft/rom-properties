@@ -398,6 +398,10 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 		// is now using the pipe2() syscall.
 		SCMP_SYS(pipe2),
 
+		// Needed on 32-bit Ubuntu 16.04 (glibc-2.23, cURL 7.47.0) for some reason...
+		// (called from getaddrinfo())
+		SCMP_SYS(time),
+
 		-1	// End of whitelist
 	};
 	param.syscall_wl = syscall_wl;
