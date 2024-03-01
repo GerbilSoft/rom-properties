@@ -3,7 +3,7 @@
  * RecursiveScan.cpp: Recursively scan for cache files to delete.          *
  * (Win32 implementation)                                                  *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -30,9 +30,9 @@ namespace LibRpFile {
 
 /**
  * Recursively scan a directory for cache files to delete.
- * This finds *.png, *.jpg, and "version.txt".
+ * This finds *.png, *.jpg, *.jxl, and "version.txt".
  *
- * POSIX implementation: Uses readdir().
+ * Win32 implementation: Uses FindFirstFile() and FindNextFile().
  *
  * @param path	[in] Path to scan.
  * @param rlist	[in/out] Return list for filenames and file types. (d_type)
@@ -76,6 +76,7 @@ int recursiveScan(const TCHAR *path, forward_list<pair<tstring, uint8_t> > &rlis
 			const TCHAR *pExt = &findFileData.cFileName[len-4];
 			if (_tcsicmp(pExt, _T(".png")) != 0 &&
 			    _tcsicmp(pExt, _T(".jpg")) != 0 &&
+			    _tcsicmp(pExt, _T(".jxl")) != 0 &&
 			    _tcsicmp(findFileData.cFileName, _T("version.txt")) != 0)
 			{
 				// Extension is not valid.
@@ -85,8 +86,8 @@ int recursiveScan(const TCHAR *path, forward_list<pair<tstring, uint8_t> > &rlis
 
 			// All checks pass.
 		}
-	isok:
 
+	isok:
 		tstring fullFileName(path);
 		fullFileName += _T('\\');
 		fullFileName += findFileData.cFileName;
