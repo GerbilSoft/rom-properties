@@ -139,6 +139,9 @@ static int set_security_options(void)
 		__NR_openat2,		// Linux 5.6
 #endif /* __SNR_openat2 || __NR_openat2 */
 
+		// Ubuntu 16.04: mmap() is used by fgets() for some reason. (glibc-2.23)
+		SCMP_SYS(mmap), SCMP_SYS(mmap2), SCMP_SYS(munmap),
+
 		-1	// End of whitelist
 	};
 	param.syscall_wl = syscall_wl;
