@@ -137,6 +137,8 @@ INSTALL(TARGETS ${PROJECT_NAME}
 	#ARCHIVE DESTINATION "${DIR_INSTALL_LIB}"
 	COMPONENT "program"
 	)
+# FIXME: Not working properly. (cannot write files to the user's home directory)
+IF(0)
 IF(INSTALL_APPARMOR)
 	# AppArmor profile (Linux only)
 	# Convert the full path to use '.' instead of '/'.
@@ -155,6 +157,7 @@ IF(INSTALL_APPARMOR)
 		COMPONENT "apparmor"
 		)
 ENDIF(INSTALL_APPARMOR)
+ENDIF(0)
 IF(INSTALL_DEBUG)
 	# Split debug file
 	# FIXME: Generator expression $<TARGET_PROPERTY:${_target},PDB> didn't work with CPack-3.6.1.
