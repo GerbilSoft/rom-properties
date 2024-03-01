@@ -1307,7 +1307,18 @@ rp_image_ptr fromLinear32_cpp(PixelFormat px_format,
 				? (stride / bytespp)
 				: width;
 			const int dest_row_width = img->stride() / bytespp;
-#pragma omp parallel for default(none) shared(img_buf, bits) firstprivate(width, height, src_row_width, dest_row_width)
+
+#ifdef _OPENMP
+#  if _OPENMP >= 201511
+     // gcc <9.x throws an error if certain const pointers are marked as shared.
+     // https://github.com/KCL-BMEIS/niftyreg/issues/74
+     // https://gcc.gnu.org/gcc-9/porting_to.html
+#    define SHARED_OMP5(x) shared(x)
+#  else
+#    define SHARED_OMP5(x)
+#  endif
+#  pragma omp parallel for default(none) shared(img_buf) SHARED_OMP5(bits) firstprivate(width, height, src_row_width, dest_row_width)
+#endif
 			for (int y = 0; y < height; y++) {
 				const uint32_t *px_src = &img_buf[y * src_row_width];
 				uint32_t *px_dest = &bits[y * dest_row_width];

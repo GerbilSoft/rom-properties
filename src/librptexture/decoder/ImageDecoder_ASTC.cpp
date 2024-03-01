@@ -94,9 +94,16 @@ rp_image_ptr fromASTC(int width, int height,
 
 #ifdef _OPENMP
 	bool bErr = false;
+#  if _OPENMP >= 201511
+     // gcc <9.x throws an error if certain const pointers are marked as shared.
+     // https://github.com/KCL-BMEIS/niftyreg/issues/74
+     // https://gcc.gnu.org/gcc-9/porting_to.html
+#    define SHARED_OMP5(x) shared(x)
+#  else
+#    define SHARED_OMP5(x)
+#  endif
+#pragma omp parallel for default(none) shared(img_buf, bErr) SHARED_OMP5(pDestBits) firstprivate(block_x, block_y, tilesX, tilesY, bytesPerTileRow, stride_px)
 #endif /* _OPENMP */
-
-#pragma omp parallel for default(none) shared(img_buf, pDestBits, bErr) firstprivate(block_x, block_y, tilesX, tilesY, bytesPerTileRow, stride_px)
 	for (int y = 0; y < tilesY; y++) {
 		const uint8_t *pSrc = &img_buf[y * bytesPerTileRow];
 		for (int x = 0; x < tilesX; x++, pSrc += 16) {
