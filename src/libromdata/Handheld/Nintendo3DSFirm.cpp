@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * Nintendo3DSFirm.hpp: Nintendo 3DS firmware reader.                      *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -366,7 +366,7 @@ int Nintendo3DSFirm::loadFieldData(void)
 		// Sighax status.
 		// TODO: If it's SPI, we need to decrypt the FIRM contents.
 		// Reference: https://github.com/TuxSH/firmtool/blob/master/firmtool/__main__.py
-		const uint32_t first4 = be32_to_cpu(*(reinterpret_cast<const uint32_t*>(firmHeader->signature)));
+		const uint32_t first4 = be32_to_cpu(firmHeader->signature32[0]);
 		struct sighaxStatus_tbl_t {
 			uint32_t first4;
 			char status[12];
