@@ -5,3 +5,4 @@ usr/lib/*/qt5/plugins/kf5/overlayicon/overlayiconplugin_rom-properties-kf5.so
 usr/share/kio/servicemenus/rp-convert-to-png.desktop
 usr/share/kservices5/rom-properties-kf5.KPropertiesDialog.desktop
 usr/share/kservices5/rom-properties-kf5.ThumbCreator.desktop
+usr/share/kservices5/xattrview-kf5.desktop
