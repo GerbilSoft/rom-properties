@@ -43,7 +43,7 @@ EXSTYLE WS_EX_NOPARENTNOTIFY | WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     GROUPBOX        "&Schermate Titolo Game Boy", IDC_SYSTEMS_DMGTS_GROUPBOX, 7, 7, 397, 74
-    LTEXT           "Seleziona il modello di Game Boy da utilizzare per schermate del titolo a seconda del tipo di ROM.", IDC_STATIC, 15, 18, 381, 8
+    LTEXT           "Seleziona il modello di Game Boy da utilizzare per schermate del titolo per diversi tipi di ROM del Game Boy.", IDC_STATIC, 15, 18, 381, 8
     LTEXT           "Game Boy:", IDC_STATIC, 15, 30, 80, 9
     COMBOBOX        IDC_SYSTEMS_DMGTS_DMG, 77, 29, 69, 30, CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Super Game Boy:", IDC_STATIC, 15, 45, 80, 9
