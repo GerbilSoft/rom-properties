@@ -44,9 +44,7 @@ static void register_backends(void)
 K_PLUGIN_FACTORY_WITH_JSON(RomPropertiesDialogFactory, "rom-properties-kf6.json",
 	register_backends();
 	registerPlugin<RomPropertiesDialogPlugin>();
-#ifdef HAVE_KIOGUI_KIO_THUMBNAILCREATOR_H
 	registerPlugin<RomThumbnailCreator>();
-#endif /* HAVE_KIOGUI_KIO_THUMBNAILCREATOR_H */
 )
 
 // automoc4 works correctly without any special handling.

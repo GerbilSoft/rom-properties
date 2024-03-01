@@ -29,7 +29,6 @@ using LibRpTexture::rp_image;
 #include "../plugins/RomThumbCreator.hpp"
 
 // KDE Frameworks
-#include <kcoreaddons_version.h>
 #include <kpluginfactory.h>
 
 static void register_backends(void)

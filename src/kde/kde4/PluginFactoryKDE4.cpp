@@ -44,9 +44,7 @@ K_PLUGIN_FACTORY(RomPropertiesDialogFactory,
 	register_backends();
 	registerPlugin<RomPropertiesDialogPlugin>();
 )
-#if QT_VERSION < 0x050000
-K_EXPORT_PLUGIN(RomPropertiesDialogFactory("rom-properties-kde"))
-#endif
+K_EXPORT_PLUGIN(RomPropertiesDialogFactory("rom-properties-kde4"))
 
 // automoc4 works correctly without any special handling.
 // automoc5 doesn't notice that K_PLUGIN_FACTORY() has a
