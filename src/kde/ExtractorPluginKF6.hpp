@@ -1,25 +1,24 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (KDE)                              *
- * ExtractorPlugin.hpp: KFileMetaData extractor plugin.                    *
+ * ROM Properties Page shell extension. (KF6)                              *
+ * ExtractorPluginKF6.hpp: KFileMetaData extractor plugin.                 *
  *                                                                         *
- * Qt's plugin system prevents a single shared library from exporting      *
- * multiple plugins, so this file acts as a KFileMetaData ExtractorPlugin, *
- * and then forwards the request to the main library.                      *
+ * NOTE: This file is compiled as a separate .so file. Originally, a       *
+ * forwarder plugin was used, since Qt's plugin system prevents a single   *
+ * shared library from exporting multiple plugins, but as of RP 2.0,       *
+ * most of the important code is split out into libromdata.so, so the      *
+ * forwarder version is unnecessary.                                       *
  *                                                                         *
- * Copyright (c) 2018-2023 by David Korth.                                 *
+ * Copyright (c) 2018-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #pragma once
 
-#include <QtCore/qglobal.h>
+#include <QtCore/QObject>
 #include <kcoreaddons_version.h>
 #include <kfilemetadata/extractorplugin.h>
 
-#include "RpQt.hpp"
-
-#define PFN_CREATEEXTRACTORPLUGINKDE_FN CONCAT_FN(createExtractorPlugin, RP_KDE_SUFFIX)
-#define PFN_CREATEEXTRACTORPLUGINKDE_NAME "createExtractorPlugin" RP_KDE_UPPER
+#include "RpQtNS.hpp"
 
 // librpbase
 namespace LibRpBase {
@@ -32,6 +31,7 @@ class ExtractorPlugin : public ::KFileMetaData::ExtractorPlugin
 {
 Q_OBJECT
 Q_INTERFACES(KFileMetaData::ExtractorPlugin)
+Q_PLUGIN_METADATA(IID "org.kde.kf5.kfilemetadata.ExtractorPlugin" FILE "kf6/ExtractorPlugin.json")
 
 public:
 	explicit ExtractorPlugin(QObject *parent = nullptr);
@@ -51,8 +51,5 @@ private:
 public:
 	void extract(KFileMetaData::ExtractionResult *result) final;
 };
-
-// Exported function pointer to create a new RpExtractorPlugin.
-typedef ExtractorPlugin* (*pfn_createExtractorPluginKDE_t)(QObject *parent);
 
 } //namespace RomPropertiesKDE

@@ -45,6 +45,7 @@ SET(${PROJECT_NAME}_H
 	RomDataView_p.hpp
 	RomThumbCreator.hpp
 	RpQt.hpp
+	RpQtNS.hpp
 	RpQUrl.hpp
 	RpQImageBackend.hpp
 	QImageData_qt4.hpp
@@ -150,9 +151,6 @@ ENDIF(ENABLE_ACHIEVEMENTS)
 # FIXME: Dolphin ends up hanging for some reason...
 #SET(rom-properties-kio_SRCS RpFile_kio.cpp)
 #SET(rom-properties-kio_H RpFile_kio.hpp)
-
-# NOTE: RpExtractorPlugin cannot use common source because
-# Qt's moc doesn't support preprocessor directores like #ifdef.
 
 # Qt options:
 # - Fast QString concatenation. (Qt 4.6+, plus 4.8-specific version)
