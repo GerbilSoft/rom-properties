@@ -172,7 +172,7 @@ public:
 	 * @param buf	[in/out] Character buffer
 	 * @param siz	[in] Size of buf
 	 */
-	void remove_A0_padding(char *buf, size_t siz);
+	static void remove_A0_padding(char *buf, size_t siz);
 };
 
 ROMDATA_IMPL(CBMDOS)
@@ -749,7 +749,7 @@ size_t CBMDOSPrivate::read_sector(void *buf, size_t siz, uint8_t track, uint8_t 
  * @param buf	[in/out] Character buffer
  * @param siz	[in] Size of buf
  */
-void remove_A0_padding(char *buf, size_t siz)
+void CBMDOSPrivate::remove_A0_padding(char *buf, size_t siz)
 {
 	assert(siz != 0);
 	if (siz == 0)
@@ -1105,7 +1105,7 @@ int CBMDOS::loadFieldData(void)
 
 		// Disk name
 		const char *const s_disk_name_title = C_("CBMDOS", "Disk Name");
-		remove_A0_padding(disk_name, disk_name_len);
+		d->remove_A0_padding(disk_name, disk_name_len);
 		if (unlikely(!memcmp(c1541_bam.geos.geos_id_string, "GEOS", 4))) {
 			// GEOS ID is present. Parse the disk name as ASCII. (well, Latin-1)
 			d->fields.addField_string(s_disk_name_title,
@@ -1200,7 +1200,7 @@ int CBMDOS::loadFieldData(void)
 			p_list.emplace_back(filesize);
 
 			// Filename
-			remove_A0_padding(p_dir->filename, sizeof(p_dir->filename));
+			d->remove_A0_padding(p_dir->filename, sizeof(p_dir->filename));
 			if (unlikely(is_geos_file)) {
 				// GEOS file: The filename is encoded as ASCII.
 				// NOTE: Using Latin-1...
