@@ -40,17 +40,9 @@ static void register_backends(void)
 #endif /* ENABLE_ACHIEVEMENTS && HAVE_QtDBus_NOTIFY */
 }
 
-static QObject *createRomPropertiesPage(QWidget *w, QObject *parent, const QVariantList &args)
-{
-	// NOTE: RomPropertiesDialogPlugin will verify that parent is an
-	// instance of KPropertiesDialog*, so we don't have to do that here.
-	Q_UNUSED(w)
-	return new RomPropertiesDialogPlugin(parent, args);
-}
-
 K_PLUGIN_FACTORY(RomPropertiesDialogFactory,
 	register_backends();
-	registerPlugin<RomPropertiesDialogPlugin>(QString(), createRomPropertiesPage);
+	registerPlugin<RomPropertiesDialogPlugin>();
 )
 #if QT_VERSION < 0x050000
 K_EXPORT_PLUGIN(RomPropertiesDialogFactory("rom-properties-kde"))

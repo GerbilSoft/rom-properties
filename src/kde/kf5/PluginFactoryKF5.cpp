@@ -41,9 +41,6 @@ static void register_backends(void)
 #endif /* ENABLE_ACHIEVEMENTS && HAVE_QtDBus_NOTIFY */
 }
 
-#if KCOREADDONS_VERSION >= QT_VERSION_CHECK(5,89,0)
-// KF5 5.89 added a new registerPlugin() with no keyword or CreateInstanceFunction parameters
-// and deprecated the old version.
 K_PLUGIN_FACTORY_WITH_JSON(RomPropertiesDialogFactory, "rom-properties-kf5.json",
 	register_backends();
 	registerPlugin<RomPropertiesDialogPlugin>();
@@ -51,23 +48,6 @@ K_PLUGIN_FACTORY_WITH_JSON(RomPropertiesDialogFactory, "rom-properties-kf5.json"
 	registerPlugin<RomThumbnailCreator>();
 #endif /* HAVE_KIOGUI_KIO_THUMBNAILCREATOR_H */
 )
-#else /* KCOREADDONS_VERSION < QT_VERSION_CHECK(5,89,0) */
-// NOTE: KIO::ThumbnailCreator was added in KF5 5.100, so it won't be
-// added in this code path. (KF5 5.88 and earlier)
-
-static QObject *createRomPropertiesPage(QWidget *w, QObject *parent, const QVariantList &args)
-{
-	// NOTE: RomPropertiesDialogPlugin will verify that parent is an
-	// instance of KPropertiesDialog*, so we don't have to do that here.
-	Q_UNUSED(w)
-	return new RomPropertiesDialogPlugin(parent, args);
-}
-
-K_PLUGIN_FACTORY_WITH_JSON(RomPropertiesDialogFactory, "rom-properties-kf5.json",
-	register_backends();
-	registerPlugin<RomPropertiesDialogPlugin>(QString(), createRomPropertiesPage);
-)
-#endif
 
 // automoc4 works correctly without any special handling.
 // automoc5 doesn't notice that K_PLUGIN_FACTORY() has a

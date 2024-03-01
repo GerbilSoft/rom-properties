@@ -22,16 +22,8 @@
 // KDE
 #include <kpluginfactory.h>
 
-static QObject *createXAttrViewPropertiesPage(QWidget *w, QObject *parent, const QVariantList &args)
-{
-	// NOTE: RomPropertiesDialogPlugin will verify that parent is an
-	// instance of KPropertiesDialog*, so we don't have to do that here.
-	Q_UNUSED(w)
-	return new XAttrViewPropertiesDialogPlugin(parent, args);
-}
-
 K_PLUGIN_FACTORY(RomPropertiesDialogFactory,
-	registerPlugin<XAttrViewPropertiesDialogPlugin>(QString(), createXAttrViewPropertiesPage);
+	registerPlugin<XAttrViewPropertiesDialogPlugin>();
 )
 
 // automoc4 works correctly without any special handling.
