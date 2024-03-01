@@ -26,7 +26,7 @@ using std::unique_ptr;
 class XAttrViewPrivate
 {
 public:
-	// TODO: Reomve localizeQUrl() once non-local QUrls are supported.
+	// TODO: Remove localizeQUrl() once non-local QUrls are supported.
 	explicit XAttrViewPrivate(const QUrl &filename)
 		: filename(localizeQUrl(filename))
 		, hasAttributes(false)
