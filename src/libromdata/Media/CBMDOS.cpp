@@ -1066,13 +1066,11 @@ int CBMDOS::loadFieldData(void)
 	}
 
 	// TODO: Selectable unshifted vs. shifted PETSCII conversion. Using unshifted for now.
-	// TODO: If there's too many U+FFFD characters, try shifted instead.
-		// ...if it's like that in Disk Name, use shifted for filenames.
-	// TODO: Default to shifted if this is a GEOS disk.
 	// TODO: Reverse video?
 	static const char uFFFD[] = "\xEF\xBF\xBD";
 	unsigned int codepage = CP_RP_PETSCII_Unshifted;
 
+	// Disk BAM/header is read in the constructor.
 	const auto *diskHeader = &d->diskHeader;
 	d->fields.reserve(4);	// Maximum of 4 fields.
 
@@ -1368,6 +1366,92 @@ int CBMDOS::loadFieldData(void)
 
 	// Finished reading the field data.
 	return static_cast<int>(d->fields.count());
+}
+
+/**
+ * Load metadata properties.
+ * Called by RomData::metaData() if the metadata hasn't been loaded yet.
+ * @return Number of metadata properties read on success; negative POSIX error code on error.
+ */
+int CBMDOS::loadMetaData(void)
+{
+	RP_D(CBMDOS);
+	if (d->metaData != nullptr) {
+		// Metadata *has* been loaded...
+		return 0;
+	} else if (!d->file) {
+		// File isn't open.
+		return -EBADF;
+	} else if (!d->isValid) {
+		// Unsupported file.
+		return -EIO;
+	}
+
+	// TODO: Selectable unshifted vs. shifted PETSCII conversion. Using unshifted for now.
+	// TODO: Reverse video?
+	static const char uFFFD[] = "\xEF\xBF\xBD";
+	unsigned int codepage = CP_RP_PETSCII_Unshifted;
+
+	// Create the metadata object.
+	d->metaData = new RomMetaData();
+	d->metaData->reserve(1);	// Maximum of 1 metadata property.
+
+	// ROM header is read in the constructor.
+	const auto *diskHeader = &d->diskHeader;
+
+	// Get the string addresses from the BAM/header sector.
+	// TODO: Separate function for this?
+	const char *disk_name;
+	size_t disk_name_len;
+
+	switch (d->diskType) {
+		case CBMDOSPrivate::DiskType::D64:
+		case CBMDOSPrivate::DiskType::D71:
+		case CBMDOSPrivate::DiskType::D67:
+		case CBMDOSPrivate::DiskType::G64:
+		case CBMDOSPrivate::DiskType::G71:
+			// C1541, C1571, C2040
+			disk_name = diskHeader->c1541.disk_name;
+			disk_name_len = sizeof(diskHeader->c1541.disk_name);
+			break;
+
+		case CBMDOSPrivate::DiskType::D80:
+		case CBMDOSPrivate::DiskType::D82:
+			// C8050/C8250
+			disk_name = diskHeader->c8050.disk_name;
+			disk_name_len = sizeof(diskHeader->c8050.disk_name);
+			break;
+
+		case CBMDOSPrivate::DiskType::D81:
+			// C1581
+			disk_name = diskHeader->c1581.disk_name;
+			disk_name_len = sizeof(diskHeader->c1581.disk_name);
+			break;
+
+		default:
+			assert(!"Unsupported CBM disk type?");
+			return 0;
+	}
+
+	// Title (disk name)
+	disk_name_len = d->remove_A0_padding(disk_name, disk_name_len);
+	if (unlikely(!memcmp(diskHeader->c1541.geos.geos_id_string, "GEOS", 4))) {
+		// GEOS ID is present. Parse the disk name as ASCII. (well, Latin-1)
+		d->metaData->addMetaData_string(Property::Title,
+			latin1_to_utf8(disk_name, disk_name_len));
+	} else {
+		string s_disk_name = cpN_to_utf8(codepage, disk_name, disk_name_len);
+		if (s_disk_name.find(uFFFD) != string::npos) {
+			// Disk name has invalid characters when using Unshifted.
+			// Try again with Shifted.
+			codepage = CP_RP_PETSCII_Shifted;
+			s_disk_name = cpN_to_utf8(codepage, disk_name, disk_name_len);
+		}
+		d->metaData->addMetaData_string(Property::Title, s_disk_name);
+	}
+
+	// Finished reading the metadata.
+	return static_cast<int>(d->metaData->count());
 }
 
 }

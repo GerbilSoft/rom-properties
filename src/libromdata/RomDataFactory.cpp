@@ -416,7 +416,7 @@ const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_header
 
 	// CBM DOS is checked late because most of the disk image formats are
 	// only validated by file size. (no magic numbers)
-	GetRomDataFns(CBMDOS, ATTR_NONE),
+	GetRomDataFns(CBMDOS, ATTR_HAS_METADATA),
 	
 	// Headers with non-zero addresses.
 	GetRomDataFns_addr(Sega8Bit, ATTR_HAS_METADATA, 0x7FE0, 0x20),

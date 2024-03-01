@@ -235,7 +235,7 @@ button.
 
 |             System             | Properties Tab | Metadata | Internal Images | External Scans |
 |:------------------------------:|:--------------:|:--------:|:---------------:|:--------------:|
-| Commodore DOS Disk Images      |       Yes      |    No    |       GEOS*     |       N/A      |
+| Commodore DOS Disk Images      |       Yes      |   Yes    |       GEOS*     |       N/A      |
 | ISO-9660 Disc Images           |       Yes      |   Yes    |        No       |       N/A      |
 | Windows Image (.wim)           |       Yes      |    No    |       N/A       |       N/A      |
 
