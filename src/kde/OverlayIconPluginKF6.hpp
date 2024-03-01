@@ -1,12 +1,14 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (KDE)                              *
- * OverlayIconPlugin.hpp: KOverlayIconPlugin.                              *
+ * OverlayIconPluginKF6.hpp: KOverlayIconPlugin.                           *
  *                                                                         *
- * Qt's plugin system prevents a single shared library from exporting      *
- * multiple plugins, so this file acts as a KOverlayIconPlugin,            *
- * and then forwards the request to the main library.                      *
+ * NOTE: This file is compiled as a separate .so file. Originally, a       *
+ * forwarder plugin was used, since Qt's plugin system prevents a single   *
+ * shared library from exporting multiple plugins, but as of RP 2.0,       *
+ * most of the important code is split out into libromdata.so, so the      *
+ * forwarder version is unnecessary.                                       *
  *                                                                         *
- * Copyright (c) 2018-2023 by David Korth.                                 *
+ * Copyright (c) 2018-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -15,10 +17,7 @@
 #include <QtCore/qglobal.h>
 #include <KOverlayIconPlugin>
 
-#include "RpQt.hpp"
-
-#define PFN_CREATEOVERLAYICONPLUGINKDE_FN CONCAT_FN(createOverlayIconPlugin, RP_KDE_SUFFIX)
-#define PFN_CREATEOVERLAYICONPLUGINKDE_NAME "createOverlayIconPlugin" RP_KDE_UPPER
+#include "RpQtNS.hpp"
 
 namespace RomPropertiesKDE {
 
@@ -26,6 +25,9 @@ class OverlayIconPlugin : public ::KOverlayIconPlugin
 {
 Q_OBJECT
 //Q_INTERFACES(KOverlayIconPlugin)
+
+// NOTE: KF5 doesn't have a standard IID for KOverlayIconPlugin...
+Q_PLUGIN_METADATA(IID "com.gerbilsoft.rom-properties.KOverlayIconPlugin" FILE "kf6/OverlayIconPlugin.json")
 
 public:
 	explicit OverlayIconPlugin(QObject *parent = nullptr);
@@ -37,8 +39,5 @@ private:
 public:
 	QStringList getOverlays(const QUrl &item) final;
 };
-
-// Exported function pointer to create a new RpExtractorPlugin.
-typedef OverlayIconPlugin* (*pfn_createOverlayIconPluginKDE_t)(QObject *parent);
 
 } //namespace RomPropertiesKDE

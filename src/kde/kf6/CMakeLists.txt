@@ -56,13 +56,11 @@ SET(${PROJECT_NAME}_SRCS
 	${${PROJECT_NAME}_DBUS_IFACE_SRCS_2}
 	${${PROJECT_NAME}_RCC_O}
 	PluginFactoryKF6.cpp
-	../OverlayIconPlugin.cpp
 	)
 SET(${PROJECT_NAME}_H
 	${${PROJECT_NAME}_H}
 	${rom-properties-kio6_H}
 	${${PROJECT_NAME}-notify_H}
-	../OverlayIconPlugin.hpp
 	)
 
 # XAttrView plugin
@@ -169,13 +167,17 @@ IF(BUILD_KF6)
 	# requires other libraries for include paths.
 	TARGET_LINK_LIBRARIES(kfilemetadata_${PROJECT_NAME} PRIVATE Qt6::Widgets Qt6::Core)
 
-	# OverlayIconPluginForwarder [TODO: Remove forwarder]
+	# OverlayIconPlugin
 	# TODO: Use kcoreaddons_add_plugin() for the JSON?
 	# https://github.com/owncloud/client/blob/master/shell_integration/dolphin/CMakeLists.txt
 	# TODO: Better name.
 	ADD_LIBRARY(overlayiconplugin_${PROJECT_NAME} MODULE
-		OverlayIconPluginForwarder.cpp
-		OverlayIconPluginForwarder.hpp
+		../OverlayIconPlugin.cpp
+		../RpQUrl.cpp
+
+		../OverlayIconPluginKF6.hpp
+		../RpQtNS.hpp
+		../RpQUrl.hpp
 		)
 	SET_TARGET_PROPERTIES(overlayiconplugin_${PROJECT_NAME} PROPERTIES PREFIX "")
 	DO_SPLIT_DEBUG(overlayiconplugin_${PROJECT_NAME})
@@ -187,13 +189,11 @@ IF(BUILD_KF6)
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../..>	# src
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/../..>	# src
 		)
-	TARGET_LINK_LIBRARIES(overlayiconplugin_${PROJECT_NAME} PRIVATE KF6::KIOCore KF6::KIOWidgets)
-	TARGET_LINK_LIBRARIES(overlayiconplugin_${PROJECT_NAME} PRIVATE Qt6::Core)
-
-	# Link in libdl if it's required for dlopen().
-	IF(CMAKE_DL_LIBS)
-		TARGET_LINK_LIBRARIES(overlayiconplugin_${PROJECT_NAME} PRIVATE ${CMAKE_DL_LIBS})
-	ENDIF(CMAKE_DL_LIBS)
+	TARGET_LINK_LIBRARIES(overlayiconplugin_${PROJECT_NAME} PRIVATE romdata)
+	TARGET_LINK_LIBRARIES(overlayiconplugin_${PROJECT_NAME} PRIVATE KF6::KIOCore KF6::FileMetaData)
+	# NOTE: Technically, only Qt6::Core is needed, but stdafx.h usage
+	# requires other libraries for include paths.
+	TARGET_LINK_LIBRARIES(overlayiconplugin_${PROJECT_NAME} PRIVATE Qt6::Widgets Qt6::Core)
 ENDIF(BUILD_KF6)
 
 #######################
@@ -222,7 +222,7 @@ IF(BUILD_KF6)
 		"${CMAKE_SOURCE_DIR}/xdg/mime.no-thumbnail.types")
 	CONFIGURE_FILE(${PROJECT_NAME}.json.in ${PROJECT_NAME}.json @ONLY)
 	CONFIGURE_FILE(ExtractorPlugin.json.in ExtractorPlugin.json @ONLY)
-	CONFIGURE_FILE(OverlayIconPluginForwarder.json.in OverlayIconPluginForwarder.json @ONLY)
+	CONFIGURE_FILE(OverlayIconPlugin.json.in OverlayIconPlugin.json @ONLY)
 
 	# Main plugin is installed in the propertiesdialog subdirectory.
 	# Create a symlink for ThumbCreator.

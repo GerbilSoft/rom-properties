@@ -2,9 +2,11 @@
  * ROM Properties Page shell extension. (KDE)                              *
  * OverlayIconPlugin.cpp: KOverlayIconPlugin.                              *
  *                                                                         *
- * Qt's plugin system prevents a single shared library from exporting      *
- * multiple plugins, so this file acts as a KOverlayIconPlugin,            *
- * and then forwards the request to the main library.                      *
+ * NOTE: This file is compiled as a separate .so file. Originally, a       *
+ * forwarder plugin was used, since Qt's plugin system prevents a single   *
+ * shared library from exporting multiple plugins, but as of RP 2.0,       *
+ * most of the important code is split out into libromdata.so, so the      *
+ * forwarder version is unnecessary.                                       *
  *                                                                         *
  * Copyright (c) 2018-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
@@ -13,7 +15,17 @@
 #include "stdafx.h"
 #include "check-uid.hpp"
 
-#include "OverlayIconPlugin.hpp"
+#include <QtCore/qglobal.h>
+#if QT_VERSION >= QT_VERSION_CHECK(7,0,0)
+#  error Update for new Qt!
+#elif QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+#  include "OverlayIconPluginKF6.hpp"
+#elif QT_VERSION >= QT_VERSION_CHECK(5,0,0)
+#  include "OverlayIconPluginKF5.hpp"
+#else
+#  error Qt is too old!
+#endif
+
 #include "RpQUrl.hpp"
 
 // Other rom-properties libraries
@@ -29,19 +41,6 @@ using std::string;
 
 // Qt includes.
 #include <QtCore/QStandardPaths>
-
-/**
- * Factory method.
- * NOTE: Unlike the ThumbCreator version, this one is specific to
- * rom-properties, and is called by a forwarder library.
- */
-extern "C" {
-	Q_DECL_EXPORT RomPropertiesKDE::OverlayIconPlugin *PFN_CREATEOVERLAYICONPLUGINKDE_FN(QObject *parent)
-	{
-		CHECK_UID_RET(nullptr);
-		return new RomPropertiesKDE::OverlayIconPlugin(parent);
-	}
-}
 
 namespace RomPropertiesKDE {
 
