@@ -64,10 +64,10 @@ BEGIN
     GROUPBOX        "&Downloads", IDC_OPTIONS_GRPDOWNLOADS, 7, 7, 397, 121, BS_GROUPBOX, WS_EX_TRANSPARENT
     GROUPBOX        "", IDC_OPTIONS_GRPEXTIMGDL, 15, 19, 381, 47, 0, 0
     AUTOCHECKBOX    "D&ownload d'immagini esterne", IDC_OPTIONS_CHKEXTIMGDL, 21, 19, 101, 8, 0, 0
-    RTEXT           "Quando si utilizza una connessione di rete senza limite di traffico:", IDC_OPTIONS_LBL_UNMETERED_DL, 25, 31, 145, 8, 0, 0
-    COMBOBOX        IDC_OPTIONS_CBO_UNMETERED_DL, 174, 29, 132, 30, CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    RTEXT           "Quando si utilizza una connessione di rete con limiti di traffico:", IDC_OPTIONS_LBL_METERED_DL, 25, 49, 145, 8, 0, 0
-    COMBOBOX        IDC_OPTIONS_CBO_METERED_DL, 174, 47, 132, 30, CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    RTEXT           "Quando si utilizza una connessione di rete senza limite di traffico:", IDC_OPTIONS_LBL_UNMETERED_DL, 19, 31, 215, 8, 0, 0
+    COMBOBOX        IDC_OPTIONS_CBO_UNMETERED_DL, 238, 29, 132, 30, CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    RTEXT           "Quando si utilizza una connessione di rete con limiti di traffico:", IDC_OPTIONS_LBL_METERED_DL, 19, 49, 215, 8, 0, 0
+    COMBOBOX        IDC_OPTIONS_CBO_METERED_DL, 238, 47, 132, 30, CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     AUTOCHECKBOX    "Usa sempre l'icona interna (se presente) per dimensioni ridotte.", IDC_OPTIONS_INTICONSMALL, 15, 73, 381, 8, 0, WS_EX_TRANSPARENT
     AUTOCHECKBOX    "Memorizza le informazioni sull'origine del file nella cache usando attributi estesi.\nQuesto aiuta a identificare da dove sono stati scaricati i file nella cache.", IDC_OPTIONS_STOREFILEORIGININFO, 15, 87, 381, 16, BS_MULTILINE, WS_EX_TRANSPARENT
     LTEXT           "Lingua per titoli PAL su GameTDB:", IDC_STATIC, 15, 111, 120, 8, 0, WS_EX_TRANSPARENT
@@ -76,7 +76,7 @@ BEGIN
 
     GROUPBOX        "&Opzioni", IDC_OPTIONS_GRPOPTIONS, 7, 133, 397, 54, BS_GROUPBOX, WS_EX_TRANSPARENT
     AUTOCHECKBOX    "Mostra un'icona di sicurezza per le\nROM con permessi ""pericolosi"".", IDC_OPTIONS_DANGEROUSPERMISSIONS, 15, 144, 381, 16, BS_MULTILINE, WS_EX_TRANSPARENT
-    AUTOCHECKBOX    "Abilita l'estrazione delle miniature e dei metadati\nsu file system di rete. Questo potrebbe rallentare\nla navigazione dei file.", IDC_OPTIONS_ENABLETHUMBNAILONNETWORKFS, 15, 165, 381, 16, BS_MULTILINE, WS_EX_TRANSPARENT
+    AUTOCHECKBOX    "Abilita l'estrazione delle miniature e dei metadati su file system di rete.\nQuesto potrebbe rallentare la navigazione dei file.", IDC_OPTIONS_ENABLETHUMBNAILONNETWORKFS, 15, 165, 381, 16, BS_MULTILINE, WS_EX_TRANSPARENT
 END
 
 /**
