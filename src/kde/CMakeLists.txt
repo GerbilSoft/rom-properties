@@ -1,5 +1,6 @@
 # KDE (Qt) UI frontends
 PROJECT(rom-properties-kde LANGUAGES CXX)
+SET(CMAKE_AUTOMOC ON)
 
 # Common files for all KDE versions.
 

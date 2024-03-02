@@ -1,6 +1,5 @@
 # KDE UI frontend test suite (KDE4)
 PROJECT(kde4-tests LANGUAGES CXX)
-SET(CMAKE_AUTOMOC ON)
 
 # Top-level src directory
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/../../..)
