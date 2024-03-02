@@ -44,6 +44,9 @@ Major changes in v2.3 include:
   including icons for GEOS files. File formats supported currently include
   D64, D71, D80, D82, D81, D67, G64, and G71.
 
+* ColecoVision ROM images are now supported, including the text displayed
+  on the ColecoVision logo screen.
+
 * New translations: Romanian and Italian
 
 Translators wanted; if you can translate rom-properties from English to another
