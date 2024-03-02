@@ -30,7 +30,7 @@ IF(MINGW)
 	# MinGW: Ignore warnings caused by casting from GetProcAddress().
 	SET(CFLAGS_WARNINGS ${CFLAGS_WARNINGS} -Wno-cast-function-type)
 ENDIF(MINGW)
-FOREACH(FLAG_TEST ${CFLAGS_WARNINGS} ${CFLAGS_WERROR_FORMAT} "-fstrict-aliasing" "-Werror=strict-aliasing" "-fno-common" "-fcf-protection")
+FOREACH(FLAG_TEST ${CFLAGS_WARNINGS} ${CFLAGS_WERROR_FORMAT} "-fstrict-aliasing" "-Werror=strict-aliasing" "-fno-common" "-fcf-protection" "-fno-math-errno")
 	# CMake doesn't like certain characters in variable names.
 	STRING(REGEX REPLACE "/|:|=" "_" FLAG_TEST_VARNAME "${FLAG_TEST}")
 
