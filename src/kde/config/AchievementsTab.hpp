@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE)                              *
  * AchievementsTab.hpp: Achievements tab for rp-config.                    *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -24,21 +24,6 @@ private:
 	AchievementsTabPrivate *const d_ptr;
 	Q_DECLARE_PRIVATE(AchievementsTab);
 	Q_DISABLE_COPY(AchievementsTab)
-
-public:
-	/**
-	 * Does this tab have defaults available?
-	 * If so, the "Defaults" button will be enabled.
-	 * Otherwise, it will be disabled.
-	 *
-	 * AboutTab sets this to false.
-	 *
-	 * @return True to enable; false to disable.
-	 */
-	bool hasDefaults(void) const final
-	{
-		return false;
-	}
 
 protected:
 	// State change event. (Used for switching the UI language at runtime.)

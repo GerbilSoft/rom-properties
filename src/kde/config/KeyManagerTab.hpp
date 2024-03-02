@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE)                              *
  * KeyManagerTab.hpp: Key Manager tab for rp-config.                       *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -24,21 +24,6 @@ private:
 	KeyManagerTabPrivate *const d_ptr;
 	Q_DECLARE_PRIVATE(KeyManagerTab);
 	Q_DISABLE_COPY(KeyManagerTab)
-
-public:
-	/**
-	 * Does this tab have defaults available?
-	 * If so, the "Defaults" button will be enabled.
-	 * Otherwise, it will be disabled.
-	 *
-	 * KeyManagerTab sets this to false.
-	 *
-	 * @return True to enable; false to disable.
-	 */
-	bool hasDefaults(void) const final
-	{
-		return false;
-	}
 
 protected:
 	// State change event. (Used for switching the UI language at runtime.)

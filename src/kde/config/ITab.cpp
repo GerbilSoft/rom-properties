@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE)                              *
  * ITab.cpp: Configuration tab interface.                                  *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -12,6 +12,7 @@
 #include "stdafx.h"
 #include "ITab.hpp"
 
-ITab::ITab(QWidget *parent)
+ITab::ITab(QWidget *parent, bool hasDefaults)
 	: super(parent)
+	, m_hasDefaults(hasDefaults)
 {}

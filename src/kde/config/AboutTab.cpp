@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE)                              *
  * AboutTab.hpp: About tab for rp-config.                                  *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -594,7 +594,7 @@ void AboutTabPrivate::checkForUpdates(void)
 /** AboutTab **/
 
 AboutTab::AboutTab(QWidget *parent)
-	: super(parent)
+	: super(parent, false)
 	, d_ptr(new AboutTabPrivate(this))
 {
 	Q_D(AboutTab);

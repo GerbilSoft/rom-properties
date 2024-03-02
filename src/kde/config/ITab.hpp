@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE)                              *
  * ITab.hpp: Configuration tab interface.                                  *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -18,7 +18,7 @@ Q_OBJECT
 Q_PROPERTY(bool defaults READ hasDefaults)
 
 protected:
-	explicit ITab(QWidget *parent = nullptr);
+	explicit ITab(QWidget *parent = nullptr, bool hasDefaults = true);
 public:
 	~ITab() override = default;
 
@@ -26,7 +26,7 @@ private:
 	typedef QWidget super;
 	Q_DISABLE_COPY(ITab)
 
-public:
+	public:
 	/**
 	 * Does this tab have defaults available?
 	 * If so, the "Defaults" button will be enabled.
@@ -38,7 +38,7 @@ public:
 	 */
 	virtual bool hasDefaults(void) const
 	{
-		return true;
+		return m_hasDefaults;
 	}
 
 public slots:
@@ -65,4 +65,14 @@ signals:
 	 * Configuration has been modified.
 	 */
 	void modified(void);
+
+protected:
+	/**
+	 * Does this tab have defaults available?
+	 * If so, the "Defaults" button will be enabled.
+	 * Otherwise, it will be disabled.
+	 *
+	 * Default is true.
+	 */
+	bool m_hasDefaults;
 };
