@@ -174,7 +174,7 @@ SET(${PROJECT_NAME}_H
 	Console/XboxDisc.hpp
 
 	Console/atari_7800_structs.h
-	Console/colecovision_structs.h
+	Console/cv_structs.h
 	Console/cbm_cart_structs.h
 	Console/dc_structs.h
 	Console/gcn_structs.h

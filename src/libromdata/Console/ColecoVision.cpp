@@ -8,7 +8,7 @@
 
 #include "stdafx.h"
 #include "ColecoVision.hpp"
-#include "colecovision_structs.h"
+#include "cv_structs.h"
 
 #include "ctypex.h"
 

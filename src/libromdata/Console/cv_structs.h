@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (libromdata)                       *
- * colecovision_structs.h: ColecoVision ROM image data structures.         *
+ * cv_structs.h: ColecoVision ROM image data structures.                   *
  *                                                                         *
  * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
@@ -21,8 +21,6 @@ extern "C" {
  *
  * All fields are in little-endian.
  */
-// NOTE: A78 v3 explicitly uses NULLs, but older files might use spaces.
-// We won't check the padding bytes.
 typedef struct _ColecoVision_ROMHeader {
 	uint8_t magic[2];		// [0x000] Magic (0xAA 0x55 to show CV logo; 0x55 0xAA to bypass)
 	uint16_t local_sprite_table;	// [0x002] Local sprite table address
