@@ -976,6 +976,11 @@ int rp_image::unswizzle_AExp(void)
 		bits += stride_diff;
 	}
 
+	// Zero out the alpha channel in the sBIT metadata.
+	if (d->has_sBIT) {
+		d->sBIT.alpha = 0;
+	}
+
 	return 0;
 }
 
