@@ -715,7 +715,7 @@ set<uint32_t> ListDataModel::getLCs(void) const
  * Set the icon size.
  * @param iconSize Icon size.
  */
-void ListDataModel::setIconSize(const QSize &iconSize)
+void ListDataModel::setIconSize(QSize iconSize)
 {
 	Q_D(ListDataModel);
 	if (d->iconSize == iconSize) {

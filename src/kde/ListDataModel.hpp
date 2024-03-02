@@ -91,7 +91,7 @@ public:
 	 * Set the icon size.
 	 * @param iconSize Icon size.
 	 */
-	void setIconSize(const QSize &iconSize);
+	void setIconSize(QSize iconSize);
 
 	/**
 	 * Set the icon size.
@@ -120,5 +120,5 @@ signals:
 	 * Icon size has changed.
 	 * @param iconSize Icon size.
 	 */
-	void iconSizeChanged(const QSize &iconSize);
+	void iconSizeChanged(QSize iconSize);
 };

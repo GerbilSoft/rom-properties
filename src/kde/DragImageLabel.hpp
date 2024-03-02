@@ -48,7 +48,7 @@ public:
 		return m_minimumImageSize;
 	}
 
-	void setMinimumImageSize(const QSize &minimumImageSize)
+	void setMinimumImageSize(QSize minimumImageSize)
 	{
 		if (m_minimumImageSize != minimumImageSize) {
 			m_minimumImageSize = minimumImageSize;
