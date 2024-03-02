@@ -30,6 +30,7 @@ application/x-colecovision-rom		# ColecoVision
 application/x-n64-rom			# N64
 application/x-nes-rom			# NES
 application/x-fds-disk			# NES
+application/x-intellivision-rom		# IntelliVision
 application/x-ps1-executable		# PlayStationEXE
 application/x-sms-rom			# Sega8Bit
 application/x-gamegear-rom		# Sega8Bit

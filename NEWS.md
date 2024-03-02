@@ -46,6 +46,10 @@
     D67, and (mostly supports) G64 and G71 images, plus GEOS file icons.
   * ColecoVision: ColecoVision ROM images. Supports reading the title screen
     message and copyright/release year from .col images, among other things.
+    Requires a .col file extension due to lack of magic number.
+  * Intellivision: Intellivision ROM images. Supports reading the game title
+    and copyright year (if present), and some flags. Requires a .int or .itv
+    file extension due to lack of magic number.
 
 * New parser features:
   * DMG: MMM01 and MBC1M multicarts are now detected, and the internal ROM

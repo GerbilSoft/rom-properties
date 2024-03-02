@@ -365,6 +365,15 @@
     </magic>
   </mime-type>
 
+  <!-- Intellivision -->
+  <mime-type type="application/x-intellivision-rom">
+    <comment>Intellivision ROM image</comment>
+    <sub-class-of type="application/x-executable"/>
+    <generic-icon name="application-x-executable"/>
+    <glob pattern="*.int"/>
+    <glob pattern="*.itv"/>
+  </mime-type>
+
   <!-- iQuePlayer -->
   <!-- TODO: Distinguish between CMD (10,668 bytes) and DAT (11,084 bytes). -->
   <mime-type type="application/x-ique-cmd">

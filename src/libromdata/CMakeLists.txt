@@ -19,6 +19,7 @@ SET(${PROJECT_NAME}_SRCS
 	Console/GameCubeBNR.cpp
 	Console/GameCubeSave.cpp
 	Console/GameCubeRegions.cpp
+	Console/Intellivision.cpp
 	Console/iQuePlayer.cpp
 	Console/MegaDrive.cpp
 	Console/MegaDriveRegions.cpp
@@ -149,6 +150,7 @@ SET(${PROJECT_NAME}_H
 	Console/GameCubeBNR.hpp
 	Console/GameCubeSave.hpp
 	Console/GameCubeRegions.hpp
+	Console/Intellivision.hpp
 	Console/iQuePlayer.hpp
 	Console/MegaDrive.hpp
 	Console/MegaDriveRegions.hpp
@@ -180,6 +182,7 @@ SET(${PROJECT_NAME}_H
 	Console/gcn_structs.h
 	Console/gcn_banner.h
 	Console/gcn_card.h
+	Console/intv_structs.h
 	Console/ique_player_structs.h
 	Console/md_structs.h
 	Console/n64_structs.h

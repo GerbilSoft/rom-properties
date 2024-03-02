@@ -47,6 +47,9 @@ Major changes in v2.3 include:
 * ColecoVision ROM images are now supported, including the text displayed
   on the ColecoVision logo screen.
 
+* Intellivision ROM images are now supported, including the game title
+  and copyright year.
+
 * New translations: Romanian and Italian
 
 Translators wanted; if you can translate rom-properties from English to another
@@ -128,6 +131,7 @@ button.
 |:-------------------------:|:--------------:|:--------:|:---------------:|:---------------:|
 | ColecoVision              |       Yes      |    Yes   |       N/A       |        No       |
 | Commodore 64/128 .CRT     |       Yes      |    Yes   |       N/A       |      Title      |
+| Intellivision             |       Yes      |    Yes   |       N/A       |        No       |
 | iQue Player ticket files  |       Yes      |    Yes   |   Icon, Banner  |        No       |
 | Microsoft Xbox (XBE)      |       Yes      |    Yes   |       Icon      |        No       |
 | Microsoft Xbox 360 (XEX)  |       Yes      |    Yes   |       Icon      |        No       |

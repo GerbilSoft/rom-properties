@@ -40,6 +40,7 @@ using std::vector;
 #include "Console/GameCube.hpp"
 #include "Console/GameCubeBNR.hpp"
 #include "Console/GameCubeSave.hpp"
+#include "Console/Intellivision.hpp"
 #include "Console/iQuePlayer.hpp"
 #include "Console/MegaDrive.hpp"
 #include "Console/N64.hpp"
@@ -378,6 +379,7 @@ const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_header
 	GetRomDataFns(GameCube, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA | ATTR_SUPPORTS_DEVICES),
 	GetRomDataFns(GameCubeBNR, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA),
 	GetRomDataFns(GameCubeSave, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA),
+	GetRomDataFns(Intellivision, ATTR_HAS_METADATA),
 	GetRomDataFns(iQuePlayer, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA),
 	// MegaDrive: ATTR_SUPPORTS_DEVICES for Sega CD
 	GetRomDataFns(MegaDrive, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA | ATTR_SUPPORTS_DEVICES),
