@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * rp_image_ops.cpp: Image class. (operations)                             *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -10,6 +10,9 @@
 #include "rp_image.hpp"
 #include "rp_image_p.hpp"
 #include "rp_image_backend.hpp"
+
+// C includes (C++ namespace)
+#include <cmath>
 
 // librptexture
 #include "ImageSizeCalc.hpp"
@@ -854,9 +857,9 @@ int rp_image::unswizzle_YCoCg(void)
 			const float B = saturate(Y_minus_Cg - Co);
 			const uint8_t A = bits->YCoCg.a;
 
-			bits->r = (uint8_t)(R * 255.0f);
-			bits->g = (uint8_t)(G * 255.0f);
-			bits->b = (uint8_t)(B * 255.0f);
+			bits->r = (uint8_t)lrintf(R * 255.0f);
+			bits->g = (uint8_t)lrintf(G * 255.0f);
+			bits->b = (uint8_t)lrintf(B * 255.0f);
 			bits->a = A;
 
 			bits++;
@@ -913,9 +916,9 @@ int rp_image::unswizzle_YCoCg_scaled(void)
 			const float G = saturate(Y + Cg);
 			const float B = saturate(Y_minus_Cg - Co);
 
-			bits->r = (uint8_t)(R * 255.0f);
-			bits->g = (uint8_t)(G * 255.0f);
-			bits->b = (uint8_t)(B * 255.0f);
+			bits->r = (uint8_t)lrintf(R * 255.0f);
+			bits->g = (uint8_t)lrintf(G * 255.0f);
+			bits->b = (uint8_t)lrintf(B * 255.0f);
 			bits->a = 255;	// no alpha channel
 
 			bits++;
