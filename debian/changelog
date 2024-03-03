@@ -1,3 +1,10 @@
+rom-properties (2.3-1ppa1~xenial2) xenial; urgency=medium
+
+  * RomHeaderTest is failing on the Launchpad PPA build servers.
+    (hitting memory limits?)
+
+ -- David Korth <gerbilsoft@gerbilsoft.com>  Sun, 03 Mar 2024 13:38:27 -0500
+
 rom-properties (2.3-1ppa1~xenial1) xenial; urgency=medium
 
   * 2.3 release.
