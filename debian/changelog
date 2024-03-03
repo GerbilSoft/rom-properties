@@ -1,3 +1,9 @@
+rom-properties (2.3-1ppa2~bionic2) bionic; urgency=medium
+
+  * Fix OpenMP build error due to _OPENMP >= 201511 on gcc-8.4.
+
+ -- David Korth <gerbilsoft@gerbilsoft.com>  Sun, 03 Mar 2024 14:13:53 -0500
+
 rom-properties (2.3-1ppa2~bionic1) bionic; urgency=medium
 
   * Build for Ubuntu 18.04 "Bionic" Beaver.
