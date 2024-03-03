@@ -631,8 +631,6 @@ IF(${PROJECT_NAME}_LINKAGE STREQUAL SHARED)
 		RP_LibRpFile_VectorFile_ForceLinkage
 		RP_LibRpFile_XAttrReader_ForceLinkage
 		RP_LibRpFile_XAttrReader_impl_ForceLinkage
-		ext2AttrCheckboxInfo	# librpfile
-		xfsAttrCheckboxInfo	# librpfile
 		)
 	IF(WIN32)
 		SET(SYMS_FORCE ${SYMS_FORCE}
@@ -642,6 +640,13 @@ IF(${PROJECT_NAME}_LINKAGE STREQUAL SHARED)
 		IF(CPU_i386)
 			SET(SYM_PREFIX "_")
 		ENDIF(CPU_i386)
+	ELSE(WIN32)
+		# FIXME: Getting a missing symbol error on MSVC ARM64EC builds if these
+		# are unconditionally added to SYMS_FORCE.
+		SET(SYMS_FORCE ${SYMS_FORCE}
+			ext2AttrCheckboxInfo	# librpfile
+			xfsAttrCheckboxInfo	# librpfile
+			)
 	ENDIF(WIN32)
 	IF(MSVC)
 		FOREACH(_sym ${SYMS_FORCE})
