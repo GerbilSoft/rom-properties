@@ -74,8 +74,8 @@ Description: ROM Properties Page shell extension
 Package: rom-properties-kio-servicemenus
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}, libromdata4, rom-properties-utils
-Conflicts: rom-properties-kf5 (< 2.3)
-Replaces: rom-properties-kf5 (< 2.3)
+Conflicts: rom-properties-kf5 (<< 2.3)
+Replaces: rom-properties-kf5 (<< 2.3)
 Description: ROM Properties Page shell extension
  This shell extension provides thumbnailing and property page functionality
  for ROM images, disc images, and save files for various game consoles,
