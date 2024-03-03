@@ -11,7 +11,8 @@
 #include "functable.h"
 #include "cpu_features.h"
 
-#if defined(_MSC_VER)
+// rom-properties: MSVC ARM64EC build fails if intrin.h is included here for some reason...
+#if defined(_MSC_VER) && !defined(_M_ARM64EC)
 #  include <intrin.h>
 #endif
 
