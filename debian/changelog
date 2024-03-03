@@ -1,3 +1,15 @@
+rom-properties (2.3-1ppa2~mantic1) mantic; urgency=medium
+
+  * Build for Ubuntu 23.10 "Mantic" Minotaur.
+
+    PPA version bumped to ensure it updates from previous versions.
+
+  * Enabled GTK4 builds. (Nautilus 43)
+
+  * KF5 5.110.0 supports ThumbnailCreator.
+
+ -- David Korth <gerbilsoft@gerbilsoft.com>  Sun, 03 Mar 2024 15:33:49 -0500
+
 rom-properties (2.3-1ppa2~jammy2) jammy; urgency=medium
 
   * KF5: Also remove xattrview-kf5.desktop.
