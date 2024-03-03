@@ -194,12 +194,8 @@ static RP_Frontend walk_proc_tree(void)
 		// Check the parent process name.
 		// NOTE: Unity and XFCE don't have unique parent processes.
 		// FIXME: Handle ksmserver...
-		if (!strcmp(process_name, "kdeinit6")) {
-			// Found kdeinit6. (TODO: Verify this)
-			ret_fe = RP_FE_KF6;
-			ppid = 0;
-			break;
-		} else if (!strcmp(process_name, "kdeinit5")) {
+		// NOTE: "kdeinit6" is not part of KF6.
+		if (!strcmp(process_name, "kdeinit5")) {
 			// Found kdeinit5.
 			ret_fe = RP_FE_KF5;
 			ppid = 0;
@@ -249,7 +245,33 @@ static inline RP_Frontend check_xdg_desktop_name(const char *name)
 		// TODO: Check for KF6?
 		RP_Frontend ret = walk_proc_tree();
 		if (ret >= RP_FE_MAX) {
-			// Unknown. Assume KF5.
+			// Process tree walk failed.
+			// Check if KDE_SESSION_VERSION is set.
+			const char *const ksv = getenv("KDE_SESSION_VERSION");
+			if (ksv) {
+				// Convert the environment variable to a number.
+				char *endptr = NULL;
+				long ver = strtoul(ksv, &endptr, 10);
+				if (endptr && *endptr == '\0') {
+					switch (ver) {
+						default:
+							break;
+						case 4:
+							ret = RP_FE_KDE4;
+							break;
+						case 5:
+							ret = RP_FE_KF5;
+							break;
+						case 6:
+							ret = RP_FE_KF6;
+							break;
+					}
+				}
+			}
+		}
+
+		if (ret >= RP_FE_MAX) {
+			// Not set. Assume KF5.
 			ret = RP_FE_KF5;
 		}
 		return ret;
@@ -260,6 +282,7 @@ static inline RP_Frontend check_xdg_desktop_name(const char *name)
 	           !strcasecmp(name, "Cinnamon"))
 	{
 		// GTK3-based desktop environment. (GNOME or GNOME-like)
+		// TODO: Determine if it's actually GTK4.
 		return RP_FE_GTK3;
 	} else if (!strcasecmp(name, "XFCE") ||
 		   !strcasecmp(name, "LXDE"))
