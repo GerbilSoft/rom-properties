@@ -96,27 +96,12 @@ void RomDataViewPrivate::createOptionsButton(void)
 	// Create the "Options" button.
 	btnOptions = new OptionsMenuButton();
 	btnOptions->setObjectName(QLatin1String("btnOptions"));
-	btnBox->addButton(btnOptions, QDialogButtonBox::ActionRole);
+	// NOTE: Using HelpRole to force the button to the left side of the dialog.
+	// The previous method added a stretch layout item to the QDialogButtonBox's
+	// layout directly, but that doesn't appear to work on Qt6.
+	// TODO: Verify that this works correctly on Qt4. (works on Qt5)
+	btnBox->addButton(btnOptions, QDialogButtonBox::HelpRole);
 	btnOptions->hide();
-
-	// Add a spacer to the QDialogButtonBox.
-	// This will ensure that the "Options" button is left-aligned.
-	QBoxLayout *const boxLayout = findDirectChild<QBoxLayout*>(btnBox);
-	if (boxLayout) {
-		// Find the index of the "Options" button.
-		const int count = boxLayout->count();
-		int idx = -1;
-		for (int i = 0; i < count; i++) {
-			if (boxLayout->itemAt(i)->widget() == btnOptions) {
-				idx = i;
-				break;
-			}
-		}
-
-		if (idx >= 0) {
-			boxLayout->insertStretch(idx+1, 1);
-		}
-	}
 
 	// Connect the OptionsMenuButton's triggered(int) signal.
 	QObject::connect(btnOptions, SIGNAL(triggered(int)),
