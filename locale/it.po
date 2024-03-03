@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2024-02-25 13:35-0500\n"
-"PO-Revision-Date: 2024-03-01 18:13\n"
+"PO-Revision-Date: 2024-03-03 14:50\n"
 "Last-Translator: \n"
 "Language-Team: Italian\n"
 "Language: it_IT\n"
@@ -643,56 +643,56 @@ msgstr "Resetta la cache delle anteprime di sistema..."
 #: ../src/gtk/config/CacheTab.cpp:366 ../src/kde/config/CacheTab.cpp:128
 msgctxt "CacheTab"
 msgid "Clearing the ROM Properties Page cache..."
-msgstr ""
+msgstr "Ripulendo la cache di ROM Properties..."
 
 #: ../src/gtk/config/CacheTab.cpp:488 ../src/kde/config/CacheTab.cpp:280
 msgctxt "CacheTab"
 msgid "System thumbnail cache is empty. Nothing to do."
-msgstr ""
+msgstr "La cache delle anteprime di sistema è vuota. Non ho nulla da svuotare."
 
 #: ../src/gtk/config/CacheTab.cpp:491 ../src/kde/config/CacheTab.cpp:283
 #: ../src/win32/config/CacheTab.cpp:626 ../src/win32/config/CacheTab.cpp:657
 msgctxt "CacheTab"
 msgid "rom-properties cache is empty. Nothing to do."
-msgstr ""
+msgstr "La cache di rom-properites è vuota. Non ho nulla da svuotare."
 
 #: ../src/gtk/config/CacheTab.cpp:518 ../src/kde/config/CacheTab.cpp:307
 #: ../src/win32/config/CacheTab.cpp:723
 #, c-format
 msgctxt "CacheTab"
 msgid "Unable to delete %1$u file(s) and/or %2$u dir(s)."
-msgstr ""
+msgstr "Impossibile eliminare i file %1$u e/o l(a/e) directory %2$u."
 
 #: ../src/gtk/config/CacheTab.cpp:535 ../src/kde/config/CacheTab.cpp:323
 #: ../src/win32/config/CacheTab.cpp:551
 msgctxt "CacheTab"
 msgid "System thumbnail cache cleared successfully."
-msgstr ""
+msgstr "La cache delle anteprime di sistema è stata ripulita con successo."
 
 #: ../src/gtk/config/CacheTab.cpp:539 ../src/kde/config/CacheTab.cpp:327
 #: ../src/win32/config/CacheTab.cpp:729
 msgctxt "CacheTab"
 msgid "rom-properties cache cleared successfully."
-msgstr ""
+msgstr "La cache di rom-properites è stata ripulita con successo."
 
 #: ../src/gtk/config/ConfigDialog.cpp:246 ../src/kde/config/ConfigDialog.cpp:79
 msgctxt "ConfigDialog"
 msgid "&Key Manager"
-msgstr ""
+msgstr "&Gestore Chiavi"
 
 #. tr: "Reset" button.
 #: ../src/gtk/config/ConfigDialog.cpp:297
 #: ../src/win32/config/ConfigDialog.cpp:292
 msgctxt "ConfigDialog"
 msgid "&Reset"
-msgstr ""
+msgstr "&Reset"
 
 #. tr: "Defaults" button.
 #: ../src/gtk/config/ConfigDialog.cpp:298
 #: ../src/win32/config/ConfigDialog.cpp:309
 msgctxt "ConfigDialog"
 msgid "Defaults"
-msgstr ""
+msgstr "Predefiniti"
 
 #. tr: Don't use this image type for this particular system.
 #: ../src/gtk/config/ImageTypesTab.cpp:336
@@ -701,7 +701,7 @@ msgstr ""
 #: ../src/win32/config/ImageTypesTab.cpp:402
 msgctxt "ImageTypesTab|Values"
 msgid "No"
-msgstr ""
+msgstr "No"
 
 #: ../src/gtk/config/ImageTypesTab.cpp:481
 #: ../src/kde/config/ImageTypesTab.cpp:357
@@ -710,7 +710,9 @@ msgctxt "ImageTypesTab"
 msgid "GameCube, Wii, Wii U, Nintendo DS, and Nintendo 3DS external images\n"
 "are provided by <a href=\"https://www.gametdb.com/\">GameTDB</a>.\n"
 "amiibo images are provided by <a href=\"https://amiibo.life/\">amiibo.life</a>, the Unofficial amiibo Database."
-msgstr ""
+msgstr "Le immagini di GameCube, Wii, Wii U, Nintendo DS e Nintendo 3DS sono fornite \n"
+"da <a href=\"https://www.gametdb.com/\">GameTDB</a>. Le immagini degli\n"
+"amiibo sono fornite da <a href=\"https://amiibo.life/\">amiibo.life</a>, il Database di amiibo non ufficiale."
 
 #. tr: Wii keys.bin dialog title
 #: ../src/gtk/config/KeyManagerTab.cpp:483
@@ -718,7 +720,7 @@ msgstr ""
 #: ../src/win32/config/KeyManagerTab.cpp:1816
 msgctxt "KeyManagerTab"
 msgid "Select Wii keys.bin File"
-msgstr ""
+msgstr "Seleziona file Wii keys.bin"
 
 #. tr: Wii U otp.bin dialog title
 #: ../src/gtk/config/KeyManagerTab.cpp:485
@@ -726,7 +728,7 @@ msgstr ""
 #: ../src/win32/config/KeyManagerTab.cpp:1818
 msgctxt "KeyManagerTab"
 msgid "Select Wii U otp.bin File"
-msgstr ""
+msgstr "Seleziona file Wii U otp.bin"
 
 #. tr: Nintendo 3DS boot9.bin dialog title
 #: ../src/gtk/config/KeyManagerTab.cpp:487
@@ -734,7 +736,7 @@ msgstr ""
 #: ../src/win32/config/KeyManagerTab.cpp:1820
 msgctxt "KeyManagerTab"
 msgid "Select 3DS boot9.bin File"
-msgstr ""
+msgstr "Seleziona file 3DS boot9.bin"
 
 #. tr: Nintendo 3DS aeskeydb.bin dialog title
 #: ../src/gtk/config/KeyManagerTab.cpp:489
