@@ -72,7 +72,7 @@ Description: ROM Properties Page shell extension
  This package contains the KDE 4 version.
 
 Package: rom-properties-kio-servicemenus
-Architecture: any
+Architecture: all
 Depends: ${shlibs:Depends}, ${misc:Depends}, libromdata4, rom-properties-utils
 Conflicts: rom-properties-kf5 (<< 2.3)
 Replaces: rom-properties-kf5 (<< 2.3)
