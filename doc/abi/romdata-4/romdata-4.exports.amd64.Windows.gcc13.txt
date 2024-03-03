@@ -1,0 +1,299 @@
+i .idata$2
+i .idata$4
+i .idata$5
+i .idata$6
+i .idata$7
+T APNG_ref
+T APNG_unref
+T GdiplusHelper::InitGDIPlus()
+T GdiplusHelper::ShutdownGDIPlus(unsigned long long)
+T InitPropVariantFromString_noShlwapi
+T InitPropVariantFromStringVector_xp
+T LibCacheCommon::filterCacheKey(char*)
+T LibRomData::AmiiboData::overrideAmiiboDataBinFilename(wchar_t const*)
+T LibRomData::CacheManager::download[abi:cxx11](char const*)
+T LibRomData::CacheManager::findInCache[abi:cxx11](char const*)
+T LibRomData::CacheManager::setProxyUrl(char const*)
+T LibRomData::CtrKeyScrambler::CtrScramble(LibRomData::u128_t*, LibRomData::u128_t const*, LibRomData::u128_t const*)
+T LibRomData::CtrKeyScrambler::CtrScramble(LibRomData::u128_t*, LibRomData::u128_t const*, LibRomData::u128_t const*, LibRomData::u128_t const*)
+T LibRomData::GcnFst::GcnFst(unsigned char const*, unsigned int, unsigned char)
+T LibRomData::GcnFst::hasErrors() const
+T LibRomData::GcnFst::isOpen() const
+T LibRomData::ImageTypesConfig::className(unsigned int)
+T LibRomData::ImageTypesConfig::imageTypeCount()
+T LibRomData::ImageTypesConfig::imageTypeName(unsigned int)
+T LibRomData::ImageTypesConfig::supportedImageTypes(unsigned int)
+T LibRomData::ImageTypesConfig::sysCount()
+T LibRomData::ImageTypesConfig::sysName(unsigned int)
+T LibRomData::KeyStoreUI::allKeysSaved()
+T LibRomData::KeyStoreUI::getKey(int) const
+T LibRomData::KeyStoreUI::getKey(int, int) const
+T LibRomData::KeyStoreUI::hasChanged() const
+T LibRomData::KeyStoreUI::idxToSectKey(int, int*, int*) const
+T LibRomData::KeyStoreUI::importKeysFromBin(LibRomData::KeyStoreUI::ImportFileID, char const*)
+T LibRomData::KeyStoreUI::importKeysFromBin(LibRomData::KeyStoreUI::ImportFileID, LibRpFile::IRpFile*)
+T LibRomData::KeyStoreUI::importKeysFromBin(LibRomData::KeyStoreUI::ImportFileID, wchar_t const*)
+T LibRomData::KeyStoreUI::isEmpty() const
+T LibRomData::KeyStoreUI::keyCount(int) const
+T LibRomData::KeyStoreUI::~KeyStoreUI()
+T LibRomData::KeyStoreUI::KeyStoreUI()
+T LibRomData::KeyStoreUI::reset()
+T LibRomData::KeyStoreUI::sectCount() const
+T LibRomData::KeyStoreUI::sectKeyToIdx(int, int) const
+T LibRomData::KeyStoreUI::sectName(int) const
+T LibRomData::KeyStoreUI::setKey(int, char const*)
+T LibRomData::KeyStoreUI::setKey(int, int, char const*)
+T LibRomData::KeyStoreUI::totalKeyCount() const
+T LibRomData::RomDataFactory::create(char const*, unsigned int)
+T LibRomData::RomDataFactory::create(std::shared_ptr<LibRpFile::IRpFile> const&, unsigned int)
+T LibRomData::RomDataFactory::create(wchar_t const*, unsigned int)
+T LibRomData::RomDataFactory::supportedFileExtensions()
+T LibRomData::RpTextureWrapper::dx10Format() const
+T LibRomData::RpTextureWrapper::pixelFormat() const
+T LibRomData::SuperMagicDrive::decodeBlock_cpp(unsigned char*, unsigned char const*)
+T LibRomData::SuperMagicDrive::decodeBlock_sse2(unsigned char*, unsigned char const*)
+T LibRpBase::AboutTabText::getCreditsData()
+T LibRpBase::AboutTabText::getProgramInfoStringCount()
+T LibRpBase::AboutTabText::getProgramInfoString(LibRpBase::AboutTabText::ProgramInfoStringID)
+T LibRpBase::AboutTabText::getProgramVersion()
+T LibRpBase::AboutTabText::getSupportSites()
+T LibRpBase::Achievements::clearNotifyFunction(int (*)(long long, LibRpBase::Achievements::ID), long long)
+T LibRpBase::Achievements::getDescUnlocked(LibRpBase::Achievements::ID) const
+T LibRpBase::Achievements::getName(LibRpBase::Achievements::ID) const
+T LibRpBase::Achievements::instance()
+T LibRpBase::Achievements::isUnlocked(LibRpBase::Achievements::ID) const
+T LibRpBase::Achievements::setNotifyFunction(int (*)(long long, LibRpBase::Achievements::ID), long long)
+T LibRpBase::AesCipherFactory::create(LibRpBase::AesCipherFactory::Implementation)
+T LibRpBase::Config::Config()
+T LibRpBase::Config::dmgTitleScreenMode_default(LibRpBase::Config::DMG_TitleScreen_Mode)
+T LibRpBase::Config::dmgTitleScreenMode(LibRpBase::Config::DMG_TitleScreen_Mode) const
+T LibRpBase::Config::enableThumbnailOnNetworkFS() const
+T LibRpBase::Config::enableThumbnailOnNetworkFS_default()
+T LibRpBase::Config::extImgDownloadEnabled() const
+T LibRpBase::Config::extImgDownloadEnabled_default()
+T LibRpBase::Config::getDefImgTypePrio(LibRpBase::Config::ImgTypePrio_t*) const
+T LibRpBase::Config::getImgTypePrio(char const*, LibRpBase::Config::ImgTypePrio_t*) const
+T LibRpBase::Config::imgBandwidthMetered() const
+T LibRpBase::Config::imgBandwidthMetered_default()
+T LibRpBase::Config::imgBandwidthUnmetered() const
+T LibRpBase::Config::imgBandwidthUnmetered_default()
+T LibRpBase::Config::instance()
+T LibRpBase::Config::palLanguageForGameTDB() const
+T LibRpBase::Config::palLanguageForGameTDB_default()
+T LibRpBase::Config::showDangerousPermissionsOverlayIcon() const
+T LibRpBase::Config::showDangerousPermissionsOverlayIcon_default()
+T LibRpBase::Config::showXAttrView() const
+T LibRpBase::Config::showXAttrView_default()
+T LibRpBase::Config::storeFileOriginInfo() const
+T LibRpBase::Config::storeFileOriginInfo_default()
+T LibRpBase::Config::useIntIconForSmallSizes() const
+T LibRpBase::Config::useIntIconForSmallSizes_default()
+T LibRpBase::ConfReader::~ConfReader()
+T LibRpBase::ConfReader::ConfReader(LibRpBase::ConfReaderPrivate*)
+T LibRpBase::ConfReader::filename() const
+T LibRpBase::ConfReader::isLoaded() const
+T LibRpBase::ConfReader::load(bool)
+T LibRpBase::IconAnimHelper::nextFrame(int*)
+T LibRpBase::IconAnimHelper::reset()
+T LibRpBase::JSONROMOutput::JSONROMOutput(LibRpBase::RomData const*, unsigned int, unsigned int)
+T LibRpBase::KeyManager::getAndVerify(char const*, LibRpBase::KeyManager::KeyData_t*, unsigned char const*, unsigned int) const
+T LibRpBase::KeyManager::instance()
+T LibRpBase::KeyManager::verifyResultToString(LibRpBase::KeyManager::VerifyResult)
+T LibRpBase::MD5Hash::calcHash(unsigned char*, unsigned long long, void const*, unsigned long long)
+T LibRpBase::operator<<(std::ostream&, LibRpBase::JSONROMOutput const&)
+T LibRpBase::operator<<(std::ostream&, LibRpBase::ROMOutput const&)
+T LibRpBase::RomData::className() const
+T LibRpBase::RomData::doRomOp(int, LibRpBase::RomData::RomOpParams*)
+T LibRpBase::RomData::fields() const
+T LibRpBase::RomData::filename() const
+T LibRpBase::RomData::fileType() const
+T LibRpBase::RomData::fileType_string() const
+T LibRpBase::RomData::fileType_to_string(LibRpBase::RomData::FileType)
+T LibRpBase::RomData::getImageTypeName(LibRpBase::RomData::ImageType)
+T LibRpBase::RomData::image(LibRpBase::RomData::ImageType) const
+T LibRpBase::RomData::isOpen() const
+T LibRpBase::RomData::isValid() const
+T LibRpBase::RomData::metaData() const
+T LibRpBase::RomData::mimeType() const
+T LibRpBase::RomData::mipmap(int) const
+T LibRpBase::RomData::romOps() const
+T LibRpBase::RomFields::ageRatingsDecode[abi:cxx11](std::array<unsigned short, 16ull> const*, bool)
+T LibRpBase::RomFields::at(int) const
+T LibRpBase::RomFields::cbegin() const
+T LibRpBase::RomFields::cend() const
+T LibRpBase::RomFields::count() const
+T LibRpBase::RomFields::defaultLanguageCode() const
+T LibRpBase::RomFields::Field::~Field()
+T LibRpBase::RomFields::getFromListDataMulti(std::map<unsigned int, std::vector<std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >, std::allocator<std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > > >, std::less<unsigned int>, std::allocator<std::pair<unsigned int const, std::vector<std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >, std::allocator<std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > > > > > > const*, unsigned int, unsigned int)
+T LibRpBase::RomFields::getFromStringMulti(std::map<unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::less<unsigned int>, std::allocator<std::pair<unsigned int const, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > > const*, unsigned int, unsigned int)
+T LibRpBase::RomFields::tabCount() const
+T LibRpBase::RomFields::tabName(int) const
+T LibRpBase::RomMetaData::at(int) const
+T LibRpBase::RomMetaData::cbegin() const
+T LibRpBase::RomMetaData::cend() const
+T LibRpBase::RomMetaData::count() const
+T LibRpBase::RomMetaData::empty() const
+T LibRpBase::ROMOutput::ROMOutput(LibRpBase::RomData const*, unsigned int, unsigned int)
+T LibRpBase::RpImageLoader::load(std::shared_ptr<LibRpFile::IRpFile> const&)
+T LibRpBase::RpPng::libpng_copyright_string()
+T LibRpBase::RpPng::libpng_has_APNG()
+T LibRpBase::RpPng::libpng_version_number()
+T LibRpBase::RpPng::load(std::shared_ptr<LibRpFile::IRpFile> const&)
+T LibRpBase::RpPng::save(char const*, std::shared_ptr<LibRpBase::IconAnimData const> const&)
+T LibRpBase::RpPng::save(char const*, std::shared_ptr<LibRpTexture::rp_image const> const&)
+T LibRpBase::RpPng::save(wchar_t const*, std::shared_ptr<LibRpBase::IconAnimData const> const&)
+T LibRpBase::RpPng::save(wchar_t const*, std::shared_ptr<LibRpTexture::rp_image const> const&)
+T LibRpBase::RpPngWriter::close()
+T LibRpBase::RpPngWriter::isOpen() const
+T LibRpBase::RpPngWriter::lastError() const
+T LibRpBase::RpPngWriter::~RpPngWriter()
+T LibRpBase::RpPngWriter::RpPngWriter(char const*, int, int, LibRpTexture::rp_image::Format)
+T LibRpBase::RpPngWriter::RpPngWriter(char const*, std::shared_ptr<LibRpBase::IconAnimData const> const&)
+T LibRpBase::RpPngWriter::RpPngWriter(char const*, std::shared_ptr<LibRpTexture::rp_image const> const&)
+T LibRpBase::RpPngWriter::RpPngWriter(std::shared_ptr<LibRpFile::IRpFile> const&, int, int, LibRpTexture::rp_image::Format)
+T LibRpBase::RpPngWriter::RpPngWriter(std::shared_ptr<LibRpFile::IRpFile> const&, std::shared_ptr<LibRpBase::IconAnimData const> const&)
+T LibRpBase::RpPngWriter::RpPngWriter(std::shared_ptr<LibRpFile::IRpFile> const&, std::shared_ptr<LibRpTexture::rp_image const> const&)
+T LibRpBase::RpPngWriter::RpPngWriter(wchar_t const*, int, int, LibRpTexture::rp_image::Format)
+T LibRpBase::RpPngWriter::RpPngWriter(wchar_t const*, std::shared_ptr<LibRpBase::IconAnimData const> const&)
+T LibRpBase::RpPngWriter::RpPngWriter(wchar_t const*, std::shared_ptr<LibRpTexture::rp_image const> const&)
+T LibRpBase::RpPngWriter::write_IDAT()
+T LibRpBase::RpPngWriter::write_IDAT(unsigned char const* const*, bool)
+T LibRpBase::RpPngWriter::write_IHDR()
+T LibRpBase::RpPngWriter::write_IHDR(LibRpTexture::rp_image::sBIT_t const*, unsigned int const*, unsigned int)
+T LibRpBase::RpPngWriter::write_tEXt(std::vector<std::pair<char const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<char const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > > const&)
+T LibRpBase::RpPng::zlib_is_ng()
+T LibRpBase::RpPng::zlib_version_string()
+T LibRpBase::SystemRegion::getCountryCode()
+T LibRpBase::SystemRegion::getFlagPosition(unsigned int, int*, int*, bool)
+T LibRpBase::SystemRegion::getLanguageCode()
+T LibRpBase::SystemRegion::getLocalizedLanguageName(unsigned int)
+T LibRpBase::SystemRegion::lcToString[abi:cxx11](unsigned int)
+T LibRpBase::SystemRegion::lcToWString[abi:cxx11](unsigned int)
+T LibRpFile::FileSystem::access(char const*, int)
+T LibRpFile::FileSystem::file_ext(char const*)
+T LibRpFile::FileSystem::file_ext(wchar_t const*)
+T LibRpFile::FileSystem::getCacheDirectory[abi:cxx11]()
+T LibRpFile::FileSystem::getConfigDirectory[abi:cxx11]()
+T LibRpFile::FileSystem::get_file_d_type(char const*, bool)
+T LibRpFile::FileSystem::isOnBadFS(char const*, bool)
+T LibRpFile::FileSystem::isOnBadFS(wchar_t const*, bool)
+T LibRpFile::FileSystem::replace_ext[abi:cxx11](char const*, char const*)
+T LibRpFile::FileSystem::rmkdir(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)
+T LibRpFile::FileSystem::waccess(wchar_t const*, int)
+T LibRpFile::IRpFile::copyTo(LibRpFile::IRpFile*, long long, long long*, long long*)
+T LibRpFile::IRpFile::getc()
+T LibRpFile::IRpFile::IRpFile()
+T LibRpFile::IRpFile::ungetc(int)
+T LibRpFile::MemFile::close()
+T LibRpFile::MemFile::~MemFile()
+T LibRpFile::MemFile::MemFile()
+T LibRpFile::MemFile::MemFile(void const*, unsigned long long)
+T LibRpFile::MemFile::read(void*, unsigned long long)
+T LibRpFile::MemFile::seek(long long)
+T LibRpFile::MemFile::setFilename(char const*)
+T LibRpFile::MemFile::setFilename(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)
+T LibRpFile::MemFile::tell()
+T LibRpFile::MemFile::write(void const*, unsigned long long)
+T LibRpFile::recursiveScan(wchar_t const*, std::forward_list<std::pair<std::__cxx11::basic_string<wchar_t, std::char_traits<wchar_t>, std::allocator<wchar_t> >, unsigned char>, std::allocator<std::pair<std::__cxx11::basic_string<wchar_t, std::char_traits<wchar_t>, std::allocator<wchar_t> >, unsigned char> > >&)
+T LibRpFile::RpFile::ata_identify_device(_ATA_RESP_IDENTIFY_DEVICE*)
+T LibRpFile::RpFile::ata_identify_packet_device(_ATA_RESP_IDENTIFY_DEVICE*)
+T LibRpFile::RpFile::close()
+T LibRpFile::RpFile::filename() const
+T LibRpFile::RpFile::filenameW() const
+T LibRpFile::RpFile::isOpen() const
+T LibRpFile::RpFile::read(void*, unsigned long long)
+T LibRpFile::RpFile::~RpFile()
+T LibRpFile::RpFile::RpFile(char const*, LibRpFile::RpFile::FileMode)
+T LibRpFile::RpFile::RpFile(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, LibRpFile::RpFile::FileMode)
+T LibRpFile::RpFile::RpFile(std::__cxx11::basic_string<wchar_t, std::char_traits<wchar_t>, std::allocator<wchar_t> > const&, LibRpFile::RpFile::FileMode)
+T LibRpFile::RpFile::RpFile(wchar_t const*, LibRpFile::RpFile::FileMode)
+T LibRpFile::RpFile::scsi_inquiry(_SCSI_RESP_INQUIRY_STD*)
+T LibRpFile::RpFile::size()
+T LibRpFile::VectorFile::read(void*, unsigned long long)
+T LibRpFile::VectorFile::seek(long long)
+T LibRpFile::VectorFile::truncate(long long)
+T LibRpFile::VectorFile::~VectorFile()
+T LibRpFile::VectorFile::VectorFile()
+T LibRpFile::VectorFile::write(void const*, unsigned long long)
+T LibRpFile::XAttrReader::dosAttributes() const
+T LibRpFile::XAttrReader::ext2Attributes() const
+T LibRpFile::XAttrReader::genericXAttrs[abi:cxx11]() const
+T LibRpFile::XAttrReader::hasDosAttributes() const
+T LibRpFile::XAttrReader::hasExt2Attributes() const
+T LibRpFile::XAttrReader::hasGenericXAttrs() const
+T LibRpFile::XAttrReader::hasXfsAttributes() const
+T LibRpFile::XAttrReader::lastError() const
+T LibRpFile::XAttrReader::~XAttrReader()
+T LibRpFile::XAttrReader::XAttrReader(char const*)
+T LibRpFile::XAttrReader::XAttrReader(wchar_t const*)
+T LibRpFile::XAttrReader::xfsProjectId() const
+T LibRpFile::XAttrReader::xfsXFlags() const
+T LibRpText::cpN_to_utf16[abi:cxx11](unsigned int, char const*, int, unsigned int)
+T LibRpText::cpN_to_utf8[abi:cxx11](unsigned int, char const*, int, unsigned int)
+T LibRpText::rp_vsprintf[abi:cxx11](char const*, char*)
+T LibRpText::rp_vsprintf_p[abi:cxx11](char const*, char*)
+T LibRpText::rp_vswprintf[abi:cxx11](wchar_t const*, char*)
+T LibRpText::rp_vswprintf_p[abi:cxx11](wchar_t const*, char*)
+T LibRpTexture::FileFormatFactory::supportedFileExtensions()
+T LibRpTexture::ImageDecoder::fromLinear16_cpp(LibRpTexture::ImageDecoder::PixelFormat, int, int, unsigned short const*, unsigned long long, int)
+T LibRpTexture::ImageDecoder::fromLinear16_sse2(LibRpTexture::ImageDecoder::PixelFormat, int, int, unsigned short const*, unsigned long long, int)
+T LibRpTexture::ImageDecoder::fromLinear24_cpp(LibRpTexture::ImageDecoder::PixelFormat, int, int, unsigned char const*, unsigned long long, int)
+T LibRpTexture::ImageDecoder::fromLinear24_ssse3(LibRpTexture::ImageDecoder::PixelFormat, int, int, unsigned char const*, unsigned long long, int)
+T LibRpTexture::ImageDecoder::fromLinear32_cpp(LibRpTexture::ImageDecoder::PixelFormat, int, int, unsigned int const*, unsigned long long, int)
+T LibRpTexture::ImageDecoder::fromLinear32_ssse3(LibRpTexture::ImageDecoder::PixelFormat, int, int, unsigned int const*, unsigned long long, int)
+T LibRpTexture::RpGdiplusBackend::creator_fn(int, int, LibRpTexture::rp_image::Format)
+T LibRpTexture::RpGdiplusBackend::toHBITMAP_alpha()
+T LibRpTexture::RpGdiplusBackend::toHBITMAP_alpha(tagSIZE, bool)
+T LibRpTexture::RpGdiplusBackend::toHBITMAP(unsigned int, tagSIZE, bool)
+T LibRpTexture::RpGdiplusBackend::toHBITMAP(unsigned long)
+T LibRpTexture::rp_image_backend::clear_properties()
+T LibRpTexture::rp_image::backend() const
+T LibRpTexture::rp_image_backend::has_translucent_palette_entries() const
+T LibRpTexture::rp_image_backend::isValid() const
+T LibRpTexture::rp_image_backend::rp_image_backend(int, int, LibRpTexture::rp_image::Format)
+T LibRpTexture::rp_image::bits()
+T LibRpTexture::rp_image::bits() const
+T LibRpTexture::rp_image::data_len() const
+T LibRpTexture::rp_image::dup_ARGB32() const
+T LibRpTexture::rp_image::dup() const
+T LibRpTexture::rp_image::flip(LibRpTexture::rp_image::FlipOp) const
+T LibRpTexture::rp_image::format() const
+T LibRpTexture::rp_image::get_sBIT(LibRpTexture::rp_image::sBIT_t*) const
+T LibRpTexture::rp_image::height() const
+T LibRpTexture::rp_image::isSquare() const
+T LibRpTexture::rp_image::isValid() const
+T LibRpTexture::rp_image::palette() const
+T LibRpTexture::rp_image::palette_len() const
+T LibRpTexture::rp_image::premultiply()
+T LibRpTexture::rp_image::premultiply_pixel(unsigned int)
+T LibRpTexture::rp_image::resized(int, int, LibRpTexture::rp_image::Alignment, unsigned int) const
+T LibRpTexture::rp_image::row_bytes() const
+T LibRpTexture::rp_image::~rp_image()
+T LibRpTexture::rp_image::rp_image(int, int, LibRpTexture::rp_image::Format)
+T LibRpTexture::rp_image::scanLine(int) const
+T LibRpTexture::rp_image::setBackendCreatorFn(LibRpTexture::rp_image_backend* (*)(int, int, LibRpTexture::rp_image::Format))
+T LibRpTexture::rp_image::squared() const
+T LibRpTexture::rp_image::stride() const
+T LibRpTexture::rp_image::tr_idx() const
+T LibRpTexture::rp_image::un_premultiply_cpp()
+T LibRpTexture::rp_image::un_premultiply_sse41()
+T LibRpTexture::rp_image::width() const
+T LibRpText::utf16be_to_utf8[abi:cxx11](char16_t const*, int)
+T LibRpText::utf16_bswap[abi:cxx11](char16_t const*, int)
+T LibRpText::utf16le_to_utf8[abi:cxx11](char16_t const*, int)
+T LibRpText::utf16_to_cpN[abi:cxx11](unsigned int, char16_t const*, int)
+T LibRpText::utf8_to_cpN[abi:cxx11](unsigned int, char const*, int)
+T LibWin32Common::ComBase_isReferenced()
+T LibWin32Common::decRpGlobalRefCount()
+T LibWin32Common::getCacheDirectory[abi:cxx11]()
+T LibWin32Common::getConfigDirectory[abi:cxx11]()
+T LibWin32Common::getHomeDirectory[abi:cxx11]()
+T LibWin32Common::incRpGlobalRefCount()
+T LibWin32Common::rp_QISearch(void*, QITAB const*, _GUID const&, void**)
+T rp_byte_swap_16_array_sse2
+T rp_byte_swap_16_array_ssse3
+T rp_byte_swap_32_array_sse2
+T rp_byte_swap_32_array_ssse3
+T RP_CPU_InitCPUFlags
+T rp_i18n_init
+T w32err_to_posix
