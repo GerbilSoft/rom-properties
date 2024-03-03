@@ -114,6 +114,7 @@ string IntellivisionPrivate::getTitle(int *pOutYear) const
 	// Convert it to 8-bit ASCII.
 	// NOTE: Removing the high bit to ensure UTF-8 compatibility.
 	// TODO: Verify the whole EXEC character set.
+	// FIXME: 0x5E and 0x5F are arrows, similar to PETSCII.
 	string title;
 	title.reserve(32);
 	const uint16_t *const p_end = &romHeader.u16[ARRAY_SIZE(romHeader.u16)];
