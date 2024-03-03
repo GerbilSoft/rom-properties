@@ -1309,7 +1309,7 @@ rp_image_ptr fromLinear32_cpp(PixelFormat px_format,
 			const int dest_row_width = img->stride() / bytespp;
 
 #ifdef _OPENMP
-#  if _OPENMP >= 201511
+#  if _OPENMP >= 201511 && (defined(__clang__) || defined(_MSC_VER) || !defined(__GNUC__) || (defined(__GNUC__) && __GNUC__ >= 9))
      // gcc <9.x throws an error if certain const pointers are marked as shared.
      // https://github.com/KCL-BMEIS/niftyreg/issues/74
      // https://gcc.gnu.org/gcc-9/porting_to.html
