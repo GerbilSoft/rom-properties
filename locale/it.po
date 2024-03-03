@@ -1,9 +1,9 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: rom-properties 2.2.1+\n"
+"Project-Id-Version: rom-properties 2.3+\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2024-02-25 13:35-0500\n"
-"PO-Revision-Date: 2024-03-01 18:13\n"
+"PO-Revision-Date: 2024-03-03 23:45\n"
 "Last-Translator: \n"
 "Language-Team: Italian\n"
 "Language: it\n"
@@ -653,56 +653,56 @@ msgstr "Resetta la cache delle anteprime di sistema..."
 #: ../src/gtk/config/CacheTab.cpp:366 ../src/kde/config/CacheTab.cpp:128
 msgctxt "CacheTab"
 msgid "Clearing the ROM Properties Page cache..."
-msgstr ""
+msgstr "Ripulendo la cache di ROM Properties..."
 
 #: ../src/gtk/config/CacheTab.cpp:488 ../src/kde/config/CacheTab.cpp:280
 msgctxt "CacheTab"
 msgid "System thumbnail cache is empty. Nothing to do."
-msgstr ""
+msgstr "La cache delle anteprime di sistema è vuota. Non ho nulla da svuotare."
 
 #: ../src/gtk/config/CacheTab.cpp:491 ../src/kde/config/CacheTab.cpp:283
 #: ../src/win32/config/CacheTab.cpp:626 ../src/win32/config/CacheTab.cpp:657
 msgctxt "CacheTab"
 msgid "rom-properties cache is empty. Nothing to do."
-msgstr ""
+msgstr "La cache di rom-properites è vuota. Non ho nulla da svuotare."
 
 #: ../src/gtk/config/CacheTab.cpp:518 ../src/kde/config/CacheTab.cpp:307
 #: ../src/win32/config/CacheTab.cpp:723
 #, c-format
 msgctxt "CacheTab"
 msgid "Unable to delete %1$u file(s) and/or %2$u dir(s)."
-msgstr ""
+msgstr "Impossibile eliminare i file %1$u e/o l(a/e) directory %2$u."
 
 #: ../src/gtk/config/CacheTab.cpp:535 ../src/kde/config/CacheTab.cpp:323
 #: ../src/win32/config/CacheTab.cpp:551
 msgctxt "CacheTab"
 msgid "System thumbnail cache cleared successfully."
-msgstr ""
+msgstr "La cache delle anteprime di sistema è stata ripulita con successo."
 
 #: ../src/gtk/config/CacheTab.cpp:539 ../src/kde/config/CacheTab.cpp:327
 #: ../src/win32/config/CacheTab.cpp:729
 msgctxt "CacheTab"
 msgid "rom-properties cache cleared successfully."
-msgstr ""
+msgstr "La cache di rom-properties è stata ripulita con successo."
 
 #: ../src/gtk/config/ConfigDialog.cpp:246 ../src/kde/config/ConfigDialog.cpp:79
 msgctxt "ConfigDialog"
 msgid "&Key Manager"
-msgstr ""
+msgstr "&Gestore Chiavi"
 
 #. tr: "Reset" button.
 #: ../src/gtk/config/ConfigDialog.cpp:297
 #: ../src/win32/config/ConfigDialog.cpp:292
 msgctxt "ConfigDialog"
 msgid "&Reset"
-msgstr ""
+msgstr "&Reset"
 
 #. tr: "Defaults" button.
 #: ../src/gtk/config/ConfigDialog.cpp:298
 #: ../src/win32/config/ConfigDialog.cpp:309
 msgctxt "ConfigDialog"
 msgid "Defaults"
-msgstr ""
+msgstr "Predefiniti"
 
 #. tr: Don't use this image type for this particular system.
 #: ../src/gtk/config/ImageTypesTab.cpp:336
@@ -711,7 +711,7 @@ msgstr ""
 #: ../src/win32/config/ImageTypesTab.cpp:402
 msgctxt "ImageTypesTab|Values"
 msgid "No"
-msgstr ""
+msgstr "No"
 
 #: ../src/gtk/config/ImageTypesTab.cpp:481
 #: ../src/kde/config/ImageTypesTab.cpp:357
@@ -723,6 +723,11 @@ msgid ""
 "amiibo images are provided by <a href=\"https://amiibo.life/\">amiibo.life</"
 "a>, the Unofficial amiibo Database."
 msgstr ""
+"Le immagini di GameCube, Wii, Wii U, Nintendo DS e Nintendo 3DS sono "
+"fornite \n"
+"da <a href=\"https://www.gametdb.com/\">GameTDB</a>. Le immagini degli\n"
+"amiibo sono fornite da <a href=\"https://amiibo.life/\">amiibo.life</a>, il "
+"Database di amiibo non ufficiale."
 
 #. tr: Wii keys.bin dialog title
 #: ../src/gtk/config/KeyManagerTab.cpp:483
@@ -730,7 +735,7 @@ msgstr ""
 #: ../src/win32/config/KeyManagerTab.cpp:1816
 msgctxt "KeyManagerTab"
 msgid "Select Wii keys.bin File"
-msgstr ""
+msgstr "Seleziona file Wii keys.bin"
 
 #. tr: Wii U otp.bin dialog title
 #: ../src/gtk/config/KeyManagerTab.cpp:485
@@ -738,7 +743,7 @@ msgstr ""
 #: ../src/win32/config/KeyManagerTab.cpp:1818
 msgctxt "KeyManagerTab"
 msgid "Select Wii U otp.bin File"
-msgstr ""
+msgstr "Seleziona file Wii U otp.bin"
 
 #. tr: Nintendo 3DS boot9.bin dialog title
 #: ../src/gtk/config/KeyManagerTab.cpp:487
@@ -746,7 +751,7 @@ msgstr ""
 #: ../src/win32/config/KeyManagerTab.cpp:1820
 msgctxt "KeyManagerTab"
 msgid "Select 3DS boot9.bin File"
-msgstr ""
+msgstr "Seleziona file 3DS boot9.bin"
 
 #. tr: Nintendo 3DS aeskeydb.bin dialog title
 #: ../src/gtk/config/KeyManagerTab.cpp:489
@@ -754,7 +759,7 @@ msgstr ""
 #: ../src/win32/config/KeyManagerTab.cpp:1822
 msgctxt "KeyManagerTab"
 msgid "Select 3DS aeskeydb.bin File"
-msgstr ""
+msgstr "Seleziona file 3DS aeskeydb.bin"
 
 #. tr: Wii keys.bin file filter (RP format)
 #: ../src/gtk/config/KeyManagerTab.cpp:494
@@ -762,7 +767,7 @@ msgstr ""
 #: ../src/win32/config/KeyManagerTab.cpp:1827
 msgctxt "KeyManagerTab"
 msgid "keys.bin|keys.bin|-|Binary Files|*.bin|-|All Files|*|-"
-msgstr ""
+msgstr "keys.bin|keys.bin|-|File binari|*.bin|-|Tutti i file|*|-"
 
 #. tr: Wii U otp.bin file filter (RP format)
 #: ../src/gtk/config/KeyManagerTab.cpp:496
@@ -770,7 +775,7 @@ msgstr ""
 #: ../src/win32/config/KeyManagerTab.cpp:1829
 msgctxt "KeyManagerTab"
 msgid "otp.bin|otp.bin|-|Binary Files|*.bin|-|All Files|*|-"
-msgstr ""
+msgstr "otp.bin|otp.bin|-|File binari|*.bin|-|Tutti i file|*|-"
 
 #. tr: Nintendo 3DS boot9.bin file filter (RP format)
 #: ../src/gtk/config/KeyManagerTab.cpp:498
@@ -778,7 +783,7 @@ msgstr ""
 #: ../src/win32/config/KeyManagerTab.cpp:1831
 msgctxt "KeyManagerTab"
 msgid "boot9.bin|boot9.bin|-|Binary Files|*.bin|-|All Files|*|-"
-msgstr ""
+msgstr "boot9.bin|boot9.bin|-|File binari|*.bin|-|Tutti i file|*|-"
 
 #. tr: Nintendo 3DS aeskeydb.bin file filter (RP format)
 #: ../src/gtk/config/KeyManagerTab.cpp:500
@@ -786,7 +791,7 @@ msgstr ""
 #: ../src/win32/config/KeyManagerTab.cpp:1833
 msgctxt "KeyManagerTab"
 msgid "aeskeydb.bin|aeskeydb.bin|-|Binary Files|*.bin|-|All Files|*|-"
-msgstr ""
+msgstr "aeskeydb.bin|aeskeydb.bin|-|File binari|*.bin|-|Tutti i file|*|-"
 
 #: ../src/gtk/config/KeyManagerTab.cpp:563
 #: ../src/kde/config/KeyManagerTab.cpp:146
@@ -796,6 +801,8 @@ msgid ""
 "An invalid parameter was passed to the key importer.\n"
 "THIS IS A BUG; please report this to the developers!"
 msgstr ""
+"Un parametro non valido è stato passato all'importatore di chiavi.\n"
+"QUESTO È UN BUG; per favore segnalalo agli sviluppatori!"
 
 #: ../src/gtk/config/KeyManagerTab.cpp:570
 #: ../src/kde/config/KeyManagerTab.cpp:154
@@ -805,6 +812,8 @@ msgid ""
 "An unknown key ID was passed to the key importer.\n"
 "THIS IS A BUG; please report this to the developers!"
 msgstr ""
+"Un ID di chiave sconosciuto è stato passato all'importatore di chiavi.\n"
+"QUESTO È UN BUG; per favore segnalalo agli sviluppatori!"
 
 #: ../src/gtk/config/KeyManagerTab.cpp:579
 #: ../src/kde/config/KeyManagerTab.cpp:164
@@ -812,7 +821,7 @@ msgstr ""
 #, c-format
 msgctxt "KeyManagerTab"
 msgid "An error occurred while opening '%1$s': %2$s"
-msgstr ""
+msgstr "Si è verificato un errore durante l'apertura di '%1$s': %2$s"
 
 #: ../src/gtk/config/KeyManagerTab.cpp:584
 #: ../src/kde/config/KeyManagerTab.cpp:170
@@ -820,7 +829,7 @@ msgstr ""
 #, c-format
 msgctxt "KeyManagerTab"
 msgid "An error occurred while opening '%s'."
-msgstr ""
+msgstr "Si è verificato un errore durante l'apertura di '%s'."
 
 #: ../src/gtk/config/KeyManagerTab.cpp:595
 #: ../src/kde/config/KeyManagerTab.cpp:182
@@ -828,7 +837,7 @@ msgstr ""
 #, c-format
 msgctxt "KeyManagerTab"
 msgid "An error occurred while reading '%1$s': %2$s"
-msgstr ""
+msgstr "Si è verificato un errore durante la lettura di '%1$s': %2$s"
 
 #: ../src/gtk/config/KeyManagerTab.cpp:600
 #: ../src/kde/config/KeyManagerTab.cpp:188
@@ -836,7 +845,7 @@ msgstr ""
 #, c-format
 msgctxt "KeyManagerTab"
 msgid "An error occurred while reading '%s'."
-msgstr ""
+msgstr "Si è verificato un errore durante la lettura di '%s'."
 
 #: ../src/gtk/config/KeyManagerTab.cpp:609
 #: ../src/kde/config/KeyManagerTab.cpp:198
@@ -844,7 +853,7 @@ msgstr ""
 #, c-format
 msgctxt "KeyManagerTab"
 msgid "The file '%1$s' is not a valid %2$s file."
-msgstr ""
+msgstr "Il file '%1$s' non è un file %2$s valido."
 
 #: ../src/gtk/config/KeyManagerTab.cpp:617
 #: ../src/kde/config/KeyManagerTab.cpp:208
@@ -852,7 +861,7 @@ msgstr ""
 #, c-format
 msgctxt "KeyManagerTab"
 msgid "No keys were imported from '%s'."
-msgstr ""
+msgstr "Nessuna chiave importata da '%s'."
 
 #: ../src/gtk/config/KeyManagerTab.cpp:630
 #: ../src/kde/config/KeyManagerTab.cpp:219
@@ -861,8 +870,8 @@ msgstr ""
 msgctxt "KeyManagerTab"
 msgid "%1$s key was imported from '%2$s'."
 msgid_plural "%1$s keys were imported from '%2$s'."
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "%1$s chiave è stata importata da '%2$s'."
+msgstr[1] "%1$s chiavi sono state importate da '%2$s'."
 
 #: ../src/gtk/config/KeyManagerTab.cpp:650
 #: ../src/kde/config/KeyManagerTab.cpp:239
@@ -871,8 +880,8 @@ msgstr[1] ""
 msgctxt "KeyManagerTab"
 msgid "%s key already exists in the Key Manager."
 msgid_plural "%s keys already exist in the Key Manager."
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "%s chiave esiste già nel Gestore delle Chiavi."
+msgstr[1] "%s chiavi esistono già nel Gestore delle Chiavi."
 
 #: ../src/gtk/config/KeyManagerTab.cpp:659
 #: ../src/kde/config/KeyManagerTab.cpp:248
