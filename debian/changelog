@@ -1,3 +1,9 @@
+rom-properties (2.3-1ppa1~xenial1) xenial; urgency=medium
+
+  * 2.3 release.
+
+ -- David Korth <gerbilsoft@gerbilsoft.com>  Sun, 03 Mar 2024 12:53:33 -0500
+
 rom-properties (2.2.1-1ppa1~xenial2) xenial; urgency=medium
 
   * Fix LD_LIBRARY_PATH due to $(shell pwd) pointing to the base directory,

@@ -1,6 +1,6 @@
 # Changes
 
-## v2.3 (released 2023/??/??)
+## v2.3 (released 2024/03/03)
 
 * New features:
   * Extended attributes: On Linux, XFS attributes are now displayed if they're
