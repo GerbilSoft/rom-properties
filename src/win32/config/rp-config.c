@@ -63,12 +63,13 @@ static const TCHAR rp_subdir[] = _T("ia64\\");
 // looking up CLSIDs in the registry, so we might as well have the
 // string format here instead of converting at runtime
 // CLSID paths.
-static const TCHAR CLSIDs[5][40] = {
+static const TCHAR CLSIDs[6][40] = {
 	_T("{E51BC107-E491-4B29-A6A3-2A4309259802}"),	// RP_ExtractIcon
 	_T("{84573BC0-9502-42F8-8066-CC527D0779E5}"),	// RP_ExtractImage
 	_T("{2443C158-DF7C-4352-B435-BC9F885FFD52}"),	// RP_ShellPropSheetExt
 	_T("{4723DF58-463E-4590-8F4A-8D9DD4F4355A}"),	// RP_ThumbnailProvider
 	_T("{02C6AF01-3C99-497D-B3FC-E38CE526786B}"),	// RP_ShellIconOverlayIdentifier
+	_T("{150715EA-6843-472C-9709-2CFA56690501}"),	// RP_ContextMenu
 };
 
 /**
