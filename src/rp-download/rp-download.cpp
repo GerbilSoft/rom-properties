@@ -331,6 +331,7 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 		SCMP_SYS(clock_gettime64),
 #endif /* __SNR_clock_gettime64 || __NR_clock_gettime64 */
 		SCMP_SYS(close),
+		SCMP_SYS(faccessat),	// Linux on aarch64 does not have an access() syscall
 		SCMP_SYS(fcntl),     SCMP_SYS(fcntl64),		// gcc profiling
 		SCMP_SYS(fsetxattr),
 		SCMP_SYS(fstat),     SCMP_SYS(fstat64),		// __GI___fxstat() [printf()]

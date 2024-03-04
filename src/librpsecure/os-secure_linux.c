@@ -94,6 +94,7 @@ int rp_secure_enable(rp_secure_param_t param)
 					// is defined when compiling gcc.
 		SCMP_SYS(fcntl),	// for managing .gcda files
 		SCMP_SYS(access),	// for managing .gcda files
+		SCMP_SYS(faccessat),	// Linux on aarch64 does not have an access() syscall
 #endif /* GCOV */
 
 		-1	// End of whitelist
