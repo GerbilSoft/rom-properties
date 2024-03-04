@@ -39,13 +39,18 @@ static int ifunc_method_impl4(int a, long b, char c)
 
 static __typeof__(&ifunc_method_impl1) ifunc_method_resolve(void)
 {
+	time_t s = time(NULL);
+
 	// NOTE: Since libromdata is a shared library now, IFUNC resolvers
 	// cannot call PLT functions. Otherwise, it will crash.
 	// We'll use gcc's built-in CPU ID functions instead.
 	// Requires gcc-4.8 or later, or clang-6.0 or later.
-	time_t s = time(NULL);
+	// Also, this only works on i386/amd64.
+#if defined(__i386__) || defined(__amd64__) || defined(_M_IX86) || defined(_M_X64)
 	__builtin_cpu_init();
 	if (__builtin_cpu_supports("sse2")) s ^= 3;
+#endif
+
 	switch (s & 3) {
 		default:
 		case 0:	return &ifunc_method_impl1;
