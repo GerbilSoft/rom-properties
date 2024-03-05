@@ -2337,12 +2337,11 @@ inline BOOL RP_ShellPropSheetExtPrivate::ListView_GetDispInfo(NMLVDISPINFO *plvd
 
 	// Get the real item number using the sort map.
 	int iItem = plvItem->iItem;
-	if (iItem >= 0 && iItem < static_cast<int>(lvData.vSortMap.size())) {
-		iItem = lvData.vSortMap[iItem];
-	} else {
+	if (iItem < 0 || iItem >= static_cast<int>(lvData.vSortMap.size())) {
 		// Out of range...
 		return FALSE;
 	}
+	iItem = lvData.vSortMap[iItem];
 
 	BOOL bRet = FALSE;
 
@@ -2448,7 +2447,7 @@ inline BOOL RP_ShellPropSheetExt_Private::Header_DividerDblClick(const NMHEADER 
 		// ListView data not found...
 		return FALSE;
 	}
-	LvData &lvData = iter_lvData->second;
+	const LvData &lvData = iter_lvData->second;
 
 	// Adjust the specified column.
 	assert(phd->iItem < static_cast<int>(lvData.col_widths.size()));
