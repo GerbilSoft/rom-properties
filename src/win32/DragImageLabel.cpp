@@ -45,7 +45,6 @@ public:
 	SIZE actualSize;	// Calculated icon size
 	RECT rect;		// RECT with specified position and actual icon size
 
-	bool ecksBawks;
 	HMENU hMenuEcksBawks;
 
 	// rp_image
@@ -84,6 +83,7 @@ public:
 
 	// Use nearest-neighbor scaling?
 	bool useNearestNeighbor;
+	bool ecksBawks;
 
 public:
 	/**
@@ -120,11 +120,11 @@ public:
 
 DragImageLabelPrivate::DragImageLabelPrivate(HWND hwndParent)
 	: hwndParent(hwndParent)
-	, ecksBawks(false)
 	, hMenuEcksBawks(nullptr)
 	, hbmpImg(nullptr)
 	, anim(nullptr)
 	, useNearestNeighbor(false)
+	, ecksBawks(false)
 {
 	// TODO: Set rect/size as parameters?
 	requiredSize.cx = DIL_REQ_IMAGE_SIZE;
