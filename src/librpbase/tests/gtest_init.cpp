@@ -98,6 +98,7 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 
 		// for posix_fadvise()
 		SCMP_SYS(fadvise64), SCMP_SYS(fadvise64_64),
+		SCMP_SYS(arm_fadvise64_64),	// CPU-specific syscall for Linux on 32-bit ARM
 
 		-1	// End of whitelist
 	};
