@@ -2681,16 +2681,15 @@ INT_PTR RP_ShellPropSheetExt_Private::DlgProc_WM_PAINT(HWND hDlg)
 	PAINTSTRUCT ps;
 	HDC hdc = BeginPaint(hDlg, &ps);
 
-	// TODO: Check paint rectangles?
 	// TODO: Share the memory DC between lblBanner and lblIcon?
 
 	// Draw the banner.
-	if (lblBanner) {
+	if (lblBanner && lblBanner->intersects(&ps.rcPaint)) {
 		lblBanner->draw(hdc);
 	}
 
 	// Draw the icon.
-	if (lblIcon) {
+	if (lblIcon && lblIcon->intersects(&ps.rcPaint)) {
 		lblIcon->draw(hdc);
 	}
 

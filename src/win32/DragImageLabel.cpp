@@ -44,10 +44,11 @@ public:
 	POINT position;
 
 	// Icon sizes
-	SIZE requiredSize;	// Required size.
-	SIZE actualSize;	// Actual size.
+	SIZE requiredSize;	// Required size
+	SIZE actualSize;	// Actual size
 
 	// Calculated RECT based on position and size
+	// TODO: Get rid of position and actual size in favor of just rect?
 	RECT rect;
 
 	bool ecksBawks;
@@ -57,7 +58,7 @@ public:
 	rp_image_const_ptr img;
 	HBITMAP hbmpImg;	// for non-animated only
 
-	// Animated icon data.
+	// Animated icon data
 	struct anim_vars {
 		IconAnimDataConstPtr iconAnimData;
 		std::array<HBITMAP, IconAnimData::MAX_FRAMES> iconFrames;
@@ -695,4 +696,18 @@ void DragImageLabel::invalidateRect(bool bErase)
 {
 	RP_D(DragImageLabel);
 	InvalidateRect(d->hwndParent, &d->rect, bErase);
+}
+
+/**
+ * Does a given rectangle intersect this control's rectangle?
+ * Typically used for WM_PAINT.
+ *
+ * @param lprcOther Rectangle to check
+ * @return True if it does; false if it doesn't.
+ */
+bool DragImageLabel::intersects(const RECT *lprcOther) const
+{
+	RP_D(const DragImageLabel);
+	RECT rcIntersect;
+	return (IntersectRect(&rcIntersect, &d->rect, lprcOther) != 0);
 }

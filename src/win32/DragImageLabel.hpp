@@ -116,4 +116,13 @@ public:
 	 * @param bErase Erase the background.
 	 */
 	void invalidateRect(bool bErase = false);
+
+	/**
+	 * Does a given rectangle intersect this control's rectangle?
+	 * Typically used for WM_PAINT.
+	 *
+	 * @param lprcOther Rectangle to check
+	 * @return True if it does; false if it doesn't.
+	 */
+	bool intersects(const RECT *lprcOther) const;
 };
