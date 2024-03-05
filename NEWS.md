@@ -3,9 +3,10 @@
 ## v2.? (released 2024/??/??)
 
 * Other changes:
-
   * On Linux, rp-config now correctly detects KDE Plasma 6 and uses the
     KF6 version of the UI instead of the KF5 version.
+  * Linux, armhf/aarch64: Add missing syscalls to the seccomp whitelist.
+    This fixes unit tests in the Launchpad build system.
 
 ## v2.3 (released 2024/03/03)
 
