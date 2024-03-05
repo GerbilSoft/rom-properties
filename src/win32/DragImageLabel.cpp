@@ -42,7 +42,7 @@ public:
 
 	// TODO: Eliminate actualSize()?
 	SIZE requiredSize;	// Required icon size
-	SIZE actualSize;	// Calculated icon size
+	SIZE actualSize;	// Actual icon size, after rescaling (if necessary)
 	RECT rect;		// RECT with specified position and actual icon size
 
 	HMENU hMenuEcksBawks;
