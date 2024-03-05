@@ -1,12 +1,20 @@
 # Changes
 
-## v2.? (released 2024/??/??)
+## v2.3.1 (released 2024/03/??)
 
-* Other changes:
+NOTE: Precompiled builds of v2.3.1 are only being provided for Windows.
+The Linux-specific changes don't affect any current releases of
+Ubuntu Linux.
+
+* Bug fixes:
   * On Linux, rp-config now correctly detects KDE Plasma 6 and uses the
     KF6 version of the UI instead of the KF5 version.
   * Linux, armhf/aarch64: Add missing syscalls to the seccomp whitelist.
     This fixes unit tests in the Launchpad build system.
+  * Windows: Fix a crash when viewing the ROM Properties tab through
+    the Directory Opus file browser.
+    * Fixes #405: Crash when used inside Directory Opus
+      * Reported by @Kugelblitz360.
 
 ## v2.3 (released 2024/03/03)
 

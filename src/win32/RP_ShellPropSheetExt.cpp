@@ -3008,7 +3008,7 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::SubtabDlgProc(HWND hDlg, UINT uMs
 	switch (uMsg) {
 		case WM_DESTROY: {
 			// Remove the TAB_PTR_PROP property from the page.
-			// The TAB_PTR_PROP property stored the pointer to the 
+			// The TAB_PTR_PROP property stored the pointer to the
 			// RP_ShellPropSheetExt_Private::tab object.
 			RemoveProp(hDlg, RP_ShellPropSheetExtPrivate::TAB_PTR_PROP);
 			break;
@@ -3176,6 +3176,6 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::SubtabDlgProc(HWND hDlg, UINT uMs
 		}
 	}
 
-	// Dummy callback procedure that does nothing.
-	return DefSubclassProc(hDlg, uMsg, wParam, lParam);
+	// Nothing to do here...
+	return FALSE;
 }
