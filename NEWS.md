@@ -13,6 +13,9 @@ Ubuntu Linux.
     This fixes unit tests in the Launchpad build system.
   * Windows: Fix a crash when viewing the ROM Properties tab through
     the Directory Opus file browser.
+    * This regressed in v1.7.
+      * Commit: cff90b5309a5bad29bdc4065abda743c32875ffa
+      * [win32] RP_ShellPropSheetExt: Initial scrolling for data widgets.
     * Fixes #405: Crash when used inside Directory Opus
       * Reported by @Kugelblitz360.
 
