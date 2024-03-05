@@ -40,16 +40,10 @@ private:
 public:
 	HWND hwndParent;
 
-	// Position
-	POINT position;
-
-	// Icon sizes
-	SIZE requiredSize;	// Required size
-	SIZE actualSize;	// Actual size
-
-	// Calculated RECT based on position and size
-	// TODO: Get rid of position and actual size in favor of just rect?
-	RECT rect;
+	// TODO: Eliminate actualSize()?
+	SIZE requiredSize;	// Required icon size
+	SIZE actualSize;	// Calculated icon size
+	RECT rect;		// RECT with specified position and actual icon size
 
 	bool ecksBawks;
 	HMENU hMenuEcksBawks;
@@ -135,15 +129,13 @@ DragImageLabelPrivate::DragImageLabelPrivate(HWND hwndParent)
 	// TODO: Set rect/size as parameters?
 	requiredSize.cx = DIL_REQ_IMAGE_SIZE;
 	requiredSize.cy = DIL_REQ_IMAGE_SIZE;
-	actualSize = requiredSize;
-
-	position.x = 0;
-	position.y = 0;
+	actualSize.cx = DIL_REQ_IMAGE_SIZE;
+	actualSize.cy = DIL_REQ_IMAGE_SIZE;
 
 	rect.left = 0;
-	rect.right = actualSize.cx;
+	rect.right = DIL_REQ_IMAGE_SIZE;
 	rect.top = 0;
-	rect.bottom = actualSize.cy;
+	rect.bottom = DIL_REQ_IMAGE_SIZE;
 }
 
 DragImageLabelPrivate::~DragImageLabelPrivate()
@@ -295,11 +287,10 @@ void DragImageLabelPrivate::updateRect(void)
 	// TODO: Not if the new one completely overlaps the old one?
 	InvalidateRect(hwndParent, &rect, false);
 
+	// rect.left/rect.top already contains the actual position.
 	// TODO: Optimize by not invalidating if it didn't change.
-	rect.left   = position.x;
-	rect.right  = position.x + actualSize.cx;
-	rect.top    = position.y;
-	rect.bottom = position.y + actualSize.cy;
+	rect.right  = rect.left + actualSize.cx;
+	rect.bottom = rect.top  + actualSize.cy;
 	InvalidateRect(hwndParent, &rect, false);
 }
 
@@ -405,16 +396,17 @@ SIZE DragImageLabel::actualSize(void) const
 POINT DragImageLabel::position(void) const
 {
 	RP_D(const DragImageLabel);
-	return d->position;
+	return { d->rect.left, d->rect.top };
 }
 
 void DragImageLabel::setPosition(POINT position)
 {
 	RP_D(DragImageLabel);
-	if (d->position.x != position.x ||
-	    d->position.y != position.y)
+	if (d->rect.left != position.x ||
+	    d->rect.top != position.y)
 	{
-		d->position = position;
+		d->rect.left = position.x;
+		d->rect.top = position.y;
 		d->updateRect();
 	}
 }
@@ -422,11 +414,11 @@ void DragImageLabel::setPosition(POINT position)
 void DragImageLabel::setPosition(int x, int y)
 {
 	RP_D(DragImageLabel);
-	if (d->position.x != x ||
-	    d->position.y != y)
+	if (d->rect.left != x ||
+	    d->rect.top != y)
 	{
-		d->position.x = x;
-		d->position.y = y;
+		d->rect.left = x;
+		d->rect.top = y;
 		d->updateRect();
 	}
 }
@@ -681,7 +673,7 @@ void DragImageLabel::draw(HDC hdc)
 
 	RP_D(DragImageLabel);
 	SelectBitmap(hdcMem, hbmp);
-	BitBlt(hdc, d->position.x, d->position.y,
+	BitBlt(hdc, d->rect.left, d->rect.top,
 		d->actualSize.cx, d->actualSize.cy,
 		hdcMem, 0, 0, SRCCOPY);
 
