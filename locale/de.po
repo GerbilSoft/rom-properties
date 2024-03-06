@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2024-02-25 13:35-0500\n"
-"PO-Revision-Date: 2024-02-25 18:55\n"
+"PO-Revision-Date: 2024-03-06 18:02\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
 "Language: de_DE\n"
@@ -3347,7 +3347,7 @@ msgstr "Mapper"
 #, c-format
 msgctxt "NES|Mapper"
 msgid "%1$u - %2$s"
-msgstr ""
+msgstr "%1$u - %2$s"
 
 #: ../src/libromdata/Console/NES.cpp:1164
 msgctxt "NES"
@@ -3522,7 +3522,7 @@ msgstr ""
 #: ../src/libromdata/Console/NES.cpp:1384
 msgctxt "NES|Expansion"
 msgid "Two Vaus Controllers plus Famicom Data Recorder"
-msgstr ""
+msgstr "Zwei Vaus Controller inklusive Famicom Data Recorder"
 
 #: ../src/libromdata/Console/NES.cpp:1385
 msgctxt "NES|Expansion"
@@ -3965,7 +3965,7 @@ msgstr "Beschreibung"
 #: ../src/libromdata/Console/Sega8Bit.cpp:497
 msgctxt "Sega8Bit"
 msgid "M404 Copyright Header"
-msgstr ""
+msgstr "M404 Copyright-Header"
 
 #: ../src/libromdata/Console/SegaSaturn.cpp:501
 msgctxt "SegaSaturn"
@@ -3975,7 +3975,7 @@ msgstr "Saturn"
 #: ../src/libromdata/Console/SegaSaturn.cpp:514
 msgctxt "SegaSaturn"
 msgid "Product #"
-msgstr ""
+msgstr "Produkt #"
 
 #: ../src/libromdata/Console/SegaSaturn.cpp:560
 msgctxt "SegaSaturn|Peripherals"
@@ -4010,7 +4010,7 @@ msgstr "Multi-Tap"
 #: ../src/libromdata/Console/SegaSaturn.cpp:566
 msgctxt "SegaSaturn|Peripherals"
 msgid "Light Gun"
-msgstr ""
+msgstr "Light Gun"
 
 #: ../src/libromdata/Console/SegaSaturn.cpp:567
 msgctxt "SegaSaturn|Peripherals"
@@ -4030,17 +4030,17 @@ msgstr "Link Kabel"
 #: ../src/libromdata/Console/SegaSaturn.cpp:570
 msgctxt "SegaSaturn|Peripherals"
 msgid "NetLink"
-msgstr ""
+msgstr "NetLink"
 
 #: ../src/libromdata/Console/SegaSaturn.cpp:571
 msgctxt "SegaSaturn|Peripherals"
 msgid "Pachinko"
-msgstr ""
+msgstr "Pachinko"
 
 #: ../src/libromdata/Console/SegaSaturn.cpp:572
 msgctxt "SegaSaturn|Peripherals"
 msgid "Floppy Drive"
-msgstr ""
+msgstr "Diskettenlaufwerk"
 
 #: ../src/libromdata/Console/SegaSaturn.cpp:573
 msgctxt "SegaSaturn|Peripherals"
@@ -4050,12 +4050,12 @@ msgstr ""
 #: ../src/libromdata/Console/SegaSaturn.cpp:574
 msgctxt "SegaSaturn|Peripherals"
 msgid "MPEG Card"
-msgstr ""
+msgstr "MPEG-Karte"
 
 #: ../src/libromdata/Console/SegaSaturn.cpp:580
 msgctxt "SegaSaturn"
 msgid "Peripherals"
-msgstr ""
+msgstr "Peripheriegeräte"
 
 #: ../src/libromdata/Console/SNES.cpp:633
 #: ../src/libromdata/Handheld/DMG.cpp:578
@@ -4114,12 +4114,12 @@ msgstr "Datum"
 #: ../src/libromdata/Console/SNES.cpp:1450
 msgctxt "SNES|ProgramType"
 msgid "BS-X Script"
-msgstr ""
+msgstr "BS-X Skript"
 
 #: ../src/libromdata/Console/SNES.cpp:1453
 msgctxt "SNES|ProgramType"
 msgid "SA-1"
-msgstr ""
+msgstr "SA-1"
 
 #: ../src/libromdata/Console/SNES.cpp:1459
 msgctxt "SNES"
@@ -4191,12 +4191,12 @@ msgstr "Unbekannt (%02X %02X %02X %02X)"
 #: ../src/libromdata/Console/WiiU.cpp:377
 msgctxt "WiiU"
 msgid "OS Version"
-msgstr ""
+msgstr "OS Version"
 
 #: ../src/libromdata/Console/WiiWAD.cpp:832
 msgctxt "WiiWAD"
 msgid "Unknown error. (THIS IS A BUG!)"
-msgstr ""
+msgstr "Unbekannter Fehler. (DIES IST EIN BUG!)"
 
 #: ../src/libromdata/Console/WiiWAD.cpp:834
 msgctxt "WiiWAD"
@@ -4565,7 +4565,7 @@ msgstr ""
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1712
 msgctxt "Xbox360_XEX"
 msgid "Hard Disk"
-msgstr ""
+msgstr "Festplatte"
 
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1713
 msgctxt "Xbox360_XEX"
@@ -4615,7 +4615,7 @@ msgstr ""
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1725
 msgctxt "Xbox360_XEX"
 msgid "RAM Drive"
-msgstr ""
+msgstr "RAM-Laufwerk"
 
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1727
 msgctxt "Xbox360_XEX"
@@ -4797,7 +4797,7 @@ msgstr "DVD-ROM DL"
 #: ../src/libromdata/Console/Xbox_XBE.cpp:745
 msgctxt "Xbox_XBE"
 msgid "DVD-RW SL"
-msgstr ""
+msgstr "DVD-RW SL"
 
 #: ../src/libromdata/Console/Xbox_XBE.cpp:746
 msgctxt "Xbox_XBE"
@@ -4852,7 +4852,7 @@ msgstr ""
 #: ../src/libromdata/Console/Xbox_XBE.cpp:799
 msgctxt "Region"
 msgid "Rest of World"
-msgstr ""
+msgstr "Rest der Welt"
 
 #: ../src/libromdata/Console/Xbox_XBE.cpp:800
 msgctxt "Region"
@@ -4867,7 +4867,7 @@ msgstr "Nintendo Wii AES Schlüssel"
 #: ../src/libromdata/crypto/KeyStoreUI.cpp:880
 msgctxt "KeyStoreUI|Section"
 msgid "Nintendo 3DS Key Scrambler Constants"
-msgstr ""
+msgstr "Nintendo 3DS Key Scrambler Konstanten"
 
 #: ../src/libromdata/crypto/KeyStoreUI.cpp:881
 msgctxt "KeyStoreUI|Section"
@@ -4895,25 +4895,25 @@ msgstr "Windows"
 #: ../src/libromdata/data/EXEData.cpp:92
 msgctxt "EXE|Subsystem"
 msgid "Console"
-msgstr ""
+msgstr "Konsole"
 
 #. tr: IMAGE_SUBSYSTEM_OS2_CUI
 #: ../src/libromdata/data/EXEData.cpp:96
 msgctxt "EXE|Subsystem"
 msgid "OS/2 Console"
-msgstr ""
+msgstr "OS/2 Konsole"
 
 #. tr: IMAGE_SUBSYSTEM_POSIX_CUI
 #: ../src/libromdata/data/EXEData.cpp:100
 msgctxt "EXE|Subsystem"
 msgid "POSIX Console"
-msgstr ""
+msgstr "POSIX Konsole"
 
 #. tr: IMAGE_SUBSYSTEM_NATIVE_WINDOWS
 #: ../src/libromdata/data/EXEData.cpp:102
 msgctxt "EXE|Subsystem"
 msgid "Win9x Native Driver"
-msgstr ""
+msgstr "Win9x Nativer Treiber"
 
 #. tr: IMAGE_SUBSYSTEM_WINDOWS_CE_GUI
 #: ../src/libromdata/data/EXEData.cpp:104
@@ -4943,7 +4943,7 @@ msgstr "EFI Laufzeit-Treiber"
 #: ../src/libromdata/data/EXEData.cpp:112
 msgctxt "EXE|Subsystem"
 msgid "EFI ROM Image"
-msgstr ""
+msgstr "EFI ROM Abbild"
 
 #. tr: IMAGE_SUBSYSTEM_XBOX
 #: ../src/libromdata/data/EXEData.cpp:114
@@ -4990,43 +4990,43 @@ msgstr ""
 #: ../src/libromdata/data/NESMappers.cpp:614
 msgctxt "NES|Mirroring"
 msgid "Four Screens"
-msgstr ""
+msgstr "Vier Bildschirme"
 
 #: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:39
 msgctxt "Nintendo3DSSysTitles"
 msgid "System Settings"
-msgstr ""
+msgstr "Systemeinstellungen"
 
 #: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:40
 msgctxt "Nintendo3DSSysTitles"
 msgid "Download Play"
-msgstr ""
+msgstr "Download Spiel"
 
 #: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:41
 msgctxt "Nintendo3DSSysTitles"
 msgid "Activity Log"
-msgstr ""
+msgstr "Aktivitätslog"
 
 #: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:42
 #: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:57
 msgctxt "Nintendo3DSSysTitles"
 msgid "Health and Safety Information"
-msgstr ""
+msgstr "Gesundheits- und Sicherheitsinformationen"
 
 #: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:43
 msgctxt "Nintendo3DSSysTitles"
 msgid "Nintendo 3DS Camera"
-msgstr ""
+msgstr "Nintendo 3DS Kamera"
 
 #: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:44
 msgctxt "Nintendo3DSSysTitles"
 msgid "Nintendo 3DS Sound"
-msgstr ""
+msgstr "Nintendo 3DS Sound"
 
 #: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:45
 msgctxt "Nintendo3DSSysTitles"
 msgid "Mii Maker"
-msgstr ""
+msgstr "Mii Maker"
 
 #: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:46
 msgctxt "Nintendo3DSSysTitles"
@@ -5067,17 +5067,17 @@ msgstr "System-Updater (SAFE_MODE)"
 #: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:53
 msgctxt "Nintendo3DSSysTitles"
 msgid "Promotional Video (v1.1.0)"
-msgstr ""
+msgstr "Promotion-Video (v1.1.0)"
 
 #: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:54
 msgctxt "Nintendo3DSSysTitles"
 msgid "Nintendo Network ID Settings"
-msgstr ""
+msgstr "Nintendo Netzwerk ID-Einstellungen"
 
 #: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:59
 msgctxt "Nintendo3DSSysTitles"
 msgid "microSD Management"
-msgstr ""
+msgstr "microSD-Verwaltung"
 
 #: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:67
 msgctxt "Nintendo3DSSysTitles"
@@ -5118,13 +5118,13 @@ msgstr "Benachrichtigungen"
 #: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:74
 msgctxt "Nintendo3DSSysTitles"
 msgid "Software Keyboard"
-msgstr ""
+msgstr "Software-Tastatur"
 
 #: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:75
 #: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:86
 msgctxt "Nintendo3DSSysTitles"
 msgid "Software Keyboard (SAFE_MODE)"
-msgstr ""
+msgstr "Software-Tastatur (SAFE_MODE)"
 
 #: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:76
 msgctxt "Nintendo3DSSysTitles"
@@ -5144,17 +5144,17 @@ msgstr ""
 #: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:79
 msgctxt "Nintendo3DSSysTitles"
 msgid "eShop applet"
-msgstr ""
+msgstr "eShop Applet"
 
 #: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:80
 msgctxt "Nintendo3DSSysTitles"
 msgid "Miiverse"
-msgstr ""
+msgstr "Miiverse"
 
 #: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:81
 msgctxt "Nintendo3DSSysTitles"
 msgid "Miiverse posting applet"
-msgstr ""
+msgstr "Miiverse Posting-Applet"
 
 #: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:82
 msgctxt "Nintendo3DSSysTitles"
@@ -5868,7 +5868,7 @@ msgstr ""
 #: ../src/libromdata/Handheld/Nintendo3DS_ops.cpp:50
 msgctxt "Nintendo3DS|RomOps"
 msgid "Nintendo DS SRL Files|*.nds;*.srl|application/x-nintendo-ds-rom;application/x-nintendo-dsi-rom"
-msgstr ""
+msgstr "Nintendo DS SRL-Dateien|*.nds;*.srl|application/x-nintendo-ds-rom;application/x-nintendo-dsi-rom"
 
 #: ../src/libromdata/Handheld/Nintendo3DS_ops.cpp:96
 #: ../src/libromdata/Handheld/Nintendo3DS_ops.cpp:112
@@ -5890,7 +5890,7 @@ msgstr ""
 #: ../src/libromdata/Handheld/Nintendo3DS_ops.cpp:143
 msgctxt "Nintendo3DS"
 msgid "SRL file extracted successfully."
-msgstr ""
+msgstr "SRL Datei erfolgreich extrahiert."
 
 #: ../src/libromdata/Handheld/Nintendo3DS_ops.cpp:146
 msgctxt "Nintendo3DS"
@@ -6056,12 +6056,12 @@ msgstr ""
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1135
 msgctxt "NintendoDS"
 msgid "DSi ROM Type"
-msgstr ""
+msgstr "DSi ROM Typ"
 
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1160
 msgctxt "NintendoDS"
 msgid "Key Index"
-msgstr ""
+msgstr "Key Index"
 
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1164
 msgctxt "NintendoDS"
@@ -6116,7 +6116,7 @@ msgstr ""
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1232
 msgctxt "NintendoDS|DSi_Permissions"
 msgid "SSL Client Cert"
-msgstr ""
+msgstr "SSL-Client Zertifikat"
 
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1233
 msgctxt "NintendoDS|DSi_Permissions"
