@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2024-02-25 13:35-0500\n"
-"PO-Revision-Date: 2024-03-06 18:02\n"
+"PO-Revision-Date: 2024-03-06 19:30\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
 "Language: de_DE\n"
@@ -6560,7 +6560,7 @@ msgstr ""
 #: ../src/libromdata/Media/ISO.cpp:790
 msgctxt "ISO"
 msgid "ISO-9660 PVD"
-msgstr ""
+msgstr "ISO-9660 PVD"
 
 #: ../src/libromdata/Media/ISO.cpp:796 ../src/libromdata/Media/ISO.cpp:838
 msgctxt "ISO"
@@ -6580,36 +6580,36 @@ msgstr ""
 #: ../src/libromdata/Media/ISO.cpp:832
 msgctxt "ISO"
 msgid "CD-i PVD"
-msgstr ""
+msgstr "CD-i PVD"
 
 #: ../src/libromdata/Media/ISO.cpp:857
 msgctxt "ISO"
 msgid "UDF Version"
-msgstr ""
+msgstr "UDF-Version"
 
 #: ../src/libromdata/Other/Amiibo.cpp:378
 msgctxt "Amiibo"
 msgid "NTAG215 Serial"
-msgstr ""
+msgstr "NTAG215 Seriennummer"
 
 #. tr: amiibo ID. Represents the character and amiibo series.
 #. TODO: Link to https://amiibo.life/nfc/%08X-%08X
 #: ../src/libromdata/Other/Amiibo.cpp:388
 msgctxt "Amiibo"
 msgid "amiibo ID"
-msgstr ""
+msgstr "amiibo ID"
 
 #. tr: NFP_TYPE_FIGURINE == standard amiibo
 #: ../src/libromdata/Other/Amiibo.cpp:395
 msgctxt "Amiibo|Type"
 msgid "Figurine"
-msgstr ""
+msgstr "Figur"
 
 #. tr: NFP_TYPE_CARD == amiibo card
 #: ../src/libromdata/Other/Amiibo.cpp:397
 msgctxt "Amiibo|Type"
 msgid "Card"
-msgstr ""
+msgstr "Karte"
 
 #. tr: NFP_TYPE_YARN == yarn amiibo
 #: ../src/libromdata/Other/Amiibo.cpp:399
@@ -6621,54 +6621,55 @@ msgstr ""
 #: ../src/libromdata/Other/Amiibo.cpp:401
 msgctxt "Amiibo|Type"
 msgid "Power-Up Band"
-msgstr ""
+msgstr "Power-Up Band"
 
 #: ../src/libromdata/Other/Amiibo.cpp:403
 msgctxt "Amiibo"
 msgid "amiibo Type"
-msgstr ""
+msgstr "amiibo Typ"
 
 #: ../src/libromdata/Other/Amiibo.cpp:418
 msgctxt "Amiibo"
 msgid "Character Series"
-msgstr ""
+msgstr "Charakter Serie"
 
 #: ../src/libromdata/Other/Amiibo.cpp:423
 msgctxt "Amiibo"
 msgid "Character Name"
-msgstr ""
+msgstr "Charakter Name"
 
 #: ../src/libromdata/Other/Amiibo.cpp:428
 msgctxt "Amiibo"
 msgid "amiibo Series"
-msgstr ""
+msgstr "amiibo Serie"
 
 #: ../src/libromdata/Other/Amiibo.cpp:433
 msgctxt "Amiibo"
 msgid "amiibo Name"
-msgstr ""
+msgstr "amiibo Name"
 
 #: ../src/libromdata/Other/Amiibo.cpp:438
 msgctxt "Amiibo"
 msgid "amiibo Wave #"
-msgstr ""
+msgstr "amiibo Welle #"
 
 #: ../src/libromdata/Other/Amiibo.cpp:441
 msgctxt "Amiibo"
 msgid "amiibo Release #"
-msgstr ""
+msgstr "amiibo Veröffentlichung #"
 
 #: ../src/libromdata/Other/Amiibo.cpp:449
 #, c-format
 msgctxt "Amiibo"
 msgid "amiibo images provided by %s,\n"
 "the Unofficial amiibo Database."
-msgstr ""
+msgstr "amiibo Bilder bereitgestellt von %s,\n"
+"der Inoffiziellen amiibo Datenbank."
 
 #: ../src/libromdata/Other/Amiibo.cpp:451
 msgctxt "Amiibo"
 msgid "Credits"
-msgstr ""
+msgstr "Mitwirkende"
 
 #: ../src/libromdata/Other/ELF.cpp:931
 msgctxt "ELF"
@@ -7266,12 +7267,12 @@ msgstr ""
 #: ../src/libromdata/Other/EXE.cpp:453 ../src/libromdata/Other/EXE_PE.cpp:653
 msgctxt "EXE"
 msgid "CPU"
-msgstr ""
+msgstr "CPU"
 
 #: ../src/libromdata/Other/EXE.cpp:465 ../src/libromdata/Other/EXE_NE.cpp:320
 msgctxt "EXE"
 msgid "Target OS"
-msgstr ""
+msgstr "Ziel OS"
 
 #: ../src/libromdata/Other/EXE.cpp:848
 msgctxt "EXE"
@@ -7423,7 +7424,7 @@ msgstr ""
 #, c-format
 msgctxt "EXE|Runtime"
 msgid "Microsoft Visual Basic %u.%u Runtime"
-msgstr ""
+msgstr "Microsoft Visual Basic %u.%u Laufzeit"
 
 #: ../src/libromdata/Other/EXE_NE.cpp:330
 msgctxt "EXE|DGroupType"
