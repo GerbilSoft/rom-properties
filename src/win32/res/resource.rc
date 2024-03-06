@@ -85,6 +85,17 @@ BEGIN
 	END
 END
 
+/** Menus **/
+
+IDR_ECKS_BAWKS MENU DISCARDABLE
+BEGIN
+	POPUP "Ecks Bawks"
+	BEGIN
+		MENUITEM "ermahgerd! an ecks bawks ISO!", IDM_ECKS_BAWKS_1
+		MENUITEM "Yar, har, fiddle dee dee", IDM_ECKS_BAWKS_2
+	END
+END
+
 /** Generic dialogs **/
 
 /**

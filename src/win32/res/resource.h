@@ -25,6 +25,11 @@
 #define IDP_ACH_GRAY_32x32			323
 #define IDP_ACH_GRAY_64x64			324
 
+// Menus
+#define IDR_ECKS_BAWKS				38727
+#define IDM_ECKS_BAWKS_1			38728
+#define IDM_ECKS_BAWKS_2			38729
+
 // Dialogs
 #define IDD_PROPERTY_SHEET			100	// Generic property sheet
 #define IDD_SUBTAB_CHILD_DIALOG			101	// Subtab child dialog

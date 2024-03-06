@@ -2,11 +2,13 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * DragImageLabel.cpp: Drag & Drop image label.                            *
  *                                                                         *
- * Copyright (c) 2019-2023 by David Korth.                                 *
+ * Copyright (c) 2019-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "stdafx.h"
+#include "res/resource.h"
+
 #include "DragImageLabel.hpp"
 #include "RpImageWin32.hpp"
 
@@ -438,11 +440,8 @@ void DragImageLabel::setEcksBawks(bool newEcksBawks)
 		return;
 	}
 
-	d->hMenuEcksBawks = CreatePopupMenu();
-	AppendMenu(d->hMenuEcksBawks, MF_STRING, IDM_ECKS_BAWKS_MENU_BASE + 1,
-		_T("ermahgerd! an ecks bawks ISO!"));
-	AppendMenu(d->hMenuEcksBawks, MF_STRING, IDM_ECKS_BAWKS_MENU_BASE + 2,
-		_T("Yar, har, fiddle dee dee"));
+	// NOTE: Need to get the submenu of this menu.
+	d->hMenuEcksBawks = LoadMenu(HINST_THISCOMPONENT, MAKEINTRESOURCE(IDR_ECKS_BAWKS));
 }
 
 void DragImageLabel::tryPopupEcksBawks(LPARAM lParam)
@@ -458,7 +457,9 @@ void DragImageLabel::tryPopupEcksBawks(LPARAM lParam)
 	// Convert from local coordinates to screen coordinates.
 	MapWindowPoints(d->hwndParent, HWND_DESKTOP, &pt, 1);
 
-	int id = TrackPopupMenu(d->hMenuEcksBawks,
+	HMENU hSubMenu = GetSubMenu(d->hMenuEcksBawks, 0);
+	assert(hSubMenu != nullptr);
+	int id = TrackPopupMenu(hSubMenu,
 		TPM_LEFTALIGN | TPM_TOPALIGN | TPM_VERNEGANIMATION |
 			TPM_NONOTIFY | TPM_RETURNCMD,
 		pt.x, pt.y, 0, d->hwndParent, nullptr);
@@ -470,10 +471,10 @@ void DragImageLabel::tryPopupEcksBawks(LPARAM lParam)
 			break;
 		case 0:		// No item selected
 			break;
-		case IDM_ECKS_BAWKS_MENU_BASE + 1:
+		case IDM_ECKS_BAWKS_1:
 			url = _T("https://twitter.com/DeaThProj/status/1684469412978458624");
 			break;
-		case IDM_ECKS_BAWKS_MENU_BASE + 2:
+		case IDM_ECKS_BAWKS_2:
 			url = _T("https://github.com/xenia-canary/xenia-canary/pull/180");
 			break;
 	}

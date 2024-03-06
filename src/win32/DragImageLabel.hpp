@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * DragImageLabel.hpp: Drag & Drop image label.                            *
  *                                                                         *
- * Copyright (c) 2019-2023 by David Korth.                                 *
+ * Copyright (c) 2019-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -14,8 +14,6 @@
 // Other rom-properties libraries
 #include "librpbase/img/IconAnimData.hpp"
 #include "librptexture/img/rp_image.hpp"
-
-#define IDM_ECKS_BAWKS_MENU_BASE	0x9000
 
 class DragImageLabelPrivate;
 class DragImageLabel
