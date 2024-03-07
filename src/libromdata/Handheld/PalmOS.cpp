@@ -363,6 +363,7 @@ rp_image_const_ptr PalmOSPrivate::loadIcon(void)
 
 		case 2:
 			// 2-bpp grayscale
+			// TODO: Use $00/$88/$CC/$FF palette instead of $00/$80/$C0/$FF?
 			img_icon = ImageDecoder::fromLinearGray2bpp(width, height, icon_data.get(), icon_data_len, static_cast<int>(rowBytes));
 			break;
 
