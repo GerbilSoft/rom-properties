@@ -20,20 +20,22 @@ namespace LibRpTexture { namespace ImageDecoder {
 
 /**
  * Convert a linear CI4 image to rp_image with a little-endian 16-bit palette.
- * @param px_format Palette pixel format.
- * @param msn_left If true, most-significant nybble is the left pixel.
- * @param width Image width.
- * @param height Image height.
- * @param img_buf CI4 image buffer.
- * @param img_siz Size of image data. [must be >= (w*h)/2]
- * @param pal_buf Palette buffer.
- * @param pal_siz Size of palette data. [must be >= 16*2 for 16-bit, >= 16*4 for 32-bit]
+ * @param px_format	[in] Palette pixel format
+ * @param msn_left	[in] If true, most-significant nybble is the left pixel
+ * @param width		[in] Image width
+ * @param height	[in] Image height
+ * @param img_buf	[in] CI4 image buffer
+ * @param img_siz	[in] Size of image data [must be >= (w*h)/2]
+ * @param pal_buf	[in] Palette buffer
+ * @param pal_siz	[in] Size of palette data [must be >= 16*2 for 16-bit, >= 16*4 for 32-bit]
+ * @param stride	[in,opt] Stride, in bytes (if 0, assumes width*bytespp)
  * @return rp_image, or nullptr on error.
  */
 rp_image_ptr fromLinearCI4(PixelFormat px_format, bool msn_left,
 	int width, int height,
 	const uint8_t *RESTRICT img_buf, size_t img_siz,
-	const void *RESTRICT pal_buf, size_t pal_siz)
+	const void *RESTRICT pal_buf, size_t pal_siz,
+	int stride)
 {
 	// Verify parameters.
 	assert(img_buf != nullptr);
@@ -67,6 +69,15 @@ rp_image_ptr fromLinearCI4(PixelFormat px_format, bool msn_left,
 	if (width % 2 != 0)
 		return nullptr;
 
+	// Source stride adjustment.
+	int src_stride_adj = 0;
+	assert(stride >= 0);
+	if (stride > 0) {
+		// Set src_stride_adj to the number of bytes we need to
+		// add to the end of each line to get to the next row.
+		src_stride_adj = stride - ((width / 2) + (width & 1));
+	}
+
 	// Create an rp_image.
 	rp_image_ptr img = std::make_shared<rp_image>(width, height, rp_image::Format::CI8);
 	if (!img->isValid()) {
@@ -86,6 +97,16 @@ rp_image_ptr fromLinearCI4(PixelFormat px_format, bool msn_left,
 
 	int tr_idx = -1;
 	switch (px_format) {
+		case PixelFormat::Host_ARGB32: {
+			// Use the palette directly.
+			memcpy(palette, pal_buf, 16 * sizeof(uint32_t));
+
+			// Set the sBIT metadata.
+			static const rp_image::sBIT_t sBIT = {8,8,8,0,8};
+			img->set_sBIT(&sBIT);
+			break;
+		}
+
 		case PixelFormat::ARGB1555: {
 			const uint16_t *pal_buf16 = reinterpret_cast<const uint16_t*>(pal_buf);
 			for (unsigned int i = 0; i < 16; i++, pal_buf16++) {
@@ -236,6 +257,7 @@ rp_image_ptr fromLinearCI4(PixelFormat px_format, bool msn_left,
 				img_buf++;
 				px_dest += 2;
 			}
+			img_buf += src_stride_adj;
 			px_dest += dest_stride_adj;
 		}
 	} else {
@@ -247,6 +269,7 @@ rp_image_ptr fromLinearCI4(PixelFormat px_format, bool msn_left,
 				img_buf++;
 				px_dest += 2;
 			}
+			img_buf += src_stride_adj;
 			px_dest += dest_stride_adj;
 		}
 	}

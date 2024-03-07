@@ -19,11 +19,14 @@
 #include "palmos_structs.h"
 
 // Other rom-properties libraries
+#include "librptexture/decoder/ImageDecoder_common.hpp"
+#include "librptexture/decoder/ImageDecoder_Linear.hpp"
 #include "librptexture/decoder/ImageDecoder_Linear_Gray.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;
 using namespace LibRpTexture;
+using LibRpTexture::ImageDecoder::PixelFormat;
 
 // C++ STL classes
 using std::map;
@@ -264,8 +267,8 @@ rp_image_const_ptr PalmOSPrivate::loadIcon(void)
 	for (auto iter = bitmapTypeMap.cbegin(); iter != iter_end; ++iter) {
 		if (!selBitmapType) {
 			// No bitmap selected yet.
-			// NOTE: Only allowing 1-bpp and 2-bpp for now.
-			if (iter->second.pixelSize <= 2) {
+			// NOTE: Only allowing 1-4 bpp for now.
+			if (iter->second.pixelSize <= 4) {
 				addr = iter->first;
 				selBitmapType = &(iter->second);
 			}
@@ -275,17 +278,15 @@ rp_image_const_ptr PalmOSPrivate::loadIcon(void)
 		// Check if this bitmap is "better" than the currently selected one.
 		const PalmOS_BitmapType_t *checkBitmapType = &(iter->second);
 
-		// NOTE: Only allowing 1-bpp and 2-bpp for now.
-		if (checkBitmapType->pixelSize > 2)
+		// NOTE: Only allowing 1-4 bpp for now.
+		if (checkBitmapType->pixelSize > 4)
 			continue;
 
 		// First check: Is it a newer version?
 		if (checkBitmapType->version > selBitmapType->version) {
-			if (checkBitmapType->pixelSize <= 2) {
-				addr = iter->first;
-				selBitmapType = checkBitmapType;
-				continue;
-			}
+			addr = iter->first;
+			selBitmapType = checkBitmapType;
+			continue;
 		}
 
 		// Next check: Is the color depth higher? (bpp; pixelSize)
@@ -302,11 +303,9 @@ rp_image_const_ptr PalmOSPrivate::loadIcon(void)
 		if (checkBitmapType->width > selBitmapType->width ||
 		    checkBitmapType->height > selBitmapType->height)
 		{
-			if (checkBitmapType->pixelSize <= 2) {
-				addr = iter->first;
-				selBitmapType = checkBitmapType;
-				continue;
-			}
+			addr = iter->first;
+			selBitmapType = checkBitmapType;
+			continue;
 		}
 	}
 
@@ -366,6 +365,30 @@ rp_image_const_ptr PalmOSPrivate::loadIcon(void)
 			// 2-bpp grayscale
 			img_icon = ImageDecoder::fromLinearGray2bpp(width, height, icon_data.get(), icon_data_len, static_cast<int>(rowBytes));
 			break;
+
+		case 4: {
+			// 4-bpp grayscale
+			// NOTE: Using a function intended for 16-color images,
+			// so we'll have to provide our own palette.
+			uint32_t palette[16];
+			uint32_t gray = 0xFFFFFFFFU;
+			for (unsigned int i = 0; i < ARRAY_SIZE(palette); i++, gray -= 0x111111U) {
+				palette[i] = gray;
+			}
+
+			img_icon = ImageDecoder::fromLinearCI4(PixelFormat::Host_ARGB32, true,
+					width, height,
+					icon_data.get(), icon_data_len,
+					palette, sizeof(palette), rowBytes);
+			if (img_icon) {
+				// Set the sBIT metadata.
+				// NOTE: Setting the grayscale value, though we're
+				// not saving grayscale PNGs at the moment.
+				static const rp_image::sBIT_t sBIT = {4,4,4,4,0};
+				img_icon->set_sBIT(&sBIT);
+			}
+			break;
+		}
 	}
 
 	return img_icon;

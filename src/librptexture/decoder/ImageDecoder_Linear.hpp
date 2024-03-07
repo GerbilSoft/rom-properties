@@ -14,14 +14,15 @@ namespace LibRpTexture { namespace ImageDecoder {
 
 /**
  * Convert a linear CI4 image to rp_image with a little-endian 16-bit palette.
- * @param px_format Palette pixel format.
- * @param msn_left If true, most-significant nybble is the left pixel.
- * @param width Image width.
- * @param height Image height.
- * @param img_buf CI4 image buffer.
- * @param img_siz Size of image data. [must be >= (w*h)/2]
- * @param pal_buf Palette buffer.
- * @param pal_siz Size of palette data. [must be >= 16*2 for 16-bit, >= 16*4 for 32-bit]
+ * @param px_format	[in] Palette pixel format
+ * @param msn_left	[in] If true, most-significant nybble is the left pixel
+ * @param width		[in] Image width
+ * @param height	[in] Image height
+ * @param img_buf	[in] CI4 image buffer
+ * @param img_siz	[in] Size of image data [must be >= (w*h)/2]
+ * @param pal_buf	[in] Palette buffer
+ * @param pal_siz	[in] Size of palette data [must be >= 16*2 for 16-bit, >= 16*4 for 32-bit]
+ * @param stride	[in,opt] Stride, in bytes (if 0, assumes width*bytespp)
  * @return rp_image, or nullptr on error.
  */
 ATTR_ACCESS_SIZE(read_only, 5, 6)
@@ -29,7 +30,8 @@ ATTR_ACCESS_SIZE(read_only, 7, 8)
 rp_image_ptr fromLinearCI4(PixelFormat px_format, bool msn_left,
 	int width, int height,
 	const uint8_t *RESTRICT img_buf, size_t img_siz,
-	const void *RESTRICT pal_buf, size_t pal_siz);
+	const void *RESTRICT pal_buf, size_t pal_siz,
+	int stride = 0);
 
 /**
  * Convert a linear CI8 image to rp_image with a little-endian 16-bit palette.
