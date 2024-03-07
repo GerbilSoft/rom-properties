@@ -264,24 +264,28 @@ rp_image_const_ptr PalmOSPrivate::loadIcon(void)
 	for (auto iter = bitmapTypeMap.cbegin(); iter != iter_end; ++iter) {
 		if (!selBitmapType) {
 			// No bitmap selected yet.
-			addr = iter->first;
-			selBitmapType = &(iter->second);
+			// NOTE: Only allowing 1-bpp and 2-bpp for now.
+			if (iter->second.pixelSize <= 2) {
+				addr = iter->first;
+				selBitmapType = &(iter->second);
+			}
 			continue;
 		}
-		break;
 
 		// Check if this bitmap is "better" than the currently selected one.
 		const PalmOS_BitmapType_t *checkBitmapType = &(iter->second);
 
-		// NOTE: Only allowing 1-bpp only for now.
-		if (checkBitmapType->pixelSize > 1)
+		// NOTE: Only allowing 1-bpp and 2-bpp for now.
+		if (checkBitmapType->pixelSize > 2)
 			continue;
 
 		// First check: Is it a newer version?
 		if (checkBitmapType->version > selBitmapType->version) {
-			addr = iter->first;
-			selBitmapType = checkBitmapType;
-			continue;
+			if (checkBitmapType->pixelSize <= 2) {
+				addr = iter->first;
+				selBitmapType = checkBitmapType;
+				continue;
+			}
 		}
 
 		// Next check: Is the color depth higher? (bpp; pixelSize)
@@ -298,19 +302,16 @@ rp_image_const_ptr PalmOSPrivate::loadIcon(void)
 		if (checkBitmapType->width > selBitmapType->width ||
 		    checkBitmapType->height > selBitmapType->height)
 		{
-			addr = iter->first;
-			selBitmapType = checkBitmapType;
-			continue;
+			if (checkBitmapType->pixelSize <= 2) {
+				addr = iter->first;
+				selBitmapType = checkBitmapType;
+				continue;
+			}
 		}
 	}
 
 	if (!selBitmapType) {
 		// No bitmap was selected...
-		return {};
-	}
-
-	if (selBitmapType->pixelSize > 1) {
-		// Only 1-bpp icons are supported right now.
 		return {};
 	}
 
@@ -327,7 +328,7 @@ rp_image_const_ptr PalmOSPrivate::loadIcon(void)
 	}
 	addr += header_size_tbl[selBitmapType->version];
 
-	// Parse a 1-bpp icon.
+	// Decode the icon.
 	const int width = selBitmapType->width;
 	const int height = selBitmapType->height;
 	assert(width > 0);
@@ -350,7 +351,23 @@ rp_image_const_ptr PalmOSPrivate::loadIcon(void)
 		return {};
 	}
 
-	img_icon = ImageDecoder::fromLinearMono(width, height, icon_data.get(), icon_data_len, static_cast<int>(rowBytes));
+	switch (selBitmapType->pixelSize) {
+		default:
+			assert(!"Pixel size is not supported yet!");
+			break;
+
+		case 0:	// NOTE: for v0 only
+		case 1:
+			// 1-bpp monochrome
+			img_icon = ImageDecoder::fromLinearMono(width, height, icon_data.get(), icon_data_len, static_cast<int>(rowBytes));
+			break;
+
+		case 2:
+			// 2-bpp grayscale
+			img_icon = ImageDecoder::fromLinearGray2bpp(width, height, icon_data.get(), icon_data_len, static_cast<int>(rowBytes));
+			break;
+	}
+
 	return img_icon;
 }
 
