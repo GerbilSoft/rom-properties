@@ -68,9 +68,7 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 #endif /* __SNR_openat2 || __NR_openat2 */
 
 		// for ImageDecoderTest so we don't have to copy the test files to the binary directory
-		SCMP_SYS(access),
 		SCMP_SYS(chdir),
-		SCMP_SYS(faccessat),	// Linux on aarch64 does not have an access() syscall
 
 		// Google Test
 		SCMP_SYS(getcwd),	// testing::internal::FilePath::GetCurrentDir()

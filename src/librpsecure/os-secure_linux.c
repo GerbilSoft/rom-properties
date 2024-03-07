@@ -72,6 +72,10 @@ int rp_secure_enable(rp_secure_param_t param)
 		SCMP_SYS(rt_sigreturn),
 		SCMP_SYS(write),
 
+		SCMP_SYS(access),
+		SCMP_SYS(faccessat),	// Linux on aarch64 does not have an access() syscall
+		SCMP_SYS(faccessat2),	// Required for Gentoo's sandbox (amiiboc)
+
 		// restart_syscall() is called by glibc to restart
 		// certain syscalls if they're interrupted.
 		SCMP_SYS(restart_syscall),
@@ -93,8 +97,6 @@ int rp_secure_enable(rp_secure_param_t param)
 		SCMP_SYS(getpid),	// gcov uses getpid() in gcov_open() if GCOV_LOCKED
 					// is defined when compiling gcc.
 		SCMP_SYS(fcntl),	// for managing .gcda files
-		SCMP_SYS(access),	// for managing .gcda files
-		SCMP_SYS(faccessat),	// Linux on aarch64 does not have an access() syscall
 #endif /* GCOV */
 
 		-1	// End of whitelist

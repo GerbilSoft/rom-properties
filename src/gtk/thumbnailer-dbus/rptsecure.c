@@ -33,10 +33,8 @@ int rpt_do_security_options(void)
 		// FIXME: glibc-2.31 uses 64-bit time syscalls that may not be
 		// defined in earlier versions, including Ubuntu 14.04.
 
-		SCMP_SYS(access),	// LibUnixCommon::isWritableDirectory()
 		SCMP_SYS(close),
 		SCMP_SYS(dup),		// gzdopen()
-		SCMP_SYS(faccessat),	// Linux on aarch64 does not have an access() syscall
 		SCMP_SYS(fcntl),     SCMP_SYS(fcntl64),		// gcc profiling
 		SCMP_SYS(fstat),     SCMP_SYS(fstat64),		// __GI___fxstat() [printf()]
 		SCMP_SYS(fstatat64), SCMP_SYS(newfstatat),	// Ubuntu 19.10 (32-bit)
