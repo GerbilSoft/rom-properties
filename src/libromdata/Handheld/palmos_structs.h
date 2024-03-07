@@ -140,6 +140,7 @@ typedef struct PACKED _PalmOS_BitmapType_t {
 	};
 } PalmOS_BitmapType_t;
 ASSERT_STRUCT(PalmOS_BitmapType_t, 0x18);
+#pragma pack()
 #define PalmOS_BitmapType_v0_SIZE 16
 #define PalmOS_BitmapType_v1_SIZE 16
 #define PalmOS_BitmapType_v2_SIZE 16
