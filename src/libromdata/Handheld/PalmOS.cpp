@@ -19,6 +19,7 @@
 #include "palmos_structs.h"
 
 // Other rom-properties libraries
+#include "librptexture/decoder/ImageDecoder_Linear.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;
@@ -55,10 +56,19 @@ public:
 	PalmOS_PRC_Header_t prcHeader;
 
 	// Resource headers
+	// NOTE: Kept in big-endian format.
 	rp::uvector<PalmOS_PRC_ResHeader_t> resHeaders;
 
 	// Icon
 	rp_image_ptr img_icon;
+
+	/**
+	 * Find a resource header.
+	 * @param type Resource type
+	 * @param id ID, or 0 for "first available"
+	 * @return Pointer to resource header, or nullptr if not found.
+	 */
+	const PalmOS_PRC_ResHeader_t *findResHeader(uint32_t type, uint16_t id = 0) const;
 
 	/**
 	 * Load the icon.
@@ -100,6 +110,39 @@ PalmOSPrivate::PalmOSPrivate(const IRpFilePtr &file)
 }
 
 /**
+ * Find a resource header.
+ * @param type Resource type
+ * @param id ID, or 0 for "first available"
+ * @return Pointer to resource header, or nullptr if not found.
+ */
+const PalmOS_PRC_ResHeader_t *PalmOSPrivate::findResHeader(uint32_t type, uint16_t id) const
+{
+	if (resHeaders.empty()) {
+		// No resource headers...
+		return nullptr;
+	}
+
+#if SYS_BYTEORDER != SYS_BIG_ENDIAN
+	// Convert type and ID to big-endian for faster parsing.
+	type = cpu_to_be32(type);
+	id = cpu_to_be16(id);
+#endif /* SYS_BYTEORDER != SYS_BIG_ENDIAN */
+
+	// Find the specified resource header.
+	for (const auto &hdr : resHeaders) {
+		if (hdr.type == type) {
+			if (id == 0 || hdr.id == id) {
+				// Found a matching resource.
+				return &hdr;
+			}
+		}
+	}
+
+	// Resource not found.
+	return nullptr;
+}
+
+/**
  * Load the icon.
  * @return Icon, or nullptr on error.
  */
@@ -110,12 +153,101 @@ rp_image_const_ptr PalmOSPrivate::loadIcon(void)
 		return img_icon;
 	} else if (!this->isValid || !this->file) {
 		// Can't load the icon.
-		return nullptr;
+		return {};
 	}
 
-	// TODO: Search for a "tAIB" resource and load it.
-	// TODO LATER: Pick the highest color-depth version and/or largest icon.
-	return {};
+	// Find the application icon resource.
+	// - Type: 'tAIB'
+	// - Large icon: 1000 (usually 22x22; may be up to 32x32)
+	// - Small icon: 1001 (15x9)
+	// TODO: Allow user selection. For now, large icon only.
+	const PalmOS_PRC_ResHeader_t *const iconHdr = findResHeader(PalmOS_PRC_ResType_ApplicationIcon, 1000);
+	if (!iconHdr) {
+		// Not found...
+		return {};
+	}
+
+	// Found the application icon.
+	// Read the BitmapType struct.
+	uint32_t addr = be32_to_cpu(iconHdr->addr);
+	// TODO: Verify the address is after the resource header section.
+
+	PalmOS_BitmapType_t bitmapType;
+	size_t size = file->seekAndRead(addr, &bitmapType, sizeof(bitmapType));
+	if (size != sizeof(bitmapType)) {
+		// Failed to read the BitmapType struct.
+		return {};
+	}
+
+	// Only 1-bpp icons are supported right now.
+	// TODO: For v1-v3, check for additional bitmaps and pick the
+	// bitmap with the highest color depth. (and/or largest size?)
+	// TODO: Split into a general icon loading function?
+	size_t bitmapType_size;
+	switch (bitmapType.version) {
+		default:
+			// Not supported.
+			return {};
+
+		case 0:
+			// v0
+			bitmapType_size = PalmOS_BitmapType_v0_SIZE;
+			break;
+
+		case 1:
+			// v1
+			// NOTE: Only allowing 1-bpp images for now.
+			if (bitmapType.pixelSize != 1) {
+				return {};
+			}
+			bitmapType_size = PalmOS_BitmapType_v1_SIZE;
+			break;
+
+		case 2:
+			// v2
+			// NOTE: Only allowing 1-bpp images for now.
+			if (bitmapType.pixelSize != 1) {
+				return {};
+			}
+			bitmapType_size = PalmOS_BitmapType_v2_SIZE;
+			break;
+
+		case 3:
+			// v2
+			// NOTE: Only allowing 1-bpp images for now.
+			if (bitmapType.pixelSize != 1) {
+				return {};
+			}
+			bitmapType_size = PalmOS_BitmapType_v3_SIZE;
+			break;
+	}
+
+	// Parse a 1-bpp icon.
+	const int width = be16_to_cpu(bitmapType.width);
+	const int height = be16_to_cpu(bitmapType.height);
+	assert(width > 0);
+	assert(width <= 256);
+	assert(height > 0);
+	assert(height <= 256);
+	if (width <= 0 || width > 256 ||
+	    height <= 0 || height > 256)
+	{
+		// Icon size is probably out of range.
+		return {};
+	}
+	const unsigned int rowBytes = be16_to_cpu(bitmapType.rowBytes);
+	const size_t icon_data_len = (size_t)rowBytes * (size_t)height;
+
+	addr += bitmapType_size;
+	unique_ptr<uint8_t[]> icon_data(new uint8_t[icon_data_len]);
+	size = file->seekAndRead(addr, icon_data.get(), icon_data_len);
+	if (size != icon_data_len) {
+		// Seek and/or read error.
+		return {};
+	}
+
+	img_icon = ImageDecoder::fromLinearMono(width, height, icon_data.get(), icon_data_len, static_cast<int>(rowBytes));
+	return img_icon;
 }
 
 /** PalmOS **/
@@ -164,6 +296,19 @@ PalmOS::PalmOS(const IRpFilePtr &file)
 
 	if (!d->isValid) {
 		d->file.reset();
+		return;
+	}
+
+	// Load the resource headers.
+	const unsigned int num_records = be16_to_cpu(d->prcHeader.num_records);
+	const size_t res_size = num_records * sizeof(PalmOS_PRC_ResHeader_t);
+	d->resHeaders.resize(num_records);
+	size = d->file->seekAndRead(sizeof(d->prcHeader), d->resHeaders.data(), res_size);
+	if (size != res_size) {
+		// Seek and/or read error.
+		d->resHeaders.clear();
+		d->file.reset();
+		d->isValid = false;
 	}
 }
 

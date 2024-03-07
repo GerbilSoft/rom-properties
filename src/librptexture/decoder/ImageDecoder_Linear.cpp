@@ -580,14 +580,15 @@ rp_image_ptr fromLinearCI8(PixelFormat px_format,
 
 /**
  * Convert a linear monochrome image to rp_image.
- * @param width Image width.
- * @param height Image height.
- * @param img_buf Monochrome image buffer.
- * @param img_siz Size of image data. [must be >= (w*h)/8]
+ * @param width		[in] Image width
+ * @param height	[in] Image height
+ * @param img_buf	[in] Monochrome image buffer
+ * @param img_siz	[in] Size of image data [must be >= (w*h)/8]
+ * @param stride	[in,opt] Stride, in bytes (if 0, assumes width*bytespp)
  * @return rp_image, or nullptr on error.
  */
 rp_image_ptr fromLinearMono(int width, int height,
-	const uint8_t *RESTRICT img_buf, size_t img_siz)
+	const uint8_t *RESTRICT img_buf, size_t img_siz, int stride)
 {
 	// Verify parameters.
 	assert(img_buf != nullptr);
@@ -597,19 +598,23 @@ rp_image_ptr fromLinearMono(int width, int height,
 	if (!img_buf || width <= 0 || height <= 0 ||
 	    img_siz < (((size_t)width * (size_t)height) / 8))
 	{
-		return nullptr;
+		return {};
 	}
 
-	// Monochrome width must be a multiple of eight.
-	assert(width % 8 == 0);
-	if (width % 8 != 0)
-		return nullptr;
+	// Source stride adjustment.
+	int src_stride_adj = 0;
+	assert(stride >= 0);
+	if (stride > 0) {
+		// Set src_stride_adj to the number of bytes we need to
+		// add to the end of each line to get to the next row.
+		src_stride_adj = stride - ((width / 8) + ((width % 8) > 0));
+	}
 
 	// Create an rp_image.
 	rp_image_ptr img = std::make_shared<rp_image>(width, height, rp_image::Format::CI8);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		return nullptr;
+		return {};
 	}
 	const int dest_stride_adj = img->stride() - img->width();
 
@@ -625,15 +630,21 @@ rp_image_ptr fromLinearMono(int width, int height,
 	// Convert one line at a time. (monochrome -> CI8)
 	uint8_t *px_dest = static_cast<uint8_t*>(img->bits());
 	for (unsigned int y = static_cast<unsigned int>(height); y > 0; y--) {
-		for (unsigned int x = static_cast<unsigned int>(width); x > 0; x -= 8) {
+		for (int x = width; x > 0; x -= 8) {
 			uint8_t pxMono = *img_buf++;
+
+			// For images where width is not a multiple of 8,
+			// we'll discard the remaining bits in the last byte.
+			const unsigned int max_bit = (x >= 8) ? 8 : static_cast<unsigned int>(x);
+
 			// TODO: Unroll this loop?
-			for (unsigned int bit = 8; bit > 0; bit--, px_dest++) {
+			for (unsigned int bit = max_bit; bit > 0; bit--, px_dest++) {
 				// MSB == left-most pixel.
 				*px_dest = (pxMono >> 7);
 				pxMono <<= 1;
 			}
 		}
+		img_buf += src_stride_adj;
 		px_dest += dest_stride_adj;
 	}
 

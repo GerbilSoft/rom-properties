@@ -51,15 +51,16 @@ rp_image_ptr fromLinearCI8(PixelFormat px_format,
 
 /**
  * Convert a linear monochrome image to rp_image.
- * @param width Image width.
- * @param height Image height.
- * @param img_buf Monochrome image buffer.
- * @param img_siz Size of image data. [must be >= (w*h)/8]
+ * @param width		[in] Image width
+ * @param height	[in] Image height
+ * @param img_buf	[in] Monochrome image buffer
+ * @param img_siz	[in] Size of image data [must be >= (w*h)/8]
+ * @param stride	[in,opt] Stride, in bytes (if 0, assumes width*bytespp)
  * @return rp_image, or nullptr on error.
  */
 ATTR_ACCESS_SIZE(read_only, 3, 4)
 rp_image_ptr fromLinearMono(int width, int height,
-	const uint8_t *RESTRICT img_buf, size_t img_siz);
+	const uint8_t *RESTRICT img_buf, size_t img_siz, int stride = 0);
 
 /**
  * Convert a linear 8-bit RGB image to rp_image.
