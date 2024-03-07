@@ -74,7 +74,11 @@ int rp_secure_enable(rp_secure_param_t param)
 
 		SCMP_SYS(access),
 		SCMP_SYS(faccessat),	// Linux on aarch64 does not have an access() syscall
+#if defined(__SNR_faccessat2)
 		SCMP_SYS(faccessat2),	// Required for Gentoo's sandbox (amiiboc)
+#elif defined(__NR_faccessat2)
+		__NR_faccessat2		// Required for Gentoo's sandbox (amiiboc)
+#endif /* __SNR_faccessat2 || __NR_faccessat2 */
 
 		// restart_syscall() is called by glibc to restart
 		// certain syscalls if they're interrupted.
