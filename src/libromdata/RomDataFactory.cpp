@@ -77,6 +77,7 @@ using std::vector;
 #include "Handheld/Nintendo3DSFirm.hpp"
 #include "Handheld/Nintendo3DS_SMDH.hpp"
 #include "Handheld/NintendoDS.hpp"
+#include "Handheld/PalmOS.hpp"
 #include "Handheld/PokemonMini.hpp"
 #include "Handheld/PSP.hpp"
 #include "Handheld/VirtualBoy.hpp"
@@ -392,6 +393,7 @@ const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_header
 
 	// Handhelds
 	GetRomDataFns(Nintendo3DS, ATTR_HAS_THUMBNAIL | ATTR_HAS_DPOVERLAY | ATTR_HAS_METADATA),
+	GetRomDataFns(PalmOS, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA),	// TODO: Magic at 0x40?
 
 	// Audio
 	GetRomDataFns(ADX, ATTR_HAS_METADATA),
