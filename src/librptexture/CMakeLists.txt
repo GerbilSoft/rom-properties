@@ -29,6 +29,7 @@ SET(${PROJECT_NAME}_SRCS
 	img/un-premultiply.cpp
 
 	decoder/ImageDecoder_Linear.cpp
+	decoder/ImageDecoder_Linear_Gray.cpp
 	decoder/ImageDecoder_GCN.cpp
 	decoder/ImageDecoder_NDS.cpp
 	decoder/ImageDecoder_N3DS.cpp
@@ -71,6 +72,7 @@ SET(${PROJECT_NAME}_H
 	decoder/ImageDecoder_common.hpp
 	decoder/ImageDecoder_p.hpp
 	decoder/ImageDecoder_Linear.hpp
+	decoder/ImageDecoder_Linear_Gray.hpp
 	decoder/ImageDecoder_GCN.hpp
 	decoder/ImageDecoder_NDS.hpp
 	decoder/ImageDecoder_N3DS.hpp
