@@ -95,7 +95,7 @@ rp_image_const_ptr ASTCPrivate::loadImage(void)
 	if (img) {
 		// Image has already been loaded.
 		return img;
-	} else if (!this->file || !this->isValid) {
+	} else if (!this->isValid || !this->file) {
 		// Can't load the image.
 		return nullptr;
 	}

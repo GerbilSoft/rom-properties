@@ -427,7 +427,7 @@ rp_image_const_ptr DreamcastSavePrivate::loadIcon(void)
 	if (iconAnimData) {
 		// Icon has already been loaded.
 		return iconAnimData->frames[0];
-	} else if (!this->file || !this->isValid) {
+	} else if (!this->isValid || !this->file) {
 		// Can't load the icon.
 		return nullptr;
 	}
@@ -544,7 +544,7 @@ rp_image_const_ptr DreamcastSavePrivate::loadIcon_ICONDATA_VMS(void)
 	if (iconAnimData) {
 		// Icon has already been loaded.
 		return iconAnimData->frames[0];
-	} else if (!this->file || !this->isValid) {
+	} else if (!this->isValid || !this->file) {
 		// Can't load the icon.
 		return nullptr;
 	}
@@ -660,7 +660,7 @@ rp_image_const_ptr DreamcastSavePrivate::loadBanner(void)
 	if (img_banner) {
 		// Banner is already loaded.
 		return img_banner;
-	} else if (!this->file || !this->isValid) {
+	} else if (!this->isValid || !this->file) {
 		// Can't load the banner.
 		return nullptr;
 	}

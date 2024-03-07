@@ -229,7 +229,7 @@ rp_image_const_ptr PowerVR3Private::loadImage(int mip)
 	if (!mipmaps.empty() && mipmaps[mip] != nullptr) {
 		// Image has already been loaded.
 		return mipmaps[mip];
-	} else if (!this->file || !this->isValid) {
+	} else if (!this->isValid || !this->file) {
 		// Can't load the image.
 		return nullptr;
 	}

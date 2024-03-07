@@ -127,7 +127,7 @@ rp_image_const_ptr GameComPrivate::loadIcon(void)
 	if (img_icon) {
 		// Icon has already been loaded.
 		return img_icon;
-	} else if (!this->file || !this->isValid) {
+	} else if (!this->isValid || !this->file) {
 		// Can't load the icon.
 		return nullptr;
 	} else if (!(romHeader.flags & GCOM_FLAG_HAS_ICON)) {

@@ -302,7 +302,7 @@ rp_image_const_ptr GameCubeSavePrivate::loadIcon(void)
 	if (iconAnimData) {
 		// Icon has already been loaded.
 		return iconAnimData->frames[0];
-	} else if (!this->file || !this->isValid) {
+	} else if (!this->isValid || !this->file) {
 		// Can't load the icon.
 		return nullptr;
 	}
@@ -485,7 +485,7 @@ rp_image_const_ptr GameCubeSavePrivate::loadBanner(void)
 	if (img_banner) {
 		// Banner is already loaded.
 		return img_banner;
-	} else if (!this->file || !this->isValid) {
+	} else if (!this->isValid || !this->file) {
 		// Can't load the banner.
 		return nullptr;
 	}

@@ -323,7 +323,7 @@ rp_image_const_ptr iQuePlayerPrivate::loadThumbnailImage(void)
 	if (img_thumbnail) {
 		// Thumbnail is already loaded.
 		return img_thumbnail;
-	} else if (!this->file || !this->isValid) {
+	} else if (!this->isValid || !this->file) {
 		// Can't load the banner.
 		return nullptr;
 	}
@@ -353,7 +353,7 @@ rp_image_const_ptr iQuePlayerPrivate::loadTitleImage(void)
 	if (img_title) {
 		// Title is already loaded.
 		return img_title;
-	} else if (!this->file || !this->isValid) {
+	} else if (!this->isValid || !this->file) {
 		// Can't load the banner.
 		return nullptr;
 	}

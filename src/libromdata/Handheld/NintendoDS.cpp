@@ -146,7 +146,7 @@ rp_image_const_ptr NintendoDSPrivate::loadIcon(void)
 	if (icon_first_frame) {
 		// Icon has already been loaded.
 		return icon_first_frame;
-	} else if (!this->file || !this->isValid) {
+	} else if (!this->isValid || !this->file) {
 		// Can't load the icon.
 		return nullptr;
 	}

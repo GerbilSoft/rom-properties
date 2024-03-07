@@ -161,7 +161,7 @@ rp_image_const_ptr GameCubeBNRPrivate::loadBanner(void)
 	if (img_banner) {
 		// Banner is already loaded.
 		return img_banner;
-	} else if (!this->file || !this->isValid) {
+	} else if (!this->isValid || !this->file) {
 		// Can't load the banner.
 		return nullptr;
 	}
