@@ -629,7 +629,7 @@ vector<RomData::ImageSizeDef> GameCom::supportedImageSizes(ImageType imageType) 
 	ASSERT_supportedImageSizes(imageType);
 
 	RP_D(const GameCom);
-	if (!d->isValid || imageType != IMG_INT_MEDIA ||
+	if (!d->isValid || imageType != IMG_INT_ICON ||
 	    !(d->romHeader.flags & GCOM_FLAG_HAS_ICON))
 	{
 		// Only IMG_INT_ICON is supported,
