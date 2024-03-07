@@ -42,6 +42,15 @@ static const char *seccomp_debug_get_arch_name(unsigned int arch)
 #ifdef SCMP_ARCH_AARCH64
 		case SCMP_ARCH_AARCH64:		return "arm64";
 #endif
+#ifdef SCMP_ARCH_LOONGARCH32
+		case SCMP_ARCH_LOONGARCH32:	return "loongarch32";
+#endif
+#ifdef SCMP_ARCH_LOONGARCH64
+		case SCMP_ARCH_LOONGARCH64:	return "loongarch64";
+#endif
+#ifdef SCMP_ARCH_M68K
+		case SCMP_ARCH_M68K:		return "m68k";
+#endif
 #ifdef SCMP_ARCH_MIPS
 		case SCMP_ARCH_MIPS:		return "mips";
 #endif
@@ -80,6 +89,18 @@ static const char *seccomp_debug_get_arch_name(unsigned int arch)
 #endif
 #ifdef SCMP_ARCH_PARISC64
 		case SCMP_ARCH_PARISC64:	return "parisc64";
+#endif
+#ifdef SCMP_ARCH_RISCV32
+		case SCMP_ARCH_RISCV32:		return "riscv32";
+#endif
+#ifdef SCMP_ARCH_RISCV64
+		case SCMP_ARCH_RISCV64:		return "riscv64";
+#endif
+#ifdef SCMP_ARCH_SHEB
+		case SCMP_ARCH_SHEB:		return "sheb";
+#endif
+#ifdef SCMP_ARCH_SH
+		case SCMP_ARCH_SH:		return "sh";
 #endif
 		default:			return "unknown";
 	}
