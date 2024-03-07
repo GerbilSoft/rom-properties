@@ -11,10 +11,13 @@
 // librpbase
 #include "librpbase/RomData.hpp"
 
+// NOTE: Using QT_VERSION_CHECK causes errors on moc-qt4 due to CMAKE_AUTOMOC.
+// Reference: https://bugzilla.redhat.com/show_bug.cgi?id=1396755
+// QT_VERSION_CHECK(5,0,0) -> 0x50000
 #include <qglobal.h>
-#if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
+#if QT_VERSION >= 0x50000
 #  define RP_OMB_USE_LAMBDA_FUNCTIONS 1
-#endif /* QT_VERSION < QT_VERSION_CHECK(5,0,0) */
+#endif /* QT_VERSION >= QT_VERSION_CHECK(5,0,0) */
 
 // Qt classes and includes
 #include <QPushButton>
