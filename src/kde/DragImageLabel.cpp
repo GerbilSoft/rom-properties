@@ -26,7 +26,6 @@ DragImageLabel::DragImageLabel(const QString &text, QWidget *parent, Qt::WindowF
 	: super(text, parent, f)
 	, m_minimumImageSize(DIL_MIN_IMAGE_SIZE, DIL_MIN_IMAGE_SIZE)
 	, m_ecksBawks(false)
-	, m_img(nullptr)
 	, m_anim(nullptr)
 {}
 
@@ -34,7 +33,6 @@ DragImageLabel::DragImageLabel(QWidget *parent, Qt::WindowFlags f)
 	: super(parent, f)
 	, m_minimumImageSize(DIL_MIN_IMAGE_SIZE, DIL_MIN_IMAGE_SIZE)
 	, m_ecksBawks(false)
-	, m_img(nullptr)
 	, m_anim(nullptr)
 {}
 

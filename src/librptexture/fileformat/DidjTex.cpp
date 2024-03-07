@@ -108,7 +108,6 @@ const TextureInfo DidjTexPrivate::textureInfo = {
 DidjTexPrivate::DidjTexPrivate(DidjTex *q, const IRpFilePtr &file)
 	: super(q, file, &textureInfo)
 	, texType(TexType::Unknown)
-	, img(nullptr)
 {
 	// Clear the structs and arrays.
 	memset(&texHeader, 0, sizeof(texHeader));

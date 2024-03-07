@@ -112,7 +112,6 @@ const uint32_t GameComPrivate::gcom_palette[4] = {
 
 GameComPrivate::GameComPrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
-	, img_icon(nullptr)
 {
 	// Clear the ROM header struct.
 	memset(&romHeader, 0, sizeof(romHeader));

@@ -175,7 +175,6 @@ const TextureInfo XboxXPRPrivate::textureInfo = {
 XboxXPRPrivate::XboxXPRPrivate(XboxXPR *q, const IRpFilePtr &file)
 	: super(q, file, &textureInfo)
 	, xprType(XPRType::Unknown)
-	, img(nullptr)
 {
 	// Clear the structs and arrays.
 	memset(&xpr0Header, 0, sizeof(xpr0Header));

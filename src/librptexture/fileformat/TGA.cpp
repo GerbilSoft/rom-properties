@@ -129,7 +129,6 @@ TGAPrivate::TGAPrivate(TGA *q, const IRpFilePtr &file)
 	: super(q, file, &textureInfo)
 	, texType(TexType::Unknown)
 	, alphaType(TGA_ALPHATYPE_PRESENT)
-	, img(nullptr)
 	, flipOp(rp_image::FLIP_V)	// default orientation requires vertical flip
 {
 	// Clear the structs.

@@ -95,7 +95,6 @@ const TextureInfo ValveVTF3Private::textureInfo = {
 
 ValveVTF3Private::ValveVTF3Private(ValveVTF3 *q, const IRpFilePtr &file)
 	: super(q, file, &textureInfo)
-	, img(nullptr)
 {
 	// Clear the VTF3 header struct.
 	memset(&vtf3Header, 0, sizeof(vtf3Header));

@@ -162,7 +162,6 @@ SegaPVRPrivate::SegaPVRPrivate(SegaPVR *q, const IRpFilePtr &file)
 	, pvrType(PVRType::Unknown)
 	, gbix_len(0)
 	, gbix(0)
-	, img(nullptr)
 {
 	// Clear the PVR header structs.
 	memset(&pvrHeader, 0, sizeof(pvrHeader));

@@ -79,7 +79,6 @@ const TextureInfo ASTCPrivate::textureInfo = {
 
 ASTCPrivate::ASTCPrivate(ASTC *q, const IRpFilePtr &file)
 	: super(q, file, &textureInfo)
-	, img(nullptr)
 {
 	// Clear the structs and arrays.
 	memset(&astcHeader, 0, sizeof(astcHeader));
