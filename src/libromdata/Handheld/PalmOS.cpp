@@ -12,7 +12,7 @@
 // - https://web.mit.edu/Tytso/www/pilot/prc-format.html
 // - https://stuff.mit.edu/afs/sipb/user/yonah/docs/Palm%20OS%20Companion.pdf
 // - https://stuff.mit.edu/afs/sipb/user/yonah/docs/Palm%20OS%20Reference.pdf
-// - http://www.cs.trinity.edu/~jhowland/class.files.cs3194.html/palm-docs/Constructor%20for%20Palm%20OS.pdf
+// - https://www.cs.trinity.edu/~jhowland/class.files.cs3194.html/palm-docs/Constructor%20for%20Palm%20OS.pdf
 
 #include "stdafx.h"
 #include "PalmOS.hpp"
@@ -26,6 +26,7 @@ using namespace LibRpText;
 using namespace LibRpTexture;
 
 // C++ STL classes
+using std::map;
 using std::string;
 using std::unique_ptr;
 using std::vector;
@@ -156,6 +157,8 @@ rp_image_const_ptr PalmOSPrivate::loadIcon(void)
 		return {};
 	}
 
+	// TODO: Make this a general icon loading function?
+
 	// Find the application icon resource.
 	// - Type: 'tAIB'
 	// - Large icon: 1000 (usually 22x22; may be up to 32x32)
@@ -172,59 +175,161 @@ rp_image_const_ptr PalmOSPrivate::loadIcon(void)
 	uint32_t addr = be32_to_cpu(iconHdr->addr);
 	// TODO: Verify the address is after the resource header section.
 
-	PalmOS_BitmapType_t bitmapType;
-	size_t size = file->seekAndRead(addr, &bitmapType, sizeof(bitmapType));
-	if (size != sizeof(bitmapType)) {
-		// Failed to read the BitmapType struct.
+	// Read all of the BitmapType struct headers.
+	// - Key: Struct header address
+	// - Value: PalmOS_BitmapType_t
+	// TODO: Do we need to store all of them?
+	map<uint32_t, PalmOS_BitmapType_t> bitmapTypeMap;
+
+	while (addr != 0) {
+		PalmOS_BitmapType_t bitmapType;
+		size_t size = file->seekAndRead(addr, &bitmapType, sizeof(bitmapType));
+		if (size != sizeof(bitmapType)) {
+			// Failed to read the BitmapType struct.
+			return {};
+		}
+
+		// Validate the bitmap version and get the next bitmap address.
+		const uint32_t cur_addr = addr;
+		switch (bitmapType.version) {
+			default:
+				// Not supported.
+				assert(!"Unsupported BitmapType version.");
+				return {};
+
+			case 0:
+				// v0: no chaining, so this is the last bitmap
+				addr = 0;
+				break;
+
+			case 1:
+				// v1: next bitmap has a relative offset in DWORDs
+				if (bitmapType.pixelSize == 255) {
+					// FIXME: This is the next bitmap after a v2 bitmap,
+					// but there's 16 bytes of weird data between it?
+					addr += 16;
+					continue;
+				}
+				if (bitmapType.v1.nextDepthOffset != 0) {
+					const unsigned int nextDepthOffset = be16_to_cpu(bitmapType.v1.nextDepthOffset);
+					addr += nextDepthOffset * sizeof(uint32_t);
+				} else {
+					addr = 0;
+				}
+				break;
+
+			case 2:
+				// v2: next bitmap has a relative offset in DWORDs
+				// FIXME: v2 sometimes has an extra +0x04 DWORDs offset to the next bitmap? (+0x10 bytes)
+				if (bitmapType.v2.nextDepthOffset != 0) {
+					const unsigned int nextDepthOffset = be16_to_cpu(bitmapType.v2.nextDepthOffset);// + 0x4;
+					addr += nextDepthOffset * sizeof(uint32_t);
+				} else {
+					addr = 0;
+				}
+				break;
+
+			case 3:
+				// v3: next bitmap has a relative offset in bytes
+				if (bitmapType.v3.nextBitmapOffset != 0) {
+					addr += be32_to_cpu(bitmapType.v3.nextBitmapOffset);
+				} else {
+					addr = 0;
+				}
+				break;
+		}
+
+		// NOTE: Byteswapping bitmapType width/height fields here.
+#if SYS_BYTEORDER != SYS_BIG_ENDIAN
+		bitmapType.width = be16_to_cpu(bitmapType.width);
+		bitmapType.height = be16_to_cpu(bitmapType.height);
+#endif /* SYS_BYTEORDER != SYS_BIG_ENDIAN */
+
+		// Sanity check: Icon must have valid dimensions.
+		assert(bitmapType.width > 0);
+		assert(bitmapType.height > 0);
+		if (bitmapType.width > 0 && bitmapType.height >= 0) {
+			bitmapTypeMap.emplace(cur_addr, bitmapType);
+		}
+	}
+
+	if (bitmapTypeMap.empty()) {
+		// No bitmaps...
 		return {};
 	}
 
-	// Only 1-bpp icons are supported right now.
-	// TODO: For v1-v3, check for additional bitmaps and pick the
-	// bitmap with the highest color depth. (and/or largest size?)
-	// TODO: Split into a general icon loading function?
-	size_t bitmapType_size;
-	switch (bitmapType.version) {
-		default:
-			// Not supported.
-			return {};
+	// Select the "best" bitmap.
+	const PalmOS_BitmapType_t *selBitmapType = nullptr;
+	const auto iter_end = bitmapTypeMap.cend();
+	for (auto iter = bitmapTypeMap.cbegin(); iter != iter_end; ++iter) {
+		if (!selBitmapType) {
+			// No bitmap selected yet.
+			addr = iter->first;
+			selBitmapType = &(iter->second);
+			continue;
+		}
+		break;
 
-		case 0:
-			// v0
-			bitmapType_size = PalmOS_BitmapType_v0_SIZE;
-			break;
+		// Check if this bitmap is "better" than the currently selected one.
+		const PalmOS_BitmapType_t *checkBitmapType = &(iter->second);
 
-		case 1:
-			// v1
-			// NOTE: Only allowing 1-bpp images for now.
-			if (bitmapType.pixelSize != 1) {
-				return {};
-			}
-			bitmapType_size = PalmOS_BitmapType_v1_SIZE;
-			break;
+		// NOTE: Only allowing 1-bpp only for now.
+		if (checkBitmapType->pixelSize > 1)
+			continue;
 
-		case 2:
-			// v2
-			// NOTE: Only allowing 1-bpp images for now.
-			if (bitmapType.pixelSize != 1) {
-				return {};
-			}
-			bitmapType_size = PalmOS_BitmapType_v2_SIZE;
-			break;
+		// First check: Is it a newer version?
+		if (checkBitmapType->version > selBitmapType->version) {
+			addr = iter->first;
+			selBitmapType = checkBitmapType;
+			continue;
+		}
 
-		case 3:
-			// v2
-			// NOTE: Only allowing 1-bpp images for now.
-			if (bitmapType.pixelSize != 1) {
-				return {};
-			}
-			bitmapType_size = PalmOS_BitmapType_v3_SIZE;
-			break;
+		// Next check: Is the color depth higher? (bpp; pixelSize)
+		if (checkBitmapType->pixelSize > selBitmapType->pixelSize) {
+			addr = iter->first;
+			selBitmapType = checkBitmapType;
+			continue;
+		}
+
+		// TODO: v3: Does it have a higher pixel density?
+
+		// Final check: Is it a bigger icon?
+		// TODO: Check total area instead of width vs. height?
+		if (checkBitmapType->width > selBitmapType->width ||
+		    checkBitmapType->height > selBitmapType->height)
+		{
+			addr = iter->first;
+			selBitmapType = checkBitmapType;
+			continue;
+		}
 	}
 
+	if (!selBitmapType) {
+		// No bitmap was selected...
+		return {};
+	}
+
+	if (selBitmapType->pixelSize > 1) {
+		// Only 1-bpp icons are supported right now.
+		return {};
+	}
+
+	static const uint8_t header_size_tbl[] = {
+		PalmOS_BitmapType_v0_SIZE,
+		PalmOS_BitmapType_v1_SIZE,
+		PalmOS_BitmapType_v2_SIZE,
+		PalmOS_BitmapType_v3_SIZE,
+	};
+	assert(selBitmapType->version < ARRAY_SIZE(header_size_tbl));
+	if (selBitmapType->version >= ARRAY_SIZE(header_size_tbl)) {
+		// Version is not supported...
+		return {};
+	}
+	addr += header_size_tbl[selBitmapType->version];
+
 	// Parse a 1-bpp icon.
-	const int width = be16_to_cpu(bitmapType.width);
-	const int height = be16_to_cpu(bitmapType.height);
+	const int width = selBitmapType->width;
+	const int height = selBitmapType->height;
 	assert(width > 0);
 	assert(width <= 256);
 	assert(height > 0);
@@ -235,12 +340,11 @@ rp_image_const_ptr PalmOSPrivate::loadIcon(void)
 		// Icon size is probably out of range.
 		return {};
 	}
-	const unsigned int rowBytes = be16_to_cpu(bitmapType.rowBytes);
+	const unsigned int rowBytes = be16_to_cpu(selBitmapType->rowBytes);
 	const size_t icon_data_len = (size_t)rowBytes * (size_t)height;
 
-	addr += bitmapType_size;
 	unique_ptr<uint8_t[]> icon_data(new uint8_t[icon_data_len]);
-	size = file->seekAndRead(addr, icon_data.get(), icon_data_len);
+	size_t size = file->seekAndRead(addr, icon_data.get(), icon_data_len);
 	if (size != icon_data_len) {
 		// Seek and/or read error.
 		return {};
