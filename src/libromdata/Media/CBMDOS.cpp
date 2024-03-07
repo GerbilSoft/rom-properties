@@ -1143,6 +1143,14 @@ int CBMDOS::loadFieldData(void)
 	// C1581 has an additional file type, "CBM".
 	const uint8_t max_file_type = (d->diskType == CBMDOSPrivate::DiskType::D81) ? 6 : 5;
 
+	// Make sure the directory track number is valid.
+	assert((size_t)d->dir_track-1 < d->track_offsets.size());
+	if ((size_t)d->dir_track-1 >= d->track_offsets.size()) {
+		// Unable to read the directory track...
+		// TODO: Show an error?
+		return static_cast<int>(d->fields.count());
+	}
+
 	// Read the directory.
 	// NOTE: Ignoring the directory location in the BAM sector,
 	// since it might be incorrect. Assuming dir_track/dir_first_sector.
@@ -1151,13 +1159,6 @@ int CBMDOS::loadFieldData(void)
 	vector<vector<string> > *const vv_dir = new vector<vector<string> >();
 	auto vv_icons = new RomFields::ListDataIcons_t;	// for GEOS files only
 	bool has_icons = false;
-
-	assert((size_t)d->dir_track-1 < d->track_offsets.size());
-	if ((size_t)d->dir_track-1 >= d->track_offsets.size()) {
-		// Unable to read the directory track...
-		// TODO: Show an error?
-		return static_cast<int>(d->fields.count());
-	}
 
 	const unsigned int sector_count = d->track_offsets[d->dir_track-1].sector_count;
 	for (unsigned int i = d->dir_first_sector; i < sector_count && !sectors_read.test(i); ) {
