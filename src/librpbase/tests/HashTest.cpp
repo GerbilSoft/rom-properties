@@ -135,6 +135,12 @@ TEST_P(HashTest, hashTest)
 
 	// Compare the hash to the expected hash.
 	CompareByteArrays(mode.hash, hash, mode.hash_len, "hash");
+
+	if (mode.hash_len == 4) {
+		// Verify the uint32_t hash.
+		const uint32_t expected_hash = (mode.hash[0] << 24) | (mode.hash[1] << 16) | (mode.hash[2] << 8) | mode.hash[3];
+		EXPECT_EQ(expected_hash, hashObj.getHash32());
+	}
 }
 
 /** CRC32 hash tests **/
@@ -148,7 +154,6 @@ static const uint8_t crc32_exp[][4] = {
 	{0x52,0x5B,0x47,0x99},
 };
 
-// TODO: Test Hash::getHash32()?
 INSTANTIATE_TEST_SUITE_P(CRC32StringHashTest, HashTest,
 	::testing::Values(
 		HashTest_mode("", crc32_exp[0], 4, Hash::Algorithm::CRC32),
