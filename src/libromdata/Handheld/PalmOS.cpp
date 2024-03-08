@@ -522,18 +522,28 @@ rp_image_const_ptr PalmOSPrivate::loadIcon(void)
 					width, height,
 					icon_data.get(), icon_data_len,
 					PalmOS_system_palette, sizeof(PalmOS_system_palette), rowBytes);
-			if (img_icon && (flags & PalmOS_BitmapType_Flags_hasTransparency)) {
-				// Get the transparent palette index.
-				const uint8_t tr_idx = (selBitmapType->version == 2)
-					? selBitmapType->v2.transparentIndex
-					: static_cast<uint8_t>(be32_to_cpu(selBitmapType->v3.transparentValue));
+			if (img_icon) {
+				bool did_tRNS = false;
+				if (flags & PalmOS_BitmapType_Flags_hasTransparency) {
+					// Get the transparent palette index.
+					const uint8_t tr_idx = (selBitmapType->version == 2)
+						? selBitmapType->v2.transparentIndex
+						: static_cast<uint8_t>(be32_to_cpu(selBitmapType->v3.transparentValue));
 
-				// Set the transparent index and adjust the palette.
-				img_icon->set_tr_idx(tr_idx);
-				assert(tr_idx < img_icon->palette_len());
-				if (tr_idx < img_icon->palette_len()) {
-					uint32_t *const palette = img_icon->palette();
-					palette[tr_idx] = 0x00000000;
+					// Set the transparent index and adjust the palette.
+					img_icon->set_tr_idx(tr_idx);
+					assert(tr_idx < img_icon->palette_len());
+					if (tr_idx < img_icon->palette_len()) {
+						uint32_t *const palette = img_icon->palette();
+						palette[tr_idx] = 0x00000000;
+						did_tRNS = true;
+					}
+				}
+
+				if (!did_tRNS) {
+					// Remove the alpha channel from the sBIT metadata.
+					static const rp_image::sBIT_t sBIT = {8,8,8,0,0};
+					img_icon->set_sBIT(&sBIT);
 				}
 			}
 			break;
