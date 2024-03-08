@@ -11,7 +11,7 @@
 #include "tcharx.h"
 
 // MD5Hash
-#include "../crypto/MD5Hash.hpp"
+#include "../crypto/Hash.hpp"
 
 // C includes. (C++ namespace)
 #include <cstdio>
@@ -125,7 +125,9 @@ TEST_P(MD5HashTest, md5HashTest)
 	const MD5HashTest_mode &mode = GetParam();
 
 	uint8_t md5[16];
-	EXPECT_EQ(0, MD5Hash::calcHash(md5, sizeof(md5), mode.str, strlen(mode.str)));
+	Hash md5Hash(Hash::Algorithm::MD5);
+	EXPECT_EQ(0, md5Hash.process(mode.str, strlen(mode.str)));
+	EXPECT_EQ(0, md5Hash.getHash(md5, sizeof(md5)));
 
 	// Compare the hash to the expected hash.
 	CompareByteArrays(mode.md5, md5, sizeof(md5), "MD5 hash");

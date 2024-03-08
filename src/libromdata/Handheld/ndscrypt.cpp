@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * ndscrypt.cpp: Nintendo DS encryption.                                   *
  *                                                                         *
- * Copyright (c) 2020-2023 by David Korth.                                 *
+ * Copyright (c) 2020-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -26,12 +26,12 @@
 #include <cerrno>
 
 // librpbase, librpfile, librpthreads
-#include "librpbase/crypto/MD5Hash.hpp"
+#include "librpbase/crypto/Hash.hpp"
 #include "librpfile/FileSystem.hpp"
 #include "librpfile/RpFile.hpp"
 #include "librpthreads/Mutex.hpp"
 using namespace LibRpFile;
-using LibRpBase::MD5Hash;
+using LibRpBase::Hash;
 using LibRpThreads::Mutex;
 using LibRpThreads::MutexLocker;
 
@@ -129,8 +129,10 @@ int ndscrypt_load_blowfish_bin(BlowfishKey bfkey)
 
 	// Verify the MD5.
 	uint8_t md5[16];
-	MD5Hash::calcHash(md5, sizeof(md5), blowfish_data[bfkey].get(), NDS_BLOWFISH_SIZE);
-	if (memcmp(md5, blowfish_md5[bfkey], sizeof(md5)) != 0) {
+	Hash md5Hash(Hash::Algorithm::MD5);
+	md5Hash.process(blowfish_data[bfkey].get(), NDS_BLOWFISH_SIZE);
+	int ret = md5Hash.getHash(md5, sizeof(md5));
+	if (ret != 0 || memcmp(md5, blowfish_md5[bfkey], sizeof(md5)) != 0) {
 		// MD5 is incorrect.
 		blowfish_data[bfkey].reset();
 		return 2;
