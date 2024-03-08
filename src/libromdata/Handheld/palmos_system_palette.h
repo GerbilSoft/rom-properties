@@ -11,7 +11,7 @@
 
 // NOTE: The original palette has an index value as the high byte.
 // This has been changed to an opaque alpha channel. (0xFF)
-static const uint32_t palmos_system_palette[256] =
+static const uint32_t PalmOS_system_palette[256] =
 {
 	0xFFFFFFFF, 0xFFFFCCFF, 0xFFFF99FF, 0xFFFF66FF, 0xFFFF33FF, 0xFFFF00FF, 0xFFFFFFCC, 0xFFFFCCCC,
 	0xFFFF99CC, 0xFFFF66CC, 0xFFFF33CC, 0xFFFF00CC, 0xFFFFFF99, 0xFFFFCC99, 0xFFFF9999, 0xFFFF6699,
