@@ -406,7 +406,7 @@ rp_image_const_ptr PalmOSPrivate::loadIcon(void)
 			             PalmOS_BitmapType_Flags_directColor |
 			             PalmOS_BitmapType_Flags_indirectColorTable))
 			{
-				// Flag not supported.
+				// Flag is not supported.
 				break;
 			}
 
@@ -437,7 +437,9 @@ rp_image_const_ptr PalmOSPrivate::loadIcon(void)
 							src += sizeof(uint16_t);
 						}
 
-						// TODO: Make sure we don't overrun the source buffer.
+						// Make sure we don't overrun the source buffer.
+						const uint8_t *const src_end = src + std::min(compr_size, static_cast<unsigned int>(icon_data_len));
+
 						unique_ptr<uint8_t[]> decomp_buf(new uint8_t[icon_data_len]);
 						uint8_t *dest = decomp_buf.get();
 						const uint8_t *lastrow = dest;
@@ -446,6 +448,10 @@ rp_image_const_ptr PalmOSPrivate::loadIcon(void)
 								// First byte is a diffmask indicating which bytes in
 								// an 8-byte group are the same as the previous row.
 								// NOTE: Assumed to be 0 for the first row.
+								assert(src < src_end);
+								if (src >= src_end)
+									break;
+
 								uint8_t diffmask = *src++;
 								if (y == 0)
 									diffmask = 0xFF;
@@ -459,12 +465,17 @@ rp_image_const_ptr PalmOSPrivate::loadIcon(void)
 										px = lastrow[x + b];
 									} else {
 										// Read a byte from the source data.
+										assert(src < src_end);
+										if (src >= src_end)
+											break;
 										px = *src++;
 									}
 									*dest++ = px;
 								}
 							}
 
+							if (src >= src_end)
+								break;
 							if (y > 0)
 								lastrow += rowBytes;
 						}
