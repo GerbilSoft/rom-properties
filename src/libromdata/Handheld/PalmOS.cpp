@@ -17,6 +17,7 @@
 #include "stdafx.h"
 #include "PalmOS.hpp"
 #include "palmos_structs.h"
+#include "palmos_system_palette.h"
 
 // Other rom-properties libraries
 #include "librptexture/decoder/ImageDecoder_common.hpp"
@@ -267,8 +268,8 @@ rp_image_const_ptr PalmOSPrivate::loadIcon(void)
 	for (auto iter = bitmapTypeMap.cbegin(); iter != iter_end; ++iter) {
 		if (!selBitmapType) {
 			// No bitmap selected yet.
-			// NOTE: Only allowing 1-4 bpp for now.
-			if (iter->second.pixelSize <= 4) {
+			// NOTE: Only allowing 1-8 bpp for now.
+			if (iter->second.pixelSize <= 8) {
 				addr = iter->first;
 				selBitmapType = &(iter->second);
 			}
@@ -278,8 +279,8 @@ rp_image_const_ptr PalmOSPrivate::loadIcon(void)
 		// Check if this bitmap is "better" than the currently selected one.
 		const PalmOS_BitmapType_t *checkBitmapType = &(iter->second);
 
-		// NOTE: Only allowing 1-4 bpp for now.
-		if (checkBitmapType->pixelSize > 4)
+		// NOTE: Only allowing 1-8 bpp for now.
+		if (checkBitmapType->pixelSize > 8)
 			continue;
 
 		// First check: Is it a newer version?
@@ -388,6 +389,93 @@ rp_image_const_ptr PalmOSPrivate::loadIcon(void)
 				static const rp_image::sBIT_t sBIT = {4,4,4,4,0};
 				img_icon->set_sBIT(&sBIT);
 			}
+			break;
+		}
+
+		case 8: {
+			// 8-bpp indexed (palette)
+			// TODO: Handle various flags.
+			// TODO: Use the default Palm OS color table. Using grayscale for now.
+			const uint16_t flags = be16_to_cpu(selBitmapType->flags);
+			if (flags & (PalmOS_BitmapType_Flags_hasColorTable |
+			             /*PalmOS_BitmapType_Flags_hasTransparency |*/ // TODO: not supported yet, but skip it for now
+			             PalmOS_BitmapType_Flags_directColor |
+			             PalmOS_BitmapType_Flags_indirectColorTable))
+			{
+				// Flag not supported.
+				break;
+			}
+
+			// Decompress certain types of images. (TODO: Separate function?)
+			if (selBitmapType->version >= 2 && (flags & PalmOS_BitmapType_Flags_compressed)) {
+				switch (selBitmapType->v2.compressionType) {
+					default:
+						// Not supported...
+						return {};
+
+					case PalmOS_BitmapType_CompressionType_None:
+						// Not actually compressed...
+						break;
+
+					case PalmOS_BitmapType_CompressionType_ScanLine: {
+						// Scanline compression
+						const uint8_t *src = icon_data.get();
+
+						// The image starts with the compressed data size.
+						uint32_t compr_size;
+						if (selBitmapType->version >= 3) {
+							// v3: 32-bit size
+							compr_size = (src[0] << 24) | (src[1] << 16) | (src[2] << 8) | src[3];
+							src += sizeof(uint32_t);
+						} else {
+							// v2: 16-bit size
+							compr_size = (src[1] << 8) | src[0];
+							src += sizeof(uint16_t);
+						}
+
+						// TODO: Make sure we don't overrun the source buffer.
+						unique_ptr<uint8_t[]> decomp_buf(new uint8_t[icon_data_len]);
+						uint8_t *dest = decomp_buf.get();
+						const uint8_t *lastrow = dest;
+						for (int y = 0; y < height; y++) {
+							for (unsigned int x = 0; x < rowBytes; x += 8) {
+								// First byte is a diffmask indicating which bytes in
+								// an 8-byte group are the same as the previous row.
+								// NOTE: Assumed to be 0 for the first row.
+								uint8_t diffmask = *src++;
+								if (y == 0)
+									diffmask = 0xFF;
+
+								// Process 8 bytes.
+								unsigned int bytecount = std::min(rowBytes - x, 8U);
+								for (unsigned int b = 0; b < bytecount; b++, diffmask <<= 1) {
+									uint8_t px;
+									if (!(diffmask & (1U << 7))) {
+										// Read a byte from the last row.
+										px = lastrow[x + b];
+									} else {
+										// Read a byte from the source data.
+										px = *src++;
+									}
+									*dest++ = px;
+								}
+							}
+
+							if (y > 0)
+								lastrow += rowBytes;
+						}
+
+						// Swap the data buffers.
+						std::swap(icon_data, decomp_buf);
+						break;
+					}
+				}
+			}
+
+			img_icon = ImageDecoder::fromLinearCI8(PixelFormat::Host_ARGB32,
+					width, height,
+					icon_data.get(), icon_data_len,
+					palmos_system_palette, sizeof(palmos_system_palette), rowBytes);
 			break;
 		}
 	}

@@ -35,13 +35,14 @@ rp_image_ptr fromLinearCI4(PixelFormat px_format, bool msn_left,
 
 /**
  * Convert a linear CI8 image to rp_image with a little-endian 16-bit palette.
- * @param px_format Palette pixel format.
- * @param width Image width.
- * @param height Image height.
- * @param img_buf CI8 image buffer.
- * @param img_siz Size of image data. [must be >= (w*h)]
- * @param pal_buf Palette buffer.
- * @param pal_siz Size of palette data. [must be >= 256*2 for 16-bit, >= 256*4 for 32-bit]
+ * @param px_format	[in] Palette pixel format
+ * @param width		[in] Image width.
+ * @param height	[in] Image height
+ * @param img_buf	[in] CI8 image buffer
+ * @param img_siz	[in] Size of image data [must be >= (w*h)]
+ * @param pal_buf	[in] Palette buffer
+ * @param pal_siz	[in] Size of palette data [must be >= 256*2 for 16-bit, >= 256*4 for 32-bit]
+ * @param stride	[in,opt] Stride, in bytes (if 0, assumes width*bytespp)
  * @return rp_image, or nullptr on error.
  */
 ATTR_ACCESS_SIZE(read_only, 4, 5)
@@ -49,7 +50,8 @@ ATTR_ACCESS_SIZE(read_only, 6, 7)
 rp_image_ptr fromLinearCI8(PixelFormat px_format,
 	int width, int height,
 	const uint8_t *RESTRICT img_buf, size_t img_siz,
-	const void *RESTRICT pal_buf, size_t pal_siz);
+	const void *RESTRICT pal_buf, size_t pal_siz,
+	int stride = 0);
 
 /**
  * Convert a linear 8-bit RGB image to rp_image.

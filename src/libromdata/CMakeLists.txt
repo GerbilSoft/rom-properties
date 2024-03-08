@@ -229,6 +229,7 @@ SET(${PROJECT_NAME}_H
 	Handheld/nds_structs.h
 	Handheld/ngpc_structs.h
 	Handheld/palmos_structs.h
+	Handheld/palmos_system_palette.h
 	Handheld/pkmnmini_structs.h
 	Handheld/lnx_structs.h
 	Handheld/vb_structs.h

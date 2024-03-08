@@ -148,17 +148,19 @@ ASSERT_STRUCT(PalmOS_BitmapType_t, 0x18);
 
 /**
  * Palm OS BitmapType flags
+ *
+ * NOTE: M68K C bitfields start at the MSB.
  */
 typedef enum {
-	PalmOS_BitmapType_Flags_compressed		= (1U << 0),
-	PalmOS_BitmapType_Flags_hasColorTable		= (1U << 1),
-	PalmOS_BitmapType_Flags_hasTransparency		= (1U << 2),
-	PalmOS_BitmapType_Flags_indirect		= (1U << 3),
-	PalmOS_BitmapType_Flags_forScreen		= (1U << 4),
-	PalmOS_BitmapType_Flags_directColor		= (1U << 5),	// Direct color (RGB) bitmap
-	PalmOS_BitmapType_Flags_indirectColorTable	= (1U << 6),	// If set: Pointer to color table follows BitmapType structure
+	PalmOS_BitmapType_Flags_compressed		= (1U << 15),
+	PalmOS_BitmapType_Flags_hasColorTable		= (1U << 14),
+	PalmOS_BitmapType_Flags_hasTransparency		= (1U << 13),
+	PalmOS_BitmapType_Flags_indirect		= (1U << 12),
+	PalmOS_BitmapType_Flags_forScreen		= (1U << 11),
+	PalmOS_BitmapType_Flags_directColor		= (1U << 10),	// Direct color (RGB) bitmap
+	PalmOS_BitmapType_Flags_indirectColorTable	= (1U <<  9),	// If set: Pointer to color table follows BitmapType structure
 									// If clear: Color table follows BitmapType structure
-	PalmOS_BitmapType_Flags_noDither		= (1U << 7),
+	PalmOS_BitmapType_Flags_noDither		= (1U <<  8),
 } PalmOS_BitmapType_Flags_e;
 
 /**
