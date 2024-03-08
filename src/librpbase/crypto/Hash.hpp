@@ -24,10 +24,11 @@ public:
 	enum class Algorithm {
 		Unknown = 0,
 
-		MD5 = 1,
-		SHA1 = 2,
-		SHA256 = 3,
-		SHA512 = 4,
+		CRC32	= 1,
+		MD5	= 2,
+		SHA1	= 3,
+		SHA256	= 4,
+		SHA512	= 5,
 
 		Max
 	};
@@ -83,6 +84,12 @@ public:
 	 */
 	ATTR_ACCESS_SIZE(read_write, 2, 3)
 	int getHash(uint8_t *pHash, size_t hash_len);
+
+	/**
+	 * Get the hash value as uint32_t. (32-bit hashes only!)
+	 * @return 32-bit hash on success; 0 on error.
+	 */
+	uint32_t getHash32(void) const;
 };
 
 }

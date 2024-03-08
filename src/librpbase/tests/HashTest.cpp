@@ -137,6 +137,29 @@ TEST_P(HashTest, hashTest)
 	CompareByteArrays(mode.hash, hash, mode.hash_len, "hash");
 }
 
+/** CRC32 hash tests **/
+
+static const uint8_t crc32_exp[][4] = {
+	{0x00,0x00,0x00,0x00},
+	{0x51,0x90,0x25,0xE9},
+	{0xCF,0xFA,0xFB,0xFD},
+	{0x47,0x4B,0x75,0x6F},
+	{0xDE,0x90,0xA6,0x7F},
+	{0x52,0x5B,0x47,0x99},
+};
+
+// TODO: Test Hash::getHash32()?
+INSTANTIATE_TEST_SUITE_P(CRC32StringHashTest, HashTest,
+	::testing::Values(
+		HashTest_mode("", crc32_exp[0], 4, Hash::Algorithm::CRC32),
+		HashTest_mode("The quick brown fox jumps over the lazy dog.", crc32_exp[1], 4, Hash::Algorithm::CRC32),
+		HashTest_mode("▁▂▃▄▅▆▇█▉▊▋▌▍▎▏", crc32_exp[2], 4, Hash::Algorithm::CRC32),
+		HashTest_mode("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.", crc32_exp[3], 4, Hash::Algorithm::CRC32),
+		HashTest_mode("ＳＰＹＲＯ　ＴＨＥ　ＤＲＡＧＯＮ", crc32_exp[4], 4, Hash::Algorithm::CRC32),
+		HashTest_mode("ソニック カラーズ", crc32_exp[5], 4, Hash::Algorithm::CRC32)
+		)
+	);
+
 /** MD5 hash tests **/
 
 static const uint8_t md5_exp[][16] = {

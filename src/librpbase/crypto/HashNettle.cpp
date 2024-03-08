@@ -9,6 +9,9 @@
 #include "stdafx.h"
 #include "Hash.hpp"
 
+// zlib for crc32()
+#include <zlib.h>
+
 // Nettle hash MD5 functions
 #include <nettle/md5.h>
 #include <nettle/sha1.h>
@@ -26,6 +29,7 @@ public:
 
 	// Hash::Hash() initializes this by calling reset().
 	union {
+		uint32_t crc32;
 		struct md5_ctx md5;
 		struct sha1_ctx sha1;
 		struct sha256_ctx sha256;
@@ -62,6 +66,9 @@ void Hash::reset(void)
 	switch (d->algorithm) {
 		default:
 			assert(!"Invalid hash algorithm specified.");
+			break;
+		case Algorithm::CRC32:
+			d->ctx.crc32 = 0U;
 			break;
 		case Algorithm::MD5:
 			md5_init(&d->ctx.md5);
@@ -118,6 +125,9 @@ int Hash::process(const void *pData, size_t len)
 		default:
 			assert(!"Invalid hash algorithm specified.");
 			return -EINVAL;
+		case Algorithm::CRC32:
+			d->ctx.crc32 = crc32(d->ctx.crc32, static_cast<const uint8_t*>(pData), len);
+			break;
 		case Algorithm::MD5:
 			md5_update(&d->ctx.md5, len, static_cast<const uint8_t*>(pData));
 			break;
@@ -147,6 +157,7 @@ size_t Hash::hashLength(void) const
 	static const uint8_t hash_length_tbl[] = {
 		0,			// Unknown
 
+		sizeof(uint32_t),	// CRC32
 		MD5_DIGEST_SIZE,	// MD5
 		SHA1_DIGEST_SIZE,	// SHA1
 		SHA256_DIGEST_SIZE,	// SHA256
@@ -184,6 +195,12 @@ int Hash::getHash(uint8_t *pHash, size_t hash_len)
 		default:
 			assert(!"Invalid hash algorithm specified.");
 			return -EINVAL;
+		case Algorithm::CRC32: {
+			// NOTE: Converting to big-endian format.
+			const uint32_t crc32_be = cpu_to_be32(d->ctx.crc32);
+			memcpy(pHash, &crc32_be, sizeof(crc32_be));
+			break;
+		}
 		case Algorithm::MD5:
 			md5_digest(&d->ctx.md5, hash_len, pHash);
 			break;
@@ -199,6 +216,20 @@ int Hash::getHash(uint8_t *pHash, size_t hash_len)
 	}
 
 	return 0;
+}
+
+/**
+ * Get the hash value as uint32_t. (32-bit hashes only!)
+ * @return 32-bit hash on success; 0 on error.
+ */
+uint32_t Hash::getHash32(void) const
+{
+	RP_D(const Hash);
+	assert(d->algorithm == Algorithm::CRC32);
+	if (d->algorithm != Algorithm::CRC32)
+		return 0;
+
+	return d->ctx.crc32;
 }
 
 }
