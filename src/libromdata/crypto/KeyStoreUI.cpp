@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * KeyStoreUI.cpp: Key store UI base class.                                *
  *                                                                         *
- * Copyright (c) 2012-2023 by David Korth.                                 *
+ * Copyright (c) 2012-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -13,6 +13,7 @@
 #include "librpbase/crypto/KeyManager.hpp"
 #include "librpbase/crypto/IAesCipher.hpp"
 #include "librpbase/crypto/AesCipherFactory.hpp"
+#include "librpbase/crypto/Hash.hpp"
 #include "librpfile/RpFile.hpp"
 using namespace LibRpBase;
 using namespace LibRpText;
@@ -31,13 +32,6 @@ using std::u16string;
 using std::unique_ptr;
 using std::vector;
 
-// zlib for crc32()
-#include <zlib.h>
-#ifdef _MSC_VER
-// MSVC: Exception handling for /DELAYLOAD.
-#  include "libwin32common/DelayLoadHelper.h"
-#endif /* _MSC_VER */
-
 // for Qt-style signal emission
 #ifdef emit
 #undef emit
@@ -45,11 +39,6 @@ using std::vector;
 #define emit
 
 namespace LibRomData {
-
-#ifdef _MSC_VER
-// DelayLoad test implementation.
-DELAYLOAD_TEST_FUNCTION_IMPL0(get_crc_table);
-#endif /* _MSC_VER */
 
 class KeyStoreUIPrivate
 {
@@ -1279,27 +1268,13 @@ KeyStoreUI::ImportReturn KeyStoreUIPrivate::importN3DSboot9bin(IRpFile *file)
 		return iret;
 	}
 
-#if defined(_MSC_VER) && defined(ZLIB_IS_DLL)
-	// Delay load verification.
-	// TODO: Only if linked with /DELAYLOAD?
-	bool has_zlib = true;
-	if (DelayLoad_test_get_crc_table() != 0) {
-		// Delay load failed.
-		// Can't calculate the CRC32.
-		has_zlib = false;
-	}
-#else /* !defined(_MSC_VER) || !defined(ZLIB_IS_DLL) */
-	// zlib isn't in a DLL, but we need to ensure that the
-	// CRC table is initialized anyway.
-	static const bool has_zlib = true;
-	get_crc_table();
-#endif /* defined(_MSC_VER) && defined(ZLIB_IS_DLL) */
-
-	if (has_zlib) {
+	Hash crc32Hash(Hash::Algorithm::CRC32);
+	if (crc32Hash.isUsable()) {
 		// Check the CRC32.
 		// NOTE: CRC32 isn't particularly strong, so we'll still
 		// verify the keys before importing them.
-		const uint32_t crc = crc32(0, buf.get(), 32768);
+		crc32Hash.process(buf.get(), 32768);
+		const uint32_t crc = crc32Hash.getHash32();
 		if (crc != 0x9D50A525) {
 			// Incorrect CRC32.
 			iret.status = KeyStoreUI::ImportStatus::InvalidFile;

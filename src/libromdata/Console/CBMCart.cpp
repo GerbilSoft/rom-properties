@@ -12,6 +12,7 @@
 #include "data/CBMData.hpp"
 
 // Other rom-properties libraries
+#include "librpbase/crypto/Hash.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;
@@ -21,19 +22,7 @@ using std::string;
 using std::unique_ptr;
 using std::vector;
 
-// zlib for crc32()
-#include <zlib.h>
-#ifdef _MSC_VER
-// MSVC: Exception handling for /DELAYLOAD.
-#  include "libwin32common/DelayLoadHelper.h"
-#endif /* _MSC_VER */
-
 namespace LibRomData {
-
-#ifdef _MSC_VER
-// DelayLoad test implementation.
-DELAYLOAD_TEST_FUNCTION_IMPL0(get_crc_table);
-#endif /* _MSC_VER */
 
 class CBMCartPrivate final : public RomDataPrivate
 {
@@ -71,13 +60,6 @@ public:
 	// Used for the external image URL.
 	// NOTE: Calculated by extURLs() on demand.
 	uint32_t rom_16k_crc32;
-
-public:
-	/**
-	 * Initialize zlib.
-	 * @return 0 on success; non-zero on error.
-	 */
-	static int zlibInit(void);
 };
 
 ROMDATA_IMPL(CBMCart)
@@ -113,30 +95,6 @@ CBMCartPrivate::CBMCartPrivate(const IRpFilePtr &file)
 {
 	// Clear the ROM header struct.
 	memset(&romHeader, 0, sizeof(romHeader));
-}
-
-/**
- * Initialize zlib.
- * @return 0 on success; non-zero on error.
- */
-int CBMCartPrivate::zlibInit(void)
-{
-#if defined(_MSC_VER) && defined(ZLIB_IS_DLL)
-	// Delay load verification.
-	// TODO: Only if linked with /DELAYLOAD?
-	if (DelayLoad_test_get_crc_table() != 0) {
-		// Delay load failed.
-		// Can't calculate the CRC32.
-		return -ENOENT;
-	}
-#else /* !defined(_MSC_VER) || !defined(ZLIB_IS_DLL) */
-	// zlib isn't in a DLL, but we need to ensure that the
-	// CRC table is initialized anyway.
-	get_crc_table();
-#endif /* defined(_MSC_VER) && defined(ZLIB_IS_DLL) */
-
-	// zlib initialized.
-	return 0;
 }
 
 /** CBMCart **/
@@ -499,7 +457,8 @@ int CBMCart::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) co
 	// then it's the CRC32 of whatever's available.
 	if (d->rom_16k_crc32 == 0) {
 		// CRC32 hasn't been calculated yet.
-		if (d->zlibInit() != 0) {
+		Hash crc32Hash(Hash::Algorithm::CRC32);
+		if (!crc32Hash.isUsable()) {
 			// zlib could not be initialized.
 			return -EIO;
 		}
@@ -566,7 +525,8 @@ int CBMCart::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) co
 		}
 
 		// Calculate the CRC32 of whatever data we could read.
-		d->rom_16k_crc32 = crc32(0, buf.get(), static_cast<uInt>(sz_rd_total));
+		crc32Hash.process(buf.get(), sz_rd_total);
+		d->rom_16k_crc32 = crc32Hash.getHash32();
 	}
 
 	// Lowercase hex CRC32s are used.

@@ -93,19 +93,19 @@ ENDIF()
 
 IF(ENABLE_DECRYPTION)
 	SET(${PROJECT_NAME}_CRYPTO_SRCS crypto/AesCipherFactory.cpp)
-	SET(${PROJECT_NAME}_CRYPTO_H    crypto/IAesCipher.hpp crypto/MD5Hash.hpp)
+	SET(${PROJECT_NAME}_CRYPTO_H    crypto/IAesCipher.hpp crypto/Hash.hpp)
 	IF(WIN32)
 		SET(${PROJECT_NAME}_CRYPTO_OS_SRCS
 			crypto/AesCAPI.cpp
 			crypto/AesCAPI_NG.cpp
-			crypto/MD5HashCAPI.cpp
+			crypto/HashCAPI.cpp
 			)
 		SET(${PROJECT_NAME}_CRYPTO_OS_H
 			crypto/AesCAPI.hpp
 			crypto/AesCAPI_NG.hpp
 			)
 	ELSE(WIN32)
-		SET(${PROJECT_NAME}_CRYPTO_OS_SRCS crypto/AesNettle.cpp crypto/MD5HashNettle.cpp)
+		SET(${PROJECT_NAME}_CRYPTO_OS_SRCS crypto/AesNettle.cpp crypto/HashNettle.cpp)
 		SET(${PROJECT_NAME}_CRYPTO_OS_H    crypto/AesNettle.hpp)
 	ENDIF(WIN32)
 ENDIF(ENABLE_DECRYPTION)
