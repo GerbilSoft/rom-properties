@@ -191,7 +191,7 @@ uint8_t *PalmOSPrivate::decompress_scanline(const PalmOS_BitmapType_t *bitmapTyp
 	}
 	const uint8_t *const compr_data_end = compr_data + std::min(compr_size, static_cast<unsigned int>(compr_data_len));
 
-	const int height = bitmapType->height;
+	const int height = be16_to_cpu(bitmapType->height);
 	const unsigned int rowBytes = be16_to_cpu(bitmapType->rowBytes);
 	const size_t icon_data_len = (size_t)rowBytes * (size_t)height;
 
@@ -332,16 +332,12 @@ rp_image_const_ptr PalmOSPrivate::loadIcon(void)
 				break;
 		}
 
-		// NOTE: Byteswapping bitmapType width/height fields here.
-#if SYS_BYTEORDER != SYS_BIG_ENDIAN
-		bitmapType.width = be16_to_cpu(bitmapType.width);
-		bitmapType.height = be16_to_cpu(bitmapType.height);
-#endif /* SYS_BYTEORDER != SYS_BIG_ENDIAN */
-
 		// Sanity check: Icon must have valid dimensions.
-		assert(bitmapType.width > 0);
-		assert(bitmapType.height > 0);
-		if (bitmapType.width > 0 && bitmapType.height >= 0) {
+		const int width = be16_to_cpu(bitmapType.width);
+		const int height = be16_to_cpu(bitmapType.height);
+		assert(width > 0);
+		assert(height > 0);
+		if (width > 0 && height > 0) {
 			bitmapTypeMap.emplace(cur_addr, bitmapType);
 		}
 	}
@@ -418,8 +414,8 @@ rp_image_const_ptr PalmOSPrivate::loadIcon(void)
 	addr += header_size_tbl[selBitmapType->version];
 
 	// Decode the icon.
-	const int width = selBitmapType->width;
-	const int height = selBitmapType->height;
+	const int width = be16_to_cpu(selBitmapType->width);
+	const int height = be16_to_cpu(selBitmapType->height);
 	assert(width > 0);
 	assert(width <= 256);
 	assert(height > 0);
