@@ -707,8 +707,8 @@ void ISO::addMetaData_PVD(RomMetaData *metaData, const struct _ISO_Primary_Volum
 int ISO::isRomSupported_static(const DetectInfo *info)
 {
 	// NOTE: Only checking for supported file extensions.
-	assert(info->ext != nullptr);
-	if (!info->ext) {
+	assert(info != nullptr);
+	if (!info || !info->ext) {
 		// No file extension specified...
 		return -1;
 	}
