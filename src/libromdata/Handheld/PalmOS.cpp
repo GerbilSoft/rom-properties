@@ -433,7 +433,7 @@ rp_image_const_ptr PalmOSPrivate::loadIcon(void)
 							src += sizeof(uint32_t);
 						} else {
 							// v2: 16-bit size
-							compr_size = (src[1] << 8) | src[0];
+							compr_size = (src[0] << 8) | src[1];
 							src += sizeof(uint16_t);
 						}
 
