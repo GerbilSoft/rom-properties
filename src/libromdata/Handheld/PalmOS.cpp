@@ -526,7 +526,7 @@ rp_image_const_ptr PalmOSPrivate::loadIcon(void)
 					width, height,
 					icon_data.get(), icon_data_len,
 					palmos_system_palette, sizeof(palmos_system_palette), rowBytes);
-			if (flags & PalmOS_BitmapType_Flags_hasTransparency) {
+			if (img_icon && (flags & PalmOS_BitmapType_Flags_hasTransparency)) {
 				// Get the transparent palette index.
 				const uint8_t tr_idx = (selBitmapType->version == 2)
 					? selBitmapType->v2.transparentIndex
