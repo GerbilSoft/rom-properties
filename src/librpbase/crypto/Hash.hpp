@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include "config.librpbase.h"
+
 #include "common.h"
 #include "dll-macros.h"	// for RP_LIBROMDATA_PUBLIC
 
@@ -25,10 +27,12 @@ public:
 		Unknown = 0,
 
 		CRC32	= 1,
+#ifdef ENABLE_DECRYPTION
 		MD5	= 2,
 		SHA1	= 3,
 		SHA256	= 4,
 		SHA512	= 5,
+#endif /* ENABLE_DECRYPTION */
 
 		Max
 	};

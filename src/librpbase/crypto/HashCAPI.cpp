@@ -15,9 +15,11 @@
 #include "libwin32common/RpWin32_sdk.h"
 #include "libwin32common/w32err.hpp"
 
+#ifdef ENABLE_DECRYPTION
 // References:
 // - https://docs.microsoft.com/en-us/windows/win32/seccrypto/example-c-program--creating-an-md-5-hash-from-file-content
-#include <wincrypt.h>
+#  include <wincrypt.h>
+#endif /* ENABLE_DECRYPTION */
 
 // zlib for crc32()
 #include <zlib.h>
@@ -51,10 +53,12 @@ public:
 
 	union {
 		uint32_t crc32;
+#ifdef ENABLE_DECRYPTION
 		struct {
 			HCRYPTPROV hProvider;
 			HCRYPTHASH hHash;
 		};
+#endif /* ENABLE_DECRYPTION */
 	} ctx;
 
 #ifdef CHECK_DELAYLOAD
@@ -83,6 +87,7 @@ HashPrivate::HashPrivate(Hash::Algorithm algorithm)
 		return;
 	}
 
+#ifdef ENABLE_DECRYPTION
 	// Get a handle to the crypto provider.
 	// NOTE: MS_ENH_RSA_AES_PROV is required for SHA-256/SHA-512.
 	// This provider requires Windows XP SP3 or later.
@@ -102,16 +107,19 @@ HashPrivate::HashPrivate(Hash::Algorithm algorithm)
 			ctx.hProvider = NULL;	// TODO: Is this necessary? (Verify nullptr)
 		}
 	}
+#endif /* ENABLE_DECRYPTION */
 }
 
 HashPrivate::~HashPrivate()
 {
+#ifdef ENABLE_DECRYPTION
 	if (algorithm != Hash::Algorithm::CRC32) {
 		if (ctx.hHash)
 			CryptDestroyHash(ctx.hHash);
 		if (ctx.hProvider)
 			CryptReleaseContext(ctx.hProvider, 0);
 	}
+#endif /* ENABLE_DECRYPTION */
 }
 
 #ifdef CHECK_DELAYLOAD
@@ -163,6 +171,7 @@ void Hash::reset(void)
 		return;
 	}
 
+#ifdef ENABLE_DECRYPTION
 	if (d->ctx.hHash) {
 		CryptDestroyHash(d->ctx.hHash);
 		d->ctx.hHash = NULL;
@@ -191,6 +200,7 @@ void Hash::reset(void)
 		// TODO: Verify that d->hHash is nullptr here.
 		d->ctx.hHash = NULL;
 	}
+#endif /* ENABLE_DECRYPTION */
 }
 
 /**
@@ -219,7 +229,11 @@ bool Hash::isUsable(void) const
 #endif /* CHECK_DELAYLOAD */
 	}
 
+#ifdef ENABLE_DECRYPTION
 	return (d->ctx.hHash != NULL);
+#else /* !ENABLE_DECRYPTION */
+	return false;
+#endif /* ENABLE_DECRYPTION */
 }
 
 /**
@@ -250,6 +264,7 @@ int Hash::process(const void *pData, size_t len)
 		return 0;
 	}
 
+#ifdef ENABLE_DECRYPTION
 	assert(d->ctx.hHash != NULL);
 	if (!d->ctx.hHash)
 		return -EINVAL;
@@ -261,6 +276,9 @@ int Hash::process(const void *pData, size_t len)
 	}
 
 	return 0;
+#else /* !ENABLE_DECRYPTION */
+	return -ENOTSUP;
+#endif /* ENABLE_DECRYPTION */
 }
 
 /**
@@ -277,15 +295,17 @@ size_t Hash::hashLength(void) const
 		0,			// Unknown
 
 		sizeof(uint32_t),	// CRC32
+#ifdef ENABLE_DECRYPTION
 		16,			// MD5
 		20,			// SHA1
 		32,			// SHA256
 		64,			// SHA512
+#endif /* ENABLE_DECRYPTION */
 	};
 
 	assert(d->algorithm > Algorithm::Unknown);
-	assert(d->algorithm < Algorithm::Max);
-	if (d->algorithm > Algorithm::Unknown && d->algorithm < Algorithm::Max) {
+	assert(d->algorithm < (Hash::Algorithm)ARRAY_SIZE(hash_length_tbl));
+	if (d->algorithm > Algorithm::Unknown && d->algorithm < (Hash::Algorithm)ARRAY_SIZE(hash_length_tbl)) {
 		return hash_length_tbl[static_cast<int>(d->algorithm)];
 	}
 
@@ -318,6 +338,7 @@ int Hash::getHash(uint8_t *pHash, size_t hash_len)
 		return 0;
 	}
 
+#ifdef ENABLE_DECRPYTION
 	int ret = 0;
 	DWORD cbHash = static_cast<DWORD>(hash_len);
 	if (!CryptGetHashParam(d->ctx.hHash, HP_HASHVAL, pHash, &cbHash, 0)) {
@@ -329,6 +350,9 @@ int Hash::getHash(uint8_t *pHash, size_t hash_len)
 	}
 
 	return ret;
+#else /* !ENABLE_DECRPYTION */
+	return -ENOTSUP;
+#endif /* ENABLE_DECRYPTION */
 }
 
 /**

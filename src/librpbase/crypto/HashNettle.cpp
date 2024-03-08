@@ -12,10 +12,12 @@
 // zlib for crc32()
 #include <zlib.h>
 
-// Nettle hash MD5 functions
-#include <nettle/md5.h>
-#include <nettle/sha1.h>
-#include <nettle/sha2.h>
+#ifdef ENABLE_DECRYPTION
+// Nettle hash functions
+#  include <nettle/md5.h>
+#  include <nettle/sha1.h>
+#  include <nettle/sha2.h>
+#endif /* ENABLE_DECRYPTION */
 
 namespace LibRpBase {
 
@@ -30,10 +32,12 @@ public:
 	// Hash::Hash() initializes this by calling reset().
 	union {
 		uint32_t crc32;
+#ifdef ENABLE_DECRYPTION
 		struct md5_ctx md5;
 		struct sha1_ctx sha1;
 		struct sha256_ctx sha256;
 		struct sha512_ctx sha512;
+#endif /* ENABLE_DECRYPTION */
 	} ctx;
 };
 
@@ -70,6 +74,7 @@ void Hash::reset(void)
 		case Algorithm::CRC32:
 			d->ctx.crc32 = 0U;
 			break;
+#ifdef ENABLE_DECRYPTION
 		case Algorithm::MD5:
 			md5_init(&d->ctx.md5);
 			break;
@@ -82,6 +87,7 @@ void Hash::reset(void)
 		case Algorithm::SHA512:
 			sha512_init(&d->ctx.sha512);
 			break;
+#endif /* ENABLE_DECRYPTION */
 	}
 }
 
@@ -101,8 +107,14 @@ Hash::Algorithm Hash::algorithm(void) const
  */
 bool Hash::isUsable(void) const
 {
+	RP_D(const Hash);
+#ifdef ENABLE_DECRYPTION
 	// TODO: Check supported Nettle versions and handle this properly.
-	return true;
+	RP_D(const Hash);
+	return (d->algorithm > Algorithm::Unknown && d->algorithm < Algorithm::Max);
+#else /* !ENABLE_DECRYPTION */
+	return (d->algorithm == Algorithm::CRC32);
+#endif /* ENABLE_DECRYPTION */
 }
 
 /**
@@ -124,10 +136,11 @@ int Hash::process(const void *pData, size_t len)
 	switch (d->algorithm) {
 		default:
 			assert(!"Invalid hash algorithm specified.");
-			return -EINVAL;
+			return -ENOTSUP;
 		case Algorithm::CRC32:
 			d->ctx.crc32 = crc32(d->ctx.crc32, static_cast<const uint8_t*>(pData), len);
 			break;
+#ifdef ENABLE_DECRYPTION
 		case Algorithm::MD5:
 			md5_update(&d->ctx.md5, len, static_cast<const uint8_t*>(pData));
 			break;
@@ -140,6 +153,7 @@ int Hash::process(const void *pData, size_t len)
 		case Algorithm::SHA512:
 			sha512_update(&d->ctx.sha512, len, static_cast<const uint8_t*>(pData));
 			break;
+#endif /* ENABLE_DECRYPTION */
 	}
 
 	return 0;
@@ -158,15 +172,17 @@ size_t Hash::hashLength(void) const
 		0,			// Unknown
 
 		sizeof(uint32_t),	// CRC32
+#ifdef ENABLE_DECRYPTION
 		MD5_DIGEST_SIZE,	// MD5
 		SHA1_DIGEST_SIZE,	// SHA1
 		SHA256_DIGEST_SIZE,	// SHA256
 		SHA512_DIGEST_SIZE,	// SHA512
+#endif /* ENABLE_DECRYPTION */
 	};
 
 	assert(d->algorithm > Algorithm::Unknown);
-	assert(d->algorithm < Algorithm::Max);
-	if (d->algorithm > Algorithm::Unknown && d->algorithm < Algorithm::Max) {
+	assert(d->algorithm < (Hash::Algorithm)ARRAY_SIZE(hash_length_tbl));
+	if (d->algorithm > Algorithm::Unknown && d->algorithm < (Hash::Algorithm)ARRAY_SIZE(hash_length_tbl)) {
 		return hash_length_tbl[static_cast<int>(d->algorithm)];
 	}
 
@@ -201,6 +217,7 @@ int Hash::getHash(uint8_t *pHash, size_t hash_len)
 			memcpy(pHash, &crc32_be, sizeof(crc32_be));
 			break;
 		}
+#ifdef ENABLE_DECRYPTION
 		case Algorithm::MD5:
 			md5_digest(&d->ctx.md5, hash_len, pHash);
 			break;
@@ -213,6 +230,7 @@ int Hash::getHash(uint8_t *pHash, size_t hash_len)
 		case Algorithm::SHA512:
 			sha512_digest(&d->ctx.sha512, hash_len, pHash);
 			break;
+#endif /* ENABLE_DECRYPTION */
 	}
 
 	return 0;

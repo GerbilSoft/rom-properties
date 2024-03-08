@@ -26,7 +26,7 @@ int main(void) {
 	return 0;
 }" HAVE_UNORDERED_SET_RESERVE)
 
-# Sources.
+# Sources
 SET(${PROJECT_NAME}_SRCS
 	RomData.cpp
 	RomFields.cpp
@@ -51,7 +51,7 @@ SET(${PROJECT_NAME}_SRCS
 	config/Config.cpp
 	config/AboutTabText.cpp
 	)
-# Headers.
+# Headers
 SET(${PROJECT_NAME}_H
 	RomData.hpp
 	RomData_decl.hpp
@@ -91,22 +91,33 @@ ELSEIF(JPEG_FOUND)
 	SET(${PROJECT_NAME}_H ${${PROJECT_NAME}_H} img/RpJpeg.hpp)
 ENDIF()
 
+# NOTE: Hash contains CRC32, which isn't cryptographic, but we're keeping
+# Hash in ${PROJECT_NAME}_CRYPTO_SRCS for consistency.
+SET(${PROJECT_NAME}_CRYPTO_H crypto/Hash.hpp)
+IF(WIN32)
+	SET(${PROJECT_NAME}_CRYPTO_SRCS crypto/HashCAPI.cpp)
+ELSE(WIN32)
+	SET(${PROJECT_NAME}_CRYPTO_SRCS crypto/HashNettle.cpp)
+ENDIF(WIN32)
 IF(ENABLE_DECRYPTION)
-	SET(${PROJECT_NAME}_CRYPTO_SRCS crypto/AesCipherFactory.cpp)
-	SET(${PROJECT_NAME}_CRYPTO_H    crypto/IAesCipher.hpp crypto/Hash.hpp)
+	SET(${PROJECT_NAME}_CRYPTO_SRCS ${${PROJECT_NAME}_CRYPTO_SRCS} crypto/AesCipherFactory.cpp)
+	SET(${PROJECT_NAME}_CRYPTO_H    ${${PROJECT_NAME}_CRYPTO_H} crypto/IAesCipher.hpp)
 	IF(WIN32)
-		SET(${PROJECT_NAME}_CRYPTO_OS_SRCS
+		SET(${PROJECT_NAME}_CRYPTO_SRCS ${${PROJECT_NAME}_CRYPTO_SRCS}
 			crypto/AesCAPI.cpp
 			crypto/AesCAPI_NG.cpp
-			crypto/HashCAPI.cpp
 			)
-		SET(${PROJECT_NAME}_CRYPTO_OS_H
+		SET(${PROJECT_NAME}_CRYPTO_H ${${PROJECT_NAME}_CRYPTO_H}
 			crypto/AesCAPI.hpp
 			crypto/AesCAPI_NG.hpp
 			)
 	ELSE(WIN32)
-		SET(${PROJECT_NAME}_CRYPTO_OS_SRCS crypto/AesNettle.cpp crypto/HashNettle.cpp)
-		SET(${PROJECT_NAME}_CRYPTO_OS_H    crypto/AesNettle.hpp)
+		SET(${PROJECT_NAME}_CRYPTO_SRCS ${${PROJECT_NAME}_CRYPTO_SRCS}
+			crypto/AesNettle.cpp
+			)
+		SET(${PROJECT_NAME}_CRYPTO_H ${${PROJECT_NAME}_CRYPTO_H}
+			crypto/AesNettle.hpp
+			)
 	ENDIF(WIN32)
 ENDIF(ENABLE_DECRYPTION)
 
@@ -149,7 +160,6 @@ FOREACH(_target ${TARGETS})
 	ADD_LIBRARY(${_target} STATIC
 		${${PROJECT_NAME}_SRCS} ${${PROJECT_NAME}_H}
 		${${PROJECT_NAME}_CRYPTO_SRCS} ${${PROJECT_NAME}_CRYPTO_H}
-		${${PROJECT_NAME}_CRYPTO_OS_SRCS} ${${PROJECT_NAME}_CRYPTO_OS_H}
 		${${PROJECT_NAME}_SSSE3_SRCS}
 		)
 	IF(ENABLE_PCH)
