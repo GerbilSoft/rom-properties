@@ -49,6 +49,18 @@ public:
 	void reset(void);
 
 	/**
+	 * Get the specified hash algorithm.
+	 * @return Hash algorithm.
+	 */
+	Algorithm algorithm(void) const;
+
+	/**
+	 * Is the specified hash algorithm usable?
+	 * @return True if it is; false if it isn't.
+	 */
+	bool isUsable(void) const;
+
+	/**
 	 * Process a block of data using the previously-specified hashing algorithm.
 	 * @param pData		[in] Input data
 	 * @param len		[in] Data length

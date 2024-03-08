@@ -118,6 +118,26 @@ void Hash::reset(void)
 }
 
 /**
+ * Get the specified hash algorithm.
+ * @return Hash algorithm.
+ */
+Hash::Algorithm Hash::algorithm(void) const
+{
+	RP_D(const Hash);
+	return d->algorithm;
+}
+
+/**
+ * Is the specified hash algorithm usable?
+ * @return True if it is; false if it isn't.
+ */
+bool Hash::isUsable(void) const
+{
+	RP_D(const Hash);
+	return (d->hHash != NULL);
+}
+
+/**
  * Process a block of data using the previously-specified hashing algorithm.
  * @param pData		[in] Input data
  * @param len		[in] Data length
