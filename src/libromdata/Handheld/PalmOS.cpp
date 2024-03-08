@@ -76,6 +76,15 @@ public:
 	const PalmOS_PRC_ResHeader_t *findResHeader(uint32_t type, uint16_t id = 0) const;
 
 	/**
+	 * Decompress a scanline-compressed bitmap.
+	 * @param bitmapType		[in] PalmOS_BitmapType_t
+	 * @param compr_data		[in] Compressed bitmap data
+	 * @param compr_data_len	[in] Length of compr_data
+	 * @return Buffer containing the decompressed bitmap (rowBytes * height), or nullptr on error.
+	 */
+	uint8_t *decompress_scanline(const PalmOS_BitmapType_t *bitmapType, const uint8_t *compr_data, size_t compr_data_len);
+
+	/**
 	 * Load the icon.
 	 * @return Icon, or nullptr on error.
 	 */
@@ -147,6 +156,86 @@ const PalmOS_PRC_ResHeader_t *PalmOSPrivate::findResHeader(uint32_t type, uint16
 	return nullptr;
 }
 
+/**
+ * Decompress a scanline-compressed bitmap.
+ * @param bitmapType		[in] PalmOS_BitmapType_t
+ * @param compr_data		[in] Compressed bitmap data
+ * @param compr_data_len	[in] Length of compr_data
+ * @return Buffer containing the decompressed bitmap (rowBytes * height), or nullptr on error.
+ */
+uint8_t *PalmOSPrivate::decompress_scanline(const PalmOS_BitmapType_t *bitmapType, const uint8_t *compr_data, size_t compr_data_len)
+{
+	assert(compr_data_len > 4);
+	if (compr_data_len <= 4)
+		return nullptr;
+
+	// The image starts with the compressed data size.
+	uint32_t compr_size;
+	if (bitmapType->version >= 3) {
+		// v3: 32-bit size
+		compr_size = (compr_data[0] << 24) | (compr_data[1] << 16) | (compr_data[2] << 8) | compr_data[3];
+		compr_data += sizeof(uint32_t);
+		compr_data_len -= sizeof(uint32_t);
+	} else {
+		// v2: 16-bit size
+		compr_size = (compr_data[0] << 8) | compr_data[1];
+		compr_data += sizeof(uint16_t);
+		compr_data_len -= sizeof(uint16_t);
+	}
+
+	// Make sure we don't overrun the source buffer.
+	assert(compr_size <= compr_data_len);
+	if (compr_size > compr_data_len) {
+		// Compressed size is *larger* than the source buffer.
+		return nullptr;
+	}
+	const uint8_t *const compr_data_end = compr_data + std::min(compr_size, static_cast<unsigned int>(compr_data_len));
+
+	const int height = bitmapType->height;
+	const unsigned int rowBytes = be16_to_cpu(bitmapType->rowBytes);
+	const size_t icon_data_len = (size_t)rowBytes * (size_t)height;
+
+	unique_ptr<uint8_t[]> decomp_buf(new uint8_t[icon_data_len]);
+	uint8_t *dest = decomp_buf.get();
+	const uint8_t *lastrow = dest;
+	for (int y = 0; y < height; y++) {
+		for (unsigned int x = 0; x < rowBytes; x += 8) {
+			// First byte is a diffmask indicating which bytes in
+			// an 8-byte group are the same as the previous row.
+			// NOTE: Assumed to be 0 for the first row.
+			assert(compr_data < compr_data_end);
+			if (compr_data >= compr_data_end)
+				return nullptr;
+
+			uint8_t diffmask = *compr_data++;
+			if (y == 0)
+				diffmask = 0xFF;
+
+			// Process 8 bytes.
+			unsigned int bytecount = std::min(rowBytes - x, 8U);
+			for (unsigned int b = 0; b < bytecount; b++, diffmask <<= 1) {
+				uint8_t px;
+				if (!(diffmask & (1U << 7))) {
+					// Read a byte from the last row.
+					px = lastrow[x + b];
+				} else {
+					// Read a byte from the source data.
+					assert(compr_data < compr_data_end);
+					if (compr_data >= compr_data_end)
+						return nullptr;
+					px = *compr_data++;
+				}
+				*dest++ = px;
+			}
+		}
+
+		if (y > 0)
+			lastrow += rowBytes;
+	}
+
+	// Bitmap has been decompressed.
+	return decomp_buf.release();
+}
 /**
  * Load the icon.
  * @return Icon, or nullptr on error.
@@ -423,65 +512,11 @@ rp_image_const_ptr PalmOSPrivate::loadIcon(void)
 
 					case PalmOS_BitmapType_CompressionType_ScanLine: {
 						// Scanline compression
-						const uint8_t *src = icon_data.get();
-
-						// The image starts with the compressed data size.
-						uint32_t compr_size;
-						if (selBitmapType->version >= 3) {
-							// v3: 32-bit size
-							compr_size = (src[0] << 24) | (src[1] << 16) | (src[2] << 8) | src[3];
-							src += sizeof(uint32_t);
-						} else {
-							// v2: 16-bit size
-							compr_size = (src[0] << 8) | src[1];
-							src += sizeof(uint16_t);
+						icon_data.reset(decompress_scanline(selBitmapType, icon_data.get(), icon_data_len));
+						if (!icon_data) {
+							// Decompression failed.
+							return {};
 						}
-
-						// Make sure we don't overrun the source buffer.
-						const uint8_t *const src_end = src + std::min(compr_size, static_cast<unsigned int>(icon_data_len));
-
-						unique_ptr<uint8_t[]> decomp_buf(new uint8_t[icon_data_len]);
-						uint8_t *dest = decomp_buf.get();
-						const uint8_t *lastrow = dest;
-						for (int y = 0; y < height; y++) {
-							for (unsigned int x = 0; x < rowBytes; x += 8) {
-								// First byte is a diffmask indicating which bytes in
-								// an 8-byte group are the same as the previous row.
-								// NOTE: Assumed to be 0 for the first row.
-								assert(src < src_end);
-								if (src >= src_end)
-									break;
-
-								uint8_t diffmask = *src++;
-								if (y == 0)
-									diffmask = 0xFF;
-
-								// Process 8 bytes.
-								unsigned int bytecount = std::min(rowBytes - x, 8U);
-								for (unsigned int b = 0; b < bytecount; b++, diffmask <<= 1) {
-									uint8_t px;
-									if (!(diffmask & (1U << 7))) {
-										// Read a byte from the last row.
-										px = lastrow[x + b];
-									} else {
-										// Read a byte from the source data.
-										assert(src < src_end);
-										if (src >= src_end)
-											break;
-										px = *src++;
-									}
-									*dest++ = px;
-								}
-							}
-
-							if (src >= src_end)
-								break;
-							if (y > 0)
-								lastrow += rowBytes;
-						}
-
-						// Swap the data buffers.
-						std::swap(icon_data, decomp_buf);
 						break;
 					}
 				}
