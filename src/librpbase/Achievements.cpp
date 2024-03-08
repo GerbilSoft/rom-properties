@@ -771,17 +771,6 @@ void Achievements::clearNotifyFunction(NotifyFunc func, intptr_t user_data)
  */
 int Achievements::unlock(ID id, int bit)
 {
-#if defined(_MSC_VER) && defined(ZLIB_IS_DLL)
-	// Delay load verification.
-	// TODO: Only if linked with /DELAYLOAD?
-	if (DelayLoad_test_get_crc_table() != 0) {
-		// Delay load failed.
-		// We won't be able to calculate CRC32s, so don't
-		// enable achievements at all.
-		return -ENOTSUP;
-	}
-#endif /* defined(_MSC_VER) && defined(ZLIB_IS_DLL) */
-
 	// If this achievement is bool/count, increment the value.
 	// If the value has hit the maximum, achievement is unlocked.
 	assert((int)id >= 0);
@@ -882,17 +871,6 @@ int Achievements::unlock(ID id, int bit)
  */
 time_t Achievements::isUnlocked(ID id) const
 {
-#if defined(_MSC_VER) && defined(ZLIB_IS_DLL)
-	// Delay load verification.
-	// TODO: Only if linked with /DELAYLOAD?
-	if (DelayLoad_test_get_crc_table() != 0) {
-		// Delay load failed.
-		// We won't be able to calculate CRC32s, so don't
-		// enable achievements at all.
-		return -1;
-	}
-#endif /* defined(_MSC_VER) && defined(ZLIB_IS_DLL) */
-
 	// If this achievement is bool/count, increment the value.
 	// If the value has hit the maximum, achievement is unlocked.
 	assert((int)id >= 0);
