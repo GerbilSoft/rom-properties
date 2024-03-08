@@ -17,6 +17,7 @@
 
 // Other rom-properties libraries
 #include "librpbase/Achievements.hpp"
+#include "librpbase/crypto/Hash.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;
@@ -28,19 +29,7 @@ using namespace LibRpText;
 using std::string;
 using std::vector;
 
-// zlib for crc32()
-#include <zlib.h>
-#ifdef _MSC_VER
-// MSVC: Exception handling for /DELAYLOAD.
-#  include "libwin32common/DelayLoadHelper.h"
-#endif /* _MSC_VER */
-
 namespace LibRomData {
-
-#ifdef _MSC_VER
-// DelayLoad test implementation.
-DELAYLOAD_TEST_FUNCTION_IMPL0(get_crc_table);
-#endif /* _MSC_VER */
 
 class MegaDrivePrivate final : public RomDataPrivate
 {
@@ -205,12 +194,6 @@ public:
 	 * @return Publisher, or "Unknown" if unknown.
 	 */
 	static string getPublisher(const MD_RomHeader *pRomHeader);
-
-	/**
-	 * Initialize zlib.
-	 * @return 0 on success; non-zero on error.
-	 */
-	static int zlibInit(void);
 };
 
 ROMDATA_IMPL(MegaDrive)
@@ -709,30 +692,6 @@ string MegaDrivePrivate::getPublisher(const MD_RomHeader *pRomHeader)
 	return s_publisher;
 }
 
-/**
- * Initialize zlib.
- * @return 0 on success; non-zero on error.
- */
-int MegaDrivePrivate::zlibInit(void)
-{
-#if defined(_MSC_VER) && defined(ZLIB_IS_DLL)
-	// Delay load verification.
-	// TODO: Only if linked with /DELAYLOAD?
-	if (DelayLoad_test_get_crc_table() != 0) {
-		// Delay load failed.
-		// Can't calculate the CRC32.
-		return -ENOENT;
-	}
-#else /* !defined(_MSC_VER) || !defined(ZLIB_IS_DLL) */
-	// zlib isn't in a DLL, but we need to ensure that the
-	// CRC table is initialized anyway.
-	get_crc_table();
-#endif /* defined(_MSC_VER) && defined(ZLIB_IS_DLL) */
-
-	// zlib initialized.
-	return 0;
-}
-
 /** MegaDrive **/
 
 /**
@@ -778,7 +737,6 @@ MegaDrive::MegaDrive(const IRpFilePtr &file)
 	d->romType = isRomSupported_static(&info);
 
 	// Mega CD security program CRC32
-	// TODO: zlib delay-load on Windows.
 	uint32_t mcd_sp_crc = 0;
 
 	if (d->romType >= 0) {
@@ -836,8 +794,12 @@ MegaDrive::MegaDrive(const IRpFilePtr &file)
 				// able to distinguish between them.
 				// NOTE: Only the first 0x4C0 bytes seem to be identical
 				// between USA and EUR, and 0x150 in JPN...
-				if (size >= (0x200 + 0x150) && !d->zlibInit()) {
-					mcd_sp_crc = crc32(0, &header[0x200], 0x150);
+				if (size >= (0x200 + 0x150)) {
+					Hash crc32Hash(Hash::Algorithm::CRC32);
+					if (crc32Hash.isUsable()) {
+						crc32Hash.process(&header[0x200], 0x150);
+						mcd_sp_crc = crc32Hash.getHash32();
+					}
 				}
 				break;
 
@@ -863,8 +825,12 @@ MegaDrive::MegaDrive(const IRpFilePtr &file)
 				// able to distinguish between them.
 				// NOTE: Only the first 0x4C0 bytes seem to be identical
 				// between USA and EUR, and 0x150 in JPN...
-				if (size >= (0x210 + 0x150) && !d->zlibInit()) {
-					mcd_sp_crc = crc32(0, &header[0x210], 0x150);
+				if (size >= (0x210 + 0x150)) {
+					Hash crc32Hash(Hash::Algorithm::CRC32);
+					if (crc32Hash.isUsable()) {
+						crc32Hash.process(&header[0x210], 0x150);
+						mcd_sp_crc = crc32Hash.getHash32();
+					}
 				}
 				break;
 
@@ -927,7 +893,8 @@ MegaDrive::MegaDrive(const IRpFilePtr &file)
 	    !memcmp(s_serial_number, "GM 00054503-00", sizeof(d->romHeader.serial_number)) &&
 	    (d->romType & MegaDrivePrivate::ROM_FORMAT_MASK) == MegaDrivePrivate::ROM_FORMAT_CART_BIN)
 	{
-		if (d->zlibInit() != 0) {
+		Hash crc32Hash(Hash::Algorithm::CRC32);
+		if (!crc32Hash.isUsable()) {
 			// Can't initialize zlib to calculate the CRC32.
 			return;
 		}
@@ -937,7 +904,8 @@ MegaDrive::MegaDrive(const IRpFilePtr &file)
 		uint8_t buf[256];
 		size_t size = d->file->seekAndRead(0x20000, buf, sizeof(buf));
 		if (size == sizeof(buf)) {
-			d->gt_crc = crc32(0, buf, sizeof(buf));
+			crc32Hash.process(buf, sizeof(buf));
+			d->gt_crc = crc32Hash.getHash32();
 		}
 	}
 	// If this is S&K, try reading the locked-on ROM header.

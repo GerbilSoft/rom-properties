@@ -12,6 +12,7 @@
 #include "data/Nintendo3DSFirmData.hpp"
 
 // Other rom-properties libraries
+#include "librpbase/crypto/Hash.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;
@@ -23,19 +24,7 @@ using namespace LibRpText;
 using std::string;
 using std::unique_ptr;
 
-// zlib for crc32()
-#include <zlib.h>
-#ifdef _MSC_VER
-// MSVC: Exception handling for /DELAYLOAD.
-#  include "libwin32common/DelayLoadHelper.h"
-#endif /* _MSC_VER */
-
 namespace LibRomData {
-
-#ifdef _MSC_VER
-// DelayLoad test implementation.
-DELAYLOAD_TEST_FUNCTION_IMPL0(get_crc_table);
-#endif /* _MSC_VER */
 
 class Nintendo3DSFirmPrivate final : public RomDataPrivate
 {
@@ -239,25 +228,12 @@ int Nintendo3DSFirm::loadFieldData(void)
 	bool checkCustomFIRM = false;	// Check for a custom FIRM, e.g. Boot9Strap.
 	bool checkARM9 = false;		// Check for ARM9 homebrew.
 	if (arm11_entrypoint != 0 && arm9_entrypoint != 0) {
-#if defined(_MSC_VER) && defined(ZLIB_IS_DLL)
-		// Delay load verification.
-		// TODO: Only if linked with /DELAYLOAD?
-		bool has_zlib = true;
-		if (DelayLoad_test_get_crc_table() != 0) {
-			// Delay load failed.
-			// Can't calculate the CRC32.
-			has_zlib = false;
-		}
-#else /* !defined(_MSC_VER) || !defined(ZLIB_IS_DLL) */
-		// zlib isn't in a DLL, but we need to ensure that the
-		// CRC table is initialized anyway.
-		static const bool has_zlib = true;
-		get_crc_table();
-#endif /* defined(_MSC_VER) && defined(ZLIB_IS_DLL) */
-
 		// Calculate the CRC32 and look it up.
-		if (has_zlib && firmBuf) {
-			const uint32_t crc = crc32(0, firmBuf.get(), static_cast<unsigned int>(szFile));
+		// TODO: Check firmBuf before initializing CRC32?
+		Hash crc32Hash(Hash::Algorithm::CRC32);
+		if (crc32Hash.isUsable() && firmBuf) {
+			crc32Hash.process(firmBuf.get(), szFile);
+			const uint32_t crc = crc32Hash.getHash32();;
 			firmBin = Nintendo3DSFirmData::lookup_firmBin(crc);
 			if (firmBin != nullptr) {
 				// Official firmware binary.

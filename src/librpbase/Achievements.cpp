@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * Achievements.cpp: Achievements class.                                   *
  *                                                                         *
- * Copyright (c) 2020-2023 by David Korth.                                 *
+ * Copyright (c) 2020-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -10,9 +10,11 @@
 #include "Achievements.hpp"
 #include "libi18n/i18n.h"
 
-// librpfile, librptexture
+// librpbase, librpfile
+#include "librpbase/crypto/Hash.hpp"
 #include "librpfile/FileSystem.hpp"
 #include "librpfile/RpFile.hpp"
+using namespace LibRpBase;
 using namespace LibRpFile;
 
 // C++ STL classes
@@ -22,13 +24,6 @@ using std::unordered_map;
 
 // Uninitialized vector class
 #include "uvector.h"
-
-// zlib for CRC32.
-#include <zlib.h>
-#ifdef _MSC_VER
-// MSVC: Exception handling for /DELAYLOAD.
-#  include "libwin32common/DelayLoadHelper.h"
-#endif /* _MSC_VER */
 
 #ifdef _WIN32
 // Win32 is needed for GetCurrentProcessId().
@@ -44,11 +39,6 @@ using std::unordered_map;
 //#define FORCE_OBFUSCATE 1
 
 namespace LibRpBase {
-
-#ifdef _MSC_VER
-// DelayLoad test implementation.
-DELAYLOAD_TEST_FUNCTION_IMPL0(get_crc_table);
-#endif /* _MSC_VER */
 
 class AchievementsPrivate
 {
@@ -349,19 +339,12 @@ void AchievementsPrivate::doObfuscate(uint16_t iv, uint8_t *buf, size_t size)
  */
 int AchievementsPrivate::save(void) const
 {
-#if defined(_MSC_VER) && defined(ZLIB_IS_DLL)
-	// Delay load verification.
-	// TODO: Only if linked with /DELAYLOAD?
-	if (DelayLoad_test_get_crc_table() != 0) {
-		// Delay load failed.
+	Hash crc32Hash(Hash::Algorithm::CRC32);
+	if (!crc32Hash.isUsable()) {
+		// zlib could not be initialized.
 		// Can't calculate the CRC32.
 		return -ENOTSUP;
 	}
-#else /* !defined(_MSC_VER) || !defined(ZLIB_IS_DLL) */
-	// zlib isn't in a DLL, but we need to ensure that the
-	// CRC table is initialized anyway.
-	get_crc_table();
-#endif /* defined(_MSC_VER) && defined(ZLIB_IS_DLL) */
 
 	// Create the achievements file in memory.
 	rp::uvector<uint8_t> buf;
@@ -435,9 +418,8 @@ int AchievementsPrivate::save(void) const
 	// CRC32 of achievement data.
 	// Includes count.
 	if (buf.size() > HeaderSizeMinusCount) {
-		header->crc32 = cpu_to_le32(
-			crc32(0, &buf.data()[HeaderSizeMinusCount],
-			      static_cast<uInt>(buf.size() - HeaderSizeMinusCount)));
+		crc32Hash.process(&buf.data()[HeaderSizeMinusCount], buf.size() - HeaderSizeMinusCount);
+		header->crc32 = cpu_to_le32(crc32Hash.getHash32());
 	}
 
 #if defined(NDEBUG) || defined(FORCE_OBFUSCATE)
@@ -499,15 +481,12 @@ int AchievementsPrivate::save(void) const
  */
 int AchievementsPrivate::load(void)
 {
-#if defined(_MSC_VER) && defined(ZLIB_IS_DLL)
-	// Delay load verification.
-	// TODO: Only if linked with /DELAYLOAD?
-	if (DelayLoad_test_get_crc_table() != 0) {
-		// Delay load failed.
+	Hash crc32Hash(Hash::Algorithm::CRC32);
+	if (!crc32Hash.isUsable()) {
+		// zlib could not be initialized.
 		// Can't calculate the CRC32.
 		return -ENOTSUP;
 	}
-#endif /* defined(_MSC_VER) && defined(ZLIB_IS_DLL) */
 
 	// Clear loaded achievements.
 	loaded = false;
@@ -602,7 +581,8 @@ int AchievementsPrivate::load(void)
 	header = reinterpret_cast<const AchBinHeader*>(buf.data());
 
 	// Verify the CRC32.
-	const uint32_t crc = crc32(0, &buf.data()[HeaderSizeMinusCount], data_len);
+	crc32Hash.process(&buf.data()[HeaderSizeMinusCount], data_len);
+	const uint32_t crc = crc32Hash.getHash32();
 	if (crc != le32_to_cpu(header->crc32)) {
 		// Incorrect CRC32.
 		return -EBADF;
