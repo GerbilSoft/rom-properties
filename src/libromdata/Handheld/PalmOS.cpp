@@ -530,6 +530,11 @@ rp_image_const_ptr PalmOSPrivate::loadIcon(void)
 		compr_data_len = icon_data_len;
 	}
 
+	// Sanity check: compr_data_len should *always* be <= icon_data_len.
+	assert(compr_data_len <= icon_data_len);
+	if (compr_data_len > icon_data_len)
+		return {};
+
 	// NOTE: Allocating enough memory for the uncompressed bitmap,
 	// but only reading enough data for the compressed bitmap.
 	// (If the bitmap is not compressed, the sizes are the same.)
