@@ -175,31 +175,7 @@ const PalmOS_PRC_ResHeader_t *PalmOSPrivate::findResHeader(uint32_t type, uint16
  */
 uint8_t *PalmOSPrivate::decompress_scanline(const PalmOS_BitmapType_t *bitmapType, const uint8_t *compr_data, size_t compr_data_len)
 {
-	assert(compr_data_len >= 4+9);
-	if (compr_data_len < 4+9)
-		return nullptr;
-
-	// The image starts with the compressed data size.
-	uint32_t compr_size;
-	if (bitmapType->version >= 3) {
-		// v3: 32-bit size
-		compr_size = (compr_data[0] << 24) | (compr_data[1] << 16) | (compr_data[2] << 8) | compr_data[3];
-		compr_data += sizeof(uint32_t);
-		compr_data_len -= sizeof(uint32_t);
-	} else {
-		// v2: 16-bit size
-		compr_size = (compr_data[0] << 8) | compr_data[1];
-		compr_data += sizeof(uint16_t);
-		compr_data_len -= sizeof(uint16_t);
-	}
-
-	// Make sure we don't overrun the source buffer.
-	assert(compr_size <= compr_data_len);
-	if (compr_size > compr_data_len) {
-		// Compressed size is *larger* than the source buffer.
-		return nullptr;
-	}
-	const uint8_t *const compr_data_end = compr_data + std::min(compr_size, static_cast<unsigned int>(compr_data_len));
+	const uint8_t *const compr_data_end = &compr_data[compr_data_len];
 
 	const int height = be16_to_cpu(bitmapType->height);
 	const unsigned int rowBytes = be16_to_cpu(bitmapType->rowBytes);
@@ -256,32 +232,7 @@ uint8_t *PalmOSPrivate::decompress_scanline(const PalmOS_BitmapType_t *bitmapTyp
  */
 uint8_t *PalmOSPrivate::decompress_RLE(const PalmOS_BitmapType_t *bitmapType, const uint8_t *compr_data, size_t compr_data_len)
 {
-	assert(compr_data_len > 4);
-	if (compr_data_len <= 4)
-		return nullptr;
-
-	// The image starts with the compressed data size.
-	// TODO: Move this to loadIcon()? It's the same as in decompress_scanline().
-	uint32_t compr_size;
-	if (bitmapType->version >= 3) {
-		// v3: 32-bit size
-		compr_size = (compr_data[0] << 24) | (compr_data[1] << 16) | (compr_data[2] << 8) | compr_data[3];
-		compr_data += sizeof(uint32_t);
-		compr_data_len -= sizeof(uint32_t);
-	} else {
-		// v2: 16-bit size
-		compr_size = (compr_data[0] << 8) | compr_data[1];
-		compr_data += sizeof(uint16_t);
-		compr_data_len -= sizeof(uint16_t);
-	}
-
-	// Make sure we don't overrun the source buffer.
-	assert(compr_size <= compr_data_len);
-	if (compr_size > compr_data_len) {
-		// Compressed size is *larger* than the source buffer.
-		return nullptr;
-	}
-	const uint8_t *const compr_data_end = compr_data + std::min(compr_size, static_cast<unsigned int>(compr_data_len));
+	const uint8_t *const compr_data_end = &compr_data[compr_data_len];
 
 	const int height = be16_to_cpu(bitmapType->height);
 	const unsigned int rowBytes = be16_to_cpu(bitmapType->rowBytes);
@@ -543,22 +494,41 @@ rp_image_const_ptr PalmOSPrivate::loadIcon(void)
 		}
 	}
 
-	const uint8_t compr_type = (version >= 2 && (flags & PalmOS_BitmapType_Flags_compressed))
-		? selBitmapType->v2.compressionType
-		: static_cast<uint8_t>(PalmOS_BitmapType_CompressionType_None);
-	size_t compr_data_len = icon_data_len;	// Compressed data length (if short read) [TODO: Use the length field?]
-
-	unique_ptr<uint8_t[]> icon_data(new uint8_t[icon_data_len]);
-	size_t size = file->seekAndRead(addr, icon_data.get(), icon_data_len);
-	if (size != icon_data_len) {
-		// Seek and/or read error.
-		// NOTE: If the bitmap is compressed, then we may get a short read.
-		// We'll allow it in that case.
-		if (size <= 16 || compr_type == PalmOS_BitmapType_CompressionType_None) {
-			// Read was **too** short, or the bitmap isn't compressed.
+	uint8_t compr_type;
+	uint32_t compr_data_len;
+	if (version >= 2 && (flags & PalmOS_BitmapType_Flags_compressed)) {
+		// Bitmap data is compressed. Read the compressed size field.
+		uint8_t cbuf[4];
+		size_t size = file->seekAndRead(addr, cbuf, sizeof(cbuf));
+		if (size != sizeof(cbuf)) {
+			// Seek and/or read error.
 			return {};
 		}
-		compr_data_len = size;
+
+		compr_type = selBitmapType->v2.compressionType;
+		if (version >= 3) {
+			// v3: 32-bit size
+			compr_data_len = (cbuf[0] << 24) | (cbuf[1] << 16) | (cbuf[2] << 8) | cbuf[3];
+			addr += sizeof(uint32_t);
+		} else {
+			// v2: 16-bit size
+			compr_data_len = (cbuf[0] << 8) | cbuf[1];
+			addr += sizeof(uint16_t);
+		}
+	} else {
+		// Not compressed.
+		compr_type = PalmOS_BitmapType_CompressionType_None;
+		compr_data_len = icon_data_len;
+	}
+
+	// NOTE: Allocating enough memory for the uncompressed bitmap,
+	// but only reading enough data for the compressed bitmap.
+	// (If the bitmap is not compressed, the sizes are the same.)
+	unique_ptr<uint8_t[]> icon_data(new uint8_t[icon_data_len]);
+	size_t size = file->seekAndRead(addr, icon_data.get(), compr_data_len);
+	if (size != compr_data_len) {
+		// Seek and/or read error.
+		return {};
 	}
 
 	switch (selBitmapType->pixelSize) {
