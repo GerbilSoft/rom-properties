@@ -199,6 +199,39 @@ typedef enum {
 	PalmOS_BitmapType_Density_Quadruple	= 288,	// 640x640 display
 } PalmOS_BitmapType_Density_e;
 
+/**
+ * Palm OS RGBColorType palette entry.
+ * For v2 and v3.
+ *
+ * All fields are in big-endian, with 16-bit alignment.
+ */
+#pragma pack(2)
+typedef struct PACKED _PalmOS_RGBColorType_t {
+	uint8_t index;	// [0x000] Palette index
+	uint8_t r;	// [0x001] Red
+	uint8_t g;	// [0x002] Green
+	uint8_t b;	// [0x003] Blue
+} PalmOS_RGBColorType_t;
+ASSERT_STRUCT(PalmOS_RGBColorType_t, 4);
+#pragma pack()
+
+/**
+ * Palm OS BitmapDirectInfoType for 16-bpp direct color bitmaps.
+ * For v2 only.
+ *
+ * All fields are in big-endian, with 16-bit alignment.
+ */
+#pragma pack(2)
+typedef struct PACKED _PalmOS_BitmapDirectInfoType_t {
+	uint8_t redBits;			// [0x000] Number of red bits (should be 5)
+	uint8_t greenBits;			// [0x001] Number of green bits (should be 6)
+	uint8_t blueBits;			// [0x002] Number of blue bits (should be 5)
+	uint8_t reserved;			// [0x003]
+	PalmOS_RGBColorType_t transparentcolor;	// [0x004] Transparent color
+} PalmOS_BitmapDirectInfoType_t;
+ASSERT_STRUCT(PalmOS_BitmapDirectInfoType_t, 8);
+#pragma pack()
+
 #ifdef __cplusplus
 }
 #endif

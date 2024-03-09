@@ -353,20 +353,13 @@ rp_image_const_ptr PalmOSPrivate::loadIcon(void)
 	for (auto iter = bitmapTypeMap.cbegin(); iter != iter_end; ++iter) {
 		if (!selBitmapType) {
 			// No bitmap selected yet.
-			// NOTE: Only allowing 1-8 bpp for now.
-			if (iter->second.pixelSize <= 8) {
-				addr = iter->first;
-				selBitmapType = &(iter->second);
-			}
+			addr = iter->first;
+			selBitmapType = &(iter->second);
 			continue;
 		}
 
 		// Check if this bitmap is "better" than the currently selected one.
 		const PalmOS_BitmapType_t *checkBitmapType = &(iter->second);
-
-		// NOTE: Only allowing 1-8 bpp for now.
-		if (checkBitmapType->pixelSize > 8)
-			continue;
 
 		// First check: Is it a newer version?
 		if (checkBitmapType->version > selBitmapType->version) {
@@ -399,6 +392,7 @@ rp_image_const_ptr PalmOSPrivate::loadIcon(void)
 		// No bitmap was selected...
 		return {};
 	}
+	const uint8_t version = selBitmapType->version;
 
 	static const uint8_t header_size_tbl[] = {
 		PalmOS_BitmapType_v0_SIZE,
@@ -406,12 +400,12 @@ rp_image_const_ptr PalmOSPrivate::loadIcon(void)
 		PalmOS_BitmapType_v2_SIZE,
 		PalmOS_BitmapType_v3_SIZE,
 	};
-	assert(selBitmapType->version < ARRAY_SIZE(header_size_tbl));
-	if (selBitmapType->version >= ARRAY_SIZE(header_size_tbl)) {
+	assert(version < ARRAY_SIZE(header_size_tbl));
+	if (version >= ARRAY_SIZE(header_size_tbl)) {
 		// Version is not supported...
 		return {};
 	}
-	addr += header_size_tbl[selBitmapType->version];
+	addr += header_size_tbl[version];
 
 	// Decode the icon.
 	const int width = be16_to_cpu(selBitmapType->width);
@@ -428,6 +422,24 @@ rp_image_const_ptr PalmOSPrivate::loadIcon(void)
 	}
 	const unsigned int rowBytes = be16_to_cpu(selBitmapType->rowBytes);
 	const size_t icon_data_len = (size_t)rowBytes * (size_t)height;
+	const uint16_t flags = be16_to_cpu(selBitmapType->flags);
+
+	PalmOS_BitmapDirectInfoType_t bitmapDirectInfoType;
+	if (flags & PalmOS_BitmapType_Flags_directColor) {
+		// Direct Color flag is set. Must be v2 or v3, and pixelSize must be 16.
+		assert(version >= 2);
+		assert(selBitmapType->pixelSize == 16);
+		if (version < 2 || selBitmapType->pixelSize != 16)
+			return {};
+
+		// Read the BitmapDirectInfoType field.
+		size_t size = file->seekAndRead(addr, &bitmapDirectInfoType, sizeof(bitmapDirectInfoType));
+		if (size != sizeof(bitmapDirectInfoType)) {
+			// Seek and/or read error.
+			return {};
+		}
+		addr += sizeof(bitmapDirectInfoType);
+	}
 
 	unique_ptr<uint8_t[]> icon_data(new uint8_t[icon_data_len]);
 	size_t size = file->seekAndRead(addr, icon_data.get(), icon_data_len);
@@ -480,12 +492,11 @@ rp_image_const_ptr PalmOSPrivate::loadIcon(void)
 		case 8: {
 			// 8-bpp indexed (palette)
 			// NOTE: Must be v2 or higher.
-			assert(selBitmapType->version >= 2);
-			if (selBitmapType->version < 2)
+			assert(version >= 2);
+			if (version < 2)
 				break;
 
 			// TODO: Handle various flags.
-			const uint16_t flags = be16_to_cpu(selBitmapType->flags);
 			if (flags & (PalmOS_BitmapType_Flags_hasColorTable |
 			             PalmOS_BitmapType_Flags_directColor |
 			             PalmOS_BitmapType_Flags_indirectColorTable))
@@ -525,7 +536,7 @@ rp_image_const_ptr PalmOSPrivate::loadIcon(void)
 				bool did_tRNS = false;
 				if (flags & PalmOS_BitmapType_Flags_hasTransparency) {
 					// Get the transparent palette index.
-					const uint8_t tr_idx = (selBitmapType->version == 2)
+					const uint8_t tr_idx = (version == 2)
 						? selBitmapType->v2.transparentIndex
 						: static_cast<uint8_t>(be32_to_cpu(selBitmapType->v3.transparentValue));
 
@@ -545,6 +556,66 @@ rp_image_const_ptr PalmOSPrivate::loadIcon(void)
 					img_icon->set_sBIT(&sBIT);
 				}
 			}
+			break;
+		}
+
+		case 16: {
+			// 16-bpp (RGB565)
+			// NOTE: Must be v2 or higher.
+			assert(version >= 2);
+			if (version < 2)
+				break;
+
+			// TODO: Handle various flags.
+			if (flags & (PalmOS_BitmapType_Flags_compressed |
+			             PalmOS_BitmapType_Flags_hasColorTable |
+			             /*PalmOS_BitmapType_Flags_hasTransparency |*/	// TODO (also, v3 only for 16-bpp)
+			             PalmOS_BitmapType_Flags_indirect |
+			             /*PalmOS_BitmapType_Flags_directColor |*/
+			             PalmOS_BitmapType_Flags_indirectColorTable))
+			{
+				// Flag is not supported.
+				break;
+			}
+
+			// TODO: Validate the BitmapDirectInfoType field.
+			// TODO: Transparency.
+
+			// v2: Image is encoded using RGB565 BE.
+			// v3: Check pixelFormat.
+			const uint8_t pixelFormat = (version == 3)
+				? selBitmapType->v3.pixelFormat
+				: static_cast<uint8_t>(PalmOS_BitmapType_PixelFormat_RGB565_BE);
+			switch (pixelFormat) {
+				default:
+				case PalmOS_BitmapType_PixelFormat_Indexed:
+				case PalmOS_BitmapType_PixelFormat_Indexed_LE:
+					// Not supported...
+					assert(!"pixelFormat not supported!");
+					break;
+
+				case PalmOS_BitmapType_PixelFormat_RGB565_BE:
+					// RGB565, big-endian (standard for v2; default for v3)
+#if SYS_BYTEORDER != SYS_BIG_ENDIAN
+					// Byteswap the data.
+					assert(icon_data_len % 2 == 0);
+					rp_byte_swap_16_array(reinterpret_cast<uint16_t*>(icon_data.get()), icon_data_len);
+#endif /* SYS_BYTEORDER != SYS_BIG_ENDIAN */
+					break;
+
+				case PalmOS_BitmapType_PixelFormat_RGB565_LE:
+					// RGB565, big-endian (standard for v2; default for v3)
+#if SYS_BYTEORDER != SYS_LIL_ENDIAN
+					// Byteswap the data.
+					assert(icon_data_len % 2 == 0);
+					rp_byte_swap_16_array(reinterpret_cast<uint16_t*>(icon_data.get()), icon_data_len);
+#endif /* SYS_BYTEORDER != SYS_LIL_ENDIAN */
+					break;
+			}
+
+			img_icon = ImageDecoder::fromLinear16(PixelFormat::RGB565,
+					width, height,
+					reinterpret_cast<const uint16_t*>(icon_data.get()), icon_data_len);
 			break;
 		}
 	}
