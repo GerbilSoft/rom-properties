@@ -463,7 +463,7 @@ rp_image_ptr PalmOSPrivate::loadBitmap_tAIB(const PalmOS_BitmapType_t *bitmapTyp
 				break;
 			}
 
-			// Decompress certain types of images. (TODO: Separate function?)
+			// Decompress certain types of images.
 			switch (compr_type) {
 				default:
 					// Not supported...
@@ -533,8 +533,7 @@ rp_image_ptr PalmOSPrivate::loadBitmap_tAIB(const PalmOS_BitmapType_t *bitmapTyp
 				break;
 
 			// TODO: Handle various flags.
-			if (flags & (PalmOS_BitmapType_Flags_compressed |
-			             PalmOS_BitmapType_Flags_hasColorTable |
+			if (flags & (PalmOS_BitmapType_Flags_hasColorTable |
 			             PalmOS_BitmapType_Flags_indirect |
 			             /*PalmOS_BitmapType_Flags_directColor |*/
 			             PalmOS_BitmapType_Flags_indirectColorTable))
@@ -544,6 +543,28 @@ rp_image_ptr PalmOSPrivate::loadBitmap_tAIB(const PalmOS_BitmapType_t *bitmapTyp
 			}
 
 			// TODO: Validate the BitmapDirectInfoType field.
+
+			// Decompress certain types of images.
+			switch (compr_type) {
+				default:
+					// Not supported...
+					return {};
+
+				case PalmOS_BitmapType_CompressionType_None:
+					// Not actually compressed...
+					break;
+
+				case PalmOS_BitmapType_CompressionType_ScanLine: {
+					// Scanline compression
+					// NOTE: No changes for 16-bpp compared to 8-bpp.
+					icon_data.reset(decompress_scanline(bitmapType, icon_data.get(), compr_data_len));
+					if (!icon_data) {
+						// Decompression failed.
+						return {};
+					}
+					break;
+				}
+			}
 
 			// v2: Image is encoded using RGB565 BE.
 			// v3: Check pixelFormat.
@@ -908,6 +929,7 @@ int PalmOS::isRomSupported_static(const DetectInfo *info)
 	}
 
 	// Check for a non-zero type field.
+	// TODO: Better heuristics.
 	const PalmOS_PRC_Header_t *const prcHeader =
 		reinterpret_cast<const PalmOS_PRC_Header_t*>(info->header.pData);
 	if (prcHeader->type != 0) {
