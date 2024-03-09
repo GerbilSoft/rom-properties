@@ -374,7 +374,7 @@ int WiiU::loadFieldData(void)
 		discHeader->os_version[1], '.',
 		discHeader->os_version[2], '\0'
 	};
-	d->fields.addField_string(C_("WiiU", "OS Version"), s_os_version);
+	d->fields.addField_string(C_("RomData", "OS Version"), s_os_version);
 
 	// Region
 	// TODO: Compare against list of regions and show the fancy name.

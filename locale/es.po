@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties 2.1+\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2024-03-09 15:23-0500\n"
+"POT-Creation-Date: 2024-03-09 15:33-0500\n"
 "PO-Revision-Date: 2021-04-02 22:56-0400\n"
 "Last-Translator: Amnesia1000\n"
 "Language-Team: \n"
@@ -3401,8 +3401,9 @@ msgctxt "RomData"
 msgid "Entry Point"
 msgstr "Punto de entrada"
 
-#: ../src/libromdata/Console/N64.cpp:296
-msgctxt "N64"
+#: ../src/libromdata/Console/N64.cpp:296 ../src/libromdata/Console/WiiU.cpp:377
+#: ../src/libromdata/Other/ELF.cpp:2088 ../src/libromdata/Other/EXE_PE.cpp:656
+msgctxt "RomData"
 msgid "OS Version"
 msgstr "Versión de SO"
 
@@ -4313,11 +4314,6 @@ msgstr "Desconocido(a) (%4s)"
 msgctxt "RomData"
 msgid "Unknown (%02X %02X %02X %02X)"
 msgstr "Desconocido(a) (%02X %02X %02X %02X)"
-
-#: ../src/libromdata/Console/WiiU.cpp:377
-msgctxt "WiiU"
-msgid "OS Version"
-msgstr "Versión de SO"
 
 #: ../src/libromdata/Console/WiiWAD.cpp:832
 #, fuzzy
@@ -7292,11 +7288,6 @@ msgctxt "ELF"
 msgid "Interpreter"
 msgstr "Interpretador"
 
-#: ../src/libromdata/Other/ELF.cpp:2088
-msgctxt "ELF"
-msgid "OS Version"
-msgstr "Versión de SO"
-
 #. tr: Entry point, then "Position-Independent".
 #: ../src/libromdata/Other/ELF.cpp:2104
 #, c-format
@@ -7993,11 +7984,6 @@ msgstr "Microsoft Visual C++ %s Debug Runtime"
 msgctxt "EXE|Runtime"
 msgid "Microsoft System C++ Runtime"
 msgstr "Microsoft System C++ Runtime"
-
-#: ../src/libromdata/Other/EXE_PE.cpp:656
-msgctxt "EXE"
-msgid "OS Version"
-msgstr "Versión de SO"
 
 #: ../src/libromdata/Other/EXE_PE.cpp:675
 msgctxt "EXE"

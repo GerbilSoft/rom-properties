@@ -2085,7 +2085,7 @@ int ELF::loadFieldData(void)
 
 	// Operating system.
 	if (!d->osVersion.empty()) {
-		d->fields.addField_string(C_("ELF", "OS Version"), d->osVersion);
+		d->fields.addField_string(C_("RomData", "OS Version"), d->osVersion);
 	}
 
 	// Entry point.

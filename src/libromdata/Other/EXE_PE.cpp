@@ -653,7 +653,7 @@ void EXEPrivate::addFields_PE(void)
 	fields.addField_string(C_("EXE", "CPU"), s_cpu);
 
 	// OS version
-	fields.addField_string(C_("EXE", "OS Version"),
+	fields.addField_string(C_("RomData", "OS Version"),
 		rp_sprintf("%u.%u", os_ver_major, os_ver_minor));
 
 	// Subsystem name and version

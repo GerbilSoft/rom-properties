@@ -293,7 +293,7 @@ int N64::loadFieldData(void)
 
 	// OS version.
 	// TODO: ISALPHA(), or ISUPPER()?
-	const char *const os_version_title = C_("N64", "OS Version");
+	const char *const os_version_title = C_("RomData", "OS Version");
 	if (romHeader->os_version[0] == 0x00 &&
 	    romHeader->os_version[1] == 0x00 &&
 	    ISALPHA(romHeader->os_version[3]))

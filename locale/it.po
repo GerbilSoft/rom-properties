@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties 2.3+\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2024-03-09 15:23-0500\n"
+"POT-Creation-Date: 2024-03-09 15:33-0500\n"
 "PO-Revision-Date: 2024-03-03 23:45\n"
 "Last-Translator: \n"
 "Language-Team: Italian\n"
@@ -3351,8 +3351,9 @@ msgctxt "RomData"
 msgid "Entry Point"
 msgstr ""
 
-#: ../src/libromdata/Console/N64.cpp:296
-msgctxt "N64"
+#: ../src/libromdata/Console/N64.cpp:296 ../src/libromdata/Console/WiiU.cpp:377
+#: ../src/libromdata/Other/ELF.cpp:2088 ../src/libromdata/Other/EXE_PE.cpp:656
+msgctxt "RomData"
 msgid "OS Version"
 msgstr ""
 
@@ -4256,11 +4257,6 @@ msgstr ""
 #, c-format
 msgctxt "RomData"
 msgid "Unknown (%02X %02X %02X %02X)"
-msgstr ""
-
-#: ../src/libromdata/Console/WiiU.cpp:377
-msgctxt "WiiU"
-msgid "OS Version"
 msgstr ""
 
 #: ../src/libromdata/Console/WiiWAD.cpp:832
@@ -7200,11 +7196,6 @@ msgctxt "ELF"
 msgid "Interpreter"
 msgstr ""
 
-#: ../src/libromdata/Other/ELF.cpp:2088
-msgctxt "ELF"
-msgid "OS Version"
-msgstr ""
-
 #. tr: Entry point, then "Position-Independent".
 #: ../src/libromdata/Other/ELF.cpp:2104
 #, c-format
@@ -7900,11 +7891,6 @@ msgstr ""
 #: ../src/libromdata/Other/EXE_PE.cpp:552
 msgctxt "EXE|Runtime"
 msgid "Microsoft System C++ Runtime"
-msgstr ""
-
-#: ../src/libromdata/Other/EXE_PE.cpp:656
-msgctxt "EXE"
-msgid "OS Version"
 msgstr ""
 
 #: ../src/libromdata/Other/EXE_PE.cpp:675
