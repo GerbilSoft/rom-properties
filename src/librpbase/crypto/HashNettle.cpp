@@ -110,7 +110,6 @@ bool Hash::isUsable(void) const
 	RP_D(const Hash);
 #ifdef ENABLE_DECRYPTION
 	// TODO: Check supported Nettle versions and handle this properly.
-	RP_D(const Hash);
 	return (d->algorithm > Algorithm::Unknown && d->algorithm < Algorithm::Max);
 #else /* !ENABLE_DECRYPTION */
 	return (d->algorithm == Algorithm::CRC32);
