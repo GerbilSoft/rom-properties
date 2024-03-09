@@ -837,6 +837,7 @@ rp_image_const_ptr PalmOSPrivate::loadIcon(void)
 		return {};
 	}
 
+#if 0
 	// AFL testing only: Load *all* bitmaps;
 	for (auto iter = bitmapTypeMap.cbegin(); iter != bitmapTypeMap.cend(); ++iter) {
 		printf("loading: %08X\n", iter->first);
@@ -845,6 +846,7 @@ rp_image_const_ptr PalmOSPrivate::loadIcon(void)
 			printf("FAILED: %08X\n", iter->first);
 		}
 	}
+#endif
 
 	// Select the "best" bitmap.
 	const PalmOS_BitmapType_t *selBitmapType = nullptr;
@@ -1025,7 +1027,7 @@ int PalmOS::isRomSupported_static(const DetectInfo *info)
 	assert(info != nullptr);
 	assert(info->header.pData != nullptr);
 	assert(info->header.addr == 0);
-	if (!info || /*!info->ext ||*/ !info->header.pData ||
+	if (!info || !info->ext || !info->header.pData ||
 	    info->header.addr != 0 ||
 	    info->header.size < sizeof(PalmOS_PRC_Header_t))
 	{
@@ -1035,7 +1037,7 @@ int PalmOS::isRomSupported_static(const DetectInfo *info)
 	}
 
 	// NOTE: File extension must match, and the type field must be non-zero.
-	/*bool ok = false;
+	bool ok = false;
 	for (const char *const *ext = PalmOSPrivate::exts;
 	     *ext != nullptr; ext++)
 	{
@@ -1048,7 +1050,7 @@ int PalmOS::isRomSupported_static(const DetectInfo *info)
 	if (!ok) {
 		// File extension doesn't match.
 		return -1;
-	}*/
+	}
 
 	// Check for a non-zero type field.
 	// TODO: Better heuristics.
