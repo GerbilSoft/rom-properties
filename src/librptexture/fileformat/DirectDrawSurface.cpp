@@ -17,6 +17,7 @@
 
 // Other rom-properties libraries
 #include "libi18n/i18n.h"
+#include "librptext/fourCC.hpp"
 using namespace LibRpFile;
 using LibRpBase::RomFields;
 using LibRpText::rp_sprintf;
@@ -514,7 +515,6 @@ int DirectDrawSurfacePrivate::updatePixelFormat(void)
 		const RGB_Format_Table_t *const entry = getRGBFormatTableEntry(ddspf);
 		if (!entry) {
 			// No table...
-			printf("ERR\n");
 			dxgi_alpha = DDS_ALPHA_MODE_UNKNOWN;
 			return -ENOTSUP;
 		}
@@ -1265,11 +1265,7 @@ const char *DirectDrawSurface::pixelFormat(void) const
 	if (ddspf.dwFlags & DDPF_FOURCC) {
 		// Compressed RGB data.
 		// NOTE: If DX10, see dxgi_format.
-		d_nc->pixel_format[0] = (ddspf.dwFourCC >> 24) & 0xFF;
-		d_nc->pixel_format[1] = (ddspf.dwFourCC >> 16) & 0xFF;
-		d_nc->pixel_format[2] = (ddspf.dwFourCC >>  8) & 0xFF;
-		d_nc->pixel_format[3] =  ddspf.dwFourCC        & 0xFF;
-		d_nc->pixel_format[4] = '\0';
+		LibRpText::fourCCtoString(d_nc->pixel_format, sizeof(d_nc->pixel_format), ddspf.dwFourCC);
 		return d_nc->pixel_format;
 	}
 

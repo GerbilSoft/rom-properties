@@ -55,6 +55,7 @@ SET(${PROJECT_NAME}_SRCS
 	Handheld/Nintendo3DS_SMDH.cpp
 	Handheld/NintendoDS.cpp
 	Handheld/NintendoDS_ops.cpp
+	Handheld/PalmOS.cpp
 	Handheld/PokemonMini.cpp
 	Handheld/PSP.cpp
 	Handheld/VirtualBoy.cpp
@@ -215,6 +216,7 @@ SET(${PROJECT_NAME}_H
 	Handheld/Nintendo3DS_SMDH.hpp
 	Handheld/NintendoDS.hpp
 	Handheld/NintendoDS_p.hpp
+	Handheld/PalmOS.hpp
 	Handheld/PokemonMini.hpp
 	Handheld/PSP.hpp
 	Handheld/VirtualBoy.hpp
@@ -226,6 +228,8 @@ SET(${PROJECT_NAME}_H
 	Handheld/n3ds_structs.h
 	Handheld/nds_structs.h
 	Handheld/ngpc_structs.h
+	Handheld/palmos_structs.h
+	Handheld/palmos_system_palette.h
 	Handheld/pkmnmini_structs.h
 	Handheld/lnx_structs.h
 	Handheld/vb_structs.h

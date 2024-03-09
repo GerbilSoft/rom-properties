@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * PlayStationDisc.cpp: PlayStation 1 and 2 disc image reader.             *
  *                                                                         *
- * Copyright (c) 2019-2023 by David Korth.                                 *
+ * Copyright (c) 2019-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -762,7 +762,7 @@ int PlayStationDisc::loadFieldData(void)
 			// Version
 			auto iter = d->system_cnf.find("VER");
 			if (iter != d->system_cnf.end() && !iter->second.empty()) {
-				d->fields.addField_string(C_("PlayStationDisc", "Version"), iter->second);
+				d->fields.addField_string(C_("RomData", "Version"), iter->second);
 			}
 
 			// Video mode

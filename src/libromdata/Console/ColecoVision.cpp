@@ -340,7 +340,6 @@ ColecoVision::ColecoVision(const IRpFilePtr &file)
 int ColecoVision::isRomSupported_static(const DetectInfo *info)
 {
 	assert(info != nullptr);
-	assert(info->ext != nullptr);
 	if (!info || !info->ext) {
 		// Needs the file extension...
 		return -1;

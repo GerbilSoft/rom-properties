@@ -20,20 +20,22 @@ namespace LibRpTexture { namespace ImageDecoder {
 
 /**
  * Convert a linear CI4 image to rp_image with a little-endian 16-bit palette.
- * @param px_format Palette pixel format.
- * @param msn_left If true, most-significant nybble is the left pixel.
- * @param width Image width.
- * @param height Image height.
- * @param img_buf CI4 image buffer.
- * @param img_siz Size of image data. [must be >= (w*h)/2]
- * @param pal_buf Palette buffer.
- * @param pal_siz Size of palette data. [must be >= 16*2 for 16-bit, >= 16*4 for 32-bit]
+ * @param px_format	[in] Palette pixel format
+ * @param msn_left	[in] If true, most-significant nybble is the left pixel
+ * @param width		[in] Image width
+ * @param height	[in] Image height
+ * @param img_buf	[in] CI4 image buffer
+ * @param img_siz	[in] Size of image data [must be >= (w*h)/2]
+ * @param pal_buf	[in] Palette buffer
+ * @param pal_siz	[in] Size of palette data [must be >= 16*2 for 16-bit, >= 16*4 for 32-bit]
+ * @param stride	[in,opt] Stride, in bytes (if 0, assumes width*bytespp)
  * @return rp_image, or nullptr on error.
  */
 rp_image_ptr fromLinearCI4(PixelFormat px_format, bool msn_left,
 	int width, int height,
 	const uint8_t *RESTRICT img_buf, size_t img_siz,
-	const void *RESTRICT pal_buf, size_t pal_siz)
+	const void *RESTRICT pal_buf, size_t pal_siz,
+	int stride)
 {
 	// Verify parameters.
 	assert(img_buf != nullptr);
@@ -67,6 +69,15 @@ rp_image_ptr fromLinearCI4(PixelFormat px_format, bool msn_left,
 	if (width % 2 != 0)
 		return nullptr;
 
+	// Source stride adjustment.
+	int src_stride_adj = 0;
+	assert(stride >= 0);
+	if (stride > 0) {
+		// Set src_stride_adj to the number of bytes we need to
+		// add to the end of each line to get to the next row.
+		src_stride_adj = stride - ((width / 2) + (width & 1));
+	}
+
 	// Create an rp_image.
 	rp_image_ptr img = std::make_shared<rp_image>(width, height, rp_image::Format::CI8);
 	if (!img->isValid()) {
@@ -86,6 +97,16 @@ rp_image_ptr fromLinearCI4(PixelFormat px_format, bool msn_left,
 
 	int tr_idx = -1;
 	switch (px_format) {
+		case PixelFormat::Host_ARGB32: {
+			// Use the palette directly.
+			memcpy(palette, pal_buf, 16 * sizeof(uint32_t));
+
+			// Set the sBIT metadata.
+			static const rp_image::sBIT_t sBIT = {8,8,8,0,8};
+			img->set_sBIT(&sBIT);
+			break;
+		}
+
 		case PixelFormat::ARGB1555: {
 			const uint16_t *pal_buf16 = reinterpret_cast<const uint16_t*>(pal_buf);
 			for (unsigned int i = 0; i < 16; i++, pal_buf16++) {
@@ -236,6 +257,7 @@ rp_image_ptr fromLinearCI4(PixelFormat px_format, bool msn_left,
 				img_buf++;
 				px_dest += 2;
 			}
+			img_buf += src_stride_adj;
 			px_dest += dest_stride_adj;
 		}
 	} else {
@@ -247,6 +269,7 @@ rp_image_ptr fromLinearCI4(PixelFormat px_format, bool msn_left,
 				img_buf++;
 				px_dest += 2;
 			}
+			img_buf += src_stride_adj;
 			px_dest += dest_stride_adj;
 		}
 	}
@@ -257,19 +280,21 @@ rp_image_ptr fromLinearCI4(PixelFormat px_format, bool msn_left,
 
 /**
  * Convert a linear CI8 image to rp_image with a little-endian 16-bit palette.
- * @param px_format Palette pixel format.
- * @param width Image width.
- * @param height Image height.
- * @param img_buf CI8 image buffer.
- * @param img_siz Size of image data. [must be >= (w*h)]
- * @param pal_buf Palette buffer.
- * @param pal_siz Size of palette data. [must be >= 256*2 for 16-bit, >= 256*4 for 32-bit]
+ * @param px_format	[in] Palette pixel format
+ * @param width		[in] Image width.
+ * @param height	[in] Image height
+ * @param img_buf	[in] CI8 image buffer
+ * @param img_siz	[in] Size of image data [must be >= (w*h)]
+ * @param pal_buf	[in] Palette buffer
+ * @param pal_siz	[in] Size of palette data [must be >= 256*2 for 16-bit, >= 256*4 for 32-bit]
+ * @param stride	[in,opt] Stride, in bytes (if 0, assumes width*bytespp)
  * @return rp_image, or nullptr on error.
  */
 rp_image_ptr fromLinearCI8(PixelFormat px_format,
 	int width, int height,
 	const uint8_t *RESTRICT img_buf, size_t img_siz,
-	const void *RESTRICT pal_buf, size_t pal_siz)
+	const void *RESTRICT pal_buf, size_t pal_siz,
+	int stride)
 {
 	// Verify parameters.
 	assert(img_buf != nullptr);
@@ -559,8 +584,8 @@ rp_image_ptr fromLinearCI8(PixelFormat px_format,
 	img->set_tr_idx(tr_idx);
 
 	uint8_t *px_dest = static_cast<uint8_t*>(img->bits());
-	const int stride = img->stride();
-	if (stride == width) {
+	const int dest_stride = img->stride();
+	if (dest_stride == (stride == 0 ? width : stride)) {
 		// Image stride matches the source width.
 		// Copy the entire image all at once.
 		// TODO: Needs testing.
@@ -569,79 +594,10 @@ rp_image_ptr fromLinearCI8(PixelFormat px_format,
 		// Copy one line at a time. (CI8 -> CI8)
 		for (unsigned int y = static_cast<unsigned int>(height); y > 0; y--) {
 			memcpy(px_dest, img_buf, width);
-			px_dest += stride;
-			img_buf += width;
+			img_buf += stride;
+			px_dest += dest_stride;
 		}
 	}
-
-	// Image has been converted.
-	return img;
-}
-
-/**
- * Convert a linear monochrome image to rp_image.
- * @param width Image width.
- * @param height Image height.
- * @param img_buf Monochrome image buffer.
- * @param img_siz Size of image data. [must be >= (w*h)/8]
- * @return rp_image, or nullptr on error.
- */
-rp_image_ptr fromLinearMono(int width, int height,
-	const uint8_t *RESTRICT img_buf, size_t img_siz)
-{
-	// Verify parameters.
-	assert(img_buf != nullptr);
-	assert(width > 0);
-	assert(height > 0);
-	assert(img_siz >= (((size_t)width * (size_t)height) / 8));
-	if (!img_buf || width <= 0 || height <= 0 ||
-	    img_siz < (((size_t)width * (size_t)height) / 8))
-	{
-		return nullptr;
-	}
-
-	// Monochrome width must be a multiple of eight.
-	assert(width % 8 == 0);
-	if (width % 8 != 0)
-		return nullptr;
-
-	// Create an rp_image.
-	rp_image_ptr img = std::make_shared<rp_image>(width, height, rp_image::Format::CI8);
-	if (!img->isValid()) {
-		// Could not allocate the image.
-		return nullptr;
-	}
-	const int dest_stride_adj = img->stride() - img->width();
-
-	// Set a default monochrome palette.
-	uint32_t *palette = img->palette();
-	palette[0] = 0xFFFFFFFFU;	// white
-	palette[1] = 0xFF000000U;	// black
-	img->set_tr_idx(-1);
-
-	// NOTE: rp_image initializes the palette to 0,
-	// so we don't need to clear the remaining colors.
-
-	// Convert one line at a time. (monochrome -> CI8)
-	uint8_t *px_dest = static_cast<uint8_t*>(img->bits());
-	for (unsigned int y = static_cast<unsigned int>(height); y > 0; y--) {
-		for (unsigned int x = static_cast<unsigned int>(width); x > 0; x -= 8) {
-			uint8_t pxMono = *img_buf++;
-			// TODO: Unroll this loop?
-			for (unsigned int bit = 8; bit > 0; bit--, px_dest++) {
-				// MSB == left-most pixel.
-				*px_dest = (pxMono >> 7);
-				pxMono <<= 1;
-			}
-		}
-		px_dest += dest_stride_adj;
-	}
-
-	// Set the sBIT metadata.
-	// NOTE: Setting the grayscale value, though we're
-	// not saving grayscale PNGs at the moment.
-	static const rp_image::sBIT_t sBIT = {1,1,1,1,0};
-	img->set_sBIT(&sBIT);
 
 	// Image has been converted.
 	return img;

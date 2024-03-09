@@ -2,6 +2,12 @@
 
 ## v2.4 (released 2024/03/??)
 
+* New parsers:
+  * PalmOS: Palm OS executables and resource files (.prc). Thumbnailing is
+    supported (the largest and highest color-depth icon is selected).
+    * Fixes #407: [Feature Request] Add support for Palm OS apps
+      * Requested by @xxmichibxx.
+
 * Bug fixes:
   * On Linux, rp-config now correctly detects KDE Plasma 6 and uses the
     KF6 version of the UI instead of the KF5 version.

@@ -99,6 +99,8 @@ application/x-ctr-smdh			# Nintendo3DS_SMDH (Citra)
 application/x-nintendo-ds-rom		# NintendoDS
 application/vnd.nintendo.nitro.rom	# NintendoDS
 application/x-nintendo-dsi-rom		# NintendoDS
+application/vnd.palm			# Palm OS
+application/x-mobipocket-ebook		# Palm OS (may take precedence on some systems)
 application/x-psp-ciso-image		# PSP
 application/x-psp-dax-image		# PSP
 application/x-psp-jiso-image		# PSP
