@@ -96,6 +96,15 @@ public:
 	uint8_t *decompress_RLE(const PalmOS_BitmapType_t *bitmapType, const uint8_t *compr_data, size_t compr_data_len);
 
 	/**
+	 * Decompress a PackBits-compressed bitmap. (8-bpp version)
+	 * @param bitmapType		[in] PalmOS_BitmapType_t
+	 * @param compr_data		[in] Compressed bitmap data
+	 * @param compr_data_len	[in] Length of compr_data
+	 * @return Buffer containing the decompressed bitmap (rowBytes * height), or nullptr on error.
+	 */
+	uint8_t *decompress_PackBits8(const PalmOS_BitmapType_t *bitmapType, const uint8_t *compr_data, size_t compr_data_len);
+
+	/**
 	 * Load the specified bitmap from a 'tAIB' resource.
 	 * @param bitmapType BitmapType struct
 	 * @param addr Address of the BitmapType struct
@@ -305,6 +314,74 @@ uint8_t *PalmOSPrivate::decompress_RLE(const PalmOS_BitmapType_t *bitmapType, co
 }
 
 /**
+ * Decompress a PackBits-compressed bitmap. (8-bpp version)
+ * @param bitmapType		[in] PalmOS_BitmapType_t
+ * @param compr_data		[in] Compressed bitmap data
+ * @param compr_data_len	[in] Length of compr_data
+ * @return Buffer containing the decompressed bitmap (rowBytes * height), or nullptr on error.
+ */
+uint8_t *PalmOSPrivate::decompress_PackBits8(const PalmOS_BitmapType_t *bitmapType, const uint8_t *compr_data, size_t compr_data_len)
+{
+	// Reference: https://en.wikipedia.org/wiki/PackBits
+	const uint8_t *const compr_data_end = &compr_data[compr_data_len];
+
+	const int height = be16_to_cpu(bitmapType->height);
+	const unsigned int rowBytes = be16_to_cpu(bitmapType->rowBytes);
+	const size_t icon_data_len = (size_t)rowBytes * (size_t)height;
+
+	unique_ptr<uint8_t[]> decomp_buf(new uint8_t[icon_data_len]);
+	uint8_t *dest = decomp_buf.get();
+	for (int y = 0; y < height; y++) {
+		for (unsigned int x = 0; x < rowBytes; ) {
+			// First byte is a signed control byte.
+			assert(compr_data < compr_data_end);
+			if (compr_data >= compr_data_end)
+				return nullptr;
+			const int8_t cbyte = static_cast<int8_t>(*compr_data++);
+
+			if (cbyte == -128) {
+				// No operation. Skip this byte.
+				continue;
+			} else if (cbyte < 0) {
+				// One byte, repeated (1 - n) times.
+				// NOTE: Limited to the remaining bytes in the current row.
+				// TODO: Assert if too many bytes?
+				int reps = 1 - static_cast<int>(cbyte);
+				if (x + static_cast<unsigned int>(reps) >= rowBytes) {
+					reps = static_cast<int>(rowBytes - x);
+				}
+
+				assert(compr_data < compr_data_end);
+				if (compr_data >= compr_data_end)
+					return nullptr;
+				const uint8_t data = *compr_data++;
+				memset(dest, data, reps);
+				dest += reps;
+				x += reps;
+			} else /*if (cbyte > 0)*/ {
+				// (1 + n) bytes of data to copy.
+				unsigned int reps = 1 + static_cast<unsigned int>(cbyte);
+
+				assert(compr_data + reps <= compr_data_end);
+				if (compr_data + reps > compr_data_end)
+					return nullptr;
+
+				// NOTE: Limited to the remaining bytes in the current row.
+				// TODO: Assert if too many bytes?
+				const unsigned int to_copy = std::min(reps, rowBytes - x);
+				memcpy(dest, compr_data, to_copy);
+				compr_data += reps;
+				dest += to_copy;
+				x += to_copy;
+			}
+		}
+	}
+
+	// Bitmap has been decompressed.
+	return decomp_buf.release();
+}
+
+/**
  * Load the specified bitmap from a 'tAIB' resource.
  * @param bitmapType BitmapType struct
  * @param addr Address of the BitmapType struct
@@ -477,6 +554,16 @@ rp_image_ptr PalmOSPrivate::loadBitmap_tAIB(const PalmOS_BitmapType_t *bitmapTyp
 				case PalmOS_BitmapType_CompressionType_ScanLine: {
 					// Scanline compression
 					icon_data.reset(decompress_scanline(bitmapType, icon_data.get(), compr_data_len));
+					if (!icon_data) {
+						// Decompression failed.
+						return {};
+					}
+					break;
+				}
+
+				case PalmOS_BitmapType_CompressionType_PackBits: {
+					// PackBits compression
+					icon_data.reset(decompress_PackBits8(bitmapType, icon_data.get(), compr_data_len));
 					if (!icon_data) {
 						// Decompression failed.
 						return {};
