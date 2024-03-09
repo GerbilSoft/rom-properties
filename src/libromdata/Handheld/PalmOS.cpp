@@ -467,6 +467,7 @@ rp_image_ptr PalmOSPrivate::loadBitmap_tAIB(const PalmOS_BitmapType_t *bitmapTyp
 			switch (compr_type) {
 				default:
 					// Not supported...
+					assert(!"Unsupported bitmap compression type.");
 					return {};
 
 				case PalmOS_BitmapType_CompressionType_None:
@@ -548,6 +549,7 @@ rp_image_ptr PalmOSPrivate::loadBitmap_tAIB(const PalmOS_BitmapType_t *bitmapTyp
 			switch (compr_type) {
 				default:
 					// Not supported...
+					assert(!"Unsupported bitmap compression type.");
 					return {};
 
 				case PalmOS_BitmapType_CompressionType_None:
