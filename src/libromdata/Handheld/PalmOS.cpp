@@ -1025,8 +1025,8 @@ int PalmOS::loadFieldData(void)
 	const PalmOS_PRC_Header_t *const prcHeader = &d->prcHeader;
 	d->fields.reserve(6);	// Maximum of 6 fields.
 
-	// Internal name
-	d->fields.addField_string(C_("PalmOS", "Internal Name"),
+	// Title
+	d->fields.addField_string(C_("RomData", "Title"),
 		latin1_to_utf8(prcHeader->name, sizeof(prcHeader->name)),
 		RomFields::STRF_TRIM_END);
 
@@ -1056,10 +1056,10 @@ int PalmOS::loadFieldData(void)
 			RomFields::STRF_MONOSPACE);
 	}
 
-	// Title
+	// Icon Name
 	const string s_tAIN = d->load_string(PalmOS_PRC_ResType_ApplicationName, 1000);
 	if (!s_tAIN.empty()) {
-		d->fields.addField_string(C_("RomData", "Title"), s_tAIN);
+		d->fields.addField_string(C_("PalmOS", "Icon Name"), s_tAIN);
 	}
 
 	// Version
@@ -1104,16 +1104,10 @@ int PalmOS::loadMetaData(void)
 	// TODO: Text encoding?
 	const PalmOS_PRC_Header_t *const prcHeader = &d->prcHeader;
 
-	// Title (use the "tAIN" resource if available; otherwise, internal name)
-	const string tAIN = d->load_string(PalmOS_PRC_ResType_ApplicationName, 1000);
-	if (!tAIN.empty()) {
-		d->metaData->addMetaData_string(Property::Title, tAIN,
-			RomMetaData::STRF_TRIM_END);
-	} else {
-		d->metaData->addMetaData_string(Property::Title,
-			latin1_to_utf8(prcHeader->name, sizeof(prcHeader->name)),
-			RomMetaData::STRF_TRIM_END);
-	}
+	// Title
+	d->metaData->addMetaData_string(Property::Title,
+		latin1_to_utf8(prcHeader->name, sizeof(prcHeader->name)),
+		RomMetaData::STRF_TRIM_END);
 
 	// Finished reading the metadata.
 	return static_cast<int>(d->metaData->count());
