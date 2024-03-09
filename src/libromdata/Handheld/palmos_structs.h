@@ -13,6 +13,7 @@
 // - https://stuff.mit.edu/afs/sipb/user/yonah/docs/Palm%20OS%20Companion.pdf
 // - https://stuff.mit.edu/afs/sipb/user/yonah/docs/Palm%20OS%20Reference.pdf
 // - https://www.cs.trinity.edu/~jhowland/class.files.cs3194.html/palm-docs/Constructor%20for%20Palm%20OS.pdf
+// - https://www.cs.uml.edu/~fredm/courses/91.308-spr05/files/palmdocs/uiguidelines.pdf
 
 #pragma once
 
