@@ -527,8 +527,10 @@ rp_image_ptr PalmOSPrivate::loadBitmap_tAIB(const PalmOS_BitmapType_t *bitmapTyp
 		case 8: {
 			// 8-bpp indexed (palette)
 			// NOTE: Must be v2 or higher.
-			assert(version >= 2);
-			if (version < 2)
+			// NOTE 2: SpaceWarColor v2.1 and later has an 8-bpp icon bitmap
+			// marked as v1. We'll allow that for now...
+			assert(version >= 1);
+			if (version < 1)
 				break;
 
 			// TODO: Handle various flags.
