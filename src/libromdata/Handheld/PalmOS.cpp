@@ -23,6 +23,7 @@
 #include "librptexture/decoder/ImageDecoder_common.hpp"
 #include "librptexture/decoder/ImageDecoder_Linear.hpp"
 #include "librptexture/decoder/ImageDecoder_Linear_Gray.hpp"
+#include "librptexture/decoder/PixelConversion.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;
@@ -569,7 +570,6 @@ rp_image_const_ptr PalmOSPrivate::loadIcon(void)
 			// TODO: Handle various flags.
 			if (flags & (PalmOS_BitmapType_Flags_compressed |
 			             PalmOS_BitmapType_Flags_hasColorTable |
-			             /*PalmOS_BitmapType_Flags_hasTransparency |*/	// TODO (also, v3 only for 16-bpp)
 			             PalmOS_BitmapType_Flags_indirect |
 			             /*PalmOS_BitmapType_Flags_directColor |*/
 			             PalmOS_BitmapType_Flags_indirectColorTable))
@@ -579,7 +579,6 @@ rp_image_const_ptr PalmOSPrivate::loadIcon(void)
 			}
 
 			// TODO: Validate the BitmapDirectInfoType field.
-			// TODO: Transparency.
 
 			// v2: Image is encoded using RGB565 BE.
 			// v3: Check pixelFormat.
@@ -616,6 +615,32 @@ rp_image_const_ptr PalmOSPrivate::loadIcon(void)
 			img_icon = ImageDecoder::fromLinear16(PixelFormat::RGB565,
 					width, height,
 					reinterpret_cast<const uint16_t*>(icon_data.get()), icon_data_len);
+
+			if (img_icon && (flags & PalmOS_BitmapType_Flags_hasTransparency)) {
+				// Apply transparency.
+				argb32_t key;
+				switch (version) {
+					default:
+						assert(!"Incorrect version for transparency?");
+						break;
+					case 2: {
+						// v2 uses a transparency color in the BitmapDirectInfoType field.
+						// Need to mask and extend the bits.
+						PalmOS_RGBColorType_t tc = bitmapDirectInfoType.transparentcolor;
+						key.a = 0xFF;
+						key.r = (tc.r & 0xF8) | (tc.r >> 5);
+						key.g = (tc.g & 0xFC) | (tc.g >> 6);
+						key.b = (tc.b & 0xF8) | (tc.b >> 5);
+						break;
+					}
+					case 3:
+						// v3 stores a 16-bit RGB565 value in the transparentValue field.
+						// TODO: Is this always RGB565 BE, or can it be RGB565 LE?
+						key.u32 = PixelConversion::RGB565_to_ARGB32(be32_to_cpu(selBitmapType->v3.transparentValue));
+						break;
+				}
+				img_icon->apply_chroma_key(key.u32);
+			}
 			break;
 		}
 	}
