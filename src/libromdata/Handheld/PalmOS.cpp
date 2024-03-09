@@ -590,9 +590,10 @@ PalmOS::PalmOS(const IRpFilePtr &file)
 	}
 
 	// Check if this application is supported.
+	const char *const filename = file->filename();
 	const DetectInfo info = {
 		{0, sizeof(d->prcHeader), reinterpret_cast<const uint8_t*>(&d->prcHeader)},
-		nullptr,	// ext (not needed for PalmOS)
+		FileSystem::file_ext(filename),	// ext
 		0		// szFile (not needed for PalmOS)
 	};
 	d->isValid = (isRomSupported_static(&info) >= 0);
@@ -625,7 +626,7 @@ int PalmOS::isRomSupported_static(const DetectInfo *info)
 	assert(info != nullptr);
 	assert(info->header.pData != nullptr);
 	assert(info->header.addr == 0);
-	if (!info || !info->header.pData ||
+	if (!info || !info->ext || !info->header.pData ||
 	    info->header.addr != 0 ||
 	    info->header.size < sizeof(PalmOS_PRC_Header_t))
 	{
@@ -634,12 +635,28 @@ int PalmOS::isRomSupported_static(const DetectInfo *info)
 		return -1;
 	}
 
-	// TODO: Check for some more fields.
-	// For now, only checking that the type field is "appl".
+	// NOTE: File extension must match, and the type field must be non-zero.
+	bool ok = false;
+	for (const char *const *ext = PalmOSPrivate::exts;
+	     *ext != nullptr; ext++)
+	{
+		if (!strcasecmp(info->ext, *ext)) {
+			// File extension is supported.
+			ok = true;
+			break;
+		}
+	}
+	if (!ok) {
+		// File extension doesn't match.
+		return -1;
+	}
+
+	// Check for a non-zero type field.
 	const PalmOS_PRC_Header_t *const prcHeader =
 		reinterpret_cast<const PalmOS_PRC_Header_t*>(info->header.pData);
-	if (prcHeader->type == cpu_to_be32(PalmOS_PRC_FileType_Application)) {
-		// It's an application.
+	if (prcHeader->type != 0) {
+		// Type is non-zero.
+		// TODO: More checks?
 		return 0;
 	}
 
@@ -785,6 +802,19 @@ int PalmOS::loadFieldData(void)
 	d->fields.addField_string(C_("PalmOS", "Internal Name"),
 		latin1_to_utf8(prcHeader->name, sizeof(prcHeader->name)),
 		RomFields::STRF_TRIM_END);
+
+	// Type
+	// TODO: Filter out non-ASCII characters.
+	{
+		char s_type[5];
+		uint32_t type = be32_to_cpu(prcHeader->type);
+		for (int i = 3; i >= 0; i--, type >>= 8) {
+			s_type[i] = (type & 0xFF);
+		}
+		s_type[4] = '\0';
+		d->fields.addField_string(C_("PalmOS", "Type"), s_type,
+			RomFields::STRF_MONOSPACE);
+	}
 
 	// Creator ID
 	// TODO: Filter out non-ASCII characters.
