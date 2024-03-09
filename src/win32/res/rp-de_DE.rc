@@ -42,7 +42,7 @@ STYLE DS_3DLOOK | DS_CONTROL | DS_SHELLFONT | WS_VISIBLE | WS_CHILDWINDOW | WS_T
 EXSTYLE WS_EX_NOPARENTNOTIFY | WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    GROUPBOX        "Game Boy Titelbildschirme", IDC_STATIC, 7, 7, 397, 82
+    GROUPBOX        "Game Boy Titelbildschirme", IDC_SYSTEMS_DMGTS_GROUPBOX, 7, 7, 397, 82
     LTEXT           "Wählen Sie das Game Boy-Modell aus, das für Titelbildschirme für verschiedene Arten von\nGame Boy-ROM-Bildern verwendet werden soll.", IDC_STATIC, 15, 18, 381, 16
     LTEXT           "Game Boy:", IDC_STATIC, 15, 38, 80, 9
     COMBOBOX        IDC_SYSTEMS_DMGTS_DMG, 77, 37, 69, 30, CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
@@ -61,7 +61,7 @@ STYLE DS_3DLOOK | DS_CONTROL | DS_SHELLFONT | WS_VISIBLE | WS_CHILDWINDOW | WS_T
 EXSTYLE WS_EX_NOPARENTNOTIFY | WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", FW_NORMAL, 0, 0
 BEGIN
-    GROUPBOX        "&Downloads", IDC_STATIC, 7, 7, 397, 121, BS_GROUPBOX, WS_EX_TRANSPARENT
+    GROUPBOX        "&Downloads", IDC_OPTIONS_GRPDOWNLOADS, 7, 7, 397, 121, BS_GROUPBOX, WS_EX_TRANSPARENT
     GROUPBOX        "", IDC_OPTIONS_GRPEXTIMGDL, 15, 19, 381, 47, 0, 0
     AUTOCHECKBOX    "E&xternal Image Downloads", IDC_OPTIONS_CHKEXTIMGDL, 21, 19, 101, 8, 0, 0
     RTEXT           "Wenn eine unlimitierte Netzwerkverbindung genutzt wird:", IDC_OPTIONS_LBL_UNMETERED_DL, 25, 31, 185, 8, 0, 0
@@ -74,7 +74,7 @@ BEGIN
     // FIXME: Determine best height. (Compare to RP_ShellPropSheetExt for multi-language.)
     CONTROL         "", IDC_OPTIONS_PALLANGUAGEFORGAMETDB, WC_LANGUAGECOMBOBOX, CBS_DROPDOWNLIST | WS_CHILD | WS_TABSTOP | WS_VISIBLE, 138, 108, 68, 128, WS_EX_LEFT
 
-    GROUPBOX        "&Optionen", IDC_STATIC, 7, 133, 397, 54, BS_GROUPBOX, WS_EX_TRANSPARENT
+    GROUPBOX        "&Optionen", IDC_OPTIONS_GRPOPTIONS, 7, 133, 397, 54, BS_GROUPBOX, WS_EX_TRANSPARENT
     AUTOCHECKBOX    "Zeige ein Sicherheits-Overlay-Symbol für ROM-Bilder mit\n""gefährlichen"" Berechtigungen.", IDC_OPTIONS_DANGEROUSPERMISSIONS, 15, 144, 381, 16, BS_MULTILINE, WS_EX_TRANSPARENT
     AUTOCHECKBOX    "Thumbnail- und Metadaten-Extrahierung auf Netzwerk-Dateisystemen aktivieren.\nDies kann das Browsen verlangsamen.", IDC_OPTIONS_ENABLETHUMBNAILONNETWORKFS, 15, 165, 381, 16, BS_MULTILINE, WS_EX_TRANSPARENT
 END
