@@ -101,10 +101,12 @@ public:
 	rp_image_const_ptr loadIcon(void);
 
 	/**
-	 * Get the title from the tAIN resource, if available.
-	 * @return Title, or empty string if not found.
+	 * Get a string resource. (max 255 bytes + NULL)
+	 * @param type		[in] Resource type
+	 * @param id		[in] Resource ID
+	 * @return String resource, or empty string if not found.
 	 */
-	string load_tAIN(void);
+	string load_string(uint32_t type, uint16_t id);
 };
 
 ROMDATA_IMPL(PalmOS)
@@ -745,19 +747,21 @@ rp_image_const_ptr PalmOSPrivate::loadIcon(void)
 }
 
 /**
- * Get the title from the tAIN resource, if available.
- * @return Title, or empty string if not found.
+ * Get a string resource. (max 255 bytes + NULL)
+ * @param type		[in] Resource type
+ * @param id		[in] Resource ID
+ * @return String resource, or empty string if not found.
  */
-string PalmOSPrivate::load_tAIN(void)
+string PalmOSPrivate::load_string(uint32_t type, uint16_t id)
 {
-	const PalmOS_PRC_ResHeader_t *const tAIN = findResHeader(PalmOS_PRC_ResType_ApplicationName, 1000);
-	if (!tAIN)
+	const PalmOS_PRC_ResHeader_t *const pRes = findResHeader(type, id);
+	if (!pRes)
 		return {};
 
 	// Read up to 256 bytes at tAIN's address.
 	// This resource contains a NULL-terminated string.
 	char buf[256];
-	size_t size = file->seekAndRead(be32_to_cpu(tAIN->addr), buf, sizeof(buf));
+	size_t size = file->seekAndRead(be32_to_cpu(pRes->addr), buf, sizeof(buf));
 	if (size == 0 || size > sizeof(buf)) {
 		// Out of range.
 		return {};
@@ -1019,7 +1023,7 @@ int PalmOS::loadFieldData(void)
 	// TODO: Add more fields?
 	// TODO: Text encoding?
 	const PalmOS_PRC_Header_t *const prcHeader = &d->prcHeader;
-	d->fields.reserve(4);	// Maximum of 3 fields.
+	d->fields.reserve(5);	// Maximum of 5 fields.
 
 	// Internal name
 	d->fields.addField_string(C_("PalmOS", "Internal Name"),
@@ -1053,9 +1057,15 @@ int PalmOS::loadFieldData(void)
 	}
 
 	// Title
-	const string tAIN = d->load_tAIN();
+	const string tAIN = d->load_string(PalmOS_PRC_ResType_ApplicationName, 1000);
 	if (!tAIN.empty()) {
 		d->fields.addField_string(C_("RomData", "Title"), tAIN);
+	}
+
+	// Version
+	const string s_tver = d->load_string(PalmOS_PRC_ResType_ApplicationVersion, 1000);
+	if (!s_tver.empty()) {
+		d->fields.addField_string(C_("RomData", "Version"), s_tver);
 	}
 
 	// Finished reading the field data.
@@ -1089,7 +1099,7 @@ int PalmOS::loadMetaData(void)
 	const PalmOS_PRC_Header_t *const prcHeader = &d->prcHeader;
 
 	// Title (use the "tAIN" resource if available; otherwise, internal name)
-	const string tAIN = d->load_tAIN();
+	const string tAIN = d->load_string(PalmOS_PRC_ResType_ApplicationName, 1000);
 	if (!tAIN.empty()) {
 		d->metaData->addMetaData_string(Property::Title, tAIN,
 			RomMetaData::STRF_TRIM_END);
