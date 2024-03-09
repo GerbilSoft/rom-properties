@@ -1023,7 +1023,7 @@ int PalmOS::loadFieldData(void)
 	// TODO: Add more fields?
 	// TODO: Text encoding?
 	const PalmOS_PRC_Header_t *const prcHeader = &d->prcHeader;
-	d->fields.reserve(5);	// Maximum of 5 fields.
+	d->fields.reserve(6);	// Maximum of 6 fields.
 
 	// Internal name
 	d->fields.addField_string(C_("PalmOS", "Internal Name"),
@@ -1057,15 +1057,21 @@ int PalmOS::loadFieldData(void)
 	}
 
 	// Title
-	const string tAIN = d->load_string(PalmOS_PRC_ResType_ApplicationName, 1000);
-	if (!tAIN.empty()) {
-		d->fields.addField_string(C_("RomData", "Title"), tAIN);
+	const string s_tAIN = d->load_string(PalmOS_PRC_ResType_ApplicationName, 1000);
+	if (!s_tAIN.empty()) {
+		d->fields.addField_string(C_("RomData", "Title"), s_tAIN);
 	}
 
 	// Version
 	const string s_tver = d->load_string(PalmOS_PRC_ResType_ApplicationVersion, 1000);
 	if (!s_tver.empty()) {
 		d->fields.addField_string(C_("RomData", "Version"), s_tver);
+	}
+
+	// Category
+	const string s_taic = d->load_string(PalmOS_PRC_ResType_ApplicationCategory, 1000);
+	if (!s_taic.empty()) {
+		d->fields.addField_string(C_("PalmOS", "Category"), s_taic);
 	}
 
 	// Finished reading the field data.

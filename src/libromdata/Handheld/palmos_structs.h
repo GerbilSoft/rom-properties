@@ -78,6 +78,7 @@ typedef enum {
 	PalmOS_PRC_ResType_ApplicationIcon	= 'tAIB',
 	PalmOS_PRC_ResType_ApplicationName	= 'tAIN',
 	PalmOS_PRC_ResType_ApplicationVersion	= 'tver',
+	PalmOS_PRC_ResType_ApplicationCategory	= 'taic',
 } PalmOS_PRC_ResType_e;
 
 /**
