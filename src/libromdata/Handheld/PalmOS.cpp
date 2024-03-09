@@ -592,7 +592,7 @@ rp_image_ptr PalmOSPrivate::loadBitmap_tAIB(const PalmOS_BitmapType_t *bitmapTyp
 				bool did_tRNS = false;
 				if (flags & PalmOS_BitmapType_Flags_hasTransparency) {
 					// Get the transparent palette index.
-					const uint8_t tr_idx = (version == 2)
+					const uint8_t tr_idx = (version <= 2)
 						? bitmapType->v2.transparentIndex
 						: static_cast<uint8_t>(be32_to_cpu(bitmapType->v3.transparentValue));
 
