@@ -939,10 +939,10 @@ string PalmOSPrivate::load_string(uint32_t type, uint16_t id)
 PalmOS::PalmOS(const IRpFilePtr &file)
 	: super(new PalmOSPrivate(file))
 {
-	// This class handles applications. (we'll indicate "Executable")
+	// This class handles resource files.
+	// Defaulting to "ResourceLibrary". We'll check for other types later.
 	RP_D(PalmOS);
 	d->mimeType = PalmOSPrivate::mimeTypes[0];
-	d->fileType = FileType::Executable;
 
 	if (!d->file) {
 		// Could not ref() the file handle.
@@ -969,6 +969,27 @@ PalmOS::PalmOS(const IRpFilePtr &file)
 	if (!d->isValid) {
 		d->file.reset();
 		return;
+	}
+
+	// Determine the file type.
+	struct file_type_map_t {
+		uint32_t prc_type;
+		RomData::FileType fileType;
+	};
+	static const file_type_map_t file_type_map[] = {
+		{'appl', FileType::Executable},
+		{'appm', FileType::Executable},
+		{'libr', FileType::SharedLibrary},
+		{'JLib', FileType::SharedLibrary},
+	};
+	// TODO: More heuristics for detecting executables with non-standard types?
+	const uint32_t type = be32_to_cpu(d->prcHeader.type);
+	d->fileType = FileType::ResourceLibrary;
+	for (const auto &ft : file_type_map) {
+		if (ft.prc_type == type) {
+			d->fileType = ft.fileType;
+			break;
+		}
 	}
 
 	// Load the resource headers.
