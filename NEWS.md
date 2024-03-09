@@ -1,10 +1,6 @@
 # Changes
 
-## v2.3.1 (released 2024/03/??)
-
-NOTE: Precompiled builds of v2.3.1 are only being provided for Windows.
-The Linux-specific changes don't affect any current releases of
-Ubuntu Linux.
+## v2.4 (released 2024/03/??)
 
 * Bug fixes:
   * On Linux, rp-config now correctly detects KDE Plasma 6 and uses the

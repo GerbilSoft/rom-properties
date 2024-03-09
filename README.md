@@ -11,12 +11,9 @@ video game ROM and disc images.
 [![CodeFactor](https://www.codefactor.io/repository/github/gerbilsoft/rom-properties/badge)](https://www.codefactor.io/repository/github/gerbilsoft/rom-properties/overview)
 [![codecov](https://codecov.io/gh/GerbilSoft/rom-properties/graph/badge.svg?token=oIiL6oVPwZ)](https://codecov.io/gh/GerbilSoft/rom-properties)
 
-## v2.3.1
+## v2.3
 
 ![KDE Dolphin showing a Commodore 1541 disk image from GEOS.](doc/img/rp-v2.3-kde5.CBMDOS.png)
-
-v2.3.1 is a minor bugfix release for a crash that may occur on Windows when
-using the Directory Opus file browser.
 
 Major changes in v2.3 include:
 
