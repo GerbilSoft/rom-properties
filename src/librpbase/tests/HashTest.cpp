@@ -6,6 +6,8 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "config.librpbase.h"
+
 // Google Test
 #include "gtest/gtest.h"
 #include "tcharx.h"
@@ -130,6 +132,7 @@ TEST_P(HashTest, hashTest)
 	uint8_t hash[64];
 
 	Hash hashObj(mode.algorithm);
+	ASSERT_TRUE(hashObj.isUsable()) << "Specified algorithm is not usable on this system!";
 	EXPECT_EQ(0, hashObj.process(mode.str, strlen(mode.str)));
 	EXPECT_EQ(0, hashObj.getHash(hash, mode.hash_len));
 
@@ -164,6 +167,8 @@ INSTANTIATE_TEST_SUITE_P(CRC32StringHashTest, HashTest,
 		HashTest_mode("ソニック カラーズ", crc32_exp[5], 4, Hash::Algorithm::CRC32)
 		)
 	);
+
+#ifdef ENABLE_DECRYPTION
 
 /** MD5 hash tests **/
 
@@ -350,5 +355,7 @@ INSTANTIATE_TEST_SUITE_P(SHA512StringHashTest, HashTest,
 		HashTest_mode("ソニック カラーズ", sha512_exp[5], 64, Hash::Algorithm::SHA512)
 		)
 	);
+
+#endif /* ENABLE_DECRYPTION */
 
 } }
