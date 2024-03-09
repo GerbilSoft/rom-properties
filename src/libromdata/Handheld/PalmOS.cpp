@@ -433,13 +433,15 @@ rp_image_const_ptr PalmOSPrivate::loadIcon(void)
 		if (version < 2 || selBitmapType->pixelSize != 16)
 			return {};
 
-		// Read the BitmapDirectInfoType field.
-		size_t size = file->seekAndRead(addr, &bitmapDirectInfoType, sizeof(bitmapDirectInfoType));
-		if (size != sizeof(bitmapDirectInfoType)) {
-			// Seek and/or read error.
-			return {};
+		if (version == 2) {
+			// Read the BitmapDirectInfoType field.
+			size_t size = file->seekAndRead(addr, &bitmapDirectInfoType, sizeof(bitmapDirectInfoType));
+			if (size != sizeof(bitmapDirectInfoType)) {
+				// Seek and/or read error.
+				return {};
+			}
+			addr += sizeof(bitmapDirectInfoType);
 		}
-		addr += sizeof(bitmapDirectInfoType);
 	}
 
 	unique_ptr<uint8_t[]> icon_data(new uint8_t[icon_data_len]);
