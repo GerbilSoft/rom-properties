@@ -485,7 +485,6 @@ rp_image_const_ptr PalmOSPrivate::loadIcon(void)
 				break;
 
 			// TODO: Handle various flags.
-			// TODO: Use the default Palm OS color table. Using grayscale for now.
 			const uint16_t flags = be16_to_cpu(selBitmapType->flags);
 			if (flags & (PalmOS_BitmapType_Flags_hasColorTable |
 			             PalmOS_BitmapType_Flags_directColor |
