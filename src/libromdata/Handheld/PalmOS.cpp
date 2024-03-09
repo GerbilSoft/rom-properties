@@ -86,6 +86,15 @@ public:
 	uint8_t *decompress_scanline(const PalmOS_BitmapType_t *bitmapType, const uint8_t *compr_data, size_t compr_data_len);
 
 	/**
+	 * Decompress an RLE-compressed bitmap.
+	 * @param bitmapType		[in] PalmOS_BitmapType_t
+	 * @param compr_data		[in] Compressed bitmap data
+	 * @param compr_data_len	[in] Length of compr_data
+	 * @return Buffer containing the decompressed bitmap (rowBytes * height), or nullptr on error.
+	 */
+	uint8_t *decompress_RLE(const PalmOS_BitmapType_t *bitmapType, const uint8_t *compr_data, size_t compr_data_len);
+
+	/**
 	 * Load the icon.
 	 * @return Icon, or nullptr on error.
 	 */
@@ -166,8 +175,8 @@ const PalmOS_PRC_ResHeader_t *PalmOSPrivate::findResHeader(uint32_t type, uint16
  */
 uint8_t *PalmOSPrivate::decompress_scanline(const PalmOS_BitmapType_t *bitmapType, const uint8_t *compr_data, size_t compr_data_len)
 {
-	assert(compr_data_len > 4);
-	if (compr_data_len <= 4)
+	assert(compr_data_len >= 4+9);
+	if (compr_data_len < 4+9)
 		return nullptr;
 
 	// The image starts with the compressed data size.
@@ -237,6 +246,96 @@ uint8_t *PalmOSPrivate::decompress_scanline(const PalmOS_BitmapType_t *bitmapTyp
 	// Bitmap has been decompressed.
 	return decomp_buf.release();
 }
+
+/**
+ * Decompress an RLE-compressed bitmap.
+ * @param bitmapType		[in] PalmOS_BitmapType_t
+ * @param compr_data		[in] Compressed bitmap data
+ * @param compr_data_len	[in] Length of compr_data
+ * @return Buffer containing the decompressed bitmap (rowBytes * height), or nullptr on error.
+ */
+uint8_t *PalmOSPrivate::decompress_RLE(const PalmOS_BitmapType_t *bitmapType, const uint8_t *compr_data, size_t compr_data_len)
+{
+	assert(compr_data_len > 4);
+	if (compr_data_len <= 4)
+		return nullptr;
+
+	// The image starts with the compressed data size.
+	// TODO: Move this to loadIcon()? It's the same as in decompress_scanline().
+	uint32_t compr_size;
+	if (bitmapType->version >= 3) {
+		// v3: 32-bit size
+		compr_size = (compr_data[0] << 24) | (compr_data[1] << 16) | (compr_data[2] << 8) | compr_data[3];
+		compr_data += sizeof(uint32_t);
+		compr_data_len -= sizeof(uint32_t);
+	} else {
+		// v2: 16-bit size
+		compr_size = (compr_data[0] << 8) | compr_data[1];
+		compr_data += sizeof(uint16_t);
+		compr_data_len -= sizeof(uint16_t);
+	}
+
+	// Make sure we don't overrun the source buffer.
+	assert(compr_size <= compr_data_len);
+	if (compr_size > compr_data_len) {
+		// Compressed size is *larger* than the source buffer.
+		return nullptr;
+	}
+	const uint8_t *const compr_data_end = compr_data + std::min(compr_size, static_cast<unsigned int>(compr_data_len));
+
+	const int height = be16_to_cpu(bitmapType->height);
+	const unsigned int rowBytes = be16_to_cpu(bitmapType->rowBytes);
+	const size_t icon_data_len = (size_t)rowBytes * (size_t)height;
+
+	unique_ptr<uint8_t[]> decomp_buf(new uint8_t[icon_data_len]);
+	const uint8_t *const dest_end = &decomp_buf[icon_data_len];
+	uint8_t *dest = decomp_buf.get();
+	for (int y = 0; y < height; y++) {
+		for (unsigned int x = 0; x < rowBytes; ) {
+			assert(compr_data < compr_data_end);
+			if (compr_data >= compr_data_end)
+				return nullptr;
+
+			// Read the RLE count byte.
+			uint8_t b_count = *compr_data++;
+			assert(b_count != 0);
+			if (b_count == 0) {
+				// Invalid: RLE count cannot be 0.
+				return nullptr;
+			}
+			assert(b_count + x <= rowBytes);
+			if (b_count + x > rowBytes) {
+				// Invalid: RLE exceeds the scanline boundary.
+				return nullptr;
+			}
+
+			// Read the RLE data byte.
+			assert(compr_data < compr_data_end);
+			if (compr_data >= compr_data_end)
+				return nullptr;
+			uint8_t b_data = *compr_data++;
+
+			// Write the decompressed data bytes.
+			assert(dest + b_count <= dest_end);
+			if (dest + b_count > dest_end) {
+				// Invalid: Decompressed data goes out of bounds.
+				return nullptr;
+			}
+			memset(dest, b_data, b_count);
+			dest += b_count;
+			x += b_count;
+		}
+	}
+
+	// Sanity check: We should be at the end of the bitmap.
+	assert(dest == dest_end);
+	if (dest != dest_end)
+		return nullptr;
+
+	// Bitmap has been decompressed.
+	return decomp_buf.release();
+}
+
 /**
  * Load the icon.
  * @return Icon, or nullptr on error.
@@ -422,7 +521,7 @@ rp_image_const_ptr PalmOSPrivate::loadIcon(void)
 		return {};
 	}
 	const unsigned int rowBytes = be16_to_cpu(selBitmapType->rowBytes);
-	const size_t icon_data_len = (size_t)rowBytes * (size_t)height;
+	size_t icon_data_len = (size_t)rowBytes * (size_t)height;
 	const uint16_t flags = be16_to_cpu(selBitmapType->flags);
 
 	PalmOS_BitmapDirectInfoType_t bitmapDirectInfoType;
@@ -444,11 +543,22 @@ rp_image_const_ptr PalmOSPrivate::loadIcon(void)
 		}
 	}
 
+	const uint8_t compr_type = (version >= 2 && (flags & PalmOS_BitmapType_Flags_compressed))
+		? selBitmapType->v2.compressionType
+		: static_cast<uint8_t>(PalmOS_BitmapType_CompressionType_None);
+	size_t compr_data_len = icon_data_len;	// Compressed data length (if short read) [TODO: Use the length field?]
+
 	unique_ptr<uint8_t[]> icon_data(new uint8_t[icon_data_len]);
 	size_t size = file->seekAndRead(addr, icon_data.get(), icon_data_len);
 	if (size != icon_data_len) {
 		// Seek and/or read error.
-		return {};
+		// NOTE: If the bitmap is compressed, then we may get a short read.
+		// We'll allow it in that case.
+		if (size <= 16 || compr_type == PalmOS_BitmapType_CompressionType_None) {
+			// Read was **too** short, or the bitmap isn't compressed.
+			return {};
+		}
+		compr_data_len = size;
 	}
 
 	switch (selBitmapType->pixelSize) {
@@ -509,25 +619,33 @@ rp_image_const_ptr PalmOSPrivate::loadIcon(void)
 			}
 
 			// Decompress certain types of images. (TODO: Separate function?)
-			if (flags & PalmOS_BitmapType_Flags_compressed) {
-				switch (selBitmapType->v2.compressionType) {
-					default:
-						// Not supported...
+			switch (compr_type) {
+				default:
+					// Not supported...
+					return {};
+
+				case PalmOS_BitmapType_CompressionType_None:
+					// Not actually compressed...
+					break;
+
+				case PalmOS_BitmapType_CompressionType_ScanLine: {
+					// Scanline compression
+					icon_data.reset(decompress_scanline(selBitmapType, icon_data.get(), compr_data_len));
+					if (!icon_data) {
+						// Decompression failed.
 						return {};
-
-					case PalmOS_BitmapType_CompressionType_None:
-						// Not actually compressed...
-						break;
-
-					case PalmOS_BitmapType_CompressionType_ScanLine: {
-						// Scanline compression
-						icon_data.reset(decompress_scanline(selBitmapType, icon_data.get(), icon_data_len));
-						if (!icon_data) {
-							// Decompression failed.
-							return {};
-						}
-						break;
 					}
+					break;
+				}
+
+				case PalmOS_BitmapType_CompressionType_RLE: {
+					// RLE compression
+					icon_data.reset(decompress_RLE(selBitmapType, icon_data.get(), compr_data_len));
+					if (!icon_data) {
+						// Decompression failed.
+						return {};
+					}
+					break;
 				}
 			}
 
