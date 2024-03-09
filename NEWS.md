@@ -1,10 +1,10 @@
 # Changes
 
-## v2.3.1 (released 2024/03/??)
+## v2.4 (released 2024/03/??)
 
-NOTE: Precompiled builds of v2.3.1 are only being provided for Windows.
-The Linux-specific changes don't affect any current releases of
-Ubuntu Linux.
+* New parsers:
+  * PalmOS: Palm OS executables and resource files (.prc). Thumbnailing is
+    supported (the largest and highest color-depth icon is selected).
 
 * Bug fixes:
   * On Linux, rp-config now correctly detects KDE Plasma 6 and uses the
