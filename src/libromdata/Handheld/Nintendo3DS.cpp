@@ -2059,7 +2059,7 @@ int Nintendo3DS::loadFieldData(void)
 		// TODO: Required system version?
 
 		// Version.
-		d->fields.addField_string(C_("Nintendo3DS", "Version"),
+		d->fields.addField_string(C_("RomData", "Version"),
 			d->n3dsVersionToString(be16_to_cpu(tmd_header->title_version)));
 
 		// Issuer.

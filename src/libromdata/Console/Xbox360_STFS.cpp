@@ -981,7 +981,7 @@ int Xbox360_STFS::loadFieldData(void)
 	Xbox360_Version_t ver, basever;
 	ver.u32 = be32_to_cpu(stfsMetadata->version.u32);
 	basever.u32 = be32_to_cpu(stfsMetadata->base_version.u32);
-	d->fields.addField_string(C_("Xbox360_XEX", "Version"),
+	d->fields.addField_string(C_("RomData", "Version"),
 		rp_sprintf("%u.%u.%u.%u",
 			static_cast<unsigned int>(ver.major),
 			static_cast<unsigned int>(ver.minor),

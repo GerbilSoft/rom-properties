@@ -3,7 +3,7 @@
  * EXE_NE.cpp: DOS/Windows executable reader.                              *
  * 16-bit New Executable format.                                           *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * Copyright (c) 2022 by Egor.                                             *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
@@ -482,7 +482,7 @@ void EXEPrivate::addFields_NE(void)
 		ret = rsrcReader->load_VS_VERSION_INFO(VS_VERSION_INFO, -1, &vsffi, &vssfi);
 		if (ret == 0) {
 			// Add the version fields.
-			fields.setTabName(1, C_("EXE", "Version"));
+			fields.setTabName(1, C_("RomData", "Version"));
 			fields.setTabIndex(1);
 			addFields_VS_VERSION_INFO(&vsffi, &vssfi);
 		}
