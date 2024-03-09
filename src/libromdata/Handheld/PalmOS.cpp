@@ -993,6 +993,7 @@ PalmOS::PalmOS(const IRpFilePtr &file)
 		{'appm', FileType::Executable},
 		{'libr', FileType::SharedLibrary},
 		{'JLib', FileType::SharedLibrary},
+		{'pdrv', FileType::DeviceDriver},
 	};
 	// TODO: More heuristics for detecting executables with non-standard types?
 	const uint32_t type = be32_to_cpu(d->prcHeader.type);
