@@ -99,6 +99,12 @@ public:
 	 * @return Icon, or nullptr on error.
 	 */
 	rp_image_const_ptr loadIcon(void);
+
+	/**
+	 * Get the title from the tAIN resource, if available.
+	 * @return Title, or empty string if not found.
+	 */
+	string load_tAIN(void);
 };
 
 ROMDATA_IMPL(PalmOS)
@@ -738,6 +744,38 @@ rp_image_const_ptr PalmOSPrivate::loadIcon(void)
 	return img_icon;
 }
 
+/**
+ * Get the title from the tAIN resource, if available.
+ * @return Title, or empty string if not found.
+ */
+string PalmOSPrivate::load_tAIN(void)
+{
+	const PalmOS_PRC_ResHeader_t *const tAIN = findResHeader(PalmOS_PRC_ResType_ApplicationName, 1000);
+	if (!tAIN)
+		return {};
+
+	// Read up to 256 bytes at tAIN's address.
+	// This resource contains a NULL-terminated string.
+	char buf[256];
+	size_t size = file->seekAndRead(be32_to_cpu(tAIN->addr), buf, sizeof(buf));
+	if (size == 0 || size > sizeof(buf)) {
+		// Out of range.
+		return {};
+	}
+
+	// Make sure the buffer is NULL-terminated.
+	buf[size-1] = '\0';
+
+	// Find the first NULL byte and use that as the length.
+	const char *const nullpos = static_cast<const char*>(memchr(buf, '\0', size));
+	if (!nullpos)
+		return {};
+
+	// TODO: Text encoding.
+	const int len = static_cast<int>(nullpos - buf);
+	return latin1_to_utf8(buf, len);
+}
+
 /** PalmOS **/
 
 /**
@@ -981,7 +1019,7 @@ int PalmOS::loadFieldData(void)
 	// TODO: Add more fields?
 	// TODO: Text encoding?
 	const PalmOS_PRC_Header_t *const prcHeader = &d->prcHeader;
-	d->fields.reserve(3);	// Maximum of 3 fields.
+	d->fields.reserve(4);	// Maximum of 3 fields.
 
 	// Internal name
 	d->fields.addField_string(C_("PalmOS", "Internal Name"),
@@ -1014,6 +1052,12 @@ int PalmOS::loadFieldData(void)
 			RomFields::STRF_MONOSPACE);
 	}
 
+	// Title
+	const string tAIN = d->load_tAIN();
+	if (!tAIN.empty()) {
+		d->fields.addField_string(C_("RomData", "Title"), tAIN);
+	}
+
 	// Finished reading the field data.
 	return static_cast<int>(d->fields.count());
 }
@@ -1044,11 +1088,16 @@ int PalmOS::loadMetaData(void)
 	// TODO: Text encoding?
 	const PalmOS_PRC_Header_t *const prcHeader = &d->prcHeader;
 
-	// Internal name
-	// TODO: Use "tAIN" resource if available?
-	d->metaData->addMetaData_string(Property::Title,
-		latin1_to_utf8(prcHeader->name, sizeof(prcHeader->name)),
-		RomMetaData::STRF_TRIM_END);
+	// Title (use the "tAIN" resource if available; otherwise, internal name)
+	const string tAIN = d->load_tAIN();
+	if (!tAIN.empty()) {
+		d->metaData->addMetaData_string(Property::Title, tAIN,
+			RomMetaData::STRF_TRIM_END);
+	} else {
+		d->metaData->addMetaData_string(Property::Title,
+			latin1_to_utf8(prcHeader->name, sizeof(prcHeader->name)),
+			RomMetaData::STRF_TRIM_END);
+	}
 
 	// Finished reading the metadata.
 	return static_cast<int>(d->metaData->count());
