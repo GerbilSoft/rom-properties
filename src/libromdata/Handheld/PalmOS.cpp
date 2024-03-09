@@ -21,6 +21,7 @@
 #include "palmos_system_palette.h"
 
 // Other rom-properties libraries
+#include "librptext/fourCC.hpp"
 #include "librptexture/decoder/ImageDecoder_common.hpp"
 #include "librptexture/decoder/ImageDecoder_Linear.hpp"
 #include "librptexture/decoder/ImageDecoder_Linear_Gray.hpp"
@@ -1205,26 +1206,22 @@ int PalmOS::loadFieldData(void)
 	// TODO: Filter out non-ASCII characters.
 	{
 		char s_type[5];
-		uint32_t type = be32_to_cpu(prcHeader->type);
-		for (int i = 3; i >= 0; i--, type >>= 8) {
-			s_type[i] = (type & 0xFF);
+		int ret = LibRpText::fourCCtoString(s_type, sizeof(s_type), be32_to_cpu(prcHeader->type));
+		if (ret == 0) {
+			d->fields.addField_string(C_("PalmOS", "Type"), s_type,
+				RomFields::STRF_MONOSPACE);
 		}
-		s_type[4] = '\0';
-		d->fields.addField_string(C_("PalmOS", "Type"), s_type,
-			RomFields::STRF_MONOSPACE);
 	}
 
 	// Creator ID
 	// TODO: Filter out non-ASCII characters.
 	if (prcHeader->creator_id != 0) {
 		char s_creator_id[5];
-		uint32_t creator_id = be32_to_cpu(prcHeader->creator_id);
-		for (int i = 3; i >= 0; i--, creator_id >>= 8) {
-			s_creator_id[i] = (creator_id & 0xFF);
+		int ret = LibRpText::fourCCtoString(s_creator_id, sizeof(s_creator_id), be32_to_cpu(prcHeader->creator_id));
+		if (ret == 0) {
+			d->fields.addField_string(C_("PalmOS", "Creator ID"), s_creator_id,
+				RomFields::STRF_MONOSPACE);
 		}
-		s_creator_id[4] = '\0';
-		d->fields.addField_string(C_("PalmOS", "Creator ID"), s_creator_id,
-			RomFields::STRF_MONOSPACE);
 	}
 
 	// Icon Name

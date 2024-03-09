@@ -59,6 +59,7 @@ UNSET(CMAKE_REQUIRED_DEFINITIONS)
 # Sources
 SET(${PROJECT_NAME}_SRCS
 	conversion.cpp
+	fourCC.cpp
 	libc.c
 	printf.cpp
 	specialized.cpp
@@ -66,6 +67,7 @@ SET(${PROJECT_NAME}_SRCS
 # Headers
 SET(${PROJECT_NAME}_H
 	conversion.hpp
+	fourCC.hpp
 	libc.h
 	NULL-check.hpp
 	printf.hpp
