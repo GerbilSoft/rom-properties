@@ -338,7 +338,7 @@ int Hash::getHash(uint8_t *pHash, size_t hash_len)
 		return 0;
 	}
 
-#ifdef ENABLE_DECRPYTION
+#ifdef ENABLE_DECRYPTION
 	int ret = 0;
 	DWORD cbHash = static_cast<DWORD>(hash_len);
 	if (!CryptGetHashParam(d->ctx.hHash, HP_HASHVAL, pHash, &cbHash, 0)) {
@@ -350,7 +350,7 @@ int Hash::getHash(uint8_t *pHash, size_t hash_len)
 	}
 
 	return ret;
-#else /* !ENABLE_DECRPYTION */
+#else /* !ENABLE_DECRYPTION */
 	return -ENOTSUP;
 #endif /* ENABLE_DECRYPTION */
 }
