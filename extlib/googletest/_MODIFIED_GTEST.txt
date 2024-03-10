@@ -27,5 +27,9 @@ The following changes have been made to the original:
 - Removed test suites, scripts, and Xcode projects in order to reduce
   warnings on LGTM.
 
+- Add a workaround for std::is_trivially_copy_constructible<T> and
+  std::is_trivially_destructible<T> not being implemented in gcc-4.9.
+  (They were added in gcc-5.) Fixes the build on Debian 8.
+
 To obtain the original googletest-1.12.1, visit:
 https://github.com/google/googletest

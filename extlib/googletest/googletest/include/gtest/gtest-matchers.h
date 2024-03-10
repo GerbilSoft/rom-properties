@@ -428,11 +428,22 @@ class MatcherBase : private MatcherDescriberInterface {
     }
   }
 
+// rom-properties: Fix build with Debian 8. (gcc-4.9)
+// https://stackoverflow.com/questions/25123458/is-trivially-copyable-is-not-a-member-of-std
+// https://stackoverflow.com/a/31798726
+#if defined(__GNUG__) && __GNUC__ < 5
+#  define IS_TRIVIALLY_COPY_CONSTRUCTIBLE(T)  __has_trivial_copy(T)
+#  define IS_TRIVIALLY_DESTRUCTIBLE(T)        __has_trivial_destructor(T)
+#else
+#  define IS_TRIVIALLY_COPY_CONSTRUCTIBLE(T)  std::is_trivially_copy_constructible<T>::value
+#  define IS_TRIVIALLY_DESTRUCTIBLE(T)        std::is_trivially_destructible<T>::value
+#endif
+
   template <typename M>
   static constexpr bool IsInlined() {
     return sizeof(M) <= sizeof(Buffer) && alignof(M) <= alignof(Buffer) &&
-           std::is_trivially_copy_constructible<M>::value &&
-           std::is_trivially_destructible<M>::value;
+           IS_TRIVIALLY_COPY_CONSTRUCTIBLE(M) &&
+           IS_TRIVIALLY_DESTRUCTIBLE(M);
   }
 
   template <typename M, bool = MatcherBase::IsInlined<M>()>
