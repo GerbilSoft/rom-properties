@@ -734,9 +734,13 @@ int rp_image::swizzle_cpp(const char *swz_spec)
 	// NOTE: Texture uses ARGB format, but swizzle uses rgba.
 	// Rotate swz_ch to convert it to argb.
 	// The entire thing needs to be byteswapped to match the internal order, too.
-	// TODO: Verify on big-endian.
-	swz_ch.u32 = (swz_ch.u32 >> 24) | (swz_ch.u32 << 8);
-	swz_ch.u32 = be32_to_cpu(swz_ch.u32);
+#if SYS_BYTEORDER == SYS_LIL_ENDIAN
+	// LE: Rotate 8-bits right
+	swz_ch.u32 = (swz_ch.u32 >> 24) | (swz_ch.u32 <<  8);
+#else /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
+	// BE: Rotate 8-bits left
+	swz_ch.u32 = (swz_ch.u32 >>  8) | (swz_ch.u32 << 24);
+#endif /* SYS_BYTEORDER == SYS_LIL_ENDIAN */
 
 	uint32_t *bits = static_cast<uint32_t*>(backend->data());
 	const unsigned int stride_diff = (backend->stride - this->row_bytes()) / sizeof(uint32_t);
@@ -746,18 +750,10 @@ int rp_image::swizzle_cpp(const char *swz_spec)
 			u8_32 cur, swz;
 			cur.u32 = *bits;
 
-		// TODO: Verify on big-endian.
-#if SYS_BYTEORDER == SYS_LIL_ENDIAN
-#  define SWZ_CH_B 0
-#  define SWZ_CH_G 1
-#  define SWZ_CH_R 2
-#  define SWZ_CH_A 3
-#else /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
-#  define SWZ_CH_B 3
-#  define SWZ_CH_G 2
-#  define SWZ_CH_R 1
-#  define SWZ_CH_A 0
-#endif /* SYS_BYTEORDER == SYS_LIL_ENDIAN */
+#define SWZ_CH_B 3
+#define SWZ_CH_G 2
+#define SWZ_CH_R 1
+#define SWZ_CH_A 0
 
 #define SWIZZLE_CHANNEL(n) do { \
 				switch (swz_ch.u8[n]) { \

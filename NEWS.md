@@ -25,6 +25,7 @@
       instead of big-endian. This didn't have any actual effect on LE, since
       the le*_to_cpu() macros are no-ops on little-endian systems, but it
       resulted in failures on big-endian systems.
+    * rp_image::swizzle_cpp(): Fix swizzling on big-endian systems.
 
 ## v2.3 (released 2024/03/03)
 
