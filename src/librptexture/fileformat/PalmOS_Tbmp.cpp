@@ -763,10 +763,34 @@ const char *PalmOS_Tbmp::pixelFormat(void) const
 			// TODO: Transparency; compression formats
 			px_fmt = "CI8";
 			break;
-		case 16:
+
+		case 16: {
 			// TODO: Transparency; compression formats; RGB565 BE or LE
+			const uint8_t pixelFormat = (d->bitmapType.version == 3)
+				? d->bitmapType.v3.pixelFormat
+				: static_cast<uint8_t>(PalmOS_BitmapType_PixelFormat_RGB565_BE);
+			switch (pixelFormat) {
+				default:
+				case PalmOS_BitmapType_PixelFormat_Indexed:
+				case PalmOS_BitmapType_PixelFormat_Indexed_LE:
+					// Not supported...
+					assert(!"pixelFormat not supported!");
+					px_fmt = nullptr;
+					break;
+
+				case PalmOS_BitmapType_PixelFormat_RGB565_BE:
+					// RGB565, big-endian (standard for v2; default for v3)
+					px_fmt = "RGB565 (big-endian)";
+					break;
+
+				case PalmOS_BitmapType_PixelFormat_RGB565_LE:
+					// RGB565, big-endian (standard for v2; default for v3)
+					px_fmt = "RGB565 (little-endian)";
+					break;
+			}
 			px_fmt = "RGB565 (big-endian)";
 			break;
+		}
 	}
 
 	return px_fmt;
