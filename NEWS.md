@@ -26,6 +26,9 @@
       the le*_to_cpu() macros are no-ops on little-endian systems, but it
       resulted in failures on big-endian systems.
     * rp_image::swizzle_cpp(): Fix swizzling on big-endian systems.
+  * Linux: Fix build on GTK+ 3.x versions earlier than 3.15.8.
+    * gtk_popover_set_transitions_enabled() was added in GTK+ 3.15.8.
+      It's now used for GTK+ versions [3.15.8, 3.21.5).
 
 ## v2.3 (released 2024/03/03)
 
