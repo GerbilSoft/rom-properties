@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpfile)                        *
  * FileSystem_posix.cpp: File system functions. (POSIX implementation)     *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -27,6 +27,9 @@
 #  include <sys/vfs.h>
 #  include <linux/magic.h>
 // from `man 2 fstatfs`, but not present in linux/magic.h on 4.14-r1
+#  ifndef BPF_FS_MAGIC
+#    define BPF_FS_MAGIC 0xcafe4a11
+#  endif
 #  ifndef CGROUP2_SUPER_MAGIC
 #    define CGROUP2_SUPER_MAGIC 0x63677270
 #  endif
