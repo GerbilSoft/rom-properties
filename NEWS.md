@@ -66,6 +66,7 @@
       GameCube disc images.
     * Fixes #397: Could you add support for PS2 ISO's compressed to zso and cso?
       * Reported by @60fpshacksrock.
+  * Linux: KDE Frameworks 6 is fully supported.
   * New Romanian translation (ro_RO), contributed by @ionuttbara.
   * New Italian translation (it_IT), contributed by MaRod92.
 

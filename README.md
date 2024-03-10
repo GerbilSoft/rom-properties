@@ -72,7 +72,7 @@ Or use the Mibbit Web IRC client: http://mibbit.com/?server=irc.badnik.zone&chan
 
 Currently, the ROM Properties Page shell extension is compatible with the
 following platforms:
-* KDE Frameworks 5.x
+* KDE Frameworks 5.x and 6.x
 * XFCE (GTK+ 2.x, GTK+ 3.x)
 * GNOME and Unity (GTK+ 3.x)
 * GNOME 43 (GTK 4.x)
