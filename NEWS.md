@@ -20,6 +20,11 @@
       * [win32] RP_ShellPropSheetExt: Initial scrolling for data widgets.
     * Fixes #405: Crash when used inside Directory Opus
       * Reported by @Kugelblitz360.
+  * Fixed several issues on big-endian systems, e.g. PowerPC.
+    * DreamcastSave: Byteswapping was incorrectly enabled on little-endian
+      instead of big-endian. This didn't have any actual effect on LE, since
+      the le*_to_cpu() macros are no-ops on little-endian systems, but it
+      resulted in failures on big-endian systems.
 
 ## v2.3 (released 2024/03/03)
 
