@@ -48,6 +48,7 @@ SET(${PROJECT_NAME}_SRCS
 	fileformat/GodotSTEX.cpp
 	fileformat/KhronosKTX.cpp
 	fileformat/KhronosKTX2.cpp
+	fileformat/PalmOS_Tbmp.cpp
 	fileformat/PowerVR3.cpp
 	fileformat/SegaPVR.cpp
 	fileformat/TGA.cpp
@@ -92,6 +93,7 @@ SET(${PROJECT_NAME}_H
 	fileformat/GodotSTEX.hpp
 	fileformat/KhronosKTX.hpp
 	fileformat/KhronosKTX2.hpp
+	fileformat/PalmOS_Tbmp.hpp
 	fileformat/PowerVR3.hpp
 	fileformat/SegaPVR.hpp
 	fileformat/TGA.hpp
@@ -105,6 +107,8 @@ SET(${PROJECT_NAME}_H
 	fileformat/godot_stex_structs.h
 	fileformat/ktx_structs.h
 	fileformat/ktx_structs.h
+	fileformat/palmos_tbmp_structs.h
+	fileformat/palmos_system_palette.h
 	fileformat/pvr_structs.h
 	fileformat/pvr3_structs.h
 	fileformat/vtf_structs.h
