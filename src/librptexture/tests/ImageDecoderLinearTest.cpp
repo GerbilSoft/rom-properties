@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture/tests)               *
  * ImageDecoderLinearTest.cpp: Linear image decoding tests with SSSE3.     *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -398,6 +398,10 @@ void ImageDecoderLinearTest::Validate_RpImage(
 	for (int y = 0; y < height; y++) {
 		const uint32_t *px = static_cast<const uint32_t*>(img->scanLine(y));
 		for (int x = 0; x < width; x++, px++) {
+			if (dest_pixel != *px) {
+				printf("ERR: (%d,%d): expected %08X, got %08X\n",
+					x, y, dest_pixel, *px);
+			}
 			ASSERT_EQ(dest_pixel, *px);
 		}
 	}
