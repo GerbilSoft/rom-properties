@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2024-03-09 15:33-0500\n"
-"PO-Revision-Date: 2024-03-09 21:16\n"
+"PO-Revision-Date: 2024-03-10 18:50\n"
 "Last-Translator: \n"
 "Language-Team: Italian\n"
 "Language: it_IT\n"
@@ -871,8 +871,8 @@ msgstr[1] "%s chiavi esistono già nel Gestore delle Chiavi."
 msgctxt "KeyManagerTab"
 msgid "%s key was not imported because it is incorrect."
 msgid_plural "%s keys were not imported because they are incorrect."
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "La chiave %s non è stata importata perché non è corretta."
+msgstr[1] "Le chiavi %s non sono state importate perché non sono corrette."
 
 #: ../src/gtk/config/KeyManagerTab.cpp:668
 #: ../src/kde/config/KeyManagerTab.cpp:257
@@ -881,8 +881,8 @@ msgstr[1] ""
 msgctxt "KeyManagerTab"
 msgid "%s key was not imported because it isn't used by rom-properties."
 msgid_plural "%s keys were not imported because they aren't used by rom-properties."
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "La chiave %s non è stata importata perché non è utilizzata da rom-properties."
+msgstr[1] "Le chiavi %s non sono state importate perché non sono utilizzate da rom-properties."
 
 #: ../src/gtk/config/KeyManagerTab.cpp:677
 #: ../src/kde/config/KeyManagerTab.cpp:266
@@ -891,8 +891,8 @@ msgstr[1] ""
 msgctxt "KeyManagerTab"
 msgid "%s key was not imported because it is encrypted and the master key isn't available."
 msgid_plural "%s keys were not imported because they are encrypted and the master key isn't available."
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "La chiave %s non è stata importata perché è cifrata e la master key non è disponibile."
+msgstr[1] "Le chiavi %s non sono state importate perché sono cifrate e la master key non è disponibile."
 
 #: ../src/gtk/config/KeyManagerTab.cpp:686
 #: ../src/kde/config/KeyManagerTab.cpp:275
@@ -901,8 +901,8 @@ msgstr[1] ""
 msgctxt "KeyManagerTab"
 msgid "%s key has been imported and verified as correct."
 msgid_plural "%s keys have been imported and verified as correct."
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "La chiave %s è stata importata e verificata correttamente."
+msgstr[1] "Le chiavi %s sono state importate e verificate come corrette."
 
 #: ../src/gtk/config/KeyManagerTab.cpp:694
 #: ../src/kde/config/KeyManagerTab.cpp:284
@@ -911,8 +911,8 @@ msgstr[1] ""
 msgctxt "KeyManagerTab"
 msgid "%s key has been imported without verification."
 msgid_plural "%s keys have been imported without verification."
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "La chiave %s è stata importata senza verifica."
+msgstr[1] "Le chiavi %s sono state importate senza verifica."
 
 #. tr: Column 0: Key Name.
 #: ../src/gtk/config/KeyManagerTab_gtk3.cpp:70
@@ -921,7 +921,7 @@ msgstr[1] ""
 #: ../src/win32/config/KeyManagerTab.cpp:369
 msgctxt "KeyManagerTab"
 msgid "Key Name"
-msgstr ""
+msgstr "Nome della Chiave"
 
 #. tr: Column 1: Value.
 #: ../src/gtk/config/KeyManagerTab_gtk3.cpp:82
@@ -931,7 +931,7 @@ msgstr ""
 #: ../src/win32/config/KeyManagerTab.cpp:378
 msgctxt "KeyManagerTab"
 msgid "Value"
-msgstr ""
+msgstr "Valore"
 
 #. tr: Column 2: Verification status.
 #: ../src/gtk/config/KeyManagerTab_gtk3.cpp:95
@@ -940,37 +940,37 @@ msgstr ""
 #: ../src/win32/config/KeyManagerTab.cpp:383
 msgctxt "KeyManagerTab"
 msgid "Valid?"
-msgstr ""
+msgstr "Valida?"
 
 #: ../src/gtk/config/OptionsTab.cpp:123
 msgctxt "OptionsTab"
 msgid "Downloads"
-msgstr ""
+msgstr "Downloads"
 
 #. tr: Tab title.
 #: ../src/gtk/config/OptionsTab.cpp:245 ../src/win32/config/OptionsTab.cpp:663
 msgctxt "OptionsTab"
 msgid "Options"
-msgstr ""
+msgstr "Opzioni"
 
 #: ../src/gtk/config/SystemsTab.cpp:97
 msgctxt "SystemsTab"
 msgid "Game Boy Title Screens"
-msgstr ""
+msgstr "Schermate Titolo Game Boy"
 
 #: ../src/gtk/config/UpdateChecker.cpp:160
 #: ../src/kde/config/UpdateChecker.cpp:60
 #: ../src/win32/config/UpdateChecker.cpp:72
 msgctxt "UpdateChecker"
 msgid "Failed to download version file."
-msgstr ""
+msgstr "Impossibile scaricare dati sulla versione più recente."
 
 #: ../src/gtk/config/UpdateChecker.cpp:170
 #: ../src/kde/config/UpdateChecker.cpp:69
 #: ../src/win32/config/UpdateChecker.cpp:81
 msgctxt "UpdateChecker"
 msgid "Failed to open version file."
-msgstr ""
+msgstr "Impossibile aprire il file di versione."
 
 #: ../src/gtk/config/UpdateChecker.cpp:181
 #: ../src/gtk/config/UpdateChecker.cpp:194
@@ -10425,7 +10425,7 @@ msgstr ""
 #: ../src/win32/config/AboutTab.cpp:1569
 msgctxt "AboutTab"
 msgid "About"
-msgstr ""
+msgstr "Riguardo a"
 
 #. tr: Tab title.
 #: ../src/win32/config/AchievementsTab.cpp:667
