@@ -379,12 +379,12 @@ void ImageDecoderTest::Compare_RpImage(
 	const uint32_t *pBitsActual   = static_cast<const uint32_t*>(pImgActual->bits());
 	const int stride_diff_exp = (pImgExpected->stride() - pImgExpected->row_bytes()) / sizeof(uint32_t);
 	const int stride_diff_act = (pImgActual->stride() - pImgActual->row_bytes()) / sizeof(uint32_t);
-	const unsigned int width  = static_cast<unsigned int>(pImgExpected->width());
-	const unsigned int height = static_cast<unsigned int>(pImgExpected->height());
-	for (unsigned int y = 0; y < height; y++) {
-		for (unsigned int x = 0; x < width; x++, pBitsExpected++, pBitsActual++) {
+	const int width  = pImgExpected->width();
+	const int height = pImgExpected->height();
+	for (int y = 0; y < height; y++) {
+		for (int x = 0; x < width; x++, pBitsExpected++, pBitsActual++) {
 			if (*pBitsExpected != *pBitsActual) {
-				printf("ERR: (%u,%u): expected %08X, got %08X\n",
+				printf("ERR: (%d,%d): expected %08X, got %08X\n",
 					x, y, *pBitsExpected, *pBitsActual);
 			}
 			ASSERT_EQ(*pBitsExpected, *pBitsActual) <<
