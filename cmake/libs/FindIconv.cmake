@@ -87,6 +87,7 @@ if(NOT DEFINED Iconv_IS_BUILT_IN)
         ic = iconv_open(\"to\", \"from\");
         iconv(ic, &a, &i, &b, &j);
         iconv_close(ic);
+        return 0;
       }
       "
     )
