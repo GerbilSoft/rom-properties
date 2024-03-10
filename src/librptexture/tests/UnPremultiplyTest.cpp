@@ -106,7 +106,7 @@ TEST_F(UnPremultiplyTest, un_premultiply_dispatch_benchmark)
 /**
  * Benchmark the ImageDecoder::premultiply() function. (Standard version)
  */
-TEST_F(UnPremultiplyTest, premultiply_cpp)
+TEST_F(UnPremultiplyTest, premultiply_cpp_benchmark)
 {
 	for (unsigned int i = BENCHMARK_ITERATIONS; i > 0; i--) {
 		m_img->premultiply();
