@@ -944,13 +944,13 @@ INSTANTIATE_TEST_SUITE_P(fromLinear16, ImageDecoderLinearTest,
 	::testing::Values(
 		/** 16-bit **/
 		ImageDecoderLinearTest_mode(
-			le32_to_cpu(0x1234),
+			le16_to_cpu(0x1234),
 			ImageDecoder::PixelFormat::RGB565,
 			0,
 			0xFF1045A5,
 			16),
 		ImageDecoderLinearTest_mode(
-			le32_to_cpu(0xA222),
+			le16_to_cpu(0xA222),
 			ImageDecoder::PixelFormat::BGR565,
 			0,
 			0xFF1045A5,
@@ -958,25 +958,25 @@ INSTANTIATE_TEST_SUITE_P(fromLinear16, ImageDecoderLinearTest,
 
 		// ARGB4444
 		ImageDecoderLinearTest_mode(
-			le32_to_cpu(0x1234),
+			le16_to_cpu(0x1234),
 			ImageDecoder::PixelFormat::ARGB4444,
 			0,
 			0x11223344,
 			16),
 		ImageDecoderLinearTest_mode(
-			le32_to_cpu(0x1432),
+			le16_to_cpu(0x1432),
 			ImageDecoder::PixelFormat::ABGR4444,
 			0,
 			0x11223344,
 			16),
 		ImageDecoderLinearTest_mode(
-			le32_to_cpu(0x2341),
+			le16_to_cpu(0x2341),
 			ImageDecoder::PixelFormat::RGBA4444,
 			0,
 			0x11223344,
 			16),
 		ImageDecoderLinearTest_mode(
-			le32_to_cpu(0x4321),
+			le16_to_cpu(0x4321),
 			ImageDecoder::PixelFormat::BGRA4444,
 			0,
 			0x11223344,
@@ -984,25 +984,25 @@ INSTANTIATE_TEST_SUITE_P(fromLinear16, ImageDecoderLinearTest,
 
 		// xRGB4444
 		ImageDecoderLinearTest_mode(
-			le32_to_cpu(0x1234),
+			le16_to_cpu(0x1234),
 			ImageDecoder::PixelFormat::xRGB4444,
 			0,
 			0xFF223344,
 			16),
 		ImageDecoderLinearTest_mode(
-			le32_to_cpu(0x1432),
+			le16_to_cpu(0x1432),
 			ImageDecoder::PixelFormat::xBGR4444,
 			0,
 			0xFF223344,
 			16),
 		ImageDecoderLinearTest_mode(
-			le32_to_cpu(0x2341),
+			le16_to_cpu(0x2341),
 			ImageDecoder::PixelFormat::RGBx4444,
 			0,
 			0xFF223344,
 			16),
 		ImageDecoderLinearTest_mode(
-			le32_to_cpu(0x4321),
+			le16_to_cpu(0x4321),
 			ImageDecoder::PixelFormat::BGRx4444,
 			0,
 			0xFF223344,
@@ -1010,25 +1010,25 @@ INSTANTIATE_TEST_SUITE_P(fromLinear16, ImageDecoderLinearTest,
 
 		// ARGB1555
 		ImageDecoderLinearTest_mode(
-			le32_to_cpu(0x1234),
+			le16_to_cpu(0x1234),
 			ImageDecoder::PixelFormat::ARGB1555,
 			0,
 			0x00218CA5,
 			16),
 		ImageDecoderLinearTest_mode(
-			le32_to_cpu(0x5224),
+			le16_to_cpu(0x5224),
 			ImageDecoder::PixelFormat::ABGR1555,
 			0,
 			0x00218CA5,
 			16),
 		ImageDecoderLinearTest_mode(
-			le32_to_cpu(0x9234),
+			le16_to_cpu(0x9234),
 			ImageDecoder::PixelFormat::ARGB1555,
 			0,
 			0xFF218CA5,
 			16),
 		ImageDecoderLinearTest_mode(
-			le32_to_cpu(0xD224),
+			le16_to_cpu(0xD224),
 			ImageDecoder::PixelFormat::ABGR1555,
 			0,
 			0xFF218CA5,
@@ -1036,25 +1036,25 @@ INSTANTIATE_TEST_SUITE_P(fromLinear16, ImageDecoderLinearTest,
 
 		// RGBA1555
 		ImageDecoderLinearTest_mode(
-			le32_to_cpu(0x4320),
+			le16_to_cpu(0x4320),
 			ImageDecoder::PixelFormat::RGBA5551,
 			0,
 			0x00426384,
 			16),
 		ImageDecoderLinearTest_mode(
-			le32_to_cpu(0x8310),
+			le16_to_cpu(0x8310),
 			ImageDecoder::PixelFormat::BGRA5551,
 			0,
 			0x00426384,
 			16),
 		ImageDecoderLinearTest_mode(
-			le32_to_cpu(0x4321),
+			le16_to_cpu(0x4321),
 			ImageDecoder::PixelFormat::RGBA5551,
 			0,
 			0xFF426384,
 			16),
 		ImageDecoderLinearTest_mode(
-			le32_to_cpu(0x8311),
+			le16_to_cpu(0x8311),
 			ImageDecoder::PixelFormat::BGRA5551,
 			0,
 			0xFF426384,
@@ -1062,13 +1062,13 @@ INSTANTIATE_TEST_SUITE_P(fromLinear16, ImageDecoderLinearTest,
 
 		// RG88
 		ImageDecoderLinearTest_mode(
-			le32_to_cpu(0x1234),
+			le16_to_cpu(0x1234),
 			ImageDecoder::PixelFormat::RG88,
 			0,
 			0xFF123400,
 			16),
 		ImageDecoderLinearTest_mode(
-			le32_to_cpu(0x3412),
+			le16_to_cpu(0x3412),
 			ImageDecoder::PixelFormat::GR88,
 			0,
 			0xFF123400,
@@ -1076,13 +1076,13 @@ INSTANTIATE_TEST_SUITE_P(fromLinear16, ImageDecoderLinearTest,
 
 		/** 15-bit **/
 		ImageDecoderLinearTest_mode(
-			le32_to_cpu(0x1234),
+			le16_to_cpu(0x1234),
 			ImageDecoder::PixelFormat::RGB555,
 			0,
 			0xFF218CA5,
 			15),
 		ImageDecoderLinearTest_mode(
-			le32_to_cpu(0x5224),
+			le16_to_cpu(0x5224),
 			ImageDecoder::PixelFormat::BGR555,
 			0,
 			0xFF218CA5,
@@ -1094,13 +1094,13 @@ INSTANTIATE_TEST_SUITE_P(fromLinear16_384, ImageDecoderLinearTest,
 	::testing::Values(
 		/** 16-bit **/
 		ImageDecoderLinearTest_mode(
-			le32_to_cpu(0x1234),
+			le16_to_cpu(0x1234),
 			ImageDecoder::PixelFormat::RGB565,
 			384,
 			0xFF1045A5,
 			16),
 		ImageDecoderLinearTest_mode(
-			le32_to_cpu(0xA222),
+			le16_to_cpu(0xA222),
 			ImageDecoder::PixelFormat::BGR565,
 			384,
 			0xFF1045A5,
@@ -1108,25 +1108,25 @@ INSTANTIATE_TEST_SUITE_P(fromLinear16_384, ImageDecoderLinearTest,
 
 		// ARGB4444
 		ImageDecoderLinearTest_mode(
-			le32_to_cpu(0x1234),
+			le16_to_cpu(0x1234),
 			ImageDecoder::PixelFormat::ARGB4444,
 			384,
 			0x11223344,
 			16),
 		ImageDecoderLinearTest_mode(
-			le32_to_cpu(0x1432),
+			le16_to_cpu(0x1432),
 			ImageDecoder::PixelFormat::ABGR4444,
 			384,
 			0x11223344,
 			16),
 		ImageDecoderLinearTest_mode(
-			le32_to_cpu(0x2341),
+			le16_to_cpu(0x2341),
 			ImageDecoder::PixelFormat::RGBA4444,
 			384,
 			0x11223344,
 			16),
 		ImageDecoderLinearTest_mode(
-			le32_to_cpu(0x4321),
+			le16_to_cpu(0x4321),
 			ImageDecoder::PixelFormat::BGRA4444,
 			384,
 			0x11223344,
@@ -1134,25 +1134,25 @@ INSTANTIATE_TEST_SUITE_P(fromLinear16_384, ImageDecoderLinearTest,
 
 		// xRGB4444
 		ImageDecoderLinearTest_mode(
-			le32_to_cpu(0x1234),
+			le16_to_cpu(0x1234),
 			ImageDecoder::PixelFormat::xRGB4444,
 			384,
 			0xFF223344,
 			16),
 		ImageDecoderLinearTest_mode(
-			le32_to_cpu(0x1432),
+			le16_to_cpu(0x1432),
 			ImageDecoder::PixelFormat::xBGR4444,
 			384,
 			0xFF223344,
 			16),
 		ImageDecoderLinearTest_mode(
-			le32_to_cpu(0x2341),
+			le16_to_cpu(0x2341),
 			ImageDecoder::PixelFormat::RGBx4444,
 			384,
 			0xFF223344,
 			16),
 		ImageDecoderLinearTest_mode(
-			le32_to_cpu(0x4321),
+			le16_to_cpu(0x4321),
 			ImageDecoder::PixelFormat::BGRx4444,
 			384,
 			0xFF223344,
@@ -1160,25 +1160,25 @@ INSTANTIATE_TEST_SUITE_P(fromLinear16_384, ImageDecoderLinearTest,
 
 		// ARGB1555
 		ImageDecoderLinearTest_mode(
-			le32_to_cpu(0x1234),
+			le16_to_cpu(0x1234),
 			ImageDecoder::PixelFormat::ARGB1555,
 			384,
 			0x00218CA5,
 			16),
 		ImageDecoderLinearTest_mode(
-			le32_to_cpu(0x5224),
+			le16_to_cpu(0x5224),
 			ImageDecoder::PixelFormat::ABGR1555,
 			384,
 			0x00218CA5,
 			16),
 		ImageDecoderLinearTest_mode(
-			le32_to_cpu(0x9234),
+			le16_to_cpu(0x9234),
 			ImageDecoder::PixelFormat::ARGB1555,
 			384,
 			0xFF218CA5,
 			16),
 		ImageDecoderLinearTest_mode(
-			le32_to_cpu(0xD224),
+			le16_to_cpu(0xD224),
 			ImageDecoder::PixelFormat::ABGR1555,
 			384,
 			0xFF218CA5,
@@ -1186,25 +1186,25 @@ INSTANTIATE_TEST_SUITE_P(fromLinear16_384, ImageDecoderLinearTest,
 
 		// RGBA1555
 		ImageDecoderLinearTest_mode(
-			le32_to_cpu(0x4320),
+			le16_to_cpu(0x4320),
 			ImageDecoder::PixelFormat::RGBA5551,
 			384,
 			0x00426384,
 			16),
 		ImageDecoderLinearTest_mode(
-			le32_to_cpu(0x8310),
+			le16_to_cpu(0x8310),
 			ImageDecoder::PixelFormat::BGRA5551,
 			384,
 			0x00426384,
 			16),
 		ImageDecoderLinearTest_mode(
-			le32_to_cpu(0x4321),
+			le16_to_cpu(0x4321),
 			ImageDecoder::PixelFormat::RGBA5551,
 			384,
 			0xFF426384,
 			16),
 		ImageDecoderLinearTest_mode(
-			le32_to_cpu(0x8311),
+			le16_to_cpu(0x8311),
 			ImageDecoder::PixelFormat::BGRA5551,
 			384,
 			0xFF426384,
@@ -1212,13 +1212,13 @@ INSTANTIATE_TEST_SUITE_P(fromLinear16_384, ImageDecoderLinearTest,
 
 		// RG88
 		ImageDecoderLinearTest_mode(
-			le32_to_cpu(0x1234),
+			le16_to_cpu(0x1234),
 			ImageDecoder::PixelFormat::RG88,
 			384,
 			0xFF123400,
 			16),
 		ImageDecoderLinearTest_mode(
-			le32_to_cpu(0x3412),
+			le16_to_cpu(0x3412),
 			ImageDecoder::PixelFormat::GR88,
 			384,
 			0xFF123400,
@@ -1226,13 +1226,13 @@ INSTANTIATE_TEST_SUITE_P(fromLinear16_384, ImageDecoderLinearTest,
 
 		/** 15-bit **/
 		ImageDecoderLinearTest_mode(
-			le32_to_cpu(0x1234),
+			le16_to_cpu(0x1234),
 			ImageDecoder::PixelFormat::RGB555,
 			384,
 			0xFF218CA5,
 			15),
 		ImageDecoderLinearTest_mode(
-			le32_to_cpu(0x5224),
+			le16_to_cpu(0x5224),
 			ImageDecoder::PixelFormat::BGR555,
 			384,
 			0xFF218CA5,
