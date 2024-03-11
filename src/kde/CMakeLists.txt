@@ -7,7 +7,8 @@ SET(CMAKE_AUTOMOC ON)
 # Sources and headers.
 SET(${PROJECT_NAME}_SRCS
 	plugins/RomPropertiesDialogPlugin.cpp
-	plugins/RomThumbCreator.cpp
+	plugins/RomThumbCreator_p.cpp
+	rp_create_thumbnail.cpp
 	RomDataView.cpp
 	RomDataView_ops.cpp
 	RpQt.cpp
@@ -42,7 +43,7 @@ SET(${PROJECT_NAME}_SRCS
 	)
 SET(${PROJECT_NAME}_H
 	plugins/RomPropertiesDialogPlugin.hpp
-	plugins/RomThumbCreator.hpp
+	plugins/RomThumbCreator_p.hpp
 	RomDataView.hpp
 	RomDataView_p.hpp
 	RpQt.hpp
@@ -90,6 +91,14 @@ SET(${PROJECT_NAME}_UIS
 SET(${PROJECT_NAME}_RCC_SRCS
 	../res/flags/flags.qrc
 	../res/ach/ach.qrc
+	)
+
+# Sources and headers for RomThumbCreator (KDE4, KF5 <5.100)
+SET(${PROJECT_NAME}_RomThumbCreator_SRCS
+	plugins/RomThumbCreator.cpp
+	)
+SET(${PROJECT_NAME}_RomThumbCreator_H
+	plugins/RomThumbCreator.hpp
 	)
 
 # XAttrView plugin

@@ -17,7 +17,6 @@
 // KDE Frameworks 6 will only have ThumbnailCreator.
 class RomThumbCreatorPrivate;
 
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
 #include <kio/thumbcreator.h>
 // TODO: ThumbCreatorV2 on KDE4 for user configuration?
 // (This was merged into ThumbCreator for KF5.)
@@ -63,35 +62,3 @@ private:
 	Q_DECLARE_PRIVATE(RomThumbCreator)
 	Q_DISABLE_COPY(RomThumbCreator)
 };
-#endif /* QT_VERSION < QT_VERSION_CHECK(6,0,0) */
-
-#ifdef HAVE_KIOGUI_KIO_THUMBNAILCREATOR_H
-
-#include <KIO/ThumbnailCreator>
-
-#define RomThumbnailCreatorPrivate RomThumbCreatorPrivate
-class RomThumbnailCreator : public KIO::ThumbnailCreator
-{
-Q_OBJECT
-
-public:
-	RomThumbnailCreator(QObject *parent, const QVariantList &args);
-	~RomThumbnailCreator() override;
-
-public:
-	/**
-	 * Create a thumbnail. (new interface added in KF5 5.100)
-	 *
-	 * @param request ThumbnailRequest
-	 * @return ThumbnailResult
-	 */
-	KIO::ThumbnailResult create(const KIO::ThumbnailRequest &request) final;
-
-private:
-	typedef KIO::ThumbnailCreator super;
-	RomThumbnailCreatorPrivate *const d_ptr;
-	Q_DECLARE_PRIVATE(RomThumbnailCreator)
-	Q_DISABLE_COPY(RomThumbnailCreator)
-};
-
-#endif /* HAVE_KIOGUI_KIO_THUMBNAILCREATOR_H */

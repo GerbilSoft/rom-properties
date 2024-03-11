@@ -11,6 +11,9 @@ STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}_H "${rom-properties-kde_
 STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}_UIS "${rom-properties-kde_UIS}")
 STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}_RCC_SRCS "${rom-properties-kde_RCC_SRCS}")
 
+STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}_RomThumbCreator_SRCS "${rom-properties-kde_RomThumbCreator_SRCS}")
+STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}_RomThumbCreator_H    "${rom-properties-kde_RomThumbCreator_H}")
+
 STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}_XATTR_SRCS "${rom-properties-kde_XATTR_SRCS}")
 STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}_XATTR_H    "${rom-properties-kde_XATTR_H}")
 STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}_XATTR_UIS  "${rom-properties-kde_XATTR_UIS}")
@@ -44,6 +47,7 @@ ENDIF(HAVE_QtDBus)
 # Main plugin
 SET(${PROJECT_NAME}_SRCS
 	${${PROJECT_NAME}_SRCS}
+	${${PROJECT_NAME}_RomThumbCreator_SRCS}
 	${${PROJECT_NAME}-notify_SRCS}
 	${${PROJECT_NAME}_DBUS_IFACE_SRCS}
 	${${PROJECT_NAME}_DBUS_IFACE_SRCS_2}
@@ -52,6 +56,7 @@ SET(${PROJECT_NAME}_SRCS
 	)
 SET(${PROJECT_NAME}_H
 	${${PROJECT_NAME}_H}
+	${${PROJECT_NAME}_RomThumbCreator_H}
 	${${PROJECT_NAME}-notify_H}
 	)
 

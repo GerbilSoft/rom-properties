@@ -1,10 +1,10 @@
-/***************************************************************************
- * ROM Properties Page shell extension. (KF6)                              *
- * PluginFactoryKF6.cpp: Plugin factory class.                             *
- *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
- * SPDX-License-Identifier: GPL-2.0-or-later                               *
- ***************************************************************************/
+/*******************************************************************************
+ * ROM Properties Page shell extension. (KF5)                                  *
+ * ThumbnailCreatorPluginFactoryKF5.cpp: ThumbnailCreator plugin factory class *
+ *                                                                             *
+ * Copyright (c) 2016-2024 by David Korth.                                     *
+ * SPDX-License-Identifier: GPL-2.0-or-later                                   *
+ *******************************************************************************/
 
 /**
  * References:
@@ -15,17 +15,13 @@
  */
 
 #include "stdafx.h"
-#include "config.kde.h"
 
 // RpQImageBackend
 #include "RpQImageBackend.hpp"
 using LibRpTexture::rp_image;
 
-// Achievements backend
-#include "AchQtDBus.hpp"
-
 // Plugins
-#include "../plugins/RomPropertiesDialogPlugin.hpp"
+#include "plugins/RomThumbnailCreator.hpp"
 
 // KDE Frameworks
 #include <kcoreaddons_version.h>
@@ -35,14 +31,11 @@ static void register_backends(void)
 {
 	// Register RpQImageBackend and AchQtDBus.
 	rp_image::setBackendCreatorFn(RpQImageBackend::creator_fn);
-#if defined(ENABLE_ACHIEVEMENTS) && defined(HAVE_QtDBus_NOTIFY)
-	AchQtDBus::instance();
-#endif /* ENABLE_ACHIEVEMENTS && HAVE_QtDBus_NOTIFY */
 }
 
-K_PLUGIN_FACTORY_WITH_JSON(RomPropertiesDialogFactory, "rom-properties-kf6.json",
+K_PLUGIN_FACTORY_WITH_JSON(RomThumbnailCreatorFactory, "RomThumbnailCreator.json",
 	register_backends();
-	registerPlugin<RomPropertiesDialogPlugin>();
+	registerPlugin<RomThumbnailCreator>();
 )
 
 // automoc4 works correctly without any special handling.
@@ -50,4 +43,4 @@ K_PLUGIN_FACTORY_WITH_JSON(RomPropertiesDialogFactory, "rom-properties-kf6.json"
 // Q_OBJECT macro, so it needs a manual .moc include.
 // That .moc include trips up automoc4, even if it's #ifdef'd.
 // Hence, we need separate files for KDE4, KF5, and KF6.
-#include "PluginFactoryKF6.moc"
+#include "ThumbnailCreatorPluginFactoryKF5.moc"

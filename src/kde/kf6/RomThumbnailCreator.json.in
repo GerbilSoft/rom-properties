@@ -1,4 +1,5 @@
 {
+    "CacheThumbnail": true,
     "KPlugin": {
         "Name": "ROM Properties Page",
         "Description": "ROM Properties Page for KDE Frameworks 6",

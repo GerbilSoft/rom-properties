@@ -24,6 +24,9 @@ STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}_H    "${rom-properties-k
 STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}_UIS  "${rom-properties-kde_UIS}")
 STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}_RCC_SRCS "${rom-properties-kde_RCC_SRCS}")
 
+STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}_RomThumbCreator_SRCS "${rom-properties-kde_RomThumbCreator_SRCS}")
+STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}_RomThumbCreator_H    "${rom-properties-kde_RomThumbCreator_H}")
+
 STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}_XATTR_SRCS "${rom-properties-kde_XATTR_SRCS}")
 STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}_XATTR_H    "${rom-properties-kde_XATTR_H}")
 STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}_XATTR_UIS  "${rom-properties-kde_XATTR_UIS}")
@@ -55,8 +58,10 @@ IF(HAVE_QtDBus)
 ENDIF(HAVE_QtDBus)
 
 # Main plugin
+# TODO: Don't compile in RomThumbCreator if we have ThumbnailCreator? (KF5 5.100+)
 SET(${PROJECT_NAME}_SRCS
 	${${PROJECT_NAME}_SRCS}
+	${${PROJECT_NAME}_RomThumbCreator_SRCS}
 	${rom-properties-kio5_SRCS}
 	${${PROJECT_NAME}-notify_SRCS}
 	${${PROJECT_NAME}_DBUS_IFACE_SRCS}
@@ -66,6 +71,7 @@ SET(${PROJECT_NAME}_SRCS
 	)
 SET(${PROJECT_NAME}_H
 	${${PROJECT_NAME}_H}
+	${${PROJECT_NAME}_RomThumbCreator_H}
 	${rom-properties-kio5_H}
 	${${PROJECT_NAME}-notify_H}
 	)
@@ -112,14 +118,55 @@ IF(BUILD_KF5)
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/../..>	# src
 		)
 	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE romdata)
-	IF(HAVE_KIOGUI_KIO_THUMBNAILCREATOR_H)
-		TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE KF5::KIOGui)
-	ENDIF(HAVE_KIOGUI_KIO_THUMBNAILCREATOR_H)
-	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE KF5::CoreAddons KF5::KIOCore KF5::KIOWidgets KF5::WidgetsAddons KF5::FileMetaData)
+	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE KF5::CoreAddons KF5::KIOWidgets KF5::KIOCore KF5::WidgetsAddons KF5::FileMetaData)
 	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC Qt5::Widgets Qt5::Gui Qt5::Core)
 	IF(HAVE_QtDBus)
 		TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC Qt5::DBus)
 	ENDIF(HAVE_QtDBus)
+
+	### ThumbnailCreator plugin (KF5 5.100 and later) ###
+	IF(HAVE_KIOGUI_KIO_THUMBNAILCREATOR_H)
+	SET(RomThumbnailCreator_NAME RomThumbnailCreator-kf5)
+	ADD_LIBRARY(${RomThumbnailCreator_NAME} MODULE
+		ThumbnailCreatorPluginFactoryKF5.cpp
+		../plugins/RomThumbnailCreator.cpp
+		../plugins/RomThumbCreator_p.cpp
+		../ProxyForUrl.cpp
+		../RpQImageBackend.cpp
+		../RpQUrl.cpp
+		../RpQt.cpp
+
+		../plugins/RomThumbnailCreator.hpp
+		../plugins/RomThumbCreator_p.hpp
+		../ProxyForUrl.hpp
+		../RpQImageBackend.hpp
+		../RpQUrl.hpp
+		../RpQt.hpp
+		)
+	# TODO: Enable PCH?
+	#IF(ENABLE_PCH)
+	#	TARGET_PRECOMPILE_HEADERS(${RomThumbnailCreator_NAME} PRIVATE
+	#		"${RP_CONFIG_LIBC_H}" "${RP_COMPILER_COMPAT_H}"
+	#		../stdafx.h
+	#		)
+	#ENDIF(ENABLE_PCH)
+	SET_TARGET_PROPERTIES(${RomThumbnailCreator_NAME} PROPERTIES PREFIX "")
+	DO_SPLIT_DEBUG(${RomThumbnailCreator_NAME})
+	TARGET_INCLUDE_DIRECTORIES(${RomThumbnailCreator_NAME}
+		PUBLIC	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>		# kf6
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>		# kf6
+		PRIVATE	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>	# kde
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/..>	# kde
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../..>	# src
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/../..>	# src
+		)
+	TARGET_LINK_LIBRARIES(${RomThumbnailCreator_NAME} PRIVATE romdata)
+	TARGET_LINK_LIBRARIES(${RomThumbnailCreator_NAME} PRIVATE KF5::KIOWidgets KF5::KIOCore)
+	TARGET_LINK_LIBRARIES(${RomThumbnailCreator_NAME} PUBLIC Qt5::Widgets Qt5::Gui Qt5::Core)
+	IF(HAVE_QtDBus)
+		TARGET_LINK_LIBRARIES(${RomThumbnailCreator_NAME} PUBLIC Qt5::DBus)
+	ENDIF(HAVE_QtDBus)
+	ENDIF(HAVE_KIOGUI_KIO_THUMBNAILCREATOR_H)
 
 	### XAttrView plugin ###
 	SET(XATTRVIEW_NAME xattrview-kf5)
@@ -147,7 +194,7 @@ IF(BUILD_KF5)
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/../..>	# src
 		)
 	TARGET_LINK_LIBRARIES(${XATTRVIEW_NAME} PRIVATE romdata)
-	TARGET_LINK_LIBRARIES(${XATTRVIEW_NAME} PRIVATE KF5::KIOCore KF5::KIOWidgets)
+	TARGET_LINK_LIBRARIES(${XATTRVIEW_NAME} PRIVATE KF5::KIOWidgets KF5::KIOCore)
 	TARGET_LINK_LIBRARIES(${XATTRVIEW_NAME} PUBLIC Qt5::Widgets Qt5::Gui Qt5::Core)
 
 	### Additional Plugins ###
@@ -227,13 +274,18 @@ IF(BUILD_KF5)
 		"${CMAKE_PROJECT_VERSION_MAJOR}.${CMAKE_PROJECT_VERSION_MINOR}.${CMAKE_PROJECT_VERSION_PATCH}"
 		"${CMAKE_SOURCE_DIR}/xdg/mime.thumbnail.types"
 		"${CMAKE_SOURCE_DIR}/xdg/mime.no-thumbnail.types")
+
 	IF(NOT HAVE_JSON_PLUGIN_LOADER)
 		CONFIGURE_FILE(${PROJECT_NAME}.KPropertiesDialog.desktop.in ${PROJECT_NAME}.KPropertiesDialog.desktop @ONLY)
 	ENDIF(NOT HAVE_JSON_PLUGIN_LOADER)
 	IF(NOT HAVE_KIOGUI_KIO_THUMBNAILCREATOR_H)
 		CONFIGURE_FILE(${PROJECT_NAME}.ThumbCreator.desktop.in      ${PROJECT_NAME}.ThumbCreator.desktop @ONLY)
 	ENDIF(NOT HAVE_KIOGUI_KIO_THUMBNAILCREATOR_H)
+
 	CONFIGURE_FILE(${PROJECT_NAME}.json.in ${PROJECT_NAME}.json @ONLY)
+	IF(HAVE_KIOGUI_KIO_THUMBNAILCREATOR_H)
+		CONFIGURE_FILE(RomThumbnailCreator.json.in RomThumbnailCreator.json @ONLY)
+	ENDIF(HAVE_KIOGUI_KIO_THUMBNAILCREATOR_H)
 	CONFIGURE_FILE(ExtractorPlugin.json.in ExtractorPlugin.json @ONLY)
 	CONFIGURE_FILE(OverlayIconPlugin.json.in OverlayIconPlugin.json @ONLY)
 
@@ -242,22 +294,8 @@ IF(BUILD_KF5)
 	ELSE(HAVE_JSON_PLUGIN_LOADER)
 		SET(${PROJECT_NAME}_PLUGIN_DIR "${KF5_PLUGIN_INSTALL_DIR}")
 	ENDIF(HAVE_JSON_PLUGIN_LOADER)
-	INSTALL(TARGETS ${PROJECT_NAME} ${XATTRVIEW_NAME}
-		LIBRARY DESTINATION "${${PROJECT_NAME}_PLUGIN_DIR}"
-		COMPONENT "plugin")
 
-	IF(HAVE_KIOGUI_KIO_THUMBNAILCREATOR_H)
-		# Main plugin is installed in the propertiesdialog subdirectory.
-		# Create a symlink for ThumbnailCreator.
-		ADD_CUSTOM_COMMAND(TARGET ${PROJECT_NAME} POST_BUILD
-			COMMAND ln -sf "${${PROJECT_NAME}_PLUGIN_DIR}/${PROJECT_NAME}.so" "${PROJECT_NAME}.symlink.ThumbnailCreator.so"
-			WORKING_DIRECTORY "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}"
-			VERBATIM)
-		INSTALL(FILES "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/${PROJECT_NAME}.symlink.ThumbnailCreator.so"
-			DESTINATION "${KF5_THUMB_PLUGIN_INSTALL_DIR}"
-			RENAME "${PROJECT_NAME}.so"
-			COMPONENT "plugin")
-	ELSE(HAVE_KIOGUI_KIO_THUMBNAILCREATOR_H)
+	IF(NOT HAVE_KIOGUI_KIO_THUMBNAILCREATOR_H)
 		# NOTE: If using JSON plugin loading, we need to create a symlink for
 		# the old ThumbCreator interface.
 		IF(HAVE_JSON_PLUGIN_LOADER)
@@ -273,8 +311,17 @@ IF(BUILD_KF5)
 		INSTALL(FILES "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.ThumbCreator.desktop"
 			DESTINATION "${SERVICES_INSTALL_DIR}"
 			COMPONENT "plugin")
-	ENDIF(HAVE_KIOGUI_KIO_THUMBNAILCREATOR_H)
+	ENDIF(NOT HAVE_KIOGUI_KIO_THUMBNAILCREATOR_H)
 
+	# Install plugins in the appropriate subdirectories.
+	INSTALL(TARGETS ${PROJECT_NAME} ${XATTRVIEW_NAME}
+		LIBRARY DESTINATION "${${PROJECT_NAME}_PLUGIN_DIR}"
+		COMPONENT "plugin")
+	IF(HAVE_KIOGUI_KIO_THUMBNAILCREATOR_H)
+		INSTALL(TARGETS ${RomThumbnailCreator_NAME}
+			LIBRARY DESTINATION "${KF5_THUMB_PLUGIN_INSTALL_DIR}"
+			COMPONENT "plugin")
+	ENDIF(HAVE_KIOGUI_KIO_THUMBNAILCREATOR_H)
 	INSTALL(TARGETS kfilemetadata_${PROJECT_NAME}
 		LIBRARY DESTINATION "${KF5_KFMD_PLUGIN_INSTALL_DIR}"
 		COMPONENT "plugin")

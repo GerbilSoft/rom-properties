@@ -105,10 +105,52 @@ IF(BUILD_KF6)
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/../..>	# src
 		)
 	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE romdata)
-	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC KF6::KIOGui KF6::KIOCore KF6::KIOWidgets KF6::WidgetsAddons KF6::FileMetaData)
+	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC KF6::KIOWidgets KF6::KIOGui KF6::KIOCore KF6::WidgetsAddons KF6::FileMetaData)
 	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC Qt6::Network Qt6::Widgets Qt6::Gui Qt6::Core)
 	IF(HAVE_QtDBus)
 		TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC Qt6::DBus)
+	ENDIF(HAVE_QtDBus)
+
+	### ThumbnailCreator plugin ###
+	SET(RomThumbnailCreator_NAME RomThumbnailCreator-kf6)
+	ADD_LIBRARY(${RomThumbnailCreator_NAME} MODULE
+		ThumbnailCreatorPluginFactoryKF6.cpp
+		../plugins/RomThumbnailCreator.cpp
+		../plugins/RomThumbCreator_p.cpp
+		../ProxyForUrl.cpp
+		../RpQImageBackend.cpp
+		../RpQUrl.cpp
+		../RpQt.cpp
+
+		../plugins/RomThumbnailCreator.hpp
+		../plugins/RomThumbCreator_p.hpp
+		../ProxyForUrl.hpp
+		../RpQImageBackend.hpp
+		../RpQUrl.hpp
+		../RpQt.hpp
+		)
+	# TODO: Enable PCH?
+	#IF(ENABLE_PCH)
+	#	TARGET_PRECOMPILE_HEADERS(${RomThumbnailCreator_NAME} PRIVATE
+	#		"${RP_CONFIG_LIBC_H}" "${RP_COMPILER_COMPAT_H}"
+	#		../stdafx.h
+	#		)
+	#ENDIF(ENABLE_PCH)
+	SET_TARGET_PROPERTIES(${RomThumbnailCreator_NAME} PROPERTIES PREFIX "")
+	DO_SPLIT_DEBUG(${RomThumbnailCreator_NAME})
+	TARGET_INCLUDE_DIRECTORIES(${RomThumbnailCreator_NAME}
+		PUBLIC	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>		# kf6
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>		# kf6
+		PRIVATE	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>	# kde
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/..>	# kde
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../..>	# src
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/../..>	# src
+		)
+	TARGET_LINK_LIBRARIES(${RomThumbnailCreator_NAME} PRIVATE romdata)
+	TARGET_LINK_LIBRARIES(${RomThumbnailCreator_NAME} PRIVATE KF6::KIOWidgets KF6::KIOCore)
+	TARGET_LINK_LIBRARIES(${RomThumbnailCreator_NAME} PUBLIC Qt6::Widgets Qt6::Gui Qt6::Core)
+	IF(HAVE_QtDBus)
+		TARGET_LINK_LIBRARIES(${RomThumbnailCreator_NAME} PUBLIC Qt6::DBus)
 	ENDIF(HAVE_QtDBus)
 
 	### XAttrView plugin ###
@@ -137,7 +179,7 @@ IF(BUILD_KF6)
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/../..>	# src
 		)
 	TARGET_LINK_LIBRARIES(${XATTRVIEW_NAME} PRIVATE romdata)
-	TARGET_LINK_LIBRARIES(${XATTRVIEW_NAME} PRIVATE KF6::KIOCore KF6::KIOWidgets)
+	TARGET_LINK_LIBRARIES(${XATTRVIEW_NAME} PRIVATE KF6::KIOWidgets KF6::KIOCore)
 	TARGET_LINK_LIBRARIES(${XATTRVIEW_NAME} PUBLIC Qt6::Widgets Qt6::Gui Qt6::Core)
 
 	### Additional Plugins ###
@@ -220,24 +262,19 @@ IF(BUILD_KF6)
 		"${CMAKE_PROJECT_VERSION_MAJOR}.${CMAKE_PROJECT_VERSION_MINOR}.${CMAKE_PROJECT_VERSION_PATCH}"
 		"${CMAKE_SOURCE_DIR}/xdg/mime.thumbnail.types"
 		"${CMAKE_SOURCE_DIR}/xdg/mime.no-thumbnail.types")
+
 	CONFIGURE_FILE(${PROJECT_NAME}.json.in ${PROJECT_NAME}.json @ONLY)
+	CONFIGURE_FILE(RomThumbnailCreator.json.in RomThumbnailCreator.json @ONLY)
 	CONFIGURE_FILE(ExtractorPlugin.json.in ExtractorPlugin.json @ONLY)
 	CONFIGURE_FILE(OverlayIconPlugin.json.in OverlayIconPlugin.json @ONLY)
 
-	# Main plugin is installed in the propertiesdialog subdirectory.
-	# Create a symlink for ThumbCreator.
-	ADD_CUSTOM_COMMAND(TARGET ${PROJECT_NAME} POST_BUILD
-		COMMAND ln -sf "${KF6_PRPD_PLUGIN_INSTALL_DIR}/${PROJECT_NAME}.so" "${PROJECT_NAME}.symlink.so"
-		WORKING_DIRECTORY "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}"
-		VERBATIM)
+	# Install plugins in the appropriate subdirectories.
 	INSTALL(TARGETS ${PROJECT_NAME} ${XATTRVIEW_NAME}
 		LIBRARY DESTINATION "${KF6_PRPD_PLUGIN_INSTALL_DIR}"
 		COMPONENT "plugin")
-	INSTALL(FILES "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/${PROJECT_NAME}.symlink.so"
-		DESTINATION "${KF6_THUMB_PLUGIN_INSTALL_DIR}"
-		RENAME "${PROJECT_NAME}.so"
+	INSTALL(TARGETS ${RomThumbnailCreator_NAME}
+		LIBRARY DESTINATION "${KF6_THUMB_PLUGIN_INSTALL_DIR}"
 		COMPONENT "plugin")
-
 	INSTALL(TARGETS kfilemetadata_${PROJECT_NAME}
 		LIBRARY DESTINATION "${KF6_KFMD_PLUGIN_INSTALL_DIR}"
 		COMPONENT "plugin")
