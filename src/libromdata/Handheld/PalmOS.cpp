@@ -221,19 +221,12 @@ rp_image_const_ptr PalmOSPrivate::loadIcon(void)
 					addr += 16;
 					continue;
 				}
-				if (bitmapType.v1.nextDepthOffset != 0) {
-					const unsigned int nextDepthOffset = be16_to_cpu(bitmapType.v1.nextDepthOffset);
-					addr += nextDepthOffset * sizeof(uint32_t);
-				} else {
-					addr = 0;
-				}
-				break;
-
+				// fall-through
 			case 2:
 				// v2: next bitmap has a relative offset in DWORDs
-				// FIXME: v2 sometimes has an extra +0x04 DWORDs offset to the next bitmap? (+0x10 bytes)
-				if (bitmapType.v2.nextDepthOffset != 0) {
-					const unsigned int nextDepthOffset = be16_to_cpu(bitmapType.v2.nextDepthOffset);// + 0x4;
+				// NOTE: nextDepthOffset is the same for both v1 and v2.
+				if (bitmapType.v1.nextDepthOffset != 0) {
+					const unsigned int nextDepthOffset = be16_to_cpu(bitmapType.v1.nextDepthOffset);
 					addr += nextDepthOffset * sizeof(uint32_t);
 				} else {
 					addr = 0;
