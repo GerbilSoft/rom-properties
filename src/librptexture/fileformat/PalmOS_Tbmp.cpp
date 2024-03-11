@@ -739,10 +739,8 @@ void PalmOS_Tbmp::init(void)
 const char *PalmOS_Tbmp::pixelFormat(void) const
 {
 	RP_D(const PalmOS_Tbmp);
-	if (!d->isValid) {
-		// Not supported.
+	if (!d->isValid)
 		return nullptr;
-	}
 
 	const char *px_fmt;
 	switch (d->bitmapType.pixelSize) {
@@ -820,6 +818,8 @@ int PalmOS_Tbmp::getFields(RomFields *fields) const
 uint32_t PalmOS_Tbmp::getNextTbmpAddress(void) const
 {
 	RP_D(const PalmOS_Tbmp);
+	if (!d->isValid)
+		return 0;
 
 	uint32_t next_addr = 0;
 	switch (d->bitmapType.version) {
@@ -863,10 +863,8 @@ uint32_t PalmOS_Tbmp::getNextTbmpAddress(void) const
 rp_image_const_ptr PalmOS_Tbmp::image(void) const
 {
 	RP_D(const PalmOS_Tbmp);
-	if (!d->isValid) {
-		// Unknown file type.
-		return nullptr;
-	}
+	if (!d->isValid)
+		return {};
 
 	// Load the image.
 	return const_cast<PalmOS_Tbmp_Private*>(d)->loadTbmp();
