@@ -813,6 +813,45 @@ int PalmOS_Tbmp::getFields(RomFields *fields) const
 }
 #endif /* ENABLE_LIBRPBASE_ROMFIELDS */
 
+/**
+ * Get the address of the next bitmap. (for tAIB resources)
+ * @return Address of the next bitmap, or 0 if none.
+ */
+uint32_t PalmOS_Tbmp::getNextTbmpAddress(void) const
+{
+	RP_D(const PalmOS_Tbmp);
+
+	uint32_t next_addr = 0;
+	switch (d->bitmapType.version) {
+		default:
+			assert(!"Unsupported BitmapType version.");
+			break;
+
+		case 0:
+			// v0: no chaining, so this is the last bitmap
+			break;
+
+		case 1:
+		case 2:
+			// v2: next bitmap has a relative offset in DWORDs
+			// NOTE: nextDepthOffset is the same for both v1 and v2.
+			if (d->bitmapType.v1.nextDepthOffset != 0) {
+				const unsigned int nextDepthOffset = be16_to_cpu(d->bitmapType.v1.nextDepthOffset);
+				next_addr = d->bitmapTypeAddr + (nextDepthOffset * sizeof(uint32_t));
+			}
+			break;
+
+		case 3:
+			// v3: next bitmap has a relative offset in bytes
+			if (d->bitmapType.v3.nextBitmapOffset != 0) {
+				next_addr = d->bitmapTypeAddr + be32_to_cpu(d->bitmapType.v3.nextBitmapOffset);
+			}
+			break;
+	}
+
+	return next_addr;
+}
+
 /** Image accessors **/
 
 /**

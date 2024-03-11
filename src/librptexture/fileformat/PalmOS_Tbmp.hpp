@@ -35,9 +35,10 @@ private:
 	void init(void);
 
 public:
-	static int isRomSupported_static(const DetectInfo *info);
-
-public:
+	/**
+	 * Get the address of the next bitmap. (for tAIB resources)
+	 * @return Address of the next bitmap, or 0 if none.
+	 */
 	uint32_t getNextTbmpAddress(void) const;
 
 FILEFORMAT_DECL_END()
