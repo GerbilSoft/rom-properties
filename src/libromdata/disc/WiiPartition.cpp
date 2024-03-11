@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * WiiPartition.hpp: Wii partition reader.                                 *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -527,7 +527,7 @@ WiiPartition::WiiPartition(const IDiscReaderPtr &discReader, off64_t partition_o
 	}
 
 	// Make sure the signature type is correct.
-	if (d->partitionHeader.ticket.signature_type != cpu_to_be32(RVL_SIGNATURE_TYPE_RSA2048)) {
+	if (d->partitionHeader.ticket.signature_type != cpu_to_be32(RVL_CERT_SIGTYPE_RSA2048_SHA1)) {
 		// TODO: Better error?
 		m_lastError = EIO;
 		m_file.reset();

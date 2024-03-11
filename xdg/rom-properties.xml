@@ -509,6 +509,13 @@
     </magic>
   </mime-type>
 
+  <!-- WiiTicket -->
+  <mime-type type="application/x-nintendo-ticket">
+    <comment>Nintendo Ticket</comment>
+    <generic-icon name="application-pkix-cert"/>
+    <glob pattern="*.tik"/>
+  </mime-type>
+
   <!-- WiiU -->
   <mime-type type="application/x-wii-u-rom">
     <comment>Wii U disc image</comment>

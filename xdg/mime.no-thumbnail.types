@@ -35,6 +35,7 @@ application/x-ps1-executable		# PlayStationEXE
 application/x-sms-rom			# Sega8Bit
 application/x-gamegear-rom		# Sega8Bit
 application/x-saturn-rom		# SegaSaturn
+application/x-nintendo-ticket		# WiiTicket
 
 # Handheld
 application/x-atari-lynx-rom		# Lynx

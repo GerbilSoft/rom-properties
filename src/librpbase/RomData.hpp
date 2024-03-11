@@ -214,6 +214,7 @@ public:
 		Partition,		// Partition
 		MetadataFile,		// Metadata File
 		PatchFile,		// Patch File
+		Ticket,			// Ticket file (e.g. Wii/Wii U .tik)
 
 		Max
 	};

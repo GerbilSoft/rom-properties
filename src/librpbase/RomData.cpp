@@ -624,6 +624,8 @@ const char *RomData::fileType_to_string(FileType fileType)
 		NOP_C_("RomData|FileType", "Metadata File"),
 		// tr: FileType::PatchFile
 		NOP_C_("RomData|FileType", "Patch File"),
+		// tr: FileType::Ticket
+		NOP_C_("RomData|FileType", "Ticket"),
 	}};
  
 	const char *const s_fileType = fileType_names[(int)fileType];
