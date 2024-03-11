@@ -15,10 +15,6 @@ using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;
 
-// C++ STL classes
-using std::string;
-using std::vector;
-
 namespace LibRomData {
 
 class WiiTicketPrivate final : public RomDataPrivate
