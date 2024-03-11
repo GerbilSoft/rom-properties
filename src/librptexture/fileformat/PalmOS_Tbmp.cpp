@@ -151,7 +151,7 @@ uint8_t *PalmOS_Tbmp_Private::decompress_scanline(const uint8_t *compr_data, siz
 				diffmask = 0xFF;
 
 			// Process 8 bytes.
-			unsigned int bytecount = std::min(rowBytes - x, 8U);
+			const unsigned int bytecount = std::min(rowBytes - x, 8U);
 			for (unsigned int b = 0; b < bytecount; b++, diffmask <<= 1) {
 				uint8_t px;
 				if (!(diffmask & (1U << 7))) {
@@ -200,7 +200,7 @@ uint8_t *PalmOS_Tbmp_Private::decompress_RLE(const uint8_t *compr_data, size_t c
 				return nullptr;
 
 			// Read the RLE count byte.
-			uint8_t b_count = *compr_data++;
+			const uint8_t b_count = *compr_data++;
 			assert(b_count != 0);
 			if (b_count == 0) {
 				// Invalid: RLE count cannot be 0.
@@ -216,7 +216,7 @@ uint8_t *PalmOS_Tbmp_Private::decompress_RLE(const uint8_t *compr_data, size_t c
 			assert(compr_data < compr_data_end);
 			if (compr_data >= compr_data_end)
 				return nullptr;
-			uint8_t b_data = *compr_data++;
+			const uint8_t b_data = *compr_data++;
 
 			// Write the decompressed data bytes.
 			assert(dest + b_count <= dest_end);
@@ -285,7 +285,7 @@ uint8_t *PalmOS_Tbmp_Private::decompress_PackBits8(const uint8_t *compr_data, si
 				x += reps;
 			} else /*if (cbyte > 0)*/ {
 				// (1 + n) bytes of data to copy.
-				unsigned int reps = 1 + static_cast<unsigned int>(cbyte);
+				const unsigned int reps = 1 + static_cast<unsigned int>(cbyte);
 
 				assert(compr_data + reps <= compr_data_end);
 				if (compr_data + reps > compr_data_end)
