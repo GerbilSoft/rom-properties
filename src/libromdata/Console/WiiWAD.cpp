@@ -81,7 +81,7 @@ WiiWADPrivate::WiiWADPrivate(const IRpFilePtr &file)
 	, data_size(0)
 	, pIMETContent(nullptr)
 	, imetContentOffset(0)
-	, key_idx(WiiPartition::Key_Max)
+	, key_idx(WiiPartition::EncryptionKeys::Unknown)
 	, key_status(KeyManager::VerifyResult::Unknown)
 {
 	// Clear the various structs.
@@ -373,7 +373,7 @@ WiiWAD::WiiWAD(const IRpFilePtr &file)
 	static const char issuer_rvt[] = "Root-CA00000002-XS00000006";
 	if (!memcmp(d->ticket.signature_issuer, issuer_rvt, sizeof(issuer_rvt))) {
 		// Debug encryption.
-		d->key_idx = WiiPartition::Key_Rvt_Debug;
+		d->key_idx = WiiPartition::EncryptionKeys::Key_RVT_Debug;
 	} else {
 		// Retail encryption.
 		uint8_t idx = d->ticket.common_key_index;
@@ -396,8 +396,8 @@ WiiWAD::WiiWAD(const IRpFilePtr &file)
 
 	// Key verification data.
 	// TODO: Move out of WiiPartition and into WiiVerifyKeys?
-	const char *const keyName = WiiPartition::encryptionKeyName_static(d->key_idx);
-	const uint8_t *const verifyData = WiiPartition::encryptionVerifyData_static(d->key_idx);
+	const char *const keyName = WiiPartition::encryptionKeyName_static(static_cast<int>(d->key_idx));
+	const uint8_t *const verifyData = WiiPartition::encryptionVerifyData_static(static_cast<int>(d->key_idx));
 	assert(keyName != nullptr);
 	assert(keyName[0] != '\0');
 	assert(verifyData != nullptr);
@@ -1044,7 +1044,7 @@ int WiiWAD::loadFieldData(void)
 
 	// Encryption key.
 	// TODO: WiiPartition function to get a key's "display name"?
-	static const std::array<const char*, WiiPartition::Key_Max> encKeyNames = {{
+	static const std::array<const char*, static_cast<size_t>(WiiPartition::EncryptionKeys::Max)> encKeyNames = {{
 		// Retail
 		NOP_C_("Wii|EncKey", "Retail"),
 		NOP_C_("Wii|EncKey", "Korean"),
@@ -1061,8 +1061,8 @@ int WiiWAD::loadFieldData(void)
 		NOP_C_("Wii|EncKey", "SD MD5"),
 	}};
 	const char *keyName;
-	if (d->key_idx >= 0 && d->key_idx < encKeyNames.size()) {
-		keyName = dpgettext_expr(RP_I18N_DOMAIN, "Wii|EncKey", encKeyNames[d->key_idx]);
+	if (static_cast<int>(d->key_idx) >= 0 && static_cast<int>(d->key_idx) < (int)encKeyNames.size()) {
+		keyName = dpgettext_expr(RP_I18N_DOMAIN, "Wii|EncKey", encKeyNames[static_cast<int>(d->key_idx)]);
 	} else {
 		keyName = C_("WiiWAD", "Unknown");
 	}
@@ -1428,7 +1428,7 @@ int WiiWAD::checkViewedAchievements(void) const
 	Achievements *const pAch = Achievements::instance();
 	int ret = 0;
 
-	if (d->key_idx == WiiPartition::Key_Rvt_Debug) {
+	if (d->key_idx == WiiPartition::EncryptionKeys::Key_RVT_Debug) {
 		// Debug encryption.
 		pAch->unlock(Achievements::ID::ViewedDebugCryptedFile);
 		ret++;

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * WiiPartition.hpp: Wii partition reader.                                 *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -103,20 +103,25 @@ public:
 	 */
 	LibRpBase::KeyManager::VerifyResult verifyResult(void) const;
 
-	// Encryption key in use.
-	// TODO: Merge with EncryptionKeys.
-	enum class EncKey {
-	Unknown = -1,
+	// Encryption key indexes
+	enum class EncryptionKeys : int8_t {
+		Unknown = -2,
+		None = -1,	// No encryption (RVT-H Reader)
 
-		RVL_Common = 0,		// Common key
-		RVL_Korean = 1,		// Korean key
-		WUP_vWii = 2,		// vWii key
+		// Retail
+		Key_RVL_Common = 0,
+		Key_RVL_Korean,
+		Key_WUP_Starbuck_vWii_Common,
 
-		RVT_Debug = 3,		// Common key (debug)
-		RVT_Korean = 4,		// Korean key (debug)
-		CAT_vWii = 5,		// vWii key (debug)
+		// Debug
+		Key_RVT_Debug,
+		Key_RVT_Korean,
+		Key_CAT_Starbuck_vWii_Common,
 
-		None = 6,		// No encryption (RVT-H)
+		// SD card (TODO: Retail vs. Debug?)
+		Key_RVL_SD_AES,
+		Key_RVL_SD_IV,
+		Key_RVL_SD_MD5,
 
 		Max
 	};
@@ -125,14 +130,14 @@ public:
 	 * Get the encryption key in use.
 	 * @return Encryption key in use.
 	 */
-	EncKey encKey(void) const;
+	EncryptionKeys encKey(void) const;
 
 	/**
 	 * Get the encryption key that would be in use if the partition was encrypted.
 	 * This is only needed for NASOS images.
 	 * @return "Real" encryption key in use.
 	 */
-	EncKey encKeyReal(void) const;
+	EncryptionKeys encKeyReal(void) const;
 
 	/**
 	 * Get the ticket.
@@ -151,27 +156,6 @@ public:
 	 * @return Title ID. (0-0 if unavailable)
 	 */
 	Nintendo_TitleID_BE_t titleID(void) const;
-
-public:
-	// Encryption key indexes.
-	enum EncryptionKeys {
-		// Retail
-		Key_Rvl_Common,
-		Key_Rvl_Korean,
-		Key_Wup_Starbuck_vWii_Common,
-
-		// Debug
-		Key_Rvt_Debug,
-		Key_Rvt_Korean,
-		Key_Cat_Starbuck_vWii_Common,
-
-		// SD card (TODO: Retail vs. Debug?)
-		Key_Rvl_SD_AES,
-		Key_Rvl_SD_IV,
-		Key_Rvl_SD_MD5,
-
-		Key_Max
-	};
 
 #ifdef ENABLE_DECRYPTION
 public:

@@ -123,7 +123,7 @@ WiiSavePrivate::WiiSavePrivate(const IRpFilePtr &file)
 	memset(&bkHeader, 0, sizeof(bkHeader));
 
 #ifdef ENABLE_DECRYPTION
-	key_idx.fill(WiiPartition::Key_Max);
+	key_idx.fill(WiiPartition::EncryptionKeys::Max);
 	key_status.fill(KeyManager::VerifyResult::Unknown);
 #endif /* ENABLE_DECRYPTION */
 }
@@ -215,8 +215,8 @@ WiiSave::WiiSave(const IRpFilePtr &file)
 	// since we can still show the Bk header fields.
 
 	// TODO: Debug vs. Retail?
-	d->key_idx[0] = WiiPartition::Key_Rvl_SD_AES;
-	d->key_idx[1] = WiiPartition::Key_Rvl_SD_IV;
+	d->key_idx[0] = WiiPartition::EncryptionKeys::Key_RVL_SD_AES;
+	d->key_idx[1] = WiiPartition::EncryptionKeys::Key_RVL_SD_IV;
 
 	// Initialize the CBC reader for the main data area.
 	// TODO: WiiVerifyKeys class.
@@ -227,8 +227,8 @@ WiiSave::WiiSave(const IRpFilePtr &file)
 	// TODO: Move out of WiiPartition and into WiiVerifyKeys?
 	KeyManager::KeyData_t keyData[2];
 	for (size_t i = 0; i < d->key_idx.size(); i++) {
-		const char *const keyName = WiiPartition::encryptionKeyName_static(d->key_idx[i]);
-		const uint8_t *const verifyData = WiiPartition::encryptionVerifyData_static(d->key_idx[i]);
+		const char *const keyName = WiiPartition::encryptionKeyName_static(static_cast<int>(d->key_idx[i]));
+		const uint8_t *const verifyData = WiiPartition::encryptionVerifyData_static(static_cast<int>(d->key_idx[i]));
 		assert(keyName != nullptr);
 		assert(keyName[0] != '\0');
 		assert(verifyData != nullptr);

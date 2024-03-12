@@ -1124,9 +1124,9 @@ KeyStoreUI::ImportReturn KeyStoreUIPrivate::importWiiKeysBin(IRpFile *file)
 	// - SD keys are not present in keys.bin.
 
 	static const KeyStoreUIPrivate::KeyBinAddress keyBinAddress[] = {
-		{0x114, WiiPartition::Key_Rvl_Common},
-		{0x114, WiiPartition::Key_Rvt_Debug},
-		{0x274, WiiPartition::Key_Rvl_Korean},
+		{0x114, static_cast<int>(WiiPartition::EncryptionKeys::Key_RVL_Common)},
+		{0x114, static_cast<int>(WiiPartition::EncryptionKeys::Key_RVT_Debug)},
+		{0x274, static_cast<int>(WiiPartition::EncryptionKeys::Key_RVL_Korean)},
 
 		{0, -1}
 	};
@@ -1190,9 +1190,9 @@ KeyStoreUI::ImportReturn KeyStoreUIPrivate::importWiiUOtpBin(IRpFile *file)
 	// TODO:
 	// - SD keys are not present in otp.bin.
 	static const KeyStoreUIPrivate::KeyBinAddress keyBinAddress_retail[] = {
-		{0x014, WiiPartition::Key_Rvl_Common},
-		{0x348, WiiPartition::Key_Rvl_Korean},
-		{0x0D0, WiiPartition::Key_Wup_Starbuck_vWii_Common},
+		{0x014, static_cast<int>(WiiPartition::EncryptionKeys::Key_RVL_Common)},
+		{0x348, static_cast<int>(WiiPartition::EncryptionKeys::Key_RVL_Korean)},
+		{0x0D0, static_cast<int>(WiiPartition::EncryptionKeys::Key_WUP_Starbuck_vWii_Common)},
 
 		// TODO: Import Wii U keys.
 #if 0
@@ -1204,9 +1204,9 @@ KeyStoreUI::ImportReturn KeyStoreUIPrivate::importWiiUOtpBin(IRpFile *file)
 	};
 
 	static const KeyStoreUIPrivate::KeyBinAddress keyBinAddress_debug[] = {
-		{0x014, WiiPartition::Key_Rvt_Debug},
-		{0x348, WiiPartition::Key_Rvt_Korean},
-		{0x0D0, WiiPartition::Key_Cat_Starbuck_vWii_Common},
+		{0x014, static_cast<int>(WiiPartition::EncryptionKeys::Key_RVT_Debug)},
+		{0x348, static_cast<int>(WiiPartition::EncryptionKeys::Key_RVT_Korean)},
+		{0x0D0, static_cast<int>(WiiPartition::EncryptionKeys::Key_CAT_Starbuck_vWii_Common)},
 
 		// TODO: Import Wii U keys.
 #if 0

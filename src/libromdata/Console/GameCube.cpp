@@ -676,7 +676,7 @@ const char *GameCubePrivate::wii_getCryptoStatus(const WiiPartition *partition)
 	const KeyManager::VerifyResult res = partition->verifyResult();
 	if (res == KeyManager::VerifyResult::KeyNotFound) {
 		// This may be an invalid key index.
-		if (partition->encKey() == WiiPartition::EncKey::Unknown) {
+		if (partition->encKey() == WiiPartition::EncryptionKeys::Unknown) {
 			// Invalid key index.
 			return C_("Wii", "Invalid common key index.");
 		}
@@ -1749,7 +1749,7 @@ int GameCube::loadFieldData(void)
 
 			// Encryption key.
 			// TODO: Use a string table?
-			WiiPartition::EncKey encKey;
+			WiiPartition::EncryptionKeys encKey;
 			if (d->isNASOSFormatDiscImage()) {
 				// NASOS disc image.
 				// If this would normally be an encrypted image, use encKeyReal().
@@ -1761,28 +1761,31 @@ int GameCube::loadFieldData(void)
 				encKey = entry.partition->encKey();
 			}
 
-			static const std::array<const char*, (int)WiiPartition::EncKey::Max> wii_key_tbl = {{
-				// tr: WiiPartition::EncKey::RVL_Common - Retail encryption key.
+			static const std::array<const char*, 6> wii_key_tbl = {{
+				// tr: WiiPartition::EncryptionKeys::Key_RVL_Common - Retail encryption key.
 				NOP_C_("Wii|EncKey", "Retail"),
-				// tr: WiiPartition::EncKey::RVL_Korean - Korean encryption key.
+				// tr: WiiPartition::EncryptionKeys::Key_RVL_Korean - Korean encryption key.
 				NOP_C_("Wii|EncKey", "Korean"),
-				// tr: WiiPartition::EncKey::WUP_vWii - vWii-specific encryption key.
+				// tr: WiiPartition::EncryptionKeys::Key_WUP_vWii - vWii-specific encryption key.
 				NOP_C_("Wii|EncKey", "vWii"),
 
-				// tr: WiiPartition::EncKey::RVT_Debug - Debug encryption key.
+				// tr: WiiPartition::EncryptionKeys::Key_RVT_Debug - Debug encryption key.
 				NOP_C_("Wii|EncKey", "Debug"),
-				// tr: WiiPartition::EncKey::RVT_Korean - Korean (debug) encryption key.
+				// tr: WiiPartition::EncryptionKeys::Key_RVT_Korean - Korean (debug) encryption key.
 				NOP_C_("Wii|EncKey", "Korean (debug)"),
-				// tr: WiiPartition::EncKey::CAT_vWii - vWii (debug) encryption key.
+				// tr: WiiPartition::EncryptionKeys::Key_CAT_vWii - vWii (debug) encryption key.
 				NOP_C_("Wii|EncKey", "vWii (debug)"),
 
-				// tr: WiiPartition::EncKey::None - No encryption.
-				NOP_C_("Wii|EncKey", "None"),
+				// NOTE: Not including SD card keys.
+				// NOTE: "None" is not included here. It's handled separately.
 			}};
 
 			const char *s_key_name;
 			if ((int)encKey >= 0 && (int)encKey < static_cast<int>(wii_key_tbl.size())) {
 				s_key_name = dpgettext_expr(RP_I18N_DOMAIN, "Wii|KeyIdx", wii_key_tbl[(int)encKey]);
+			} else if (encKey == WiiPartition::EncryptionKeys::None) {
+				// tr: WiiPartition::EncryptionKeys::None - No encryption.
+				s_key_name = C_("Wii|EncKey", "None");
 			} else {
 				// WiiPartition::EncKey::Unknown
 				s_key_name = C_("RomData", "Unknown");
@@ -2181,7 +2184,7 @@ int GameCube::checkViewedAchievements(void) const
 	}
 
 	int ret = 0;
-	WiiPartition::EncKey encKey;
+	WiiPartition::EncryptionKeys encKey;
 	if (d->isNASOSFormatDiscImage()) {
 		// NASOS disc image.
 		// If this would normally be an encrypted image, use encKeyReal().
@@ -2196,9 +2199,9 @@ int GameCube::checkViewedAchievements(void) const
 	switch (encKey) {
 		default:
 			break;
-		case WiiPartition::EncKey::RVT_Debug:
-		case WiiPartition::EncKey::RVT_Korean:
-		case WiiPartition::EncKey::CAT_vWii:
+		case WiiPartition::EncryptionKeys::Key_RVT_Debug:
+		case WiiPartition::EncryptionKeys::Key_RVT_Korean:
+		case WiiPartition::EncryptionKeys::Key_CAT_Starbuck_vWii_Common:
 			// Debug encryption.
 			pAch->unlock(Achievements::ID::ViewedDebugCryptedFile);
 			ret++;
