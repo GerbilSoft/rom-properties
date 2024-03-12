@@ -374,7 +374,7 @@ int WiiTMD::loadFieldData(void)
 	}
 
 	// Access rights
-	if (sysID == NINTENDO_SYSID_WII || sysID == NINTENDO_SYSID_WUP) {
+	if (sysID == NINTENDO_SYSID_RVL || sysID == NINTENDO_SYSID_WUP) {
 		vector<string> *const v_access_rights_hdr = new vector<string>();
 		v_access_rights_hdr->reserve(2);
 		v_access_rights_hdr->emplace_back("AHBPROT");
