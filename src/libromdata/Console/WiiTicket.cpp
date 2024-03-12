@@ -318,4 +318,30 @@ int WiiTicket::loadMetaData(void)
 	return static_cast<int>(d->metaData->count());
 }
 
+/** Ticket accessors **/
+
+/**
+ * Get the ticket format version.
+ * @return Ticket format version
+ */
+unsigned int WiiTicket::ticketFormatVersion(void) const
+{
+	RP_D(const WiiTicket);
+	return (likely(d->isValid)) ? d->ticket.v0.ticket_format_version : 0;
+}
+
+/**
+ * Get the ticket. (v0)
+ *
+ * NOTE: The v1 ticket doesn't have any useful extra data,
+ * so we're only offering the v0 ticket.
+ *
+ * @return Ticket
+ */
+const RVL_Ticket *WiiTicket::ticket_v0(void) const
+{
+	RP_D(const WiiTicket);
+	return (likely(d->isValid)) ? &d->ticket.v0 : nullptr;
+}
+
 }

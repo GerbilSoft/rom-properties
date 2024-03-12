@@ -10,6 +10,7 @@
 #include "WiiUPackage.hpp"
 
 // RomData subclasses
+#include "WiiTicket.hpp"
 #include "WiiTMD.hpp"
 
 // Other rom-properties libraries
@@ -42,7 +43,8 @@ public:
 	// Directory path (strdup()'d)
 	char *path;
 
-	// TMD
+	// Ticket and TMD
+	WiiTicket *ticket;
 	WiiTMD *tmd;
 
 	// Contents table
@@ -148,29 +150,62 @@ WiiUPackage::WiiUPackage(const char *path)
 		return;
 	}
 
-	// Open the TMD.
+	// Open the ticket.
+	WiiTicket *ticket = nullptr;
+
 	string s_path(d->path);
-	s_path += "/title.tmd";
-	IRpFilePtr file = std::make_shared<RpFile>(s_path, RpFile::FM_OPEN_READ);
-	if (!file->isOpen()) {
-		// Failed to open the TMD.
+	s_path += DIR_SEP_CHR;
+	s_path += "title.tik";
+	IRpFilePtr subfile = std::make_shared<RpFile>(s_path, RpFile::FM_OPEN_READ);
+	if (subfile->isOpen()) {
+		ticket = new WiiTicket(subfile);
+		if (ticket->isValid()) {
+			// Make sure the ticket is v1.
+			if (ticket->ticketFormatVersion() != 1) {
+				// Not v1.
+				delete ticket;
+				ticket = nullptr;
+			}
+		} else {
+			delete ticket;
+			ticket = nullptr;
+		}
+	}
+	subfile.reset();
+	if (!ticket) {
+		// Unable to load the ticket.
 		free(d->path);
 		d->path = nullptr;
 		return;
 	}
-	WiiTMD *const tmd = new WiiTMD(file);
-	if (!tmd->isValid()) {
-		// Not a valid TMD.
-		delete tmd;
-		free(d->path);
-		d->path = nullptr;
-		return;
+	d->ticket = ticket;
+
+	// Open the TMD.
+	WiiTMD *tmd = nullptr;
+
+	s_path.resize(s_path.size()-9);
+	s_path += "title.tmd";
+	subfile = std::make_shared<RpFile>(s_path, RpFile::FM_OPEN_READ);
+	if (subfile->isOpen()) {
+		tmd = new WiiTMD(subfile);
+		if (tmd->isValid()) {
+			// Make sure the TMD is v1.
+			if (tmd->tmdFormatVersion() != 1) {
+				// Not v1.
+				delete tmd;
+				tmd = nullptr;
+			}
+		} else {
+			delete tmd;
+			tmd = nullptr;
+		}
 	}
-	// Make sure the TMD is v1.
-	if (tmd->tmdFormatVersion() != 1) {
-		// Not a v1 TMD.
-		delete tmd;
+	subfile.reset();
+	if (!tmd) {
+		// Unable to load the TMD.
+		delete d->ticket;
 		free(d->path);
+		d->ticket = nullptr;
 		d->path = nullptr;
 		return;
 	}
@@ -181,8 +216,10 @@ WiiUPackage::WiiUPackage(const char *path)
 	d->contentsTable = tmd->contentsTableV1(0);
 	if (d->contentsTable.empty()) {
 		// No contents?
-		delete tmd;
+		delete d->ticket;
+		delete d->tmd;
 		free(d->path);
+		d->ticket = nullptr;
 		d->tmd = nullptr;
 		d->path = nullptr;
 		return;
