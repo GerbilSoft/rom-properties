@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (libromdata)                       *
- * ColecoVision.cpp: ColecoVision ROM reader.                              *
+ * WiiUPackage.hpp: Wii U NUS Package reader.                              *
  *                                                                         *
  * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
@@ -382,7 +382,7 @@ const char *ColecoVision::systemName(unsigned int type) const
 	// ColecoVision has the same name worldwide, so we can
 	// ignore the region selection.
 	static_assert(SYSNAME_TYPE_MASK == 3,
-		"N64::systemName() array index optimization needs to be updated.");
+		"ColecoVision::systemName() array index optimization needs to be updated.");
 
 	// Bits 0-1: Type. (long, short, abbreviation)
 	static const char *const sysNames[4] = {

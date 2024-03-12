@@ -235,7 +235,7 @@ const char *Intellivision::systemName(unsigned int type) const
 	// Intellivision has the same name worldwide, so we can
 	// ignore the region selection.
 	static_assert(SYSNAME_TYPE_MASK == 3,
-		"N64::systemName() array index optimization needs to be updated.");
+		"Intellivision::systemName() array index optimization needs to be updated.");
 
 	// Bits 0-1: Type. (long, short, abbreviation)
 	static const char *const sysNames[4] = {
