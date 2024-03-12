@@ -104,22 +104,22 @@ static int fstPrint(IFst *fst, ostream &os, const string &path,
 			}
 		}
 
+		const string name = dirent->name;
+		// Sanity check: Filenames cannot contain '/'.
+		if (name.find('/') != string::npos) {
+			// ERROR
+			// TODO: Print an error message?
+			fst->closedir(dirp);
+			return -EIO;
+		}
+
 		// NOTE: The next DirEnt is obtained in one of the
 		// following if/else branches. We can't obtain more
 		// than one DirEnt at a time, since the DirEnt is
 		// actually stored within the Dir object.
 		if (dirent->type == DT_DIR) {
-			// Subdirectory.
+			// Subdirectory
 			fc.dirs++;
-
-			const string name = dirent->name;
-			// Sanity check: Filenames cannot contain '/'.
-			if (name.find('/') != string::npos) {
-				// ERROR
-				// TODO: Print an error message?
-				fst->closedir(dirp);
-				return -EIO;
-			}
 
 			string subdir = path;
 			if (path.empty() || (path[path.size()-1] != '/')) {
@@ -157,11 +157,8 @@ static int fstPrint(IFst *fst, ostream &os, const string &path,
 			// Remove the extra tree line.
 			tree_lines.resize(tree_lines.size()-1);
 		} else {
-			// File.
+			// File
 			fc.files++;
-
-			// Save the filename.
-			const string name = dirent->name;
 
 			// Tree + name length.
 			// - Tree is 4 characters per level.
