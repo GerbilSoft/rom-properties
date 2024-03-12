@@ -631,6 +631,16 @@ STDAPI DllRegisterServer(void)
 	lResult = RP_ShellPropSheetExt::RegisterFileType(hkcr, _T("Drive"));
 	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 
+	// Register RP_ShellPropSheetExt and thumbnailers for directories.
+	lResult = RP_ShellPropSheetExt::RegisterFileType(hkcr, _T("Directory"));
+	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
+	lResult = RP_ExtractIcon::RegisterFileType(hkcr, _T("Directory"));
+	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
+	lResult = RP_ExtractImage::RegisterFileType(hkcr, _T("Directory"));
+	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
+	lResult = RP_ThumbnailProvider::RegisterFileType(hkcr, _T("Directory"));
+	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
+
 	// Register RP_XAttrView for all file types.
 	// TODO: Also for drives?
 	lResult = RP_XAttrView::RegisterFileType(hkcr, _T("*"));
@@ -732,7 +742,7 @@ STDAPI DllUnregisterServer(void)
 	RegKey hklm(HKEY_LOCAL_MACHINE, nullptr, KEY_READ, false);
 	if (!hklm.isOpen()) return SELFREG_E_CLASS;
 
-	// Unegister all supported file types.
+	// Unregister all supported file types.
 	const vector<RomDataFactory::ExtInfo> vec_exts = RomDataFactory::supportedFileExtensions();
 	for (const auto &ext : vec_exts) {
 		// Unregister the file type handlers for this file extension globally.
@@ -753,6 +763,16 @@ STDAPI DllUnregisterServer(void)
 	// Unregister RP_ShellPropSheetExt for disk drives.
 	// TODO: Icon/thumbnail handling?
 	lResult = RP_ShellPropSheetExt::UnregisterFileType(hkcr, _T("Drive"));
+	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
+
+	// Unregister RP_ShellPropSheetExt and thumbnailers for directories.
+	lResult = RP_ShellPropSheetExt::UnregisterFileType(hkcr, _T("Directory"));
+	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
+	lResult = RP_ExtractIcon::UnregisterFileType(hkcr, _T("Directory"));
+	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
+	lResult = RP_ExtractImage::UnregisterFileType(hkcr, _T("Directory"));
+	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
+	lResult = RP_ThumbnailProvider::UnregisterFileType(hkcr, _T("Directory"));
 	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 
 	// Unregister RP_XAttrView for all file types.
