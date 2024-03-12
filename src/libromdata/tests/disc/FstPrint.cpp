@@ -113,6 +113,14 @@ static int fstPrint(IFst *fst, ostream &os, const string &path,
 			fc.dirs++;
 
 			const string name = dirent->name;
+			// Sanity check: Filenames cannot contain '/'.
+			if (name.find('/') != string::npos) {
+				// ERROR
+				// TODO: Print an error message?
+				fst->closedir(dirp);
+				return -EIO;
+			}
+
 			string subdir = path;
 			if (path.empty() || (path[path.size()-1] != '/')) {
 				// Append a trailing slash.
@@ -141,6 +149,7 @@ static int fstPrint(IFst *fst, ostream &os, const string &path,
 			int ret = fstPrint(fst, os, subdir, level+1, tree_lines, fc, pt);
 			if (ret != 0) {
 				// ERROR
+				// TODO: Print an error message?
 				fst->closedir(dirp);
 				return ret;
 			}
