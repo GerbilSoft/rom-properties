@@ -1,16 +1,16 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (libromdata)                       *
- * GcnFst.cpp: GameCube/Wii FST parser.                                    *
+ * WiiUFst.cpp: Wii U FST parser                                           *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "stdafx.h"
 #include "librpbase/config.librpbase.h"
 
-#include "GcnFst.hpp"
-#include "../Console/gcn_structs.h"
+#include "WiiUFst.hpp"
+#include "../Console/wiiu_structs.h"
 
 // Other rom-properties libraries
 using namespace LibRpBase;
@@ -22,27 +22,35 @@ using std::unordered_map;
 
 namespace LibRomData {
 
-class GcnFstPrivate
+class WiiUFstPrivate
 {
 public:
-	GcnFstPrivate(const uint8_t *fstData, uint32_t len, uint8_t offsetShift);
-	~GcnFstPrivate();
+	WiiUFstPrivate(const uint8_t *fstData, uint32_t len);
+	~WiiUFstPrivate();
 
 private:
-	RP_DISABLE_COPY(GcnFstPrivate)
+	RP_DISABLE_COPY(WiiUFstPrivate)
 
 public:
 	bool hasErrors;
-	uint8_t offsetShift;	// offset shift (0 for GCN, 2 for Wii)
 
 	// IFst::Dir* reference counter
 	int fstDirCount;
 
-	GCN_FST_Entry *fstData;
+	uint8_t *fstData;
 	const char *string_table_ptr;	// pointer into fstData
 
 	uint32_t fstData_sz;
 	uint32_t string_table_sz;
+
+	// Pointers into fstData
+	const WUP_FST_Header *fstHeader;
+	const WUP_FST_SecondaryHeader *fstSecHeaders;
+	const WUP_FST_Entry *fstEntries;
+
+	// File offset factor
+	// Cached from fstHeader, in host-endian format.
+	uint32_t file_offset_factor;
 
 	// String table, converted to Unicode.
 	// - Key: String offset in the FST string table.
@@ -53,14 +61,14 @@ public:
 	 * Check if an fst_entry is a directory.
 	 * @return True if this is a directory; false if it's a regular file.
 	 */
-	static inline bool is_dir(const GCN_FST_Entry *fst_entry);
+	static inline bool is_dir(const WUP_FST_Entry *fst_entry);
 
 	/**
 	 * Get an FST entry's name.
 	 * @param fst_entry FST entry.
 	 * @return Name, or nullptr if an error occurred.
 	 */
-	inline const char *entry_name(const GCN_FST_Entry *fst_entry) const;
+	inline const char *entry_name(const WUP_FST_Entry *fst_entry) const;
 
 	/**
 	 * Get an FST entry.
@@ -72,40 +80,69 @@ public:
 	 * @param ppszName	[out, opt] Entry name. (Do not free this!)
 	 * @return FST entry, or nullptr on error.
 	 */
-	const GCN_FST_Entry *entry(int idx, const char **ppszName = nullptr) const;
+	const WUP_FST_Entry *entry(int idx, const char **ppszName = nullptr) const;
 
 	/**
 	 * Find a path.
 	 * @param path Path. (Absolute paths only!)
 	 * @return fst_entry if found, or nullptr if not.
 	 */
-	const GCN_FST_Entry *find_path(const char *path) const;
+	const WUP_FST_Entry *find_path(const char *path) const;
 };
 
-/** GcnFstPrivate **/
+/** WiiUFstPrivate **/
 
-GcnFstPrivate::GcnFstPrivate(const uint8_t *fstData, uint32_t len, uint8_t offsetShift)
+WiiUFstPrivate::WiiUFstPrivate(const uint8_t *fstData, uint32_t len)
 	: hasErrors(false)
-	, offsetShift(offsetShift)
 	, fstDirCount(0)
 	, fstData(nullptr)
 	, string_table_ptr(nullptr)
 	, fstData_sz(len)
 	, string_table_sz(0)
+	, fstHeader(nullptr)
+	, fstSecHeaders(nullptr)
+	, fstEntries(nullptr)
+	, file_offset_factor(0)
 {
+	static const uint32_t WUP_FST_MIN_SIZE = static_cast<uint32_t>(
+		sizeof(WUP_FST_Header) +
+		sizeof(WUP_FST_SecondaryHeader) +
+		sizeof(WUP_FST_Entry));
+
 	assert(fstData != nullptr);
-	assert(len >= sizeof(GCN_FST_Entry));
-	if (!fstData || len < sizeof(GCN_FST_Entry)) {
+	assert(len >= WUP_FST_MIN_SIZE);
+	if (!fstData || len < WUP_FST_MIN_SIZE) {
 		// Invalid parameters.
+		hasErrors = true;
+		return;
+	}
+
+	// Validate the FST magic.
+	fstHeader = reinterpret_cast<const WUP_FST_Header*>(fstData);
+	if (fstHeader->magic != cpu_to_be32(WUP_FST_MAGIC)) {
+		// Invalid FST.
+		hasErrors = true;
+		return;
+	}
+
+	// Get the start of the secondary headers.
+	static const uint32_t sec_header_start = static_cast<uint32_t>(sizeof(WUP_FST_Header));
+
+	// Get the start of the file entries.
+	const uint32_t file_entry_start = static_cast<uint32_t>(
+		sec_header_start +
+		sizeof(WUP_FST_SecondaryHeader) * be32_to_cpu(fstHeader->sec_header_count));
+	if (file_entry_start >= fstData_sz) {
+		// Out of bounds!
 		hasErrors = true;
 		return;
 	}
 
 	// String table is stored after the file table.
 	// Use the root entry to determine how many files are present.
-	const GCN_FST_Entry *root_entry = reinterpret_cast<const GCN_FST_Entry*>(fstData);
+	const WUP_FST_Entry *const root_entry = reinterpret_cast<const WUP_FST_Entry*>(&fstData[file_entry_start]);
 	const uint32_t file_count = be32_to_cpu(root_entry->root_dir.file_count);
-	if (file_count <= 1 || file_count > (fstData_sz / sizeof(GCN_FST_Entry))) {
+	if (file_count <= 1 || (file_count + 1) > (WUP_FST_MIN_SIZE) + (fstData_sz / sizeof(WUP_FST_Entry))) {
 		// Sanity check: File count is invalid.
 		// - 1 file means it only has a root directory.
 		// - 0 files isn't possible.
@@ -114,7 +151,7 @@ GcnFstPrivate::GcnFstPrivate(const uint8_t *fstData, uint32_t len, uint8_t offse
 		return;
 	}
 
-	const uint32_t string_table_offset = file_count * sizeof(GCN_FST_Entry);
+	const uint32_t string_table_offset = file_entry_start + static_cast<uint32_t>(file_count * sizeof(WUP_FST_Entry));
 	if (string_table_offset >= len) {
 		// Invalid FST length.
 		hasErrors = true;
@@ -126,11 +163,19 @@ GcnFstPrivate::GcnFstPrivate(const uint8_t *fstData, uint32_t len, uint8_t offse
 	uint8_t *const fst8 = new uint8_t[fstData_sz + 1];
 	memcpy(fst8, fstData, fstData_sz);
 	fst8[fstData_sz] = 0; // Make sure the string table is NULL-terminated.
-	this->fstData = reinterpret_cast<GCN_FST_Entry*>(fst8);
+	this->fstData = fst8;
 
 	// Save a pointer to the string table.
 	string_table_ptr = reinterpret_cast<char*>(&fst8[string_table_offset]);
 	string_table_sz = fstData_sz - string_table_offset;
+
+	// Save other pointers.
+	fstHeader = reinterpret_cast<const WUP_FST_Header*>(fst8);
+	fstSecHeaders = reinterpret_cast<const WUP_FST_SecondaryHeader*>(&fst8[sec_header_start]);
+	fstEntries = reinterpret_cast<const WUP_FST_Entry*>(&fst8[file_entry_start]);
+
+	// Cache the file offset factor.
+	file_offset_factor = be32_to_cpu(fstHeader->file_offset_factor);
 
 #ifdef HAVE_UNORDERED_MAP_RESERVE
 	// Reserve space in the string table.
@@ -139,7 +184,7 @@ GcnFstPrivate::GcnFstPrivate(const uint8_t *fstData, uint32_t len, uint8_t offse
 #endif
 }
 
-GcnFstPrivate::~GcnFstPrivate()
+WiiUFstPrivate::~WiiUFstPrivate()
 {
 	assert(fstDirCount == 0);
 	delete[] fstData;
@@ -149,7 +194,7 @@ GcnFstPrivate::~GcnFstPrivate()
  * Check if an fst_entry is a directory.
  * @return True if this is a directory; false if it's a regular file.
  */
-inline bool GcnFstPrivate::is_dir(const GCN_FST_Entry *fst_entry)
+inline bool WiiUFstPrivate::is_dir(const WUP_FST_Entry *fst_entry)
 {
 	return ((be32_to_cpu(fst_entry->file_type_name_offset) >> 24) == 1);
 }
@@ -159,7 +204,7 @@ inline bool GcnFstPrivate::is_dir(const GCN_FST_Entry *fst_entry)
  * @param fst_entry FST entry.
  * @return Name, or nullptr if an error occurred.
  */
-inline const char *GcnFstPrivate::entry_name(const GCN_FST_Entry *fst_entry) const
+inline const char *WiiUFstPrivate::entry_name(const WUP_FST_Entry *fst_entry) const
 {
 	// Get the name entry from the string table.
 	const uint32_t offset = be32_to_cpu(fst_entry->file_type_name_offset) & 0xFFFFFF;
@@ -194,7 +239,7 @@ inline const char *GcnFstPrivate::entry_name(const GCN_FST_Entry *fst_entry) con
  * @param ppszName	[out, opt] Entry name. (Do not free this!)
  * @return FST entry, or nullptr on error.
  */
-const GCN_FST_Entry *GcnFstPrivate::entry(int idx, const char **ppszName) const
+const WUP_FST_Entry *WiiUFstPrivate::entry(int idx, const char **ppszName) const
 {
 	if (!fstData || idx < 0) {
 		// No FST, or idx is invalid.
@@ -202,7 +247,7 @@ const GCN_FST_Entry *GcnFstPrivate::entry(int idx, const char **ppszName) const
 	}
 
 	// NOTE: For the root directory, next_offset is the number of entries.
-	if (static_cast<uint32_t>(idx) >= be32_to_cpu(fstData[0].root_dir.file_count)) {
+	if (static_cast<uint32_t>(idx) >= be32_to_cpu(fstEntries[0].root_dir.file_count)) {
 		// Index is out of range.
 		return nullptr;
 	}
@@ -213,11 +258,11 @@ const GCN_FST_Entry *GcnFstPrivate::entry(int idx, const char **ppszName) const
 			*ppszName = nullptr;
 		} else {
 			// Get the entry's name.
-			*ppszName = entry_name(&fstData[idx]);
+			*ppszName = entry_name(&fstEntries[idx]);
 		}
 	}
 
-	return &fstData[idx];
+	return &fstEntries[idx];
 }
 
 /**
@@ -225,7 +270,7 @@ const GCN_FST_Entry *GcnFstPrivate::entry(int idx, const char **ppszName) const
  * @param path Path. (Absolute paths only!)
  * @return fst_entry if found, or nullptr if not.
  */
-const GCN_FST_Entry *GcnFstPrivate::find_path(const char *path) const
+const WUP_FST_Entry *WiiUFstPrivate::find_path(const char *path) const
 {
 	if (!path) {
 		// Invalid path.
@@ -233,7 +278,7 @@ const GCN_FST_Entry *GcnFstPrivate::find_path(const char *path) const
 	}
 
 	// Get the root directory.
-	const GCN_FST_Entry *fst_entry = this->entry(0, nullptr);
+	const WUP_FST_Entry *fst_entry = this->entry(0, nullptr);
 	if (!fst_entry) {
 		// Can't find the root directory.
 		return nullptr;
@@ -344,20 +389,19 @@ const GCN_FST_Entry *GcnFstPrivate::find_path(const char *path) const
 	return fst_entry;
 }
 
-/** GcnFst **/
+/** WiiUFst **/
 
 /**
- * Parse a GameCube FST.
- * @param fstData FST data.
- * @param len Length of fstData, in bytes.
- * @param offsetShift File offset shift. (0 = GCN, 2 = Wii)
+ * Parse a Wii U FST.
+ * @param fstData FST data
+ * @param len Length of fstData, in bytes
  */
-GcnFst::GcnFst(const uint8_t *fstData, uint32_t len, uint8_t offsetShift)
+WiiUFst::WiiUFst(const uint8_t *fstData, uint32_t len)
 	: super()
-	, d(new GcnFstPrivate(fstData, len, offsetShift))
+	, d(new WiiUFstPrivate(fstData, len))
 { }
 
-GcnFst::~GcnFst()
+WiiUFst::~WiiUFst()
 {
 	delete d;
 }
@@ -366,7 +410,7 @@ GcnFst::~GcnFst()
  * Is the FST open?
  * @return True if open; false if not.
  */
-bool GcnFst::isOpen(void) const
+bool WiiUFst::isOpen(void) const
 {
 	return (d->string_table_ptr != nullptr);
 }
@@ -375,7 +419,7 @@ bool GcnFst::isOpen(void) const
  * Have any errors been detected in the FST?
  * @return True if yes; false if no.
  */
-bool GcnFst::hasErrors(void) const
+bool WiiUFst::hasErrors(void) const
 {
 	return d->hasErrors;
 }
@@ -387,7 +431,7 @@ bool GcnFst::hasErrors(void) const
  * @param path	[in] Directory path.
  * @return IFst::Dir*, or nullptr on error.
  */
-IFst::Dir *GcnFst::opendir(const char *path)
+IFst::Dir *WiiUFst::opendir(const char *path)
 {
 	// TODO: Ignoring path right now.
 	// Always reading the root directory.
@@ -397,7 +441,7 @@ IFst::Dir *GcnFst::opendir(const char *path)
 	}
 
 	// Find the path.
-	const GCN_FST_Entry *fst_entry = d->find_path(path);
+	const WUP_FST_Entry *const fst_entry = d->find_path(path);
 	if (!fst_entry) {
 		// Error finding the path.
 		return nullptr;
@@ -413,10 +457,11 @@ IFst::Dir *GcnFst::opendir(const char *path)
 	d->fstDirCount++;
 	dirp->parent = this;
 	// TODO: Better way to get dir_idx?
-	dirp->dir_idx = static_cast<int>(fst_entry - d->fstData);
+	dirp->dir_idx = static_cast<int>(fst_entry - d->fstEntries);
 
 	// Initialize the entry to the root directory.
 	// readdir() will automatically seek to the next entry.
+	dirp->entry.ptnum = be16_to_cpu(fst_entry->storage_cluster_index);
 	dirp->entry.idx = dirp->dir_idx;
 	dirp->entry.type = DT_DIR;
 	dirp->entry.name = d->entry_name(fst_entry);
@@ -434,7 +479,7 @@ IFst::Dir *GcnFst::opendir(const char *path)
  * @return IFst::DirEnt*, or nullptr if end of directory or on error.
  * (End of directory does not set lastError; an error does.)
  */
-IFst::DirEnt *GcnFst::readdir(IFst::Dir *dirp)
+IFst::DirEnt *WiiUFst::readdir(IFst::Dir *dirp)
 {
 	assert(dirp != nullptr);
 	assert(dirp->parent == this);
@@ -445,7 +490,7 @@ IFst::DirEnt *GcnFst::readdir(IFst::Dir *dirp)
 	}
 
 	// Get the directory's fst_entry.
-	const GCN_FST_Entry *dir_fst_entry = d->entry(dirp->dir_idx);
+	const WUP_FST_Entry *const dir_fst_entry = d->entry(dirp->dir_idx);
 	if (!dir_fst_entry) {
 		// dir_idx is corrupted.
 		return nullptr;
@@ -453,7 +498,7 @@ IFst::DirEnt *GcnFst::readdir(IFst::Dir *dirp)
 
 	// Seek to the next entry in the directory.
 	int idx = dirp->entry.idx;
-	const GCN_FST_Entry *fst_entry = d->entry(idx, nullptr);
+	const WUP_FST_Entry *fst_entry = d->entry(idx, nullptr);
 	if (!fst_entry) {
 		// No more entries.
 		return nullptr;
@@ -501,14 +546,14 @@ IFst::DirEnt *GcnFst::readdir(IFst::Dir *dirp)
 	const bool is_fst_dir = d->is_dir(fst_entry);
 	dirp->entry.type = is_fst_dir ? DT_DIR : DT_REG;
 	dirp->entry.name = pName;
-	dirp->entry.ptnum = 0;
+	dirp->entry.ptnum = be16_to_cpu(fst_entry->storage_cluster_index);
 	if (is_fst_dir) {
 		// offset and size are not valid for directories.
 		dirp->entry.offset = 0;
 		dirp->entry.size = 0;
 	} else {
 		// Save the offset and size.
-		dirp->entry.offset = static_cast<off64_t>(be32_to_cpu(fst_entry->file.offset)) << d->offsetShift;
+		dirp->entry.offset = static_cast<off64_t>(be32_to_cpu(fst_entry->file.offset)) * d->file_offset_factor;
 		dirp->entry.size = be32_to_cpu(fst_entry->file.size);
 	}
 
@@ -520,7 +565,7 @@ IFst::DirEnt *GcnFst::readdir(IFst::Dir *dirp)
  * @param dirp IFst::Dir pointer.
  * @return 0 on success; negative POSIX error code on error.
  */
-int GcnFst::closedir(IFst::Dir *dirp)
+int WiiUFst::closedir(IFst::Dir *dirp)
 {
 	assert(dirp != nullptr);
 	assert(dirp->parent == this);
@@ -546,14 +591,14 @@ int GcnFst::closedir(IFst::Dir *dirp)
  * @param dirent	[out] Pointer to DirEnt buffer.
  * @return 0 on success; negative POSIX error code on error.
  */
-int GcnFst::find_file(const char *filename, DirEnt *dirent)
+int WiiUFst::find_file(const char *filename, DirEnt *dirent)
 {
 	if (!filename || !dirent) {
 		// Invalid parameters.
 		return -EINVAL;
 	}
 
-	const GCN_FST_Entry *fst_entry = d->find_path(filename);
+	const WUP_FST_Entry *const fst_entry = d->find_path(filename);
 	if (!fst_entry) {
 		// Not found.
 		return -ENOENT;
@@ -563,14 +608,13 @@ int GcnFst::find_file(const char *filename, DirEnt *dirent)
 	const bool is_fst_dir = d->is_dir(fst_entry);
 	dirent->type = is_fst_dir ? DT_DIR : DT_REG;
 	dirent->name = d->entry_name(fst_entry);
-	dirent->ptnum = 0;	// not used for GCN/Wii
 	if (is_fst_dir) {
 		// offset and size are not valid for directories.
 		dirent->offset = 0;
 		dirent->size = 0;
 	} else {
 		// Save the offset and size.
-		dirent->offset = static_cast<off64_t>(be32_to_cpu(fst_entry->file.offset)) << d->offsetShift;
+		dirent->offset = static_cast<off64_t>(be32_to_cpu(fst_entry->file.offset)) * d->file_offset_factor;
 		dirent->size = be32_to_cpu(fst_entry->file.size);
 	}
 
@@ -585,7 +629,7 @@ int GcnFst::find_file(const char *filename, DirEnt *dirent)
  *
  * @return Size of all files, in bytes. (-1 on error)
  */
-off64_t GcnFst::totalUsedSize(void) const
+off64_t WiiUFst::totalUsedSize(void) const
 {
 	if (!d->fstData) {
 		// No FST...
@@ -593,7 +637,7 @@ off64_t GcnFst::totalUsedSize(void) const
 	}
 
 	off64_t total_size = 0;
-	const GCN_FST_Entry *entry = d->fstData;
+	const WUP_FST_Entry *entry = &d->fstEntries[0];
 	uint32_t file_count = be32_to_cpu(entry->root_dir.file_count);
 	entry++;
 

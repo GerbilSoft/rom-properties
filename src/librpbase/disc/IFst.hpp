@@ -52,13 +52,14 @@ class NOVTABLE IFst
 		/** opendir() interface **/
 
 		struct DirEnt {
-			off64_t offset;		// Starting address.
-			off64_t size;		// File size.
-			const char *name;	// Filename.
+			off64_t offset;		// Starting address
+			off64_t size;		// File size
+			const char *name;	// Filename
 
 			// TODO: Additional placeholders?
-			int idx;		// File index.
-			uint8_t type;		// File type. (See d_type.h)
+			unsigned int ptnum;	// Partition or content number
+			int idx;		// File index
+			uint8_t type;		// File type (See d_type.h)
 		};
 
 		struct Dir {

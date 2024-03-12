@@ -11,6 +11,8 @@
 #include <stdint.h>
 #include "common.h"
 
+#include "nintendo_system_id.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -90,6 +92,68 @@ typedef struct _WUP_Content_Entry {
 	uint8_t unused[12];		// [0x024] Unused. (Maybe it was going to be used for SHA-256?)
 } WUP_Content_Entry;
 ASSERT_STRUCT(WUP_Content_Entry, 48);
+
+/**
+ * Wii U FST: Header
+ * Reference: https://wiiubrew.org/wiki/FST
+ *
+ * All fields are big-endian.
+ */
+#define WUP_FST_MAGIC 0x46535400	// 'FST\x00'
+typedef struct _WUP_FST_Header {
+	uint32_t magic;			// [0x000] Magic number: 'FST\x00'
+	uint32_t file_offset_factor;	// [0x004] File offsets must be multiplied by this value.
+					//         Usually 0x20; some titles have 0x01.
+	uint32_t sec_header_count;	// [0x008] Number of secondary headers
+					//         Usually one per TMD content entry
+	uint16_t unknown;		// [0x00C] Unknown (0x0100?)
+	uint8_t reserved[18];		// [0x00E] Zeroes
+} WUP_FST_Header;
+ASSERT_STRUCT(WUP_FST_Header, 32);
+
+/**
+ * Wii U FST: Secondary header
+ * There's usually one per TMD content entry.
+ * Reference: https://wiiubrew.org/wiki/FST
+ *
+ * All fields are big-endian.
+ */
+typedef struct _WUP_FST_SecondaryHeader {
+	uint32_t offset;			// [0x000] Offset, in sectors on the current partition
+	uint32_t size;				// [0x004] Size, in sectors
+	Nintendo_TitleID_BE_t owner_tid;	// [0x008] Owner title ID (sometimes zero)
+	uint32_t group_id;			// [0x010] Group ID (sometimes zero)
+	uint16_t unknown;			// [0x014] Unknown (0x0100 or 0x0200?)
+	uint8_t reserved[10];			// [0x016] Zeroes
+} WUP_FST_SecondaryHeader;
+ASSERT_STRUCT(WUP_FST_SecondaryHeader, 32);
+
+/**
+ * Wii U FST: File/directory entry
+ * Reference: https://wiiubrew.org/wiki/FST
+ *
+ * All fields are big-endian.
+ */
+typedef struct _WUP_FST_Entry {
+	uint32_t file_type_name_offset;		// [0x000] MSB = type; low 24 bits = name offset
+	union {
+		struct {
+			uint32_t unused;		// Unused
+			uint32_t file_count;		// File count
+		} root_dir;
+		struct {
+			uint32_t unused;		// Unused
+			uint32_t next_offset;		// Index of the next entry in the current directory.
+		} dir;
+		struct {
+			uint32_t offset;		// File offset (multiply by file_offset_factor)
+			uint32_t size;			// File size, in bytes
+		} file;
+	};
+	uint16_t flags;				// [0x00C] Flags (0x440 == data contains an SHA-1 hash)
+	uint16_t storage_cluster_index;		// [0x00E] Storage cluster index
+} WUP_FST_Entry;
+ASSERT_STRUCT(WUP_FST_Entry, 16);
 
 #ifdef __cplusplus
 }

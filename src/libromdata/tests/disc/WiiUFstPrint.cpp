@@ -1,15 +1,17 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (libromdata/tests)                 *
- * GcnFstPrint.cpp: GameCube/Wii FST printer.                              *
+ * WiiUFstPrint.cpp: Wii U FST printer                                     *
  *                                                                         *
  * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "disc/GcnFst.hpp"
+// NOTE: Using GcnFstPrint for (most) localization contexts.
+
+#include "disc/WiiUFst.hpp"
 #include "FstPrint.hpp"
 using LibRpBase::IFst;
-using LibRomData::GcnFst;
+using LibRomData::WiiUFst;
 
 // i18n
 #include "libi18n/i18n.h"
@@ -64,26 +66,9 @@ int RP_C_API main(int argc, char *argv[])
 	rp_i18n_init();
 
 	if (argc < 2 || argc > 3) {
-		fprintf(stderr, C_("GcnFstPrint", "Syntax: %s fst.bin [offsetShift]"), argv[0]);
-		fputc('\n', stderr);
-		fputs(C_("GcnFstPrint", "offsetShift should be 0 for GameCube, 2 for Wii. (default is 0)"), stderr);
+		fprintf(stderr, C_("WiiUFstPrint", "Syntax: %s fst.bin"), argv[0]);
 		fputc('\n', stderr);
 		return EXIT_FAILURE;
-	}
-
-	// Was an offsetShift specified?
-	uint8_t offsetShift = 0;	// Default is GameCube.
-	if (argc == 3) {
-		char *endptr = nullptr;
-		long ltmp = strtol(argv[2], &endptr, 10);
-		if (*endptr != '\0' || (ltmp != 0 && ltmp != 2)) {
-			fprintf(stderr, C_("GcnFstPrint", "Invalid offset shift '%s' specified."), argv[2]);
-			fputc('\n', stderr);
-			fputs(C_("GcnFstPrint", "offsetShift should be 0 for GameCube, 2 for Wii. (default is 0)"), stderr);
-			fputc('\n', stderr);
-			return EXIT_FAILURE;
-		}
-		offsetShift = static_cast<uint8_t>(ltmp);
 	}
 
 	// Open and read the FST file.
@@ -115,7 +100,7 @@ int RP_C_API main(int argc, char *argv[])
 		// tr: %1$u == number of bytes read, %2$u == number of bytes expected to read
 		fprintf_p(stderr, C_("GcnFstPrint", "ERROR: Read %1$u bytes, expected %2$u bytes."),
 			(unsigned int)rd_size, (unsigned int)fileSize);
-		fputc('\n', stderr);
+		putchar('\n');
 		return EXIT_FAILURE;
 	}
 
@@ -134,17 +119,17 @@ int RP_C_API main(int argc, char *argv[])
 	// Parse the FST.
 	// TODO: Validate the FST and return an error if it doesn't
 	// "look" like an FST?
-	unique_ptr<IFst> fst(new GcnFst(&fstData[fst_start_offset],
-		static_cast<uint32_t>(fileSize - fst_start_offset), offsetShift));
+	unique_ptr<IFst> fst(new WiiUFst(&fstData[fst_start_offset],
+		static_cast<uint32_t>(fileSize - fst_start_offset)));
 	if (!fst->isOpen()) {
-		fprintf(stderr, C_("GcnFstPrint", "*** ERROR: Could not parse '%s' as GcnFst."), argv[1]);
+		fprintf(stderr, C_("WiiUFstPrint", "*** ERROR: Could not parse '%s' as WiiUFst."), argv[1]);
 		fputc('\n', stderr);
 		return EXIT_FAILURE;
 	}
 
 	// Print the FST to an ostringstream.
 	ostringstream oss;
-	LibRomData::fstPrint(fst.get(), oss);
+	LibRomData::fstPrint(fst.get(), oss, true);
 	const string fst_str = oss.str();
 
 #ifdef _WIN32
@@ -164,7 +149,7 @@ int RP_C_API main(int argc, char *argv[])
 
 	if (fst->hasErrors()) {
 		fputc('\n', stderr);
-		fputs(C_("GcnFstPrint", "*** WARNING: FST has errors and may be unusable."), stderr);
+		fputs(C_("WiiUFstPrint", "*** WARNING: FST has errors and may be unusable."), stderr);
 		fputc('\n', stderr);
 	}
 
