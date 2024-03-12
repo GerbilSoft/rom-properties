@@ -26,6 +26,7 @@ class WiiTMDPrivate final : public RomDataPrivate
 {
 public:
 	WiiTMDPrivate(const IRpFilePtr &file);
+	~WiiTMDPrivate();
 
 private:
 	typedef RomDataPrivate super;
@@ -40,6 +41,16 @@ public:
 public:
 	// TMD header
 	RVL_TMD_Header tmdHeader;
+
+	// TMD v1: CMD group header
+	WUP_CMD_GroupHeader *cmdGroupHeader;
+
+public:
+	/**
+	 * Load the CMD group header. (TMD v1)
+	 * @return 0 on success; negative POSIX error code on error.
+	 */
+	int loadCmdGroupHeader(void);
 };
 
 ROMDATA_IMPL(WiiTMD)
@@ -65,9 +76,49 @@ const RomDataInfo WiiTMDPrivate::romDataInfo = {
 
 WiiTMDPrivate::WiiTMDPrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
+	, cmdGroupHeader(nullptr)
 {
 	// Clear the TMD header struct.
 	memset(&tmdHeader, 0, sizeof(tmdHeader));
+}
+
+WiiTMDPrivate::~WiiTMDPrivate()
+{
+	delete cmdGroupHeader;
+}
+
+/**
+ * Load the CMD group header. (TMD v1)
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int WiiTMDPrivate::loadCmdGroupHeader(void)
+{
+	if (this->cmdGroupHeader) {
+		// CMD group header is already loaded.
+		return 0;
+	}
+
+	// File must be open.
+	if (!isValid || !file || !file->isOpen())
+		return -EIO;
+
+	// This TMD must be v1.
+	assert(tmdHeader.tmd_format_version == 1);
+	if (tmdHeader.tmd_format_version != 1) {
+		// Incorrect TMD version.
+		return -EINVAL;
+	}
+
+	WUP_CMD_GroupHeader *const grpHdr = new WUP_CMD_GroupHeader;
+	size_t size = file->seekAndRead(sizeof(RVL_TMD_Header), grpHdr, sizeof(*grpHdr));
+	if (size != sizeof(*grpHdr)) {
+		// Seek and/or read error.
+		delete grpHdr;
+		return -EIO;
+	}
+
+	this->cmdGroupHeader = grpHdr;
+	return 0;
 }
 
 /** WiiTMD **/
@@ -424,6 +475,121 @@ int WiiTMD::loadMetaData(void)
 
 	// Finished reading the metadata.
 	return static_cast<int>(d->metaData->count());
+}
+
+/** TMD accessors **/
+
+/**
+ * Get the TMD format version.
+ * @return TMD format version
+ */
+unsigned int WiiTMD::tmdFormatVersion(void) const
+{
+	RP_D(const WiiTMD);
+	return (likely(d->isValid)) ? d->tmdHeader.tmd_format_version : 0;
+}
+
+/**
+ * Get the TMD header.
+ * @return TMD header
+ */
+const RVL_TMD_Header *WiiTMD::tmdHeader(void) const
+{
+	RP_D(const WiiTMD);
+	return (likely(d->isValid)) ? &d->tmdHeader : nullptr;
+}
+
+/**
+ * Get the number of content metadata groups. (for TMD v1)
+ * @return Number of content metadata groups, or 0 on error.
+ */
+unsigned int WiiTMD::cmdGroupCountV1(void)
+{
+	RP_D(WiiTMD);
+
+	// This TMD must be v1.
+	assert(d->tmdHeader.tmd_format_version == 1);
+	if (d->tmdHeader.tmd_format_version != 1) {
+		// Incorrect TMD version.
+		return 0;
+	}
+
+	// Make sure the CMD group header is loaded.
+	if (d->loadCmdGroupHeader() != 0) {
+		// Unable to load the CMD group header.
+		return 0;
+	}
+
+	// Find the first CMD group that has zero entries.
+	unsigned int idx;
+	for (idx = 0; idx < ARRAY_SIZE(d->cmdGroupHeader->entries); idx++) {
+		if (d->cmdGroupHeader->entries[idx].nbr_cont == 0) {
+			// Found a zero entry.
+			break;
+		}
+	}
+
+	// idx is the index of the first entry with zero contents.
+	// This is the total number of valid CMD groups.
+	return idx;
+}
+
+/**
+ * Get the contents table. (for TMD v1)
+ * @param grpIdx CMD group index
+ * @return Contents table, or empty rp::uvector<> on error.
+ */
+rp::uvector<WUP_Content_Entry> WiiTMD::contentsTableV1(unsigned int grpIdx)
+{
+	// NOTE: Not cached, so the file needs to remain open.
+	RP_D(WiiTMD);
+	assert(d->isValid);
+	assert((bool)d->file);
+	assert(d->file->isOpen());
+	if (!d->isValid || !d->file || !d->file->isOpen()) {
+		// Unable to read data from the file.
+		return {};
+	}
+
+	// grpIdx must be [0,64).
+	assert(grpIdx < ARRAY_SIZE(WUP_CMD_GroupHeader::entries));
+	if (grpIdx >= ARRAY_SIZE(WUP_CMD_GroupHeader::entries)) {
+		return {};
+	}
+
+	// This TMD must be v1.
+	assert(d->tmdHeader.tmd_format_version == 1);
+	if (d->tmdHeader.tmd_format_version != 1) {
+		// Incorrect TMD version.
+		return {};
+	}
+
+	// Make sure the CMD group header is loaded.
+	if (d->loadCmdGroupHeader() != 0) {
+		// Unable to load the CMD group header.
+		return {};
+	}
+
+	static const off64_t contents_tbl_offset =
+		sizeof(RVL_TMD_Header) +
+		sizeof(WUP_CMD_GroupHeader);
+
+	// Read the contents specified in the selected group.
+	const unsigned int nbr_cont = be16_to_cpu(d->cmdGroupHeader->entries[grpIdx].nbr_cont);
+	if (nbr_cont == 0) {
+		// No contents?
+		return {};
+	}
+
+	const off64_t addr = contents_tbl_offset + (be16_to_cpu(d->cmdGroupHeader->entries[grpIdx].offset) * sizeof(WUP_Content_Entry));
+
+	rp::uvector<WUP_Content_Entry> contentsTbl;
+	const size_t data_size = nbr_cont * sizeof(WUP_Content_Entry);
+	contentsTbl.resize(data_size);
+	size_t size = d->file->seekAndRead(addr, contentsTbl.data(), data_size);
+	if (likely(size == data_size))
+		return contentsTbl;
+	return {};
 }
 
 }

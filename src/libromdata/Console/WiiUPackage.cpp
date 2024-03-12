@@ -9,6 +9,9 @@
 #include "stdafx.h"
 #include "WiiUPackage.hpp"
 
+// RomData subclasses
+#include "WiiTMD.hpp"
+
 // Other rom-properties libraries
 using namespace LibRpBase;
 using namespace LibRpFile;
@@ -38,6 +41,12 @@ public:
 public:
 	// Directory path (strdup()'d)
 	char *path;
+
+	// TMD
+	WiiTMD *tmd;
+
+	// Contents table
+	rp::uvector<WUP_Content_Entry> contentsTable;
 };
 
 ROMDATA_IMPL(WiiUPackage)
@@ -71,6 +80,7 @@ WiiUPackagePrivate::WiiUPackagePrivate(const char *path)
 
 WiiUPackagePrivate::~WiiUPackagePrivate()
 {
+	delete tmd;
 	free(path);
 }
 
@@ -135,6 +145,47 @@ WiiUPackage::WiiUPackage(const char *path)
 	if (!d->isValid) {
 		free(d->path);
 		d->path = nullptr;
+		return;
+	}
+
+	// Open the TMD.
+	string s_path(d->path);
+	s_path += "/title.tmd";
+	IRpFilePtr file = std::make_shared<RpFile>(s_path, RpFile::FM_OPEN_READ);
+	if (!file->isOpen()) {
+		// Failed to open the TMD.
+		free(d->path);
+		d->path = nullptr;
+		return;
+	}
+	WiiTMD *const tmd = new WiiTMD(file);
+	if (!tmd->isValid()) {
+		// Not a valid TMD.
+		delete tmd;
+		free(d->path);
+		d->path = nullptr;
+		return;
+	}
+	// Make sure the TMD is v1.
+	if (tmd->tmdFormatVersion() != 1) {
+		// Not a v1 TMD.
+		delete tmd;
+		free(d->path);
+		d->path = nullptr;
+		return;
+	}
+	d->tmd = tmd;
+
+	// Read the contents table for group 0.
+	// TODO: Multiple groups?
+	d->contentsTable = tmd->contentsTableV1(0);
+	if (d->contentsTable.empty()) {
+		// No contents?
+		delete tmd;
+		free(d->path);
+		d->tmd = nullptr;
+		d->path = nullptr;
+		return;
 	}
 }
 
