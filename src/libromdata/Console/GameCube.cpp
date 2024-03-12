@@ -678,7 +678,7 @@ const char *GameCubePrivate::wii_getCryptoStatus(const WiiPartition *partition)
 		// This may be an invalid key index.
 		if (partition->encKey() == WiiPartition::EncKey::Unknown) {
 			// Invalid key index.
-			return C_("Wii", "ERROR: Invalid common key index.");
+			return C_("Wii", "Invalid common key index.");
 		}
 	}
 
@@ -690,7 +690,7 @@ const char *GameCubePrivate::wii_getCryptoStatus(const WiiPartition *partition)
 
 	const char *err = KeyManager::verifyResultToString(res);
 	if (!err) {
-		err = C_("GameCube", "ERROR: Unknown error. (THIS IS A BUG!)");
+		err = C_("GameCube", "Unknown error. (THIS IS A BUG!)");
 	}
 	return err;
 }
