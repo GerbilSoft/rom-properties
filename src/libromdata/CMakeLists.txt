@@ -37,6 +37,7 @@ SET(${PROJECT_NAME}_SRCS
 	Console/WiiTicket.cpp
 	Console/WiiTMD.cpp
 	Console/WiiU.cpp
+	Console/WiiUPackage.cpp
 	Console/WiiWAD.cpp
 	Console/WiiWAD_ops.cpp
 	Console/WiiWIBN.cpp
@@ -172,6 +173,7 @@ SET(${PROJECT_NAME}_H
 	Console/WiiTMD.hpp
 	Console/WiiSave.hpp
 	Console/WiiU.hpp
+	Console/WiiUPackage.hpp
 	Console/WiiWAD.hpp
 	Console/WiiWAD_p.hpp
 	Console/WiiWIBN.hpp

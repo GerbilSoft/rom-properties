@@ -298,6 +298,7 @@ std::wstring resolve_symlink(const wchar_t *filenameW);
  * @param filename Filename to check (UTF-8)
  * @return True if the file is a directory; false if not.
  */
+RP_LIBROMDATA_PUBLIC
 bool is_directory(const char *filename);
 
 #ifdef _WIN32
@@ -309,6 +310,7 @@ bool is_directory(const char *filename);
  * @param filenameW Filename to check (UTF-16)
  * @return True if the file is a directory; false if not.
  */
+RP_LIBROMDATA_PUBLIC
 bool is_directory(const wchar_t *filenameW);
 #endif /* _WIN32 */
 
