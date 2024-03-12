@@ -263,6 +263,10 @@ const GCN_FST_Entry *GcnFstPrivate::find_path(const char *path) const
 		return fst_entry;
 	}
 
+	// Set of directory indexes that have already been processed.
+	// Used to prevent infinite loops if the FST has weird corruption.
+	std::unordered_set<int> idx_already;
+
 	// Skip the initial slash.
 	int idx = 1;	// Ignore the root directory.
 	// NOTE: This is the index *after* the last file.
@@ -294,8 +298,16 @@ const GCN_FST_Entry *GcnFstPrivate::find_path(const char *path) const
 		}
 
 		// Search this directory for a matching path component.
+		idx_already.clear();
 		bool found = false;
 		for (; idx < last_fst_idx; idx++) {
+			auto iter = idx_already.find(idx);
+			if (iter != idx_already.end()) {
+				// Something is wrong! We've already iterated over this directory.
+				return nullptr;
+			}
+			idx_already.insert(idx);
+
 			const char *pName;
 			fst_entry = this->entry(idx, &pName);
 			if (!fst_entry) {
