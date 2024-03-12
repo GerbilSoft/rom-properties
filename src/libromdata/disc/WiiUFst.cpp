@@ -147,7 +147,7 @@ WiiUFstPrivate::WiiUFstPrivate(const uint8_t *fstData, uint32_t len)
 		// Sanity check: File count is invalid.
 		// - 1 file means it only has a root directory.
 		// - 0 files isn't possible.
-		// - Can't have more than fstData_sz / sizeof(GCN_FST_Entry) files.
+		// - Can't have more than fstData_sz / sizeof(WUP_FST_Entry) files.
 		hasErrors = true;
 		return;
 	}
@@ -368,7 +368,7 @@ const WUP_FST_Entry *WiiUFstPrivate::find_path(const char *path) const
 				return nullptr;
 			}
 
-			// TODO: Is GCN/Wii case-sensitive?
+			// TODO: Is Wii U case-sensitive?
 			if (pName && !strcmp(path_component.c_str(), pName)) {
 				// Found a match.
 				found = true;
