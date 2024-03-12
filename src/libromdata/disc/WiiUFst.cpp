@@ -628,6 +628,7 @@ int WiiUFst::find_file(const char *filename, DirEnt *dirent)
 	const bool is_fst_dir = d->is_dir(fst_entry);
 	dirent->type = is_fst_dir ? DT_DIR : DT_REG;
 	dirent->name = d->entry_name(fst_entry);
+	dirent->ptnum = be16_to_cpu(fst_entry->storage_cluster_index);
 	if (is_fst_dir) {
 		// offset and size are not valid for directories.
 		dirent->offset = 0;
