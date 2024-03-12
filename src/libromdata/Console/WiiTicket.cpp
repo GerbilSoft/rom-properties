@@ -95,7 +95,7 @@ WiiTicket::WiiTicket(const IRpFilePtr &file)
 	// Read the ticket. (either v0 or v1, depending on how much was read)
 	d->file->rewind();
 	size_t size = d->file->read(&d->ticket, sizeof(d->ticket));
-	if (size != sizeof(RVL_Ticket)) {
+	if (size < sizeof(RVL_Ticket)) {
 		// Ticket is too small.
 		d->file.reset();
 		return;
