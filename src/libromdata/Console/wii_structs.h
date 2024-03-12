@@ -159,7 +159,7 @@ ASSERT_STRUCT(RVL_TimeLimit, 2*sizeof(uint32_t));
  */
 #pragma pack(1)
 typedef struct PACKED _RVL_Ticket {
-	uint32_t signature_type;	// [0x000] Always 0x10001 for RSA-2048.
+	uint32_t signature_type;	// [0x000] Signature type
 	uint8_t signature[0x100];	// [0x004] Signature
 	uint8_t padding_sig[0x3C];	// [0x104] Padding (always 0)
 
@@ -244,42 +244,48 @@ typedef struct PACKED _RVL_Ticket_V1 {
 ASSERT_STRUCT(RVL_Ticket_V1, 0x350);
 
 /**
- * Wii TMD header.
- * Reference: https://wiibrew.org/wiki/Tmd_file_structure
+ * Wii TMD header
+ * References:
+ * - https://wiibrew.org/wiki/Title_metadata
+ * - https://wiiubrew.org/wiki/Title_metadata
+ *
+ * All fields are big-endian.
  */
 #pragma pack(1)
 typedef struct PACKED _RVL_TMD_Header {
-	uint32_t signature_type;	// [0x000] Always 0x10001 for RSA-2048.
-	uint8_t signature[0x100];	// [0x004] Signature.
-	uint8_t padding_sig[0x3C];	// [0x104] Padding. (always 0)
+	uint32_t signature_type;	// [0x000] Signature type
+	uint8_t signature[0x100];	// [0x004] Signature
+	uint8_t padding_sig[0x3C];	// [0x104] Padding (always 0)
 
 	// The following fields are all covered by the above signature.
-	char signature_issuer[0x40];	// [0x140] Signature issuer.
-	uint8_t version;		// [0x180] Version.
-	uint8_t ca_crl_version;		// [0x181] CA CRL version.
-	uint8_t signer_crl_version;	// [0x182] Signer CRL version.
+	char signature_issuer[0x40];	// [0x140] Signature issuer
+	uint8_t tmd_format_version;	// [0x180] TMD format version (v0 for Wii; v1 for Wii U)
+	uint8_t ca_crl_version;		// [0x181] CA CRL version
+	uint8_t signer_crl_version;	// [0x182] Signer CRL version
 	uint8_t padding1;		// [0x183]
-	Nintendo_TitleID_BE_t sys_version;	// [0x184] System version. (IOS title ID)
-	Nintendo_TitleID_BE_t title_id;		// [0x18C] Title ID.
-	uint32_t title_type;		// [0x194] Title type.
-	uint16_t group_id;		// [0x198] Group ID.
+	Nintendo_TitleID_BE_t sys_version;	// [0x184] System version [IOS(U) title ID]
+	Nintendo_TitleID_BE_t title_id;		// [0x18C] Title ID
+	uint32_t title_type;		// [0x194] Title type
+	uint16_t group_id;		// [0x198] Group ID
 	uint16_t reserved1;		// [0x19A]
 
 	// region_code and ratings are NOT valid for discs.
 	// They're only valid for WiiWare.
-	uint16_t region_code;		// [0x19C] Region code. (See GCN_Region_Code.)
-	uint8_t ratings[0x10];		// [0x19E] Country-specific age ratings.
+	uint16_t region_code;		// [0x19C] Region code (See GCN_Region_Code)
+	uint8_t ratings[0x10];		// [0x19E] Country-specific age ratings
 	uint8_t reserved3[12];		// [0x1AE]
 
-	uint8_t ipc_mask[12];		// [0x1BA] IPC mask.
+	uint8_t ipc_mask[12];		// [0x1BA] IPC mask
 	uint8_t reserved4[18];		// [0x1C6]
-	uint32_t access_rights;		// [0x1D8] Access rights. (See RVL_Access_Rights_e.)
-	uint16_t title_version;		// [0x1DC] Title version.
-	uint16_t nbr_cont;		// [0x1DE] Number of contents.
-	uint16_t boot_index;		// [0x1E0] Boot index.
+	uint32_t access_rights;		// [0x1D8] Access rights (See RVL_Access_Rights_e)
+	uint16_t title_version;		// [0x1DC] Title version
+	uint16_t nbr_cont;		// [0x1DE] Number of contents
+	uint16_t boot_index;		// [0x1E0] Boot index
 	uint8_t padding2[2];		// [0x1E2]
 
-	// Following this header is a variable-length content table.
+	// Following this header is:
+	// - v0: Content table (length indicated by nbr_cont)
+	// - v1: CMD group header
 } RVL_TMD_Header;
 ASSERT_STRUCT(RVL_TMD_Header, 0x1E4);
 #pragma pack()
@@ -293,8 +299,10 @@ typedef enum {
 } RVL_Access_Rights_e;
 
 /**
- * Wii content entry. (Stored after the TMD.)
+ * Wii content entry (Stored after the TMD) (v0)
  * Reference: https://wiibrew.org/wiki/Title_metadata
+ *
+ * All fields are big-endian.
  */
 #pragma pack(1)
 typedef struct PACKED _RVL_Content_Entry {
@@ -304,7 +312,7 @@ typedef struct PACKED _RVL_Content_Entry {
 	uint64_t size;			// [0x008] Size
 	uint8_t sha1_hash[20];		// [0x010] SHA-1 hash of the content (installed) or H3 table (disc).
 } RVL_Content_Entry;
-ASSERT_STRUCT(RVL_Content_Entry, 0x24);
+ASSERT_STRUCT(RVL_Content_Entry, 36);
 #pragma pack()
 
 /**

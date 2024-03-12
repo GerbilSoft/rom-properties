@@ -516,6 +516,13 @@
     <glob pattern="*.tik"/>
   </mime-type>
 
+  <!-- WiiTMD -->
+  <mime-type type="application/x-nintendo-tmd">
+    <comment>Nintendo Title Metadata</comment>
+    <generic-icon name="application-pkix-cert"/>
+    <glob pattern="*.tmd"/>
+  </mime-type>
+
   <!-- WiiU -->
   <mime-type type="application/x-wii-u-rom">
     <comment>Wii U disc image</comment>

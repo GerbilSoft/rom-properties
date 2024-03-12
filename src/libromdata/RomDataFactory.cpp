@@ -53,6 +53,7 @@ using std::vector;
 #include "Console/SufamiTurbo.hpp"
 #include "Console/WiiSave.hpp"
 #include "Console/WiiTicket.hpp"
+#include "Console/WiiTMD.hpp"
 #include "Console/WiiU.hpp"
 #include "Console/WiiWAD.hpp"
 #include "Console/WiiWIBN.hpp"
@@ -391,6 +392,7 @@ const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_header
 	GetRomDataFns(SegaSaturn, ATTR_NONE | ATTR_HAS_METADATA | ATTR_SUPPORTS_DEVICES),
 	GetRomDataFns(WiiSave, ATTR_HAS_THUMBNAIL),
 	GetRomDataFns(WiiTicket, ATTR_HAS_METADATA),
+	GetRomDataFns(WiiTMD, ATTR_HAS_METADATA),
 	GetRomDataFns(WiiWAD, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA),
 
 	// Handhelds
