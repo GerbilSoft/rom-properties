@@ -95,7 +95,7 @@ WiiTicket::WiiTicket(const IRpFilePtr &file)
 	// Read the ticket. (either v0 or v1, depending on how much was read)
 	d->file->rewind();
 	size_t size = d->file->read(&d->ticket, sizeof(d->ticket));
-	if (size < sizeof(RVL_Ticket)) {
+	if (size != sizeof(RVL_Ticket)) {
 		// Ticket is too small.
 		d->file.reset();
 		return;
@@ -105,7 +105,7 @@ WiiTicket::WiiTicket(const IRpFilePtr &file)
 	const char *const filename = file->filename();
 	const DetectInfo info = {
 		{0, sizeof(d->ticket), reinterpret_cast<const uint8_t*>(&d->ticket)},
-		FileSystem::file_ext(filename),	// ext (not needed for WiiTicket)
+		FileSystem::file_ext(filename),	// ext
 		d->file->size()			// szFile
 	};
 	d->isValid = (isRomSupported_static(&info) >= 0);
@@ -263,15 +263,15 @@ int WiiTicket::loadFieldData(void)
 		be32_to_cpu(ticket->title_id.lo));
 	d->fields.addField_string(C_("Nintendo", "Title ID"), s_title_id, RomFields::STRF_MONOSPACE);
 
-	// Console ID
-	d->fields.addField_string_numeric(C_("Nintendo", "Console ID"),
-		be32_to_cpu(ticket->console_id), RomFields::Base::Hex, 8,
-		RomFields::STRF_MONOSPACE);
-
 	// Issuer
 	d->fields.addField_string(C_("Nintendo", "Issuer"),
 		latin1_to_utf8(ticket->signature_issuer, sizeof(ticket->signature_issuer)),
 		RomFields::STRF_MONOSPACE | RomFields::STRF_TRIM_END);
+
+	// Console ID
+	d->fields.addField_string_numeric(C_("Nintendo", "Console ID"),
+		be32_to_cpu(ticket->console_id), RomFields::Base::Hex, 8,
+		RomFields::STRF_MONOSPACE);
 
 	// Key index
 	// TODO: Convert to Retail/Korean/vWii for Wii titles?
