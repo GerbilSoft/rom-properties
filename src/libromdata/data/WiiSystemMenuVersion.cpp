@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * WiiSystemMenuVersion.cpp: Nintendo Wii System Menu version list.        *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -23,10 +23,10 @@ struct SysVersionEntry_t {
  * - https://wiiubrew.org/wiki/Title_database
  * - https://yls8.mtheall.com/ninupdates/reports.php
  */
-static const std::array<SysVersionEntry_t, 46> sysVersionList = {{
+static const std::array<SysVersionEntry_t, 48> sysVersionList = {{
 	// Wii
 	// Reference: https://wiibrew.org/wiki/System_Menu
-	{ 33, "1.0"},
+	{ 33, "1.0U"}, { 34, "1.0E"}, { 64, "1.0J"},
 	{ 97, "2.0U"}, {128, "2.0J"}, {130, "2.0E"},
 	{162, "2.1E"},
 	{192, "2.2J"}, {193, "2.2U"}, {194, "2.2E"},
