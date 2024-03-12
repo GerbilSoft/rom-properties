@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata/tests)                 *
  * FstPrint.cpp: FST printer.                                              *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -141,6 +141,7 @@ static int fstPrint(IFst *fst, ostream &os, const string &path,
 			int ret = fstPrint(fst, os, subdir, level+1, tree_lines, fc, pt);
 			if (ret != 0) {
 				// ERROR
+				fst->closedir(dirp);
 				return ret;
 			}
 
