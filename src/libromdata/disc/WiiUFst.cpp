@@ -159,6 +159,14 @@ WiiUFstPrivate::WiiUFstPrivate(const uint8_t *fstData, uint32_t len)
 		return;
 	}
 
+	// Sanity check: String table cannot contain '/'.
+	string_table_sz = fstData_sz - string_table_offset;
+	if (memchr(&fstData[string_table_offset], '/', string_table_sz) != nullptr) {
+		// String table has '/'!
+		hasErrors = true;
+		return;
+	}
+
 	// Copy the FST data.
 	// NOTE: +1 for NULL termination.
 	uint8_t *const fst8 = new uint8_t[fstData_sz + 1];
@@ -168,7 +176,6 @@ WiiUFstPrivate::WiiUFstPrivate(const uint8_t *fstData, uint32_t len)
 
 	// Save a pointer to the string table.
 	string_table_ptr = reinterpret_cast<char*>(&fst8[string_table_offset]);
-	string_table_sz = fstData_sz - string_table_offset;
 
 	// Save other pointers.
 	fstHeader = reinterpret_cast<const WUP_FST_Header*>(fst8);
