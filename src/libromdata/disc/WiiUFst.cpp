@@ -143,7 +143,7 @@ WiiUFstPrivate::WiiUFstPrivate(const uint8_t *fstData, uint32_t len)
 	// Use the root entry to determine how many files are present.
 	const WUP_FST_Entry *const root_entry = reinterpret_cast<const WUP_FST_Entry*>(&fstData[file_entry_start]);
 	const uint32_t file_count = be32_to_cpu(root_entry->root_dir.file_count);
-	if (file_count <= 1 || (file_count + 1) > (WUP_FST_MIN_SIZE) + (fstData_sz / sizeof(WUP_FST_Entry))) {
+	if (file_count <= 1 || file_count > (WUP_FST_MIN_SIZE - sizeof(WUP_FST_Entry) + (fstData_sz / sizeof(WUP_FST_Entry)))) {
 		// Sanity check: File count is invalid.
 		// - 1 file means it only has a root directory.
 		// - 0 files isn't possible.
