@@ -25,16 +25,23 @@ public:
 	/** TMD accessors **/
 
 	/**
+	 * Get the TMD header.
+	 * @return TMD header
+	 */
+	const RVL_TMD_Header *tmdHeader(void) const;
+
+	/**
 	 * Get the TMD format version.
 	 * @return TMD format version
 	 */
 	unsigned int tmdFormatVersion(void) const;
 
 	/**
-	 * Get the TMD header.
-	 * @return TMD header
+	 * Get the boot index.
+	 * This corresponds to the 'index' field in the content entries.
+	 * @return Boot index
 	 */
-	const RVL_TMD_Header *tmdHeader(void) const;
+	uint16_t bootIndex(void) const;
 
 	/**
 	 * Get the number of content metadata groups. (for TMD v1)

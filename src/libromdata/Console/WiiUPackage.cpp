@@ -7,11 +7,21 @@
  ***************************************************************************/
 
 #include "stdafx.h"
+#include "config.librpbase.h"
 #include "WiiUPackage.hpp"
 
 // RomData subclasses
 #include "WiiTicket.hpp"
 #include "WiiTMD.hpp"
+
+// Wii U FST
+#include "disc/WiiUFst.hpp"
+
+#ifdef ENABLE_DECRYPTION
+#  include "librpbase/crypto/IAesCipher.hpp"
+#  include "librpbase/crypto/AesCipherFactory.hpp"
+#  include "librpbase/disc/CBCReader.hpp"
+#endif /* ENABLE_DECRYPTION */
 
 // Other rom-properties libraries
 using namespace LibRpBase;
@@ -20,6 +30,8 @@ using namespace LibRpText;
 
 // C++ STL classes
 using std::string;
+using std::unique_ptr;
+using std::vector;
 
 namespace LibRomData {
 
@@ -43,12 +55,29 @@ public:
 	// Directory path (strdup()'d)
 	char *path;
 
-	// Ticket and TMD
+	// Ticket, TMD, and FST
 	WiiTicket *ticket;
 	WiiTMD *tmd;
+	WiiUFst *fst;
 
 	// Contents table
 	rp::uvector<WUP_Content_Entry> contentsTable;
+
+	// Contents readers (index is the TMD index)
+	vector<IDiscReaderPtr> contentsReaders;
+
+public:
+	/**
+	 * Clear everything.
+	 */
+	void reset(void);
+
+	/**
+	 * Open a content file.
+	 * @param idx Content index (TMD index)
+	 * @return Content file, or nullptr on error.
+	 */
+	IDiscReaderPtr openContentFile(unsigned int idx);
 };
 
 ROMDATA_IMPL(WiiUPackage)
@@ -72,6 +101,9 @@ const RomDataInfo WiiUPackagePrivate::romDataInfo = {
 
 WiiUPackagePrivate::WiiUPackagePrivate(const char *path)
 	: super({}, &romDataInfo)
+	, ticket(nullptr)
+	, tmd(nullptr)
+	, fst(nullptr)
 {
 	if (path && path[0] != '\0') {
 		this->path = strdup(path);
@@ -82,8 +114,97 @@ WiiUPackagePrivate::WiiUPackagePrivate(const char *path)
 
 WiiUPackagePrivate::~WiiUPackagePrivate()
 {
-	delete tmd;
 	free(path);
+	delete ticket;
+	delete tmd;
+	delete fst;
+}
+
+/**
+ * Clear everything.
+ */
+void WiiUPackagePrivate::reset(void)
+{
+	free(path);
+	delete ticket;
+	delete tmd;
+	delete fst;
+
+	path = nullptr;
+	ticket = nullptr;
+	tmd = nullptr;
+	path = nullptr;
+}
+
+/**
+ * Open a content file.
+ * @param idx Content index (TMD index)
+ * @return Content file, or nullptr on error.
+ */
+IDiscReaderPtr WiiUPackagePrivate::openContentFile(unsigned int idx)
+{
+	assert(idx < contentsReaders.size());
+	if (idx >= contentsReaders.size())
+		return {};
+
+	if (contentsReaders[idx]) {
+		// Content is already open.
+		return contentsReaders[idx];
+	}
+
+#ifdef ENABLE_DECRYPTION
+	// Attempt to open the content.
+	const WUP_Content_Entry &entry = contentsTable[idx];
+	string s_path(this->path);
+	s_path += DIR_SEP_CHR;
+
+	// Try with lowercase hex first.
+	const uint32_t content_id = be32_to_cpu(entry.content_id);
+	char fnbuf[16];
+	snprintf(fnbuf, sizeof(fnbuf), "%08x.app", content_id);
+	s_path += fnbuf;
+
+	IRpFilePtr subfile = std::make_shared<RpFile>(s_path.c_str(), RpFile::FM_OPEN_READ);
+	if (!subfile->isOpen()) {
+		// Try with uppercase hex.
+		snprintf(fnbuf, sizeof(fnbuf), "%08X.app", content_id);
+		s_path.resize(s_path.size()-12);
+		s_path += fnbuf;
+
+		subfile = std::make_shared<RpFile>(s_path.c_str(), RpFile::FM_OPEN_READ);
+		if (!subfile->isOpen()) {
+			// Unable to open the content file.
+			// TODO: Error code?
+			return {};
+		}
+	}
+
+	// TODO: Decrypt the title key. Using a hard-coded title key for now.
+	static const uint8_t title_key[16] = {
+		0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+		0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+	};
+
+	// IV is the 2-byte content index, followed by zeroes.
+	uint8_t iv[16];
+	memcpy(iv, &entry.index, 2);
+	memset(&iv[2], 0, 14);
+
+	// Create a disc reader.
+	// TODO: H3 reader if the content is H3-hashed.
+	CBCReaderPtr cbcReader = std::make_shared<CBCReader>(subfile, 0, subfile->size(), title_key, iv);
+	if (!cbcReader->isOpen()) {
+		// Unable to open the CBC reader.
+		return {};
+	}
+
+	// Disc reader is open.
+	contentsReaders[idx] = cbcReader;
+	return cbcReader;
+#else /* !ENABLE_DECRYPTION */
+	// Unencrypted NUS packages are NOT supported right now.
+	return {};
+#endif /* ENABLE_DECRYPTION */
 }
 
 /** WiiUPackage **/
@@ -136,8 +257,7 @@ WiiUPackage::WiiUPackage(const char *path)
 
 	if (!d->path) {
 		// No path specified...
-		free(d->path);
-		d->path = nullptr;
+		d->reset();
 		return;
 	}
 
@@ -145,8 +265,7 @@ WiiUPackage::WiiUPackage(const char *path)
 	d->isValid = (isDirSupported_static(path) >= 0);
 
 	if (!d->isValid) {
-		free(d->path);
-		d->path = nullptr;
+		d->reset();
 		return;
 	}
 
@@ -174,8 +293,7 @@ WiiUPackage::WiiUPackage(const char *path)
 	subfile.reset();
 	if (!ticket) {
 		// Unable to load the ticket.
-		free(d->path);
-		d->path = nullptr;
+		d->reset();
 		return;
 	}
 	d->ticket = ticket;
@@ -203,10 +321,7 @@ WiiUPackage::WiiUPackage(const char *path)
 	subfile.reset();
 	if (!tmd) {
 		// Unable to load the TMD.
-		delete d->ticket;
-		free(d->path);
-		d->ticket = nullptr;
-		d->path = nullptr;
+		d->reset();
 		return;
 	}
 	d->tmd = tmd;
@@ -216,14 +331,59 @@ WiiUPackage::WiiUPackage(const char *path)
 	d->contentsTable = tmd->contentsTableV1(0);
 	if (d->contentsTable.empty()) {
 		// No contents?
-		delete d->ticket;
-		delete d->tmd;
-		free(d->path);
-		d->ticket = nullptr;
-		d->tmd = nullptr;
-		d->path = nullptr;
+		d->reset();
 		return;
 	}
+
+	// Initialize the contentsReaders vector based on the number of contents.
+	d->contentsReaders.resize(d->contentsTable.size());
+
+	// Find and load the FST. (It has the "bootable" flag, and is usually the first content.)
+	// NOTE: tmd->bootIndex() byteswaps to host-endian. Swap it back for comparisons.
+	IDiscReaderPtr fstReader;
+	const uint16_t boot_index = cpu_to_be16(tmd->bootIndex());
+	unsigned int i = 0;
+	for (const auto &p : d->contentsTable) {
+		if (p.index == boot_index) {
+			// Found it!
+			fstReader = d->openContentFile(i);
+			break;
+		}
+		i++;
+	}
+	if (!fstReader) {
+		// Could not open the FST.
+		d->reset();
+		return;
+	}
+
+	// Need to load the entire FST, which will be memcpy()'d by WiiUFst.
+	// TODO: Eliminate a copy.
+	off64_t fst_size = fstReader->size();
+	if (fst_size <= 0 || fst_size > 1048576U) {
+		// FST is empty and/or too big?
+		d->reset();
+		return;
+	}
+	unique_ptr<uint8_t[]> fst_buf(new uint8_t[fst_size]);
+	size_t size = fstReader->read(fst_buf.get(), fst_size);
+	if (size != static_cast<size_t>(fst_size)) {
+		// Read error.
+		d->reset();
+		return;
+	}
+
+	// Create the WiiUFst.
+	WiiUFst *const fst = new WiiUFst(fst_buf.get(), static_cast<uint32_t>(fst_size));
+	if (!fst->isOpen()) {
+		// FST is invalid?
+		printf("FST PARSE ERR\n");
+		d->reset();
+		return;
+	}
+
+	// FST loaded.
+	printf("FST OK\n");
 }
 
 /**

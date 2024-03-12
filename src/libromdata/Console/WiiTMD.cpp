@@ -480,6 +480,16 @@ int WiiTMD::loadMetaData(void)
 /** TMD accessors **/
 
 /**
+ * Get the TMD header.
+ * @return TMD header
+ */
+const RVL_TMD_Header *WiiTMD::tmdHeader(void) const
+{
+	RP_D(const WiiTMD);
+	return (likely(d->isValid)) ? &d->tmdHeader : nullptr;
+}
+
+/**
  * Get the TMD format version.
  * @return TMD format version
  */
@@ -490,13 +500,14 @@ unsigned int WiiTMD::tmdFormatVersion(void) const
 }
 
 /**
- * Get the TMD header.
- * @return TMD header
+ * Get the boot index.
+ * This corresponds to the 'index' field in the content entries.
+ * @return Boot index
  */
-const RVL_TMD_Header *WiiTMD::tmdHeader(void) const
+uint16_t WiiTMD::bootIndex(void) const
 {
 	RP_D(const WiiTMD);
-	return (likely(d->isValid)) ? &d->tmdHeader : nullptr;
+	return (likely(d->isValid)) ? be16_to_cpu(d->tmdHeader.boot_index) : 0;
 }
 
 /**
