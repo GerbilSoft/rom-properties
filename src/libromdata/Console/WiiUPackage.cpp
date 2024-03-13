@@ -398,6 +398,7 @@ WiiUPackage::WiiUPackage(const char *path)
 	if (!ticket) {
 		// Unable to load the ticket.
 		d->reset();
+		d->isValid = false;
 		return;
 	}
 	d->ticket = ticket;
@@ -426,16 +427,21 @@ WiiUPackage::WiiUPackage(const char *path)
 	if (!tmd) {
 		// Unable to load the TMD.
 		d->reset();
+		d->isValid = false;
 		return;
 	}
 	d->tmd = tmd;
+
+	// NOTE: From this point on, if an error occurs, we won't reset fields.
+	// This will allow Ticket and TMD to be displayed, even if we can't
+	// decrypt anything else.
 
 #if ENABLE_DECRYPTION
 	// Decrypt the title key.
 	int ret = d->ticket->decryptTitleKey(d->title_key, sizeof(d->title_key));
 	if (ret != 0) {
 		// Failed to decrypt the title key.
-		d->reset();
+		// TODO: verifyResult
 		return;
 	}
 #endif /* ENABLE_DECRYPTION */
@@ -445,7 +451,6 @@ WiiUPackage::WiiUPackage(const char *path)
 	d->contentsTable = tmd->contentsTableV1(0);
 	if (d->contentsTable.empty()) {
 		// No contents?
-		d->reset();
 		return;
 	}
 
@@ -467,7 +472,6 @@ WiiUPackage::WiiUPackage(const char *path)
 	}
 	if (!fstReader) {
 		// Could not open the FST.
-		d->reset();
 		return;
 	}
 
@@ -476,14 +480,12 @@ WiiUPackage::WiiUPackage(const char *path)
 	off64_t fst_size = fstReader->size();
 	if (fst_size <= 0 || fst_size > 1048576U) {
 		// FST is empty and/or too big?
-		d->reset();
 		return;
 	}
 	unique_ptr<uint8_t[]> fst_buf(new uint8_t[fst_size]);
 	size_t size = fstReader->read(fst_buf.get(), fst_size);
 	if (size != static_cast<size_t>(fst_size)) {
 		// Read error.
-		d->reset();
 		return;
 	}
 
@@ -491,8 +493,6 @@ WiiUPackage::WiiUPackage(const char *path)
 	WiiUFst *const fst = new WiiUFst(fst_buf.get(), static_cast<uint32_t>(fst_size));
 	if (!fst->isOpen()) {
 		// FST is invalid?
-		printf("FST PARSE ERR\n");
-		d->reset();
 		return;
 	}
 	d->fst = fst;
