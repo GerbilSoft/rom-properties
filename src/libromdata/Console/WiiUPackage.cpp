@@ -18,14 +18,8 @@
 #include "disc/WiiUFst.hpp"
 
 // librpbase
-#include "librpbase/crypto/KeyManager.hpp"
 #ifdef ENABLE_DECRYPTION
-#  include "librpbase/crypto/IAesCipher.hpp"
-#  include "librpbase/crypto/AesCipherFactory.hpp"
 #  include "librpbase/disc/CBCReader.hpp"
-
-// for encryption key indexes
-#  include "libromdata/disc/WiiPartition.hpp"
 #endif /* ENABLE_DECRYPTION */
 
 // Other rom-properties libraries
@@ -81,14 +75,6 @@ public:
 	 * Clear everything.
 	 */
 	void reset(void);
-
-#ifdef ENABLE_DECRYPTION
-	/**
-	 * Decrypt the title key.
-	 * @return 0 on success; negative POSIX error code on error.
-	 */
-	int decryptTitleKey(void);
-#endif /* ENABLE_DECRYPTION */
 
 	/**
 	 * Open a content file.
@@ -158,118 +144,6 @@ void WiiUPackagePrivate::reset(void)
 	tmd = nullptr;
 	path = nullptr;
 }
-
-#ifdef ENABLE_DECRYPTION
-/**
- * Decrypt the title key.
- * @return 0 on success; negative POSIX error code on error.
- */
-int WiiUPackagePrivate::decryptTitleKey(void)
-{
-	assert(ticket != nullptr);
-	if (!ticket) {
-		return -EIO;
-	}
-
-	// Determine the key in use by checking the issuer.
-	// TODO: Common issuer check function in WiiPartition or WiiTicket?
-	// TODO: WiiPartition probably isn't the best place for Wii U keys...
-	const RVL_Ticket *const rvlTicket = ticket->ticket_v0();
-	assert(rvlTicket != nullptr);
-
-	char issuer[64];
-	memcpy(issuer, rvlTicket->signature_issuer, sizeof(rvlTicket->signature_issuer));
-	issuer[sizeof(issuer)-1] = '\0';
-
-	uint32_t ca, xs;
-	char c;
-	int ret = sscanf(issuer, "Root-CA%08X-XS%08X%c", &ca, &xs, &c);
-	if (ret != 2) {
-		// Not a valid issuer...
-		return -EINVAL;
-	}
-
-	uint8_t common_key_index = rvlTicket->common_key_index;
-	if (common_key_index > 2) {
-		// Out of range. Assume Wii common key.
-		common_key_index = 0;
-	}
-
-	// Check CA and XS.
-	WiiPartition::EncryptionKeys encKey;
-	if (ca == 1 && xs == 3) {
-		// RVL retail
-		encKey = static_cast<WiiPartition::EncryptionKeys>(
-			(int)WiiPartition::EncryptionKeys::Key_RVL_Common + common_key_index);
-	} else if (ca == 2 && xs == 6) {
-		// RVT debug (TODO: There's also XS00000004)
-		encKey = static_cast<WiiPartition::EncryptionKeys>(
-			(int)WiiPartition::EncryptionKeys::Key_RVT_Debug + common_key_index);
-	} else if (ca == 3 && xs == 0xc) {
-		// CTR/WUP retail
-		encKey = WiiPartition::EncryptionKeys::Key_WUP_Starbuck_WiiU_Common;
-	} else if (ca == 4 && xs == 0xf) {
-		// CAT debug
-		encKey = WiiPartition::EncryptionKeys::Key_CAT_Starbuck_WiiU_Common;
-	} else {
-		// Unsupported CA/XS combination.
-		return -EINVAL;
-	}
-
-	// Get the Key Manager instance.
-	KeyManager *const keyManager = KeyManager::instance();
-	assert(keyManager != nullptr);
-
-	// Initialize the AES cipher.
-	unique_ptr<IAesCipher> cipher(AesCipherFactory::create());
-	if (!cipher || !cipher->isInit()) {
-		// Error initializing the cipher.
-		// TODO: Return verifyResult?
-		//verifyResult = KeyManager::VerifyResult::IAesCipherInitErr;
-		return -EIO;
-	}
-
-	// Get the common key.
-	KeyManager::KeyData_t keyData;
-	KeyManager::VerifyResult verifyResult = keyManager->getAndVerify(
-		WiiPartition::encryptionKeyName_static(static_cast<int>(encKey)), &keyData,
-		WiiPartition::encryptionVerifyData_static(static_cast<int>(encKey)), 16);
-	if (verifyResult != KeyManager::VerifyResult::OK) {
-		// An error occurred while loading the common key.
-		// TODO: Return verifyResult?
-		return -EINVAL;
-	}
-
-	// Load the common key into the AES cipher. (CBC mode)
-	ret = cipher->setKey(keyData.key, keyData.length);
-	ret |= cipher->setChainingMode(IAesCipher::ChainingMode::CBC);
-	if (ret != 0) {
-		// Error initializing the cipher.
-		// TODO: Return verifyResult?
-		//verifyResult = KeyManager::VerifyResult::IAesCipherInitErr;
-		return -EIO;
-	}
-
-	// Get the IV.
-	// First 8 bytes are the title ID.
-	// Second 8 bytes are all 0.
-	uint8_t iv[16];
-	memcpy(iv, rvlTicket->title_id.u8, 8);
-	memset(&iv[8], 0, 8);
-
-	// Decrypt the title key.
-	memcpy(title_key, rvlTicket->enc_title_key, sizeof(title_key));
-	if (cipher->decrypt(title_key, sizeof(title_key), iv, sizeof(iv)) != sizeof(title_key)) {
-		// Error decrypting the title key.
-		// TODO: Return verifyResult?
-		//verifyResult = KeyManager::VerifyResult::IAesCipherDecryptErr;
-		return -EIO;
-	}
-
-	// Title key decrypted.
-	return 0;
-}
-#endif /* ENABLE_DECRYPTION */
 
 /**
  * Open a content file.
@@ -457,7 +331,7 @@ WiiUPackage::WiiUPackage(const char *path)
 
 #if ENABLE_DECRYPTION
 	// Decrypt the title key.
-	int ret = d->decryptTitleKey();
+	int ret = d->ticket->decryptTitleKey(d->title_key, sizeof(d->title_key));
 	if (ret != 0) {
 		// Failed to decrypt the title key.
 		d->reset();

@@ -7,6 +7,7 @@
  ***************************************************************************/
 
 #pragma once
+#include "config.librpbase.h"
 
 #include "librpbase/RomData.hpp"
 
@@ -33,6 +34,16 @@ public:
 	 * @return Ticket
 	 */
 	const RVL_Ticket *ticket_v0(void) const;
+
+#ifdef ENABLE_DECRYPTION
+	/**
+	 * Get the decrypted title key.
+	 * @param pKeyBuf	[out] Pointer to key buffer
+	 * @param size		[in] Size of pKeyBuf (must be >= 16)
+	 * @return 0 on success; negative POSIX error code on error.
+	 */
+	int decryptTitleKey(uint8_t *pKeyBuf, size_t size) const;
+#endif /* ENABLE_DECRYPTION */
 
 ROMDATA_DECL_END()
 
