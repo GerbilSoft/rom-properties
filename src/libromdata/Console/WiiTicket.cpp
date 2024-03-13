@@ -176,9 +176,12 @@ int WiiTicket::isRomSupported_static(const DetectInfo *info)
 			}
 			break;
 		case 1:
-			if (info->szFile != sizeof(RVL_Ticket_V1)) {
+			if (info->szFile < static_cast<off64_t>(sizeof(RVL_Ticket_V1))) {
 				// Incorrect file size.
-				// TODO: Allow larger tickets?
+				// NOTE: Updates may have larger tickets.
+				// NES REMIX (USA) (Update) has a 2640-byte ticket.
+				// It seems to have a certificate chain appended?
+				// We'll allow any ticket >= 848 bytes for now.
 				return -1;
 			}
 			break;
