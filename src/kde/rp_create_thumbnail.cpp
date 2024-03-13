@@ -49,16 +49,13 @@ Q_DECL_EXPORT int RP_C_API rp_create_thumbnail2(const char *source_file, const c
 	// TODO: Static initializer somewhere?
 	rp_image::setBackendCreatorFn(RpQImageBackend::creator_fn);
 
-	// Local URL
-	const QUrl localUrl = localizeQUrl(QUrl(QString::fromUtf8(source_file)));
-
+	// TODO: Check enableThumbnailOnNetworkFS
 	RomDataPtr romData;
 
-	// TODO: enableThumbnailOnNetworkFS
-
 	// Check if this is a directory.
+	const QUrl localUrl = localizeQUrl(QUrl(QString::fromUtf8(source_file)));
 	const string s_local_filename = localUrl.toLocalFile().toUtf8().constData();
-	if (!s_local_filename.empty() && FileSystem::is_directory(s_local_filename.c_str())) {
+	if (unlikely(!s_local_filename.empty() && FileSystem::is_directory(s_local_filename.c_str()))) {
 		// Directory: Call RomDataFactory::create() with the filename.
 		romData = RomDataFactory::create(s_local_filename.c_str());
 	} else {
