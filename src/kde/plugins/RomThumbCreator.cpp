@@ -79,20 +79,40 @@ bool RomThumbCreator::create(const QString &path, int width, int height, QImage 
 		return false;
 	}
 
-	// Attempt to open the ROM file.
-	// NOTE: QUrl uses the following special characters as delimiters:
-	// - '?': query string
-	// - '#': anchor
-	// so we need to urlencode it first.
-	QString path_enc = path;
-#ifndef _WIN32
-	path_enc.replace(QChar(L'?'), QLatin1String("%3f"));
-#endif /* _WIN32 */
-	path_enc.replace(QChar(L'#'), QLatin1String("%23"));
-	const QUrl path_url(path_enc);
+	RomDataPtr romData;
 
-	const IRpFilePtr file(openQUrl(path_url, true));
-	if (!file) {
+	// Check if this is a directory.
+	const string s_filename = path.toUtf8().constData();
+	if (likely(!FileSystem::is_directory(s_filename.c_str()))) {
+		// Directory: Call RomDataFactory::create() with the filename.
+		romData = RomDataFactory::create(s_filename.c_str());
+	} else {
+		// File: Open the file and call RomDataFactory::create() with the opened file.
+
+		// NOTE: QUrl uses the following special characters as delimiters:
+		// - '?': query string
+		// - '#': anchor
+		// so we need to urlencode it first.
+		QString path_enc = path;
+#ifndef _WIN32
+		path_enc.replace(QChar(L'?'), QLatin1String("%3f"));
+#endif /* _WIN32 */
+		path_enc.replace(QChar(L'#'), QLatin1String("%23"));
+		const QUrl path_url(path_enc);
+
+		// Attempt to open the ROM file.
+		const IRpFilePtr file(openQUrl(path_url, true));
+		if (!file) {
+			return false;
+		}
+
+		// Get the appropriate RomData class for this ROM.
+		// RomData class *must* support at least one image type.
+		romData = RomDataFactory::create(file, RomDataFactory::RDA_HAS_THUMBNAIL);
+	}
+
+	if (!romData) {
+		// Not a supported RomData object.
 		return false;
 	}
 
@@ -100,7 +120,7 @@ bool RomThumbCreator::create(const QString &path, int width, int height, QImage 
 	// TODO: What if they aren't?
 	Q_D(RomThumbCreator);
 	RomThumbCreatorPrivate::GetThumbnailOutParams_t outParams;
-	int ret = d->getThumbnail(file, width, &outParams);
+	int ret = d->getThumbnail(romData, width, &outParams);
 
 	if (ret == 0) {
 		img = outParams.retImg;
