@@ -13,6 +13,8 @@
 namespace LibRomData {
 
 ROMDATA_DECL_BEGIN(WiiUPackage)
+ROMDATA_DECL_IMGSUPPORT()
+ROMDATA_DECL_IMGINT()
 
 public:
 	/**

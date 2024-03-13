@@ -23,11 +23,15 @@
 #  include "disc/WiiUH3Reader.hpp"
 #endif /* ENABLE_DECRYPTION */
 
+// TGA FileFormat
+#include "librptexture/fileformat/TGA.hpp"
+
 // Other rom-properties libraries
 #include "librpbase/disc/PartitionFile.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;
+using namespace LibRpTexture;
 
 // C++ STL classes
 using std::string;
@@ -61,6 +65,9 @@ public:
 	WiiTMD *tmd;
 	WiiUFst *fst;
 
+	// Icon (loaded from "/meta/iconTex.tga")
+	rp_image_const_ptr img_icon;
+
 #ifdef ENABLE_DECRYPTION
 	// Title key
 	uint8_t title_key[16];
@@ -91,9 +98,16 @@ public:
 	 * @return IRpFile, or nullptr on error.
 	 */
 	IRpFilePtr open(const char *filename);
+
+	/**
+	 * Load the icon.
+	 * @return Icon, or nullptr on error.
+	 */
+	rp_image_const_ptr loadIcon(void);
 };
 
 ROMDATA_IMPL(WiiUPackage)
+ROMDATA_IMPL_IMG(WiiUPackage)
 
 /** WiiUPackagePrivate **/
 
@@ -262,6 +276,39 @@ IRpFilePtr WiiUPackagePrivate::open(const char *filename)
 	// get its own shared_ptr<>.
 	// The IDiscReaderPtr above must remain valid while this PartitionFilePtr is valid.
 	return std::make_shared<PartitionFile>(contentFile.get(), dirent.offset, dirent.size);
+}
+
+/**
+ * Load the icon.
+ * @return Icon, or nullptr on error.
+ */
+rp_image_const_ptr WiiUPackagePrivate::loadIcon(void)
+{
+	if (img_icon) {
+		// Icon has already been loaded.
+		return img_icon;
+	} else if (!this->isValid || !this->fst) {
+		// Can't load the icon.
+		return {};
+	}
+
+	// Icon is "/meta/iconTex.tga".
+	IRpFilePtr f_icon = this->open("/meta/iconTex.tga");
+	if (!f_icon) {
+		// Icon not found?
+		return {};
+	}
+
+	// Attempt to open the icon as TGA.
+	unique_ptr<TGA> tga(new TGA(f_icon));
+	if (!tga->isValid()) {
+		// Not a valid TGA file.
+		return {};
+	}
+
+	// Get the icon.
+	img_icon = tga->image();
+	return img_icon;
 }
 
 /** WiiUPackage **/
@@ -451,7 +498,6 @@ WiiUPackage::WiiUPackage(const char *path)
 	d->fst = fst;
 
 	// FST loaded.
-	printf("FST OK\n");
 }
 
 /**
@@ -534,6 +580,36 @@ const char *WiiUPackage::systemName(unsigned int type) const
 }
 
 /**
+ * Get a bitfield of image types this class can retrieve.
+ * @return Bitfield of supported image types. (ImageTypesBF)
+ */
+uint32_t WiiUPackage::supportedImageTypes_static(void)
+{
+	return IMGBF_INT_ICON;;
+}
+
+/**
+ * Get a list of all available image sizes for the specified image type.
+ * @param imageType Image type.
+ * @return Vector of available image sizes, or empty vector if no images are available.
+ */
+vector<RomData::ImageSizeDef> WiiUPackage::supportedImageSizes_static(ImageType imageType)
+{
+	ASSERT_supportedImageSizes(imageType);
+
+	switch (imageType) {
+		case IMG_INT_ICON:
+			// Wii U icons are usually 128x128.
+			return {{nullptr, 128, 128, 0}};
+		default:
+			break;
+	}
+
+	// Unsupported image type.
+	return {};
+}
+
+/**
  * Load field data.
  * Called by RomData::fields() if the field data hasn't been loaded yet.
  * @return Number of fields read on success; negative POSIX error code on error.
@@ -556,6 +632,26 @@ int WiiUPackage::loadFieldData(void)
 
 	// Finished reading the field data.
 	return static_cast<int>(d->fields.count());
+}
+
+/**
+ * Load an internal image.
+ * Called by RomData::image().
+ * @param imageType	[in] Image type to load.
+ * @param pImage	[out] Reference to rp_image_const_ptr to store the image in.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int WiiUPackage::loadInternalImage(ImageType imageType, rp_image_const_ptr &pImage)
+{
+	ASSERT_loadInternalImage(imageType, pImage);
+	RP_D(WiiUPackage);
+	ROMDATA_loadInternalImage_single(
+		IMG_INT_ICON,	// ourImageType
+		d->path,	// file (NOTE: Using d->path because we don't have a "file")
+		d->isValid,	// isValid
+		0,		// romType
+		d->img_icon,	// imgCache
+		d->loadIcon);	// func
 }
 
 }
