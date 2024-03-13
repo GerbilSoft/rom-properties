@@ -129,6 +129,7 @@ SET(${PROJECT_NAME}_SRCS
 	disc/WbfsReader.cpp
 	disc/WiiPartition.cpp
 	disc/WiiUFst.cpp
+	disc/WiiUH3Reader.cpp
 	disc/WuxReader.cpp
 	disc/XDVDFSPartition.cpp
 
@@ -337,6 +338,7 @@ SET(${PROJECT_NAME}_H
 	disc/WbfsReader.hpp
 	disc/WiiPartition.hpp
 	disc/WiiUFst.hpp
+	disc/WiiUH3Reader.hpp
 	disc/WuxReader.hpp
 	disc/XDVDFSPartition.cpp
 

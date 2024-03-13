@@ -20,9 +20,11 @@
 // librpbase
 #ifdef ENABLE_DECRYPTION
 #  include "librpbase/disc/CBCReader.hpp"
+#  include "disc/WiiUH3Reader.hpp"
 #endif /* ENABLE_DECRYPTION */
 
 // Other rom-properties libraries
+#include "librpbase/disc/PartitionFile.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;
@@ -82,6 +84,13 @@ public:
 	 * @return Content file, or nullptr on error.
 	 */
 	IDiscReaderPtr openContentFile(unsigned int idx);
+
+	/**
+	 * Open a file from the contents using the FST.
+	 * @param filename Filename
+	 * @return IRpFile, or nullptr on error.
+	 */
+	IRpFilePtr open(const char *filename);
 };
 
 ROMDATA_IMPL(WiiUPackage)
@@ -188,26 +197,71 @@ IDiscReaderPtr WiiUPackagePrivate::openContentFile(unsigned int idx)
 		}
 	}
 
-	// IV is the 2-byte content index, followed by zeroes.
-	uint8_t iv[16];
-	memcpy(iv, &entry.index, 2);
-	memset(&iv[2], 0, 14);
-
 	// Create a disc reader.
-	// TODO: H3 reader if the content is H3-hashed.
-	CBCReaderPtr cbcReader = std::make_shared<CBCReader>(subfile, 0, subfile->size(), title_key, iv);
-	if (!cbcReader->isOpen()) {
+	// TODO: Bitfield constants for 'type'?
+	IDiscReaderPtr discReader;
+	if (entry.type & cpu_to_be16(0x0002)) {
+		// Content is H3-hashed.
+		// NOTE: No IV is needed here.
+		discReader = std::make_shared<WiiUH3Reader>(subfile, title_key, sizeof(title_key));
+	} else {
+		// Content is not H3-hashed.
+
+		// IV is the 2-byte content index, followed by zeroes.
+		uint8_t iv[16];
+		memcpy(iv, &entry.index, 2);
+		memset(&iv[2], 0, 14);
+
+		discReader = std::make_shared<CBCReader>(subfile, 0, subfile->size(), title_key, iv);
+	}
+	if (!discReader->isOpen()) {
 		// Unable to open the CBC reader.
 		return {};
 	}
 
 	// Disc reader is open.
-	contentsReaders[idx] = cbcReader;
-	return cbcReader;
+	contentsReaders[idx] = discReader;
+	return discReader;
 #else /* !ENABLE_DECRYPTION */
 	// Unencrypted NUS packages are NOT supported right now.
 	return {};
 #endif /* ENABLE_DECRYPTION */
+}
+
+/**
+ * Open a file from the contents using the FST.
+ * @param filename Filename
+ * @return IRpFile, or nullptr on error.
+ */
+IRpFilePtr WiiUPackagePrivate::open(const char *filename)
+{
+	assert(fst != nullptr);
+	if (!fst) {
+		// No FST.
+		return {};
+	}
+
+	// Get the FST entry.
+	IFst::DirEnt dirent;
+	int ret = fst->find_file(filename, &dirent);
+	if (ret != 0) {
+		// File not found?
+		return {};
+	}
+
+	// Make sure the required content file is open.
+	IDiscReaderPtr contentFile = openContentFile(dirent.ptnum);
+	if (!contentFile) {
+		// Unable to open this content file.
+		return {};
+	}
+
+	// Create a PartitionFile.
+	// NOTE: PartitionFile does not take a shared_ptr<> because it's
+	// also created from within an IPartition object, so it can't
+	// get its own shared_ptr<>.
+	// The IDiscReaderPtr above must remain valid while this PartitionFilePtr is valid.
+	return std::make_shared<PartitionFile>(contentFile.get(), dirent.offset, dirent.size);
 }
 
 /** WiiUPackage **/
@@ -394,6 +448,7 @@ WiiUPackage::WiiUPackage(const char *path)
 		d->reset();
 		return;
 	}
+	d->fst = fst;
 
 	// FST loaded.
 	printf("FST OK\n");

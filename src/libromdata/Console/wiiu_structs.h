@@ -155,6 +155,37 @@ typedef struct _WUP_FST_Entry {
 } WUP_FST_Entry;
 ASSERT_STRUCT(WUP_FST_Entry, 16);
 
+/**
+ * Wii U: H3 content blocks
+ *
+ * All fields are big-endian.
+ */
+typedef struct _WUP_H3_Content_Block {
+	// One hash block covers a 1 MB superblock.
+	// IV starts in hashes.h0[block number % 16].
+	// NOTE: All hashes are SHA-1.
+	struct {
+		// 16 H0 hashes, each of which covers the data area (63 KB) of one 64 KB block.
+		// For every megabyte of data, all 64 KB blocks have the same H0 hashes.
+		uint8_t h0[16][20];
+		// 16 H1 hashes, each of which covers the H0 table for a given 1 MB block.
+		// For every 16 MB of data, all 64 KB blocks have the same H1 hashes.
+		uint8_t h1[16][20];
+		// 16 H2 hashes, each of which covers the H1 table for a given 16 MB block.
+		// For every 256 MB of data, all 64 KB blocks have the same H2 hashes.
+		uint8_t h2[16][20];
+
+		// Unused
+		uint8_t unused[64];
+	} hashes;
+	uint8_t data[0xFC00];
+} WUP_H3_Content_Block;
+ASSERT_STRUCT(WUP_H3_Content_Block, 65536);
+
+#define WUP_H3_SECTOR_SIZE_ENCRYPTED 0x10000
+#define WUP_H3_SECTOR_SIZE_DECRYPTED 0xFC00
+#define WUP_H3_SECTOR_SIZE_DECRYPTED_OFFSET 0x400
+
 #ifdef __cplusplus
 }
 #endif
