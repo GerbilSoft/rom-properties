@@ -123,6 +123,10 @@ public:
 		Key_RVL_SD_IV,
 		Key_RVL_SD_MD5,
 
+		// Wii U mode keys
+		Key_WUP_Starbuck_WiiU_Common,
+		Key_CAT_Starbuck_WiiU_Common,
+
 		Max
 	};
 
