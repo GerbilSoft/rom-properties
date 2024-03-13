@@ -248,28 +248,25 @@ void WiiPartitionPrivate::getEncKey(void)
 		return;
 	}
 
+	// NOTE: vWii common key shouldn't be used for discs,
+	// but we'll allow it anyway...
 	assert(partitionHeader.ticket.common_key_index <= 1);
-	const uint8_t keyIdx = partitionHeader.ticket.common_key_index;
+	uint8_t common_key_index = partitionHeader.ticket.common_key_index;
+	if (common_key_index > 2) {
+		// Out of range. Assume Wii common key.
+		common_key_index = 0;
+	}
 
 	// Check the issuer to determine Retail vs. Debug.
 	static const char issuer_rvt[] = "Root-CA00000002-XS00000006";
 	if (!memcmp(partitionHeader.ticket.signature_issuer, issuer_rvt, sizeof(issuer_rvt))) {
 		// Debug issuer. Use the debug key for keyIdx == 0.
-		// NOTE: vWii common key shouldn't be used for discs,
-		// but we'll allow it anyway...
-		if (keyIdx <= 2) {
-			encKeyReal = static_cast<WiiPartition::EncryptionKeys>(
-				(int)WiiPartition::EncryptionKeys::Key_RVT_Debug + keyIdx);
-		}
+		encKeyReal = static_cast<WiiPartition::EncryptionKeys>(
+			(int)WiiPartition::EncryptionKeys::Key_RVT_Debug + common_key_index);
 	} else {
 		// Assuming Retail issuer.
-		// NOTE: vWii common key shouldn't be used for discs,
-		// but we'll allow it anyway...
-		if (keyIdx <= 2) {
-			// keyIdx maps to encKey directly for retail.
-			encKeyReal = static_cast<WiiPartition::EncryptionKeys>(
-				(int)WiiPartition::EncryptionKeys::Key_RVL_Common + keyIdx);
-		}
+		encKeyReal = static_cast<WiiPartition::EncryptionKeys>(
+			(int)WiiPartition::EncryptionKeys::Key_RVL_Common + common_key_index);
 	}
 
 	if ((cryptoMethod & WiiPartition::CM_MASK_ENCRYPTED) == WiiPartition::CM_UNENCRYPTED) {
@@ -325,13 +322,13 @@ KeyManager::VerifyResult WiiPartitionPrivate::initDecryption(void)
 		return verifyResult;
 	}
 
-	// Get the common key.
+	// Load the common key into the AES cipher. (CBC mode)
 	KeyManager::KeyData_t keyData;
 	verifyResult = keyManager->getAndVerify(
 		WiiPartitionPrivate::EncryptionKeyNames[static_cast<int>(encKey)], &keyData,
 		WiiPartitionPrivate::EncryptionKeyVerifyData[static_cast<int>(encKey)], 16);
 	if (verifyResult != KeyManager::VerifyResult::OK) {
-		// An error occurred loading while the common key.
+		// An error occurred while loading the common key.
 		return verifyResult;
 	}
 

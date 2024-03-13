@@ -369,19 +369,23 @@ WiiWAD::WiiWAD(const IRpFilePtr &file)
 		d->tmdContentsTbl.clear();
 	}
 
+	// Common key index for e.g. Korean and vWii keys.
+	uint8_t common_key_index = d->ticket.common_key_index;
+	if (common_key_index > 2) {
+		// Out of range. Assume Wii common key.
+		common_key_index = 0;
+	}
+
 	// Determine the key index and debug vs. retail.
 	static const char issuer_rvt[] = "Root-CA00000002-XS00000006";
 	if (!memcmp(d->ticket.signature_issuer, issuer_rvt, sizeof(issuer_rvt))) {
-		// Debug encryption.
-		d->key_idx = WiiPartition::EncryptionKeys::Key_RVT_Debug;
+		// Debug encryption
+		d->key_idx = static_cast<WiiPartition::EncryptionKeys>(
+			(int)WiiPartition::EncryptionKeys::Key_RVT_Debug + common_key_index);
 	} else {
-		// Retail encryption.
-		uint8_t idx = d->ticket.common_key_index;
-		if (idx > 2) {
-			// Out of range. Assume Wii common key.
-			idx = 0;
-		}
-		d->key_idx = (WiiPartition::EncryptionKeys)idx;
+		// Retail encryption
+		d->key_idx = static_cast<WiiPartition::EncryptionKeys>(
+			(int)WiiPartition::EncryptionKeys::Key_RVL_Common + common_key_index);
 	}
 
 	// Main header is valid.
