@@ -364,6 +364,7 @@ const RVL_Ticket *WiiTicket::ticket_v0(void) const
  * @param size		[in] Size of pKeyBuf (must be >= 16)
  * @return 0 on success; negative POSIX error code on error.
  */
+ATTR_ACCESS_SIZE(write_only, 2, 3)
 int WiiTicket::decryptTitleKey(uint8_t *pKeyBuf, size_t size) const
 {
 	RP_D(const WiiTicket);

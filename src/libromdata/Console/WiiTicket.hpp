@@ -42,6 +42,7 @@ public:
 	 * @param size		[in] Size of pKeyBuf (must be >= 16)
 	 * @return 0 on success; negative POSIX error code on error.
 	 */
+	ATTR_ACCESS_SIZE(write_only, 2, 3)
 	int decryptTitleKey(uint8_t *pKeyBuf, size_t size) const;
 #endif /* ENABLE_DECRYPTION */
 
