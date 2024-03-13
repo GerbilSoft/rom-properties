@@ -13,6 +13,7 @@
 #include "check-uid.h"
 
 // Other rom-properties libraries
+#include "librpfile/FileSystem.hpp"
 using namespace LibRpBase;
 using namespace LibRpTexture;
 
@@ -181,22 +182,23 @@ public:
 /** CreateThumbnail **/
 
 /**
- * Open a file from a filename or URI.
+ * Create a RomData object from a filename or URI.
  * @param source_file	[in] Source filename or URI
  * @param s_uri		[out] Normalized URI (file:/ for a filename, etc.)
  * @param p_err		[out] RPCT error code
- * @return IRpFilePtr on success; nullptr on error.
+ * @return RomDataPtr on success; nullptr on error.
  */
-static IRpFilePtr openFromFilenameOrURI(const char *source_file, string &s_uri, int *p_err)
+static RomDataPtr openFromFilenameOrURI(const char *source_file, string &s_uri, int *p_err)
 {
 	// NOTE: Not checking these in Release builds.
+	// TODO: Simplify the "is_directory" code.
 	assert(source_file != nullptr);
 	assert(p_err != nullptr);
+	RomDataPtr romData;
 
 	s_uri.clear();
 	const bool enableThumbnailOnNetworkFS = Config::instance()->enableThumbnailOnNetworkFS();
 
-	IRpFilePtr file;
 	char *const uri_scheme = g_uri_parse_scheme(source_file);
 	if (uri_scheme != nullptr) {
 		// This is a URI.
@@ -214,8 +216,26 @@ static IRpFilePtr openFromFilenameOrURI(const char *source_file, string &s_uri, 
 				return nullptr;
 			}
 
-			// Open the file using RpFile.
-			file = std::make_shared<RpFile>(source_filename, RpFile::FM_OPEN_READ_GZ);
+			if (likely(!FileSystem::is_directory(source_filename))) {
+				// File: Open the file and call RomDataFactory::create() with the opened file.
+
+				// Attempt to open the ROM file.
+				const IRpFilePtr file = std::make_shared<RpFile>(source_filename, RpFile::FM_OPEN_READ_GZ);
+				if (!file) {
+					// Could not open the file.
+					if (p_err) {
+						*p_err = RPCT_ERROR_CANNOT_OPEN_SOURCE_FILE;
+					}
+					return {};
+				}
+
+				// Get the appropriate RomData class for this ROM.
+				// RomData class *must* support at least one image type.
+				romData = RomDataFactory::create(file, RomDataFactory::RDA_HAS_THUMBNAIL);
+			} else {
+				// Directory: Call RomDataFactory::create() with the filename.
+				romData = RomDataFactory::create(source_filename);
+			}
 			g_free(source_filename);
 		} else {
 			// Not a local filename.
@@ -226,7 +246,18 @@ static IRpFilePtr openFromFilenameOrURI(const char *source_file, string &s_uri, 
 			}
 
 			// Open the file using RpFileGio.
-			file = std::make_shared<RpFileGio>(source_file);
+			const IRpFilePtr file = std::make_shared<RpFileGio>(source_file);
+			if (!file) {
+				// Could not open the file.
+				if (p_err) {
+					*p_err = RPCT_ERROR_CANNOT_OPEN_SOURCE_FILE;
+				}
+				return {};
+			}
+
+			// Get the appropriate RomData class for this ROM.
+			// RomData class *must* support at least one image type.
+			romData = RomDataFactory::create(file, RomDataFactory::RDA_HAS_THUMBNAIL);
 		}
 	} else {
 		// This is a filename.
@@ -267,20 +298,38 @@ static IRpFilePtr openFromFilenameOrURI(const char *source_file, string &s_uri, 
 			}
 		}
 
-		// Open the file using RpFile.
-		file = std::make_shared<RpFile>(source_file, RpFile::FM_OPEN_READ_GZ);
+		if (likely(!FileSystem::is_directory(source_file))) {
+			// File: Open the file and call RomDataFactory::create() with the opened file.
+
+			// Attempt to open the ROM file.
+			const IRpFilePtr file = std::make_shared<RpFile>(source_file, RpFile::FM_OPEN_READ_GZ);
+			if (!file) {
+				// Could not open the file.
+				if (p_err) {
+					*p_err = RPCT_ERROR_CANNOT_OPEN_SOURCE_FILE;
+				}
+				return {};
+			}
+
+			// Get the appropriate RomData class for this ROM.
+			// RomData class *must* support at least one image type.
+			romData = RomDataFactory::create(file, RomDataFactory::RDA_HAS_THUMBNAIL);
+		} else {
+			// Directory: Call RomDataFactory::create() with the filename.
+			romData = RomDataFactory::create(source_file);
+		}
 	}
 
-	if (file && file->isOpen()) {
+	if (romData && romData->isValid()) {
 		// File has been opened successfully.
 		*p_err = 0;
-		return file;
+		return romData;
 	}
 
 	// File was not opened.
 	// TODO: Actual error code?
 	*p_err = RPCT_ERROR_CANNOT_OPEN_SOURCE_FILE;
-	return nullptr;
+	return {};
 }
 
 /**
@@ -317,18 +366,10 @@ G_MODULE_EXPORT int RP_C_API rp_create_thumbnail2(
 	// Attempt to open the ROM file.
 	string s_uri;
 	int ret = -1;
-	const IRpFilePtr file = openFromFilenameOrURI(source_file, s_uri, &ret);
-	if (!file || ret != 0) {
+	const RomDataPtr romData = openFromFilenameOrURI(source_file, s_uri, &ret);
+	if (!romData || ret != 0) {
 		// Error opening the file.
 		return ret;
-	}
-
-	// Get the appropriate RomData class for this ROM.
-	// RomData class *must* support at least one image type.
-	const RomDataPtr romData = RomDataFactory::create(file, RomDataFactory::RDA_HAS_THUMBNAIL);
-	if (!romData) {
-		// ROM is not supported.
-		return RPCT_ERROR_SOURCE_FILE_NOT_SUPPORTED;
 	}
 
 	// Create the thumbnail.
