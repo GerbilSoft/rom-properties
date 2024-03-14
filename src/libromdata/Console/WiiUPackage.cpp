@@ -551,6 +551,11 @@ int WiiUPackage::loadFieldData(void)
 
 	// TODO
 
+#ifdef ENABLE_XML
+	// Parse the Wii U System XMLs.
+	d->addFields_System_XMLs();
+#endif /* ENABLE_XML */
+
 	// Finished reading the field data.
 	return static_cast<int>(d->fields.count());
 }

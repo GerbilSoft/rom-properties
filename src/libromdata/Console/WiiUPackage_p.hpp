@@ -32,6 +32,11 @@
 // C++ STL includes
 #include <vector>
 
+// TinyXML2
+namespace tinyxml2 {
+	class XMLDocument;
+}
+
 namespace LibRomData {
 
 class WiiUPackagePrivate final : public LibRpBase::RomDataPrivate
@@ -98,6 +103,32 @@ public:
 	 * @return Icon, or nullptr on error.
 	 */
 	LibRpTexture::rp_image_const_ptr loadIcon(void);
+
+#ifdef ENABLE_XML
+private:
+	/**
+	 * Load a Wii U system XML file.
+	 *
+	 * The XML is loaded and parsed using the specified
+	 * TinyXML document.
+	 *
+	 * NOTE: DelayLoad must be checked by the caller, since it's
+	 * passing an XMLDocument reference to this function.
+	 *
+	 * @param doc		[in/out] XML document
+	 * @param filename	[in] XML filename
+	 * @param rootNode	[in] Root node for verification
+	 * @return 0 on success; negative POSIX error code on error.
+	 */
+	int loadSystemXml(tinyxml2::XMLDocument &doc, const char *filename, const char *rootNode);
+
+public:
+	/**
+	 * Add fields from the Wii U System XML files.
+	 * @return 0 on success; negative POSIX error code on error.
+ 	 */
+	int addFields_System_XMLs(void);
+#endif /* ENABLE_XML */
 };
 
 }
