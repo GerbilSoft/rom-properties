@@ -154,6 +154,38 @@ do { } while (0)
 } while (0)
 
 /**
+ * Parse a "hexBinary" element.
+ * NOTE: Some fields are 64-bit hexBinary, so we'll return a 64-bit value.
+ * @param rootNode	[in] Root node
+ * @param name		[in] Node name
+ * @return hexBinary data (returns 0 on error)
+ */
+uint64_t WiiUPackagePrivate::parseHexBinary(const XMLElement *rootNode, const char *name)
+{
+	const XMLElement *const elem = rootNode->FirstChildElement(name);
+	if (!elem)
+		return 0;
+
+	const char *attr = elem->Attribute("type");
+	if (!attr || strcmp(attr, "hexBinary") != 0)
+		return 0;
+
+	attr = elem->Attribute("length");
+	assert(strcmp(attr, "4") != 0 || strcmp(attr, "8") != 0);
+	if (!attr || (strcmp(attr, "4") != 0 && strcmp(attr, "8") != 0))
+		return 0;
+
+	const char *const text = elem->GetText();
+	if (!text)
+		return 0;
+
+	// Parse the value as a uint64_t.
+	char *endptr;
+	uint64_t val = strtoull(text, &endptr, 16);
+	return (*endptr == '\0') ? val : 0;
+}
+
+/**
  * Add fields from the Wii U System XML files.
  * @return 0 on success; negative POSIX error code on error.
  */
@@ -320,6 +352,24 @@ int WiiUPackagePrivate::addFields_System_XMLs(void)
 
 	// Product code
 	ADD_TEXT(rootNode, "product_code", C_("WiiU", "Product Code"));
+
+	// Region code
+	// Maps directly to the region field.
+	const uint32_t region_code = parseHexBinary(rootNode, "region");
+
+	static const char *const wiiu_region_bitfield_names[] = {
+		NOP_C_("Region", "Japan"),
+		NOP_C_("Region", "USA"),
+		NOP_C_("Region", "Europe"),
+		nullptr,	//NOP_C_("Region", "Australia"),	// NOTE: Not actually used?
+		NOP_C_("Region", "China"),
+		NOP_C_("Region", "South Korea"),
+		NOP_C_("Region", "Taiwan"),
+	};
+	vector<string> *const v_wiiu_region_bitfield_names = RomFields::strArrayToVector_i18n(
+		"Region", wiiu_region_bitfield_names, ARRAY_SIZE(wiiu_region_bitfield_names));
+	fields.addField_bitfield(C_("RomData", "Region Code"),
+		v_wiiu_region_bitfield_names, 3, region_code);
 
 	// Controller support
 	uint32_t controllers = 0;

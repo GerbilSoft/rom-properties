@@ -35,6 +35,7 @@
 // TinyXML2
 namespace tinyxml2 {
 	class XMLDocument;
+	class XMLElement;
 }
 
 namespace LibRomData {
@@ -121,6 +122,15 @@ private:
 	 * @return 0 on success; negative POSIX error code on error.
 	 */
 	int loadSystemXml(tinyxml2::XMLDocument &doc, const char *filename, const char *rootNode);
+
+	/**
+	 * Parse a "hexBinary" element.
+	 * NOTE: Some fields are 64-bit hexBinary, so we'll return a 64-bit value.
+	 * @param rootNode	[in] Root node
+	 * @param name		[in] Node name
+	 * @return hexBinary data
+	 */
+	static uint64_t parseHexBinary(const tinyxml2::XMLElement *rootNode, const char *name);
 
 public:
 	/**
