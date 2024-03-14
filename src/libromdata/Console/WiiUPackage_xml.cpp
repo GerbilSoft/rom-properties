@@ -154,6 +154,37 @@ do { } while (0)
 } while (0)
 
 /**
+ * Parse an "unsignedInt" element.
+ * @param rootNode	[in] Root node
+ * @param name		[in] Node name
+ * @return unsignedInt data (returns 0 on error)
+ */
+unsigned int WiiUPackagePrivate::parseUnsignedInt(const XMLElement *rootNode, const char *name)
+{
+	const XMLElement *const elem = rootNode->FirstChildElement(name);
+	if (!elem)
+		return 0;
+
+	const char *attr = elem->Attribute("type");
+	if (!attr || strcmp(attr, "unsignedInt") != 0)
+		return 0;
+
+	attr = elem->Attribute("length");
+	assert(strcmp(attr, "4") == 0);
+	if (!attr || strcmp(attr, "4") != 0)
+		return 0;
+
+	const char *const text = elem->GetText();
+	if (!text)
+		return 0;
+
+	// Parse the value as an unsigned int.
+	char *endptr;
+	unsigned int val = strtoul(text, &endptr, 10);
+	return (*endptr == '\0') ? val : 0;
+}
+
+/**
  * Parse a "hexBinary" element.
  * NOTE: Some fields are 64-bit hexBinary, so we'll return a 64-bit value.
  * @param rootNode	[in] Root node
@@ -384,26 +415,8 @@ int WiiUPackagePrivate::addFields_System_XMLs(void)
 		"drc_use",
 	};
 	for (unsigned int i = 0; i < ARRAY_SIZE(controller_nodes); i++) {
-		const XMLElement *const elem = rootNode->FirstChildElement(controller_nodes[i]);
-		if (!elem)
-			continue;
-
-		// This should be an unsignedInt with length 4.
-		const char *attr = elem->Attribute("type");
-		if (!attr || strcmp(attr, "unsignedInt") != 0)
-			continue;
-		attr = elem->Attribute("length");
-		if (!attr || strcmp(attr, "4") != 0)
-			continue;
-
-		const char *const text = elem->GetText();
-		if (!text)
-			continue;
-
-		// Parse the value as an unsigned int.
-		char *endptr;
-		unsigned int val = strtoul(text, &endptr, 10);
-		if (*endptr == '\0' && val > 0) {
+		unsigned int val = parseUnsignedInt(rootNode, controller_nodes[i]);
+		if (val > 0) {
 			// This controller is supported.
 			controllers |= (1U << i);
 		}

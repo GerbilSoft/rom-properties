@@ -124,6 +124,14 @@ private:
 	int loadSystemXml(tinyxml2::XMLDocument &doc, const char *filename, const char *rootNode);
 
 	/**
+	 * Parse an "unsignedInt" element.
+	 * @param rootNode	[in] Root node
+	 * @param name		[in] Node name
+	 * @return unsignedInt data (returns 0 on error)
+	 */
+	unsigned int parseUnsignedInt(const tinyxml2::XMLElement *rootNode, const char *name);
+
+	/**
 	 * Parse a "hexBinary" element.
 	 * NOTE: Some fields are 64-bit hexBinary, so we'll return a 64-bit value.
 	 * @param rootNode	[in] Root node
