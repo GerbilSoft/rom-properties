@@ -1647,7 +1647,7 @@ int Nintendo3DS::loadFieldData(void)
 				if (!shownWarning) {
 					const char *err = KeyManager::verifyResultToString(res);
 					if (!err) {
-						err = C_("Nintendo3DS", "Unknown error. (THIS IS A BUG!)");
+						err = C_("RomData", "Unknown error. (THIS IS A BUG!)");
 					}
 					d->fields.addField_string(C_("RomData", "Warning"),
 						err, RomFields::STRF_WARNING);
@@ -1743,7 +1743,7 @@ int Nintendo3DS::loadFieldData(void)
 					: KeyManager::VerifyResult::Unknown);
 				const char *err = KeyManager::verifyResultToString(res);
 				if (!err) {
-					err = C_("Nintendo3DS", "Unknown error. (THIS IS A BUG!)");
+					err = C_("RomData", "Unknown error. (THIS IS A BUG!)");
 				}
 				d->fields.addField_string(C_("RomData", "Warning"),
 					err, RomFields::STRF_WARNING);

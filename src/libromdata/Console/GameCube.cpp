@@ -693,7 +693,7 @@ const char *GameCubePrivate::wii_getCryptoStatus(const WiiPartition *partition)
 
 	const char *err = KeyManager::verifyResultToString(res);
 	if (!err) {
-		err = C_("GameCube", "Unknown error. (THIS IS A BUG!)");
+		err = C_("RomData", "Unknown error. (THIS IS A BUG!)");
 	}
 	return err;
 }

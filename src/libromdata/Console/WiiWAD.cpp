@@ -810,7 +810,7 @@ int WiiWAD::loadFieldData(void)
 		// Unable to get the decryption key.
 		const char *err = KeyManager::verifyResultToString(d->key_status);
 		if (!err) {
-			err = C_("WiiWAD", "Unknown error. (THIS IS A BUG!)");
+			err = C_("RomData", "Unknown error. (THIS IS A BUG!)");
 		}
 		d->fields.addField_string(C_("WiiWAD", "Warning"),
 			err, RomFields::STRF_WARNING);
