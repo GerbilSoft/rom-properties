@@ -175,6 +175,7 @@ SET(${PROJECT_NAME}_H
 	Console/WiiSave.hpp
 	Console/WiiU.hpp
 	Console/WiiUPackage.hpp
+	Console/WiiUPackage_p.hpp
 	Console/WiiWAD.hpp
 	Console/WiiWAD_p.hpp
 	Console/WiiWIBN.hpp

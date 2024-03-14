@@ -7,21 +7,8 @@
  ***************************************************************************/
 
 #include "stdafx.h"
-#include "config.librpbase.h"
 #include "WiiUPackage.hpp"
-
-// RomData subclasses
-#include "WiiTicket.hpp"
-#include "WiiTMD.hpp"
-
-// Wii U FST
-#include "disc/WiiUFst.hpp"
-
-// librpbase
-#ifdef ENABLE_DECRYPTION
-#  include "librpbase/disc/CBCReader.hpp"
-#  include "disc/WiiUH3Reader.hpp"
-#endif /* ENABLE_DECRYPTION */
+#include "WiiUPackage_p.hpp"
 
 // TGA FileFormat
 #include "librptexture/fileformat/TGA.hpp"
@@ -39,72 +26,6 @@ using std::unique_ptr;
 using std::vector;
 
 namespace LibRomData {
-
-class WiiUPackagePrivate final : public RomDataPrivate
-{
-public:
-	WiiUPackagePrivate(const char *path);
-	~WiiUPackagePrivate();
-
-private:
-	typedef RomDataPrivate super;
-	RP_DISABLE_COPY(WiiUPackagePrivate)
-
-public:
-	/** RomDataInfo **/
-	static const char *const exts[];
-	static const char *const mimeTypes[];
-	static const RomDataInfo romDataInfo;
-
-public:
-	// Directory path (strdup()'d)
-	char *path;
-
-	// Ticket, TMD, and FST
-	WiiTicket *ticket;
-	WiiTMD *tmd;
-	WiiUFst *fst;
-
-	// Icon (loaded from "/meta/iconTex.tga")
-	rp_image_const_ptr img_icon;
-
-#ifdef ENABLE_DECRYPTION
-	// Title key
-	uint8_t title_key[16];
-#endif /* ENABLE_DECRYPTION */
-
-	// Contents table
-	rp::uvector<WUP_Content_Entry> contentsTable;
-
-	// Contents readers (index is the TMD index)
-	vector<IDiscReaderPtr> contentsReaders;
-
-public:
-	/**
-	 * Clear everything.
-	 */
-	void reset(void);
-
-	/**
-	 * Open a content file.
-	 * @param idx Content index (TMD index)
-	 * @return Content file, or nullptr on error.
-	 */
-	IDiscReaderPtr openContentFile(unsigned int idx);
-
-	/**
-	 * Open a file from the contents using the FST.
-	 * @param filename Filename
-	 * @return IRpFile, or nullptr on error.
-	 */
-	IRpFilePtr open(const char *filename);
-
-	/**
-	 * Load the icon.
-	 * @return Icon, or nullptr on error.
-	 */
-	rp_image_const_ptr loadIcon(void);
-};
 
 ROMDATA_IMPL(WiiUPackage)
 ROMDATA_IMPL_IMG(WiiUPackage)
