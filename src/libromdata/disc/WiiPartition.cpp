@@ -170,6 +170,7 @@ KeyManager::VerifyResult WiiPartitionPrivate::initDecryption(void)
 		}
 
 		// NOTE: WiiTicket requires a ".tik" file extension.
+		// TODO: Have WiiTicket use dynamic_cast<> to determine if this is a MemFile?
 		memFile->setFilename("title.tik");
 
 		WiiTicket *const wiiTicket = new WiiTicket(memFile);

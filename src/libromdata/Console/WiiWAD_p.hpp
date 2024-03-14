@@ -28,8 +28,7 @@
 #  include "librpbase/disc/CBCReader.hpp"
 #endif /* ENABLE_DECRYPTION */
 
-// WiiTicket for EncryptionKeys
-// TODO: Use for title key decryption.
+// WiiTicket for title key decryption
 #include "../Console/WiiTicket.hpp"
 
 // Uninitialized vector class
@@ -78,6 +77,9 @@ public:
 	} wadHeader;
 	RVL_Ticket ticket;
 	RVL_TMD_Header tmdHeader;
+
+	// WiiTicket
+	std::unique_ptr<WiiTicket> wiiTicket;
 
 	// Data offset and size
 	uint32_t data_offset;
