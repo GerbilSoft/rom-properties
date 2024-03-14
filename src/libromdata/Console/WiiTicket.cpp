@@ -11,11 +11,9 @@
 #include "wii_structs.h"
 
 // librpbase
-#include "librpbase/crypto/KeyManager.hpp"
 #ifdef ENABLE_DECRYPTION
 #  include "librpbase/crypto/IAesCipher.hpp"
 #  include "librpbase/crypto/AesCipherFactory.hpp"
-
 // for encryption key indexes
 #  include "libromdata/disc/WiiPartition.hpp"
 #endif /* ENABLE_DECRYPTION */
@@ -48,6 +46,20 @@ public:
 public:
 	// Ticket (v0 and v1)
 	RVL_Ticket_V1 ticket;
+
+	// Encryption key verification result
+	KeyManager::VerifyResult verifyResult;
+
+	// Encryption key in use
+	WiiPartition::EncryptionKeys encKey;
+
+public:
+	/**
+	 * Determine which encryption key is in use.
+	 * Result is stored in this->encKey.
+	 * @return 0 on success; negative POSIX error code on error.
+	 */
+	int getEncKey(void);
 };
 
 ROMDATA_IMPL(WiiTicket)
@@ -73,9 +85,72 @@ const RomDataInfo WiiTicketPrivate::romDataInfo = {
 
 WiiTicketPrivate::WiiTicketPrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
+#ifdef ENABLE_DECRYPTION
+	, verifyResult(KeyManager::VerifyResult::Unknown)
+#else /* !ENABLE_DECRYPTION */
+	, verifyResult(KeyManager::VerifyResult::NoSupport)
+#endif /* ENABLE_DECRYPTION */
+	, encKey(WiiPartition::EncryptionKeys::Unknown)
 {
 	// Clear the ticket struct.
 	memset(&ticket, 0, sizeof(ticket));
+}
+
+/**
+ * Determine which encryption key is in use.
+ * Result is stored in this->encKey.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int WiiTicketPrivate::getEncKey(void)
+{
+	if (encKey != WiiPartition::EncryptionKeys::Unknown) {
+		// Key was already determined.
+		return 0;
+	}
+
+	// Determine the key in use by checking the issuer.
+	// TODO: WiiPartition probably isn't the best place for Wii U keys...
+	char issuer[64];
+	memcpy(issuer, ticket.v0.signature_issuer, sizeof(ticket.v0.signature_issuer));
+	issuer[sizeof(issuer)-1] = '\0';
+
+	uint32_t ca, xs;
+	char c;
+	int ret = sscanf(issuer, "Root-CA%08X-XS%08X%c", &ca, &xs, &c);
+	if (ret != 2) {
+		// Not a valid issuer...
+		return -EINVAL;
+	}
+
+	uint8_t common_key_index = ticket.v0.common_key_index;
+	if (common_key_index > 2) {
+		// Out of range. Assume Wii common key.
+		common_key_index = 0;
+	}
+
+	// Check CA and XS.
+	WiiPartition::EncryptionKeys encKey;
+	if (ca == 1 && xs == 3) {
+		// RVL retail
+		encKey = static_cast<WiiPartition::EncryptionKeys>(
+			(int)WiiPartition::EncryptionKeys::Key_RVL_Common + common_key_index);
+	} else if (ca == 2 && xs == 6) {
+		// RVT debug (TODO: There's also XS00000004)
+		encKey = static_cast<WiiPartition::EncryptionKeys>(
+			(int)WiiPartition::EncryptionKeys::Key_RVT_Debug + common_key_index);
+	} else if (ca == 3 && xs == 0xc) {
+		// CTR/WUP retail
+		encKey = WiiPartition::EncryptionKeys::Key_WUP_Starbuck_WiiU_Common;
+	} else if (ca == 4 && xs == 0xf) {
+		// CAT debug
+		encKey = WiiPartition::EncryptionKeys::Key_CAT_Starbuck_WiiU_Common;
+	} else {
+		// Unsupported CA/XS combination.
+		return -EINVAL;
+	}
+
+	this->encKey = encKey;
+	return 0;
 }
 
 /** WiiTicket **/
@@ -363,64 +438,31 @@ const RVL_Ticket *WiiTicket::ticket_v0(void) const
 #ifdef ENABLE_DECRYPTION
 /**
  * Get the decrypted title key.
+ * The title ID is used as the IV.
+ *
  * @param pKeyBuf	[out] Pointer to key buffer
- * @param size		[in] Size of pKeyBuf (must be >= 16)
- * @return 0 on success; negative POSIX error code on error.
+ * @param size		[in] Size of pKeyBuf (must be 16)
+ * @return 0 on success; negative POSIX error code on error. (Check verifyResult() for key verification errors.)
  */
 ATTR_ACCESS_SIZE(write_only, 2, 3)
-int WiiTicket::decryptTitleKey(uint8_t *pKeyBuf, size_t size) const
+int WiiTicket::decryptTitleKey(uint8_t *pKeyBuf, size_t size)
 {
-	RP_D(const WiiTicket);
+	RP_D(WiiTicket);
 	assert(d->isValid);
 	assert(size >= 16);
 	if (!d->isValid) {
 		// Not valid...
 		return -EIO;
-	} else if (size < 16) {
-		// Key buffer is too small.
+	} else if (size != 16) {
+		// Key buffer size is incorrect.
 		return -EINVAL;
 	}
 
-	// Determine the key in use by checking the issuer.
-	// TODO: Common issuer check function in WiiPartition or WiiTicket?
-	// TODO: WiiPartition probably isn't the best place for Wii U keys...
-	char issuer[64];
-	memcpy(issuer, d->ticket.v0.signature_issuer, sizeof(d->ticket.v0.signature_issuer));
-	issuer[sizeof(issuer)-1] = '\0';
-
-	uint32_t ca, xs;
-	char c;
-	int ret = sscanf(issuer, "Root-CA%08X-XS%08X%c", &ca, &xs, &c);
-	if (ret != 2) {
-		// Not a valid issuer...
-		return -EINVAL;
-	}
-
-	uint8_t common_key_index = d->ticket.v0.common_key_index;
-	if (common_key_index > 2) {
-		// Out of range. Assume Wii common key.
-		common_key_index = 0;
-	}
-
-	// Check CA and XS.
-	WiiPartition::EncryptionKeys encKey;
-	if (ca == 1 && xs == 3) {
-		// RVL retail
-		encKey = static_cast<WiiPartition::EncryptionKeys>(
-			(int)WiiPartition::EncryptionKeys::Key_RVL_Common + common_key_index);
-	} else if (ca == 2 && xs == 6) {
-		// RVT debug (TODO: There's also XS00000004)
-		encKey = static_cast<WiiPartition::EncryptionKeys>(
-			(int)WiiPartition::EncryptionKeys::Key_RVT_Debug + common_key_index);
-	} else if (ca == 3 && xs == 0xc) {
-		// CTR/WUP retail
-		encKey = WiiPartition::EncryptionKeys::Key_WUP_Starbuck_WiiU_Common;
-	} else if (ca == 4 && xs == 0xf) {
-		// CAT debug
-		encKey = WiiPartition::EncryptionKeys::Key_CAT_Starbuck_WiiU_Common;
-	} else {
-		// Unsupported CA/XS combination.
-		return -EINVAL;
+	// Determine the encryption key in use.
+	int ret = d->getEncKey();
+	if (ret != 0) {
+		// Error getting the encryption key.
+		return ret;
 	}
 
 	// Get the Key Manager instance.
@@ -431,19 +473,18 @@ int WiiTicket::decryptTitleKey(uint8_t *pKeyBuf, size_t size) const
 	unique_ptr<IAesCipher> cipher(AesCipherFactory::create());
 	if (!cipher || !cipher->isInit()) {
 		// Error initializing the cipher.
-		// TODO: Return verifyResult?
-		//verifyResult = KeyManager::VerifyResult::IAesCipherInitErr;
+		d->verifyResult = KeyManager::VerifyResult::IAesCipherInitErr;
 		return -EIO;
 	}
 
 	// Get the common key.
 	KeyManager::KeyData_t keyData;
 	KeyManager::VerifyResult verifyResult = keyManager->getAndVerify(
-		WiiPartition::encryptionKeyName_static(static_cast<int>(encKey)), &keyData,
-		WiiPartition::encryptionVerifyData_static(static_cast<int>(encKey)), 16);
+		WiiPartition::encryptionKeyName_static(static_cast<int>(d->encKey)), &keyData,
+		WiiPartition::encryptionVerifyData_static(static_cast<int>(d->encKey)), 16);
 	if (verifyResult != KeyManager::VerifyResult::OK) {
 		// An error occurred while loading the common key.
-		// TODO: Return verifyResult?
+		d->verifyResult = verifyResult;
 		return -EINVAL;
 	}
 
@@ -453,7 +494,7 @@ int WiiTicket::decryptTitleKey(uint8_t *pKeyBuf, size_t size) const
 	if (ret != 0) {
 		// Error initializing the cipher.
 		// TODO: Return verifyResult?
-		//verifyResult = KeyManager::VerifyResult::IAesCipherInitErr;
+		d->verifyResult = KeyManager::VerifyResult::IAesCipherInitErr;
 		return -EIO;
 	}
 
@@ -469,7 +510,7 @@ int WiiTicket::decryptTitleKey(uint8_t *pKeyBuf, size_t size) const
 	if (cipher->decrypt(pKeyBuf, sizeof(d->ticket.v0.enc_title_key), iv, sizeof(iv)) != sizeof(d->ticket.v0.enc_title_key)) {
 		// Error decrypting the title key.
 		// TODO: Return verifyResult?
-		//verifyResult = KeyManager::VerifyResult::IAesCipherDecryptErr;
+		d->verifyResult = KeyManager::VerifyResult::IAesCipherDecryptErr;
 		return -EIO;
 	}
 
@@ -477,5 +518,31 @@ int WiiTicket::decryptTitleKey(uint8_t *pKeyBuf, size_t size) const
 	return 0;
 }
 #endif /* ENABLE_DECRYPTION */
+
+/**
+ * Encryption key verification result.
+ * Call this function after calling decryptTitleKey().
+ * @return Encryption key verification result.
+ */
+KeyManager::VerifyResult WiiTicket::verifyResult(void) const
+{
+	RP_D(const WiiTicket);
+	return d->verifyResult;
+}
+
+/**
+ * Encryption key in use.
+ * Call this function after calling decryptTitleKey().
+ * @return Encryption key in use.
+ */
+WiiPartition::EncryptionKeys WiiTicket::encKey(void) const
+{
+	RP_D(const WiiTicket);
+	if (d->encKey == WiiPartition::EncryptionKeys::Unknown) {
+		// Try to determine the encryption key.
+		const_cast<WiiTicketPrivate*>(d)->getEncKey();
+	}
+	return d->encKey;
+}
 
 }

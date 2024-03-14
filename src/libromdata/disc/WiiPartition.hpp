@@ -42,10 +42,10 @@ public:
 	 * NOTE: The IDiscReader *must* remain valid while this
 	 * WiiPartition is open.
 	 *
-	 * @param discReader		[in] IDiscReader.
-	 * @param partition_offset	[in] Partition start offset.
+	 * @param discReader		[in] IDiscReader
+	 * @param partition_offset	[in] Partition start offset
 	 * @param partition_size	[in] Calculated partition size. Used if the size in the header is 0.
-	 * @param cryptoMethod		[in] Crypto method.
+	 * @param cryptoMethod		[in] Crypto method
 	 */
 	WiiPartition(const LibRpBase::IDiscReaderPtr &discReader, off64_t partition_offset,
 		off64_t partition_size, CryptoMethod crypto = CM_STANDARD);
