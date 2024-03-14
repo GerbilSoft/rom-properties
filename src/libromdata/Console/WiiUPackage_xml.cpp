@@ -38,23 +38,6 @@ extern int DelayLoad_test_TinyXML2(void);
 
 /** TinyXML2 macros **/
 
-#define ADD_ATTR(elem, attr_name, desc) do { \
-	const char *const attr = elem->Attribute(attr_name); \
-	if (attr) { \
-		fields.addField_string((desc), attr); \
-	} \
-} while (0)
-
-#define ADD_TEXT(parent_elem, child_elem_name, desc) do { \
-	FIRST_CHILD_ELEMENT(child_elem, parent_elem, child_elem_name); \
-	if (child_elem) { \
-		const char *const text = child_elem->GetText(); \
-		if (text) { \
-			fields.addField_string((desc), text); \
-		} \
-	} \
-} while (0)
-
 /**
  * Load a Wii U system XML file.
  *
@@ -317,6 +300,60 @@ int WiiUPackagePrivate::addFields_System_XMLs(void)
 		delete pMap_publisher;
 		fields.addField_string(s_publisher_title, s_unknown);
 	}
+
+	// Product code
+	
+	// Controller support
+	uint32_t controllers = 0;
+	static const char *const controller_nodes[] = {
+		"ext_dev_nunchaku",
+		"ext_dev_classic",
+		"ext_dev_urcc",
+		"ext_dev_board",
+		"ext_dev_usb_keyboard",
+		//"ext_dev_etc",	// TODO
+		//"ext_dev_etc_name",	// TODO
+		"drc_use",
+	};
+	for (unsigned int i = 0; i < ARRAY_SIZE(controller_nodes); i++) {
+		const XMLElement *const elem = rootNode->FirstChildElement(controller_nodes[i]);
+		if (!elem)
+			continue;
+
+		// This should be an unsignedInt with length 4.
+		const char *attr = elem->Attribute("type");
+		if (!attr || strcmp(attr, "unsignedInt") != 0)
+			continue;
+		attr = elem->Attribute("length");
+		if (!attr || strcmp(attr, "4") != 0)
+			continue;
+
+		const char *const text = elem->GetText();
+		if (!text)
+			continue;
+
+		// Parse the value as an unsigned int.
+		char *endptr;
+		unsigned int val = strtoul(text, &endptr, 10);
+		if (*endptr == '\0' && val > 0) {
+			// This controller is supported.
+			controllers |= (1U << i);
+		}
+	}
+
+	static const char *const controllers_bitfield_names[] = {
+		NOP_C_("WiiU|Controller", "Nunchuk"),
+		NOP_C_("WiiU|Controller", "Classic"),
+		NOP_C_("WiiU|Controller", "Pro"),
+		NOP_C_("WiiU|Controller", "Balance Board"),
+		NOP_C_("WiiU|Controller", "USB Keyboard"),
+		NOP_C_("WiiU|Controller", "Gamepad"),
+	};
+	vector<string> *const v_controllers_bitfield_names = RomFields::strArrayToVector_i18n(
+		"WiiU|Controller", controllers_bitfield_names, ARRAY_SIZE(controllers_bitfield_names));
+	fields.addField_bitfield(C_("WiiU", "Controllers"),
+		v_controllers_bitfield_names, 3, controllers);
+
 
 	// System XML files read successfully.
 	return 0;
