@@ -136,6 +136,23 @@ int WiiUPackagePrivate::loadSystemXml(XMLDocument &doc, const char *filename, co
 	return 0;
 }
 
+#define FIRST_CHILD_ELEMENT(var, parent_elem, child_elem_name) \
+	const XMLElement *var = parent_elem->FirstChildElement(child_elem_name); \
+	if (!var) { \
+		var = parent_elem->FirstChildElement(child_elem_name); \
+	} \
+do { } while (0)
+
+#define ADD_TEXT(parent_elem, child_elem_name, desc) do { \
+	FIRST_CHILD_ELEMENT(child_elem, parent_elem, child_elem_name); \
+	if (child_elem) { \
+		const char *const text = child_elem->GetText(); \
+		if (text) { \
+			fields.addField_string((desc), text); \
+		} \
+	} \
+} while (0)
+
 /**
  * Add fields from the Wii U System XML files.
  * @return 0 on success; negative POSIX error code on error.
@@ -302,7 +319,8 @@ int WiiUPackagePrivate::addFields_System_XMLs(void)
 	}
 
 	// Product code
-	
+	ADD_TEXT(rootNode, "product_code", C_("WiiU", "Product Code"));
+
 	// Controller support
 	uint32_t controllers = 0;
 	static const char *const controller_nodes[] = {
