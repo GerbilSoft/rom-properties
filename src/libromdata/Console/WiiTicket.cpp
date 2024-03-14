@@ -595,6 +595,7 @@ int WiiTicket::decryptTitleKey(uint8_t *pKeyBuf, size_t size)
 	}
 
 	// Title key decrypted.
+	d->verifyResult = KeyManager::VerifyResult::OK;
 	return 0;
 }
 #endif /* ENABLE_DECRYPTION */
