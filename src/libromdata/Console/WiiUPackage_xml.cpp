@@ -403,7 +403,7 @@ int WiiUPackagePrivate::addFields_System_XMLs(void)
 	ADD_TEXT(metaRootNode, "product_code", C_("WiiU", "Product Code"));
 
 	// SDK version
-	unsigned int sdk_version = parseUnsignedInt(appRootNode, "sdk_version");
+	const unsigned int sdk_version = parseUnsignedInt(appRootNode, "sdk_version");
 	if (sdk_version != 0) {
 		char s_sdk_version[32];
 		snprintf(s_sdk_version, sizeof(s_sdk_version), "%u.%02u.%02u",
@@ -413,6 +413,13 @@ int WiiUPackagePrivate::addFields_System_XMLs(void)
 
 	// argstr (TODO: Better title)
 	ADD_TEXT(cosRootNode, "argstr", "argstr");
+
+	// app_type (TODO: Decode this!)
+	const unsigned int app_type = parseHexBinary(appRootNode, "app_type");
+	if (app_type != 0) {
+		fields.addField_string_numeric(C_("WiiU", "Type"), app_type,
+			RomFields::Base::Hex, 8, RomFields::STRF_MONOSPACE);
+	}
 
 	// Region code
 	// Maps directly to the region field.
