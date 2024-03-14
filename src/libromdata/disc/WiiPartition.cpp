@@ -51,7 +51,7 @@ public:
 	RVL_PartitionHeader partitionHeader;
 
 	// WiiTicket
-	unique_ptr<WiiTicket> ticket;
+	unique_ptr<WiiTicket> wiiTicket;
 
 	// Encryption key verification result
 	KeyManager::VerifyResult verifyResult;
@@ -160,7 +160,7 @@ KeyManager::VerifyResult WiiPartitionPrivate::initDecryption(void)
 	// Otherwise, we can only get the partition size information.
 
 	// Initialize the WiiTicket.
-	if (!ticket) {
+	if (!wiiTicket) {
 		MemFilePtr memFile = std::make_shared<MemFile>(
 			reinterpret_cast<const uint8_t*>(&partitionHeader.ticket), sizeof(partitionHeader.ticket));
 		if (!memFile->isOpen()) {
@@ -172,18 +172,18 @@ KeyManager::VerifyResult WiiPartitionPrivate::initDecryption(void)
 		// NOTE: WiiTicket requires a ".tik" file extension.
 		memFile->setFilename("title.tik");
 
-		WiiTicket *const ticket = new WiiTicket(memFile);
-		if (!ticket->isValid()) {
+		WiiTicket *const wiiTicket = new WiiTicket(memFile);
+		if (!wiiTicket->isValid()) {
 			// Not a valid ticket?
-			delete ticket;
+			delete wiiTicket;
 			// TODO: Better verifyResult value?
 			return verifyResult;
 		}
-		this->ticket.reset(ticket);
+		this->wiiTicket.reset(wiiTicket);
 	}
 
 	// Get the encryption key in use.
-	encKeyReal = ticket->encKey();
+	encKeyReal = wiiTicket->encKey();
 	if ((int)encKeyReal < 0 || encKeyReal >= WiiTicket::EncryptionKeys::Max) {
 		// Invalid key...
 		// TODO: Correct verifyResult?
@@ -203,10 +203,10 @@ KeyManager::VerifyResult WiiPartitionPrivate::initDecryption(void)
 #ifdef ENABLE_DECRYPTION
 	// Get the title key.
 	uint8_t title_key[16];
-	int ret = ticket->decryptTitleKey(title_key, sizeof(title_key));
+	int ret = wiiTicket->decryptTitleKey(title_key, sizeof(title_key));
 	if (ret != 0) {
 		// Title key decryption failed.
-		verifyResult = ticket->verifyResult();
+		verifyResult = wiiTicket->verifyResult();
 		return verifyResult;
 	}
 
