@@ -15,6 +15,9 @@
 // librpbase
 #include "librpbase/crypto/KeyManager.hpp"
 
+// WiiTicket for EncryptionKeys
+#include "../Console/WiiTicket.hpp"
+
 namespace LibRomData {
 
 class WiiPartitionPrivate;
@@ -103,45 +106,18 @@ public:
 	 */
 	LibRpBase::KeyManager::VerifyResult verifyResult(void) const;
 
-	// Encryption key indexes
-	enum class EncryptionKeys : int8_t {
-		Unknown = -2,
-		None = -1,	// No encryption (RVT-H Reader)
-
-		// Retail
-		Key_RVL_Common = 0,
-		Key_RVL_Korean,
-		Key_WUP_Starbuck_vWii_Common,
-
-		// Debug
-		Key_RVT_Debug,
-		Key_RVT_Korean,
-		Key_CAT_Starbuck_vWii_Common,
-
-		// SD card (TODO: Retail vs. Debug?)
-		Key_RVL_SD_AES,
-		Key_RVL_SD_IV,
-		Key_RVL_SD_MD5,
-
-		// Wii U mode keys
-		Key_WUP_Starbuck_WiiU_Common,
-		Key_CAT_Starbuck_WiiU_Common,
-
-		Max
-	};
-
 	/**
 	 * Get the encryption key in use.
 	 * @return Encryption key in use.
 	 */
-	EncryptionKeys encKey(void) const;
+	WiiTicket::EncryptionKeys encKey(void) const;
 
 	/**
 	 * Get the encryption key that would be in use if the partition was encrypted.
 	 * This is only needed for NASOS images.
 	 * @return "Real" encryption key in use.
 	 */
-	EncryptionKeys encKeyReal(void) const;
+	WiiTicket::EncryptionKeys encKeyReal(void) const;
 
 	/**
 	 * Get the ticket.
@@ -160,29 +136,6 @@ public:
 	 * @return Title ID. (0-0 if unavailable)
 	 */
 	Nintendo_TitleID_BE_t titleID(void) const;
-
-#ifdef ENABLE_DECRYPTION
-public:
-	/**
-	 * Get the total number of encryption key names.
-	 * @return Number of encryption key names.
-	 */
-	static int encryptionKeyCount_static(void);
-
-	/**
-	 * Get an encryption key name.
-	 * @param keyIdx Encryption key index.
-	 * @return Encryption key name (in ASCII), or nullptr on error.
-	 */
-	static const char* encryptionKeyName_static(int keyIdx);
-
-	/**
-	 * Get the verification data for a given encryption key index.
-	 * @param keyIdx Encryption key index.
-	 * @return Verification data. (16 bytes)
-	 */
-	static const uint8_t* encryptionVerifyData_static(int keyIdx);
-#endif /* ENABLE_DECRYPTION */
 };
 
 typedef std::shared_ptr<WiiPartition> WiiPartitionPtr;

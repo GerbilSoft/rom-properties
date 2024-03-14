@@ -13,7 +13,6 @@
 #include "librpbase/crypto/KeyManager.hpp"
 
 #include "wii_structs.h"
-#include "disc/WiiPartition.hpp"	// for encryption key constants
 
 namespace LibRomData {
 
@@ -58,11 +57,62 @@ public:
 	 */
 	LibRpBase::KeyManager::VerifyResult verifyResult(void) const;
 
+public:
+	// Encryption key indexes
+	enum class EncryptionKeys : int8_t {
+		Unknown = -2,
+		None = -1,	// No encryption (RVT-H Reader)
+
+		// Retail
+		Key_RVL_Common = 0,
+		Key_RVL_Korean,
+		Key_WUP_Starbuck_vWii_Common,
+
+		// Debug
+		Key_RVT_Debug,
+		Key_RVT_Korean,
+		Key_CAT_Starbuck_vWii_Common,
+
+		// SD card (TODO: Retail vs. Debug?)
+		Key_RVL_SD_AES,
+		Key_RVL_SD_IV,
+		Key_RVL_SD_MD5,
+
+		// Wii U mode keys
+		Key_WUP_Starbuck_WiiU_Common,
+		Key_CAT_Starbuck_WiiU_Common,
+
+		Max
+	};
+
 	/**
 	 * Encryption key in use.
 	 * @return Encryption key in use.
 	 */
-	WiiPartition::EncryptionKeys encKey(void) const;
+	EncryptionKeys encKey(void) const;
+
+#ifdef ENABLE_DECRYPTION
+public:
+	/**
+	 * Get the total number of encryption key names.
+	 * @return Number of encryption key names.
+	 */
+	static int encryptionKeyCount_static(void);
+
+	/**
+	 * Get an encryption key name.
+	 * @param keyIdx Encryption key index.
+	 * @return Encryption key name (in ASCII), or nullptr on error.
+	 */
+	static const char* encryptionKeyName_static(int keyIdx);
+
+	/**
+	 * Get the verification data for a given encryption key index.
+	 * @param keyIdx Encryption key index.
+	 * @return Verification data. (16 bytes)
+	 */
+	static const uint8_t* encryptionVerifyData_static(int keyIdx);
+#endif /* ENABLE_DECRYPTION */
 
 ROMDATA_DECL_END()
 

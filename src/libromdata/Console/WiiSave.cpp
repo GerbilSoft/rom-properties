@@ -17,15 +17,18 @@ using namespace LibRpFile;
 using namespace LibRpText;
 using namespace LibRpTexture;
 
-// Decryption.
+// Decryption
 #include "librpbase/crypto/KeyManager.hpp"
-#include "disc/WiiPartition.hpp"	// for key information
 #ifdef ENABLE_DECRYPTION
 #  include "librpbase/disc/CBCReader.hpp"
 // For sections delegated to other RomData subclasses.
 #  include "librpbase/disc/PartitionFile.hpp"
 #  include "WiiWIBN.hpp"
 #endif /* ENABLE_DECRYPTION */
+
+// WiiTicket for EncryptionKeys
+// TODO: Use for title key decryption.
+#include "../Console/WiiTicket.hpp"
 
 // C++ STL classes
 using std::array;
@@ -77,7 +80,7 @@ public:
 	WiiWIBN *wibnData;
 
 	// Key indexes (0 == AES, 1 == IV)
-	std::array<WiiPartition::EncryptionKeys, 2> key_idx;
+	std::array<WiiTicket::EncryptionKeys, 2> key_idx;
 	// Key status
 	std::array<KeyManager::VerifyResult, 2> key_status;
 #endif /* ENABLE_DECRYPTION */
@@ -123,7 +126,7 @@ WiiSavePrivate::WiiSavePrivate(const IRpFilePtr &file)
 	memset(&bkHeader, 0, sizeof(bkHeader));
 
 #ifdef ENABLE_DECRYPTION
-	key_idx.fill(WiiPartition::EncryptionKeys::Max);
+	key_idx.fill(WiiTicket::EncryptionKeys::Max);
 	key_status.fill(KeyManager::VerifyResult::Unknown);
 #endif /* ENABLE_DECRYPTION */
 }
@@ -215,20 +218,19 @@ WiiSave::WiiSave(const IRpFilePtr &file)
 	// since we can still show the Bk header fields.
 
 	// TODO: Debug vs. Retail?
-	d->key_idx[0] = WiiPartition::EncryptionKeys::Key_RVL_SD_AES;
-	d->key_idx[1] = WiiPartition::EncryptionKeys::Key_RVL_SD_IV;
+	d->key_idx[0] = WiiTicket::EncryptionKeys::Key_RVL_SD_AES;
+	d->key_idx[1] = WiiTicket::EncryptionKeys::Key_RVL_SD_IV;
 
 	// Initialize the CBC reader for the main data area.
 	// TODO: WiiVerifyKeys class.
 	KeyManager *const keyManager = KeyManager::instance();
 	assert(keyManager != nullptr);
 
-	// Key verification data.
-	// TODO: Move out of WiiPartition and into WiiVerifyKeys?
+	// Key verification data
 	KeyManager::KeyData_t keyData[2];
 	for (size_t i = 0; i < d->key_idx.size(); i++) {
-		const char *const keyName = WiiPartition::encryptionKeyName_static(static_cast<int>(d->key_idx[i]));
-		const uint8_t *const verifyData = WiiPartition::encryptionVerifyData_static(static_cast<int>(d->key_idx[i]));
+		const char *const keyName = WiiTicket::encryptionKeyName_static(static_cast<int>(d->key_idx[i]));
+		const uint8_t *const verifyData = WiiTicket::encryptionVerifyData_static(static_cast<int>(d->key_idx[i]));
 		assert(keyName != nullptr);
 		assert(keyName[0] != '\0');
 		assert(verifyData != nullptr);

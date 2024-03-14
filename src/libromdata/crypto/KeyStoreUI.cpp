@@ -20,7 +20,7 @@ using namespace LibRpText;
 using namespace LibRpFile;
 
 // libromdata
-#include "../disc/WiiPartition.hpp"
+#include "../Console/WiiTicket.hpp"
 #include "../crypto/CtrKeyScrambler.hpp"
 #include "../crypto/N3DSVerifyKeys.hpp"
 #include "../Console/Xbox360_XEX.hpp"
@@ -124,7 +124,7 @@ public:
 public:
 	// Section enumeration
 	enum class SectionID {
-		WiiPartition	= 0,
+		WiiTicket	= 0,
 		CtrKeyScrambler	= 1,
 		N3DSVerifyKeys	= 2,
 		Xbox360_XEX	= 3,
@@ -221,7 +221,7 @@ public:
 /** KeyStoreUIPrivate **/
 
 const std::array<KeyStoreUIPrivate::EncKeyFns_t, 4> KeyStoreUIPrivate::encKeyFns = {{
-	ENCKEYFNS(WiiPartition),
+	ENCKEYFNS(WiiTicket),
 	ENCKEYFNS(CtrKeyScrambler),
 	ENCKEYFNS(N3DSVerifyKeys),
 	ENCKEYFNS(Xbox360_XEX),
@@ -1124,15 +1124,15 @@ KeyStoreUI::ImportReturn KeyStoreUIPrivate::importWiiKeysBin(IRpFile *file)
 	// - SD keys are not present in keys.bin.
 
 	static const KeyStoreUIPrivate::KeyBinAddress keyBinAddress[] = {
-		{0x114, static_cast<int>(WiiPartition::EncryptionKeys::Key_RVL_Common)},
-		{0x114, static_cast<int>(WiiPartition::EncryptionKeys::Key_RVT_Debug)},
-		{0x274, static_cast<int>(WiiPartition::EncryptionKeys::Key_RVL_Korean)},
+		{0x114, static_cast<int>(WiiTicket::EncryptionKeys::Key_RVL_Common)},
+		{0x114, static_cast<int>(WiiTicket::EncryptionKeys::Key_RVT_Debug)},
+		{0x274, static_cast<int>(WiiTicket::EncryptionKeys::Key_RVL_Korean)},
 
 		{0, -1}
 	};
 
 	// Import the keys.
-	return importKeysFromBlob(KeyStoreUIPrivate::SectionID::WiiPartition,
+	return importKeysFromBlob(KeyStoreUIPrivate::SectionID::WiiTicket,
 		keyBinAddress, buf, sizeof(buf));
 }
 
@@ -1190,9 +1190,9 @@ KeyStoreUI::ImportReturn KeyStoreUIPrivate::importWiiUOtpBin(IRpFile *file)
 	// TODO:
 	// - SD keys are not present in otp.bin.
 	static const KeyStoreUIPrivate::KeyBinAddress keyBinAddress_retail[] = {
-		{0x014, static_cast<int>(WiiPartition::EncryptionKeys::Key_RVL_Common)},
-		{0x348, static_cast<int>(WiiPartition::EncryptionKeys::Key_RVL_Korean)},
-		{0x0D0, static_cast<int>(WiiPartition::EncryptionKeys::Key_WUP_Starbuck_vWii_Common)},
+		{0x014, static_cast<int>(WiiTicket::EncryptionKeys::Key_RVL_Common)},
+		{0x348, static_cast<int>(WiiTicket::EncryptionKeys::Key_RVL_Korean)},
+		{0x0D0, static_cast<int>(WiiTicket::EncryptionKeys::Key_WUP_Starbuck_vWii_Common)},
 
 		// TODO: Import Wii U keys.
 #if 0
@@ -1204,9 +1204,9 @@ KeyStoreUI::ImportReturn KeyStoreUIPrivate::importWiiUOtpBin(IRpFile *file)
 	};
 
 	static const KeyStoreUIPrivate::KeyBinAddress keyBinAddress_debug[] = {
-		{0x014, static_cast<int>(WiiPartition::EncryptionKeys::Key_RVT_Debug)},
-		{0x348, static_cast<int>(WiiPartition::EncryptionKeys::Key_RVT_Korean)},
-		{0x0D0, static_cast<int>(WiiPartition::EncryptionKeys::Key_CAT_Starbuck_vWii_Common)},
+		{0x014, static_cast<int>(WiiTicket::EncryptionKeys::Key_RVT_Debug)},
+		{0x348, static_cast<int>(WiiTicket::EncryptionKeys::Key_RVT_Korean)},
+		{0x0D0, static_cast<int>(WiiTicket::EncryptionKeys::Key_CAT_Starbuck_vWii_Common)},
 
 		// TODO: Import Wii U keys.
 #if 0
@@ -1221,7 +1221,7 @@ KeyStoreUI::ImportReturn KeyStoreUIPrivate::importWiiUOtpBin(IRpFile *file)
 		(likely(!isDebug) ? keyBinAddress_retail : keyBinAddress_debug);
 
 	// Import the keys.
-	return importKeysFromBlob(KeyStoreUIPrivate::SectionID::WiiPartition,
+	return importKeysFromBlob(KeyStoreUIPrivate::SectionID::WiiTicket,
 		kba, buf, sizeof(buf));
 }
 

@@ -58,9 +58,9 @@ public:
 
 public:
 	// Encryption key in use
-	WiiPartition::EncryptionKeys encKey;
+	WiiTicket::EncryptionKeys encKey;
 	// Encryption key that would be used if the partition was encrypted
-	WiiPartition::EncryptionKeys encKeyReal;
+	WiiTicket::EncryptionKeys encKeyReal;
 
 	// Crypto method
 	WiiPartition::CryptoMethod cryptoMethod;
@@ -113,90 +113,10 @@ public:
 public:
 	// AES cipher for this partition's title key
 	unique_ptr<IAesCipher> aes_title;
-
-public:
-	// Verification key names
-	static const std::array<const char*, static_cast<size_t>(WiiPartition::EncryptionKeys::Max)> EncryptionKeyNames;
-
-	// Verification key data
-	static const uint8_t EncryptionKeyVerifyData[static_cast<size_t>(WiiPartition::EncryptionKeys::Max)][16];
 #endif
 };
 
 /** WiiPartitionPrivate **/
-
-#ifdef ENABLE_DECRYPTION
-
-// Verification key names.
-const std::array<const char*, static_cast<size_t>(WiiPartition::EncryptionKeys::Max)> WiiPartitionPrivate::EncryptionKeyNames = {{
-	// Retail
-	"rvl-common",
-	"rvl-korean",
-	"wup-starbuck-vwii-common",
-
-	// Debug
-	"rvt-debug",
-	"rvt-korean",
-	"cat-starbuck-vwii-common",
-
-	// SD card (TODO: Retail vs. Debug?)
-	"rvl-sd-aes",
-	"rvl-sd-iv",
-	"rvl-sd-md5",
-
-	// Wii U mode keys
-	"wup-starbuck-wiiu-common",
-	"cat-starbuck-wiiu-common",
-}};
-
-const uint8_t WiiPartitionPrivate::EncryptionKeyVerifyData[static_cast<size_t>(WiiPartition::EncryptionKeys::Max)][16] = {
-	/** Retail **/
-
-	// rvl-common
-	{0xCF,0xB7,0xFF,0xA0,0x64,0x0C,0x7A,0x7D,
-	 0xA7,0x22,0xDC,0x16,0x40,0xFA,0x04,0x58},
-	// rvl-korean
-	{0x98,0x1C,0xD4,0x51,0x17,0xF2,0x23,0xB6,
-	 0xC8,0x84,0x4A,0x97,0xA6,0x93,0xF2,0xE3},
-	// wup-starbuck-vwii-common
-	{0x04,0xF1,0x33,0x3F,0xF8,0x05,0x7B,0x8F,
-	 0xA7,0xF1,0xED,0x6E,0xAC,0x23,0x33,0xFA},
-
-	/** Debug **/
-
-	// rvt-debug
-	{0x22,0xC4,0x2C,0x5B,0xCB,0xFE,0x75,0xAC,
-	 0xEB,0xC3,0x6B,0xAF,0x90,0xB3,0xB4,0xF5},
-	// rvt-korean
-	{0x31,0x81,0xF2,0xCA,0xFE,0x70,0x58,0xCB,
-	 0x3C,0x0F,0xB9,0x9D,0x2D,0x45,0x74,0xDA},
-	// cat-starbuck-vwii-common
-	{0x0B,0xFB,0x83,0x83,0x38,0xCB,0x1A,0x83,
-	 0x5E,0x1C,0xEC,0xCA,0xDC,0x5D,0xF1,0xFA},
-
-	/** SD card (TODO: Retail vs. Debug?) **/
-
-	// rvl-sd-aes
-	{0x8C,0x1C,0xBA,0x01,0x02,0xB9,0x6F,0x65,
-	 0x24,0x7C,0x85,0x3C,0x0F,0x3B,0x8C,0x37},
-	// rvl-sd-iv
-	{0xE3,0xEE,0xE5,0x0F,0xDC,0xFD,0xBE,0x89,
-	 0x20,0x05,0xF2,0xB9,0xD8,0x1D,0xF1,0x27},
-	// rvl-sd-md5
-	{0xF8,0xE1,0x8D,0x89,0x06,0xC7,0x21,0x32,
-	 0x9D,0xE0,0x14,0x19,0x30,0xC3,0x88,0x1F},
-
-	/** Wii U mode keys **/
-
-	// wup-starbuck-wiiu-common
-	{0x05,0xBA,0x63,0x98,0x8A,0x50,0x90,0x4D,
-	 0xEC,0x93,0xAC,0xF3,0x07,0x8F,0x3E,0x90},
-
-	// cat-starbuck-wiiu-common
-	{0xF3,0xE2,0xED,0xF4,0x8D,0x99,0x2A,0x5B,
-	 0xD8,0xE1,0x3F,0xA2,0x9B,0x89,0x73,0xAA},
-};
-#endif /* ENABLE_DECRYPTION */
 
 WiiPartitionPrivate::WiiPartitionPrivate(WiiPartition *q,
 		off64_t data_size, off64_t partition_offset,
@@ -207,8 +127,8 @@ WiiPartitionPrivate::WiiPartitionPrivate(WiiPartition *q,
 #else /* !ENABLE_DECRYPTION */
 	, verifyResult(KeyManager::VerifyResult::NoSupport)
 #endif /* ENABLE_DECRYPTION */
-	, encKey(WiiPartition::EncryptionKeys::Unknown)
-	, encKeyReal(WiiPartition::EncryptionKeys::Unknown)
+	, encKey(WiiTicket::EncryptionKeys::Unknown)
+	, encKeyReal(WiiTicket::EncryptionKeys::Unknown)
 	, cryptoMethod(cryptoMethod)
 	, pos_7C00(-1)
 	, sector_num(~0)
@@ -264,7 +184,7 @@ KeyManager::VerifyResult WiiPartitionPrivate::initDecryption(void)
 
 	// Get the encryption key in use.
 	encKeyReal = ticket->encKey();
-	if ((int)encKeyReal < 0 || encKeyReal >= WiiPartition::EncryptionKeys::Max) {
+	if ((int)encKeyReal < 0 || encKeyReal >= WiiTicket::EncryptionKeys::Max) {
 		// Invalid key...
 		// TODO: Correct verifyResult?
 		verifyResult = KeyManager::VerifyResult::KeyInvalid;
@@ -274,7 +194,7 @@ KeyManager::VerifyResult WiiPartitionPrivate::initDecryption(void)
 	// Is this partition encrypted?
 	if ((cryptoMethod & WiiPartition::CM_MASK_ENCRYPTED) == WiiPartition::CM_UNENCRYPTED) {
 		// Not encrypted.
-		encKey = WiiPartition::EncryptionKeys::None;
+		encKey = WiiTicket::EncryptionKeys::None;
 	} else {
 		// Encrypted.
 		encKey = encKeyReal;
@@ -344,7 +264,7 @@ KeyManager::VerifyResult WiiPartitionPrivate::initDecryption(void)
 		return verifyResult;
 	}
 #else /* !ENABLE_DECRYPTION */
-	if (encKey != WiiPartition::EncryptionKeys::None) {
+	if (encKey != WiiTicket::EncryptionKeys::None) {
 		// Can't read an encrypted disc image in a NoCrypto build.
 		verifyResult = KeyManager::VerifyResult::NoSupport;
 		return verifyResult;
@@ -480,7 +400,7 @@ WiiPartition::WiiPartition(const IDiscReaderPtr &discReader, off64_t partition_o
 	if ((cryptoMethod & WiiPartition::CM_MASK_ENCRYPTED) == WiiPartition::CM_UNENCRYPTED) {
 		// No encryption. (RVT-H)
 		// TODO: Get the "real" encryption key?
-		d->encKey = WiiPartition::EncryptionKeys::None;
+		d->encKey = WiiTicket::EncryptionKeys::None;
 		d->pos_7C00 = 0;
 
 		// NOTE: Debug discs may have incrementing values in update partitions.
@@ -785,7 +705,7 @@ KeyManager::VerifyResult WiiPartition::verifyResult(void) const
  * Get the encryption key in use.
  * @return Encryption key in use.
  */
-WiiPartition::EncryptionKeys WiiPartition::encKey(void) const
+WiiTicket::EncryptionKeys WiiPartition::encKey(void) const
 {
 	// TODO: Errors?
 	RP_D(WiiPartition);
@@ -798,7 +718,7 @@ WiiPartition::EncryptionKeys WiiPartition::encKey(void) const
  * This is only needed for NASOS images.
  * @return "Real" encryption key in use.
  */
-WiiPartition::EncryptionKeys WiiPartition::encKeyReal(void) const
+WiiTicket::EncryptionKeys WiiPartition::encKeyReal(void) const
 {
 	// TODO: Errors?
 	RP_D(WiiPartition);
@@ -841,46 +761,5 @@ Nintendo_TitleID_BE_t WiiPartition::titleID(void) const
 	RP_D(const WiiPartition);
 	return d->partitionHeader.ticket.title_id;
 }
-
-#ifdef ENABLE_DECRYPTION
-/** Encryption keys. **/
-
-/**
- * Get the total number of encryption key names.
- * @return Number of encryption key names.
- */
-int WiiPartition::encryptionKeyCount_static(void)
-{
-	return static_cast<int>(EncryptionKeys::Max);
-}
-
-/**
- * Get an encryption key name.
- * @param keyIdx Encryption key index.
- * @return Encryption key name (in ASCII), or nullptr on error.
- */
-const char *WiiPartition::encryptionKeyName_static(int keyIdx)
-{
-	assert(keyIdx >= 0);
-	assert(keyIdx < static_cast<int>(EncryptionKeys::Max));
-	if (keyIdx < 0 || keyIdx >= static_cast<int>(EncryptionKeys::Max))
-		return nullptr;
-	return WiiPartitionPrivate::EncryptionKeyNames[keyIdx];
-}
-
-/**
- * Get the verification data for a given encryption key index.
- * @param keyIdx Encryption key index.
- * @return Verification data. (16 bytes)
- */
-const uint8_t *WiiPartition::encryptionVerifyData_static(int keyIdx)
-{
-	assert(keyIdx >= 0);
-	assert(keyIdx < static_cast<int>(EncryptionKeys::Max));
-	if (keyIdx < 0 || keyIdx >= static_cast<int>(EncryptionKeys::Max))
-		return nullptr;
-	return WiiPartitionPrivate::EncryptionKeyVerifyData[keyIdx];
-}
-#endif /* ENABLE_DECRYPTION */
 
 }
