@@ -16,6 +16,7 @@
 // Other rom-properties libraries
 using namespace LibRpBase;
 using namespace LibRpFile;
+using namespace LibRpText;
 
 // TinyXML2
 #include "tinyxml2.h"
@@ -232,24 +233,41 @@ int WiiUPackagePrivate::addFields_System_XMLs(void)
 	}
 #endif /* defined(_MSC_VER) && defined(XML_IS_DLL) */
 
-	// Load meta.xml first.
-	// TODO: app.xml, cos.xml.
-	XMLDocument doc;
-	int ret = loadSystemXml(doc, "/meta/meta.xml", "menu");
-	if (ret != 0) {
+	// Load the three XML files.
+	XMLDocument appXml, cosXml, metaXml;
+	int ret = loadSystemXml(appXml, "/code/app.xml", "app");
+	if (ret != 0)
 		return ret;
-	}
+	ret = loadSystemXml(cosXml, "/code/cos.xml", "app");
+	if (ret != 0)
+		return ret;
+	ret = loadSystemXml(metaXml, "/meta/meta.xml", "menu");
+	if (ret != 0)
+		return ret;
 
 	// NOTE: Not creating a separate tab.
 
-	// Root node: "menu"
-	const XMLElement *const rootNode = doc.FirstChildElement("menu");
-	if (!rootNode) {
+	// app.xml root node: "app"
+	const XMLElement *const appRootNode = appXml.FirstChildElement("app");
+	if (!appRootNode) {
+		// No "app" element.
+		// TODO: Better error code.
+		return -EIO;
+	}
+
+	// cos.xml root node: "app"
+	const XMLElement *const cosRootNode = cosXml.FirstChildElement("app");
+	if (!cosRootNode) {
+		// No "app" element.
+		// TODO: Better error code.
+		return -EIO;
+	}
+
+	// meta.xml root node: "menu"
+	const XMLElement *const metaRootNode = metaXml.FirstChildElement("menu");
+	if (!metaRootNode) {
 		// No "menu" element.
 		// TODO: Better error code.
-#if TINYXML2_MAJOR_VERSION >= 2
-		doc.Clear();
-#endif /* TINYXML2_MAJOR_VERSION >= 2 */
 		return -EIO;
 	}
 
@@ -300,13 +318,13 @@ int WiiUPackagePrivate::addFields_System_XMLs(void)
 		shortname_key += xml_lc_map[i].xml_lc;
 		publisher_key += xml_lc_map[i].xml_lc;
 
-		const XMLElement *elem = rootNode->FirstChildElement(longname_key.c_str());
+		const XMLElement *elem = metaRootNode->FirstChildElement(longname_key.c_str());
 		longnames[i] = (elem) ? elem->GetText() : nullptr;
 
-		elem = rootNode->FirstChildElement(shortname_key.c_str());
+		elem = metaRootNode->FirstChildElement(shortname_key.c_str());
 		shortnames[i] = (elem) ? elem->GetText() : nullptr;
 
-		elem = rootNode->FirstChildElement(publisher_key.c_str());
+		elem = metaRootNode->FirstChildElement(publisher_key.c_str());
 		publishers[i] = (elem) ? elem->GetText() : nullptr;
 	}
 
@@ -382,11 +400,23 @@ int WiiUPackagePrivate::addFields_System_XMLs(void)
 	}
 
 	// Product code
-	ADD_TEXT(rootNode, "product_code", C_("WiiU", "Product Code"));
+	ADD_TEXT(metaRootNode, "product_code", C_("WiiU", "Product Code"));
+
+	// SDK version
+	unsigned int sdk_version = parseUnsignedInt(appRootNode, "sdk_version");
+	if (sdk_version != 0) {
+		char s_sdk_version[32];
+		snprintf(s_sdk_version, sizeof(s_sdk_version), "%u.%02u.%02u",
+			sdk_version / 10000, (sdk_version / 100) % 100, sdk_version % 100);
+		fields.addField_string(C_("WiiU", "SDK Version"), s_sdk_version);
+	}
+
+	// argstr (TODO: Better title)
+	ADD_TEXT(cosRootNode, "argstr", "argstr");
 
 	// Region code
 	// Maps directly to the region field.
-	const uint32_t region_code = parseHexBinary(rootNode, "region");
+	const uint32_t region_code = parseHexBinary(metaRootNode, "region");
 
 	static const char *const wiiu_region_bitfield_names[] = {
 		NOP_C_("Region", "Japan"),
@@ -415,7 +445,7 @@ int WiiUPackagePrivate::addFields_System_XMLs(void)
 		"drc_use",
 	};
 	for (unsigned int i = 0; i < ARRAY_SIZE(controller_nodes); i++) {
-		unsigned int val = parseUnsignedInt(rootNode, controller_nodes[i]);
+		unsigned int val = parseUnsignedInt(metaRootNode, controller_nodes[i]);
 		if (val > 0) {
 			// This controller is supported.
 			controllers |= (1U << i);
