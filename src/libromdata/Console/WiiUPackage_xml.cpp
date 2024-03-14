@@ -171,7 +171,7 @@ uint64_t WiiUPackagePrivate::parseHexBinary(const XMLElement *rootNode, const ch
 		return 0;
 
 	attr = elem->Attribute("length");
-	assert(strcmp(attr, "4") != 0 || strcmp(attr, "8") != 0);
+	assert(strcmp(attr, "4") == 0 || strcmp(attr, "8") == 0);
 	if (!attr || (strcmp(attr, "4") != 0 && strcmp(attr, "8") != 0))
 		return 0;
 
