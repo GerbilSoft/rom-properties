@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * RpJpeg.cpp: JPEG image handler.                                         *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -16,12 +16,12 @@
 // libi18n
 #include "libi18n/i18n.h"
 
-// librpfile, librptexture
+// Other rom-properties libraries
 using namespace LibRpFile;
 using namespace LibRpTexture;
 
 #ifdef RPJPEG_HAS_SSSE3
-#  include "librpcpu/cpuflags_x86.h"
+#  include "librpcpuid/cpuflags_x86.h"
 #endif /* RPJPEG_HAS_SSSE3 */
 
 // C includes (C++ namespace)

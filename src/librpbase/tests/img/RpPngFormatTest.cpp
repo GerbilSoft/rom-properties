@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase/tests)                  *
  * RpPngFormatTest.cpp: RpPng format test.                                 *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -35,7 +35,7 @@
 #include "uvector.h"
 
 // Other rom-properties libraries
-#include "librpcpu/byteswap_rp.h"
+#include "librpbyteswap/byteswap_rp.h"
 #include "librpfile/FileSystem.hpp"
 #include "librpfile/MemFile.hpp"
 #include "librpfile/RpFile.hpp"

@@ -223,9 +223,10 @@ FOREACH(_target ${TARGETS})
 
 	# Other libraries
 	TARGET_LINK_LIBRARIES(${_target} PRIVATE
-		rpcpu${_target_suffix} rpfile${_target_suffix} rptext${_target_suffix}
+		rpbyteswap${_target_suffix} rpfile${_target_suffix} rptext${_target_suffix}
 		rptexture${_target_suffix} rpthreads${_target_suffix}
 		cachecommon${_target_suffix})
+	TARGET_LINK_LIBRARIES(${_target} PRIVATE rpcpuid)	# for CPU dispatch
 	TARGET_LINK_LIBRARIES(${_target} PRIVATE inih)
 
 	IF(ZLIB_FOUND)

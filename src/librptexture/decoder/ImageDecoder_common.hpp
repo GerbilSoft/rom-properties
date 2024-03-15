@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * ImageDecoder_common.hpp: Common image decoder definitions.              *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -11,7 +11,7 @@
 #include "config.librptexture.h"
 
 #include "common.h"
-#include "librpcpu/cpu_dispatch.h"
+#include "librpcpuid/cpu_dispatch.h"
 
 // C includes
 #include <stdint.h>
@@ -23,7 +23,7 @@
 #include "common.h"
 
 #if defined(RP_CPU_I386) || defined(RP_CPU_AMD64)
-#  include "librpcpu/cpuflags_x86.h"
+#  include "librpcpuid/cpuflags_x86.h"
 #  define IMAGEDECODER_HAS_SSE2 1
 #  define IMAGEDECODER_HAS_SSSE3 1
 #endif

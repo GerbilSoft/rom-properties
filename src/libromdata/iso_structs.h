@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * iso9660.h: ISO-9660 structs for CD-ROM images.                          *
  *                                                                         *
- * Copyright (c) 2017-2023 by David Korth.                                 *
+ * Copyright (c) 2017-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -15,7 +15,7 @@
 #include <stdint.h>
 
 #include "common.h"
-#include "librpcpu/byteswap_rp.h"
+#include "librpbyteswap/byteswap_rp.h"
 
 #ifdef __cplusplus
 extern "C" {

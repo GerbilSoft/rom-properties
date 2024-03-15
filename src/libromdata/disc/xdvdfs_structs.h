@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * xdvdfs_structs.h: Xbox XDVDFS structs.                                  *
  *                                                                         *
- * Copyright (c) 2019-2023 by David Korth.                                 *
+ * Copyright (c) 2019-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -15,9 +15,7 @@
 #pragma once
 
 #include <stdint.h>
-
 #include "common.h"
-#include "librpcpu/byteorder.h"
 
 #ifdef __cplusplus
 extern "C" {

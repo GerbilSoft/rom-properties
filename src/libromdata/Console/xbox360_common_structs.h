@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * xbox360_common_structs.h: Microsoft Xbox 360 common data structures.    *
  *                                                                         *
- * Copyright (c) 2019-2023 by David Korth.                                 *
+ * Copyright (c) 2019-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -11,7 +11,7 @@
 #include <stdint.h>
 
 #include "common.h"
-#include "librpcpu/byteorder.h"
+#include "librpbyteswap/byteorder.h"
 
 /**
  * Xbox 360: Vesion number

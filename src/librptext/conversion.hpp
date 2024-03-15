@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptext)                        *
  * conversion.hpp: Text encoding functions                                 *
  *                                                                         *
- * Copyright (c) 2009-2023 by David Korth.                                 *
+ * Copyright (c) 2009-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -12,7 +12,7 @@
 
 // System byteorder is needed for conversions from UTF-16.
 // Conversions to UTF-16 always use host-endian.
-#include "librpcpu/byteorder.h"
+#include "librpbyteswap/byteorder.h"
 
 #include "common.h"
 #include "dll-macros.h"	// for RP_LIBROMDATA_PUBLIC

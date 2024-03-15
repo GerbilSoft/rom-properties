@@ -11,8 +11,8 @@
 #include "tcharx.h"
 #include "common.h"
 
-// librpcpu, librpbase
-#include "librpcpu/byteswap_rp.h"
+// librpbyteswap, librpbase
+#include "librpbyteswap/byteswap_rp.h"
 #include "aligned_malloc.h"
 
 // librptexture

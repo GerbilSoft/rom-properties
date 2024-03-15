@@ -1,9 +1,9 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (librpcpu)                         *
+ * ROM Properties Page shell extension. (librpbyteswap)                    *
  * byteswap_mmx.c: Byteswapping functions.                                 *
  * MMX-optimized version.                                                  *
  *                                                                         *
- * Copyright (c) 2008-2022 by David Korth                                  *
+ * Copyright (c) 2008-2024 by David Korth                                  *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * stdafx.h: Common definitions and includes.                              *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -62,16 +62,15 @@
 # include "libwin32common/RpWin32_sdk.h"
 #endif /* _WIN32 */
 
-// librpcpu
-#include "librpcpu/byteswap_rp.h"
-#include "librpcpu/bitstuff.h"
+// librpbyteswap
+#include "librpbyteswap/byteswap_rp.h"
+#include "librpbyteswap/bitstuff.h"
 
 // librpbase common headers
 #include "common.h"
 #include "aligned_malloc.h"
 #include "ctypex.h"
 #include "dll-macros.h"
-#include "librpcpu/cpu_dispatch.h"
 
 #ifdef __cplusplus
 // librpbase C++ headers

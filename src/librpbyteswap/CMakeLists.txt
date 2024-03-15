@@ -1,27 +1,23 @@
-# rom-properties CPU support library
-PROJECT(rpcpu LANGUAGES C)
+# rom-properties byteswapping library
+PROJECT(rpbyteswap LANGUAGES C)
 
 # Check for C headers.
 CHECK_INCLUDE_FILES("features.h" HAVE_FEATURES_H)
-CHECK_INCLUDE_FILES("cpuid.h" HAVE_CPUID_H)
 
-# Sources.
+# Sources
 SET(${PROJECT_NAME}_SRCS
 	byteswap.c
 	)
-# Headers.
+# Headers
 SET(${PROJECT_NAME}_H
 	byteorder.h
 	byteswap_rp.h
 	bitstuff.h
 	)
 
-# CPU-specific and optimized sources.
+# CPU-specific and optimized sources
 INCLUDE(CPUInstructionSetFlags)
 IF(CPU_i386 OR CPU_amd64)
-	SET(${PROJECT_NAME}_CPU_SRCS cpuflags_x86.c)
-	SET(${PROJECT_NAME}_CPU_H cpuflags_x86.h)
-
 	# MSVC does not support MMX intrinsics in 64-bit builds.
 	# Reference: https://docs.microsoft.com/en-us/cpp/cpp/m64?view=msvc-160
 	#
@@ -65,8 +61,7 @@ IF(NOT MSVC)
 	CHECK_C_SOURCE_COMPILES("int main(int argc, char *argv[]) { return __builtin_bswap64((unsigned long long)argc); }" HAVE___BUILTIN_BSWAP64)
 ENDIF(NOT MSVC)
 
-# Write the config.h files.
-CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.librpcpu.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.librpcpu.h")
+# Write the config.h files
 CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.byteswap.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.byteswap.h")
 
 ######################
@@ -87,8 +82,6 @@ ENDIF()
 FOREACH(_target ${TARGETS})
 	ADD_LIBRARY(${_target} STATIC
 		${${PROJECT_NAME}_SRCS} ${${PROJECT_NAME}_H}
-		${${PROJECT_NAME}_OS_SRCS} ${${PROJECT_NAME}_OS_H}
-		${${PROJECT_NAME}_CPU_SRCS} ${${PROJECT_NAME}_CPU_H}
 		${${PROJECT_NAME}_IFUNC_SRCS}
 		${${PROJECT_NAME}_MMX_SRCS}
 		${${PROJECT_NAME}_SSE2_SRCS}
@@ -110,6 +103,8 @@ FOREACH(_target ${TARGETS})
 		UNSET(_target_suffix)
 	ENDIF()
 
+	# rpcpuid is needed for CPU identification.
+	TARGET_LINK_LIBRARIES(${_target} PRIVATE rpcpuid)
 	# rpthreads is needed for atomic functions.
 	TARGET_LINK_LIBRARIES(${_target} PRIVATE rpthreads${_target_suffix})
 
@@ -118,8 +113,8 @@ FOREACH(_target ${TARGETS})
 	# - Private: Parent source and binary directories,
 	#            and top-level binary directory for git_version.h.
 	TARGET_INCLUDE_DIRECTORIES(${_target}
-		PUBLIC  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>		# librpcpu
-			$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>		# librpcpu
+		PUBLIC  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>		# librpbyteswap
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>		# librpbyteswap
 		PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>	# src
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/..>	# src
 			$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>			# build

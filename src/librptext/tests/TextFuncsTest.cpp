@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptext/tests)                  *
  * TextFuncsTest.cpp: Text conversion functions test                       *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -13,7 +13,7 @@
 // TextFuncs
 #include "../conversion.hpp"
 #include "../utf8_strlen.hpp"
-#include "librpcpu/byteorder.h"
+#include "librpbyteswap/byteorder.h"
 using namespace LibRpText;
 
 // C includes. (C++ namespace)

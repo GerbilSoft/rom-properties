@@ -1,14 +1,14 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (librpcpu)                         *
+ * ROM Properties Page shell extension. (librpcpuid)                         *
  * cpu_dispatch.h: CPU dispatch macros.                                    *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #pragma once
 
-#include "librpcpu/config.librpcpu.h"
+#include "librpcpuid/config.librpcpuid.h"
 
 // Check for certain CPUs.
 // Reference: https://sourceforge.net/p/predef/wiki/Architectures/

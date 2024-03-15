@@ -57,8 +57,9 @@ typedef uint64_t deUint64;
 #pragma GCC diagnostic ignored "-Wunused-function"
 #endif
 
-// rom-properties
-#include "../../src/librpcpu/byteorder.h"
+// rom-properties: Use librpbyteswap's byteorder macros.
+// NOTE: Not able to detect built-in byteswapping intrinsics here.
+#include "../../src/librpbyteswap/byteorder.h"
 
 namespace basisu_astc
 {

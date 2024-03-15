@@ -151,7 +151,7 @@ FOREACH(_target ${TARGETS})
 	ENDIF(HAVE_WCWIDTH)
 
 	# Other libraries
-	TARGET_LINK_LIBRARIES(${_target} PRIVATE rpthreads${_target_suffix} rpcpu${_target_suffix})
+	TARGET_LINK_LIBRARIES(${_target} PRIVATE rpthreads${_target_suffix} rpbyteswap${_target_suffix})
 
 	IF(Iconv_LIBRARY AND NOT Iconv_IS_BUILT_IN)
 		TARGET_LINK_LIBRARIES(${_target} PRIVATE Iconv::Iconv)

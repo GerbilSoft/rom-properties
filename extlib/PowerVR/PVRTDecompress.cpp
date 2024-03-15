@@ -16,9 +16,9 @@
 #include <cassert>
 #include <vector>
 
-// rom-properties: Use librpcpu's byteorder macros.
+// rom-properties: Use librpbyteswap's byteorder macros.
 // NOTE: Not able to detect built-in byteswapping intrinsics here.
-#include "../../src/librpcpu/byteorder.h"
+#include "../../src/librpbyteswap/byteorder.h"
 #define __swab32(x) \
 	((uint32_t)((((uint32_t)x) << 24) | (((uint32_t)x) >> 24) | \
 		((((uint32_t)x) & 0x0000FF00UL) << 8) | \

@@ -1,15 +1,17 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (librpcpu)                         *
+ * ROM Properties Page shell extension. (librpbyteswap)                    *
  * byteswap_ifunc.c: Byteswapping functions. (IFUNC)                       *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "byteswap_rp.h"
-#include "cpu_dispatch.h"
+#include "config.librpcpuid.h"
 
 #ifdef HAVE_IFUNC
+
+#include "byteswap_rp.h"
+#include "cpu_dispatch.h"
 
 // NOTE: llvm/clang 14.0.0 fails to detect the resolver functions
 // if they're marked static, even though the docs say this is okay.

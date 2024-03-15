@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptext)                        *
  * conversion_iconv.cpp: Text encoding functions (iconv version)           *
  *                                                                         *
- * Copyright (c) 2009-2023 by David Korth.                                 *
+ * Copyright (c) 2009-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -17,7 +17,7 @@
 #endif
 
 // Determine the system encodings.
-#include "librpcpu/byteorder.h"
+#include "librpbyteswap/byteorder.h"
 #if SYS_BYTEORDER == SYS_BIG_ENDIAN
 #  define RP_ICONV_UTF16_ENCODING "UTF-16BE"
 #else

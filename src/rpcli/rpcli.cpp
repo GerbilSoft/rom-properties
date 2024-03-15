@@ -3,7 +3,7 @@
  * rpcli.cpp: Command-line interface for properties.                       *
  *                                                                         *
  * Copyright (c) 2016-2018 by Egor.                                        *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -16,9 +16,11 @@
 // OS-specific security options.
 #include "rpcli_secure.h"
 
+// librpbyteswap
+#include "librpbyteswap/byteswap_rp.h"
+
 // librpbase
 #include "libi18n/i18n.h"
-#include "librpcpu/byteswap_rp.h"
 #include "librpbase/RomData.hpp"
 #include "librpbase/SystemRegion.hpp"
 #include "librpbase/img/RpPng.hpp"

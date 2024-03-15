@@ -176,7 +176,7 @@ FOREACH(_target ${TARGETS})
 	ENDIF()
 
 	# rpthreads is needed for atomic functions.
-	TARGET_LINK_LIBRARIES(${_target} PRIVATE rpcpu${_target_suffix} rpthreads${_target_suffix})
+	TARGET_LINK_LIBRARIES(${_target} PRIVATE rpbyteswap${_target_suffix} rpthreads${_target_suffix})
 	TARGET_LINK_LIBRARIES(${_target} PRIVATE cachecommon${_target_suffix})
 	IF(ENABLE_NLS)
 		TARGET_LINK_LIBRARIES(${_target} PRIVATE i18n${_target_suffix})

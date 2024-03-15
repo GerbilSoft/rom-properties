@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptext)                        *
  * conversion.cpp: Text encoding functions                                 *
  *                                                                         *
- * Copyright (c) 2009-2023 by David Korth.                                 *
+ * Copyright (c) 2009-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -12,7 +12,7 @@
 
 // Other rom-properties libraries
 #include "libi18n/i18n.h"
-#include "librpcpu/byteswap_rp.h"
+#include "librpbyteswap/byteswap_rp.h"
 #include "librpthreads/pthread_once.h"
 
 // C includes

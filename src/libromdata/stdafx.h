@@ -58,9 +58,9 @@
 #include "ctypex.h"
 #include "dll-macros.h"
 
-// librpcpu
-#include "librpcpu/byteswap_rp.h"
-#include "librpcpu/bitstuff.h"
+// librpbyteswap
+#include "librpbyteswap/byteswap_rp.h"
+#include "librpbyteswap/bitstuff.h"
 
 #ifdef __cplusplus
 // librpbase C++ headers

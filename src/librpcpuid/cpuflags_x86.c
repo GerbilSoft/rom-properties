@@ -1,6 +1,6 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (librpcpu)                         *
- * cpuflags_x86.h: x86 CPU flags detection.                                *
+ * ROM Properties Page shell extension. (librpcpuid)                       *
+ * cpuflags_x86.c: x86 CPU flags detection.                                *
  *                                                                         *
  * Copyright (c) 2017-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
@@ -11,11 +11,12 @@
 #  error Do not compile byteswap_x86.c on non-x86 CPUs!
 #endif
 
-#include "config.librpcpu.h"
+#include "config.librpcpuid.h"
 #include "cpuflags_x86.h"
 
 // librpthreads
-#include "librpthreads/pthread_once.h"
+// FIXME: Cannot use librpthreads at the moment due to static linkage.
+//#include "librpthreads/pthread_once.h"
 
 #ifdef HAVE_CPUID_H
 #  include <cpuid.h>
@@ -326,6 +327,12 @@ static void RP_CPU_InitCPUFlags_int(void)
  */
 void RP_C_API RP_CPU_InitCPUFlags(void)
 {
-	static pthread_once_t cpu_once_control = PTHREAD_ONCE_INIT;
-	pthread_once(&cpu_once_control, RP_CPU_InitCPUFlags_int);
+	// FIXME: Cannot use librpthreads at the moment due to static linkage.
+	//static pthread_once_t cpu_once_control = PTHREAD_ONCE_INIT;
+	//pthread_once(&cpu_once_control, RP_CPU_InitCPUFlags_int);
+	static uint8_t cpu_once_control = 0;
+	if (cpu_once_control == 0) {
+		RP_CPU_InitCPUFlags_int();
+		cpu_once_control = 1;
+	}
 }

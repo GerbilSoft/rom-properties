@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * GdkImageConv.hpp: Helper functions to convert from rp_image to GDK.     *
  *                                                                         *
- * Copyright (c) 2017-2023 by David Korth.                                 *
+ * Copyright (c) 2017-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -11,14 +11,14 @@
 // NOTE: GdkPixbuf doesn't natively support 8bpp. Because of this,
 // we can't simply make a GdkPixbuf rp_image backend.
 
-#include "librpcpu/cpu_dispatch.h"
+#include "librpcpuid/cpu_dispatch.h"
 namespace LibRpTexture {
 	class rp_image;
 }
 #include <gdk-pixbuf/gdk-pixbuf.h>
 
 #if defined(RP_CPU_I386) || defined(RP_CPU_AMD64)
-#  include "librpcpu/cpuflags_x86.h"
+#  include "librpcpuid/cpuflags_x86.h"
 #  define GDKIMAGECONV_HAS_SSSE3 1
 #endif
 
