@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpfile)                        *
  * RpFile_scsi.cpp: General SCSI functions.                                *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -14,6 +14,10 @@
 #ifdef _WIN32
 #  include "libwin32common/w32err.hpp"
 #endif
+
+// librpbyteswap
+#include "librpbyteswap/bitstuff.h"
+#include "librpbyteswap/byteswap_rp.h"
 
 #include "scsi_protocol.h"
 #include "ata_protocol.h"

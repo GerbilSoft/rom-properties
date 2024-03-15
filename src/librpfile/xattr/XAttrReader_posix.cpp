@@ -11,8 +11,8 @@
 #include "XAttrReader.hpp"
 #include "XAttrReader_p.hpp"
 
-// BEFORE COMMIT: is this needed?
-//#include "librpbyteswap/byteswap_rp.h"
+// librpbyteswap
+#include "librpbyteswap/byteswap_rp.h"
 
 #include <fcntl.h>	// AT_FDCWD
 #include <sys/stat.h>	// stat(), statx()

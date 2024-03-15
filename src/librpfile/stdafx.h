@@ -52,7 +52,3 @@
 // Common headers
 #include "common.h"
 #include "ctypex.h"
-
-// librpbyteswap
-#include "librpbyteswap/byteswap_rp.h"
-#include "librpbyteswap/bitstuff.h"
