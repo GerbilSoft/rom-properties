@@ -145,7 +145,7 @@ rp_thunar_menu_provider_get_file_menu_items(ThunarxMenuProvider *provider, GtkWi
 		// FIXME: We don't support writing to non-local files right now.
 		// Only allow file:// protocol.
 		gchar *const scheme = thunarx_file_info_get_uri_scheme(file_info);
-		const bool is_file = (scheme && g_ascii_strcasecmp(scheme, "file") != 0);
+		const bool is_file = (scheme && !g_ascii_strcasecmp(scheme, "file"));
 		g_free(scheme);
 		if (!is_file) {
 			// Not file:// protocol.
