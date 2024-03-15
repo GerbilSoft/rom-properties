@@ -210,7 +210,11 @@ static void RP_CPU_InitCPUFlags_int(void)
 	unsigned int regs[4];	// %eax, %ebx, %ecx, %edx
 	unsigned int maxFunc;
 #ifdef RP_CPU_I386
+	// i386 is not guaranteed to support FXSAVE. (required for SSE)
 	uint8_t can_FXSAVE = 0;
+#else /* !RP_CPU_I386 */
+	// amd64 *is* guaranteed to support FXSAVE.
+	static const uint8_t can_FXSAVE = 1;
 #endif /* RP_CPU_I386 */
 
 	// Make sure the CPU flags variable is empty.
@@ -238,6 +242,7 @@ static void RP_CPU_InitCPUFlags_int(void)
 	// Get the processor info and feature bits.
 	cpuid(CPUID_PROC_INFO_FEATURE_BITS, regs);
 
+#ifdef RP_CPU_I386
 	if (regs[REG_EDX] & CPUFLAG_IA32_EDX_MMX) {
 		// MMX is supported.
 		// NOTE: Not officially supported on amd64 in 64-bit,
@@ -245,7 +250,6 @@ static void RP_CPU_InitCPUFlags_int(void)
 		RP_CPU_Flags |= RP_CPUFLAG_X86_MMX;
 	}
 
-#ifdef RP_CPU_I386
 	if (regs[REG_EDX] & CPUFLAG_IA32_EDX_SSE) {
 		// CPU reports that it supports SSE, but the OS
 		// might not support FXSAVE.
@@ -287,12 +291,21 @@ static void RP_CPU_InitCPUFlags_int(void)
 #  endif /* _WIN32 */
 		}
 	}
+#else /* !RP_CPU_I386 */
+	// amd64: MMX *does* function, but use is not recommended.
+	// Use SSE or SSE2 instead on 64-bit.
+	// Also, SSE and SSE2 are always supported on amd64.
+	RP_CPU_Flags |= (RP_CPUFLAG_X86_MMX | RP_CPUFLAG_X86_SSE | RP_CPUFLAG_X86_SSE2);
+#endif /* RP_CPU_I386 */
 
 	// Check for other SSE instruction sets.
 	if (can_FXSAVE) {
-		RP_CPU_Flags |= RP_CPUFLAG_X86_SSE;
+#ifdef RP_CPU_I386
+		if (regs[REG_EDX] & CPUFLAG_IA32_EDX_SSE)	// this check is *probably* not needed?
+			RP_CPU_Flags |= CPUFLAG_IA32_EDX_SSE;
 		if (regs[REG_EDX] & CPUFLAG_IA32_EDX_SSE2)
 			RP_CPU_Flags |= RP_CPUFLAG_X86_SSE2;
+#endif /* RP_CPU_I386 */
 		if (regs[REG_ECX] & CPUFLAG_IA32_ECX_SSE3)
 			RP_CPU_Flags |= RP_CPUFLAG_X86_SSE3;
 		if (regs[REG_ECX] & CPUFLAG_IA32_ECX_SSSE3)
@@ -302,18 +315,6 @@ static void RP_CPU_InitCPUFlags_int(void)
 		if (regs[REG_ECX] & CPUFLAG_IA32_ECX_SSE42)
 			RP_CPU_Flags |= RP_CPUFLAG_X86_SSE42;
 	}
-#else /* !RP_CPU_I386 */
-	// AMD64: SSE2 and lower are always supported.
-	RP_CPU_Flags |= (RP_CPUFLAG_X86_SSE | RP_CPUFLAG_X86_SSE2);
-
-	// Check for other SSE instruction sets.
-	if (regs[REG_ECX] & CPUFLAG_IA32_ECX_SSSE3)
-		RP_CPU_Flags |= RP_CPUFLAG_X86_SSSE3;
-	if (regs[REG_ECX] & CPUFLAG_IA32_ECX_SSE41)
-		RP_CPU_Flags |= RP_CPUFLAG_X86_SSE41;
-	if (regs[REG_ECX] & CPUFLAG_IA32_ECX_SSE42)
-		RP_CPU_Flags |= RP_CPUFLAG_X86_SSE42;
-#endif /* RP_CPU_I386 */
 
 	// CPU flags initialized.
 	RP_CPU_Flags_Init = 1;
