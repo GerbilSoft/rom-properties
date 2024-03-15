@@ -31,22 +31,13 @@ extern "C" {
 NO_SANITIZE_ADDRESS
 __typeof__(&SuperMagicDrive::decodeBlock_cpp) decodeBlock_resolve(void)
 {
-	// NOTE: Since libromdata is a shared library now, IFUNC resolvers
-	// cannot call PLT functions. Otherwise, it will crash.
-	// We'll use gcc's built-in CPU ID functions instead.
-	// Requires gcc-4.8 or later, or clang-6.0 or later.
-
-#if defined(SMD_HAS_SSE2) || defined(SMD_HAS_MMX)
-	__builtin_cpu_init();
-#endif
-
 #ifdef SMD_HAS_SSE2
-	if (__builtin_cpu_supports("sse2")) {
+	if (RP_CPU_HasSSE2()) {
 		return &SuperMagicDrive::decodeBlock_sse2;
 	} else
 #endif /* SMD_HAS_SSE2 */
 #ifdef SMD_HAS_MMX
-	if (__builtin_cpu_supports("mmx")) {
+	if (RP_CPU_HasMMX()) {
 		return &SuperMagicDrive::decodeBlock_mmx;
 	} else
 #endif /* SMD_HAS_MMX */

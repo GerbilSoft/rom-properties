@@ -35,8 +35,7 @@ __typeof__(&GdkImageConv::rp_image_to_GdkPixbuf_cpp) rp_image_to_GdkPixbuf_resol
 	// Requires gcc-4.8 or later, or clang-6.0 or later.
 
 #ifdef GDKIMAGECONV_HAS_SSSE3
-	__builtin_cpu_init();
-	if (__builtin_cpu_supports("ssse3")) {
+	if (RP_CPU_HasSSSE3()) {
 		return &GdkImageConv::rp_image_to_GdkPixbuf_ssse3;
 	} else
 #endif /* GDKIMAGECONV_HAS_SSSE3 */
