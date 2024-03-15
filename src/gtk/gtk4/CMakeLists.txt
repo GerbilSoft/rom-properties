@@ -76,7 +76,7 @@ SET(${PROJECT_NAME}_SRCS
 	NautilusPlugin.cpp
 	NautilusPropertiesModelProvider.cpp
 	NautilusPropertiesModel.cpp
-	../gtk3/NautilusMenuProvider.cpp
+	../gtk3/NautilusMenuProvider.c
 	../gtk3/MenuProviderCommon.c
 	)
 SET(${PROJECT_NAME}_H
@@ -86,7 +86,7 @@ SET(${PROJECT_NAME}_H
 	NautilusPlugin.hpp
 	NautilusPropertiesModelProvider.hpp
 	NautilusPropertiesModel.hpp
-	../gtk3/NautilusMenuProvider.hpp
+	../gtk3/NautilusMenuProvider.h
 	nautilus-extension-mini.h
 	../gtk3/MenuProviderCommon.h
 	)

@@ -1,8 +1,8 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (GTK+ 3.x)                         *
- * MenuProviderCommon.h: Common functions for Menu Providers               *
+ * MenuProviderCommon.c: Common functions for Menu Providers               *
  *                                                                         *
- * Copyright (c) 2017-2023 by David Korth.                                 *
+ * Copyright (c) 2017-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -13,6 +13,10 @@
 #include "img/TCreateThumbnail.hpp"
 
 #include "tcharx.h"	// for DIR_SEP_CHR
+
+// Supported MIME types
+// TODO: Consolidate with the KF5 service menu?
+#include "mime-types.convert-to-png.h"
 
 /**
  * Is a URI using the file:// scheme?
@@ -88,4 +92,38 @@ int rp_menu_provider_convert_to_png(const gchar *source_uri)
 	g_free(output_file_esc);
 	g_free(output_file);
 	return ret;
+}
+
+/**
+ * Comparator function for rp_menu_provider_is_mime_type_supported().
+ *
+ * bsearch() gives us a pointer to the const char*, not the const char*,
+ * so we can't simply use strcmp().
+ *
+ * @param a
+ * @param b
+ * @return strcmp() result
+ */
+static int mime_type_compar(const void *a, const void *b)
+{
+	const char *const sa = *((const char**)a);
+	const char *const sb = *((const char**)b);
+	return strcmp(sa, sb);
+}
+
+/**
+ * Is a MIME type supported for "Convert to PNG"?
+ * @param mime MIME type
+ * @return True if supported; false if not.
+ */
+gboolean rp_menu_provider_is_mime_type_supported(const gchar *mime_type)
+{
+	// Check the file against all supported MIME types.
+	const char *const type = bsearch(&mime_type,
+		mime_types_convert_to_png,
+		ARRAY_SIZE(mime_types_convert_to_png),
+		sizeof(mime_types_convert_to_png[0]),
+		(int(*)(const void*, const void*))mime_type_compar);
+
+	return (type != NULL);
 }

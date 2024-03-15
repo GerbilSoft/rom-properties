@@ -1,15 +1,15 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (GTK+ 3.x)                         *
- * NautilusMenuProvider.cpp: Nautilus (and forks) Menu Provider Definition *
+ * NautilusMenuProvider.c: Nautilus (and forks) Menu Provider Definition   *
  *                                                                         *
- * Copyright (c) 2017-2023 by David Korth.                                 *
+ * Copyright (c) 2017-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 // Reference: https://github.com/xfce-mirror/thunar-archive-plugin/blob/master/thunar-archive-plugin/tap-provider.c
 
 #include "stdafx.h"
-#include "NautilusMenuProvider.hpp"
+#include "NautilusMenuProvider.h"
 #include "MenuProviderCommon.h"
 
 #include "../RomDataView.hpp"
@@ -22,10 +22,6 @@
 #  include "NautilusPlugin.hpp"
 #  include "nautilus-extension-mini.h"
 #endif /* GTK_CHECK_VERSION(4,0,0) */
-
-// Supported MIME types
-// TODO: Consolidate with the KF5 service menu?
-#include "mime-types.convert-to-png.h"
 
 static GQuark rp_item_convert_to_png_quark;
 
@@ -57,7 +53,7 @@ struct _RpNautilusMenuProvider {
 // NOTE: G_DEFINE_TYPE() doesn't work in C++ mode with gcc-6.2
 // due to an implicit int to GTypeFlags conversion.
 G_DEFINE_DYNAMIC_TYPE_EXTENDED(RpNautilusMenuProvider, rp_nautilus_menu_provider,
-	G_TYPE_OBJECT, static_cast<GTypeFlags>(0),
+	G_TYPE_OBJECT, (GTypeFlags)0,
 	G_IMPLEMENT_INTERFACE_DYNAMIC(NAUTILUS_TYPE_MENU_PROVIDER,
 		rp_nautilus_menu_provider_page_provider_init));
 
@@ -103,7 +99,7 @@ rp_nautilus_menu_provider_page_provider_init(NautilusMenuProviderInterface *ifac
 static gpointer
 rp_item_convert_to_png_ThreadFunc(GList *files)
 {
-	for (GList *file = files; file != nullptr; file = file->next) {
+	for (GList *file = files; file != NULL; file = file->next) {
 		gchar *const source_uri = nautilus_file_info_get_uri(NAUTILUS_FILE_INFO(file->data));
 		if (G_UNLIKELY(!source_uri))
 			continue;
@@ -115,7 +111,7 @@ rp_item_convert_to_png_ThreadFunc(GList *files)
 	}
 
 	nautilus_file_info_list_free(files);
-	return nullptr;
+	return NULL;
 }
 
 static void
@@ -123,7 +119,7 @@ rp_item_convert_to_png(NautilusMenuItem *item, gpointer user_data)
 {
 	RP_UNUSED(user_data);
 
-	GList *const files = static_cast<GList*>(g_object_steal_qdata(G_OBJECT(item), rp_item_convert_to_png_quark));
+	GList *const files = (GList*)g_object_steal_qdata(G_OBJECT(item), rp_item_convert_to_png_quark);
 	if (G_UNLIKELY(!files))
 		return;
 
@@ -152,7 +148,7 @@ rp_nautilus_menu_provider_get_file_items(
 	// Verify that all specified files are supported.
 	bool is_supported = false;
 	int file_count = 0;
-	for (GList *file = files; file != nullptr; file = file->next) {
+	for (GList *file = files; file != NULL; file = file->next) {
 		NautilusFileInfo *const file_info = NAUTILUS_FILE_INFO(file->data);
 
 		// FIXME: We don't support writing to non-local files right now.
@@ -172,15 +168,8 @@ rp_nautilus_menu_provider_get_file_items(
 			continue;
 		}
 
-		// Check the file against all supported MIME types.
-		static const char *const *const p_mime_types_convert_to_png_end =
-			&mime_types_convert_to_png[ARRAY_SIZE(mime_types_convert_to_png)];
-		is_supported = std::binary_search(mime_types_convert_to_png, p_mime_types_convert_to_png_end, mime_type,
-			[](const char *a, const char *b) noexcept -> bool
-			{
-				return (strcmp(a, b) < 0);
-			}
-		);
+		// Check if the MIME type is supported.
+		is_supported = rp_menu_provider_is_mime_type_supported(mime_type);
 		g_free(mime_type);
 		if (!is_supported)
 			break;
@@ -190,7 +179,7 @@ rp_nautilus_menu_provider_get_file_items(
 
 	if (!is_supported) {
 		// One or more selected file(s) are not supported.
-		return nullptr;
+		return NULL;
 	}
 
 	// Create the menu item.
@@ -208,5 +197,5 @@ rp_nautilus_menu_provider_get_file_items(
 		(GDestroyNotify)pfn_nautilus_file_info_list_free);
 	g_signal_connect_closure(G_OBJECT(item), "activate",
 		g_cclosure_new_object(G_CALLBACK(rp_item_convert_to_png), G_OBJECT(item)), TRUE);
-	return g_list_prepend(nullptr, item);
+	return g_list_prepend(NULL, item);
 }

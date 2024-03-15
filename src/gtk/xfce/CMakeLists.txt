@@ -87,7 +87,7 @@ SET(${PROJECT_NAME}_SRCS
 	${${PROJECT_NAME}_IFUNC_SRCS}
 	${${PROJECT_NAME}_SSSE3_SRCS}
 	../gtk3/ThunarPlugin.cpp
-	../gtk3/ThunarMenuProvider.cpp
+	../gtk3/ThunarMenuProvider.c
 	../gtk3/ThunarPropertyPageProvider.cpp
 	../gtk3/MenuProviderCommon.c
 	)
@@ -95,7 +95,7 @@ SET(${PROJECT_NAME}_H
 	${${PROJECT_NAME}_H} ${${PROJECT_NAME}_H}
 	../plugin-helper.h
 	../gtk3/ThunarPlugin.hpp
-	../gtk3/ThunarMenuProvider.hpp
+	../gtk3/ThunarMenuProvider.h
 	../gtk3/ThunarPropertyPageProvider.hpp
 	../gtk3/thunarx-mini.h
 	../gtk3/MenuProviderCommon.h

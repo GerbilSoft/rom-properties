@@ -89,10 +89,10 @@ SET(${PROJECT_NAME}_SRCS
 	${${PROJECT_NAME}_IFUNC_SRCS}
 	NautilusPlugin.cpp
 	NautilusPropertyPageProvider.cpp
-	NautilusMenuProvider.cpp
+	NautilusMenuProvider.c
 	ThunarPlugin.cpp
 	ThunarPropertyPageProvider.cpp
-	ThunarMenuProvider.cpp
+	ThunarMenuProvider.c
 	MenuProviderCommon.c
 	)
 SET(${PROJECT_NAME}_H
@@ -100,10 +100,10 @@ SET(${PROJECT_NAME}_H
 	../plugin-helper.h
 	NautilusPlugin.hpp
 	NautilusPropertyPageProvider.hpp
-	NautilusMenuProvider.hpp
+	NautilusMenuProvider.h
 	ThunarPlugin.hpp
 	ThunarPropertyPageProvider.hpp
-	ThunarMenuProvider.hpp
+	ThunarMenuProvider.h
 	thunarx-mini.h
 	nautilus-extension-mini.h
 	mime-types.convert-to-png.h

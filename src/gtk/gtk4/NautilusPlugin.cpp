@@ -10,7 +10,7 @@
 #include "config.gtk.h"
 #include "NautilusPlugin.hpp"
 
-#include "../gtk3/NautilusMenuProvider.hpp"
+#include "../gtk3/NautilusMenuProvider.h"
 #include "AchGDBus.hpp"
 #include "plugin-helper.h"
 #include "NautilusPropertiesModelProvider.hpp"

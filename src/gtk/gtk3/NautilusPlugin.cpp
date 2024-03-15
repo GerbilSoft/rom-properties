@@ -11,7 +11,7 @@
 #include "NautilusPlugin.hpp"
 
 #include "AchGDBus.hpp"
-#include "NautilusMenuProvider.hpp"
+#include "NautilusMenuProvider.h"
 #include "NautilusPropertyPageProvider.hpp"
 #include "plugin-helper.h"
 
