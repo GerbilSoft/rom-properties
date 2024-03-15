@@ -47,17 +47,18 @@
 // Flags stored in the %ecx register.
 #define CPUFLAG_IA32_ECX_SSE3		((uint32_t)(1U << 0))
 #define CPUFLAG_IA32_ECX_SSSE3		((uint32_t)(1U << 9))
+#define CPUFLAG_IA32_ECX_FMA3		((uint32_t)(1U << 12))
 #define CPUFLAG_IA32_ECX_SSE41		((uint32_t)(1U << 19))
 #define CPUFLAG_IA32_ECX_SSE42		((uint32_t)(1U << 20))
 #define CPUFLAG_IA32_ECX_XSAVE		((uint32_t)(1U << 26))
 #define CPUFLAG_IA32_ECX_OSXSAVE	((uint32_t)(1U << 27))
 #define CPUFLAG_IA32_ECX_AVX		((uint32_t)(1U << 28))
-#define CPUFLAG_IA32_ECX_FMA3		((uint32_t)(1U << 12))
+#define CPUFLAG_IA32_ECX_F16C		((uint32_t)(1U << 29))
 
 // CPUID function 7: Extended Features
 
 // Flags stored in the %ebx register.
-#define CPUFLAG_IA32_FN7_EBX_AVX2	((uint32_t)(1U << 5))
+#define CPUFLAG_IA32_FN7p0_EBX_AVX2	((uint32_t)(1U << 5))
 
 // CPUID function 0x80000001: Extended Processor Info and Feature Bits
 
@@ -68,7 +69,6 @@
 
 // Flags stored in the %ecx register.
 #define CPUFLAG_IA32_EXT_ECX_SSE4A	((uint32_t)(1U << 6))
-#define CPUFLAG_IA32_EXT_ECX_F16C	((uint32_t)(1U << 29))
 #define CPUFLAG_IA32_EXT_ECX_XOP	((uint32_t)(1U << 11))
 #define CPUFLAG_IA32_EXT_ECX_FMA4	((uint32_t)(1U << 16))
 
@@ -141,8 +141,8 @@ static FORCEINLINE int is_cpuid_supported(void)
 
 /**
  * Run the `cpuid` instruction.
- * @param level
- * @param regs Registers. (%eax, %ebx, %ecx, %edx)
+ * @param level %eax
+ * @param regs Registers (%eax, %ebx, %ecx, %edx)
  */
 static FORCEINLINE void cpuid(unsigned int level, unsigned int regs[4])
 {
@@ -192,6 +192,61 @@ static FORCEINLINE void cpuid(unsigned int level, unsigned int regs[4])
 #endif
 }
 
+/**
+ * Run the `cpuid` instruction, with 'count' parameter.
+ * @param level %eax
+ * @param count %ecx
+ * @param regs Registers (%eax, %ebx, %ecx, %edx)
+ */
+static FORCEINLINE void cpuid_count(unsigned int level, unsigned int count, unsigned int regs[4])
+{
+#ifdef HAVE_CPUID_H
+	// Use the compiler's __cpuid_count() macro.
+	__cpuid_count(level, count, regs[0], regs[1], regs[2], regs[3]);
+#elif defined(__GNUC__)
+	// CPUID macro with PIC support.
+	// See http://gcc.gnu.org/ml/gcc-patches/2007-09/msg00324.html
+#  ifdef ASM_RESERVE_EBX
+	__asm__ (
+		"xchgl	%%ebx, %1\n"
+		"cpuid\n"
+		"xchgl	%%ebx, %1\n"
+		: "=a" (regs[0]), "=r" (regs[1]), "=c" (regs[2]), "=d" (regs[3])
+		: "0" (level), "2" (count)
+		);
+#  else /* !ASM_RESERVE_EBX */
+	__asm__ (
+		"cpuid\n"
+		: "=a" (regs[0]), "=b" (regs[1]), "=c" (regs[2]), "=d" (regs[3])
+		: "0" (level), "2" (count)
+		);
+#  endif
+#elif defined(_MSC_VER)
+#  if _MSC_VER >= 1400
+	// CPUID for MSVC 2005+
+	// Uses the __cpuid() intrinsic.
+	__cpuidex((int*)regs, level, count);
+#  else /* _MSC_VER < 1400 */
+	// CPUID for old MSVC that doesn't support intrinsics.
+	// (TODO: Check MSVC 2002 and 2003?)
+#    if defined(RP_CPU_AMD64)
+#      error Cannot use inline assembly on 64-bit MSVC.
+#    endif
+	__asm {
+		mov	eax, level
+		mov	ecx, count
+		cpuid
+		mov	regs[0 * TYPE int], eax
+		mov	regs[1 * TYPE int], ebx
+		mov	regs[2 * TYPE int], ecx
+		mov	regs[3 * TYPE int], edx
+	}
+#  endif
+#else
+#  error Missing 'cpuid' asm implementation for this compiler.
+#endif
+}
+
 // Register indexes.
 #define REG_EAX 0
 #define REG_EBX 1
@@ -216,6 +271,7 @@ static void RP_CPU_InitCPUFlags_int(void)
 	// amd64 *is* guaranteed to support FXSAVE.
 	static const uint8_t can_FXSAVE = 1;
 #endif /* RP_CPU_I386 */
+	uint8_t can_XSAVE = 0;
 
 	// Make sure the CPU flags variable is empty.
 	RP_CPU_Flags = 0;
@@ -314,6 +370,29 @@ static void RP_CPU_InitCPUFlags_int(void)
 			RP_CPU_Flags |= RP_CPUFLAG_X86_SSE41;
 		if (regs[REG_ECX] & CPUFLAG_IA32_ECX_SSE42)
 			RP_CPU_Flags |= RP_CPUFLAG_X86_SSE42;
+		if (regs[REG_ECX] & CPUFLAG_IA32_ECX_F16C)
+			RP_CPU_Flags |= RP_CPUFLAG_X86_F16C;
+		if (regs[REG_ECX] & CPUFLAG_IA32_ECX_FMA3)
+			RP_CPU_Flags |= RP_CPUFLAG_X86_FMA3;
+	}
+
+	// Check for XSAVE and OSXSAVE.
+	// Required for AVX and AVX2.
+	can_XSAVE = (regs[REG_ECX] & (CPUFLAG_IA32_ECX_XSAVE | CPUFLAG_IA32_ECX_OSXSAVE)) ==
+	                             (CPUFLAG_IA32_ECX_XSAVE | CPUFLAG_IA32_ECX_OSXSAVE);
+	if (can_XSAVE) {
+		// XSAVE and OSXSAVE are set.
+		if (regs[REG_ECX] & CPUFLAG_IA32_ECX_AVX)
+			RP_CPU_Flags |= RP_CPUFLAG_X86_AVX;
+	}
+
+	// Get extended features, including AVX2.
+	// NOTE: AVX2 requires XSAVE.
+	if (can_XSAVE && maxFunc >= CPUID_EXT_FEATURES) {
+		cpuid_count(CPUID_EXT_FEATURES, 0, regs);
+
+		if (regs[REG_EBX] & CPUFLAG_IA32_FN7p0_EBX_AVX2)
+			RP_CPU_Flags |= RP_CPUFLAG_X86_AVX2;
 	}
 
 	// CPU flags initialized.

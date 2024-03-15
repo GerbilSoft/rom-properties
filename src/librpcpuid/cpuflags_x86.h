@@ -24,13 +24,17 @@ extern "C" {
 
 // Set of CPU flags we check for right now.
 // More flags will be added if needed.
-#define RP_CPUFLAG_X86_MMX		((uint32_t)(1U << 0))
-#define RP_CPUFLAG_X86_SSE		((uint32_t)(1U << 1))
-#define RP_CPUFLAG_X86_SSE2		((uint32_t)(1U << 2))
-#define RP_CPUFLAG_X86_SSE3		((uint32_t)(1U << 3))
-#define RP_CPUFLAG_X86_SSSE3		((uint32_t)(1U << 4))
-#define RP_CPUFLAG_X86_SSE41		((uint32_t)(1U << 5))
-#define RP_CPUFLAG_X86_SSE42		((uint32_t)(1U << 6))
+#define RP_CPUFLAG_X86_MMX		((uint32_t)(1U <<  0))
+#define RP_CPUFLAG_X86_SSE		((uint32_t)(1U <<  1))
+#define RP_CPUFLAG_X86_SSE2		((uint32_t)(1U <<  2))
+#define RP_CPUFLAG_X86_SSE3		((uint32_t)(1U <<  3))
+#define RP_CPUFLAG_X86_SSSE3		((uint32_t)(1U <<  4))
+#define RP_CPUFLAG_X86_SSE41		((uint32_t)(1U <<  5))
+#define RP_CPUFLAG_X86_SSE42		((uint32_t)(1U <<  6))
+#define RP_CPUFLAG_X86_AVX		((uint32_t)(1U <<  7))
+#define RP_CPUFLAG_X86_AVX2		((uint32_t)(1U <<  8))
+#define RP_CPUFLAG_X86_F16C		((uint32_t)(1U <<  9))
+#define RP_CPUFLAG_X86_FMA3		((uint32_t)(1U << 10))
 
 #endif /* RP_CPU_I386 || RP_CPU_AMD64 */
 
