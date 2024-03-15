@@ -12,13 +12,15 @@
 #include "common.h"
 #include "dll-macros.h"	// for RP_C_API
 
+// RP_CPU_* macros
+#include "cpu_dispatch.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 /* CPU flags (IA32/x86_64) */
-#if defined(_M_IX86) || defined(__i386__) || \
-    defined(_M_X64) || defined(_M_AMD64) || defined(__amd64__) || defined(__x86_64__)
+#if defined(RP_CPU_I386) || defined(RP_CPU_AMD64)
 
 // Set of CPU flags we check for right now.
 // More flags will be added if needed.
@@ -30,7 +32,7 @@ extern "C" {
 #define RP_CPUFLAG_X86_SSE41		((uint32_t)(1U << 5))
 #define RP_CPUFLAG_X86_SSE42		((uint32_t)(1U << 6))
 
-#endif /* _M_IX86) || __i386__ || _M_X64 || _M_AMD64 || __amd64__ || __x86_64__ */
+#endif /* RP_CPU_I386 || RP_CPU_AMD64 */
 
 // Don't modify these!
 extern uint32_t RP_CPU_Flags;
@@ -47,7 +49,7 @@ void RP_C_API RP_CPU_InitCPUFlags(void);
  */
 static FORCEINLINE int RP_CPU_HasMMX(void)
 {
-#if defined(__amd64__) || defined(__x86_64__) || defined(_M_X64)
+#ifdef RP_CPU_AMD64
 	// 64-bit always has MMX.
 	return 1;
 #else
@@ -64,7 +66,7 @@ static FORCEINLINE int RP_CPU_HasMMX(void)
  */
 static FORCEINLINE int RP_CPU_HasSSE2(void)
 {
-#if defined(__amd64__) || defined(__x86_64__) || defined(_M_X64)
+#if RP_CPU_AMD64
 	// 64-bit always has SSE2.
 	return 1;
 #else

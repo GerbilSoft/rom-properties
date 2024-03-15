@@ -6,13 +6,12 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#if !defined(__i386__) && !defined(__amd64__) && !defined(__x86_64__) && \
-    !defined(_M_IX86) && !defined(_M_X64)
-#  error Do not compile byteswap_x86.c on non-x86 CPUs!
-#endif
-
 #include "config.librpcpuid.h"
 #include "cpuflags_x86.h"
+
+#if !defined(RP_CPU_I386) && !defined(RP_CPU_AMD64)
+#  error Do not compile byteswap_x86.c on non-x86 CPUs!
+#endif
 
 // librpthreads
 // FIXME: Cannot use librpthreads at the moment due to static linkage.
@@ -89,7 +88,7 @@
  */
 static FORCEINLINE int is_cpuid_supported(void)
 {
-#if defined(__GNUC__) && defined(__i386__)
+#if defined(__GNUC__) && defined(RP_CPU_I386)
 	// gcc, i386
 	int __eax;
 	__asm__ (
@@ -108,7 +107,7 @@ static FORCEINLINE int is_cpuid_supported(void)
 		: "edx", "cc"	// Clobber
 		);
 	return __eax;
-#elif defined(_MSC_VER) && defined(_M_IX86)
+#elif defined(_MSC_VER) && defined(RP_CPU_I386)
 	// MSVC, i386
 	int __eax;
 	__asm {
@@ -134,7 +133,7 @@ static FORCEINLINE int is_cpuid_supported(void)
 }
 
 // gcc-5.0 no longer permanently reserves %ebx for PIC.
-#if defined(__GNUC__) && !defined(__clang__) && defined(__i386__)
+#if defined(__GNUC__) && !defined(__clang__) && defined(RP_CPU_I386)
 #  if __GNUC__ < 5 && defined(__PIC__)
 #    define ASM_RESERVE_EBX 1
 #  endif
@@ -176,7 +175,7 @@ static FORCEINLINE void cpuid(unsigned int level, unsigned int regs[4])
 #  else /* _MSC_VER < 1400 */
 	// CPUID for old MSVC that doesn't support intrinsics.
 	// (TODO: Check MSVC 2002 and 2003?)
-#    if defined(_M_X64)
+#    if defined(RP_CPU_AMD64)
 #      error Cannot use inline assembly on 64-bit MSVC.
 #    endif
 	__asm {
@@ -210,9 +209,9 @@ static void RP_CPU_InitCPUFlags_int(void)
 {
 	unsigned int regs[4];	// %eax, %ebx, %ecx, %edx
 	unsigned int maxFunc;
-#if defined(__i386__) || defined(_M_IX86)
+#ifdef RP_CPU_I386
 	uint8_t can_FXSAVE = 0;
-#endif /* defined(__i386__) || defined(_M_IX86) */
+#endif /* RP_CPU_I386 */
 
 	// Make sure the CPU flags variable is empty.
 	RP_CPU_Flags = 0;
@@ -247,7 +246,7 @@ static void RP_CPU_InitCPUFlags_int(void)
 			RP_CPU_Flags |= RP_CPUFLAG_X86_MMX;
 		}
 
-#if defined(__i386__) || defined(_M_IX86)
+#ifdef RP_CPU_I386
 		if (regs[REG_EDX] & CPUFLAG_IA32_EDX_SSE) {
 			// CPU reports that it supports SSE, but the OS
 			// might not support FXSAVE.
@@ -304,7 +303,7 @@ static void RP_CPU_InitCPUFlags_int(void)
 			if (regs[REG_ECX] & CPUFLAG_IA32_ECX_SSE42)
 				RP_CPU_Flags |= RP_CPUFLAG_X86_SSE42;
 		}
-#else /* !(defined(__i386__) || defined(_M_IX86)) */
+#else /* !RP_CPU_I386 */
 		// AMD64: SSE2 and lower are always supported.
 		RP_CPU_Flags |= (RP_CPUFLAG_X86_SSE | RP_CPUFLAG_X86_SSE2);
 
@@ -315,7 +314,7 @@ static void RP_CPU_InitCPUFlags_int(void)
 			RP_CPU_Flags |= RP_CPUFLAG_X86_SSE41;
 		if (regs[REG_ECX] & CPUFLAG_IA32_ECX_SSE42)
 			RP_CPU_Flags |= RP_CPUFLAG_X86_SSE42;
-#endif /* defined(__i386__) || defined(_M_IX86) */
+#endif /* RP_CPU_I386 */
 	}
 
 	// CPU flags initialized.
