@@ -2,6 +2,11 @@
 
 ## v2.4 (released 2024/03/??)
 
+* New features:
+  * IFUNC resolvers have been rewritten to use our own CPUID code again,
+    which is more efficient because, among other things, it doesn't do
+    string comparisons.
+
 * New parsers:
   * PalmOS: Palm OS executables and resource files (.prc). Thumbnailing is
     supported (the largest and highest color-depth icon is selected).
