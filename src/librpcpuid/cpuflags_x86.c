@@ -229,93 +229,91 @@ static void RP_CPU_InitCPUFlags_int(void)
 	// This also retrieves the CPU vendor string. (currently unused)
 	cpuid(CPUID_MAX_FUNCTIONS, regs);
 	maxFunc = regs[0];
-	if (maxFunc == 0) {
+	if (maxFunc < CPUID_PROC_INFO_FEATURE_BITS) {
 		// No CPUID functions are supported.
 		RP_CPU_Flags_Init = 1;
 		return;
 	}
 
-	if (maxFunc >= CPUID_PROC_INFO_FEATURE_BITS) {
-		// Get the processor info and feature bits.
-		cpuid(CPUID_PROC_INFO_FEATURE_BITS, regs);
+	// Get the processor info and feature bits.
+	cpuid(CPUID_PROC_INFO_FEATURE_BITS, regs);
 
-		if (regs[REG_EDX] & CPUFLAG_IA32_EDX_MMX) {
-			// MMX is supported.
-			// NOTE: Not officially supported on amd64 in 64-bit,
-			// but all known implementations support it.
-			RP_CPU_Flags |= RP_CPUFLAG_X86_MMX;
-		}
+	if (regs[REG_EDX] & CPUFLAG_IA32_EDX_MMX) {
+		// MMX is supported.
+		// NOTE: Not officially supported on amd64 in 64-bit,
+		// but all known implementations support it.
+		RP_CPU_Flags |= RP_CPUFLAG_X86_MMX;
+	}
 
 #ifdef RP_CPU_I386
-		if (regs[REG_EDX] & CPUFLAG_IA32_EDX_SSE) {
-			// CPU reports that it supports SSE, but the OS
-			// might not support FXSAVE.
+	if (regs[REG_EDX] & CPUFLAG_IA32_EDX_SSE) {
+		// CPU reports that it supports SSE, but the OS
+		// might not support FXSAVE.
 
-			// Check if this CPU supports FXSAVE with SSE.
-			if (regs[REG_EDX] & CPUFLAG_IA32_EDX_FXSAVE) {
-				// CPU supports FXSAVE.
+		// Check if this CPU supports FXSAVE with SSE.
+		if (regs[REG_EDX] & CPUFLAG_IA32_EDX_FXSAVE) {
+			// CPU supports FXSAVE.
 
 #  ifdef _WIN32
-				// Windows 95 does not support SSE.
-				// Windows NT 4.0 supports SSE if the
-				// appropriate driver is installed.
+			// Windows 95 does not support SSE.
+			// Windows NT 4.0 supports SSE if the
+			// appropriate driver is installed.
 
-				// Check if CR0.EM == 0.
-				unsigned int __smsw;
+			// Check if CR0.EM == 0.
+			unsigned int __smsw;
 #    if defined(__GNUC__)
-				__asm__ (
-					"smsw	%0"
-					: "=r" (__smsw)
-					);
+			__asm__ (
+				"smsw	%0"
+				: "=r" (__smsw)
+				);
 #    elif defined(_MSC_VER)
-				// TODO: Optimize the MSVC version to
-				// not use the stack?
-				__asm	smsw	__smsw
+			// TODO: Optimize the MSVC version to
+			// not use the stack?
+			__asm	smsw	__smsw
 #    else
 #      error Missing 'smsw' asm implementation for this compiler.
 #    endif
-				if (!(__smsw & IA32_CR0_EM)) {
-					// FPU emulation is disabled.
-					// SSE is enabled by the OS.
-					can_FXSAVE = 1;
-				}
-#  else /* !_WIN32 */
-				// For non-Windows operating systems, we'll assume
-				// the OS supports SSE. Valgrind doesn't like the
-				// 'smsw' instruction, so we can't do memory debugging
-				// with Valgrind if we use 'smsw'.
+			if (!(__smsw & IA32_CR0_EM)) {
+				// FPU emulation is disabled.
+				// SSE is enabled by the OS.
 				can_FXSAVE = 1;
-#  endif /* _WIN32 */
 			}
+#  else /* !_WIN32 */
+			// For non-Windows operating systems, we'll assume
+			// the OS supports SSE. Valgrind doesn't like the
+			// 'smsw' instruction, so we can't do memory debugging
+			// with Valgrind if we use 'smsw'.
+			can_FXSAVE = 1;
+#  endif /* _WIN32 */
 		}
+	}
 
-		// Check for other SSE instruction sets.
-		if (can_FXSAVE) {
-			RP_CPU_Flags |= RP_CPUFLAG_X86_SSE;
-			if (regs[REG_EDX] & CPUFLAG_IA32_EDX_SSE2)
-				RP_CPU_Flags |= RP_CPUFLAG_X86_SSE2;
-			if (regs[REG_ECX] & CPUFLAG_IA32_ECX_SSE3)
-				RP_CPU_Flags |= RP_CPUFLAG_X86_SSE3;
-			if (regs[REG_ECX] & CPUFLAG_IA32_ECX_SSSE3)
-				RP_CPU_Flags |= RP_CPUFLAG_X86_SSSE3;
-			if (regs[REG_ECX] & CPUFLAG_IA32_ECX_SSE41)
-				RP_CPU_Flags |= RP_CPUFLAG_X86_SSE41;
-			if (regs[REG_ECX] & CPUFLAG_IA32_ECX_SSE42)
-				RP_CPU_Flags |= RP_CPUFLAG_X86_SSE42;
-		}
-#else /* !RP_CPU_I386 */
-		// AMD64: SSE2 and lower are always supported.
-		RP_CPU_Flags |= (RP_CPUFLAG_X86_SSE | RP_CPUFLAG_X86_SSE2);
-
-		// Check for other SSE instruction sets.
+	// Check for other SSE instruction sets.
+	if (can_FXSAVE) {
+		RP_CPU_Flags |= RP_CPUFLAG_X86_SSE;
+		if (regs[REG_EDX] & CPUFLAG_IA32_EDX_SSE2)
+			RP_CPU_Flags |= RP_CPUFLAG_X86_SSE2;
+		if (regs[REG_ECX] & CPUFLAG_IA32_ECX_SSE3)
+			RP_CPU_Flags |= RP_CPUFLAG_X86_SSE3;
 		if (regs[REG_ECX] & CPUFLAG_IA32_ECX_SSSE3)
 			RP_CPU_Flags |= RP_CPUFLAG_X86_SSSE3;
 		if (regs[REG_ECX] & CPUFLAG_IA32_ECX_SSE41)
 			RP_CPU_Flags |= RP_CPUFLAG_X86_SSE41;
 		if (regs[REG_ECX] & CPUFLAG_IA32_ECX_SSE42)
 			RP_CPU_Flags |= RP_CPUFLAG_X86_SSE42;
-#endif /* RP_CPU_I386 */
 	}
+#else /* !RP_CPU_I386 */
+	// AMD64: SSE2 and lower are always supported.
+	RP_CPU_Flags |= (RP_CPUFLAG_X86_SSE | RP_CPUFLAG_X86_SSE2);
+
+	// Check for other SSE instruction sets.
+	if (regs[REG_ECX] & CPUFLAG_IA32_ECX_SSSE3)
+		RP_CPU_Flags |= RP_CPUFLAG_X86_SSSE3;
+	if (regs[REG_ECX] & CPUFLAG_IA32_ECX_SSE41)
+		RP_CPU_Flags |= RP_CPUFLAG_X86_SSE41;
+	if (regs[REG_ECX] & CPUFLAG_IA32_ECX_SSE42)
+		RP_CPU_Flags |= RP_CPUFLAG_X86_SSE42;
+#endif /* RP_CPU_I386 */
 
 	// CPU flags initialized.
 	RP_CPU_Flags_Init = 1;
