@@ -4,18 +4,18 @@
 # libromdata.so.X / romdata-X.dll.
 PROJECT(rpcpuid LANGUAGES C)
 
-# Check for C headers.
-CHECK_INCLUDE_FILES("features.h" HAVE_FEATURES_H)
+# Check for C headers
 CHECK_INCLUDE_FILES("cpuid.h" HAVE_CPUID_H)
 
 # Sources
 SET(${PROJECT_NAME}_SRCS dummy.c)
+SET(${PROJECT_NAME}_H cpu_dispatch.h)
 
 # CPU-specific and optimized sources
 INCLUDE(CPUInstructionSetFlags)
 IF(CPU_i386 OR CPU_amd64)
 	SET(${PROJECT_NAME}_CPU_SRCS cpuflags_x86.c)
-	SET(${PROJECT_NAME}_CPU_H cpuflags_x86.h)
+	SET(${PROJECT_NAME}_CPU_H cpuflags_x86.h cpuid_x86.h)
 ENDIF()
 
 # Write the config.h file.
