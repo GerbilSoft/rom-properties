@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpcpu)                         *
  * cpuflags_x86.h: x86 CPU flags detection.                                *
  *                                                                         *
- * Copyright (c) 2017-2022 by David Korth.                                 *
+ * Copyright (c) 2017-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -11,10 +11,15 @@
 #  error Do not compile byteswap_x86.c on non-x86 CPUs!
 #endif
 
+#include "config.librpcpu.h"
 #include "cpuflags_x86.h"
 
 // librpthreads
 #include "librpthreads/pthread_once.h"
+
+#ifdef HAVE_CPUID_H
+#  include <cpuid.h>
+#endif /* HAVE_CPUID_H */
 
 #if defined(_MSC_VER) && _MSC_VER >= 1400
 #  include <intrin.h>
@@ -143,7 +148,7 @@ static FORCEINLINE void cpuid(unsigned int level, unsigned int regs[4])
 {
 #ifdef HAVE_CPUID_H
 	// Use the compiler's __cpuid() macro.
-	__cpuid(level, regs[0], regs[1], regs[2, regs[3]);
+	__cpuid(level, regs[0], regs[1], regs[2], regs[3]);
 #elif defined(__GNUC__)
 	// CPUID macro with PIC support.
 	// See http://gcc.gnu.org/ml/gcc-patches/2007-09/msg00324.html
