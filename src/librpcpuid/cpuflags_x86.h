@@ -47,63 +47,40 @@ extern int RP_CPU_Flags_Init;	// 1 if RP_CPU_Flags has been initialized.
  */
 void RP_C_API RP_CPU_InitCPUFlags(void);
 
-/**
- * Check if the CPU supports MMX.
- * @return Non-zero if MMX is supported; 0 if not.
- */
-static FORCEINLINE int RP_CPU_HasMMX(void)
-{
+// Convenience macros to determine if the CPU supports a certain flag.
+
+// Macro for flags that need to be tested on both i386 and amd64 CPUs.
+#define CPU_FLAG_X86_CHECK(flag) \
+static FORCEINLINE int RP_CPU_Has##flag(void) \
+{ \
+	if (unlikely(!RP_CPU_Flags_Init)) { \
+		RP_CPU_InitCPUFlags(); \
+	} \
+	return (int)(RP_CPU_Flags & RP_CPUFLAG_X86_##flag); \
+}
+
+// Macro for flags that always exist on amd64 and only need to be tested on i386.
 #ifdef RP_CPU_AMD64
-	// 64-bit always has MMX.
-	return 1;
-#else
-	if (unlikely(!RP_CPU_Flags_Init)) {
-		RP_CPU_InitCPUFlags();
-	}
-	return (int)(RP_CPU_Flags & RP_CPUFLAG_X86_MMX);
-#endif
+#  define CPU_FLAG_X86_CHECK_i386only(flag) \
+static FORCEINLINE int RP_CPU_Has##flag(void) \
+{ \
+	return 1; \
 }
+#else /* !RP_CPU_AMD64 */
+#  define CPU_FLAG_X86_CHECK_i386only(flag) CPU_FLAG_X86_CHECK(flag)
+#endif /* RP_CPU_AMD64 */
 
-/**
- * Check if the CPU supports SSE2.
- * @return Non-zero if SSE2 is supported; 0 if not.
- */
-static FORCEINLINE int RP_CPU_HasSSE2(void)
-{
-#if RP_CPU_AMD64
-	// 64-bit always has SSE2.
-	return 1;
-#else
-	if (unlikely(!RP_CPU_Flags_Init)) {
-		RP_CPU_InitCPUFlags();
-	}
-	return (int)(RP_CPU_Flags & RP_CPUFLAG_X86_SSE2);
-#endif
-}
-
-/**
- * Check if the CPU supports SSSE3.
- * @return Non-zero if SSSE3 is supported; 0 if not.
- */
-static FORCEINLINE int RP_CPU_HasSSSE3(void)
-{
-	if (unlikely(!RP_CPU_Flags_Init)) {
-		RP_CPU_InitCPUFlags();
-	}
-	return (int)(RP_CPU_Flags & RP_CPUFLAG_X86_SSSE3);
-}
-
-/**
- * Check if the CPU supports SSE4.1.
- * @return Non-zero if SSE4.1 is supported; 0 if not.
- */
-static FORCEINLINE int RP_CPU_HasSSE41(void)
-{
-	if (unlikely(!RP_CPU_Flags_Init)) {
-		RP_CPU_InitCPUFlags();
-	}
-	return (int)(RP_CPU_Flags & RP_CPUFLAG_X86_SSE41);
-}
+CPU_FLAG_X86_CHECK_i386only(MMX)
+CPU_FLAG_X86_CHECK_i386only(SSE)
+CPU_FLAG_X86_CHECK_i386only(SSE2)
+CPU_FLAG_X86_CHECK(SSE3)
+CPU_FLAG_X86_CHECK(SSSE3)
+CPU_FLAG_X86_CHECK(SSE41)
+CPU_FLAG_X86_CHECK(SSE42)
+CPU_FLAG_X86_CHECK(AVX)
+CPU_FLAG_X86_CHECK(AVX2)
+CPU_FLAG_X86_CHECK(F16C)
+CPU_FLAG_X86_CHECK(FMA3)
 
 #ifdef __cplusplus
 }
