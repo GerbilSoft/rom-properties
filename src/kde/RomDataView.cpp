@@ -149,36 +149,92 @@ void RomDataViewPrivate::initHeaderRow(void)
 	const uint32_t imgbf = romData->supportedImageTypes();
 
 	// Banner
+	bool ok = false;
 	if (imgbf & RomData::IMGBF_INT_BANNER) {
 		// Get the banner.
-		bool ok = ui.lblBanner->setRpImage(romData->image(RomData::IMG_INT_BANNER));
-		ui.lblBanner->setVisible(ok);
-	} else {
-		// No banner.
-		ui.lblBanner->hide();
+		rp_image_const_ptr img = romData->image(RomData::IMG_INT_BANNER);
+		if (img) {
+			ok = ui.lblBanner->setRpImage(img);
+			if (ok) {
+				// Adjust the banner size.
+				// FIXME: Store the standard banner size somewhere else.
+				const QSize bannerSize(img->width(), img->height());
+				static const QSize bannerStdSize(96, 32);
+				if (bannerSize != bannerStdSize) {
+					// Need to scale the banner label to match the aspect ratio.
+					const QSize bannerScaledSize(rintf(
+						(float)bannerStdSize.width() * ((float)bannerSize.width() / (float)bannerSize.height())),
+						bannerStdSize.height());
+					ui.lblBanner->setMinimumSize(bannerScaledSize);
+					ui.lblBanner->setMaximumSize(bannerScaledSize);
+					ui.lblBanner->setScaledContents(true);
+				} else {
+					// Use the standard banner size.
+					ui.lblBanner->setMinimumSize(bannerSize);
+					ui.lblBanner->setMaximumSize(bannerSize);
+					ui.lblBanner->setScaledContents(false);
+				}
+			}
+		}
 	}
+	ui.lblBanner->setVisible(ok);
 
 	// Icon
+	ok = false;
 	if (imgbf & RomData::IMGBF_INT_ICON) {
 		// Get the icon.
 		const rp_image_const_ptr icon = romData->image(RomData::IMG_INT_ICON);
 		if (icon && icon->isValid()) {
+			QSize iconSize;
+
 			// Is this an animated icon?
-			bool ok = ui.lblIcon->setIconAnimData(romData->iconAnimData());
+			IconAnimDataConstPtr iconAnimData = romData->iconAnimData();
+			if (iconAnimData) {
+				ok = ui.lblIcon->setIconAnimData(romData->iconAnimData());
+				if (ok) {
+					// Get the size of the first animated icon frame.
+					const int frame = iconAnimData->seq_index[0];
+					const rp_image_ptr &img = iconAnimData->frames[frame];
+					assert((bool)img);
+					if (img) {
+						iconSize = QSize(img->width(), img->height());
+					} else {
+						// Invalid icon frame?
+						ui.lblIcon->setIconAnimData(nullptr);
+						ok = false;
+					}
+				}
+			}
 			if (!ok) {
 				// Not an animated icon, or invalid icon data.
 				// Set the static icon.
 				ok = ui.lblIcon->setRpImage(icon);
+				if (ok) {
+					iconSize = QSize(icon->width(), icon->height());
+				}
 			}
-			ui.lblIcon->setVisible(ok);
-		} else {
-			// No icon.
-			ui.lblIcon->hide();
+
+			if (ok) {
+				// FIXME: Store the standard icon size somewhere else.
+				static const QSize iconStdSize(32, 32);
+				if (iconSize != iconStdSize) {
+					// Need to scale the icon label to match the aspect ratio.
+					const QSize iconScaledSize(rintf(
+						(float)iconStdSize.width() * ((float)iconSize.width() / (float)iconSize.height())),
+						iconStdSize.height());
+					ui.lblIcon->setMinimumSize(iconScaledSize);
+					ui.lblIcon->setMaximumSize(iconScaledSize);
+					ui.lblIcon->setScaledContents(true);
+				} else {
+					// Use the standard icon size.
+					ui.lblIcon->setMinimumSize(iconSize);
+					ui.lblIcon->setMaximumSize(iconSize);
+					ui.lblIcon->setScaledContents(false);
+				}
+			}
 		}
-	} else {
-		// No icon.
-		ui.lblIcon->hide();
 	}
+	ui.lblIcon->setVisible(ok);
 
 	const bool ecksBawks = (romData->fileType() == RomData::FileType::DiscImage &&
 	                        systemName && strstr(systemName, "Xbox") != nullptr);

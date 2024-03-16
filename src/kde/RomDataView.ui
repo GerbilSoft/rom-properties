@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>141</width>
-    <height>30</height>
+    <height>32</height>
    </rect>
   </property>
   <layout class="QVBoxLayout" name="vboxLayout">
@@ -46,10 +46,24 @@
       </widget>
      </item>
      <item>
-      <widget class="DragImageLabel" name="lblBanner"/>
+      <widget class="DragImageLabel" name="lblBanner">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+      </widget>
      </item>
      <item>
-      <widget class="DragImageLabel" name="lblIcon"/>
+      <widget class="DragImageLabel" name="lblIcon">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+      </widget>
      </item>
      <item>
       <spacer name="hspcHeader2">

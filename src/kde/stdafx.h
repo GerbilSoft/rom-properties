@@ -15,6 +15,7 @@
 #include <cassert>
 #include <cerrno>
 #include <cinttypes>
+#include <cmath>
 #include <cstring>
 #include <stdint.h>
 #include <stdlib.h>
@@ -37,6 +38,7 @@
 #include <assert.h>
 #include <errno.h>
 #include <inttypes.h>
+#include <math.h>
 #include <string.h>
 #include <stdint.h>
 #include <stdlib.h>
