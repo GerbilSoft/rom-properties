@@ -561,6 +561,10 @@ int WiiUPackage::loadFieldData(void)
 #ifdef ENABLE_XML
 		// Parse the Wii U System XMLs.
 		d->addFields_System_XMLs();
+#else /* !ENABLE_XML */
+		d->fields.addField_string(C_("RomData", "Warning"),
+			C_("RomData", "XML parsing is disabled in this build."),
+			RomFields::STRF_WARNING);
 #endif /* ENABLE_XML */
 	} else {
 		// Decryption keys were NOT loaded. Show a warning.
