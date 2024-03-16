@@ -1,8 +1,8 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (libromdata)                       *
- * WiiUData.hpp: Nintendo Wii U publisher data.                            *
+ * WiiUData.hpp: Nintendo Wii U data.                                      *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -321,6 +321,85 @@ uint32_t lookup_disc_publisher(const char *id4)
 
 	// Not found.
 	return 0;
+}
+
+struct WiiUApplicationType {
+	uint32_t app_type;
+	const char *desc;
+};
+
+/**
+ * Wii U application types.
+ * TODO: Convert into a string table?
+ *
+ * Reference: https://github.com/devkitPro/wut/blob/master/include/coreinit/mcp.h
+ */
+static const std::array<WiiUApplicationType, 45> wiiu_application_types = {{
+	{0x0000001D, "Compat User"},
+	{0x0800001B, "Game Update"},
+	{0x0800000E, "Game DLC"},
+	{0x10000009, "boot1"},
+	{0x1000000A, "IOSU"},
+	{0x10000011, "Compat System"},
+	{0x10000012, "Bluetooth Firmware"},
+	{0x10000013, "DRH Firmware"},
+	{0x10000014, "DRC Firmware"},
+	{0x10000015, "System Version"},
+	{0x1000001A, "DRC Language"},
+	{0x10000024, "In-Disc Patch"},
+	{0x10000025, "OS Patch"},
+	{0x1800000F, "Data System"},
+	{0x18000010, "Exceptions Data"},
+	{0x1800001C, "Shared RO Data"},
+	{0x1800001E, "Cert Store"},
+	{0x18000023, "Patch Map Data"},
+	{0x18000029, "WagonU Migration List"},
+	{0x18000030, "Caffeine Title List"},
+	{0x18000031, "MCP Title List"},
+	{0x20000007, "Update User"},
+	{0x30000008, "Update System"},
+	{0x80000000, "Game"},
+	{0x8000001F, "Game(Inv)"},
+	{0x8000002E, "Wii Game"},
+	{0x90000001, "System Menu"},
+	{0x9000000B, "System Updater"},
+	{0x90000020, "System Applet"},
+	{0x90000021, "Account Applet"},
+	{0x90000022, "System Settings"},
+	{0x9000002F, "Eco Process"},
+	{0xD0000002, "Vino"},
+	{0xD0000003, "eManual"},
+	{0xD0000004, "HOME Button Menu"},
+	{0xD0000005, "Error Display"},
+	{0xD0000006, "Browser"},
+	{0xD000000D, "Mini Miiverse"},
+	{0xD0000016, "Miiverse"},
+	{0xD0000017, "eShop"},
+	{0xD0000018, "Friend List"},
+	{0xD0000019, "Download Management"},
+	{0xD000002B, "TestOverlay"},
+	{0xD000002C, "eShop Overlay"},
+	{0xD0000033, "amiibo Settings"},
+}};
+
+/**
+ * Look up a Wii U application type.
+ * @param app_type Application type ID
+ * @return Application type string, or nullptr if unknown.
+ */
+const char *lookup_application_type(uint32_t app_type)
+{
+	auto p_app_type = std::lower_bound(wiiu_application_types.cbegin(), wiiu_application_types.cend(), app_type,
+		[](const WiiUApplicationType &app_type_info, const uint32_t app_type) noexcept -> bool {
+			return (app_type_info.app_type < app_type);
+		});
+	if (p_app_type != wiiu_application_types.cend() && p_app_type->app_type == app_type) {
+		// Found a matching application type.
+		return p_app_type->desc;
+	}
+
+	// Not found.
+	return nullptr;
 }
 
 } }

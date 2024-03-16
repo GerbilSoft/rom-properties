@@ -13,6 +13,9 @@
 #  error Cannot compile EXE_manifest.cpp without XML support.
 #endif
 
+// for Wii U application types
+#include "data/WiiUData.hpp"
+
 // Other rom-properties libraries
 using namespace LibRpBase;
 using namespace LibRpFile;
@@ -448,8 +451,14 @@ int WiiUPackagePrivate::addFields_System_XMLs(void)
 	// app_type (TODO: Decode this!)
 	const unsigned int app_type = parseHexBinary(appRootNode, "app_type");
 	if (app_type != 0) {
-		fields.addField_string_numeric(C_("WiiU", "Type"), app_type,
-			RomFields::Base::Hex, 8, RomFields::STRF_MONOSPACE);
+		const char *const s_app_type_title = C_("WiiU", "Type");
+		const char *const s_app_type = WiiUData::lookup_application_type(app_type);
+		if (s_app_type) {
+			fields.addField_string(s_app_type_title, s_app_type);
+		} else {
+			fields.addField_string_numeric(s_app_type_title, app_type,
+				RomFields::Base::Hex, 8, RomFields::STRF_MONOSPACE);
+		}
 	}
 
 	// Region code

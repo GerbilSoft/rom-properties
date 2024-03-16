@@ -1,8 +1,8 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (libromdata)                       *
- * WiiUData.hpp: Nintendo Wii U publisher data.                            *
+ * WiiUData.hpp: Nintendo Wii U data.                                      *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -28,5 +28,12 @@ namespace LibRomData { namespace WiiUData {
  * @return Packed publisher ID, or 0 if not found.
  */
 uint32_t lookup_disc_publisher(const char *id4);
+
+/**
+ * Look up a Wii U application type.
+ * @param app_type Application type ID
+ * @return Application type string, or nullptr if unknown.
+ */
+const char *lookup_application_type(uint32_t app_type);
 
 } }
