@@ -550,6 +550,8 @@ int WiiUPackage::loadFieldData(void)
 	}
 
 #ifdef ENABLE_XML
+	d->fields.reserve(10);	// Maximum of 10 fields.
+
 	// Check if the decryption keys were loaded.
 	const KeyManager::VerifyResult verifyResult = d->ticket->verifyResult();
 	if (verifyResult == KeyManager::VerifyResult::OK) {
