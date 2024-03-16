@@ -34,6 +34,7 @@ static void	rp_drag_image_finalize	(GObject	*object);
 // Signal handlers
 static void	rp_drag_image_map_signal_handler  (RpDragImage *image, gpointer user_data);
 static void	rp_drag_image_unmap_signal_handler(RpDragImage *image, gpointer user_data);
+static void	rp_drag_image_notify_width_or_height_signal_handler(RpDragImage *image, GParamSpec *pspec, gpointer user_data);
 // FIXME: GTK4 has a new Drag & Drop API.
 #if !GTK_CHECK_VERSION(4,0,0)
 static void	rp_drag_image_drag_begin(RpDragImage *image, GdkDragContext *context, gpointer user_data);
@@ -178,6 +179,8 @@ rp_drag_image_init(RpDragImage *image)
 	// Pixmaps can only be updated once we have a valid size.
 	g_signal_connect(G_OBJECT(image), "map",   G_CALLBACK(rp_drag_image_map_signal_handler),   nullptr);
 	g_signal_connect(G_OBJECT(image), "unmap", G_CALLBACK(rp_drag_image_unmap_signal_handler), nullptr);
+	g_signal_connect(G_OBJECT(image), "notify::width-request",  G_CALLBACK(rp_drag_image_notify_width_or_height_signal_handler), nullptr);
+	g_signal_connect(G_OBJECT(image), "notify::height-request", G_CALLBACK(rp_drag_image_notify_width_or_height_signal_handler), nullptr);
 
 // FIXME: GTK4 has a new Drag & Drop API.
 #if !GTK_CHECK_VERSION(4,0,0)
@@ -723,6 +726,28 @@ rp_drag_image_unmap_signal_handler(RpDragImage *image, gpointer user_data)
 	image->mapped = false;
 }
 
+/**
+ * Requested width or height has changed.
+ * @param image RpDragImage
+ * @param pspec GObject parameter specification
+ * @param user_data User data
+ */
+static void
+rp_drag_image_notify_width_or_height_signal_handler(RpDragImage *image, GParamSpec *pspec, gpointer user_data)
+{
+	RP_UNUSED(pspec);
+	RP_UNUSED(user_data);
+
+	if (image->mapped) {
+		// Update the pixmaps.
+		// NOTE: This function might be called twice in a row
+		// if both requested width and height are changed.
+		rp_drag_image_update_pixmaps(image);
+	} else {
+		// Mark the image as dirty.
+		image->dirty = true;
+	}
+}
 
 // FIXME: GTK4 has a new Drag & Drop API.
 #if !GTK_CHECK_VERSION(4,0,0)
