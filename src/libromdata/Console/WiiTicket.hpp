@@ -91,6 +91,23 @@ public:
 	 */
 	EncryptionKeys encKey(void) const;
 
+	/**
+	 * Get a user-friendly name for the specified encryption key.
+	 * NOTE: EncryptionKeys::Unknown will return nullptr.
+	 *
+	 * @param encKey Encryption key index
+	 * @return User-friendly name, or nullptr if not found.
+	 */
+	static const char *encKeyName_static(EncryptionKeys encKey);
+
+	/**
+	 * Get a user-friendly name for this ticket's encryption key.
+	 * NOTE: EncryptionKeys::Unknown will return nullptr.
+	 *
+	 * @return User-friendly name, or nullptr if not found.
+	 */
+	const char *encKeyName(void) const;
+
 #ifdef ENABLE_DECRYPTION
 public:
 	/**
