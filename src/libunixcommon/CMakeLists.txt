@@ -28,7 +28,7 @@ IF(BUILD_GTK3 OR BUILD_GTK4)
 	# Nautilus (GNOME)
 	FIND_PACKAGE(LibNautilusExtension)	# v3
 	FIND_PACKAGE(LibNautilusExtension4)	# v4
-	IF(LibNautilusExtension_FOUND AND LibNautilusExtnsion4_FOUND)
+	IF(LibNautilusExtension_FOUND AND LibNautilusExtension4_FOUND)
 		# Found both versions. (...not normally possible?)
 	ELSEIF(LibNautilusExtension_FOUND)
 		# Found v3 but not v4. Use defaults for v4.
