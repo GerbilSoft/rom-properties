@@ -18,6 +18,9 @@ using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;
 
+// for the system language code
+#include "SystemRegion.hpp"
+
 // TinyXML2
 #include "tinyxml2.h"
 using namespace tinyxml2;
@@ -379,8 +382,26 @@ int WiiUPackagePrivate::addFields_System_XMLs(void)
 	const char *const s_publisher_title = C_("RomData", "Publisher");
 	const char *const s_unknown = C_("RomData", "Unknown");
 
-	// TODO: Implement getDefaultLC().
-	const uint32_t def_lc = 'en'; //d->getDefaultLC();
+	// Get the system language code and see if we have a matching title.
+	uint32_t def_lc = SystemRegion::getLanguageCode();
+	if (pMap_longname->find(def_lc) == pMap_longname->end()) {
+		// Not valid. Check English.
+		if (pMap_longname->find('en') != pMap_longname->end()) {
+			// English is valid.
+			def_lc = 'en';
+		} else {
+			// Not valid. Check Japanese.
+			if (pMap_longname->find('jp') != pMap_longname->end()) {
+				// Japanese is valid.
+				def_lc = 'jp';
+			} else {
+				// Not valid...
+				// Default to English anyway.
+				def_lc = 'en';
+			}
+		}
+	}
+
 	if (!pMap_shortname->empty()) {
 		fields.addField_string_multi(s_title_title, pMap_shortname, def_lc);
 	} else {

@@ -141,6 +141,12 @@ private:
 	 */
 	static uint64_t parseHexBinary(const tinyxml2::XMLElement *rootNode, const char *name);
 
+	/**
+	 * Get the default language code for the multi-string fields.
+	 * @return Language code, e.g. 'en' or 'es'.
+	 */
+	uint32_t getDefaultLC(void) const;
+
 public:
 	/**
 	 * Add fields from the Wii U System XML files.
