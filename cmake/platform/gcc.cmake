@@ -111,6 +111,8 @@ ENDIF(ENABLE_COVERAGE)
 # NOTE: CHECK_C_COMPILER_FLAG() doesn't seem to work, even with
 # CMAKE_TRY_COMPILE_TARGET_TYPE. Check `ld --help` for the various
 # parameters instead.
+# NOTE 2: Emscripten doesn't like these LDFLAGS.
+IF(NOT EMSCRIPTEN)
 EXECUTE_PROCESS(COMMAND ${CMAKE_LINKER} --help
 	OUTPUT_VARIABLE _ld_out
 	ERROR_QUIET)
@@ -241,6 +243,7 @@ IF(NOT CMAKE_SYSTEM MATCHES "Linux")
 		STRING(REPLACE "-Wl,${FLAG_REMOVE}" "" RP_MODULE_LINKER_FLAGS_COMMON "${RP_MODULE_LINKER_FLAGS_COMMON}")
 	ENDFOREACH(FLAG_REMOVE)
 ENDIF(NOT CMAKE_SYSTEM MATCHES "Linux")
+ENDIF(NOT EMSCRIPTEN)
 
 # Debug builds: Check for -Og.
 # This flag was added in gcc-4.8, and enables optimizations that
