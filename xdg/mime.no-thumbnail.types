@@ -83,4 +83,11 @@ application/x-ms-wim			# Wim
 # Texture
 # Formats listed here are widely supported by Linux desktop
 # environments, but not other systems.
+application/tga				# TGA
+application/x-targa			# TGA
+application/x-tga			# TGA
+image/targa				# TGA
+image/tga				# TGA
+image/x-icb				# TGA
+image/x-targa				# TGA
 image/x-tga				# TGA

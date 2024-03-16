@@ -118,6 +118,15 @@ const char *const TGAPrivate::exts[] = {
 const char *const TGAPrivate::mimeTypes[] = {
 	// Unofficial MIME types from FreeDesktop.org.
 	"image/x-tga",
+	"image/x-targa",
+
+	// shared-mime-info lists these MIME types as aliases.
+	"image/targa",
+	"image/tga",
+	"image/x-icb",
+	"application/tga",
+	"application/x-targa",
+	"application/x-tga",
 
 	nullptr
 };
@@ -523,7 +532,7 @@ TGA::TGA(const IRpFilePtr &file)
 	: super(new TGAPrivate(this, file))
 {
 	RP_D(TGA);
-	d->mimeType = "image/x-tga";	// unofficial
+	d->mimeType = TGAPrivate::mimeTypes[0];	// unofficial
 	d->textureFormatName = "TrueVision TGA";
 
 	if (!d->file) {
