@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * Ext2AttrView.c: Ext2 file system attribute viewer widget.               *
  *                                                                         *
- * Copyright (c) 2017-2023 by David Korth.                                 *
+ * Copyright (c) 2017-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -101,7 +101,7 @@ rp_ext2_attr_view_class_init(RpExt2AttrViewClass *klass)
 	props[PROP_FLAGS] = g_param_spec_int(
 		"flags", "Flags", "Ext2 file system file attributes",
 		G_MININT, G_MAXINT, 0,
-		(GParamFlags)(G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+		(GParamFlags)(G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS | G_PARAM_EXPLICIT_NOTIFY));
 
 	// Install the properties.
 	g_object_class_install_properties(gobject_class, PROP_LAST, props);
@@ -212,14 +212,9 @@ rp_ext2_attr_view_set_property(GObject		*object,
 	RpExt2AttrView *const widget = RP_EXT2_ATTR_VIEW(object);
 
 	switch (prop_id) {
-		case PROP_FLAGS: {
-			const int flags = g_value_get_int(value);
-			if (widget->flags != flags) {
-				widget->flags = flags;
-				rp_ext2_attr_view_update_flags_display(widget);
-			}
+		case PROP_FLAGS:
+			rp_ext2_attr_view_set_flags(widget, g_value_get_int(value));
 			break;
-		}
 
 		default:
 			G_OBJECT_WARN_INVALID_PROPERTY_ID(object, prop_id, pspec);
@@ -333,6 +328,7 @@ void
 rp_ext2_attr_view_set_flags(RpExt2AttrView *widget, int flags)
 {
 	g_return_if_fail(RP_IS_EXT2_ATTR_VIEW(widget));
+
 	if (widget->flags != flags) {
 		widget->flags = flags;
 		rp_ext2_attr_view_update_flags_display(widget);

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * CacheCleaner.hpp: Cache cleaner object for CacheCleaner.                *
  *                                                                         *
- * Copyright (c) 2017-2023 by David Korth.                                 *
+ * Copyright (c) 2017-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -89,7 +89,7 @@ rp_cache_cleaner_class_init(RpCacheCleanerClass *klass)
 	props[PROP_CACHE_DIR] = g_param_spec_enum(
 		"cache-dir", "cache-dir", "Cache directory to clean.",
 		RP_TYPE_CACHE_DIR, RP_CD_System,
-		(GParamFlags)(G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+		(GParamFlags)(G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS | G_PARAM_EXPLICIT_NOTIFY));
 
 	// Install the properties.
 	g_object_class_install_properties(gobject_class, PROP_LAST, props);
@@ -194,8 +194,7 @@ rp_cache_cleaner_set_property(GObject	*object,
 
 	switch (prop_id) {
 		case PROP_CACHE_DIR:
-			// TODO: Verify that it's in range?
-			widget->cache_dir = static_cast<RpCacheDir>(g_value_get_enum(value));
+			rp_cache_cleaner_set_cache_dir(widget, static_cast<RpCacheDir>(g_value_get_enum(value)));
 			break;
 		default:
 			G_OBJECT_WARN_INVALID_PROPERTY_ID(object, prop_id, pspec);
@@ -224,7 +223,12 @@ void
 rp_cache_cleaner_set_cache_dir(RpCacheCleaner *cleaner, RpCacheDir cache_dir)
 {
 	g_return_if_fail(RP_IS_CACHE_CLEANER(cleaner));
-	cleaner->cache_dir = cache_dir;
+
+	// TODO: Verify that cache_dir is in range.
+	if (cleaner->cache_dir != cache_dir) {
+		cleaner->cache_dir = cache_dir;
+		g_object_notify_by_pspec(G_OBJECT(cleaner), props[PROP_CACHE_DIR]);
+	}
 }
 
 /** Internal functions **/

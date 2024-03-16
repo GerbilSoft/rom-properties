@@ -144,21 +144,21 @@ rp_thumbnailer_class_init(RpThumbnailerClass *klass)
 	props[PROP_CONNECTION] = g_param_spec_object(
 		"connection", "connection", "D-Bus connection",
 		G_TYPE_DBUS_CONNECTION,
-		G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS | G_PARAM_CONSTRUCT_ONLY);
+		G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS | G_PARAM_CONSTRUCT_ONLY | G_PARAM_EXPLICIT_NOTIFY);
 
 	props[PROP_CACHE_DIR] = g_param_spec_string(
 		"cache-dir", "cache-dir", "XDG cache directory",
 		NULL,
-		G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS | G_PARAM_CONSTRUCT_ONLY);
+		G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS | G_PARAM_CONSTRUCT_ONLY | G_PARAM_EXPLICIT_NOTIFY);
 
 	props[PROP_PFN_RP_CREATE_THUMBNAIL2] = g_param_spec_pointer(
 		"pfn-rp-create-thumbnail2", "pfn-rp-create-thumbnail2", "rp_create_thumbnail2() function pointer",
-		G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS | G_PARAM_CONSTRUCT_ONLY);
+		G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS | G_PARAM_CONSTRUCT_ONLY | G_PARAM_EXPLICIT_NOTIFY);
 
 	props[PROP_EXPORTED] = g_param_spec_boolean(
 		"exported", "exported", "Is the D-Bus object exported?",
 		false,
-		G_PARAM_READABLE | G_PARAM_STATIC_STRINGS);
+		G_PARAM_READABLE | G_PARAM_STATIC_STRINGS | G_PARAM_EXPLICIT_NOTIFY);
 
 	// Install the properties.
 	g_object_class_install_properties(gobject_class, PROP_LAST, props);
@@ -195,6 +195,8 @@ rp_thumbnailer_constructed(GObject *object)
 		g_critical("Error exporting RpThumbnailer on session bus: %s", error->message);
 		g_error_free(error);
 		thumbnailer->exported = false;
+		// NOTE: Probably not really changed, but notify anyway.
+		g_object_notify_by_pspec(G_OBJECT(thumbnailer), props[PROP_EXPORTED]);
 		return;
 	}
 
@@ -274,6 +276,9 @@ rp_thumbnailer_set_property(GObject *object,
 	RpThumbnailer *const thumbnailer = RP_THUMBNAILER(object);
 
 	switch (prop_id) {
+		/** NOTE: These properties are G_PARAM_CONSTRUCT_ONLY. **/
+		/** No setter functions are available. **/
+
 		case PROP_CONNECTION: {
 			g_clear_object(&thumbnailer->connection);
 
@@ -281,24 +286,27 @@ rp_thumbnailer_set_property(GObject *object,
 			thumbnailer->connection = (G_IS_DBUS_CONNECTION(connection))
 				? (GDBusConnection*)g_object_ref(connection)
 				: NULL;
+
+			g_object_notify_by_pspec(object, props[PROP_CONNECTION]);
 			break;
 		}
 
 		case PROP_CACHE_DIR:
 			g_free(thumbnailer->cache_dir);
 			thumbnailer->cache_dir = g_value_dup_string(value);
+			g_object_notify_by_pspec(object, props[PROP_CACHE_DIR]);
 			break;
 
 		case PROP_PFN_RP_CREATE_THUMBNAIL2:
 			thumbnailer->pfn_rp_create_thumbnail2 =
 				(PFN_RP_CREATE_THUMBNAIL2)g_value_get_pointer(value);
+			g_object_notify_by_pspec(object, props[PROP_PFN_RP_CREATE_THUMBNAIL2]);
 			break;
 
+		/** END: G_PARAM_CONSTRUCT_ONLY **/
+
+		// TODO: Handling read-only properties?
 		case PROP_EXPORTED:
-			// FIXME: Read-only property.
-			// Need to show some error message...
-			break;
-
 		default:
 			G_OBJECT_WARN_INVALID_PROPERTY_ID(object, prop_id, pspec);
 			break;

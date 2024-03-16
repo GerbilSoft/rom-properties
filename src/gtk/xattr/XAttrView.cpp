@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * XAttrView.cpp: MS-DOS file system attribute viewer widget.              *
  *                                                                         *
- * Copyright (c) 2017-2023 by David Korth.                                 *
+ * Copyright (c) 2017-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -107,7 +107,7 @@ rp_xattr_view_class_init(RpXAttrViewClass *klass)
 	props[PROP_URI] = g_param_spec_string(
 		"uri", "URI", "URI of the file being displayed.",
 		nullptr,
-		(GParamFlags)(G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+		(GParamFlags)(G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS | G_PARAM_EXPLICIT_NOTIFY));
 
 	// Install the properties.
 	g_object_class_install_properties(gobject_class, PROP_LAST, props);
@@ -339,15 +339,9 @@ rp_xattr_view_set_property(GObject	*object,
 	RpXAttrView *const widget = RP_XATTR_VIEW(object);
 
 	switch (prop_id) {
-		case PROP_URI: {
-			const gchar *uri = g_value_get_string(value);
-			if (g_strcmp0(widget->uri, uri) != 0) {
-				// URI has changed.
-				g_set_str(&widget->uri, uri);
-				rp_xattr_view_load_attributes(widget);
-			}
+		case PROP_URI:
+			rp_xattr_view_set_uri(widget, g_value_get_string(value));
 			break;
-		}
 
 		default:
 			G_OBJECT_WARN_INVALID_PROPERTY_ID(object, prop_id, pspec);
@@ -604,6 +598,7 @@ void
 rp_xattr_view_set_uri(RpXAttrView *widget, const gchar *uri)
 {
 	g_return_if_fail(RP_IS_XATTR_VIEW(widget));
+
 	if (g_strcmp0(widget->uri, uri) != 0) {
 		g_set_str(&widget->uri, uri);
 		rp_xattr_view_load_attributes(widget);

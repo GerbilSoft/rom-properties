@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * LanguageComboBoxItem.cpp: Language ComboBox: GtkComboBox version        *
  *                                                                         *
- * Copyright (c) 2017-2022 by David Korth.                                 *
+ * Copyright (c) 2017-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -67,17 +67,17 @@ rp_language_combo_box_item_class_init(RpLanguageComboBoxItemClass *klass)
 	props[PROP_ICON] = g_param_spec_object(
 		"icon", "Icon", "Icon representing this language code",
 		PIMGTYPE_GOBJECT_TYPE,
-		(GParamFlags)(G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+		(GParamFlags)(G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS | G_PARAM_EXPLICIT_NOTIFY));
 
 	props[PROP_NAME] = g_param_spec_string(
 		"name", "Name", "Language name",
 		"",
-		(GParamFlags)(G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+		(GParamFlags)(G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS | G_PARAM_EXPLICIT_NOTIFY));
 
 	props[PROP_LC] = g_param_spec_uint(
 		"lc", "Language code", "Language code for this item",
 		0U, ~0U, 0U,
-		(GParamFlags)(G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+		(GParamFlags)(G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS | G_PARAM_EXPLICIT_NOTIFY));
 
 	// Install the properties.
 	g_object_class_install_properties(gobject_class, PROP_LAST, props);
@@ -107,32 +107,22 @@ rp_language_combo_box_item_set_property(GObject		*object,
 	RpLanguageComboBoxItem *const item = RP_LANGUAGE_COMBO_BOX_ITEM(object);
 
 	switch (prop_id) {
-		case PROP_ICON: {
-			PIMGTYPE const icon = PIMGTYPE_CAST(g_value_get_object(value));
-			if (icon) {
-				if (item->icon) {
-					PIMGTYPE_unref(item->icon);
-					item->icon = NULL;
-				}
-				item->icon = PIMGTYPE_ref(icon);
-			}
+		case PROP_ICON:
+			rp_language_combo_box_item_set_icon(item, PIMGTYPE_CAST(g_value_get_object(value)));
 			break;
-		}
 
 		case PROP_NAME:
-			g_set_str(&item->name, g_value_get_string(value));
+			rp_language_combo_box_item_set_name(item, g_value_get_string(value));
 			break;
 
 		case PROP_LC:
-			item->lc = g_value_get_uint(value);
+			rp_language_combo_box_item_set_lc(item, g_value_get_uint(value));
 			break;
 
 		default:
 			G_OBJECT_WARN_INVALID_PROPERTY_ID(object, prop_id, pspec);
 			break;
 	}
-
-	// TODO: Notification signals for GListModel?
 }
 
 static void
@@ -200,13 +190,17 @@ rp_language_combo_box_item_set_icon(RpLanguageComboBoxItem *item, PIMGTYPE icon)
 {
 	g_return_if_fail(RP_IS_LANGUAGE_COMBO_BOX_ITEM(item));
 
+	if (icon == item->icon) {
+		// Same icon. Nothing to do.
+		return;
+	}
+
 	if (item->icon) {
 		PIMGTYPE_unref(item->icon);
 	}
 	item->icon = PIMGTYPE_ref(icon);
 
 	g_object_notify_by_pspec(G_OBJECT(item), props[PROP_ICON]);
-
 }
 
 PIMGTYPE
@@ -222,8 +216,11 @@ void
 rp_language_combo_box_item_set_name(RpLanguageComboBoxItem *item, const char *name)
 {
 	g_return_if_fail(RP_IS_LANGUAGE_COMBO_BOX_ITEM(item));
-	g_set_str(&item->name, name);
-	g_object_notify_by_pspec(G_OBJECT(item), props[PROP_NAME]);
+
+	if (g_strcmp0(item->name, name) != 0) {
+		g_set_str(&item->name, name);
+		g_object_notify_by_pspec(G_OBJECT(item), props[PROP_NAME]);
+	}
 
 }
 
@@ -240,8 +237,11 @@ void
 rp_language_combo_box_item_set_lc(RpLanguageComboBoxItem *item, uint32_t lc)
 {
 	g_return_if_fail(RP_IS_LANGUAGE_COMBO_BOX_ITEM(item));
-	item->lc = lc;
-	g_object_notify_by_pspec(G_OBJECT(item), props[PROP_LC]);
+
+	if (item->lc != lc) {
+		item->lc = lc;
+		g_object_notify_by_pspec(G_OBJECT(item), props[PROP_LC]);
+	}
 
 }
 

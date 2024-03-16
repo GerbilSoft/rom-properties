@@ -140,17 +140,17 @@ rp_rom_data_view_class_init(RpRomDataViewClass *klass)
 	props[PROP_URI] = g_param_spec_string(
 		"uri", "URI", "URI of the ROM image being displayed.",
 		nullptr,
-		(GParamFlags)(G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+		(GParamFlags)(G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS | G_PARAM_EXPLICIT_NOTIFY));
 
 	props[PROP_DESC_FORMAT_TYPE] = g_param_spec_enum(
 		"desc-format-type", "desc-format-type", "Description format type.",
 		RP_TYPE_DESC_FORMAT_TYPE, RP_DFT_XFCE,
-		(GParamFlags)(G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+		(GParamFlags)(G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS | G_PARAM_EXPLICIT_NOTIFY));
 
 	props[PROP_SHOWING_DATA] = g_param_spec_boolean(
 		"showing-data", "showing-data", "Is a valid RomData object being displayed?",
 		false,
-		(GParamFlags)(G_PARAM_READABLE | G_PARAM_STATIC_STRINGS));
+		(GParamFlags)(G_PARAM_READABLE | G_PARAM_STATIC_STRINGS | G_PARAM_EXPLICIT_NOTIFY));
 
 	// Install the properties.
 	g_object_class_install_properties(gobject_class, PROP_LAST, props);
@@ -417,6 +417,8 @@ rp_rom_data_view_new_with_romData(const gchar *uri, const RomDataPtr &romData, R
 		page->uri = g_strdup(uri);
 		if (romData) {
 			page->cxx->romData = romData;
+			// NOTE: Not emitting this notification here...
+			//g_object_notify_by_pspec(G_OBJECT(page), props[PROP_SHOWING_DATA]);
 		}
 	}
 
@@ -550,8 +552,6 @@ rp_rom_data_view_set_uri(RpRomDataView	*page,
 	}
 
 	// URI has been changed.
-	// FIXME: If called from rp_rom_data_view_set_property(), this might
-	// result in *two* notifications.
 	g_object_notify_by_pspec(G_OBJECT(page), props[PROP_URI]);
 }
 
@@ -567,15 +567,10 @@ rp_rom_data_view_set_desc_format_type(RpRomDataView *page, RpDescFormatType desc
 {
 	g_return_if_fail(RP_IS_ROM_DATA_VIEW(page));
 	g_return_if_fail(desc_format_type >= RP_DFT_XFCE && desc_format_type < RP_DFT_LAST);
-	if (desc_format_type == page->desc_format_type) {
-		// Nothing to change.
-		// NOTE: g_return_if_fail() prints an assertion warning,
-		// so we can't use that for this check.
-		return;
-	}
 
-	// FIXME: If called from rp_rom_data_view_set_property(), this might
-	// result in *two* notifications.
+	if (desc_format_type == page->desc_format_type)
+		return;
+
 	page->desc_format_type = desc_format_type;
 	rp_rom_data_view_desc_format_type_changed(page, desc_format_type);
 	g_object_notify_by_pspec(G_OBJECT(page), props[PROP_DESC_FORMAT_TYPE]);
@@ -2044,7 +2039,6 @@ rp_rom_data_view_load_rom_data(RpRomDataView *page)
 		// result in *two* notifications.
 		page->cxx->romData = std::move(romData);
 		page->hasCheckedAchievements = false;
-		g_object_notify_by_pspec(G_OBJECT(page), props[PROP_SHOWING_DATA]);
 	}
 
 	if (page->cxx->romData) {
@@ -2057,6 +2051,10 @@ rp_rom_data_view_load_rom_data(RpRomDataView *page)
 		// since we don't need it once the RomData has been
 		// loaded by RomDataView.
 		page->cxx->romData->close();
+
+		// Send a notification for PROP_SHOWING_DATA here,
+		// since the data is now actually being shown.
+		g_object_notify_by_pspec(G_OBJECT(page), props[PROP_SHOWING_DATA]);
 	}
 
 	// Animation timer will be started when the page

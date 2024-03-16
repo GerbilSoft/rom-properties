@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * KeyStoreQt.cpp: Key store object for GTK.                               *
  *                                                                         *
- * Copyright (c) 2017-2023 by David Korth.                                 *
+ * Copyright (c) 2017-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -103,6 +103,8 @@ protected: /*signals:*/
 	 */
 	void modified_int(void) final
 	{
+		// TODO: Do we need both a signal and notify?
+		g_object_notify_by_pspec(G_OBJECT(q), props[PROP_CHANGED]);
 		g_signal_emit(q, signals[SIGNAL_MODIFIED], 0);
 	}
 };
@@ -124,11 +126,11 @@ rp_key_store_gtk_class_init(RpKeyStoreGTKClass *klass)
 
 	props[PROP_TOTAL_KEY_COUNT] = g_param_spec_int(
 		"total-key-count", "total-key-count", "Total key count",
-		0, 99999, 0, (GParamFlags)(G_PARAM_READABLE | G_PARAM_STATIC_STRINGS));
+		0, 99999, 0, (GParamFlags)(G_PARAM_READABLE | G_PARAM_STATIC_STRINGS | G_PARAM_EXPLICIT_NOTIFY));
 
 	props[PROP_CHANGED] = g_param_spec_boolean(
 		"changed", "changed", "Has the user changed anything?",
-		FALSE, (GParamFlags)(G_PARAM_READABLE | G_PARAM_STATIC_STRINGS));
+		FALSE, (GParamFlags)(G_PARAM_READABLE | G_PARAM_STATIC_STRINGS | G_PARAM_EXPLICIT_NOTIFY));
 
 	// Install the properties.
 	g_object_class_install_properties(gobject_class, PROP_LAST, props);

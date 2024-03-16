@@ -165,7 +165,7 @@ rp_options_menu_button_class_init(RpOptionsMenuButtonClass *klass)
 	props[PROP_DIRECTION] = g_param_spec_enum(
 		"direction", "Direction (up or down)", "Direction for the dropdown arrow.",
 		GTK_TYPE_ARROW_TYPE, GTK_ARROW_UP,
-		(GParamFlags)(G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+		(GParamFlags)(G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS | G_PARAM_EXPLICIT_NOTIFY));
 
 	// Install the properties.
 	// NOTE: Not overriding properties anymore because this widget
@@ -180,6 +180,7 @@ rp_options_menu_button_class_init(RpOptionsMenuButtonClass *klass)
 		static_cast<GSignalFlags>(G_SIGNAL_RUN_FIRST | G_SIGNAL_ACTION),
 		0, nullptr, nullptr, nullptr,
 		G_TYPE_NONE, 0);
+
 	signals[SIGNAL_ACTIVATE] = g_signal_new("activate",
 		G_OBJECT_CLASS_TYPE(gobject_class),
 		static_cast<GSignalFlags>(G_SIGNAL_RUN_FIRST | G_SIGNAL_ACTION),
@@ -311,7 +312,7 @@ rp_options_menu_button_set_property(GObject		*object,
 
 	switch (prop_id) {
 		case PROP_DIRECTION:
-			rp_options_menu_button_set_direction(widget, (GtkArrowType)g_value_get_enum(value));
+			rp_options_menu_button_set_direction(widget, static_cast<GtkArrowType>(g_value_get_enum(value)));
 			break;
 
 		default:
@@ -388,6 +389,8 @@ rp_options_menu_button_set_direction(RpOptionsMenuButton *widget, GtkArrowType a
 #else /* !USE_GTK_MENU_BUTTON */
 	widget->arrowType = arrowType;
 #endif /* USE_GTK_MENU_BUTTON */
+
+	g_object_notify_by_pspec(G_OBJECT(widget), props[PROP_DIRECTION]);
 }
 
 static gboolean

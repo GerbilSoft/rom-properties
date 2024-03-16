@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * XfsAttrView.c: XFS file system attribute viewer widget.                 *
  *                                                                         *
- * Copyright (c) 2017-2023 by David Korth.                                 *
+ * Copyright (c) 2017-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -102,12 +102,12 @@ rp_xfs_attr_view_class_init(RpXfsAttrViewClass *klass)
 	props[PROP_XFLAGS] = g_param_spec_uint(
 		"xflags", "XFlags", "XFS file system file attributes",
 		0, G_MAXUINT32, 0,
-		(GParamFlags)(G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+		(GParamFlags)(G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS | G_PARAM_EXPLICIT_NOTIFY));
 
 	props[PROP_PROJECT_ID] = g_param_spec_uint(
 		"project-id", "Project ID", "Project ID",
 		0, G_MAXUINT32, 0,
-		(GParamFlags)(G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+		(GParamFlags)(G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS | G_PARAM_EXPLICIT_NOTIFY));
 
 	// Install the properties.
 	g_object_class_install_properties(gobject_class, PROP_LAST, props);
@@ -212,23 +212,13 @@ rp_xfs_attr_view_set_property(GObject		*object,
 	RpXfsAttrView *const widget = RP_XFS_ATTR_VIEW(object);
 
 	switch (prop_id) {
-		case PROP_XFLAGS: {
-			const guint32 xflags = g_value_get_uint(value);
-			if (widget->xflags != xflags) {
-				widget->xflags = xflags;
-				rp_xfs_attr_view_update_xflags_checkboxes(widget);
-			}
+		case PROP_XFLAGS:
+			rp_xfs_attr_view_set_xflags(widget, g_value_get_uint(value));
 			break;
-		}
 
-		case PROP_PROJECT_ID: {
-			const guint32 project_id = g_value_get_uint(value);
-			if (widget->project_id != project_id) {
-				widget->project_id = project_id;
-				rp_xfs_attr_view_update_project_id(widget);
-			}
+		case PROP_PROJECT_ID:
+			rp_xfs_attr_view_set_project_id(widget, g_value_get_uint(value));
 			break;
-		}
 
 		default:
 			G_OBJECT_WARN_INVALID_PROPERTY_ID(object, prop_id, pspec);
@@ -314,6 +304,7 @@ void
 rp_xfs_attr_view_set_xflags(RpXfsAttrView *widget, guint32 xflags)
 {
 	g_return_if_fail(RP_IS_XFS_ATTR_VIEW(widget));
+
 	if (widget->xflags != xflags) {
 		widget->xflags = xflags;
 		rp_xfs_attr_view_update_xflags_checkboxes(widget);
@@ -357,6 +348,7 @@ void
 rp_xfs_attr_view_set_project_id(RpXfsAttrView *widget, guint32 project_id)
 {
 	g_return_if_fail(RP_IS_XFS_ATTR_VIEW(widget));
+
 	if (widget->xflags != project_id) {
 		widget->project_id = project_id;
 		rp_xfs_attr_view_update_project_id(widget);

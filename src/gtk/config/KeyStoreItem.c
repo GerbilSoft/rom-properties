@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * KeyStoreItem.h: KeyManagerTab item (for GTK4 GtkTreeListModel)          *
  *                                                                         *
- * Copyright (c) 2017-2023 by David Korth.                                 *
+ * Copyright (c) 2017-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -70,30 +70,30 @@ rp_key_store_item_class_init(RpKeyStoreItemClass *klass)
 	props[PROP_NAME] = g_param_spec_string(
 		"name", "Name", "Key (or section) name",
 		"",
-		(GParamFlags)(G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+		(GParamFlags)(G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS | G_PARAM_EXPLICIT_NOTIFY));
 
 	props[PROP_VALUE] = g_param_spec_string(
 		"value", "Value", "Key value",
 		"",
-		(GParamFlags)(G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+		(GParamFlags)(G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS | G_PARAM_EXPLICIT_NOTIFY));
 
 	props[PROP_STATUS] = g_param_spec_uint(
 		"status", "Status", "Key status (corresponds to KeyStoreUI::Status)",
 		0U, 4U, 0U,
-		(GParamFlags)(G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+		(GParamFlags)(G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS | G_PARAM_EXPLICIT_NOTIFY));
 
 	// NOTE: Flat index *should* be considered unsigned,
 	// but everything else uses int for this.
 	props[PROP_FLAT_IDX] = g_param_spec_int(
 		"flat-idx", "Flat Index", "Flat key index for this item (or section index for headers)",
 		0, G_MAXINT, 0,
-		(GParamFlags)(G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+		(GParamFlags)(G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS | G_PARAM_EXPLICIT_NOTIFY));
 
 	// Is this a section header?
 	props[PROP_IS_SECTION] = g_param_spec_boolean(
 		"is-section", "Is Section?", "Is this a section header?",
 		FALSE,
-		(GParamFlags)(G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+		(GParamFlags)(G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS | G_PARAM_EXPLICIT_NOTIFY));
 
 	// Install the properties.
 	g_object_class_install_properties(gobject_class, PROP_LAST, props);
@@ -108,9 +108,9 @@ rp_key_store_item_init(RpKeyStoreItem *item)
 RpKeyStoreItem*
 rp_key_store_item_new(const char *name, const char *value, uint8_t status, int flat_idx, gboolean is_section)
 {
-	return g_object_new(RP_TYPE_KEY_STORE_ITEM,
+	return static_cast<RpKeyStoreItem*>(g_object_new(RP_TYPE_KEY_STORE_ITEM,
 		"name", name, "value", value, "status", status,
-		"flat-idx", flat_idx, "is-section", is_section, NULL);
+		"flat-idx", flat_idx, "is-section", is_section, NULL));
 }
 
 RpKeyStoreItem*
@@ -120,7 +120,7 @@ rp_key_store_item_new_key(const char *name, const char *value, uint8_t status, i
 }
 
 RpKeyStoreItem*
-rp_key_store_item_new_section	(const char *name, const char *value, int sect_idx)
+rp_key_store_item_new_section(const char *name, const char *value, int sect_idx)
 {
 	return rp_key_store_item_new(name, value, 0, sect_idx, TRUE);
 }
@@ -136,32 +136,24 @@ rp_key_store_item_set_property(GObject		*object,
 	RpKeyStoreItem *const item = RP_KEY_STORE_ITEM(object);
 
 	switch (prop_id) {
-		case PROP_NAME: {
-			const char *str = g_value_get_string(value);
-			if (g_strcmp0(item->name, str) != 0) {
-				g_set_str(&item->name, str);
-			}
+		case PROP_NAME:
+			rp_key_store_item_set_name(item, g_value_get_string(value));
 			break;
-		}
 
-		case PROP_VALUE: {
-			const char *str = g_value_get_string(value);
-			if (g_strcmp0(item->value, str) != 0) {
-				g_set_str(&item->value, str);
-			}
+		case PROP_VALUE:
+			rp_key_store_item_set_value(item, g_value_get_string(value));
 			break;
-		}
 
 		case PROP_STATUS:
-			item->status = g_value_get_uint(value);
+			rp_key_store_item_set_status(item, g_value_get_uint(value));
 			break;
 
 		case PROP_FLAT_IDX:
-			item->flat_idx = g_value_get_int(value);
+			rp_key_store_item_set_flat_idx(item, g_value_get_int(value));
 			break;
 
 		case PROP_IS_SECTION:
-			item->is_section = g_value_get_boolean(value);
+			rp_key_store_item_set_is_section(item, g_value_get_boolean(value));
 			break;
 
 		default:
@@ -227,6 +219,7 @@ void
 rp_key_store_item_set_name(RpKeyStoreItem *item, const char *name)
 {
 	g_return_if_fail(RP_IS_KEY_STORE_ITEM(item));
+
 	if (g_strcmp0(item->name, name) != 0) {
 		g_set_str(&item->name, name);
 		g_object_notify_by_pspec(G_OBJECT(item), props[PROP_NAME]);
@@ -247,6 +240,7 @@ void
 rp_key_store_item_set_value(RpKeyStoreItem *item, const char *value)
 {
 	g_return_if_fail(RP_IS_KEY_STORE_ITEM(item));
+
 	if (g_strcmp0(item->value, value) != 0) {
 		g_set_str(&item->value, value);
 		g_object_notify_by_pspec(G_OBJECT(item), props[PROP_VALUE]);
@@ -266,8 +260,10 @@ void
 rp_key_store_item_set_status(RpKeyStoreItem *item, uint8_t status)
 {
 	g_return_if_fail(RP_IS_KEY_STORE_ITEM(item));
+
+	// TODO: Verify range? Use the actual enum?
 	if (item->status != status) {
-		item->status = status;	// TODO: Verify range?
+		item->status = status;
 		g_object_notify_by_pspec(G_OBJECT(item), props[PROP_STATUS]);
 	}
 
@@ -284,6 +280,7 @@ void
 rp_key_store_item_set_flat_idx(RpKeyStoreItem *item, int flat_idx)
 {
 	g_return_if_fail(RP_IS_KEY_STORE_ITEM(item));
+
 	if (item->flat_idx != flat_idx) {
 		item->flat_idx = flat_idx;
 		g_object_notify_by_pspec(G_OBJECT(item), props[PROP_FLAT_IDX]);
@@ -301,6 +298,7 @@ void
 rp_key_store_item_set_is_section(RpKeyStoreItem *item, gboolean is_section)
 {
 	g_return_if_fail(RP_IS_KEY_STORE_ITEM(item));
+
 	if (item->is_section != is_section) {
 		item->is_section = is_section;
 		g_object_notify_by_pspec(G_OBJECT(item), props[PROP_IS_SECTION]);

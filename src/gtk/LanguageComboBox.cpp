@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * LanguageComboBox.cpp: Language GtkComboBox subclass.                    *
  *                                                                         *
- * Copyright (c) 2017-2023 by David Korth.                                 *
+ * Copyright (c) 2017-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -120,12 +120,12 @@ rp_language_combo_box_class_init(RpLanguageComboBoxClass *klass)
 	props[PROP_SELECTED_LC] = g_param_spec_uint(
 		"selected-lc", "Selected LC", "Selected language code.",
 		0U, ~0U, 0U,
-		(GParamFlags)(G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+		(GParamFlags)(G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS | G_PARAM_EXPLICIT_NOTIFY));
 
 	props[PROP_FORCE_PAL] = g_param_spec_boolean(
 		"force-pal", "Force PAL", "Force PAL regions.",
 		false,
-		(GParamFlags)(G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+		(GParamFlags)(G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS | G_PARAM_EXPLICIT_NOTIFY));
 
 	// Install the properties.
 	g_object_class_install_properties(gobject_class, PROP_LAST, props);
@@ -645,8 +645,6 @@ rp_language_combo_box_set_selected_lc(RpLanguageComboBox *widget, uint32_t lc)
 	}
 #endif /* USE_GTK_DROP_DOWN */
 
-	// FIXME: If called from rp_language_combo_box_set_property(), this might
-	// result in *two* notifications.
 	g_object_notify_by_pspec(G_OBJECT(widget), props[PROP_SELECTED_LC]);
 
 	// NOTE: rp_language_combo_box_changed_handler will emit SIGNAL_LC_CHANGED,
@@ -698,8 +696,10 @@ rp_language_combo_box_set_force_pal(RpLanguageComboBox *widget, gboolean forcePA
 
 	if (widget->forcePAL == forcePAL)
 		return;
+
 	widget->forcePAL = forcePAL;
 	rp_language_combo_box_rebuild_icons(widget);
+	g_object_notify_by_pspec(G_OBJECT(widget), props[PROP_FORCE_PAL]);
 }
 
 /**
