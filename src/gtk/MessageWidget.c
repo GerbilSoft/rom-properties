@@ -132,23 +132,36 @@ rp_message_widget_class_init(RpMessageWidgetClass *klass)
 	props[PROP_TEXT] = g_param_spec_string(
 		"text", "Text", "Text displayed on the MessageWidget.",
 		NULL,
-		(GParamFlags)(G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+		(GParamFlags)(G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS | G_PARAM_EXPLICIT_NOTIFY));
 
 	props[PROP_MESSAGE_TYPE] = g_param_spec_enum(
 		"message-type", "Message Type", "Message type.",
 		GTK_TYPE_MESSAGE_TYPE, GTK_MESSAGE_OTHER,
-		(GParamFlags)(G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+		(GParamFlags)(G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS | G_PARAM_EXPLICIT_NOTIFY));
 
+#ifdef USE_GTK_REVEALER
 	props[PROP_TRANSITION_TYPE] = g_param_spec_enum(
 		"transition-type", NULL, NULL,
 		GTK_TYPE_REVEALER_TRANSITION_TYPE,
 		GTK_REVEALER_TRANSITION_TYPE_SLIDE_DOWN,
-		(GParamFlags)(G_PARAM_READWRITE | G_PARAM_CONSTRUCT | G_PARAM_STATIC_STRINGS));
+		(GParamFlags)(G_PARAM_READWRITE | G_PARAM_CONSTRUCT | G_PARAM_STATIC_STRINGS | G_PARAM_EXPLICIT_NOTIFY));
 
 	props[PROP_TRANSITION_DURATION] = g_param_spec_uint(
 		"transition-duration", NULL, NULL,
 		0, G_MAXUINT, 250,
-		(GParamFlags)(G_PARAM_READWRITE | G_PARAM_CONSTRUCT | G_PARAM_STATIC_STRINGS));
+		(GParamFlags)(G_PARAM_READWRITE | G_PARAM_CONSTRUCT | G_PARAM_STATIC_STRINGS | G_PARAM_EXPLICIT_NOTIFY));
+#else /* !USE_GTK_REVEALER */
+	props[PROP_TRANSITION_TYPE] = g_param_spec_enum(
+		"transition-type", NULL, NULL,
+		GTK_TYPE_REVEALER_TRANSITION_TYPE,
+		GTK_REVEALER_TRANSITION_TYPE_NONE,
+		(GParamFlags)(G_PARAM_READABLE | G_PARAM_STATIC_STRINGS | G_PARAM_EXPLICIT_NOTIFY));
+
+	props[PROP_TRANSITION_DURATION] = g_param_spec_uint(
+		"transition-duration", NULL, NULL,
+		0, 0, 0,
+		(GParamFlags)(G_PARAM_READABLE | G_PARAM_STATIC_STRINGS | G_PARAM_EXPLICIT_NOTIFY));
+#endif /* USE_GTK_REVEALER */
 
 	// Install the properties.
 	g_object_class_install_properties(gobject_class, PROP_LAST, props);
@@ -357,20 +370,34 @@ rp_message_widget_set_property(GObject		*object,
 
 	switch (prop_id) {
 		case PROP_TEXT:
+			// TODO: Compare old text to determine if a notify signal needs to be sent.
 			gtk_label_set_text(GTK_LABEL(widget->label), g_value_get_string(value));
+			g_object_notify_by_pspec(object, props[PROP_TEXT]);
 			break;
 		case PROP_MESSAGE_TYPE:
 			rp_message_widget_set_message_type(widget, (GtkMessageType)g_value_get_enum(value));
 			break;
 
-		// TODO: notify signals?
 #ifdef USE_GTK_REVEALER
-		case PROP_TRANSITION_TYPE:
-			gtk_revealer_set_transition_type(GTK_REVEALER(widget->revealer), g_value_get_enum(value));
+		case PROP_TRANSITION_TYPE: {
+			const GtkRevealerTransitionType transition = g_value_get_enum(value);
+			if (gtk_revealer_get_transition_type(GTK_REVEALER(widget->revealer)) == transition)
+				break;
+
+			gtk_revealer_set_transition_type(GTK_REVEALER(widget->revealer), transition);
+			g_object_notify_by_pspec(object, props[PROP_TRANSITION_TYPE]);
 			break;
-		case PROP_TRANSITION_DURATION:
+		}
+
+		case PROP_TRANSITION_DURATION: {
+			const guint duration = g_value_get_uint(value);
+			if (gtk_revealer_get_transition_duration(GTK_REVEALER(widget->revealer)) == duration)
+				break;
+
 			gtk_revealer_set_transition_duration(GTK_REVEALER(widget->revealer), g_value_get_uint(value));
+			g_object_notify_by_pspec(object, props[PROP_TRANSITION_DURATION]);
 			break;
+		}
 #else /* !USE_GTK_REVEALER */
 		case PROP_TRANSITION_TYPE:
 		case PROP_TRANSITION_DURATION:
@@ -573,8 +600,6 @@ rp_message_widget_set_message_type(RpMessageWidget *widget, GtkMessageType messa
 #endif /* !GTK_CHECK_VERSION(3,0,0) */
 	}
 
-	// FIXME: If called from rom_data_view_set_property(), this might
-	// result in *two* notifications.
 	g_object_notify_by_pspec(G_OBJECT(widget), props[PROP_MESSAGE_TYPE]);
 }
 
