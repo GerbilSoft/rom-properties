@@ -1023,31 +1023,15 @@ int WiiWAD::loadFieldData(void)
 		}
 	}
 
-	// Encryption key.
-	// TODO: WiiPartition function to get a key's "display name"?
-	static const std::array<const char*, static_cast<size_t>(WiiTicket::EncryptionKeys::Max)> encKeyNames = {{
-		// Retail
-		NOP_C_("Wii|EncKey", "Retail"),
-		NOP_C_("Wii|EncKey", "Korean"),
-		NOP_C_("Wii|EncKey", "vWii"),
-
-		// Debug
-		NOP_C_("Wii|EncKey", "Debug"),
-		NOP_C_("Wii|EncKey", "Korean (debug)"),
-		NOP_C_("Wii|EncKey", "vWii (debug)"),
-
-		// SD card (TODO: Retail vs. Debug?)
-		NOP_C_("Wii|EncKey", "SD AES"),
-		NOP_C_("Wii|EncKey", "SD IV"),
-		NOP_C_("Wii|EncKey", "SD MD5"),
-	}};
-	const char *keyName;
-	if (static_cast<int>(d->key_idx) >= 0 && static_cast<int>(d->key_idx) < (int)encKeyNames.size()) {
-		keyName = dpgettext_expr(RP_I18N_DOMAIN, "Wii|EncKey", encKeyNames[static_cast<int>(d->key_idx)]);
+	// Encryption key
+	const char *const s_key_name = (d->wiiTicket) ? d->wiiTicket->encKeyName() : nullptr;
+	if (s_key_name) {
+		d->fields.addField_string(C_("RomData", "Encryption Key"), s_key_name);
 	} else {
-		keyName = C_("WiiWAD", "Unknown");
+		d->fields.addField_string(C_("RomData", "Warning"),
+			C_("RomData", "Could not determine the required encryption key."),
+			RomFields::STRF_WARNING);
 	}
-	d->fields.addField_string(C_("RomData", "Encryption Key"), keyName);
 
 	// Console ID.
 	// TODO: Hide the "0x" prefix?

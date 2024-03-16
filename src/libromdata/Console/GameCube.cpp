@@ -1750,8 +1750,7 @@ int GameCube::loadFieldData(void)
 			}
 			data_row.emplace_back(std::move(s_ptype));
 
-			// Encryption key.
-			// TODO: Use a string table?
+			// Encryption key
 			WiiTicket::EncryptionKeys encKey;
 			if (d->isNASOSFormatDiscImage()) {
 				// NASOS disc image.
@@ -1764,32 +1763,8 @@ int GameCube::loadFieldData(void)
 				encKey = entry.partition->encKey();
 			}
 
-			static const std::array<const char*, 6> wii_key_tbl = {{
-				// tr: Key_RVL_Common - Retail Wii encryption key
-				NOP_C_("Wii|EncKey", "Retail"),
-				// tr: Key_RVL_Korean - Korean Wii encryption key
-				NOP_C_("Wii|EncKey", "Korean"),
-				// tr: Key_WUP_vWii - vWii-specific Wii encryption key
-				NOP_C_("Wii|EncKey", "vWii"),
-
-				// tr: Key_RVT_Debug - Debug Wii encryption key
-				NOP_C_("Wii|EncKey", "Debug"),
-				// tr: Key_RVT_Korean - Korean (debug) Wii encryption key
-				NOP_C_("Wii|EncKey", "Korean (debug)"),
-				// tr: Key_CAT_vWii - vWii (debug) Wii encryption key
-				NOP_C_("Wii|EncKey", "vWii (debug)"),
-
-				// NOTE: Not including SD card keys.
-				// NOTE: "None" is not included here. It's handled separately.
-			}};
-
-			const char *s_key_name;
-			if ((int)encKey >= 0 && (int)encKey < static_cast<int>(wii_key_tbl.size())) {
-				s_key_name = dpgettext_expr(RP_I18N_DOMAIN, "Wii|KeyIdx", wii_key_tbl[(int)encKey]);
-			} else if (encKey == WiiTicket::EncryptionKeys::None) {
-				// tr: EncryptionKeys::None - No encryption.
-				s_key_name = C_("Wii|EncKey", "None");
-			} else {
+			const char *s_key_name = WiiTicket::encKeyName_static(encKey);
+			if (!s_key_name) {
 				// tr: EncryptionKeys::Unknown
 				s_key_name = C_("RomData", "Unknown");
 			}
