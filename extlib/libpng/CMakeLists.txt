@@ -788,7 +788,8 @@ if(PNG_SHARED)
                              PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
   target_include_directories(png_shared SYSTEM
                              INTERFACE $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/libpng${PNGLIB_ABI_VERSION}>)
-  target_link_libraries(png_shared PUBLIC ZLIB::ZLIB ${M_LIBRARY})
+  # rom-properties: ZLIB::ZLIB -> ${ZLIB_LIBRARY}
+  target_link_libraries(png_shared PUBLIC ${ZLIB_LIBRARY} ${M_LIBRARY})
 endif()
 
 if(PNG_STATIC)
@@ -806,7 +807,8 @@ if(PNG_STATIC)
                              PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
   target_include_directories(png_static SYSTEM
                              INTERFACE $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/libpng${PNGLIB_ABI_VERSION}>)
-  target_link_libraries(png_static PUBLIC ZLIB::ZLIB ${M_LIBRARY})
+  # rom-properties: ZLIB::ZLIB -> ${ZLIB_LIBRARY}
+  target_link_libraries(png_static PUBLIC ${ZLIB_LIBRARY} ${M_LIBRARY})
   # rom-properties: Set the MSVC debug path.
   SET_MSVC_DEBUG_PATH(png_static)
 endif()
@@ -837,7 +839,8 @@ if(PNG_FRAMEWORK)
                              PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
   target_include_directories(png_framework SYSTEM
                              INTERFACE $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/libpng${PNGLIB_ABI_VERSION}>)
-  target_link_libraries(png_framework PUBLIC ZLIB::ZLIB ${M_LIBRARY})
+  # rom-properties: ZLIB::ZLIB -> ${ZLIB_LIBRARY}
+  target_link_libraries(png_framework PUBLIC ${ZLIB_LIBRARY} ${M_LIBRARY})
 endif()
 
 if(NOT PNG_LIBRARY_TARGETS)
