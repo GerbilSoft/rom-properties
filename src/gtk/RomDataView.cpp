@@ -656,7 +656,7 @@ rp_rom_data_view_init_header_row(RpRomDataView *page)
 			if (banner_h != imgStdHeight) {
 				// Need to scale the banner image to match the aspect ratio.
 				const int banner_scaled_w = rintf((float)imgStdHeight * ((float)banner_w / (float)banner_h));
-				gtk_widget_set_size_request(page->imgBanner, banner_scaled_w, banner_h);
+				gtk_widget_set_size_request(page->imgBanner, banner_scaled_w, imgStdHeight);
 			} else {
 				// Use the original banner size.
 				gtk_widget_set_size_request(page->imgBanner, banner_w, banner_h);
@@ -705,7 +705,7 @@ rp_rom_data_view_init_header_row(RpRomDataView *page)
 				if (icon_h != imgStdHeight) {
 					// Need to scale the icon image to match the aspect ratio.
 					const int icon_scaled_w = rintf((float)imgStdHeight * ((float)icon_w / (float)icon_h));
-					gtk_widget_set_size_request(page->imgIcon, icon_scaled_w, icon_h);
+					gtk_widget_set_size_request(page->imgIcon, icon_scaled_w, imgStdHeight);
 				} else {
 					// Use the original icon size.
 					gtk_widget_set_size_request(page->imgIcon, icon_w, icon_h);
