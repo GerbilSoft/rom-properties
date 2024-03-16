@@ -554,13 +554,14 @@ int WiiUPackage::loadFieldData(void)
 	// TODO: Show a decryption key warning and/or "no XMLs".
 	d->fields.setTabName(0, "Wii U");
 
-#ifdef ENABLE_XML
 	// Check if the decryption keys were loaded.
 	const KeyManager::VerifyResult verifyResult = d->ticket->verifyResult();
 	if (verifyResult == KeyManager::VerifyResult::OK) {
 		// Decryption keys were loaded. We can add XML fields.
+#ifdef ENABLE_XML
 		// Parse the Wii U System XMLs.
 		d->addFields_System_XMLs();
+#endif /* ENABLE_XML */
 	} else {
 		// Decryption keys were NOT loaded. Show a warning.
 		// NOTE: We can still show ticket/TMD fields.
@@ -571,7 +572,6 @@ int WiiUPackage::loadFieldData(void)
 		d->fields.addField_string(C_("RomData", "Warning"), err,
 			RomFields::STRF_WARNING);
 	}
-#endif /* ENABLE_XML */
 
 	// Add the ticket and/or TMD fields.
 	if (d->ticket) {
