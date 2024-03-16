@@ -147,6 +147,7 @@ void RomDataViewPrivate::initHeaderRow(void)
 
 	// Supported image types
 	const uint32_t imgbf = romData->supportedImageTypes();
+	// FIXME: Store the standard image height somewhere else.
 	static const int imgStdHeight = 32;
 	bool ok = false;
 
@@ -158,7 +159,6 @@ void RomDataViewPrivate::initHeaderRow(void)
 			ok = ui.lblBanner->setRpImage(img);
 			if (ok) {
 				// Adjust the banner size.
-				// FIXME: Store the standard banner size somewhere else.
 				const QSize bannerSize(img->width(), img->height());
 				if (bannerSize.height() != imgStdHeight) {
 					// Need to scale the banner label to match the aspect ratio.
@@ -215,7 +215,6 @@ void RomDataViewPrivate::initHeaderRow(void)
 			}
 
 			if (ok) {
-				// FIXME: Store the standard icon size somewhere else.
 				if (iconSize.height() != imgStdHeight) {
 					// Need to scale the icon label to match the aspect ratio.
 					const QSize iconScaledSize(rintf(
