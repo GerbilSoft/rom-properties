@@ -1305,7 +1305,11 @@ endif()
 
 # rom-properties: Export the ZLIB target unconditionally.
 # Needed for libpng-1.6.42's CMakeLists.txt.
-add_library(ZLIB::ZLIB ALIAS zlib)
+IF(TARGET zlib)
+    add_library(ZLIB::ZLIB ALIAS zlib)
+ELSEIF(TARGET zlibstatic)
+    add_library(ZLIB::ZLIB ALIAS zlibstatic)
+ENDIF()
 
 #============================================================================
 # Example binaries
