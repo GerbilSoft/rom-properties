@@ -524,6 +524,60 @@ int WiiUPackagePrivate::addFields_System_XMLs(void)
 	fields.addField_bitfield(C_("WiiU", "Controllers"),
 		v_controllers_bitfield_names, 3, controllers);
 
+	// System XML files read successfully.
+	return 0;
+}
+
+/**
+ * Add metadata from the Wii U System XML files.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int WiiUPackagePrivate::addMetaData_System_XMLs(void)
+{
+	fprintf(stderr, "QUACK\n");
+#if defined(_MSC_VER) && defined(XML_IS_DLL)
+	// Delay load verification.
+	// TODO: Only if linked with /DELAYLOAD?
+	int ret_dl = DelayLoad_test_TinyXML2();
+	if (ret_dl != 0) {
+		// Delay load failed.
+		return ret_dl;
+	}
+#endif /* defined(_MSC_VER) && defined(XML_IS_DLL) */
+
+	// Load meta.xml.
+	XMLDocument appXml, cosXml, metaXml;
+	int ret = loadSystemXml(metaXml, "/meta/meta.xml", "menu");
+	if (ret != 0)
+		return ret;
+
+	// meta.xml root node: "menu"
+	const XMLElement *const metaRootNode = metaXml.FirstChildElement("menu");
+	if (!metaRootNode) {
+		// No "menu" element.
+		// TODO: Better error code.
+		return -EIO;
+	}
+
+	// Title
+	// TODO: Shortname vs. longname? Default LC?
+	const XMLElement *elem = metaRootNode->FirstChildElement("shortname_en");
+	if (elem) {
+		const char *const title = elem->GetText();
+		if (title) {
+			metaData->addMetaData_string(Property::Title, title);
+		}
+	}
+
+	// Publisher
+	// TODO: Default LC?
+	elem = metaRootNode->FirstChildElement("publisher_en");
+	if (elem) {
+		const char *const publisher = elem->GetText();
+		if (publisher) {
+			metaData->addMetaData_string(Property::Publisher, publisher);
+		}
+	}
 
 	// System XML files read successfully.
 	return 0;

@@ -145,8 +145,14 @@ public:
 	/**
 	 * Add fields from the Wii U System XML files.
 	 * @return 0 on success; negative POSIX error code on error.
- 	 */
+	 */
 	int addFields_System_XMLs(void);
+
+	/**
+	 * Add metadata from the Wii U System XML files.
+	 * @return 0 on success; negative POSIX error code on error.
+	 */
+	int addMetaData_System_XMLs(void);
 #endif /* ENABLE_XML */
 };
 

@@ -573,6 +573,43 @@ int WiiUPackage::loadFieldData(void)
 }
 
 /**
+ * Load metadata properties.
+ * Called by RomData::metaData() if the metadata hasn't been loaded yet.
+ * @return Number of metadata properties read on success; negative POSIX error code on error.
+ */
+int WiiUPackage::loadMetaData(void)
+{
+	RP_D(WiiUPackage);
+	if (d->metaData != nullptr) {
+		// Metadata *has* been loaded...
+		return 0;
+	} else if (!d->path) {
+		// No directory...
+		return -EBADF;
+	} else if (!d->isValid) {
+		// Unknown ROM image type.
+		return -EIO;
+	}
+
+	// Create the metadata object.
+	d->metaData = new RomMetaData();
+	d->metaData->reserve(2);	// Maximum of 2 metadata properties.
+
+#ifdef ENABLE_XML
+	// Check if the decryption keys were loaded.
+	const KeyManager::VerifyResult verifyResult = d->ticket->verifyResult();
+	if (verifyResult == KeyManager::VerifyResult::OK) {
+		// Decryption keys were loaded. We can add XML fields.
+		// Parse the Wii U System XMLs.
+		d->addMetaData_System_XMLs();
+	}
+#endif /* ENABLE_XML */
+
+	// Finished reading the metadata.
+	return static_cast<int>(d->metaData->count());
+}
+
+/**
  * Load an internal image.
  * Called by RomData::image().
  * @param imageType	[in] Image type to load.

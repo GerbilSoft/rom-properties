@@ -191,13 +191,6 @@ void ExtractorPlugin::extract(ExtractionResult *result)
 		return;
 	}
 
-	// Attempt to open the ROM file.
-	const IRpFilePtr file(openQUrl(QUrl(result->inputUrl()), false));
-	if (!file) {
-		// Could not open the file.
-		return;
-	}
-
 	// Which attributes are required?
 #if KCOREADDONS_VERSION >= QT_VERSION_CHECK(5,76,0)
 	static const unsigned int mask = ExtractionResult::ExtractMetaData | ExtractionResult::ExtractImageData;
@@ -222,9 +215,27 @@ void ExtractorPlugin::extract(ExtractionResult *result)
 			break;
 	}
 
-	// Get the appropriate RomData class for this ROM.
-	// file is dup()'d by RomData.
-	const RomDataPtr romData = RomDataFactory::create(file, attrs);
+	const QUrl inputUrl(QUrl(result->inputUrl()));
+	RomDataPtr romData;
+
+	// Check if this is a directory.
+	const QUrl localUrl = localizeQUrl(inputUrl);
+	const string s_local_filename = localUrl.toLocalFile().toUtf8().constData();
+	if (unlikely(!s_local_filename.empty() && FileSystem::is_directory(s_local_filename.c_str()))) {
+		// Directory: Call RomDataFactory::create() with the filename.
+		romData = RomDataFactory::create(s_local_filename.c_str());
+	} else {
+		// File: Open the file and call RomDataFactory::create() with the opened file.
+		IRpFilePtr file(openQUrl(localUrl, false));
+		if (!file) {
+			// Could not open the file.
+			return;
+		}
+
+		// Get the appropriate RomData class for this ROM.
+		romData = RomDataFactory::create(file, attrs);
+	}
+
 	if (!romData) {
 		// ROM is not supported.
 		return;
