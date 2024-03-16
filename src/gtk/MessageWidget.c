@@ -370,34 +370,19 @@ rp_message_widget_set_property(GObject		*object,
 
 	switch (prop_id) {
 		case PROP_TEXT:
-			// TODO: Compare old text to determine if a notify signal needs to be sent.
-			gtk_label_set_text(GTK_LABEL(widget->label), g_value_get_string(value));
-			g_object_notify_by_pspec(object, props[PROP_TEXT]);
+			rp_message_widget_set_text(widget, g_value_get_string(value));
 			break;
 		case PROP_MESSAGE_TYPE:
 			rp_message_widget_set_message_type(widget, (GtkMessageType)g_value_get_enum(value));
 			break;
 
 #ifdef USE_GTK_REVEALER
-		case PROP_TRANSITION_TYPE: {
-			const GtkRevealerTransitionType transition = g_value_get_enum(value);
-			if (gtk_revealer_get_transition_type(GTK_REVEALER(widget->revealer)) == transition)
-				break;
-
-			gtk_revealer_set_transition_type(GTK_REVEALER(widget->revealer), transition);
-			g_object_notify_by_pspec(object, props[PROP_TRANSITION_TYPE]);
+		case PROP_TRANSITION_TYPE:
+			rp_message_widget_set_transition_type(widget, (GtkRevealerTransitionType)g_value_get_enum(value));
 			break;
-		}
-
-		case PROP_TRANSITION_DURATION: {
-			const guint duration = g_value_get_uint(value);
-			if (gtk_revealer_get_transition_duration(GTK_REVEALER(widget->revealer)) == duration)
-				break;
-
-			gtk_revealer_set_transition_duration(GTK_REVEALER(widget->revealer), g_value_get_uint(value));
-			g_object_notify_by_pspec(object, props[PROP_TRANSITION_DURATION]);
+		case PROP_TRANSITION_DURATION:
+			rp_message_widget_set_transition_duration(widget, g_value_get_uint(value));
 			break;
-		}
 #else /* !USE_GTK_REVEALER */
 		case PROP_TRANSITION_TYPE:
 		case PROP_TRANSITION_DURATION:
@@ -452,22 +437,25 @@ rp_message_widget_get_property(GObject		*object,
 void
 rp_message_widget_set_text(RpMessageWidget *widget, const gchar *str)
 {
-	gtk_label_set_text(GTK_LABEL(widget->label), str);
+	g_return_if_fail(RP_IS_MESSAGE_WIDGET(widget));
 
-	// FIXME: If called from rom_data_view_set_property(), this might
-	// result in *two* notifications.
+	// TODO: Verify that the text has actually changed first.
+	gtk_label_set_text(GTK_LABEL(widget->label), str);
 	g_object_notify_by_pspec(G_OBJECT(widget), props[PROP_TEXT]);
 }
 
 const gchar*
 rp_message_widget_get_text(RpMessageWidget *widget)
 {
+	g_return_val_if_fail(RP_IS_MESSAGE_WIDGET(widget), NULL);
 	return gtk_label_get_text(GTK_LABEL(widget->label));
 }
 
 void
 rp_message_widget_set_message_type(RpMessageWidget *widget, GtkMessageType messageType)
 {
+	g_return_if_fail(RP_IS_MESSAGE_WIDGET(widget));
+
 	// Update the icon.
 	// Background colors based on KMessageWidget.
 	typedef struct _IconInfo_t {
@@ -606,6 +594,7 @@ rp_message_widget_set_message_type(RpMessageWidget *widget, GtkMessageType messa
 GtkMessageType
 rp_message_widget_get_message_type(RpMessageWidget *widget)
 {
+	g_return_val_if_fail(RP_IS_MESSAGE_WIDGET(widget), GTK_MESSAGE_OTHER);
 	return widget->messageType;
 }
 
@@ -625,6 +614,7 @@ rp_message_widget_get_child_revealed(RpMessageWidget *widget)
 void
 rp_message_widget_set_reveal_child(RpMessageWidget *widget, gboolean reveal_child)
 {
+	// TODO: Add an actual property?
 	g_return_if_fail(RP_IS_MESSAGE_WIDGET(widget));
 
 #ifdef USE_GTK_REVEALER
@@ -642,6 +632,7 @@ rp_message_widget_set_reveal_child(RpMessageWidget *widget, gboolean reveal_chil
 gboolean
 rp_message_widget_get_reveal_child(RpMessageWidget *widget)
 {
+	// TODO: Add property wrapper?
 	g_return_val_if_fail(RP_IS_MESSAGE_WIDGET(widget), FALSE);
 
 #ifdef USE_GTK_REVEALER
@@ -658,7 +649,11 @@ rp_message_widget_set_transition_duration(RpMessageWidget *widget, guint duratio
 	g_return_if_fail(RP_IS_MESSAGE_WIDGET(widget));
 
 #ifdef USE_GTK_REVEALER
-	gtk_revealer_set_transition_duration(GTK_REVEALER(widget->revealer), duration);
+	if (gtk_revealer_get_transition_duration(GTK_REVEALER(widget->revealer)) == duration)
+		return;
+
+	gtk_revealer_set_transition_duration(GTK_REVEALER(widget->revealer), g_value_get_uint(value));
+	g_object_notify_by_pspec(G_OBJECT(widget), props[PROP_TRANSITION_DURATION]);
 #else /*! USE_GTK_REVEALER */
 	// Not using GtkRevealer, so don't do anything.
 	RP_UNUSED(duration);
@@ -684,7 +679,11 @@ rp_message_widget_set_transition_type(RpMessageWidget *widget, GtkRevealerTransi
 	g_return_if_fail(RP_IS_MESSAGE_WIDGET(widget));
 
 #ifdef USE_GTK_REVEALER
+	if (gtk_revealer_get_transition_type(GTK_REVEALER(widget->revealer)) == transition)
+		return;
+
 	gtk_revealer_set_transition_type(GTK_REVEALER(widget->revealer), transition);
+	g_object_notify_by_pspec(G_OBJECT(widget), props[PROP_TRANSITION_TYPE]);
 #else /*! USE_GTK_REVEALER */
 	// Not using GtkRevealer, so don't do anything.
 	RP_UNUSED(transition);
