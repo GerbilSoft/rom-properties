@@ -241,9 +241,6 @@ rp_key_manager_tab_init(RpKeyManagerTab *tab)
 #endif /* !USE_GTK_MENU_BUTTON */
 
 #if GTK_CHECK_VERSION(4,0,0)
-	// Hide the MessageWidget initially.
-	gtk_widget_set_visible(tab->messageWidget, false);
-
 	gtk_box_append(GTK_BOX(tab), tab->messageWidget);
 	gtk_box_append(GTK_BOX(tab), tab->scrolledWindow);
 	gtk_box_append(GTK_BOX(tab), tab->btnImport);
@@ -256,10 +253,6 @@ rp_key_manager_tab_init(RpKeyManagerTab *tab)
 #  else /* RP_USE_GTK_ALIGNMENT */
 	gtk_box_pack_start(GTK_BOX(tab), alignImport, FALSE, FALSE, 0);
 #  endif /* RP_USE_GTK_ALIGNMENT */
-
-	// NOTE: GTK4 defaults to visible; GTK2 and GTK3 defaults to invisible.
-	// Hiding unconditionally just in case.
-	gtk_widget_set_visible(tab->messageWidget, false);
 
 	gtk_widget_show_all(tab->scrolledWindow);
 	gtk_widget_show_all(tab->btnImport);
@@ -703,9 +696,10 @@ rp_key_manager_tab_show_key_import_return_status(RpKeyManagerTab	*tab,
 	// TODO: Copy over timeout code from RomDataView?
 	// (Or, remove the timeout code entirely?)
 	// TODO: MessageSound?
-	rp_message_widget_set_message_type(RP_MESSAGE_WIDGET(tab->messageWidget), type);
-	rp_message_widget_set_text(RP_MESSAGE_WIDGET(tab->messageWidget), msg.c_str());
-	gtk_widget_set_visible(tab->messageWidget, true);
+	RpMessageWidget *const messageWidget = RP_MESSAGE_WIDGET(tab->messageWidget);
+	rp_message_widget_set_message_type(messageWidget, type);
+	rp_message_widget_set_text(messageWidget, msg.c_str());
+	rp_message_widget_set_reveal_child(messageWidget, true);
 }
 
 #ifdef USE_G_MENU_MODEL

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * MessageWidget.h: Message widget (similar to KMessageWidget)             *
  *                                                                         *
- * Copyright (c) 2017-2023 by David Korth.                                 *
+ * Copyright (c) 2017-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -26,5 +26,9 @@ const gchar*	rp_message_widget_get_text	(RpMessageWidget *widget);
 
 void		rp_message_widget_set_message_type	(RpMessageWidget *widget, GtkMessageType messageType);
 GtkMessageType	rp_message_widget_get_message_type	(RpMessageWidget *widget);
+
+void		rp_message_widget_set_reveal_child	(RpMessageWidget *widget, gboolean reveal_child);
+gboolean	rp_message_widget_get_reveal_child	(RpMessageWidget *widget);
+gboolean	rp_message_widget_get_child_revealed	(RpMessageWidget *widget);
 
 G_END_DECLS

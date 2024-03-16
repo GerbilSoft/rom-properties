@@ -165,6 +165,15 @@ gtk_overlay_set_child(GtkOverlay *overlay, GtkWidget *child)
 }
 #  endif /* GTK_CHECK_VERSION(3,1,6) */
 
+#  if GTK_CHECK_VERSION(3,9,0)
+static inline void
+gtk_revealer_set_child(GtkRevealer *revealer, GtkWidget *child)
+{
+	// TODO: Remove the existing child widget?
+	gtk_container_add((GtkContainer*)revealer, child);
+}
+#  endif /* GTK_CHECK_VERSION(3,9,0) */
+
 static inline void
 gtk_scrolled_window_set_child(GtkScrolledWindow *scrolled_window, GtkWidget *child)
 {

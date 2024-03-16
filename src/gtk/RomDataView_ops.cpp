@@ -381,9 +381,7 @@ rp_rom_data_view_getSaveFileDialog_callback(GFile *file, save_data_t *save_data)
 		RpMessageWidget *const messageWidget = RP_MESSAGE_WIDGET(page->messageWidget);
 		rp_message_widget_set_message_type(messageWidget, messageType);
 		rp_message_widget_set_text(messageWidget, params.msg.c_str());
-#if !GTK_CHECK_VERSION(4,0,0)
-		gtk_widget_show(page->messageWidget);
-#endif /* !GTK_CHECK_VERSION(4,0,0) */
+		rp_message_widget_set_reveal_child(messageWidget, true);
 	}
 }
 
