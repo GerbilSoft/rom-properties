@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE)                              *
  * RomDataView.cpp: RomData viewer.                                        *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -147,29 +147,29 @@ void RomDataViewPrivate::initHeaderRow(void)
 
 	// Supported image types
 	const uint32_t imgbf = romData->supportedImageTypes();
+	static const int imgStdHeight = 32;
+	bool ok = false;
 
 	// Banner
-	bool ok = false;
 	if (imgbf & RomData::IMGBF_INT_BANNER) {
 		// Get the banner.
-		rp_image_const_ptr img = romData->image(RomData::IMG_INT_BANNER);
+		const rp_image_const_ptr img = romData->image(RomData::IMG_INT_BANNER);
 		if (img) {
 			ok = ui.lblBanner->setRpImage(img);
 			if (ok) {
 				// Adjust the banner size.
 				// FIXME: Store the standard banner size somewhere else.
 				const QSize bannerSize(img->width(), img->height());
-				static const QSize bannerStdSize(96, 32);
-				if (bannerSize.height() != bannerStdSize.height()) {
+				if (bannerSize.height() != imgStdHeight) {
 					// Need to scale the banner label to match the aspect ratio.
 					const QSize bannerScaledSize(rintf(
-						(float)bannerStdSize.height() * ((float)bannerSize.width() / (float)bannerSize.height())),
-						bannerStdSize.height());
+						(float)imgStdHeight * ((float)bannerSize.width() / (float)bannerSize.height())),
+						imgStdHeight);
 					ui.lblBanner->setMinimumSize(bannerScaledSize);
 					ui.lblBanner->setMaximumSize(bannerScaledSize);
 					ui.lblBanner->setScaledContents(true);
 				} else {
-					// Use the standard banner size.
+					// Use the original banner size.
 					ui.lblBanner->setMinimumSize(bannerSize);
 					ui.lblBanner->setMaximumSize(bannerSize);
 					ui.lblBanner->setScaledContents(false);
@@ -188,7 +188,7 @@ void RomDataViewPrivate::initHeaderRow(void)
 			QSize iconSize;
 
 			// Is this an animated icon?
-			IconAnimDataConstPtr iconAnimData = romData->iconAnimData();
+			const IconAnimDataConstPtr iconAnimData = romData->iconAnimData();
 			if (iconAnimData) {
 				ok = ui.lblIcon->setIconAnimData(romData->iconAnimData());
 				if (ok) {
@@ -216,17 +216,16 @@ void RomDataViewPrivate::initHeaderRow(void)
 
 			if (ok) {
 				// FIXME: Store the standard icon size somewhere else.
-				static const QSize iconStdSize(32, 32);
-				if (iconSize.height() != iconStdSize.height()) {
+				if (iconSize.height() != imgStdHeight) {
 					// Need to scale the icon label to match the aspect ratio.
 					const QSize iconScaledSize(rintf(
-						(float)iconStdSize.height() * ((float)iconSize.width() / (float)iconSize.height())),
-						iconStdSize.height());
+						(float)imgStdHeight * ((float)iconSize.width() / (float)iconSize.height())),
+						imgStdHeight);
 					ui.lblIcon->setMinimumSize(iconScaledSize);
 					ui.lblIcon->setMaximumSize(iconScaledSize);
 					ui.lblIcon->setScaledContents(true);
 				} else {
-					// Use the standard icon size.
+					// Use the original icon size.
 					ui.lblIcon->setMinimumSize(iconSize);
 					ui.lblIcon->setMaximumSize(iconSize);
 					ui.lblIcon->setScaledContents(false);
