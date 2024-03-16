@@ -651,6 +651,8 @@ rp_rom_data_view_init_header_row(RpRomDataView *page)
 			gtk_widget_set_visible(page->imgBanner, true);
 		}
 	}
+	// TODO: Adjust for aspect ratios?
+	gtk_widget_set_size_request(page->imgBanner, 96, 32);
 
 	// Icon
 	gtk_widget_set_visible(page->imgIcon, false);
@@ -670,6 +672,8 @@ rp_rom_data_view_init_header_row(RpRomDataView *page)
 			}
 		}
 	}
+	// TODO: Adjust for aspect ratios?
+	gtk_widget_set_size_request(page->imgIcon, 32, 32);
 
 	// Show the header row. (outer box)
 	gtk_widget_set_visible(page->hboxHeaderRow_outer, true);
@@ -2194,7 +2198,7 @@ rp_rom_data_view_map_signal_handler(RpRomDataView	*page,
  */
 static void
 rp_rom_data_view_unmap_signal_handler(RpRomDataView	*page,
-				   gpointer	 user_data)
+				      gpointer		 user_data)
 {
 	RP_UNUSED(user_data);
 	rp_drag_image_stop_anim_timer(RP_DRAG_IMAGE(page->imgIcon));
