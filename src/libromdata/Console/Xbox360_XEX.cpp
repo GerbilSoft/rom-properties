@@ -1907,7 +1907,7 @@ int Xbox360_XEX::loadFieldData(void)
 				break;
 		}
 	}
-	d->fields.addField_string(C_("Xbox360_XEX", "Encryption Key"), s_encryption_key);
+	d->fields.addField_string(C_("RomData", "Encryption Key"), s_encryption_key);
 
 	// Compression
 	static const std::array<const char*, 4> compression_tbl = {{

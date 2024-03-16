@@ -1047,11 +1047,11 @@ int WiiWAD::loadFieldData(void)
 	} else {
 		keyName = C_("WiiWAD", "Unknown");
 	}
-	d->fields.addField_string(C_("WiiWAD", "Encryption Key"), keyName);
+	d->fields.addField_string(C_("RomData", "Encryption Key"), keyName);
 
 	// Console ID.
 	// TODO: Hide the "0x" prefix?
-	d->fields.addField_string_numeric(C_("NIntendo", "Console ID"),
+	d->fields.addField_string_numeric(C_("Nintendo", "Console ID"),
 		be32_to_cpu(d->ticket.console_id), RomFields::Base::Hex, 8,
 		RomFields::STRF_MONOSPACE);
 
