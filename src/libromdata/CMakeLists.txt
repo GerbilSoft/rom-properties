@@ -599,7 +599,7 @@ IF(${PROJECT_NAME}_LINKAGE STREQUAL SHARED)
 			)
 	ENDIF()
 ELSE()
-	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC rpcpu rptexture rpfile rpbase rptext)
+	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC rpbyteswap rptexture rpfile rpbase rptext)
 	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC rpthreads cachecommon)
 	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE rpcpuid)	# for CPU dispatch
 	IF(ENABLE_NLS)
