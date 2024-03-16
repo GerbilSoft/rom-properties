@@ -336,14 +336,9 @@ int WiiUPackagePrivate::addFields_System_XMLs(void)
 		shortname_key += xml_lc_map[i].xml_lc;
 		publisher_key += xml_lc_map[i].xml_lc;
 
-		const XMLElement *elem = metaRootNode->FirstChildElement(longname_key.c_str());
-		longnames[i] = (elem) ? elem->GetText() : nullptr;
-
-		elem = metaRootNode->FirstChildElement(shortname_key.c_str());
-		shortnames[i] = (elem) ? elem->GetText() : nullptr;
-
-		elem = metaRootNode->FirstChildElement(publisher_key.c_str());
-		publishers[i] = (elem) ? elem->GetText() : nullptr;
+		longnames[i] = getText(metaRootNode, longname_key.c_str());
+		shortnames[i] = getText(metaRootNode, shortname_key.c_str());
+		publishers[i] = getText(metaRootNode, publisher_key.c_str());
 	}
 
 	// If English is valid, we'll deduplicate titles.
