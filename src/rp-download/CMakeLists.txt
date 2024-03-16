@@ -42,6 +42,7 @@ SET(${PROJECT_NAME}_H
 	http-status.hpp
 	)
 
+# Determine which IDownloader backend to use.
 IF(WIN32)
 	# Windows: Use WinInet.
 	SET(${PROJECT_NAME}_OS_SRCS
@@ -55,7 +56,9 @@ IF(WIN32)
 
 	# Create the manifest file.
 	CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/${PROJECT_NAME}.exe.manifest.in" "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.exe.manifest" @ONLY)
-ELSE(WIN32)
+ELSEIF(EMSCRIPTEN)
+	# TODO: wasm downloader module?
+ELSEIF(UNIX)
 	# Non-Windows platforms: Use cURL.
 	FIND_PACKAGE(CURL REQUIRED)
 	INCLUDE_DIRECTORIES(${CURL_INCLUDE_DIRS})
@@ -66,8 +69,11 @@ ELSE(WIN32)
 	SET(${PROJECT_NAME}_OS_H
 		CurlDownloader.hpp
 		)
+ELSE()
+	MESSAGE(FATAL_ERROR "No IDownloader backend available!")
 ENDIF()
 
+IF(${PROJECT_NAME}_OS_SRCS)	# only build if an IDownloader backend is available
 #########################
 # Build the executable. #
 #########################
@@ -163,3 +169,5 @@ IF(INSTALL_DEBUG)
 			)
 	ENDIF(DEBUG_FILENAME)
 ENDIF(INSTALL_DEBUG)
+
+ENDIF(${PROJECT_NAME}_OS_SRCS)

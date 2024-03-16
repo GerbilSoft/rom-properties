@@ -112,6 +112,8 @@ OPTION(ENABLE_LTO "Enable link-time optimization in release builds." ${LTO_DEFAU
 # Split debug information into a separate file.
 # FIXME: macOS `strip` shows an error:
 # error: symbols referenced by indirect symbol table entries that can't be stripped in: [library]
+# NOTE: Disabled on Emscripten because it's JavaScript/WebAssembly.
+IF(NOT EMSCRIPTEN)
 IF(APPLE)
 	OPTION(SPLIT_DEBUG "Split debug information into a separate file." OFF)
 ELSE(APPLE)
@@ -124,6 +126,7 @@ IF(INSTALL_DEBUG AND NOT SPLIT_DEBUG)
 	# Cannot install debug files if we're not splitting them.
 	SET(INSTALL_DEBUG OFF CACHE INTERNAL "Install the split debug files." FORCE)
 ENDIF(INSTALL_DEBUG AND NOT SPLIT_DEBUG)
+ENDIF(NOT EMSCRIPTEN)
 
 # Enable coverage checking. (gcc/clang only)
 OPTION(ENABLE_COVERAGE "Enable code coverage checking. (gcc/clang only)" OFF)

@@ -33,6 +33,11 @@ IF(MSVC AND _MSVC_C_ARCHITECTURE_FAMILY)
 	ELSE()
 		MESSAGE(FATAL_ERROR "Unsupported value for _MSVC_C_ARCHITECTURE_FAMILY: ${_MSVC_C_ARCHITECTURE_FAMILY}")
 	ENDIF()
+ELSEIF(EMSCRIPTEN)
+	# Emscripten: Use a custom CPU architecture.
+	# zlib-ng uses "wasm32", so we'll use that too.
+	SET(CPU_wasm32 1)
+	SET(WIN32_MANIFEST_PROCESSOR_ARCHITECTURE "wasm32")
 ELSE()
 	# TODO: Verify cross-compile functionality.
 	# TODO: ARM/ARM64 is untested.
