@@ -160,10 +160,10 @@ void RomDataViewPrivate::initHeaderRow(void)
 				// FIXME: Store the standard banner size somewhere else.
 				const QSize bannerSize(img->width(), img->height());
 				static const QSize bannerStdSize(96, 32);
-				if (bannerSize != bannerStdSize) {
+				if (bannerSize.height() != bannerStdSize.height()) {
 					// Need to scale the banner label to match the aspect ratio.
 					const QSize bannerScaledSize(rintf(
-						(float)bannerStdSize.width() * ((float)bannerSize.width() / (float)bannerSize.height())),
+						(float)bannerStdSize.height() * ((float)bannerSize.width() / (float)bannerSize.height())),
 						bannerStdSize.height());
 					ui.lblBanner->setMinimumSize(bannerScaledSize);
 					ui.lblBanner->setMaximumSize(bannerScaledSize);
@@ -217,10 +217,10 @@ void RomDataViewPrivate::initHeaderRow(void)
 			if (ok) {
 				// FIXME: Store the standard icon size somewhere else.
 				static const QSize iconStdSize(32, 32);
-				if (iconSize != iconStdSize) {
+				if (iconSize.height() != iconStdSize.height()) {
 					// Need to scale the icon label to match the aspect ratio.
 					const QSize iconScaledSize(rintf(
-						(float)iconStdSize.width() * ((float)iconSize.width() / (float)iconSize.height())),
+						(float)iconStdSize.height() * ((float)iconSize.width() / (float)iconSize.height())),
 						iconStdSize.height());
 					ui.lblIcon->setMinimumSize(iconScaledSize);
 					ui.lblIcon->setMaximumSize(iconScaledSize);
