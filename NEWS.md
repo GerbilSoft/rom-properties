@@ -7,6 +7,9 @@
     supported (the largest and highest color-depth icon is selected).
     * Fixes #407: [Feature Request] Add support for Palm OS apps
       * Requested by @xxmichibxx.
+  * WiiUPackage: Wii U NUS packages. This parser reads an NUS package
+    directory containing a ticket, TMD, and encrypted contents. Requires
+    the Wii U common key in keys.conf.
 
 * Bug fixes:
   * On Linux, rp-config now correctly detects KDE Plasma 6 and uses the
