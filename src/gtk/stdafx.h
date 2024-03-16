@@ -30,6 +30,7 @@
 #include <cstring>
 #include <cinttypes>
 #include <climits>
+#include <cmath>
 #include <stdint.h>
 #include <stdlib.h>
 
@@ -52,6 +53,7 @@
 #include <errno.h>
 #include <inttypes.h>
 #include <limits.h>
+#include <math.h>
 #include <string.h>
 #include <stdint.h>
 #include <stdlib.h>
