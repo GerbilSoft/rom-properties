@@ -455,7 +455,7 @@ int WiiUPackagePrivate::addFields_System_XMLs(void)
 	};
 	static_assert(ARRAY_SIZE(age_rating_nodes) == (int)RomFields::AgeRatingsCountry::MaxAllocated, "age_rating_nodes is out of sync with age_ratings_t");
 
-	for (int i = ARRAY_SIZE(age_rating_nodes)-1; i >= 0; i--) {
+	for (int i = static_cast<int>(age_ratings.size())-1; i >= 0; i--) {
 		if (!(valid_ratings & (1U << i))) {
 			// Rating is not applicable for Wii U.
 			age_ratings[i] = 0;
