@@ -16,14 +16,48 @@ typedef enum {
 	PROP_TEXT,
 	PROP_MESSAGE_TYPE,
 
+	// GtkRevealer wrapper properties
+	// NOTE: Ordering matches GtkRevealer, even though
+	// GtkRevealer has the accessor functions sorted...
+	PROP_TRANSITION_TYPE,
+	PROP_TRANSITION_DURATION,
+
 	PROP_LAST
 } MessageWidgetPropID;
 
 // GtkRevealer was added in GTK 3.10.
 // (This is also our minimum GTK3 version.)
-#if GTK_CHECK_VERSION(3,10,0)
+#if GTK_CHECK_VERSION(3,9,0)
 #  define USE_GTK_REVEALER 1
-#endif /* GTK_CHECK_VERSION(3,10,0) */
+#endif /* GTK_CHECK_VERSION(3,9,0) */
+
+#if !GTK_CHECK_VERSION(3,9,0)
+// GtkRevealerTransitionType enumeration registration
+// TODO: rp-gtk-enums instead?
+static GType
+gtk_revealer_transition_type_get_type(void)
+{
+	static gsize static_g_enum_type_id;
+
+	if (g_once_init_enter (&static_g_enum_type_id)) {
+		static const GEnumValue values[] = {
+			{ GTK_REVEALER_TRANSITION_TYPE_NONE, "GTK_REVEALER_TRANSITION_TYPE_NONE", "None" },
+			{ GTK_REVEALER_TRANSITION_TYPE_CROSSFADE, "GTK_REVEALER_TRANSITION_TYPE_CROSSFADE", "Crossfade" },
+			{ GTK_REVEALER_TRANSITION_TYPE_SLIDE_RIGHT, "GTK_REVEALER_TRANSITION_TYPE_SLIDE_RIGHT", "Right" },
+			{ GTK_REVEALER_TRANSITION_TYPE_SLIDE_LEFT, "GTK_REVEALER_TRANSITION_TYPE_SLIDE_LEFT", "Left" },
+			{ GTK_REVEALER_TRANSITION_TYPE_SLIDE_UP, "GTK_REVEALER_TRANSITION_TYPE_SLIDE_UP", "Up" },
+			{ GTK_REVEALER_TRANSITION_TYPE_SLIDE_DOWN, "GTK_REVEALER_TRANSITION_TYPE_SLIDE_DOWN", "Down" },
+			{ 0, NULL, NULL }
+		};
+
+		GType g_enum_type_id = g_enum_register_static ("GtkRevealerTransitionType", values);
+
+		g_once_init_leave (&static_g_enum_type_id, g_enum_type_id);
+	}
+	return static_g_enum_type_id;
+}
+#  define GTK_TYPE_REVEALER_TRANSITION_TYPE gtk_revealer_transition_type_get_type()
+#endif /* !GTK_CHECK_VERSION(3,9,0) */
 
 static void	rp_message_widget_set_property	(GObject	*object,
 						 guint		 prop_id,
@@ -104,6 +138,17 @@ rp_message_widget_class_init(RpMessageWidgetClass *klass)
 		"message-type", "Message Type", "Message type.",
 		GTK_TYPE_MESSAGE_TYPE, GTK_MESSAGE_OTHER,
 		(GParamFlags)(G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+
+	props[PROP_TRANSITION_TYPE] = g_param_spec_enum(
+		"transition-type", NULL, NULL,
+		GTK_TYPE_REVEALER_TRANSITION_TYPE,
+		GTK_REVEALER_TRANSITION_TYPE_SLIDE_DOWN,
+		(GParamFlags)(G_PARAM_READWRITE | G_PARAM_CONSTRUCT | G_PARAM_STATIC_STRINGS));
+
+	props[PROP_TRANSITION_DURATION] = g_param_spec_uint(
+		"transition-duration", NULL, NULL,
+		0, G_MAXUINT, 250,
+		(GParamFlags)(G_PARAM_READWRITE | G_PARAM_CONSTRUCT | G_PARAM_STATIC_STRINGS));
 
 	// Install the properties.
 	g_object_class_install_properties(gobject_class, PROP_LAST, props);
@@ -314,10 +359,24 @@ rp_message_widget_set_property(GObject		*object,
 		case PROP_TEXT:
 			gtk_label_set_text(GTK_LABEL(widget->label), g_value_get_string(value));
 			break;
-
 		case PROP_MESSAGE_TYPE:
 			rp_message_widget_set_message_type(widget, (GtkMessageType)g_value_get_enum(value));
 			break;
+
+		// TODO: notify signals?
+#ifdef USE_GTK_REVEALER
+		case PROP_TRANSITION_TYPE:
+			gtk_revealer_set_transition_type(GTK_REVEALER(widget->revealer), g_value_get_enum(value));
+			break;
+		case PROP_TRANSITION_DURATION:
+			gtk_revealer_set_transition_duration(GTK_REVEALER(widget->revealer), g_value_get_uint(value));
+			break;
+#else /* !USE_GTK_REVEALER */
+		case PROP_TRANSITION_TYPE:
+		case PROP_TRANSITION_DURATION:
+			// Nothing to do here. (TODO: Error?)
+			break;
+#endif /* USE_GTK_REVEALER */
 
 		default:
 			G_OBJECT_WARN_INVALID_PROPERTY_ID(object, prop_id, pspec);
@@ -337,10 +396,25 @@ rp_message_widget_get_property(GObject		*object,
 		case PROP_TEXT:
 			g_value_set_string(value, gtk_label_get_text(GTK_LABEL(widget->label)));
 			break;
-
 		case PROP_MESSAGE_TYPE:
 			g_value_set_enum(value, widget->messageType);
 			break;
+
+#ifdef USE_GTK_REVEALER
+		case PROP_TRANSITION_TYPE:
+			g_value_set_enum(value, gtk_revealer_get_transition_type(GTK_REVEALER(widget->revealer)));
+			break;
+		case PROP_TRANSITION_DURATION:
+			g_value_set_uint(value, gtk_revealer_get_transition_duration(GTK_REVEALER(widget->revealer)));
+			break;
+#else /* !USE_GTK_REVEALER */
+		case PROP_TRANSITION_TYPE:
+			g_value_set_enum(value, GTK_REVEALER_TRANSITION_TYPE_NONE);
+			break;
+		case PROP_TRANSITION_DURATION:
+			g_value_set_uint(value, 0);
+			break;
+#endif /* USE_GTK_REVEALER */
 
 		default:
 			G_OBJECT_WARN_INVALID_PROPERTY_ID(object, prop_id, pspec);
