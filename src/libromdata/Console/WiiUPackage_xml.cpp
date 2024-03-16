@@ -222,6 +222,20 @@ uint64_t WiiUPackagePrivate::parseHexBinary(const XMLElement *rootNode, const ch
 }
 
 /**
+ * Get text from an XML element.
+ * @param rootNode	[in] Root node
+ * @param name		[in] Node name
+ * @return Node text, or nullptr if not found or empty.
+ */
+inline const char *WiiUPackagePrivate::getText(const tinyxml2::XMLElement *rootNode, const char *name)
+{
+	const XMLElement *const elem = rootNode->FirstChildElement(name);
+	if (!elem)
+		return nullptr;
+	return elem->GetText();
+}
+
+/**
  * Add fields from the Wii U System XML files.
  * @return 0 on success; negative POSIX error code on error.
  */
@@ -579,24 +593,44 @@ int WiiUPackagePrivate::addMetaData_System_XMLs(void)
 		return -EIO;
 	}
 
-	// Title
-	// TODO: Shortname vs. longname? Default LC?
-	const XMLElement *elem = metaRootNode->FirstChildElement("shortname_en");
-	if (elem) {
-		const char *const title = elem->GetText();
-		if (title) {
-			metaData->addMetaData_string(Property::Title, title);
+	// Get the system language code and see if we have a matching title.
+	// NOTE: Using the same LC for all fields once we find a matching title.
+	string s_def_lc = SystemRegion::lcToString(SystemRegion::getLanguageCode());
+	char nodeName[16];
+	snprintf(nodeName, sizeof(nodeName), "shortname_%s", s_def_lc.c_str());
+
+	const char *shortname = getText(metaRootNode, nodeName);
+	if (!shortname) {
+		// Not valid. Check English.
+		shortname = getText(metaRootNode, "shortname_en");
+		if (shortname) {
+			// English is valid.
+			s_def_lc = "en";
+		} else {
+			// Not valid. Check Japanese.
+			shortname = getText(metaRootNode, "shortname_jp");
+			if (shortname) {
+				// Japanese is valid.
+				s_def_lc = "jp";
+			} else {
+				// Not valid...
+				// Default to English anyway.
+				s_def_lc = "en";
+			}
 		}
 	}
 
+	// Title
+	// TODO: Shortname vs. longname?
+	if (shortname) {
+		metaData->addMetaData_string(Property::Title, shortname);
+	}
+
 	// Publisher
-	// TODO: Default LC?
-	elem = metaRootNode->FirstChildElement("publisher_en");
-	if (elem) {
-		const char *const publisher = elem->GetText();
-		if (publisher) {
-			metaData->addMetaData_string(Property::Publisher, publisher);
-		}
+	snprintf(nodeName, sizeof(nodeName), "publisher_%s", s_def_lc.c_str());
+	const char *const publisher = getText(metaRootNode, nodeName);
+	if (publisher) {
+		metaData->addMetaData_string(Property::Publisher, publisher);
 	}
 
 	// System XML files read successfully.

@@ -142,6 +142,14 @@ private:
 	static uint64_t parseHexBinary(const tinyxml2::XMLElement *rootNode, const char *name);
 
 	/**
+	 * Get text from an XML element.
+	 * @param rootNode	[in] Root node
+	 * @param name		[in] Node name
+	 * @return Node text, or nullptr if not found or empty.
+	 */
+	static inline const char *getText(const tinyxml2::XMLElement *rootNode, const char *name);
+
+	/**
 	 * Get the default language code for the multi-string fields.
 	 * @return Language code, e.g. 'en' or 'es'.
 	 */
