@@ -268,12 +268,15 @@ rp_rom_data_view_getSaveFileDialog_callback(GFile *file, save_data_t *save_data)
 	}
 
 	// TODO: URIs?
-	gchar *const filename = g_file_get_path(file);
-	g_object_unref(file);
-	if (!filename && save_data->isFileRequired) {
-		// No filename, but a file is required...
-		g_free(save_data);
-		return;
+	gchar *filename = nullptr;
+	if (file) {
+		filename = g_file_get_path(file);
+		g_object_unref(file);
+		if (!filename && save_data->isFileRequired) {
+			// No filename, but a file is required...
+			g_free(save_data);
+			return;
+		}
 	}
 
 	// for convenience purposes
