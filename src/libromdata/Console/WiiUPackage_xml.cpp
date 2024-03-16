@@ -555,7 +555,6 @@ int WiiUPackagePrivate::addFields_System_XMLs(void)
  */
 int WiiUPackagePrivate::addMetaData_System_XMLs(void)
 {
-	fprintf(stderr, "QUACK\n");
 #if defined(_MSC_VER) && defined(XML_IS_DLL)
 	// Delay load verification.
 	// TODO: Only if linked with /DELAYLOAD?
