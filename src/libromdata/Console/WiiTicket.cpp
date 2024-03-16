@@ -425,7 +425,7 @@ int WiiTicket::loadFieldData(void)
 
 	// Ticket is read in the constructor.
 	const RVL_Ticket *const ticket = &d->ticket.v0;
-	d->fields.reserve(4);	// Maximum of 4 fields.
+	d->fields.reserve(5);	// Maximum of 4 fields.
 
 	// Title ID
 	char s_title_id[24];
@@ -445,8 +445,64 @@ int WiiTicket::loadFieldData(void)
 		RomFields::STRF_MONOSPACE);
 
 	// Key index
-	// TODO: Convert to Retail/Korean/vWii for Wii titles?
 	d->fields.addField_string_numeric(C_("Nintendo", "Key Index"), ticket->common_key_index);
+
+	// Encryption key in use
+	// NOTE: Indicating "(Wii U)" for Wii U-specific keys.
+	// TODO: Consolidate with GameCube::loadFieldData()'s "Wii|EncKey"?
+	const char *const s_encKey_title = C_("RomData", "Encryption Key");
+	int ret = d->getEncKey();
+	if (ret == 0) {
+		static const std::array<const char*, (int)EncryptionKeys::Max> wii_key_tbl = {{
+			// tr: Key_RVL_Common - Retail Wii encryption key
+			NOP_C_("Wii|EncKey", "Retail"),
+			// tr: Key_RVL_Korean - Korean Wii encryption key
+			NOP_C_("Wii|EncKey", "Korean"),
+			// tr: Key_WUP_vWii - vWii-specific Wii encryption key
+			NOP_C_("Wii|EncKey", "vWii"),
+
+			// tr: Key_RVT_Debug - Debug Wii encryption key
+			NOP_C_("Wii|EncKey", "Debug"),
+			// tr: Key_RVT_Korean - Korean (debug) Wii encryption key
+			NOP_C_("Wii|EncKey", "Korean (debug)"),
+			// tr: Key_CAT_vWii - vWii (debug) Wii encryption key
+			NOP_C_("Wii|EncKey", "vWii (debug)"),
+
+			// SD card encryption keys (unlikely!)
+
+			// tr: Key_RVL_SD_AES - SD card encryption key
+			NOP_C_("Wii|EncKey", "SD card AES"),
+			// tr: Key_RVL_SD_IV - SD card IV
+			NOP_C_("Wii|EncKey", "SD card IV"),
+			// tr: Key_RVL_SD_MD5 - SD card MD5 blanker
+			NOP_C_("Wii|EncKey", "SD card MD5 blanker"),
+
+			// Wii U mode keys
+
+			// tr: Key_WUP_Starbuck_WiiU_Common - Retail Wii U encryption key
+			NOP_C_("Wii|EncKey", "Retail (Wii U)"),
+			// tr: Key_CAT_Starbuck_WiiU_Common - Debug Wii U encryption key
+			NOP_C_("Wii|EncKey", "Debug (Wii U)"),
+		}};
+
+		const char *s_key_name;
+		if ((int)d->encKey >= 0 && d->encKey < EncryptionKeys::Max) {
+			s_key_name = dpgettext_expr(RP_I18N_DOMAIN, "Wii|KeyIdx", wii_key_tbl[(int)d->encKey]);
+		} else if (d->encKey == WiiTicket::EncryptionKeys::None) {
+			// tr: EncryptionKeys::None - No encryption.
+			s_key_name = C_("Wii|EncKey", "None");
+		} else {
+			// tr: EncryptionKeys::Unknown
+			s_key_name = C_("RomData", "Unknown");
+		}
+
+		d->fields.addField_string(s_encKey_title, s_key_name);
+	} else {
+		// Unable to get the encryption key?
+		d->fields.addField_string(C_("RomData", "Warning"),
+			C_("RomData", "Could not determine the required encryption key."),
+			RomFields::STRF_WARNING);
+	}
 
 	// Finished reading the field data.
 	return static_cast<int>(d->fields.count());
