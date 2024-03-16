@@ -187,8 +187,9 @@ rp_message_widget_init(RpMessageWidget *widget)
 	gtk_widget_set_name(widget->revealer, "revealer");
 #  if GTK_CHECK_VERSION(4,0,0)
 	gtk_box_append(GTK_BOX(widget), widget->revealer);
+	gtk_widget_set_hexpand(widget->revealer, TRUE);
 #  else /* !GTK_CHECK_VERSION(4,0,0) */
-	gtk_container_add(GTK_CONTAINER(widget), widget->revealer);
+	gtk_box_pack_start(GTK_BOX(widget), widget->revealer, TRUE, TRUE, 0);
 #  endif /* GTK_CHECK_VERSION(4,0,0) */
 #else /* !USE_GTK_REVEALER */
 	// Add a GtkEventBox for the inner color.
@@ -198,17 +199,30 @@ rp_message_widget_init(RpMessageWidget *widget)
 	// This code is here for testing purposes only.
 	widget->evbox_inner = rp_gtk_hbox_new(0);
 	gtk_box_append(GTK_BOX(widget), widget->evbox_inner);
+	gtk_widget_set_hexpand(widget->evbox_inner, TRUE);
 #  else /* !GTK_CHECK_VERSION(4,0,0) */
 	widget->evbox_inner = gtk_event_box_new();
+#    if GTK_CHECK_VERSION(3,0,0)
+	gtk_box_pack_start(GTK_BOX(widget), widget->evbox_inner, TRUE, TRUE, 0);
+#    else /* !GTK_CHECK_VERSION(3,0,0) */
+	// FIXME: On GTK2, using gtk_box_pack_start() results in the box being too small?
 	gtk_container_add(GTK_CONTAINER(widget), widget->evbox_inner);
+#    endif /* GTK_CHECK_VERSION(3,0,0) */
 #  endif /* GTK_CHECK_VERSION(4,0,0) */
 	gtk_widget_set_name(widget->evbox_inner, "evbox_inner");
 #endif /* GTK_CHECK_VERSION(3,0,0) */
 
 	// Add a GtkHBox for all the other widgets.
-	widget->hbox = rp_gtk_hbox_new(0);
+	widget->hbox = rp_gtk_hbox_new(4);
 	hbox = GTK_BOX(widget->hbox);
 	gtk_widget_set_name(widget->hbox, "hbox");
+
+#if GTK_CHECK_VERSION(4,0,0)
+	// Extra padding needed on GTK4 for some reason.
+	gtk_widget_set_margin_start(widget->hbox, 4);
+	gtk_widget_set_margin_end(widget->hbox, 4);
+#endif /* GTK_CHECK_VERSION(4,0,0) */
+
 #if USE_GTK_REVEALER
 	gtk_revealer_set_child(GTK_REVEALER(widget->revealer), widget->hbox);
 #else /* !USE_GTK_REVEALER */
@@ -220,10 +234,26 @@ rp_message_widget_init(RpMessageWidget *widget)
 #endif /* USE_GTK_REVEALER */
 
 	widget->messageType = GTK_MESSAGE_OTHER;
+
 	widget->image = gtk_image_new();
 	gtk_widget_set_name(widget->image, "image");
+
+	// Need to use GtkMisc to ensure the label is left-aligned.
 	widget->label = gtk_label_new(NULL);
 	gtk_widget_set_name(widget->label, "label");
+#if GTK_CHECK_VERSION(3,16,0)
+	gtk_label_set_xalign(GTK_LABEL(widget->label), 0.0f);
+	gtk_label_set_yalign(GTK_LABEL(widget->label), 0.5f);
+#else /* !GTK_CHECK_VERSION(3,16,0) */
+	gtk_misc_set_alignment(GTK_MISC(widget->label), 0.0f, 0.5f);
+#endif /* GTK_CHECK_VERSION(3,16,0) */
+#if GTK_CHECK_VERSION(4,0,0)
+	// FIXME: On GTK3, this is causing the label to be center-aligned.
+	// On GTK4, this is *required* for the close button to be right-aligned.
+	// In GTK3, if this is set, toggling the full "expand" property in the
+	// GTK inspector "fixes" the alignment. (GTK3 bug?)
+	gtk_widget_set_hexpand(widget->label, TRUE);
+#endif /* GTK_CHECK_VERSION(3,0,0) */
 
 	// TODO: Align the GtkImage to the top of the first line
 	// if the label has multiple lines.
