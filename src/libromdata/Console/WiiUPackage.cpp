@@ -549,9 +549,12 @@ int WiiUPackage::loadFieldData(void)
 		return -EIO;
 	}
 
-#ifdef ENABLE_XML
 	d->fields.reserve(10);	// Maximum of 10 fields.
 
+	// TODO: Show a decryption key warning and/or "no XMLs".
+	d->fields.setTabName(0, "Wii U");
+
+#ifdef ENABLE_XML
 	// Check if the decryption keys were loaded.
 	const KeyManager::VerifyResult verifyResult = d->ticket->verifyResult();
 	if (verifyResult == KeyManager::VerifyResult::OK) {
@@ -569,6 +572,25 @@ int WiiUPackage::loadFieldData(void)
 			RomFields::STRF_WARNING);
 	}
 #endif /* ENABLE_XML */
+
+	// Add the ticket and/or TMD fields.
+	if (d->ticket) {
+		const RomFields *const ticket_fields = d->ticket->fields();
+		assert(ticket_fields != nullptr);
+		if (ticket_fields) {
+			// TODO: Localize this?
+			d->fields.addTab("Ticket");
+			d->fields.addFields_romFields(ticket_fields, -1);
+		}
+	}
+	if (d->tmd) {
+		const RomFields *const tmd_fields = d->tmd->fields();
+		assert(tmd_fields != nullptr);
+		if (tmd_fields) {
+			d->fields.addTab("TMD");
+			d->fields.addFields_romFields(tmd_fields, -1);
+		}
+	}
 
 	// Finished reading the field data.
 	return static_cast<int>(d->fields.count());
@@ -606,6 +628,9 @@ int WiiUPackage::loadMetaData(void)
 		d->addMetaData_System_XMLs();
 	}
 #endif /* ENABLE_XML */
+
+	// No ticket/TMD metadata; the only thing it sets is the
+	// "Title" property, which is the Title ID.
 
 	// Finished reading the metadata.
 	return static_cast<int>(d->metaData->count());
