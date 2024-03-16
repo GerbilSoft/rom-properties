@@ -301,9 +301,9 @@ const char *RomFields::ageRatingAbbrev(AgeRatingsCountry country)
 	static const char abbrevs[][8] = {
 		"CERO", "ESRB", "",        "USK",
 		"PEGI", "MEKU", "PEGI-PT", "BBFC",
-		"ACB",  "GRB",  "CGSRR",
+		"ACB",  "GRB",  "CGSRR", "OFLC",
 	};
-	static_assert(ARRAY_SIZE_I(abbrevs) == (int)AgeRatingsCountry::Taiwan+1,
+	static_assert(ARRAY_SIZE_I(abbrevs) == (int)AgeRatingsCountry::MaxAllocated,
 		"Age Ratings abbrevations needs to be updated!");
 
 	assert((int)country >= 0 && (int)country < ARRAY_SIZE_I(abbrevs));

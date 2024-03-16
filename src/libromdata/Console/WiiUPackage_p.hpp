@@ -127,9 +127,10 @@ private:
 	 * Parse an "unsignedInt" element.
 	 * @param rootNode	[in] Root node
 	 * @param name		[in] Node name
+	 * @param defval	[in] Default value to return if the node isn't found
 	 * @return unsignedInt data (returns 0 on error)
 	 */
-	unsigned int parseUnsignedInt(const tinyxml2::XMLElement *rootNode, const char *name);
+	unsigned int parseUnsignedInt(const tinyxml2::XMLElement *rootNode, const char *name, unsigned int defval = 0);
 
 	/**
 	 * Parse a "hexBinary" element.

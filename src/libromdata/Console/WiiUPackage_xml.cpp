@@ -158,9 +158,10 @@ do { } while (0)
  * Parse an "unsignedInt" element.
  * @param rootNode	[in] Root node
  * @param name		[in] Node name
+ * @param defval	[in] Default value to return if the node isn't found
  * @return unsignedInt data (returns 0 on error)
  */
-unsigned int WiiUPackagePrivate::parseUnsignedInt(const XMLElement *rootNode, const char *name)
+unsigned int WiiUPackagePrivate::parseUnsignedInt(const XMLElement *rootNode, const char *name, unsigned int defval)
 {
 	const XMLElement *const elem = rootNode->FirstChildElement(name);
 	if (!elem)
@@ -182,7 +183,7 @@ unsigned int WiiUPackagePrivate::parseUnsignedInt(const XMLElement *rootNode, co
 	// Parse the value as an unsigned int.
 	char *endptr;
 	unsigned int val = strtoul(text, &endptr, 10);
-	return (*endptr == '\0') ? val : 0;
+	return (*endptr == '\0') ? val : defval;
 }
 
 /**
@@ -438,6 +439,57 @@ int WiiUPackagePrivate::addFields_System_XMLs(void)
 		"Region", wiiu_region_bitfield_names, ARRAY_SIZE(wiiu_region_bitfield_names));
 	fields.addField_bitfield(C_("RomData", "Region Code"),
 		v_wiiu_region_bitfield_names, 3, region_code);
+
+	// Age rating(s)
+	// The fields match other Nintendo products, but it's in XML
+	// instead of a binary field.
+	// TODO: Exclude ratings that aren't actually used?
+	RomFields::age_ratings_t age_ratings;
+	// Valid ratings: 0-1, 3-4, 6-11 (excludes old BBFC and Finland/MEKU)
+	static const uint16_t valid_ratings = 0xFDB;
+	static const char *const age_rating_nodes[] = {
+		"pc_cero", "pc_esrb", "pc_bbfc", "pc_usk",
+		"pc_pegi_gen", "pc_pegi_fin", "pc_pegi_prt", "pc_pegi_bbfc",
+		"pc_cob", "pc_grb", "pc_cgsrr", "pc_oflc",
+		/*"pc_reserved0", "pc_reserved1", "pc_reserved2", "pc_reserved3",*/
+	};
+	static_assert(ARRAY_SIZE(age_rating_nodes) == (int)RomFields::AgeRatingsCountry::MaxAllocated, "age_rating_nodes is out of sync with age_ratings_t");
+
+	for (int i = ARRAY_SIZE(age_rating_nodes)-1; i >= 0; i--) {
+		if (!(valid_ratings & (1U << i))) {
+			// Rating is not applicable for Wii U.
+			age_ratings[i] = 0;
+			continue;
+		}
+
+		// Wii U ratings field:
+		// - 0x00-0x1F: Age rating
+		// - 0x80: No rating
+		// - 0xC0: Rating pending
+		unsigned int val = parseUnsignedInt(metaRootNode, age_rating_nodes[i], ~0U);
+		if (val == ~0U) {
+			// Not found...
+			age_ratings[i] = 0;
+			continue;
+		}
+
+		if (val == 0x80) {
+			// Rating is unused
+			age_ratings[i] = 0;
+		} else if (val == 0xC0) {
+			// Rating pending
+			age_ratings[i] = RomFields::AGEBF_ACTIVE | RomFields::AGEBF_PENDING;
+		} /*else if (val == 0) {
+			// No age restriction
+			// FIXME: Can be confused with some other ratings, so disabled for now.
+			// Maybe Wii U has the same 0x20 bit as 3DS?
+			age_ratings[i] = RomFields::AGEBF_ACTIVE | RomFields::AGEBF_NO_RESTRICTION;
+		}*/ else {
+			// Set active | age value.
+			age_ratings[i] = RomFields::AGEBF_ACTIVE | (val & RomFields::AGEBF_MIN_AGE_MASK);
+		}
+	}
+	fields.addField_ageRatings(C_("RomData", "Age Ratings"), age_ratings);
 
 	// Controller support
 	uint32_t controllers = 0;
