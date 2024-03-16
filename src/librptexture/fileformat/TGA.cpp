@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * TGA.cpp: TrueVision TGA reader.                                         *
  *                                                                         *
- * Copyright (c) 2019-2023 by David Korth.                                 *
+ * Copyright (c) 2019-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -284,7 +284,7 @@ rp_image_const_ptr TGAPrivate::loadImage(void)
 		} else {
 			// Color map is present, but this is not a colormap image.
 			// Skip over the color map.
-			file->seek(file->tell() + cmap_size);
+			file->seek_cur(cmap_size);
 		}
 	}
 

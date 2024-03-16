@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpfile)                        *
  * IRpFile.cpp: File wrapper interface.                                    *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -45,7 +45,6 @@ int IRpFile::ungetc(int c)
 {
 	RP_UNUSED(c);	// TODO: Don't ignore this?
 
-	// TODO: seek() overload that supports SEEK_CUR?
 	const off64_t pos = tell();
 	if (pos <= 0) {
 		// Cannot ungetc().
