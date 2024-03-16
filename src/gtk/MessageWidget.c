@@ -510,6 +510,19 @@ rp_message_widget_get_message_type(RpMessageWidget *widget)
 	return widget->messageType;
 }
 
+gboolean
+rp_message_widget_get_child_revealed(RpMessageWidget *widget)
+{
+	g_return_val_if_fail(RP_IS_MESSAGE_WIDGET(widget), FALSE);
+
+#ifdef USE_GTK_REVEALER
+	return gtk_revealer_get_child_revealed(GTK_REVEALER(widget->revealer));
+#else /* !USE_GTK_REVEALER */
+	// Not using GtkRevealer, so just get the widget visibility.
+	return gtk_widget_get_visible(GTK_WIDGET(widget));
+#endif /* USE_GTK_REVEALER */
+}
+
 void
 rp_message_widget_set_reveal_child(RpMessageWidget *widget, gboolean reveal_child)
 {
@@ -540,16 +553,55 @@ rp_message_widget_get_reveal_child(RpMessageWidget *widget)
 #endif /* USE_GTK_REVEALER */
 }
 
-gboolean
-rp_message_widget_get_child_revealed(RpMessageWidget *widget)
+void
+rp_message_widget_set_transition_duration(RpMessageWidget *widget, guint duration)
 {
-	g_return_val_if_fail(RP_IS_MESSAGE_WIDGET(widget), FALSE);
+	g_return_if_fail(RP_IS_MESSAGE_WIDGET(widget));
 
 #ifdef USE_GTK_REVEALER
-	return gtk_revealer_get_child_revealed(GTK_REVEALER(widget->revealer));
-#else /* !USE_GTK_REVEALER */
-	// Not using GtkRevealer, so just get the widget visibility.
-	return gtk_widget_get_visible(GTK_WIDGET(widget));
+	gtk_revealer_set_transition_duration(GTK_REVEALER(widget->revealer), duration);
+#else /*! USE_GTK_REVEALER */
+	// Not using GtkRevealer, so don't do anything.
+	RP_UNUSED(duration);
+#endif /* USE_GTK_REVEALER */
+}
+
+guint
+rp_message_widget_get_transition_duration(RpMessageWidget *widget)
+{
+	g_return_val_if_fail(RP_IS_MESSAGE_WIDGET(widget), 0U);
+
+#ifdef USE_GTK_REVEALER
+	return gtk_revealer_get_transition_duration(GTK_REVEALER(widget->revealer));
+#else /*! USE_GTK_REVEALER */
+	// Not using GtkRevealer, so return a default value.
+	return 0U;
+#endif /* USE_GTK_REVEALER */
+}
+
+void
+rp_message_widget_set_transition_type(RpMessageWidget *widget, GtkRevealerTransitionType transition)
+{
+	g_return_if_fail(RP_IS_MESSAGE_WIDGET(widget));
+
+#ifdef USE_GTK_REVEALER
+	gtk_revealer_set_transition_type(GTK_REVEALER(widget->revealer), transition);
+#else /*! USE_GTK_REVEALER */
+	// Not using GtkRevealer, so don't do anything.
+	RP_UNUSED(transition);
+#endif /* USE_GTK_REVEALER */
+}
+
+GtkRevealerTransitionType
+rp_message_widget_get_transition_type(RpMessageWidget *widget)
+{
+	g_return_val_if_fail(RP_IS_MESSAGE_WIDGET(widget), 0U);
+
+#ifdef USE_GTK_REVEALER
+	return gtk_revealer_get_transition_type(GTK_REVEALER(widget->revealer));
+#else /*! USE_GTK_REVEALER */
+	// Not using GtkRevealer, so return a default value.
+	return GTK_REVEALER_TRANSITION_TYPE_NONE;
 #endif /* USE_GTK_REVEALER */
 }
 

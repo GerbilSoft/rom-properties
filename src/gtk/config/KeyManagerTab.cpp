@@ -112,6 +112,7 @@ rp_key_manager_tab_init(RpKeyManagerTab *tab)
 	// MessageWidget goes at the top of the window.
 	tab->messageWidget = rp_message_widget_new();
 	gtk_widget_set_name(tab->messageWidget, "messageWidget");
+	rp_message_widget_set_transition_type(RP_MESSAGE_WIDGET(tab->messageWidget), GTK_REVEALER_TRANSITION_TYPE_SLIDE_DOWN);
 
 	// Initialize the KeyStoreGTK.
 	tab->keyStore = rp_key_store_gtk_new();

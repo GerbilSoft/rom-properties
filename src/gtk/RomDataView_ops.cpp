@@ -371,6 +371,7 @@ rp_rom_data_view_getSaveFileDialog_callback(GFile *file, save_data_t *save_data)
 		// Show the MessageWidget.
 		if (!page->messageWidget) {
 			page->messageWidget = rp_message_widget_new();
+			rp_message_widget_set_transition_type(RP_MESSAGE_WIDGET(page->messageWidget), GTK_REVEALER_TRANSITION_TYPE_SLIDE_UP);
 #if GTK_CHECK_VERSION(4,0,0)
 			gtk_box_append(GTK_BOX(page), page->messageWidget);
 #else /* !GTK_CHECK_VERSION(4,0,0) */
