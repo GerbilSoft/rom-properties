@@ -1765,18 +1765,18 @@ int GameCube::loadFieldData(void)
 			}
 
 			static const std::array<const char*, 6> wii_key_tbl = {{
-				// tr: WiiTicket::EncryptionKeys::Key_RVL_Common - Retail encryption key.
+				// tr: Key_RVL_Common - Retail Wii encryption key
 				NOP_C_("Wii|EncKey", "Retail"),
-				// tr: WiiTicket::EncryptionKeys::Key_RVL_Korean - Korean encryption key.
+				// tr: Key_RVL_Korean - Korean Wii encryption key
 				NOP_C_("Wii|EncKey", "Korean"),
-				// tr: WiiTicket::EncryptionKeys::Key_WUP_vWii - vWii-specific encryption key.
+				// tr: Key_WUP_vWii - vWii-specific Wii encryption key
 				NOP_C_("Wii|EncKey", "vWii"),
 
-				// tr: WiiTicket::EncryptionKeys::Key_RVT_Debug - Debug encryption key.
+				// tr: Key_RVT_Debug - Debug Wii encryption key
 				NOP_C_("Wii|EncKey", "Debug"),
-				// tr: WiiTicket::EncryptionKeys::Key_RVT_Korean - Korean (debug) encryption key.
+				// tr: Key_RVT_Korean - Korean (debug) Wii encryption key
 				NOP_C_("Wii|EncKey", "Korean (debug)"),
-				// tr: WiiTicket::EncryptionKeys::Key_CAT_vWii - vWii (debug) encryption key.
+				// tr: Key_CAT_vWii - vWii (debug) Wii encryption key
 				NOP_C_("Wii|EncKey", "vWii (debug)"),
 
 				// NOTE: Not including SD card keys.
@@ -1787,10 +1787,10 @@ int GameCube::loadFieldData(void)
 			if ((int)encKey >= 0 && (int)encKey < static_cast<int>(wii_key_tbl.size())) {
 				s_key_name = dpgettext_expr(RP_I18N_DOMAIN, "Wii|KeyIdx", wii_key_tbl[(int)encKey]);
 			} else if (encKey == WiiTicket::EncryptionKeys::None) {
-				// tr: WiiTicket::EncryptionKeys::None - No encryption.
+				// tr: EncryptionKeys::None - No encryption.
 				s_key_name = C_("Wii|EncKey", "None");
 			} else {
-				// WiiPartition::EncKey::Unknown
+				// tr: EncryptionKeys::Unknown
 				s_key_name = C_("RomData", "Unknown");
 			}
 			data_row.emplace_back(s_key_name);
