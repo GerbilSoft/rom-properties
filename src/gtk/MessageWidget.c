@@ -653,7 +653,7 @@ rp_message_widget_set_transition_duration(RpMessageWidget *widget, guint duratio
 	if (gtk_revealer_get_transition_duration(GTK_REVEALER(widget->revealer)) == duration)
 		return;
 
-	gtk_revealer_set_transition_duration(GTK_REVEALER(widget->revealer), g_value_get_uint(value));
+	gtk_revealer_set_transition_duration(GTK_REVEALER(widget->revealer), duration);
 	g_object_notify_by_pspec(G_OBJECT(widget), props[PROP_TRANSITION_DURATION]);
 #else /*! USE_GTK_REVEALER */
 	// Not using GtkRevealer, so don't do anything.
