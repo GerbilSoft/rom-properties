@@ -434,7 +434,7 @@ int WiiUPackagePrivate::addFields_System_XMLs(void)
 	}
 
 	// Product code
-	ADD_TEXT(metaRootNode, "product_code", C_("WiiU", "Product Code"));
+	ADD_TEXT(metaRootNode, "product_code", C_("Nintendo", "Product Code"));
 
 	// SDK version
 	const unsigned int sdk_version = parseUnsignedInt(appRootNode, "sdk_version");

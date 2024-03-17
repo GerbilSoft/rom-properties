@@ -984,7 +984,7 @@ int NintendoDS::loadFieldData(void)
 
 		if (!pMap_full_title->empty()) {
 			const uint32_t def_lc = d->getDefaultLC();
-			d->fields.addField_string_multi(C_("NintendoDS", "Full Title"), pMap_full_title, def_lc);
+			d->fields.addField_string_multi(C_("Nintendo", "Full Title"), pMap_full_title, def_lc);
 		} else {
 			delete pMap_full_title;
 		}
@@ -1157,7 +1157,7 @@ int NintendoDS::loadFieldData(void)
 
 	// TODO: Keyset is determined by the system.
 	// There might be some indicator in the cartridge header...
-	d->fields.addField_string_numeric(C_("NintendoDS", "Key Index"), key_idx);
+	d->fields.addField_string_numeric(C_("Nintendo", "Key Index"), key_idx);
 
 	const char *const region_code_name = (d->cia
 			? C_("RomData", "Region Code")

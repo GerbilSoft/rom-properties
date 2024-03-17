@@ -495,8 +495,8 @@ int Nintendo3DS_SMDH::loadFieldData(void)
 		}
 	}
 
-	const char *const s_title_title = C_("Nintendo3DS", "Title");
-	const char *const s_full_title_title = C_("Nintendo3DS", "Full Title");
+	const char *const s_title_title = C_("Nintendo", "Title");
+	const char *const s_full_title_title = C_("Nintendo", "Full Title");
 	const char *const s_publisher_title = C_("RomData", "Publisher");
 	const char *const s_unknown = C_("RomData", "Unknown");
 

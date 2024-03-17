@@ -685,7 +685,7 @@ void Nintendo3DSPrivate::addTitleIdAndProductCodeFields(bool showContentType)
 	}
 
 	// Product code.
-	fields.addField_string(C_("Nintendo3DS", "Product Code"),
+	fields.addField_string(C_("Nintendo", "Product Code"),
 		latin1_to_utf8(ncch_header->product_code, sizeof(ncch_header->product_code)));
 
 	// Content type.
