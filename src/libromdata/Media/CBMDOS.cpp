@@ -23,7 +23,7 @@
 
 // Other rom-properties libraries
 #include "libi18n/i18n.h"
-#include "librptexture/decoder/ImageDecoder_C64.hpp"
+#include "librptexture/decoder/ImageDecoder_Linear_Gray.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;
@@ -1268,7 +1268,7 @@ int CBMDOS::loadFieldData(void)
 				cbmdos_GEOS_info_block_t geos_info;
 				size = d->read_sector(&geos_info, sizeof(geos_info), p_dir->geos.info_addr.track ,p_dir->geos.info_addr.sector);
 				if (size == sizeof(geos_info)) {
-					icon = ImageDecoder::fromC64_SingleColor_Sprite(geos_info.icon, sizeof(geos_info.icon));
+					icon = ImageDecoder::fromLinearMono(24, 21, geos_info.icon, sizeof(geos_info.icon));
 				}
 			}
 

@@ -13,17 +13,6 @@
 namespace LibRpTexture { namespace ImageDecoder {
 
 /**
- * Convert a Commodore 64 single-color sprite (24x21) to rp_image.
- * A default monochrome palette is used.
- * @param img_buf CI4 image buffer
- * @param img_siz Size of image data [must be >= 24*21/8 (63)]
- * @return rp_image, or nullptr on error.
- */
-ATTR_ACCESS_SIZE(read_only, 1, 2)
-rp_image_ptr fromC64_SingleColor_Sprite(
-	const uint8_t *RESTRICT img_buf, size_t img_siz);
-
-/**
  * Convert a Commodore 64 multi-color sprite (12x21) to rp_image.
  * A default 4-color grayscale palette is used.
  * @param img_buf CI4 image buffer
