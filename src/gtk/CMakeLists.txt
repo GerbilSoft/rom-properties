@@ -66,6 +66,9 @@ SET(${PROJECT_NAME}_GLib_SRCS
 	is-supported.cpp
 	ProxyForUrl.cpp
 	RpGtkCpp.cpp
+
+	config/CacheCleaner.cpp
+	config/UpdateChecker.cpp
 	)
 SET(${PROJECT_NAME}_GLib_H
 	RomDataFormat.hpp
@@ -74,6 +77,9 @@ SET(${PROJECT_NAME}_GLib_H
 	ProxyForUrl.hpp
 	glib-compat.h
 	RpGtkCpp.hpp
+
+	config/CacheCleaner.hpp
+	config/UpdateChecker.hpp
 	)
 
 # Sources and headers
@@ -93,6 +99,7 @@ SET(${PROJECT_NAME}_SRCS
 	AchSpriteSheet.cpp
 	ISpriteSheet.cpp
 	FlagSpriteSheet.cpp
+
 	config/stub-export.c
 	config/ConfigDialog.cpp
 	config/RpConfigTab.c
@@ -100,10 +107,9 @@ SET(${PROJECT_NAME}_SRCS
 	config/SystemsTab.cpp
 	config/OptionsTab.cpp
 	config/CacheTab.cpp
-	config/CacheCleaner.cpp
 	config/AchievementsTab.cpp
 	config/AboutTab.cpp
-	config/UpdateChecker.cpp
+
 	xattr/Ext2AttrView.c
 	xattr/XfsAttrView.c
 	xattr/DosAttrView.c
@@ -127,16 +133,16 @@ SET(${PROJECT_NAME}_H
 	ISpriteSheet.hpp
 	FlagSpriteSheet.hpp
 	gtk-i18n.h
+
 	config/ConfigDialog.hpp
 	config/RpConfigTab.h
 	config/ImageTypesTab.hpp
 	config/SystemsTab.hpp
 	config/OptionsTab.hpp
 	config/CacheTab.hpp
-	config/CacheCleaner.hpp
 	config/AchievementsTab.hpp
 	config/AboutTab.hpp
-	config/UpdateChecker.hpp
+
 	xattr/Ext2AttrView.h
 	xattr/XfsAttrView.h
 	xattr/DosAttrView.h
