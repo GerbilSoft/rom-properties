@@ -750,44 +750,82 @@ void Nintendo3DSPrivate::addTitleIdAndProductCodeFields(bool showContentType)
 		}
 	}
 
-	struct logo_crc_tbl_t {
-		uint32_t crc;
-		const char *name;
+	static const char logo_name_strtbl[] = {
+		"Nintendo\0"			// 0
+		"Licensed by Nintendo\0"	// 9
+		"Distributed by Nintendo\0"	// 30
+		"iQue\0"			// 54
+		"iQue (System)\0"		// 59
+
+		// Homebrew logos
+		// TODO: Make them translatable?
+		"Homebrew (static)\0"		// 73
+		"Homebrew (animated)\0"		// 91
 	};
-	static const std::array<logo_crc_tbl_t, 7> logo_crc_tbl = {{
+	static_assert(sizeof(logo_name_strtbl) == 111+1, "logo_crc_strtbl[] needs to be recalculated!");
+
+	// NOTE: Instead of wasting space by using a struct with uint32_t crc and uint8_t offset,
+	// use two separate arrays.
+
+	// Logo CRC32 table
+	static const std::array<uint32_t, 7> logo_crc_tbl = {{
 		// Official logos
 		// NOTE: Not translatable!
-		{0xCFD0EB8BU,	"Nintendo"},
-		{0x1093522BU,	"Licensed by Nintendo"},
-		{0x4FA8771CU,	"Distributed by Nintendo"},
-		{0x7F68B548U,	"iQue"},
-		{0xD8907ED7U,	"iQue (System)"},
+		0xCFD0EB8BU,	// "Nintendo"
+		0x1093522BU,	// "Licensed by Nintendo"
+		0x4FA8771CU,	// "Distributed by Nintendo"
+		0x7F68B548U,	// "iQue"
+		0xD8907ED7U,	// "iQue (System)"
 
 		// Homebrew logos
 		// TODO: Make them translatable?
 
 		// "Old" static Homebrew logo.
 		// Included with `makerom`.
-		{0x343A79D9U,	"Homebrew (static)"},
+		0x343A79D9U,	// "Homebrew (static)"
 
 		// "New" animated Homebrew logo.
 		// Uses the Homebrew Launcher theme.
 		// Reference: https://gbatemp.net/threads/release-default-homebrew-custom-logo-bin.457611/
-		{0xF257BD67U,	"Homebrew (animated)"},
+		0xF257BD67U,	// "Homebrew (animated)"
 	}};
+
+	// Logo name offset table
+	static const std::array<uint8_t, 7> logo_name_offset_tbl = {{
+		// Official logos
+		// NOTE: Not translatable!
+		0,	// "Nintendo"
+		9,	// "Licensed by Nintendo"
+		30,	// "Distributed by Nintendo"
+		54,	// "iQue"
+		59,	// "iQue (System)"
+
+		// Homebrew logos
+		// TODO: Make them translatable?
+
+		// "Old" static Homebrew logo.
+		// Included with `makerom`.
+		73,	// "Homebrew (static)"
+
+		// "New" animated Homebrew logo.
+		// Uses the Homebrew Launcher theme.
+		// Reference: https://gbatemp.net/threads/release-default-homebrew-custom-logo-bin.457611/
+		91,	// "Homebrew (animated)"
+	}};
+
+	static_assert(logo_crc_tbl.size() == logo_name_offset_tbl.size(), "Logo tables have differing sizes!");
 
 	// If CRC is zero, we don't have a valid logo section.
 	// Otherwise, search for a matching logo.
 	const char *logo_name = nullptr;
 	if (crc != 0) {
 		// Search for a matching logo.
-		auto iter = std::find_if(logo_crc_tbl.cbegin(), logo_crc_tbl.cend(),
-			[crc](const logo_crc_tbl_t &p) noexcept -> bool {
-				return (p.crc == crc);
-			});
-		if (iter != logo_crc_tbl.cend()) {
-			// Found a matching logo.
-			logo_name = iter->name;
+		for (unsigned int i = 0; i < ARRAY_SIZE(logo_crc_tbl); i++) {
+			if (logo_crc_tbl[i] == crc) {
+				// Found a matching CRC.
+				logo_name = &logo_name_strtbl[logo_name_offset_tbl[i]];
+				break;
+			}
 		}
 
 		if (!logo_name) {
