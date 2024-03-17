@@ -189,7 +189,7 @@ int GdiReaderPrivate::parseGdiFile(char *gdibuf)
 		// 2097152 blocks == 4 GB if using 2048-byte sectors.
 		if (blockStart < 0 || blockStart > 2097152 ||
 		    (sectorSize != 2048 && sectorSize != 2352) ||
-		    filename[0] == 0 || reserved != 0)
+		    filename[0] == '\0' || reserved != 0)
 		{
 			// Invalid fields.
 			return -EIO;
@@ -233,7 +233,6 @@ int GdiReaderPrivate::parseGdiFile(char *gdibuf)
 		blockRange.reserved = 0;
 		// Various Dreamcast emulators use the filename as-is with no
 		// encoding conversion. Assuming this means UTF-8.
-		filename[sizeof(filename)-1] = 0;
 		blockRange.filename.assign(filename);
 		blockRange.file = nullptr;
 
