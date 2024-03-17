@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * PIMGTYPE.hpp: PIMGTYPE typedef and wrapper functions.                   *
  *                                                                         *
- * Copyright (c) 2017-2021 by David Korth.                                 *
+ * Copyright (c) 2017-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -13,7 +13,7 @@
 #include "librpbase/img/RpPng.hpp"
 #include "librpfile/MemFile.hpp"
 using namespace LibRpBase;
-using LibRpFile::IRpFile;
+using LibRpFile::IRpFilePtr;
 using LibRpFile::MemFile;
 using LibRpTexture::rp_image_ptr;
 
@@ -241,7 +241,7 @@ rp_image_ptr rp_image_load_png_from_gresource(const char *filename)
 
 	gsize size = 0;
 	gconstpointer data = g_bytes_get_data(pBytes, &size);
-	shared_ptr<IRpFile> memFile = std::make_shared<MemFile>(data, size);
+	IRpFilePtr memFile = std::make_shared<MemFile>(data, size);
 
 	return RpPng::load(memFile);
 }
