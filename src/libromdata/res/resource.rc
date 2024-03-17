@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * resource.rc: Win32 resource script. (Common resources)                  *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -41,7 +41,7 @@ BEGIN
 			VALUE "FileDescription", "libromdata"
 			VALUE "FileVersion", "rom-properties " Win32_RC_FileVersion
 			VALUE "InternalName", "rom-properties"
-			VALUE "LegalCopyright", "Copyright (c) 2016-2023 by David Korth."
+			VALUE "LegalCopyright", "Copyright (c) 2016-2024 by David Korth."
 			//VALUE "LegalTrademarks"
 			//VALUE "OriginalFilename"
 			//VALUE "PrivateBuild"
