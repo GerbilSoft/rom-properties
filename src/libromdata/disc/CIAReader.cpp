@@ -128,46 +128,47 @@ CIAReaderPrivate::CIAReaderPrivate(CIAReader *q,
 	KeyManager::VerifyResult res = N3DSVerifyKeys::loadKeyNormal(&keyNormal,
 		keyNormal_name, keyX_name, keyY_name,
 		keyNormal_verify, keyX_verify, keyY_verify);
-	if (res == KeyManager::VerifyResult::OK) {
-		// Create a cipher to decrypt the title key.
-		IAesCipher *cipher = AesCipherFactory::create();
-
-		// Initialize parameters for title key decryption.
-		// TODO: Error checking.
-		// Parameters:
-		// - Keyslot: 0x3D
-		// - Chaining mode: CBC
-		// - IV: Title ID (little-endian)
-		cipher->setChainingMode(IAesCipher::ChainingMode::CBC);
-		cipher->setKey(keyNormal.u8, sizeof(keyNormal.u8));
-
-		// CIA IV is the title ID in big-endian.
-		// The ticket title ID is already in big-endian,
-		// so copy it over directly.
-		u128_t cia_iv;
-		memcpy(cia_iv.u8, &ticket->title_id.id, sizeof(ticket->title_id.id));
-		memset(&cia_iv.u8[8], 0, 8);
-		cipher->setIV(cia_iv.u8, sizeof(cia_iv.u8));
-
-		// Decrypt the title key.
-		uint8_t title_key[16];
-		memcpy(title_key, ticket->title_key, sizeof(title_key));
-		cipher->decrypt(title_key, sizeof(title_key));
-		delete cipher;
-
-		// Data area: IV is the TMD content index.
-		cia_iv.u8[0] = tmd_content_index >> 8;
-		cia_iv.u8[1] = tmd_content_index & 0xFF;
-		memset(&cia_iv.u8[2], 0, sizeof(cia_iv.u8)-2);
-
-		// Create a CBC reader to decrypt the CIA.
-		cbcReader = std::make_shared<CBCReader>(q->m_file, content_offset, content_length, title_key, cia_iv.u8);
-	} else {
+	if (res != KeyManager::VerifyResult::OK) {
 		// Unable to get the CIA encryption keys.
 		// TODO: Set an error.
 		//verifyResult = res;
 		q->m_file.reset();
+		return;
 	}
+
+	// Create a cipher to decrypt the title key.
+	IAesCipher *cipher = AesCipherFactory::create();
+
+	// Initialize parameters for title key decryption.
+	// TODO: Error checking.
+	// Parameters:
+	// - Keyslot: 0x3D
+	// - Chaining mode: CBC
+	// - IV: Title ID (little-endian)
+	cipher->setChainingMode(IAesCipher::ChainingMode::CBC);
+	cipher->setKey(keyNormal.u8, sizeof(keyNormal.u8));
+
+	// CIA IV is the title ID in big-endian.
+	// The ticket title ID is already in big-endian,
+	// so copy it over directly.
+	u128_t cia_iv;
+	memcpy(cia_iv.u8, &ticket->title_id.id, sizeof(ticket->title_id.id));
+	memset(&cia_iv.u8[8], 0, 8);
+	cipher->setIV(cia_iv.u8, sizeof(cia_iv.u8));
+
+	// Decrypt the title key.
+	uint8_t title_key[16];
+	memcpy(title_key, ticket->title_key, sizeof(title_key));
+	cipher->decrypt(title_key, sizeof(title_key));
+	delete cipher;
+
+	// Data area: IV is the TMD content index.
+	cia_iv.u8[0] = tmd_content_index >> 8;
+	cia_iv.u8[1] = tmd_content_index & 0xFF;
+	memset(&cia_iv.u8[2], 0, sizeof(cia_iv.u8)-2);
+
+	// Create a CBC reader to decrypt the CIA.
+	cbcReader = std::make_shared<CBCReader>(q->m_file, content_offset, content_length, title_key, cia_iv.u8);
 #else /* !ENABLE_DECRYPTION */
 	// Cannot decrypt the CIA.
 	// TODO: Set an error.
