@@ -247,6 +247,18 @@ IF(BUILD_XFCE OR BUILD_GTK3 OR BUILD_GTK4)
 	TARGET_LINK_LIBRARIES(rom-properties-glib PUBLIC glibresources)
 	TARGET_LINK_LIBRARIES(rom-properties-glib PUBLIC GLib2::gio-unix GLib2::gio GLib2::gobject GLib2::glib)
 	TARGET_LINK_LIBRARIES(rom-properties-glib PRIVATE romdata)		# for config.librptext.h
+
+	# Require glib-2.34 to match XFCE and GTK3.
+	# If the GTK4 UI frontend is enabled, require glib-2.66 instead.
+	IF(BUILD_GTK4)
+		TARGET_COMPILE_DEFINITIONS(rom-properties-glib
+			PRIVATE -DGLIB_VERSION_MIN_REQUIRED=GLIB_VERSION_2_66 -DGLIB_VERSION_MAX_ALLOWED=GLIB_VERSION_2_66
+			)
+	ELSE(BUILD_GTK4)
+		TARGET_COMPILE_DEFINITIONS(rom-properties-glib
+			PRIVATE -DGLIB_VERSION_MIN_REQUIRED=GLIB_VERSION_2_34 -DGLIB_VERSION_MAX_ALLOWED=GLIB_VERSION_2_34
+			)
+	ENDIF(BUILD_GTK4)
 ENDIF(BUILD_XFCE OR BUILD_GTK3 OR BUILD_GTK4)
 
 # Unix: Add -fpic/-fPIC in order to use this static library in plugins.
