@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2024-03-16 21:21-0400\n"
-"PO-Revision-Date: 2024-03-17 02:07\n"
+"PO-Revision-Date: 2024-03-17 03:17\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
 "Language: de_DE\n"
@@ -3058,7 +3058,7 @@ msgstr ""
 #: ../src/libromdata/Console/Intellivision.cpp:301
 msgctxt "Intellivision"
 msgid "Flags"
-msgstr ""
+msgstr "Flags"
 
 #: ../src/libromdata/Console/iQuePlayer.cpp:639
 #: ../src/libromdata/Handheld/Nintendo3DS_SMDH.cpp:593
@@ -3308,7 +3308,7 @@ msgstr "Einstiegspunkt"
 #: ../src/libromdata/Other/EXE_PE.cpp:656
 msgctxt "RomData"
 msgid "OS Version"
-msgstr ""
+msgstr "OS-Version"
 
 #: ../src/libromdata/Console/N64.cpp:315
 msgctxt "N64"
@@ -4286,7 +4286,7 @@ msgstr ""
 #: ../src/libromdata/Console/WiiTicket.cpp:678
 msgctxt "Wii|EncKey"
 msgid "Retail (Wii U)"
-msgstr ""
+msgstr "Retail (Wii U)"
 
 #. tr: Key_CAT_Starbuck_WiiU_Common - Debug Wii U encryption key
 #: ../src/libromdata/Console/WiiTicket.cpp:680
@@ -6746,7 +6746,7 @@ msgstr "Zuletzt bearbeitet"
 #: ../src/libromdata/Media/Wim.cpp:412
 msgctxt "Wim|Images"
 msgid "OS Version"
-msgstr ""
+msgstr "OS-Version"
 
 #: ../src/libromdata/Media/Wim.cpp:413
 msgctxt "Wim|Images"
@@ -7893,7 +7893,7 @@ msgstr ""
 #: ../src/libromdata/Other/EXE_NE.cpp:710
 msgctxt "EXE|Exports"
 msgid "Flags"
-msgstr ""
+msgstr "Flags"
 
 #: ../src/libromdata/Other/EXE_NE.cpp:882
 #: ../src/libromdata/Other/EXE_NE.cpp:900
@@ -8130,7 +8130,7 @@ msgstr ""
 #: ../src/libromdata/Other/MachO.cpp:545
 msgctxt "MachO"
 msgid "Flags"
-msgstr ""
+msgstr "Flags"
 
 #: ../src/libromdata/Other/NintendoBadge.cpp:639
 msgctxt "NintendoBadge"
@@ -9124,7 +9124,7 @@ msgctxt "LibRpText|FileSize"
 msgid "byte"
 msgid_plural "bytes"
 msgstr[0] "byte"
-msgstr[1] ""
+msgstr[1] "bytes"
 
 #. tr: Kilobytes
 #: ../src/librptext/conversion.cpp:296 ../src/librptext/conversion.cpp:384
@@ -9308,7 +9308,7 @@ msgstr ""
 #: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1401
 msgctxt "DirectDrawSurface"
 msgid "Flags"
-msgstr ""
+msgstr "Flags"
 
 #: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1408
 msgctxt "DirectDrawSurface|ddspf"
@@ -9358,7 +9358,7 @@ msgstr "-X"
 #: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1446
 msgctxt "DirectDrawSurface|dwCaps2"
 msgid "+Y"
-msgstr "+J"
+msgstr "+Y"
 
 #: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1447
 msgctxt "DirectDrawSurface|dwCaps2"
@@ -9378,7 +9378,7 @@ msgstr "-Z"
 #: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1454
 msgctxt "DirectDrawSurface|dwCaps2"
 msgid "Volume"
-msgstr "Lautstärke"
+msgstr "Rauminhalt"
 
 #: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1458
 msgctxt "DirectDrawSurface"
@@ -9459,7 +9459,7 @@ msgstr ""
 #: ../src/librptexture/fileformat/GodotSTEX.cpp:1181
 msgctxt "GodotSTEX"
 msgid "Flags"
-msgstr ""
+msgstr "Flags"
 
 #: ../src/librptexture/fileformat/GodotSTEX.cpp:1188
 msgctxt "GodotSTEX|DataFormat"
@@ -9627,7 +9627,7 @@ msgstr ""
 #: ../src/librptexture/fileformat/PowerVR3.cpp:1036
 msgctxt "PowerVR3"
 msgid "Flags"
-msgstr ""
+msgstr "Flags"
 
 #: ../src/librptexture/fileformat/PowerVR3.cpp:1041
 msgctxt "PowerVR3|ColorSpace"
