@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties 2.3+\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2024-03-16 21:21-0400\n"
-"PO-Revision-Date: 2024-03-06 19:30\n"
+"PO-Revision-Date: 2024-03-17 02:07\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
 "Language: de\n"
@@ -1992,7 +1992,7 @@ msgstr "/8 Takt Teiler"
 #, c-format
 msgctxt "VGM"
 msgid "%s IF reg"
-msgstr ""
+msgstr "%s IF reg"
 
 #: ../src/libromdata/Audio/VGM.cpp:552
 msgctxt "VGM|AY8910Flags"
@@ -2320,7 +2320,7 @@ msgstr "Einstiegspunkt"
 #: ../src/libromdata/Console/ColecoVision.cpp:440
 msgctxt "ColecoVision"
 msgid "IRQ Vector"
-msgstr ""
+msgstr "IRQ-Vektor"
 
 #: ../src/libromdata/Console/Dreamcast.cpp:591
 msgctxt "Dreamcast"
@@ -3113,7 +3113,7 @@ msgstr ""
 #: ../src/libromdata/Console/Intellivision.cpp:301
 msgctxt "Intellivision"
 msgid "Flags"
-msgstr "Flags"
+msgstr ""
 
 #: ../src/libromdata/Console/iQuePlayer.cpp:639
 #: ../src/libromdata/Handheld/Nintendo3DS_SMDH.cpp:593
@@ -3363,7 +3363,7 @@ msgstr "Einstiegspunkt"
 #: ../src/libromdata/Other/EXE_PE.cpp:656
 msgctxt "RomData"
 msgid "OS Version"
-msgstr "OS Version"
+msgstr ""
 
 #: ../src/libromdata/Console/N64.cpp:315
 msgctxt "N64"
@@ -4156,7 +4156,7 @@ msgstr ""
 #: ../src/libromdata/Console/SNES.cpp:1363
 msgctxt "Region"
 msgid "Scandinavia"
-msgstr ""
+msgstr "Skandinavien"
 
 #: ../src/libromdata/Console/SNES.cpp:1373
 msgctxt "Region"
@@ -4203,7 +4203,7 @@ msgstr "SA-1"
 #: ../src/libromdata/Console/SNES.cpp:1459
 msgctxt "SNES"
 msgid "Program Type"
-msgstr ""
+msgstr "Programm Typ"
 
 #: ../src/libromdata/Console/SNES.cpp:1478
 msgctxt "SNES"
@@ -4233,7 +4233,7 @@ msgstr "SRAM-Größe"
 #: ../src/libromdata/Console/WiiSave.cpp:458
 msgctxt "WiiSave"
 msgid "Savegame ID"
-msgstr ""
+msgstr "Spielstand ID"
 
 #: ../src/libromdata/Console/WiiSave.cpp:499
 msgctxt "WiiSave"
@@ -4268,7 +4268,7 @@ msgstr "Herausgeber"
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1160
 msgctxt "Nintendo"
 msgid "Key Index"
-msgstr "Key Index"
+msgstr ""
 
 #: ../src/libromdata/Console/WiiTicket.cpp:453
 #: ../src/libromdata/Console/WiiWAD.cpp:1029
@@ -4341,7 +4341,7 @@ msgstr ""
 #: ../src/libromdata/Console/WiiTicket.cpp:678
 msgctxt "Wii|EncKey"
 msgid "Retail (Wii U)"
-msgstr "Retail (Wii U)"
+msgstr ""
 
 #. tr: Key_CAT_Starbuck_WiiU_Common - Debug Wii U encryption key
 #: ../src/libromdata/Console/WiiTicket.cpp:680
@@ -4359,7 +4359,7 @@ msgstr "Keine"
 #: ../src/libromdata/Console/WiiWAD.cpp:884
 msgctxt "Nintendo"
 msgid "Title Version"
-msgstr ""
+msgstr "Titel Version"
 
 #: ../src/libromdata/Console/WiiU.cpp:354
 #, c-format
@@ -4494,14 +4494,14 @@ msgstr ""
 #: ../src/libromdata/Console/WiiWAD_ops.cpp:85
 msgctxt "WiiWAD"
 msgid "SRL extraction is only supported for DSi TAD packages."
-msgstr ""
+msgstr "SRL Extraktion wird nur für DSi TAD Pakete unterstützt."
 
 #: ../src/libromdata/Console/WiiWAD_ops.cpp:103
 #: ../src/libromdata/Console/WiiWAD_ops.cpp:119
 #: ../src/libromdata/Console/WiiWAD_ops.cpp:131
 msgctxt "WiiWAD"
 msgid "Unable to open the SRL."
-msgstr ""
+msgstr "SRL konnte nicht geöffnet werden."
 
 #: ../src/libromdata/Console/WiiWAD_ops.cpp:106
 msgctxt "WiiWAD"
@@ -4511,12 +4511,12 @@ msgstr ""
 #: ../src/libromdata/Console/WiiWAD_ops.cpp:140
 msgctxt "WiiWAD"
 msgid "Could not open output SRL file."
-msgstr ""
+msgstr "Die Ausgabe der SRL Datei konnte nicht geöffnet werden."
 
 #: ../src/libromdata/Console/WiiWAD_ops.cpp:150
 msgctxt "WiiWAD"
 msgid "SRL file extracted successfully."
-msgstr ""
+msgstr "SRL Datei erfolgreich extrahiert."
 
 #: ../src/libromdata/Console/WiiWAD_ops.cpp:153
 msgctxt "WiiWAD"
@@ -4571,12 +4571,12 @@ msgstr ""
 #: ../src/libromdata/Console/Xbox360_STFS.cpp:926
 msgctxt "Xbox360_STFS"
 msgid "Package Type"
-msgstr ""
+msgstr "Paket Typ"
 
 #: ../src/libromdata/Console/Xbox360_STFS.cpp:930
 msgctxt "Xbox360_STFS|RomData"
 msgid "Type"
-msgstr ""
+msgstr "Typ"
 
 #: ../src/libromdata/Console/Xbox360_STFS.cpp:938
 #: ../src/libromdata/Console/Xbox360_STFS.cpp:940
@@ -4702,7 +4702,7 @@ msgstr ""
 #, c-format
 msgctxt "Xbox360_XEX"
 msgid "The Xbox 360 %s encryption key is not available."
-msgstr ""
+msgstr "Der Xbox 360 %s Verschlüsselungsschlüssel ist nicht verfügbar."
 
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1655
 msgctxt "Xbox360_XEX"
@@ -4778,7 +4778,7 @@ msgstr "Festplatte"
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1713
 msgctxt "Xbox360_XEX"
 msgid "XGD1"
-msgstr ""
+msgstr "XGD1"
 
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1714
 msgctxt "Xbox360_XEX"
@@ -4803,7 +4803,7 @@ msgstr ""
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1720
 msgctxt "Xbox360_XEX"
 msgid "Memory Unit"
-msgstr ""
+msgstr "Speichereinheit"
 
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1722
 msgctxt "Xbox360_XEX"
@@ -4858,12 +4858,12 @@ msgstr ""
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1770
 msgctxt "Xbox360_XEX"
 msgid "None"
-msgstr ""
+msgstr "Keine"
 
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1782
 msgctxt "Region"
 msgid "New Zealand"
-msgstr ""
+msgstr "Neuseeland"
 
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1817
 msgctxt "Xbox360_XEX"
@@ -4878,12 +4878,12 @@ msgstr ""
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1889
 msgctxt "Xbox360_XEX|EncKey"
 msgid "None"
-msgstr ""
+msgstr "Keine"
 
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1899
 msgctxt "Xbox360_XEX|EncKey"
 msgid "Cannot Determine"
-msgstr ""
+msgstr "Nicht bestimmbar"
 
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1903
 msgctxt "Xbox360_XEX|EncKey"
@@ -4898,7 +4898,7 @@ msgstr "Debug"
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1914
 msgctxt "Xbox360_XEX|Compression"
 msgid "None"
-msgstr ""
+msgstr "Keine"
 
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1915
 msgctxt "Xbox360_XEX|Compression"
@@ -4908,12 +4908,12 @@ msgstr ""
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1916
 msgctxt "Xbox360_XEX|Compression"
 msgid "Normal (LZX)"
-msgstr ""
+msgstr "Normal (LZX)"
 
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1917
 msgctxt "Xbox360_XEX|Compression"
 msgid "Delta"
-msgstr ""
+msgstr "Delta"
 
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1920
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1924
@@ -4924,27 +4924,27 @@ msgstr "Kompression"
 #: ../src/libromdata/Console/XboxDisc.cpp:721
 msgctxt "XboxDisc"
 msgid "Disc Type"
-msgstr ""
+msgstr "Disk Typ"
 
 #: ../src/libromdata/Console/XboxDisc.cpp:726
 msgctxt "XboxDisc"
 msgid "Extracted XDVDFS"
-msgstr ""
+msgstr "Extrahierte XDVDFS"
 
 #: ../src/libromdata/Console/XboxDisc.cpp:745
 msgctxt "XboxDisc"
 msgid "Disc Timestamp"
-msgstr ""
+msgstr "Disk Zeitstempel"
 
 #: ../src/libromdata/Console/XboxDisc.cpp:768
 msgctxt "XboxDisc"
 msgid "Boot Filename"
-msgstr ""
+msgstr "Boot Dateiname"
 
 #: ../src/libromdata/Console/Xbox_XBE.cpp:668
 msgctxt "Xbox_XBE"
 msgid "PE Filename"
-msgstr ""
+msgstr "PE Dateiname"
 
 #: ../src/libromdata/Console/Xbox_XBE.cpp:709
 msgctxt "Xbox_XBE"
@@ -5005,12 +5005,12 @@ msgstr "DVD-RW SL"
 #: ../src/libromdata/Console/Xbox_XBE.cpp:746
 msgctxt "Xbox_XBE"
 msgid "DVD-RW DL"
-msgstr ""
+msgstr "DVD-RW DL"
 
 #: ../src/libromdata/Console/Xbox_XBE.cpp:748
 msgctxt "Xbox_XBE"
 msgid "Dongle"
-msgstr ""
+msgstr "Dongle"
 
 #: ../src/libromdata/Console/Xbox_XBE.cpp:749
 msgctxt "Xbox_XBE"
@@ -5050,7 +5050,7 @@ msgstr "HDD nicht einrichten"
 #: ../src/libromdata/Console/Xbox_XBE.cpp:785
 msgctxt "Xbox_XBE"
 msgid "Init Flags"
-msgstr ""
+msgstr "Init-Flaggen"
 
 #: ../src/libromdata/Console/Xbox_XBE.cpp:799
 msgctxt "Region"
@@ -6614,10 +6614,9 @@ msgid "3 cycles"
 msgstr ""
 
 #: ../src/libromdata/Media/CBMDOS.cpp:1118
-#, fuzzy
 msgctxt "CBMDOS"
 msgid "Disk Name"
-msgstr "Disk Name"
+msgstr ""
 
 #: ../src/libromdata/Media/CBMDOS.cpp:1136
 msgctxt "CBMDOS"
@@ -6625,10 +6624,9 @@ msgid "Disk ID"
 msgstr ""
 
 #: ../src/libromdata/Media/CBMDOS.cpp:1140
-#, fuzzy
 msgctxt "CBMDOS"
 msgid "DOS Type"
-msgstr "DOS Typ"
+msgstr ""
 
 #: ../src/libromdata/Media/CBMDOS.cpp:1283
 msgctxt "CBMDOS|Directory"
@@ -7279,7 +7277,7 @@ msgstr ""
 #: ../src/libromdata/Other/ELF.cpp:2069
 msgctxt "ELF"
 msgid "ABI Version"
-msgstr ""
+msgstr "ABI Version"
 
 #: ../src/libromdata/Other/ELF.cpp:2075
 msgctxt "ELF"
@@ -7294,7 +7292,7 @@ msgstr ""
 #: ../src/libromdata/Other/ELF.cpp:2078
 msgctxt "ELF|Linkage"
 msgid "Static"
-msgstr ""
+msgstr "Statisch"
 
 #: ../src/libromdata/Other/ELF.cpp:2083
 msgctxt "ELF"
@@ -7380,96 +7378,96 @@ msgstr ""
 #: ../src/libromdata/Other/EXE.cpp:201
 msgctxt "EXE|FileType"
 msgid "Font"
-msgstr ""
+msgstr "Schriftart"
 
 #. tr: VFT_VXD
 #: ../src/libromdata/Other/EXE.cpp:203
 msgctxt "EXE|FileType"
 msgid "Virtual Device Driver"
-msgstr ""
+msgstr "Virtueller Gerätetreiber"
 
 #. tr: VFT_STATIC_LIB
 #: ../src/libromdata/Other/EXE.cpp:207
 msgctxt "EXE|FileType"
 msgid "Static Library"
-msgstr ""
+msgstr "Statische Bibliothek"
 
 #: ../src/libromdata/Other/EXE.cpp:209
 msgctxt "EXE"
 msgid "File Type"
-msgstr ""
+msgstr "Dateiformat"
 
 #. tr: VFT2_DRV_PRINTER
 #: ../src/libromdata/Other/EXE.cpp:234
 msgctxt "EXE|FileSubType"
 msgid "Printer"
-msgstr ""
+msgstr "Drucker"
 
 #. tr: VFT2_DRV_KEYBOARD
 #: ../src/libromdata/Other/EXE.cpp:236
 msgctxt "EXE|FileSubType"
 msgid "Keyboard"
-msgstr ""
+msgstr "Tastatur"
 
 #. tr: VFT2_DRV_LANGUAGE
 #: ../src/libromdata/Other/EXE.cpp:238
 msgctxt "EXE|FileSubType"
 msgid "Language"
-msgstr ""
+msgstr "Sprache"
 
 #. tr: VFT2_DRV_DISPLAY
 #: ../src/libromdata/Other/EXE.cpp:240
 msgctxt "EXE|FileSubType"
 msgid "Display"
-msgstr ""
+msgstr "Anzeige"
 
 #. tr: VFT2_DRV_MOUSE
 #: ../src/libromdata/Other/EXE.cpp:242
 msgctxt "EXE|FileSubType"
 msgid "Mouse"
-msgstr ""
+msgstr "Maus"
 
 #. tr: VFT2_DRV_NETWORK
 #: ../src/libromdata/Other/EXE.cpp:244
 msgctxt "EXE|FileSubType"
 msgid "Network"
-msgstr ""
+msgstr "Netzwerk"
 
 #. tr: VFT2_DRV_SYSTEM
 #: ../src/libromdata/Other/EXE.cpp:246
 msgctxt "EXE|FileSubType"
 msgid "System"
-msgstr ""
+msgstr "System"
 
 #. tr: VFT2_DRV_INSTALLABLE
 #: ../src/libromdata/Other/EXE.cpp:248
 msgctxt "EXE|FileSubType"
 msgid "Installable"
-msgstr ""
+msgstr "Installierbar"
 
 #. tr: VFT2_DRV_SOUND
 #: ../src/libromdata/Other/EXE.cpp:250
 msgctxt "EXE|FileSubType"
 msgid "Sound"
-msgstr ""
+msgstr "Ton"
 
 #. tr: VFT2_DRV_COMM
 #: ../src/libromdata/Other/EXE.cpp:252
 msgctxt "EXE|FileSubType"
 msgid "Communications"
-msgstr ""
+msgstr "Kommunikation"
 
 #. tr: VFT2_DRV_INPUTMETHOD
 #: ../src/libromdata/Other/EXE.cpp:254
 msgctxt "EXE|FileSubType"
 msgid "Input Method"
-msgstr ""
+msgstr "Eingabemethode"
 
 #. tr: VFT2_DRV_VERSIONED_PRINTER
 #: ../src/libromdata/Other/EXE.cpp:256
 msgctxt "EXE|FileSubType"
 msgid "Versioned Printer"
-msgstr ""
+msgstr "Versionierter Drucker"
 
 #. tr: VFT2_FONT_RASTER
 #: ../src/libromdata/Other/EXE.cpp:270
@@ -7502,12 +7500,12 @@ msgstr ""
 #: ../src/libromdata/Other/EXE.cpp:331
 msgctxt "EXE|StringFileInfo"
 msgid "Key"
-msgstr ""
+msgstr "Schlüssel"
 
 #: ../src/libromdata/Other/EXE.cpp:332
 msgctxt "EXE|StringFileInfo"
 msgid "Value"
-msgstr ""
+msgstr "Wert"
 
 #: ../src/libromdata/Other/EXE.cpp:372
 msgctxt "EXE"
@@ -7647,17 +7645,17 @@ msgstr ""
 #: ../src/libromdata/Other/EXE_manifest.cpp:249
 msgctxt "EXE|Manifest"
 msgid "Description"
-msgstr ""
+msgstr "Beschreibung"
 
 #: ../src/libromdata/Other/EXE_manifest.cpp:262
 msgctxt "EXE|Manifest"
 msgid "Execution Level"
-msgstr ""
+msgstr "Ausführungsebene"
 
 #: ../src/libromdata/Other/EXE_manifest.cpp:263
 msgctxt "EXE|Manifest"
 msgid "UI Access"
-msgstr ""
+msgstr "UI Zugriff"
 
 #: ../src/libromdata/Other/EXE_manifest.cpp:283
 msgctxt "EXE|Manifest|WinSettings"
@@ -7687,7 +7685,7 @@ msgstr ""
 #: ../src/libromdata/Other/EXE_manifest.cpp:288
 msgctxt "EXE|Manifest|WinSettings"
 msgid "Printer Driver Isolation"
-msgstr ""
+msgstr "Druckertreiberisolation"
 
 #: ../src/libromdata/Other/EXE_manifest.cpp:289
 msgctxt "EXE|Manifest|WinSettings"
@@ -7697,7 +7695,7 @@ msgstr ""
 #: ../src/libromdata/Other/EXE_manifest.cpp:323
 msgctxt "EXE|Manifest"
 msgid "Settings"
-msgstr ""
+msgstr "Einstellungen"
 
 #: ../src/libromdata/Other/EXE_manifest.cpp:330
 msgctxt "EXE|Manifest"
@@ -7815,17 +7813,17 @@ msgstr ""
 #: ../src/libromdata/Other/EXE_NE.cpp:369
 msgctxt "EXE|ApplType"
 msgid "Windows compatible"
-msgstr ""
+msgstr "Windows kompatibel"
 
 #: ../src/libromdata/Other/EXE_NE.cpp:370
 msgctxt "EXE|ApplType"
 msgid "Windows application"
-msgstr ""
+msgstr "Windows Anwendung"
 
 #: ../src/libromdata/Other/EXE_NE.cpp:374
 msgctxt "EXE"
 msgid "Application Type"
-msgstr ""
+msgstr "Anwendungstyp"
 
 #: ../src/libromdata/Other/EXE_NE.cpp:381
 msgctxt "EXE|ApplFlags"
@@ -7952,7 +7950,7 @@ msgstr ""
 #: ../src/libromdata/Other/EXE_PE.cpp:1155
 msgctxt "EXE|Exports"
 msgid "Name"
-msgstr ""
+msgstr "Name"
 
 #: ../src/libromdata/Other/EXE_NE.cpp:709
 msgctxt "EXE|Exports"
@@ -8086,12 +8084,12 @@ msgstr ""
 #: ../src/libromdata/Other/EXE_PE.cpp:727
 msgctxt "EXE"
 msgid "Not set"
-msgstr ""
+msgstr "Nicht gesetzt"
 
 #: ../src/libromdata/Other/EXE_PE.cpp:917
 msgctxt "EXE|Exports"
 msgid "None"
-msgstr ""
+msgstr "Keine"
 
 #: ../src/libromdata/Other/EXE_PE.cpp:932
 #: ../src/libromdata/Other/EXE_PE.cpp:951
@@ -8124,27 +8122,27 @@ msgstr ""
 #: ../src/libromdata/Other/Lua.cpp:688
 msgctxt "Lua"
 msgid "int size"
-msgstr ""
+msgstr "int Größe"
 
 #: ../src/libromdata/Other/Lua.cpp:690
 msgctxt "Lua"
 msgid "size_t size"
-msgstr ""
+msgstr "size_t Größe"
 
 #: ../src/libromdata/Other/Lua.cpp:692
 msgctxt "Lua"
 msgid "lua_Instruction size"
-msgstr ""
+msgstr "lua_Instruction Größe"
 
 #: ../src/libromdata/Other/Lua.cpp:694
 msgctxt "Lua"
 msgid "lua_Integer size"
-msgstr ""
+msgstr "lua_Integer Größe"
 
 #: ../src/libromdata/Other/Lua.cpp:696
 msgctxt "Lua"
 msgid "lua_Number size"
-msgstr ""
+msgstr "lua_Number Größe"
 
 #: ../src/libromdata/Other/Lua.cpp:701
 msgctxt "Lua"
@@ -8154,17 +8152,17 @@ msgstr ""
 #: ../src/libromdata/Other/Lua.cpp:704
 msgctxt "Lua"
 msgid "Integer"
-msgstr ""
+msgstr "Ganzzahl"
 
 #: ../src/libromdata/Other/Lua.cpp:707
 msgctxt "Lua"
 msgid "String"
-msgstr ""
+msgstr "Zeichenkette"
 
 #: ../src/libromdata/Other/Lua.cpp:714
 msgctxt "Lua"
 msgid "lua_Number type"
-msgstr ""
+msgstr "lua_Number Typ"
 
 #: ../src/libromdata/Other/Lua.cpp:719
 msgctxt "Lua"
@@ -8179,17 +8177,17 @@ msgstr ""
 #: ../src/libromdata/Other/Lua.cpp:725
 msgctxt "Lua"
 msgid "File corrupted"
-msgstr ""
+msgstr "Datei beschädigt"
 
 #: ../src/libromdata/Other/MachO.cpp:495
 msgctxt "MachO"
 msgid "Format"
-msgstr ""
+msgstr "Format"
 
 #: ../src/libromdata/Other/MachO.cpp:508
 msgctxt "MachO"
 msgid "CPU"
-msgstr ""
+msgstr "CPU"
 
 #: ../src/libromdata/Other/MachO.cpp:520
 msgctxt "MachO"
@@ -8204,7 +8202,7 @@ msgstr ""
 #: ../src/libromdata/Other/NintendoBadge.cpp:639
 msgctxt "NintendoBadge"
 msgid "Type"
-msgstr ""
+msgstr "Typ"
 
 #: ../src/libromdata/Other/NintendoBadge.cpp:640
 msgctxt "NintendoBadge"
@@ -8239,12 +8237,12 @@ msgstr ""
 #: ../src/libromdata/Other/NintendoBadge.cpp:715
 msgctxt "NintendoBadge"
 msgid "Launch Title ID"
-msgstr ""
+msgstr "Start Titel ID"
 
 #: ../src/libromdata/Other/NintendoBadge.cpp:719
 msgctxt "NintendoBadge"
 msgid "None"
-msgstr ""
+msgstr "Keine"
 
 #. tr: %1$s == Title name, %2$s == Region
 #: ../src/libromdata/Other/NintendoBadge.cpp:739
@@ -8275,22 +8273,22 @@ msgstr ""
 #: ../src/libromdata/Other/NintendoBadge.cpp:759
 msgctxt "NintendoBadge"
 msgid "Badge Set"
-msgstr ""
+msgstr "Abzeichen Set"
 
 #: ../src/libromdata/Other/NintendoBadge.cpp:790
 msgctxt "NintendoBadge"
 msgid "Set ID"
-msgstr ""
+msgstr "Set ID"
 
 #: ../src/libromdata/Other/RpTextureWrapper.cpp:257
 msgctxt "RpTextureWrapper"
 msgid "Dimensions"
-msgstr ""
+msgstr "Größen"
 
 #: ../src/libromdata/Other/RpTextureWrapper.cpp:267
 msgctxt "RpTextureWrapper"
 msgid "Rescale To"
-msgstr ""
+msgstr "Skalieren nach"
 
 #: ../src/libromdata/Other/RpTextureWrapper.cpp:278
 msgctxt "RpTextureWrapper"
@@ -8597,7 +8595,7 @@ msgstr ""
 #: ../src/librpbase/RomData.cpp:600
 msgctxt "RomData|FileType"
 msgid "eMMC Dump"
-msgstr ""
+msgstr "eMMC-Dump"
 
 #. tr: FileType::ContainerFile
 #: ../src/librpbase/RomData.cpp:602
@@ -8663,7 +8661,7 @@ msgstr ""
 #: ../src/librpbase/RomData.cpp:622
 msgctxt "RomData|FileType"
 msgid "Partition"
-msgstr ""
+msgstr "Partition"
 
 #. tr: FileType::MetadataFile
 #: ../src/librpbase/RomData.cpp:624
@@ -8767,19 +8765,19 @@ msgstr ""
 #: ../src/librpbase/RomFields.cpp:345
 msgctxt "RomFields|AgeRating"
 msgid "No"
-msgstr ""
+msgstr "Nein"
 
 #. tr: No age restriction.
 #: ../src/librpbase/RomFields.cpp:351
 msgctxt "RomFields|AgeRating"
 msgid "All"
-msgstr ""
+msgstr "Alle"
 
 #. tr: No age ratings.
 #: ../src/librpbase/RomFields.cpp:526
 msgctxt "RomFields|AgeRating"
 msgid "None"
-msgstr ""
+msgstr "Keine"
 
 #: ../src/librpbase/TextOut_text.cpp:419 ../src/librpbase/TextOut_text.cpp:440
 msgctxt "TextOut"
@@ -8814,7 +8812,7 @@ msgstr ""
 #: ../src/librpbase/TextOut_text.cpp:977
 msgctxt "TextOut"
 msgid "Animated icon is present (use -a to extract)"
-msgstr ""
+msgstr "Animiertes Icon ist vorhanden (verwende -a zum Extrahieren)"
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:19
 msgctxt "Ext2AttrView"
@@ -9040,7 +9038,7 @@ msgstr ""
 #: ../src/librpfile/xattr/Ext2AttrData.c:80
 msgctxt "Ext2AttrView"
 msgid "DAX"
-msgstr ""
+msgstr "DAX"
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:81
 msgctxt "Ext2AttrView"
@@ -9085,7 +9083,7 @@ msgstr "unveränderlich"
 #: ../src/librpfile/xattr/XfsAttrData.c:26
 msgctxt "XfsAttrView"
 msgid "File cannot be modified"
-msgstr ""
+msgstr "Datei kann nicht geändert werden"
 
 #: ../src/librpfile/xattr/XfsAttrData.c:28
 msgctxt "XfsAttrView"
@@ -9212,105 +9210,105 @@ msgstr ""
 msgctxt "LibRpText|FileSize"
 msgid "byte"
 msgid_plural "bytes"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "byte"
+msgstr[1] "bytes"
 
 #. tr: Kilobytes
 #: ../src/librptext/conversion.cpp:296 ../src/librptext/conversion.cpp:384
 msgctxt "LibRpText|FileSize"
 msgid "KiB"
-msgstr ""
+msgstr "KiB"
 
 #. tr: Megabytes
 #: ../src/librptext/conversion.cpp:301
 msgctxt "LibRpText|FileSize"
 msgid "MiB"
-msgstr ""
+msgstr "MiB"
 
 #. tr: Gigabytes
 #: ../src/librptext/conversion.cpp:306
 msgctxt "LibRpText|FileSize"
 msgid "GiB"
-msgstr ""
+msgstr "GiB"
 
 #. tr: Terabytes
 #: ../src/librptext/conversion.cpp:311
 msgctxt "LibRpText|FileSize"
 msgid "TiB"
-msgstr ""
+msgstr "TiB"
 
 #. tr: Petabytes
 #: ../src/librptext/conversion.cpp:316
 msgctxt "LibRpText|FileSize"
 msgid "PiB"
-msgstr ""
+msgstr "PiB"
 
 #. tr: Exabytes
 #: ../src/librptext/conversion.cpp:321
 msgctxt "LibRpText|FileSize"
 msgid "EiB"
-msgstr ""
+msgstr "EiB"
 
 #. tr: %1$s == localized value, %2$s == suffix (e.g. MiB)
 #: ../src/librptext/conversion.cpp:358 ../src/librptext/conversion.cpp:383
 #, c-format
 msgctxt "LibRpText|FileSize"
 msgid "%1$s %2$s"
-msgstr ""
+msgstr "%1$s %2$s"
 
 #. tr: Hertz (< 1,000)
 #: ../src/librptext/conversion.cpp:402
 msgctxt "LibRpText|Frequency"
 msgid "Hz"
-msgstr ""
+msgstr "Hz"
 
 #. tr: Kilohertz
 #: ../src/librptext/conversion.cpp:407
 msgctxt "LibRpText|Frequency"
 msgid "kHz"
-msgstr ""
+msgstr "kHz"
 
 #. tr: Megahertz
 #: ../src/librptext/conversion.cpp:412
 msgctxt "LibRpText|Frequency"
 msgid "MHz"
-msgstr ""
+msgstr "MHz"
 
 #. tr: Gigahertz
 #: ../src/librptext/conversion.cpp:417
 msgctxt "LibRpText|Frequency"
 msgid "GHz"
-msgstr ""
+msgstr "GHz"
 
 #. tr: %1$s == localized value, %2$s == suffix (e.g. MHz)
 #: ../src/librptext/conversion.cpp:448
 #, c-format
 msgctxt "LibRpText|Frequency"
 msgid "%1$s %2$s"
-msgstr ""
+msgstr "%1$s %2$s"
 
 #: ../src/librptexture/fileformat/DidjTex.cpp:471
 msgctxt "DidjTex"
 msgid "Display Size"
-msgstr ""
+msgstr "Anzeigegröße"
 
 #: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1287
 #, c-format
 msgctxt "DirectDrawSurface"
 msgid "Alpha (%u-bit)"
-msgstr ""
+msgstr "Alpha (%u-bit)"
 
 #: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1291
 #, c-format
 msgctxt "DirectDrawSurface"
 msgid "YUV (%u-bit)"
-msgstr ""
+msgstr "YUV (%u-bit)"
 
 #: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1296
 #, c-format
 msgctxt "DirectDrawSurface"
 msgid "Luminance + Alpha (%u-bit)"
-msgstr ""
+msgstr "Helligkeit + Alpha (%u-bit)"
 
 #: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1300
 #, c-format
@@ -9417,12 +9415,12 @@ msgstr ""
 #: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1425
 msgctxt "DirectDrawSurface|dwCaps"
 msgid "Texture"
-msgstr ""
+msgstr "Textur"
 
 #: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1431
 msgctxt "DirectDrawSurface|dwCaps"
 msgid "Mipmap"
-msgstr ""
+msgstr "Mipmap"
 
 #: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1435
 msgctxt "DirectDrawSurface"
@@ -9432,42 +9430,42 @@ msgstr ""
 #: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1442
 msgctxt "DirectDrawSurface|dwCaps2"
 msgid "Cubemap"
-msgstr ""
+msgstr "Cubemap"
 
 #: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1443
 msgctxt "DirectDrawSurface|dwCaps2"
 msgid "+X"
-msgstr ""
+msgstr "+X"
 
 #: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1444
 msgctxt "DirectDrawSurface|dwCaps2"
 msgid "-X"
-msgstr ""
+msgstr "-X"
 
 #: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1446
 msgctxt "DirectDrawSurface|dwCaps2"
 msgid "+Y"
-msgstr ""
+msgstr "+Y"
 
 #: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1447
 msgctxt "DirectDrawSurface|dwCaps2"
 msgid "-Y"
-msgstr ""
+msgstr "-Y"
 
 #: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1448
 msgctxt "DirectDrawSurface|dwCaps2"
 msgid "+Z"
-msgstr ""
+msgstr "+Z"
 
 #: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1449
 msgctxt "DirectDrawSurface|dwCaps2"
 msgid "-Z"
-msgstr ""
+msgstr "-Z"
 
 #: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1454
 msgctxt "DirectDrawSurface|dwCaps2"
 msgid "Volume"
-msgstr ""
+msgstr "Lautstärke"
 
 #: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1458
 msgctxt "DirectDrawSurface"
@@ -9669,7 +9667,7 @@ msgstr ""
 #: ../src/librptexture/fileformat/KhronosKTX.cpp:1109
 msgctxt "KhronosKTX|KeyValue"
 msgid "Key"
-msgstr ""
+msgstr "Schlüssel"
 
 #: ../src/librptexture/fileformat/KhronosKTX.cpp:1110
 msgctxt "KhronosKTX|KeyValue"
@@ -9716,7 +9714,7 @@ msgstr ""
 #: ../src/librptexture/fileformat/PowerVR3.cpp:1036
 msgctxt "PowerVR3"
 msgid "Flags"
-msgstr "Flags"
+msgstr ""
 
 #: ../src/librptexture/fileformat/PowerVR3.cpp:1041
 msgctxt "PowerVR3|ColorSpace"
