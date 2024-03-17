@@ -439,7 +439,7 @@ rp_message_widget_set_text(RpMessageWidget *widget, const gchar *str)
 {
 	g_return_if_fail(RP_IS_MESSAGE_WIDGET(widget));
 
-	if (!g_strcmp0(gtk_label_get_text(GTK_LABEL(widget->label)), str)) {
+	if (g_strcmp0(gtk_label_get_text(GTK_LABEL(widget->label)), str) != 0) {
 		gtk_label_set_text(GTK_LABEL(widget->label), str);
 		g_object_notify_by_pspec(G_OBJECT(widget), props[PROP_TEXT]);
 	}
