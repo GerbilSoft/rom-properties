@@ -140,6 +140,7 @@ CIAReaderPrivate::CIAReaderPrivate(CIAReader *q,
 		// - IV: Title ID (little-endian)
 		cipher->setChainingMode(IAesCipher::ChainingMode::CBC);
 		cipher->setKey(keyNormal.u8, sizeof(keyNormal.u8));
+
 		// CIA IV is the title ID in big-endian.
 		// The ticket title ID is already in big-endian,
 		// so copy it over directly.

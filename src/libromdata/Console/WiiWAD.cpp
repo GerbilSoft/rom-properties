@@ -199,7 +199,7 @@ int WiiWADPrivate::openSRL(void)
 	PartitionFilePtr ptFile = std::make_shared<PartitionFile>(cbcReader.get(),
 		imetContentOffset, be64_to_cpu(pIMETContent->size));
 	if (ptFile->isOpen()) {
-		// Open the SRL..
+		// Open the SRL.
 		RomDataPtr srl = std::make_shared<NintendoDS>(ptFile);
 		if (srl->isOpen()) {
 			// Opened successfully.
