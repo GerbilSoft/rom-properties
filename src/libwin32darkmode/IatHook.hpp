@@ -13,10 +13,19 @@
 
 #include <stdint.h>
 
-// PIMAGE_DELAYLOAD_DESCRIPTOR was added in the Windows 8 SDK.
+// IMAGE_DELAYLOAD_DESCRIPTOR was added in the Windows 8 SDK.
+// MinGW-w64 also has it as of v6.0.0.
 #include "libwin32common/RpWin32_sdk.h"
 #include <ntverp.h>
-#if !defined(VER_PRODUCTBUILD) || VER_PRODUCTBUILD < 9200
+#if defined(__MINGW32__)
+#  if !defined(__MINGW64_VERSION_MAJOR) || (defined(__MINGW64_VERSION_MAJOR) && __MINGW64_VERSION_MAJOR < 6)
+#    define NEEDS_IMAGE_DELAYLOAD_DESCRIPTOR 1
+#  endif
+#elif !defined(VER_PRODUCTBUILD) || VER_PRODUCTBUILD < 9200
+#  define NEEDS_IMAGE_DELAYLOAD_DESCRIPTOR 1
+#endif
+
+#ifdef NEEDS_IMAGE_DELAYLOAD_DESCRIPTOR
 typedef struct _IMAGE_DELAYLOAD_DESCRIPTOR {
 	union {
 		DWORD AllAttributes;
@@ -37,7 +46,7 @@ typedef struct _IMAGE_DELAYLOAD_DESCRIPTOR {
 } IMAGE_DELAYLOAD_DESCRIPTOR, *PIMAGE_DELAYLOAD_DESCRIPTOR;
 
 typedef const IMAGE_DELAYLOAD_DESCRIPTOR *PCIMAGE_DELAYLOAD_DESCRIPTOR;
-#endif /* !defined(VER_PRODUCTBUILD) || VER_PRODUCTBUILD < 9200 */
+#endif /* NEEDS_IMAGE_DELAYLOAD_DESCRIPTOR */
 
 template <typename T, typename T1, typename T2>
 constexpr T RVA2VA(T1 base, T2 rva)
