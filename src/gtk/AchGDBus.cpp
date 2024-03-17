@@ -10,7 +10,6 @@
 #include "AchGDBus.hpp"
 
 // librpbase
-#include "librpbase/Achievements.hpp"
 using LibRpBase::Achievements;
 
 // GDBus
@@ -23,61 +22,12 @@ using LibRpBase::Achievements;
 // C++ STL classes
 using std::string;
 
-class AchGDBusPrivate
-{
-public:
-	AchGDBusPrivate();
-	~AchGDBusPrivate();
-
-private:
-	RP_DISABLE_COPY(AchGDBusPrivate)
-
-public:
-	// Static AchGDBus instance.
-	// TODO: Q_GLOBAL_STATIC() equivalent, though we
-	// may need special initialization if the compiler
-	// doesn't support thread-safe statics.
-	static AchGDBus instance;
-	bool hasRegistered;
-
-public:
-	/**
-	 * Notification function. (static)
-	 * @param user_data	[in] User data. (this)
-	 * @param id		[in] Achievement ID.
-	 * @return 0 on success; negative POSIX error code on error.
-	 */
-	static int RP_C_API notifyFunc(intptr_t user_data, Achievements::ID id);
-
-	/**
-	 * Notification function. (non-static)
-	 * @param id	[in] Achievement ID.
-	 * @return 0 on success; negative POSIX error code on error.
-	 */
-	int notifyFunc(Achievements::ID id);
-};
-
-/** AchGDBusPrivate **/
+/** AchGDBusPrivate (previously) **/
 
 // Singleton instance.
 // Using a static non-pointer variable in order to
 // handle proper destruction when the DLL is unloaded.
-AchGDBus AchGDBusPrivate::instance;
-
-AchGDBusPrivate::AchGDBusPrivate()
-	: hasRegistered(false)
-{
-	// NOTE: Cannot register here because the static Achievements
-	// instance might not be fully initialized yet.
-}
-
-AchGDBusPrivate::~AchGDBusPrivate()
-{
-	if (hasRegistered) {
-		Achievements *const pAch = Achievements::instance();
-		pAch->clearNotifyFunction(notifyFunc, reinterpret_cast<intptr_t>(this));
-	}
-}
+AchGDBus AchGDBus::m_instance;
 
 /**
  * Notification function. (static)
@@ -85,10 +35,10 @@ AchGDBusPrivate::~AchGDBusPrivate()
  * @param id		[in] Achievement ID.
  * @return 0 on success; negative POSIX error code on error.
  */
-int RP_C_API AchGDBusPrivate::notifyFunc(intptr_t user_data, Achievements::ID id)
+int RP_C_API AchGDBus::notifyFunc(intptr_t user_data, Achievements::ID id)
 {
-	AchGDBusPrivate *const pAchGP = reinterpret_cast<AchGDBusPrivate*>(user_data);
-	return pAchGP->notifyFunc(id);
+	AchGDBus *const q = reinterpret_cast<AchGDBus*>(user_data);
+	return q->notifyFunc(id);
 }
 
 /**
@@ -96,7 +46,7 @@ int RP_C_API AchGDBusPrivate::notifyFunc(intptr_t user_data, Achievements::ID id
  * @param id	[in] Achievement ID.
  * @return 0 on success; negative POSIX error code on error.
  */
-int AchGDBusPrivate::notifyFunc(Achievements::ID id)
+int AchGDBus::notifyFunc(Achievements::ID id)
 {
 	assert((int)id >= 0);
 	assert(id < Achievements::ID::Max);
@@ -277,12 +227,18 @@ int AchGDBusPrivate::notifyFunc(Achievements::ID id)
 /** AchGDBus **/
 
 AchGDBus::AchGDBus()
-	: d_ptr(new AchGDBusPrivate())
-{ }
+	: m_hasRegistered(false)
+{
+	// NOTE: Cannot register here because the static Achievements
+	// instance might not be fully initialized yet.
+}
 
 AchGDBus::~AchGDBus()
 {
-	delete d_ptr;
+	if (m_hasRegistered) {
+		Achievements *const pAch = Achievements::instance();
+		pAch->clearNotifyFunction(notifyFunc, reinterpret_cast<intptr_t>(this));
+	}
 }
 
 /**
@@ -296,16 +252,15 @@ AchGDBus::~AchGDBus()
  */
 AchGDBus *AchGDBus::instance(void)
 {
-	AchGDBus *const q = &AchGDBusPrivate::instance;
+	AchGDBus *const q = &AchGDBus::m_instance;
 
 	// NOTE: Cannot register in the private class constructor because
 	// the Achievements instance might not be fully initialized yet.
 	// Registering here instead.
-	AchGDBusPrivate *const d = q->d_ptr;
-	if (!d->hasRegistered) {
+	if (!q->m_hasRegistered) {
 		Achievements *const pAch = Achievements::instance();
-		pAch->setNotifyFunction(AchGDBusPrivate::notifyFunc, reinterpret_cast<intptr_t>(d));
-		d->hasRegistered = true;
+		pAch->setNotifyFunction(AchGDBus::notifyFunc, reinterpret_cast<intptr_t>(q));
+		q->m_hasRegistered = true;
 	}
 
 	return q;

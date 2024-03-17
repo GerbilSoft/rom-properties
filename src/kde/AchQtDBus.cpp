@@ -10,7 +10,6 @@
 #include "AchQtDBus.hpp"
 
 // librpbase, librptexture
-#include "librpbase/Achievements.hpp"
 using LibRpBase::Achievements;
 using LibRpTexture::argb32_t;
 
@@ -24,40 +23,6 @@ using LibRpTexture::argb32_t;
 
 // Achievement spritesheets
 #include "AchSpriteSheet.hpp"
-
-class AchQtDBusPrivate
-{
-public:
-	AchQtDBusPrivate();
-	~AchQtDBusPrivate();
-
-private:
-	RP_DISABLE_COPY(AchQtDBusPrivate)
-
-public:
-	// Static AchQtDBus instance.
-	// TODO: Q_GLOBAL_STATIC() equivalent, though we
-	// may need special initialization if the compiler
-	// doesn't support thread-safe statics.
-	static AchQtDBus instance;
-	bool hasRegistered;
-
-public:
-	/**
-	 * Notification function. (static)
-	 * @param user_data	[in] User data. (this)
-	 * @param id		[in] Achievement ID.
-	 * @return 0 on success; negative POSIX error code on error.
-	 */
-	static int RP_C_API notifyFunc(intptr_t user_data, Achievements::ID id);
-
-	/**
-	 * Notification function. (non-static)
-	 * @param id	[in] Achievement ID.
-	 * @return 0 on success; negative POSIX error code on error.
-	 */
-	int notifyFunc(Achievements::ID id);
-};
 
 struct NotifyIconStruct {
 	int width;
@@ -98,47 +63,31 @@ inline const QDBusArgument &operator>>(const QDBusArgument &argument, NotifyIcon
 	return argument;
 }
 
-/** AchQtDBusPrivate **/
+/** AchQtDBusPrivate (previously) **/
 
 // Singleton instance.
 // Using a static non-pointer variable in order to
 // handle proper destruction when the DLL is unloaded.
-AchQtDBus AchQtDBusPrivate::instance;
+AchQtDBus AchQtDBus::m_instance;
 
-AchQtDBusPrivate::AchQtDBusPrivate()
-	: hasRegistered(false)
+/**
+ * Notification function (static)
+ * @param user_data	[in] User data (this)
+ * @param id		[in] Achievement ID
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int RP_C_API AchQtDBus::notifyFunc(intptr_t user_data, Achievements::ID id)
 {
-	// NOTE: Cannot register here because the static Achievements
-	// instance might not be fully initialized yet.
-	qDBusRegisterMetaType<NotifyIconStruct>();
-}
-
-AchQtDBusPrivate::~AchQtDBusPrivate()
-{
-	if (hasRegistered) {
-		Achievements *const pAch = Achievements::instance();
-		pAch->clearNotifyFunction(notifyFunc, reinterpret_cast<intptr_t>(this));
-	}
+	AchQtDBus *const q = reinterpret_cast<AchQtDBus*>(user_data);
+	return q->notifyFunc(id);
 }
 
 /**
- * Notification function. (static)
- * @param user_data	[in] User data. (this)
- * @param id		[in] Achievement ID.
+ * Notification function (non-static)
+ * @param id	[in] Achievement ID
  * @return 0 on success; negative POSIX error code on error.
  */
-int RP_C_API AchQtDBusPrivate::notifyFunc(intptr_t user_data, Achievements::ID id)
-{
-	AchQtDBusPrivate *const pAchQtP = reinterpret_cast<AchQtDBusPrivate*>(user_data);
-	return pAchQtP->notifyFunc(id);
-}
-
-/**
- * Notification function. (non-static)
- * @param id	[in] Achievement ID.
- * @return 0 on success; negative POSIX error code on error.
- */
-int AchQtDBusPrivate::notifyFunc(Achievements::ID id)
+int AchQtDBus::notifyFunc(Achievements::ID id)
 {
 	assert((int)id >= 0);
 	assert(id < Achievements::ID::Max);
@@ -256,12 +205,19 @@ int AchQtDBusPrivate::notifyFunc(Achievements::ID id)
 /** AchQtDBus **/
 
 AchQtDBus::AchQtDBus()
-	: d_ptr(new AchQtDBusPrivate())
-{}
+	: m_hasRegistered(false)
+{
+	// NOTE: Cannot register here because the static Achievements
+	// instance might not be fully initialized yet.
+	qDBusRegisterMetaType<NotifyIconStruct>();
+}
 
 AchQtDBus::~AchQtDBus()
 {
-	delete d_ptr;
+	if (m_hasRegistered) {
+		Achievements *const pAch = Achievements::instance();
+		pAch->clearNotifyFunction(notifyFunc, reinterpret_cast<intptr_t>(this));
+	}
 }
 
 /**
@@ -275,13 +231,16 @@ AchQtDBus::~AchQtDBus()
  */
 AchQtDBus *AchQtDBus::instance(void)
 {
-	AchQtDBus *const q = &AchQtDBusPrivate::instance;
+	AchQtDBus *const q = &m_instance;
 
 	// NOTE: Cannot register in the private class constructor because
 	// the Achievements instance might not be fully initialized yet.
 	// Registering here instead.
-	Achievements *const pAch = Achievements::instance();
-	pAch->setNotifyFunction(AchQtDBusPrivate::notifyFunc, reinterpret_cast<intptr_t>(q->d_ptr));
+	if (!q->m_hasRegistered) {
+		Achievements *const pAch = Achievements::instance();
+		pAch->setNotifyFunction(notifyFunc, reinterpret_cast<intptr_t>(q));
+		q->m_hasRegistered = true;
+	}
 
 	return q;
 }
