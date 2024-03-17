@@ -29,11 +29,7 @@ using std::string;
 class CacheTabPrivate
 {
 public:
-	explicit CacheTabPrivate(CacheTab *q)
-		: q_ptr(q)
-		, thrCleaner(nullptr)
-		, ccCleaner(nullptr)
-	{};
+	explicit CacheTabPrivate(CacheTab *q);
 	~CacheTabPrivate();
 
 private:
@@ -45,8 +41,8 @@ public:
 	Ui::CacheTab ui;
 
 	// Cache cleaner object and thread.
-	QThread *thrCleaner;
-	CacheCleaner *ccCleaner;
+	QThread thrCleaner;
+	CacheCleaner ccCleaner;
 
 public:
 	/**
@@ -64,20 +60,46 @@ public:
 
 /** CacheTabPrivate **/
 
+CacheTabPrivate::CacheTabPrivate(CacheTab *q)
+	: q_ptr(q)
+	, thrCleaner(q)
+	, ccCleaner()
+{
+	thrCleaner.setObjectName(QLatin1String("thrCleaner"));
+
+	ccCleaner.setObjectName(QLatin1String("ccCleaner"));
+	ccCleaner.moveToThread(&thrCleaner);
+
+	// Status slots.
+	QObject::connect(&ccCleaner, SIGNAL(progress(int,int,bool)),
+			 q, SLOT(ccCleaner_progress(int,int,bool)));
+	QObject::connect(&ccCleaner, SIGNAL(error(QString)),
+			 q, SLOT(ccCleaner_error(QString)));
+	QObject::connect(&ccCleaner, SIGNAL(cacheIsEmpty(CacheCleaner::CacheDir)),
+			 q, SLOT(ccCleaner_cacheIsEmpty(CacheCleaner::CacheDir)));
+	QObject::connect(&ccCleaner, SIGNAL(cacheCleared(CacheCleaner::CacheDir,unsigned int,unsigned int)),
+			 q, SLOT(ccCleaner_cacheCleared(CacheCleaner::CacheDir,unsigned int,unsigned int)));
+	QObject::connect(&ccCleaner, SIGNAL(finished()),
+			 q, SLOT(ccCleaner_finished()));
+
+	// Thread signals.
+	QObject::connect(&thrCleaner, SIGNAL(started()),
+			 &ccCleaner, SLOT(run()));
+	QObject::connect(&ccCleaner, SIGNAL(finished()),
+			 &thrCleaner, SLOT(quit()));
+}
+
 CacheTabPrivate::~CacheTabPrivate()
 {
-	if (thrCleaner && thrCleaner->isRunning()) {
+	if (thrCleaner.isRunning()) {
 		// Make sure the thread is stopped.
-		thrCleaner->quit();
-		const bool ok = thrCleaner->wait(5000);
+		thrCleaner.quit();
+		const bool ok = thrCleaner.wait(5000);
 		if (!ok) {
 			// Thread is hung. Terminate it.
-			thrCleaner->terminate();
+			thrCleaner.terminate();
 		}
 	}
-
-	delete ccCleaner;
-	delete thrCleaner;
 }
 
 /**
@@ -103,7 +125,7 @@ void CacheTabPrivate::enableUiControls(bool enable)
  */
 void CacheTabPrivate::clearCacheDir(CacheCleaner::CacheDir cacheDir)
 {
-	if (thrCleaner && thrCleaner->isRunning()) {
+	if (thrCleaner.isRunning()) {
 		// Cleaning thread is already running.
 		return;
 	}
@@ -137,40 +159,11 @@ void CacheTabPrivate::clearCacheDir(CacheCleaner::CacheDir cacheDir)
 	// Disable the buttons until we're done.
 	enableUiControls(false);
 
-	// Create the QThread and CacheCleaner if necessary.
-	if (!thrCleaner) {
-		thrCleaner = new QThread(q);
-		thrCleaner->setObjectName(QLatin1String("thrCleaner"));
-	}
-	if (!ccCleaner) {
-		ccCleaner = new CacheCleaner(nullptr);
-		ccCleaner->setObjectName(QLatin1String("ccCleaner"));
-		ccCleaner->moveToThread(thrCleaner);
-
-		// Status slots.
-		QObject::connect(ccCleaner, SIGNAL(progress(int,int,bool)),
-				 q, SLOT(ccCleaner_progress(int,int,bool)));
-		QObject::connect(ccCleaner, SIGNAL(error(QString)),
-				 q, SLOT(ccCleaner_error(QString)));
-		QObject::connect(ccCleaner, SIGNAL(cacheIsEmpty(CacheCleaner::CacheDir)),
-				 q, SLOT(ccCleaner_cacheIsEmpty(CacheCleaner::CacheDir)));
-		QObject::connect(ccCleaner, SIGNAL(cacheCleared(CacheCleaner::CacheDir,unsigned int,unsigned int)),
-				 q, SLOT(ccCleaner_cacheCleared(CacheCleaner::CacheDir,unsigned int,unsigned int)));
-		QObject::connect(ccCleaner, SIGNAL(finished()),
-				 q, SLOT(ccCleaner_finished()));
-
-		// Thread signals.
-		QObject::connect(thrCleaner, SIGNAL(started()),
-				 ccCleaner, SLOT(run()));
-		QObject::connect(ccCleaner, SIGNAL(finished()),
-				 thrCleaner, SLOT(quit()));
-	}
-
 	// Set the cache directory.
-	ccCleaner->setCacheDir(cacheDir);
+	ccCleaner.setCacheDir(cacheDir);
 
 	// Run the cleaning thread.
-	thrCleaner->start();
+	thrCleaner.start();
 }
 
 /** CacheTab **/
