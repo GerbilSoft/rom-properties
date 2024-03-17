@@ -97,8 +97,8 @@ public:
 
 public:
 	// Update checker object and thread.
-	QThread *thrUpdate;
-	UpdateChecker *updChecker;
+	QThread thrUpdate;
+	UpdateChecker updChecker;
 
 	// Checked for updates yet?
 	bool checkedForUpdates;
@@ -115,25 +115,39 @@ public:
 
 AboutTabPrivate::AboutTabPrivate(AboutTab *q)
 	: q_ptr(q)
-	, thrUpdate(nullptr)
-	, updChecker(nullptr)
+	, thrUpdate(q)
+	, updChecker()
 	, checkedForUpdates(false)
-{ }
+{
+	thrUpdate.setObjectName(QLatin1String("thrUpdate"));
+
+	updChecker.setObjectName(QLatin1String("updChecker"));
+	updChecker.moveToThread(&thrUpdate);
+
+	// Status slots
+	QObject::connect(&updChecker, SIGNAL(error(QString)),
+			 q, SLOT(updChecker_error(QString)));
+	QObject::connect(&updChecker, SIGNAL(retrieved(quint64)),
+			 q, SLOT(updChecker_retrieved(quint64)));
+
+	// Thread signals
+	QObject::connect(&thrUpdate, SIGNAL(started()),
+			 &updChecker, SLOT(run()));
+	QObject::connect(&updChecker, SIGNAL(finished()),
+			 &thrUpdate, SLOT(quit()));
+}
 
 AboutTabPrivate::~AboutTabPrivate()
 {
-	if (thrUpdate && thrUpdate->isRunning()) {
+	if (thrUpdate.isRunning()) {
 		// Make sure the thread is stopped.
-		thrUpdate->quit();
-		bool ok = thrUpdate->wait(5000);
+		thrUpdate.quit();
+		bool ok = thrUpdate.wait(5000);
 		if (!ok) {
 			// Thread is hung. Terminate it.
-			thrUpdate->terminate();
+			thrUpdate.terminate();
 		}
 	}
-
-	delete updChecker;
-	delete thrUpdate;
 }
 
 /**
@@ -564,31 +578,10 @@ void AboutTabPrivate::checkForUpdates(void)
 {
 	// Create the QThread and UpdateChecker if necessary.
 	Q_Q(AboutTab);
-	if (!thrUpdate) {
-		thrUpdate = new QThread(q);
-		thrUpdate->setObjectName(QLatin1String("thrUpdate"));
-	}
-	if (!updChecker) {
-		updChecker = new UpdateChecker(nullptr);
-		updChecker->setObjectName(QLatin1String("updChecker"));
-		updChecker->moveToThread(thrUpdate);
-
-		// Status slots
-		QObject::connect(updChecker, SIGNAL(error(QString)),
-				 q, SLOT(updChecker_error(QString)));
-		QObject::connect(updChecker, SIGNAL(retrieved(quint64)),
-				 q, SLOT(updChecker_retrieved(quint64)));
-
-		// Thread signals
-		QObject::connect(thrUpdate, SIGNAL(started()),
-				 updChecker, SLOT(run()));
-		QObject::connect(updChecker, SIGNAL(finished()),
-				 thrUpdate, SLOT(quit()));
-	}
 
 	// Run the update check thread.
 	ui.lblUpdateCheck->setText(U82Q(C_("AboutTab", "Checking for updates...")));
-	thrUpdate->start();
+	thrUpdate.start();
 }
 
 /** AboutTab **/
