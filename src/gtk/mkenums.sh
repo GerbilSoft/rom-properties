@@ -20,12 +20,14 @@ shortname=RP
 
 set -ev
 
+ENUM_HEADER_FILES="RomDataView.hpp config/CacheCleaner.hpp"
+
 # Header
 glib-mkenums \
 	--template rp-gtk-enums.template.h \
-	*.h *.hpp */*.h */*.hpp > "${name}.h"
+	${ENUM_HEADER_FILES} > "${name}.h"
 
 # Source
 glib-mkenums \
 	--template rp-gtk-enums.template.c \
-	*.h *.hpp */*.h */*.hpp > "${name}.c"
+	${ENUM_HEADER_FILES} > "${name}.c"
