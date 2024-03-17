@@ -15,6 +15,9 @@
     supported (the largest and highest color-depth icon is selected).
     * Fixes #407: [Feature Request] Add support for Palm OS apps
       * Requested by @xxmichibxx.
+  * WiiUPackage: Wii U NUS packages. This parser reads an NUS package
+    directory containing a ticket, TMD, and encrypted contents. Requires
+    the Wii U common key in keys.conf.
 
 * Bug fixes:
   * On Linux, rp-config now correctly detects KDE Plasma 6 and uses the
@@ -40,6 +43,8 @@
       It's now used for GTK+ versions [3.15.8, 3.21.5).
   * GTK: Fix the "Convert to PNG" context menu item not showing up.
     * Affects: v2.2.1 - v2.3
+  * GTK, KDE: The banner and icon display in the properties tab are now
+    resized if they're too big.
 
 ## v2.3 (released 2024/03/03)
 

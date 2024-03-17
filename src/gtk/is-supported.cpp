@@ -11,8 +11,9 @@
 
 #include <glib.h>
 
-// librpfile, librpbase, libromdata
+// librpbase, librpfile, libromdata
 #include "libromdata/RomDataFactory.hpp"
+#include "librpfile/FileSystem.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
 using LibRomData::RomDataFactory;
@@ -28,25 +29,39 @@ RomDataPtr rp_gtk_open_uri(const char *uri)
 	g_return_val_if_fail(uri != nullptr && uri[0] != '\0', nullptr);
 
 	// TODO: Check file extensions and/or MIME types?
+	RomDataPtr romData;
 
 	// Check if the URI maps to a local file.
-	IRpFilePtr file;
 	gchar *const filename = g_filename_from_uri(uri, nullptr, nullptr);
 	if (filename) {
-		// Local file. Use RpFile.
-		file = std::make_shared<RpFile>(filename, RpFile::FM_OPEN_READ_GZ);
-		g_free(filename);
+		// Local file:
+		// - If this is a diretory: Call RomDataFactory::create() with the pathname.
+		// - If this is a file: Create an RpFile first.
+		if (likely(!FileSystem::is_directory(filename))) {
+			// File: Open the file and call RomDataFactory::create() with the opened file.
+			IRpFilePtr file = std::make_shared<RpFile>(filename, RpFile::FM_OPEN_READ_GZ);
+			g_free(filename);
+			if (!file->isOpen()) {
+				// Unable to open the file...
+				// TODO: Return an error code?
+				return {};
+			}
+			romData = RomDataFactory::create(file);
+		} else {
+			// Directory: Call RomDataFactory::create() with the filename.
+			// (NOTE: Local filenames only!)
+			romData = RomDataFactory::create(filename);
+			g_free(filename);
+		}
 	} else {
 		// Not a local file. Use RpFileGio.
-		file = std::make_shared<RpFileGio>(uri);
+		IRpFilePtr file = std::make_shared<RpFileGio>(uri);
+		if (!file->isOpen()) {
+			// Unable to open the file...
+			// TODO: Return an error code?
+			return {};
+		}
 	}
 
-	if (!file->isOpen()) {
-		// Unable to open the file...
-		// TODO: Return an error code?
-		return {};
-	}
-
-	// Create the RomData object.
-	return RomDataFactory::create(file);
+	return romData;
 }

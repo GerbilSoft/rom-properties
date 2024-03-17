@@ -244,27 +244,44 @@ static void ExtractImages(const RomData *romData, const vector<ExtractParam> &ex
 static void DoFile(const TCHAR *filename, bool json, const vector<ExtractParam> &extract,
 	uint32_t lc = 0, unsigned int flags = 0)
 {
-	// FIXME: Make T2U8c() unnecessary here.
-	fputs("== ", stderr);
-	fprintf(stderr, C_("rpcli", "Reading file '%s'..."), T2U8c(filename));
-	fputc('\n', stderr);
-	fflush(stderr);
+	RomDataPtr romData;
 
-	shared_ptr<RpFile> file = std::make_shared<RpFile>(filename, RpFile::FM_OPEN_READ_GZ);
-	if (!file->isOpen()) {
-		// TODO: Return an error code?
-		fputs("-- ", stderr);
-		fprintf(stderr, C_("rpcli", "Couldn't open file: %s"), strerror(file->lastError()));
+	if (likely(!FileSystem::is_directory(filename))) {
+		// File: Open the file and call RomDataFactory::create() with the opened file.
+
+		// FIXME: Make T2U8c() unnecessary here.
+		fputs("== ", stderr);
+		fprintf(stderr, C_("rpcli", "Reading file '%s'..."), T2U8c(filename));
 		fputc('\n', stderr);
 		fflush(stderr);
-		if (json) {
-			printf("{\"error\":\"couldn't open file\",\"code\":%d}\n", file->lastError());
-			fflush(stdout);
+
+		shared_ptr<RpFile> file = std::make_shared<RpFile>(filename, RpFile::FM_OPEN_READ_GZ);
+		if (!file->isOpen()) {
+			// TODO: Return an error code?
+			fputs("-- ", stderr);
+			fprintf(stderr, C_("rpcli", "Couldn't open file: %s"), strerror(file->lastError()));
+			fputc('\n', stderr);
+			fflush(stderr);
+			if (json) {
+				printf("{\"error\":\"couldn't open file\",\"code\":%d}\n", file->lastError());
+				fflush(stdout);
+			}
+			return;
 		}
-		return;
+
+		romData = RomDataFactory::create(file);
+	} else {
+		// Directory: Call RomDataFactory::create() with the filename.
+
+		// FIXME: Make T2U8c() unnecessary here.
+		fputs("== ", stderr);
+		fprintf(stderr, C_("rpcli", "Reading directory '%s'..."), T2U8c(filename));
+		fputc('\n', stderr);
+		fflush(stderr);
+
+		romData = RomDataFactory::create(filename);
 	}
 
-	const RomDataPtr romData = RomDataFactory::create(file);
 	if (romData) {
 		if (json) {
 			fputs("-- ", stderr);

@@ -152,14 +152,17 @@ class RomFields
 
 			Japan		= 0,	// Japan (CERO)
 			USA		= 1,	// USA (ESRB)
+			Unused		= 2,	// Unused (may have been England/BBFC before PEGI?)
 			Germany		= 3,	// Germany (USK)
 			Europe		= 4,	// Europe (PEGI)
 			Finland		= 5,	// Finland (MEKU)
 			Portugal	= 6,	// Portugal (PEGI-PT)
 			England		= 7,	// England (BBFC)
-			Australia	= 8,	// Australia (ACB)
+			Australia	= 8,	// Australia (ACB/COB)
 			SouthKorea	= 9,	// South Korea (GRB, formerly KMRB)
 			Taiwan		= 10,	// Taiwan (CGSRR)
+			NewZealand	= 11,	// New Zealand (OFLC)
+			MaxAllocated,		// Maximum number of age rating fields allocated so far
 
 			Max		= 16	// Maximum number of age rating fields
 		};

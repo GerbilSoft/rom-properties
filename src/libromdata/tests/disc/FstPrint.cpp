@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata/tests)                 *
  * FstPrint.cpp: FST printer.                                              *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -56,16 +56,18 @@ struct FstFileCount {
 
 /**
  * Print an FST to an ostream.
- * @param fst		[in]FST to print.
- * @param os		[in] ostream.
- * @param path		[in] Directory path.
- * @param level		[in] Current directory level. (0 == root)
- * @param tree_lines	[in/out] Levels with tree lines.
- * @param fc		[out] File count.
+ * @param fst		[in] FST to print
+ * @param os		[in] ostream
+ * @param path		[in] Directory path
+ * @param level		[in] Current directory level (0 == root)
+ * @param tree_lines	[in/out] Levels with tree lines
+ * @param fc		[out] File count
+ * @param pt		[in] If true, print partition numbers
  * @return 0 on success; negative POSIX error code on error.
  */
 static int fstPrint(IFst *fst, ostream &os, const string &path,
-	int level, vector<uint8_t> &tree_lines, FstFileCount &fc)
+	int level, vector<uint8_t> &tree_lines, FstFileCount &fc,
+	bool pt)
 {
 	// Open the root path in the FST.
 	IFst::Dir *dirp = fst->opendir(path);
@@ -102,15 +104,23 @@ static int fstPrint(IFst *fst, ostream &os, const string &path,
 			}
 		}
 
+		const string name = dirent->name;
+		// Sanity check: Filenames cannot contain '/'.
+		if (name.find('/') != string::npos) {
+			// ERROR
+			// TODO: Print an error message?
+			fst->closedir(dirp);
+			return -EIO;
+		}
+
 		// NOTE: The next DirEnt is obtained in one of the
 		// following if/else branches. We can't obtain more
 		// than one DirEnt at a time, since the DirEnt is
 		// actually stored within the Dir object.
 		if (dirent->type == DT_DIR) {
-			// Subdirectory.
+			// Subdirectory
 			fc.dirs++;
 
-			const string name = dirent->name;
 			string subdir = path;
 			if (path.empty() || (path[path.size()-1] != '/')) {
 				// Append a trailing slash.
@@ -136,20 +146,19 @@ static int fstPrint(IFst *fst, ostream &os, const string &path,
 			os << name << '\n';
 
 			// Print the subdirectory.
-			int ret = fstPrint(fst, os, subdir, level+1, tree_lines, fc);
+			int ret = fstPrint(fst, os, subdir, level+1, tree_lines, fc, pt);
 			if (ret != 0) {
 				// ERROR
+				// TODO: Print an error message?
+				fst->closedir(dirp);
 				return ret;
 			}
 
 			// Remove the extra tree line.
 			tree_lines.resize(tree_lines.size()-1);
 		} else {
-			// File.
+			// File
 			fc.files++;
-
-			// Save the filename.
-			const string name = dirent->name;
 
 			// Tree + name length.
 			// - Tree is 4 characters per level.
@@ -168,8 +177,13 @@ static int fstPrint(IFst *fst, ostream &os, const string &path,
 
 			// Print the attributes. (address, size)
 			char attrs[64];
-			snprintf(attrs, sizeof(attrs), "[addr:0x%08" PRIX64 ", size:%" PRId64 "]",
-				 static_cast<uint64_t>(dirent->offset), dirent->size);
+			if (pt) {
+				snprintf(attrs, sizeof(attrs), "[pt:0x%02x, addr:0x%08" PRIX64 ", size:%" PRId64 "]",
+					dirent->ptnum, static_cast<uint64_t>(dirent->offset), dirent->size);
+			} else {
+				snprintf(attrs, sizeof(attrs), "[addr:0x%08" PRIX64 ", size:%" PRId64 "]",
+					static_cast<uint64_t>(dirent->offset), dirent->size);
+			}
 
 			// Check if any more entries are present.
 			dirent = fst->readdir(dirp);
@@ -194,12 +208,13 @@ static int fstPrint(IFst *fst, ostream &os, const string &path,
 
 /**
  * Print an FST to an ostream.
- * @param fst	[in] FST to print.
- * @param os	[in,out] ostream.
+ * @param fst	[in] FST to print
+ * @param os	[in,out] ostream
+ * @param pt	[in] If true, print partition numbers
  *
  * @return 0 on success; negative POSIX error code on error.
  */
-int fstPrint(IFst *fst, ostream &os)
+int fstPrint(IFst *fst, ostream &os, bool pt)
 {
 	if (!fst) {
 		// Invalid parameters.
@@ -210,7 +225,7 @@ int fstPrint(IFst *fst, ostream &os)
 	tree_lines.reserve(16);
 
 	FstFileCount fc = {0, 0};
-	int ret = fstPrint(fst, os, "/", 0, tree_lines, fc);
+	int ret = fstPrint(fst, os, "/", 0, tree_lines, fc, pt);
 	if (ret != 0) {
 		return ret;
 	}

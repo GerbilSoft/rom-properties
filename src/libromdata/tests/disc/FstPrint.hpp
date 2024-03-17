@@ -17,11 +17,12 @@ namespace LibRomData {
 
 /**
  * Print an FST to an ostream.
- * @param fst	[in] FST to print.
- * @param os	[in,out] ostream.
+ * @param fst	[in] FST to print
+ * @param os	[in,out] ostream
+ * @param pt	[in] If true, print partition numbers
  *
  * @return 0 on success; negative POSIX error code on error.
  */
-int fstPrint(LibRpBase::IFst *fst, std::ostream &os);
+int fstPrint(LibRpBase::IFst *fst, std::ostream &os, bool pt = false);
 
 };

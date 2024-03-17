@@ -49,9 +49,30 @@ KIO::ThumbnailResult RomThumbnailCreator::create(const KIO::ThumbnailRequest &re
 		return KIO::ThumbnailResult::fail();
 	}
 
-	// Attempt to open the ROM file.
-	const IRpFilePtr file(openQUrl(url, true));
-	if (!file) {
+	RomDataPtr romData;
+
+	// Check if this is a directory.
+	const QUrl localUrl = localizeQUrl(url);
+	const string s_local_filename = localUrl.toLocalFile().toUtf8().constData();
+	if (unlikely(!s_local_filename.empty() && FileSystem::is_directory(s_local_filename.c_str()))) {
+		// Directory: Call RomDataFactory::create() with the filename.
+		romData = RomDataFactory::create(s_local_filename.c_str());
+	} else {
+		// File: Open the file and call RomDataFactory::create() with the opened file.
+
+		// Attempt to open the ROM file.
+		const IRpFilePtr file(openQUrl(url, true));
+		if (!file) {
+			return KIO::ThumbnailResult::fail();
+		}
+
+		// Get the appropriate RomData class for this ROM.
+		// RomData class *must* support at least one image type.
+		romData = RomDataFactory::create(file, RomDataFactory::RDA_HAS_THUMBNAIL);
+	}
+
+	if (!romData) {
+		// Not a supported RomData object.
 		return KIO::ThumbnailResult::fail();
 	}
 
@@ -60,7 +81,7 @@ KIO::ThumbnailResult RomThumbnailCreator::create(const KIO::ThumbnailRequest &re
 	Q_D(RomThumbnailCreator);
 	const int width = request.targetSize().width();
 	RomThumbnailCreatorPrivate::GetThumbnailOutParams_t outParams;
-	int ret = d->getThumbnail(file, width, &outParams);
+	int ret = d->getThumbnail(romData, width, &outParams);
 
 	if (ret != 0) {
 		return KIO::ThumbnailResult::fail();

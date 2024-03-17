@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE)                              *
  * RomDataView.cpp: RomData viewer.                                        *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -147,38 +147,92 @@ void RomDataViewPrivate::initHeaderRow(void)
 
 	// Supported image types
 	const uint32_t imgbf = romData->supportedImageTypes();
+	// FIXME: Store the standard image height somewhere else.
+	static const int imgStdHeight = 32;
+	bool ok = false;
 
 	// Banner
 	if (imgbf & RomData::IMGBF_INT_BANNER) {
 		// Get the banner.
-		bool ok = ui.lblBanner->setRpImage(romData->image(RomData::IMG_INT_BANNER));
-		ui.lblBanner->setVisible(ok);
-	} else {
-		// No banner.
-		ui.lblBanner->hide();
+		const rp_image_const_ptr img = romData->image(RomData::IMG_INT_BANNER);
+		if (img) {
+			ok = ui.lblBanner->setRpImage(img);
+			if (ok) {
+				// Adjust the banner size.
+				const QSize bannerSize(img->width(), img->height());
+				if (bannerSize.height() != imgStdHeight) {
+					// Need to scale the banner label to match the aspect ratio.
+					const QSize bannerScaledSize(rintf(
+						(float)imgStdHeight * ((float)bannerSize.width() / (float)bannerSize.height())),
+						imgStdHeight);
+					ui.lblBanner->setMinimumSize(bannerScaledSize);
+					ui.lblBanner->setMaximumSize(bannerScaledSize);
+					ui.lblBanner->setScaledContents(true);
+				} else {
+					// Use the original banner size.
+					ui.lblBanner->setMinimumSize(bannerSize);
+					ui.lblBanner->setMaximumSize(bannerSize);
+					ui.lblBanner->setScaledContents(false);
+				}
+			}
+		}
 	}
+	ui.lblBanner->setVisible(ok);
 
 	// Icon
+	ok = false;
 	if (imgbf & RomData::IMGBF_INT_ICON) {
 		// Get the icon.
 		const rp_image_const_ptr icon = romData->image(RomData::IMG_INT_ICON);
 		if (icon && icon->isValid()) {
+			QSize iconSize;
+
 			// Is this an animated icon?
-			bool ok = ui.lblIcon->setIconAnimData(romData->iconAnimData());
+			const IconAnimDataConstPtr iconAnimData = romData->iconAnimData();
+			if (iconAnimData) {
+				ok = ui.lblIcon->setIconAnimData(romData->iconAnimData());
+				if (ok) {
+					// Get the size of the first animated icon frame.
+					const int frame = iconAnimData->seq_index[0];
+					const rp_image_ptr &img = iconAnimData->frames[frame];
+					assert((bool)img);
+					if (img) {
+						iconSize = QSize(img->width(), img->height());
+					} else {
+						// Invalid icon frame?
+						ui.lblIcon->setIconAnimData(nullptr);
+						ok = false;
+					}
+				}
+			}
 			if (!ok) {
 				// Not an animated icon, or invalid icon data.
 				// Set the static icon.
 				ok = ui.lblIcon->setRpImage(icon);
+				if (ok) {
+					iconSize = QSize(icon->width(), icon->height());
+				}
 			}
-			ui.lblIcon->setVisible(ok);
-		} else {
-			// No icon.
-			ui.lblIcon->hide();
+
+			if (ok) {
+				if (iconSize.height() != imgStdHeight) {
+					// Need to scale the icon label to match the aspect ratio.
+					const QSize iconScaledSize(rintf(
+						(float)imgStdHeight * ((float)iconSize.width() / (float)iconSize.height())),
+						imgStdHeight);
+					ui.lblIcon->setMinimumSize(iconScaledSize);
+					ui.lblIcon->setMaximumSize(iconScaledSize);
+					ui.lblIcon->setScaledContents(true);
+				} else {
+					// Use the original icon size.
+					ui.lblIcon->setMinimumSize(iconSize);
+					ui.lblIcon->setMaximumSize(iconSize);
+					ui.lblIcon->setScaledContents(false);
+				}
+			}
 		}
-	} else {
-		// No icon.
-		ui.lblIcon->hide();
 	}
+	ui.lblIcon->setVisible(ok);
 
 	const bool ecksBawks = (romData->fileType() == RomData::FileType::DiscImage &&
 	                        systemName && strstr(systemName, "Xbox") != nullptr);

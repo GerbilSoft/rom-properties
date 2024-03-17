@@ -40,15 +40,39 @@ using std::string;
  */
 RomDataView *RomPropertiesDialogPlugin::createRomDataView(const KFileItem &fileItem, KPropertiesDialog *props)
 {
-	// Attempt to open the ROM file.
-	const IRpFilePtr file(openQUrl(fileItem.url(), false));
-	if (!file) {
-		// Unable to open the file.
-		return nullptr;
+	RomDataPtr romData;
+
+	if (likely(!fileItem.isDir())) {
+		// File: Open the file and call RomDataFactory::create() with the opened file.
+
+		// Attempt to open the ROM file.
+		const IRpFilePtr file(openQUrl(fileItem.url(), false));
+		if (!file) {
+			// Unable to open the file.
+			return nullptr;
+		}
+
+		// Get the appropriate RomData class for this ROM.
+		romData = RomDataFactory::create(file);
+	} else {
+		// Directory: Call RomDataFactory::create() with the filename.
+		// (NOTE: Local filenames only!)
+		QUrl localUrl = localizeQUrl(fileItem.url());
+		if (localUrl.isEmpty()) {
+			// Unable to localize the URL.
+			return nullptr;
+		}
+
+		string s_local_filename;
+		if (localUrl.scheme().isEmpty() || localUrl.isLocalFile()) {
+			s_local_filename = localUrl.toLocalFile().toUtf8().constData();
+		}
+
+		if (likely(!s_local_filename.empty())) {
+			romData = RomDataFactory::create(s_local_filename.c_str());
+		}
 	}
 
-	// Get the appropriate RomData class for this ROM.
-	const RomDataPtr romData = RomDataFactory::create(file);
 	if (!romData) {
 		// ROM is not supported.
 		return nullptr;

@@ -699,7 +699,7 @@ void Nintendo3DSPrivate::addTitleIdAndProductCodeFields(bool showContentType)
 #ifdef ENABLE_DECRYPTION
 		// Only show the encryption type if a TMD isn't available.
 		if (loadTicketAndTMD() != 0) {
-			fields.addField_string(C_("Nintendo3DS", "Issuer"),
+			fields.addField_string(C_("Nintendo", "Issuer"),
 				ncch->isDebug()
 					? C_("Nintendo3DS", "Debug")
 					: C_("Nintendo3DS", "Retail"));
@@ -1647,7 +1647,7 @@ int Nintendo3DS::loadFieldData(void)
 				if (!shownWarning) {
 					const char *err = KeyManager::verifyResultToString(res);
 					if (!err) {
-						err = C_("Nintendo3DS", "Unknown error. (THIS IS A BUG!)");
+						err = C_("RomData", "Unknown error. (THIS IS A BUG!)");
 					}
 					d->fields.addField_string(C_("RomData", "Warning"),
 						err, RomFields::STRF_WARNING);
@@ -1743,7 +1743,7 @@ int Nintendo3DS::loadFieldData(void)
 					: KeyManager::VerifyResult::Unknown);
 				const char *err = KeyManager::verifyResultToString(res);
 				if (!err) {
-					err = C_("Nintendo3DS", "Unknown error. (THIS IS A BUG!)");
+					err = C_("RomData", "Unknown error. (THIS IS A BUG!)");
 				}
 				d->fields.addField_string(C_("RomData", "Warning"),
 					err, RomFields::STRF_WARNING);
@@ -1907,7 +1907,7 @@ int Nintendo3DS::loadFieldData(void)
 			// Also show encryption type.
 			// TODO: Show a warning if `ncch` is NULL?
 			if (ncch) {
-				d->fields.addField_string(C_("Nintendo3DS", "Issuer"),
+				d->fields.addField_string(C_("Nintendo", "Issuer"),
 					ncch->isDebug()
 						? C_("Nintendo3DS", "Debug")
 						: C_("Nintendo3DS", "Retail"));
@@ -2052,7 +2052,7 @@ int Nintendo3DS::loadFieldData(void)
 			issuer = nullptr;
 		}
 
-		const char *const issuer_title = C_("Nintendo3DS", "Issuer");
+		const char *const issuer_title = C_("Nintendo", "Issuer");
 		if (issuer) {
 			// tr: Ticket issuer. (retail or debug)
 			d->fields.addField_string(issuer_title, issuer);
@@ -2072,7 +2072,7 @@ int Nintendo3DS::loadFieldData(void)
 		// Console ID.
 		// NOTE: Technically part of the ticket.
 		// NOTE: Not including the "0x" hex prefix.
-		d->fields.addField_string(C_("Nintendo3DS", "Console ID"),
+		d->fields.addField_string(C_("Nintendo", "Console ID"),
 			rp_sprintf("%08X", be32_to_cpu(d->mxh.ticket.console_id)),
 			RomFields::STRF_MONOSPACE);
 

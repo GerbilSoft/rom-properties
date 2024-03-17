@@ -301,9 +301,9 @@ const char *RomFields::ageRatingAbbrev(AgeRatingsCountry country)
 	static const char abbrevs[][8] = {
 		"CERO", "ESRB", "",        "USK",
 		"PEGI", "MEKU", "PEGI-PT", "BBFC",
-		"ACB",  "GRB",  "CGSRR",
+		"ACB",  "GRB",  "CGSRR",   "OFLC",
 	};
-	static_assert(ARRAY_SIZE_I(abbrevs) == (int)AgeRatingsCountry::Taiwan+1,
+	static_assert(ARRAY_SIZE_I(abbrevs) == (int)AgeRatingsCountry::MaxAllocated,
 		"Age Ratings abbrevations needs to be updated!");
 
 	assert((int)country >= 0 && (int)country < ARRAY_SIZE_I(abbrevs));
@@ -409,8 +409,10 @@ string RomFields::ageRatingDecode(AgeRatingsCountry country, uint16_t rating)
 						s_rating = "G";
 						break;
 					case 7:
+					case 8:		// Wii U
 						s_rating = "PG";
 						break;
+					case 13:	// Wii U
 					case 14:
 						s_rating = "M";
 						break;
@@ -425,6 +427,27 @@ string RomFields::ageRatingDecode(AgeRatingsCountry country, uint16_t rating)
 						break;
 				}
 				break;
+
+			case AgeRatingsCountry::NewZealand:
+				switch (rating & RomFields::AGEBF_MIN_AGE_MASK) {
+					case 0:
+						s_rating = "G";
+						break;
+					case 7:
+					case 8:		// Wii U
+						s_rating = "PG";
+						break;
+					case 13:	// Wii U
+					case 14:
+						s_rating = "M";
+						break;
+					case 15:	// Wii U: One setting for R13/R15/R16/R18
+						s_rating = "R";
+						break;
+					default:
+						// Unknown rating.
+						break;
+				}
 
 			default:
 				// No special handling for this country.

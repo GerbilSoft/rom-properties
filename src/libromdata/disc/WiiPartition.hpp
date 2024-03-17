@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * WiiPartition.hpp: Wii partition reader.                                 *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -14,6 +14,9 @@
 
 // librpbase
 #include "librpbase/crypto/KeyManager.hpp"
+
+// WiiTicket for EncryptionKeys
+#include "../Console/WiiTicket.hpp"
 
 namespace LibRomData {
 
@@ -42,10 +45,10 @@ public:
 	 * NOTE: The IDiscReader *must* remain valid while this
 	 * WiiPartition is open.
 	 *
-	 * @param discReader		[in] IDiscReader.
-	 * @param partition_offset	[in] Partition start offset.
+	 * @param discReader		[in] IDiscReader
+	 * @param partition_offset	[in] Partition start offset
 	 * @param partition_size	[in] Calculated partition size. Used if the size in the header is 0.
-	 * @param cryptoMethod		[in] Crypto method.
+	 * @param cryptoMethod		[in] Crypto method
 	 */
 	WiiPartition(const LibRpBase::IDiscReaderPtr &discReader, off64_t partition_offset,
 		off64_t partition_size, CryptoMethod crypto = CM_STANDARD);
@@ -103,36 +106,18 @@ public:
 	 */
 	LibRpBase::KeyManager::VerifyResult verifyResult(void) const;
 
-	// Encryption key in use.
-	// TODO: Merge with EncryptionKeys.
-	enum class EncKey {
-	Unknown = -1,
-
-		RVL_Common = 0,		// Common key
-		RVL_Korean = 1,		// Korean key
-		WUP_vWii = 2,		// vWii key
-
-		RVT_Debug = 3,		// Common key (debug)
-		RVT_Korean = 4,		// Korean key (debug)
-		CAT_vWii = 5,		// vWii key (debug)
-
-		None = 6,		// No encryption (RVT-H)
-
-		Max
-	};
-
 	/**
 	 * Get the encryption key in use.
 	 * @return Encryption key in use.
 	 */
-	EncKey encKey(void) const;
+	WiiTicket::EncryptionKeys encKey(void) const;
 
 	/**
 	 * Get the encryption key that would be in use if the partition was encrypted.
 	 * This is only needed for NASOS images.
 	 * @return "Real" encryption key in use.
 	 */
-	EncKey encKeyReal(void) const;
+	WiiTicket::EncryptionKeys encKeyReal(void) const;
 
 	/**
 	 * Get the ticket.
@@ -151,50 +136,6 @@ public:
 	 * @return Title ID. (0-0 if unavailable)
 	 */
 	Nintendo_TitleID_BE_t titleID(void) const;
-
-public:
-	// Encryption key indexes.
-	enum EncryptionKeys {
-		// Retail
-		Key_Rvl_Common,
-		Key_Rvl_Korean,
-		Key_Wup_Starbuck_vWii_Common,
-
-		// Debug
-		Key_Rvt_Debug,
-		Key_Rvt_Korean,
-		Key_Cat_Starbuck_vWii_Common,
-
-		// SD card (TODO: Retail vs. Debug?)
-		Key_Rvl_SD_AES,
-		Key_Rvl_SD_IV,
-		Key_Rvl_SD_MD5,
-
-		Key_Max
-	};
-
-#ifdef ENABLE_DECRYPTION
-public:
-	/**
-	 * Get the total number of encryption key names.
-	 * @return Number of encryption key names.
-	 */
-	static int encryptionKeyCount_static(void);
-
-	/**
-	 * Get an encryption key name.
-	 * @param keyIdx Encryption key index.
-	 * @return Encryption key name (in ASCII), or nullptr on error.
-	 */
-	static const char* encryptionKeyName_static(int keyIdx);
-
-	/**
-	 * Get the verification data for a given encryption key index.
-	 * @param keyIdx Encryption key index.
-	 * @return Verification data. (16 bytes)
-	 */
-	static const uint8_t* encryptionVerifyData_static(int keyIdx);
-#endif /* ENABLE_DECRYPTION */
 };
 
 typedef std::shared_ptr<WiiPartition> WiiPartitionPtr;

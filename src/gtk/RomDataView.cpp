@@ -635,36 +635,80 @@ rp_rom_data_view_init_header_row(RpRomDataView *page)
 
 	// Supported image types.
 	const uint32_t imgbf = romData->supportedImageTypes();
+	// FIXME: Store the standard image height somewhere else.
+	static const int imgStdHeight = 32;
+	bool ok = false;
 
 	// Banner
 	gtk_widget_set_visible(page->imgBanner, false);
 	if (imgbf & RomData::IMGBF_INT_BANNER) {
 		// Get the banner.
-		bool ok = rp_drag_image_set_rp_image(
-			RP_DRAG_IMAGE(page->imgBanner), romData->image(RomData::IMG_INT_BANNER));
+		const rp_image_const_ptr img = romData->image(RomData::IMG_INT_BANNER);
+		ok = rp_drag_image_set_rp_image(RP_DRAG_IMAGE(page->imgBanner), img);
 		if (ok) {
-			gtk_widget_set_visible(page->imgBanner, true);
+			const int banner_w = img->width();
+			const int banner_h = img->height();
+			if (banner_h != imgStdHeight) {
+				// Need to scale the banner image to match the aspect ratio.
+				const int banner_scaled_w = rintf((float)imgStdHeight * ((float)banner_w / (float)banner_h));
+				gtk_widget_set_size_request(page->imgBanner, banner_scaled_w, imgStdHeight);
+			} else {
+				// Use the original banner size.
+				gtk_widget_set_size_request(page->imgBanner, banner_w, banner_h);
+			}
 		}
 	}
+	gtk_widget_set_visible(page->imgBanner, ok);
 
 	// Icon
-	gtk_widget_set_visible(page->imgIcon, false);
 	if (imgbf & RomData::IMGBF_INT_ICON) {
 		// Get the icon.
 		const rp_image_const_ptr icon = romData->image(RomData::IMG_INT_ICON);
 		if (icon && icon->isValid()) {
+			int icon_w = -1, icon_h = -1;
+
 			// Is this an animated icon?
-			bool ok = rp_drag_image_set_icon_anim_data(RP_DRAG_IMAGE(page->imgIcon), romData->iconAnimData());
+			const IconAnimDataConstPtr iconAnimData = romData->iconAnimData();
+			ok = rp_drag_image_set_icon_anim_data(RP_DRAG_IMAGE(page->imgIcon), iconAnimData);
+			if (ok) {
+				// Get the size of the first animated icon frame.
+				const int frame = iconAnimData->seq_index[0];
+				const rp_image_ptr &img = iconAnimData->frames[frame];
+				assert((bool)img);
+				if (img) {
+					icon_w = img->width();
+					icon_h = img->height();
+				} else {
+					// Invalid icon frame?
+					rp_drag_image_set_icon_anim_data(RP_DRAG_IMAGE(page->imgIcon), nullptr);
+					ok = false;
+				}
+			}
 			if (!ok) {
 				// Not an animated icon, or invalid icon data.
 				// Set the static icon.
 				ok = rp_drag_image_set_rp_image(RP_DRAG_IMAGE(page->imgIcon), icon);
+				if (ok) {
+					icon_w = icon->width();
+					icon_h = icon->height();
+				}
 			}
+
 			if (ok) {
-				gtk_widget_set_visible(page->imgIcon, true);
+				assert(icon_w > 0);
+				assert(icon_h > 0);
+				if (icon_h != imgStdHeight) {
+					// Need to scale the icon image to match the aspect ratio.
+					const int icon_scaled_w = rintf((float)imgStdHeight * ((float)icon_w / (float)icon_h));
+					gtk_widget_set_size_request(page->imgIcon, icon_scaled_w, imgStdHeight);
+				} else {
+					// Use the original icon size.
+					gtk_widget_set_size_request(page->imgIcon, icon_w, icon_h);
+				}
 			}
 		}
 	}
+	gtk_widget_set_visible(page->imgIcon, ok);
 
 	// Show the header row. (outer box)
 	gtk_widget_set_visible(page->hboxHeaderRow_outer, true);
@@ -2192,7 +2236,7 @@ rp_rom_data_view_map_signal_handler(RpRomDataView	*page,
  */
 static void
 rp_rom_data_view_unmap_signal_handler(RpRomDataView	*page,
-				   gpointer	 user_data)
+				      gpointer		 user_data)
 {
 	RP_UNUSED(user_data);
 	rp_drag_image_stop_anim_timer(RP_DRAG_IMAGE(page->imgIcon));

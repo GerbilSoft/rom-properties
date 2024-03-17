@@ -162,7 +162,7 @@ const char *Atari7800::systemName(unsigned int type) const
 	// Atari 7800 has the same name worldwide, so we can
 	// ignore the region selection.
 	static_assert(SYSNAME_TYPE_MASK == 3,
-		"N64::systemName() array index optimization needs to be updated.");
+		"Atari7800::systemName() array index optimization needs to be updated.");
 
 	// Bits 0-1: Type. (long, short, abbreviation)
 	static const char *const sysNames[4] = {

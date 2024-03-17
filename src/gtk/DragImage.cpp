@@ -19,9 +19,6 @@ using namespace LibRpTexture;
 // C++ STL classes
 using std::unique_ptr;
 
-// TODO: Adjust minimum image size based on DPI.
-#define DIL_MIN_IMAGE_SIZE 32
-
 // GtkPopover was added in GTK 3.12.
 // GMenuModel is also implied by this, since GMenuModel
 // support was added to GTK+ 3.4.
@@ -35,6 +32,9 @@ static void	rp_drag_image_dispose	(GObject	*object);
 static void	rp_drag_image_finalize	(GObject	*object);
 
 // Signal handlers
+static void	rp_drag_image_map_signal_handler  (RpDragImage *image, gpointer user_data);
+static void	rp_drag_image_unmap_signal_handler(RpDragImage *image, gpointer user_data);
+static void	rp_drag_image_notify_width_or_height_signal_handler(RpDragImage *image, GParamSpec *pspec, gpointer user_data);
 // FIXME: GTK4 has a new Drag & Drop API.
 #if !GTK_CHECK_VERSION(4,0,0)
 static void	rp_drag_image_drag_begin(RpDragImage *image, GdkDragContext *context, gpointer user_data);
@@ -128,11 +128,8 @@ struct _RpDragImage {
 	// Current frame.
 	PIMGTYPE curFrame;
 
-	// Minimum image size.
-	struct {
-		int width;
-		int height;
-	} minimumImageSize;
+	bool mapped;	// true if the widget is currently mapped
+	bool dirty;	// true if the pixmaps need to be updated on next map
 
 	bool ecksBawks;
 #ifdef USE_G_MENU_MODEL
@@ -169,9 +166,6 @@ rp_drag_image_init(RpDragImage *image)
 	// Initialize C++ objects.
 	image->cxx = new _RpDragImageCxx();
 
-	image->minimumImageSize.width = DIL_MIN_IMAGE_SIZE;
-	image->minimumImageSize.height = DIL_MIN_IMAGE_SIZE;
-
 	// Create the child GtkImage widget.
 	image->imageWidget = gtk_image_new();
 	gtk_widget_set_name(image->imageWidget, "imageWidget");
@@ -182,9 +176,15 @@ rp_drag_image_init(RpDragImage *image)
 	gtk_container_add(GTK_CONTAINER(image), image->imageWidget);
 #endif /* GTK_CHECK_VERSION(4,0,0) */
 
+	// Pixmaps can only be updated once we have a valid size.
+	g_signal_connect(G_OBJECT(image), "map",   G_CALLBACK(rp_drag_image_map_signal_handler),   nullptr);
+	g_signal_connect(G_OBJECT(image), "unmap", G_CALLBACK(rp_drag_image_unmap_signal_handler), nullptr);
+	g_signal_connect(G_OBJECT(image), "notify::width-request",  G_CALLBACK(rp_drag_image_notify_width_or_height_signal_handler), nullptr);
+	g_signal_connect(G_OBJECT(image), "notify::height-request", G_CALLBACK(rp_drag_image_notify_width_or_height_signal_handler), nullptr);
+
 // FIXME: GTK4 has a new Drag & Drop API.
 #if !GTK_CHECK_VERSION(4,0,0)
-	g_signal_connect(G_OBJECT(image), "drag-begin", G_CALLBACK(rp_drag_image_drag_begin), nullptr);
+	g_signal_connect(G_OBJECT(image), "drag-begin",    G_CALLBACK(rp_drag_image_drag_begin),    nullptr);
 	g_signal_connect(G_OBJECT(image), "drag-data-get", G_CALLBACK(rp_drag_image_drag_data_get), nullptr);
 #endif /* !GTK_CHECK_VERSION(4,0,0) */
 }
@@ -259,16 +259,45 @@ rp_drag_image_update_pixmaps(RpDragImage *image)
 {
 	g_return_val_if_fail(RP_IS_DRAG_IMAGE(image), false);
 	_RpDragImageCxx *const cxx = image->cxx;
+	auto *const anim = cxx->anim;
 	bool bRet = false;
+
+	if (!image->mapped) {
+		// RpDragImage is not mapped to the screen.
+		// Set the dirty flag and update pixmaps later.
+		// The "dirty" flag will force an update when mapped.
+		image->dirty = true;
+
+		// Return a value similar to the rest of the function.
+		if (anim && anim->iconAnimData) {
+			bRet = true;
+		} else if (cxx->img && cxx->img->isValid()) {
+			bRet = true;
+		}
+		return bRet;
+	}
 
 	if (image->curFrame) {
 		PIMGTYPE_unref(image->curFrame);
 		image->curFrame = nullptr;
 	}
 
+	// TODO: Call this function if the size request is changed.
+#if GTK_CHECK_VERSION(3,0,0)
+	// NOTE: In testing, the two sizes (minimum and natural) returned by
+	// gtk_widget_get_preferred_size() are both the same if
+	// gtk_widget_set_size_request() is called.
+	// If it's not called, then both are 0 x 0.
+	GtkRequisition req_sz;
+	gtk_widget_get_preferred_size(GTK_WIDGET(image), &req_sz, nullptr);
+#else /* !GTK_CHECK_VERSION(3,0,0) */
+	GtkRequisition req_sz;
+	gtk_widget_size_request(GTK_WIDGET(image), &req_sz);
+#endif /* GTK_CHECK_VERSION(3,0,0) */
+	const bool doRescaleIfNeeded = (req_sz.width > 0 && req_sz.height > 0);
+
 	// FIXME: Transparency isn't working for e.g. GALE01.gci.
 	// (Super Smash Bros. Melee)
-	auto *const anim = cxx->anim;
 	if (anim && anim->iconAnimData) {
 		const IconAnimDataConstPtr &iconAnimData = anim->iconAnimData;
 
@@ -283,7 +312,19 @@ rp_drag_image_update_pixmaps(RpDragImage *image)
 			const rp_image_const_ptr &frame = iconAnimData->frames[i];
 			if (frame && frame->isValid()) {
 				// NOTE: Allowing NULL frames here...
-				anim->iconFrames[i] = rp_image_to_PIMGTYPE(frame);
+				PIMGTYPE img = rp_image_to_PIMGTYPE(frame);
+				if (img && doRescaleIfNeeded && (frame->width() != req_sz.width || frame->height() != req_sz.height)) {
+					// Need to rescale the image.
+					// TODO: Only check the first frame, then set a bool?
+					// TODO: Verify High-DPI.
+					// TODO: Nearest-neighbor scaling?
+					PIMGTYPE scale_img = PIMGTYPE_scale(img, req_sz.width, req_sz.height, true);
+					if (scale_img) {
+						PIMGTYPE_unref(img);
+						img = scale_img;
+					}
+				}
+				anim->iconFrames[i] = img;
 			}
 		}
 
@@ -302,7 +343,18 @@ rp_drag_image_update_pixmaps(RpDragImage *image)
 		bRet = true;
 	} else if (cxx->img && cxx->img->isValid()) {
 		// Single image.
-		image->curFrame = rp_image_to_PIMGTYPE(cxx->img);
+		PIMGTYPE img = rp_image_to_PIMGTYPE(cxx->img);
+		if (img && doRescaleIfNeeded && (cxx->img->width() != req_sz.width || cxx->img->height() != req_sz.height)) {
+			// Need to rescale the image.
+			// TODO: Verify High-DPI.
+			// TODO: Nearest-neighbor scaling?
+			PIMGTYPE scale_img = PIMGTYPE_scale(img, req_sz.width, req_sz.height, true);
+			if (scale_img) {
+				PIMGTYPE_unref(img);
+				img = scale_img;
+			}
+		}
+		image->curFrame = img;
 		gtk_image_set_from_PIMGTYPE(GTK_IMAGE(image->imageWidget), image->curFrame);
 		bRet = true;
 	}
@@ -327,30 +379,8 @@ rp_drag_image_update_pixmaps(RpDragImage *image)
 	}
 #endif /* !GTK_CHECK_VERSION(4,0,0) */
 
+	image->dirty = false;
 	return bRet;
-}
-
-void
-rp_drag_image_get_minimum_image_size(RpDragImage *image, int *width, int *height)
-{
-	g_return_if_fail(RP_IS_DRAG_IMAGE(image));
-
-	*width = image->minimumImageSize.width;
-	*height = image->minimumImageSize.height;
-}
-
-void
-rp_drag_image_set_minimum_image_size(RpDragImage *image, int width, int height)
-{
-	g_return_if_fail(RP_IS_DRAG_IMAGE(image));
-
-	if (image->minimumImageSize.width != width &&
-	    image->minimumImageSize.height != height)
-	{
-		image->minimumImageSize.width = width;
-		image->minimumImageSize.height = height;
-		rp_drag_image_update_pixmaps(image);
-	}
 }
 
 bool rp_drag_image_get_ecks_bawks(RpDragImage *image)
@@ -666,6 +696,58 @@ rp_drag_image_reset_anim_frame(RpDragImage *image)
 }
 
 /** Signal handlers **/
+
+/**
+ * DragImage is being mapped onto the screen.
+ * @param image RpDragImage
+ * @param user_data User data
+ */
+static void
+rp_drag_image_map_signal_handler(RpDragImage *image, gpointer user_data)
+{
+	RP_UNUSED(user_data);
+
+	image->mapped = true;
+	if (image->dirty) {
+		// rp_drag_image_update_pixmaps() clears image->dirty().
+		rp_drag_image_update_pixmaps(image);
+	}
+}
+
+/**
+ * DragImage is being unmapped from the screen.
+ * @param image RpDragImage
+ * @param user_data User data
+ */
+static void
+rp_drag_image_unmap_signal_handler(RpDragImage *image, gpointer user_data)
+{
+	RP_UNUSED(user_data);
+	image->mapped = false;
+}
+
+/**
+ * Requested width or height has changed.
+ * @param image RpDragImage
+ * @param pspec GObject parameter specification
+ * @param user_data User data
+ */
+static void
+rp_drag_image_notify_width_or_height_signal_handler(RpDragImage *image, GParamSpec *pspec, gpointer user_data)
+{
+	RP_UNUSED(pspec);
+	RP_UNUSED(user_data);
+
+	if (image->mapped) {
+		// Update the pixmaps.
+		// NOTE: This function might be called twice in a row
+		// if both requested width and height are changed.
+		rp_drag_image_update_pixmaps(image);
+	} else {
+		// Mark the image as dirty.
+		image->dirty = true;
+	}
+}
 
 // FIXME: GTK4 has a new Drag & Drop API.
 #if !GTK_CHECK_VERSION(4,0,0)

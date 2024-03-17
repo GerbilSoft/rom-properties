@@ -16,8 +16,13 @@
 
 // Other rom-properties libraries
 #include "libromdata/RomDataFactory.hpp"
+#include "librpfile/FileSystem.hpp"
 using LibRomData::RomDataFactory;
 using LibRpText::rp_sprintf;
+using namespace LibRpFile;
+
+// C++ STL classes
+using std::string;
 
 /**
  * Thumbnail creator function for wrapper programs. (v2)
@@ -44,17 +49,30 @@ Q_DECL_EXPORT int RP_C_API rp_create_thumbnail2(const char *source_file, const c
 	// TODO: Static initializer somewhere?
 	rp_image::setBackendCreatorFn(RpQImageBackend::creator_fn);
 
-	// Attempt to open the ROM file.
+	// TODO: Check enableThumbnailOnNetworkFS
+	RomDataPtr romData;
+
+	// Check if this is a directory.
 	const QUrl localUrl = localizeQUrl(QUrl(QString::fromUtf8(source_file)));
-	const IRpFilePtr file(openQUrl(localUrl, true));
-	if (!file) {
-		// Could not open the file.
-		return RPCT_ERROR_CANNOT_OPEN_SOURCE_FILE;
+	const string s_local_filename = localUrl.toLocalFile().toUtf8().constData();
+	if (unlikely(!s_local_filename.empty() && FileSystem::is_directory(s_local_filename.c_str()))) {
+		// Directory: Call RomDataFactory::create() with the filename.
+		romData = RomDataFactory::create(s_local_filename.c_str());
+	} else {
+		// File: Open the file and call RomDataFactory::create() with the opened file.
+
+		// Attempt to open the ROM file.
+		const IRpFilePtr file(openQUrl(localUrl, true));
+		if (!file) {
+			// Could not open the file.
+			return RPCT_ERROR_CANNOT_OPEN_SOURCE_FILE;
+		}
+
+		// Get the appropriate RomData class for this ROM.
+		// RomData class *must* support at least one image type.
+		romData = RomDataFactory::create(file, RomDataFactory::RDA_HAS_THUMBNAIL);
 	}
 
-	// Get the appropriate RomData class for this ROM.
-	// RomData class *must* support at least one image type.
-	const RomDataPtr romData = RomDataFactory::create(file, RomDataFactory::RDA_HAS_THUMBNAIL);
 	if (!romData) {
 		// ROM is not supported.
 		return RPCT_ERROR_SOURCE_FILE_NOT_SUPPORTED;

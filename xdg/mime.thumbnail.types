@@ -64,6 +64,7 @@ application/x-snes-rom			# SNES
 application/x-sufami-turbo-rom		# SufamiTurbo
 application/x-wii-save			# WiiSave
 application/x-wii-u-rom			# WiiU
+inode/directory				# WiiUPackage (NOTE: Very generic!)
 application/x-nintendo-dsi-tad		# WiiWAD
 application/x-wii-wad			# WiiWAD
 application/x-doom-wad			# WiiWAD (for compatibility)

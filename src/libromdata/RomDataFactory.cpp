@@ -52,7 +52,10 @@ using std::vector;
 #include "Console/SNES.hpp"
 #include "Console/SufamiTurbo.hpp"
 #include "Console/WiiSave.hpp"
+#include "Console/WiiTicket.hpp"
+#include "Console/WiiTMD.hpp"
 #include "Console/WiiU.hpp"
+#include "Console/WiiUPackage.hpp"
 #include "Console/WiiWAD.hpp"
 #include "Console/WiiWIBN.hpp"
 #include "Console/Xbox_XBE.hpp"
@@ -121,6 +124,11 @@ using std::vector;
 #include "disc/NASOSReader.hpp"
 #include "disc/WbfsReader.hpp"
 #include "disc/WuxReader.hpp"
+
+// TODO: Remove after adding isDirSupported_static wchar_t overload.
+#ifdef _WIN32
+#  include "librptext/wchar.hpp"
+#endif /* _WIN32 */
 
 namespace LibRomData {
 
@@ -389,6 +397,8 @@ const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_header
 	GetRomDataFns(SNES, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA),
 	GetRomDataFns(SegaSaturn, ATTR_NONE | ATTR_HAS_METADATA | ATTR_SUPPORTS_DEVICES),
 	GetRomDataFns(WiiSave, ATTR_HAS_THUMBNAIL),
+	GetRomDataFns(WiiTicket, ATTR_HAS_METADATA),
+	GetRomDataFns(WiiTMD, ATTR_HAS_METADATA),
 	GetRomDataFns(WiiWAD, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA),
 
 	// Handhelds
@@ -1089,15 +1099,25 @@ RomDataPtr RomDataFactory::create(const char *filename, unsigned int attrs)
 	// Check if this is a file or a directory.
 	// If it's a file, we'll create an RpFile and then
 	// call create(IRpFile*,unsigned int).
-	if (!FileSystem::is_directory(filename)) {
+	if (likely(!FileSystem::is_directory(filename))) {
 		// Not a directory.
 		shared_ptr<RpFile> file = std::make_shared<RpFile>(filename, RpFile::FM_OPEN_READ_GZ);
 		if (file->isOpen()) {
 			romData = create(file, attrs);
 		}
+	} else {
+		// This is a directory. We currently only have one
+		// RomData subclass that takes directories, so we'll
+		// try that out here.
+		// TODO: Separate function?
+		if (WiiUPackage::isDirSupported_static(filename) >= 0) {
+			romData = std::make_shared<WiiUPackage>(filename);
+			if (!romData->isValid()) {
+				romData.reset();
+			}
+		}
 	}
 
-	// TODO: Check for RomData subclasses that support directories.
 	return romData;
 }
 
@@ -1128,11 +1148,24 @@ RomDataPtr RomDataFactory::create(const wchar_t *filenameW, unsigned int attrs)
 	// Check if this is a file or a directory.
 	// If it's a file, we'll create an RpFile and then
 	// call create(IRpFile*,unsigned int).
-	if (!FileSystem::is_directory(filenameW)) {
+	if (likely(!FileSystem::is_directory(filenameW))) {
 		// Not a directory.
 		shared_ptr<RpFile> file = std::make_shared<RpFile>(filenameW, RpFile::FM_OPEN_READ_GZ);
 		if (file->isOpen()) {
 			romData = create(file, attrs);
+		}
+	} else {
+		// This is a directory. We currently only have one
+		// RomData subclass that takes directories, so we'll
+		// try that out here.
+		// TODO: Separate function?
+		// TODO: filenameW in WiiUPackage?
+		const string u8filename = W2U8(filenameW);
+		if (WiiUPackage::isDirSupported_static(u8filename.c_str()) >= 0) {
+			romData = std::make_shared<WiiUPackage>(u8filename.c_str());
+			if (!romData->isValid()) {
+				romData.reset();
+			}
 		}
 	}
 

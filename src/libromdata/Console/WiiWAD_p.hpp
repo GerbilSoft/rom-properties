@@ -18,9 +18,6 @@
 #include "librpbase/crypto/KeyManager.hpp"
 #include "librpfile/IRpFile.hpp"
 
-// for key information
-#include "disc/WiiPartition.hpp"
-
 // Wii structs
 #include "gcn_structs.h"
 #include "wii_structs.h"
@@ -30,6 +27,9 @@
 #ifdef ENABLE_DECRYPTION
 #  include "librpbase/disc/CBCReader.hpp"
 #endif /* ENABLE_DECRYPTION */
+
+// WiiTicket for title key decryption
+#include "../Console/WiiTicket.hpp"
 
 // Uninitialized vector class
 #include "uvector.h"
@@ -78,6 +78,9 @@ public:
 	RVL_Ticket ticket;
 	RVL_TMD_Header tmdHeader;
 
+	// WiiTicket
+	std::unique_ptr<WiiTicket> wiiTicket;
+
 	// Data offset and size
 	uint32_t data_offset;
 	uint32_t data_size;
@@ -115,7 +118,7 @@ public:
 #endif /* ENABLE_DECRYPTION */
 
 	// Key index
-	WiiPartition::EncryptionKeys key_idx;
+	WiiTicket::EncryptionKeys key_idx;
 	// Key status
 	LibRpBase::KeyManager::VerifyResult key_status;
 

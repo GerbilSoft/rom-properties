@@ -34,7 +34,10 @@ SET(${PROJECT_NAME}_SRCS
 	Console/SufamiTurbo.cpp
 	Console/WiiCommon.cpp
 	Console/WiiSave.cpp
+	Console/WiiTicket.cpp
+	Console/WiiTMD.cpp
 	Console/WiiU.cpp
+	Console/WiiUPackage.cpp
 	Console/WiiWAD.cpp
 	Console/WiiWAD_ops.cpp
 	Console/WiiWIBN.cpp
@@ -125,6 +128,8 @@ SET(${PROJECT_NAME}_SRCS
 	disc/PEResourceReader.cpp
 	disc/WbfsReader.cpp
 	disc/WiiPartition.cpp
+	disc/WiiUFst.cpp
+	disc/WiiUH3Reader.cpp
 	disc/WuxReader.cpp
 	disc/XDVDFSPartition.cpp
 
@@ -165,8 +170,12 @@ SET(${PROJECT_NAME}_H
 	Console/SNES.hpp
 	Console/SufamiTurbo.hpp
 	Console/WiiCommon.hpp
+	Console/WiiTicket.hpp
+	Console/WiiTMD.hpp
 	Console/WiiSave.hpp
 	Console/WiiU.hpp
+	Console/WiiUPackage.hpp
+	Console/WiiUPackage_p.hpp
 	Console/WiiWAD.hpp
 	Console/WiiWAD_p.hpp
 	Console/WiiWIBN.hpp
@@ -329,6 +338,8 @@ SET(${PROJECT_NAME}_H
 	disc/PEResourceReader.hpp
 	disc/WbfsReader.hpp
 	disc/WiiPartition.hpp
+	disc/WiiUFst.hpp
+	disc/WiiUH3Reader.hpp
 	disc/WuxReader.hpp
 	disc/XDVDFSPartition.cpp
 
@@ -349,7 +360,10 @@ SET(${PROJECT_NAME}_H
 	)
 
 IF(ENABLE_XML)
-	SET(${PROJECT_NAME}_SRCS ${${PROJECT_NAME}_SRCS} Other/EXE_manifest.cpp)
+	SET(${PROJECT_NAME}_SRCS ${${PROJECT_NAME}_SRCS}
+		Console/WiiUPackage_xml.cpp
+		Other/EXE_manifest.cpp
+		)
 	IF(MSVC AND (NOT USE_INTERNAL_XML OR USE_INTERNAL_XML_DLL))
 		SET(${PROJECT_NAME}_SRCS ${${PROJECT_NAME}_SRCS} Other/EXE_delayload.cpp)
 	ENDIF(MSVC AND (NOT USE_INTERNAL_XML OR USE_INTERNAL_XML_DLL))

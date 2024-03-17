@@ -20,12 +20,13 @@
 // Other rom-properties libraries
 #include "librpbase/Achievements.hpp"
 #include "librpbase/SystemRegion.hpp"
+#include "librpfile/MemFile.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;
 using namespace LibRpTexture;
 
-// Decryption.
+// Decryption
 #ifdef ENABLE_DECRYPTION
 #  include "librpbase/crypto/AesCipherFactory.hpp"
 #  include "librpbase/crypto/IAesCipher.hpp"
@@ -81,7 +82,7 @@ WiiWADPrivate::WiiWADPrivate(const IRpFilePtr &file)
 	, data_size(0)
 	, pIMETContent(nullptr)
 	, imetContentOffset(0)
-	, key_idx(WiiPartition::Key_Max)
+	, key_idx(WiiTicket::EncryptionKeys::Unknown)
 	, key_status(KeyManager::VerifyResult::Unknown)
 {
 	// Clear the various structs.
@@ -369,20 +370,32 @@ WiiWAD::WiiWAD(const IRpFilePtr &file)
 		d->tmdContentsTbl.clear();
 	}
 
-	// Determine the key index and debug vs. retail.
-	static const char issuer_rvt[] = "Root-CA00000002-XS00000006";
-	if (!memcmp(d->ticket.signature_issuer, issuer_rvt, sizeof(issuer_rvt))) {
-		// Debug encryption.
-		d->key_idx = WiiPartition::Key_Rvt_Debug;
-	} else {
-		// Retail encryption.
-		uint8_t idx = d->ticket.common_key_index;
-		if (idx > 2) {
-			// Out of range. Assume Wii common key.
-			idx = 0;
-		}
-		d->key_idx = (WiiPartition::EncryptionKeys)idx;
+	// Attempt to parse the ticket.
+	MemFilePtr memFile = std::make_shared<MemFile>(
+		reinterpret_cast<const uint8_t*>(&d->ticket), sizeof(d->ticket));
+	if (!memFile->isOpen()) {
+		// Failed to open a MemFile.
+		d->file.reset();
+		d->wadType = WiiWADPrivate::WadType::Unknown;
+		return;
 	}
+
+	// NOTE: WiiTicket requires a ".tik" file extension.
+	// TODO: Have WiiTicket use dynamic_cast<> to determine if this is a MemFile?
+	memFile->setFilename("title.tik");
+
+	WiiTicket *const wiiTicket = new WiiTicket(memFile);
+	if (!wiiTicket->isValid()) {
+		// Not a valid ticket?
+		delete wiiTicket;
+		d->file.reset();
+		d->wadType = WiiWADPrivate::WadType::Unknown;
+		return;
+	}
+	d->wiiTicket.reset(wiiTicket);
+
+	// Get the key in use.
+	d->key_idx = d->wiiTicket->encKey();
 
 	// Main header is valid.
 	d->isValid = true;
@@ -390,46 +403,13 @@ WiiWAD::WiiWAD(const IRpFilePtr &file)
 #ifdef ENABLE_DECRYPTION
 	// Initialize the CBC reader for the main data area.
 
-	// TODO: WiiVerifyKeys class.
-	KeyManager *const keyManager = KeyManager::instance();
-	assert(keyManager != nullptr);
-
-	// Key verification data.
-	// TODO: Move out of WiiPartition and into WiiVerifyKeys?
-	const char *const keyName = WiiPartition::encryptionKeyName_static(d->key_idx);
-	const uint8_t *const verifyData = WiiPartition::encryptionVerifyData_static(d->key_idx);
-	assert(keyName != nullptr);
-	assert(keyName[0] != '\0');
-	assert(verifyData != nullptr);
-
-	// Get and verify the key.
-	KeyManager::KeyData_t keyData;
-	d->key_status = keyManager->getAndVerify(keyName, &keyData, verifyData, 16);
-	if (d->key_status != KeyManager::VerifyResult::OK) {
-		// Unable to get and verify the key.
+	// First, decrypt the title key.
+	int ret = d->wiiTicket->decryptTitleKey(d->dec_title_key, sizeof(d->dec_title_key));
+	d->key_status = d->wiiTicket->verifyResult();
+	if (ret != 0) {
+		// Failed to decrypt the title key.
 		return;
 	}
-
-	// Create a cipher to decrypt the title key.
-	IAesCipher *cipher = AesCipherFactory::create();
-
-	// Initialize parameters for title key decryption.
-	// TODO: Error checking.
-	// Parameters:
-	// - Chaining mode: CBC
-	// - IV: Title ID (little-endian)
-	cipher->setChainingMode(IAesCipher::ChainingMode::CBC);
-	cipher->setKey(keyData.key, keyData.length);
-	// Title key IV: High 8 bytes are the title ID (in big-endian), low 8 bytes are 0.
-	uint8_t iv[16];
-	memcpy(iv, &d->ticket.title_id.id, sizeof(d->ticket.title_id.id));
-	memset(&iv[8], 0, 8);
-	cipher->setIV(iv, sizeof(iv));
-	
-	// Decrypt the title key.
-	memcpy(d->dec_title_key, d->ticket.enc_title_key, sizeof(d->ticket.enc_title_key));
-	cipher->decrypt(d->dec_title_key, sizeof(d->dec_title_key));
-	delete cipher;
 
 	if (!d->pIMETContent) {
 		// No boot content...
@@ -439,6 +419,7 @@ WiiWAD::WiiWAD(const IRpFilePtr &file)
 	// Data area IV:
 	// - First two bytes are the big-endian content index.
 	// - Remaining bytes are zero.
+	uint8_t iv[16];
 	memcpy(iv, &d->pIMETContent->index, sizeof(d->pIMETContent->index));
 	memset(&iv[2], 0, sizeof(iv)-2);
 
@@ -829,7 +810,7 @@ int WiiWAD::loadFieldData(void)
 		// Unable to get the decryption key.
 		const char *err = KeyManager::verifyResultToString(d->key_status);
 		if (!err) {
-			err = C_("WiiWAD", "Unknown error. (THIS IS A BUG!)");
+			err = C_("RomData", "Unknown error. (THIS IS A BUG!)");
 		}
 		d->fields.addField_string(C_("WiiWAD", "Warning"),
 			err, RomFields::STRF_WARNING);
@@ -1042,35 +1023,19 @@ int WiiWAD::loadFieldData(void)
 		}
 	}
 
-	// Encryption key.
-	// TODO: WiiPartition function to get a key's "display name"?
-	static const std::array<const char*, WiiPartition::Key_Max> encKeyNames = {{
-		// Retail
-		NOP_C_("Wii|EncKey", "Retail"),
-		NOP_C_("Wii|EncKey", "Korean"),
-		NOP_C_("Wii|EncKey", "vWii"),
-
-		// Debug
-		NOP_C_("Wii|EncKey", "Debug"),
-		NOP_C_("Wii|EncKey", "Korean (debug)"),
-		NOP_C_("Wii|EncKey", "vWii (debug)"),
-
-		// SD card (TODO: Retail vs. Debug?)
-		NOP_C_("Wii|EncKey", "SD AES"),
-		NOP_C_("Wii|EncKey", "SD IV"),
-		NOP_C_("Wii|EncKey", "SD MD5"),
-	}};
-	const char *keyName;
-	if (d->key_idx >= 0 && d->key_idx < encKeyNames.size()) {
-		keyName = dpgettext_expr(RP_I18N_DOMAIN, "Wii|EncKey", encKeyNames[d->key_idx]);
+	// Encryption key
+	const char *const s_key_name = (d->wiiTicket) ? d->wiiTicket->encKeyName() : nullptr;
+	if (s_key_name) {
+		d->fields.addField_string(C_("RomData", "Encryption Key"), s_key_name);
 	} else {
-		keyName = C_("WiiWAD", "Unknown");
+		d->fields.addField_string(C_("RomData", "Warning"),
+			C_("RomData", "Could not determine the required encryption key."),
+			RomFields::STRF_WARNING);
 	}
-	d->fields.addField_string(C_("WiiWAD", "Encryption Key"), keyName);
 
 	// Console ID.
 	// TODO: Hide the "0x" prefix?
-	d->fields.addField_string_numeric(C_("WiiWAD", "Console ID"),
+	d->fields.addField_string_numeric(C_("Nintendo", "Console ID"),
 		be32_to_cpu(d->ticket.console_id), RomFields::Base::Hex, 8,
 		RomFields::STRF_MONOSPACE);
 
@@ -1428,7 +1393,7 @@ int WiiWAD::checkViewedAchievements(void) const
 	Achievements *const pAch = Achievements::instance();
 	int ret = 0;
 
-	if (d->key_idx == WiiPartition::Key_Rvt_Debug) {
+	if (d->key_idx == WiiTicket::EncryptionKeys::Key_RVT_Debug) {
 		// Debug encryption.
 		pAch->unlock(Achievements::ID::ViewedDebugCryptedFile);
 		ret++;

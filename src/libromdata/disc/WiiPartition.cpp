@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * WiiPartition.hpp: Wii partition reader.                                 *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -20,6 +20,11 @@
 #endif /* ENABLE_DECRYPTION */
 using namespace LibRpBase;
 
+// WiiTicket for title key decryption
+#include "../Console/WiiTicket.hpp"
+#include "librpfile/MemFile.hpp"
+using namespace LibRpFile;
+
 // C++ STL classes
 using std::unique_ptr;
 
@@ -35,7 +40,7 @@ class WiiPartitionPrivate final : public GcnPartitionPrivate
 public:
 	WiiPartitionPrivate(WiiPartition *q, off64_t data_size,
 		off64_t partition_offset, WiiPartition::CryptoMethod cryptoMethod);
-	~WiiPartitionPrivate() final;
+	~WiiPartitionPrivate() final = default;
 
 private:
 	typedef GcnPartitionPrivate super;
@@ -45,20 +50,17 @@ public:
 	// Partition header
 	RVL_PartitionHeader partitionHeader;
 
+	// WiiTicket
+	unique_ptr<WiiTicket> wiiTicket;
+
 	// Encryption key verification result
 	KeyManager::VerifyResult verifyResult;
 
 public:
-	/**
-	 * Determine the encryption key used by this partition.
-	 * This initializes encKey and encKeyReal.
-	 */
-	void getEncKey(void);
-
 	// Encryption key in use
-	WiiPartition::EncKey encKey;
+	WiiTicket::EncryptionKeys encKey;
 	// Encryption key that would be used if the partition was encrypted
-	WiiPartition::EncKey encKeyReal;
+	WiiTicket::EncryptionKeys encKeyReal;
 
 	// Crypto method
 	WiiPartition::CryptoMethod cryptoMethod;
@@ -100,88 +102,21 @@ public:
 	 */
 	int readSector(uint32_t sector_num);
 
-#ifdef ENABLE_DECRYPTION
 public:
-	// AES cipher for this partition's title key
-	IAesCipher *aes_title;
-	// Decrypted title key
-	uint8_t title_key[16];
-
 	/**
 	 * Initialize decryption.
 	 * @return VerifyResult.
 	 */
 	KeyManager::VerifyResult initDecryption(void);
 
+#ifdef ENABLE_DECRYPTION
 public:
-	// Verification key names
-	static const std::array<const char*, WiiPartition::Key_Max> EncryptionKeyNames;
-
-	// Verification key data
-	static const uint8_t EncryptionKeyVerifyData[WiiPartition::Key_Max][16];
+	// AES cipher for this partition's title key
+	unique_ptr<IAesCipher> aes_title;
 #endif
 };
 
 /** WiiPartitionPrivate **/
-
-#ifdef ENABLE_DECRYPTION
-
-// Verification key names.
-const std::array<const char*, WiiPartition::Key_Max> WiiPartitionPrivate::EncryptionKeyNames = {{
-	// Retail
-	"rvl-common",
-	"rvl-korean",
-	"wup-starbuck-vwii-common",
-
-	// Debug
-	"rvt-debug",
-	"rvt-korean",
-	"cat-starbuck-vwii-common",
-
-	// SD card (TODO: Retail vs. Debug?)
-	"rvl-sd-aes",
-	"rvl-sd-iv",
-	"rvl-sd-md5",
-}};
-
-const uint8_t WiiPartitionPrivate::EncryptionKeyVerifyData[WiiPartition::Key_Max][16] = {
-	/** Retail **/
-
-	// rvl-common
-	{0xCF,0xB7,0xFF,0xA0,0x64,0x0C,0x7A,0x7D,
-	 0xA7,0x22,0xDC,0x16,0x40,0xFA,0x04,0x58},
-	// rvl-korean
-	{0x98,0x1C,0xD4,0x51,0x17,0xF2,0x23,0xB6,
-	 0xC8,0x84,0x4A,0x97,0xA6,0x93,0xF2,0xE3},
-	// wup-starbuck-vwii-common
-	{0x04,0xF1,0x33,0x3F,0xF8,0x05,0x7B,0x8F,
-	 0xA7,0xF1,0xED,0x6E,0xAC,0x23,0x33,0xFA},
-
-	/** Debug **/
-
-	// rvt-debug
-	{0x22,0xC4,0x2C,0x5B,0xCB,0xFE,0x75,0xAC,
-	 0xEB,0xC3,0x6B,0xAF,0x90,0xB3,0xB4,0xF5},
-	// rvt-korean
-	{0x31,0x81,0xF2,0xCA,0xFE,0x70,0x58,0xCB,
-	 0x3C,0x0F,0xB9,0x9D,0x2D,0x45,0x74,0xDA},
-	// cat-starbuck-vwii-common
-	{0x0B,0xFB,0x83,0x83,0x38,0xCB,0x1A,0x83,
-	 0x5E,0x1C,0xEC,0xCA,0xDC,0x5D,0xF1,0xFA},
-
-	/** SD card (TODO: Retail vs. Debug?) **/
-
-	// rvl-sd-aes
-	{0x8C,0x1C,0xBA,0x01,0x02,0xB9,0x6F,0x65,
-	 0x24,0x7C,0x85,0x3C,0x0F,0x3B,0x8C,0x37},
-	// rvl-sd-iv
-	{0xE3,0xEE,0xE5,0x0F,0xDC,0xFD,0xBE,0x89,
-	 0x20,0x05,0xF2,0xB9,0xD8,0x1D,0xF1,0x27},
-	// rvl-sd-md5
-	{0xF8,0xE1,0x8D,0x89,0x06,0xC7,0x21,0x32,
-	 0x9D,0xE0,0x14,0x19,0x30,0xC3,0x88,0x1F},
-};
-#endif /* ENABLE_DECRYPTION */
 
 WiiPartitionPrivate::WiiPartitionPrivate(WiiPartition *q,
 		off64_t data_size, off64_t partition_offset,
@@ -189,20 +124,14 @@ WiiPartitionPrivate::WiiPartitionPrivate(WiiPartition *q,
 	: super(q, partition_offset, data_size, 2)
 #ifdef ENABLE_DECRYPTION
 	, verifyResult(KeyManager::VerifyResult::Unknown)
-	, encKey(WiiPartition::EncKey::Unknown)
-	, encKeyReal(WiiPartition::EncKey::Unknown)
-	, cryptoMethod(cryptoMethod)
-	, pos_7C00(-1)
-	, sector_num(~0)
-	, aes_title(nullptr)
 #else /* !ENABLE_DECRYPTION */
 	, verifyResult(KeyManager::VerifyResult::NoSupport)
-	, encKey(WiiPartition::EncKey::Unknown)
-	, encKeyReal(WiiPartition::EncKey::Unknown)
+#endif /* ENABLE_DECRYPTION */
+	, encKey(WiiTicket::EncryptionKeys::Unknown)
+	, encKeyReal(WiiTicket::EncryptionKeys::Unknown)
 	, cryptoMethod(cryptoMethod)
 	, pos_7C00(-1)
 	, sector_num(~0)
-#endif /* ENABLE_DECRYPTION */
 {
 	// Clear data set by GcnPartition in case the
 	// partition headers can't be read.
@@ -217,58 +146,6 @@ WiiPartitionPrivate::WiiPartitionPrivate(WiiPartition *q,
 }
 
 /**
- * Determine the encryption key used by this partition.
- * This initializes encKey and encKeyReal.
- */
-void WiiPartitionPrivate::getEncKey(void)
-{
-	if (encKey > WiiPartition::EncKey::Unknown) {
-		// Encryption key has already been determined.
-		return;
-	}
-
-	encKey = WiiPartition::EncKey::Unknown;
-	encKeyReal = WiiPartition::EncKey::Unknown;
-	if (partition_size < 0) {
-		// Error loading the partition header.
-		return;
-	}
-
-	assert(partitionHeader.ticket.common_key_index <= 1);
-	const uint8_t keyIdx = partitionHeader.ticket.common_key_index;
-
-	// Check the issuer to determine Retail vs. Debug.
-	static const char issuer_rvt[] = "Root-CA00000002-XS00000006";
-	if (!memcmp(partitionHeader.ticket.signature_issuer, issuer_rvt, sizeof(issuer_rvt))) {
-		// Debug issuer. Use the debug key for keyIdx == 0.
-		// NOTE: vWii common key shouldn't be used for discs,
-		// but we'll allow it anyway...
-		if (keyIdx <= 2) {
-			encKeyReal = static_cast<WiiPartition::EncKey>(
-				(int)WiiPartition::EncKey::RVT_Debug + keyIdx);
-		}
-	} else {
-		// Assuming Retail issuer.
-		// NOTE: vWii common key shouldn't be used for discs,
-		// but we'll allow it anyway...
-		if (keyIdx <= 2) {
-			// keyIdx maps to encKey directly for retail.
-			encKeyReal = static_cast<WiiPartition::EncKey>(
-				(int)WiiPartition::EncKey::RVL_Common + keyIdx);
-		}
-	}
-
-	if ((cryptoMethod & WiiPartition::CM_MASK_ENCRYPTED) == WiiPartition::CM_UNENCRYPTED) {
-		// Not encrypted.
-		encKey = WiiPartition::EncKey::None;
-	} else {
-		// Encrypted.
-		encKey = encKeyReal;
-	}
-}
-
-#ifdef ENABLE_DECRYPTION
-/**
  * Initialize decryption.
  * @return VerifyResult.
  */
@@ -282,46 +159,56 @@ KeyManager::VerifyResult WiiPartitionPrivate::initDecryption(void)
 	// If decryption is enabled, we can load the key and enable reading.
 	// Otherwise, we can only get the partition size information.
 
-	// Get the Key Manager instance.
-	KeyManager *const keyManager = KeyManager::instance();
-	assert(keyManager != nullptr);
+	// Initialize the WiiTicket.
+	if (!wiiTicket) {
+		MemFilePtr memFile = std::make_shared<MemFile>(
+			reinterpret_cast<const uint8_t*>(&partitionHeader.ticket), sizeof(partitionHeader.ticket));
+		if (!memFile->isOpen()) {
+			// Failed to open a MemFile.
+			// TODO: Better verifyResult value?
+			return verifyResult;
+		}
 
-	// Determine the required encryption key.
-	getEncKey();
-	if (encKey <= WiiPartition::EncKey::Unknown) {
-		// Invalid encryption key index.
-		// Use VerifyResult::KeyNotFound here.
-		// This condition is indicated by VerifyResult::KeyNotFound
-		// and a key index EncKey::Unknown.
-		verifyResult = KeyManager::VerifyResult::KeyNotFound;
+		// NOTE: WiiTicket requires a ".tik" file extension.
+		// TODO: Have WiiTicket use dynamic_cast<> to determine if this is a MemFile?
+		memFile->setFilename("title.tik");
+
+		WiiTicket *const wiiTicket = new WiiTicket(memFile);
+		if (!wiiTicket->isValid()) {
+			// Not a valid ticket?
+			delete wiiTicket;
+			// TODO: Better verifyResult value?
+			return verifyResult;
+		}
+		this->wiiTicket.reset(wiiTicket);
+	}
+
+	// Get the encryption key in use.
+	encKeyReal = wiiTicket->encKey();
+	if ((int)encKeyReal < 0 || encKeyReal >= WiiTicket::EncryptionKeys::Max) {
+		// Invalid key...
+		// TODO: Correct verifyResult?
+		verifyResult = KeyManager::VerifyResult::KeyInvalid;
 		return verifyResult;
 	}
 
-	// Determine the encryption key to use.
-	WiiPartition::EncryptionKeys keyIdx;
-	switch (encKey) {
-		case WiiPartition::EncKey::RVL_Common:
-			keyIdx = WiiPartition::Key_Rvl_Common;
-			break;
-		case WiiPartition::EncKey::RVL_Korean:
-			keyIdx = WiiPartition::Key_Rvl_Korean;
-			break;
-		case WiiPartition::EncKey::WUP_vWii:
-			keyIdx = WiiPartition::Key_Wup_Starbuck_vWii_Common;
-			break;
-		case WiiPartition::EncKey::RVT_Debug:
-			keyIdx = WiiPartition::Key_Rvt_Debug;
-			break;
-		case WiiPartition::EncKey::RVT_Korean:
-			keyIdx = WiiPartition::Key_Rvt_Korean;
-			break;
-		case WiiPartition::EncKey::CAT_vWii:
-			keyIdx = WiiPartition::Key_Cat_Starbuck_vWii_Common;
-			break;
-		default:
-			// Unknown key...
-			verifyResult = KeyManager::VerifyResult::KeyNotFound;
-			return verifyResult;
+	// Is this partition encrypted?
+	if ((cryptoMethod & WiiPartition::CM_MASK_ENCRYPTED) == WiiPartition::CM_UNENCRYPTED) {
+		// Not encrypted.
+		encKey = WiiTicket::EncryptionKeys::None;
+	} else {
+		// Encrypted.
+		encKey = encKeyReal;
+	}
+
+#ifdef ENABLE_DECRYPTION
+	// Get the title key.
+	uint8_t title_key[16];
+	int ret = wiiTicket->decryptTitleKey(title_key, sizeof(title_key));
+	if (ret != 0) {
+		// Title key decryption failed.
+		verifyResult = wiiTicket->verifyResult();
+		return verifyResult;
 	}
 
 	// Initialize the AES cipher.
@@ -332,18 +219,8 @@ KeyManager::VerifyResult WiiPartitionPrivate::initDecryption(void)
 		return verifyResult;
 	}
 
-	// Get the common key.
-	KeyManager::KeyData_t keyData;
-	verifyResult = keyManager->getAndVerify(
-		WiiPartitionPrivate::EncryptionKeyNames[keyIdx], &keyData,
-		WiiPartitionPrivate::EncryptionKeyVerifyData[keyIdx], 16);
-	if (verifyResult != KeyManager::VerifyResult::OK) {
-		// An error occurred loading while the common key.
-		return verifyResult;
-	}
-
-	// Load the common key. (CBC mode)
-	int ret = cipher->setKey(keyData.key, keyData.length);
+	// Load the decrypted title key. (CBC mode)
+	ret = cipher->setKey(title_key, sizeof(title_key));
 	ret |= cipher->setChainingMode(IAesCipher::ChainingMode::CBC);
 	if (ret != 0) {
 		// Error initializing the cipher.
@@ -351,38 +228,14 @@ KeyManager::VerifyResult WiiPartitionPrivate::initDecryption(void)
 		return verifyResult;
 	}
 
-	// Get the IV.
-	// First 8 bytes are the title ID.
-	// Second 8 bytes are all 0.
-	uint8_t iv[16];
-	memcpy(iv, partitionHeader.ticket.title_id.u8, 8);
-	memset(&iv[8], 0, 8);
-
-	// Decrypt the title key.
-	memcpy(title_key, partitionHeader.ticket.enc_title_key, sizeof(title_key));
-	if (cipher->decrypt(title_key, sizeof(title_key), iv, sizeof(iv)) != sizeof(title_key)) {
-		// Error decrypting the title key.
-		verifyResult = KeyManager::VerifyResult::IAesCipherDecryptErr;
-		return verifyResult;
-	}
-
-	// Set the title key in the AES cipher.
-	if (cipher->setKey(title_key, sizeof(title_key)) != 0) {
-		// Error initializing the cipher.
-		verifyResult = KeyManager::VerifyResult::IAesCipherInitErr;
-		return verifyResult;
-	}
-
 	// readSector() needs aes_title.
-	delete aes_title;
-	aes_title = cipher.release();
+	aes_title = std::move(cipher);
 
 	// Read sector 0, which contains a disc header.
 	// NOTE: readSector() doesn't check verifyResult.
 	if (readSector(0) != 0) {
 		// Error reading sector 0.
-		delete aes_title;
-		aes_title = nullptr;
+		aes_title.reset();
 		verifyResult = KeyManager::VerifyResult::IAesCipherDecryptErr;
 		return verifyResult;
 	}
@@ -411,18 +264,17 @@ KeyManager::VerifyResult WiiPartitionPrivate::initDecryption(void)
 		}
 		return verifyResult;
 	}
+#else /* !ENABLE_DECRYPTION */
+	if (encKey != WiiTicket::EncryptionKeys::None) {
+		// Can't read an encrypted disc image in a NoCrypto build.
+		verifyResult = KeyManager::VerifyResult::NoSupport;
+		return verifyResult;
+	}
+#endif /* ENABLE_DECRYPTION */
 
 	// Cipher initialized.
 	verifyResult = KeyManager::VerifyResult::OK;
 	return verifyResult;
-}
-#endif /* ENABLE_DECRYPTION */
-
-WiiPartitionPrivate::~WiiPartitionPrivate()
-{
-#ifdef ENABLE_DECRYPTION
-	delete aes_title;
-#endif /* ENABLE_DECRYPTION */
 }
 
 /**
@@ -496,10 +348,10 @@ int WiiPartitionPrivate::readSector(uint32_t sector_num)
  * NOTE: The IDiscReader *must* remain valid while this
  * WiiPartition is open.
  *
- * @param discReader		[in] IDiscReader.
- * @param partition_offset	[in] Partition start offset.
+ * @param discReader		[in] IDiscReader
+ * @param partition_offset	[in] Partition start offset
  * @param partition_size	[in] Calculated partition size. Used if the size in the header is 0.
- * @param cryptoMethod		[in] Crypto method.
+ * @param cryptoMethod		[in] Crypto method
  */
 WiiPartition::WiiPartition(const IDiscReaderPtr &discReader, off64_t partition_offset,
 		off64_t partition_size, CryptoMethod cryptoMethod)
@@ -527,7 +379,7 @@ WiiPartition::WiiPartition(const IDiscReaderPtr &discReader, off64_t partition_o
 	}
 
 	// Make sure the signature type is correct.
-	if (d->partitionHeader.ticket.signature_type != cpu_to_be32(RVL_SIGNATURE_TYPE_RSA2048)) {
+	if (d->partitionHeader.ticket.signature_type != cpu_to_be32(RVL_CERT_SIGTYPE_RSA2048_SHA1)) {
 		// TODO: Better error?
 		m_lastError = EIO;
 		m_file.reset();
@@ -544,13 +396,13 @@ WiiPartition::WiiPartition(const IDiscReaderPtr &discReader, off64_t partition_o
 	}
 
 	d->partition_size = d->data_size + d->data_offset;
-#ifdef ENABLE_DECRYPTION
-	d->pos_7C00 = 0;
-#endif /* ENABLE_DECRYPTION */
 
 	// Unencrypted discs don't need decryption.
 	if ((cryptoMethod & WiiPartition::CM_MASK_ENCRYPTED) == WiiPartition::CM_UNENCRYPTED) {
 		// No encryption. (RVT-H)
+		// TODO: Get the "real" encryption key?
+		d->encKey = WiiTicket::EncryptionKeys::None;
+		d->pos_7C00 = 0;
 
 		// NOTE: Debug discs may have incrementing values in update partitions.
 		static const uint8_t incr_vals[32] = {
@@ -570,10 +422,15 @@ WiiPartition::WiiPartition(const IDiscReaderPtr &discReader, off64_t partition_o
 			// TODO: Check for Wii magic?
 			d->verifyResult = KeyManager::VerifyResult::OK;
 		}
+	} else {
+		// Disc is encrypted.
+		// Only initialize d->pos_7C00 if decryption is supported.
+#ifdef ENABLE_DECRYPTION
+		d->pos_7C00 = 0;
+#endif /* ENABLE_DECRYPTION */
 	}
 
-	// Encryption will not be initialized until
-	// read() is called.
+	// Encryption will not be initialized until read() is called.
 }
 
 /** IDiscReader **/
@@ -849,11 +706,11 @@ KeyManager::VerifyResult WiiPartition::verifyResult(void) const
  * Get the encryption key in use.
  * @return Encryption key in use.
  */
-WiiPartition::EncKey WiiPartition::encKey(void) const
+WiiTicket::EncryptionKeys WiiPartition::encKey(void) const
 {
 	// TODO: Errors?
 	RP_D(WiiPartition);
-	d->getEncKey();
+	d->initDecryption();
 	return d->encKey;
 }
 
@@ -862,11 +719,11 @@ WiiPartition::EncKey WiiPartition::encKey(void) const
  * This is only needed for NASOS images.
  * @return "Real" encryption key in use.
  */
-WiiPartition::EncKey WiiPartition::encKeyReal(void) const
+WiiTicket::EncryptionKeys WiiPartition::encKeyReal(void) const
 {
 	// TODO: Errors?
 	RP_D(WiiPartition);
-	d->getEncKey();
+	d->initDecryption();
 	return d->encKeyReal;
 }
 
@@ -877,9 +734,9 @@ WiiPartition::EncKey WiiPartition::encKeyReal(void) const
 const RVL_Ticket *WiiPartition::ticket(void) const
 {
 	RP_D(const WiiPartition);
-	return (d->partitionHeader.ticket.signature_type != 0
+	return (d->partitionHeader.ticket.signature_type != 0)
 		? &d->partitionHeader.ticket
-		: nullptr);
+		: nullptr;
 }
 
 /**
@@ -891,9 +748,9 @@ const RVL_TMD_Header *WiiPartition::tmdHeader(void) const
 	RP_D(const WiiPartition);
 	const RVL_TMD_Header *const tmdHeader =
 		reinterpret_cast<const RVL_TMD_Header*>(d->partitionHeader.tmd);
-	return (tmdHeader->signature_type != 0
+	return (tmdHeader->signature_type != 0)
 		? tmdHeader
-		: nullptr);
+		: nullptr;
 }
 
 /**
@@ -905,46 +762,5 @@ Nintendo_TitleID_BE_t WiiPartition::titleID(void) const
 	RP_D(const WiiPartition);
 	return d->partitionHeader.ticket.title_id;
 }
-
-#ifdef ENABLE_DECRYPTION
-/** Encryption keys. **/
-
-/**
- * Get the total number of encryption key names.
- * @return Number of encryption key names.
- */
-int WiiPartition::encryptionKeyCount_static(void)
-{
-	return Key_Max;
-}
-
-/**
- * Get an encryption key name.
- * @param keyIdx Encryption key index.
- * @return Encryption key name (in ASCII), or nullptr on error.
- */
-const char *WiiPartition::encryptionKeyName_static(int keyIdx)
-{
-	assert(keyIdx >= 0);
-	assert(keyIdx < Key_Max);
-	if (keyIdx < 0 || keyIdx >= Key_Max)
-		return nullptr;
-	return WiiPartitionPrivate::EncryptionKeyNames[keyIdx];
-}
-
-/**
- * Get the verification data for a given encryption key index.
- * @param keyIdx Encryption key index.
- * @return Verification data. (16 bytes)
- */
-const uint8_t *WiiPartition::encryptionVerifyData_static(int keyIdx)
-{
-	assert(keyIdx >= 0);
-	assert(keyIdx < Key_Max);
-	if (keyIdx < 0 || keyIdx >= Key_Max)
-		return nullptr;
-	return WiiPartitionPrivate::EncryptionKeyVerifyData[keyIdx];
-}
-#endif /* ENABLE_DECRYPTION */
 
 }
