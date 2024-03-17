@@ -158,7 +158,7 @@ static cairo_status_t PIMGTYPE_CairoReadFunc(void *closure, unsigned char *data,
 }
 #else /* GdkPixbuf */
 // Mapping of data pointers to GBytes* objects for unreference.
-static std::unordered_map<const void*, GBytes*> map_gbytes_unref;
+static std::map<const void*, GBytes*> map_gbytes_unref;
 
 /**
  * GDestroyNotify for g_memory_input_stream_new_from_data().

@@ -38,6 +38,7 @@
 #include <algorithm>
 #include <array>
 #include <forward_list>
+#include <map>
 #include <memory>
 #include <set>
 #include <string>
