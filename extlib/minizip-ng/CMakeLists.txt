@@ -8,7 +8,7 @@
 #cmake_minimum_required(VERSION 3.13)
 
 # Library version
-set(VERSION "4.0.4")
+set(VERSION "4.0.5")
 # API version
 set(SOVERSION "4")
 
@@ -272,7 +272,7 @@ if(MZ_BZIP2)
         list(APPEND MINIZIP_LIB ${BZIP2_LIBRARIES})
         list(APPEND MINIZIP_LBD ${BZIP2_LIBRARY_DIRS})
 
-        set(PC_PRIVATE_LIBS "${PC_PRIVATE_LIBS} -lbzip2")
+        set(PC_PRIVATE_LIBS "${PC_PRIVATE_LIBS} -lbz2")
     elseif(MZ_FETCH_LIBS)
         clone_repo(bzip2 https://sourceware.org/git/bzip2.git)
 
@@ -658,6 +658,7 @@ if(MZ_COMPAT)
     if(MZ_COMPAT_VERSION)
         list(APPEND MINIZIP_DEF -DMZ_COMPAT_VERSION=${MZ_COMPAT_VERSION})
     endif()
+
     list(APPEND MINIZIP_SRC mz_compat.c)
     list(APPEND MINIZIP_HDR mz_compat.h
         ${CMAKE_CURRENT_BINARY_DIR}/ioapi.h
