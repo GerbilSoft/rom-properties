@@ -75,8 +75,10 @@ public:
 
 /** HashPrivate **/
 
+#ifdef CHECK_DELAYLOAD
 pthread_once_t HashPrivate::delay_load_check = PTHREAD_ONCE_INIT;
 bool HashPrivate::has_zlib = false;
+#endif /* CHECK_DELAYLOAD */
 
 HashPrivate::HashPrivate(Hash::Algorithm algorithm)
 	: algorithm(algorithm)
