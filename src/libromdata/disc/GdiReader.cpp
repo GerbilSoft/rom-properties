@@ -23,6 +23,7 @@ using namespace LibRpText;
 #include "Media/ISO.hpp"
 
 // C++ STL classes
+#include <limits>
 using std::string;
 using std::unique_ptr;
 using std::vector;
@@ -58,9 +59,11 @@ public:
 	vector<BlockRange> blockRanges;
 
 	// Track to blockRanges mappings.
-	// Index = track# (minus 1)
-	// Value = pointer to BlockRange in blockRanges.
-	vector<BlockRange*> trackMappings;
+	// - Index = track# (minus 1)
+	// - Value = index in blockRanges [-1 if not mapped]
+	// NOTE: Must use index in blockRanges. Using pointers fails if
+	// blockRanges is internally allocated.
+	vector<int8_t> trackMappings;
 
 	// Number of logical 2048-byte blocks.
 	// Determined by the highest data track.
@@ -154,7 +157,7 @@ int GdiReaderPrivate::parseGdiFile(char *gdibuf)
 	}
 
 	blockRanges.reserve(static_cast<size_t>(trackCount));
-	trackMappings.resize(static_cast<size_t>(trackCount));
+	trackMappings.resize(static_cast<size_t>(trackCount), -1);
 
 	// Remainder of file is the track list.
 	// Format: Track# LBA Type SectorSize Filename ???
@@ -209,13 +212,18 @@ int GdiReaderPrivate::parseGdiFile(char *gdibuf)
 		if (trackNumber <= 0 || trackNumber > trackCount) {
 			// Out of range.
 			return -EIO;
-		} else if (trackMappings[trackNumber-1] != nullptr) {
+		} else if (trackMappings[trackNumber-1] >= 0) {
 			// Duplicate.
 			return -EIO;
 		}
 
 		// Save the track information.
 		const size_t idx = blockRanges.size();
+		assert(idx <= std::numeric_limits<int8_t>::max());
+		if (idx > std::numeric_limits<int8_t>::max()) {
+			// Too many tracks. (More than 127???)
+			return -ENOMEM;
+		}
 		blockRanges.resize(idx+1);
 		BlockRange &blockRange = blockRanges[idx];
 		blockRange.blockStart = static_cast<unsigned int>(blockStart);
@@ -230,7 +238,7 @@ int GdiReaderPrivate::parseGdiFile(char *gdibuf)
 		blockRange.file = nullptr;
 
 		// Save the track mapping.
-		trackMappings[trackNumber-1] = &blockRange;
+		trackMappings[trackNumber-1] = static_cast<int8_t>(idx);
 	}
 
 	// Done parsing the GDI.
@@ -258,20 +266,21 @@ int GdiReaderPrivate::openTrack(int trackNumber)
 		return -ENOENT;
 	}
 
-	BlockRange *const blockRange = trackMappings[trackNumber-1];
-	if (!blockRange) {
+	int mapping = trackMappings[trackNumber-1];
+	if (mapping < 0) {
 		// No block range. Track either doesn't exist
 		// or is an audio track.
 		return -ENOENT;
 	}
 
-	if (blockRange->file) {
+	BlockRange &blockRange = blockRanges[mapping];
+	if (blockRange.file) {
 		// File is already open.
 		return 0;
 	}
 
 	// Separate the file extension.
-	string basename = blockRange->filename;
+	string basename = blockRange.filename;
 	string ext;
 	const size_t dotpos = basename.find_last_of('.');
 	if (dotpos != string::npos) {
@@ -279,7 +288,7 @@ int GdiReaderPrivate::openTrack(int trackNumber)
 		basename.resize(dotpos);
 	} else {
 		// No extension. Add one based on sector size.
-		ext = (blockRange->sectorSize == 2048 ? ".iso" : ".bin");
+		ext = (blockRange.sectorSize == 2048 ? ".iso" : ".bin");
 	}
 
 	// Open the related file.
@@ -299,15 +308,15 @@ int GdiReaderPrivate::openTrack(int trackNumber)
 	}
 
 	// Is the file a multiple of the sector size?
-	if (fileSize % blockRange->sectorSize != 0) {
+	if (fileSize % blockRange.sectorSize != 0) {
 		// Not a multiple of the sector size.
 		delete file;
 		return -EIO;
 	}
 
 	// File opened.
-	blockRange->blockEnd = blockRange->blockStart + static_cast<unsigned int>(fileSize / blockRange->sectorSize) - 1;
-	blockRange->file = file;
+	blockRange.blockEnd = blockRange.blockStart + static_cast<unsigned int>(fileSize / blockRange.sectorSize) - 1;
+	blockRange.file = file;
 	return 0;
 }
 
@@ -329,11 +338,18 @@ int GdiReaderPrivate::getTrackLBAInfo(int trackNumber, unsigned int &lba_start, 
 		// Invalid track number.
 		return -EINVAL;
 	}
-	GdiReaderPrivate::BlockRange *const blockRange = trackMappings[trackNumber-1];
+
+	int mapping = trackMappings[trackNumber-1];
+	if (mapping < 0) {
+		// No block range. Track either doesn't exist
+		// or is an audio track.
+		return -ENOENT;
+	}
 
 	// Calculate the track length.
-	lba_start = blockRange->blockStart;
-	lba_size = blockRange->blockEnd - lba_start + 1;
+	const BlockRange &blockRange = blockRanges[mapping];
+	lba_start = blockRange.blockStart;
+	lba_size = blockRange.blockEnd - lba_start + 1;
 	return 0;
 }
 
@@ -402,10 +418,11 @@ GdiReader::GdiReader(const IRpFilePtr &file)
 	// NOTE: Searching in reverse order.
 	int lastDataTrack = 0;	// 1-based; 0 is invalid.
 	std::for_each(d->trackMappings.crbegin(), d->trackMappings.crend(),
-		[&lastDataTrack](const GdiReaderPrivate::BlockRange *blockRange) noexcept -> void {
-			if (blockRange) {
-				if (static_cast<int>(blockRange->trackNumber) > lastDataTrack) {
-					lastDataTrack = blockRange->trackNumber;
+		[&lastDataTrack, d](const int mapping) noexcept -> void {
+			if (mapping >= 0) {
+				const GdiReaderPrivate::BlockRange &blockRange = d->blockRanges[mapping];
+				if (static_cast<int>(blockRange.trackNumber) > lastDataTrack) {
+					lastDataTrack = blockRange.trackNumber;
 				}
 			}
 		}
@@ -421,8 +438,8 @@ GdiReader::GdiReader(const IRpFilePtr &file)
 		}
 	}
 
-	const GdiReaderPrivate::BlockRange *const lastBlockRange = d->trackMappings[lastDataTrack-1];
-	if (!lastBlockRange) {
+	const int mapping_lastBlockRange = d->trackMappings[lastDataTrack-1];
+	if (mapping_lastBlockRange < 0) {
 		// Should not get here...
 		d->close();
 		m_lastError = EIO;
@@ -432,7 +449,7 @@ GdiReader::GdiReader(const IRpFilePtr &file)
 	// Disc parameters.
 	// A full Dreamcast disc has 549,150 sectors.
 	d->block_size = 2048;
-	d->blockCount = lastBlockRange->blockEnd + 1;
+	d->blockCount = d->blockRanges[mapping_lastBlockRange].blockEnd + 1;
 	d->disc_size = d->blockCount * 2048;
 
 	// Reset the disc position.
@@ -634,11 +651,11 @@ int GdiReader::startingLBA(int trackNumber) const
 	if (trackNumber <= 0 || trackNumber > static_cast<int>(d->trackMappings.size()))
 		return -1;
 
-	const GdiReaderPrivate::BlockRange *blockRange = d->trackMappings[trackNumber-1];
-	if (!blockRange)
+	const int mapping = d->trackMappings[trackNumber-1];
+	if (mapping < 0)
 		return -1;
 
-	return static_cast<int>(blockRange->blockStart);
+	return static_cast<int>(d->blockRanges[mapping].blockStart);
 }
 
 /**
