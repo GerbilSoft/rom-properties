@@ -58,7 +58,7 @@ LPVOID LoadResource_i18n(HMODULE hModule, LPCTSTR lpType, DWORD dwResId)
 		// Search for the specified language code.
 		// NOTE: 'en' is special-cased and skips this search.
 		auto iter = std::lower_bound(lc_mappings.cbegin(), lc_mappings.cend(), lc,
-			[lc](const lc_mapping_t lc_mapping, uint32_t lc) {
+			[](const lc_mapping_t lc_mapping, uint32_t lc) {
 				return (lc_mapping.lc < lc);
 			});
 		if (iter != lc_mappings.cend() && iter->lc == lc) {
