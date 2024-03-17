@@ -33,6 +33,8 @@
   * Linux: Fix build on GTK+ 3.x versions earlier than 3.15.8.
     * gtk_popover_set_transitions_enabled() was added in GTK+ 3.15.8.
       It's now used for GTK+ versions [3.15.8, 3.21.5).
+  * GTK, KDE: The banner and icon display in the properties tab are now
+    resized if they're too big.
 
 ## v2.3 (released 2024/03/03)
 
