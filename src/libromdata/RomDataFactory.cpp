@@ -995,11 +995,12 @@ RomDataPtr create(const IRpFilePtr &file, unsigned int attrs)
  * types must be supported by the RomData subclass in order to
  * be returned.
  *
- * @param filename ROM filename (UTF-8)
+ * @param filename ROM filename (encoding depends on CharType)
  * @param attrs RomDataAttr bitfield. If set, RomData subclass must have the specified attributes.
  * @return RomData subclass, or nullptr if the ROM isn't supported.
  */
-RomDataPtr create(const char *filename, unsigned int attrs)
+template<typename CharType>
+static RomDataPtr T_create(const CharType *filename, unsigned int attrs)
 {
 	RomDataPtr romData;
 
@@ -1028,6 +1029,30 @@ RomDataPtr create(const char *filename, unsigned int attrs)
 	return romData;
 }
 
+/**
+ * Create a RomData subclass for the specified ROM file.
+ *
+ * This version creates a base RpFile for the RomData object.
+ * It does not support extended virtual filesystems like GVfs
+ * or KIO, but it does support directories.
+ *
+ * NOTE: RomData::isValid() is checked before returning a
+ * created RomData instance, so returned objects can be
+ * assumed to be valid as long as they aren't nullptr.
+ *
+ * If imgbf is non-zero, at least one of the specified image
+ * types must be supported by the RomData subclass in order to
+ * be returned.
+ *
+ * @param filename ROM filename (UTF-8)
+ * @param attrs RomDataAttr bitfield. If set, RomData subclass must have the specified attributes.
+ * @return RomData subclass, or nullptr if the ROM isn't supported.
+ */
+RomDataPtr create(const char *filename, unsigned int attrs)
+{
+	return T_create(filename, attrs);
+}
+
 #ifdef _WIN32
 /**
  * Create a RomData subclass for the specified ROM file.
@@ -1050,32 +1075,7 @@ RomDataPtr create(const char *filename, unsigned int attrs)
  */
 RomDataPtr create(const wchar_t *filename, unsigned int attrs)
 {
-	RomDataPtr romData;
-
-	// Check if this is a file or a directory.
-	// If it's a file, we'll create an RpFile and then
-	// call create(IRpFile*,unsigned int).
-	if (likely(!FileSystem::is_directory(filename))) {
-		// Not a directory.
-		shared_ptr<RpFile> file = std::make_shared<RpFile>(filename, RpFile::FM_OPEN_READ_GZ);
-		if (file->isOpen()) {
-			romData = create(file, attrs);
-		}
-	} else {
-		// This is a directory. We currently only have one
-		// RomData subclass that takes directories, so we'll
-		// try that out here.
-		// TODO: Separate function?
-		if (WiiUPackage::isDirSupported_static(filename) >= 0) {
-			romData = std::make_shared<WiiUPackage>(filename);
-			if (!romData->isValid()) {
-				romData.reset();
-			}
-		}
-	}
-
-	// TODO: Check for RomData subclasses that support directories.
-	return romData;
+	return T_create(filename, attrs);
 }
 #endif /* _WIN32 */
 
