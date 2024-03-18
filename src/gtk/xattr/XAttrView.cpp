@@ -230,12 +230,12 @@ rp_xattr_view_init(RpXAttrView *widget)
 #else /* !GTK_CHECK_VERSION(2,91,0) */
 	// NOTE: The extra alignments outside the frame reduce the frame widths.
 	// This only affects GTK2, so meh.
-	GtkWidget *const alignVboxExt2Attributes = gtk_alignment_new(0.0f, 0.0f, 0.0f, 0.0f);
-	gtk_widget_set_name(alignVboxExt2Attributes, "alignVboxExt2Attributes");
-	gtk_widget_show(alignVboxExt2Attributes);
-	gtk_alignment_set_padding(GTK_ALIGNMENT(alignVboxExt2Attributes), 6, 6, 6, 6);
-	gtk_container_add(GTK_CONTAINER(alignVboxExt2Attributes), vboxExt2Attributes);
-	gtk_frame_set_child(GTK_FRAME(widget->fraExt2Attributes), alignVboxExt2Attributes);
+	GtkWidget *const alignVBoxExt2Attributes = gtk_alignment_new(0.0f, 0.0f, 0.0f, 0.0f);
+	gtk_widget_set_name(alignVBoxExt2Attributes, "alignVBoxExt2Attributes");
+	gtk_widget_show(alignVBoxExt2Attributes);
+	gtk_alignment_set_padding(GTK_ALIGNMENT(alignVBoxExt2Attributes), 6, 6, 6, 6);
+	gtk_container_add(GTK_CONTAINER(alignVBoxExt2Attributes), vboxExt2Attributes);
+	gtk_frame_set_child(GTK_FRAME(widget->fraExt2Attributes), alignVBoxExt2Attributes);
 
 	GtkWidget *const alignFraExt2Attributes = gtk_alignment_new(0.0f, 0.0f, 0.0f, 0.0f);
 	gtk_widget_set_name(alignFraExt2Attributes, "alignFraExt2Attributes");
@@ -243,12 +243,12 @@ rp_xattr_view_init(RpXAttrView *widget)
 	gtk_alignment_set_padding(GTK_ALIGNMENT(alignFraExt2Attributes), 6, 6, 6, 6);
 	gtk_container_add(GTK_CONTAINER(alignFraExt2Attributes), widget->fraExt2Attributes);
 
-	GtkWidget *const alignVboxXfsAttributes = gtk_alignment_new(0.0f, 0.0f, 0.0f, 0.0f);
-	gtk_widget_set_name(alignVboxXfsAttributes, "alignVboxXfsAttributes");
-	gtk_widget_show(alignVboxXfsAttributes);
-	gtk_alignment_set_padding(GTK_ALIGNMENT(alignVboxXfsAttributes), 6, 6, 6, 6);
-	gtk_container_add(GTK_CONTAINER(alignVboxXfsAttributes), vboxXfsAttributes);
-	gtk_frame_set_child(GTK_FRAME(widget->fraXfsAttributes), alignVboxXfsAttributes);
+	GtkWidget *const alignVBoxXfsAttributes = gtk_alignment_new(0.0f, 0.0f, 0.0f, 0.0f);
+	gtk_widget_set_name(alignVBoxXfsAttributes, "alignVBoxXfsAttributes");
+	gtk_widget_show(alignVBoxXfsAttributes);
+	gtk_alignment_set_padding(GTK_ALIGNMENT(alignVBoxXfsAttributes), 6, 6, 6, 6);
+	gtk_container_add(GTK_CONTAINER(alignVBoxXfsAttributes), vboxXfsAttributes);
+	gtk_frame_set_child(GTK_FRAME(widget->fraXfsAttributes), alignVBoxXfsAttributes);
 
 	GtkWidget *const alignFraXfsAttributes = gtk_alignment_new(0.0f, 0.0f, 0.0f, 0.0f);
 	gtk_widget_set_name(alignFraXfsAttributes, "alignFraXfsAttributes");
@@ -256,12 +256,12 @@ rp_xattr_view_init(RpXAttrView *widget)
 	gtk_alignment_set_padding(GTK_ALIGNMENT(alignFraXfsAttributes), 6, 6, 6, 6);
 	gtk_container_add(GTK_CONTAINER(alignFraXfsAttributes), widget->fraXfsAttributes);
 
-	GtkWidget *const alignVboxDosAttributes = gtk_alignment_new(0.0f, 0.0f, 0.0f, 0.0f);
-	gtk_widget_set_name(alignVboxDosAttributes, "alignVboxDosAttributes");
-	gtk_widget_show(alignVboxDosAttributes);
-	gtk_alignment_set_padding(GTK_ALIGNMENT(alignVboxDosAttributes), 6, 6, 6, 6);
-	gtk_container_add(GTK_CONTAINER(alignVboxDosAttributes), vboxDosAttributes);
-	gtk_frame_set_child(GTK_FRAME(widget->fraDosAttributes), alignVboxDosAttributes);
+	GtkWidget *const alignVBoxDosAttributes = gtk_alignment_new(0.0f, 0.0f, 0.0f, 0.0f);
+	gtk_widget_set_name(alignVBoxDosAttributes, "alignVBoxDosAttributes");
+	gtk_widget_show(alignVBoxDosAttributes);
+	gtk_alignment_set_padding(GTK_ALIGNMENT(alignVBoxDosAttributes), 6, 6, 6, 6);
+	gtk_container_add(GTK_CONTAINER(alignVBoxDosAttributes), vboxDosAttributes);
+	gtk_frame_set_child(GTK_FRAME(widget->fraDosAttributes), alignVBoxDosAttributes);
 
 	GtkWidget *const alignFraDosAttributes = gtk_alignment_new(0.0f, 0.0f, 0.0f, 0.0f);
 	gtk_widget_set_name(alignFraDosAttributes, "alignFraDosAttributes");
