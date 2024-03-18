@@ -92,18 +92,18 @@ void OptionsTab::reset(void)
 	Q_D(OptionsTab);
 
 	// Downloads
-	d->ui.grpExtImgDownloads->setChecked(config->extImgDownloadEnabled());
-	d->ui.chkUseIntIconForSmallSizes->setChecked(config->useIntIconForSmallSizes());
-	d->ui.chkStoreFileOriginInfo->setChecked(config->storeFileOriginInfo());
+	d->ui.grpExtImgDownloads->setChecked(config->getBoolConfigOption(Config::BoolConfig::Downloads_ExtImgDownloadEnabled));
+	d->ui.chkUseIntIconForSmallSizes->setChecked(config->getBoolConfigOption(Config::BoolConfig::Downloads_UseIntIconForSmallSizes));
+	d->ui.chkStoreFileOriginInfo->setChecked(config->getBoolConfigOption(Config::BoolConfig::Downloads_StoreFileOriginInfo));
 
 	// Image bandwidth options
 	d->ui.cboUnmeteredConnection->setCurrentIndex(static_cast<int>(config->imgBandwidthUnmetered()));
 	d->ui.cboMeteredConnection->setCurrentIndex(static_cast<int>(config->imgBandwidthMetered()));
 
 	// Options
-	d->ui.chkShowDangerousPermissionsOverlayIcon->setChecked(config->showDangerousPermissionsOverlayIcon());
-	d->ui.chkEnableThumbnailOnNetworkFS->setChecked(config->enableThumbnailOnNetworkFS());
-	d->ui.chkShowXAttrView->setChecked(config->showXAttrView());
+	d->ui.chkShowDangerousPermissionsOverlayIcon->setChecked(config->getBoolConfigOption(Config::BoolConfig::Options_ShowDangerousPermissionsOverlayIcon));
+	d->ui.chkEnableThumbnailOnNetworkFS->setChecked(config->getBoolConfigOption(Config::BoolConfig::Options_EnableThumbnailOnNetworkFS));
+	d->ui.chkShowXAttrView->setChecked(config->getBoolConfigOption(Config::BoolConfig::Options_ShowXAttrView));
 
 	// PAL language code
 	d->ui.cboGameTDBPAL->setSelectedLC(config->palLanguageForGameTDB());
@@ -124,17 +124,17 @@ void OptionsTab::loadDefaults(void)
 	Q_D(OptionsTab);
 
 	// Downloads
-	bool bdef = Config::extImgDownloadEnabled_default();
+	bool bdef = Config::getBoolConfigOption_default(Config::BoolConfig::Downloads_ExtImgDownloadEnabled);
 	if (d->ui.grpExtImgDownloads->isChecked() != bdef) {
 		d->ui.grpExtImgDownloads->setChecked(bdef);
 		isDefChanged = true;
 	}
-	bdef = Config::useIntIconForSmallSizes_default();
+	bdef = Config::getBoolConfigOption_default(Config::BoolConfig::Downloads_UseIntIconForSmallSizes);
 	if (d->ui.chkUseIntIconForSmallSizes->isChecked() != bdef) {
 		d->ui.chkUseIntIconForSmallSizes->setChecked(bdef);
 		isDefChanged = true;
 	}
-	bdef = Config::storeFileOriginInfo_default();
+	bdef = Config::getBoolConfigOption_default(Config::BoolConfig::Downloads_StoreFileOriginInfo);
 	if (d->ui.chkStoreFileOriginInfo->isChecked() != bdef) {
 		d->ui.chkStoreFileOriginInfo->setChecked(bdef);
 		isDefChanged = true;
@@ -158,17 +158,17 @@ void OptionsTab::loadDefaults(void)
 	}
 
 	// Options
-	bdef = Config::showDangerousPermissionsOverlayIcon_default();
+	bdef = Config::getBoolConfigOption_default(Config::BoolConfig::Options_ShowDangerousPermissionsOverlayIcon);
 	if (d->ui.chkShowDangerousPermissionsOverlayIcon->isChecked() != bdef) {
 		d->ui.chkShowDangerousPermissionsOverlayIcon->setChecked(bdef);
 		isDefChanged = true;
 	}
-	bdef = Config::enableThumbnailOnNetworkFS_default();
+	bdef = Config::getBoolConfigOption_default(Config::BoolConfig::Options_EnableThumbnailOnNetworkFS);
 	if (d->ui.chkEnableThumbnailOnNetworkFS->isChecked() != bdef) {
 		d->ui.chkEnableThumbnailOnNetworkFS->setChecked(bdef);
 		isDefChanged = true;
 	}
-	bdef = Config::showXAttrView_default();
+	bdef = Config::getBoolConfigOption_default(Config::BoolConfig::Options_ShowXAttrView);
 	if (d->ui.chkShowXAttrView->isChecked() != bdef) {
 		d->ui.chkShowXAttrView->setChecked(bdef);
 		isDefChanged = true;

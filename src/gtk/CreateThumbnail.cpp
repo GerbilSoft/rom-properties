@@ -195,7 +195,7 @@ static RomDataPtr openFromFilenameOrURI(const char *source_file, string &s_uri, 
 	RomDataPtr romData;
 
 	s_uri.clear();
-	const bool enableThumbnailOnNetworkFS = Config::instance()->enableThumbnailOnNetworkFS();
+	const bool enableThumbnailOnNetworkFS = Config::instance()->getBoolConfigOption(Config::BoolConfig::Options_EnableThumbnailOnNetworkFS);
 
 	char *const uri_scheme = g_uri_parse_scheme(source_file);
 	if (uri_scheme != nullptr) {

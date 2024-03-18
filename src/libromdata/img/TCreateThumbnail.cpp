@@ -140,7 +140,7 @@ ImgClass TCreateThumbnail<ImgClass>::getExternalImage(
 
 	// NOTE: This will force a configuration timestamp check.
 	const Config *const config = Config::instance();
-	const bool extImgDownloadEnabled = config->extImgDownloadEnabled();
+	const bool extImgDownloadEnabled = config->getBoolConfigOption(Config::BoolConfig::Downloads_ExtImgDownloadEnabled);
 	const Config::ImgBandwidth imgBandwidthMode = unlikely(this->isMetered())
 		? config->imgBandwidthMetered()
 		: config->imgBandwidthUnmetered();
@@ -289,7 +289,7 @@ int TCreateThumbnail<ImgClass>::getThumbnail(const RomDataPtr &romData, int reqS
 			return RPCT_ERROR_CANNOT_OPEN_SOURCE_FILE;
 	}
 
-	if (config->useIntIconForSmallSizes() && reqSize <= 48) {
+	if (config->getBoolConfigOption_default(Config::BoolConfig::Downloads_UseIntIconForSmallSizes) && reqSize <= 48) {
 		// Check for an icon first.
 		// TODO: Define "small sizes" somewhere. (DPI independence?)
 		if (imgbf & RomData::IMGBF_INT_ICON) {

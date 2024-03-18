@@ -603,40 +603,6 @@ void Config::getDefImgTypePrio(ImgTypePrio_t *imgTypePrio) const
 /** Download options **/
 
 /**
- * Should we download images from external databases?
- * NOTE: Call load() before using this function.
- * @return True if downloads are enabled; false if not.
- */
-bool Config::extImgDownloadEnabled(void) const
-{
-	RP_D(const Config);
-	return d->extImgDownloadEnabled;
-}
-
-/**
- * Always use the internal icon (if present) for small sizes.
- * TODO: Clarify "small sizes".
- * NOTE: Call load() before using this function.
- * @return True if we should use the internal icon for small sizes; false if not.
- */
-bool Config::useIntIconForSmallSizes(void) const
-{
-	RP_D(const Config);
-	return d->useIntIconForSmallSizes;
-}
-
-/**
- * Store file origin information?
- * NOTE: Call load() before using this function.
- * @return True if we should; false if not.
- */
-bool Config::storeFileOriginInfo(void) const
-{
-	RP_D(const Config);
-	return d->storeFileOriginInfo;
-}
-
-/**
  * Language code for PAL titles on GameTDB.
  * @return Language code.
  */
@@ -706,39 +672,36 @@ Config::DMG_TitleScreen_Mode Config::dmgTitleScreenMode(DMG_TitleScreen_Mode rom
 	return d->dmgTSMode[romType];
 }
 
-/** Other options **/
+/** Boolean configuration options **/
 
 /**
- * Show an overlay icon for "dangerous" permissions?
- * NOTE: Call load() before using this function.
- * @return True if we should show the overlay icon; false if not.
+ * Get a boolean configuration option.
+ * @param option Boolean configuration option
+ * @return Value. (If the option is invalid, returns false.)
  */
-bool Config::showDangerousPermissionsOverlayIcon(void) const
+bool Config::getBoolConfigOption(BoolConfig option) const
 {
 	RP_D(const Config);
-	return d->showDangerousPermissionsOverlayIcon;
-}
 
-/**
- * Enable thumbnailing and metadata on network filesystems?
- * NOTE: Call load() before using this function.
- * @return True if we should enable; false if not.
- */
-bool Config::enableThumbnailOnNetworkFS(void) const
-{
-	RP_D(const Config);
-	return d->enableThumbnailOnNetworkFS;
-}
+	switch (option) {
+		default:
+			assert(!"Invalid BoolConfig option.");
+			break;
 
-/**
- * Show the Extended Attributes tab?
- * NOTE: Call load() before using this function.
- * @return True if we should enable; false if not.
- */
-bool Config::showXAttrView(void) const
-{
-	RP_D(const Config);
-	return d->showXAttrView;
+		case BoolConfig::Downloads_ExtImgDownloadEnabled:
+			return d->extImgDownloadEnabled;
+		case BoolConfig::Downloads_UseIntIconForSmallSizes:
+			return d->useIntIconForSmallSizes;
+		case BoolConfig::Downloads_StoreFileOriginInfo:
+			return d->storeFileOriginInfo;
+
+		case BoolConfig::Options_ShowDangerousPermissionsOverlayIcon:
+			return d->showDangerousPermissionsOverlayIcon;
+		case BoolConfig::Options_EnableThumbnailOnNetworkFS:
+			return d->enableThumbnailOnNetworkFS;
+		case BoolConfig::Options_ShowXAttrView:
+			return d->showXAttrView;
+	}
 }
 
 /**** Default values ****/
@@ -750,9 +713,6 @@ T Config::name##_default(void) \
 { \
 	return ConfigPrivate::name##_default; \
 }
-DEFAULT_VALUE_IMPL(bool, extImgDownloadEnabled)
-DEFAULT_VALUE_IMPL(bool, useIntIconForSmallSizes)
-DEFAULT_VALUE_IMPL(bool, storeFileOriginInfo)
 DEFAULT_VALUE_IMPL(uint32_t, palLanguageForGameTDB)
 DEFAULT_VALUE_IMPL(Config::ImgBandwidth, imgBandwidthUnmetered)
 DEFAULT_VALUE_IMPL(Config::ImgBandwidth, imgBandwidthMetered)
@@ -771,8 +731,32 @@ Config::DMG_TitleScreen_Mode Config::dmgTitleScreenMode_default(DMG_TitleScreen_
 	return ConfigPrivate::dmgTSMode_default[romType];
 }
 
-DEFAULT_VALUE_IMPL(bool, showDangerousPermissionsOverlayIcon)
-DEFAULT_VALUE_IMPL(bool, enableThumbnailOnNetworkFS)
-DEFAULT_VALUE_IMPL(bool, showXAttrView)
+/**
+ * Get the default value for a boolean configuration option.
+ * @param option Boolean configuration option
+ * @return Value. (If the option is invalid, returns false.)
+ */
+bool Config::getBoolConfigOption_default(BoolConfig option)
+{
+	switch (option) {
+		default:
+			assert(!"Invalid BoolConfig option.");
+			break;
+
+		case BoolConfig::Downloads_ExtImgDownloadEnabled:
+			return ConfigPrivate::extImgDownloadEnabled_default;
+		case BoolConfig::Downloads_UseIntIconForSmallSizes:
+			return ConfigPrivate::useIntIconForSmallSizes_default;
+		case BoolConfig::Downloads_StoreFileOriginInfo:
+			return ConfigPrivate::storeFileOriginInfo_default;
+
+		case BoolConfig::Options_ShowDangerousPermissionsOverlayIcon:
+			return ConfigPrivate::showDangerousPermissionsOverlayIcon_default;
+		case BoolConfig::Options_EnableThumbnailOnNetworkFS:
+			return ConfigPrivate::enableThumbnailOnNetworkFS_default;
+		case BoolConfig::Options_ShowXAttrView:
+			return ConfigPrivate::showXAttrView_default;
+	}
+}
 
 }

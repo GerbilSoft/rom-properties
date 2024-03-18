@@ -52,7 +52,7 @@ QStringList OverlayIconPlugin::getOverlays(const QUrl &item)
 	QStringList sl;
 
 	const Config *const config = Config::instance();
-	if (!config->showDangerousPermissionsOverlayIcon()) {
+	if (!config->getBoolConfigOption(Config::BoolConfig::Options_ShowDangerousPermissionsOverlayIcon)) {
 		// Overlay icon is disabled.
 		return sl;
 	}

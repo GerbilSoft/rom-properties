@@ -119,7 +119,7 @@ IFACEMETHODIMP RP_ExtractIcon::Load(_In_ LPCOLESTR pszFileName, DWORD dwMode)
 
 	// Check for "bad" file systems.
 	const Config *const config = Config::instance();
-	if (FileSystem::isOnBadFS(d->olefilename, config->enableThumbnailOnNetworkFS())) {
+	if (FileSystem::isOnBadFS(d->olefilename, config->getBoolConfigOption(Config::BoolConfig::Options_EnableThumbnailOnNetworkFS))) {
 		// This file is on a "bad" file system.
 		return S_OK;
 	}

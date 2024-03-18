@@ -89,7 +89,7 @@ IFACEMETHODIMP RP_ShellIconOverlayIdentifier::IsMemberOf(_In_ PCWSTR pwszPath, D
 	}
 
 	const Config *const config = Config::instance();
-	if (!config->showDangerousPermissionsOverlayIcon()) {
+	if (!config->getBoolConfigOption(Config::BoolConfig::Options_ShowDangerousPermissionsOverlayIcon)) {
 		// Overlay icon is disabled.
 		return S_FALSE;
 	}
@@ -102,7 +102,7 @@ IFACEMETHODIMP RP_ShellIconOverlayIdentifier::IsMemberOf(_In_ PCWSTR pwszPath, D
 
 	// Check for "bad" file systems.
 	// TODO: Combine with the above "slow" check?
-	if (FileSystem::isOnBadFS(pwszPath, config->enableThumbnailOnNetworkFS())) {
+	if (FileSystem::isOnBadFS(pwszPath, config->getBoolConfigOption(Config::BoolConfig::Options_EnableThumbnailOnNetworkFS))) {
 		// This file is on a "bad" file system.
 		return S_FALSE;
 	}
@@ -185,7 +185,7 @@ IFACEMETHODIMP RP_ShellIconOverlayIdentifier::GetPriority(_Out_ int *pPriority)
 	}
 
 	const Config *const config = Config::instance();
-	if (!config->showDangerousPermissionsOverlayIcon()) {
+	if (!config->getBoolConfigOption(Config::BoolConfig::Options_ShowDangerousPermissionsOverlayIcon)) {
 		// Overlay icon is disabled.
 		return S_FALSE;
 	}

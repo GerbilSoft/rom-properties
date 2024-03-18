@@ -2203,7 +2203,7 @@ IFACEMETHODIMP RP_ShellPropSheetExt::Initialize(
 
 	// Check for "bad" file systems.
 	config = Config::instance();
-	if (FileSystem::isOnBadFS(tfilename, config->enableThumbnailOnNetworkFS())) {
+	if (FileSystem::isOnBadFS(tfilename, config->getBoolConfigOption(Config::BoolConfig::Options_EnableThumbnailOnNetworkFS))) {
 		// This file is on a "bad" file system.
 		goto cleanup;
 	}

@@ -143,7 +143,7 @@ IRpFilePtr openQUrl(const QUrl &url, bool isThumbnail)
 	if (isThumbnail) {
 		// We're thumbnailing the file. Check "bad FS" settings.
 		const Config *const config = Config::instance();
-		const bool enableThumbnailOnNetworkFS = config->enableThumbnailOnNetworkFS();
+		const bool enableThumbnailOnNetworkFS = config->getBoolConfigOption(Config::BoolConfig::Options_EnableThumbnailOnNetworkFS);
 		if (!s_local_filename.empty()) {
 			// This is a local file. Check if it's on a "bad" file system.
 			if (FileSystem::isOnBadFS(s_local_filename.c_str(), enableThumbnailOnNetworkFS)) {

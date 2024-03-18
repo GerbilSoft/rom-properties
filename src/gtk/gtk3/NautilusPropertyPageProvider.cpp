@@ -181,7 +181,7 @@ rp_nautilus_property_page_provider_get_pages(NautilusPropertyPageProvider *provi
 
 	// Check if XAttrView is enabled.
 	const Config *const config = Config::instance();
-	if (config->showXAttrView()) {
+	if (config->getBoolConfigOption_default(Config::BoolConfig::Options_ShowXAttrView)) {
 		// XAttrView is enabled.
 		page = rp_nautilus_property_page_provider_get_XAttrView(uri);
 		if (page) {

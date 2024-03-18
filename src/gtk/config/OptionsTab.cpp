@@ -367,13 +367,13 @@ rp_options_tab_reset(RpOptionsTab *tab)
 	// Downloads
 	gtk_check_button_set_active(
 		GTK_CHECK_BUTTON(tab->chkExtImgDownloadEnabled),
-		config->extImgDownloadEnabled());
+		config->getBoolConfigOption(Config::BoolConfig::Downloads_ExtImgDownloadEnabled));
 	gtk_check_button_set_active(
 		GTK_CHECK_BUTTON(tab->chkUseIntIconForSmallSizes),
-		config->useIntIconForSmallSizes());
+		config->getBoolConfigOption(Config::BoolConfig::Downloads_UseIntIconForSmallSizes));
 	gtk_check_button_set_active(
 		GTK_CHECK_BUTTON(tab->chkStoreFileOriginInfo),
-		config->storeFileOriginInfo());
+		config->getBoolConfigOption(Config::BoolConfig::Downloads_StoreFileOriginInfo));
 
 	// Image bandwidth options
 	SET_CBO(tab->cboUnmeteredConnection, static_cast<int>(config->imgBandwidthUnmetered()));
@@ -384,13 +384,13 @@ rp_options_tab_reset(RpOptionsTab *tab)
 	// Options
 	gtk_check_button_set_active(
 		GTK_CHECK_BUTTON(tab->chkShowDangerousPermissionsOverlayIcon),
-		config->showDangerousPermissionsOverlayIcon());
+		config->getBoolConfigOption(Config::BoolConfig::Options_ShowDangerousPermissionsOverlayIcon));
 	gtk_check_button_set_active(
 		GTK_CHECK_BUTTON(tab->chkEnableThumbnailOnNetworkFS),
-		config->enableThumbnailOnNetworkFS());
+		config->getBoolConfigOption(Config::BoolConfig::Options_EnableThumbnailOnNetworkFS));
 	gtk_check_button_set_active(
 		GTK_CHECK_BUTTON(tab->chkShowXAttrView),
-		config->showXAttrView());
+		config->getBoolConfigOption(Config::BoolConfig::Options_ShowXAttrView));
 
 	// PAL language code
 	rp_language_combo_box_set_selected_lc(RP_LANGUAGE_COMBO_BOX(tab->cboGameTDBPAL), config->palLanguageForGameTDB());
@@ -409,19 +409,19 @@ rp_options_tab_load_defaults(RpOptionsTab *tab)
 	bool isDefChanged = false;
 
 	// Downloads
-	bool bdef = Config::extImgDownloadEnabled_default();
+	bool bdef = Config::getBoolConfigOption_default(Config::BoolConfig::Downloads_ExtImgDownloadEnabled);
 	if (COMPARE_CHK(tab->chkExtImgDownloadEnabled, bdef)) {
 		SET_CHK(tab->chkExtImgDownloadEnabled, bdef);
 		isDefChanged = true;
 		// Update sensitivity
 		rp_options_tab_chkExtImgDownloadEnabled_toggled(GTK_CHECK_BUTTON(tab->chkExtImgDownloadEnabled), tab);
 	}
-	bdef = Config::useIntIconForSmallSizes_default();
+	bdef = Config::getBoolConfigOption_default(Config::BoolConfig::Downloads_UseIntIconForSmallSizes);
 	if (COMPARE_CHK(tab->chkUseIntIconForSmallSizes, bdef)) {
 		SET_CHK(tab->chkUseIntIconForSmallSizes, bdef);
 		isDefChanged = true;
 	}
-	bdef = Config::storeFileOriginInfo_default();
+	bdef = Config::getBoolConfigOption_default(Config::BoolConfig::Downloads_StoreFileOriginInfo);
 	if (COMPARE_CHK(tab->chkStoreFileOriginInfo, bdef)) {
 		SET_CHK(tab->chkStoreFileOriginInfo, bdef);
 		isDefChanged = true;
@@ -446,17 +446,17 @@ rp_options_tab_load_defaults(RpOptionsTab *tab)
 	}
 
 	// Options
-	bdef = Config::showDangerousPermissionsOverlayIcon_default();
+	bdef = Config::getBoolConfigOption_default(Config::BoolConfig::Options_ShowDangerousPermissionsOverlayIcon);
 	if (COMPARE_CHK(tab->chkShowDangerousPermissionsOverlayIcon, bdef)) {
 		gtk_check_button_set_active(GTK_CHECK_BUTTON(tab->chkShowDangerousPermissionsOverlayIcon), bdef);
 		isDefChanged = true;
 	}
-	bdef = Config::enableThumbnailOnNetworkFS_default();
+	bdef = Config::getBoolConfigOption_default(Config::BoolConfig::Options_EnableThumbnailOnNetworkFS);
 	if (COMPARE_CHK(tab->chkEnableThumbnailOnNetworkFS, bdef)) {
 		gtk_check_button_set_active(GTK_CHECK_BUTTON(tab->chkEnableThumbnailOnNetworkFS), bdef);
 		isDefChanged = true;
 	}
-	bdef = Config::showXAttrView_default();
+	bdef = Config::getBoolConfigOption_default(Config::BoolConfig::Options_ShowXAttrView);
 	if (COMPARE_CHK(tab->chkShowXAttrView, bdef)) {
 		gtk_check_button_set_active(GTK_CHECK_BUTTON(tab->chkShowXAttrView), bdef);
 		isDefChanged = true;

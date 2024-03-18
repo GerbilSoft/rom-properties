@@ -71,7 +71,7 @@ XAttrViewPropertiesDialogPlugin::XAttrViewPropertiesDialogPlugin(QObject *parent
 
 	// Check if XAttrView is enabled.
 	const Config *const config = Config::instance();
-	if (!config->showXAttrView()) {
+	if (!config->getBoolConfigOption_default(Config::BoolConfig::Options_ShowXAttrView)) {
 		// XAttrView is disabled.
 		return;
 	}

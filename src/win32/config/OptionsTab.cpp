@@ -169,9 +169,9 @@ void OptionsTabPrivate::reset(void)
 	const Config *const config = Config::instance();
 
 	// Downloads
-	CheckDlgButton(hWndPropSheet, IDC_OPTIONS_CHKEXTIMGDL, boolToBstChecked(config->extImgDownloadEnabled()));
-	CheckDlgButton(hWndPropSheet, IDC_OPTIONS_INTICONSMALL, boolToBstChecked(config->useIntIconForSmallSizes()));
-	CheckDlgButton(hWndPropSheet, IDC_OPTIONS_STOREFILEORIGININFO, boolToBstChecked(config->storeFileOriginInfo()));
+	CheckDlgButton(hWndPropSheet, IDC_OPTIONS_CHKEXTIMGDL, boolToBstChecked(config->getBoolConfigOption(Config::BoolConfig::Downloads_ExtImgDownloadEnabled)));
+	CheckDlgButton(hWndPropSheet, IDC_OPTIONS_INTICONSMALL, boolToBstChecked(config->getBoolConfigOption(Config::BoolConfig::Downloads_UseIntIconForSmallSizes)));
+	CheckDlgButton(hWndPropSheet, IDC_OPTIONS_STOREFILEORIGININFO, boolToBstChecked(config->getBoolConfigOption(Config::BoolConfig::Downloads_StoreFileOriginInfo)));
 
 	// Image bandwidth options
 	ComboBox_SetCurSel(GetDlgItem(hWndPropSheet, IDC_OPTIONS_CBO_UNMETERED_DL), static_cast<int>(config->imgBandwidthUnmetered()));
@@ -184,10 +184,10 @@ void OptionsTabPrivate::reset(void)
 	// is working on Windows.
 	/*
 	CheckDlgButton(hWndPropSheet, IDC_OPTIONS_DANGEROUSPERMISSIONS,
-		boolToBstChecked(config->showDangerousPermissionsOverlayIcon()));
+		boolToBstChecked(config->getBoolConfigOption(Config::BoolConfig::Options_ShowDangerousPermissionsOverlayIcon)));
 	*/
 	CheckDlgButton(hWndPropSheet, IDC_OPTIONS_ENABLETHUMBNAILONNETWORKFS,
-		boolToBstChecked(config->enableThumbnailOnNetworkFS()));
+		boolToBstChecked(config->getBoolConfigOption(Config::BoolConfig::Options_EnableThumbnailOnNetworkFS)));
 
 	// FIXME: Remove this once the "dangerous" permissions overlay
 	// is working on Windows.
@@ -212,7 +212,7 @@ void OptionsTabPrivate::loadDefaults(void)
 
 	// Downloads
 	bool bcur = bstCheckedToBool(IsDlgButtonChecked(hWndPropSheet, IDC_OPTIONS_CHKEXTIMGDL));
-	bool bdef = Config::extImgDownloadEnabled_default();
+	bool bdef = Config::getBoolConfigOption_default(Config::BoolConfig::Downloads_ExtImgDownloadEnabled);
 	if (bcur != bdef) {
 		CheckDlgButton(hWndPropSheet, IDC_OPTIONS_CHKEXTIMGDL, boolToBstChecked(bdef));
 		isDefChanged = true;
@@ -220,13 +220,13 @@ void OptionsTabPrivate::loadDefaults(void)
 		updateGrpExtImgDl();
 	}
 	bcur = bstCheckedToBool(IsDlgButtonChecked(hWndPropSheet, IDC_OPTIONS_INTICONSMALL));
-	bdef = Config::useIntIconForSmallSizes_default();
+	bdef = Config::getBoolConfigOption_default(Config::BoolConfig::Downloads_UseIntIconForSmallSizes);
 	if (bcur != bdef) {
 		CheckDlgButton(hWndPropSheet, IDC_OPTIONS_INTICONSMALL, boolToBstChecked(bdef));
 		isDefChanged = true;
 	}
 	bcur = bstCheckedToBool(IsDlgButtonChecked(hWndPropSheet, IDC_OPTIONS_STOREFILEORIGININFO));
-	bdef = Config::storeFileOriginInfo_default();
+	bdef = Config::getBoolConfigOption_default(Config::BoolConfig::Downloads_StoreFileOriginInfo);
 	if (bcur != bdef) {
 		CheckDlgButton(hWndPropSheet, IDC_OPTIONS_STOREFILEORIGININFO, boolToBstChecked(bdef));
 		isDefChanged = true;
@@ -260,14 +260,14 @@ void OptionsTabPrivate::loadDefaults(void)
 	// is working on Windows.
 	/*
 	bcur = bstCheckedToBool(IsDlgButtonChecked(hWndPropSheet, IDC_OPTIONS_DANGEROUSPERMISSIONS));
-	bdef = Config::showDangerousPermissionsOverlayIcon_default();
+	bdef = Config::getBoolConfigOption_default(Config::BoolConfig::Options_ShowDangerousPermissionsOverlayIcon);
 	if (bcur != bdef) {
 		CheckDlgButton(hWndPropSheet, IDC_OPTIONS_DANGEROUSPERMISSIONS, boolToBstChecked(bdef));
 		isDefChanged = true;
 	}
 	*/
 	bcur = bstCheckedToBool(IsDlgButtonChecked(hWndPropSheet, IDC_OPTIONS_ENABLETHUMBNAILONNETWORKFS));
-	bdef = Config::enableThumbnailOnNetworkFS_default();
+	bdef = Config::getBoolConfigOption_default(Config::BoolConfig::Options_EnableThumbnailOnNetworkFS);
 	if (bcur != bdef) {
 		CheckDlgButton(hWndPropSheet, IDC_OPTIONS_ENABLETHUMBNAILONNETWORKFS, boolToBstChecked(bdef));
 		isDefChanged = true;
