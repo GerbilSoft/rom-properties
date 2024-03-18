@@ -1159,10 +1159,8 @@ RomDataPtr RomDataFactory::create(const wchar_t *filenameW, unsigned int attrs)
 		// RomData subclass that takes directories, so we'll
 		// try that out here.
 		// TODO: Separate function?
-		// TODO: filenameW in WiiUPackage?
-		const string u8filename = W2U8(filenameW);
-		if (WiiUPackage::isDirSupported_static(u8filename.c_str()) >= 0) {
-			romData = std::make_shared<WiiUPackage>(u8filename.c_str());
+		if (WiiUPackage::isDirSupported_static(filenameW) >= 0) {
+			romData = std::make_shared<WiiUPackage>(filenameW);
 			if (!romData->isValid()) {
 				romData.reset();
 			}

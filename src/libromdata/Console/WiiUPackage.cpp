@@ -20,8 +20,13 @@ using namespace LibRpFile;
 using namespace LibRpText;
 using namespace LibRpTexture;
 
+#ifdef _WIN32
+#  include "librptext/wchar.hpp"
+#endif /* _WIN32 */
+
 // C++ STL classes
 using std::string;
+using std::tstring;
 using std::unique_ptr;
 using std::vector;
 
@@ -54,7 +59,12 @@ WiiUPackagePrivate::WiiUPackagePrivate(const char *path)
 	, fst(nullptr)
 {
 	if (path && path[0] != '\0') {
+#ifdef _WIN32
+		// Windows: Storing the path as UTF-16 internally.
+		this->path = _tcsdup(U82T_c(path));
+#else /* !_WIN32 */
 		this->path = strdup(path);
+#endif /* _WIN32 */
 	} else {
 		this->path = nullptr;
 	}
@@ -64,6 +74,26 @@ WiiUPackagePrivate::WiiUPackagePrivate(const char *path)
 	memset(title_key, 0, sizeof(title_key));
 #endif /* ENABLE_DECRYPTION */
 }
+
+#ifdef _WIN32
+WiiUPackagePrivate::WiiUPackagePrivate(const wchar_t *path)
+	: super({}, &romDataInfo)
+	, ticket(nullptr)
+	, tmd(nullptr)
+	, fst(nullptr)
+{
+	if (path && path[0] != L'\0') {
+		this->path = _tcsdup(path);
+	} else {
+		this->path = nullptr;
+	}
+
+#ifdef ENABLE_DECRYPTION
+	// Clear the title key.
+	memset(title_key, 0, sizeof(title_key));
+#endif /* ENABLE_DECRYPTION */
+}
+#endif /* _WIN32 */
 
 WiiUPackagePrivate::~WiiUPackagePrivate()
 {
@@ -108,19 +138,19 @@ IDiscReaderPtr WiiUPackagePrivate::openContentFile(unsigned int idx)
 #ifdef ENABLE_DECRYPTION
 	// Attempt to open the content.
 	const WUP_Content_Entry &entry = contentsTable[idx];
-	string s_path(this->path);
+	tstring s_path(this->path);
 	s_path += DIR_SEP_CHR;
 
 	// Try with lowercase hex first.
 	const uint32_t content_id = be32_to_cpu(entry.content_id);
-	char fnbuf[16];
-	snprintf(fnbuf, sizeof(fnbuf), "%08x.app", content_id);
+	TCHAR fnbuf[16];
+	_sntprintf(fnbuf, ARRAY_SIZE(fnbuf), _T("%08x.app"), content_id);
 	s_path += fnbuf;
 
 	IRpFilePtr subfile = std::make_shared<RpFile>(s_path.c_str(), RpFile::FM_OPEN_READ);
 	if (!subfile->isOpen()) {
 		// Try with uppercase hex.
-		snprintf(fnbuf, sizeof(fnbuf), "%08X.app", content_id);
+		_sntprintf(fnbuf, ARRAY_SIZE(fnbuf), _T("%08X.app"), content_id);
 		s_path.resize(s_path.size()-12);
 		s_path += fnbuf;
 
@@ -251,7 +281,7 @@ rp_image_const_ptr WiiUPackagePrivate::loadIcon(void)
  * @param file Open ROM image.
  */
 WiiUPackage::WiiUPackage(const IRpFilePtr &file)
-	: super(new WiiUPackagePrivate(nullptr))
+	: super(new WiiUPackagePrivate((const TCHAR*)nullptr))
 {
 	// Not supported!
 	RP_UNUSED(file);
@@ -277,6 +307,38 @@ WiiUPackage::WiiUPackage(const IRpFilePtr &file)
 WiiUPackage::WiiUPackage(const char *path)
 	: super(new WiiUPackagePrivate(path))
 {
+	init();
+}
+
+#ifdef _WIN32
+/**
+ * Read a Wii U NUS package.
+ *
+ * NOTE: Wii U NUS packages are directories. This constructor
+ * takes a local directory path.
+ *
+ * A ROM image must be opened by the caller. The file handle
+ * will be ref()'d and must be kept open in order to load
+ * data from the ROM image.
+ *
+ * To close the file, either delete this object or call close().
+ *
+ * NOTE: Check isValid() to determine if this is a valid ROM.
+ *
+ * @param path Local directory path (UTF-8)
+ */
+WiiUPackage::WiiUPackage(const wchar_t *path)
+	: super(new WiiUPackagePrivate(path))
+{
+	init();
+}
+#endif /* _WIN32 */
+
+/**
+ * Internal initialization function for the two constructors.
+ */
+void WiiUPackage::init(void)
+{
 	RP_D(WiiUPackage);
 	d->fileType = FileType::ApplicationPackage;
 
@@ -287,7 +349,7 @@ WiiUPackage::WiiUPackage(const char *path)
 	}
 
 	// Check if this path is supported.
-	d->isValid = (isDirSupported_static(path) >= 0);
+	d->isValid = (isDirSupported_static(d->path) >= 0);
 
 	if (!d->isValid) {
 		d->reset();
@@ -297,9 +359,9 @@ WiiUPackage::WiiUPackage(const char *path)
 	// Open the ticket.
 	WiiTicket *ticket = nullptr;
 
-	string s_path(d->path);
+	tstring s_path(d->path);
 	s_path += DIR_SEP_CHR;
-	s_path += "title.tik";
+	s_path += _T("title.tik");
 	IRpFilePtr subfile = std::make_shared<RpFile>(s_path, RpFile::FM_OPEN_READ);
 	if (subfile->isOpen()) {
 		ticket = new WiiTicket(subfile);
@@ -328,7 +390,7 @@ WiiUPackage::WiiUPackage(const char *path)
 	WiiTMD *tmd = nullptr;
 
 	s_path.resize(s_path.size()-9);
-	s_path += "title.tmd";
+	s_path += _T("title.tmd");
 	subfile = std::make_shared<RpFile>(s_path, RpFile::FM_OPEN_READ);
 	if (subfile->isOpen()) {
 		tmd = new WiiTMD(subfile);
@@ -435,7 +497,7 @@ int WiiUPackage::isRomSupported_static(const DetectInfo *info)
 
 /**
  * Is a directory supported by this class?
- * @param path Directory to check.
+ * @param path Directory to check
  * @return Class-specific system ID (>= 0) if supported; -1 if not.
  */
 int WiiUPackage::isDirSupported_static(const char *path)
@@ -470,6 +532,46 @@ int WiiUPackage::isDirSupported_static(const char *path)
 	// This appears to be a Wii U NUS package.
 	return 0;
 }
+
+#ifdef _WIN32
+/**
+ * Is a directory supported by this class?
+ * @param path Directory to check
+ * @return Class-specific system ID (>= 0) if supported; -1 if not.
+ */
+int WiiUPackage::isDirSupported_static(const wchar_t *path)
+{
+	assert(path != nullptr);
+	assert(path[0] != L'\0');
+	if (!path || path[0] == L'\0') {
+		// No path specified.
+		return -1;
+	}
+
+	wstring s_path(path);
+	s_path += DIR_SEP_CHR;
+	const size_t path_orig_size = s_path.size();
+
+	/// Check for the ticket, TMD, and certificate chain files.
+	static const wchar_t *const filenames_to_check[3] = {
+		L"title.tik",
+		L"title.tmd",
+		L"title.cert",
+	};
+	for (auto filename : filenames_to_check) {
+		s_path.resize(path_orig_size);
+		s_path += filename;
+
+		if (FileSystem::access(s_path.c_str(), R_OK) != 0) {
+			// File is missing.
+			return -1;
+		}
+	}
+
+	// This appears to be a Wii U NUS package.
+	return 0;
+}
+#endif /* _WIN32 */
 
 /**
  * Get the name of the system the loaded ROM is designed for.

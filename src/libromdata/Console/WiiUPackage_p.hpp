@@ -29,6 +29,9 @@
 // Uninitialized vector class
 #include "uvector.h"
 
+// TCHAR
+#include "tcharx.h"
+
 // C++ STL includes
 #include <vector>
 
@@ -44,6 +47,9 @@ class WiiUPackagePrivate final : public LibRpBase::RomDataPrivate
 {
 public:
 	WiiUPackagePrivate(const char *path);
+#ifdef _WIN32
+	WiiUPackagePrivate(const wchar_t *path);
+#endif /* _WIN32 */
 	~WiiUPackagePrivate();
 
 private:
@@ -58,7 +64,7 @@ public:
 
 public:
 	// Directory path (strdup()'d)
-	char *path;
+	TCHAR *path;
 
 	// Ticket, TMD, and FST
 	WiiTicket *ticket;
