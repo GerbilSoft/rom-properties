@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * ConfigDialog.hpp: Configuration dialog.                                 *
  *                                                                         *
- * Copyright (c) 2017-2022 by David Korth.                                 *
+ * Copyright (c) 2017-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -34,7 +34,7 @@
 #define GTK_I18N_STR_SAVE	dgettext(GTK_I18N_DOMAIN, "_Save")
 #define GTK_I18N_STR_OPEN	dgettext(GTK_I18N_DOMAIN, "_Open")
 #else /* !GTK_CHECK_VERSION(3,0,0) */
-// GTK3: Context is "Stock label"
+// GTK2: Context is "Stock label"
 #define GTK_I18N_STR_CANCEL	dpgettext(GTK_I18N_DOMAIN, "Stock label", "_Cancel")
 #define GTK_I18N_STR_APPLY	dpgettext(GTK_I18N_DOMAIN, "Stock label", "_Apply")
 #define GTK_I18N_STR_OK		dpgettext(GTK_I18N_DOMAIN, "Stock label", "_OK")
