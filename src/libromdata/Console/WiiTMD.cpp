@@ -231,7 +231,20 @@ int WiiTMD::isRomSupported_static(const DetectInfo *info)
 				sizeof(WUP_Content_Entry)))
 			{
 				// Incorrect file size.
-				// TODO: Allow larger tickets?
+
+				// NOTE 2: Wii U boot1 has a 2,868-byte v1 TMD.
+				// 2,868 matches the above *minus* WUP_CMD_GroupEntry.
+				if (tmdHeader->title_id.hi == cpu_to_be32(0x00050010) &&
+				    tmdHeader->title_id.lo == cpu_to_be32(0x10000100))
+				{
+					// This is Wii U boot1.
+					if (info->szFile == 2868) {
+						// Size matches.
+						break;
+					}
+				}
+
+				// (20 bytes larger than v0 tickets.)
 				return -1;
 			}
 			break;

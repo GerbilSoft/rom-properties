@@ -477,6 +477,7 @@ void WiiUPackage::init(void)
 	WiiUFst *const fst = new WiiUFst(fst_buf.get(), static_cast<uint32_t>(fst_size));
 	if (!fst->isOpen()) {
 		// FST is invalid?
+		// NOTE: boot1 does not have an FST.
 		return;
 	}
 	d->fst = fst;
@@ -658,7 +659,10 @@ int WiiUPackage::loadFieldData(void)
 		// Decryption keys were loaded. We can add XML fields.
 #ifdef ENABLE_XML
 		// Parse the Wii U System XMLs.
-		d->addFields_System_XMLs();
+		// NOTE: Only if the FST was loaded.
+		if (d->fst) {
+			d->addFields_System_XMLs();
+		}
 #else /* !ENABLE_XML */
 		d->fields.addField_string(C_("RomData", "Warning"),
 			C_("RomData", "XML parsing is disabled in this build."),

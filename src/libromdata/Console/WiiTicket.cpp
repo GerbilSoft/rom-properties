@@ -333,10 +333,25 @@ int WiiTicket::isRomSupported_static(const DetectInfo *info)
 		case 1:
 			if (info->szFile < static_cast<off64_t>(sizeof(RVL_Ticket_V1))) {
 				// Incorrect file size.
+
 				// NOTE: Updates may have larger tickets.
 				// NES REMIX (USA) (Update) has a 2640-byte ticket.
 				// It seems to have a certificate chain appended?
 				// We'll allow any ticket >= 848 bytes for now.
+
+				// NOTE 2: Wii U boot1 has a 696-byte v1 ticket.
+				// (20 bytes larger than v0 tickets.)
+				if (ticket->title_id.hi == cpu_to_be32(0x00050010) &&
+				    ticket->title_id.lo == cpu_to_be32(0x10000100))
+				{
+					// This is Wii U boot1.
+					if (info->szFile == 676+20) {
+						// Size matches v0 + 20 bytes.
+						break;
+					}
+				}
+
+				// Still not valid.
 				return -1;
 			}
 			break;
