@@ -370,6 +370,10 @@ int CBMCart::loadFieldData(void)
 			s_type = CBMData::lookup_VIC20_cart_type(type);
 			break;
 
+		case CBMCartPrivate::RomType::Plus4:
+			s_type = CBMData::lookup_Plus4_cart_type(type);
+			break;
+
 		default:
 			// Type is not supported for this platform.
 			b_noType = true;
