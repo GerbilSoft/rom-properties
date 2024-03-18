@@ -121,8 +121,8 @@ int rmkdir(const string &path)
 
 /**
  * Does a file exist?
- * @param pathname Pathname.
- * @param mode Mode.
+ * @param pathname Pathname (UTF-8)
+ * @param mode Mode
  * @return 0 if the file exists with the specified mode; non-zero if not.
  */
 int access(const char *pathname, int mode)
@@ -132,7 +132,7 @@ int access(const char *pathname, int mode)
 
 /**
  * Get a file's size.
- * @param filename Filename.
+ * @param filename Filename (UTF-8)
  * @return Size on success; -1 on error.
  */
 off64_t filesize(const char *filename)
@@ -165,7 +165,7 @@ off64_t filesize(const char *filename)
 
 /**
  * Set the modification timestamp of a file.
- * @param filename	[in] Filename (UTF-16)
+ * @param filename	[in] Filename (UTF-8)
  * @param mtime		[in] Modification time (UNIX timestamp)
  * @return 0 on success; negative POSIX error code on error.
  */
@@ -220,7 +220,7 @@ int get_mtime(const char *filename, time_t *pMtime)
 
 /**
  * Delete a file.
- * @param filename Filename.
+ * @param filename Filename (UTF-8)
  * @return 0 on success; negative POSIX error code on error.
  */
 int delete_file(const char *filename)

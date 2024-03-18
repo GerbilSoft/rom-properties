@@ -279,7 +279,7 @@ int rmkdir(const string &path)
 
 /**
  * Does a file exist?
- * @param pathname Pathname
+ * @param pathname Pathname (UTF-8)
  * @param mode Mode
  * @return 0 if the file exists with the specified mode; non-zero if not.
  */
@@ -293,11 +293,11 @@ int access(const char *pathname, int mode)
 
 /**
  * Does a file exist?
- * @param pathname Pathname
+ * @param pathname Pathname (UTF-16)
  * @param mode Mode
  * @return 0 if the file exists with the specified mode; non-zero if not.
  */
-int waccess(const wchar_t *pathname, int mode)
+int access(const wchar_t *pathname, int mode)
 {
 	// Windows doesn't recognize X_OK.
 	const tstring tpathname = makeWinPath(pathname);
@@ -307,7 +307,7 @@ int waccess(const wchar_t *pathname, int mode)
 
 /**
  * Get a file's size. (internal function)
- * @param tfilename Filename
+ * @param tfilename Filename (TCHAR)
  * @return Size on success; -1 on error.
  */
 static off64_t filesize_int(const tstring &tfilename)
@@ -340,7 +340,7 @@ static off64_t filesize_int(const tstring &tfilename)
 
 /**
  * Get a file's size.
- * @param filename Filename
+ * @param filename Filename (UTF-8)
  * @return Size on success; -1 on error.
  */
 off64_t filesize(const char *filename)
@@ -350,17 +350,17 @@ off64_t filesize(const char *filename)
 
 /**
  * Get a file's size.
- * @param filename Filename
+ * @param filename Filename (UTF-16)
  * @return Size on success; -1 on error.
  */
-off64_t wfilesize(const wchar_t *filename)
+off64_t filesize(const wchar_t *filename)
 {
 	return filesize_int(makeWinPath(filename));
 }
 
 /**
  * Set the modification timestamp of a file.
- * @param tfilename	[in] Filename (tstring)
+ * @param tfilename	[in] Filename (TCHAR)
  * @param mtime		[in] Modification time (UNIX timestamp)
  * @return 0 on success; negative POSIX error code on error.
  */
@@ -398,14 +398,14 @@ int set_mtime(const char *filename, time_t mtime)
  * @param mtime		[in] Modification time (UNIX timestamp)
  * @return 0 on success; negative POSIX error code on error.
  */
-int set_mtime(const wchar_t *filenameW, time_t mtime)
+int set_mtime(const wchar_t *filename, time_t mtime)
 {
-	return set_mtime_int(makeWinPath(filenameW), mtime);
+	return set_mtime_int(makeWinPath(filename), mtime);
 }
 
 /**
  * Get the modification timestamp of a file. (internal function)
- * @param tfilename	[in] Filename (tstring)
+ * @param tfilename	[in] Filename (TCHAR)
  * @param pMtime	[out] Buffer for the modification time (UNIX timestamp)
  * @return 0 on success; negative POSIX error code on error.
  */
@@ -455,18 +455,18 @@ int get_mtime(const char *filename, time_t *pMtime)
 
 /**
  * Get the modification timestamp of a file.
- * @param filenameW	[in] Filename (UTF-16)
+ * @param filename	[in] Filename (UTF-16)
  * @param pMtime	[out] Buffer for the modification time (UNIX timestamp)
  * @return 0 on success; negative POSIX error code on error.
  */
-int get_mtime(const wchar_t *filenameW, time_t *pMtime)
+int get_mtime(const wchar_t *filename, time_t *pMtime)
 {
-	return get_mtime_int(makeWinPath(filenameW), pMtime);
+	return get_mtime_int(makeWinPath(filename), pMtime);
 }
 
 /**
  * Delete a file.
- * @param filename Filename.
+ * @param filename Filename (UTF-8)
  * @return 0 on success; negative POSIX error code on error.
  */
 int delete_file(const char *filename)
@@ -494,7 +494,7 @@ int delete_file(const char *filename)
  * Symbolic links are NOT resolved; otherwise wouldn't check
  * if the specified file was a symlink itself.
  *
- * @param tfilename Filename (UTF-16; makeWinPath() must have been called)
+ * @param tfilename Filename (TCHAR; makeWinPath() must have already been called)
  * @return True if the file is a symbolic link; false if not.
  */
 static bool is_symlink_int(const TCHAR *tfilename)
@@ -544,17 +544,17 @@ bool is_symlink(const char *filename)
  * Symbolic links are NOT resolved; otherwise wouldn't check
  * if the specified file was a symlink itself.
  *
- * @param filenameW Filename (UTF-16)
+ * @param filename Filename (UTF-16)
  * @return True if the file is a symbolic link; false if not.
  */
-bool is_symlink(const wchar_t *filenameW)
+bool is_symlink(const wchar_t *filename)
 {
-	assert(filenameW != nullptr);
-	assert(filenameW[0] != L'\0');
-	if (unlikely(!filenameW || filenameW[0] == L'\0')) {
+	assert(filename != nullptr);
+	assert(filename[0] != L'\0');
+	if (unlikely(!filename || filename[0] == L'\0')) {
 		return false;
 	}
-	const tstring tfilename = makeWinPath(filenameW);
+	const tstring tfilename = makeWinPath(filename);
 	return is_symlink_int(tfilename.c_str());
 }
 
@@ -675,17 +675,17 @@ string resolve_symlink(const char *filename)
  * If the specified filename is not a symbolic link,
  * the filename will be returned as-is.
  *
- * @param filenameW Filename of symbolic link (UTF-16)
+ * @param filename Filename of symbolic link (UTF-16)
  * @return Resolved symbolic link, or empty string on error.
  */
-wstring resolve_symlink(const wchar_t *filenameW)
+wstring resolve_symlink(const wchar_t *filename)
 {
-	assert(filenameW != nullptr);
-	assert(filenameW[0] != L'\0');
-	if (unlikely(!filenameW || filenameW[0] == '\0')) {
+	assert(filename != nullptr);
+	assert(filename[0] != L'\0');
+	if (unlikely(!filename || filename[0] == '\0')) {
 		return {};
 	}
-	const tstring tfilename = makeWinPath(filenameW);
+	const tstring tfilename = makeWinPath(filename);
 	return resolve_symlink_int(tfilename.c_str());
 }
 
@@ -715,17 +715,17 @@ bool is_directory(const char *filename)
  *
  * Symbolic links are resolved as per usual directory traversal.
  *
- * @param filenameW Filename to check (UTF-16)
+ * @param filename Filename to check (UTF-16)
  * @return True if the file is a directory; false if not.
  */
-bool is_directory(const wchar_t *filenameW)
+bool is_directory(const wchar_t *filename)
 {
-	assert(filenameW != nullptr);
-	assert(filenameW[0] != '\0');
-	if (unlikely(!filenameW || filenameW[0] == L'\0')) {
+	assert(filename != nullptr);
+	assert(filename[0] != '\0');
+	if (unlikely(!filename || filename[0] == L'\0')) {
 		return false;
 	}
-	const tstring tfilename = makeWinPath(filenameW);
+	const tstring tfilename = makeWinPath(filename);
 
 	const DWORD attrs = GetFileAttributes(tfilename.c_str());
 	return (attrs != INVALID_FILE_ATTRIBUTES && (attrs & FILE_ATTRIBUTE_DIRECTORY));
@@ -769,13 +769,13 @@ bool isOnBadFS(const char *filename, bool allowNetFS)
  *
  * @return True if this file is on a "bad" file system; false if not.
  */
-bool isOnBadFS(const wchar_t *filenameW, bool allowNetFS)
+bool isOnBadFS(const wchar_t *filename, bool allowNetFS)
 {
 	// TODO: More comprehensive check.
 	// For now, merely checking if it starts with "\\\\"
 	// and the third character is not '?' or '.'.
-	if (filenameW[0] == L'\\' && filenameW[1] == L'\\' &&
-	    filenameW[2] != L'\0' && filenameW[2] != L'?' && filenameW[2] != L'.')
+	if (filename[0] == L'\\' && filename[1] == L'\\' &&
+	    filename[2] != L'\0' && filename[2] != L'?' && filename[2] != L'.')
 	{
 		// This file is located on a network share.
 		return !allowNetFS;
@@ -787,7 +787,7 @@ bool isOnBadFS(const wchar_t *filenameW, bool allowNetFS)
 
 /**
  * Get a file's size and time. (internal function)
- * @param tfilename	[in] Filename (tstring)
+ * @param tfilename	[in] Filename (TCHAR)
  * @param pFileSize	[out] File size
  * @param pMtime	[out] Modification time (UNIX timestamp)
  * @return 0 on success; negative POSIX error code on error.
@@ -851,14 +851,14 @@ int get_file_size_and_mtime(const char *filename, off64_t *pFileSize, time_t *pM
 
 /**
  * Get a file's size and time.
- * @param filenameW	[in] Filename (UTF-16)
+ * @param filename	[in] Filename (UTF-16)
  * @param pFileSize	[out] File size
  * @param pMtime	[out] Modification time (UNIX timestamp)
  * @return 0 on success; negative POSIX error code on error.
  */
-int get_file_size_and_mtime(const wchar_t *filenameW, off64_t *pFileSize, time_t *pMtime)
+int get_file_size_and_mtime(const wchar_t *filename, off64_t *pFileSize, time_t *pMtime)
 {
-	return get_file_size_and_mtime_int(makeWinPath(filenameW), pFileSize, pMtime);
+	return get_file_size_and_mtime_int(makeWinPath(filename), pFileSize, pMtime);
 }
 
 /**

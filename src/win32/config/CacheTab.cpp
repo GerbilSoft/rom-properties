@@ -621,7 +621,7 @@ int CacheTabPrivate::clearRomPropertiesCache(void)
 
 	// Does the cache directory exist?
 	// If it doesn't, we'll act like it's empty.
-	if (FileSystem::taccess(cacheDirT.c_str(), R_OK) != 0) {
+	if (FileSystem::access(cacheDirT.c_str(), R_OK) != 0) {
 		// Unable to read the directory. Assume it's missing.
 		SetWindowText(hStatusLabel, U82T_c(C_("CacheTab", "rom-properties cache is empty. Nothing to do.")));
 		SendMessage(hProgressBar, PBM_SETRANGE, 0, MAKELONG(0, 1));

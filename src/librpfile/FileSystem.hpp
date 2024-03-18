@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpfile)                        *
  * FileSystem.hpp: File system functions.                                  *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -59,7 +59,7 @@ int rmkdir(const std::string &path);
 
 /**
  * Does a file exist?
- * @param pathname Pathname
+ * @param pathname Pathname (UTF-8)
  * @param mode Mode
  * @return 0 if the file exists with the specified mode; non-zero if not.
  */
@@ -69,17 +69,17 @@ int access(const char *pathname, int mode);
 #ifdef _WIN32
 /**
  * Does a file exist?
- * @param pathname Pathname
+ * @param pathname Pathname (UTF-16)
  * @param mode Mode
  * @return 0 if the file exists with the specified mode; non-zero if not.
  */
 RP_LIBROMDATA_PUBLIC
-int waccess(const wchar_t *pathname, int mode);
+int access(const wchar_t *pathname, int mode);
 #endif /* _WIN32 */
 
 /**
  * Get a file's size.
- * @param filename Filename
+ * @param filename Filename (UTF-8)
  * @return Size on success; -1 on error.
  */
 off64_t filesize(const char *filename);
@@ -87,10 +87,10 @@ off64_t filesize(const char *filename);
 #ifdef _WIN32
 /**
  * Get a file's size.
- * @param filename Filename
+ * @param filename Filename (UTF-16)
  * @return Size on success; -1 on error.
  */
-off64_t wfilesize(const wchar_t *filename);
+off64_t filesize(const wchar_t *filename);
 #endif /* _WIN32 */
 
 /**
@@ -142,7 +142,7 @@ static inline int set_mtime(const std::string &filename, time_t mtime)
  * @param mtime		[in] Modification time (UNIX timestamp)
  * @return 0 on success; negative POSIX error code on error.
  */
-int set_mtime(const wchar_t *filenameW, time_t mtime);
+int set_mtime(const wchar_t *filename, time_t mtime);
 
 /**
  * Set the modification timestamp of a file.
@@ -150,9 +150,9 @@ int set_mtime(const wchar_t *filenameW, time_t mtime);
  * @param mtime		[in] Modification time (UNIX timestamp)
  * @return 0 on success; negative POSIX error code on error.
  */
-static inline int set_mtime(const std::wstring &filenameW, time_t mtime)
+static inline int set_mtime(const std::wstring &filename, time_t mtime)
 {
-	return set_mtime(filenameW.c_str(), mtime);
+	return set_mtime(filename.c_str(), mtime);
 }
 #endif /* _WIN32 */
 
@@ -178,21 +178,21 @@ static inline int get_mtime(const std::string &filename, time_t *pMtime)
 #ifdef _WIN32
 /**
  * Get the modification timestamp of a file.
- * @param filename	[in] Filename (UTF-8)
+ * @param filename	[in] Filename (UTF-16)
  * @param pMtime	[out] Buffer for the modification time (UNIX timestamp)
  * @return 0 on success; negative POSIX error code on error.
  */
-int get_mtime(const wchar_t *filenameW, time_t *pMtime);
+int get_mtime(const wchar_t *filename, time_t *pMtime);
 
 /**
  * Get the modification timestamp of a file.
- * @param filename	[in] Filename (UTF-8)
+ * @param filename	[in] Filename (UTF-16)
  * @param pMtime	[out] Buffer for the modification time (UNIX timestamp)
  * @return 0 on success; negative POSIX error code on error.
  */
-static inline int get_mtime(const std::wstring &filenameW, time_t *pMtime)
+static inline int get_mtime(const std::wstring &filename, time_t *pMtime)
 {
-	return get_mtime(filenameW.c_str(), pMtime);
+	return get_mtime(filename.c_str(), pMtime);
 }
 #endif /* _WIN32 */
 
@@ -216,7 +216,7 @@ static inline int delete_file(const std::string &filename)
 /**
  * Get the file extension from a filename or pathname.
  * NOTE: Returned value points into the specified filename.
- * @param filename Filename
+ * @param filename Filename (UTF-8)
  * @return File extension, including the leading dot; nullptr if no extension.
  */
 RP_LIBROMDATA_PUBLIC
@@ -226,7 +226,7 @@ const char *file_ext(const char *filename);
 /**
  * Get the file extension from a filename or pathname. (wchar_t version)
  * NOTE: Returned value points into the specified filename.
- * @param filename Filename
+ * @param filename Filename (UTF-16)
  * @return File extension, including the leading dot; nullptr if no extension.
  */
 RP_LIBROMDATA_PUBLIC
@@ -260,10 +260,10 @@ bool is_symlink(const char *filename);
  * Symbolic links are NOT resolved; otherwise wouldn't check
  * if the specified file was a symlink itself.
  *
- * @param filenameW Filename (UTF-16)
+ * @param filename Filename (UTF-16)
  * @return True if the file is a symbolic link; false if not.
  */
-bool is_symlink(const wchar_t *filenameW);
+bool is_symlink(const wchar_t *filename);
 #endif /* _WIN32 */
 
 /**
@@ -284,10 +284,10 @@ std::string resolve_symlink(const char *filename);
  * If the specified filename is not a symbolic link,
  * the filename will be returned as-is.
  *
- * @param filenameW Filename of symbolic link (UTF-16)
+ * @param filename Filename of symbolic link (UTF-16)
  * @return Resolved symbolic link, or empty string on error.
  */
-std::wstring resolve_symlink(const wchar_t *filenameW);
+std::wstring resolve_symlink(const wchar_t *filename);
 #endif /* _WIN32 */
 
 /**
@@ -307,11 +307,11 @@ bool is_directory(const char *filename);
  *
  * Symbolic links are resolved as per usual directory traversal.
  *
- * @param filenameW Filename to check (UTF-16)
+ * @param filename Filename to check (UTF-16)
  * @return True if the file is a directory; false if not.
  */
 RP_LIBROMDATA_PUBLIC
-bool is_directory(const wchar_t *filenameW);
+bool is_directory(const wchar_t *filename);
 #endif /* _WIN32 */
 
 /**
@@ -341,7 +341,7 @@ bool isOnBadFS(const char *filename, bool allowNetFS = false);
  * @return True if this file is on a "bad" file system; false if not.
  */
 RP_LIBROMDATA_PUBLIC
-bool isOnBadFS(const wchar_t *filenameW, bool allowNetFS = false);
+bool isOnBadFS(const wchar_t *filename, bool allowNetFS = false);
 #endif /* _WIN32 */
 
 /**
@@ -368,23 +368,23 @@ static inline int get_file_size_and_mtime(const std::string &filename, off64_t *
 #ifdef _WIN32
 /**
  * Get a file's size and time.
- * @param filenameW	[in] Filename (UTF-16)
+ * @param filename	[in] Filename (UTF-16)
  * @param pFileSize	[out] File size
  * @param pMtime	[out] Modification time (UNIX timestamp)
  * @return 0 on success; negative POSIX error code on error.
  */
-int get_file_size_and_mtime(const wchar_t *filenameW, off64_t *pFileSize, time_t *pMtime);
+int get_file_size_and_mtime(const wchar_t *filename, off64_t *pFileSize, time_t *pMtime);
 
 /**
  * Get a file's size and time.
- * @param filenameW	[in] Filename (UTF-16)
+ * @param filename	[in] Filename (UTF-16)
  * @param pFileSize	[out] File size
  * @param pMtime	[out] Modification time (UNIX timestamp)
  * @return 0 on success; negative POSIX error code on error.
  */
-static inline int get_file_size_and_mtime(const std::wstring &filenameW, off64_t *pFileSize, time_t *pMtime)
+static inline int get_file_size_and_mtime(const std::wstring &filename, off64_t *pFileSize, time_t *pMtime)
 {
-	return get_file_size_and_mtime(filenameW.c_str(), pFileSize, pMtime);
+	return get_file_size_and_mtime(filename.c_str(), pFileSize, pMtime);
 }
 #endif /* _WIN32 */
 
@@ -405,34 +405,5 @@ uint8_t win32_attrs_to_d_type(uint32_t dwAttrs);
  */
 RP_LIBROMDATA_PUBLIC
 uint8_t get_file_d_type(const char *filename, bool deref = false);
-
-/** TCHAR functions for Windows **/
-// NOTE: The `const char*` functions use UTF-8, not ANSI.
-
-#ifdef _UNICODE
-
-static inline int taccess(const wchar_t *pathname, int mode)
-{
-	return waccess(pathname, mode);
-}
-
-static inline off64_t tfilesize(const wchar_t *filename)
-{
-	return wfilesize(filename);
-}
-
-#else /* !_UNICODE */
-
-static inline int taccess(const char *pathname, int mode)
-{
-	return access(pathname, mode);
-}
-
-static inline off64_t tfilesize(const char *filename)
-{
-	return filesize(filename);
-}
-
-#endif /* !_UNICODE */
 
 } }
