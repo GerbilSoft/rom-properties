@@ -449,27 +449,22 @@ int WiiUPackage::isDirSupported_static(const char *path)
 
 	string s_path(path);
 	s_path += DIR_SEP_CHR;
+	const size_t path_orig_size = s_path.size();
 
 	/// Check for the ticket, TMD, and certificate chain files.
+	static const char *const filenames_to_check[3] = {
+		"title.tik",
+		"title.tmd",
+		"title.cert",
+	};
+	for (auto filename : filenames_to_check) {
+		s_path.resize(path_orig_size);
+		s_path += filename;
 
-	s_path += "title.tik";
-	if (FileSystem::access(s_path.c_str(), R_OK) != 0) {
-		// No ticket.
-		return -1;
-	}
-
-	s_path.resize(s_path.size()-4);
-	s_path += ".tmd";
-	if (FileSystem::access(s_path.c_str(), R_OK) != 0) {
-		// No TMD.
-		return -1;
-	}
-
-	s_path.resize(s_path.size()-4);
-	s_path += ".cert";
-	if (FileSystem::access(s_path.c_str(), R_OK) != 0) {
-		// No certificate chain.
-		return -1;
+		if (FileSystem::access(s_path.c_str(), R_OK) != 0) {
+			// File is missing.
+			return -1;
+		}
 	}
 
 	// This appears to be a Wii U NUS package.
