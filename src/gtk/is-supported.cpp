@@ -16,7 +16,7 @@
 #include "librpfile/FileSystem.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
-using LibRomData::RomDataFactory;
+using namespace LibRomData;
 
 /**
  * Attempt to open a RomData object from the specified GVfs URI.

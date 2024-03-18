@@ -17,9 +17,9 @@
 // Other rom-properties libraries
 #include "libromdata/RomDataFactory.hpp"
 #include "librpfile/FileSystem.hpp"
-using LibRomData::RomDataFactory;
 using LibRpText::rp_sprintf;
 using namespace LibRpFile;
+using namespace LibRomData;
 
 // C++ STL classes
 using std::string;

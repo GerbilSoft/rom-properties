@@ -29,12 +29,10 @@
 #include "RpQUrl.hpp"
 
 // Other rom-properties libraries
+#include "libromdata/RomDataFactory.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
-
-// libromdata
-#include "libromdata/RomDataFactory.hpp"
-using LibRomData::RomDataFactory;
+using namespace LibRomData;
 
 // C++ STL classes
 using std::string;

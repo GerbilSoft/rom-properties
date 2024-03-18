@@ -40,7 +40,7 @@ using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;
 using namespace LibRpTexture;
-using LibRomData::RomDataFactory;
+using namespace LibRomData;
 
 // C++ STL classes
 using std::set;

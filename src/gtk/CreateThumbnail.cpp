@@ -13,13 +13,11 @@
 #include "check-uid.h"
 
 // Other rom-properties libraries
+#include "libromdata/RomDataFactory.hpp"
 #include "librpfile/FileSystem.hpp"
 using namespace LibRpBase;
 using namespace LibRpTexture;
-
-// libromdata
-#include "libromdata/RomDataFactory.hpp"
-using LibRomData::RomDataFactory;
+using namespace LibRomData;
 
 // TCreateThumbnail is a templated class,
 // so we have to #include the .cpp file here.
