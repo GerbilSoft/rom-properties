@@ -2,22 +2,17 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * ImageTypesConfig.cpp: Image Types non-templated common functions.       *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-// NOTE: This is #included in other files,
-// so don't use any 'using' statements!
-
+#include "stdafx.h"
 #include "ImageTypesConfig.hpp"
 #include "librpbase/config/Config.hpp"
 
 // librpbase
 #include "librpbase/RomData.hpp"	// for IMG_* constants
 using namespace LibRpBase;
-
-// libi18n
-#include "libi18n/i18n.h"
 
 // RomData subclasses with images.
 // Does not include texture files, since those are always
@@ -33,9 +28,6 @@ using namespace LibRpBase;
 #include "Console/PlayStationSave.hpp"
 #include "Console/WiiU.hpp"
 #include "Console/WiiWAD.hpp"
-
-// C++ includes.
-#include <string>
 
 namespace LibRomData { namespace ImageTypesConfig {
 
