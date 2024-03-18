@@ -26,4 +26,11 @@ const char *lookup_C64_cart_type(uint16_t type);
  */
 const char *lookup_VIC20_cart_type(uint16_t type);
 
+/**
+ * Look up a Plus/4 cartridge type.
+ * @param type Cartridge type
+ * @return Cartridge type name, or nullptr if not found.
+ */
+const char *lookup_Plus4_cart_type(uint16_t type);
+
 } }

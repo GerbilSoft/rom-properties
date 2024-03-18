@@ -97,3 +97,5 @@
 75|IEEE Flash! 64
 76|Turtle Graphics II
 77|Freeze Frame MK2
+78|Partner 64
+79|Hyper-BASIC

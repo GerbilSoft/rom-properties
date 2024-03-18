@@ -11,7 +11,8 @@
 
 namespace LibRomData { namespace CBMData {
 
-/** Cartridge types are synchronized with VICE 3.6. **/
+// Cartridge types are synchronized with VICE 3.8.
+// Reference: https://vice-emu.sourceforge.io/vice_16.html#SEC432
 #include "CBM_C64_Cartridge_Type_data.h"
 
 // VIC-20 cartridge types
@@ -22,6 +23,14 @@ static const std::array<const char*, 6> crt_types_vic20 = {{
 	"Vic Flash Plugin",
 	"UltiMem",
 	"Final Expansion",
+}};
+
+// Plus/4 cartridge types
+static const std::array<const char*, 4> crt_types_plus4 = {{
+	"generic cartridge",
+	"c264 magic cart",
+	"Plus4 multi cart",
+	"1MB Cartridge",
 }};
 
 /** Public functions **/
@@ -52,6 +61,19 @@ const char *lookup_VIC20_cart_type(uint16_t type)
 		return nullptr;
 	}
 	return crt_types_vic20[type];
+}
+
+/**
+ * Look up a Plus/4 cartridge type.
+ * @param type Cartridge type
+ * @return Cartridge type name, or nullptr if not found.
+ */
+const char *lookup_Plus4_cart_type(uint16_t type)
+{
+	if (unlikely(type >= crt_types_plus4.size())) {
+		return nullptr;
+	}
+	return crt_types_plus4[type];
 }
 
 } }

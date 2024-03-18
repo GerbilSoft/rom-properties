@@ -349,6 +349,18 @@ int CBMCart::loadFieldData(void)
 							break;
 					}
 					break;
+				case 2:
+					s_type = "Partner 128";
+					break;
+				case 3:
+					s_type = "Comal 80";
+					break;
+				case 4:
+					s_type = "Magic Desk 128";
+					break;
+				case 5:
+					s_type = "Gmod2-C128";
+					break;
 				default:
 					break;
 			}
