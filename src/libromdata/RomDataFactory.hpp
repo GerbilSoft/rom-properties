@@ -121,12 +121,12 @@ public:
 	 * types must be supported by the RomData subclass in order to
 	 * be returned.
 	 *
-	 * @param filenameW ROM filename (UTF-16)
+	 * @param filename ROM filename (UTF-16)
 	 * @param attrs RomDataAttr bitfield. If set, RomData subclass must have the specified attributes.
 	 * @return RomData subclass, or nullptr if the ROM isn't supported.
 	 */
 	RP_LIBROMDATA_PUBLIC
-	static LibRpBase::RomDataPtr create(const wchar_t *filenameW, unsigned int attrs = 0);
+	static LibRpBase::RomDataPtr create(const wchar_t *filename, unsigned int attrs = 0);
 #endif /* _WIN32 */
 
 #ifdef ROMDATAFACTORY_USE_FILE_EXTENSIONS

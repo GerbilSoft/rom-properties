@@ -1137,20 +1137,20 @@ RomDataPtr RomDataFactory::create(const char *filename, unsigned int attrs)
  * types must be supported by the RomData subclass in order to
  * be returned.
  *
- * @param filenameW ROM filename (UTF-16)
+ * @param filename ROM filename (UTF-16)
  * @param attrs RomDataAttr bitfield. If set, RomData subclass must have the specified attributes.
  * @return RomData subclass, or nullptr if the ROM isn't supported.
  */
-RomDataPtr RomDataFactory::create(const wchar_t *filenameW, unsigned int attrs)
+RomDataPtr RomDataFactory::create(const wchar_t *filename, unsigned int attrs)
 {
 	RomDataPtr romData;
 
 	// Check if this is a file or a directory.
 	// If it's a file, we'll create an RpFile and then
 	// call create(IRpFile*,unsigned int).
-	if (likely(!FileSystem::is_directory(filenameW))) {
+	if (likely(!FileSystem::is_directory(filename))) {
 		// Not a directory.
-		shared_ptr<RpFile> file = std::make_shared<RpFile>(filenameW, RpFile::FM_OPEN_READ_GZ);
+		shared_ptr<RpFile> file = std::make_shared<RpFile>(filename, RpFile::FM_OPEN_READ_GZ);
 		if (file->isOpen()) {
 			romData = create(file, attrs);
 		}
@@ -1159,8 +1159,8 @@ RomDataPtr RomDataFactory::create(const wchar_t *filenameW, unsigned int attrs)
 		// RomData subclass that takes directories, so we'll
 		// try that out here.
 		// TODO: Separate function?
-		if (WiiUPackage::isDirSupported_static(filenameW) >= 0) {
-			romData = std::make_shared<WiiUPackage>(filenameW);
+		if (WiiUPackage::isDirSupported_static(filename) >= 0) {
+			romData = std::make_shared<WiiUPackage>(filename);
 			if (!romData->isValid()) {
 				romData.reset();
 			}
