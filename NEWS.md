@@ -6,9 +6,9 @@
   * IFUNC resolvers have been rewritten to use our own CPUID code again,
     which is more efficient because, among other things, it doesn't do
     string comparisons.
-  * GTK: The info bars that appear when using ROM Options or importing
-    keys in rp-config's Key Manager now uses GtkRevealer if using
-    GTK 3.10 or later.
+  * GTK: The info bars that appear when using ROM Operations (the "Options"
+    button on the Properties tab) or importing keys in rp-config's
+    Key Manager now uses GtkRevealer if using GTK 3.10 or later.
 
 * New parsers:
   * PalmOS: Palm OS executables and resource files (.prc). Thumbnailing is
