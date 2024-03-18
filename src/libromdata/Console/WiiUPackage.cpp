@@ -676,12 +676,17 @@ int WiiUPackage::loadFieldData(void)
 	}
 
 	// Add the ticket and/or TMD fields.
+	// NOTE: If the XMLs aren't found, we'll need to reuse tab 0.
 	if (d->ticket) {
 		const RomFields *const ticket_fields = d->ticket->fields();
 		assert(ticket_fields != nullptr);
 		if (ticket_fields) {
 			// TODO: Localize this?
-			d->fields.addTab("Ticket");
+			if (d->fields.count() == 0) {
+				d->fields.setTabName(0, "Ticket");
+			} else {
+				d->fields.addTab("Ticket");
+			}
 			d->fields.addFields_romFields(ticket_fields, -1);
 		}
 	}
@@ -689,7 +694,11 @@ int WiiUPackage::loadFieldData(void)
 		const RomFields *const tmd_fields = d->tmd->fields();
 		assert(tmd_fields != nullptr);
 		if (tmd_fields) {
-			d->fields.addTab("TMD");
+			if (d->fields.count() == 0) {
+				d->fields.setTabName(0, "TMD");
+			} else {
+				d->fields.addTab("TMD");
+			}
 			d->fields.addFields_romFields(tmd_fields, -1);
 		}
 	}
