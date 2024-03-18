@@ -144,10 +144,7 @@ int WiiUPackagePrivate::loadSystemXml(XMLDocument &doc, const char *filename, co
 }
 
 #define FIRST_CHILD_ELEMENT(var, parent_elem, child_elem_name) \
-	const XMLElement *var = parent_elem->FirstChildElement(child_elem_name); \
-	if (!var) { \
-		var = parent_elem->FirstChildElement(child_elem_name); \
-	} \
+	const XMLElement *var = (likely(parent_elem)) ? parent_elem->FirstChildElement(child_elem_name) : nullptr; \
 do { } while (0)
 
 #define ADD_TEXT(parent_elem, child_elem_name, desc) do { \
@@ -169,6 +166,9 @@ do { } while (0)
  */
 unsigned int WiiUPackagePrivate::parseUnsignedInt(const XMLElement *rootNode, const char *name, unsigned int defval)
 {
+	if (!rootNode)
+		return 0;
+
 	const XMLElement *const elem = rootNode->FirstChildElement(name);
 	if (!elem)
 		return 0;
@@ -201,6 +201,9 @@ unsigned int WiiUPackagePrivate::parseUnsignedInt(const XMLElement *rootNode, co
  */
 uint64_t WiiUPackagePrivate::parseHexBinary(const XMLElement *rootNode, const char *name)
 {
+	if (!rootNode)
+		return 0;
+
 	const XMLElement *const elem = rootNode->FirstChildElement(name);
 	if (!elem)
 		return 0;
@@ -232,6 +235,9 @@ uint64_t WiiUPackagePrivate::parseHexBinary(const XMLElement *rootNode, const ch
  */
 inline const char *WiiUPackagePrivate::getText(const tinyxml2::XMLElement *rootNode, const char *name)
 {
+	if (!rootNode)
+		return nullptr;
+
 	const XMLElement *const elem = rootNode->FirstChildElement(name);
 	if (!elem)
 		return nullptr;
@@ -256,40 +262,30 @@ int WiiUPackagePrivate::addFields_System_XMLs(void)
 
 	// Load the three XML files.
 	XMLDocument appXml, cosXml, metaXml;
-	int ret = loadSystemXml(appXml, "/code/app.xml", "app");
-	if (ret != 0)
-		return ret;
-	ret = loadSystemXml(cosXml, "/code/cos.xml", "app");
-	if (ret != 0)
-		return ret;
-	ret = loadSystemXml(metaXml, "/meta/meta.xml", "menu");
-	if (ret != 0)
-		return ret;
+	{
+		int retSys = loadSystemXml(appXml, "/code/app.xml", "app");
+		int retCos = loadSystemXml(cosXml, "/code/cos.xml", "app");
+		int retMeta = loadSystemXml(metaXml, "/meta/meta.xml", "menu");
+
+		if (retSys != 0 && retCos != 0 && retMeta != 0) {
+			// Unable to load any of the XMLs.
+			return retSys;
+		}
+	}
 
 	// NOTE: Not creating a separate tab.
 
 	// app.xml root node: "app"
 	const XMLElement *const appRootNode = appXml.FirstChildElement("app");
-	if (!appRootNode) {
-		// No "app" element.
-		// TODO: Better error code.
-		return -EIO;
-	}
-
 	// cos.xml root node: "app"
 	const XMLElement *const cosRootNode = cosXml.FirstChildElement("app");
-	if (!cosRootNode) {
-		// No "app" element.
-		// TODO: Better error code.
-		return -EIO;
-	}
-
 	// meta.xml root node: "menu"
 	const XMLElement *const metaRootNode = metaXml.FirstChildElement("menu");
-	if (!metaRootNode) {
-		// No "menu" element.
+
+	if (!appRootNode && !cosRootNode && !metaRootNode) {
+		// Missing root elements from all three XMLs.
 		// TODO: Better error code.
-		return -EIO;
+		//return -EIO;
 	}
 
 	// Title (shortname), full title (longname), publisher
@@ -321,247 +317,255 @@ int WiiUPackagePrivate::addFields_System_XMLs(void)
 		{"zht", 'hant'},
 	};
 
-	const char *longnames[WiiU_LC_COUNT];
-	const char *shortnames[WiiU_LC_COUNT];
-	const char *publishers[WiiU_LC_COUNT];
-	string longname_key = "longname_";
-	string shortname_key = "shortname_";
-	string publisher_key = "publisher_";
-	longname_key.reserve(13);
-	shortname_key.reserve(14);
-	publisher_key.reserve(14);
-	for (unsigned int i = 0; i < WiiU_LC_COUNT; i++) {
-		longname_key.resize(9);
-		shortname_key.resize(10);
-		publisher_key.resize(10);
+	if (metaRootNode) {
+		const char *longnames[WiiU_LC_COUNT];
+		const char *shortnames[WiiU_LC_COUNT];
+		const char *publishers[WiiU_LC_COUNT];
+		string longname_key = "longname_";
+		string shortname_key = "shortname_";
+		string publisher_key = "publisher_";
+		longname_key.reserve(13);
+		shortname_key.reserve(14);
+		publisher_key.reserve(14);
+		for (unsigned int i = 0; i < WiiU_LC_COUNT; i++) {
+			longname_key.resize(9);
+			shortname_key.resize(10);
+			publisher_key.resize(10);
 
-		longname_key += xml_lc_map[i].xml_lc;
-		shortname_key += xml_lc_map[i].xml_lc;
-		publisher_key += xml_lc_map[i].xml_lc;
+			longname_key += xml_lc_map[i].xml_lc;
+			shortname_key += xml_lc_map[i].xml_lc;
+			publisher_key += xml_lc_map[i].xml_lc;
 
-		longnames[i] = getText(metaRootNode, longname_key.c_str());
-		shortnames[i] = getText(metaRootNode, shortname_key.c_str());
-		publishers[i] = getText(metaRootNode, publisher_key.c_str());
-	}
-
-	// If English is valid, we'll deduplicate titles.
-	// TODO: Constants for Wii U languages. (Extension of Wii languages?)
-	const bool dedupe_titles = (longnames[1] && longnames[1][0] != '\0');
-
-	RomFields::StringMultiMap_t *const pMap_longname = new RomFields::StringMultiMap_t();
-	RomFields::StringMultiMap_t *const pMap_shortname = new RomFields::StringMultiMap_t();
-	RomFields::StringMultiMap_t *const pMap_publisher = new RomFields::StringMultiMap_t();
-	for (int langID = 0; langID < WiiU_LC_COUNT; langID++) {
-		// Check for empty strings first.
-		if ((!longnames[langID] || longnames[langID][0] == '\0') &&
-		    (!shortnames[langID] || shortnames[langID][0] == '\0') &&
-		    (!publishers[langID] || publishers[langID][0] == '\0'))
-		{
-			// Strings are empty.
-			continue;
+			longnames[i] = getText(metaRootNode, longname_key.c_str());
+			shortnames[i] = getText(metaRootNode, shortname_key.c_str());
+			publishers[i] = getText(metaRootNode, publisher_key.c_str());
 		}
 
-		if (dedupe_titles && langID != 1 /* English */) {
-			// Check if the title matches English.
-			if (longnames[langID] && longnames[1] && !strcmp(longnames[langID], longnames[1]) &&
-			    shortnames[langID] && shortnames[1] && !strcmp(shortnames[langID], shortnames[1]) &&
-			    publishers[langID] && publishers[1] && !strcmp(publishers[langID], publishers[1]))
+		// If English is valid, we'll deduplicate titles.
+		// TODO: Constants for Wii U languages. (Extension of Wii languages?)
+		const bool dedupe_titles = (longnames[1] && longnames[1][0] != '\0');
+
+		RomFields::StringMultiMap_t *const pMap_longname = new RomFields::StringMultiMap_t();
+		RomFields::StringMultiMap_t *const pMap_shortname = new RomFields::StringMultiMap_t();
+		RomFields::StringMultiMap_t *const pMap_publisher = new RomFields::StringMultiMap_t();
+		for (int langID = 0; langID < WiiU_LC_COUNT; langID++) {
+			// Check for empty strings first.
+			if ((!longnames[langID] || longnames[langID][0] == '\0') &&
+			(!shortnames[langID] || shortnames[langID][0] == '\0') &&
+			(!publishers[langID] || publishers[langID][0] == '\0'))
 			{
-				// All three title fields match English.
+				// Strings are empty.
 				continue;
 			}
-		}
 
-		const uint32_t lc = xml_lc_map[langID].lc;
-		assert(lc != 0);
-		if (lc == 0)
-			continue;
+			if (dedupe_titles && langID != 1 /* English */) {
+				// Check if the title matches English.
+				if (longnames[langID] && longnames[1] && !strcmp(longnames[langID], longnames[1]) &&
+				shortnames[langID] && shortnames[1] && !strcmp(shortnames[langID], shortnames[1]) &&
+				publishers[langID] && publishers[1] && !strcmp(publishers[langID], publishers[1]))
+				{
+					// All three title fields match English.
+					continue;
+				}
+			}
 
-		if (longnames[langID] && longnames[langID][0] != '\0') {
-			pMap_longname->emplace(lc, longnames[langID]);
-		}
-		if (shortnames[langID] && shortnames[langID][0] != '\0') {
-			pMap_shortname->emplace(lc, shortnames[langID]);
-		}
-		if (publishers[langID] && publishers[langID][0] != '\0') {
-			pMap_publisher->emplace(lc, publishers[langID]);
-		}
-	}
+			const uint32_t lc = xml_lc_map[langID].lc;
+			assert(lc != 0);
+			if (lc == 0)
+				continue;
 
-	// NOTE: Using the same descriptions as Nintendo3DS.
-	const char *const s_title_title = C_("Nintendo", "Title");
-	const char *const s_full_title_title = C_("Nintendo", "Full Title");
-	const char *const s_publisher_title = C_("RomData", "Publisher");
-	const char *const s_unknown = C_("RomData", "Unknown");
-
-	// Get the system language code and see if we have a matching title.
-	uint32_t def_lc = SystemRegion::getLanguageCode();
-	if (pMap_longname->find(def_lc) == pMap_longname->end()) {
-		// Not valid. Check English.
-		if (pMap_longname->find('en') != pMap_longname->end()) {
-			// English is valid.
-			def_lc = 'en';
-		} else {
-			// Not valid. Check Japanese.
-			if (pMap_longname->find('jp') != pMap_longname->end()) {
-				// Japanese is valid.
-				def_lc = 'jp';
-			} else {
-				// Not valid...
-				// Default to English anyway.
-				def_lc = 'en';
+			if (longnames[langID] && longnames[langID][0] != '\0') {
+				pMap_longname->emplace(lc, longnames[langID]);
+			}
+			if (shortnames[langID] && shortnames[langID][0] != '\0') {
+				pMap_shortname->emplace(lc, shortnames[langID]);
+			}
+			if (publishers[langID] && publishers[langID][0] != '\0') {
+				pMap_publisher->emplace(lc, publishers[langID]);
 			}
 		}
-	}
 
-	if (!pMap_shortname->empty()) {
-		fields.addField_string_multi(s_title_title, pMap_shortname, def_lc);
-	} else {
-		delete pMap_shortname;
-		fields.addField_string(s_title_title, s_unknown);
-	}
-	if (!pMap_longname->empty()) {
-		fields.addField_string_multi(s_full_title_title, pMap_longname, def_lc);
-	} else {
-		delete pMap_longname;
-		fields.addField_string(s_full_title_title, s_unknown);
-	}
-	if (!pMap_publisher->empty()) {
-		fields.addField_string_multi(s_publisher_title, pMap_publisher, def_lc);
-	} else {
-		delete pMap_publisher;
-		fields.addField_string(s_publisher_title, s_unknown);
+		// NOTE: Using the same descriptions as Nintendo3DS.
+		const char *const s_title_title = C_("Nintendo", "Title");
+		const char *const s_full_title_title = C_("Nintendo", "Full Title");
+		const char *const s_publisher_title = C_("RomData", "Publisher");
+		const char *const s_unknown = C_("RomData", "Unknown");
+
+		// Get the system language code and see if we have a matching title.
+		uint32_t def_lc = SystemRegion::getLanguageCode();
+		if (pMap_longname->find(def_lc) == pMap_longname->end()) {
+			// Not valid. Check English.
+			if (pMap_longname->find('en') != pMap_longname->end()) {
+				// English is valid.
+				def_lc = 'en';
+			} else {
+				// Not valid. Check Japanese.
+				if (pMap_longname->find('jp') != pMap_longname->end()) {
+					// Japanese is valid.
+					def_lc = 'jp';
+				} else {
+					// Not valid...
+					// Default to English anyway.
+					def_lc = 'en';
+				}
+			}
+		}
+
+		if (!pMap_shortname->empty()) {
+			fields.addField_string_multi(s_title_title, pMap_shortname, def_lc);
+		} else {
+			delete pMap_shortname;
+			fields.addField_string(s_title_title, s_unknown);
+		}
+		if (!pMap_longname->empty()) {
+			fields.addField_string_multi(s_full_title_title, pMap_longname, def_lc);
+		} else {
+			delete pMap_longname;
+			fields.addField_string(s_full_title_title, s_unknown);
+		}
+		if (!pMap_publisher->empty()) {
+			fields.addField_string_multi(s_publisher_title, pMap_publisher, def_lc);
+		} else {
+			delete pMap_publisher;
+			fields.addField_string(s_publisher_title, s_unknown);
+		}
 	}
 
 	// Product code
 	ADD_TEXT(metaRootNode, "product_code", C_("Nintendo", "Product Code"));
 
 	// SDK version
-	const unsigned int sdk_version = parseUnsignedInt(appRootNode, "sdk_version");
-	if (sdk_version != 0) {
-		char s_sdk_version[32];
-		snprintf(s_sdk_version, sizeof(s_sdk_version), "%u.%02u.%02u",
-			sdk_version / 10000, (sdk_version / 100) % 100, sdk_version % 100);
-		fields.addField_string(C_("WiiU", "SDK Version"), s_sdk_version);
+	if (appRootNode) {
+		const unsigned int sdk_version = parseUnsignedInt(appRootNode, "sdk_version");
+		if (sdk_version != 0) {
+			char s_sdk_version[32];
+			snprintf(s_sdk_version, sizeof(s_sdk_version), "%u.%02u.%02u",
+				sdk_version / 10000, (sdk_version / 100) % 100, sdk_version % 100);
+			fields.addField_string(C_("WiiU", "SDK Version"), s_sdk_version);
+		}
 	}
 
 	// argstr (TODO: Better title)
 	ADD_TEXT(cosRootNode, "argstr", "argstr");
 
 	// app_type (TODO: Decode this!)
-	const unsigned int app_type = parseHexBinary(appRootNode, "app_type");
-	if (app_type != 0) {
-		const char *const s_app_type_title = C_("WiiU", "Type");
-		const char *const s_app_type = WiiUData::lookup_application_type(app_type);
-		if (s_app_type) {
-			fields.addField_string(s_app_type_title, s_app_type);
-		} else {
-			fields.addField_string_numeric(s_app_type_title, app_type,
-				RomFields::Base::Hex, 8, RomFields::STRF_MONOSPACE);
+	if (appRootNode) {
+		const unsigned int app_type = parseHexBinary(appRootNode, "app_type");
+		if (app_type != 0) {
+			const char *const s_app_type_title = C_("WiiU", "Type");
+			const char *const s_app_type = WiiUData::lookup_application_type(app_type);
+			if (s_app_type) {
+				fields.addField_string(s_app_type_title, s_app_type);
+			} else {
+				fields.addField_string_numeric(s_app_type_title, app_type,
+					RomFields::Base::Hex, 8, RomFields::STRF_MONOSPACE);
+			}
 		}
 	}
 
-	// Region code
-	// Maps directly to the region field.
-	const uint32_t region_code = parseHexBinary(metaRootNode, "region");
+	if (metaRootNode) {
+		// Region code
+		// Maps directly to the region field.
+		const uint32_t region_code = parseHexBinary(metaRootNode, "region");
 
-	static const char *const wiiu_region_bitfield_names[] = {
-		NOP_C_("Region", "Japan"),
-		NOP_C_("Region", "USA"),
-		NOP_C_("Region", "Europe"),
-		nullptr,	//NOP_C_("Region", "Australia"),	// NOTE: Not actually used?
-		NOP_C_("Region", "China"),
-		NOP_C_("Region", "South Korea"),
-		NOP_C_("Region", "Taiwan"),
-	};
-	vector<string> *const v_wiiu_region_bitfield_names = RomFields::strArrayToVector_i18n(
-		"Region", wiiu_region_bitfield_names, ARRAY_SIZE(wiiu_region_bitfield_names));
-	fields.addField_bitfield(C_("RomData", "Region Code"),
-		v_wiiu_region_bitfield_names, 3, region_code);
+		static const char *const wiiu_region_bitfield_names[] = {
+			NOP_C_("Region", "Japan"),
+			NOP_C_("Region", "USA"),
+			NOP_C_("Region", "Europe"),
+			nullptr,	//NOP_C_("Region", "Australia"),	// NOTE: Not actually used?
+			NOP_C_("Region", "China"),
+			NOP_C_("Region", "South Korea"),
+			NOP_C_("Region", "Taiwan"),
+		};
+		vector<string> *const v_wiiu_region_bitfield_names = RomFields::strArrayToVector_i18n(
+			"Region", wiiu_region_bitfield_names, ARRAY_SIZE(wiiu_region_bitfield_names));
+		fields.addField_bitfield(C_("RomData", "Region Code"),
+			v_wiiu_region_bitfield_names, 3, region_code);
 
-	// Age rating(s)
-	// The fields match other Nintendo products, but it's in XML
-	// instead of a binary field.
-	// TODO: Exclude ratings that aren't actually used?
-	RomFields::age_ratings_t age_ratings;
-	// Valid ratings: 0-1, 3-4, 6-11 (excludes old BBFC and Finland/MEKU)
-	static const uint16_t valid_ratings = 0xFDB;
-	static const char *const age_rating_nodes[] = {
-		"pc_cero", "pc_esrb", "pc_bbfc", "pc_usk",
-		"pc_pegi_gen", "pc_pegi_fin", "pc_pegi_prt", "pc_pegi_bbfc",
-		"pc_cob", "pc_grb", "pc_cgsrr", "pc_oflc",
-		/*"pc_reserved0", "pc_reserved1", "pc_reserved2", "pc_reserved3",*/
-	};
-	static_assert(ARRAY_SIZE(age_rating_nodes) == (int)RomFields::AgeRatingsCountry::MaxAllocated, "age_rating_nodes is out of sync with age_ratings_t");
+		// Age rating(s)
+		// The fields match other Nintendo products, but it's in XML
+		// instead of a binary field.
+		// TODO: Exclude ratings that aren't actually used?
+		RomFields::age_ratings_t age_ratings;
+		// Valid ratings: 0-1, 3-4, 6-11 (excludes old BBFC and Finland/MEKU)
+		static const uint16_t valid_ratings = 0xFDB;
+		static const char *const age_rating_nodes[] = {
+			"pc_cero", "pc_esrb", "pc_bbfc", "pc_usk",
+			"pc_pegi_gen", "pc_pegi_fin", "pc_pegi_prt", "pc_pegi_bbfc",
+			"pc_cob", "pc_grb", "pc_cgsrr", "pc_oflc",
+			/*"pc_reserved0", "pc_reserved1", "pc_reserved2", "pc_reserved3",*/
+		};
+		static_assert(ARRAY_SIZE(age_rating_nodes) == (int)RomFields::AgeRatingsCountry::MaxAllocated, "age_rating_nodes is out of sync with age_ratings_t");
 
-	for (int i = static_cast<int>(age_ratings.size())-1; i >= 0; i--) {
-		if (!(valid_ratings & (1U << i))) {
-			// Rating is not applicable for Wii U.
-			age_ratings[i] = 0;
-			continue;
+		for (int i = static_cast<int>(age_ratings.size())-1; i >= 0; i--) {
+			if (!(valid_ratings & (1U << i))) {
+				// Rating is not applicable for Wii U.
+				age_ratings[i] = 0;
+				continue;
+			}
+
+			// Wii U ratings field:
+			// - 0x00-0x1F: Age rating
+			// - 0x80: No rating
+			// - 0xC0: Rating pending
+			unsigned int val = parseUnsignedInt(metaRootNode, age_rating_nodes[i], ~0U);
+			if (val == ~0U) {
+				// Not found...
+				age_ratings[i] = 0;
+				continue;
+			}
+
+			if (val == 0x80) {
+				// Rating is unused
+				age_ratings[i] = 0;
+			} else if (val == 0xC0) {
+				// Rating pending
+				age_ratings[i] = RomFields::AGEBF_ACTIVE | RomFields::AGEBF_PENDING;
+			} /*else if (val == 0) {
+				// No age restriction
+				// FIXME: Can be confused with some other ratings, so disabled for now.
+				// Maybe Wii U has the same 0x20 bit as 3DS?
+				age_ratings[i] = RomFields::AGEBF_ACTIVE | RomFields::AGEBF_NO_RESTRICTION;
+			}*/ else {
+				// Set active | age value.
+				age_ratings[i] = RomFields::AGEBF_ACTIVE | (val & RomFields::AGEBF_MIN_AGE_MASK);
+			}
+		}
+		fields.addField_ageRatings(C_("RomData", "Age Ratings"), age_ratings);
+
+		// Controller support
+		uint32_t controllers = 0;
+		static const char *const controller_nodes[] = {
+			"ext_dev_nunchaku",
+			"ext_dev_classic",
+			"ext_dev_urcc",
+			"ext_dev_board",
+			"ext_dev_usb_keyboard",
+			//"ext_dev_etc",	// TODO
+			//"ext_dev_etc_name",	// TODO
+			"drc_use",
+		};
+		for (unsigned int i = 0; i < ARRAY_SIZE(controller_nodes); i++) {
+			unsigned int val = parseUnsignedInt(metaRootNode, controller_nodes[i]);
+			if (val > 0) {
+				// This controller is supported.
+				controllers |= (1U << i);
+			}
 		}
 
-		// Wii U ratings field:
-		// - 0x00-0x1F: Age rating
-		// - 0x80: No rating
-		// - 0xC0: Rating pending
-		unsigned int val = parseUnsignedInt(metaRootNode, age_rating_nodes[i], ~0U);
-		if (val == ~0U) {
-			// Not found...
-			age_ratings[i] = 0;
-			continue;
-		}
-
-		if (val == 0x80) {
-			// Rating is unused
-			age_ratings[i] = 0;
-		} else if (val == 0xC0) {
-			// Rating pending
-			age_ratings[i] = RomFields::AGEBF_ACTIVE | RomFields::AGEBF_PENDING;
-		} /*else if (val == 0) {
-			// No age restriction
-			// FIXME: Can be confused with some other ratings, so disabled for now.
-			// Maybe Wii U has the same 0x20 bit as 3DS?
-			age_ratings[i] = RomFields::AGEBF_ACTIVE | RomFields::AGEBF_NO_RESTRICTION;
-		}*/ else {
-			// Set active | age value.
-			age_ratings[i] = RomFields::AGEBF_ACTIVE | (val & RomFields::AGEBF_MIN_AGE_MASK);
-		}
+		static const char *const controllers_bitfield_names[] = {
+			NOP_C_("WiiU|Controller", "Nunchuk"),
+			NOP_C_("WiiU|Controller", "Classic"),
+			NOP_C_("WiiU|Controller", "Pro"),
+			NOP_C_("WiiU|Controller", "Balance Board"),
+			NOP_C_("WiiU|Controller", "USB Keyboard"),
+			NOP_C_("WiiU|Controller", "Gamepad"),
+		};
+		vector<string> *const v_controllers_bitfield_names = RomFields::strArrayToVector_i18n(
+			"WiiU|Controller", controllers_bitfield_names, ARRAY_SIZE(controllers_bitfield_names));
+		fields.addField_bitfield(C_("WiiU", "Controllers"),
+			v_controllers_bitfield_names, 3, controllers);
 	}
-	fields.addField_ageRatings(C_("RomData", "Age Ratings"), age_ratings);
-
-	// Controller support
-	uint32_t controllers = 0;
-	static const char *const controller_nodes[] = {
-		"ext_dev_nunchaku",
-		"ext_dev_classic",
-		"ext_dev_urcc",
-		"ext_dev_board",
-		"ext_dev_usb_keyboard",
-		//"ext_dev_etc",	// TODO
-		//"ext_dev_etc_name",	// TODO
-		"drc_use",
-	};
-	for (unsigned int i = 0; i < ARRAY_SIZE(controller_nodes); i++) {
-		unsigned int val = parseUnsignedInt(metaRootNode, controller_nodes[i]);
-		if (val > 0) {
-			// This controller is supported.
-			controllers |= (1U << i);
-		}
-	}
-
-	static const char *const controllers_bitfield_names[] = {
-		NOP_C_("WiiU|Controller", "Nunchuk"),
-		NOP_C_("WiiU|Controller", "Classic"),
-		NOP_C_("WiiU|Controller", "Pro"),
-		NOP_C_("WiiU|Controller", "Balance Board"),
-		NOP_C_("WiiU|Controller", "USB Keyboard"),
-		NOP_C_("WiiU|Controller", "Gamepad"),
-	};
-	vector<string> *const v_controllers_bitfield_names = RomFields::strArrayToVector_i18n(
-		"WiiU|Controller", controllers_bitfield_names, ARRAY_SIZE(controllers_bitfield_names));
-	fields.addField_bitfield(C_("WiiU", "Controllers"),
-		v_controllers_bitfield_names, 3, controllers);
 
 	// System XML files read successfully.
 	return 0;
