@@ -220,6 +220,12 @@ void ExtractorPlugin::extract(ExtractionResult *result)
 	const QUrl localUrl = localizeQUrl(inputUrl);
 	const string s_local_filename = localUrl.toLocalFile().toUtf8().constData();
 	if (unlikely(!s_local_filename.empty() && FileSystem::is_directory(s_local_filename.c_str()))) {
+		const Config *const config = Config::instance();
+		if (!config->getBoolConfigOption(Config::BoolConfig::Options_ThumbnailDirectoryPackages)) {
+			// Directory package thumbnailing is disabled.
+			return;
+		}
+
 		// Directory: Call RomDataFactory::create() with the filename.
 		romData = RomDataFactory::create(s_local_filename.c_str());
 	} else {

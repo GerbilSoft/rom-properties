@@ -97,6 +97,7 @@ public:
 	bool showDangerousPermissionsOverlayIcon;
 	bool enableThumbnailOnNetworkFS;
 	bool showXAttrView;
+	bool thumbnailDirectoryPackages;
 
 public:
 	/** Default values **/
@@ -119,6 +120,7 @@ public:
 	static const constexpr bool showDangerousPermissionsOverlayIcon_default = true;
 	static const constexpr bool enableThumbnailOnNetworkFS_default = false;
 	static const constexpr bool showXAttrView_default = true;
+	static const constexpr bool thumbnailDirectoryPackages_default = true;
 };
 
 /** ConfigPrivate **/
@@ -172,6 +174,8 @@ ConfigPrivate::ConfigPrivate()
 	, enableThumbnailOnNetworkFS(enableThumbnailOnNetworkFS_default)
 	// Show the Extended Attributes tab
 	, showXAttrView(showXAttrView_default)
+	// Thumbnail directory packages (e.g. Wii U)
+	, thumbnailDirectoryPackages(thumbnailDirectoryPackages_default)
 {
 	// NOTE: Configuration is also initialized in the reset() function.
 	dmgTSMode = dmgTSMode_default;
@@ -214,6 +218,8 @@ void ConfigPrivate::reset(void)
 	enableThumbnailOnNetworkFS = enableThumbnailOnNetworkFS_default;
 	// Show the Extended Attributes tab
 	showXAttrView = showXAttrView_default;
+	// Thumbnail directory packages (e.g. Wii U)
+	thumbnailDirectoryPackages = thumbnailDirectoryPackages_default;
 }
 
 /**
@@ -331,13 +337,15 @@ int ConfigPrivate::processConfigLine(const char *section, const char *name, cons
 		dmgTSMode[dmg_key] = dmg_value;
 	} else if (!strcasecmp(section, "Options")) {
 		// Options.
-		bool *param;
+		bool *bParam;
 		if (!strcasecmp(name, "ShowDangerousPermissionsOverlayIcon")) {
-			param = &showDangerousPermissionsOverlayIcon;
+			bParam = &showDangerousPermissionsOverlayIcon;
 		} else if (!strcasecmp(name, "EnableThumbnailOnNetworkFS")) {
-			param = &enableThumbnailOnNetworkFS;
+			bParam = &enableThumbnailOnNetworkFS;
 		} else if (!strcasecmp(name, "ShowXAttrView")) {
-			param = &showXAttrView;
+			bParam = &showXAttrView;
+		} else if (!strcasecmp(name, "ThumbnailDirectoryPackages")) {
+			bParam = &thumbnailDirectoryPackages;
 		} else {
 			// Invalid option.
 			return 1;
@@ -346,9 +354,9 @@ int ConfigPrivate::processConfigLine(const char *section, const char *name, cons
 		// Parse the value.
 		// Acceptable values are "true", "false", "1", and "0".
 		if (!strcasecmp(value, "true") || !strcmp(value, "1")) {
-			*param = true;
+			*bParam = true;
 		} else if (!strcasecmp(value, "false") || !strcmp(value, "0")) {
-			*param = false;
+			*bParam = false;
 		} else {
 			// TODO: Show a warning or something?
 		}
@@ -701,6 +709,8 @@ bool Config::getBoolConfigOption(BoolConfig option) const
 			return d->enableThumbnailOnNetworkFS;
 		case BoolConfig::Options_ShowXAttrView:
 			return d->showXAttrView;
+		case BoolConfig::Options_ThumbnailDirectoryPackages:
+			return d->thumbnailDirectoryPackages;
 	}
 }
 
@@ -756,6 +766,8 @@ bool Config::getBoolConfigOption_default(BoolConfig option)
 			return ConfigPrivate::enableThumbnailOnNetworkFS_default;
 		case BoolConfig::Options_ShowXAttrView:
 			return ConfigPrivate::showXAttrView_default;
+		case BoolConfig::Options_ThumbnailDirectoryPackages:
+			return ConfigPrivate::thumbnailDirectoryPackages_default;
 	}
 }
 

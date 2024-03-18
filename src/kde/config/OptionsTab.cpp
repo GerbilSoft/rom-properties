@@ -103,6 +103,7 @@ void OptionsTab::reset(void)
 	// Options
 	d->ui.chkShowDangerousPermissionsOverlayIcon->setChecked(config->getBoolConfigOption(Config::BoolConfig::Options_ShowDangerousPermissionsOverlayIcon));
 	d->ui.chkEnableThumbnailOnNetworkFS->setChecked(config->getBoolConfigOption(Config::BoolConfig::Options_EnableThumbnailOnNetworkFS));
+	d->ui.chkThumbnailDirectoryPackages->setChecked(config->getBoolConfigOption(Config::BoolConfig::Options_ThumbnailDirectoryPackages));
 	d->ui.chkShowXAttrView->setChecked(config->getBoolConfigOption(Config::BoolConfig::Options_ShowXAttrView));
 
 	// PAL language code
@@ -166,6 +167,11 @@ void OptionsTab::loadDefaults(void)
 	bdef = Config::getBoolConfigOption_default(Config::BoolConfig::Options_EnableThumbnailOnNetworkFS);
 	if (d->ui.chkEnableThumbnailOnNetworkFS->isChecked() != bdef) {
 		d->ui.chkEnableThumbnailOnNetworkFS->setChecked(bdef);
+		isDefChanged = true;
+	}
+	bdef = Config::getBoolConfigOption_default(Config::BoolConfig::Options_ThumbnailDirectoryPackages);
+	if (d->ui.chkThumbnailDirectoryPackages->isChecked() != bdef) {
+		d->ui.chkThumbnailDirectoryPackages->setChecked(bdef);
 		isDefChanged = true;
 	}
 	bdef = Config::getBoolConfigOption_default(Config::BoolConfig::Options_ShowXAttrView);
@@ -249,6 +255,8 @@ void OptionsTab::save(QSettings *pSettings)
 		d->ui.chkShowDangerousPermissionsOverlayIcon->isChecked());
 	pSettings->setValue(QLatin1String("EnableThumbnailOnNetworkFS"),
 		d->ui.chkEnableThumbnailOnNetworkFS->isChecked());
+	pSettings->setValue(QLatin1String("ThumbnailDirectoryPackages"),
+		d->ui.chkThumbnailDirectoryPackages->isChecked());
 	pSettings->setValue(QLatin1String("ShowXAttrView"),
 		d->ui.chkShowXAttrView->isChecked());
 	pSettings->endGroup();

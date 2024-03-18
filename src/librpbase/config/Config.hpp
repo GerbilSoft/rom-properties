@@ -140,6 +140,7 @@ public:
 		Options_ShowDangerousPermissionsOverlayIcon,
 		Options_EnableThumbnailOnNetworkFS,
 		Options_ShowXAttrView,
+		Options_ThumbnailDirectoryPackages,
 
 		Max
 	};

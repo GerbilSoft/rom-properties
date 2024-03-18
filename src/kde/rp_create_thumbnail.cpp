@@ -56,6 +56,12 @@ Q_DECL_EXPORT int RP_C_API rp_create_thumbnail2(const char *source_file, const c
 	const QUrl localUrl = localizeQUrl(QUrl(QString::fromUtf8(source_file)));
 	const string s_local_filename = localUrl.toLocalFile().toUtf8().constData();
 	if (unlikely(!s_local_filename.empty() && FileSystem::is_directory(s_local_filename.c_str()))) {
+		const Config *const config = Config::instance();
+		if (!config->getBoolConfigOption(Config::BoolConfig::Options_ThumbnailDirectoryPackages)) {
+			// Directory package thumbnailing is disabled.
+			return RPCT_ERROR_DIRECTORY_THUMBNAILING_DISABLED;
+		}
+
 		// Directory: Call RomDataFactory::create() with the filename.
 		romData = RomDataFactory::create(s_local_filename.c_str());
 	} else {

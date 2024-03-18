@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>503</width>
-    <height>483</height>
+    <width>454</width>
+    <height>504</height>
    </rect>
   </property>
   <layout class="QVBoxLayout" name="vboxMain">
@@ -160,6 +160,14 @@ file systems. This may slow down file browsing.</string>
        </widget>
       </item>
       <item>
+       <widget class="QCheckBox" name="chkThumbnailDirectoryPackages">
+        <property name="text">
+         <string>Enable thumbnailing and metadata extraction of directory-based
+packages, e.g. for Wii U. This may slow down file browsing.</string>
+        </property>
+       </widget>
+      </item>
+      <item>
        <widget class="QCheckBox" name="chkShowXAttrView">
         <property name="text">
          <string>Show the Extended Attributes tab.</string>
@@ -200,8 +208,8 @@ file systems. This may slow down file browsing.</string>
    <slot>optionChanged_slot()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>40</x>
-     <y>199</y>
+     <x>54</x>
+     <y>189</y>
     </hint>
     <hint type="destinationlabel">
      <x>4</x>
@@ -216,8 +224,8 @@ file systems. This may slow down file browsing.</string>
    <slot>optionChanged_slot()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>79</x>
-     <y>383</y>
+     <x>93</x>
+     <y>363</y>
     </hint>
     <hint type="destinationlabel">
      <x>0</x>
@@ -232,8 +240,8 @@ file systems. This may slow down file browsing.</string>
    <slot>optionChanged_slot()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>75</x>
-     <y>432</y>
+     <x>89</x>
+     <y>409</y>
     </hint>
     <hint type="destinationlabel">
      <x>1</x>
@@ -248,8 +256,8 @@ file systems. This may slow down file browsing.</string>
    <slot>optionChanged_slot()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>100</x>
-     <y>248</y>
+     <x>114</x>
+     <y>235</y>
     </hint>
     <hint type="destinationlabel">
      <x>0</x>
@@ -264,8 +272,8 @@ file systems. This may slow down file browsing.</string>
    <slot>optionChanged_slot()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>356</x>
-     <y>289</y>
+     <x>328</x>
+     <y>274</y>
     </hint>
     <hint type="destinationlabel">
      <x>487</x>
@@ -312,8 +320,8 @@ file systems. This may slow down file browsing.</string>
    <slot>optionChanged_slot()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>451</x>
-     <y>60</y>
+     <x>439</x>
+     <y>100</y>
     </hint>
     <hint type="destinationlabel">
      <x>501</x>
@@ -328,12 +336,28 @@ file systems. This may slow down file browsing.</string>
    <slot>optionChanged_slot()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>133</x>
-     <y>451</y>
+     <x>147</x>
+     <y>483</y>
     </hint>
     <hint type="destinationlabel">
      <x>191</x>
      <y>480</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>chkThumbnailDirectoryPackages</sender>
+   <signal>clicked()</signal>
+   <receiver>OptionsTab</receiver>
+   <slot>optionChanged_slot()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>56</x>
+     <y>437</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>0</x>
+     <y>436</y>
     </hint>
    </hints>
   </connection>

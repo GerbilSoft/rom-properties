@@ -62,6 +62,7 @@ struct _RpOptionsTab {
 	// Options
 	GtkWidget *chkShowDangerousPermissionsOverlayIcon;
 	GtkWidget *chkEnableThumbnailOnNetworkFS;
+	GtkWidget *chkThumbnailDirectoryPackages;
 	GtkWidget *chkShowXAttrView;
 };
 
@@ -265,6 +266,10 @@ rp_options_tab_init(RpOptionsTab *tab)
 		C_("OptionsTab", "Enable thumbnailing and metadata extraction on network\n"
 			"file systems. This may slow down file browsing."));
 	gtk_widget_set_name(tab->chkEnableThumbnailOnNetworkFS, "chkEnableThumbnailOnNetworkFS");
+	tab->chkThumbnailDirectoryPackages = gtk_check_button_new_with_label(
+		C_("OptionsTab", "Enable thumbnailing and metadata extraction of directory-based\n"
+			"packages, e.g. for Wii U. This may slow down file browsing."));
+	gtk_widget_set_name(tab->chkThumbnailDirectoryPackages, "chkThumbnailDirectoryPackages");
 	tab->chkShowXAttrView = gtk_check_button_new_with_label(
 		C_("OptionsTab", "Show the Extended Attributes tab."));
 	gtk_widget_set_name(tab->chkShowXAttrView, "chkShowXAttrView");
@@ -299,6 +304,8 @@ rp_options_tab_init(RpOptionsTab *tab)
 		G_CALLBACK(rp_options_tab_modified_handler), tab);
 	g_signal_connect(tab->chkEnableThumbnailOnNetworkFS, "toggled",
 		G_CALLBACK(rp_options_tab_modified_handler), tab);
+	g_signal_connect(tab->chkThumbnailDirectoryPackages, "toggled",
+		G_CALLBACK(rp_options_tab_modified_handler), tab);
 	g_signal_connect(tab->chkShowXAttrView, "toggled",
 		G_CALLBACK(rp_options_tab_modified_handler), tab);
 
@@ -315,6 +322,7 @@ rp_options_tab_init(RpOptionsTab *tab)
 	gtk_box_append(GTK_BOX(tab), fraOptions);
 	gtk_box_append(GTK_BOX(vboxOptions), tab->chkShowDangerousPermissionsOverlayIcon);
 	gtk_box_append(GTK_BOX(vboxOptions), tab->chkEnableThumbnailOnNetworkFS);
+	gtk_box_append(GTK_BOX(vboxOptions), tab->chkThumbnailDirectoryPackages);
 	gtk_box_append(GTK_BOX(vboxOptions), tab->chkShowXAttrView);
 #else /* !GTK_CHECK_VERSION(4,0,0) */
 	gtk_box_pack_start(GTK_BOX(tab), fraDownloads, false, false, 0);
@@ -329,6 +337,7 @@ rp_options_tab_init(RpOptionsTab *tab)
 	gtk_box_pack_start(GTK_BOX(tab), fraOptions, false, false, 0);
 	gtk_box_pack_start(GTK_BOX(vboxOptions), tab->chkShowDangerousPermissionsOverlayIcon, false, false, 0);
 	gtk_box_pack_start(GTK_BOX(vboxOptions), tab->chkEnableThumbnailOnNetworkFS, false, false, 0);
+	gtk_box_pack_start(GTK_BOX(vboxOptions), tab->chkThumbnailDirectoryPackages, false, false, 0);
 	gtk_box_pack_start(GTK_BOX(vboxOptions), tab->chkShowXAttrView, false, false, 0);
 
 	gtk_widget_show_all(fraDownloads);
@@ -388,6 +397,9 @@ rp_options_tab_reset(RpOptionsTab *tab)
 	gtk_check_button_set_active(
 		GTK_CHECK_BUTTON(tab->chkEnableThumbnailOnNetworkFS),
 		config->getBoolConfigOption(Config::BoolConfig::Options_EnableThumbnailOnNetworkFS));
+	gtk_check_button_set_active(
+		GTK_CHECK_BUTTON(tab->chkThumbnailDirectoryPackages),
+		config->getBoolConfigOption(Config::BoolConfig::Options_ThumbnailDirectoryPackages));
 	gtk_check_button_set_active(
 		GTK_CHECK_BUTTON(tab->chkShowXAttrView),
 		config->getBoolConfigOption(Config::BoolConfig::Options_ShowXAttrView));
@@ -454,6 +466,11 @@ rp_options_tab_load_defaults(RpOptionsTab *tab)
 	bdef = Config::getBoolConfigOption_default(Config::BoolConfig::Options_EnableThumbnailOnNetworkFS);
 	if (COMPARE_CHK(tab->chkEnableThumbnailOnNetworkFS, bdef)) {
 		gtk_check_button_set_active(GTK_CHECK_BUTTON(tab->chkEnableThumbnailOnNetworkFS), bdef);
+		isDefChanged = true;
+	}
+	bdef = Config::getBoolConfigOption_default(Config::BoolConfig::Options_ThumbnailDirectoryPackages);
+	if (COMPARE_CHK(tab->chkThumbnailDirectoryPackages, bdef)) {
+		gtk_check_button_set_active(GTK_CHECK_BUTTON(tab->chkThumbnailDirectoryPackages), bdef);
 		isDefChanged = true;
 	}
 	bdef = Config::getBoolConfigOption_default(Config::BoolConfig::Options_ShowXAttrView);
@@ -530,6 +547,8 @@ rp_options_tab_save(RpOptionsTab *tab, GKeyFile *keyFile)
 		GET_CHK(tab->chkShowDangerousPermissionsOverlayIcon));
 	g_key_file_set_boolean(keyFile, "Options", "EnableThumbnailOnNetworkFS",
 		GET_CHK(tab->chkEnableThumbnailOnNetworkFS));
+	g_key_file_set_boolean(keyFile, "Options", "ThumbnailDirectoryPackages",
+		GET_CHK(tab->chkThumbnailDirectoryPackages));
 	g_key_file_set_boolean(keyFile, "Options", "ShowXAttrView",
 		GET_CHK(tab->chkShowXAttrView));
 

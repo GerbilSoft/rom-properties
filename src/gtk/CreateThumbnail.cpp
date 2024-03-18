@@ -231,6 +231,15 @@ static RomDataPtr openFromFilenameOrURI(const char *source_file, string &s_uri, 
 				// RomData class *must* support at least one image type.
 				romData = RomDataFactory::create(file, RomDataFactory::RDA_HAS_THUMBNAIL);
 			} else {
+				const Config *const config = Config::instance();
+				if (!config->getBoolConfigOption(Config::BoolConfig::Options_ThumbnailDirectoryPackages)) {
+					// Directory package thumbnailing is disabled.
+					if (p_err) {
+						*p_err = RPCT_ERROR_DIRECTORY_THUMBNAILING_DISABLED;
+					}
+					return {};
+				}
+
 				// Directory: Call RomDataFactory::create() with the filename.
 				romData = RomDataFactory::create(source_filename);
 			}
@@ -244,6 +253,7 @@ static RomDataPtr openFromFilenameOrURI(const char *source_file, string &s_uri, 
 			}
 
 			// Open the file using RpFileGio.
+			// TODO: Directories using RpFileGio?
 			const IRpFilePtr file = std::make_shared<RpFileGio>(source_file);
 			if (!file) {
 				// Could not open the file.
@@ -313,6 +323,15 @@ static RomDataPtr openFromFilenameOrURI(const char *source_file, string &s_uri, 
 			// RomData class *must* support at least one image type.
 			romData = RomDataFactory::create(file, RomDataFactory::RDA_HAS_THUMBNAIL);
 		} else {
+			const Config *const config = Config::instance();
+			if (!config->getBoolConfigOption(Config::BoolConfig::Options_ThumbnailDirectoryPackages)) {
+				// Directory package thumbnailing is disabled.
+				if (p_err) {
+					*p_err = RPCT_ERROR_DIRECTORY_THUMBNAILING_DISABLED;
+				}
+				return {};
+			}
+
 			// Directory: Call RomDataFactory::create() with the filename.
 			romData = RomDataFactory::create(source_file);
 		}
