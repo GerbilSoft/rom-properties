@@ -440,13 +440,14 @@ void WiiUPackage::init(void)
 	// Initialize the contentsReaders vector based on the number of contents.
 	d->contentsReaders.resize(d->contentsTable.size());
 
-	// Find and load the FST. (It has the "bootable" flag, and is usually the first content.)
+	// Find and load the FST.
 	// NOTE: tmd->bootIndex() byteswaps to host-endian. Swap it back for comparisons.
+	// NOTE: Many dev system titles do NOT have the FST as the bootable content,
+	// but it *is* always index 0. Hence, search for index 0 instead of the boot_index.
 	IDiscReaderPtr fstReader;
-	const uint16_t boot_index = cpu_to_be16(tmd->bootIndex());
 	unsigned int i = 0;
 	for (const auto &p : d->contentsTable) {
-		if (p.index == boot_index) {
+		if (p.index == 0) {
 			// Found it!
 			fstReader = d->openContentFile(i);
 			break;
