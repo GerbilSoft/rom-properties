@@ -124,7 +124,7 @@ void OptionsTab::loadDefaults(void)
 	Q_D(OptionsTab);
 
 	// Downloads
-	bool bdef = Config::enableThumbnailOnNetworkFS_default();
+	bool bdef = Config::extImgDownloadEnabled_default();
 	if (d->ui.grpExtImgDownloads->isChecked() != bdef) {
 		d->ui.grpExtImgDownloads->setChecked(bdef);
 		isDefChanged = true;
