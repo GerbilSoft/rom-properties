@@ -179,24 +179,32 @@ void OptionsTabPrivate::reset(void)
 	// Update sensitivity
 	updateGrpExtImgDl();
 
-	// Options
-	// FIXME: Uncomment this once the "dangerous" permissions overlay
-	// is working on Windows.
-	/*
-	CheckDlgButton(hWndPropSheet, IDC_OPTIONS_DANGEROUSPERMISSIONS,
-		boolToBstChecked(config->getBoolConfigOption(Config::BoolConfig::Options_ShowDangerousPermissionsOverlayIcon)));
-	*/
-	CheckDlgButton(hWndPropSheet, IDC_OPTIONS_ENABLETHUMBNAILONNETWORKFS,
-		boolToBstChecked(config->getBoolConfigOption(Config::BoolConfig::Options_EnableThumbnailOnNetworkFS)));
-
-	// FIXME: Remove this once the "dangerous" permissions overlay
-	// is working on Windows.
-	CheckDlgButton(hWndPropSheet, IDC_OPTIONS_DANGEROUSPERMISSIONS, BST_UNCHECKED);
-	EnableWindow(GetDlgItem(hWndPropSheet, IDC_OPTIONS_DANGEROUSPERMISSIONS), FALSE);
-
 	// PAL language code
 	HWND cboGameTDBPAL = GetDlgItem(hWndPropSheet, IDC_OPTIONS_PALLANGUAGEFORGAMETDB);
 	LanguageComboBox_SetSelectedLC(cboGameTDBPAL, config->palLanguageForGameTDB());
+
+	// Options
+
+	// FIXME: Re-enable IDC_OPTIONS_DANGEROUSPERMISSIONS once the
+	// "dangerous" permissions overlay is working on Windows.
+#if 0
+	CheckDlgButton(hWndPropSheet, IDC_OPTIONS_DANGEROUSPERMISSIONS,
+		boolToBstChecked(config->getBoolConfigOption(Config::BoolConfig::Options_ShowDangerousPermissionsOverlayIcon)));
+#else
+	CheckDlgButton(hWndPropSheet, IDC_OPTIONS_DANGEROUSPERMISSIONS, BST_UNCHECKED);
+	EnableWindow(GetDlgItem(hWndPropSheet, IDC_OPTIONS_DANGEROUSPERMISSIONS), FALSE);
+#endif
+
+	CheckDlgButton(hWndPropSheet, IDC_OPTIONS_ENABLETHUMBNAILONNETWORKFS,
+		boolToBstChecked(config->getBoolConfigOption(Config::BoolConfig::Options_EnableThumbnailOnNetworkFS)));
+
+	// Thumbnail directory packages
+	CheckDlgButton(hWndPropSheet, IDC_OPTIONS_THUMBNAILDIRECTORYPACKAGES,
+		boolToBstChecked(config->getBoolConfigOption(Config::BoolConfig::Options_ThumbnailDirectoryPackages)));
+
+	// Show XAttrView
+	CheckDlgButton(hWndPropSheet, IDC_OPTIONS_SHOWXATTRVIEW,
+		boolToBstChecked(config->getBoolConfigOption(Config::BoolConfig::Options_ShowXAttrView)));
 
 	// No longer changed.
 	changed = false;
@@ -256,20 +264,36 @@ void OptionsTabPrivate::loadDefaults(void)
 	}
 
 	// Options
+
+#if 0
 	// FIXME: Uncomment this once the "dangerous" permissions overlay
 	// is working on Windows.
-	/*
 	bcur = bstCheckedToBool(IsDlgButtonChecked(hWndPropSheet, IDC_OPTIONS_DANGEROUSPERMISSIONS));
 	bdef = Config::getBoolConfigOption_default(Config::BoolConfig::Options_ShowDangerousPermissionsOverlayIcon);
 	if (bcur != bdef) {
 		CheckDlgButton(hWndPropSheet, IDC_OPTIONS_DANGEROUSPERMISSIONS, boolToBstChecked(bdef));
 		isDefChanged = true;
 	}
-	*/
+#endif
+
 	bcur = bstCheckedToBool(IsDlgButtonChecked(hWndPropSheet, IDC_OPTIONS_ENABLETHUMBNAILONNETWORKFS));
 	bdef = Config::getBoolConfigOption_default(Config::BoolConfig::Options_EnableThumbnailOnNetworkFS);
 	if (bcur != bdef) {
 		CheckDlgButton(hWndPropSheet, IDC_OPTIONS_ENABLETHUMBNAILONNETWORKFS, boolToBstChecked(bdef));
+		isDefChanged = true;
+	}
+
+	bcur = bstCheckedToBool(IsDlgButtonChecked(hWndPropSheet, IDC_OPTIONS_THUMBNAILDIRECTORYPACKAGES));
+	bdef = Config::getBoolConfigOption_default(Config::BoolConfig::Options_ThumbnailDirectoryPackages);
+	if (bcur != bdef) {
+		CheckDlgButton(hWndPropSheet, IDC_OPTIONS_THUMBNAILDIRECTORYPACKAGES, boolToBstChecked(bdef));
+		isDefChanged = true;
+	}
+
+	bcur = bstCheckedToBool(IsDlgButtonChecked(hWndPropSheet, IDC_OPTIONS_SHOWXATTRVIEW));
+	bdef = Config::getBoolConfigOption_default(Config::BoolConfig::Options_ShowXAttrView);
+	if (bcur != bdef) {
+		CheckDlgButton(hWndPropSheet, IDC_OPTIONS_SHOWXATTRVIEW, boolToBstChecked(bdef));
 		isDefChanged = true;
 	}
 
@@ -363,6 +387,12 @@ void OptionsTabPrivate::save(void)
 	btstr = bstCheckedToBoolString(IsDlgButtonChecked(hWndPropSheet, IDC_OPTIONS_ENABLETHUMBNAILONNETWORKFS));
 	WritePrivateProfileString(_T("Options"), _T("EnableThumbnailOnNetworkFS"), btstr, tfilename.c_str());
 
+	btstr = bstCheckedToBoolString(IsDlgButtonChecked(hWndPropSheet, IDC_OPTIONS_THUMBNAILDIRECTORYPACKAGES));
+	WritePrivateProfileString(_T("Options"), _T("ThumbnailDirectoryPackages"), btstr, tfilename.c_str());
+
+	btstr = bstCheckedToBoolString(IsDlgButtonChecked(hWndPropSheet, IDC_OPTIONS_SHOWXATTRVIEW));
+	WritePrivateProfileString(_T("Options"), _T("ShowXAttrView"), btstr, tfilename.c_str());
+
 	// No longer changed.
 	changed = false;
 }
@@ -453,6 +483,8 @@ INT_PTR CALLBACK OptionsTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam,
 				DarkMode_InitButton_Dlg(hDlg, IDC_OPTIONS_GRPOPTIONS);
 				DarkMode_InitButton_Dlg(hDlg, IDC_OPTIONS_DANGEROUSPERMISSIONS);
 				DarkMode_InitButton_Dlg(hDlg, IDC_OPTIONS_ENABLETHUMBNAILONNETWORKFS);
+				DarkMode_InitButton_Dlg(hDlg, IDC_OPTIONS_THUMBNAILDIRECTORYPACKAGES);
+				DarkMode_InitButton_Dlg(hDlg, IDC_OPTIONS_SHOWXATTRVIEW);
 			}
 
 			// Reset the configuration. 338

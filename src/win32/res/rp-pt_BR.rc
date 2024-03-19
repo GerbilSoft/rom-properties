@@ -75,9 +75,11 @@ BEGIN
     // FIXME: Determine best height. (Compare to RP_ShellPropSheetExt for multi-language.)
     CONTROL         "", IDC_OPTIONS_PALLANGUAGEFORGAMETDB, WC_LANGUAGECOMBOBOX, CBS_DROPDOWNLIST | WS_CHILD | WS_TABSTOP | WS_VISIBLE, 138, 108, 68, 128, WS_EX_LEFT
 
-    GROUPBOX        "&Options", IDC_OPTIONS_GRPOPTIONS, 7, 133, 437, 54, BS_GROUPBOX, WS_EX_TRANSPARENT
+    GROUPBOX        "&Options", IDC_OPTIONS_GRPOPTIONS, 7, 133, 437, 90, BS_GROUPBOX, WS_EX_TRANSPARENT
     AUTOCHECKBOX    "Show a security overlay icon for ROM images with\n""dangerous"" permissions.", IDC_OPTIONS_DANGEROUSPERMISSIONS, 15, 144, 421, 16, BS_MULTILINE, WS_EX_TRANSPARENT
     AUTOCHECKBOX    "Enable thumbnailing and metadata extraction on network\nfile systems. This may slow down file browsing.", IDC_OPTIONS_ENABLETHUMBNAILONNETWORKFS, 15, 165, 421, 16, BS_MULTILINE, WS_EX_TRANSPARENT
+    AUTOCHECKBOX    "Enable thumbnailing and metadata extraction of directory-based\npackages, e.g. for Wii U. This may slow down file browsing.", IDC_OPTIONS_THUMBNAILDIRECTORYPACKAGES, 15, 186, 381, 16, BS_MULTILINE, WS_EX_TRANSPARENT
+    AUTOCHECKBOX    "Show the Extended Attributes tab.", IDC_OPTIONS_SHOWXATTRVIEW, 15, 207, 381, 8, BS_MULTILINE, WS_EX_TRANSPARENT
 END
 
 /**

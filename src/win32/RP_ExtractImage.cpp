@@ -120,6 +120,14 @@ IFACEMETHODIMP RP_ExtractImage::Load(_In_ LPCOLESTR pszFileName, DWORD dwMode)
 		return S_OK;
 	}
 
+	// If ThumbnailDirectoryPackages is disabled, make sure this is *not* a directory.
+	if (!config->getBoolConfigOption(Config::BoolConfig::Options_ThumbnailDirectoryPackages)) {
+		if (FileSystem::is_directory(d->olefilename)) {
+			// It's a directory. Don't thumbnail it.
+			return S_OK;
+		}
+	}
+
 	// Get the appropriate RomData class for this ROM.
 	// RomData class *must* support at least one image type.
 	d->romData = RomDataFactory::create(d->olefilename, RomDataFactory::RDA_HAS_THUMBNAIL);
