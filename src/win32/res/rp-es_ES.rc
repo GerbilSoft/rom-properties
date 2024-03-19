@@ -79,7 +79,7 @@ BEGIN
     AUTOCHECKBOX    "Mostrar un icono de superposición de seguridad para las imágenes de la ROM con\nPermisos ""peligrosos"".", IDC_OPTIONS_DANGEROUSPERMISSIONS, 15, 144, 381, 16, BS_MULTILINE, WS_EX_TRANSPARENT
     AUTOCHECKBOX    "Habilitar la extracción de miniaturas y metadatos de los sistemas\nde archivos de red. Esto puede ralentizar la navegación de los archivos.", IDC_OPTIONS_ENABLETHUMBNAILONNETWORKFS, 15, 165, 381, 16, BS_MULTILINE, WS_EX_TRANSPARENT
     AUTOCHECKBOX    "Enable thumbnailing and metadata extraction of directory-based\npackages, e.g. for Wii U. This may slow down file browsing.", IDC_OPTIONS_THUMBNAILDIRECTORYPACKAGES, 15, 186, 381, 16, BS_MULTILINE, WS_EX_TRANSPARENT
-    AUTOCHECKBOX    "Show the Extended Attributes tab.", IDC_OPTIONS_SHOWXATTRVIEW, 15, 207, 381, 8, BS_MULTILINE, WS_EX_TRANSPARENT
+    AUTOCHECKBOX    "Muestra la pestaña Atributos extendidos.", IDC_OPTIONS_SHOWXATTRVIEW, 15, 207, 381, 8, BS_MULTILINE, WS_EX_TRANSPARENT
 END
 
 /**
