@@ -3,7 +3,7 @@
  * un-premultiply.cpp: Un-premultiply function.                            *
  * Standard version. (C++ code only)                                       *
  *                                                                         *
- * Copyright (c) 2017-2023 by David Korth.                                 *
+ * Copyright (c) 2017-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -62,7 +62,7 @@ const unsigned int rp_image::qt_inv_premul_factor[256] = {
  * From qt-5.11.0's qrgb.h.
  * qUnpremultiply()
  *
- * This is needed in order to convert DXT2/3 to DXT4/5.
+ * This is needed in order to convert DXT2/4 to DXT3/5.
  *
  * @param px	[in] ARGB32 pixel to un-premultiply.
  * @return Un-premultiplied pixel.

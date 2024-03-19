@@ -3,7 +3,7 @@
  * un-premultiply_sse41.cpp: Un-premultiply function.                      *
  * SSE4.1-optimized version.                                               *
  *                                                                         *
- * Copyright (c) 2017-2023 by David Korth.                                 *
+ * Copyright (c) 2017-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -26,7 +26,7 @@ namespace LibRpTexture {
  * From qt-5.11.0's qdrawingprimitive_sse2_p.h.
  * qUnpremultiply_sse4()
  *
- * This is needed in order to convert DXT2/3 to DXT4/5.
+ * This is needed in order to convert DXT2/4 to DXT3/5.
  *
  * @param px	[in/out] argb32_t pixel to un-premultiply, in place.
  */
