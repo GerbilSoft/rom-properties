@@ -36,7 +36,7 @@ G_STMT_START { \
 } G_STMT_END
 
 /* Property identifiers. */
-enum RpThumbnailerProperties {
+typedef enum {
 	PROP_0,
 
 	PROP_CONNECTION,
@@ -45,14 +45,14 @@ enum RpThumbnailerProperties {
 	PROP_EXPORTED,
 
 	PROP_LAST
-};
+} RpThumbnailerProperties;
 
 /* Signal identifiers */
-enum RpThumbnailerSignals {
+typedef enum {
 	SIGNAL_SHUTDOWN,	// RpThumbnailer has been idle for long enough and should exit.
 
 	SIGNAL_LAST
-};
+} RpThumbnailerSignals;
 
 // Internal functions.
 static void	rp_thumbnailer_constructed	(GObject	*object);
