@@ -335,7 +335,7 @@ IFACEMETHODIMP RP_XAttrView::Initialize(
 
 	// Check if XAttrView is enabled.
 	const Config *const config = Config::instance();
-	if (!config->getBoolConfigOption_default(Config::BoolConfig::Options_ShowXAttrView)) {
+	if (!config->getBoolConfigOption(Config::BoolConfig::Options_ShowXAttrView)) {
 		// XAttrView is disabled.
 		return E_FAIL;
 	}
