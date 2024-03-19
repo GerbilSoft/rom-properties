@@ -18,6 +18,9 @@
   * WiiUPackage: Wii U NUS packages. This parser reads an NUS package
     directory containing a ticket, TMD, and encrypted contents. Requires
     the Wii U common key in keys.conf.
+    * rp-config now has an option to disable directory thumbnailing,
+      since it can slow down file browsing. Disabling directory
+      thumbnailing will disable Wii U NUS package thumbnailing.
 
 * Bug fixes:
   * On Linux, rp-config now correctly detects KDE Plasma 6 and uses the
@@ -45,6 +48,9 @@
     * Affects: v2.2.1 - v2.3
   * GTK, KDE: The banner and icon display in the properties tab are now
     resized if they're too big.
+  * Windows: rp-config: Added a checkbox to enable/disable the Extended
+    Attributes tab. This was already added to the GTK and KDE UI frontends
+    when Extended Attributes was added, but I forgot to do so for Windows.
 
 ## v2.3 (released 2024/03/03)
 
