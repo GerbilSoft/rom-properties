@@ -694,7 +694,7 @@ bool Config::getBoolConfigOption(BoolConfig option) const
 	switch (option) {
 		default:
 			assert(!"Invalid BoolConfig option.");
-			break;
+			return false;
 
 		case BoolConfig::Downloads_ExtImgDownloadEnabled:
 			return d->extImgDownloadEnabled;
@@ -751,7 +751,7 @@ bool Config::getBoolConfigOption_default(BoolConfig option)
 	switch (option) {
 		default:
 			assert(!"Invalid BoolConfig option.");
-			break;
+			return false;
 
 		case BoolConfig::Downloads_ExtImgDownloadEnabled:
 			return ConfigPrivate::extImgDownloadEnabled_default;
