@@ -59,15 +59,16 @@ public:
 	unsigned int messageType;	// MB_ICON*
 	SIZE szIcon;			// Icon size
 
-	enum CloseButtonState {
-		CLSBTN_NORMAL = 0,
-		CLSBTN_HOVER,
-		CLSBTN_PRESSED,
-	};
-	CloseButtonState closeButtonState;
 	RECT rectBtnClose;		// Close button rect
 	bool bBtnCloseEntered;		// True if the mouse cursor entered the Close button area.
 	bool bBtnCloseDown;		// True if WM_LBUTTONDOWN received while over the Close button.
+
+	enum class CloseButtonState : uint8_t {
+		Normal = 0,
+		Hover,
+		Pressed,
+	};
+	CloseButtonState closeButtonState;
 };
 
 MessageWidgetPrivate::MessageWidgetPrivate(HWND hWnd)
@@ -80,7 +81,7 @@ MessageWidgetPrivate::MessageWidgetPrivate(HWND hWnd)
 	, hbrBg(nullptr)
 	, colorBg(0)
 	, messageType(MB_ICONINFORMATION)
-	, closeButtonState(CLSBTN_NORMAL)
+	, closeButtonState(CloseButtonState::Normal)
 	, bBtnCloseEntered(false)
 	, bBtnCloseDown(false)
 {
@@ -254,14 +255,14 @@ void MessageWidgetPrivate::paint(void)
 	// Close button
 	RECT tmpRectBtnClose = rectBtnClose;
 	switch (closeButtonState) {
-		case CLSBTN_NORMAL:
+		case CloseButtonState::Normal:
 		default:
 			SelectObject(hDC, hFontMarlett);
 			break;
-		case CLSBTN_HOVER:
+		case CloseButtonState::Hover:
 			SelectObject(hDC, hFontMarlettBold);
 			break;
-		case CLSBTN_PRESSED:
+		case CloseButtonState::Pressed:
 			SelectObject(hDC, hFontMarlettBold);
 			tmpRectBtnClose.left += 2;
 			tmpRectBtnClose.top += 2;
@@ -366,8 +367,8 @@ MessageWidgetWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			if (PtInRect(&d->rectBtnClose, pt)) {
 				// We're hovering over the Close button.
 				clsbtn = d->bBtnCloseDown
-					? MessageWidgetPrivate::CLSBTN_PRESSED
-					: MessageWidgetPrivate::CLSBTN_HOVER;
+					? MessageWidgetPrivate::CloseButtonState::Pressed
+					: MessageWidgetPrivate::CloseButtonState::Hover;
 				if (!d->bBtnCloseEntered) {
 					// Start mouse tracking for WM_MOUSELEAVE.
 					TRACKMOUSEEVENT tme;
@@ -380,7 +381,7 @@ MessageWidgetWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				}
 			} else {
 				// Not hovering over the Close button.
-				clsbtn = MessageWidgetPrivate::CLSBTN_NORMAL;
+				clsbtn = MessageWidgetPrivate::CloseButtonState::Normal;
 			}
 			if (clsbtn != d->closeButtonState) {
 				d->closeButtonState = clsbtn;
@@ -402,7 +403,7 @@ MessageWidgetWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				SetCapture(hWnd);
 
 				// Redraw the Close button.
-				d->closeButtonState = MessageWidgetPrivate::CLSBTN_PRESSED;
+				d->closeButtonState = MessageWidgetPrivate::CloseButtonState::Pressed;
 				InvalidateRect(hWnd, &d->rectBtnClose, TRUE);
 				return TRUE;
 			}
@@ -417,8 +418,8 @@ MessageWidgetWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			if (d->bBtnCloseDown) {
 				// Mouse button released over the Close button.
 				d->bBtnCloseDown = false;
-				if (d->closeButtonState != MessageWidgetPrivate::CLSBTN_NORMAL) {
-					d->closeButtonState = MessageWidgetPrivate::CLSBTN_NORMAL;
+				if (d->closeButtonState != MessageWidgetPrivate::CloseButtonState::Normal) {
+					d->closeButtonState = MessageWidgetPrivate::CloseButtonState::Normal;
 					InvalidateRect(hWnd, &d->rectBtnClose, TRUE);
 				}
 
@@ -442,8 +443,8 @@ MessageWidgetWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			MessageWidgetPrivate *const d = reinterpret_cast<MessageWidgetPrivate*>(
 				GetWindowLongPtr(hWnd, GWLP_USERDATA));
 			d->bBtnCloseEntered = false;
-			if (d->closeButtonState != MessageWidgetPrivate::CLSBTN_NORMAL) {
-				d->closeButtonState = MessageWidgetPrivate::CLSBTN_NORMAL;
+			if (d->closeButtonState != MessageWidgetPrivate::CloseButtonState::Normal) {
+				d->closeButtonState = MessageWidgetPrivate::CloseButtonState::Normal;
 				InvalidateRect(hWnd, &d->rectBtnClose, TRUE);
 			}
 			return TRUE;

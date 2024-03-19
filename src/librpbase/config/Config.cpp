@@ -91,7 +91,7 @@ public:
 	bool downloadHighResScans;
 
 	// DMG title screen mode [index is ROM type]
-	std::array<Config::DMG_TitleScreen_Mode, Config::DMG_TitleScreen_Mode::DMG_TS_MAX> dmgTSMode;
+	std::array<Config::DMG_TitleScreen_Mode, static_cast<size_t>(Config::DMG_TitleScreen_Mode::Max)> dmgTSMode;
 
 	// Other options
 	bool showDangerousPermissionsOverlayIcon;
@@ -114,7 +114,7 @@ public:
 
 	// DMG title screen mode [index is ROM type]
 	// NOTE: Can't use constexpr here because it breaks on gcc-7.5.0. (Ubuntu 18.04)
-	static const std::array<Config::DMG_TitleScreen_Mode, Config::DMG_TitleScreen_Mode::DMG_TS_MAX> dmgTSMode_default;
+	static const std::array<Config::DMG_TitleScreen_Mode, static_cast<size_t>(Config::DMG_TitleScreen_Mode::Max)> dmgTSMode_default;
 
 	// Other options
 	static const constexpr bool showDangerousPermissionsOverlayIcon_default = true;
@@ -149,10 +149,10 @@ const std::array<uint8_t, 8> ConfigPrivate::defImgTypePrio = {
 };
 
 // DMG title screen mode [index is ROM type]
-const std::array<Config::DMG_TitleScreen_Mode, Config::DMG_TitleScreen_Mode::DMG_TS_MAX> ConfigPrivate::dmgTSMode_default = {
-	Config::DMG_TitleScreen_Mode::DMG_TS_DMG,
-	Config::DMG_TitleScreen_Mode::DMG_TS_SGB,
-	Config::DMG_TitleScreen_Mode::DMG_TS_CGB
+const std::array<Config::DMG_TitleScreen_Mode, static_cast<size_t>(Config::DMG_TitleScreen_Mode::Max)> ConfigPrivate::dmgTSMode_default = {
+	Config::DMG_TitleScreen_Mode::DMG,
+	Config::DMG_TitleScreen_Mode::SGB,
+	Config::DMG_TitleScreen_Mode::CGB
 };
 
 ConfigPrivate::ConfigPrivate()
@@ -312,11 +312,11 @@ int ConfigPrivate::processConfigLine(const char *section, const char *name, cons
 
 		// Parse the key.
 		if (!strcasecmp(name, "DMG")) {
-			dmg_key = Config::DMG_TitleScreen_Mode::DMG_TS_DMG;
+			dmg_key = Config::DMG_TitleScreen_Mode::DMG;
 		} else if (!strcasecmp(name, "SGB")) {
-			dmg_key = Config::DMG_TitleScreen_Mode::DMG_TS_SGB;
+			dmg_key = Config::DMG_TitleScreen_Mode::SGB;
 		} else if (!strcasecmp(name, "CGB")) {
-			dmg_key = Config::DMG_TitleScreen_Mode::DMG_TS_CGB;
+			dmg_key = Config::DMG_TitleScreen_Mode::CGB;
 		} else {
 			// Invalid key.
 			return 1;
@@ -324,17 +324,17 @@ int ConfigPrivate::processConfigLine(const char *section, const char *name, cons
 
 		// Parse the value.
 		if (!strcasecmp(value, "DMG")) {
-			dmg_value = Config::DMG_TitleScreen_Mode::DMG_TS_DMG;
+			dmg_value = Config::DMG_TitleScreen_Mode::DMG;
 		} else if (!strcasecmp(value, "SGB")) {
-			dmg_value = Config::DMG_TitleScreen_Mode::DMG_TS_SGB;
+			dmg_value = Config::DMG_TitleScreen_Mode::SGB;
 		} else if (!strcasecmp(value, "CGB")) {
-			dmg_value = Config::DMG_TitleScreen_Mode::DMG_TS_CGB;
+			dmg_value = Config::DMG_TitleScreen_Mode::CGB;
 		} else {
 			// Invalid value.
 			return 1;
 		}
 
-		dmgTSMode[dmg_key] = dmg_value;
+		dmgTSMode[static_cast<size_t>(dmg_key)] = dmg_value;
 	} else if (!strcasecmp(section, "Options")) {
 		// Options.
 		bool *bParam;
@@ -667,17 +667,17 @@ Config::ImgBandwidth Config::imgBandwidthMetered(void) const
  */
 Config::DMG_TitleScreen_Mode Config::dmgTitleScreenMode(DMG_TitleScreen_Mode romType) const
 {
-	assert(romType >= DMG_TitleScreen_Mode::DMG_TS_DMG);
-	assert(romType <  DMG_TitleScreen_Mode::DMG_TS_MAX);
-	if (romType <  DMG_TitleScreen_Mode::DMG_TS_DMG ||
-	    romType >= DMG_TitleScreen_Mode::DMG_TS_MAX)
+	assert(romType >= DMG_TitleScreen_Mode::DMG);
+	assert(romType <  DMG_TitleScreen_Mode::Max);
+	if (romType <  DMG_TitleScreen_Mode::DMG ||
+	    romType >= DMG_TitleScreen_Mode::Max)
 	{
 		// Invalid ROM type. Return DMG.
-		return DMG_TitleScreen_Mode::DMG_TS_DMG;
+		return DMG_TitleScreen_Mode::DMG;
 	}
 
 	RP_D(const Config);
-	return d->dmgTSMode[romType];
+	return d->dmgTSMode[static_cast<size_t>(romType)];
 }
 
 /** Boolean configuration options **/
@@ -729,16 +729,16 @@ DEFAULT_VALUE_IMPL(Config::ImgBandwidth, imgBandwidthMetered)
 
 Config::DMG_TitleScreen_Mode Config::dmgTitleScreenMode_default(DMG_TitleScreen_Mode romType)
 {
-	assert(romType >= DMG_TitleScreen_Mode::DMG_TS_DMG);
-	assert(romType <  DMG_TitleScreen_Mode::DMG_TS_MAX);
-	if (romType <  DMG_TitleScreen_Mode::DMG_TS_DMG ||
-	    romType >= DMG_TitleScreen_Mode::DMG_TS_MAX)
+	assert(romType >= DMG_TitleScreen_Mode::DMG);
+	assert(romType <  DMG_TitleScreen_Mode::Max);
+	if (romType <  DMG_TitleScreen_Mode::DMG ||
+	    romType >= DMG_TitleScreen_Mode::Max)
 	{
 		// Invalid ROM type. Return DMG.
-		return DMG_TitleScreen_Mode::DMG_TS_DMG;
+		return DMG_TitleScreen_Mode::DMG;
 	}
 
-	return ConfigPrivate::dmgTSMode_default[romType];
+	return ConfigPrivate::dmgTSMode_default[static_cast<size_t>(romType)];
 }
 
 /**

@@ -115,12 +115,12 @@ public:
 
 	/** DMG title screen mode **/
 
-	enum DMG_TitleScreen_Mode : uint8_t {
-		DMG_TS_DMG,	// Use DMG mode title screens.
-		DMG_TS_SGB,	// Use SGB mode title screens if available.
-		DMG_TS_CGB,	// Use CGB mode title screens if available.
+	enum class DMG_TitleScreen_Mode : uint8_t {
+		DMG,	// Use DMG mode title screens.
+		SGB,	// Use SGB mode title screens if available.
+		CGB,	// Use CGB mode title screens if available.
 
-		DMG_TS_MAX
+		Max
 	};
 
 	/**

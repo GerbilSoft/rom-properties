@@ -117,24 +117,24 @@ void SystemsTabPrivate::reset(void)
 	// Special handling: DMG as SGB doesn't really make sense,
 	// so handle it as DMG.
 	const Config::DMG_TitleScreen_Mode tsMode =
-		config->dmgTitleScreenMode(Config::DMG_TitleScreen_Mode::DMG_TS_DMG);
+		config->dmgTitleScreenMode(Config::DMG_TitleScreen_Mode::DMG);
 	const HWND hwndDmgTsDMG = GetDlgItem(hWndPropSheet, IDC_SYSTEMS_DMGTS_DMG);
 	switch (tsMode) {
-		case Config::DMG_TitleScreen_Mode::DMG_TS_DMG:
-		case Config::DMG_TitleScreen_Mode::DMG_TS_SGB:
+		case Config::DMG_TitleScreen_Mode::DMG:
+		case Config::DMG_TitleScreen_Mode::SGB:
 		default:
 			ComboBox_SetCurSel(hwndDmgTsDMG, 0);
 			break;
-		case Config::DMG_TitleScreen_Mode::DMG_TS_CGB:
+		case Config::DMG_TitleScreen_Mode::CGB:
 			ComboBox_SetCurSel(hwndDmgTsDMG, 1);
 			break;
 	}
 
 	// The SGB and CGB dropdowns have all three.
 	ComboBox_SetCurSel(GetDlgItem(hWndPropSheet, IDC_SYSTEMS_DMGTS_SGB),
-		(int)config->dmgTitleScreenMode(Config::DMG_TitleScreen_Mode::DMG_TS_SGB));
+		(int)config->dmgTitleScreenMode(Config::DMG_TitleScreen_Mode::SGB));
 	ComboBox_SetCurSel(GetDlgItem(hWndPropSheet, IDC_SYSTEMS_DMGTS_CGB),
-		(int)config->dmgTitleScreenMode(Config::DMG_TitleScreen_Mode::DMG_TS_CGB));
+		(int)config->dmgTitleScreenMode(Config::DMG_TitleScreen_Mode::CGB));
 
 	// No longer changed.
 	changed = false;

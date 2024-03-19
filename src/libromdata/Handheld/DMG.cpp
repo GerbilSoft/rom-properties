@@ -1417,8 +1417,8 @@ int DMG::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 
 	// Check the title screen mode variant to use.
 	static const char ts_subdirs
-		[Config::DMG_TitleScreen_Mode::DMG_TS_MAX]
-		[Config::DMG_TitleScreen_Mode::DMG_TS_MAX][8] =
+		[static_cast<size_t>(Config::DMG_TitleScreen_Mode::Max)]
+		[static_cast<size_t>(Config::DMG_TitleScreen_Mode::Max)][8] =
 	{
 		// Rows: ROM type (DMG, SGB, CGB)
 		// Columns: User selection (DMG, SGB, CGB)
@@ -1437,18 +1437,18 @@ int DMG::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 	const Config *const config = Config::instance();
 	Config::DMG_TitleScreen_Mode cfg_rom;
 	if (dmg_system & DMGPrivate::DMG_SYSTEM_CGB) {
-		cfg_rom = Config::DMG_TitleScreen_Mode::DMG_TS_CGB;
+		cfg_rom = Config::DMG_TitleScreen_Mode::CGB;
 	} else if (dmg_system & DMGPrivate::DMG_SYSTEM_SGB) {
-		cfg_rom = Config::DMG_TitleScreen_Mode::DMG_TS_SGB;
+		cfg_rom = Config::DMG_TitleScreen_Mode::SGB;
 	} else {
-		cfg_rom = Config::DMG_TitleScreen_Mode::DMG_TS_DMG;
+		cfg_rom = Config::DMG_TitleScreen_Mode::DMG;
 	}
 
 	Config::DMG_TitleScreen_Mode cfg_ts = config->dmgTitleScreenMode(cfg_rom);
-	assert(cfg_ts >= Config::DMG_TitleScreen_Mode::DMG_TS_DMG);
-	assert(cfg_ts <  Config::DMG_TitleScreen_Mode::DMG_TS_MAX);
-	if (cfg_ts <  Config::DMG_TitleScreen_Mode::DMG_TS_DMG ||
-	    cfg_ts >= Config::DMG_TitleScreen_Mode::DMG_TS_MAX)
+	assert(cfg_ts >= Config::DMG_TitleScreen_Mode::DMG);
+	assert(cfg_ts <  Config::DMG_TitleScreen_Mode::Max);
+	if (cfg_ts <  Config::DMG_TitleScreen_Mode::DMG ||
+	    cfg_ts >= Config::DMG_TitleScreen_Mode::Max)
 	{
 		// Out of range. Use the default.
 		cfg_ts = cfg_rom;
@@ -1458,14 +1458,14 @@ int DMG::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 	// Some CGB ROMs do have SGB borders, but since the header doesn't
 	// unlock SGB mode, it doesn't show up on hardware. It *does* show
 	// up on mGBA, though...
-	if (cfg_ts == Config::DMG_TitleScreen_Mode::DMG_TS_SGB &&
+	if (cfg_ts == Config::DMG_TitleScreen_Mode::SGB &&
 	    !(dmg_system & DMGPrivate::DMG_SYSTEM_SGB))
 	{
-		cfg_ts = Config::DMG_TitleScreen_Mode::DMG_TS_DMG;
+		cfg_ts = Config::DMG_TitleScreen_Mode::DMG;
 	}
 
 	// Get the image subdirectory from the table.
-	img_subdir = ts_subdirs[cfg_rom][cfg_ts];
+	img_subdir = ts_subdirs[static_cast<size_t>(cfg_rom)][static_cast<size_t>(cfg_ts)];
 
 	// Subdirectory:
 	// - CGB/x/:   CGB game. (x == region byte, or NoID if no Game ID)

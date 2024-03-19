@@ -294,21 +294,21 @@ rp_systems_tab_reset(RpSystemsTab *tab)
 	// Special handling: DMG as SGB doesn't really make sense,
 	// so handle it as DMG.
 	const Config::DMG_TitleScreen_Mode tsMode =
-		config->dmgTitleScreenMode(Config::DMG_TitleScreen_Mode::DMG_TS_DMG);
+		config->dmgTitleScreenMode(Config::DMG_TitleScreen_Mode::DMG);
 	switch (tsMode) {
-		case Config::DMG_TitleScreen_Mode::DMG_TS_DMG:
-		case Config::DMG_TitleScreen_Mode::DMG_TS_SGB:
+		case Config::DMG_TitleScreen_Mode::DMG:
+		case Config::DMG_TitleScreen_Mode::SGB:
 		default:
 			SET_CBO(tab->cboDMG, 0);
 			break;
-		case Config::DMG_TitleScreen_Mode::DMG_TS_CGB:
+		case Config::DMG_TitleScreen_Mode::CGB:
 			SET_CBO(tab->cboDMG, 1);
 			break;
 	}
 
 	// The SGB and CGB dropdowns have all three.
-	SET_CBO(tab->cboSGB, (int)config->dmgTitleScreenMode(Config::DMG_TitleScreen_Mode::DMG_TS_SGB));
-	SET_CBO(tab->cboCGB, (int)config->dmgTitleScreenMode(Config::DMG_TitleScreen_Mode::DMG_TS_CGB));
+	SET_CBO(tab->cboSGB, (int)config->dmgTitleScreenMode(Config::DMG_TitleScreen_Mode::SGB));
+	SET_CBO(tab->cboCGB, (int)config->dmgTitleScreenMode(Config::DMG_TitleScreen_Mode::CGB));
 
 	tab->changed = false;
 	tab->inhibit = false;

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE)                              *
  * SystemsTab.cpp: Systems tab for rp-config.                              *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -87,21 +87,21 @@ void SystemsTab::reset(void)
 	// Special handling: DMG as SGB doesn't really make sense,
 	// so handle it as DMG.
 	const Config::DMG_TitleScreen_Mode tsMode =
-		config->dmgTitleScreenMode(Config::DMG_TitleScreen_Mode::DMG_TS_DMG);
+		config->dmgTitleScreenMode(Config::DMG_TitleScreen_Mode::DMG);
 	switch (tsMode) {
-		case Config::DMG_TitleScreen_Mode::DMG_TS_DMG:
-		case Config::DMG_TitleScreen_Mode::DMG_TS_SGB:
+		case Config::DMG_TitleScreen_Mode::DMG:
+		case Config::DMG_TitleScreen_Mode::SGB:
 		default:
 			d->ui.cboDMG->setCurrentIndex(0);
 			break;
-		case Config::DMG_TitleScreen_Mode::DMG_TS_CGB:
+		case Config::DMG_TitleScreen_Mode::CGB:
 			d->ui.cboDMG->setCurrentIndex(1);
 			break;
 	}
 
 	// The SGB and CGB dropdowns have all three.
-	d->ui.cboSGB->setCurrentIndex((int)config->dmgTitleScreenMode(Config::DMG_TitleScreen_Mode::DMG_TS_SGB));
-	d->ui.cboCGB->setCurrentIndex((int)config->dmgTitleScreenMode(Config::DMG_TitleScreen_Mode::DMG_TS_CGB));
+	d->ui.cboSGB->setCurrentIndex((int)config->dmgTitleScreenMode(Config::DMG_TitleScreen_Mode::SGB));
+	d->ui.cboCGB->setCurrentIndex((int)config->dmgTitleScreenMode(Config::DMG_TitleScreen_Mode::CGB));
 
 	// Restore the signal block state.
 	d->ui.cboDMG->blockSignals(blockDMG);
