@@ -2100,8 +2100,6 @@ rp_rom_data_view_load_rom_data(RpRomDataView *page)
 	// Load the specified URI.
 	RomDataPtr romData = rp_gtk_open_uri(page->uri);
 	if (romData) {
-		// FIXME: If called from rp_rom_data_view_set_property(), this might
-		// result in *two* notifications.
 		page->cxx->romData = std::move(romData);
 		page->hasCheckedAchievements = false;
 	}

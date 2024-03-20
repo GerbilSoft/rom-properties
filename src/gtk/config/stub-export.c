@@ -25,6 +25,11 @@ typedef void *GtkApplication;
 #  define GTK_WIDGET_SHOW_GTK3(widget) gtk_widget_show(widget)
 #endif /* GTK_CHECK_VERSION(4,0,0) */
 
+#if GTK_CHECK_VERSION(2,90,2)
+static GtkApplication *app = NULL;
+#endif /* GTK_CHECK_VERSION(2,90,2) */
+static int status = 0;
+
 #if !GTK_CHECK_VERSION(2,90,2)
 /**
  * ConfigDialog was closed by clicking the X button.
@@ -107,7 +112,6 @@ int RP_C_API rp_show_config_dialog(int argc, char *argv[])
 #endif
 
 	CHECK_UID_RET(EXIT_FAILURE);
-	int status;
 #if GTK_CHECK_VERSION(2,90,2)
 	GtkApplication *const app = gtk_application_new(
 		"com.gerbilsoft.rom-properties.rp-config", G_APPLICATION_FLAGS_NONE);
@@ -118,7 +122,10 @@ int RP_C_API rp_show_config_dialog(int argc, char *argv[])
 	// NOTE: We aren't setting up command line options in GApplication,
 	// so it will complain if argv has any parameters.
 	char *argv_new[1] = { argv[0] };
-	status = g_application_run(G_APPLICATION(app), 1, argv_new);
+	const int gstatus = g_application_run(G_APPLICATION(app), 1, argv_new);
+	if (gstatus != 0 && status != 0) {
+		status = gstatus;
+	}
 #else /* !GTK_CHECK_VERSION(2,90,2) */
 	// NOTE: GTK2 doesn't send a startup notification.
 	// Not going to implement the Startup Notification protocol manually
@@ -126,7 +133,6 @@ int RP_C_API rp_show_config_dialog(int argc, char *argv[])
 	gtk_init(NULL, NULL);
 	rp_config_app_activate(NULL, 0);
 	gtk_main();
-	status = 0;
 #endif /* GTK_CHECK_VERSION(2,90,2) */
 
 	return status;
@@ -229,7 +235,19 @@ rp_RomDataView_app_activate(GtkApplication *app, const gchar *uri)
 	gtk_widget_set_name(lblRomDataViewTab, "lblRomDataViewTab");
 
 	// Add the RomDataView to the GtkNotebook.
-	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), vboxRomDataView, lblRomDataViewTab);
+	int page_idx = gtk_notebook_append_page(GTK_NOTEBOOK(notebook), vboxRomDataView, lblRomDataViewTab);
+
+	// NOTE: Need to run the idle process in order for RomDataView to process the URI.
+	// TODO: Create the RomData object here instead? (would need to convert to .cpp)
+	// Also, we'd be able to check for RomData without having to create everything first...
+	while (g_main_context_pending(NULL)) {
+		g_main_context_iteration(NULL, TRUE);
+	}
+	if (!rp_rom_data_view_is_showing_data(RP_ROM_DATA_VIEW(romDataView))) {
+		// Not a valid RomData object.
+		gtk_notebook_remove_page(GTK_NOTEBOOK(notebook), page_idx);
+		g_object_unref(lblRomDataViewTab);
+	}
 
 	/** XAttrView **/
 
@@ -265,6 +283,17 @@ rp_RomDataView_app_activate(GtkApplication *app, const gchar *uri)
 	}
 
 	/** Rest of the dialog **/
+
+	// Make sure we have at least one tab.
+	if (gtk_notebook_get_n_pages(GTK_NOTEBOOK(notebook)) < 1) {
+		fprintf(stderr, "*** GTK%u rp_show_RomDataView_dialog(): No tabs were created; exiting.\n", (unsigned int)GTK_MAJOR_VERSION);
+		status = 1;
+#if GTK_CHECK_VERSION(2,90,2)
+		g_application_quit(G_APPLICATION(app));
+#else /* GTK_CHECK_VERSION(2,90,2) */
+		gtk_main_quit();
+#endif /* GTK_CHECK_VERSION(2,90,2) */
+	}
 
 	// Connect the dialog response handler.
 	g_signal_connect(dialog, "response", G_CALLBACK(rp_show_RomDataView_dialog_response_handler), NULL);
@@ -315,10 +344,8 @@ int RP_C_API rp_show_RomDataView_dialog(int argc, char *argv[])
 #endif
 
 	CHECK_UID_RET(EXIT_FAILURE);
-	int status;
 #if GTK_CHECK_VERSION(2,90,2)
-	GtkApplication *const app = gtk_application_new(
-		"com.gerbilsoft.rom-properties.rp-config", G_APPLICATION_FLAGS_NONE);
+	app = gtk_application_new("com.gerbilsoft.rom-properties.rp-config", G_APPLICATION_FLAGS_NONE);
 	// NOTE: GApplication is supposed to set this, but KDE isn't seeing it...
 	g_set_prgname("com.gerbilsoft.rom-properties.rp-config");
 	g_signal_connect(app, "activate", G_CALLBACK(rp_RomDataView_app_activate), argv[argc-1]);
@@ -326,7 +353,10 @@ int RP_C_API rp_show_RomDataView_dialog(int argc, char *argv[])
 	// NOTE: We aren't setting up command line options in GApplication,
 	// so it will complain if argv has any parameters.
 	char *argv_new[1] = { argv[0] };
-	status = g_application_run(G_APPLICATION(app), 1, argv_new);
+	const int gstatus = g_application_run(G_APPLICATION(app), 1, argv_new);
+	if (gstatus != 0 && status != 0) {
+		status = gstatus;
+	}
 #else /* !GTK_CHECK_VERSION(2,90,2) */
 	// NOTE: GTK2 doesn't send a startup notification.
 	// Not going to implement the Startup Notification protocol manually
@@ -334,7 +364,6 @@ int RP_C_API rp_show_RomDataView_dialog(int argc, char *argv[])
 	gtk_init(NULL, NULL);
 	rp_RomDataView_app_activate(NULL, argv[argc-1]);
 	gtk_main();
-	status = 0;
 #endif /* GTK_CHECK_VERSION(2,90,2) */
 
 	return status;

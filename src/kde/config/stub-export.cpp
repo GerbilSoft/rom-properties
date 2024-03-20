@@ -139,16 +139,6 @@ Q_DECL_EXPORT int RP_C_API rp_show_RomDataView_dialog(int argc, char *argv[])
 		return EXIT_FAILURE;
 	}
 
-	// Open a RomData object.
-	// TODO: Support URLs? Currently filenames only for testing.
-	const char *const uri = argv[argc-1];
-	fprintf(stderr, "*** " RP_KDE_UPPER " rp_show_RomDataView_dialog(): Opening URI: '%s'\n", uri);
-	RomDataPtr romData = RomDataFactory::create(argv[argc-1]);
-	if (!romData) {
-		fprintf(stderr, "*** " RP_KDE_UPPER " rp_show_RomDataView_dialog(): Failed to open URI '%s'.\n", uri);
-		return EXIT_FAILURE;
-	}
-
 	QApplication *const app = initQApp(argc, argv);
 
 	// Register RpQImageBackend and AchQtDBus.
@@ -177,10 +167,19 @@ Q_DECL_EXPORT int RP_C_API rp_show_RomDataView_dialog(int argc, char *argv[])
 	tabWidget->setObjectName(QLatin1String("tabWidget"));
 	vboxDialog->addWidget(tabWidget);
 
-	// Create a RomDataView object.
-	RomDataView *const romDataView = new RomDataView(romData, dialog);
-	romDataView->setObjectName(QLatin1String("romDataView"));
-	tabWidget->addTab(romDataView, QLatin1String("ROM Properties"));
+	// Open a RomData object.
+	// TODO: Support URLs? Currently filenames only for testing.
+	const char *const uri = argv[argc-1];
+	fprintf(stderr, "*** " RP_KDE_UPPER " rp_show_RomDataView_dialog(): Opening URI: '%s'\n", uri);
+	RomDataPtr romData = RomDataFactory::create(argv[argc-1]);
+	if (romData) {
+		// Create a RomDataView object.
+		RomDataView *const romDataView = new RomDataView(romData, dialog);
+		romDataView->setObjectName(QLatin1String("romDataView"));
+		tabWidget->addTab(romDataView, QLatin1String("ROM Properties"));
+	} else {
+		fputs("*** " RP_KDE_UPPER " rp_show_RomDataView_dialog(): RomData object could not be created for this URI.\n", stderr);
+	}
 
 #if 0
 	// Create an XAttrView object.
@@ -195,7 +194,14 @@ Q_DECL_EXPORT int RP_C_API rp_show_RomDataView_dialog(int argc, char *argv[])
 	}
 #endif
 
+	// Make sure we have at least one tab.
+	if (tabWidget->count() < 1) {
+		fputs("*** " RP_KDE_UPPER " rp_show_RomDataView_dialog(): No tabs were created; exiting.\n", stderr);
+		return EXIT_FAILURE;
+	}
+
 	// Run the Qt UI.
 	// FIXME: May need changes if the main loop is already running.
+	fputs("*** " RP_KDE_UPPER " rp_show_RomDataView_dialog(): Starting main loop.\n", stderr);
 	return app->exec();
 }
