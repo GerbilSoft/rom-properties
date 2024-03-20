@@ -82,7 +82,7 @@ GdkTexture *GdkTextureConv::rp_image_to_GdkTexture(const rp_image *img)
 
 			// Destination image buffer
 			const size_t data_len = static_cast<size_t>(width) * static_cast<size_t>(height) * sizeof(argb32_t);
-			argb32_t *const dest_buf = static_cast<argb32_t*>(malloc(data_len));
+			argb32_t *const dest_buf = static_cast<argb32_t*>(g_malloc(data_len));
 			argb32_t *px_dest = dest_buf;
 
 			// Copy the image data.
@@ -111,14 +111,16 @@ GdkTexture *GdkTextureConv::rp_image_to_GdkTexture(const rp_image *img)
 
 			// NOTE: GdkMemoryTexture only does a g_bytes_ref() if the stride matches
 			// what it expects, so we need to do a deep copy here.
-			GBytes *const pBytes = g_bytes_new(dest_buf, data_len);
+			GBytes *const pBytes = g_bytes_new_take(dest_buf, data_len);
 			assert(pBytes != nullptr);
 			if (pBytes) {
 				// TODO: Verify format on big-endian.
 				texture = gdk_memory_texture_new(width, height, GDK_MEMORY_B8G8R8A8, pBytes, width * sizeof(argb32_t));
 				g_bytes_unref(pBytes);
+			} else {
+				// g_bytes_new_take() failed.
+				free(dest_buf);
 			}
-			free(dest_buf);
 			break;
 		}
 
