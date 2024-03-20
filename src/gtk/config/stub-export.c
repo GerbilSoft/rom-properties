@@ -45,7 +45,7 @@ config_dialog_delete_event(RpConfigDialog *dialog, GdkEvent *event, gpointer use
 /**
  * GtkApplication activate() signal handler.
  * Also used manually for GTK2.
- * @param app GtkApplication (or nullptr on GTK2)
+ * @param app GtkApplication (or NULL on GTK2)
  * @param user_data
  */
 static void
@@ -128,9 +128,38 @@ int RP_C_API rp_show_config_dialog(int argc, char *argv[])
 /** RomDataView test program **/
 
 /**
+ * Dialog response handler
+ * @param dialog GtkDialog
+ * @param response_id Response ID
+ * @param user_data
+ */
+static void
+rp_show_RomDataView_dialog_response_handler(GtkDialog	*dialog,
+					    gint	 response_id,
+					    gpointer	 user_data)
+{
+	RP_UNUSED(user_data);
+
+	switch (response_id) {
+		case GTK_RESPONSE_OK:
+		case GTK_RESPONSE_CANCEL:
+			// Close the dialog.
+#if GTK_CHECK_VERSION(3,9,8)
+			gtk_window_close(GTK_WINDOW(dialog));
+#else /* !GTK_CHECK_VERSION(3,9,8) */
+			gtk_widget_destroy(GTK_WIDGET(dialog));
+#endif /* GTK_CHECK_VERSION(3,9,8) */
+			break;
+
+		default:
+			break;
+	}
+}
+
+/**
  * GtkApplication activate() signal handler.
  * Also used manually for GTK2.
- * @param app GtkApplication (or nullptr on GTK2)
+ * @param app GtkApplication (or NULL on GTK2)
  * @param user_data URI to open
  */
 static void
@@ -147,7 +176,7 @@ rp_RomDataView_app_activate(GtkApplication *app, const gchar *uri)
 		s_title,
 		NULL,
 		0,
-		"OK", GTK_RESPONSE_ACCEPT,
+		"OK", GTK_RESPONSE_OK,
 		NULL);
 	gtk_widget_set_name(dialog, "RomDataView-test-dialog");
 	gtk_widget_set_visible(dialog, TRUE);
@@ -187,6 +216,9 @@ rp_RomDataView_app_activate(GtkApplication *app, const gchar *uri)
 
 	// Add the RomDataView to the GtkNotebook.
 	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), vboxNotebookPage, tabLabel);
+
+	// Connect the dialog response handler.
+	g_signal_connect(dialog, "response", G_CALLBACK(rp_show_RomDataView_dialog_response_handler), NULL);
 
 #if GTK_CHECK_VERSION(2,90,2)
 	gtk_application_add_window(app, GTK_WINDOW(dialog));
