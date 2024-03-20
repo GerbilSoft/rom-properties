@@ -2223,7 +2223,7 @@ rp_rom_data_view_map_signal_handler(RpRomDataView	*page,
 	}
 
 	// Check for "viewed" achievements.
-	if (!page->hasCheckedAchievements) {
+	if (!page->hasCheckedAchievements && (bool)page->cxx->romData) {
 		page->cxx->romData->checkViewedAchievements();
 		page->hasCheckedAchievements = true;
 	}

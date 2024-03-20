@@ -1179,7 +1179,7 @@ void RomDataView::paintEvent(QPaintEvent *event)
 {
 	// Check for "viewed" achievements.
 	Q_D(RomDataView);
-	if (!d->hasCheckedAchievements) {
+	if (!d->hasCheckedAchievements && (bool)d->romData) {
 		d->romData->checkViewedAchievements();
 		d->hasCheckedAchievements = true;
 	}
