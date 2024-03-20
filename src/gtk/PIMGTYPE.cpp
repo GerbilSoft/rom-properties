@@ -102,9 +102,10 @@ PIMGTYPE PIMGTYPE_scale(PIMGTYPE pImgType, int width, int height, bool bilinear)
 	}
 
 	// Create a GdkMemoryTexture using the cairo_surface_t image data directly.
-	// NOTE: The data here technically isn't static, but we don't want to do *two* copies.
+	// NOTE: GdkMemoryTexture only does a g_bytes_ref() if the stride matches
+	// what it expects, so we need to do a deep copy here.
 	const int dest_stride = cairo_image_surface_get_stride(dest_surface);
-	GBytes *const pBytes = g_bytes_new_static(cairo_image_surface_get_data(dest_surface), height * dest_stride);
+	GBytes *const pBytes = g_bytes_new(cairo_image_surface_get_data(dest_surface), height * dest_stride);
 	// FIXME: GDK_MEMORY_DEFAULT (GDK_MEMORY_B8G8R8A8_PREMULTIPLIED) causes a heap overflow here...
 	GdkTexture *const texture = gdk_memory_texture_new(width, height, GDK_MEMORY_B8G8R8A8, pBytes, dest_stride);
 	g_bytes_unref(pBytes);

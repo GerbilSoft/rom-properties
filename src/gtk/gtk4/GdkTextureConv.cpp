@@ -66,17 +66,12 @@ GdkTexture *GdkTextureConv::rp_image_to_GdkTexture(const rp_image *img)
 			array<argb32_t, 256> palette;
 			unsigned int i;
 			for (i = 0; i+1 < src_pal_len; i += 2, src_pal += 2) {
-				// Swap the R and B channels in the palette.
 				palette[i+0].u32 = src_pal[0].u32;
 				palette[i+1].u32 = src_pal[1].u32;
-
-				std::swap(palette[i+0].r, palette[i+0].b);
-				std::swap(palette[i+1].r, palette[i+1].b);
 			}
 			for (; i < src_pal_len; i++, src_pal++) {
 				// Last color.
 				palette[i].u32 = src_pal->u32;
-				std::swap(palette[i].r, palette[i].b);
 			}
 
 			// Zero out the rest of the palette if the new
@@ -114,8 +109,9 @@ GdkTexture *GdkTextureConv::rp_image_to_GdkTexture(const rp_image *img)
 				img_buf += src_stride_adj;
 			}
 
-			// NOTE: The data here technically isn't static, but we don't want to do *two* copies.
-			GBytes *const pBytes = g_bytes_new_static(dest_buf, data_len);
+			// NOTE: GdkMemoryTexture only does a g_bytes_ref() if the stride matches
+			// what it expects, so we need to do a deep copy here.
+			GBytes *const pBytes = g_bytes_new(dest_buf, data_len);
 			assert(pBytes != nullptr);
 			if (pBytes) {
 				// TODO: Verify format on big-endian.
