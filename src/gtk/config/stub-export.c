@@ -198,6 +198,10 @@ rp_RomDataView_app_activate(GtkApplication *app, const gchar *uri)
 	GtkWidget *const vboxNotebookPage = rp_gtk_vbox_new(4);
 	gtk_widget_set_name(vboxNotebookPage, "vboxNotebookPage");
 	gtk_widget_set_visible(vboxNotebookPage, TRUE);
+#if GTK_CHECK_VERSION(3,0,0)
+	gtk_widget_set_hexpand(vboxNotebookPage, TRUE);
+	gtk_widget_set_vexpand(vboxNotebookPage, TRUE);
+#endif /* GTK_CHECK_VERSION(3,0,0) */
 
 	// Create a RomDataView object with the specified URI.
 	// TODO: Which RpDescFormatType?

@@ -167,6 +167,11 @@ rp_drag_image_init(RpDragImage *image)
 	// Create the child GtkImage widget.
 	image->imageWidget = gtk_image_new();
 	gtk_widget_set_name(image->imageWidget, "imageWidget");
+#if GTK_CHECK_VERSION(3,0,0)
+	// Image widget needs to expand to fill DragImage.
+	gtk_widget_set_hexpand(image->imageWidget, true);
+	gtk_widget_set_vexpand(image->imageWidget, true);
+#endif /* GTK_CHECK_VERSION(4,0,0) */
 #if GTK_CHECK_VERSION(4,0,0)
 	gtk_box_append(GTK_BOX(image), image->imageWidget);
 #else /* !GTK_CHECK_VERSION(4,0,0) */

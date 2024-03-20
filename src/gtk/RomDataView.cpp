@@ -286,18 +286,20 @@ rp_rom_data_view_init(RpRomDataView *page)
 	// NOTE: Not visible initially.
 	page->hboxHeaderRow_outer = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 	gtk_widget_set_name(page->hboxHeaderRow_outer, "hboxHeaderRow_outer");
+	gtk_widget_set_hexpand(page->hboxHeaderRow_outer, true);
+	gtk_widget_set_vexpand(page->hboxHeaderRow_outer, false);
 
 	// Header row. (inner box)
 	page->hboxHeaderRow = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 8);
 	gtk_widget_set_name(page->hboxHeaderRow, "hboxHeaderRow");
 	gtk_widget_set_halign(page->hboxHeaderRow, GTK_ALIGN_CENTER);
 	gtk_widget_set_hexpand(page->hboxHeaderRow, true);
+	gtk_widget_set_vexpand(page->hboxHeaderRow, false);
 
 #  if GTK_CHECK_VERSION(4,0,0)
 	gtk_widget_set_visible(page->hboxHeaderRow_outer, false);	// GTK4 shows widgets by default.
 	gtk_box_append(GTK_BOX(page), page->hboxHeaderRow_outer);
 	gtk_box_append(GTK_BOX(page->hboxHeaderRow_outer), page->hboxHeaderRow);
-	gtk_widget_set_hexpand(page->hboxHeaderRow_outer, true);
 #  else /* !GTK_CHECK_VERSION(4,0,0) */
 	gtk_widget_show(page->hboxHeaderRow);
 	gtk_box_pack_start(GTK_BOX(page), page->hboxHeaderRow_outer, false, false, 0);
