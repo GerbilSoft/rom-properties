@@ -1550,12 +1550,22 @@ rp_rom_data_view_create_options_button(RpRomDataView *page)
 	// - nautilus-3.x: GtkNotebook
 	// - caja-3.x: GtkNotebook
 	// - nemo-3.x: GtkStack
+	// - GTK4: GtkStack, then GtkNotebook
 #ifndef GTK_IS_STACK
 #  define GTK_IS_STACK(x) 1
 #endif
 	assert(GTK_IS_NOTEBOOK(parent) || GTK_IS_STACK(parent));
 	if (!GTK_IS_NOTEBOOK(parent) && !GTK_IS_STACK(parent))
 		return;
+#if GTK_CHECK_VERSION(4,0,0)
+	if (GTK_IS_STACK(parent)) {
+		// GtkStack; next widget up might be GtkNotebook.
+		GtkWidget *const nparent = gtk_widget_get_parent(parent);
+		if (GTK_IS_NOTEBOOK(nparent)) {
+			parent = nparent;
+		}
+	}
+#endif /* GTK_CHECK_VERSION(4,0,0) */
 
 	// Nemo only: We might have a GtkFrame between the GtkStack and GtkBox.
 	GtkWidget *fparent = gtk_widget_get_parent(parent);
@@ -1583,6 +1593,12 @@ rp_rom_data_view_create_options_button(RpRomDataView *page)
 	// - Caja: FMPropertiesWindow
 	// - Nemo: NemoPropertiesWindow
 	parent = gtk_widget_get_parent(parent);
+#if GTK_CHECK_VERSION(4,0,0)
+	// GTK4: There might be another GtkBox here.
+	if (GTK_IS_BOX(parent)) {
+		parent = gtk_widget_get_parent(parent);
+	}
+#endif /* GTK_CHECK_VERSION(4,0,0) */
 
 #if GTK_CHECK_VERSION(3,0,0)
 	bool isLibAdwaita = false;
@@ -1614,10 +1630,9 @@ rp_rom_data_view_create_options_button(RpRomDataView *page)
 	page->btnOptions = rp_options_menu_button_new();
 	gtk_widget_set_name(page->btnOptions, "btnOptions");
 	rp_options_menu_button_set_direction(RP_OPTIONS_MENU_BUTTON(page->btnOptions), GTK_ARROW_UP);
-#if GTK_CHECK_VERSION(4,0,0)
-	// GTK2/GTK3 default to hidden. GTK4 defaults to visible.
-	gtk_widget_set_visible(page->btnOptions, false);
-#endif /* GTK_CHECK_VERSION(4,0,0) */
+	// Set btnOptions visibility depending on whether or not the page is mapped.
+	// (Normally not mapped in a properties dialog; but it *is* mapped in the test program.)
+	gtk_widget_set_visible(page->btnOptions, gtk_widget_get_mapped(GTK_WIDGET(page)));
 
 #if GTK_CHECK_VERSION(3,0,0)
 	if (isLibAdwaita) {

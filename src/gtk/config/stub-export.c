@@ -172,7 +172,6 @@ rp_RomDataView_app_activate(GtkApplication *app, const gchar *uri)
 
 	// Create a RomDataView object with the specified URI.
 	// TODO: Which RpDescFormatType?
-	printf("URI = %s\n", uri);
 	GtkWidget *const romDataView = rp_rom_data_view_new_with_uri(uri, RP_DFT_XFCE);
 	gtk_widget_set_visible(romDataView, TRUE);
 	gtk_widget_set_name(romDataView, "romDataView");
