@@ -78,7 +78,7 @@ BEGIN
     AUTOCHECKBOX    "Mostra un'icona di sicurezza per le\nROM con permessi ""pericolosi"".", IDC_OPTIONS_DANGEROUSPERMISSIONS, 15, 144, 381, 16, BS_MULTILINE, WS_EX_TRANSPARENT
     AUTOCHECKBOX    "Abilita l'estrazione delle miniature e dei metadati\nsu file system di rete. Questo potrebbe rallentare\nla navigazione dei file.", IDC_OPTIONS_ENABLETHUMBNAILONNETWORKFS, 15, 165, 381, 16, BS_MULTILINE, WS_EX_TRANSPARENT
     AUTOCHECKBOX    "Enable thumbnailing and metadata extraction of directory-based\npackages, e.g. for Wii U. This may slow down file browsing.", IDC_OPTIONS_THUMBNAILDIRECTORYPACKAGES, 15, 186, 381, 16, BS_MULTILINE, WS_EX_TRANSPARENT
-    AUTOCHECKBOX    "Show the Extended Attributes tab.", IDC_OPTIONS_SHOWXATTRVIEW, 15, 207, 381, 8, BS_MULTILINE, WS_EX_TRANSPARENT
+    AUTOCHECKBOX    "Mostra la scheda Attributi Estesi.", IDC_OPTIONS_SHOWXATTRVIEW, 15, 207, 381, 8, BS_MULTILINE, WS_EX_TRANSPARENT
 END
 
 /**
