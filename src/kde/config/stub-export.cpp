@@ -12,6 +12,7 @@
 
 #include "ConfigDialog.hpp"
 #include "RomDataView.hpp"
+#include "xattr/XAttrView.hpp"
 
 // Program version
 #include "librpbase/config/AboutTabText.hpp"
@@ -140,9 +141,11 @@ Q_DECL_EXPORT int RP_C_API rp_show_RomDataView_dialog(int argc, char *argv[])
 
 	// Open a RomData object.
 	// TODO: Support URLs? Currently filenames only for testing.
+	const char *const uri = argv[argc-1];
+	fprintf(stderr, "*** " RP_KDE_UPPER " rp_show_RomDataView_dialog(): Opening URI: '%s'\n", uri);
 	RomDataPtr romData = RomDataFactory::create(argv[argc-1]);
 	if (!romData) {
-		fprintf(stderr, "*** " RP_KDE_UPPER " rp_show_RomDataView_dialog(): Failed to open URI '%s'.\n", argv[argc-1]);
+		fprintf(stderr, "*** " RP_KDE_UPPER " rp_show_RomDataView_dialog(): Failed to open URI '%s'.\n", uri);
 		return EXIT_FAILURE;
 	}
 
@@ -178,6 +181,19 @@ Q_DECL_EXPORT int RP_C_API rp_show_RomDataView_dialog(int argc, char *argv[])
 	RomDataView *const romDataView = new RomDataView(romData, dialog);
 	romDataView->setObjectName(QLatin1String("romDataView"));
 	tabWidget->addTab(romDataView, QLatin1String("ROM Properties"));
+
+#if 0
+	// Create an XAttrView object.
+	// FIXME: Need to reference the XAttrView plugin?
+	XAttrView *const xattrView = new XAttrView(QUrl(QString::fromUtf8(uri)), dialog);
+	if (xattrView->hasAttributes()) {
+		xattrView->setObjectName(QLatin1String("xattrView"));
+		tabWidget->addTab(romDataView, QLatin1String("xattrs"));
+	} else {
+		fputs("*** " RP_KDE_UPPER " rp_show_RomDataView_dialog(): No extended attributes found; not showing xattrs tab.\n", stderr);
+		delete xattrView;
+	}
+#endif
 
 	// Run the Qt UI.
 	// FIXME: May need changes if the main loop is already running.

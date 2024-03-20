@@ -520,13 +520,20 @@ static int
 rp_xattr_view_load_attributes(RpXAttrView *widget)
 {
 	// Attempt to open the file.
-	gchar *const filename = g_filename_from_uri(widget->uri, nullptr, nullptr);
+	gchar *filename = g_filename_from_uri(widget->uri, nullptr, nullptr);
 	if (!filename) {
-		// Not a local file.
-		widget->has_attributes = false;
-		delete widget->xattrReader;
-		widget->xattrReader = nullptr;
-		return -EIO;
+		// This might be a plain filename and not a URI.
+		if (access(widget->uri, R_OK) == 0) {
+			// It's a plain filename.
+			// TODO: Eliminate g_strdup()?
+			filename = g_strdup(widget->uri);
+		} else {
+			// Not a local file.
+			widget->has_attributes = false;
+			delete widget->xattrReader;
+			widget->xattrReader = nullptr;
+			return -EIO;
+		}
 	}
 
 	// Close the XAttrReader if it's already open.

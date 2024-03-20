@@ -11,12 +11,19 @@
 
 #include "ConfigDialog.hpp"
 #include "RomDataView.hpp"
+#include "xattr/XAttrView.hpp"
 
 #if !GTK_CHECK_VERSION(2,90,2)
 // GtkApplication was introduced in GTK3.
 // For GTK2, make it a generic opaque pointer.
 typedef void *GtkApplication;
 #endif /* !GTK_CHECK_VERSION(2,90,2) */
+
+#if GTK_CHECK_VERSION(4,0,0)
+#  define GTK_WIDGET_SHOW_GTK3(widget)
+#else /* !GTK_CHECK_VERSION(4,0,0) */
+#  define GTK_WIDGET_SHOW_GTK3(widget) gtk_widget_show(widget)
+#endif /* GTK_CHECK_VERSION(4,0,0) */
 
 #if !GTK_CHECK_VERSION(2,90,2)
 /**
@@ -59,7 +66,7 @@ rp_config_app_activate(GtkApplication *app, gpointer user_data)
 	// Create the ConfigDialog.
 	GtkWidget *const configDialog = rp_config_dialog_new();
 	gtk_widget_set_name(configDialog, "configDialog");
-	gtk_widget_set_visible(configDialog, true);
+	gtk_widget_set_visible(configDialog, TRUE);
 #if GTK_CHECK_VERSION(2,90,2)
 	gtk_application_add_window(app, GTK_WINDOW(configDialog));
 #else /* GTK_CHECK_VERSION(2,90,2) */
@@ -167,6 +174,7 @@ rp_RomDataView_app_activate(GtkApplication *app, const gchar *uri)
 {
 	// Initialize base i18n.
 	rp_i18n_init();
+	fprintf(stderr, "*** GTK%u rp_show_RomDataView_dialog(): Opening URI: '%s'\n", (unsigned int)GTK_MAJOR_VERSION, uri);
 
 	// Create a GtkDialog.
 	// TODO: Use GtkWindow on GTK4?
@@ -186,7 +194,7 @@ rp_RomDataView_app_activate(GtkApplication *app, const gchar *uri)
 	// Create a GtkNotebook to simulate Nautilus, Thunar, etc.
 	GtkWidget *const notebook = gtk_notebook_new();
 	gtk_widget_set_name(notebook, "notebook");
-	gtk_widget_set_visible(notebook, TRUE);
+	GTK_WIDGET_SHOW_GTK3(notebook);
 #if GTK_CHECK_VERSION(4,0,0)
 	gtk_box_append(GTK_BOX(contentArea), notebook);
 #else /* !GTK_CHECK_VERSION(4,0,0) */
@@ -195,31 +203,68 @@ rp_RomDataView_app_activate(GtkApplication *app, const gchar *uri)
 
 	// NOTE: Thunar has an extra widget between the GtkNotebook and RomDataView.
 	// TODO: Have RomDataView check for this instead of expecting it when using RP_DFT_XFCE?
-	GtkWidget *const vboxNotebookPage = rp_gtk_vbox_new(4);
-	gtk_widget_set_name(vboxNotebookPage, "vboxNotebookPage");
-	gtk_widget_set_visible(vboxNotebookPage, TRUE);
+	GtkWidget *const vboxRomDataView = rp_gtk_vbox_new(4);
+	gtk_widget_set_name(vboxRomDataView, "vboxRomDataView");
+	GTK_WIDGET_SHOW_GTK3(vboxRomDataView);
 #if GTK_CHECK_VERSION(3,0,0)
-	gtk_widget_set_hexpand(vboxNotebookPage, TRUE);
-	gtk_widget_set_vexpand(vboxNotebookPage, TRUE);
+	gtk_widget_set_hexpand(vboxRomDataView, TRUE);
+	gtk_widget_set_vexpand(vboxRomDataView, TRUE);
 #endif /* GTK_CHECK_VERSION(3,0,0) */
+
+	/** RomDataView **/
 
 	// Create a RomDataView object with the specified URI.
 	// TODO: Which RpDescFormatType?
 	GtkWidget *const romDataView = rp_rom_data_view_new_with_uri(uri, RP_DFT_XFCE);
-	gtk_widget_set_visible(romDataView, TRUE);
+	GTK_WIDGET_SHOW_GTK3(romDataView);
 	gtk_widget_set_name(romDataView, "romDataView");
 #if GTK_CHECK_VERSION(4,0,0)
-	gtk_box_append(GTK_BOX(vboxNotebookPage), romDataView);
+	gtk_box_append(GTK_BOX(vboxRomDataView), romDataView);
 #else /* !GTK_CHECK_VERSION(4,0,0) */
-	gtk_box_pack_start(GTK_BOX(vboxNotebookPage), romDataView, TRUE, TRUE, 4);
+	gtk_box_pack_start(GTK_BOX(vboxRomDataView), romDataView, TRUE, TRUE, 4);
 #endif /* GTK_CHECK_VERSION(4,0,0) */
 
 	// Label for the tab.
-	GtkWidget *const tabLabel = gtk_label_new("ROM Properties");
-	gtk_widget_set_name(tabLabel, "tabLabel");
+	GtkWidget *const lblRomDataViewTab = gtk_label_new("ROM Properties");
+	gtk_widget_set_name(lblRomDataViewTab, "lblRomDataViewTab");
 
 	// Add the RomDataView to the GtkNotebook.
-	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), vboxNotebookPage, tabLabel);
+	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), vboxRomDataView, lblRomDataViewTab);
+
+	/** XAttrView **/
+
+	// Create a RomDataView object with the specified URI.
+	// TODO: Which RpDescFormatType?
+	GtkWidget *const xattrView = rp_xattr_view_new(uri);
+	if (rp_xattr_view_has_attributes(RP_XATTR_VIEW(xattrView))) {
+		GtkWidget *const vboxXAttrView = rp_gtk_vbox_new(4);
+		gtk_widget_set_name(vboxXAttrView, "vboxXAttrView");
+		GTK_WIDGET_SHOW_GTK3(vboxXAttrView);
+#if GTK_CHECK_VERSION(3,0,0)
+		gtk_widget_set_hexpand(vboxXAttrView, TRUE);
+		gtk_widget_set_vexpand(vboxXAttrView, TRUE);
+#endif /* GTK_CHECK_VERSION(3,0,0) */
+
+		GTK_WIDGET_SHOW_GTK3(xattrView);
+		gtk_widget_set_name(xattrView, "xattrView");
+#if GTK_CHECK_VERSION(4,0,0)
+		gtk_box_append(GTK_BOX(vboxXAttrView), xattrView);
+#else /* !GTK_CHECK_VERSION(4,0,0) */
+		gtk_box_pack_start(GTK_BOX(vboxXAttrView), xattrView, TRUE, TRUE, 4);
+#endif /* GTK_CHECK_VERSION(4,0,0) */
+
+		// Label for the tab.
+		GtkWidget *const lblXAttrViewTab = gtk_label_new("xattrs");
+		gtk_widget_set_name(lblXAttrViewTab, "lblXAttrViewTab");
+
+		// Add the RomDataView to the GtkNotebook.
+		gtk_notebook_append_page(GTK_NOTEBOOK(notebook), vboxXAttrView, lblXAttrViewTab);
+	} else {
+		fprintf(stderr, "*** GTK%u rp_show_RomDataView_dialog(): No extended attributes found; not showing xattrs tab.\n", (unsigned int)GTK_MAJOR_VERSION);
+		g_object_unref(xattrView);
+	}
+
+	/** Rest of the dialog **/
 
 	// Connect the dialog response handler.
 	g_signal_connect(dialog, "response", G_CALLBACK(rp_show_RomDataView_dialog_response_handler), NULL);
