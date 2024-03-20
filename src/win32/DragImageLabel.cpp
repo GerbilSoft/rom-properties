@@ -435,10 +435,10 @@ void DragImageLabel::setEcksBawks(bool newEcksBawks)
 {
 	RP_D(DragImageLabel);
 	d->ecksBawks = newEcksBawks;
-	if (d->ecksBawks && d->hMenuEcksBawks) {
-		// Already created the Ecks Bawks menu.
+	if (!d->ecksBawks)
 		return;
-	}
+	if (d->hMenuEcksBawks)
+		return;
 
 	// NOTE: Need to get the submenu of this menu.
 	d->hMenuEcksBawks = LoadMenu(HINST_THISCOMPONENT, MAKEINTRESOURCE(IDR_ECKS_BAWKS));
