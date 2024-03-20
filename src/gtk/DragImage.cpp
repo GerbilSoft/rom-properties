@@ -33,7 +33,6 @@ static void	rp_drag_image_finalize	(GObject	*object);
 
 // Signal handlers
 static void	rp_drag_image_map_signal_handler  (RpDragImage *image, gpointer user_data);
-static void	rp_drag_image_unmap_signal_handler(RpDragImage *image, gpointer user_data);
 static void	rp_drag_image_notify_width_or_height_signal_handler(RpDragImage *image, GParamSpec *pspec, gpointer user_data);
 // FIXME: GTK4 has a new Drag & Drop API.
 #if !GTK_CHECK_VERSION(4,0,0)
@@ -128,7 +127,6 @@ struct _RpDragImage {
 	// Current frame.
 	PIMGTYPE curFrame;
 
-	bool mapped;	// true if the widget is currently mapped
 	bool dirty;	// true if the pixmaps need to be updated on next map
 
 	bool ecksBawks;
@@ -177,8 +175,7 @@ rp_drag_image_init(RpDragImage *image)
 #endif /* GTK_CHECK_VERSION(4,0,0) */
 
 	// Pixmaps can only be updated once we have a valid size.
-	g_signal_connect(G_OBJECT(image), "map",   G_CALLBACK(rp_drag_image_map_signal_handler),   nullptr);
-	g_signal_connect(G_OBJECT(image), "unmap", G_CALLBACK(rp_drag_image_unmap_signal_handler), nullptr);
+	g_signal_connect(G_OBJECT(image), "map", G_CALLBACK(rp_drag_image_map_signal_handler),   nullptr);
 	g_signal_connect(G_OBJECT(image), "notify::width-request",  G_CALLBACK(rp_drag_image_notify_width_or_height_signal_handler), nullptr);
 	g_signal_connect(G_OBJECT(image), "notify::height-request", G_CALLBACK(rp_drag_image_notify_width_or_height_signal_handler), nullptr);
 
@@ -262,7 +259,7 @@ rp_drag_image_update_pixmaps(RpDragImage *image)
 	auto *const anim = cxx->anim;
 	bool bRet = false;
 
-	if (!image->mapped) {
+	if (!gtk_widget_get_mapped(GTK_WIDGET(image))) {
 		// RpDragImage is not mapped to the screen.
 		// Set the dirty flag and update pixmaps later.
 		// The "dirty" flag will force an update when mapped.
@@ -707,23 +704,10 @@ rp_drag_image_map_signal_handler(RpDragImage *image, gpointer user_data)
 {
 	RP_UNUSED(user_data);
 
-	image->mapped = true;
 	if (image->dirty) {
-		// rp_drag_image_update_pixmaps() clears image->dirty().
+		// rp_drag_image_update_pixmaps() clears image->dirty.
 		rp_drag_image_update_pixmaps(image);
 	}
-}
-
-/**
- * DragImage is being unmapped from the screen.
- * @param image RpDragImage
- * @param user_data User data
- */
-static void
-rp_drag_image_unmap_signal_handler(RpDragImage *image, gpointer user_data)
-{
-	RP_UNUSED(user_data);
-	image->mapped = false;
 }
 
 /**
@@ -738,7 +722,7 @@ rp_drag_image_notify_width_or_height_signal_handler(RpDragImage *image, GParamSp
 	RP_UNUSED(pspec);
 	RP_UNUSED(user_data);
 
-	if (image->mapped) {
+	if (gtk_widget_get_mapped(GTK_WIDGET(image))) {
 		// Update the pixmaps.
 		// NOTE: This function might be called twice in a row
 		// if both requested width and height are changed.
