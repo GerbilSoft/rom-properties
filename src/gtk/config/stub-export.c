@@ -144,7 +144,7 @@ rp_RomDataView_app_activate(GtkApplication *app, const gchar *uri)
 	char s_title[40];
 	snprintf(s_title, sizeof(s_title), "RomDataView GTK%u test program", (unsigned int)GTK_MAJOR_VERSION);
 	GtkWidget *const dialog = gtk_dialog_new_with_buttons(
-		"RomDataView GTK test program",
+		s_title,
 		NULL,
 		0,
 		"OK", GTK_RESPONSE_ACCEPT,
