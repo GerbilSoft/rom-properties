@@ -415,10 +415,10 @@ void rp_drag_image_set_ecks_bawks(RpDragImage *image, bool new_ecks_bawks)
 {
 	g_return_if_fail(RP_IS_DRAG_IMAGE(image));
 	image->ecksBawks = new_ecks_bawks;
-	if (image->ecksBawks && image->menuEcksBawks) {
-		// Ecks Bawks popup menu is already created.
+	if (!image->ecksBawks)
 		return;
-	}
+	if (image->menuEcksBawks)
+		return;
 
 	// Create the Ecks Bawks popup menu.
 	if (ecksbawks_quark == 0) {
@@ -456,7 +456,10 @@ void rp_drag_image_set_ecks_bawks(RpDragImage *image, bool new_ecks_bawks)
 	gtk_popover_set_transitions_enabled(GTK_POPOVER(image->popEcksBawks), true);
 #    endif /* GTK_CHECK_VERSION(3,15,8) && !GTK_CHECK_VERSION(3,21,5) */
 #  endif /* GTK_CHECK_VERSION(4,0,0) */
+	// NOTE: We need to ensure we have a reference to the GtkPopover(Menu).
+	g_object_ref_sink(image->popEcksBawks);
 #else /* !USE_G_MENU_MODEL */
+
 	image->menuEcksBawks = gtk_menu_new();
 	gtk_widget_set_name(image->menuEcksBawks, "menuEcksBawks");
 
