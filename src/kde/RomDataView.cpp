@@ -66,7 +66,6 @@ void RomDataViewPrivate::createOptionsButton(void)
 	assert(btnOptions == nullptr);
 	if (btnOptions)
 		return;
-
 	Q_Q(RomDataView);
 
 	// Parent should be a KPropertiesDialog.
@@ -82,6 +81,11 @@ void RomDataViewPrivate::createOptionsButton(void)
 	// also give it the object name "buttonbox". We'll leave out the name
 	// for compatibility purposes.
 	KPageWidget *const pageWidget = findDirectChild<KPageWidget*>(parent);
+	if (!pageWidget) {
+		// No KPageWidget? This might be the RomDataView test program.
+		// Skip the "Options" button for now.
+		return;
+	}
 
 	// Check for the QDialogButtonBox in the KPageWidget first.
 	QDialogButtonBox *btnBox = findDirectChild<QDialogButtonBox*>(pageWidget);
