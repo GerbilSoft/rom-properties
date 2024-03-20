@@ -208,15 +208,12 @@ rp_drag_image_dispose(GObject *object)
 	}
 
 #ifdef USE_G_MENU_MODEL
-#  if GTK_CHECK_VERSION(4,0,0)
-	// FIXME: Verify that this works.
-	g_clear_object(&image->popEcksBawks);
-#  else /* !GTK_CHECK_VERSION(4,0,0) */
+#  if !GTK_CHECK_VERSION(4,0,0)
 	if (image->popEcksBawks) {
 		gtk_widget_destroy(image->popEcksBawks);
 		image->popEcksBawks = nullptr;
 	}
-#  endif /* GTK_CHECK_VERSION(4,0,0) */
+#  endif /* !GTK_CHECK_VERSION(4,0,0) */
 	g_clear_object(&image->menuEcksBawks);
 
 	// The GSimpleActionGroup owns the actions, so
@@ -391,7 +388,24 @@ bool rp_drag_image_get_ecks_bawks(RpDragImage *image)
 	return image->ecksBawks;
 }
 
-#if !GTK_CHECK_VERSION(4,0,0)
+#if GTK_CHECK_VERSION(4,0,0)
+static void
+rp_drag_image_on_gesture_pressed_event(GtkGestureClick *self, gint n_press, gdouble x, gdouble y, RpDragImage *image)
+{
+	RP_UNUSED(self);
+	RP_UNUSED(x);
+	RP_UNUSED(y);
+
+	if (!image->ecksBawks)
+		return;
+
+	// Only show the menu on the first right-click per gesture.
+	if (n_press != 1)
+		return;
+
+	gtk_popover_popup(GTK_POPOVER(image->popEcksBawks));
+}
+#else /* !GTK_CHECK_VERSION(4,0,0) */
 static void
 rp_drag_image_on_button_press_event(RpDragImage *image, GdkEventButton *event, gpointer userdata)
 {
@@ -414,7 +428,7 @@ rp_drag_image_on_button_press_event(RpDragImage *image, GdkEventButton *event, g
 #endif /* USE_G_MENU_MODEL */
 	}
 }
-#endif /* !GTK_CHECK_VERSION(4,0,0) */
+#endif /* GTK_CHECK_VERSION(4,0,0) */
 
 void rp_drag_image_set_ecks_bawks(RpDragImage *image, bool new_ecks_bawks)
 {
@@ -455,14 +469,15 @@ void rp_drag_image_set_ecks_bawks(RpDragImage *image, bool new_ecks_bawks)
 	gtk_widget_insert_action_group(GTK_WIDGET(image), prefix, G_ACTION_GROUP(image->actionGroup));
 #  if GTK_CHECK_VERSION(4,0,0)
 	image->popEcksBawks = gtk_popover_menu_new_from_model(G_MENU_MODEL(image->menuEcksBawks));
+	// GTK4: Need to set parent. Otherwise, gtk_popover_popup() will crash.
+	gtk_widget_set_parent(image->popEcksBawks, GTK_WIDGET(image));
 #  else /* !GTK_CHECK_VERSION(4,0,0) */
 	image->popEcksBawks = gtk_popover_new_from_model(GTK_WIDGET(image), G_MENU_MODEL(image->menuEcksBawks));
 #    if GTK_CHECK_VERSION(3,15,8) && !GTK_CHECK_VERSION(3,21,5)
 	gtk_popover_set_transitions_enabled(GTK_POPOVER(image->popEcksBawks), true);
 #    endif /* GTK_CHECK_VERSION(3,15,8) && !GTK_CHECK_VERSION(3,21,5) */
 #  endif /* GTK_CHECK_VERSION(4,0,0) */
-	// NOTE: We need to ensure we have a reference to the GtkPopover(Menu).
-	g_object_ref_sink(image->popEcksBawks);
+	gtk_widget_set_name(image->popEcksBawks, "popEcksBawks");
 #else /* !USE_G_MENU_MODEL */
 
 	image->menuEcksBawks = gtk_menu_new();
@@ -477,12 +492,19 @@ void rp_drag_image_set_ecks_bawks(RpDragImage *image, bool new_ecks_bawks)
 	}
 #endif
 
-#if !GTK_CHECK_VERSION(4,0,0)
+#if GTK_CHECK_VERSION(4,0,0)
+	// GTK4: Use GtkGestureClick to handle right-click.
+	// NOTE: GtkWidget takes ownership of the gesture object.
+	GtkGesture *const rightClickGesture = gtk_gesture_click_new();
+	gtk_gesture_single_set_button(GTK_GESTURE_SINGLE(rightClickGesture), GDK_BUTTON_SECONDARY);
+	gtk_widget_add_controller(GTK_WIDGET(image), GTK_EVENT_CONTROLLER(rightClickGesture));
+	g_signal_connect(rightClickGesture, "pressed", G_CALLBACK(rp_drag_image_on_gesture_pressed_event), image);
+#else /* !GTK_CHECK_VERSION(4,0,0) */
 	// GTK2/GTK3: Show context menu on right-click.
 	// NOTE: On my system, programs show context menus on mouse button down.
 	// On Windows, it shows the menu on mouse button up?
 	g_signal_connect(image, "button-press-event", G_CALLBACK(rp_drag_image_on_button_press_event), nullptr);
-#endif /* !GTK_CHECK_VERSION(4,0,0) */
+#endif /* GTK_CHECK_VERSION(4,0,0) */
 }
 
 /**
