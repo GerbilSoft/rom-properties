@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * RomDataView.cpp: RomData viewer widget. (Private functions)             *
  *                                                                         *
- * Copyright (c) 2017-2023 by David Korth.                                 *
+ * Copyright (c) 2017-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -60,27 +60,11 @@ struct _RpRomDataViewCxx {
 	LibRpBase::RomDataPtr	romData;	// RomData
 
 	struct tab {
-		// owned by GtkNotebook
 		GtkWidget	*vbox;		// Either parent page or a GtkVBox/GtkBox.
 		GtkWidget	*table;		// GtkTable (2.x); GtkGrid (3.x)
 		GtkWidget	*lblCredits;
 
-		// *not* owned by GtkNotebook
-		GtkWidget	*lblTabName;	// GtkLabel: Tab name
-
-		tab() : vbox(nullptr), table(nullptr), lblCredits(nullptr), lblTabName(nullptr) { }
-
-		~tab() {
-#if GTK_CHECK_VERSION(4,0,0)
-			// vbox, table, lblCredits are all handled by deleting tabs,
-			// because GtkNotebook takes ownership.
-			// lblTabName, on the other hand, is *not* owned by GtkNotebook.
-			// NOTE: This only seems to be needed on GTK4?
-			if (lblTabName) {
-				g_object_unref(lblTabName);
-			}
-#endif /* GTK_CHECK_VERSION(4,0,0) */
-		}
+		tab() : vbox(nullptr), table(nullptr), lblCredits(nullptr) { }
 	};
 	std::vector<tab> tabs;
 

@@ -1807,10 +1807,16 @@ rp_rom_data_view_update_display(RpRomDataView *page)
 #endif /* GTK_CHECK_VERSION(4,0,0) */
 
 			// Add the tab.
-			tab.lblTabName = gtk_label_new(name);
+			GtkWidget *const lblTabName = gtk_label_new(name);
 			snprintf(tab_name, sizeof(tab_name), "lblTab%d", i);
-			gtk_widget_set_name(tab.lblTabName, tab_name);
-			gtk_notebook_append_page(GTK_NOTEBOOK(page->tabWidget), tab.vbox, tab.lblTabName);
+			gtk_widget_set_name(lblTabName, tab_name);
+			gtk_notebook_append_page(GTK_NOTEBOOK(page->tabWidget), tab.vbox, lblTabName);
+
+#if GTK_CHECK_VERSION(4,0,0)
+			// GtkNotebook took a reference to the tab label,
+			// so we don't need to keep our reference.
+			g_object_unref(lblTabName);
+#endif /* GTK_CHECK_VERSION(4,0,0) */
 		}
 
 #if GTK_CHECK_VERSION(4,0,0)

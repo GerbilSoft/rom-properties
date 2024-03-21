@@ -72,10 +72,6 @@ struct _RpAboutTab {
 	GtkWidget	*lblLibraries;
 	GtkWidget	*lblSupport;
 
-	GtkWidget	*lblTabCredits;
-	GtkWidget	*lblTabLibraries;
-	GtkWidget	*lblTabSupport;
-
 #ifdef ENABLE_UPDATE_CHECK
 	GtkWidget	*lblUpdateCheck;
 	RpUpdateChecker	*updChecker;
@@ -288,15 +284,23 @@ rp_about_tab_init(RpAboutTab *tab)
 #endif /* GTK_CHECK_VERSION(3,0,0) */
 
 	// Create the tabs.
-	tab->lblTabCredits = rp_gtk_label_new_with_mnemonic(C_("AboutTab", "C&redits"));
-	gtk_notebook_append_page(GTK_NOTEBOOK(tabWidget), scrlCredits, tab->lblTabCredits);
-	gtk_widget_set_name(tab->lblTabCredits, "lblCreditsTab");
-	tab->lblTabLibraries = rp_gtk_label_new_with_mnemonic(C_("AboutTab", "&Libraries"));
-	gtk_widget_set_name(tab->lblTabLibraries, "lblLibrariesTab");
-	gtk_notebook_append_page(GTK_NOTEBOOK(tabWidget), scrlLibraries, tab->lblTabLibraries);
-	tab->lblTabSupport = rp_gtk_label_new_with_mnemonic(C_("AboutTab", "&Support"));
-	gtk_widget_set_name(tab->lblTabSupport, "lblSupportTab");
-	gtk_notebook_append_page(GTK_NOTEBOOK(tabWidget), scrlSupport, tab->lblTabSupport);
+	GtkWidget *const lblTabCredits = rp_gtk_label_new_with_mnemonic(C_("AboutTab", "C&redits"));
+	gtk_notebook_append_page(GTK_NOTEBOOK(tabWidget), scrlCredits, lblTabCredits);
+	gtk_widget_set_name(lblTabCredits, "lblCreditsTab");
+	GtkWidget *const lblTabLibraries = rp_gtk_label_new_with_mnemonic(C_("AboutTab", "&Libraries"));
+	gtk_widget_set_name(lblTabLibraries, "lblLibrariesTab");
+	gtk_notebook_append_page(GTK_NOTEBOOK(tabWidget), scrlLibraries, lblTabLibraries);
+	GtkWidget *const lblTabSupport = rp_gtk_label_new_with_mnemonic(C_("AboutTab", "&Support"));
+	gtk_widget_set_name(lblTabSupport, "lblSupportTab");
+	gtk_notebook_append_page(GTK_NOTEBOOK(tabWidget), scrlSupport, lblTabSupport);
+
+#if GTK_CHECK_VERSION(4,0,0)
+	// GtkNotebook took a reference to the tab labels,
+	// so we don't need to keep our references.
+	g_object_unref(lblTabCredits);
+	g_object_unref(lblTabLibraries);
+	g_object_unref(lblTabSupport);
+#endif /* GTK_CHECK_VERSION(4,0,0) */
 
 #if GTK_CHECK_VERSION(4,0,0)
 	GTK_WIDGET_HALIGN_CENTER(hboxTitle);
@@ -361,14 +365,6 @@ rp_about_tab_dispose(GObject *object)
 		g_clear_object(&tab->updChecker);
 	}
 #endif /* ENABLE_UPDATE_CHECK */
-
-#if GTK_CHECK_VERSION(4,0,0)
-	// Unref the tab labels.
-	// TODO: Is this needed for GTK2/GTK3?
-	g_object_unref(tab->lblTabCredits);
-	g_object_unref(tab->lblTabLibraries);
-	g_object_unref(tab->lblTabSupport);
-#endif /* !GTK_CHECK_VERSION(4,0,0) */
 
 	// Call the superclass dispose() function.
 	G_OBJECT_CLASS(rp_about_tab_parent_class)->dispose(object);
