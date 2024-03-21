@@ -26,6 +26,13 @@ using std::unique_ptr;
 #  define USE_G_MENU_MODEL 1
 #endif /* GTK_CHECK_VERSION(3,11,5) */
 
+// GTK4 introduces GtkPicture, which supports arbitrary images.
+// GtkImage has been relegated to icons only, and only really
+// supports square images properly.
+#if GTK_CHECK_VERSION(3,94,0)
+#  define USE_GTK_PICTURE 1
+#endif /* GTK_CHECK_VERSION(3,94,0) */
+
 static GQuark ecksbawks_quark = 0;
 
 static void	rp_drag_image_dispose	(GObject	*object);
@@ -118,18 +125,15 @@ struct _RpDragImageCxx {
 // DragImage instance
 struct _RpDragImage {
 	super __parent__;
+	_RpDragImageCxx *cxx;	// C++ objects
+	PIMGTYPE curFrame;	// Current frame
 
-	// C++ objects
-	_RpDragImageCxx *cxx;
-
-	// GtkImage child widget.
+	// GtkImage (GTK2/GTK3) or GtkPicture (GTK4) child widget
 	GtkWidget *imageWidget;
-	// Current frame.
-	PIMGTYPE curFrame;
 
 	bool dirty;	// true if the pixmaps need to be updated on next map
-
 	bool ecksBawks;
+
 #ifdef USE_G_MENU_MODEL
 	GMenu *menuEcksBawks;
 	GtkWidget *popEcksBawks;		// GtkPopover (3.x); GtkPopoverMenu (4.x)
@@ -165,13 +169,13 @@ rp_drag_image_init(RpDragImage *image)
 	image->cxx = new _RpDragImageCxx();
 
 	// Create the child GtkImage widget.
+#ifdef USE_GTK_PICTURE
+	image->imageWidget = gtk_picture_new();
+#else /* !USE_GTK_PICTURE */
 	image->imageWidget = gtk_image_new();
+#endif /* USE_GTK_PICTURE */
+
 	gtk_widget_set_name(image->imageWidget, "imageWidget");
-#if GTK_CHECK_VERSION(3,0,0)
-	// Image widget needs to expand to fill DragImage.
-	gtk_widget_set_hexpand(image->imageWidget, true);
-	gtk_widget_set_vexpand(image->imageWidget, true);
-#endif /* GTK_CHECK_VERSION(4,0,0) */
 #if GTK_CHECK_VERSION(4,0,0)
 	gtk_box_append(GTK_BOX(image), image->imageWidget);
 #else /* !GTK_CHECK_VERSION(4,0,0) */
@@ -338,7 +342,11 @@ rp_drag_image_update_pixmaps(RpDragImage *image)
 
 		// Show the first frame.
 		image->curFrame = PIMGTYPE_ref(anim->iconFrames[anim->iconAnimHelper.frameNumber()]);
+#ifdef USE_GTK_PICTURE
+		gtk_picture_set_paintable(GTK_PICTURE(image->imageWidget), GDK_PAINTABLE(image->curFrame));
+#else /* !USE_GTK_PICTURE */
 		gtk_image_set_from_PIMGTYPE(GTK_IMAGE(image->imageWidget), image->curFrame);
+#endif /* USE_GTK_PICTURE */
 		bRet = true;
 	} else if (cxx->img && cxx->img->isValid()) {
 		// Single image.
@@ -354,7 +362,11 @@ rp_drag_image_update_pixmaps(RpDragImage *image)
 			}
 		}
 		image->curFrame = img;
+#ifdef USE_GTK_PICTURE
+		gtk_picture_set_paintable(GTK_PICTURE(image->imageWidget), GDK_PAINTABLE(image->curFrame));
+#else /* !USE_GTK_PICTURE */
 		gtk_image_set_from_PIMGTYPE(GTK_IMAGE(image->imageWidget), image->curFrame);
+#endif /* USE_GTK_PICTURE */
 		bRet = true;
 	}
 
@@ -530,7 +542,11 @@ rp_drag_image_set_rp_image(RpDragImage *image, const rp_image_const_ptr &img)
 	cxx->img = img;
 	if (!img) {
 		if (!cxx->anim || !cxx->anim->iconAnimData) {
-			gtk_image_clear(GTK_IMAGE(image->imageWidget));
+#ifdef USE_GTK_PICTURE
+			gtk_picture_set_paintable(GTK_PICTURE(image->imageWidget), nullptr);
+#else /* !USE_GTK_PICTURE */
+			gtk_image_set_from_PIMGTYPE(GTK_IMAGE(image->imageWidget), nullptr);
+#endif /* USE_GTK_PICTURE */
 		} else {
 			return rp_drag_image_update_pixmaps(image);
 		}
@@ -569,7 +585,11 @@ rp_drag_image_set_icon_anim_data(RpDragImage *image, const IconAnimDataConstPtr 
 		g_clear_handle_id(&anim->tmrIconAnim, g_source_remove);
 
 		if (!cxx->img) {
-			gtk_image_clear(GTK_IMAGE(image->imageWidget));
+#ifdef USE_GTK_PICTURE
+			gtk_picture_set_paintable(GTK_PICTURE(image->imageWidget), nullptr);
+#else /* !USE_GTK_PICTURE */
+			gtk_image_set_from_PIMGTYPE(GTK_IMAGE(image->imageWidget), nullptr);
+#endif /* USE_GTK_PICTURE */
 		} else {
 			return rp_drag_image_update_pixmaps(image);
 		}
@@ -596,7 +616,11 @@ rp_drag_image_clear(RpDragImage *image)
 	}
 
 	cxx->img.reset();
-	gtk_image_clear(GTK_IMAGE(image->imageWidget));
+#ifdef USE_GTK_PICTURE
+	gtk_picture_set_paintable(GTK_PICTURE(image->imageWidget), nullptr);
+#else /* !USE_GTK_PICTURE */
+	gtk_image_set_from_PIMGTYPE(GTK_IMAGE(image->imageWidget), nullptr);
+#endif /* USE_GTK_PICTURE */
 }
 
 /**
@@ -628,7 +652,11 @@ rp_drag_image_anim_timer_func(RpDragImage *image)
 	if (frame != anim->last_frame_number) {
 		// New frame number.
 		// Update the icon.
+#ifdef USE_GTK_PICTURE
+		gtk_picture_set_paintable(GTK_PICTURE(image->imageWidget), GDK_PAINTABLE(anim->iconFrames[frame]));
+#else /* !USE_GTK_PICTURE */
 		gtk_image_set_from_PIMGTYPE(GTK_IMAGE(image->imageWidget), anim->iconFrames[frame]);
+#endif /* USE_GTK_PICTURE */
 		anim->last_frame_number = frame;
 	}
 
