@@ -41,6 +41,21 @@ struct _RpRomDataViewClass {
 // Multi-language stuff
 typedef std::pair<GtkLabel*, const LibRpBase::RomFields::Field*> Data_StringMulti_t;
 
+#if GTK_CHECK_VERSION(4,0,0)
+struct Data_ListDataMulti_t {
+	GListStore *listStore;
+	GtkColumnView *columnView;
+	const LibRpBase::RomFields::Field *field;
+
+	Data_ListDataMulti_t(
+		GListStore *listStore,
+		GtkColumnView *columnView,
+		const LibRpBase::RomFields::Field *field)
+		: listStore(listStore)
+		, columnView(columnView)
+		, field(field) { }
+};
+#else /* !GTK_CHECK_VERSION(4,0,0) */
 struct Data_ListDataMulti_t {
 	GtkListStore *listStore;
 	GtkTreeView *treeView;
@@ -54,6 +69,7 @@ struct Data_ListDataMulti_t {
 		, treeView(treeView)
 		, field(field) { }
 };
+#endif /* GTK_CHECK_VERSION(4,0,0) */
 
 // C++ objects
 struct _RpRomDataViewCxx {

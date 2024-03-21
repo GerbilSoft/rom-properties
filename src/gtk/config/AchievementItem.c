@@ -144,10 +144,8 @@ rp_achievement_item_get_property(GObject	*object,
 
 	switch (prop_id) {
 		case PROP_ICON:
-			if (item->icon) {
-				// Caller must take a reference.
-				g_value_set_object(value, item->icon);
-			}
+			// Caller must take a reference.
+			g_value_set_object(value, item->icon ? item->icon : NULL);
 			break;
 
 		case PROP_DESCRIPTION:

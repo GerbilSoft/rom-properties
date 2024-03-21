@@ -79,8 +79,9 @@ SET(${PROJECT_NAME}_SRCS
 	../gtk3/NautilusMenuProvider.c
 	../gtk3/MenuProviderCommon.c
 
-	# TODO: GTK4 version
-	../RomDataView_gtk3.cpp
+	../RomDataView_gtk4.cpp
+	../ListDataItem.c
+	../ListDataItem.h
 	)
 SET(${PROJECT_NAME}_H
 	${${PROJECT_NAME}_H} ${${PROJECT_NAME}_H}

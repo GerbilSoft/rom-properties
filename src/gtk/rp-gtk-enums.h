@@ -7,6 +7,10 @@
 
 G_BEGIN_DECLS
 
+/* enumerations from "ListDataItem.h" */
+GType rp_list_data_item_col0_type_get_type (void) G_GNUC_CONST;
+#define RP_TYPE_LIST_DATA_ITEM_COL0_TYPE (rp_list_data_item_col0_type_get_type ())
+
 /* enumerations from "RomDataView.hpp" */
 GType rp_desc_format_type_get_type (void) G_GNUC_CONST;
 #define RP_TYPE_DESC_FORMAT_TYPE (rp_desc_format_type_get_type ())
