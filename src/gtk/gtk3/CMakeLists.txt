@@ -96,6 +96,7 @@ SET(${PROJECT_NAME}_SRCS
 	MenuProviderCommon.c
 
 	../RomDataView_gtk3.cpp
+	sort_funcs.c
 	)
 SET(${PROJECT_NAME}_H
 	${${PROJECT_NAME}_H} ${${PROJECT_NAME}_H}
@@ -110,6 +111,8 @@ SET(${PROJECT_NAME}_H
 	nautilus-extension-mini.h
 	mime-types.convert-to-png.h
 	MenuProviderCommon.h
+
+	sort_funcs.h
 	)
 IF(ENABLE_DECRYPTION)
 	SET(${PROJECT_NAME}_SRCS ${${PROJECT_NAME}_SRCS} ../config/KeyManagerTab_gtk3.cpp)

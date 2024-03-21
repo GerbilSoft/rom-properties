@@ -92,7 +92,6 @@ SET(${PROJECT_NAME}_SRCS
 	rp-gtk-enums.c
 	MessageWidget.c
 	RpGtk.c
-	sort_funcs.c
 	gtk-compat.c
 	LanguageComboBox.cpp
 	OptionsMenuButton.cpp
@@ -124,7 +123,6 @@ SET(${PROJECT_NAME}_H
 	rp-gtk-enums.h
 	MessageWidget.h
 	RpGtk.h
-	sort_funcs.h
 	gtk-compat.h
 	LanguageComboBox.hpp
 	OptionsMenuButton.hpp

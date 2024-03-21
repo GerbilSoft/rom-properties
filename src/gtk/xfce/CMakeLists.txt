@@ -92,6 +92,7 @@ SET(${PROJECT_NAME}_SRCS
 	../gtk3/MenuProviderCommon.c
 
 	../RomDataView_gtk3.cpp
+	../gtk3/sort_funcs.c
 	)
 SET(${PROJECT_NAME}_H
 	${${PROJECT_NAME}_H} ${${PROJECT_NAME}_H}
@@ -101,6 +102,8 @@ SET(${PROJECT_NAME}_H
 	../gtk3/ThunarPropertyPageProvider.hpp
 	../gtk3/thunarx-mini.h
 	../gtk3/MenuProviderCommon.h
+
+	../gtk3/sort_funcs.h
 	)
 IF(ENABLE_DECRYPTION)
 	SET(${PROJECT_NAME}_SRCS ${${PROJECT_NAME}_SRCS} ../config/KeyManagerTab_gtk3.cpp)

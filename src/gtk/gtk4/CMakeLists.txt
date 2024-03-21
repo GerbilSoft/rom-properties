@@ -81,7 +81,7 @@ SET(${PROJECT_NAME}_SRCS
 
 	../RomDataView_gtk4.cpp
 	../ListDataItem.c
-	../ListDataItem.h
+	sort_funcs.c
 	)
 SET(${PROJECT_NAME}_H
 	${${PROJECT_NAME}_H} ${${PROJECT_NAME}_H}
@@ -93,6 +93,9 @@ SET(${PROJECT_NAME}_H
 	../gtk3/NautilusMenuProvider.h
 	nautilus-extension-mini.h
 	../gtk3/MenuProviderCommon.h
+
+	../ListDataItem.h
+	sort_funcs.h
 	)
 IF(ENABLE_DECRYPTION)
 	# FIXME: Editing keys in the GTK4 version causes crashes.

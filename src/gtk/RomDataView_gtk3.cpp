@@ -12,7 +12,7 @@
 #include "RomDataView_p.hpp"
 #include "RomDataFormat.hpp"
 
-#include "sort_funcs.h"
+#include "gtk3/sort_funcs.h"
 
 // Other rom-properties libraries
 using namespace LibRpBase;

@@ -13,7 +13,7 @@
 #include "RomDataFormat.hpp"
 
 #include "ListDataItem.h"
-#include "sort_funcs.h"
+#include "gtk4/sort_funcs.h"
 
 // Other rom-properties libraries
 using namespace LibRpBase;
@@ -217,7 +217,10 @@ rp_rom_data_view_init_listdata(RpRomDataView *page, const RomFields::Field &fiel
 
 	// GtkColumnView requires a GtkSelectionModel, so we'll create
 	// a GtkSingleSelection to wrap around the GListStore.
-	GtkSingleSelection *const selModel = gtk_single_selection_new(G_LIST_MODEL(listStore));
+	// NOTE: Also setting up the sort model here.
+	GtkSorter *const sorter = (GtkSorter*)g_object_ref(gtk_column_view_get_sorter(GTK_COLUMN_VIEW(columnView)));
+	GtkSortListModel *const sortListModel = gtk_sort_list_model_new(G_LIST_MODEL(listStore), sorter);
+	GtkSingleSelection *const selModel = gtk_single_selection_new(G_LIST_MODEL(sortListModel));
 	gtk_column_view_set_model(GTK_COLUMN_VIEW(columnView), GTK_SELECTION_MODEL(selModel));
 	g_object_unref(selModel);
 
@@ -293,11 +296,6 @@ rp_rom_data_view_init_listdata(RpRomDataView *page, const RomFields::Field &fiel
 				break;
 		}
 
-#if 0
-		// Enable sorting.
-		gtk_tree_view_column_set_sort_column_id(column, listStore_col_idx);
-		gtk_tree_view_column_set_clickable(column, TRUE);
-
 		// Check what we should use for sorting.
 		// NOTE: We're setting the sorting functions on the proxy model.
 		// That way, it won't affect the underlying data, which ensures
@@ -310,26 +308,31 @@ rp_rom_data_view_init_listdata(RpRomDataView *page, const RomFields::Field &fiel
 				// Unsupported. We'll use standard sorting.
 				assert(!"Unsupported sorting method.");
 				// fall-through
-			case RomFields::COLSORT_STANDARD:
-				// Standard sorting.
-				gtk_tree_sortable_set_sort_func(GTK_TREE_SORTABLE(sortProxy),
-					listStore_col_idx, sort_RFT_LISTDATA_standard,
-					GINT_TO_POINTER(listStore_col_idx), nullptr);
+			case RomFields::COLSORT_STANDARD: {
+				// Standard sorting
+				GtkCustomSorter *const sorter = gtk_custom_sorter_new(
+					sort_RFT_LISTDATA_standard, GINT_TO_POINTER(i), nullptr);
+				gtk_column_view_column_set_sorter(column, GTK_SORTER(sorter));
+				g_object_unref(sorter);
 				break;
-			case RomFields::COLSORT_NOCASE:
+			}
+			case RomFields::COLSORT_NOCASE: {
 				// Case-insensitive sorting.
-				gtk_tree_sortable_set_sort_func(GTK_TREE_SORTABLE(sortProxy),
-					listStore_col_idx, sort_RFT_LISTDATA_nocase,
-					GINT_TO_POINTER(listStore_col_idx), nullptr);
+				GtkCustomSorter *const sorter = gtk_custom_sorter_new(
+					sort_RFT_LISTDATA_nocase, GINT_TO_POINTER(i), nullptr);
+				gtk_column_view_column_set_sorter(column, GTK_SORTER(sorter));
+				g_object_unref(sorter);
 				break;
-			case RomFields::COLSORT_NUMERIC:
+			}
+			case RomFields::COLSORT_NUMERIC: {
 				// Numeric sorting. (case-insensitive)
-				gtk_tree_sortable_set_sort_func(GTK_TREE_SORTABLE(sortProxy),
-					listStore_col_idx, sort_RFT_LISTDATA_numeric,
-					GINT_TO_POINTER(listStore_col_idx), nullptr);
+				GtkCustomSorter *const sorter = gtk_custom_sorter_new(
+					sort_RFT_LISTDATA_numeric, GINT_TO_POINTER(i), nullptr);
+				gtk_column_view_column_set_sorter(column, GTK_SORTER(sorter));
+				g_object_unref(sorter);
 				break;
+			}
 		}
-#endif
 	}
 
 	// Add the row data.
@@ -408,11 +411,6 @@ rp_rom_data_view_init_listdata(RpRomDataView *page, const RomFields::Field &fiel
 #endif /* GTK_CHECK_VERSION */
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolledWindow),
 			GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
-
-#if 0
-	// Sort proxy model for the GtkListStore.
-	GtkTreeModel *sortProxy = gtk_tree_model_sort_new_with_model(GTK_TREE_MODEL(listStore));
-#endif
 
 	// Add the GtkColumnView to the scrolled window.
 	gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(scrolledWindow), columnView);

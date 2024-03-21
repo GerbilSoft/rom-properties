@@ -14,7 +14,8 @@
 #include "gtk-compat.h"
 
 // sort_funcs.h
-#include "sort_funcs.h"
+// TODO: Test the GTK4 sorting functions.
+#include "gtk3/sort_funcs.h"
 
 // for ARRAY_SIZE()
 #include "common.h"

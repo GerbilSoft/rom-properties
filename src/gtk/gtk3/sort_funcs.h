@@ -1,5 +1,5 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (GTK+ common)                      *
+ * ROM Properties Page shell extension. (GTK2/GTK3)                        *
  * sort_funcs.h: GtkTreeSortable sort functions.                           *
  *                                                                         *
  * Copyright (c) 2017-2024 by David Korth.                                 *
