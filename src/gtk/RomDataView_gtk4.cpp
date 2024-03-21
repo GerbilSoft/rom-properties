@@ -27,11 +27,25 @@ using std::vector;
 // TODO: Ideal icon size? Using 32x32 for now.
 static const int icon_sz = 32;
 
+// Format tables.
+// Pango enum values are known to fit in uint8_t.
+static const gfloat align_tbl_xalign[4] = {
+	// Order: TXA_D, TXA_L, TXA_C, TXA_R
+	0.0f, 0.0f, 0.5f, 1.0f
+};
+static const uint8_t align_tbl_halign[4] = {
+	// Order: TXA_D, TXA_L, TXA_C, TXA_R
+	GTK_ALIGN_START, GTK_ALIGN_START,
+	GTK_ALIGN_CENTER, GTK_ALIGN_END
+};
+
 // GtkSignalListItemFactory signal handlers
 // Reference: https://blog.gtk.org/2020/09/05/a-primer-on-gtklistview/
 // NOTE: user_data is RpListDataItemCol0Type.
+
+// Column 0 setup: user_data == RpListDataItemCol0Type
 static void
-setup_listitem_cb(GtkListItemFactory *factory, GtkListItem *list_item, gpointer user_data)
+setup_listitem_cb_col0(GtkListItemFactory *factory, GtkListItem *list_item, gpointer user_data)
 {
 	RP_UNUSED(factory);
 
@@ -41,12 +55,9 @@ setup_listitem_cb(GtkListItemFactory *factory, GtkListItem *list_item, gpointer 
 			assert(!"Unsupported col0_type!");
 			break;
 
-		case RP_LIST_DATA_ITEM_COL0_TYPE_TEXT: {
-			GtkWidget *const label = gtk_label_new(nullptr);
-			gtk_label_set_xalign(GTK_LABEL(label), 0.0f);
-			gtk_list_item_set_child(list_item, label);
+		case RP_LIST_DATA_ITEM_COL0_TYPE_TEXT:
+			assert(!"col0 setup should only be used for checkbox or icon!");
 			break;
-		}
 
 		case RP_LIST_DATA_ITEM_COL0_TYPE_CHECKBOX:
 			gtk_list_item_set_child(list_item, gtk_check_button_new());
@@ -59,6 +70,20 @@ setup_listitem_cb(GtkListItemFactory *factory, GtkListItem *list_item, gpointer 
 			break;
 		}
 	}
+}
+
+// Text column setup: user_data == (col_attrs.align_data & RomFields::TXA_MASK)
+static void
+setup_listitem_cb_text(GtkListItemFactory *factory, GtkListItem *list_item, gpointer user_data)
+{
+	RP_UNUSED(factory);
+
+	const uint32_t align_data = (GPOINTER_TO_UINT(user_data) & RomFields::TXA_MASK);
+
+	GtkWidget *const label = gtk_label_new(nullptr);
+	gtk_label_set_xalign(GTK_LABEL(label), align_tbl_xalign[align_data]);
+	gtk_widget_set_halign(label, static_cast<GtkAlign>(align_tbl_halign[align_data]));
+	gtk_list_item_set_child(list_item, label);
 }
 
 static void
@@ -206,7 +231,7 @@ rp_rom_data_view_init_listdata(RpRomDataView *page, const RomFields::Field &fiel
 		// Prepend an extra column for checkboxes or icons.
 		col0_type = (hasCheckboxes) ? RP_LIST_DATA_ITEM_COL0_TYPE_CHECKBOX : RP_LIST_DATA_ITEM_COL0_TYPE_ICON;
 		GtkListItemFactory *const factory = gtk_signal_list_item_factory_new();
-		g_signal_connect(factory, "setup", G_CALLBACK(setup_listitem_cb), GINT_TO_POINTER(col0_type));
+		g_signal_connect(factory, "setup", G_CALLBACK(setup_listitem_cb_col0), GINT_TO_POINTER(col0_type));
 		g_signal_connect(factory, "bind", G_CALLBACK(bind_listitem_cb), GINT_TO_POINTER(0));
 
 		GtkColumnViewColumn *const column = gtk_column_view_column_new(nullptr, factory);
@@ -220,24 +245,12 @@ rp_rom_data_view_init_listdata(RpRomDataView *page, const RomFields::Field &fiel
 		listStore_col_start = 0;
 	}
 
-	// Format tables.
-	// Pango enum values are known to fit in uint8_t.
-	static const gfloat align_tbl_xalign[4] = {
-		// Order: TXA_D, TXA_L, TXA_C, TXA_R
-		0.0f, 0.0f, 0.5f, 1.0f
-	};
-	static const uint8_t align_tbl_pango[4] = {
-		// Order: TXA_D, TXA_L, TXA_C, TXA_R
-		PANGO_ALIGN_LEFT, PANGO_ALIGN_LEFT,
-		PANGO_ALIGN_CENTER, PANGO_ALIGN_RIGHT
-	};
-
 	// Create the remaining columns.
 	RomFields::ListDataColAttrs_t col_attrs = listDataDesc.col_attrs;
-	for (int i = 0; i < colCount; i++) {
+	for (int i = 0; i < colCount; i++, col_attrs.shiftRight()) {
 		// Prepend an extra column for checkboxes or icons.
 		GtkListItemFactory *const factory = gtk_signal_list_item_factory_new();
-		g_signal_connect(factory, "setup", G_CALLBACK(setup_listitem_cb), GINT_TO_POINTER(RP_LIST_DATA_ITEM_COL0_TYPE_TEXT));
+		g_signal_connect(factory, "setup", G_CALLBACK(setup_listitem_cb_text), GUINT_TO_POINTER(col_attrs.align_data & RomFields::TXA_MASK));
 		g_signal_connect(factory, "bind", G_CALLBACK(bind_listitem_cb), GINT_TO_POINTER(i + listStore_col_start));
 
 		// NOTE: Not skipping empty column names.
@@ -250,10 +263,6 @@ rp_rom_data_view_init_listdata(RpRomDataView *page, const RomFields::Field &fiel
 		// Header/data alignment
 		g_object_set(column,
 			"alignment", align_tbl_xalign[col_attrs.align_headers & RomFields::TXA_MASK],
-			nullptr);
-		g_object_set(renderer,
-			"xalign", align_tbl_xalign[col_attrs.align_data & RomFields::TXA_MASK],
-			"alignment", static_cast<PangoAlignment>(align_tbl_pango[col_attrs.align_data & RomFields::TXA_MASK]),
 			nullptr);
 #endif
 
