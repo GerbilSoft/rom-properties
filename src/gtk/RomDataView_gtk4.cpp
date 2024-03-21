@@ -252,6 +252,7 @@ rp_rom_data_view_init_listdata(RpRomDataView *page, const RomFields::Field &fiel
 
 	// Create the remaining columns.
 	RomFields::ListDataColAttrs_t col_attrs = listDataDesc.col_attrs;
+	GtkColumnViewColumn *sortingColumn = nullptr;
 	for (int i = 0; i < colCount; i++, col_attrs.shiftRight()) {
 		// Prepend an extra column for checkboxes or icons.
 		GtkListItemFactory *const factory = gtk_signal_list_item_factory_new();
@@ -332,6 +333,12 @@ rp_rom_data_view_init_listdata(RpRomDataView *page, const RomFields::Field &fiel
 				g_object_unref(sorter);
 				break;
 			}
+		}
+
+		// Is this the default sort column?
+		// Sorting must be done *after* row data is added.
+		if (col_attrs.sort_col == i) {
+			sortingColumn = column;
 		}
 	}
 
@@ -419,15 +426,13 @@ rp_rom_data_view_init_listdata(RpRomDataView *page, const RomFields::Field &fiel
 	// May require fixed columns...
 	// Reference: https://developer.gnome.org/gtk3/stable/GtkTreeView.html#gtk-tree-view-set-fixed-height-mode
 
-#if 0
 	// Set the default sorting column.
 	// NOTE: sort_dir maps directly to GtkSortType.
-	if (col_attrs.sort_col >= 0) {
-		gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(sortProxy),
-			col_attrs.sort_col + listStore_col_start,
-			static_cast<GtkSortType>(col_attrs.sort_dir));
+	// NOTE 2: This must be done *after* all the data is added.
+	// FIXME: This doesn't seem to be working...
+	if (sortingColumn) {
+		gtk_column_view_sort_by_column(GTK_COLUMN_VIEW(columnView), sortingColumn, GTK_SORT_DESCENDING);
 	}
-#endif
 
 	// Set a minimum height for the scroll area.
 	// TODO: Adjust for DPI, and/or use a font size?
