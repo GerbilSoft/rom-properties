@@ -19,6 +19,7 @@ using namespace LibRpBase;
 using namespace LibRpTexture;
 
 // C++ STL classes
+using std::set;
 using std::string;
 using std::vector;
 
@@ -477,4 +478,96 @@ rp_rom_data_view_init_listdata(RpRomDataView *page, const RomFields::Field &fiel
 	}
 
 	return scrolledWindow;
+}
+
+/**
+ * Update RFT_LISTDATA_MULTI fields.
+ * Called from rp_rom_data_view_update_multi.
+ * @param page		[in] RomDataView object.
+ * @param user_lc	[in] User-specified language code.
+ * @param set_lc	[in/out] Set of LCs
+ */
+void
+rp_rom_data_view_update_multi_RFT_LISTDATA_MULTI(RpRomDataView *page, uint32_t user_lc, set<uint32_t> &set_lc)
+{
+	_RpRomDataViewCxx *const cxx = page->cxx;
+
+	// RFT_LISTDATA_MULTI
+	for (const Data_ListDataMulti_t &vldm : cxx->vecListDataMulti) {
+		GtkListStore *const listStore = vldm.listStore;
+		const RomFields::Field *const pField = vldm.field;
+		const auto *const pListData_multi = pField->data.list_data.data.multi;
+		assert(pListData_multi != nullptr);
+		assert(!pListData_multi->empty());
+		if (!pListData_multi || pListData_multi->empty()) {
+			// Invalid RFT_LISTDATA_MULTI...
+			continue;
+		}
+
+		if (!page->cboLanguage) {
+			// Need to add all supported languages.
+			// TODO: Do we need to do this for all of them, or just one?
+			for (const auto &pldm : *pListData_multi) {
+				set_lc.emplace(pldm.first);
+			}
+		}
+
+		// Get the ListData_t.
+		const auto *const pListData = RomFields::getFromListDataMulti(pListData_multi, cxx->def_lc, user_lc);
+		assert(pListData != nullptr);
+		if (pListData != nullptr) {
+			// If we have checkboxes or icons, start at column 1.
+			// Otherwise, start at column 0.
+			int listStore_col_start;
+			if (pField->flags & (RomFields::RFT_LISTDATA_CHECKBOXES | RomFields::RFT_LISTDATA_ICONS)) {
+				// Checkboxes and/or icons are present.
+				listStore_col_start = 1;
+			} else {
+				listStore_col_start = 0;
+			}
+
+			const auto &listDataDesc = pField->desc.list_data;
+
+			// Update the list.
+			GtkTreeIter treeIter;
+			GtkTreeModel *const treeModel = GTK_TREE_MODEL(listStore);
+			gboolean ok = gtk_tree_model_get_iter_first(treeModel, &treeIter);
+			auto iter_listData = pListData->cbegin();
+			const auto pListData_cend = pListData->cend();
+			while (ok && iter_listData != pListData_cend) {
+				// TODO: Verify GtkListStore column count?
+				int col = listStore_col_start;
+				unsigned int is_timestamp = listDataDesc.col_attrs.is_timestamp;
+				for (const string &str : *iter_listData) {
+					if (unlikely((is_timestamp & 1) && str.size() == sizeof(int64_t))) {
+						// Timestamp column. Format the timestamp.
+						RomFields::TimeString_t time_string;
+						memcpy(time_string.str, str.data(), 8);
+
+						gchar *const str = rom_data_format_datetime(
+							time_string.time, listDataDesc.col_attrs.dtflags);
+						gtk_list_store_set(listStore, &treeIter, col,
+							(likely(str != nullptr) ? str : C_("RomData", "Unknown")), -1);
+						g_free(str);
+					} else {
+						gtk_list_store_set(listStore, &treeIter, col, str.c_str(), -1);
+					}
+
+					// Next column
+					is_timestamp >>= 1;
+					col++;
+				}
+
+				// Next row
+				++iter_listData;
+				ok = gtk_tree_model_iter_next(treeModel, &treeIter);
+			}
+
+			// Resize the columns to fit the contents.
+			// NOTE: Only done on first load.
+			if (!page->cboLanguage) {
+				gtk_tree_view_columns_autosize(GTK_TREE_VIEW(vldm.treeView));
+			}
+		}
+	}
 }

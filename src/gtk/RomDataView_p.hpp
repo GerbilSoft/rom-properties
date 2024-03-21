@@ -151,3 +151,15 @@ GtkWidget*
 rp_rom_data_view_init_listdata(RpRomDataView *page, const LibRpBase::RomFields::Field &field);
 
 G_END_DECLS
+
+#ifdef __cplusplus
+/**
+ * Update RFT_LISTDATA_MULTI fields.
+ * Called from rp_rom_data_view_update_multi.
+ * @param page		[in] RomDataView object.
+ * @param user_lc	[in] User-specified language code.
+ * @param set_lc	[in/out] Set of LCs
+ */
+void
+rp_rom_data_view_update_multi_RFT_LISTDATA_MULTI(RpRomDataView *page, uint32_t user_lc, std::set<uint32_t> &set_lc);
+#endif /* __cplusplus */
