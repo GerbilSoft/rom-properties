@@ -90,6 +90,8 @@ SET(${PROJECT_NAME}_SRCS
 	../gtk3/ThunarMenuProvider.c
 	../gtk3/ThunarPropertyPageProvider.cpp
 	../gtk3/MenuProviderCommon.c
+
+	../RomDataView_gtk3.cpp
 	)
 SET(${PROJECT_NAME}_H
 	${${PROJECT_NAME}_H} ${${PROJECT_NAME}_H}

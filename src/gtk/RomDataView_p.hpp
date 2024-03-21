@@ -141,4 +141,13 @@ void	btnOptions_triggered_signal_handler	(RpOptionsMenuButton	*menuButton,
 						 gint		 	 id,
 						 RpRomDataView		*page);
 
+/**
+ * Initialize a list data field.
+ * @param page		[in] RomDataView object
+ * @param field		[in] RomFields::Field
+ * @return Display widget, or nullptr on error.
+ */
+GtkWidget*
+rp_rom_data_view_init_listdata(RpRomDataView *page, const LibRpBase::RomFields::Field &field);
+
 G_END_DECLS
