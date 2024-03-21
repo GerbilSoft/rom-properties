@@ -24,6 +24,9 @@ using std::set;
 using std::string;
 using std::vector;
 
+// TODO: Ideal icon size? Using 32x32 for now.
+static const int icon_sz = 32;
+
 // GtkSignalListItemFactory signal handlers
 // Reference: https://blog.gtk.org/2020/09/05/a-primer-on-gtklistview/
 // NOTE: user_data is RpListDataItemCol0Type.
@@ -37,18 +40,24 @@ setup_listitem_cb(GtkListItemFactory *factory, GtkListItem *list_item, gpointer 
 		default:
 			assert(!"Unsupported col0_type!");
 			break;
+
 		case RP_LIST_DATA_ITEM_COL0_TYPE_TEXT: {
 			GtkWidget *const label = gtk_label_new(nullptr);
 			gtk_label_set_xalign(GTK_LABEL(label), 0.0f);
 			gtk_list_item_set_child(list_item, label);
 			break;
 		}
+
 		case RP_LIST_DATA_ITEM_COL0_TYPE_CHECKBOX:
 			gtk_list_item_set_child(list_item, gtk_check_button_new());
 			break;
-		case RP_LIST_DATA_ITEM_COL0_TYPE_ICON:
-			gtk_list_item_set_child(list_item, gtk_picture_new());
+
+		case RP_LIST_DATA_ITEM_COL0_TYPE_ICON: {
+			GtkWidget *const picture = gtk_picture_new();
+			gtk_widget_set_size_request(picture, icon_sz, icon_sz);
+			gtk_list_item_set_child(list_item, picture);
 			break;
+		}
 	}
 }
 
@@ -201,7 +210,7 @@ rp_rom_data_view_init_listdata(RpRomDataView *page, const RomFields::Field &fiel
 		g_signal_connect(factory, "bind", G_CALLBACK(bind_listitem_cb), GINT_TO_POINTER(0));
 
 		GtkColumnViewColumn *const column = gtk_column_view_column_new(nullptr, factory);
-		//gtk_column_view_column_set_resizable(column, TRUE);
+		gtk_column_view_column_set_fixed_width(column, icon_sz);
 		gtk_column_view_append_column(GTK_COLUMN_VIEW(columnView), column);
 
 		listStore_col_start = 1;	// Skip the checkbox column for strings.
@@ -339,20 +348,8 @@ rp_rom_data_view_init_listdata(RpRomDataView *page, const RomFields::Field &fiel
 			if (icon) {
 				PIMGTYPE pixbuf = rp_image_to_PIMGTYPE(icon);
 				if (pixbuf) {
-					// TODO: Ideal icon size?
-					// Using 32x32 for now.
-					static const int icon_sz = 32;
-					// NOTE: GtkCellRendererPixbuf can't scale the
-					// pixbuf itself...
-					if (!PIMGTYPE_size_check(pixbuf, icon_sz, icon_sz)) {
-						// TODO: Use nearest-neighbor if upscaling.
-						// Also, preserve the aspect ratio.
-						PIMGTYPE scaled = PIMGTYPE_scale(pixbuf, icon_sz, icon_sz, true);
-						if (scaled) {
-							PIMGTYPE_unref(pixbuf);
-							pixbuf = scaled;
-						}
-					}
+					// NOTE: GtkPicture *can* scale the pixbuf itself.
+					// Using GtkPicture to scale it instead of scaling here.
 					rp_list_data_item_set_icon(item, pixbuf);
 					PIMGTYPE_unref(pixbuf);
 				}
