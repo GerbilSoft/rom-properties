@@ -17,8 +17,8 @@ G_DECLARE_FINAL_TYPE(RpCacheCleaner, rp_cache_cleaner, RP, CACHE_CLEANER, GObjec
 
 /** RP_CacheDir: Cache directories. **/
 typedef enum {
-	RP_CD_System,		/*< nick=System thumbnail cache directory >*/
-	RP_CD_RomProperties,	/*< nick=ROM Properties cache directory >*/
+	RP_CD_System,		/*< nick="System thumbnail cache directory" >*/
+	RP_CD_RomProperties,	/*< nick="ROM Properties cache directory" >*/
 } RpCacheDir;
 
 RpCacheCleaner	*rp_cache_cleaner_new		(RpCacheDir cache_dir) G_GNUC_INTERNAL G_GNUC_MALLOC;
