@@ -84,8 +84,6 @@ static gboolean	rp_rom_data_view_load_rom_data	(RpRomDataView	*page);
 static void	rp_rom_data_view_delete_tabs	(RpRomDataView	*page);
 
 /** Signal handlers **/
-static void	checkbox_no_toggle_signal_handler   (GtkCheckButton	*checkbutton,
-						     RpRomDataView	*page);
 static void	rp_rom_data_view_map_signal_handler (RpRomDataView	*page,
 						     gpointer		 user_data);
 static void	rp_rom_data_view_unmap_signal_handler(RpRomDataView	*page,
@@ -1777,10 +1775,10 @@ rp_rom_data_view_delete_tabs(RpRomDataView *page)
  * @param checkbutton Bitfield checkbox
  * @param page RomDataView
  */
-static void
+void
 checkbox_no_toggle_signal_handler(GtkCheckButton *checkbutton, RpRomDataView *page)
 {
-	if (page->inhibit_checkbox_no_toggle) {
+	if (page && page->inhibit_checkbox_no_toggle) {
 		// Inhibiting the no-toggle handler.
 		return;
 	}

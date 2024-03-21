@@ -153,6 +153,9 @@ extern GQuark RFT_STRING_warning_quark;
 int	rp_rom_data_view_update_field		(RpRomDataView		*page,
 						 int			 fieldIdx);
 
+void	checkbox_no_toggle_signal_handler	(GtkCheckButton		*checkbutton,
+						 RpRomDataView		*page);
+
 void	btnOptions_triggered_signal_handler	(RpOptionsMenuButton	*menuButton,
 						 gint		 	 id,
 						 RpRomDataView		*page);

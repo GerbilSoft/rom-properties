@@ -59,9 +59,12 @@ setup_listitem_cb_col0(GtkListItemFactory *factory, GtkListItem *list_item, gpoi
 			assert(!"col0 setup should only be used for checkbox or icon!");
 			break;
 
-		case RP_LIST_DATA_ITEM_COL0_TYPE_CHECKBOX:
-			gtk_list_item_set_child(list_item, gtk_check_button_new());
+		case RP_LIST_DATA_ITEM_COL0_TYPE_CHECKBOX: {
+			GtkWidget *const checkBox = gtk_check_button_new();
+			gtk_list_item_set_child(list_item, checkBox);
+			g_signal_connect(G_OBJECT(checkBox), "toggled", G_CALLBACK(checkbox_no_toggle_signal_handler), nullptr);
 			break;
+		}
 
 		case RP_LIST_DATA_ITEM_COL0_TYPE_ICON: {
 			GtkWidget *const picture = gtk_picture_new();
@@ -115,6 +118,12 @@ bind_listitem_cb(GtkListItemFactory *factory, GtkListItem *list_item, gpointer u
 		case RP_LIST_DATA_ITEM_COL0_TYPE_CHECKBOX:
 			// Column 0 is a checkbox.
 			if (column == 0) {
+				// NOTE: Cannot access page->inhibit_checkbox_no_toggle here...
+				// As long as we set the new value in RFT_BITFIELD_value_quark first,
+				// the signal handler will do the "right thing", though maybe
+				// less efficiently than by inhibiting the signal...
+				const gboolean checked = rp_list_data_item_get_checked(item);
+				g_object_set_qdata(G_OBJECT(widget), RFT_BITFIELD_value_quark, GUINT_TO_POINTER((guint)checked));
 				gtk_check_button_set_active(GTK_CHECK_BUTTON(widget), rp_list_data_item_get_checked(item));
 			} else {
 				gtk_label_set_markup(GTK_LABEL(widget), rp_list_data_item_get_column_text(item, column-1));
