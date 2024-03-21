@@ -329,6 +329,7 @@ int RP_C_API rp_show_RomDataView_dialog(int argc, char *argv[])
 		fprintf(stderr, "*** GTK%u rp_show_RomDataView_dialog(): ERROR: No URI specified.\n", (unsigned int)GTK_MAJOR_VERSION);
 		return EXIT_FAILURE;
 	}
+	const char *const uri = argv[argc-1];
 
 #if !GLIB_CHECK_VERSION(2,35,1)
         // g_type_init() is automatic as of glib-2.35.1
@@ -348,7 +349,7 @@ int RP_C_API rp_show_RomDataView_dialog(int argc, char *argv[])
 	app = gtk_application_new("com.gerbilsoft.rom-properties.rp-config", G_APPLICATION_FLAGS_NONE);
 	// NOTE: GApplication is supposed to set this, but KDE isn't seeing it...
 	g_set_prgname("com.gerbilsoft.rom-properties.rp-config");
-	g_signal_connect(app, "activate", G_CALLBACK(rp_RomDataView_app_activate), argv[argc-1]);
+	g_signal_connect(app, "activate", G_CALLBACK(rp_RomDataView_app_activate), (gpointer)uri);
 
 	// NOTE: We aren't setting up command line options in GApplication,
 	// so it will complain if argv has any parameters.
@@ -362,7 +363,7 @@ int RP_C_API rp_show_RomDataView_dialog(int argc, char *argv[])
 	// Not going to implement the Startup Notification protocol manually
 	// because GTK2 desktops likely wouldn't support it, anyway.
 	gtk_init(NULL, NULL);
-	rp_RomDataView_app_activate(NULL, argv[argc-1]);
+	rp_RomDataView_app_activate(NULL, uri);
 	gtk_main();
 #endif /* GTK_CHECK_VERSION(2,90,2) */
 

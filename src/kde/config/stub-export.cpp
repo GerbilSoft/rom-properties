@@ -138,6 +138,7 @@ Q_DECL_EXPORT int RP_C_API rp_show_RomDataView_dialog(int argc, char *argv[])
 		fputs("*** " RP_KDE_UPPER " rp_show_RomDataView_dialog(): ERROR: No URI specified.\n", stderr);
 		return EXIT_FAILURE;
 	}
+	const char *const uri = argv[argc-1];
 
 	QApplication *const app = initQApp(argc, argv);
 
@@ -169,7 +170,6 @@ Q_DECL_EXPORT int RP_C_API rp_show_RomDataView_dialog(int argc, char *argv[])
 
 	// Open a RomData object.
 	// TODO: Support URLs? Currently filenames only for testing.
-	const char *const uri = argv[argc-1];
 	fprintf(stderr, "*** " RP_KDE_UPPER " rp_show_RomDataView_dialog(): Opening URI: '%s'\n", uri);
 	RomDataPtr romData = RomDataFactory::create(argv[argc-1]);
 	if (romData) {
