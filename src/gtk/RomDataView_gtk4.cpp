@@ -209,9 +209,11 @@ rp_rom_data_view_init_listdata(RpRomDataView *page, const RomFields::Field &fiel
 
 	// Create the GtkColumnView.
 	GtkWidget *const columnView = gtk_column_view_new(nullptr);
-	// TODO: How to show/hide headers? Might be automatic if titles aren't set...
-//		gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(treeView),
-//		(listDataDesc.names != nullptr));
+	// FIXME: GtkColumnView doesn't expose a function to hide column headers.
+	// We'll have to manually hide them.
+	if (!listDataDesc.names) {
+		gtk_widget_set_visible(gtk_widget_get_first_child(columnView), false);
+	}
 
 	// GtkColumnView requires a GtkSelectionModel, so we'll create
 	// a GtkSingleSelection to wrap around the GListStore.
