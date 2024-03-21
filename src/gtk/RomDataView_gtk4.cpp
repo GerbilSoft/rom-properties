@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (GTK+ common)                      *
- * RomDataView_gtk3.cpp: RomData viewer widget. (GTK2/GTK3-specific)       *
+ * RomDataView_gtk3.cpp: RomData viewer widget. (GTK4-specific)            *
  *                                                                         *
  * Copyright (c) 2017-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
@@ -183,6 +183,7 @@ rp_rom_data_view_init_listdata(RpRomDataView *page, const RomFields::Field &fiel
 	// a GtkSingleSelection to wrap around the GListStore.
 	GtkSingleSelection *const selModel = gtk_single_selection_new(G_LIST_MODEL(listStore));
 	gtk_column_view_set_model(GTK_COLUMN_VIEW(columnView), GTK_SELECTION_MODEL(selModel));
+	g_object_unref(selModel);
 
 	// NOTE: Regarding object ownership:
 	// - GtkColumnViewColumn takes ownership of the GtkListItemFactory
@@ -522,8 +523,10 @@ rp_rom_data_view_update_multi_RFT_LISTDATA_MULTI(RpRomDataView *page, uint32_t u
 			// NOTE: ListDataItem doesn't emit any signals if the text is changed.
 			// As a workaround, remove the GtkColumnView's model, then re-add it.
 			GtkSelectionModel *const selModel = gtk_column_view_get_model(GTK_COLUMN_VIEW(vldm.columnView));
+			g_object_ref(selModel);
 			gtk_column_view_set_model(GTK_COLUMN_VIEW(vldm.columnView), NULL);
 			gtk_column_view_set_model(GTK_COLUMN_VIEW(vldm.columnView), GTK_SELECTION_MODEL(selModel));
+			g_object_unref(selModel);
 
 #if 0
 			// Resize the columns to fit the contents.

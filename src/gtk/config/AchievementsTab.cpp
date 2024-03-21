@@ -227,6 +227,7 @@ rp_achievements_tab_init(RpAchievementsTab *tab)
 	// a GtkSingleSelection to wrap around the GListStore.
 	GtkSingleSelection *const selModel = gtk_single_selection_new(G_LIST_MODEL(tab->listStore));
 	gtk_column_view_set_model(GTK_COLUMN_VIEW(tab->columnView), GTK_SELECTION_MODEL(selModel));
+	g_object_unref(selModel);
 
 	// NOTE: Regarding object ownership:
 	// - GtkColumnViewColumn takes ownership of the GtkListItemFactory
