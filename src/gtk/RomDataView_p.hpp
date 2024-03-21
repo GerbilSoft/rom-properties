@@ -60,11 +60,27 @@ struct _RpRomDataViewCxx {
 	LibRpBase::RomDataPtr	romData;	// RomData
 
 	struct tab {
+		// owned by GtkNotebook
 		GtkWidget	*vbox;		// Either parent page or a GtkVBox/GtkBox.
 		GtkWidget	*table;		// GtkTable (2.x); GtkGrid (3.x)
 		GtkWidget	*lblCredits;
 
-		tab() : vbox(nullptr), table(nullptr), lblCredits(nullptr) { }
+		// *not* owned by GtkNotebook
+		GtkWidget	*lblTabName;	// GtkLabel: Tab name
+
+		tab() : vbox(nullptr), table(nullptr), lblCredits(nullptr), lblTabName(nullptr) { }
+
+		~tab() {
+#if GTK_CHECK_VERSION(4,0,0)
+			// vbox, table, lblCredits are all handled by deleting tabs,
+			// because GtkNotebook takes ownership.
+			// lblTabName, on the other hand, is *not* owned by GtkNotebook.
+			// NOTE: This only seems to be needed on GTK4?
+			if (lblTabName) {
+				g_object_unref(lblTabName);
+			}
+#endif /* GTK_CHECK_VERSION(4,0,0) */
+		}
 	};
 	std::vector<tab> tabs;
 

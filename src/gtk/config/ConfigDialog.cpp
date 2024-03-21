@@ -95,6 +95,12 @@ struct _RpConfigDialogClass {
 };
 
 // ConfigDialog instance
+#ifdef ENABLE_DECRYPTION
+#  define TAB_COUNT 7
+#else /* !ENABLE_DECRYPTION */
+#  define TAB_COUNT 6
+#endif
+
 struct _RpConfigDialog {
 	super __parent__;
 
@@ -112,6 +118,9 @@ struct _RpConfigDialog {
 
 	// GtkNotebook tab widget
 	GtkWidget *tabWidget;
+
+	// Tab labels
+	GtkWidget *tabLabels[TAB_COUNT];
 
 	// Signal handler IDs
 	gulong tabWidget_switch_page;
@@ -247,13 +256,16 @@ rp_config_dialog_init(RpConfigDialog *dialog)
 #endif /* ENABLE_DECRYPTION */
 		TAB_INFO(About,		NOP_C_("ConfigDialog", "Abou&t"),		rp_about_tab_new),
 	};
+	static_assert(ARRAY_SIZE(tabInfo_tbl) == ARRAY_SIZE(dialog->tabLabels), "dialog->tabLabels[] is out of sync!");
 
 	// Create the tabs.
+	GtkWidget **ppTabLabel = dialog->tabLabels;
 	for (const auto &tabInfo : tabInfo_tbl) {
 		GtkWidget *const tab_label = rp_gtk_label_new_with_mnemonic(
 			dpgettext_expr(RP_I18N_DOMAIN, "ConfigDialog", tabInfo.title));
 		gtk_widget_set_name(tab_label, tabInfo.lbl_name);
 		GTK_WIDGET_SHOW_GTK3(tab_label);
+		*(ppTabLabel++) = tab_label;
 
 		GtkWidget *const tab = tabInfo.ctor_fn();
 		gtk_widget_set_name(tab, tabInfo.tab_name);
@@ -402,6 +414,14 @@ rp_config_dialog_dispose(GObject *object)
 		g_signal_handler_disconnect(dialog->tabWidget, dialog->tabWidget_switch_page);
 		dialog->tabWidget_switch_page = 0;
 	}
+
+#if GTK_CHECK_VERSION(4,0,0)
+	// Unref the tab labels.
+	// TODO: Is this needed for GTK2/GTK3?
+	for (GtkWidget *const tabLabel : dialog->tabLabels) {
+		g_object_unref(tabLabel);
+	}
+#endif /* GTK_CHECK_VERSION(4,0,0) */
 
 	// Call the superclass dispose() function.
 	G_OBJECT_CLASS(rp_config_dialog_parent_class)->dispose(object);

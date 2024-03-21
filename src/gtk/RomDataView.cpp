@@ -1807,10 +1807,10 @@ rp_rom_data_view_update_display(RpRomDataView *page)
 #endif /* GTK_CHECK_VERSION(4,0,0) */
 
 			// Add the tab.
-			GtkWidget *label = gtk_label_new(name);
+			tab.lblTabName = gtk_label_new(name);
 			snprintf(tab_name, sizeof(tab_name), "lblTab%d", i);
-			gtk_widget_set_name(label, tab_name);
-			gtk_notebook_append_page(GTK_NOTEBOOK(page->tabWidget), tab.vbox, label);
+			gtk_widget_set_name(tab.lblTabName, tab_name);
+			gtk_notebook_append_page(GTK_NOTEBOOK(page->tabWidget), tab.vbox, tab.lblTabName);
 		}
 
 #if GTK_CHECK_VERSION(4,0,0)
@@ -2142,6 +2142,18 @@ rp_rom_data_view_delete_tabs(RpRomDataView *page)
 	assert(page->cxx != nullptr);
 	_RpRomDataViewCxx *const cxx = page->cxx;
 
+	if (page->tabWidget) {
+		// Delete the tab widget.
+		// NOTE: Must be deleted before clearing tabs
+		// due to lblTabName ownership shenanigans.
+#if GTK_CHECK_VERSION(4,0,0)
+		gtk_box_remove(GTK_BOX(page), page->tabWidget);
+#else /* !GTK_CHECK_VERSION(4,0,0) */
+		gtk_container_remove(GTK_CONTAINER(page), page->tabWidget);
+#endif /* GTK_CHECK_VERSION(4,0,0) */
+		page->tabWidget = nullptr;
+	}
+
 	// Clear the tabs.
 	if (cxx->tabs.size() == 1) {
 		// Single tab. We'll need to remove the table first.
@@ -2164,16 +2176,6 @@ rp_rom_data_view_delete_tabs(RpRomDataView *page)
 		gtk_container_remove(GTK_CONTAINER(page), page->messageWidget);
 #endif /* GTK_CHECK_VERSION(4,0,0) */
 		page->messageWidget = nullptr;
-	}
-
-	if (page->tabWidget) {
-		// Delete the tab widget.
-#if GTK_CHECK_VERSION(4,0,0)
-		gtk_box_remove(GTK_BOX(page), page->tabWidget);
-#else /* !GTK_CHECK_VERSION(4,0,0) */
-		gtk_container_remove(GTK_CONTAINER(page), page->tabWidget);
-#endif /* GTK_CHECK_VERSION(4,0,0) */
-		page->tabWidget = nullptr;
 	}
 
 	if (page->cboLanguage) {
