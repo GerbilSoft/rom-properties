@@ -519,7 +519,12 @@ rp_rom_data_view_update_multi_RFT_LISTDATA_MULTI(RpRomDataView *page, uint32_t u
 				}
 			}
 
-			// FIXME: Need to emit signals indicating the model has changed.
+			// NOTE: ListDataItem doesn't emit any signals if the text is changed.
+			// As a workaround, remove the GtkColumnView's model, then re-add it.
+			GtkSelectionModel *const selModel = gtk_column_view_get_model(GTK_COLUMN_VIEW(vldm.columnView));
+			gtk_column_view_set_model(GTK_COLUMN_VIEW(vldm.columnView), NULL);
+			gtk_column_view_set_model(GTK_COLUMN_VIEW(vldm.columnView), GTK_SELECTION_MODEL(selModel));
+
 #if 0
 			// Resize the columns to fit the contents.
 			// NOTE: Only done on first load.
