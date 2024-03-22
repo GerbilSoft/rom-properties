@@ -72,6 +72,14 @@ struct _RpXAttrView {
 G_BEGIN_DECLS
 
 /**
+ * Initialize the widgets for POSIX xattrs.
+ * @param widget RpXAttrView
+ * @param scrlXAttr GtkScrolledWindow parent widget for the POSIX xattrs widget
+ */
+void
+rp_xattr_view_init_posix_xattrs_widgets(struct _RpXAttrView *widget, GtkScrolledWindow *scrlXAttr);
+
+/**
  * Load POSIX xattrs, if available.
  * @param widget XAttrView
  * @return 0 on success; negative POSIX error code on error.

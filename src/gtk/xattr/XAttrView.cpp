@@ -114,42 +114,8 @@ rp_xattr_view_init(RpXAttrView *widget)
 	gtk_widget_set_margin(scrlXAttr, 6);	// TODO: GTK2 version
 #endif /* GTK_CHECK_VERSION(2,91,1) */
 
-	// Column titles
-	static const char *const column_titles[XATTR_COL_MAX] = {
-		NOP_C_("XAttrView", "Name"),
-		NOP_C_("XAttrView", "Value"),
-	};
-
-	// TODO: GtkListView version for GTK4
-
-	// Create the GtkListStore and GtkTreeView.
-	widget->listStore = gtk_list_store_new(2, G_TYPE_STRING, G_TYPE_STRING);
-	widget->treeView = gtk_tree_view_new_with_model(GTK_TREE_MODEL(widget->listStore));
-	gtk_widget_set_name(widget->treeView, "treeView");
-	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(widget->treeView), TRUE);
-	gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(scrlXAttr), widget->treeView);
-
-#if !GTK_CHECK_VERSION(3,0,0)
-	// GTK+ 2.x: Use the "rules hint" for alternating row colors.
-	// Deprecated in GTK+ 3.14 (and removed in GTK4), but it doesn't
-	// work with GTK+ 3.x anyway.
-	// TODO: GTK4's GtkListView might have a similar function.
-	gtk_tree_view_set_rules_hint(GTK_TREE_VIEW(widget->treeView), true);
-#endif /* !GTK_CHECK_VERSION(3,0,0) */
-
-	// Create the columns.
-	// NOTE: Unlock Time is stored as a string, not as a GDateTime or Unix timestamp.
-	for (int i = 0; i < XATTR_COL_MAX; i++) {
-		GtkTreeViewColumn *const column = gtk_tree_view_column_new();
-		gtk_tree_view_column_set_title(column,
-			dpgettext_expr(RP_I18N_DOMAIN, "XAttrView", column_titles[i]));
-		gtk_tree_view_column_set_resizable(column, TRUE);
-
-		GtkCellRenderer *const renderer = gtk_cell_renderer_text_new();
-		gtk_tree_view_column_pack_start(column, renderer, FALSE);
-		gtk_tree_view_column_add_attribute(column, renderer, "text", i);
-		gtk_tree_view_append_column(GTK_TREE_VIEW(widget->treeView), column);
-	}
+	// Initialize the GtkTreeView (GTK2/GTK3) or GtkColumnView (GTK4).
+	rp_xattr_view_init_posix_xattrs_widgets(widget, GTK_SCROLLED_WINDOW(scrlXAttr));
 
 #if GTK_CHECK_VERSION(4,0,0)
 	gtk_box_append(GTK_BOX(vboxExt2Attributes), widget->ext2AttrView);
