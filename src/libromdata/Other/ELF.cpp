@@ -2114,7 +2114,7 @@ int ELF::loadFieldData(void)
 		const string fieldName = rp_sprintf("BuildID[%s]", (d->build_id_type ? d->build_id_type : "unknown"));
 		d->fields.addField_string_hexdump(fieldName.c_str(),
 			d->build_id.data(), d->build_id.size(),
-			RomFields::STRF_HEX_LOWER | RomFields::STRF_HEXDUMP_NO_SPACES);
+			RomFields::STRF_HEX_LOWER | RomFields::STRF_HEXDUMP_NO_SPACES | RomFields::STRF_MONOSPACE);
 	}
 
 	// If this is a dynamically-linked executable,
