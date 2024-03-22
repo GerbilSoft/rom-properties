@@ -236,6 +236,9 @@ rp_RomDataView_app_activate(GtkApplication *app, const gchar *uri)
 
 	// Add the RomDataView to the GtkNotebook.
 	int page_idx = gtk_notebook_append_page(GTK_NOTEBOOK(notebook), vboxRomDataView, lblRomDataViewTab);
+#if GTK_CHECK_VERSION(4,0,0)
+	g_object_unref(lblRomDataViewTab);
+#endif /* GTK_CHECK_VERSION(4,0,0) */
 
 	// NOTE: Need to run the idle process in order for RomDataView to process the URI.
 	// TODO: Create the RomData object here instead? (would need to convert to .cpp)
@@ -246,7 +249,6 @@ rp_RomDataView_app_activate(GtkApplication *app, const gchar *uri)
 	if (!rp_rom_data_view_is_showing_data(RP_ROM_DATA_VIEW(romDataView))) {
 		// Not a valid RomData object.
 		gtk_notebook_remove_page(GTK_NOTEBOOK(notebook), page_idx);
-		g_object_unref(lblRomDataViewTab);
 	}
 
 	/** XAttrView **/
@@ -279,6 +281,7 @@ rp_RomDataView_app_activate(GtkApplication *app, const gchar *uri)
 		gtk_notebook_append_page(GTK_NOTEBOOK(notebook), vboxXAttrView, lblXAttrViewTab);
 	} else {
 		fprintf(stderr, "*** GTK%u rp_show_RomDataView_dialog(): No extended attributes found; not showing xattrs tab.\n", (unsigned int)GTK_MAJOR_VERSION);
+		g_object_ref_sink(xattrView);
 		g_object_unref(xattrView);
 	}
 
