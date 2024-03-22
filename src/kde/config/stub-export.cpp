@@ -38,7 +38,7 @@ using namespace LibRpTexture;
  * @param argv
  * @return QApplication
  */
-static QApplication *initQApp(int argc, char *argv[])
+static QApplication *initQApp(int &argc, char *argv[])
 {
 	QApplication *app = qApp;
 	if (app) {
