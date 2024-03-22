@@ -162,8 +162,13 @@ Q_DECL_EXPORT int RP_C_API rp_show_RomDataView_dialog(int argc, char *argv[])
 		Qt::WindowMinimizeButtonHint |
 		Qt::WindowCloseButtonHint);
 	dialog->setObjectName(QLatin1String("dialog"));
-	dialog->setWindowTitle(applicationDisplayName);
 	dialog->show();
+
+	// TODO: Verify on Qt4.
+#if QT_VERSION < QT_VERSION_CHECK(5,0,0)
+	dialog->setWindowTitle(applicationDisplayName);
+#endif /* QT_VERSION < QT_VERSION_CHECK(5,0,0) */
+	dialog->setWindowFilePath(QString::fromUtf8(uri));
 
 	// Create a QVBoxLayout for the dialog.
 	QVBoxLayout *const vboxDialog = new QVBoxLayout(dialog);
