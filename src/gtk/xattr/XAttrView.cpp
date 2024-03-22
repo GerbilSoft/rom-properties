@@ -390,6 +390,14 @@ rp_xattr_view_load_dos_attrs(RpXAttrView *widget)
 static int
 rp_xattr_view_load_attributes(RpXAttrView *widget)
 {
+	if (!widget->uri) {
+		// Empty. Clear the display widgets.
+		rp_xattr_view_clear_display_widgets(widget);
+		delete widget->xattrReader;
+		widget->xattrReader = nullptr;
+		return -EINVAL;
+	}
+
 	// Attempt to open the file.
 	gchar *filename = g_filename_from_uri(widget->uri, nullptr, nullptr);
 	if (!filename) {
@@ -479,16 +487,7 @@ rp_xattr_view_set_uri(RpXAttrView *widget, const gchar *uri)
 
 	if (g_strcmp0(widget->uri, uri) != 0) {
 		g_set_str(&widget->uri, uri);
-
-		if (likely(uri)) {
-			rp_xattr_view_load_attributes(widget);
-		} else {
-			// No URI. Clear everything.
-			rp_xattr_view_clear_display_widgets(widget);
-			delete widget->xattrReader;
-			widget->xattrReader = nullptr;
-		}
-
+		rp_xattr_view_load_attributes(widget);
 		g_object_notify_by_pspec(G_OBJECT(widget), props[PROP_URI]);
 	}
 }
