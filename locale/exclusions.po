@@ -21,27 +21,36 @@ msgstr ""
 msgid "_Open"
 msgstr ""
 
-#: ../src/gtk/gtk-i18n.h:38
-msgctxt "Stock label"
-msgid "_Cancel"
+#: ../src/gtk/gtk-i18n.h:36
+msgid "_Open"
 msgstr ""
 
 #: ../src/gtk/gtk-i18n.h:39
 msgctxt "Stock label"
-msgid "_Apply"
+msgid "_Cancel"
 msgstr ""
 
 #: ../src/gtk/gtk-i18n.h:40
 msgctxt "Stock label"
-msgid "_OK"
+msgid "_Apply"
 msgstr ""
 
 #: ../src/gtk/gtk-i18n.h:41
 msgctxt "Stock label"
-msgid "_Save"
+msgid "_OK"
 msgstr ""
 
 #: ../src/gtk/gtk-i18n.h:42
 msgctxt "Stock label"
+msgid "_Save"
+msgstr ""
+
+#: ../src/gtk/gtk-i18n.h:43
+msgctxt "Stock label"
 msgid "_Open"
+msgstr ""
+
+#: ../src/gtk/gtk-i18n.h:43
+msgctxt "Stock label"
+msgid "_Close"
 msgstr ""

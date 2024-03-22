@@ -13,6 +13,8 @@
 #include "RomDataView.hpp"
 #include "xattr/XAttrView.hpp"
 
+#include "gtk-i18n.h"
+
 #if !GTK_CHECK_VERSION(2,90,2)
 // GtkApplication was introduced in GTK3.
 // For GTK2, make it a generic opaque pointer.
@@ -156,6 +158,7 @@ rp_show_RomDataView_dialog_response_handler(GtkDialog	*dialog,
 	switch (response_id) {
 		case GTK_RESPONSE_OK:
 		case GTK_RESPONSE_CANCEL:
+		case GTK_RESPONSE_CLOSE:
 			// Close the dialog.
 #if GTK_CHECK_VERSION(3,9,8)
 			gtk_window_close(GTK_WINDOW(dialog));
@@ -190,7 +193,7 @@ rp_RomDataView_app_activate(GtkApplication *app, const gchar *uri)
 		s_title,
 		NULL,
 		0,
-		"OK", GTK_RESPONSE_OK,
+		GTK_I18N_STR_CLOSE, GTK_RESPONSE_CLOSE,
 		NULL);
 	gtk_widget_set_name(dialog, "RomDataView-test-dialog");
 	gtk_widget_set_visible(dialog, TRUE);
