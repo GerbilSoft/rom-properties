@@ -51,6 +51,7 @@
   * Windows: rp-config: Added a checkbox to enable/disable the Extended
     Attributes tab. This was already added to the GTK and KDE UI frontends
     when Extended Attributes was added, but I forgot to do so for Windows.
+  * KDE: MessageWidget sounds now work on KF6.
 
 ## v2.3 (released 2024/03/03)
 
