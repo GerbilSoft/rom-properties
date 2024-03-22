@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (GTK+ common)                      *
- * XAttrView.cpp: MS-DOS file system attribute viewer widget.              *
+ * XAttrView.cpp: Extended attribute viewer property page.                 *
  *                                                                         *
  * Copyright (c) 2017-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
@@ -8,6 +8,7 @@
 
 #include "stdafx.h"
 #include "XAttrView.hpp"
+#include "XAttrView_p.hpp"
 
 // XAttrReader
 #include "librpfile/xattr/XAttrReader.hpp"
@@ -17,15 +18,6 @@ using LibRpFile::XAttrReader;
 #include "Ext2AttrView.h"
 #include "XfsAttrView.h"
 #include "DosAttrView.h"
-
-/* Property identifiers */
-typedef enum {
-	PROP_0,
-
-	PROP_URI,
-
-	PROP_LAST
-} RpXAttrViewPropID;
 
 static void	rp_xattr_view_set_property(GObject	*object,
 					   guint	 prop_id,
@@ -42,52 +34,6 @@ static int	rp_xattr_view_load_attributes(RpXAttrView *widget);
 static void	rp_xattr_view_clear_display_widgets(RpXAttrView *widget);
 
 static GParamSpec *props[PROP_LAST];
-
-/* Column identifiers */
-typedef enum {
-	XATTR_COL_NAME,
-	XATTR_COL_VALUE,
-
-	XATTR_COL_MAX
-} XAttrColumns;
-
-#if GTK_CHECK_VERSION(3,0,0)
-typedef GtkBoxClass superclass;
-typedef GtkBox super;
-#define GTK_TYPE_SUPER GTK_TYPE_BOX
-#define USE_GTK_GRID 1	// Use GtkGrid instead of GtkTable.
-#else /* !GTK_CHECK_VERSION(3,0,0) */
-typedef GtkVBoxClass superclass;
-typedef GtkVBox super;
-#define GTK_TYPE_SUPER GTK_TYPE_VBOX
-#endif /* GTK_CHECK_VERSION(3,0,0) */
-
-// XAttrView class
-struct _RpXAttrViewClass {
-	superclass __parent__;
-};
-
-// XAttrView instance
-struct _RpXAttrView {
-	super __parent__;
-
-	gchar *uri;
-	XAttrReader *xattrReader;
-	gboolean has_attributes;
-
-	GtkWidget *fraExt2Attributes;
-	GtkWidget *ext2AttrView;
-
-	GtkWidget *fraXfsAttributes;
-	GtkWidget *xfsAttrView;
-
-	GtkWidget *fraDosAttributes;
-	GtkWidget *dosAttrView;
-
-	GtkWidget	*fraXAttr;
-	GtkListStore	*listStore;
-	GtkWidget	*treeView;
-};
 
 // NOTE: G_DEFINE_TYPE() doesn't work in C++ mode with gcc-6.2
 // due to an implicit int to GTypeFlags conversion.
@@ -466,47 +412,6 @@ rp_xattr_view_load_dos_attrs(RpXAttrView *widget)
 	rp_dos_attr_view_set_attrs(RP_DOS_ATTR_VIEW(widget->dosAttrView),
 		widget->xattrReader->dosAttributes());
 	gtk_widget_set_visible(widget->fraDosAttributes, true);
-	return 0;
-}
-
-/**
- * Load POSIX xattrs, if available.
- * @param widget XAttrView
- * @return 0 on success; negative POSIX error code on error.
- */
-static int
-rp_xattr_view_load_posix_xattrs(RpXAttrView *widget)
-{
-	// Hide by default.
-	// If we do have attributes, we'll show the widgets there.
-	gtk_widget_set_visible(widget->fraXAttr, false);
-
-	gtk_list_store_clear(widget->listStore);
-	if (!widget->xattrReader->hasGenericXAttrs()) {
-		// No generic attributes.
-		return -ENOENT;
-	}
-
-	const XAttrReader::XAttrList &xattrList = widget->xattrReader->genericXAttrs();
-	for (const auto &xattr : xattrList) {
-		GtkTreeIter treeIter;
-		gtk_list_store_append(widget->listStore, &treeIter);
-		// NOTE: Trimming leading and trailing spaces from the value.
-		// TODO: If copy is added, include the spaces.
-		gchar *value_str = g_strdup(xattr.second.c_str());
-		if (value_str) {
-			value_str = g_strstrip(value_str);
-			gtk_list_store_set(widget->listStore, &treeIter,
-				0, xattr.first.c_str(), 1, value_str, -1);
-			g_free(value_str);
-		}
-	}
-
-	// Resize the columns to fit the contents.
-	gtk_tree_view_columns_autosize(GTK_TREE_VIEW(widget->treeView));
-
-	// Extended attributes retrieved.
-	gtk_widget_set_visible(widget->fraXAttr, true);
 	return 0;
 }
 

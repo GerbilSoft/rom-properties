@@ -93,6 +93,7 @@ SET(${PROJECT_NAME}_SRCS
 
 	../RomDataView_gtk3.cpp
 	../gtk3/sort_funcs.c
+	../xattr/XAttrView_gtk3.cpp
 	)
 SET(${PROJECT_NAME}_H
 	${${PROJECT_NAME}_H} ${${PROJECT_NAME}_H}
