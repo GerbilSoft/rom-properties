@@ -240,6 +240,8 @@ rp_RomDataView_app_activate(GtkApplication *app, const gchar *uri)
 	// Add the RomDataView to the GtkNotebook.
 	int page_idx = gtk_notebook_append_page(GTK_NOTEBOOK(notebook), vboxRomDataView, lblRomDataViewTab);
 #if GTK_CHECK_VERSION(4,0,0)
+	// GtkNotebook took a reference to the tab label,
+	// so we don't need to keep our reference.
 	g_object_unref(lblRomDataViewTab);
 #endif /* GTK_CHECK_VERSION(4,0,0) */
 
