@@ -253,6 +253,7 @@ rp_RomDataView_app_activate(GtkApplication *app, const gchar *uri)
 	}
 	if (!rp_rom_data_view_is_showing_data(RP_ROM_DATA_VIEW(romDataView))) {
 		// Not a valid RomData object.
+		fprintf(stderr, "*** GTK%u rp_show_RomDataView_dialog(): RomData object could not be created for this URI.\n", (unsigned int)GTK_MAJOR_VERSION);
 		gtk_notebook_remove_page(GTK_NOTEBOOK(notebook), page_idx);
 	}
 
