@@ -227,7 +227,12 @@ int XAttrViewPrivate::loadAttributes(void)
 		return -ENOTSUP;
 	}
 
-	const string s_local_filename = filename.toLocalFile().toUtf8().constData();
+	string s_local_filename;
+	if (filename.scheme().isEmpty()) {
+		s_local_filename = filename.path().toUtf8().constData();
+	} else if (filename.isLocalFile()) {
+		s_local_filename = filename.toLocalFile().toUtf8().constData();
+	}
 
 	// Open an XAttrReader.
 	xattrReader.reset(new XAttrReader(s_local_filename.c_str()));

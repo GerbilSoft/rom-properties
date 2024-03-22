@@ -140,7 +140,9 @@ Q_DECL_EXPORT int RP_C_API rp_create_thumbnail2(const char *source_file, const c
 	if (doXDG) {
 		// Local filename
 		QString qs_source_filename;
-		if (localUrl.scheme().isEmpty() || localUrl.isLocalFile()) {
+		if (localUrl.scheme().isEmpty()) {
+			qs_source_filename = localUrl.path();
+		} else if (localUrl.isLocalFile()) {
 			qs_source_filename = localUrl.toLocalFile();
 		}
 
