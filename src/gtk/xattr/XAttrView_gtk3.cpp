@@ -101,3 +101,12 @@ rp_xattr_view_load_posix_xattrs(struct _RpXAttrView *widget)
 	gtk_widget_set_visible(widget->fraXAttr, true);
 	return 0;
 }
+
+/**
+ * Clear POSIX xattrs.
+ */
+void
+rp_xattr_view_clear_posix_xattrs(struct _RpXAttrView *widget)
+{
+	gtk_list_store_clear(widget->listStore);
+}

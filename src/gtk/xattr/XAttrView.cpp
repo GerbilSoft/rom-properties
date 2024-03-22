@@ -462,7 +462,7 @@ rp_xattr_view_clear_display_widgets(RpXAttrView *widget)
 	rp_xfs_attr_view_clear_xflags(RP_XFS_ATTR_VIEW(widget->xfsAttrView));
 	rp_xfs_attr_view_clear_project_id(RP_XFS_ATTR_VIEW(widget->xfsAttrView));
 	rp_dos_attr_view_clear_attrs(RP_DOS_ATTR_VIEW(widget->dosAttrView));
-	gtk_list_store_clear(widget->listStore);
+	rp_xattr_view_clear_posix_xattrs(widget);
 }
 
 /** Property accessors / mutators **/
