@@ -36,9 +36,10 @@ using namespace LibRpTexture;
  * Initialize the QApplication.
  * @param argc
  * @param argv
+ * @param applicationDisplayName
  * @return QApplication
  */
-static QApplication *initQApp(int &argc, char *argv[])
+static QApplication *initQApp(int &argc, char *argv[], const QString &applicationDisplayName)
 {
 	QApplication *app = qApp;
 	if (app) {
@@ -79,11 +80,12 @@ static QApplication *initQApp(int &argc, char *argv[])
 	app->setOrganizationDomain(QLatin1String("gerbilsoft.com"));
 	app->setOrganizationName(QLatin1String("GerbilSoft"));
 #if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
-	app->setApplicationDisplayName(QCoreApplication::translate(
-			"ConfigDialog", "ROM Properties Page configuration", nullptr));
+	app->setApplicationDisplayName(applicationDisplayName);
 #  if QT_VERSION >= QT_VERSION_CHECK(5,7,0)
 	app->setDesktopFileName(QLatin1String("com.gerbilsoft.rom-properties.rp-config"));
 #  endif /* QT_VERSION >= QT_VERSION_CHECK(5,7,0) */
+#else /* !QT_VERSION >= QT_VERSION_CHECK(5,0,0) */
+	RP_UNUSED(applicationDisplayName);
 #endif /* QT_VERSION >= QT_VERSION_CHECK(5,0,0) */
 
 	const char *const programVersion =
@@ -107,7 +109,9 @@ Q_DECL_EXPORT int RP_C_API rp_show_config_dialog(int argc, char *argv[])
 {
 	CHECK_UID_RET(EXIT_FAILURE);
 
-	QApplication *const app = initQApp(argc, argv);
+	const QString applicationDisplayName = QCoreApplication::translate(
+		"ConfigDialog", "ROM Properties Page configuration", nullptr);
+	QApplication *const app = initQApp(argc, argv, applicationDisplayName);
 
 	// Create and run the ConfigDialog.
 	// TODO: Get the return value?
@@ -140,7 +144,8 @@ Q_DECL_EXPORT int RP_C_API rp_show_RomDataView_dialog(int argc, char *argv[])
 	}
 	const char *const uri = argv[argc-1];
 
-	QApplication *const app = initQApp(argc, argv);
+	const QString applicationDisplayName = QLatin1String("RomDataView " RP_KDE_UPPER " test program");
+	QApplication *const app = initQApp(argc, argv, applicationDisplayName);
 
 	// Register RpQImageBackend and AchQtDBus.
 	rp_image::setBackendCreatorFn(RpQImageBackend::creator_fn);
@@ -157,6 +162,7 @@ Q_DECL_EXPORT int RP_C_API rp_show_RomDataView_dialog(int argc, char *argv[])
 		Qt::WindowMinimizeButtonHint |
 		Qt::WindowCloseButtonHint);
 	dialog->setObjectName(QLatin1String("dialog"));
+	dialog->setWindowTitle(applicationDisplayName);
 	dialog->show();
 
 	// Create a QVBoxLayout for the dialog.
