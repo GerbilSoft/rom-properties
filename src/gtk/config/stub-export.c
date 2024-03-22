@@ -291,11 +291,22 @@ rp_RomDataView_app_activate(GtkApplication *app, const gchar *uri)
 	if (gtk_notebook_get_n_pages(GTK_NOTEBOOK(notebook)) < 1) {
 		fprintf(stderr, "*** GTK%u rp_show_RomDataView_dialog(): No tabs were created; exiting.\n", (unsigned int)GTK_MAJOR_VERSION);
 		status = 1;
+
+#if GTK_CHECK_VERSION(3,98,4)
+		gtk_window_destroy(GTK_WINDOW(dialog));
+#else /* !GTK_CHECK_VERSION(3,98,4) */
+		gtk_widget_destroy(dialog);
+#endif /* GTK_CHECK_VERSION(3,98,4) */
+
 #if GTK_CHECK_VERSION(2,90,2)
 		g_application_quit(G_APPLICATION(app));
 #else /* GTK_CHECK_VERSION(2,90,2) */
-		gtk_main_quit();
+		// NOTE: Calling gtk_main_quit() for GTK2 here fails:
+		// Gtk-CRITICAL **: IA__gtk_main_quit: assertion 'main_loops != NULL' failed
+		//gtk_main_quit();
 #endif /* GTK_CHECK_VERSION(2,90,2) */
+
+		return;
 	}
 
 	// Connect the dialog response handler.
@@ -367,7 +378,8 @@ int RP_C_API rp_show_RomDataView_dialog(int argc, char *argv[])
 	// because GTK2 desktops likely wouldn't support it, anyway.
 	gtk_init(NULL, NULL);
 	rp_RomDataView_app_activate(NULL, uri);
-	gtk_main();
+	if (status == 0)
+		gtk_main();
 #endif /* GTK_CHECK_VERSION(2,90,2) */
 
 	return status;
