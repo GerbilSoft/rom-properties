@@ -26,11 +26,15 @@ using namespace LibRpTexture;
 
 #include "RpQImageBackend.hpp"
 #include "AchQtDBus.hpp"
+#include "RpQUrl.hpp"
 
 // i18n
 #ifdef ENABLE_NLS
 #  include "../GettextTranslator.hpp"
 #endif
+
+// C++ STL classes
+using std::string;
 
 /**
  * Initialize the QApplication.
@@ -188,26 +192,44 @@ Q_DECL_EXPORT int RP_C_API rp_show_RomDataView_dialog(int argc, char *argv[])
 	QObject::connect(buttonBox, SIGNAL(accepted()), dialog, SLOT(accept()));
 	QObject::connect(buttonBox, SIGNAL(rejected()), dialog, SLOT(reject()));
 
-	// Open a RomData object.
-	// TODO: Support URLs? Currently filenames only for testing.
+	// Parse the specified URI and localize it.
+	QUrl localUrl(QString::fromUtf8(uri));
+	if (localUrl.isEmpty()) {
+		fprintf(stderr, "*** " RP_KDE_UPPER " rp_show_RomDataView_dialog(): URI '%s' is invalid.\n", uri);
+		return EXIT_FAILURE;
+	}
 	fprintf(stderr, "*** " RP_KDE_UPPER " rp_show_RomDataView_dialog(): Opening URI: '%s'\n", uri);
-	RomDataPtr romData = RomDataFactory::create(argv[argc-1]);
-	if (romData) {
-		// Create a RomDataView object.
-		RomDataView *const romDataView = new RomDataView(romData, dialog);
-		romDataView->setObjectName(QLatin1String("romDataView"));
-		tabWidget->addTab(romDataView, QLatin1String("ROM Properties"));
-	} else {
+
+	// Get the local filename.
+	string s_local_filename;
+	if (localUrl.scheme().isEmpty()) {
+		s_local_filename = localUrl.path().toUtf8().constData();
+	} else if (localUrl.isLocalFile()) {
+		s_local_filename = localUrl.toLocalFile().toUtf8().constData();
+	}
+
+	// Open a RomData object.
+	RomDataPtr romData;
+	if (likely(!s_local_filename.empty())) {
+		romData = RomDataFactory::create(s_local_filename.c_str());
+		if (romData) {
+			// Create a RomDataView object.
+			RomDataView *const romDataView = new RomDataView(romData, dialog);
+			romDataView->setObjectName(QLatin1String("romDataView"));
+			tabWidget->addTab(romDataView, QLatin1String("ROM Properties"));
+		}
+	}
+	if (!romData) {
 		fputs("*** " RP_KDE_UPPER " rp_show_RomDataView_dialog(): RomData object could not be created for this URI.\n", stderr);
 	}
 
 #if 0
 	// Create an XAttrView object.
 	// FIXME: Need to reference the XAttrView plugin?
-	XAttrView *const xattrView = new XAttrView(QUrl(QString::fromUtf8(uri)), dialog);
+	XAttrView *const xattrView = new XAttrView(localUrl, dialog);
 	if (xattrView->hasAttributes()) {
 		xattrView->setObjectName(QLatin1String("xattrView"));
-		tabWidget->addTab(romDataView, QLatin1String("xattrs"));
+		tabWidget->addTab(xattrView, QLatin1String("xattrs"));
 	} else {
 		fputs("*** " RP_KDE_UPPER " rp_show_RomDataView_dialog(): No extended attributes found; not showing xattrs tab.\n", stderr);
 		delete xattrView;
