@@ -81,20 +81,18 @@ void RomDataViewPrivate::createOptionsButton(void)
 	// also give it the object name "buttonbox". We'll leave out the name
 	// for compatibility purposes.
 	KPageWidget *const pageWidget = findDirectChild<KPageWidget*>(parent);
-	if (!pageWidget) {
-		// No KPageWidget? This might be the RomDataView test program.
-		// Skip the "Options" button for now.
-		return;
-	}
 
 	// Check for the QDialogButtonBox in the KPageWidget first.
-	QDialogButtonBox *btnBox = findDirectChild<QDialogButtonBox*>(pageWidget);
-	if (!btnBox) {
-		// Check in the KPropertiesDialog.
-		btnBox = findDirectChild<QDialogButtonBox*>(parent);
+	QDialogButtonBox *buttonBox = nullptr;
+	if (pageWidget) {
+		buttonBox = findDirectChild<QDialogButtonBox*>(pageWidget);
 	}
-	assert(btnBox != nullptr);
-	if (!btnBox)
+	if (!buttonBox) {
+		// Check in the KPropertiesDialog.
+		buttonBox = findDirectChild<QDialogButtonBox*>(parent);
+	}
+	assert(buttonBox != nullptr);
+	if (!buttonBox)
 		return;
 
 	// Create the "Options" button.
@@ -103,8 +101,8 @@ void RomDataViewPrivate::createOptionsButton(void)
 	// NOTE: Using HelpRole to force the button to the left side of the dialog.
 	// The previous method added a stretch layout item to the QDialogButtonBox's
 	// layout directly, but that doesn't appear to work on Qt6.
-	// TODO: Verify that this works correctly on Qt4. (works on Qt5)
-	btnBox->addButton(btnOptions, QDialogButtonBox::HelpRole);
+	// FIXME: Generally works on KF5/Qt5, but not on Ubuntu 18.04?
+	buttonBox->addButton(btnOptions, QDialogButtonBox::HelpRole);
 	btnOptions->hide();
 
 	// Connect the OptionsMenuButton's triggered(int) signal.

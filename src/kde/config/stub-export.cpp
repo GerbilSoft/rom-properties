@@ -168,6 +168,15 @@ Q_DECL_EXPORT int RP_C_API rp_show_RomDataView_dialog(int argc, char *argv[])
 	tabWidget->setObjectName(QLatin1String("tabWidget"));
 	vboxDialog->addWidget(tabWidget);
 
+	// Create a button box for the standard buttons. (and RomDataView's "Options" button)
+	QDialogButtonBox *const buttonBox = new QDialogButtonBox(dialog);
+	buttonBox->setObjectName(QLatin1String("buttonBox"));
+	buttonBox->setOrientation(Qt::Horizontal);
+	buttonBox->setStandardButtons(QDialogButtonBox::Apply | QDialogButtonBox::Cancel | QDialogButtonBox::Ok);
+	vboxDialog->addWidget(buttonBox);
+	QObject::connect(buttonBox, SIGNAL(accepted()), dialog, SLOT(accept()));
+	QObject::connect(buttonBox, SIGNAL(rejected()), dialog, SLOT(reject()));
+
 	// Open a RomData object.
 	// TODO: Support URLs? Currently filenames only for testing.
 	fprintf(stderr, "*** " RP_KDE_UPPER " rp_show_RomDataView_dialog(): Opening URI: '%s'\n", uri);
