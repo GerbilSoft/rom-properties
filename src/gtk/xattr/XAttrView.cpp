@@ -479,7 +479,16 @@ rp_xattr_view_set_uri(RpXAttrView *widget, const gchar *uri)
 
 	if (g_strcmp0(widget->uri, uri) != 0) {
 		g_set_str(&widget->uri, uri);
-		rp_xattr_view_load_attributes(widget);
+
+		if (likely(uri)) {
+			rp_xattr_view_load_attributes(widget);
+		} else {
+			// No URI. Clear everything.
+			rp_xattr_view_clear_display_widgets(widget);
+			delete widget->xattrReader;
+			widget->xattrReader = nullptr;
+		}
+
 		g_object_notify_by_pspec(G_OBJECT(widget), props[PROP_URI]);
 	}
 }
