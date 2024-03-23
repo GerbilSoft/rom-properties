@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libunixcommon)                    *
  * dll-search.c: Function to search for a usable rom-properties library.   *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -238,43 +238,43 @@ static inline RP_Frontend check_xdg_desktop_name(const char *name)
 	// - https://askubuntu.com/a/227669
 
 	// TODO: Check other values for $XDG_CURRENT_DESKTOP.
+	RP_Frontend ret = RP_FE_MAX;
 	if (!strcasecmp(name, "KDE")) {
-		// KDE.
-		// Check parent processes to determine the version.
-		// NOTE: Assuming KF5 if unable to determine the KDE version.
-		// TODO: Check for KF6?
-		RP_Frontend ret = walk_proc_tree();
-		if (ret >= RP_FE_MAX) {
-			// Process tree walk failed.
-			// Check if KDE_SESSION_VERSION is set.
-			const char *const ksv = getenv("KDE_SESSION_VERSION");
-			if (ksv) {
-				// Convert the environment variable to a number.
-				char *endptr = NULL;
-				long ver = strtoul(ksv, &endptr, 10);
-				if (endptr && *endptr == '\0') {
-					switch (ver) {
-						default:
-							break;
-						case 4:
-							ret = RP_FE_KDE4;
-							break;
-						case 5:
-							ret = RP_FE_KF5;
-							break;
-						case 6:
-							ret = RP_FE_KF6;
-							break;
-					}
+		// KDE
+		// Check if KDE_SESSION_VERSION is set.
+		const char *const ksv = getenv("KDE_SESSION_VERSION");
+		if (ksv) {
+			// Convert the environment variable to a number.
+			char *endptr = NULL;
+			long ver = strtoul(ksv, &endptr, 10);
+			if (endptr && *endptr == '\0') {
+				switch (ver) {
+					default:
+						break;
+					case 4:
+						ret = RP_FE_KDE4;
+						break;
+					case 5:
+						ret = RP_FE_KF5;
+						break;
+					case 6:
+						ret = RP_FE_KF6;
+						break;
 				}
 			}
 		}
 
 		if (ret >= RP_FE_MAX) {
-			// Not set. Assume KF5.
-			ret = RP_FE_KF5;
+			// KDE_SESSION_VERSION is not set.
+			// Check parent processes to determine the version.
+			// NOTE: Assuming KF5 if unable to determine the KDE version.
+			// TODO: Check for KF6?
+			RP_Frontend ret = walk_proc_tree();
+			if (ret >= RP_FE_MAX) {
+				// Not set. Assume KF5.
+				ret = RP_FE_KF5;
+			}
 		}
-		return ret;
 	} else if (!strcasecmp(name, "GNOME") ||
 	           !strcasecmp(name, "Unity") ||
 	           !strcasecmp(name, "MATE") ||
@@ -283,32 +283,31 @@ static inline RP_Frontend check_xdg_desktop_name(const char *name)
 	{
 		// GTK3-based desktop environment. (GNOME or GNOME-like)
 		// TODO: Determine if it's actually GTK4.
-		return RP_FE_GTK3;
+		ret = RP_FE_GTK3;
 	} else if (!strcasecmp(name, "XFCE") ||
 		   !strcasecmp(name, "LXDE"))
 	{
 		// This *might* be GTK3 if it's new enough.
-		return RP_FE_GTK3;
+		ret = RP_FE_GTK3;
 	}
 
 	// NOTE: The following desktop names are not actually used.
 	// They're used here for debugging purposes only.
 	if (!strcasecmp(name, "KF6") || !strcasecmp(name, "KDE6")) {
-		return RP_FE_KF6;
+		ret = RP_FE_KF6;
 	} else if (!strcasecmp(name, "KF5") || !strcasecmp(name, "KDE5")) {
-		return RP_FE_KF5;
+		ret = RP_FE_KF5;
 	} else if (!strcasecmp(name, "KDE4")) {
-		return RP_FE_KDE4;
+		ret = RP_FE_KDE4;
 	} else if (!strcasecmp(name, "GTK4")) {
-		return RP_FE_GTK4;
+		ret = RP_FE_GTK4;
 	} else if (!strcasecmp(name, "GTK3")) {
-		return RP_FE_GTK3;
+		ret = RP_FE_GTK3;
 	} else if (!strcasecmp(name, "GTK2")) {
-		return RP_FE_GTK2;
+		ret = RP_FE_GTK2;
 	}
 
-	// Unknown desktop name.
-	return RP_FE_MAX;
+	return ret;
 }
 
 /**
