@@ -139,9 +139,7 @@ TEST_F(ListDataSortProxyModelTest, ascendingSort)
 			EXPECT_NE(str, nullptr) << "Unexpected NULL string pointer";
 			if (str) {
 				EXPECT_NE(str[0], '\0') << "Unexpected empty string";
-
-				const int drow = ARRAY_SIZE(sorted_strings_asc[row]) - row - 1;
-				EXPECT_STREQ(sorted_strings_asc[col][drow], str) << "sorting column " << col << ", checking row " << row;
+				EXPECT_STREQ(sorted_strings_asc[col][row], str) << "sorting column " << col << ", checking row " << row;
 			}
 		};
 
@@ -175,7 +173,9 @@ TEST_F(ListDataSortProxyModelTest, descendingSort)
 			EXPECT_NE(str, nullptr) << "Unexpected NULL string pointer";
 			if (str) {
 				EXPECT_NE(str[0], '\0') << "Unexpected empty string";
-				EXPECT_STREQ(sorted_strings_asc[col][row], str) << "sorting column " << col << ", checking row " << row;
+
+				const int drow = ARRAY_SIZE(sorted_strings_asc[row]) - row - 1;
+				EXPECT_STREQ(sorted_strings_asc[col][drow], str) << "sorting column " << col << ", checking row " << row;
 			}
 		};
 
