@@ -37,19 +37,13 @@ class ListDataSortProxyModelTest : public ::testing::Test
 		ListDataSortProxyModelTest()
 			: listStore(nullptr)
 			, sortProxy(nullptr)
-		{
-			memset(sorter, 0, sizeof(sorter));
-		}
+		{}
 
 		~ListDataSortProxyModelTest() override
 		{
 			// GtkSortListModel takes ownership of listStore,
 			// so listStore will get unref()'d when sortProxy does.
 			g_clear_object(&sortProxy);
-
-			for (GtkCustomSorter *&p : sorter) {
-				g_clear_object(&p);
-			}
 		}
 
 	public:
@@ -59,7 +53,56 @@ class ListDataSortProxyModelTest : public ::testing::Test
 	protected:
 		GListStore *listStore;		// List data
 		GtkSortListModel *sortProxy;	// Sort proxy
-		GtkCustomSorter *sorter[4];
+
+	public:
+		// Sorting order (function pointers) [ascending order]
+		static const GCompareDataFunc sort_funcs_asc[4];
+
+		static gint rp_sort_RFT_LISTDATA_standard_DESC(gconstpointer a, gconstpointer b, gpointer userdata);
+		static gint rp_sort_RFT_LISTDATA_nocase_DESC(gconstpointer a, gconstpointer b, gpointer userdata);
+		static gint rp_sort_RFT_LISTDATA_numeric_DESC(gconstpointer a, gconstpointer b, gpointer userdata);
+
+		// Sorting order (function pointers) [descending order]
+		static const GCompareDataFunc sort_funcs_desc[4];
+};
+
+// Sorting order (function pointers) [ascending order]
+const GCompareDataFunc ListDataSortProxyModelTest::sort_funcs_asc[4] = {
+	// Column 0: Greek alphabet, standard sort
+	rp_sort_RFT_LISTDATA_standard,
+	// Column 1: Greek alphabet, case-insensitive sort
+	rp_sort_RFT_LISTDATA_nocase,
+	// Column 2: Numbers, standard sort
+	rp_sort_RFT_LISTDATA_standard,
+	// Column 3: Numbers, numeric sort
+	rp_sort_RFT_LISTDATA_numeric,
+};
+
+gint ListDataSortProxyModelTest::rp_sort_RFT_LISTDATA_standard_DESC(gconstpointer a, gconstpointer b, gpointer userdata)
+{
+	return -rp_sort_RFT_LISTDATA_standard(a, b, userdata);
+}
+
+gint ListDataSortProxyModelTest::rp_sort_RFT_LISTDATA_nocase_DESC(gconstpointer a, gconstpointer b, gpointer userdata)
+{
+	return -rp_sort_RFT_LISTDATA_nocase(a, b, userdata);
+}
+
+gint ListDataSortProxyModelTest::rp_sort_RFT_LISTDATA_numeric_DESC(gconstpointer a, gconstpointer b, gpointer userdata)
+{
+	return -rp_sort_RFT_LISTDATA_numeric(a, b, userdata);
+}
+
+// Sorting order (function pointers) [descending order]
+const GCompareDataFunc ListDataSortProxyModelTest::sort_funcs_desc[4] = {
+	// Column 0: Greek alphabet, standard sort
+	rp_sort_RFT_LISTDATA_standard_DESC,
+	// Column 1: Greek alphabet, case-insensitive sort
+	rp_sort_RFT_LISTDATA_nocase_DESC,
+	// Column 2: Numbers, standard sort
+	rp_sort_RFT_LISTDATA_standard_DESC,
+	// Column 3: Numbers, numeric sort
+	rp_sort_RFT_LISTDATA_numeric_DESC,
 };
 
 void ListDataSortProxyModelTest::SetUp()
@@ -83,23 +126,6 @@ void ListDataSortProxyModelTest::SetUp()
 		g_list_store_append(listStore, item);
 		g_object_unref(item);
 	}
-
-	// Sorting order (function pointers)
-	static const GCompareDataFunc sort_funcs[4] = {
-		// Column 0: Greek alphabet, standard sort
-		rp_sort_RFT_LISTDATA_standard,
-		// Column 1: Greek alphabet, case-insensitive sort
-		rp_sort_RFT_LISTDATA_nocase,
-		// Column 2: Numbers, standard sort
-		rp_sort_RFT_LISTDATA_standard,
-		// Column 3: Numbers, numeric sort
-		rp_sort_RFT_LISTDATA_numeric,
-	};
-
-	// Set the column sort functions.
-	for (gint col = 0; col < 4; col++) {
-		sorter[col] = gtk_custom_sorter_new(sort_funcs[col], GINT_TO_POINTER(col), nullptr);
-	}
 }
 
 void ListDataSortProxyModelTest::TearDown()
@@ -107,10 +133,6 @@ void ListDataSortProxyModelTest::TearDown()
 	// GtkSortListModel takes ownership of listStore,
 	// so listStore will get unref()'d when sortProxy does.
 	g_clear_object(&sortProxy);
-
-	for (GtkCustomSorter *&p : sorter) {
-		g_clear_object(&p);
-	}
 }
 
 /**
@@ -124,8 +146,9 @@ TEST_F(ListDataSortProxyModelTest, ascendingSort)
 	ASSERT_EQ(rowCount, g_list_model_get_n_items(G_LIST_MODEL(sortProxy))) << "Sort proxy row count doesn't match the original model!";
 
 	for (int col = 0; col < columnCount; col++) {
-		// FIXME: Ascending vs. descending?
-		gtk_sort_list_model_set_sorter(GTK_SORT_LIST_MODEL(sortProxy), GTK_SORTER(sorter[col]));
+		GtkCustomSorter *const sorter = gtk_custom_sorter_new(sort_funcs_asc[col], GINT_TO_POINTER(col), nullptr);
+		gtk_sort_list_model_set_sorter(GTK_SORT_LIST_MODEL(sortProxy), GTK_SORTER(sorter));
+		//g_object_unref(sorter);
 
 		int row;
 		for (row = 0; row < rowCount; row++) {
@@ -158,8 +181,9 @@ TEST_F(ListDataSortProxyModelTest, descendingSort)
 	ASSERT_EQ(rowCount, g_list_model_get_n_items(G_LIST_MODEL(sortProxy))) << "Sort proxy row count doesn't match the original model!";
 
 	for (int col = 0; col < columnCount; col++) {
-		// FIXME: Ascending vs. descending?
-		gtk_sort_list_model_set_sorter(GTK_SORT_LIST_MODEL(sortProxy), GTK_SORTER(sorter[col]));
+		GtkCustomSorter *const sorter = gtk_custom_sorter_new(sort_funcs_desc[col], GINT_TO_POINTER(col), nullptr);
+		gtk_sort_list_model_set_sorter(GTK_SORT_LIST_MODEL(sortProxy), GTK_SORTER(sorter));
+		g_object_unref(sorter);
 
 		int row;
 		for (row = 0; row < rowCount; row++) {
