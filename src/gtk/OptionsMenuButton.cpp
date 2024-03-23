@@ -221,8 +221,8 @@ rp_options_menu_button_init(RpOptionsMenuButton *widget)
 	rp_options_menu_button_set_direction(widget, GTK_ARROW_UP);
 
 #if GTK_CHECK_VERSION(4,0,0)
-	gtk_menu_button_set_label(GTK_MENU_BUTTON(widget), s_title.c_str());
-	gtk_menu_button_set_use_underline(GTK_MENU_BUTTON(widget), TRUE);
+	gtk_menu_button_set_label(GTK_MENU_BUTTON(widget->menuButton), s_title.c_str());
+	gtk_menu_button_set_use_underline(GTK_MENU_BUTTON(widget->menuButton), TRUE);
 #else /* !GTK_CHECK_VERSION(4,0,0) */
 	gtk_widget_show(widget->menuButton);	// needed for GTK2/GTK3 but not GTK4
 
@@ -248,7 +248,11 @@ rp_options_menu_button_init(RpOptionsMenuButton *widget)
 #endif /* GTK_CHECK_VERSION(4,0,0) */
 
 	// Connect the wrapper signals.
+	// NOTE: GTK4 GtkMenuButton does not have a "clicked" signal.
+	// TODO: Remove the wrapped "clicked" signal?
+#if !GTK_CHECK_VERSION(4,0,0)
 	g_signal_connect(widget->menuButton, "clicked", G_CALLBACK(menuButton_clicked_signal_handler), widget);
+#endif /* !GTK_CHECK_VERSION(4,0,0) */
 	g_signal_connect(widget->menuButton, "activate", G_CALLBACK(menuButton_activate_signal_handler), widget);
 
 #ifndef USE_GTK_MENU_BUTTON

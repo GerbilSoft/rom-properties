@@ -14,6 +14,7 @@
 #include "librpbase/img/IconAnimHelper.hpp"
 #include "librpfile/VectorFile.hpp"
 using namespace LibRpBase;
+using namespace LibRpFile;
 using namespace LibRpTexture;
 
 // C++ STL classes
@@ -26,6 +27,13 @@ using std::unique_ptr;
 #  define USE_G_MENU_MODEL 1
 #endif /* GTK_CHECK_VERSION(3,11,5) */
 
+// GTK4 introduces GtkPicture, which supports arbitrary images.
+// GtkImage has been relegated to icons only, and only really
+// supports square images properly.
+#if GTK_CHECK_VERSION(3,94,0)
+#  define USE_GTK_PICTURE 1
+#endif /* GTK_CHECK_VERSION(3,94,0) */
+
 static GQuark ecksbawks_quark = 0;
 
 static void	rp_drag_image_dispose	(GObject	*object);
@@ -33,13 +41,15 @@ static void	rp_drag_image_finalize	(GObject	*object);
 
 // Signal handlers
 static void	rp_drag_image_map_signal_handler  (RpDragImage *image, gpointer user_data);
-static void	rp_drag_image_unmap_signal_handler(RpDragImage *image, gpointer user_data);
 static void	rp_drag_image_notify_width_or_height_signal_handler(RpDragImage *image, GParamSpec *pspec, gpointer user_data);
-// FIXME: GTK4 has a new Drag & Drop API.
-#if !GTK_CHECK_VERSION(4,0,0)
+#if GTK_CHECK_VERSION(4,0,0)
+static GdkContentProvider *rp_drag_image_drag_source_prepare(GtkDragSource *source, double x, double y, RpDragImage *image);
+static void	rp_drag_image_drag_source_drag_begin(GtkDragSource *source, GdkDrag *drag, RpDragImage *image);
+static void	rp_drag_image_drag_source_drag_end(GtkDragSource *source, GdkDrag *drag, gboolean delete_data, RpDragImage *image);
+#else /* !GTK_CHECK_VERSION(4,0,0) */
 static void	rp_drag_image_drag_begin(RpDragImage *image, GdkDragContext *context, gpointer user_data);
 static void	rp_drag_image_drag_data_get(RpDragImage *image, GdkDragContext *context, GtkSelectionData *data, guint info, guint time, gpointer user_data);
-#endif /* !GTK_CHECK_VERSION(4,0,0) */
+#endif /* GTK_CHECK_VERSION(4,0,0) */
 
 #ifdef USE_G_MENU_MODEL
 static void	ecksbawks_action_triggered_signal_handler     (GSimpleAction	*action,
@@ -76,6 +86,12 @@ struct _RpDragImageCxx {
 	~_RpDragImageCxx()
 	{
 		delete anim;
+
+#if GTK_CHECK_VERSION(4,0,0)
+		if (pngBytes) {
+			g_bytes_unref(pngBytes);
+		}
+#endif /* GTK_CHECK_VERSION(4,0,0) */
 	}
 
 	// rp_image (C++ shared_ptr)
@@ -114,24 +130,26 @@ struct _RpDragImageCxx {
 		}
 	};
 	anim_vars *anim;
+
+#if GTK_CHECK_VERSION(4,0,0)
+	// Temporary buffer for PNG data when dragging and dropping images.
+	VectorFilePtr pngData;
+	GBytes *pngBytes;
+#endif /* GTK_CHECK_VERSION(4,0,0) */
 };
 
 // DragImage instance
 struct _RpDragImage {
 	super __parent__;
+	_RpDragImageCxx *cxx;	// C++ objects
+	PIMGTYPE curFrame;	// Current frame
 
-	// C++ objects
-	_RpDragImageCxx *cxx;
-
-	// GtkImage child widget.
+	// GtkImage (GTK2/GTK3) or GtkPicture (GTK4) child widget
 	GtkWidget *imageWidget;
-	// Current frame.
-	PIMGTYPE curFrame;
 
-	bool mapped;	// true if the widget is currently mapped
 	bool dirty;	// true if the pixmaps need to be updated on next map
-
 	bool ecksBawks;
+
 #ifdef USE_G_MENU_MODEL
 	GMenu *menuEcksBawks;
 	GtkWidget *popEcksBawks;		// GtkPopover (3.x); GtkPopoverMenu (4.x)
@@ -139,6 +157,10 @@ struct _RpDragImage {
 #else /* !USE_G_MENU_MODEL */
 	GtkWidget *menuEcksBawks;	// GtkMenu
 #endif /* USE_G_MENU_MODEL */
+
+#if GTK_CHECK_VERSION(4,0,0)
+	GtkDragSource *dragSource;
+#endif /* GTK_CHECK_VERSION(4,0,0) */
 };
 
 // NOTE: G_DEFINE_TYPE() doesn't work in C++ mode with gcc-6.2
@@ -167,7 +189,12 @@ rp_drag_image_init(RpDragImage *image)
 	image->cxx = new _RpDragImageCxx();
 
 	// Create the child GtkImage widget.
+#ifdef USE_GTK_PICTURE
+	image->imageWidget = gtk_picture_new();
+#else /* !USE_GTK_PICTURE */
 	image->imageWidget = gtk_image_new();
+#endif /* USE_GTK_PICTURE */
+
 	gtk_widget_set_name(image->imageWidget, "imageWidget");
 #if GTK_CHECK_VERSION(4,0,0)
 	gtk_box_append(GTK_BOX(image), image->imageWidget);
@@ -177,16 +204,20 @@ rp_drag_image_init(RpDragImage *image)
 #endif /* GTK_CHECK_VERSION(4,0,0) */
 
 	// Pixmaps can only be updated once we have a valid size.
-	g_signal_connect(G_OBJECT(image), "map",   G_CALLBACK(rp_drag_image_map_signal_handler),   nullptr);
-	g_signal_connect(G_OBJECT(image), "unmap", G_CALLBACK(rp_drag_image_unmap_signal_handler), nullptr);
+	g_signal_connect(G_OBJECT(image), "map", G_CALLBACK(rp_drag_image_map_signal_handler),   nullptr);
 	g_signal_connect(G_OBJECT(image), "notify::width-request",  G_CALLBACK(rp_drag_image_notify_width_or_height_signal_handler), nullptr);
 	g_signal_connect(G_OBJECT(image), "notify::height-request", G_CALLBACK(rp_drag_image_notify_width_or_height_signal_handler), nullptr);
 
-// FIXME: GTK4 has a new Drag & Drop API.
-#if !GTK_CHECK_VERSION(4,0,0)
+#if GTK_CHECK_VERSION(4,0,0)
+	image->dragSource = gtk_drag_source_new();
+	g_signal_connect(G_OBJECT(image->dragSource), "prepare",    G_CALLBACK(rp_drag_image_drag_source_prepare),    image);
+	g_signal_connect(G_OBJECT(image->dragSource), "drag-begin", G_CALLBACK(rp_drag_image_drag_source_drag_begin), image);
+	g_signal_connect(G_OBJECT(image->dragSource), "drag-end",   G_CALLBACK(rp_drag_image_drag_source_drag_end),   image);
+	gtk_widget_add_controller(GTK_WIDGET(image), GTK_EVENT_CONTROLLER(image->dragSource));
+#else /* !GTK_CHECK_VERSION(4,0,0) */
 	g_signal_connect(G_OBJECT(image), "drag-begin",    G_CALLBACK(rp_drag_image_drag_begin),    nullptr);
 	g_signal_connect(G_OBJECT(image), "drag-data-get", G_CALLBACK(rp_drag_image_drag_data_get), nullptr);
-#endif /* !GTK_CHECK_VERSION(4,0,0) */
+#endif /* GTK_CHECK_VERSION(4,0,0) */
 }
 
 static void
@@ -206,15 +237,12 @@ rp_drag_image_dispose(GObject *object)
 	}
 
 #ifdef USE_G_MENU_MODEL
-#  if GTK_CHECK_VERSION(4,0,0)
-	// FIXME: Verify that this works.
-	g_clear_object(&image->popEcksBawks);
-#  else /* !GTK_CHECK_VERSION(4,0,0) */
+#  if !GTK_CHECK_VERSION(4,0,0)
 	if (image->popEcksBawks) {
 		gtk_widget_destroy(image->popEcksBawks);
 		image->popEcksBawks = nullptr;
 	}
-#  endif /* GTK_CHECK_VERSION(4,0,0) */
+#  endif /* !GTK_CHECK_VERSION(4,0,0) */
 	g_clear_object(&image->menuEcksBawks);
 
 	// The GSimpleActionGroup owns the actions, so
@@ -262,7 +290,7 @@ rp_drag_image_update_pixmaps(RpDragImage *image)
 	auto *const anim = cxx->anim;
 	bool bRet = false;
 
-	if (!image->mapped) {
+	if (!gtk_widget_get_mapped(GTK_WIDGET(image))) {
 		// RpDragImage is not mapped to the screen.
 		// Set the dirty flag and update pixmaps later.
 		// The "dirty" flag will force an update when mapped.
@@ -282,7 +310,6 @@ rp_drag_image_update_pixmaps(RpDragImage *image)
 		image->curFrame = nullptr;
 	}
 
-	// TODO: Call this function if the size request is changed.
 #if GTK_CHECK_VERSION(3,0,0)
 	// NOTE: In testing, the two sizes (minimum and natural) returned by
 	// gtk_widget_get_preferred_size() are both the same if
@@ -339,7 +366,11 @@ rp_drag_image_update_pixmaps(RpDragImage *image)
 
 		// Show the first frame.
 		image->curFrame = PIMGTYPE_ref(anim->iconFrames[anim->iconAnimHelper.frameNumber()]);
+#ifdef USE_GTK_PICTURE
+		gtk_picture_set_paintable(GTK_PICTURE(image->imageWidget), GDK_PAINTABLE(image->curFrame));
+#else /* !USE_GTK_PICTURE */
 		gtk_image_set_from_PIMGTYPE(GTK_IMAGE(image->imageWidget), image->curFrame);
+#endif /* USE_GTK_PICTURE */
 		bRet = true;
 	} else if (cxx->img && cxx->img->isValid()) {
 		// Single image.
@@ -355,7 +386,11 @@ rp_drag_image_update_pixmaps(RpDragImage *image)
 			}
 		}
 		image->curFrame = img;
+#ifdef USE_GTK_PICTURE
+		gtk_picture_set_paintable(GTK_PICTURE(image->imageWidget), GDK_PAINTABLE(image->curFrame));
+#else /* !USE_GTK_PICTURE */
 		gtk_image_set_from_PIMGTYPE(GTK_IMAGE(image->imageWidget), image->curFrame);
+#endif /* USE_GTK_PICTURE */
 		bRet = true;
 	}
 
@@ -366,12 +401,16 @@ rp_drag_image_update_pixmaps(RpDragImage *image)
 		// Set a drag source.
 		// TODO: Use text/uri-list and extract to a temporary directory?
 		// FIXME: application/octet-stream works on Nautilus, but not Thunar...
-		static const GtkTargetEntry targetEntry = {
-			const_cast<char*>("application/octet-stream"),	// target
-			GTK_TARGET_OTHER_APP,		// flags
-			1,				// info
+		static const GtkTargetEntry targetEntries[2] = {
+			{(char*)"image/png",			// target
+			 GTK_TARGET_OTHER_APP,			// flags
+			 1},					// info
+
+			{(char*)"application/octet-stream",	// target
+			 GTK_TARGET_OTHER_APP,			// flags
+			 2},					// info
 		};
-		gtk_drag_source_set(GTK_WIDGET(image), GDK_BUTTON1_MASK, &targetEntry, 1, GDK_ACTION_COPY);
+		gtk_drag_source_set(GTK_WIDGET(image), GDK_BUTTON1_MASK, targetEntries, ARRAY_SIZE(targetEntries), GDK_ACTION_COPY);
 	} else {
 		// No image or animated icon data.
 		// Unset the drag source.
@@ -389,7 +428,24 @@ bool rp_drag_image_get_ecks_bawks(RpDragImage *image)
 	return image->ecksBawks;
 }
 
-#if !GTK_CHECK_VERSION(4,0,0)
+#if GTK_CHECK_VERSION(4,0,0)
+static void
+rp_drag_image_on_gesture_pressed_event(GtkGestureClick *self, gint n_press, gdouble x, gdouble y, RpDragImage *image)
+{
+	RP_UNUSED(self);
+	RP_UNUSED(x);
+	RP_UNUSED(y);
+
+	if (!image->ecksBawks)
+		return;
+
+	// Only show the menu on the first right-click per gesture.
+	if (n_press != 1)
+		return;
+
+	gtk_popover_popup(GTK_POPOVER(image->popEcksBawks));
+}
+#else /* !GTK_CHECK_VERSION(4,0,0) */
 static void
 rp_drag_image_on_button_press_event(RpDragImage *image, GdkEventButton *event, gpointer userdata)
 {
@@ -412,16 +468,16 @@ rp_drag_image_on_button_press_event(RpDragImage *image, GdkEventButton *event, g
 #endif /* USE_G_MENU_MODEL */
 	}
 }
-#endif /* !GTK_CHECK_VERSION(4,0,0) */
+#endif /* GTK_CHECK_VERSION(4,0,0) */
 
 void rp_drag_image_set_ecks_bawks(RpDragImage *image, bool new_ecks_bawks)
 {
 	g_return_if_fail(RP_IS_DRAG_IMAGE(image));
 	image->ecksBawks = new_ecks_bawks;
-	if (image->ecksBawks && image->menuEcksBawks) {
-		// Ecks Bawks popup menu is already created.
+	if (!image->ecksBawks)
 		return;
-	}
+	if (image->menuEcksBawks)
+		return;
 
 	// Create the Ecks Bawks popup menu.
 	if (ecksbawks_quark == 0) {
@@ -453,13 +509,17 @@ void rp_drag_image_set_ecks_bawks(RpDragImage *image, bool new_ecks_bawks)
 	gtk_widget_insert_action_group(GTK_WIDGET(image), prefix, G_ACTION_GROUP(image->actionGroup));
 #  if GTK_CHECK_VERSION(4,0,0)
 	image->popEcksBawks = gtk_popover_menu_new_from_model(G_MENU_MODEL(image->menuEcksBawks));
+	// GTK4: Need to set parent. Otherwise, gtk_popover_popup() will crash.
+	gtk_widget_set_parent(image->popEcksBawks, GTK_WIDGET(image));
 #  else /* !GTK_CHECK_VERSION(4,0,0) */
 	image->popEcksBawks = gtk_popover_new_from_model(GTK_WIDGET(image), G_MENU_MODEL(image->menuEcksBawks));
 #    if GTK_CHECK_VERSION(3,15,8) && !GTK_CHECK_VERSION(3,21,5)
 	gtk_popover_set_transitions_enabled(GTK_POPOVER(image->popEcksBawks), true);
 #    endif /* GTK_CHECK_VERSION(3,15,8) && !GTK_CHECK_VERSION(3,21,5) */
 #  endif /* GTK_CHECK_VERSION(4,0,0) */
+	gtk_widget_set_name(image->popEcksBawks, "popEcksBawks");
 #else /* !USE_G_MENU_MODEL */
+
 	image->menuEcksBawks = gtk_menu_new();
 	gtk_widget_set_name(image->menuEcksBawks, "menuEcksBawks");
 
@@ -472,12 +532,19 @@ void rp_drag_image_set_ecks_bawks(RpDragImage *image, bool new_ecks_bawks)
 	}
 #endif
 
-#if !GTK_CHECK_VERSION(4,0,0)
+#if GTK_CHECK_VERSION(4,0,0)
+	// GTK4: Use GtkGestureClick to handle right-click.
+	// NOTE: GtkWidget takes ownership of the gesture object.
+	GtkGesture *const rightClickGesture = gtk_gesture_click_new();
+	gtk_gesture_single_set_button(GTK_GESTURE_SINGLE(rightClickGesture), GDK_BUTTON_SECONDARY);
+	gtk_widget_add_controller(GTK_WIDGET(image), GTK_EVENT_CONTROLLER(rightClickGesture));
+	g_signal_connect(rightClickGesture, "pressed", G_CALLBACK(rp_drag_image_on_gesture_pressed_event), image);
+#else /* !GTK_CHECK_VERSION(4,0,0) */
 	// GTK2/GTK3: Show context menu on right-click.
 	// NOTE: On my system, programs show context menus on mouse button down.
 	// On Windows, it shows the menu on mouse button up?
 	g_signal_connect(image, "button-press-event", G_CALLBACK(rp_drag_image_on_button_press_event), nullptr);
-#endif /* !GTK_CHECK_VERSION(4,0,0) */
+#endif /* GTK_CHECK_VERSION(4,0,0) */
 }
 
 /**
@@ -503,7 +570,11 @@ rp_drag_image_set_rp_image(RpDragImage *image, const rp_image_const_ptr &img)
 	cxx->img = img;
 	if (!img) {
 		if (!cxx->anim || !cxx->anim->iconAnimData) {
-			gtk_image_clear(GTK_IMAGE(image->imageWidget));
+#ifdef USE_GTK_PICTURE
+			gtk_picture_set_paintable(GTK_PICTURE(image->imageWidget), nullptr);
+#else /* !USE_GTK_PICTURE */
+			gtk_image_set_from_PIMGTYPE(GTK_IMAGE(image->imageWidget), nullptr);
+#endif /* USE_GTK_PICTURE */
 		} else {
 			return rp_drag_image_update_pixmaps(image);
 		}
@@ -542,7 +613,11 @@ rp_drag_image_set_icon_anim_data(RpDragImage *image, const IconAnimDataConstPtr 
 		g_clear_handle_id(&anim->tmrIconAnim, g_source_remove);
 
 		if (!cxx->img) {
-			gtk_image_clear(GTK_IMAGE(image->imageWidget));
+#ifdef USE_GTK_PICTURE
+			gtk_picture_set_paintable(GTK_PICTURE(image->imageWidget), nullptr);
+#else /* !USE_GTK_PICTURE */
+			gtk_image_set_from_PIMGTYPE(GTK_IMAGE(image->imageWidget), nullptr);
+#endif /* USE_GTK_PICTURE */
 		} else {
 			return rp_drag_image_update_pixmaps(image);
 		}
@@ -569,7 +644,11 @@ rp_drag_image_clear(RpDragImage *image)
 	}
 
 	cxx->img.reset();
-	gtk_image_clear(GTK_IMAGE(image->imageWidget));
+#ifdef USE_GTK_PICTURE
+	gtk_picture_set_paintable(GTK_PICTURE(image->imageWidget), nullptr);
+#else /* !USE_GTK_PICTURE */
+	gtk_image_set_from_PIMGTYPE(GTK_IMAGE(image->imageWidget), nullptr);
+#endif /* USE_GTK_PICTURE */
 }
 
 /**
@@ -601,7 +680,11 @@ rp_drag_image_anim_timer_func(RpDragImage *image)
 	if (frame != anim->last_frame_number) {
 		// New frame number.
 		// Update the icon.
+#ifdef USE_GTK_PICTURE
+		gtk_picture_set_paintable(GTK_PICTURE(image->imageWidget), GDK_PAINTABLE(anim->iconFrames[frame]));
+#else /* !USE_GTK_PICTURE */
 		gtk_image_set_from_PIMGTYPE(GTK_IMAGE(image->imageWidget), anim->iconFrames[frame]);
+#endif /* USE_GTK_PICTURE */
 		anim->last_frame_number = frame;
 	}
 
@@ -707,23 +790,10 @@ rp_drag_image_map_signal_handler(RpDragImage *image, gpointer user_data)
 {
 	RP_UNUSED(user_data);
 
-	image->mapped = true;
 	if (image->dirty) {
-		// rp_drag_image_update_pixmaps() clears image->dirty().
+		// rp_drag_image_update_pixmaps() clears image->dirty.
 		rp_drag_image_update_pixmaps(image);
 	}
-}
-
-/**
- * DragImage is being unmapped from the screen.
- * @param image RpDragImage
- * @param user_data User data
- */
-static void
-rp_drag_image_unmap_signal_handler(RpDragImage *image, gpointer user_data)
-{
-	RP_UNUSED(user_data);
-	image->mapped = false;
 }
 
 /**
@@ -738,7 +808,7 @@ rp_drag_image_notify_width_or_height_signal_handler(RpDragImage *image, GParamSp
 	RP_UNUSED(pspec);
 	RP_UNUSED(user_data);
 
-	if (image->mapped) {
+	if (gtk_widget_get_mapped(GTK_WIDGET(image))) {
 		// Update the pixmaps.
 		// NOTE: This function might be called twice in a row
 		// if both requested width and height are changed.
@@ -749,13 +819,113 @@ rp_drag_image_notify_width_or_height_signal_handler(RpDragImage *image, GParamSp
 	}
 }
 
-// FIXME: GTK4 has a new Drag & Drop API.
-#if !GTK_CHECK_VERSION(4,0,0)
+/**
+ * Create a PNG file for the drag & drop operation.
+ * @param image RpDragImage
+ * @return VectorFile containing the PNG data.
+ */
+static VectorFilePtr
+rp_drag_image_create_PNG_file(RpDragImage *image)
+{
+	_RpDragImageCxx *const cxx = image->cxx;
+	auto *const anim = cxx->anim;
+	const bool isAnimated = (anim && anim->iconAnimData && anim->iconAnimHelper.isAnimated());
+
+	VectorFilePtr pngData = std::make_shared<VectorFile>();
+	unique_ptr<RpPngWriter> pngWriter;
+	if (isAnimated) {
+		// Animated icon.
+		pngWriter.reset(new RpPngWriter(pngData, anim->iconAnimData));
+	} else if (cxx->img) {
+		// Standard icon.
+		// NOTE: Using the source image because we want the original
+		// size, not the resized version.
+		pngWriter.reset(new RpPngWriter(pngData, cxx->img));
+	} else {
+		// No icon...
+		return {};
+	}
+
+	if (!pngWriter->isOpen()) {
+		// Unable to open the PNG writer.
+		return {};
+	}
+
+	// TODO: Add text fields indicating the source game.
+
+	int pwRet = pngWriter->write_IHDR();
+	if (pwRet != 0) {
+		// Error writing the PNG image...
+		return {};
+	}
+	pwRet = pngWriter->write_IDAT();
+	if (pwRet != 0) {
+		// Error writing the PNG image...
+		return {};
+	}
+
+	// RpPngWriter will finalize the PNG on delete.
+	pngWriter.reset();
+	return pngData;
+}
+
+#if GTK_CHECK_VERSION(4,0,0)
+static GdkContentProvider*
+rp_drag_image_drag_source_prepare(GtkDragSource *source, double x, double y, RpDragImage *image)
+{
+	RP_UNUSED(source);
+	RP_UNUSED(x);
+	RP_UNUSED(y);
+
+	_RpDragImageCxx *const cxx = image->cxx;
+	cxx->pngData = rp_drag_image_create_PNG_file(image);
+	if (!cxx->pngData)
+		return nullptr;
+
+	if (cxx->pngBytes) {
+		g_bytes_unref(cxx->pngBytes);
+	}
+
+	const std::vector<uint8_t> &pngVec = cxx->pngData->vector();
+	cxx->pngBytes = g_bytes_new_static(pngVec.data(), pngVec.size());
+
+	GdkContentProvider *providers[2] = {
+		gdk_content_provider_new_for_bytes("image/png", cxx->pngBytes),
+		gdk_content_provider_new_for_bytes("application/octet-stream", cxx->pngBytes),
+	};
+	return gdk_content_provider_new_union(providers, ARRAY_SIZE(providers));
+}
+
+static void
+rp_drag_image_drag_source_drag_begin(GtkDragSource *source, GdkDrag *drag, RpDragImage *image)
+{
+	RP_UNUSED(drag);
+
+	// Set the drag icon.
+	// NOTE: gtk_drag_source_set_icon() takes its own reference to the PIMGTYPE.
+	// TODO: Hotspot coordinates?
+	gtk_drag_source_set_icon(source, GDK_PAINTABLE(image->curFrame), 0, 0);
+}
+
+static void
+rp_drag_image_drag_source_drag_end(GtkDragSource *source, GdkDrag *drag, gboolean delete_data, RpDragImage *image)
+{
+	RP_UNUSED(source);
+	RP_UNUSED(drag);
+	RP_UNUSED(delete_data);
+
+	_RpDragImageCxx *const cxx = image->cxx;
+	if (cxx->pngBytes) {
+		g_bytes_unref(cxx->pngBytes);
+		cxx->pngBytes = nullptr;
+	}
+	cxx->pngData.reset();
+}
+#else /* !GTK_CHECK_VERSION(4,0,0) */
 static void
 rp_drag_image_drag_begin(RpDragImage *image, GdkDragContext *context, gpointer user_data)
 {
 	RP_UNUSED(user_data);
-	g_return_if_fail(RP_IS_DRAG_IMAGE(image));
 
 	// Set the drag icon.
 	// NOTE: gtk_drag_set_icon_PIMGTYPE() takes its own reference to the PIMGTYPE.
@@ -772,48 +942,10 @@ rp_drag_image_drag_data_get(RpDragImage *image, GdkDragContext *context, GtkSele
 	RP_UNUSED(info);
 	RP_UNUSED(time);
 	RP_UNUSED(user_data);
-	g_return_if_fail(RP_IS_DRAG_IMAGE(image));
-	_RpDragImageCxx *const cxx = image->cxx;
 
-	auto *const anim = cxx->anim;
-	const bool isAnimated = (anim && anim->iconAnimData && anim->iconAnimHelper.isAnimated());
-
-	using LibRpFile::VectorFile;
-	std::shared_ptr<VectorFile> pngData = std::make_shared<VectorFile>();
-	unique_ptr<RpPngWriter> pngWriter;
-	if (isAnimated) {
-		// Animated icon.
-		pngWriter.reset(new RpPngWriter(pngData, anim->iconAnimData));
-	} else if (cxx->img) {
-		// Standard icon.
-		// NOTE: Using the source image because we want the original
-		// size, not the resized version.
-		pngWriter.reset(new RpPngWriter(pngData, cxx->img));
-	} else {
-		// No icon...
+	VectorFilePtr pngData = rp_drag_image_create_PNG_file(image);
+	if (!pngData)
 		return;
-	}
-
-	if (!pngWriter->isOpen()) {
-		// Unable to open the PNG writer.
-		return;
-	}
-
-	// TODO: Add text fields indicating the source game.
-
-	int pwRet = pngWriter->write_IHDR();
-	if (pwRet != 0) {
-		// Error writing the PNG image...
-		return;
-	}
-	pwRet = pngWriter->write_IDAT();
-	if (pwRet != 0) {
-		// Error writing the PNG image...
-		return;
-	}
-
-	// RpPngWriter will finalize the PNG on delete.
-	pngWriter.reset();
 
 	// Set the selection data.
 	// NOTE: gtk_selection_data_set() copies the data.
@@ -821,7 +953,7 @@ rp_drag_image_drag_data_get(RpDragImage *image, GdkDragContext *context, GtkSele
 	gtk_selection_data_set(data, gdk_atom_intern_static_string("image/png"), 8,
 		pngVec.data(), static_cast<gint>(pngVec.size()));
 }
-#endif /* !GTK_CHECK_VERSION(4,0,0) */
+#endif /* GTK_CHECK_VERSION(4,0,0) */
 
 static void
 ecksbawks_show_url(gint id)

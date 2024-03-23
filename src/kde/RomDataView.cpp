@@ -66,7 +66,6 @@ void RomDataViewPrivate::createOptionsButton(void)
 	assert(btnOptions == nullptr);
 	if (btnOptions)
 		return;
-
 	Q_Q(RomDataView);
 
 	// Parent should be a KPropertiesDialog.
@@ -84,13 +83,16 @@ void RomDataViewPrivate::createOptionsButton(void)
 	KPageWidget *const pageWidget = findDirectChild<KPageWidget*>(parent);
 
 	// Check for the QDialogButtonBox in the KPageWidget first.
-	QDialogButtonBox *btnBox = findDirectChild<QDialogButtonBox*>(pageWidget);
-	if (!btnBox) {
-		// Check in the KPropertiesDialog.
-		btnBox = findDirectChild<QDialogButtonBox*>(parent);
+	QDialogButtonBox *buttonBox = nullptr;
+	if (pageWidget) {
+		buttonBox = findDirectChild<QDialogButtonBox*>(pageWidget);
 	}
-	assert(btnBox != nullptr);
-	if (!btnBox)
+	if (!buttonBox) {
+		// Check in the KPropertiesDialog.
+		buttonBox = findDirectChild<QDialogButtonBox*>(parent);
+	}
+	assert(buttonBox != nullptr);
+	if (!buttonBox)
 		return;
 
 	// Create the "Options" button.
@@ -99,8 +101,8 @@ void RomDataViewPrivate::createOptionsButton(void)
 	// NOTE: Using HelpRole to force the button to the left side of the dialog.
 	// The previous method added a stretch layout item to the QDialogButtonBox's
 	// layout directly, but that doesn't appear to work on Qt6.
-	// TODO: Verify that this works correctly on Qt4. (works on Qt5)
-	btnBox->addButton(btnOptions, QDialogButtonBox::HelpRole);
+	// FIXME: Generally works on KF5/Qt5, but not on Ubuntu 18.04?
+	buttonBox->addButton(btnOptions, QDialogButtonBox::HelpRole);
 	btnOptions->hide();
 
 	// Connect the OptionsMenuButton's triggered(int) signal.
@@ -532,12 +534,10 @@ QTreeView *RomDataViewPrivate::initListData(QLabel *lblDesc,
 	// while others might take up three or more.
 	treeView->setUniformRowHeights(false);
 
-	// Item models.
-	// TODO: Subclass QSortFilterProxyModel for custom sorting methods.
+	// Item models
 	ListDataModel *const listModel = new ListDataModel(q);
 	// NOTE: No name for this QObject.
 	ListDataSortProxyModel *const proxyModel = new ListDataSortProxyModel(q);
-	// NOTE: No name for this QObject.
 	proxyModel->setSortingMethods(listDataDesc.col_attrs.sorting);
 	proxyModel->setSourceModel(listModel);
 	treeView->setModel(proxyModel);

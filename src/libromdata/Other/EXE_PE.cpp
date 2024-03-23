@@ -948,6 +948,9 @@ int EXEPrivate::addFields_PE_Export(void)
 		params.data.single = vv_data;
 		// TODO: Header alignment?
 		params.col_attrs.align_data = AFLD_ALIGN5(TXA_D, TXA_R, TXA_D, TXA_D, TXA_D);
+		params.col_attrs.sorting    = AFLD_ALIGN5(COLSORT_NC, COLSORT_NUM, COLSORT_NUM, COLSORT_STD, COLSORT_STD);
+		params.col_attrs.sort_col   = 0;	// Name
+		params.col_attrs.sort_dir   = RomFields::COLSORTORDER_ASCENDING;
 		fields.addField_listData(C_("EXE", "Exports"), &params);
 	} else {
 		delete vv_data;
@@ -1165,6 +1168,9 @@ int EXEPrivate::addFields_PE_Import(void)
 	params.data.single = vv_data;
 	// TODO: Header alignment?
 	params.col_attrs.align_data = AFLD_ALIGN3(TXA_D, TXA_R, TXA_D);
+	params.col_attrs.sorting    = AFLD_ALIGN3(COLSORT_NC, COLSORT_NUM, COLSORT_NC);
+	params.col_attrs.sort_col   = 0;	// Name
+	params.col_attrs.sort_dir   = RomFields::COLSORTORDER_ASCENDING;
 	fields.addField_listData(C_("EXE", "Imports"), &params);
 	return 0;
 }

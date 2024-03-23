@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (GTK+ common)                      *
- * ConfigDialog.hpp: Configuration dialog.                                 *
+ * gtk-i18n.h: Standard strings localized by GTK.                          *
  *                                                                         *
  * Copyright (c) 2017-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
@@ -33,6 +33,7 @@
 #define GTK_I18N_STR_OK		dgettext(GTK_I18N_DOMAIN, "_OK")
 #define GTK_I18N_STR_SAVE	dgettext(GTK_I18N_DOMAIN, "_Save")
 #define GTK_I18N_STR_OPEN	dgettext(GTK_I18N_DOMAIN, "_Open")
+#define GTK_I18N_STR_CLOSE	dgettext(GTK_I18N_DOMAIN, "_Close")
 #else /* !GTK_CHECK_VERSION(3,0,0) */
 // GTK2: Context is "Stock label"
 #define GTK_I18N_STR_CANCEL	dpgettext(GTK_I18N_DOMAIN, "Stock label", "_Cancel")
@@ -40,6 +41,7 @@
 #define GTK_I18N_STR_OK		dpgettext(GTK_I18N_DOMAIN, "Stock label", "_OK")
 #define GTK_I18N_STR_SAVE	dpgettext(GTK_I18N_DOMAIN, "Stock label", "_Save")
 #define GTK_I18N_STR_OPEN	dpgettext(GTK_I18N_DOMAIN, "Stock label", "_Open")
+#define GTK_I18N_STR_CLOSE	dpgettext(GTK_I18N_DOMAIN, "Stock label", "_Close")
 #endif /* GTK_CHECK_VERSION(3,0,0) */
 
 #else /* !ENABLE_NLS */
@@ -50,5 +52,6 @@
 #define GTK_I18N_STR_OK		"_OK"
 #define GTK_I18N_STR_SAVE	"_Save"
 #define GTK_I18N_STR_OPEN	"_Open"
+#define GTK_I18N_STR_CLOSE	"_Close"
 
 #endif /* #if defined(ENABLE_NLS) && ENABLE_NLS */

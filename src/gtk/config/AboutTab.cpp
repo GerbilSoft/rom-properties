@@ -284,15 +284,23 @@ rp_about_tab_init(RpAboutTab *tab)
 #endif /* GTK_CHECK_VERSION(3,0,0) */
 
 	// Create the tabs.
-	GtkWidget *lblTab = rp_gtk_label_new_with_mnemonic(C_("AboutTab", "C&redits"));
-	gtk_notebook_append_page(GTK_NOTEBOOK(tabWidget), scrlCredits, lblTab);
-	gtk_widget_set_name(lblTab, "lblCreditsTab");
-	lblTab = rp_gtk_label_new_with_mnemonic(C_("AboutTab", "&Libraries"));
-	gtk_widget_set_name(lblTab, "lblLibrariesTab");
-	gtk_notebook_append_page(GTK_NOTEBOOK(tabWidget), scrlLibraries, lblTab);
-	lblTab = rp_gtk_label_new_with_mnemonic(C_("AboutTab", "&Support"));
-	gtk_widget_set_name(lblTab, "lblSupportTab");
-	gtk_notebook_append_page(GTK_NOTEBOOK(tabWidget), scrlSupport, lblTab);
+	GtkWidget *const lblTabCredits = rp_gtk_label_new_with_mnemonic(C_("AboutTab", "C&redits"));
+	gtk_notebook_append_page(GTK_NOTEBOOK(tabWidget), scrlCredits, lblTabCredits);
+	gtk_widget_set_name(lblTabCredits, "lblCreditsTab");
+	GtkWidget *const lblTabLibraries = rp_gtk_label_new_with_mnemonic(C_("AboutTab", "&Libraries"));
+	gtk_widget_set_name(lblTabLibraries, "lblLibrariesTab");
+	gtk_notebook_append_page(GTK_NOTEBOOK(tabWidget), scrlLibraries, lblTabLibraries);
+	GtkWidget *const lblTabSupport = rp_gtk_label_new_with_mnemonic(C_("AboutTab", "&Support"));
+	gtk_widget_set_name(lblTabSupport, "lblSupportTab");
+	gtk_notebook_append_page(GTK_NOTEBOOK(tabWidget), scrlSupport, lblTabSupport);
+
+#if GTK_CHECK_VERSION(4,0,0)
+	// GtkNotebook took a reference to the tab labels,
+	// so we don't need to keep our references.
+	g_object_unref(lblTabCredits);
+	g_object_unref(lblTabLibraries);
+	g_object_unref(lblTabSupport);
+#endif /* GTK_CHECK_VERSION(4,0,0) */
 
 #if GTK_CHECK_VERSION(4,0,0)
 	GTK_WIDGET_HALIGN_CENTER(hboxTitle);
@@ -349,9 +357,10 @@ rp_about_tab_init(RpAboutTab *tab)
 static void
 rp_about_tab_dispose(GObject *object)
 {
-#ifdef ENABLE_UPDATE_CHECK
 	RpAboutTab *const tab = RP_ABOUT_TAB(object);
+	RP_UNUSED(tab);	// maybe unused in some builds (XFCE/GTK2)...
 
+#ifdef ENABLE_UPDATE_CHECK
 	if (tab->updChecker) {
 		g_clear_object(&tab->updChecker);
 	}

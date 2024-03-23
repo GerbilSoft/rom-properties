@@ -11,30 +11,24 @@ INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR}/..)
 
 ### sort_funcs.c testss
 
-SET(SortFuncsTest_SRCS
-	SortFuncsTest.cpp
-	../sort_funcs.c
-	#../ListDataModel.cpp
-	#../SortFuncs.cpp
-	#../RomDataFormat.cpp
-	#../RpQImageBackend.cpp
-	#../RpQUrl.cpp
-	#../RpQt.cpp
-	)
-SET(SortFuncsTest_H
-	../sort_funcs.h
-	#../ListDataModel.hpp
-	#../SortFuncs.hpp
-	#../RomDataFormat.hpp
-	#../RpQImageBackend.hpp
-	#../RpQUrl.hpp
-	#../RpQt.hpp
-	)
+SET(SortFuncsTest_SRCS SortFuncsTest.cpp)
+
+SET(SortFuncsTest_GTK_COMMON_SRCS ../sort_funcs_common.c)
+SET(SortFuncsTest_GTK_COMMON_H    ../sort_funcs_common.h)
+
+SET(SortFuncsTest_GTK3_SRCS ../gtk3/sort_funcs.c)
+SET(SortFuncsTest_GTK3_H    ../gtk3/sort_funcs.h)
+
+SET(SortFuncsTest_GTK4_SRCS ../gtk4/sort_funcs.c)
+SET(SortFuncsTest_GTK4_H    ../gtk4/sort_funcs.h)
 
 IF(BUILD_XFCE)
 	ADD_EXECUTABLE(SortFuncsTest_gtk2
 		${SortFuncsTest_SRCS}
-		${SortFuncsTest_H}
+		${SortFuncsTest_GTK_COMMON_SRCS}
+		${SortFuncsTest_GTK_COMMON_H}
+		${SortFuncsTest_GTK3_SRCS}
+		${SortFuncsTest_GTK3_H}
 		)
 	TARGET_LINK_LIBRARIES(SortFuncsTest_gtk2 PRIVATE rptest)
 	#TARGET_LINK_LIBRARIES(SortFuncsTest_gtk2 PRIVATE GdkPixbuf2::gdkpixbuf2)
@@ -45,7 +39,10 @@ ENDIF(BUILD_XFCE)
 IF(BUILD_GTK3)
 	ADD_EXECUTABLE(SortFuncsTest_gtk3
 		${SortFuncsTest_SRCS}
-		${SortFuncsTest_H}
+		${SortFuncsTest_GTK_COMMON_SRCS}
+		${SortFuncsTest_GTK_COMMON_H}
+		${SortFuncsTest_GTK3_SRCS}
+		${SortFuncsTest_GTK3_H}
 		)
 	TARGET_LINK_LIBRARIES(SortFuncsTest_gtk3 PRIVATE rptest)
 	#TARGET_LINK_LIBRARIES(SortFuncsTest_gtk3 PRIVATE Cairo::gobject)
@@ -56,7 +53,11 @@ ENDIF(BUILD_GTK3)
 IF(BUILD_GTK4)
 	ADD_EXECUTABLE(SortFuncsTest_gtk4
 		${SortFuncsTest_SRCS}
-		${SortFuncsTest_H}
+		# TODO: Test the GTK4 sorting functions.
+		${SortFuncsTest_GTK_COMMON_SRCS}
+		${SortFuncsTest_GTK_COMMON_H}
+		${SortFuncsTest_GTK3_SRCS}
+		${SortFuncsTest_GTK3_H}
 		)
 	TARGET_LINK_LIBRARIES(SortFuncsTest_gtk4 PRIVATE rptest)
 	#TARGET_LINK_LIBRARIES(SortFuncsTest_gtk4 PRIVATE Cairo::gobject)

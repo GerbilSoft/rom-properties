@@ -94,7 +94,6 @@ struct _RpConfigDialogClass {
 	superclass __parent__;
 };
 
-// ConfigDialog instance
 struct _RpConfigDialog {
 	super __parent__;
 
@@ -275,6 +274,12 @@ rp_config_dialog_init(RpConfigDialog *dialog)
 
 		gtk_notebook_append_page(GTK_NOTEBOOK(dialog->tabWidget), alignment, tab_label);
 #endif /* RP_USE_GTK_ALIGNMENT */
+
+#if GTK_CHECK_VERSION(4,0,0)
+		// GtkNotebook took a reference to the tab label,
+		// so we don't need to keep our reference.
+		g_object_unref(tab_label);
+#endif /* GTK_CHECK_VERSION(4,0,0) */
 	}
 
 	// Show the GtkNotebook.

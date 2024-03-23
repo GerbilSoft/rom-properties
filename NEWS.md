@@ -9,6 +9,8 @@
   * GTK: The info bars that appear when using ROM Operations (the "Options"
     button on the Properties tab) or importing keys in rp-config's
     Key Manager now uses GtkRevealer if using GTK 3.10 or later.
+  * Linux: rp-stub now has a test program for RomDataView, which can be
+    accessed by specifying `-R` and a filename.
 
 * New parsers:
   * PalmOS: Palm OS executables and resource files (.prc). Thumbnailing is
@@ -51,6 +53,7 @@
   * Windows: rp-config: Added a checkbox to enable/disable the Extended
     Attributes tab. This was already added to the GTK and KDE UI frontends
     when Extended Attributes was added, but I forgot to do so for Windows.
+  * KDE: MessageWidget sounds now work on KF6.
 
 ## v2.3 (released 2024/03/03)
 

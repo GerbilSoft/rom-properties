@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpfile)                        *
  * VectorFile.hpp: IRpFile implementation using an std::vector.            *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -142,5 +142,7 @@ class RP_LIBROMDATA_PUBLIC VectorFile final : public IRpFile
 		std::vector<uint8_t> *m_pVector;	// NOTE: Needs to be ptr to prevent DLL linkage issues.
 		size_t m_pos;				// Current position
 };
+
+typedef std::shared_ptr<VectorFile> VectorFilePtr;
 
 }

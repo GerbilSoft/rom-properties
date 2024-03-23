@@ -20,7 +20,7 @@ shortname=RP
 
 set -ev
 
-ENUM_HEADER_FILES="RomDataView.hpp config/CacheCleaner.hpp"
+ENUM_HEADER_FILES="RomDataView.hpp config/CacheCleaner.hpp ListDataItem.h"
 
 # Header
 glib-mkenums \

@@ -136,7 +136,9 @@ IRpFilePtr openQUrl(const QUrl &url, bool isThumbnail)
 	}
 
 	string s_local_filename;
-	if (localUrl.scheme().isEmpty() || localUrl.isLocalFile()) {
+	if (localUrl.scheme().isEmpty()) {
+		s_local_filename = localUrl.path().toUtf8().constData();
+	} else if (localUrl.isLocalFile()) {
 		s_local_filename = localUrl.toLocalFile().toUtf8().constData();
 	}
 

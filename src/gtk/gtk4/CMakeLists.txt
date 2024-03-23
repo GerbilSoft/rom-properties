@@ -68,9 +68,9 @@ ENDIF(ENABLE_ACHIEVEMENTS)
 
 # Sources and headers. (GTK4-specific)
 SET(${PROJECT_NAME}_SRCS
-	${${PROJECT_NAME}_SRCS} ${${PROJECT_NAME}_H}
-	${${PROJECT_NAME}_GTK4MIN_SRCS} ${${PROJECT_NAME}_GTK4MIN_H}
-	${${PROJECT_NAME}-notify_SRCS} ${${PROJECT_NAME}-notify_H}
+	${${PROJECT_NAME}_SRCS}
+	${${PROJECT_NAME}_GTK4MIN_SRCS}
+	${${PROJECT_NAME}-notify_SRCS}
 	${${PROJECT_NAME}_IFUNC_SRCS}
 	${${PROJECT_NAME}_SSSE3_SRCS}
 	NautilusPlugin.cpp
@@ -78,10 +78,15 @@ SET(${PROJECT_NAME}_SRCS
 	NautilusPropertiesModel.cpp
 	../gtk3/NautilusMenuProvider.c
 	../gtk3/MenuProviderCommon.c
+
+	../RomDataView_gtk4.cpp
+	sort_funcs.c
+	../xattr/XAttrView_gtk4.cpp
 	)
 SET(${PROJECT_NAME}_H
-	${${PROJECT_NAME}_H} ${${PROJECT_NAME}_H}
+	${${PROJECT_NAME}_H}
 	${${PROJECT_NAME}_GTK4MIN_H}
+	${${PROJECT_NAME}-notify_H}
 	../plugin-helper.h
 	NautilusPlugin.hpp
 	NautilusPropertiesModelProvider.hpp
@@ -89,6 +94,8 @@ SET(${PROJECT_NAME}_H
 	../gtk3/NautilusMenuProvider.h
 	nautilus-extension-mini.h
 	../gtk3/MenuProviderCommon.h
+
+	sort_funcs.h
 	)
 IF(ENABLE_DECRYPTION)
 	# FIXME: Editing keys in the GTK4 version causes crashes.

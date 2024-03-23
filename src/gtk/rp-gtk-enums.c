@@ -3,6 +3,30 @@
 
 #include <glib-object.h>
 
+/* enumerations from "ListDataItem.h" */
+#include "ListDataItem.h"
+GType
+rp_list_data_item_col0_type_get_type (void)
+{
+  static gsize static_g_enum_type_id;
+
+  if (g_once_init_enter (&static_g_enum_type_id))
+    {
+      static const GEnumValue values[] = {
+            { RP_LIST_DATA_ITEM_COL0_TYPE_TEXT, "RP_LIST_DATA_ITEM_COL0_TYPE_TEXT", "Text only" },
+            { RP_LIST_DATA_ITEM_COL0_TYPE_CHECKBOX, "RP_LIST_DATA_ITEM_COL0_TYPE_CHECKBOX", "Column 0 is a checkbox" },
+            { RP_LIST_DATA_ITEM_COL0_TYPE_ICON, "RP_LIST_DATA_ITEM_COL0_TYPE_ICON", "Column 1 is an icon" },
+            { RP_LIST_DATA_ITEM_COL0_TYPE_LAST, "RP_LIST_DATA_ITEM_COL0_TYPE_LAST", "last" },
+            { 0, NULL, NULL }
+      };
+
+      GType g_enum_type_id = g_enum_register_static ("RpListDataItemCol0Type", values);
+
+      g_once_init_leave (&static_g_enum_type_id, g_enum_type_id);
+    }
+  return static_g_enum_type_id;
+}
+
 /* enumerations from "RomDataView.hpp" */
 #include "RomDataView.hpp"
 GType

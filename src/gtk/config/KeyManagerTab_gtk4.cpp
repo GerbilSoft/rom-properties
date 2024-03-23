@@ -1,8 +1,8 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (GTK+ common)                      *
- * KeyManagerTab_gtk3.hpp: Key Manager tab for rp-config. (GTK2/GTK3)      *
+ * KeyManagerTab_gtk4.cpp: Key Manager tab for rp-config. (GTK4)           *
  *                                                                         *
- * Copyright (c) 2017-2023 by David Korth.                                 *
+ * Copyright (c) 2017-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -309,6 +309,7 @@ void rp_key_manager_tab_create_GtkTreeView(RpKeyManagerTab *tab)
 	// a GtkSingleSelection to wrap around the GListStore.
 	GtkSingleSelection *const selModel = gtk_single_selection_new(G_LIST_MODEL(tab->treeListModel));
 	gtk_column_view_set_model(GTK_COLUMN_VIEW(tab->columnView), GTK_SELECTION_MODEL(selModel));
+	g_object_unref(selModel);
 
 	// Column titles
 	static const char *const column_titles[KEY_COL_MAX] = {

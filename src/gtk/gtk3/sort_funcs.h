@@ -1,5 +1,5 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (GTK+ common)                      *
+ * ROM Properties Page shell extension. (GTK2/GTK3)                        *
  * sort_funcs.h: GtkTreeSortable sort functions.                           *
  *                                                                         *
  * Copyright (c) 2017-2024 by David Korth.                                 *
@@ -18,9 +18,9 @@ G_BEGIN_DECLS
  * @param a
  * @param b
  * @param userdata Column ID
- * @return -1, 0, or 1.
+ * @return -1, 0, or 1 (like strcmp())
  */
-gint sort_RFT_LISTDATA_standard(GtkTreeModel *model, GtkTreeIter *a, GtkTreeIter *b, gpointer userdata);
+gint rp_sort_RFT_LISTDATA_standard(GtkTreeModel *model, GtkTreeIter *a, GtkTreeIter *b, gpointer userdata);
 
 /**
  * RFT_LISTDATA sorting function for COLSORT_NOCASE (case-insensitive).
@@ -28,9 +28,9 @@ gint sort_RFT_LISTDATA_standard(GtkTreeModel *model, GtkTreeIter *a, GtkTreeIter
  * @param a
  * @param b
  * @param userdata Column ID
- * @return -1, 0, or 1.
+ * @return -1, 0, or 1 (like strcmp())
  */
-gint sort_RFT_LISTDATA_nocase(GtkTreeModel *model, GtkTreeIter *a, GtkTreeIter *b, gpointer userdata);
+gint rp_sort_RFT_LISTDATA_nocase(GtkTreeModel *model, GtkTreeIter *a, GtkTreeIter *b, gpointer userdata);
 
 /**
  * RFT_LISTDATA sorting function for COLSORT_NUMERIC.
@@ -38,8 +38,8 @@ gint sort_RFT_LISTDATA_nocase(GtkTreeModel *model, GtkTreeIter *a, GtkTreeIter *
  * @param a
  * @param b
  * @param userdata Column ID
- * @return -1, 0, or 1.
+ * @return -1, 0, or 1 (like strcmp())
  */
-gint sort_RFT_LISTDATA_numeric(GtkTreeModel *model, GtkTreeIter *a, GtkTreeIter *b, gpointer userdata);
+gint rp_sort_RFT_LISTDATA_numeric(GtkTreeModel *model, GtkTreeIter *a, GtkTreeIter *b, gpointer userdata);
 
 G_END_DECLS

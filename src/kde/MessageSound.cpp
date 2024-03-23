@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * MessageSound.cpp: Message sound effects class.                          *
  *                                                                         *
- * Copyright (c) 2018-2020 by David Korth.                                 *
+ * Copyright (c) 2018-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -18,6 +18,8 @@
 #  include <knotification.h>
 #endif
 
+#include "RpQtNS.hpp"
+
 namespace MessageSound {
 
 /**
@@ -29,10 +31,10 @@ namespace MessageSound {
 void play(QMessageBox::Icon notificationType, const QString &message, QWidget *parent)
 {
 #if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
-	QPluginLoader lib(QStringLiteral("kf5/FrameworkIntegrationPlugin"));
+	QPluginLoader lib(QStringLiteral(RP_KDE_LOWER "/FrameworkIntegrationPlugin"));
 	QObject *const rootObj = lib.instance();
 	if (rootObj) {
-		KMessageBoxNotifyInterface *iface = rootObj->property(KMESSAGEBOXNOTIFY_PROPERTY)
+		KMessageBoxNotifyInterface *const iface = rootObj->property(KMESSAGEBOXNOTIFY_PROPERTY)
 			.value<KMessageBoxNotifyInterface*>();
 		if (iface) {
 			iface->sendNotification(notificationType, message, parent);

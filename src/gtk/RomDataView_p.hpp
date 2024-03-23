@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * RomDataView.cpp: RomData viewer widget. (Private functions)             *
  *                                                                         *
- * Copyright (c) 2017-2023 by David Korth.                                 *
+ * Copyright (c) 2017-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -41,6 +41,21 @@ struct _RpRomDataViewClass {
 // Multi-language stuff
 typedef std::pair<GtkLabel*, const LibRpBase::RomFields::Field*> Data_StringMulti_t;
 
+#if GTK_CHECK_VERSION(4,0,0)
+struct Data_ListDataMulti_t {
+	GListStore *listStore;
+	GtkColumnView *columnView;
+	const LibRpBase::RomFields::Field *field;
+
+	Data_ListDataMulti_t(
+		GListStore *listStore,
+		GtkColumnView *columnView,
+		const LibRpBase::RomFields::Field *field)
+		: listStore(listStore)
+		, columnView(columnView)
+		, field(field) { }
+};
+#else /* !GTK_CHECK_VERSION(4,0,0) */
 struct Data_ListDataMulti_t {
 	GtkListStore *listStore;
 	GtkTreeView *treeView;
@@ -54,6 +69,7 @@ struct Data_ListDataMulti_t {
 		, treeView(treeView)
 		, field(field) { }
 };
+#endif /* GTK_CHECK_VERSION(4,0,0) */
 
 // C++ objects
 struct _RpRomDataViewCxx {
@@ -137,8 +153,32 @@ extern GQuark RFT_STRING_warning_quark;
 int	rp_rom_data_view_update_field		(RpRomDataView		*page,
 						 int			 fieldIdx);
 
+void	checkbox_no_toggle_signal_handler	(GtkCheckButton		*checkbutton,
+						 RpRomDataView		*page);
+
 void	btnOptions_triggered_signal_handler	(RpOptionsMenuButton	*menuButton,
 						 gint		 	 id,
 						 RpRomDataView		*page);
 
+/**
+ * Initialize a list data field.
+ * @param page		[in] RomDataView object
+ * @param field		[in] RomFields::Field
+ * @return Display widget, or nullptr on error.
+ */
+GtkWidget*
+rp_rom_data_view_init_listdata(RpRomDataView *page, const LibRpBase::RomFields::Field &field);
+
 G_END_DECLS
+
+#ifdef __cplusplus
+/**
+ * Update RFT_LISTDATA_MULTI fields.
+ * Called from rp_rom_data_view_update_multi.
+ * @param page		[in] RomDataView object.
+ * @param user_lc	[in] User-specified language code.
+ * @param set_lc	[in/out] Set of LCs
+ */
+void
+rp_rom_data_view_update_multi_RFT_LISTDATA_MULTI(RpRomDataView *page, uint32_t user_lc, std::set<uint32_t> &set_lc);
+#endif /* __cplusplus */

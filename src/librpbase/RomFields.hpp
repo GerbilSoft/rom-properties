@@ -30,22 +30,23 @@
 
 namespace LibRpBase {
 
-// Text alignment macros.
-#define TXA_D	(RomFields::TextAlign::TXA_DEFAULT)
-#define TXA_L	(RomFields::TextAlign::TXA_LEFT)
-#define TXA_C	(RomFields::TextAlign::TXA_CENTER)
-#define TXA_R	(RomFields::TextAlign::TXA_RIGHT)
+// Text alignment macros
+#define TXA_D	(LibRpBase::RomFields::TextAlign::TXA_DEFAULT)
+#define TXA_L	(LibRpBase::RomFields::TextAlign::TXA_LEFT)
+#define TXA_C	(LibRpBase::RomFields::TextAlign::TXA_CENTER)
+#define TXA_R	(LibRpBase::RomFields::TextAlign::TXA_RIGHT)
 
-// Column sizing macros.
+// Column sizing macros
 // Based on Qt5's QHeaderView::ResizeMode.
-#define COLSZ_I	(RomFields::ColSizing::COLSZ_INTERACTIVE)
-//#define COLSZ_F	(RomFields::ColSizing::COLSZ_FIXED)
-#define COLSZ_S	(RomFields::ColSizing::COLSZ_STRETCH)
-#define COLSZ_R	(RomFields::ColSizing::COLSZ_RESIZETOCONTENTS)
+#define COLSZ_I	(LibRpBase::RomFields::ColSizing::COLSZ_INTERACTIVE)
+//#define COLSZ_F	(LibRpBase::RomFields::ColSizing::COLSZ_FIXED)
+#define COLSZ_S	(LibRpBase::RomFields::ColSizing::COLSZ_STRETCH)
+#define COLSZ_R	(LibRpBase::RomFields::ColSizing::COLSZ_RESIZETOCONTENTS)
 
-// Column sorting macros.
-#define COLSORT_STD	(RomFields::ColSorting::COLSORT_STANDARD)
-#define COLSORT_NUM	(RomFields::ColSorting::COLSORT_NUMERIC)
+// Column sorting macros
+#define COLSORT_STD	(LibRpBase::RomFields::ColSorting::COLSORT_STANDARD)
+#define COLSORT_NC	(LibRpBase::RomFields::ColSorting::COLSORT_NOCASE)
+#define COLSORT_NUM	(LibRpBase::RomFields::ColSorting::COLSORT_NUMERIC)
 
 // RFT_LISTDATA macros for both text alignment and column sizing.
 // - # indicates number of columns.

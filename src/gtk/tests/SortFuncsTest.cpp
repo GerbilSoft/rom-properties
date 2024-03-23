@@ -14,7 +14,8 @@
 #include "gtk-compat.h"
 
 // sort_funcs.h
-#include "sort_funcs.h"
+// TODO: Test the GTK4 sorting functions.
+#include "gtk3/sort_funcs.h"
 
 // for ARRAY_SIZE()
 #include "common.h"
@@ -131,13 +132,13 @@ void ListDataSortProxyModelTest::SetUp()
 	// Sorting order (function pointers)
 	static const GtkTreeIterCompareFunc sort_funcs[4] = {
 		// Column 0: Greek alphabet, standard sort
-		sort_RFT_LISTDATA_standard,
+		rp_sort_RFT_LISTDATA_standard,
 		// Column 1: Greek alphabet, case-insensitive sort
-		sort_RFT_LISTDATA_nocase,
+		rp_sort_RFT_LISTDATA_nocase,
 		// Column 2: Numbers, standard sort
-		sort_RFT_LISTDATA_standard,
+		rp_sort_RFT_LISTDATA_standard,
 		// Column 3: Numbers, numeric sort
-		sort_RFT_LISTDATA_numeric,
+		rp_sort_RFT_LISTDATA_numeric,
 	};
 
 	// Set the column sort functions.

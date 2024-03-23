@@ -21,8 +21,8 @@ G_DECLARE_FINAL_TYPE(RpRomDataView, rp_rom_data_view, RP, ROM_DATA_VIEW, GtkVBox
 
 /** RpDescFormatType: How the "description" label is formatted. **/
 typedef enum {
-	RP_DFT_XFCE	= 0,	/*< nick=XFCE style (default) >*/
-	RP_DFT_GNOME	= 1,	/*< nick=GNOME style >*/
+	RP_DFT_XFCE	= 0,	/*< nick="XFCE style (default)" >*/
+	RP_DFT_GNOME	= 1,	/*< nick="GNOME style" >*/
 
 	RP_DFT_LAST
 } RpDescFormatType;
