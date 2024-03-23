@@ -14,6 +14,7 @@
 #include "librpbase/img/IconAnimHelper.hpp"
 #include "librpfile/VectorFile.hpp"
 using namespace LibRpBase;
+using namespace LibRpFile;
 using namespace LibRpTexture;
 
 // C++ STL classes
@@ -41,11 +42,14 @@ static void	rp_drag_image_finalize	(GObject	*object);
 // Signal handlers
 static void	rp_drag_image_map_signal_handler  (RpDragImage *image, gpointer user_data);
 static void	rp_drag_image_notify_width_or_height_signal_handler(RpDragImage *image, GParamSpec *pspec, gpointer user_data);
-// FIXME: GTK4 has a new Drag & Drop API.
-#if !GTK_CHECK_VERSION(4,0,0)
+#if GTK_CHECK_VERSION(4,0,0)
+static GdkContentProvider *rp_drag_image_drag_source_prepare(GtkDragSource *source, double x, double y, RpDragImage *image);
+static void	rp_drag_image_drag_source_drag_begin(GtkDragSource *source, GdkDrag *drag, RpDragImage *image);
+static void	rp_drag_image_drag_source_drag_end(GtkDragSource *source, GdkDrag *drag, gboolean delete_data, RpDragImage *image);
+#else /* !GTK_CHECK_VERSION(4,0,0) */
 static void	rp_drag_image_drag_begin(RpDragImage *image, GdkDragContext *context, gpointer user_data);
 static void	rp_drag_image_drag_data_get(RpDragImage *image, GdkDragContext *context, GtkSelectionData *data, guint info, guint time, gpointer user_data);
-#endif /* !GTK_CHECK_VERSION(4,0,0) */
+#endif /* GTK_CHECK_VERSION(4,0,0) */
 
 #ifdef USE_G_MENU_MODEL
 static void	ecksbawks_action_triggered_signal_handler     (GSimpleAction	*action,
@@ -82,6 +86,12 @@ struct _RpDragImageCxx {
 	~_RpDragImageCxx()
 	{
 		delete anim;
+
+#if GTK_CHECK_VERSION(4,0,0)
+		if (pngBytes) {
+			g_bytes_unref(pngBytes);
+		}
+#endif /* GTK_CHECK_VERSION(4,0,0) */
 	}
 
 	// rp_image (C++ shared_ptr)
@@ -120,6 +130,12 @@ struct _RpDragImageCxx {
 		}
 	};
 	anim_vars *anim;
+
+#if GTK_CHECK_VERSION(4,0,0)
+	// Temporary buffer for PNG data when dragging and dropping images.
+	VectorFilePtr pngData;
+	GBytes *pngBytes;
+#endif /* GTK_CHECK_VERSION(4,0,0) */
 };
 
 // DragImage instance
@@ -141,6 +157,10 @@ struct _RpDragImage {
 #else /* !USE_G_MENU_MODEL */
 	GtkWidget *menuEcksBawks;	// GtkMenu
 #endif /* USE_G_MENU_MODEL */
+
+#if GTK_CHECK_VERSION(4,0,0)
+	GtkDragSource *dragSource;
+#endif /* GTK_CHECK_VERSION(4,0,0) */
 };
 
 // NOTE: G_DEFINE_TYPE() doesn't work in C++ mode with gcc-6.2
@@ -188,11 +208,16 @@ rp_drag_image_init(RpDragImage *image)
 	g_signal_connect(G_OBJECT(image), "notify::width-request",  G_CALLBACK(rp_drag_image_notify_width_or_height_signal_handler), nullptr);
 	g_signal_connect(G_OBJECT(image), "notify::height-request", G_CALLBACK(rp_drag_image_notify_width_or_height_signal_handler), nullptr);
 
-// FIXME: GTK4 has a new Drag & Drop API.
-#if !GTK_CHECK_VERSION(4,0,0)
+#if GTK_CHECK_VERSION(4,0,0)
+	image->dragSource = gtk_drag_source_new();
+	g_signal_connect(G_OBJECT(image->dragSource), "prepare",    G_CALLBACK(rp_drag_image_drag_source_prepare),    image);
+	g_signal_connect(G_OBJECT(image->dragSource), "drag-begin", G_CALLBACK(rp_drag_image_drag_source_drag_begin), image);
+	g_signal_connect(G_OBJECT(image->dragSource), "drag-end",   G_CALLBACK(rp_drag_image_drag_source_drag_end),   image);
+	gtk_widget_add_controller(GTK_WIDGET(image), GTK_EVENT_CONTROLLER(image->dragSource));
+#else /* !GTK_CHECK_VERSION(4,0,0) */
 	g_signal_connect(G_OBJECT(image), "drag-begin",    G_CALLBACK(rp_drag_image_drag_begin),    nullptr);
 	g_signal_connect(G_OBJECT(image), "drag-data-get", G_CALLBACK(rp_drag_image_drag_data_get), nullptr);
-#endif /* !GTK_CHECK_VERSION(4,0,0) */
+#endif /* GTK_CHECK_VERSION(4,0,0) */
 }
 
 static void
@@ -285,7 +310,6 @@ rp_drag_image_update_pixmaps(RpDragImage *image)
 		image->curFrame = nullptr;
 	}
 
-	// TODO: Call this function if the size request is changed.
 #if GTK_CHECK_VERSION(3,0,0)
 	// NOTE: In testing, the two sizes (minimum and natural) returned by
 	// gtk_widget_get_preferred_size() are both the same if
@@ -791,13 +815,108 @@ rp_drag_image_notify_width_or_height_signal_handler(RpDragImage *image, GParamSp
 	}
 }
 
-// FIXME: GTK4 has a new Drag & Drop API.
-#if !GTK_CHECK_VERSION(4,0,0)
+/**
+ * Create a PNG file for the drag & drop operation.
+ * @param image RpDragImage
+ * @return VectorFile containing the PNG data.
+ */
+static VectorFilePtr
+rp_drag_image_create_PNG_file(RpDragImage *image)
+{
+	_RpDragImageCxx *const cxx = image->cxx;
+	auto *const anim = cxx->anim;
+	const bool isAnimated = (anim && anim->iconAnimData && anim->iconAnimHelper.isAnimated());
+
+	VectorFilePtr pngData = std::make_shared<VectorFile>();
+	unique_ptr<RpPngWriter> pngWriter;
+	if (isAnimated) {
+		// Animated icon.
+		pngWriter.reset(new RpPngWriter(pngData, anim->iconAnimData));
+	} else if (cxx->img) {
+		// Standard icon.
+		// NOTE: Using the source image because we want the original
+		// size, not the resized version.
+		pngWriter.reset(new RpPngWriter(pngData, cxx->img));
+	} else {
+		// No icon...
+		return {};
+	}
+
+	if (!pngWriter->isOpen()) {
+		// Unable to open the PNG writer.
+		return {};
+	}
+
+	// TODO: Add text fields indicating the source game.
+
+	int pwRet = pngWriter->write_IHDR();
+	if (pwRet != 0) {
+		// Error writing the PNG image...
+		return {};
+	}
+	pwRet = pngWriter->write_IDAT();
+	if (pwRet != 0) {
+		// Error writing the PNG image...
+		return {};
+	}
+
+	// RpPngWriter will finalize the PNG on delete.
+	pngWriter.reset();
+	return pngData;
+}
+
+#if GTK_CHECK_VERSION(4,0,0)
+static GdkContentProvider*
+rp_drag_image_drag_source_prepare(GtkDragSource *source, double x, double y, RpDragImage *image)
+{
+	RP_UNUSED(source);
+	RP_UNUSED(x);
+	RP_UNUSED(y);
+
+	_RpDragImageCxx *const cxx = image->cxx;
+	cxx->pngData = rp_drag_image_create_PNG_file(image);
+	if (!cxx->pngData)
+		return nullptr;
+
+	if (cxx->pngBytes) {
+		g_bytes_unref(cxx->pngBytes);
+	}
+
+	const std::vector<uint8_t> &pngVec = cxx->pngData->vector();
+	cxx->pngBytes = g_bytes_new_static(pngVec.data(), pngVec.size());
+	return gdk_content_provider_new_for_bytes("image/png", cxx->pngBytes);
+}
+
+static void
+rp_drag_image_drag_source_drag_begin(GtkDragSource *source, GdkDrag *drag, RpDragImage *image)
+{
+	RP_UNUSED(drag);
+
+	// Set the drag icon.
+	// NOTE: gtk_drag_source_set_icon() takes its own reference to the PIMGTYPE.
+	// TODO: Hotspot coordinates?
+	gtk_drag_source_set_icon(source, GDK_PAINTABLE(image->curFrame), 0, 0);
+}
+
+static void
+rp_drag_image_drag_source_drag_end(GtkDragSource *source, GdkDrag *drag, gboolean delete_data, RpDragImage *image)
+{
+	RP_UNUSED(source);
+	RP_UNUSED(drag);
+	RP_UNUSED(delete_data);
+
+	_RpDragImageCxx *const cxx = image->cxx;
+	if (cxx->pngBytes) {
+		g_bytes_unref(cxx->pngBytes);
+		cxx->pngBytes = nullptr;
+	}
+	cxx->pngData.reset();
+}
+#else /* !GTK_CHECK_VERSION(4,0,0) */
 static void
 rp_drag_image_drag_begin(RpDragImage *image, GdkDragContext *context, gpointer user_data)
 {
 	RP_UNUSED(user_data);
-	g_return_if_fail(RP_IS_DRAG_IMAGE(image));
 
 	// Set the drag icon.
 	// NOTE: gtk_drag_set_icon_PIMGTYPE() takes its own reference to the PIMGTYPE.
@@ -814,48 +933,10 @@ rp_drag_image_drag_data_get(RpDragImage *image, GdkDragContext *context, GtkSele
 	RP_UNUSED(info);
 	RP_UNUSED(time);
 	RP_UNUSED(user_data);
-	g_return_if_fail(RP_IS_DRAG_IMAGE(image));
-	_RpDragImageCxx *const cxx = image->cxx;
 
-	auto *const anim = cxx->anim;
-	const bool isAnimated = (anim && anim->iconAnimData && anim->iconAnimHelper.isAnimated());
-
-	using LibRpFile::VectorFile;
-	std::shared_ptr<VectorFile> pngData = std::make_shared<VectorFile>();
-	unique_ptr<RpPngWriter> pngWriter;
-	if (isAnimated) {
-		// Animated icon.
-		pngWriter.reset(new RpPngWriter(pngData, anim->iconAnimData));
-	} else if (cxx->img) {
-		// Standard icon.
-		// NOTE: Using the source image because we want the original
-		// size, not the resized version.
-		pngWriter.reset(new RpPngWriter(pngData, cxx->img));
-	} else {
-		// No icon...
+	VectorFilePtr pngData = rp_drag_image_create_PNG_file(image);
+	if (!pngData)
 		return;
-	}
-
-	if (!pngWriter->isOpen()) {
-		// Unable to open the PNG writer.
-		return;
-	}
-
-	// TODO: Add text fields indicating the source game.
-
-	int pwRet = pngWriter->write_IHDR();
-	if (pwRet != 0) {
-		// Error writing the PNG image...
-		return;
-	}
-	pwRet = pngWriter->write_IDAT();
-	if (pwRet != 0) {
-		// Error writing the PNG image...
-		return;
-	}
-
-	// RpPngWriter will finalize the PNG on delete.
-	pngWriter.reset();
 
 	// Set the selection data.
 	// NOTE: gtk_selection_data_set() copies the data.
@@ -863,7 +944,7 @@ rp_drag_image_drag_data_get(RpDragImage *image, GdkDragContext *context, GtkSele
 	gtk_selection_data_set(data, gdk_atom_intern_static_string("image/png"), 8,
 		pngVec.data(), static_cast<gint>(pngVec.size()));
 }
-#endif /* !GTK_CHECK_VERSION(4,0,0) */
+#endif /* GTK_CHECK_VERSION(4,0,0) */
 
 static void
 ecksbawks_show_url(gint id)
