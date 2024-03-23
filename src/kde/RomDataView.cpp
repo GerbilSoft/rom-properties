@@ -534,12 +534,10 @@ QTreeView *RomDataViewPrivate::initListData(QLabel *lblDesc,
 	// while others might take up three or more.
 	treeView->setUniformRowHeights(false);
 
-	// Item models.
-	// TODO: Subclass QSortFilterProxyModel for custom sorting methods.
+	// Item models
 	ListDataModel *const listModel = new ListDataModel(q);
 	// NOTE: No name for this QObject.
 	ListDataSortProxyModel *const proxyModel = new ListDataSortProxyModel(q);
-	// NOTE: No name for this QObject.
 	proxyModel->setSortingMethods(listDataDesc.col_attrs.sorting);
 	proxyModel->setSourceModel(listModel);
 	treeView->setModel(proxyModel);
