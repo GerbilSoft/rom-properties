@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * PIMGTYPE.hpp: PIMGTYPE typedef and wrapper functions.                   *
  *                                                                         *
- * Copyright (c) 2017-2023 by David Korth.                                 *
+ * Copyright (c) 2017-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -20,7 +20,7 @@
 #if GTK_CHECK_VERSION(4,0,0)
 #  define RP_GTK_USE_GDKTEXTURE 1
 #  ifdef __cplusplus
-#    include "GdkTextureConv.hpp"
+#    include "gtk4/GdkTextureConv.hpp"
 #  endif /* __cplusplus */
 #  define PIMGTYPE_GOBJECT_TYPE GDK_TYPE_TEXTURE
 #  define PIMGTYPE_CAST(obj) GDK_TEXTURE(obj)
@@ -31,7 +31,7 @@ G_END_DECLS
 #elif GTK_CHECK_VERSION(3,10,0) && !GTK_CHECK_VERSION(4,0,0)
 #  define RP_GTK_USE_CAIRO 1
 #  ifdef __cplusplus
-#    include "CairoImageConv.hpp"
+#    include "gtk3/CairoImageConv.hpp"
 #  endif /* __cplusplus */
 #  include <cairo-gobject.h>
 #  define PIMGTYPE_GOBJECT_TYPE CAIRO_GOBJECT_TYPE_SURFACE
@@ -42,7 +42,7 @@ typedef cairo_surface_t *PIMGTYPE;
 G_END_DECLS
 #else
 #  ifdef __cplusplus
-#    include "GdkImageConv.hpp"
+#    include "xfce/GdkImageConv.hpp"
 #  endif /* __cplusplus */
 #  define PIMGTYPE_GOBJECT_TYPE GDK_TYPE_PIXBUF
 #  define PIMGTYPE_CAST(obj) GDK_PIXBUF(obj)
