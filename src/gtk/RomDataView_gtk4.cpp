@@ -290,15 +290,14 @@ rp_rom_data_view_init_listdata(RpRomDataView *page, const RomFields::Field &fiel
 				//gtk_tree_view_column_set_sizing(column, GTK_TREE_VIEW_COLUMN_GROW_ONLY);
 				break;
 			/*case RomFields::ColSizing::COLSZ_FIXED:
-				gtk_column_view_column_set_resizable(column, true);
-				gtk_tree_view_column_set_sizing(column, FIXED);
+				gtk_column_view_column_set_resizable(column, false);
+				//gtk_tree_view_column_set_sizing(column, FIXED);
 				break;*/
 			case RomFields::ColSizing::COLSZ_STRETCH:
 				// TODO: Wordwrapping and/or text elision?
 				// NOTE: Allowing the user to resize the column because
 				// unlike Qt, we can't shrink it by shrinking the window.
 				gtk_column_view_column_set_resizable(column, true);
-				gtk_column_view_column_set_expand(column, true);
 				//gtk_tree_view_column_set_sizing(column, GTK_TREE_VIEW_COLUMN_GROW_ONLY);
 				break;
 			case RomFields::ColSizing::COLSZ_RESIZETOCONTENTS:
@@ -306,6 +305,10 @@ rp_rom_data_view_init_listdata(RpRomDataView *page, const RomFields::Field &fiel
 				//gtk_tree_view_column_set_sizing(column, GTK_TREE_VIEW_COLUMN_AUTOSIZE);
 				break;
 		}
+
+		// The final column should always have expand set.
+		// Other columns should *not* have expand set.
+		gtk_column_view_column_set_expand(column, (i == colCount-1));
 
 		// Check what we should use for sorting.
 		// NOTE: We're setting the sorting functions on the proxy model.
