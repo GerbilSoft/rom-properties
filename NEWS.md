@@ -9,6 +9,8 @@
   * GTK: The info bars that appear when using ROM Operations (the "Options"
     button on the Properties tab) or importing keys in rp-config's
     Key Manager now uses GtkRevealer if using GTK 3.10 or later.
+  * Linux: rp-stub now has a test program for RomDataView, which can be
+    accessed by specifying `-R` and a filename.
 
 * New parsers:
   * PalmOS: Palm OS executables and resource files (.prc). Thumbnailing is
