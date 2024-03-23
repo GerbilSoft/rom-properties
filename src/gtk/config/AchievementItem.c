@@ -1,6 +1,6 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (GTK+ common)                      *
- * AchievementItem.c: Achievement ComboBox Item (for GtkDropDown)          *
+ * ROM Properties Page shell extension. (GTK4)                             *
+ * AchievementItem.c: Achievement item for GtkDropDown                     *
  *                                                                         *
  * Copyright (c) 2017-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
@@ -184,10 +184,7 @@ rp_achievement_item_finalize(GObject *object)
 {
 	RpAchievementItem *const item = RP_ACHIEVEMENT_ITEM(object);
 
-	if (item->description) {
-		g_free(item->description);
-		item->description = NULL;
-	}
+	g_free(item->description);
 
 	// Call the superclass finalize() function.
 	G_OBJECT_CLASS(rp_achievement_item_parent_class)->finalize(object);
