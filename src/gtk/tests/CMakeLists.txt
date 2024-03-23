@@ -11,20 +11,31 @@ INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR}/..)
 
 ### sort_funcs.c testss
 
-SET(SortFuncsTest_SRCS SortFuncsTest.cpp)
-
 SET(SortFuncsTest_GTK_COMMON_SRCS ../sort_funcs_common.c)
 SET(SortFuncsTest_GTK_COMMON_H    ../sort_funcs_common.h)
 
-SET(SortFuncsTest_GTK3_SRCS ../gtk3/sort_funcs.c)
-SET(SortFuncsTest_GTK3_H    ../gtk3/sort_funcs.h)
+SET(SortFuncsTest_GTK3_SRCS
+	SortFuncsTest_gtk3.cpp
+	../gtk3/sort_funcs.c
+	)
+SET(SortFuncsTest_GTK3_H
+	../gtk3/sort_funcs.h
+	)
 
-SET(SortFuncsTest_GTK4_SRCS ../gtk4/sort_funcs.c)
-SET(SortFuncsTest_GTK4_H    ../gtk4/sort_funcs.h)
+SET(SortFuncsTest_GTK4_SRCS
+	SortFuncsTest_gtk4.cpp
+	../rp-gtk-enums.c
+	../ListDataItem.c
+	../gtk4/sort_funcs.c
+	)
+SET(SortFuncsTest_GTK4_H
+	../rp-gtk-enums.h
+	../ListDataItem.h
+	../gtk4/sort_funcs.h
+	)
 
 IF(BUILD_XFCE)
 	ADD_EXECUTABLE(SortFuncsTest_gtk2
-		${SortFuncsTest_SRCS}
 		${SortFuncsTest_GTK_COMMON_SRCS}
 		${SortFuncsTest_GTK_COMMON_H}
 		${SortFuncsTest_GTK3_SRCS}
@@ -38,7 +49,6 @@ IF(BUILD_XFCE)
 ENDIF(BUILD_XFCE)
 IF(BUILD_GTK3)
 	ADD_EXECUTABLE(SortFuncsTest_gtk3
-		${SortFuncsTest_SRCS}
 		${SortFuncsTest_GTK_COMMON_SRCS}
 		${SortFuncsTest_GTK_COMMON_H}
 		${SortFuncsTest_GTK3_SRCS}
@@ -52,12 +62,10 @@ IF(BUILD_GTK3)
 ENDIF(BUILD_GTK3)
 IF(BUILD_GTK4)
 	ADD_EXECUTABLE(SortFuncsTest_gtk4
-		${SortFuncsTest_SRCS}
-		# TODO: Test the GTK4 sorting functions.
 		${SortFuncsTest_GTK_COMMON_SRCS}
 		${SortFuncsTest_GTK_COMMON_H}
-		${SortFuncsTest_GTK3_SRCS}
-		${SortFuncsTest_GTK3_H}
+		${SortFuncsTest_GTK4_SRCS}
+		${SortFuncsTest_GTK4_H}
 		)
 	TARGET_LINK_LIBRARIES(SortFuncsTest_gtk4 PRIVATE rptest)
 	#TARGET_LINK_LIBRARIES(SortFuncsTest_gtk4 PRIVATE Cairo::gobject)

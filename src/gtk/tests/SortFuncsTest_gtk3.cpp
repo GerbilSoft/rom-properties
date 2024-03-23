@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (gtk/tests)                        *
- * SortFuncsTest.cpp: sort_funcs.c test.                                   *
+ * SortFuncsTest_gtk3.cpp: sort_funcs.c test (GTK2/GTK3)                   *
  *                                                                         *
  * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
@@ -26,6 +26,9 @@
 // C++ STL classes
 using std::string;
 
+// Test data
+#include "SortFuncsTest_data.h"
+
 namespace LibRomData { namespace Tests {
 
 class ListDataSortProxyModelTest : public ::testing::Test
@@ -49,42 +52,6 @@ class ListDataSortProxyModelTest : public ::testing::Test
 	protected:
 		GtkListStore *listStore;	// List data
 		GtkTreeModel *sortProxy;	// Sort proxy
-
-	public:
-		// Sorted strings
-		static const char *const sorted_strings_asc[4][24];
-};
-
-// Sorted strings
-const char *const ListDataSortProxyModelTest::sorted_strings_asc[4][24] = {
-	// Column 0: Greek alphabet, standard sort
-	{"Alpha", "Epsilon", "Eta", "Gamma",
-	 "Iota", "Lambda", "Nu", "Omicron",
-	 "Phi", "Psi", "Rho", "Tau",
-	 "bEta", "cHi", "dElta", "kAppa",
-	 "mU", "oMega", "pI", "sIgma",
-	 "tHeta", "uPsilon", "xI", "zEta"},
-	// Column 1: Greek alphabet, case-insensitive sort
-	{"Alpha", "bEta", "cHi", "dElta",
-	 "Epsilon", "Eta", "Gamma", "Iota",
-	 "kAppa", "Lambda", "mU", "Nu",
-	 "oMega", "Omicron", "Phi", "pI",
-	 "Psi", "Rho", "sIgma", "Tau",
-	 "tHeta", "uPsilon", "xI", "zEta"},
-	// Column 2: Numbers, standard sort
-	{"1", "10", "11", "12",
-	 "13", "14", "15", "16",
-	 "17", "18", "19", "2",
-	 "20", "21", "22", "23",
-	 "24", "3", "4", "5",
-	 "6", "7", "8", "9"},
-	// Column 3: Numbers, numeric sort
-	{"1", "2", "3", "4",
-	 "5", "6", "7", "8",
-	 "9", "10", "11", "12",
-	 "13", "14", "15", "16",
-	 "17", "18", "19", "20",
-	 "21", "22", "23", "24"}
 };
 
 void ListDataSortProxyModelTest::SetUp()
@@ -93,36 +60,9 @@ void ListDataSortProxyModelTest::SetUp()
 	listStore = gtk_list_store_new(4, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
 	sortProxy = gtk_tree_model_sort_new_with_model(GTK_TREE_MODEL(listStore));
 
-	// Add the list data.
+	// Add the "randomized" list data.
 	// NOTE: Outer vector is rows, not columns!
 	// TODO: Add from the sorted data, then do a random sort?
-	static const char *const list_data_randomized[][4] = {
-		{"pI", "tHeta", "2", "7"},
-		{"cHi", "Iota", "15", "1"},
-		{"uPsilon", "Alpha", "1", "22"},
-		{"Psi", "mU", "14", "15"},
-		{"xI", "Nu", "20", "16"},
-		{"Gamma", "Phi", "17", "12"},
-		{"Epsilon", "Rho", "11", "23"},
-		{"zEta", "pI", "5", "8"},
-		{"Lambda", "Eta", "8", "5"},
-		{"Nu", "bEta", "18", "19"},
-		{"Iota", "Tau", "10", "13"},
-		{"Eta", "Lambda", "13", "20"},
-		{"kAppa", "Psi", "23", "9"},
-		{"Omicron", "Gamma", "4", "18"},
-		{"tHeta", "sIgma", "7", "4"},
-		{"dElta", "zEta", "3", "21"},
-		{"sIgma", "Omicron", "21", "14"},
-		{"mU", "oMega", "6", "24"},
-		{"bEta", "Epsilon", "24", "11"},
-		{"oMega", "cHi", "16", "6"},
-		{"Tau", "xI", "19", "17"},
-		{"Alpha", "uPsilon", "22", "2"},
-		{"Phi", "dElta", "12", "10"},
-		{"Rho", "kAppa", "9", "3"}
-	};
-
 	for (auto *p : list_data_randomized) {
 		GtkTreeIter treeIter;
 		gtk_list_store_append(listStore, &treeIter);
@@ -173,7 +113,7 @@ TEST_F(ListDataSortProxyModelTest, ascendingSort)
 		do {
 			gchar *str = nullptr;
 			gtk_tree_model_get(sortProxy, &iter, col, &str, -1);
-			EXPECT_NE(str, nullptr) << "Unexpected NULL pointer";
+			EXPECT_NE(str, nullptr) << "Unexpected NULL string pointer";
 			if (str) {
 				EXPECT_NE(str[0], '\0') << "Unexpected empty string";
 				EXPECT_STREQ(sorted_strings_asc[col][row], str) << "sorting column " << col << ", checking row " << row;
@@ -208,7 +148,7 @@ TEST_F(ListDataSortProxyModelTest, descendingSort)
 		do {
 			gchar *str = nullptr;
 			gtk_tree_model_get(sortProxy, &iter, col, &str, -1);
-			EXPECT_NE(str, nullptr) << "Unexpected NULL pointer";
+			EXPECT_NE(str, nullptr) << "Unexpected NULL string pointer";
 			if (str) {
 				EXPECT_NE(str[0], '\0') << "Unexpected empty string";
 
