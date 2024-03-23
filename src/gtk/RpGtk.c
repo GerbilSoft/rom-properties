@@ -191,6 +191,7 @@ static int rpFileFilterToGtkFileDialog(GtkFileDialog *fileDialog, const char *fi
 
 		// Add the GtkFileFilter to the GListStore.
 		g_list_store_append(listStore, fileFilter);
+		g_object_unref(fileFilter);
 
 		if (!pStrv[2]) {
 			// MIME type token is missing. We're done here.

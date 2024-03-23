@@ -393,12 +393,16 @@ void rp_key_manager_tab_init_keys(RpKeyManagerTab *tab)
 			const KeyStoreUI::Key *const key = keyStoreUI->getKey(sectIdx, keyIdx);
 			// NOTE: Only key name and flat key index are added here.
 			// Value and Valid? are set by the KeyStoreGTK signal handlers.
-			g_list_store_append(listStore, rp_key_store_item_new_key(key->name.c_str(), nullptr, false, idx));
+			RpKeyStoreItem *const item = rp_key_store_item_new_key(key->name.c_str(), nullptr, false, idx);
+			g_list_store_append(listStore, item);
+			g_object_unref(item);
 		}
 		tab->vSectionListStore->emplace_back(listStore);
 
 		// Add the root list node now that the child node has been created.
-		g_list_store_append(tab->rootListStore, rp_key_store_item_new_section(keyStoreUI->sectName(sectIdx), nullptr, sectIdx));
+		RpKeyStoreItem *const section = rp_key_store_item_new_section(keyStoreUI->sectName(sectIdx), nullptr, sectIdx);
+		g_list_store_append(tab->rootListStore, section);
+		g_object_unref(section);
 	}
 
 	// Expand all of the sections initially.

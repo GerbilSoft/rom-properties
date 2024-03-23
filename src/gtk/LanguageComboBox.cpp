@@ -435,6 +435,7 @@ rp_language_combo_box_set_lcs(RpLanguageComboBox *widget, const uint32_t *lcs_ar
 			rp_language_combo_box_item_set_name(item, SystemRegion::lcToString(lc).c_str());
 		}
 		g_list_store_append(widget->listStore, item);
+		g_object_unref(item);
 
 		if (sel_lc != 0 && lc == sel_lc) {
 			// This was the previously-selected LC.

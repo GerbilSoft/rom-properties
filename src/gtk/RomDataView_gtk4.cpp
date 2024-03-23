@@ -412,6 +412,7 @@ rp_rom_data_view_init_listdata(RpRomDataView *page, const RomFields::Field &fiel
 		}
 
 		g_list_store_append(listStore, item);
+		g_object_unref(item);
 		row++;
 	}
 

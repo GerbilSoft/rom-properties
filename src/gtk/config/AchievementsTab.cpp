@@ -349,8 +349,10 @@ rp_achievements_tab_reset(RpAchievementsTab *tab)
 
 		// Add the list item.
 #ifdef USE_GTK_COLUMN_VIEW
-		g_list_store_append(tab->listStore, rp_achievement_item_new(icon, s_ach.c_str(), timestamp));
+		RpAchievementItem *const item = rp_achievement_item_new(icon, s_ach.c_str(), timestamp);
+		g_list_store_append(tab->listStore, item);
 		PIMGTYPE_unref(icon);
+		g_object_unref(item);
 
 		// TODO: Unlock time.
 #else /* !USE_GTK_COLUMN_VIEW */

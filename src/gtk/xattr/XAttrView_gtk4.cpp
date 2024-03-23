@@ -191,6 +191,7 @@ rp_xattr_view_load_posix_xattrs(struct _RpXAttrView *widget)
 		g_free(value_str);
 
 		g_list_store_append(widget->listStore, item);
+		g_object_unref(item);
 	}
 
 	// Resize the columns to fit the contents. [TODO]
