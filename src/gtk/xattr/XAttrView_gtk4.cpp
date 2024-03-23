@@ -15,7 +15,41 @@
 using LibRpFile::XAttrReader;
 
 #include "XAttrViewItem.h"
+#include "../sort_funcs_common.h"
 #include "../gtk4/sort_funcs.h"
+
+/**
+ * Sorting function for COLSORT_NOCASE (case-insensitive).
+ * @param a
+ * @param b
+ * @param userdata Column ID
+ * @return -1, 0, or 1 (like strcmp())
+ */
+static gint
+sort_XAttrViewItem_nocase(gconstpointer a, gconstpointer b, gpointer userdata)
+{
+	RpXAttrViewItem *const xaviA = RP_XATTRVIEW_ITEM((gpointer)a);
+	RpXAttrViewItem *const xaviB = RP_XATTRVIEW_ITEM((gpointer)b);
+
+	// Get the text and do a case-insensitive string comparison.
+	const int column = GPOINTER_TO_INT(userdata);
+	const char *strA, *strB;
+	switch (column) {
+		default:
+			assert(!"Invalid column for XAttrViewItem.");
+			return 0;
+		case 0:
+			strA = rp_xattrview_item_get_name(xaviA);
+			strB = rp_xattrview_item_get_name(xaviB);
+			break;
+		case 1:
+			strA = rp_xattrview_item_get_value(xaviA);
+			strB = rp_xattrview_item_get_value(xaviB);
+			break;
+	}
+
+	return rp_sort_string_nocase(strA, strB);
+}
 
 static void
 setup_listitem_cb(GtkListItemFactory *factory, GtkListItem *list_item, gpointer user_data)
@@ -113,15 +147,12 @@ rp_xattr_view_init_posix_xattrs_widgets(struct _RpXAttrView *widget, GtkScrolled
 			sortingColumn = column;
 		}
 
-		// FIXME: Need to make a common sort function file.
-#if 0
 		// Use case-insensitive sorting.
 		// TODO: Case-sensitive because Linux file systems? (or make it an option)
 		GtkCustomSorter *const sorter = gtk_custom_sorter_new(
-			sort_RFT_LISTDATA_nocase, GINT_TO_POINTER(i), nullptr);
+			sort_XAttrViewItem_nocase, GINT_TO_POINTER(i), nullptr);
 		gtk_column_view_column_set_sorter(column, GTK_SORTER(sorter));
 		g_object_unref(sorter);
-#endif
 	}
 
 	// Default to sorting by name.
