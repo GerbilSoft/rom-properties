@@ -65,8 +65,13 @@ struct _RpXAttrView {
 	GtkWidget	*dosAttrView;
 
 	GtkWidget	*fraXAttr;
+#if GTK_CHECK_VERSION(4,0,0)
+	GListStore	*listStore;
+	GtkWidget	*columnView;
+#else /* !GTK_CHECK_VERSION(4,0,0) */
 	GtkListStore	*listStore;
 	GtkWidget	*treeView;
+#endif /* GTK_CHECK_VERSION(4,0,0) */
 };
 
 G_BEGIN_DECLS

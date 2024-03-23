@@ -150,11 +150,15 @@ SET(${PROJECT_NAME}_H
 # Sources and headers (GTK4+ only)
 SET(${PROJECT_NAME}_GTK4MIN_SRCS
 	LanguageComboBoxItem.c
+	ListDataItem.c
 	config/AchievementItem.c
+	xattr/XAttrViewItem.c
 	)
 SET(${PROJECT_NAME}_GTK4MIN_H
 	LanguageComboBoxItem.h
+	ListDataItem.h
 	config/AchievementItem.h
+	xattr/XAttrViewItem.h
 	)
 
 IF(ENABLE_DECRYPTION)
