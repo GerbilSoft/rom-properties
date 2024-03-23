@@ -103,6 +103,7 @@ bind_listitem_cb(GtkListItemFactory *factory, GtkListItem *list_item, gpointer u
 	// If has_icon is set, column 0 is the icon; text starts at column 1.
 	// Otherwise, text starts at column 0.
 	RpListDataItem *const item = RP_LIST_DATA_ITEM(gtk_list_item_get_item(list_item));
+	assert(item != nullptr);
 	if (!item)
 		return;
 
