@@ -8,12 +8,14 @@
  ***************************************************************************/
 
 #include "stdafx.h"
-//#include "XAttrView.hpp"
 #include "XAttrView_p.hpp"
 
 // XAttrReader
 #include "librpfile/xattr/XAttrReader.hpp"
 using LibRpFile::XAttrReader;
+
+// Sorting functions
+#include "../gtk3/sort_funcs.h"
 
 /**
  * Initialize the widgets for POSIX xattrs.
@@ -29,13 +31,15 @@ rp_xattr_view_init_posix_xattrs_widgets(struct _RpXAttrView *widget, GtkScrolled
 		NOP_C_("XAttrView", "Value"),
 	};
 
-	// TODO: GtkListView version for GTK4
-
-	// Create the GtkListStore and GtkTreeView.
+	// Create the GtkListStore, sort proxy, and GtkTreeView.
 	widget->listStore = gtk_list_store_new(2, G_TYPE_STRING, G_TYPE_STRING);
-	widget->treeView = gtk_tree_view_new_with_model(GTK_TREE_MODEL(widget->listStore));
+	GtkTreeModel *const sortProxy = gtk_tree_model_sort_new_with_model(GTK_TREE_MODEL(widget->listStore));
+	widget->treeView = gtk_tree_view_new_with_model(GTK_TREE_MODEL(sortProxy));
+#if !GTK_CHECK_VERSION(4,0,0)
+	g_object_unref(sortProxy);	// Needed for GTK2/GTK3; not for GTK4
+#endif /* !GTK_CHECK_VERSION(4,0,0) */
 	gtk_widget_set_name(widget->treeView, "treeView");
-	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(widget->treeView), TRUE);
+	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(widget->treeView), true);
 	gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(scrlXAttr), widget->treeView);
 
 #if !GTK_CHECK_VERSION(3,0,0)
@@ -52,13 +56,28 @@ rp_xattr_view_init_posix_xattrs_widgets(struct _RpXAttrView *widget, GtkScrolled
 		GtkTreeViewColumn *const column = gtk_tree_view_column_new();
 		gtk_tree_view_column_set_title(column,
 			dpgettext_expr(RP_I18N_DOMAIN, "XAttrView", column_titles[i]));
-		gtk_tree_view_column_set_resizable(column, TRUE);
+		gtk_tree_view_column_set_resizable(column, true);
 
 		GtkCellRenderer *const renderer = gtk_cell_renderer_text_new();
-		gtk_tree_view_column_pack_start(column, renderer, FALSE);
+		gtk_tree_view_column_pack_start(column, renderer, false);
 		gtk_tree_view_column_add_attribute(column, renderer, "text", i);
 		gtk_tree_view_append_column(GTK_TREE_VIEW(widget->treeView), column);
+
+		// Allow case-insensitive sorting.
+		// TODO: Case-sensitive because Linux file systems? (or make it an option)
+		gtk_tree_view_column_set_sort_column_id(column, i);
+		gtk_tree_view_column_set_clickable(column, true);
+#if !GTK_CHECK_VERSION(4,0,0)
+		// FIXME: sort_funcs.c for GTK4 is not compatible.
+		// Remove this check once XAttrView_gtk4.cpp is added.
+		gtk_tree_sortable_set_sort_func(GTK_TREE_SORTABLE(sortProxy),
+			i, sort_RFT_LISTDATA_nocase,
+			GINT_TO_POINTER(i), nullptr);
+#endif /* !GTK_CHECK_VERSION(4,0,0) */
 	}
+
+	// Default to sorting by name.
+	gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(sortProxy), 0, GTK_SORT_ASCENDING);
 }
 
 /**
