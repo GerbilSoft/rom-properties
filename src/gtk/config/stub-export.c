@@ -13,6 +13,7 @@
 #include "RomDataView.hpp"
 #include "xattr/XAttrView.hpp"
 
+#include "RpGtk.h"
 #include "gtk-i18n.h"
 
 #if !GTK_CHECK_VERSION(2,90,2)
@@ -183,12 +184,11 @@ rp_RomDataView_app_activate(GtkApplication *app, const gchar *uri)
 {
 	// Initialize base i18n.
 	rp_i18n_init();
-	fprintf(stderr, "*** GTK%u rp_show_RomDataView_dialog(): Opening URI: '%s'\n", (unsigned int)GTK_MAJOR_VERSION, uri);
+	fprintf(stderr, "*** GTK" GTK_MAJOR_STR " rp_show_RomDataView_dialog(): Opening URI: '%s'\n", uri);
 
 	// Create a GtkDialog.
 	// TODO: Use GtkWindow on GTK4?
-	char s_title[40];
-	snprintf(s_title, sizeof(s_title), "RomDataView GTK%u test program", (unsigned int)GTK_MAJOR_VERSION);
+	static const char s_title[] = "RomDataView GTK" GTK_MAJOR_STR " test program";
 	GtkWidget *const dialog = gtk_dialog_new_with_buttons(
 		s_title,
 		NULL,
@@ -253,7 +253,7 @@ rp_RomDataView_app_activate(GtkApplication *app, const gchar *uri)
 	}
 	if (!rp_rom_data_view_is_showing_data(RP_ROM_DATA_VIEW(romDataView))) {
 		// Not a valid RomData object.
-		fprintf(stderr, "*** GTK%u rp_show_RomDataView_dialog(): RomData object could not be created for this URI.\n", (unsigned int)GTK_MAJOR_VERSION);
+		fputs("*** GTK" GTK_MAJOR_STR " rp_show_RomDataView_dialog(): RomData object could not be created for this URI.\n", stderr);
 		gtk_notebook_remove_page(GTK_NOTEBOOK(notebook), page_idx);
 	}
 
@@ -286,7 +286,7 @@ rp_RomDataView_app_activate(GtkApplication *app, const gchar *uri)
 		// Add the RomDataView to the GtkNotebook.
 		gtk_notebook_append_page(GTK_NOTEBOOK(notebook), vboxXAttrView, lblXAttrViewTab);
 	} else {
-		fprintf(stderr, "*** GTK%u rp_show_RomDataView_dialog(): No extended attributes found; not showing xattrs tab.\n", (unsigned int)GTK_MAJOR_VERSION);
+		fputs("*** GTK" GTK_MAJOR_STR " rp_show_RomDataView_dialog(): No extended attributes found; not showing xattrs tab.\n", stderr);
 		g_object_ref_sink(xattrView);
 		g_object_unref(xattrView);
 	}
@@ -295,7 +295,7 @@ rp_RomDataView_app_activate(GtkApplication *app, const gchar *uri)
 
 	// Make sure we have at least one tab.
 	if (gtk_notebook_get_n_pages(GTK_NOTEBOOK(notebook)) < 1) {
-		fprintf(stderr, "*** GTK%u rp_show_RomDataView_dialog(): No tabs were created; exiting.\n", (unsigned int)GTK_MAJOR_VERSION);
+		fputs("*** GTK" GTK_MAJOR_STR " rp_show_RomDataView_dialog(): No tabs were created; exiting.\n", stderr);
 		status = 1;
 
 #if GTK_CHECK_VERSION(3,98,4)
@@ -346,7 +346,7 @@ int RP_C_API rp_show_RomDataView_dialog(int argc, char *argv[])
 	// For now, assuming the last element is the URI.
 	if (argc < 2) {
 		// Not enough parameters...
-		fprintf(stderr, "*** GTK%u rp_show_RomDataView_dialog(): ERROR: No URI specified.\n", (unsigned int)GTK_MAJOR_VERSION);
+		fputs("*** GTK" GTK_MAJOR_STR " rp_show_RomDataView_dialog(): ERROR: No URI specified.\n", stderr);
 		return EXIT_FAILURE;
 	}
 	const char *const uri = argv[argc-1];

@@ -8,9 +8,10 @@
 
 #include "stdafx.h"
 #include "CreateThumbnail.hpp"
+#include "check-uid.h"
 
 #include "ProxyForUrl.hpp"
-#include "check-uid.h"
+#include "RpGtk.h"
 
 // Other rom-properties libraries
 #include "libromdata/RomDataFactory.hpp"
@@ -31,21 +32,6 @@ using LibRomData::TCreateThumbnail;
 // C++ STL classes
 using std::string;
 using std::unique_ptr;
-
-// GTK+ major version.
-// We can't simply use GTK_MAJOR_VERSION because
-// that has parentheses.
-#if GTK_CHECK_VERSION(5,0,0)
-#  error Needs updating for GTK5.
-#elif GTK_CHECK_VERSION(4,0,0)
-#  define GTK_MAJOR_STR "4"
-#elif GTK_CHECK_VERSION(3,0,0)
-#  define GTK_MAJOR_STR "3"
-#elif GTK_CHECK_VERSION(2,0,0)
-#  define GTK_MAJOR_STR "2"
-#else
-#  error GTK+ is too old.
-#endif
 
 /** CreateThumbnailPrivate **/
 

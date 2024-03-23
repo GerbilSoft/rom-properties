@@ -12,6 +12,21 @@
 
 G_BEGIN_DECLS
 
+// GTK+ major version.
+// We can't simply use GTK_MAJOR_VERSION because
+// that has parentheses.
+#if GTK_CHECK_VERSION(5,0,0)
+#  error Needs updating for GTK5.
+#elif GTK_CHECK_VERSION(4,0,0)
+#  define GTK_MAJOR_STR "4"
+#elif GTK_CHECK_VERSION(3,0,0)
+#  define GTK_MAJOR_STR "3"
+#elif GTK_CHECK_VERSION(2,0,0)
+#  define GTK_MAJOR_STR "2"
+#else
+#  error GTK+ is too old.
+#endif
+
 /**
  * File dialog callback function.
  * @param file (in) (transfer full): Selected file, or NULL if no file was selected
