@@ -24,6 +24,9 @@
       since it can slow down file browsing. Disabling directory
       thumbnailing will disable Wii U NUS package thumbnailing.
 
+* New parser features:
+  * EXE: Use numeric sorting for ordinals and hints.
+
 * Bug fixes:
   * On Linux, rp-config now correctly detects KDE Plasma 6 and uses the
     KF6 version of the UI instead of the KF5 version.
