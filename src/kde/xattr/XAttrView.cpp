@@ -175,6 +175,9 @@ int XAttrViewPrivate::loadPosixXattrs(void)
 		return -ENOENT;
 	}
 
+	// Disable sorting while we add items.
+	ui.treeXAttr->setSortingEnabled(false);
+
 	const XAttrReader::XAttrList &xattrList = xattrReader->genericXAttrs();
 	for (const auto &xattr : xattrList) {
 		QTreeWidgetItem *const treeWidgetItem = new QTreeWidgetItem(ui.treeXAttr);
@@ -197,6 +200,12 @@ int XAttrViewPrivate::loadPosixXattrs(void)
 		ui.treeXAttr->resizeColumnToContents(i);
 	}
 #endif
+
+	// QTreeWidget uses a case-insensitive sort by default.
+	// For case-sensitive, we'd have to subclass QTreeWidgetItem.
+	// Leaving it as-is for now.
+	ui.treeXAttr->sortByColumn(0, Qt::AscendingOrder);
+	ui.treeXAttr->setSortingEnabled(true);
 
 	// Extended attributes retrieved.
 	ui.grpXAttr->show();
