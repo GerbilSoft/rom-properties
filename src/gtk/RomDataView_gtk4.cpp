@@ -322,7 +322,7 @@ rp_rom_data_view_init_listdata(RpRomDataView *page, const RomFields::Field &fiel
 			case RomFields::COLSORT_STANDARD: {
 				// Standard sorting
 				GtkCustomSorter *const sorter = gtk_custom_sorter_new(
-					sort_RFT_LISTDATA_standard, GINT_TO_POINTER(i), nullptr);
+					rp_sort_RFT_LISTDATA_standard, GINT_TO_POINTER(i), nullptr);
 				gtk_column_view_column_set_sorter(column, GTK_SORTER(sorter));
 				g_object_unref(sorter);
 				break;
@@ -330,7 +330,7 @@ rp_rom_data_view_init_listdata(RpRomDataView *page, const RomFields::Field &fiel
 			case RomFields::COLSORT_NOCASE: {
 				// Case-insensitive sorting.
 				GtkCustomSorter *const sorter = gtk_custom_sorter_new(
-					sort_RFT_LISTDATA_nocase, GINT_TO_POINTER(i), nullptr);
+					rp_sort_RFT_LISTDATA_nocase, GINT_TO_POINTER(i), nullptr);
 				gtk_column_view_column_set_sorter(column, GTK_SORTER(sorter));
 				g_object_unref(sorter);
 				break;
@@ -338,7 +338,7 @@ rp_rom_data_view_init_listdata(RpRomDataView *page, const RomFields::Field &fiel
 			case RomFields::COLSORT_NUMERIC: {
 				// Numeric sorting. (case-insensitive)
 				GtkCustomSorter *const sorter = gtk_custom_sorter_new(
-					sort_RFT_LISTDATA_numeric, GINT_TO_POINTER(i), nullptr);
+					rp_sort_RFT_LISTDATA_numeric, GINT_TO_POINTER(i), nullptr);
 				gtk_column_view_column_set_sorter(column, GTK_SORTER(sorter));
 				g_object_unref(sorter);
 				break;

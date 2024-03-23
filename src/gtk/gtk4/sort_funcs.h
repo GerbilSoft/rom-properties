@@ -17,26 +17,26 @@ G_BEGIN_DECLS
  * @param a
  * @param b
  * @param userdata Column ID
- * @return -1, 0, or 1.
+ * @return -1, 0, or 1 (like strcmp())
  */
-gint sort_RFT_LISTDATA_standard(gconstpointer a, gconstpointer b, gpointer userdata);
+gint rp_sort_RFT_LISTDATA_standard(gconstpointer a, gconstpointer b, gpointer userdata);
 
 /**
  * RFT_LISTDATA sorting function for COLSORT_NOCASE (case-insensitive).
  * @param a
  * @param b
  * @param userdata Column ID
- * @return -1, 0, or 1.
+ * @return -1, 0, or 1 (like strcmp())
  */
-gint sort_RFT_LISTDATA_nocase(gconstpointer a, gconstpointer b, gpointer userdata);
+gint rp_sort_RFT_LISTDATA_nocase(gconstpointer a, gconstpointer b, gpointer userdata);
 
 /**
  * RFT_LISTDATA sorting function for COLSORT_NUMERIC.
  * @param a
  * @param b
  * @param userdata Column ID
- * @return -1, 0, or 1.
+ * @return -1, 0, or 1 (like strcmp())
  */
-gint sort_RFT_LISTDATA_numeric(gconstpointer a, gconstpointer b, gpointer userdata);
+gint rp_sort_RFT_LISTDATA_numeric(gconstpointer a, gconstpointer b, gpointer userdata);
 
 G_END_DECLS

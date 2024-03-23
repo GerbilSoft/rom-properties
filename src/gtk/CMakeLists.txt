@@ -66,6 +66,7 @@ SET(${PROJECT_NAME}_GLib_SRCS
 	is-supported.cpp
 	ProxyForUrl.cpp
 	RpGtkCpp.cpp
+	sort_funcs_common.c
 
 	config/CacheCleaner.cpp
 	config/UpdateChecker.cpp
@@ -77,6 +78,7 @@ SET(${PROJECT_NAME}_GLib_H
 	ProxyForUrl.hpp
 	glib-compat.h
 	RpGtkCpp.hpp
+	sort_funcs_common.h
 
 	config/CacheCleaner.hpp
 	config/UpdateChecker.hpp

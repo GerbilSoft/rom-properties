@@ -422,19 +422,19 @@ rp_rom_data_view_init_listdata(RpRomDataView *page, const RomFields::Field &fiel
 			case RomFields::COLSORT_STANDARD:
 				// Standard sorting.
 				gtk_tree_sortable_set_sort_func(GTK_TREE_SORTABLE(sortProxy),
-					listStore_col_idx, sort_RFT_LISTDATA_standard,
+					listStore_col_idx, rp_sort_RFT_LISTDATA_standard,
 					GINT_TO_POINTER(listStore_col_idx), nullptr);
 				break;
 			case RomFields::COLSORT_NOCASE:
 				// Case-insensitive sorting.
 				gtk_tree_sortable_set_sort_func(GTK_TREE_SORTABLE(sortProxy),
-					listStore_col_idx, sort_RFT_LISTDATA_nocase,
+					listStore_col_idx, rp_sort_RFT_LISTDATA_nocase,
 					GINT_TO_POINTER(listStore_col_idx), nullptr);
 				break;
 			case RomFields::COLSORT_NUMERIC:
 				// Numeric sorting. (case-insensitive)
 				gtk_tree_sortable_set_sort_func(GTK_TREE_SORTABLE(sortProxy),
-					listStore_col_idx, sort_RFT_LISTDATA_numeric,
+					listStore_col_idx, rp_sort_RFT_LISTDATA_numeric,
 					GINT_TO_POINTER(listStore_col_idx), nullptr);
 				break;
 		}

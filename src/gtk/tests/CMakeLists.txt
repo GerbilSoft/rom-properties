@@ -13,6 +13,9 @@ INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR}/..)
 
 SET(SortFuncsTest_SRCS SortFuncsTest.cpp)
 
+SET(SortFuncsTest_GTK_COMMON_SRCS ../sort_funcs_common.c)
+SET(SortFuncsTest_GTK_COMMON_H    ../sort_funcs_common.h)
+
 SET(SortFuncsTest_GTK3_SRCS ../gtk3/sort_funcs.c)
 SET(SortFuncsTest_GTK3_H    ../gtk3/sort_funcs.h)
 
@@ -22,6 +25,8 @@ SET(SortFuncsTest_GTK4_H    ../gtk4/sort_funcs.h)
 IF(BUILD_XFCE)
 	ADD_EXECUTABLE(SortFuncsTest_gtk2
 		${SortFuncsTest_SRCS}
+		${SortFuncsTest_GTK_COMMON_SRCS}
+		${SortFuncsTest_GTK_COMMON_H}
 		${SortFuncsTest_GTK3_SRCS}
 		${SortFuncsTest_GTK3_H}
 		)
@@ -34,6 +39,8 @@ ENDIF(BUILD_XFCE)
 IF(BUILD_GTK3)
 	ADD_EXECUTABLE(SortFuncsTest_gtk3
 		${SortFuncsTest_SRCS}
+		${SortFuncsTest_GTK_COMMON_SRCS}
+		${SortFuncsTest_GTK_COMMON_H}
 		${SortFuncsTest_GTK3_SRCS}
 		${SortFuncsTest_GTK3_H}
 		)
@@ -47,6 +54,8 @@ IF(BUILD_GTK4)
 	ADD_EXECUTABLE(SortFuncsTest_gtk4
 		${SortFuncsTest_SRCS}
 		# TODO: Test the GTK4 sorting functions.
+		${SortFuncsTest_GTK_COMMON_SRCS}
+		${SortFuncsTest_GTK_COMMON_H}
 		${SortFuncsTest_GTK3_SRCS}
 		${SortFuncsTest_GTK3_H}
 		)

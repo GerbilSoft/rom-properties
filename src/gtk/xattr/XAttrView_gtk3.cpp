@@ -67,7 +67,7 @@ rp_xattr_view_init_posix_xattrs_widgets(struct _RpXAttrView *widget, GtkScrolled
 		gtk_tree_view_column_set_sort_column_id(column, i);
 		gtk_tree_view_column_set_clickable(column, true);
 		gtk_tree_sortable_set_sort_func(GTK_TREE_SORTABLE(sortProxy),
-			i, sort_RFT_LISTDATA_nocase,
+			i, rp_sort_RFT_LISTDATA_nocase,
 			GINT_TO_POINTER(i), nullptr);
 	}
 
