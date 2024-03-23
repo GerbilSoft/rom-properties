@@ -439,9 +439,9 @@ rp_rom_data_view_init_listdata(RpRomDataView *page, const RomFields::Field &fiel
 	// Set the default sorting column.
 	// NOTE: sort_dir maps directly to GtkSortType.
 	// NOTE 2: This must be done *after* all the data is added.
-	// FIXME: This doesn't seem to be working...
 	if (sortingColumn) {
-		gtk_column_view_sort_by_column(GTK_COLUMN_VIEW(columnView), sortingColumn, GTK_SORT_DESCENDING);
+		gtk_column_view_sort_by_column(GTK_COLUMN_VIEW(columnView),
+			sortingColumn, static_cast<GtkSortType>(col_attrs.sort_dir));
 	}
 
 	// Set a minimum height for the scroll area.
