@@ -364,6 +364,7 @@ void DragImageLabel::mouseMoveEvent(QMouseEvent *event)
 	QMimeData *const mimeData = new QMimeData;
 	mimeData->setObjectName(QLatin1String("mimeData"));
 	mimeData->setData(QLatin1String("image/png"), pngData->qByteArray());
+	mimeData->setData(QLatin1String("application/octet-stream"), pngData->qByteArray());
 
 	QDrag *const drag = new QDrag(this);
 	drag->setObjectName(QLatin1String("drag"));
