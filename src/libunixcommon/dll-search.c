@@ -32,7 +32,7 @@ typedef enum {
 	RP_FE_KF6,
 	RP_FE_GTK2,	// XFCE (Thunar 1.6)
 	RP_FE_GTK3,	// GNOME, MATE, Cinnamon, XFCE (Thunar 1.8)
-	RP_FE_GTK4,	// not used yet
+	RP_FE_GTK4,	// GNOME 43
 
 	RP_FE_MAX
 } RP_Frontend;
