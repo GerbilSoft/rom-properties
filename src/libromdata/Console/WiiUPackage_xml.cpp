@@ -143,20 +143,6 @@ int WiiUPackagePrivate::loadSystemXml(XMLDocument &doc, const char *filename, co
 	return 0;
 }
 
-#define FIRST_CHILD_ELEMENT(var, parent_elem, child_elem_name) \
-	const XMLElement *var = (likely(parent_elem)) ? parent_elem->FirstChildElement(child_elem_name) : nullptr; \
-do { } while (0)
-
-#define ADD_TEXT(parent_elem, child_elem_name, desc) do { \
-	FIRST_CHILD_ELEMENT(child_elem, parent_elem, child_elem_name); \
-	if (child_elem) { \
-		const char *const text = child_elem->GetText(); \
-		if (text) { \
-			fields.addField_string((desc), text); \
-		} \
-	} \
-} while (0)
-
 /**
  * Parse an "unsignedInt" element.
  * @param rootNode	[in] Root node
@@ -243,6 +229,13 @@ inline const char *WiiUPackagePrivate::getText(const tinyxml2::XMLElement *rootN
 		return nullptr;
 	return elem->GetText();
 }
+
+#define ADD_TEXT(rootNode, name, desc) do { \
+	const char *const text = getText(rootNode, name); \
+	if (text) { \
+		fields.addField_string((desc), text); \
+	} \
+} while (0)
 
 /**
  * Add fields from the Wii U System XML files.
