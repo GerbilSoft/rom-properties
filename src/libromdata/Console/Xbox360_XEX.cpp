@@ -1037,7 +1037,7 @@ void Xbox360_XEX_Private::convertGameRatings(
 	// Region conversion table:
 	// - Index: Xbox 360 region (-1 if not supported)
 	// - Value: RomFields::age_ratings_t region
-	static const array<RomFields::AgeRatingsCountry, 14> region_conv = {{
+	static constexpr array<RomFields::AgeRatingsCountry, 14> region_conv = {{
 		RomFields::AgeRatingsCountry::USA,
 		RomFields::AgeRatingsCountry::Europe,
 		RomFields::AgeRatingsCountry::Finland,

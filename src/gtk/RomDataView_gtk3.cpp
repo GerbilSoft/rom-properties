@@ -337,11 +337,11 @@ rp_rom_data_view_init_listdata(RpRomDataView *page, const RomFields::Field &fiel
 
 	// Format tables.
 	// Pango enum values are known to fit in uint8_t.
-	static const array<gfloat, 4> align_tbl_xalign = {{
+	static constexpr array<gfloat, 4> align_tbl_xalign = {{
 		// Order: TXA_D, TXA_L, TXA_C, TXA_R
 		0.0f, 0.0f, 0.5f, 1.0f
 	}};
-	static const array<uint8_t, 4> align_tbl_pango = {{
+	static constexpr array<uint8_t, 4> align_tbl_pango = {{
 		// Order: TXA_D, TXA_L, TXA_C, TXA_R
 		PANGO_ALIGN_LEFT, PANGO_ALIGN_LEFT,
 		PANGO_ALIGN_CENTER, PANGO_ALIGN_RIGHT

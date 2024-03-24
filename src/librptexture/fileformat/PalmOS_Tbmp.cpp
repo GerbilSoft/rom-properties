@@ -315,7 +315,7 @@ rp_image_const_ptr PalmOS_Tbmp_Private::loadTbmp(void)
 {
 	const uint8_t version = bitmapType.version;
 
-	static const array<uint8_t, 4> header_size_tbl = {{
+	static constexpr array<uint8_t, 4> header_size_tbl = {{
 		PalmOS_BitmapType_v0_SIZE,
 		PalmOS_BitmapType_v1_SIZE,
 		PalmOS_BitmapType_v2_SIZE,

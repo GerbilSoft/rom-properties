@@ -175,7 +175,7 @@ static const int16_t etc2_intensity_a1[8][4] = {
 
 // ETC1 arranges pixels by column, then by row.
 // This table maps it back to linear.
-static const array<uint8_t, 16> etc1_mapping = {{
+static constexpr array<uint8_t, 16> etc1_mapping = {{
 	0, 4,  8, 12,
 	1, 5,  9, 13,
 	2, 6, 10, 14,
@@ -185,7 +185,7 @@ static const array<uint8_t, 16> etc1_mapping = {{
 // ETC1 subblock mapping.
 // Index: flip bit
 // Value: 16-bit bitfield; bit 0 == ETC1-arranged pixel 0.
-static const array<uint16_t, 2> etc1_subblock_mapping = {{
+static constexpr array<uint16_t, 2> etc1_subblock_mapping = {{
 	// flip == 0: 2x4
 	0xFF00,
 
@@ -194,7 +194,7 @@ static const array<uint16_t, 2> etc1_subblock_mapping = {{
 }};
 
 // 3-bit 2's complement lookup table.
-static const array<int8_t, 8> etc1_3bit_diff_tbl = {{
+static constexpr array<int8_t, 8> etc1_3bit_diff_tbl = {{
 	0, 1, 2, 3, -4, -3, -2, -1
 }};
 
@@ -207,7 +207,7 @@ enum class etc2_block_mode {
 };
 
 // ETC2 distance table for 'T' and 'H' modes.
-static const array<uint8_t, 8> etc2_dist_tbl = {{
+static constexpr array<uint8_t, 8> etc2_dist_tbl = {{
 	 3,  6, 11, 16,
 	23, 32, 41, 64,
 }};

@@ -33,7 +33,7 @@ struct DmgSpecialCase_t {
 // TODO: Sachen "TETRIS" ROMs have the same global checksum.
 
 // DMG, Non-JP
-static const array<DmgSpecialCase_t, 37> dmgSpecialCases_DMG_NoJP = {{
+static constexpr array<DmgSpecialCase_t, 37> dmgSpecialCases_DMG_NoJP = {{
 	{"BIONIC-COMMANDO", ""},
 	{"BOKEMOB BLUE", ""},
 	{"CAESARS PALACE", "61"},
@@ -74,7 +74,7 @@ static const array<DmgSpecialCase_t, 37> dmgSpecialCases_DMG_NoJP = {{
 }};
 
 // DMG, JP
-static const array<DmgSpecialCase_t, 8> dmgSpecialCases_DMG_JP = {{
+static constexpr array<DmgSpecialCase_t, 8> dmgSpecialCases_DMG_JP = {{
 	{"GAME", ""},			// Sachen
 	{"GBWARST", ""},
 	{"MENU", "00"},			// Unl
@@ -86,7 +86,7 @@ static const array<DmgSpecialCase_t, 8> dmgSpecialCases_DMG_JP = {{
 }};
 
 // CGB, Non-JP
-static const array<DmgSpecialCase_t, 9> dmgSpecialCases_CGB_NoJP = {{
+static constexpr array<DmgSpecialCase_t, 9> dmgSpecialCases_CGB_NoJP = {{
 	{"BUGS BUNNY", ""},
 	{"COOL HAND", ""},
 	{"GB SMART CARD", ""},	// Unl
@@ -99,7 +99,7 @@ static const array<DmgSpecialCase_t, 9> dmgSpecialCases_CGB_NoJP = {{
 }};
 
 // CGB, JP
-static const array<DmgSpecialCase_t, 4> dmgSpecialCases_CGB_JP = {{
+static constexpr array<DmgSpecialCase_t, 4> dmgSpecialCases_CGB_JP = {{
 	{"DIGIMON 5", "MK"},
 	{"GBDAYTEST", ""},	// Unl
 	{"HARVEST-MOON GB", ""},
@@ -111,7 +111,7 @@ struct DmgSpecialCase_Dispatch_tbl_t {
 	const DmgSpecialCase_t *ptr;
 	size_t size;
 };
-static const array<DmgSpecialCase_Dispatch_tbl_t, 4> dmgSpecialCases_dispatch_tbl = {{
+static constexpr array<DmgSpecialCase_Dispatch_tbl_t, 4> dmgSpecialCases_dispatch_tbl = {{
 	{dmgSpecialCases_DMG_NoJP.data(), dmgSpecialCases_DMG_NoJP.size()},
 	{dmgSpecialCases_DMG_JP.data(),   dmgSpecialCases_DMG_JP.size()},
 	{dmgSpecialCases_CGB_NoJP.data(), dmgSpecialCases_CGB_NoJP.size()},

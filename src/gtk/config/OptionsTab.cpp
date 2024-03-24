@@ -21,12 +21,12 @@ using namespace LibRpBase;
 // C++ STL classes
 using std::array;
 
-// PAL language codes for GameTDB.
+// PAL language codes for GameTDB
 // NOTE: 'au' is technically not a language code, but
 // GameTDB handles it as a separate language.
 // TODO: Combine with the KDE version.
 // NOTE: GTK LanguageComboBox uses a NULL-terminated pal_lc[] array.
-static const array<uint32_t, 9+1> pal_lc = {{'au', 'de', 'en', 'es', 'fr', 'it', 'nl', 'pt', 'ru', 0}};
+static constexpr array<uint32_t, 9+1> pal_lc = {{'au', 'de', 'en', 'es', 'fr', 'it', 'nl', 'pt', 'ru', 0}};
 
 #if GTK_CHECK_VERSION(3,0,0)
 typedef GtkBoxClass superclass;

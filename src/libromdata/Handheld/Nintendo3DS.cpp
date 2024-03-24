@@ -1405,9 +1405,9 @@ int Nintendo3DS::isRomSupported_static(const DetectInfo *info)
 		// Check if this is an eMMC dump or a CCI image.
 		// This is done by checking the eMMC-specific crypt type section.
 		// (All zeroes for CCI; minor variance between Old3DS and New3DS.)
-		static const array<uint8_t, 8> crypt_cci      = {{0,0,0,0,0,0,0,0}};
-		static const array<uint8_t, 8> crypt_emmc_old = {{1,2,2,2,2,0,0,0}};
-		static const array<uint8_t, 8> crypt_emmc_new = {{1,2,2,2,3,0,0,0}};
+		static constexpr array<uint8_t, 8> crypt_cci      = {{0,0,0,0,0,0,0,0}};
+		static constexpr array<uint8_t, 8> crypt_emmc_old = {{1,2,2,2,2,0,0,0}};
+		static constexpr array<uint8_t, 8> crypt_emmc_new = {{1,2,2,2,3,0,0,0}};
 		if (!memcmp(ncsd_header->emmc_part_tbl.crypt_type, crypt_cci.data(), crypt_cci.size())) {
 			// CCI image
 			return static_cast<int>(Nintendo3DSPrivate::RomType::CCI);

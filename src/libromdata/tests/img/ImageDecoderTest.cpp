@@ -2070,7 +2070,7 @@ extern "C" int gtest_main(int argc, TCHAR *argv[])
 
 	// Check for the ImageDecoder_data directory and chdir() into it.
 #ifdef _WIN32
-	static const array<const TCHAR*, 11> subdirs = {{
+	static constexpr array<const TCHAR*, 11> subdirs = {{
 		_T("ImageDecoder_data"),
 		_T("bin\\ImageDecoder_data"),
 		_T("src\\libromdata\\tests\\img\\ImageDecoder_data"),
@@ -2084,7 +2084,7 @@ extern "C" int gtest_main(int argc, TCHAR *argv[])
 		_T("..\\..\\..\\bin\\Release\\ImageDecoder_data"),
 	}};
 #else /* !_WIN32 */
-	static const array<const TCHAR*, 10> subdirs = {{
+	static constexpr array<const TCHAR*, 10> subdirs = {{
 		_T("ImageDecoder_data"),
 		_T("bin/ImageDecoder_data"),
 		_T("src/libromdata/tests/img/ImageDecoder_data"),

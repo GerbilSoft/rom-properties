@@ -517,7 +517,7 @@ int WiiUPackage::isDirSupported_static(const char *path)
 	const size_t path_orig_size = s_path.size();
 
 	/// Check for the ticket, TMD, and certificate chain files.
-	static const array<const char*, 3> filenames_to_check = {{
+	static constexpr array<const char*, 3> filenames_to_check = {{
 		"title.tik",
 		"title.tmd",
 		"title.cert",
@@ -556,7 +556,7 @@ int WiiUPackage::isDirSupported_static(const wchar_t *path)
 	const size_t path_orig_size = s_path.size();
 
 	/// Check for the ticket, TMD, and certificate chain files.
-	static const array<const wchar_t*, 3> filenames_to_check = {{
+	static constexpr array<const wchar_t*, 3> filenames_to_check = {{
 		L"title.tik",
 		L"title.tmd",
 		L"title.cert",

@@ -170,7 +170,7 @@ size_t Hash::hashLength(void) const
 	RP_D(const Hash);
 
 	// Lookup table
-	static const array<uint8_t, (int)Algorithm::Max> hash_length_tbl = {{
+	static constexpr array<uint8_t, (int)Algorithm::Max> hash_length_tbl = {{
 		0,			// Unknown
 
 		sizeof(uint32_t),	// CRC32

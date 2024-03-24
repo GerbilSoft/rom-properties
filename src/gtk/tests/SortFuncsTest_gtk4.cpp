@@ -57,27 +57,33 @@ class ListDataSortProxyModelTest : public ::testing::Test
 
 	public:
 		// Sorting order (function pointers) [ascending order]
-		static const array<GCompareDataFunc, 4> sort_funcs_asc;
+		static constexpr array<GCompareDataFunc, 4> sort_funcs_asc = {{
+			// Column 0: Greek alphabet, standard sort
+			rp_sort_RFT_LISTDATA_standard,
+			// Column 1: Greek alphabet, case-insensitive sort
+			rp_sort_RFT_LISTDATA_nocase,
+			// Column 2: Numbers, standard sort
+			rp_sort_RFT_LISTDATA_standard,
+			// Column 3: Numbers, numeric sort
+			rp_sort_RFT_LISTDATA_numeric,
+		}};
 
 		static gint rp_sort_RFT_LISTDATA_standard_DESC(gconstpointer a, gconstpointer b, gpointer userdata);
 		static gint rp_sort_RFT_LISTDATA_nocase_DESC(gconstpointer a, gconstpointer b, gpointer userdata);
 		static gint rp_sort_RFT_LISTDATA_numeric_DESC(gconstpointer a, gconstpointer b, gpointer userdata);
 
 		// Sorting order (function pointers) [descending order]
-		static const array<GCompareDataFunc, 4> sort_funcs_desc;
+		static constexpr array<GCompareDataFunc, 4> sort_funcs_desc = {{
+			// Column 0: Greek alphabet, standard sort
+			rp_sort_RFT_LISTDATA_standard_DESC,
+			// Column 1: Greek alphabet, case-insensitive sort
+			rp_sort_RFT_LISTDATA_nocase_DESC,
+			// Column 2: Numbers, standard sort
+			rp_sort_RFT_LISTDATA_standard_DESC,
+			// Column 3: Numbers, numeric sort
+			rp_sort_RFT_LISTDATA_numeric_DESC,
+		}};
 };
-
-// Sorting order (function pointers) [ascending order]
-const array<GCompareDataFunc, 4> ListDataSortProxyModelTest::sort_funcs_asc = {{
-	// Column 0: Greek alphabet, standard sort
-	rp_sort_RFT_LISTDATA_standard,
-	// Column 1: Greek alphabet, case-insensitive sort
-	rp_sort_RFT_LISTDATA_nocase,
-	// Column 2: Numbers, standard sort
-	rp_sort_RFT_LISTDATA_standard,
-	// Column 3: Numbers, numeric sort
-	rp_sort_RFT_LISTDATA_numeric,
-}};
 
 gint ListDataSortProxyModelTest::rp_sort_RFT_LISTDATA_standard_DESC(gconstpointer a, gconstpointer b, gpointer userdata)
 {
@@ -93,18 +99,6 @@ gint ListDataSortProxyModelTest::rp_sort_RFT_LISTDATA_numeric_DESC(gconstpointer
 {
 	return -rp_sort_RFT_LISTDATA_numeric(a, b, userdata);
 }
-
-// Sorting order (function pointers) [descending order]
-const array<GCompareDataFunc, 4> ListDataSortProxyModelTest::sort_funcs_desc = {{
-	// Column 0: Greek alphabet, standard sort
-	rp_sort_RFT_LISTDATA_standard_DESC,
-	// Column 1: Greek alphabet, case-insensitive sort
-	rp_sort_RFT_LISTDATA_nocase_DESC,
-	// Column 2: Numbers, standard sort
-	rp_sort_RFT_LISTDATA_standard_DESC,
-	// Column 3: Numbers, numeric sort
-	rp_sort_RFT_LISTDATA_numeric_DESC,
-}};
 
 void ListDataSortProxyModelTest::SetUp()
 {

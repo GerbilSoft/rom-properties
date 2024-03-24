@@ -484,7 +484,7 @@ void rp_drag_image_set_ecks_bawks(RpDragImage *image, bool new_ecks_bawks)
 	if (ecksbawks_quark == 0) {
 		ecksbawks_quark = g_quark_from_string("ecksbawks");
 	}
-	static const array<const char*, 2> menu_items = {{
+	static constexpr array<const char*, 2> menu_items = {{
 		"ermahgerd! an ecks bawks ISO!",
 		"Yar, har, fiddle dee dee",
 	}};

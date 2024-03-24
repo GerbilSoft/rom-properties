@@ -233,7 +233,7 @@ int PokemonMini::loadFieldData(void)
 	d->fields.addField_string(C_("RomData", "Game ID"), latin1_to_utf8(id4, 4));
 
 	// Vector table.
-	static const array<const char*, PokemonMini_IRQ_MAX> vectors_names = {{
+	static constexpr array<const char*, PokemonMini_IRQ_MAX> vectors_names = {{
 		// 0
 		"Reset",
 		"PRC Frame Copy",
@@ -277,9 +277,9 @@ int PokemonMini::loadFieldData(void)
 	// NOTE: PC is the value *after* the jump instruction.
 	// Offset: PC = PC + #ssss - 1
 	// Reference: https://github.com/OpenEmu/PokeMini-Core/blob/master/PokeMini/pokemini-code/doc/PM_Opc_JMP.html
-	static const array<uint8_t, 4> vec_prefix   = {{0xCE, 0xC4, 0x00, 0xF3}};
-	static const array<uint8_t, 6> vec_empty_ff = {{0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF}};
-	static const array<uint8_t, 6> vec_empty_00 = {{0x00, 0x00, 0x00, 0x00, 0x00, 0x00}};
+	static constexpr array<uint8_t, 4> vec_prefix   = {{0xCE, 0xC4, 0x00, 0xF3}};
+	static constexpr array<uint8_t, 6> vec_empty_ff = {{0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF}};
+	static constexpr array<uint8_t, 6> vec_empty_00 = {{0x00, 0x00, 0x00, 0x00, 0x00, 0x00}};
 
 	auto vv_vectors = new RomFields::ListData_t(ARRAY_SIZE(vectors_names));
 	uint32_t pc = 0x2100 + offsetof(PokemonMini_RomHeader, irqs);

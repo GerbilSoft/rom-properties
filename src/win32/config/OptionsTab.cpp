@@ -123,8 +123,12 @@ public:
 	// Has the user changed anything?
 	bool changed;
 
-	// PAL language codes for GameTDB.
-	static const array<uint32_t, 9+1> pal_lc;
+	// PAL language codes for GameTDB
+	// NOTE: 'au' is technically not a language code, but
+	// GameTDB handles it as a separate language.
+	// TODO: Combine with the GTK/KDE version.
+	// NOTE: Win32 LanguageComboBox uses a NULL-terminated pal_lc[] array.
+	static constexpr array<uint32_t, 9+1> pal_lc = {{'au', 'de', 'en', 'es', 'fr', 'it', 'nl', 'pt', 'ru', 0}};
 
 public:
 	// Dark Mode background brush
@@ -133,13 +137,6 @@ public:
 };
 
 /** OptionsTabPrivate **/
-
-// PAL language codes for GameTDB.
-// NOTE: 'au' is technically not a language code, but
-// GameTDB handles it as a separate language.
-// TODO: Combine with the KDE version.
-// NOTE: Win32 LanguageComboBox uses a NULL-terminated pal_lc[] array.
-const array<uint32_t, 9+1> OptionsTabPrivate::pal_lc = {{'au', 'de', 'en', 'es', 'fr', 'it', 'nl', 'pt', 'ru', 0}};
 
 OptionsTabPrivate::OptionsTabPrivate()
 	: hPropSheetPage(nullptr)

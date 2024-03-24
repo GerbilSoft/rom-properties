@@ -450,7 +450,7 @@ TEST_F(TextFuncsTest, cp1252_sjis_to_utf16_ascii)
 	// NOTE: Need to manually initialize the char16_t[] array
 	// due to the way _RP() is implemented for versions of
 	// MSVC older than 2015.
-	static const array<char16_t, 19+1> utf16_out = {{
+	static constexpr array<char16_t, 19+1> utf16_out = {{
 		'C',':','\\','W','i','n','d','o',
 		'w','s','\\','S','y','s','t','e',
 		'm','3','2',0
@@ -783,7 +783,7 @@ TEST_F(TextFuncsTest, u16_strlen)
 
 	// Compare to 8-bit strlen() with ASCII.
 	static const char ascii_in[] = "abcdefghijklmnopqrstuvwxyz";
-	static const array<char16_t, 26+1> u16_in = {{
+	static constexpr array<char16_t, 26+1> u16_in = {{
 		'a','b','c','d','e','f','g','h','i','j','k','l',
 		'm','n','o','p','q','r','s','t','u','v','w','x',
 		'y','z',0
@@ -796,7 +796,7 @@ TEST_F(TextFuncsTest, u16_strlen)
 	// Test u16_strlen() with SMP characters.
 	// u16_strlen() will return the number of 16-bit characters,
 	// NOT the number of code points.
-	static const array<char16_t, 10+1> u16smp_in = {{
+	static constexpr array<char16_t, 10+1> u16smp_in = {{
 		0xD83C,0xDF4C,0xD83C,0xDF59,
 		0xD83C,0xDF69,0xD83D,0xDCB5,
 		0xD83D,0xDCBE,0x0000
@@ -813,7 +813,7 @@ TEST_F(TextFuncsTest, u16_strdup)
 	// On all other systems, it's a simple implementation.
 
 	// Test string.
-	static const array<char16_t, 44+1> u16_str = {{
+	static constexpr array<char16_t, 44+1> u16_str = {{
 		'T','h','e',' ','q','u','i','c','k',' ','b','r',
 		'o','w','n',' ','f','o','x',' ','j','u','m','p',
 		's',' ','o','v','e','r',' ','t','h','e',' ','l',
@@ -857,9 +857,9 @@ TEST_F(TextFuncsTest, u16_strcmp)
 	// Three test strings.
 	// TODO: Update these strings so they would fail if tested
 	// using u16_strcasecmp().
-	static const array<char16_t, 8> u16_str1 = {{'a','b','c','d','e','f','g',0}};
-	static const array<char16_t, 8> u16_str2 = {{'a','b','d','e','f','g','h',0}};
-	static const array<char16_t, 8> u16_str3 = {{'d','e','f','g','h','i','j',0}};
+	static constexpr array<char16_t, 8> u16_str1 = {{'a','b','c','d','e','f','g',0}};
+	static constexpr array<char16_t, 8> u16_str2 = {{'a','b','d','e','f','g','h',0}};
+	static constexpr array<char16_t, 8> u16_str3 = {{'d','e','f','g','h','i','j',0}};
 
 	// Compare strings to themselves.
 	EXPECT_EQ(0, u16_strcmp(u16_str1.data(), u16_str1.data()));
@@ -884,9 +884,9 @@ TEST_F(TextFuncsTest, u16_strcasecmp)
 	// On all other systems, it's a simple implementation.
 
 	// Three test strings.
-	static const array<char16_t, 8> u16_str1 = {{'A','b','C','d','E','f','G',0}};
-	static const array<char16_t, 8> u16_str2 = {{'a','B','d','E','f','G','h',0}};
-	static const array<char16_t, 8> u16_str3 = {{'D','e','F','g','H','i','J',0}};
+	static constexpr array<char16_t, 8> u16_str1 = {{'A','b','C','d','E','f','G',0}};
+	static constexpr array<char16_t, 8> u16_str2 = {{'a','B','d','E','f','G','h',0}};
+	static constexpr array<char16_t, 8> u16_str3 = {{'D','e','F','g','H','i','J',0}};
 
 	// Compare strings to themselves.
 	EXPECT_EQ(0, u16_strcasecmp(u16_str1.data(), u16_str1.data()));

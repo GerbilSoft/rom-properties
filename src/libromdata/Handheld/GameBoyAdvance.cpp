@@ -191,7 +191,7 @@ int GameBoyAdvance::isRomSupported_static(const DetectInfo *info)
 	}
 
 	// Check the first 16 bytes of the Nintendo logo.
-	static const array<uint8_t, 16> nintendo_gba_logo = {{
+	static constexpr array<uint8_t, 16> nintendo_gba_logo = {{
 		0x24, 0xFF, 0xAE, 0x51, 0x69, 0x9A, 0xA2, 0x21,
 		0x3D, 0x84, 0x82, 0x0A, 0x84, 0xE4, 0x09, 0xAD
 	}};
@@ -526,7 +526,7 @@ int GameBoyAdvance::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int s
 	// multi-character constants.
 	string name;
 	name.reserve(12);
-	static const array<uint32_t, 7> common_ID4 = {{
+	static constexpr array<uint32_t, 7> common_ID4 = {{
 		'AGBJ', '    ', '____', 'RARE',
 		'0000', 'XXXX', 'XXXE',
 	}};

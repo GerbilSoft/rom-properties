@@ -445,7 +445,7 @@ void KeyManagerTabPrivate::initDialog(void)
 	// 8,12 seems to be right on both XP and 7...
 	// TODO: If the user double-clicks the column splitter, it will
 	// resize based on the displayed rows, not all rows.
-	static const array<int, 2> column_padding = {{8, 12}};
+	static constexpr array<int, 2> column_padding = {{8, 12}};
 	array<int, 2> column_width = {{0, 0}};
 
 	// Make sure the "Value" column is at least 32 characters wide.

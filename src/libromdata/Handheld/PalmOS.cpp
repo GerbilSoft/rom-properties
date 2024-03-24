@@ -408,7 +408,7 @@ PalmOS::PalmOS(const IRpFilePtr &file)
 		uint32_t prc_type;
 		RomData::FileType fileType;
 	};
-	static const array<file_type_map_t, 5> file_type_map = {{
+	static constexpr array<file_type_map_t, 5> file_type_map = {{
 		{'appl', FileType::Executable},
 		{'appm', FileType::Executable},
 		{'libr', FileType::SharedLibrary},

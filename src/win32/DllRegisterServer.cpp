@@ -224,7 +224,7 @@ static LONG UnregisterFileType(RegKey &hkcr, RegKey *pHklm, const RomDataFactory
 	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 
 	// Delete keys if they're empty.
-	static const array<LPCTSTR, 2> keysToDel = {{_T("ShellEx"), _T("RP_Fallback")}};
+	static constexpr array<LPCTSTR, 2> keysToDel = {{_T("ShellEx"), _T("RP_Fallback")}};
 	for (LPCTSTR keyToDel : keysToDel) {
 		// Check if the key is empty.
 		RegKey hkey_del(hkey_fileType, keyToDel, KEY_READ, false);

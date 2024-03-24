@@ -57,10 +57,11 @@ PropSheetIconPrivate::PropSheetIconPrivate()
 {
 	// Check for a DLL containing a usable ROM chip icon.
 	struct IconDllData_t {
-		const TCHAR *dll_filename;
+		LPCTSTR dll_filename;
 		LPCTSTR pszIcon;
 	};
 
+	// FIXME: constexpr isn't working here for some reason...
 	static const array<IconDllData_t, 2> iconDllData = {{
 		{_T("imageres.dll"), MAKEINTRESOURCE(34)},	// Vista+
 		{_T("shell32.dll"),  MAKEINTRESOURCE(13)},

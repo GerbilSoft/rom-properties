@@ -72,14 +72,9 @@ public:
 	enum class DMG_Hardware : uint8_t {
 		Unknown = 0,
 
-		ROM,
-		MBC1,
-		MBC2,
-		MBC3,
-		MBC4,
-		MBC5,
-		MBC6,
-		MBC7,
+		ROM, MBC1, MBC2, MBC3,
+		MBC4, MBC5, MBC6, MBC7,
+
 		MMM01,	// multicart: real header is in the last 32 KB
 		HUC1,
 		HUC3,
@@ -88,7 +83,16 @@ public:
 
 		Max
 	};
-	static const array<const char*, 14> dmg_hardware_names;
+
+	// Cartridge hardware (names; matches the DMG_Hardware enum)
+	static constexpr array<const char*, (int)DMG_Hardware::Max> dmg_hardware_names = {{
+		"Unknown",
+
+		"ROM", "MBC1", "MBC2", "MBC3",
+		"MBC4", "MBC5", "MBC6", "MBC7",
+		"MMM01", "HuC1", "HuC3", "TAMA5",
+		"POCKET CAMERA", // ???
+	}};
 
 	struct dmg_cart_type {
 		DMG_Hardware hardware;
@@ -133,10 +137,8 @@ public:
 	static inline int RomSize(uint8_t type);
 
 public:
-	/**
-	 * DMG RAM size array
-	 */
-	static const array<uint8_t, 6> dmg_ram_size;
+	// DMG RAM size array
+	static constexpr array<uint8_t, 6> dmg_ram_size = {{0, 2, 8, 32, 128, 64}};
 
 public:
 	enum class RomType {
@@ -237,24 +239,6 @@ const RomDataInfo DMGPrivate::romDataInfo = {
 };
 
 /** Internal ROM data **/
-
-// Cartridge hardware
-const array<const char*, 14> DMGPrivate::dmg_hardware_names = {{
-	"Unknown",
-	"ROM",
-	"MBC1",
-	"MBC2",
-	"MBC3",
-	"MBC4",
-	"MBC5",
-	"MBC6",
-	"MBC7",
-	"MMM01",
-	"HuC1",
-	"HuC3",
-	"TAMA5",
-	"POCKET CAMERA", // ???
-}};
 
 const array<DMGPrivate::dmg_cart_type, 35> DMGPrivate::dmg_cart_types_start = {{
 	{DMG_Hardware::ROM,	0},
@@ -371,8 +355,8 @@ inline DMGPrivate::dmg_cart_type DMGPrivate::CartType(uint8_t type)
  */
 inline int DMGPrivate::RomSize(uint8_t type)
 {
-	static const array<uint16_t, 8> rom_size = {{32, 64, 128, 256, 512, 1024, 2048, 4096}};
-	static const array<uint16_t, 4> rom_size_52 = {{1152, 1280, 1536}};
+	static constexpr array<uint16_t, 8> rom_size = {{32, 64, 128, 256, 512, 1024, 2048, 4096}};
+	static constexpr array<uint16_t, 4> rom_size_52 = {{1152, 1280, 1536}};
 	if (type < rom_size.size()) {
 		return rom_size[type];
 	} else if (type >= 0x52 && type < 0x52+rom_size_52.size()) {
@@ -380,11 +364,6 @@ inline int DMGPrivate::RomSize(uint8_t type)
 	}
 	return -1;
 }
-
-/**
- * DMG RAM size array
- */
-const array<uint8_t, 6> DMGPrivate::dmg_ram_size = {{0, 2, 8, 32, 128, 64}};
 
 /**
  * Get the title and game ID.
@@ -492,7 +471,7 @@ void DMGPrivate::getTitleAndGameID(const DMG_RomHeader *pRomHeader, string &s_ti
 			// Old publisher code.
 			// NOTE: This probably won't ever happen,
 			// since Game ID was added *after* CGB.
-			static const array<char, 16> hex_lookup = {{
+			static constexpr array<char, 16> hex_lookup = {{
 				'0','1','2','3','4','5','6','7',
 				'8','9','A','B','C','D','E','F'
 			}};
@@ -804,7 +783,7 @@ DMG::DMG(const IRpFilePtr &file)
 	// Check for MMM01 menu headers at 0xF8000 (1 MiB) and 0x78000 (512 KiB).
 	// NOTE: 512 KiB versions indicates MBC3 (0x11), not MMM01, in the menu bank.
 	// TODO: 256 KiB version has a menu at 0x00000, not the expected 0x38000.
-	static const array<unsigned int, 2> mmm01_rom_size_check = {{1048576U, 524288U}};
+	static constexpr array<unsigned int, 2> mmm01_rom_size_check = {{1048576U, 524288U}};
 	d->is_mmm01_multicart = false;
 	for (unsigned int mmm01_rom_size : mmm01_rom_size_check) {
 		if (fileSize != mmm01_rom_size)
@@ -890,7 +869,7 @@ int DMG::isRomSupported_static(const DetectInfo *info)
 	* NOTE: CGB bootrom only checks the top half of the logo.
 	* (see 0x00D1 of CGB IPL)
 	*/
-	static const array<uint8_t, 0x18> dmg_nintendo_logo = {{
+	static constexpr array<uint8_t, 0x18> dmg_nintendo_logo = {{
 		0xCE, 0xED, 0x66, 0x66, 0xCC, 0x0D, 0x00, 0x0B,
 		0x03, 0x73, 0x00, 0x83, 0x00, 0x0C, 0x00, 0x0D,
 		0x00, 0x08, 0x11, 0x1F, 0x88, 0x89, 0x00, 0x0E
@@ -1165,7 +1144,7 @@ int DMG::loadFieldData(void)
 		};
 
 		// TODO: Localization?
-		static const array<gbx_mapper_tbl_t, 21> gbx_mapper_tbl = {{
+		static constexpr array<gbx_mapper_tbl_t, 21> gbx_mapper_tbl = {{
 			// Nintendo
 			{GBX_MAPPER_ROM_ONLY,		"ROM only"},
 			{GBX_MAPPER_MBC1,		"Nintendo MBC1"},

@@ -680,7 +680,7 @@ extern "C" int gtest_main(int argc, TCHAR *argv[])
 
 	// Check for the RomHeaders directory and chdir() into it.
 #ifdef _WIN32
-	static const array<const TCHAR*, 11> subdirs = {{
+	static constexpr array<const TCHAR*, 11> subdirs = {{
 		_T("RomHeaders"),
 		_T("bin\\RomHeaders"),
 		_T("src\\libromdata\\tests\\RomHeaders"),
@@ -694,7 +694,7 @@ extern "C" int gtest_main(int argc, TCHAR *argv[])
 		_T("..\\..\\..\\bin\\Release\\RomHeaders"),
 	}};
 #else /* !_WIN32 */
-	static const array<const TCHAR* ,9> subdirs = {{
+	static constexpr array<const TCHAR* ,9> subdirs = {{
 		_T("RomHeaders"),
 		_T("bin/RomHeaders"),
 		_T("src/libromdata/tests/RomHeaders"),

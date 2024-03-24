@@ -35,10 +35,10 @@ using std::array;
 namespace LibRpBase { namespace RpImageLoader {
 
 // Magic numbers
-static const array<uint8_t, 8> png_magic = {{0x89, 'P', 'N', 'G', '\r', '\n', 0x1A, '\n'}};
+static constexpr array<uint8_t, 8> png_magic = {{0x89, 'P', 'N', 'G', '\r', '\n', 0x1A, '\n'}};
 #ifdef HAVE_JPEG
-static const array<uint8_t, 4> jpeg_magic = {{'J','F','I','F'}};
-static const array<uint8_t, 4> exif_magic = {{'E','x','i','f'}};
+static constexpr array<uint8_t, 4> jpeg_magic = {{'J','F','I','F'}};
+static constexpr array<uint8_t, 4> exif_magic = {{'E','x','i','f'}};
 #endif /* HAVE_JPEG */
 
 /** RpImageLoader **/

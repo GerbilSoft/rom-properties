@@ -112,7 +112,7 @@ int Cdrom2352Reader::isDiscSupported_static(const uint8_t *pHeader, size_t szHea
 	}
 
 	// CD-ROM sync magic magic
-	static const array<uint8_t, 12> CDROM_2352_MAGIC =
+	static constexpr array<uint8_t, 12> CDROM_2352_MAGIC =
 		{{0x00,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0x00}};
 
 	// Check the CD-ROM sync magic.

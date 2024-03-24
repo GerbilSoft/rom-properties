@@ -184,7 +184,7 @@ void Hash::reset(void)
 
 	// Lookup table
 	// NOTE: SHA256 and SHA512 requires XP SP3 or later.
-	static const array<ALG_ID, (int)Algorithm::Max> alg_id_tbl = {{
+	static constexpr array<ALG_ID, (int)Algorithm::Max> alg_id_tbl = {{
 		0,			// Unknown
 
 		0,		// CRC32 (not using CryptoAPI)
@@ -296,7 +296,7 @@ size_t Hash::hashLength(void) const
 	RP_D(const Hash);
 
 	// Lookup table
-	static const array<uint8_t, (int)Algorithm::Max> hash_length_tbl = {{
+	static constexpr array<uint8_t, (int)Algorithm::Max> hash_length_tbl = {{
 		0,			// Unknown
 
 		sizeof(uint32_t),	// CRC32

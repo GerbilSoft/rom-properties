@@ -201,7 +201,7 @@ inline void SegaPVRPrivate::byteswap_gvr(PVR_Header *gvr)
  */
 const char *SegaPVRPrivate::pixelFormatName(void) const
 {
-	static const array<const char*, 10> pxfmt_tbl_pvr = {{
+	static constexpr array<const char*, 10> pxfmt_tbl_pvr = {{
 		// Sega Dreamcast (PVR)
 		"ARGB1555", "RGB565",		// 0x00-0x01
 		"ARGB4444", "YUV422",		// 0x02-0x03
@@ -211,23 +211,23 @@ const char *SegaPVRPrivate::pixelFormatName(void) const
 		// Sony PlayStation 2 (SVR)
 		"BGR5A3", "BGR888_ABGR7888",	// 0x08-0x09
 	}};
-	static const array<const char*, 3> pxfmt_tbl_gvr = {{
+	static constexpr array<const char*, 3> pxfmt_tbl_gvr = {{
 		// GameCube (GVR)
 		"IA8", "RGB565", "RGB5A3",	// 0x00-0x02
 	}};
 #if 0
-	static const array<const char*, 0> pxfmt_tbl_pvrx = {{
+	static constexpr array<const char*, 0> pxfmt_tbl_pvrx = {{
 		// Xbox (PVRX) (TODO)
 	}};
 #endif
 
-	static const array<const char *const *, (int)PVRType::Max> pxfmt_tbl_ptrs = {{
+	static constexpr array<const char *const *, (int)PVRType::Max> pxfmt_tbl_ptrs = {{
 		pxfmt_tbl_pvr.data(),
 		pxfmt_tbl_gvr.data(),
 		pxfmt_tbl_pvr.data(),	// SVR
 		nullptr, //pxfmt_tbl_pvrx.data(),
 	}};
-	static const array<uint8_t, (int)PVRType::Max> pxfmt_tbl_sizes = {{
+	static constexpr array<uint8_t, (int)PVRType::Max> pxfmt_tbl_sizes = {{
 		static_cast<uint8_t>(pxfmt_tbl_pvr.size()),
 		static_cast<uint8_t>(pxfmt_tbl_gvr.size()),
 		static_cast<uint8_t>(pxfmt_tbl_pvr.size()),	// SVR
@@ -264,7 +264,7 @@ const char *SegaPVRPrivate::pixelFormatName(void) const
  */
 const char *SegaPVRPrivate::imageDataTypeName(void) const
 {
-	static const array<const char*, 19> idt_tbl_pvr = {{
+	static constexpr array<const char*, 19> idt_tbl_pvr = {{
 		// Sega Dreamcast (PVR)
 		nullptr,				// 0x00
 		"Square (Twiddled)",			// 0x01
@@ -286,7 +286,7 @@ const char *SegaPVRPrivate::imageDataTypeName(void) const
 		"Small VQ (Mipmap)",			// 0x11
 		"Square (Twiddled, Mipmap) (Alt)",	// 0x12
 	}};
-	static const array<const char*, 14> idt_tbl_svr = {{
+	static constexpr array<const char*, 14> idt_tbl_svr = {{
 		// Sony PlayStation 2 (SVR)
 		// NOTE: First index represents format 0x60.
 		"Rectangle",			// 0x60
@@ -304,7 +304,7 @@ const char *SegaPVRPrivate::imageDataTypeName(void) const
 		"8-bit (ABGR8), Rectangle",	// 0x6C
 		"8-bit (ABGR8), Square",	// 0x6D
 	}};
-	static const array<const char*, 15> idt_tbl_gvr = {{
+	static constexpr array<const char*, 15> idt_tbl_gvr = {{
 		// GameCube (GVR)
 		"I4",			// 0x00
 		"I8",			// 0x01
@@ -321,18 +321,18 @@ const char *SegaPVRPrivate::imageDataTypeName(void) const
 		"DXT1",			// 0x0E
 	}};
 #if 0
-	static const array<const char*, 0> idt_tbl_pvrx = {{
+	static constexpr array<const char*, 0> idt_tbl_pvrx = {{
 		// Xbox (PVRX) (TODO)
 	}};
 #endif
 
-	static const array<const char *const *, (int)PVRType::Max> idt_tbl_ptrs = {{
+	static constexpr array<const char *const *, (int)PVRType::Max> idt_tbl_ptrs = {{
 		idt_tbl_pvr.data(),
 		idt_tbl_gvr.data(),
 		idt_tbl_svr.data(),
 		nullptr, //idt_tbl_pvrx.data(),
 	}};
-	static const array<uint8_t, (int)PVRType::Max> idt_tbl_sizes = {{
+	static constexpr array<uint8_t, (int)PVRType::Max> idt_tbl_sizes = {{
 		static_cast<uint8_t>(idt_tbl_pvr.size()),
 		static_cast<uint8_t>(idt_tbl_gvr.size()),
 		static_cast<uint8_t>(idt_tbl_svr.size()),
@@ -1025,12 +1025,12 @@ rp_image_ptr SegaPVRPrivate::svr_unswizzle_4or8(const rp_image_const_ptr &img_sw
 	// Original Delphi version by Dageron:
 	// - https://gta.nick7.com/ps2/swizzling/unswizzle_delphi.txt
 
-	static const array<uint8_t, 8> interlaceMatrix = {{
+	static constexpr array<uint8_t, 8> interlaceMatrix = {{
 		0x00, 0x10, 0x02, 0x12,
 		0x11, 0x01, 0x13, 0x03,
 	}};
-	static const array<int8_t, 4> matrix = {{0, 1, -1, 0}};
-	static const array<int8_t, 2> tileMatrix = {{4, -4}};
+	static constexpr array<int8_t, 4> matrix = {{0, 1, -1, 0}};
+	static constexpr array<int8_t, 2> tileMatrix = {{4, -4}};
 
 	// Only CI8 formats are supported here.
 	assert(img_swz != nullptr);
@@ -1125,12 +1125,12 @@ rp_image_ptr SegaPVRPrivate::svr_unswizzle_16(const rp_image_const_ptr &img_swz)
 	// Original Delphi version by Dageron:
 	// - https://gta.nick7.com/ps2/swizzling/unswizzle_delphi.txt
 
-	static const array<uint8_t, 8> interlaceMatrix = {{
+	static constexpr array<uint8_t, 8> interlaceMatrix = {{
 		0x00, 0x10, 0x02, 0x12,
 		0x11, 0x01, 0x13, 0x03,
 	}};
-	static const array<int8_t, 4> matrix = {{0, 1, -1, 0}};
-	static const array<int8_t, 2> tileMatrix = {{4, -4}};
+	static constexpr array<int8_t, 4> matrix = {{0, 1, -1, 0}};
+	static constexpr array<int8_t, 2> tileMatrix = {{4, -4}};
 
 	// Only ARGB32 formats are supported here.
 	assert(img_swz != nullptr);

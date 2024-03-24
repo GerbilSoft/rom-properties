@@ -1049,20 +1049,20 @@ int ELFPrivate::addSymbolFields(span<const char> dynsym_strtab)
 			vector<string> row;
 			row.reserve(7);
 			row.emplace_back(&strtab[sym.st_name]);
-			static const array<const char*, 16> bindings = {{
+			static constexpr array<const char*, 16> bindings = {{
 				"LOCAL", "GLOBAL", "WEAK",
 				"3", "4", "5", "6", "7", "8", "9",
 				"GNU_UNIQUE", "LOOS+1", "LOOS+2",
 				"LOPROC+0", "LOPROC+1", "LOPROC+2",
 			}};
-			static const array<const char*, 16> types = {{
+			static constexpr array<const char*, 16> types = {{
 				"NOTYPE", "OBJECT", "FUNC", "SECTION",
 				"FILE", "COMMON", "TLS",
 				"7", "8", "9",
 				"GNU_IFNUC", "LOOS+1", "LOOS+2",
 				"LOPROC+0", "LOPROC+1", "LOPROC+2",
 			}};
-			static const array<const char*, 4> visibilities = {{
+			static constexpr array<const char*, 4> visibilities = {{
 				"DEFAULT", "INTERNAL", "HIDDEN", "PROTECTED"
 			}};
 
@@ -1482,7 +1482,7 @@ int ELF::loadFieldData(void)
 	// NOTE: Executable type is used as File Type.
 
 	// Bitness/Endianness. (consolidated as "format")
-	static const array<const char*, 4> exec_type_tbl = {{
+	static constexpr array<const char*, 4> exec_type_tbl = {{
 		NOP_C_("RomData|ExecType", "32-bit Little-Endian"),
 		NOP_C_("RomData|ExecType", "64-bit Little-Endian"),
 		NOP_C_("RomData|ExecType", "32-bit Big-Endian"),
@@ -1569,7 +1569,7 @@ int ELF::loadFieldData(void)
 			}
 
 			// SPARC memory ordering.
-			static const array<const char*, 4> sparc_mm = {{
+			static constexpr array<const char*, 4> sparc_mm = {{
 				NOP_C_("ELF|SPARC_MM", "Total Store Ordering"),
 				NOP_C_("ELF|SPARC_MM", "Partial Store Ordering"),
 				NOP_C_("ELF|SPARC_MM", "Relaxed Memory Ordering"),
@@ -1756,7 +1756,7 @@ int ELF::loadFieldData(void)
 			// binutils: include/elf/sh.h
 
 			// CPU subtypes
-			static const array<const char*, 25> superh_cpu_subtype_tbl = {{
+			static constexpr array<const char*, 25> superh_cpu_subtype_tbl = {{
 				// 0-15
 				nullptr, "SH-1", "SH-2", "SH-3",
 				"SH-DSP", "SH3-DSP", "SH4AL-DSP", nullptr,
@@ -1847,7 +1847,7 @@ int ELF::loadFieldData(void)
 			}
 
 			// ISA
-			static const array<const char*, 8> cf_isa_tbl = {{
+			static constexpr array<const char*, 8> cf_isa_tbl = {{
 				nullptr,
 				"ISA A (no div)", "ISA A", "ISA A+",
 				"ISA B (no USP)", "ISA B",
@@ -2007,7 +2007,7 @@ int ELF::loadFieldData(void)
 
 		case EM_Z80: {
 			// binutils: include/elf/z80.h
-			static const array<const char*, 6> z80_insn_set_tbl = {{
+			static constexpr array<const char*, 6> z80_insn_set_tbl = {{
 				nullptr, "Z80", "Z180", "R800",
 				"eZ80 (Z80 mode)", "Sharp LR35902",
 			}};
@@ -2029,7 +2029,7 @@ int ELF::loadFieldData(void)
 			// binutils: include/elf/riscv.h
 
 			// Floating-point ABI in use
-			static const array<const char*, 4> riscv_fpabi_tbl = {{
+			static constexpr array<const char*, 4> riscv_fpabi_tbl = {{
 				NOP_C_("ELF|RISCVFPABI", "Soft-Float"),
 				NOP_C_("ELF|RISCVFPABI", "Single-Float"),
 				NOP_C_("ELF|RISCVFPABI", "Double-Float"),

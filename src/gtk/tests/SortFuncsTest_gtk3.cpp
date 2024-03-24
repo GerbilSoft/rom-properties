@@ -71,7 +71,7 @@ void ListDataSortProxyModelTest::SetUp()
 	}
 
 	// Sorting order (function pointers)
-	static const array<GtkTreeIterCompareFunc, 4> sort_funcs = {{
+	static constexpr array<GtkTreeIterCompareFunc, 4> sort_funcs = {{
 		// Column 0: Greek alphabet, standard sort
 		rp_sort_RFT_LISTDATA_standard,
 		// Column 1: Greek alphabet, case-insensitive sort

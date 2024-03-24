@@ -1185,7 +1185,7 @@ int GodotSTEX::getFields(RomFields *fields) const
 		}
 		case 4: {
 			// Data Format (Godot 4 only)
-			static const array<const char*, 4> data_format_tbl = {{
+			static constexpr array<const char*, 4> data_format_tbl = {{
 				NOP_C_("GodotSTEX|DataFormat", "Image"),
 				"PNG",	// Not translatable!
 				"WebP",	// Not translatable!

@@ -177,11 +177,19 @@ public:
 		klass::encryptionVerifyData_static \
 	}
 
-	static const array<EncKeyFns_t, 4> encKeyFns;
+	static constexpr array<KeyStoreUIPrivate::EncKeyFns_t, 4> encKeyFns = {{
+		ENCKEYFNS(WiiTicket),
+		ENCKEYFNS(CtrKeyScrambler),
+		ENCKEYFNS(N3DSVerifyKeys),
+		ENCKEYFNS(Xbox360_XEX),
+	}};
 
 public:
-	// Hexadecimal lookup table.
-	static const array<char, 16> hex_lookup;
+	// Hexadecimal lookup table
+	static constexpr array<char, 16> hex_lookup = {{
+		'0','1','2','3','4','5','6','7',
+		'8','9','A','B','C','D','E','F',
+	}};
 
 	/**
 	 * Convert a binary key to a hexadecimal string.
@@ -224,19 +232,6 @@ public:
 };
 
 /** KeyStoreUIPrivate **/
-
-const array<KeyStoreUIPrivate::EncKeyFns_t, 4> KeyStoreUIPrivate::encKeyFns = {{
-	ENCKEYFNS(WiiTicket),
-	ENCKEYFNS(CtrKeyScrambler),
-	ENCKEYFNS(N3DSVerifyKeys),
-	ENCKEYFNS(Xbox360_XEX),
-}};
-
-// Hexadecimal lookup table.
-const array<char, 16> KeyStoreUIPrivate::hex_lookup = {{
-	'0','1','2','3','4','5','6','7',
-	'8','9','A','B','C','D','E','F',
-}};
 
 KeyStoreUIPrivate::KeyStoreUIPrivate(KeyStoreUI *q)
 	: q_ptr(q)
@@ -875,7 +870,7 @@ const char *KeyStoreUI::sectName(int sectIdx) const
 		return nullptr;
 	}
 
-	static const array<const char*, 4> sectNames = {{
+	static constexpr array<const char*, 4> sectNames = {{
 		NOP_C_("KeyStoreUI|Section", "Nintendo Wii AES Keys"),
 		NOP_C_("KeyStoreUI|Section", "Nintendo 3DS Key Scrambler Constants"),
 		NOP_C_("KeyStoreUI|Section", "Nintendo 3DS AES Keys"),
@@ -1134,7 +1129,7 @@ KeyStoreUI::ImportReturn KeyStoreUIPrivate::importWiiKeysBin(IRpFile *file)
 	// TODO:
 	// - SD keys are not present in keys.bin.
 
-	static const array<KeyStoreUIPrivate::KeyBinAddress, 3> keyBinAddress = {{
+	static constexpr array<KeyStoreUIPrivate::KeyBinAddress, 3> keyBinAddress = {{
 		{0x114, static_cast<int>(WiiTicket::EncryptionKeys::Key_RVL_Common)},
 		{0x114, static_cast<int>(WiiTicket::EncryptionKeys::Key_RVT_Debug)},
 		{0x274, static_cast<int>(WiiTicket::EncryptionKeys::Key_RVL_Korean)},
@@ -1198,7 +1193,7 @@ KeyStoreUI::ImportReturn KeyStoreUIPrivate::importWiiUOtpBin(IRpFile *file)
 	// Key addresses and indexes.
 	// TODO:
 	// - SD keys are not present in otp.bin.
-	static const array<KeyStoreUIPrivate::KeyBinAddress, 3> keyBinAddress_retail = {{
+	static constexpr array<KeyStoreUIPrivate::KeyBinAddress, 3> keyBinAddress_retail = {{
 		{0x014, static_cast<int>(WiiTicket::EncryptionKeys::Key_RVL_Common)},
 		{0x348, static_cast<int>(WiiTicket::EncryptionKeys::Key_RVL_Korean)},
 		{0x0D0, static_cast<int>(WiiTicket::EncryptionKeys::Key_WUP_Starbuck_vWii_Common)},
@@ -1210,7 +1205,7 @@ KeyStoreUI::ImportReturn KeyStoreUIPrivate::importWiiUOtpBin(IRpFile *file)
 #endif
 	}};
 
-	static const array<KeyStoreUIPrivate::KeyBinAddress, 3> keyBinAddress_debug = {{
+	static constexpr array<KeyStoreUIPrivate::KeyBinAddress, 3> keyBinAddress_debug = {{
 		{0x014, static_cast<int>(WiiTicket::EncryptionKeys::Key_RVT_Debug)},
 		{0x348, static_cast<int>(WiiTicket::EncryptionKeys::Key_RVT_Korean)},
 		{0x0D0, static_cast<int>(WiiTicket::EncryptionKeys::Key_CAT_Starbuck_vWii_Common)},
@@ -1290,7 +1285,7 @@ KeyStoreUI::ImportReturn KeyStoreUIPrivate::importN3DSboot9bin(IRpFile *file)
 	}
 
 	// Key addresses and indexes.
-	static const array<KeyStoreUIPrivate::KeyBinAddress, 6> keyBinAddress = {{
+	static constexpr array<KeyStoreUIPrivate::KeyBinAddress, 6> keyBinAddress = {{
 		{0x5720, N3DSVerifyKeys::Key_Retail_SpiBoot},
 		{0x59D0, N3DSVerifyKeys::Key_Retail_Slot0x2CKeyX},
 		{0x5A20, N3DSVerifyKeys::Key_Retail_Slot0x3DKeyX},
@@ -1374,7 +1369,7 @@ KeyStoreUI::ImportReturn KeyStoreUIPrivate::importN3DSaeskeydb(IRpFile *file)
 				// Only KeyX is available for this key.
 				// KeyY is taken from the title's RSA signature.
 				if (aesKey->type == 'X') {
-					static const array<uint8_t, 2> keys_Slot0x18KeyX = {{
+					static constexpr array<uint8_t, 2> keys_Slot0x18KeyX = {{
 						N3DSVerifyKeys::Key_Retail_Slot0x18KeyX,
 						N3DSVerifyKeys::Key_Debug_Slot0x18KeyX,
 					}};
@@ -1387,7 +1382,7 @@ KeyStoreUI::ImportReturn KeyStoreUIPrivate::importN3DSaeskeydb(IRpFile *file)
 				// Only KeyX is available for this key.
 				// KeyY is taken from the title's RSA signature.
 				if (aesKey->type == 'X') {
-					static const array<uint8_t, 2> keys_Slot0x1BKeyX = {{
+					static constexpr array<uint8_t, 2> keys_Slot0x1BKeyX = {{
 						N3DSVerifyKeys::Key_Retail_Slot0x1BKeyX,
 						N3DSVerifyKeys::Key_Debug_Slot0x1BKeyX,
 					}};
@@ -1400,7 +1395,7 @@ KeyStoreUI::ImportReturn KeyStoreUIPrivate::importN3DSaeskeydb(IRpFile *file)
 				// Only KeyX is available for this key.
 				// KeyY is taken from the title's RSA signature.
 				if (aesKey->type == 'X') {
-					static const array<uint8_t, 2> keys_Slot0x25KeyX = {{
+					static constexpr array<uint8_t, 2> keys_Slot0x25KeyX = {{
 						N3DSVerifyKeys::Key_Retail_Slot0x25KeyX,
 						N3DSVerifyKeys::Key_Debug_Slot0x25KeyX,
 					}};
@@ -1413,7 +1408,7 @@ KeyStoreUI::ImportReturn KeyStoreUIPrivate::importN3DSaeskeydb(IRpFile *file)
 				// Only KeyX is available for this key.
 				// KeyY is taken from the title's RSA signature.
 				if (aesKey->type == 'X') {
-					static const array<uint8_t, 2> keys_Slot0x2CKeyX = {{
+					static constexpr array<uint8_t, 2> keys_Slot0x2CKeyX = {{
 						N3DSVerifyKeys::Key_Retail_Slot0x2CKeyX,
 						N3DSVerifyKeys::Key_Debug_Slot0x2CKeyX,
 					}};
@@ -1426,7 +1421,7 @@ KeyStoreUI::ImportReturn KeyStoreUIPrivate::importN3DSaeskeydb(IRpFile *file)
 				// KeyX, KeyY, and KeyNormal are available.
 				switch (aesKey->type) {
 					case 'X': {
-						static const array<uint8_t, 2> keys_Slot0x3DKeyX = {{
+						static constexpr array<uint8_t, 2> keys_Slot0x3DKeyX = {{
 							N3DSVerifyKeys::Key_Retail_Slot0x3DKeyX,
 							N3DSVerifyKeys::Key_Debug_Slot0x3DKeyX,
 						}};
@@ -1435,7 +1430,7 @@ KeyStoreUI::ImportReturn KeyStoreUIPrivate::importN3DSaeskeydb(IRpFile *file)
 						break;
 					}
 					case 'Y': {
-						static const array<uint8_t, 12> keys_Slot0x3DKeyY = {{
+						static constexpr array<uint8_t, 12> keys_Slot0x3DKeyY = {{
 							N3DSVerifyKeys::Key_Retail_Slot0x3DKeyY_0,
 							N3DSVerifyKeys::Key_Retail_Slot0x3DKeyY_1,
 							N3DSVerifyKeys::Key_Retail_Slot0x3DKeyY_2,
@@ -1454,7 +1449,7 @@ KeyStoreUI::ImportReturn KeyStoreUIPrivate::importN3DSaeskeydb(IRpFile *file)
 						break;
 					}
 					case 'N': {
-						static const array<uint8_t, 12> keys_Slot0x3DKeyNormal = {{
+						static constexpr array<uint8_t, 12> keys_Slot0x3DKeyNormal = {{
 							N3DSVerifyKeys::Key_Retail_Slot0x3DKeyNormal_0,
 							N3DSVerifyKeys::Key_Retail_Slot0x3DKeyNormal_1,
 							N3DSVerifyKeys::Key_Retail_Slot0x3DKeyNormal_2,

@@ -479,7 +479,7 @@ int WonderSwan::loadFieldData(void)
 		v_system_bitfield_names, 0, ws_system);
 
 	// ROM size
-	static const array<uint16_t, 10> rom_size_tbl = {{
+	static constexpr array<uint16_t, 10> rom_size_tbl = {{
 		128, 256, 512, 1024,
 		2048, 3072, 4096, 6144,
 		8192, 16384,
@@ -494,7 +494,7 @@ int WonderSwan::loadFieldData(void)
 	}
 
 	// Save size and type
-	static const array<uint16_t, 6> sram_size_tbl = {{
+	static constexpr array<uint16_t, 6> sram_size_tbl = {{
 		0, 8, 32, 128, 256, 512,
 	}};
 	const char *const save_memory_title = C_("WonderSwan", "Save Memory");

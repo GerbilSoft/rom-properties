@@ -128,8 +128,13 @@ public:
 	 */
 	int readVmiHeader(const IRpFilePtr &vmi_file);
 
-	// Graphic eyecatch sizes
-	static const array<uint32_t, 4> eyecatch_sizes;
+	// Graphic eyecatch sizes (in bytes)
+	static constexpr array<uint32_t, 4> eyecatch_sizes = {{
+		0,	// DC_VMS_EYECATCH_NONE
+		DC_VMS_EYECATCH_ARGB4444_DATA_SIZE,
+		DC_VMS_EYECATCH_CI8_PALETTE_SIZE + DC_VMS_EYECATCH_CI8_DATA_SIZE,
+		DC_VMS_EYECATCH_CI4_PALETTE_SIZE + DC_VMS_EYECATCH_CI4_DATA_SIZE
+	}};
 
 	// VMS icon struct
 	// For processing VMS icons only;
@@ -206,14 +211,6 @@ const char *const DreamcastSavePrivate::mimeTypes[] = {
 const RomDataInfo DreamcastSavePrivate::romDataInfo = {
 	"DreamcastSave", exts, mimeTypes
 };
-
-// Graphic eyecatch sizes.
-const array<uint32_t, 4> DreamcastSavePrivate::eyecatch_sizes = {{
-	0,	// DC_VMS_EYECATCH_NONE
-	DC_VMS_EYECATCH_ARGB4444_DATA_SIZE,
-	DC_VMS_EYECATCH_CI8_PALETTE_SIZE + DC_VMS_EYECATCH_CI8_DATA_SIZE,
-	DC_VMS_EYECATCH_CI4_PALETTE_SIZE + DC_VMS_EYECATCH_CI4_DATA_SIZE
-}};
 
 DreamcastSavePrivate::DreamcastSavePrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)

@@ -234,7 +234,7 @@ int Amiibo::isRomSupported_static(const DetectInfo *info)
 	}
 
 	// Check the "must match" values.
-	static const array<uint8_t, 3> lock_footer = {{0x01, 0x00, 0x0F}};
+	static constexpr array<uint8_t, 3> lock_footer = {{0x01, 0x00, 0x0F}};
 	static_assert(sizeof(nfpData->lock_footer) == sizeof(lock_footer)+1, "lock_footer is the wrong size.");
 
 	if (nfpData->lock_header != cpu_to_be16(NFP_LOCK_HEADER) ||
@@ -361,7 +361,7 @@ int Amiibo::loadFieldData(void)
 	// Serial number
 
 	// Convert the 7-byte serial number to ASCII.
-	static const array<char, 16> hex_lookup = {{
+	static constexpr array<char, 16> hex_lookup = {{
 		'0','1','2','3','4','5','6','7',
 		'8','9','A','B','C','D','E','F'
 	}};
@@ -391,7 +391,7 @@ int Amiibo::loadFieldData(void)
 		RomFields::STRF_MONOSPACE);
 
 	// tr: amiibo type.
-	static const array<const char*, 4> amiibo_type_tbl = {{
+	static constexpr array<const char*, 4> amiibo_type_tbl = {{
 		// tr: NFP_TYPE_FIGURINE == standard amiibo
 		NOP_C_("Amiibo|Type", "Figurine"),
 		// tr: NFP_TYPE_CARD == amiibo card
