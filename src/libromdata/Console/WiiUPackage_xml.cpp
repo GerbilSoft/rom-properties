@@ -29,6 +29,7 @@ using namespace LibRpText;
 using namespace tinyxml2;
 
 // C++ STL classes
+using std::array;
 using std::string;
 using std::unique_ptr;
 using std::vector;
@@ -295,7 +296,7 @@ int WiiUPackagePrivate::addFields_System_XMLs(void)
 		char xml_lc[4];	// LC in the XML file
 		uint32_t lc;	// Our LC
 	};
-	static const xml_lc_map_t xml_lc_map[WiiU_LC_COUNT] = {
+	static const std::array<xml_lc_map_t, WiiU_LC_COUNT> xml_lc_map = {{
 		{"ja",    'ja'},
 		{"en",    'en'},
 		{"fr",    'fr'},
@@ -308,7 +309,7 @@ int WiiUPackagePrivate::addFields_System_XMLs(void)
 		{"pt",    'pt'},
 		{"ru",    'ru'},
 		{"zht", 'hant'},
-	};
+	}};
 
 	if (metaRootNode) {
 		const char *longnames[WiiU_LC_COUNT];
@@ -320,7 +321,7 @@ int WiiUPackagePrivate::addFields_System_XMLs(void)
 		longname_key.reserve(13);
 		shortname_key.reserve(14);
 		publisher_key.reserve(14);
-		for (unsigned int i = 0; i < WiiU_LC_COUNT; i++) {
+		for (size_t i = 0; i < xml_lc_map.size(); i++) {
 			longname_key.resize(9);
 			shortname_key.resize(10);
 			publisher_key.resize(10);
@@ -341,7 +342,7 @@ int WiiUPackagePrivate::addFields_System_XMLs(void)
 		RomFields::StringMultiMap_t *const pMap_longname = new RomFields::StringMultiMap_t();
 		RomFields::StringMultiMap_t *const pMap_shortname = new RomFields::StringMultiMap_t();
 		RomFields::StringMultiMap_t *const pMap_publisher = new RomFields::StringMultiMap_t();
-		for (int langID = 0; langID < WiiU_LC_COUNT; langID++) {
+		for (int langID = 0; langID < (int)xml_lc_map.size(); langID++) {
 			// Check for empty strings first.
 			if ((!longnames[langID] || longnames[langID][0] == '\0') &&
 			(!shortnames[langID] || shortnames[langID][0] == '\0') &&
@@ -482,13 +483,13 @@ int WiiUPackagePrivate::addFields_System_XMLs(void)
 		RomFields::age_ratings_t age_ratings;
 		// Valid ratings: 0-1, 3-4, 6-11 (excludes old BBFC and Finland/MEKU)
 		static const uint16_t valid_ratings = 0xFDB;
-		static const char *const age_rating_nodes[] = {
+		static const array<const char*, 12> age_rating_nodes = {{
 			"pc_cero", "pc_esrb", "pc_bbfc", "pc_usk",
 			"pc_pegi_gen", "pc_pegi_fin", "pc_pegi_prt", "pc_pegi_bbfc",
 			"pc_cob", "pc_grb", "pc_cgsrr", "pc_oflc",
 			/*"pc_reserved0", "pc_reserved1", "pc_reserved2", "pc_reserved3",*/
-		};
-		static_assert(ARRAY_SIZE(age_rating_nodes) == (int)RomFields::AgeRatingsCountry::MaxAllocated, "age_rating_nodes is out of sync with age_ratings_t");
+		}};
+		static_assert(age_rating_nodes.size() == (int)RomFields::AgeRatingsCountry::MaxAllocated, "age_rating_nodes is out of sync with age_ratings_t");
 
 		for (int i = static_cast<int>(age_ratings.size())-1; i >= 0; i--) {
 			if (!(valid_ratings & (1U << i))) {
@@ -528,7 +529,7 @@ int WiiUPackagePrivate::addFields_System_XMLs(void)
 
 		// Controller support
 		uint32_t controllers = 0;
-		static const char *const controller_nodes[] = {
+		static const std::array<const char*, 6> controller_nodes = {{
 			"ext_dev_nunchaku",
 			"ext_dev_classic",
 			"ext_dev_urcc",
@@ -537,8 +538,8 @@ int WiiUPackagePrivate::addFields_System_XMLs(void)
 			//"ext_dev_etc",	// TODO
 			//"ext_dev_etc_name",	// TODO
 			"drc_use",
-		};
-		for (unsigned int i = 0; i < ARRAY_SIZE(controller_nodes); i++) {
+		}};
+		for (size_t i = 0; i < controller_nodes.size(); i++) {
 			unsigned int val = parseUnsignedInt(metaRootNode, controller_nodes[i]);
 			if (val > 0) {
 				// This controller is supported.
