@@ -127,6 +127,7 @@ SET(${PROJECT_NAME}_H
 	RpGtk.h
 	gtk-compat.h
 	LanguageComboBox.hpp
+	LanguageComboBox_p.hpp
 	OptionsMenuButton.hpp
 	check-uid.h
 	AchSpriteSheet.hpp
@@ -151,6 +152,7 @@ SET(${PROJECT_NAME}_H
 
 # Sources and headers (GTK2/GTK3 only)
 SET(${PROJECT_NAME}_GTK3MAX_SRCS
+	LanguageComboBox_gtk3.cpp
 	RomDataView_gtk3.cpp
 	gtk3/sort_funcs.c
 	xattr/XAttrView_gtk3.cpp
@@ -161,6 +163,7 @@ SET(${PROJECT_NAME}_GTK3MAX_H
 
 # Sources and headers (GTK4+ only)
 SET(${PROJECT_NAME}_GTK4MIN_SRCS
+	LanguageComboBox_gtk4.cpp
 	LanguageComboBoxItem.c
 	ListDataItem.c
 	config/AchievementItem.c
