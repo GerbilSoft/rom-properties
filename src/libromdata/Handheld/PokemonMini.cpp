@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * PokemonMini.cpp: Pokémon Mini ROM reader.                               *
  *                                                                         *
- * Copyright (c) 2019-2023 by David Korth.                                 *
+ * Copyright (c) 2019-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -16,6 +16,7 @@ using namespace LibRpFile;
 using namespace LibRpText;
 
 // C++ STL classes
+using std::array;
 using std::string;
 using std::vector;
 
@@ -232,7 +233,7 @@ int PokemonMini::loadFieldData(void)
 	d->fields.addField_string(C_("RomData", "Game ID"), latin1_to_utf8(id4, 4));
 
 	// Vector table.
-	static const std::array<const char*, PokemonMini_IRQ_MAX> vectors_names = {{
+	static const array<const char*, PokemonMini_IRQ_MAX> vectors_names = {{
 		// 0
 		"Reset",
 		"PRC Frame Copy",
@@ -276,9 +277,9 @@ int PokemonMini::loadFieldData(void)
 	// NOTE: PC is the value *after* the jump instruction.
 	// Offset: PC = PC + #ssss - 1
 	// Reference: https://github.com/OpenEmu/PokeMini-Core/blob/master/PokeMini/pokemini-code/doc/PM_Opc_JMP.html
-	static const uint8_t vec_prefix[4]   = {0xCE, 0xC4, 0x00, 0xF3};
-	static const uint8_t vec_empty_ff[6] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
-	static const uint8_t vec_empty_00[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+	static const array<uint8_t, 4> vec_prefix   = {{0xCE, 0xC4, 0x00, 0xF3}};
+	static const array<uint8_t, 6> vec_empty_ff = {{0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF}};
+	static const array<uint8_t, 6> vec_empty_00 = {{0x00, 0x00, 0x00, 0x00, 0x00, 0x00}};
 
 	auto vv_vectors = new RomFields::ListData_t(ARRAY_SIZE(vectors_names));
 	uint32_t pc = 0x2100 + offsetof(PokemonMini_RomHeader, irqs);
@@ -294,7 +295,7 @@ int PokemonMini::loadFieldData(void)
 
 		// Address
 		string s_address;
-		if (!memcmp(&romHeader->irqs[i][0], vec_prefix, sizeof(vec_prefix))) {
+		if (!memcmp(&romHeader->irqs[i][0], vec_prefix.data(), vec_prefix.size())) {
 			// Standard vector jump opcode.
 			uint32_t offset = (romHeader->irqs[i][5] << 8) | romHeader->irqs[i][4];
 			offset += pc + 3 + 3 - 1;
@@ -305,8 +306,8 @@ int PokemonMini::loadFieldData(void)
 			uint32_t offset = (romHeader->irqs[i][2] << 8) | romHeader->irqs[i][1];
 			offset += pc + 3 - 1;
 			s_address = rp_sprintf("0x%04X", offset);
-		} else if (!memcmp(&romHeader->irqs[i][0], vec_empty_ff, sizeof(vec_empty_ff)) ||
-			   !memcmp(&romHeader->irqs[i][0], vec_empty_00, sizeof(vec_empty_00))) {
+		} else if (!memcmp(&romHeader->irqs[i][0], vec_empty_ff.data(), vec_empty_ff.size()) ||
+			   !memcmp(&romHeader->irqs[i][0], vec_empty_00.data(), vec_empty_00.size())) {
 			// Empty vector.
 			s_address = C_("RomData|VectorTable", "None");
 		} else {

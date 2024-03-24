@@ -62,9 +62,11 @@ using namespace LibRpTexture;
 #include <cstring>
 
 // C++ includes
+#include <array>
 #include <functional>
 #include <memory>
 #include <string>
+using std::array;
 using std::shared_ptr;
 using std::string;
 
@@ -2068,7 +2070,7 @@ extern "C" int gtest_main(int argc, TCHAR *argv[])
 
 	// Check for the ImageDecoder_data directory and chdir() into it.
 #ifdef _WIN32
-	static const TCHAR *const subdirs[] = {
+	static const array<const TCHAR*, 11> subdirs = {{
 		_T("ImageDecoder_data"),
 		_T("bin\\ImageDecoder_data"),
 		_T("src\\libromdata\\tests\\img\\ImageDecoder_data"),
@@ -2080,9 +2082,9 @@ extern "C" int gtest_main(int argc, TCHAR *argv[])
 		_T("..\\..\\..\\bin\\ImageDecoder_data"),
 		_T("..\\..\\..\\bin\\Debug\\ImageDecoder_data"),
 		_T("..\\..\\..\\bin\\Release\\ImageDecoder_data"),
-	};
+	}};
 #else /* !_WIN32 */
-	static const TCHAR *const subdirs[] = {
+	static const array<const TCHAR*, 10> subdirs = {{
 		_T("ImageDecoder_data"),
 		_T("bin/ImageDecoder_data"),
 		_T("src/libromdata/tests/img/ImageDecoder_data"),
@@ -2093,7 +2095,7 @@ extern "C" int gtest_main(int argc, TCHAR *argv[])
 		_T("../../../../../src/libromdata/tests/img/ImageDecoder_data"),
 		_T("../../../../../../src/libromdata/tests/img/ImageDecoder_data"),
 		_T("../../../bin/ImageDecoder_data"),
-	};
+	}};
 #endif /* _WIN32 */
 
 	bool is_found = false;

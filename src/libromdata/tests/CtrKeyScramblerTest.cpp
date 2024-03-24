@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata/tests)                 *
  * CtrKeyScramblerTest.cpp: CtrKeyScrambler class test.                    *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -18,8 +18,9 @@
 #include <cstdio>
 
 // C++ includes
-#include <iostream>
+#include <array>
 #include <string>
+using std::array;
 using std::string;
 
 namespace LibRomData { namespace Tests {
@@ -155,16 +156,16 @@ TEST_P(CtrKeyScramblerTest, ctrScrambleTest)
 	ASSERT_TRUE(mode.keyY != nullptr);
 
 	// Use a rather bland scrambling key.
-	static const uint8_t ctr_scrambler[16] = {
+	static const array<uint8_t, 16> ctr_scrambler = {{
 		0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07,
 		0x08,0x09,0x0A,0x0B,0x0C,0x0D,0x0E,0x0F
-	};
+	}};
 
 	u128_t keyNormal;
 	ASSERT_EQ(0, CtrKeyScrambler::CtrScramble(&keyNormal,
 		reinterpret_cast<const u128_t*>(mode.keyX),
 		reinterpret_cast<const u128_t*>(mode.keyY),
-		reinterpret_cast<const u128_t*>(&ctr_scrambler)));
+		reinterpret_cast<const u128_t*>(ctr_scrambler.data())));
 
 	// Compare the generated KeyNormal to the expected KeyNormal.
 	CompareByteArrays(mode.keyNormal, keyNormal.u8, 16, "KeyNormal");
@@ -173,26 +174,26 @@ TEST_P(CtrKeyScramblerTest, ctrScrambleTest)
 /** CtrKeyScrambler tests. **/
 
 // Example KeyX.
-static const uint8_t test_KeyX[16] = {
+static const array<uint8_t, 16> test_KeyX = {{
 	0x01,0x23,0x45,0x67,0x89,0xAB,0xCD,0xEF,
 	0xFE,0xDC,0xBA,0x98,0x76,0x54,0x32,0x10
-};
+}};
 
 // Example KeyY.
-static const uint8_t test_KeyY[16] = {
+static const array<uint8_t, 16> test_KeyY = {{
 	0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA,
 	0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA
-};
+}};
 
 // Expected CtrScramble(test_KeyX, test_KeyY).
-static const uint8_t test_CtrScramble[16] = {
+static const array<uint8_t, 16> test_CtrScramble = {{
 	0xEB,0x4C,0x83,0xD5,0xFC,0xA8,0x94,0x21,
 	0x1B,0xBB,0x85,0x34,0x0E,0x5B,0x70,0xE4
-};
+}};
 
 INSTANTIATE_TEST_SUITE_P(ctrScrambleTest, CtrKeyScramblerTest,
 	::testing::Values(
-		CtrKeyScramblerTest_mode(test_CtrScramble, test_KeyX, test_KeyY)
+		CtrKeyScramblerTest_mode(test_CtrScramble.data(), test_KeyX.data(), test_KeyY.data())
 	));
 } }
 

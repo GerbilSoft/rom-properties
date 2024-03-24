@@ -30,6 +30,7 @@ using LibWin32UI::LoadDialog_i18n;
 #include "NetworkStatus.h"
 
 // C++ STL classes
+using std::array;
 using std::tstring;
 
 class OptionsTabPrivate
@@ -123,7 +124,7 @@ public:
 	bool changed;
 
 	// PAL language codes for GameTDB.
-	static const uint32_t pal_lc[];
+	static const array<uint32_t, 9+1> pal_lc;
 
 public:
 	// Dark Mode background brush
@@ -138,7 +139,7 @@ public:
 // GameTDB handles it as a separate language.
 // TODO: Combine with the KDE version.
 // NOTE: Win32 LanguageComboBox uses a NULL-terminated pal_lc[] array.
-const uint32_t OptionsTabPrivate::pal_lc[] = {'au', 'de', 'en', 'es', 'fr', 'it', 'nl', 'pt', 'ru', 0};
+const array<uint32_t, 9+1> OptionsTabPrivate::pal_lc = {{'au', 'de', 'en', 'es', 'fr', 'it', 'nl', 'pt', 'ru', 0}};
 
 OptionsTabPrivate::OptionsTabPrivate()
 	: hPropSheetPage(nullptr)
@@ -467,7 +468,7 @@ INT_PTR CALLBACK OptionsTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam,
 			assert(cboLanguage != nullptr);
 			if (cboLanguage) {
 				LanguageComboBox_SetForcePAL(cboLanguage, true);
-				LanguageComboBox_SetLCs(cboLanguage, pal_lc);
+				LanguageComboBox_SetLCs(cboLanguage, pal_lc.data());
 			}
 
 			// Set window themes for Win10's dark mode.

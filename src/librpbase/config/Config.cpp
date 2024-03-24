@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * Config.cpp: Configuration manager.                                      *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -13,7 +13,8 @@
 #include "ConfReader_p.hpp"
 #include "ctypex.h"
 
-// C++ STL classes.
+// C++ STL classes
+using std::array;
 using std::string;
 using std::unordered_map;
 
@@ -435,7 +436,7 @@ int ConfigPrivate::processConfigLine(const char *section, const char *name, cons
 			// MSVC 2015 and gcc-4.5.2. In order to get it to work correctly,
 			// we have to store the length byte separately from the actual
 			// image type name.
-			static const char *const imageTypeNames[] = {
+			static const array<const char*, RomData::IMG_EXT_MAX+1> imageTypeNames = {{
 				"\x07" "IntIcon",
 				"\x09" "IntBanner",
 				"\x08" "IntMedia",
@@ -446,11 +447,11 @@ int ConfigPrivate::processConfigLine(const char *section, const char *name, cons
 				"\x0C" "ExtCoverFull",
 				"\x06" "ExtBox",
 				"\x0E" "ExtTitleScreen",
-			};
+			}};
 			static_assert(ARRAY_SIZE(imageTypeNames) == RomData::IMG_EXT_MAX+1, "imageTypeNames[] is the wrong size.");
 
 			RomData::ImageType imgType = static_cast<RomData::ImageType>(-1);
-			for (size_t i = 0; i < ARRAY_SIZE(imageTypeNames); i++) {
+			for (size_t i = 0; i < imageTypeNames.size(); i++) {
 				if (static_cast<size_t>(imageTypeNames[i][0]) == len &&
 				    !strncasecmp(pos, &imageTypeNames[i][1], len))
 				{

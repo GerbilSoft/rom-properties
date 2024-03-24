@@ -13,6 +13,7 @@
 #include "KeyStoreItem.h"
 
 // C++ STL classes
+using std::array;
 using std::string;
 using std::vector;
 
@@ -176,7 +177,7 @@ bind_listitem_cb(GtkListItemFactory *factory, GtkListItem *list_item, gpointer u
 {
 	RP_UNUSED(factory);
 
-	static const std::array<const char*, 5> is_valid_icon_name_tbl = {{
+	static const array<const char*, 5> is_valid_icon_name_tbl = {{
 		nullptr,		// Empty
 		"dialog-question",	// Unknown
 		"dialog-error",		// NotAKey
@@ -312,11 +313,11 @@ void rp_key_manager_tab_create_GtkTreeView(RpKeyManagerTab *tab)
 	g_object_unref(selModel);
 
 	// Column titles
-	static const char *const column_titles[KEY_COL_MAX] = {
+	static const array<const char*, KEY_COL_MAX> column_titles = {{
 		NOP_C_("KeyManagerTab", "Key Name"),
 		NOP_C_("KeyManagerTab", "Value"),
 		NOP_C_("KeyManagerTab", "Valid?"),
-	};
+	}};
 
 	// NOTE: Regarding object ownership:
 	// - GtkColumnViewColumn takes ownership of the GtkListItemFactory

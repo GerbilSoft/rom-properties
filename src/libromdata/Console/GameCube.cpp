@@ -67,7 +67,7 @@ public:
 
 public:
 	// NDDEMO header
-	static const uint8_t nddemo_header[64];
+	static const std::array<uint8_t, 64> nddemo_header;
 
 	enum DiscType {
 		DISC_UNKNOWN = -1,	// Unknown disc type
@@ -270,7 +270,7 @@ const RomDataInfo GameCubePrivate::romDataInfo = {
 };
 
 // NDDEMO header.
-const uint8_t GameCubePrivate::nddemo_header[64] = {
+const array<uint8_t, 64> GameCubePrivate::nddemo_header = {{
 	0x30, 0x30, 0x00, 0x45, 0x30, 0x31, 0x00, 0x00,
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -279,7 +279,7 @@ const uint8_t GameCubePrivate::nddemo_header[64] = {
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-};
+}};
 
 GameCubePrivate::GameCubePrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
@@ -388,7 +388,7 @@ int GameCubePrivate::loadWiiPartitionTables(void)
 
 		// Read the partition table entries.
 		const off64_t pt_addr = vgtbl.vg[i].addr.geto_be();
-		static constexpr size_t pt_size = pt.size() * sizeof(pt[0]);
+		static const constexpr size_t pt_size = pt.size() * sizeof(pt[0]);
 		size = discReader->seekAndRead(pt_addr, pt.data(), pt_size);
 		if (size != pt_size) {
 			// Error reading the partition table entries.
@@ -915,8 +915,8 @@ GameCube::GameCube(const IRpFilePtr &file)
 				if (d->discHeader.magic_gcn == cpu_to_be32(GCN_MAGIC)) {
 					// GCN magic number is present.
 					break;
-				} else if (!memcmp(&d->discHeader, GameCubePrivate::nddemo_header,
-				           sizeof(GameCubePrivate::nddemo_header)))
+				} else if (!memcmp(&d->discHeader, GameCubePrivate::nddemo_header.data(),
+				                   GameCubePrivate::nddemo_header.size()))
 				{
 					// nddemo header is present.
 					break;
@@ -964,8 +964,8 @@ GameCube::GameCube(const IRpFilePtr &file)
 			// TODO: Check for Triforce?
 			d->discType &= ~GameCubePrivate::DISC_SYSTEM_MASK;
 			d->discType |=  GameCubePrivate::DISC_SYSTEM_GCN;
-		} else if (!memcmp(&d->discHeader, GameCubePrivate::nddemo_header,
-			    sizeof(GameCubePrivate::nddemo_header)))
+		} else if (!memcmp(&d->discHeader, GameCubePrivate::nddemo_header.data(),
+			           GameCubePrivate::nddemo_header.size()))
 		{
 			// NDDEMO disc.
 			d->discType &= ~GameCubePrivate::DISC_SYSTEM_MASK;
@@ -1103,7 +1103,9 @@ int GameCube::isRomSupported_static(const DetectInfo *info)
 	}
 
 	// Check for NDDEMO. (Early GameCube demo discs.)
-	if (!memcmp(gcn_header, GameCubePrivate::nddemo_header, sizeof(GameCubePrivate::nddemo_header))) {
+	if (!memcmp(gcn_header, GameCubePrivate::nddemo_header.data(),
+	            GameCubePrivate::nddemo_header.size()))
+	{
 		// NDDEMO disc.
 		return (GameCubePrivate::DISC_SYSTEM_GCN | GameCubePrivate::DISC_FORMAT_RAW);
 	}

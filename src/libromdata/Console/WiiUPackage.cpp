@@ -25,6 +25,7 @@ using namespace LibRpTexture;
 #endif /* _WIN32 */
 
 // C++ STL classes
+using std::array;
 using std::string;
 using std::tstring;
 using std::unique_ptr;
@@ -516,12 +517,12 @@ int WiiUPackage::isDirSupported_static(const char *path)
 	const size_t path_orig_size = s_path.size();
 
 	/// Check for the ticket, TMD, and certificate chain files.
-	static const char *const filenames_to_check[3] = {
+	static const array<const char*, 3> filenames_to_check = {{
 		"title.tik",
 		"title.tmd",
 		"title.cert",
-	};
-	for (auto filename : filenames_to_check) {
+	}};
+	for (const auto filename : filenames_to_check) {
 		s_path.resize(path_orig_size);
 		s_path += filename;
 
@@ -555,12 +556,12 @@ int WiiUPackage::isDirSupported_static(const wchar_t *path)
 	const size_t path_orig_size = s_path.size();
 
 	/// Check for the ticket, TMD, and certificate chain files.
-	static const wchar_t *const filenames_to_check[3] = {
+	static const array<const wchar_t*, 3> filenames_to_check = {{
 		L"title.tik",
 		L"title.tmd",
 		L"title.cert",
-	};
-	for (auto filename : filenames_to_check) {
+	}};
+	for (const auto filename : filenames_to_check) {
 		s_path.resize(path_orig_size);
 		s_path += filename;
 

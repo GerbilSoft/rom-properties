@@ -519,7 +519,7 @@ int CBMDOSPrivate::decode_GCR_bytes(uint8_t *data, const uint8_t *gcr)
 	// - index: GCR 5-bit value
 	// - value: Decoded 4-bit value
 	// NOTE: Invalid values will be -1.
-	static const int8_t gcr_decode_map[32] = {
+	static const array<int8_t, 32> gcr_decode_map = {{
 		// GCR: 00000, 00001, 00010, 00011
 		-1, -1, -1, -1,
 
@@ -543,7 +543,7 @@ int CBMDOSPrivate::decode_GCR_bytes(uint8_t *data, const uint8_t *gcr)
 
 		// GCR: 11100, 11101, 11110, 11111
 		-1, 0xD, 0xE, -1,
-	};
+	}};
 
 	// Combine five GCR bytes into a uint64_t.
 	uint64_t gcr_data = ((uint64_t)gcr[0] << 32) |

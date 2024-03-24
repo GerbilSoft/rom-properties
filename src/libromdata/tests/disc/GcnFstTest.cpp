@@ -41,10 +41,12 @@ using LibRpBase::IFst;
 
 // C++ includes
 #include <algorithm>
+#include <array>
 #include <sstream>
 #include <string>
 #include <unordered_set>
 #include <vector>
+using std::array;
 using std::istringstream;
 using std::ostream;
 using std::string;
@@ -179,9 +181,9 @@ void GcnFstTest::SetUp(void)
 	// These FSTs have an extra header at the top, indicating what
 	// disc the FST belongs to.
 	unsigned int fst_start_offset = 0;
-	static const uint8_t root_dir_data[] = {1,0,0,0,0,0,0,0,0,0};
+	static const array<uint8_t, 10> root_dir_data = {{1,0,0,0,0,0,0,0,0,0}};
 	if (m_fst_buf.size() >= 0x60) {
-		if (!memcmp(&m_fst_buf[0x50], root_dir_data, sizeof(root_dir_data))) {
+		if (!memcmp(&m_fst_buf[0x50], root_dir_data.data(), root_dir_data.size())) {
 			// Found an NKit FST.
 			fst_start_offset = 0x50;
 		}

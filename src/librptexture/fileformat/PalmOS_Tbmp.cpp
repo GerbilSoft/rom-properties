@@ -26,6 +26,7 @@ using LibRpBase::RomFields;
 using LibRpTexture::ImageDecoder::PixelFormat;
 
 // C++ STL classes
+using std::array;
 using std::unique_ptr;
 
 namespace LibRpTexture {
@@ -314,14 +315,14 @@ rp_image_const_ptr PalmOS_Tbmp_Private::loadTbmp(void)
 {
 	const uint8_t version = bitmapType.version;
 
-	static const uint8_t header_size_tbl[] = {
+	static const array<uint8_t, 4> header_size_tbl = {{
 		PalmOS_BitmapType_v0_SIZE,
 		PalmOS_BitmapType_v1_SIZE,
 		PalmOS_BitmapType_v2_SIZE,
 		PalmOS_BitmapType_v3_SIZE,
-	};
-	assert(version < ARRAY_SIZE(header_size_tbl));
-	if (version >= ARRAY_SIZE(header_size_tbl)) {
+	}};
+	assert(version < header_size_tbl.size());
+	if (version >= header_size_tbl.size()) {
 		// Version is not supported...
 		return {};
 	}

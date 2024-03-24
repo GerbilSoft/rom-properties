@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata/tests)                 *
  * SuperMagicDriveTest.cpp: SuperMagicDrive class test.                    *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -14,8 +14,12 @@
 #include "libromdata/utils/SuperMagicDrive.hpp"
 #include "aligned_malloc.h"
 
-// C includes. (C++ namespace)
+// C includes (C++ namespace)
 #include <cstdio>
+
+// C++ includes
+#include <array>
+using std::array;
 
 // zlib
 #define CHUNK 4096
@@ -34,24 +38,20 @@ class SuperMagicDriveTest : public ::testing::Test
 		}
 
 	public:
-		// Output block size. (+64 for zlib)
+		// Output block size (+64 for zlib)
 		static const unsigned int OUT_BLOCK_UNZ_SIZE = SuperMagicDrive::SMD_BLOCK_SIZE+64;
 
-		/**
-		 * 16 KB plain binary data block.
-		 */
-		static const uint8_t bin_data_gz[11811];
+		// 16 KB plain binary data block
+		static const array<uint8_t, 11811> bin_data_gz;
 
-		// Number of iterations for benchmarks.
+		// Number of iterations for benchmarks
 		static const unsigned int BENCHMARK_ITERATIONS = 100000;
 
-		/**
-		 * 16 KB SMD-interleaved data block.
-		 */
-		static const uint8_t smd_data_gz[403];
+		// 16 KB SMD-interleaved data block
+		static const array<uint8_t, 403> smd_data_gz;
 
 	public:
-		// Uncompressed data buffers.
+		// Uncompressed data buffers
 		static uint8_t *m_bin_data;
 		static uint8_t *m_smd_data;
 
@@ -201,8 +201,7 @@ int SuperMagicDriveTest::decompress(uint8_t *pOut, unsigned int out_len, const u
 int SuperMagicDriveTest::decompress(void)
 {
 	m_bin_data = static_cast<uint8_t*>(aligned_malloc(16, OUT_BLOCK_UNZ_SIZE));
-	int ret = decompress(m_bin_data, OUT_BLOCK_UNZ_SIZE, bin_data_gz,
-		static_cast<unsigned int>(sizeof(bin_data_gz)));
+	int ret = decompress(m_bin_data, OUT_BLOCK_UNZ_SIZE, bin_data_gz.data(), bin_data_gz.size());
 	if (ret != 0) {
 		aligned_free(m_bin_data);
 		m_bin_data = nullptr;
@@ -210,8 +209,7 @@ int SuperMagicDriveTest::decompress(void)
 	}
 
 	m_smd_data = static_cast<uint8_t*>(aligned_malloc(16, OUT_BLOCK_UNZ_SIZE));
-	ret = decompress(m_smd_data, OUT_BLOCK_UNZ_SIZE, smd_data_gz,
-		static_cast<unsigned int>(sizeof(smd_data_gz)));
+	ret = decompress(m_smd_data, OUT_BLOCK_UNZ_SIZE, smd_data_gz.data(), smd_data_gz.size());
 	if (ret != 0) {
 		aligned_free(m_smd_data);
 		m_smd_data = nullptr;

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * DidjTex.hpp: Leapster Didj .tex reader.                                 *
  *                                                                         *
- * Copyright (c) 2019-2023 by David Korth.                                 *
+ * Copyright (c) 2019-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -30,6 +30,7 @@ using LibRpBase::RomFields;
 #endif /* _MSC_VER */
 
 // C++ STL classes
+using std::array;
 using std::string;
 using std::unique_ptr;
 
@@ -420,15 +421,15 @@ const char *DidjTex::pixelFormat(void) const
 	}
 
 	// TODO: Verify other formats.
-	static const char *const pxfmt_tbl[] = {
+	static const array<const char*, 10> pxfmt_tbl = {{
 		nullptr,
 
 		"RGB565", nullptr, "RGBA4444",
 		"8bpp with RGB565 palette", nullptr, "8bpp with RGBA4444 palette",
 		"4bpp with RGB565 palette", nullptr, "4bpp with RGBA4444 palette",
-	};
+	}};
 
-	if (d->texHeader.px_format < ARRAY_SIZE(pxfmt_tbl) &&
+	if (d->texHeader.px_format < pxfmt_tbl.size() &&
 	    pxfmt_tbl[d->texHeader.px_format] != nullptr)
 	{
 		return pxfmt_tbl[d->texHeader.px_format];

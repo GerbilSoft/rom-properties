@@ -34,6 +34,7 @@ using namespace LibRpTexture;
 #include "disc/CIAReader.hpp"
 
 // C++ STL classes
+using std::array;
 using std::string;
 using std::unique_ptr;
 using std::vector;
@@ -1404,15 +1405,15 @@ int Nintendo3DS::isRomSupported_static(const DetectInfo *info)
 		// Check if this is an eMMC dump or a CCI image.
 		// This is done by checking the eMMC-specific crypt type section.
 		// (All zeroes for CCI; minor variance between Old3DS and New3DS.)
-		static const uint8_t crypt_cci[8]      = {0,0,0,0,0,0,0,0};
-		static const uint8_t crypt_emmc_old[8] = {1,2,2,2,2,0,0,0};
-		static const uint8_t crypt_emmc_new[8] = {1,2,2,2,3,0,0,0};
-		if (!memcmp(ncsd_header->emmc_part_tbl.crypt_type, crypt_cci, sizeof(crypt_cci))) {
-			// CCI image.
+		static const array<uint8_t, 8> crypt_cci      = {{0,0,0,0,0,0,0,0}};
+		static const array<uint8_t, 8> crypt_emmc_old = {{1,2,2,2,2,0,0,0}};
+		static const array<uint8_t, 8> crypt_emmc_new = {{1,2,2,2,3,0,0,0}};
+		if (!memcmp(ncsd_header->emmc_part_tbl.crypt_type, crypt_cci.data(), crypt_cci.size())) {
+			// CCI image
 			return static_cast<int>(Nintendo3DSPrivate::RomType::CCI);
-		} else if (!memcmp(ncsd_header->emmc_part_tbl.crypt_type, crypt_emmc_old, sizeof(crypt_emmc_old)) ||
-			   !memcmp(ncsd_header->emmc_part_tbl.crypt_type, crypt_emmc_new, sizeof(crypt_emmc_new))) {
-			// eMMC dump.
+		} else if (!memcmp(ncsd_header->emmc_part_tbl.crypt_type, crypt_emmc_old.data(), crypt_emmc_old.size()) ||
+			   !memcmp(ncsd_header->emmc_part_tbl.crypt_type, crypt_emmc_new.data(), crypt_emmc_new.size())) {
+			// eMMC dump
 			// NOTE: Not differentiating between Old3DS and New3DS here.
 			return static_cast<int>(Nintendo3DSPrivate::RomType::eMMC);
 		} else {

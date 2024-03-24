@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * Xbox360_XEX.cpp: Microsoft Xbox 360 executable reader.                  *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -1037,7 +1037,7 @@ void Xbox360_XEX_Private::convertGameRatings(
 	// Region conversion table:
 	// - Index: Xbox 360 region (-1 if not supported)
 	// - Value: RomFields::age_ratings_t region
-	static const RomFields::AgeRatingsCountry region_conv[14] = {
+	static const array<RomFields::AgeRatingsCountry, 14> region_conv = {{
 		RomFields::AgeRatingsCountry::USA,
 		RomFields::AgeRatingsCountry::Europe,
 		RomFields::AgeRatingsCountry::Finland,
@@ -1052,7 +1052,7 @@ void Xbox360_XEX_Private::convertGameRatings(
 		RomFields::AgeRatingsCountry::Invalid,		// TODO: FPB?
 		RomFields::AgeRatingsCountry::Taiwan,
 		RomFields::AgeRatingsCountry::Invalid,		// TODO: Singapore
-	};
+	}};
 
 	// Rating conversion table:
 	// - Primary index: Xbox 360 region

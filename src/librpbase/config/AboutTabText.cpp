@@ -11,6 +11,9 @@
 #include "config.version.h"
 #include "git.h"
 
+// C++ STL classes
+using std::array;
+
 // AboutTabText isn't used by libromdata directly,
 // so use some linker hax to force linkage.
 extern "C" {
@@ -37,7 +40,7 @@ uint64_t getProgramVersion(void)
 
 /** Program information strings **/
 
-static const std::array<const char*, (int)ProgramInfoStringID::Max> ProgramInfoString_tbl = {{
+static const array<const char*, (int)ProgramInfoStringID::Max> ProgramInfoString_tbl = {{
 	"rom-properties",				// ProgramName
 	"ROM Properties Page Shell Extension",		// ProgramFullName
 	"Copyright (c) 2016-2024 by David Korth.",	// Copyright
@@ -96,7 +99,7 @@ ProgramInfoStringID getProgramInfoStringCount(void)
  * Credits data.
  * Ends with CreditType::Max.
  */
-static const CreditsData_t creditsData[] = {
+static const array<CreditsData_t, 16+1> creditsData = {{
 	// Developers
 	{CreditType::Developer,		"David Korth", "mailto:gerbilsoft@gerbilsoft.com", "gerbilsoft@gerbilsoft.com", nullptr},
 	{CreditType::Continue,		"Egor", "mailto:egor@opensrc.club", "egor@opensrc.club", nullptr},
@@ -121,7 +124,7 @@ static const CreditsData_t creditsData[] = {
 
 	// End of list
 	{CreditType::Max, nullptr, nullptr, nullptr, nullptr}
-};
+}};
 
 /**
  * Get the credits data.
@@ -130,7 +133,7 @@ static const CreditsData_t creditsData[] = {
  */
 const CreditsData_t *getCreditsData(void)
 {
-	return creditsData;
+	return creditsData.data();
 }
 
 /** Support **/
@@ -139,13 +142,13 @@ const CreditsData_t *getCreditsData(void)
  * Support sites.
  * Ends with nullptr.
  */
-static const SupportSite_t supportSites[] = {
+static const array<SupportSite_t, 3+1> supportSites = {{
 	{"GitHub: GerbilSoft/rom-properties", "https://github.com/GerbilSoft/rom-properties"},
 	{"Sonic Retro", "https://forums.sonicretro.org/index.php?showtopic=35692"},
 	{"GBAtemp", "https://gbatemp.net/threads/rom-properties-page-shell-extension.442424/"},
 
 	{nullptr, nullptr}
-};
+}};
 
 /**
  * Get the support sites.
@@ -154,7 +157,7 @@ static const SupportSite_t supportSites[] = {
  */
 const SupportSite_t *getSupportSites(void)
 {
-	return supportSites;
+	return supportSites.data();
 }
 
 } }

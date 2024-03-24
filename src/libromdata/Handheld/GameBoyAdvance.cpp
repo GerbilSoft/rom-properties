@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * GameBoyAdvance.hpp: Nintendo Game Boy Advance ROM reader.               *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -17,6 +17,7 @@ using namespace LibRpFile;
 using namespace LibRpText;
 
 // C++ STL classes
+using std::array;
 using std::string;
 using std::vector;
 
@@ -190,16 +191,16 @@ int GameBoyAdvance::isRomSupported_static(const DetectInfo *info)
 	}
 
 	// Check the first 16 bytes of the Nintendo logo.
-	static const uint8_t nintendo_gba_logo[16] = {
+	static const array<uint8_t, 16> nintendo_gba_logo = {{
 		0x24, 0xFF, 0xAE, 0x51, 0x69, 0x9A, 0xA2, 0x21,
 		0x3D, 0x84, 0x82, 0x0A, 0x84, 0xE4, 0x09, 0xAD
-	};
+	}};
 
 	GameBoyAdvancePrivate::RomType romType = GameBoyAdvancePrivate::RomType::Unknown;
 
 	const GBA_RomHeader *const gba_header =
 		reinterpret_cast<const GBA_RomHeader*>(info->header.pData);
-	if (!memcmp(gba_header->nintendo_logo, nintendo_gba_logo, sizeof(nintendo_gba_logo))) {
+	if (!memcmp(gba_header->nintendo_logo, nintendo_gba_logo.data(), nintendo_gba_logo.size())) {
 		// Nintendo logo is present at the correct location.
 		romType = GameBoyAdvancePrivate::RomType::GBA;
 	} else if (gba_header->fixed_96h == 0x96 && gba_header->device_type == 0x00) {
@@ -525,7 +526,7 @@ int GameBoyAdvance::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int s
 	// multi-character constants.
 	string name;
 	name.reserve(12);
-	static const std::array<uint32_t, 7> common_ID4 = {{
+	static const array<uint32_t, 7> common_ID4 = {{
 		'AGBJ', '    ', '____', 'RARE',
 		'0000', 'XXXX', 'XXXE',
 	}};

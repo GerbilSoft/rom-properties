@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * Cdrom2352Reader.hpp: CD-ROM reader for 2352-byte sector images.         *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -21,6 +21,9 @@
 using namespace LibRpBase;
 using namespace LibRpFile;
 
+// C++ STL classes
+using std::array;
+
 namespace LibRomData {
 
 class Cdrom2352ReaderPrivate : public SparseDiscReaderPrivate
@@ -33,9 +36,6 @@ private:
 	RP_DISABLE_COPY(Cdrom2352ReaderPrivate)
 
 public:
-	// CD-ROM sync magic
-	static const uint8_t CDROM_2352_MAGIC[12];
-
 	// Physical block size
 	// Supported block sizes: 2352 (raw), 2448 (raw+subchan)
 	unsigned int physBlockSize;
@@ -45,10 +45,6 @@ public:
 };
 
 /** Cdrom2352ReaderPrivate **/
-
-// CD-ROM sync magic magic.
-const uint8_t Cdrom2352ReaderPrivate::CDROM_2352_MAGIC[12] =
-	{0x00,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0x00};
 
 Cdrom2352ReaderPrivate::Cdrom2352ReaderPrivate(Cdrom2352Reader *q, unsigned int physBlockSize)
 	: super(q)
@@ -115,9 +111,12 @@ int Cdrom2352Reader::isDiscSupported_static(const uint8_t *pHeader, size_t szHea
 		return -1;
 	}
 
+	// CD-ROM sync magic magic
+	static const array<uint8_t, 12> CDROM_2352_MAGIC =
+		{{0x00,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0x00}};
+
 	// Check the CD-ROM sync magic.
-	if (!memcmp(pHeader, Cdrom2352ReaderPrivate::CDROM_2352_MAGIC,
-	     sizeof(Cdrom2352ReaderPrivate::CDROM_2352_MAGIC)))
+	if (!memcmp(pHeader, CDROM_2352_MAGIC.data(), CDROM_2352_MAGIC.size()))
 	{
 		// Valid CD-ROM sync magic.
 		return 0;

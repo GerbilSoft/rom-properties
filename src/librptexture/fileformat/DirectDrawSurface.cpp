@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * DirectDrawSurface.hpp: DirectDraw Surface image reader.                 *
  *                                                                         *
- * Copyright (c) 2017-2023 by David Korth.                                 *
+ * Copyright (c) 2017-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -32,6 +32,7 @@ using LibRpText::rp_sprintf;
 #include "decoder/ImageDecoder_ASTC.hpp"
 
 // C++ STL classes
+using std::array;
 using std::string;
 using std::vector;
 
@@ -104,12 +105,12 @@ class DirectDrawSurfacePrivate final : public FileFormatPrivate
 		};
 		ASSERT_STRUCT(RGB_Format_Table_t, sizeof(uint32_t)*4 + 15 + 1);
 
-		static const RGB_Format_Table_t rgb_fmt_tbl_8[];	// 8-bit RGB
-		static const RGB_Format_Table_t rgb_fmt_tbl_16[];	// 16-bit RGB
-		static const RGB_Format_Table_t rgb_fmt_tbl_24[];	// 24-bit RGB
-		static const RGB_Format_Table_t rgb_fmt_tbl_32[];	// 32-bit RGB
-		static const RGB_Format_Table_t rgb_fmt_tbl_luma[];	// Luminance
-		static const RGB_Format_Table_t rgb_fmt_tbl_alpha[];	// Alpha
+		static const array<RGB_Format_Table_t,  1> rgb_fmt_tbl_8;	// 8-bit RGB
+		static const array<RGB_Format_Table_t, 17> rgb_fmt_tbl_16;	// 16-bit RGB
+		static const array<RGB_Format_Table_t,  2> rgb_fmt_tbl_24;	// 24-bit RGB
+		static const array<RGB_Format_Table_t, 11> rgb_fmt_tbl_32;	// 32-bit RGB
+		static const array<RGB_Format_Table_t,  9> rgb_fmt_tbl_luma;	// Luminance
+		static const array<RGB_Format_Table_t,  1> rgb_fmt_tbl_alpha;	// Alpha
 
 		/**
 		 * Get an RGB_Format_Table_t entry from an RGB format table.
@@ -168,13 +169,13 @@ const TextureInfo DirectDrawSurfacePrivate::textureInfo = {
 };
 
 // Supported 16-bit uncompressed RGB formats
-const DirectDrawSurfacePrivate::RGB_Format_Table_t DirectDrawSurfacePrivate::rgb_fmt_tbl_8[] = {
+const array<DirectDrawSurfacePrivate::RGB_Format_Table_t, 1> DirectDrawSurfacePrivate::rgb_fmt_tbl_8 = {{
 	// 3-bit for R and G; 2-bit for B
 	{0xE0, 0x1C, 0x03, 0x00, "RGB332", ImageDecoder::PixelFormat::RGB332},
-};
+}};
 
 // Supported 16-bit uncompressed RGB formats
-const DirectDrawSurfacePrivate::RGB_Format_Table_t DirectDrawSurfacePrivate::rgb_fmt_tbl_16[] = {
+const array<DirectDrawSurfacePrivate::RGB_Format_Table_t, 17> DirectDrawSurfacePrivate::rgb_fmt_tbl_16 = {{
 	// 5-bit per channel, plus alpha.
 	{0x7C00, 0x03E0, 0x001F, 0x8000, "ARGB1555", ImageDecoder::PixelFormat::ARGB1555},
 	{0x001F, 0x03E0, 0x007C, 0x8000, "ABGR1555", ImageDecoder::PixelFormat::ABGR1555},
@@ -203,16 +204,16 @@ const DirectDrawSurfacePrivate::RGB_Format_Table_t DirectDrawSurfacePrivate::rgb
 
 	// Other uncommon 16-bit formats.
 	{0x00E0, 0x001C, 0x0003, 0xFF00, "ARGB8332", ImageDecoder::PixelFormat::ARGB8332},
-};
+}};
 
 // Supported 24-bit uncompressed RGB formats
-const DirectDrawSurfacePrivate::RGB_Format_Table_t DirectDrawSurfacePrivate::rgb_fmt_tbl_24[] = {
+const array<DirectDrawSurfacePrivate::RGB_Format_Table_t, 2> DirectDrawSurfacePrivate::rgb_fmt_tbl_24 = {{
 	{0x00FF0000, 0x0000FF00, 0x000000FF, 0x00000000, "RGB888", ImageDecoder::PixelFormat::RGB888},
 	{0x000000FF, 0x0000FF00, 0x00FF0000, 0x00000000, "BGR888", ImageDecoder::PixelFormat::BGR888},
-};
+}};
 
 // Supported 32-bit uncompressed RGB formats
-const DirectDrawSurfacePrivate::RGB_Format_Table_t DirectDrawSurfacePrivate::rgb_fmt_tbl_32[] = {
+const array<DirectDrawSurfacePrivate::RGB_Format_Table_t, 11> DirectDrawSurfacePrivate::rgb_fmt_tbl_32 = {{
 	// Alpha
 	{0x00FF0000, 0x0000FF00, 0x000000FF, 0xFF000000, "ARGB8888", ImageDecoder::PixelFormat::ARGB8888},
 	{0x000000FF, 0x0000FF00, 0x00FF0000, 0xFF000000, "ABGR8888", ImageDecoder::PixelFormat::ABGR8888},
@@ -230,10 +231,10 @@ const DirectDrawSurfacePrivate::RGB_Format_Table_t DirectDrawSurfacePrivate::rgb
 
 	{0x3FF00000, 0x000FFC00, 0x000003FF, 0xC0000000, "A2R10G10B10", ImageDecoder::PixelFormat::A2R10G10B10},
 	{0x000003FF, 0x000FFC00, 0x3FF00000, 0xC0000000, "A2B10G10R10", ImageDecoder::PixelFormat::A2B10G10R10},
-};
+}};
 
 // Supported luminance formats.
-const DirectDrawSurfacePrivate::RGB_Format_Table_t DirectDrawSurfacePrivate::rgb_fmt_tbl_luma[] = {
+const array<DirectDrawSurfacePrivate::RGB_Format_Table_t, 9> DirectDrawSurfacePrivate::rgb_fmt_tbl_luma = {{
 	// 8-bit
 	// TODO: Verify A4L4.
 	{0x00FF, 0x0000, 0x0000, 0x0000, "L8",   ImageDecoder::PixelFormat::L8},
@@ -248,13 +249,13 @@ const DirectDrawSurfacePrivate::RGB_Format_Table_t DirectDrawSurfacePrivate::rgb
 	{0xFFFF, 0xFFFF, 0xFFFF, 0x0000, "L16",  ImageDecoder::PixelFormat::L16},
 	{0x00FF, 0x0000, 0x0000, 0xFF00, "A8L8", ImageDecoder::PixelFormat::A8L8},
 	{0x00FF, 0x00FF, 0x00FF, 0xFF00, "A8L8", ImageDecoder::PixelFormat::A8L8},			// from Pillow
-};
+}};
 
 // Supported alpha formats.
-const DirectDrawSurfacePrivate::RGB_Format_Table_t DirectDrawSurfacePrivate::rgb_fmt_tbl_alpha[] = {
+const array<DirectDrawSurfacePrivate::RGB_Format_Table_t, 1> DirectDrawSurfacePrivate::rgb_fmt_tbl_alpha = {{
 	// 8-bit
 	{0x0000, 0x0000, 0x0000, 0x00FF, "A8", ImageDecoder::PixelFormat::A8},
-};
+}};
 
 /**
  * Get an RGB_Format_Table_t entry from an RGB format table.
@@ -276,24 +277,24 @@ const DirectDrawSurfacePrivate::RGB_Format_Table_t *DirectDrawSurfacePrivate::ge
 		switch (ddspf.dwRGBBitCount) {
 			case 8:
 				// 8-bit
-				entry = rgb_fmt_tbl_8;
-				pTbl_end = &rgb_fmt_tbl_8[ARRAY_SIZE(rgb_fmt_tbl_8)];
+				entry = rgb_fmt_tbl_8.data();
+				pTbl_end = &rgb_fmt_tbl_8[rgb_fmt_tbl_8.size()];
 				break;
 			case 15:
 			case 16:
 				// 16-bit
-				entry = rgb_fmt_tbl_16;
-				pTbl_end = &rgb_fmt_tbl_16[ARRAY_SIZE(rgb_fmt_tbl_16)];
+				entry = rgb_fmt_tbl_16.data();
+				pTbl_end = &rgb_fmt_tbl_16[rgb_fmt_tbl_16.size()];
 				break;
 			case 24:
 				// 24-bit
-				entry = rgb_fmt_tbl_24;
-				pTbl_end = &rgb_fmt_tbl_24[ARRAY_SIZE(rgb_fmt_tbl_24)];
+				entry = rgb_fmt_tbl_24.data();
+				pTbl_end = &rgb_fmt_tbl_24[rgb_fmt_tbl_24.size()];
 				break;
 			case 32:
 				// 32-bit
-				entry = rgb_fmt_tbl_32;
-				pTbl_end = &rgb_fmt_tbl_32[ARRAY_SIZE(rgb_fmt_tbl_32)];
+				entry = rgb_fmt_tbl_32.data();
+				pTbl_end = &rgb_fmt_tbl_32[rgb_fmt_tbl_32.size()];
 				break;
 			default:
 				// Not supported
@@ -301,12 +302,12 @@ const DirectDrawSurfacePrivate::RGB_Format_Table_t *DirectDrawSurfacePrivate::ge
 		}
 	} else if (ddspf.dwFlags & DDPF_LUMINANCE) {
 		// Luminance
-		entry = rgb_fmt_tbl_luma;
-		pTbl_end = &rgb_fmt_tbl_luma[ARRAY_SIZE(rgb_fmt_tbl_luma)];
+		entry = rgb_fmt_tbl_luma.data();
+		pTbl_end = &rgb_fmt_tbl_luma[rgb_fmt_tbl_luma.size()];
 	} else if (ddspf.dwFlags & DDPF_ALPHA) {
 		// Alpha
-		entry = rgb_fmt_tbl_alpha;
-		pTbl_end = &rgb_fmt_tbl_alpha[ARRAY_SIZE(rgb_fmt_tbl_alpha)];
+		entry = rgb_fmt_tbl_alpha.data();
+		pTbl_end = &rgb_fmt_tbl_alpha[rgb_fmt_tbl_alpha.size()];
 	} else {
 		// Not supported
 		return nullptr;

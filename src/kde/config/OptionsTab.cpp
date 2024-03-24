@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE)                              *
  * OptionsTab.cpp: Options tab for rp-config.                              *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -11,6 +11,9 @@
 
 // librpbase
 using LibRpBase::Config;
+
+// C++ STL classes
+using std::array;
 
 #include "ui_OptionsTab.h"
 class OptionsTabPrivate
@@ -29,7 +32,7 @@ public:
 	bool changed;
 
 	// PAL language codes for GameTDB.
-	static const uint32_t pal_lc[];
+	static const array<uint32_t, 9> pal_lc;
 };
 
 /** OptionsTabPrivate **/
@@ -37,7 +40,7 @@ public:
 // PAL language codes for GameTDB.
 // NOTE: 'au' is technically not a language code, but
 // GameTDB handles it as a separate language.
-const uint32_t OptionsTabPrivate::pal_lc[] = {'au', 'de', 'en', 'es', 'fr', 'it', 'nl', 'pt', 'ru'};
+const array<uint32_t, 9> OptionsTabPrivate::pal_lc = {{'au', 'de', 'en', 'es', 'fr', 'it', 'nl', 'pt', 'ru'}};
 
 OptionsTabPrivate::OptionsTabPrivate()
 	: changed(false)
@@ -54,7 +57,7 @@ OptionsTab::OptionsTab(QWidget *parent)
 
 	// Initialize the PAL language dropdown.
 	d->ui.cboGameTDBPAL->setForcePAL(true);
-	d->ui.cboGameTDBPAL->setLCs(OptionsTabPrivate::pal_lc, ARRAY_SIZE(OptionsTabPrivate::pal_lc));
+	d->ui.cboGameTDBPAL->setLCs(OptionsTabPrivate::pal_lc.data(), OptionsTabPrivate::pal_lc.size());
 
 	// Load the current configuration.
 	reset();

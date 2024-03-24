@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * NintendoDS.hpp: Nintendo DS(i) ROM reader.                              *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -682,28 +682,28 @@ int NintendoDS::isRomSupported_static(const DetectInfo *info)
 	}
 
 	// Check the first 16 bytes of the Nintendo logo.
-	static const uint8_t nintendo_gba_logo[16] = {
+	static const array<uint8_t, 16> nintendo_gba_logo = {{
 		0x24, 0xFF, 0xAE, 0x51, 0x69, 0x9A, 0xA2, 0x21,
 		0x3D, 0x84, 0x82, 0x0A, 0x84, 0xE4, 0x09, 0xAD
-	};
-	static const uint8_t nintendo_ds_logo_slot2[16] = {
+	}};
+	static const array<uint8_t, 16> nintendo_ds_logo_slot2 = {{
 		0xC8, 0x60, 0x4F, 0xE2, 0x01, 0x70, 0x8F, 0xE2,
 		0x17, 0xFF, 0x2F, 0xE1, 0x12, 0x4F, 0x11, 0x48,
-	};
+	}};
 
 	const NDS_RomHeader *const romHeader =
 		reinterpret_cast<const NDS_RomHeader*>(info->header.pData);
-	if (!memcmp(romHeader->nintendo_logo, nintendo_gba_logo, sizeof(nintendo_gba_logo)) &&
+	if (!memcmp(romHeader->nintendo_logo, nintendo_gba_logo.data(), nintendo_gba_logo.size()) &&
 	    romHeader->nintendo_logo_checksum == cpu_to_le16(0xCF56)) {
 		// Nintendo logo is valid. (Slot-1)
-		static const std::array<int8_t, 4> nds_romType = {{
+		static const array<int8_t, 4> nds_romType = {{
 			(int8_t)NintendoDSPrivate::RomType::NDS,		// 0x00 == Nintendo DS
 			(int8_t)NintendoDSPrivate::RomType::NDS,		// 0x01 == invalid (assuming DS)
 			(int8_t)NintendoDSPrivate::RomType::DSi_Enhanced,	// 0x02 == DSi-enhanced
 			(int8_t)NintendoDSPrivate::RomType::DSi_Exclusive,	// 0x03 == DSi-only
 		}};
 		return nds_romType[romHeader->unitcode & 3];
-	} else if (!memcmp(romHeader->nintendo_logo, nintendo_ds_logo_slot2, sizeof(nintendo_ds_logo_slot2)) &&
+	} else if (!memcmp(romHeader->nintendo_logo, nintendo_ds_logo_slot2.data(), nintendo_ds_logo_slot2.size()) &&
 		   romHeader->nintendo_logo_checksum == cpu_to_le16(0x9E1A)) {
 		// Nintendo logo is valid. (Slot-2)
 		// NOTE: Slot-2 is NDS only.
@@ -1106,7 +1106,7 @@ int NintendoDS::loadFieldData(void)
 		uint8_t dsi_filetype;
 		const char *s_dsi_filetype;
 	};
-	static const std::array<dsi_filetype_tbl_t, 6> dsi_filetype_tbl = {{
+	static const array<dsi_filetype_tbl_t, 6> dsi_filetype_tbl = {{
 		// tr: DSi-enhanced or DSi-exclusive cartridge.
 		{DSi_FTYPE_CARTRIDGE,		NOP_C_("NintendoDS|DSiFileType", "Cartridge")},
 		// tr: DSiWare (download-only title)

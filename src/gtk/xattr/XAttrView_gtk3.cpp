@@ -17,6 +17,9 @@ using LibRpFile::XAttrReader;
 // Sorting functions
 #include "../gtk3/sort_funcs.h"
 
+// C++ STL classes
+using std::array;
+
 /**
  * Initialize the widgets for POSIX xattrs.
  * @param widget RpXAttrView
@@ -44,10 +47,10 @@ rp_xattr_view_init_posix_xattrs_widgets(struct _RpXAttrView *widget, GtkScrolled
 #endif /* !GTK_CHECK_VERSION(3,0,0) */
 
 	// Column titles
-	static const char *const column_titles[XATTR_COL_MAX] = {
+	static const array<const char*, XATTR_COL_MAX> column_titles = {{
 		NOP_C_("XAttrView", "Name"),
 		NOP_C_("XAttrView", "Value"),
-	};
+	}};
 
 	// Create the columns.
 	// NOTE: Unlock Time is stored as a string, not as a GDateTime or Unix timestamp.

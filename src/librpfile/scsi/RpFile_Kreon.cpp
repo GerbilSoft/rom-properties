@@ -17,7 +17,7 @@
 
 #include "scsi_protocol.h"
 
-// C++ STL classes.
+// C++ STL classes
 using std::array;
 using std::vector;
 
@@ -141,9 +141,9 @@ vector<RpFile::KreonFeature> RpFile::getKreonFeatureList(void)
 #ifdef RP_OS_SCSI_SUPPORTED
 	// Kreon "Get Feature List" command
 	// Reference: https://github.com/saramibreak/DiscImageCreator/blob/cb9267da4877d32ab68263c25187cbaab3435ad5/DiscImageCreator/execScsiCmdforDVD.cpp#L1223
-	static const uint8_t cdb[6] = {0xFF, 0x08, 0x01, 0x10, 0x00, 0x00};
+	static const array<uint8_t, 6> cdb = {{0xFF, 0x08, 0x01, 0x10, 0x00, 0x00}};
 	array<uint16_t, 13> feature_buf;
-	int ret = d->scsi_send_cdb(cdb, sizeof(cdb), feature_buf.data(), sizeof(feature_buf), RpFilePrivate::ScsiDirection::In);
+	int ret = d->scsi_send_cdb(cdb.data(), cdb.size(), feature_buf.data(), feature_buf.size(), RpFilePrivate::ScsiDirection::In);
 	if (ret != 0) {
 		// SCSI command failed.
 		return vec;

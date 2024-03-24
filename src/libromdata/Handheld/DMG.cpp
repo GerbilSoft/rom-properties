@@ -25,6 +25,7 @@ using namespace LibRpFile;
 #include "Audio/gbs_structs.h"
 
 // C++ STL classes
+using std::array;
 using std::shared_ptr;
 using std::string;
 using std::vector;
@@ -87,7 +88,7 @@ public:
 
 		Max
 	};
-	static const std::array<const char*, 14> dmg_hardware_names;
+	static const array<const char*, 14> dmg_hardware_names;
 
 	struct dmg_cart_type {
 		DMG_Hardware hardware;
@@ -98,8 +99,8 @@ private:
 	// Sparse array setup:
 	// - "start" starts at 0x00.
 	// - "end" ends at 0xFF.
-	static const std::array<dmg_cart_type, 35> dmg_cart_types_start;
-	static const std::array<dmg_cart_type,  4> dmg_cart_types_end;
+	static const array<dmg_cart_type, 35> dmg_cart_types_start;
+	static const array<dmg_cart_type,  4> dmg_cart_types_end;
 
 public:
 	/**
@@ -135,16 +136,7 @@ public:
 	/**
 	 * DMG RAM size array
 	 */
-	static const std::array<uint8_t, 6> dmg_ram_size;
-
-	/**
-	 * Nintendo's logo which is checked by bootrom.
-	 * (Top half only.)
-	 * 
-	 * NOTE: CGB bootrom only checks the top half of the logo.
-	 * (see 0x00D1 of CGB IPL)
-	 */
-	static const uint8_t dmg_nintendo[0x18];
+	static const array<uint8_t, 6> dmg_ram_size;
 
 public:
 	enum class RomType {
@@ -247,7 +239,7 @@ const RomDataInfo DMGPrivate::romDataInfo = {
 /** Internal ROM data **/
 
 // Cartridge hardware
-const std::array<const char*, 14> DMGPrivate::dmg_hardware_names = {
+const array<const char*, 14> DMGPrivate::dmg_hardware_names = {{
 	"Unknown",
 	"ROM",
 	"MBC1",
@@ -262,9 +254,9 @@ const std::array<const char*, 14> DMGPrivate::dmg_hardware_names = {
 	"HuC3",
 	"TAMA5",
 	"POCKET CAMERA", // ???
-};
+}};
 
-const std::array<DMGPrivate::dmg_cart_type, 35> DMGPrivate::dmg_cart_types_start = {{
+const array<DMGPrivate::dmg_cart_type, 35> DMGPrivate::dmg_cart_types_start = {{
 	{DMG_Hardware::ROM,	0},
 	{DMG_Hardware::MBC1,	0},
 	{DMG_Hardware::MBC1,	DMG_FEATURE_RAM},
@@ -302,7 +294,7 @@ const std::array<DMGPrivate::dmg_cart_type, 35> DMGPrivate::dmg_cart_types_start
 	{DMG_Hardware::MBC7,	DMG_FEATURE_TILT|DMG_FEATURE_RAM|DMG_FEATURE_BATTERY},
 }};
 
-const std::array<DMGPrivate::dmg_cart_type, 4> DMGPrivate::dmg_cart_types_end = {{
+const array<DMGPrivate::dmg_cart_type, 4> DMGPrivate::dmg_cart_types_end = {{
 	{DMG_Hardware::Camera, 0},
 	{DMG_Hardware::TAMA5, 0},
 	{DMG_Hardware::HUC3, 0},
@@ -379,8 +371,8 @@ inline DMGPrivate::dmg_cart_type DMGPrivate::CartType(uint8_t type)
  */
 inline int DMGPrivate::RomSize(uint8_t type)
 {
-	static const std::array<uint16_t, 8> rom_size = {32, 64, 128, 256, 512, 1024, 2048, 4096};
-	static const std::array<uint16_t, 4> rom_size_52 = {1152, 1280, 1536};
+	static const array<uint16_t, 8> rom_size = {{32, 64, 128, 256, 512, 1024, 2048, 4096}};
+	static const array<uint16_t, 4> rom_size_52 = {{1152, 1280, 1536}};
 	if (type < rom_size.size()) {
 		return rom_size[type];
 	} else if (type >= 0x52 && type < 0x52+rom_size_52.size()) {
@@ -392,22 +384,7 @@ inline int DMGPrivate::RomSize(uint8_t type)
 /**
  * DMG RAM size array
  */
-const std::array<uint8_t, 6> DMGPrivate::dmg_ram_size = {
-	0, 2, 8, 32, 128, 64
-};
-
-/**
- * Nintendo's logo which is checked by bootrom.
- * (Top half only.)
- * 
- * NOTE: CGB bootrom only checks the top half of the logo.
- * (see 0x00D1 of CGB IPL)
- */
-const uint8_t DMGPrivate::dmg_nintendo[0x18] = {
-	0xCE, 0xED, 0x66, 0x66, 0xCC, 0x0D, 0x00, 0x0B,
-	0x03, 0x73, 0x00, 0x83, 0x00, 0x0C, 0x00, 0x0D,
-	0x00, 0x08, 0x11, 0x1F, 0x88, 0x89, 0x00, 0x0E
-};
+const array<uint8_t, 6> DMGPrivate::dmg_ram_size = {{0, 2, 8, 32, 128, 64}};
 
 /**
  * Get the title and game ID.
@@ -515,7 +492,7 @@ void DMGPrivate::getTitleAndGameID(const DMG_RomHeader *pRomHeader, string &s_ti
 			// Old publisher code.
 			// NOTE: This probably won't ever happen,
 			// since Game ID was added *after* CGB.
-			static const std::array<char, 16> hex_lookup = {{
+			static const array<char, 16> hex_lookup = {{
 				'0','1','2','3','4','5','6','7',
 				'8','9','A','B','C','D','E','F'
 			}};
@@ -827,7 +804,7 @@ DMG::DMG(const IRpFilePtr &file)
 	// Check for MMM01 menu headers at 0xF8000 (1 MiB) and 0x78000 (512 KiB).
 	// NOTE: 512 KiB versions indicates MBC3 (0x11), not MMM01, in the menu bank.
 	// TODO: 256 KiB version has a menu at 0x00000, not the expected 0x38000.
-	static const unsigned int mmm01_rom_size_check[] = {1048576U, 524288U};
+	static const array<unsigned int, 2> mmm01_rom_size_check = {{1048576U, 524288U}};
 	d->is_mmm01_multicart = false;
 	for (unsigned int mmm01_rom_size : mmm01_rom_size_check) {
 		if (fileSize != mmm01_rom_size)
@@ -906,12 +883,23 @@ int DMG::isRomSupported_static(const DetectInfo *info)
 		return static_cast<int>(DMGPrivate::RomType::Unknown);
 	}
 
+	/**
+	* Nintendo's logo which is checked by bootrom.
+	* (Top half only.)
+	* 
+	* NOTE: CGB bootrom only checks the top half of the logo.
+	* (see 0x00D1 of CGB IPL)
+	*/
+	static const array<uint8_t, 0x18> dmg_nintendo_logo = {{
+		0xCE, 0xED, 0x66, 0x66, 0xCC, 0x0D, 0x00, 0x0B,
+		0x03, 0x73, 0x00, 0x83, 0x00, 0x0C, 0x00, 0x0D,
+		0x00, 0x08, 0x11, 0x1F, 0x88, 0x89, 0x00, 0x0E
+	}};
+
 	// Check for the ROM header at 0x100. (standard location)
 	const DMG_RomHeader *romHeader =
 		reinterpret_cast<const DMG_RomHeader*>(&info->header.pData[0x100]);
-	if (!memcmp(romHeader->nintendo, DMGPrivate::dmg_nintendo,
-	     sizeof(DMGPrivate::dmg_nintendo)))
-	{
+	if (!memcmp(romHeader->nintendo, dmg_nintendo_logo.data(), dmg_nintendo_logo.size())) {
 		// Found at the standard location.
 		DMGPrivate::RomType romType;
 		if (romHeader->cgbflag & 0x80) {
@@ -936,9 +924,7 @@ int DMG::isRomSupported_static(const DetectInfo *info)
 		{
 			// Check the headered location.
 			romHeader = reinterpret_cast<const DMG_RomHeader*>(&info->header.pData[0x300]);
-			if (!memcmp(romHeader->nintendo, DMGPrivate::dmg_nintendo,
-			     sizeof(DMGPrivate::dmg_nintendo)))
-			{
+			if (!memcmp(romHeader->nintendo, dmg_nintendo_logo.data(), dmg_nintendo_logo.size())) {
 				// Found at the headered location.
 				DMGPrivate::RomType romType;
 				if (romHeader->cgbflag & 0x80) {
@@ -1179,7 +1165,7 @@ int DMG::loadFieldData(void)
 		};
 
 		// TODO: Localization?
-		static const std::array<gbx_mapper_tbl_t, 21> gbx_mapper_tbl = {{
+		static const array<gbx_mapper_tbl_t, 21> gbx_mapper_tbl = {{
 			// Nintendo
 			{GBX_MAPPER_ROM_ONLY,		"ROM only"},
 			{GBX_MAPPER_MBC1,		"Nintendo MBC1"},

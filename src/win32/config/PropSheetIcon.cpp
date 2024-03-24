@@ -2,12 +2,15 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * PropSheetIcon.cpp: Property sheet icon.                                 *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "stdafx.h"
 #include "PropSheetIcon.hpp"
+
+// C++ STL classes
+using std::array;
 
 class PropSheetIconPrivate
 {
@@ -55,13 +58,13 @@ PropSheetIconPrivate::PropSheetIconPrivate()
 	// Check for a DLL containing a usable ROM chip icon.
 	struct IconDllData_t {
 		const TCHAR *dll_filename;
-		LPTSTR pszIcon;
+		LPCTSTR pszIcon;
 	};
 
-	static const IconDllData_t iconDllData[] = {
+	static const array<IconDllData_t, 2> iconDllData = {{
 		{_T("imageres.dll"), MAKEINTRESOURCE(34)},	// Vista+
 		{_T("shell32.dll"),  MAKEINTRESOURCE(13)},
-	};
+	}};
 
 	for (const auto &p : iconDllData) {
 		HMODULE hDll = LoadLibraryEx(p.dll_filename, nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);

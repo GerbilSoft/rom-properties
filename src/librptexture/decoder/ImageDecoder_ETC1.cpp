@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * ImageDecoder_ETC1.cpp: Image decoding functions: ETC1                   *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -175,28 +175,28 @@ static const int16_t etc2_intensity_a1[8][4] = {
 
 // ETC1 arranges pixels by column, then by row.
 // This table maps it back to linear.
-static const uint8_t etc1_mapping[16] = {
+static const array<uint8_t, 16> etc1_mapping = {{
 	0, 4,  8, 12,
 	1, 5,  9, 13,
 	2, 6, 10, 14,
 	3, 7, 11, 15,
-};
+}};
 
 // ETC1 subblock mapping.
 // Index: flip bit
 // Value: 16-bit bitfield; bit 0 == ETC1-arranged pixel 0.
-static const uint16_t etc1_subblock_mapping[2] = {
+static const array<uint16_t, 2> etc1_subblock_mapping = {{
 	// flip == 0: 2x4
 	0xFF00,
 
 	// flip == 1: 4x2
 	0xCCCC,
-};
+}};
 
 // 3-bit 2's complement lookup table.
-static const int8_t etc1_3bit_diff_tbl[8] = {
+static const array<int8_t, 8> etc1_3bit_diff_tbl = {{
 	0, 1, 2, 3, -4, -3, -2, -1
-};
+}};
 
 // ETC2 block mode.
 enum class etc2_block_mode {
@@ -207,10 +207,10 @@ enum class etc2_block_mode {
 };
 
 // ETC2 distance table for 'T' and 'H' modes.
-static const uint8_t etc2_dist_tbl[8] = {
+static const array<uint8_t, 8> etc2_dist_tbl = {{
 	 3,  6, 11, 16,
 	23, 32, 41, 64,
-};
+}};
 
 // ETC2 alpha modifiers table.
 static const int8_t etc2_alpha_tbl[16][8] = {

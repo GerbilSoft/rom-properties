@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * FontHandler.cpp: Font handler.                                          *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -13,7 +13,8 @@
 // libwin32common
 #include "libwin32common/w32err.hpp"
 
-// C++ STL classes.
+// C++ STL classes
+using std::array;
 using std::tstring;
 using std::unordered_set;
 using std::vector;
@@ -181,7 +182,7 @@ int FontHandlerPrivate::findMonospacedFont(LOGFONT *plfFontMono)
 	}
 
 	// Fonts to try.
-	static const TCHAR *const mono_font_names[] = {
+	static const array<LPCTSTR, 12> mono_font_names = {{
 		_T("DejaVu Sans Mono"),
 		_T("Consolas"),
 		_T("Lucida Console"),
@@ -194,7 +195,7 @@ int FontHandlerPrivate::findMonospacedFont(LOGFONT *plfFontMono)
 		_T("Fixedsys Excelsior 1.0"),
 		_T("Fixedsys"),
 		_T("Courier New"),
-	};
+	}};
 
 	const TCHAR *mono_font = nullptr;
 	for (const TCHAR *pFontTest : mono_font_names) {

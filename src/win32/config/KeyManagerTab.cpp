@@ -41,7 +41,8 @@ using namespace LibRpText;
 // libromdata
 using namespace LibRomData;
 
-// C++ STL classes.
+// C++ STL classes
+using std::array;
 using std::locale;
 using std::ostringstream;
 using std::string;
@@ -444,8 +445,8 @@ void KeyManagerTabPrivate::initDialog(void)
 	// 8,12 seems to be right on both XP and 7...
 	// TODO: If the user double-clicks the column splitter, it will
 	// resize based on the displayed rows, not all rows.
-	static const int column_padding[2] = {8, 12};
-	int column_width[2] = {0, 0};
+	static const array<int, 2> column_padding = {{8, 12}};
+	array<int, 2> column_width = {{0, 0}};
 
 	// Make sure the "Value" column is at least 32 characters wide.
 	// NOTE: ListView_GetStringWidth() doesn't adjust for the monospaced font.

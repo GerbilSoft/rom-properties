@@ -18,6 +18,9 @@ using LibRpFile::XAttrReader;
 #include "../sort_funcs_common.h"
 #include "../gtk4/sort_funcs.h"
 
+// C++ STL classes
+using std::array;
+
 /**
  * Sorting function for COLSORT_NOCASE (case-insensitive).
  * @param a
@@ -125,10 +128,10 @@ rp_xattr_view_init_posix_xattrs_widgets(struct _RpXAttrView *widget, GtkScrolled
 	// As such, neither the factory nor the column objects will be unref()'d here.
 
 	// Column titles
-	static const char *const column_titles[XATTR_COL_MAX] = {
+	static const array<const char*, XATTR_COL_MAX> column_titles = {{
 		NOP_C_("XAttrView", "Name"),
 		NOP_C_("XAttrView", "Value"),
-	};
+	}};
 
 	// Create the columns.
 	GtkColumnViewColumn *sortingColumn = nullptr;;

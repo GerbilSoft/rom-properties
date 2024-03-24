@@ -18,6 +18,7 @@ using namespace LibRpFile;
 using namespace LibRpTexture;
 
 // C++ STL classes
+using std::array;
 using std::unique_ptr;
 
 // GtkPopover was added in GTK 3.12.
@@ -100,7 +101,7 @@ struct _RpDragImageCxx {
 	// Animated icon data
 	struct anim_vars {
 		IconAnimDataConstPtr iconAnimData;
-		std::array<PIMGTYPE, IconAnimData::MAX_FRAMES> iconFrames;
+		array<PIMGTYPE, IconAnimData::MAX_FRAMES> iconFrames;
 		IconAnimHelper iconAnimHelper;
 		guint tmrIconAnim;	// Timer ID
 		int last_delay;		// Last delay value.
@@ -483,10 +484,10 @@ void rp_drag_image_set_ecks_bawks(RpDragImage *image, bool new_ecks_bawks)
 	if (ecksbawks_quark == 0) {
 		ecksbawks_quark = g_quark_from_string("ecksbawks");
 	}
-	static const char *menu_items[] = {
+	static const array<const char*, 2> menu_items = {{
 		"ermahgerd! an ecks bawks ISO!",
 		"Yar, har, fiddle dee dee",
-	};
+	}};
 #ifdef USE_G_MENU_MODEL
 	image->menuEcksBawks = g_menu_new();
 	image->actionGroup = g_simple_action_group_new();

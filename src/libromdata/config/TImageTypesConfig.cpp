@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * TImageTypesConfig.cpp: Image Types editor template.                     *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -25,6 +25,7 @@ using namespace LibRpBase;
 #include <cassert>
 
 // C++ includes
+#include <array>
 #include <string>
 
 namespace LibRomData {
@@ -304,7 +305,7 @@ int TImageTypesConfig<ComboBox>::save(void)
 
 		// Convert the image type priority to strings.
 		// TODO: Export the string data from Config.
-		static const char *const conf_imageTypeNames[] = {
+		static const std::array<const char*, 10> conf_imageTypeNames = {{
 			"IntIcon",
 			"IntBanner",
 			"IntMedia",
@@ -315,7 +316,7 @@ int TImageTypesConfig<ComboBox>::save(void)
 			"ExtCoverFull",
 			"ExtBox",
 			"ExtTitleScreen",
-		};
+		}};
 
 		bool hasOne = false;
 		for (uint8_t imageType : imgTypePrio) {

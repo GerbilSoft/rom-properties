@@ -29,6 +29,7 @@ using namespace LibRpText;
 using namespace LibRpTexture;
 
 // C++ STL classes
+using std::array;
 using std::map;
 using std::shared_ptr;
 using std::string;
@@ -407,13 +408,13 @@ PalmOS::PalmOS(const IRpFilePtr &file)
 		uint32_t prc_type;
 		RomData::FileType fileType;
 	};
-	static const file_type_map_t file_type_map[] = {
+	static const array<file_type_map_t, 5> file_type_map = {{
 		{'appl', FileType::Executable},
 		{'appm', FileType::Executable},
 		{'libr', FileType::SharedLibrary},
 		{'JLib', FileType::SharedLibrary},
 		{'pdrv', FileType::DeviceDriver},
-	};
+	}};
 	// TODO: More heuristics for detecting executables with non-standard types?
 	const uint32_t type = be32_to_cpu(d->prcHeader.type);
 	d->fileType = FileType::ResourceLibrary;

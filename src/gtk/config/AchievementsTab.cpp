@@ -24,6 +24,7 @@
 using namespace LibRpBase;
 
 // C++ STL classes
+using std::array;
 using std::string;
 
 /* Column identifiers */
@@ -207,13 +208,13 @@ rp_achievements_tab_init(RpAchievementsTab *tab)
 #endif /* GTK_CHECK_VERSION(2,91,1) */
 
 	// Column titles
-	static const char *const column_titles[ACH_COL_MAX] = {
+	static const array<const char*, ACH_COL_MAX> column_titles = {{
 		NOP_C_("AchievementsTab", "Icon"),
 		NOP_C_("AchievementsTab", "Achievement"),
 		NOP_C_("AchievementsTab", "Unlock Time"),
-	};
+	}};
 	// Column resizability
-	static const bool column_resizable[ACH_COL_MAX] = {false, true, true};
+	static const array<bool, ACH_COL_MAX> column_resizable = {{false, true, true}};
 
 #ifdef USE_GTK_COLUMN_VIEW
 	// Create the GListStore and GtkColumnView.
@@ -255,9 +256,9 @@ rp_achievements_tab_init(RpAchievementsTab *tab)
 	gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(scrolledWindow), tab->treeView);
 
 	// Property to use for each column
-	static const char *const column_property_names[ACH_COL_MAX] = {
+	static const array<const char*, ACH_COL_MAX> column_property_names = {{
 		GTK_CELL_RENDERER_PIXBUF_PROPERTY, "markup", "text"
-	};
+	}};
 
 	// Create the columns.
 	// NOTE: Unlock Time is stored as a string, not as a GDateTime or Unix timestamp.

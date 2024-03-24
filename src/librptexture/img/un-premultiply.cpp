@@ -12,6 +12,9 @@
 #include "rp_image_p.hpp"
 #include "rp_image_backend.hpp"
 
+// C++ STL classes
+using std::array;
+
 // Workaround for RP_D() expecting the no-underscore, UpperCamelCase naming convention.
 #define rp_imagePrivate rp_image_private
 
@@ -22,7 +25,7 @@ namespace LibRpTexture {
  * From Qt 5.9.1's qcolor.cpp.
  * These values are: 0x00FF00FF / alpha
  */
-const unsigned int rp_image::qt_inv_premul_factor[256] = {
+const array<unsigned int, 256> rp_image::qt_inv_premul_factor = {{
 	0, 16711935, 8355967, 5570645, 4177983, 3342387, 2785322, 2387419,
 	2088991, 1856881, 1671193, 1519266, 1392661, 1285533, 1193709, 1114129,
 	1044495, 983055, 928440, 879575, 835596, 795806, 759633, 726605,
@@ -55,7 +58,7 @@ const unsigned int rp_image::qt_inv_premul_factor[256] = {
 	72034, 71725, 71418, 71114, 70813, 70514, 70218, 69924,
 	69633, 69344, 69057, 68773, 68491, 68211, 67934, 67659,
 	67386, 67116, 66847, 66581, 66317, 66055, 65795, 65537
-};
+}};
 
 /**
  * Un-premultiply an argb32_t pixel. (Standard version)

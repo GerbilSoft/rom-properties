@@ -19,6 +19,7 @@ using namespace LibRpBase;
 using namespace LibRpTexture;
 
 // C++ STL classes
+using std::array;
 using std::set;
 using std::string;
 using std::vector;
@@ -336,15 +337,15 @@ rp_rom_data_view_init_listdata(RpRomDataView *page, const RomFields::Field &fiel
 
 	// Format tables.
 	// Pango enum values are known to fit in uint8_t.
-	static const gfloat align_tbl_xalign[4] = {
+	static const array<gfloat, 4> align_tbl_xalign = {{
 		// Order: TXA_D, TXA_L, TXA_C, TXA_R
 		0.0f, 0.0f, 0.5f, 1.0f
-	};
-	static const uint8_t align_tbl_pango[4] = {
+	}};
+	static const array<uint8_t, 4> align_tbl_pango = {{
 		// Order: TXA_D, TXA_L, TXA_C, TXA_R
 		PANGO_ALIGN_LEFT, PANGO_ALIGN_LEFT,
 		PANGO_ALIGN_CENTER, PANGO_ALIGN_RIGHT
-	};
+	}};
 
 	// Set up the columns.
 	RomFields::ListDataColAttrs_t col_attrs = listDataDesc.col_attrs;

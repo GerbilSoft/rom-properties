@@ -20,6 +20,7 @@ using namespace LibRpBase;
 using namespace LibRpTexture;
 
 // C++ STL classes
+using std::array;
 using std::set;
 using std::string;
 using std::vector;
@@ -29,15 +30,15 @@ static const int icon_sz = 32;
 
 // Format tables.
 // Pango enum values are known to fit in uint8_t.
-static const gfloat align_tbl_xalign[4] = {
+static const std::array<gfloat, 4> align_tbl_xalign = {{
 	// Order: TXA_D, TXA_L, TXA_C, TXA_R
 	0.0f, 0.0f, 0.5f, 1.0f
-};
-static const uint8_t align_tbl_halign[4] = {
+}};
+static const std::array<uint8_t, 4> align_tbl_halign = {{
 	// Order: TXA_D, TXA_L, TXA_C, TXA_R
 	GTK_ALIGN_START, GTK_ALIGN_START,
 	GTK_ALIGN_CENTER, GTK_ALIGN_END
-};
+}};
 
 // GtkSignalListItemFactory signal handlers
 // Reference: https://blog.gtk.org/2020/09/05/a-primer-on-gtklistview/

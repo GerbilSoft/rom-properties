@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * ELF.cpp: Executable and Linkable Format reader.                         *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -29,6 +29,7 @@ using namespace LibRpText;
 #endif
 
 // C++ STL classes
+using std::array;
 using std::string;
 using std::vector;
 
@@ -1048,22 +1049,22 @@ int ELFPrivate::addSymbolFields(span<const char> dynsym_strtab)
 			vector<string> row;
 			row.reserve(7);
 			row.emplace_back(&strtab[sym.st_name]);
-			static const char *const bindings[16] = {
+			static const array<const char*, 16> bindings = {{
 				"LOCAL", "GLOBAL", "WEAK",
 				"3", "4", "5", "6", "7", "8", "9",
 				"GNU_UNIQUE", "LOOS+1", "LOOS+2",
 				"LOPROC+0", "LOPROC+1", "LOPROC+2",
-			};
-			static const char *const types[16] = {
+			}};
+			static const array<const char*, 16> types = {{
 				"NOTYPE", "OBJECT", "FUNC", "SECTION",
 				"FILE", "COMMON", "TLS",
 				"7", "8", "9",
 				"GNU_IFNUC", "LOOS+1", "LOOS+2",
 				"LOPROC+0", "LOPROC+1", "LOPROC+2",
-			};
-			static const char *const visibilities[4] = {
+			}};
+			static const array<const char*, 4> visibilities = {{
 				"DEFAULT", "INTERNAL", "HIDDEN", "PROTECTED"
-			};
+			}};
 
 			row.emplace_back(bindings[ELF64_ST_BIND(sym.st_info)]);
 			row.emplace_back(types[ELF64_ST_TYPE(sym.st_info)]);
@@ -1481,15 +1482,15 @@ int ELF::loadFieldData(void)
 	// NOTE: Executable type is used as File Type.
 
 	// Bitness/Endianness. (consolidated as "format")
-	static const char *const exec_type_tbl[] = {
+	static const array<const char*, 4> exec_type_tbl = {{
 		NOP_C_("RomData|ExecType", "32-bit Little-Endian"),
 		NOP_C_("RomData|ExecType", "64-bit Little-Endian"),
 		NOP_C_("RomData|ExecType", "32-bit Big-Endian"),
 		NOP_C_("RomData|ExecType", "64-bit Big-Endian"),
-	};
+	}};
 	const char *const format_title = C_("ELF", "Format");
 	if (d->elfFormat > ELFPrivate::Elf_Format::Unknown &&
-	    (int)d->elfFormat < ARRAY_SIZE_I(exec_type_tbl))
+	    (int)d->elfFormat < (int)exec_type_tbl.size())
 	{
 		d->fields.addField_string(format_title,
 			dpgettext_expr(RP_I18N_DOMAIN, "RomData|ExecType", exec_type_tbl[(int)d->elfFormat]));
@@ -1568,12 +1569,12 @@ int ELF::loadFieldData(void)
 			}
 
 			// SPARC memory ordering.
-			static const char *const sparc_mm[] = {
+			static const array<const char*, 4> sparc_mm = {{
 				NOP_C_("ELF|SPARC_MM", "Total Store Ordering"),
 				NOP_C_("ELF|SPARC_MM", "Partial Store Ordering"),
 				NOP_C_("ELF|SPARC_MM", "Relaxed Memory Ordering"),
 				NOP_C_("ELF|SPARC_MM", "Invalid"),
-			};
+			}};
 			d->fields.addField_string(C_("ELF", "Memory Ordering"),
 				dpgettext_expr(RP_I18N_DOMAIN, "ELF|SPARC_MM", sparc_mm[e_flags & 3]));
 
@@ -1754,8 +1755,8 @@ int ELF::loadFieldData(void)
 		case EM_SH: {
 			// binutils: include/elf/sh.h
 
-			// CPU subtypes.
-			static const char *const superh_cpu_subtype_tbl[] = {
+			// CPU subtypes
+			static const array<const char*, 25> superh_cpu_subtype_tbl = {{
 				// 0-15
 				nullptr, "SH-1", "SH-2", "SH-3",
 				"SH-DSP", "SH3-DSP", "SH4AL-DSP", nullptr,
@@ -1766,10 +1767,10 @@ int ELF::loadFieldData(void)
 				"SH-4 (No FPU)", "SH-4A (No FPU)", "SH-4 (No MMU or FPU)", "SH-2A (No FPU)",
 				"SH-3 (No MMU)", "SH-2A/SH-4 (No FPU)", "SH-2A/SH-3 (No FPU)", "SH-2A/SH-4",
 				"SH-2A/SH-3E",
-			};
+			}};
 			const char *s_cpu_subtype = nullptr;
 			const uint8_t cpu_subtype = (e_flags & 0x1F);
-			if (cpu_subtype < ARRAY_SIZE(superh_cpu_subtype_tbl)) {
+			if (cpu_subtype < superh_cpu_subtype_tbl.size()) {
 				s_cpu_subtype = superh_cpu_subtype_tbl[cpu_subtype];
 			}
 			if (s_cpu_subtype) {
@@ -1846,15 +1847,15 @@ int ELF::loadFieldData(void)
 			}
 
 			// ISA
-			static const char *const cf_isa_tbl[] = {
+			static const array<const char*, 8> cf_isa_tbl = {{
 				nullptr,
 				"ISA A (no div)", "ISA A", "ISA A+",
 				"ISA B (no USP)", "ISA B",
 				"ISA C", "ISA C (no div)",
-			};
+			}};
 			const char *cf_isa = nullptr;
 			const uint8_t cf_isa_flags = (e_flags & 0x0F);
-			if (cf_isa_flags < ARRAY_SIZE(cf_isa_tbl)) {
+			if (cf_isa_flags < cf_isa_tbl.size()) {
 				cf_isa = cf_isa_tbl[cf_isa_flags];
 			}
 
@@ -2006,14 +2007,14 @@ int ELF::loadFieldData(void)
 
 		case EM_Z80: {
 			// binutils: include/elf/z80.h
-			static const char *const z80_insn_set_tbl[] = {
+			static const array<const char*, 6> z80_insn_set_tbl = {{
 				nullptr, "Z80", "Z180", "R800",
 				"eZ80 (Z80 mode)", "Sharp LR35902",
-			};
+			}};
 
 			const char *z80_insn_set = nullptr;
 			e_flags &= 0xFF;
-			if (e_flags < ARRAY_SIZE(z80_insn_set_tbl)) {
+			if (e_flags < z80_insn_set_tbl.size()) {
 				z80_insn_set = z80_insn_set_tbl[e_flags];
 			} else if (e_flags == 0x84) {
 				z80_insn_set = "eZ80 (ADL mode)";
@@ -2027,17 +2028,17 @@ int ELF::loadFieldData(void)
 		case EM_RISCV: {
 			// binutils: include/elf/riscv.h
 
-			// Floating-point ABI in use.
-			static const char *const riscv_fpabi_tbl[] = {
+			// Floating-point ABI in use
+			static const array<const char*, 4> riscv_fpabi_tbl = {{
 				NOP_C_("ELF|RISCVFPABI", "Soft-Float"),
 				NOP_C_("ELF|RISCVFPABI", "Single-Float"),
 				NOP_C_("ELF|RISCVFPABI", "Double-Float"),
 				NOP_C_("ELF|RISCVFPABI", "Quad-Float"),
-			};
+			}};
 			d->fields.addField_string(C_("ELF", "Floating-Point ABI"),
 				dpgettext_expr(RP_I18N_DOMAIN, "ELF|RISCVFPABI", riscv_fpabi_tbl[((e_flags & 0x0006) >> 1)]));
 
-			// RISC-V CPU flags.
+			// RISC-V CPU flags
 			static const char *const riscv_flags_names[] = {
 				// 0x1-0x8
 				"RVC", nullptr, nullptr, "RV32E",

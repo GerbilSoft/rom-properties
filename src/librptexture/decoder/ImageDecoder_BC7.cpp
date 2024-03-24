@@ -21,9 +21,9 @@ using std::array;
 namespace LibRpTexture { namespace ImageDecoder {
 
 // Interpolation values.
-static const uint8_t aWeight2[] = {0, 21, 43, 64};
-static const uint8_t aWeight3[] = {0, 9, 18, 27, 37, 46, 55, 64};
-static const uint8_t aWeight4[] = {0, 4, 9, 13, 17, 21, 26, 30, 34, 38, 43, 47, 51, 55, 60, 64};
+static const array<uint8_t,  4> aWeight2 = {{0, 21, 43, 64}};
+static const array<uint8_t,  8> aWeight3 = {{0, 9, 18, 27, 37, 46, 55, 64}};
+static const array<uint8_t, 16> aWeight4 = {{0, 4, 9, 13, 17, 21, 26, 30, 34, 38, 43, 47, 51, 55, 60, 64}};
 
 /** Partition definitions. **/
 
@@ -35,7 +35,7 @@ static const uint8_t aWeight4[] = {0, 4, 9, 13, 17, 21, 26, 30, 34, 38, 43, 47, 
 // References:
 // - https://rockets2000.wordpress.com/2015/05/19/bc7-partitions-subsets/
 // - https://github.com/hglm/detex/blob/master/bptc-tables.c
-static const uint32_t bc7_2sub[64] = {
+static const array<uint32_t, 64> bc7_2sub = {{
 	0x50505050, 0x40404040, 0x54545454, 0x54505040,
 	0x50404000, 0x55545450, 0x55545040, 0x54504000,
 	0x50400000, 0x55555450, 0x55544000, 0x54400000,
@@ -52,13 +52,13 @@ static const uint32_t bc7_2sub[64] = {
 	0x50410514, 0x41051450, 0x05415014, 0x14054150,
 	0x41050514, 0x41505014, 0x40011554, 0x54150140,
 	0x50505500, 0x00555050, 0x15151010, 0x54540404
-};
+}};
 
 // Partition definitions for modes with 2 subsets.
 // References:
 // - https://rockets2000.wordpress.com/2015/05/19/bc7-partitions-subsets/
 // - https://github.com/hglm/detex/blob/master/bptc-tables.c
-static const uint32_t bc7_3sub[64] = {
+static const array<uint32_t, 64> bc7_3sub = {{
 	0xAA685050, 0x6A5A5040, 0x5A5A4200, 0x5450A0A8,
 	0xA5A50000, 0xA0A05050, 0x5555A0A0, 0x5A5A5050,
 	0xAA550000, 0xAA555500, 0xAAAA5500, 0x90909090,
@@ -75,7 +75,7 @@ static const uint32_t bc7_3sub[64] = {
 	0xA85454A8, 0x80959580, 0xAA141414, 0x96960000,
 	0xAAAA1414, 0xA05050A0, 0xA0A5A5A0, 0x96000000,
 	0x40804080, 0xA9A8A9A8, 0xAAAAAA44, 0x2A4A5254
-};
+}};
 
 /**
  * Interpolate a color component.
@@ -142,7 +142,7 @@ static inline int get_mode(uint32_t dword0)
 }
 
 // Anchor indexes for the second subset (idx == 1) in 2-subset modes.
-static const uint8_t anchorIndexes_subset2of2[64] = {
+static const array<uint8_t, 64> anchorIndexes_subset2of2 = {{
 	15, 15, 15, 15, 15, 15, 15, 15,
 	15, 15, 15, 15, 15, 15, 15, 15,
 	15,  2,  8,  2,  2,  8,  8, 15,
@@ -151,10 +151,10 @@ static const uint8_t anchorIndexes_subset2of2[64] = {
 	 2,  8,  2,  2,  2, 15, 15,  6,
 	 6,  2,  6,  8, 15, 15,  2,  2,
 	15, 15, 15, 15, 15,  2,  2, 15,
-};
+}};
 
 // Anchor indexes for the second subset (idx == 1) in 3-subset modes.
-static const uint8_t anchorIndexes_subset2of3[64] = {
+static const array<uint8_t, 64> anchorIndexes_subset2of3 = {{
 	 3,  3, 15, 15,  8,  3, 15, 15,
 	 8,  8,  6,  6,  6,  5,  3,  3,
 	 3,  3,  8, 15,  3,  3,  6, 10,
@@ -163,10 +163,10 @@ static const uint8_t anchorIndexes_subset2of3[64] = {
 	15,  3, 15,  5, 15, 15, 15, 15,
 	 3, 15,  5,  5,  5,  8,  5, 10,
 	 5, 10,  8, 13, 15, 12,  3,  3,
-};
+}};
 
 // Anchor indexes for the third subset (idx == 2) in 3-subset modes.
-static const uint8_t anchorIndexes_subset3of3[64] = {
+static const array<uint8_t, 64> anchorIndexes_subset3of3 = {{
 	15,  8,  8,  3, 15, 15,  3,  8,
 	15, 15, 15, 15, 15, 15, 15,  8,
 	15,  8, 15,  3, 15,  8, 15,  8,
@@ -175,7 +175,7 @@ static const uint8_t anchorIndexes_subset3of3[64] = {
 	 6, 15,  8, 15,  3,  6,  6,  8,
 	15,  3, 15, 15, 15, 15, 15, 15,
 	15, 15, 15, 15,  3, 15, 15,  8,
-};
+}};
 
 /**
  * Get the index of the "anchor" bits for implied index bits.
@@ -331,8 +331,8 @@ static int decodeBC7Block(array<argb32_t, 4*4> &tileBuf, const uint64_t *bc7_src
 	}
 
 	// Subset/partition.
-	static const uint8_t SubsetCount[8] = {3, 2, 3, 2, 1, 1, 1, 2};
-	static const uint8_t PartitionBits[8] = {4, 6, 6, 6, 0, 0, 0, 6};
+	static const array<uint8_t, 8> SubsetCount   = {{3, 2, 3, 2, 1, 1, 1, 2}};
+	static const array<uint8_t, 8> PartitionBits = {{4, 6, 6, 6, 0, 0, 0, 6}};
 	uint32_t subset = 0;
 	uint8_t partition = 0;
 	if (PartitionBits[mode] != 0) {
@@ -361,9 +361,9 @@ static int decodeBC7Block(array<argb32_t, 4*4> &tileBuf, const uint64_t *bc7_src
 	}
 
 	// Number of endpoints.
-	static const uint8_t EndpointCount[8] = {6, 4, 6, 4, 2, 2, 2, 4};
+	static const array<uint8_t, 8> EndpointCount = {{6, 4, 6, 4, 2, 2, 2, 4}};
 	// Bits per endpoint component.
-	static const uint8_t EndpointBits[8] = {4, 6, 5, 7, 5, 7, 7, 5};
+	static const array<uint8_t, 8> EndpointBits  = {{4, 6, 5, 7, 5, 7, 7, 5}};
 
 	// Extract and extend the components.
 	// NOTE: Components are stored in RRRR/GGGG/BBBB/AAAA order.
@@ -388,7 +388,7 @@ static int decodeBC7Block(array<argb32_t, 4*4> &tileBuf, const uint64_t *bc7_src
 	}
 
 	// Do we have alpha components?
-	static const uint8_t AlphaBits[8] = {0, 0, 0, 0, 6, 8, 7, 5};
+	static const array<uint8_t, 8> AlphaBits = {{0, 0, 0, 0, 6, 8, 7, 5}};
 	uint8_t alpha_bits = AlphaBits[mode];
 	if (alpha_bits != 0) {
 		// We have alpha components.
@@ -412,7 +412,7 @@ static int decodeBC7Block(array<argb32_t, 4*4> &tileBuf, const uint64_t *bc7_src
 	// NOTE: These are applied per subset.
 	// The P-bit count is needed here in order to determine the
 	// shift amount for the endpoints and alpha values.
-	static const uint8_t PBitCount[8] = {1, 1, 0, 1, 0, 0, 1, 1};
+	static const array<uint8_t, 8> PBitCount = {{1, 1, 0, 1, 0, 0, 1, 1}};
 	if (PBitCount[mode] != 0) {
 		// Optimization to avoid having to shift the
 		// whole 64-bit and/or 128-bit value multiple times.
@@ -481,7 +481,7 @@ static int decodeBC7Block(array<argb32_t, 4*4> &tileBuf, const uint64_t *bc7_src
 	// Bits per index. (either 2 or 3)
 	// NOTE: Most modes don't have the full 32-bit or 48-bit
 	// index table. Missing bits are assumed to be 0.
-	static const uint8_t IndexBits[8] = {3, 3, 2, 2, 0, 2, 4, 2};
+	static const array<uint8_t, 8> IndexBits = {{3, 3, 2, 2, 0, 2, 4, 2}};
 	unsigned int index_bits = IndexBits[mode];
 
 	// At this point, the only remaining data is indexes,

@@ -24,6 +24,9 @@
 // zlib for crc32()
 #include <zlib.h>
 
+// C++ STL classes
+using std::array;
+
 #if defined(_MSC_VER) && defined(ZLIB_IS_DLL)
 #  define CHECK_DELAYLOAD 1
 #endif
@@ -181,7 +184,7 @@ void Hash::reset(void)
 
 	// Lookup table
 	// NOTE: SHA256 and SHA512 requires XP SP3 or later.
-	static const ALG_ID alg_id_tbl[] = {
+	static const array<ALG_ID, (int)Algorithm::Max> alg_id_tbl = {{
 		0,			// Unknown
 
 		0,		// CRC32 (not using CryptoAPI)
@@ -189,7 +192,7 @@ void Hash::reset(void)
 		CALG_SHA1,	// SHA1
 		CALG_SHA_256,	// SHA256
 		CALG_SHA_512,	// SHA512
-	};
+	}};
 
 	assert(d->algorithm > Algorithm::CRC32);
 	assert(d->algorithm < Algorithm::Max);
@@ -293,7 +296,7 @@ size_t Hash::hashLength(void) const
 	RP_D(const Hash);
 
 	// Lookup table
-	static const uint8_t hash_length_tbl[] = {
+	static const array<uint8_t, (int)Algorithm::Max> hash_length_tbl = {{
 		0,			// Unknown
 
 		sizeof(uint32_t),	// CRC32
@@ -303,11 +306,11 @@ size_t Hash::hashLength(void) const
 		32,			// SHA256
 		64,			// SHA512
 #endif /* ENABLE_DECRYPTION */
-	};
+	}};
 
 	assert(d->algorithm > Algorithm::Unknown);
-	assert(d->algorithm < (Hash::Algorithm)ARRAY_SIZE(hash_length_tbl));
-	if (d->algorithm > Algorithm::Unknown && d->algorithm < (Hash::Algorithm)ARRAY_SIZE(hash_length_tbl)) {
+	assert(d->algorithm < (Hash::Algorithm)hash_length_tbl.size());
+	if (d->algorithm > Algorithm::Unknown && d->algorithm < (Hash::Algorithm)hash_length_tbl.size()) {
 		return hash_length_tbl[static_cast<int>(d->algorithm)];
 	}
 

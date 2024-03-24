@@ -19,6 +19,9 @@
 #  include <nettle/sha2.h>
 #endif /* ENABLE_DECRYPTION */
 
+// C++ STL classes
+using std::array;
+
 namespace LibRpBase {
 
 class HashPrivate
@@ -167,7 +170,7 @@ size_t Hash::hashLength(void) const
 	RP_D(const Hash);
 
 	// Lookup table
-	static const uint8_t hash_length_tbl[] = {
+	static const array<uint8_t, (int)Algorithm::Max> hash_length_tbl = {{
 		0,			// Unknown
 
 		sizeof(uint32_t),	// CRC32
@@ -177,11 +180,11 @@ size_t Hash::hashLength(void) const
 		SHA256_DIGEST_SIZE,	// SHA256
 		SHA512_DIGEST_SIZE,	// SHA512
 #endif /* ENABLE_DECRYPTION */
-	};
+	}};
 
 	assert(d->algorithm > Algorithm::Unknown);
-	assert(d->algorithm < (Hash::Algorithm)ARRAY_SIZE(hash_length_tbl));
-	if (d->algorithm > Algorithm::Unknown && d->algorithm < (Hash::Algorithm)ARRAY_SIZE(hash_length_tbl)) {
+	assert(d->algorithm < (Hash::Algorithm)hash_length_tbl.size());
+	if (d->algorithm > Algorithm::Unknown && d->algorithm < (Hash::Algorithm)hash_length_tbl.size()) {
 		return hash_length_tbl[static_cast<int>(d->algorithm)];
 	}
 

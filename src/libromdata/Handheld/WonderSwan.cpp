@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * WonderSwan.cpp: Bandai WonderSwan (Color) ROM reader.                   *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -17,6 +17,7 @@ using namespace LibRpText;
 using namespace LibRpFile;
 
 // C++ STL classes
+using std::array;
 using std::string;
 using std::vector;
 
@@ -478,13 +479,13 @@ int WonderSwan::loadFieldData(void)
 		v_system_bitfield_names, 0, ws_system);
 
 	// ROM size
-	static const uint16_t rom_size_tbl[] = {
+	static const array<uint16_t, 10> rom_size_tbl = {{
 		128, 256, 512, 1024,
 		2048, 3072, 4096, 6144,
 		8192, 16384,
-	};
+	}};
 	const char *const rom_size_title = C_("WonderSwan", "ROM Size");
-	if (romFooter->rom_size < ARRAY_SIZE(rom_size_tbl)) {
+	if (romFooter->rom_size < rom_size_tbl.size()) {
 		d->fields.addField_string(rom_size_title,
 			formatFileSizeKiB(rom_size_tbl[romFooter->rom_size]));
 	} else {
@@ -493,13 +494,13 @@ int WonderSwan::loadFieldData(void)
 	}
 
 	// Save size and type
-	static const uint16_t sram_size_tbl[] = {
+	static const array<uint16_t, 6> sram_size_tbl = {{
 		0, 8, 32, 128, 256, 512,
-	};
+	}};
 	const char *const save_memory_title = C_("WonderSwan", "Save Memory");
 	if (romFooter->save_type == 0) {
 		d->fields.addField_string(save_memory_title, C_("WonderSwan|SaveMemory", "None"));
-	} else if (romFooter->save_type < ARRAY_SIZE(sram_size_tbl)) {
+	} else if (romFooter->save_type < sram_size_tbl.size()) {
 		d->fields.addField_string(save_memory_title,
 			// tr: Parameter 2 indicates the save type, e.g. "SRAM" or "EEPROM".
 			rp_sprintf_p(C_("WonderSwan|SaveMemory", "%1$u KiB (%2$s)"),

@@ -26,6 +26,7 @@ using LibRpBase::RomFields;
 #include "decoder/ImageDecoder_Linear.hpp"
 
 // C++ STL classes
+using std::array;
 using std::string;
 using std::unique_ptr;
 
@@ -801,14 +802,14 @@ int TGA::getFields(RomFields *fields) const
 	// Alpha channel
 	// TODO: dpgettext_expr()
 	const char *s_alphaType;
-	static const char *const alphaType_tbl[] = {
+	static const array<const char*, 5> alphaType_tbl = {{
 		NOP_C_("TGA|AlphaType", "None"),
 		NOP_C_("TGA|AlphaType", "Undefined (ignore)"),
 		NOP_C_("TGA|AlphaType", "Undefined (retain)"),
 		NOP_C_("TGA|AlphaType", "Present"),
 		NOP_C_("TGA|AlphaType", "Premultiplied"),
-	};
-	s_alphaType = alphaType_tbl[d->alphaType >= 0 && (int)d->alphaType < 5
+	}};
+	s_alphaType = alphaType_tbl[d->alphaType >= 0 && (int)d->alphaType < (int)alphaType_tbl.size()
 		? d->alphaType : TGA_ALPHATYPE_UNDEFINED_IGNORE];
 	fields->addField_string(C_("TGA", "Alpha Type"), s_alphaType);
 

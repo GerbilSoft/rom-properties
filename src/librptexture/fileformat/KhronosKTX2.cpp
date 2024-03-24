@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * KhronosKTX2.cpp: Khronos KTX2 image reader.                             *
  *                                                                         *
- * Copyright (c) 2017-2023 by David Korth.                                 *
+ * Copyright (c) 2017-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -39,6 +39,7 @@ using LibRpText::rp_sprintf;
 #include "decoder/ImageDecoder_ASTC.hpp"
 
 // C++ STL classes
+using std::array;
 using std::string;
 using std::unique_ptr;
 using std::vector;
@@ -957,13 +958,13 @@ int KhronosKTX2::getFields(RomFields *fields) const
 	const KTX2_Header *const ktx2Header = &d->ktx2Header;
 
 	// Supercompression.
-	static const char *const supercompression_tbl[] = {
+	static const array<const char*, 4> supercompression_tbl = {{
 		"None",			// TODO: Localize?
 		"BasisLZ",
 		"Zstandard",
 		"ZLIB",
-	};
-	if (ktx2Header->supercompressionScheme < ARRAY_SIZE(supercompression_tbl)) {
+	}};
+	if (ktx2Header->supercompressionScheme < supercompression_tbl.size()) {
 		fields->addField_string(C_("KhronosKTX2", "Supercompression"),
 			supercompression_tbl[ktx2Header->supercompressionScheme]);
 	} else {

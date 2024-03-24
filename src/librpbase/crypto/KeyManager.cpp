@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * KeyManager.cpp: Encryption key manager.                                 *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -13,7 +13,8 @@
 #include "config/ConfReader_p.hpp"
 #include "libi18n/i18n.h"
 
-// C++ STL classes.
+// C++ STL classes
+using std::array;
 using std::string;
 using std::unique_ptr;
 using std::unordered_map;
@@ -432,7 +433,7 @@ int KeyManager::hexStringToBytes(const Char *str, uint8_t *buf, unsigned int len
 {
 	// ASCII to HEX lookup table.
 	// Reference: http://codereview.stackexchange.com/questions/22757/char-hex-string-to-byte-array
-	static const uint8_t ascii_to_hex[0x80] = {
+	static const array<uint8_t, 0x80> ascii_to_hex = {{
 		//0     1     2     3     4     5     6    7      8     9     A     B     C     D     E     F
 		0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,//0
 		0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,//1
@@ -442,13 +443,13 @@ int KeyManager::hexStringToBytes(const Char *str, uint8_t *buf, unsigned int len
 		0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,//5
 		0xFF, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,//6
 		0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,//7
-	};
+	}};
 
 	for (; len > 0; len--, str += 2, buf++) {
 		// Process two characters at a time.
 		// Two hexadecimal digits == one byte.
 		if (static_cast<unsigned int>(str[0]) >= 0x80 ||
-			static_cast<unsigned int>(str[1]) >= 0x80)
+		    static_cast<unsigned int>(str[1]) >= 0x80)
 		{
 			// Invalid character.
 			return -EINVAL;

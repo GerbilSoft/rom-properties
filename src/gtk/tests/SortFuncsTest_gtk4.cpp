@@ -24,6 +24,7 @@
 #include <cstdio>
 
 // C++ STL classes
+using std::array;
 using std::string;
 
 // Test data
@@ -56,18 +57,18 @@ class ListDataSortProxyModelTest : public ::testing::Test
 
 	public:
 		// Sorting order (function pointers) [ascending order]
-		static const GCompareDataFunc sort_funcs_asc[4];
+		static const array<GCompareDataFunc, 4> sort_funcs_asc;
 
 		static gint rp_sort_RFT_LISTDATA_standard_DESC(gconstpointer a, gconstpointer b, gpointer userdata);
 		static gint rp_sort_RFT_LISTDATA_nocase_DESC(gconstpointer a, gconstpointer b, gpointer userdata);
 		static gint rp_sort_RFT_LISTDATA_numeric_DESC(gconstpointer a, gconstpointer b, gpointer userdata);
 
 		// Sorting order (function pointers) [descending order]
-		static const GCompareDataFunc sort_funcs_desc[4];
+		static const array<GCompareDataFunc, 4> sort_funcs_desc;
 };
 
 // Sorting order (function pointers) [ascending order]
-const GCompareDataFunc ListDataSortProxyModelTest::sort_funcs_asc[4] = {
+const array<GCompareDataFunc, 4> ListDataSortProxyModelTest::sort_funcs_asc = {{
 	// Column 0: Greek alphabet, standard sort
 	rp_sort_RFT_LISTDATA_standard,
 	// Column 1: Greek alphabet, case-insensitive sort
@@ -76,7 +77,7 @@ const GCompareDataFunc ListDataSortProxyModelTest::sort_funcs_asc[4] = {
 	rp_sort_RFT_LISTDATA_standard,
 	// Column 3: Numbers, numeric sort
 	rp_sort_RFT_LISTDATA_numeric,
-};
+}};
 
 gint ListDataSortProxyModelTest::rp_sort_RFT_LISTDATA_standard_DESC(gconstpointer a, gconstpointer b, gpointer userdata)
 {
@@ -94,7 +95,7 @@ gint ListDataSortProxyModelTest::rp_sort_RFT_LISTDATA_numeric_DESC(gconstpointer
 }
 
 // Sorting order (function pointers) [descending order]
-const GCompareDataFunc ListDataSortProxyModelTest::sort_funcs_desc[4] = {
+const array<GCompareDataFunc, 4> ListDataSortProxyModelTest::sort_funcs_desc = {{
 	// Column 0: Greek alphabet, standard sort
 	rp_sort_RFT_LISTDATA_standard_DESC,
 	// Column 1: Greek alphabet, case-insensitive sort
@@ -103,7 +104,7 @@ const GCompareDataFunc ListDataSortProxyModelTest::sort_funcs_desc[4] = {
 	rp_sort_RFT_LISTDATA_standard_DESC,
 	// Column 3: Numbers, numeric sort
 	rp_sort_RFT_LISTDATA_numeric_DESC,
-};
+}};
 
 void ListDataSortProxyModelTest::SetUp()
 {

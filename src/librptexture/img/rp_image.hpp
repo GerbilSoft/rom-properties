@@ -16,6 +16,7 @@
 #include <stdint.h>
 
 // C++ includes
+#include <array>
 #include <memory>
 
 #include "librpcpuid/cpu_dispatch.h"
@@ -86,7 +87,7 @@ class rp_image
 		* From Qt 5.9.1's qcolor.cpp.
 		* These values are: 0x00FF00FF / alpha
 		*/
-		static const unsigned int qt_inv_premul_factor[256];
+		static const std::array<unsigned int, 256> qt_inv_premul_factor;
 
 	public:
 		/**

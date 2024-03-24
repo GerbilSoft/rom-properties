@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * PowerVR3.cpp: PowerVR 3.0.0 texture image reader.                       *
  *                                                                         *
- * Copyright (c) 2019-2023 by David Korth.                                 *
+ * Copyright (c) 2019-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -35,6 +35,7 @@ using LibRpBase::RomFields;
 #include "decoder/ImageDecoder_ASTC.hpp"
 
 // C++ STL classes
+using std::array;
 using std::string;
 using std::unique_ptr;
 using std::vector;
@@ -99,10 +100,10 @@ class PowerVR3Private final : public FileFormatPrivate
 			uint8_t bits;	// 8, 15, 16, 24, 32
 		};
 
-		static const struct FmtLkup_t fmtLkup_tbl_U8[];
-		static const struct FmtLkup_t fmtLkup_tbl_U16[];
+		static const array<FmtLkup_t, 11> fmtLkup_tbl_U8;
+		static const array<FmtLkup_t,  1> fmtLkup_tbl_U16;
 #if 0
-		static const struct FmtLkup_t fmtLkup_tbl_U32[];
+		static const array<FmtLkup_t,  0> fmtLkup_tbl_U32;
 #endif
 
 		/**
@@ -141,7 +142,7 @@ const TextureInfo PowerVR3Private::textureInfo = {
 };
 
 // Uncompressed format lookup table. (UBYTE, UBYTE_NORM)
-const struct PowerVR3Private::FmtLkup_t PowerVR3Private::fmtLkup_tbl_U8[] = {
+const array<PowerVR3Private::FmtLkup_t, 11> PowerVR3Private::fmtLkup_tbl_U8 = {{
 	//{   'i', 0x00000008, ImageDecoder::PixelFormat::I8,		 8},
 	//{   'r', 0x00000008, ImageDecoder::PixelFormat::R8,		 8},
 	{   'a', 0x00000008, ImageDecoder::PixelFormat::A8,		 8},
@@ -172,21 +173,21 @@ const struct PowerVR3Private::FmtLkup_t PowerVR3Private::fmtLkup_tbl_U8[] = {
 	{  '\0bgr', 0x00101010, ImageDecoder::PixelFormat::B16G16R16,		48},
 	{  '\0rgb', 0x000B0B0A, ImageDecoder::PixelFormat::R11G11B10,		32},	// NOTE: May be float.
 #endif
-};
+}};
 
 // Uncompressed format lookup table. (USHORT, USHORT_NORM)
-const struct PowerVR3Private::FmtLkup_t PowerVR3Private::fmtLkup_tbl_U16[] = {
+const array<PowerVR3Private::FmtLkup_t, 1> PowerVR3Private::fmtLkup_tbl_U16 = {{
 	//{'\0\0\0r', 0x00000010, ImageDecoder::PixelFormat::R16,		16},
 	{ '\0\0gr', 0x00001010, ImageDecoder::PixelFormat::G16R16,	32},
 #if 0
 	// TODO: High-bit-depth luminance.
 	{ '\0\0al', 0x00001010, ImageDecoder::PixelFormat::A16L16,	32},
 #endif
-};
+}};
 
 #if 0
 // Uncompressed format lookup table. (UINT, UINT_NORM)
-const struct PowerVR3Private::FmtLkup_t PowerVR3Private::fmtLkup_tbl_U32[] = {
+const array<PowerVR3Private::FmtLkup_t, 0> PowerVR3Private::fmtLkup_tbl_U32 = {{
 	//{'\0\0\0r', 0x00000020, ImageDecoder::PixelFormat::R32,			32},
 	//{ '\0\0gr', 0x00002020, ImageDecoder::PixelFormat::G32R32,		32},
 	//{  '\0bgr', 0x00202020, ImageDecoder::PixelFormat::B32G32R32,		32},
@@ -196,7 +197,7 @@ const struct PowerVR3Private::FmtLkup_t PowerVR3Private::fmtLkup_tbl_U32[] = {
 	{'\0\0\0l', 0x00000020, ImageDecoder::PixelFormat::L32,		32},
 	{ '\0\0al', 0x00002020, ImageDecoder::PixelFormat::A32L32,	32},
 #endif
-};
+}};
 #endif
 
 PowerVR3Private::PowerVR3Private(PowerVR3 *q, const IRpFilePtr &file)
@@ -309,6 +310,7 @@ rp_image_const_ptr PowerVR3Private::loadImage(int mip)
 			return nullptr;
 		}
 
+		// TODO: Check fmtLkup_tbl_U16 too? Need some test files...
 		for (const auto &p : fmtLkup_tbl_U8) {
 			if (p.pixel_format == pvr3Header.pixel_format &&
 			    p.channel_depth == pvr3Header.channel_depth)
@@ -903,7 +905,7 @@ const char *PowerVR3::pixelFormat(void) const
 	// TODO: Localization?
 	if (d->pvr3Header.channel_depth == 0) {
 		// Compressed texture format.
-		static const char *const pvr3PxFmt_tbl[] = {
+		static const array<const char*, PVR3_PXF_MAX> pvr3PxFmt_tbl = {{
 			// 0
 			"PVRTC 2bpp RGB", "PVRTC 2bpp RGBA",
 			"PVRTC 4bpp RGB", "PVRTC 4bpp RGBA",
@@ -928,10 +930,10 @@ const char *PowerVR3::pixelFormat(void) const
 			"ASTC_3x3x3", "ASTC_4x3x3", "ASTC_4x4x3", "ASTC_4x4x4",
 			"ASTC_5x4x4", "ASTC_5x5x4", "ASTC_5x5x5", "ASTC_6x5x5",
 			"ASTC_6x6x5", "ASTC_6x6x6",
-		};
-		static_assert(ARRAY_SIZE(pvr3PxFmt_tbl) == PVR3_PXF_MAX, "pvr3PxFmt_tbl[] needs to be updated!");
+		}};
+		static_assert(pvr3PxFmt_tbl.size() == PVR3_PXF_MAX, "pvr3PxFmt_tbl[] needs to be updated!");
 
-		if (d->pvr3Header.pixel_format < ARRAY_SIZE(pvr3PxFmt_tbl)) {
+		if (d->pvr3Header.pixel_format < pvr3PxFmt_tbl.size()) {
 			return pvr3PxFmt_tbl[d->pvr3Header.pixel_format];
 		}
 
@@ -1023,7 +1025,7 @@ int PowerVR3::getFields(RomFields *fields) const
 	}
 	fields->addField_string(C_("PowerVR3", "Endianness"), endian_str);
 
-	// Flags.
+	// Flags
 	// NOTE: "Compressed" is listed in the PowerVR Native SDK,
 	// but I'm not sure what it's used for...
 	static const char *const flags_names[] = {
@@ -1036,13 +1038,13 @@ int PowerVR3::getFields(RomFields *fields) const
 	fields->addField_bitfield(C_("PowerVR3", "Flags"),
 		v_flags_names, 3, pvr3Header->flags);
 
-	// Color space.
-	static const char *const pvr3_colorspace_tbl[] = {
+	// Color space
+	static const array<const char*, PVR3_COLOR_SPACE_MAX> pvr3_colorspace_tbl = {{
 		NOP_C_("PowerVR3|ColorSpace", "Linear RGB"),
 		"sRGB",	// Not translatable
-	};
-	static_assert(ARRAY_SIZE(pvr3_colorspace_tbl) == PVR3_COLOR_SPACE_MAX, "pvr3_colorspace_tbl[] needs to be updated!");
-	if (pvr3Header->color_space < ARRAY_SIZE(pvr3_colorspace_tbl)) {
+	}};
+	static_assert(pvr3_colorspace_tbl.size() == PVR3_COLOR_SPACE_MAX, "pvr3_colorspace_tbl[] needs to be updated!");
+	if (pvr3Header->color_space < pvr3_colorspace_tbl.size()) {
 		fields->addField_string(C_("PowerVR3", "Color Space"),
 			dpgettext_expr(RP_I18N_DOMAIN, "PowerVR3|ColorSpace",
 				pvr3_colorspace_tbl[pvr3Header->color_space]));
@@ -1051,8 +1053,8 @@ int PowerVR3::getFields(RomFields *fields) const
 			pvr3Header->color_space);
 	}
 
-	// Channel type.
-	static const char *const pvr3_chtype_tbl[] = {
+	// Channel type
+	static const array<const char*, PVR3_CHTYPE_MAX> pvr3_chtype_tbl = {{
 		NOP_C_("PowerVR3|ChannelType", "Unsigned Byte (normalized)"),
 		NOP_C_("PowerVR3|ChannelType", "Signed Byte (normalized)"),
 		NOP_C_("PowerVR3|ChannelType", "Unsigned Byte"),
@@ -1066,9 +1068,9 @@ int PowerVR3::getFields(RomFields *fields) const
 		NOP_C_("PowerVR3|ChannelType", "Unsigned Integer"),
 		NOP_C_("PowerVR3|ChannelType", "Signed Integer"),
 		NOP_C_("PowerVR3|ChannelType", "Float"),
-	};
-	static_assert(ARRAY_SIZE(pvr3_chtype_tbl) == PVR3_CHTYPE_MAX, "pvr3_chtype_tbl[] needs to be updated!");
-	if (pvr3Header->channel_type < ARRAY_SIZE(pvr3_chtype_tbl)) {
+	}};
+	static_assert(pvr3_chtype_tbl.size() == PVR3_CHTYPE_MAX, "pvr3_chtype_tbl[] needs to be updated!");
+	if (pvr3Header->channel_type < pvr3_chtype_tbl.size()) {
 		fields->addField_string(C_("PowerVR3", "Channel Type"),
 			pvr3_chtype_tbl[pvr3Header->channel_type]);
 			//dpgettext_expr(RP_I18N_DOMAIN, "PowerVR3|ChannelType", pvr3_chtype_tbl[pvr3Header->channel_type]));

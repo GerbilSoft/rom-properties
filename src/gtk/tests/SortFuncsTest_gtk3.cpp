@@ -24,6 +24,7 @@
 #include <cstdio>
 
 // C++ STL classes
+using std::array;
 using std::string;
 
 // Test data
@@ -70,7 +71,7 @@ void ListDataSortProxyModelTest::SetUp()
 	}
 
 	// Sorting order (function pointers)
-	static const GtkTreeIterCompareFunc sort_funcs[4] = {
+	static const array<GtkTreeIterCompareFunc, 4> sort_funcs = {{
 		// Column 0: Greek alphabet, standard sort
 		rp_sort_RFT_LISTDATA_standard,
 		// Column 1: Greek alphabet, case-insensitive sort
@@ -79,7 +80,7 @@ void ListDataSortProxyModelTest::SetUp()
 		rp_sort_RFT_LISTDATA_standard,
 		// Column 3: Numbers, numeric sort
 		rp_sort_RFT_LISTDATA_numeric,
-	};
+	}};
 
 	// Set the column sort functions.
 	for (gint col = 0; col < 4; col++) {

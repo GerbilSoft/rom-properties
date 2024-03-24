@@ -2,13 +2,16 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * NESMappers.cpp: NES mapper data.                                        *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * Copyright (c) 2016-2022 by Egor.                                        *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "stdafx.h"
 #include "NESMappers.hpp"
+
+// C++ STL classes
+using std::array;
 
 namespace LibRomData { namespace NESMappers {
 
@@ -96,32 +99,32 @@ struct NESSubmapperInfo {
 };
 
 // Mapper 001: MMC1
-static const struct NESSubmapperInfo mmc1_submappers[] = {
+static const array<NESSubmapperInfo, 5> mmc1_submappers = {{
 	{1, 0,   1, NESMirroring::Unknown, "SUROM"},
 	{2, 0,   1, NESMirroring::Unknown, "SOROM"},
 	{3, 0, 155, NESMirroring::Unknown, "MMC1A"},
 	{4, 0,   1, NESMirroring::Unknown, "SXROM"},
 	{5, 0,   0, NESMirroring::Unknown, "SEROM, SHROM, SH1ROM"},
-};
+}};
 
 // Discrete logic mappers: UxROM (002), CNROM (003), AxROM (007)
-static const struct NESSubmapperInfo discrete_logic_submappers[] = {
+static const array<NESSubmapperInfo, 3> discrete_logic_submappers = {{
 	{0, 0,   0, NESMirroring::Unknown, "Bus conflicts are unspecified"},
 	{1, 0,   0, NESMirroring::Unknown, "Bus conflicts do not occur"},
 	{2, 0,   0, NESMirroring::Unknown, "Bus conflicts occur, resulting in: bus AND rom"},
-};
+}};
 
 // Mapper 004: MMC3
-static const struct NESSubmapperInfo mmc3_submappers[] = {
+static const array<NESSubmapperInfo, 5> mmc3_submappers = {{
 	{0, 0,      0, NESMirroring::Unknown, "MMC3C"},
 	{1, 0,      0, NESMirroring::Unknown, "MMC6"},
 	{2, 0, 0xFFFF, NESMirroring::Unknown, "MMC3C with hard-wired mirroring"},
 	{3, 0,      0, NESMirroring::Unknown, "MC-ACC"},
 	{4, 0,      0, NESMirroring::Unknown, "MMC3A"},
-};
+}};
 
 // Mapper 006: Game Doctor Mode 1
-static const struct NESSubmapperInfo mapper006_submappers[] = {
+static const array<NESSubmapperInfo, 8> mapper006_submappers = {{
 	{0, 0,   0, NESMirroring::Unknown, "UNROM"},
 	{1, 0,   0, NESMirroring::Unknown, "UN1ROM + CHRSW"},
 	{2, 0,   0, NESMirroring::Unknown, "UOROM"},
@@ -130,125 +133,125 @@ static const struct NESSubmapperInfo mapper006_submappers[] = {
 	{5, 0,   0, NESMirroring::Unknown, "CNROM-256"},
 	{6, 0,   0, NESMirroring::Unknown, "CNROM-128"},
 	{7, 0,   0, NESMirroring::Unknown, "NROM-256"},
-};
+}};
 
 // Mapper 016: Bandai FCG-x
-static const struct NESSubmapperInfo bandai_fcgx_submappers[] = {
+static const array<NESSubmapperInfo, 5> bandai_fcgx_submappers = {{
 	{1, 0, 159, NESMirroring::Unknown, "LZ93D50 with 24C01"},
 	{2, 0, 157, NESMirroring::Unknown, "Datach Joint ROM System"},
 	{3, 0, 153, NESMirroring::Unknown, "8 KiB of WRAM instead of serial EEPROM"},
 	{4, 0,   0, NESMirroring::Unknown, "FCG-1/2"},
 	{5, 0,   0, NESMirroring::Unknown, "LZ93D50 with optional 24C02"},
-};
+}};
 
 // Mapper 019: Namco 129, 163
-static const struct NESSubmapperInfo namco_129_164_submappers[] = {
+static const array<NESSubmapperInfo, 6> namco_129_164_submappers = {{
 	{0, 0,   0, NESMirroring::Unknown, "Expansion sound volume unspecified"},
 	{1, 0,  19, NESMirroring::Unknown, "Internal RAM battery-backed; no expansion sound"},
 	{2, 0,   0, NESMirroring::Unknown, "No expansion sound"},
 	{3, 0,   0, NESMirroring::Unknown, "N163 expansion sound: 11.0-13.0 dB louder than NES APU"},
 	{4, 0,   0, NESMirroring::Unknown, "N163 expansion sound: 16.0-17.0 dB louder than NES APU"},
 	{5, 0,   0, NESMirroring::Unknown, "N163 expansion sound: 18.0-19.5 dB louder than NES APU"},
-};
+}};
 
 // Mapper 021: Konami VRC4c, VRC4c
-static const struct NESSubmapperInfo vrc4a_vrc4c_submappers[] = {
+static const array<NESSubmapperInfo, 2> vrc4a_vrc4c_submappers = {{
 	{1, 0,   0, NESMirroring::Unknown, "VRC4a"},
 	{2, 0,   0, NESMirroring::Unknown, "VRC4c"},
-};
+}};
 
 // Mapper 023: Konami VRC4e, VRC4f, VRC2b
-static const struct NESSubmapperInfo vrc4ef_vrc2b_submappers[] = {
+static const array<NESSubmapperInfo, 3> vrc4ef_vrc2b_submappers = {{
 	{1, 0,   0, NESMirroring::Unknown, "VRC4f"},
 	{2, 0,   0, NESMirroring::Unknown, "VRC4e"},
 	{3, 0,   0, NESMirroring::Unknown, "VRC2b"},
-};
+}};
 
 // Mapper 025: Konami VRC4b, VRC4d, VRC2c
-static const struct NESSubmapperInfo vrc4bd_vrc2c_submappers[] = {
+static const array<NESSubmapperInfo, 3> vrc4bd_vrc2c_submappers = {{
 	{1, 0,   0, NESMirroring::Unknown, "VRC4b"},
 	{2, 0,   0, NESMirroring::Unknown, "VRC4d"},
 	{3, 0,   0, NESMirroring::Unknown, "VRC2c"},
-};
+}};
 
 // Mapper 032: Irem G101
-static const struct NESSubmapperInfo irem_g101_submappers[] = {
+static const array<NESSubmapperInfo, 2> irem_g101_submappers = {{
 	{0, 0,   0, NESMirroring::Unknown, "Programmable mirroring"},
 	{1, 0,   0, NESMirroring::OneScreen_B, "Fixed one-screen mirroring"},
-};
+}};
 
 // Mapper 034: BNROM / NINA-001
 // TODO: Distinguish between these two for iNES ROMs.
-static const struct NESSubmapperInfo bnrom_nina001_submappers[] = {
+static const array<NESSubmapperInfo, 2> bnrom_nina001_submappers = {{
 	{1, 0,   0, NESMirroring::Unknown, "NINA-001"},
 	{2, 0,   0, NESMirroring::Unknown, "BNROM"},
-};
+}};
 
 // Mapper 068: Sunsoft-4
-static const struct NESSubmapperInfo sunsoft4_submappers[] = {
+static const array<NESSubmapperInfo, 1> sunsoft4_submappers = {{
 	{1, 0,   0, NESMirroring::Unknown, "Dual Cartridge System (NTB-ROM)"},
-};
+}};
 
 // Mapper 071: Codemasters
-static const struct NESSubmapperInfo codemasters_submappers[] = {
+static const array<NESSubmapperInfo, 1> codemasters_submappers = {{
 	{1, 0,   0, NESMirroring::MapperAB, "Programmable one-screen mirroring (Fire Hawk)"},
-};
+}};
 
 // Mapper 078: Cosmo Carrier / Holy Diver
-static const struct NESSubmapperInfo mapper078_submappers[] = {
+static const array<NESSubmapperInfo, 3> mapper078_submappers = {{
 	{1, 0,      0, NESMirroring::MapperAB, "Programmable one-screen mirroring (Uchuusen: Cosmo Carrier)"},
 	{2, 0, 0xFFFF, NESMirroring::Unknown, "Fixed vertical mirroring + WRAM"},
 	{3, 0,      0, NESMirroring::MapperHV, "Programmable H/V mirroring (Holy Diver)"},
-};
+}};
 
 // Mapper 083: Cony/Yoko
-static const struct NESSubmapperInfo cony_yoko_submappers[] = {
+static const array<NESSubmapperInfo, 3> cony_yoko_submappers = {{
 	{0, 0,   0, NESMirroring::Unknown, "1 KiB CHR-ROM banking, no WRAM"},
 	{1, 0,   0, NESMirroring::Unknown, "2 KiB CHR-ROM banking, no WRAM"},
 	{2, 0,   0, NESMirroring::Unknown, "1 KiB CHR-ROM banking, 32 KiB banked WRAM"},
-};
+}};
 
 // Mapper 108: FDS conversions
-static const struct NESSubmapperInfo mapper108_submappers[] = {
+static const array<NESSubmapperInfo, 4> mapper108_submappers = {{
 	{1, 0,   0, NESMirroring::Unknown, "DH-08: Bubble Bobble (LH31)"},
 	{2, 0,   0, NESMirroring::Unknown, "Bubble Bobble (LH31) (CHR-RAM)"},
 	{3, 0,   0, NESMirroring::Unknown, "Falsion (LH54); Meikyuu Jiin Dababa (LH28)"},
 	{4, 0,   0, NESMirroring::Unknown, "Pro Wrestling (LE05)"},
-};
+}};
 
 // Mapper 114: Sugar Softec/Hosenkan
-static const struct NESSubmapperInfo mapper114_submappers[] = {
+static const array<NESSubmapperInfo, 2> mapper114_submappers = {{
 	{0, 0,   0, NESMirroring::Unknown, "MMC3 registers: 0,3,1,5,6,7,2,4"},
 	{1, 0,   0, NESMirroring::Unknown, "MMC3 registers: 0,2,5,3,6,1,7,4"},
-};
+}};
 
 // Mapper 197: Kǎshèng (MMC3 clone)
-static const struct NESSubmapperInfo mapper197_submappers[] = {
+static const array<NESSubmapperInfo, 4> mapper197_submappers = {{
 	{0, 0,   0, NESMirroring::Unknown, "Super Fighter III (PRG-ROM CRC32 0xC333F621)"},
 	{1, 0,   0, NESMirroring::Unknown, "Super Fighter III (PRG-ROM CRC32 0x2091BEB2)"},
 	{2, 0,   0, NESMirroring::Unknown, "Mortal Kombat III Special"},
 	{3, 0,   0, NESMirroring::Unknown, "1995 Super 2-in-1"},
-};
+}};
 
 // Mapper 210: Namcot 175, 340
-static const struct NESSubmapperInfo namcot_175_340_submappers[] = {
+static const array<NESSubmapperInfo, 2> namcot_175_340_submappers = {{
 	{1, 0,   0, NESMirroring::Header,     "Namcot 175 (fixed mirroring)"},
 	{2, 0,   0, NESMirroring::MapperHVAB, "Namcot 340 (programmable mirroring)"},
-};
+}};
 
 // Mapper 215: Sugar Softec
-static const struct NESSubmapperInfo sugar_softec_submappers[] = {
+static const array<NESSubmapperInfo, 2> sugar_softec_submappers = {{
 	{0, 0,   0, NESMirroring::Unknown, "UNL-8237"},
 	{1, 0,   0, NESMirroring::Unknown, "UNL-8237A"},
-};
+}};
 
 // Mapper 232: Codemasters Quattro
-static const struct NESSubmapperInfo quattro_submappers[] = {
+static const array<NESSubmapperInfo, 1> quattro_submappers = {{
 	{1, 0,   0, NESMirroring::Unknown, "Aladdin Deck Enhancer"},
-};
+}};
 
 // Mapper 256: OneBus Famiclones
-static const struct NESSubmapperInfo onebus_submappers[] = {
+static const array<NESSubmapperInfo, 7> onebus_submappers = {{
 	{ 1, 0,   0, NESMirroring::Unknown, "Waixing VT03"},
 	{ 2, 0,   0, NESMirroring::Unknown, "Power Joy Supermax"},
 	{ 3, 0,   0, NESMirroring::Unknown, "Zechess/Hummer Team"},
@@ -256,41 +259,41 @@ static const struct NESSubmapperInfo onebus_submappers[] = {
 	{ 5, 0,   0, NESMirroring::Unknown, "Waixing VT02"},
 	{14, 0,   0, NESMirroring::Unknown, "Karaoto"},
 	{15, 0,   0, NESMirroring::Unknown, "Jungletac"},
-};
+}};
 
 // Mapper 268: SMD132/SMD133
-static const struct NESSubmapperInfo smd132_smd133_submappers[] = {
+static const array<NESSubmapperInfo, 2> smd132_smd133_submappers = {{
 	{0, 0,   0, NESMirroring::Unknown, "COOLBOY ($6000-$7FFF)"},
 	{1, 0,   0, NESMirroring::Unknown, "MINDKIDS ($5000-$5FFF)"},
-};
+}};
 
 // Mapper 313: Reset-based multicart (MMC3)
-static const struct NESSubmapperInfo mapper313_submappers[] = {
+static const array<NESSubmapperInfo, 5> mapper313_submappers = {{
 	{0, 0,   0, NESMirroring::Unknown, "Game size: 128 KiB PRG, 128 KiB CHR"},
 	{1, 0,   0, NESMirroring::Unknown, "Game size: 256 KiB PRG, 128 KiB CHR"},
 	{2, 0,   0, NESMirroring::Unknown, "Game size: 128 KiB PRG, 256 KiB CHR"},
 	{3, 0,   0, NESMirroring::Unknown, "Game size: 256 KiB PRG, 256 KiB CHR"},
 	{4, 0,   0, NESMirroring::Unknown, "Game size: 256 KiB PRG (first game); 128 KiB PRG (other games); 128 KiB CHR"},
-};
+}};
 
 // Mapper 407: Win, Lose, or Draw Plug-n-Play (VT03)
-static const struct NESSubmapperInfo mapper407_submappers[] = {
+static const array<NESSubmapperInfo, 1> mapper407_submappers = {{
 	{15, 0,   0, NESMirroring::Unknown, "Opcode encryption (see mapper 256, submapper 15)"},
-};
+}};
 
 // Mapper 444: NC7000M multicart (MMC3-compatible)
-static const struct NESSubmapperInfo mapper444_submappers[] = {
+static const array<NESSubmapperInfo, 4> mapper444_submappers = {{
 	{0, 0,   0, NESMirroring::Unknown, "CHR A17 to $6000.0; CHR A18 to $6000.1"},
 	{1, 0,   0, NESMirroring::Unknown, "CHR A17 to MMC3 CHR A17; CHR A18 to $6000.1"},
 	{2, 0,   0, NESMirroring::Unknown, "CHR A17 to $6000.0; CHR A18 to $6000.4"},
 	{3, 0,   0, NESMirroring::Unknown, "CHR A17 to MMC3 CHR A17; CHR A18 to $6000.4"},
-};
+}};
 
 // Mapper 458: K-3102 and GN-23 multicart PCBs (MMC3-based)
-static const struct NESSubmapperInfo mapper458_submappers[] = {
+static const array<NESSubmapperInfo, 2> mapper458_submappers = {{
 	{0, 0,   0, NESMirroring::MapperHV, "K-3102"},
 	{1, 0,   0, NESMirroring::MapperHV, "GN-23"},
-};
+}};
 
 /**
  * NES 2.0 submapper list.
@@ -306,8 +309,8 @@ struct NESSubmapperEntry {
 	const NESSubmapperInfo *info;	// Submapper information.
 };
 
-#define NES2_SUBMAPPER(num, arr) {num, (uint16_t)ARRAY_SIZE(arr), arr}
-static const std::array<NESSubmapperEntry, 31> submappers = {{
+#define NES2_SUBMAPPER(num, arr) {num, (uint16_t)((arr).size()), (arr).data()}
+static const array<NESSubmapperEntry, 31> submappers = {{
 	NES2_SUBMAPPER(  1, mmc1_submappers),			// MMC1
 	NES2_SUBMAPPER(  2, discrete_logic_submappers),		// UxROM
 	NES2_SUBMAPPER(  3, discrete_logic_submappers),		// CNROM

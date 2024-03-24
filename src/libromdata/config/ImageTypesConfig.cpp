@@ -29,6 +29,9 @@ using namespace LibRpBase;
 #include "Console/WiiU.hpp"
 #include "Console/WiiWAD.hpp"
 
+// C++ STL classes
+using std::array;
+
 namespace LibRomData { namespace ImageTypesConfig {
 
 // Number of image types. (columns)
@@ -49,7 +52,7 @@ struct SysData_t {
 	{#klass, LibRomData::klass::supportedImageTypes_static}
 
 // System data.
-static const SysData_t sysData[SYS_COUNT] = {
+static const array<SysData_t, SYS_COUNT> sysData = {{
 	SysDataEntry(Amiibo),
 	SysDataEntry(NintendoBadge),
 	SysDataEntry(DreamcastSave),
@@ -61,7 +64,7 @@ static const SysData_t sysData[SYS_COUNT] = {
 	SysDataEntry(PlayStationSave),
 	SysDataEntry(WiiU),
 	SysDataEntry(WiiWAD),
-};
+}};
 
 }
 
@@ -82,7 +85,7 @@ unsigned int imageTypeCount(void)
 const char *imageTypeName(unsigned int imageType)
 {
 	// Image type names.
-	static const std::array<const char*, IMG_TYPE_COUNT> imageType_names = {{
+	static const array<const char*, IMG_TYPE_COUNT> imageType_names = {{
 		/** Internal **/
 
 		// tr: IMG_INT_ICON
@@ -133,7 +136,7 @@ unsigned int sysCount(void)
 const char *sysName(unsigned int sys)
 {
 	// System names.
-	static const std::array<const char*, SYS_COUNT> sysNames = {{
+	static const array<const char*, SYS_COUNT> sysNames = {{
 		// tr: amiibo
 		NOP_C_("ImageTypesConfig|SysName", "amiibo"),
 		// tr: NintendoBadge

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * GodotSTEX.cpp: Godot STEX image reader.                                 *
  *                                                                         *
- * Copyright (c) 2017-2023 by David Korth.                                 *
+ * Copyright (c) 2017-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -34,6 +34,7 @@ using namespace LibRpText;
 using LibRpTexture::ImageSizeCalc::OpCode;
 
 // C++ STL classes
+using std::array;
 using std::shared_ptr;
 using std::string;
 using std::unique_ptr;
@@ -1184,13 +1185,14 @@ int GodotSTEX::getFields(RomFields *fields) const
 		}
 		case 4: {
 			// Data Format (Godot 4 only)
-			static const char *const data_format_tbl[] = {
+			static const array<const char*, 4> data_format_tbl = {{
 				NOP_C_("GodotSTEX|DataFormat", "Image"),
-				"PNG", "WebP",	// Not translatable!
+				"PNG",	// Not translatable!
+				"WebP",	// Not translatable!
 				NOP_C_("GodotSTEX|DataFormat", "Basis Universal"),
-			};
+			}};
 			const char *const s_title = C_("GodotSTEX", "Data Format");
-			if (d->stexHeader.v4.data_format < ARRAY_SIZE(data_format_tbl)) {
+			if (d->stexHeader.v4.data_format < data_format_tbl.size()) {
 				fields->addField_string(s_title,
 					dpgettext_expr(RP_I18N_DOMAIN, "GodotSTEX|DataFormat",
 						data_format_tbl[d->stexHeader.v4.data_format]));

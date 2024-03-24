@@ -30,11 +30,13 @@ using namespace LibRpFile;
 #include "ctypex.h"
 
 // C++ includes
+#include <array>
 #include <forward_list>
 #include <iostream>
 #include <memory>
 #include <sstream>
 #include <string>
+using std::array;
 using std::forward_list;
 using std::ostringstream;
 using std::shared_ptr;
@@ -678,7 +680,7 @@ extern "C" int gtest_main(int argc, TCHAR *argv[])
 
 	// Check for the RomHeaders directory and chdir() into it.
 #ifdef _WIN32
-	static const TCHAR *const subdirs[] = {
+	static const array<const TCHAR*, 11> subdirs = {{
 		_T("RomHeaders"),
 		_T("bin\\RomHeaders"),
 		_T("src\\libromdata\\tests\\RomHeaders"),
@@ -690,9 +692,9 @@ extern "C" int gtest_main(int argc, TCHAR *argv[])
 		_T("..\\..\\..\\bin\\RomHeaders"),
 		_T("..\\..\\..\\bin\\Debug\\RomHeaders"),
 		_T("..\\..\\..\\bin\\Release\\RomHeaders"),
-	};
+	}};
 #else /* !_WIN32 */
-	static const TCHAR *const subdirs[] = {
+	static const array<const TCHAR* ,9> subdirs = {{
 		_T("RomHeaders"),
 		_T("bin/RomHeaders"),
 		_T("src/libromdata/tests/RomHeaders"),
@@ -702,7 +704,7 @@ extern "C" int gtest_main(int argc, TCHAR *argv[])
 		_T("../../../../src/libromdata/tests/RomHeaders"),
 		_T("../../../../../src/libromdata/tests/RomHeaders"),
 		_T("../../../bin/RomHeaders"),
-	};
+	}};
 #endif /* _WIN32 */
 
 	bool is_found = false;

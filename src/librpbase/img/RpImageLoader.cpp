@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * RpImageLoader.cpp: Image loader class.                                  *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -29,13 +29,16 @@ extern "C" {
 	unsigned char RP_LibRpBase_RpImageLoader_ForceLinkage;
 }
 
+// C++ STL classes
+using std::array;
+
 namespace LibRpBase { namespace RpImageLoader {
 
 // Magic numbers
-static const uint8_t png_magic[8] = {0x89, 'P', 'N', 'G', '\r', '\n', 0x1A, '\n'};
+static const array<uint8_t, 8> png_magic = {{0x89, 'P', 'N', 'G', '\r', '\n', 0x1A, '\n'}};
 #ifdef HAVE_JPEG
-static const uint8_t jpeg_magic[4] = {'J','F','I','F'};
-static const uint8_t exif_magic[4] = {'E','x','i','f'};
+static const array<uint8_t, 4> jpeg_magic = {{'J','F','I','F'}};
+static const array<uint8_t, 4> exif_magic = {{'E','x','i','f'}};
 #endif /* HAVE_JPEG */
 
 /** RpImageLoader **/
@@ -54,7 +57,7 @@ rp_image_ptr load(const IRpFilePtr &file)
 	size_t sz = file->read(buf, sizeof(buf));
 	if (sz >= sizeof(png_magic)) {
 		// Check for PNG.
-		if (!memcmp(buf, png_magic, sizeof(png_magic))) {
+		if (!memcmp(buf, png_magic.data(), png_magic.size())) {
 			// Found a PNG image.
 			return RpPng::load(file);
 		}
@@ -62,8 +65,8 @@ rp_image_ptr load(const IRpFilePtr &file)
 		else if (buf[0] == 0xFF && buf[1] != 0xFF && buf[2] == 0xFF) {
 			// This may be a JPEG.
 			// Check for the JFIF and Exif magic numbers.
-			if (!memcmp(&buf[6], jpeg_magic, sizeof(jpeg_magic)) ||
-			    !memcmp(&buf[6], exif_magic, sizeof(exif_magic)))
+			if (!memcmp(&buf[6], jpeg_magic.data(), jpeg_magic.size()) ||
+			    !memcmp(&buf[6], exif_magic.data(), exif_magic.size()))
 			{
 				// Found a JPEG image.
 				return RpJpeg::load(file);

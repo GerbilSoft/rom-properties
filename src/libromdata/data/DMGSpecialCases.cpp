@@ -2,13 +2,16 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * DMGSpecialCases.cpp: Game Boy special cases for RPDB images.            *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "stdafx.h"
 #include "DMGSpecialCases.hpp"
 #include "Handheld/dmg_structs.h"
+
+// C++ STL classes
+using std::array;
 
 namespace LibRomData { namespace DMGSpecialCases {
 
@@ -30,7 +33,7 @@ struct DmgSpecialCase_t {
 // TODO: Sachen "TETRIS" ROMs have the same global checksum.
 
 // DMG, Non-JP
-static const DmgSpecialCase_t dmgSpecialCases_DMG_NoJP[] = {
+static const array<DmgSpecialCase_t, 37> dmgSpecialCases_DMG_NoJP = {{
 	{"BIONIC-COMMANDO", ""},
 	{"BOKEMOB BLUE", ""},
 	{"CAESARS PALACE", "61"},
@@ -68,10 +71,10 @@ static const DmgSpecialCase_t dmgSpecialCases_DMG_NoJP[] = {
 	{"TOM AND JERRY", ""},
 	{"TRACK MEET", ""},
 	{"Zelda Colour", ""},	// Other hacks
-};
+}};
 
 // DMG, JP
-static const DmgSpecialCase_t dmgSpecialCases_DMG_JP[] = {
+static const array<DmgSpecialCase_t, 8> dmgSpecialCases_DMG_JP = {{
 	{"GAME", ""},			// Sachen
 	{"GBWARST", ""},
 	{"MENU", "00"},			// Unl
@@ -80,10 +83,10 @@ static const DmgSpecialCase_t dmgSpecialCases_DMG_JP[] = {
 	{"SAGA", "C3"},
 	{"TEST", "00"},			// Unl
 	{"TOM AND JERRY", ""},
-};
+}};
 
 // CGB, Non-JP
-static const DmgSpecialCase_t dmgSpecialCases_CGB_NoJP[] = {
+static const array<DmgSpecialCase_t, 9> dmgSpecialCases_CGB_NoJP = {{
 	{"BUGS BUNNY", ""},
 	{"COOL HAND", ""},
 	{"GB SMART CARD", ""},	// Unl
@@ -93,27 +96,27 @@ static const DmgSpecialCase_t dmgSpecialCases_CGB_NoJP[] = {
 	{"SYLVESTER", ""},
 	{"ZELDA", ""},
 	{"ZELDA PL", ""},
-};
+}};
 
 // CGB, JP
-static const DmgSpecialCase_t dmgSpecialCases_CGB_JP[] = {
+static const array<DmgSpecialCase_t, 4> dmgSpecialCases_CGB_JP = {{
 	{"DIGIMON 5", "MK"},
 	{"GBDAYTEST", ""},	// Unl
 	{"HARVEST-MOON GB", ""},
 	{"METAL SLUG 2", "01"},
-};
+}};
 
 // Dispatch array for DMG special cases
 struct DmgSpecialCase_Dispatch_tbl_t {
 	const DmgSpecialCase_t *ptr;
 	size_t size;
 };
-static const DmgSpecialCase_Dispatch_tbl_t dmgSpecialCases_dispatch_tbl[] = {
-	{dmgSpecialCases_DMG_NoJP, ARRAY_SIZE(dmgSpecialCases_DMG_NoJP)},
-	{dmgSpecialCases_DMG_JP,   ARRAY_SIZE(dmgSpecialCases_DMG_JP)},
-	{dmgSpecialCases_CGB_NoJP, ARRAY_SIZE(dmgSpecialCases_CGB_NoJP)},
-	{dmgSpecialCases_CGB_JP,   ARRAY_SIZE(dmgSpecialCases_CGB_JP)},
-};
+static const array<DmgSpecialCase_Dispatch_tbl_t, 4> dmgSpecialCases_dispatch_tbl = {{
+	{dmgSpecialCases_DMG_NoJP.data(), dmgSpecialCases_DMG_NoJP.size()},
+	{dmgSpecialCases_DMG_JP.data(),   dmgSpecialCases_DMG_JP.size()},
+	{dmgSpecialCases_CGB_NoJP.data(), dmgSpecialCases_CGB_NoJP.size()},
+	{dmgSpecialCases_CGB_JP.data(),   dmgSpecialCases_CGB_JP.size()},
+}};
 
 // Special cases for CGB ROM images with identical ID6s.
 static const char cgbSpecialCases[][8] = {
@@ -199,8 +202,8 @@ bool is_rpdb_checksum_needed_TitleBased(const DMG_RomHeader *romHeader)
 	char pbcode[3];
 	get_publisher_code(pbcode, romHeader);
 	const uint8_t flags = get_lookup_flags(romHeader);
-	assert(flags < ARRAY_SIZE(dmgSpecialCases_dispatch_tbl));
-	if (flags >= ARRAY_SIZE(dmgSpecialCases_dispatch_tbl))
+	assert(flags < dmgSpecialCases_dispatch_tbl.size());
+	if (flags >= dmgSpecialCases_dispatch_tbl.size())
 		return false;
 
 	const char *const title = romHeader->title16;
