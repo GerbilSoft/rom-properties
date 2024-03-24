@@ -209,9 +209,6 @@ const DirectDrawSurfacePrivate::RGB_Format_Table_t DirectDrawSurfacePrivate::rgb
 const DirectDrawSurfacePrivate::RGB_Format_Table_t DirectDrawSurfacePrivate::rgb_fmt_tbl_24[] = {
 	{0x00FF0000, 0x0000FF00, 0x000000FF, 0x00000000, "RGB888", ImageDecoder::PixelFormat::RGB888},
 	{0x000000FF, 0x0000FF00, 0x00FF0000, 0x00000000, "BGR888", ImageDecoder::PixelFormat::BGR888},
-
-	// end
-	{0, 0, 0, 0, "", ImageDecoder::PixelFormat::Unknown}
 };
 
 // Supported 32-bit uncompressed RGB formats
