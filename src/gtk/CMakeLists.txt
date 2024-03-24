@@ -149,6 +149,16 @@ SET(${PROJECT_NAME}_H
 	xattr/XAttrView.hpp
 	)
 
+# Sources and headers (GTK2/GTK3 only)
+SET(${PROJECT_NAME}_GTK3MAX_SRCS
+	RomDataView_gtk3.cpp
+	gtk3/sort_funcs.c
+	xattr/XAttrView_gtk3.cpp
+	)
+SET(${PROJECT_NAME}_GTK3MAX_H
+	gtk3/sort_funcs.h
+	)
+
 # Sources and headers (GTK4+ only)
 SET(${PROJECT_NAME}_GTK4MIN_SRCS
 	LanguageComboBoxItem.c
