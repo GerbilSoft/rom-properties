@@ -26,6 +26,7 @@ using namespace LibRpBase;
 using namespace LibRpFile;
 
 // C++ STL classes
+using std::array;
 using std::unique_ptr;
 
 #include "GcnPartition_p.hpp"
@@ -66,6 +67,10 @@ public:
 	WiiPartition::CryptoMethod cryptoMethod;
 
 public:
+	// Incrementing values. Occasionally found in the
+	// update partition of debug-signed discs.
+	static const array<uint8_t, 32> incr_vals;
+
 	// Decrypted read position. (0x7C00 bytes out of 0x8000)
 	// NOTE: Actual read position if ((cryptoMethod & CM_MASK_SECTOR) == CM_32K).
 	off64_t pos_7C00;
@@ -117,6 +122,15 @@ public:
 };
 
 /** WiiPartitionPrivate **/
+
+// Incrementing values. Occasionally found in the
+// update partition of debug-signed discs.
+const array<uint8_t, 32> WiiPartitionPrivate::incr_vals = {
+	0x00,0x00,0x00,0x00, 0x00,0x00,0x00,0x04,
+	0x00,0x00,0x00,0x08, 0x00,0x00,0x00,0x0C,
+	0x00,0x00,0x00,0x10, 0x00,0x00,0x00,0x14,
+	0x00,0x00,0x00,0x18, 0x00,0x00,0x00,0x1C,
+};
 
 WiiPartitionPrivate::WiiPartitionPrivate(WiiPartition *q,
 		off64_t data_size, off64_t partition_offset,
@@ -248,13 +262,7 @@ KeyManager::VerifyResult WiiPartitionPrivate::initDecryption(void)
 		// Invalid disc header.
 
 		// NOTE: Debug discs may have incrementing values in update partitions.
-		static const uint8_t incr_vals[32] = {
-			0x00,0x00,0x00,0x00, 0x00,0x00,0x00,0x04,
-			0x00,0x00,0x00,0x08, 0x00,0x00,0x00,0x0C,
-			0x00,0x00,0x00,0x10, 0x00,0x00,0x00,0x14,
-			0x00,0x00,0x00,0x18, 0x00,0x00,0x00,0x1C,
-		};
-		if (!memcmp(sector_buf.data, incr_vals, sizeof(incr_vals))) {
+		if (!memcmp(sector_buf.data, incr_vals.data(), incr_vals.size())) {
 			// Found incrementing values.
 			verifyResult = KeyManager::VerifyResult::IncrementingValues;
 		} else {
@@ -404,17 +412,9 @@ WiiPartition::WiiPartition(const IDiscReaderPtr &discReader, off64_t partition_o
 		d->encKey = WiiTicket::EncryptionKeys::None;
 		d->pos_7C00 = 0;
 
-		// NOTE: Debug discs may have incrementing values in update partitions.
-		static const uint8_t incr_vals[32] = {
-			0x00,0x00,0x00,0x00, 0x00,0x00,0x00,0x04,
-			0x00,0x00,0x00,0x08, 0x00,0x00,0x00,0x0C,
-			0x00,0x00,0x00,0x10, 0x00,0x00,0x00,0x14,
-			0x00,0x00,0x00,0x18, 0x00,0x00,0x00,0x1C,
-		};
-
 		uint8_t data[32];
 		size_t size = m_file->seekAndRead(d->partition_offset + d->data_offset, data, sizeof(data));
-		if (size == sizeof(incr_vals) && !memcmp(data, incr_vals, sizeof(incr_vals))) {
+		if (size == d->incr_vals.size() && !memcmp(data, d->incr_vals.data(), d->incr_vals.size())) {
 			// Found incrementing values.
 			d->verifyResult = KeyManager::VerifyResult::IncrementingValues;
 		} else {
