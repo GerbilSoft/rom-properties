@@ -123,13 +123,6 @@ public:
 	// Has the user changed anything?
 	bool changed;
 
-	// PAL language codes for GameTDB
-	// NOTE: 'au' is technically not a language code, but
-	// GameTDB handles it as a separate language.
-	// TODO: Combine with the GTK/KDE version.
-	// NOTE: Win32 LanguageComboBox uses a NULL-terminated pal_lc[] array.
-	static constexpr array<uint32_t, 9+1> pal_lc = {{'au', 'de', 'en', 'es', 'fr', 'it', 'nl', 'pt', 'ru', 0}};
-
 public:
 	// Dark Mode background brush
 	HBRUSH hbrBkgnd;
@@ -465,7 +458,7 @@ INT_PTR CALLBACK OptionsTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam,
 			assert(cboLanguage != nullptr);
 			if (cboLanguage) {
 				LanguageComboBox_SetForcePAL(cboLanguage, true);
-				LanguageComboBox_SetLCs(cboLanguage, pal_lc.data());
+				LanguageComboBox_SetLCs(cboLanguage, Config::get_all_pal_lcs());
 			}
 
 			// Set window themes for Win10's dark mode.

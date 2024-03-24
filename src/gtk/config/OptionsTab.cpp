@@ -21,13 +21,6 @@ using namespace LibRpBase;
 // C++ STL classes
 using std::array;
 
-// PAL language codes for GameTDB
-// NOTE: 'au' is technically not a language code, but
-// GameTDB handles it as a separate language.
-// TODO: Combine with the KDE version.
-// NOTE: GTK LanguageComboBox uses a NULL-terminated pal_lc[] array.
-static constexpr array<uint32_t, 9+1> pal_lc = {{'au', 'de', 'en', 'es', 'fr', 'it', 'nl', 'pt', 'ru', 0}};
-
 #if GTK_CHECK_VERSION(3,0,0)
 typedef GtkBoxClass superclass;
 typedef GtkBox super;
@@ -242,7 +235,7 @@ rp_options_tab_init(RpOptionsTab *tab)
 	tab->cboGameTDBPAL = rp_language_combo_box_new();
 	gtk_widget_set_name(tab->cboGameTDBPAL, "cboGameTDBPAL");
 	rp_language_combo_box_set_force_pal(RP_LANGUAGE_COMBO_BOX(tab->cboGameTDBPAL), true);
-	rp_language_combo_box_set_lcs(RP_LANGUAGE_COMBO_BOX(tab->cboGameTDBPAL), pal_lc.data());
+	rp_language_combo_box_set_lcs(RP_LANGUAGE_COMBO_BOX(tab->cboGameTDBPAL), Config::get_all_pal_lcs());
 
 	// Create the "Options" frame.
 	// FIXME: GtkFrame doesn't support mnemonics?

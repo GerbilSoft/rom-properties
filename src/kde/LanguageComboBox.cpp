@@ -52,8 +52,9 @@ void LanguageComboBox::updateIcons(void)
 
 /**
  * Set the language codes.
- * @param set_lc Set of language codes.
+ * @param set_lc Set of language codes
  */
+ATTR_ACCESS(read_only, 2)
 void LanguageComboBox::setLCs(const std::set<uint32_t> &set_lc)
 {
 	// Check the LC of the selected index.
@@ -94,8 +95,23 @@ void LanguageComboBox::setLCs(const std::set<uint32_t> &set_lc)
 
 /**
  * Set the language codes.
- * @param p_lc Array of language codes.
- * @param len Number of language codes.
+ * @param p_lc Array of language codes (NULL-terminated)
+ */
+ATTR_ACCESS(read_only, 2)
+void LanguageComboBox::setLCs(const uint32_t *p_lc)
+{
+	// Convert the array to std::set<uint32_t> first.
+	std::set<uint32_t> set_lc;
+	for (; *p_lc != 0; p_lc++) {
+		set_lc.emplace(*p_lc);
+	}
+	setLCs(set_lc);
+}
+
+/**
+ * Set the language codes.
+ * @param p_lc Array of language codes
+ * @param len Number of language codes in the array
  */
 ATTR_ACCESS_SIZE(read_only, 2, 3)
 void LanguageComboBox::setLCs(const uint32_t *p_lc, size_t len)
@@ -110,7 +126,7 @@ void LanguageComboBox::setLCs(const uint32_t *p_lc, size_t len)
 
 /**
  * Get the set of language codes.
- * @return Set of language codes.
+ * @return Set of language codes
  */
 std::set<uint32_t> LanguageComboBox::lcs(void) const
 {

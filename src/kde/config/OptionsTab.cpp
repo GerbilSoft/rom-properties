@@ -30,11 +30,6 @@ public:
 public:
 	// Has the user changed anything?
 	bool changed;
-
-	// PAL language codes for GameTDB
-	// NOTE: 'au' is technically not a language code, but
-	// GameTDB handles it as a separate language.
-	static constexpr array<uint32_t, 9> pal_lc = {{'au', 'de', 'en', 'es', 'fr', 'it', 'nl', 'pt', 'ru'}};
 };
 
 /** OptionsTabPrivate **/
@@ -54,7 +49,7 @@ OptionsTab::OptionsTab(QWidget *parent)
 
 	// Initialize the PAL language dropdown.
 	d->ui.cboGameTDBPAL->setForcePAL(true);
-	d->ui.cboGameTDBPAL->setLCs(OptionsTabPrivate::pal_lc.data(), OptionsTabPrivate::pal_lc.size());
+	d->ui.cboGameTDBPAL->setLCs(Config::get_all_pal_lcs());
 
 	// Load the current configuration.
 	reset();

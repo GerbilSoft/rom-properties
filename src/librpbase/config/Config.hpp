@@ -67,6 +67,14 @@ public:
 	};
 
 	/**
+	 * Get the default image type priority data.
+	 * This is the priority data used if a custom configuration
+	 * is not defined for a given class.
+	 * @param imgTypePrio	[out] Image type priority data.
+	 */
+	static void getDefImgTypePrio(ImgTypePrio_t *imgTypePrio);
+
+	/**
 	 * Get the image type priority data for the specified class name.
 	 * NOTE: Call load() before using this function.
 	 * @param className	[in] Class name. (ASCII)
@@ -75,15 +83,13 @@ public:
 	 */
 	ImgTypeResult getImgTypePrio(const char *className, ImgTypePrio_t *imgTypePrio) const;
 
-	/**
-	 * Get the default image type priority data.
-	 * This is the priority data used if a custom configuration
-	 * is not defined for a given class.
-	 * @param imgTypePrio	[out] Image type priority data.
-	 */
-	void getDefImgTypePrio(ImgTypePrio_t *imgTypePrio) const;
-
 	/** Download options **/
+
+	/**
+	 * Get the array of language codes available on GameTDB.
+	 * @return NULL-terminated array of language codes.
+	 */
+	static const uint32_t *get_all_pal_lcs(void);
 
 	/**
 	 * Language code for PAL titles on GameTDB.

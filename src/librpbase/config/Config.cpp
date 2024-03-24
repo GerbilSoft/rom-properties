@@ -78,6 +78,11 @@ public:
 	 */
 	unordered_map<string, uint32_t> mapImgTypePrio;
 
+	// PAL language codes for GameTDB (NULL-terminated array)
+	// NOTE: 'au' is technically not a language code, but
+	// GameTDB handles it as a separate language.
+	static constexpr array<uint32_t, 9+1> pal_lc = {{'au', 'de', 'en', 'es', 'fr', 'it', 'nl', 'pt', 'ru', 0}};
+
 	// Download options
 	uint32_t palLanguageForGameTDB;
 	bool extImgDownloadEnabled;
@@ -599,17 +604,25 @@ Config::ImgTypeResult Config::getImgTypePrio(const char *className, ImgTypePrio_
  * is not defined for a given class.
  * @param imgTypePrio	[out] Image type priority data.
  */
-void Config::getDefImgTypePrio(ImgTypePrio_t *imgTypePrio) const
+void Config::getDefImgTypePrio(ImgTypePrio_t *imgTypePrio)
 {
 	assert(imgTypePrio != nullptr);
 	if (imgTypePrio) {
-		RP_D(const Config);
-		imgTypePrio->imgTypes = d->defImgTypePrio.data();
-		imgTypePrio->length = d->defImgTypePrio.size();
+		imgTypePrio->imgTypes = ConfigPrivate::defImgTypePrio.data();
+		imgTypePrio->length = ConfigPrivate::defImgTypePrio.size();
 	}
 }
 
 /** Download options **/
+
+/**
+ * Get the array of language codes available on GameTDB.
+ * @return NULL-terminated array of language codes.
+ */
+const uint32_t *Config::get_all_pal_lcs(void)
+{
+	return ConfigPrivate::pal_lc.data();
+}
 
 /**
  * Language code for PAL titles on GameTDB.

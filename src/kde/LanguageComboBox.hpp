@@ -42,21 +42,29 @@ public:
 
 	/**
 	 * Set the language codes.
-	 * @param set_lc Set of language codes.
+	 * @param set_lc Set of language codes
 	 */
+	ATTR_ACCESS(read_only, 2)
 	void setLCs(const std::set<uint32_t> &set_lc);
 
 	/**
 	 * Set the language codes.
-	 * @param p_lc Array of language codes.
-	 * @param len Number of language codes.
+	 * @param p_lc Array of language codes (NULL-terminated)
+	 */
+	ATTR_ACCESS(read_only, 2)
+	void setLCs(const uint32_t *p_lc);
+
+	/**
+	 * Set the language codes.
+	 * @param p_lc Array of language codes
+	 * @param len Number of language codes
 	 */
 	ATTR_ACCESS_SIZE(read_only, 2, 3)
 	void setLCs(const uint32_t *p_lc, size_t len);
 
 	/**
 	 * Get the set of language codes.
-	 * @return Set of language codes.
+	 * @return Set of language codes
 	 */
 	std::set<uint32_t> lcs(void) const;
 
