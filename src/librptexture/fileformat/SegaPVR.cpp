@@ -221,7 +221,8 @@ const char *SegaPVRPrivate::pixelFormatName(void) const
 	}};
 #endif
 
-	static constexpr array<const char *const *, (int)PVRType::Max> pxfmt_tbl_ptrs = {{
+	// FIXME: MSVC 2015 doesn't like it when this array is marked as constexpr.
+	static const array<const char *const *, (int)PVRType::Max> pxfmt_tbl_ptrs = {{
 		pxfmt_tbl_pvr.data(),
 		pxfmt_tbl_gvr.data(),
 		pxfmt_tbl_pvr.data(),	// SVR
@@ -326,7 +327,8 @@ const char *SegaPVRPrivate::imageDataTypeName(void) const
 	}};
 #endif
 
-	static constexpr array<const char *const *, (int)PVRType::Max> idt_tbl_ptrs = {{
+	// FIXME: MSVC 2015 doesn't like it when this array is marked as constexpr.
+	static const array<const char *const *, (int)PVRType::Max> idt_tbl_ptrs = {{
 		idt_tbl_pvr.data(),
 		idt_tbl_gvr.data(),
 		idt_tbl_svr.data(),
