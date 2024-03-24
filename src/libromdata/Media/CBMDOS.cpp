@@ -149,6 +149,10 @@ public:
 		cbmdos_C1581_header_t c1581;
 	} diskHeader;
 
+	// U+FFFD: Unicode replacement character
+	// Used by various conversion functions if a character could not be converted.
+	static constexpr const char uFFFD[] = "\xEF\xBF\xBD";
+
 public:
 	/**
 	 * Decode 5 GCR bytes into 4 data bytes.
@@ -183,6 +187,14 @@ public:
 	 * @return String length with $A0 padding removed.
 	 */
 	static size_t remove_A0_padding(const char *buf, size_t siz);
+
+	/**
+	 * Get the disk name.
+	 * @param pCodepage	[opt,out] Codepage used (unshifted or shifted)
+	 * @return Disk name, or empty string on error.
+	 */
+	ATTR_ACCESS(write_only, 2)
+	string getDiskName(unsigned int *pCodepage = nullptr) const;
 };
 
 ROMDATA_IMPL(CBMDOS)
@@ -778,6 +790,78 @@ size_t CBMDOSPrivate::remove_A0_padding(const char *buf, size_t siz)
 	return siz;
 }
 
+/**
+ * Get the disk name.
+ * @param pCodepage	[opt,out] Codepage used (unshifted or shifted)
+ * @return Disk name, or empty string on error.
+ */
+ATTR_ACCESS(write_only, 2)
+string CBMDOSPrivate::getDiskName(unsigned int *pCodepage) const
+{
+	// TODO: Selectable unshifted vs. shifted PETSCII conversion. Using unshifted for now.
+	// TODO: Reverse video?
+	unsigned int codepage = CP_RP_PETSCII_Unshifted;
+	const char *disk_name;
+	size_t disk_name_len;
+
+	switch (diskType) {
+		case CBMDOSPrivate::DiskType::D64:
+		case CBMDOSPrivate::DiskType::D71:
+		case CBMDOSPrivate::DiskType::D67:
+		case CBMDOSPrivate::DiskType::G64:
+		case CBMDOSPrivate::DiskType::G71:
+			// C1541, C1571, C2040
+			disk_name = diskHeader.c1541.disk_name;
+			disk_name_len = sizeof(diskHeader.c1541.disk_name);
+			break;
+
+		case CBMDOSPrivate::DiskType::D80:
+		case CBMDOSPrivate::DiskType::D82:
+			// C8050/C8250
+			disk_name = diskHeader.c8050.disk_name;
+			disk_name_len = sizeof(diskHeader.c8050.disk_name);
+			break;
+
+		case CBMDOSPrivate::DiskType::D81:
+			// C1581
+			disk_name = diskHeader.c1581.disk_name;
+			disk_name_len = sizeof(diskHeader.c1581.disk_name);
+			break;
+
+		default:
+			assert(!"Unsupported CBM disk type?");
+			if (pCodepage) {
+				*pCodepage = codepage;
+			}
+			return {};
+	}
+
+	// Remove padding characters ($A0)
+	disk_name_len = remove_A0_padding(disk_name, disk_name_len);
+
+	if (unlikely(!memcmp(diskHeader.c1541.geos.geos_id_string, "GEOS", 4))) {
+		// GEOS ID is present. Parse the disk name as ASCII. (well, Latin-1)
+		if (pCodepage) {
+			*pCodepage = codepage;
+		}
+		return latin1_to_utf8(disk_name, static_cast<int>(disk_name_len));
+	}
+
+	// Try unshifted first.
+	string s_disk_name = cpN_to_utf8(codepage, disk_name, static_cast<int>(disk_name_len));
+	if (s_disk_name.find(uFFFD) != string::npos) {
+		// Disk name has invalid characters when using Unshifted.
+		// Try again with Shifted.
+		codepage = CP_RP_PETSCII_Shifted;
+		s_disk_name = cpN_to_utf8(codepage, disk_name, static_cast<int>(disk_name_len));
+	}
+
+	if (pCodepage) {
+		*pCodepage = codepage;
+	}
+	return s_disk_name;
+}
+
 /** CBMDOS **/
 
 /**
@@ -1067,7 +1151,6 @@ int CBMDOS::loadFieldData(void)
 
 	// TODO: Selectable unshifted vs. shifted PETSCII conversion. Using unshifted for now.
 	// TODO: Reverse video?
-	static const char uFFFD[] = "\xEF\xBF\xBD";
 	unsigned int codepage = CP_RP_PETSCII_Unshifted;
 
 	// Disk BAM/header is read in the constructor.
@@ -1076,8 +1159,7 @@ int CBMDOS::loadFieldData(void)
 
 	// Get the string addresses from the BAM/header sector.
 	// TODO: Separate function for this?
-	const char *disk_name, *disk_id, *dos_type;
-	int disk_name_len;
+	const char *disk_id, *dos_type;
 
 	switch (d->diskType) {
 		case CBMDOSPrivate::DiskType::D64:
@@ -1086,8 +1168,6 @@ int CBMDOS::loadFieldData(void)
 		case CBMDOSPrivate::DiskType::G64:
 		case CBMDOSPrivate::DiskType::G71:
 			// C1541, C1571, C2040
-			disk_name = diskHeader->c1541.disk_name;
-			disk_name_len = static_cast<int>(sizeof(diskHeader->c1541.disk_name));
 			disk_id = diskHeader->c1541.disk_id;
 			dos_type = diskHeader->c1541.dos_type;
 			break;
@@ -1095,16 +1175,12 @@ int CBMDOS::loadFieldData(void)
 		case CBMDOSPrivate::DiskType::D80:
 		case CBMDOSPrivate::DiskType::D82:
 			// C8050/C8250
-			disk_name = diskHeader->c8050.disk_name;
-			disk_name_len = static_cast<int>(sizeof(diskHeader->c8050.disk_name));
 			disk_id = diskHeader->c8050.disk_id;
 			dos_type = diskHeader->c8050.dos_type;
 			break;
 
 		case CBMDOSPrivate::DiskType::D81:
 			// C1581
-			disk_name = diskHeader->c1581.disk_name;
-			disk_name_len = static_cast<int>(sizeof(diskHeader->c1581.disk_name));
 			disk_id = diskHeader->c1581.disk_id;
 			dos_type = diskHeader->c1581.dos_type;
 			break;
@@ -1115,22 +1191,8 @@ int CBMDOS::loadFieldData(void)
 	}
 
 	// Disk name
-	const char *const s_disk_name_title = C_("CBMDOS", "Disk Name");
-	disk_name_len = (int)d->remove_A0_padding(disk_name, disk_name_len);
-	if (unlikely(!memcmp(diskHeader->c1541.geos.geos_id_string, "GEOS", 4))) {
-		// GEOS ID is present. Parse the disk name as ASCII. (well, Latin-1)
-		d->fields.addField_string(s_disk_name_title,
-			latin1_to_utf8(disk_name, disk_name_len));
-	} else {
-		string s_disk_name = cpN_to_utf8(codepage, disk_name, disk_name_len);
-		if (s_disk_name.find(uFFFD) != string::npos) {
-			// Disk name has invalid characters when using Unshifted.
-			// Try again with Shifted.
-			codepage = CP_RP_PETSCII_Shifted;
-			s_disk_name = cpN_to_utf8(codepage, disk_name, disk_name_len);
-		}
-		d->fields.addField_string(s_disk_name_title, s_disk_name);
-	}
+	// This also sets codepage to the guessed codepage used by the disk name.
+	d->fields.addField_string(C_("CBMDOS", "Disk Name"), d->getDiskName(&codepage));
 
 	// Disk ID
 	d->fields.addField_string(C_("CBMDOS", "Disk ID"),
@@ -1218,7 +1280,7 @@ int CBMDOS::loadFieldData(void)
 				p_list.emplace_back(latin1_to_utf8(p_dir->filename, filename_len));
 			} else {
 				string s_filename = cpN_to_utf8(codepage, p_dir->filename, filename_len);
-				if (codepage == CP_RP_PETSCII_Unshifted && s_filename.find(uFFFD) != string::npos) {
+				if (codepage == CP_RP_PETSCII_Unshifted && s_filename.find(d->uFFFD) != string::npos) {
 					// File name has invalid characters when using Unshifted.
 					// Try again with Shifted.
 					codepage = CP_RP_PETSCII_Shifted;
@@ -1388,68 +1450,16 @@ int CBMDOS::loadMetaData(void)
 		return -EIO;
 	}
 
-	// TODO: Selectable unshifted vs. shifted PETSCII conversion. Using unshifted for now.
-	// TODO: Reverse video?
-	static const char uFFFD[] = "\xEF\xBF\xBD";
-	unsigned int codepage = CP_RP_PETSCII_Unshifted;
-
 	// Create the metadata object.
 	d->metaData = new RomMetaData();
 	d->metaData->reserve(1);	// Maximum of 1 metadata property.
 
 	// ROM header is read in the constructor.
-	const auto *diskHeader = &d->diskHeader;
-
-	// Get the string addresses from the BAM/header sector.
-	// TODO: Separate function for this?
-	const char *disk_name;
-	int disk_name_len;
-
-	switch (d->diskType) {
-		case CBMDOSPrivate::DiskType::D64:
-		case CBMDOSPrivate::DiskType::D71:
-		case CBMDOSPrivate::DiskType::D67:
-		case CBMDOSPrivate::DiskType::G64:
-		case CBMDOSPrivate::DiskType::G71:
-			// C1541, C1571, C2040
-			disk_name = diskHeader->c1541.disk_name;
-			disk_name_len = static_cast<int>(sizeof(diskHeader->c1541.disk_name));
-			break;
-
-		case CBMDOSPrivate::DiskType::D80:
-		case CBMDOSPrivate::DiskType::D82:
-			// C8050/C8250
-			disk_name = diskHeader->c8050.disk_name;
-			disk_name_len = static_cast<int>(sizeof(diskHeader->c8050.disk_name));
-			break;
-
-		case CBMDOSPrivate::DiskType::D81:
-			// C1581
-			disk_name = diskHeader->c1581.disk_name;
-			disk_name_len = static_cast<int>(sizeof(diskHeader->c1581.disk_name));
-			break;
-
-		default:
-			assert(!"Unsupported CBM disk type?");
-			return 0;
-	}
+	//const auto *diskHeader = &d->diskHeader;
 
 	// Title (disk name)
-	disk_name_len = (int)d->remove_A0_padding(disk_name, disk_name_len);
-	if (unlikely(!memcmp(diskHeader->c1541.geos.geos_id_string, "GEOS", 4))) {
-		// GEOS ID is present. Parse the disk name as ASCII. (well, Latin-1)
-		d->metaData->addMetaData_string(Property::Title,
-			latin1_to_utf8(disk_name, disk_name_len));
-	} else {
-		string s_disk_name = cpN_to_utf8(codepage, disk_name, disk_name_len);
-		if (s_disk_name.find(uFFFD) != string::npos) {
-			// Disk name has invalid characters when using Unshifted.
-			// Try again with Shifted.
-			codepage = CP_RP_PETSCII_Shifted;
-			s_disk_name = cpN_to_utf8(codepage, disk_name, disk_name_len);
-		}
-		d->metaData->addMetaData_string(Property::Title, s_disk_name);
-	}
+	// TODO: Specify a codepage?
+	d->metaData->addMetaData_string(Property::Title, d->getDiskName());
 
 	// Finished reading the metadata.
 	return static_cast<int>(d->metaData->count());
