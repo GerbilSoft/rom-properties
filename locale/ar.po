@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2024-03-16 21:21-0400\n"
-"PO-Revision-Date: 2024-03-24 00:29\n"
+"PO-Revision-Date: 2024-03-24 01:26\n"
 "Last-Translator: \n"
 "Language-Team: Arabic\n"
 "Language: ar_SA\n"
@@ -168,21 +168,21 @@ msgstr "أرشيف"
 #: ../src/gtk/xattr/DosAttrView.c:131
 msgctxt "DosAttrView"
 msgid "&System"
-msgstr ""
+msgstr "نظام"
 
 #: ../build/src/kde/kf5/ui_DosAttrView.h:104
 #: ../build/src/kde/kf6/ui_DosAttrView.h:104
 #: ../src/gtk/xattr/DosAttrView.c:153
 msgctxt "DosAttrView"
 msgid "&Compressed"
-msgstr ""
+msgstr "مضغوط"
 
 #: ../build/src/kde/kf5/ui_DosAttrView.h:105
 #: ../build/src/kde/kf6/ui_DosAttrView.h:105
 #: ../src/gtk/xattr/DosAttrView.c:155
 msgctxt "DosAttrView"
 msgid "&Encrypted"
-msgstr ""
+msgstr "مشفّر"
 
 #: ../build/src/kde/kf5/ui_Ext2AttrView.h:85
 #: ../build/src/kde/kf6/ui_Ext2AttrView.h:85
@@ -199,7 +199,10 @@ msgid "Select the image types you would like to use for each system as its thumb
 "Internal images are contained within the ROM file.\n"
 "External images are downloaded from an external image database.\n\n"
 "1 = highest priority; 2 = second highest priority; No = ignore"
-msgstr ""
+msgstr "اختر أنواع الصورة الخاصة بكل نظام.\n"
+"الصور الداخلية مصدرها مِلَفّ اللعبة.\n"
+"الصور الخارجية يتم تنزيلها من قاعدة بيانات من النت.\n\n"
+"1 = الأولوية الأعلى، 2 = الأولوية الأعلى الثانية، لا = تجاهل"
 
 #: ../build/src/kde/kf5/ui_KeyManagerTab.h:90
 #: ../build/src/kde/kf6/ui_KeyManagerTab.h:90
@@ -207,20 +210,20 @@ msgstr ""
 #: ../src/kde/config/KeyManagerTab.cpp:326
 msgctxt "KeyManagerTab"
 msgid "I&mport"
-msgstr ""
+msgstr "استيراد"
 
 #: ../build/src/kde/kf5/ui_OptionsTab.h:177
 #: ../build/src/kde/kf6/ui_OptionsTab.h:177
 msgctxt "OptionsTab"
 msgid "&Downloads"
-msgstr ""
+msgstr "التنزيلات"
 
 #: ../build/src/kde/kf5/ui_OptionsTab.h:178
 #: ../build/src/kde/kf6/ui_OptionsTab.h:178
 #: ../src/gtk/config/OptionsTab.cpp:142
 msgctxt "OptionsTab"
 msgid "E&xternal Image Downloads"
-msgstr ""
+msgstr "تنزيلات الصور الخارجية"
 
 #: ../build/src/kde/kf5/ui_OptionsTab.h:179
 #: ../build/src/kde/kf6/ui_OptionsTab.h:179
@@ -228,7 +231,7 @@ msgstr ""
 msgctxt "OptionsTab"
 msgid "When using an unlimited\n"
 "network connection:"
-msgstr ""
+msgstr "عند استعمال نت غير محدودة:"
 
 #: ../build/src/kde/kf5/ui_OptionsTab.h:181
 #: ../build/src/kde/kf5/ui_OptionsTab.h:187
@@ -237,7 +240,7 @@ msgstr ""
 #: ../src/gtk/config/OptionsTab.cpp:154 ../src/win32/config/OptionsTab.cpp:422
 msgctxt "OptionsTab"
 msgid "Don't download any images"
-msgstr ""
+msgstr "عدم تنزيل أي صور"
 
 #: ../build/src/kde/kf5/ui_OptionsTab.h:182
 #: ../build/src/kde/kf5/ui_OptionsTab.h:188
@@ -246,7 +249,7 @@ msgstr ""
 #: ../src/gtk/config/OptionsTab.cpp:155 ../src/win32/config/OptionsTab.cpp:423
 msgctxt "OptionsTab"
 msgid "Download normal-resolution images"
-msgstr ""
+msgstr "تنزيل صور ذات جودة عادية"
 
 #: ../build/src/kde/kf5/ui_OptionsTab.h:183
 #: ../build/src/kde/kf5/ui_OptionsTab.h:189
@@ -255,7 +258,7 @@ msgstr ""
 #: ../src/gtk/config/OptionsTab.cpp:156 ../src/win32/config/OptionsTab.cpp:424
 msgctxt "OptionsTab"
 msgid "Download high-resolution images"
-msgstr ""
+msgstr "تنزيل صور ذات جودة عالية"
 
 #: ../build/src/kde/kf5/ui_OptionsTab.h:185
 #: ../build/src/kde/kf6/ui_OptionsTab.h:185
@@ -263,14 +266,14 @@ msgstr ""
 msgctxt "OptionsTab"
 msgid "When using a metered\n"
 "network connection:"
-msgstr ""
+msgstr "عند استعمال نت محدودة:"
 
 #: ../build/src/kde/kf5/ui_OptionsTab.h:191
 #: ../build/src/kde/kf6/ui_OptionsTab.h:191
 #: ../src/gtk/config/OptionsTab.cpp:226
 msgctxt "OptionsTab"
 msgid "Always use the internal icon (if present) for small sizes."
-msgstr ""
+msgstr "استعمال الأيقونة الداخلية دومًا للأحجام الصغيرة (إذا كانت متوفرة)."
 
 #: ../build/src/kde/kf5/ui_OptionsTab.h:192
 #: ../build/src/kde/kf6/ui_OptionsTab.h:192
@@ -285,13 +288,13 @@ msgstr ""
 #: ../src/gtk/config/OptionsTab.cpp:236
 msgctxt "OptionsTab"
 msgid "Language for PAL titles on GameTDB:"
-msgstr ""
+msgstr "لغة الألعاب ذات نظام PAL:"
 
 #: ../build/src/kde/kf5/ui_OptionsTab.h:195
 #: ../build/src/kde/kf6/ui_OptionsTab.h:195
 msgctxt "OptionsTab"
 msgid "&Options"
-msgstr ""
+msgstr "خيارات"
 
 #: ../build/src/kde/kf5/ui_OptionsTab.h:196
 #: ../build/src/kde/kf6/ui_OptionsTab.h:196
@@ -307,7 +310,8 @@ msgstr ""
 msgctxt "OptionsTab"
 msgid "Enable thumbnailing and metadata extraction on network\n"
 "file systems. This may slow down file browsing."
-msgstr ""
+msgstr "تفعيل الصور والمعلومات عبر الشبكة (شبكة محلية مثلاً).\n"
+"تصفح الملفات حينها بطيء."
 
 #: ../build/src/kde/kf5/ui_OptionsTab.h:200
 #: ../build/src/kde/kf6/ui_OptionsTab.h:200
@@ -320,14 +324,14 @@ msgstr ""
 #: ../build/src/kde/kf6/ui_SystemsTab.h:124
 msgctxt "SystemsTab"
 msgid "&Game Boy Title Screens"
-msgstr ""
+msgstr "صور غيم بوي"
 
 #: ../build/src/kde/kf5/ui_SystemsTab.h:125
 #: ../build/src/kde/kf6/ui_SystemsTab.h:125
 #: ../src/gtk/config/SystemsTab.cpp:120
 msgctxt "SystemsTab"
 msgid "Game &Boy:"
-msgstr ""
+msgstr "غيم بوي:"
 
 #: ../build/src/kde/kf5/ui_SystemsTab.h:126
 #: ../build/src/kde/kf5/ui_SystemsTab.h:130
@@ -338,7 +342,7 @@ msgstr ""
 #: ../src/gtk/config/SystemsTab.cpp:128
 msgctxt "SystemsTab"
 msgid "Game Boy"
-msgstr ""
+msgstr "غيم بوي"
 
 #: ../build/src/kde/kf5/ui_SystemsTab.h:127
 #: ../build/src/kde/kf5/ui_SystemsTab.h:132
@@ -349,14 +353,14 @@ msgstr ""
 #: ../src/gtk/config/SystemsTab.cpp:130
 msgctxt "SystemsTab"
 msgid "Game Boy Color"
-msgstr ""
+msgstr "غيم بوي ملون"
 
 #: ../build/src/kde/kf5/ui_SystemsTab.h:129
 #: ../build/src/kde/kf6/ui_SystemsTab.h:129
 #: ../src/gtk/config/SystemsTab.cpp:121
 msgctxt "SystemsTab"
 msgid "&Super Game Boy:"
-msgstr ""
+msgstr "سوبر غيم بوي:"
 
 #: ../build/src/kde/kf5/ui_SystemsTab.h:131
 #: ../build/src/kde/kf5/ui_SystemsTab.h:136
@@ -365,14 +369,14 @@ msgstr ""
 #: ../src/gtk/config/SystemsTab.cpp:129
 msgctxt "SystemsTab"
 msgid "Super Game Boy"
-msgstr ""
+msgstr "سوبر غيم بوي"
 
 #: ../build/src/kde/kf5/ui_SystemsTab.h:134
 #: ../build/src/kde/kf6/ui_SystemsTab.h:134
 #: ../src/gtk/config/SystemsTab.cpp:122
 msgctxt "SystemsTab"
 msgid "Game Boy &Color:"
-msgstr ""
+msgstr "غيم بوي ملون:"
 
 #: ../build/src/kde/kf5/ui_SystemsTab.h:139
 #: ../build/src/kde/kf6/ui_SystemsTab.h:139
@@ -380,28 +384,28 @@ msgstr ""
 msgctxt "SystemsTab"
 msgid "Select the Game Boy model to use for title screens for different types of\n"
 "Game Boy ROM images."
-msgstr ""
+msgstr "اختر نوع غيم بوي وصوره التي تريدها."
 
 #: ../build/src/kde/kf5/ui_XAttrView.h:114
 #: ../build/src/kde/kf6/ui_XAttrView.h:114
 #: ../src/gtk/xattr/XAttrView.cpp:125
 msgctxt "XAttrView"
 msgid "Ext2 Attributes"
-msgstr ""
+msgstr "صفة الملف (Ext2)"
 
 #: ../build/src/kde/kf5/ui_XAttrView.h:115
 #: ../build/src/kde/kf6/ui_XAttrView.h:115
 #: ../src/gtk/xattr/XAttrView.cpp:133
 msgctxt "XAttrView"
 msgid "XFS Attributes"
-msgstr ""
+msgstr "صفة الملف (XFS)"
 
 #: ../build/src/kde/kf5/ui_XAttrView.h:116
 #: ../build/src/kde/kf6/ui_XAttrView.h:116
 #: ../src/gtk/xattr/XAttrView.cpp:141
 msgctxt "XAttrView"
 msgid "MS-DOS Attributes"
-msgstr ""
+msgstr "صفة الملف (MS-DOS)"
 
 #: ../build/src/kde/kf5/ui_XAttrView.h:117
 #: ../build/src/kde/kf6/ui_XAttrView.h:117
@@ -414,7 +418,7 @@ msgstr ""
 #: ../src/gtk/xattr/XAttrView.cpp:174
 msgctxt "XAttrView"
 msgid "Value"
-msgstr ""
+msgstr "القيمة"
 
 #: ../build/src/kde/kf5/ui_XAttrView.h:120
 #: ../build/src/kde/kf6/ui_XAttrView.h:120
@@ -688,7 +692,7 @@ msgstr ""
 #: ../src/win32/config/ImageTypesTab.cpp:402
 msgctxt "ImageTypesTab|Values"
 msgid "No"
-msgstr ""
+msgstr "لا"
 
 #: ../src/gtk/config/ImageTypesTab.cpp:481
 #: ../src/kde/config/ImageTypesTab.cpp:357
@@ -697,7 +701,9 @@ msgctxt "ImageTypesTab"
 msgid "GameCube, Wii, Wii U, Nintendo DS, and Nintendo 3DS external images\n"
 "are provided by <a href=\"https://www.gametdb.com/\">GameTDB</a>.\n"
 "amiibo images are provided by <a href=\"https://amiibo.life/\">amiibo.life</a>, the Unofficial amiibo Database."
-msgstr ""
+msgstr "الصور الخارجية لكل من غيم كيوب، وي، وي يو، نينتندو دي اس وَنينتندو 3دي اس\n"
+"مزودة من طرف <a href=\"https://www.gametdb.com/\">GameTDB</a>.\n"
+"صور أميبو مزودة من طرف<a href=\"https://amiibo.life/\">amiibo.life</a>، قاعدة بيانات أميبو غير الرسمية."
 
 #. tr: Wii keys.bin dialog title
 #: ../src/gtk/config/KeyManagerTab.cpp:477
@@ -705,7 +711,7 @@ msgstr ""
 #: ../src/win32/config/KeyManagerTab.cpp:1816
 msgctxt "KeyManagerTab"
 msgid "Select Wii keys.bin File"
-msgstr ""
+msgstr "اختر مِلَفّ وي keys.bin"
 
 #. tr: Wii U otp.bin dialog title
 #: ../src/gtk/config/KeyManagerTab.cpp:479
@@ -713,7 +719,7 @@ msgstr ""
 #: ../src/win32/config/KeyManagerTab.cpp:1818
 msgctxt "KeyManagerTab"
 msgid "Select Wii U otp.bin File"
-msgstr ""
+msgstr "اختر مِلَفّ وي يو otp.bin"
 
 #. tr: Nintendo 3DS boot9.bin dialog title
 #: ../src/gtk/config/KeyManagerTab.cpp:481
@@ -721,7 +727,7 @@ msgstr ""
 #: ../src/win32/config/KeyManagerTab.cpp:1820
 msgctxt "KeyManagerTab"
 msgid "Select 3DS boot9.bin File"
-msgstr ""
+msgstr "اختر مِلَفّ 3دي اس boot9.bin"
 
 #. tr: Nintendo 3DS aeskeydb.bin dialog title
 #: ../src/gtk/config/KeyManagerTab.cpp:483
@@ -729,7 +735,7 @@ msgstr ""
 #: ../src/win32/config/KeyManagerTab.cpp:1822
 msgctxt "KeyManagerTab"
 msgid "Select 3DS aeskeydb.bin File"
-msgstr ""
+msgstr "اختر مِلَفّ 3دي اس aeskeydb.bin"
 
 #. tr: Wii keys.bin file filter (RP format)
 #: ../src/gtk/config/KeyManagerTab.cpp:488
@@ -737,7 +743,7 @@ msgstr ""
 #: ../src/win32/config/KeyManagerTab.cpp:1827
 msgctxt "KeyManagerTab"
 msgid "keys.bin|keys.bin|-|Binary Files|*.bin|-|All Files|*|-"
-msgstr ""
+msgstr "keys.bin|keys.bin|-|ملفات باينري|*.bin|-|كل الملفات|*|-"
 
 #. tr: Wii U otp.bin file filter (RP format)
 #: ../src/gtk/config/KeyManagerTab.cpp:490
@@ -745,7 +751,7 @@ msgstr ""
 #: ../src/win32/config/KeyManagerTab.cpp:1829
 msgctxt "KeyManagerTab"
 msgid "otp.bin|otp.bin|-|Binary Files|*.bin|-|All Files|*|-"
-msgstr ""
+msgstr "otp.bin|otp.bin|-|ملفات باينري|*.bin|-|كل الملفات|*|-"
 
 #. tr: Nintendo 3DS boot9.bin file filter (RP format)
 #: ../src/gtk/config/KeyManagerTab.cpp:492
@@ -753,7 +759,7 @@ msgstr ""
 #: ../src/win32/config/KeyManagerTab.cpp:1831
 msgctxt "KeyManagerTab"
 msgid "boot9.bin|boot9.bin|-|Binary Files|*.bin|-|All Files|*|-"
-msgstr ""
+msgstr "boot9.bin|boot9.bin|-|ملفات باينري|*.bin|-|كل الملفات|*|-"
 
 #. tr: Nintendo 3DS aeskeydb.bin file filter (RP format)
 #: ../src/gtk/config/KeyManagerTab.cpp:494
@@ -761,7 +767,7 @@ msgstr ""
 #: ../src/win32/config/KeyManagerTab.cpp:1833
 msgctxt "KeyManagerTab"
 msgid "aeskeydb.bin|aeskeydb.bin|-|Binary Files|*.bin|-|All Files|*|-"
-msgstr ""
+msgstr "aeskeydb.bin|aeskeydb.bin|-|ملفات باينري|*.bin|-|كل الملفات|*|-"
 
 #: ../src/gtk/config/KeyManagerTab.cpp:557
 #: ../src/kde/config/KeyManagerTab.cpp:146
@@ -769,7 +775,8 @@ msgstr ""
 msgctxt "KeyManagerTab"
 msgid "An invalid parameter was passed to the key importer.\n"
 "THIS IS A BUG; please report this to the developers!"
-msgstr ""
+msgstr "مُستَورِد المفاتيح تلقى قيمة خاطئة.\n"
+"هذا خلل، بلغ المطورين من فضلك!"
 
 #: ../src/gtk/config/KeyManagerTab.cpp:564
 #: ../src/kde/config/KeyManagerTab.cpp:154
