@@ -26,15 +26,16 @@ using LibRpFile::RpFile;
 #include "librpfile/scsi/scsi_protocol.h"
 #include "librpfile/scsi/ata_protocol.h"
 
-// C++ includes.
-#include <iomanip>
-#include <iostream>
+// C++ STL classes
+using std::array;
+using std::ios;
+using std::ostream;
 
 class StreamStateSaver {
-	std::ios &stream;	// Stream being adjusted.
-	std::ios state;		// Copy of original flags.
+	ios &stream;	// Stream being adjusted.
+	ios state;		// Copy of original flags.
 public:
-	explicit StreamStateSaver(std::ios &stream)
+	explicit StreamStateSaver(ios &stream)
 		: stream(stream)
 		, state(nullptr)
 	{
@@ -61,7 +62,7 @@ ScsiInquiry::ScsiInquiry(RpFile *file)
 	: file(file)
 {}
 
-std::ostream& operator<<(std::ostream& os, const ScsiInquiry& si)
+ostream& operator<<(ostream& os, const ScsiInquiry& si)
 {
 	SCSI_RESP_INQUIRY_STD resp;
 	int ret = si.file->scsi_inquiry(&resp);
@@ -78,7 +79,7 @@ std::ostream& operator<<(std::ostream& os, const ScsiInquiry& si)
 	StreamStateSaver state(os);
 	os << "-- SCSI INQUIRY data for: " << si.file->filename() << '\n';
 
-	static const std::array<const char*, 0x20> pdt_tbl = {{
+	static const array<const char*, 0x20> pdt_tbl = {{
 		"Direct-access block device",		// 0x00
 		"Sequential-access device",		// 0x01
 		"Printer",				// 0x02
@@ -112,7 +113,7 @@ std::ostream& operator<<(std::ostream& os, const ScsiInquiry& si)
 		static_cast<unsigned int>(resp.PeripheralDeviceType) & 0x1F)) << '\n';
 
 	os << "Peripheral qualifier:   ";
-	static const std::array<const char*, 8> pq_tbl = {{
+	static const array<const char*, 8> pq_tbl = {{
 		"Connected",		// 000b
 		"Not connected",	// 001b
 		"010b",			// 010b
@@ -163,7 +164,7 @@ AtaIdentifyDevice::AtaIdentifyDevice(RpFile *file, bool packet)
 	, packet(packet)
 {}
 
-std::ostream& operator<<(std::ostream& os, const AtaIdentifyDevice& si)
+ostream& operator<<(ostream& os, const AtaIdentifyDevice& si)
 {
 	ATA_RESP_IDENTIFY_DEVICE resp;
 	int ret;

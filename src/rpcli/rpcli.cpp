@@ -66,19 +66,7 @@ using namespace LibRpTexture;
 #endif
 #include "tcharx.h"
 
-// C includes
-#include <stdlib.h>
-
-// C includes (C++ namespace)
-#include <cassert>
-#include <cerrno>
-
-// C++ includes
-#include <fstream>
-#include <iostream>
-#include <locale>
-#include <string>
-#include <vector>
+// C++ STL classes
 using std::cout;
 using std::cerr;
 using std::locale;
