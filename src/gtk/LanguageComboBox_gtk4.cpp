@@ -73,7 +73,8 @@ bind_listitem_cb(GtkListItemFactory	*factory,
  * Initialize the GTK3/GTK4-specific portion of the LanguageComboBox.
  * @param widget RpLanguageComboBox
  */
-void rp_language_combo_box_init_gtkX(struct _RpLanguageComboBox *widget)
+void
+rp_language_combo_box_init_gtkX(struct _RpLanguageComboBox *widget)
 {
 	// Create the GListStore
 	widget->listStore = g_list_store_new(RP_TYPE_LANGUAGE_COMBO_BOX_ITEM);

@@ -32,7 +32,8 @@ static void	rp_language_combo_box_changed_handler(GtkComboBox		*comboBox,
  * Initialize the GTK3/GTK4-specific portion of the LanguageComboBox.
  * @param widget RpLanguageComboBox
  */
-void rp_language_combo_box_init_gtkX(struct _RpLanguageComboBox *widget)
+void
+rp_language_combo_box_init_gtkX(struct _RpLanguageComboBox *widget)
 {
 	// Create the GtkComboBox widget.
 	widget->comboBox = gtk_combo_box_new();
