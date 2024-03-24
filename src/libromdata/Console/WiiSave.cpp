@@ -61,7 +61,9 @@ public:
 	bool svLoaded;	// True if svHeader was read.
 
 	// Wii_Bk_Header_t magic
-	static const uint8_t bk_header_magic[8];
+	static constexpr array<uint8_t, 8> bk_header_magic = {{
+		0x00, 0x00, 0x00, 0x70, 0x42, 0x6B, 0x00, 0x01
+	}};
 
 	/**
 	 * Round a value to the next highest multiple of 64.
@@ -107,11 +109,6 @@ const char *const WiiSavePrivate::mimeTypes[] = {
 };
 const RomDataInfo WiiSavePrivate::romDataInfo = {
 	"WiiSave", exts, mimeTypes
-};
-
-// Wii_Bk_Header_t magic.
-const uint8_t WiiSavePrivate::bk_header_magic[8] = {
-	0x00, 0x00, 0x00, 0x70, 0x42, 0x6B, 0x00, 0x01
 };
 
 WiiSavePrivate::WiiSavePrivate(const IRpFilePtr &file)
@@ -195,7 +192,7 @@ WiiSave::WiiSave(const IRpFilePtr &file)
 	for (; bkHeaderAddr < size; bkHeaderAddr += BANNER_WIBN_ICON_SIZE) {
 		const Wii_Bk_Header_t *bkHeader =
 			reinterpret_cast<const Wii_Bk_Header_t*>(svData.get() + bkHeaderAddr);
-		if (!memcmp(bkHeader->full_magic, d->bk_header_magic, sizeof(d->bk_header_magic))) {
+		if (!memcmp(bkHeader->full_magic, d->bk_header_magic.data(), d->bk_header_magic.size())) {
 			// Found the full magic.
 			memcpy(&d->bkHeader, bkHeader, sizeof(d->bkHeader));
 			break;
@@ -450,7 +447,7 @@ int WiiSave::loadFieldData(void)
 	// Check if the headers are valid.
 	// TODO: Do this in the constructor instead?
 	const bool isSvValid = (svHeader->savegame_id.id != 0);
-	const bool isBkValid = (!memcmp(bkHeader->full_magic, d->bk_header_magic, sizeof(d->bk_header_magic)));
+	const bool isBkValid = (!memcmp(bkHeader->full_magic, d->bk_header_magic.data(), d->bk_header_magic.size()));
 
 	// Savegame header.
 	if (isSvValid) {
