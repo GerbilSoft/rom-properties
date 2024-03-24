@@ -310,7 +310,8 @@ struct NESSubmapperEntry {
 };
 
 #define NES2_SUBMAPPER(num, arr) {num, (uint16_t)((arr).size()), (arr).data()}
-static constexpr array<NESSubmapperEntry, 31> submappers = {{
+// FIXME: MSVC 2015 doesn't like it when this array is marked as constexpr.
+static const array<NESSubmapperEntry, 31> submappers = {{
 	NES2_SUBMAPPER(  1, mmc1_submappers),			// MMC1
 	NES2_SUBMAPPER(  2, discrete_logic_submappers),		// UxROM
 	NES2_SUBMAPPER(  3, discrete_logic_submappers),		// CNROM

@@ -111,7 +111,8 @@ struct DmgSpecialCase_Dispatch_tbl_t {
 	const DmgSpecialCase_t *ptr;
 	size_t size;
 };
-static constexpr array<DmgSpecialCase_Dispatch_tbl_t, 4> dmgSpecialCases_dispatch_tbl = {{
+// FIXME: MSVC 2015 doesn't like it when this array is marked as constexpr.
+static const array<DmgSpecialCase_Dispatch_tbl_t, 4> dmgSpecialCases_dispatch_tbl = {{
 	{dmgSpecialCases_DMG_NoJP.data(), dmgSpecialCases_DMG_NoJP.size()},
 	{dmgSpecialCases_DMG_JP.data(),   dmgSpecialCases_DMG_JP.size()},
 	{dmgSpecialCases_CGB_NoJP.data(), dmgSpecialCases_CGB_NoJP.size()},
