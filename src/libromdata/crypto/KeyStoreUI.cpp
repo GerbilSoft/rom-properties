@@ -27,6 +27,7 @@ using namespace LibRpFile;
 using namespace LibRomData;
 
 // C++ STL classes
+using std::array;
 using std::string;
 using std::u16string;
 using std::unique_ptr;
@@ -139,12 +140,16 @@ public:
 	 * Import keys from a binary blob.
 	 * @param sectIdx	[in] Section index
 	 * @param kba		[in] KeyBinAddress array
+	 * @param kba_len	[in] Length of kba (in KeyBinAddress units)
 	 * @param buf		[in] Key buffer
-	 * @param len		[in] Length of buf
+	 * @param buf_len	[in] Length of buf (in bytes)
 	 * @return Key import status
 	 */
+	ATTR_ACCESS_SIZE(read_only, 3, 4)
+	ATTR_ACCESS_SIZE(read_only, 5, 6)
 	KeyStoreUI::ImportReturn importKeysFromBlob(SectionID sectIdx,
-		const KeyBinAddress *kba, const uint8_t *buf, unsigned int len);
+		const KeyBinAddress *kba, unsigned int kba_len,
+		const uint8_t *buf, unsigned int buf_len);
 
 	/**
 	 * Get the encryption key required for aeskeydb.bin.
@@ -172,11 +177,11 @@ public:
 		klass::encryptionVerifyData_static \
 	}
 
-	static const std::array<EncKeyFns_t, 4> encKeyFns;
+	static const array<EncKeyFns_t, 4> encKeyFns;
 
 public:
 	// Hexadecimal lookup table.
-	static const std::array<char, 16> hex_lookup;
+	static const array<char, 16> hex_lookup;
 
 	/**
 	 * Convert a binary key to a hexadecimal string.
@@ -220,7 +225,7 @@ public:
 
 /** KeyStoreUIPrivate **/
 
-const std::array<KeyStoreUIPrivate::EncKeyFns_t, 4> KeyStoreUIPrivate::encKeyFns = {{
+const array<KeyStoreUIPrivate::EncKeyFns_t, 4> KeyStoreUIPrivate::encKeyFns = {{
 	ENCKEYFNS(WiiTicket),
 	ENCKEYFNS(CtrKeyScrambler),
 	ENCKEYFNS(N3DSVerifyKeys),
@@ -228,10 +233,10 @@ const std::array<KeyStoreUIPrivate::EncKeyFns_t, 4> KeyStoreUIPrivate::encKeyFns
 }};
 
 // Hexadecimal lookup table.
-const std::array<char, 16> KeyStoreUIPrivate::hex_lookup = {
+const array<char, 16> KeyStoreUIPrivate::hex_lookup = {{
 	'0','1','2','3','4','5','6','7',
 	'8','9','A','B','C','D','E','F',
-};
+}};
 
 KeyStoreUIPrivate::KeyStoreUIPrivate(KeyStoreUI *q)
 	: q_ptr(q)
@@ -480,22 +485,27 @@ inline int KeyStoreUIPrivate::idxToSectKey(int idx, int *pSectIdx, int *pKeyIdx)
  * FIXME: More comprehensive error messages for the message bar.
  * @param sectIdx	[in] Section index
  * @param kba		[in] KeyBinAddress array
+ * @param kba_len	[in] Length of kba (in KeyBinAddress units)
  * @param buf		[in] Key buffer
- * @param len		[in] Length of buf
+ * @param buf_len	[in] Length of buf (in bytes)
  * @return Key import status
  */
-KeyStoreUI::ImportReturn KeyStoreUIPrivate::importKeysFromBlob(
-	SectionID sectIdx, const KeyBinAddress *kba, const uint8_t *buf, unsigned int len)
+ATTR_ACCESS_SIZE(read_only, 3, 4)
+ATTR_ACCESS_SIZE(read_only, 5, 6)
+KeyStoreUI::ImportReturn KeyStoreUIPrivate::importKeysFromBlob(SectionID sectIdx,
+	const KeyBinAddress *kba, unsigned int kba_len,
+	const uint8_t *buf, unsigned int buf_len)
 {
 	KeyStoreUI::ImportReturn iret = {KeyStoreUI::ImportStatus::InvalidParams, 0, 0, 0, 0, 0, 0, 0};
 
 	assert((int)sectIdx >= 0);
 	assert((int)sectIdx < static_cast<int>(sections.size()));
 	assert(kba != nullptr);
+	assert(kba_len != 0);
 	assert(buf != nullptr);
-	assert(len != 0);
+	assert(buf_len != 0);
 	if ((int)sectIdx < 0 || (int)sectIdx >= static_cast<int>(sections.size()) ||
-	    !kba || !buf || len == 0)
+	    !kba || kba_len == 0 || !buf || buf_len == 0)
 	{
 		iret.status = KeyStoreUI::ImportStatus::InvalidParams;
 		return iret;
@@ -504,15 +514,16 @@ KeyStoreUI::ImportReturn KeyStoreUIPrivate::importKeysFromBlob(
 	RP_Q(KeyStoreUI);
 	bool wereKeysImported = false;
 	const int keyIdxStart = sections[(int)sectIdx].keyIdxStart;
-	for (; kba->keyIdx >= 0; kba++) {
+	const KeyBinAddress *const kba_end = &kba[kba_len];
+	for (; kba < kba_end; kba++) {
 		KeyStoreUI::Key *const pKey = &keys[keyIdxStart + kba->keyIdx];
 		if (pKey->status == KeyStoreUI::Key::Status::OK) {
 			// Key is already OK. Don't bother with it.
 			iret.keysExist++;
 			continue;
 		}
-		assert(kba->address + 16 < len);
-		if (kba->address + 16 > len) {
+		assert(kba->address + 16 < buf_len);
+		if (kba->address + 16 > buf_len) {
 			// Out of range...
 			// FIXME: Report an error?
 			continue;
@@ -864,12 +875,12 @@ const char *KeyStoreUI::sectName(int sectIdx) const
 		return nullptr;
 	}
 
-	static const std::array<const char*, 4> sectNames = {
+	static const array<const char*, 4> sectNames = {{
 		NOP_C_("KeyStoreUI|Section", "Nintendo Wii AES Keys"),
 		NOP_C_("KeyStoreUI|Section", "Nintendo 3DS Key Scrambler Constants"),
 		NOP_C_("KeyStoreUI|Section", "Nintendo 3DS AES Keys"),
 		NOP_C_("KeyStoreUI|Section", "Microsoft Xbox 360 AES Keys"),
-	};
+	}};
 	static_assert(sectNames.size() == d->encKeyFns.size(),
 		"sectNames[] is out of sync with d->encKeyFns[].");
 
@@ -1123,17 +1134,15 @@ KeyStoreUI::ImportReturn KeyStoreUIPrivate::importWiiKeysBin(IRpFile *file)
 	// TODO:
 	// - SD keys are not present in keys.bin.
 
-	static const KeyStoreUIPrivate::KeyBinAddress keyBinAddress[] = {
+	static const array<KeyStoreUIPrivate::KeyBinAddress, 3> keyBinAddress = {{
 		{0x114, static_cast<int>(WiiTicket::EncryptionKeys::Key_RVL_Common)},
 		{0x114, static_cast<int>(WiiTicket::EncryptionKeys::Key_RVT_Debug)},
 		{0x274, static_cast<int>(WiiTicket::EncryptionKeys::Key_RVL_Korean)},
-
-		{0, -1}
-	};
+	}};
 
 	// Import the keys.
 	return importKeysFromBlob(KeyStoreUIPrivate::SectionID::WiiTicket,
-		keyBinAddress, buf, sizeof(buf));
+		keyBinAddress.data(), keyBinAddress.size(), buf, sizeof(buf));
 }
 
 /**
@@ -1164,20 +1173,20 @@ KeyStoreUI::ImportReturn KeyStoreUIPrivate::importWiiUOtpBin(IRpFile *file)
 	// Verify the vWii Boot1 hash.
 	// TODO: Are there multiple variants of vWii Boot1?
 	bool isDebug;
-	static const uint8_t vWii_Boot1_hash_retail[20] = {
+	static const std::array<uint8_t, 20> vWii_Boot1_hash_retail = {{
 		0xF8,0xB1,0x8E,0xC3,0xFE,0x26,0xB9,0xB1,
 		0x1A,0xD4,0xA4,0xED,0xD3,0xB7,0xA0,0x31,
 		0x11,0x9A,0x79,0xF8
-	};
-	static const uint8_t vWii_Boot1_hash_debug[20] = {
+	}};
+	static const std::array<uint8_t, 20> vWii_Boot1_hash_debug = {{
 		0x9C,0x43,0x35,0x08,0x0C,0xC7,0x57,0x4F,
 		0xCD,0xDE,0x85,0xBF,0x21,0xF6,0xC9,0x7C,
 		0x6C,0xAF,0xC1,0xDB
-	};
-	if (!memcmp(&buf[0], vWii_Boot1_hash_retail, sizeof(vWii_Boot1_hash_retail))) {
+	}};
+	if (!memcmp(&buf[0], vWii_Boot1_hash_retail.data(), vWii_Boot1_hash_retail.size())) {
 		// Retail Boot1 hash matches.
 		isDebug = false;
-	} else if (!memcmp(&buf[0], vWii_Boot1_hash_debug, sizeof(vWii_Boot1_hash_debug))) {
+	} else if (!memcmp(&buf[0], vWii_Boot1_hash_debug.data(), vWii_Boot1_hash_debug.size())) {
 		// Debug Boot1 hash matches.
 		isDebug = true;
 	} else {
@@ -1189,7 +1198,7 @@ KeyStoreUI::ImportReturn KeyStoreUIPrivate::importWiiUOtpBin(IRpFile *file)
 	// Key addresses and indexes.
 	// TODO:
 	// - SD keys are not present in otp.bin.
-	static const KeyStoreUIPrivate::KeyBinAddress keyBinAddress_retail[] = {
+	static const array<KeyStoreUIPrivate::KeyBinAddress, 3> keyBinAddress_retail = {{
 		{0x014, static_cast<int>(WiiTicket::EncryptionKeys::Key_RVL_Common)},
 		{0x348, static_cast<int>(WiiTicket::EncryptionKeys::Key_RVL_Korean)},
 		{0x0D0, static_cast<int>(WiiTicket::EncryptionKeys::Key_WUP_Starbuck_vWii_Common)},
@@ -1199,11 +1208,9 @@ KeyStoreUI::ImportReturn KeyStoreUIPrivate::importWiiUOtpBin(IRpFile *file)
 		{0x090, /* Wii U ancast key */},
 		{0x0E0, /* Wii U common key */},
 #endif
+	}};
 
-		{0, -1}
-	};
-
-	static const KeyStoreUIPrivate::KeyBinAddress keyBinAddress_debug[] = {
+	static const array<KeyStoreUIPrivate::KeyBinAddress, 3> keyBinAddress_debug = {{
 		{0x014, static_cast<int>(WiiTicket::EncryptionKeys::Key_RVT_Debug)},
 		{0x348, static_cast<int>(WiiTicket::EncryptionKeys::Key_RVT_Korean)},
 		{0x0D0, static_cast<int>(WiiTicket::EncryptionKeys::Key_CAT_Starbuck_vWii_Common)},
@@ -1213,16 +1220,16 @@ KeyStoreUI::ImportReturn KeyStoreUIPrivate::importWiiUOtpBin(IRpFile *file)
 		{0x090, /* Wii U ancast key */},
 		{0x0E0, /* Wii U common key */},
 #endif
-
-		{0, -1}
-	};
-
-	const KeyStoreUIPrivate::KeyBinAddress *const kba =
-		(likely(!isDebug) ? keyBinAddress_retail : keyBinAddress_debug);
+	}};
 
 	// Import the keys.
-	return importKeysFromBlob(KeyStoreUIPrivate::SectionID::WiiTicket,
-		kba, buf, sizeof(buf));
+	if (likely(!isDebug)) {
+		return importKeysFromBlob(KeyStoreUIPrivate::SectionID::WiiTicket,
+			keyBinAddress_retail.data(), keyBinAddress_retail.size(), buf, sizeof(buf));
+	} else {
+		return importKeysFromBlob(KeyStoreUIPrivate::SectionID::WiiTicket,
+			keyBinAddress_debug.data(), keyBinAddress_debug.size(), buf, sizeof(buf));
+	}
 }
 
 /**
@@ -1283,7 +1290,7 @@ KeyStoreUI::ImportReturn KeyStoreUIPrivate::importN3DSboot9bin(IRpFile *file)
 	}
 
 	// Key addresses and indexes.
-	static const KeyStoreUIPrivate::KeyBinAddress keyBinAddress[] = {
+	static const array<KeyStoreUIPrivate::KeyBinAddress, 6> keyBinAddress = {{
 		{0x5720, N3DSVerifyKeys::Key_Retail_SpiBoot},
 		{0x59D0, N3DSVerifyKeys::Key_Retail_Slot0x2CKeyX},
 		{0x5A20, N3DSVerifyKeys::Key_Retail_Slot0x3DKeyX},
@@ -1291,13 +1298,11 @@ KeyStoreUI::ImportReturn KeyStoreUIPrivate::importN3DSboot9bin(IRpFile *file)
 		{0x5740, N3DSVerifyKeys::Key_Debug_SpiBoot},
 		{0x5DD0, N3DSVerifyKeys::Key_Debug_Slot0x2CKeyX},
 		{0x5E20, N3DSVerifyKeys::Key_Debug_Slot0x3DKeyX},
-
-		{0, -1}
-	};
+	}};
 
 	// Import the keys.
 	return importKeysFromBlob(KeyStoreUIPrivate::SectionID::N3DSVerifyKeys,
-		keyBinAddress, buf.get(), 32768);
+		keyBinAddress.data(), keyBinAddress.size(), buf.get(), 32768);
 }
 
 /**
@@ -1369,12 +1374,12 @@ KeyStoreUI::ImportReturn KeyStoreUIPrivate::importN3DSaeskeydb(IRpFile *file)
 				// Only KeyX is available for this key.
 				// KeyY is taken from the title's RSA signature.
 				if (aesKey->type == 'X') {
-					static const uint8_t keys_Slot0x18KeyX[] = {
+					static const array<uint8_t, 2> keys_Slot0x18KeyX = {{
 						N3DSVerifyKeys::Key_Retail_Slot0x18KeyX,
 						N3DSVerifyKeys::Key_Debug_Slot0x18KeyX,
-					};
-					keyCount = ARRAY_SIZE(keys_Slot0x18KeyX);
-					pKeyIdx = keys_Slot0x18KeyX;
+					}};
+					keyCount = keys_Slot0x18KeyX.size();
+					pKeyIdx = keys_Slot0x18KeyX.data();
 				}
 				break;
 
@@ -1382,12 +1387,12 @@ KeyStoreUI::ImportReturn KeyStoreUIPrivate::importN3DSaeskeydb(IRpFile *file)
 				// Only KeyX is available for this key.
 				// KeyY is taken from the title's RSA signature.
 				if (aesKey->type == 'X') {
-					static const uint8_t keys_Slot0x1BKeyX[] = {
+					static const array<uint8_t, 2> keys_Slot0x1BKeyX = {{
 						N3DSVerifyKeys::Key_Retail_Slot0x1BKeyX,
 						N3DSVerifyKeys::Key_Debug_Slot0x1BKeyX,
-					};
-					keyCount = ARRAY_SIZE(keys_Slot0x1BKeyX);
-					pKeyIdx = keys_Slot0x1BKeyX;
+					}};
+					keyCount = keys_Slot0x1BKeyX.size();
+					pKeyIdx = keys_Slot0x1BKeyX.data();
 				}
 				break;
 
@@ -1395,12 +1400,12 @@ KeyStoreUI::ImportReturn KeyStoreUIPrivate::importN3DSaeskeydb(IRpFile *file)
 				// Only KeyX is available for this key.
 				// KeyY is taken from the title's RSA signature.
 				if (aesKey->type == 'X') {
-					static const uint8_t keys_Slot0x25KeyX[] = {
+					static const array<uint8_t, 2> keys_Slot0x25KeyX = {{
 						N3DSVerifyKeys::Key_Retail_Slot0x25KeyX,
 						N3DSVerifyKeys::Key_Debug_Slot0x25KeyX,
-					};
-					keyCount = ARRAY_SIZE(keys_Slot0x25KeyX);
-					pKeyIdx = keys_Slot0x25KeyX;
+					}};
+					keyCount = keys_Slot0x25KeyX.size();
+					pKeyIdx = keys_Slot0x25KeyX.data();
 				}
 				break;
 
@@ -1408,12 +1413,12 @@ KeyStoreUI::ImportReturn KeyStoreUIPrivate::importN3DSaeskeydb(IRpFile *file)
 				// Only KeyX is available for this key.
 				// KeyY is taken from the title's RSA signature.
 				if (aesKey->type == 'X') {
-					static const uint8_t keys_Slot0x2CKeyX[] = {
+					static const array<uint8_t, 2> keys_Slot0x2CKeyX = {{
 						N3DSVerifyKeys::Key_Retail_Slot0x2CKeyX,
 						N3DSVerifyKeys::Key_Debug_Slot0x2CKeyX,
-					};
-					keyCount = ARRAY_SIZE(keys_Slot0x2CKeyX);
-					pKeyIdx = keys_Slot0x2CKeyX;
+					}};
+					keyCount = keys_Slot0x2CKeyX.size();
+					pKeyIdx = keys_Slot0x2CKeyX.data();
 				}
 				break;
 
@@ -1421,16 +1426,16 @@ KeyStoreUI::ImportReturn KeyStoreUIPrivate::importN3DSaeskeydb(IRpFile *file)
 				// KeyX, KeyY, and KeyNormal are available.
 				switch (aesKey->type) {
 					case 'X': {
-						static const uint8_t keys_Slot0x3DKeyX[] = {
+						static const array<uint8_t, 2> keys_Slot0x3DKeyX = {{
 							N3DSVerifyKeys::Key_Retail_Slot0x3DKeyX,
 							N3DSVerifyKeys::Key_Debug_Slot0x3DKeyX,
-						};
-						keyCount = ARRAY_SIZE(keys_Slot0x3DKeyX);
-						pKeyIdx = keys_Slot0x3DKeyX;
+						}};
+						keyCount = keys_Slot0x3DKeyX.size();
+						pKeyIdx = keys_Slot0x3DKeyX.data();
 						break;
 					}
 					case 'Y': {
-						static const uint8_t keys_Slot0x3DKeyY[] = {
+						static const array<uint8_t, 12> keys_Slot0x3DKeyY = {{
 							N3DSVerifyKeys::Key_Retail_Slot0x3DKeyY_0,
 							N3DSVerifyKeys::Key_Retail_Slot0x3DKeyY_1,
 							N3DSVerifyKeys::Key_Retail_Slot0x3DKeyY_2,
@@ -1443,13 +1448,13 @@ KeyStoreUI::ImportReturn KeyStoreUIPrivate::importN3DSaeskeydb(IRpFile *file)
 							N3DSVerifyKeys::Key_Debug_Slot0x3DKeyY_3,
 							N3DSVerifyKeys::Key_Debug_Slot0x3DKeyY_4,
 							N3DSVerifyKeys::Key_Debug_Slot0x3DKeyY_5,
-						};
-						keyCount = ARRAY_SIZE(keys_Slot0x3DKeyY);
-						pKeyIdx = keys_Slot0x3DKeyY;
+						}};
+						keyCount = keys_Slot0x3DKeyY.size();
+						pKeyIdx = keys_Slot0x3DKeyY.data();
 						break;
 					}
 					case 'N': {
-						static const uint8_t keys_Slot0x3DKeyNormal[] = {
+						static const array<uint8_t, 12> keys_Slot0x3DKeyNormal = {{
 							N3DSVerifyKeys::Key_Retail_Slot0x3DKeyNormal_0,
 							N3DSVerifyKeys::Key_Retail_Slot0x3DKeyNormal_1,
 							N3DSVerifyKeys::Key_Retail_Slot0x3DKeyNormal_2,
@@ -1462,9 +1467,9 @@ KeyStoreUI::ImportReturn KeyStoreUIPrivate::importN3DSaeskeydb(IRpFile *file)
 							N3DSVerifyKeys::Key_Debug_Slot0x3DKeyNormal_3,
 							N3DSVerifyKeys::Key_Debug_Slot0x3DKeyNormal_4,
 							N3DSVerifyKeys::Key_Debug_Slot0x3DKeyNormal_5,
-						};
-						keyCount = ARRAY_SIZE(keys_Slot0x3DKeyNormal);
-						pKeyIdx = keys_Slot0x3DKeyNormal;
+						}};
+						keyCount = keys_Slot0x3DKeyNormal.size();
+						pKeyIdx = keys_Slot0x3DKeyNormal.data();
 						break;
 					}
 					default:
