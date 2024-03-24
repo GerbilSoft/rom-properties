@@ -148,8 +148,8 @@ public:
 	ATTR_ACCESS_SIZE(read_only, 3, 4)
 	ATTR_ACCESS_SIZE(read_only, 5, 6)
 	KeyStoreUI::ImportReturn importKeysFromBlob(SectionID sectIdx,
-		const KeyBinAddress *kba, unsigned int kba_len,
-		const uint8_t *buf, unsigned int buf_len);
+		const KeyBinAddress *kba, size_t kba_len,
+		const uint8_t *buf, size_t buf_len);
 
 	/**
 	 * Get the encryption key required for aeskeydb.bin.
@@ -493,8 +493,8 @@ inline int KeyStoreUIPrivate::idxToSectKey(int idx, int *pSectIdx, int *pKeyIdx)
 ATTR_ACCESS_SIZE(read_only, 3, 4)
 ATTR_ACCESS_SIZE(read_only, 5, 6)
 KeyStoreUI::ImportReturn KeyStoreUIPrivate::importKeysFromBlob(SectionID sectIdx,
-	const KeyBinAddress *kba, unsigned int kba_len,
-	const uint8_t *buf, unsigned int buf_len)
+	const KeyBinAddress *kba, size_t kba_len,
+	const uint8_t *buf, size_t buf_len)
 {
 	KeyStoreUI::ImportReturn iret = {KeyStoreUI::ImportStatus::InvalidParams, 0, 0, 0, 0, 0, 0, 0};
 
@@ -1367,7 +1367,7 @@ KeyStoreUI::ImportReturn KeyStoreUIPrivate::importN3DSaeskeydb(IRpFile *file)
 		// Check if this is a supported keyslot.
 		// Key indexes: 0 == retail, 1 == debug
 		// except for Slot0x3DKeyY, which has 6 of each
-		unsigned int keyCount = 0;
+		size_t keyCount = 0;
 		const uint8_t *pKeyIdx = nullptr;
 		switch (aesKey->slot) {
 			case 0x18:
@@ -1510,7 +1510,7 @@ KeyStoreUI::ImportReturn KeyStoreUIPrivate::importN3DSaeskeydb(IRpFile *file)
 
 		// Check if the key is OK.
 		bool keyChecked = false;
-		for (int i = keyCount; i > 0; i--, pKeyIdx++) {
+		for (size_t i = keyCount; i > 0; i--, pKeyIdx++) {
 			KeyStoreUI::Key *const pKey = &keys[keyIdxStart + *pKeyIdx];
 			if (pKey->status == KeyStoreUI::Key::Status::OK) {
 				// Key is already OK. Don't bother with it.
