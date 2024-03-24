@@ -343,18 +343,9 @@ const char *SegaPVRPrivate::imageDataTypeName(void) const
 
 	// GVR has these values located at a different offset.
 	// TODO: Verify PVRX.
-	uint8_t img_data_type;
-	switch (pvrType) {
-		default:
-		case SegaPVRPrivate::PVRType::PVR:
-		case SegaPVRPrivate::PVRType::SVR:
-		case SegaPVRPrivate::PVRType::PVRX:	// TODO
-			img_data_type = pvrHeader.pvr.img_data_type;
-			break;
-		case SegaPVRPrivate::PVRType::GVR:
-			img_data_type = pvrHeader.gvr.img_data_type;
-			break;
-	}
+	const uint8_t img_data_type = (pvrType == SegaPVRPrivate::PVRType::GVR)
+		? pvrHeader.gvr.img_data_type
+		: pvrHeader.pvr.img_data_type;
 
 	// NOTE: For GameCube, this is essentially the pixel format.
 	const char *const *const p_idt_tbl = idt_tbl_ptrs[(int)pvrType];
