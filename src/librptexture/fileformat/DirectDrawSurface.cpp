@@ -278,23 +278,23 @@ const DirectDrawSurfacePrivate::RGB_Format_Table_t *DirectDrawSurfacePrivate::ge
 			case 8:
 				// 8-bit
 				entry = rgb_fmt_tbl_8.data();
-				pTbl_end = &rgb_fmt_tbl_8[rgb_fmt_tbl_8.size()];
+				pTbl_end = entry + rgb_fmt_tbl_8.size();
 				break;
 			case 15:
 			case 16:
 				// 16-bit
 				entry = rgb_fmt_tbl_16.data();
-				pTbl_end = &rgb_fmt_tbl_16[rgb_fmt_tbl_16.size()];
+				pTbl_end = entry + rgb_fmt_tbl_16.size();
 				break;
 			case 24:
 				// 24-bit
 				entry = rgb_fmt_tbl_24.data();
-				pTbl_end = &rgb_fmt_tbl_24[rgb_fmt_tbl_24.size()];
+				pTbl_end = entry + rgb_fmt_tbl_24.size();
 				break;
 			case 32:
 				// 32-bit
 				entry = rgb_fmt_tbl_32.data();
-				pTbl_end = &rgb_fmt_tbl_32[rgb_fmt_tbl_32.size()];
+				pTbl_end = entry + rgb_fmt_tbl_32.size();
 				break;
 			default:
 				// Not supported
@@ -303,11 +303,11 @@ const DirectDrawSurfacePrivate::RGB_Format_Table_t *DirectDrawSurfacePrivate::ge
 	} else if (ddspf.dwFlags & DDPF_LUMINANCE) {
 		// Luminance
 		entry = rgb_fmt_tbl_luma.data();
-		pTbl_end = &rgb_fmt_tbl_luma[rgb_fmt_tbl_luma.size()];
+		pTbl_end = entry + rgb_fmt_tbl_luma.size();
 	} else if (ddspf.dwFlags & DDPF_ALPHA) {
 		// Alpha
 		entry = rgb_fmt_tbl_alpha.data();
-		pTbl_end = &rgb_fmt_tbl_alpha[rgb_fmt_tbl_alpha.size()];
+		pTbl_end = entry + rgb_fmt_tbl_alpha.size();
 	} else {
 		// Not supported
 		return nullptr;
