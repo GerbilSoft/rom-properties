@@ -2,11 +2,14 @@
  * ROM Properties Page shell extension. (librptext)                        *
  * RP_CP_tbls.hpp: Code page lookup tables for custom code pages.          *
  *                                                                         *
- * Copyright (c) 2009-2023 by David Korth.                                 *
+ * Copyright (c) 2009-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #pragma once
+
+// C++ includes
+#include <array>
 
 namespace LibRpText { namespace CodePageTables {
 
@@ -18,7 +21,7 @@ namespace LibRpText { namespace CodePageTables {
 // They will be represented by U+FFFD.
 // NOTE: A few codepoints can be represented by emojis.
 // Those won't be supported here.
-static const char16_t atariST_lkup[256] = {
+static const constexpr std::array<char16_t, 256> atariST_lkup = {{
 	// 0x00
 	0x0000, 0x21E7, 0x21E9, 0x21E8, 0x21E6, 0x274E, 0xFFFD, 0xFFFD,
 	0x2713, 0xFFFD, '\n', 0x266A, 0x240C, '\r', 0xFFFD, 0xFFFD,
@@ -61,7 +64,7 @@ static const char16_t atariST_lkup[256] = {
 	// 0xF0
 	0x2261, 0x00B1, 0x2265, 0x2264, 0x2320, 0x2321, 0x00F7, 0x2248,
 	0x00B0, 0x2022, 0x00B7, 0x221A, 0x207F, 0x00B2, 0x00B3, 0x00AF,
-};
+}};
 
 // Atari 8-bit ATASCII lookup table.
 // Reference: https://en.wikipedia.org/wiki/ATASCII
@@ -74,7 +77,7 @@ static const char16_t atariST_lkup[256] = {
 // symbols can't be represented easily, so we'll use whatever
 // Wikipedia has listed for symbols and duplicate the ASCII area.
 // TODO: Use '\n' for CR instead?
-static const char16_t atascii_lkup[256] = {
+static const constexpr std::array<char16_t, 256> atascii_lkup = {{
 	// 0x00
 	0x2665, 0x251C, 0x2590, 0x2518, 0x2524, 0x2510, 0x2571, 0x2572,
 	0x25E2, 0x2597, 0x25E3, 0x259D, 0x2598, 0x2580, 0x2582, 0x2596,
@@ -112,7 +115,7 @@ static const char16_t atascii_lkup[256] = {
 	0xFFFD, 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o',
 	// 0xF0
 	'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD,
-};
+}};
 
 /** PETSCII **/
 
@@ -125,7 +128,7 @@ static const char16_t atascii_lkup[256] = {
 // TODO: Use '\n' for CR instead?
 
 // Unshifted. (uppercase+graphics)
-static const char16_t petscii_unshifted_lkup[256] = {
+static const constexpr std::array<char16_t, 256> petscii_unshifted_lkup = {{
 	// 0x00
 	0xFFFD, 0xFFFD, 0xFFFD, 0x0003, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD,
 	0xFFFD, 0xFFFD, '\n', 0xFFFD, 0xFFFD, '\r', 0xFFFD, 0xFFFD,
@@ -176,10 +179,10 @@ static const char16_t petscii_unshifted_lkup[256] = {
 	// 0xF0
 	0x250C, 0x2534, 0x252C, 0x2524, 0x258E, 0x258D, 0xFFFD, 0xFFFD,
 	0xFFFD, 0x258E, 0xFFFD, 0x2596, 0x259D, 0x2518, 0x2598, 0x259A,
-};
+}};
 
 // Shifted. (lowercase+uppercase)
-static const char16_t petscii_shifted_lkup[256] = {
+static const constexpr std::array<char16_t, 256> petscii_shifted_lkup = {{
 	// 0x00
 	0xFFFD, 0xFFFD, 0xFFFD, 0x0003, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD,
 	0xFFFD, 0xFFFD, '\n', 0xFFFD, 0xFFFD, '\r', 0xFFFD, 0xFFFD,
@@ -226,14 +229,14 @@ static const char16_t petscii_shifted_lkup[256] = {
 	// 0xF0
 	0x250C, 0x2534, 0x252C, 0x2524, 0x258E, 0x258D, 0xFFFD, 0xFFFD,
 	0xFFFD, 0x258E, 0x2713, 0x2596, 0x259D, 0x2518, 0x2598, 0x259A,
-};
+}};
 
 // Lookup tables in RP_CP_* ordering.
-static const char16_t *const lkup_tbls[] = {
-	atariST_lkup,		// CP_RP_ATARIST
-	atascii_lkup,		// CP_RP_ATASCII
-	petscii_unshifted_lkup,	// CP_RP_PETSCII_Unshifted
-	petscii_shifted_lkup,	// CP_RP_PETSCII_Shifted
-};
+static const constexpr std::array<const std::array<char16_t, 256>*, 4> lkup_tbls = {{
+	&atariST_lkup,		// CP_RP_ATARIST
+	&atascii_lkup,		// CP_RP_ATASCII
+	&petscii_unshifted_lkup,	// CP_RP_PETSCII_Unshifted
+	&petscii_shifted_lkup,	// CP_RP_PETSCII_Shifted
+}};
 
 } }
