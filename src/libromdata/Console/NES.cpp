@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * NES.cpp: Nintendo Entertainment System/Famicom ROM reader.              *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * Copyright (c) 2016-2022 by Egor.                                        *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
@@ -1337,7 +1337,7 @@ int NES::loadFieldData(void)
 						// NES 2.0 Extended Console Type
 						static const char *const ext_hw_types[] = {
 							"NES/Famicom/Dendy",	// Not normally used.
-							"Nintendo Vs. System",	// Not normally used.
+							"Nintendo VS. System",	// Not normally used.
 							"PlayChoice-10",	// Not normally used.
 							"Famiclone with BCD support",
 							"V.R. Technology VT01 with monochrome palette",
@@ -1366,10 +1366,10 @@ int NES::loadFieldData(void)
 						NOP_C_("NES|Expansion", "NES/Famicom Controllers"),
 						NOP_C_("NES|Expansion", "NES Four Score / Satellite"),
 						NOP_C_("NES|Expansion", "Famicom Four Players Adapter"),
-						NOP_C_("NES|Expansion", "Vs. System"),
-						NOP_C_("NES|Expansion", "Vs. System (reversed inputs)"),
-						NOP_C_("NES|Expansion", "Vs. Pinball (Japan)"),
-						NOP_C_("NES|Expansion", "Vs. Zapper"),
+						NOP_C_("NES|Expansion", "VS. System"),
+						NOP_C_("NES|Expansion", "VS. System (reversed inputs)"),
+						NOP_C_("NES|Expansion", "VS. Pinball (Japan)"),
+						NOP_C_("NES|Expansion", "VS. Zapper"),
 						NOP_C_("NES|Expansion", "Zapper"),
 						NOP_C_("NES|Expansion", "Two Zappers"),
 						NOP_C_("NES|Expansion", "Bandai Hyper Shot"),
