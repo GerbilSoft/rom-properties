@@ -16,17 +16,19 @@
 #include "librpbyteswap/byteorder.h"
 using namespace LibRpText;
 
-// C includes. (C++ namespace)
+// C includes (C++ namespace)
 #include <cstdio>
 #include <cstring>
 
-// C++ includes.
+// C++ includes
+#include <array>
 #include <string>
+using std::array;
 using std::string;
 using std::u16string;
 
-#define C8(x) reinterpret_cast<const char*>(x)
-#define C16(x) reinterpret_cast<const char16_t*>(x)
+#define C8(x) reinterpret_cast<const char*>(x.data())
+#define C16(x) reinterpret_cast<const char16_t*>(x.data())
 
 #define C16_ARRAY_SIZE(x) (sizeof(x)/sizeof(char16_t))
 #define C16_ARRAY_SIZE_I(x) static_cast<int>(sizeof(x)/sizeof(char16_t))
@@ -48,7 +50,7 @@ class TextFuncsTest : public ::testing::Test
 		 * cp1252 test string.
 		 * Contains all possible cp1252 characters.
 		 */
-		static const uint8_t cp1252_data[250];
+		static const array<uint8_t, 250> cp1252_data;
 
 		/**
 		 * cp1252 to UTF-8 test string.
@@ -56,7 +58,7 @@ class TextFuncsTest : public ::testing::Test
 		 * - cp1252_to_utf8(cp1252_data, ARRAY_SIZE_I(cp1252_data))
 		 * - cp1252_sjis_to_utf8(cp1252_data, ARRAY_SIZE_I(cp1252_data))
 		 */
-		static const uint8_t cp1252_utf8_data[388];
+		static const array<uint8_t, 388> cp1252_utf8_data;
 
 		/**
 		 * cp1252 to UTF-16 test string.
@@ -64,7 +66,7 @@ class TextFuncsTest : public ::testing::Test
 		 * - cp1252_to_utf16(cp1252_data, sizeof(cp1252_data))
 		 * - cp1252_sjis_to_utf16(cp1252_data, sizeof(cp1252_data))
 		 */
-		static const char16_t cp1252_utf16_data[250];
+		static const array<char16_t, 250> cp1252_utf16_data;
 
 		/**
 		 * Shift-JIS test string.
@@ -73,40 +75,40 @@ class TextFuncsTest : public ::testing::Test
 		 * This string is from the JP Pokemon Colosseum (GCN) save file,
 		 * plus a wave dash character (8160).
 		 */
-		static const uint8_t sjis_data[36];
+		static const array<uint8_t, 36> sjis_data;
 
 		/**
 		 * Shift-JIS to UTF-8 test string.
 		 * Contains the expected result from:
 		 * - cp1252_sjis_to_utf8(sjis_data, ARRAY_SIZE_I(sjis_data))
 		 */
-		static const uint8_t sjis_utf8_data[53];
+		static const array<uint8_t, 53> sjis_utf8_data;
 
 		/**
 		 * Shift-JIS to UTF-16 test string.
 		 * Contains the expected result from:
 		 * - cp1252_sjis_to_utf16(sjis_data, ARRAY_SIZE_I(sjis_data))
 		 */
-		static const char16_t sjis_utf16_data[19];
+		static const array<char16_t, 19> sjis_utf16_data;
 
 		/**
 		 * Shift-JIS test string with a cp1252 copyright symbol. (0xA9)
 		 * This string is incorrectly detected as Shift-JIS because
 		 * all bytes are valid.
 		 */
-		static const uint8_t sjis_copyright_in[16];
+		static const array<uint8_t, 16> sjis_copyright_in;
 
 		/**
 		 * UTF-8 result from:
 		 * - cp1252_sjis_to_utf8(sjis_copyright_in, sizeof(sjis_copyright_in))
 		 */
-		static const uint8_t sjis_copyright_out_utf8[18];
+		static const array<uint8_t, 18> sjis_copyright_out_utf8;
 
 		/**
 		 * UTF-16 result from:
 		 * - cp1252_sjis_to_utf16(sjis_copyright_in, sizeof(sjis_copyright_in))
 		 */
-		static const char16_t sjis_copyright_out_utf16[16];
+		static const array<char16_t, 16> sjis_copyright_out_utf16;
 
 		/**
 		 * UTF-8 test string.
@@ -115,7 +117,7 @@ class TextFuncsTest : public ::testing::Test
 		 * This contains the same string as
 		 * utf16le_data[] and utf16be_data[].
 		 */
-		static const uint8_t utf8_data[325];
+		static const array<uint8_t, 325> utf8_data;
 
 		/**
 		 * UTF-16LE test string.
@@ -127,7 +129,7 @@ class TextFuncsTest : public ::testing::Test
 		 * NOTE: This is encoded as uint8_t to prevent
 		 * byteswapping issues.
 		 */
-		static const uint8_t utf16le_data[558];
+		static const array<uint8_t, 558> utf16le_data;
 
 		/**
 		 * UTF-16BE test string.
@@ -139,7 +141,7 @@ class TextFuncsTest : public ::testing::Test
 		 * NOTE: This is encoded as uint8_t to prevent
 		 * byteswapping issues.
 		 */
-		static const uint8_t utf16be_data[558];
+		static const array<uint8_t, 558> utf16be_data;
 
 		// Host-endian UTF-16 data for functions
 		// that convert to/from host-endian UTF-16.
@@ -157,7 +159,7 @@ class TextFuncsTest : public ::testing::Test
 		 * This includes the C1 control codes, as per the Unicode Latin-1 Supplement:
 		 * https://en.wikipedia.org/wiki/Latin-1_Supplement_(Unicode_block)
 		 */
-		static const uint8_t latin1_utf8_data[371+1];
+		static const array<uint8_t, 371+1> latin1_utf8_data;
 
 		/**
 		 * Latin-1 to UTF-16 test string.
@@ -167,7 +169,7 @@ class TextFuncsTest : public ::testing::Test
 		 * This includes the C1 control codes, as per the Unicode Latin-1 Supplement:
 		 * https://en.wikipedia.org/wiki/Latin-1_Supplement_(Unicode_block)
 		 */
-		static const char16_t latin1_utf16_data[249+1];
+		static const array<char16_t, 249+1> latin1_utf16_data;
 
 		/** Specialized code page functions. **/
 
@@ -175,27 +177,27 @@ class TextFuncsTest : public ::testing::Test
 		 * Atari ST to UTF-8 test string.
 		 * Contains all Atari ST characters that can be converted to Unicode.
 		 */
-		static const char atariST_data[236+1];
+		static const array<uint8_t, 236+1> atariST_data;
 
 		/**
 		 * Atari ST to UTF-16 test string.
 		 * Contains the expected result from:
 		 * - utf8_to_utf16(cpN_to_utf8(CP_RP_ATARIST, atariST_data, ARRAY_SIZE_I(atariST_data)))
 		 */
-		static const char16_t atariST_utf16_data[236+1];
+		static const array<char16_t, 236+1> atariST_utf16_data;
 
 		/**
 		 * Atari ATASCII to UTF-8 test string.
 		 * Contains all Atari ATASCII characters that can be converted to Unicode.
 		 */
-		static const char atascii_data[229+1];
+		static const array<uint8_t, 229+1> atascii_data;
 
 		/**
 		 * Atari ATASCII to UTF-16 test string.
 		 * Contains the expected result from:
 		 * - utf8_to_utf16(cpN_to_utf8(CP_RP_ATASCII, atascii_data, ARRAY_SIZE_I(atascii_data)-1))
 		 */
-		static const char16_t atascii_utf16_data[229+1];
+		static const array<char16_t, 229+1> atascii_utf16_data;
 };
 
 // Test strings are located in TextFuncsTest_data.hpp.
@@ -210,33 +212,33 @@ TEST_F(TextFuncsTest, cp1252_to_utf8)
 {
 	// Test with implicit length.
 	string str = cp1252_to_utf8(C8(cp1252_data), -1);
-	EXPECT_EQ(ARRAY_SIZE(cp1252_utf8_data)-1, str.size());
+	EXPECT_EQ(cp1252_utf8_data.size()-1, str.size());
 	EXPECT_EQ(C8(cp1252_utf8_data), str);
 
 	// Test with explicit length.
-	str = cp1252_to_utf8(C8(cp1252_data), ARRAY_SIZE_I(cp1252_data)-1);
-	EXPECT_EQ(ARRAY_SIZE(cp1252_utf8_data)-1, str.size());
+	str = cp1252_to_utf8(C8(cp1252_data), cp1252_data.size()-1);
+	EXPECT_EQ(cp1252_utf8_data.size()-1, str.size());
 	EXPECT_EQ(C8(cp1252_utf8_data), str);
 
 	// Test with explicit length and an extra NULL.
 	// The extra NULL should be trimmed.
-	str = cp1252_to_utf8(C8(cp1252_data), ARRAY_SIZE_I(cp1252_data));
-	EXPECT_EQ(ARRAY_SIZE(cp1252_utf8_data)-1, str.size());
+	str = cp1252_to_utf8(C8(cp1252_data), cp1252_data.size());
+	EXPECT_EQ(cp1252_utf8_data.size()-1, str.size());
 	EXPECT_EQ(C8(cp1252_utf8_data), str);
 
 	// Test with std::string source data.
 	string src(C8(cp1252_data));
-	EXPECT_EQ(ARRAY_SIZE(cp1252_data)-1, src.size());
+	EXPECT_EQ(cp1252_data.size()-1, src.size());
 	str = cp1252_to_utf8(src);
-	EXPECT_EQ(ARRAY_SIZE(cp1252_utf8_data)-1, str.size());
+	EXPECT_EQ(cp1252_utf8_data.size()-1, str.size());
 	EXPECT_EQ(C8(cp1252_utf8_data), str);
 
 	// Test with std::string source data and an extra NULL.
 	// The extra NULL should be trimmed.
-	src.assign(C8(cp1252_data), ARRAY_SIZE(cp1252_data));
-	EXPECT_EQ(ARRAY_SIZE(cp1252_data), src.size());
+	src.assign(C8(cp1252_data), cp1252_data.size());
+	EXPECT_EQ(cp1252_data.size(), src.size());
 	str = cp1252_to_utf8(src);
-	EXPECT_EQ(ARRAY_SIZE(cp1252_utf8_data)-1, str.size());
+	EXPECT_EQ(cp1252_utf8_data.size()-1, str.size());
 	EXPECT_EQ(C8(cp1252_utf8_data), str);
 }
 
@@ -247,19 +249,19 @@ TEST_F(TextFuncsTest, cp1252_to_utf16)
 {
 	// Test with implicit length.
 	u16string str = cp1252_to_utf16(C8(cp1252_data), -1);
-	EXPECT_EQ(ARRAY_SIZE(cp1252_utf16_data)-1, str.size());
-	EXPECT_EQ(cp1252_utf16_data, str);
+	EXPECT_EQ(cp1252_utf16_data.size()-1, str.size());
+	EXPECT_EQ(cp1252_utf16_data.data(), str);
 
 	// Test with explicit length.
-	str = cp1252_to_utf16(C8(cp1252_data), ARRAY_SIZE_I(cp1252_data)-1);
-	EXPECT_EQ(ARRAY_SIZE(cp1252_utf16_data)-1, str.size());
-	EXPECT_EQ(cp1252_utf16_data, str);
+	str = cp1252_to_utf16(C8(cp1252_data), cp1252_data.size()-1);
+	EXPECT_EQ(cp1252_utf16_data.size()-1, str.size());
+	EXPECT_EQ(cp1252_utf16_data.data(), str);
 
 	// Test with explicit length and an extra NULL.
 	// The extra NULL should be trimmed.
-	str = cp1252_to_utf16(C8(cp1252_data), ARRAY_SIZE_I(cp1252_data));
-	EXPECT_EQ(ARRAY_SIZE(cp1252_utf16_data)-1, str.size());
-	EXPECT_EQ(cp1252_utf16_data, str);
+	str = cp1252_to_utf16(C8(cp1252_data), cp1252_data.size());
+	EXPECT_EQ(cp1252_utf16_data.size()-1, str.size());
+	EXPECT_EQ(cp1252_utf16_data.data(), str);
 }
 
 /** Code Page 1252 + Shift-JIS (932) **/
@@ -273,33 +275,33 @@ TEST_F(TextFuncsTest, cp1252_sjis_to_utf8_fallback)
 {
 	// Test with implicit length.
 	string str = cp1252_sjis_to_utf8(C8(cp1252_data), -1);
-	EXPECT_EQ(ARRAY_SIZE(cp1252_utf8_data)-1, str.size());
+	EXPECT_EQ(cp1252_utf8_data.size()-1, str.size());
 	EXPECT_EQ(C8(cp1252_utf8_data), str);
 
 	// Test with explicit length.
-	str = cp1252_sjis_to_utf8(C8(cp1252_data), ARRAY_SIZE_I(cp1252_data)-1);
-	EXPECT_EQ(ARRAY_SIZE(cp1252_utf8_data)-1, str.size());
+	str = cp1252_sjis_to_utf8(C8(cp1252_data), cp1252_data.size()-1);
+	EXPECT_EQ(cp1252_utf8_data.size()-1, str.size());
 	EXPECT_EQ(C8(cp1252_utf8_data), str);
 
 	// Test with explicit length and an extra NULL.
 	// The extra NULL should be trimmed.
-	str = cp1252_sjis_to_utf8(C8(cp1252_data), ARRAY_SIZE_I(cp1252_data));
-	EXPECT_EQ(ARRAY_SIZE(cp1252_utf8_data)-1, str.size());
+	str = cp1252_sjis_to_utf8(C8(cp1252_data), cp1252_data.size());
+	EXPECT_EQ(cp1252_utf8_data.size()-1, str.size());
 	EXPECT_EQ(C8(cp1252_utf8_data), str);
 
 	// Test with std::string source data.
 	string src(C8(cp1252_data));
-	EXPECT_EQ(ARRAY_SIZE(cp1252_data)-1, src.size());
+	EXPECT_EQ(cp1252_data.size()-1, src.size());
 	str = cp1252_sjis_to_utf8(src);
-	EXPECT_EQ(ARRAY_SIZE(cp1252_utf8_data)-1, str.size());
+	EXPECT_EQ(cp1252_utf8_data.size()-1, str.size());
 	EXPECT_EQ(C8(cp1252_utf8_data), str);
 
 	// Test with std::string source data and an extra NULL.
 	// The extra NULL should be trimmed.
-	src.assign(C8(cp1252_data), ARRAY_SIZE(cp1252_data));
-	EXPECT_EQ(ARRAY_SIZE(cp1252_data), src.size());
+	src.assign(C8(cp1252_data), cp1252_data.size());
+	EXPECT_EQ(cp1252_data.size(), src.size());
 	str = cp1252_sjis_to_utf8(src);
-	EXPECT_EQ(ARRAY_SIZE(cp1252_utf8_data)-1, str.size());
+	EXPECT_EQ(cp1252_utf8_data.size()-1, str.size());
 	EXPECT_EQ(C8(cp1252_utf8_data), str);
 }
 
@@ -315,18 +317,18 @@ TEST_F(TextFuncsTest, cp1252_sjis_to_utf8_copyright)
 
 	// Test with implicit length.
 	string str = cp1252_sjis_to_utf8(C8(sjis_copyright_in), -1);
-	EXPECT_EQ(ARRAY_SIZE(sjis_copyright_out_utf8)-1, str.size());
+	EXPECT_EQ(sjis_copyright_out_utf8.size()-1, str.size());
 	EXPECT_EQ(C8(sjis_copyright_out_utf8), str);
 
 	// Test with explicit length.
-	str = cp1252_sjis_to_utf8(C8(sjis_copyright_in), ARRAY_SIZE_I(sjis_copyright_in)-1);
-	EXPECT_EQ(ARRAY_SIZE(sjis_copyright_out_utf8)-1, str.size());
+	str = cp1252_sjis_to_utf8(C8(sjis_copyright_in), sjis_copyright_in.size()-1);
+	EXPECT_EQ(sjis_copyright_out_utf8.size()-1, str.size());
 	EXPECT_EQ(C8(sjis_copyright_out_utf8), str);
 
 	// Test with explicit length and an extra NULL.
 	// The extra NULL should be trimmed.
-	str = cp1252_sjis_to_utf8(C8(sjis_copyright_in), ARRAY_SIZE_I(sjis_copyright_in));
-	EXPECT_EQ(ARRAY_SIZE(sjis_copyright_out_utf8)-1, str.size());
+	str = cp1252_sjis_to_utf8(C8(sjis_copyright_in), sjis_copyright_in.size());
+	EXPECT_EQ(sjis_copyright_out_utf8.size()-1, str.size());
 	EXPECT_EQ(C8(sjis_copyright_out_utf8), str);
 }
 
@@ -367,18 +369,18 @@ TEST_F(TextFuncsTest, cp1252_sjis_to_utf8_japanese)
 {
 	// Test with implicit length.
 	string str = cp1252_sjis_to_utf8(C8(sjis_data), -1);
-	EXPECT_EQ(ARRAY_SIZE(sjis_utf8_data)-1, str.size());
+	EXPECT_EQ(sjis_utf8_data.size()-1, str.size());
 	EXPECT_EQ(C8(sjis_utf8_data), str);
 
 	// Test with explicit length.
-	str = cp1252_sjis_to_utf8(C8(sjis_data), ARRAY_SIZE_I(sjis_data)-1);
-	EXPECT_EQ(ARRAY_SIZE(sjis_utf8_data)-1, str.size());
+	str = cp1252_sjis_to_utf8(C8(sjis_data), sjis_data.size()-1);
+	EXPECT_EQ(sjis_utf8_data.size()-1, str.size());
 	EXPECT_EQ(C8(sjis_utf8_data), str);
 
 	// Test with explicit length and an extra NULL.
 	// The extra NULL should be trimmed.
-	str = cp1252_sjis_to_utf8(C8(sjis_data), ARRAY_SIZE_I(sjis_data));
-	EXPECT_EQ(ARRAY_SIZE(sjis_utf8_data)-1, str.size());
+	str = cp1252_sjis_to_utf8(C8(sjis_data), sjis_data.size());
+	EXPECT_EQ(sjis_utf8_data.size()-1, str.size());
 	EXPECT_EQ(C8(sjis_utf8_data), str);
 }
 
@@ -391,19 +393,19 @@ TEST_F(TextFuncsTest, cp1252_sjis_to_utf16_fallback)
 {
 	// Test with implicit length.
 	u16string str = cp1252_sjis_to_utf16(C8(cp1252_data), -1);
-	EXPECT_EQ(ARRAY_SIZE(cp1252_utf16_data)-1, str.size());
-	EXPECT_EQ(cp1252_utf16_data, str);
+	EXPECT_EQ(cp1252_utf16_data.size()-1, str.size());
+	EXPECT_EQ(cp1252_utf16_data.data(), str);
 
 	// Test with explicit length.
-	str = cp1252_sjis_to_utf16(C8(cp1252_data), ARRAY_SIZE_I(cp1252_data)-1);
-	EXPECT_EQ(ARRAY_SIZE(cp1252_utf16_data)-1, str.size());
-	EXPECT_EQ(cp1252_utf16_data, str);
+	str = cp1252_sjis_to_utf16(C8(cp1252_data), cp1252_data.size()-1);
+	EXPECT_EQ(cp1252_utf16_data.size()-1, str.size());
+	EXPECT_EQ(cp1252_utf16_data.data(), str);
 
 	// Test with explicit length and an extra NULL.
 	// The extra NULL should be trimmed.
-	str = cp1252_sjis_to_utf16(C8(cp1252_data), ARRAY_SIZE_I(cp1252_data));
-	EXPECT_EQ(ARRAY_SIZE(cp1252_utf16_data)-1, str.size());
-	EXPECT_EQ(cp1252_utf16_data, str);
+	str = cp1252_sjis_to_utf16(C8(cp1252_data), cp1252_data.size());
+	EXPECT_EQ(cp1252_utf16_data.size()-1, str.size());
+	EXPECT_EQ(cp1252_utf16_data.data(), str);
 }
 
 /**
@@ -418,19 +420,19 @@ TEST_F(TextFuncsTest, cp1252_sjis_to_utf16_copyright)
 
 	// Test with implicit length.
 	u16string str = cp1252_sjis_to_utf16(C8(sjis_copyright_in), -1);
-	EXPECT_EQ(ARRAY_SIZE(sjis_copyright_out_utf16)-1, str.size());
-	EXPECT_EQ(sjis_copyright_out_utf16, str);
+	EXPECT_EQ(sjis_copyright_out_utf16.size()-1, str.size());
+	EXPECT_EQ(sjis_copyright_out_utf16.data(), str);
 
 	// Test with explicit length.
-	str = cp1252_sjis_to_utf16(C8(sjis_copyright_in), ARRAY_SIZE_I(sjis_copyright_in)-1);
-	EXPECT_EQ(ARRAY_SIZE(sjis_copyright_out_utf16)-1, str.size());
-	EXPECT_EQ(sjis_copyright_out_utf16, str);
+	str = cp1252_sjis_to_utf16(C8(sjis_copyright_in), sjis_copyright_in.size()-1);
+	EXPECT_EQ(sjis_copyright_out_utf16.size()-1, str.size());
+	EXPECT_EQ(sjis_copyright_out_utf16.data(), str);
 
 	// Test with explicit length and an extra NULL.
 	// The extra NULL should be trimmed.
-	str = cp1252_sjis_to_utf16(C8(sjis_copyright_in), ARRAY_SIZE_I(sjis_copyright_in));
-	EXPECT_EQ(ARRAY_SIZE(sjis_copyright_out_utf16)-1, str.size());
-	EXPECT_EQ(sjis_copyright_out_utf16, str);
+	str = cp1252_sjis_to_utf16(C8(sjis_copyright_in), sjis_copyright_in.size());
+	EXPECT_EQ(sjis_copyright_out_utf16.size()-1, str.size());
+	EXPECT_EQ(sjis_copyright_out_utf16.data(), str);
 }
 
 /**
@@ -448,27 +450,27 @@ TEST_F(TextFuncsTest, cp1252_sjis_to_utf16_ascii)
 	// NOTE: Need to manually initialize the char16_t[] array
 	// due to the way _RP() is implemented for versions of
 	// MSVC older than 2015.
-	static const char16_t utf16_out[] = {
+	static const array<char16_t, 19+1> utf16_out = {{
 		'C',':','\\','W','i','n','d','o',
 		'w','s','\\','S','y','s','t','e',
 		'm','3','2',0
-	};
+	}};
 
 	// Test with implicit length.
 	u16string str = cp1252_sjis_to_utf16(cp1252_in, -1);
-	EXPECT_EQ(ARRAY_SIZE(utf16_out)-1, str.size());
-	EXPECT_EQ(utf16_out, str);
+	EXPECT_EQ(utf16_out.size()-1, str.size());
+	EXPECT_EQ(utf16_out.data(), str);
 
 	// Test with explicit length.
 	str = cp1252_sjis_to_utf16(cp1252_in, ARRAY_SIZE_I(cp1252_in)-1);
-	EXPECT_EQ(ARRAY_SIZE(utf16_out)-1, str.size());
-	EXPECT_EQ(utf16_out, str);
+	EXPECT_EQ(utf16_out.size()-1, str.size());
+	EXPECT_EQ(utf16_out.data(), str);
 
 	// Test with explicit length and an extra NULL.
 	// The extra NULL should be trimmed.
 	str = cp1252_sjis_to_utf16(cp1252_in, ARRAY_SIZE_I(cp1252_in));
-	EXPECT_EQ(ARRAY_SIZE(utf16_out)-1, str.size());
-	EXPECT_EQ(utf16_out, str);
+	EXPECT_EQ(utf16_out.size()-1, str.size());
+	EXPECT_EQ(utf16_out.data(), str);
 }
 
 /**
@@ -479,19 +481,19 @@ TEST_F(TextFuncsTest, cp1252_sjis_to_utf16_japanese)
 {
 	// Test with implicit length.
 	u16string str = cp1252_sjis_to_utf16(C8(sjis_data), -1);
-	EXPECT_EQ(ARRAY_SIZE(sjis_utf16_data)-1, str.size());
-	EXPECT_EQ(sjis_utf16_data, str);
+	EXPECT_EQ(sjis_utf16_data.size()-1, str.size());
+	EXPECT_EQ(sjis_utf16_data.data(), str);
 
 	// Test with explicit length.
-	str = cp1252_sjis_to_utf16(C8(sjis_data), ARRAY_SIZE_I(sjis_data)-1);
-	EXPECT_EQ(ARRAY_SIZE(sjis_utf16_data)-1, str.size());
-	EXPECT_EQ(sjis_utf16_data, str);
+	str = cp1252_sjis_to_utf16(C8(sjis_data), sjis_data.size()-1);
+	EXPECT_EQ(sjis_utf16_data.size()-1, str.size());
+	EXPECT_EQ(sjis_utf16_data.data(), str);
 
 	// Test with explicit length and an extra NULL.
 	// The extra NULL should be trimmed.
-	str = cp1252_sjis_to_utf16(C8(sjis_data), ARRAY_SIZE_I(sjis_data));
-	EXPECT_EQ(ARRAY_SIZE(sjis_utf16_data)-1, str.size());
-	EXPECT_EQ(sjis_utf16_data, str);
+	str = cp1252_sjis_to_utf16(C8(sjis_data), sjis_data.size());
+	EXPECT_EQ(sjis_utf16_data.size()-1, str.size());
+	EXPECT_EQ(sjis_utf16_data.data(), str);
 }
 
 /** UTF-8 to UTF-16 and vice-versa **/
@@ -511,13 +513,13 @@ TEST_F(TextFuncsTest, utf8_to_utf16)
 	EXPECT_EQ(C16(utf16_data), str);
 
 	// Test with explicit length.
-	str = utf8_to_utf16(C8(utf8_data), ARRAY_SIZE_I(utf8_data)-1);
+	str = utf8_to_utf16(C8(utf8_data), utf8_data.size()-1);
 	EXPECT_EQ(C16_ARRAY_SIZE(utf16_data)-1, str.size());
 	EXPECT_EQ(C16(utf16_data), str);
 
 	// Test with explicit length and an extra NULL.
 	// The extra NULL should be trimmed.
-	str = utf8_to_utf16(C8(utf8_data), ARRAY_SIZE_I(utf8_data));
+	str = utf8_to_utf16(C8(utf8_data), utf8_data.size());
 	EXPECT_EQ(C16_ARRAY_SIZE(utf16_data)-1, str.size());
 	EXPECT_EQ(C16(utf16_data), str);
 }
@@ -533,18 +535,18 @@ TEST_F(TextFuncsTest, utf16le_to_utf8)
 
 	// Test with implicit length.
 	string str = utf16le_to_utf8(C16(utf16le_data), -1);
-	EXPECT_EQ(ARRAY_SIZE(utf8_data)-1, str.size());
+	EXPECT_EQ(utf8_data.size()-1, str.size());
 	EXPECT_EQ(C8(utf8_data), str);
 
 	// Test with explicit length.
 	str = utf16le_to_utf8(C16(utf16le_data), C16_ARRAY_SIZE_I(utf16_data)-1);
-	EXPECT_EQ(ARRAY_SIZE(utf8_data)-1, str.size());
+	EXPECT_EQ(utf8_data.size()-1, str.size());
 	EXPECT_EQ(C8(utf8_data), str);
 
 	// Test with explicit length and an extra NULL.
 	// The extra NULL should be trimmed.
 	str = utf16le_to_utf8(C16(utf16le_data), C16_ARRAY_SIZE_I(utf16_data));
-	EXPECT_EQ(ARRAY_SIZE(utf8_data)-1, str.size());
+	EXPECT_EQ(utf8_data.size()-1, str.size());
 	EXPECT_EQ(C8(utf8_data), str);
 }
 
@@ -559,18 +561,18 @@ TEST_F(TextFuncsTest, utf16be_to_utf8)
 
 	// Test with implicit length.
 	string str = utf16be_to_utf8(C16(utf16be_data), -1);
-	EXPECT_EQ(ARRAY_SIZE(utf8_data)-1, str.size());
+	EXPECT_EQ(utf8_data.size()-1, str.size());
 	EXPECT_EQ(C8(utf8_data), str);
 
 	// Test with explicit length.
 	str = utf16be_to_utf8(C16(utf16be_data), C16_ARRAY_SIZE_I(utf16_data)-1);
-	EXPECT_EQ(ARRAY_SIZE(utf8_data)-1, str.size());
+	EXPECT_EQ(utf8_data.size()-1, str.size());
 	EXPECT_EQ(C8(utf8_data), str);
 
 	// Test with explicit length and an extra NULL.
 	// The extra NULL should be trimmed.
 	str = utf16be_to_utf8(C16(utf16be_data), C16_ARRAY_SIZE_I(utf16_data));
-	EXPECT_EQ(ARRAY_SIZE(utf8_data)-1, str.size());
+	EXPECT_EQ(utf8_data.size()-1, str.size());
 	EXPECT_EQ(C8(utf8_data), str);
 }
 
@@ -588,18 +590,18 @@ TEST_F(TextFuncsTest, utf16_to_utf8)
 
 	// Test with implicit length.
 	string str = utf16_to_utf8(C16(utf16_data), -1);
-	EXPECT_EQ(ARRAY_SIZE(utf8_data)-1, str.size());
+	EXPECT_EQ(utf8_data.size()-1, str.size());
 	EXPECT_EQ(C8(utf8_data), str);
 
 	// Test with explicit length.
 	str = utf16_to_utf8(C16(utf16_data), C16_ARRAY_SIZE_I(utf16_data)-1);
-	EXPECT_EQ(ARRAY_SIZE(utf8_data)-1, str.size());
+	EXPECT_EQ(utf8_data.size()-1, str.size());
 	EXPECT_EQ(C8(utf8_data), str);
 
 	// Test with explicit length and an extra NULL.
 	// The extra NULL should be trimmed.
 	str = utf16_to_utf8(C16(utf16_data), C16_ARRAY_SIZE_I(utf16_data));
-	EXPECT_EQ(ARRAY_SIZE(utf8_data)-1, str.size());
+	EXPECT_EQ(utf8_data.size()-1, str.size());
 	EXPECT_EQ(C8(utf8_data), str);
 }
 
@@ -673,18 +675,18 @@ TEST_F(TextFuncsTest, latin1_to_utf8)
 {
 	// Test with implicit length.
 	string str = cpN_to_utf8(CP_LATIN1, C8(cp1252_data), -1);
-	EXPECT_EQ(ARRAY_SIZE(latin1_utf8_data)-1, str.size());
+	EXPECT_EQ(latin1_utf8_data.size()-1, str.size());
 	EXPECT_EQ(C8(latin1_utf8_data), str);
 
 	// Test with explicit length.
-	str = cpN_to_utf8(CP_LATIN1, C8(cp1252_data), ARRAY_SIZE_I(cp1252_data)-1);
-	EXPECT_EQ(ARRAY_SIZE(latin1_utf8_data)-1, str.size());
+	str = cpN_to_utf8(CP_LATIN1, C8(cp1252_data), cp1252_data.size()-1);
+	EXPECT_EQ(latin1_utf8_data.size()-1, str.size());
 	EXPECT_EQ(C8(latin1_utf8_data), str);
 
 	// Test with explicit length and an extra NULL.
 	// The extra NULL should be trimmed.
-	str = cpN_to_utf8(CP_LATIN1, C8(cp1252_data), ARRAY_SIZE_I(cp1252_data));
-	EXPECT_EQ(ARRAY_SIZE(latin1_utf8_data)-1, str.size());
+	str = cpN_to_utf8(CP_LATIN1, C8(cp1252_data), cp1252_data.size());
+	EXPECT_EQ(latin1_utf8_data.size()-1, str.size());
 	EXPECT_EQ(C8(latin1_utf8_data), str);
 }
 
@@ -695,19 +697,19 @@ TEST_F(TextFuncsTest, latin1_to_utf16)
 {
 	// Test with implicit length.
 	u16string str = cpN_to_utf16(CP_LATIN1, C8(cp1252_data), -1);
-	EXPECT_EQ(ARRAY_SIZE(latin1_utf16_data)-1, str.size());
-	EXPECT_EQ(latin1_utf16_data, str);
+	EXPECT_EQ(latin1_utf16_data.size()-1, str.size());
+	EXPECT_EQ(latin1_utf16_data.data(), str);
 
 	// Test with explicit length.
-	str = cpN_to_utf16(CP_LATIN1, C8(cp1252_data), ARRAY_SIZE_I(cp1252_data)-1);
-	EXPECT_EQ(ARRAY_SIZE(latin1_utf16_data)-1, str.size());
-	EXPECT_EQ(latin1_utf16_data, str);
+	str = cpN_to_utf16(CP_LATIN1, C8(cp1252_data), cp1252_data.size()-1);
+	EXPECT_EQ(latin1_utf16_data.size()-1, str.size());
+	EXPECT_EQ(latin1_utf16_data.data(), str);
 
 	// Test with explicit length and an extra NULL.
 	// The extra NULL should be trimmed.
-	str = cpN_to_utf16(CP_LATIN1, C8(cp1252_data), ARRAY_SIZE_I(cp1252_data));
-	EXPECT_EQ(ARRAY_SIZE(latin1_utf16_data)-1, str.size());
-	EXPECT_EQ(latin1_utf16_data, str);
+	str = cpN_to_utf16(CP_LATIN1, C8(cp1252_data), cp1252_data.size());
+	EXPECT_EQ(latin1_utf16_data.size()-1, str.size());
+	EXPECT_EQ(latin1_utf16_data.data(), str);
 }
 
 /**
@@ -717,33 +719,33 @@ TEST_F(TextFuncsTest, utf8_to_latin1)
 {
 	// Test with implicit length.
 	string str = utf8_to_latin1(C8(latin1_utf8_data), -1);
-	EXPECT_EQ(ARRAY_SIZE(cp1252_data)-1, str.size());
+	EXPECT_EQ(cp1252_data.size()-1, str.size());
 	EXPECT_EQ(C8(cp1252_data), str);
 
 	// Test with explicit length.
-	str = utf8_to_latin1(C8(latin1_utf8_data), ARRAY_SIZE_I(latin1_utf8_data)-1);
-	EXPECT_EQ(ARRAY_SIZE(cp1252_data)-1, str.size());
+	str = utf8_to_latin1(C8(latin1_utf8_data), latin1_utf8_data.size()-1);
+	EXPECT_EQ(cp1252_data.size()-1, str.size());
 	EXPECT_EQ(C8(cp1252_data), str);
 
 	// Test with explicit length and an extra NULL.
 	// The extra NULL should be trimmed.
-	str = utf8_to_latin1(C8(latin1_utf8_data), ARRAY_SIZE_I(latin1_utf8_data));
-	EXPECT_EQ(ARRAY_SIZE(cp1252_data)-1, str.size());
+	str = utf8_to_latin1(C8(latin1_utf8_data), latin1_utf8_data.size());
+	EXPECT_EQ(cp1252_data.size()-1, str.size());
 	EXPECT_EQ(C8(cp1252_data), str);
 
 	// Test with std::string source data.
 	string src(C8(latin1_utf8_data));
-	EXPECT_EQ(ARRAY_SIZE(latin1_utf8_data)-1, src.size());
+	EXPECT_EQ(latin1_utf8_data.size()-1, src.size());
 	str = utf8_to_latin1(src);
-	EXPECT_EQ(ARRAY_SIZE(cp1252_data)-1, str.size());
+	EXPECT_EQ(cp1252_data.size()-1, str.size());
 	EXPECT_EQ(C8(cp1252_data), str);
 
 	// Test with std::string source data and an extra NULL.
 	// The extra NULL should be trimmed.
-	src.assign(C8(latin1_utf8_data), ARRAY_SIZE(latin1_utf8_data));
-	EXPECT_EQ(ARRAY_SIZE(latin1_utf8_data), src.size());
+	src.assign(C8(latin1_utf8_data), latin1_utf8_data.size());
+	EXPECT_EQ(latin1_utf8_data.size(), src.size());
 	str = utf8_to_latin1(src);
-	EXPECT_EQ(ARRAY_SIZE(cp1252_data)-1, str.size());
+	EXPECT_EQ(cp1252_data.size()-1, str.size());
 	EXPECT_EQ(C8(cp1252_data), str);
 }
 
@@ -754,18 +756,18 @@ TEST_F(TextFuncsTest, utf16_to_latin1)
 {
 	// Test with implicit length.
 	string str = utf16_to_latin1(C16(latin1_utf16_data), -1);
-	EXPECT_EQ(ARRAY_SIZE(cp1252_data)-1, str.size());
+	EXPECT_EQ(cp1252_data.size()-1, str.size());
 	EXPECT_EQ(C8(cp1252_data), str);
 
 	// Test with explicit length.
-	str = utf16_to_latin1(C16(latin1_utf16_data), ARRAY_SIZE_I(latin1_utf16_data)-1);
-	EXPECT_EQ(ARRAY_SIZE(cp1252_data)-1, str.size());
+	str = utf16_to_latin1(C16(latin1_utf16_data), latin1_utf16_data.size()-1);
+	EXPECT_EQ(cp1252_data.size()-1, str.size());
 	EXPECT_EQ(C8(cp1252_data), str);
 
 	// Test with explicit length and an extra NULL.
 	// The extra NULL should be trimmed.
-	str = utf16_to_latin1(C16(latin1_utf16_data), ARRAY_SIZE(latin1_utf16_data));
-	EXPECT_EQ(ARRAY_SIZE(cp1252_data)-1, str.size());
+	str = utf16_to_latin1(C16(latin1_utf16_data), latin1_utf16_data.size());
+	EXPECT_EQ(cp1252_data.size()-1, str.size());
 	EXPECT_EQ(C8(cp1252_data), str);
 }
 
@@ -781,25 +783,25 @@ TEST_F(TextFuncsTest, u16_strlen)
 
 	// Compare to 8-bit strlen() with ASCII.
 	static const char ascii_in[] = "abcdefghijklmnopqrstuvwxyz";
-	static const char16_t u16_in[] = {
+	static const array<char16_t, 26+1> u16_in = {{
 		'a','b','c','d','e','f','g','h','i','j','k','l',
 		'm','n','o','p','q','r','s','t','u','v','w','x',
 		'y','z',0
-	};
+	}};
 
 	EXPECT_EQ(ARRAY_SIZE(ascii_in)-1, strlen(ascii_in));
-	EXPECT_EQ(ARRAY_SIZE(u16_in)-1, u16_strlen(u16_in));
-	EXPECT_EQ(strlen(ascii_in), u16_strlen(u16_in));
+	EXPECT_EQ(u16_in.size()-1, u16_strlen(u16_in.data()));
+	EXPECT_EQ(strlen(ascii_in), u16_strlen(u16_in.data()));
 
 	// Test u16_strlen() with SMP characters.
 	// u16_strlen() will return the number of 16-bit characters,
 	// NOT the number of code points.
-	static const char16_t u16smp_in[] = {
+	static const array<char16_t, 10+1> u16smp_in = {{
 		0xD83C,0xDF4C,0xD83C,0xDF59,
 		0xD83C,0xDF69,0xD83D,0xDCB5,
 		0xD83D,0xDCBE,0x0000
-	};
-	EXPECT_EQ(ARRAY_SIZE(u16smp_in)-1, u16_strlen(u16smp_in));
+	}};
+	EXPECT_EQ(u16smp_in.size()-1, u16_strlen(u16smp_in.data()));
 }
 
 /**
@@ -811,19 +813,19 @@ TEST_F(TextFuncsTest, u16_strdup)
 	// On all other systems, it's a simple implementation.
 
 	// Test string.
-	static const char16_t u16_str[] = {
+	static const array<char16_t, 44+1> u16_str = {{
 		'T','h','e',' ','q','u','i','c','k',' ','b','r',
 		'o','w','n',' ','f','o','x',' ','j','u','m','p',
 		's',' ','o','v','e','r',' ','t','h','e',' ','l',
 		'a','z','y',' ','d','o','g','.',0
-	};
+	}};
 
-	char16_t *const u16_dup = u16_strdup(u16_str);
+	char16_t *const u16_dup = u16_strdup(u16_str.data());
 	ASSERT_TRUE(u16_dup != nullptr);
 
 	// Verify the NULL terminator.
-	EXPECT_EQ(0, u16_dup[ARRAY_SIZE(u16_str)-1]);
-	if (u16_dup[ARRAY_SIZE(u16_str)-1] != 0) {
+	EXPECT_EQ(0, u16_dup[u16_str.size()-1]);
+	if (u16_dup[u16_str.size()-1] != 0) {
 		// NULL terminator not found.
 		// u16_strlen() and u16_strcmp() may crash,
 		// so exit early.
@@ -834,12 +836,12 @@ TEST_F(TextFuncsTest, u16_strdup)
 	}
 
 	// Verify the string length.
-	EXPECT_EQ(ARRAY_SIZE(u16_str)-1, u16_strlen(u16_dup));
+	EXPECT_EQ(u16_str.size()-1, u16_strlen(u16_dup));
 
 	// Verify the string contents.
 	// NOTE: EXPECT_STREQ() supports const wchar_t*,
 	// but not const char16_t*.
-	EXPECT_EQ(0, u16_strcmp(u16_str, u16_dup));
+	EXPECT_EQ(0, u16_strcmp(u16_str.data(), u16_dup));
 
 	free(u16_dup);
 }
@@ -855,22 +857,22 @@ TEST_F(TextFuncsTest, u16_strcmp)
 	// Three test strings.
 	// TODO: Update these strings so they would fail if tested
 	// using u16_strcasecmp().
-	static const char16_t u16_str1[] = {'a','b','c','d','e','f','g',0};
-	static const char16_t u16_str2[] = {'a','b','d','e','f','g','h',0};
-	static const char16_t u16_str3[] = {'d','e','f','g','h','i','j',0};
+	static const array<char16_t, 8> u16_str1 = {{'a','b','c','d','e','f','g',0}};
+	static const array<char16_t, 8> u16_str2 = {{'a','b','d','e','f','g','h',0}};
+	static const array<char16_t, 8> u16_str3 = {{'d','e','f','g','h','i','j',0}};
 
 	// Compare strings to themselves.
-	EXPECT_EQ(0, u16_strcmp(u16_str1, u16_str1));
-	EXPECT_EQ(0, u16_strcmp(u16_str2, u16_str2));
-	EXPECT_EQ(0, u16_strcmp(u16_str3, u16_str3));
+	EXPECT_EQ(0, u16_strcmp(u16_str1.data(), u16_str1.data()));
+	EXPECT_EQ(0, u16_strcmp(u16_str2.data(), u16_str2.data()));
+	EXPECT_EQ(0, u16_strcmp(u16_str3.data(), u16_str3.data()));
 
 	// Compare strings to each other.
-	EXPECT_LT(u16_strcmp(u16_str1, u16_str2), 0);
-	EXPECT_LT(u16_strcmp(u16_str1, u16_str3), 0);
-	EXPECT_GT(u16_strcmp(u16_str2, u16_str1), 0);
-	EXPECT_LT(u16_strcmp(u16_str2, u16_str3), 0);
-	EXPECT_GT(u16_strcmp(u16_str3, u16_str1), 0);
-	EXPECT_GT(u16_strcmp(u16_str3, u16_str2), 0);
+	EXPECT_LT(u16_strcmp(u16_str1.data(), u16_str2.data()), 0);
+	EXPECT_LT(u16_strcmp(u16_str1.data(), u16_str3.data()), 0);
+	EXPECT_GT(u16_strcmp(u16_str2.data(), u16_str1.data()), 0);
+	EXPECT_LT(u16_strcmp(u16_str2.data(), u16_str3.data()), 0);
+	EXPECT_GT(u16_strcmp(u16_str3.data(), u16_str1.data()), 0);
+	EXPECT_GT(u16_strcmp(u16_str3.data(), u16_str2.data()), 0);
 }
 
 /**
@@ -882,22 +884,22 @@ TEST_F(TextFuncsTest, u16_strcasecmp)
 	// On all other systems, it's a simple implementation.
 
 	// Three test strings.
-	static const char16_t u16_str1[] = {'A','b','C','d','E','f','G',0};
-	static const char16_t u16_str2[] = {'a','B','d','E','f','G','h',0};
-	static const char16_t u16_str3[] = {'D','e','F','g','H','i','J',0};
+	static const array<char16_t, 8> u16_str1 = {{'A','b','C','d','E','f','G',0}};
+	static const array<char16_t, 8> u16_str2 = {{'a','B','d','E','f','G','h',0}};
+	static const array<char16_t, 8> u16_str3 = {{'D','e','F','g','H','i','J',0}};
 
 	// Compare strings to themselves.
-	EXPECT_EQ(0, u16_strcasecmp(u16_str1, u16_str1));
-	EXPECT_EQ(0, u16_strcasecmp(u16_str2, u16_str2));
-	EXPECT_EQ(0, u16_strcasecmp(u16_str3, u16_str3));
+	EXPECT_EQ(0, u16_strcasecmp(u16_str1.data(), u16_str1.data()));
+	EXPECT_EQ(0, u16_strcasecmp(u16_str2.data(), u16_str2.data()));
+	EXPECT_EQ(0, u16_strcasecmp(u16_str3.data(), u16_str3.data()));
 
 	// Compare strings to each other.
-	EXPECT_LT(u16_strcasecmp(u16_str1, u16_str2), 0);
-	EXPECT_LT(u16_strcasecmp(u16_str1, u16_str3), 0);
-	EXPECT_GT(u16_strcasecmp(u16_str2, u16_str1), 0);
-	EXPECT_LT(u16_strcasecmp(u16_str2, u16_str3), 0);
-	EXPECT_GT(u16_strcasecmp(u16_str3, u16_str1), 0);
-	EXPECT_GT(u16_strcasecmp(u16_str3, u16_str2), 0);
+	EXPECT_LT(u16_strcasecmp(u16_str1.data(), u16_str2.data()), 0);
+	EXPECT_LT(u16_strcasecmp(u16_str1.data(), u16_str3.data()), 0);
+	EXPECT_GT(u16_strcasecmp(u16_str2.data(), u16_str1.data()), 0);
+	EXPECT_LT(u16_strcasecmp(u16_str2.data(), u16_str3.data()), 0);
+	EXPECT_GT(u16_strcasecmp(u16_str3.data(), u16_str1.data()), 0);
+	EXPECT_GT(u16_strcasecmp(u16_str3.data(), u16_str2.data()), 0);
 }
 
 /** Specialized code page functions. **/
@@ -909,23 +911,23 @@ TEST_F(TextFuncsTest, atariST_to_utf8)
 	// Reference: https://en.wikipedia.org/wiki/Atari_ST_character_set
 
 	// Test with implicit length.
-	string str = cpN_to_utf8(CP_RP_ATARIST, atariST_data, -1);
+	string str = cpN_to_utf8(CP_RP_ATARIST, C8(atariST_data), -1);
 	u16string u16str = utf8_to_utf16(str);
-	EXPECT_EQ(ARRAY_SIZE(atariST_utf16_data)-1, u16str.size());
-	EXPECT_EQ(atariST_utf16_data, u16str);
+	EXPECT_EQ(atariST_utf16_data.size()-1, u16str.size());
+	EXPECT_EQ(atariST_utf16_data.data(), u16str);
 
 	// Test with explicit length.
-	str = cpN_to_utf8(CP_RP_ATARIST, atariST_data, ARRAY_SIZE(atariST_data)-1);
+	str = cpN_to_utf8(CP_RP_ATARIST, C8(atariST_data), atariST_data.size()-1);
 	u16str = utf8_to_utf16(str);
 	EXPECT_EQ(ARRAY_SIZE(atariST_utf16_data)-1, u16str.size());
-	EXPECT_EQ(atariST_utf16_data, u16str);
+	EXPECT_EQ(atariST_utf16_data.data(), u16str);
 
 	// Test with explicit length and an extra NULL.
 	// The extra NULL should be trimmed.
-	str = cpN_to_utf8(CP_RP_ATARIST, atariST_data, ARRAY_SIZE(atariST_data));
+	str = cpN_to_utf8(CP_RP_ATARIST, C8(atariST_data), atariST_data.size());
 	u16str = utf8_to_utf16(str);
 	EXPECT_EQ(ARRAY_SIZE(atariST_utf16_data)-1, u16str.size());
-	EXPECT_EQ(atariST_utf16_data, u16str);
+	EXPECT_EQ(atariST_utf16_data.data(), u16str);
 }
 
 TEST_F(TextFuncsTest, atascii_to_utf8)
@@ -937,23 +939,23 @@ TEST_F(TextFuncsTest, atascii_to_utf8)
 	// Test with implicit length.
 	// NOTE: We have to skip the first character, 0x00, because
 	// implicit length mode would interpret that as an empty string.
-	string str = cpN_to_utf8(CP_RP_ATASCII, &atascii_data[1], -1);
+	string str = cpN_to_utf8(CP_RP_ATASCII, &C8(atascii_data)[1], -1);
 	u16string u16str = utf8_to_utf16(str);
-	EXPECT_EQ(ARRAY_SIZE(atascii_utf16_data)-2, u16str.size());
+	EXPECT_EQ(atascii_utf16_data.size()-2, u16str.size());
 	EXPECT_EQ(&atascii_utf16_data[1], u16str);
 
 	// Test with explicit length.
-	str = cpN_to_utf8(CP_RP_ATASCII, atascii_data, ARRAY_SIZE(atascii_data)-1);
+	str = cpN_to_utf8(CP_RP_ATASCII, C8(atascii_data), atascii_data.size()-1);
 	u16str = utf8_to_utf16(str);
-	EXPECT_EQ(ARRAY_SIZE(atascii_utf16_data)-1, u16str.size());
-	EXPECT_EQ(atascii_utf16_data, u16str);
+	EXPECT_EQ(atascii_utf16_data.size()-1, u16str.size());
+	EXPECT_EQ(atascii_utf16_data.data(), u16str);
 
 	// Test with explicit length and an extra NULL.
 	// The extra NULL should be trimmed.
-	str = cpN_to_utf8(CP_RP_ATASCII, C8(atascii_data), ARRAY_SIZE(atascii_data));
+	str = cpN_to_utf8(CP_RP_ATASCII, C8(atascii_data), atascii_data.size());
 	u16str = utf8_to_utf16(str);
-	EXPECT_EQ(ARRAY_SIZE(atascii_utf16_data)-1, u16str.size());
-	EXPECT_EQ(atascii_utf16_data, u16str);
+	EXPECT_EQ(atascii_utf16_data.size()-1, u16str.size());
+	EXPECT_EQ(atascii_utf16_data.data(), u16str);
 }
 
 /** Other text functions **/
@@ -969,20 +971,20 @@ TEST_F(TextFuncsTest, utf8_disp_strlen)
 
 	// Test string with 2-byte UTF-8 code points. (U+0080 - U+07FF)
 	static const char utf8_2byte_text[] = "Ακρόπολη";
-	EXPECT_EQ(16, strlen(utf8_2byte_text));
-	EXPECT_EQ(8, utf8_disp_strlen(utf8_2byte_text));
+	EXPECT_EQ(16U, strlen(utf8_2byte_text));
+	EXPECT_EQ(8U, utf8_disp_strlen(utf8_2byte_text));
 
 	// Test string with 3-byte UTF-8 code points. (U+0800 - U+FFFF)
 	static const char utf8_3byte_text[] = "╔╗╚╝┼";
-	EXPECT_EQ(15, strlen(utf8_3byte_text));
-	EXPECT_EQ(5, utf8_disp_strlen(utf8_3byte_text));
+	EXPECT_EQ(15U, strlen(utf8_3byte_text));
+	EXPECT_EQ(5U, utf8_disp_strlen(utf8_3byte_text));
 
 #ifndef _WIN32
 	// Test string with 4-byte UTF-8 code points. (U+10000 - U+10FFFF)
 	// FIXME: Broken on Windows... (returns 7)
 	static const char utf8_4byte_text[] = "😂🙄💾🖬";
-	EXPECT_EQ(16, strlen(utf8_4byte_text));
-	EXPECT_EQ(4, utf8_disp_strlen(utf8_4byte_text));
+	EXPECT_EQ(16U, strlen(utf8_4byte_text));
+	EXPECT_EQ(4U, utf8_disp_strlen(utf8_4byte_text));
 #endif /* !_WIN32 */
 }
 
