@@ -1077,7 +1077,7 @@ int CBMDOS::loadFieldData(void)
 	// Get the string addresses from the BAM/header sector.
 	// TODO: Separate function for this?
 	const char *disk_name, *disk_id, *dos_type;
-	size_t disk_name_len;
+	int disk_name_len;
 
 	switch (d->diskType) {
 		case CBMDOSPrivate::DiskType::D64:
@@ -1087,7 +1087,7 @@ int CBMDOS::loadFieldData(void)
 		case CBMDOSPrivate::DiskType::G71:
 			// C1541, C1571, C2040
 			disk_name = diskHeader->c1541.disk_name;
-			disk_name_len = sizeof(diskHeader->c1541.disk_name);
+			disk_name_len = static_cast<int>(sizeof(diskHeader->c1541.disk_name));
 			disk_id = diskHeader->c1541.disk_id;
 			dos_type = diskHeader->c1541.dos_type;
 			break;
@@ -1096,7 +1096,7 @@ int CBMDOS::loadFieldData(void)
 		case CBMDOSPrivate::DiskType::D82:
 			// C8050/C8250
 			disk_name = diskHeader->c8050.disk_name;
-			disk_name_len = sizeof(diskHeader->c8050.disk_name);
+			disk_name_len = static_cast<int>(sizeof(diskHeader->c8050.disk_name));
 			disk_id = diskHeader->c8050.disk_id;
 			dos_type = diskHeader->c8050.dos_type;
 			break;
@@ -1104,7 +1104,7 @@ int CBMDOS::loadFieldData(void)
 		case CBMDOSPrivate::DiskType::D81:
 			// C1581
 			disk_name = diskHeader->c1581.disk_name;
-			disk_name_len = sizeof(diskHeader->c1581.disk_name);
+			disk_name_len = static_cast<int>(sizeof(diskHeader->c1581.disk_name));
 			disk_id = diskHeader->c1581.disk_id;
 			dos_type = diskHeader->c1581.dos_type;
 			break;
@@ -1116,7 +1116,7 @@ int CBMDOS::loadFieldData(void)
 
 	// Disk name
 	const char *const s_disk_name_title = C_("CBMDOS", "Disk Name");
-	disk_name_len = d->remove_A0_padding(disk_name, disk_name_len);
+	disk_name_len = (int)d->remove_A0_padding(disk_name, disk_name_len);
 	if (unlikely(!memcmp(diskHeader->c1541.geos.geos_id_string, "GEOS", 4))) {
 		// GEOS ID is present. Parse the disk name as ASCII. (well, Latin-1)
 		d->fields.addField_string(s_disk_name_title,
@@ -1211,7 +1211,7 @@ int CBMDOS::loadFieldData(void)
 			p_list.emplace_back(filesize);
 
 			// Filename
-			const size_t filename_len = d->remove_A0_padding(p_dir->filename, sizeof(p_dir->filename));
+			const int filename_len = (int)d->remove_A0_padding(p_dir->filename, sizeof(p_dir->filename));
 			if (unlikely(is_geos_file)) {
 				// GEOS file: The filename is encoded as ASCII.
 				// NOTE: Using Latin-1...
@@ -1403,7 +1403,7 @@ int CBMDOS::loadMetaData(void)
 	// Get the string addresses from the BAM/header sector.
 	// TODO: Separate function for this?
 	const char *disk_name;
-	size_t disk_name_len;
+	int disk_name_len;
 
 	switch (d->diskType) {
 		case CBMDOSPrivate::DiskType::D64:
@@ -1413,20 +1413,20 @@ int CBMDOS::loadMetaData(void)
 		case CBMDOSPrivate::DiskType::G71:
 			// C1541, C1571, C2040
 			disk_name = diskHeader->c1541.disk_name;
-			disk_name_len = sizeof(diskHeader->c1541.disk_name);
+			disk_name_len = static_cast<int>(sizeof(diskHeader->c1541.disk_name));
 			break;
 
 		case CBMDOSPrivate::DiskType::D80:
 		case CBMDOSPrivate::DiskType::D82:
 			// C8050/C8250
 			disk_name = diskHeader->c8050.disk_name;
-			disk_name_len = sizeof(diskHeader->c8050.disk_name);
+			disk_name_len = static_cast<int>(sizeof(diskHeader->c8050.disk_name));
 			break;
 
 		case CBMDOSPrivate::DiskType::D81:
 			// C1581
 			disk_name = diskHeader->c1581.disk_name;
-			disk_name_len = sizeof(diskHeader->c1581.disk_name);
+			disk_name_len = static_cast<int>(sizeof(diskHeader->c1581.disk_name));
 			break;
 
 		default:
@@ -1435,7 +1435,7 @@ int CBMDOS::loadMetaData(void)
 	}
 
 	// Title (disk name)
-	disk_name_len = d->remove_A0_padding(disk_name, disk_name_len);
+	disk_name_len = (int)d->remove_A0_padding(disk_name, disk_name_len);
 	if (unlikely(!memcmp(diskHeader->c1541.geos.geos_id_string, "GEOS", 4))) {
 		// GEOS ID is present. Parse the disk name as ASCII. (well, Latin-1)
 		d->metaData->addMetaData_string(Property::Title,
