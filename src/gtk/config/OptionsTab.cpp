@@ -78,8 +78,8 @@ static void	rp_options_tab_notify_selected_handler		(GtkDropDown	*dropDown,
 #endif /* USE_GTK_DROP_DOWN */
 static void	rp_options_tab_modified_handler			(GtkWidget	*widget,
 								 RpOptionsTab	*tab);
-static void	rp_options_tab_lc_changed_handler		(RpLanguageComboBox *widget,
-								 uint32_t	 lc,
+static void	cboGameTDBPAL_notify_selected_lc_handler	(RpLanguageComboBox *widget,
+								 GParamSpec	*pspec,
 								 RpOptionsTab	*tab);
 static void	rp_options_tab_chkExtImgDownloadEnabled_toggled	(GtkCheckButton	*checkButton,
 								 RpOptionsTab	*tab);
@@ -293,8 +293,8 @@ rp_options_tab_init(RpOptionsTab *tab)
 		G_CALLBACK(rp_options_tab_modified_handler), tab);
 	g_signal_connect(tab->chkStoreFileOriginInfo, "toggled",
 		G_CALLBACK(rp_options_tab_modified_handler), tab);
-	g_signal_connect(tab->cboGameTDBPAL, "lc-changed",
-		G_CALLBACK(rp_options_tab_lc_changed_handler), tab);
+	g_signal_connect(tab->cboGameTDBPAL, "notify::selected-lc",
+		G_CALLBACK(cboGameTDBPAL_notify_selected_lc_handler), tab);
 
 	g_signal_connect(tab->chkShowDangerousPermissionsOverlayIcon, "toggled",
 		G_CALLBACK(rp_options_tab_modified_handler), tab);
@@ -593,18 +593,18 @@ rp_options_tab_modified_handler(GtkWidget *widget, RpOptionsTab *tab)
 }
 
 /**
- * "lc-changed" signal handler for RpLanguageComboBox
- * @param widget RpLanguageComboBox
- * @param lc New language code
+ * Notification for "selected-lc" for RpLanguageComboBox
+ * @param widget LanguageComboBox
+ * @param pspec Property specification
  * @param tab OptionsTab
  */
 static void
-rp_options_tab_lc_changed_handler(RpLanguageComboBox *widget,
-				  uint32_t	 lc,
-				  RpOptionsTab	*tab)
+cboGameTDBPAL_notify_selected_lc_handler(RpLanguageComboBox *widget,
+					 GParamSpec	*pspec,
+					 RpOptionsTab	*tab)
 {
 	RP_UNUSED(widget);
-	RP_UNUSED(lc);
+	RP_UNUSED(pspec);
 	if (tab->inhibit)
 		return;
 

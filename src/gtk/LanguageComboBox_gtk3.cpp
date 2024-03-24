@@ -229,7 +229,7 @@ rp_language_combo_box_clear_lcs(RpLanguageComboBox *widget)
 
 	if (cur_idx >= 0) {
 		// Nothing is selected now.
-		g_signal_emit(widget, rp_language_combo_box_signals[SIGNAL_LC_CHANGED], 0, 0);
+		g_object_notify_by_pspec(G_OBJECT(widget), rp_language_combo_box_props[PROP_SELECTED_LC]);
 	}
 }
 
@@ -282,9 +282,9 @@ rp_language_combo_box_set_selected_lc(RpLanguageComboBox *widget, uint32_t lc)
 		}
 	}
 
-	// NOTE: rp_language_combo_box_changed_handler will emit SIGNAL_LC_CHANGED,
-	// so we don't need to emit it here.
-	g_object_notify_by_pspec(G_OBJECT(widget), rp_language_combo_box_props[PROP_SELECTED_LC]);
+	// NOTE: rp_language_combo_box_changed_handler will notify that "selected-lc" has changed,
+	// so we don't need to notify here.
+	//g_object_notify_by_pspec(G_OBJECT(widget), rp_language_combo_box_props[PROP_SELECTED_LC]);
 	return bRet;
 }
 
@@ -323,6 +323,5 @@ rp_language_combo_box_changed_handler(GtkComboBox		*comboBox,
 				      RpLanguageComboBox	*widget)
 {
 	RP_UNUSED(comboBox);
-	const uint32_t lc = rp_language_combo_box_get_selected_lc(widget);
-	g_signal_emit(widget, rp_language_combo_box_signals[SIGNAL_LC_CHANGED], 0, lc);
+	g_object_notify_by_pspec(G_OBJECT(widget), rp_language_combo_box_props[PROP_SELECTED_LC]);
 }

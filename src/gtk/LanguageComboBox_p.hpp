@@ -23,15 +23,7 @@ typedef enum {
 	PROP_LAST
 } RpLanguageComboBoxPropID;
 
-/* Signal identifiers */
-typedef enum {
-	SIGNAL_LC_CHANGED,	// Language code was changed.
-
-	SIGNAL_LAST
-} RpLanguageComboBoxSignalID;
-
 extern GParamSpec *rp_language_combo_box_props[PROP_LAST];
-extern guint rp_language_combo_box_signals[SIGNAL_LAST];
 
 #if GTK_CHECK_VERSION(3,0,0)
 typedef GtkBoxClass superclass;

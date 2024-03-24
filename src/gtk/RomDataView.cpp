@@ -88,9 +88,9 @@ static void	rp_rom_data_view_map_signal_handler (RpRomDataView	*page,
 						     gpointer		 user_data);
 static void	rp_rom_data_view_unmap_signal_handler(RpRomDataView	*page,
 						     gpointer		 user_data);
-static void	cboLanguage_lc_changed_signal_handler(GtkComboBox	*widget,
-						     uint32_t		 lc,
-						     RpRomDataView	*page);
+static void	cboLanguage_notify_selected_lc_handler(RpLanguageComboBox *widget,
+						       GParamSpec	*pspec,
+						       RpRomDataView	*page);
 
 #if GTK_CHECK_VERSION(3,0,0)
 // libadwaita/libhandy function pointers.
@@ -1085,8 +1085,8 @@ rp_rom_data_view_update_multi(RpRomDataView *page, uint32_t user_lc)
 		}
 		rp_language_combo_box_set_selected_lc(RP_LANGUAGE_COMBO_BOX(page->cboLanguage), lc_to_set);
 
-		// Connect the "lc-changed" signal.
-		g_signal_connect(page->cboLanguage, "lc-changed", G_CALLBACK(cboLanguage_lc_changed_signal_handler), page);
+		// Connect the notification for "selected-lc".
+		g_signal_connect(page->cboLanguage, "notify::selected-lc", G_CALLBACK(cboLanguage_notify_selected_lc_handler), page);
 	}
 }
 
@@ -1832,15 +1832,16 @@ rp_rom_data_view_unmap_signal_handler(RpRomDataView	*page,
 
 /**
  * The RFT_MULTI_STRING language was changed.
- * @param widget	GtkComboBox
- * @param lc		Language code
- * @param page		RomDataView
+ * @param widget LanguageComboBox
+ * @param pspec Property specification
+ * @param page RomDataView
  */
 static void
-cboLanguage_lc_changed_signal_handler(GtkComboBox *widget,
-				      uint32_t     lc,
-				      RpRomDataView *page)
+cboLanguage_notify_selected_lc_handler(RpLanguageComboBox *widget,
+				       GParamSpec	*pspec,
+				       RpRomDataView	*page)
 {
-	RP_UNUSED(widget);
+	RP_UNUSED(pspec);
+	const uint32_t lc = rp_language_combo_box_get_selected_lc(widget);
 	rp_rom_data_view_update_multi(page, lc);
 }
