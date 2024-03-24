@@ -29,8 +29,8 @@ namespace LibRpBase {
 
 struct IconAnimData final
 {
-	static const constexpr int MAX_FRAMES = 64;
-	static const constexpr int MAX_SEQUENCE = 64;
+	static constexpr int MAX_FRAMES = 64;
+	static constexpr int MAX_SEQUENCE = 64;
 
 	int count;	// Frame count.
 	int seq_count;	// Sequence count.

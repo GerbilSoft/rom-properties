@@ -36,7 +36,7 @@ class ByteswapTest : public ::testing::Test
 
 	public:
 		// Test array size
-		static const constexpr unsigned int TEST_ARRAY_SIZE = 1024;
+		static constexpr unsigned int TEST_ARRAY_SIZE = 1024;
 
 		/**
 		 * Original test data

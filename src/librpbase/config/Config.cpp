@@ -104,24 +104,24 @@ public:
 	/** Default values **/
 
 	// Download options
-	static const constexpr uint32_t palLanguageForGameTDB_default = 'en';
-	static const constexpr bool extImgDownloadEnabled_default = true;
-	static const constexpr bool useIntIconForSmallSizes_default = true;
-	static const constexpr bool storeFileOriginInfo_default = true;
+	static constexpr uint32_t palLanguageForGameTDB_default = 'en';
+	static constexpr bool extImgDownloadEnabled_default = true;
+	static constexpr bool useIntIconForSmallSizes_default = true;
+	static constexpr bool storeFileOriginInfo_default = true;
 
 	// Image bandwidth options
-	static const constexpr Config::ImgBandwidth imgBandwidthUnmetered_default = Config::ImgBandwidth::HighRes;
-	static const constexpr Config::ImgBandwidth imgBandwidthMetered_default = Config::ImgBandwidth::NormalRes;
+	static constexpr Config::ImgBandwidth imgBandwidthUnmetered_default = Config::ImgBandwidth::HighRes;
+	static constexpr Config::ImgBandwidth imgBandwidthMetered_default = Config::ImgBandwidth::NormalRes;
 
 	// DMG title screen mode [index is ROM type]
 	// NOTE: Can't use constexpr here because it breaks on gcc-7.5.0. (Ubuntu 18.04)
 	static const std::array<Config::DMG_TitleScreen_Mode, static_cast<size_t>(Config::DMG_TitleScreen_Mode::Max)> dmgTSMode_default;
 
 	// Other options
-	static const constexpr bool showDangerousPermissionsOverlayIcon_default = true;
-	static const constexpr bool enableThumbnailOnNetworkFS_default = false;
-	static const constexpr bool showXAttrView_default = true;
-	static const constexpr bool thumbnailDirectoryPackages_default = true;
+	static constexpr bool showDangerousPermissionsOverlayIcon_default = true;
+	static constexpr bool enableThumbnailOnNetworkFS_default = false;
+	static constexpr bool showXAttrView_default = true;
+	static constexpr bool thumbnailDirectoryPackages_default = true;
 };
 
 /** ConfigPrivate **/

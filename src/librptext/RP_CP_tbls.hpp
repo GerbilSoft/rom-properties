@@ -21,7 +21,7 @@ namespace LibRpText { namespace CodePageTables {
 // They will be represented by U+FFFD.
 // NOTE: A few codepoints can be represented by emojis.
 // Those won't be supported here.
-static const constexpr std::array<char16_t, 256> atariST_lkup = {{
+static constexpr std::array<char16_t, 256> atariST_lkup = {{
 	// 0x00
 	0x0000, 0x21E7, 0x21E9, 0x21E8, 0x21E6, 0x274E, 0xFFFD, 0xFFFD,
 	0x2713, 0xFFFD, '\n', 0x266A, 0x240C, '\r', 0xFFFD, 0xFFFD,
@@ -77,7 +77,7 @@ static const constexpr std::array<char16_t, 256> atariST_lkup = {{
 // symbols can't be represented easily, so we'll use whatever
 // Wikipedia has listed for symbols and duplicate the ASCII area.
 // TODO: Use '\n' for CR instead?
-static const constexpr std::array<char16_t, 256> atascii_lkup = {{
+static constexpr std::array<char16_t, 256> atascii_lkup = {{
 	// 0x00
 	0x2665, 0x251C, 0x2590, 0x2518, 0x2524, 0x2510, 0x2571, 0x2572,
 	0x25E2, 0x2597, 0x25E3, 0x259D, 0x2598, 0x2580, 0x2582, 0x2596,
@@ -128,7 +128,7 @@ static const constexpr std::array<char16_t, 256> atascii_lkup = {{
 // TODO: Use '\n' for CR instead?
 
 // Unshifted. (uppercase+graphics)
-static const constexpr std::array<char16_t, 256> petscii_unshifted_lkup = {{
+static constexpr std::array<char16_t, 256> petscii_unshifted_lkup = {{
 	// 0x00
 	0xFFFD, 0xFFFD, 0xFFFD, 0x0003, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD,
 	0xFFFD, 0xFFFD, '\n', 0xFFFD, 0xFFFD, '\r', 0xFFFD, 0xFFFD,
@@ -182,7 +182,7 @@ static const constexpr std::array<char16_t, 256> petscii_unshifted_lkup = {{
 }};
 
 // Shifted. (lowercase+uppercase)
-static const constexpr std::array<char16_t, 256> petscii_shifted_lkup = {{
+static constexpr std::array<char16_t, 256> petscii_shifted_lkup = {{
 	// 0x00
 	0xFFFD, 0xFFFD, 0xFFFD, 0x0003, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD,
 	0xFFFD, 0xFFFD, '\n', 0xFFFD, 0xFFFD, '\r', 0xFFFD, 0xFFFD,
@@ -232,7 +232,7 @@ static const constexpr std::array<char16_t, 256> petscii_shifted_lkup = {{
 }};
 
 // Lookup tables in RP_CP_* ordering.
-static const constexpr std::array<const std::array<char16_t, 256>*, 4> lkup_tbls = {{
+static constexpr std::array<const std::array<char16_t, 256>*, 4> lkup_tbls = {{
 	&atariST_lkup,		// CP_RP_ATARIST
 	&atascii_lkup,		// CP_RP_ATASCII
 	&petscii_unshifted_lkup,	// CP_RP_PETSCII_Unshifted

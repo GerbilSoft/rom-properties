@@ -388,7 +388,7 @@ int GameCubePrivate::loadWiiPartitionTables(void)
 
 		// Read the partition table entries.
 		const off64_t pt_addr = vgtbl.vg[i].addr.geto_be();
-		static const constexpr size_t pt_size = pt.size() * sizeof(pt[0]);
+		static constexpr size_t pt_size = pt.size() * sizeof(pt[0]);
 		size = discReader->seekAndRead(pt_addr, pt.data(), pt_size);
 		if (size != pt_size) {
 			// Error reading the partition table entries.
