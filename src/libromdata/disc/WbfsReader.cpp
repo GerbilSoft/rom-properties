@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * WbfsReader.cpp: WBFS disc image reader.                                 *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -96,7 +96,7 @@ WbfsReaderPrivate::~WbfsReaderPrivate()
 
 // from libwbfs.c
 // TODO: Optimize this?
-static inline uint8_t size_to_shift(uint32_t size)
+static inline constexpr uint8_t size_to_shift(uint32_t size)
 {
 	uint8_t ret = 0;
 	while (size) {

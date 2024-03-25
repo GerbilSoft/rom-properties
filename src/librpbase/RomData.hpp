@@ -156,7 +156,7 @@ protected:
 	 * @param type Bitfield containing SystemNameType values.
 	 * @return True if valid; false if not.
 	 */
-	static inline bool isSystemNameTypeValid(unsigned int type)
+	static inline constexpr bool isSystemNameTypeValid(unsigned int type)
 	{
 		// Check for an invalid SYSNAME_TYPE.
 		if ((type & SYSNAME_TYPE_MASK) > SYSNAME_TYPE_ABBREVIATION)

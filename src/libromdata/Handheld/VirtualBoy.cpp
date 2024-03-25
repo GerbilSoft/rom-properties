@@ -41,23 +41,42 @@ public:
 	/**
 	 * Is character a valid JIS X 0201 codepoint?
 	 * @param c The character
-	 * @return Wether or not character is valid
+	 * @return Whether or not character is valid
 	 */
-	static bool inline isJISX0201(unsigned char c);
-		
+	static inline constexpr bool isJISX0201(unsigned char c)
+	{
+		return (c >= ' ' && c <= '~') || (c > 0xA0 && c < 0xE0);
+	}
+
 	/**
 	 * Is character a valid Publisher ID character?
 	 * @param c The character
 	 * @return Wether or not character is valid
 	 */
-	static bool inline isPublisherID(char c);
+	static inline bool isPublisherID(char c)
+	{
+		// Valid characters:
+		// - Uppercase letters
+		// - Digits
+		// FIXME: This is not constexpr on MSVC 2022.
+		return (ISUPPER(c) || ISDIGIT(c));
+	}
 
 	/**
 	 * Is character a valid Game ID character?
 	 * @param c The character
 	 * @return Wether or not character is valid
 	 */
-	static bool inline isGameID(char c);
+	static inline bool isGameID(char c)
+	{
+		// Valid characters:
+		// - Uppercase letters
+		// - Digits
+		// - Space (' ')
+		// - Hyphen ('-')
+		// FIXME: This is not constexpr on MSVC 2022.
+		return (ISUPPER(c) || ISDIGIT(c) || c == ' ' || c == '-');
+	}
 	
 public:
 	// ROM footer
@@ -92,41 +111,6 @@ VirtualBoyPrivate::VirtualBoyPrivate(const IRpFilePtr &file)
 {
 	// Clear the ROM footer struct.
 	memset(&romFooter, 0, sizeof(romFooter));
-}
-
-/**
- * Is character a valid JIS X 0201 codepoint?
- * @param c The character
- * @return Wether or not character is valid
- */
-bool inline VirtualBoyPrivate::isJISX0201(unsigned char c){
-	return (c >= ' ' && c <= '~') || (c > 0xA0 && c < 0xE0);
-}
-
-/**
- * Is character a valid Game ID character?
- * @param c The character
- * @return Wether or not character is valid
- */
-bool inline VirtualBoyPrivate::isPublisherID(char c){
-	// Valid characters:
-	// - Uppercase letters
-	// - Digits
-	return (ISUPPER(c) || ISDIGIT(c));
-}
-
-/**
- * Is character a valid Game ID character?
- * @param c The character
- * @return Wether or not character is valid
- */
-bool inline VirtualBoyPrivate::isGameID(char c){
-	// Valid characters:
-	// - Uppercase letters
-	// - Digits
-	// - Space (' ')
-	// - Hyphen ('-')
-	return (ISUPPER(c) || ISDIGIT(c) || c == ' ' || c == '-');
 }
 
 /** VirtualBoy **/

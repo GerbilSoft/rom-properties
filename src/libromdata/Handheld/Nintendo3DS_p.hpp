@@ -3,7 +3,7 @@
  * Nintendo3DS.hpp: Nintendo 3DS ROM reader. (Private class)               *
  * Handles CCI/3DS, CIA, and SMDH files.                                   *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -153,7 +153,7 @@ public:
 	 * @return Next highest multiple of 64.
 	 */
 	template<typename T>
-	static inline T toNext64(T val)
+	static inline constexpr T toNext64(T val)
 	{
 		return (val + static_cast<T>(63)) & ~(static_cast<T>(63));
 	}

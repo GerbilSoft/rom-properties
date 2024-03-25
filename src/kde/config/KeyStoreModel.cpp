@@ -73,13 +73,13 @@ public:
 // - LOWORD: Section.
 // - HIWORD: Key index. (0xFFFF for section header)
 #ifndef _WIN32
-static inline uint16_t LOWORD(uint32_t dwValue) {
+static inline constexpr uint16_t LOWORD(uint32_t dwValue) {
 	return (dwValue & 0xFFFF);
 }
-static inline uint16_t HIWORD(uint32_t dwValue) {
+static inline constexpr uint16_t HIWORD(uint32_t dwValue) {
 	return (dwValue >> 16);
 }
-static inline uint32_t MAKELONG(uint16_t wLow, uint16_t wHigh) {
+static inline constexpr uint32_t MAKELONG(uint16_t wLow, uint16_t wHigh) {
 	return (wLow | (wHigh << 16));
 }
 #endif /* _WIN32 */

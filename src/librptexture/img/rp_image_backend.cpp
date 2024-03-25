@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * rp_image_backend.cpp: Image backend and storage classes.                *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -13,7 +13,7 @@ namespace LibRpTexture {
 
 /** rp_image_backend **/
 
-static inline int calc_stride(int width, rp_image::Format format)
+static inline int constexpr calc_stride(int width, rp_image::Format format)
 {
 	switch (format) {
 		case rp_image::Format::CI8:

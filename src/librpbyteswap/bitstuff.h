@@ -17,6 +17,13 @@
 
 #include "stdboolx.h"
 
+// constexpr is not valid in C.
+#ifndef __cplusplus
+#  ifndef constexpr
+#    define constexpr
+#  endif /* !constexpr */
+#endif /* !__cplusplus */
+
 /**
  * Unsigned integer log2(n).
  * @param n Value
@@ -29,6 +36,7 @@ static inline unsigned int uilog2(unsigned int n)
 	// instead of the number of leading zeroes.
 	return (n == 0 ? 0 : 31^__builtin_clz(n));
 #elif defined(_MSC_VER)
+	// FIXME: _BitScanReverse() is not constexpr on MSVC 2022.
 	unsigned long index;
 	unsigned char x = _BitScanReverse(&index, n);
 	return (x ? index : 0);
@@ -45,7 +53,7 @@ static inline unsigned int uilog2(unsigned int n)
  * @param x Value.
  * @return Population count.
  */
-static inline unsigned int popcount(unsigned int x)
+static inline constexpr unsigned int popcount(unsigned int x)
 {
 #if defined(__GNUC__)
 	return __builtin_popcount(x);
@@ -69,7 +77,7 @@ static inline unsigned int popcount(unsigned int x)
  */
 #ifdef __cplusplus
 template<typename T>
-static inline bool isPow2(T x)
+static inline constexpr bool isPow2(T x)
 #else
 static inline bool isPow2(unsigned int x)
 #endif
@@ -87,5 +95,6 @@ static inline bool isPow2(unsigned int x)
  */
 static inline unsigned int nextPow2(unsigned int x)
 {
+	// FIXME: _BitScanReverse() [in uilog2()] is not constexpr on MSVC 2022.
 	return (1U << (uilog2(x) + 1));
 }

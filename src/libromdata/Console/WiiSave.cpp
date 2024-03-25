@@ -71,7 +71,7 @@ public:
 	 * @return Next highest multiple of 64.
 	 */
 	template<typename T>
-	static inline T toNext64(T val)
+	static inline constexpr T toNext64(T val)
 	{
 		return (val + (T)63) & ~((T)63);
 	}

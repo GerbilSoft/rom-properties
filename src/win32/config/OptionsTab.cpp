@@ -48,9 +48,9 @@ protected:
 	 * @param value Bool value.
 	 * @return BST_CHECKED or BST_UNCHECKED.
 	 */
-	static inline int boolToBstChecked(bool value)
+	static inline constexpr int boolToBstChecked(bool value)
 	{
-		return (value ? BST_CHECKED : BST_UNCHECKED);
+		return (value) ? BST_CHECKED : BST_UNCHECKED;
 	}
 
 	/**
@@ -58,9 +58,9 @@ protected:
 	 * @param value BST_CHECKED or BST_UNCHECKED.
 	 * @return Bool string.
 	 */
-	static inline const TCHAR *bstCheckedToBoolString(unsigned int value)
+	static inline constexpr LPCTSTR bstCheckedToBoolString(unsigned int value)
 	{
-		return (value == BST_CHECKED ? _T("true") : _T("false"));
+		return (value == BST_CHECKED) ? _T("true") : _T("false");
 	}
 
 	/**
@@ -68,7 +68,7 @@ protected:
 	 * @param value BST_CHECKED or BST_UNCHECKED.
 	 * @return bool.
 	 */
-	static inline bool bstCheckedToBool(unsigned int value)
+	static inline constexpr bool bstCheckedToBool(unsigned int value)
 	{
 		return (value == BST_CHECKED);
 	}

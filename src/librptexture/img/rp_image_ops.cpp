@@ -807,7 +807,7 @@ int rp_image::swizzle_cpp(const char *swz_spec)
 	return 0;
 }
 
-static inline float saturate(float a)
+static inline constexpr float saturate(float a)
 {
 	if (a < 0) a = 0;
 	if (a > 1) a = 1;

@@ -101,7 +101,7 @@ public:
 	 * Is a character a valid game ID character?
 	 * @return True if it is; false if it isn't.
 	 */
-	static inline bool isValidGameIDChar(char x)
+	static inline constexpr bool isValidGameIDChar(char x)
 	{
 		return (x >= '0' && x <= '9') || (x >= 'A' && x <= 'Z');
 	}

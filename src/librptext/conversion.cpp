@@ -201,7 +201,7 @@ const char16_t *u16_memchr(const char16_t *wcs, char16_t c, size_t n)
 /** Other useful text functions **/
 
 template<typename T>
-static inline int calc_frac_part(T val, T mask)
+static inline constexpr int calc_frac_part(T val, T mask)
 {
 	const float f = static_cast<float>(val & (mask - 1)) / static_cast<float>(mask);
 	int frac_part = static_cast<int>(f * 1000.0f);

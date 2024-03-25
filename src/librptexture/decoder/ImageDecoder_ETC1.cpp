@@ -237,7 +237,7 @@ static const int8_t etc2_alpha_tbl[16][8] = {
  * @param value 4-bit color component.
  * @return 8-bit color value.
  */
-static inline uint8_t extend_4to8bits(uint8_t value)
+static inline constexpr uint8_t extend_4to8bits(uint8_t value)
 {
 	return (value << 4) | value;
 }
@@ -247,7 +247,7 @@ static inline uint8_t extend_4to8bits(uint8_t value)
  * @param value 5-bit color component.
  * @return 8-bit color value.
  */
-static inline uint8_t extend_5to8bits(uint8_t value)
+static inline constexpr uint8_t extend_5to8bits(uint8_t value)
 {
 	return (value << 3) | (value >> 2);
 }
@@ -257,7 +257,7 @@ static inline uint8_t extend_5to8bits(uint8_t value)
  * @param value 6-bit color component.
  * @return 8-bit color value.
  */
-static inline uint8_t extend_6to8bits(uint8_t value)
+static inline constexpr uint8_t extend_6to8bits(uint8_t value)
 {
 	return (value << 2) | (value >> 4);
 }
@@ -267,7 +267,7 @@ static inline uint8_t extend_6to8bits(uint8_t value)
  * @param value 7-bit color component.
  * @return 7-bit color value.
  */
-static inline uint8_t extend_7to8bits(uint8_t value)
+static inline constexpr uint8_t extend_7to8bits(uint8_t value)
 {
 	return (value << 1) | (value >> 6);
 }

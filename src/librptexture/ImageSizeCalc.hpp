@@ -23,7 +23,7 @@ namespace LibRpTexture { namespace ImageSizeCalc {
  * @return Size, in bytes
  */
 template<typename X, typename Y>
-static inline size_t T_calcImageSize(X width, Y height)
+static inline constexpr size_t T_calcImageSize(X width, Y height)
 {
 	assert(width > 0);
 	assert(height > 0);
@@ -39,7 +39,7 @@ static inline size_t T_calcImageSize(X width, Y height)
  * @return Size, in bytes
  */
 template<typename X, typename Y, typename Z>
-static inline size_t T_calcImageSize(X width, Y height, Z pixelsize)
+static inline constexpr size_t T_calcImageSize(X width, Y height, Z pixelsize)
 {
 	assert(width > 0);
 	assert(height > 0);
@@ -103,7 +103,7 @@ unsigned int T_calcImageSizePVRTC_PoT(int width, int height);
  * @param block_y	[in] Block height
  * @return True if valid; false if not.
  */
-static inline bool validateBlockSizeASTC(uint8_t block_x, uint8_t block_y)
+static inline constexpr bool validateBlockSizeASTC(uint8_t block_x, uint8_t block_y)
 {
 	assert(block_x >= 4);
 	assert(block_x <= 12);

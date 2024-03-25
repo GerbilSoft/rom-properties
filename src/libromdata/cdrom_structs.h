@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * cdrom_structs.h: CD-ROM data structures.                                *
  *                                                                         *
- * Copyright (c) 2017-2023 by David Korth.                                 *
+ * Copyright (c) 2017-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -164,11 +164,11 @@ ASSERT_STRUCT(CDROM_2352_Sector_t, 2352);
  * @param sector Raw CD-ROM sector.
  * @return Start of user data section.
  */
-static inline const uint8_t *cdromSectorDataPtr(const CDROM_2352_Sector_t *sector)
+static inline constexpr const uint8_t *cdromSectorDataPtr(const CDROM_2352_Sector_t *sector)
 {
-	return (unlikely(sector->mode == 2)
+	return (unlikely(sector->mode == 2))
 		? sector->m2xa_f1.data
-		: sector->m1.data);
+		: sector->m1.data;
 }
 
 #ifdef __cplusplus
