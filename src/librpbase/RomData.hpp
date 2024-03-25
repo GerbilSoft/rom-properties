@@ -452,14 +452,6 @@ public:
 	RP_LIBROMDATA_PUBLIC
 	const RomMetaData *metaData(void) const;
 
-private:
-	/**
-	 * Verify that the specified image type has been loaded.
-	 * @param imageType Image type.
-	 * @return 0 if loaded; negative POSIX error code on error.
-	 */
-	int verifyImageTypeLoaded(ImageType imageType) const;
-
 public:
 	/**
 	 * Get an internal image from the ROM.
