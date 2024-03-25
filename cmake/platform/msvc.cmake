@@ -77,8 +77,7 @@ IF(MSVC_VERSION GREATER 1919 AND _MSVC_C_ARCHITECTURE_FAMILY MATCHES "^([iI]?[xX
 ENDIF()
 
 # MSVC: C/C++ conformance settings
-# FIXME: Re-enable "/permissive-" after fixing things.
-FOREACH(FLAG_TEST "/Zc:wchar_t" "/Zc:inline") #"/permissive-"
+FOREACH(FLAG_TEST "/Zc:wchar_t" "/Zc:inline")
 	# CMake doesn't like certain characters in variable names.
 	STRING(REGEX REPLACE "/|:|=" "_" FLAG_TEST_VARNAME "${FLAG_TEST}")
 
