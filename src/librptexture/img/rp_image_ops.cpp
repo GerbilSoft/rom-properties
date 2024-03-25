@@ -807,7 +807,7 @@ int rp_image::swizzle_cpp(const char *swz_spec)
 	return 0;
 }
 
-static inline constexpr float saturate(float a)
+static inline float saturate(float a)
 {
 	// FIXME: MSVC 2015 doesn't like this function being marked as constexpr.
 	if (a < 0) a = 0;
