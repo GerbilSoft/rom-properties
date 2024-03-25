@@ -25,6 +25,9 @@ namespace LibRpTexture { namespace PixelConversion {
 /** Color conversion functions. **/
 // NOTE: px16 and px32 are always in host-endian.
 
+// FIXME: MSVC 2015 doesn't like functions being marked as constexpr
+// if any variables are declared in them.
+
 /** Lookup tables **/
 
 // 2-bit alpha lookup table
@@ -59,7 +62,7 @@ static constexpr std::array<uint8_t, 8> c3_lookup = {{
  * @param px16 RGB565 pixel.
  * @return ARGB32 pixel.
  */
-static inline constexpr uint32_t RGB565_to_ARGB32(uint16_t px16)
+static inline uint32_t RGB565_to_ARGB32(uint16_t px16)
 {
 	// RGB565: RRRRRGGG GGGBBBBB
 	// ARGB32: AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
@@ -77,7 +80,7 @@ static inline constexpr uint32_t RGB565_to_ARGB32(uint16_t px16)
  * @param px16 BGR565 pixel.
  * @return ARGB32 pixel.
  */
-static inline constexpr uint32_t BGR565_to_ARGB32(uint16_t px16)
+static inline uint32_t BGR565_to_ARGB32(uint16_t px16)
 {
 	// RGB565: BBBBBGGG GGGRRRRR
 	// ARGB32: AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
@@ -95,7 +98,7 @@ static inline constexpr uint32_t BGR565_to_ARGB32(uint16_t px16)
  * @param px16 ARGB1555 pixel.
  * @return ARGB32 pixel.
  */
-static inline constexpr uint32_t ARGB1555_to_ARGB32(uint16_t px16)
+static inline uint32_t ARGB1555_to_ARGB32(uint16_t px16)
 {
 	// ARGB1555: ARRRRRGG GGGBBBBB
 	// ARGB32:   AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
@@ -115,7 +118,7 @@ static inline constexpr uint32_t ARGB1555_to_ARGB32(uint16_t px16)
  * @param px16 ABGR1555 pixel.
  * @return ARGB32 pixel.
  */
-static inline constexpr uint32_t ABGR1555_to_ARGB32(uint16_t px16)
+static inline uint32_t ABGR1555_to_ARGB32(uint16_t px16)
 {
 	// ABGR1555: ABBBBBGG GGGRRRRR
 	// ARGB32:   AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
@@ -135,7 +138,7 @@ static inline constexpr uint32_t ABGR1555_to_ARGB32(uint16_t px16)
  * @param px16 RGBA5551 pixel.
  * @return ARGB32 pixel.
  */
-static inline constexpr uint32_t RGBA5551_to_ARGB32(uint16_t px16)
+static inline uint32_t RGBA5551_to_ARGB32(uint16_t px16)
 {
 	// RGBA5551: RRRRRGGG GGBBBBBA
 	// ARGB32:   AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
@@ -155,7 +158,7 @@ static inline constexpr uint32_t RGBA5551_to_ARGB32(uint16_t px16)
  * @param px16 BGRA5551 pixel.
  * @return ARGB32 pixel.
  */
-static inline constexpr uint32_t BGRA5551_to_ARGB32(uint16_t px16)
+static inline uint32_t BGRA5551_to_ARGB32(uint16_t px16)
 {
 	// BGRA5551: BBBBBGGG GGRRRRRA
 	// ARGB32:   AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
@@ -175,7 +178,7 @@ static inline constexpr uint32_t BGRA5551_to_ARGB32(uint16_t px16)
  * @param px16 ARGB4444 pixel.
  * @return ARGB32 pixel.
  */
-static inline constexpr uint32_t ARGB4444_to_ARGB32(uint16_t px16)
+static inline uint32_t ARGB4444_to_ARGB32(uint16_t px16)
 {
 	// ARGB4444: AAAARRRR GGGGBBBB
 	// ARGB32:   AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
@@ -192,7 +195,7 @@ static inline constexpr uint32_t ARGB4444_to_ARGB32(uint16_t px16)
  * @param px16 ABGR4444 pixel.
  * @return ARGB32 pixel.
  */
-static inline constexpr uint32_t ABGR4444_to_ARGB32(uint16_t px16)
+static inline uint32_t ABGR4444_to_ARGB32(uint16_t px16)
 {
 	// ARGB4444: AAAABBBB GGGGRRRR
 	// ARGB32:   AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
@@ -209,7 +212,7 @@ static inline constexpr uint32_t ABGR4444_to_ARGB32(uint16_t px16)
  * @param px16 RGBA4444 pixel.
  * @return ARGB32 pixel.
  */
-static inline constexpr uint32_t RGBA4444_to_ARGB32(uint16_t px16)
+static inline uint32_t RGBA4444_to_ARGB32(uint16_t px16)
 {
 	// RGBA4444: RRRRGGGG BBBBAAAA
 	// ARGB32:   AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
@@ -226,7 +229,7 @@ static inline constexpr uint32_t RGBA4444_to_ARGB32(uint16_t px16)
  * @param px16 BGRA4444 pixel.
  * @return ARGB32 pixel.
  */
-static inline constexpr uint32_t BGRA4444_to_ARGB32(uint16_t px16)
+static inline uint32_t BGRA4444_to_ARGB32(uint16_t px16)
 {
 	// RGBA4444: BBBBGGGG RRRRAAAA
 	// ARGB32:   AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
@@ -243,7 +246,7 @@ static inline constexpr uint32_t BGRA4444_to_ARGB32(uint16_t px16)
  * @param px16 xRGB4444 pixel.
  * @return ARGB32 pixel.
  */
-static inline constexpr uint32_t xRGB4444_to_ARGB32(uint16_t px16)
+static inline uint32_t xRGB4444_to_ARGB32(uint16_t px16)
 {
 	// xRGB4444: xxxxRRRR GGGGBBBB
 	// ARGB32:   AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
@@ -260,7 +263,7 @@ static inline constexpr uint32_t xRGB4444_to_ARGB32(uint16_t px16)
  * @param px16 xBGR4444 pixel.
  * @return ARGB32 pixel.
  */
-static inline constexpr uint32_t xBGR4444_to_ARGB32(uint16_t px16)
+static inline uint32_t xBGR4444_to_ARGB32(uint16_t px16)
 {
 	// xRGB4444: xxxxBBBB GGGGRRRR
 	// ARGB32:   AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
@@ -277,7 +280,7 @@ static inline constexpr uint32_t xBGR4444_to_ARGB32(uint16_t px16)
  * @param px16 RGBx4444 pixel.
  * @return ARGB32 pixel.
  */
-static inline constexpr uint32_t RGBx4444_to_ARGB32(uint16_t px16)
+static inline uint32_t RGBx4444_to_ARGB32(uint16_t px16)
 {
 	// RGBx4444: RRRRGGGG BBBBxxxx
 	// ARGB32:   AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
@@ -294,7 +297,7 @@ static inline constexpr uint32_t RGBx4444_to_ARGB32(uint16_t px16)
  * @param px16 BGRx4444 pixel.
  * @return ARGB32 pixel.
  */
-static inline constexpr uint32_t BGRx4444_to_ARGB32(uint16_t px16)
+static inline uint32_t BGRx4444_to_ARGB32(uint16_t px16)
 {
 	// RGBx4444: BBBBGGGG RRRRxxxx
 	// ARGB32:   AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
@@ -353,7 +356,7 @@ static inline uint32_t GR88_to_ARGB32(uint16_t px16)
  * @param px16 RGB5A3 pixel. (Must be host-endian.)
  * @return ARGB32 pixel.
  */
-static inline constexpr uint32_t RGB5A3_to_ARGB32(uint16_t px16)
+static inline uint32_t RGB5A3_to_ARGB32(uint16_t px16)
 {
 	// px16 high bit: if set, no alpha channel
 	uint32_t px32 = (px16 & 0x8000U)
@@ -388,7 +391,7 @@ static inline constexpr uint32_t RGB5A3_to_ARGB32(uint16_t px16)
  * @param px16 IA8 pixel.
  * @return ARGB32 pixel.
  */
-static inline constexpr uint32_t IA8_to_ARGB32(uint16_t px16)
+static inline uint32_t IA8_to_ARGB32(uint16_t px16)
 {
 	// FIXME: What's the component order of IA8?
 	// Assuming I=MSB, A=LSB...
@@ -410,7 +413,7 @@ static inline constexpr uint32_t IA8_to_ARGB32(uint16_t px16)
  * @param a4 A4 value.
  * @return ARGB32 pixel.
  */
-static inline constexpr uint32_t RGB565_A4_to_ARGB32(uint16_t px16, uint8_t a4)
+static inline uint32_t RGB565_A4_to_ARGB32(uint16_t px16, uint8_t a4)
 {
 	// RGB565: RRRRRGGG GGGBBBBB
 	// ARGB32: AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
@@ -432,7 +435,7 @@ static inline constexpr uint32_t RGB565_A4_to_ARGB32(uint16_t px16, uint8_t a4)
  * @param px16 BGR5A3 pixel. (Must be host-endian.)
  * @return ARGB32 pixel.
  */
-static inline constexpr uint32_t BGR5A3_to_ARGB32(uint16_t px16)
+static inline uint32_t BGR5A3_to_ARGB32(uint16_t px16)
 {
 	// px16 high bit: if set, no alpha channel
 	uint32_t px32 = (px16 & 0x8000U)
@@ -469,7 +472,7 @@ static inline constexpr uint32_t BGR5A3_to_ARGB32(uint16_t px16)
  * @param px16 RGB555 pixel.
  * @return ARGB32 pixel.
  */
-static inline constexpr uint32_t RGB555_to_ARGB32(uint16_t px16)
+static inline uint32_t RGB555_to_ARGB32(uint16_t px16)
 {
 	// RGB555: xRRRRRGG GGGBBBBB
 	// ARGB32: AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
@@ -486,7 +489,7 @@ static inline constexpr uint32_t RGB555_to_ARGB32(uint16_t px16)
  * @param px16 BGR555 pixel.
  * @return ARGB32 pixel.
  */
-static inline constexpr uint32_t BGR555_to_ARGB32(uint16_t px16)
+static inline uint32_t BGR555_to_ARGB32(uint16_t px16)
 {
 	// BGR555: xBBBBBGG GGGRRRRR
 	// ARGB32: AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
@@ -512,10 +515,9 @@ static inline constexpr uint32_t G16R16_to_ARGB32(uint32_t px32)
 
 	// G16R16: GGGGGGGG gggggggg RRRRRRRR rrrrrrrr
 	// ARGB32: AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
-	uint32_t argb = 0xFF000000U;
-	argb |= ((px32 <<  8) & 0x00FF0000) |
+	return 0xFF000000U |
+		((px32 <<  8) & 0x00FF0000) |
 		((px32 >> 16) & 0x0000FF00);
-	return argb;
 }
 
 /**
@@ -601,7 +603,7 @@ static inline uint32_t RGB9_E5_to_ARGB32(uint32_t px32)
  * @param px16 BGR888_ABGR7888 pixel. (Must be host-endian.)
  * @return ARGB32 pixel.
  */
-static inline constexpr uint32_t BGR888_ABGR7888_to_ARGB32(uint32_t px32)
+static inline uint32_t BGR888_ABGR7888_to_ARGB32(uint32_t px32)
 {
 	// px32 high bit: if set, no alpha channel
 	uint32_t argb = (px32 & 0x80000000U)
@@ -639,9 +641,8 @@ static inline constexpr uint32_t L8_to_ARGB32(uint8_t px8)
 {
 	//     L8: LLLLLLLL
 	// ARGB32: AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
-	uint32_t argb = 0xFF000000U;
-	argb |= px8 | (px8 << 8) | (px8 << 16);
-	return argb;
+	return 0xFF000000U |
+		px8 | (px8 << 8) | (px8 << 16);
 }
 
 /**
@@ -650,7 +651,7 @@ static inline constexpr uint32_t L8_to_ARGB32(uint8_t px8)
  * @param px8 A4L4 pixel.
  * @return ARGB32 pixel.
  */
-static inline constexpr uint32_t A4L4_to_ARGB32(uint8_t px8)
+static inline uint32_t A4L4_to_ARGB32(uint8_t px8)
 {
 	//   A4L4: AAAALLLL
 	// ARGB32: AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
@@ -680,7 +681,7 @@ static inline constexpr uint32_t L16_to_ARGB32(uint16_t px16)
  * @param px16 A8L8 pixel.
  * @return ARGB32 pixel.
  */
-static inline constexpr uint32_t A8L8_to_ARGB32(uint16_t px16)
+static inline uint32_t A8L8_to_ARGB32(uint16_t px16)
 {
 	//   A8L8: AAAAAAAA LLLLLLLL
 	// ARGB32: AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
@@ -696,7 +697,7 @@ static inline constexpr uint32_t A8L8_to_ARGB32(uint16_t px16)
  * @param px16 L8A8 pixel.
  * @return ARGB32 pixel.
  */
-static inline constexpr uint32_t L8A8_to_ARGB32(uint16_t px16)
+static inline uint32_t L8A8_to_ARGB32(uint16_t px16)
 {
 	// FIXME: What's the component order of IA8?
 	// Assuming I=MSB, A=LSB...
@@ -748,11 +749,10 @@ static inline constexpr uint32_t RGB332_to_ARGB32(uint8_t px8)
 {
 	// RGB332: RRRGGGBB
 	// ARGB32: AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
-	uint32_t argb = 0xFF000000U;
-	argb |= (c3_lookup[(px8 & 0xE0) >> 5] << 16);	// R
-	argb |= (c3_lookup[(px8 & 0x1C) >> 2] <<  8);	// G
-	argb |=  c2_lookup[(px8 & 0x03)];		// B
-	return argb;
+	return 0xFF000000U |
+		(c3_lookup[(px8 & 0xE0) >> 5] << 16) |	// R
+		(c3_lookup[(px8 & 0x1C) >> 2] <<  8) |	// G
+		 c2_lookup[(px8 & 0x03)];		// B
 }
 
 } }
