@@ -925,10 +925,10 @@ int RomData::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) co
 }
 
 /**
-* Get name of an image type
-* @param imageType Image type.
-* @return String containing user-friendly name of an image type.
-*/
+ * Get the name of an image type
+ * @param imageType Image type.
+ * @return String containing user-friendly name of an image type.
+ */
 const char *RomData::getImageTypeName(ImageType imageType) {
 	assert(imageType >= IMG_INT_MIN && imageType <= IMG_EXT_MAX);
 	if (imageType < IMG_INT_MIN || imageType > IMG_EXT_MAX) {
