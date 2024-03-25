@@ -13,8 +13,9 @@ namespace LibRpTexture {
 
 /** rp_image_backend **/
 
-static inline int constexpr calc_stride(int width, rp_image::Format format)
+static inline int calc_stride(int width, rp_image::Format format)
 {
+	// FIXME: MSVC 2015 doesn't like this function being marked as constexpr.
 	switch (format) {
 		case rp_image::Format::CI8:
 			return ALIGN_BYTES(16, width);
