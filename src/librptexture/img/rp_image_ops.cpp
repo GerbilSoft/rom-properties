@@ -809,10 +809,9 @@ int rp_image::swizzle_cpp(const char *swz_spec)
 
 static inline constexpr float saturate(float a)
 {
-	// FIXME: MSVC 2015 doesn't like it if we set a=0 or a=1 in constexpr,
-	// but MSVC 2022 may optimize it better. (Use SSE intrinsics if available?)
-	if (a < 0) return 0;
-	if (a > 1) return 1;
+	// FIXME: MSVC 2015 doesn't like this function being marked as constexpr.
+	if (a < 0) a = 0;
+	if (a > 1) a = 1;
 	return a;
 }
 
