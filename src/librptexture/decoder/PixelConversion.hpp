@@ -358,7 +358,7 @@ static inline constexpr uint32_t RGB5A3_to_ARGB32(uint16_t px16)
 	// px16 high bit: if set, no alpha channel
 	uint32_t px32 = (px16 & 0x8000U)
 		? 0xFF000000U
-		: a3_lookup[(px16 >> 12) & 0x07];
+		: 0;
 
 	if (px16 & 0x8000) {
 		// RGB555: xRRRRRGG GGGBBBBB
@@ -370,10 +370,13 @@ static inline constexpr uint32_t RGB5A3_to_ARGB32(uint16_t px16)
 	} else {
 		// RGB4A3: xAAARRRR GGGGBBBB
 		// ARGB32: AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
-		px32 |=  (px16 & 0x000F);	// Blue
+		px32  =  (px16 & 0x000F);	// Blue
 		px32 |= ((px16 & 0x00F0) << 4);	// Green
 		px32 |= ((px16 & 0x0F00) << 8);	// Red
 		px32 |= (px32 << 4);		// Copy to the top nybble.
+
+		// Calculate and apply the alpha channel.
+		px32 |= a3_lookup[((px16 >> 12) & 0x07)];
 	}
 
 	return px32;
@@ -434,7 +437,7 @@ static inline constexpr uint32_t BGR5A3_to_ARGB32(uint16_t px16)
 	// px16 high bit: if set, no alpha channel
 	uint32_t px32 = (px16 & 0x8000U)
 		? 0xFF000000U
-		: a3_lookup[(px16 >> 12) & 0x07];
+		: 0;
 
 	if (px16 & 0x8000) {
 		// BGR555: xBBBBBGG GGGRRRRR
@@ -601,9 +604,9 @@ static inline uint32_t RGB9_E5_to_ARGB32(uint32_t px32)
 static inline constexpr uint32_t BGR888_ABGR7888_to_ARGB32(uint32_t px32)
 {
 	// px32 high bit: if set, no alpha channel
-	uint32_t argb = (px32 & 0x8000000U)
+	uint32_t argb = (px32 & 0x80000000U)
 		? 0xFF000000U
-		: (((px32 & 0x7F000000U) << 1) | ((px32 & 0x80000000U) >> 7));
+		: 0;
 
 	if (px32 & 0x80000000U) {
 		// BGR888: xxxxxxxx BBBBBBBB GGGGGGGG RRRRRRRR
@@ -614,9 +617,11 @@ static inline constexpr uint32_t BGR888_ABGR7888_to_ARGB32(uint32_t px32)
 	} else {
 		// ABGR7888: xAAAAAAA BBBBBBBB GGGGGGGG RRRRRRRR
 		//   ARGB32: AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
-		argb |= (px32 >> 16) & 0xFF;	// Blue
-		argb |= (px32 & 0x0000FF00U);	// Green
-		argb |= (px32 & 0xFF) << 16;	// Red
+		argb  = (px32 & 0x7F000000U) << 1;	// Alpha
+		argb |= (argb & 0x80000000U) >> 7;	// Alpha LSB
+		argb |= (px32 >> 16) & 0xFF;		// Blue
+		argb |= (px32 & 0x0000FF00U);		// Green
+		argb |= (px32 & 0xFF) << 16;		// Red
 	}
 
 	return argb;
