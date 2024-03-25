@@ -39,8 +39,6 @@ SET(${PROJECT_NAME}_SRCS
 	decoder/ImageDecoder_BC7.cpp
 	decoder/ImageDecoder_C64.cpp
 
-	decoder/PixelConversion.cpp
-
 	fileformat/FileFormat.cpp
 	fileformat/ASTC.cpp
 	fileformat/DidjTex.cpp
