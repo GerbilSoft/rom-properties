@@ -46,8 +46,7 @@ static inline constexpr time_t WindowsTimeToUnixTime(int64_t wintime)
  */
 static inline constexpr time_t WindowsSplitTimeToUnixTime(uint32_t wintime_hi, uint32_t wintime_lo)
 {
-	const int64_t wintime = ((int64_t)wintime_hi << 32U) | wintime_lo;
-	return WindowsTimeToUnixTime(wintime);
+	return WindowsTimeToUnixTime(((int64_t)wintime_hi << 32U) | wintime_lo);
 }
 
 /**
