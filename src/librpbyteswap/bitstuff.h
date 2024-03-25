@@ -53,7 +53,7 @@ static inline unsigned int uilog2(unsigned int n)
  * @param x Value.
  * @return Population count.
  */
-static inline constexpr unsigned int popcount(unsigned int x)
+static inline unsigned int popcount(unsigned int x)
 {
 #if defined(__GNUC__)
 	return __builtin_popcount(x);
@@ -62,6 +62,7 @@ static inline constexpr unsigned int popcount(unsigned int x)
 	// - https://gcc.gnu.org/bugzilla/show_bug.cgi?id=36041
 	// - https://gcc.gnu.org/bugzilla/attachment.cgi?id=15529
 	// - https://gcc.gnu.org/viewcvs/gcc?view=revision&revision=200506
+	// FIXME: MSVC 2015 doesn't like this code when using constexpr.
 	x = (x & 0x55555555U) + ((x >> 1) & 0x55555555U);
 	x = (x & 0x33333333U) + ((x >> 2) & 0x33333333U);
 	x = (x & 0x0F0F0F0FU) + ((x >> 4) & 0x0F0F0F0FU);
