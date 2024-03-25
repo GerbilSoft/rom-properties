@@ -79,7 +79,7 @@ public:
 	 * @param endianness Endianness
 	 * @return Flipped endianness
 	 */
-	static inline constexpr Endianness FlipEndianness(Endianness endianness)
+	static inline Endianness FlipEndianness(Endianness endianness)
 	{
 		switch (endianness) {
 			case Endianness::BE:	return Endianness::LE;

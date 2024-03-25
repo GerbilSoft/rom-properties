@@ -96,7 +96,7 @@ WbfsReaderPrivate::~WbfsReaderPrivate()
 
 // from libwbfs.c
 // TODO: Optimize this?
-static inline constexpr uint8_t size_to_shift(uint32_t size)
+static inline uint8_t size_to_shift(uint32_t size)
 {
 	uint8_t ret = 0;
 	while (size) {
