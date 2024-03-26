@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (rp-download)                         *
  * SetFileOriginInfo_posix.cpp: setFileOriginInfo() function. (POSIX version) *
  *                                                                            *
- * Copyright (c) 2016-2023 by David Korth.                                    *
+ * Copyright (c) 2016-2024 by David Korth.                                    *
  * SPDX-License-Identifier: GPL-2.0-or-later                                  *
  ******************************************************************************/
 
@@ -77,7 +77,7 @@ static int processConfigLine(void *user, const char *section, const char *name, 
  */
 static bool getStoreFileOriginInfo(void)
 {
-	static const bool default_value = true;
+	static constexpr bool default_value = true;
 
 	// Get the config filename.
 	// NOTE: Not cached, since rp-download downloads one file per run.
@@ -113,7 +113,7 @@ int setFileOriginInfo(FILE *file, const TCHAR *url, time_t mtime)
 	const int fd = fileno(file);
 
 	// TODO: Use the origin website instead of "rom-properties"?
-	static const char xdg_publisher[] = "rom-properties";
+	static constexpr char xdg_publisher[] = "rom-properties";
 
 	// NOTE: Even if one of the xattr functions fails, we'll
 	// continue with others and setting mtime. The first error

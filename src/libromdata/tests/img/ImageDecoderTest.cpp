@@ -133,8 +133,8 @@ struct ImageDecoderTest_mode
 };
 
 // Maximum file size for images.
-static const size_t MAX_DDS_IMAGE_FILESIZE = 12*1024*1024;
-static const size_t MAX_PNG_IMAGE_FILESIZE =  2*1024*1024;
+static constexpr size_t MAX_DDS_IMAGE_FILESIZE = 12U*1024U*1024U;
+static constexpr size_t MAX_PNG_IMAGE_FILESIZE =  2U*1024U*1024U;
 
 class ImageDecoderTest : public ::testing::TestWithParam<ImageDecoderTest_mode>
 {
@@ -166,8 +166,8 @@ class ImageDecoderTest : public ::testing::TestWithParam<ImageDecoderTest_mode>
 			const rp_image *pImgActual);
 
 		// Number of iterations for benchmarks.
-		static const unsigned int BENCHMARK_ITERATIONS = 1000;
-		static const unsigned int BENCHMARK_ITERATIONS_BC7 = 100;
+		static constexpr unsigned int BENCHMARK_ITERATIONS = 1000;
+		static constexpr unsigned int BENCHMARK_ITERATIONS_BC7 = 100;
 
 	public:
 		// Image buffers.
@@ -603,7 +603,7 @@ string ImageDecoderTest::test_case_suffix_generator(const ::testing::TestParamIn
 	// Append the image type to allow checking multiple types
 	// of images in the same file.
 	if (likely(info.param.mipmapLevel < 0)) {
-		static const char s_imgType[][8] = {
+		static constexpr char s_imgType[][8] = {
 			"_Icon", "_Banner", "_Media", "_Image"
 		};
 		static_assert(ARRAY_SIZE(s_imgType) == RomData::IMG_INT_MAX - RomData::IMG_INT_MIN + 1,

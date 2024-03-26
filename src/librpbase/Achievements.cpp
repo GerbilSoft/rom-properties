@@ -410,7 +410,7 @@ int AchievementsPrivate::save(void) const
 	// get the header pointer again.
 	header = reinterpret_cast<AchBinHeader*>(buf.data());
 
-	static const size_t HeaderSizeMinusCount = sizeof(AchBinHeader) - sizeof(header->count);
+	static constexpr size_t HeaderSizeMinusCount = sizeof(AchBinHeader) - sizeof(header->count);
 
 	// Length of achievement data.
 	// Includes count, but not crc32.
@@ -564,7 +564,7 @@ int AchievementsPrivate::load(void)
 	}
 
 	// Length should be >= HeaderSizeMinusCount, and less than 1 MB.
-	static const size_t HeaderSizeMinusCount = sizeof(AchBinHeader) - sizeof(header->count);
+	static constexpr size_t HeaderSizeMinusCount = sizeof(AchBinHeader) - sizeof(header->count);
 	const uint32_t data_len = le32_to_cpu(header->length);
 	if (data_len < sizeof(header->count) ||
 	    data_len >= ((1*1024*1024)-HeaderSizeMinusCount) ||

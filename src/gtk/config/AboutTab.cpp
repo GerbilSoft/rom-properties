@@ -417,7 +417,7 @@ rp_about_tab_init_program_title_text(GtkWidget *imgLogo, GtkLabel *lblTitle)
 
 	// Get the 128x128 icon.
 	// TODO: Determine the best size.
-	static const int icon_size = 128;
+	static constexpr int icon_size = 128;
 #if GTK_CHECK_VERSION(4,0,0)
 	// TODO: Get text direction from lblTitle instead of imgLogo?
 	// FIXME: This is loading a 32x32 icon...

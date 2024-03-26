@@ -35,9 +35,9 @@ using std::array;
 namespace LibRomData { namespace ImageTypesConfig {
 
 // Number of image types. (columns)
-static const unsigned int IMG_TYPE_COUNT = LibRpBase::RomData::IMG_EXT_MAX+1;
+static constexpr unsigned int IMG_TYPE_COUNT = LibRpBase::RomData::IMG_EXT_MAX+1;
 // Number of systems. (rows)
-static const unsigned int SYS_COUNT = 11;
+static constexpr unsigned int SYS_COUNT = 11;
 
 namespace Private {
 

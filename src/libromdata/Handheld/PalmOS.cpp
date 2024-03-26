@@ -503,7 +503,7 @@ const char *PalmOS::systemName(unsigned int type) const
 	static_assert(SYSNAME_TYPE_MASK == 3,
 		"PalmOS::systemName() array index optimization needs to be updated.");
 
-	static const char *const sysNames[4] = {
+	static constexpr const char *const sysNames[4] = {
 		"Palm OS",
 		"Palm OS",
 		"Palm",

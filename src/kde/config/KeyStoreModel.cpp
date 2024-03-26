@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE)                              *
  * KeyStoreModel.cpp: QAbstractListModel for KeyStore.                     *
  *                                                                         *
- * Copyright (c) 2012-2023 by David Korth.                                 *
+ * Copyright (c) 2012-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -49,7 +49,7 @@ public:
 
 		// Pixmaps for Column::IsValid.
 		// TODO: Hi-DPI support.
-		static const int pxmIsValid_size = 16;
+		static constexpr int pxmIsValid_size = 16;
 		QPixmap pxmIsValid_unknown;
 		QPixmap pxmIsValid_invalid;
 		QPixmap pxmIsValid_good;

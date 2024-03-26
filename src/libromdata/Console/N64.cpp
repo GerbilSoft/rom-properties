@@ -231,7 +231,7 @@ const char *N64::systemName(unsigned int type) const
 		"N64::systemName() array index optimization needs to be updated.");
 
 	// Bits 0-1: Type. (long, short, abbreviation)
-	static const char *const sysNames[4] = {
+	static constexpr const char *const sysNames[4] = {
 		"Nintendo 64", "Nintendo 64", "N64", nullptr
 	};
 

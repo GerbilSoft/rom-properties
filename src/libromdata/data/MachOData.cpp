@@ -25,7 +25,7 @@ const char *lookup_cpu_type(uint32_t cputype)
 	const unsigned int abi = (cputype >> 24);
 	const unsigned int cpu = (cputype & 0xFFFFFF);
 
-	static const char cpu_tbl_32[19][8] = {
+	static constexpr char cpu_tbl_32[19][8] = {
 		// 32-bit CPUs
 		"", "VAX", "", "ROMP",
 		"NS32032", "NS32332", "MC680x0", "i386",
@@ -106,7 +106,7 @@ const char *lookup_cpu_subtype(uint32_t cputype, uint32_t cpusubtype)
 		}
 
 		case CPU_TYPE_MC680x0: {
-			static const char cpu_subtype_m68k_tbl[][8] = {
+			static constexpr char cpu_subtype_m68k_tbl[][8] = {
 				"", "", "MC68040", "MC68030"
 			};
 			if (cpusubtype < ARRAY_SIZE(cpu_subtype_m68k_tbl)) {
@@ -211,7 +211,7 @@ const char *lookup_cpu_subtype(uint32_t cputype, uint32_t cpusubtype)
 		}
 
 		case CPU_TYPE_MIPS: {
-			static const char cpu_subtype_mips_tbl[][8] = {
+			static constexpr char cpu_subtype_mips_tbl[][8] = {
 				"", "R2300", "R2600", "R2800",
 				"R2000a", "R2000", "R3000a", "R3000"
 			};
@@ -238,7 +238,7 @@ const char *lookup_cpu_subtype(uint32_t cputype, uint32_t cpusubtype)
 		}
 
 		case CPU_TYPE_MC88000: {
-			static const char cpu_subtype_m88k_tbl[][8] = {
+			static constexpr char cpu_subtype_m88k_tbl[][8] = {
 				"", "MC88100", "MC88110"
 			};
 			if (cpusubtype < ARRAY_SIZE(cpu_subtype_m88k_tbl)) {
@@ -266,7 +266,7 @@ const char *lookup_cpu_subtype(uint32_t cputype, uint32_t cpusubtype)
 		}
 
 		case CPU_TYPE_POWERPC: {
-			static const char cpu_subtype_ppc_tbl[][8] = {
+			static constexpr char cpu_subtype_ppc_tbl[][8] = {
 				"", "601", "602", "603",
 				"603e", "603ev", "604", "604e",
 				"620", "750", "7400", "7450"

@@ -3,7 +3,7 @@
  * RP_XAttrView_Register.hpp: Extended attribute viewer property page.     *
  * COM registration functions.                                             *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -20,7 +20,7 @@ using std::tstring;
 CLSID_IMPL(RP_XAttrView, _T("ROM Properties Page - Extended Attribute viewer"))
 
 // PropertySheetHandler key name
-static const TCHAR psh_name[] = _T("XAttrView");
+static constexpr TCHAR psh_name[] = _T("XAttrView");
 
 /**
  * Register the file type handler.

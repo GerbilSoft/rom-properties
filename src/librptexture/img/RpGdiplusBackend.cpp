@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * RpGdiplusBackend.hpp: rp_image_backend using GDI+.                      *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -531,7 +531,7 @@ Gdiplus::Bitmap *RpGdiplusBackend::dup_ARGB32(void) const
 HBITMAP RpGdiplusBackend::toHBITMAP(Gdiplus::ARGB bgColor)
 {
 	// Wrapper for the resizing toHBITMAP() function.
-	static const SIZE size = {0, 0};
+	static constexpr SIZE size = {0, 0};
 	return toHBITMAP(bgColor, size, true);
 }
 
@@ -667,7 +667,7 @@ HBITMAP RpGdiplusBackend::toHBITMAP_alpha(void)
 			// Always convert to ARGB32.
 			// Windows will end up doing this anyway,
 			// and it doesn't really like CI8+alpha.
-			static const SIZE size = {0, 0};
+			static constexpr SIZE size = {0, 0};
 			hBitmap = toHBITMAP_alpha(size, false);
 			break;
 		}

@@ -29,7 +29,7 @@ static constexpr array<const char*, Key_Max> EncryptionKeyNames = {{
 	"ctr-scrambler",
 }};
 
-static const uint8_t EncryptionKeyVerifyData[Key_Max][16] = {
+static constexpr uint8_t EncryptionKeyVerifyData[Key_Max][16] = {
 	// twl-scrambler
 	{0x65,0xCF,0x82,0xC5,0xDB,0x79,0x93,0x8C,
 	 0x01,0x33,0x65,0x87,0x72,0xDF,0x60,0x94},

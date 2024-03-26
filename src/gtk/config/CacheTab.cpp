@@ -120,7 +120,7 @@ rp_cache_tab_class_init(RpCacheTabClass *klass)
 		GTK_STYLE_PROVIDER(provider), GTK_STYLE_PROVIDER_PRIORITY_USER);
 #  endif /* !GTK_CHECK_VERSION(4,0,0) */
 
-	static const char css_ProgressBar[] =
+	static constexpr char css_ProgressBar[] =
 		"@define-color gsrp_color_pb_error rgb(144,24,24);\n"
 		"progressbar.gsrp_pb_error > trough > progress {\n"
 		"\tbackground-image: none;\n"

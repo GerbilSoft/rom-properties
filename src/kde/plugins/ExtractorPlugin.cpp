@@ -191,9 +191,9 @@ void ExtractorPlugin::extract(ExtractionResult *result)
 
 	// Which attributes are required?
 #if KCOREADDONS_VERSION >= QT_VERSION_CHECK(5,76,0)
-	static const unsigned int mask = ExtractionResult::ExtractMetaData | ExtractionResult::ExtractImageData;
+	static constexpr unsigned int mask = ExtractionResult::ExtractMetaData | ExtractionResult::ExtractImageData;
 #else /* KCOREADDONS_VERSION < QT_VERSION_CHECK(5,76,0) */
-	static const unsigned int mask = ExtractionResult::ExtractMetaData;
+	static constexpr unsigned int mask = ExtractionResult::ExtractMetaData;
 #endif /* KCOREADDONS_VERSION >= QT_VERSION_CHECK(5,76,0) */
 	unsigned int attrs;
 	switch (flags & mask) {

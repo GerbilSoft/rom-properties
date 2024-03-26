@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * NEResourceReader.cpp: New Executable resource reader.                   *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -108,7 +108,7 @@ NEResourceReaderPrivate::NEResourceReaderPrivate(
 	// NOTE: Win16 executables don't have a separate
 	// .rsrc section, so we have to use the entire
 	// size of the file as the resource size.
-	static const uint32_t fileSize_MAX = 16U*1024*1024;
+	static constexpr uint32_t fileSize_MAX = 16U*1024*1024;
 
 	// Validate the starting address and size.
 	const off64_t fileSize_o64 = q->m_file->size();
@@ -442,7 +442,7 @@ int NEResourceReaderPrivate::load_StringTable(IRpFile *file, IResourceReader::St
 		const int value_len = wValueLength - 1;
 		if (value_len <= 0) {
 			// Empty value.
-			static const char str_empty[1] = {0};
+			static constexpr char str_empty[1] = {0};
 			value = str_empty;
 		} else if (value[value_len] != 0) {
 			// Not NULL-terminated.
@@ -703,7 +703,7 @@ int NEResourceReader::load_VS_VERSION_INFO(int id, int lang, VS_FIXEDFILEINFO *p
 	}
 
 	// Read the version header.
-	static const char vsvi[] = "VS_VERSION_INFO";
+	static constexpr char vsvi[] = "VS_VERSION_INFO";
 	uint16_t len, valueLen;
 	int ret = NEResourceReaderPrivate::load_VS_VERSION_INFO_header(f_ver.get(), vsvi, &len, &valueLen);
 	if (ret != 0) {
@@ -755,7 +755,7 @@ int NEResourceReader::load_VS_VERSION_INFO(int id, int lang, VS_FIXEDFILEINFO *p
 	alignFileDWORD(f_ver.get());
 
 	// Read the StringFileInfo section header.
-	static const char vssfi[] = "StringFileInfo";
+	static constexpr char vssfi[] = "StringFileInfo";
 	ret = NEResourceReaderPrivate::load_VS_VERSION_INFO_header(f_ver.get(), vssfi, &len, &valueLen);
 	if (ret != 0) {
 		// No StringFileInfo section.

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * PEResourceReader.cpp: Portable Executable resource reader.              *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -141,7 +141,7 @@ PEResourceReaderPrivate::PEResourceReaderPrivate(
 	}
 
 	// Validate the starting address and size.
-	static const uint32_t fileSize_MAX = 2U*1024*1024*1024;
+	static constexpr uint32_t fileSize_MAX = 2U*1024*1024*1024;
 	const off64_t fileSize_o64 = q->m_file->size();
 	if (fileSize_o64 > fileSize_MAX) {
 		// A Win32/Win64 executable larger than 2 GB doesn't make any sense.
@@ -517,7 +517,7 @@ int PEResourceReaderPrivate::load_StringTable(IRpFile *file, IResourceReader::St
 		const int value_len = (wValueLength / 2) - 1;
 		if (value_len <= 0) {
 			// Empty value.
-			static const char16_t u16_empty[1] = {0};
+			static constexpr char16_t u16_empty[1] = {0};
 			value = u16_empty;
 		} else if (value[value_len] != cpu_to_le16(0)) {
 			// Not NULL-terminated.
@@ -788,7 +788,7 @@ int PEResourceReader::load_VS_VERSION_INFO(int id, int lang, VS_FIXEDFILEINFO *p
 	}
 
 	// Read the version header.
-	static const char16_t vsvi[] = {'V','S','_','V','E','R','S','I','O','N','_','I','N','F','O',0};
+	static constexpr char16_t vsvi[] = {'V','S','_','V','E','R','S','I','O','N','_','I','N','F','O',0};
 	uint16_t len, valueLen;
 	int ret = PEResourceReaderPrivate::load_VS_VERSION_INFO_header(f_ver.get(), vsvi, 0, &len, &valueLen);
 	if (ret != 0) {
@@ -840,7 +840,7 @@ int PEResourceReader::load_VS_VERSION_INFO(int id, int lang, VS_FIXEDFILEINFO *p
 	alignFileDWORD(f_ver.get());
 
 	// Read the StringFileInfo section header.
-	static const char16_t vssfi[] = {'S','t','r','i','n','g','F','i','l','e','I','n','f','o',0};
+	static constexpr char16_t vssfi[] = {'S','t','r','i','n','g','F','i','l','e','I','n','f','o',0};
 	ret = PEResourceReaderPrivate::load_VS_VERSION_INFO_header(f_ver.get(), vssfi, 1, &len, &valueLen);
 	if (ret != 0) {
 		// No StringFileInfo section.

@@ -280,7 +280,7 @@ rp_image_const_ptr GameComPrivate::loadIcon(void)
 
 	// Set the sBIT metadata.
 	// TODO: Use grayscale instead of RGB.
-	static const rp_image::sBIT_t sBIT = {2,2,2,0,0};
+	static constexpr rp_image::sBIT_t sBIT = {2,2,2,0,0};
 	tmp_icon->set_sBIT(&sBIT);
 
 	// Save and return the icon.
@@ -401,7 +401,7 @@ rp_image_const_ptr GameComPrivate::loadIconRLE(void)
 	// Icon is stored at bank_offset + ((x << 8) | y).
 	// Up to 4 bytes per 4 pixels for the most extreme RLE test case.
 	// (effectively 8bpp, though usually much less)
-	static const size_t icon_rle_data_max_len = GCOM_ICON_W * GCOM_ICON_H;
+	static constexpr size_t icon_rle_data_max_len = GCOM_ICON_W * GCOM_ICON_H;
 	unique_ptr<uint8_t[]> icon_rle_data(new uint8_t[icon_rle_data_max_len]);
 	unsigned int icon_file_offset = bank_offset + ((romHeader.icon.x << 8) | (romHeader.icon.y));
 	if (icon_file_offset >= GCOM_ICON_RLE_BANK_LOAD_OFFSET) {
@@ -418,7 +418,7 @@ rp_image_const_ptr GameComPrivate::loadIconRLE(void)
 	}
 
 	// Decompress the RLE data. (2bpp)
-	static const size_t icon_data_len = (GCOM_ICON_W * GCOM_ICON_H) / 4;
+	static constexpr size_t icon_data_len = (GCOM_ICON_W * GCOM_ICON_H) / 4;
 	unique_ptr<uint8_t[]> icon_data(new uint8_t[icon_data_len]);
 	ssize_t ssize = rle_decompress(icon_data.get(), icon_data_len, icon_rle_data.get(), icon_rle_data_max_len);
 	if (ssize != icon_data_len) {
@@ -470,7 +470,7 @@ rp_image_const_ptr GameComPrivate::loadIconRLE(void)
 
 	// Set the sBIT metadata.
 	// TODO: Use grayscale instead of RGB.
-	static const rp_image::sBIT_t sBIT = {2,2,2,0,0};
+	static constexpr rp_image::sBIT_t sBIT = {2,2,2,0,0};
 	tmp_icon->set_sBIT(&sBIT);
 
 	// Save and return the icon.
@@ -585,7 +585,7 @@ const char *GameCom::systemName(unsigned int type) const
 	static_assert(SYSNAME_TYPE_MASK == 3,
 		"GameCom::systemName() array index optimization needs to be updated.");
 
-	static const char *const sysNames[4] = {
+	static constexpr const char *const sysNames[4] = {
 		"Tiger game.com",
 		"game.com",
 		"game.com",

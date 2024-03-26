@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * GdkImageConv.cpp: Helper functions to convert from rp_image to GDK.     *
  *                                                                         *
- * Copyright (c) 2017-2023 by David Korth.                                 *
+ * Copyright (c) 2017-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -117,7 +117,7 @@ GdkPixbuf *GdkImageConv::rp_image_to_GdkPixbuf_ssse3(const rp_image *img)
 				break;
 
 			// Get the palette.
-			static const unsigned int dest_pal_len = 256;
+			static constexpr unsigned int dest_pal_len = 256;
 			uint32_t *const palette = static_cast<uint32_t*>(aligned_malloc(16, dest_pal_len*sizeof(uint32_t)));
 			assert(palette != nullptr);
 			if (unlikely(!palette)) {

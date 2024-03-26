@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (rp-download)                      *
  * http-status.hpp: HTTP status codes.                                     *
  *                                                                         *
- * Copyright (c) 2020-2023 by David Korth.                                 *
+ * Copyright (c) 2020-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -21,7 +21,7 @@
 const TCHAR *http_status_string(int code)
 {
 	// Do a binary search.
-	static const HttpStatusMsg_t *const p_http_status_offtbl =
+	static constexpr const HttpStatusMsg_t *const p_http_status_offtbl =
 		&http_status_offtbl[ARRAY_SIZE(http_status_offtbl)];
 	auto pHttp = std::lower_bound(http_status_offtbl, p_http_status_offtbl, code,
 		[](const HttpStatusMsg_t &msg, int code) noexcept -> bool {

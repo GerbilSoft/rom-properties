@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * ImageDecoder_DC.cpp: Image decoding functions: Dreamcast                *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -117,9 +117,9 @@ rp_image_ptr fromDreamcastSquareTwiddled16(PixelFormat px_format,
 			img->set_sBIT(sBIT_val); \
 			break; \
 		}
-	static const rp_image::sBIT_t sBIT_1555 = {5,5,5,0,1};
-	static const rp_image::sBIT_t sBIT_565  = {5,6,5,0,0};
-	static const rp_image::sBIT_t sBIT_4444 = {4,4,4,0,4};
+	static constexpr rp_image::sBIT_t sBIT_1555 = {5,5,5,0,1};
+	static constexpr rp_image::sBIT_t sBIT_565  = {5,6,5,0,0};
+	static constexpr rp_image::sBIT_t sBIT_4444 = {4,4,4,0,4};
 
 	uint32_t *px_dest = static_cast<uint32_t*>(img->bits());
 	const int dest_stride_adj = (img->stride() / sizeof(uint32_t)) - img->width();
@@ -214,9 +214,9 @@ rp_image_ptr fromDreamcastVQ16(PixelFormat px_format,
 			img->set_sBIT(sBIT_val); \
 			break; \
 		}
-	static const rp_image::sBIT_t sBIT_1555 = {5,5,5,0,1};
-	static const rp_image::sBIT_t sBIT_565  = {5,6,5,0,0};
-	static const rp_image::sBIT_t sBIT_4444 = {4,4,4,0,4};
+	static constexpr rp_image::sBIT_t sBIT_1555 = {5,5,5,0,1};
+	static constexpr rp_image::sBIT_t sBIT_565  = {5,6,5,0,0};
+	static constexpr rp_image::sBIT_t sBIT_4444 = {4,4,4,0,4};
 
 	unique_ptr<uint32_t[]> palette(new uint32_t[pal_entry_count]);
 	switch (px_format) {

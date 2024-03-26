@@ -342,7 +342,7 @@ TEST_F(TextFuncsTest, cp1252_sjis_to_utf8_copyright)
  */
 TEST_F(TextFuncsTest, cp1252_sjis_to_utf8_ascii)
 {
-	static const char cp1252_in[] = "C:\\Windows\\System32";
+	static constexpr char cp1252_in[] = "C:\\Windows\\System32";
 
 	// Test with implicit length.
 	string str = cp1252_sjis_to_utf8(cp1252_in, -1);
@@ -445,7 +445,7 @@ TEST_F(TextFuncsTest, cp1252_sjis_to_utf16_copyright)
  */
 TEST_F(TextFuncsTest, cp1252_sjis_to_utf16_ascii)
 {
-	static const char cp1252_in[] = "C:\\Windows\\System32";
+	static constexpr char cp1252_in[] = "C:\\Windows\\System32";
 
 	// NOTE: Need to manually initialize the char16_t[] array
 	// due to the way _RP() is implemented for versions of
@@ -782,7 +782,7 @@ TEST_F(TextFuncsTest, u16_strlen)
 	// On all other systems, it's a simple implementation.
 
 	// Compare to 8-bit strlen() with ASCII.
-	static const char ascii_in[] = "abcdefghijklmnopqrstuvwxyz";
+	static constexpr char ascii_in[] = "abcdefghijklmnopqrstuvwxyz";
 	static constexpr array<char16_t, 26+1> u16_in = {{
 		'a','b','c','d','e','f','g','h','i','j','k','l',
 		'm','n','o','p','q','r','s','t','u','v','w','x',
@@ -966,23 +966,23 @@ TEST_F(TextFuncsTest, atascii_to_utf8)
 TEST_F(TextFuncsTest, utf8_disp_strlen)
 {
 	// utf8_disp_strlen() should be identical to strlen() for ASCII text.
-	static const char ascii_text[] = "abc123xyz789";
+	static constexpr char ascii_text[] = "abc123xyz789";
 	EXPECT_EQ(strlen(ascii_text), utf8_disp_strlen(ascii_text));
 
 	// Test string with 2-byte UTF-8 code points. (U+0080 - U+07FF)
-	static const char utf8_2byte_text[] = "Ακρόπολη";
+	static constexpr char utf8_2byte_text[] = "Ακρόπολη";
 	EXPECT_EQ(16U, strlen(utf8_2byte_text));
 	EXPECT_EQ(8U, utf8_disp_strlen(utf8_2byte_text));
 
 	// Test string with 3-byte UTF-8 code points. (U+0800 - U+FFFF)
-	static const char utf8_3byte_text[] = "╔╗╚╝┼";
+	static constexpr char utf8_3byte_text[] = "╔╗╚╝┼";
 	EXPECT_EQ(15U, strlen(utf8_3byte_text));
 	EXPECT_EQ(5U, utf8_disp_strlen(utf8_3byte_text));
 
 #ifndef _WIN32
 	// Test string with 4-byte UTF-8 code points. (U+10000 - U+10FFFF)
 	// FIXME: Broken on Windows... (returns 7)
-	static const char utf8_4byte_text[] = "😂🙄💾🖬";
+	static constexpr char utf8_4byte_text[] = "😂🙄💾🖬";
 	EXPECT_EQ(16U, strlen(utf8_4byte_text));
 	EXPECT_EQ(4U, utf8_disp_strlen(utf8_4byte_text));
 #endif /* !_WIN32 */
@@ -1156,13 +1156,13 @@ TEST_F(TextFuncsTest, dos2unix)
 {
 	int lf_count;
 
-	static const char expected_lf[] = "The quick brown fox\njumps over\nthe lazy dog.";
-	static const char test1[] = "The quick brown fox\r\njumps over\r\nthe lazy dog.";
-	static const char expected_lf2[] = "The quick brown fox\njumps over\nthe lazy dog.\n";
-	static const char test2[] = "The quick brown fox\r\njumps over\r\nthe lazy dog.\r\n";
-	static const char test3[] = "The quick brown fox\r\njumps over\r\nthe lazy dog.\r";
-	static const char test4[] = "The quick brown fox\rjumps over\rthe lazy dog.\r";
-	static const char test5[] = "The quick brown fox\njumps over\rthe lazy dog.\r";
+	static constexpr char expected_lf[] = "The quick brown fox\njumps over\nthe lazy dog.";
+	static constexpr char test1[] = "The quick brown fox\r\njumps over\r\nthe lazy dog.";
+	static constexpr char expected_lf2[] = "The quick brown fox\njumps over\nthe lazy dog.\n";
+	static constexpr char test2[] = "The quick brown fox\r\njumps over\r\nthe lazy dog.\r\n";
+	static constexpr char test3[] = "The quick brown fox\r\njumps over\r\nthe lazy dog.\r";
+	static constexpr char test4[] = "The quick brown fox\rjumps over\rthe lazy dog.\r";
+	static constexpr char test5[] = "The quick brown fox\njumps over\rthe lazy dog.\r";
 
 	// Basic conversion. (no trailing newline sequence)
 	lf_count = 0;

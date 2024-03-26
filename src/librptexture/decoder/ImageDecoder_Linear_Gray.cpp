@@ -88,7 +88,7 @@ rp_image_ptr fromLinearMono(int width, int height,
 	// Set the sBIT metadata.
 	// NOTE: Setting the grayscale value, though we're
 	// not saving grayscale PNGs at the moment.
-	static const rp_image::sBIT_t sBIT = {1,1,1,1,0};
+	static constexpr rp_image::sBIT_t sBIT = {1,1,1,1,0};
 	img->set_sBIT(&sBIT);
 
 	// Image has been converted.
@@ -173,7 +173,7 @@ rp_image_ptr fromLinearGray2bpp(int width, int height,
 	// Set the sBIT metadata.
 	// NOTE: Setting the grayscale value, though we're
 	// not saving grayscale PNGs at the moment.
-	static const rp_image::sBIT_t sBIT = {2,2,2,2,0};
+	static constexpr rp_image::sBIT_t sBIT = {2,2,2,2,0};
 	img->set_sBIT(&sBIT);
 
 	// Image has been converted.

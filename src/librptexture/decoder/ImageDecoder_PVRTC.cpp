@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * ImageDecoder_PVRTC.cpp: Image decoding functions: PVRTC                 *
  *                                                                         *
- * Copyright (c) 2019-2023 by David Korth.                                 *
+ * Copyright (c) 2019-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -103,8 +103,8 @@ rp_image_ptr fromPVRTC(int width, int height,
 	}
 
 	// Set the sBIT metadata.
-	static const rp_image::sBIT_t sBIT_alpha  = {8,8,8,0,8};
-	static const rp_image::sBIT_t sBIT_opaque = {8,8,8,0,0};
+	static constexpr rp_image::sBIT_t sBIT_alpha  = {8,8,8,0,8};
+	static constexpr rp_image::sBIT_t sBIT_opaque = {8,8,8,0,0};
 	img->set_sBIT(((mode & PVRTC_ALPHA_MASK) == PVRTC_ALPHA_YES) ? &sBIT_alpha : &sBIT_opaque);
 
 	// Image has been converted.
@@ -196,7 +196,7 @@ rp_image_ptr fromPVRTCII(int width, int height,
 
 	// Set the sBIT metadata.
 	// NOTE: Assuming PVRTC-II always has alpha for now.
-	static const rp_image::sBIT_t sBIT  = {8,8,8,0,8};
+	static constexpr rp_image::sBIT_t sBIT = {8,8,8,0,8};
 	img->set_sBIT(&sBIT);
 
 	// Image has been converted.

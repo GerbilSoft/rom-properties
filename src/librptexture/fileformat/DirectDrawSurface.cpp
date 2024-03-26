@@ -265,7 +265,7 @@ const array<DirectDrawSurfacePrivate::RGB_Format_Table_t, 1> DirectDrawSurfacePr
 const DirectDrawSurfacePrivate::RGB_Format_Table_t *DirectDrawSurfacePrivate::getRGBFormatTableEntry(const DDS_PIXELFORMAT &ddspf)
 {
 #ifndef NDEBUG
-	static const unsigned int FORMATS = DDPF_ALPHA | DDPF_FOURCC | DDPF_RGB | DDPF_YUV | DDPF_LUMINANCE;
+	static constexpr unsigned int FORMATS = DDPF_ALPHA | DDPF_FOURCC | DDPF_RGB | DDPF_YUV | DDPF_LUMINANCE;
 	assert(((ddspf.dwFlags & FORMATS) == DDPF_RGB) ||
 	       ((ddspf.dwFlags & FORMATS) == DDPF_LUMINANCE) ||
 	       ((ddspf.dwFlags & FORMATS) == DDPF_ALPHA));
@@ -369,7 +369,7 @@ int DirectDrawSurfacePrivate::updatePixelFormat(void)
 	int ret = 0;
 	const DDS_PIXELFORMAT &ddspf = ddsHeader.ddspf;
 #ifndef NDEBUG
-	static const unsigned int FORMATS = DDPF_ALPHA | DDPF_FOURCC | DDPF_RGB | DDPF_YUV | DDPF_LUMINANCE;
+	static constexpr unsigned int FORMATS = DDPF_ALPHA | DDPF_FOURCC | DDPF_RGB | DDPF_YUV | DDPF_LUMINANCE;
 	assert(((ddspf.dwFlags & FORMATS) == DDPF_FOURCC) ||
 	       ((ddspf.dwFlags & FORMATS) == DDPF_RGB) ||
 	       ((ddspf.dwFlags & FORMATS) == DDPF_LUMINANCE) ||

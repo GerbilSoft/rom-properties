@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * ExecRpDownload_posix.cpp: Execute rp-download.exe. (POSIX)              *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -33,7 +33,7 @@ namespace LibRomData {
 int CacheManager::execRpDownload(const string &filteredCacheKey)
 {
 	// TODO: Mac OS X path. (bundle?)
- 	static const char rp_download_exe[] = DIR_INSTALL_LIBEXEC "/rp-download";
+ 	static constexpr char rp_download_exe[] = DIR_INSTALL_LIBEXEC "/rp-download";
 
 	// Parameters.
 	const char *const argv[3] = {

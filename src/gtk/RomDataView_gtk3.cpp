@@ -239,7 +239,7 @@ rp_rom_data_view_init_listdata(RpRomDataView *page, const RomFields::Field &fiel
 				if (pixbuf) {
 					// TODO: Ideal icon size?
 					// Using 32x32 for now.
-					static const int icon_sz = 32;
+					static constexpr int icon_sz = 32;
 					// NOTE: GtkCellRendererPixbuf can't scale the
 					// pixbuf itself...
 					if (!PIMGTYPE_size_check(pixbuf, icon_sz, icon_sz)) {

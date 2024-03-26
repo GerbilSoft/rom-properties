@@ -956,9 +956,9 @@ int Xbox360_XDBF_Private::addFields_achievements_SPA(void)
 	// Sanity check:
 	// - Size must be at least sizeof(XDBF_XACH_Header).
 	// - Size must be a maximum of sizeof(XDBF_XACH_Header) + (sizeof(XDBF_XACH_Entry_SPA) * 512).
-	static const unsigned int XACH_MAX_COUNT = 512;
-	static const uint32_t XACH_MIN_SIZE = (uint32_t)sizeof(XDBF_XACH_Header);
-	static const uint32_t XACH_MAX_SIZE = XACH_MIN_SIZE + (uint32_t)(sizeof(XDBF_XACH_Entry_SPA) * XACH_MAX_COUNT);
+	static constexpr unsigned int XACH_MAX_COUNT = 512;
+	static constexpr uint32_t XACH_MIN_SIZE = (uint32_t)sizeof(XDBF_XACH_Header);
+	static constexpr uint32_t XACH_MAX_SIZE = XACH_MIN_SIZE + (uint32_t)(sizeof(XDBF_XACH_Entry_SPA) * XACH_MAX_COUNT);
 	assert(length > XACH_MIN_SIZE);
 	assert(length <= XACH_MAX_SIZE);
 	if (length < XACH_MIN_SIZE || length > XACH_MAX_SIZE) {
@@ -1160,9 +1160,9 @@ int Xbox360_XDBF_Private::addFields_avatarAwards_SPA(void)
 	// Sanity check:
 	// - Size must be at least sizeof(XDBF_XGAA_Header).
 	// - Size must be a maximum of sizeof(XDBF_XGAA_Header) + (sizeof(XDBF_XGAA_Entry) * 16).
-	static const unsigned int XGAA_MAX_COUNT = 16;
-	static const uint32_t XGAA_MIN_SIZE = (uint32_t)sizeof(XDBF_XGAA_Header);
-	static const uint32_t XGAA_MAX_SIZE = XGAA_MIN_SIZE + (uint32_t)(sizeof(XDBF_XGAA_Entry) * XGAA_MAX_COUNT);
+	static constexpr unsigned int XGAA_MAX_COUNT = 16;
+	static constexpr uint32_t XGAA_MIN_SIZE = (uint32_t)sizeof(XDBF_XGAA_Header);
+	static constexpr uint32_t XGAA_MAX_SIZE = XGAA_MIN_SIZE + (uint32_t)(sizeof(XDBF_XGAA_Entry) * XGAA_MAX_COUNT);
 	assert(length >= XGAA_MIN_SIZE);
 	assert(length <= XGAA_MAX_SIZE);
 	if (unlikely(length == XGAA_MIN_SIZE)) {
@@ -1760,7 +1760,7 @@ const char *Xbox360_XDBF::systemName(unsigned int type) const
 
 	// Bits 0-1: Type. (long, short, abbreviation)
 	// TODO: XDBF-specific, or just use Xbox 360?
-	static const char *const sysNames[4] = {
+	static constexpr const char *const sysNames[4] = {
 		"Microsoft Xbox 360", "Xbox 360", "X360", nullptr
 	};
 

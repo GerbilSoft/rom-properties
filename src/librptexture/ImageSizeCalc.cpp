@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * ImageSizeCalc.hpp: Image size calculation functions.                    *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -79,7 +79,7 @@ unsigned int calcImageSize_tbl(
 template<bool is2bpp>
 unsigned int T_calcImageSizePVRTC_PoT(int width, int height)
 {
-	static const int min_width = (is2bpp ? 8 : 4);
+	static constexpr int min_width = (is2bpp ? 8 : 4);
 	if (width < min_width) {
 		width = min_width;
 	} else if (!isPow2(width)) {

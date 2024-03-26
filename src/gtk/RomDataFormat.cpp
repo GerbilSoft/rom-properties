@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * RomDataFormat.hpp: Common RomData string formatting functions.          *
  *                                                                         *
- * Copyright (c) 2017-2022 by David Korth.                                 *
+ * Copyright (c) 2017-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -39,7 +39,7 @@ rom_data_format_datetime(time_t date_time, unsigned int flags)
 		return nullptr;
 	}
 
-	static const char formats_strtbl[] =
+	static constexpr char formats_strtbl[] =
 		"\0"		// [0] No date or time
 		"%x\0"		// [1] Date
 		"%X\0"		// [4] Time

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (rp-download)                         *
  * SetFileOriginInfo_win32.cpp: setFileOriginInfo() function. (Win32 version) *
  *                                                                            *
- * Copyright (c) 2016-2023 by David Korth.                                    *
+ * Copyright (c) 2016-2024 by David Korth.                                    *
  * SPDX-License-Identifier: GPL-2.0-or-later                                  *
  ******************************************************************************/
 
@@ -40,7 +40,7 @@ namespace RpDownload {
  */
 static bool getStoreFileOriginInfo(void)
 {
-	static const bool default_value = true;
+	static constexpr bool default_value = true;
 	DWORD dwRet;
 	TCHAR szValue[64];
 
@@ -128,7 +128,7 @@ int setFileOriginInfo(FILE *file, const TCHAR *filename, const TCHAR *url, time_
 		// NOTE: Assuming UTF-8 encoding.
 		// FIXME: Chromium has some shenanigans for Windows 10.
 		// Reference: https://github.com/chromium/chromium/blob/55f44515cd0b9e7739b434d1c62f4b7e321cd530/components/services/quarantine/quarantine_win.cc
-		static const char zoneID_hdr[] = "[ZoneTransfer]\r\nZoneID=3\r\nHostUrl=";
+		static constexpr char zoneID_hdr[] = "[ZoneTransfer]\r\nZoneID=3\r\nHostUrl=";
 		string s_zoneID;
 		s_zoneID.reserve(sizeof(zoneID_hdr) + _tcslen(url) + 2 + 16);
 		s_zoneID = zoneID_hdr;

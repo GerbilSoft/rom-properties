@@ -142,7 +142,7 @@ static FORCEINLINE uint64_t extract48(const etc2_alpha *RESTRICT data)
  * index values in ascending two-bit value order as
  * listed above instead of mapping to ETC1 table 3.17.2.
  */
-static const int16_t etc1_intensity[8][4] = {
+static constexpr int16_t etc1_intensity[8][4] = {
 	{ 2,   8,  -2,   -8},
 	{ 5,  17,  -5,  -17},
 	{ 9,  29,  -9,  -29},
@@ -162,7 +162,7 @@ static const int16_t etc1_intensity[8][4] = {
  * index values in ascending two-bit value order as
  * listed above instead of mapping to ETC1 table 3.17.2.
  */
-static const int16_t etc2_intensity_a1[8][4] = {
+static constexpr int16_t etc2_intensity_a1[8][4] = {
 	{0,   8, 0,   -8},
 	{0,  17, 0,  -17},
 	{0,  29, 0,  -29},
@@ -213,7 +213,7 @@ static constexpr array<uint8_t, 8> etc2_dist_tbl = {{
 }};
 
 // ETC2 alpha modifiers table.
-static const int8_t etc2_alpha_tbl[16][8] = {
+static constexpr int8_t etc2_alpha_tbl[16][8] = {
 	{-3, -6,  -9, -15, 2, 5, 8, 14},
 	{-3, -7, -10, -13, 2, 6, 9, 12},
 	{-2, -5,  -8, -13, 1, 4, 7, 12},
@@ -661,7 +661,7 @@ rp_image_ptr fromETC1(int width, int height,
 	}
 
 	// Set the sBIT metadata.
-	static const rp_image::sBIT_t sBIT = {8,8,8,0,0};
+	static constexpr rp_image::sBIT_t sBIT = {8,8,8,0,0};
 	img->set_sBIT(&sBIT);
 
 	// Image has been converted.
@@ -727,7 +727,7 @@ rp_image_ptr fromETC2_RGB(int width, int height,
 	}
 
 	// Set the sBIT metadata.
-	static const rp_image::sBIT_t sBIT = {8,8,8,0,0};
+	static constexpr rp_image::sBIT_t sBIT = {8,8,8,0,0};
 	img->set_sBIT(&sBIT);
 
 	// Image has been converted.
@@ -841,7 +841,7 @@ rp_image_ptr fromETC2_RGBA(int width, int height,
 	}
 
 	// Set the sBIT metadata.
-	static const rp_image::sBIT_t sBIT = {8,8,8,0,8};
+	static constexpr rp_image::sBIT_t sBIT = {8,8,8,0,8};
 	img->set_sBIT(&sBIT);
 
 	// Image has been converted.
@@ -907,7 +907,7 @@ rp_image_ptr fromETC2_RGB_A1(int width, int height,
 	}
 
 	// Set the sBIT metadata.
-	static const rp_image::sBIT_t sBIT = {8,8,8,0,1};
+	static constexpr rp_image::sBIT_t sBIT = {8,8,8,0,1};
 	img->set_sBIT(&sBIT);
 
 	// Image has been converted.
@@ -977,7 +977,7 @@ rp_image_ptr fromEAC_R11(int width, int height,
 
 	// Set the sBIT metadata.
 	// NOTE: Cannot set the G and B channels to 0, so setting them to 1.
-	static const rp_image::sBIT_t sBIT = {8,1,1,0,0};
+	static constexpr rp_image::sBIT_t sBIT = {8,1,1,0,0};
 	img->set_sBIT(&sBIT);
 
 	// Image has been converted.
@@ -1049,7 +1049,7 @@ rp_image_ptr fromEAC_RG11(int width, int height,
 
 	// Set the sBIT metadata.
 	// NOTE: Cannot set the B channel to 0, so setting it to 1 instead.
-	static const rp_image::sBIT_t sBIT = {8,8,1,0,0};
+	static constexpr rp_image::sBIT_t sBIT = {8,8,1,0,0};
 	img->set_sBIT(&sBIT);
 
 	// Image has been converted.

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * AchWin32.hpp: Win32 notifications for achievements.                     *
  *                                                                         *
- * Copyright (c) 2020-2023 by David Korth.                                 *
+ * Copyright (c) 2020-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -49,13 +49,13 @@ public:
 	static const TCHAR NID_UID_PTR_PROP[];
 
 	// Timeout for the achievement popup. (in ms)
-	static const unsigned int ACHWIN32_TIMEOUT = 10U * 1000U;
+	static constexpr unsigned int ACHWIN32_TIMEOUT = 10U * 1000U;
 
 	// Window message for NOTIFYICONDATA.
-	static const unsigned int WM_ACHWIN32_NOTIFY = WM_USER + 69;	// nice
+	static constexpr unsigned int WM_ACHWIN32_NOTIFY = WM_USER + 69;	// nice
 
 	// Icon ID high word.
-	static const DWORD ACHWIN32_NID_UID_HI = 0x19840000;
+	static constexpr DWORD ACHWIN32_NID_UID_HI = 0x19840000;
 
 public:
 	/**
@@ -320,7 +320,7 @@ void AchWin32Private::registerWindowClass(void)
 	if (AchWin32Private::instance.d_ptr->atomWindowClass != 0)
 		return;
 
-	static const WNDCLASSEX wndClass = {
+	static constexpr WNDCLASSEX wndClass = {
 		sizeof(WNDCLASSEX),		// cbSize
 		CS_HREDRAW | CS_VREDRAW,	// style
 		RpAchNotifyWndProc,		// lpfnWndProc

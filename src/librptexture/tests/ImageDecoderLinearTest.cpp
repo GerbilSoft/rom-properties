@@ -109,7 +109,7 @@ class ImageDecoderLinearTest : public ::testing::TestWithParam<ImageDecoderLinea
 			const uint32_t dest_pixel);
 
 		// Number of iterations for benchmarks.
-		static const unsigned int BENCHMARK_ITERATIONS = 100000;
+		static constexpr unsigned int BENCHMARK_ITERATIONS = 100000U;
 
 	public:
 		// Temporary image buffer

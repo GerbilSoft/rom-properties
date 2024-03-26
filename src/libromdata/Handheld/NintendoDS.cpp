@@ -734,7 +734,7 @@ const char *NintendoDS::systemName(unsigned int type) const
 	// Bits 0-1: Type. (long, short, abbreviation)
 	// Bit 2: 0 for NDS, 1 for DSi-exclusive.
 	// Bit 3: 0 for worldwide, 1 for China. (iQue DS)
-	static const char *const sysNames[16] = {
+	static constexpr const char *const sysNames[16] = {
 		// Nintendo (worldwide)
 		"Nintendo DS", "Nintendo DS", "NDS", nullptr,
 		"Nintendo DSi", "Nintendo DSi", "DSi", nullptr,
@@ -881,11 +881,11 @@ int NintendoDS::loadFieldData(void)
 
 #ifdef _WIN32
 	// Windows: 6 visible rows per RFT_LISTDATA.
-	static const int rows_visible = 6;
-#else
+	static constexpr int rows_visible = 6;
+#else /* !_WIN32 */
 	// Linux: 4 visible rows per RFT_LISTDATA.
-	static const int rows_visible = 4;
-#endif
+	static constexpr int rows_visible = 4;
+#endif /* _WIN32 */
 
 	// ROM header is read in the constructor.
 	const NDS_RomHeader *const romHeader = &d->romHeader;
@@ -1185,7 +1185,7 @@ int NintendoDS::loadFieldData(void)
 	RomFields::age_ratings_t age_ratings;
 	// Valid ratings: 0-1, 3-9
 	// TODO: Not sure if Finland is valid for DSi.
-	static const uint16_t valid_ratings = 0x3FB;
+	static constexpr uint16_t valid_ratings = 0x3FB;
 
 	for (int i = static_cast<int>(age_ratings.size())-1; i >= 0; i--) {
 		if (!(valid_ratings & (1U << i))) {

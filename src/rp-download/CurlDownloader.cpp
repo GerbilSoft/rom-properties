@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (rp-download)                      *
  * CurlDownloader.cpp: libcurl-based file downloader.                      *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -58,7 +58,7 @@ size_t CurlDownloader::write_data(char *ptr, size_t size, size_t nmemb, void *us
 	if (vec->capacity() == 0) {
 		// Capacity wasn't initialized by Content-Length.
 		// Reserve at least 64 KB.
-		static const size_t min_reserve = 64*1024;
+		static constexpr size_t min_reserve = 64*1024;
 		const size_t reserve = (len > min_reserve ? len : min_reserve);
 		vec->reserve(reserve);
 	}
@@ -88,8 +88,8 @@ size_t CurlDownloader::parse_header(char *ptr, size_t size, size_t nitems, void 
 	const size_t len = size * nitems;
 
 	// Supported headers.
-	static const char http_content_length[] = "Content-Length: ";
-	static const char http_last_modified[] = "Last-Modified: ";
+	static constexpr char http_content_length[] = "Content-Length: ";
+	static constexpr char http_last_modified[] = "Last-Modified: ";
 
 	if (len >= sizeof(http_content_length) &&
 	    !strncasecmp(ptr, http_content_length, sizeof(http_content_length)-1))

@@ -579,14 +579,14 @@ const char *PlayStationDisc::systemName(unsigned int type) const
 	switch (d->consoleType) {
 		default:
 		case PlayStationDiscPrivate::ConsoleType::PS1: {
-			static const char *const sysNames_PS1[4] = {
+			static constexpr const char *const sysNames_PS1[4] = {
 				"Sony PlayStation", "PlayStation", "PS1", nullptr
 			};
 			return sysNames_PS1[type & SYSNAME_TYPE_MASK];
 		}
 
 		case PlayStationDiscPrivate::ConsoleType::PS2: {
-			static const char *const sysNames_PS2[4] = {
+			static constexpr const char *const sysNames_PS2[4] = {
 				"Sony PlayStation 2", "PlayStation 2", "PS2", nullptr
 			};
 			return sysNames_PS2[type & SYSNAME_TYPE_MASK];
@@ -936,7 +936,7 @@ int PlayStationDisc::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int 
 	}
 
 	// System ID
-	static const char sys_tbl[][4] = {
+	static constexpr char sys_tbl[][4] = {
 		"ps1", "ps2"
 	};
 	if (d->consoleType >= PlayStationDiscPrivate::ConsoleType::Max)

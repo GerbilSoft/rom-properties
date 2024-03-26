@@ -482,7 +482,7 @@ int WiiUPackagePrivate::addFields_System_XMLs(void)
 		// TODO: Exclude ratings that aren't actually used?
 		RomFields::age_ratings_t age_ratings;
 		// Valid ratings: 0-1, 3-4, 6-11 (excludes old BBFC and Finland/MEKU)
-		static const uint16_t valid_ratings = 0xFDB;
+		static constexpr uint16_t valid_ratings = 0xFDB;
 		static constexpr array<const char*, 12> age_rating_nodes = {{
 			"pc_cero", "pc_esrb", "pc_bbfc", "pc_usk",
 			"pc_pegi_gen", "pc_pegi_fin", "pc_pegi_prt", "pc_pegi_bbfc",

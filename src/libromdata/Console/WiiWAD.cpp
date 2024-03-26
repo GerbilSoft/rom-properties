@@ -589,7 +589,7 @@ const char *WiiWAD::systemName(unsigned int type) const
 		case NINTENDO_SYSID_IOS:
 		case NINTENDO_SYSID_RVL: {
 			// Wii
-			static const char *const sysNames_Wii[4] = {
+			static constexpr const char *const sysNames_Wii[4] = {
 				"Nintendo Wii", "Wii", "Wii", nullptr
 			};
 			return sysNames_Wii[type];
@@ -598,7 +598,7 @@ const char *WiiWAD::systemName(unsigned int type) const
 		case NINTENDO_SYSID_TWL: {
 			// DSi
 			// TODO: iQue DSi for China?
-			static const char *const sysNames_DSi[4] = {
+			static constexpr const char *const sysNames_DSi[4] = {
 				"Nintendo DSi", "DSi", "DSi", nullptr
 			};
 			return sysNames_DSi[type];
@@ -992,7 +992,7 @@ int WiiWAD::loadFieldData(void)
 			// mapping is necessary.
 			RomFields::age_ratings_t age_ratings;
 			// Valid ratings: 0-1, 3-9
-			static const uint16_t valid_ratings = 0x3FB;
+			static constexpr uint16_t valid_ratings = 0x3FB;
 
 			for (int i = static_cast<int>(age_ratings.size())-1; i >= 0; i--) {
 				if (!(valid_ratings & (1U << i))) {

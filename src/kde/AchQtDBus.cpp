@@ -124,7 +124,7 @@ int AchQtDBus::notifyFunc(Achievements::ID id)
 
 	// Hints, including image data.
 	// FIXME: Icon size. Using 32px for now.
-	static const int iconSize = 32;
+	static constexpr int iconSize = 32;
 	const AchSpriteSheet achSpriteSheet(iconSize);
 	QVariantMap hints;
 

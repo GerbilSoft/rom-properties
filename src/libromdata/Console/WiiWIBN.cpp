@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * WiiWIBN.hpp: Nintendo Wii save file banner reader.                      *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -122,8 +122,8 @@ rp_image_const_ptr WiiWIBNPrivate::loadIcon(void)
 
 	// Icon starts after the header and banner.
 	// Read up to 8 icons.
-	static const unsigned int iconstartaddr = BANNER_WIBN_STRUCT_SIZE;
-	static const unsigned int iconsizetotal = BANNER_WIBN_ICON_SIZE*CARD_MAXICONS;
+	static constexpr unsigned int iconstartaddr = BANNER_WIBN_STRUCT_SIZE;
+	static constexpr unsigned int iconsizetotal = BANNER_WIBN_ICON_SIZE*CARD_MAXICONS;
 	// FIXME: Some compilers are reporting that `icondata.get()` is NULL here,
 	// which results in an error due to -Werror=nonnull.
 	auto icondata = aligned_uptr<uint8_t>(16, iconsizetotal);
@@ -341,7 +341,7 @@ const char *WiiWIBN::systemName(unsigned int type) const
 		"WiiWIBN::systemName() array index optimization needs to be updated.");
 
 	// Bits 0-1: Type. (long, short, abbreviation)
-	static const char *const sysNames[4] = {
+	static constexpr const char *const sysNames[4] = {
 		// NOTE: Same as Wii.
 		"Nintendo Wii", "Wii", "Wii", nullptr
 	};

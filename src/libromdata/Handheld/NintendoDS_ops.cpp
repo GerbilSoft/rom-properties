@@ -572,7 +572,7 @@ int NintendoDS::doRomOp_int(int id, RomOpParams *pParams)
 
 			// Update fields.
 #ifndef ENABLE_DSi_SECURE_AREA
-			static const bool dsi = false;
+			static constexpr bool dsi = false;
 #endif /* ENABLE_DSi_SECURE_AREA */
 			pParams->status = 0;
 			pParams->msg = doEncrypt

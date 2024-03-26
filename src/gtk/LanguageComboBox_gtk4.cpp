@@ -111,7 +111,7 @@ rp_language_combo_box_rebuild_icons(struct _RpLanguageComboBox *widget)
 	// - Fractional scaling
 	// - Runtime adjustment via "configure" event
 	// Reference: https://developer.gnome.org/gdk3/stable/gdk3-Windows.html#gdk-window-get-scale-factor
-	static const int iconSize = 16;
+	static constexpr int iconSize = 16;
 
 #if GTK_CHECK_VERSION(3,10,0)
 #  if 0

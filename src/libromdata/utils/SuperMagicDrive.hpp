@@ -32,10 +32,10 @@
 
 namespace LibRomData { namespace SuperMagicDrive {
 
-// SMD block size.
-static const unsigned int SMD_BLOCK_SIZE = 16384;
+// SMD block size
+static constexpr unsigned int SMD_BLOCK_SIZE = 16384;
 
-/** Internal algorithms. **/
+/** Internal algorithms **/
 // NOTE: These are public to allow for unit tests and benchmarking.
 
 /**

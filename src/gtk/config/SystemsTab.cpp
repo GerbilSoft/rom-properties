@@ -358,8 +358,8 @@ rp_systems_tab_save(RpSystemsTab *tab, GKeyFile *keyFile)
 
 	// Save the configuration.
 
-	static const char s_dmg_dmg[][4] = {"DMG", "CGB"};
-	static const char s_dmg_other[][4] = {"DMG", "SGB", "CGB"};
+	static constexpr char s_dmg_dmg[][4] = {"DMG", "CGB"};
+	static constexpr char s_dmg_other[][4] = {"DMG", "SGB", "CGB"};
 
 	const int idxDMG = GET_CBO(tab->cboDMG);
 	assert(idxDMG >= 0);

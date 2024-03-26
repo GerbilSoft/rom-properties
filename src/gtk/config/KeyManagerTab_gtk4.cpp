@@ -264,7 +264,7 @@ void rp_key_manager_tab_class_init_gtkver(RpKeyManagerTabClass *klass)
 		GTK_STYLE_PROVIDER(provider), GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
 
 	// Reference: https://discourse.gnome.org/t/setting-text-colour-in-gtkeditable-label-while-its-being-edited-gtk4/6979/5
-	static const char css_EditableLabel[] =
+	static constexpr char css_EditableLabel[] =
 		"editablelabel.gsrp_monospace stack text,\n"
 		"editablelabel.gsrp_monospace stack text selection,\n"
 		"editablelabel.gsrp_monospace stack label {\n"

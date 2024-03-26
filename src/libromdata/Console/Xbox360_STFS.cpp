@@ -729,7 +729,7 @@ const char *Xbox360_STFS::systemName(unsigned int type) const
 
 	// Bits 0-1: Type. (long, short, abbreviation)
 	// TODO: STFS-specific, or just use Xbox 360?
-	static const char *const sysNames[4] = {
+	static constexpr const char *const sysNames[4] = {
 		"Microsoft Xbox 360", "Xbox 360", "X360", nullptr
 	};
 

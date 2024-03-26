@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * Sega8Bit.cpp: Sega 8-bit (SMS/GG) ROM reader.                           *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -272,7 +272,7 @@ int Sega8Bit::isRomSupported_static(const DetectInfo *info)
 		return -1;
 
 	// Header data must contain 0x7FF0-0x7FFF.
-	static const unsigned int header_addr_expected = 0x7FF0;
+	static constexpr unsigned int header_addr_expected = 0x7FF0;
 	if (info->szFile < header_addr_expected ||
 	    info->header.addr > header_addr_expected ||
 	    info->header.addr + info->header.size < header_addr_expected + 0x10)
@@ -314,7 +314,7 @@ const char *Sega8Bit::systemName(unsigned int type) const
 	static_assert(SYSNAME_TYPE_MASK == 3,
 		"Sega8Bit::systemName() array index optimization needs to be updated.");
 
-	static const char *const sysNames[4] = {
+	static constexpr const char *const sysNames[4] = {
 		"Sega Master System",
 		"Master System",
 		"SMS",

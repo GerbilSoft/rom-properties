@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE)                              *
  * KeyStoreItemDelegate.cpp: KeyStore item delegate for QListView.         *
  *                                                                         *
- * Copyright (c) 2013-2023 by David Korth.                                 *
+ * Copyright (c) 2013-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -29,15 +29,15 @@ KeyStoreItemDelegate::KeyStoreItemDelegate(QObject *parent)
 	// we need to use QRegExpValidator if it isn't available.
 
 	// Hexadecimal
-	static const char regex_validHexKey[] = "[0-9a-fA-F]*";
+	static constexpr char regex_validHexKey[] = "[0-9a-fA-F]*";
 
 	// Hexadecimal + Kanji
 	// Reference: http://www.localizingjapan.com/blog/2012/01/20/regular-expressions-for-japanese-text/
 #if QT_VERSION >= 0x050100
-	static const char regex_validHexKeyOrKanji[] = "[0-9a-fA-F\\p{Han}]*";
+	static constexpr char regex_validHexKeyOrKanji[] = "[0-9a-fA-F\\p{Han}]*";
 #else /* QT_VERSION < 0x050100 */
 	// QRegExp doesn't support named Unicode properties.
-	static const char regex_validHexKeyOrKanji[] = "[0-9a-fA-F\\x3400-\\x4DB5\\x4E00-\\x9FCB\\xF900-\\xFA6A]*";
+	static constexpr char regex_validHexKeyOrKanji[] = "[0-9a-fA-F\\x3400-\\x4DB5\\x4E00-\\x9FCB\\xF900-\\xFA6A]*";
 #endif
 
 #if QT_VERSION >= 0x050100
@@ -133,7 +133,7 @@ void KeyStoreItemDelegate::paint(QPainter *painter,
 #if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
 	const qreal dpm = pxm.devicePixelRatio();
 #else /* QT_VERSION < QT_VERSION_CHECK(5,0,0) */
-	static const qreal dpm = 1.0;
+	static constexpr qreal dpm = 1.0;
 #endif /* QT_VERSION >= QT_VERSION_CHECK(5,0,0) */
 	const QPointF pointF(
 		((((optionv4.rect.width() * dpm) - pxm.width()) / 2) + (optionv4.rect.left() * dpm)) / dpm,

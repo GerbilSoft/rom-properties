@@ -634,7 +634,7 @@ rp_rom_data_view_init_header_row(RpRomDataView *page)
 	// Supported image types.
 	const uint32_t imgbf = romData->supportedImageTypes();
 	// FIXME: Store the standard image height somewhere else.
-	static const int imgStdHeight = 32;
+	static constexpr int imgStdHeight = 32;
 	bool ok = false;
 
 	// Banner

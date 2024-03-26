@@ -402,7 +402,7 @@ rp_drag_image_update_pixmaps(RpDragImage *image)
 		// Set a drag source.
 		// TODO: Use text/uri-list and extract to a temporary directory?
 		// FIXME: application/octet-stream works on Nautilus, but not Thunar...
-		static const GtkTargetEntry targetEntries[2] = {
+		static constexpr GtkTargetEntry targetEntries[2] = {
 			{(char*)"image/png",			// target
 			 GTK_TARGET_OTHER_APP,			// flags
 			 1},					// info

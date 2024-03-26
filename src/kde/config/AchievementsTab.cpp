@@ -77,7 +77,7 @@ void AchievementsTab::reset(void)
 
 	// TODO: Ideal icon size?
 	// Using 32x32 for now.
-	static const int iconSize = 32;
+	static constexpr int iconSize = 32;
 	const AchSpriteSheet achSpriteSheet(iconSize);
 	treeWidget->setIconSize(QSize(iconSize, iconSize));
 

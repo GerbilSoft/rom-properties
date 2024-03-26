@@ -167,10 +167,10 @@ rp_image_const_ptr NintendoBadgePrivate::loadImage(int idx)
 	// Badge sizes.
 	// Badge data is RGB565+A4.
 	// Badge set data is RGB565 only. (No alpha!)
-	static const unsigned int badge64_rgb_sz = BADGE_SIZE_LARGE_W*BADGE_SIZE_LARGE_H*2;
-	static const unsigned int badge64_a4_sz  = BADGE_SIZE_LARGE_W*BADGE_SIZE_LARGE_H/2;
-	static const unsigned int badge32_rgb_sz = BADGE_SIZE_SMALL_W*BADGE_SIZE_SMALL_H*2;
-	static const unsigned int badge32_a4_sz  = BADGE_SIZE_SMALL_W*BADGE_SIZE_SMALL_H/2;
+	static constexpr unsigned int badge64_rgb_sz = BADGE_SIZE_LARGE_W*BADGE_SIZE_LARGE_H*2;
+	static constexpr unsigned int badge64_a4_sz  = BADGE_SIZE_LARGE_W*BADGE_SIZE_LARGE_H/2;
+	static constexpr unsigned int badge32_rgb_sz = BADGE_SIZE_SMALL_W*BADGE_SIZE_SMALL_H*2;
+	static constexpr unsigned int badge32_a4_sz  = BADGE_SIZE_SMALL_W*BADGE_SIZE_SMALL_H/2;
 
 	// Starting address and sizes depend on file type and mega badge status.
 	unsigned int start_addr;
@@ -315,7 +315,7 @@ rp_image_const_ptr NintendoBadgePrivate::loadImage(int idx)
 	}
 
 	// Set the sBIT metadata.
-	static const rp_image::sBIT_t sBIT = {5,6,5,0,4};
+	static constexpr rp_image::sBIT_t sBIT = {5,6,5,0,4};
 	img->set_sBIT(&sBIT);
 
 	img_badges[idx] = img;
@@ -512,7 +512,7 @@ const char *NintendoBadge::systemName(unsigned int type) const
 	static_assert(SYSNAME_TYPE_MASK == 3,
 		"NintendoBadge::systemName() array index optimization needs to be updated.");
 
-	static const char *const sysNames[4] = {
+	static constexpr const char *const sysNames[4] = {
 		"Nintendo Badge Arcade", "Badge Arcade", "Badge", nullptr,
 	};
 

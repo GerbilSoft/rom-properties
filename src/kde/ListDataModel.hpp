@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * ListDataModel.hpp: QAbstractListModel for RFT_LISTDATA.                 *
  *                                                                         *
- * Copyright (c) 2012-2023 by David Korth.                                 *
+ * Copyright (c) 2012-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -39,7 +39,7 @@ private:
 
 public:
 	// Role for an rp_image*.
-	static const int RpImageRole = Qt::UserRole + 0x4049;
+	static constexpr int RpImageRole = Qt::UserRole + 0x4049;
 
 public:
 	// Qt Model/View interface.

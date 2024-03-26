@@ -235,7 +235,7 @@ rp_config_dialog_init(RpConfigDialog *dialog)
 	{ tab_title, ctor, "lbl" #klass, "tab" #klass }
 #endif /* RP_USE_GTK_ALIGNMENT */
 
-	static const TabInfo_t tabInfo_tbl[] = {
+	static constexpr TabInfo_t tabInfo_tbl[] = {
 		TAB_INFO(ImageTypes,	NOP_C_("ConfigDialog", "&Image Types"),		rp_image_types_tab_new),
 		TAB_INFO(Systems,	NOP_C_("ConfigDialog", "&Systems"),		rp_systems_tab_new),
 		TAB_INFO(Options,	NOP_C_("ConfigDialog", "&Options"),		rp_options_tab_new),

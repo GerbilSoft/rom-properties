@@ -3,7 +3,7 @@
  * Nintendo3DS_SMDH.hpp: Nintendo 3DS SMDH reader.                         *
  * Handles SMDH files and SMDH sections.                                   *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -341,7 +341,7 @@ const char *Nintendo3DS_SMDH::systemName(unsigned int type) const
 	// Bits 0-1: Type. (long, short, abbreviation)
 	// Bit 2: iQue
 	// TODO: Is it possible to identify "*New*" Nintendo 3DS" from just the SMDH?
-	static const char *const sysNames[4*4] = {
+	static constexpr const char *const sysNames[4*4] = {
 		"Nintendo 3DS", "Nintendo 3DS", "3DS", nullptr,
 		"iQue 3DS", "iQue 3DS", "3DS", nullptr,
 	};
@@ -542,7 +542,7 @@ int Nintendo3DS_SMDH::loadFieldData(void)
 	// mapping is necessary.
 	RomFields::age_ratings_t age_ratings;
 	// Valid ratings: 0-1, 3-4, 6-10
-	static const uint16_t valid_ratings = 0x7DB;
+	static constexpr uint16_t valid_ratings = 0x7DB;
 
 	for (int i = static_cast<int>(age_ratings.size())-1; i >= 0; i--) {
 		if (!(valid_ratings & (1U << i))) {

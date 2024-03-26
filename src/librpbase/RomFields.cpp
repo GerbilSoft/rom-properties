@@ -298,7 +298,7 @@ RomFields::~RomFields()
  */
 const char *RomFields::ageRatingAbbrev(AgeRatingsCountry country)
 {
-	static const char abbrevs[][8] = {
+	static constexpr char abbrevs[][8] = {
 		"CERO", "ESRB", "",        "USK",
 		"PEGI", "MEKU", "PEGI-PT", "BBFC",
 		"ACB",  "GRB",  "CGSRR",   "OFLC",
@@ -999,7 +999,7 @@ int RomFields::addField_string_hexdump(const char *name, const uint8_t *buf, siz
 	char *pStr = str.get();
 
 	// Hexadecimal lookup table.
-	static const char hex_lookup[2][16] = {
+	static constexpr char hex_lookup[2][16] = {
 		// Uppercase
 		{'0','1','2','3','4','5','6','7',
 		 '8','9','A','B','C','D','E','F'},

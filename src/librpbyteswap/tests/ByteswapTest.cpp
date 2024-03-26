@@ -37,7 +37,7 @@ class ByteswapTest : public ::testing::Test
 
 	public:
 		// Test array size
-		static constexpr unsigned int TEST_ARRAY_SIZE = 1024;
+		static constexpr unsigned int TEST_ARRAY_SIZE = 1024U;
 
 		/**
 		 * Original test data
@@ -55,7 +55,7 @@ class ByteswapTest : public ::testing::Test
 		static const array<uint8_t, TEST_ARRAY_SIZE> bswap_32b;
 
 		// Number of iterations for benchmarks.
-		static const unsigned int BENCHMARK_ITERATIONS = 100000;
+		static constexpr unsigned int BENCHMARK_ITERATIONS = 100000U;
 
 	public:
 		void SetUp(void) final;
@@ -63,7 +63,7 @@ class ByteswapTest : public ::testing::Test
 
 	public:
 		// Temporary aligned memory buffer.
-		static const unsigned int ALIGN_BUF_SIZE = TEST_ARRAY_SIZE * 16;
+		static constexpr unsigned int ALIGN_BUF_SIZE = TEST_ARRAY_SIZE * 16U;
 		UNIQUE_PTR_ALIGNED(uint8_t) align_buf;
 };
 

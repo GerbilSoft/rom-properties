@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * MessageWidget.cpp: Message widget. (Similar to KMessageWidget)          *
  *                                                                         *
- * Copyright (c) 2017-2023 by David Korth.                                 *
+ * Copyright (c) 2017-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -472,7 +472,7 @@ void MessageWidgetRegister(void)
 	if (atom_messageWidget != 0)
 		return;
 
-	static const WNDCLASSEX wndClass = {
+	static constexpr WNDCLASSEX wndClass = {
 		sizeof(WNDCLASSEX),		// cbSize
 		CS_HREDRAW | CS_VREDRAW,	// style
 		MessageWidgetWndProc,		// lpfnWndProc

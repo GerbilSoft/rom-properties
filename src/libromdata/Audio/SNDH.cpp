@@ -241,8 +241,8 @@ SNDHPrivate::TagData SNDHPrivate::parseTags(void)
 
 		// unice68 uses a margin of 16 bytes for input size vs. file size,
 		// and a maximum of 16 MB for the output size.
-		static const int SNDH_SIZE_MARGIN = 16;
-		static const int SNDH_SIZE_MAX = (1 << 24);
+		static constexpr int SNDH_SIZE_MARGIN = 16;
+		static constexpr int SNDH_SIZE_MAX = (1 << 24);
 		int csize = 0;
 		int reqSize = unice68_depacked_size(inbuf.get(), &csize);
 		assert(reqSize > 0);
@@ -762,7 +762,7 @@ const char *SNDH::systemName(unsigned int type) const
 		"SNDH::systemName() array index optimization needs to be updated.");
 
 	// Bits 0-1: Type. (long, short, abbreviation)
-	static const char *const sysNames[4] = {
+	static constexpr const char *const sysNames[4] = {
 		"Atari ST SNDH Audio", "SNDH", "SNDH", nullptr
 	};
 

@@ -168,7 +168,7 @@ const char *Lynx::systemName(unsigned int type) const
 		"Lynx::systemName() array index optimization needs to be updated.");
 
 	// Bits 0-1: Type. (long, short, abbreviation)
-	static const char *const sysNames[4] = {
+	static constexpr const char *const sysNames[4] = {
 		"Atari Lynx", "Lynx", "LNX", nullptr,
 	};
 
@@ -204,7 +204,7 @@ int Lynx::loadFieldData(void)
 	d->fields.addField_string(C_("Lynx", "Manufacturer"),
 		latin1_to_utf8(romHeader->manufname, sizeof(romHeader->manufname)));
 
-	static const char rotation_names[][8] = {
+	static constexpr char rotation_names[][8] = {
 		NOP_C_("Lynx|Rotation", "None"),
 		NOP_C_("Lynx|Rotation", "Left"),
 		NOP_C_("Lynx|Rotation", "Right"),

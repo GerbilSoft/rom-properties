@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * CBMCart.cpp: Commodore ROM cartridge reader.                            *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -220,7 +220,7 @@ const char *CBMCart::systemName(unsigned int type) const
 	static_assert(SYSNAME_TYPE_MASK == 3,
 		"CBMCart::systemName() array index optimization needs to be updated.");
 
-	static const char *const sysNames[][4] = {
+	static constexpr const char *const sysNames[][4] = {
 		{"Commodore 64", "C64", "C64", nullptr},
 		{"Commodore 128", "C128", "C128", nullptr},
 		{"Commodore CBM-II", "CBM-II", "CBM-II", nullptr},
@@ -311,7 +311,7 @@ int CBMCart::loadFieldData(void)
 					// Identify the type based on the EXROM/GAME lines.
 					const uint8_t id = (romHeader->c64_game  != 0) |
 					                  ((romHeader->c64_exrom != 0) << 1);
-					static const char crt_types_c64_generic[][16] = {
+					static constexpr char crt_types_c64_generic[][16] = {
 						"16 KB game", "8 KB game",
 						"UltiMax mode", "RAM/disabled"
 					};
@@ -458,7 +458,7 @@ int CBMCart::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) co
 	}
 
 	// System IDs.
-	static const char sys_tbl[][8] = {
+	static constexpr char sys_tbl[][8] = {
 		"c64", "c128", "cbmII", "vic20", "plus4"
 	};
 	if (static_cast<int>(d->romType) >= ARRAY_SIZE_I(sys_tbl))

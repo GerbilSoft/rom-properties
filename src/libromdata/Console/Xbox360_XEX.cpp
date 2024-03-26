@@ -1065,7 +1065,7 @@ void Xbox360_XEX_Private::convertGameRatings(
 	// - If rating A is 0, and rating B is 2:
 	//   - The value for "A" gets slot 0.
 	//   - The value for "B" gets slots 1 and 2.
-	static const int8_t region_values[14][16] = {
+	static constexpr int8_t region_values[14][16] = {
 		// USA (ESRB)
 		{3, 6, 6, 10, 10, 13, 13, 17, 17, 18, 18, 18, 18, 18, 18, -1},
 		// Europe (PEGI)
@@ -1507,7 +1507,7 @@ const char *Xbox360_XEX::systemName(unsigned int type) const
 
 	// Bits 0-1: Type. (long, short, abbreviation)
 	// TODO: XEX-specific, or just use Xbox 360?
-	static const char *const sysNames[4] = {
+	static constexpr const char *const sysNames[4] = {
 		"Microsoft Xbox 360", "Xbox 360", "X360", nullptr
 	};
 

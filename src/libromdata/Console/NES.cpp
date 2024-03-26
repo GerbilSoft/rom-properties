@@ -854,7 +854,7 @@ int NES::isRomSupported_static(const DetectInfo *info)
 
 	// Check for FDS.
 	// TODO: Check that the block code is 0x01?
-	static const uint8_t fds_magic[] = "*NINTENDO-HVC*";
+	static constexpr uint8_t fds_magic[] = "*NINTENDO-HVC*";
 
 	// Check for headered FDS.
 	const FDS_DiskHeader_fwNES *fwNESHeader =
@@ -908,7 +908,7 @@ const char *NES::systemName(unsigned int type) const
 	switch (d->romType & NESPrivate::ROM_SYSTEM_MASK) {
 		case NESPrivate::ROM_SYSTEM_NES:
 		default: {
-			static const char *const sysNames_NES[3][4] = {
+			static constexpr const char *const sysNames_NES[3][4] = {
 				// NES (International)
 				{"Nintendo Entertainment System",
 				 "Nintendo Entertainment System",
@@ -942,7 +942,7 @@ const char *NES::systemName(unsigned int type) const
 		}
 
 		case NESPrivate::ROM_SYSTEM_FDS: {
-			static const char *const sysNames_FDS[] = {
+			static constexpr const char *const sysNames_FDS[] = {
 				"Nintendo Famicom Disk System",
 				"Famicom Disk System",
 				"FDS", nullptr
@@ -951,7 +951,7 @@ const char *NES::systemName(unsigned int type) const
 		}
 
 		case NESPrivate::ROM_SYSTEM_VS: {
-			static const char *const sysNames_VS[] = {
+			static constexpr const char *const sysNames_VS[] = {
 				"Nintendo VS. System",
 				"VS. System",
 				"VS", nullptr
@@ -960,7 +960,7 @@ const char *NES::systemName(unsigned int type) const
 		}
 
 		case NESPrivate::ROM_SYSTEM_PC10: {
-			static const char *const sysNames_PC10[] = {
+			static constexpr const char *const sysNames_PC10[] = {
 				"Nintendo PlayChoice-10",
 				"PlayChoice-10",
 				"PC10", nullptr
@@ -1295,7 +1295,7 @@ int NES::loadFieldData(void)
 				{
 					// Check the Vs. PPU type.
 					// NOTE: Not translatable!
-					static const char vs_ppu_types[][12] = {
+					static constexpr char vs_ppu_types[][12] = {
 						"RP2C03B",     "RP2C03G",
 						"RP2C04-0001", "RP2C04-0002",
 						"RP2C04-0003", "RP2C04-0004",
@@ -1330,7 +1330,7 @@ int NES::loadFieldData(void)
 				if ((d->romType & NESPrivate::ROM_FORMAT_MASK) == NESPrivate::ROM_FORMAT_NES2) {
 					if ((d->header.ines.mapper_hi & INES_F7_SYSTEM_MASK) == INES_F7_SYSTEM_EXTD) {
 						// NES 2.0 Extended Console Type
-						static const char *const ext_hw_types[] = {
+						static constexpr const char *const ext_hw_types[] = {
 							"NES/Famicom/Dendy",	// Not normally used.
 							"Nintendo VS. System",	// Not normally used.
 							"PlayChoice-10",	// Not normally used.
@@ -1355,7 +1355,7 @@ int NES::loadFieldData(void)
 					misc_roms = d->header.ines.nes2.misc_roms & 3;
 
 					// Default expansion hardware.
-					static const char *const exp_hw_tbl[] = {
+					static constexpr const char *const exp_hw_tbl[] = {
 						// 0x00
 						NOP_C_("NES|Expansion", "Unspecified"),
 						NOP_C_("NES|Expansion", "NES/Famicom Controllers"),
@@ -1539,7 +1539,7 @@ int NES::loadFieldData(void)
 			d->fields.addField_string(mirroring_title, s_mirroring_int);
 
 			// Board type (Mapper)
-			static const char footer_mapper_tbl[][8] = {
+			static constexpr char footer_mapper_tbl[][8] = {
 				"NROM", "CNROM", "UNROM", "GNROM", "MMCx"
 			};
 			const unsigned int footer_mapper = (footer.board_info & 0x7F);

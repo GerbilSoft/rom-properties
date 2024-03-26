@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (rp-download)                      *
  * WinInetDownloader.cpp: WinInet-based file downloader.                   *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -72,7 +72,7 @@ int WinInetDownloader::download(void)
 			INTERNET_FLAG_NO_UI;
 	if (!IsWindowsVistaOrGreater()) {
 		// WinInet doesn't support SNI prior to Vista.
-		static const TCHAR rpdb_domain[] = _T("https://rpdb.gerbilsoft.com/");
+		static constexpr TCHAR rpdb_domain[] = _T("https://rpdb.gerbilsoft.com/");
 		if (m_url.size() >= _countof(rpdb_domain) &&
 		    !_tcsncmp(m_url.c_str(), rpdb_domain, _countof(rpdb_domain)-1))
 		{
@@ -185,7 +185,7 @@ int WinInetDownloader::download(void)
 	}
 
 	// Read the file.
-	static const DWORD BUF_SIZE_INCREMENT = 64*1024;
+	static constexpr DWORD BUF_SIZE_INCREMENT = 64U * 1024U;
 	DWORD cur_increment;
 	m_data.clear();
 	if (dwContentLength > 0) {

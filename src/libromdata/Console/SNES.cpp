@@ -693,7 +693,7 @@ string SNESPrivate::getGameID(bool doFake) const
 		char prefix[6];
 		char suffix[6];
 	};
-	static const PrefixSuffixTbl_t region_ps[] = {
+	static constexpr PrefixSuffixTbl_t region_ps[] = {
 		// 0x00
 		{"SHVC-", "-JPN"},	// Japan
 		{"SNS-",  "-USA"},	// North America
@@ -820,7 +820,7 @@ SNES::SNES(const IRpFilePtr &file)
 	if (d->romType == SNESPrivate::RomType::Unknown) {
 		// Check for BS-X "Memory Pack" headers.
 		static constexpr array<uint16_t, 2> bsx_addrs = {{0x7F00, 0xFF00}};
-		static const uint8_t bsx_mempack_magic[6] = {'M', 0, 'P', 0, 0, 0};
+		static constexpr uint8_t bsx_mempack_magic[6] = {'M', 0, 'P', 0, 0, 0};
 		uint8_t buf[7];
 
 		for (const uint16_t bsx_addr : bsx_addrs) {
@@ -887,13 +887,13 @@ SNES::SNES(const IRpFilePtr &file)
 		if (!isCopierHeader) {
 			// Check for "GAME DOCTOR SF ".
 			// (UCON64 uses "GAME DOCTOR SF 3", but there's multiple versions.)
-			static const char gdsf3[] = "GAME DOCTOR SF ";
+			static constexpr char gdsf3[] = "GAME DOCTOR SF ";
 			if (!memcmp(&smdHeader, gdsf3, sizeof(gdsf3)-1)) {
 				// Game Doctor ROM header.
 				isCopierHeader = true;
 			} else {
 				// Check for "SUPERUFO".
-				static const char superufo[] = "SUPERUFO";
+				static constexpr char superufo[] = "SUPERUFO";
 				const uint8_t *u8ptr = reinterpret_cast<const uint8_t*>(&smdHeader);
 				if (!memcmp(&u8ptr[8], superufo, sizeof(superufo)-1)) {
 					// Super UFO ROM header.
@@ -906,7 +906,7 @@ SNES::SNES(const IRpFilePtr &file)
 	// Header addresses to check.
 	// If a copier header is detected, use index 1,
 	// which checks +512 offsets first.
-	static const uint32_t all_header_addresses[2][4] = {
+	static constexpr uint32_t all_header_addresses[2][4] = {
 		// Non-headered first.
 		{0x7FB0, 0xFFB0, 0x7FB0+512, 0xFFB0+512},
 		// Headered first.
@@ -1011,14 +1011,14 @@ int SNES::isRomSupported_static(const DetectInfo *info)
 	if (info->header.addr == 0 && info->header.size >= 0x200) {
 		// Check for "GAME DOCTOR SF ".
 		// (UCON64 uses "GAME DOCTOR SF 3", but there's multiple versions.)
-		static const char gdsf3[] = "GAME DOCTOR SF ";
+		static constexpr char gdsf3[] = "GAME DOCTOR SF ";
 		if (!memcmp(info->header.pData, gdsf3, sizeof(gdsf3)-1)) {
 			// Game Doctor ROM header.
 			return static_cast<int>(SNESPrivate::RomType::SNES);
 		}
 
 		// Check for "SUPERUFO".
-		static const char superufo[] = "SUPERUFO";
+		static constexpr char superufo[] = "SUPERUFO";
 		if (!memcmp(&info->header.pData[8], superufo, sizeof(superufo)-8)) {
 			// Super UFO ROM header.
 			return static_cast<int>(SNESPrivate::RomType::SNES);
@@ -1049,7 +1049,7 @@ const char *SNES::systemName(unsigned int type) const
 	unsigned int idx = (type & SYSNAME_TYPE_MASK);
 
 	// Localized SNES/SFC system names.
-	static const char *const sysNames[16] = {
+	static constexpr const char *const sysNames[16] = {
 		// Japan: Super Famicom
 		"Nintendo Super Famicom", "Super Famicom", "SFC", nullptr,
 		// South Korea: Super Comboy
@@ -1061,7 +1061,7 @@ const char *SNES::systemName(unsigned int type) const
 	};
 
 	// BS-X system names.
-	static const char *const sysNames_BSX[4] = {
+	static constexpr const char *const sysNames_BSX[4] = {
 		"Satellaview BS-X", "Satellaview", "BS-X", nullptr
 	};
 

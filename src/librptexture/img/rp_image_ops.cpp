@@ -836,7 +836,7 @@ int rp_image::unswizzle_YCoCg(void)
 	argb32_t *bits = static_cast<argb32_t*>(backend->data());
 
 	// Conversion offset (for YCoCg to RGB)
-	static const float YCoCg_offset = 0.5f * 256.0f / 255.0f;
+	static constexpr float YCoCg_offset = 0.5f * 256.0f / 255.0f;
 
 	for (unsigned int y = static_cast<unsigned int>(backend->height); y > 0; y--) {
 		for (unsigned int x = static_cast<unsigned int>(width); x > 0; x--) {
@@ -888,7 +888,7 @@ int rp_image::unswizzle_YCoCg_scaled(void)
 	argb32_t *bits = static_cast<argb32_t*>(backend->data());
 
 	// Conversion offset (for YCoCg to RGB)
-	static const float YCoCg_offset = 0.5f * 256.0f / 255.0f;
+	static constexpr float YCoCg_offset = 0.5f * 256.0f / 255.0f;
 
 	for (unsigned int y = static_cast<unsigned int>(backend->height); y > 0; y--) {
 		for (unsigned int x = static_cast<unsigned int>(width); x > 0; x--) {

@@ -295,7 +295,7 @@ const char *WiiTMD::systemName(unsigned int type) const
 		"WiiTMD::systemName() array index optimization needs to be updated.");
 
 	// Use the title ID to determine the system.
-	static const char *const sysNames[8][4] = {
+	static constexpr const char *const sysNames[8][4] = {
 		{"Nintendo Wii", "Wii", "Wii", nullptr},	// Wii IOS
 		{"Nintendo Wii", "Wii", "Wii", nullptr},	// Wii
 		{"GBA NetCard", "NetCard", "NetCard", nullptr},	// GBA NetCard
@@ -594,7 +594,7 @@ rp::uvector<WUP_Content_Entry> WiiTMD::contentsTableV1(unsigned int grpIdx)
 		return {};
 	}
 
-	static const off64_t contents_tbl_offset =
+	static constexpr off64_t contents_tbl_offset =
 		sizeof(RVL_TMD_Header) +
 		sizeof(WUP_CMD_GroupHeader);
 

@@ -88,8 +88,8 @@ public:
 	// - VMS: 0
 	// - DCI: 32
 	uint32_t data_area_offset;
-	static const uint32_t DATA_AREA_OFFSET_VMS = 0;
-	static const uint32_t DATA_AREA_OFFSET_DCI = 32;
+	static constexpr uint32_t DATA_AREA_OFFSET_VMS = 0;
+	static constexpr uint32_t DATA_AREA_OFFSET_DCI = 32;
 
 	/** NOTE: Fields have been byteswapped when loaded. **/
 	// VMS header
@@ -1080,7 +1080,7 @@ const char *DreamcastSave::systemName(unsigned int type) const
 		"DreamcastSave::systemName() array index optimization needs to be updated.");
 
 	// Bits 0-1: Type. (long, short, abbreviation)
-	static const char *const sysNames[4] = {
+	static constexpr const char *const sysNames[4] = {
 		"Sega Dreamcast", "Dreamcast", "DC", nullptr
 	};
 

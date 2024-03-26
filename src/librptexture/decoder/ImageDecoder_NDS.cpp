@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * ImageDecoder_GCN.cpp: Image decoding functions: Nintendo DS             *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -94,7 +94,7 @@ rp_image_ptr fromNDS_CI4(int width, int height,
 	}
 
 	// Set the sBIT metadata.
-	static const rp_image::sBIT_t sBIT = {5,5,5,0,1};
+	static constexpr rp_image::sBIT_t sBIT = {5,5,5,0,1};
 	img->set_sBIT(&sBIT);
 
 	// Image has been converted.

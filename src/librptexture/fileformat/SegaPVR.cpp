@@ -684,7 +684,7 @@ rp_image_const_ptr SegaPVRPrivate::loadPvrImage(void)
 
 		case PVR_IMG_VQ: {
 			// VQ images have a 1024-entry palette.
-			static const size_t pal_siz = 1024U * 2;
+			static constexpr size_t pal_siz = 1024U * 2U;
 			const uint16_t *const pal_buf = reinterpret_cast<const uint16_t*>(buf.get());
 			const uint8_t *const img_buf = buf.get() + pal_siz;
 			const size_t img_siz = expected_size - pal_siz;
@@ -699,7 +699,7 @@ rp_image_const_ptr SegaPVRPrivate::loadPvrImage(void)
 		case PVR_IMG_VQ_MIPMAP: {
 			// VQ images have a 1024-entry palette.
 			// This is stored before the mipmaps, so we need to read it manually.
-			static const unsigned int pal_siz = 1024*2;
+			static constexpr size_t pal_siz = 1024U * 2U;
 			unique_ptr<uint16_t[]> pal_buf(new uint16_t[pal_siz/2]);
 			size = file->seekAndRead(pvrDataStart, pal_buf.get(), pal_siz);
 			if (size != pal_siz) {
@@ -1325,7 +1325,7 @@ SegaPVR::SegaPVR(const IRpFilePtr &file)
 	d->dimensions[1] = d->pvrHeader.height;
 
 	// Set the MIME type and texture format name.
-	static const char *const sysNames[(int)SegaPVRPrivate::PVRType::Max] = {
+	static constexpr const char *const sysNames[(int)SegaPVRPrivate::PVRType::Max] = {
 		"Sega Dreamcast PVR",
 		"Sega GVR for GameCube",
 		"Sega SVR for PlayStation 2",

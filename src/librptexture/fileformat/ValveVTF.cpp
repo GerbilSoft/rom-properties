@@ -768,10 +768,10 @@ int ValveVTF::getFields(RomFields *fields) const
 	// TODO: Move to RomFields?
 #ifdef _WIN32
 	// Windows: 6 visible rows per RFT_LISTDATA.
-	static const int rows_visible = 6;
+	static constexpr int rows_visible = 6;
 #else
 	// Linux: 4 visible rows per RFT_LISTDATA.
-	static const int rows_visible = 4;
+	static constexpr int rows_visible = 4;
 #endif
 
 	const int initial_count = fields->count();

@@ -100,7 +100,7 @@ void ListDataSortProxyModelTest::TearDown()
  */
 TEST_F(ListDataSortProxyModelTest, ascendingSort)
 {
-	static const int columnCount = 4;
+	static constexpr int columnCount = 4;
 	const int rowCount = gtk_tree_model_iter_n_children(GTK_TREE_MODEL(listStore), nullptr);
 	ASSERT_GT(rowCount, 0) << "No rows available???";
 
@@ -135,7 +135,7 @@ TEST_F(ListDataSortProxyModelTest, ascendingSort)
  */
 TEST_F(ListDataSortProxyModelTest, descendingSort)
 {
-	static const int columnCount = 4;
+	static constexpr int columnCount = 4;
 	const int rowCount = gtk_tree_model_iter_n_children(GTK_TREE_MODEL(listStore), nullptr);
 	ASSERT_GT(rowCount, 0) << "No rows available???";
 

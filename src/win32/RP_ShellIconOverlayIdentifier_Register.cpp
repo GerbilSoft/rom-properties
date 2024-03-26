@@ -3,7 +3,7 @@
  * RP_ShellIconOverlayIdentifier_Register.cpp: IShellIconOverlayIdentifier *
  * COM registration functions.                                             *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -18,7 +18,7 @@ using LibWin32UI::RegKey;
 extern const TCHAR RP_ProgID[];
 
 // Overlay handler name.
-static const TCHAR RP_OverlayHandler[] = _T("RpDangerousPermissionsOverlay");
+static constexpr TCHAR RP_OverlayHandler[] = _T("RpDangerousPermissionsOverlay");
 
 /**
  * Register the COM object.

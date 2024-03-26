@@ -291,7 +291,7 @@ static int formatDateTime(char *buf, size_t size, time_t timestamp, RomFields::D
 
 	if (likely(SystemRegion::getLanguageCode() != 0)) {
 		// Localized time format
-		static const char formats_strtbl[] =
+		static constexpr char formats_strtbl[] =
 			"\0"		// [0] No date or time
 			"%x\0"		// [1] Date
 			"%X\0"		// [4] Time
@@ -320,7 +320,7 @@ static int formatDateTime(char *buf, size_t size, time_t timestamp, RomFields::D
 		// MSVCRT's strftime().
 
 		// Month names for dates without years
-		static const char months[12][4] = {
+		static constexpr char months[12][4] = {
 			"Jan", "Feb", "Mar", "Apr", "May", "Jun",
 			"Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
 		};

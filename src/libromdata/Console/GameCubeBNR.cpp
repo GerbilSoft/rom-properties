@@ -532,7 +532,7 @@ const char *GameCubeBNR::systemName(unsigned int type) const
 		"GameCubeBNR::systemName() array index optimization needs to be updated.");
 
 	// Bits 0-1: Type. (long, short, abbreviation)
-	static const char *const sysNames[4] = {
+	static constexpr const char *const sysNames[4] = {
 		// FIXME: "NGC" in Japan?
 		"Nintendo GameCube", "GameCube", "GCN", nullptr,
 	};

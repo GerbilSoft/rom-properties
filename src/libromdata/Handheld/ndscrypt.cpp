@@ -42,7 +42,7 @@ using std::unique_ptr;
 // Blowfish data.
 // This is loaded from ~/.config/rom-properties/nds-blowfish.bin.
 static Mutex blowfish_mutex;
-static const uint8_t blowfish_md5[3][16] = {
+static constexpr uint8_t blowfish_md5[3][16] = {
 	// nds-blowfish
 	{0xC0,0x8C,0x5A,0xFD,0x9C,0x6D,0x95,0x30,
 	 0x81,0x7C,0xD2,0x03,0x3E,0x38,0x64,0xD7},
@@ -63,7 +63,7 @@ static unique_ptr<uint8_t[]> blowfish_data[3];
  */
 int ndscrypt_load_blowfish_bin(BlowfishKey bfkey)
 {
-	static const char *const filenames[] = {
+	static constexpr const char *const filenames[] = {
 		"nds-blowfish.bin",
 		"dsi-blowfish.bin",
 		"dsi-devel-blowfish.bin",
@@ -398,8 +398,8 @@ int NDSCrypt::encrypt_arm9(uint8_t *data, BlowfishKey bfkey)
  */
 static int encryptSecureArea(uint8_t *pRom, BlowfishKey bfkey)
 {
-	static const unsigned int rounds_offsets = 0x1600;
-	static const unsigned int sbox_offsets = 0x1C00;
+	static constexpr unsigned int rounds_offsets = 0x1600;
+	static constexpr unsigned int sbox_offsets = 0x1C00;
 
 	// If the ROM is already encrypted, we don't need to do anything.
 	uint32_t *const pRom32 = reinterpret_cast<uint32_t*>(pRom);

@@ -94,7 +94,7 @@ ColecoVisionPrivate::ColecoVisionPrivate(const IRpFilePtr &file)
  */
 string ColecoVisionPrivate::getTitle(int *pOutYear) const
 {
-	static const uint8_t magic_has_logo[2] = {0xAA, 0x55};
+	static constexpr uint8_t magic_has_logo[2] = {0xAA, 0x55};
 	if (memcmp(romHeader.magic, magic_has_logo, sizeof(romHeader.magic)) != 0) {
 		// Not the correct magic. No title.
 		if (pOutYear) {
@@ -385,7 +385,7 @@ const char *ColecoVision::systemName(unsigned int type) const
 		"ColecoVision::systemName() array index optimization needs to be updated.");
 
 	// Bits 0-1: Type. (long, short, abbreviation)
-	static const char *const sysNames[4] = {
+	static constexpr const char *const sysNames[4] = {
 		"ColecoVision", "ColecoVision", "CV", nullptr
 	};
 

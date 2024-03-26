@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * SystemRegion.hpp: Get the system country code.                          *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -56,8 +56,8 @@ RP_LIBROMDATA_PUBLIC
 const char *getLocalizedLanguageName(uint32_t lc);
 
 // Flag sprite sheet columns/rows.
-static const unsigned int FLAGS_SPRITE_SHEET_COLS = 4;
-static const unsigned int FLAGS_SPRITE_SHEET_ROWS = 4;
+static constexpr unsigned int FLAGS_SPRITE_SHEET_COLS = 4;
+static constexpr unsigned int FLAGS_SPRITE_SHEET_ROWS = 4;
 
 /**
  * Get the position of a language code's flag icon in the flags sprite sheet.

@@ -396,7 +396,7 @@ XboxDisc::XboxDisc(const IRpFilePtr &file)
 		// to be an edge case where it's an XGD3 disc that has a video
 		// partition that matches an XGD2 timestamp.
 		if (d->discType == XboxDiscPrivate::DiscType::XGD2) {
-			static const off64_t xgd3_offset = XDVDFS_LBA_OFFSET_XGD3 * XDVDFS_BLOCK_SIZE;
+			static constexpr off64_t xgd3_offset = XDVDFS_LBA_OFFSET_XGD3 * XDVDFS_BLOCK_SIZE;
 			d->xdvdfs_addr = XDVDFS_LBA_OFFSET_XGD3 * XDVDFS_BLOCK_SIZE;
 			d->xdvdfsPartition = std::make_shared<XDVDFSPartition>(d->file,
 				xgd3_offset, d->file->size() - xgd3_offset);
@@ -558,7 +558,7 @@ int XboxDisc::isRomSupported_static(
 	if (btime >= 1293811200) {
 		// Timestamp is after 2011/01/01 00:00:00.00 -08:00.
 		// Check for XGD3.
-		static const char xgd3_pvd_times[][9+1] = {
+		static constexpr char xgd3_pvd_times[][9+1] = {
 			"17000000\xE4",	// 17:00:00.00 -07:00
 			"16000000\xE0",	// 16:00:00.00 -08:00
 		};
@@ -599,14 +599,14 @@ const char *XboxDisc::systemName(unsigned int type) const
 	switch (consoleType) {
 		default:
 		case XboxDiscPrivate::ConsoleType::Xbox: {
-			static const char *const sysNames_Xbox[4] = {
+			static constexpr const char *const sysNames_Xbox[4] = {
 				"Microsoft Xbox", "Xbox", "Xbox", nullptr
 			};
 			return sysNames_Xbox[type & SYSNAME_TYPE_MASK];
 		}
 
 		case XboxDiscPrivate::ConsoleType::Xbox360: {
-			static const char *const sysNames_X360[4] = {
+			static constexpr const char *const sysNames_X360[4] = {
 				"Microsoft Xbox 360", "Xbox 360", "X360", nullptr
 			};
 			return sysNames_X360[type & SYSNAME_TYPE_MASK];

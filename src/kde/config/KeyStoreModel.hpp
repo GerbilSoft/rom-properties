@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE)                              *
  * KeyStoreModel.hpp: QAbstractListModel for KeyStore.                     *
  *                                                                         *
- * Copyright (c) 2012-2023 by David Korth.                                 *
+ * Copyright (c) 2012-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -47,7 +47,7 @@ public:
 	QModelIndex parent(const QModelIndex& index) const final;
 
 	// Custom role for "allowKanji".
-	static const int AllowKanjiRole = Qt::UserRole;
+	static constexpr int AllowKanjiRole = Qt::UserRole;
 
 	QVariant data(const QModelIndex& index, int role) const final;
 	bool setData(const QModelIndex& index, const QVariant& value, int role = Qt::EditRole) final;

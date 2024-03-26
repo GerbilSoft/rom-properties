@@ -602,7 +602,7 @@ int ELFPrivate::checkSectionHeaders(void)
 					memcpy(desc, pData, sizeof(desc));
 
 					const uint32_t os_id = elf32_to_cpu(desc[0]);
-					static const char os_tbl[][12] = {
+					static constexpr char os_tbl[][12] = {
 						"Linux", "Hurd", "Solaris", "kFreeBSD", "kNetBSD"
 					};
 
@@ -1439,14 +1439,14 @@ const char *ELF::systemName(unsigned int type) const
 
 	if (d->isWiiU) {
 		// This is a Wii U RPX/RPL executable.
-		static const char *const sysNames_WiiU[4] = {
+		static constexpr const char *const sysNames_WiiU[4] = {
 			"Nintendo Wii U", "Wii U", "Wii U", nullptr
 		};
 		return sysNames_WiiU[type];
 	}
 
 	// Standard ELF executable.
-	static const char *const sysNames[4] = {
+	static constexpr const char *const sysNames[4] = {
 		"Executable and Linkable Format", "ELF", "ELF", nullptr
 	};
 
@@ -1607,7 +1607,7 @@ int ELF::loadFieldData(void)
 			}
 
 			// MIPS architecture level.
-			static const char mips_levels[][12] = {
+			static constexpr char mips_levels[][12] = {
 				"MIPS-I", "MIPS-II", "MIPS-III", "MIPS-IV",
 				"MIPS-V", "MIPS32", "MIPS64", "MIPS32 rel2",
 				"MIPS64 rel2", "MIPS32 rel6", "MIPS64 rel6"
@@ -1797,7 +1797,7 @@ int ELF::loadFieldData(void)
 			// TODO: Other ARC variants?
 
 			// CPU subtypes.
-			static const char arc_cpu_subtypes[][8] = {
+			static constexpr char arc_cpu_subtypes[][8] = {
 				"", "", "ARC600", "ARC700",
 				"ARC601", "ARCv2EM", "ARCv2HS",
 			};
@@ -1860,7 +1860,7 @@ int ELF::loadFieldData(void)
 			}
 
 			// MAC
-			static const char cf_mac_tbl[][8] = {
+			static constexpr char cf_mac_tbl[][8] = {
 				"MAC", "EMAC", "EMAC_B"
 			};
 			const char *cf_mac = nullptr;
@@ -1920,7 +1920,7 @@ int ELF::loadFieldData(void)
 		case EM_M32R:
 		case EM_CYGNUS_M32R: {
 			// binutils: include/elf/m32r.h
-			static const char m32r_insn_set_tbl[][8] = {
+			static constexpr char m32r_insn_set_tbl[][8] = {
 				"m32r", "m32rx", "m32r2"
 			};
 			const unsigned int idx = (e_flags >> 28) & 0x03;

@@ -973,7 +973,7 @@ int KeyStoreUI::setKey(int sectIdx, int keyIdx, const char *value)
 
 	// Expected key length, in hex digits.
 	// TODO: Support more than 128-bit keys.
-	static const size_t expected_key_len = 16*2;
+	static constexpr size_t expected_key_len = 16*2;
 
 	// If allowKanji is true, check if the key is kanji
 	// and convert it to UTF-16LE hexadecimal.
@@ -1119,7 +1119,7 @@ KeyStoreUI::ImportReturn KeyStoreUIPrivate::importWiiKeysBin(IRpFile *file)
 
 	// Verify the BootMii (BackupMii) header.
 	// TODO: Is there a v0? If this shows v0, show a different message.
-	static const char BackupMii_magic[] = "BackupMii v1";
+	static constexpr char BackupMii_magic[] = "BackupMii v1";
 	if (memcmp(buf, BackupMii_magic, sizeof(BackupMii_magic)-1) != 0) {
 		// TODO: Check for v0.
 		iret.status = KeyStoreUI::ImportStatus::InvalidFile;

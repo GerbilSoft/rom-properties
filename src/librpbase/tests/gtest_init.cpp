@@ -1,8 +1,8 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (librpbase/tests)                  *
- * gtest_init.c: Google Test initialization.                               *
+ * gtest_init.cpp: Google Test initialization.                             *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -39,7 +39,7 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 #if defined(_WIN32)
 	param.bHighSec = FALSE;
 #elif defined(HAVE_SECCOMP)
-	static const int syscall_wl[] = {
+	static constexpr int syscall_wl[] = {
 		// Syscalls used by rom-properties unit tests.
 		// TODO: Add more syscalls.
 		// FIXME: glibc-2.31 uses 64-bit time syscalls that may not be

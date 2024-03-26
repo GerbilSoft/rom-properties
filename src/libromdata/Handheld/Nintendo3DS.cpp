@@ -111,7 +111,7 @@ int Nintendo3DSPrivate::loadSMDH(void)
 		return 0;
 	}
 
-	static const size_t N3DS_SMDH_Section_Size =
+	static constexpr size_t N3DS_SMDH_Section_Size =
 		sizeof(N3DS_SMDH_Header_t) + sizeof(N3DS_SMDH_Icon_t);
 
 	IRpFilePtr smdhFile;
@@ -751,7 +751,7 @@ void Nintendo3DSPrivate::addTitleIdAndProductCodeFields(bool showContentType)
 		}
 	}
 
-	static const char logo_name_strtbl[] = {
+	static constexpr char logo_name_strtbl[] = {
 		"Nintendo\0"			// 0
 		"Licensed by Nintendo\0"	// 9
 		"Distributed by Nintendo\0"	// 30
@@ -1049,7 +1049,7 @@ int Nintendo3DSPrivate::loadPermissions(void)
 
 	// TODO: Ignore permissions on system titles.
 	// TODO: Check permissions on retail games and compare to this list.
-	static const uint32_t fsAccess_dangerous =
+	static constexpr uint32_t fsAccess_dangerous =
 		// mset has CategorySystemApplication set.
 		N3DS_NCCH_EXHEADER_ACI_FsAccess_CategorySystemApplication |
 		// TinyFormat has CategoryFilesystemTool set.
@@ -1059,7 +1059,7 @@ int Nintendo3DSPrivate::loadPermissions(void)
 		N3DS_NCCH_EXHEADER_ACI_FsAccess_CtrNandRoWrite |
 		// mset has CategorySystemSettings set.
 		N3DS_NCCH_EXHEADER_ACI_FsAccess_CategorySystemSettings;
-	static const uint32_t ioAccess_dangerous =
+	static constexpr uint32_t ioAccess_dangerous =
 		N3DS_NCCH_EXHEADER_ACI_IoAccess_FsMountNand |
 		N3DS_NCCH_EXHEADER_ACI_IoAccess_FsMountNandRoWrite |
 		N3DS_NCCH_EXHEADER_ACI_IoAccess_FsMountTwln |
@@ -1095,11 +1095,11 @@ int Nintendo3DSPrivate::addFields_permissions(void)
 
 #ifdef _WIN32
 	// Windows: 6 visible rows per RFT_LISTDATA.
-	static const int rows_visible = 6;
-#else
+	static constexpr int rows_visible = 6;
+#else /* !_WIN32 */
 	// Linux: 4 visible rows per RFT_LISTDATA.
-	static const int rows_visible = 4;
-#endif
+	static constexpr int rows_visible = 4;
+#endif /* _WIN32 */
 
 	// FS access.
 	static constexpr array<const char*, 22> perm_fs_access = {{
@@ -1480,7 +1480,7 @@ const char *Nintendo3DS::systemName(unsigned int type) const
 	// Bit 2: *New* Nintendo 3DS
 	// Bit 3: iQue
 	// TODO: Compare code gen for 2D vs. 1D arrays.
-	static const char *const sysNames[4*4] = {
+	static constexpr const char *const sysNames[4*4] = {
 		"Nintendo 3DS", "Nintendo 3DS", "3DS", nullptr,
 		"*New* Nintendo 3DS", "*New* Nintendo 3DS", "N3DS", nullptr,
 
@@ -1822,7 +1822,7 @@ int Nintendo3DS::loadFieldData(void)
 		};
 
 		// eMMC keyslots.
-		static const uint8_t emmc_keyslots[2][8] = {
+		static constexpr uint8_t emmc_keyslots[2][8] = {
 			// Old3DS keyslots.
 			{0x03, 0x07, 0x06, 0x06, 0x04, 0x00, 0x00, 0x00},
 			// New3DS keyslots.
@@ -2262,7 +2262,7 @@ int Nintendo3DS::loadFieldData(void)
 			latin1_to_utf8(ncch_exheader->sci.title, sizeof(ncch_exheader->sci.title)));
 
 		// Application type. (resource limit category)
-		static const char appl_type_tbl[4][16] = {
+		static constexpr char appl_type_tbl[4][16] = {
 			// tr: N3DS_NCCH_EXHEADER_ACI_ResLimit_Categry_APPLICATION
 			NOP_C_("Nintendo3DS|ApplType", "Application"),
 			// tr: N3DS_NCCH_EXHEADER_ACI_ResLimit_Categry_SYS_APPLET

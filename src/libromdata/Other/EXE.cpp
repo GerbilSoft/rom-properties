@@ -801,12 +801,12 @@ const char *EXE::systemName(unsigned int type) const
 	static_assert(SYSNAME_TYPE_MASK == 3,
 		"EXE::systemName() array index optimization needs to be updated.");
 
-	static const char *const sysNames_Windows[4] = {
+	static constexpr const char *const sysNames_Windows[4] = {
 		"Microsoft Windows", "Windows", "Windows", nullptr
 	};
 
 	// New Executable (and Linear Executable) operating systems.
-	static const char *const sysNames_NE[6][4] = {
+	static constexpr const char *const sysNames_NE[6][4] = {
 		// NE_OS_UNKNOWN
 		// NOTE: Windows 1.0 executables have this value.
 		{"Microsoft Windows", "Windows", "Windows", nullptr},
@@ -825,7 +825,7 @@ const char *EXE::systemName(unsigned int type) const
 	switch (d->exeType) {
 		case EXEPrivate::ExeType::MZ: {
 			// DOS executable.
-			static const char *const sysNames_DOS[4] = {
+			static constexpr const char *const sysNames_DOS[4] = {
 				"Microsoft MS-DOS", "MS-DOS", "DOS", nullptr
 			};
 			return sysNames_DOS[type & SYSNAME_TYPE_MASK];
@@ -836,7 +836,7 @@ const char *EXE::systemName(unsigned int type) const
 			if (d->hdr.ne.targOS > NE_OS_BOSS) {
 				// Check for Phar Lap 286 extenders.
 				// Reference: https://github.com/weheartwebsites/exeinfo/blob/master/exeinfo.cpp
-				static const char *const sysNames_NE_PharLap[2][4] = {
+				static constexpr const char *const sysNames_NE_PharLap[2][4] = {
 					{"Phar Lap 286|DOS Extender, OS/2", "Phar Lap 286 OS/2", "Phar Lap 286 OS/2", nullptr},	// 0x81
 					{"Phar Lap 286|DOS Extender, Windows", "Phar Lap 286 Windows", "Phar Lap 286 Windows", nullptr},	// 0x82
 				};
@@ -855,7 +855,7 @@ const char *EXE::systemName(unsigned int type) const
 		case EXEPrivate::ExeType::COM_NE: {
 			// 16-bit COM/NE hybrid.
 			// Used by Multitasking MS-DOS 4.0's IBMDOS.COM.
-			static const char *const sysNames_MultiDOS[4] = {
+			static constexpr const char *const sysNames_MultiDOS[4] = {
 				"Multitasking MS-DOS 4.0", "European DOS", "EuroDOS", nullptr
 			};
 			return sysNames_MultiDOS[type & SYSNAME_TYPE_MASK];
@@ -889,8 +889,8 @@ const char *EXE::systemName(unsigned int type) const
 				case IMAGE_SUBSYSTEM_EFI_BOOT_SERVICE_DRIVER:
 				case IMAGE_SUBSYSTEM_EFI_RUNTIME_DRIVER:
 				case IMAGE_SUBSYSTEM_EFI_ROM: {
-					// EFI executable.
-					static const char *const sysNames_EFI[4] = {
+					// EFI executable
+					static constexpr const char *const sysNames_EFI[4] = {
 						"Extensible Firmware Interface", "EFI", "EFI", nullptr
 					};
 					return sysNames_EFI[type & SYSNAME_TYPE_MASK];
@@ -898,7 +898,7 @@ const char *EXE::systemName(unsigned int type) const
 
 				case IMAGE_SUBSYSTEM_XBOX: {
 					// Check the CPU type.
-					static const char *const sysNames_Xbox[3][4] = {
+					static constexpr const char *const sysNames_Xbox[3][4] = {
 						{"Microsoft Xbox", "Xbox", "Xbox", nullptr},
 						{"Microsoft Xbox 360", "Xbox 360", "X360", nullptr},
 						{"Microsoft Xbox One", "Xbox One", "Xbone", nullptr},
@@ -960,7 +960,7 @@ int EXE::loadFieldData(void)
 
 	// Executable type.
 	// NOTE: Not translatable.
-	static const char exeTypes_strtbl[] =
+	static constexpr char exeTypes_strtbl[] =
 		"MS-DOS Executable\0"			// ExeType::MZ
 		"16-bit New Executable\0"		// ExeType::NE
 		"16-bit COM/NE Hybrid\0"		// ExeType::COM_NE

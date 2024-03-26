@@ -3,7 +3,7 @@
  * Wim.cpp: Microsoft WIM header reader                                    *
  *                                                                         *
  * Copyright (c) 2023 by ecumber.                                          *
- * Copyright (c) 2019-2023 by David Korth.                                 *
+ * Copyright (c) 2019-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -170,7 +170,7 @@ int WimPrivate::addFields_XML()
 	}
 
 	// the eighth byte of the "size" is used for flags so we have to AND it
-	static const uint64_t XML_MAX_SIZE = 16U*1024U*1024U;
+	static constexpr uint64_t XML_MAX_SIZE = 16U*1024U*1024U;
 	uint64_t size = (wimHeader.xml_resource.size & 0x00FFFFFFFFFFFFFFULL);
 	assert(size <= XML_MAX_SIZE);
 	if (size > XML_MAX_SIZE) {
@@ -570,7 +570,7 @@ const char* Wim::systemName(unsigned int type) const
 	static_assert(SYSNAME_TYPE_MASK == 3,
 		"Wim::systemName() array index optimization needs to be updated.");
 
-	static const char *const sysNames[4] = {
+	static constexpr const char *const sysNames[4] = {
 		"Microsoft WIM",
 		"WIM Image",
 		"WIM",

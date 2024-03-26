@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libwin32ui)                       *
  * WinUI.hpp: Windows UI common functions.                                 *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -242,7 +242,7 @@ bool isComCtl32_v610(void)
 int measureStringForListView(HDC hDC, const tstring &tstr, int *pNlCount)
 {
 	// TODO: Actual padding value?
-	static const int COL_WIDTH_PADDING = 8*2;
+	static constexpr int COL_WIDTH_PADDING = 8*2;
 
 	// Measured width.
 	int width = 0;

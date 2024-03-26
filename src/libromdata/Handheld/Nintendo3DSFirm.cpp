@@ -175,7 +175,7 @@ const char *Nintendo3DSFirm::systemName(unsigned int type) const
 
 	// Bits 0-1: Type. (long, short, abbreviation)
 	// TODO: *New* Nintendo 3DS for N3DS-exclusive titles; iQue for China.
-	static const char *const sysNames[4] = {
+	static constexpr const char *const sysNames[4] = {
 		"Nintendo 3DS", "Nintendo 3DS", "3DS", nullptr
 	};
 
@@ -267,7 +267,7 @@ int Nintendo3DSFirm::loadFieldData(void)
 		} else if (firmBuf) {
 			// Check for sighax installer.
 			// NOTE: String has a NULL terminator.
-			static const char sighax_magic[] = "3DS BOOTHAX INS";
+			static constexpr char sighax_magic[] = "3DS BOOTHAX INS";
 			if (!memcmp(&firmBuf[0x208], sighax_magic, sizeof(sighax_magic))) {
 				// Found derrek's sighax installer.
 				firmBinDesc = "sighax installer";

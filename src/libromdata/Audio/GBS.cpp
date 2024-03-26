@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * GBS.hpp: GBS audio reader.                                              *
  *                                                                         *
- * Copyright (c) 2018-2023 by David Korth.                                 *
+ * Copyright (c) 2018-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -192,7 +192,7 @@ const char *GBS::systemName(unsigned int type) const
 
 	// Bits 0-1: Type. (long, short, abbreviation)
 	// Bit 2: GBS or GBR.
-	static const char *const sysNames[2][4] = {
+	static constexpr const char *const sysNames[2][4] = {
 		{"Game Boy Sound System", "GBS", "GBS", nullptr},
 		{"Game Boy Ripped", "GBR", "GBR", nullptr},
 	};

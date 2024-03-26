@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * rp_image.hpp: Image class.                                              *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -91,7 +91,7 @@ rp_image_backend_default::rp_image_backend_default(int width, int height, rp_ima
 	}
 
 	// Maximum image size (1024 MB)
-	static const size_t MAX_IMAGE_SIZE = 1024U * 1024U * 1024U;
+	static constexpr size_t MAX_IMAGE_SIZE = 1024U * 1024U * 1024U;
 
 	// Allocate memory for the image.
 	// We're using the full stride for the last row
@@ -517,7 +517,7 @@ const char *rp_image::getFormatName(Format format)
 		return nullptr;
 	}
 
-	static const char format_names[][8] = {
+	static constexpr char format_names[][8] = {
 		"None",
 		"CI8",
 		"ARGB32",

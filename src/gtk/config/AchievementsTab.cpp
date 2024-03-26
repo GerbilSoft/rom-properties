@@ -316,7 +316,7 @@ rp_achievements_tab_reset(RpAchievementsTab *tab)
 	// Load the Achievements icon sprite sheet.
 	// NOTE: Assuming 32x32 icons for now.
 	// TODO: Check DPI and adjust on DPI changes?
-	static const gint iconSize = 32;
+	static constexpr gint iconSize = 32;
 	AchSpriteSheet achSpriteSheet(iconSize);
 
 	// Pango 1.49.0 [2021/08/22] added percentage sizes.

@@ -369,7 +369,7 @@ rp_options_menu_button_set_direction(RpOptionsMenuButton *widget, GtkArrowType a
 #endif /* USE_GTK_MENU_BUTTON */
 
 #if !GTK_CHECK_VERSION(4,0,0)
-	static const char iconName_tbl[][20] = {
+	static constexpr char iconName_tbl[][20] = {
 		"pan-up-symbolic",
 		"pan-down-symbolic",
 		"pan-start-symbolic",

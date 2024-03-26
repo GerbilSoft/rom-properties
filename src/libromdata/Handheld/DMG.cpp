@@ -941,7 +941,7 @@ const char *DMG::systemName(unsigned int type) const
 
 	// Bits 0-1: Type. (long, short, abbreviation)
 	// Bit 2: Game Boy Color. (DMG-specific)
-	static const char *const sysNames[2][4] = {
+	static constexpr const char *const sysNames[2][4] = {
 		{"Nintendo Game Boy", "Game Boy", "GB", nullptr},
 		{"Nintendo Game Boy Color", "Game Boy Color", "GBC", nullptr}
 	};
@@ -1381,7 +1381,7 @@ int DMG::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 	bool append_cksum = false;
 
 	// Check the title screen mode variant to use.
-	static const char ts_subdirs
+	static constexpr char ts_subdirs
 		[static_cast<size_t>(Config::DMG_TitleScreen_Mode::Max)]
 		[static_cast<size_t>(Config::DMG_TitleScreen_Mode::Max)][8] =
 	{

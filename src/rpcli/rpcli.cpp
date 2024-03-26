@@ -494,7 +494,7 @@ static void ShowUsage(void)
 	};
 
 	// Normal commands
-	static const cmd_t cmds[] = {
+	static constexpr cmd_t cmds[] = {
 #ifdef ENABLE_DECRYPTION
 		{"  -k:  ", NOP_C_("rpcli", "Verify encryption keys in keys.conf.")},
 #endif /* ENABLE_DECRYPTION */
@@ -517,7 +517,7 @@ static void ShowUsage(void)
 
 #ifdef RP_OS_SCSI_SUPPORTED
 	// Commands for devices
-	static const cmd_t cmds_dev[] = {
+	static constexpr cmd_t cmds_dev[] = {
 		{"  -is: ", NOP_C_("rpcli", "Run a SCSI INQUIRY command.")},
 		{"  -ia: ", NOP_C_("rpcli", "Run an ATA IDENTIFY DEVICE command.")},
 		{"  -ip: ", NOP_C_("rpcli", "Run an ATA IDENTIFY PACKET DEVICE command.")},

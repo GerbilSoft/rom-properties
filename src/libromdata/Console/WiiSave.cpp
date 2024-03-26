@@ -166,12 +166,12 @@ WiiSave::WiiSave(const IRpFilePtr &file)
 	// - Reading with save file header, banner, max number of icons, and the Bk header.
 	// - Bk header is the only unencrypted header.
 	// - Need to get encryption keys.
-	static const unsigned int svSizeMin = (unsigned int)(
+	static constexpr unsigned int svSizeMin = (unsigned int)(
 		sizeof(Wii_SaveGame_Header_t) +
 		sizeof(Wii_WIBN_Header_t) +
 		BANNER_WIBN_IMAGE_SIZE + BANNER_WIBN_ICON_SIZE +
 		sizeof(Wii_Bk_Header_t));
-	static const unsigned int svSizeTotal = (unsigned int)(
+	static constexpr unsigned int svSizeTotal = (unsigned int)(
 		svSizeMin + (BANNER_WIBN_ICON_SIZE * (CARD_MAXICONS-1)));
 	auto svData = aligned_uptr<uint8_t>(16, svSizeTotal);
 
@@ -358,7 +358,7 @@ const char *WiiSave::systemName(unsigned int type) const
 	static_assert(SYSNAME_TYPE_MASK == 3,
 		"WiiSave::systemName() array index optimization needs to be updated.");
 
-	static const char *const sysNames[4] = {
+	static constexpr const char *const sysNames[4] = {
 		"Nintendo Wii", "Wii", "Wii", nullptr
 	};
 
@@ -501,7 +501,7 @@ int WiiSave::loadFieldData(void)
 	// NoCopy? (separate from permissions)
 	if (d->wibnData) {
 		// Flags bitfield.
-		static const char *const flags_names[] = {
+		static constexpr const char *const flags_names[] = {
 			NOP_C_("WiiSave|Flags", "No Copy from NAND"),
 		};
 		vector<string> *const v_flags_names = RomFields::strArrayToVector_i18n(

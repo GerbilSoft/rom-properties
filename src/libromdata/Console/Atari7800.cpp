@@ -166,7 +166,7 @@ const char *Atari7800::systemName(unsigned int type) const
 		"Atari7800::systemName() array index optimization needs to be updated.");
 
 	// Bits 0-1: Type. (long, short, abbreviation)
-	static const char *const sysNames[4] = {
+	static constexpr const char *const sysNames[4] = {
 		"Atari 7800", "Atari 7800", "7800", nullptr
 	};
 

@@ -238,7 +238,7 @@ const char *Intellivision::systemName(unsigned int type) const
 		"Intellivision::systemName() array index optimization needs to be updated.");
 
 	// Bits 0-1: Type. (long, short, abbreviation)
-	static const char *const sysNames[4] = {
+	static constexpr const char *const sysNames[4] = {
 		"Intellivision", "Intellivision", "INTV", nullptr
 	};
 

@@ -313,7 +313,7 @@ int PlayStationSave::isRomSupported_static(const DetectInfo *info)
 			const uint8_t *const header = info->header.pData;
 
 			// Check the block magic.
-			static const uint8_t block_magic[4] = {
+			static constexpr uint8_t block_magic[4] = {
 				PS1_ENTRY_ALLOC_FIRST, 0x00, 0x00, 0x00,
 			};
 			if (memcmp(header, block_magic, sizeof(block_magic)) != 0) {
@@ -376,7 +376,7 @@ const char *PlayStationSave::systemName(unsigned int type) const
 		"PlayStationSave::systemName() array index optimization needs to be updated.");
 
 	// Bits 0-1: Type. (long, short, abbreviation)
-	static const char *const sysNames[4] = {
+	static constexpr const char *const sysNames[4] = {
 		"Sony PlayStation", "PlayStation", "PS1", nullptr
 	};
 

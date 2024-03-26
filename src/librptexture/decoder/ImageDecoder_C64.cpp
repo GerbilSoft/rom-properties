@@ -69,7 +69,7 @@ rp_image_ptr fromC64_MultiColor_Sprite(
 
 	// Set the sBIT metadata.
 	// TODO: Use grayscale instead of RGB.
-	static const rp_image::sBIT_t sBIT = {2,2,2,0,0};
+	static constexpr rp_image::sBIT_t sBIT = {2,2,2,0,0};
 	img->set_sBIT(&sBIT);
 
 	// Image has been converted.

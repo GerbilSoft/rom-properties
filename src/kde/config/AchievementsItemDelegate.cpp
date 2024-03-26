@@ -81,12 +81,12 @@ void AchievementsItemDelegate::paint(QPainter *painter,
 	};
 
 	// Alignment flags.
-	static const int HALIGN_FLAGS =
+	static constexpr int HALIGN_FLAGS =
 			Qt::AlignLeft |
 			Qt::AlignRight |
 			Qt::AlignHCenter |
 			Qt::AlignJustify;
-	static const int VALIGN_FLAGS =
+	static constexpr int VALIGN_FLAGS =
 			Qt::AlignTop |
 			Qt::AlignBottom |
 			Qt::AlignVCenter;

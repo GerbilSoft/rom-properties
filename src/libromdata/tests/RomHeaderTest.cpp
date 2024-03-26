@@ -77,9 +77,9 @@ inline ::std::ostream& operator<<(::std::ostream& os, const RomHeaderTest_mode& 
 };
 
 // Maximum file size for files within the .tar archives.
-static const uint64_t MAX_BIN_FILESIZE = 4*1024*1024;	// 4 MB (for MD lock-on)
-static const uint64_t MAX_TXT_FILESIZE = 32*1024;	// 32 KB
-static const uint64_t MAX_JSON_FILESIZE = 32*1024;	// 32 KB
+static constexpr uint64_t MAX_BIN_FILESIZE  =  4U*1024U*1024U;	// 4 MB (for MD lock-on)
+static constexpr uint64_t MAX_TXT_FILESIZE  = 32U*1024U;	// 32 KB
+static constexpr uint64_t MAX_JSON_FILESIZE = 32U*1024U;	// 32 KB
 
 class RomHeaderTest : public ::testing::TestWithParam<RomHeaderTest_mode>
 {
@@ -237,7 +237,7 @@ int RomHeaderTest::read_next_files(const RomHeaderTest_mode &mode)
 	if (mode.bin_filename.size() > 4 &&
 	    mode.bin_filename.compare(mode.bin_filename.size() - 4, string::npos, ".sfc") == 0)
 	{
-		static const size_t MIN_BIN_DATA_SIZE = 64U * 1024U;
+		static constexpr size_t MIN_BIN_DATA_SIZE = 64U * 1024U;
 		if (last_bin_data.size() < MIN_BIN_DATA_SIZE) {
 			const size_t cur_size = last_bin_data.size();
 			last_bin_data.resize(MIN_BIN_DATA_SIZE);

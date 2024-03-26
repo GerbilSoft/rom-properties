@@ -39,13 +39,13 @@ class SuperMagicDriveTest : public ::testing::Test
 
 	public:
 		// Output block size (+64 for zlib)
-		static const unsigned int OUT_BLOCK_UNZ_SIZE = SuperMagicDrive::SMD_BLOCK_SIZE+64;
+		static constexpr unsigned int OUT_BLOCK_UNZ_SIZE = SuperMagicDrive::SMD_BLOCK_SIZE+64;
 
 		// 16 KB plain binary data block
 		static const array<uint8_t, 11811> bin_data_gz;
 
 		// Number of iterations for benchmarks
-		static const unsigned int BENCHMARK_ITERATIONS = 100000;
+		static constexpr unsigned int BENCHMARK_ITERATIONS = 100000;
 
 		// 16 KB SMD-interleaved data block
 		static const array<uint8_t, 403> smd_data_gz;

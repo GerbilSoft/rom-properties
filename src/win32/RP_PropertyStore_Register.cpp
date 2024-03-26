@@ -3,7 +3,7 @@
  * RP_PropSheet_Register.cpp: IPropertyStore implementation.               *
  * COM registration functions.                                             *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -29,7 +29,7 @@ tstring RP_PropertyStore_Private::GetPreviewDetailsString()
 {
 	// PreviewDetails.
 	// NOTE: Default properties should go *after* these.
-	static const TCHAR PreviewDetails[] = _T("prop:")
+	static constexpr TCHAR PreviewDetails[] = _T("prop:")
 		// Custom properties.
 		_T("System.Title;")
 		_T("System.Company;")
@@ -72,7 +72,7 @@ std::tstring RP_PropertyStore_Private::GetInfoTipString()
 {
 	// InfoTip.
 	// NOTE: Default properties should go *before* these.
-	static const TCHAR InfoTip[] =
+	static constexpr TCHAR InfoTip[] =
 		// Custom properties.
 		_T("System.Title;")
 		_T("System.Company;")
@@ -124,7 +124,7 @@ std::tstring RP_PropertyStore_Private::GetFullDetailsString()
 	// they're listed here but aren't set by RP_PropertyStore.
 	// We'll need to register multiple ProgIDs for different
 	// classes of files, but maybe later...
-	static const TCHAR FullDetails[] = _T("prop:")
+	static constexpr TCHAR FullDetails[] = _T("prop:")
 		_T("System.PropGroup.General;")
 		_T("System.Title;")
 		_T("System.Company;")

@@ -48,7 +48,7 @@ struct LanguageOffTbl_t {
 // Language name string table.
 // NOTE: Strings are UTF-8.
 // Reference: https://www.omniglot.com/language/names.htm
-static const char languages_strtbl[] =
+static constexpr char languages_strtbl[] =
 	"English (AU)\0"	// 'au' (GameTDB only)
 	"Deutsch\0"		// 'de'
 	"English\0"		// 'en'

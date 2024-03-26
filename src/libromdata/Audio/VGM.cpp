@@ -301,7 +301,7 @@ const char *VGM::systemName(unsigned int type) const
 		"VGM::systemName() array index optimization needs to be updated.");
 
 	// Bits 0-1: Type. (long, short, abbreviation)
-	static const char *const sysNames[4] = {
+	static constexpr const char *const sysNames[4] = {
 		"Video Game Music", "VGM", "VGM", nullptr
 	};
 
@@ -652,7 +652,7 @@ int VGM::loadFieldData(void)
 					uint8_t lkup = vgmHeader->ay8910_type;
 					lkup = (lkup >> 2) | (lkup & 3);
 
-					static const char chip_name_tbl[8][8] = {
+					static constexpr char chip_name_tbl[8][8] = {
 						"AY8910", "AY8912", "AY8913", "AY8930",
 						"YM2139", "YM3439", "YMZ284", "YMZ294",
 					};

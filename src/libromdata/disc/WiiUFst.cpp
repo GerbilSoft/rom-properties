@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * WiiUFst.cpp: Wii U FST parser                                           *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -105,7 +105,7 @@ WiiUFstPrivate::WiiUFstPrivate(const uint8_t *fstData, uint32_t len)
 	, fstEntries(nullptr)
 	, file_offset_factor(0)
 {
-	static const uint32_t WUP_FST_MIN_SIZE = static_cast<uint32_t>(
+	static constexpr uint32_t WUP_FST_MIN_SIZE = static_cast<uint32_t>(
 		sizeof(WUP_FST_Header) +
 		sizeof(WUP_FST_SecondaryHeader) +
 		sizeof(WUP_FST_Entry));
@@ -127,7 +127,7 @@ WiiUFstPrivate::WiiUFstPrivate(const uint8_t *fstData, uint32_t len)
 	}
 
 	// Get the start of the secondary headers.
-	static const uint32_t sec_header_start = static_cast<uint32_t>(sizeof(WUP_FST_Header));
+	static constexpr uint32_t sec_header_start = static_cast<uint32_t>(sizeof(WUP_FST_Header));
 
 	// Get the start of the file entries.
 	const uint32_t file_entry_start = static_cast<uint32_t>(

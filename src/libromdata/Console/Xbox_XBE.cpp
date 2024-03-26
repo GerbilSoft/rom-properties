@@ -162,7 +162,7 @@ int Xbox_XBE_Private::findXbeSectionHeader(const char *name, XBE_Section_Header 
 	// We're loading the first 64 KB of the executable.
 	// Section headers and names are usually there.
 	// TODO: Find any exceptions?
-	static const size_t XBE_READ_SIZE = 64*1024;
+	static constexpr size_t XBE_READ_SIZE = 64*1024;
 
 	// Load the section headers.
 	const uint32_t base_address = le32_to_cpu(xbeHeader.base_address);
@@ -520,7 +520,7 @@ const char *Xbox_XBE::systemName(unsigned int type) const
 		"Xbox_XBE::systemName() array index optimization needs to be updated.");
 
 	// Bits 0-1: Type. (long, short, abbreviation)
-	static const char *const sysNames[4] = {
+	static constexpr const char *const sysNames[4] = {
 		"Microsoft Xbox", "Xbox", "Xbox", nullptr
 	};
 
@@ -733,7 +733,7 @@ int Xbox_XBE::loadFieldData(void)
 	// NOTE: Using a string instead of a bitfield because very rarely
 	// are all of these set, and in most cases, none are.
 	// TODO: RFT_LISTDATA?
-	static const char media_type_tbl[][12] = {
+	static constexpr char media_type_tbl[][12] = {
 		// 0
 		NOP_C_("Xbox_XBE", "Hard Disk"),
 		NOP_C_("Xbox_XBE", "XGD1"),

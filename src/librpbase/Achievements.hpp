@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * Achievements.hpp: Achievements class.                                   *
  *                                                                         *
- * Copyright (c) 2020-2023 by David Korth.                                 *
+ * Copyright (c) 2020-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -68,8 +68,8 @@ class Achievements
 		};
 
 		// Achievements sprite sheet columns/rows.
-		static const unsigned int ACH_SPRITE_SHEET_COLS = 4;
-		static const unsigned int ACH_SPRITE_SHEET_ROWS = 4;
+		static constexpr unsigned int ACH_SPRITE_SHEET_COLS = 4;
+		static constexpr unsigned int ACH_SPRITE_SHEET_ROWS = 4;
 
 	public:
 		/**

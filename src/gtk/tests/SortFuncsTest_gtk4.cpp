@@ -135,7 +135,7 @@ void ListDataSortProxyModelTest::TearDown()
  */
 TEST_F(ListDataSortProxyModelTest, ascendingSort)
 {
-	static const int columnCount = 4;
+	static constexpr int columnCount = 4;
 	const int rowCount = g_list_model_get_n_items(G_LIST_MODEL(listStore));
 	ASSERT_GT(rowCount, 0) << "No rows available???";
 	ASSERT_EQ(rowCount, g_list_model_get_n_items(G_LIST_MODEL(sortProxy))) << "Sort proxy row count doesn't match the original model!";
@@ -170,7 +170,7 @@ TEST_F(ListDataSortProxyModelTest, ascendingSort)
  */
 TEST_F(ListDataSortProxyModelTest, descendingSort)
 {
-	static const int columnCount = 4;
+	static constexpr int columnCount = 4;
 	const int rowCount = g_list_model_get_n_items(G_LIST_MODEL(listStore));
 	ASSERT_GT(rowCount, 0) << "No rows available???";
 	ASSERT_EQ(rowCount, g_list_model_get_n_items(G_LIST_MODEL(sortProxy))) << "Sort proxy row count doesn't match the original model!";

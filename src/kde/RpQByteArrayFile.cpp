@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * RpQByteArrayFile.cpp: IRpFile implementation using a QByteArray.        *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -13,7 +13,7 @@
 using std::string;
 
 // 128 MB *should* be a reasonable maximum...
-static const off64_t QBYTEARRAYFILE_MAX_SIZE = 128U*1024*1024;
+static constexpr off64_t QBYTEARRAYFILE_MAX_SIZE = 128U*1024*1024;
 
 /**
  * Open an IRpFile backed by a QByteArray.

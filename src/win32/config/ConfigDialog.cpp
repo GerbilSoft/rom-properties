@@ -69,9 +69,9 @@ private:
 public:
 	// Property sheet variables.
 #ifdef ENABLE_DECRYPTION
-	static const unsigned int TAB_COUNT = 7;
+	static constexpr unsigned int TAB_COUNT = 7;
 #else
-	static const unsigned int TAB_COUNT = 6;
+	static constexpr unsigned int TAB_COUNT = 6;
 #endif
 	std::array<ITab*, TAB_COUNT> tabs;
 	std::array<HPROPSHEETPAGE, TAB_COUNT> hpsp;

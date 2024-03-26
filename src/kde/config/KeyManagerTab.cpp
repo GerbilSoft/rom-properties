@@ -229,7 +229,7 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 	}
 
 	// U+2022 (BULLET) == \xE2\x80\xA2
-	static const char nl_bullet[] = "\n\xE2\x80\xA2 ";
+	static constexpr char nl_bullet[] = "\n\xE2\x80\xA2 ";
 
 	if (showKeyStats) {
 		if (iret.keysExist > 0) {

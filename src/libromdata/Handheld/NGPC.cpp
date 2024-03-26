@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * NGPC.cpp: Neo Geo Pocket (Color) ROM reader.                            *
  *                                                                         *
- * Copyright (c) 2019-2023 by David Korth.                                 *
+ * Copyright (c) 2019-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -209,7 +209,7 @@ const char *NGPC::systemName(unsigned int type) const
 
 	// Bits 0-1: Type. (long, short, abbreviation)
 	// Bit 2: Machine type. (0 == NGP, 1 == NGPC)
-	static const char *const sysNames[2][4] = {
+	static constexpr const char *const sysNames[2][4] = {
 		{"Neo Geo Pocket", "NGP", "NGP", nullptr},
 		{"Neo Geo Pocket Color", "NGPC", "NGPC", nullptr}
 	};

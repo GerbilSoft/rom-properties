@@ -166,7 +166,7 @@ void SystemsTab::save(QSettings *pSettings)
 	Q_D(const SystemsTab);
 	pSettings->beginGroup(QLatin1String("DMGTitleScreenMode"));
 
-	static const char s_dmg_dmg[][4] = {"DMG", "CGB"};
+	static constexpr char s_dmg_dmg[][4] = {"DMG", "CGB"};
 	const int idxDMG = d->ui.cboDMG->currentIndex();
 	assert(idxDMG >= 0);
 	assert(idxDMG < ARRAY_SIZE_I(s_dmg_dmg));
@@ -174,7 +174,7 @@ void SystemsTab::save(QSettings *pSettings)
 		pSettings->setValue(QLatin1String("DMG"), QLatin1String(s_dmg_dmg[idxDMG]));
 	}
 
-	static const char s_dmg_other[][4] = {"DMG", "SGB", "CGB"};
+	static constexpr char s_dmg_other[][4] = {"DMG", "SGB", "CGB"};
 	const int idxSGB = d->ui.cboSGB->currentIndex();
 	const int idxCGB = d->ui.cboCGB->currentIndex();
 

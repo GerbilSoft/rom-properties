@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpfile)                        *
  * VectorFile.cpp: IRpFile implementation using an std::vector.            *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -22,7 +22,7 @@ extern "C" {
 namespace LibRpFile {
 
 // 128 MB *should* be a reasonable maximum...
-static const off64_t VECTOR_FILE_MAX_SIZE = 128U*1024*1024;
+static constexpr off64_t VECTOR_FILE_MAX_SIZE = 128U*1024U*1024U;
 
 /**
  * Open an IRpFile backed by an std::vector.

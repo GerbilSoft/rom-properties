@@ -473,7 +473,7 @@ rp_key_manager_tab_handle_menu_action(RpKeyManagerTab *tab, gint id)
 	    id > (int)KeyStoreUI::ImportFileID::N3DSaeskeydb)
 		return;
 
-	static const char dialog_titles_tbl[][32] = {
+	static constexpr char dialog_titles_tbl[][32] = {
 		// tr: Wii keys.bin dialog title
 		NOP_C_("KeyManagerTab", "Select Wii keys.bin File"),
 		// tr: Wii U otp.bin dialog title
@@ -484,7 +484,7 @@ rp_key_manager_tab_handle_menu_action(RpKeyManagerTab *tab, gint id)
 		NOP_C_("KeyManagerTab", "Select 3DS aeskeydb.bin File"),
 	};
 
-	static const char file_filters_tbl[][64] = {
+	static constexpr char file_filters_tbl[][64] = {
 		// tr: Wii keys.bin file filter (RP format)
 		NOP_C_("KeyManagerTab", "keys.bin|keys.bin|-|Binary Files|*.bin|-|All Files|*|-"),
 		// tr: Wii U otp.bin file filter (RP format)
@@ -630,7 +630,7 @@ rp_key_manager_tab_show_key_import_return_status(RpKeyManagerTab	*tab,
 	}
 
 	// U+2022 (BULLET) == \xE2\x80\xA2
-	static const char nl_bullet[] = "\n\xE2\x80\xA2 ";
+	static constexpr char nl_bullet[] = "\n\xE2\x80\xA2 ";
 
 	if (showKeyStats) {
 		char buf[16];

@@ -29,7 +29,7 @@ struct SysTitleGroup {
 }; */
 
 // Regions
-static const char regions[6][4] = {
+static constexpr char regions[6][4] = {
 	"JPN", "USA", "EUR",
 	"CHN", "KOR", "TWN",
 };

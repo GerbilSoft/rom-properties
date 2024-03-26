@@ -150,7 +150,7 @@ void RomDataViewPrivate::initHeaderRow(void)
 	// Supported image types
 	const uint32_t imgbf = romData->supportedImageTypes();
 	// FIXME: Store the standard image height somewhere else.
-	static const int imgStdHeight = 32;
+	static constexpr int imgStdHeight = 32;
 	bool ok = false;
 
 	// Banner

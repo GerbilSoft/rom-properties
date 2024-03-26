@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * RpImageWin32.cpp: rp_image to Win32 conversion functions.               *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -279,7 +279,7 @@ HBITMAP toHBITMAP(const rp_image *image, uint32_t bgColor, SIZE size, bool neare
  */
 HBITMAP toHBITMAP_alpha(const rp_image *image)
 {
-	static const SIZE size = {0, 0};
+	static constexpr SIZE size = {0, 0};
 	return toHBITMAP_alpha(image, size, false);
 }
 

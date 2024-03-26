@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * FileFormatFactory.cpp: FileFormat factory class.                        *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -333,7 +333,7 @@ void FileFormatFactoryPrivate::init_supportedFileExtensions(void)
 	// The actual data is stored in the vector<const char*>.
 	unordered_set<string> set_exts;
 
-	static const size_t reserve_size = ARRAY_SIZE(FileFormatFactoryPrivate::FileFormatFns_magic);
+	static constexpr size_t reserve_size = ARRAY_SIZE(FileFormatFactoryPrivate::FileFormatFns_magic);
 	vec_exts.reserve(reserve_size);
 #ifdef HAVE_UNORDERED_SET_RESERVE
 	set_exts.reserve(reserve_size);
@@ -403,7 +403,7 @@ vector<const char*> FileFormatFactory::supportedMimeTypes(void)
 	vector<const char*> vec_mimeTypes;
 	unordered_set<string> set_mimeTypes;
 
-	static const size_t reserve_size = ARRAY_SIZE(FileFormatFactoryPrivate::FileFormatFns_magic) * 2;
+	static constexpr size_t reserve_size = ARRAY_SIZE(FileFormatFactoryPrivate::FileFormatFns_magic) * 2;
 	vec_mimeTypes.reserve(reserve_size);
 #ifdef HAVE_UNORDERED_SET_RESERVE
 	set_mimeTypes.reserve(reserve_size);

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * iQuePlayer.cpp: iQue Player .cmd reader.                                *
  *                                                                         *
- * Copyright (c) 2019-2023 by David Korth.                                 *
+ * Copyright (c) 2019-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -164,7 +164,7 @@ int iQuePlayerPrivate::getTitleAndISBN(string &title, string &isbn)
 {
 	// Stored immediately after the thumbnail and title images,
 	// and NULL-terminated.
-	static const size_t title_buf_sz = IQUE_PLAYER_BBCONTENTMETADATAHEAD_ADDRESS - sizeof(contentDesc);
+	static constexpr size_t title_buf_sz = IQUE_PLAYER_BBCONTENTMETADATAHEAD_ADDRESS - sizeof(contentDesc);
 	std::unique_ptr<char[]> title_buf(new char[title_buf_sz]);
 
 	const unsigned int title_addr = sizeof(contentDesc) +
@@ -191,7 +191,7 @@ int iQuePlayerPrivate::getTitleAndISBN(string &title, string &isbn)
 	// Check for "\xEF\xBB\xBF" (UTF-8 BOM).
 	// Title 00201b2c (Dongwu Senlin) uses this separator instead
 	// of a NULL character for some reason.
-	static const char utf8bom[] = "\xEF\xBB\xBF";
+	static constexpr char utf8bom[] = "\xEF\xBB\xBF";
 	const char *p = title_buf.get();
 	const char *p_end = static_cast<const char*>(memmem(p, title_buf_sz, utf8bom, sizeof(utf8bom)-1));
 	if (p_end && p_end > p) {
@@ -329,7 +329,7 @@ rp_image_const_ptr iQuePlayerPrivate::loadThumbnailImage(void)
 	}
 
 	// Get the thumbnail address and size.
-	static const off64_t thumb_addr = sizeof(contentDesc);
+	static constexpr off64_t thumb_addr = sizeof(contentDesc);
 	const size_t z_thumb_size = be16_to_cpu(contentDesc.thumb_image_size);
 	if (z_thumb_size > 0x4000) {
 		// Out of range.
@@ -529,7 +529,7 @@ const char *iQuePlayer::systemName(unsigned int type) const
 		"iQuePlayer::systemName() array index optimization needs to be updated.");
 
 	// Bits 0-1: Type. (long, short, abbreviation)
-	static const char *const sysNames[4] = {
+	static constexpr const char *const sysNames[4] = {
 		"iQue Player", "iQue Player", "iQue", nullptr
 	};
 

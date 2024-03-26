@@ -1110,10 +1110,10 @@ int GameCube::isRomSupported_static(const DetectInfo *info)
 	// Check for SDK headers.
 	// TODO: More comprehensive?
 	// TODO: Checksum at 0x0830. (For GCN, makeGCM always puts 0xAB0B here...)
-	static const uint32_t sdk_0x0000 = 0xFFFF0000;	// BE32
+	static constexpr uint32_t sdk_0x0000 = 0xFFFF0000;	// BE32
 	// TODO: Some RVMs have extended headers at 0x0800, but not the 0x082C value.
-	static const uint32_t sdk_0x0820 = 0x0002F000;	// BE32
-	static const uint32_t sdk_0x082C = 0x0000E006;	// BE32
+	static constexpr uint32_t sdk_0x0820 = 0x0002F000;	// BE32
+	static constexpr uint32_t sdk_0x082C = 0x0000E006;	// BE32
 	const uint32_t *const pData32 =
 		reinterpret_cast<const uint32_t*>(info->header.pData);
 	if (pData32[0] == cpu_to_be32(sdk_0x0000)) {
@@ -1141,8 +1141,8 @@ int GameCube::isRomSupported_static(const DetectInfo *info)
 
 	// Check for WIA or RVZ.
 	// TODO: Remove this when a proper SparseDiscReader subclass is added.
-	static const uint32_t wia_magic = 'WIA\x01';
-	static const uint32_t rvz_magic = 'RVZ\x01';
+	static constexpr uint32_t wia_magic = 'WIA\x01';
+	static constexpr uint32_t rvz_magic = 'RVZ\x01';
 	if (pData32[0] == cpu_to_be32(rvz_magic) ||
 	    unlikely(pData32[0] == cpu_to_be32(wia_magic)))
 	{
@@ -1213,7 +1213,7 @@ const char *GameCube::systemName(unsigned int type) const
 
 	// Bits 0-1: Type. (long, short, abbreviation)
 	// Bits 2-3: DISC_SYSTEM_MASK (GCN, Wii, Triforce)
-	static const char *const sysNames[4][4] = {
+	static constexpr const char *const sysNames[4][4] = {
 		{"Nintendo GameCube", "GameCube", "GCN", nullptr},
 		{"Nintendo/Sega/Namco Triforce", "Triforce", "TF", nullptr},
 		{"Nintendo Wii", "Wii", "Wii", nullptr},
@@ -1508,7 +1508,7 @@ int GameCube::loadFieldData(void)
 	if (d->hasRvlRegionSetting) {
 		RomFields::age_ratings_t age_ratings;
 		// Valid ratings: 0-1, 3-9
-		static const uint16_t valid_ratings = 0x3FB;
+		static constexpr uint16_t valid_ratings = 0x3FB;
 
 		for (int i = static_cast<int>(age_ratings.size())-1; i >= 0; i--) {
 			if (!(valid_ratings & (1U << i))) {
@@ -1782,7 +1782,7 @@ int GameCube::loadFieldData(void)
 			data_row.emplace_back(LibRpText::formatFileSize(entry.partition->partition_size()));
 		}
 
-		// Fields.
+		// Fields
 		static const char *const partitions_names[] = {
 			// tr: Partition number.
 			NOP_C_("Wii|Partition", "#"),

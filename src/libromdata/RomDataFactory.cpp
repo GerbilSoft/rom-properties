@@ -199,7 +199,7 @@ pthread_once_t once_mimeTypes = PTHREAD_ONCE_INIT;
  *
  * TODO: Add support for multiple magic numbers per class.
  */
-const RomDataFns romDataFns_magic[] = {
+constexpr RomDataFns romDataFns_magic[] = {
 	// Consoles
 	GetRomDataFns_addr(Atari7800, ATTR_HAS_METADATA, 4, 'RI78'),	// "ATARI7800"
 	GetRomDataFns_addr(PlayStationEXE, 0, 0, 'PS-X'),
@@ -258,7 +258,7 @@ const RomDataFns romDataFns_magic[] = {
  * Headers with addresses other than 0 should be
  * placed at the end of this array.
  */
-const RomDataFns romDataFns_header[] = {
+constexpr RomDataFns romDataFns_header[] = {
 	// Consoles
 	GetRomDataFns(ColecoVision, ATTR_HAS_METADATA),
 	GetRomDataFns(Dreamcast, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA | ATTR_SUPPORTS_DEVICES),
@@ -328,7 +328,7 @@ const RomDataFns romDataFns_header[] = {
 };
 
 // RomData subclasses that use a footer.
-const RomDataFns romDataFns_footer[] = {
+constexpr RomDataFns romDataFns_footer[] = {
 	GetRomDataFns(VirtualBoy, ATTR_NONE),
 	GetRomDataFns(WonderSwan, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA),
 	{nullptr, nullptr, nullptr, ATTR_NONE, 0, 0}
@@ -337,7 +337,7 @@ const RomDataFns romDataFns_footer[] = {
 // Table of pointers to tables.
 // This reduces duplication by only requiring a single loop
 // in each function.
-const RomDataFns *const romDataFns_tbl[] = {
+constexpr const RomDataFns *const romDataFns_tbl[] = {
 	romDataFns_magic,
 	romDataFns_header,
 	romDataFns_footer,
@@ -376,7 +376,7 @@ static IDiscReader *IDiscReader_ctor(const IRpFilePtr &file)
 	 magic}
 
 #define P99_PROTECT(...) __VA_ARGS__	/* Reference: https://stackoverflow.com/a/5504336 */
-const IDiscReaderFns iDiscReaderFns[] = {
+constexpr IDiscReaderFns iDiscReaderFns[] = {
 	GetIDiscReaderFns(CisoGcnReader,	P99_PROTECT({'CISO'})),
 	// NOTE: MSVC doesn't like putting #ifdef within the P99_PROTECT macro.
 	// TODO: Disable ZISO and JISO if LZ4 and LZO aren't available?
@@ -472,7 +472,7 @@ IDiscReader *openIDiscReader(const IRpFilePtr &file, uint32_t magic0)
 		const char *const ext = FileSystem::file_ext(filename);
 		if (ext) do {
 			// TODO: Make .wbf1 support optional. Disabled for now.
-			static const bool enable_wbf1 = false;
+			static constexpr bool enable_wbf1 = false;
 			if (unlikely(enable_wbf1 && !strcasecmp(ext, ".wbf1"))) {
 				// Second part of split WBFS.
 				IRpFilePtr wbfs0 = FileSystem::openRelatedFile(filename, nullptr, ".wbfs");
@@ -604,7 +604,7 @@ RomData *checkISO(const IRpFilePtr &file)
 #define GetRomDataFns_ISO(sys) \
 	{sys::isRomSupported_static, \
 	 RomData_ctor<sys>}
-	static const RomDataFns_ISO romDataFns_ISO[] = {
+	static constexpr RomDataFns_ISO romDataFns_ISO[] = {
 		GetRomDataFns_ISO(PlayStationDisc),
 		GetRomDataFns_ISO(PSP),
 		GetRomDataFns_ISO(XboxDisc),
@@ -817,7 +817,7 @@ RomDataPtr create(const IRpFilePtr &file, unsigned int attrs)
 				// for file types that don't use this.
 				// TODO: Don't hard-code this.
 				// Use a pointer to supportedFileExtensions_static() instead?
-				static const char exts[][8] = {
+				static constexpr char exts[][8] = {
 					".bin",		// generic .bin
 					".sms",		// Sega Master System
 					".gg",		// Game Gear
@@ -913,7 +913,7 @@ RomDataPtr create(const IRpFilePtr &file, unsigned int attrs)
 
 		// Do we have a matching extension?
 		// FIXME: Instead of hard-coded, check romDataInfo()->exts.
-		static const char exts[][8] = {
+		static constexpr char exts[][8] = {
 			".vb",		// VirtualBoy
 			".ws",		// WonderSwan
 			".wsc",		// WonderSwan Color
@@ -940,7 +940,7 @@ RomDataPtr create(const IRpFilePtr &file, unsigned int attrs)
 
 		// Make sure we've read the footer.
 		if (!readFooter) {
-			static const int footer_size = 1024;
+			static constexpr int footer_size = 1024;
 			if (info.szFile > footer_size) {
 				info.header.addr = static_cast<uint32_t>(info.szFile - footer_size);
 				info.header.size = static_cast<uint32_t>(reader->seekAndRead(info.header.addr, header.u8, footer_size));
@@ -1103,7 +1103,7 @@ void init_supportedFileExtensions(void)
 	// The actual data is stored in the vector<ExtInfo>.
 	std::unordered_map<string, unsigned int> map_exts;
 
-	static const size_t reserve_size =
+	static constexpr size_t reserve_size =
 		(ARRAY_SIZE(romDataFns_magic) +
 		 ARRAY_SIZE(romDataFns_header) +
 		 ARRAY_SIZE(romDataFns_footer)) * 2;
@@ -1137,7 +1137,7 @@ void init_supportedFileExtensions(void)
 	}
 
 	// Get file extensions from FileFormatFactory.
-	static const unsigned int FFF_ATTRS = ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA;
+	static constexpr unsigned int FFF_ATTRS = ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA;
 	const vector<const char*> &vec_exts_fileFormat = FileFormatFactory::supportedFileExtensions();
 	for (const char *ext : vec_exts_fileFormat) {
 		auto iter = map_exts.find(ext);
@@ -1196,7 +1196,7 @@ void init_supportedMimeTypes(void)
 	// is stored in the vector<const char*>.
 	std::unordered_set<string> set_mimeTypes;
 
-	static const size_t reserve_size =
+	static constexpr size_t reserve_size =
 		(ARRAY_SIZE(romDataFns_magic) +
 		 ARRAY_SIZE(romDataFns_header) +
 		 ARRAY_SIZE(romDataFns_footer)) * 2;

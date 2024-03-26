@@ -225,7 +225,7 @@ rp_image_ptr RpJpeg::load(const IRpFilePtr &file)
 	// Defining MY_JCS_EXT_BGRA so it can be compiled with libjpeg and
 	// later used with libjpeg-turbo. Prefixed so it doesn't conflict
 	// with libjpeg-turbo's headers.
-	static const int MY_JCS_EXT_BGRA = 13;
+	static constexpr int MY_JCS_EXT_BGRA = 13;
 	bool try_ext_bgra = true;	// True if we should try JCS_EXT_BGRA first.
 	bool tried_ext_bgra = false;	// True if we tried JCS_EXT_BGRA.
 
@@ -549,7 +549,7 @@ rp_image_ptr RpJpeg::load(const IRpFilePtr &file)
 
 		// Set the sBIT metadata.
 		// TODO: 10-bit/12-bit JPEGs?
-		static const rp_image::sBIT_t sBIT = {8,8,8,0,0};
+		static constexpr rp_image::sBIT_t sBIT = {8,8,8,0,0};
 		img->set_sBIT(&sBIT);
 	} else {
 		// Grayscale image, or RGB image with libjpeg-turbo's JCS_EXT_BGRA.
@@ -569,10 +569,10 @@ rp_image_ptr RpJpeg::load(const IRpFilePtr &file)
 		if (cinfo.out_color_space == JCS_GRAYSCALE) {
 			// NOTE: Setting the grayscale value, though we're
 			// not saving grayscale PNGs at the moment.
-			static const rp_image::sBIT_t sBIT = {8,8,8,8,0};
+			static constexpr rp_image::sBIT_t sBIT = {8,8,8,8,0};
 			img->set_sBIT(&sBIT);
 		} else {
-			static const rp_image::sBIT_t sBIT = {8,8,8,0,0};
+			static constexpr rp_image::sBIT_t sBIT = {8,8,8,0,0};
 			img->set_sBIT(&sBIT);
 		}
 	}

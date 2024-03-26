@@ -119,7 +119,7 @@ XfsAttrView::XfsAttrView(QWidget *parent)
 	d->ui.setupUi(this);
 
 	// Create the checkboxes.
-	static const int col_count = 4;
+	static constexpr int col_count = 4;
 	int col = 0, row = 0;
 	for (size_t i = 0; i < d->checkBoxes.size(); i++) {
 		const XfsAttrCheckboxInfo_t *const p = xfsAttrCheckboxInfo(static_cast<XfsAttrCheckboxID>(i));

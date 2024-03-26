@@ -410,7 +410,7 @@ rp_image_const_ptr GameCubeSavePrivate::loadIcon(void)
 		switch (iconfmt & CARD_ICON_MASK) {
 			case CARD_ICON_RGB: {
 				// RGB5A3
-				static const size_t iconsize = CARD_ICON_W * CARD_ICON_H * 2;
+				static constexpr size_t iconsize = CARD_ICON_W * CARD_ICON_H * 2;
 				iconAnimData->frames[i] = ImageDecoder::fromGcn16(
 					ImageDecoder::PixelFormat::RGB5A3, CARD_ICON_W, CARD_ICON_H,
 					reinterpret_cast<const uint16_t*>(icondata.get() + iconaddr_cur),
@@ -422,7 +422,7 @@ rp_image_const_ptr GameCubeSavePrivate::loadIcon(void)
 			case CARD_ICON_CI_UNIQUE: {
 				// CI8 with a unique palette.
 				// Palette is located immediately after the icon.
-				static const size_t iconsize = CARD_ICON_W * CARD_ICON_H * 1;
+				static constexpr size_t iconsize = CARD_ICON_W * CARD_ICON_H * 1;
 				iconAnimData->frames[i] = ImageDecoder::fromGcnCI8(
 					CARD_ICON_W, CARD_ICON_H,
 					icondata.get() + iconaddr_cur, iconsize,
@@ -432,7 +432,7 @@ rp_image_const_ptr GameCubeSavePrivate::loadIcon(void)
 			}
 
 			case CARD_ICON_CI_SHARED: {
-				static const size_t iconsize = CARD_ICON_W * CARD_ICON_H * 1;
+				static constexpr size_t iconsize = CARD_ICON_W * CARD_ICON_H * 1;
 				iconAnimData->frames[i] = ImageDecoder::fromGcnCI8(
 					CARD_ICON_W, CARD_ICON_H,
 					icondata.get() + iconaddr_cur, iconsize,
@@ -507,7 +507,7 @@ rp_image_const_ptr GameCubeSavePrivate::loadBanner(void)
 	}
 
 	// Read the banner data.
-	static const int MAX_BANNER_SIZE = (CARD_BANNER_W * CARD_BANNER_H * 2);
+	static constexpr int MAX_BANNER_SIZE = (CARD_BANNER_W * CARD_BANNER_H * 2);
 	uint8_t bannerbuf[MAX_BANNER_SIZE];
 	size_t size = file->seekAndRead(dataOffset + direntry.iconaddr,
 					bannerbuf, bannersize);
@@ -701,7 +701,7 @@ int GameCubeSave::isRomSupported_static(const DetectInfo *info)
 	}
 
 	// Check for GCS. (GameShark)
-	static const uint8_t gcs_magic[] = {'G','C','S','A','V','E'};
+	static constexpr uint8_t gcs_magic[] = {'G','C','S','A','V','E'};
 	if (!memcmp(info->header.pData, gcs_magic, sizeof(gcs_magic))) {
 		// Is the size correct?
 		// GCS files are a multiple of 8 KB, plus 336 bytes:
@@ -721,7 +721,7 @@ int GameCubeSave::isRomSupported_static(const DetectInfo *info)
 	}
 
 	// Check for SAV. (MaxDrive)
-	static const uint8_t sav_magic[] = "DATELGC_SAVE\x00\x00\x00\x00";
+	static constexpr uint8_t sav_magic[] = "DATELGC_SAVE\x00\x00\x00\x00";
 	if (!memcmp(info->header.pData, sav_magic, sizeof(sav_magic)-1)) {
 		// Is the size correct?
 		// SAVE files are a multiple of 8 KB, plus 192 bytes:
@@ -775,7 +775,7 @@ const char *GameCubeSave::systemName(unsigned int type) const
 		"GameCubeSave::systemName() array index optimization needs to be updated.");
 
 	// Bits 0-1: Type. (long, short, abbreviation)
-	static const char *const sysNames[4] = {
+	static constexpr const char *const sysNames[4] = {
 		"Nintendo GameCube", "GameCube", "GCN", nullptr
 	};
 

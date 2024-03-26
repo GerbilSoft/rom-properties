@@ -149,8 +149,8 @@ struct RpPngFormatTest_mode
 };
 
 // Maximum file size for images.
-static const off64_t MAX_PNG_IMAGE_FILESIZE =    512*1024;
-static const off64_t MAX_BMP_IMAGE_FILESIZE = 2*1024*1024;
+static constexpr off64_t MAX_PNG_IMAGE_FILESIZE =    512*1024;
+static constexpr off64_t MAX_BMP_IMAGE_FILESIZE = 2*1024*1024;
 
 class RpPngFormatTest : public ::testing::TestWithParam<RpPngFormatTest_mode>
 {
@@ -1017,34 +1017,34 @@ string RpPngFormatTest::test_case_suffix_generator(const ::testing::TestParamInf
 // 1-, 2-, 4-, and 8 bits per channel.
 
 // gl_triangle PNG IHDR chunks.
-static const PNG_IHDR_t gl_triangle_RGB24_IHDR =
+static constexpr PNG_IHDR_t gl_triangle_RGB24_IHDR =
 	{400, 352, 8, PNG_COLOR_TYPE_RGB, 0, 0, 0};
-static const PNG_IHDR_t gl_triangle_ARGB32_IHDR =
+static constexpr PNG_IHDR_t gl_triangle_ARGB32_IHDR =
 	{400, 352, 8, PNG_COLOR_TYPE_RGB_ALPHA, 0, 0, 0};
-static const PNG_IHDR_t gl_triangle_gray_IHDR =
+static constexpr PNG_IHDR_t gl_triangle_gray_IHDR =
 	{400, 352, 8, PNG_COLOR_TYPE_GRAY, 0, 0, 0};
-static const PNG_IHDR_t gl_triangle_gray_alpha_IHDR =
+static constexpr PNG_IHDR_t gl_triangle_gray_alpha_IHDR =
 	{400, 352, 8, PNG_COLOR_TYPE_GRAY_ALPHA, 0, 0, 0};
 
 // gl_triangle BITMAPINFOHEADER structs.
-static const BITMAPINFOHEADER gl_triangle_RGB24_BIH =
+static constexpr BITMAPINFOHEADER gl_triangle_RGB24_BIH =
 	{sizeof(BITMAPINFOHEADER),
 		400, 352, 1, 24, BI_RGB, 400*352*(24/8),
 		3936, 3936, 0, 0};
-static const BITMAPINFOHEADER gl_triangle_RGB24_tRNS_BIH =
+static constexpr BITMAPINFOHEADER gl_triangle_RGB24_tRNS_BIH =
 	{sizeof(BITMAPINFOHEADER),
 		400, 352, 1, 32, BI_BITFIELDS, 400*352*(32/8),
 		3936, 3936, 0, 0};
-static const BITMAPINFOHEADER gl_triangle_ARGB32_BIH =
+static constexpr BITMAPINFOHEADER gl_triangle_ARGB32_BIH =
 	{sizeof(BITMAPINFOHEADER),
 		400, 352, 1, 32, BI_BITFIELDS, 400*352*(32/8),
 		3936, 3936, 0, 0};
-static const BITMAPINFOHEADER gl_triangle_gray_BIH =
+static constexpr BITMAPINFOHEADER gl_triangle_gray_BIH =
 	{sizeof(BITMAPINFOHEADER),
 		400, 352, 1, 8, BI_RGB, 400*352,
 		3936, 3936, 256, 256};
 // BMP doesn't support gray+alpha, so we're using ARGB32.
-static const BITMAPINFOHEADER gl_triangle_gray_alpha_BIH =
+static constexpr BITMAPINFOHEADER gl_triangle_gray_alpha_BIH =
 	{sizeof(BITMAPINFOHEADER),
 		400, 352, 1, 32, BI_BITFIELDS, 400*352*(32/8),
 		3936, 3936, 0, 0};
@@ -1086,34 +1086,34 @@ INSTANTIATE_TEST_SUITE_P(gl_triangle_png, RpPngFormatTest,
 	, RpPngFormatTest::test_case_suffix_generator);
 
 // gl_quad PNG IHDR chunks.
-static const PNG_IHDR_t gl_quad_RGB24_IHDR =
+static constexpr PNG_IHDR_t gl_quad_RGB24_IHDR =
 	{480, 384, 8, PNG_COLOR_TYPE_RGB, 0, 0, 0};
-static const PNG_IHDR_t gl_quad_ARGB32_IHDR =
+static constexpr PNG_IHDR_t gl_quad_ARGB32_IHDR =
 	{480, 384, 8, PNG_COLOR_TYPE_RGB_ALPHA, 0, 0, 0};
-static const PNG_IHDR_t gl_quad_gray_IHDR =
+static constexpr PNG_IHDR_t gl_quad_gray_IHDR =
 	{480, 384, 8, PNG_COLOR_TYPE_GRAY, 0, 0, 0};
-static const PNG_IHDR_t gl_quad_gray_alpha_IHDR =
+static constexpr PNG_IHDR_t gl_quad_gray_alpha_IHDR =
 	{480, 384, 8, PNG_COLOR_TYPE_GRAY_ALPHA, 0, 0, 0};
 
 // gl_quad BITMAPINFOHEADER structs.
-static const BITMAPINFOHEADER gl_quad_RGB24_BIH =
+static constexpr BITMAPINFOHEADER gl_quad_RGB24_BIH =
 	{sizeof(BITMAPINFOHEADER),
 		480, 384, 1, 24, BI_RGB, 480*384*(24/8),
 		3936, 3936, 0, 0};
-static const BITMAPINFOHEADER gl_quad_RGB24_tRNS_BIH =
+static constexpr BITMAPINFOHEADER gl_quad_RGB24_tRNS_BIH =
 	{sizeof(BITMAPINFOHEADER),
 		480, 384, 1, 32, BI_BITFIELDS, 480*384*(32/8),
 		3936, 3936, 0, 0};
-static const BITMAPINFOHEADER gl_quad_ARGB32_BIH =
+static constexpr BITMAPINFOHEADER gl_quad_ARGB32_BIH =
 	{sizeof(BITMAPINFOHEADER),
 		480, 384, 1, 32, BI_BITFIELDS, 480*384*(32/8),
 		3936, 3936, 0, 0};
-static const BITMAPINFOHEADER gl_quad_gray_BIH =
+static constexpr BITMAPINFOHEADER gl_quad_gray_BIH =
 	{sizeof(BITMAPINFOHEADER),
 		480, 384, 1, 8, BI_RGB, 480*384,
 		3936, 3936, 256, 256};
 // BMP doesn't support gray+alpha, so we're using ARGB32.
-static const BITMAPINFOHEADER gl_quad_gray_alpha_BIH =
+static constexpr BITMAPINFOHEADER gl_quad_gray_alpha_BIH =
 	{sizeof(BITMAPINFOHEADER),
 		480, 384, 1, 32, BI_BITFIELDS, 480*384*(32/8),
 		3936, 3936, 0, 0};
@@ -1155,24 +1155,24 @@ INSTANTIATE_TEST_SUITE_P(gl_quad_png, RpPngFormatTest,
 	, RpPngFormatTest::test_case_suffix_generator);
 
 // xterm 256-color PNG IHDR chunks.
-static const PNG_IHDR_t xterm_256color_CI8_IHDR =
+static constexpr PNG_IHDR_t xterm_256color_CI8_IHDR =
 	{608, 720, 8, PNG_COLOR_TYPE_PALETTE, 0, 0, 0};
-static const PNG_IHDR_t xterm_256color_CI8_tRNS_IHDR =
+static constexpr PNG_IHDR_t xterm_256color_CI8_tRNS_IHDR =
 	{608, 720, 8, PNG_COLOR_TYPE_PALETTE, 0, 0, 0};
 
 // xterm 256-color BITMAPINFOHEADER structs.
-static const BITMAPINFOHEADER xterm_256color_CI8_BIH =
+static constexpr BITMAPINFOHEADER xterm_256color_CI8_BIH =
 	{sizeof(BITMAPINFOHEADER),
 		608, 720, 1, 8, BI_RGB, 608*720,
 		3936, 3936, 253, 253};
 #if defined(HAVE_PNG)
-static const BITMAPINFOHEADER xterm_256color_CI8_tRNS_BIH =
+static constexpr BITMAPINFOHEADER xterm_256color_CI8_tRNS_BIH =
 	{sizeof(BITMAPINFOHEADER),
 		608, 720, 1, 8, BI_RGB, 608*720,
 		3936, 3936, 254, 254};
 #elif defined(_WIN32)
 // GDI+ converts PNG_COLOR_TYPE_PALETTE + tRNS to 32-bit ARGB.
-static const BITMAPINFOHEADER xterm_256color_CI8_tRNS_gdip_BIH =
+static constexpr BITMAPINFOHEADER xterm_256color_CI8_tRNS_gdip_BIH =
 	{sizeof(BITMAPINFOHEADER),
 		608, 720, 1, 32, BI_BITFIELDS, 608*720*(32/8),
 		3936, 3936, 0, 0};
@@ -1182,7 +1182,7 @@ static const BITMAPINFOHEADER xterm_256color_CI8_tRNS_gdip_BIH =
 
 #ifdef HAVE_PNG
 // tRNS chunk for CI8.tRNS BMPs.
-static const tRNS_CI8_t xterm_256color_CI8_tRNS_bmp_tRNS = {{
+static constexpr tRNS_CI8_t xterm_256color_CI8_tRNS_bmp_tRNS = {{
 	0x00,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
 	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
 	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
@@ -1245,7 +1245,7 @@ INSTANTIATE_TEST_SUITE_P(xterm_256color_tRNS_png, RpPngFormatTest,
 /** Low color depth and odd width tests. **/
 
 // 135x270 with 16-color palette.
-static const PNG_IHDR_t odd_width_16color_CI4_IHDR =
+static constexpr PNG_IHDR_t odd_width_16color_CI4_IHDR =
 	{135, 270, 4, PNG_COLOR_TYPE_PALETTE, 0, 0, 0};
 
 // 135x270 with 16-color palette.
@@ -1253,7 +1253,7 @@ static const PNG_IHDR_t odd_width_16color_CI4_IHDR =
 // RpPng converts it to 8bpp, since RpImage does not
 // support CI4 images.
 // NOTE 2: Image width is internally a multiple of 8.
-static const BITMAPINFOHEADER odd_width_16color_CI8_BIH =
+static constexpr BITMAPINFOHEADER odd_width_16color_CI8_BIH =
 	{sizeof(BITMAPINFOHEADER),
 		135, 270, 1, 8, BI_RGB, (135+1)*270,
 		3936, 3936, 16, 16};
@@ -1273,19 +1273,19 @@ INSTANTIATE_TEST_SUITE_P(odd_width_16color_png, RpPngFormatTest,
 
 /** Monochrome tests. **/
 
-static const PNG_IHDR_t happy_mac_mono_IHDR =
+static constexpr PNG_IHDR_t happy_mac_mono_IHDR =
 	{512, 342, 1, PNG_COLOR_TYPE_PALETTE, 0, 0, 0};
-static const PNG_IHDR_t happy_mac_mono_odd_size_IHDR =
+static constexpr PNG_IHDR_t happy_mac_mono_odd_size_IHDR =
 	{75, 73, 1, PNG_COLOR_TYPE_PALETTE, 0, 0, 0};
 
-static const BITMAPINFOHEADER happy_mac_mono_BIH =
+static constexpr BITMAPINFOHEADER happy_mac_mono_BIH =
 	{sizeof(BITMAPINFOHEADER),
 		512, 342, 1, 1, BI_RGB, 512*342/8,
 		3936, 3936, 2, 2};
 // NOTE: Monochrome bitmaps always have a stride of 4 bytes.
 // For 75px, that increases it to 96px wide.
 // (Internal width is a multiple of 32px.)
-static const BITMAPINFOHEADER happy_mac_mono_odd_size_BIH =
+static constexpr BITMAPINFOHEADER happy_mac_mono_odd_size_BIH =
 	{sizeof(BITMAPINFOHEADER),
 		75, 73, 1, 1, BI_RGB, 96*73/8,
 		3936, 3936, 2, 2};

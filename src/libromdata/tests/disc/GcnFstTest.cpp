@@ -87,8 +87,8 @@ inline ::std::ostream& operator<<(::std::ostream& os, const GcnFstTest_mode& mod
 };
 
 // Maximum file size for FST files.
-static const uint64_t MAX_GCN_FST_BIN_FILESIZE = 1024UL*1024UL;	// 1.0 MB
-static const uint64_t MAX_GCN_FST_TXT_FILESIZE = 1536UL*1024UL;	// 1.5 MB
+static constexpr uint64_t MAX_GCN_FST_BIN_FILESIZE = 1024UL*1024UL;	// 1.0 MB
+static constexpr uint64_t MAX_GCN_FST_TXT_FILESIZE = 1536UL*1024UL;	// 1.5 MB
 
 class GcnFstTest : public ::testing::TestWithParam<GcnFstTest_mode>
 {
@@ -594,7 +594,7 @@ extern "C" int gtest_main(int argc, TCHAR *argv[])
 
 #ifdef _WIN32
 	// Check for the fst_data directory and chdir() into it.
-	static const TCHAR *const subdirs[] = {
+	static constexpr const TCHAR *const subdirs[] = {
 		_T("fst_data"),
 		_T("bin\\fst_data"),
 		_T("src\\libromdata\\tests\\disc\\fst_data"),
@@ -608,7 +608,7 @@ extern "C" int gtest_main(int argc, TCHAR *argv[])
 		_T("..\\..\\..\\bin\\Release\\fst_data"),
 	};
 #else /* !_WIN32 */
-	static const TCHAR *const subdirs[] = {
+	static constexpr const TCHAR *const subdirs[] = {
 		_T("fst_data"),
 		_T("bin/fst_data"),
 		_T("src/libromdata/tests/disc/fst_data"),

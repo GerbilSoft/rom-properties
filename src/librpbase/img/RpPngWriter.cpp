@@ -265,7 +265,7 @@ class RpPngWriterPrivate
 
 			void set_sBIT(const rp_image::sBIT_t* sBIT)
 			{
-				static const rp_image::sBIT_t sBIT_invalid = {0,0,0,0,0};
+				static constexpr rp_image::sBIT_t sBIT_invalid = {0,0,0,0,0};
 				if (sBIT && memcmp(sBIT, &sBIT_invalid, sizeof(*sBIT)) != 0) {
 					// sBIT is valid.
 					this->sBIT = *sBIT;
@@ -1242,7 +1242,7 @@ int RpPngWriter::write_IHDR(void)
 #ifdef PNG_sBIT_SUPPORTED
 			const int color_type = (d->cache.skip_alpha ? PNG_COLOR_TYPE_RGB : PNG_COLOR_TYPE_RGB_ALPHA);
 #else /* !PNG_sBIT_SUPPORTED */
-			static const int color_type = PNG_COLOR_TYPE_RGB_ALPHA;
+			static constexpr int color_type = PNG_COLOR_TYPE_RGB_ALPHA;
 #endif /* PNG_sBIT_SUPPORTED */
 			png_set_IHDR(d->png_ptr, d->info_ptr,
 					d->cache.width, d->cache.height, 8,

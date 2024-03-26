@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase/tests)                  *
  * TimegmTest.cpp: timegm() test.                                          *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -225,16 +225,16 @@ extern "C" int gtest_main(int argc, TCHAR *argv[])
 {
 #if defined(USING_MSVCRT_MKGMTIME)
 # if defined(HAVE__MKGMTIME64)
-	static const char func_name[] = "_mkgmtime64() (MSVCRT)";
+	static constexpr char func_name[] = "_mkgmtime64() (MSVCRT)";
 # elif defined(HAVE__MKGMTIME32)
-	static const char func_name[] = "_mkgmtime32() (MSVCRT)";
+	static constexpr char func_name[] = "_mkgmtime32() (MSVCRT)";
 # else /*elif defined(HAVE__MKGMTIME)*/
-	static const char func_name[] = "_mkgmtime() (MSVCRT)";
+	static constexpr char func_name[] = "_mkgmtime() (MSVCRT)";
 # endif
 #elif defined(HAVE_TIMEGM)
-	static const char func_name[] = "timegm() (libc)";
+	static constexpr char func_name[] = "timegm() (libc)";
 #else
-	static const char func_name[] = "timegm() (internal)";
+	static constexpr char func_name[] = "timegm() (internal)";
 #endif
 
 	fputs("LibRpBase test suite: timegm() tests.\n", stderr);

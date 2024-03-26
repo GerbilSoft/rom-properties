@@ -86,7 +86,7 @@ int AchGDBus::notifyFunc(Achievements::ID id)
 	g_free(s_achDescUnlocked);
 
 	// actions: as
-	static const gchar *const actions[] = { nullptr };
+	static constexpr const gchar *const actions[] = { nullptr };
 
 	// hints: a{sv}
 	// NOTE: GDBus seems to take ownership of `hints`...
@@ -95,7 +95,7 @@ int AchGDBus::notifyFunc(Achievements::ID id)
 
 	// Get the icon.
 	// FIXME: Icon size. Using 32px for now.
-	static const gint iconSize = 32;
+	static constexpr gint iconSize = 32;
 	AchSpriteSheet achSpriteSheet(iconSize);
 	PIMGTYPE icon = achSpriteSheet.getIcon(id);
 	assert(icon != nullptr);
