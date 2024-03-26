@@ -320,11 +320,9 @@ rp_systems_tab_load_defaults(RpSystemsTab *tab)
 	g_return_if_fail(RP_IS_SYSTEMS_TAB(tab));
 	tab->inhibit = true;
 
-	// TODO: Get the defaults from Config.
-	// For now, hard-coding everything here.
-	static const int8_t idxDMG_default = 0;
-	static const int8_t idxSGB_default = 1;
-	static const int8_t idxCGB_default = 2;
+	const int idxDMG_default = (int)Config::dmgTitleScreenMode_default(Config::DMG_TitleScreen_Mode::DMG);
+	const int idxSGB_default = (int)Config::dmgTitleScreenMode_default(Config::DMG_TitleScreen_Mode::SGB);
+	const int idxCGB_default = (int)Config::dmgTitleScreenMode_default(Config::DMG_TitleScreen_Mode::CGB);
 	bool isDefChanged = false;
 
 	if (COMPARE_CBO(tab->cboDMG, idxDMG_default)) {

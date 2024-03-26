@@ -116,11 +116,9 @@ void SystemsTab::reset(void)
  */
 void SystemsTab::loadDefaults(void)
 {
-	// TODO: Get the defaults from Config.
-	// For now, hard-coding everything here.
-	static const int8_t idxDMG_default = 0;
-	static const int8_t idxSGB_default = 1;
-	static const int8_t idxCGB_default = 2;
+	const int idxDMG_default = (int)Config::dmgTitleScreenMode_default(Config::DMG_TitleScreen_Mode::DMG);
+	const int idxSGB_default = (int)Config::dmgTitleScreenMode_default(Config::DMG_TitleScreen_Mode::SGB);
+	const int idxCGB_default = (int)Config::dmgTitleScreenMode_default(Config::DMG_TitleScreen_Mode::CGB);
 	bool isDefChanged = false;
 
 	Q_D(SystemsTab);
