@@ -1,8 +1,8 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (KDE)                              *
- * AchievementsItemDelegate.hpp: Achievements item delegate for rp-config. *
+ * AchievementsItemDelegate.cpp: Achievements item delegate for rp-config. *
  *                                                                         *
- * Copyright (c) 2013-2023 by David Korth.                                 *
+ * Copyright (c) 2013-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -227,10 +227,10 @@ QSize AchievementsItemDelegate::sizeHint(const QStyleOptionViewItem &option,
 		return super::sizeHint(option, index);
 	}
 
-	const array<QString, LINE_COUNT> sl = {
+	const array<QString, LINE_COUNT> sl = {{
 		s_ach.left(nl_pos),
 		s_ach.mid(nl_pos + 1)
-	};
+	}};
 
 #if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
 	const QStyleOptionViewItem &bgOption = option;

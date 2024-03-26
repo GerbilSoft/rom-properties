@@ -134,7 +134,7 @@ const TextureInfo ValveVTFPrivate::textureInfo = {
 };
 
 // Image format table
-const array<const char*, VTF_IMAGE_FORMAT_MAX> ValveVTFPrivate::img_format_tbl = {
+const array<const char*, VTF_IMAGE_FORMAT_MAX> ValveVTFPrivate::img_format_tbl = {{
 	"RGBA8888",
 	"ABGR8888",
 	"RGB888",
@@ -162,10 +162,10 @@ const array<const char*, VTF_IMAGE_FORMAT_MAX> ValveVTFPrivate::img_format_tbl =
 	"RGBA16161616F",
 	"RGBA16161616",
 	"UVLX8888",
-};
+}};
 
 // ImageSizeCalc opcode table
-const array<ImageSizeCalc::OpCode, VTF_IMAGE_FORMAT_MAX> ValveVTFPrivate::op_tbl = {
+const array<ImageSizeCalc::OpCode, VTF_IMAGE_FORMAT_MAX> ValveVTFPrivate::op_tbl = {{
 	OpCode::Multiply4,	// VTF_IMAGE_FORMAT_RGBA8888
 	OpCode::Multiply4,	// VTF_IMAGE_FORMAT_ABGR8888
 	OpCode::Multiply3,	// VTF_IMAGE_FORMAT_RGB888
@@ -193,7 +193,7 @@ const array<ImageSizeCalc::OpCode, VTF_IMAGE_FORMAT_MAX> ValveVTFPrivate::op_tbl
 	OpCode::Multiply8,	// VTF_IMAGE_FORMAT_RGBA16161616F
 	OpCode::Multiply8,	// VTF_IMAGE_FORMAT_RGBA16161616
 	OpCode::Multiply4,	// VTF_IMAGE_FORMAT_UVLX8888
-};
+}};
 
 ValveVTFPrivate::ValveVTFPrivate(ValveVTF *q, const IRpFilePtr &file)
 	: super(q, file, &textureInfo)
