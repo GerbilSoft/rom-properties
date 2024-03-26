@@ -17,6 +17,7 @@ using namespace LibRpTexture;
 using LibRpBase::RomFields;
 
 // C++ STL classes
+using std::array;
 using std::set;
 using std::string;
 using std::unordered_map;
@@ -110,20 +111,17 @@ public:
 	void updateLC(uint32_t def_lc, uint32_t user_lc);
 
 public:
-	// Column data alignment table.
-	static const std::array<uint8_t, 4> align_tbl;
+	// Column data alignment table
+	// All values are known to fit in uint8_t.
+	// NOTE: Need to include AlignVCenter.
+	static constexpr array<uint8_t, 4> align_tbl = {{
+		// Order: TXA_D, TXA_L, TXA_C, TXA_R
+		Qt::AlignLeft | Qt::AlignVCenter,
+		Qt::AlignLeft | Qt::AlignVCenter,
+		Qt::AlignCenter,
+		Qt::AlignRight | Qt::AlignVCenter,
+	}};
 };
-
-// Format table.
-// All values are known to fit in uint8_t.
-// NOTE: Need to include AlignVCenter.
-const std::array<uint8_t, 4> ListDataModelPrivate::align_tbl = {{
-	// Order: TXA_D, TXA_L, TXA_C, TXA_R
-	Qt::AlignLeft | Qt::AlignVCenter,
-	Qt::AlignLeft | Qt::AlignVCenter,
-	Qt::AlignCenter,
-	Qt::AlignRight | Qt::AlignVCenter,
-}};
 
 ListDataModelPrivate::ListDataModelPrivate(ListDataModel *q)
 	: q_ptr(q)

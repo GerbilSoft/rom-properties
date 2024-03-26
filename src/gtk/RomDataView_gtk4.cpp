@@ -26,15 +26,15 @@ using std::string;
 using std::vector;
 
 // TODO: Ideal icon size? Using 32x32 for now.
-static const int icon_sz = 32;
+static constexpr int icon_sz = 32;
 
 // Format tables.
 // Pango enum values are known to fit in uint8_t.
-static const std::array<gfloat, 4> align_tbl_xalign = {{
+static constexpr array<gfloat, 4> align_tbl_xalign = {{
 	// Order: TXA_D, TXA_L, TXA_C, TXA_R
 	0.0f, 0.0f, 0.5f, 1.0f
 }};
-static const std::array<uint8_t, 4> align_tbl_halign = {{
+static constexpr array<uint8_t, 4> align_tbl_halign = {{
 	// Order: TXA_D, TXA_L, TXA_C, TXA_R
 	GTK_ALIGN_START, GTK_ALIGN_START,
 	GTK_ALIGN_CENTER, GTK_ALIGN_END

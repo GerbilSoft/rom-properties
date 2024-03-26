@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * KhronosKTX.cpp: Khronos KTX image reader.                               *
  *                                                                         *
- * Copyright (c) 2017-2023 by David Korth.                                 *
+ * Copyright (c) 2017-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -37,6 +37,7 @@ using LibRpBase::RomFields;
 #include "decoder/ImageDecoder_ASTC.hpp"
 
 // C++ STL classes
+using std::array;
 using std::string;
 using std::unique_ptr;
 using std::vector;
@@ -820,7 +821,7 @@ void KhronosKTXPrivate::loadKeyValueData(void)
 				char str[7];
 				rp_image::FlipOp flipOp;
 			};
-			static const std::array<orientation_tbl_t, 4> orientation_tbl = {{
+			static constexpr array<orientation_tbl_t, 4> orientation_tbl = {{
 				{{'S','=','r',',','T','=','d'}, rp_image::FLIP_NONE},
 				{{'S','=','r',',','T','=','u'}, rp_image::FLIP_V},
 				{{'S','=','l',',','T','=','d'}, rp_image::FLIP_H},

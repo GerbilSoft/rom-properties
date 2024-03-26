@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * XboxLanguage.cpp: Get the system language for Microsoft Xbox systems.   *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -14,6 +14,9 @@ using namespace LibRpBase;
 
 // Microsoft Xbox system structs.
 #include "Console/xbox360_xdbf_structs.h"
+
+// C++ STL classes
+using std::array;
 
 namespace LibRomData { namespace XboxLanguage {
 
@@ -69,7 +72,7 @@ int getXbox360Language(void)
 uint32_t getXbox360LanguageCode(int langID)
 {
 	// GCN_PAL_Language_ID system language code mapping.
-	static const std::array<uint32_t, 12+1> langID_to_lc = {{
+	static constexpr array<uint32_t, 12+1> langID_to_lc = {{
 		0,	// XDBF_LANGUAGE_UNKNOWN
 		'en',	// XDBF_LANGUAGE_ENGLISH
 		'ja',	// XDBF_LANGUAGE_JAPANESE

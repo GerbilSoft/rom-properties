@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * NintendoLanguage.hpp: Get the system language for Nintendo systems.     *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -18,8 +18,11 @@ using namespace LibRpBase;
 #include "Handheld/nds_structs.h"
 #include "Handheld/n3ds_structs.h"
 
-// C includes. (C++ namespace)
+// C includes (C++ namespace)
 #include <cassert>
+
+// C++ STL classes
+using std::array;
 
 namespace LibRomData { namespace NintendoLanguage {
 
@@ -62,14 +65,14 @@ int getGcnPalLanguage(void)
 uint32_t getGcnPalLanguageCode(int langID)
 {
 	// GCN_PAL_Language_ID system language code mapping.
-	static const std::array<uint16_t, GCN_PAL_LANG_MAX> langID_to_lc = {
+	static constexpr array<uint16_t, GCN_PAL_LANG_MAX> langID_to_lc = {{
 		'en',	// GCN_PAL_LANG_ENGLISH
 		'de',	// GCN_PAL_LANG_GERMAN
 		'fr',	// GCN_PAL_LANG_FRENCH
 		'es',	// GCN_PAL_LANG_SPANISH
 		'it',	// GCN_PAL_LANG_ITALIAN
 		'nl',	// GCN_PAL_LANG_DUTCH
-	};
+	}};
 
 	assert(langID >= 0);
 	assert(langID <  static_cast<int>(langID_to_lc.size()));
@@ -123,7 +126,7 @@ int getWiiLanguage(void)
 uint32_t getWiiLanguageCode(int langID)
 {
 	// Wii_Language_ID system language code mapping.
-	static const std::array<uint16_t, WII_LANG_MAX> langID_to_lc = {
+	static constexpr array<uint16_t, WII_LANG_MAX> langID_to_lc = {{
 		'ja',	// WII_LANG_JAPANESE
 		'en',	// WII_LANG_ENGLISH
 		'de',	// WII_LANG_GERMAN
@@ -134,7 +137,7 @@ uint32_t getWiiLanguageCode(int langID)
 		0,	// 7: unknown
 		0,	// 8: unknown
 		'ko',	// WII_LANG_KOREAN
-	};
+	}};
 
 	assert(langID >= 0);
 	assert(langID <  static_cast<int>(langID_to_lc.size()));
@@ -245,7 +248,7 @@ int getN3DSLanguage(void)
 uint32_t getNDSLanguageCode(int langID, int maxID)
 {
 	// N3DS_Language_ID system language code mapping.
-	static const std::array<uint32_t, N3DS_LANG_MAX> langID_to_lc = {
+	static constexpr array<uint32_t, N3DS_LANG_MAX> langID_to_lc = {{
 		// 0-7 are the same as Nintendo DS.
 		'ja',	// N3DS_LANG_JAPANESE
 		'en',	// N3DS_LANG_ENGLISH
@@ -261,7 +264,7 @@ uint32_t getNDSLanguageCode(int langID, int maxID)
 		'pt',	// N3DS_LANG_PORTUGUESE
 		'ru',	// N3DS_LANG_RUSSIAN
 		'hant',	// N3DS_LANG_CHINESE_TRAD
-	};
+	}};
 
 	assert(langID >= 0);
 	assert(maxID < static_cast<int>(langID_to_lc.size()));

@@ -31,6 +31,7 @@ using LibRpText::rp_sprintf;
 using LibRpTexture::ImageSizeCalc::OpCode;
 
 // C++ STL classes
+using std::array;
 using std::string;
 using std::vector;
 
@@ -79,10 +80,10 @@ class ValveVTFPrivate final : public FileFormatPrivate
 
 	public:
 		// Image format table
-		static const std::array<const char*, VTF_IMAGE_FORMAT_MAX> img_format_tbl;
+		static const array<const char*, VTF_IMAGE_FORMAT_MAX> img_format_tbl;
 
 		// ImageSizeCalc opcode table
-		static const std::array<ImageSizeCalc::OpCode, VTF_IMAGE_FORMAT_MAX> op_tbl;
+		static const array<ImageSizeCalc::OpCode, VTF_IMAGE_FORMAT_MAX> op_tbl;
 
 	public:
 		/**
@@ -133,7 +134,7 @@ const TextureInfo ValveVTFPrivate::textureInfo = {
 };
 
 // Image format table
-const std::array<const char*, VTF_IMAGE_FORMAT_MAX> ValveVTFPrivate::img_format_tbl = {
+const array<const char*, VTF_IMAGE_FORMAT_MAX> ValveVTFPrivate::img_format_tbl = {
 	"RGBA8888",
 	"ABGR8888",
 	"RGB888",
@@ -164,7 +165,7 @@ const std::array<const char*, VTF_IMAGE_FORMAT_MAX> ValveVTFPrivate::img_format_
 };
 
 // ImageSizeCalc opcode table
-const std::array<ImageSizeCalc::OpCode, VTF_IMAGE_FORMAT_MAX> ValveVTFPrivate::op_tbl = {
+const array<ImageSizeCalc::OpCode, VTF_IMAGE_FORMAT_MAX> ValveVTFPrivate::op_tbl = {
 	OpCode::Multiply4,	// VTF_IMAGE_FORMAT_RGBA8888
 	OpCode::Multiply4,	// VTF_IMAGE_FORMAT_ABGR8888
 	OpCode::Multiply3,	// VTF_IMAGE_FORMAT_RGB888
@@ -210,7 +211,7 @@ ValveVTFPrivate::ValveVTFPrivate(ValveVTF *q, const IRpFilePtr &file)
 */
 unsigned int ValveVTFPrivate::getMinBlockSize(VTF_IMAGE_FORMAT format)
 {
-	static const std::array<uint8_t, VTF_IMAGE_FORMAT_MAX> block_size_tbl = {
+	static constexpr array<uint8_t, VTF_IMAGE_FORMAT_MAX> block_size_tbl = {{
 		4,	// VTF_IMAGE_FORMAT_RGBA8888
 		4,	// VTF_IMAGE_FORMAT_ABGR8888
 		3,	// VTF_IMAGE_FORMAT_RGB888
@@ -238,7 +239,7 @@ unsigned int ValveVTFPrivate::getMinBlockSize(VTF_IMAGE_FORMAT format)
 		8,	// VTF_IMAGE_FORMAT_RGBA16161616F
 		8,	// VTF_IMAGE_FORMAT_RGBA16161616
 		4,	// VTF_IMAGE_FORMAT_UVLX8888
-	};
+	}};
 
 	assert(format >= 0 && format < static_cast<int>(block_size_tbl.size()));
 	if (format < 0 || format >= static_cast<int>(block_size_tbl.size())) {

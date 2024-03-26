@@ -26,6 +26,7 @@ using namespace LibRpText;
 #include "Media/ISO.hpp"
 
 // C++ STL classes
+using std::array;
 using std::string;
 using std::vector;
 
@@ -265,7 +266,7 @@ uint32_t MegaDrivePrivate::parseIOSupport(const char *io_support, int size)
 	// NOTE: Only 48 entries; starts at 0x30, ends at 0x5F.
 	// Index: Character
 	// Value: Bitfield value, or -1 if not applicable.
-	static const std::array<int8_t, 0x30> md_io_chr_map = {
+	static constexpr array<int8_t, 0x30> md_io_chr_map = {
 		// 0x30 ['0'-'9']
 		MD_IOSH_JOYPAD_SMS, -1, -1, -1, MD_IOSH_TEAM_PLAYER, -1, MD_IOSH_JOYPAD_6, -1,
 		-1, -1, -1, -1, -1, -1, -1 ,-1,
@@ -583,7 +584,7 @@ void MegaDrivePrivate::addFields_vectorTable(const M68K_VectorTable *pVectors)
 		"IRQ7 (NMI)\0"
 	};
 	// Just under 255 (uint8_t max). Nice.
-	static const std::array<uint8_t, 20> vectors_offtbl = {{
+	static constexpr array<uint8_t, 20> vectors_offtbl = {{
 		0, 11, 23, 33, 47, 67, 84, 98,	// $00-$1C
 		114, 134, 150, 166,			// $20-$2C
 		182, 201, 206, 216, 221, 235, 240, 254,	// $60-$7C
@@ -591,7 +592,7 @@ void MegaDrivePrivate::addFields_vectorTable(const M68K_VectorTable *pVectors)
 
 	// Map of displayed vectors to actual vectors.
 	// This uses vector indees, *not* byte addresses.
-	static const std::array<int8_t, 20> vectors_map = {{
+	static constexpr array<int8_t, 20> vectors_map = {{
 		 0,  1,  2,  3,  4,  5,  6,  7,	// $00-$1C
 		 8,  9, 10, 11,			// $20-$2C
 		24, 25, 26, 27, 28, 29, 30, 31,	// $60-$7C
@@ -1622,7 +1623,7 @@ int MegaDrive::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) 
 		}
 	} else {
 		// Using the MD hex region code.
-		static const std::array<char, 16> dec_to_hex = {{
+		static constexpr array<char, 16> dec_to_hex = {{
 			'0', '1', '2', '3', '4', '5', '6', '7',
 			'8', '9', 'A', 'B', 'C', 'D', 'E', 'F',
 		}};
@@ -1681,7 +1682,7 @@ int MegaDrive::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) 
 				uint8_t md_region;
 				char serial[15];
 			};
-			static const std::array<MDRomSerialData_t, 26> md_rom_serial_data = {{
+			static constexpr array<MDRomSerialData_t, 26> md_rom_serial_data = {{
 				{0x0F, "GM 00004039-00"},	// Arrow Flash
 				{0x04, "GM T-24016 -00"},	// Atomic Robo-Kid
 				{0x08, "GM T-120146-50"},	// Brian Lara Cricket 96 / Shane Warne Cricket (EUR)

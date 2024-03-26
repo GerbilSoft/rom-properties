@@ -2,12 +2,15 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * WonderSwanPublishers.hpp: Bandai WonderSwan third-party publishers list.*
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "stdafx.h"
 #include "WonderSwanPublishers.hpp"
+
+// C++ STL classes
+using std::array;
 
 namespace LibRomData { namespace WonderSwanPublishers {
 
@@ -21,7 +24,7 @@ struct ThirdPartyEntry {
  * Array index is the publisher ID.
  * Reference: http://daifukkat.su/docs/wsman/#cart_meta_publist
  */
-static const std::array<ThirdPartyEntry, 0x41> thirdPartyList = {{
+static constexpr array<ThirdPartyEntry, 0x41> thirdPartyList = {{
 	// 0x00
 	{"",	"<unlicensed>"},
 	{"BAN",	"Bandai"},

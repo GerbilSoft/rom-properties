@@ -18,6 +18,7 @@ using namespace LibRpBase;
 using namespace LibRpText;
 
 // C++ STL classes
+using std::array;
 using std::string;
 using std::vector;
 
@@ -204,7 +205,7 @@ int EXEPrivate::findNERuntimeDLL(string &refDesc, string &refLink, bool &refHasK
 		const char dll_name[8];	// NOT NULL-terminated!
 		const char *url;
 	};
-	static const std::array<msvb_dll_t, 5> msvb_dll_tbl = {{
+	static constexpr array<msvb_dll_t, 5> msvb_dll_tbl = {{
 		{4,0, {'V','B','R','U','N','4','0','0'}, nullptr},
 		{4,0, {'V','B','R','U','N','4','1','6'}, nullptr},	// TODO: Is this a thing?
 		{3,0, {'V','B','R','U','N','3','0','0'}, nullptr},
@@ -326,12 +327,12 @@ void EXEPrivate::addFields_NE(void)
 	}
 
 	// DGroup type.
-	static const std::array<const char*, 4> dgroupTypes = {
+	static constexpr array<const char*, 4> dgroupTypes = {{
 		NOP_C_("EXE|DGroupType", "None"),
 		NOP_C_("EXE|DGroupType", "Single Shared"),
 		NOP_C_("EXE|DGroupType", "Multiple"),
 		NOP_C_("EXE|DGroupType", "(null)"),
-	};
+	}};
 	fields.addField_string(C_("EXE", "DGroup Type"),
 		pgettext_expr("EXE|DGroupType", dgroupTypes[hdr.ne.ProgFlags & 3]));
 
@@ -354,21 +355,21 @@ void EXEPrivate::addFields_NE(void)
 	const char *applType;
 	if (hdr.ne.targOS == NE_OS_OS2) {
 		// Only mentioning Presentation Manager for OS/2 executables.
-		static const std::array<const char*, 4> applTypes_OS2 = {
+		static constexpr array<const char*, 4> applTypes_OS2 = {{
 			NOP_C_("EXE|ApplType", "None"),
 			NOP_C_("EXE|ApplType", "Full Screen (not aware of Presentation Manager)"),
 			NOP_C_("EXE|ApplType", "Presentation Manager compatible"),
 			NOP_C_("EXE|ApplType", "Presentation Manager application"),
-		};
+		}};
 		applType = applTypes_OS2[hdr.ne.ApplFlags & 3];
 	} else {
 		// Assume Windows for everything else.
-		static const std::array<const char*, 4> applTypes_Win = {
+		static constexpr array<const char*, 4> applTypes_Win = {{
 			NOP_C_("EXE|ApplType", "None"),
 			NOP_C_("EXE|ApplType", "Full Screen (not aware of Windows)"),
 			NOP_C_("EXE|ApplType", "Windows compatible"),
 			NOP_C_("EXE|ApplType", "Windows application"),
-		};
+		}};
 		applType = applTypes_Win[hdr.ne.ApplFlags & 3];
 	}
 	fields.addField_string(C_("EXE", "Application Type"),

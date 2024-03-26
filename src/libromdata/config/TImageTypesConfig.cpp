@@ -305,7 +305,7 @@ int TImageTypesConfig<ComboBox>::save(void)
 
 		// Convert the image type priority to strings.
 		// TODO: Export the string data from Config.
-		static const std::array<const char*, 10> conf_imageTypeNames = {{
+		static constexpr std::array<const char*, 10> conf_imageTypeNames = {{
 			"IntIcon",
 			"IntBanner",
 			"IntMedia",

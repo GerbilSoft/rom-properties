@@ -43,6 +43,7 @@ using namespace LibRpTexture;
 using namespace LibRomData;
 
 // C++ STL classes
+using std::array;
 using std::set;
 using std::string;
 using std::unique_ptr;
@@ -857,7 +858,7 @@ int RP_ShellPropSheetExt_Private::initListData(_In_ HWND hWndTab,
 
 	// Format table.
 	// All values are known to fit in uint8_t.
-	static const std::array<uint8_t, 4> align_tbl = {{
+	static constexpr array<uint8_t, 4> align_tbl = {{
 		// Order: TXA_D, TXA_L, TXA_C, TXA_R
 		LVCFMT_LEFT, LVCFMT_LEFT, LVCFMT_CENTER, LVCFMT_RIGHT
 	}};

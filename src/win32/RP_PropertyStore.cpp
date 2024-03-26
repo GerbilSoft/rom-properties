@@ -28,6 +28,7 @@ using namespace LibRomData;
 #include "file/RpFile_IStream.hpp"
 
 // C++ STL classes
+using std::array;
 using std::shared_ptr;
 using std::wstring;
 
@@ -45,7 +46,7 @@ const CLSID CLSID_RP_PropertyStore =
  *   - pkey: PROPERTYKEY (if nullptr, not implemented)
  *   - vtype: Expected variant type.
  */
-const std::array<RP_PropertyStore_Private::MetaDataConv, 79> RP_PropertyStore_Private::metaDataConv = {{
+const array<RP_PropertyStore_Private::MetaDataConv, 79> RP_PropertyStore_Private::metaDataConv = {{
 	{nullptr, VT_EMPTY},			// Empty
 
 	// Audio

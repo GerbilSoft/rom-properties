@@ -10,6 +10,9 @@
 #include "Xbox360_STFS_ContentType.hpp"
 #include "../Console/xbox360_stfs_structs.h"
 
+// C++ STL classes
+using std::array;
+
 namespace LibRomData { namespace Xbox360_STFS_ContentType {
 
 struct ContentTypeEntry {
@@ -21,7 +24,7 @@ struct ContentTypeEntry {
  * Xbox 360 STFS content type list.
  * Reference: https://github.com/Free60Project/wiki/blob/master/STFS.md
  */
-static const std::array<ContentTypeEntry, 30> contentTypeList = {{
+static constexpr array<ContentTypeEntry, 30> contentTypeList = {{
 	{STFS_CONTENT_TYPE_SAVED_GAME,		NOP_C_("Xbox360_STFS|ContentType", "Saved Game")},
 	{STFS_CONTENT_TYPE_MARKETPLACE_CONTENT,	NOP_C_("Xbox360_STFS|ContentType", "Marketplace Content")},
 	{STFS_CONTENT_TYPE_PUBLISHER,		NOP_C_("Xbox360_STFS|ContentType", "Publisher")},

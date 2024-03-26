@@ -18,6 +18,7 @@ using namespace LibRpBase;
 using namespace LibRpFile;
 
 // C++ STL classes
+using std::array;
 using std::string;
 using std::unique_ptr;
 using std::unordered_map;
@@ -80,7 +81,7 @@ public:
 					// AT_BITFIELD: Number of bits. (up to 64)
 					//              All bits must be 1 to unlock.
 	};
-	static const std::array<AchInfo_t, 5> achInfo;
+	static const array<AchInfo_t, 5> achInfo;
 
 	// C++14 adds support for enum classes as unordered_map keys.
 	// C++11 needs an explicit hash functor.
@@ -200,7 +201,7 @@ public:
 /** AchievementsPrivate **/
 
 // Achievement information.
-const std::array<AchievementsPrivate::AchInfo_t, 5> AchievementsPrivate::achInfo = {{
+const array<AchievementsPrivate::AchInfo_t, 5> AchievementsPrivate::achInfo = {{
 	{
 		NOP_C_("Achievements", "You are now a developer!"),
 		NOP_C_("Achievements", "Viewed a debug-encrypted file."),

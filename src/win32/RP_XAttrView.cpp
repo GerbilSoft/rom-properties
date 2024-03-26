@@ -32,6 +32,7 @@ using LibWin32UI::LoadDialog_i18n;
 #include "librpfile/xattr/dos_attrs.h"
 
 // C++ STL classes
+using std::array;
 using std::tstring;
 using std::unique_ptr;
 
@@ -82,7 +83,7 @@ int RP_XAttrView_Private::loadDosAttrs(void)
 		uint16_t id;
 		uint16_t attr;
 	};
-	static const std::array<res_map_t, 6> res_map = {{
+	static constexpr array<res_map_t, 6> res_map = {{
 		{IDC_XATTRVIEW_DOS_READONLY, FILE_ATTRIBUTE_READONLY},
 		{IDC_XATTRVIEW_DOS_HIDDEN, FILE_ATTRIBUTE_HIDDEN},
 		{IDC_XATTRVIEW_DOS_ARCHIVE, FILE_ATTRIBUTE_ARCHIVE},

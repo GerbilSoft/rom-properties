@@ -16,6 +16,9 @@
 // Ext2AttrData
 #include "librpfile/xattr/Ext2AttrData.h"
 
+// C++ STL classes
+using std::array;
+
 /** Ext2AttrViewPrivate **/
 
 #include "ui_Ext2AttrView.h"
@@ -34,7 +37,7 @@ public:
 	int flags;
 
 	// See Ext2AttrData.h
-	std::array<QCheckBox*, EXT2_ATTR_CHECKBOX_MAX> checkBoxes;
+	array<QCheckBox*, EXT2_ATTR_CHECKBOX_MAX> checkBoxes;
 
 public:
 	/**
@@ -99,7 +102,7 @@ void Ext2AttrViewPrivate::updateFlagsString(void)
 		uint8_t bit;
 		char chr;
 	};
-	static const std::array<flags_name, 22> flags_array = {{
+	static constexpr array<flags_name, 22> flags_array = {{
 		{  0, 's' }, {  1, 'u' }, {  3, 'S' }, { 16, 'D' },
 		{  4, 'i' }, {  5, 'a' }, {  6, 'd' }, {  7, 'A' },
 		{  2, 'c' }, { 11, 'E' }, { 14, 'j' }, { 12, 'I' },
@@ -130,7 +133,7 @@ void Ext2AttrViewPrivate::updateFlagsCheckboxes(void)
 
 	// Flag order, relative to checkboxes
 	// NOTE: Uses bit indexes.
-	static const std::array<uint8_t, 22> flag_order = {
+	static constexpr array<uint8_t, 22> flag_order = {
 		 5,  7,  2, 23,  6, 16, 19, 11,
 		30,  4, 12, 14, 10, 28, 29,  0,
 		 3, 15, 17,  1, 25, 20

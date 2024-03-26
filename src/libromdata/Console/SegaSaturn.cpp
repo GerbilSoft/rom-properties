@@ -24,6 +24,7 @@ using namespace LibRpText;
 #include "Media/ISO.hpp"
 
 // C++ STL classes
+using std::array;
 using std::string;
 using std::vector;
 
@@ -195,7 +196,7 @@ uint32_t SegaSaturnPrivate::parsePeripherals(const char *peripherals, int size)
 		char io_chr;	// Character in the Peripherals field
 		uint8_t io_bit;	// Bit number in the returned bitfield
 	};
-	static const std::array<saturn_io_tbl_t, 17> saturn_io_tbl = {{
+	static constexpr array<saturn_io_tbl_t, 17> saturn_io_tbl = {{
 		{' ', 0},	// quick exit for empty entries
 		SATURN_IO_SUPPORT_ENTRY(CONTROL_PAD),
 		SATURN_IO_SUPPORT_ENTRY(ANALOG_CONTROLLER),

@@ -2,12 +2,15 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * NintendoPublishers.cpp: Nintendo third-party publishers list.           *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "stdafx.h"
 #include "NintendoPublishers.hpp"
+
+// C++ STL classes
+using std::array;
 
 namespace LibRomData { namespace NintendoPublishers {
 
@@ -83,7 +86,7 @@ const char *lookup(const char *code)
  */
 const char *lookup_old(uint8_t code)
 {
-	static const std::array<char, 16> hex_lookup = {{
+	static constexpr array<char, 16> hex_lookup = {{
 		'0','1','2','3','4','5','6','7',
 		'8','9','A','B','C','D','E','F'
 	}};

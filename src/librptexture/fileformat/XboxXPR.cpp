@@ -23,6 +23,9 @@ using LibRpText::rp_sprintf;
 #include "decoder/ImageDecoder_Linear.hpp"
 #include "decoder/ImageDecoder_S3TC.hpp"
 
+// C++ STL classes
+using std::array;
+
 namespace LibRpTexture {
 
 class XboxXPRPrivate final : public FileFormatPrivate
@@ -361,7 +364,7 @@ rp_image_const_ptr XboxXPRPrivate::loadXboxXPR0Image(void)
 				// DXTn is automatically unswizzled by the DXTn
 				// functions, so those should be false.
 	};
-	static const std::array<xpr_mode_t, 0x42> xpr_mode_tbl = {{
+	static constexpr array<xpr_mode_t, 0x42> xpr_mode_tbl = {{
 		{ 8, ImageDecoder::PixelFormat::L8,		0, true},	// 0x00: L8
 		{ 0, ImageDecoder::PixelFormat::Unknown,	0, true},	// 0x01: AL8 (TODO)
 		{16, ImageDecoder::PixelFormat::ARGB1555, 	0, true},	// 0x02: ARGB1555
@@ -639,7 +642,7 @@ const char *XboxXPR::pixelFormat(void) const
 		return nullptr;
 	}
 
-	static const std::array<const char*, 0x65> pxfmt_tbl = {
+	static constexpr array<const char*, 0x65> pxfmt_tbl = {{
 		// 0x00
 		"L8", "AL8", "ARGB1555", "RGB555",
 		"ARGB4444", "RGB565", "ARGB8888", "xRGB8888",
@@ -693,7 +696,7 @@ const char *XboxXPR::pixelFormat(void) const
 		// 0x60
 		nullptr, nullptr, nullptr, "Vertex Data",
 		"Index16",
-	};
+	}};
 
 	if (d->xpr0Header.pixel_format < pxfmt_tbl.size()) {
 		return pxfmt_tbl[d->xpr0Header.pixel_format];

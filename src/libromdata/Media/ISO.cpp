@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * ISO.cpp: ISO-9660 disc image parser.                                    *
  *                                                                         *
- * Copyright (c) 2019-2023 by David Korth.                                 *
+ * Copyright (c) 2019-2024 by David Korth.                                 *
  * Copyright (c) 2020 by Egor.                                             *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
@@ -22,6 +22,7 @@ using namespace LibRpFile;
 using namespace LibRpText;
 
 // C++ STL classes
+using std::array;
 using std::string;
 using std::vector;
 
@@ -607,7 +608,7 @@ ISO::ISO(const IRpFilePtr &file)
 		d->sector_offset = ISO_DATA_OFFSET_MODE1_COOKED;
 	} else {
 		// Try again using raw sectors: 2352, 2448
-		static const std::array<uint16_t, 2> sector_sizes = {{2352, 2448}};
+		static constexpr array<uint16_t, 2> sector_sizes = {{2352, 2448}};
 		CDROM_2352_Sector_t sector;
 
 		for (const unsigned int p : sector_sizes) {

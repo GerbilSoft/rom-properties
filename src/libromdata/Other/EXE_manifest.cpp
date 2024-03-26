@@ -22,6 +22,7 @@ using namespace LibRpFile;
 using namespace tinyxml2;
 
 // C++ STL classes
+using std::array;
 using std::string;
 using std::unique_ptr;
 using std::vector;
@@ -92,7 +93,7 @@ int EXEPrivate::loadWin32ManifestResource(XMLDocument &doc, const char **ppResNa
 		uint16_t id;
 		const char *name;
 	};
-	static const std::array<resource_id_t, 4> resource_id_tbl = {{
+	static constexpr array<resource_id_t, 4> resource_id_tbl = {{
 		{CREATEPROCESS_MANIFEST_RESOURCE_ID, "CreateProcess"},
 		{ISOLATIONAWARE_MANIFEST_RESOURCE_ID, "Isolation-Aware"},
 		{ISOLATIONAWARE_NOSTATICIMPORT_MANIFEST_RESOURCE_ID, "Isolation-Aware, No Static Import"},

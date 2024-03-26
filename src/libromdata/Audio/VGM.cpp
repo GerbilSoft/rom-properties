@@ -389,7 +389,7 @@ int VGM::loadFieldData(void)
 #endif /* ENABLE_NLS */
 
 			// TODO: Multiple composer handling.
-			static const std::array<gd3_tag_field_tbl_t, 7> gd3_tag_field_tbl = {{
+			static constexpr array<gd3_tag_field_tbl_t, 7> gd3_tag_field_tbl = {{
 				GD3_TAG_FIELD_TBL_ENTRY("RomData|Audio",	NOP_C_("RomData|Audio", "Track Name"),	GD3_TAG_TRACK_NAME_EN),
 				GD3_TAG_FIELD_TBL_ENTRY("VGM",			NOP_C_("VGM", "Game Name"),		GD3_TAG_GAME_NAME_EN),
 				GD3_TAG_FIELD_TBL_ENTRY("VGM",			NOP_C_("VGM", "System Name"),		GD3_TAG_SYSTEM_NAME_EN),
@@ -867,7 +867,7 @@ int VGM::loadMetaData(void)
 				Property prop;	// Metadata property index
 				uint8_t idx;	// GD3 tag index (GD3_TAG_ID)
 			};
-			static const std::array<gd3_tag_prop_tbl_t, 5> gd3_tag_prop_tbl = {{
+			static constexpr array<gd3_tag_prop_tbl_t, 5> gd3_tag_prop_tbl = {{
 				{Property::Title,	GD3_TAG_TRACK_NAME_EN},
 				{Property::Album,	GD3_TAG_GAME_NAME_EN},		// NOTE: Not exactly "album"...
 				//{Property::SystemName,	GD3_TAG_SYSTEM_NAME_EN),	// FIXME: No property for this...

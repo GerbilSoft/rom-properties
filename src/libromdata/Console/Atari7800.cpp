@@ -16,6 +16,7 @@ using namespace LibRpFile;
 using namespace LibRpText;
 
 // C++ STL classes
+using std::array;
 using std::string;
 
 namespace LibRomData {
@@ -220,7 +221,7 @@ int Atari7800::loadFieldData(void)
 	}
 
 	// Controllers
-	static const std::array<const char*, 12> controller_tbl = {{
+	static constexpr array<const char*, 12> controller_tbl = {{
 		// 0
 		NOP_C_("Atari7800|ControllerType", "None"),
 		NOP_C_("Atari7800|ControllerType", "Joystick (7800)"),

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * XboxDisc.cpp: Microsoft Xbox disc image parser.                         *
  *                                                                         *
- * Copyright (c) 2019-2023 by David Korth.                                 *
+ * Copyright (c) 2019-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -27,6 +27,7 @@ using namespace LibRpTexture;
 #include "Xbox360_XEX.hpp"
 
 // C++ STL classes
+using std::array;
 using std::string;
 using std::vector;
 
@@ -505,7 +506,7 @@ int XboxDisc::isRomSupported_static(
 		int32_t btime;	// Creation time.
 	};
 
-	static const std::array<xgd_pvd_t, 21> xgd_tbl = {{
+	static constexpr array<xgd_pvd_t, 21> xgd_tbl = {{
 		// XGD1
 		{1,  0, 1000334575},	// XGD1: 2001-09-13 10:42:55.00 '0' (+12:00)
 

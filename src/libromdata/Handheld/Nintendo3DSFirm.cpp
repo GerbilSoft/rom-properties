@@ -21,6 +21,7 @@ using namespace LibRpText;
 #include "librptext/libc.h"
 
 // C++ STL classes
+using std::array;
 using std::string;
 using std::unique_ptr;
 
@@ -296,7 +297,7 @@ int Nintendo3DSFirm::loadFieldData(void)
 			const char *searchstr;	// Search string.
 			unsigned int searchlen;	// Search string length, without the NULL terminator.
 		};
-		static const std::array<arm9VerStr_t, 9> arm9VerStr_tbl = {{
+		static constexpr array<arm9VerStr_t, 9> arm9VerStr_tbl = {{
 			{"Luma3DS",		"Luma3DS v", 9},
 			{"GodMode9",		"GodMode9 Explorer v", 19},	// Older versions
 			{"GodMode9",		"GodMode9 v", 10},		// Newer versions (v1.9.1; TODO check for first one?)
@@ -347,7 +348,7 @@ int Nintendo3DSFirm::loadFieldData(void)
 			uint32_t first4;
 			char status[12];
 		};
-		static const std::array<sighaxStatus_tbl_t, 7> sighaxStatus_tbl = {{
+		static constexpr array<sighaxStatus_tbl_t, 7> sighaxStatus_tbl = {{
 			{0xB6724531,	"NAND retail"},		// SciresM
 			{0x6EFF209C,	"NAND retail"},		// sighax.com
 			{0x88697CDC,	"NAND devkit"},		// SciresM

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * RP_PropertyStore_p.hpp: IPropertyStore implementation. (PRIVATE CLASS)  *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -20,7 +20,8 @@
 // CLSID
 extern const CLSID CLSID_RP_PropertyStore;
 
-// C++ includes.
+// C++ includes
+#include <array>
 #include <vector>
 
 class RP_PropertyStore_Private

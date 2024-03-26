@@ -17,6 +17,7 @@ using namespace LibRpFile;
 using namespace LibRpText;
 
 // C++ STL classes
+using std::array;
 using std::string;
 using std::vector;
 
@@ -74,14 +75,14 @@ const RomDataInfo EXEPrivate::romDataInfo = {
 
 // NE target OSes.
 // Also used for LE.
-const std::array<const char*, 6> EXEPrivate::NE_TargetOSes = {
+const array<const char*, 6> EXEPrivate::NE_TargetOSes = {{
 	nullptr,			// NE_OS_UNKNOWN
 	"IBM OS/2",			// NE_OS_OS2
 	"Microsoft Windows",		// NE_OS_WIN
 	"European MS-DOS 4.x",		// NE_OS_DOS4
 	"Microsoft Windows (386)",	// NE_OS_WIN386 (TODO)
 	"Borland Operating System Services",	// NE_OS_BOSS
-};
+}};
 
 EXEPrivate::EXEPrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
@@ -145,7 +146,7 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 		uint32_t dwFileOS;
 		const char *s_fileOS;
 	};
-	static const std::array<fileOS_tbl_t, 14> fileOS_tbl = {{
+	static constexpr array<fileOS_tbl_t, 14> fileOS_tbl = {{
 		// TODO: Reorder based on how common each OS is?
 		// VOS_NT_WINDOWS32 is probably the most common nowadays.
 
@@ -188,7 +189,7 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 	}
 
 	// File type
-	static const std::array<const char*, 8> fileTypes_tbl = {
+	static constexpr array<const char*, 8> fileTypes_tbl = {{
 		// VFT_UNKNOWN
 		nullptr,
 		// tr: VFT_APP
@@ -205,7 +206,7 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 		nullptr,
 		// tr: VFT_STATIC_LIB
 		NOP_C_("EXE|FileType", "Static Library"),
-	};
+	}};
 	const char *const fileType_title = C_("EXE", "File Type");
 	if (pVsFfi->dwFileType < fileTypes_tbl.size() &&
 	    fileTypes_tbl[pVsFfi->dwFileType] != nullptr)
@@ -227,7 +228,7 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 	switch (pVsFfi->dwFileType) {
 		case VFT_DRV: {
 			hasSubtype = true;
-			static const std::array<const char*, 13> fileSubtypes_DRV = {
+			static constexpr array<const char*, 13> fileSubtypes_DRV = {{
 				// VFT2_UNKNOWN
 				nullptr,
 				// tr: VFT2_DRV_PRINTER
@@ -254,7 +255,7 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 				NOP_C_("EXE|FileSubType", "Input Method"),
 				// tr: VFT2_DRV_VERSIONED_PRINTER
 				NOP_C_("EXE|FileSubType", "Versioned Printer"),
-			};
+			}};
 			if (pVsFfi->dwFileSubtype < fileSubtypes_DRV.size()) {
 				fileSubtype = fileSubtypes_DRV[pVsFfi->dwFileSubtype];
 			}
@@ -263,7 +264,7 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 
 		case VFT_FONT: {
 			hasSubtype = true;
-			static const std::array<const char*, 4> fileSubtypes_FONT = {
+			static constexpr array<const char*, 4> fileSubtypes_FONT = {{
 				// VFT2_UNKNOWN
 				nullptr,
 				// tr: VFT2_FONT_RASTER
@@ -272,7 +273,7 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 				NOP_C_("EXE|FileSubType", "Vector"),
 				// tr: VFT2_FONT_TRUETYPE
 				NOP_C_("EXE|FileSubType", "TrueType"),
-			};
+			}};
 			if (pVsFfi->dwFileSubtype < fileSubtypes_FONT.size()) {
 				fileSubtype = fileSubtypes_FONT[pVsFfi->dwFileSubtype];
 			}
@@ -968,9 +969,9 @@ int EXE::loadFieldData(void)
 		"32-bit Linear Executable\0"		// ExeType::LX
 		"32-bit Portable Executable\0"		// ExeType::PE
 		"64-bit Portable Executable\0";		// ExeType::PE32PLUS
-	static const std::array<uint8_t, 8> exeTypes_offtbl = {
+	static constexpr array<uint8_t, 8> exeTypes_offtbl = {{
 		0, 18, 40, 61, 90, 109, 134, 161
-	};
+	}};
 	static_assert(sizeof(exeTypes_strtbl) == 189, "exeTypes_offtbl[] needs to be recalculated");
 	static_assert(exeTypes_offtbl.size() == static_cast<size_t>(EXEPrivate::ExeType::Max), "Update exeTypes[]!");
 

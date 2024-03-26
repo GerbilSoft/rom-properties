@@ -27,6 +27,7 @@ using namespace LibRpText;
 using namespace LibRpTexture;
 
 // C++ STL classes
+using std::array;
 using std::shared_ptr;
 using std::string;
 using std::vector;
@@ -915,7 +916,7 @@ int Xbox360_STFS::loadFieldData(void)
 
 	// File type
 	// TODO: Show console-specific information for 'CON '.
-	static const std::array<const char*, (int)Xbox360_STFS_Private::StfsType::Max> file_type_tbl = {{
+	static constexpr array<const char*, (int)Xbox360_STFS_Private::StfsType::Max> file_type_tbl = {{
 		NOP_C_("Xbox360_STFS|FileType", "Console-Specific Package"),
 		NOP_C_("Xbox360_STFS|FileType", "Non-Xbox Live Package"),
 		NOP_C_("Xbox360_STFS|FileType", "Xbox Live Package"),

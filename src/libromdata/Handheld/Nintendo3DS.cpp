@@ -442,7 +442,7 @@ int Nintendo3DSPrivate::loadTicketAndTMD(void)
 	}
 
 	// Skip over the signature and padding.
-	static const std::array<uint16_t, 8> sig_len_tbl = {{
+	static constexpr array<uint16_t, 8> sig_len_tbl = {{
 		0x200 + 0x3C,	// N3DS_SIGTYPE_RSA_4096_SHA1
 		0x100 + 0x3C,	// N3DS_SIGTYPE_RSA_2048_SHA1,
 		0x3C  + 0x40,	// N3DS_SIGTYPE_EC_SHA1
@@ -769,7 +769,7 @@ void Nintendo3DSPrivate::addTitleIdAndProductCodeFields(bool showContentType)
 	// use two separate arrays.
 
 	// Logo CRC32 table
-	static const std::array<uint32_t, 7> logo_crc_tbl = {{
+	static constexpr array<uint32_t, 7> logo_crc_tbl = {{
 		// Official logos
 		// NOTE: Not translatable!
 		0xCFD0EB8BU,	// "Nintendo"
@@ -792,7 +792,7 @@ void Nintendo3DSPrivate::addTitleIdAndProductCodeFields(bool showContentType)
 	}};
 
 	// Logo name offset table
-	static const std::array<uint8_t, 7> logo_name_offset_tbl = {{
+	static constexpr array<uint8_t, 7> logo_name_offset_tbl = {{
 		// Official logos
 		// NOTE: Not translatable!
 		0,	// "Nintendo"
@@ -1102,7 +1102,7 @@ int Nintendo3DSPrivate::addFields_permissions(void)
 #endif
 
 	// FS access.
-	static const std::array<const char*, 22> perm_fs_access = {{
+	static constexpr array<const char*, 22> perm_fs_access = {{
 		"CategorySysApplication",
 		"CategoryHardwareCheck",
 		"CategoryFileSystemTool",
@@ -1141,7 +1141,7 @@ int Nintendo3DSPrivate::addFields_permissions(void)
 	fields.addField_listData(C_("Nintendo3DS", "FS Access"), &params);
 
 	// ARM9 access.
-	static const std::array<const char*, 10> perm_arm9_access = {{
+	static constexpr array<const char*, 10> perm_arm9_access = {{
 		"FsMountNand",
 		"FsMountNandRoWrite",
 		"FsMountTwln",
@@ -1883,12 +1883,12 @@ int Nintendo3DS::loadFieldData(void)
 			// TODO: Check if platform != 1 on New3DS-only cartridges.
 
 			// Card type.
-			static const std::array<const char*, 4> media_type_tbl = {
+			static constexpr array<const char*, 4> media_type_tbl = {{
 				"Inner Device",
 				"Card1",
 				"Card2",
 				"Extended Device",
-			};
+			}};
 			const uint8_t media_type = ncsd_header->cci.partition_flags[N3DS_NCSD_PARTITION_FLAG_MEDIA_TYPE_INDEX];
 			const char *const media_type_title = C_("Nintendo3DS", "Media Type");
 			if (media_type < media_type_tbl.size()) {
@@ -1918,12 +1918,12 @@ int Nintendo3DS::loadFieldData(void)
 				card_dev_id = ncsd_header->cci.partition_flags[N3DS_NCSD_PARTITION_FLAG_MEDIA_CARD_DEVICE_SDK3];
 			}
 
-			static const std::array<const char*, 4> card_dev_tbl = {
+			static constexpr array<const char*, 4> card_dev_tbl = {{
 				nullptr,
 				NOP_C_("Nintendo3DS|CDev", "NOR Flash"),
 				NOP_C_("Nintendo3DS|CDev", "None"),
 				NOP_C_("Nintendo3DS|CDev", "Bluetooth"),
-			};
+			}};
 			const char *const card_device_title = C_("Nintendo3DS", "Card Device");
 			if (card_dev_id >= 1 && card_dev_id < card_dev_tbl.size()) {
 				d->fields.addField_string(card_device_title,
@@ -2302,7 +2302,7 @@ int Nintendo3DS::loadFieldData(void)
 
 		// Old3DS System Mode.
 		// NOTE: Mode names are NOT translatable!
-		static const std::array<ModeTbl_t, 6> old3ds_sys_mode_tbl = {{
+		static constexpr array<ModeTbl_t, 6> old3ds_sys_mode_tbl = {{
 			{"Prod", 64},	// N3DS_NCCH_EXHEADER_ACI_FLAG2_Old3DS_SysMode_Prod
 			{"", 0},
 			{"Dev1", 96},	// N3DS_NCCH_EXHEADER_ACI_FLAG2_Old3DS_SysMode_Dev1
@@ -2327,7 +2327,7 @@ int Nintendo3DS::loadFieldData(void)
 
 		// New3DS System Mode.
 		// NOTE: Mode names are NOT translatable!
-		static const std::array<ModeTbl_t, 4> new3ds_sys_mode_tbl = {{
+		static constexpr array<ModeTbl_t, 4> new3ds_sys_mode_tbl = {{
 			{"Legacy", 64},	// N3DS_NCCH_EXHEADER_ACI_FLAG1_New3DS_SysMode_Legacy
 			{"Prod",  124},	// N3DS_NCCH_EXHEADER_ACI_FLAG1_New3DS_SysMode_Prod
 			{"Dev1",  178},	// N3DS_NCCH_EXHEADER_ACI_FLAG1_New3DS_SysMode_Dev1

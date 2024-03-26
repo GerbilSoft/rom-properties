@@ -21,6 +21,7 @@
 // NOTE: This must be here and *not* in ByteswapTest_data.hpp because
 // ByteswapTest_data.hpp is contained within the LibRpCpu::Tests namespace.
 #include <array>
+using std::array;
 
 namespace LibRpCpu { namespace Tests {
 
@@ -41,17 +42,17 @@ class ByteswapTest : public ::testing::Test
 		/**
 		 * Original test data
 		 */
-		static const std::array<uint8_t, TEST_ARRAY_SIZE> bswap_orig;
+		static const array<uint8_t, TEST_ARRAY_SIZE> bswap_orig;
 
 		/**
 		 * 16-bit byteswapped test data
 		 */
-		static const std::array<uint8_t, TEST_ARRAY_SIZE> bswap_16b;
+		static const array<uint8_t, TEST_ARRAY_SIZE> bswap_16b;
 
 		/**
 		 * 32-bit byteswapped test data
 		 */
-		static const std::array<uint8_t, TEST_ARRAY_SIZE> bswap_32b;
+		static const array<uint8_t, TEST_ARRAY_SIZE> bswap_32b;
 
 		// Number of iterations for benchmarks.
 		static const unsigned int BENCHMARK_ITERATIONS = 100000;

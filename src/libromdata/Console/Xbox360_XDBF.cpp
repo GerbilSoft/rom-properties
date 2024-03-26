@@ -833,7 +833,7 @@ const char *Xbox360_XDBF_Private::getTitleType(void) const
 		return nullptr;
 	}
 
-	static const std::array<const char*, 4> title_type_tbl = {{
+	static constexpr array<const char*, 4> title_type_tbl = {{
 		NOP_C_("Xbox360_XDBF|TitleType", "System Title"),
 		NOP_C_("Xbox360_XDBF|TitleType", "Full Game"),
 		NOP_C_("Xbox360_XDBF|TitleType", "Demo"),

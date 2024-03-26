@@ -16,6 +16,7 @@ using namespace LibRpFile;
 using namespace LibRpText;
 
 // C++ STL classes
+using std::array;
 using std::ostringstream;
 using std::string;
 
@@ -466,7 +467,7 @@ int BCSTM::loadFieldData(void)
 	}
 
 	// Codec
-	static const std::array<const char*, 4> codec_tbl = {{
+	static constexpr array<const char*, 4> codec_tbl = {{
 		NOP_C_("BCSTM|Codec", "Signed 8-bit PCM"),
 		NOP_C_("BCSTM|Codec", "Signed 16-bit PCM"),
 		"DSP ADPCM", "IMA ADPCM",

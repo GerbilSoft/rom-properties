@@ -61,8 +61,19 @@ public:
 	 * Default image type priority.
 	 * Used if a custom configuration is not defined
 	 * for a given system.
+	 *
+	 * TODO: Per-system defaults?
 	 */
-	static const std::array<uint8_t, 8> defImgTypePrio;
+	static constexpr array<uint8_t, 8> defImgTypePrio = {{
+		RomData::IMG_EXT_TITLE_SCREEN,	// WiiWare only
+		RomData::IMG_EXT_MEDIA,
+		RomData::IMG_EXT_COVER,
+		RomData::IMG_EXT_BOX,
+		RomData::IMG_INT_IMAGE,
+		RomData::IMG_INT_MEDIA,
+		RomData::IMG_INT_ICON,
+		RomData::IMG_INT_BANNER,
+	}};
 
 	// Image type priority data.
 	// Managed as a single block in order to reduce
@@ -97,7 +108,7 @@ public:
 	bool downloadHighResScans;
 
 	// DMG title screen mode [index is ROM type]
-	std::array<Config::DMG_TitleScreen_Mode, static_cast<size_t>(Config::DMG_TitleScreen_Mode::Max)> dmgTSMode;
+	array<Config::DMG_TitleScreen_Mode, static_cast<size_t>(Config::DMG_TitleScreen_Mode::Max)> dmgTSMode;
 
 	// Other options
 	bool showDangerousPermissionsOverlayIcon;
@@ -119,8 +130,11 @@ public:
 	static constexpr Config::ImgBandwidth imgBandwidthMetered_default = Config::ImgBandwidth::NormalRes;
 
 	// DMG title screen mode [index is ROM type]
-	// NOTE: Can't use constexpr here because it breaks on gcc-7.5.0. (Ubuntu 18.04)
-	static const std::array<Config::DMG_TitleScreen_Mode, static_cast<size_t>(Config::DMG_TitleScreen_Mode::Max)> dmgTSMode_default;
+	static constexpr array<Config::DMG_TitleScreen_Mode, static_cast<size_t>(Config::DMG_TitleScreen_Mode::Max)> dmgTSMode_default = {{
+		Config::DMG_TitleScreen_Mode::DMG,
+		Config::DMG_TitleScreen_Mode::SGB,
+		Config::DMG_TitleScreen_Mode::CGB
+	}};
 
 	// Other options
 	static constexpr bool showDangerousPermissionsOverlayIcon_default = true;
@@ -135,31 +149,6 @@ public:
 // Using a static non-pointer variable in order to
 // handle proper destruction when the DLL is unloaded.
 Config ConfigPrivate::instance;
-
-/**
- * Default image type priority.
- * Used if a custom configuration is not defined
- * for a given system.
- *
- * TODO: Per-system defaults?
- */
-const std::array<uint8_t, 8> ConfigPrivate::defImgTypePrio = {
-	RomData::IMG_EXT_TITLE_SCREEN,	// WiiWare only
-	RomData::IMG_EXT_MEDIA,
-	RomData::IMG_EXT_COVER,
-	RomData::IMG_EXT_BOX,
-	RomData::IMG_INT_IMAGE,
-	RomData::IMG_INT_MEDIA,
-	RomData::IMG_INT_ICON,
-	RomData::IMG_INT_BANNER,
-};
-
-// DMG title screen mode [index is ROM type]
-const std::array<Config::DMG_TitleScreen_Mode, static_cast<size_t>(Config::DMG_TitleScreen_Mode::Max)> ConfigPrivate::dmgTSMode_default = {
-	Config::DMG_TitleScreen_Mode::DMG,
-	Config::DMG_TitleScreen_Mode::SGB,
-	Config::DMG_TitleScreen_Mode::CGB
-};
 
 ConfigPrivate::ConfigPrivate()
 	: super("rom-properties.conf")

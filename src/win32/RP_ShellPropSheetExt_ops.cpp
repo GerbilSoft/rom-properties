@@ -27,6 +27,7 @@ using namespace LibRpText;
 // C++ STL classes
 #include <fstream>
 #include <sstream>
+using std::array;
 using std::ofstream;
 using std::ostringstream;
 using std::string;
@@ -316,7 +317,7 @@ void RP_ShellPropSheetExt_Private::btnOptions_action_triggered(int menuId)
 			TCHAR default_ext[7];
 			bool toClipboard;
 		};
-		static const std::array<StdActsInfo_t, 4> stdActsInfo = {{
+		static constexpr array<StdActsInfo_t, 4> stdActsInfo = {{
 			// OPTION_EXPORT_TEXT
 			{NOP_C_("RomDataView", "Export to Text File"),
 			 // tr: "Text Files" filter (RP format)

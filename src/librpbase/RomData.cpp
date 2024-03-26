@@ -18,6 +18,7 @@ using namespace LibRpText;
 using namespace LibRpTexture;
 
 // C++ STL classes
+using std::array;
 using std::string;
 using std::vector;
 
@@ -565,7 +566,7 @@ const char *RomData::fileType_to_string(FileType fileType)
 		fileType = FileType::Unknown;
 	}
 
-	static const std::array<const char*, (int)FileType::Max> fileType_names = {{
+	static constexpr array<const char*, (int)FileType::Max> fileType_names = {{
 		// FileType::Unknown
 		NOP_C_("RomData|FileType", "(unknown file type)"),
 		// tr: FileType::ROM_Image
@@ -935,7 +936,7 @@ const char *RomData::getImageTypeName(ImageType imageType) {
 		return nullptr;
 	}
 
-	static const std::array<const char*, IMG_EXT_MAX+1> imageType_names = {{
+	static constexpr array<const char*, IMG_EXT_MAX+1> imageType_names = {{
 		/** Internal **/
 
 		// tr: IMG_INT_ICON

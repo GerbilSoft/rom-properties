@@ -19,6 +19,8 @@
 
 // C++ STL classes
 #include <array>
+#include <string>
+using std::array;
 using std::string;
 #ifdef _WIN32
 using std::wstring;
@@ -47,7 +49,7 @@ namespace LibCacheCommon {
 // - 2: Dot
 // - 3: Slash
 // - 4: Backslash or colon (error)
-static const std::array<uint8_t, 0x80> valid_ascii_tbl = {{
+static constexpr array<uint8_t, 0x80> valid_ascii_tbl = {{
 	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 0x00
 	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 0x10
 	1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 2, 3, // 0x20 (", *, ., /)

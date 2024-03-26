@@ -90,7 +90,7 @@ bool RpFile::isKreonDriveModel(void)
 		char vendor_id[8];
 		const char *const *product_id_tbl;
 	};
-	static const std::array<vendor_tbl_t, 3> vendor_tbl = {{
+	static constexpr array<vendor_tbl_t, 3> vendor_tbl = {{
 		{{'T','S','S','T','c','o','r','p'}, TSSTcorp_product_tbl},
 		{{'P','B','D','S',' ',' ',' ',' '}, PBDS_product_tbl},
 		{{'H','L','-','D','T','-','S','T'}, HLDTST_product_tbl},

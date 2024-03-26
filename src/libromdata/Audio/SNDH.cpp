@@ -28,6 +28,7 @@ using namespace LibRpText;
 #include "librptext/libc.h"
 
 // C++ STL classes
+using std::array;
 using std::string;
 using std::unique_ptr;
 using std::vector;
@@ -720,7 +721,7 @@ int SNDH::isRomSupported_static(const DetectInfo *info)
 				uint8_t len;
 				char data[4];
 			};
-			static const std::array<sndh_fragment_t, 5> fragments = {{
+			static constexpr array<sndh_fragment_t, 5> fragments = {{
 				{3, {'N','D','H',0}},
 				{4, {'T','I','T','L'}},
 				{4, {'C','O','N','V'}},

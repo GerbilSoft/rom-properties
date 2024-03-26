@@ -13,6 +13,7 @@
 using LibRpBase::RomData;
 
 // C++ STL classes
+using std::array;
 using std::vector;
 
 /** Standard actions. **/
@@ -20,7 +21,7 @@ struct option_menu_action_t {
 	const char *desc;
 	int id;
 };
-static const std::array<option_menu_action_t, 4> stdacts = {{
+static constexpr array<option_menu_action_t, 4> stdacts = {{
 	{NOP_C_("OptionsMenuButton|StdActs", "Export to Text..."),	OPTION_EXPORT_TEXT},
 	{NOP_C_("OptionsMenuButton|StdActs", "Export to JSON..."),	OPTION_EXPORT_JSON},
 	{NOP_C_("OptionsMenuButton|StdActs", "Copy as Text"),		OPTION_COPY_TEXT},

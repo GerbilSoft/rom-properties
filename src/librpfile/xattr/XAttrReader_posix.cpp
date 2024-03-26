@@ -72,6 +72,7 @@ struct fsxattr {
 #include "uvector.h"
 
 // C++ STL classes
+using std::array;
 using std::string;
 
 // XAttrReader isn't used by libromdata directly,
@@ -314,7 +315,7 @@ int XAttrReaderPrivate::loadDosAttrs(void)
 		const char name[23];
 		bool be32;
 	};
-	static const std::array<DosAttrName, 3> dosAttrNames = {{
+	static constexpr array<DosAttrName, 3> dosAttrNames = {{
 		{"system.ntfs_attrib_be", true},
 		{"system.ntfs_attrib", false},
 		{"system.dos_attrib", false},

@@ -2,12 +2,15 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * CBMData.hpp: Commodore cartridge data.                                  *
  *                                                                         *
- * Copyright (c) 2022 by David Korth.                                      *
+ * Copyright (c) 2022-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "stdafx.h"
 #include "CBMData.hpp"
+
+// C++ STL classes
+using std::array;
 
 namespace LibRomData { namespace CBMData {
 
@@ -16,7 +19,7 @@ namespace LibRomData { namespace CBMData {
 #include "CBM_C64_Cartridge_Type_data.h"
 
 // VIC-20 cartridge types
-static const std::array<const char*, 6> crt_types_vic20 = {{
+static constexpr array<const char*, 6> crt_types_vic20 = {{
 	"generic cartridge",
 	"Mega-Cart",
 	"Behr Bonz",
@@ -26,7 +29,7 @@ static const std::array<const char*, 6> crt_types_vic20 = {{
 }};
 
 // Plus/4 cartridge types
-static const std::array<const char*, 4> crt_types_plus4 = {{
+static constexpr array<const char*, 4> crt_types_plus4 = {{
 	"generic cartridge",
 	"c264 magic cart",
 	"Plus4 multi cart",

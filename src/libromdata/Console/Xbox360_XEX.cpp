@@ -237,7 +237,7 @@ public:
 #ifdef ENABLE_DECRYPTION
 public:
 	// Verification key names.
-	static const std::array<const char*, Xbox360_XEX::Key_Max> EncryptionKeyNames;
+	static const array<const char*, Xbox360_XEX::Key_Max> EncryptionKeyNames;
 
 	// Verification key data.
 	static const uint8_t EncryptionKeyVerifyData[Xbox360_XEX::Key_Max][16];
@@ -998,7 +998,7 @@ int Xbox360_XEX_Private::initPeReader(void)
  */
 string Xbox360_XEX_Private::formatMediaID(const uint8_t *pId)
 {
-	static const std::array<char, 16> hex_lookup = {{
+	static constexpr array<char, 16> hex_lookup = {{
 		'0','1','2','3','4','5','6','7',
 		'8','9','A','B','C','D','E','F',
 	}};
@@ -1707,7 +1707,7 @@ int Xbox360_XEX::loadFieldData(void)
 			C_("Xbox360_XEX", "Xbox Game Disc only"));
 	} else {
 		// Other types.
-		static const std::array<const char*, 29> media_type_tbl = {{
+		static constexpr array<const char*, 29> media_type_tbl = {{
 			// 0
 			NOP_C_("Xbox360_XEX", "Hard Disk"),
 			NOP_C_("Xbox360_XEX", "XGD1"),
@@ -1910,7 +1910,7 @@ int Xbox360_XEX::loadFieldData(void)
 	d->fields.addField_string(C_("RomData", "Encryption Key"), s_encryption_key);
 
 	// Compression
-	static const std::array<const char*, 4> compression_tbl = {{
+	static constexpr array<const char*, 4> compression_tbl = {{
 		NOP_C_("Xbox360_XEX|Compression", "None"),
 		NOP_C_("Xbox360_XEX|Compression", "Basic (Sparse)"),
 		NOP_C_("Xbox360_XEX|Compression", "Normal (LZX)"),

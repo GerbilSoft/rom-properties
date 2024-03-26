@@ -296,7 +296,7 @@ int WiiUPackagePrivate::addFields_System_XMLs(void)
 		char xml_lc[4];	// LC in the XML file
 		uint32_t lc;	// Our LC
 	};
-	static const std::array<xml_lc_map_t, WiiU_LC_COUNT> xml_lc_map = {{
+	static constexpr array<xml_lc_map_t, WiiU_LC_COUNT> xml_lc_map = {{
 		{"ja",    'ja'},
 		{"en",    'en'},
 		{"fr",    'fr'},
@@ -529,7 +529,7 @@ int WiiUPackagePrivate::addFields_System_XMLs(void)
 
 		// Controller support
 		uint32_t controllers = 0;
-		static const std::array<const char*, 6> controller_nodes = {{
+		static constexpr array<const char*, 6> controller_nodes = {{
 			"ext_dev_nunchaku",
 			"ext_dev_classic",
 			"ext_dev_urcc",

@@ -10,6 +10,9 @@
 #include "ELFData.hpp"
 #include "Other/elf_structs.h"
 
+// C++ STL classes
+using std::array;
+
 namespace LibRomData { namespace ELFData {
 
 #include "ELFMachineTypes_data.h"
@@ -22,7 +25,7 @@ struct ELFMachineType {
 
 // ELF machine types. (other IDs)
 // Reference: https://github.com/file/file/blob/master/magic/Magdir/elf
-static const std::array<ELFMachineType, 30> ELFMachineTypes_other = {{
+static constexpr array<ELFMachineType, 30> ELFMachineTypes_other = {{
 	// The following are unofficial and/or obsolete types.
 	// TODO: Indicate unofficial/obsolete using a separate flag?
 	{0x1057,	"AVR (unofficial)"},

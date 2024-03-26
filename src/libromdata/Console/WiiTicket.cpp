@@ -22,6 +22,7 @@ using namespace LibRpFile;
 using namespace LibRpText;
 
 // C++ STL classes
+using std::array;
 using std::unique_ptr;
 
 namespace LibRomData {
@@ -62,7 +63,7 @@ public:
 #ifdef ENABLE_DECRYPTION
 public:
 	// Verification key names
-	static const std::array<const char*, static_cast<size_t>(WiiTicket::EncryptionKeys::Max)> EncryptionKeyNames;
+	static const array<const char*, static_cast<size_t>(WiiTicket::EncryptionKeys::Max)> EncryptionKeyNames;
 
 	// Verification key data
 	static const uint8_t EncryptionKeyVerifyData[static_cast<size_t>(WiiTicket::EncryptionKeys::Max)][16];

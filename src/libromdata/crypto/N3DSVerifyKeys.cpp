@@ -20,6 +20,7 @@ using LibRpBase::KeyManager;
 #include "CtrKeyScrambler.hpp"
 
 // C++ STL classes
+using std::array;
 using std::unique_ptr;
 
 namespace LibRomData {
@@ -35,7 +36,7 @@ public:
 
 public:
 	// Verification key names
-	static const std::array<const char*, N3DSVerifyKeys::Key_Max> EncryptionKeyNames;
+	static const array<const char*, N3DSVerifyKeys::Key_Max> EncryptionKeyNames;
 
 	// Verification key data
 	static const uint8_t EncryptionKeyVerifyData[N3DSVerifyKeys::Key_Max][16];
@@ -43,7 +44,7 @@ public:
 
 /** N3DSVerifyKeysPrivate **/
 
-const std::array<const char*, N3DSVerifyKeys::Key_Max> N3DSVerifyKeysPrivate::EncryptionKeyNames = {{
+const array<const char*, N3DSVerifyKeys::Key_Max> N3DSVerifyKeysPrivate::EncryptionKeyNames = {{
 	// Retail
 	"ctr-spi-boot",
 	"ctr-Slot0x18KeyX",

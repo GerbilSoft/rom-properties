@@ -19,6 +19,10 @@
 // C++ includes
 #include <algorithm>
 
+// C++ STL classes
+using std::array;
+using std::string;
+
 // DT_* enumeration
 #include "d_type.h"
 
@@ -61,9 +65,6 @@
 #    define SYSV4_SUPER_MAGIC 0x012ff7b5
 #  endif
 #endif /* __linux__ */
-
-// C++ STL classes
-using std::string;
 
 namespace LibRpFile { namespace FileSystem {
 
@@ -365,7 +366,7 @@ bool isOnBadFS(const char *filename, bool allowNetFS)
 	const uint32_t f_type = static_cast<uint32_t>(sfbuf.f_type);
 
 	// Virtual file systems; ignore these completely
-	static const std::array<uint32_t, 23> vfs_types = {{
+	static constexpr array<uint32_t, 23> vfs_types = {{
 		ANON_INODE_FS_MAGIC,
 		BDEVFS_MAGIC,
 		BPF_FS_MAGIC,
@@ -392,7 +393,7 @@ bool isOnBadFS(const char *filename, bool allowNetFS)
 	}};
 
 	// Network file systems; ignore only if !netFS
-	static const std::array<uint32_t, 9> netfs_types = {{
+	static constexpr array<uint32_t, 9> netfs_types = {{
 		AFS_SUPER_MAGIC,
 		CIFS_MAGIC_NUMBER,
 		CODA_SUPER_MAGIC,

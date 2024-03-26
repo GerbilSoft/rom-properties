@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * TextOut.hpp: Text output for RomData. (User-readable text)              *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * Copyright (c) 2016-2018 by Egor.                                        *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
@@ -14,6 +14,7 @@
 #include <cassert>
 
 // C++ STL classes
+using std::array;
 using std::max;
 using std::ostream;
 using std::string;
@@ -301,7 +302,7 @@ static int formatDateTime(char *buf, size_t size, time_t timestamp, RomFields::D
 			"%b %d\0"	// [14] Date (no year)
 			"%X\0"		// [20] Time
 			"%b %d %X\0";	// [23] Date Time (no year)
-		static const std::array<uint8_t, 8> formats_offtbl = {0, 1, 4, 7, 13, 14, 20, 23};
+		static constexpr array<uint8_t, 8> formats_offtbl = {0, 1, 4, 7, 13, 14, 20, 23};
 		static_assert(sizeof(formats_strtbl) == 33, "formats_offtbl[] needs to be recalculated");
 
 		const unsigned int offset = (dtflags & RomFields::RFT_DATETIME_HAS_DATETIME_NO_YEAR_MASK);

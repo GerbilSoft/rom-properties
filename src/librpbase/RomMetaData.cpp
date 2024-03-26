@@ -17,6 +17,7 @@
 using namespace LibRpText;
 
 // C++ STL classes
+using std::array;
 using std::string;
 using std::vector;
 
@@ -37,10 +38,10 @@ public:
 	// Mapping of Property to metaData indexes.
 	// Index == Property
 	// Value == metaData index (-1 for none)
-	std::array<Property, (int)Property::PropertyCount> map_metaData;
+	array<Property, (int)Property::PropertyCount> map_metaData;
 
 	// Property type mapping
-	static const std::array<PropertyType, (int)Property::PropertyCount> PropertyTypeMap;
+	static const array<PropertyType, (int)Property::PropertyCount> PropertyTypeMap;
 
 	/**
 	 * Add or overwrite a Property.
@@ -53,7 +54,7 @@ public:
 /** RomMetaDataPrivate **/
 
 // Property type mapping
-const std::array<PropertyType, (int)Property::PropertyCount> RomMetaDataPrivate::PropertyTypeMap = {
+const array<PropertyType, (int)Property::PropertyCount> RomMetaDataPrivate::PropertyTypeMap = {
 	PropertyType::FirstPropertyType,	// first type is invalid
 
 	// Audio

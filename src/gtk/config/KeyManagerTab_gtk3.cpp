@@ -13,6 +13,9 @@
 // Other rom-properties libraries
 using LibRomData::KeyStoreUI;
 
+// C++ STL classes
+using std::array;
+
 // GtkCellRendererText signal handlers
 static void	renderer_edited_signal_handler(GtkCellRendererText	*self,
 					       gchar			*path,
@@ -145,7 +148,7 @@ void rp_key_manager_tab_init_keys(RpKeyManagerTab *tab)
 
 /** KeyStoreGTK signal handlers **/
 
-static const std::array<const char*, 5> is_valid_icon_name_tbl = {{
+static constexpr array<const char*, 5> is_valid_icon_name_tbl = {{
 	nullptr,		// Empty
 	"dialog-question",	// Unknown
 	"dialog-error",		// NotAKey

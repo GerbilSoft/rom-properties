@@ -17,10 +17,11 @@ using namespace LibRpText;
 using LibRomData::KeyStoreUI;
 
 // C++ STL classes
+using std::array;
 using std::string;
 
 // KeyStoreUI::ImportFileID
-static const std::array<const char*, 4> import_menu_actions = {{
+static constexpr array<const char*, 4> import_menu_actions = {{
 	"Wii keys.bin",
 	"Wii U otp.bin",
 	"3DS boot9.bin",

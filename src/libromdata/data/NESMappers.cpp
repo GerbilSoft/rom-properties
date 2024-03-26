@@ -444,7 +444,7 @@ const char *lookup_ines(int mapper)
 int tnesMapperToInesMapper(int tnes_mapper)
 {
 	// 255 == not supported
-	static const std::array<uint8_t, 52> ines_mappers = {
+	static constexpr array<uint8_t, 52> ines_mappers = {{
 		// 0
 		0,	// NROM
 		1,	// SxROM (MMC1)
@@ -508,7 +508,7 @@ int tnesMapperToInesMapper(int tnes_mapper)
 		// 50
 		65,	// Irem-H-3001
 		185,	// VROM-disable
-	};
+	}};
 
 	if (tnes_mapper < 0 || tnes_mapper >= static_cast<int>(ines_mappers.size())) {
 		// Undefined TNES mapper.

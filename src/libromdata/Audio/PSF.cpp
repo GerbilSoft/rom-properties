@@ -18,6 +18,7 @@ using namespace LibRpFile;
 using namespace LibRpText;
 
 // C++ STL classes
+using std::array;
 using std::string;
 using std::unique_ptr;
 using std::unordered_map;
@@ -50,7 +51,17 @@ public:
 		char tag_name[7];	// psfby
 		const char *sys_name;	// system name (localizable)
 	};
-	static const std::array<psf_type_tbl_t, 9> psf_type_tbl;
+	static constexpr array<psf_type_tbl_t, 9> psf_type_tbl = {{
+		{PSF_VERSION_PLAYSTATION,	"psfby",	NOP_C_("PSF|System", "Sony PlayStation")},
+		{PSF_VERSION_PLAYSTATION_2,	"psfby",	NOP_C_("PSF|System", "Sony PlayStation 2")},
+		{PSF_VERSION_SATURN,		"ssfby",	NOP_C_("PSF|System", "Sega Saturn")},
+		{PSF_VERSION_DREAMCAST,		"dsfby",	NOP_C_("PSF|System", "Sega Dreamcast")},
+		{PSF_VERSION_MEGA_DRIVE,	"msfby",	NOP_C_("PSF|System", "Sega Mega Drive")}, // FIXME: "msfby" may be incorrect.
+		{PSF_VERSION_N64,		"usfby",	NOP_C_("PSF|System", "Nintendo 64")},
+		{PSF_VERSION_GBA,		"gsfby",	NOP_C_("PSF|System", "Game Boy Advance")},
+		{PSF_VERSION_SNES,		"snsfby",	NOP_C_("PSF|System", "Super NES")},
+		{PSF_VERSION_QSOUND,		"qsfby",	NOP_C_("PSF|System", "Capcom QSound")},
+	}};
 
 	/**
 	 * Parse the tag section.
@@ -108,19 +119,6 @@ const char *const PSFPrivate::mimeTypes[] = {
 const RomDataInfo PSFPrivate::romDataInfo = {
 	"PSF", exts, mimeTypes
 };
-
-// PSF types
-const std::array<PSFPrivate::psf_type_tbl_t, 9> PSFPrivate::psf_type_tbl = {{
-	{PSF_VERSION_PLAYSTATION,	"psfby",	NOP_C_("PSF|System", "Sony PlayStation")},
-	{PSF_VERSION_PLAYSTATION_2,	"psfby",	NOP_C_("PSF|System", "Sony PlayStation 2")},
-	{PSF_VERSION_SATURN,		"ssfby",	NOP_C_("PSF|System", "Sega Saturn")},
-	{PSF_VERSION_DREAMCAST,		"dsfby",	NOP_C_("PSF|System", "Sega Dreamcast")},
-	{PSF_VERSION_MEGA_DRIVE,	"msfby",	NOP_C_("PSF|System", "Sega Mega Drive")}, // FIXME: "msfby" may be incorrect.
-	{PSF_VERSION_N64,		"usfby",	NOP_C_("PSF|System", "Nintendo 64")},
-	{PSF_VERSION_GBA,		"gsfby",	NOP_C_("PSF|System", "Game Boy Advance")},
-	{PSF_VERSION_SNES,		"snsfby",	NOP_C_("PSF|System", "Super NES")},
-	{PSF_VERSION_QSOUND,		"qsfby",	NOP_C_("PSF|System", "Capcom QSound")},
-}};
 
 PSFPrivate::PSFPrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)

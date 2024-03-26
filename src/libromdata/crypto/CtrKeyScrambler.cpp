@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * CtrKeyScrambler.cpp: Nintendo 3DS key scrambler.                        *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -18,10 +18,13 @@
 #include "librpbase/crypto/KeyManager.hpp"
 using LibRpBase::KeyManager;
 
+// C++ STL classes
+using std::array;
+
 namespace LibRomData { namespace CtrKeyScrambler {
 
 // Verification key names.
-static const std::array<const char*, Key_Max> EncryptionKeyNames = {{
+static constexpr array<const char*, Key_Max> EncryptionKeyNames = {{
 	"twl-scrambler",
 	"ctr-scrambler",
 }};

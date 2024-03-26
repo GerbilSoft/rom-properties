@@ -14,6 +14,9 @@
 
 #include "libi18n/i18n.h"
 
+// C++ STL classes
+using std::array;
+
 namespace LibRomData { namespace EXEData {
 
 struct MachineType {
@@ -23,7 +26,7 @@ struct MachineType {
 
 // PE machine types.
 // NOTE: The cpu field *must* be sorted in ascending order.
-static const std::array<MachineType, 40> machineTypes_PE = {{
+static constexpr array<MachineType, 40> machineTypes_PE = {{
 	{IMAGE_FILE_MACHINE_I386,	"Intel i386"},
 	{IMAGE_FILE_MACHINE_R3000_BE,	"MIPS R3000 (big-endian)"},
 	{IMAGE_FILE_MACHINE_R3000,	"MIPS R3000"},
@@ -68,7 +71,7 @@ static const std::array<MachineType, 40> machineTypes_PE = {{
 
 // LE machine types.
 // NOTE: The cpu field *must* be sorted in ascending order.
-static const std::array<MachineType, 9> machineTypes_LE = {{
+static constexpr array<MachineType, 9> machineTypes_LE = {{
 	{LE_CPU_80286,		"Intel i286"},
 	{LE_CPU_80386,		"Intel i386"},
 	{LE_CPU_80486,		"Intel i486"},
@@ -81,7 +84,7 @@ static const std::array<MachineType, 9> machineTypes_LE = {{
 }};
 
 // Subsystem names
-static const std::array<const char*, IMAGE_SUBSYSTEM_WINDOWS_BOOT_APPLICATION+1> subsystemNames = {
+static constexpr array<const char*, IMAGE_SUBSYSTEM_WINDOWS_BOOT_APPLICATION+1> subsystemNames = {{
 	// IMAGE_SUBSYSTEM_UNKNOWN
 	nullptr,
 	// tr: IMAGE_SUBSYSTEM_NATIVE
@@ -116,7 +119,7 @@ static const std::array<const char*, IMAGE_SUBSYSTEM_WINDOWS_BOOT_APPLICATION+1>
 	nullptr,
 	// tr: IMAGE_SUBSYSTEM_WINDOWS_BOOT_APPLICATION
 	NOP_C_("EXE|Subsystem", "Boot Application"),
-};
+}};
 
 /** Public functions **/
 

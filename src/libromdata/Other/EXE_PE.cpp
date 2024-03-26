@@ -21,6 +21,7 @@ using namespace LibRpText;
 #include "librptext/libc.h"
 
 // C++ STL classes
+using std::array;
 using std::string;
 using std::unique_ptr;
 using std::vector;
@@ -430,7 +431,7 @@ int EXEPrivate::findPERuntimeDLL(string &refDesc, string &refLink)
 		const char *url_i386;	// i386 download link
 		const char *url_amd64;	// amd64 download link
 	};
-	static const std::array<msvc_dll_t, 13> msvc_dll_tbl = {{
+	static constexpr array<msvc_dll_t, 13> msvc_dll_tbl = {{
 		{120,	"2013", "https://aka.ms/highdpimfc2013x86enu", "https://aka.ms/highdpimfc2013x64enu"},
 		{110,	"2012", "https://download.microsoft.com/download/1/6/B/16B06F60-3B20-4FF2-B699-5E9B7962F9AE/VSU_4/vcredist_x86.exe", "https://download.microsoft.com/download/1/6/B/16B06F60-3B20-4FF2-B699-5E9B7962F9AE/VSU_4/vcredist_x64.exe"},
 		{100,	"2010", "https://download.microsoft.com/download/1/6/5/165255E7-1014-4D0A-B094-B6A430A6BFFC/vcredist_x86.exe", "https://download.microsoft.com/download/1/6/5/165255E7-1014-4D0A-B094-B6A430A6BFFC/vcredist_x64.exe"},
@@ -453,7 +454,7 @@ int EXEPrivate::findPERuntimeDLL(string &refDesc, string &refLink)
 		const char dll_name[14];
 		const char *url;
 	};
-	static const std::array<msvb_dll_t, 4> msvb_dll_tbl = {{
+	static constexpr array<msvb_dll_t, 4> msvb_dll_tbl = {{
 		{6,0, "msvbvm60.dll", "https://download.microsoft.com/download/5/a/d/5ad868a0-8ecd-4bb0-a882-fe53eb7ef348/VB6.0-KB290887-X86.exe"},
 		{5,0, "msvbvm50.dll", "https://download.microsoft.com/download/vb50pro/utility/1/win98/en-us/msvbvm50.exe"},
 

@@ -32,6 +32,7 @@ using namespace LibRpText;
 #include "ini.h"
 
 // C++ STL classes
+using std::array;
 using std::string;
 using std::unordered_map;
 using std::vector;
@@ -344,7 +345,7 @@ PlayStationDisc::PlayStationDisc(const IRpFilePtr &file)
 		discReader = std::make_shared<DiscReader>(d->file);
 	} else {
 		// Check for a PVD with 2352-byte or 2448-byte sectors.
-		static const std::array<uint16_t, 2> sector_sizes = {{2352, 2448}};
+		static constexpr array<uint16_t, 2> sector_sizes = {{2352, 2448}};
 		CDROM_2352_Sector_t sector;
 
 		for (const unsigned int p : sector_sizes) {
