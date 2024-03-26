@@ -116,7 +116,7 @@ const char *imageTypeName(unsigned int imageType)
 	assert(imageType < imageType_names.size());
 	if (imageType >= imageType_names.size())
 		return nullptr;
-	return dpgettext_expr(RP_I18N_DOMAIN, "ImageTypesConfig|ImageTypeDisp", imageType_names[imageType]);
+	return pgettext_expr("ImageTypesConfig|ImageTypeDisp", imageType_names[imageType]);
 }
 
 /**
@@ -164,7 +164,7 @@ const char *sysName(unsigned int sys)
 	assert(sys < sysNames.size());
 	if (sys >= sysNames.size())
 		return nullptr;
-	return dpgettext_expr(RP_I18N_DOMAIN, "ImageTypesConfig|SysName", sysNames[sys]);
+	return pgettext_expr("ImageTypesConfig|SysName", sysNames[sys]);
 }
 
 /**

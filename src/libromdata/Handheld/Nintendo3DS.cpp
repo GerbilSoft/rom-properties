@@ -1927,7 +1927,7 @@ int Nintendo3DS::loadFieldData(void)
 			const char *const card_device_title = C_("Nintendo3DS", "Card Device");
 			if (card_dev_id >= 1 && card_dev_id < card_dev_tbl.size()) {
 				d->fields.addField_string(card_device_title,
-					dpgettext_expr(RP_I18N_DOMAIN, "Nintendo3DS|CDev", card_dev_tbl[card_dev_id]));
+					pgettext_expr("Nintendo3DS|CDev", card_dev_tbl[card_dev_id]));
 			} else {
 				d->fields.addField_string(card_device_title,
 					rp_sprintf_p(C_("Nintendo3DS|CDev", "Unknown (SDK2=0x%1$02X, SDK3=0x%2$02X)"),
@@ -2276,7 +2276,7 @@ int Nintendo3DS::loadFieldData(void)
 		const uint8_t appl_type = ncch_exheader->aci.arm11_local.res_limit_category;
 		if (appl_type < ARRAY_SIZE(appl_type_tbl)) {
 			d->fields.addField_string(type_title,
-				dpgettext_expr(RP_I18N_DOMAIN, "Nintendo3DS|ApplType", appl_type_tbl[appl_type]));
+				pgettext_expr("Nintendo3DS|ApplType", appl_type_tbl[appl_type]));
 		} else {
 			d->fields.addField_string(type_title,
 				rp_sprintf(C_("Nintendo3DS", "Invalid (0x%02X)"), appl_type));

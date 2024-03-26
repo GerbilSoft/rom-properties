@@ -1493,7 +1493,7 @@ int ELF::loadFieldData(void)
 	    (int)d->elfFormat < (int)exec_type_tbl.size())
 	{
 		d->fields.addField_string(format_title,
-			dpgettext_expr(RP_I18N_DOMAIN, "RomData|ExecType", exec_type_tbl[(int)d->elfFormat]));
+			pgettext_expr("RomData|ExecType", exec_type_tbl[(int)d->elfFormat]));
 	}
 	else
 	{
@@ -1576,7 +1576,7 @@ int ELF::loadFieldData(void)
 				NOP_C_("ELF|SPARC_MM", "Invalid"),
 			}};
 			d->fields.addField_string(C_("ELF", "Memory Ordering"),
-				dpgettext_expr(RP_I18N_DOMAIN, "ELF|SPARC_MM", sparc_mm[e_flags & 3]));
+				pgettext_expr("ELF|SPARC_MM", sparc_mm[e_flags & 3]));
 
 			// SPARC CPU flags. (rshifted by 8)
 			static const char *const sparc_flags_names[] = {
@@ -2036,7 +2036,7 @@ int ELF::loadFieldData(void)
 				NOP_C_("ELF|RISCVFPABI", "Quad-Float"),
 			}};
 			d->fields.addField_string(C_("ELF", "Floating-Point ABI"),
-				dpgettext_expr(RP_I18N_DOMAIN, "ELF|RISCVFPABI", riscv_fpabi_tbl[((e_flags & 0x0006) >> 1)]));
+				pgettext_expr("ELF|RISCVFPABI", riscv_fpabi_tbl[((e_flags & 0x0006) >> 1)]));
 
 			// RISC-V CPU flags
 			static const char *const riscv_flags_names[] = {

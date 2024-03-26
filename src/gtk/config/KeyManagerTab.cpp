@@ -495,10 +495,8 @@ rp_key_manager_tab_handle_menu_action(RpKeyManagerTab *tab, gint id)
 	};
 
 	GtkWindow *const parent = gtk_widget_get_toplevel_window(GTK_WIDGET(tab));
-	const char *const title = dpgettext_expr(
-		RP_I18N_DOMAIN, "KeyManagerTab", dialog_titles_tbl[id]);
-	const char *const filter = dpgettext_expr(
-		RP_I18N_DOMAIN, "KeyManagerTab", file_filters_tbl[id]);
+	const char *const title = pgettext_expr("KeyManagerTab", dialog_titles_tbl[id]);
+	const char *const filter = pgettext_expr("KeyManagerTab", file_filters_tbl[id]);
 
 	open_data_t *const open_data = static_cast<open_data_t*>(g_malloc(sizeof(*open_data)));
 	open_data->tab = tab;

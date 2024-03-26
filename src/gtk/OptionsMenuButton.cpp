@@ -564,7 +564,7 @@ rp_options_menu_button_reinit_menu(RpOptionsMenuButton *widget,
 
 		// Create the menu item.
 		snprintf(buf, sizeof(buf), "%s.%d", prefix, p.id);
-		g_menu_append(menuStdActs, dpgettext_expr(RP_I18N_DOMAIN, "RomDataView|Options", p.desc), buf);
+		g_menu_append(menuStdActs, pgettext_expr("RomDataView|Options", p.desc), buf);
 	}
 
 	/** ROM operations. **/
@@ -602,7 +602,7 @@ rp_options_menu_button_reinit_menu(RpOptionsMenuButton *widget,
 
 	for (const option_menu_action_t &p : stdacts) {
 		GtkWidget *const menuItem = gtk_menu_item_new_with_label(
-			dpgettext_expr(RP_I18N_DOMAIN, "RomDataView|Options", p.desc));
+			pgettext_expr("RomDataView|Options", p.desc));
 		// NOTE: No name for this GtkWidget.
 		g_object_set_qdata(G_OBJECT(menuItem), menuOptions_id_quark, GINT_TO_POINTER(p.id));
 		g_signal_connect(menuItem, "activate", G_CALLBACK(menuOptions_triggered_signal_handler), widget);

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * ValveVTF.cpp: Valve VTF image reader.                                   *
  *                                                                         *
- * Copyright (c) 2017-2023 by David Korth.                                 *
+ * Copyright (c) 2017-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -837,7 +837,7 @@ int ValveVTF::getFields(RomFields *fields) const
 		vv_flags->resize(j);
 		auto &data_row = vv_flags->at(j-1);
 		// TODO: Localization.
-		//data_row.emplace_back(dpgettext_expr(RP_I18N_DOMAIN, "ValveVTF|Flags", pFlagName));
+		//data_row.emplace_back(pgettext_expr("ValveVTF|Flags", pFlagName));
 		data_row.emplace_back(pFlagName);
 	}
 
@@ -882,7 +882,7 @@ int ValveVTF::getFields(RomFields *fields) const
 	if (img_format) {
 		// TODO: Localization.
 		fields->addField_string(low_res_image_format_title, img_format);
-			//dpgettext_expr(RP_I18N_DOMAIN, "ValveVTF|ImageFormat", img_format));
+			//pgettext_expr("ValveVTF|ImageFormat", img_format));
 		// Low-res image size.
 		fields->addField_dimensions(C_("ValveVTF", "Low-Res Size"),
 			vtfHeader->lowResImageWidth,

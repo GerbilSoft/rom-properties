@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * OptionsMenuButton.cpp: Options menu button QPushButton subclass.        *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -66,7 +66,7 @@ void OptionsMenuButton::reinitMenu(const LibRpBase::RomData *romData)
 	// Add the standard actions.
 	for (const option_menu_action_t &p : stdacts) {
 		QAction *const action = menuOptions->addAction(
-			U82Q(dpgettext_expr(RP_I18N_DOMAIN, "OptionsMenuButton", p.desc)));
+			U82Q(pgettext_expr("OptionsMenuButton", p.desc)));
 #ifdef RP_OMB_USE_LAMBDA_FUNCTIONS
 		// Qt5: Use a lambda function.
 		const int id = p.id;	// only capture id, not the whole reference

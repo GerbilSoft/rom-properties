@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * EXEData.cpp: DOS/Windows executable data.                               *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -167,7 +167,7 @@ const char *lookup_pe_subsystem(uint16_t subsystem)
 	if (subsystem >= subsystemNames.size())
 		return nullptr;
 
-	return dpgettext_expr(RP_I18N_DOMAIN, "EXE|Subsystem", subsystemNames[subsystem]);
+	return pgettext_expr("EXE|Subsystem", subsystemNames[subsystem]);
 }
 
 } }

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * BRSTM.cpp: Nintendo Wii BRSTM audio reader.                             *
  *                                                                         *
- * Copyright (c) 2019-2023 by David Korth.                                 *
+ * Copyright (c) 2019-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -337,7 +337,7 @@ int BRSTM::loadFieldData(void)
 	const char *const codec_title = C_("BRSTM", "Codec");
 	if (headChunk1->codec < codec_tbl.size()) {
 		d->fields.addField_string(codec_title,
-			dpgettext_expr(RP_I18N_DOMAIN, "BRSTM|Codec", codec_tbl[headChunk1->codec]));
+			pgettext_expr("BRSTM|Codec", codec_tbl[headChunk1->codec]));
 	} else {
 		d->fields.addField_string(codec_title,
 			rp_sprintf(C_("RomData", "Unknown (%u)"), headChunk1->codec));

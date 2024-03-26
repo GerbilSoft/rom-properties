@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libi18n)                          *
  * i18n.h: Internationalization support code.                              *
  *                                                                         *
- * Copyright (c) 2017-2023 by David Korth.                                 *
+ * Copyright (c) 2017-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -34,7 +34,9 @@
 #  define C_(msgctxt, msgid)			(msgid)
 #  define N_(msgid1, msgid2, n)			((n) == 1 ? (msgid1) : (msgid2))
 #  define NC_(msgctxt, msgid1, msgid2, n)	((n) == 1 ? (msgid1) : (msgid2))
-#  define dpgettext_expr(domain, msgctxt, msgid)			(msgid)
+#  define pgettext_expr(domain, msgctxt, msgid)			(msgid)
+#  define dpgettext_expr(domain, msgctxt, msgid)		(msgid)
+#  define npgettext_expr(domain, msgctxt, msgid1, msgid2, n)	((n) == 1 ? (msgid1) : (msgid2))
 #  define dnpgettext_expr(domain, msgctxt, msgid1, msgid2, n)	((n) == 1 ? (msgid1) : (msgid2))
 #endif
 

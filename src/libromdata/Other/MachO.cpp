@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * MachO.cpp: Mach-O executable format.                                    *
  *                                                                         *
- * Copyright (c) 2019-2023 by David Korth.                                 *
+ * Copyright (c) 2019-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -497,7 +497,7 @@ int MachO::loadFieldData(void)
 		    (int)machFormat < static_cast<int>(exec_type_tbl.size()))
 		{
 			d->fields.addField_string(format_title,
-				dpgettext_expr(RP_I18N_DOMAIN, "RomData|ExecType", exec_type_tbl[(int)machFormat]));
+				pgettext_expr("RomData|ExecType", exec_type_tbl[(int)machFormat]));
 		} else {
 			// TODO: Show individual values.
 			// NOTE: This shouldn't happen...

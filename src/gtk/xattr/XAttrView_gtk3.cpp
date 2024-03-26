@@ -57,7 +57,7 @@ rp_xattr_view_init_posix_xattrs_widgets(struct _RpXAttrView *widget, GtkScrolled
 	for (int i = 0; i < XATTR_COL_MAX; i++) {
 		GtkTreeViewColumn *const column = gtk_tree_view_column_new();
 		gtk_tree_view_column_set_title(column,
-			dpgettext_expr(RP_I18N_DOMAIN, "XAttrView", column_titles[i]));
+			pgettext_expr("XAttrView", column_titles[i]));
 		gtk_tree_view_column_set_resizable(column, true);
 
 		GtkCellRenderer *const renderer = gtk_cell_renderer_text_new();

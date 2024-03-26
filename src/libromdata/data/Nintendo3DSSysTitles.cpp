@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * Nintendo3DSSysTitles.cpp: Nintendo 3DS system title lookup.             *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -132,7 +132,7 @@ const char *lookup_sys_title(uint32_t tid_hi, uint32_t tid_lo, const char **pReg
 				if (pRegion) {
 					*pRegion = regions[region];
 				}
-				return dpgettext_expr(RP_I18N_DOMAIN, "Nintendo3DSSysTitles", titles->desc);
+				return pgettext_expr("Nintendo3DSSysTitles", titles->desc);
 			}
 		}
 	}

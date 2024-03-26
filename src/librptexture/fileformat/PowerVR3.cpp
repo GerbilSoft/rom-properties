@@ -1046,7 +1046,7 @@ int PowerVR3::getFields(RomFields *fields) const
 	static_assert(pvr3_colorspace_tbl.size() == PVR3_COLOR_SPACE_MAX, "pvr3_colorspace_tbl[] needs to be updated!");
 	if (pvr3Header->color_space < pvr3_colorspace_tbl.size()) {
 		fields->addField_string(C_("PowerVR3", "Color Space"),
-			dpgettext_expr(RP_I18N_DOMAIN, "PowerVR3|ColorSpace",
+			pgettext_expr("PowerVR3|ColorSpace",
 				pvr3_colorspace_tbl[pvr3Header->color_space]));
 	} else {
 		fields->addField_string_numeric(C_("PowerVR3", "Color Space"),
@@ -1073,7 +1073,7 @@ int PowerVR3::getFields(RomFields *fields) const
 	if (pvr3Header->channel_type < pvr3_chtype_tbl.size()) {
 		fields->addField_string(C_("PowerVR3", "Channel Type"),
 			pvr3_chtype_tbl[pvr3Header->channel_type]);
-			//dpgettext_expr(RP_I18N_DOMAIN, "PowerVR3|ChannelType", pvr3_chtype_tbl[pvr3Header->channel_type]));
+			//pgettext_expr("PowerVR3|ChannelType", pvr3_chtype_tbl[pvr3Header->channel_type]));
 	} else {
 		fields->addField_string_numeric(C_("PowerVR3", "Channel Type"),
 			pvr3Header->channel_type);

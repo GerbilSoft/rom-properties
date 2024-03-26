@@ -404,7 +404,7 @@ int Amiibo::loadFieldData(void)
 	const char *const amiibo_type_title = C_("Amiibo", "amiibo Type");
 	if ((char_id & 0xFF) < amiibo_type_tbl.size()) {
 		d->fields.addField_string(amiibo_type_title,
-			dpgettext_expr(RP_I18N_DOMAIN, "Amiibo|Type", amiibo_type_tbl[char_id & 0xFF]));
+			pgettext_expr("Amiibo|Type", amiibo_type_tbl[char_id & 0xFF]));
 	} else {
 		// Invalid amiibo type.
 		d->fields.addField_string(amiibo_type_title,

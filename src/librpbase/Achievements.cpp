@@ -940,7 +940,7 @@ const char *Achievements::getName(ID id) const
 
 	RP_D(const Achievements);
 	const AchievementsPrivate::AchInfo_t *const achInfo = &d->achInfo[(int)id];
-	return dpgettext_expr(RP_I18N_DOMAIN, "Achievements", achInfo->name);
+	return pgettext_expr("Achievements", achInfo->name);
 }
 
 /**
@@ -959,7 +959,7 @@ const char *Achievements::getDescUnlocked(ID id) const
 
 	RP_D(const Achievements);
 	const AchievementsPrivate::AchInfo_t *const achInfo = &d->achInfo[(int)id];
-	return dpgettext_expr(RP_I18N_DOMAIN, "Achievements", achInfo->desc_unlk);
+	return pgettext_expr("Achievements", achInfo->desc_unlk);
 }
 
 }

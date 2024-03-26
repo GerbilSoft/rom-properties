@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * EXE.cpp: DOS/Windows executable reader.                                 *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -211,7 +211,7 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 	    fileTypes_tbl[pVsFfi->dwFileType] != nullptr)
 	{
 		fields.addField_string(fileType_title,
-			dpgettext_expr(RP_I18N_DOMAIN, "EXE|FileType", fileTypes_tbl[pVsFfi->dwFileType]));
+			pgettext_expr("EXE|FileType", fileTypes_tbl[pVsFfi->dwFileType]));
 	} else {
 		if (pVsFfi->dwFileType == VFT_UNKNOWN) {
 			fields.addField_string(fileType_title, C_("RomData", "Unknown"));
@@ -287,7 +287,7 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 		const char *const fileSubType_title = C_("EXE", "File Subtype");
 		if (fileSubtype) {
 			fields.addField_string(fileSubType_title,
-				dpgettext_expr(RP_I18N_DOMAIN, "EXE|FileSubType", fileSubtype));
+				pgettext_expr("EXE|FileSubType", fileSubtype));
 		} else {
 			fields.addField_string(fileSubType_title,
 				rp_sprintf(C_("RomData", "Unknown (0x%02X)"), pVsFfi->dwFileSubtype));

@@ -630,7 +630,7 @@ const char *RomData::fileType_to_string(FileType fileType)
  
 	const char *const s_fileType = fileType_names[(int)fileType];
 	assert(s_fileType != nullptr);
-	return dpgettext_expr(RP_I18N_DOMAIN, "RomData|FileType", s_fileType);
+	return pgettext_expr("RomData|FileType", s_fileType);
 }
 
 /**
@@ -963,7 +963,7 @@ const char *RomData::getImageTypeName(ImageType imageType) {
 		NOP_C_("RomData|ImageType", "External title screen"),
 	}};
 
-	return dpgettext_expr(RP_I18N_DOMAIN, "RomData|ImageType", imageType_names[imageType]);
+	return pgettext_expr("RomData|ImageType", imageType_names[imageType]);
 }
 
 /**

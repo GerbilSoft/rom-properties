@@ -333,7 +333,7 @@ void EXEPrivate::addFields_NE(void)
 		NOP_C_("EXE|DGroupType", "(null)"),
 	};
 	fields.addField_string(C_("EXE", "DGroup Type"),
-		dpgettext_expr(RP_I18N_DOMAIN, "EXE|DGroupType", dgroupTypes[hdr.ne.ProgFlags & 3]));
+		pgettext_expr("EXE|DGroupType", dgroupTypes[hdr.ne.ProgFlags & 3]));
 
 	// Program flags
 	static const char *const ProgFlags_names[] = {
@@ -372,7 +372,7 @@ void EXEPrivate::addFields_NE(void)
 		applType = applTypes_Win[hdr.ne.ApplFlags & 3];
 	}
 	fields.addField_string(C_("EXE", "Application Type"),
-		dpgettext_expr(RP_I18N_DOMAIN, "EXE|ApplType", applType));
+		pgettext_expr("EXE|ApplType", applType));
 
 	// Application flags
 	static const char *const ApplFlags_names[] = {

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * Atari7800.cpp: Atari 7800 ROM reader.                                   *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -243,7 +243,7 @@ int Atari7800::loadFieldData(void)
 
 		if (control_type < controller_tbl.size()) {
 			d->fields.addField_string(control_title.c_str(),
-				dpgettext_expr(RP_I18N_DOMAIN, "Atari7800|ControllerType",
+				pgettext_expr("Atari7800|ControllerType",
 					controller_tbl[control_type]));
 		} else {
 			d->fields.addField_string(control_title.c_str(),

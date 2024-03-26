@@ -1918,7 +1918,7 @@ int Xbox360_XEX::loadFieldData(void)
 	}};
 	if (d->fileFormatInfo.compression_type < compression_tbl.size()) {
 		d->fields.addField_string(C_("Xbox360_XEX", "Compression"),
-			dpgettext_expr(RP_I18N_DOMAIN, "Xbox360_XEX|Compression",
+			pgettext_expr("Xbox360_XEX|Compression",
 				compression_tbl[d->fileFormatInfo.compression_type]));
 	} else {
 		d->fields.addField_string(C_("Xbox360_XEX", "Compression"),

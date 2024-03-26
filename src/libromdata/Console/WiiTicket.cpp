@@ -697,7 +697,7 @@ const char *WiiTicket::encKeyName_static(EncryptionKeys encKey)
 
 	const char *s_key_name;
 	if ((int)encKey >= 0 && encKey < EncryptionKeys::Max) {
-		s_key_name = dpgettext_expr(RP_I18N_DOMAIN, "Wii|KeyIdx", wii_key_tbl[(int)encKey]);
+		s_key_name = pgettext_expr("Wii|KeyIdx", wii_key_tbl[(int)encKey]);
 	} else if (encKey == WiiTicket::EncryptionKeys::None) {
 		// tr: EncryptionKeys::None - No encryption.
 		s_key_name = C_("Wii|EncKey", "None");

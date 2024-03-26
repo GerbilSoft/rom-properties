@@ -510,7 +510,7 @@ static void ShowUsage(void)
 
 	for (auto &p : cmds) {
 		fputs(p.opt, stderr);
-		fputs(dpgettext_expr(RP_I18N_DOMAIN, "rpcli", p.desc), stderr);
+		fputs(pgettext_expr("rpcli", p.desc), stderr);
 		fputc('\n', stderr);
 	}
 	fputc('\n', stderr);
@@ -527,7 +527,7 @@ static void ShowUsage(void)
 	fputc('\n', stderr);
 	for (auto &p : cmds_dev) {
 		fputs(p.opt, stderr);
-		fputs(dpgettext_expr(RP_I18N_DOMAIN, "rpcli", p.desc), stderr);
+		fputs(pgettext_expr("rpcli", p.desc), stderr);
 		fputc('\n', stderr);
 	}
 	fputc('\n', stderr);

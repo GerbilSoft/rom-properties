@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * OptionsMenuButton.cpp: Options menu button WC_BUTTON superclass.        *
  *                                                                         *
- * Copyright (c) 2017-2023 by David Korth.                                 *
+ * Copyright (c) 2017-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -133,7 +133,7 @@ void OptionsMenuButtonPrivate::reinitMenu(const RomData *romData)
 	// Add the standard actions.
 	for (const option_menu_action_t &p : stdacts) {
 		AppendMenu(hMenuOptions, MF_STRING, IDM_OPTIONS_MENU_BASE + p.id,
-			U82T_c(dpgettext_expr(RP_I18N_DOMAIN, "RomDataView|Options", p.desc)));
+			U82T_c(pgettext_expr("RomDataView|Options", p.desc)));
 	}
 
 	/** ROM operations. **/

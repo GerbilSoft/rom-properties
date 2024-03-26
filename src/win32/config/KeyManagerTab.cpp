@@ -1834,10 +1834,8 @@ void KeyManagerTabPrivate::importKeysFromBin(KeyStoreUI::ImportFileID id)
 		NOP_C_("KeyManagerTab", "aeskeydb.bin|aeskeydb.bin|-|Binary Files|*.bin|-|All Files|*|-"),
 	};
 
-	const char *const s_title = dpgettext_expr(
-		RP_I18N_DOMAIN, "KeyManagerTab", dialog_titles_tbl[(int)id]);
-	const char *const s_filter = dpgettext_expr(
-		RP_I18N_DOMAIN, "KeyManagerTab", file_filters_tbl[(int)id]);
+	const char *const s_title = pgettext_expr("KeyManagerTab", dialog_titles_tbl[(int)id]);
+	const char *const s_filter = pgettext_expr("KeyManagerTab", file_filters_tbl[(int)id]);
 
 	assert(hWndPropSheet != nullptr);
 	if (!hWndPropSheet)

@@ -879,7 +879,7 @@ const char *KeyStoreUI::sectName(int sectIdx) const
 	static_assert(sectNames.size() == d->encKeyFns.size(),
 		"sectNames[] is out of sync with d->encKeyFns[].");
 
-	return dpgettext_expr(RP_I18N_DOMAIN, "KeyStoreUI|Section", sectNames[sectIdx]);
+	return pgettext_expr("KeyStoreUI|Section", sectNames[sectIdx]);
 }
 
 /**

@@ -332,7 +332,7 @@ void rp_key_manager_tab_create_GtkTreeView(RpKeyManagerTab *tab)
 		g_signal_connect(factory, "bind", G_CALLBACK(bind_listitem_cb), GINT_TO_POINTER(i));
 
 		GtkColumnViewColumn *const column = gtk_column_view_column_new(
-			dpgettext_expr(RP_I18N_DOMAIN, "KeyManagerTab", column_titles[i]), factory);
+			pgettext_expr("KeyManagerTab", column_titles[i]), factory);
 		gtk_column_view_column_set_resizable(column, true);
 		gtk_column_view_append_column(GTK_COLUMN_VIEW(tab->columnView), column);
 	}

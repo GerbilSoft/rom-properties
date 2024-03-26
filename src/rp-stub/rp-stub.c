@@ -134,7 +134,7 @@ static void show_help(const char *argv0)
 		for (const struct opt_t *p = thumb_opts; p != thumb_opts_end; p++) {
 			fputs(p->opt, stdout);
 			fputs("\t\t", stdout);
-			puts(dpgettext_expr(RP_I18N_DOMAIN, "rp-stub|Help", p->desc));
+			puts(pgettext_expr("rp-stub|Help", p->desc));
 		}
 		putchar('\n');
 
@@ -155,7 +155,7 @@ static void show_help(const char *argv0)
 			} else {
 				fputs("\t", stdout);
 			}
-			puts(dpgettext_expr(RP_I18N_DOMAIN, "rp-stub|Help", p->desc));
+			puts(pgettext_expr("rp-stub|Help", p->desc));
 		}
 	} else {
 		printf(C_("rp-stub|Help", "Usage: %s"), argv0);

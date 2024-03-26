@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * MegaDrive.cpp: Sega Mega Drive ROM reader.                              *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -441,7 +441,7 @@ void MegaDrivePrivate::addFields_romHeader(const MD_RomHeader *pRomHeader, bool 
 			if (!s_io_devices.empty()) {
 				s_io_devices += ", ";
 			}
-			s_io_devices += dpgettext_expr(RP_I18N_DOMAIN, "MegaDrive|I/O", name);
+			s_io_devices += pgettext_expr("MegaDrive|I/O", name);
 		}
 
 		// Next bit.

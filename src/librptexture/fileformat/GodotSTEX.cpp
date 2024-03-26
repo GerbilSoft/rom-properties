@@ -1194,7 +1194,7 @@ int GodotSTEX::getFields(RomFields *fields) const
 			const char *const s_title = C_("GodotSTEX", "Data Format");
 			if (d->stexHeader.v4.data_format < data_format_tbl.size()) {
 				fields->addField_string(s_title,
-					dpgettext_expr(RP_I18N_DOMAIN, "GodotSTEX|DataFormat",
+					pgettext_expr("GodotSTEX|DataFormat",
 						data_format_tbl[d->stexHeader.v4.data_format]));
 			} else {
 				fields->addField_string(s_title,

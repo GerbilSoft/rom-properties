@@ -924,7 +924,7 @@ int Xbox360_STFS::loadFieldData(void)
 	    d->stfsType < Xbox360_STFS_Private::StfsType::Max)
 	{
 		d->fields.addField_string(C_("Xbox360_STFS", "Package Type"),
-			dpgettext_expr(RP_I18N_DOMAIN, "Xbox360_STFS|FileType",
+			pgettext_expr("Xbox360_STFS|FileType",
 				file_type_tbl[(int)d->stfsType]));
 	} else {
 		d->fields.addField_string(C_("Xbox360_STFS|RomData", "Type"),

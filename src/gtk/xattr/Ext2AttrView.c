@@ -150,12 +150,12 @@ rp_ext2_attr_view_init(RpExt2AttrView *widget)
 		// Prepend the lsattr character to the checkbox label.
 		char buf[256];
 		snprintf(buf, sizeof(buf), s_lsattr_fmt, p->lsattr_chr,
-			dpgettext_expr(RP_I18N_DOMAIN, "Ext2AttrView", p->label));
+			pgettext_expr("Ext2AttrView", p->label));
 
 		GtkWidget *const checkBox = gtk_check_button_new_with_label(buf);
 		gtk_widget_set_name(checkBox, p->name);
 		gtk_widget_set_tooltip_text(checkBox,
-			dpgettext_expr(RP_I18N_DOMAIN, "Ext2AttrView", p->tooltip));
+			pgettext_expr("Ext2AttrView", p->tooltip));
 
 		widget->checkBoxes[i] = checkBox;
 

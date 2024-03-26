@@ -136,10 +136,10 @@ rp_xfs_attr_view_init(RpXfsAttrView *widget)
 		const XfsAttrCheckboxInfo_t *const p = xfsAttrCheckboxInfo((XfsAttrCheckboxID)i);
 
 		GtkWidget *const checkBox = gtk_check_button_new_with_label(
-			dpgettext_expr(RP_I18N_DOMAIN, "XfsAttrView", p->label));
+			pgettext_expr("XfsAttrView", p->label));
 		gtk_widget_set_name(checkBox, p->name);
 		gtk_widget_set_tooltip_text(checkBox,
-			dpgettext_expr(RP_I18N_DOMAIN, "XfsAttrView", p->tooltip));
+			pgettext_expr("XfsAttrView", p->tooltip));
 
 		widget->checkBoxes[i] = checkBox;
 

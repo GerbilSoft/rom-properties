@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * RomFields.cpp: ROM fields class.                                        *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -843,7 +843,7 @@ vector<string> *RomFields::strArrayToVector_i18n(const char *msgctxt, const char
 		// nullptr will be handled as empty strings.
 		const char *const str = *strArray;
 		if (str) {
-			pVec->emplace_back(dpgettext_expr(RP_I18N_DOMAIN, msgctxt, str));
+			pVec->emplace_back(pgettext_expr(msgctxt, str));
 		} else {
 			pVec->emplace_back();
 		}

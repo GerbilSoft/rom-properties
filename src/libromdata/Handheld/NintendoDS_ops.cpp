@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * NintendoDS_ops.cpp: Nintendo DS(i) ROM reader. (ROM operations)         *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -167,8 +167,7 @@ const char *NintendoDSPrivate::getNDSSecureAreaString(void)
 	if (secArea >= NintendoDSPrivate::NDS_SECAREA_HOMEBREW &&
 	    secArea <= NintendoDSPrivate::NDS_SECAREA_ENCRYPTED)
 	{
-		return dpgettext_expr(RP_I18N_DOMAIN,
-			"NintendoDS|SecureArea", nds_secure_area_type[secArea]);
+		return pgettext_expr("NintendoDS|SecureArea", nds_secure_area_type[secArea]);
 	}
 
 	return C_("RomData", "Unknown");

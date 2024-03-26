@@ -1729,7 +1729,7 @@ int GameCube::loadFieldData(void)
 				NOP_C_("Wii|Partition", "Channel"),
 			}};
 			if (entry.type <= RVL_PT_CHANNEL) {
-				s_ptype = dpgettext_expr(RP_I18N_DOMAIN, "Wii|Partition", part_type_tbl[entry.type]);
+				s_ptype = pgettext_expr("Wii|Partition", part_type_tbl[entry.type]);
 			} else {
 				// If all four bytes are ASCII letters and/or numbers,
 				// print it as-is. (SSBB demo channel)

@@ -3,7 +3,7 @@
  * Xbox360_XDBF.cpp: Microsoft Xbox 360 game resource reader.              *
  * Handles XDBF files and sections.                                        *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -842,7 +842,7 @@ const char *Xbox360_XDBF_Private::getTitleType(void) const
 
 	const uint32_t title_type = be32_to_cpu(xthd.title_type);
 	if (title_type < title_type_tbl.size()) {
-		return dpgettext_expr(RP_I18N_DOMAIN, "Xbox360_XDBF|TitleType",
+		return pgettext_expr("Xbox360_XDBF|TitleType",
 			title_type_tbl[title_type]);
 	}
 

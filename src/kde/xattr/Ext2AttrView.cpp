@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * Ext2AttrView.cpp: Ext2 file system attribute viewer widget.             *
  *                                                                         *
- * Copyright (c) 2022-2023 by David Korth.                                 *
+ * Copyright (c) 2022-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -78,10 +78,10 @@ void Ext2AttrViewPrivate::retranslateUi_nonDesigner(void)
 		// Prepend the lsattr character to the checkbox label.
 		char buf[256];
 		snprintf(buf, sizeof(buf), s_lsattr_fmt, p->lsattr_chr,
-			dpgettext_expr(RP_I18N_DOMAIN, "Ext2AttrView", p->label));
+			pgettext_expr("Ext2AttrView", p->label));
 
 		checkBoxes[i]->setText(U82Q(buf));
-		checkBoxes[i]->setToolTip(U82Q(dpgettext_expr(RP_I18N_DOMAIN, "Ext2AttrView", p->tooltip)));
+		checkBoxes[i]->setToolTip(U82Q(pgettext_expr("Ext2AttrView", p->tooltip)));
 	}
 }
 

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * SNES.cpp: Super Nintendo ROM image reader.                              *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -1388,7 +1388,7 @@ int SNES::loadFieldData(void)
 			const char *const region_title = C_("RomData", "Region Code");
 			if (region_lkup) {
 				d->fields.addField_string(region_title,
-					dpgettext_expr(RP_I18N_DOMAIN, "Region", region_lkup));
+					pgettext_expr("Region", region_lkup));
 			} else {
 				d->fields.addField_string(region_title,
 					rp_sprintf(C_("RomData", "Unknown (0x%02X)"),
@@ -1459,7 +1459,7 @@ int SNES::loadFieldData(void)
 			const char *const program_type_title = C_("SNES", "Program Type");
 			if (program_type) {
 				d->fields.addField_string(program_type_title,
-					dpgettext_expr(RP_I18N_DOMAIN, "SNES|ProgramType", program_type));
+					pgettext_expr("SNES|ProgramType", program_type));
 			} else {
 				d->fields.addField_string(program_type_title,
 					rp_sprintf(C_("RomData", "Unknown (0x%08X)"),

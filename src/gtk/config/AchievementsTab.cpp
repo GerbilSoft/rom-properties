@@ -242,7 +242,7 @@ rp_achievements_tab_init(RpAchievementsTab *tab)
 		g_signal_connect(factory, "bind", G_CALLBACK(bind_listitem_cb), GINT_TO_POINTER(i));
 
 		GtkColumnViewColumn *const column = gtk_column_view_column_new(
-			dpgettext_expr(RP_I18N_DOMAIN, "AchievementsTab", column_titles[i]), factory);
+			pgettext_expr("AchievementsTab", column_titles[i]), factory);
 		gtk_column_view_column_set_resizable(column, static_cast<gboolean>(column_resizable[i]));
 		gtk_column_view_column_set_expand(column, (i == ACH_COL_DESCRIPTION));
 		gtk_column_view_append_column(GTK_COLUMN_VIEW(tab->columnView), column);
@@ -265,7 +265,7 @@ rp_achievements_tab_init(RpAchievementsTab *tab)
 	for (int i = 0; i < ACH_COL_MAX; i++) {
 		GtkTreeViewColumn *const column = gtk_tree_view_column_new();
 		gtk_tree_view_column_set_title(column,
-			dpgettext_expr(RP_I18N_DOMAIN, "AchievementsTab", column_titles[i]));
+			pgettext_expr("AchievementsTab", column_titles[i]));
 		gtk_tree_view_column_set_resizable(column, static_cast<gboolean>(column_resizable[i]));
 
 		GtkCellRenderer *const renderer = (i == 0 ? gtk_cell_renderer_pixbuf_new() : gtk_cell_renderer_text_new());

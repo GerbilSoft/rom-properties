@@ -1199,7 +1199,7 @@ int NES::loadFieldData(void)
 	}};
 	if (tv_mode < tv_mode_tbl.size()) {
 		d->fields.addField_string(C_("NES", "TV Mode"),
-			dpgettext_expr(RP_I18N_DOMAIN, "NES|TVMode", tv_mode_tbl[tv_mode]));
+			pgettext_expr("NES|TVMode", tv_mode_tbl[tv_mode]));
 	}
 
 	// ROM features
@@ -1418,7 +1418,7 @@ int NES::loadFieldData(void)
 
 					const unsigned int exp_hw = (d->header.ines.nes2.expansion & 0x3F);
 					if (exp_hw < ARRAY_SIZE(exp_hw_tbl)) {
-						s_exp_hw = dpgettext_expr(RP_I18N_DOMAIN, "NES|Expansion", exp_hw_tbl[exp_hw]);
+						s_exp_hw = pgettext_expr("NES|Expansion", exp_hw_tbl[exp_hw]);
 					}
 				}
 				break;

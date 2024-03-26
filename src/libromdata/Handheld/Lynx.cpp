@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * Lynx.hpp: Atari Lynx ROM reader.                                        *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * Copyright (c) 2017-2018 by Egor.                                        *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
@@ -211,7 +211,7 @@ int Lynx::loadFieldData(void)
 	};
 	d->fields.addField_string(C_("Lynx", "Rotation"),
 		(romHeader->rotation < ARRAY_SIZE(rotation_names)
-			? dpgettext_expr(RP_I18N_DOMAIN, "Lynx|Rotation", rotation_names[romHeader->rotation])
+			? pgettext_expr("Lynx|Rotation", rotation_names[romHeader->rotation])
 			: C_("RomData", "Unknown")));
 
 	d->fields.addField_string(C_("Lynx", "Bank 0 Size"),

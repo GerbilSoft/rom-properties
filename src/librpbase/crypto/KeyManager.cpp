@@ -259,7 +259,7 @@ const char *KeyManager::verifyResultToString(VerifyResult res)
 	assert(res >= (KeyManager::VerifyResult)0);
 	assert(res < (KeyManager::VerifyResult)errTbl.size());
 	return (res >= (KeyManager::VerifyResult)0 && res < (KeyManager::VerifyResult)errTbl.size())
-		? dpgettext_expr(RP_I18N_DOMAIN, "KeyManager|VerifyResult", errTbl[(int)res])
+		? pgettext_expr("KeyManager|VerifyResult", errTbl[(int)res])
 		: nullptr;
 }
 
