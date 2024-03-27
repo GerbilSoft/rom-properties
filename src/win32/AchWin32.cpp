@@ -320,7 +320,7 @@ void AchWin32Private::registerWindowClass(void)
 	if (AchWin32Private::instance.d_ptr->atomWindowClass != 0)
 		return;
 
-	static constexpr WNDCLASSEX wndClass = {
+	static const WNDCLASSEX wndClass = {
 		sizeof(WNDCLASSEX),		// cbSize
 		CS_HREDRAW | CS_VREDRAW,	// style
 		RpAchNotifyWndProc,		// lpfnWndProc
