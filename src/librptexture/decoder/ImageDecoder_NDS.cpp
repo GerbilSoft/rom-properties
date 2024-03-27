@@ -94,7 +94,7 @@ rp_image_ptr fromNDS_CI4(int width, int height,
 	}
 
 	// Set the sBIT metadata.
-	static constexpr rp_image::sBIT_t sBIT = {5,5,5,0,1};
+	static const rp_image::sBIT_t sBIT = {5,5,5,0,1};
 	img->set_sBIT(&sBIT);
 
 	// Image has been converted.

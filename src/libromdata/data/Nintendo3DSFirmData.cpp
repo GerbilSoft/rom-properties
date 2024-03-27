@@ -18,7 +18,7 @@ namespace LibRomData { namespace Nintendo3DSFirmData {
  * Firmware binary version information.
  * NOTE: Sorted by CRC32 for bsearch().
  */
-static constexpr array<FirmBin_t, 48> firmBins = {{
+static const array<FirmBin_t, 48> firmBins = {{
 	{0x0FD41774, {2,27, 0}, { 1, 0}, false},
 	{0x104F1A22, {2,50, 9}, {10, 2}, true},
 	{0x11A9A4BA, {2,36, 0}, { 5, 1}, false},

@@ -1049,7 +1049,7 @@ const char *SNES::systemName(unsigned int type) const
 	unsigned int idx = (type & SYSNAME_TYPE_MASK);
 
 	// Localized SNES/SFC system names.
-	static constexpr const char *const sysNames[16] = {
+	static const char *const sysNames[16] = {
 		// Japan: Super Famicom
 		"Nintendo Super Famicom", "Super Famicom", "SFC", nullptr,
 		// South Korea: Super Comboy
@@ -1061,7 +1061,7 @@ const char *SNES::systemName(unsigned int type) const
 	};
 
 	// BS-X system names.
-	static constexpr const char *const sysNames_BSX[4] = {
+	static const char *const sysNames_BSX[4] = {
 		"Satellaview BS-X", "Satellaview", "BS-X", nullptr
 	};
 
@@ -1319,7 +1319,7 @@ int SNES::loadFieldData(void)
 		uint8_t rom_mapping;
 		const char *s_rom_mapping;
 	};
-	static constexpr array<rom_mapping_tbl_t, 10> rom_mapping_tbl = {{
+	static const array<rom_mapping_tbl_t, 10> rom_mapping_tbl = {{
 		{SNES_ROMMAPPING_LoROM,			"LoROM"},
 		{SNES_ROMMAPPING_HiROM,			"HiROM"},
 		{SNES_ROMMAPPING_LoROM_S_DD1,		"LoROM + S-DD1"},

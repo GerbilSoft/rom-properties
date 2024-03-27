@@ -279,7 +279,7 @@ HBITMAP toHBITMAP(const rp_image *image, uint32_t bgColor, SIZE size, bool neare
  */
 HBITMAP toHBITMAP_alpha(const rp_image *image)
 {
-	static constexpr SIZE size = {0, 0};
+	static const SIZE size = {0, 0};
 	return toHBITMAP_alpha(image, size, false);
 }
 

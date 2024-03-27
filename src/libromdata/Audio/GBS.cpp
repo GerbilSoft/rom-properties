@@ -192,7 +192,7 @@ const char *GBS::systemName(unsigned int type) const
 
 	// Bits 0-1: Type. (long, short, abbreviation)
 	// Bit 2: GBS or GBR.
-	static constexpr const char *const sysNames[2][4] = {
+	static const char *const sysNames[2][4] = {
 		{"Game Boy Sound System", "GBS", "GBS", nullptr},
 		{"Game Boy Ripped", "GBR", "GBR", nullptr},
 	};

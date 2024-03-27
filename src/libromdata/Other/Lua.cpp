@@ -625,7 +625,7 @@ const char *Lua::systemName(unsigned int type) const
 	static_assert((int)LuaPrivate::LuaVersion::Max == 10,
 		"Lua::systemName() array index optimization needs to be updated.");
 
-	static constexpr const char *const sysNames[10][4] = {
+	static const char *const sysNames[10][4] = {
 		{"PUC Lua 2.4", "Lua 2.4", "Lua", nullptr},
 		{"PUC Lua 2.5/3.0", "Lua 2.5/3.0", "Lua", nullptr},
 		{"PUC Lua 3.1", "Lua 3.1", "Lua", nullptr},

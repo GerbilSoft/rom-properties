@@ -24,7 +24,7 @@ struct ThirdPartyEntry {
  * Array index is the publisher ID.
  * Reference: http://daifukkat.su/docs/wsman/#cart_meta_publist
  */
-static constexpr array<ThirdPartyEntry, 0x41> thirdPartyList = {{
+static const array<ThirdPartyEntry, 0x41> thirdPartyList = {{
 	// 0x00
 	{"",	"<unlicensed>"},
 	{"BAN",	"Bandai"},

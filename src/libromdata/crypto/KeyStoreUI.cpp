@@ -177,12 +177,7 @@ public:
 		klass::encryptionVerifyData_static \
 	}
 
-	static constexpr array<KeyStoreUIPrivate::EncKeyFns_t, 4> encKeyFns = {{
-		ENCKEYFNS(WiiTicket),
-		ENCKEYFNS(CtrKeyScrambler),
-		ENCKEYFNS(N3DSVerifyKeys),
-		ENCKEYFNS(Xbox360_XEX),
-	}};
+	static const array<KeyStoreUIPrivate::EncKeyFns_t, 4> encKeyFns;
 
 public:
 	// Hexadecimal lookup table
@@ -232,6 +227,13 @@ public:
 };
 
 /** KeyStoreUIPrivate **/
+
+const array<KeyStoreUIPrivate::EncKeyFns_t, 4> KeyStoreUIPrivate::encKeyFns = {{
+	ENCKEYFNS(WiiTicket),
+	ENCKEYFNS(CtrKeyScrambler),
+	ENCKEYFNS(N3DSVerifyKeys),
+	ENCKEYFNS(Xbox360_XEX),
+}};
 
 KeyStoreUIPrivate::KeyStoreUIPrivate(KeyStoreUI *q)
 	: q_ptr(q)
@@ -1129,7 +1131,7 @@ KeyStoreUI::ImportReturn KeyStoreUIPrivate::importWiiKeysBin(IRpFile *file)
 	// TODO:
 	// - SD keys are not present in keys.bin.
 
-	static constexpr array<KeyStoreUIPrivate::KeyBinAddress, 3> keyBinAddress = {{
+	static const array<KeyStoreUIPrivate::KeyBinAddress, 3> keyBinAddress = {{
 		{0x114, static_cast<int>(WiiTicket::EncryptionKeys::Key_RVL_Common)},
 		{0x114, static_cast<int>(WiiTicket::EncryptionKeys::Key_RVT_Debug)},
 		{0x274, static_cast<int>(WiiTicket::EncryptionKeys::Key_RVL_Korean)},
@@ -1193,7 +1195,7 @@ KeyStoreUI::ImportReturn KeyStoreUIPrivate::importWiiUOtpBin(IRpFile *file)
 	// Key addresses and indexes.
 	// TODO:
 	// - SD keys are not present in otp.bin.
-	static constexpr array<KeyStoreUIPrivate::KeyBinAddress, 3> keyBinAddress_retail = {{
+	static const array<KeyStoreUIPrivate::KeyBinAddress, 3> keyBinAddress_retail = {{
 		{0x014, static_cast<int>(WiiTicket::EncryptionKeys::Key_RVL_Common)},
 		{0x348, static_cast<int>(WiiTicket::EncryptionKeys::Key_RVL_Korean)},
 		{0x0D0, static_cast<int>(WiiTicket::EncryptionKeys::Key_WUP_Starbuck_vWii_Common)},
@@ -1205,7 +1207,7 @@ KeyStoreUI::ImportReturn KeyStoreUIPrivate::importWiiUOtpBin(IRpFile *file)
 #endif
 	}};
 
-	static constexpr array<KeyStoreUIPrivate::KeyBinAddress, 3> keyBinAddress_debug = {{
+	static const array<KeyStoreUIPrivate::KeyBinAddress, 3> keyBinAddress_debug = {{
 		{0x014, static_cast<int>(WiiTicket::EncryptionKeys::Key_RVT_Debug)},
 		{0x348, static_cast<int>(WiiTicket::EncryptionKeys::Key_RVT_Korean)},
 		{0x0D0, static_cast<int>(WiiTicket::EncryptionKeys::Key_CAT_Starbuck_vWii_Common)},
@@ -1285,7 +1287,7 @@ KeyStoreUI::ImportReturn KeyStoreUIPrivate::importN3DSboot9bin(IRpFile *file)
 	}
 
 	// Key addresses and indexes.
-	static constexpr array<KeyStoreUIPrivate::KeyBinAddress, 6> keyBinAddress = {{
+	static const array<KeyStoreUIPrivate::KeyBinAddress, 6> keyBinAddress = {{
 		{0x5720, N3DSVerifyKeys::Key_Retail_SpiBoot},
 		{0x59D0, N3DSVerifyKeys::Key_Retail_Slot0x2CKeyX},
 		{0x5A20, N3DSVerifyKeys::Key_Retail_Slot0x3DKeyX},

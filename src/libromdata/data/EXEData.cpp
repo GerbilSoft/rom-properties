@@ -26,7 +26,7 @@ struct MachineType {
 
 // PE machine types.
 // NOTE: The cpu field *must* be sorted in ascending order.
-static constexpr array<MachineType, 40> machineTypes_PE = {{
+static const array<MachineType, 40> machineTypes_PE = {{
 	{IMAGE_FILE_MACHINE_I386,	"Intel i386"},
 	{IMAGE_FILE_MACHINE_R3000_BE,	"MIPS R3000 (big-endian)"},
 	{IMAGE_FILE_MACHINE_R3000,	"MIPS R3000"},
@@ -71,7 +71,7 @@ static constexpr array<MachineType, 40> machineTypes_PE = {{
 
 // LE machine types.
 // NOTE: The cpu field *must* be sorted in ascending order.
-static constexpr array<MachineType, 9> machineTypes_LE = {{
+static const array<MachineType, 9> machineTypes_LE = {{
 	{LE_CPU_80286,		"Intel i286"},
 	{LE_CPU_80386,		"Intel i386"},
 	{LE_CPU_80486,		"Intel i486"},

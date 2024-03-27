@@ -37,7 +37,7 @@ static constexpr char regions[6][4] = {
 /**
  * System applications (tid hi == 0x00040010)
  */
-static constexpr array<SysTitle, 19> sys_title_00040010 = {{
+static const array<SysTitle, 19> sys_title_00040010 = {{
 	/** Common titles **/
 	{{0x00020000, 0x00021000, 0x00022000, 0x00026000, 0x00027000, 0x00028000}, NOP_C_("Nintendo3DSSysTitles", "System Settings")},
 	{{0x00020100, 0x00021100, 0x00022100, 0x00026100, 0x00027100, 0x00028100}, NOP_C_("Nintendo3DSSysTitles", "Download Play")},
@@ -65,7 +65,7 @@ static constexpr array<SysTitle, 19> sys_title_00040010 = {{
 /**
  * System applets (tid hi == 0x00040030)
  */
-static constexpr array<SysTitle, 18> sys_title_00040030 = {{
+static const array<SysTitle, 18> sys_title_00040030 = {{
 	/** Common titles **/
 	{{0x00008202, 0x00008F02, 0x00009802, 0x0000A102, 0x0000A902, 0x0000B102}, NOP_C_("Nintendo3DSSysTitles", "HOME Menu")},
 	{{0x00008402, 0x00009002, 0x00009902, 0x0000A202, 0x0000AA02, 0x0000B202}, NOP_C_("Nintendo3DSSysTitles", "Camera")},

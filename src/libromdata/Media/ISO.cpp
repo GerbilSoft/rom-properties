@@ -745,7 +745,7 @@ const char *ISO::systemName(unsigned int type) const
 		"ISO::systemName() array index optimization needs to be updated.");
 
 	// TODO: UDF, HFS, others?
-	static constexpr const char *const sysNames[3][4] = {
+	static const char *const sysNames[3][4] = {
 		{"ISO-9660", "ISO", "ISO", nullptr},
 		{"High Sierra Format", "High Sierra", "HSF", nullptr},
 		{"Compact Disc Interactive", "CD-i", "CD-i", nullptr},

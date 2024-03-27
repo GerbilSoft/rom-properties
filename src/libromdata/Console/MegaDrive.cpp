@@ -1207,7 +1207,7 @@ const char *MegaDrive::systemName(unsigned int type) const
 	const unsigned int idx = (type & SYSNAME_TYPE_MASK);
 	if ((type & SYSNAME_REGION_MASK) == SYSNAME_REGION_GENERIC) {
 		// Generic system name.
-		static constexpr const char *const sysNames[6][4] = {
+		static const char *const sysNames[6][4] = {
 			{"Sega Mega Drive", "Mega Drive", "MD", nullptr},
 			{"Sega Mega CD", "Mega CD", "MCD", nullptr},
 			{"Sega 32X", "Sega 32X", "32X", nullptr},
@@ -1224,7 +1224,7 @@ const char *MegaDrive::systemName(unsigned int type) const
 	switch (md_bregion) {
 		case MegaDriveRegions::MD_BrandingRegion::Japan:
 		default: {
-			static constexpr const char *const sysNames_JP[6][4] = {
+			static const char *const sysNames_JP[6][4] = {
 				{"Sega Mega Drive", "Mega Drive", "MD", nullptr},
 				{"Sega Mega CD", "Mega CD", "MCD", nullptr},
 				{"Sega Super 32X", "Super 32X", "32X", nullptr},
@@ -1236,7 +1236,7 @@ const char *MegaDrive::systemName(unsigned int type) const
 		}
 
 		case MegaDriveRegions::MD_BrandingRegion::USA: {
-			static constexpr const char *const sysNames_US[6][4] = {
+			static const char *const sysNames_US[6][4] = {
 				// TODO: "MD" or "Gen"?
 				{"Sega Genesis", "Genesis", "MD", nullptr},
 				{"Sega CD", "Sega CD", "MCD", nullptr},
@@ -1249,7 +1249,7 @@ const char *MegaDrive::systemName(unsigned int type) const
 		}
 
 		case MegaDriveRegions::MD_BrandingRegion::Europe: {
-			static constexpr const char *const sysNames_EU[6][4] = {
+			static const char *const sysNames_EU[6][4] = {
 				{"Sega Mega Drive", "Mega Drive", "MD", nullptr},
 				{"Sega Mega CD", "Mega CD", "MCD", nullptr},
 				{"Sega Mega Drive 32X", "Mega Drive 32X", "32X", nullptr},
@@ -1261,7 +1261,7 @@ const char *MegaDrive::systemName(unsigned int type) const
 		}
 
 		case MegaDriveRegions::MD_BrandingRegion::South_Korea: {
-			static constexpr const char *const sysNames_KR[6][4] = {
+			static const char *const sysNames_KR[6][4] = {
 				// TODO: "MD" or something else?
 				{"Samsung Super Aladdin Boy", "Super Aladdin Boy", "MD", nullptr},
 				{"Samsung CD Aladdin Boy", "CD Aladdin Boy", "MCD", nullptr},
@@ -1274,7 +1274,7 @@ const char *MegaDrive::systemName(unsigned int type) const
 		}
 
 		case MegaDriveRegions::MD_BrandingRegion::Brazil: {
-			static constexpr const char *const sysNames_BR[6][4] = {
+			static const char *const sysNames_BR[6][4] = {
 				{"Sega Mega Drive", "Mega Drive", "MD", nullptr},
 				{"Sega CD", "Sega CD", "MCD", nullptr},
 				{"Sega Mega 32X", "Mega 32X", "32X", nullptr},
@@ -1684,7 +1684,7 @@ int MegaDrive::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) 
 				uint8_t md_region;
 				char serial[15];
 			};
-			static constexpr array<MDRomSerialData_t, 26> md_rom_serial_data = {{
+			static const array<MDRomSerialData_t, 26> md_rom_serial_data = {{
 				{0x0F, "GM 00004039-00"},	// Arrow Flash
 				{0x04, "GM T-24016 -00"},	// Atomic Robo-Kid
 				{0x08, "GM T-120146-50"},	// Brian Lara Cricket 96 / Shane Warne Cricket (EUR)

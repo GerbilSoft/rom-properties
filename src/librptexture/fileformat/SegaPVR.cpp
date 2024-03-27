@@ -1325,7 +1325,7 @@ SegaPVR::SegaPVR(const IRpFilePtr &file)
 	d->dimensions[1] = d->pvrHeader.height;
 
 	// Set the MIME type and texture format name.
-	static constexpr const char *const sysNames[(int)SegaPVRPrivate::PVRType::Max] = {
+	static const char *const sysNames[(int)SegaPVRPrivate::PVRType::Max] = {
 		"Sega Dreamcast PVR",
 		"Sega GVR for GameCube",
 		"Sega SVR for PlayStation 2",

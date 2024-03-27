@@ -364,7 +364,7 @@ rp_image_const_ptr XboxXPRPrivate::loadXboxXPR0Image(void)
 				// DXTn is automatically unswizzled by the DXTn
 				// functions, so those should be false.
 	};
-	static constexpr array<xpr_mode_t, 0x42> xpr_mode_tbl = {{
+	static const array<xpr_mode_t, 0x42> xpr_mode_tbl = {{
 		{ 8, ImageDecoder::PixelFormat::L8,		0, true},	// 0x00: L8
 		{ 0, ImageDecoder::PixelFormat::Unknown,	0, true},	// 0x01: AL8 (TODO)
 		{16, ImageDecoder::PixelFormat::ARGB1555, 	0, true},	// 0x02: ARGB1555

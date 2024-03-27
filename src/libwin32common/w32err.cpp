@@ -29,7 +29,7 @@ typedef struct _errmap {
         uint16_t posix;	// POSIX error code.
 } errmap;
 
-static constexpr errmap w32_to_posix[] = {
+static const errmap w32_to_posix[] = {
 	{ERROR_SUCCESS,			0         },  // 0
 	{ERROR_INVALID_FUNCTION,	EINVAL    },  // 1
 	{ERROR_FILE_NOT_FOUND,		ENOENT    },  // 2
@@ -127,7 +127,7 @@ int w32err_to_posix(DWORD w32err)
 	}
 
 	// Check the error code table.
-	static constexpr const errmap *const p_w32_to_posix_end =
+	static const errmap *const p_w32_to_posix_end =
 		&w32_to_posix[_countof(w32_to_posix)];
 	auto pErr = std::lower_bound(w32_to_posix, p_w32_to_posix_end, w32err,
 		[](const errmap &err, DWORD w32err) noexcept -> bool {

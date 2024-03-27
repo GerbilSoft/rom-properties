@@ -317,7 +317,7 @@ void RP_ShellPropSheetExt_Private::btnOptions_action_triggered(int menuId)
 			TCHAR default_ext[7];
 			bool toClipboard;
 		};
-		static constexpr array<StdActsInfo_t, 4> stdActsInfo = {{
+		static const array<StdActsInfo_t, 4> stdActsInfo = {{
 			// OPTION_EXPORT_TEXT
 			{NOP_C_("RomDataView", "Export to Text File"),
 			 // tr: "Text Files" filter (RP format)

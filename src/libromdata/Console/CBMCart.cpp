@@ -220,7 +220,7 @@ const char *CBMCart::systemName(unsigned int type) const
 	static_assert(SYSNAME_TYPE_MASK == 3,
 		"CBMCart::systemName() array index optimization needs to be updated.");
 
-	static constexpr const char *const sysNames[][4] = {
+	static const char *const sysNames[][4] = {
 		{"Commodore 64", "C64", "C64", nullptr},
 		{"Commodore 128", "C128", "C128", nullptr},
 		{"Commodore CBM-II", "CBM-II", "CBM-II", nullptr},

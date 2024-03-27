@@ -1111,7 +1111,7 @@ const char *CBMDOS::systemName(unsigned int type) const
 		"CBMDOS::systemName() array index optimization needs to be updated.");
 
 	// TODO: More types.
-	static constexpr const char *const sysNames[8][4] = {
+	static const char *const sysNames[8][4] = {
 		{"Commodore 1541", "C1541", "C1541", nullptr},
 		{"Commodore 1571", "C1571", "C1571", nullptr},
 		{"Commodore 8050", "C8050", "C8050", nullptr},

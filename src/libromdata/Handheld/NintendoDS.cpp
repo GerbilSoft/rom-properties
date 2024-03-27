@@ -734,7 +734,7 @@ const char *NintendoDS::systemName(unsigned int type) const
 	// Bits 0-1: Type. (long, short, abbreviation)
 	// Bit 2: 0 for NDS, 1 for DSi-exclusive.
 	// Bit 3: 0 for worldwide, 1 for China. (iQue DS)
-	static constexpr const char *const sysNames[16] = {
+	static const char *const sysNames[16] = {
 		// Nintendo (worldwide)
 		"Nintendo DS", "Nintendo DS", "NDS", nullptr,
 		"Nintendo DSi", "Nintendo DSi", "DSi", nullptr,
@@ -1106,7 +1106,7 @@ int NintendoDS::loadFieldData(void)
 		uint8_t dsi_filetype;
 		const char *s_dsi_filetype;
 	};
-	static constexpr array<dsi_filetype_tbl_t, 6> dsi_filetype_tbl = {{
+	static const array<dsi_filetype_tbl_t, 6> dsi_filetype_tbl = {{
 		// tr: DSi-enhanced or DSi-exclusive cartridge.
 		{DSi_FTYPE_CARTRIDGE,		NOP_C_("NintendoDS|DSiFileType", "Cartridge")},
 		// tr: DSiWare (download-only title)

@@ -52,7 +52,7 @@ struct SysData_t {
 	{#klass, LibRomData::klass::supportedImageTypes_static}
 
 // System data.
-static constexpr array<SysData_t, SYS_COUNT> sysData = {{
+static const array<SysData_t, SYS_COUNT> sysData = {{
 	SysDataEntry(Amiibo),
 	SysDataEntry(NintendoBadge),
 	SysDataEntry(DreamcastSave),

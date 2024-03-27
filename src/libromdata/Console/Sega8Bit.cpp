@@ -314,7 +314,7 @@ const char *Sega8Bit::systemName(unsigned int type) const
 	static_assert(SYSNAME_TYPE_MASK == 3,
 		"Sega8Bit::systemName() array index optimization needs to be updated.");
 
-	static constexpr const char *const sysNames[4] = {
+	static const char *const sysNames[4] = {
 		"Sega Master System",
 		"Master System",
 		"SMS",

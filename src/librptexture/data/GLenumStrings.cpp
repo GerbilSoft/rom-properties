@@ -273,7 +273,7 @@ static constexpr char glEnum_strtbl[] =
 	"COMPRESSED_SRGB_ALPHA_PVRTC_2BPPV2_IMG\0"
 	"COMPRESSED_SRGB_ALPHA_PVRTC_4BPPV2_IMG\0";
 
-static constexpr array<OffTbl_t, 227> glEnum_offtbl = {{
+static const array<OffTbl_t, 227> glEnum_offtbl = {{
 	{GL_BYTE, 1},
 	{GL_UNSIGNED_BYTE, 6},
 	{GL_SHORT, 20},

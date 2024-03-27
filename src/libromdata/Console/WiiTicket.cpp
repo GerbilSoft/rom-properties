@@ -403,7 +403,7 @@ const char *WiiTicket::systemName(unsigned int type) const
 		"WiiTicket::systemName() array index optimization needs to be updated.");
 
 	// Use the title ID to determine the system.
-	static constexpr const char *const sysNames[8][4] = {
+	static const char *const sysNames[8][4] = {
 		{"Nintendo Wii", "Wii", "Wii", nullptr},	// Wii IOS
 		{"Nintendo Wii", "Wii", "Wii", nullptr},	// Wii
 		{"GBA NetCard", "NetCard", "NetCard", nullptr},	// GBA NetCard

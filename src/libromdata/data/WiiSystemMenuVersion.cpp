@@ -26,7 +26,7 @@ struct SysVersionEntry_t {
  * - https://wiiubrew.org/wiki/Title_database
  * - https://yls8.mtheall.com/ninupdates/reports.php
  */
-static constexpr array<SysVersionEntry_t, 48> sysVersionList = {{
+static const array<SysVersionEntry_t, 48> sysVersionList = {{
 	// Wii
 	// Reference: https://wiibrew.org/wiki/System_Menu
 	{ 33, "1.0U"}, { 34, "1.0E"}, { 64, "1.0J"},

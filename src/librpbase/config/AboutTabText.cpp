@@ -99,7 +99,7 @@ ProgramInfoStringID getProgramInfoStringCount(void)
  * Credits data.
  * Ends with CreditType::Max.
  */
-static constexpr array<CreditsData_t, 16+1> creditsData = {{
+static const array<CreditsData_t, 16+1> creditsData = {{
 	// Developers
 	{CreditType::Developer,		"David Korth", "mailto:gerbilsoft@gerbilsoft.com", "gerbilsoft@gerbilsoft.com", nullptr},
 	{CreditType::Continue,		"Egor", "mailto:egor@opensrc.club", "egor@opensrc.club", nullptr},
@@ -142,7 +142,7 @@ const CreditsData_t *getCreditsData(void)
  * Support sites.
  * Ends with nullptr.
  */
-static constexpr array<SupportSite_t, 3+1> supportSites = {{
+static const array<SupportSite_t, 3+1> supportSites = {{
 	{"GitHub: GerbilSoft/rom-properties", "https://github.com/GerbilSoft/rom-properties"},
 	{"Sonic Retro", "https://forums.sonicretro.org/index.php?showtopic=35692"},
 	{"GBAtemp", "https://gbatemp.net/threads/rom-properties-page-shell-extension.442424/"},

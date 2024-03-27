@@ -175,7 +175,7 @@ const char *Nintendo3DSFirm::systemName(unsigned int type) const
 
 	// Bits 0-1: Type. (long, short, abbreviation)
 	// TODO: *New* Nintendo 3DS for N3DS-exclusive titles; iQue for China.
-	static constexpr const char *const sysNames[4] = {
+	static const char *const sysNames[4] = {
 		"Nintendo 3DS", "Nintendo 3DS", "3DS", nullptr
 	};
 

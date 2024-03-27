@@ -720,7 +720,7 @@ const char *SPC::systemName(unsigned int type) const
 		"SPC::systemName() array index optimization needs to be updated.");
 
 	// Bits 0-1: Type. (long, short, abbreviation)
-	static constexpr const char *const sysNames[4] = {
+	static const char *const sysNames[4] = {
 		"Super NES SPC Audio", "SPC", "SPC", nullptr
 	};
 

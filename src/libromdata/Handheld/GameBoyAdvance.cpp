@@ -251,7 +251,7 @@ const char *GameBoyAdvance::systemName(unsigned int type) const
 	static_assert(SYSNAME_TYPE_MASK == 3,
 		"GameBoyAdvance::systemName() array index optimization needs to be updated.");
 
-	static constexpr const char *const sysNames[4] = {
+	static const char *const sysNames[4] = {
 		"Nintendo Game Boy Advance",
 		"Game Boy Advance",
 		"GBA",

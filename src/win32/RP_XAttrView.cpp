@@ -83,7 +83,7 @@ int RP_XAttrView_Private::loadDosAttrs(void)
 		uint16_t id;
 		uint16_t attr;
 	};
-	static constexpr array<res_map_t, 6> res_map = {{
+	static const array<res_map_t, 6> res_map = {{
 		{IDC_XATTRVIEW_DOS_READONLY, FILE_ATTRIBUTE_READONLY},
 		{IDC_XATTRVIEW_DOS_HIDDEN, FILE_ATTRIBUTE_HIDDEN},
 		{IDC_XATTRVIEW_DOS_ARCHIVE, FILE_ATTRIBUTE_ARCHIVE},

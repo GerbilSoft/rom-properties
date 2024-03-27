@@ -589,7 +589,7 @@ const char *WiiWAD::systemName(unsigned int type) const
 		case NINTENDO_SYSID_IOS:
 		case NINTENDO_SYSID_RVL: {
 			// Wii
-			static constexpr const char *const sysNames_Wii[4] = {
+			static const char *const sysNames_Wii[4] = {
 				"Nintendo Wii", "Wii", "Wii", nullptr
 			};
 			return sysNames_Wii[type];
@@ -598,7 +598,7 @@ const char *WiiWAD::systemName(unsigned int type) const
 		case NINTENDO_SYSID_TWL: {
 			// DSi
 			// TODO: iQue DSi for China?
-			static constexpr const char *const sysNames_DSi[4] = {
+			static const char *const sysNames_DSi[4] = {
 				"Nintendo DSi", "DSi", "DSi", nullptr
 			};
 			return sysNames_DSi[type];

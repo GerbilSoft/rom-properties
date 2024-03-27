@@ -196,7 +196,7 @@ uint32_t SegaSaturnPrivate::parsePeripherals(const char *peripherals, int size)
 		char io_chr;	// Character in the Peripherals field
 		uint8_t io_bit;	// Bit number in the returned bitfield
 	};
-	static constexpr array<saturn_io_tbl_t, 17> saturn_io_tbl = {{
+	static const array<saturn_io_tbl_t, 17> saturn_io_tbl = {{
 		{' ', 0},	// quick exit for empty entries
 		SATURN_IO_SUPPORT_ENTRY(CONTROL_PAD),
 		SATURN_IO_SUPPORT_ENTRY(ANALOG_CONTROLLER),
@@ -470,7 +470,7 @@ const char *SegaSaturn::systemName(unsigned int type) const
 	static_assert(SYSNAME_TYPE_MASK == 3,
 		"SegaSaturn::systemName() array index optimization needs to be updated.");
 
-	static constexpr const char *const sysNames[4] = {
+	static const char *const sysNames[4] = {
 		"Sega Saturn", "Saturn", "Sat", nullptr
 	};
 

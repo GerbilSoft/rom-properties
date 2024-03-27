@@ -205,7 +205,7 @@ int EXEPrivate::findNERuntimeDLL(string &refDesc, string &refLink, bool &refHasK
 		const char dll_name[8];	// NOT NULL-terminated!
 		const char *url;
 	};
-	static constexpr array<msvb_dll_t, 5> msvb_dll_tbl = {{
+	static const array<msvb_dll_t, 5> msvb_dll_tbl = {{
 		{4,0, {'V','B','R','U','N','4','0','0'}, nullptr},
 		{4,0, {'V','B','R','U','N','4','1','6'}, nullptr},	// TODO: Is this a thing?
 		{3,0, {'V','B','R','U','N','3','0','0'}, nullptr},

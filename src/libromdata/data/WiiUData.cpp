@@ -26,7 +26,7 @@ struct WiiUDiscPublisher {
  *
  * Reference: https://www.gametdb.com/WiiU/List
  */
-static constexpr array<WiiUDiscPublisher, 199> disc_publishers_noregion = {{
+static const array<WiiUDiscPublisher, 199> disc_publishers_noregion = {{
 	{'AAFx', '0001'},	// Bayonetta
 	{'AALx', '0001'},	// Animal Crossing: amiibo Festival
 	{'ABAx', '0001'},	// Mario Party 10
@@ -239,7 +239,7 @@ static constexpr array<WiiUDiscPublisher, 199> disc_publishers_noregion = {{
  *
  * Reference: https://www.gametdb.com/WiiU/List
  */
-static constexpr array<WiiUDiscPublisher, 37> disc_publishers_region = {{
+static const array<WiiUDiscPublisher, 37> disc_publishers_region = {{
 	{'ABEE', '00G9'},	// Ben 10: Omniverse (NTSC-U)
 	{'ABEP', '00AF'},	// Ben 10: Omniverse (PAL)
 	{'ABVE', '00G9'},	// Ben 10: Omniverse 2 (NTSC-U)
@@ -337,7 +337,7 @@ struct WiiUApplicationType {
  *
  * Reference: https://github.com/devkitPro/wut/blob/master/include/coreinit/mcp.h
  */
-static constexpr array<WiiUApplicationType, 45> wiiu_application_types = {{
+static const array<WiiUApplicationType, 45> wiiu_application_types = {{
 	{0x0000001D, "Compat User"},
 	{0x0800001B, "Game Update"},
 	{0x0800000E, "Game DLC"},

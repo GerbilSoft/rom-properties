@@ -908,7 +908,7 @@ const char *NES::systemName(unsigned int type) const
 	switch (d->romType & NESPrivate::ROM_SYSTEM_MASK) {
 		case NESPrivate::ROM_SYSTEM_NES:
 		default: {
-			static constexpr const char *const sysNames_NES[3][4] = {
+			static const char *const sysNames_NES[3][4] = {
 				// NES (International)
 				{"Nintendo Entertainment System",
 				 "Nintendo Entertainment System",
@@ -942,7 +942,7 @@ const char *NES::systemName(unsigned int type) const
 		}
 
 		case NESPrivate::ROM_SYSTEM_FDS: {
-			static constexpr const char *const sysNames_FDS[] = {
+			static const char *const sysNames_FDS[] = {
 				"Nintendo Famicom Disk System",
 				"Famicom Disk System",
 				"FDS", nullptr
@@ -951,7 +951,7 @@ const char *NES::systemName(unsigned int type) const
 		}
 
 		case NESPrivate::ROM_SYSTEM_VS: {
-			static constexpr const char *const sysNames_VS[] = {
+			static const char *const sysNames_VS[] = {
 				"Nintendo VS. System",
 				"VS. System",
 				"VS", nullptr
@@ -960,7 +960,7 @@ const char *NES::systemName(unsigned int type) const
 		}
 
 		case NESPrivate::ROM_SYSTEM_PC10: {
-			static constexpr const char *const sysNames_PC10[] = {
+			static const char *const sysNames_PC10[] = {
 				"Nintendo PlayChoice-10",
 				"PlayChoice-10",
 				"PC10", nullptr

@@ -529,7 +529,7 @@ const char *iQuePlayer::systemName(unsigned int type) const
 		"iQuePlayer::systemName() array index optimization needs to be updated.");
 
 	// Bits 0-1: Type. (long, short, abbreviation)
-	static constexpr const char *const sysNames[4] = {
+	static const char *const sysNames[4] = {
 		"iQue Player", "iQue Player", "iQue", nullptr
 	};
 

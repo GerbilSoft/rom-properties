@@ -661,7 +661,7 @@ rp_image_ptr fromETC1(int width, int height,
 	}
 
 	// Set the sBIT metadata.
-	static constexpr rp_image::sBIT_t sBIT = {8,8,8,0,0};
+	static const rp_image::sBIT_t sBIT = {8,8,8,0,0};
 	img->set_sBIT(&sBIT);
 
 	// Image has been converted.
@@ -727,7 +727,7 @@ rp_image_ptr fromETC2_RGB(int width, int height,
 	}
 
 	// Set the sBIT metadata.
-	static constexpr rp_image::sBIT_t sBIT = {8,8,8,0,0};
+	static const rp_image::sBIT_t sBIT = {8,8,8,0,0};
 	img->set_sBIT(&sBIT);
 
 	// Image has been converted.
@@ -841,7 +841,7 @@ rp_image_ptr fromETC2_RGBA(int width, int height,
 	}
 
 	// Set the sBIT metadata.
-	static constexpr rp_image::sBIT_t sBIT = {8,8,8,0,8};
+	static const rp_image::sBIT_t sBIT = {8,8,8,0,8};
 	img->set_sBIT(&sBIT);
 
 	// Image has been converted.
@@ -907,7 +907,7 @@ rp_image_ptr fromETC2_RGB_A1(int width, int height,
 	}
 
 	// Set the sBIT metadata.
-	static constexpr rp_image::sBIT_t sBIT = {8,8,8,0,1};
+	static const rp_image::sBIT_t sBIT = {8,8,8,0,1};
 	img->set_sBIT(&sBIT);
 
 	// Image has been converted.
@@ -977,7 +977,7 @@ rp_image_ptr fromEAC_R11(int width, int height,
 
 	// Set the sBIT metadata.
 	// NOTE: Cannot set the G and B channels to 0, so setting them to 1.
-	static constexpr rp_image::sBIT_t sBIT = {8,1,1,0,0};
+	static const rp_image::sBIT_t sBIT = {8,1,1,0,0};
 	img->set_sBIT(&sBIT);
 
 	// Image has been converted.
@@ -1049,7 +1049,7 @@ rp_image_ptr fromEAC_RG11(int width, int height,
 
 	// Set the sBIT metadata.
 	// NOTE: Cannot set the B channel to 0, so setting it to 1 instead.
-	static constexpr rp_image::sBIT_t sBIT = {8,8,1,0,0};
+	static const rp_image::sBIT_t sBIT = {8,8,1,0,0};
 	img->set_sBIT(&sBIT);
 
 	// Image has been converted.

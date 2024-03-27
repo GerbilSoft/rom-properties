@@ -1213,7 +1213,7 @@ const char *GameCube::systemName(unsigned int type) const
 
 	// Bits 0-1: Type. (long, short, abbreviation)
 	// Bits 2-3: DISC_SYSTEM_MASK (GCN, Wii, Triforce)
-	static constexpr const char *const sysNames[4][4] = {
+	static const char *const sysNames[4][4] = {
 		{"Nintendo GameCube", "GameCube", "GCN", nullptr},
 		{"Nintendo/Sega/Namco Triforce", "Triforce", "TF", nullptr},
 		{"Nintendo Wii", "Wii", "Wii", nullptr},

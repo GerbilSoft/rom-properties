@@ -941,7 +941,7 @@ const char *DMG::systemName(unsigned int type) const
 
 	// Bits 0-1: Type. (long, short, abbreviation)
 	// Bit 2: Game Boy Color. (DMG-specific)
-	static constexpr const char *const sysNames[2][4] = {
+	static const char *const sysNames[2][4] = {
 		{"Nintendo Game Boy", "Game Boy", "GB", nullptr},
 		{"Nintendo Game Boy Color", "Game Boy Color", "GBC", nullptr}
 	};
@@ -1144,7 +1144,7 @@ int DMG::loadFieldData(void)
 		};
 
 		// TODO: Localization?
-		static constexpr array<gbx_mapper_tbl_t, 21> gbx_mapper_tbl = {{
+		static const array<gbx_mapper_tbl_t, 21> gbx_mapper_tbl = {{
 			// Nintendo
 			{GBX_MAPPER_ROM_ONLY,		"ROM only"},
 			{GBX_MAPPER_MBC1,		"Nintendo MBC1"},

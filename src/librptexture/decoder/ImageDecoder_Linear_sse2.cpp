@@ -343,11 +343,11 @@ rp_image_ptr fromLinear16_sse2(PixelFormat px_format,
 	const __m128i MaskGR88  = _mm_setr_epi32(0x00FFFF00,0x00FFFF00,0x00FFFF00,0x00FFFF00);
 
 	// sBIT metadata.
-	static constexpr rp_image::sBIT_t sBIT_RGB565   = {5,6,5,0,0};
-	static constexpr rp_image::sBIT_t sBIT_ARGB1555 = {5,5,5,0,1};
-	static constexpr rp_image::sBIT_t sBIT_xRGB4444 = {4,4,4,0,0};
-	static constexpr rp_image::sBIT_t sBIT_ARGB4444 = {4,4,4,0,4};
-	static constexpr rp_image::sBIT_t sBIT_RGB555   = {5,5,5,0,0};
+	static const rp_image::sBIT_t sBIT_RGB565   = {5,6,5,0,0};
+	static const rp_image::sBIT_t sBIT_ARGB1555 = {5,5,5,0,1};
+	static const rp_image::sBIT_t sBIT_xRGB4444 = {4,4,4,0,0};
+	static const rp_image::sBIT_t sBIT_ARGB4444 = {4,4,4,0,4};
+	static const rp_image::sBIT_t sBIT_RGB555   = {5,5,5,0,0};
 
 	// Macro for 16-bit formats with no alpha channel.
 #define fromLinear16_convert(fmt, sBIT, Rshift_W, Gshift_W, Bshift_W, Rbits, Gbits, Bbits, isBGR, Rmask, Gmask, Bmask) \
@@ -470,7 +470,7 @@ rp_image_ptr fromLinear16_sse2(PixelFormat px_format,
 			}
 
 			// Set the sBIT metadata.
-			static constexpr rp_image::sBIT_t sBIT_RG88 = {8,8,1,0,0};
+			static const rp_image::sBIT_t sBIT_RG88 = {8,8,1,0,0};
 			img->set_sBIT(&sBIT_RG88);
 			break;
 		}
@@ -517,7 +517,7 @@ rp_image_ptr fromLinear16_sse2(PixelFormat px_format,
 			}
 
 			// Set the sBIT metadata.
-			static constexpr rp_image::sBIT_t sBIT_RG88 = {8,8,1,0,0};
+			static const rp_image::sBIT_t sBIT_RG88 = {8,8,1,0,0};
 			img->set_sBIT(&sBIT_RG88);
 			break;
 		}

@@ -83,12 +83,12 @@ rp_image_ptr fromGcn16(PixelFormat px_format,
 	// NOTE: For RGB5A3, pixels may be RGB555 or ARGB4444.
 	// We'll use 555 for RGB, and 4 for alpha.
 	// TODO: Set alpha to 0 if no translucent pixels were found.
-	static constexpr rp_image::sBIT_t sBIT_5A3 = {5,5,5,0,4};
-	static constexpr rp_image::sBIT_t sBIT_565 = {5,6,5,0,0};
+	static const rp_image::sBIT_t sBIT_5A3 = {5,5,5,0,4};
+	static const rp_image::sBIT_t sBIT_565 = {5,6,5,0,0};
 
 	// NOTE: For IA8, setting the grayscale value, though we're
 	// not saving grayscale PNGs at the moment.
-	static constexpr rp_image::sBIT_t sBIT_IA8 = {8,8,8,8,8};
+	static const rp_image::sBIT_t sBIT_IA8 = {8,8,8,8,8};
 
 	switch (px_format) {
 		GCN_16(PixelFormat::RGB5A3, RGB5A3_to_ARGB32, &sBIT_5A3)
@@ -188,7 +188,7 @@ rp_image_ptr fromGcnCI8(int width, int height,
 	// NOTE: Pixels may be RGB555 or ARGB4444.
 	// We'll use 555 for RGB, and 4 for alpha.
 	// TODO: Set alpha to 0 if no translucent pixels were found.
-	static constexpr rp_image::sBIT_t sBIT = {5,5,5,0,4};
+	static const rp_image::sBIT_t sBIT = {5,5,5,0,4};
 	img->set_sBIT(&sBIT);
 
 	// Image has been converted.
@@ -266,7 +266,7 @@ rp_image_ptr fromGcnI8(int width, int height,
 
 	// Set the sBIT metadata.
 	// TODO: Use grayscale instead of RGB.
-	static constexpr rp_image::sBIT_t sBIT = {8,8,8,0,0};
+	static const rp_image::sBIT_t sBIT = {8,8,8,0,0};
 	img->set_sBIT(&sBIT);
 
 	// Image has been converted.

@@ -384,7 +384,7 @@ int DirectDrawSurfacePrivate::updatePixelFormat(void)
 			uint8_t dxgi_format;
 			uint8_t dxgi_alpha;
 		};
-		static constexpr array<fourCC_dxgi_tbl_t, 28> fourCC_dxgi_tbl = {{
+		static const array<fourCC_dxgi_tbl_t, 28> fourCC_dxgi_tbl = {{
 			{DDPF_FOURCC_DXT1, DXGI_FORMAT_BC1_UNORM, DDS_ALPHA_MODE_STRAIGHT},
 			{DDPF_FOURCC_DXT2, DXGI_FORMAT_BC2_UNORM, DDS_ALPHA_MODE_PREMULTIPLIED},
 			{DDPF_FOURCC_DXT3, DXGI_FORMAT_BC2_UNORM, DDS_ALPHA_MODE_STRAIGHT},
@@ -445,7 +445,7 @@ int DirectDrawSurfacePrivate::updatePixelFormat(void)
 				ImageDecoder::PixelFormat pxf_uncomp;
 				uint8_t bytespp;
 			};
-			static constexpr array<dx10_tbl_t, 25> dx10_tbl = {{
+			static const array<dx10_tbl_t, 25> dx10_tbl = {{
 				{DXGI_FORMAT_R10G10B10A2_TYPELESS,	ImageDecoder::PixelFormat::A2B10G10R10, 4},
 				{DXGI_FORMAT_R10G10B10A2_UNORM,		ImageDecoder::PixelFormat::A2B10G10R10, 4},
 				{DXGI_FORMAT_R10G10B10A2_UINT,		ImageDecoder::PixelFormat::A2B10G10R10, 4},

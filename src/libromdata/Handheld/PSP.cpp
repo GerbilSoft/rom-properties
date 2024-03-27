@@ -369,7 +369,7 @@ const char *PSP::systemName(unsigned int type) const
 	static_assert(SYSNAME_TYPE_MASK == 3,
 		"PSP::systemName() array index optimization needs to be updated.");
 
-	static constexpr const char *const sysNames[2][4] = {
+	static const char *const sysNames[2][4] = {
 		{"Sony PlayStation Portable", "PlayStation Portable", "PSP", nullptr},
 		{"Universal Media Disc", "Universal Media Disc", "UMD", nullptr},
 	};

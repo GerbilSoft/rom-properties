@@ -232,7 +232,7 @@ static constexpr std::array<char16_t, 256> petscii_shifted_lkup = {{
 }};
 
 // Lookup tables in RP_CP_* ordering.
-static constexpr std::array<const std::array<char16_t, 256>*, 4> lkup_tbls = {{
+static const std::array<const std::array<char16_t, 256>*, 4> lkup_tbls = {{
 	&atariST_lkup,		// CP_RP_ATARIST
 	&atascii_lkup,		// CP_RP_ATASCII
 	&petscii_unshifted_lkup,	// CP_RP_PETSCII_Unshifted

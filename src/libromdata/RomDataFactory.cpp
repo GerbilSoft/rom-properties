@@ -199,7 +199,7 @@ pthread_once_t once_mimeTypes = PTHREAD_ONCE_INIT;
  *
  * TODO: Add support for multiple magic numbers per class.
  */
-constexpr RomDataFns romDataFns_magic[] = {
+static const RomDataFns romDataFns_magic[] = {
 	// Consoles
 	GetRomDataFns_addr(Atari7800, ATTR_HAS_METADATA, 4, 'RI78'),	// "ATARI7800"
 	GetRomDataFns_addr(PlayStationEXE, 0, 0, 'PS-X'),
@@ -258,7 +258,7 @@ constexpr RomDataFns romDataFns_magic[] = {
  * Headers with addresses other than 0 should be
  * placed at the end of this array.
  */
-constexpr RomDataFns romDataFns_header[] = {
+static const RomDataFns romDataFns_header[] = {
 	// Consoles
 	GetRomDataFns(ColecoVision, ATTR_HAS_METADATA),
 	GetRomDataFns(Dreamcast, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA | ATTR_SUPPORTS_DEVICES),
@@ -328,7 +328,7 @@ constexpr RomDataFns romDataFns_header[] = {
 };
 
 // RomData subclasses that use a footer.
-constexpr RomDataFns romDataFns_footer[] = {
+static const RomDataFns romDataFns_footer[] = {
 	GetRomDataFns(VirtualBoy, ATTR_NONE),
 	GetRomDataFns(WonderSwan, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA),
 	{nullptr, nullptr, nullptr, ATTR_NONE, 0, 0}
@@ -337,7 +337,7 @@ constexpr RomDataFns romDataFns_footer[] = {
 // Table of pointers to tables.
 // This reduces duplication by only requiring a single loop
 // in each function.
-constexpr const RomDataFns *const romDataFns_tbl[] = {
+static const RomDataFns *const romDataFns_tbl[] = {
 	romDataFns_magic,
 	romDataFns_header,
 	romDataFns_footer,
@@ -376,7 +376,7 @@ static IDiscReader *IDiscReader_ctor(const IRpFilePtr &file)
 	 magic}
 
 #define P99_PROTECT(...) __VA_ARGS__	/* Reference: https://stackoverflow.com/a/5504336 */
-constexpr IDiscReaderFns iDiscReaderFns[] = {
+static const IDiscReaderFns iDiscReaderFns[] = {
 	GetIDiscReaderFns(CisoGcnReader,	P99_PROTECT({'CISO'})),
 	// NOTE: MSVC doesn't like putting #ifdef within the P99_PROTECT macro.
 	// TODO: Disable ZISO and JISO if LZ4 and LZO aren't available?
@@ -604,7 +604,7 @@ RomData *checkISO(const IRpFilePtr &file)
 #define GetRomDataFns_ISO(sys) \
 	{sys::isRomSupported_static, \
 	 RomData_ctor<sys>}
-	static constexpr RomDataFns_ISO romDataFns_ISO[] = {
+	static const RomDataFns_ISO romDataFns_ISO[] = {
 		GetRomDataFns_ISO(PlayStationDisc),
 		GetRomDataFns_ISO(PSP),
 		GetRomDataFns_ISO(XboxDisc),

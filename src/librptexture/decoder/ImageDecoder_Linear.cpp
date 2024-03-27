@@ -102,7 +102,7 @@ rp_image_ptr fromLinearCI4(PixelFormat px_format, bool msn_left,
 			memcpy(palette, pal_buf, 16 * sizeof(uint32_t));
 
 			// Set the sBIT metadata.
-			static constexpr rp_image::sBIT_t sBIT = {8,8,8,0,8};
+			static const rp_image::sBIT_t sBIT = {8,8,8,0,8};
 			img->set_sBIT(&sBIT);
 			break;
 		}
@@ -117,7 +117,7 @@ rp_image_ptr fromLinearCI4(PixelFormat px_format, bool msn_left,
 				}
 			}
 			// Set the sBIT metadata.
-			static constexpr rp_image::sBIT_t sBIT = {5,5,5,0,1};
+			static const rp_image::sBIT_t sBIT = {5,5,5,0,1};
 			img->set_sBIT(&sBIT);
 			break;
 		}
@@ -128,7 +128,7 @@ rp_image_ptr fromLinearCI4(PixelFormat px_format, bool msn_left,
 				palette[i] = RGB565_to_ARGB32(le16_to_cpu(*pal_buf16));
 			}
 			// Set the sBIT metadata.
-			static constexpr rp_image::sBIT_t sBIT = {5,6,5,0,0};
+			static const rp_image::sBIT_t sBIT = {5,6,5,0,0};
 			img->set_sBIT(&sBIT);
 			break;
 		}
@@ -143,7 +143,7 @@ rp_image_ptr fromLinearCI4(PixelFormat px_format, bool msn_left,
 				}
 			}
 			// Set the sBIT metadata.
-			static constexpr rp_image::sBIT_t sBIT = {4,4,4,0,4};
+			static const rp_image::sBIT_t sBIT = {4,4,4,0,4};
 			img->set_sBIT(&sBIT);
 			break;
 		}
@@ -158,7 +158,7 @@ rp_image_ptr fromLinearCI4(PixelFormat px_format, bool msn_left,
 				}
 			}
 			// Set the sBIT metadata.
-			static constexpr rp_image::sBIT_t sBIT = {4,4,4,0,4};
+			static const rp_image::sBIT_t sBIT = {4,4,4,0,4};
 			img->set_sBIT(&sBIT);
 			break;
 		}
@@ -173,7 +173,7 @@ rp_image_ptr fromLinearCI4(PixelFormat px_format, bool msn_left,
 				}
 			}
 			// Set the sBIT metadata.
-			static constexpr rp_image::sBIT_t sBIT = {5,5,5,0,0};
+			static const rp_image::sBIT_t sBIT = {5,5,5,0,0};
 			img->set_sBIT(&sBIT);
 			break;
 		}
@@ -195,7 +195,7 @@ rp_image_ptr fromLinearCI4(PixelFormat px_format, bool msn_left,
 				}
 			}
 			// Set the sBIT metadata.
-			static constexpr rp_image::sBIT_t sBIT = {5,5,5,0,0};
+			static const rp_image::sBIT_t sBIT = {5,5,5,0,0};
 			img->set_sBIT(&sBIT);
 			break;
 		}
@@ -213,7 +213,7 @@ rp_image_ptr fromLinearCI4(PixelFormat px_format, bool msn_left,
 			}
 			// Set the sBIT metadata.
 			// TODO: Check if alpha is actually used?
-			static constexpr rp_image::sBIT_t sBIT = {5,5,5,0,4};
+			static const rp_image::sBIT_t sBIT = {5,5,5,0,4};
 			img->set_sBIT(&sBIT);
 			break;
 		}
@@ -232,7 +232,7 @@ rp_image_ptr fromLinearCI4(PixelFormat px_format, bool msn_left,
 			}
 			// Set the sBIT metadata.
 			// TODO: Check if alpha is actually used?
-			static constexpr rp_image::sBIT_t sBIT = {8,8,8,0,8};
+			static const rp_image::sBIT_t sBIT = {8,8,8,0,8};
 			img->set_sBIT(&sBIT);
 			break;
 		}
@@ -368,7 +368,7 @@ rp_image_ptr fromLinearCI8(PixelFormat px_format,
 				}
 			}
 			// Set the sBIT metadata.
-			static constexpr rp_image::sBIT_t sBIT = {5,5,5,0,1};
+			static const rp_image::sBIT_t sBIT = {5,5,5,0,1};
 			img->set_sBIT(&sBIT);
 			break;
 		}
@@ -380,7 +380,7 @@ rp_image_ptr fromLinearCI8(PixelFormat px_format,
 				palette[i+1].u32 = RGB555_to_ARGB32(le16_to_cpu(pal_buf16[1]));
 			}
 			// Set the sBIT metadata.
-			static constexpr rp_image::sBIT_t sBIT = {5,6,5,0,0};
+			static const rp_image::sBIT_t sBIT = {5,6,5,0,0};
 			img->set_sBIT(&sBIT);
 			break;
 		}
@@ -392,7 +392,7 @@ rp_image_ptr fromLinearCI8(PixelFormat px_format,
 				palette[i+1].u32 = RGB565_to_ARGB32(le16_to_cpu(pal_buf16[1]));
 			}
 			// Set the sBIT metadata.
-			static constexpr rp_image::sBIT_t sBIT = {5,6,5,0,0};
+			static const rp_image::sBIT_t sBIT = {5,6,5,0,0};
 			img->set_sBIT(&sBIT);
 			break;
 		}
@@ -412,7 +412,7 @@ rp_image_ptr fromLinearCI8(PixelFormat px_format,
 				}
 			}
 			// Set the sBIT metadata.
-			static constexpr rp_image::sBIT_t sBIT = {4,4,4,0,4};
+			static const rp_image::sBIT_t sBIT = {4,4,4,0,4};
 			img->set_sBIT(&sBIT);
 			break;
 		}
@@ -432,7 +432,7 @@ rp_image_ptr fromLinearCI8(PixelFormat px_format,
 				}
 			}
 			// Set the sBIT metadata.
-			static constexpr rp_image::sBIT_t sBIT = {4,4,4,0,4};
+			static const rp_image::sBIT_t sBIT = {4,4,4,0,4};
 			img->set_sBIT(&sBIT);
 			break;
 		}
@@ -455,7 +455,7 @@ rp_image_ptr fromLinearCI8(PixelFormat px_format,
 			}
 			// Set the sBIT metadata.
 			// TODO: Check if alpha is actually used?
-			static constexpr rp_image::sBIT_t sBIT = {5,5,5,0,4};
+			static const rp_image::sBIT_t sBIT = {5,5,5,0,4};
 			img->set_sBIT(&sBIT);
 			break;
 		}
@@ -478,7 +478,7 @@ rp_image_ptr fromLinearCI8(PixelFormat px_format,
 			}
 			// Set the sBIT metadata.
 			// TODO: Check if alpha is actually used?
-			static constexpr rp_image::sBIT_t sBIT = {8,8,8,0,8};
+			static const rp_image::sBIT_t sBIT = {8,8,8,0,8};
 			img->set_sBIT(&sBIT);
 			break;
 		}
@@ -500,7 +500,7 @@ rp_image_ptr fromLinearCI8(PixelFormat px_format,
 			}
 
 			// Set the sBIT metadata.
-			static constexpr rp_image::sBIT_t sBIT = {8,8,8,0,0};
+			static const rp_image::sBIT_t sBIT = {8,8,8,0,0};
 			img->set_sBIT(&sBIT);
 			break;
 		}
@@ -522,7 +522,7 @@ rp_image_ptr fromLinearCI8(PixelFormat px_format,
 			}
 			// Set the sBIT metadata.
 			// TODO: Check if alpha is actually used?
-			static constexpr rp_image::sBIT_t sBIT = {8,8,8,0,8};
+			static const rp_image::sBIT_t sBIT = {8,8,8,0,8};
 			img->set_sBIT(&sBIT);
 			break;
 		}
@@ -544,7 +544,7 @@ rp_image_ptr fromLinearCI8(PixelFormat px_format,
 			}
 			// Set the sBIT metadata.
 			// TODO: Check if alpha is actually used?
-			static constexpr rp_image::sBIT_t sBIT = {8,8,8,0,8};
+			static const rp_image::sBIT_t sBIT = {8,8,8,0,8};
 			img->set_sBIT(&sBIT);
 			break;
 		}
@@ -558,7 +558,7 @@ rp_image_ptr fromLinearCI8(PixelFormat px_format,
 				palette[i+1].u32 = pal_buf32[1] | 0xFF000000U;
 			}
 			// Set the sBIT metadata.
-			static constexpr rp_image::sBIT_t sBIT = {8,8,8,0,0};
+			static const rp_image::sBIT_t sBIT = {8,8,8,0,0};
 			img->set_sBIT(&sBIT);
 			break;
 		}
@@ -572,7 +572,7 @@ rp_image_ptr fromLinearCI8(PixelFormat px_format,
 				palette[i+1].u32 = __swab32(pal_buf32[1]) | 0xFF000000U;
 			}
 			// Set the sBIT metadata.
-			static constexpr rp_image::sBIT_t sBIT = {8,8,8,0,0};
+			static const rp_image::sBIT_t sBIT = {8,8,8,0,0};
 			img->set_sBIT(&sBIT);
 			break;
 		}
@@ -675,7 +675,7 @@ rp_image_ptr fromLinear8(PixelFormat px_format,
 				px_dest += dest_stride_adj; \
 			} \
 			/* Set the sBIT data. */ \
-			static constexpr rp_image::sBIT_t sBIT = {r,g,b,gr,a}; \
+			static const rp_image::sBIT_t sBIT = {r,g,b,gr,a}; \
 			img->set_sBIT(&sBIT); \
 		} break
 
@@ -767,7 +767,7 @@ rp_image_ptr fromLinear16_cpp(PixelFormat px_format,
 				px_dest += dest_stride_adj; \
 			} \
 			/* Set the sBIT data. */ \
-			static constexpr rp_image::sBIT_t sBIT = {r,g,b,gr,a}; \
+			static const rp_image::sBIT_t sBIT = {r,g,b,gr,a}; \
 			img->set_sBIT(&sBIT); \
 		} break
 			
@@ -911,7 +911,7 @@ rp_image_ptr fromLinear24_cpp(PixelFormat px_format,
 	}
 
 	// Set the sBIT metadata.
-	static constexpr rp_image::sBIT_t sBIT = {8,8,8,0,0};
+	static const rp_image::sBIT_t sBIT = {8,8,8,0,0};
 	img->set_sBIT(&sBIT);
 
 	// Image has been converted.
@@ -971,8 +971,8 @@ rp_image_ptr fromLinear32_cpp(PixelFormat px_format,
 	const int dest_stride_adj = (dest_stride / sizeof(argb32_t)) - img->width();
 
 	// sBIT for standard ARGB32
-	static constexpr rp_image::sBIT_t sBIT_x32 = {8,8,8,0,0};
-	static constexpr rp_image::sBIT_t sBIT_A32 = {8,8,8,0,8};
+	static const rp_image::sBIT_t sBIT_x32 = {8,8,8,0,0};
+	static const rp_image::sBIT_t sBIT_A32 = {8,8,8,0,8};
 
 	// Destination pixel buffer
 	uint32_t *px_dest = static_cast<uint32_t*>(img->bits());
@@ -1241,7 +1241,7 @@ rp_image_ptr fromLinear32_cpp(PixelFormat px_format,
 				px_dest += dest_stride_adj; \
 			} \
 			/* Set the sBIT data. */ \
-			static constexpr rp_image::sBIT_t sBIT = {r,g,b,gr,a}; \
+			static const rp_image::sBIT_t sBIT = {r,g,b,gr,a}; \
 			img->set_sBIT(&sBIT); \
 		} break
 
@@ -1286,7 +1286,7 @@ rp_image_ptr fromLinear32_cpp(PixelFormat px_format,
 			}
 
 			/* Set the sBIT data. */
-			static constexpr rp_image::sBIT_t sBIT = {8,8,8,0,0};
+			static const rp_image::sBIT_t sBIT = {8,8,8,0,0};
 			img->set_sBIT(&sBIT);
 			break;
 		}

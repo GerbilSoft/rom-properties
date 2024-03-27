@@ -687,7 +687,7 @@ rp_image_ptr fromBC7(int width, int height,
 	// sBIT metadata.
 	// TODO: Dynamically determine if we have alpha?
 	// Rotation bits makes this difficult...
-	static constexpr rp_image::sBIT_t sBIT = {8,8,8,0,8};
+	static const rp_image::sBIT_t sBIT = {8,8,8,0,8};
 
 #ifdef _OPENMP
 	bool bErr = false;

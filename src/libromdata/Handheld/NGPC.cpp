@@ -209,7 +209,7 @@ const char *NGPC::systemName(unsigned int type) const
 
 	// Bits 0-1: Type. (long, short, abbreviation)
 	// Bit 2: Machine type. (0 == NGP, 1 == NGPC)
-	static constexpr const char *const sysNames[2][4] = {
+	static const char *const sysNames[2][4] = {
 		{"Neo Geo Pocket", "NGP", "NGP", nullptr},
 		{"Neo Geo Pocket Color", "NGPC", "NGPC", nullptr}
 	};

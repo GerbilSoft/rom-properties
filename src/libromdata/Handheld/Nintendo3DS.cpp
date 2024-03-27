@@ -1480,7 +1480,7 @@ const char *Nintendo3DS::systemName(unsigned int type) const
 	// Bit 2: *New* Nintendo 3DS
 	// Bit 3: iQue
 	// TODO: Compare code gen for 2D vs. 1D arrays.
-	static constexpr const char *const sysNames[4*4] = {
+	static const char *const sysNames[4*4] = {
 		"Nintendo 3DS", "Nintendo 3DS", "3DS", nullptr,
 		"*New* Nintendo 3DS", "*New* Nintendo 3DS", "N3DS", nullptr,
 
@@ -2346,7 +2346,7 @@ int Nintendo3DS::loadFieldData(void)
 				rp_sprintf(C_("Nintendo3DS", "Invalid (0x%02X)"), new3ds_sys_mode));
 		}
 
-		// New3DS CPU Mode.
+		// New3DS CPU Mode
 		static const char *const new3ds_cpu_mode_names[] = {
 			NOP_C_("Nintendo3DS|N3DSCPUMode", "L2 Cache"),
 			NOP_C_("Nintendo3DS|N3DSCPUMode", "804 MHz"),

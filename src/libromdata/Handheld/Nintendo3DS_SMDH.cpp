@@ -341,7 +341,7 @@ const char *Nintendo3DS_SMDH::systemName(unsigned int type) const
 	// Bits 0-1: Type. (long, short, abbreviation)
 	// Bit 2: iQue
 	// TODO: Is it possible to identify "*New*" Nintendo 3DS" from just the SMDH?
-	static constexpr const char *const sysNames[4*4] = {
+	static const char *const sysNames[4*4] = {
 		"Nintendo 3DS", "Nintendo 3DS", "3DS", nullptr,
 		"iQue 3DS", "iQue 3DS", "3DS", nullptr,
 	};

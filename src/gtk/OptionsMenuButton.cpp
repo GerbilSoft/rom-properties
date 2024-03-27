@@ -140,7 +140,7 @@ struct option_menu_action_t {
 	const char *desc;
 	int id;
 };
-static constexpr array<option_menu_action_t, 4> stdacts = {{
+static const array<option_menu_action_t, 4> stdacts = {{
 	{NOP_C_("OptionsMenuButton|StdActs", "Export to Text..."),	OPTION_EXPORT_TEXT},
 	{NOP_C_("OptionsMenuButton|StdActs", "Export to JSON..."),	OPTION_EXPORT_JSON},
 	{NOP_C_("OptionsMenuButton|StdActs", "Copy as Text"),		OPTION_COPY_TEXT},

@@ -296,7 +296,7 @@ int WiiUPackagePrivate::addFields_System_XMLs(void)
 		char xml_lc[4];	// LC in the XML file
 		uint32_t lc;	// Our LC
 	};
-	static constexpr array<xml_lc_map_t, WiiU_LC_COUNT> xml_lc_map = {{
+	static const array<xml_lc_map_t, WiiU_LC_COUNT> xml_lc_map = {{
 		{"ja",    'ja'},
 		{"en",    'en'},
 		{"fr",    'fr'},
@@ -483,7 +483,7 @@ int WiiUPackagePrivate::addFields_System_XMLs(void)
 		RomFields::age_ratings_t age_ratings;
 		// Valid ratings: 0-1, 3-4, 6-11 (excludes old BBFC and Finland/MEKU)
 		static constexpr uint16_t valid_ratings = 0xFDB;
-		static constexpr array<const char*, 12> age_rating_nodes = {{
+		static const array<const char*, 12> age_rating_nodes = {{
 			"pc_cero", "pc_esrb", "pc_bbfc", "pc_usk",
 			"pc_pegi_gen", "pc_pegi_fin", "pc_pegi_prt", "pc_pegi_bbfc",
 			"pc_cob", "pc_grb", "pc_cgsrr", "pc_oflc",
@@ -529,7 +529,7 @@ int WiiUPackagePrivate::addFields_System_XMLs(void)
 
 		// Controller support
 		uint32_t controllers = 0;
-		static constexpr array<const char*, 6> controller_nodes = {{
+		static const array<const char*, 6> controller_nodes = {{
 			"ext_dev_nunchaku",
 			"ext_dev_classic",
 			"ext_dev_urcc",

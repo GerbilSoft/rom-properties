@@ -93,7 +93,7 @@ int EXEPrivate::loadWin32ManifestResource(XMLDocument &doc, const char **ppResNa
 		uint16_t id;
 		const char *name;
 	};
-	static constexpr array<resource_id_t, 4> resource_id_tbl = {{
+	static const array<resource_id_t, 4> resource_id_tbl = {{
 		{CREATEPROCESS_MANIFEST_RESOURCE_ID, "CreateProcess"},
 		{ISOLATIONAWARE_MANIFEST_RESOURCE_ID, "Isolation-Aware"},
 		{ISOLATIONAWARE_NOSTATICIMPORT_MANIFEST_RESOURCE_ID, "Isolation-Aware, No Static Import"},

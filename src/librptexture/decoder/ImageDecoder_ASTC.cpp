@@ -159,7 +159,7 @@ rp_image_ptr fromASTC(int width, int height,
 
 	// Set the sBIT metadata.
 	// NOTE: Assuming ASTC always has alpha for now.
-	static constexpr rp_image::sBIT_t sBIT  = {8,8,8,0,8};
+	static const rp_image::sBIT_t sBIT  = {8,8,8,0,8};
 	img->set_sBIT(&sBIT);
 
 	// Image has been converted.

@@ -1439,14 +1439,14 @@ const char *ELF::systemName(unsigned int type) const
 
 	if (d->isWiiU) {
 		// This is a Wii U RPX/RPL executable.
-		static constexpr const char *const sysNames_WiiU[4] = {
+		static const char *const sysNames_WiiU[4] = {
 			"Nintendo Wii U", "Wii U", "Wii U", nullptr
 		};
 		return sysNames_WiiU[type];
 	}
 
 	// Standard ELF executable.
-	static constexpr const char *const sysNames[4] = {
+	static const char *const sysNames[4] = {
 		"Executable and Linkable Format", "ELF", "ELF", nullptr
 	};
 

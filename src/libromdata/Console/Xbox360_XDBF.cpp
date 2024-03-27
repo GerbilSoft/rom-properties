@@ -1760,7 +1760,7 @@ const char *Xbox360_XDBF::systemName(unsigned int type) const
 
 	// Bits 0-1: Type. (long, short, abbreviation)
 	// TODO: XDBF-specific, or just use Xbox 360?
-	static constexpr const char *const sysNames[4] = {
+	static const char *const sysNames[4] = {
 		"Microsoft Xbox 360", "Xbox 360", "X360", nullptr
 	};
 

@@ -67,7 +67,7 @@ static_assert(sizeof(languages_strtbl) == 0x93+1, "languages_strtbl[] size has c
 
 // Language name mapping.
 // NOTE: This MUST be sorted by 'lc'!
-static constexpr array<LanguageOffTbl_t, 14> languages_offtbl = {{
+static const array<LanguageOffTbl_t, 14> languages_offtbl = {{
 	{'au',	0}, // GameTDB only
 	{'de',	13},
 	{'en',	21},
@@ -395,7 +395,7 @@ int getFlagPosition(uint32_t lc, int *pCol, int *pRow, bool forcePAL)
 		uint16_t col;
 		uint16_t row;
 	};
-	static constexpr array<flagpos_tbl_t, 13> flagpos_tbl = {{
+	static const array<flagpos_tbl_t, 13> flagpos_tbl = {{
 		{'hans',	0, 0},
 		{'hant',	0, 0},
 		{'au',		1, 3},	// GameTDB only

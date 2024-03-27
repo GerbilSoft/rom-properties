@@ -164,7 +164,7 @@ rp_image_ptr fromLinear24_ssse3(PixelFormat px_format,
 	}
 
 	// Set the sBIT metadata.
-	static constexpr rp_image::sBIT_t sBIT = {8,8,8,0,0};
+	static const rp_image::sBIT_t sBIT = {8,8,8,0,0};
 	img->set_sBIT(&sBIT);
 
 	// Image has been converted.
@@ -268,7 +268,7 @@ rp_image_ptr fromLinear32_ssse3(PixelFormat px_format,
 			}
 		}
 		// Set the sBIT metadata.
-		static constexpr rp_image::sBIT_t sBIT_A32 = {8,8,8,0,8};
+		static const rp_image::sBIT_t sBIT_A32 = {8,8,8,0,8};
 		img->set_sBIT(&sBIT_A32);
 		return img;
 	}
@@ -425,7 +425,7 @@ rp_image_ptr fromLinear32_ssse3(PixelFormat px_format,
 		}
 
 		// Set the sBIT metadata.
-		static constexpr rp_image::sBIT_t sBIT_A32 = {8,8,8,0,8};
+		static const rp_image::sBIT_t sBIT_A32 = {8,8,8,0,8};
 		img->set_sBIT(&sBIT_A32);
 	} else {
 		// Image does not have an alpha channel.
@@ -524,10 +524,10 @@ rp_image_ptr fromLinear32_ssse3(PixelFormat px_format,
 
 		// Set the sBIT metadata.
 		if (unlikely(px_format == PixelFormat::G16R16)) {
-			static constexpr rp_image::sBIT_t sBIT_G16R16 = {8,8,1,0,0};
+			static const rp_image::sBIT_t sBIT_G16R16 = {8,8,1,0,0};
 			img->set_sBIT(&sBIT_G16R16);
 		} else {
-			static constexpr rp_image::sBIT_t sBIT_x32 = {8,8,8,0,0};
+			static const rp_image::sBIT_t sBIT_x32 = {8,8,8,0,0};
 			img->set_sBIT(&sBIT_x32);
 		}
 	}

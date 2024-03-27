@@ -821,7 +821,7 @@ void KhronosKTXPrivate::loadKeyValueData(void)
 				char str[7];
 				rp_image::FlipOp flipOp;
 			};
-			static constexpr array<orientation_tbl_t, 4> orientation_tbl = {{
+			static const array<orientation_tbl_t, 4> orientation_tbl = {{
 				{{'S','=','r',',','T','=','d'}, rp_image::FLIP_NONE},
 				{{'S','=','r',',','T','=','u'}, rp_image::FLIP_V},
 				{{'S','=','l',',','T','=','d'}, rp_image::FLIP_H},

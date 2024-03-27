@@ -280,7 +280,7 @@ rp_image_const_ptr GameComPrivate::loadIcon(void)
 
 	// Set the sBIT metadata.
 	// TODO: Use grayscale instead of RGB.
-	static constexpr rp_image::sBIT_t sBIT = {2,2,2,0,0};
+	static const rp_image::sBIT_t sBIT = {2,2,2,0,0};
 	tmp_icon->set_sBIT(&sBIT);
 
 	// Save and return the icon.
@@ -470,7 +470,7 @@ rp_image_const_ptr GameComPrivate::loadIconRLE(void)
 
 	// Set the sBIT metadata.
 	// TODO: Use grayscale instead of RGB.
-	static constexpr rp_image::sBIT_t sBIT = {2,2,2,0,0};
+	static const rp_image::sBIT_t sBIT = {2,2,2,0,0};
 	tmp_icon->set_sBIT(&sBIT);
 
 	// Save and return the icon.
@@ -585,7 +585,7 @@ const char *GameCom::systemName(unsigned int type) const
 	static_assert(SYSNAME_TYPE_MASK == 3,
 		"GameCom::systemName() array index optimization needs to be updated.");
 
-	static constexpr const char *const sysNames[4] = {
+	static const char *const sysNames[4] = {
 		"Tiger game.com",
 		"game.com",
 		"game.com",

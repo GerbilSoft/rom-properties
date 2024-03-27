@@ -85,7 +85,7 @@ rp_image_ptr fromN3DSTiledRGB565(int width, int height,
 	}
 
 	// Set the sBIT metadata.
-	static constexpr rp_image::sBIT_t sBIT = {5,6,5,0,0};
+	static const rp_image::sBIT_t sBIT = {5,6,5,0,0};
 	img->set_sBIT(&sBIT);
 
 	// Image has been converted.
@@ -158,7 +158,7 @@ rp_image_ptr fromN3DSTiledRGB565_A4(int width, int height,
 	}
 
 	// Set the sBIT metadata.
-	static constexpr rp_image::sBIT_t sBIT = {5,6,5,0,4};
+	static const rp_image::sBIT_t sBIT = {5,6,5,0,4};
 	img->set_sBIT(&sBIT);
 
 	// Image has been converted.

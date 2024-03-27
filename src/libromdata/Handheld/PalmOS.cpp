@@ -408,7 +408,7 @@ PalmOS::PalmOS(const IRpFilePtr &file)
 		uint32_t prc_type;
 		RomData::FileType fileType;
 	};
-	static constexpr array<file_type_map_t, 5> file_type_map = {{
+	static const array<file_type_map_t, 5> file_type_map = {{
 		{'appl', FileType::Executable},
 		{'appm', FileType::Executable},
 		{'libr', FileType::SharedLibrary},
@@ -503,7 +503,7 @@ const char *PalmOS::systemName(unsigned int type) const
 	static_assert(SYSNAME_TYPE_MASK == 3,
 		"PalmOS::systemName() array index optimization needs to be updated.");
 
-	static constexpr const char *const sysNames[4] = {
+	static const char *const sysNames[4] = {
 		"Palm OS",
 		"Palm OS",
 		"Palm",

@@ -315,7 +315,7 @@ int XAttrReaderPrivate::loadDosAttrs(void)
 		const char name[23];
 		bool be32;
 	};
-	static constexpr array<DosAttrName, 3> dosAttrNames = {{
+	static const array<DosAttrName, 3> dosAttrNames = {{
 		{"system.ntfs_attrib_be", true},
 		{"system.ntfs_attrib", false},
 		{"system.dos_attrib", false},

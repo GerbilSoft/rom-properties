@@ -315,7 +315,7 @@ rp_image_const_ptr NintendoBadgePrivate::loadImage(int idx)
 	}
 
 	// Set the sBIT metadata.
-	static constexpr rp_image::sBIT_t sBIT = {5,6,5,0,4};
+	static const rp_image::sBIT_t sBIT = {5,6,5,0,4};
 	img->set_sBIT(&sBIT);
 
 	img_badges[idx] = img;
@@ -512,7 +512,7 @@ const char *NintendoBadge::systemName(unsigned int type) const
 	static_assert(SYSNAME_TYPE_MASK == 3,
 		"NintendoBadge::systemName() array index optimization needs to be updated.");
 
-	static constexpr const char *const sysNames[4] = {
+	static const char *const sysNames[4] = {
 		"Nintendo Badge Arcade", "Badge Arcade", "Badge", nullptr,
 	};
 

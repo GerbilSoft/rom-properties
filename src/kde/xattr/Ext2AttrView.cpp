@@ -102,7 +102,7 @@ void Ext2AttrViewPrivate::updateFlagsString(void)
 		uint8_t bit;
 		char chr;
 	};
-	static constexpr array<flags_name, 22> flags_array = {{
+	static const array<flags_name, 22> flags_array = {{
 		{  0, 's' }, {  1, 'u' }, {  3, 'S' }, { 16, 'D' },
 		{  4, 'i' }, {  5, 'a' }, {  6, 'd' }, {  7, 'A' },
 		{  2, 'c' }, { 11, 'E' }, { 14, 'j' }, { 12, 'I' },

@@ -168,7 +168,7 @@ const char *Lynx::systemName(unsigned int type) const
 		"Lynx::systemName() array index optimization needs to be updated.");
 
 	// Bits 0-1: Type. (long, short, abbreviation)
-	static constexpr const char *const sysNames[4] = {
+	static const char *const sysNames[4] = {
 		"Atari Lynx", "Lynx", "LNX", nullptr,
 	};
 

@@ -570,7 +570,7 @@ const char* Wim::systemName(unsigned int type) const
 	static_assert(SYSNAME_TYPE_MASK == 3,
 		"Wim::systemName() array index optimization needs to be updated.");
 
-	static constexpr const char *const sysNames[4] = {
+	static const char *const sysNames[4] = {
 		"Microsoft WIM",
 		"WIM Image",
 		"WIM",
