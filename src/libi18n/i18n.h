@@ -34,9 +34,9 @@
 #  define C_(msgctxt, msgid)			(msgid)
 #  define N_(msgid1, msgid2, n)			((n) == 1 ? (msgid1) : (msgid2))
 #  define NC_(msgctxt, msgid1, msgid2, n)	((n) == 1 ? (msgid1) : (msgid2))
-#  define pgettext_expr(domain, msgctxt, msgid)			(msgid)
+#  define pgettext_expr(msgctxt, msgid)				(msgid)
 #  define dpgettext_expr(domain, msgctxt, msgid)		(msgid)
-#  define npgettext_expr(domain, msgctxt, msgid1, msgid2, n)	((n) == 1 ? (msgid1) : (msgid2))
+#  define npgettext_expr(msgctxt, msgid1, msgid2, n)		((n) == 1 ? (msgid1) : (msgid2))
 #  define dnpgettext_expr(domain, msgctxt, msgid1, msgid2, n)	((n) == 1 ? (msgid1) : (msgid2))
 #endif
 
