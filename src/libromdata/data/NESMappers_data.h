@@ -1,4 +1,5 @@
 /** NES Mappers (generated from NESMappers_data.txt) **/
+#pragma once
 
 #include <stdint.h>
 

@@ -1,4 +1,5 @@
 /** ELFMachineTypes (generated from ELFMachineTypes_data.txt) **/
+#pragma once
 
 #include <stdint.h>
 

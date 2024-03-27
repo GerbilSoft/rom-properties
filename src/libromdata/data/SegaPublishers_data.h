@@ -1,4 +1,5 @@
 /** SegaTCode (generated from SegaPublishers_data.txt) **/
+#pragma once
 
 #include <stdint.h>
 

@@ -1,4 +1,5 @@
 /** Xbox Third-Party Publishers (generated from XboxPublishers_data.txt) **/
+#pragma once
 
 #include <stdint.h>
 

@@ -99,7 +99,8 @@ f_out = open(sys.argv[2], 'w')
 idx_type = 'uint16_t' if len(string_table) < 65536 else 'uint32_t'
 
 f_out.write(
-	f"/** Nintendo Third-Party Publishers (FDS) (generated from {sys.argv[1]}) **/\n\n"
+	f"/** Nintendo Third-Party Publishers (FDS) (generated from {sys.argv[1]}) **/\n"
+	"#pragma once\n\n"
 	"#include <stdint.h>\n\n"
 	"static const char NintendoPublishers_FDS_strtbl[] =\n"
 )

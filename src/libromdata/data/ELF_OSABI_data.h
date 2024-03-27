@@ -1,4 +1,5 @@
 /** ELF_OSABI (generated from ELF_OSABI_data.txt) **/
+#pragma once
 
 #include <stdint.h>
 

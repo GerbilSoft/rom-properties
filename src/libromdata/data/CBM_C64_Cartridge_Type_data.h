@@ -1,4 +1,5 @@
 /** CBM_C64_cart_type (generated from CBM_C64_Cartridge_Type_data.txt) **/
+#pragma once
 
 #include <stdint.h>
 

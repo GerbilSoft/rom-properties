@@ -98,7 +98,8 @@ else:
 	idx_type = 'uint32_t'
 
 f_out.write(
-	f"/** {prefix} (generated from {infile}) **/\n\n"
+	f"/** {prefix} (generated from {infile}) **/\n"
+	"#pragma once\n\n"
 	"#include <stdint.h>\n\n"
 	f"static const char {prefix}_strtbl[] =\n"
 )

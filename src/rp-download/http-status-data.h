@@ -1,4 +1,5 @@
 /** http_status (generated from http-status-data.txt) **/
+#pragma once
 
 #include <stdint.h>
 

@@ -1,4 +1,5 @@
 /** Nintendo Third-Party Publishers (FDS) (generated from NintendoPublishers_FDS_data.txt) **/
+#pragma once
 
 #include <stdint.h>
 

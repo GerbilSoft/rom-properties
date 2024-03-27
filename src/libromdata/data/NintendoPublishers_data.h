@@ -1,4 +1,5 @@
 /** Nintendo Third-Party Publishers (generated from NintendoPublishers_data.txt) **/
+#pragma once
 
 #include <stdint.h>
 
