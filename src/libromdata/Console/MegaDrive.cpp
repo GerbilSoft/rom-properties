@@ -997,7 +997,7 @@ int MegaDrive::isRomSupported_static(const DetectInfo *info)
 		uint8_t sys_name_len;	// Length to check at $100; for $101, subtract 1.
 		uint32_t system_id;
 	};
-	static constexpr cart_magic_sega_t cart_magic_sega[] = {
+	static const cart_magic_sega_t cart_magic_sega[] = {
 		{" 32X      ",   10, MegaDrivePrivate::ROM_SYSTEM_32X},
 		{" SSF        ", 12, MegaDrivePrivate::ROM_SYSTEM_MD |
 		                     MegaDrivePrivate::ROM_EXT_SSF2},
@@ -1020,7 +1020,7 @@ int MegaDrive::isRomSupported_static(const DetectInfo *info)
 		char sys_name[17];
 		uint8_t system_id;
 	};
-	static constexpr cart_magic_other_t cart_magic_other[] = {
+	static const cart_magic_other_t cart_magic_other[] = {
 		{"SAMSUNG PICO    ", MegaDrivePrivate::ROM_SYSTEM_PICO},	// TODO: Indicate Korean.
 		{"IMA IKUNOUJYUKU ", MegaDrivePrivate::ROM_SYSTEM_PICO},	// Some JP ROMs
 		{"IMA IKUNOJYUKU  ", MegaDrivePrivate::ROM_SYSTEM_PICO},	// Some JP ROMs
