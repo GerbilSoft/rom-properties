@@ -2300,9 +2300,9 @@ int Nintendo3DS::loadFieldData(void)
 		} ModeTbl_t;
 		ASSERT_STRUCT(ModeTbl_t, 8);
 
-		// Old3DS System Mode.
+		// Old3DS System Mode
 		// NOTE: Mode names are NOT translatable!
-		static constexpr array<ModeTbl_t, 6> old3ds_sys_mode_tbl = {{
+		static const array<ModeTbl_t, 6> old3ds_sys_mode_tbl = {{
 			{"Prod", 64},	// N3DS_NCCH_EXHEADER_ACI_FLAG2_Old3DS_SysMode_Prod
 			{"", 0},
 			{"Dev1", 96},	// N3DS_NCCH_EXHEADER_ACI_FLAG2_Old3DS_SysMode_Dev1
@@ -2325,9 +2325,9 @@ int Nintendo3DS::loadFieldData(void)
 				rp_sprintf(C_("Nintendo3DS", "Invalid (0x%02X)"), old3ds_sys_mode));
 		}
 
-		// New3DS System Mode.
+		// New3DS System Mode
 		// NOTE: Mode names are NOT translatable!
-		static constexpr array<ModeTbl_t, 4> new3ds_sys_mode_tbl = {{
+		static const array<ModeTbl_t, 4> new3ds_sys_mode_tbl = {{
 			{"Legacy", 64},	// N3DS_NCCH_EXHEADER_ACI_FLAG1_New3DS_SysMode_Legacy
 			{"Prod",  124},	// N3DS_NCCH_EXHEADER_ACI_FLAG1_New3DS_SysMode_Prod
 			{"Dev1",  178},	// N3DS_NCCH_EXHEADER_ACI_FLAG1_New3DS_SysMode_Dev1
