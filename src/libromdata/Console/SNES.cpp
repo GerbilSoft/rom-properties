@@ -693,7 +693,7 @@ string SNESPrivate::getGameID(bool doFake) const
 		char prefix[6];
 		char suffix[6];
 	};
-	static constexpr PrefixSuffixTbl_t region_ps[] = {
+	static const PrefixSuffixTbl_t region_ps[] = {
 		// 0x00
 		{"SHVC-", "-JPN"},	// Japan
 		{"SNS-",  "-USA"},	// North America
