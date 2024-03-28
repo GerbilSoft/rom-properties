@@ -7,6 +7,7 @@ CHECK_INCLUDE_FILES("features.h" HAVE_FEATURES_H)
 # Sources
 SET(${PROJECT_NAME}_SRCS
 	byteswap.c
+	bitstuff.c
 	)
 # Headers
 SET(${PROJECT_NAME}_H

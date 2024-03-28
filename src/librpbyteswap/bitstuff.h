@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (librpbyteswap)                    *
- * bitstuff.h: Bit manipulation inline functions.                          *
+ * bitstuff.h: Bit manipulation functions.                                 *
  *                                                                         *
  * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
@@ -24,11 +24,22 @@
 #  endif /* !constexpr */
 #endif /* !__cplusplus */
 
+// const: Function does not have any effects except on the return value,
+// and it only depends on the input parameters. (similar to constexpr)
+#ifndef ATTR_CONST
+#  ifdef __GNUC__
+#    define ATTR_CONST __attribute__((const))
+#  else /* !__GNUC__ */
+#    define ATTR_CONST
+#  endif /* __GNUC__ */
+#endif /* ATTR_CONST */
+
 /**
  * Unsigned integer log2(n).
  * @param n Value
  * @return uilog2(n)
  */
+ATTR_CONST
 static inline unsigned int uilog2(unsigned int n)
 {
 #if defined(__GNUC__)
@@ -49,24 +60,29 @@ static inline unsigned int uilog2(unsigned int n)
 }
 
 /**
- * Population count function.
- * @param x Value.
- * @return Population count.
+ * Population count function. (C version)
+ * @param x Value
+ * @return Population count
  */
+#ifdef __cplusplus
+extern "C"
+#endif /* __cplusplus */
+ATTR_CONST
+unsigned int popcount_c(unsigned int x);
+
+/**
+ * Population count function.
+ * Inline version that uses a compiler built-in if available.
+ * @param x Value
+ * @return Population count
+ */
+ATTR_CONST
 static inline unsigned int popcount(unsigned int x)
 {
 #if defined(__GNUC__)
 	return __builtin_popcount(x);
 #else
-	// References:
-	// - https://gcc.gnu.org/bugzilla/show_bug.cgi?id=36041
-	// - https://gcc.gnu.org/bugzilla/attachment.cgi?id=15529
-	// - https://gcc.gnu.org/viewcvs/gcc?view=revision&revision=200506
-	// FIXME: MSVC 2015 doesn't like this code when using constexpr.
-	x = (x & 0x55555555U) + ((x >> 1) & 0x55555555U);
-	x = (x & 0x33333333U) + ((x >> 2) & 0x33333333U);
-	x = (x & 0x0F0F0F0FU) + ((x >> 4) & 0x0F0F0F0FU);
-	return (x * 0x01010101U) >> 24;
+	return popcount_c(x);
 #endif
 }
 
@@ -78,8 +94,10 @@ static inline unsigned int popcount(unsigned int x)
  */
 #ifdef __cplusplus
 template<typename T>
+ATTR_CONST
 static inline constexpr bool isPow2(T x)
 #else
+ATTR_CONST
 static inline bool isPow2(unsigned int x)
 #endif
 {

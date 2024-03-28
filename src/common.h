@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension.                                    *
  * common.h: Common types and macros.                                      *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -208,3 +208,23 @@
 #else /* !__SANITIZE_ADDRESS__ */
 #  define NO_SANITIZE_ADDRESS
 #endif /* __SANITIZE_ADDRESS__ */
+
+// pure: Function does not have any effects except on the return value,
+// and it only depends on the input parameters and/or global variables.
+#ifndef ATTR_PURE
+#  ifdef __GNUC__
+#    define ATTR_PURE __attribute__((pure))
+#  else /* !__GNUC__ */
+#    define ATTR_PURE
+#  endif /* __GNUC__ */
+#endif /* ATTR_PURE */
+
+// const: Function does not have any effects except on the return value,
+// and it only depends on the input parameters. (similar to constexpr)
+#ifndef ATTR_CONST
+#  ifdef __GNUC__
+#    define ATTR_CONST __attribute__((const))
+#  else /* !__GNUC__ */
+#    define ATTR_CONST
+#  endif /* __GNUC__ */
+#endif /* ATTR_CONST */
