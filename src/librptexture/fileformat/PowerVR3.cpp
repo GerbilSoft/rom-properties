@@ -905,7 +905,7 @@ const char *PowerVR3::pixelFormat(void) const
 	// TODO: Localization?
 	if (d->pvr3Header.channel_depth == 0) {
 		// Compressed texture format.
-		static constexpr array<const char*, PVR3_PXF_MAX> pvr3PxFmt_tbl = {{
+		static const array<const char*, PVR3_PXF_MAX> pvr3PxFmt_tbl = {{
 			// 0
 			"PVRTC 2bpp RGB", "PVRTC 2bpp RGBA",
 			"PVRTC 4bpp RGB", "PVRTC 4bpp RGBA",
@@ -1039,7 +1039,7 @@ int PowerVR3::getFields(RomFields *fields) const
 		v_flags_names, 3, pvr3Header->flags);
 
 	// Color space
-	static constexpr array<const char*, PVR3_COLOR_SPACE_MAX> pvr3_colorspace_tbl = {{
+	static const array<const char*, PVR3_COLOR_SPACE_MAX> pvr3_colorspace_tbl = {{
 		NOP_C_("PowerVR3|ColorSpace", "Linear RGB"),
 		"sRGB",	// Not translatable
 	}};
@@ -1054,7 +1054,7 @@ int PowerVR3::getFields(RomFields *fields) const
 	}
 
 	// Channel type
-	static constexpr array<const char*, PVR3_CHTYPE_MAX> pvr3_chtype_tbl = {{
+	static const array<const char*, PVR3_CHTYPE_MAX> pvr3_chtype_tbl = {{
 		NOP_C_("PowerVR3|ChannelType", "Unsigned Byte (normalized)"),
 		NOP_C_("PowerVR3|ChannelType", "Signed Byte (normalized)"),
 		NOP_C_("PowerVR3|ChannelType", "Unsigned Byte"),

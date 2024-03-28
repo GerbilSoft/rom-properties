@@ -321,7 +321,7 @@ MachO::MachO(const IRpFilePtr &file)
 		(uint8_t)FileType::Unknown,		// MH_DSYM (TODO)
 		(uint8_t)FileType::Unknown,		// MH_KEXT_BUNDLE (TODO)
 	}};
-	static constexpr array<const char*, 12> mimeTypes_tbl = {{
+	static const array<const char*, 12> mimeTypes_tbl = {{
 		nullptr,				// 0
 		"application/x-mach-object",		// MH_OBJECT
 		"application/x-mach-executable",	// MH_EXECUTE
@@ -487,7 +487,7 @@ int MachO::loadFieldData(void)
 		}
 
 		// Executable format.
-		static constexpr array<const char*, 4> exec_type_tbl = {{
+		static const array<const char*, 4> exec_type_tbl = {{
 			NOP_C_("RomData|ExecType", "32-bit Little-Endian"),
 			NOP_C_("RomData|ExecType", "64-bit Little-Endian"),
 			NOP_C_("RomData|ExecType", "32-bit Big-Endian"),

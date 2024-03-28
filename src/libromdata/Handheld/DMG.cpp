@@ -85,14 +85,7 @@ public:
 	};
 
 	// Cartridge hardware (names; matches the DMG_Hardware enum)
-	static constexpr array<const char*, (int)DMG_Hardware::Max> dmg_hardware_names = {{
-		"Unknown",
-
-		"ROM", "MBC1", "MBC2", "MBC3",
-		"MBC4", "MBC5", "MBC6", "MBC7",
-		"MMM01", "HuC1", "HuC3", "TAMA5",
-		"POCKET CAMERA", // ???
-	}};
+	static const array<const char*, (int)DMG_Hardware::Max> dmg_hardware_names;
 
 	struct dmg_cart_type {
 		DMG_Hardware hardware;
@@ -239,6 +232,16 @@ const RomDataInfo DMGPrivate::romDataInfo = {
 };
 
 /** Internal ROM data **/
+
+// Cartridge hardware (names; matches the DMG_Hardware enum)
+const array<const char*, (int)DMGPrivate::DMG_Hardware::Max> DMGPrivate::dmg_hardware_names = {{
+	"Unknown",
+
+	"ROM", "MBC1", "MBC2", "MBC3",
+	"MBC4", "MBC5", "MBC6", "MBC7",
+	"MMM01", "HuC1", "HuC3", "TAMA5",
+	"POCKET CAMERA", // ???
+}};
 
 const array<DMGPrivate::dmg_cart_type, 35> DMGPrivate::dmg_cart_types_start = {{
 	{DMG_Hardware::ROM,	0},

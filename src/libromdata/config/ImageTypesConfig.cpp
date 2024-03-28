@@ -85,7 +85,7 @@ unsigned int imageTypeCount(void)
 const char *imageTypeName(unsigned int imageType)
 {
 	// Image type names.
-	static constexpr array<const char*, IMG_TYPE_COUNT> imageType_names = {{
+	static const array<const char*, IMG_TYPE_COUNT> imageType_names = {{
 		/** Internal **/
 
 		// tr: IMG_INT_ICON
@@ -136,7 +136,7 @@ unsigned int sysCount(void)
 const char *sysName(unsigned int sys)
 {
 	// System names.
-	static constexpr array<const char*, SYS_COUNT> sysNames = {{
+	static const array<const char*, SYS_COUNT> sysNames = {{
 		// tr: amiibo
 		NOP_C_("ImageTypesConfig|SysName", "amiibo"),
 		// tr: NintendoBadge

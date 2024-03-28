@@ -233,7 +233,7 @@ int PokemonMini::loadFieldData(void)
 	d->fields.addField_string(C_("RomData", "Game ID"), latin1_to_utf8(id4, 4));
 
 	// Vector table.
-	static constexpr array<const char*, PokemonMini_IRQ_MAX> vectors_names = {{
+	static const array<const char*, PokemonMini_IRQ_MAX> vectors_names = {{
 		// 0
 		"Reset",
 		"PRC Frame Copy",

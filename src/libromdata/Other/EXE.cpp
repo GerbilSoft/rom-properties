@@ -189,7 +189,7 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 	}
 
 	// File type
-	static constexpr array<const char*, 8> fileTypes_tbl = {{
+	static const array<const char*, 8> fileTypes_tbl = {{
 		// VFT_UNKNOWN
 		nullptr,
 		// tr: VFT_APP
@@ -228,7 +228,7 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 	switch (pVsFfi->dwFileType) {
 		case VFT_DRV: {
 			hasSubtype = true;
-			static constexpr array<const char*, 13> fileSubtypes_DRV = {{
+			static const array<const char*, 13> fileSubtypes_DRV = {{
 				// VFT2_UNKNOWN
 				nullptr,
 				// tr: VFT2_DRV_PRINTER
@@ -264,7 +264,7 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 
 		case VFT_FONT: {
 			hasSubtype = true;
-			static constexpr array<const char*, 4> fileSubtypes_FONT = {{
+			static const array<const char*, 4> fileSubtypes_FONT = {{
 				// VFT2_UNKNOWN
 				nullptr,
 				// tr: VFT2_FONT_RASTER

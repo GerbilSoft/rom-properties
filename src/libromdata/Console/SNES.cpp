@@ -1208,7 +1208,7 @@ int SNES::loadFieldData(void)
 
 	// Cartridge HW
 	// TODO: Make this translatable.
-	static constexpr array<const char*, 16> hw_base_tbl = {{
+	static const array<const char*, 16> hw_base_tbl = {{
 		// 0
 		"ROM", "ROM, RAM", "ROM, RAM, Battery", "ROM, ",
 		"ROM, RAM, ", "ROM, RAM, Battery, ", "ROM, Battery, ", nullptr,
@@ -1220,7 +1220,7 @@ int SNES::loadFieldData(void)
 		nullptr,
 		nullptr, nullptr, nullptr, nullptr
 	}};
-	static constexpr array<const char*, 16> hw_enh_tbl = {{
+	static const array<const char*, 16> hw_enh_tbl = {{
 		"DSP-1", "Super FX", "OBC-1", "SA-1",
 		"S-DD1", "S-RTC", "Unknown", "Unknown",
 		"Unknown", "Unknown", "Unknown", "Unknown",
@@ -1357,7 +1357,7 @@ int SNES::loadFieldData(void)
 
 	// Region
 	// NOTE: Not listed for BS-X because BS-X is Japan only.
-	static constexpr array<const char*, 0x15> RegionCode_str_tbl = {{
+	static const array<const char*, 0x15> RegionCode_str_tbl = {{
 		NOP_C_("Region", "Japan"),
 		NOP_C_("Region", "North America"),
 		NOP_C_("Region", "Europe"),

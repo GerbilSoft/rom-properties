@@ -18,7 +18,7 @@ using LibWin32UI::RegKey;
 extern const TCHAR RP_ProgID[];
 
 // Overlay handler name.
-static constexpr TCHAR RP_OverlayHandler[] = _T("RpDangerousPermissionsOverlay");
+static const TCHAR RP_OverlayHandler[] = _T("RpDangerousPermissionsOverlay");
 
 /**
  * Register the COM object.

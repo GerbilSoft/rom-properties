@@ -1102,7 +1102,7 @@ int Nintendo3DSPrivate::addFields_permissions(void)
 #endif /* _WIN32 */
 
 	// FS access.
-	static constexpr array<const char*, 22> perm_fs_access = {{
+	static const array<const char*, 22> perm_fs_access = {{
 		"CategorySysApplication",
 		"CategoryHardwareCheck",
 		"CategoryFileSystemTool",
@@ -1141,7 +1141,7 @@ int Nintendo3DSPrivate::addFields_permissions(void)
 	fields.addField_listData(C_("Nintendo3DS", "FS Access"), &params);
 
 	// ARM9 access.
-	static constexpr array<const char*, 10> perm_arm9_access = {{
+	static const array<const char*, 10> perm_arm9_access = {{
 		"FsMountNand",
 		"FsMountNandRoWrite",
 		"FsMountTwln",
@@ -1883,7 +1883,7 @@ int Nintendo3DS::loadFieldData(void)
 			// TODO: Check if platform != 1 on New3DS-only cartridges.
 
 			// Card type.
-			static constexpr array<const char*, 4> media_type_tbl = {{
+			static const array<const char*, 4> media_type_tbl = {{
 				"Inner Device",
 				"Card1",
 				"Card2",
@@ -1918,7 +1918,7 @@ int Nintendo3DS::loadFieldData(void)
 				card_dev_id = ncsd_header->cci.partition_flags[N3DS_NCSD_PARTITION_FLAG_MEDIA_CARD_DEVICE_SDK3];
 			}
 
-			static constexpr array<const char*, 4> card_dev_tbl = {{
+			static const array<const char*, 4> card_dev_tbl = {{
 				nullptr,
 				NOP_C_("Nintendo3DS|CDev", "NOR Flash"),
 				NOP_C_("Nintendo3DS|CDev", "None"),

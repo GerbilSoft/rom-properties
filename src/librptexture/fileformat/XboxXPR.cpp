@@ -642,7 +642,7 @@ const char *XboxXPR::pixelFormat(void) const
 		return nullptr;
 	}
 
-	static constexpr array<const char*, 0x65> pxfmt_tbl = {{
+	static const array<const char*, 0x65> pxfmt_tbl = {{
 		// 0x00
 		"L8", "AL8", "ARGB1555", "RGB555",
 		"ARGB4444", "RGB565", "ARGB8888", "xRGB8888",

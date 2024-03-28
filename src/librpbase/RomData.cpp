@@ -566,7 +566,7 @@ const char *RomData::fileType_to_string(FileType fileType)
 		fileType = FileType::Unknown;
 	}
 
-	static constexpr array<const char*, (int)FileType::Max> fileType_names = {{
+	static const array<const char*, (int)FileType::Max> fileType_names = {{
 		// FileType::Unknown
 		NOP_C_("RomData|FileType", "(unknown file type)"),
 		// tr: FileType::ROM_Image
@@ -936,7 +936,7 @@ const char *RomData::getImageTypeName(ImageType imageType) {
 		return nullptr;
 	}
 
-	static constexpr array<const char*, IMG_EXT_MAX+1> imageType_names = {{
+	static const array<const char*, IMG_EXT_MAX+1> imageType_names = {{
 		/** Internal **/
 
 		// tr: IMG_INT_ICON

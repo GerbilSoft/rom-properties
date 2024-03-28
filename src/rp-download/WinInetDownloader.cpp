@@ -72,7 +72,7 @@ int WinInetDownloader::download(void)
 			INTERNET_FLAG_NO_UI;
 	if (!IsWindowsVistaOrGreater()) {
 		// WinInet doesn't support SNI prior to Vista.
-		static constexpr TCHAR rpdb_domain[] = _T("https://rpdb.gerbilsoft.com/");
+		static const TCHAR rpdb_domain[] = _T("https://rpdb.gerbilsoft.com/");
 		if (m_url.size() >= _countof(rpdb_domain) &&
 		    !_tcsncmp(m_url.c_str(), rpdb_domain, _countof(rpdb_domain)-1))
 		{

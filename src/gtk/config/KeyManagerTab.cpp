@@ -21,7 +21,7 @@ using std::array;
 using std::string;
 
 // KeyStoreUI::ImportFileID
-static constexpr array<const char*, 4> import_menu_actions = {{
+static const array<const char*, 4> import_menu_actions = {{
 	"Wii keys.bin",
 	"Wii U otp.bin",
 	"3DS boot9.bin",

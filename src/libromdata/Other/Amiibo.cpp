@@ -391,7 +391,7 @@ int Amiibo::loadFieldData(void)
 		RomFields::STRF_MONOSPACE);
 
 	// tr: amiibo type.
-	static constexpr array<const char*, 4> amiibo_type_tbl = {{
+	static const array<const char*, 4> amiibo_type_tbl = {{
 		// tr: NFP_TYPE_FIGURINE == standard amiibo
 		NOP_C_("Amiibo|Type", "Figurine"),
 		// tr: NFP_TYPE_CARD == amiibo card

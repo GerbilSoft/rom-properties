@@ -182,7 +182,7 @@ int FontHandlerPrivate::findMonospacedFont(LOGFONT *plfFontMono)
 	}
 
 	// Fonts to try.
-	static constexpr array<LPCTSTR, 12> mono_font_names = {{
+	static const array<LPCTSTR, 12> mono_font_names = {{
 		_T("DejaVu Sans Mono"),
 		_T("Consolas"),
 		_T("Lucida Console"),

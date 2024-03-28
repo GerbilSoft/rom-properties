@@ -958,7 +958,7 @@ int KhronosKTX2::getFields(RomFields *fields) const
 	const KTX2_Header *const ktx2Header = &d->ktx2Header;
 
 	// Supercompression.
-	static constexpr array<const char*, 4> supercompression_tbl = {{
+	static const array<const char*, 4> supercompression_tbl = {{
 		"None",			// TODO: Localize?
 		"BasisLZ",
 		"Zstandard",

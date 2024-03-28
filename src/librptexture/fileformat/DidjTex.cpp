@@ -421,7 +421,7 @@ const char *DidjTex::pixelFormat(void) const
 	}
 
 	// TODO: Verify other formats.
-	static constexpr array<const char*, 10> pxfmt_tbl = {{
+	static const array<const char*, 10> pxfmt_tbl = {{
 		nullptr,
 
 		"RGB565", nullptr, "RGBA4444",

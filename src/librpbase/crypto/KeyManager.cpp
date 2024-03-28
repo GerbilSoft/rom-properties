@@ -231,7 +231,7 @@ KeyManager::KeyManager()
  */
 const char *KeyManager::verifyResultToString(VerifyResult res)
 {
-	static constexpr array<const char*, (int)KeyManager::VerifyResult::Max> errTbl = {{
+	static const array<const char*, (int)KeyManager::VerifyResult::Max> errTbl = {{
 		// tr: VerifyResult::OK
 		NOP_C_("KeyManager|VerifyResult", "Something happened."),
 		// tr: VerifyResult::InvalidParams

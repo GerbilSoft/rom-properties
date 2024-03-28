@@ -467,7 +467,7 @@ int BCSTM::loadFieldData(void)
 	}
 
 	// Codec
-	static constexpr array<const char*, 4> codec_tbl = {{
+	static const array<const char*, 4> codec_tbl = {{
 		NOP_C_("BCSTM|Codec", "Signed 8-bit PCM"),
 		NOP_C_("BCSTM|Codec", "Signed 16-bit PCM"),
 		"DSP ADPCM", "IMA ADPCM",

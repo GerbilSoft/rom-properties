@@ -802,7 +802,7 @@ int TGA::getFields(RomFields *fields) const
 	// Alpha channel
 	// TODO: dpgettext_expr()
 	const char *s_alphaType;
-	static constexpr array<const char*, 5> alphaType_tbl = {{
+	static const array<const char*, 5> alphaType_tbl = {{
 		NOP_C_("TGA|AlphaType", "None"),
 		NOP_C_("TGA|AlphaType", "Undefined (ignore)"),
 		NOP_C_("TGA|AlphaType", "Undefined (retain)"),

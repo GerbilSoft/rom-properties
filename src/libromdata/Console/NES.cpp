@@ -1186,7 +1186,7 @@ int NES::loadFieldData(void)
 	}
 
 	// TV mode
-	static constexpr array<const char*, 4> tv_mode_tbl = {{
+	static const array<const char*, 4> tv_mode_tbl = {{
 		"NTSC (RP2C02)",
 		"PAL (RP2C07)",
 		NOP_C_("NES|TVMode", "Dual (NTSC/PAL)"),
@@ -1311,7 +1311,7 @@ int NES::loadFieldData(void)
 
 					// Check the Vs. hardware type.
 					// NOTE: Not translatable!
-					static constexpr array<const char*, 7> vs_hw_types = {{
+					static const array<const char*, 7> vs_hw_types = {{
 						"Vs. Unisystem",
 						"Vs. Unisystem (RBI Baseball)",
 						"Vs. Unisystem (TKO Boxing)",

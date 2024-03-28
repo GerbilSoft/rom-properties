@@ -40,7 +40,7 @@ uint64_t getProgramVersion(void)
 
 /** Program information strings **/
 
-static constexpr array<const char*, (int)ProgramInfoStringID::Max> ProgramInfoString_tbl = {{
+static const array<const char*, (int)ProgramInfoStringID::Max> ProgramInfoString_tbl = {{
 	"rom-properties",				// ProgramName
 	"ROM Properties Page Shell Extension",		// ProgramFullName
 	"Copyright (c) 2016-2024 by David Korth.",	// Copyright

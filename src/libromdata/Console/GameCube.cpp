@@ -1717,7 +1717,7 @@ int GameCube::loadFieldData(void)
 
 			// Partition type.
 			string s_ptype;
-			static constexpr array<const char*, 3> part_type_tbl = {{
+			static const array<const char*, 3> part_type_tbl = {{
 				// tr: GameCubePrivate::RVL_PT_GAME (Game partition)
 				NOP_C_("Wii|Partition", "Game"),
 				// tr: GameCubePrivate::RVL_PT_UPDATE (Update partition)

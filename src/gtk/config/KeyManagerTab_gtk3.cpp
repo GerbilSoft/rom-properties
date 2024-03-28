@@ -148,7 +148,7 @@ void rp_key_manager_tab_init_keys(RpKeyManagerTab *tab)
 
 /** KeyStoreGTK signal handlers **/
 
-static constexpr array<const char*, 5> is_valid_icon_name_tbl = {{
+static const array<const char*, 5> is_valid_icon_name_tbl = {{
 	nullptr,		// Empty
 	"dialog-question",	// Unknown
 	"dialog-error",		// NotAKey

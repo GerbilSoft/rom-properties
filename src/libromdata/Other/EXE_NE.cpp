@@ -327,7 +327,7 @@ void EXEPrivate::addFields_NE(void)
 	}
 
 	// DGroup type.
-	static constexpr array<const char*, 4> dgroupTypes = {{
+	static const array<const char*, 4> dgroupTypes = {{
 		NOP_C_("EXE|DGroupType", "None"),
 		NOP_C_("EXE|DGroupType", "Single Shared"),
 		NOP_C_("EXE|DGroupType", "Multiple"),
@@ -355,7 +355,7 @@ void EXEPrivate::addFields_NE(void)
 	const char *applType;
 	if (hdr.ne.targOS == NE_OS_OS2) {
 		// Only mentioning Presentation Manager for OS/2 executables.
-		static constexpr array<const char*, 4> applTypes_OS2 = {{
+		static const array<const char*, 4> applTypes_OS2 = {{
 			NOP_C_("EXE|ApplType", "None"),
 			NOP_C_("EXE|ApplType", "Full Screen (not aware of Presentation Manager)"),
 			NOP_C_("EXE|ApplType", "Presentation Manager compatible"),
@@ -364,7 +364,7 @@ void EXEPrivate::addFields_NE(void)
 		applType = applTypes_OS2[hdr.ne.ApplFlags & 3];
 	} else {
 		// Assume Windows for everything else.
-		static constexpr array<const char*, 4> applTypes_Win = {{
+		static const array<const char*, 4> applTypes_Win = {{
 			NOP_C_("EXE|ApplType", "None"),
 			NOP_C_("EXE|ApplType", "Full Screen (not aware of Windows)"),
 			NOP_C_("EXE|ApplType", "Windows compatible"),

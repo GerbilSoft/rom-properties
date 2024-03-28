@@ -432,7 +432,7 @@ IFACEMETHODIMP RP_XAttrView::AddPages(_In_ LPFNADDPROPSHEETPAGE pfnAddPage, LPAR
 	}
 
 	// tr: Tab title.
-	static constexpr TCHAR tsTabTitle[] = _T("xattrs");
+	static const TCHAR tsTabTitle[] = _T("xattrs");
 
 	// Create an XAttrView page.
 	PROPSHEETPAGE psp;

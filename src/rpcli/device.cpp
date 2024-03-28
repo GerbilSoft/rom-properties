@@ -79,7 +79,7 @@ ostream& operator<<(ostream& os, const ScsiInquiry& si)
 	StreamStateSaver state(os);
 	os << "-- SCSI INQUIRY data for: " << si.file->filename() << '\n';
 
-	static constexpr array<const char*, 0x20> pdt_tbl = {{
+	static const array<const char*, 0x20> pdt_tbl = {{
 		"Direct-access block device",		// 0x00
 		"Sequential-access device",		// 0x01
 		"Printer",				// 0x02
@@ -113,7 +113,7 @@ ostream& operator<<(ostream& os, const ScsiInquiry& si)
 		static_cast<unsigned int>(resp.PeripheralDeviceType) & 0x1F)) << '\n';
 
 	os << "Peripheral qualifier:   ";
-	static constexpr array<const char*, 8> pq_tbl = {{
+	static const array<const char*, 8> pq_tbl = {{
 		"Connected",		// 000b
 		"Not connected",	// 001b
 		"010b",			// 010b

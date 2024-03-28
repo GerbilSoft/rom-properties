@@ -50,7 +50,7 @@ using std::wostringstream;
 using std::wstring;
 
 // KeyStoreUI::ImportFileID
-static constexpr array<LPCTSTR, 4> import_menu_actions = {{
+static const array<LPCTSTR, 4> import_menu_actions = {{
 	_T("Wii keys.bin"),
 	_T("Wii U otp.bin"),
 	_T("3DS boot9.bin"),

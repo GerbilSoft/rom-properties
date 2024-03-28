@@ -20,7 +20,7 @@ using std::tstring;
 CLSID_IMPL(RP_XAttrView, _T("ROM Properties Page - Extended Attribute viewer"))
 
 // PropertySheetHandler key name
-static constexpr TCHAR psh_name[] = _T("XAttrView");
+static const TCHAR psh_name[] = _T("XAttrView");
 
 /**
  * Register the file type handler.

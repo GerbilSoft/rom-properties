@@ -221,7 +221,7 @@ int Atari7800::loadFieldData(void)
 	}
 
 	// Controllers
-	static constexpr array<const char*, 12> controller_tbl = {{
+	static const array<const char*, 12> controller_tbl = {{
 		// 0
 		NOP_C_("Atari7800|ControllerType", "None"),
 		NOP_C_("Atari7800|ControllerType", "Joystick (7800)"),

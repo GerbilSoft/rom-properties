@@ -201,7 +201,7 @@ inline void SegaPVRPrivate::byteswap_gvr(PVR_Header *gvr)
  */
 const char *SegaPVRPrivate::pixelFormatName(void) const
 {
-	static constexpr array<const char*, 10> pxfmt_tbl_pvr = {{
+	static const array<const char*, 10> pxfmt_tbl_pvr = {{
 		// Sega Dreamcast (PVR)
 		"ARGB1555", "RGB565",		// 0x00-0x01
 		"ARGB4444", "YUV422",		// 0x02-0x03
@@ -211,12 +211,12 @@ const char *SegaPVRPrivate::pixelFormatName(void) const
 		// Sony PlayStation 2 (SVR)
 		"BGR5A3", "BGR888_ABGR7888",	// 0x08-0x09
 	}};
-	static constexpr array<const char*, 3> pxfmt_tbl_gvr = {{
+	static const array<const char*, 3> pxfmt_tbl_gvr = {{
 		// GameCube (GVR)
 		"IA8", "RGB565", "RGB5A3",	// 0x00-0x02
 	}};
 #if 0
-	static constexpr array<const char*, 0> pxfmt_tbl_pvrx = {{
+	static const array<const char*, 0> pxfmt_tbl_pvrx = {{
 		// Xbox (PVRX) (TODO)
 	}};
 #endif
@@ -265,7 +265,7 @@ const char *SegaPVRPrivate::pixelFormatName(void) const
  */
 const char *SegaPVRPrivate::imageDataTypeName(void) const
 {
-	static constexpr array<const char*, 19> idt_tbl_pvr = {{
+	static const array<const char*, 19> idt_tbl_pvr = {{
 		// Sega Dreamcast (PVR)
 		nullptr,				// 0x00
 		"Square (Twiddled)",			// 0x01
@@ -287,7 +287,7 @@ const char *SegaPVRPrivate::imageDataTypeName(void) const
 		"Small VQ (Mipmap)",			// 0x11
 		"Square (Twiddled, Mipmap) (Alt)",	// 0x12
 	}};
-	static constexpr array<const char*, 14> idt_tbl_svr = {{
+	static const array<const char*, 14> idt_tbl_svr = {{
 		// Sony PlayStation 2 (SVR)
 		// NOTE: First index represents format 0x60.
 		"Rectangle",			// 0x60
@@ -305,7 +305,7 @@ const char *SegaPVRPrivate::imageDataTypeName(void) const
 		"8-bit (ABGR8), Rectangle",	// 0x6C
 		"8-bit (ABGR8), Square",	// 0x6D
 	}};
-	static constexpr array<const char*, 15> idt_tbl_gvr = {{
+	static const array<const char*, 15> idt_tbl_gvr = {{
 		// GameCube (GVR)
 		"I4",			// 0x00
 		"I8",			// 0x01
@@ -322,7 +322,7 @@ const char *SegaPVRPrivate::imageDataTypeName(void) const
 		"DXT1",			// 0x0E
 	}};
 #if 0
-	static constexpr array<const char*, 0> idt_tbl_pvrx = {{
+	static const array<const char*, 0> idt_tbl_pvrx = {{
 		// Xbox (PVRX) (TODO)
 	}};
 #endif

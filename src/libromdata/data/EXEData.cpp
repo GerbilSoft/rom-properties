@@ -84,7 +84,7 @@ static const array<MachineType, 9> machineTypes_LE = {{
 }};
 
 // Subsystem names
-static constexpr array<const char*, IMAGE_SUBSYSTEM_WINDOWS_BOOT_APPLICATION+1> subsystemNames = {{
+static const array<const char*, IMAGE_SUBSYSTEM_WINDOWS_BOOT_APPLICATION+1> subsystemNames = {{
 	// IMAGE_SUBSYSTEM_UNKNOWN
 	nullptr,
 	// tr: IMAGE_SUBSYSTEM_NATIVE

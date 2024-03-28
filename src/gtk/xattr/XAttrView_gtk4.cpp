@@ -128,7 +128,7 @@ rp_xattr_view_init_posix_xattrs_widgets(struct _RpXAttrView *widget, GtkScrolled
 	// As such, neither the factory nor the column objects will be unref()'d here.
 
 	// Column titles
-	static constexpr array<const char*, XATTR_COL_MAX> column_titles = {{
+	static const array<const char*, XATTR_COL_MAX> column_titles = {{
 		NOP_C_("XAttrView", "Name"),
 		NOP_C_("XAttrView", "Value"),
 	}};

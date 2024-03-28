@@ -208,7 +208,7 @@ rp_achievements_tab_init(RpAchievementsTab *tab)
 #endif /* GTK_CHECK_VERSION(2,91,1) */
 
 	// Column titles
-	static constexpr array<const char*, ACH_COL_MAX> column_titles = {{
+	static const array<const char*, ACH_COL_MAX> column_titles = {{
 		NOP_C_("AchievementsTab", "Icon"),
 		NOP_C_("AchievementsTab", "Achievement"),
 		NOP_C_("AchievementsTab", "Unlock Time"),
@@ -256,7 +256,7 @@ rp_achievements_tab_init(RpAchievementsTab *tab)
 	gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(scrolledWindow), tab->treeView);
 
 	// Property to use for each column
-	static constexpr array<const char*, ACH_COL_MAX> column_property_names = {{
+	static const array<const char*, ACH_COL_MAX> column_property_names = {{
 		GTK_CELL_RENDERER_PIXBUF_PROPERTY, "markup", "text"
 	}};
 

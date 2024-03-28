@@ -29,7 +29,7 @@ tstring RP_PropertyStore_Private::GetPreviewDetailsString()
 {
 	// PreviewDetails.
 	// NOTE: Default properties should go *after* these.
-	static constexpr TCHAR PreviewDetails[] = _T("prop:")
+	static const TCHAR PreviewDetails[] = _T("prop:")
 		// Custom properties.
 		_T("System.Title;")
 		_T("System.Company;")
@@ -72,7 +72,7 @@ std::tstring RP_PropertyStore_Private::GetInfoTipString()
 {
 	// InfoTip.
 	// NOTE: Default properties should go *before* these.
-	static constexpr TCHAR InfoTip[] =
+	static const TCHAR InfoTip[] =
 		// Custom properties.
 		_T("System.Title;")
 		_T("System.Company;")
@@ -124,7 +124,7 @@ std::tstring RP_PropertyStore_Private::GetFullDetailsString()
 	// they're listed here but aren't set by RP_PropertyStore.
 	// We'll need to register multiple ProgIDs for different
 	// classes of files, but maybe later...
-	static constexpr TCHAR FullDetails[] = _T("prop:")
+	static const TCHAR FullDetails[] = _T("prop:")
 		_T("System.PropGroup.General;")
 		_T("System.Title;")
 		_T("System.Company;")

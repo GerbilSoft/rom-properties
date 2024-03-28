@@ -47,7 +47,7 @@ rp_xattr_view_init_posix_xattrs_widgets(struct _RpXAttrView *widget, GtkScrolled
 #endif /* !GTK_CHECK_VERSION(3,0,0) */
 
 	// Column titles
-	static constexpr array<const char*, XATTR_COL_MAX> column_titles = {{
+	static const array<const char*, XATTR_COL_MAX> column_titles = {{
 		NOP_C_("XAttrView", "Name"),
 		NOP_C_("XAttrView", "Value"),
 	}};

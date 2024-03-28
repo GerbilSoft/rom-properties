@@ -1707,7 +1707,7 @@ int Xbox360_XEX::loadFieldData(void)
 			C_("Xbox360_XEX", "Xbox Game Disc only"));
 	} else {
 		// Other types.
-		static constexpr array<const char*, 29> media_type_tbl = {{
+		static const array<const char*, 29> media_type_tbl = {{
 			// 0
 			NOP_C_("Xbox360_XEX", "Hard Disk"),
 			NOP_C_("Xbox360_XEX", "XGD1"),
@@ -1910,7 +1910,7 @@ int Xbox360_XEX::loadFieldData(void)
 	d->fields.addField_string(C_("RomData", "Encryption Key"), s_encryption_key);
 
 	// Compression
-	static constexpr array<const char*, 4> compression_tbl = {{
+	static const array<const char*, 4> compression_tbl = {{
 		NOP_C_("Xbox360_XEX|Compression", "None"),
 		NOP_C_("Xbox360_XEX|Compression", "Basic (Sparse)"),
 		NOP_C_("Xbox360_XEX|Compression", "Normal (LZX)"),

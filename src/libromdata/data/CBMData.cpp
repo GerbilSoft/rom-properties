@@ -19,7 +19,7 @@ namespace LibRomData { namespace CBMData {
 #include "CBM_C64_Cartridge_Type_data.h"
 
 // VIC-20 cartridge types
-static constexpr array<const char*, 6> crt_types_vic20 = {{
+static const array<const char*, 6> crt_types_vic20 = {{
 	"generic cartridge",
 	"Mega-Cart",
 	"Behr Bonz",
@@ -29,7 +29,7 @@ static constexpr array<const char*, 6> crt_types_vic20 = {{
 }};
 
 // Plus/4 cartridge types
-static constexpr array<const char*, 4> crt_types_plus4 = {{
+static const array<const char*, 4> crt_types_plus4 = {{
 	"generic cartridge",
 	"c264 magic cart",
 	"Plus4 multi cart",

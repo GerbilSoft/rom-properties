@@ -872,7 +872,7 @@ const char *KeyStoreUI::sectName(int sectIdx) const
 		return nullptr;
 	}
 
-	static constexpr array<const char*, 4> sectNames = {{
+	static const array<const char*, 4> sectNames = {{
 		NOP_C_("KeyStoreUI|Section", "Nintendo Wii AES Keys"),
 		NOP_C_("KeyStoreUI|Section", "Nintendo 3DS Key Scrambler Constants"),
 		NOP_C_("KeyStoreUI|Section", "Nintendo 3DS AES Keys"),

@@ -24,7 +24,7 @@ using std::array;
 namespace LibRomData { namespace CtrKeyScrambler {
 
 // Verification key names.
-static constexpr array<const char*, Key_Max> EncryptionKeyNames = {{
+static const array<const char*, Key_Max> EncryptionKeyNames = {{
 	"twl-scrambler",
 	"ctr-scrambler",
 }};
