@@ -832,7 +832,7 @@ int NintendoBadge::loadMetaData(void)
 	d->metaData->reserve(1);	// Maximum of 1 metadata property.
 
 	// Title
-	int lang = NintendoLanguage::getN3DSLanguage();
+	const N3DS_Language_ID langID = d->getLanguageID();
 	switch (d->badgeType) {
 		default:
 			// Unknown.
@@ -840,36 +840,19 @@ int NintendoBadge::loadMetaData(void)
 			break;
 
 		case NintendoBadgePrivate::BadgeType::PRBS: {
-			// Check the PRBS for the current language ID.
+			// PRBS name validity is already checked by d->getLanguageID().
 			const Badge_PRBS_Header *const prbs = &d->badgeHeader.prbs;
-
-			if (prbs->name[lang][0] == cpu_to_le16('\0')) {
-				// Not valid. Check English.
-				if (prbs->name[N3DS_LANG_ENGLISH][0] != cpu_to_le16('\0')) {
-					// English is valid.
-					lang = N3DS_LANG_ENGLISH;
-				} else {
-					// Not valid. Check Japanese.
-					if (prbs->name[N3DS_LANG_JAPANESE][0] != cpu_to_le16('\0')) {
-						// Japanese is valid.
-						lang = N3DS_LANG_JAPANESE;
-					} else {
-						// Not valid...
-						// Default to English anyway.
-						lang = N3DS_LANG_ENGLISH;
-					}
-				}
-			}
-
 			d->metaData->addMetaData_string(Property::Title,
-				utf16le_to_utf8(prbs->name[lang], sizeof(prbs->name[lang])));
+				utf16le_to_utf8(prbs->name[langID], sizeof(prbs->name[langID])));
 			break;
 		}
 
 		case NintendoBadgePrivate::BadgeType::CABS: {
 			// Check the CABS for the current language ID.
+			// TODO: Do this check in d->getLanguageID()?
 			const Badge_CABS_Header *const cabs = &d->badgeHeader.cabs;
 
+			int lang = NintendoLanguage::getN3DSLanguage();
 			if (cabs->name[lang][0] == cpu_to_le16('\0')) {
 				// Not valid. Check English.
 				if (cabs->name[N3DS_LANG_ENGLISH][0] != cpu_to_le16('\0')) {
