@@ -381,7 +381,7 @@ int VirtualBoy::loadMetaData(void)
 		// A closed file is OK, since we already loaded the footer.
 		return -EBADF;
 	} else if (!d->isValid) {
-		// Unknown save banner file type.
+		// ROM image isn't valid.
 		return -EIO;
 	}
 
