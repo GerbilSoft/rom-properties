@@ -331,11 +331,15 @@ IF(GTK3_FOUND OR GTK4_FOUND)
 		)
 ENDIF(GTK3_FOUND OR GTK4_FOUND)
 
-# Build the D-Bus thumbnailer.
-# Required for XFCE.
 IF(BUILD_XFCE OR BUILD_GTK3 OR BUILD_GTK4)
+	# Build the D-Bus thumbnailer.
+	# Required for XFCE.
 	SET(BUILD_THUMBNAILER_DBUS ON CACHE INTERNAL "Build the D-Bus thumbnailer." FORCE)
 	ADD_SUBDIRECTORY(thumbnailer-dbus)
+
+	# Build the Tracker extractor module.
+	SET(BUILD_TRACKER_EXTRACTOR ON CACHE INTERNAL "Build the Tracker extractor module." FORCE)
+	ADD_SUBDIRECTORY(tracker)
 ENDIF(BUILD_XFCE OR BUILD_GTK3 OR BUILD_GTK4)
 
 IF(BUILD_TESTING)
