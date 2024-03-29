@@ -95,6 +95,12 @@ public:
 	 * @return Language code, e.g. 'en' or 'es'.
 	 */
 	inline uint32_t getDefaultLC(void) const;
+
+	/**
+	 * Add a "Name" field from either PRBS or CABS.
+	 * @param names Badge names
+	 */
+	void addFields_name(const badge_names_t *names);
 };
 
 ROMDATA_IMPL(NintendoBadge)
@@ -397,6 +403,58 @@ inline uint32_t NintendoBadgePrivate::getDefaultLC(void) const
 	return lc;
 }
 
+/**
+ * Add a "Name" field from either PRBS or CABS.
+ * @param names Badge names
+ */
+void NintendoBadgePrivate::addFields_name(const badge_names_t *names)
+{
+	// Name: Check if English is valid.
+	// If it is, we'll de-duplicate fields.
+	const bool dedupe_titles = ((*names)[N3DS_LANG_ENGLISH][0] != cpu_to_le16('\0'));
+
+	// Name field
+	// NOTE: There are 16 entries for names, but only 12 Nintendo 3DS langauges...
+	RomFields::StringMultiMap_t *const pMap_name = new RomFields::StringMultiMap_t();
+	for (int langID = 0; langID < N3DS_LANG_MAX; langID++) {
+		// Check for empty strings first.
+		if ((*names)[langID][0] == 0) {
+			// Strings are empty.
+			continue;
+		}
+
+		if (dedupe_titles && langID != N3DS_LANG_ENGLISH) {
+			// Check if the name matches English.
+			// NOTE: Not converting to host-endian first, since
+			// u16_strncmp() checks for equality and for 0.
+			if (!u16_strncmp((*names)[langID], (*names)[N3DS_LANG_ENGLISH],
+			                 ARRAY_SIZE((*names)[N3DS_LANG_ENGLISH])))
+			{
+				// Name matches English.
+				continue;
+			}
+		}
+
+		const uint32_t lc = NintendoLanguage::getNDSLanguageCode(langID, N3DS_LANG_MAX-1);
+		assert(lc != 0);
+		if (lc == 0)
+			continue;
+
+		if ((*names)[langID][0] != cpu_to_le16('\0')) {
+			pMap_name->emplace(lc, utf16le_to_utf8((*names)[langID], ARRAY_SIZE_I((*names)[langID])));
+		}
+	}
+
+	const char *const s_name_title = C_("NintendoBadge", "Name");
+	if (!pMap_name->empty()) {
+		const uint32_t def_lc = getDefaultLC();
+		fields.addField_string_multi(s_name_title, pMap_name, def_lc);
+	} else {
+		delete pMap_name;
+		fields.addField_string(s_name_title, C_("RomData", "Unknown"));
+	}
+}
+
 /** NintendoBadge **/
 
 /**
@@ -646,22 +704,17 @@ int NintendoBadge::loadFieldData(void)
 	// Maximum of 7 fields.
 	d->fields.reserve(7);
 
-	// Get the system language.
-	// TODO: Verify against the region code somehow?
-	int lang = NintendoLanguage::getN3DSLanguage();
-
-	// Type.
 	const char *const s_type_title = C_("NintendoBadge", "Type");
-	const char *const s_name_title = C_("NintendoBadge", "Name");
 	const char *const s_set_name_title = C_("NintendoBadge", "Set Name");
 	switch (d->badgeType) {
 		default:
-			// Unknown.
+			// Unknown
 			assert(!"Unknown badge type. (Should not get here!)");
 			d->fields.addField_string(s_type_title, C_("RomData", "Unknown"));
 			break;
 
 		case NintendoBadgePrivate::BadgeType::PRBS: {
+			// Type
 			d->fields.addField_string(s_type_title,
 				d->megaBadge ? C_("NintendoBadge|Type", "Mega Badge")
 				             : C_("NintendoBadge|Type", "Individual Badge"));
@@ -669,50 +722,8 @@ int NintendoBadge::loadFieldData(void)
 			// PRBS-specific fields
 			const Badge_PRBS_Header *const prbs = &d->badgeHeader.prbs;
 
-			// Name: Check if English is valid.
-			// If it is, we'll de-duplicate fields.
-			const bool dedupe_titles = (prbs->names[N3DS_LANG_ENGLISH][0] != cpu_to_le16('\0'));
-
-			// Name field
-			// NOTE: There are 16 entries for names, but only 12 Nintendo 3DS langauges...
-			RomFields::StringMultiMap_t *const pMap_name = new RomFields::StringMultiMap_t();
-			for (int langID = 0; langID < N3DS_LANG_MAX; langID++) {
-				// Check for empty strings first.
-				if (prbs->names[langID][0] == 0) {
-					// Strings are empty.
-					continue;
-				}
-
-				if (dedupe_titles && langID != N3DS_LANG_ENGLISH) {
-					// Check if the name matches English.
-					// NOTE: Not converting to host-endian first, since
-					// u16_strncmp() checks for equality and for 0.
-					if (!u16_strncmp(prbs->names[langID], prbs->names[N3DS_LANG_ENGLISH],
-					                 ARRAY_SIZE(prbs->names[N3DS_LANG_ENGLISH])))
-					{
-						// Name matches English.
-						continue;
-					}
-				}
-
-				const uint32_t lc = NintendoLanguage::getNDSLanguageCode(langID, N3DS_LANG_MAX-1);
-				assert(lc != 0);
-				if (lc == 0)
-					continue;
-
-				if (prbs->names[langID][0] != cpu_to_le16('\0')) {
-					pMap_name->emplace(lc, utf16le_to_utf8(
-						prbs->names[langID], ARRAY_SIZE_I(prbs->names[langID])));
-				}
-			}
-
-			if (!pMap_name->empty()) {
-				const uint32_t def_lc = d->getDefaultLC();
-				d->fields.addField_string_multi(s_name_title, pMap_name, def_lc);
-			} else {
-				delete pMap_name;
-				d->fields.addField_string(s_name_title, C_("RomData", "Unknown"));
-			}
+			// Name
+			d->addFields_name(&prbs->names);
 
 			// Badge ID
 			d->fields.addField_string_numeric(C_("NintendoBadge", "Badge ID"),
@@ -777,35 +788,14 @@ int NintendoBadge::loadFieldData(void)
 		}
 
 		case NintendoBadgePrivate::BadgeType::CABS: {
+			// Type
 			d->fields.addField_string(s_type_title, C_("NintendoBadge", "Badge Set"));
 
 			// CABS-specific fields
 			const Badge_CABS_Header *const cabs = &d->badgeHeader.cabs;
 
 			// Name
-			// Check that the field is valid.
-			if (cabs->names[lang][0] == 0) {
-				// Not valid. Check English.
-				if (cabs->names[N3DS_LANG_ENGLISH][0] != 0) {
-					// English is valid.
-					lang = N3DS_LANG_ENGLISH;
-				} else {
-					// Not valid. Check Japanese.
-					if (cabs->names[N3DS_LANG_JAPANESE][0] != 0) {
-						// Japanese is valid.
-						lang = N3DS_LANG_JAPANESE;
-					} else {
-						// Not valid...
-						// TODO: Check other languages?
-						lang = -1;
-					}
-				}
-			}
-			// NOTE: There aer 16 name entries, but only 12 languages...
-			if (lang >= 0 && lang < ARRAY_SIZE_I(cabs->names)) {
-				d->fields.addField_string(s_name_title,
-					utf16le_to_utf8(cabs->names[lang], sizeof(cabs->names[lang])));
-			}
+			d->addFields_name(&cabs->names);
 
 			// Badge ID
 			d->fields.addField_string_numeric(C_("NintendoBadge", "Set ID"), cabs->set_id);
@@ -849,7 +839,7 @@ int NintendoBadge::loadMetaData(void)
 	const N3DS_Language_ID langID = d->getLanguageID();
 	switch (d->badgeType) {
 		default:
-			// Unknown.
+			// Unknown
 			assert(!"Unknown badge type. (Should not get here!)");
 			break;
 
