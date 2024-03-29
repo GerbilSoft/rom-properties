@@ -69,43 +69,107 @@ tracker_extract_get_metadata(TrackerExtractInfo *info)
 			pfn_tracker_sparql_builder_predicate(metadata, "a");
 			pfn_tracker_sparql_builder_object(metadata, "nfo:Software");
 			break;
-
 		case RomData::FileType::DiscImage:
+			pfn_tracker_sparql_builder_predicate(metadata, "a");
+			pfn_tracker_sparql_builder_object(metadata, "nfo:Filesystem");
+			// TODO: Specific type of file system? ("nfo:filesystemType")
+			break;
 		case RomData::FileType::SaveFile:
+			// TODO
+			break;
 		case RomData::FileType::EmbeddedDiscImage:
+			pfn_tracker_sparql_builder_predicate(metadata, "a");
+			pfn_tracker_sparql_builder_object(metadata, "nfo:Filesystem");
+			// TODO: Specific type of file system? ("nfo:filesystemType")
+			break;
 		case RomData::FileType::ApplicationPackage:
+			pfn_tracker_sparql_builder_predicate(metadata, "a");
+			pfn_tracker_sparql_builder_object(metadata, "nfo:Application");
 		case RomData::FileType::NFC_Dump:
+			// TODO
+			break;
 		case RomData::FileType::DiskImage:
+			pfn_tracker_sparql_builder_predicate(metadata, "a");
+			pfn_tracker_sparql_builder_object(metadata, "nfo:Filesystem");
+			// TODO: Specific type of file system? ("nfo:filesystemType")
+			break;
 		case RomData::FileType::Executable:
+			pfn_tracker_sparql_builder_predicate(metadata, "a");
+			pfn_tracker_sparql_builder_object(metadata, "nfo:Application");
+			break;
 		case RomData::FileType::DLL:
+			pfn_tracker_sparql_builder_predicate(metadata, "a");
+			pfn_tracker_sparql_builder_object(metadata, "nfo:Software");
+			break;
 		case RomData::FileType::DeviceDriver:
+			pfn_tracker_sparql_builder_predicate(metadata, "a");
+			pfn_tracker_sparql_builder_object(metadata, "nfo:Software");
+			break;
 		case RomData::FileType::ResourceLibrary:
+			pfn_tracker_sparql_builder_predicate(metadata, "a");
+			pfn_tracker_sparql_builder_object(metadata, "nfo:DataContainer");
+			break;
 		case RomData::FileType::IconFile:
+			pfn_tracker_sparql_builder_predicate(metadata, "a");
+			pfn_tracker_sparql_builder_object(metadata, "nfo:Image");
+			pfn_tracker_sparql_builder_object(metadata, "nfo:RasterImage");
+			break;
 		case RomData::FileType::BannerFile:
+			pfn_tracker_sparql_builder_predicate(metadata, "a");
+			pfn_tracker_sparql_builder_object(metadata, "nfo:Image");
+			pfn_tracker_sparql_builder_object(metadata, "nfo:RasterImage");
+			break;
 		case RomData::FileType::Homebrew:
+			pfn_tracker_sparql_builder_predicate(metadata, "a");
+			pfn_tracker_sparql_builder_object(metadata, "nfo:Application");
+			break;
 		case RomData::FileType::eMMC_Dump:
+			pfn_tracker_sparql_builder_predicate(metadata, "a");
+			pfn_tracker_sparql_builder_object(metadata, "nfo:Filesystem");
+			break;
 		case RomData::FileType::ContainerFile:
+			pfn_tracker_sparql_builder_predicate(metadata, "a");
+			pfn_tracker_sparql_builder_object(metadata, "nfo:DataContainer");
+			break;
 		case RomData::FileType::FirmwareBinary:
-
+			pfn_tracker_sparql_builder_predicate(metadata, "a");
+			pfn_tracker_sparql_builder_object(metadata, "nfo:OperatingSystem");
+			break;
 		case RomData::FileType::TextureFile:
 			pfn_tracker_sparql_builder_predicate(metadata, "a");
 			pfn_tracker_sparql_builder_object(metadata, "nfo:Image");
 			pfn_tracker_sparql_builder_object(metadata, "nfo:RasterImage");
 			break;
-
 		case RomData::FileType::RelocatableObject:
+			// TODO
+			break;
 		case RomData::FileType::SharedLibrary:
+			pfn_tracker_sparql_builder_predicate(metadata, "a");
+			pfn_tracker_sparql_builder_object(metadata, "nfo:Application");
+			break;
 		case RomData::FileType::CoreDump:
-
+			// TODO
+			break;
 		case RomData::FileType::AudioFile:
 			pfn_tracker_sparql_builder_predicate(metadata, "a");
 			pfn_tracker_sparql_builder_object(metadata, "nfo:Audio");
 			break;
-
 		case RomData::FileType::BootSector:
+			// TODO
+			break;
 		case RomData::FileType::Bundle:
+			pfn_tracker_sparql_builder_predicate(metadata, "a");
+			pfn_tracker_sparql_builder_object(metadata, "nfo:DataContainer");
+			break;
 		case RomData::FileType::ResourceFile:
+			pfn_tracker_sparql_builder_predicate(metadata, "a");
+			pfn_tracker_sparql_builder_object(metadata, "nfo:DataContainer");
+			break;
 		case RomData::FileType::Partition:
+			pfn_tracker_sparql_builder_predicate(metadata, "a");
+			pfn_tracker_sparql_builder_object(metadata, "nfo:FilesystemImage");
+			break;
+
 		case RomData::FileType::MetadataFile:
 		case RomData::FileType::PatchFile:
 		case RomData::FileType::Ticket:
