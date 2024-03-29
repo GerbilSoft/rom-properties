@@ -299,7 +299,12 @@ static const RomDataFns romDataFns_header[] = {
 
 	// The following formats have 16-bit magic numbers,
 	// so they should go at the end of the address=0 section.
-	GetRomDataFns(EXE, ATTR_HAS_DPOVERLAY),	// TODO: Thumbnailing on non-Windows platforms.
+#ifdef _WIN32
+	// NOTE: Windows provides its own thumbnail and metadata extraction for EXEs.
+	GetRomDataFns(EXE, ATTR_HAS_DPOVERLAY),
+#else /* !_WIN32 */
+	GetRomDataFns(EXE, ATTR_HAS_DPOVERLAY | ATTR_HAS_METADATA),	// TODO: Thumbnailing on non-Windows platforms.
+#endif /* _WIN32 */
 	GetRomDataFns(PlayStationSave, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA),
 
 	// NOTE: game.com may be at either 0 or 0x40000.
