@@ -53,7 +53,7 @@ TEST_F(BitstuffTest, uilog2)
 }
 
 /**
- * Test popcount()
+ * Test popcount() [inline version that may use a compiler built-in]
  */
 TEST_F(BitstuffTest, popcount)
 {
@@ -84,6 +84,41 @@ TEST_F(BitstuffTest, popcount)
 	// Single bit
 	for (unsigned int i = 0; i < 32; i++) {
 		EXPECT_EQ(1U, popcount(1U << i));
+	}
+}
+
+/**
+ * Test popcount_c() [C version]
+ */
+TEST_F(BitstuffTest, popcount_c)
+{
+	// Empty and filled
+	EXPECT_EQ(0U, popcount_c(0U));
+	EXPECT_EQ(32U, popcount_c(~0U));
+
+	// Various test patterns
+	EXPECT_EQ(16U, popcount_c(0x55555555U));
+	EXPECT_EQ(16U, popcount_c(0xAAAAAAAAU));
+	EXPECT_EQ(16U, popcount_c(0x33333333U));
+	EXPECT_EQ(16U, popcount_c(0x0F0F0F0FU));
+
+	EXPECT_EQ(8U, popcount_c(0x05050505U));
+	EXPECT_EQ(8U, popcount_c(0x50505050U));
+	EXPECT_EQ(8U, popcount_c(0x0A0A0A0AU));
+	EXPECT_EQ(8U, popcount_c(0xA0A0A0A0U));
+	EXPECT_EQ(8U, popcount_c(0x03030303U));
+	EXPECT_EQ(8U, popcount_c(0x30303030U));
+	EXPECT_EQ(8U, popcount_c(0x0C0C0C0CU));
+	EXPECT_EQ(8U, popcount_c(0xC0C0C0C0U));
+
+	EXPECT_EQ(12U, popcount_c(0x07070707U));
+	EXPECT_EQ(12U, popcount_c(0x70707070U));
+	EXPECT_EQ(12U, popcount_c(0x0E0E0E0EU));
+	EXPECT_EQ(12U, popcount_c(0xE0E0E0E0U));
+
+	// Single bit
+	for (unsigned int i = 0; i < 32; i++) {
+		EXPECT_EQ(1U, popcount_c(1U << i));
 	}
 }
 
