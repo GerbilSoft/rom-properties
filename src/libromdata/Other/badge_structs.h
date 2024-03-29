@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * badge_structs.h: Nintendo Badge Arcade data structures.                 *
  *                                                                         *
- * Copyright (c) 2017-2023 by David Korth.                                 *
+ * Copyright (c) 2017-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -28,6 +28,8 @@ extern "C" {
 #define BADGE_SIZE_SMALL_H 32
 #define BADGE_SIZE_LARGE_W 64
 #define BADGE_SIZE_LARGE_H 64
+
+typedef char16_t badge_names_t[16][128];
 
 /**
  * PRBS: Badge file.
@@ -59,7 +61,7 @@ typedef struct _Badge_PRBS_Header {
 	uint32_t mb_width;	// [0x0B8] Mega-badge width.
 	uint32_t mb_height;	// [0x0BC] Mega-badge height.
 	uint8_t reserved4[32];	// [0x0C0] Unknown
-	char16_t name[16][128];	// [0x0E0] Badge names. (UTF-16LE)
+	badge_names_t names;	// [0x0E0] Badge names. (UTF-16LE)
 } Badge_PRBS_Header;
 ASSERT_STRUCT(Badge_PRBS_Header, 0x10E0);
 
@@ -81,7 +83,7 @@ typedef struct _Badge_CABS_Header {
 	uint8_t reserved2[4];	// [0x028] Unknown
 	char setname[48];	// [0x02C] Set name. (Latin-1?)
 	uint8_t reserved3[12];	// [0x05C] Unknown
-	char16_t name[16][128];	// [0x068] Set names. (UTF-16LE)
+	badge_names_t names;	// [0x068] Set names. (UTF-16LE)
 } Badge_CABS_Header;
 ASSERT_STRUCT(Badge_CABS_Header, 0x1068);
 
