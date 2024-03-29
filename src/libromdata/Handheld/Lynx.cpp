@@ -45,6 +45,7 @@ ROMDATA_IMPL(Lynx)
 /* RomDataInfo */
 const char *const LynxPrivate::exts[] = {
 	".lnx",
+	".lyx",
 
 	nullptr
 };
@@ -186,15 +187,16 @@ int Lynx::loadFieldData(void)
 	if (!d->fields.empty()) {
 		// Field data *has* been loaded...
 		return 0;
-	} else if (!d->file || !d->file->isOpen()) {
-		// File isn't open.
+	} else if (!d->file) {
+		// No file.
+		// A closed file is OK, since we already loaded the header.
 		return -EBADF;
 	} else if (!d->isValid) {
 		// Unknown ROM image type.
 		return -EIO;
 	}
 
-	// Lynx ROM header.
+	// Lynx ROM header
 	const Lynx_RomHeader *const romHeader = &d->romHeader;
 	d->fields.reserve(5);	// Maximum of 5 fields.
 
@@ -221,6 +223,45 @@ int Lynx::loadFieldData(void)
 		LibRpText::formatFileSize(le16_to_cpu(romHeader->page_size_bank0) * 256));
 
 	return static_cast<int>(d->fields.count());
+}
+
+/**
+ * Load metadata properties.
+ * Called by RomData::metaData() if the metadata hasn't been loaded yet.
+ * @return Number of metadata properties read on success; negative POSIX error code on error.
+ */
+int Lynx::loadMetaData(void)
+{
+	RP_D(Lynx);
+	if (d->metaData != nullptr) {
+		// Metadata *has* been loaded...
+		return 0;
+	} else if (!d->file) {
+		// No file.
+		// A closed file is OK, since we already loaded the header.
+		return -EBADF;
+	} else if (!d->isValid) {
+		// Unknown save banner file type.
+		return -EIO;
+	}
+
+	// Create the metadata object.
+	d->metaData = new RomMetaData();
+	d->metaData->reserve(2);	// Maximum of 2 metadata properties.
+
+	// Lynx ROM header
+	const Lynx_RomHeader *const romHeader = &d->romHeader;
+
+	// Title
+	d->metaData->addMetaData_string(Property::Title,
+		latin1_to_utf8(romHeader->cartname, sizeof(romHeader->cartname)));
+
+	// Publisher (aka manufacturer)
+	d->metaData->addMetaData_string(Property::Publisher,
+		latin1_to_utf8(romHeader->manufname, sizeof(romHeader->manufname)));
+
+	// Finished reading the metadata.
+	return static_cast<int>(d->metaData->count());
 }
 
 }
