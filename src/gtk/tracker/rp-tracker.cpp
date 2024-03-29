@@ -42,7 +42,7 @@ tracker_extract_get_metadata(TrackerExtractInfo *info)
 		return false;
 	}
 
-	GFile *const file = pfn_tracker_extract_info_get_file(info);
+	GFile *const file = tracker_extract_pfns.v1.info.get_file(info);
 	if (!file) {
 		return false;
 	}
@@ -57,7 +57,7 @@ tracker_extract_get_metadata(TrackerExtractInfo *info)
 		return false;
 	}
 
-	TrackerSparqlBuilder *const metadata = pfn_tracker_extract_info_get_metadata_builder(info);
+	TrackerSparqlBuilder *const metadata = tracker_extract_pfns.v1.info.get_metadata_builder(info);
 
 	// Determine the file type.
 	// TODO: Better NFOs for some of these.
@@ -66,108 +66,108 @@ tracker_extract_get_metadata(TrackerExtractInfo *info)
 			assert(!"Unhandled file type!");
 			break;
 		case RomData::FileType::ROM_Image:
-			pfn_tracker_sparql_builder_predicate(metadata, "a");
-			pfn_tracker_sparql_builder_object(metadata, "nfo:Software");
+			tracker_sparql_pfns.v1.builder.predicate(metadata, "a");
+			tracker_sparql_pfns.v1.builder.object(metadata, "nfo:Software");
 			break;
 		case RomData::FileType::DiscImage:
-			pfn_tracker_sparql_builder_predicate(metadata, "a");
-			pfn_tracker_sparql_builder_object(metadata, "nfo:Filesystem");
+			tracker_sparql_pfns.v1.builder.predicate(metadata, "a");
+			tracker_sparql_pfns.v1.builder.object(metadata, "nfo:Filesystem");
 			// TODO: Specific type of file system? ("nfo:filesystemType")
 			break;
 		case RomData::FileType::SaveFile:
 			// TODO
 			break;
 		case RomData::FileType::EmbeddedDiscImage:
-			pfn_tracker_sparql_builder_predicate(metadata, "a");
-			pfn_tracker_sparql_builder_object(metadata, "nfo:Filesystem");
+			tracker_sparql_pfns.v1.builder.predicate(metadata, "a");
+			tracker_sparql_pfns.v1.builder.object(metadata, "nfo:Filesystem");
 			// TODO: Specific type of file system? ("nfo:filesystemType")
 			break;
 		case RomData::FileType::ApplicationPackage:
-			pfn_tracker_sparql_builder_predicate(metadata, "a");
-			pfn_tracker_sparql_builder_object(metadata, "nfo:Application");
+			tracker_sparql_pfns.v1.builder.predicate(metadata, "a");
+			tracker_sparql_pfns.v1.builder.object(metadata, "nfo:Application");
 		case RomData::FileType::NFC_Dump:
 			// TODO
 			break;
 		case RomData::FileType::DiskImage:
-			pfn_tracker_sparql_builder_predicate(metadata, "a");
-			pfn_tracker_sparql_builder_object(metadata, "nfo:Filesystem");
+			tracker_sparql_pfns.v1.builder.predicate(metadata, "a");
+			tracker_sparql_pfns.v1.builder.object(metadata, "nfo:Filesystem");
 			// TODO: Specific type of file system? ("nfo:filesystemType")
 			break;
 		case RomData::FileType::Executable:
-			pfn_tracker_sparql_builder_predicate(metadata, "a");
-			pfn_tracker_sparql_builder_object(metadata, "nfo:Application");
+			tracker_sparql_pfns.v1.builder.predicate(metadata, "a");
+			tracker_sparql_pfns.v1.builder.object(metadata, "nfo:Application");
 			break;
 		case RomData::FileType::DLL:
-			pfn_tracker_sparql_builder_predicate(metadata, "a");
-			pfn_tracker_sparql_builder_object(metadata, "nfo:Software");
+			tracker_sparql_pfns.v1.builder.predicate(metadata, "a");
+			tracker_sparql_pfns.v1.builder.object(metadata, "nfo:Software");
 			break;
 		case RomData::FileType::DeviceDriver:
-			pfn_tracker_sparql_builder_predicate(metadata, "a");
-			pfn_tracker_sparql_builder_object(metadata, "nfo:Software");
+			tracker_sparql_pfns.v1.builder.predicate(metadata, "a");
+			tracker_sparql_pfns.v1.builder.object(metadata, "nfo:Software");
 			break;
 		case RomData::FileType::ResourceLibrary:
-			pfn_tracker_sparql_builder_predicate(metadata, "a");
-			pfn_tracker_sparql_builder_object(metadata, "nfo:DataContainer");
+			tracker_sparql_pfns.v1.builder.predicate(metadata, "a");
+			tracker_sparql_pfns.v1.builder.object(metadata, "nfo:DataContainer");
 			break;
 		case RomData::FileType::IconFile:
-			pfn_tracker_sparql_builder_predicate(metadata, "a");
-			pfn_tracker_sparql_builder_object(metadata, "nfo:Image");
-			pfn_tracker_sparql_builder_object(metadata, "nfo:RasterImage");
+			tracker_sparql_pfns.v1.builder.predicate(metadata, "a");
+			tracker_sparql_pfns.v1.builder.object(metadata, "nfo:Image");
+			tracker_sparql_pfns.v1.builder.object(metadata, "nfo:RasterImage");
 			break;
 		case RomData::FileType::BannerFile:
-			pfn_tracker_sparql_builder_predicate(metadata, "a");
-			pfn_tracker_sparql_builder_object(metadata, "nfo:Image");
-			pfn_tracker_sparql_builder_object(metadata, "nfo:RasterImage");
+			tracker_sparql_pfns.v1.builder.predicate(metadata, "a");
+			tracker_sparql_pfns.v1.builder.object(metadata, "nfo:Image");
+			tracker_sparql_pfns.v1.builder.object(metadata, "nfo:RasterImage");
 			break;
 		case RomData::FileType::Homebrew:
-			pfn_tracker_sparql_builder_predicate(metadata, "a");
-			pfn_tracker_sparql_builder_object(metadata, "nfo:Application");
+			tracker_sparql_pfns.v1.builder.predicate(metadata, "a");
+			tracker_sparql_pfns.v1.builder.object(metadata, "nfo:Application");
 			break;
 		case RomData::FileType::eMMC_Dump:
-			pfn_tracker_sparql_builder_predicate(metadata, "a");
-			pfn_tracker_sparql_builder_object(metadata, "nfo:Filesystem");
+			tracker_sparql_pfns.v1.builder.predicate(metadata, "a");
+			tracker_sparql_pfns.v1.builder.object(metadata, "nfo:Filesystem");
 			break;
 		case RomData::FileType::ContainerFile:
-			pfn_tracker_sparql_builder_predicate(metadata, "a");
-			pfn_tracker_sparql_builder_object(metadata, "nfo:DataContainer");
+			tracker_sparql_pfns.v1.builder.predicate(metadata, "a");
+			tracker_sparql_pfns.v1.builder.object(metadata, "nfo:DataContainer");
 			break;
 		case RomData::FileType::FirmwareBinary:
-			pfn_tracker_sparql_builder_predicate(metadata, "a");
-			pfn_tracker_sparql_builder_object(metadata, "nfo:OperatingSystem");
+			tracker_sparql_pfns.v1.builder.predicate(metadata, "a");
+			tracker_sparql_pfns.v1.builder.object(metadata, "nfo:OperatingSystem");
 			break;
 		case RomData::FileType::TextureFile:
-			pfn_tracker_sparql_builder_predicate(metadata, "a");
-			pfn_tracker_sparql_builder_object(metadata, "nfo:Image");
-			pfn_tracker_sparql_builder_object(metadata, "nfo:RasterImage");
+			tracker_sparql_pfns.v1.builder.predicate(metadata, "a");
+			tracker_sparql_pfns.v1.builder.object(metadata, "nfo:Image");
+			tracker_sparql_pfns.v1.builder.object(metadata, "nfo:RasterImage");
 			break;
 		case RomData::FileType::RelocatableObject:
 			// TODO
 			break;
 		case RomData::FileType::SharedLibrary:
-			pfn_tracker_sparql_builder_predicate(metadata, "a");
-			pfn_tracker_sparql_builder_object(metadata, "nfo:Application");
+			tracker_sparql_pfns.v1.builder.predicate(metadata, "a");
+			tracker_sparql_pfns.v1.builder.object(metadata, "nfo:Application");
 			break;
 		case RomData::FileType::CoreDump:
 			// TODO
 			break;
 		case RomData::FileType::AudioFile:
-			pfn_tracker_sparql_builder_predicate(metadata, "a");
-			pfn_tracker_sparql_builder_object(metadata, "nfo:Audio");
+			tracker_sparql_pfns.v1.builder.predicate(metadata, "a");
+			tracker_sparql_pfns.v1.builder.object(metadata, "nfo:Audio");
 			break;
 		case RomData::FileType::BootSector:
 			// TODO
 			break;
 		case RomData::FileType::Bundle:
-			pfn_tracker_sparql_builder_predicate(metadata, "a");
-			pfn_tracker_sparql_builder_object(metadata, "nfo:DataContainer");
+			tracker_sparql_pfns.v1.builder.predicate(metadata, "a");
+			tracker_sparql_pfns.v1.builder.object(metadata, "nfo:DataContainer");
 			break;
 		case RomData::FileType::ResourceFile:
-			pfn_tracker_sparql_builder_predicate(metadata, "a");
-			pfn_tracker_sparql_builder_object(metadata, "nfo:DataContainer");
+			tracker_sparql_pfns.v1.builder.predicate(metadata, "a");
+			tracker_sparql_pfns.v1.builder.object(metadata, "nfo:DataContainer");
 			break;
 		case RomData::FileType::Partition:
-			pfn_tracker_sparql_builder_predicate(metadata, "a");
-			pfn_tracker_sparql_builder_object(metadata, "nfo:FilesystemImage");
+			tracker_sparql_pfns.v1.builder.predicate(metadata, "a");
+			tracker_sparql_pfns.v1.builder.object(metadata, "nfo:FilesystemImage");
 			break;
 
 		case RomData::FileType::MetadataFile:
@@ -195,73 +195,73 @@ tracker_extract_get_metadata(TrackerExtractInfo *info)
 
 			// Audio
 			case Property::Channels:
-				pfn_tracker_sparql_builder_predicate(metadata, "nfo:channels");
-				pfn_tracker_sparql_builder_object_int64(metadata, prop.data.ivalue);
+				tracker_sparql_pfns.v1.builder.predicate(metadata, "nfo:channels");
+				tracker_sparql_pfns.v1.builder.object_int64(metadata, prop.data.ivalue);
 				break;
 			case Property::Duration:
 				// NOTE: RomMetaData uses milliseconds. Tracker uses seconds.
-				pfn_tracker_sparql_builder_predicate(metadata, "nfo:duration");
-				pfn_tracker_sparql_builder_object_int64(metadata, prop.data.ivalue / 1000);
+				tracker_sparql_pfns.v1.builder.predicate(metadata, "nfo:duration");
+				tracker_sparql_pfns.v1.builder.object_int64(metadata, prop.data.ivalue / 1000);
 				break;
 			case Property::Genre:
-				pfn_tracker_sparql_builder_predicate(metadata, "nmm:genre");
-				pfn_tracker_sparql_builder_object_string(metadata, prop.data.str->c_str());
+				tracker_sparql_pfns.v1.builder.predicate(metadata, "nmm:genre");
+				tracker_sparql_pfns.v1.builder.object_string(metadata, prop.data.str->c_str());
 				break;
 			case Property::SampleRate:
-				pfn_tracker_sparql_builder_predicate(metadata, "nfo:sampleRate");
-				pfn_tracker_sparql_builder_object_int64(metadata, prop.data.ivalue);
+				tracker_sparql_pfns.v1.builder.predicate(metadata, "nfo:sampleRate");
+				tracker_sparql_pfns.v1.builder.object_int64(metadata, prop.data.ivalue);
 				break;
 			case Property::TrackNumber:
-				pfn_tracker_sparql_builder_predicate(metadata, "nmm:trackNumber");
-				pfn_tracker_sparql_builder_object_int64(metadata, prop.data.ivalue);
+				tracker_sparql_pfns.v1.builder.predicate(metadata, "nmm:trackNumber");
+				tracker_sparql_pfns.v1.builder.object_int64(metadata, prop.data.ivalue);
 				break;
 			case Property::ReleaseYear:
 				// FIXME: Needs to be in nie:informationElementDate foramt.
 				/*
-				pfn_tracker_sparql_builder_predicate(metadata, "nmm:releaseDate");
-				pfn_tracker_sparql_builder_object_int64(metadata, prop.data.ivalue);
+				tracker_sparql_pfns.v1.builder.predicate(metadata, "nmm:releaseDate");
+				tracker_sparql_pfns.v1.builder.object_int64(metadata, prop.data.ivalue);
 				*/
 				break;
 			case Property::Artist:
 				// TODO
 				break;
 			case Property::Album:
-				pfn_tracker_sparql_builder_predicate(metadata, "nmm:musicAlbum");
-				pfn_tracker_sparql_builder_object_string(metadata, prop.data.str->c_str());
+				tracker_sparql_pfns.v1.builder.predicate(metadata, "nmm:musicAlbum");
+				tracker_sparql_pfns.v1.builder.object_string(metadata, prop.data.str->c_str());
 				break;
 			case Property::AlbumArtist:
 				// TODO
 				break;
 			case Property::Composer:
-				pfn_tracker_sparql_builder_predicate(metadata, "nmm:composer");
-				pfn_tracker_sparql_builder_object_string(metadata, prop.data.str->c_str());
+				tracker_sparql_pfns.v1.builder.predicate(metadata, "nmm:composer");
+				tracker_sparql_pfns.v1.builder.object_string(metadata, prop.data.str->c_str());
 				break;
 			case Property::Lyricist:
-				pfn_tracker_sparql_builder_predicate(metadata, "nmm:lyricist");
-				pfn_tracker_sparql_builder_object_string(metadata, prop.data.str->c_str());
+				tracker_sparql_pfns.v1.builder.predicate(metadata, "nmm:lyricist");
+				tracker_sparql_pfns.v1.builder.object_string(metadata, prop.data.str->c_str());
 				break;
 
 			// Document
 			case Property::Author:
 				// NOTE: Closest equivalent is "Creator".
-				pfn_tracker_sparql_builder_predicate(metadata, "nco:creator");
-				pfn_tracker_sparql_builder_object_string(metadata, prop.data.str->c_str());
+				tracker_sparql_pfns.v1.builder.predicate(metadata, "nco:creator");
+				tracker_sparql_pfns.v1.builder.object_string(metadata, prop.data.str->c_str());
 				break;
 			case Property::Title:
-				pfn_tracker_sparql_builder_predicate(metadata, "nie:title");
-				pfn_tracker_sparql_builder_object_string(metadata, prop.data.str->c_str());
+				tracker_sparql_pfns.v1.builder.predicate(metadata, "nie:title");
+				tracker_sparql_pfns.v1.builder.object_string(metadata, prop.data.str->c_str());
 				break;
 			case Property::Copyright:
-				pfn_tracker_sparql_builder_predicate(metadata, "nie:copyright");
-				pfn_tracker_sparql_builder_object_string(metadata, prop.data.str->c_str());
+				tracker_sparql_pfns.v1.builder.predicate(metadata, "nie:copyright");
+				tracker_sparql_pfns.v1.builder.object_string(metadata, prop.data.str->c_str());
 				break;
 			case Property::Publisher:
-				pfn_tracker_sparql_builder_predicate(metadata, "nco:publisher");
-				pfn_tracker_sparql_builder_object_string(metadata, prop.data.str->c_str());
+				tracker_sparql_pfns.v1.builder.predicate(metadata, "nco:publisher");
+				tracker_sparql_pfns.v1.builder.object_string(metadata, prop.data.str->c_str());
 				break;
 			case Property::Description:
-				pfn_tracker_sparql_builder_predicate(metadata, "nie:description");
-				pfn_tracker_sparql_builder_object_string(metadata, prop.data.str->c_str());
+				tracker_sparql_pfns.v1.builder.predicate(metadata, "nie:description");
+				tracker_sparql_pfns.v1.builder.object_string(metadata, prop.data.str->c_str());
 				break;
 			case Property::CreationDate:
 				// TODO: Convert from Unix timestamp to "xsd:dateTime" for "nie:contentCreated".
@@ -269,18 +269,18 @@ tracker_extract_get_metadata(TrackerExtractInfo *info)
 
 			// Media
 			case Property::Width:
-				pfn_tracker_sparql_builder_predicate(metadata, "nfo:width");
-				pfn_tracker_sparql_builder_object_int64(metadata, prop.data.ivalue);
+				tracker_sparql_pfns.v1.builder.predicate(metadata, "nfo:width");
+				tracker_sparql_pfns.v1.builder.object_int64(metadata, prop.data.ivalue);
 				break;
 			case Property::Height:
-				pfn_tracker_sparql_builder_predicate(metadata, "nfo:height");
-				pfn_tracker_sparql_builder_object_int64(metadata, prop.data.ivalue);
+				tracker_sparql_pfns.v1.builder.predicate(metadata, "nfo:height");
+				tracker_sparql_pfns.v1.builder.object_int64(metadata, prop.data.ivalue);
 				break;
 
 			// Audio
 			case Property::DiscNumber:
-				pfn_tracker_sparql_builder_predicate(metadata, "nmm:setNumber");
-				pfn_tracker_sparql_builder_object_int64(metadata, prop.data.ivalue);
+				tracker_sparql_pfns.v1.builder.predicate(metadata, "nmm:setNumber");
+				tracker_sparql_pfns.v1.builder.object_int64(metadata, prop.data.ivalue);
 				break;
 		}
 	}

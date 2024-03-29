@@ -24,46 +24,13 @@ static void *libtracker_extract_so = NULL;
 static void *libtracker_sparql_so = NULL;
 
 // Function pointers
-
-/** TrackerSparqlBuilder **/
-
-__typeof__(tracker_sparql_builder_get_type)		*pfn_tracker_sparql_builder_get_type;
-__typeof__(tracker_sparql_builder_state_get_type)	*pfn_tracker_sparql_builder_state_get_type;
-__typeof__(tracker_sparql_builder_subject_variable)	*pfn_tracker_sparql_builder_subject_variable;
-__typeof__(tracker_sparql_builder_object_variable)	*pfn_tracker_sparql_builder_object_variable;
-__typeof__(tracker_sparql_builder_subject_iri)		*pfn_tracker_sparql_builder_subject_iri;
-__typeof__(tracker_sparql_builder_subject)		*pfn_tracker_sparql_builder_subject;
-__typeof__(tracker_sparql_builder_predicate_iri)	*pfn_tracker_sparql_builder_predicate_iri;
-__typeof__(tracker_sparql_builder_predicate)		*pfn_tracker_sparql_builder_predicate;
-__typeof__(tracker_sparql_builder_object_iri)		*pfn_tracker_sparql_builder_object_iri;
-__typeof__(tracker_sparql_builder_object)		*pfn_tracker_sparql_builder_object;
-__typeof__(tracker_sparql_builder_object_string)	*pfn_tracker_sparql_builder_object_string;
-__typeof__(tracker_sparql_builder_object_unvalidated)	*pfn_tracker_sparql_builder_object_unvalidated;
-__typeof__(tracker_sparql_builder_object_boolean)	*pfn_tracker_sparql_builder_object_boolean;
-__typeof__(tracker_sparql_builder_object_int64)		*pfn_tracker_sparql_builder_object_int64;
-__typeof__(tracker_sparql_builder_object_date)		*pfn_tracker_sparql_builder_object_date;
-__typeof__(tracker_sparql_builder_object_double)	*pfn_tracker_sparql_builder_object_double;
-__typeof__(tracker_sparql_builder_object_blank_open)	*pfn_tracker_sparql_builder_object_blank_open;
-__typeof__(tracker_sparql_builder_object_blank_close)	*pfn_tracker_sparql_builder_object_blank_close;
-__typeof__(tracker_sparql_builder_prepend)		*pfn_tracker_sparql_builder_prepend;
-__typeof__(tracker_sparql_builder_append)		*pfn_tracker_sparql_builder_append;
-
-/** TrackerExtractInfo **/
-
-__typeof__(tracker_extract_info_get_type)		*pfn_tracker_extract_info_get_type;
-__typeof__(tracker_extract_info_ref)			*pfn_tracker_extract_info_ref;
-__typeof__(tracker_extract_info_unref)			*pfn_tracker_extract_info_unref;
-__typeof__(tracker_extract_info_get_file)		*pfn_tracker_extract_info_get_file;
-__typeof__(tracker_extract_info_get_mimetype)		*pfn_tracker_extract_info_get_mimetype;
-__typeof__(tracker_extract_info_get_preupdate_builder)	*pfn_tracker_extract_info_get_preupdate_builder;
-__typeof__(tracker_extract_info_get_postupdate_builder)	*pfn_tracker_extract_info_get_postupdate_builder;
-__typeof__(tracker_extract_info_get_metadata_builder)	*pfn_tracker_extract_info_get_metadata_builder;
+tracker_sparql_pfns_u tracker_sparql_pfns;
+tracker_extract_pfns_u tracker_extract_pfns;
 
 /**
  * Initialize Tracker function pointers.
  * @return 0 on success; negative POSIX error code on error.
  */
-#include <stdio.h>
 int rp_tracker_init_pfn(void)
 {
 	// Attempt to open Tracker libraries.
@@ -92,42 +59,42 @@ int rp_tracker_init_pfn(void)
 
 	// Load symbols.
 	// TODO: Check for NULL symbols?
-#define DLSYM(so, sym) \
-	pfn_##sym = dlsym(so, #sym)
+#define DLSYM(so, u, v, substruct, prefix, sym) \
+	u.v.substruct.sym = dlsym(so, #prefix "_" #sym)
 
 	/** TrackerSparqlBuilder **/
 
-	DLSYM(libtracker_sparql_so, tracker_sparql_builder_get_type);
-	DLSYM(libtracker_sparql_so, tracker_sparql_builder_state_get_type);
-	DLSYM(libtracker_sparql_so, tracker_sparql_builder_subject_variable);
-	DLSYM(libtracker_sparql_so, tracker_sparql_builder_object_variable);
-	DLSYM(libtracker_sparql_so, tracker_sparql_builder_subject_iri);
-	DLSYM(libtracker_sparql_so, tracker_sparql_builder_subject);
-	DLSYM(libtracker_sparql_so, tracker_sparql_builder_predicate_iri);
-	DLSYM(libtracker_sparql_so, tracker_sparql_builder_predicate);
-	DLSYM(libtracker_sparql_so, tracker_sparql_builder_object_iri);
-	DLSYM(libtracker_sparql_so, tracker_sparql_builder_object);
-	DLSYM(libtracker_sparql_so, tracker_sparql_builder_object_string);
-	DLSYM(libtracker_sparql_so, tracker_sparql_builder_object_unvalidated);
-	DLSYM(libtracker_sparql_so, tracker_sparql_builder_object_boolean);
-	DLSYM(libtracker_sparql_so, tracker_sparql_builder_object_int64);
-	DLSYM(libtracker_sparql_so, tracker_sparql_builder_object_date);
-	DLSYM(libtracker_sparql_so, tracker_sparql_builder_object_double);
-	DLSYM(libtracker_sparql_so, tracker_sparql_builder_object_blank_open);
-	DLSYM(libtracker_sparql_so, tracker_sparql_builder_object_blank_close);
-	DLSYM(libtracker_sparql_so, tracker_sparql_builder_prepend);
-	DLSYM(libtracker_sparql_so, tracker_sparql_builder_append);
+	DLSYM(libtracker_sparql_so, tracker_sparql_pfns, v1, builder, tracker_sparql_builder, get_type);
+	DLSYM(libtracker_sparql_so, tracker_sparql_pfns, v1, builder, tracker_sparql_builder, state_get_type);
+	DLSYM(libtracker_sparql_so, tracker_sparql_pfns, v1, builder, tracker_sparql_builder, subject_variable);
+	DLSYM(libtracker_sparql_so, tracker_sparql_pfns, v1, builder, tracker_sparql_builder, object_variable);
+	DLSYM(libtracker_sparql_so, tracker_sparql_pfns, v1, builder, tracker_sparql_builder, subject_iri);
+	DLSYM(libtracker_sparql_so, tracker_sparql_pfns, v1, builder, tracker_sparql_builder, subject);
+	DLSYM(libtracker_sparql_so, tracker_sparql_pfns, v1, builder, tracker_sparql_builder, predicate_iri);
+	DLSYM(libtracker_sparql_so, tracker_sparql_pfns, v1, builder, tracker_sparql_builder, predicate);
+	DLSYM(libtracker_sparql_so, tracker_sparql_pfns, v1, builder, tracker_sparql_builder, object_iri);
+	DLSYM(libtracker_sparql_so, tracker_sparql_pfns, v1, builder, tracker_sparql_builder, object);
+	DLSYM(libtracker_sparql_so, tracker_sparql_pfns, v1, builder, tracker_sparql_builder, object_string);
+	DLSYM(libtracker_sparql_so, tracker_sparql_pfns, v1, builder, tracker_sparql_builder, object_unvalidated);
+	DLSYM(libtracker_sparql_so, tracker_sparql_pfns, v1, builder, tracker_sparql_builder, object_boolean);
+	DLSYM(libtracker_sparql_so, tracker_sparql_pfns, v1, builder, tracker_sparql_builder, object_int64);
+	DLSYM(libtracker_sparql_so, tracker_sparql_pfns, v1, builder, tracker_sparql_builder, object_date);
+	DLSYM(libtracker_sparql_so, tracker_sparql_pfns, v1, builder, tracker_sparql_builder, object_double);
+	DLSYM(libtracker_sparql_so, tracker_sparql_pfns, v1, builder, tracker_sparql_builder, object_blank_open);
+	DLSYM(libtracker_sparql_so, tracker_sparql_pfns, v1, builder, tracker_sparql_builder, object_blank_close);
+	DLSYM(libtracker_sparql_so, tracker_sparql_pfns, v1, builder, tracker_sparql_builder, prepend);
+	DLSYM(libtracker_sparql_so, tracker_sparql_pfns, v1, builder, tracker_sparql_builder, append);
 
 	/** TrackerExtractInfo **/
 
-	DLSYM(libtracker_extract_so, tracker_extract_info_get_type);
-	DLSYM(libtracker_extract_so, tracker_extract_info_ref);
-	DLSYM(libtracker_extract_so, tracker_extract_info_unref);
-	DLSYM(libtracker_extract_so, tracker_extract_info_get_file);
-	DLSYM(libtracker_extract_so, tracker_extract_info_get_mimetype);
-	DLSYM(libtracker_extract_so, tracker_extract_info_get_preupdate_builder);
-	DLSYM(libtracker_extract_so, tracker_extract_info_get_postupdate_builder);
-	DLSYM(libtracker_extract_so, tracker_extract_info_get_metadata_builder);
+	DLSYM(libtracker_extract_so, tracker_extract_pfns, v1, info, tracker_extract_info, get_type);
+	DLSYM(libtracker_extract_so, tracker_extract_pfns, v1, info, tracker_extract_info, ref);
+	DLSYM(libtracker_extract_so, tracker_extract_pfns, v1, info, tracker_extract_info, unref);
+	DLSYM(libtracker_extract_so, tracker_extract_pfns, v1, info, tracker_extract_info, get_file);
+	DLSYM(libtracker_extract_so, tracker_extract_pfns, v1, info, tracker_extract_info, get_mimetype);
+	DLSYM(libtracker_extract_so, tracker_extract_pfns, v1, info, tracker_extract_info, get_preupdate_builder);
+	DLSYM(libtracker_extract_so, tracker_extract_pfns, v1, info, tracker_extract_info, get_postupdate_builder);
+	DLSYM(libtracker_extract_so, tracker_extract_pfns, v1, info, tracker_extract_info, get_metadata_builder);
 
 	rp_tracker_api = 1;
 	return 0;
