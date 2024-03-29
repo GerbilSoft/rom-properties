@@ -131,7 +131,7 @@ public:
 
 public:
 	// DMG RAM size array
-	static constexpr array<uint8_t, 6> dmg_ram_size = {{0, 2, 8, 32, 128, 64}};
+	static const array<uint8_t, 6> dmg_ram_size;
 
 public:
 	enum class RomType {
@@ -287,6 +287,9 @@ const array<DMGPrivate::dmg_cart_type, 4> DMGPrivate::dmg_cart_types_end = {{
 	{DMG_Hardware::HUC3, 0},
 	{DMG_Hardware::HUC1, DMG_FEATURE_RAM|DMG_FEATURE_BATTERY},
 }};
+
+// DMG RAM size array
+const array<uint8_t, 6> DMGPrivate::dmg_ram_size = {{0, 2, 8, 32, 128, 64}};
 
 DMGPrivate::DMGPrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
@@ -868,7 +871,7 @@ int DMG::isRomSupported_static(const DetectInfo *info)
 	/**
 	* Nintendo's logo which is checked by bootrom.
 	* (Top half only.)
-	* 
+	*
 	* NOTE: CGB bootrom only checks the top half of the logo.
 	* (see 0x00D1 of CGB IPL)
 	*/

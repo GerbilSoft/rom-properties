@@ -64,16 +64,7 @@ public:
 	 *
 	 * TODO: Per-system defaults?
 	 */
-	static constexpr array<uint8_t, 8> defImgTypePrio = {{
-		RomData::IMG_EXT_TITLE_SCREEN,	// WiiWare only
-		RomData::IMG_EXT_MEDIA,
-		RomData::IMG_EXT_COVER,
-		RomData::IMG_EXT_BOX,
-		RomData::IMG_INT_IMAGE,
-		RomData::IMG_INT_MEDIA,
-		RomData::IMG_INT_ICON,
-		RomData::IMG_INT_BANNER,
-	}};
+	static const array<uint8_t, 8> defImgTypePrio;
 
 	// Image type priority data.
 	// Managed as a single block in order to reduce
@@ -92,7 +83,7 @@ public:
 	// PAL language codes for GameTDB (NULL-terminated array)
 	// NOTE: 'au' is technically not a language code, but
 	// GameTDB handles it as a separate language.
-	static constexpr array<uint32_t, 9+1> pal_lc = {{'au', 'de', 'en', 'es', 'fr', 'it', 'nl', 'pt', 'ru', 0}};
+	static const array<uint32_t, 9+1> pal_lc;
 
 	// Download options
 	uint32_t palLanguageForGameTDB;
@@ -130,11 +121,7 @@ public:
 	static constexpr Config::ImgBandwidth imgBandwidthMetered_default = Config::ImgBandwidth::NormalRes;
 
 	// DMG title screen mode [index is ROM type]
-	static constexpr array<Config::DMG_TitleScreen_Mode, static_cast<size_t>(Config::DMG_TitleScreen_Mode::Max)> dmgTSMode_default = {{
-		Config::DMG_TitleScreen_Mode::DMG,
-		Config::DMG_TitleScreen_Mode::SGB,
-		Config::DMG_TitleScreen_Mode::CGB
-	}};
+	static const array<Config::DMG_TitleScreen_Mode, static_cast<size_t>(Config::DMG_TitleScreen_Mode::Max)> dmgTSMode_default;
 
 	// Other options
 	static constexpr bool showDangerousPermissionsOverlayIcon_default = true;
@@ -149,6 +136,36 @@ public:
 // Using a static non-pointer variable in order to
 // handle proper destruction when the DLL is unloaded.
 Config ConfigPrivate::instance;
+
+/**
+ * Default image type priority.
+ * Used if a custom configuration is not defined
+ * for a given system.
+ *
+ * TODO: Per-system defaults?
+ */
+const array<uint8_t, 8> ConfigPrivate::defImgTypePrio = {{
+	RomData::IMG_EXT_TITLE_SCREEN,	// WiiWare only
+	RomData::IMG_EXT_MEDIA,
+	RomData::IMG_EXT_COVER,
+	RomData::IMG_EXT_BOX,
+	RomData::IMG_INT_IMAGE,
+	RomData::IMG_INT_MEDIA,
+	RomData::IMG_INT_ICON,
+	RomData::IMG_INT_BANNER,
+}};
+
+// PAL language codes for GameTDB (NULL-terminated array)
+// NOTE: 'au' is technically not a language code, but
+// GameTDB handles it as a separate language.
+const array<uint32_t, 9+1> ConfigPrivate::pal_lc = {{'au', 'de', 'en', 'es', 'fr', 'it', 'nl', 'pt', 'ru', 0}};
+
+// DMG title screen mode [index is ROM type]
+const array<Config::DMG_TitleScreen_Mode, static_cast<size_t>(Config::DMG_TitleScreen_Mode::Max)> ConfigPrivate::dmgTSMode_default = {{
+	Config::DMG_TitleScreen_Mode::DMG,
+	Config::DMG_TitleScreen_Mode::SGB,
+	Config::DMG_TitleScreen_Mode::CGB
+}};
 
 ConfigPrivate::ConfigPrivate()
 	: super("rom-properties.conf")

@@ -114,14 +114,19 @@ public:
 	// Column data alignment table
 	// All values are known to fit in uint8_t.
 	// NOTE: Need to include AlignVCenter.
-	static constexpr array<uint8_t, 4> align_tbl = {{
-		// Order: TXA_D, TXA_L, TXA_C, TXA_R
-		Qt::AlignLeft | Qt::AlignVCenter,
-		Qt::AlignLeft | Qt::AlignVCenter,
-		Qt::AlignCenter,
-		Qt::AlignRight | Qt::AlignVCenter,
-	}};
+	static const array<uint8_t, 4> align_tbl;
 };
+
+// Column data alignment table
+// All values are known to fit in uint8_t.
+// NOTE: Need to include AlignVCenter.
+const array<uint8_t, 4> ListDataModelPrivate::align_tbl = {{
+	// Order: TXA_D, TXA_L, TXA_C, TXA_R
+	Qt::AlignLeft | Qt::AlignVCenter,
+	Qt::AlignLeft | Qt::AlignVCenter,
+	Qt::AlignCenter,
+	Qt::AlignRight | Qt::AlignVCenter,
+}};
 
 ListDataModelPrivate::ListDataModelPrivate(ListDataModel *q)
 	: q_ptr(q)

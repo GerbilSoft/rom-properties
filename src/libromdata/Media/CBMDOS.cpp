@@ -151,7 +151,7 @@ public:
 
 	// U+FFFD: Unicode replacement character
 	// Used by various conversion functions if a character could not be converted.
-	static constexpr const char uFFFD[] = "\xEF\xBF\xBD";
+	static const char uFFFD[4];
 
 public:
 	/**
@@ -251,6 +251,10 @@ const char *const CBMDOSPrivate::mimeTypes[] = {
 const RomDataInfo CBMDOSPrivate::romDataInfo = {
 	"CBMDOS", exts, mimeTypes
 };
+
+// U+FFFD: Unicode replacement character
+// Used by various conversion functions if a character could not be converted.
+const char CBMDOSPrivate::uFFFD[4] = "\xEF\xBF\xBD";
 
 CBMDOSPrivate::CBMDOSPrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)

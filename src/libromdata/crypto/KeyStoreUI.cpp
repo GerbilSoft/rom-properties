@@ -181,10 +181,7 @@ public:
 
 public:
 	// Hexadecimal lookup table
-	static constexpr array<char, 16> hex_lookup = {{
-		'0','1','2','3','4','5','6','7',
-		'8','9','A','B','C','D','E','F',
-	}};
+	static const array<char, 16> hex_lookup;
 
 	/**
 	 * Convert a binary key to a hexadecimal string.
@@ -233,6 +230,12 @@ const array<KeyStoreUIPrivate::EncKeyFns_t, 4> KeyStoreUIPrivate::encKeyFns = {{
 	ENCKEYFNS(CtrKeyScrambler),
 	ENCKEYFNS(N3DSVerifyKeys),
 	ENCKEYFNS(Xbox360_XEX),
+}};
+
+// Hexadecimal lookup table
+const array<char, 16> KeyStoreUIPrivate::hex_lookup = {{
+	'0','1','2','3','4','5','6','7',
+	'8','9','A','B','C','D','E','F',
 }};
 
 KeyStoreUIPrivate::KeyStoreUIPrivate(KeyStoreUI *q)

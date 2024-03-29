@@ -61,9 +61,7 @@ public:
 	bool svLoaded;	// True if svHeader was read.
 
 	// Wii_Bk_Header_t magic
-	static constexpr array<uint8_t, 8> bk_header_magic = {{
-		0x00, 0x00, 0x00, 0x70, 0x42, 0x6B, 0x00, 0x01
-	}};
+	static const array<uint8_t, 8> bk_header_magic;
 
 	/**
 	 * Round a value to the next highest multiple of 64.
@@ -110,6 +108,11 @@ const char *const WiiSavePrivate::mimeTypes[] = {
 const RomDataInfo WiiSavePrivate::romDataInfo = {
 	"WiiSave", exts, mimeTypes
 };
+
+// Wii_Bk_Header_t magic
+const array<uint8_t, 8> WiiSavePrivate::bk_header_magic = {{
+	0x00, 0x00, 0x00, 0x70, 0x42, 0x6B, 0x00, 0x01
+}};
 
 WiiSavePrivate::WiiSavePrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)

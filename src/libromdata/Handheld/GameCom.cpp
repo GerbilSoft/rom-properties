@@ -57,12 +57,7 @@ protected:
 	// Palette
 	// NOTE: Index 0 is white; index 3 is black.
 	// TODO: Use colors closer to the original screen?
-	static constexpr array<uint32_t, 4> gcom_palette = {{
-		0xFFFFFFFF,
-		0xFFC0C0C0,
-		0xFF808080,
-		0xFF000000,
-	}};
+	static const array<uint32_t, 4> gcom_palette;
 
 	/**
 	 * Decompress game.com RLE data.
@@ -108,6 +103,16 @@ const char *const GameComPrivate::mimeTypes[] = {
 const RomDataInfo GameComPrivate::romDataInfo = {
 	"GameCom", exts, mimeTypes
 };
+
+// Palette
+// NOTE: Index 0 is white; index 3 is black.
+// TODO: Use colors closer to the original screen?
+const array<uint32_t, 4> GameComPrivate::gcom_palette = {{
+	0xFFFFFFFF,
+	0xFFC0C0C0,
+	0xFF808080,
+	0xFF000000,
+}};
 
 GameComPrivate::GameComPrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
