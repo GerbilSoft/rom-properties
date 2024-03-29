@@ -8,6 +8,7 @@
 
 // Tracker packages on most systems, including Ubuntu and Gentoo,
 // do not install headers for libtracker-extract.
+#pragma once
 
 #include <glib.h>
 #include <glib-object.h>

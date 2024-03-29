@@ -8,6 +8,7 @@
 
 // Tracker packages on most systems, including Ubuntu and Gentoo,
 // do not install headers for libtracker-extract.
+#pragma once
 
 #include <glib.h>
 #include <glib-object.h>
@@ -17,16 +18,8 @@ G_BEGIN_DECLS
 
 /** TrackerSparqlBuilder **/
 
-#define TRACKER_SPARQL_TYPE_BUILDER (tracker_sparql_builder_get_type ())
-#define TRACKER_SPARQL_BUILDER(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), TRACKER_SPARQL_TYPE_BUILDER, TrackerSparqlBuilder))
-#define TRACKER_SPARQL_BUILDER_CLASS(klass) (G_TYPE_CHECK_CLASS_CAST ((klass), TRACKER_SPARQL_TYPE_BUILDER, TrackerSparqlBuilderClass))
-#define TRACKER_SPARQL_IS_BUILDER(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), TRACKER_SPARQL_TYPE_BUILDER))
-#define TRACKER_SPARQL_IS_BUILDER_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), TRACKER_SPARQL_TYPE_BUILDER))
-#define TRACKER_SPARQL_BUILDER_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), TRACKER_SPARQL_TYPE_BUILDER, TrackerSparqlBuilderClass))
-
 typedef struct _TrackerSparqlBuilder TrackerSparqlBuilder;
-typedef struct _TrackerSparqlBuilderClass TrackerSparqlBuilderClass;
-typedef struct _TrackerSparqlBuilder TrackerSparqlBuilderPrivate;
+typedef struct _TrackerSparqlBuilderPrivate TrackerSparqlBuilderPrivate;
 
 struct _TrackerSparqlBuilder {
 	GObject parent_instance;
