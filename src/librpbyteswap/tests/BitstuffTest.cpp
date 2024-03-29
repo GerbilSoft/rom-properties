@@ -13,8 +13,12 @@
 // bit stuff
 #include "librpbyteswap/bitstuff.h"
 
-// C includes. (C++ namespace)
+// C includes
+#include <stdlib.h>
+
+// C includes (C++ namespace)
 #include <cstdio>
+#include <ctime>
 
 namespace LibRpCpu { namespace Tests {
 
@@ -88,6 +92,35 @@ TEST_F(BitstuffTest, popcount)
 }
 
 /**
+ * Test popcount() using random values [inline version that may use a compiler built-in]
+ */
+TEST_F(BitstuffTest, rand_popcount)
+{
+	// Testing 16,384 random values.
+	// NOTE: MSVC RAND_MAX is 32,767, so we only get 15 bits of random data per rand() call.
+	for (unsigned int i = 0; i < 16384; i++) {
+		unsigned int testval = 0;
+		unsigned int popcnt_expected = 0;
+
+		int rnd = 0;
+		for (unsigned int j = 0; j < 32; j++, rnd >>= 1) {
+			if (j == 0 || j == 15 || j == 30) {
+				rnd = rand();
+			}
+			const unsigned int bit = (rnd & 1);
+			testval <<= 1;
+			testval |= bit;
+			popcnt_expected += bit;
+		}
+
+		// Test the popcount() function.
+		EXPECT_EQ(popcnt_expected, popcount(testval)) << "Test value: 0x" <<
+			std::setw(8) << std::setfill('0') << std::hex << testval <<
+			std::setw(0) << std::setfill(' ') << std::dec;
+	}
+}
+
+/**
  * Test popcount_c() [C version]
  */
 TEST_F(BitstuffTest, popcount_c)
@@ -119,6 +152,35 @@ TEST_F(BitstuffTest, popcount_c)
 	// Single bit
 	for (unsigned int i = 0; i < 32; i++) {
 		EXPECT_EQ(1U, popcount_c(1U << i));
+	}
+}
+
+/**
+ * Test popcount_c() using random values [C version]
+ */
+TEST_F(BitstuffTest, rand_popcount_c)
+{
+	// Testing 16,384 random values.
+	// NOTE: MSVC RAND_MAX is 32,767, so we only get 15 bits of random data per rand() call.
+	for (unsigned int i = 0; i < 16384; i++) {
+		unsigned int testval = 0;
+		unsigned int popcnt_expected = 0;
+
+		int rnd = 0;
+		for (unsigned int j = 0; j < 32; j++, rnd >>= 1) {
+			if (j == 0 || j == 15 || j == 30) {
+				rnd = rand();
+			}
+			const unsigned int bit = (rnd & 1);
+			testval <<= 1;
+			testval |= bit;
+			popcnt_expected += bit;
+		}
+
+		// Test the popcount_c() function.
+		EXPECT_EQ(popcnt_expected, popcount_c(testval)) << "Test value: 0x" <<
+			std::setw(8) << std::setfill('0') << std::hex << testval <<
+			std::setw(0) << std::setfill(' ') << std::dec;
 	}
 }
 
@@ -176,6 +238,9 @@ extern "C" int gtest_main(int argc, TCHAR *argv[])
 {
 	fputs("LibRpCpu test suite: bitstuff.h tests\n\n", stderr);
 	fflush(nullptr);
+
+	// Initialize the random number generator.
+	srand(time(nullptr));
 
 	// coverity[fun_call_w_exception]: uncaught exceptions cause nonzero exit anyway, so don't warn.
 	::testing::InitGoogleTest(&argc, argv);
