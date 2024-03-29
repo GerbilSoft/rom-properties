@@ -294,7 +294,7 @@ static const RomDataFns romDataFns_header[] = {
 	// Other
 	GetRomDataFns(Amiibo, ATTR_HAS_THUMBNAIL),
 	GetRomDataFns(MachO, ATTR_NONE),
-	GetRomDataFns(NintendoBadge, ATTR_HAS_THUMBNAIL),
+	GetRomDataFns(NintendoBadge, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA),
 	GetRomDataFns(Wim, ATTR_NONE),
 
 	// The following formats have 16-bit magic numbers,

@@ -621,7 +621,8 @@ int NintendoBadge::loadFieldData(void)
 		// Field data *has* been loaded...
 		return 0;
 	} else if (!d->file) {
-		// File isn't open.
+		// No file.
+		// A closed file is OK, since we already loaded the header.
 		return -EBADF;
 	} else if (!d->isValid || (int)d->badgeType < 0) {
 		// Unknown badge type.
@@ -640,19 +641,25 @@ int NintendoBadge::loadFieldData(void)
 	const char *const s_name_title = C_("NintendoBadge", "Name");
 	const char *const s_set_name_title = C_("NintendoBadge", "Set Name");
 	switch (d->badgeType) {
+		default:
+			// Unknown.
+			assert(!"Unknown badge type. (Should not get here!)");
+			d->fields.addField_string(s_type_title, C_("RomData", "Unknown"));
+			break;
+
 		case NintendoBadgePrivate::BadgeType::PRBS: {
 			d->fields.addField_string(s_type_title,
 				d->megaBadge ? C_("NintendoBadge|Type", "Mega Badge")
 				             : C_("NintendoBadge|Type", "Individual Badge"));
 
-			// PRBS-specific fields.
+			// PRBS-specific fields
 			const Badge_PRBS_Header *const prbs = &d->badgeHeader.prbs;
 
 			// Name: Check if English is valid.
 			// If it is, we'll de-duplicate fields.
 			const bool dedupe_titles = (prbs->name[N3DS_LANG_ENGLISH][0] != cpu_to_le16('\0'));
 
-			// Name field.
+			// Name field
 			// NOTE: There are 16 entries for names, but only 12 Nintendo 3DS langauges...
 			RomFields::StringMultiMap_t *const pMap_name = new RomFields::StringMultiMap_t();
 			for (int langID = 0; langID < N3DS_LANG_MAX; langID++) {
@@ -693,25 +700,25 @@ int NintendoBadge::loadFieldData(void)
 				d->fields.addField_string(s_name_title, C_("RomData", "Unknown"));
 			}
 
-			// Badge ID.
+			// Badge ID
 			d->fields.addField_string_numeric(C_("NintendoBadge", "Badge ID"),
 				le32_to_cpu(prbs->badge_id));
 
-			// Badge filename.
+			// Badge filename
 			d->fields.addField_string(C_("RomData", "Filename"),
 				latin1_to_utf8(prbs->filename, sizeof(prbs->filename)));
 
-			// Set name.
+			// Set name
 			d->fields.addField_string(s_set_name_title,
 				latin1_to_utf8(prbs->setname, sizeof(prbs->setname)));
 
-			// Mega badge size.
+			// Mega badge size
 			if (d->megaBadge) {
 				d->fields.addField_dimensions(C_("NintendoBadge", "Mega Badge Size"),
 					prbs->mb_width, prbs->mb_height);
 			}
 
-			// Title ID.
+			// Title ID
 			const char *const launch_title_id_title = C_("NintendoBadge", "Launch Title ID");
 			if (prbs->title_id.id == cpu_to_le64(0xFFFFFFFFFFFFFFFFULL)) {
 				// No title ID.
@@ -758,10 +765,10 @@ int NintendoBadge::loadFieldData(void)
 		case NintendoBadgePrivate::BadgeType::CABS: {
 			d->fields.addField_string(s_type_title, C_("NintendoBadge", "Badge Set"));
 
-			// CABS-specific fields.
+			// CABS-specific fields
 			const Badge_CABS_Header *const cabs = &d->badgeHeader.cabs;
 
-			// Name.
+			// Name
 			// Check that the field is valid.
 			if (cabs->name[lang][0] == 0) {
 				// Not valid. Check English.
@@ -786,24 +793,109 @@ int NintendoBadge::loadFieldData(void)
 					utf16le_to_utf8(cabs->name[lang], sizeof(cabs->name[lang])));
 			}
 
-			// Badge ID.
+			// Badge ID
 			d->fields.addField_string_numeric(C_("NintendoBadge", "Set ID"), cabs->set_id);
 
-			// Set name.
+			// Set name
 			d->fields.addField_string(s_set_name_title,
 				latin1_to_utf8(cabs->setname, sizeof(cabs->setname)));
 			break;
 		}
-
-		default:
-			// Unknown.
-			assert(!"Unknown badge type. (Should not get here!)");
-			d->fields.addField_string(s_type_title, C_("RomData", "Unknown"));
-			break;
 	}
 
 	// Finished reading the field data.
 	return static_cast<int>(d->fields.count());
+}
+
+/**
+ * Load metadata properties.
+ * Called by RomData::metaData() if the metadata hasn't been loaded yet.
+ * @return Number of metadata properties read on success; negative POSIX error code on error.
+ */
+int NintendoBadge::loadMetaData(void)
+{
+	RP_D(NintendoBadge);
+	if (d->metaData != nullptr) {
+		// Metadata *has* been loaded...
+		return 0;
+	} else if (!d->file) {
+		// No file.
+		// A closed file is OK, since we already loaded the header.
+		return -EBADF;
+	} else if (!d->isValid || (int)d->badgeType < 0) {
+		// Unknown badge type.
+		return -EIO;
+	}
+
+	// Create the metadata object.
+	d->metaData = new RomMetaData();
+	d->metaData->reserve(1);	// Maximum of 1 metadata property.
+
+	// Title
+	int lang = NintendoLanguage::getN3DSLanguage();
+	switch (d->badgeType) {
+		default:
+			// Unknown.
+			assert(!"Unknown badge type. (Should not get here!)");
+			break;
+
+		case NintendoBadgePrivate::BadgeType::PRBS: {
+			// Check the PRBS for the current language ID.
+			const Badge_PRBS_Header *const prbs = &d->badgeHeader.prbs;
+
+			if (prbs->name[lang][0] == cpu_to_le16('\0')) {
+				// Not valid. Check English.
+				if (prbs->name[N3DS_LANG_ENGLISH][0] != cpu_to_le16('\0')) {
+					// English is valid.
+					lang = N3DS_LANG_ENGLISH;
+				} else {
+					// Not valid. Check Japanese.
+					if (prbs->name[N3DS_LANG_JAPANESE][0] != cpu_to_le16('\0')) {
+						// Japanese is valid.
+						lang = N3DS_LANG_JAPANESE;
+					} else {
+						// Not valid...
+						// Default to English anyway.
+						lang = N3DS_LANG_ENGLISH;
+					}
+				}
+			}
+
+			d->metaData->addMetaData_string(Property::Title,
+				utf16le_to_utf8(prbs->name[lang], sizeof(prbs->name[lang])));
+			break;
+		}
+
+		case NintendoBadgePrivate::BadgeType::CABS: {
+			// Check the CABS for the current language ID.
+			const Badge_CABS_Header *const cabs = &d->badgeHeader.cabs;
+
+			if (cabs->name[lang][0] == cpu_to_le16('\0')) {
+				// Not valid. Check English.
+				if (cabs->name[N3DS_LANG_ENGLISH][0] != cpu_to_le16('\0')) {
+					// English is valid.
+					lang = N3DS_LANG_ENGLISH;
+				} else {
+					// Not valid. Check Japanese.
+					if (cabs->name[N3DS_LANG_JAPANESE][0] != cpu_to_le16('\0')) {
+						// Japanese is valid.
+						lang = N3DS_LANG_JAPANESE;
+					} else {
+						// Not valid...
+						// Default to English anyway.
+						lang = N3DS_LANG_ENGLISH;
+					}
+				}
+			}
+
+			d->metaData->addMetaData_string(Property::Title,
+				utf16le_to_utf8(cabs->name[lang], sizeof(cabs->name[lang])));
+			break;
+		}
+	}
+
+	// Finished reading the metadata.
+	return static_cast<int>(d->metaData->count());
 }
 
 /**
