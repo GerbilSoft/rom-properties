@@ -296,8 +296,9 @@ int VirtualBoy::loadFieldData(void)
 	if (!d->fields.empty()) {
 		// Field data *has* been loaded...
 		return 0;
-	} else if (!d->file || !d->file->isOpen()) {
-		// File isn't open.
+	} else if (!d->file) {
+		// No file.
+		// A closed file is OK, since we already loaded the footer.
 		return -EBADF;
 	} else if (!d->isValid) {
 		// ROM image isn't valid.
@@ -312,7 +313,7 @@ int VirtualBoy::loadFieldData(void)
 	d->fields.addField_string(C_("RomData", "Title"),
 		cp1252_sjis_to_utf8(romFooter->title, sizeof(romFooter->title)));
 
-	// Game ID and publisher.
+	// Game ID
 	string id6(romFooter->gameid, sizeof(romFooter->gameid));
 	id6.append(romFooter->publisher, sizeof(romFooter->publisher));
 	d->fields.addField_string(C_("RomData", "Game ID"), latin1_to_utf8(id6));
@@ -362,6 +363,62 @@ int VirtualBoy::loadFieldData(void)
 	}
 
 	return static_cast<int>(d->fields.count());
+}
+
+/**
+ * Load metadata properties.
+ * Called by RomData::metaData() if the metadata hasn't been loaded yet.
+ * @return Number of metadata properties read on success; negative POSIX error code on error.
+ */
+int VirtualBoy::loadMetaData(void)
+{
+	RP_D(VirtualBoy);
+	if (d->metaData != nullptr) {
+		// Metadata *has* been loaded...
+		return 0;
+	} else if (!d->file) {
+		// No file.
+		// A closed file is OK, since we already loaded the footer.
+		return -EBADF;
+	} else if (!d->isValid) {
+		// Unknown save banner file type.
+		return -EIO;
+	}
+
+	// Create the metadata object.
+	d->metaData = new RomMetaData();
+	d->metaData->reserve(2);	// Maximum of 2 metadata properties.
+
+	// Virtual Boy ROM footer, excluding the vector table.
+	const VB_RomFooter *const romFooter = &d->romFooter;
+
+	// Title
+	d->metaData->addMetaData_string(Property::Title,
+		cp1252_sjis_to_utf8(romFooter->title, sizeof(romFooter->title)));
+
+	// Publisher (aka manufacturer)
+	// Look up the publisher.
+	const char *const publisher = NintendoPublishers::lookup(romFooter->publisher);
+	string s_publisher;
+	if (publisher) {
+		s_publisher = publisher;
+	} else {
+		if (ISALNUM(romFooter->publisher[0]) &&
+		    ISALNUM(romFooter->publisher[1]))
+		{
+			s_publisher = rp_sprintf(C_("RomData", "Unknown (%.2s)"),
+				romFooter->publisher);
+		} else {
+			s_publisher = rp_sprintf(C_("RomData", "Unknown (%02X %02X)"),
+				static_cast<uint8_t>(romFooter->publisher[0]),
+				static_cast<uint8_t>(romFooter->publisher[1]));
+		}
+	}
+	d->fields.addField_string(C_("RomData", "Publisher"), s_publisher);
+	d->metaData->addMetaData_string(Property::Publisher, s_publisher);
+
+	// Finished reading the metadata.
+	return static_cast<int>(d->metaData->count());
 }
 
 }
