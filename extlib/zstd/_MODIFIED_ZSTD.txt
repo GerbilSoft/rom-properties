@@ -1,11 +1,11 @@
-This copy of zstd-1.5.4 is a modified version of the original.
+This copy of zstd-1.5.6 is a modified version of the original.
 
-commit 945f27758c0fd67b636103a38dbf050266c6b90a
-Merge pull request #3487 from facebook/dev
+commit 794ea1b0afca0f020f4e57b6732332231fb23c70
+Merge pull request #3984 from facebook/dev
 
-release v1.5.4
+v1.5.6
 
-Tag: v1.5.4
+Tag: v1.5.6
 
 The following changes have been made to the original:
 
@@ -13,5 +13,7 @@ The following changes have been made to the original:
 
 - Added the Win32 resource file to the DLL build.
 
-To obtain the original zstd-1.5.4, visit:
+- Some fixes for ARM64EC on Windows.
+
+To obtain the original zstd-1.5.6, visit:
 https://github.com/facebook/zstd
