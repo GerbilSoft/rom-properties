@@ -42,7 +42,7 @@ Vcs-Browser: https://github.com/GerbilSoft/rom-properties
 
 Package: rom-properties-all
 Architecture: any
-Depends: ${misc:Depends}, libromdata5, rom-properties-kde4, rom-properties-kf5, rom-properties-xfce, rom-properties-gtk3, rom-properties-cli, rom-properties-utils, rom-properties-lang, rom-properties-thumbnailer-dbus
+Depends: ${misc:Depends}, libromdata5, rom-properties-kde4, rom-properties-kf5, rom-properties-xfce, rom-properties-gtk3, rom-properties-cli, rom-properties-tracker, rom-properties-utils, rom-properties-lang, rom-properties-thumbnailer-dbus
 Description: ROM Properties Page shell extension
  This shell extension provides thumbnailing and property page functionality
  for ROM images, disc images, and save files for various game consoles,
@@ -100,7 +100,7 @@ Description: ROM Properties Page shell extension
 Package: rom-properties-xfce
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}, libromdata5, rom-properties-utils, rom-properties-xdg, rom-properties-thumbnailer-dbus
-Recommends: rom-properties-lang
+Recommends: rom-properties-lang, rom-properties-tracker
 Description: ROM Properties Page shell extension
  This shell extension provides thumbnailing and property page functionality
  for ROM images, disc images, and save files for various game consoles,
@@ -114,7 +114,7 @@ Description: ROM Properties Page shell extension
 Package: rom-properties-gtk3
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}, libromdata5, rom-properties-utils, rom-properties-xdg, rom-properties-thumbnailer-dbus
-Recommends: rom-properties-lang
+Recommends: rom-properties-lang, rom-properties-tracker
 Conflicts: rom-properties-gnome, rom-properties-mate, rom-properties-cinnamon, rom-properties-gtk3-common
 Replaces: rom-properties-gnome, rom-properties-mate, rom-properties-cinnamon, rom-properties-gtk3-common
 Description: ROM Properties Page shell extension
@@ -140,6 +140,17 @@ Description: ROM Properties Page shell extension
  including Nintendo GameCube and Wii.
  .
  This package contains the command line version.
+
+Package: rom-properties-tracker
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, libromdata5
+Description: ROM Properties Page shell extension
+ This shell extension provides thumbnailing and property page functionality
+ for ROM images, disc images, and save files for various game consoles,
+ including Nintendo GameCube and Wii.
+ .
+ This package contains the Tracker metadata extractor module for
+ GNOME desktops.
 
 Package: rom-properties-utils
 Architecture: any
