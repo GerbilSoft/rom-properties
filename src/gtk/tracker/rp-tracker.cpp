@@ -298,7 +298,8 @@ tracker_extract_get_metadata(TrackerExtractInfo *info, GError **error)
 			// TODO: Specific type of file system? ("nfo:filesystemType")
 			break;
 		case RomData::FileType::SaveFile:
-			// TODO
+			// FIXME: Not the best type...
+			fileTypes[0] = "nfo:Document";
 			break;
 		case RomData::FileType::EmbeddedDiscImage:
 			fileTypes[0] = "nfo:Filesystem";

@@ -1,0 +1,6 @@
+[ExtractorRule]
+ModulePath=libextract-rom-properties.so
+MimeTypes=application/x-dreamcast-vms;application/x-dreamcast-vms-info;application/x-dreamcast-dci;application/x-gamecube-save;application/x-ique-cmd;application/x-ique-dat;application/x-ps1-save;application/x-wii-save;
+# FIXME: Not the best type...
+FallbackRdfTypes=nfo:Document;
+Graph=tracker:Documents

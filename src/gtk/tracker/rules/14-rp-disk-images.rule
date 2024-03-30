@@ -1,0 +1,5 @@
+[ExtractorRule]
+ModulePath=libextract-rom-properties.so
+MimeTypes=application/x-cbm-d64;application/x-cbm-d71;application/x-cbm-d80;application/x-cbm-d82;application/x-cbm-d81;application/x-cbm-d67;application/x-cbm-g64;application/x-cbm-g71;application/x-c64-datadisk;application/x-c64-rawdisk;application/x-d64;application/x-d71;application/x-d80;application/x-d82;application/x-d81;application/x-d67;application/x-g64;application/x-g71;application/x-nintendo-3ds-emmc;application/x-ms-wim;
+FallbackRdfTypes=nfo:Filesystem;
+Graph=tracker:Software

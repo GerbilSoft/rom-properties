@@ -1,0 +1,5 @@
+[ExtractorRule]
+ModulePath=libextract-rom-properties.so
+MimeTypes=application/x-nintendo-dsi-tad;application/x-wii-wad;application/x-doom-wad;application/x-nintendo-3ds-cia;application/x-ctr-cia;
+FallbackRdfTypes=nfo:Application;
+Graph=tracker:Software

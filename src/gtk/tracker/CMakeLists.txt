@@ -75,8 +75,14 @@ IF(0) #BUILD_TRACKER_EXTRACTOR)
 	# - tracker-2.0: share/tracker-miners/extract-rules/
 	# - tracker-3.0: share/tracker3-miners/extract-rules
 	SET(RULE_FILES
+		rules/14-rp-application-packages.rule
 		rules/14-rp-audio.rule
+		rules/14-rp-banners.rule
+		rules/14-rp-cd-images.rule
+		rules/14-rp-disk-images.rule
+		rules/14-rp-executables.rule
 		rules/14-rp-rom-images.rule
+		rules/14-rp-save-files.rule
 		rules/14-rp-textures.rule
 		)
 	INSTALL(FILES ${RULE_FILES}
