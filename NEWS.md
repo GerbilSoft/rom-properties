@@ -11,6 +11,8 @@
     Key Manager now uses GtkRevealer if using GTK 3.10 or later.
   * Linux: rp-stub now has a test program for RomDataView, which can be
     accessed by specifying `-R` and a filename.
+  * A GNOME Tracker extractor module is now included for metadata extraction
+    on GNOME systems.
 
 * New parsers:
   * PalmOS: Palm OS executables and resource files (.prc). Thumbnailing is
@@ -26,6 +28,12 @@
 
 * New parser features:
   * EXE: Use numeric sorting for ordinals and hints.
+  * Added metadata extraction for the following file types:
+    * Atari Lynx ROM images
+    * Nintendo Badge Arcade badge files
+    * Nintendo Virtual Boy ROM images
+    * Nintendo Wii save files
+    * Windows/DOS executables
 
 * Bug fixes:
   * On Linux, rp-config now correctly detects KDE Plasma 6 and uses the
