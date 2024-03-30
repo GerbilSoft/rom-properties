@@ -55,7 +55,7 @@ jobs:
 
     - name: Build rom-properties (Release build)
       run: |
-        cmake . -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=ON -G Ninja
+        cmake . -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=ON -DTRACKER_INSTALL_API_VERSION=3 -G Ninja
         ninja
 
     - name: Perform CodeQL Analysis
