@@ -406,6 +406,8 @@ is currently always enabled, so Windows builds are always GPL-3+ at the moment.
 * @ThePBone: German
 * @ionuttbara: Romanian
 * @MaRod92: Italian
+* Motwera: Arabic
+* Chipsum: Arabic
 
 ### Other Contributions
 

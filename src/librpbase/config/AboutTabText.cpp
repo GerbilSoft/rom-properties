@@ -118,6 +118,8 @@ static const array<CreditsData_t, 16+1> creditsData = {{
 	{CreditType::Continue,		"ThePBone", nullptr, nullptr, "de"},
 	{CreditType::Continue,		"ionuttbara", nullptr, nullptr, "ro"},
 	{CreditType::Continue,		"MaRod92", nullptr, nullptr, "it"},
+	{CreditType::Continue,		"Motwera", nullptr, nullptr, "ar"},
+	{CreditType::Continue,		"Chipsum", nullptr, nullptr, "ar"},
 
 	// Contributors
 	{CreditType::Contributor,	"CheatFreak47", nullptr, nullptr, nullptr},
