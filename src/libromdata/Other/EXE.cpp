@@ -613,7 +613,9 @@ EXE::EXE(const IRpFilePtr &file)
 	// NOTE: MSVC handles 'PE\0\0' as 0x00504500,
 	// probably due to the embedded NULL bytes.
 	if (d->hdr.pe.Signature == cpu_to_be32(0x50450000) /*'PE\0\0'*/) {
-		// This is a PE executable.
+		// Portable Executable (Win32/Win64)
+		d->mimeType = "application/vnd.microsoft.portable-executable";
+
 		// Check if it's PE or PE32+.
 		// (.NET is checked in loadFieldData().)
 		switch (le16_to_cpu(d->hdr.pe.OptionalHeader.Magic)) {
@@ -658,8 +660,9 @@ EXE::EXE(const IRpFilePtr &file)
 			}
 		}
 	} else if (d->hdr.ne.sig == cpu_to_be16('NE')) {
-		// New Executable.
+		// New Executable
 		d->exeType = EXEPrivate::ExeType::NE;
+		d->mimeType = "application/x-ms-ne-executable";
 
 		// Check if this is a resource library.
 		// (All segment size values are 0.)
