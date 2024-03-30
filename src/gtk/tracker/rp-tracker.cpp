@@ -291,7 +291,7 @@ tracker_extract_get_metadata(TrackerExtractInfo *info, GError **error)
 			// NOTE: Only using tracker_file_get_content_identifier() if this is API version 3.
 			// tracker_file_get_content_identifier() was added to Tracker 3.3.0-alpha.
 			// TODO: Only if we're using Tracker 3.3.0 or later?
-			gchar *const resource_uri = tracker_file_get_content_identifier(file, NULL, NULL);
+			gchar *const resource_uri = tracker_file_get_content_identifier(file, nullptr, nullptr);
 			resource = tracker_sparql_pfns.v2.resource._new(resource_uri);
 			g_free(resource_uri);
 			break;
