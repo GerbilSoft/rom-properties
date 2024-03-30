@@ -21,8 +21,8 @@
 int rp_tracker_api = 0;
 
 // Module handles
-static void *libtracker_extract_so = NULL;
-static void *libtracker_sparql_so = NULL;
+static void *libtracker_extract_so;
+static void *libtracker_sparql_so;
 
 // Function pointers
 tracker_sparql_pfns_u tracker_sparql_pfns;

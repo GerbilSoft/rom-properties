@@ -37,15 +37,15 @@
 
 // dlopen() pointers for libblkid
 // NOTE: Not dlclose()'d.
-static void *libblkid_so = NULL;
+static void *libblkid_so;
 
 typedef struct blkid_struct_cache *blkid_cache;
 
 extern int blkid_get_cache(blkid_cache *cache, const char *filename);
 extern char *blkid_get_tag_value(blkid_cache cache, const char *tagname, const char *devname);
 
-static __typeof__(blkid_get_cache) *pfn_blkid_get_cache = NULL;
-static __typeof__(blkid_get_tag_value) *pfn_blkid_get_tag_value = NULL;
+static __typeof__(blkid_get_cache) *pfn_blkid_get_cache;
+static __typeof__(blkid_get_tag_value) *pfn_blkid_get_tag_value;
 
 /** Original libtracker-miners-common code starts here **/
 
