@@ -298,7 +298,7 @@ int Intellivision::loadFieldData(void)
 	};
 	vector<string> *const v_flags_bitfield_names = RomFields::strArrayToVector_i18n(
 		"Region", flags_bitfield_names, ARRAY_SIZE(flags_bitfield_names));
-	d->fields.addField_bitfield(C_("Intellivision", "Flags"),
+	d->fields.addField_bitfield(C_("RomData", "Flags"),
 		v_flags_bitfield_names, 2, flags);
 
 	// TODO: Entry point (differs if EXEC is used or not)

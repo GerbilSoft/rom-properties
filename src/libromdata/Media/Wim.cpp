@@ -627,7 +627,7 @@ int Wim::loadFieldData(void)
 
 	vector<string> *const v_wim_flag_names = RomFields::strArrayToVector_i18n(
 		"RomData", wim_flag_names, ARRAY_SIZE(wim_flag_names));
-	d->fields.addField_bitfield(C_("Wim", "Flags"),
+	d->fields.addField_bitfield(C_("RomData", "Flags"),
 		v_wim_flag_names, 3, wimflags);
 
 	// loop through each compression flag and test if it is set

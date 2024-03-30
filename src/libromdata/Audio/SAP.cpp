@@ -605,7 +605,7 @@ int SAP::loadFieldData(void)
 	uint32_t flags = 0;
 	if (tags.ntsc)   flags |= (1U << 0);
 	if (tags.stereo) flags |= (1U << 1);
-	d->fields.addField_bitfield(C_("SAP", "Flags"),
+	d->fields.addField_bitfield(C_("RomData", "Flags"),
 		v_flags_names, 0, flags);
 
 	// Type

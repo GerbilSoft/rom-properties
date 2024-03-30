@@ -543,7 +543,7 @@ int MachO::loadFieldData(void)
 		};
 		vector<string> *const v_flags_bitfield_names = RomFields::strArrayToVector(
 			flags_bitfield_names, ARRAY_SIZE(flags_bitfield_names));
-		d->fields.addField_bitfield(C_("MachO", "Flags"),
+		d->fields.addField_bitfield(C_("RomData", "Flags"),
 			v_flags_bitfield_names, 3, machHeader->flags);
 	}
 

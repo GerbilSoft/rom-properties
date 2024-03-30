@@ -470,7 +470,7 @@ int WiiWIBN::loadFieldData(void)
 	};
 	vector<string> *const v_flags_names = RomFields::strArrayToVector_i18n(
 		"WiiWIBN|Flags", flags_names, ARRAY_SIZE(flags_names));
-	d->fields.addField_bitfield(C_("WiiWIBN", "Flags"),
+	d->fields.addField_bitfield(C_("RomData", "Flags"),
 		v_flags_names, 0, be32_to_cpu(wibnHeader->flags));
 
 	// Finished reading the field data.

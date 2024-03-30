@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties 2.2+\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2024-03-30 17:53-0400\n"
+"POT-Creation-Date: 2024-03-30 18:05-0400\n"
 "PO-Revision-Date: 2023-12-16 19:42\n"
 "Last-Translator: \n"
 "Language-Team: French\n"
@@ -1676,7 +1676,12 @@ msgid "Stereo"
 msgstr "Stéréo"
 
 #: ../src/libromdata/Audio/SAP.cpp:608
-msgctxt "SAP"
+#: ../src/libromdata/Console/Intellivision.cpp:301
+#: ../src/libromdata/Console/WiiWIBN.cpp:473
+#: ../src/libromdata/Handheld/NintendoDS.cpp:1090
+#: ../src/libromdata/Handheld/NintendoDS.cpp:1273
+#: ../src/libromdata/Media/Wim.cpp:630 ../src/libromdata/Other/MachO.cpp:546
+msgctxt "RomData"
 msgid "Flags"
 msgstr ""
 
@@ -3064,11 +3069,6 @@ msgstr ""
 #: ../src/libromdata/Console/Intellivision.cpp:297
 msgctxt "Intellivision|Flags"
 msgid "Skip ECS title screen"
-msgstr ""
-
-#: ../src/libromdata/Console/Intellivision.cpp:301
-msgctxt "Intellivision"
-msgid "Flags"
 msgstr ""
 
 #: ../src/libromdata/Console/iQuePlayer.cpp:640
@@ -4490,11 +4490,6 @@ msgstr ""
 #: ../src/libromdata/Console/WiiWIBN.cpp:469
 msgctxt "WiiWIBN|Flags"
 msgid "No Copy"
-msgstr ""
-
-#: ../src/libromdata/Console/WiiWIBN.cpp:473
-msgctxt "WiiWIBN"
-msgid "Flags"
 msgstr ""
 
 #: ../src/libromdata/Console/Xbox360_STFS.cpp:920
@@ -6117,12 +6112,6 @@ msgctxt "NintendoDS"
 msgid "DS Region Code"
 msgstr ""
 
-#: ../src/libromdata/Handheld/NintendoDS.cpp:1090
-#: ../src/libromdata/Handheld/NintendoDS.cpp:1273
-msgctxt "NintendoDS"
-msgid "Flags"
-msgstr ""
-
 #. tr: DSi-enhanced or DSi-exclusive cartridge.
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1111
 msgctxt "NintendoDS|DSiFileType"
@@ -6806,11 +6795,6 @@ msgstr ""
 #: ../src/libromdata/Media/Wim.cpp:623
 msgctxt "Wim|Flags"
 msgid "Write in progress"
-msgstr ""
-
-#: ../src/libromdata/Media/Wim.cpp:630
-msgctxt "Wim"
-msgid "Flags"
 msgstr ""
 
 #: ../src/libromdata/Media/Wim.cpp:659
@@ -8130,11 +8114,6 @@ msgstr ""
 #: ../src/libromdata/Other/MachO.cpp:521
 msgctxt "MachO"
 msgid "CPU Subtype"
-msgstr ""
-
-#: ../src/libromdata/Other/MachO.cpp:546
-msgctxt "MachO"
-msgid "Flags"
 msgstr ""
 
 #: ../src/libromdata/Other/NintendoBadge.cpp:448

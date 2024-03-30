@@ -1087,7 +1087,7 @@ int NintendoDS::loadFieldData(void)
 			params.headers = nullptr;
 			params.data.single = vv_dsi_flags;
 			params.mxd.checkboxes = romHeader->dsi.flags;
-			d->fields.addField_listData(C_("NintendoDS", "Flags"), &params);
+			d->fields.addField_listData(C_("RomData", "Flags"), &params);
 		}
 		return static_cast<int>(d->fields.count());
 	}
@@ -1270,7 +1270,7 @@ int NintendoDS::loadFieldData(void)
 	params.headers = nullptr;
 	params.data.single = vv_dsi_flags;
 	params.mxd.checkboxes = romHeader->dsi.flags;
-	d->fields.addField_listData(C_("NintendoDS", "Flags"), &params);
+	d->fields.addField_listData(C_("RomData", "Flags"), &params);
 
 	// Finished reading the field data.
 	return static_cast<int>(d->fields.count());
