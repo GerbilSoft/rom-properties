@@ -59,6 +59,7 @@ const char *const EXEPrivate::mimeTypes[] = {
 	// Unofficial MIME types from FreeDesktop.org.
 	"application/x-ms-dos-executable",
 	"application/x-ms-ne-executable",
+	"application/x-dosexec",
 
 	// Unofficial MIME types from Microsoft.
 	// Reference: https://technet.microsoft.com/en-us/library/cc995276.aspx?f=255&MSPPError=-2147217396

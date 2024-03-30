@@ -72,6 +72,7 @@ application/x-sharedlib			# ELF
 application/x-core			# ELF
 application/x-lua			# Lua
 application/vnd.microsoft.portable-executable	# EXE
+application/x-dosexec			# EXE
 application/x-ms-dos-executable		# EXE
 application/x-ms-ne-executable		# EXE
 application/x-msdownload		# EXE
