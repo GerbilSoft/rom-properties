@@ -29,7 +29,6 @@ using namespace LibRpBase;
 using namespace LibRomData;
 
 // C includes (C++ namespace)
-#include <cstdio>
 #include <stdlib.h>
 
 static void
@@ -433,4 +432,17 @@ tracker_extract_get_metadata(TrackerExtractInfo *info, GError **error)
 		tracker_extract_pfns.v2.info.set_resource(info, resource);
 	}
 	return true;
+}
+
+/** Shutdown function **/
+
+// NOTE: The init function had a TrackerModuleThreadAwareness parameter
+// prior to 1.11.2. We can't tell if it's v1 or v2+ at this point,
+// so we'll only implement the shutdown() function.
+
+extern "C"
+G_MODULE_EXPORT void
+tracker_extract_module_shutdown(void)
+{
+	rp_tracker_free_pfn();
 }
