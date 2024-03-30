@@ -16,6 +16,7 @@
 #include "ps1_structs.h"
 
 // Other rom-properties libraries
+#include "librptexture/decoder/ImageDecoder_Linear.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;
