@@ -22,10 +22,13 @@
 #endif /* !GLIB_CHECK_VERSION(2,53,1) && !_WIN32 && __GNUC__ >= 4 */
 
 // libromdata
+#include "librpbase/config/Config.hpp"
 #include "librpbase/RomData.hpp"
 #include "librpbase/RomMetaData.hpp"
+#include "librpfile/FileSystem.hpp"
 #include "libromdata/RomDataFactory.hpp"
 using namespace LibRpBase;
+using namespace LibRpFile;
 using namespace LibRomData;
 
 // C includes (C++ namespace)
@@ -244,9 +247,22 @@ tracker_extract_get_metadata(TrackerExtractInfo *info, GError **error)
 		return false;
 	}
 
-	// Attempt to open the file using RomDataFactory.
-	// TODO: "Slow" FS checking?
 	gchar *const filename = g_file_get_path(file);
+	if (!filename) {
+		// Unable to get a local filename.
+		// TODO: Support URIs?
+		return false;
+	}
+
+	// Check for "bad" file systems.
+	Config *const config = Config::instance();
+	if (FileSystem::isOnBadFS(filename, config->getBoolConfigOption(Config::BoolConfig::Options_EnableThumbnailOnNetworkFS))) {
+		// This file is on a "bad" file system.
+		g_free(filename);
+		return false;
+	}
+
+	// Attempt to open the file using RomDataFactory.
 	RomDataPtr romData = RomDataFactory::create(filename);
 	g_free(filename);
 	if (!romData) {
