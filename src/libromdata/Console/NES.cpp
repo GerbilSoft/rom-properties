@@ -121,24 +121,10 @@ public:
 	int get_iNES_mapper_number(void) const;
 
 	// Internal footer: PRG ROM sizes (as powers of two)
-	static constexpr array<uint8_t, 6> footer_prg_rom_size_shift_lkup = {{
-		16,	// 0 (64 KB)
-		14,	// 1 (16 KB)
-		15,	// 2 (32 KB)
-		17,	// 3 (128 KB)
-		18,	// 4 (256 KB)
-		19,	// 5 (512 KB)
-	}};
+	static const array<uint8_t, 6> footer_prg_rom_size_shift_lkup;
 
 	// Internal footer: CHR ROM sizes (as powers of two)
-	static constexpr array<uint8_t, 6> footer_chr_rom_size_shift_lkup = {{
-		13,	// 0 (8 KB)
-		14,	// 1 (16 KB)
-		15,	// 2 (32 KB)
-		17,	// 3 (128 KB)	// FIXME: May be 64 KB.
-		18,	// 4 (256 KB)
-		19,	// 5 (512 KB)
-	}};
+	static const array<uint8_t, 6> footer_chr_rom_size_shift_lkup;
 
 	/**
 	 * Load the internal footer.
@@ -184,6 +170,26 @@ const char *const NESPrivate::mimeTypes[] = {
 const RomDataInfo NESPrivate::romDataInfo = {
 	"NES", exts, mimeTypes
 };
+
+// Internal footer: PRG ROM sizes (as powers of two)
+const array<uint8_t, 6> NESPrivate::footer_prg_rom_size_shift_lkup = {{
+	16,	// 0 (64 KB)
+	14,	// 1 (16 KB)
+	15,	// 2 (32 KB)
+	17,	// 3 (128 KB)
+	18,	// 4 (256 KB)
+	19,	// 5 (512 KB)
+}};
+
+// Internal footer: CHR ROM sizes (as powers of two)
+const array<uint8_t, 6> NESPrivate::footer_chr_rom_size_shift_lkup = {{
+	13,	// 0 (8 KB)
+	14,	// 1 (16 KB)
+	15,	// 2 (32 KB)
+	17,	// 3 (128 KB)	// FIXME: May be 64 KB.
+	18,	// 4 (256 KB)
+	19,	// 5 (512 KB)
+}};
 
 NESPrivate::NESPrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)

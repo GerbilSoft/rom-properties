@@ -1,0 +1,5 @@
+[ExtractorRule]
+ModulePath=libextract-rom-properties.so
+MimeTypes=application/x-cso;application/x-compressed-iso;application/x-dreamcast-rom;application/x-dreamcast-iso-image;application/x-dc-rom;application/x-gd-rom-cue;application/x-gamecube-rom;application/x-gamecube-iso-image;application/x-gamecube-tgc;application/x-wii-rom;application/x-wii-iso-image;application/x-wbfs;application/x-wia;application/x-nasos-image;application/x-gcz-image;application/x-dpf-image;application/x-rpf-image;application/x-rvz-image;application/x-sega-cd-rom;application/x-sega-cd-32x-rom;application/x-wii-u-rom;application/x-psp-ciso-image;application/x-psp-dax-image;application/x-psp-jiso-image;application/x-psp-ziso-image;
+FallbackRdfTypes=nfo:Filesystem;
+Graph=tracker:Software

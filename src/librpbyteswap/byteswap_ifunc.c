@@ -22,7 +22,6 @@
  * IFUNC resolver function for rp_byte_swap_16_array().
  * @return Function pointer.
  */
-NO_SANITIZE_ADDRESS
 __typeof__(&rp_byte_swap_16_array_c) rp_byte_swap_16_array_resolve(void)
 {
 #ifdef BYTESWAP_HAS_SSSE3
@@ -55,7 +54,6 @@ __typeof__(&rp_byte_swap_16_array_c) rp_byte_swap_16_array_resolve(void)
  * IFUNC resolver function for rp_byte_swap_32_array().
  * @return Function pointer.
  */
-NO_SANITIZE_ADDRESS
 __typeof__(&rp_byte_swap_32_array_c) rp_byte_swap_32_array_resolve(void)
 {
 #ifdef BYTESWAP_HAS_SSSE3

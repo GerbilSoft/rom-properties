@@ -324,6 +324,11 @@ IF(BUILD_TESTING)
 	SET(EXTLIB_BUILD "${EXTLIB_BUILD}- Google Test\n")
 ENDIF(BUILD_TESTING)
 
+IF(BUILD_TRACKER_EXTRACTOR)
+	SET(TRACKER_API_DISPLAY "${TRACKER_INSTALL_API_VERSION}")
+ELSE(BUILD_TRACKER_EXTRACTOR)
+	SET(TRACKER_API_DISPLAY "(none)")
+ENDIF(BUILD_TRACKER_EXTRACTOR)
 
 INCLUDE(DirInstallPaths)
 MESSAGE(STATUS "
@@ -334,6 +339,7 @@ Build Summary:
 - Target CPU architecture: ${TARGET_CPU_ARCH}
 - Building these UI frontends: ${UI_FRONTENDS}
 - Building command-line frontend: ${CLI_BUILD_MSG}
+- GNOME Tracker API version: ${TRACKER_API_DISPLAY}
 - libromdata is built as: ${LIBROMDATA_LIB_TYPE}
 - Security mechanism: ${SECURITY_MECHANISM}
 - Decryption functionality: ${ENABLE_DECRYPTION_MSG}

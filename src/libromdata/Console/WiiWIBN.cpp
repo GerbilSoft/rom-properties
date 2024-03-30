@@ -436,25 +436,26 @@ int WiiWIBN::loadFieldData(void)
 	if (!d->fields.empty()) {
 		// Field data *has* been loaded...
 		return 0;
-	} else if (!d->file || !d->file->isOpen()) {
-		// File isn't open.
+	} else if (!d->file) {
+		// No file.
+		// A closed file is OK, since we already loaded the header.
 		return -EBADF;
 	} else if (!d->isValid) {
 		// Unknown save banner file type.
 		return -EIO;
 	}
 
-	// Wii WIBN header.
+	// Wii WIBN header
 	const Wii_WIBN_Header_t *const wibnHeader = &d->wibnHeader;
 	d->fields.reserve(3);	// Maximum of 3 fields.
 
 	// TODO: Combine title and subtitle into one field?
 
-	// Title.
+	// Title
 	d->fields.addField_string(C_("WiiWIBN", "Title"),
 		utf16be_to_utf8(wibnHeader->gameTitle, ARRAY_SIZE_I(wibnHeader->gameTitle)));
 
-	// Subtitle.
+	// Subtitle
 	// NOTE: Skipping empty subtitles.
 	const char16_t chr1 = wibnHeader->gameSubTitle[0];
 	const char16_t chr2 = wibnHeader->gameSubTitle[1];
@@ -463,7 +464,7 @@ int WiiWIBN::loadFieldData(void)
 			utf16be_to_utf8(wibnHeader->gameSubTitle, ARRAY_SIZE_I(wibnHeader->gameSubTitle)));
 	}
 
-	// Flags.
+	// Flags
 	static const char *const flags_names[] = {
 		NOP_C_("WiiWIBN|Flags", "No Copy"),
 	};
@@ -474,6 +475,41 @@ int WiiWIBN::loadFieldData(void)
 
 	// Finished reading the field data.
 	return static_cast<int>(d->fields.count());
+}
+
+/**
+ * Load metadata properties.
+ * Called by RomData::metaData() if the metadata hasn't been loaded yet.
+ * @return Number of metadata properties read on success; negative POSIX error code on error.
+ */
+int WiiWIBN::loadMetaData(void)
+{
+	RP_D(WiiWIBN);
+	if (d->metaData != nullptr) {
+		// Metadata *has* been loaded...
+		return 0;
+	} else if (!d->file) {
+		// No file.
+		// A closed file is OK, since we already loaded the header.
+		return -EBADF;
+	} else if (!d->isValid) {
+		// Unknown save banner file type.
+		return -EIO;
+	}
+
+	// Create the metadata object.
+	d->metaData = new RomMetaData();
+	d->metaData->reserve(1);	// Maximum of 1 metadata property.
+
+	// Wii WIBN header
+	const Wii_WIBN_Header_t *const wibnHeader = &d->wibnHeader;
+
+	// Title [TODO: Also subtitle?]
+	d->metaData->addMetaData_string(Property::Title,
+		utf16be_to_utf8(wibnHeader->gameTitle, ARRAY_SIZE_I(wibnHeader->gameTitle)));
+
+	// Finished reading the metadata.
+	return static_cast<int>(d->metaData->count());
 }
 
 /**
@@ -569,16 +605,6 @@ IconAnimDataConstPtr WiiWIBN::iconAnimData(void) const
 
 	// Return the icon animation data.
 	return d->iconAnimData;
-}
-
-/**
- * Is the NoCopy flag set?
- * @return True if set; false if not.
- */
-bool WiiWIBN::isNoCopyFlagSet(void) const
-{
-	RP_D(const WiiWIBN);
-	return !!(d->wibnHeader.flags & cpu_to_be32(BANNER_WIBN_FLAGS_NOCOPY));
 }
 
 }

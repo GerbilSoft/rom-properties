@@ -11,7 +11,7 @@ IF(GLib2_FOUND AND GObject2_FOUND AND GIO_FOUND AND GIO-UNIX_FOUND)
 	# All required libraries were found.
 ELSE(GLib2_FOUND AND GObject2_FOUND AND GIO_FOUND AND GIO-UNIX_FOUND)
 	# A required library was not found.
-	# Disable the D-Bus t
+	# Disable the D-Bus Thumbnailer.
 	SET(BUILD_THUMBNAILER_DBUS OFF CACHE INTERNAL "Build the D-Bus thumbnailer" FORCE)
 ENDIF(GLib2_FOUND AND GObject2_FOUND AND GIO_FOUND AND GIO-UNIX_FOUND)
 

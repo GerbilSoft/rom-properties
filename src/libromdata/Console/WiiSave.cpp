@@ -61,9 +61,7 @@ public:
 	bool svLoaded;	// True if svHeader was read.
 
 	// Wii_Bk_Header_t magic
-	static constexpr array<uint8_t, 8> bk_header_magic = {{
-		0x00, 0x00, 0x00, 0x70, 0x42, 0x6B, 0x00, 0x01
-	}};
+	static const array<uint8_t, 8> bk_header_magic;
 
 	/**
 	 * Round a value to the next highest multiple of 64.
@@ -110,6 +108,11 @@ const char *const WiiSavePrivate::mimeTypes[] = {
 const RomDataInfo WiiSavePrivate::romDataInfo = {
 	"WiiSave", exts, mimeTypes
 };
+
+// Wii_Bk_Header_t magic
+const array<uint8_t, 8> WiiSavePrivate::bk_header_magic = {{
+	0x00, 0x00, 0x00, 0x70, 0x42, 0x6B, 0x00, 0x01
+}};
 
 WiiSavePrivate::WiiSavePrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
@@ -498,17 +501,13 @@ int WiiSave::loadFieldData(void)
 	}
 
 #ifdef ENABLE_DECRYPTION
-	// NoCopy? (separate from permissions)
 	if (d->wibnData) {
-		// Flags bitfield.
-		static constexpr const char *const flags_names[] = {
-			NOP_C_("WiiSave|Flags", "No Copy from NAND"),
-		};
-		vector<string> *const v_flags_names = RomFields::strArrayToVector_i18n(
-			"WiiSave|Flags", flags_names, ARRAY_SIZE(flags_names));
-		const uint32_t flags = (d->wibnData->isNoCopyFlagSet() ? 1 : 0);
-		d->fields.addField_bitfield(C_("WiiSave", "Flags"),
-			v_flags_names, 3, flags);
+		// Add the WIBN data.
+		const RomFields *const wibnFields = d->wibnData->fields();
+		assert(wibnFields != nullptr);
+		if (wibnFields) {
+			d->fields.addFields_romFields(wibnFields, 0);
+		}
 	}
 #endif /* ENABLE_DECRYPTION */
 

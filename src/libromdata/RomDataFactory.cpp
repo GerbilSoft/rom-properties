@@ -205,7 +205,7 @@ static const RomDataFns romDataFns_magic[] = {
 	GetRomDataFns_addr(PlayStationEXE, 0, 0, 'PS-X'),
 	GetRomDataFns_addr(SufamiTurbo, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 8, 'FC-A'),	// Less common than "BAND"
 	GetRomDataFns_addr(WiiU, ATTR_HAS_THUMBNAIL | ATTR_SUPPORTS_DEVICES, 0, 'WUP-'),
-	GetRomDataFns_addr(WiiWIBN, ATTR_HAS_THUMBNAIL, 0, 'WIBN'),
+	GetRomDataFns_addr(WiiWIBN, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'WIBN'),
 	GetRomDataFns_addr(Xbox_XBE, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'XBEH'),
 	GetRomDataFns_addr(Xbox360_XDBF, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'XDBF'),
 	GetRomDataFns_addr(Xbox360_XEX, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'XEX1'),
@@ -215,7 +215,7 @@ static const RomDataFns romDataFns_magic[] = {
 	GetRomDataFns_addr(DMG, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0x104, 0xCEED6666),
 	GetRomDataFns_addr(DMG, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0x304, 0xCEED6666),	// headered
 	GetRomDataFns_addr(GameBoyAdvance, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0x04, 0x24FFAE51),
-	GetRomDataFns_addr(Lynx, ATTR_NONE, 0, 'LYNX'),
+	GetRomDataFns_addr(Lynx, ATTR_HAS_METADATA, 0, 'LYNX'),
 	GetRomDataFns_addr(NGPC, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 12, ' SNK'),
 	GetRomDataFns_addr(Nintendo3DSFirm, ATTR_NONE, 0, 'FIRM'),
 	GetRomDataFns_addr(Nintendo3DS_SMDH, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'SMDH'),
@@ -294,12 +294,17 @@ static const RomDataFns romDataFns_header[] = {
 	// Other
 	GetRomDataFns(Amiibo, ATTR_HAS_THUMBNAIL),
 	GetRomDataFns(MachO, ATTR_NONE),
-	GetRomDataFns(NintendoBadge, ATTR_HAS_THUMBNAIL),
+	GetRomDataFns(NintendoBadge, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA),
 	GetRomDataFns(Wim, ATTR_NONE),
 
 	// The following formats have 16-bit magic numbers,
 	// so they should go at the end of the address=0 section.
-	GetRomDataFns(EXE, ATTR_HAS_DPOVERLAY),	// TODO: Thumbnailing on non-Windows platforms.
+#ifdef _WIN32
+	// NOTE: Windows provides its own thumbnail and metadata extraction for EXEs.
+	GetRomDataFns(EXE, ATTR_HAS_DPOVERLAY),
+#else /* !_WIN32 */
+	GetRomDataFns(EXE, ATTR_HAS_DPOVERLAY | ATTR_HAS_METADATA),	// TODO: Thumbnailing on non-Windows platforms.
+#endif /* _WIN32 */
 	GetRomDataFns(PlayStationSave, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA),
 
 	// NOTE: game.com may be at either 0 or 0x40000.
@@ -329,7 +334,7 @@ static const RomDataFns romDataFns_header[] = {
 
 // RomData subclasses that use a footer.
 static const RomDataFns romDataFns_footer[] = {
-	GetRomDataFns(VirtualBoy, ATTR_NONE),
+	GetRomDataFns(VirtualBoy, ATTR_HAS_METADATA),
 	GetRomDataFns(WonderSwan, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA),
 	{nullptr, nullptr, nullptr, ATTR_NONE, 0, 0}
 };

@@ -1,0 +1,5 @@
+[ExtractorRule]
+ModulePath=libextract-rom-properties.so
+MimeTypes=application/x-gamecube-bnr;application/x-wii-wibn;application/x-nintendo-3ds-smdh;application/x-ctr-smdh;application/x-nintendo-amiibo;application/x-nintendo-badge;application/vnd.ms-cab-compressed;application/x-nintendo-badge-set;
+FallbackRdfTypes=nfo:Image;nfo:RasterImage;
+Graph=tracker:Pictures

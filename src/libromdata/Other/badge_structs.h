@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * badge_structs.h: Nintendo Badge Arcade data structures.                 *
  *                                                                         *
- * Copyright (c) 2017-2023 by David Korth.                                 *
+ * Copyright (c) 2017-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -29,6 +29,9 @@ extern "C" {
 #define BADGE_SIZE_LARGE_W 64
 #define BADGE_SIZE_LARGE_H 64
 
+typedef char16_t badge_names_t[16][128];
+ASSERT_STRUCT(badge_names_t, 4096);
+
 /**
  * PRBS: Badge file.
  *
@@ -44,22 +47,22 @@ extern "C" {
 #define BADGE_PRBS_MAGIC 'PRBS'
 typedef struct _Badge_PRBS_Header {
 	uint32_t magic;		// [0x000] 'PRBS' (big-endian)
-	uint8_t reserved1[56];	// [0x004] Unknown
+	uint8_t reserved1[56];	// [0x004]
 	uint32_t badge_id;	// [0x03C] Badge ID
-	uint8_t reserved2[4];	// [0x040] Unknown
-	char filename[48];	// [0x044] Image filename. (Latin-1?)
-	char setname[48];	// [0x074] Set name. (Latin-1?)
+	uint8_t reserved2[4];	// [0x040]
+	char filename[48];	// [0x044] Image filename (Latin-1?)
+	char setname[48];	// [0x074] Set name (Latin-1?)
 #pragma pack(1)
 	struct PACKED {
 		Nintendo_TitleID_LE_t title_id;	// [0x0A4] Title ID for program launch.
 						// If no program is assigned, this is all 0xFF.
 	};
 #pragma pack()
-	uint8_t reserved3[12];	// [0x0AC] Unknown
-	uint32_t mb_width;	// [0x0B8] Mega-badge width.
-	uint32_t mb_height;	// [0x0BC] Mega-badge height.
-	uint8_t reserved4[32];	// [0x0C0] Unknown
-	char16_t name[16][128];	// [0x0E0] Badge names. (UTF-16LE)
+	uint8_t reserved3[12];	// [0x0AC]
+	uint32_t mb_width;	// [0x0B8] Mega-badge width
+	uint32_t mb_height;	// [0x0BC] Mega-badge height
+	uint8_t reserved4[32];	// [0x0C0]
+	badge_names_t names;	// [0x0E0] Badge names (UTF-16LE)
 } Badge_PRBS_Header;
 ASSERT_STRUCT(Badge_PRBS_Header, 0x10E0);
 
@@ -76,12 +79,12 @@ ASSERT_STRUCT(Badge_PRBS_Header, 0x10E0);
 #define BADGE_CABS_MAGIC 'CABS'
 typedef struct _Badge_CABS_Header {
 	uint32_t magic;		// [0x000] 'CABS'
-	uint8_t reserved1[32];	// [0x004] Unknown
-	uint32_t set_id;	// [0x024] Set ID.
-	uint8_t reserved2[4];	// [0x028] Unknown
-	char setname[48];	// [0x02C] Set name. (Latin-1?)
-	uint8_t reserved3[12];	// [0x05C] Unknown
-	char16_t name[16][128];	// [0x068] Set names. (UTF-16LE)
+	uint8_t reserved1[32];	// [0x004]
+	uint32_t set_id;	// [0x024] Set ID
+	uint8_t reserved2[4];	// [0x028]
+	char setname[48];	// [0x02C] Set name (Latin-1?)
+	uint8_t reserved3[12];	// [0x05C]
+	badge_names_t names;	// [0x068] Set names (UTF-16LE)
 } Badge_CABS_Header;
 ASSERT_STRUCT(Badge_CABS_Header, 0x1068);
 

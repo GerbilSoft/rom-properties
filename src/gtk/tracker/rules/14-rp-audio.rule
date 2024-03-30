@@ -1,0 +1,5 @@
+[ExtractorRule]
+ModulePath=libextract-rom-properties.so
+MimeTypes=audio/prs.sid;audio/x-adx;audio/x-bcstm;audio/x-bcwav;audio/x-bfstm;audio/x-brstm;audio/x-gbr;audio/x-gbs;audio/x-minipsf;audio/x-nsf;audio/x-psf;audio/x-sap;audio/x-sndh;audio/x-spc;audio/x-vgm;
+FallbackRdfTypes=nfo:Audio;
+Graph=tracker:Audio

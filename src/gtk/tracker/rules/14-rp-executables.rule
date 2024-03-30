@@ -1,0 +1,5 @@
+[ExtractorRule]
+ModulePath=libextract-rom-properties.so
+MimeTypes=application/vnd.microsoft.portable-executable;application/vnd.palm;application/x-core;application/x-ctr-3dsx;application/x-ctr-cxi;application/x-dosexec;application/x-executable;application/x-lua;application/x-mach-bundle;application/x-mach-core;application/x-mach-executable;application/x-mach-fat-binary;application/x-mach-object;application/x-mach-sharedlib;application/x-mobipocket-ebook;application/x-ms-dos-executable;application/x-ms-ne-executable;application/x-msdownload;application/x-nintendo-3ds-cxi;application/x-nintendo-3ds-executable;application/x-nintendo-3ds-ncch;application/x-object;application/x-sharedlib;application/x-xbox-executable;application/x-xbox360-executable;application/x-xbox360-patch;application/x-xbox360-stfs;application/x-xbox360-xdbf;
+FallbackRdfTypes=nfo:Application;
+Graph=tracker:Software

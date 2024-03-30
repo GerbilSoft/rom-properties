@@ -58,6 +58,8 @@ const char *const EXEPrivate::exts[] = {
 const char *const EXEPrivate::mimeTypes[] = {
 	// Unofficial MIME types from FreeDesktop.org.
 	"application/x-ms-dos-executable",
+	"application/x-ms-ne-executable",
+	"application/x-dosexec",
 
 	// Unofficial MIME types from Microsoft.
 	// Reference: https://technet.microsoft.com/en-us/library/cc995276.aspx?f=255&MSPPError=-2147217396
@@ -612,7 +614,9 @@ EXE::EXE(const IRpFilePtr &file)
 	// NOTE: MSVC handles 'PE\0\0' as 0x00504500,
 	// probably due to the embedded NULL bytes.
 	if (d->hdr.pe.Signature == cpu_to_be32(0x50450000) /*'PE\0\0'*/) {
-		// This is a PE executable.
+		// Portable Executable (Win32/Win64)
+		d->mimeType = "application/vnd.microsoft.portable-executable";
+
 		// Check if it's PE or PE32+.
 		// (.NET is checked in loadFieldData().)
 		switch (le16_to_cpu(d->hdr.pe.OptionalHeader.Magic)) {
@@ -657,8 +661,9 @@ EXE::EXE(const IRpFilePtr &file)
 			}
 		}
 	} else if (d->hdr.ne.sig == cpu_to_be16('NE')) {
-		// New Executable.
+		// New Executable
 		d->exeType = EXEPrivate::ExeType::NE;
+		d->mimeType = "application/x-ms-ne-executable";
 
 		// Check if this is a resource library.
 		// (All segment size values are 0.)
@@ -946,7 +951,7 @@ int EXE::loadFieldData(void)
 		// File isn't open.
 		return -EBADF;
 	} else if (!d->isValid || (int)d->exeType < 0) {
-		// Unknown ROM image type.
+		// Unknown EXE type.
 		return -EIO;
 	}
 
@@ -1019,6 +1024,121 @@ int EXE::loadFieldData(void)
 
 	// Finished reading the field data.
 	return static_cast<int>(d->fields.count());
+}
+
+/**
+ * Load metadata properties.
+ * Called by RomData::metaData() if the metadata hasn't been loaded yet.
+ * @return Number of metadata properties read on success; negative POSIX error code on error.
+ */
+int EXE::loadMetaData(void)
+{
+	RP_D(EXE);
+	if (d->metaData != nullptr) {
+		// Metadata *has* been loaded...
+		return 0;
+	} else if (!d->file || !d->file->isOpen()) {
+		// File isn't open.
+		return -EBADF;
+	} else if (!d->isValid || (int)d->exeType < 0) {
+		// Unknown EXE type.
+		return -EIO;
+	}
+
+	// We can parse fields for NE (Win16) and PE (Win32) executables,
+	// if they have a resource section.
+	int ret = -1;
+	switch (d->exeType) {
+		default:
+			// Cannot load any metadata...
+			return 0;
+
+		case EXEPrivate::ExeType::NE:
+		case EXEPrivate::ExeType::COM_NE:
+			ret = d->loadNEResourceTable();
+			break;
+
+		case EXEPrivate::ExeType::PE:
+		case EXEPrivate::ExeType::PE32PLUS:
+			ret = d->loadPEResourceTypes();
+			break;
+	}
+
+	if (ret != 0 || !d->rsrcReader) {
+		// No resources available.
+		return 0;
+	}
+
+	// Load the version resource.
+	// NOTE: load_VS_VERSION_INFO loads it in host-endian.
+	VS_FIXEDFILEINFO vsffi;
+	IResourceReader::StringFileInfo vssfi;
+	if (d->rsrcReader->load_VS_VERSION_INFO(VS_VERSION_INFO, -1, &vsffi, &vssfi) != 0) {
+		// Unable to load VS_VERSION_INFO.
+		return 0;
+	} else if (vssfi.empty()) {
+		// No data...
+		return 0;
+	}
+
+	// TODO: Show the language that most closely matches the system.
+	// For now, only showing the "first" language, which may be
+	// random due to unordered_map<>.
+	// NOTE: IResourceReader::StringTable is vector<pair<string, string> >, so searching may be slow...
+	const auto &st = vssfi.begin()->second;
+	if (st.empty()) {
+		// No data...
+		return 0;
+	}
+
+	// Create the metadata object.
+	d->metaData = new RomMetaData();
+	d->metaData->reserve(4);	// Maximum of 4 metadata properties.
+
+	// Simple lambda function to find a string in IResourceReader::StringTable.
+	auto findval = [](const IResourceReader::StringTable &st, const char *key) -> const char* {
+		for (const auto &p : st) {
+			if (p.first == key) {
+				return p.second.c_str();
+			}
+		}
+		return nullptr;
+	};
+
+	// Title (FileDescription, ProductName, or InternalName)
+	const char *val = findval(st, "FileDescription");
+	if (!val) {
+		val = findval(st, "ProductName");
+		if (!val) {
+			val = findval(st, "InternalName");
+		}
+	}
+	if (val) {
+		d->metaData->addMetaData_string(Property::Title, val);
+	}
+
+	// Publisher (CompanyName)
+	val = findval(st, "CompanyName");
+	if (val) {
+		d->metaData->addMetaData_string(Property::Publisher, val);
+	}
+
+	// Description (FileDescription)
+	val = findval(st, "FileDescription");
+	if (val) {
+		d->metaData->addMetaData_string(Property::Description, val);
+	}
+
+	// Copyright (LegalCopyright)
+	val = findval(st, "LegalCopyright");
+	if (val) {
+		d->metaData->addMetaData_string(Property::Copyright, val);
+	}
+
+	// TODO: Comments? On KDE Dolphin, "Comments" is assumed to be user-added...
+
+	// Finished reading the metadata.
+	return static_cast<int>(d->metaData->count());
 }
 
 /**

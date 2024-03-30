@@ -215,6 +215,14 @@ Copyright: Copyright (c) 2017 rxi
 License: MIT
 
 Files:
+ src/gtk/tracker/tracker-file-utils.c
+ src/gtk/tracker/tracker-file-utils.h
+Copyright:
+ Copyright (C) 2006, Jamie McCracken <jamiemcc@gnome.org>
+ Copyright (C) 2008, Nokia <ivan.frade@nokia.com>
+License: LGPL-2.1+
+
+Files:
  src/libwin32darkmode/DarkMode.?pp
  src/libwin32darkmode/ListViewUtil.?pp
 Copyright: Copyright (c) 2019 Richard Yu
