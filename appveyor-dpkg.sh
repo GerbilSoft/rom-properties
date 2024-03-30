@@ -37,4 +37,5 @@ apt-get -y install \
 	libgsound-dev \
 	libgtk-3-dev \
 	libcairo2-dev \
-	libnautilus-extension-dev
+	libnautilus-extension-dev \
+	libblkid-dev

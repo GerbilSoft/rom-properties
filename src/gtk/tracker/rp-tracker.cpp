@@ -7,6 +7,7 @@
  ***************************************************************************/
 
 #include "tracker-mini.h"
+#include "tracker-file-utils.h"
 
 // glib: module handling
 #include <gmodule.h>
@@ -225,9 +226,10 @@ add_metadata_properties_v2(const RomMetaData *metaData, TrackerResource *resourc
 	}
 }
 
+// NOTE: The "error" parameter was added in tracker-3.0.
 extern "C"
 G_MODULE_EXPORT gboolean
-tracker_extract_get_metadata(TrackerExtractInfo *info)
+tracker_extract_get_metadata(TrackerExtractInfo *info, GError **error)
 {
 	// Make sure the Tracker function pointers are initialized.
 	// TODO: ELF ctor/dtor?
@@ -238,6 +240,8 @@ tracker_extract_get_metadata(TrackerExtractInfo *info)
 
 	GFile *const file = tracker_extract_pfns.v1.info.get_file(info);
 	if (!file) {
+		// TODO: Set error if Tracker 3.0.
+		((void)error);
 		return false;
 	}
 
@@ -255,7 +259,6 @@ tracker_extract_get_metadata(TrackerExtractInfo *info)
 		TrackerSparqlBuilder *builder;
 		TrackerResource *resource;
 	};
-	printf("API == %d\n", rp_tracker_api);
 	switch (rp_tracker_api) {
 		default:
 			assert(!"Tracker API version is not supported.");
@@ -268,6 +271,16 @@ tracker_extract_get_metadata(TrackerExtractInfo *info)
 		case 2:
 			resource = tracker_sparql_pfns.v2.resource._new(nullptr);
 			break;
+
+		case 3: {
+			// NOTE: Only using tracker_file_get_content_identifier() if this is API version 3.
+			// tracker_file_get_content_identifier() was added to Tracker 3.3.0-alpha.
+			// TODO: Only if we're using Tracker 3.3.0 or later?
+			gchar *const resource_uri = tracker_file_get_content_identifier(file, NULL, NULL);
+			resource = tracker_sparql_pfns.v2.resource._new(resource_uri);
+			g_free(resource_uri);
+			break;
+		}
 	}
 
 	// Determine the file type.
@@ -383,6 +396,7 @@ tracker_extract_get_metadata(TrackerExtractInfo *info)
 				break;
 
 			case 2:
+			case 3:
 				tracker_sparql_pfns.v2.resource.add_uri(resource, "rdf:type", fileTypes[0]);
 				if (fileTypes[1]) {
 					tracker_sparql_pfns.v2.resource.add_uri(resource, "rdf:type", fileTypes[1]);
@@ -409,6 +423,7 @@ tracker_extract_get_metadata(TrackerExtractInfo *info)
 			add_metadata_properties_v1(metaData, builder);
 			break;
 		case 2:
+		case 3:
 			add_metadata_properties_v2(metaData, resource);
 			break;
 	}

@@ -12,6 +12,7 @@ packages:
 * XFCE (GTK+ 3.x): libglib2.0-dev libgtk-3-dev libcairo2-dev libthunarx-3-dev libgsound-dev
 * GNOME, MATE, Cinnamon: libglib2.0-dev libgtk-3-dev libcairo2-dev libnautilus-extension-dev libgsound-dev
 * GNOME 43: libglib2.0-dev libgtk-4-dev libgdk-pixbuf2.0-dev libnautilus-extension-dev libgsound-dev
+* GNOME Tracker: libblkid-dev
 
 NOTE: On older versions of Ubuntu, some packages were different:
 * Earlier than 18.04:

@@ -10,6 +10,7 @@
 // do not install headers for libtracker-extract.
 
 #include "tracker-mini.h"
+#include "tracker-file-utils.h"
 
 // C includes
 #include <dlfcn.h>
@@ -152,6 +153,20 @@ int rp_tracker_init_pfn(void)
 		// Already initialized.
 		return 0;
 	}
+
+	// Check for Tracker 3.0.
+	libtracker_sparql_so = dlopen("libtracker-sparql-3.0.so.0", RTLD_NOW | RTLD_LOCAL);
+	libtracker_extract_so = dlopen("libtracker-extract.so", RTLD_NOW | RTLD_LOCAL);
+	if (libtracker_sparql_so && libtracker_extract_so) {
+		// Found Tracker 3.0.
+		// NOTE: Functions are essentially the same as 2.0.
+		init_tracker_v2();
+		rp_tracker_api = 3;
+		return 0;
+	}
+
+	// Clear dlopen() pointers and try again.
+	close_modules();
 
 	// Check for Tracker 2.0.
 	libtracker_sparql_so = dlopen("libtracker-sparql-2.0.so.0", RTLD_NOW | RTLD_LOCAL);

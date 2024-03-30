@@ -33,7 +33,8 @@ Build-Depends:
  gettext,
  liblz4-dev,
  liblzo2-dev,
- libgsound-dev
+ libgsound-dev,
+ libblkid-dev
 Standards-Version: 3.9.8
 Homepage: https://github.com/GerbilSoft/rom-properties
 Vcs-Git: https://github.com/GerbilSoft/rom-properties
