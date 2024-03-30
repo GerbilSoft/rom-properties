@@ -14,7 +14,7 @@
 #include "tracker-file-utils.h"
 
 #include <gio/gunixmounts.h>
-#include <blkid.h>
+//#include <blkid.h>
 
 #ifdef HAVE_BTRFS_IOCTL
 #  include <linux/btrfs.h>
@@ -23,6 +23,8 @@
 #endif
 
 // C includes
+#include <dlfcn.h>
+#include <errno.h>
 #include <fcntl.h>
 #include <string.h>
 #include <unistd.h>
@@ -30,6 +32,22 @@
 // NOTE: The following features have been disabled compatibility with older glib:
 // - g_autofree (2.44)
 // - g_unix_mount_monitor_get() (2.44)
+
+/** blkid/blkid.h **/
+
+// dlopen() pointers for libblkid
+// NOTE: Not dlclose()'d.
+static void *libblkid_so = NULL;
+
+typedef struct blkid_struct_cache *blkid_cache;
+
+extern int blkid_get_cache(blkid_cache *cache, const char *filename);
+extern char *blkid_get_tag_value(blkid_cache cache, const char *tagname, const char *devname);
+
+static __typeof__(blkid_get_cache) *pfn_blkid_get_cache = NULL;
+static __typeof__(blkid_get_tag_value) *pfn_blkid_get_tag_value = NULL;
+
+/** Original libtracker-miners-common code starts here **/
 
 typedef struct {
 	GFile *file;
@@ -82,7 +100,7 @@ update_mounts (TrackerUnixMountCache *cache)
 		UnixMountInfo mount;
 
 		devname = g_unix_mount_get_device_path (entry);
-		id = blkid_get_tag_value (cache->id_cache, "UUID", devname);
+		id = pfn_blkid_get_tag_value (cache->id_cache, "UUID", devname);
 		if (!id && strchr (devname, G_DIR_SEPARATOR) != NULL)
 			id = g_strdup (devname);
 
@@ -115,7 +133,7 @@ tracker_unix_mount_cache_get (void)
 		obj->mounts = g_array_new (FALSE, FALSE, sizeof (UnixMountInfo));
 		g_array_set_clear_func (obj->mounts, clear_mount_info);
 
-		blkid_get_cache (&obj->id_cache, NULL);
+		pfn_blkid_get_cache (&obj->id_cache, NULL);
 
 		/*g_signal_connect (obj->monitor, "mounts-changed",
 				  G_CALLBACK (on_mounts_changed), obj);*/
@@ -181,11 +199,54 @@ tracker_file_get_btrfs_subvolume_id (GFile *file)
 }
 #endif
 
+/**
+ * Attempt to initialize libblkid.so.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+static int
+init_libblkid_so(void)
+{
+	if (libblkid_so) {
+		// Already initialized.
+		return 0;
+	}
+
+	// Attempt to dlopen() libblkid.so.
+	// NOTE: Not dlclose()'d.
+	libblkid_so = dlopen("libblkid.so.1", RTLD_NOW | RTLD_LOCAL);
+	if (!libblkid_so) {
+		// Not found...
+		// TODO: Other error?
+		return -ENOENT;
+	}
+
+	// Attempt to dlsym() the required symbols.
+	pfn_blkid_get_cache = dlsym(libblkid_so, "blkid_get_cache");
+	pfn_blkid_get_tag_value = dlsym(libblkid_so, "blkid_get_tag_value");
+	if (!pfn_blkid_get_cache || !pfn_blkid_get_tag_value) {
+		// One (or both) symbols are missing?
+		dlclose(libblkid_so);
+		pfn_blkid_get_cache = NULL;
+		pfn_blkid_get_tag_value = NULL;
+		libblkid_so = NULL;
+		return -EIO;
+	}
+
+	// Symbols loaded.
+	return 0;
+}
+
 gchar *
 tracker_file_get_content_identifier (GFile *file, GFileInfo *info, const gchar *suffix)
 {
 	const gchar *id;
 	/*g_autofree*/ gchar *inode = NULL, *str = NULL, *subvolume = NULL;
+
+	// Make sure libblkid.so is initialized.
+	if (init_libblkid_so() != 0) {
+		// Cannot initialize libblkid.so.
+		return NULL;
+	}
 
 	if (info) {
 		g_object_ref (info);
