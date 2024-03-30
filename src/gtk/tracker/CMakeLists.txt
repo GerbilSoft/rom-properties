@@ -24,6 +24,7 @@ SET(${PROJECT_NAME}_SRCS
 SET(${PROJECT_NAME}_H
 	tracker-mini.h
 	tracker-mini-1.0.h
+	tracker-mini-2.0.h
 	)
 
 IF(BUILD_TRACKER_EXTRACTOR)
