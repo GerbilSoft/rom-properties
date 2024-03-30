@@ -15,6 +15,7 @@
 #include <gio/gio.h>
 
 #include "tracker-mini-1.0.h"
+#include "tracker-mini-2.0.h"
 
 G_BEGIN_DECLS
 
@@ -25,14 +26,18 @@ extern int rp_tracker_api;
 /** Function pointer structs **/
 
 typedef union _tracker_sparql_pfns_u {
+	// NOTE: v2 *replaces* v1.
 	tracker_sparql_1_0_pfns_t v1;
+	tracker_sparql_2_0_pfns_t v2;
 } tracker_sparql_pfns_u;
 extern tracker_sparql_pfns_u tracker_sparql_pfns;
 
-typedef union _tracker_extract_pfns_u {
+typedef struct _tracker_extract_pfns_t {
+	// NOTE: v2 is an *extension* of v1.
 	tracker_extract_1_0_pfns_t v1;
-} tracker_extract_pfns_u;
-extern tracker_extract_pfns_u tracker_extract_pfns;
+	tracker_extract_2_0_pfns_t v2;
+} tracker_extract_pfns_t;
+extern tracker_extract_pfns_t tracker_extract_pfns;
 
 /** Management functions **/
 

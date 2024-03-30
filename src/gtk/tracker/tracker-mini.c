@@ -25,43 +25,52 @@ static void *libtracker_sparql_so = NULL;
 
 // Function pointers
 tracker_sparql_pfns_u tracker_sparql_pfns;
-tracker_extract_pfns_u tracker_extract_pfns;
+tracker_extract_pfns_t tracker_extract_pfns;
 
-/**
- * Initialize Tracker function pointers.
- * @return 0 on success; negative POSIX error code on error.
- */
-int rp_tracker_init_pfn(void)
-{
-	// Attempt to open Tracker libraries.
-	// TODO: Use a config.h file for the library paths.
-	// Hard-coding 32-bit Ubuntu paths for now.
-	if (rp_tracker_api > 0) {
-		// Already initialized.
-		return 0;
-	}
-
-	// Check for Tracker 1.0.
-	libtracker_sparql_so = dlopen("libtracker-sparql-1.0.so.0", RTLD_NOW | RTLD_LOCAL);
-	libtracker_extract_so = dlopen("libtracker-extract.so.0", RTLD_NOW | RTLD_LOCAL);
-	if (!libtracker_sparql_so || !libtracker_extract_so) {
-		// One or more libraries were not found.
-		if (libtracker_sparql_so) {
-			dlclose(libtracker_sparql_so);
-			libtracker_sparql_so = NULL;
-		}
-		if (libtracker_extract_so) {
-			dlclose(libtracker_extract_so);
-			libtracker_extract_so = NULL;
-		}
-		return -ENOENT;
-	}
-
-	// Load symbols.
-	// TODO: Check for NULL symbols?
 #define DLSYM(so, u, v, substruct, prefix, sym) \
 	u.v.substruct.sym = dlsym(so, #prefix "_" #sym)
 
+/**
+ * Close dlopen()'d module pointers.
+ */
+static void close_modules(void)
+{
+	// TODO: NULL out the function pointers?
+	if (libtracker_sparql_so) {
+		dlclose(libtracker_sparql_so);
+		libtracker_sparql_so = NULL;
+	}
+	if (libtracker_extract_so) {
+		dlclose(libtracker_extract_so);
+		libtracker_extract_so = NULL;
+	}
+
+	rp_tracker_api = 0;
+}
+
+/**
+ * Initialize libtracker_extract v1 function pointers.
+ * Common to both v1 and v2.
+ */
+static void init_tracker_extract_v1(void)
+{
+	/** TrackerExtractInfo **/
+
+	DLSYM(libtracker_extract_so, tracker_extract_pfns, v1, info, tracker_extract_info, get_type);
+	DLSYM(libtracker_extract_so, tracker_extract_pfns, v1, info, tracker_extract_info, ref);
+	DLSYM(libtracker_extract_so, tracker_extract_pfns, v1, info, tracker_extract_info, unref);
+	DLSYM(libtracker_extract_so, tracker_extract_pfns, v1, info, tracker_extract_info, get_file);
+	DLSYM(libtracker_extract_so, tracker_extract_pfns, v1, info, tracker_extract_info, get_mimetype);
+	DLSYM(libtracker_extract_so, tracker_extract_pfns, v1, info, tracker_extract_info, get_preupdate_builder);
+	DLSYM(libtracker_extract_so, tracker_extract_pfns, v1, info, tracker_extract_info, get_postupdate_builder);
+	DLSYM(libtracker_extract_so, tracker_extract_pfns, v1, info, tracker_extract_info, get_metadata_builder);
+}
+
+/**
+ * Initialize tracker-1.0 function pointers.
+ */
+static void init_tracker_v1(void)
+{
 	/** TrackerSparqlBuilder **/
 
 	DLSYM(libtracker_sparql_so, tracker_sparql_pfns, v1, builder, tracker_sparql_builder, get_type);
@@ -86,18 +95,88 @@ int rp_tracker_init_pfn(void)
 	DLSYM(libtracker_sparql_so, tracker_sparql_pfns, v1, builder, tracker_sparql_builder, append);
 
 	/** TrackerExtractInfo **/
-
-	DLSYM(libtracker_extract_so, tracker_extract_pfns, v1, info, tracker_extract_info, get_type);
-	DLSYM(libtracker_extract_so, tracker_extract_pfns, v1, info, tracker_extract_info, ref);
-	DLSYM(libtracker_extract_so, tracker_extract_pfns, v1, info, tracker_extract_info, unref);
-	DLSYM(libtracker_extract_so, tracker_extract_pfns, v1, info, tracker_extract_info, get_file);
-	DLSYM(libtracker_extract_so, tracker_extract_pfns, v1, info, tracker_extract_info, get_mimetype);
-	DLSYM(libtracker_extract_so, tracker_extract_pfns, v1, info, tracker_extract_info, get_preupdate_builder);
-	DLSYM(libtracker_extract_so, tracker_extract_pfns, v1, info, tracker_extract_info, get_postupdate_builder);
-	DLSYM(libtracker_extract_so, tracker_extract_pfns, v1, info, tracker_extract_info, get_metadata_builder);
+	init_tracker_extract_v1();
 
 	rp_tracker_api = 1;
-	return 0;
+}
+
+/**
+ * Initialize tracker-2.0 function pointers.
+ */
+static void init_tracker_v2(void)
+{
+	// TODO: Check for NULL symbols?
+
+	/** TrackerResource (part of libtracker_sparql) **/
+
+	tracker_sparql_pfns.v2.resource._new = dlsym(libtracker_sparql_so, "tracker_resource_new");
+
+	DLSYM(libtracker_sparql_so, tracker_sparql_pfns, v2, resource, tracker_resource, set_gvalue);
+	DLSYM(libtracker_sparql_so, tracker_sparql_pfns, v2, resource, tracker_resource, set_boolean);
+	DLSYM(libtracker_sparql_so, tracker_sparql_pfns, v2, resource, tracker_resource, set_double);
+	DLSYM(libtracker_sparql_so, tracker_sparql_pfns, v2, resource, tracker_resource, set_int);
+	DLSYM(libtracker_sparql_so, tracker_sparql_pfns, v2, resource, tracker_resource, set_int64);
+	DLSYM(libtracker_sparql_so, tracker_sparql_pfns, v2, resource, tracker_resource, set_relation);
+	DLSYM(libtracker_sparql_so, tracker_sparql_pfns, v2, resource, tracker_resource, set_take_relation);
+	DLSYM(libtracker_sparql_so, tracker_sparql_pfns, v2, resource, tracker_resource, set_string);
+	DLSYM(libtracker_sparql_so, tracker_sparql_pfns, v2, resource, tracker_resource, set_uri);
+
+	DLSYM(libtracker_sparql_so, tracker_sparql_pfns, v2, resource, tracker_resource, add_gvalue);
+	DLSYM(libtracker_sparql_so, tracker_sparql_pfns, v2, resource, tracker_resource, add_boolean);
+	DLSYM(libtracker_sparql_so, tracker_sparql_pfns, v2, resource, tracker_resource, add_double);
+	DLSYM(libtracker_sparql_so, tracker_sparql_pfns, v2, resource, tracker_resource, add_int);
+	DLSYM(libtracker_sparql_so, tracker_sparql_pfns, v2, resource, tracker_resource, add_int64);
+	DLSYM(libtracker_sparql_so, tracker_sparql_pfns, v2, resource, tracker_resource, add_relation);
+	DLSYM(libtracker_sparql_so, tracker_sparql_pfns, v2, resource, tracker_resource, add_take_relation);
+	DLSYM(libtracker_sparql_so, tracker_sparql_pfns, v2, resource, tracker_resource, add_string);
+	DLSYM(libtracker_sparql_so, tracker_sparql_pfns, v2, resource, tracker_resource, add_uri);
+
+	/** TrackerExtractInfo **/
+
+	init_tracker_extract_v1();
+	DLSYM(libtracker_extract_so, tracker_extract_pfns, v2, info, tracker_extract_info, set_resource);
+
+	rp_tracker_api = 2;
+}
+
+/**
+ * Initialize Tracker function pointers.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int rp_tracker_init_pfn(void)
+{
+	// Attempt to open Tracker libraries.
+	// TODO: Use a config.h file for the library paths.
+	// Hard-coding 32-bit Ubuntu paths for now.
+	if (rp_tracker_api > 0) {
+		// Already initialized.
+		return 0;
+	}
+
+	// Check for Tracker 2.0.
+	libtracker_sparql_so = dlopen("libtracker-sparql-2.0.so.0", RTLD_NOW | RTLD_LOCAL);
+	libtracker_extract_so = dlopen("libtracker-extract.so.0", RTLD_NOW | RTLD_LOCAL);
+	if (libtracker_sparql_so && libtracker_extract_so) {
+		// Found Tracker 2.0.
+		init_tracker_v2();
+		return 0;
+	}
+
+	// Clear dlopen() pointers and try again.
+	close_modules();
+
+	// Check for Tracker 1.0.
+	libtracker_sparql_so = dlopen("libtracker-sparql-1.0.so.0", RTLD_NOW | RTLD_LOCAL);
+	libtracker_extract_so = dlopen("libtracker-extract.so.0", RTLD_NOW | RTLD_LOCAL);
+	if (libtracker_sparql_so && libtracker_extract_so) {
+		// Found Tracker 1.0.
+		init_tracker_v1();
+		return 0;
+	}
+
+	// One or more libraries were not found.
+	close_modules();
+	return -ENOENT;
 }
 
 /**

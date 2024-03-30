@@ -53,3 +53,26 @@ IF(BUILD_TRACKER_EXTRACTOR)
 		PRIVATE G_LOG_DOMAIN=\"${PROJECT_NAME}\"
 		)
 ENDIF(BUILD_TRACKER_EXTRACTOR)
+
+#########################################
+# Install the tracker extractor module. #
+#########################################
+
+IF(0) #BUILD_TRACKER_EXTRACTOR)
+	# Rule files
+	# - tracker-1.0: share/tracker/extract-rules/
+	# - tracker-2.0: share/tracker-miners/extract-rules/
+	SET(RULE_FILES
+		rules/20-rp-audio.rule
+		rules/20-rp-rom-images.rule
+		rules/20-rp-textures.rule
+		)
+	INSTALL(FILES ${RULE_FILES}
+		DESTINATION "share/tracker-miners/extract-rules"
+		COMPONENT "plugin"
+		)
+
+	# Extractor module
+	# - tracker-1.0: lib/[arch]/tracker-1.0/extract-modules/libextract-[module].so
+	# - tracker-2.0: lib/[arch]/tracker-miners-2.0/extract-modules/libextract-[module].so
+ENDIF(0) #BUILD_TRACKER_EXTRACTOR)
