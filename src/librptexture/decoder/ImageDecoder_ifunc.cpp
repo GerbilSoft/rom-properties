@@ -26,7 +26,6 @@ extern "C" {
  * IFUNC resolver function for fromLinear16().
  * @return Function pointer.
  */
-NO_SANITIZE_ADDRESS
 __typeof__(&ImageDecoder::fromLinear16_cpp) fromLinear16_resolve(void)
 {
 #ifdef IMAGEDECODER_HAS_SSE2
@@ -44,7 +43,6 @@ __typeof__(&ImageDecoder::fromLinear16_cpp) fromLinear16_resolve(void)
  * IFUNC resolver function for fromLinear24().
  * @return Function pointer.
  */
-NO_SANITIZE_ADDRESS
 __typeof__(&ImageDecoder::fromLinear24_cpp) fromLinear24_resolve(void)
 {
 #ifdef IMAGEDECODER_HAS_SSSE3
@@ -61,7 +59,6 @@ __typeof__(&ImageDecoder::fromLinear24_cpp) fromLinear24_resolve(void)
  * IFUNC resolver function for fromLinear32().
  * @return Function pointer.
  */
-NO_SANITIZE_ADDRESS
 __typeof__(&ImageDecoder::fromLinear32_cpp) fromLinear32_resolve(void)
 {
 #ifdef IMAGEDECODER_HAS_SSSE3

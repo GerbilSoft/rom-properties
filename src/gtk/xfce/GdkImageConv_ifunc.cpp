@@ -26,7 +26,6 @@ extern "C" {
  * IFUNC resolver function for rp_image_to_GdkPixbuf().
  * @return Function pointer.
  */
-NO_SANITIZE_ADDRESS
 __typeof__(&GdkImageConv::rp_image_to_GdkPixbuf_cpp) rp_image_to_GdkPixbuf_resolve(void)
 {
 	// NOTE: Since libromdata is a shared library now, IFUNC resolvers
