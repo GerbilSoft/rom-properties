@@ -32,6 +32,7 @@ SET(${PROJECT_NAME}_SRCS
 	Console/SegaSaturn.cpp
 	Console/SNES.cpp
 	Console/SufamiTurbo.cpp
+	Console/WiiBNR.cpp
 	Console/WiiCommon.cpp
 	Console/WiiSave.cpp
 	Console/WiiTicket.cpp
@@ -169,6 +170,7 @@ SET(${PROJECT_NAME}_H
 	Console/SegaSaturn.hpp
 	Console/SNES.hpp
 	Console/SufamiTurbo.hpp
+	Console/WiiBNR.hpp
 	Console/WiiCommon.hpp
 	Console/WiiTicket.hpp
 	Console/WiiTMD.hpp

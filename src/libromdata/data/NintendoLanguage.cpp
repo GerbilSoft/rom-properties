@@ -98,6 +98,7 @@ int getWiiLanguage(void)
 			// any of the languages supported by Wii.
 			return WII_LANG_ENGLISH;
 		case 'ja':
+		case 'hant':	// special-case: ID4 region == 'W', sys region == JPN
 			return WII_LANG_JAPANESE;
 		case 'de':
 			return WII_LANG_GERMAN;

@@ -52,6 +52,7 @@ using std::vector;
 #include "Console/SegaSaturn.hpp"
 #include "Console/SNES.hpp"
 #include "Console/SufamiTurbo.hpp"
+#include "Console/WiiBNR.hpp"
 #include "Console/WiiSave.hpp"
 #include "Console/WiiTicket.hpp"
 #include "Console/WiiTMD.hpp"
@@ -204,6 +205,8 @@ static const RomDataFns romDataFns_magic[] = {
 	GetRomDataFns_addr(Atari7800, ATTR_HAS_METADATA, 4, 'RI78'),	// "ATARI7800"
 	GetRomDataFns_addr(PlayStationEXE, 0, 0, 'PS-X'),
 	GetRomDataFns_addr(SufamiTurbo, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 8, 'FC-A'),	// Less common than "BAND"
+	GetRomDataFns_addr(WiiBNR, ATTR_HAS_METADATA, 64, 'IMET'),	// common
+	GetRomDataFns_addr(WiiBNR, ATTR_HAS_METADATA, 128, 'IMET'),	// seen in some homebrew
 	GetRomDataFns_addr(WiiU, ATTR_HAS_THUMBNAIL | ATTR_SUPPORTS_DEVICES, 0, 'WUP-'),
 	GetRomDataFns_addr(WiiWIBN, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'WIBN'),
 	GetRomDataFns_addr(Xbox_XBE, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'XBEH'),

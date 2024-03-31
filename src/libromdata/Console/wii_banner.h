@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * wii_banner.h: Nintendo Wii banner structures.                           *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -26,8 +26,8 @@ extern "C" {
  * - 0x0020: Savegame extracted via Wii System Menu
  */
 
-// Magic numbers.
-#define BANNER_WIBN_MAGIC		0x5749424E	/* 'WIBN' */
+// Magic numbers
+#define BANNER_WIBN_MAGIC		'WIBN'		/* 'WIBN' */
 #define BANNER_WIBN_ADDRESS_RAW		0x0000		/* banner.bin from SaveGame Manager GX */
 #define BANNER_WIBN_ADDRESS_ENCRYPTED	0x0020		/* extracted from Wii System Menu */
 
@@ -75,8 +75,8 @@ typedef enum {
 	WII_WIBN_FLAG_ICON_BOUNCE	= (1U << 4),	// Icon animation "bounces" instead of looping.
 } Wii_WIBN_Flags_e;
 
-// IMET magic number.
-#define WII_IMET_MAGIC 0x494D4554	/* 'IMET' */
+// IMET magic number
+#define WII_IMET_MAGIC 'IMET'
 
 /**
  * IMET (Wii opening.bnr header)

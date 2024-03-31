@@ -24,8 +24,8 @@ namespace LibRomData {
 /**
  * Get a multi-language string map from a Wii banner.
  * @param pImet		[in] Wii_IMET_t
- * @param gcnRegion	[in] GameCube region code.
- * @param id4_region	[in] ID4 region.
+ * @param gcnRegion	[in] GameCube region code
+ * @param id4_region	[in] ID4 region
  * @return Allocated RomFields::StringMultiMap_t, or nullptr on error.
  */
 RomFields::StringMultiMap_t *WiiCommon::getWiiBannerStrings(
@@ -55,8 +55,8 @@ RomFields::StringMultiMap_t *WiiCommon::getWiiBannerStrings(
 		}
 
 		// Check for empty strings first.
-		if (pImet->names[langID][0][0] == 0 &&
-		    pImet->names[langID][1][0] == 0)
+		if (pImet->names[langID][0][0] == '\0' &&
+		    pImet->names[langID][1][0] == '\0')
 		{
 			// Strings are empty.
 			continue;
@@ -90,12 +90,12 @@ RomFields::StringMultiMap_t *WiiCommon::getWiiBannerStrings(
 				continue;
 		}
 
-		if (pImet->names[langID][0][0] != cpu_to_be16('\0')) {
+		if (pImet->names[langID][0][0] != '\0') {
 			// NOTE: The banner may have two lines.
 			// Each line is a maximum of 21 characters.
 			// Convert from UTF-16 BE and split into two lines at the same time.
 			string info = utf16be_to_utf8(pImet->names[langID][0], ARRAY_SIZE_I(pImet->names[langID][0]));
-			if (pImet->names[langID][1][0] != cpu_to_be16('\0')) {
+			if (pImet->names[langID][1][0] != '\0') {
 				info += '\n';
 				info += utf16be_to_utf8(pImet->names[langID][1], ARRAY_SIZE_I(pImet->names[langID][1]));
 			}
@@ -112,6 +112,64 @@ RomFields::StringMultiMap_t *WiiCommon::getWiiBannerStrings(
 
 	// Map is done.
 	return pMap_bannerName;
+}
+
+/**
+ * Get a single string from a Wii banner that most closely matches the system language.
+ * @param pImet		[in] Wii_IMET_t
+ * @param gcnRegion	[in] GameCube region code
+ * @param id4_region	[in] ID4 region
+ * @return String, or empty string on error.
+ */
+string WiiCommon::getWiiBannerStringForSysLC(
+	const Wii_IMET_t *pImet, uint32_t gcnRegion, char id4_region)
+{
+	assert(pImet != nullptr);
+	if (!pImet) {
+		return {};
+	}
+
+	// Validate the IMET magic number.
+	if (pImet->magic != cpu_to_be32(WII_IMET_MAGIC)) {
+		// Not valid.
+		return {};
+	}
+
+	// Determine the system's Nintendo language code.
+	int langID = NintendoLanguage::getWiiLanguage();
+
+	if (pImet->names[langID][0][0] == '\0' &&
+	    pImet->names[langID][1][0] == '\0')
+	{
+		// Empty strings. Try English.
+		langID = WII_LANG_ENGLISH;
+		if (pImet->names[langID][0][0] == '\0' &&
+		    pImet->names[langID][1][0] == '\0')
+		{
+			// Empty strings. Try Japanese.
+			if (pImet->names[langID][0][0] == '\0' &&
+			    pImet->names[langID][1][0] == '\0')
+			{
+				// Empty strings. Can't do anything else...
+				// TODO: Try all languages?
+				return {};
+			}
+		}
+	}
+
+	// NOTE: The banner may have two lines.
+	// Each line is a maximum of 21 characters.
+	// Convert from UTF-16 BE and split into two lines at the same time.
+	string info;
+	if (pImet->names[langID][0][0] != '\0') {
+		info = utf16be_to_utf8(pImet->names[langID][0], ARRAY_SIZE_I(pImet->names[langID][0]));
+		if (pImet->names[langID][1][0] != cpu_to_be16('\0')) {
+			info += '\n';
+			info += utf16be_to_utf8(pImet->names[langID][1], ARRAY_SIZE_I(pImet->names[langID][1]));
+		}
+	}
+
+	return info;
 }
 
 }

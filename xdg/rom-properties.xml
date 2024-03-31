@@ -509,6 +509,20 @@
     </magic>
   </mime-type>
 
+  <!-- GameCubeBNR -->
+  <mime-type type="application/x-wii-bnr">
+    <comment>Wii banner animation</comment>
+    <!-- FIXME: Better icon. -->
+    <sub-class-of type="image/x-generic"/>
+    <generic-icon name="image-x-generic"/>
+    <!-- NOTE: Same as GameCubeBNR... -->
+    <glob pattern="*.bnr"/>
+    <magic priority="80">
+      <match value="IMET" type="string" offset="64"/>
+      <match value="IMET" type="string" offset="128"/>  <!-- seen in some homebrew? -->
+    </magic>
+  </mime-type>
+
   <!-- WiiTicket -->
   <mime-type type="application/x-nintendo-ticket">
     <comment>Nintendo Ticket</comment>

@@ -11,8 +11,11 @@
 #include "librpbase/RomFields.hpp"
 #include "wii_banner.h"
 
-// C includes.
+// C includes
 #include <stdint.h>
+
+// C++ STL classes
+#include <string>
 
 namespace LibRomData {
 
@@ -33,6 +36,16 @@ public:
 	 * @return Allocated RomFields::StringMultiMap_t, or nullptr on error.
 	 */
 	static LibRpBase::RomFields::StringMultiMap_t *getWiiBannerStrings(
+		const Wii_IMET_t *pImet, uint32_t gcnRegion, char id4_region);
+
+	/**
+	 * Get a single string from a Wii banner that most closely matches the system language.
+	 * @param pImet		[in] Wii_IMET_t
+	 * @param gcnRegion	[in] GameCube region code
+	 * @param id4_region	[in] ID4 region
+	 * @return String, or empty string on error.
+	 */
+	static std::string getWiiBannerStringForSysLC(
 		const Wii_IMET_t *pImet, uint32_t gcnRegion, char id4_region);
 };
 
