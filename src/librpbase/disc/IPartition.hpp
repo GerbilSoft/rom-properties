@@ -60,6 +60,8 @@ class NOVTABLE IPartition : public IDiscReader
 		virtual off64_t partition_size_used(void) const = 0;
 };
 
+typedef std::shared_ptr<IPartition> IPartitionPtr;
+
 /**
  * Both gcc and MSVC fail to compile unless we provide
  * an empty implementation, even though the function is
