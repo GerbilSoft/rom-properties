@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2024-03-30 18:05-0400\n"
-"PO-Revision-Date: 2024-03-30 22:11\n"
+"PO-Revision-Date: 2024-03-31 09:09\n"
 "Last-Translator: \n"
 "Language-Team: Arabic\n"
 "Language: ar_SA\n"
@@ -468,7 +468,7 @@ msgstr ""
 #: ../src/win32/config/AboutTab.cpp:1007
 msgctxt "AboutTabl|Credits"
 msgid "GNU GPL v2"
-msgstr ""
+msgstr "GNU GPL v2"
 
 #. tr: %s is the name of the license.
 #: ../src/gtk/config/AboutTab.cpp:491 ../src/kde/config/AboutTab.cpp:219
@@ -476,25 +476,25 @@ msgstr ""
 #, c-format
 msgctxt "AboutTab|Credits"
 msgid "This program is licensed under the %s or later."
-msgstr ""
+msgstr "هذا البرنامَج مرخص بموجب %s أو أحدث."
 
 #: ../src/gtk/config/AboutTab.cpp:506 ../src/kde/config/AboutTab.cpp:234
 #: ../src/win32/config/AboutTab.cpp:1025
 msgctxt "AboutTab|Credits"
 msgid "Developers:"
-msgstr ""
+msgstr "المطورون:"
 
 #: ../src/gtk/config/AboutTab.cpp:509 ../src/kde/config/AboutTab.cpp:237
 #: ../src/win32/config/AboutTab.cpp:1028
 msgctxt "AboutTab|Credits"
 msgid "Contributors:"
-msgstr ""
+msgstr "المساهمون:"
 
 #: ../src/gtk/config/AboutTab.cpp:512 ../src/kde/config/AboutTab.cpp:240
 #: ../src/win32/config/AboutTab.cpp:1031
 msgctxt "AboutTab|Credits"
 msgid "Translators:"
-msgstr ""
+msgstr "المترجمون:"
 
 #. tr: Sub-credit.
 #: ../src/gtk/config/AboutTab.cpp:541 ../src/kde/config/AboutTab.cpp:269
@@ -502,7 +502,7 @@ msgstr ""
 #, c-format
 msgctxt "AboutTab|Credits"
 msgid " (%s)"
-msgstr ""
+msgstr " (%s)"
 
 #. tr: Using an internal copy of a library.
 #: ../src/gtk/config/AboutTab.cpp:567 ../src/kde/config/AboutTab.cpp:293
@@ -518,7 +518,7 @@ msgstr ""
 #, c-format
 msgctxt "AboutTab|Libraries"
 msgid "Compiled with %s."
-msgstr ""
+msgstr "مُجَمَّعْ باستخدام %s."
 
 #. tr: Using an external library, e.g. libpcre.so
 #: ../src/gtk/config/AboutTab.cpp:571 ../src/kde/config/AboutTab.cpp:297
@@ -526,7 +526,7 @@ msgstr ""
 #, c-format
 msgctxt "AboutTab|Libraries"
 msgid "Using %s."
-msgstr ""
+msgstr "يستعمل %s."
 
 #. tr: License: (libraries with only a single license)
 #: ../src/gtk/config/AboutTab.cpp:573 ../src/kde/config/AboutTab.cpp:299
@@ -554,19 +554,19 @@ msgstr ""
 #: ../src/win32/config/AboutTab.cpp:1266
 msgctxt "AboutTab|Support"
 msgid "For technical support, you can visit the following websites:"
-msgstr ""
+msgstr "للحصول على الدعم الفني، يمكنك زيارة المواقع التالية:"
 
 #: ../src/gtk/config/AboutTab.cpp:803 ../src/kde/config/AboutTab.cpp:553
 #: ../src/win32/config/AboutTab.cpp:1282
 msgctxt "AboutTab|Support"
 msgid "You can also email the developer directly:"
-msgstr ""
+msgstr "يمكنك أيضًا إرسال بريد إلكتروني مباشرة إلى المطور:"
 
 #: ../src/gtk/config/AboutTab.cpp:829 ../src/kde/config/AboutTab.cpp:583
 #: ../src/win32/config/AboutTab.cpp:579
 msgctxt "AboutTab"
 msgid "Checking for updates..."
-msgstr ""
+msgstr "جاري التحقق من وجود تحديثات..."
 
 #. tr: Error message template. (GTK version, with formatting)
 #: ../src/gtk/config/AboutTab.cpp:849 ../src/gtk/config/CacheTab.cpp:462
@@ -574,25 +574,25 @@ msgstr ""
 #, c-format
 msgctxt "ConfigDialog"
 msgid "<b>ERROR:</b> %s"
-msgstr ""
+msgstr "<b>خطأ:</b> %s"
 
 #: ../src/gtk/config/AboutTab.cpp:879 ../src/kde/config/AboutTab.cpp:683
 #: ../src/win32/config/AboutTab.cpp:691
 #, c-format
 msgctxt "AboutTab"
 msgid "Latest version: %s"
-msgstr ""
+msgstr "أحدث إصدار: %s"
 
 #: ../src/gtk/config/AboutTab.cpp:882 ../src/kde/config/AboutTab.cpp:686
 msgctxt "AboutTab"
 msgid "<b>New version available!</b>"
-msgstr ""
+msgstr "<b>إصدار جديد متوفر!</b>"
 
 #: ../src/gtk/config/AboutTab.cpp:885 ../src/kde/config/AboutTab.cpp:689
 #: ../src/win32/config/AboutTab.cpp:697
 msgctxt "AboutTab"
 msgid "Download at GitHub"
-msgstr ""
+msgstr "تنزيل من GitHub"
 
 #: ../src/gtk/config/CacheCleaner.cpp:259
 #: ../src/gtk/config/CacheCleaner.cpp:317 ../src/kde/config/CacheCleaner.cpp:46
@@ -662,7 +662,7 @@ msgstr ""
 #, c-format
 msgctxt "CacheTab"
 msgid "Unable to delete %1$u file(s) and/or %2$u dir(s)."
-msgstr ""
+msgstr "غير قادر على حذف %1$u ملف(ـات) وَ/أو %2$u مجلد(ـات)."
 
 #: ../src/gtk/config/CacheTab.cpp:535 ../src/kde/config/CacheTab.cpp:316
 #: ../src/win32/config/CacheTab.cpp:551
@@ -1061,7 +1061,7 @@ msgstr ""
 #: ../src/win32/RP_ShellPropSheetExt.cpp:1286
 msgctxt "RomDataView"
 msgid "ERROR"
-msgstr ""
+msgstr "خطأ"
 
 #: ../src/gtk/gtk4/NautilusPropertiesModel.cpp:212
 #: ../src/gtk/RomDataView.cpp:623 ../src/kde/RomDataView.cpp:138
@@ -1089,7 +1089,7 @@ msgstr ""
 #: ../src/gtk/gtk4/NautilusPropertiesModel.cpp:224
 msgctxt "RomDataView"
 msgid "File Type"
-msgstr ""
+msgstr "نوع الملف"
 
 #: ../src/gtk/gtk-i18n.h:36
 msgid "_Close"
@@ -1099,25 +1099,25 @@ msgstr ""
 #: ../src/win32/OptionsMenuButton.cpp:35
 msgctxt "OptionsMenuButton|StdActs"
 msgid "Export to Text..."
-msgstr ""
+msgstr "تصدير إلى النص..."
 
 #: ../src/gtk/OptionsMenuButton.cpp:145 ../src/kde/OptionsMenuButton.cpp:26
 #: ../src/win32/OptionsMenuButton.cpp:36
 msgctxt "OptionsMenuButton|StdActs"
 msgid "Export to JSON..."
-msgstr ""
+msgstr "تصدير إلى JSON..."
 
 #: ../src/gtk/OptionsMenuButton.cpp:146 ../src/kde/OptionsMenuButton.cpp:27
 #: ../src/win32/OptionsMenuButton.cpp:37
 msgctxt "OptionsMenuButton|StdActs"
 msgid "Copy as Text"
-msgstr ""
+msgstr "نسخ كنص"
 
 #: ../src/gtk/OptionsMenuButton.cpp:147 ../src/kde/OptionsMenuButton.cpp:28
 #: ../src/win32/OptionsMenuButton.cpp:38
 msgctxt "OptionsMenuButton|StdActs"
 msgid "Copy as JSON"
-msgstr ""
+msgstr "نسخ كـ JSON"
 
 #. tr: "Options" button.
 #: ../src/gtk/OptionsMenuButton.cpp:206 ../src/kde/OptionsMenuButton.cpp:40
@@ -1133,7 +1133,8 @@ msgstr ""
 msgctxt "RomDataView"
 msgid "%1$s\n"
 "%2$s"
-msgstr ""
+msgstr "%1$s\n"
+"%2$s"
 
 #. tr: Field description label.
 #: ../src/gtk/RomDataView.cpp:1421 ../src/kde/RomDataView.cpp:986
@@ -1141,7 +1142,7 @@ msgstr ""
 #, c-format
 msgctxt "RomDataView"
 msgid "%s:"
-msgstr ""
+msgstr "%s:"
 
 #. tr: EncryptionKeys::Unknown
 #: ../src/gtk/RomDataView_gtk3.cpp:272 ../src/gtk/RomDataView_gtk3.cpp:551
@@ -1205,47 +1206,47 @@ msgstr ""
 #, c-format
 msgctxt "RomDataView"
 msgid "File: '%s'"
-msgstr ""
+msgstr "المِلَفّ: '%s'"
 
 #: ../src/gtk/RomDataView_ops.cpp:441 ../src/kde/RomDataView_ops.cpp:217
 #: ../src/win32/RP_ShellPropSheetExt_ops.cpp:322
 msgctxt "RomDataView"
 msgid "Export to Text File"
-msgstr ""
+msgstr "تصدير إلى مِلَفّ نصي"
 
 #. tr: "Text Files" filter (RP format)
 #: ../src/gtk/RomDataView_ops.cpp:443 ../src/kde/RomDataView_ops.cpp:219
 #: ../src/win32/RP_ShellPropSheetExt_ops.cpp:324
 msgctxt "RomDataView"
 msgid "Text Files|*.txt|text/plain|All Files|*|-"
-msgstr ""
+msgstr "ملفات نصية|*.txt|text/plain|كل الملفات|*|-"
 
 #: ../src/gtk/RomDataView_ops.cpp:448 ../src/kde/RomDataView_ops.cpp:224
 #: ../src/win32/RP_ShellPropSheetExt_ops.cpp:328
 msgctxt "RomDataView"
 msgid "Export to JSON File"
-msgstr ""
+msgstr "تصدير إلى ملف JSON"
 
 #. tr: "JSON Files" filter (RP format)
 #: ../src/gtk/RomDataView_ops.cpp:450 ../src/kde/RomDataView_ops.cpp:226
 #: ../src/win32/RP_ShellPropSheetExt_ops.cpp:330
 msgctxt "RomDataView"
 msgid "JSON Files|*.json|application/json|All Files|*|-"
-msgstr ""
+msgstr "JSON ملفات|*.json|application/json|كل الملفات|*|-"
 
 #. tr: "All Files" filter (RP format)
 #: ../src/gtk/RomDataView_ops.cpp:544 ../src/kde/RomDataView_ops.cpp:324
 #: ../src/win32/RP_ShellPropSheetExt_ops.cpp:495
 msgctxt "RomData"
 msgid "All Files|*|-"
-msgstr ""
+msgstr "كل الملفات|*|-"
 
 #. tr: format string for Ext2 attribute checkbox labels (%c == lsattr character)
 #: ../src/gtk/xattr/Ext2AttrView.c:145 ../src/kde/xattr/Ext2AttrView.cpp:76
 #, c-format
 msgctxt "Ext2AttrView"
 msgid "%c: %s"
-msgstr ""
+msgstr "%c: %s"
 
 #: ../src/gtk/xattr/XAttrView.cpp:95
 msgctxt "XAttrView"
@@ -1316,7 +1317,7 @@ msgstr ""
 #: ../src/libromdata/Handheld/GameBoyAdvance.cpp:412
 msgctxt "RomData"
 msgid "Yes"
-msgstr ""
+msgstr "نعم"
 
 #. tr: Debugging is disabled.
 #: ../src/libromdata/Audio/ADX.cpp:315 ../src/libromdata/Audio/BCSTM.cpp:502
@@ -1325,7 +1326,7 @@ msgstr ""
 #: ../src/libromdata/Handheld/GameBoyAdvance.cpp:414
 msgctxt "RomData"
 msgid "No"
-msgstr ""
+msgstr "لا"
 
 #: ../src/libromdata/Audio/ADX.cpp:318
 msgctxt "ADX"
@@ -1554,22 +1555,22 @@ msgstr ""
 #: ../src/libromdata/Audio/PSF.cpp:115
 msgctxt "PSF|System"
 msgid "Sony PlayStation"
-msgstr ""
+msgstr "سوني بلايستيشن"
 
 #: ../src/libromdata/Audio/PSF.cpp:116
 msgctxt "PSF|System"
 msgid "Sony PlayStation 2"
-msgstr ""
+msgstr "سوني بلايستيشن 2"
 
 #: ../src/libromdata/Audio/PSF.cpp:117
 msgctxt "PSF|System"
 msgid "Sega Saturn"
-msgstr ""
+msgstr "سيغا ساترن"
 
 #: ../src/libromdata/Audio/PSF.cpp:118
 msgctxt "PSF|System"
 msgid "Sega Dreamcast"
-msgstr ""
+msgstr "سيغا دريم كاست"
 
 #: ../src/libromdata/Audio/PSF.cpp:119
 msgctxt "PSF|System"
