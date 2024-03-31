@@ -34,6 +34,7 @@ using namespace LibRpTexture;
 
 // For sections delegated to other RomData subclasses.
 #include "GameCubeBNR.hpp"
+#include "WiiBNR.hpp"
 
 // WiiTicket for EncryptionKeys
 #include "WiiTicket.hpp"
@@ -116,18 +117,8 @@ public:
 	struct {
 		// FIXME: gcn_partition used to be in the 'gcn' union.
 		// Can't do that with shared_ptr...
-		GcnPartitionPtr gcn_partition;	// GcnPartition for opening.bnr
-		union {
-			struct {
-				// GameCube opening.bnr object
-				// NOTE: Not turning this into a shared_ptr<>.
-				GameCubeBNR *data;
-			} gcn;
-			struct {
-				// Wii opening.bnr (IMET section)
-				Wii_IMET_t *imet;
-			} wii;
-		};
+		GcnPartitionPtr gcnPartition;	// GcnPartition for opening.bnr
+		RomDataPtr romData;		// either GameCubeBNR or WiiBNR
 	} opening_bnr;
 
 	/**
@@ -178,33 +169,24 @@ public:
 	string getPublisher(void) const;
 
 	/**
-	 * Load opening.bnr. (GameCube only)
+	 * Load opening.bnr.
 	 * @return 0 on success; negative POSIX error code on error.
 	 */
-	int gcn_loadOpeningBnr(void);
+	int loadOpeningBnr(void);
 
 	/**
-	 * Load opening.bnr. (Wii only)
-	 * @return 0 on success; negative POSIX error code on error.
-	 */
-	int wii_loadOpeningBnr(void);
-
-	/**
-	 * [GameCube] Add the game information field from opening.bnr.
+	 * Add the game information field from opening.bnr.
 	 *
-	 * This adds an RFT_STRING field for BNR1, and
-	 * RFT_STRING_MULTI for BNR2.
+	 * GameCube:
+	 * - This adds an RFT_STRING field for BNR1, and
+	 *   RFT_STRING_MULTI for BNR2.
+	 *
+	 * Wii:
+	 * - This adds an RFT_STRING_MULTI field with all available languages.
 	 *
 	 * @return 0 on success; negative POSIX error code on error.
 	 */
-	int gcn_addGameInfo(void);
-
-	/**
-	 * [Wii] Add the game name from opening.bnr.
-	 * This adds an RFT_STRING_MULTI field with all available languages.
-	 * @return 0 on success; negative POSIX error code on error.
-	 */
-	int wii_addBannerName(void);
+	int addGameInfo(void);
 
 	/**
 	 * Get the encryption status of a partition.
@@ -294,9 +276,6 @@ GameCubePrivate::GameCubePrivate(const IRpFilePtr &file)
 	// Clear the various structs.
 	memset(&discHeader, 0, sizeof(discHeader));
 	memset(&regionSetting, 0, sizeof(regionSetting));
-
-	// opening_bnr has some C++ objects, so manually clear it.
-	opening_bnr.gcn.data = nullptr;
 }
 
 GameCubePrivate::~GameCubePrivate()
@@ -307,21 +286,6 @@ GameCubePrivate::~GameCubePrivate()
 
 	// Clear the existing partition table vector.
 	wiiPtbl.clear();
-
-	if (discType > DISC_UNKNOWN) {
-		// Delete opening.bnr data.
-		switch (discType & DISC_SYSTEM_MASK) {
-			case DISC_SYSTEM_GCN:
-				delete opening_bnr.gcn.data;
-				opening_bnr.gcn_partition.reset();
-				break;
-			case DISC_SYSTEM_WII:
-				delete opening_bnr.wii.imet;
-				break;
-			default:
-				break;
-		}
-	}
 }
 
 /**
@@ -486,183 +450,161 @@ string GameCubePrivate::getPublisher(void) const
 }
 
 /**
- * Load opening.bnr. (GameCube version)
+ * Load opening.bnr.
  * @return 0 on success; negative POSIX error code on error.
  */
-int GameCubePrivate::gcn_loadOpeningBnr(void)
+int GameCubePrivate::loadOpeningBnr(void)
 {
-	assert((bool)discReader);
-	assert((discType & DISC_SYSTEM_MASK) == DISC_SYSTEM_GCN);
-	if (!discReader) {
-		return -EIO;
-	} else if ((discType & DISC_SYSTEM_MASK) != DISC_SYSTEM_GCN) {
-		// Not supported.
-		// TODO: Do Triforce games have opening.bnr?
-		return -ENOTSUP;
-	}
-
-	if (opening_bnr.gcn.data) {
+	if (opening_bnr.romData) {
 		// Banner is already loaded.
 		return 0;
 	}
 
-	// NOTE: The GCN partition needs to stay open,
-	// since we have a subclass for reading the object.
-	// since we don't need to access more than one file.
-	GcnPartitionPtr gcnPartition = std::make_shared<GcnPartition>(discReader, 0);
-	if (!gcnPartition->isOpen()) {
-		// Could not open the partition.
+	assert((bool)discReader);
+	assert((discType & DISC_SYSTEM_MASK) != DISC_SYSTEM_TRIFORCE);
+	if (!discReader) {
+		return -EIO;
+	} else if ((discType & DISC_SYSTEM_MASK) == DISC_SYSTEM_TRIFORCE) {
+		// Not supported.
+		// TODO: Do Triforce games have an equivalent to opening.bnr?
+		return -ENOTSUP;
+	}
+
+	GcnPartition *partition = nullptr;
+	IRpFilePtr f_opening_bnr;
+	switch (discType & DISC_SYSTEM_MASK) {
+		default:
+			assert(!"System not supported!");
+			return -ENOTSUP;
+
+		case DISC_SYSTEM_GCN: {
+			// NOTE: The GCN partition needs to stay open,
+			// since we have a subclass for reading the object.
+			// since we don't need to access more than one file.
+			opening_bnr.gcnPartition = std::make_shared<GcnPartition>(discReader, 0);
+			if (!opening_bnr.gcnPartition->isOpen()) {
+				// Could not open the partition.
+				opening_bnr.gcnPartition.reset();
+				return -EIO;
+			}
+
+			partition = opening_bnr.gcnPartition.get();
+			break;
+		}
+
+		case DISC_SYSTEM_WII: {
+			// Wii partition tables need to be loaded first.
+			// They might have already been loaded by loadFieldData(),
+			// but not loadMetaData().
+			const int wiiPtLoaded = loadWiiPartitionTables();
+			if (wiiPtLoaded != 0) {
+				// Unable to load Wii partition tables.
+				return -EIO;
+			}
+			partition = gamePartition;
+			break;
+		}
+	}
+	assert(partition != nullptr);
+	if (!partition) {
+		opening_bnr.gcnPartition.reset();
 		return -EIO;
 	}
 
-	const IRpFilePtr f_opening_bnr = gcnPartition->open("/opening.bnr");
+	// Attempt to open "opening.bnr".
+	f_opening_bnr = partition->open("/opening.bnr");
 	if (!f_opening_bnr) {
 		// Error opening "opening.bnr".
-		const int err = -gcnPartition->lastError();
+		const int err = -partition->lastError();
+		opening_bnr.gcnPartition.reset();
 		return err;
 	}
 
-	// Attempt to open a GameCubeBNR subclass.
-	GameCubeBNR *const bnr = new GameCubeBNR(f_opening_bnr, this->gcnRegion);
-	if (!bnr->isOpen()) {
+	// Attempt to open the appropriate subclass.
+	RomDataPtr romData;
+	switch (discType & DISC_SYSTEM_MASK) {
+		default:
+			assert(!"System not supported!");
+			return -ENOTSUP;
+		case DISC_SYSTEM_GCN:
+			romData = std::make_shared<GameCubeBNR>(f_opening_bnr, this->gcnRegion);
+			break;
+		case DISC_SYSTEM_WII:
+			romData = std::make_shared<WiiBNR>(f_opening_bnr, this->gcnRegion, discHeader.id4[3]);
+			break;
+	}
+	if (!romData->isOpen()) {
 		// Unable to open the subclass.
-		delete bnr;
+		opening_bnr.gcnPartition.reset();
 		return -EIO;
 	}
 
 	// GameCubeBNR subclass is open.
-	opening_bnr.gcn_partition = std::move(gcnPartition);
-	opening_bnr.gcn.data = bnr;
+	opening_bnr.romData = std::move(romData);;
 	return 0;
 }
 
 /**
- * Load opening.bnr. (Wii version)
- * @return 0 on success; negative POSIX error code on error.
- */
-int GameCubePrivate::wii_loadOpeningBnr(void)
-{
-	assert((bool)discReader);
-	assert((discType & DISC_SYSTEM_MASK) == DISC_SYSTEM_WII);
-	if (!discReader) {
-		return -EIO;
-	} else if ((discType & DISC_SYSTEM_MASK) != DISC_SYSTEM_WII) {
-		// Not supported.
-		return -ENOTSUP;
-	}
-
-	if (opening_bnr.wii.imet) {
-		// Banner is already loaded.
-		return 0;
-	}
-
-	if (!gamePartition) {
-		// No game partition...
-		return -ENOENT;
-	}
-
-	const IRpFilePtr f_opening_bnr = gamePartition->open("/opening.bnr");
-	if (!f_opening_bnr) {
-		// Error opening "opening.bnr".
-		return -gamePartition->lastError();
-	}
-
-	// Read the IMET struct.
-	unique_ptr<Wii_IMET_t> pBanner(new Wii_IMET_t);
-	size_t size = f_opening_bnr->read(pBanner.get(), sizeof(*pBanner));
-	if (size != sizeof(*pBanner)) {
-		// Read error.
-		const int err = f_opening_bnr->lastError();
-		return (err != 0 ? -err : -EIO);
-	}
-
-	// Verify the IMET magic.
-	if (pBanner->magic != cpu_to_be32(WII_IMET_MAGIC)) {
-		// Magic is incorrect.
-		// TODO: Better error code?
-		return -EIO;
-	}
-
-	// Banner is loaded.
-	opening_bnr.wii.imet = pBanner.release();
-	return 0;
-}
-
-/**
- * [GameCube] Add the game information field from opening.bnr.
+ * Add the game information field from opening.bnr.
  *
- * This adds an RFT_STRING field for BNR1, and
- * RFT_STRING_MULTI for BNR2.
+ * GameCube:
+ * - This adds an RFT_STRING field for BNR1, and
+ *   RFT_STRING_MULTI for BNR2.
+ *
+ * Wii:
+ * - This adds an RFT_STRING_MULTI field with all available languages.
  *
  * @return 0 on success; negative POSIX error code on error.
  */
-int GameCubePrivate::gcn_addGameInfo(void)
+int GameCubePrivate::addGameInfo(void)
 {
-	assert((discType & DISC_SYSTEM_MASK) == DISC_SYSTEM_GCN);
-	if ((discType & DISC_SYSTEM_MASK) != DISC_SYSTEM_GCN) {
+	assert((discType & DISC_SYSTEM_MASK) != DISC_SYSTEM_TRIFORCE);
+	if ((discType & DISC_SYSTEM_MASK) == DISC_SYSTEM_TRIFORCE) {
 		// Not supported.
 		// TODO: Do Triforce games have opening.bnr?
 		return -ENOENT;
 	}
 
-	if (!opening_bnr.gcn.data) {
+	if (!opening_bnr.romData) {
 		// Attempt to load opening.bnr.
-		if (const_cast<GameCubePrivate*>(this)->gcn_loadOpeningBnr() != 0) {
+		if (const_cast<GameCubePrivate*>(this)->loadOpeningBnr() != 0) {
 			// Error loading opening.bnr.
 			return -ENOENT;
 		}
 
 		// Make sure it was actually loaded.
-		if (!opening_bnr.gcn.data) {
+		if (!opening_bnr.romData) {
 			// opening.bnr was not loaded.
 			return -EIO;
 		}
 	}
 
-	// Add the field from the GameCubeBNR.
-	return opening_bnr.gcn.data->addField_gameInfo(&this->fields);
-}
-
-/**
- * [Wii] Add the game name from opening.bnr.
- * This adds an RFT_STRING_MULTI field with all available languages.
- * @return 0 on success; negative POSIX error code on error.
- */
-int GameCubePrivate::wii_addBannerName(void)
-{
-	assert((discType & DISC_SYSTEM_MASK) == DISC_SYSTEM_WII);
-	if ((discType & DISC_SYSTEM_MASK) != DISC_SYSTEM_WII) {
-		// Not supported.
-		return -ENOENT;
-	}
-
-	if (!opening_bnr.wii.imet) {
-		// Attempt to load opening.bnr.
-		if (const_cast<GameCubePrivate*>(this)->wii_loadOpeningBnr() != 0) {
-			// Error loading opening.bnr.
-			return -ENOENT;
+	// Add the field from the opening.bnr RomData object.
+	int ret = 0;
+	switch (discType & DISC_SYSTEM_MASK) {
+		default:
+			assert(!"System not supported!");
+			ret = -ENOTSUP;
+			break;
+		case DISC_SYSTEM_GCN: {
+			GameCubeBNR *const bnr = dynamic_cast<GameCubeBNR*>(opening_bnr.romData.get());
+			assert(bnr != nullptr);
+			if (!bnr) {
+				return -EIO;
+			}
+			ret = bnr->addField_gameInfo(&this->fields);
+			break;
 		}
-
-		// Make sure it was actually loaded.
-		if (!opening_bnr.wii.imet) {
-			// opening.bnr was not loaded.
-			return -EIO;
+		case DISC_SYSTEM_WII: {
+			const RomFields *const imetFields = opening_bnr.romData->fields();
+			assert(imetFields != nullptr);
+			if (imetFields) {
+				fields.addFields_romFields(imetFields, 0);
+			}
+			break;
 		}
 	}
-
-	// Get the string map.
-	RomFields::StringMultiMap_t *const pMap_bannerName = WiiCommon::getWiiBannerStrings(
-		opening_bnr.wii.imet, gcnRegion, discHeader.id4[3]);
-	if (!pMap_bannerName) {
-		// Error getting the map...
-		return -EIO;
-	}
-
-	// Add the field.
-	const uint32_t def_lc = NintendoLanguage::getWiiLanguageCode(
-		NintendoLanguage::getWiiLanguage());
-	fields.addField_string_multi(C_("GameCube", "Game Info"), pMap_bannerName, def_lc);
-	return 0;
+	return ret;
 }
 
 /**
@@ -1052,10 +994,10 @@ void GameCube::close(void)
 		// may be needed for images and fields.
 		switch (d->discType & GameCubePrivate::DISC_SYSTEM_MASK) {
 			case GameCubePrivate::DISC_SYSTEM_GCN:
-				if (d->opening_bnr.gcn.data) {
-					d->opening_bnr.gcn.data->close();
+				if (d->opening_bnr.romData) {
+					d->opening_bnr.romData->close();
 				}
-				d->opening_bnr.gcn_partition.reset();
+				d->opening_bnr.gcnPartition.reset();
 				break;
 			case GameCubePrivate::DISC_SYSTEM_WII:
 				// No subclass for Wii yet.
@@ -1450,7 +1392,7 @@ int GameCube::loadFieldData(void)
 			// GameCube-specific fields.
 
 			// Add the Game Info field from opening.bnr.
-			d->gcn_addGameInfo();
+			d->addGameInfo();
 
 			// Finished reading the field data.
 			return static_cast<int>(d->fields.count());
@@ -1544,7 +1486,7 @@ int GameCube::loadFieldData(void)
 	// Display the Wii partition table(s).
 	if (wiiPtLoaded == 0) {
 		// Add the game name from opening.bnr.
-		int ret = d->wii_addBannerName();
+		int ret = d->addGameInfo();
 		if (ret != 0) {
 			// Unable to load the game name from opening.bnr.
 			// This might be because it's homebrew, a prototype, or a key error.
@@ -1840,34 +1782,30 @@ int GameCube::loadMetaData(void)
 	// Disc header is read in the constructor.
 	const GCN_DiscHeader *const discHeader = &d->discHeader;
 
-	// If this is GameCube, use opening.bnr if available.
-	// TODO: Wii IMET?
+	// Add opening.bnr metadata if it's available.
 	bool addedBnrMetaData = false;
-	switch (d->discType & GameCubePrivate::DISC_SYSTEM_MASK) {
-		default:
+	do {
+		if ((d->discType & GameCubePrivate::DISC_SYSTEM_MASK) == GameCubePrivate::DISC_SYSTEM_TRIFORCE)
 			break;
 
-		case GameCubePrivate::DISC_SYSTEM_GCN: {
-			if (!d->opening_bnr.gcn.data) {
-				d->gcn_loadOpeningBnr();
-				if (!d->opening_bnr.gcn.data) {
-					// Still unable to load the metadata.
-					break;
-				}
+		if (!d->opening_bnr.romData) {
+			d->loadOpeningBnr();
+			if (!d->opening_bnr.romData) {
+				// Still unable to load the metadata.
+				break;
 			}
-
-			// Get the metadata from opening.bnr.
-			const RomMetaData *const bnrMetaData = d->opening_bnr.gcn.data->metaData();
-			if (bnrMetaData && !bnrMetaData->empty()) {
-				int ret = d->metaData->addMetaData_metaData(bnrMetaData);
-				if (ret >= 0) {
-					// Metadata added successfully.
-					addedBnrMetaData = true;
-				}
-			}
-			break;
 		}
-	}
+
+		// Get the metadata from opening.bnr.
+		const RomMetaData *const bnrMetaData = d->opening_bnr.romData->metaData();
+		if (bnrMetaData && !bnrMetaData->empty()) {
+			int ret = d->metaData->addMetaData_metaData(bnrMetaData);
+			if (ret >= 0) {
+				// Metadata added successfully.
+				addedBnrMetaData = true;
+			}
+		}
+	} while (0);
 
 	if (!addedBnrMetaData) {
 		// Unable to load opening.bnr.
@@ -1951,15 +1889,15 @@ int GameCube::loadInternalImage(ImageType imageType, rp_image_const_ptr &pImage)
 
 	// Load opening.bnr. (GCN/Triforce only)
 	// FIXME: Does Triforce have opening.bnr?
-	if (d->gcn_loadOpeningBnr() != 0) {
+	if (d->loadOpeningBnr() != 0) {
 		// Could not load opening.bnr.
 		pImage.reset();
 		return -ENOENT;
 	}
 
 	// Forward this call to the GameCubeBNR object.
-	if (d->opening_bnr.gcn.data) {
-		return d->opening_bnr.gcn.data->loadInternalImage(imageType, pImage);
+	if (d->opening_bnr.romData) {
+		return d->opening_bnr.romData->loadInternalImage(imageType, pImage);
 	}
 
 	// No GameCubeBNR object.
