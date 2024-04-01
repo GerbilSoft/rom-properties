@@ -143,9 +143,10 @@ button.
 | Nintendo GameCube Discs   |       Yes      |    Yes   |      Banner     |   Disc, Covers  |
 | Nintendo GameCube Banners |       Yes      |    Yes   |      Banner     |        No       |
 | Nintendo GameCube Saves   |       Yes      |    Yes   |       Icon      |       N/A       |
+| Nintendo Wii Banners      |       Yes      |    Yes   |        No       |        No       |
 | Nintendo Wii Discs        |       Yes      |    Yes   |        No       |   Disc, Covers  |
 | Nintendo Wii WADs         |       Yes      |    Yes   |       Yes*      |  Title, Covers  |
-| Nintendo Wii Saves        |       Yes      |    No    |       Yes       |       N/A       |
+| Nintendo Wii Saves        |       Yes      |    Yes   |       Yes       |       N/A       |
 | Nintendo Wii U            |       Yes      |    No    |        No       |   Disc, Covers  |
 | Sega 8-bit (SMS, GG)      |       Yes      |    Yes   |       N/A       |        No       |
 | Sega Mega Drive           |       Yes      |    Yes   |       N/A       |      Title      |
@@ -164,11 +165,11 @@ button.
 
 |             System            | Properties Tab | Metadata | Internal Images | External Images |
 |:-----------------------------:|:--------------:|:--------:|:---------------:|:---------------:|
-| Atari Lynx                    |       Yes      |    No    |       N/A       |        No       |
+| Atari Lynx                    |       Yes      |    Yes   |       N/A       |        No       |
 | Bandai WonderSwan (Color)     |       Yes      |    Yes   |       N/A       |      Title      |
 | Neo Geo Pocket (Color)        |       Yes      |    Yes   |       N/A       |      Title      |
 | Nintendo Game Boy (Color)     |       Yes      |    Yes   |       N/A       |      Title      |
-| Nintendo Virtual Boy          |       Yes      |    No    |       N/A       |        No       |
+| Nintendo Virtual Boy          |       Yes      |    Yes   |       N/A       |        No       |
 | Nintendo Game Boy Advance     |       Yes      |    Yes   |       N/A       |      Title      |
 | Nintendo DS(i)                |       Yes      |    Yes   |       Icon      |   Covers, Box   |
 | Nintendo DSi TADs*            |     Partial    |    No    |        No       |        No       |
@@ -259,8 +260,8 @@ Notes:
 | PUC Lua binaries               |       Yes      |    No    |       N/A       |       N/A      |
 | Mach-O Binaries                |       Yes      |    No    |       N/A       |       N/A      |
 | Nintendo amiibo                |       Yes      |    No    |       N/A       |      Media     |
-| Nintendo Badge Arcade          |       Yes      |    No    |      Image      |       N/A      |
-| Windows/DOS Executables        |       Yes      |    No    |        No       |       N/A      |
+| Nintendo Badge Arcade          |       Yes      |   Yes    |      Image      |       N/A      |
+| Windows/DOS Executables        |       Yes      |   Yes    |        No       |       N/A      |
 
 Notes:
 * Internal image refers to artwork contained within the ROM and/or disc image.
