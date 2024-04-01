@@ -27,8 +27,8 @@ BEGIN
     LTEXT           "", IDC_STATIC_DESC, 7, 7, 260, 81, SS_LEFT, WS_EX_LEFT | WS_EX_TRANSPARENT
     LTEXT           "", IDC_STATIC_STATUS1, 7, 92, 259, 9, NOT WS_VISIBLE | SS_LEFT, WS_EX_LEFT | WS_EX_TRANSPARENT
     CONTROL         "", IDC_STATIC_STATUS2, "SysLink", 0x50010000, 7, 102, 259, 33, WS_EX_LEFT | WS_EX_TRANSPARENT
-    PUSHBUTTON      "Uninstall", IDC_BUTTON_UNINSTALL, 139, 136, 50, 14, 0, WS_EX_LEFT
-    DEFPUSHBUTTON   "Install", IDC_BUTTON_INSTALL, 83, 136, 50, 14, 0, WS_EX_LEFT
+    PUSHBUTTON      "إلغاء التثبيت", IDC_BUTTON_UNINSTALL, 139, 136, 50, 14, 0, WS_EX_LEFT
+    DEFPUSHBUTTON   "تثبيت", IDC_BUTTON_INSTALL, 83, 136, 50, 14, 0, WS_EX_LEFT
 END
 
 /** String Table **/
@@ -44,8 +44,8 @@ STRINGTABLE
 BEGIN
 	IDS_MAIN_DESCRIPTION, L"This installer will register the ROM Properties Page DLL with the system, which will provide extra functionality for supported files in Windows Explorer.\n\nNote that the DLL locations are hard-coded in the registry. If you move the DLLs, you will have to rerun this installer. In addition, the DLLs will usually be locked by Explorer, so you will need to use this program to uninstall the DLLs first and then restart Explorer in order to move the DLLs.\n\nUninstalling will unregister the ROM Properties DLL, which will disable the extra functionality provided by the DLL for supported ROM files.\0"
 
-	IDS_ISR_FATAL_ERROR, L"An unknown fatal error occurred.\0"
-	IDS_ISR_PROCESS_STILL_ACTIVE, L"The REGSVR32 process never completed.\0"
+	IDS_ISR_FATAL_ERROR, L"حدث خطأ فادح غير معروف.\0"
+	IDS_ISR_PROCESS_STILL_ACTIVE, L"العملية REGSVR32 لم تكتمل أبدًا.\0"
 	IDS_ISR_REGSVR32_FAIL_ARGS, L"REGSVR32 failed: Invalid argument.\0"
 	IDS_ISR_REGSVR32_FAIL_OLE, L"REGSVR32 failed: OleInitialize() failed.\0"
 	IDS_DLLS_REGISTERING, L"Registering DLLs...\0"
@@ -67,12 +67,12 @@ BEGIN
 	IDSF_MSVCRT_MISSING_ONE, L"The %s MSVC 2015-%u runtime is not installed.\0"
 	IDSF_MSVCRT_MISSING_MULTIPLE, L"The %s MSVC 2015-%u runtimes are not installed.\0"
 
-	IDSF_ISR_INVALID_ARCH, L"Invalid system architecture: %d\0"
-	IDSF_ISR_FILE_NOT_FOUND, L"%s\\%s is missing.\0"
-	IDSF_ISR_CREATEPROCESS_FAILED, L"Could not start REGSVR32.exe. (Err:%u)\0"
-	IDSF_ISR_REGSVR32_FAIL_LOAD, L"REGSVR32 failed: %s\\%s is not a valid DLL.\0"
-	IDSF_ISR_REGSVR32_FAIL_ENTRY, L"REGSVR32 failed: %s\\%s is missing %s().\0"
-	IDSF_ISR_REGSVR32_FAIL_REG, L"REGSVR32 failed: %s() returned an error.\0"
-	IDSF_ISR_REGSVR32_UNKNOWN_EXIT_CODE, L"REGSVR32 failed: Unknown exit code: %u\0"
-	IDSF_ERROR_COULD_NOT_OPEN_URL, L"Could not open the URL.\n\nWin32 error code: %d\0"
+	IDSF_ISR_INVALID_ARCH, L"بنية النظام غير صالحة: %d\0"
+	IDSF_ISR_FILE_NOT_FOUND, L"%s\\%s غير موجود.\0"
+	IDSF_ISR_CREATEPROCESS_FAILED, L"تعذر بَدْء تشغيل REGSVR32.exe. (خطأ:%u)\0"
+	IDSF_ISR_REGSVR32_FAIL_LOAD, L"فشلت عملية REGSVR32: %s\%s ليست مكتبة ديناميكية صالحة.\0"
+	IDSF_ISR_REGSVR32_FAIL_ENTRY, L"فشلت عملية REGSVR32: %s\%s يفتقد %s().\0"
+	IDSF_ISR_REGSVR32_FAIL_REG, L"فشلت عملية REGSVR32: %s() أرجعت خطأ.\0"
+	IDSF_ISR_REGSVR32_UNKNOWN_EXIT_CODE, L"فشلت عملية REGSVR32: exit code غير معروف: %u\0"
+	IDSF_ERROR_COULD_NOT_OPEN_URL, L"تعذر فتح عنوان الرابط.\n\nرمز خطأ Win32: %d\0"
 END
