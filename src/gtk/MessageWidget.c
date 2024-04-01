@@ -519,9 +519,14 @@ rp_message_widget_set_message_type(RpMessageWidget *widget, GtkMessageType messa
 		// (gtk_style_context_lookup_color() is deprecated in GTK4)
 		bool dark = false;
 		GdkRGBA color;
+#if GTK_CHECK_VERSION(4,9,1)
+		gtk_widget_get_color(GTK_WIDGET(widget->hbox), &color);
+#else /* !GTK_CHECK_VERSION(4,9,1) */
 		gboolean bRet = gtk_style_context_lookup_color(
 			gtk_widget_get_style_context(widget->hbox), "theme_text_color", &color);
-		if (bRet) {
+		if (bRet)
+#endif /* GTK_CHECK_VERSION(4,9,1) */
+		{
 			// BT.601 grayscale conversion
 			const gfloat grayscale = (color.red   * 0.299f) +
 			                         (color.green * 0.587f) +
