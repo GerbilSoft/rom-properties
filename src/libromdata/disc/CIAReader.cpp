@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * CIAReader.cpp: Nintendo 3DS CIA reader.                                 *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -296,34 +296,6 @@ off64_t CIAReader::size(void)
 	off64_t ret = d->cbcReader->size();
 	m_lastError = d->cbcReader->lastError();
 	return ret;
-}
-
-/** IPartition **/
-
-/**
- * Get the partition size.
- * This size includes the partition header and hashes.
- * @return Partition size, or -1 on error.
- */
-off64_t CIAReader::partition_size(void) const
-{
-	// TODO: Handle errors.
-	RP_D(const CIAReader);
-	return (d->cbcReader ? d->cbcReader->partition_size() : -1);
-}
-
-/**
- * Get the used partition size.
- * This size includes the partition header and hashes,
- * but does not include "empty" sectors.
- * @return Used partition size, or -1 on error.
- */
-off64_t CIAReader::partition_size_used(void) const
-{
-	// NOTE: For CIAReader, this is the same as partition_size().
-	// TODO: Handle errors.
-	RP_D(const CIAReader);
-	return (d->cbcReader ? d->cbcReader->partition_size_used() : -1);
 }
 
 }

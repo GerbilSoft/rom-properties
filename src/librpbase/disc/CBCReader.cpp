@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * CBCReader.hpp: AES-128-CBC data reader class.                           *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -395,34 +395,6 @@ off64_t CBCReader::tell(void)
  */
 off64_t CBCReader::size(void)
 {
-	RP_D(const CBCReader);
-	return d->length;
-}
-
-/** IPartition **/
-
-/**
- * Get the partition size.
- * This size includes the partition header and hashes.
- * @return Partition size, or -1 on error.
- */
-off64_t CBCReader::partition_size(void) const
-{
-	// TODO: Errors?
-	RP_D(const CBCReader);
-	return d->length;
-}
-
-/**
- * Get the used partition size.
- * This size includes the partition header and hashes,
- * but does not include "empty" sectors.
- * @return Used partition size, or -1 on error.
- */
-off64_t CBCReader::partition_size_used(void) const
-{
-	// TODO: Errors?
-	// NOTE: For CBCReader, this is the same as partition_size().
 	RP_D(const CBCReader);
 	return d->length;
 }

@@ -11,12 +11,12 @@
 #include "../Handheld/n3ds_structs.h"
 
 // librpbase
-#include "librpbase/disc/IPartition.hpp"
+#include "librpbase/disc/IDiscReader.hpp"
 
 namespace LibRomData {
 
 class CIAReaderPrivate;
-class CIAReader final : public LibRpBase::IPartition
+class CIAReader final : public LibRpBase::IDiscReader
 {
 public:
 	/**
@@ -39,7 +39,7 @@ public:
 	~CIAReader() final;
 
 private:
-	typedef IPartition super;
+	typedef IDiscReader super;
 	RP_DISABLE_COPY(CIAReader)
 
 protected:
@@ -48,6 +48,18 @@ protected:
 
 public:
 	/** IDiscReader **/
+
+	/**
+	 * isDiscSupported() is not handled by CIAReader.
+	 * @return -1
+	 */
+	ATTR_ACCESS_SIZE(read_only, 2, 3)
+	int isDiscSupported(const uint8_t *pHeader, size_t szHeader) const final
+	{
+		RP_UNUSED(pHeader);
+		RP_UNUSED(szHeader);
+		return -1;
+	}
 
 	/**
 	 * Read data from the partition.
@@ -78,24 +90,6 @@ public:
 	 * @return Data size, or -1 on error.
 	 */
 	off64_t size(void) final;
-
-public:
-	/** IPartition **/
-
-	/**
-	 * Get the partition size.
-	 * This size includes the partition header and hashes.
-	 * @return Partition size, or -1 on error.
-	 */
-	off64_t partition_size(void) const final;
-
-	/**
-	 * Get the used partition size.
-	 * This size includes the partition header and hashes,
-	 * but does not include "empty" sectors.
-	 * @return Used partition size, or -1 on error.
-	 */
-	off64_t partition_size_used(void) const final;
 };
 
 typedef std::shared_ptr<CIAReader> CIAReaderPtr;
