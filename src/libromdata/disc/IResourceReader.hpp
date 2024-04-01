@@ -44,6 +44,16 @@ public:
 public:
 	/** Resource access functions **/
 
+private:
+	/**
+	 * IPartition open() function.
+	 * We don't want to use this one.
+	 * @param filename Filename.
+	 * @return IRpFile*, or nullptr on error.
+	 */
+	LibRpFile::IRpFilePtr open(const char *filename) final;
+
+public:
 	/**
 	 * Open a resource.
 	 * @param type Resource type ID.

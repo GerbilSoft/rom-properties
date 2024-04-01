@@ -43,6 +43,7 @@ SET(${PROJECT_NAME}_SRCS
 	img/IconAnimHelper.cpp
 	disc/IDiscReader.cpp
 	disc/DiscReader.cpp
+	disc/IPartition.cpp
 	disc/PartitionFile.cpp
 	disc/SparseDiscReader.cpp
 	disc/CBCReader.cpp

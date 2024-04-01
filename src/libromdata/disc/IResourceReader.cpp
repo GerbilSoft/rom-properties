@@ -27,4 +27,17 @@ int IResourceReader::alignFileDWORD(IRpFile *file)
 	return ret;
 }
 
+/**
+ * IPartition open() function.
+ * We don't want to use this one.
+ * @param filename Filename.
+ * @return IRpFile*, or nullptr on error.
+ */
+LibRpFile::IRpFilePtr IResourceReader::open(const char *filename)
+{
+	RP_UNUSED(filename);
+	assert(!"IPartition::open(const char*) should not be used for IResourceReader!");
+	return {};
+}
+
 }

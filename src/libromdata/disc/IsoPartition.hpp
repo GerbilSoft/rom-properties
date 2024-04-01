@@ -97,17 +97,7 @@ public:
 	 * @param path	[in] Directory path.
 	 * @return IFst::Dir*, or nullptr on error.
 	 */
-	LibRpBase::IFst::Dir *opendir(const char *path);
-
-	/**
-	 * Open a directory.
-	 * @param path	[in] Directory path.
-	 * @return IFst::Dir*, or nullptr on error.
-	 */
-	inline LibRpBase::IFst::Dir *opendir(const std::string &path)
-	{
-		return opendir(path.c_str());
-	}
+	LibRpBase::IFst::Dir *opendir(const char *path) final;
 
 	/**
 	 * Read a directory entry.
@@ -115,14 +105,14 @@ public:
 	 * @return IFst::DirEnt, or nullptr if end of directory or on error.
 	 * (TODO: Add lastError()?)
 	 */
-	LibRpBase::IFst::DirEnt *readdir(LibRpBase::IFst::Dir *dirp);
+	LibRpBase::IFst::DirEnt *readdir(LibRpBase::IFst::Dir *dirp) final;
 
 	/**
 	 * Close an opened directory.
 	 * @param dirp IFst::Dir pointer.
 	 * @return 0 on success; negative POSIX error code on error.
 	 */
-	int closedir(LibRpBase::IFst::Dir *dirp);
+	int closedir(LibRpBase::IFst::Dir *dirp) final;
 #endif
 
 	/**
@@ -130,7 +120,7 @@ public:
 	 * @param filename Filename.
 	 * @return IRpFile*, or nullptr on error.
 	 */
-	LibRpFile::IRpFilePtr open(const char *filename);
+	LibRpFile::IRpFilePtr open(const char *filename) final;
 
 	/**
 	 * Get a file's timestamp.
