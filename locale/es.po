@@ -2435,7 +2435,7 @@ msgstr "%1$u de %2$u"
 #: ../src/libromdata/Handheld/VirtualBoy.cpp:348
 msgctxt "Region"
 msgid "Japan"
-msgstr "Japon"
+msgstr "Japón"
 
 #: ../src/libromdata/Console/Dreamcast.cpp:642
 #: ../src/libromdata/Console/GameCubeRegions.cpp:118
@@ -3594,7 +3594,7 @@ msgstr "VS. System (entradas invertidas)"
 #: ../src/libromdata/Console/NES.cpp:1372
 msgctxt "NES|Expansion"
 msgid "VS. Pinball (Japan)"
-msgstr "VS. Pinball (Japon)"
+msgstr "VS. Pinball (Japón)"
 
 #: ../src/libromdata/Console/NES.cpp:1373
 msgctxt "NES|Expansion"
@@ -5652,12 +5652,12 @@ msgstr "Sin RAM"
 #: ../src/libromdata/Handheld/DMG.cpp:683
 msgctxt "Region|DMG"
 msgid "Japanese"
-msgstr "Japones"
+msgstr "Japonés"
 
 #: ../src/libromdata/Handheld/DMG.cpp:687
 msgctxt "Region|DMG"
 msgid "Non-Japanese"
-msgstr "No Japones"
+msgstr "No Japonés"
 
 #: ../src/libromdata/Handheld/DMG.cpp:692
 #, c-format
