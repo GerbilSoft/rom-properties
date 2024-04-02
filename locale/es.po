@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2024-03-30 18:05-0400\n"
-"PO-Revision-Date: 2024-04-02 04:12\n"
+"PO-Revision-Date: 2024-04-02 19:30\n"
 "Last-Translator: \n"
 "Language-Team: Spanish\n"
 "Language: es_ES\n"
@@ -2360,7 +2360,7 @@ msgstr "%1$u de %2$u"
 #: ../src/libromdata/Handheld/VirtualBoy.cpp:348
 msgctxt "Region"
 msgid "Japan"
-msgstr "Japon"
+msgstr "Japón"
 
 #: ../src/libromdata/Console/Dreamcast.cpp:642
 #: ../src/libromdata/Console/GameCubeRegions.cpp:118
@@ -5547,12 +5547,12 @@ msgstr "Sin RAM"
 #: ../src/libromdata/Handheld/DMG.cpp:683
 msgctxt "Region|DMG"
 msgid "Japanese"
-msgstr "Japones"
+msgstr "Japonés"
 
 #: ../src/libromdata/Handheld/DMG.cpp:687
 msgctxt "Region|DMG"
 msgid "Non-Japanese"
-msgstr "No Japones"
+msgstr "No Japonés"
 
 #: ../src/libromdata/Handheld/DMG.cpp:692
 #, c-format
