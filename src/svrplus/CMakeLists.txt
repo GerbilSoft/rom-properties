@@ -11,6 +11,7 @@ SET(${PROJECT_NAME}_H resource.h gdipmini.h)
 SET(${PROJECT_NAME}_RC
 	resource.rc
 	res-en_US.rc
+	res-ar_SA.rc
 	res-de_DE.rc
 	res-fr_FR.rc
 	res-it_IT.rc

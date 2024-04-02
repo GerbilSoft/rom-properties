@@ -1,0 +1,78 @@
+/***************************************************************************
+ * ROM Properties Page shell extension installer. (svrplus)                *
+ * resource.rc: Win32 resource script. (ar_SA)                             *
+ *                                                                         *
+ * Copyright (c) 2017-2022 by Egor.                                        *
+ * Copyright (c) 2017-2023 by David Korth.                                 *
+ * SPDX-License-Identifier: GPL-2.0-or-later                               *
+ ***************************************************************************/
+
+// UTF-8 encoding
+#pragma code_page(65001)
+
+// Common rom-properties resource header
+#include "resource.common.inc.h"
+
+// svrplus resources
+#include "resource.h"
+
+/** Dialogs **/
+LANGUAGE LANG_ARABIC, SUBLANG_DEFAULT
+IDD_SVRPLUS DIALOGEX 0, 0, 273, 157
+STYLE DS_3DLOOK | DS_CENTER | DS_MODALFRAME | DS_SHELLFONT | WS_CAPTION | WS_VISIBLE | WS_POPUPWINDOW | WS_MINIMIZEBOX | WS_SYSMENU
+EXSTYLE WS_EX_CONTROLPARENT
+CAPTION "مثبت صفحة خصائص ROM"
+FONT 8, "MS Shell Dlg"
+BEGIN
+    LTEXT           "", IDC_STATIC_DESC, 7, 7, 260, 81, SS_LEFT, WS_EX_LEFT | WS_EX_TRANSPARENT
+    LTEXT           "", IDC_STATIC_STATUS1, 7, 92, 259, 9, NOT WS_VISIBLE | SS_LEFT, WS_EX_LEFT | WS_EX_TRANSPARENT
+    CONTROL         "", IDC_STATIC_STATUS2, "SysLink", 0x50010000, 7, 102, 259, 33, WS_EX_LEFT | WS_EX_TRANSPARENT
+    PUSHBUTTON      "إلغاء التثبيت", IDC_BUTTON_UNINSTALL, 139, 136, 50, 14, 0, WS_EX_LEFT
+    DEFPUSHBUTTON   "تثبيت", IDC_BUTTON_INSTALL, 83, 136, 50, 14, 0, WS_EX_LEFT
+END
+
+/** String Table **/
+// NOTE: String table does NOT NULL-terminate strings by default.
+// All strings listed here must have a "\0" at the end of the string.
+// Toolchain-specific notes:
+// - windres: No option to automatically NULL-terminate, but will
+//            accept the "\0" here.
+// - MSVC rc: Ignores "\0", but has a "/n" option to automatically
+//            NULL-terminate strings.
+LANGUAGE LANG_ARABIC, SUBLANG_DEFAULT
+STRINGTABLE
+BEGIN
+	IDS_MAIN_DESCRIPTION, L"سيقومُ هذا المُثَبِّتْ بتسجيل مكتبة خصائص ROM مع النظام، مما سيوفر وظائف إضافية للملفات المدعومة في مستكشف ويندوز.\n\nيرجى ملاحظة أن مواقع المكتبات الديناميكية مُبرمجة بشكل ثابت في التسجيل. إذا قمت بنقل المكتبات الديناميكية، ستحتاج إلى إعادة تشغيل هذا المثبت. بالإضافة إلى ذلك، ستكون المكتبات الديناميكية عادة ما تكون مقفلة بواسطة المستكشف، لذا ستحتاج إلى استخدام هذا البرنامج لإلغاء تثبيت المكتبات الديناميكية أولاً، ثم إعادة تشغيل المستكشف من أجل نقل المكتبات الديناميكية.\n\nسيؤدي إلغاء التثبيت إلى إلغاء تسجيل مكتبة خصائص ROM، مما سيعطل الوظائف الإضافية التي توفرها المكتبة الديناميكية لملفات ROM المدعومة.\0"
+
+	IDS_ISR_FATAL_ERROR, L"حدث خطأ فادح غير معروف.\0"
+	IDS_ISR_PROCESS_STILL_ACTIVE, L"العملية REGSVR32 لم تكتمل أبدًا.\0"
+	IDS_ISR_REGSVR32_FAIL_ARGS, L"فشلت عملية REGSVR32: الوسيط غير صالح.\0"
+	IDS_ISR_REGSVR32_FAIL_OLE, L"فشلت عملية REGSVR32: فشلت OleInitialize().\0"
+	IDS_DLLS_REGISTERING, L"تسجيل المكتبات الديناميكية...\0"
+	IDS_DLL_REGISTERING, L"تسجيل المكتبة الديناميكية...\0"
+	IDS_DLLS_UNREGISTERING, L"إلغاء تسجيل المكتبات الديناميكية...\0"
+	IDS_DLL_UNREGISTERING, L"إلغاء تسجيل المكتبة الديناميكية...\0"
+	IDS_DLLS_REG_OK, L"تم تسجيل المكتبات الديناميكية بنجاح.\0"
+	IDS_DLL_REG_OK, L"تم تسجيل المكتبة الديناميكية بنجاح.\0"
+	IDS_DLLS_UNREG_OK, L"تم إلغاء تسجيل المكتبات الديناميكية بنجاح.\0"
+	IDS_DLL_UNREG_OK, L"تم إلغاء تسجيل المكتبة الديناميكية بنجاح.\0"
+	IDS_DLLS_REG_ERROR, L"حدث خطأ خلال تسجيل المكتبات الديناميكية:\0"
+	IDS_DLL_REG_ERROR, L"حدث خطأ خلال تسجيل المكتبة الديناميكية:\0"
+	IDS_DLLS_UNREG_ERROR, L"حدث خطأ خلال إلغاء تسجيل المكتبات الديناميكية:\0"
+	IDS_DLL_UNREG_ERROR, L"حدث خطأ خلال إلغاء تسجيل المكتبة الديناميكية:\0"
+	IDS_ERROR_STARTING_WORKER_THREAD, L"حدث خطأ خلال بَدْء تشغيل مؤشر ترابط العامل.\0"
+	IDS_ERROR_COULD_NOT_OPEN_URL_TITLE, L"تعذر فتح الرابط\0"
+
+	IDSF_MSVCRT_DOWNLOAD_AT, L"يمكنك تنزيل runtime MSVC 2015-%u على الرابط التالي:\0"
+	IDSF_MSVCRT_MISSING_ONE, L"runtime %s MSVC 2015-%u غير مثبت.\0"
+	IDSF_MSVCRT_MISSING_MULTIPLE, L"runtimes %s MSVC 2015-%u غير مثبتة.\0"
+
+	IDSF_ISR_INVALID_ARCH, L"بنية النظام غير صالحة: %d\0"
+	IDSF_ISR_FILE_NOT_FOUND, L"%s\\%s غير موجود.\0"
+	IDSF_ISR_CREATEPROCESS_FAILED, L"تعذر بَدْء تشغيل REGSVR32.exe. (خطأ:%u)\0"
+	IDSF_ISR_REGSVR32_FAIL_LOAD, L"فشلت عملية REGSVR32: %s\%s ليست مكتبة ديناميكية صالحة.\0"
+	IDSF_ISR_REGSVR32_FAIL_ENTRY, L"فشلت عملية REGSVR32: %s\%s يفتقد %s().\0"
+	IDSF_ISR_REGSVR32_FAIL_REG, L"فشلت عملية REGSVR32: %s() أرجعت خطأ.\0"
+	IDSF_ISR_REGSVR32_UNKNOWN_EXIT_CODE, L"فشلت عملية REGSVR32: exit code غير معروف: %u\0"
+	IDSF_ERROR_COULD_NOT_OPEN_URL, L"تعذر فتح عنوان الرابط.\n\nرمز خطأ Win32: %d\0"
+END
