@@ -25,6 +25,9 @@
     * rp-config now has an option to disable directory thumbnailing,
       since it can slow down file browsing. Disabling directory
       thumbnailing will disable Wii U NUS package thumbnailing.
+  * NintendoDS_BNR: Split out icon/title parser from NintendoDS.
+    Allows thumbnailing of individual Nintendo DS .bnr files in addition
+    to .nds ROM images.
 
 * New parser features:
   * EXE: Use numeric sorting for ordinals and hints.

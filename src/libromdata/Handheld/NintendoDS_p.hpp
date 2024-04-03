@@ -14,6 +14,9 @@
 // C++ includes
 #include <vector>
 
+// Icon/title data
+#include "NintendoDS_BNR.hpp"
+
 // Other rom-properties libraries
 #include "librpbase/RomData_p.hpp"
 #include "librpbase/RomFields.hpp"
@@ -28,7 +31,7 @@ class NintendoDSPrivate final : public LibRpBase::RomDataPrivate
 {
 public:
 	NintendoDSPrivate(const LibRpFile::IRpFilePtr &file, bool cia);
-	~NintendoDSPrivate() final = default;
+	~NintendoDSPrivate() final;;
 
 private:
 	typedef LibRpBase::RomDataPrivate super;
@@ -39,16 +42,6 @@ public:
 	static const char *const exts[];
 	static const char *const mimeTypes[];
 	static const LibRpBase::RomDataInfo romDataInfo;
-
-public:
-	// Animated icon data
-	// This class owns all of the icons in here, so we
-	// must delete all of them.
-	LibRpBase::IconAnimDataPtr iconAnimData;
-
-	// Pointer to the first frame in iconAnimData.
-	// Used when showing a static icon.
-	rp_image_const_ptr icon_first_frame;
 
 public:
 	/** RomFields **/
@@ -105,6 +98,9 @@ public:
 	// NOTE: Must be byteswapped on access.
 	NDS_RomHeader romHeader;
 
+	// Icon/title data
+	NintendoDS_BNR *nds_icon_title;
+
 	// Cached ROM size to determine trimmed or untrimmed.
 	off64_t romSize;
 
@@ -112,10 +108,11 @@ public:
 	uint32_t secData;
 	NDS_SecureArea secArea;
 
-	// Icon/title data from the ROM header.
-	// NOTE: Must be byteswapped on access.
-	NDS_IconTitleData nds_icon_title;
-	bool nds_icon_title_loaded;
+	/**
+	 * Load the icon/title data.
+	 * @return 0 on success; negative POSIX error code on error.
+	 */
+	int loadIconTitleData(void);
 
 	// If true, this is an SRL in a 3DS CIA.
 	// Some fields shouldn't be displayed.
@@ -124,18 +121,6 @@ public:
 	// Field indexes for ROM operations
 	int fieldIdx_secData;	// "Security Data" (RFT_BITFIELD)
 	int fieldIdx_secArea;	// "Secure Area" (RFT_STRING)
-
-	/**
-	 * Load the icon/title data.
-	 * @return 0 on success; negative POSIX error code on error.
-	 */
-	int loadIconTitleData(void);
-
-	/**
-	 * Load the ROM image's icon.
-	 * @return Icon, or nullptr on error.
-	 */
-	rp_image_const_ptr loadIcon(void);
 
 	/**
 	 * Get the title index.
@@ -228,25 +213,6 @@ public:
 	 * @return DSi flags string vector.
 	 */
 	static LibRpBase::RomFields::ListData_t *getDSiFlagsStringVector(void);
-
-	/**
-	 * Get the maximum supported language for an icon/title version.
-	 * @param version Icon/title version.
-	 * @return Maximum supported language.
-	 */
-	static NDS_Language_ID getMaxSupportedLanguage(uint16_t version);
-
-	/**
-	 * Get the language ID to use for the title fields.
-	 * @return NDS language ID.
-	 */
-	NDS_Language_ID getLanguageID(void) const;
-
-	/**
-	 * Get the default language code for the multi-string fields.
-	 * @return Language code, e.g. 'en' or 'es'.
-	 */
-	uint32_t getDefaultLC(void) const;
 };
 
 }

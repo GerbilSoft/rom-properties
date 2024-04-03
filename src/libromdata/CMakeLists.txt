@@ -59,6 +59,7 @@ SET(${PROJECT_NAME}_SRCS
 	Handheld/Nintendo3DS_SMDH.cpp
 	Handheld/NintendoDS.cpp
 	Handheld/NintendoDS_ops.cpp
+	Handheld/NintendoDS_BNR.cpp
 	Handheld/PalmOS.cpp
 	Handheld/PokemonMini.cpp
 	Handheld/PSP.cpp
@@ -227,6 +228,7 @@ SET(${PROJECT_NAME}_H
 	Handheld/Nintendo3DS_SMDH.hpp
 	Handheld/NintendoDS.hpp
 	Handheld/NintendoDS_p.hpp
+	Handheld/NintendoDS_BNR.hpp
 	Handheld/PalmOS.hpp
 	Handheld/PokemonMini.hpp
 	Handheld/PSP.hpp

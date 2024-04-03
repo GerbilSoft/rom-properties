@@ -806,6 +806,23 @@
     </magic>
   </mime-type>
 
+  <!-- NintendoDS_BNR -->
+  <!-- FIXME: The magic number is too generic... -->
+  <!--
+  <mime-type type="application/x-nintendo-ds-bnr">
+    <comment>Nintendo DS icon/title data</comment>
+    <sub-class-of type="image/x-generic"/>
+    <generic-icon name="image-x-generic"/>
+    <glob pattern="*.bnr"/>
+    <magic priority="50">
+      <match value="0x0001" type="little16" offset="0"/>
+      <match value="0x0002" type="little16" offset="0"/>
+      <match value="0x0003" type="little16" offset="0"/>
+      <match value="0x0103" type="little16" offset="0"/>
+    </magic>
+  </mime-type>
+  -->
+
   <!-- PSP -->
   <mime-type type="application/x-psp-ciso-image">
     <comment>PlayStation Portable CISO disc image</comment>

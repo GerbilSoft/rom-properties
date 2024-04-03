@@ -82,6 +82,7 @@ using std::vector;
 #include "Handheld/Nintendo3DSFirm.hpp"
 #include "Handheld/Nintendo3DS_SMDH.hpp"
 #include "Handheld/NintendoDS.hpp"
+#include "Handheld/NintendoDS_BNR.hpp"
 #include "Handheld/PalmOS.hpp"
 #include "Handheld/PokemonMini.hpp"
 #include "Handheld/PSP.hpp"
@@ -318,6 +319,10 @@ static const RomDataFns romDataFns_header[] = {
 	// only validated by file size. (no magic numbers)
 	GetRomDataFns(CBMDOS, ATTR_HAS_METADATA),
 	
+	// Handhelds: NintendoDS_BNR
+	// No magic number, but it has CRC16s.
+	GetRomDataFns(NintendoDS_BNR, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA),
+
 	// Headers with non-zero addresses.
 	GetRomDataFns_addr(Sega8Bit, ATTR_HAS_METADATA, 0x7FE0, 0x20),
 	GetRomDataFns_addr(PokemonMini, ATTR_HAS_METADATA, 0x2100, 0xD0),
