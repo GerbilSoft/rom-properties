@@ -413,6 +413,15 @@ NintendoDS_BNR::NintendoDS_BNR(const IRpFilePtr &file)
 		return;
 	}
 
+	// Validate the "reserved" section. (Should be 0.)
+	for (unsigned int i = 0; i < sizeof(d->nds_icon_title.reserved1); i++) {
+		if (d->nds_icon_title.reserved1[i] != 0) {
+			// Non-zero. This is an error.
+			d->file.reset();
+			return;
+		}
+	}
+
 	// Validate all CRC16s.
 	// NOTE: Unused CRC16s should be 0.
 	// NOTE 2: Using cpu_to_le16() so we can memcmp() against nds_icon_title directly.
