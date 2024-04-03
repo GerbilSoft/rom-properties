@@ -1081,7 +1081,8 @@ int NintendoDS::loadInternalImage(ImageType imageType, rp_image_const_ptr &pImag
 	if (!d->nds_icon_title) {
 		if (d->loadIconTitleData() != 0) {
 			// Error loading the icon/title data.
-			return {};
+			pImage.reset();
+			return -EIO;
 		}
 	}
 
