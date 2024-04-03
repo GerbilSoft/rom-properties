@@ -96,6 +96,7 @@ public:
 
 	/**
 	 * Calculate the CRC16 of a block of data.
+	 * Polynomial: 0x8005 (for NDS icon/title)
 	 * @param buf Buffer
 	 * @param size Size of buffer
 	 * @return CRC16
@@ -310,6 +311,7 @@ uint32_t NintendoDS_BNR_Private::getDefaultLC(void) const
 
 /**
  * Calculate the CRC16 of a block of data.
+ * Polynomial: 0x8005 (for NDS icon/title)
  * @param buf Buffer
  * @param size Size of buffer
  * @return CRC16
@@ -317,19 +319,10 @@ uint32_t NintendoDS_BNR_Private::getDefaultLC(void) const
 uint16_t NintendoDS_BNR_Private::crc16(const uint8_t *buf, size_t size)
 {
 	// Reference: https://www.reddit.com/r/embedded/comments/1acoobg/crc16_again_with_a_little_gift_for_you_all/
-	// NOTE: NDS CRC16 uses polynomial 0x8005.
+	// NOTE: NDS icon/title CRC16 uses polynomial 0x8005.
 	uint16_t crc = 0xFFFFU;
 
 	while (size--) {
-		/*uint8_t t = crc >> 8 ^ *buf++;
-		uint8_t z = t;
-		t ^= (t >> 1);
-		t ^= (t >> 2);
-		t ^= (t >> 4);
-		t &= 1;
-		t |= (z << 1);
-
-		crc = (crc << 8) ^ ((uint16_t)(t << 15)) ^ ((uint16_t)(t << 1)) ^ ((uint16_t)t);*/
 		uint32_t x = ((crc ^ *buf++) & 0xff) << 8;
 		uint32_t y = x;
 
