@@ -63,12 +63,17 @@ public:
 	};
 	DiscType discType;
 
-	// Disc reader
-	// TODO: Before shared_ptr<>, discReader and gdiReader were in a union{}.
-	// TODO: Use std::variant<>?
-	IDiscReaderPtr discReader;
-	GdiReaderPtr gdiReader;
+	// Track 03 start address.
+	// ISO-9660 directories use physical offsets,
+	// not offsets relative to the start of the track.
+	// NOTE: Not used for GDI.
+	int iso_start_offset;
 
+	// Disc reader
+	// NOTE: May be GdiReader. (TODO: std::variant<> so we don't need dynamic_cast<>?)
+	IDiscReaderPtr discReader;
+
+	// ISO-9660 data track (GD data, not CD data)
 	IsoPartitionPtr isoPartition;
 
 	// Disc header
@@ -76,12 +81,6 @@ public:
 
 	// 0GDTEX.PVR image
 	shared_ptr<SegaPVR> pvrData;	// SegaPVR object
-
-	// Track 03 start address.
-	// ISO-9660 directories use physical offsets,
-	// not offsets relative to the start of the track.
-	// NOTE: Not used for GDI.
-	int iso_start_offset;
 
 	/**
 	 * Calculate the Product CRC16.
@@ -188,15 +187,20 @@ rp_image_const_ptr DreamcastPrivate::load0GDTEX(void)
 	if (pvrData) {
 		// Image has already been loaded.
 		return pvrData->image();
-	} else if (!this->file || (!this->discReader && !this->gdiReader)) {
+	} else if (!this->file || (!this->discReader)) {
 		// Can't load the image.
-		return nullptr;
+		return {};
 	}
 
 	// Create the ISO-9660 file system reader if it isn't already opened.
 	if (!isoPartition) {
 		if (discType == DiscType::GDI) {
 			// Open track 3 as ISO-9660.
+			GdiReader *const gdiReader = dynamic_cast<GdiReader*>(discReader.get());
+			assert(gdiReader != nullptr);
+			if (!gdiReader) {
+				return {};
+			}
 			isoPartition = gdiReader->openIsoPartition(3);
 		} else {
 			// Standalone track.
@@ -206,7 +210,7 @@ rp_image_const_ptr DreamcastPrivate::load0GDTEX(void)
 		if (!isoPartition->isOpen()) {
 			// Unable to open the ISO-9660 partition.
 			isoPartition.reset();
-			return nullptr;
+			return {};
 		}
 	}
 
@@ -214,25 +218,25 @@ rp_image_const_ptr DreamcastPrivate::load0GDTEX(void)
 	const IRpFilePtr pvrFile_tmp = isoPartition->open("/0GDTEX.PVR");
 	if (!pvrFile_tmp) {
 		// Error opening "0GDTEX.PVR".
-		return nullptr;
+		return {};
 	}
 
 	// Sanity check: PVR shouldn't be larger than 4 MB.
 	if (pvrFile_tmp->size() > 4*1024*1024) {
 		// PVR is too big.
-		return nullptr;
+		return {};
 	}
 
 	// Create the SegaPVR object.
 	shared_ptr<SegaPVR> pvrData_tmp = std::make_shared<SegaPVR>(pvrFile_tmp);
-	if (pvrData_tmp->isValid()) {
-		// PVR is valid. Save it.
-		this->pvrData = std::move(pvrData_tmp);
-		return pvrData->image();
+	if (!pvrData_tmp->isValid()) {
+		// PVR is invalid.
+		return {};
 	}
 
-	// PVR is invalid.
-	return nullptr;
+	// PVR is valid. Save it.
+	this->pvrData = std::move(pvrData_tmp);
+	return pvrData->image();
 }
 
 /**
@@ -376,17 +380,18 @@ Dreamcast::Dreamcast(const IRpFilePtr &file)
 		case DreamcastPrivate::DiscType::GDI: {
 			// GD-ROM cuesheet.
 			// iso_start_offset isn't used for GDI.
-			d->gdiReader = std::make_shared<GdiReader>(d->file);
+			d->discReader = std::make_shared<GdiReader>(d->file);
+			GdiReader *const gdiReader = static_cast<GdiReader*>(d->discReader.get());
 			// Read the actual track 3 disc header.
-			const int lba_track03 = d->gdiReader->startingLBA(3);
+			const int lba_track03 = gdiReader->startingLBA(3);
 			if (lba_track03 < 0) {
 				// Error getting the track 03 LBA.
-				d->gdiReader.reset();
+				d->discReader.reset();
 				d->file.reset();
 				return;
 			}
 			// TODO: Don't hard-code 2048?
-			d->gdiReader->seekAndRead(lba_track03*2048, &d->discHeader, sizeof(d->discHeader));
+			gdiReader->seekAndRead(lba_track03*2048, &d->discHeader, sizeof(d->discHeader));
 			d->mimeType = "application/x-gd-rom-cue";	// unofficial
 			break;
 		}
@@ -409,7 +414,6 @@ void Dreamcast::close(void)
 	// Close any child RomData subclasses.
 	d->pvrData.reset();
 	d->isoPartition.reset();
-	d->gdiReader.reset();
 	d->discReader.reset();
 
 	// Call the superclass function.
@@ -769,7 +773,11 @@ int Dreamcast::loadFieldData(void)
 	ISOPtr isoData;
 	if (d->discType == DreamcastPrivate::DiscType::GDI) {
 		// Open track 3 as ISO-9660.
-		isoData = d->gdiReader->openIsoRomData(3);
+		GdiReader *const gdiReader = dynamic_cast<GdiReader*>(d->discReader.get());
+		assert(gdiReader != nullptr);
+		if (gdiReader) {
+			isoData = gdiReader->openIsoRomData(3);
+		}
 	} else {
 		// ISO object for ISO-9660 PVD
 		isoData = std::make_shared<ISO>(d->discReader);
