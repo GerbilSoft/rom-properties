@@ -539,8 +539,8 @@ void ImageDecoderTest::decodeBenchmark_internal(void)
 		// Sony PlayStation save file
 		// NOTE: Increased iterations due to smaller files.
 		max_iterations *= 10;
-	} else if (mode.dds_gz_filename.size() >= 7U &&
-		   !mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".nds.gz")) {
+	} else if (mode.dds_gz_filename.size() >= 11U &&
+		   !mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-11, 11, ".nds.bnr.gz")) {
 		// Nintendo DS ROM image
 		// NOTE: Increased iterations due to smaller files.
 		max_iterations *= 10;
@@ -1453,8 +1453,8 @@ INSTANTIATE_TEST_SUITE_P(PSV, ImageDecoderTest,
 // TODO: Use something like GcnFstTest that uses an array of filenames
 // to generate tests at runtime instead of compile-time?
 #define NDS_ICON_TEST(file) ImageDecoderTest_mode( \
-			"NDS/" file ".header-icon.nds.gz", \
-			"NDS/" file ".header-icon.png", RomData::IMG_INT_ICON)
+			"NDS/" file ".nds.bnr.gz", \
+			"NDS/" file ".nds.bnr.png", RomData::IMG_INT_ICON)
 
 INSTANTIATE_TEST_SUITE_P(NDS, ImageDecoderTest,
 	::testing::Values(
