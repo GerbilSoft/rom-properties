@@ -73,13 +73,11 @@ public:
 	*/
 	static constexpr NDS_Language_ID getMaxSupportedLanguage(uint16_t version)
 	{
-		if (version >= NDS_ICON_VERSION_HANS_KO) {
-			return NDS_LANG_KOREAN;
-		} else if (version >= NDS_ICON_VERSION_HANS) {
-			return NDS_LANG_CHINESE_SIMP;
-		} else {
-			return NDS_LANG_SPANISH;
-		}
+		return (version >= NDS_ICON_VERSION_HANS_KO)
+			? NDS_LANG_KOREAN
+			: (version >= NDS_ICON_VERSION_HANS)
+				? NDS_LANG_CHINESE_SIMP
+				: NDS_LANG_SPANISH;
 	}
 
 	/**
