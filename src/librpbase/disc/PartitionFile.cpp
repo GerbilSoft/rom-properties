@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * PartitionFile.hpp: IRpFile implementation for IPartition.               *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -18,15 +18,11 @@ namespace LibRpBase {
  * Open a file from an IPartition.
  * NOTE: These files are read-only.
  *
- * FIXME: Cannot specify IDiscReaderPtr because this is created
- * from within an IPartition. Reference counts will not be taken.
- * Make sure the file is unreferenced before the parent IDiscReader!
- *
  * @param partition	[in] IPartition (or IDiscReader) object.
  * @param offset	[in] File starting offset.
  * @param size		[in] File size.
  */
-PartitionFile::PartitionFile(IDiscReader *partition, off64_t offset, off64_t size)
+PartitionFile::PartitionFile(IDiscReaderPtr partition, off64_t offset, off64_t size)
 	: super()
 	, m_partition(partition)
 	, m_offset(offset)
@@ -45,7 +41,7 @@ PartitionFile::PartitionFile(IDiscReader *partition, off64_t offset, off64_t siz
  */
 bool PartitionFile::isOpen(void) const
 {
-	return !!m_partition;
+	return (bool)m_partition;
 }
 
 /**

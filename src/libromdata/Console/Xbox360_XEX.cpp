@@ -1266,7 +1266,7 @@ const Xbox360_XDBF *Xbox360_XEX_Private::initXDBF(void)
 				xdbf_physaddr -= (iter->vaddr - iter->physaddr);
 			}
 		}
-		peFile_tmp = std::make_shared<PartitionFile>(peReader.get(), xdbf_physaddr, pResInfo->size);
+		peFile_tmp = std::make_shared<PartitionFile>(peReader, xdbf_physaddr, pResInfo->size);
 	}
 	if (peFile_tmp->isOpen()) {
 		// FIXME: XEX1 XDBF is either encrypted or garbage...

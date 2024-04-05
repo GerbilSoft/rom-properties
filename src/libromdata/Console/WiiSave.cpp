@@ -269,7 +269,7 @@ WiiSave::WiiSave(const IRpFilePtr &file)
 		// Create the PartitionFile.
 		// TODO: Only if the save game header is valid?
 		// TODO: Get the size from the save game header?
-		PartitionFilePtr ptFile = std::make_shared<PartitionFile>(d->cbcReader.get(),
+		PartitionFilePtr ptFile = std::make_shared<PartitionFile>(d->cbcReader,
 			sizeof(Wii_SaveGame_Header_t),
 			bkHeaderAddr - sizeof(Wii_SaveGame_Header_t));
 		if (ptFile->isOpen()) {

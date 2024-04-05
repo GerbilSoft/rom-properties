@@ -196,7 +196,7 @@ int WiiWADPrivate::openSRL(void)
 	}
 
 	int ret = 0;
-	PartitionFilePtr ptFile = std::make_shared<PartitionFile>(cbcReader.get(),
+	PartitionFilePtr ptFile = std::make_shared<PartitionFile>(cbcReader,
 		imetContentOffset, be64_to_cpu(pIMETContent->size));
 	if (ptFile->isOpen()) {
 		// Open the SRL.
@@ -445,7 +445,7 @@ WiiWAD::WiiWAD(const IRpFilePtr &file)
 			// Create the PartitionFile and WiiWIBN subclass.
 			// NOTE: Not sure how big the WIBN data is, so we'll
 			// allow it to read the rest of the file.
-			PartitionFilePtr ptFile = std::make_shared<PartitionFile>(d->cbcReader.get(),
+			PartitionFilePtr ptFile = std::make_shared<PartitionFile>(d->cbcReader,
 				offsetof(Wii_IMET_t, magic),
 				be64_to_cpu(d->pIMETContent->size) - offsetof(Wii_IMET_t, magic));
 			if (ptFile->isOpen()) {

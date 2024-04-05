@@ -223,11 +223,7 @@ IRpFilePtr WiiUPackagePrivate::open(const char *filename)
 	}
 
 	// Create a PartitionFile.
-	// NOTE: PartitionFile does not take a shared_ptr<> because it's
-	// also created from within an IPartition object, so it can't
-	// get its own shared_ptr<>.
-	// The IDiscReaderPtr above must remain valid while this PartitionFilePtr is valid.
-	return std::make_shared<PartitionFile>(contentFile.get(), dirent.offset, dirent.size);
+	return std::make_shared<PartitionFile>(contentFile, dirent.offset, dirent.size);
 }
 
 /**

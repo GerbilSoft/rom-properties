@@ -22,7 +22,7 @@
 
 namespace LibRpBase {
 
-class NOVTABLE IDiscReader : public LibRpFile::IRpFile
+class NOVTABLE IDiscReader : public LibRpFile::IRpFile, public std::enable_shared_from_this<IDiscReader>
 {
 	protected:
 		explicit IDiscReader(const LibRpFile::IRpFilePtr &file);
