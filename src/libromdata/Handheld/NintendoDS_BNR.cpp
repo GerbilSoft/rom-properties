@@ -97,9 +97,10 @@ public:
 	 * Polynomial: 0x8005 (for NDS icon/title)
 	 * @param buf Buffer
 	 * @param size Size of buffer
+	 * @param crc Previous CRC16 for chaining
 	 * @return CRC16
 	 */
-	uint16_t crc16(const uint8_t *buf, size_t size);
+	uint16_t crc16(const uint8_t *buf, size_t size, uint16_t crc = 0xFFFFU);
 };
 
 ROMDATA_IMPL(NintendoDS_BNR)
@@ -312,13 +313,13 @@ uint32_t NintendoDS_BNR_Private::getDefaultLC(void) const
  * Polynomial: 0x8005 (for NDS icon/title)
  * @param buf Buffer
  * @param size Size of buffer
+ * @param crc Previous CRC16 for chaining
  * @return CRC16
  */
-uint16_t NintendoDS_BNR_Private::crc16(const uint8_t *buf, size_t size)
+uint16_t NintendoDS_BNR_Private::crc16(const uint8_t *buf, size_t size, uint16_t crc)
 {
 	// Reference: https://www.reddit.com/r/embedded/comments/1acoobg/crc16_again_with_a_little_gift_for_you_all/
 	// NOTE: NDS icon/title CRC16 uses polynomial 0x8005.
-	uint16_t crc = 0xFFFFU;
 
 	while (size--) {
 		uint32_t x = ((crc ^ *buf++) & 0xff) << 8;
@@ -416,43 +417,47 @@ NintendoDS_BNR::NintendoDS_BNR(const IRpFilePtr &file)
 	// Validate all CRC16s.
 	// NOTE: Unused CRC16s should be 0.
 	// NOTE 2: Using cpu_to_le16() so we can memcmp() against nds_icon_title directly.
-	uint16_t calc_crc16[4] = {0, 0, 0, 0};
 	const uint8_t *const pData = reinterpret_cast<const uint8_t*>(&d->nds_icon_title);
-	switch (version) {
-		default:
-			// Invalid version number.
-			assert(!"NDS icon/title version number is invalid.");
-			d->file.reset();
-			return;
 
-		case NDS_ICON_VERSION_DSi:
-			// Verify CRC16 3 [0x1240 - 0x23BF]
-			calc_crc16[3] = cpu_to_le16(d->crc16(&pData[0x1240], (0x23C0 - 0x1240)));
-			// fall-through
-
-		case NDS_ICON_VERSION_HANS_KO:
-			// Verify CRC16 2 [0x0020 - 0x0A3F]
-			calc_crc16[2] = cpu_to_le16(d->crc16(&pData[0x0020], (0x0A40 - 0x0020)));
-			// fall-through
-
-		case NDS_ICON_VERSION_HANS:
-			// Verify CRC16 1 [0x0020 - 0x093F]
-			calc_crc16[1] = cpu_to_le16(d->crc16(&pData[0x0020], (0x0940 - 0x0020)));
-			// fall-through
-
-		case NDS_ICON_VERSION_ORIGINAL:
-			// Verify CRC16 0 [0x0020 - 0x083F]
-			calc_crc16[0] = cpu_to_le16(d->crc16(&pData[0x0020], (0x0840 - 0x0020)));
-			// fall-through
-	}
-
-	if (memcmp(calc_crc16, d->nds_icon_title.crc16, sizeof(calc_crc16)) != 0) {
-		// CRC16s are incorrect.
+	// CRC16 0: [0x0020-0x083F]
+	// For all versions.
+	uint16_t crc = d->crc16(&pData[0x0020], (0x0840 - 0x0020));
+	if (crc != le16_to_cpu(d->nds_icon_title.crc16[0])) {
+		// CRC16 0 is incorrect.
 		d->file.reset();
 		return;
 	}
 
-	// TODO: Verify CRC16s?
+	// CRC16 1: [0x0020-0x093F]
+	// For NDS_ICON_VERSION_HANS and later.
+	// NOTE: Chaining onto the previous CRC to reduce cycles.
+	crc = (version >= NDS_ICON_VERSION_HANS) ? d->crc16(&pData[0x0840], (0x0940 - 0x0840), crc) : 0;
+	if (crc != le16_to_cpu(d->nds_icon_title.crc16[1])) {
+		// CRC16 1 is incorrect.
+		d->file.reset();
+		return;
+	}
+
+	// CRC16 2: [0x0020-0x0A3F]
+	// For NDS_ICON_VERSION_HANS_KO and later.
+	// NOTE: Chaining onto the previous CRC to reduce cycles.
+	crc = (version >= NDS_ICON_VERSION_HANS_KO) ? d->crc16(&pData[0x0940], (0x0A40 - 0x0940), crc) : 0;
+	if (crc != le16_to_cpu(d->nds_icon_title.crc16[2])) {
+		// CRC16 2 is incorrect.
+		d->file.reset();
+		return;
+	}
+
+	// CRC16 3: [0x1240-0x23C0]
+	// For NDS_ICON_VERSION_DSi and later.
+	crc = (version >= NDS_ICON_VERSION_DSi) ? d->crc16(&pData[0x1240], (0x23C0 - 0x1240)) : 0;
+	if (crc != le16_to_cpu(d->nds_icon_title.crc16[3])) {
+		// CRC16 3 is incorrect.
+		d->file.reset();
+		return;
+	}
+
+	// CRCs verified.
 	d->isValid = true;
 }
 
