@@ -708,7 +708,7 @@ string SNESPrivate::getGameID(bool doFake) const
 		{"SNSP-", "-ESP"},	// Spain
 		{"SNSP-", "-NOE"},	// Germany
 		{"SNSP-", "-ITA"},	// Italy
-		{"SNSN-", "-ROC"},	// China
+		{"SNSN-", "-ROC"},	// Taiwan
 		{"",      ""},
 		{"SNSN-", "-KOR"},	// South Korea
 		{"",      ""},		// ALL region?
