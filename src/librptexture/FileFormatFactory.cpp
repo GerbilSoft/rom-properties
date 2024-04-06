@@ -60,7 +60,7 @@ class FileFormatFactoryPrivate
 		// FIXME: TGA format doesn't follow this...
 		//typedef int (*pfnIsTextureSupported_t)(const FileFormat::DetectInfo *info);	// TODO
 		typedef const TextureInfo* (*pfnTextureInfo_t)(void);
-		typedef FileFormat* (*pfnNewFileFormat_t)(const IRpFilePtr &file);
+		typedef FileFormatPtr (*pfnNewFileFormat_t)(const IRpFilePtr &file);
 
 		struct FileFormatFns {
 			//pfnIsTextureSupported_t isTextureSupported;	// TODO
@@ -75,9 +75,9 @@ class FileFormatFactoryPrivate
 		 * @param klass Class name.
 		 */
 		template<typename klass>
-		static FileFormat *FileFormat_ctor(const IRpFilePtr &file)
+		static FileFormatPtr FileFormat_ctor(const IRpFilePtr &file)
 		{
-			return new klass(file);
+			return std::make_shared<klass>(file);
 		}
 
 #define GetFileFormatFns(format, magic) \
@@ -178,7 +178,7 @@ FileFormatPtr FileFormatFactory::create(const IRpFilePtr &file)
 		// Either no file was specified, or this is
 		// a device. No one would realistically use
 		// a whole device to store one texture...
-		return nullptr;
+		return {};
 	}
 
 	// Read the file's magic number.
@@ -190,29 +190,24 @@ FileFormatPtr FileFormatFactory::create(const IRpFilePtr &file)
 	size_t size = file->read(&magic, sizeof(magic));
 	if (size != sizeof(magic)) {
 		// Read error.
-		return nullptr;
+		return {};
 	}
 
 	// Special check for Khronos KTX, which has the same
 	// 32-bit magic number for two completely different versions.
 	if (magic.u32[0] == cpu_to_be32('\xABKTX')) {
-		FileFormat *fileFormat = nullptr;
+		FileFormatPtr fileFormat;
 		if (magic.u32[1] == cpu_to_be32(' 11\xBB')) {
 			// KTX 1.1
-			fileFormat = new KhronosKTX(file);
+			fileFormat = std::make_shared<KhronosKTX>(file);
 		} else if (magic.u32[1] == cpu_to_be32(' 20\xBB')) {
 			// KTX 2.0
-			fileFormat = new KhronosKTX2(file);
+			fileFormat = std::make_shared<KhronosKTX2>(file);
 		}
 
-		if (fileFormat) {
-			if (fileFormat->isValid()) {
-				// FileFormat subclass obtained.
-				return FileFormatPtr(fileFormat);
-			}
-
-			// Not actually supported.
-			delete fileFormat;
+		if (fileFormat && fileFormat->isValid()) {
+			// FileFormat subclass obtained.
+			return FileFormatPtr(fileFormat);
 		}
 	}
 
@@ -266,14 +261,13 @@ FileFormatPtr FileFormatFactory::create(const IRpFilePtr &file)
 				case 24: case 32: {
 					// Valid color depth.
 					// This might be TGA.
-					FileFormat *const fileFormat = new TGA(file);
+					FileFormatPtr fileFormat = std::make_shared<TGA>(file);
 					if (fileFormat->isValid()) {
 						// FileFormat subclass obtained.
-						return FileFormatPtr(fileFormat);
+						return fileFormat;
 					}
 
 					// Not actually supported.
-					delete fileFormat;
 					break;
 				}
 
@@ -298,20 +292,17 @@ FileFormatPtr FileFormatFactory::create(const IRpFilePtr &file)
 			// Found a matching magic number.
 			// TODO: Implement fns->isTextureSupported.
 			/*if (fns->isTextureSupported(&info) >= 0)*/ {
-				FileFormat *const fileFormat = fns->newFileFormat(file);
+				FileFormatPtr fileFormat = fns->newFileFormat(file);
 				if (fileFormat->isValid()) {
 					// FileFormat subclass obtained.
 					return FileFormatPtr(fileFormat);
 				}
-
-				// Not actually supported.
-				delete fileFormat;
 			}
 		}
 	}
 
 	// Not supported.
-	return nullptr;
+	return {};
 }
 
 #ifdef FILEFORMATFACTORY_USE_FILE_EXTENSIONS
