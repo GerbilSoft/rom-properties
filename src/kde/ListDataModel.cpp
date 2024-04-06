@@ -209,8 +209,8 @@ vector<QString> ListDataModelPrivate::convertListDataToVector(const RomFields::L
 	const unsigned int flags = pField->flags;
 	const bool hasCheckboxes = !!(flags & RomFields::RFT_LISTDATA_CHECKBOXES);
 
-	const int columnCount = static_cast<int>(list_data->at(0).size());
-	const int rowCount = list_data->size();
+	const size_t columnCount = list_data->at(0).size();
+	const size_t rowCount = list_data->size();
 
 	data.reserve(columnCount * rowCount);
 	for (const vector<string> &data_row : *list_data) {
@@ -220,8 +220,8 @@ vector<QString> ListDataModelPrivate::convertListDataToVector(const RomFields::L
 		}
 
 		// Add item text.
-		assert((int)data_row.size() == columnCount);
-		int cols = columnCount;
+		assert(data_row.size() == columnCount);
+		int cols = static_cast<int>(columnCount);
 		unsigned int is_timestamp = listDataDesc.col_attrs.is_timestamp;
 		for (const string &u8_str : data_row) {
 			if (unlikely(is_timestamp & 1)) {
@@ -247,9 +247,10 @@ vector<QString> ListDataModelPrivate::convertListDataToVector(const RomFields::L
 				break;
 			}
 		}
+
 		// If there's fewer columns in the data row than we have allocated,
 		// add blank QStrings.
-		for (int i = (int)data_row.size(); i < columnCount; i++) {
+		for (size_t i = columnCount; i < data_row.size(); i++) {
 			data.emplace_back();
 		}
 	}

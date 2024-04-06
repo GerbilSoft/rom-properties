@@ -101,7 +101,7 @@ PIMGTYPE ISpriteSheet::getIcon(int col, int row, bool gray) const
 	// create a new PIMGTYPE using an offset into the rp_image.
 	int src_stride = imgSpriteSheet->stride();
 	const int yoffset = (row * m_height * src_stride);
-	const int xoffset = (col * m_width * sizeof(uint32_t));
+	const int xoffset = (col * m_width * (int)sizeof(uint32_t));
 
 	const uint32_t *pSrcBits = reinterpret_cast<const uint32_t*>(
 		static_cast<const uint8_t*>(imgSpriteSheet->bits()) + yoffset + xoffset);
