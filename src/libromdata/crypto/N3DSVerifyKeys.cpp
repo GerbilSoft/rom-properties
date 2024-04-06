@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * N3DSVerifyKeys.cpp: Nintendo 3DS key verification data.                 *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -414,8 +414,8 @@ KeyManager::VerifyResult N3DSVerifyKeys::loadNCCHKeys(u128_t pKeyOut[2],
 	// KeyX array.
 	// - 0: Standard keyslot. (0x2C) Always used for "exefs:/icon" and "exefs:/banner".
 	// - 1: Secondary keyslot. If nullptr, same as 0.
-	const char *keyX_name[2] = {nullptr, nullptr};
-	const uint8_t *keyX_verify[2] = {nullptr, nullptr};	// TODO
+	array<const char*, 2> keyX_name = {{nullptr, nullptr}};
+	array<const uint8_t*, 2> keyX_verify = {{nullptr, nullptr}};
 
 	bool isFixedKey = false;
 	if (pNcchHeader->hdr.flags[N3DS_NCCH_FLAG_BIT_MASKS] & N3DS_NCCH_BIT_MASK_NoCrypto) {

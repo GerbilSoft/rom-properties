@@ -36,6 +36,9 @@ using namespace LibRpFile;
 using LibRpBase::KeyManager;
 #endif
 
+// C++ STL classes
+using std::array;
+
 // Using GtkDialog on GTK2/GTK3.
 // For GTK4, using GtkWindow.
 #if !GTK_CHECK_VERSION(4,0,0)
@@ -164,7 +167,7 @@ rp_config_dialog_init(RpConfigDialog *dialog)
 
 	// Set the window icon.
 	// TODO: Redo icon if the icon theme changes?
-	const uint8_t icon_sizes[] = {16, 32, 48, 64, 128};
+	static const array<uint8_t, 5> icon_sizes = {{16, 32, 48, 64, 128}};
 	GList *icon_list = nullptr;
 	for (const int icon_size : icon_sizes) {
 		GdkPixbuf *const icon = gtk_icon_theme_load_icon(

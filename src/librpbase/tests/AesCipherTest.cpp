@@ -98,10 +98,10 @@ class AesCipherTest : public ::testing::TestWithParam<AesCipherTest_mode>
 		// AES-256 encryption key.
 		// AES-128 and AES-192 use the first
 		// 16 and 24 bytes of this key.
-		static const uint8_t aes_key[32];
+		static const array<uint8_t, 32> aes_key;
 
 		// IV for AES-CBC.
-		static const uint8_t aes_iv[16];
+		static const array<uint8_t, 16> aes_iv;
 
 		// Test string.
 		static const char test_string[64];
@@ -135,18 +135,18 @@ class AesCipherTest : public ::testing::TestWithParam<AesCipherTest_mode>
 // AES-256 encryption key.
 // AES-128 and AES-192 use the first
 // 16 and 24 bytes of this key.
-const uint8_t AesCipherTest::aes_key[32] = {
+const array<uint8_t, 32> AesCipherTest::aes_key = {{
 	0x01,0x23,0x45,0x67,0x89,0xAB,0xCD,0xEF,
 	0xFE,0xDC,0xBA,0x98,0x76,0x54,0x32,0x10,
 	0x10,0x32,0x54,0x76,0x98,0xBA,0xDC,0xFE,
 	0xEF,0xCD,0xAB,0x89,0x67,0x45,0x23,0x01
-};
+}};
 
 // IV for AES-CBC.
-const uint8_t AesCipherTest::aes_iv[16] = {
+const array<uint8_t, 16> AesCipherTest::aes_iv = {{
 	0xD9,0x83,0xC2,0xA0,0x1C,0xFA,0x8B,0x88,
 	0x3A,0xE3,0xA4,0xBD,0x70,0x1F,0xC1,0x0B
-};
+}};
 
 // Test string.
 const char AesCipherTest::test_string[64] =
@@ -266,7 +266,7 @@ TEST_P(AesCipherTest, decryptTest_setIV_keyThenChaining)
 	}
 
 	// Set the cipher settings.
-	EXPECT_EQ(0, m_cipher->setKey(aes_key, mode.key_len));
+	EXPECT_EQ(0, m_cipher->setKey(aes_key.data(), mode.key_len));
 	EXPECT_EQ(0, m_cipher->setChainingMode(mode.chainingMode));
 
 	switch (mode.chainingMode) {
@@ -274,14 +274,14 @@ TEST_P(AesCipherTest, decryptTest_setIV_keyThenChaining)
 		case IAesCipher::ChainingMode::CTR:
 			// CBC requires an initialization vector.
 			// CTR requires an initial counter value.
-			EXPECT_EQ(0, m_cipher->setIV(aes_iv, sizeof(aes_iv)));
+			EXPECT_EQ(0, m_cipher->setIV(aes_iv.data(), aes_iv.size()));
 			break;
 
 		case IAesCipher::ChainingMode::ECB:
 		default:
 			// ECB doesn't use an initialization vector.
 			// setIV() should fail.
-			EXPECT_NE(0, m_cipher->setIV(aes_iv, sizeof(aes_iv)));
+			EXPECT_NE(0, m_cipher->setIV(aes_iv.data(), aes_iv.size()));
 			break;
 	}
 
@@ -311,21 +311,21 @@ TEST_P(AesCipherTest, decryptTest_setIV_chainingThenKey)
 
 	// Set the cipher settings.
 	EXPECT_EQ(0, m_cipher->setChainingMode(mode.chainingMode));
-	EXPECT_EQ(0, m_cipher->setKey(aes_key, mode.key_len));
+	EXPECT_EQ(0, m_cipher->setKey(aes_key.data(), mode.key_len));
 
 	switch (mode.chainingMode) {
 		case IAesCipher::ChainingMode::CBC:
 		case IAesCipher::ChainingMode::CTR:
 			// CBC requires an initialization vector.
 			// CTR requires an initial counter value.
-			EXPECT_EQ(0, m_cipher->setIV(aes_iv, sizeof(aes_iv)));
+			EXPECT_EQ(0, m_cipher->setIV(aes_iv.data(), aes_iv.size()));
 			break;
 
 		case IAesCipher::ChainingMode::ECB:
 		default:
 			// ECB doesn't use an initialization vector.
 			// setIV() should fail.
-			EXPECT_NE(0, m_cipher->setIV(aes_iv, sizeof(aes_iv)));
+			EXPECT_NE(0, m_cipher->setIV(aes_iv.data(), aes_iv.size()));
 			break;
 	}
 
@@ -357,21 +357,21 @@ TEST_P(AesCipherTest, decryptTest_setIV_blockAtATime)
 
 	// Set the cipher settings.
 	EXPECT_EQ(0, m_cipher->setChainingMode(mode.chainingMode));
-	EXPECT_EQ(0, m_cipher->setKey(aes_key, mode.key_len));
+	EXPECT_EQ(0, m_cipher->setKey(aes_key.data(), mode.key_len));
 
 	switch (mode.chainingMode) {
 		case IAesCipher::ChainingMode::CBC:
 		case IAesCipher::ChainingMode::CTR:
 			// CBC requires an initialization vector.
 			// CTR requires an initial counter value.
-			EXPECT_EQ(0, m_cipher->setIV(aes_iv, sizeof(aes_iv)));
+			EXPECT_EQ(0, m_cipher->setIV(aes_iv.data(), aes_iv.size()));
 			break;
 
 		case IAesCipher::ChainingMode::ECB:
 		default:
 			// ECB doesn't use an initialization vector.
 			// setIV() should fail.
-			EXPECT_NE(0, m_cipher->setIV(aes_iv, sizeof(aes_iv)));
+			EXPECT_NE(0, m_cipher->setIV(aes_iv.data(), aes_iv.size()));
 			break;
 	}
 
@@ -403,7 +403,7 @@ TEST_P(AesCipherTest, decryptTest_fourParam_keyThenChaining)
 	}
 
 	// Set the cipher settings.
-	EXPECT_EQ(0, m_cipher->setKey(aes_key, mode.key_len));
+	EXPECT_EQ(0, m_cipher->setKey(aes_key.data(), mode.key_len));
 	EXPECT_EQ(0, m_cipher->setChainingMode(mode.chainingMode));
 
 	switch (mode.chainingMode) {
@@ -419,7 +419,7 @@ TEST_P(AesCipherTest, decryptTest_fourParam_keyThenChaining)
 
 	// Decrypt the data.
 	vector<uint8_t> buf(mode.cipherText, mode.cipherText + mode.cipherText_len);
-	EXPECT_EQ(buf.size(), m_cipher->decrypt(buf.data(), buf.size(), aes_iv, sizeof(aes_iv)));
+	EXPECT_EQ(buf.size(), m_cipher->decrypt(buf.data(), buf.size(), aes_iv.data(), aes_iv.size()));
 
 	// Compare the buffer to the known plaintext.
 	CompareByteArrays(reinterpret_cast<const uint8_t*>(test_string),
@@ -444,7 +444,7 @@ TEST_P(AesCipherTest, decryptTest_fourParam_chainingThenKey)
 
 	// Set the cipher settings.
 	EXPECT_EQ(0, m_cipher->setChainingMode(mode.chainingMode));
-	EXPECT_EQ(0, m_cipher->setKey(aes_key, mode.key_len));
+	EXPECT_EQ(0, m_cipher->setKey(aes_key.data(), mode.key_len));
 
 	switch (mode.chainingMode) {
 		case IAesCipher::ChainingMode::CBC:
@@ -459,7 +459,7 @@ TEST_P(AesCipherTest, decryptTest_fourParam_chainingThenKey)
 
 	// Decrypt the data.
 	vector<uint8_t> buf(mode.cipherText, mode.cipherText + mode.cipherText_len);
-	EXPECT_EQ(buf.size(), m_cipher->decrypt(buf.data(), buf.size(), aes_iv, sizeof(aes_iv)));
+	EXPECT_EQ(buf.size(), m_cipher->decrypt(buf.data(), buf.size(), aes_iv.data(), aes_iv.size()));
 
 	// Compare the buffer to the known plaintext.
 	CompareByteArrays(reinterpret_cast<const uint8_t*>(test_string),
@@ -486,7 +486,7 @@ TEST_P(AesCipherTest, decryptTest_fourParam_blockAtATime)
 
 	// Set the cipher settings.
 	EXPECT_EQ(0, m_cipher->setChainingMode(mode.chainingMode));
-	EXPECT_EQ(0, m_cipher->setKey(aes_key, mode.key_len));
+	EXPECT_EQ(0, m_cipher->setKey(aes_key.data(), mode.key_len));
 
 	switch (mode.chainingMode) {
 		case IAesCipher::ChainingMode::CBC:
@@ -501,7 +501,7 @@ TEST_P(AesCipherTest, decryptTest_fourParam_blockAtATime)
 
 	// Decrypt one 16-byte block at a time.
 	vector<uint8_t> buf(mode.cipherText, mode.cipherText + mode.cipherText_len);
-	EXPECT_EQ(16U, m_cipher->decrypt(&buf[0], 16, aes_iv, sizeof(aes_iv)));
+	EXPECT_EQ(16U, m_cipher->decrypt(&buf[0], 16, aes_iv.data(), aes_iv.size()));
 	for (size_t i = 16U; i < buf.size(); i += 16U) {
 		EXPECT_EQ(16U, m_cipher->decrypt(&buf[i], 16U));
 	}
