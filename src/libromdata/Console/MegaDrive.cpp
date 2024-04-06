@@ -592,7 +592,7 @@ void MegaDrivePrivate::addFields_vectorTable(const M68K_VectorTable *pVectors)
 
 	// Map of displayed vectors to actual vectors.
 	// This uses vector indees, *not* byte addresses.
-	static constexpr array<int8_t, 20> vectors_map = {{
+	static constexpr array<uint8_t, 20> vectors_map = {{
 		 0,  1,  2,  3,  4,  5,  6,  7,	// $00-$1C
 		 8,  9, 10, 11,			// $20-$2C
 		24, 25, 26, 27, 28, 29, 30, 31,	// $60-$7C
