@@ -2870,7 +2870,7 @@ msgctxt "GameCube"
 msgid "Region-Free (with certain debugging hardware)"
 msgstr ""
 
-#. tr: %1%s == full region name, %2$s == abbreviation
+#. tr: %1$s == full region name, %2$s == abbreviation
 #: ../src/libromdata/Console/GameCube.cpp:1379
 #: ../src/libromdata/Console/WiiWAD.cpp:948
 #, c-format
