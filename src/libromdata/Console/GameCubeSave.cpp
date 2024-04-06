@@ -20,6 +20,7 @@ using namespace LibRpText;
 using namespace LibRpTexture;
 
 // C++ STL classes
+using std::array;
 using std::string;
 using std::vector;
 
@@ -314,20 +315,14 @@ rp_image_const_ptr GameCubeSavePrivate::loadIcon(void)
 		// No icon.
 		return nullptr;
 	}
-	switch (direntry.bannerfmt & CARD_BANNER_MASK) {
-		case CARD_BANNER_CI:
-			// CI8 banner.
-			iconaddr += (CARD_BANNER_W * CARD_BANNER_H * 1);
-			iconaddr += (256 * 2);	// RGB5A3 palette
-			break;
-		case CARD_BANNER_RGB:
-			// RGB5A3 banner.
-			iconaddr += (CARD_BANNER_W * CARD_BANNER_H * 2);
-			break;
-		default:
-			// No banner.
-			break;
-	}
+
+	static constexpr array<uint16_t, 4> banner_sizes = {{
+		0,							// CARD_BANNER_NONE
+		(CARD_BANNER_W * CARD_BANNER_H * 1) + (256 * 2),	// CARD_BANNER_CI
+		(CARD_BANNER_W * CARD_BANNER_H * 2),			// CARD_BANNER_RGB
+		0,							// CARD_BANNER_MASK
+	}};
+	iconaddr += banner_sizes[direntry.bannerfmt & CARD_BANNER_MASK];
 
 	// Calculate the icon sizes.
 	unsigned int iconsizetotal = 0;
@@ -487,23 +482,21 @@ rp_image_const_ptr GameCubeSavePrivate::loadBanner(void)
 		return img_banner;
 	} else if (!this->isValid || !this->file) {
 		// Can't load the banner.
-		return nullptr;
+		return {};
 	}
 
 	// Banner is located at direntry.iconaddr.
 	// Determine the banner format and size.
-	size_t bannersize;
-	switch (direntry.bannerfmt & CARD_BANNER_MASK) {
-		case CARD_BANNER_CI:
-			// CI8 banner.
-			bannersize = (CARD_BANNER_W * CARD_BANNER_H * 1);
-			break;
-		case CARD_BANNER_RGB:
-			bannersize = (CARD_BANNER_W * CARD_BANNER_H * 2);
-			break;
-		default:
-			// No banner.
-			return nullptr;
+	static constexpr array<uint16_t, 4> banner_sizes = {{
+		0,					// CARD_BANNER_NONE
+		CARD_BANNER_W * CARD_BANNER_H * 1,	// CARD_BANNER_CI
+		CARD_BANNER_W * CARD_BANNER_H * 2,	// CARD_BANNER_RGB
+		0,					// CARD_BANNER_MASK
+	}};
+	const unsigned int bannersize = banner_sizes[direntry.bannerfmt & CARD_BANNER_MASK];
+	if (bannersize == 0) {
+		// No banner.
+		return {};
 	}
 
 	// Read the banner data.
@@ -513,7 +506,7 @@ rp_image_const_ptr GameCubeSavePrivate::loadBanner(void)
 					bannerbuf, bannersize);
 	if (size != bannersize) {
 		// Seek and/or read error.
-		return nullptr;
+		return {};
 	}
 
 	if ((direntry.bannerfmt & CARD_BANNER_MASK) == CARD_BANNER_RGB) {
@@ -528,7 +521,7 @@ rp_image_const_ptr GameCubeSavePrivate::loadBanner(void)
 					 palbuf, sizeof(palbuf));
 		if (size != sizeof(palbuf)) {
 			// Seek and/or read error.
-			return nullptr;
+			return {};
 		}
 
 		// Convert the banner from GCN CI8 format to CI8.
