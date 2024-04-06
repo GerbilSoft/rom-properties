@@ -130,7 +130,7 @@ public:
 	int readVmiHeader(const IRpFilePtr &vmi_file);
 
 	// Graphic eyecatch sizes (in bytes)
-	static const array<uint32_t, 4> eyecatch_sizes;
+	static const array<uint16_t, 4> eyecatch_sizes;
 
 	// VMS icon struct
 	// For processing VMS icons only;
@@ -209,7 +209,7 @@ const RomDataInfo DreamcastSavePrivate::romDataInfo = {
 };
 
 // Graphic eyecatch sizes (in bytes)
-const array<uint32_t, 4> DreamcastSavePrivate::eyecatch_sizes = {{
+const array<uint16_t, 4> DreamcastSavePrivate::eyecatch_sizes = {{
 	0,	// DC_VMS_EYECATCH_NONE
 	DC_VMS_EYECATCH_ARGB4444_DATA_SIZE,
 	DC_VMS_EYECATCH_CI8_PALETTE_SIZE + DC_VMS_EYECATCH_CI8_DATA_SIZE,

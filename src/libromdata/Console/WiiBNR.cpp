@@ -147,7 +147,7 @@ void WiiBNR::init(void)
 	// - 64: Retail games
 	// - 128: Some homebrew
 	unsigned int addr = 0;
-	static constexpr array<unsigned int, 2> addrs = {{64, 128}};
+	static constexpr array<uint8_t, 2> addrs = {{64, 128}};
 	for (unsigned int p : addrs) {
 		uint32_t bnr_magic;
 		size_t size = d->file->seekAndRead(p, &bnr_magic, sizeof(bnr_magic));
@@ -207,7 +207,7 @@ int WiiBNR::isRomSupported_static(const DetectInfo *info)
 	// This is usually located at one of the following offsets:
 	// - 64: Retail games
 	// - 128: Some homebrew
-	static constexpr array<unsigned int, 2> addrs = {{64, 128}};
+	static constexpr array<uint8_t, 2> addrs = {{64, 128}};
 	for (unsigned int p : addrs) {
 		// NOTE: Wii_IMET_t includes 64 zero bytes *before* the IMET data,
 		// so we need to subtract 64 from p.
