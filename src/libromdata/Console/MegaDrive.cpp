@@ -1509,22 +1509,30 @@ int MegaDrive::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) 
 						: &d->romHeader);
 
 	const bool isEarlyRomHeader = d->checkIfEarlyRomHeader(pRomHeader);
-	const char *const s_serial_number = (isEarlyRomHeader
+	const char *const s_serial_number = (isEarlyRomHeader)
 		? pRomHeader->early.serial_number
-		: pRomHeader->serial_number);
+		: pRomHeader->serial_number;
 
 	// Check for "generic" serial numbers used by some prototypes.
 	// We can't easily look up these ROMs at the moment.
-	if (!memcmp(s_serial_number, "GM 00000000", 11) ||
-	    !memcmp(s_serial_number, "GM XXXXXXXX", 11) ||
-	    !memcmp(s_serial_number, "GM MK-0000 ", 11) ||
-	    !memcmp(s_serial_number, "GM T-000000", 11) ||
-	    !memcmp(s_serial_number, "GM T-00000 ", 11) ||
-	    !memcmp(s_serial_number, "GM T000000" , 10) ||
-	    !memcmp(s_serial_number, "GM T-XXXXX ", 11))
-	{
-		// Generic serial number.
-		return -ENOENT;
+	struct md_serial_number_t {
+		char serial_number[15];
+		uint8_t len;
+	};
+	static const array<md_serial_number_t, 7> generic_serials = {{
+		{"GM 00000000", 11},
+		{"GM XXXXXXXX", 11},
+		{"GM MK-0000 ", 11},
+		{"GM T-000000", 11},
+		{"GM T-00000 ", 11},
+		{"GM T000000",  10},
+		{"GM T-XXXXX ", 11}
+	}};
+	for (const auto &p : generic_serials) {
+		if (!memcmp(s_serial_number, p.serial_number, p.len)) {
+			// This ROM image has a generic serial number.
+			return -ENOENT;
+		}
 	}
 
 	// Make sure the ROM serial number is valid.
@@ -1609,13 +1617,22 @@ int MegaDrive::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) 
 
 		// If the serial number doesn't match, then use a
 		// generic "NO WAY!" screen.
-		if (!memcmp(&s_serial_number[3], "00001009-00", 11) ||
-		    !memcmp(&s_serial_number[3], "00004049-01", 11) ||
-		    !memcmp(&s_serial_number[3], "00001051-00", 11) ||
-		    !memcmp(&s_serial_number[3], "00001051-01", 11) ||
-		    !memcmp(&s_serial_number[3], "00001051-02", 11) ||
-		    !memcmp(&s_serial_number[3], "MK-1079 -00", 11))
-		{
+		static const array<md_serial_number_t, 6> lockon_valid_serials = {{
+			{"00001009-00", 11},
+			{"00004049-01", 11},
+			{"00001051-00", 11},
+			{"00001051-01", 11},
+			{"00001051-02", 11},
+			{"MK-1079 -00", 11}
+		}};
+		bool is_lockon_valid = false;
+		for (const auto &p : lockon_valid_serials) {
+			if (!memcmp(&s_serial_number[3], p.serial_number, p.len)) {
+				is_lockon_valid = true;
+				break;
+			}
+		}
+		if (is_lockon_valid) {
 			// Unique title screen is available.
 			gameID = latin1_to_utf8(s_serial_number, sizeof(pRomHeader->serial_number));
 		} else {
