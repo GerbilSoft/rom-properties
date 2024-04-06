@@ -850,7 +850,7 @@ int WiiWAD::loadFieldData(void)
 			s_wadType = C_("RomData", "Unknown");
 			break;
 	}
-	d->fields.addField_string(C_("WiiWAD", "Type"), s_wadType);
+	d->fields.addField_string(C_("RomData", "Type"), s_wadType);
 
 	// Internal name. (BroadOn WADs only)
 	// FIXME: This is the same "meta" section as Nintendo WADs...

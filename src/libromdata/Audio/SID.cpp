@@ -213,7 +213,7 @@ int SID::loadFieldData(void)
 			type = "Unknown";
 			break;
 	}
-	d->fields.addField_string(C_("SID", "Type"), type);
+	d->fields.addField_string(C_("RomData", "Type"), type);
 
 	// Version.
 	// TODO: Check for PSIDv2NG?

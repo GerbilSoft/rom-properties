@@ -631,7 +631,7 @@ int PalmOS::loadFieldData(void)
 		char s_type[5];
 		int ret = LibRpText::fourCCtoString(s_type, sizeof(s_type), be32_to_cpu(prcHeader->type));
 		if (ret == 0) {
-			d->fields.addField_string(C_("PalmOS", "Type"), s_type,
+			d->fields.addField_string(C_("RomData", "Type"), s_type,
 				RomFields::STRF_MONOSPACE);
 		}
 	}

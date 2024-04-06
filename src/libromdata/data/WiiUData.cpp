@@ -398,6 +398,7 @@ const char *lookup_application_type(uint32_t app_type)
 		});
 	if (p_app_type != wiiu_application_types.cend() && p_app_type->app_type == app_type) {
 		// Found a matching application type.
+		// TODO: Localize this?
 		return p_app_type->desc;
 	}
 

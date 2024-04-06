@@ -1855,7 +1855,7 @@ int Nintendo3DS::loadFieldData(void)
 			// Old3DS uses encryption type 2 for CTR NAND.
 			// New3DS uses encryption type 3 for CTR NAND.
 			const bool new3ds = (ncsd_header->emmc_part_tbl.crypt_type[4] == 3);
-			d->fields.addField_string(C_("Nintendo3DS|eMMC", "Type"),
+			d->fields.addField_string(C_("RomData", "Type"),
 				(new3ds ? "New3DS / New2DS" : "Old3DS / 2DS"));
 
 			// Partition type names.
@@ -2272,7 +2272,7 @@ int Nintendo3DS::loadFieldData(void)
 			// tr: N3DS_NCCH_EXHEADER_ACI_ResLimit_Categry_OTHER
 			NOP_C_("Nintendo3DS|ApplType", "SysModule"),
 		};
-		const char *const type_title = C_("Nintendo3DS", "Type");
+		const char *const type_title = C_("RomData", "Type");
 		const uint8_t appl_type = ncch_exheader->aci.arm11_local.res_limit_category;
 		if (appl_type < ARRAY_SIZE(appl_type_tbl)) {
 			d->fields.addField_string(type_title,

@@ -610,7 +610,7 @@ int SAP::loadFieldData(void)
 
 	// Type
 	// TODO: Verify that the type is valid?
-	const char *const type_title = C_("SAP", "Type");
+	const char *const type_title = C_("RomData", "Type");
 	if (ISALPHA(tags.type)) {
 		const char s_tag_type[2] = {tags.type, '\0'};
 		d->fields.addField_string(type_title, s_tag_type);

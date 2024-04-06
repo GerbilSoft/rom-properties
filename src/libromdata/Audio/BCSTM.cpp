@@ -404,7 +404,7 @@ int BCSTM::loadFieldData(void)
 	static constexpr char type_tbl[][8] = {
 		"BCSTM", "BFSTM", "BCWAV"
 	};
-	const char *const type_title = C_("BCSTM", "Type");
+	const char *const type_title = C_("RomData", "Type");
 	if (d->audioFormat > BCSTMPrivate::AudioFormat::Unknown &&
 	    (int)d->audioFormat < ARRAY_SIZE_I(type_tbl))
 	{

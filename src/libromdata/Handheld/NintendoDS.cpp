@@ -699,7 +699,7 @@ int NintendoDS::loadFieldData(void)
 				break;
 		}
 	}
-	d->fields.addField_string(C_("NintendoDS", "Type"), nds_romType);
+	d->fields.addField_string(C_("RomData", "Type"), nds_romType);
 
 	// Title
 	d->fields.addField_string(C_("RomData", "Title"),

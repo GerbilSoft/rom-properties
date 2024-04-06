@@ -735,15 +735,16 @@ int XboxXPR::getFields(RomFields *fields) const
 	fields->reserve(initial_count + 1);	// Maximum of 1 field. (TODO)
 
 	// Type
+	const char *const s_type_title = C_("RomData", "Type");
 	static constexpr char type_tbl[][8] = {
 		"XPR0", "XPR1", "XPR2"
 	};
 	if (d->xprType > XboxXPRPrivate::XPRType::Unknown &&
 	    (int)d->xprType < ARRAY_SIZE_I(type_tbl))
 	{
-		fields->addField_string(C_("XboxXPR", "Type"), type_tbl[(int)d->xprType]);
+		fields->addField_string(s_type_title, type_tbl[(int)d->xprType]);
 	} else {
-		fields->addField_string(C_("XboxXPR", "Type"),
+		fields->addField_string(s_type_title,
 			rp_sprintf(C_("RomData", "Unknown (%d)"), (int)d->xprType));
 	}
 

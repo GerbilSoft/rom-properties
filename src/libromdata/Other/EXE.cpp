@@ -980,7 +980,7 @@ int EXE::loadFieldData(void)
 	static_assert(sizeof(exeTypes_strtbl) == 189, "exeTypes_offtbl[] needs to be recalculated");
 	static_assert(exeTypes_offtbl.size() == static_cast<size_t>(EXEPrivate::ExeType::Max), "Update exeTypes[]!");
 
-	const char *const type_title = C_("EXE", "Type");
+	const char *const type_title = C_("RomData", "Type");
 	if (d->exeType >= EXEPrivate::ExeType::MZ && d->exeType < EXEPrivate::ExeType::Max) {
 		const unsigned int offset = exeTypes_offtbl[(int)d->exeType];
 		d->fields.addField_string(type_title, &exeTypes_strtbl[offset]);

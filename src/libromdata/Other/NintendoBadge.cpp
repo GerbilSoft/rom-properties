@@ -704,7 +704,7 @@ int NintendoBadge::loadFieldData(void)
 	// Maximum of 7 fields.
 	d->fields.reserve(7);
 
-	const char *const s_type_title = C_("NintendoBadge", "Type");
+	const char *const s_type_title = C_("RomData", "Type");
 	const char *const s_set_name_title = C_("NintendoBadge", "Set Name");
 	switch (d->badgeType) {
 		default:

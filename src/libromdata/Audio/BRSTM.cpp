@@ -317,7 +317,7 @@ int BRSTM::loadFieldData(void)
 	// NOTE: This is for consistency with BCSTM, and it's needed
 	// because we don't show the format in systemName().
 	// TODO: Add more formats?
-	d->fields.addField_string(C_("BRSTM", "Type"), "BRSTM");
+	d->fields.addField_string(C_("RomData", "Type"), "BRSTM");
 
 	// Version
 	d->fields.addField_string(C_("RomData", "Version"),

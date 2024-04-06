@@ -446,7 +446,7 @@ int WiiUPackagePrivate::addFields_System_XMLs(void)
 	if (appRootNode) {
 		const unsigned int app_type = parseHexBinary(appRootNode, "app_type");
 		if (app_type != 0) {
-			const char *const s_app_type_title = C_("WiiU", "Type");
+			const char *const s_app_type_title = C_("RomData", "Type");
 			const char *const s_app_type = WiiUData::lookup_application_type(app_type);
 			if (s_app_type) {
 				fields.addField_string(s_app_type_title, s_app_type);

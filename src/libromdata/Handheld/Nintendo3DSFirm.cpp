@@ -277,7 +277,7 @@ int Nintendo3DSFirm::loadFieldData(void)
 
 	if (firmBin) {
 		// Official firmware binary fields.
-		d->fields.addField_string(C_("Nintendo3DSFirm", "Type"),
+		d->fields.addField_string(C_("RomData", "Type"),
 			(firmBinDesc ? firmBinDesc : C_("RomData", "Unknown")));
 
 		// FIRM version.
@@ -378,7 +378,7 @@ int Nintendo3DSFirm::loadFieldData(void)
 		}
 
 		// Add the firmware type field.
-		d->fields.addField_string(C_("Nintendo3DSFirm", "Type"),
+		d->fields.addField_string(C_("RomData", "Type"),
 			(firmBinDesc ? firmBinDesc : C_("RomData", "Unknown")));
 
 		if (arm9VerStr_title) {
@@ -393,7 +393,7 @@ int Nintendo3DSFirm::loadFieldData(void)
 		d->fields.addField_string(C_("Nintendo3DSFirm", "Sighax Status"), s_sighax_status);
 	} else {
 		// Add the firmware type field.
-		d->fields.addField_string(C_("Nintendo3DSFirm", "Type"),
+		d->fields.addField_string(C_("RomData", "Type"),
 			(firmBinDesc ? firmBinDesc : C_("RomData", "Unknown")));
 	}
 
