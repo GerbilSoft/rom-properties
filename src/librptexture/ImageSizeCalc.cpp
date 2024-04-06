@@ -92,7 +92,8 @@ unsigned int T_calcImageSizePVRTC_PoT(int width, int height)
 		height = nextPow2(height);
 	}
 
-	return (width * height / (is2bpp ? 4 : 2));
+	static constexpr int bpp_divisor = (is2bpp ? 4 : 2);
+	return (width * height) / bpp_divisor;
 }
 
 // Explicit instantiation
