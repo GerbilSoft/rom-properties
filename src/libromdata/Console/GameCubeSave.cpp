@@ -305,7 +305,7 @@ rp_image_const_ptr GameCubeSavePrivate::loadIcon(void)
 		return iconAnimData->frames[0];
 	} else if (!this->isValid || !this->file) {
 		// Can't load the icon.
-		return nullptr;
+		return {};
 	}
 
 	// Calculate the icon start address.
@@ -313,7 +313,7 @@ rp_image_const_ptr GameCubeSavePrivate::loadIcon(void)
 	uint32_t iconaddr = direntry.iconaddr;
 	if (unlikely(iconaddr == 0xFFFFFFFFU)) {
 		// No icon.
-		return nullptr;
+		return {};
 	}
 
 	static constexpr array<uint16_t, 4> banner_sizes = {{
@@ -372,14 +372,7 @@ rp_image_const_ptr GameCubeSavePrivate::loadIcon(void)
 	size_t size = file->seekAndRead(dataOffset + iconaddr, icondata.get(), iconsizetotal);
 	if (size != iconsizetotal) {
 		// Seek and/or read error.
-		return nullptr;
-	}
-
-	const uint16_t *pal_CI8_shared = nullptr;
-	if (is_CI8_shared) {
-		// Shared CI8 palette is at the end of the data.
-		pal_CI8_shared = reinterpret_cast<const uint16_t*>(
-			icondata.get() + (iconsizetotal - (256*2)));
+		return {};
 	}
 
 	this->iconAnimData = std::make_shared<IconAnimData>();
@@ -427,6 +420,10 @@ rp_image_const_ptr GameCubeSavePrivate::loadIcon(void)
 			}
 
 			case CARD_ICON_CI_SHARED: {
+				// Shared CI8 palette is at the end of the data.
+				const uint16_t *const pal_CI8_shared = reinterpret_cast<const uint16_t*>(
+					icondata.get() + (iconsizetotal - (256*2)));
+
 				static constexpr size_t iconsize = CARD_ICON_W * CARD_ICON_H * 1;
 				iconAnimData->frames[i] = ImageDecoder::fromGcnCI8(
 					CARD_ICON_W, CARD_ICON_H,
