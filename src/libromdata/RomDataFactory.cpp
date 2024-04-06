@@ -141,7 +141,7 @@ namespace Private {
 
 typedef int (*pfnIsRomSupported_t)(const RomData::DetectInfo *info);
 typedef const RomDataInfo * (*pfnRomDataInfo_t)(void);
-typedef RomData* (*pfnNewRomData_t)(const IRpFilePtr &file);
+typedef RomDataPtr (*pfnNewRomData_t)(const IRpFilePtr &file);
 
 struct RomDataFns {
 	pfnIsRomSupported_t isRomSupported;
@@ -160,9 +160,9 @@ struct RomDataFns {
  * @param klass Class name.
  */
 template<typename klass>
-static RomData *RomData_ctor(const IRpFilePtr &file)
+static RomDataPtr RomData_ctor(const IRpFilePtr &file)
 {
-	return new klass(file);
+	return std::make_shared<klass>(file);
 }
 
 #define GetRomDataFns(sys, attrs) \
@@ -360,7 +360,7 @@ static const RomDataFns *const romDataFns_tbl[] = {
 /** IDiscReader / SparseDiscReader check arrays and functions **/
 
 typedef int (*pfnIsDiscSupported)(const uint8_t *pHeader, size_t szHeader);
-typedef IDiscReader* (*pfnNewIDiscReader_t)(const IRpFilePtr &file);
+typedef IDiscReaderPtr (*pfnNewIDiscReader_t)(const IRpFilePtr &file);
 
 struct IDiscReaderFns {
 	pfnIsDiscSupported isDiscSupported;
@@ -378,9 +378,9 @@ struct IDiscReaderFns {
  * @param klass Class name.
  */
 template<typename klass>
-static IDiscReader *IDiscReader_ctor(const IRpFilePtr &file)
+static IDiscReaderPtr IDiscReader_ctor(const IRpFilePtr &file)
 {
-	return new klass(file);
+	return std::make_shared<klass>(file);
 }
 
 #define GetIDiscReaderFns(discType, magic) \
@@ -408,7 +408,7 @@ static const IDiscReaderFns iDiscReaderFns[] = {
  * @param file One opened file in the .VMI+.VMS pair.
  * @return DreamcastSave if valid; nullptr if not.
  */
-RomDataPtr openDreamcastVMSandVMI(const IRpFilePtr &file)
+static RomDataPtr openDreamcastVMSandVMI(const IRpFilePtr &file)
 {
 	// We're assuming the file extension was already checked.
 	// VMS files are always a multiple of 512 bytes,
@@ -420,7 +420,7 @@ RomDataPtr openDreamcastVMSandVMI(const IRpFilePtr &file)
 	const bool has_dc_vmi = (filesize == sizeof(DC_VMI_Header));
 	if (!(has_dc_vms ^ has_dc_vmi)) {
 		// Can't be none or both...
-		return nullptr;
+		return {};
 	}
 
 	// Determine which file we should look for.
@@ -450,7 +450,7 @@ RomDataPtr openDreamcastVMSandVMI(const IRpFilePtr &file)
 	*other_file = FileSystem::openRelatedFile(filename, nullptr, rel_ext);
 	if (!*other_file) {
 		// Can't open the other file.
-		return nullptr;
+		return {};
 	}
 
 	// Attempt to create a DreamcastSave using both the
@@ -458,7 +458,7 @@ RomDataPtr openDreamcastVMSandVMI(const IRpFilePtr &file)
 	RomDataPtr dcSave = std::make_shared<DreamcastSave>(vms_file, vmi_file);
 	if (!dcSave->isValid()) {
 		// Not valid.
-		return nullptr;
+		return {};
 	}
 
 	// DreamcastSave opened.
@@ -471,17 +471,17 @@ RomDataPtr openDreamcastVMSandVMI(const IRpFilePtr &file)
  * @param magic0	[in] First 32-bit value from the file (original format from the file)
  * @return IDiscReader*, or nullptr if not applicable.
  */
-IDiscReader *openIDiscReader(const IRpFilePtr &file, uint32_t magic0)
+static IDiscReaderPtr openIDiscReader(const IRpFilePtr &file, uint32_t magic0)
 {
 	if (magic0 == 0)
-		return nullptr;
+		return {};
 	magic0 = be32_to_cpu(magic0);
 
 	if (magic0 == 'WBFS') {
 		// WBFS: Check for split format.
 		const char *const filename = file->filename();
 		if (!filename)
-			return nullptr;
+			return {};
 		const char *const ext = FileSystem::file_ext(filename);
 		if (ext) do {
 			// TODO: Make .wbf1 support optional. Disabled for now.
@@ -502,14 +502,14 @@ IDiscReader *openIDiscReader(const IRpFilePtr &file, uint32_t magic0)
 				}
 
 				// Open the WbfsReader.
-				return new WbfsReader(dualFile);
+				return std::make_shared<WbfsReader>(dualFile);
 			} else {
 				// First part of split WBFS.
 				// Check for a WBF1 file.
 				IRpFilePtr wbfs1 = FileSystem::openRelatedFile(filename, nullptr, ".wbf1");
 				if (unlikely(!wbfs1) || !wbfs1->isOpen()) {
 					// No .wbf1 file. Assume it's a single .wbfs file.
-					return new WbfsReader(file);
+					return std::make_shared<WbfsReader>(file);
 				}
 
 				// Split .wbfs/.wbf1: Use DualFile.
@@ -520,12 +520,12 @@ IDiscReader *openIDiscReader(const IRpFilePtr &file, uint32_t magic0)
 				}
 
 				// Open the WbfsReader.
-				return new WbfsReader(dualFile);
+				return std::make_shared<WbfsReader>(dualFile);
 			}
 		} while (0);
 
 		// No file extension. Assume it's a single .wbfs file.
-		return new WbfsReader(file);
+		return std::make_shared<WbfsReader>(file);
 	}
 
 	// NOTE: This was originally for SparseDiscReader subclasses.
@@ -540,7 +540,7 @@ IDiscReader *openIDiscReader(const IRpFilePtr &file, uint32_t magic0)
 				break;
 			} else if (sdfns->magic[i] == magic0) {
 				// Found a matching magic.
-				IDiscReader *const sd = sdfns->newIDiscReader(file);
+				IDiscReaderPtr sd = sdfns->newIDiscReader(file);
 				if (sd->isOpen()) {
 					// IDiscReader obtained.
 					return sd;
@@ -550,7 +550,7 @@ IDiscReader *openIDiscReader(const IRpFilePtr &file, uint32_t magic0)
 	}
 
 	// No IDiscReader is available for this file.
-	return nullptr;
+	return {};
 }
 
 /**
@@ -565,14 +565,14 @@ IDiscReader *openIDiscReader(const IRpFilePtr &file, uint32_t magic0)
  * @param file ISO-9660 disc image
  * @return Game-specific RomData subclass, or nullptr if none are supported.
  */
-RomData *checkISO(const IRpFilePtr &file)
+RomDataPtr checkISO(const IRpFilePtr &file)
 {
 	// Check for a CD file system with 2048-byte sectors.
 	CDROM_2352_Sector_t sector;
 	size_t size = file->seekAndRead(ISO_PVD_ADDRESS_2048, &sector.m1.data, sizeof(sector.m1.data));
 	if (size != sizeof(sector.m1.data)) {
 		// Unable to read the PVD.
-		return nullptr;
+		return {};
 	}
 
 	bool is2048;
@@ -591,7 +591,7 @@ RomData *checkISO(const IRpFilePtr &file)
 			size_t size = file->seekAndRead(p * ISO_PVD_LBA, &sector, sizeof(sector));
 			if (size != sizeof(sector)) {
 				// Unable to read the PVD.
-				return nullptr;
+				return {};
 			}
 
 			const uint8_t *const pData = cdromSectorDataPtr(&sector);
@@ -605,7 +605,7 @@ RomData *checkISO(const IRpFilePtr &file)
 
 	if (!pvd) {
 		// Unable to get the PVD.
-		return nullptr;
+		return {};
 	}
 
 	// Console/Handheld disc formats.
@@ -629,14 +629,11 @@ RomData *checkISO(const IRpFilePtr &file)
 	for (; fns->isRomSupported != nullptr; fns++) {
 		if (fns->isRomSupported(pvd) >= 0) {
 			// This might be the correct RomData subclass.
-			RomData *const romData = fns->newRomData(file);
+			RomDataPtr romData = fns->newRomData(file);
 			if (romData->isValid()) {
 				// Found the correct RomData subclass.
 				return romData;
 			}
-
-			// Not actually supported.
-			delete romData;
 		}
 	}
 
@@ -652,25 +649,21 @@ RomData *checkISO(const IRpFilePtr &file)
 			    !memcmp(xdvdfsHeader.magic_footer, XDVDFS_MAGIC, sizeof(xdvdfsHeader.magic_footer)))
 			{
 				// It's a match! Try opening as XboxDisc.
-				RomData *const romData = new XboxDisc(file);
+				RomDataPtr romData = std::make_shared<XboxDisc>(file);
 				if (romData->isValid()) {
 					// Found the correct RomData subclass.
 					return romData;
 				}
-
-				// Not actually supported.
-				delete romData;
 			}
 		}
 	}
 
 	// Not a game-specific file system.
 	// Use the generic ISO-9660 parser.
-	RomData *const romData = new ISO(file);
+	RomDataPtr romData = std::make_shared<ISO>(file);
 	if (romData->isValid()) {
 		return romData;
 	}
-	delete romData;
 
 	// Still not an ISO...
 	return nullptr;
@@ -714,7 +707,7 @@ RomDataPtr create(const IRpFilePtr &file, unsigned int attrs)
 	info.header.size = static_cast<uint32_t>(file->read(header.u8, sizeof(header.u8)));
 	if (info.header.size == 0) {
 		// Read error.
-		return nullptr;
+		return {};
 	}
 
 	// File extension
@@ -759,7 +752,7 @@ RomDataPtr create(const IRpFilePtr &file, unsigned int attrs)
 		info.header.size = static_cast<uint32_t>(reader->read(header.u8, sizeof(header.u8)));
 		if (info.header.size == 0) {
 			// Read error.
-			return nullptr;
+			return {};
 		}
 		isSparseDiscReader = true;
 	} else {
@@ -785,14 +778,11 @@ RomDataPtr create(const IRpFilePtr &file, unsigned int attrs)
 		if (magic == fns->size) {
 			// Found a matching magic number.
 			if (fns->isRomSupported(&info) >= 0) {
-				RomData *const romData = fns->newRomData(reader);
+				RomDataPtr romData = fns->newRomData(reader);
 				if (romData->isValid()) {
 					// RomData subclass obtained.
-					return RomDataPtr(romData);
+					return romData;
 				}
-
-				// Not actually supported.
-				delete romData;
 			}
 		}
 	}
@@ -800,14 +790,11 @@ RomDataPtr create(const IRpFilePtr &file, unsigned int attrs)
 	// Check for supported textures.
 	{
 		// TODO: RpTextureWrapper::isRomSupported()?
-		RomData *const romData = new RpTextureWrapper(reader);
+		RomDataPtr romData = std::make_shared<RpTextureWrapper>(reader);
 		if (romData->isValid()) {
 			// RomData subclass obtained.
-			return RomDataPtr(romData);
+			return romData;
 		}
-
-		// Not actually supported.
-		delete romData;
 	}
 
 	// Check other RomData subclasses that take a header,
@@ -889,7 +876,7 @@ RomDataPtr create(const IRpFilePtr &file, unsigned int attrs)
 		}
 
 		if (fns->isRomSupported(&info) >= 0) {
-			RomData *romData;
+			RomDataPtr romData;
 			if (fns->attrs & RDA_CHECK_ISO) {
 				// Check for a game-specific ISO subclass.
 				romData = Private::checkISO(reader);
@@ -900,11 +887,8 @@ RomDataPtr create(const IRpFilePtr &file, unsigned int attrs)
 
 			if (romData && romData->isValid()) {
 				// RomData subclass obtained.
-				return RomDataPtr(romData);
+				return romData;
 			}
-
-			// Not actually supported.
-			delete romData;
 		}
 	}
 
@@ -912,7 +896,7 @@ RomDataPtr create(const IRpFilePtr &file, unsigned int attrs)
 	if (info.szFile > (1LL << 30)) {
 		// No subclasses that expect footers support
 		// files larger than 1 GB.
-		return nullptr;
+		return {};
 	}
 
 	bool readFooter = false;
@@ -959,39 +943,33 @@ RomDataPtr create(const IRpFilePtr &file, unsigned int attrs)
 				info.header.size = static_cast<uint32_t>(reader->seekAndRead(info.header.addr, header.u8, footer_size));
 				if (info.header.size == 0) {
 					// Seek and/or read error.
-					return nullptr;
+					return {};
 				}
 			}
 			readFooter = true;
 		}
 
 		if (fns->isRomSupported(&info) >= 0) {
-			RomData *const romData = fns->newRomData(reader);
+			RomDataPtr romData = fns->newRomData(reader);
 			if (romData->isValid()) {
 				// RomData subclass obtained.
-				return RomDataPtr(romData);
+				return romData;
 			}
-
-			// Not actually supported.
-			delete romData;
 		}
 	}
 
 	// Last chance: If a SparseDiscReader is in use, check for ISO.
 	// Needed for PSP disc images, among others.
 	if (isSparseDiscReader) {
-		RomData *const romData = Private::checkISO(reader);
+		RomDataPtr romData = Private::checkISO(reader);
 		if (romData && romData->isValid()) {
 			// RomData subclass obtained.
-			return RomDataPtr(romData);
+			return romData;
 		}
-
-		// Not actually supported.
-		delete romData;
 	}
 
 	// Not supported.
-	return nullptr;
+	return {};
 }
 
 /**
