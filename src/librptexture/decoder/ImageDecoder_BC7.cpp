@@ -54,7 +54,7 @@ static constexpr array<uint32_t, 64> bc7_2sub = {{
 	0x50505500, 0x00555050, 0x15151010, 0x54540404
 }};
 
-// Partition definitions for modes with 2 subsets.
+// Partition definitions for modes with 3 subsets.
 // References:
 // - https://rockets2000.wordpress.com/2015/05/19/bc7-partitions-subsets/
 // - https://github.com/hglm/detex/blob/master/bptc-tables.c
