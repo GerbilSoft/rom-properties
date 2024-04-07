@@ -319,11 +319,12 @@ int VirtualBoy::loadFieldData(void)
 	d->fields.addField_string(C_("RomData", "Game ID"), latin1_to_utf8(id6));
 
 	// Look up the publisher.
+	const char *const s_publisher_title = C_("RomData", "Publisher");
 	const char *const publisher = NintendoPublishers::lookup(romFooter->publisher);
-	string s_publisher;
 	if (publisher) {
-		s_publisher = publisher;
+		d->fields.addField_string(s_publisher_title, publisher);
 	} else {
+		string s_publisher;
 		if (ISALNUM(romFooter->publisher[0]) &&
 		    ISALNUM(romFooter->publisher[1]))
 		{
@@ -334,8 +335,8 @@ int VirtualBoy::loadFieldData(void)
 				static_cast<uint8_t>(romFooter->publisher[0]),
 				static_cast<uint8_t>(romFooter->publisher[1]));
 		}
+		d->fields.addField_string(s_publisher_title, s_publisher);
 	}
-	d->fields.addField_string(C_("RomData", "Publisher"), s_publisher);
 
 	// Revision
 	d->fields.addField_string_numeric(C_("RomData", "Revision"),
@@ -399,10 +400,10 @@ int VirtualBoy::loadMetaData(void)
 	// Publisher (aka manufacturer)
 	// Look up the publisher.
 	const char *const publisher = NintendoPublishers::lookup(romFooter->publisher);
-	string s_publisher;
 	if (publisher) {
-		s_publisher = publisher;
+		d->metaData->addMetaData_string(Property::Publisher, publisher);
 	} else {
+		string s_publisher;
 		if (ISALNUM(romFooter->publisher[0]) &&
 		    ISALNUM(romFooter->publisher[1]))
 		{
@@ -413,9 +414,8 @@ int VirtualBoy::loadMetaData(void)
 				static_cast<uint8_t>(romFooter->publisher[0]),
 				static_cast<uint8_t>(romFooter->publisher[1]));
 		}
+		d->metaData->addMetaData_string(Property::Publisher, s_publisher);
 	}
-	d->fields.addField_string(C_("RomData", "Publisher"), s_publisher);
-	d->metaData->addMetaData_string(Property::Publisher, s_publisher);
 
 	// Finished reading the metadata.
 	return static_cast<int>(d->metaData->count());
