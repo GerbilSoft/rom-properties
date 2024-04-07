@@ -600,7 +600,7 @@ int KeyStoreUIPrivate::getAesKeyDB_key(u128_t *pKey) const
 
 	// Get the CTR scrambler constant.
 	const Section &sectScrambler = sections[(int)SectionID::CtrKeyScrambler];
-	const KeyStoreUI::Key &ctr_scrambler = keys[sectScrambler.keyIdxStart + CtrKeyScrambler::Key_Ctr_Scrambler];
+	const KeyStoreUI::Key &ctr_scrambler = keys[sectScrambler.keyIdxStart + (int)CtrKeyScrambler::EncryptionKeys::Key_Ctr_Scrambler];
 	if (ctr_scrambler.status != KeyStoreUI::Key::Status::OK) {
 		// Key is not correct.
 		return -ENOENT;

@@ -48,7 +48,7 @@ RP_LIBROMDATA_PUBLIC
 int CtrScramble(u128_t *keyNormal, const u128_t *keyX, const u128_t *keyY);
 
 // Encryption key indexes.
-enum EncryptionKeys {
+enum class EncryptionKeys {
 	// Retail
 	Key_Twl_Scrambler,
 	Key_Ctr_Scrambler,
