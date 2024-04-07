@@ -133,11 +133,11 @@ void Ext2AttrViewPrivate::updateFlagsCheckboxes(void)
 
 	// Flag order, relative to checkboxes
 	// NOTE: Uses bit indexes.
-	static constexpr array<uint8_t, 22> flag_order = {
+	static constexpr array<uint8_t, 22> flag_order = {{
 		 5,  7,  2, 23,  6, 16, 19, 11,
 		30,  4, 12, 14, 10, 28, 29,  0,
 		 3, 15, 17,  1, 25, 20
-	};
+	}};
 	// FIXME: checkBoxes.size() can't be used here because it's this->checkBoxes.
 	static_assert(flag_order.size() == EXT2_ATTR_CHECKBOX_MAX, "flag_order[] and checkBoxes[] are out of sync!");
 

@@ -266,7 +266,7 @@ uint32_t MegaDrivePrivate::parseIOSupport(const char *io_support, int size)
 	// NOTE: Only 48 entries; starts at 0x30, ends at 0x5F.
 	// Index: Character
 	// Value: Bitfield value, or -1 if not applicable.
-	static constexpr array<int8_t, 0x30> md_io_chr_map = {
+	static constexpr array<int8_t, 0x30> md_io_chr_map = {{
 		// 0x30 ['0'-'9']
 		MD_IOSH_JOYPAD_SMS, -1, -1, -1, MD_IOSH_TEAM_PLAYER, -1, MD_IOSH_JOYPAD_6, -1,
 		-1, -1, -1, -1, -1, -1, -1 ,-1,
@@ -278,7 +278,7 @@ uint32_t MegaDrivePrivate::parseIOSupport(const char *io_support, int size)
 		// 0x50 ['P'-'Z']
 		MD_IOSH_PRINTER, -1, MD_IOSH_SERIAL, -1, MD_IOSH_TABLET, -1, MD_IOSH_PADDLE, -1,
 		-1, -1, -1, -1, -1, -1, -1, -1,
-	};
+	}};
 
 	uint32_t ret = 0;
 	for (int i = size-1; i >= 0; i--) {

@@ -18,6 +18,7 @@ using namespace LibRpFile;
 using namespace LibRpText;
 
 // C++ STL classes
+using std::array;
 using std::pair;
 using std::string;
 using std::unique_ptr;
@@ -311,7 +312,7 @@ SAPPrivate::sap_tags_t SAPPrivate::parseTags(void)
 			void *ptr;		// Data pointer.
 		};
 
-		const std::array<KeywordDef, 14> kwds = {{
+		const array<KeywordDef, 14> kwds = {{
 			{"AUTHOR",	KeywordType::String,		&tags.author},
 			{"NAME",	KeywordType::String,		&tags.name},
 			{"DATE",	KeywordType::String,		&tags.date},

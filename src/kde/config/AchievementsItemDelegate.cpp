@@ -75,10 +75,10 @@ void AchievementsItemDelegate::paint(QPainter *painter,
 		return;
 	}
 
-	array<QString, LINE_COUNT> sl = {
+	array<QString, LINE_COUNT> sl = {{
 		s_ach.left(nl_pos),
 		s_ach.mid(nl_pos + 1)
-	};
+	}};
 
 	// Alignment flags.
 	static constexpr int HALIGN_FLAGS =
