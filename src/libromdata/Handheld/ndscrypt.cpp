@@ -13,8 +13,10 @@
 // FIXME: Not big-endian safe.
 
 #include "stdafx.h"
-#include "ndscrypt.hpp"
 #include "byteswap_rp.h"
+
+#include "ndscrypt.hpp"
+#include "nds_crc.hpp"
 
 // C includes
 #include <stdint.h>
@@ -138,35 +140,6 @@ int ndscrypt_load_blowfish_bin(BlowfishKey bfkey)
 
 	// Blowfish data has been verified.
 	return 0;
-}
-
-/**
- * Calculate the CRC16 of a block of data.
- * Polynomial: 0x8005 (for NDS icon/title)
- * @param buf Buffer
- * @param size Size of buffer
- * @param crc Previous CRC16 for chaining
- * @return CRC16
- */
-uint16_t crc16_0x8005(const uint8_t *buf, size_t size, uint16_t crc)
-{
-	// Reference: https://www.reddit.com/r/embedded/comments/1acoobg/crc16_again_with_a_little_gift_for_you_all/
-	// NOTE: NDS icon/title CRC16 uses polynomial 0x8005.
-
-	while (size--) {
-		uint32_t x = ((crc ^ *buf++) & 0xff) << 8;
-		uint32_t y = x;
-
-		x ^= x << 1;
-		x ^= x << 2;
-		x ^= x << 4;
-
-		x  = (x & 0x8000) | (y >> 1);
-
-		crc = (crc >> 8) ^ (x >> 15) ^ (x >> 1) ^ x;
-	}
-
-	return crc;
 }
 
 // Encryption context.

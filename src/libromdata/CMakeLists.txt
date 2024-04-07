@@ -65,6 +65,7 @@ SET(${PROJECT_NAME}_SRCS
 	Handheld/PSP.cpp
 	Handheld/VirtualBoy.cpp
 	Handheld/WonderSwan.cpp
+	Handheld/nds_crc.cpp
 
 	Audio/ADX.cpp
 	Audio/BCSTM.cpp
@@ -234,6 +235,7 @@ SET(${PROJECT_NAME}_H
 	Handheld/PSP.hpp
 	Handheld/VirtualBoy.hpp
 	Handheld/WonderSwan.hpp
+	Handheld/nds_crc.hpp
 
 	Handheld/dmg_structs.h
 	Handheld/gba_structs.h

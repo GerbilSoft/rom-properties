@@ -10,9 +10,9 @@
 #include "stdafx.h"
 
 #include "NintendoDS_BNR.hpp"
-#include "nds_structs.h"
 #include "data/NintendoLanguage.hpp"
-#include "ndscrypt.hpp"
+#include "nds_crc.hpp"
+#include "nds_structs.h"
 
 // Other rom-properties libraries
 #include "librptexture/decoder/ImageDecoder_NDS.hpp"
