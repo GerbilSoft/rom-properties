@@ -26,7 +26,7 @@ public:
 	// Encryption key indexes.
 	// NOTE: XEX2 debug key is all zeroes,
 	// so it's not included here.
-	enum EncryptionKeys {
+	enum class EncryptionKeys {
 		Key_XEX1,	// aka Cardea
 		Key_XEX2,
 

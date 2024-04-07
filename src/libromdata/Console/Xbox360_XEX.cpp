@@ -237,10 +237,10 @@ public:
 #ifdef ENABLE_DECRYPTION
 public:
 	// Verification key names.
-	static const array<const char*, Xbox360_XEX::Key_Max> EncryptionKeyNames;
+	static const array<const char*, (int)Xbox360_XEX::EncryptionKeys::Key_Max> EncryptionKeyNames;
 
 	// Verification key data.
-	static const uint8_t EncryptionKeyVerifyData[Xbox360_XEX::Key_Max][16];
+	static const uint8_t EncryptionKeyVerifyData[(int)Xbox360_XEX::EncryptionKeys::Key_Max][16];
 #endif
 };
 
@@ -269,7 +269,7 @@ const RomDataInfo Xbox360_XEX_Private::romDataInfo = {
 
 #ifdef ENABLE_DECRYPTION
 // Verification key names.
-const std::array<const char*, Xbox360_XEX::Key_Max> Xbox360_XEX_Private::EncryptionKeyNames = {{
+const std::array<const char*, (int)Xbox360_XEX::EncryptionKeys::Key_Max> Xbox360_XEX_Private::EncryptionKeyNames = {{
 	// XEX1
 	"xbox360-xex1",
 
@@ -277,7 +277,7 @@ const std::array<const char*, Xbox360_XEX::Key_Max> Xbox360_XEX_Private::Encrypt
 	"xbox360-xex2",
 }};
 
-const uint8_t Xbox360_XEX_Private::EncryptionKeyVerifyData[Xbox360_XEX::Key_Max][16] = {
+const uint8_t Xbox360_XEX_Private::EncryptionKeyVerifyData[(int)Xbox360_XEX::EncryptionKeys::Key_Max][16] = {
 	// xbox360-xex1
 	{0xB9,0x41,0x44,0x80,0xA4,0xE1,0x94,0x82,
 	 0xA2,0x9B,0xCD,0x7E,0xC4,0x68,0xB8,0xF0},
@@ -2078,7 +2078,7 @@ int Xbox360_XEX::checkViewedAchievements(void) const
  */
 int Xbox360_XEX::encryptionKeyCount_static(void)
 {
-	return Key_Max;
+	return (int)EncryptionKeys::Key_Max;
 }
 
 /**
@@ -2089,8 +2089,8 @@ int Xbox360_XEX::encryptionKeyCount_static(void)
 const char *Xbox360_XEX::encryptionKeyName_static(int keyIdx)
 {
 	assert(keyIdx >= 0);
-	assert(keyIdx < Key_Max);
-	if (keyIdx < 0 || keyIdx >= Key_Max)
+	assert(keyIdx < (int)EncryptionKeys::Key_Max);
+	if (keyIdx < 0 || keyIdx >= (int)EncryptionKeys::Key_Max)
 		return nullptr;
 	return Xbox360_XEX_Private::EncryptionKeyNames[keyIdx];
 }
@@ -2103,8 +2103,8 @@ const char *Xbox360_XEX::encryptionKeyName_static(int keyIdx)
 const uint8_t *Xbox360_XEX::encryptionVerifyData_static(int keyIdx)
 {
 	assert(keyIdx >= 0);
-	assert(keyIdx < Key_Max);
-	if (keyIdx < 0 || keyIdx >= Key_Max)
+	assert(keyIdx < (int)EncryptionKeys::Key_Max);
+	if (keyIdx < 0 || keyIdx >= (int)EncryptionKeys::Key_Max)
 		return nullptr;
 	return Xbox360_XEX_Private::EncryptionKeyVerifyData[keyIdx];
 }
