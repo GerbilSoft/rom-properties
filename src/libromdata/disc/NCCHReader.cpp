@@ -58,7 +58,7 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q,
 		// NOTE: readFromROM() sets q->m_lastError.
 		// TODO: Better verifyResult?
 		verifyResult = KeyManager::VerifyResult::WrongKey;
-		q->close();
+		q->m_file.reset();
 		return;
 	}
 
@@ -71,7 +71,7 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q,
 			// 0004800F-484E4841
 			verifyResult = KeyManager::VerifyResult::OK;
 			nonNcchContentType = NonNCCHContentType::NDHT;
-			q->close();
+			q->m_file.reset();
 			return;
 		}
 
@@ -89,7 +89,7 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q,
 			}
 		}
 
-		q->close();
+		q->m_file.reset();
 		return;
 	}
 	headers_loaded |= HEADER_NCCH;
@@ -143,7 +143,7 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q,
 		if (size != sizeof(exefs_header)) {
 			// Read error.
 			// NOTE: readFromROM() sets q->m_lastError.
-			q->close();
+			q->m_file.reset();
 			return;
 		}
 
