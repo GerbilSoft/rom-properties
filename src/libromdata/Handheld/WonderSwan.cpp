@@ -424,6 +424,88 @@ const char *WonderSwan::systemName(unsigned int type) const
 }
 
 /**
+ * Get a bitfield of image types this class can retrieve.
+ * @return Bitfield of supported image types. (ImageTypesBF)
+ */
+uint32_t WonderSwan::supportedImageTypes(void) const
+{
+	return IMGBF_EXT_TITLE_SCREEN;
+}
+
+/**
+ * Get a list of all available image sizes for the specified image type.
+ * @param imageType Image type.
+ * @return Vector of available image sizes, or empty vector if no images are available.
+ */
+vector<RomData::ImageSizeDef> WonderSwan::supportedImageSizes_static(ImageType imageType)
+{
+	ASSERT_supportedImageSizes(imageType);
+
+	switch (imageType) {
+		case IMG_EXT_TITLE_SCREEN:
+			// Assuming horizontal orientation by default.
+			return {{nullptr, 224, 144, 0}};
+		default:
+			break;
+	}
+
+	// Unsupported image type.
+	return {};
+}
+
+/**
+ * Get a list of all available image sizes for the specified image type.
+ * @param imageType Image type.
+ * @return Vector of available image sizes, or empty vector if no images are available.
+ */
+vector<RomData::ImageSizeDef> WonderSwan::supportedImageSizes(ImageType imageType) const
+{
+	ASSERT_supportedImageSizes(imageType);
+
+	switch (imageType) {
+		case IMG_EXT_TITLE_SCREEN: {
+			RP_D(const WonderSwan);
+			if ((d->romFooter.flags & WS_FLAG_DISPLAY_MASK) == WS_FLAG_DISPLAY_VERTICAL) {
+				return {{nullptr, 144, 224, 0}};
+			} else {
+				return {{nullptr, 224, 144, 0}};
+			}
+		}
+		default:
+			break;
+	}
+
+	// Unsupported image type.
+	return {};
+}
+
+/**
+ * Get image processing flags.
+ *
+ * These specify post-processing operations for images,
+ * e.g. applying transparency masks.
+ *
+ * @param imageType Image type.
+ * @return Bitfield of ImageProcessingBF operations to perform.
+ */
+uint32_t WonderSwan::imgpf(ImageType imageType) const
+{
+	ASSERT_imgpf(imageType);
+
+	uint32_t ret = 0;
+	switch (imageType) {
+		case IMG_EXT_TITLE_SCREEN:
+			// Use nearest-neighbor scaling when resizing.
+			ret = IMGPF_RESCALE_NEAREST;
+			break;
+
+		default:
+			break;
+	}
+	return ret;
+}
+
+/**
  * Load field data.
  * Called by RomData::fields() if the field data hasn't been loaded yet.
  * @return Number of fields read on success; negative POSIX error code on error.
@@ -560,88 +642,6 @@ int WonderSwan::loadFieldData(void)
 			: C_("WonderSwan|ROMAccessSpeed", "3 cycles"));
 
 	return static_cast<int>(d->fields.count());
-}
-
-/**
- * Get a bitfield of image types this class can retrieve.
- * @return Bitfield of supported image types. (ImageTypesBF)
- */
-uint32_t WonderSwan::supportedImageTypes(void) const
-{
-	return IMGBF_EXT_TITLE_SCREEN;
-}
-
-/**
- * Get a list of all available image sizes for the specified image type.
- * @param imageType Image type.
- * @return Vector of available image sizes, or empty vector if no images are available.
- */
-vector<RomData::ImageSizeDef> WonderSwan::supportedImageSizes_static(ImageType imageType)
-{
-	ASSERT_supportedImageSizes(imageType);
-
-	switch (imageType) {
-		case IMG_EXT_TITLE_SCREEN:
-			// Assuming horizontal orientation by default.
-			return {{nullptr, 224, 144, 0}};
-		default:
-			break;
-	}
-
-	// Unsupported image type.
-	return {};
-}
-
-/**
- * Get a list of all available image sizes for the specified image type.
- * @param imageType Image type.
- * @return Vector of available image sizes, or empty vector if no images are available.
- */
-vector<RomData::ImageSizeDef> WonderSwan::supportedImageSizes(ImageType imageType) const
-{
-	ASSERT_supportedImageSizes(imageType);
-
-	switch (imageType) {
-		case IMG_EXT_TITLE_SCREEN: {
-			RP_D(const WonderSwan);
-			if ((d->romFooter.flags & WS_FLAG_DISPLAY_MASK) == WS_FLAG_DISPLAY_VERTICAL) {
-				return {{nullptr, 144, 224, 0}};
-			} else {
-				return {{nullptr, 224, 144, 0}};
-			}
-		}
-		default:
-			break;
-	}
-
-	// Unsupported image type.
-	return {};
-}
-
-/**
- * Get image processing flags.
- *
- * These specify post-processing operations for images,
- * e.g. applying transparency masks.
- *
- * @param imageType Image type.
- * @return Bitfield of ImageProcessingBF operations to perform.
- */
-uint32_t WonderSwan::imgpf(ImageType imageType) const
-{
-	ASSERT_imgpf(imageType);
-
-	uint32_t ret = 0;
-	switch (imageType) {
-		case IMG_EXT_TITLE_SCREEN:
-			// Use nearest-neighbor scaling when resizing.
-			ret = IMGPF_RESCALE_NEAREST;
-			break;
-
-		default:
-			break;
-	}
-	return ret;
 }
 
 /**
