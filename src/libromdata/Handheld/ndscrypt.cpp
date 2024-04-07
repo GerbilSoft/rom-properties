@@ -14,9 +14,7 @@
 
 #include "stdafx.h"
 #include "ndscrypt.hpp"
-
 #include "byteswap_rp.h"
-#include "nds_crc.hpp"	// TODO: Optimized versions?
 
 // C includes
 #include <stdint.h>
@@ -140,6 +138,35 @@ int ndscrypt_load_blowfish_bin(BlowfishKey bfkey)
 
 	// Blowfish data has been verified.
 	return 0;
+}
+
+/**
+ * Calculate the CRC16 of a block of data.
+ * Polynomial: 0x8005 (for NDS icon/title)
+ * @param buf Buffer
+ * @param size Size of buffer
+ * @param crc Previous CRC16 for chaining
+ * @return CRC16
+ */
+uint16_t crc16_0x8005(const uint8_t *buf, size_t size, uint16_t crc)
+{
+	// Reference: https://www.reddit.com/r/embedded/comments/1acoobg/crc16_again_with_a_little_gift_for_you_all/
+	// NOTE: NDS icon/title CRC16 uses polynomial 0x8005.
+
+	while (size--) {
+		uint32_t x = ((crc ^ *buf++) & 0xff) << 8;
+		uint32_t y = x;
+
+		x ^= x << 1;
+		x ^= x << 2;
+		x ^= x << 4;
+
+		x  = (x & 0x8000) | (y >> 1);
+
+		crc = (crc >> 8) ^ (x >> 15) ^ (x >> 1) ^ x;
+	}
+
+	return crc;
 }
 
 // Encryption context.
@@ -422,9 +449,9 @@ static int encryptSecureArea(uint8_t *pRom, BlowfishKey bfkey)
 	// Calculate CRCs.
 	uint16_t *const pRom16 = reinterpret_cast<uint16_t*>(pRom);
 	// Secure Area CRC16
-	pRom16[0x6C/2] = cpu_to_le16(CalcCrc16(&pRom[0x4000], 0x4000));
+	pRom16[0x6C/2] = cpu_to_le16(crc16_0x8005(&pRom[0x4000], 0x4000));
 	// Header CRC16
-	pRom16[0x15E/2] = cpu_to_le16(CalcCrc16(pRom, 0x15E));
+	pRom16[0x15E/2] = cpu_to_le16(crc16_0x8005(pRom, 0x15E));
 
 	// Reinitialize the card hash.
 	ndsCrypt.init0(bfkey);
@@ -452,11 +479,11 @@ static int encryptSecureArea(uint8_t *pRom, BlowfishKey bfkey)
 
 	// Calculate CRCs and write header.
 	// Secure Area CRC16
-	pRom16[0x6C/2] = cpu_to_le16(CalcCrc16(&pRom[0x4000], 0x4000));
+	pRom16[0x6C/2] = cpu_to_le16(crc16_0x8005(&pRom[0x4000], 0x4000));
 	// Logo CRC16
-	pRom16[0x15C/2] = cpu_to_le16(CalcCrc16(&pRom[0xC0], 0x9C));
+	pRom16[0x15C/2] = cpu_to_le16(crc16_0x8005(&pRom[0xC0], 0x9C));
 	// Header CRC16
-	pRom16[0x15E/2] = cpu_to_le16(CalcCrc16(pRom, 0x15E));
+	pRom16[0x15E/2] = cpu_to_le16(crc16_0x8005(pRom, 0x15E));
 
 	return 0;
 }

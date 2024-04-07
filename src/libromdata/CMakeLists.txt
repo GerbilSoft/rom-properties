@@ -380,7 +380,6 @@ IF(ENABLE_DECRYPTION)
 		crypto/KeyStoreUI.cpp
 
 		Handheld/ndscrypt.cpp
-		Handheld/nds_crc.cpp
 		)
 	SET(${PROJECT_NAME}_CRYPTO_H
 		crypto/CtrKeyScrambler.hpp
@@ -388,7 +387,6 @@ IF(ENABLE_DECRYPTION)
 		crypto/KeyStoreUI.hpp
 
 		Handheld/ndscrypt.hpp
-		Handheld/nds_crc.hpp
 		)
 ENDIF(ENABLE_DECRYPTION)
 

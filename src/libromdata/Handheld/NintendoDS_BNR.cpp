@@ -12,6 +12,7 @@
 #include "NintendoDS_BNR.hpp"
 #include "nds_structs.h"
 #include "data/NintendoLanguage.hpp"
+#include "ndscrypt.hpp"
 
 // Other rom-properties libraries
 #include "librptexture/decoder/ImageDecoder_NDS.hpp"
@@ -91,16 +92,6 @@ public:
 	 * @return Language code, e.g. 'en' or 'es'.
 	 */
 	uint32_t getDefaultLC(void) const;
-
-	/**
-	 * Calculate the CRC16 of a block of data.
-	 * Polynomial: 0x8005 (for NDS icon/title)
-	 * @param buf Buffer
-	 * @param size Size of buffer
-	 * @param crc Previous CRC16 for chaining
-	 * @return CRC16
-	 */
-	uint16_t crc16(const uint8_t *buf, size_t size, uint16_t crc = 0xFFFFU);
 };
 
 ROMDATA_IMPL(NintendoDS_BNR)
@@ -308,35 +299,6 @@ uint32_t NintendoDS_BNR_Private::getDefaultLC(void) const
 	return lc;
 }
 
-/**
- * Calculate the CRC16 of a block of data.
- * Polynomial: 0x8005 (for NDS icon/title)
- * @param buf Buffer
- * @param size Size of buffer
- * @param crc Previous CRC16 for chaining
- * @return CRC16
- */
-uint16_t NintendoDS_BNR_Private::crc16(const uint8_t *buf, size_t size, uint16_t crc)
-{
-	// Reference: https://www.reddit.com/r/embedded/comments/1acoobg/crc16_again_with_a_little_gift_for_you_all/
-	// NOTE: NDS icon/title CRC16 uses polynomial 0x8005.
-
-	while (size--) {
-		uint32_t x = ((crc ^ *buf++) & 0xff) << 8;
-		uint32_t y = x;
-
-		x ^= x << 1;
-		x ^= x << 2;
-		x ^= x << 4;
-
-		x  = (x & 0x8000) | (y >> 1);
-
-		crc = (crc >> 8) ^ (x >> 15) ^ (x >> 1) ^ x;
-	}
-
-	return crc;
-}
-
 /** NintendoDS_BNR **/
 
 /**
@@ -421,7 +383,7 @@ NintendoDS_BNR::NintendoDS_BNR(const IRpFilePtr &file)
 
 	// CRC16 0: [0x0020-0x083F]
 	// For all versions.
-	uint16_t crc = d->crc16(&pData[0x0020], (0x0840 - 0x0020));
+	uint16_t crc = crc16_0x8005(&pData[0x0020], (0x0840 - 0x0020));
 	if (crc != le16_to_cpu(d->nds_icon_title.crc16[0])) {
 		// CRC16 0 is incorrect.
 		d->file.reset();
@@ -431,7 +393,7 @@ NintendoDS_BNR::NintendoDS_BNR(const IRpFilePtr &file)
 	// CRC16 1: [0x0020-0x093F]
 	// For NDS_ICON_VERSION_HANS and later.
 	// NOTE: Chaining onto the previous CRC to reduce cycles.
-	crc = (version >= NDS_ICON_VERSION_HANS) ? d->crc16(&pData[0x0840], (0x0940 - 0x0840), crc) : 0;
+	crc = (version >= NDS_ICON_VERSION_HANS) ? crc16_0x8005(&pData[0x0840], (0x0940 - 0x0840), crc) : 0;
 	if (crc != le16_to_cpu(d->nds_icon_title.crc16[1])) {
 		// CRC16 1 is incorrect.
 		d->file.reset();
@@ -441,7 +403,7 @@ NintendoDS_BNR::NintendoDS_BNR(const IRpFilePtr &file)
 	// CRC16 2: [0x0020-0x0A3F]
 	// For NDS_ICON_VERSION_HANS_KO and later.
 	// NOTE: Chaining onto the previous CRC to reduce cycles.
-	crc = (version >= NDS_ICON_VERSION_HANS_KO) ? d->crc16(&pData[0x0940], (0x0A40 - 0x0940), crc) : 0;
+	crc = (version >= NDS_ICON_VERSION_HANS_KO) ? crc16_0x8005(&pData[0x0940], (0x0A40 - 0x0940), crc) : 0;
 	if (crc != le16_to_cpu(d->nds_icon_title.crc16[2])) {
 		// CRC16 2 is incorrect.
 		d->file.reset();
@@ -450,7 +412,7 @@ NintendoDS_BNR::NintendoDS_BNR(const IRpFilePtr &file)
 
 	// CRC16 3: [0x1240-0x23C0]
 	// For NDS_ICON_VERSION_DSi and later.
-	crc = (version >= NDS_ICON_VERSION_DSi) ? d->crc16(&pData[0x1240], (0x23C0 - 0x1240)) : 0;
+	crc = (version >= NDS_ICON_VERSION_DSi) ? crc16_0x8005(&pData[0x1240], (0x23C0 - 0x1240)) : 0;
 	if (crc != le16_to_cpu(d->nds_icon_title.crc16[3])) {
 		// CRC16 3 is incorrect.
 		d->file.reset();
