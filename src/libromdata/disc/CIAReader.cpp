@@ -88,9 +88,9 @@ CIAReaderPrivate::CIAReaderPrivate(CIAReader *q,
 		titleKeyEncIdx = N3DS_TICKET_TITLEKEY_ISSUER_RETAIL;
 		if (ticket->keyY_index < 6) {
 			// Verification data is available.
-			keyX_verify = N3DSVerifyKeys::encryptionVerifyData_static(N3DSVerifyKeys::Key_Retail_Slot0x3DKeyX);
-			keyY_verify = N3DSVerifyKeys::encryptionVerifyData_static(N3DSVerifyKeys::Key_Retail_Slot0x3DKeyY_0 + ticket->keyY_index);
-			keyNormal_verify = N3DSVerifyKeys::encryptionVerifyData_static(N3DSVerifyKeys::Key_Retail_Slot0x3DKeyNormal_0 + ticket->keyY_index);
+			keyX_verify = N3DSVerifyKeys::encryptionVerifyData_static((int)N3DSVerifyKeys::EncryptionKeys::Key_Retail_Slot0x3DKeyX);
+			keyY_verify = N3DSVerifyKeys::encryptionVerifyData_static((int)N3DSVerifyKeys::EncryptionKeys::Key_Retail_Slot0x3DKeyY_0 + ticket->keyY_index);
+			keyNormal_verify = N3DSVerifyKeys::encryptionVerifyData_static((int)N3DSVerifyKeys::EncryptionKeys::Key_Retail_Slot0x3DKeyNormal_0 + ticket->keyY_index);
 		}
 	} else if (!strncmp(ticket->issuer, N3DS_TICKET_ISSUER_DEBUG, sizeof(ticket->issuer))) {
 		// Debug issuer.
@@ -98,9 +98,9 @@ CIAReaderPrivate::CIAReaderPrivate(CIAReader *q,
 		titleKeyEncIdx = N3DS_TICKET_TITLEKEY_ISSUER_DEBUG;
 		if (ticket->keyY_index < 6) {
 			// Verification data is available.
-			keyX_verify = N3DSVerifyKeys::encryptionVerifyData_static(N3DSVerifyKeys::Key_Debug_Slot0x3DKeyX);
-			keyY_verify = N3DSVerifyKeys::encryptionVerifyData_static(N3DSVerifyKeys::Key_Debug_Slot0x3DKeyY_0 + ticket->keyY_index);
-			keyNormal_verify = N3DSVerifyKeys::encryptionVerifyData_static(N3DSVerifyKeys::Key_Debug_Slot0x3DKeyNormal_0 + ticket->keyY_index);
+			keyX_verify = N3DSVerifyKeys::encryptionVerifyData_static((int)N3DSVerifyKeys::EncryptionKeys::Key_Debug_Slot0x3DKeyX);
+			keyY_verify = N3DSVerifyKeys::encryptionVerifyData_static((int)N3DSVerifyKeys::EncryptionKeys::Key_Debug_Slot0x3DKeyY_0 + ticket->keyY_index);
+			keyNormal_verify = N3DSVerifyKeys::encryptionVerifyData_static((int)N3DSVerifyKeys::EncryptionKeys::Key_Debug_Slot0x3DKeyNormal_0 + ticket->keyY_index);
 		}
 	} else {
 		// Unknown issuer.

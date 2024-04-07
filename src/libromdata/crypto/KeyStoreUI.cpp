@@ -608,7 +608,7 @@ int KeyStoreUIPrivate::getAesKeyDB_key(u128_t *pKey) const
 
 	// Get Slot0x2CKeyX.
 	const Section &sectN3DS = sections[(int)SectionID::N3DSVerifyKeys];
-	const KeyStoreUI::Key &key_slot0x2CKeyX = keys[sectN3DS.keyIdxStart + N3DSVerifyKeys::Key_Retail_Slot0x2CKeyX];
+	const KeyStoreUI::Key &key_slot0x2CKeyX = keys[sectN3DS.keyIdxStart + (int)N3DSVerifyKeys::EncryptionKeys::Key_Retail_Slot0x2CKeyX];
 	if (key_slot0x2CKeyX.status != KeyStoreUI::Key::Status::OK) {
 		// Key is not correct.
 		return -ENOENT;
@@ -1291,13 +1291,13 @@ KeyStoreUI::ImportReturn KeyStoreUIPrivate::importN3DSboot9bin(IRpFile *file)
 
 	// Key addresses and indexes.
 	static const array<KeyStoreUIPrivate::KeyBinAddress, 6> keyBinAddress = {{
-		{0x5720, N3DSVerifyKeys::Key_Retail_SpiBoot},
-		{0x59D0, N3DSVerifyKeys::Key_Retail_Slot0x2CKeyX},
-		{0x5A20, N3DSVerifyKeys::Key_Retail_Slot0x3DKeyX},
+		{0x5720, (int)N3DSVerifyKeys::EncryptionKeys::Key_Retail_SpiBoot},
+		{0x59D0, (int)N3DSVerifyKeys::EncryptionKeys::Key_Retail_Slot0x2CKeyX},
+		{0x5A20, (int)N3DSVerifyKeys::EncryptionKeys::Key_Retail_Slot0x3DKeyX},
 
-		{0x5740, N3DSVerifyKeys::Key_Debug_SpiBoot},
-		{0x5DD0, N3DSVerifyKeys::Key_Debug_Slot0x2CKeyX},
-		{0x5E20, N3DSVerifyKeys::Key_Debug_Slot0x3DKeyX},
+		{0x5740, (int)N3DSVerifyKeys::EncryptionKeys::Key_Debug_SpiBoot},
+		{0x5DD0, (int)N3DSVerifyKeys::EncryptionKeys::Key_Debug_Slot0x2CKeyX},
+		{0x5E20, (int)N3DSVerifyKeys::EncryptionKeys::Key_Debug_Slot0x3DKeyX},
 	}};
 
 	// Import the keys.
@@ -1375,8 +1375,8 @@ KeyStoreUI::ImportReturn KeyStoreUIPrivate::importN3DSaeskeydb(IRpFile *file)
 				// KeyY is taken from the title's RSA signature.
 				if (aesKey->type == 'X') {
 					static constexpr array<uint8_t, 2> keys_Slot0x18KeyX = {{
-						N3DSVerifyKeys::Key_Retail_Slot0x18KeyX,
-						N3DSVerifyKeys::Key_Debug_Slot0x18KeyX,
+						(uint8_t)N3DSVerifyKeys::EncryptionKeys::Key_Retail_Slot0x18KeyX,
+						(uint8_t)N3DSVerifyKeys::EncryptionKeys::Key_Debug_Slot0x18KeyX,
 					}};
 					keyCount = keys_Slot0x18KeyX.size();
 					pKeyIdx = keys_Slot0x18KeyX.data();
@@ -1388,8 +1388,8 @@ KeyStoreUI::ImportReturn KeyStoreUIPrivate::importN3DSaeskeydb(IRpFile *file)
 				// KeyY is taken from the title's RSA signature.
 				if (aesKey->type == 'X') {
 					static constexpr array<uint8_t, 2> keys_Slot0x1BKeyX = {{
-						N3DSVerifyKeys::Key_Retail_Slot0x1BKeyX,
-						N3DSVerifyKeys::Key_Debug_Slot0x1BKeyX,
+						(uint8_t)N3DSVerifyKeys::EncryptionKeys::Key_Retail_Slot0x1BKeyX,
+						(uint8_t)N3DSVerifyKeys::EncryptionKeys::Key_Debug_Slot0x1BKeyX,
 					}};
 					keyCount = keys_Slot0x1BKeyX.size();
 					pKeyIdx = keys_Slot0x1BKeyX.data();
@@ -1401,8 +1401,8 @@ KeyStoreUI::ImportReturn KeyStoreUIPrivate::importN3DSaeskeydb(IRpFile *file)
 				// KeyY is taken from the title's RSA signature.
 				if (aesKey->type == 'X') {
 					static constexpr array<uint8_t, 2> keys_Slot0x25KeyX = {{
-						N3DSVerifyKeys::Key_Retail_Slot0x25KeyX,
-						N3DSVerifyKeys::Key_Debug_Slot0x25KeyX,
+						(uint8_t)N3DSVerifyKeys::EncryptionKeys::Key_Retail_Slot0x25KeyX,
+						(uint8_t)N3DSVerifyKeys::EncryptionKeys::Key_Debug_Slot0x25KeyX,
 					}};
 					keyCount = keys_Slot0x25KeyX.size();
 					pKeyIdx = keys_Slot0x25KeyX.data();
@@ -1414,8 +1414,8 @@ KeyStoreUI::ImportReturn KeyStoreUIPrivate::importN3DSaeskeydb(IRpFile *file)
 				// KeyY is taken from the title's RSA signature.
 				if (aesKey->type == 'X') {
 					static constexpr array<uint8_t, 2> keys_Slot0x2CKeyX = {{
-						N3DSVerifyKeys::Key_Retail_Slot0x2CKeyX,
-						N3DSVerifyKeys::Key_Debug_Slot0x2CKeyX,
+						(uint8_t)N3DSVerifyKeys::EncryptionKeys::Key_Retail_Slot0x2CKeyX,
+						(uint8_t)N3DSVerifyKeys::EncryptionKeys::Key_Debug_Slot0x2CKeyX,
 					}};
 					keyCount = keys_Slot0x2CKeyX.size();
 					pKeyIdx = keys_Slot0x2CKeyX.data();
@@ -1427,8 +1427,8 @@ KeyStoreUI::ImportReturn KeyStoreUIPrivate::importN3DSaeskeydb(IRpFile *file)
 				switch (aesKey->type) {
 					case 'X': {
 						static constexpr array<uint8_t, 2> keys_Slot0x3DKeyX = {{
-							N3DSVerifyKeys::Key_Retail_Slot0x3DKeyX,
-							N3DSVerifyKeys::Key_Debug_Slot0x3DKeyX,
+							(uint8_t)N3DSVerifyKeys::EncryptionKeys::Key_Retail_Slot0x3DKeyX,
+							(uint8_t)N3DSVerifyKeys::EncryptionKeys::Key_Debug_Slot0x3DKeyX,
 						}};
 						keyCount = keys_Slot0x3DKeyX.size();
 						pKeyIdx = keys_Slot0x3DKeyX.data();
@@ -1436,18 +1436,18 @@ KeyStoreUI::ImportReturn KeyStoreUIPrivate::importN3DSaeskeydb(IRpFile *file)
 					}
 					case 'Y': {
 						static constexpr array<uint8_t, 12> keys_Slot0x3DKeyY = {{
-							N3DSVerifyKeys::Key_Retail_Slot0x3DKeyY_0,
-							N3DSVerifyKeys::Key_Retail_Slot0x3DKeyY_1,
-							N3DSVerifyKeys::Key_Retail_Slot0x3DKeyY_2,
-							N3DSVerifyKeys::Key_Retail_Slot0x3DKeyY_3,
-							N3DSVerifyKeys::Key_Retail_Slot0x3DKeyY_4,
-							N3DSVerifyKeys::Key_Retail_Slot0x3DKeyY_5,
-							N3DSVerifyKeys::Key_Debug_Slot0x3DKeyY_0,
-							N3DSVerifyKeys::Key_Debug_Slot0x3DKeyY_1,
-							N3DSVerifyKeys::Key_Debug_Slot0x3DKeyY_2,
-							N3DSVerifyKeys::Key_Debug_Slot0x3DKeyY_3,
-							N3DSVerifyKeys::Key_Debug_Slot0x3DKeyY_4,
-							N3DSVerifyKeys::Key_Debug_Slot0x3DKeyY_5,
+							(uint8_t)N3DSVerifyKeys::EncryptionKeys::Key_Retail_Slot0x3DKeyY_0,
+							(uint8_t)N3DSVerifyKeys::EncryptionKeys::Key_Retail_Slot0x3DKeyY_1,
+							(uint8_t)N3DSVerifyKeys::EncryptionKeys::Key_Retail_Slot0x3DKeyY_2,
+							(uint8_t)N3DSVerifyKeys::EncryptionKeys::Key_Retail_Slot0x3DKeyY_3,
+							(uint8_t)N3DSVerifyKeys::EncryptionKeys::Key_Retail_Slot0x3DKeyY_4,
+							(uint8_t)N3DSVerifyKeys::EncryptionKeys::Key_Retail_Slot0x3DKeyY_5,
+							(uint8_t)N3DSVerifyKeys::EncryptionKeys::Key_Debug_Slot0x3DKeyY_0,
+							(uint8_t)N3DSVerifyKeys::EncryptionKeys::Key_Debug_Slot0x3DKeyY_1,
+							(uint8_t)N3DSVerifyKeys::EncryptionKeys::Key_Debug_Slot0x3DKeyY_2,
+							(uint8_t)N3DSVerifyKeys::EncryptionKeys::Key_Debug_Slot0x3DKeyY_3,
+							(uint8_t)N3DSVerifyKeys::EncryptionKeys::Key_Debug_Slot0x3DKeyY_4,
+							(uint8_t)N3DSVerifyKeys::EncryptionKeys::Key_Debug_Slot0x3DKeyY_5,
 						}};
 						keyCount = keys_Slot0x3DKeyY.size();
 						pKeyIdx = keys_Slot0x3DKeyY.data();
@@ -1455,18 +1455,18 @@ KeyStoreUI::ImportReturn KeyStoreUIPrivate::importN3DSaeskeydb(IRpFile *file)
 					}
 					case 'N': {
 						static constexpr array<uint8_t, 12> keys_Slot0x3DKeyNormal = {{
-							N3DSVerifyKeys::Key_Retail_Slot0x3DKeyNormal_0,
-							N3DSVerifyKeys::Key_Retail_Slot0x3DKeyNormal_1,
-							N3DSVerifyKeys::Key_Retail_Slot0x3DKeyNormal_2,
-							N3DSVerifyKeys::Key_Retail_Slot0x3DKeyNormal_3,
-							N3DSVerifyKeys::Key_Retail_Slot0x3DKeyNormal_4,
-							N3DSVerifyKeys::Key_Retail_Slot0x3DKeyNormal_5,
-							N3DSVerifyKeys::Key_Debug_Slot0x3DKeyNormal_0,
-							N3DSVerifyKeys::Key_Debug_Slot0x3DKeyNormal_1,
-							N3DSVerifyKeys::Key_Debug_Slot0x3DKeyNormal_2,
-							N3DSVerifyKeys::Key_Debug_Slot0x3DKeyNormal_3,
-							N3DSVerifyKeys::Key_Debug_Slot0x3DKeyNormal_4,
-							N3DSVerifyKeys::Key_Debug_Slot0x3DKeyNormal_5,
+							(uint8_t)N3DSVerifyKeys::EncryptionKeys::Key_Retail_Slot0x3DKeyNormal_0,
+							(uint8_t)N3DSVerifyKeys::EncryptionKeys::Key_Retail_Slot0x3DKeyNormal_1,
+							(uint8_t)N3DSVerifyKeys::EncryptionKeys::Key_Retail_Slot0x3DKeyNormal_2,
+							(uint8_t)N3DSVerifyKeys::EncryptionKeys::Key_Retail_Slot0x3DKeyNormal_3,
+							(uint8_t)N3DSVerifyKeys::EncryptionKeys::Key_Retail_Slot0x3DKeyNormal_4,
+							(uint8_t)N3DSVerifyKeys::EncryptionKeys::Key_Retail_Slot0x3DKeyNormal_5,
+							(uint8_t)N3DSVerifyKeys::EncryptionKeys::Key_Debug_Slot0x3DKeyNormal_0,
+							(uint8_t)N3DSVerifyKeys::EncryptionKeys::Key_Debug_Slot0x3DKeyNormal_1,
+							(uint8_t)N3DSVerifyKeys::EncryptionKeys::Key_Debug_Slot0x3DKeyNormal_2,
+							(uint8_t)N3DSVerifyKeys::EncryptionKeys::Key_Debug_Slot0x3DKeyNormal_3,
+							(uint8_t)N3DSVerifyKeys::EncryptionKeys::Key_Debug_Slot0x3DKeyNormal_4,
+							(uint8_t)N3DSVerifyKeys::EncryptionKeys::Key_Debug_Slot0x3DKeyNormal_5,
 						}};
 						keyCount = keys_Slot0x3DKeyNormal.size();
 						pKeyIdx = keys_Slot0x3DKeyNormal.data();

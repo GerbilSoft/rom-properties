@@ -36,15 +36,15 @@ public:
 
 public:
 	// Verification key names
-	static const array<const char*, N3DSVerifyKeys::Key_Max> EncryptionKeyNames;
+	static const array<const char*, (int)N3DSVerifyKeys::EncryptionKeys::Key_Max> EncryptionKeyNames;
 
 	// Verification key data
-	static const uint8_t EncryptionKeyVerifyData[N3DSVerifyKeys::Key_Max][16];
+	static const uint8_t EncryptionKeyVerifyData[(int)N3DSVerifyKeys::EncryptionKeys::Key_Max][16];
 };
 
 /** N3DSVerifyKeysPrivate **/
 
-const array<const char*, N3DSVerifyKeys::Key_Max> N3DSVerifyKeysPrivate::EncryptionKeyNames = {{
+const array<const char*, (int)N3DSVerifyKeys::EncryptionKeys::Key_Max> N3DSVerifyKeysPrivate::EncryptionKeyNames = {{
 	// Retail
 	"ctr-spi-boot",
 	"ctr-Slot0x18KeyX",
@@ -88,7 +88,7 @@ const array<const char*, N3DSVerifyKeys::Key_Max> N3DSVerifyKeysPrivate::Encrypt
 }};
 
 // Verification key data
-const uint8_t N3DSVerifyKeysPrivate::EncryptionKeyVerifyData[N3DSVerifyKeys::Key_Max][16] = {
+const uint8_t N3DSVerifyKeysPrivate::EncryptionKeyVerifyData[(int)N3DSVerifyKeys::EncryptionKeys::Key_Max][16] = {
 	/** Retail **/
 
 	// Key_Retail_SpiBoot
@@ -434,8 +434,8 @@ KeyManager::VerifyResult N3DSVerifyKeys::loadNCCHKeys(u128_t pKeyOut[2],
 		if (le32_to_cpu(pNcchHeader->hdr.program_id.hi) & 0x10) {
 			// Using the fixed debug key.
 			// TODO: Is there a retail equivalent?
-			keyX_name[0] = N3DSVerifyKeysPrivate::EncryptionKeyNames[Key_Debug_FixedCryptoKey];
-			keyX_verify[0] = N3DSVerifyKeysPrivate::EncryptionKeyVerifyData[Key_Debug_FixedCryptoKey];
+			keyX_name[0] = N3DSVerifyKeysPrivate::EncryptionKeyNames[(int)EncryptionKeys::Key_Debug_FixedCryptoKey];
+			keyX_verify[0] = N3DSVerifyKeysPrivate::EncryptionKeyVerifyData[(int)EncryptionKeys::Key_Debug_FixedCryptoKey];
 			isFixedKey = true;
 		} else {
 			// Zero-key.
@@ -447,34 +447,34 @@ KeyManager::VerifyResult N3DSVerifyKeys::loadNCCHKeys(u128_t pKeyOut[2],
 
 		// Standard keyslot. (0x2C)
 		if (isDebug) {
-			keyX_name[0] = N3DSVerifyKeysPrivate::EncryptionKeyNames[Key_Debug_Slot0x2CKeyX];
-			keyX_verify[0] = N3DSVerifyKeysPrivate::EncryptionKeyVerifyData[Key_Debug_Slot0x2CKeyX];
+			keyX_name[0] = N3DSVerifyKeysPrivate::EncryptionKeyNames[(int)EncryptionKeys::Key_Debug_Slot0x2CKeyX];
+			keyX_verify[0] = N3DSVerifyKeysPrivate::EncryptionKeyVerifyData[(int)EncryptionKeys::Key_Debug_Slot0x2CKeyX];
 		} else {
-			keyX_name[0] = N3DSVerifyKeysPrivate::EncryptionKeyNames[Key_Retail_Slot0x2CKeyX];
-			keyX_verify[0] = N3DSVerifyKeysPrivate::EncryptionKeyVerifyData[Key_Retail_Slot0x2CKeyX];
+			keyX_name[0] = N3DSVerifyKeysPrivate::EncryptionKeyNames[(int)EncryptionKeys::Key_Retail_Slot0x2CKeyX];
+			keyX_verify[0] = N3DSVerifyKeysPrivate::EncryptionKeyVerifyData[(int)EncryptionKeys::Key_Retail_Slot0x2CKeyX];
 		}
 
 		// Check for a secondary keyslot.
 		// TODO: Handle SEED encryption? (Not needed for "exefs:/icon" and "exefs:/banner".)
-		int keyIdx;
+		EncryptionKeys keyIdx;
 		switch (pNcchHeader->hdr.flags[N3DS_NCCH_FLAG_CRYPTO_METHOD]) {
 			case 0x00:
 				// Standard (0x2C)
 				// NOTE: Leave as nullptr, since we don't
 				// need to load it twice.
-				keyIdx = -1;
+				keyIdx = EncryptionKeys::Key_Unknown;
 				break;
 			case 0x01:
 				// v7.x (0x25)
-				keyIdx = (isDebug ? Key_Debug_Slot0x25KeyX : Key_Retail_Slot0x25KeyX);
+				keyIdx = (isDebug ? EncryptionKeys::Key_Debug_Slot0x25KeyX : EncryptionKeys::Key_Retail_Slot0x25KeyX);
 				break;
 			case 0x0A:
 				// Secure3 (0x18)
-				keyIdx = (isDebug ? Key_Debug_Slot0x18KeyX : Key_Retail_Slot0x18KeyX);
+				keyIdx = (isDebug ? EncryptionKeys::Key_Debug_Slot0x18KeyX : EncryptionKeys::Key_Retail_Slot0x18KeyX);
 				break;
 			case 0x0B:
 				// Secure4 (0x1B)
-				keyIdx = (isDebug ? Key_Debug_Slot0x1BKeyX : Key_Retail_Slot0x1BKeyX);
+				keyIdx = (isDebug ? EncryptionKeys::Key_Debug_Slot0x1BKeyX : EncryptionKeys::Key_Retail_Slot0x1BKeyX);
 				break;
 			default:
 				// TODO: Unknown encryption method...
@@ -483,9 +483,9 @@ KeyManager::VerifyResult N3DSVerifyKeys::loadNCCHKeys(u128_t pKeyOut[2],
 				return KeyManager::VerifyResult::WrongKey;
 		}
 
-		if (keyIdx >= 0) {
-			keyX_name[1] = N3DSVerifyKeysPrivate::EncryptionKeyNames[keyIdx];
-			keyX_verify[1] = N3DSVerifyKeysPrivate::EncryptionKeyVerifyData[keyIdx];
+		if ((int)keyIdx >= 0) {
+			keyX_name[1] = N3DSVerifyKeysPrivate::EncryptionKeyNames[(int)keyIdx];
+			keyX_verify[1] = N3DSVerifyKeysPrivate::EncryptionKeyVerifyData[(int)keyIdx];
 		}
 	}
 
@@ -573,7 +573,7 @@ KeyManager::VerifyResult N3DSVerifyKeys::loadNCCHKeys(u128_t pKeyOut[2],
  */
 int N3DSVerifyKeys::encryptionKeyCount_static(void)
 {
-	return Key_Max;
+	return (int)EncryptionKeys::Key_Max;
 }
 
 /**
@@ -584,8 +584,8 @@ int N3DSVerifyKeys::encryptionKeyCount_static(void)
 const char *N3DSVerifyKeys::encryptionKeyName_static(int keyIdx)
 {
 	assert(keyIdx >= 0);
-	assert(keyIdx < Key_Max);
-	if (keyIdx < 0 || keyIdx >= Key_Max)
+	assert(keyIdx < (int)EncryptionKeys::Key_Max);
+	if (keyIdx < 0 || keyIdx >= (int)EncryptionKeys::Key_Max)
 		return nullptr;
 	return N3DSVerifyKeysPrivate::EncryptionKeyNames[keyIdx];
 }
@@ -598,8 +598,8 @@ const char *N3DSVerifyKeys::encryptionKeyName_static(int keyIdx)
 const uint8_t *N3DSVerifyKeys::encryptionVerifyData_static(int keyIdx)
 {
 	assert(keyIdx >= 0);
-	assert(keyIdx < Key_Max);
-	if (keyIdx < 0 || keyIdx >= Key_Max)
+	assert(keyIdx < (int)EncryptionKeys::Key_Max);
+	if (keyIdx < 0 || keyIdx >= (int)EncryptionKeys::Key_Max)
 		return nullptr;
 	return N3DSVerifyKeysPrivate::EncryptionKeyVerifyData[keyIdx];
 }

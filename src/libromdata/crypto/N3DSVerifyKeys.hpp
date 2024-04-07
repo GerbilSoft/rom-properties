@@ -98,9 +98,11 @@ class N3DSVerifyKeys
 			const N3DS_NCCH_Header_t *pNcchHeader, uint8_t issuer);
 
 		// Encryption key indexes
-		enum EncryptionKeys {
+		enum class EncryptionKeys {
+			Key_Unknown = -1,
+
 			// Retail
-			Key_Retail_SpiBoot,
+			Key_Retail_SpiBoot = 0,
 			Key_Retail_Slot0x18KeyX,
 			Key_Retail_Slot0x1BKeyX,
 			Key_Retail_Slot0x25KeyX,
