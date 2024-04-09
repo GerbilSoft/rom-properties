@@ -1374,7 +1374,8 @@ int CBMDOS::loadFieldData(void)
 
 	// Check for a C128 autoboot sector.
 	if (d->diskType == CBMDOSPrivate::DiskType::D64 ||
-	    d->diskType == CBMDOSPrivate::DiskType::D71)
+	    d->diskType == CBMDOSPrivate::DiskType::D71 ||
+	    d->diskType == CBMDOSPrivate::DiskType::D81)
 	{
 		cbmdos_C128_autoboot_sector_t autoboot;
 		size_t size = d->read_sector(&autoboot, sizeof(autoboot), 1, 0);
