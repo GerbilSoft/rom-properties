@@ -25,8 +25,9 @@
 // NOTE: Not making vImageList a pointer, since that adds
 // significantly more complexity.
 struct LvData {
-	std::vector<std::vector<std::tstring> > vvStr;	// String data.
-	std::vector<int> vImageList;			// ImageList indexes.
+	HWND hListView;					// Associated ListView control
+	std::vector<std::vector<std::tstring> > vvStr;	// String data
+	std::vector<int> vImageList;			// ImageList indexes
 
 	// Sorting: key == display index, value == LvData_t index
 	std::vector<unsigned int> vSortMap;
@@ -35,7 +36,6 @@ struct LvData {
 	std::vector<int> col_widths;
 
 	// For RFT_LISTDATA_MULTI only!
-	HWND hListView;
 	const LibRpBase::RomFields::Field *pField;
 
 	// Column 0 size adjustment.
@@ -46,8 +46,8 @@ struct LvData {
 	uint32_t sortingMethods;			// Sorting methods.
 	bool hasCheckboxes;				// True if checkboxes are valid.
 
-	LvData()
-		: hListView(nullptr), pField(nullptr)
+	explicit LvData(HWND hListView, LibRpBase::RomFields::Field *pField = nullptr)
+		: hListView(hListView), pField(pField)
 		, col0sizeadj(0), checkboxes(0)
 		, sortingMethods(0), hasCheckboxes(false)
 	{}

@@ -841,7 +841,7 @@ int RP_ShellPropSheetExt_Private::initListData(_In_ HWND hWndTab,
 	// LVS_OWNERDATA.
 	vector<vector<tstring> > lvStringData;
 	lvStringData.reserve(list_data->size());
-	LvData lvData;
+	LvData lvData(hListView);
 	lvData.vvStr.reserve(list_data->size());
 	lvData.hasCheckboxes = hasCheckboxes;
 	lvData.col_widths.resize(colCount);
@@ -1139,7 +1139,6 @@ int RP_ShellPropSheetExt_Private::initListData(_In_ HWND hWndTab,
 	}
 
 	if (isMulti) {
-		lvData.hListView = hListView;
 		lvData.pField = &field;
 	}
 
@@ -1383,7 +1382,7 @@ void RP_ShellPropSheetExt_Private::updateMulti(uint32_t user_lc)
 	// RFT_LISTDATA_MULTI
 	for (auto &&mlvd : map_lvData) {
 		LvData &lvData = mlvd.second;
-		if (!lvData.hListView) {
+		if (!lvData.pField) {
 			// Not an RFT_LISTDATA_MULTI.
 			continue;
 		}
