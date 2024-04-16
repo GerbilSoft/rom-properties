@@ -458,24 +458,6 @@ typedef struct _IMAGE_EXPORT_DIRECTORY {
 } IMAGE_EXPORT_DIRECTORY;
 ASSERT_STRUCT(IMAGE_EXPORT_DIRECTORY, 10*sizeof(uint32_t));
 
-/** Import table. **/
-// Reference: http://sandsprite.com/CodeStuff/Understanding_imports.html
-
-/**
- * Import directory.
- */
-typedef struct _IMAGE_IMPORT_DIRECTORY {
-	uint32_t rvaImportLookupTable;	// RVA of the import lookup table
-	uint32_t TimeDateStamp;		// UNIX timestamp
-	uint32_t ForwarderChain;
-	uint32_t rvaModuleName;		// RVA of the DLL filename
-	uint32_t rvaImportAddressTable;	// RVA of the thunk table
-} IMAGE_IMPORT_DIRECTORY;
-ASSERT_STRUCT(IMAGE_IMPORT_DIRECTORY, 5*sizeof(uint32_t));
-
-// Import lookup table consists of 32-bit values which are either
-// RVAs to the function name or, if the low(?) bit is set, an ordinal.
-
 /** Win32 resources **/
 
 // Resource directory
@@ -527,12 +509,30 @@ ASSERT_STRUCT(IMAGE_NT_HEADERS32, 248);
 ASSERT_STRUCT(IMAGE_NT_HEADERS64, 264);
 ASSERT_STRUCT(IMAGE_SECTION_HEADER, IMAGE_SIZEOF_SECTION_HEADER);
 ASSERT_STRUCT(IMAGE_EXPORT_DIRECTORY, 10*sizeof(uint32_t));
-ASSERT_STRUCT(IMAGE_IMPORT_DIRECTORY, 5*sizeof(uint32_t));
 ASSERT_STRUCT(IMAGE_RESOURCE_DIRECTORY, 16);
 ASSERT_STRUCT(IMAGE_RESOURCE_DIRECTORY_ENTRY, 2*sizeof(uint32_t));
 ASSERT_STRUCT(IMAGE_RESOURCE_DATA_ENTRY, 4*sizeof(uint32_t));
 
 #endif /* IMAGE_NT_SIGNATURE */
+
+/** Import table **/
+// Reference: http://sandsprite.com/CodeStuff/Understanding_imports.html
+// NOTE: *NOT* defined in the Windows SDK.
+
+/**
+ * Import directory
+ *
+ * Import lookup table consists of 32-bit values which are either
+ * RVAs to the function name or, if the low(?) bit is set, an ordinal.
+ */
+typedef struct _IMAGE_IMPORT_DIRECTORY {
+	uint32_t rvaImportLookupTable;	// RVA of the import lookup table
+	uint32_t TimeDateStamp;		// UNIX timestamp
+	uint32_t ForwarderChain;
+	uint32_t rvaModuleName;		// RVA of the DLL filename
+	uint32_t rvaImportAddressTable;	// RVA of the thunk table
+} IMAGE_IMPORT_DIRECTORY;
+ASSERT_STRUCT(IMAGE_IMPORT_DIRECTORY, 5*sizeof(uint32_t));
 
 // Manifest IDs
 typedef enum {
