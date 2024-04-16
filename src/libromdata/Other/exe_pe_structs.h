@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * exe_pe_structs.h: DOS/Windows executable structures. (PE)               *
  *                                                                         *
- * Copyright (c) 2017-2023 by David Korth.                                 *
+ * Copyright (c) 2017-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -23,6 +23,8 @@ extern "C" {
 // - https://docs.microsoft.com/en-us/windows/win32/menurc/resource-types
 // - http://sandsprite.com/CodeStuff/Understanding_imports.html
 // - https://docs.microsoft.com/en-us/windows/win32/debug/pe-format
+
+#ifndef IMAGE_NT_SIGNATURE
 
 #define IMAGE_NT_SIGNATURE 0x00004550
 #define IMAGE_NT_OPTIONAL_HDR32_MAGIC 0x10b
@@ -509,6 +511,28 @@ typedef struct _IMAGE_RESOURCE_DATA_ENTRY {
 	uint32_t Reserved;
 } IMAGE_RESOURCE_DATA_ENTRY;
 ASSERT_STRUCT(IMAGE_RESOURCE_DATA_ENTRY, 4*sizeof(uint32_t));
+
+#else /* IMAGE_NT_SIGNATURE */
+
+// Windows headers are already included, and the various structs are defined.
+// Don't re-define the structs, but ensure they have the correct sizes.
+ASSERT_STRUCT(IMAGE_FILE_HEADER, IMAGE_SIZEOF_FILE_HEADER);
+ASSERT_STRUCT(IMAGE_DATA_DIRECTORY, 2*sizeof(uint32_t));
+ASSERT_STRUCT(IMAGE_OPTIONAL_HEADER32, 224);
+ASSERT_STRUCT(IMAGE_OPTIONAL_HEADER64, 240);
+ASSERT_STRUCT(IMAGE_LOAD_CONFIG_CODE_INTEGRITY, 12);
+ASSERT_STRUCT(IMAGE_LOAD_CONFIG_DIRECTORY32, 192);
+ASSERT_STRUCT(IMAGE_LOAD_CONFIG_DIRECTORY64, 320);
+ASSERT_STRUCT(IMAGE_NT_HEADERS32, 248);
+ASSERT_STRUCT(IMAGE_NT_HEADERS64, 264);
+ASSERT_STRUCT(IMAGE_SECTION_HEADER, IMAGE_SIZEOF_SECTION_HEADER);
+ASSERT_STRUCT(IMAGE_EXPORT_DIRECTORY, 10*sizeof(uint32_t));
+ASSERT_STRUCT(IMAGE_IMPORT_DIRECTORY, 5*sizeof(uint32_t));
+ASSERT_STRUCT(IMAGE_RESOURCE_DIRECTORY, 16);
+ASSERT_STRUCT(IMAGE_RESOURCE_DIRECTORY_ENTRY, 2*sizeof(uint32_t));
+ASSERT_STRUCT(IMAGE_RESOURCE_DATA_ENTRY, 4*sizeof(uint32_t));
+
+#endif /* IMAGE_NT_SIGNATURE */
 
 // Manifest IDs
 typedef enum {

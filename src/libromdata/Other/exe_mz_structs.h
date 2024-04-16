@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * exe_mz_structs.h: DOS/Windows executable structures. (MZ)               *
  *                                                                         *
- * Copyright (c) 2017-2023 by David Korth.                                 *
+ * Copyright (c) 2017-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -14,6 +14,8 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+#ifndef IMAGE_DOS_SIGNATURE
 
 #define IMAGE_DOS_SIGNATURE 0x5A4D
 #define IMAGE_OS2_SIGNATURE 0x454E
@@ -48,6 +50,14 @@ typedef struct _IMAGE_DOS_HEADER {
 	uint32_t e_lfanew;	// Pointer to NE/LE/LX/PE headers.
 } IMAGE_DOS_HEADER;
 ASSERT_STRUCT(IMAGE_DOS_HEADER, 64);
+
+#else /* IMAGE_DOS_SIGNATURE */
+
+// Windows headers are already included, and the various structs are defined.
+// Don't re-define the structs, but ensure they have the correct sizes.
+ASSERT_STRUCT(IMAGE_DOS_HEADER, 64);
+
+#endif /* IMAGE_DOS_SIGNATURE */
 
 #ifdef __cplusplus
 }

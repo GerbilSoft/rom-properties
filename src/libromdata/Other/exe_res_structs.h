@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * exe_res_structs.h: DOS/Windows executable structures. (resources)       *
  *                                                                         *
- * Copyright (c) 2017-2023 by David Korth.                                 *
+ * Copyright (c) 2017-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -24,6 +24,7 @@ extern "C" {
 // - http://sandsprite.com/CodeStuff/Understanding_imports.html
 // - https://docs.microsoft.com/en-us/windows/win32/debug/pe-format
 
+#ifndef _WINUSER_
 // Resource types
 typedef enum {
 	RT_CURSOR	= 1,
@@ -52,6 +53,7 @@ typedef enum {
 	RT_DLGINIT	= 240,
 	RT_TOOLBAR	= 241,
 } ResourceType;
+#endif /* _WINUSER_ */
 
 /** Version resource **/
 
