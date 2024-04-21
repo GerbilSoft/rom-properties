@@ -65,52 +65,6 @@ typedef enum {
 } PE_Characteristics;
 
 typedef enum {
-	IMAGE_FILE_MACHINE_UNKNOWN	= 0x0000,
-	IMAGE_FILE_MACHINE_I386		= 0x014C, /* Intel 386 or later processors 
-						     and compatible processors */
-	IMAGE_FILE_MACHINE_R3000_BE	= 0x0160, /* MIPS big-endian */
-	IMAGE_FILE_MACHINE_R3000	= 0x0162, /* MIPS little-endian */
-	IMAGE_FILE_MACHINE_R4000	= 0x0166, /* MIPS little-endian */
-	IMAGE_FILE_MACHINE_R10000	= 0x0168, /* MIPS little-endian */
-	IMAGE_FILE_MACHINE_WCEMIPSV2	= 0x0169, /* MIPS little-endian WCE v2 */
-	IMAGE_FILE_MACHINE_ALPHA	= 0x0184, /* Alpha AXP */
-	IMAGE_FILE_MACHINE_SH3		= 0x01A2, /* Hitachi SH3 */
-	IMAGE_FILE_MACHINE_SH3DSP	= 0x01A3, /* Hitachi SH3 DSP */
-	IMAGE_FILE_MACHINE_SH3E		= 0x01A4, /* Hitachi SH3E */
-	IMAGE_FILE_MACHINE_SH4		= 0x01A6, /* Hitachi SH4 */
-	IMAGE_FILE_MACHINE_SH5		= 0x01A8, /* Hitachi SH5 */
-	IMAGE_FILE_MACHINE_ARM		= 0x01C0, /* ARM little endian */
-	IMAGE_FILE_MACHINE_THUMB	= 0x01C2, /* Thumb */
-	IMAGE_FILE_MACHINE_ARMNT	= 0x01C4, /* Thumb-2 */
-	IMAGE_FILE_MACHINE_AM33		= 0x01D3, /* Matsushita AM33 */
-	IMAGE_FILE_MACHINE_POWERPC	= 0x01F0, /* PowerPC little-endian */
-	IMAGE_FILE_MACHINE_POWERPCFP	= 0x01F1, /* PowerPC with floating point support */
-	IMAGE_FILE_MACHINE_POWERPCBE	= 0x01F2, /* PowerPC big-endian (Xbox 360) */
-	IMAGE_FILE_MACHINE_IA64		= 0x0200, /* Intel Itanium processor family */
-	IMAGE_FILE_MACHINE_MIPS16	= 0x0266, /* MIPS16 */
-	IMAGE_FILE_MACHINE_M68K		= 0x0268, /* Motorola 68000 */
-	IMAGE_FILE_MACHINE_ALPHA64	= 0x0284, /* Alpha AXP (64-bit) */
-	IMAGE_FILE_MACHINE_PA_RISC	= 0x0290, /* PA-RISC */
-	IMAGE_FILE_MACHINE_MIPSFPU	= 0x0366, /* MIPS with FPU */
-	IMAGE_FILE_MACHINE_MIPSFPU16	= 0x0466, /* MIPS16 with FPU */
-	IMAGE_FILE_MACHINE_AXP64	= IMAGE_FILE_MACHINE_ALPHA64, /* Alpha AXP (64-bit) */
-	IMAGE_FILE_MACHINE_TRICORE	= 0x0520, /* Infineon TriCore */
-	IMAGE_FILE_MACHINE_MPPC_601	= 0x0601, /* PowerPC big-endian (MSVC for Mac) */
-	IMAGE_FILE_MACHINE_CEF		= 0x0CEF, /* Common Executable Format (Windows CE) */
-	IMAGE_FILE_MACHINE_EBC		= 0x0EBC, /* EFI byte code */
-	IMAGE_FILE_MACHINE_RISCV32	= 0x5032, /* RISC-V 32-bit address space */
-	IMAGE_FILE_MACHINE_RISCV64	= 0x5064, /* RISC-V 64-bit address space */
-	IMAGE_FILE_MACHINE_RISCV128	= 0x5128, /* RISC-V 128-bit address space */
-	IMAGE_FILE_MACHINE_LOONGARCH32	= 0x6232, /* LoongArch 32-bit */
-	IMAGE_FILE_MACHINE_LOONGARCH64	= 0x6264, /* LoongArch 64-bit */
-	IMAGE_FILE_MACHINE_AMD64	= 0x8664, /* x64 */
-	IMAGE_FILE_MACHINE_M32R		= 0x9041, /* Mitsubishi M32R little endian */
-	IMAGE_FILE_MACHINE_ARM64EC	= 0xA641, /* ARM64 ("emulation-compatible") */
-	IMAGE_FILE_MACHINE_ARM64	= 0xAA64, /* ARM64 little-endian */
-	IMAGE_FILE_MACHINE_CEE		= 0xC0EE, /* MSIL (.NET) */
-} PE_Machine;
-
-typedef enum {
 	IMAGE_SUBSYSTEM_UNKNOWN				= 0,
 	IMAGE_SUBSYSTEM_NATIVE				= 1,
 	IMAGE_SUBSYSTEM_WINDOWS_GUI			= 2,
@@ -490,44 +444,24 @@ ASSERT_STRUCT(IMAGE_RESOURCE_DIRECTORY, 16);
 ASSERT_STRUCT(IMAGE_RESOURCE_DIRECTORY_ENTRY, 2*sizeof(uint32_t));
 ASSERT_STRUCT(IMAGE_RESOURCE_DATA_ENTRY, 4*sizeof(uint32_t));
 
-#ifndef IMAGE_FILE_MACHINE_R3000_BE
-#  define IMAGE_FILE_MACHINE_R3000_BE		0x0160	/* MIPS big-endian */
-#endif
-#ifndef IMAGE_FILE_MACHINE_R3000
-#  define IMAGE_FILE_MACHINE_R3000		0x0162	/* MIPS little-endian */
+#endif /* IMAGE_NT_SIGNATURE */
+
+// Machine types
+#ifndef IMAGE_FILE_MACHINE_I386
+#  define IMAGE_FILE_MACHINE_I386		0x014C	/* Intel i386 */
 #endif
 #ifndef IMAGE_FILE_MACHINE_POWERPCBE
 #  define IMAGE_FILE_MACHINE_POWERPCBE		0x01F2	/* PowerPC big-endian (Xbox 360) */
 #endif
-#ifndef IMAGE_FILE_MACHINE_M68K
-#  define IMAGE_FILE_MACHINE_M68K		0x0268	/* Motorola 68000 */
+#ifndef IMAGE_FILE_MACHINE_AMD64
+#  define IMAGE_FILE_MACHINE_AMD64		0x8664	/* AMD64 */
 #endif
-#ifndef IMAGE_FILE_MACHINE_PA_RISC
-#  define IMAGE_FILE_MACHINE_PA_RISC		0x0290	/* PA-RISC */
+#ifndef IMAGE_FILE_MACHINE_ARM64
+#  define IMAGE_FILE_MACHINE_ARM64		0xAA64	/* ARM64 little-endian */
 #endif
-#ifndef IMAGE_FILE_MACHINE_MPPC_601
-#  define IMAGE_FILE_MACHINE_MPPC_601		0x0601	/* PowerPC big-endian (MSVC for Mac) */
+#ifndef IMAGE_FILE_MACHINE_CEE
+#  define IMAGE_FILE_MACHINE_CEE		0xC0EE	/* MSIL (.NET) */
 #endif
-#ifndef IMAGE_FILE_MACHINE_RISCV32
-#  define IMAGE_FILE_MACHINE_RISCV32		0x5032	/* RISC-V 32-bit address space */
-#endif
-#ifndef IMAGE_FILE_MACHINE_RISCV64
-#  define IMAGE_FILE_MACHINE_RISCV64		0x5064	/* RISC-V 64-bit address space */
-#endif
-#ifndef IMAGE_FILE_MACHINE_RISCV128
-#  define IMAGE_FILE_MACHINE_RISCV128		0x5128	/* RISC-V 128-bit address space */
-#endif
-#ifndef IMAGE_FILE_MACHINE_LOONGARCH32
-#  define IMAGE_FILE_MACHINE_LOONGARCH32	0x6232	/* LoongArch 32-bit */
-#endif
-#ifndef IMAGE_FILE_MACHINE_LOONGARCH64
-#  define IMAGE_FILE_MACHINE_LOONGARCH64	0x6264	/* LoongArch 64-bit */
-#endif
-#ifndef IMAGE_FILE_MACHINE_ARM64EC
-#  define IMAGE_FILE_MACHINE_ARM64EC		0xA641	/* ARM64 ("emulation-compatible") */
-#endif
-
-#endif /* IMAGE_NT_SIGNATURE */
 
 /**
  * PE image data directory indexes.
