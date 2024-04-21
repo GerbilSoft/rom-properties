@@ -18,6 +18,11 @@
 #include <unordered_map>
 #include <vector>
 
+#ifdef _WIN32
+// The Windows SDK is needed for LPCSTR/LPCWSTR.
+#  include "libwin32common/RpWin32_sdk.h"
+#endif /* _WIN32 */
+
 namespace LibRomData {
 
 class NOVTABLE IResourceReader : public LibRpBase::IPartition
