@@ -167,7 +167,7 @@ int EXEPrivate::loadPEResourceTypes(void)
 	// so search back to front.
 	auto iter = std::find_if(pe_sections.crbegin(), pe_sections.crend(),
 		[](const IMAGE_SECTION_HEADER &section) noexcept -> bool {
-			return !strcmp(section.Name, ".rsrc");
+			return !strcmp(reinterpret_cast<const char*>(section.Name), ".rsrc");
 		}
 	);
 	if (iter == pe_sections.crend()) {

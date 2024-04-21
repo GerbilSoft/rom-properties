@@ -244,11 +244,12 @@ void LvData::doSort(int column, RomFields::ColSortOrder direction)
 			return false;
 		}
 
-		auto &rowA = vvStr[a];
-		auto &rowB = vvStr[b];
+		const auto &rowA = vvStr[a];
+		const auto &rowB = vvStr[b];
+		assert(column >= 0);
 		assert(column < (int)rowA.size());
 		assert(column < (int)rowB.size());
-		if (column >= (int)rowA.size() || column >= (int)rowB.size())
+		if (column < 0 || column >= (int)rowA.size() || column >= (int)rowB.size())
 			return false;
 
 		const tstring &strA = rowA[column];

@@ -56,12 +56,48 @@ private:
 public:
 	/**
 	 * Open a resource.
-	 * @param type Resource type ID.
-	 * @param id Resource ID. (-1 for "first entry")
-	 * @param lang Language ID. (-1 for "first entry")
+	 * @param type Resource type ID
+	 * @param id Resource ID (-1 for "first entry")
+	 * @param lang Language ID (-1 for "first entry")
 	 * @return IRpFile*, or nullptr on error.
 	 */
 	virtual LibRpFile::IRpFilePtr open(uint16_t type, int id, int lang) = 0;
+
+#ifdef _WIN32
+	/**
+	 * Open a resource.
+	 *
+	 * Wrapper function for unusual cases in Windows builds where the
+	 * resource type is wrapped using MAKEINTRESOURCEA().
+	 *
+	 * @param type Resource type ID
+	 * @param id Resource ID (-1 for "first entry")
+	 * @param lang Language ID (-1 for "first entry")
+	 * @return IRpFile*, or nullptr on error.
+	 */
+	inline LibRpFile::IRpFilePtr open(LPCSTR type, int id, int lang)
+	{
+		return open(static_cast<uint16_t>(
+			reinterpret_cast<uintptr_t>(type)), id, lang);
+	}
+
+	/**
+	 * Open a resource.
+	 *
+	 * Wrapper function for unusual cases in Windows builds where the
+	 * resource type is wrapped using MAKEINTRESOURCEW().
+	 *
+	 * @param type Resource type ID
+	 * @param id Resource ID (-1 for "first entry")
+	 * @param lang Language ID (-1 for "first entry")
+	 * @return IRpFile*, or nullptr on error.
+	 */
+	inline LibRpFile::IRpFilePtr open(LPCWSTR type, int id, int lang)
+	{
+		return open(static_cast<uint16_t>(
+			reinterpret_cast<uintptr_t>(type)), id, lang);
+	}
+#endif /* _WIN32 */
 
 	// StringTable
 	// - Element 1: Key

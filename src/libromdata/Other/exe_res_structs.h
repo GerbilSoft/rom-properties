@@ -64,7 +64,9 @@ typedef enum {
 #define VS_FFI_STRUCVERSION 0x10000
 #define VS_FFI_FILEFLAGSMASK 0x3F
 typedef enum {
+#ifndef VS_FF_DEBUG
 	VS_FF_DEBUG		= 0x01,
+#endif /* !VS_FF_DEBUG */
 	VS_FF_PRERELEASE	= 0x02,
 	VS_FF_PATCHED		= 0x04,
 	VS_FF_PRIVATEBUILD	= 0x08,
@@ -92,13 +94,17 @@ typedef enum {
 	VOS_DOS_WINDOWS32	= (VOS_DOS | VOS__WINDOWS32),
 	VOS_OS216_PM16		= (VOS_OS216 | VOS__PM16),
 	VOS_OS232_PM32		= (VOS_OS232 | VOS__PM32),
+#ifndef VOS_NT_WINDOWS32
 	VOS_NT_WINDOWS32	= (VOS_NT | VOS__WINDOWS32),
+#endif /* !VOS_NT_WINDOWS32 */
 } VS_OperatingSystem;
 
 typedef enum {
 	VFT_UNKNOWN = 0,
 	VFT_APP = 1,
+#ifndef VFT_DLL
 	VFT_DLL = 2,
+#endif /* !VFT_DLL */
 	VFT_DRV = 3,
 	VFT_FONT = 4,
 	VFT_VXD = 5,
@@ -106,7 +112,9 @@ typedef enum {
 } VS_FileType;
 
 typedef enum {
+#ifndef VFT2_UNKNOWN
 	VFT2_UNKNOWN = 0,
+#endif /* !VFT2_UNKNOWN */
 	VFT2_DRV_PRINTER = 1,
 	VFT2_DRV_KEYBOARD = 2,
 	VFT2_DRV_LANGUAGE = 3,

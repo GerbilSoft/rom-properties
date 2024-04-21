@@ -400,7 +400,7 @@ ASSERT_STRUCT(IMAGE_NT_HEADERS64, 264);
  * Section header.
  */
 typedef struct _IMAGE_SECTION_HEADER {
-	char Name[IMAGE_SIZEOF_SHORT_NAME];
+	uint8_t Name[IMAGE_SIZEOF_SHORT_NAME];
 	union {
 		uint32_t PhysicalAddress;
 		uint32_t VirtualSize;
@@ -490,7 +490,42 @@ ASSERT_STRUCT(IMAGE_RESOURCE_DIRECTORY, 16);
 ASSERT_STRUCT(IMAGE_RESOURCE_DIRECTORY_ENTRY, 2*sizeof(uint32_t));
 ASSERT_STRUCT(IMAGE_RESOURCE_DATA_ENTRY, 4*sizeof(uint32_t));
 
-#define IMAGE_FILE_MACHINE_POWERPCBE 0x01F2	/* PowerPC big-endian (Xbox 360) */
+#ifndef IMAGE_FILE_MACHINE_R3000_BE
+#  define IMAGE_FILE_MACHINE_R3000_BE		0x0160	/* MIPS big-endian */
+#endif
+#ifndef IMAGE_FILE_MACHINE_R3000
+#  define IMAGE_FILE_MACHINE_R3000		0x0162	/* MIPS little-endian */
+#endif
+#ifndef IMAGE_FILE_MACHINE_POWERPCBE
+#  define IMAGE_FILE_MACHINE_POWERPCBE		0x01F2	/* PowerPC big-endian (Xbox 360) */
+#endif
+#ifndef IMAGE_FILE_MACHINE_M68K
+#  define IMAGE_FILE_MACHINE_M68K		0x0268	/* Motorola 68000 */
+#endif
+#ifndef IMAGE_FILE_MACHINE_PA_RISC
+#  define IMAGE_FILE_MACHINE_PA_RISC		0x0290	/* PA-RISC */
+#endif
+#ifndef IMAGE_FILE_MACHINE_MPPC_601
+#  define IMAGE_FILE_MACHINE_MPPC_601		0x0601	/* PowerPC big-endian (MSVC for Mac) */
+#endif
+#ifndef IMAGE_FILE_MACHINE_RISCV32
+#  define IMAGE_FILE_MACHINE_RISCV32		0x5032	/* RISC-V 32-bit address space */
+#endif
+#ifndef IMAGE_FILE_MACHINE_RISCV64
+#  define IMAGE_FILE_MACHINE_RISCV64		0x5064	/* RISC-V 64-bit address space */
+#endif
+#ifndef IMAGE_FILE_MACHINE_RISCV128
+#  define IMAGE_FILE_MACHINE_RISCV128		0x5128	/* RISC-V 128-bit address space */
+#endif
+#ifndef IMAGE_FILE_MACHINE_LOONGARCH32
+#  define IMAGE_FILE_MACHINE_LOONGARCH32	0x6232	/* LoongArch 32-bit */
+#endif
+#ifndef IMAGE_FILE_MACHINE_LOONGARCH64
+#  define IMAGE_FILE_MACHINE_LOONGARCH64	0x6264	/* LoongArch 64-bit */
+#endif
+#ifndef IMAGE_FILE_MACHINE_ARM64EC
+#  define IMAGE_FILE_MACHINE_ARM64EC		0xA641	/* ARM64 ("emulation-compatible") */
+#endif
 
 #endif /* IMAGE_NT_SIGNATURE */
 
@@ -536,6 +571,12 @@ typedef struct _IMAGE_IMPORT_DIRECTORY {
 	uint32_t rvaImportAddressTable;	// RVA of the thunk table
 } IMAGE_IMPORT_DIRECTORY;
 ASSERT_STRUCT(IMAGE_IMPORT_DIRECTORY, 5*sizeof(uint32_t));
+
+#ifdef CREATEPROCESS_MANIFEST_RESOURCE_ID
+#  undef CREATEPROCESS_MANIFEST_RESOURCE_ID
+#  undef ISOLATIONAWARE_MANIFEST_RESOURCE_ID
+#  undef ISOLATIONAWARE_NOSTATICIMPORT_MANIFEST_RESOURCE_ID
+#endif /* CREATEPROCESS_MANIFEST_RESOURCE_ID */
 
 // Manifest IDs
 typedef enum {
