@@ -9,6 +9,8 @@ set -ev
 
 # Customized string tables
 # NOTE: EXENEEntries_data.py requires a Wine source tree.
+./EXEMachineTypes_parser.py EXELEMachineTypes_data.txt EXELEMachineTypes_data.h LE
+./EXEMachineTypes_parser.py EXEPEMachineTypes_data.txt EXEPEMachineTypes_data.h PE
 ./NESMappers_parser.py NESMappers_data.txt NESMappers_data.h
 ./NintendoPublishers_parser.py NintendoPublishers_data.txt NintendoPublishers_data.h
 ./NintendoPublishers_FDS_parser.py NintendoPublishers_FDS_data.txt NintendoPublishers_FDS_data.h

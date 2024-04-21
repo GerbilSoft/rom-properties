@@ -1,0 +1,44 @@
+# EXE PE Machine Types
+# Format: ID|Name
+# NOTE: Must be sorted by ID!
+
+0x014C|Intel i386
+0x0160|MIPS R3000 (big-endian)
+0x0162|MIPS R3000
+0x0166|MIPS R4000
+0x0168|MIPS R10000
+0x0169|MIPS (WCE v2)
+0x0184|DEC Alpha AXP
+0x01A2|Hitachi SH3
+0x01A3|Hitachi SH3 DSP
+0x01A4|Hitachi SH3E
+0x01A6|Hitachi SH4
+0x01A8|Hitachi SH5
+0x01C0|ARM
+0x01C2|ARM Thumb
+0x01C4|ARM Thumb-2
+0x01D3|Matsushita AM33
+0x01F0|PowerPC
+0x01F1|PowerPC with FPU
+0x01F2|PowerPC (big-endian; Xenon)
+0x0200|Intel Itanium
+0x0266|MIPS16
+0x0268|Motorola 68000
+0x0284|DEC Alpha AXP (64-bit)
+0x0290|PA-RISC
+0x0366|MIPS with FPU
+0x0466|MIPS16 with FPU
+0x0520|Infineon TriCore
+0x0601|PowerPC (big-endian)
+0x0CEF|Common Executable Format
+0x0EBC|EFI Byte Code
+0x5032|RISC-V (32-bit address space)
+0x5064|RISC-V (64-bit address space)
+0x5128|RISC-V (128-bit address space)
+0x6232|LoongArch (32-bit)
+0x6264|LoongArch (64-bit)
+0x8664|AMD64
+0x9041|Mitsubishi M32R
+0xA641|ARM (64-bit) (emulation-compatible)
+0xAA64|ARM (64-bit)
+0xC0EE|MSIL

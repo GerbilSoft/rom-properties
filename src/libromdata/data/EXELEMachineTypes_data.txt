@@ -1,0 +1,13 @@
+# EXE LE Machine Types
+# Format: ID|Name
+# NOTE: Must be sorted by ID!
+
+0x01|Intel i286
+0x02|Intel i386
+0x03|Intel i486
+0x04|Intel Pentium
+0x20|Intel i860 XR (N10)
+0x21|Intel i860 XP (N11)
+0x40|MIPS Mark I (R2000, R3000
+0x41|MIPS Mark II (R6000)
+0x42|MIPS Mark III (R4000)
