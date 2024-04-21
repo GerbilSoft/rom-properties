@@ -1,0 +1,11 @@
+# CBM Plus/4 Cartridge Types
+# Format: ID|Name
+
+# References:
+# - https://github.com/VICE-Team/svn-mirror/blob/main/vice/src/cartridge.h
+
+# 0
+0|generic cartridge
+1|c264 magic cart
+2|Plus4 multi cart
+3|1MB Cartridge

@@ -301,13 +301,17 @@ SET(${PROJECT_NAME}_H
 	data/AmiiboData.hpp
 	data/CBMData.hpp
 	data/CBM_C64_Cartridge_Type_data.h
+	data/CBM_Plus4_Cartridge_Type_data.h
+	data/CBM_VIC20_Cartridge_Type_data.h
 	data/DMGSpecialCases.hpp
 	data/ELFData.hpp
 	data/ELFMachineTypes_data.h
 	data/ELF_OSABI_data.h
 	data/EXEData.hpp
+	data/EXELEMachineTypes_data.h
 	data/EXENEEntries.hpp
 	data/EXENEEntries_data.h
+	data/EXEPEMachineTypes_data.h
 	data/MachOData.hpp
 	data/NESMappers.hpp
 	data/NESMappers_data.h

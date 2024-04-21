@@ -1,0 +1,16 @@
+# CBM VIC-20 Cartridge Types
+# Format: ID|Name
+
+# References:
+# - https://github.com/VICE-Team/svn-mirror/blob/main/vice/src/cartridge.h
+
+# 0
+0|generic cartridge
+1|Mega-Cart
+2|Behr Bonz
+3|Vic Flash Plugin
+4|UltiMem
+5|Final Expansion
+6|VIC-Rabbit
+7|Super Expander
+8|Mikro Assembler
