@@ -19,13 +19,16 @@ namespace LibRomData { namespace CBMData {
 #include "CBM_C64_Cartridge_Type_data.h"
 
 // VIC-20 cartridge types
-static const array<const char*, 6> crt_types_vic20 = {{
+static const array<const char*, 9> crt_types_vic20 = {{
 	"generic cartridge",
 	"Mega-Cart",
 	"Behr Bonz",
 	"Vic Flash Plugin",
 	"UltiMem",
 	"Final Expansion",
+	"VIC-Rabbit",
+	"Super Expander",
+	"Mikro Assembler",
 }};
 
 // Plus/4 cartridge types
