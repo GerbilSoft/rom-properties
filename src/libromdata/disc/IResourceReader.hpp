@@ -24,7 +24,7 @@ typedef char CHAR;
 typedef const CHAR *LPCSTR;
 
 typedef wchar_t WCHAR;
-typedef const WCHAR *LPCWSTR
+typedef const WCHAR *LPCWSTR;
 #endif /* _WIN32 && !_WINNT_ */
 
 namespace LibRomData {
