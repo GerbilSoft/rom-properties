@@ -18,10 +18,14 @@
 #include <unordered_map>
 #include <vector>
 
-#ifdef _WIN32
-// The Windows SDK is needed for LPCSTR/LPCWSTR.
-#  include "libwin32common/RpWin32_sdk.h"
-#endif /* _WIN32 */
+#if defined(_WIN32) && !defined(_WINNT_)
+// Define LPCSTR/LPCWSTR here.
+typedef char CHAR;
+typedef const CHAR *LPCSTR;
+
+typedef wchar_t WCHAR;
+typedef const WCHAR *LPCWSTR
+#endif /* _WIN32 && !_WINNT_ */
 
 namespace LibRomData {
 
