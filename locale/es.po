@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2024-04-06 12:33-0400\n"
-"PO-Revision-Date: 2024-04-06 17:25\n"
+"PO-Revision-Date: 2024-04-26 21:48\n"
 "Last-Translator: \n"
 "Language-Team: Spanish\n"
 "Language: es_ES\n"
@@ -243,8 +243,7 @@ msgstr "Al utilizar una conexión\n"
 #: ../src/gtk/config/OptionsTab.cpp:151 ../src/win32/config/OptionsTab.cpp:443
 msgctxt "OptionsTab"
 msgid "Don't download any images"
-msgstr "Cuando utilice una conexión\n"
-"de red medida:"
+msgstr ""
 
 #: ../build/src/kde/kf5/ui_OptionsTab.h:189
 #: ../build/src/kde/kf5/ui_OptionsTab.h:195
