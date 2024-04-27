@@ -248,8 +248,6 @@ msgstr ""
 msgctxt "OptionsTab"
 msgid "Don't download any images"
 msgstr ""
-"Cuando utilice una conexión\n"
-"de red medida:"
 
 #: ../build/src/kde/kf5/ui_OptionsTab.h:189
 #: ../build/src/kde/kf5/ui_OptionsTab.h:195
@@ -277,6 +275,8 @@ msgid ""
 "When using a metered\n"
 "network connection:"
 msgstr ""
+"Cuando utilice una conexión\n"
+"de red medida:"
 
 #: ../build/src/kde/kf5/ui_OptionsTab.h:198
 #: ../build/src/kde/kf6/ui_OptionsTab.h:198
