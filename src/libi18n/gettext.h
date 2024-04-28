@@ -213,8 +213,13 @@ npgettext_aux (const char *domain,
 #include <stdlib.h>
 #endif
 
-#define pgettext_expr(Msgctxt, Msgid) \
-  dcpgettext_expr (NULL, Msgctxt, Msgid, LC_MESSAGES)
+#ifdef DEFAULT_TEXT_DOMAIN
+# define pgettext_expr(Msgctxt, Msgid) \
+   dcpgettext_expr (DEFAULT_TEXT_DOMAIN, Msgctxt, Msgid, LC_MESSAGES)
+#else
+# define pgettext_expr(Msgctxt, Msgid) \
+   dcpgettext_expr (NULL, Msgctxt, Msgid, LC_MESSAGES)
+#endif
 #define dpgettext_expr(Domainname, Msgctxt, Msgid) \
   dcpgettext_expr (Domainname, Msgctxt, Msgid, LC_MESSAGES)
 
@@ -260,8 +265,13 @@ dcpgettext_expr (const char *domain,
   return msgid;
 }
 
-#define npgettext_expr(Msgctxt, Msgid, MsgidPlural, N) \
-  dcnpgettext_expr (NULL, Msgctxt, Msgid, MsgidPlural, N, LC_MESSAGES)
+#ifdef DEFAULT_TEXT_DOMAIN
+# define npgettext_expr(Msgctxt, Msgid, MsgidPlural, N) \
+   dcnpgettext_expr (DEFAULT_TEXT_DOMAIN, Msgctxt, Msgid, MsgidPlural, N, LC_MESSAGES)
+#else
+# define npgettext_expr(Msgctxt, Msgid, MsgidPlural, N) \
+   dcnpgettext_expr (NULL, Msgctxt, Msgid, MsgidPlural, N, LC_MESSAGES)
+#endif
 #define dnpgettext_expr(Domainname, Msgctxt, Msgid, MsgidPlural, N) \
   dcnpgettext_expr (Domainname, Msgctxt, Msgid, MsgidPlural, N, LC_MESSAGES)
 
