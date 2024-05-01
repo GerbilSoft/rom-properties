@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2024-04-06 12:33-0400\n"
-"PO-Revision-Date: 2024-04-06 17:25\n"
+"PO-Revision-Date: 2024-05-01 08:27\n"
 "Last-Translator: \n"
 "Language-Team: Italian\n"
 "Language: it_IT\n"
@@ -326,7 +326,8 @@ msgstr "Abilita l'estrazione delle miniature e dei metadati \n"
 msgctxt "OptionsTab"
 msgid "Enable thumbnailing and metadata extraction of directory-based\n"
 "packages, e.g. for Wii U. This may slow down file browsing."
-msgstr ""
+msgstr "Abilita l'estrazione delle miniature e dei metadati dei pacchetti basati su archivi,\n"
+"per esempio Wii U. Questo potrebbe rallentare la navigazione dei file."
 
 #: ../build/src/kde/kf5/ui_OptionsTab.h:209
 #: ../build/src/kde/kf6/ui_OptionsTab.h:209
@@ -1071,7 +1072,7 @@ msgstr "Tipo di file"
 
 #: ../src/gtk/gtk-i18n.h:36
 msgid "_Close"
-msgstr ""
+msgstr "_Chiudi"
 
 #: ../src/gtk/OptionsMenuButton.cpp:144 ../src/kde/OptionsMenuButton.cpp:25
 #: ../src/win32/OptionsMenuButton.cpp:35
@@ -1375,17 +1376,17 @@ msgstr "Little-Endian"
 #: ../src/libromdata/Audio/BCSTM.cpp:471
 msgctxt "BCSTM|Codec"
 msgid "Signed 8-bit PCM"
-msgstr ""
+msgstr "PCM a 8-bit con segno"
 
 #: ../src/libromdata/Audio/BCSTM.cpp:472
 msgctxt "BCSTM|Codec"
 msgid "Signed 16-bit PCM"
-msgstr ""
+msgstr "PCM a 16-bit con segno"
 
 #: ../src/libromdata/Audio/BCSTM.cpp:475
 msgctxt "BCSTM"
 msgid "Codec"
-msgstr ""
+msgstr "Codec"
 
 #: ../src/libromdata/Audio/BCSTM.cpp:481 ../src/libromdata/Audio/BRSTM.cpp:344
 #: ../src/libromdata/Console/Atari7800.cpp:251
@@ -1399,22 +1400,22 @@ msgstr ""
 #, c-format
 msgctxt "RomData"
 msgid "Unknown (%u)"
-msgstr ""
+msgstr "Sconosciuto (%u)"
 
 #: ../src/libromdata/Audio/BCSTM.cpp:501
 msgctxt "BCSTM"
 msgid "Looping"
-msgstr ""
+msgstr "Ripetuto"
 
 #: ../src/libromdata/Audio/BCSTM.cpp:504
 msgctxt "BCSTM"
 msgid "Loop Start"
-msgstr ""
+msgstr "Inizio Ciclo"
 
 #: ../src/libromdata/Audio/BCSTM.cpp:508
 msgctxt "BCSTM"
 msgid "Loop End"
-msgstr ""
+msgstr "Fine Ciclo"
 
 #: ../src/libromdata/Audio/BRSTM.cpp:323 ../src/libromdata/Audio/SID.cpp:220
 #: ../src/libromdata/Console/Dreamcast.cpp:613
@@ -1430,165 +1431,165 @@ msgstr ""
 #: ../src/libromdata/Other/EXE_PE.cpp:748
 msgctxt "RomData"
 msgid "Version"
-msgstr ""
+msgstr "Versione"
 
 #: ../src/libromdata/Audio/BRSTM.cpp:334
 msgctxt "BRSTM|Codec"
 msgid "Signed 8-bit PCM"
-msgstr ""
+msgstr "PCM a 8-bit con segno"
 
 #: ../src/libromdata/Audio/BRSTM.cpp:335
 msgctxt "BRSTM|Codec"
 msgid "Signed 16-bit PCM"
-msgstr ""
+msgstr "PCM a 16-bit con segno"
 
 #: ../src/libromdata/Audio/BRSTM.cpp:338
 msgctxt "BRSTM"
 msgid "Codec"
-msgstr ""
+msgstr "Codec"
 
 #: ../src/libromdata/Audio/BRSTM.cpp:365
 msgctxt "BRSTM"
 msgid "Looping"
-msgstr ""
+msgstr "Ripetuto"
 
 #: ../src/libromdata/Audio/BRSTM.cpp:368
 msgctxt "BRSTM"
 msgid "Loop Start"
-msgstr ""
+msgstr "Inizio Ciclo"
 
 #: ../src/libromdata/Audio/GBS.cpp:240 ../src/libromdata/Audio/NSF.cpp:204
 #: ../src/libromdata/Audio/PSF.cpp:545
 msgctxt "RomData|Audio"
 msgid "Title"
-msgstr ""
+msgstr "Titolo"
 
 #: ../src/libromdata/Audio/GBS.cpp:246 ../src/libromdata/Audio/NSF.cpp:210
 #: ../src/libromdata/Audio/SNDH.cpp:811 ../src/libromdata/Audio/VGM.cpp:396
 msgctxt "RomData|Audio"
 msgid "Composer"
-msgstr ""
+msgstr "Compositore"
 
 #: ../src/libromdata/Audio/GBS.cpp:252 ../src/libromdata/Audio/NSF.cpp:216
 #: ../src/libromdata/Audio/PSF.cpp:576 ../src/libromdata/Audio/SID.cpp:237
 msgctxt "RomData|Audio"
 msgid "Copyright"
-msgstr ""
+msgstr "Copyright"
 
 #: ../src/libromdata/Audio/GBS.cpp:257 ../src/libromdata/Audio/NSF.cpp:221
 msgctxt "RomData|Audio"
 msgid "Track Count"
-msgstr ""
+msgstr "N. Traccia"
 
 #: ../src/libromdata/Audio/GBS.cpp:261 ../src/libromdata/Audio/NSF.cpp:225
 msgctxt "RomData|Audio"
 msgid "Default Track #"
-msgstr ""
+msgstr "Traccia Predefinita #"
 
 #: ../src/libromdata/Audio/GBS.cpp:265
 msgctxt "GBS"
 msgid "Load Address"
-msgstr ""
+msgstr "Indirizzo Caric"
 
 #: ../src/libromdata/Audio/GBS.cpp:270 ../src/libromdata/Audio/GBS.cpp:295
 msgctxt "GBS"
 msgid "Init Address"
-msgstr ""
+msgstr "Indirizzo Iniz"
 
 #: ../src/libromdata/Audio/GBS.cpp:275
 msgctxt "GBS"
 msgid "Play Address"
-msgstr ""
+msgstr "Indirizzo Ripr"
 
 #: ../src/libromdata/Audio/GBS.cpp:280
 msgctxt "GBS"
 msgid "Stack Pointer"
-msgstr ""
+msgstr "Puntatore Stack"
 
 #: ../src/libromdata/Audio/GBS.cpp:300
 msgctxt "GBS"
 msgid "VSync Address"
-msgstr ""
+msgstr "Indirizzo VSync"
 
 #: ../src/libromdata/Audio/GBS.cpp:305
 msgctxt "GBS"
 msgid "Timer Address"
-msgstr ""
+msgstr "Indirizzo Timer"
 
 #: ../src/libromdata/Audio/NSF.cpp:229
 msgctxt "NSF"
 msgid "Load Address"
-msgstr ""
+msgstr "Indirizzo Caric"
 
 #: ../src/libromdata/Audio/NSF.cpp:234
 msgctxt "NSF"
 msgid "Init Address"
-msgstr ""
+msgstr "Indirizzo Iniz"
 
 #: ../src/libromdata/Audio/NSF.cpp:239
 msgctxt "NSF"
 msgid "Play Address"
-msgstr ""
+msgstr "Indirizzo Ripr"
 
 #: ../src/libromdata/Audio/NSF.cpp:257
 msgctxt "NSF"
 msgid "TV System"
-msgstr ""
+msgstr "Sistema TV"
 
 #: ../src/libromdata/Audio/NSF.cpp:267
 msgctxt "NSF"
 msgid "Expansion"
-msgstr ""
+msgstr "Espansione"
 
 #: ../src/libromdata/Audio/PSF.cpp:115
 msgctxt "PSF|System"
 msgid "Sony PlayStation"
-msgstr ""
+msgstr "Sony PlayStation"
 
 #: ../src/libromdata/Audio/PSF.cpp:116
 msgctxt "PSF|System"
 msgid "Sony PlayStation 2"
-msgstr ""
+msgstr "Sony PlayStation 2"
 
 #: ../src/libromdata/Audio/PSF.cpp:117
 msgctxt "PSF|System"
 msgid "Sega Saturn"
-msgstr ""
+msgstr "Sega Saturn"
 
 #: ../src/libromdata/Audio/PSF.cpp:118
 msgctxt "PSF|System"
 msgid "Sega Dreamcast"
-msgstr ""
+msgstr "Sega Dreamcast"
 
 #: ../src/libromdata/Audio/PSF.cpp:119
 msgctxt "PSF|System"
 msgid "Sega Mega Drive"
-msgstr ""
+msgstr "Sega Mega Drive"
 
 #: ../src/libromdata/Audio/PSF.cpp:120
 msgctxt "PSF|System"
 msgid "Nintendo 64"
-msgstr ""
+msgstr "Nintendo 64"
 
 #: ../src/libromdata/Audio/PSF.cpp:121
 msgctxt "PSF|System"
 msgid "Game Boy Advance"
-msgstr ""
+msgstr "Game Boy Advance"
 
 #: ../src/libromdata/Audio/PSF.cpp:122
 msgctxt "PSF|System"
 msgid "Super NES"
-msgstr ""
+msgstr "Super NES"
 
 #: ../src/libromdata/Audio/PSF.cpp:123
 msgctxt "PSF|System"
 msgid "Capcom QSound"
-msgstr ""
+msgstr "Capcom QSound"
 
 #: ../src/libromdata/Audio/PSF.cpp:526
 msgctxt "PSF"
 msgid "System"
-msgstr ""
+msgstr "Sistema"
 
 #: ../src/libromdata/Audio/PSF.cpp:532 ../src/libromdata/Audio/SPC.cpp:877
 #: ../src/libromdata/Console/DreamcastSave.cpp:1358
@@ -1612,39 +1613,39 @@ msgstr ""
 #, c-format
 msgctxt "RomData"
 msgid "Unknown (0x%02X)"
-msgstr ""
+msgstr "Sconosciuto (0x%02X)"
 
 #: ../src/libromdata/Audio/PSF.cpp:551 ../src/libromdata/Audio/SPC.cpp:788
 msgctxt "RomData|Audio"
 msgid "Artist"
-msgstr ""
+msgstr "Artista"
 
 #: ../src/libromdata/Audio/PSF.cpp:557
 msgctxt "PSF"
 msgid "Game"
-msgstr ""
+msgstr "Gioco"
 
 #: ../src/libromdata/Audio/PSF.cpp:564 ../src/libromdata/Audio/VGM.cpp:397
 #: ../src/libromdata/Console/Dreamcast.cpp:619
 #: ../src/libromdata/Console/SegaSaturn.cpp:526
 msgctxt "RomData"
 msgid "Release Date"
-msgstr ""
+msgstr "Data Rilascio"
 
 #: ../src/libromdata/Audio/PSF.cpp:570
 msgctxt "RomData|Audio"
 msgid "Genre"
-msgstr ""
+msgstr "Genere"
 
 #: ../src/libromdata/Audio/PSF.cpp:582
 msgctxt "PSF"
 msgid "Ripped By"
-msgstr ""
+msgstr "Estratto Da"
 
 #: ../src/libromdata/Audio/PSF.cpp:597
 msgctxt "PSF"
 msgid "Volume"
-msgstr ""
+msgstr "Volume"
 
 #: ../src/libromdata/Audio/PSF.cpp:611 ../src/libromdata/Audio/SAP.cpp:689
 #: ../src/libromdata/Audio/SNDH.cpp:928 ../src/libromdata/Audio/SNDH.cpp:932
@@ -1652,12 +1653,12 @@ msgstr ""
 #: ../src/libromdata/Audio/VGM.cpp:415
 msgctxt "RomData|Audio"
 msgid "Duration"
-msgstr ""
+msgstr "Durata"
 
 #: ../src/libromdata/Audio/PSF.cpp:618
 msgctxt "PSF"
 msgid "Fadeout Duration"
-msgstr ""
+msgstr "Durata Dissolvenza"
 
 #: ../src/libromdata/Audio/PSF.cpp:624
 msgctxt "RomData|Audio"
@@ -2219,12 +2220,12 @@ msgstr ""
 #: ../src/libromdata/Console/Atari7800.cpp:229
 msgctxt "Atari7800|ControllerType"
 msgid "Paddle"
-msgstr ""
+msgstr "Paddle"
 
 #: ../src/libromdata/Console/Atari7800.cpp:230
 msgctxt "Atari7800|ControllerType"
 msgid "Trak-Ball"
-msgstr ""
+msgstr "Trak-Ball"
 
 #: ../src/libromdata/Console/Atari7800.cpp:231
 msgctxt "Atari7800|ControllerType"
@@ -2575,81 +2576,81 @@ msgstr "Controller Opz."
 #: ../src/libromdata/Other/Lua.cpp:721 ../src/libromdata/Other/Lua.cpp:724
 msgctxt "RomData"
 msgid "Warning"
-msgstr ""
+msgstr "Attenzione"
 
 #. tr: VMS file is missing.
 #: ../src/libromdata/Console/DreamcastSave.cpp:1278
 msgctxt "DreamcastSave"
 msgid "The VMS file was not found."
-msgstr ""
+msgstr "Il file VMS non è stato trovato."
 
 #. tr: VMI file is missing.
 #: ../src/libromdata/Console/DreamcastSave.cpp:1286
 msgctxt "DreamcastSave"
 msgid "The VMI file was not found."
-msgstr ""
+msgstr "Il file VMI non è stato trovato."
 
 #. tr: Should not happen...
 #: ../src/libromdata/Console/DreamcastSave.cpp:1294
 msgctxt "DreamcastSave"
 msgid "Unrecognized VMS/VMI combination."
-msgstr ""
+msgstr "Combinazione VMS/VMI sconosciuta."
 
 #: ../src/libromdata/Console/DreamcastSave.cpp:1301
 msgctxt "DreamcastSave"
 msgid "VMI Description"
-msgstr ""
+msgstr "Descrizione VMI"
 
 #: ../src/libromdata/Console/DreamcastSave.cpp:1305
 msgctxt "DreamcastSave"
 msgid "VMI Copyright"
-msgstr ""
+msgstr "Copyright VMI"
 
 #. tr: ICONDATA_VMS
 #: ../src/libromdata/Console/DreamcastSave.cpp:1315
 msgctxt "DreamcastSave"
 msgid "Icon Data"
-msgstr ""
+msgstr "Dati Icona"
 
 #. tr: No file type entry.
 #: ../src/libromdata/Console/DreamcastSave.cpp:1321
 msgctxt "DreamcastSave"
 msgid "None"
-msgstr ""
+msgstr "Nessuna"
 
 #. tr: Save file.
 #: ../src/libromdata/Console/DreamcastSave.cpp:1325
 #: ../src/libromdata/Console/DreamcastSave.cpp:1340
 msgctxt "DreamcastSave"
 msgid "Save Data"
-msgstr ""
+msgstr "Dati Salvataggio"
 
 #. tr: VMU game file. ("VMS" in Japan; "VMU" in USA; "VM" in Europe)
 #: ../src/libromdata/Console/DreamcastSave.cpp:1329
 #: ../src/libromdata/Console/DreamcastSave.cpp:1344
 msgctxt "DreamcastSave"
 msgid "VMU Game"
-msgstr ""
+msgstr "Gioco VMU"
 
 #: ../src/libromdata/Console/DreamcastSave.cpp:1352
 msgctxt "DreamcastSave"
 msgid "File Type"
-msgstr ""
+msgstr "Tipo di file"
 
 #: ../src/libromdata/Console/DreamcastSave.cpp:1370
 msgctxt "DreamcastSave"
 msgid "Copy OK"
-msgstr ""
+msgstr "Copia OK"
 
 #: ../src/libromdata/Console/DreamcastSave.cpp:1373
 msgctxt "DreamcastSave"
 msgid "Copy Protected"
-msgstr ""
+msgstr "Protetto da copia"
 
 #: ../src/libromdata/Console/DreamcastSave.cpp:1377
 msgctxt "DreamcastSave"
 msgid "Copy Protect"
-msgstr ""
+msgstr "Proteggi da copia"
 
 #: ../src/libromdata/Console/DreamcastSave.cpp:1388
 #: ../src/libromdata/Console/GameCubeSave.cpp:911
@@ -2662,22 +2663,22 @@ msgstr "Nome del file"
 #: ../src/libromdata/Console/DreamcastSave.cpp:1392
 msgctxt "DreamcastSave"
 msgid "Creation Time"
-msgstr ""
+msgstr "Ora di creazione"
 
 #: ../src/libromdata/Console/DreamcastSave.cpp:1399
 msgctxt "DreamcastSave"
 msgid "VMS Description"
-msgstr ""
+msgstr "Descrizione VMS"
 
 #: ../src/libromdata/Console/DreamcastSave.cpp:1423
 msgctxt "DreamcastSave"
 msgid "DC Description"
-msgstr ""
+msgstr "Descrizione DC"
 
 #: ../src/libromdata/Console/DreamcastSave.cpp:1432
 msgctxt "DreamcastSave"
 msgid "Game Title"
-msgstr ""
+msgstr "Titolo Del Gioco"
 
 #: ../src/libromdata/Console/GameCubeBNR.cpp:622
 msgctxt "GameCubeBNR"
