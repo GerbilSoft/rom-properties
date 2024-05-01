@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2024-04-06 12:33-0400\n"
-"PO-Revision-Date: 2024-05-01 08:27\n"
+"PO-Revision-Date: 2024-05-01 09:39\n"
 "Last-Translator: \n"
 "Language-Team: Italian\n"
 "Language: it_IT\n"
@@ -2683,24 +2683,24 @@ msgstr "Titolo Del Gioco"
 #: ../src/libromdata/Console/GameCubeBNR.cpp:622
 msgctxt "GameCubeBNR"
 msgid "Game Name"
-msgstr ""
+msgstr "Nome del gioco"
 
 #: ../src/libromdata/Console/GameCubeBNR.cpp:623
 msgctxt "GameCubeBNR"
 msgid "Company"
-msgstr ""
+msgstr "Azienda"
 
 #: ../src/libromdata/Console/GameCubeBNR.cpp:624
 msgctxt "GameCubeBNR"
 msgid "Description"
-msgstr ""
+msgstr "Descrizione"
 
 #: ../src/libromdata/Console/GameCubeBNR.cpp:871
 #: ../src/libromdata/Console/GameCube.cpp:1493
 #: ../src/libromdata/Console/WiiBNR.cpp:280
 msgctxt "GameCube"
 msgid "Game Info"
-msgstr ""
+msgstr "Info Gioco"
 
 #: ../src/libromdata/Console/GameCube.cpp:442
 #: ../src/libromdata/Console/SNES.cpp:620
@@ -2713,7 +2713,7 @@ msgstr ""
 #, c-format
 msgctxt "RomData"
 msgid "Unknown (%.2s)"
-msgstr ""
+msgstr "Sconosciuto (%.2s)"
 
 #: ../src/libromdata/Console/GameCube.cpp:447
 #: ../src/libromdata/Console/SNES.cpp:623
@@ -2727,17 +2727,17 @@ msgstr ""
 #, c-format
 msgctxt "RomData"
 msgid "Unknown (%02X %02X)"
-msgstr ""
+msgstr "Sconosciuto (%02X %02X)"
 
 #: ../src/libromdata/Console/GameCube.cpp:626
 msgctxt "Wii"
 msgid "Invalid common key index."
-msgstr ""
+msgstr "Indice common key non valido."
 
 #: ../src/libromdata/Console/GameCube.cpp:633
 msgctxt "Wii"
 msgid "Incrementing values"
-msgstr ""
+msgstr "Valori incrementali"
 
 #: ../src/libromdata/Console/GameCube.cpp:638
 #: ../src/libromdata/Console/WiiUPackage.cpp:673
@@ -2746,7 +2746,7 @@ msgstr ""
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:1785
 msgctxt "RomData"
 msgid "Unknown error. (THIS IS A BUG!)"
-msgstr ""
+msgstr "Errore sconosciuto. (QUESTO È UN BUG!)"
 
 #: ../src/libromdata/Console/GameCube.cpp:1325
 #: ../src/libromdata/Console/GameCubeSave.cpp:897
@@ -2766,7 +2766,7 @@ msgstr ""
 #: ../src/libromdata/Handheld/WonderSwan.cpp:450
 msgctxt "RomData"
 msgid "Game ID"
-msgstr ""
+msgstr "Id del gioco"
 
 #: ../src/libromdata/Console/GameCube.cpp:1333
 #: ../src/libromdata/Console/N64.cpp:287 ../src/libromdata/Console/NES.cpp:1270
@@ -2778,12 +2778,12 @@ msgstr ""
 #: ../src/libromdata/Handheld/WonderSwan.cpp:459
 msgctxt "RomData"
 msgid "Revision"
-msgstr ""
+msgstr "Revisione"
 
 #: ../src/libromdata/Console/GameCube.cpp:1358
 msgctxt "GameCube"
 msgid "Region-Free (with certain debugging hardware)"
-msgstr ""
+msgstr "Region-Free (con alcuni hardware di debug)"
 
 #. tr: %1$s == full region name, %2$s == abbreviation
 #: ../src/libromdata/Console/GameCube.cpp:1379
@@ -2791,7 +2791,7 @@ msgstr ""
 #, c-format
 msgctxt "Wii"
 msgid "%1$s (%2$s)"
-msgstr ""
+msgstr "%1$s (%2$s)"
 
 #: ../src/libromdata/Console/GameCube.cpp:1388
 #: ../src/libromdata/Console/SNES.cpp:1466
@@ -2800,7 +2800,7 @@ msgstr ""
 #, c-format
 msgctxt "RomData"
 msgid "Unknown (0x%08X)"
-msgstr ""
+msgstr "Sconosciuto (0x%08X)"
 
 #: ../src/libromdata/Console/GameCube.cpp:1414
 #: ../src/libromdata/Console/WiiTicket.cpp:451
@@ -2811,27 +2811,27 @@ msgstr ""
 #: ../src/libromdata/Handheld/NintendoDS.cpp:829
 msgctxt "Nintendo"
 msgid "Title ID"
-msgstr ""
+msgstr "ID Titolo"
 
 #: ../src/libromdata/Console/GameCube.cpp:1423
 #: ../src/libromdata/Console/WiiTMD.cpp:445
 #: ../src/libromdata/Console/WiiWAD.cpp:983
 msgctxt "Wii"
 msgid "DVD Video"
-msgstr ""
+msgstr "DVD Video"
 
 #: ../src/libromdata/Console/GameCube.cpp:1424
 #: ../src/libromdata/Console/WiiTMD.cpp:446
 #: ../src/libromdata/Console/WiiWAD.cpp:984
 msgctxt "Wii"
 msgid "Access Rights"
-msgstr ""
+msgstr "Diritti di accesso"
 
 #: ../src/libromdata/Console/GameCube.cpp:1429
 #: ../src/libromdata/Console/WiiWAD.cpp:961
 msgctxt "Wii"
 msgid "IOS Version"
-msgstr ""
+msgstr "Versione IOS"
 
 #: ../src/libromdata/Console/GameCube.cpp:1483
 #: ../src/libromdata/Console/WiiUPackage_xml.cpp:528
@@ -2841,56 +2841,56 @@ msgstr ""
 #: ../src/libromdata/Handheld/NintendoDS.cpp:945
 msgctxt "RomData"
 msgid "Age Ratings"
-msgstr ""
+msgstr "Classificazione di età"
 
 #: ../src/libromdata/Console/GameCube.cpp:1498
 msgctxt "GameCube"
 msgid "ERROR: No game partition was found."
-msgstr ""
+msgstr "ERRORE: Nessuna partizione di gioco trovata."
 
 #: ../src/libromdata/Console/GameCube.cpp:1504
 #, c-format
 msgctxt "GameCube"
 msgid "ERROR: %s"
-msgstr ""
+msgstr "ERRORE: %s"
 
 #: ../src/libromdata/Console/GameCube.cpp:1505
 msgctxt "GameCube"
 msgid "Unknown"
-msgstr ""
+msgstr "Sconosciuto"
 
 #: ../src/libromdata/Console/GameCube.cpp:1612
 msgctxt "Nintendo"
 msgid "Update"
-msgstr ""
+msgstr "Aggiornamento"
 
 #: ../src/libromdata/Console/GameCube.cpp:1633
 msgctxt "Nintendo"
 msgid "None"
-msgstr ""
+msgstr "Nessuno"
 
 #: ../src/libromdata/Console/GameCube.cpp:1642
 msgctxt "Nintendo"
 msgid "Update Date"
-msgstr ""
+msgstr "Data aggiornamento"
 
 #. tr: GameCubePrivate::RVL_PT_GAME (Game partition)
 #: ../src/libromdata/Console/GameCube.cpp:1667
 msgctxt "Wii|Partition"
 msgid "Game"
-msgstr ""
+msgstr "Gioco"
 
 #. tr: GameCubePrivate::RVL_PT_UPDATE (Update partition)
 #: ../src/libromdata/Console/GameCube.cpp:1669
 msgctxt "Wii|Partition"
 msgid "Update"
-msgstr ""
+msgstr "Aggiornamento"
 
 #. tr: GameCubePrivate::RVL_PT_CHANNEL (Channel partition)
 #: ../src/libromdata/Console/GameCube.cpp:1671
 msgctxt "Wii|Partition"
 msgid "Channel"
-msgstr ""
+msgstr "Canale"
 
 #. tr: Unknown used size.
 #: ../src/libromdata/Console/GameCube.cpp:1723
@@ -3082,7 +3082,7 @@ msgstr "ID Contenuto"
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2114
 msgctxt "Nintendo"
 msgid "Console ID"
-msgstr ""
+msgstr "ID Console"
 
 #: ../src/libromdata/Console/iQuePlayer.cpp:674
 msgctxt "iQuePlayer"
@@ -3163,7 +3163,7 @@ msgstr "Stampante"
 #: ../src/libromdata/Console/MegaDrive.cpp:425
 msgctxt "MegaDrive|I/O"
 msgid "Tablet"
-msgstr ""
+msgstr "Tablet"
 
 #: ../src/libromdata/Console/MegaDrive.cpp:426
 msgctxt "MegaDrive|I/O"
@@ -3496,17 +3496,17 @@ msgstr ""
 #: ../src/libromdata/Console/NES.cpp:1371
 msgctxt "NES|Expansion"
 msgid "VS. System (reversed inputs)"
-msgstr ""
+msgstr "Sistema VS. (input invertiti)"
 
 #: ../src/libromdata/Console/NES.cpp:1372
 msgctxt "NES|Expansion"
 msgid "VS. Pinball (Japan)"
-msgstr ""
+msgstr "Pinball VS. (Giappone)"
 
 #: ../src/libromdata/Console/NES.cpp:1373
 msgctxt "NES|Expansion"
 msgid "VS. Zapper"
-msgstr ""
+msgstr "Zapper VS."
 
 #: ../src/libromdata/Console/NES.cpp:1374
 msgctxt "NES|Expansion"
@@ -3641,241 +3641,241 @@ msgstr "File Turbo ASCII"
 #: ../src/libromdata/Console/NES.cpp:1404
 msgctxt "NES|Expansion"
 msgid "IGS Storage Battle Box"
-msgstr ""
+msgstr "IGS Storage Battle Box"
 
 #: ../src/libromdata/Console/NES.cpp:1405
 msgctxt "NES|Expansion"
 msgid "Family BASIC Keyboard plus Famicom Data Recorder"
-msgstr ""
+msgstr "Tastiera Family BASIC più Famicom Data Recorder"
 
 #: ../src/libromdata/Console/NES.cpp:1406
 msgctxt "NES|Expansion"
 msgid "Dongda PEC-586 Keyboard"
-msgstr ""
+msgstr "Tastiera Dongda PEC-586"
 
 #: ../src/libromdata/Console/NES.cpp:1407
 msgctxt "NES|Expansion"
 msgid "Bit Corp. Bit-79 Keyboard"
-msgstr ""
+msgstr "Tastiera Bit Corp. Bit-79"
 
 #: ../src/libromdata/Console/NES.cpp:1408
 msgctxt "NES|Expansion"
 msgid "Subor Keyboard"
-msgstr ""
+msgstr "Tastiera Subor"
 
 #: ../src/libromdata/Console/NES.cpp:1409
 msgctxt "NES|Expansion"
 msgid "Subor Keyboard plus mouse (3x8-bit protocol)"
-msgstr ""
+msgstr "Tastiera Subor più mouse (protocollo 3x8-bit)"
 
 #: ../src/libromdata/Console/NES.cpp:1410
 msgctxt "NES|Expansion"
 msgid "Subor Keyboard plus mouse (24-bit protocol)"
-msgstr ""
+msgstr "Tastiera Subor più mouse (protocollo 24-bit)"
 
 #: ../src/libromdata/Console/NES.cpp:1411
 msgctxt "NES|Expansion"
 msgid "SNES Mouse"
-msgstr ""
+msgstr "Mouse SNES"
 
 #: ../src/libromdata/Console/NES.cpp:1412
 msgctxt "NES|Expansion"
 msgid "Multicart"
-msgstr ""
+msgstr "Multicart"
 
 #: ../src/libromdata/Console/NES.cpp:1413
 msgctxt "NES|Expansion"
 msgid "SNES Controllers"
-msgstr ""
+msgstr "Controllers SNES"
 
 #: ../src/libromdata/Console/NES.cpp:1414
 msgctxt "NES|Expansion"
 msgid "RacerMate Bicycle"
-msgstr ""
+msgstr "Bicicletta RacerMate"
 
 #: ../src/libromdata/Console/NES.cpp:1415
 msgctxt "NES|Expansion"
 msgid "U-Force"
-msgstr ""
+msgstr "U-Force"
 
 #: ../src/libromdata/Console/NES.cpp:1416
 msgctxt "NES|Expansion"
 msgid "R.O.B. Stack-Up"
-msgstr ""
+msgstr "R.O.B. Stack-Up"
 
 #: ../src/libromdata/Console/NES.cpp:1417
 msgctxt "NES|Expansion"
 msgid "City Patrolman Lightgun"
-msgstr ""
+msgstr "Pistola ottica City Patrolman"
 
 #: ../src/libromdata/Console/NES.cpp:1434
 msgctxt "NES|Mirroring"
 msgid "One Screen"
-msgstr ""
+msgstr "Uno Schermo"
 
 #: ../src/libromdata/Console/NES.cpp:1436
 msgctxt "NES|Mirroring"
 msgid "Programmable"
-msgstr ""
+msgstr "Programmabile"
 
 #: ../src/libromdata/Console/NES.cpp:1440
 #: ../src/libromdata/Console/NES.cpp:1541
 #: ../src/libromdata/data/NESMappers.cpp:603
 msgctxt "NES|Mirroring"
 msgid "Horizontal"
-msgstr ""
+msgstr "Orizzontale"
 
 #: ../src/libromdata/Console/NES.cpp:1443
 #: ../src/libromdata/Console/NES.cpp:1543
 #: ../src/libromdata/data/NESMappers.cpp:603
 msgctxt "NES|Mirroring"
 msgid "Vertical"
-msgstr ""
+msgstr "Verticale"
 
 #: ../src/libromdata/Console/NES.cpp:1455
 msgctxt "NES"
 msgid "Mirroring"
-msgstr ""
+msgstr "Mirroring"
 
 #: ../src/libromdata/Console/NES.cpp:1460
 msgctxt "NES"
 msgid "Vs. PPU"
-msgstr ""
+msgstr "Vs. PPU"
 
 #: ../src/libromdata/Console/NES.cpp:1464
 msgctxt "NES"
 msgid "Vs. Hardware"
-msgstr ""
+msgstr "Vs. Hardware"
 
 #: ../src/libromdata/Console/NES.cpp:1468
 msgctxt "NES"
 msgid "Console Type"
-msgstr ""
+msgstr "Tipo Console"
 
 #: ../src/libromdata/Console/NES.cpp:1472
 msgctxt "NES"
 msgid "Misc. ROM Count"
-msgstr ""
+msgstr "Misc. ROM Count"
 
 #: ../src/libromdata/Console/NES.cpp:1476
 msgctxt "NES"
 msgid "Default Expansion"
-msgstr ""
+msgstr "Espansione Predefinita"
 
 #: ../src/libromdata/Console/NES.cpp:1487
 msgctxt "NES"
 msgid "Internal Name"
-msgstr ""
+msgstr "Nome interno"
 
 #: ../src/libromdata/Console/NES.cpp:1492
 msgctxt "NES"
 msgid "PRG Checksum"
-msgstr ""
+msgstr "Checksum PRG"
 
 #: ../src/libromdata/Console/NES.cpp:1497
 msgctxt "NES"
 msgid "CHR Checksum"
-msgstr ""
+msgstr "Checksum CHR"
 
 #: ../src/libromdata/Console/NES.cpp:1561
 msgctxt "NES"
 msgid "Board Type"
-msgstr ""
+msgstr "Tipo Scheda"
 
 #: ../src/libromdata/Console/PlayStationDisc.cpp:737
 msgctxt "PlayStationDisc"
 msgid "Boot Filename"
-msgstr ""
+msgstr "Nome File Di Avvio"
 
 #: ../src/libromdata/Console/PlayStationDisc.cpp:741
 msgctxt "PlayStationDisc"
 msgid "Boot Argument"
-msgstr ""
+msgstr "Argomento Avvio"
 
 #: ../src/libromdata/Console/PlayStationDisc.cpp:751
 msgctxt "PlayStationDisc"
 msgid "Max Thread Count"
-msgstr ""
+msgstr "Numero Massimo Di Thread"
 
 #: ../src/libromdata/Console/PlayStationDisc.cpp:757
 msgctxt "PlayStationDisc"
 msgid "Max Event Count"
-msgstr ""
+msgstr "Numero Massimo Di Eventi"
 
 #: ../src/libromdata/Console/PlayStationDisc.cpp:773
 msgctxt "PlayStationDisc"
 msgid "Video Mode"
-msgstr ""
+msgstr "Modalità Video"
 
 #: ../src/libromdata/Console/PlayStationDisc.cpp:785
 msgctxt "PlayStationDisc"
 msgid "Boot File Time"
-msgstr ""
+msgstr "Timestamp File Di Avvio"
 
 #: ../src/libromdata/Console/PlayStationDisc.cpp:818
 msgctxt "PlayStationDisc"
 msgid "CDVDGEN Version"
-msgstr ""
+msgstr "Versione CDVDGEN"
 
 #: ../src/libromdata/Console/PlayStationDisc.cpp:823
 msgctxt "PlayStationDisc"
 msgid "Disc Name"
-msgstr ""
+msgstr "Nome disco"
 
 #: ../src/libromdata/Console/PlayStationDisc.cpp:828
 msgctxt "PlayStationDisc"
 msgid "Producer Name"
-msgstr ""
+msgstr "Nome Produttore"
 
 #: ../src/libromdata/Console/PlayStationDisc.cpp:833
 msgctxt "PlayStationDisc"
 msgid "Copyright Holder"
-msgstr ""
+msgstr "Detentore Copyright"
 
 #: ../src/libromdata/Console/PlayStationDisc.cpp:839
 msgctxt "PlayStationDisc"
 msgid "Creation Date"
-msgstr ""
+msgstr "Data creazione"
 
 #: ../src/libromdata/Console/PlayStationDisc.cpp:848
 msgctxt "PlayStationDisc"
 msgid "Drive Vendor"
-msgstr ""
+msgstr "Fornitore Unità"
 
 #: ../src/libromdata/Console/PlayStationDisc.cpp:851
 msgctxt "PlayStationDisc"
 msgid "Drive Model"
-msgstr ""
+msgstr "Modello Unità"
 
 #: ../src/libromdata/Console/PlayStationDisc.cpp:854
 msgctxt "PlayStationDisc"
 msgid "Drive Firmware"
-msgstr ""
+msgstr "Firmware Unità"
 
 #: ../src/libromdata/Console/PlayStationDisc.cpp:857
 msgctxt "PlayStationDisc"
 msgid "Drive Notes"
-msgstr ""
+msgstr "Note Unità"
 
 #: ../src/libromdata/Console/PlayStationEXE.cpp:250
 msgctxt "PlayStationEXE"
 msgid "RAM Address"
-msgstr ""
+msgstr "Indirizzo RAM"
 
 #: ../src/libromdata/Console/PlayStationEXE.cpp:255
 msgctxt "PlayStationEXE"
 msgid "Initial PC"
-msgstr ""
+msgstr "PC Iniziale"
 
 #: ../src/libromdata/Console/PlayStationEXE.cpp:260
 msgctxt "PlayStationEXE"
 msgid "Initial GP"
-msgstr ""
+msgstr "GP Iniziale"
 
 #: ../src/libromdata/Console/PlayStationEXE.cpp:266
 msgctxt "PlayStationEXE"
 msgid "Initial SP/FP"
-msgstr ""
+msgstr "SP/FP Iniziale"
 
 #: ../src/libromdata/Console/PlayStationEXE.cpp:271
 msgctxt "PlayStationEXE"
@@ -4148,52 +4148,52 @@ msgstr ""
 #: ../src/libromdata/Console/SNES.cpp:1454
 msgctxt "SNES|ProgramType"
 msgid "SA-1"
-msgstr ""
+msgstr "SA-1"
 
 #: ../src/libromdata/Console/SNES.cpp:1460
 msgctxt "SNES"
 msgid "Program Type"
-msgstr ""
+msgstr "Tipo Programma"
 
 #: ../src/libromdata/Console/SNES.cpp:1479
 msgctxt "SNES"
 msgid "Limited Starts"
-msgstr ""
+msgstr "Avvii Limitati"
 
 #: ../src/libromdata/Console/SNES.cpp:1487
 msgctxt "SNES"
 msgid "Unlimited"
-msgstr ""
+msgstr "Illimitati"
 
 #: ../src/libromdata/Console/SufamiTurbo.cpp:383
 msgctxt "SufamiTurbo"
 msgid "Features"
-msgstr ""
+msgstr "Funzioni"
 
 #: ../src/libromdata/Console/SufamiTurbo.cpp:387
 msgctxt "SufamiTurbo"
 msgid "ROM Size"
-msgstr ""
+msgstr "Dimensione ROM"
 
 #: ../src/libromdata/Console/SufamiTurbo.cpp:391
 msgctxt "SufamiTurbo"
 msgid "SRAM Size"
-msgstr ""
+msgstr "Dimensione SRAM"
 
 #: ../src/libromdata/Console/WiiSave.cpp:458
 msgctxt "WiiSave"
 msgid "Savegame ID"
-msgstr ""
+msgstr "ID Salvataggio"
 
 #: ../src/libromdata/Console/WiiSave.cpp:499
 msgctxt "WiiSave"
 msgid "Permissions"
-msgstr ""
+msgstr "Permessi"
 
 #: ../src/libromdata/Console/WiiSave.cpp:516
 msgctxt "WiiSave"
 msgid "MAC Address"
-msgstr ""
+msgstr "Indirizzo MAC"
 
 #: ../src/libromdata/Console/WiiTicket.cpp:454
 #: ../src/libromdata/Console/WiiTMD.cpp:346
@@ -4202,50 +4202,50 @@ msgstr ""
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2094
 msgctxt "Nintendo"
 msgid "Issuer"
-msgstr ""
+msgstr "Emittente"
 
 #: ../src/libromdata/Console/WiiTicket.cpp:464
 #: ../src/libromdata/Handheld/NintendoDS.cpp:889
 msgctxt "Nintendo"
 msgid "Key Index"
-msgstr ""
+msgstr "Indice Chiave"
 
 #: ../src/libromdata/Console/WiiTicket.cpp:469
 #: ../src/libromdata/Console/WiiWAD.cpp:1029
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1910
 msgctxt "RomData"
 msgid "Encryption Key"
-msgstr ""
+msgstr "Chiave crittografica"
 
 #: ../src/libromdata/Console/WiiTicket.cpp:476
 #: ../src/libromdata/Console/WiiWAD.cpp:1032
 msgctxt "RomData"
 msgid "Could not determine the required encryption key."
-msgstr ""
+msgstr "Impossibile determinare la chiave di cifratura richiesta."
 
 #. tr: Key_RVL_Common - Retail Wii encryption key
 #: ../src/libromdata/Console/WiiTicket.cpp:669
 msgctxt "Wii|EncKey"
 msgid "Retail"
-msgstr ""
+msgstr "Retail"
 
 #. tr: Key_RVL_Korean - Korean Wii encryption key
 #: ../src/libromdata/Console/WiiTicket.cpp:671
 msgctxt "Wii|EncKey"
 msgid "Korean"
-msgstr ""
+msgstr "Coreana"
 
 #. tr: Key_WUP_vWii - vWii-specific Wii encryption key
 #: ../src/libromdata/Console/WiiTicket.cpp:673
 msgctxt "Wii|EncKey"
 msgid "vWii"
-msgstr ""
+msgstr "vWii"
 
 #. tr: Key_RVT_Debug - Debug Wii encryption key
 #: ../src/libromdata/Console/WiiTicket.cpp:676
 msgctxt "Wii|EncKey"
 msgid "Debug"
-msgstr ""
+msgstr "Debug"
 
 #. tr: Key_RVT_Korean - Korean (debug) Wii encryption key
 #: ../src/libromdata/Console/WiiTicket.cpp:678
@@ -4263,31 +4263,31 @@ msgstr "vWii (debug)"
 #: ../src/libromdata/Console/WiiTicket.cpp:685
 msgctxt "Wii|EncKey"
 msgid "SD card AES"
-msgstr ""
+msgstr "AES Scheda SD"
 
 #. tr: Key_RVL_SD_IV - SD card IV
 #: ../src/libromdata/Console/WiiTicket.cpp:687
 msgctxt "Wii|EncKey"
 msgid "SD card IV"
-msgstr ""
+msgstr "IV Scheda SD"
 
 #. tr: Key_RVL_SD_MD5 - SD card MD5 blanker
 #: ../src/libromdata/Console/WiiTicket.cpp:689
 msgctxt "Wii|EncKey"
 msgid "SD card MD5 blanker"
-msgstr ""
+msgstr "MD5 blanker Scheda SD"
 
 #. tr: Key_WUP_Starbuck_WiiU_Common - Retail Wii U encryption key
 #: ../src/libromdata/Console/WiiTicket.cpp:694
 msgctxt "Wii|EncKey"
 msgid "Retail (Wii U)"
-msgstr ""
+msgstr "Retail (Wii U)"
 
 #. tr: Key_CAT_Starbuck_WiiU_Common - Debug Wii U encryption key
 #: ../src/libromdata/Console/WiiTicket.cpp:696
 msgctxt "Wii|EncKey"
 msgid "Debug (Wii U)"
-msgstr ""
+msgstr "Debug (Wii U)"
 
 #. tr: EncryptionKeys::None - No encryption.
 #: ../src/libromdata/Console/WiiTicket.cpp:704
@@ -4299,108 +4299,108 @@ msgstr "Nessuna"
 #: ../src/libromdata/Console/WiiWAD.cpp:884
 msgctxt "Nintendo"
 msgid "Title Version"
-msgstr ""
+msgstr "Versione Titolo"
 
 #: ../src/libromdata/Console/WiiU.cpp:354
 #, c-format
 msgctxt "RomData"
 msgid "Unknown (%.4s)"
-msgstr ""
+msgstr "Sconosciuto (%.4s)"
 
 #: ../src/libromdata/Console/WiiU.cpp:356
 #, c-format
 msgctxt "RomData"
 msgid "Unknown (%02X %02X %02X %02X)"
-msgstr ""
+msgstr "Sconosciuto (%02X %02X %02X %02X)"
 
 #: ../src/libromdata/Console/WiiUPackage.cpp:665
 msgctxt "RomData"
 msgid "XML parsing is disabled in this build."
-msgstr ""
+msgstr "L'analisi XML è disabilitata in questa build."
 
 #: ../src/libromdata/Console/WiiUPackage_xml.cpp:383
 #: ../src/libromdata/Handheld/Nintendo3DS_SMDH.cpp:498
 msgctxt "Nintendo"
 msgid "Title"
-msgstr ""
+msgstr "Titolo"
 
 #: ../src/libromdata/Console/WiiUPackage_xml.cpp:384
 #: ../src/libromdata/Handheld/Nintendo3DS_SMDH.cpp:499
 #: ../src/libromdata/Handheld/NintendoDS_BNR.cpp:672
 msgctxt "Nintendo"
 msgid "Full Title"
-msgstr ""
+msgstr "Titolo Intero"
 
 #: ../src/libromdata/Console/WiiUPackage_xml.cpp:429
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:689
 msgctxt "Nintendo"
 msgid "Product Code"
-msgstr ""
+msgstr "Codice prodotto"
 
 #: ../src/libromdata/Console/WiiUPackage_xml.cpp:438
 msgctxt "WiiU"
 msgid "SDK Version"
-msgstr ""
+msgstr "Versione SDK"
 
 #: ../src/libromdata/Console/WiiUPackage_xml.cpp:551
 msgctxt "WiiU|Controller"
 msgid "Nunchuk"
-msgstr ""
+msgstr "Nunchuk"
 
 #: ../src/libromdata/Console/WiiUPackage_xml.cpp:552
 msgctxt "WiiU|Controller"
 msgid "Classic"
-msgstr ""
+msgstr "Classico"
 
 #: ../src/libromdata/Console/WiiUPackage_xml.cpp:553
 msgctxt "WiiU|Controller"
 msgid "Pro"
-msgstr ""
+msgstr "Pro"
 
 #: ../src/libromdata/Console/WiiUPackage_xml.cpp:554
 msgctxt "WiiU|Controller"
 msgid "Balance Board"
-msgstr ""
+msgstr "Balance Board"
 
 #: ../src/libromdata/Console/WiiUPackage_xml.cpp:555
 msgctxt "WiiU|Controller"
 msgid "USB Keyboard"
-msgstr ""
+msgstr "Tastiera USB"
 
 #: ../src/libromdata/Console/WiiUPackage_xml.cpp:556
 msgctxt "WiiU|Controller"
 msgid "Gamepad"
-msgstr ""
+msgstr "Gamepad"
 
 #: ../src/libromdata/Console/WiiUPackage_xml.cpp:560
 msgctxt "WiiU"
 msgid "Controllers"
-msgstr ""
+msgstr "Controllers"
 
 #: ../src/libromdata/Console/WiiWAD.cpp:815
 msgctxt "WiiWAD"
 msgid "Warning"
-msgstr ""
+msgstr "Attenzione"
 
 #: ../src/libromdata/Console/WiiWAD.cpp:846
 msgctxt "WiiWAD"
 msgid "BroadOn WAD Format"
-msgstr ""
+msgstr "Formato BroadOn WAD"
 
 #: ../src/libromdata/Console/WiiWAD.cpp:1065
 msgctxt "WiiWAD"
 msgid "Game Info"
-msgstr ""
+msgstr "Info Gioco"
 
 #: ../src/libromdata/Console/WiiWAD_ops.cpp:46
 msgctxt "WiiWAD|RomOps"
 msgid "Extract Nintendo DS SRL File"
-msgstr ""
+msgstr "Estrai File SRL Nintendo DS"
 
 #: ../src/libromdata/Console/WiiWAD_ops.cpp:47
 msgctxt "WiiWAD|RomOps"
 msgid "Nintendo DS SRL Files|*.nds;*.srl|application/x-nintendo-ds-rom;application/x-nintendo-dsi-rom"
-msgstr ""
+msgstr "File SRL Nintendo DS|*.nds;*.srl|application/x-nintendo-ds-rom;application/x-nintendo-dsi-rom"
 
 #: ../src/libromdata/Console/WiiWAD_ops.cpp:71
 #: ../src/libromdata/Console/WiiWAD_ops.cpp:100
