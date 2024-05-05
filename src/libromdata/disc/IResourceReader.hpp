@@ -21,9 +21,11 @@
 #if defined(_WIN32) && !defined(_WINNT_)
 // Define LPCSTR/LPCWSTR here.
 typedef char CHAR;
+typedef CHAR *LPSTR;
 typedef const CHAR *LPCSTR;
 
 typedef wchar_t WCHAR;
+typedef WCHAR *LPWSTR;
 typedef const WCHAR *LPCWSTR;
 #endif /* _WIN32 && !_WINNT_ */
 
@@ -73,39 +75,28 @@ public:
 	virtual LibRpFile::IRpFilePtr open(uint16_t type, int id, int lang) = 0;
 
 #ifdef _WIN32
-	/**
-	 * Open a resource.
-	 *
-	 * Wrapper function for unusual cases in Windows builds where the
-	 * resource type is wrapped using MAKEINTRESOURCEA().
-	 *
-	 * @param type Resource type ID
-	 * @param id Resource ID (-1 for "first entry")
-	 * @param lang Language ID (-1 for "first entry")
-	 * @return IRpFile*, or nullptr on error.
-	 */
-	inline LibRpFile::IRpFilePtr open(LPCSTR type, int id, int lang)
-	{
-		return open(static_cast<uint16_t>(
-			reinterpret_cast<uintptr_t>(type)), id, lang);
+#  define open_MAKEINTRESOURCE_wrapper(WIN_TYPE) \
+	/** \
+	 * Open a resource. \
+	 * \
+	 * Wrapper function for unusual cases in Windows builds where the \
+	 * resource type is wrapped using MAKEINTRESOURCE() functions. \
+	 * \
+	 * @param type Resource type ID \
+	 * @param id Resource ID (-1 for "first entry") \
+	 * @param lang Language ID (-1 for "first entry") \
+	 * @return IRpFile*, or nullptr on error. \
+	 */ \
+	inline LibRpFile::IRpFilePtr open(WIN_TYPE type, int id, int lang) \
+	{ \
+		return this->open(static_cast<uint16_t>( \
+			reinterpret_cast<uintptr_t>(type)), id, lang); \
 	}
 
-	/**
-	 * Open a resource.
-	 *
-	 * Wrapper function for unusual cases in Windows builds where the
-	 * resource type is wrapped using MAKEINTRESOURCEW().
-	 *
-	 * @param type Resource type ID
-	 * @param id Resource ID (-1 for "first entry")
-	 * @param lang Language ID (-1 for "first entry")
-	 * @return IRpFile*, or nullptr on error.
-	 */
-	inline LibRpFile::IRpFilePtr open(LPCWSTR type, int id, int lang)
-	{
-		return open(static_cast<uint16_t>(
-			reinterpret_cast<uintptr_t>(type)), id, lang);
-	}
+	open_MAKEINTRESOURCE_wrapper(LPSTR);
+	open_MAKEINTRESOURCE_wrapper(LPCSTR);
+	open_MAKEINTRESOURCE_wrapper(LPWSTR);
+	open_MAKEINTRESOURCE_wrapper(LPCWSTR);
 #endif /* _WIN32 */
 
 	// StringTable
