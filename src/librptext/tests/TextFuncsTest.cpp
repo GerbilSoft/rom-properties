@@ -989,119 +989,351 @@ TEST_F(TextFuncsTest, utf8_disp_strlen)
 }
 
 /**
- * Test formatFileSize().
+ * Test formatFileSize() using IEC binary units. (binary KiB)
  */
-TEST_F(TextFuncsTest, formatFileSize)
+TEST_F(TextFuncsTest, formatFileSize_IEC)
 {
 	// NOTE: Due to LC_ALL="C", use standard binary sizes. (KiB, MiB, etc)
 	// Testing 512, 768, 1024, 1536, 2048, 2560, and 3072 for each order of magnitude.
 
 	// Special cases
-	EXPECT_EQ("-1", formatFileSize(-1LL));	// negative: print as-is
-	EXPECT_EQ("0 bytes", formatFileSize(0LL));
-	EXPECT_EQ("1 byte", formatFileSize(1LL));
-	EXPECT_EQ("2 bytes", formatFileSize(2LL));
+	EXPECT_EQ("-1", formatFileSize(-1LL, LibRpText::BinaryUnitDialect::IECBinaryDialect));	// negative: print as-is
+	EXPECT_EQ("0 bytes", formatFileSize(0LL, LibRpText::BinaryUnitDialect::IECBinaryDialect));
+	EXPECT_EQ("1 byte", formatFileSize(1LL, LibRpText::BinaryUnitDialect::IECBinaryDialect));
+	EXPECT_EQ("2 bytes", formatFileSize(2LL, LibRpText::BinaryUnitDialect::IECBinaryDialect));
 
 	// Kilobyte
-	EXPECT_EQ("512 bytes", formatFileSize(512LL));
-	EXPECT_EQ("768 bytes", formatFileSize(768LL));
-	EXPECT_EQ("1024 bytes", formatFileSize(1024LL));
-	EXPECT_EQ("1536 bytes", formatFileSize(1536LL));
-	EXPECT_EQ("2.00 KiB", formatFileSize(2048LL));
-	EXPECT_EQ("2.50 KiB", formatFileSize(2560LL));
-	EXPECT_EQ("3.00 KiB", formatFileSize(3072LL));
+	EXPECT_EQ("512 bytes", formatFileSize(512LL, LibRpText::BinaryUnitDialect::IECBinaryDialect));
+	EXPECT_EQ("768 bytes", formatFileSize(768LL, LibRpText::BinaryUnitDialect::IECBinaryDialect));
+	EXPECT_EQ("1024 bytes", formatFileSize(1024LL, LibRpText::BinaryUnitDialect::IECBinaryDialect));
+	EXPECT_EQ("1536 bytes", formatFileSize(1536LL, LibRpText::BinaryUnitDialect::IECBinaryDialect));
+	EXPECT_EQ("2.00 KiB", formatFileSize(2048LL, LibRpText::BinaryUnitDialect::IECBinaryDialect));
+	EXPECT_EQ("2.50 KiB", formatFileSize(2560LL, LibRpText::BinaryUnitDialect::IECBinaryDialect));
+	EXPECT_EQ("3.00 KiB", formatFileSize(3072LL, LibRpText::BinaryUnitDialect::IECBinaryDialect));
 
 	// Megabyte
-	EXPECT_EQ("512.0 KiB", formatFileSize(512LL*1024));
-	EXPECT_EQ("768.0 KiB", formatFileSize(768LL*1024));
-	EXPECT_EQ("1024.0 KiB", formatFileSize(1024LL*1024));
-	EXPECT_EQ("1536.0 KiB", formatFileSize(1536LL*1024));
-	EXPECT_EQ("2.00 MiB", formatFileSize(2048LL*1024));
-	EXPECT_EQ("2.50 MiB", formatFileSize(2560LL*1024));
-	EXPECT_EQ("3.00 MiB", formatFileSize(3072LL*1024));
+	EXPECT_EQ("512.0 KiB", formatFileSize(512LL*1024, LibRpText::BinaryUnitDialect::IECBinaryDialect));
+	EXPECT_EQ("768.0 KiB", formatFileSize(768LL*1024, LibRpText::BinaryUnitDialect::IECBinaryDialect));
+	EXPECT_EQ("1024.0 KiB", formatFileSize(1024LL*1024, LibRpText::BinaryUnitDialect::IECBinaryDialect));
+	EXPECT_EQ("1536.0 KiB", formatFileSize(1536LL*1024, LibRpText::BinaryUnitDialect::IECBinaryDialect));
+	EXPECT_EQ("2.00 MiB", formatFileSize(2048LL*1024, LibRpText::BinaryUnitDialect::IECBinaryDialect));
+	EXPECT_EQ("2.50 MiB", formatFileSize(2560LL*1024, LibRpText::BinaryUnitDialect::IECBinaryDialect));
+	EXPECT_EQ("3.00 MiB", formatFileSize(3072LL*1024, LibRpText::BinaryUnitDialect::IECBinaryDialect));
 
 	// Gigabyte
-	EXPECT_EQ("512.0 MiB", formatFileSize(512LL*1024*1024));
-	EXPECT_EQ("768.0 MiB", formatFileSize(768LL*1024*1024));
-	EXPECT_EQ("1024.0 MiB", formatFileSize(1024LL*1024*1024));
-	EXPECT_EQ("1536.0 MiB", formatFileSize(1536LL*1024*1024));
-	EXPECT_EQ("2.00 GiB", formatFileSize(2048LL*1024*1024));
-	EXPECT_EQ("2.50 GiB", formatFileSize(2560LL*1024*1024));
-	EXPECT_EQ("3.00 GiB", formatFileSize(3072LL*1024*1024));
+	EXPECT_EQ("512.0 MiB", formatFileSize(512LL*1024*1024, LibRpText::BinaryUnitDialect::IECBinaryDialect));
+	EXPECT_EQ("768.0 MiB", formatFileSize(768LL*1024*1024, LibRpText::BinaryUnitDialect::IECBinaryDialect));
+	EXPECT_EQ("1024.0 MiB", formatFileSize(1024LL*1024*1024, LibRpText::BinaryUnitDialect::IECBinaryDialect));
+	EXPECT_EQ("1536.0 MiB", formatFileSize(1536LL*1024*1024, LibRpText::BinaryUnitDialect::IECBinaryDialect));
+	EXPECT_EQ("2.00 GiB", formatFileSize(2048LL*1024*1024, LibRpText::BinaryUnitDialect::IECBinaryDialect));
+	EXPECT_EQ("2.50 GiB", formatFileSize(2560LL*1024*1024, LibRpText::BinaryUnitDialect::IECBinaryDialect));
+	EXPECT_EQ("3.00 GiB", formatFileSize(3072LL*1024*1024, LibRpText::BinaryUnitDialect::IECBinaryDialect));
 
 	// Terabyte
-	EXPECT_EQ("512.0 GiB", formatFileSize(512LL*1024*1024*1024));
-	EXPECT_EQ("768.0 GiB", formatFileSize(768LL*1024*1024*1024));
-	EXPECT_EQ("1024.0 GiB", formatFileSize(1024LL*1024*1024*1024));
-	EXPECT_EQ("1536.0 GiB", formatFileSize(1536LL*1024*1024*1024));
-	EXPECT_EQ("2.00 TiB", formatFileSize(2048LL*1024*1024*1024));
-	EXPECT_EQ("2.50 TiB", formatFileSize(2560LL*1024*1024*1024));
-	EXPECT_EQ("3.00 TiB", formatFileSize(3072LL*1024*1024*1024));
+	EXPECT_EQ("512.0 GiB", formatFileSize(512LL*1024*1024*1024, LibRpText::BinaryUnitDialect::IECBinaryDialect));
+	EXPECT_EQ("768.0 GiB", formatFileSize(768LL*1024*1024*1024, LibRpText::BinaryUnitDialect::IECBinaryDialect));
+	EXPECT_EQ("1024.0 GiB", formatFileSize(1024LL*1024*1024*1024, LibRpText::BinaryUnitDialect::IECBinaryDialect));
+	EXPECT_EQ("1536.0 GiB", formatFileSize(1536LL*1024*1024*1024, LibRpText::BinaryUnitDialect::IECBinaryDialect));
+	EXPECT_EQ("2.00 TiB", formatFileSize(2048LL*1024*1024*1024, LibRpText::BinaryUnitDialect::IECBinaryDialect));
+	EXPECT_EQ("2.50 TiB", formatFileSize(2560LL*1024*1024*1024, LibRpText::BinaryUnitDialect::IECBinaryDialect));
+	EXPECT_EQ("3.00 TiB", formatFileSize(3072LL*1024*1024*1024, LibRpText::BinaryUnitDialect::IECBinaryDialect));
 
 	// Petabyte
-	EXPECT_EQ("512.0 TiB", formatFileSize(512LL*1024*1024*1024*1024));
-	EXPECT_EQ("768.0 TiB", formatFileSize(768LL*1024*1024*1024*1024));
-	EXPECT_EQ("1024.0 TiB", formatFileSize(1024LL*1024*1024*1024*1024));
-	EXPECT_EQ("1536.0 TiB", formatFileSize(1536LL*1024*1024*1024*1024));
-	EXPECT_EQ("2.00 PiB", formatFileSize(2048LL*1024*1024*1024*1024));
-	EXPECT_EQ("2.50 PiB", formatFileSize(2560LL*1024*1024*1024*1024));
-	EXPECT_EQ("3.00 PiB", formatFileSize(3072LL*1024*1024*1024*1024));
+	EXPECT_EQ("512.0 TiB", formatFileSize(512LL*1024*1024*1024*1024, LibRpText::BinaryUnitDialect::IECBinaryDialect));
+	EXPECT_EQ("768.0 TiB", formatFileSize(768LL*1024*1024*1024*1024, LibRpText::BinaryUnitDialect::IECBinaryDialect));
+	EXPECT_EQ("1024.0 TiB", formatFileSize(1024LL*1024*1024*1024*1024, LibRpText::BinaryUnitDialect::IECBinaryDialect));
+	EXPECT_EQ("1536.0 TiB", formatFileSize(1536LL*1024*1024*1024*1024, LibRpText::BinaryUnitDialect::IECBinaryDialect));
+	EXPECT_EQ("2.00 PiB", formatFileSize(2048LL*1024*1024*1024*1024, LibRpText::BinaryUnitDialect::IECBinaryDialect));
+	EXPECT_EQ("2.50 PiB", formatFileSize(2560LL*1024*1024*1024*1024, LibRpText::BinaryUnitDialect::IECBinaryDialect));
+	EXPECT_EQ("3.00 PiB", formatFileSize(3072LL*1024*1024*1024*1024, LibRpText::BinaryUnitDialect::IECBinaryDialect));
 
 	// Exabyte
-	EXPECT_EQ("512.0 PiB", formatFileSize(512LL*1024*1024*1024*1024*1024));
-	EXPECT_EQ("768.0 PiB", formatFileSize(768LL*1024*1024*1024*1024*1024));
-	EXPECT_EQ("1024.0 PiB", formatFileSize(1024LL*1024*1024*1024*1024*1024));
-	EXPECT_EQ("1536.0 PiB", formatFileSize(1536LL*1024*1024*1024*1024*1024));
-	EXPECT_EQ("2.00 EiB", formatFileSize(2048LL*1024*1024*1024*1024*1024));
-	EXPECT_EQ("2.50 EiB", formatFileSize(2560LL*1024*1024*1024*1024*1024));
-	EXPECT_EQ("3.00 EiB", formatFileSize(3072LL*1024*1024*1024*1024*1024));
+	EXPECT_EQ("512.0 PiB", formatFileSize(512LL*1024*1024*1024*1024*1024, LibRpText::BinaryUnitDialect::IECBinaryDialect));
+	EXPECT_EQ("768.0 PiB", formatFileSize(768LL*1024*1024*1024*1024*1024, LibRpText::BinaryUnitDialect::IECBinaryDialect));
+	EXPECT_EQ("1024.0 PiB", formatFileSize(1024LL*1024*1024*1024*1024*1024, LibRpText::BinaryUnitDialect::IECBinaryDialect));
+	EXPECT_EQ("1536.0 PiB", formatFileSize(1536LL*1024*1024*1024*1024*1024, LibRpText::BinaryUnitDialect::IECBinaryDialect));
+	EXPECT_EQ("2.00 EiB", formatFileSize(2048LL*1024*1024*1024*1024*1024, LibRpText::BinaryUnitDialect::IECBinaryDialect));
+	EXPECT_EQ("2.50 EiB", formatFileSize(2560LL*1024*1024*1024*1024*1024, LibRpText::BinaryUnitDialect::IECBinaryDialect));
+	EXPECT_EQ("3.00 EiB", formatFileSize(3072LL*1024*1024*1024*1024*1024, LibRpText::BinaryUnitDialect::IECBinaryDialect));
 
 	// Largest value for a 64-bit signed integer
-	EXPECT_EQ("7.99 EiB", formatFileSize(0x7FFFFFFFFFFFFFFFLL));
+	EXPECT_EQ("7.99 EiB", formatFileSize(0x7FFFFFFFFFFFFFFFLL, LibRpText::BinaryUnitDialect::IECBinaryDialect));
 }
 
 /**
- * Test formatFileSizeKiB().
+ * Test formatFileSize() using JEDEC binary units. (binary KB)
  */
-TEST_F(TextFuncsTest, formatFileSizeKiB)
+TEST_F(TextFuncsTest, formatFileSize_JEDEC)
 {
 	// NOTE: Due to LC_ALL="C", use standard binary sizes. (KiB, MiB, etc)
 	// Testing 512, 768, 1024, 1536, 2048, 2560, and 3072 for each order of magnitude.
 
 	// Special cases
-	EXPECT_EQ("0 KiB", formatFileSizeKiB(0U));
-	EXPECT_EQ("0 KiB", formatFileSizeKiB(1U));
-	EXPECT_EQ("0 KiB", formatFileSizeKiB(2U));
+	EXPECT_EQ("-1", formatFileSize(-1LL, LibRpText::BinaryUnitDialect::JEDECBinaryDialect));	// negative: print as-is
+	EXPECT_EQ("0 bytes", formatFileSize(0LL, LibRpText::BinaryUnitDialect::JEDECBinaryDialect));
+	EXPECT_EQ("1 byte", formatFileSize(1LL, LibRpText::BinaryUnitDialect::JEDECBinaryDialect));
+	EXPECT_EQ("2 bytes", formatFileSize(2LL, LibRpText::BinaryUnitDialect::JEDECBinaryDialect));
 
 	// Kilobyte
-	EXPECT_EQ("0 KiB", formatFileSizeKiB(512U));
-	EXPECT_EQ("0 KiB", formatFileSizeKiB(768U));
-	EXPECT_EQ("1 KiB", formatFileSizeKiB(1024U));
-	EXPECT_EQ("1 KiB", formatFileSizeKiB(1536U));
-	EXPECT_EQ("2 KiB", formatFileSizeKiB(2048U));
-	EXPECT_EQ("2 KiB", formatFileSizeKiB(2560U));
-	EXPECT_EQ("3 KiB", formatFileSizeKiB(3072U));
+	EXPECT_EQ("512 bytes", formatFileSize(512LL, LibRpText::BinaryUnitDialect::JEDECBinaryDialect));
+	EXPECT_EQ("768 bytes", formatFileSize(768LL, LibRpText::BinaryUnitDialect::JEDECBinaryDialect));
+	EXPECT_EQ("1024 bytes", formatFileSize(1024LL, LibRpText::BinaryUnitDialect::JEDECBinaryDialect));
+	EXPECT_EQ("1536 bytes", formatFileSize(1536LL, LibRpText::BinaryUnitDialect::JEDECBinaryDialect));
+	EXPECT_EQ("2.00 KB", formatFileSize(2048LL, LibRpText::BinaryUnitDialect::JEDECBinaryDialect));
+	EXPECT_EQ("2.50 KB", formatFileSize(2560LL, LibRpText::BinaryUnitDialect::JEDECBinaryDialect));
+	EXPECT_EQ("3.00 KB", formatFileSize(3072LL, LibRpText::BinaryUnitDialect::JEDECBinaryDialect));
 
 	// Megabyte
-	EXPECT_EQ("512 KiB", formatFileSizeKiB(512U*1024U));
-	EXPECT_EQ("768 KiB", formatFileSizeKiB(768U*1024U));
-	EXPECT_EQ("1024 KiB", formatFileSizeKiB(1024U*1024U));
-	EXPECT_EQ("1536 KiB", formatFileSizeKiB(1536U*1024U));
-	EXPECT_EQ("2048 KiB", formatFileSizeKiB(2048U*1024U));
-	EXPECT_EQ("2560 KiB", formatFileSizeKiB(2560U*1024U));
-	EXPECT_EQ("3072 KiB", formatFileSizeKiB(3072U*1024U));
+	EXPECT_EQ("512.0 KB", formatFileSize(512LL*1024, LibRpText::BinaryUnitDialect::JEDECBinaryDialect));
+	EXPECT_EQ("768.0 KB", formatFileSize(768LL*1024, LibRpText::BinaryUnitDialect::JEDECBinaryDialect));
+	EXPECT_EQ("1024.0 KB", formatFileSize(1024LL*1024, LibRpText::BinaryUnitDialect::JEDECBinaryDialect));
+	EXPECT_EQ("1536.0 KB", formatFileSize(1536LL*1024, LibRpText::BinaryUnitDialect::JEDECBinaryDialect));
+	EXPECT_EQ("2.00 MB", formatFileSize(2048LL*1024, LibRpText::BinaryUnitDialect::JEDECBinaryDialect));
+	EXPECT_EQ("2.50 MB", formatFileSize(2560LL*1024, LibRpText::BinaryUnitDialect::JEDECBinaryDialect));
+	EXPECT_EQ("3.00 MB", formatFileSize(3072LL*1024, LibRpText::BinaryUnitDialect::JEDECBinaryDialect));
 
 	// Gigabyte
-	EXPECT_EQ("524288 KiB", formatFileSizeKiB(512U*1024U*1024U));
-	EXPECT_EQ("786432 KiB", formatFileSizeKiB(768U*1024U*1024U));
-	EXPECT_EQ("1048576 KiB", formatFileSizeKiB(1024U*1024U*1024U));
-	EXPECT_EQ("1572864 KiB", formatFileSizeKiB(1536U*1024U*1024U));
-	EXPECT_EQ("2097152 KiB", formatFileSizeKiB(2048U*1024U*1024U));
-	EXPECT_EQ("2621440 KiB", formatFileSizeKiB(2560U*1024U*1024U));
-	EXPECT_EQ("3145728 KiB", formatFileSizeKiB(3072U*1024U*1024U));
+	EXPECT_EQ("512.0 MB", formatFileSize(512LL*1024*1024, LibRpText::BinaryUnitDialect::JEDECBinaryDialect));
+	EXPECT_EQ("768.0 MB", formatFileSize(768LL*1024*1024, LibRpText::BinaryUnitDialect::JEDECBinaryDialect));
+	EXPECT_EQ("1024.0 MB", formatFileSize(1024LL*1024*1024, LibRpText::BinaryUnitDialect::JEDECBinaryDialect));
+	EXPECT_EQ("1536.0 MB", formatFileSize(1536LL*1024*1024, LibRpText::BinaryUnitDialect::JEDECBinaryDialect));
+	EXPECT_EQ("2.00 GB", formatFileSize(2048LL*1024*1024, LibRpText::BinaryUnitDialect::JEDECBinaryDialect));
+	EXPECT_EQ("2.50 GB", formatFileSize(2560LL*1024*1024, LibRpText::BinaryUnitDialect::JEDECBinaryDialect));
+	EXPECT_EQ("3.00 GB", formatFileSize(3072LL*1024*1024, LibRpText::BinaryUnitDialect::JEDECBinaryDialect));
+
+	// Terabyte
+	EXPECT_EQ("512.0 GB", formatFileSize(512LL*1024*1024*1024, LibRpText::BinaryUnitDialect::JEDECBinaryDialect));
+	EXPECT_EQ("768.0 GB", formatFileSize(768LL*1024*1024*1024, LibRpText::BinaryUnitDialect::JEDECBinaryDialect));
+	EXPECT_EQ("1024.0 GB", formatFileSize(1024LL*1024*1024*1024, LibRpText::BinaryUnitDialect::JEDECBinaryDialect));
+	EXPECT_EQ("1536.0 GB", formatFileSize(1536LL*1024*1024*1024, LibRpText::BinaryUnitDialect::JEDECBinaryDialect));
+	EXPECT_EQ("2.00 TB", formatFileSize(2048LL*1024*1024*1024, LibRpText::BinaryUnitDialect::JEDECBinaryDialect));
+	EXPECT_EQ("2.50 TB", formatFileSize(2560LL*1024*1024*1024, LibRpText::BinaryUnitDialect::JEDECBinaryDialect));
+	EXPECT_EQ("3.00 TB", formatFileSize(3072LL*1024*1024*1024, LibRpText::BinaryUnitDialect::JEDECBinaryDialect));
+
+	// Petabyte
+	EXPECT_EQ("512.0 TB", formatFileSize(512LL*1024*1024*1024*1024, LibRpText::BinaryUnitDialect::JEDECBinaryDialect));
+	EXPECT_EQ("768.0 TB", formatFileSize(768LL*1024*1024*1024*1024, LibRpText::BinaryUnitDialect::JEDECBinaryDialect));
+	EXPECT_EQ("1024.0 TB", formatFileSize(1024LL*1024*1024*1024*1024, LibRpText::BinaryUnitDialect::JEDECBinaryDialect));
+	EXPECT_EQ("1536.0 TB", formatFileSize(1536LL*1024*1024*1024*1024, LibRpText::BinaryUnitDialect::JEDECBinaryDialect));
+	EXPECT_EQ("2.00 PB", formatFileSize(2048LL*1024*1024*1024*1024, LibRpText::BinaryUnitDialect::JEDECBinaryDialect));
+	EXPECT_EQ("2.50 PB", formatFileSize(2560LL*1024*1024*1024*1024, LibRpText::BinaryUnitDialect::JEDECBinaryDialect));
+	EXPECT_EQ("3.00 PB", formatFileSize(3072LL*1024*1024*1024*1024, LibRpText::BinaryUnitDialect::JEDECBinaryDialect));
+
+	// Exabyte
+	EXPECT_EQ("512.0 PB", formatFileSize(512LL*1024*1024*1024*1024*1024, LibRpText::BinaryUnitDialect::JEDECBinaryDialect));
+	EXPECT_EQ("768.0 PB", formatFileSize(768LL*1024*1024*1024*1024*1024, LibRpText::BinaryUnitDialect::JEDECBinaryDialect));
+	EXPECT_EQ("1024.0 PB", formatFileSize(1024LL*1024*1024*1024*1024*1024, LibRpText::BinaryUnitDialect::JEDECBinaryDialect));
+	EXPECT_EQ("1536.0 PB", formatFileSize(1536LL*1024*1024*1024*1024*1024, LibRpText::BinaryUnitDialect::JEDECBinaryDialect));
+	EXPECT_EQ("2.00 EB", formatFileSize(2048LL*1024*1024*1024*1024*1024, LibRpText::BinaryUnitDialect::JEDECBinaryDialect));
+	EXPECT_EQ("2.50 EB", formatFileSize(2560LL*1024*1024*1024*1024*1024, LibRpText::BinaryUnitDialect::JEDECBinaryDialect));
+	EXPECT_EQ("3.00 EB", formatFileSize(3072LL*1024*1024*1024*1024*1024, LibRpText::BinaryUnitDialect::JEDECBinaryDialect));
+
+	// Largest value for a 64-bit signed integer
+	EXPECT_EQ("7.99 EB", formatFileSize(0x7FFFFFFFFFFFFFFFLL, LibRpText::BinaryUnitDialect::JEDECBinaryDialect));
+}
+
+/**
+ * Test formatFileSize() using metric binary units. (decimal KB)
+ */
+TEST_F(TextFuncsTest, formatFileSize_Metric)
+{
+	// NOTE: Due to LC_ALL="C", use standard binary sizes. (KiB, MiB, etc)
+	// Testing 512, 768, 1024, 1536, 2048, 2560, and 3072 for each order of magnitude.
+
+	// Special cases
+	EXPECT_EQ("-1", formatFileSize(-1LL, LibRpText::BinaryUnitDialect::MetricBinaryDialect));	// negative: print as-is
+	EXPECT_EQ("0 bytes", formatFileSize(0LL, LibRpText::BinaryUnitDialect::MetricBinaryDialect));
+	EXPECT_EQ("1 byte", formatFileSize(1LL, LibRpText::BinaryUnitDialect::MetricBinaryDialect));
+	EXPECT_EQ("2 bytes", formatFileSize(2LL, LibRpText::BinaryUnitDialect::MetricBinaryDialect));
+
+	// Kilobyte
+	EXPECT_EQ("512 bytes", formatFileSize(512LL, LibRpText::BinaryUnitDialect::MetricBinaryDialect));
+	EXPECT_EQ("768 bytes", formatFileSize(768LL, LibRpText::BinaryUnitDialect::MetricBinaryDialect));
+	EXPECT_EQ("1024 bytes", formatFileSize(1024LL, LibRpText::BinaryUnitDialect::MetricBinaryDialect));
+	EXPECT_EQ("1536 bytes", formatFileSize(1536LL, LibRpText::BinaryUnitDialect::MetricBinaryDialect));
+	EXPECT_EQ("2.05 KB", formatFileSize(2048LL, LibRpText::BinaryUnitDialect::MetricBinaryDialect));
+	EXPECT_EQ("2.56 KB", formatFileSize(2560LL, LibRpText::BinaryUnitDialect::MetricBinaryDialect));
+	EXPECT_EQ("3.07 KB", formatFileSize(3072LL, LibRpText::BinaryUnitDialect::MetricBinaryDialect));
+
+	// Megabyte
+	EXPECT_EQ("524.3 KB", formatFileSize(512LL*1024, LibRpText::BinaryUnitDialect::MetricBinaryDialect));
+	EXPECT_EQ("786.4 KB", formatFileSize(768LL*1024, LibRpText::BinaryUnitDialect::MetricBinaryDialect));
+	EXPECT_EQ("1048.6 KB", formatFileSize(1024LL*1024, LibRpText::BinaryUnitDialect::MetricBinaryDialect));
+	EXPECT_EQ("1572.9 KB", formatFileSize(1536LL*1024, LibRpText::BinaryUnitDialect::MetricBinaryDialect));
+	EXPECT_EQ("2.10 MB", formatFileSize(2048LL*1024, LibRpText::BinaryUnitDialect::MetricBinaryDialect));
+	EXPECT_EQ("2.62 MB", formatFileSize(2560LL*1024, LibRpText::BinaryUnitDialect::MetricBinaryDialect));
+	EXPECT_EQ("3.14 MB", formatFileSize(3072LL*1024, LibRpText::BinaryUnitDialect::MetricBinaryDialect));
+
+	// Gigabyte
+	EXPECT_EQ("536.9 MB", formatFileSize(512LL*1024*1024, LibRpText::BinaryUnitDialect::MetricBinaryDialect));
+	EXPECT_EQ("805.3 MB", formatFileSize(768LL*1024*1024, LibRpText::BinaryUnitDialect::MetricBinaryDialect));
+	EXPECT_EQ("1073.7 MB", formatFileSize(1024LL*1024*1024, LibRpText::BinaryUnitDialect::MetricBinaryDialect));
+	EXPECT_EQ("1610.6 MB", formatFileSize(1536LL*1024*1024, LibRpText::BinaryUnitDialect::MetricBinaryDialect));
+	EXPECT_EQ("2.15 GB", formatFileSize(2048LL*1024*1024, LibRpText::BinaryUnitDialect::MetricBinaryDialect));
+	EXPECT_EQ("2.68 GB", formatFileSize(2560LL*1024*1024, LibRpText::BinaryUnitDialect::MetricBinaryDialect));
+	EXPECT_EQ("3.22 GB", formatFileSize(3072LL*1024*1024, LibRpText::BinaryUnitDialect::MetricBinaryDialect));
+
+	// Terabyte
+	EXPECT_EQ("549.7 GB", formatFileSize(512LL*1024*1024*1024, LibRpText::BinaryUnitDialect::MetricBinaryDialect));
+	EXPECT_EQ("824.6 GB", formatFileSize(768LL*1024*1024*1024, LibRpText::BinaryUnitDialect::MetricBinaryDialect));
+	EXPECT_EQ("1099.5 GB", formatFileSize(1024LL*1024*1024*1024, LibRpText::BinaryUnitDialect::MetricBinaryDialect));
+	EXPECT_EQ("1649.3 GB", formatFileSize(1536LL*1024*1024*1024, LibRpText::BinaryUnitDialect::MetricBinaryDialect));
+	EXPECT_EQ("2.20 TB", formatFileSize(2048LL*1024*1024*1024, LibRpText::BinaryUnitDialect::MetricBinaryDialect));
+	EXPECT_EQ("2.75 TB", formatFileSize(2560LL*1024*1024*1024, LibRpText::BinaryUnitDialect::MetricBinaryDialect));
+	EXPECT_EQ("3.30 TB", formatFileSize(3072LL*1024*1024*1024, LibRpText::BinaryUnitDialect::MetricBinaryDialect));
+
+	// Petabyte
+	EXPECT_EQ("562.9 TB", formatFileSize(512LL*1024*1024*1024*1024, LibRpText::BinaryUnitDialect::MetricBinaryDialect));
+	EXPECT_EQ("844.4 TB", formatFileSize(768LL*1024*1024*1024*1024, LibRpText::BinaryUnitDialect::MetricBinaryDialect));
+	EXPECT_EQ("1125.9 TB", formatFileSize(1024LL*1024*1024*1024*1024, LibRpText::BinaryUnitDialect::MetricBinaryDialect));
+	EXPECT_EQ("1688.8 TB", formatFileSize(1536LL*1024*1024*1024*1024, LibRpText::BinaryUnitDialect::MetricBinaryDialect));
+	EXPECT_EQ("2.25 PB", formatFileSize(2048LL*1024*1024*1024*1024, LibRpText::BinaryUnitDialect::MetricBinaryDialect));
+	EXPECT_EQ("2.81 PB", formatFileSize(2560LL*1024*1024*1024*1024, LibRpText::BinaryUnitDialect::MetricBinaryDialect));
+	EXPECT_EQ("3.38 PB", formatFileSize(3072LL*1024*1024*1024*1024, LibRpText::BinaryUnitDialect::MetricBinaryDialect));
+
+	// Exabyte
+	EXPECT_EQ("576.5 PB", formatFileSize(512LL*1024*1024*1024*1024*1024, LibRpText::BinaryUnitDialect::MetricBinaryDialect));
+	EXPECT_EQ("864.7 PB", formatFileSize(768LL*1024*1024*1024*1024*1024, LibRpText::BinaryUnitDialect::MetricBinaryDialect));
+	EXPECT_EQ("1152.9 PB", formatFileSize(1024LL*1024*1024*1024*1024*1024, LibRpText::BinaryUnitDialect::MetricBinaryDialect));
+	EXPECT_EQ("1729.4 PB", formatFileSize(1536LL*1024*1024*1024*1024*1024, LibRpText::BinaryUnitDialect::MetricBinaryDialect));
+	EXPECT_EQ("2.30 EB", formatFileSize(2048LL*1024*1024*1024*1024*1024, LibRpText::BinaryUnitDialect::MetricBinaryDialect));
+	EXPECT_EQ("2.88 EB", formatFileSize(2560LL*1024*1024*1024*1024*1024, LibRpText::BinaryUnitDialect::MetricBinaryDialect));
+	EXPECT_EQ("3.46 EB", formatFileSize(3072LL*1024*1024*1024*1024*1024, LibRpText::BinaryUnitDialect::MetricBinaryDialect));
+
+	// Largest value for a 64-bit signed integer
+	EXPECT_EQ("9.22 EB", formatFileSize(0x7FFFFFFFFFFFFFFFLL, LibRpText::BinaryUnitDialect::MetricBinaryDialect));
+}
+
+/**
+ * Test formatFileSizeKiB() using IEC binary units. (binary KiB)
+ */
+TEST_F(TextFuncsTest, formatFileSizeKiB_IEC)
+{
+	// NOTE: Due to LC_ALL="C", use standard binary sizes. (KiB, MiB, etc)
+	// Testing 512, 768, 1024, 1536, 2048, 2560, and 3072 for each order of magnitude.
+
+	// Special cases
+	EXPECT_EQ("0 KiB", formatFileSizeKiB(0U, LibRpText::BinaryUnitDialect::IECBinaryDialect));
+	EXPECT_EQ("0 KiB", formatFileSizeKiB(1U, LibRpText::BinaryUnitDialect::IECBinaryDialect));
+	EXPECT_EQ("0 KiB", formatFileSizeKiB(2U, LibRpText::BinaryUnitDialect::IECBinaryDialect));
+
+	// Kilobyte
+	EXPECT_EQ("0 KiB", formatFileSizeKiB(512U, LibRpText::BinaryUnitDialect::IECBinaryDialect));
+	EXPECT_EQ("0 KiB", formatFileSizeKiB(768U, LibRpText::BinaryUnitDialect::IECBinaryDialect));
+	EXPECT_EQ("1 KiB", formatFileSizeKiB(1024U, LibRpText::BinaryUnitDialect::IECBinaryDialect));
+	EXPECT_EQ("1 KiB", formatFileSizeKiB(1536U, LibRpText::BinaryUnitDialect::IECBinaryDialect));
+	EXPECT_EQ("2 KiB", formatFileSizeKiB(2048U, LibRpText::BinaryUnitDialect::IECBinaryDialect));
+	EXPECT_EQ("2 KiB", formatFileSizeKiB(2560U, LibRpText::BinaryUnitDialect::IECBinaryDialect));
+	EXPECT_EQ("3 KiB", formatFileSizeKiB(3072U, LibRpText::BinaryUnitDialect::IECBinaryDialect));
+
+	// Megabyte
+	EXPECT_EQ("512 KiB", formatFileSizeKiB(512U*1024U, LibRpText::BinaryUnitDialect::IECBinaryDialect));
+	EXPECT_EQ("768 KiB", formatFileSizeKiB(768U*1024U, LibRpText::BinaryUnitDialect::IECBinaryDialect));
+	EXPECT_EQ("1024 KiB", formatFileSizeKiB(1024U*1024U, LibRpText::BinaryUnitDialect::IECBinaryDialect));
+	EXPECT_EQ("1536 KiB", formatFileSizeKiB(1536U*1024U, LibRpText::BinaryUnitDialect::IECBinaryDialect));
+	EXPECT_EQ("2048 KiB", formatFileSizeKiB(2048U*1024U, LibRpText::BinaryUnitDialect::IECBinaryDialect));
+	EXPECT_EQ("2560 KiB", formatFileSizeKiB(2560U*1024U, LibRpText::BinaryUnitDialect::IECBinaryDialect));
+	EXPECT_EQ("3072 KiB", formatFileSizeKiB(3072U*1024U, LibRpText::BinaryUnitDialect::IECBinaryDialect));
+
+	// Gigabyte
+	EXPECT_EQ("524288 KiB", formatFileSizeKiB(512U*1024U*1024U, LibRpText::BinaryUnitDialect::IECBinaryDialect));
+	EXPECT_EQ("786432 KiB", formatFileSizeKiB(768U*1024U*1024U, LibRpText::BinaryUnitDialect::IECBinaryDialect));
+	EXPECT_EQ("1048576 KiB", formatFileSizeKiB(1024U*1024U*1024U, LibRpText::BinaryUnitDialect::IECBinaryDialect));
+	EXPECT_EQ("1572864 KiB", formatFileSizeKiB(1536U*1024U*1024U, LibRpText::BinaryUnitDialect::IECBinaryDialect));
+	EXPECT_EQ("2097152 KiB", formatFileSizeKiB(2048U*1024U*1024U, LibRpText::BinaryUnitDialect::IECBinaryDialect));
+	EXPECT_EQ("2621440 KiB", formatFileSizeKiB(2560U*1024U*1024U, LibRpText::BinaryUnitDialect::IECBinaryDialect));
+	EXPECT_EQ("3145728 KiB", formatFileSizeKiB(3072U*1024U*1024U, LibRpText::BinaryUnitDialect::IECBinaryDialect));
 
 	// Largest value for a 32-bit unsigned integer
-	EXPECT_EQ("4194303 KiB", formatFileSizeKiB(0xFFFFFFFFU));
+	EXPECT_EQ("4194303 KiB", formatFileSizeKiB(0xFFFFFFFFU, LibRpText::BinaryUnitDialect::IECBinaryDialect));
+}
+
+/**
+ * Test formatFileSizeKiB() using JEDEC binary units. (binary KB)
+ */
+TEST_F(TextFuncsTest, formatFileSizeKiB_JEDEC)
+{
+	// NOTE: Due to LC_ALL="C", use standard binary sizes. (KiB, MiB, etc)
+	// Testing 512, 768, 1024, 1536, 2048, 2560, and 3072 for each order of magnitude.
+
+	// Special cases
+	EXPECT_EQ("0 KB", formatFileSizeKiB(0U, LibRpText::BinaryUnitDialect::JEDECBinaryDialect));
+	EXPECT_EQ("0 KB", formatFileSizeKiB(1U, LibRpText::BinaryUnitDialect::JEDECBinaryDialect));
+	EXPECT_EQ("0 KB", formatFileSizeKiB(2U, LibRpText::BinaryUnitDialect::JEDECBinaryDialect));
+
+	// Kilobyte
+	EXPECT_EQ("0 KB", formatFileSizeKiB(512U, LibRpText::BinaryUnitDialect::JEDECBinaryDialect));
+	EXPECT_EQ("0 KB", formatFileSizeKiB(768U, LibRpText::BinaryUnitDialect::JEDECBinaryDialect));
+	EXPECT_EQ("1 KB", formatFileSizeKiB(1024U, LibRpText::BinaryUnitDialect::JEDECBinaryDialect));
+	EXPECT_EQ("1 KB", formatFileSizeKiB(1536U, LibRpText::BinaryUnitDialect::JEDECBinaryDialect));
+	EXPECT_EQ("2 KB", formatFileSizeKiB(2048U, LibRpText::BinaryUnitDialect::JEDECBinaryDialect));
+	EXPECT_EQ("2 KB", formatFileSizeKiB(2560U, LibRpText::BinaryUnitDialect::JEDECBinaryDialect));
+	EXPECT_EQ("3 KB", formatFileSizeKiB(3072U, LibRpText::BinaryUnitDialect::JEDECBinaryDialect));
+
+	// Megabyte
+	EXPECT_EQ("512 KB", formatFileSizeKiB(512U*1024U, LibRpText::BinaryUnitDialect::JEDECBinaryDialect));
+	EXPECT_EQ("768 KB", formatFileSizeKiB(768U*1024U, LibRpText::BinaryUnitDialect::JEDECBinaryDialect));
+	EXPECT_EQ("1024 KB", formatFileSizeKiB(1024U*1024U, LibRpText::BinaryUnitDialect::JEDECBinaryDialect));
+	EXPECT_EQ("1536 KB", formatFileSizeKiB(1536U*1024U, LibRpText::BinaryUnitDialect::JEDECBinaryDialect));
+	EXPECT_EQ("2048 KB", formatFileSizeKiB(2048U*1024U, LibRpText::BinaryUnitDialect::JEDECBinaryDialect));
+	EXPECT_EQ("2560 KB", formatFileSizeKiB(2560U*1024U, LibRpText::BinaryUnitDialect::JEDECBinaryDialect));
+	EXPECT_EQ("3072 KB", formatFileSizeKiB(3072U*1024U, LibRpText::BinaryUnitDialect::JEDECBinaryDialect));
+
+	// Gigabyte
+	EXPECT_EQ("524288 KB", formatFileSizeKiB(512U*1024U*1024U, LibRpText::BinaryUnitDialect::JEDECBinaryDialect));
+	EXPECT_EQ("786432 KB", formatFileSizeKiB(768U*1024U*1024U, LibRpText::BinaryUnitDialect::JEDECBinaryDialect));
+	EXPECT_EQ("1048576 KB", formatFileSizeKiB(1024U*1024U*1024U, LibRpText::BinaryUnitDialect::JEDECBinaryDialect));
+	EXPECT_EQ("1572864 KB", formatFileSizeKiB(1536U*1024U*1024U, LibRpText::BinaryUnitDialect::JEDECBinaryDialect));
+	EXPECT_EQ("2097152 KB", formatFileSizeKiB(2048U*1024U*1024U, LibRpText::BinaryUnitDialect::JEDECBinaryDialect));
+	EXPECT_EQ("2621440 KB", formatFileSizeKiB(2560U*1024U*1024U, LibRpText::BinaryUnitDialect::JEDECBinaryDialect));
+	EXPECT_EQ("3145728 KB", formatFileSizeKiB(3072U*1024U*1024U, LibRpText::BinaryUnitDialect::JEDECBinaryDialect));
+
+	// Largest value for a 32-bit unsigned integer
+	EXPECT_EQ("4194303 KB", formatFileSizeKiB(0xFFFFFFFFU, LibRpText::BinaryUnitDialect::JEDECBinaryDialect));
+}
+
+/**
+ * Test formatFileSizeKiB() using metric binary units. (decimal KB)
+ */
+TEST_F(TextFuncsTest, formatFileSizeKiB_Metric)
+{
+	// NOTE: Due to LC_ALL="C", use standard binary sizes. (KiB, MiB, etc)
+	// Testing 512, 768, 1024, 1536, 2048, 2560, and 3072 for each order of magnitude.
+
+	// Special cases
+	EXPECT_EQ("0 KB", formatFileSizeKiB(0U, LibRpText::BinaryUnitDialect::MetricBinaryDialect));
+	EXPECT_EQ("0 KB", formatFileSizeKiB(1U, LibRpText::BinaryUnitDialect::MetricBinaryDialect));
+	EXPECT_EQ("0 KB", formatFileSizeKiB(2U, LibRpText::BinaryUnitDialect::MetricBinaryDialect));
+
+	// Kilobyte
+	EXPECT_EQ("0 KB", formatFileSizeKiB(512U, LibRpText::BinaryUnitDialect::MetricBinaryDialect));
+	EXPECT_EQ("0 KB", formatFileSizeKiB(768U, LibRpText::BinaryUnitDialect::MetricBinaryDialect));
+	EXPECT_EQ("1 KB", formatFileSizeKiB(1024U, LibRpText::BinaryUnitDialect::MetricBinaryDialect));
+	EXPECT_EQ("1 KB", formatFileSizeKiB(1536U, LibRpText::BinaryUnitDialect::MetricBinaryDialect));
+	EXPECT_EQ("2 KB", formatFileSizeKiB(2048U, LibRpText::BinaryUnitDialect::MetricBinaryDialect));
+	EXPECT_EQ("2 KB", formatFileSizeKiB(2560U, LibRpText::BinaryUnitDialect::MetricBinaryDialect));
+	EXPECT_EQ("3 KB", formatFileSizeKiB(3072U, LibRpText::BinaryUnitDialect::MetricBinaryDialect));
+
+	// Megabyte
+	EXPECT_EQ("524 KB", formatFileSizeKiB(512U*1024U, LibRpText::BinaryUnitDialect::MetricBinaryDialect));
+	EXPECT_EQ("786 KB", formatFileSizeKiB(768U*1024U, LibRpText::BinaryUnitDialect::MetricBinaryDialect));
+	EXPECT_EQ("1048 KB", formatFileSizeKiB(1024U*1024U, LibRpText::BinaryUnitDialect::MetricBinaryDialect));
+	EXPECT_EQ("1572 KB", formatFileSizeKiB(1536U*1024U, LibRpText::BinaryUnitDialect::MetricBinaryDialect));
+	EXPECT_EQ("2097 KB", formatFileSizeKiB(2048U*1024U, LibRpText::BinaryUnitDialect::MetricBinaryDialect));
+	EXPECT_EQ("2621 KB", formatFileSizeKiB(2560U*1024U, LibRpText::BinaryUnitDialect::MetricBinaryDialect));
+	EXPECT_EQ("3145 KB", formatFileSizeKiB(3072U*1024U, LibRpText::BinaryUnitDialect::MetricBinaryDialect));
+
+	// Gigabyte
+	EXPECT_EQ("536870 KB", formatFileSizeKiB(512U*1024U*1024U, LibRpText::BinaryUnitDialect::MetricBinaryDialect));
+	EXPECT_EQ("805306 KB", formatFileSizeKiB(768U*1024U*1024U, LibRpText::BinaryUnitDialect::MetricBinaryDialect));
+	EXPECT_EQ("1073741 KB", formatFileSizeKiB(1024U*1024U*1024U, LibRpText::BinaryUnitDialect::MetricBinaryDialect));
+	EXPECT_EQ("1610612 KB", formatFileSizeKiB(1536U*1024U*1024U, LibRpText::BinaryUnitDialect::MetricBinaryDialect));
+	EXPECT_EQ("2147483 KB", formatFileSizeKiB(2048U*1024U*1024U, LibRpText::BinaryUnitDialect::MetricBinaryDialect));
+	EXPECT_EQ("2684354 KB", formatFileSizeKiB(2560U*1024U*1024U, LibRpText::BinaryUnitDialect::MetricBinaryDialect));
+	EXPECT_EQ("3221225 KB", formatFileSizeKiB(3072U*1024U*1024U, LibRpText::BinaryUnitDialect::MetricBinaryDialect));
+
+	// Largest value for a 32-bit unsigned integer
+	EXPECT_EQ("4294967 KB", formatFileSizeKiB(0xFFFFFFFFU, LibRpText::BinaryUnitDialect::MetricBinaryDialect));
 }
 
 /**

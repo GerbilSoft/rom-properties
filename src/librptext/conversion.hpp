@@ -617,12 +617,21 @@ static inline std::u16string utf16be_to_utf16(const char16_t *wcs, int len)
 
 /** Other useful text functions **/
 
+enum class BinaryUnitDialect {
+	DefaultBinaryDialect = -1,
+
+	IECBinaryDialect,
+	JEDECBinaryDialect,
+	MetricBinaryDialect,
+};
+
 /**
  * Format a file size.
- * @param fileSize File size.
+ * @param fileSize File size
+ * @param dialect
  * @return Formatted file size.
  */
-std::string formatFileSize(off64_t fileSize);
+std::string formatFileSize(off64_t fileSize, BinaryUnitDialect dialect = BinaryUnitDialect::DefaultBinaryDialect);
 
 /**
  * Format a file size, in KiB.
@@ -630,10 +639,11 @@ std::string formatFileSize(off64_t fileSize);
  * This function expects the size to be a multiple of 1024,
  * so it doesn't do any fractional rounding or printing.
  *
- * @param size File size.
+ * @param size File size
+ * @param dialect
  * @return Formatted file size.
  */
-std::string formatFileSizeKiB(unsigned int size);
+std::string formatFileSizeKiB(unsigned int size, BinaryUnitDialect dialect = BinaryUnitDialect::DefaultBinaryDialect);
 
 /**
  * Format a frequency.

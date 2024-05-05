@@ -201,9 +201,29 @@ const char16_t *u16_memchr(const char16_t *wcs, char16_t c, size_t n)
 /** Other useful text functions **/
 
 template<typename T>
-static inline int calc_frac_part(T val, T mask)
+static inline int calc_frac_part_binary(T val, T mask)
 {
 	const float f = static_cast<float>(val & (mask - 1)) / static_cast<float>(mask);
+	int frac_part = static_cast<int>(f * 1000.0f);
+	if (frac_part >= 990) {
+		// Edge case: The fractional portion is >= 99.
+		// In extreme cases, it could be 100 due to rounding.
+		// Always return 99 in this case.
+		return 99;
+	}
+
+	// MSVC added round() and roundf() in MSVC 2013.
+	// Use our own rounding code instead.
+	const int round_adj = ((frac_part % 10) > 5);
+	frac_part /= 10;
+	frac_part += round_adj;
+	return frac_part;
+}
+
+template<typename T>
+static inline int calc_frac_part_decimal(T val, T divisor)
+{
+	const float f = static_cast<float>(val % divisor) / static_cast<float>(divisor);
 	int frac_part = static_cast<int>(f * 1000.0f);
 	if (frac_part >= 990) {
 		// Edge case: The fractional portion is >= 99.
@@ -270,57 +290,134 @@ static void initLocalizedDecimalPoint(void)
 
 /**
  * Format a file size.
- * @param size File size.
+ * @param size File size
+ * @param dialect
  * @return Formatted file size.
  */
-string formatFileSize(off64_t size)
+string formatFileSize(off64_t size, BinaryUnitDialect dialect)
 {
 	const char *suffix;
 	// frac_part is always 0 to 100.
 	// If whole_part >= 10, frac_part is divided by 10.
 	int whole_part, frac_part;
+	bool needs_pgettext = true;
 
-	// TODO: Optimize this?
-	if (size < 0) {
-		// Invalid size. Print the value as-is.
-		suffix = nullptr;
-		whole_part = static_cast<int>(size);
-		frac_part = 0;
-	} else if (size < (2LL << 10)) {
-		// tr: Bytes (< 1,024)
-		suffix = NC_("LibRpText|FileSize", "byte", "bytes", static_cast<int>(size));
-		whole_part = static_cast<int>(size);
-		frac_part = 0;
-	} else if (size < (2LL << 20)) {
-		// tr: Kilobytes
-		suffix = C_("LibRpText|FileSize", "KiB");
-		whole_part = static_cast<int>(size >> 10);
-		frac_part = calc_frac_part<off64_t>(size, (1LL << 10));
-	} else if (size < (2LL << 30)) {
-		// tr: Megabytes
-		suffix = C_("LibRpText|FileSize", "MiB");
-		whole_part = static_cast<int>(size >> 20);
-		frac_part = calc_frac_part<off64_t>(size, (1LL << 20));
-	} else if (size < (2LL << 40)) {
-		// tr: Gigabytes
-		suffix = C_("LibRpText|FileSize", "GiB");
-		whole_part = static_cast<int>(size >> 30);
-		frac_part = calc_frac_part<off64_t>(size, (1LL << 30));
-	} else if (size < (2LL << 50)) {
-		// tr: Terabytes
-		suffix = C_("LibRpText|FileSize", "TiB");
-		whole_part = static_cast<int>(size >> 40);
-		frac_part = calc_frac_part<off64_t>(size, (1LL << 40));
-	} else if (size < (2LL << 60)) {
-		// tr: Petabytes
-		suffix = C_("LibRpText|FileSize", "PiB");
-		whole_part = static_cast<int>(size >> 50);
-		frac_part = calc_frac_part<off64_t>(size, (1LL << 50));
-	} else /*if (size < (2LL << 70))*/ {
-		// tr: Exabytes
-		suffix = C_("LibRpText|FileSize", "EiB");
-		whole_part = static_cast<int>(size >> 60);
-		frac_part = calc_frac_part<off64_t>(size, (1LL << 60));
+	if (likely(dialect != BinaryUnitDialect::MetricBinaryDialect)) {
+		// Binary KiB (or binary KB)
+		const bool isKiB = (dialect == BinaryUnitDialect::DefaultBinaryDialect ||
+		                    dialect == BinaryUnitDialect::IECBinaryDialect);
+
+		if (size < 0) {
+			// Invalid size. Print the value as-is.
+			suffix = nullptr;
+			whole_part = static_cast<int>(size);
+			frac_part = 0;
+		} else if (size < (2LL << 10)) {
+			// tr: Bytes (< 1,024)
+			suffix = NC_("LibRpText|FileSize", "byte", "bytes", static_cast<int>(size));
+			needs_pgettext = false;
+			whole_part = static_cast<int>(size);
+			frac_part = 0;
+		} else if (size < (2LL << 20)) {
+			suffix = isKiB
+				// tr: Kilobytes (binary)
+				? NOP_C_("LibRpText|FileSize", "KiB")
+				// tr: Kilobytes (decimal)
+				: NOP_C_("LibRpText|FileSize", "KB");
+			whole_part = static_cast<int>(size >> 10);
+			frac_part = calc_frac_part_binary<off64_t>(size, (1LL << 10));
+		} else if (size < (2LL << 30)) {
+			suffix = isKiB
+				// tr: Megabytes (binary)
+				? NOP_C_("LibRpText|FileSize", "MiB")
+				// tr: Megabytes (decimal)
+				: NOP_C_("LibRpText|FileSize", "MB");
+			whole_part = static_cast<int>(size >> 20);
+			frac_part = calc_frac_part_binary<off64_t>(size, (1LL << 20));
+		} else if (size < (2LL << 40)) {
+			suffix = isKiB
+				// tr: Gigabytes (binary)
+				? NOP_C_("LibRpText|FileSize", "GiB")
+				// tr: Gigabytes (decimal)
+				: NOP_C_("LibRpText|FileSize", "GB");
+			whole_part = static_cast<int>(size >> 30);
+			frac_part = calc_frac_part_binary<off64_t>(size, (1LL << 30));
+		} else if (size < (2LL << 50)) {
+			suffix = isKiB
+				// tr: Terabytes (binary)
+				? NOP_C_("LibRpText|FileSize", "TiB")
+				// tr: Terabytes (decimal)
+				: NOP_C_("LibRpText|FileSize", "TB");
+			whole_part = static_cast<int>(size >> 40);
+			frac_part = calc_frac_part_binary<off64_t>(size, (1LL << 40));
+		} else if (size < (2LL << 60)) {
+			suffix = isKiB
+				// tr: Petabytes (binary)
+				? NOP_C_("LibRpText|FileSize", "PiB")
+				// tr: Petabytes (decimal)
+				: NOP_C_("LibRpText|FileSize", "PB");
+			whole_part = static_cast<int>(size >> 50);
+			frac_part = calc_frac_part_binary<off64_t>(size, (1LL << 50));
+		} else /*if (size < (2LL << 70))*/ {
+			suffix = isKiB
+				// tr: Exabytes (binary)
+				? NOP_C_("LibRpText|FileSize", "EiB")
+				// tr: Exabytes (decimal)
+				: NOP_C_("LibRpText|FileSize", "EB");
+			whole_part = static_cast<int>(size >> 60);
+			frac_part = calc_frac_part_binary<off64_t>(size, (1LL << 60));
+		}
+	} else {
+		// Decimal KB
+		if (size < 0) {
+			// Invalid size. Print the value as-is.
+			suffix = nullptr;
+			whole_part = static_cast<int>(size);
+			frac_part = 0;
+		} else if (size < (2LL * 1000)) {
+			// tr: Bytes (< 1,000)
+			suffix = NC_("LibRpText|FileSize", "byte", "bytes", static_cast<int>(size));
+			needs_pgettext = false;
+			whole_part = static_cast<int>(size);
+			frac_part = 0;
+		} else if (size < (2LL * 1000*1000)) {
+			// tr: Kilobytes (decimal)
+			suffix = NOP_C_("LibRpText|FileSize", "KB");
+			whole_part = static_cast<int>(size / 1000);
+			frac_part = calc_frac_part_decimal<off64_t>(size, (1LL * 1000));
+		} else if (size < (2LL * 1000*1000*1000)) {
+			// tr: Megabytes (decimal)
+			suffix = NOP_C_("LibRpText|FileSize", "MB");
+			whole_part = static_cast<int>(size / (1000LL * 1000));
+			frac_part = calc_frac_part_decimal<off64_t>(size, (1000LL * 1000));
+		} else if (size < (2LL * 1000*1000*1000*1000)) {
+			// tr: Gigabytes (decimal)
+			suffix = NOP_C_("LibRpText|FileSize", "GB");
+			whole_part = static_cast<int>(size / (1000LL * 1000 * 1000));
+			frac_part = calc_frac_part_decimal<off64_t>(size, (1000LL * 1000 * 1000));
+		} else if (size < (2LL * 1000*1000*1000*1000*1000)) {
+			// tr: Terabytes (decimal)
+			suffix = NOP_C_("LibRpText|FileSize", "TB");
+			whole_part = static_cast<int>(size / (1000LL * 1000 * 1000 * 1000));
+			frac_part = calc_frac_part_decimal<off64_t>(size, (1000LL * 1000 * 1000 * 1000));
+		} else if (size < (2LL * 1000*1000*1000*1000*1000*1000)) {
+			// tr: Petabytes (decimal)
+			suffix = NOP_C_("LibRpText|FileSize", "PB");
+			whole_part = static_cast<int>(size / (1000LL * 1000 * 1000 * 1000 * 1000));
+			frac_part = calc_frac_part_decimal<off64_t>(size, (1000LL * 1000 * 1000 * 1000 * 1000));
+		} else /*if (size < (2LL * 1000*1000*1000*1000*1000*1000*1000))*/ {
+			// tr: Exabytes (decimal)
+			suffix = NOP_C_("LibRpText|FileSize", "EB");
+			whole_part = static_cast<int>(size / (1000LL * 1000 * 1000 * 1000 * 1000 * 1000));
+			frac_part = calc_frac_part_decimal<off64_t>(size, (1000LL * 1000 * 1000 * 1000 * 1000 * 1000));
+		}
+	}
+
+	// Do the actual localization here.
+	if (suffix && needs_pgettext) {
+		printf("suffix first:  %s\n", suffix);
+		suffix = pgettext_expr("LibRpText|FileSize", suffix);
+		printf("suffix second: %s\n", suffix);
 	}
 
 	// Localize the whole part.
@@ -369,19 +466,36 @@ string formatFileSize(off64_t size)
  * This function expects the size to be a multiple of 1024,
  * so it doesn't do any fractional rounding or printing.
  *
- * @param size File size.
+ * @param size File size
+ * @param dialect
  * @return Formatted file size.
  */
-std::string formatFileSizeKiB(unsigned int size)
+std::string formatFileSizeKiB(unsigned int size, BinaryUnitDialect dialect)
 {
 	// Localize the number.
 	// FIXME: If using C locale, don't do localization.
 	ostringstream s_value;
-	s_value << (size / 1024);
+	s_value << ((likely(dialect != BinaryUnitDialect::MetricBinaryDialect))
+		? (size / 1024)
+		: (size / 1000));
+
+	const char *suffix;
+	switch (dialect) {
+		default:
+		case BinaryUnitDialect::DefaultBinaryDialect:
+		case BinaryUnitDialect::IECBinaryDialect:
+			suffix = C_("LibRpText|FileSize", "KiB");
+			break;
+
+		case BinaryUnitDialect::JEDECBinaryDialect:
+		case BinaryUnitDialect::MetricBinaryDialect:
+			suffix = C_("LibRpText|FileSize", "KB");
+			break;
+	}
 
 	// tr: %1$s == localized value, %2$s == suffix (e.g. MiB)
 	return rp_sprintf_p(C_("LibRpText|FileSize", "%1$s %2$s"),
-		s_value.str().c_str(), C_("LibRpText|FileSize", "KiB"));
+		s_value.str().c_str(), suffix);
 }
 
 /**
