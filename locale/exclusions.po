@@ -22,7 +22,7 @@ msgid "_Open"
 msgstr ""
 
 #: ../src/gtk/gtk-i18n.h:36
-msgid "_Open"
+msgid "_Close"
 msgstr ""
 
 #: ../src/gtk/gtk-i18n.h:39

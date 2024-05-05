@@ -1114,10 +1114,6 @@ msgctxt "RomDataView"
 msgid "File Type"
 msgstr ""
 
-#: ../src/gtk/gtk-i18n.h:36
-msgid "_Close"
-msgstr ""
-
 #: ../src/gtk/OptionsMenuButton.cpp:144 ../src/kde/OptionsMenuButton.cpp:25
 #: ../src/win32/OptionsMenuButton.cpp:35
 msgctxt "OptionsMenuButton|StdActs"
