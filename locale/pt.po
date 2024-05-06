@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2024-04-28 18:13-0400\n"
-"PO-Revision-Date: 2024-05-05 01:57\n"
+"PO-Revision-Date: 2024-05-06 16:43\n"
 "Last-Translator: \n"
 "Language-Team: Portuguese, Brazilian\n"
 "Language: pt_BR\n"
@@ -2164,7 +2164,7 @@ msgstr ""
 #: ../src/libromdata/config/ImageTypesConfig.cpp:161
 msgctxt "ImageTypesConfig|SysName"
 msgid "Wii WAD Files"
-msgstr "Todos os arquivos"
+msgstr ""
 
 #: ../src/libromdata/Console/Atari7800.cpp:201
 #: ../src/libromdata/Console/CBMCart.cpp:297
@@ -2881,7 +2881,7 @@ msgstr "Código de jogo"
 #: ../src/libromdata/Console/GameCube.cpp:1669
 msgctxt "Wii|Partition"
 msgid "Update"
-msgstr "Atualizar"
+msgstr "Atualização"
 
 #. tr: GameCubePrivate::RVL_PT_CHANNEL (Channel partition)
 #: ../src/libromdata/Console/GameCube.cpp:1671
