@@ -1609,6 +1609,7 @@ int GameCube::loadFieldData(void)
 			}
 		}
 
+		// tr: Update version included on this disc
 		const char *const update_title = C_("Nintendo", "Update");
 		if (isDebugIOS || ios_retail_count == 1) {
 			d->fields.addField_string(update_title,

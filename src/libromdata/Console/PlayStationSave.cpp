@@ -496,7 +496,7 @@ int PlayStationSave::loadFieldData(void)
 	}
 
 	// Description.
-	d->fields.addField_string(C_("PlayStationSave", "Description"),
+	d->fields.addField_string(C_("RomData", "Description"),
 		cp1252_sjis_to_utf8(scHeader->title, sizeof(scHeader->title)));
 
 	// TODO: Moar fields.

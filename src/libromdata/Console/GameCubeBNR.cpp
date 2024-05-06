@@ -621,7 +621,7 @@ int GameCubeBNR::loadFieldData(void)
 	// Currently showing full if it's there; otherwise, normal.
 	const char *const s_game_name_title = C_("GameCubeBNR", "Game Name");
 	const char *const s_company_title = C_("GameCubeBNR", "Company");
-	const char *const s_description_title = C_("GameCubeBNR", "Description");
+	const char *const s_description_title = C_("RomData", "Description");
 
 	if (d->bannerType == GameCubeBNRPrivate::BannerType::BNR1) {
 		// BNR1: Assuming Shift-JIS with cp1252 fallback.

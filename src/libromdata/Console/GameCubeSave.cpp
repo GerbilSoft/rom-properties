@@ -913,7 +913,7 @@ int GameCubeSave::loadFieldData(void)
 	// Description
 	string description = d->getComment();
 	if (likely(!description.empty())) {
-		d->fields.addField_string(C_("GameCubeSave", "Description"), description);
+		d->fields.addField_string(C_("RomData", "Description"), description);
 	}
 
 	// Last Modified timestamp

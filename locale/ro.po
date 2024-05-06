@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2024-04-28 18:13-0400\n"
+"POT-Creation-Date: 2024-05-06 11:12-0400\n"
 "PO-Revision-Date: 2024-01-08 23:10\n"
 "Last-Translator: ionuttbara\n"
 "Language-Team: Romanian\n"
@@ -202,14 +202,6 @@ msgstr ""
 "sistem ca imagine miniaturală.\n"
 "Imaginile interne sunt conţinute în fişierul ROM.\n"
 "Imaginile externe sunt descărcate dintr-o bază de date externă de imagini"
-
-#: ../build/src/kde/kf5/ui_KeyManagerTab.h:90
-#: ../build/src/kde/kf6/ui_KeyManagerTab.h:90
-#: ../src/gtk/config/KeyManagerTab.cpp:146
-#: ../src/kde/config/KeyManagerTab.cpp:326
-msgctxt "KeyManagerTab"
-msgid "I&mport"
-msgstr "I&mport"
 
 #: ../build/src/kde/kf5/ui_OptionsTab.h:184
 #: ../build/src/kde/kf6/ui_OptionsTab.h:184
@@ -730,6 +722,12 @@ msgid ""
 "amiibo images are provided by <a href=\"https://amiibo.life/\">amiibo.life</"
 "a>, the Unofficial amiibo Database."
 msgstr ""
+
+#: ../src/gtk/config/KeyManagerTab.cpp:146
+#: ../src/kde/config/KeyManagerTab.cpp:326
+msgctxt "KeyManagerTab"
+msgid "I&mport"
+msgstr "I&mport"
 
 #. tr: Wii keys.bin dialog title
 #: ../src/gtk/config/KeyManagerTab.cpp:478
@@ -2715,7 +2713,11 @@ msgid "Company"
 msgstr ""
 
 #: ../src/libromdata/Console/GameCubeBNR.cpp:624
-msgctxt "GameCubeBNR"
+#: ../src/libromdata/Console/GameCubeSave.cpp:916
+#: ../src/libromdata/Console/PlayStationSave.cpp:499
+#: ../src/libromdata/Console/Sega8Bit.cpp:490
+#: ../src/libromdata/Console/Xbox360_STFS.cpp:898
+msgctxt "RomData"
 msgid "Description"
 msgstr ""
 
@@ -3042,11 +3044,6 @@ msgstr ""
 #: ../src/libromdata/Handheld/NintendoDS.cpp:798
 msgctxt "Region"
 msgid "Region-Free"
-msgstr ""
-
-#: ../src/libromdata/Console/GameCubeSave.cpp:916
-msgctxt "GameCubeSave"
-msgid "Description"
 msgstr ""
 
 #: ../src/libromdata/Console/GameCubeSave.cpp:920
@@ -3918,11 +3915,6 @@ msgctxt "RomData"
 msgid "Region"
 msgstr ""
 
-#: ../src/libromdata/Console/PlayStationSave.cpp:499
-msgctxt "PlayStationSave"
-msgid "Description"
-msgstr ""
-
 #: ../src/libromdata/Console/Sega8Bit.cpp:375
 msgctxt "Sega8Bit"
 msgid "Product Code"
@@ -4007,12 +3999,6 @@ msgstr ""
 #: ../src/libromdata/Console/Xbox360_STFS.cpp:890
 msgctxt "RomData"
 msgid "Name"
-msgstr ""
-
-#: ../src/libromdata/Console/Sega8Bit.cpp:490
-#: ../src/libromdata/Console/Xbox360_STFS.cpp:898
-msgctxt "RomData"
-msgid "Description"
 msgstr ""
 
 #: ../src/libromdata/Console/Sega8Bit.cpp:497
@@ -9084,7 +9070,7 @@ msgstr ""
 
 #. tr: Bytes (< 1,024)
 #. tr: Bytes (< 1,000)
-#: ../src/librptext/conversion.cpp:297 ../src/librptext/conversion.cpp:359
+#: ../src/librptext/conversion.cpp:317 ../src/librptext/conversion.cpp:379
 msgctxt "LibRpText|FileSize"
 msgid "byte"
 msgid_plural "bytes"
@@ -9093,111 +9079,111 @@ msgstr[1] ""
 msgstr[2] ""
 
 #. tr: Kilobytes (binary)
-#: ../src/librptext/conversion.cpp:304 ../src/librptext/conversion.cpp:465
+#: ../src/librptext/conversion.cpp:324 ../src/librptext/conversion.cpp:487
 msgctxt "LibRpText|FileSize"
 msgid "KiB"
 msgstr ""
 
 #. tr: Kilobytes (decimal)
-#: ../src/librptext/conversion.cpp:306 ../src/librptext/conversion.cpp:365
-#: ../src/librptext/conversion.cpp:470
+#: ../src/librptext/conversion.cpp:326 ../src/librptext/conversion.cpp:385
+#: ../src/librptext/conversion.cpp:492
 msgctxt "LibRpText|FileSize"
 msgid "KB"
 msgstr ""
 
 #. tr: Megabytes (binary)
-#: ../src/librptext/conversion.cpp:312
+#: ../src/librptext/conversion.cpp:332
 msgctxt "LibRpText|FileSize"
 msgid "MiB"
 msgstr ""
 
 #. tr: Megabytes (decimal)
-#: ../src/librptext/conversion.cpp:314 ../src/librptext/conversion.cpp:370
+#: ../src/librptext/conversion.cpp:334 ../src/librptext/conversion.cpp:390
 msgctxt "LibRpText|FileSize"
 msgid "MB"
 msgstr ""
 
 #. tr: Gigabytes (binary)
-#: ../src/librptext/conversion.cpp:320
+#: ../src/librptext/conversion.cpp:340
 msgctxt "LibRpText|FileSize"
 msgid "GiB"
 msgstr ""
 
 #. tr: Gigabytes (decimal)
-#: ../src/librptext/conversion.cpp:322 ../src/librptext/conversion.cpp:375
+#: ../src/librptext/conversion.cpp:342 ../src/librptext/conversion.cpp:395
 msgctxt "LibRpText|FileSize"
 msgid "GB"
 msgstr ""
 
 #. tr: Terabytes (binary)
-#: ../src/librptext/conversion.cpp:328
+#: ../src/librptext/conversion.cpp:348
 msgctxt "LibRpText|FileSize"
 msgid "TiB"
 msgstr ""
 
 #. tr: Terabytes (decimal)
-#: ../src/librptext/conversion.cpp:330 ../src/librptext/conversion.cpp:380
+#: ../src/librptext/conversion.cpp:350 ../src/librptext/conversion.cpp:400
 msgctxt "LibRpText|FileSize"
 msgid "TB"
 msgstr ""
 
 #. tr: Petabytes (binary)
-#: ../src/librptext/conversion.cpp:336
+#: ../src/librptext/conversion.cpp:356
 msgctxt "LibRpText|FileSize"
 msgid "PiB"
 msgstr ""
 
 #. tr: Petabytes (decimal)
-#: ../src/librptext/conversion.cpp:338 ../src/librptext/conversion.cpp:385
+#: ../src/librptext/conversion.cpp:358 ../src/librptext/conversion.cpp:405
 msgctxt "LibRpText|FileSize"
 msgid "PB"
 msgstr ""
 
 #. tr: Exabytes (binary)
-#: ../src/librptext/conversion.cpp:344
+#: ../src/librptext/conversion.cpp:364
 msgctxt "LibRpText|FileSize"
 msgid "EiB"
 msgstr ""
 
 #. tr: Exabytes (decimal)
-#: ../src/librptext/conversion.cpp:346 ../src/librptext/conversion.cpp:390
+#: ../src/librptext/conversion.cpp:366 ../src/librptext/conversion.cpp:410
 msgctxt "LibRpText|FileSize"
 msgid "EB"
 msgstr ""
 
 #. tr: %1$s == localized value, %2$s == suffix (e.g. MiB)
-#: ../src/librptext/conversion.cpp:433 ../src/librptext/conversion.cpp:475
+#: ../src/librptext/conversion.cpp:455 ../src/librptext/conversion.cpp:497
 #, c-format
 msgctxt "LibRpText|FileSize"
 msgid "%1$s %2$s"
 msgstr ""
 
 #. tr: Hertz (< 1,000)
-#: ../src/librptext/conversion.cpp:494
+#: ../src/librptext/conversion.cpp:516
 msgctxt "LibRpText|Frequency"
 msgid "Hz"
 msgstr ""
 
 #. tr: Kilohertz
-#: ../src/librptext/conversion.cpp:499
+#: ../src/librptext/conversion.cpp:521
 msgctxt "LibRpText|Frequency"
 msgid "kHz"
 msgstr ""
 
 #. tr: Megahertz
-#: ../src/librptext/conversion.cpp:504
+#: ../src/librptext/conversion.cpp:526
 msgctxt "LibRpText|Frequency"
 msgid "MHz"
 msgstr ""
 
 #. tr: Gigahertz
-#: ../src/librptext/conversion.cpp:509
+#: ../src/librptext/conversion.cpp:531
 msgctxt "LibRpText|Frequency"
 msgid "GHz"
 msgstr ""
 
 #. tr: %1$s == localized value, %2$s == suffix (e.g. MHz)
-#: ../src/librptext/conversion.cpp:540
+#: ../src/librptext/conversion.cpp:562
 #, c-format
 msgctxt "LibRpText|Frequency"
 msgid "%1$s %2$s"
