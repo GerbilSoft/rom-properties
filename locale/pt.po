@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2024-05-06 11:12-0400\n"
-"PO-Revision-Date: 2024-05-06 22:52\n"
+"PO-Revision-Date: 2024-05-07 18:06\n"
 "Last-Translator: \n"
 "Language-Team: Portuguese, Brazilian\n"
 "Language: pt_BR\n"
@@ -2162,7 +2162,7 @@ msgstr ""
 #: ../src/libromdata/config/ImageTypesConfig.cpp:161
 msgctxt "ImageTypesConfig|SysName"
 msgid "Wii WAD Files"
-msgstr "Todos os arquivos"
+msgstr ""
 
 #: ../src/libromdata/Console/Atari7800.cpp:201
 #: ../src/libromdata/Console/CBMCart.cpp:297
