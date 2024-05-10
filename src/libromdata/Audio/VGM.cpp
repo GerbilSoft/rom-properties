@@ -654,7 +654,7 @@ int VGM::loadFieldData(void)
 
 					static constexpr char chip_name_tbl[8][8] = {
 						"AY8910", "AY8912", "AY8913", "AY8930",
-						"YM2139", "YM3439", "YMZ284", "YMZ294",
+						"YM2149", "YM3439", "YMZ284", "YMZ294",
 					};
 					chip_name = chip_name_tbl[lkup];
 				} else {
