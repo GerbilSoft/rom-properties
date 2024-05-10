@@ -2221,7 +2221,7 @@ msgstr "Wii U"
 #: ../src/libromdata/config/ImageTypesConfig.cpp:161
 msgctxt "ImageTypesConfig|SysName"
 msgid "Wii WAD Files"
-msgstr "Todos os arquivos"
+msgstr ""
 
 #: ../src/libromdata/Console/Atari7800.cpp:201
 #: ../src/libromdata/Console/CBMCart.cpp:297
