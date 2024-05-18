@@ -72,6 +72,10 @@
     Affects RFT_LISTDATA, but not RFT_LISTDATA_MULTI.
     * Fixes #413: Exports/Imports table in win32 shell ext page showing blank rows
       * Reported by @ksharperd.
+  * VGM: "YM2139" should be "YM2149".
+    * Affects: v1.4 - v2.3
+    * Fixes #415: Fix name of YM2149 from "YM2139"
+      * Reported by @TheEssem.
 
 ## v2.3 (released 2024/03/03)
 
