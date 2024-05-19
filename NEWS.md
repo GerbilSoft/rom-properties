@@ -76,6 +76,9 @@
     * Affects: v1.4 - v2.3
     * Fixes #415: Fix name of YM2149 from "YM2139"
       * Reported by @TheEssem.
+  * Windows: Fix display of multi-line strings with multiple languages.
+    * Fixes #416: Win32 UI frontend: Localized multi-line strings aren't displayed correctly (was: Line feeds not working in descriptions for GameCube titles with BNR2 banner)
+      * Reported by @rctgamer3.
 
 ## v2.3 (released 2024/03/03)
 

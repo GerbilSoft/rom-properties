@@ -352,12 +352,38 @@ int RP_ShellPropSheetExt_Private::initString(_In_ HWND hWndTab,
 	int lf_count = 0;
 	tstring str_nl;
 	if (!str) {
-		if (field.type != RomFields::RFT_STRING)
-			return 0;
+		switch (field.type) {
+			default:
+				// Not supported.
+				assert(!"Unsupported field type!");
+				return 0;
 
-		// NULL string == empty string
-		if (field.data.str) {
-			str_nl = LibWin32UI::unix2dos(U82T_s(field.data.str), &lf_count);
+			case RomFields::RFT_STRING:
+				// NULL string == empty string
+				if (field.data.str) {
+					str_nl = LibWin32UI::unix2dos(U82T_s(field.data.str), &lf_count);
+				}
+				break;
+
+			case RomFields::RFT_STRING_MULTI:
+				// Need to count newlines for *all* strings in this field.
+				const auto *const pStr_multi = field.data.str_multi;
+				for (const auto &p : *pStr_multi) {
+					// Count the number of newlines.
+					int tmp_lf_count = std::accumulate(p.second.cbegin(), p.second.cend(), 0,
+						[](int sum, char chr) -> int {
+							if (chr == '\n')
+								sum++;
+							return sum;
+						});
+					if (tmp_lf_count > lf_count) {
+						lf_count = tmp_lf_count;
+					}
+				}
+
+				// NOTE: Not setting str_nl here, since the user will be
+				// able to change the displayed language.
+				break;
 		}
 	} else {
 		// Use the specified string.
@@ -1328,11 +1354,9 @@ int RP_ShellPropSheetExt_Private::initStringMulti(_In_ HWND hWndTab,
 	// NOTE: The string contents won't be initialized here.
 	// They will be initialized separately, since the user will
 	// be able to change the displayed language.
-	// NOTE 2: The string must be _T(""), not nullptr. Otherwise, it will
-	// attempt to use the field's string data, which is invalid.
 	HWND lblStringMulti = nullptr;
 	const int field_cy = initString(hWndTab, pt_start, size, field, fieldIdx,
-		_T(""), &lblStringMulti);
+		nullptr, &lblStringMulti);
 	if (lblStringMulti) {
 		vecStringMulti.emplace_back(lblStringMulti, &field);
 	}
@@ -1371,7 +1395,7 @@ void RP_ShellPropSheetExt_Private::updateMulti(uint32_t user_lc)
 		const string *const pStr = RomFields::getFromStringMulti(pStr_multi, def_lc, user_lc);
 		assert(pStr != nullptr);
 		if (pStr != nullptr) {
-			SetWindowText(lblString, U82T_s(*pStr));
+			SetWindowText(lblString, LibWin32UI::unix2dos(U82T_s(*pStr)).c_str());
 		} else {
 			SetWindowText(lblString, _T(""));
 		}
