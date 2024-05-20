@@ -25,12 +25,19 @@ XAttrReaderPrivate::XAttrReaderPrivate(const char *filename)
 	: fd(-1)
 	, lastError(0)
 	, hasExt2Attributes(false)
+	, hasXfsAttributes(false)
 	, hasDosAttributes(false)
 	, hasGenericXAttrs(false)
-	, linuxAttributes(0)
+	, ext2Attributes(0)
+	, xfsXFlags(0)
+	, xfsProjectId(0)
 	, dosAttributes(0)
 {
 	RP_UNUSED(filename);
+}
+
+XAttrReaderPrivate::~XAttrReaderPrivate()
+{
 }
 
 /**
@@ -54,6 +61,18 @@ int XAttrReaderPrivate::loadExt2Attrs(void)
 	RP_UNUSED(fd);
 	return -ENOTSUP;
 }
+
+/**
+ * Load XFS attributes, if available.
+ * Internal fd (filename on Windows) must be set.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int XAttrReaderPrivate::loadXfsAttrs(void)
+{
+        RP_UNUSED(fd);
+        return -ENOTSUP;
+}
+
 
 /**
  * Load MS-DOS attributes, if available.
