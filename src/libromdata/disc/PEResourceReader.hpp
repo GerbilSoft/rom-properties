@@ -100,6 +100,13 @@ public:
 	 */
 	LibRpFile::IRpFilePtr open(uint16_t type, int id, int lang) final;
 
+#ifdef _WIN32
+	open_MAKEINTRESOURCE_wrapper(LPSTR);
+	open_MAKEINTRESOURCE_wrapper(LPCSTR);
+	open_MAKEINTRESOURCE_wrapper(LPWSTR);
+	open_MAKEINTRESOURCE_wrapper(LPCWSTR);
+#endif /* _WIN32 */
+
 	/**
 	 * Load a VS_VERSION_INFO resource.
 	 * Data will be byteswapped to host-endian if necessary.
