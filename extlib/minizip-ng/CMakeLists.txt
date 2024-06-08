@@ -8,7 +8,7 @@
 #cmake_minimum_required(VERSION 3.13)
 
 # Library version
-set(VERSION "4.0.5")
+set(VERSION "4.0.6")
 # API version
 set(SOVERSION "4")
 
@@ -217,7 +217,7 @@ if(MZ_ZLIB)
         set(PC_PRIVATE_DEPS "zlib")
         set(ZLIB_COMPAT ON)
     elseif(MZ_FETCH_LIBS)
-        clone_repo(zlib https://github.com/madler/zlib)
+        clone_repo(zlib https://github.com/zlib-ng/zlib-ng stable)
 
         # Don't automatically add all targets to the solution
         add_subdirectory(${ZLIB_SOURCE_DIR} ${ZLIB_BINARY_DIR} EXCLUDE_FROM_ALL)
@@ -274,7 +274,7 @@ if(MZ_BZIP2)
 
         set(PC_PRIVATE_LIBS "${PC_PRIVATE_LIBS} -lbz2")
     elseif(MZ_FETCH_LIBS)
-        clone_repo(bzip2 https://sourceware.org/git/bzip2.git)
+        clone_repo(bzip2 https://sourceware.org/git/bzip2.git master)
 
         # BZip2 repository does not support cmake so we have to create
         # the bzip2 library ourselves
@@ -335,7 +335,7 @@ if(MZ_LZMA)
     elseif(MZ_FETCH_LIBS)
         set(BUILD_TESTING OFF CACHE BOOL "Build lzma tests" FORCE)
 
-        clone_repo(liblzma https://git.tukaani.org/xz.git)
+        clone_repo(liblzma https://github.com/tukaani-project/xz master)
 
         # Don't automatically add all targets to the solution
         add_subdirectory(${LIBLZMA_SOURCE_DIR} ${LIBLZMA_BINARY_DIR} EXCLUDE_FROM_ALL)
@@ -394,7 +394,7 @@ if(MZ_ZSTD)
     elseif(MZ_FETCH_LIBS)
         set(ZSTD_BUILD_PROGRAMS OFF CACHE BOOL "Build zstd programs")
 
-        clone_repo(zstd https://github.com/facebook/zstd)
+        clone_repo(zstd https://github.com/facebook/zstd release)
 
         # Don't automatically add all targets to the solution
         add_subdirectory(${ZSTD_SOURCE_DIR}/build/cmake ${ZSTD_BINARY_DIR} EXCLUDE_FROM_ALL)
