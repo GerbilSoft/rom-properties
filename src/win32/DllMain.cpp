@@ -78,7 +78,10 @@ BOOL WINAPI DllMain(HINSTANCE hInstance, DWORD dwReason, LPVOID /*lpReserved*/)
 
 		case DLL_PROCESS_DETACH:
 			// DLL is being unloaded.
-			// TODO: Disable the COM server.
+			// FIXME: If any of our COM objects are still referenced,
+			// this won't unload stuff, and things might crash...
+			// Reference: https://devblogs.microsoft.com/oldnewthing/20060920-07/?p=29663
+			DllCanUnloadNow();
 			break;
 
 		default:
