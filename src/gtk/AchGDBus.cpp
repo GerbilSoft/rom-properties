@@ -217,9 +217,7 @@ int AchGDBus::notifyFunc(Achievements::ID id)
 #ifdef RP_GTK_USE_GDKTEXTURE
 	g_free(texdata);
 #endif /* RP_GTK_USE_GDKTEXTURE */
-	if (icon) {
-		PIMGTYPE_unref(icon);
-	}
+	PIMGTYPE_unref(icon);
 	g_object_unref(proxy);
 	return 0;
 }
