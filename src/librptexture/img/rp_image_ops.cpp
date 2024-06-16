@@ -810,6 +810,9 @@ int rp_image::swizzle_cpp(const char *swz_spec)
 static inline float saturate(float a)
 {
 	// FIXME: MSVC 2015 doesn't like this function being marked as constexpr.
+	// NOTE: Don't put 'else' in the second branch.
+	// - gcc compiles it to the same code either way.
+	// - MSVC generates extra code with the 'else' branch.
 	if (a < 0) a = 0;
 	if (a > 1) a = 1;
 	return a;

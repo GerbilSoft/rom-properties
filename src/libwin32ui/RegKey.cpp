@@ -364,7 +364,7 @@ LONG RegKey::write_dword(LPCTSTR lpValueName, DWORD value)
 		return ERROR_INVALID_HANDLE;
 	}
 
-	DWORD cbData = static_cast<DWORD>(sizeof(value));
+	const DWORD cbData = static_cast<DWORD>(sizeof(value));
 	return RegSetValueEx(m_hKey,
 		lpValueName,		// lpValueName
 		0,			// Reserved
