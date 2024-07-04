@@ -99,7 +99,7 @@ ProgramInfoStringID getProgramInfoStringCount(void)
  * Credits data.
  * Ends with CreditType::Max.
  */
-static const array<CreditsData_t, 18+1> creditsData = {{
+static const array<CreditsData_t, 19+1> creditsData = {{
 	// Developers
 	{CreditType::Developer,		"David Korth", "mailto:gerbilsoft@gerbilsoft.com", "gerbilsoft@gerbilsoft.com", nullptr},
 	{CreditType::Continue,		"Egor", "mailto:egor@opensrc.club", "egor@opensrc.club", nullptr},
