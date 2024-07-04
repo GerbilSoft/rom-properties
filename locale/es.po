@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2024-05-06 11:12-0400\n"
-"PO-Revision-Date: 2024-07-04 16:29\n"
+"PO-Revision-Date: 2024-07-04 17:40\n"
 "Last-Translator: \n"
 "Language-Team: Spanish\n"
 "Language: es_ES\n"
@@ -7177,7 +7177,7 @@ msgstr "Versión de Archivo"
 #: ../src/libromdata/Other/EXE.cpp:124
 msgctxt "EXE"
 msgid "Product Version"
-msgstr "Versión de producto"
+msgstr "Versión de Producto"
 
 #: ../src/libromdata/Other/EXE.cpp:133
 msgctxt "EXE|FileFlags"
@@ -9211,7 +9211,7 @@ msgstr "Desconocido (0x%08X)"
 #: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1355
 msgctxt "DirectDrawSurface"
 msgid "NVTT Version"
-msgstr ""
+msgstr "Versión NVTT"
 
 #: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1370
 msgctxt "DirectDrawSurface"
@@ -9361,7 +9361,7 @@ msgstr "Versión XDK"
 #: ../src/librptexture/fileformat/GodotSTEX.cpp:1142
 msgctxt "GodotSTEX"
 msgid "STEX Version"
-msgstr ""
+msgstr "Versión STEX"
 
 #: ../src/librptexture/fileformat/GodotSTEX.cpp:1165
 #: ../src/librptexture/fileformat/GodotSTEX.cpp:1194
@@ -9548,7 +9548,7 @@ msgstr "Datos clave/valor"
 #: ../src/librptexture/fileformat/PowerVR3.cpp:1007
 msgctxt "PowerVR3"
 msgid "Version"
-msgstr ""
+msgstr "Versión"
 
 #: ../src/librptexture/fileformat/PowerVR3.cpp:1014
 #: ../src/librptexture/fileformat/PowerVR3.cpp:1023
@@ -10112,12 +10112,12 @@ msgstr "No es un archivo de dispositivo"
 #: ../src/rpcli/rpcli.cpp:484
 msgctxt "rpcli"
 msgid "Usage: rpcli [-k] [-c] [-p] [-j] [-l lang] [[-xN outfile]... [-mN outfile]... [-a apngoutfile] filename]..."
-msgstr ""
+msgstr "Uso: rpcli [-k] [-c] [-p] [-j] [-l lang] [[-xN archivo de salida]... [-mN archivo de salida]... [-a archivo de salida apng] nombre de archivo]..."
 
 #: ../src/rpcli/rpcli.cpp:487
 msgctxt "rpcli"
 msgid "Usage: rpcli [-c] [-p] [-j] [-l lang] [[-xN outfile]... [-mN outfile]... [-a apngoutfile] filename]..."
-msgstr ""
+msgstr "\"Uso: rpcli [-c] [-p] [-j] [-l lang] [[-xN archivo de salida]... [-mN archivo de salida]... [-a archivo de salida apng] nombre de archivo]..."
 
 #: ../src/rpcli/rpcli.cpp:499
 msgctxt "rpcli"
@@ -10132,7 +10132,7 @@ msgstr "Mostrar información del sistema regional."
 #: ../src/rpcli/rpcli.cpp:502
 msgctxt "rpcli"
 msgid "Print system path information."
-msgstr ""
+msgstr "Mostrar información del sistema regional."
 
 #: ../src/rpcli/rpcli.cpp:503
 msgctxt "rpcli"
@@ -10286,7 +10286,7 @@ msgstr ""
 #: ../src/rp-stub/rp-stub.c:90
 msgctxt "rp_stub"
 msgid "Shared library stub program."
-msgstr ""
+msgstr "Carregador de biblioteca ROM-Properties."
 
 #: ../src/rp-stub/rp-stub.c:91
 msgctxt "rp-stub"
@@ -10310,7 +10310,7 @@ msgstr "Este programa está licenciado bajo la licencia GNU GPL, versión 2.\n"
 #, c-format
 msgctxt "rp-stub|Help"
 msgid "Usage: %s [-s size] source_file output_file"
-msgstr ""
+msgstr "Uso: %s [-s tamaño] archivo_fuente archivo_de_salida"
 
 #: ../src/rp-stub/rp-stub.c:117
 msgctxt "rp-stub|Help"
@@ -10378,7 +10378,7 @@ msgstr ""
 #, c-format
 msgctxt "rp-stub|Help"
 msgid "Usage: %s"
-msgstr ""
+msgstr "Uso: %s"
 
 #: ../src/rp-stub/rp-stub.c:165
 msgctxt "rp-stub|Help"
@@ -10496,7 +10496,7 @@ msgstr "Sobre"
 #: ../src/win32/config/AchievementsTab.cpp:667
 msgctxt "AchievementsTab"
 msgid "Achievements"
-msgstr ""
+msgstr "Logros"
 
 #. tr: Windows Vista and later. Has a centralized thumbnails cache.
 #: ../src/win32/config/CacheTab.cpp:178
