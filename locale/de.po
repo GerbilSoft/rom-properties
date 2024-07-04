@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2024-05-06 11:12-0400\n"
-"PO-Revision-Date: 2024-06-11 21:56\n"
+"PO-Revision-Date: 2024-07-04 15:31\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
 "Language: de_DE\n"
@@ -866,7 +866,7 @@ msgstr[1] "%1$s Keys wurden von '%2$s' importiert."
 msgctxt "KeyManagerTab"
 msgid "%s key already exists in the Key Manager."
 msgid_plural "%s keys already exist in the Key Manager."
-msgstr[0] "Der Key %s existiert bereits im Key Manager."
+msgstr[0] "%s Key existiert bereits im Key Manager."
 msgstr[1] "%s Keys sind bereits im Key Manager vorhanden."
 
 #: ../src/gtk/config/KeyManagerTab.cpp:652
@@ -886,7 +886,7 @@ msgstr[1] "%s Keys wurden nicht importiert, weil sie falsch sind."
 msgctxt "KeyManagerTab"
 msgid "%s key was not imported because it isn't used by rom-properties."
 msgid_plural "%s keys were not imported because they aren't used by rom-properties."
-msgstr[0] "Der Key %s wurde nicht importiert, da er nicht von rom-properties verwendet wird."
+msgstr[0] "%s Key wurde nicht importiert, da er nicht von rom-properties verwendet wird."
 msgstr[1] "%s Keys wurden nicht importiert, da sie nicht von rom-properties verwendet werden."
 
 #: ../src/gtk/config/KeyManagerTab.cpp:670
@@ -906,7 +906,7 @@ msgstr[1] "%s Keys wurden nicht importiert, da sie verschlüsselt sind und der M
 msgctxt "KeyManagerTab"
 msgid "%s key has been imported and verified as correct."
 msgid_plural "%s keys have been imported and verified as correct."
-msgstr[0] "%s Key wurde importiert und für korrekt befunden."
+msgstr[0] "%s Key wurde importiert und für korrekt überprüft."
 msgstr[1] "%s Keys wurden importiert und als korrekt überprüft."
 
 #: ../src/gtk/config/KeyManagerTab.cpp:687
@@ -916,7 +916,7 @@ msgstr[1] "%s Keys wurden importiert und als korrekt überprüft."
 msgctxt "KeyManagerTab"
 msgid "%s key has been imported without verification."
 msgid_plural "%s keys have been imported without verification."
-msgstr[0] "Der Key %s wurde ohne Überprüfung importiert."
+msgstr[0] "%s Key wurde ohne Überprüfung importiert."
 msgstr[1] "%s Keys wurden ohne Überprüfung importiert."
 
 #. tr: Column 0: Key Name.
