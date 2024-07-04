@@ -409,6 +409,7 @@ is currently always enabled, so Windows builds are always GPL-3+ at the moment.
 * @MaRod92: Italian
 * Motwera: Arabic
 * Chipsum: Arabic
+* spencerchris8080: Spanish
 
 ### Other Contributions
 
