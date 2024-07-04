@@ -415,9 +415,7 @@ string formatFileSize(off64_t size, BinaryUnitDialect dialect)
 
 	// Do the actual localization here.
 	if (suffix && needs_pgettext) {
-		printf("suffix first:  %s\n", suffix);
 		suffix = pgettext_expr("LibRpText|FileSize", suffix);
-		printf("suffix second: %s\n", suffix);
 	}
 
 	// Localize the whole part.
