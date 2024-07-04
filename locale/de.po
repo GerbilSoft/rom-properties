@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties 2.3+\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2024-05-06 11:12-0400\n"
-"PO-Revision-Date: 2024-03-17 03:17\n"
+"PO-Revision-Date: 2024-07-04 16:29\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
 "Language: de\n"
@@ -889,7 +889,7 @@ msgstr[1] "%1$s Keys wurden von '%2$s' importiert."
 msgctxt "KeyManagerTab"
 msgid "%s key already exists in the Key Manager."
 msgid_plural "%s keys already exist in the Key Manager."
-msgstr[0] "Der Key %s existiert bereits im Key Manager."
+msgstr[0] "%s Key existiert bereits im Key Manager."
 msgstr[1] "%s Keys sind bereits im Key Manager vorhanden."
 
 #: ../src/gtk/config/KeyManagerTab.cpp:652
@@ -911,8 +911,7 @@ msgid "%s key was not imported because it isn't used by rom-properties."
 msgid_plural ""
 "%s keys were not imported because they aren't used by rom-properties."
 msgstr[0] ""
-"Der Key %s wurde nicht importiert, da er nicht von rom-properties verwendet "
-"wird."
+"%s Key wurde nicht importiert, da er nicht von rom-properties verwendet wird."
 msgstr[1] ""
 "%s Keys wurden nicht importiert, da sie nicht von rom-properties verwendet "
 "werden."
@@ -942,7 +941,7 @@ msgstr[1] ""
 msgctxt "KeyManagerTab"
 msgid "%s key has been imported and verified as correct."
 msgid_plural "%s keys have been imported and verified as correct."
-msgstr[0] "%s Key wurde importiert und für korrekt befunden."
+msgstr[0] "%s Key wurde importiert und für korrekt überprüft."
 msgstr[1] "%s Keys wurden importiert und als korrekt überprüft."
 
 #: ../src/gtk/config/KeyManagerTab.cpp:687
@@ -952,7 +951,7 @@ msgstr[1] "%s Keys wurden importiert und als korrekt überprüft."
 msgctxt "KeyManagerTab"
 msgid "%s key has been imported without verification."
 msgid_plural "%s keys have been imported without verification."
-msgstr[0] "Der Key %s wurde ohne Überprüfung importiert."
+msgstr[0] "%s Key wurde ohne Überprüfung importiert."
 msgstr[1] "%s Keys wurden ohne Überprüfung importiert."
 
 #. tr: Column 0: Key Name.
@@ -2846,7 +2845,7 @@ msgstr "Revision"
 #: ../src/libromdata/Console/GameCube.cpp:1358
 msgctxt "GameCube"
 msgid "Region-Free (with certain debugging hardware)"
-msgstr ""
+msgstr "Regionen-frei (mit bestimmter Debugging-Hardware)"
 
 #. tr: %1$s == full region name, %2$s == abbreviation
 #: ../src/libromdata/Console/GameCube.cpp:1379
@@ -3111,7 +3110,7 @@ msgstr "Urheber Jahr"
 #: ../src/libromdata/Console/Intellivision.cpp:295
 msgctxt "Intellivision|Flags"
 msgid "Intellivision 2"
-msgstr ""
+msgstr "Intellivision 2"
 
 #: ../src/libromdata/Console/Intellivision.cpp:296
 msgctxt "Intellivision|Flags"
@@ -3549,7 +3548,7 @@ msgstr "Famicom Vier-Spieler-Adapter"
 #: ../src/libromdata/Console/NES.cpp:1370
 msgctxt "NES|Expansion"
 msgid "VS. System"
-msgstr "VS. System"
+msgstr ""
 
 #: ../src/libromdata/Console/NES.cpp:1371
 msgctxt "NES|Expansion"
@@ -3559,12 +3558,12 @@ msgstr "VS. System (umgekehrte Eingaben)"
 #: ../src/libromdata/Console/NES.cpp:1372
 msgctxt "NES|Expansion"
 msgid "VS. Pinball (Japan)"
-msgstr "VS. Pinball (Japan)"
+msgstr ""
 
 #: ../src/libromdata/Console/NES.cpp:1373
 msgctxt "NES|Expansion"
 msgid "VS. Zapper"
-msgstr "VS. Zapper"
+msgstr ""
 
 #: ../src/libromdata/Console/NES.cpp:1374
 msgctxt "NES|Expansion"
@@ -4096,7 +4095,7 @@ msgstr ""
 #: ../src/libromdata/Console/SegaSaturn.cpp:569
 msgctxt "SegaSaturn|Peripherals"
 msgid "3D Controller"
-msgstr ""
+msgstr "3D Control Pad"
 
 #: ../src/libromdata/Console/SegaSaturn.cpp:570
 msgctxt "SegaSaturn|Peripherals"
@@ -4387,42 +4386,42 @@ msgstr "Produkt-Code"
 #: ../src/libromdata/Console/WiiUPackage_xml.cpp:438
 msgctxt "WiiU"
 msgid "SDK Version"
-msgstr ""
+msgstr "SDK Version"
 
 #: ../src/libromdata/Console/WiiUPackage_xml.cpp:551
 msgctxt "WiiU|Controller"
 msgid "Nunchuk"
-msgstr ""
+msgstr "Nunchuk"
 
 #: ../src/libromdata/Console/WiiUPackage_xml.cpp:552
 msgctxt "WiiU|Controller"
 msgid "Classic"
-msgstr ""
+msgstr "Classic"
 
 #: ../src/libromdata/Console/WiiUPackage_xml.cpp:553
 msgctxt "WiiU|Controller"
 msgid "Pro"
-msgstr ""
+msgstr "Pro"
 
 #: ../src/libromdata/Console/WiiUPackage_xml.cpp:554
 msgctxt "WiiU|Controller"
 msgid "Balance Board"
-msgstr ""
+msgstr "Balance Board"
 
 #: ../src/libromdata/Console/WiiUPackage_xml.cpp:555
 msgctxt "WiiU|Controller"
 msgid "USB Keyboard"
-msgstr ""
+msgstr "USB-Tastatur"
 
 #: ../src/libromdata/Console/WiiUPackage_xml.cpp:556
 msgctxt "WiiU|Controller"
 msgid "Gamepad"
-msgstr ""
+msgstr "Gamepad"
 
 #: ../src/libromdata/Console/WiiUPackage_xml.cpp:560
 msgctxt "WiiU"
 msgid "Controllers"
-msgstr ""
+msgstr "Controller"
 
 #: ../src/libromdata/Console/WiiWAD.cpp:815
 msgctxt "WiiWAD"
@@ -4543,7 +4542,7 @@ msgstr ""
 #: ../src/libromdata/Console/Xbox360_STFS.cpp:923
 msgctxt "Xbox360_STFS|FileType"
 msgid "Xbox Live Package"
-msgstr ""
+msgstr "Xbox Live Paket"
 
 #: ../src/libromdata/Console/Xbox360_STFS.cpp:937
 msgctxt "Xbox360_STFS"
@@ -4571,12 +4570,12 @@ msgstr ""
 #: ../src/libromdata/Console/Xbox360_STFS.cpp:993
 msgctxt "Xbox360_XEX"
 msgid "Base Version"
-msgstr ""
+msgstr "Basisversion"
 
 #: ../src/libromdata/Console/Xbox360_STFS.cpp:1004
 msgctxt "Xbox360_XEX"
 msgid "Console ID"
-msgstr ""
+msgstr "Konsolen-ID"
 
 #: ../src/libromdata/Console/Xbox360_STFS.cpp:1011
 msgctxt "Xbox360_XEX"
@@ -4601,7 +4600,7 @@ msgstr ""
 #: ../src/libromdata/Console/Xbox360_XDBF.cpp:837
 msgctxt "Xbox360_XDBF|TitleType"
 msgid "System Title"
-msgstr ""
+msgstr "System Titel"
 
 #: ../src/libromdata/Console/Xbox360_XDBF.cpp:838
 msgctxt "Xbox360_XDBF|TitleType"
@@ -5041,12 +5040,12 @@ msgstr "Nintendo 3DS Key Scrambler Konstanten"
 #: ../src/libromdata/crypto/KeyStoreUI.cpp:881
 msgctxt "KeyStoreUI|Section"
 msgid "Nintendo 3DS AES Keys"
-msgstr "Nintendo Wii AES Schlüssel"
+msgstr "Nintendo 3DS AES Schlüssel"
 
 #: ../src/libromdata/crypto/KeyStoreUI.cpp:882
 msgctxt "KeyStoreUI|Section"
 msgid "Microsoft Xbox 360 AES Keys"
-msgstr "Microsoft XBox 360 AES Schlüssel"
+msgstr "Microsoft Xbox 360 AES Schlüssel"
 
 #. tr: IMAGE_SUBSYSTEM_NATIVE
 #: ../src/libromdata/data/EXEData.cpp:39
@@ -5926,7 +5925,7 @@ msgstr ""
 #, c-format
 msgctxt "Nintendo3DS"
 msgid "%1$s (%2$u MiB)"
-msgstr ""
+msgstr "%1$s (%2$u MiB)"
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2336
 msgctxt "Nintendo3DS"
@@ -5963,37 +5962,37 @@ msgstr "ARM11 Homebrew"
 #: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:284
 msgctxt "Nintendo3DSFirm"
 msgid "FIRM Version"
-msgstr ""
+msgstr "FIRM Version"
 
 #: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:289
 msgctxt "Nintendo3DSFirm"
 msgid "System Version"
-msgstr ""
+msgstr "Systemversion"
 
 #: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:377
 msgctxt "Nintendo3DSFirm"
 msgid "Not sighaxed"
-msgstr ""
+msgstr "Nicht sighaxed"
 
 #: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:393
 msgctxt "Nintendo3DSFirm"
 msgid "Sighax Status"
-msgstr ""
+msgstr "Sighax Status"
 
 #: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:402
 msgctxt "Nintendo3DSFirm"
 msgid "ARM11 Entry Point"
-msgstr ""
+msgstr "ARM11 Einstiegspunkt"
 
 #: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:406
 msgctxt "Nintendo3DSFirm"
 msgid "ARM9 Entry Point"
-msgstr ""
+msgstr "ARM9 Einstiegspunkt"
 
 #: ../src/libromdata/Handheld/Nintendo3DS_ops.cpp:49
 msgctxt "Nintendo3DS|RomOps"
 msgid "Extract Nintendo DS SRL File"
-msgstr ""
+msgstr "Nintendo DS SRL-Datei extrahieren"
 
 #: ../src/libromdata/Handheld/Nintendo3DS_ops.cpp:50
 msgctxt "Nintendo3DS|RomOps"
@@ -6009,7 +6008,7 @@ msgstr ""
 #: ../src/libromdata/Handheld/Nintendo3DS_ops.cpp:124
 msgctxt "Nintendo3DS"
 msgid "Unable to open the SRL."
-msgstr ""
+msgstr "SRL konnte nicht geöffnet werden."
 
 #: ../src/libromdata/Handheld/Nintendo3DS_ops.cpp:99
 msgctxt "Nintendo3DS"
@@ -6019,7 +6018,7 @@ msgstr ""
 #: ../src/libromdata/Handheld/Nintendo3DS_ops.cpp:133
 msgctxt "Nintendo3DS"
 msgid "Could not open output SRL file."
-msgstr ""
+msgstr "Die ausgegebene SRL-Datei konnte nicht geöffnet werden."
 
 #: ../src/libromdata/Handheld/Nintendo3DS_ops.cpp:143
 msgctxt "Nintendo3DS"
@@ -6029,12 +6028,12 @@ msgstr "SRL Datei erfolgreich extrahiert."
 #: ../src/libromdata/Handheld/Nintendo3DS_ops.cpp:146
 msgctxt "Nintendo3DS"
 msgid "An I/O error occurred while extracting the SRL."
-msgstr ""
+msgstr "Beim Extrahieren der SRL ist ein E/A-Fehler aufgetreten."
 
 #: ../src/libromdata/Handheld/Nintendo3DS_ops.cpp:149
 msgctxt "Nintendo3DS"
 msgid "An unknown error occurred while extracting the SRL."
-msgstr ""
+msgstr "Beim Extrahieren der SRL ist ein unbekannter Fehler aufgetreten."
 
 #: ../src/libromdata/Handheld/Nintendo3DS_SMDH.cpp:597
 msgctxt "RomData"
@@ -6174,27 +6173,27 @@ msgstr ""
 #: ../src/libromdata/Handheld/NintendoDS.cpp:952
 msgctxt "NintendoDS|DSi_Permissions"
 msgid "Common Key"
-msgstr ""
+msgstr "Common Key"
 
 #: ../src/libromdata/Handheld/NintendoDS.cpp:953
 msgctxt "NintendoDS|DSi_Permissions"
 msgid "AES Slot B"
-msgstr ""
+msgstr "AES Slot B"
 
 #: ../src/libromdata/Handheld/NintendoDS.cpp:954
 msgctxt "NintendoDS|DSi_Permissions"
 msgid "AES Slot C"
-msgstr ""
+msgstr "AES Slot C"
 
 #: ../src/libromdata/Handheld/NintendoDS.cpp:955
 msgctxt "NintendoDS|DSi_Permissions"
 msgid "SD Card"
-msgstr ""
+msgstr "SD-Karte"
 
 #: ../src/libromdata/Handheld/NintendoDS.cpp:956
 msgctxt "NintendoDS|DSi_Permissions"
 msgid "eMMC Access"
-msgstr ""
+msgstr "eMMC Zugriff"
 
 #: ../src/libromdata/Handheld/NintendoDS.cpp:957
 msgctxt "NintendoDS|DSi_Permissions"
@@ -6269,7 +6268,7 @@ msgstr "Homebrew"
 #: ../src/libromdata/Handheld/NintendoDS_ops.cpp:162
 msgctxt "NintendoDS|SecureArea"
 msgid "Multiboot"
-msgstr ""
+msgstr "Multiboot"
 
 #: ../src/libromdata/Handheld/NintendoDS_ops.cpp:163
 msgctxt "NintendoDS|SecureArea"
@@ -6284,12 +6283,12 @@ msgstr "Verschlüsselt"
 #: ../src/libromdata/Handheld/NintendoDS_ops.cpp:221
 msgctxt "NintendoDS|RomOps"
 msgid "&Untrim ROM"
-msgstr ""
+msgstr "&ROM nicht kürzen"
 
 #: ../src/libromdata/Handheld/NintendoDS_ops.cpp:222
 msgctxt "NintendoDS|RomOps"
 msgid "&Trim ROM"
-msgstr ""
+msgstr "&ROM kürzen"
 
 #: ../src/libromdata/Handheld/NintendoDS_ops.cpp:243
 msgctxt "NintendoDS|RomOps"
@@ -6330,109 +6329,109 @@ msgstr ""
 #: ../src/libromdata/Handheld/NintendoDS_ops.cpp:364
 msgctxt "NintendoDS"
 msgid "ROM can't be trimmed or untrimmed."
-msgstr ""
+msgstr "Das ROM kann weder gekürzt noch ungekürzt werden."
 
 #: ../src/libromdata/Handheld/NintendoDS_ops.cpp:370
 msgctxt "NintendoDS"
 msgid "ROM image trimmed successfully."
-msgstr ""
+msgstr "ROM-Image erfolgreich gekürzt."
 
 #: ../src/libromdata/Handheld/NintendoDS_ops.cpp:371
 msgctxt "NintendoDS"
 msgid "ROM image untrimmed successfully."
-msgstr ""
+msgstr "ROM-Image erfolgreich ungekürzt."
 
 #: ../src/libromdata/Handheld/NintendoDS_ops.cpp:389
 msgctxt "NintendoDS"
 msgid "Secure area cannot be adjusted in this ROM."
-msgstr ""
+msgstr "Der sichere Bereich kann in diesem ROM nicht angepasst werden."
 
 #: ../src/libromdata/Handheld/NintendoDS_ops.cpp:429
 #, c-format
 msgctxt "RomData"
 msgid "Could not open '%1$s': %2$s"
-msgstr ""
+msgstr " '%1$s' konnte nicht geöffnet werden: %2$s"
 
 #: ../src/libromdata/Handheld/NintendoDS_ops.cpp:439
 #, c-format
 msgctxt "NintendoDS"
 msgid "File '%1$s' has the wrong size. (should be %2$s bytes)"
-msgstr ""
+msgstr "Die Datei '%1$s' hat die falsche Größe. (sollte %2$s Bytes sein)"
 
 #: ../src/libromdata/Handheld/NintendoDS_ops.cpp:445
 #, c-format
 msgctxt "NintendoDS"
 msgid "File '%s' has the wrong MD5 hash."
-msgstr ""
+msgstr "Die Datei '%s' hat den falschen MD5-Hash."
 
 #: ../src/libromdata/Handheld/NintendoDS_ops.cpp:471
 msgctxt "NintendoDS"
 msgid "Could not read the NDS Secure Area."
-msgstr ""
+msgstr "Fehler beim Lesen der NDS Secure Area."
 
 #: ../src/libromdata/Handheld/NintendoDS_ops.cpp:483
 msgctxt "NintendoDS"
 msgid "Encrypting the NDS Secure Area failed."
-msgstr ""
+msgstr "Verschlüsseln der NDS Secure Area fehlgeschlagen."
 
 #: ../src/libromdata/Handheld/NintendoDS_ops.cpp:484
 msgctxt "NintendoDS"
 msgid "Decrypting the NDS Secure Area failed."
-msgstr ""
+msgstr "Entschlüsseln der NDS Secure Area fehlgeschlagen."
 
 #: ../src/libromdata/Handheld/NintendoDS_ops.cpp:503
 msgctxt "NintendoDS"
 msgid "Could not read the DSi Secure Area."
-msgstr ""
+msgstr "Fehler beim Lesen der DSi Secure Area."
 
 #: ../src/libromdata/Handheld/NintendoDS_ops.cpp:516
 msgctxt "NintendoDS"
 msgid "Encrypting the DSi Secure Area failed."
-msgstr ""
+msgstr "Verschlüsseln der DSi Secure Area fehlgeschlagen."
 
 #: ../src/libromdata/Handheld/NintendoDS_ops.cpp:517
 msgctxt "NintendoDS"
 msgid "Decrypting the DSi Secure Area failed."
-msgstr ""
+msgstr "Entschlüsseln der DSi Secure Area fehlgeschlagen."
 
 #: ../src/libromdata/Handheld/NintendoDS_ops.cpp:530
 msgctxt "NintendoDS"
 msgid "Could not write the updated DSi Secure Area."
-msgstr ""
+msgstr "Fehler beim Schreiben der aktualisierten DSi Secure Area."
 
 #: ../src/libromdata/Handheld/NintendoDS_ops.cpp:546
 msgctxt "NintendoDS"
 msgid "Could not write the updated NDS Secure Area."
-msgstr ""
+msgstr "Fehler beim Schreiben der aktualisierten NDS Secure Area."
 
 #: ../src/libromdata/Handheld/NintendoDS_ops.cpp:579
 msgctxt "NintendoDS"
 msgid "Secure Area encrypted successfully."
 msgid_plural "Secure Areas encrypted successfully."
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "Secure Area erfolgreich verschlüsselt."
+msgstr[1] "Secure Areas erfolgreich verschlüsselt."
 
 #: ../src/libromdata/Handheld/NintendoDS_ops.cpp:581
 msgctxt "NintendoDS"
 msgid "Secure Area decrypted successfully."
 msgid_plural "Secure Areas decrypted successfully."
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "Secure Area erfolgreich entschlüsselt."
+msgstr[1] "Secure Areas erfolgreich entschlüsselt."
 
 #: ../src/libromdata/Handheld/PalmOS.cpp:645
 msgctxt "PalmOS"
 msgid "Creator ID"
-msgstr ""
+msgstr "Ersteller-ID"
 
 #: ../src/libromdata/Handheld/PalmOS.cpp:653
 msgctxt "PalmOS"
 msgid "Icon Name"
-msgstr ""
+msgstr "Symbolname"
 
 #: ../src/libromdata/Handheld/PalmOS.cpp:665
 msgctxt "PalmOS"
 msgid "Category"
-msgstr ""
+msgstr "Kategorie"
 
 #: ../src/libromdata/Handheld/PokemonMini.cpp:312
 msgctxt "RomData|VectorTable"
@@ -6718,12 +6717,12 @@ msgstr "(keine)"
 #: ../src/libromdata/Media/Wim.cpp:406
 msgctxt "Wim|Images"
 msgid "#"
-msgstr ""
+msgstr "Nr."
 
 #: ../src/libromdata/Media/Wim.cpp:407
 msgctxt "Wim|Images"
 msgid "Name"
-msgstr ""
+msgstr "Name"
 
 #: ../src/libromdata/Media/Wim.cpp:408
 msgctxt "Wim|Images"
@@ -6733,12 +6732,12 @@ msgstr "Beschreibung"
 #: ../src/libromdata/Media/Wim.cpp:409
 msgctxt "Wim|Images"
 msgid "Display Name"
-msgstr ""
+msgstr "Anzeigename"
 
 #: ../src/libromdata/Media/Wim.cpp:410
 msgctxt "Wim|Images"
 msgid "Display Desc."
-msgstr ""
+msgstr "Anzeige Beschr."
 
 #: ../src/libromdata/Media/Wim.cpp:411
 msgctxt "Wim|Images"
@@ -6753,27 +6752,27 @@ msgstr "OS-Version"
 #: ../src/libromdata/Media/Wim.cpp:413
 msgctxt "Wim|Images"
 msgid "Edition"
-msgstr ""
+msgstr "Edition"
 
 #: ../src/libromdata/Media/Wim.cpp:414
 msgctxt "Wim|Images"
 msgid "Architecture"
-msgstr ""
+msgstr "Architektur"
 
 #: ../src/libromdata/Media/Wim.cpp:415
 msgctxt "Wim|Images"
 msgid "Language"
-msgstr ""
+msgstr "Sprache"
 
 #: ../src/libromdata/Media/Wim.cpp:428
 msgctxt "Wim"
 msgid "Images"
-msgstr ""
+msgstr "Abbilder"
 
 #: ../src/libromdata/Media/Wim.cpp:609
 msgctxt "Wim"
 msgid "WIM Version"
-msgstr ""
+msgstr "WIM Version"
 
 #: ../src/libromdata/Media/Wim.cpp:618
 msgctxt "Wim|Flags"
@@ -6813,12 +6812,12 @@ msgstr "Keine"
 #: ../src/libromdata/Media/Wim.cpp:662
 msgctxt "Wim"
 msgid "Compression Method"
-msgstr ""
+msgstr "Komprimierungsmethode"
 
 #: ../src/libromdata/Media/Wim.cpp:663
 msgctxt "Wim"
 msgid "Part Number"
-msgstr ""
+msgstr "Teilenummer"
 
 #: ../src/libromdata/Media/Wim.cpp:665
 msgctxt "Wim"
@@ -6853,7 +6852,7 @@ msgstr "Karte"
 #: ../src/libromdata/Other/Amiibo.cpp:400
 msgctxt "Amiibo|Type"
 msgid "Yarn"
-msgstr ""
+msgstr "Wolle"
 
 #. tr: NFP_TYPE_BAND == Power-Up Band
 #: ../src/libromdata/Other/Amiibo.cpp:402
@@ -6949,7 +6948,7 @@ msgstr ""
 #: ../src/libromdata/Other/ELF.cpp:1101
 msgctxt "ELF|Symbol"
 msgid "Visibility"
-msgstr ""
+msgstr "Sichtbarkeit"
 
 #: ../src/libromdata/Other/ELF.cpp:1102
 msgctxt "ELF|Symbol"
@@ -6959,12 +6958,12 @@ msgstr ""
 #: ../src/libromdata/Other/ELF.cpp:1103
 msgctxt "ELF|Symbol"
 msgid "Value"
-msgstr ""
+msgstr "Wert"
 
 #: ../src/libromdata/Other/ELF.cpp:1104
 msgctxt "ELF|Symbol"
 msgid "Size"
-msgstr ""
+msgstr "Größe"
 
 #: ../src/libromdata/Other/ELF.cpp:1486 ../src/libromdata/Other/MachO.cpp:491
 msgctxt "RomData|ExecType"
@@ -6989,7 +6988,7 @@ msgstr "64-bit Big-Endian"
 #: ../src/libromdata/Other/ELF.cpp:1491
 msgctxt "ELF"
 msgid "Format"
-msgstr ""
+msgstr "Format"
 
 #: ../src/libromdata/Other/ELF.cpp:1506
 msgctxt "ELF"
@@ -7547,7 +7546,7 @@ msgstr ""
 #: ../src/libromdata/Other/EXE_manifest.cpp:241
 msgctxt "EXE|Manifest"
 msgid "Name"
-msgstr ""
+msgstr "Name"
 
 #: ../src/libromdata/Other/EXE_manifest.cpp:242
 msgctxt "EXE|Manifest"
@@ -7901,14 +7900,14 @@ msgstr ""
 #: ../src/libromdata/Other/EXE_PE.cpp:1161
 msgctxt "EXE|Exports"
 msgid "Module"
-msgstr ""
+msgstr "Modul"
 
 #: ../src/libromdata/Other/EXE_PE.cpp:477
 #: ../src/libromdata/Other/EXE_PE.cpp:529
 #, c-format
 msgctxt "EXE|Runtime"
 msgid "Microsoft Visual C++ %s Runtime"
-msgstr ""
+msgstr "Microsoft Visual C++ %s Laufzeit"
 
 #: ../src/libromdata/Other/EXE_PE.cpp:494
 #: ../src/libromdata/Other/EXE_PE.cpp:512
@@ -7916,17 +7915,17 @@ msgstr ""
 #, c-format
 msgctxt "EXE|Runtime"
 msgid "Microsoft Visual C++ %s Debug Runtime"
-msgstr ""
+msgstr "Microsoft Visual C++ %s Debug Laufzeit"
 
 #: ../src/libromdata/Other/EXE_PE.cpp:553
 msgctxt "EXE|Runtime"
 msgid "Microsoft System C++ Runtime"
-msgstr ""
+msgstr "Microsoft System C++ Laufzeit"
 
 #: ../src/libromdata/Other/EXE_PE.cpp:676
 msgctxt "EXE"
 msgid "Subsystem"
-msgstr ""
+msgstr "Subsystem"
 
 #: ../src/libromdata/Other/EXE_PE.cpp:682
 msgctxt "EXE|PEFlags"
@@ -7946,7 +7945,7 @@ msgstr "DLL"
 #: ../src/libromdata/Other/EXE_PE.cpp:693
 msgctxt "EXE"
 msgid "PE Flags"
-msgstr ""
+msgstr "PE Flags"
 
 #: ../src/libromdata/Other/EXE_PE.cpp:699
 msgctxt "EXE|DLLFlags"
@@ -8006,7 +8005,7 @@ msgstr "TS Aware"
 #: ../src/libromdata/Other/EXE_PE.cpp:713
 msgctxt "EXE"
 msgid "DLL Flags"
-msgstr ""
+msgstr "DLL Flags"
 
 #: ../src/libromdata/Other/EXE_PE.cpp:728
 msgctxt "EXE"
@@ -8124,7 +8123,7 @@ msgstr ""
 #: ../src/libromdata/Other/NintendoBadge.cpp:448
 msgctxt "NintendoBadge"
 msgid "Name"
-msgstr ""
+msgstr "Name"
 
 #: ../src/libromdata/Other/NintendoBadge.cpp:708
 msgctxt "NintendoBadge"
@@ -8399,25 +8398,25 @@ msgstr ""
 #: ../src/librpbase/crypto/KeyManager.cpp:250
 msgctxt "KeyManager|VerifyResult"
 msgid "AES decryption could not be initialized."
-msgstr ""
+msgstr "AES Entschlüsselung konnte nicht initialisiert werden."
 
 #. tr: VerifyResult::IAesCipherDecryptErr
 #: ../src/librpbase/crypto/KeyManager.cpp:252
 msgctxt "KeyManager|VerifyResult"
 msgid "AES decryption failed."
-msgstr ""
+msgstr "AES Entschlüsselung fehlgeschlagen."
 
 #. tr: VerifyResult::WrongKey
 #: ../src/librpbase/crypto/KeyManager.cpp:254
 msgctxt "KeyManager|VerifyResult"
 msgid "The key in keys.conf is incorrect."
-msgstr ""
+msgstr "Der Schlüssel in keys.conf ist falsch."
 
 #. tr: VerifyResult::IncrementingValues
 #: ../src/librpbase/crypto/KeyManager.cpp:256
 msgctxt "KeyManager|VerifyResult"
 msgid "The partition contains incrementing values."
-msgstr ""
+msgstr "Die Partition enthält inkrementelle Werte."
 
 #: ../src/librpbase/RomData.cpp:571
 msgctxt "RomData|FileType"
@@ -8704,7 +8703,7 @@ msgstr ""
 #: ../src/librpbase/TextOut_text.cpp:425
 msgctxt "TextOut"
 msgid "[More than 10 items; skipping...]"
-msgstr ""
+msgstr "[Mehr als 10 Einträge; Überspringe...]"
 
 #: ../src/librpbase/TextOut_text.cpp:888
 #, c-format
@@ -9142,7 +9141,7 @@ msgstr "KiB"
 #: ../src/librptext/conversion.cpp:492
 msgctxt "LibRpText|FileSize"
 msgid "KB"
-msgstr "KB"
+msgstr ""
 
 #. tr: Megabytes (binary)
 #: ../src/librptext/conversion.cpp:332
@@ -9154,7 +9153,7 @@ msgstr "MiB"
 #: ../src/librptext/conversion.cpp:334 ../src/librptext/conversion.cpp:390
 msgctxt "LibRpText|FileSize"
 msgid "MB"
-msgstr "MB"
+msgstr ""
 
 #. tr: Gigabytes (binary)
 #: ../src/librptext/conversion.cpp:340
@@ -9166,7 +9165,7 @@ msgstr "GiB"
 #: ../src/librptext/conversion.cpp:342 ../src/librptext/conversion.cpp:395
 msgctxt "LibRpText|FileSize"
 msgid "GB"
-msgstr "GB"
+msgstr ""
 
 #. tr: Terabytes (binary)
 #: ../src/librptext/conversion.cpp:348
@@ -9178,7 +9177,7 @@ msgstr "TiB"
 #: ../src/librptext/conversion.cpp:350 ../src/librptext/conversion.cpp:400
 msgctxt "LibRpText|FileSize"
 msgid "TB"
-msgstr "TB"
+msgstr ""
 
 #. tr: Petabytes (binary)
 #: ../src/librptext/conversion.cpp:356
@@ -9190,7 +9189,7 @@ msgstr "PiB"
 #: ../src/librptext/conversion.cpp:358 ../src/librptext/conversion.cpp:405
 msgctxt "LibRpText|FileSize"
 msgid "PB"
-msgstr "PB"
+msgstr ""
 
 #. tr: Exabytes (binary)
 #: ../src/librptext/conversion.cpp:364
@@ -9202,7 +9201,7 @@ msgstr "EiB"
 #: ../src/librptext/conversion.cpp:366 ../src/librptext/conversion.cpp:410
 msgctxt "LibRpText|FileSize"
 msgid "EB"
-msgstr "EB"
+msgstr ""
 
 #. tr: %1$s == localized value, %2$s == suffix (e.g. MiB)
 #: ../src/librptext/conversion.cpp:455 ../src/librptext/conversion.cpp:497
