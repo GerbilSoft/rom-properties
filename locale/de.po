@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2024-05-06 11:12-0400\n"
-"PO-Revision-Date: 2024-07-04 15:31\n"
+"PO-Revision-Date: 2024-07-04 16:29\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
 "Language: de_DE\n"
@@ -4984,7 +4984,7 @@ msgstr "Nintendo 3DS AES Schlüssel"
 #: ../src/libromdata/crypto/KeyStoreUI.cpp:882
 msgctxt "KeyStoreUI|Section"
 msgid "Microsoft Xbox 360 AES Keys"
-msgstr "Microsoft XBox 360 AES Schlüssel"
+msgstr "Microsoft Xbox 360 AES Schlüssel"
 
 #. tr: IMAGE_SUBSYSTEM_NATIVE
 #: ../src/libromdata/data/EXEData.cpp:39
@@ -7477,7 +7477,7 @@ msgstr ""
 #: ../src/libromdata/Other/EXE_manifest.cpp:241
 msgctxt "EXE|Manifest"
 msgid "Name"
-msgstr ""
+msgstr "Name"
 
 #: ../src/libromdata/Other/EXE_manifest.cpp:242
 msgctxt "EXE|Manifest"
