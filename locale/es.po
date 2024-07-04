@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2024-05-06 11:12-0400\n"
-"PO-Revision-Date: 2024-07-04 17:40\n"
+"PO-Revision-Date: 2024-07-04 18:48\n"
 "Last-Translator: \n"
 "Language-Team: Spanish\n"
 "Language: es_ES\n"
@@ -128,7 +128,7 @@ msgstr "&Opciones"
 #: ../src/gtk/config/ConfigDialog.cpp:245
 msgctxt "ConfigDialog"
 msgid "Thumbnail Cache"
-msgstr "Cache de miniaturas"
+msgstr "Cache de Miniaturas"
 
 #: ../build/src/kde/kf5/ui_ConfigDialog.h:95
 #: ../build/src/kde/kf6/ui_ConfigDialog.h:96
@@ -434,7 +434,7 @@ msgstr "Valor"
 #: ../src/gtk/xattr/XAttrView_gtk4.cpp:132
 msgctxt "XAttrView"
 msgid "Name"
-msgstr ""
+msgstr "Nombre"
 
 #: ../build/src/kde/kf5/ui_XfsAttrView.h:85
 #: ../build/src/kde/kf6/ui_XfsAttrView.h:85
@@ -1739,7 +1739,7 @@ msgstr "Lista de canciones"
 #: ../src/libromdata/Audio/SID.cpp:225
 msgctxt "RomData|Audio"
 msgid "Name"
-msgstr ""
+msgstr "Nombre"
 
 #: ../src/libromdata/Audio/SID.cpp:242
 msgctxt "SID"
@@ -1812,7 +1812,7 @@ msgstr ""
 #: ../src/libromdata/Audio/SNDH.cpp:927 ../src/libromdata/Audio/SNDH.cpp:930
 msgctxt "SNDH|SubtuneList"
 msgid "Name"
-msgstr ""
+msgstr "Nombre"
 
 #: ../src/libromdata/Audio/SNDH.cpp:944
 msgctxt "SNDH"
