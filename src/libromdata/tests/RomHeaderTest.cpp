@@ -650,13 +650,19 @@ extern "C" int gtest_main(int argc, TCHAR *argv[])
 #define AMIIBO_DATA_BIN_WITH_DOTDOT_DOTDOT_DOTDOT_BIN_DIR _T("..") DIR_SEP_STR _T("..") DIR_SEP_STR _T("..") DIR_SEP_STR AMIIBO_DATA_BIN_WITH_BIN_DIR
 	if (!_taccess(AMIIBO_DATA_BIN_BASE, R_OK)) {
 		// Found in the current directory.
-		_tgetcwd(amiibo_data_bin_path, ARRAY_SIZE(amiibo_data_bin_path));
+		if (!_tgetcwd(amiibo_data_bin_path, ARRAY_SIZE(amiibo_data_bin_path))) {
+			_ftprintf(stderr, _T("*** ERROR: getcwd() failed: %s\n"), _tcserror(errno));
+			return EXIT_FAILURE;
+		}
 		if (_tcslen(amiibo_data_bin_path) < (ARRAY_SIZE(amiibo_data_bin_path) - 32)) {
 			_tcscat(amiibo_data_bin_path, DIR_SEP_STR AMIIBO_DATA_BIN_BASE);
 		}
 	} else if (!_taccess(AMIIBO_DATA_BIN_WITH_BIN_DIR, R_OK)) {
 		// Found in the current directory.
-		_tgetcwd(amiibo_data_bin_path, ARRAY_SIZE(amiibo_data_bin_path));
+		if (!_tgetcwd(amiibo_data_bin_path, ARRAY_SIZE(amiibo_data_bin_path))) {
+			_ftprintf(stderr, _T("*** ERROR: getcwd() failed: %s\n"), _tcserror(errno));
+			return EXIT_FAILURE;
+		}
 		if (_tcslen(amiibo_data_bin_path) < (ARRAY_SIZE(amiibo_data_bin_path) - 32)) {
 			_tcscat(amiibo_data_bin_path, DIR_SEP_STR AMIIBO_DATA_BIN_WITH_BIN_DIR);
 		}
@@ -664,7 +670,10 @@ extern "C" int gtest_main(int argc, TCHAR *argv[])
 #ifndef _WIN32
 	else if (!_taccess(AMIIBO_DATA_BIN_WITH_DOTDOT_DOTDOT_DOTDOT_BIN_DIR, R_OK)) {
 		// We're in ${CMAKE_CURRENT_BINARY_DIR}.
-		_tgetcwd(amiibo_data_bin_path, ARRAY_SIZE(amiibo_data_bin_path));
+		if (!_tgetcwd(amiibo_data_bin_path, ARRAY_SIZE(amiibo_data_bin_path))) {
+			_ftprintf(stderr, _T("*** ERROR: getcwd() failed: %s\n"), _tcserror(errno));
+			return EXIT_FAILURE;
+		}
 		if (_tcslen(amiibo_data_bin_path) < (ARRAY_SIZE(amiibo_data_bin_path) - 32)) {
 			_tcscat(amiibo_data_bin_path, DIR_SEP_STR AMIIBO_DATA_BIN_WITH_DOTDOT_DOTDOT_DOTDOT_BIN_DIR);
 		}
