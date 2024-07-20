@@ -82,6 +82,8 @@
       * Reported by @rctgamer3.
   * rpcli: Fix APNG extraction.
     * Affects: v2.3
+  * GameCubeSave: Adjust icon delays.
+    * Reported by @Louis322.
 
 ## v2.3 (released 2024/03/03)
 
