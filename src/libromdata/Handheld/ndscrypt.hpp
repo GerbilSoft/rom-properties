@@ -16,7 +16,7 @@ extern "C" {
 #endif
 
 // nds-blowfish.bin size.
-#define NDS_BLOWFISH_SIZE 0x1048
+#define NDS_BLOWFISH_SIZE 0x1048U
 
 typedef enum {
 	NDSCRYPT_BF_NDS = 0,	// Nintendo DS
