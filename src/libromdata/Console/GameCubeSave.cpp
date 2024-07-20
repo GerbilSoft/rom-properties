@@ -387,13 +387,53 @@ rp_image_const_ptr GameCubeSavePrivate::loadIcon(void)
 			// End of the icons.
 			break;
 		}
+		const bool is_last_icon = (i + 1 == CARD_MAXICONS) || (((iconspeed >> 2) & CARD_SPEED_MASK) == CARD_SPEED_END);
 
-		// Icon delay.
-		// Using 125ms for the fastest speed.
-		// TODO: Verify this?
-		iconAnimData->delays[i].numer = static_cast<uint16_t>(delay);
-		iconAnimData->delays[i].denom = 8;
-		iconAnimData->delays[i].ms = delay * 125;
+		// Icon delay
+		// Rates:
+		// - 0: No icon
+		// - 1: 4 frames (4/60 or 4/50)
+		// - 2: 8 frames (8/60 or 8/50)
+		// - 3: 12 frames (12/60 or 12/50)
+		// NOTE: On all tested GCN IPL (NTSC and PAL), and Wii Menu 4.3U,
+		// the first image typically shows for one extra frame,
+		// and the last image typically shows for one fewer frame.
+		static constexpr std::array<uint8_t, 4> numers = {{0, 4, 8, 12}};
+		if (direntry.id6[3] == 'P') {
+			// PAL: 50 Hz
+			static constexpr std::array<uint16_t, 4> ms       = {{0, 4*1000/50, 8*1000/50, 12*1000/50}};
+			static constexpr std::array<uint16_t, 4> ms_first = {{0, 5*1000/50, 9*1000/50, 13*1000/50}};
+			static constexpr std::array<uint16_t, 4> ms_last  = {{0, 3*1000/50, 7*1000/50, 11*1000/50}};
+
+			iconAnimData->delays[i].denom = 50;
+			if (i == 0) {
+				iconAnimData->delays[i].numer = numers[delay] + 1;
+				iconAnimData->delays[i].ms = ms_first[delay];
+			} else if (is_last_icon) {
+				iconAnimData->delays[i].numer = numers[delay] - 1;
+				iconAnimData->delays[i].ms = ms_last[delay];
+			} else {
+				iconAnimData->delays[i].numer = numers[delay];
+				iconAnimData->delays[i].ms = ms[delay];
+			}
+		} else {
+			// NTSC: 60 Hz
+			static constexpr std::array<uint16_t, 4> ms       = {{0, 67 /*4*1000/60*/, 133 /*8*1000/60*/, 200 /*12*1000/60*/}};
+			static constexpr std::array<uint16_t, 4> ms_first = {{0, 83 /*5*1000/60*/, 150 /*9*1000/60*/, 260 /*13*1000/60*/}};
+			static constexpr std::array<uint16_t, 4> ms_last  = {{0, 50 /*3*1000/60*/, 117 /*7*1000/60*/, 183 /*11*1000/60*/}};
+
+			iconAnimData->delays[i].denom = 60;
+			if (i == 0) {
+				iconAnimData->delays[i].numer = numers[delay] + 1;
+				iconAnimData->delays[i].ms = ms_first[delay];
+			} else if (is_last_icon) {
+				iconAnimData->delays[i].numer = numers[delay] - 1;
+				iconAnimData->delays[i].ms = ms_last[delay];
+			} else {
+				iconAnimData->delays[i].numer = numers[delay];
+				iconAnimData->delays[i].ms = ms[delay];
+			}
+		}
 
 		switch (iconfmt & CARD_ICON_MASK) {
 			case CARD_ICON_RGB: {
@@ -457,6 +497,7 @@ rp_image_const_ptr GameCubeSavePrivate::loadIcon(void)
 	}
 	if (direntry.bannerfmt & CARD_ANIM_MASK) {
 		// "Bounce" the icon.
+		// TODO: Need to adjust the first icon length in some cases? (Verify on IPL.)
 		for (int i = iconAnimData->count-2; i > 0; i--, idx++) {
 			iconAnimData->seq_index[idx] = i;
 			iconAnimData->delays[idx] = iconAnimData->delays[i];
