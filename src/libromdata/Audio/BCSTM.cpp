@@ -17,7 +17,6 @@ using namespace LibRpText;
 
 // C++ STL classes
 using std::array;
-using std::ostringstream;
 using std::string;
 
 namespace LibRomData {
@@ -486,9 +485,8 @@ int BCSTM::loadFieldData(void)
 
 	// Sample rate
 	// NOTE: Using ostringstream for localized numeric formatting.
-	ostringstream oss;
-	oss << sample_rate << " Hz";
-	d->fields.addField_string(C_("RomData|Audio", "Sample Rate"), oss.str());
+	d->fields.addField_string(C_("RomData|Audio", "Sample Rate"),
+		rp_sprintf(C_("RomData", "%u Hz"), sample_rate));
 
 	// Length (non-looping)
 	// TODO: Figure this out for BCWAV.

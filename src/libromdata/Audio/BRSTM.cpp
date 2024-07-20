@@ -17,7 +17,6 @@ using namespace LibRpText;
 
 // C++ STL classes
 using std::array;
-using std::ostringstream;
 using std::string;
 
 namespace LibRomData {
@@ -352,10 +351,8 @@ int BRSTM::loadFieldData(void)
 	const uint32_t sample_count = d->brstm32_to_cpu(headChunk1->sample_count);
 
 	// Sample rate
-	// NOTE: Using ostringstream for localized numeric formatting.
-	ostringstream oss;
-	oss << sample_rate << " Hz";
-	d->fields.addField_string(C_("RomData|Audio", "Sample Rate"), oss.str());
+	d->fields.addField_string(C_("RomData|Audio", "Sample Rate"),
+		rp_sprintf(C_("RomData", "%u Hz"), sample_rate));
 
 	// Length (non-looping)
 	d->fields.addField_string(C_("RomData|Audio", "Length"),
