@@ -16,7 +16,6 @@ using namespace LibRpFile;
 using namespace LibRpText;
 
 // C++ STL classes
-using std::ostringstream;
 using std::string;
 
 namespace LibRomData {
@@ -292,10 +291,8 @@ int ADX::loadFieldData(void)
 	const uint32_t sample_count = be32_to_cpu(adxHeader->sample_count);
 
 	// Sample rate
-	// NOTE: Using ostringstream for localized numeric formatting.
-	ostringstream oss;
-	oss << sample_rate << " Hz";
-	d->fields.addField_string(C_("RomData|Audio", "Sample Rate"), oss.str());
+	d->fields.addField_string(C_("RomData|Audio", "Sample Rate"),
+		rp_sprintf(C_("RomData", "%u Hz"), sample_rate));
 
 	// Length. (non-looping)
 	d->fields.addField_string(C_("RomData|Audio", "Length"),
@@ -305,9 +302,8 @@ int ADX::loadFieldData(void)
 	// High-pass cutoff
 	// TODO: What does this value represent?
 	// FIXME: Disabling until I figure this out.
-	oss.str("");
-	oss << be16_to_cpu(adxHeader->high_pass_cutoff) << " Hz";
-	d->fields.addField_string(C_("ADX", "High-Pass Cutoff"), oss.str());
+	d->fields.addField_string(C_("ADX", "High-Pass Cutoff"),
+		rp_sprintf(C_("RomData", "%u Hz"), adxHeader->high_pass_cutoff));
 #endif
 
 	// Translated strings

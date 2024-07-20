@@ -839,7 +839,7 @@ int SNDH::loadFieldData(void)
 	// VBL *before* timers. We'll list it before timers.
 
 	// VBlank frequency.
-	const char *const s_hz = C_("SNDH", "%u Hz");
+	const char *const s_hz = C_("RomData", "%u Hz");
 	if (tags.vblank_freq != 0) {
 		d->fields.addField_string(C_("SNDH", "VBlank Freq"),
 			rp_sprintf(s_hz, tags.vblank_freq));

@@ -1824,7 +1824,7 @@ msgstr "Numero di Sottobrani"
 
 #: ../src/libromdata/Audio/SNDH.cpp:842
 #, c-format
-msgctxt "SNDH"
+msgctxt "RomData"
 msgid "%u Hz"
 msgstr "%u Hz"
 

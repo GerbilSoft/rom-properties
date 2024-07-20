@@ -1829,7 +1829,7 @@ msgstr "# de subtonos"
 
 #: ../src/libromdata/Audio/SNDH.cpp:842
 #, c-format
-msgctxt "SNDH"
+msgctxt "RomData"
 msgid "%u Hz"
 msgstr ""
 
