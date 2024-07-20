@@ -852,10 +852,10 @@ int RpPngWriterPrivate::write_IDAT(void)
 int RpPngWriterPrivate::write_IDAT_APNG(void)
 {
 	assert(file != nullptr);
-	assert(img != nullptr);
+	assert(iconAnimData != nullptr);
 	assert(imageTag == ImageTag::IconAnimData);
 	assert(IHDR_written);
-	if (unlikely(!file || !img || imageTag != ImageTag::IconAnimData)) {
+	if (unlikely(!file || !iconAnimData || imageTag != ImageTag::IconAnimData)) {
 		// Invalid state.
 		lastError = EIO;
 		return -lastError;

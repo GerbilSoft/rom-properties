@@ -80,6 +80,8 @@
     * Fixes #416: Win32 UI frontend: Localized multi-line strings aren't displayed correctly
       (was: Line feeds not working in descriptions for GameCube titles with BNR2 banner)
       * Reported by @rctgamer3.
+  * rpcli: Fix APNG extraction.
+    * Affects: v2.3
 
 ## v2.3 (released 2024/03/03)
 
