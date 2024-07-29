@@ -1,12 +1,12 @@
-This copy of lz4-1.9.4 is a modified version of the original.
+This copy of lz4-1.10.0 is a modified version of the original.
 
-commit 5ff839680134437dbf4678f3d0c7b371d84f4964
+commit ebb370ca83af193212df4dcbadcc5d87bc0de2f0
 
-Merge pull request #1138 from lz4/dev
+Merge pull request #1461 from lz4/dev
 
-stage v1.9.4
+Release branch v1.10.0
 
-Tag: v1.9.4
+Tag: v1.10.0
 
 The following changes have been made to the original:
 
@@ -26,5 +26,5 @@ The following changes have been made to the original:
 - Don't check for gcc warning flags on MSVC and vice-versa
   This merely wastes time.
 
-To obtain the original lz4-1.9.4, visit:
+To obtain the original lz4-1.10.0, visit:
 https://github.com/lz4/lz4
