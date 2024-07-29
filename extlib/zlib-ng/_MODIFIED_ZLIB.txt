@@ -1,9 +1,9 @@
-This copy of zlib-ng 2.1.5 is a modified version of the original.
+This copy of zlib-ng 2.2.1 is a modified version of the original.
 
-commit 74253725f884e2424a0dd8ae3f69896d5377f325
-2.1.6 Release
+commit d54e3769be0c522015b784eca2af258b1c026107
+2.2.1 Release
     
-Tag: 2.1.6
+Tag: 2.2.1
 
 The following changes have been made to the original:
 
@@ -26,7 +26,7 @@ The following changes have been made to the original:
 
 - Some other functionality not needed by rom-properties has been disabled.
 
-To obtain the original zlib-ng v2.1.5, visit:
+To obtain the original zlib-ng v2.2.1, visit:
 https://github.com/zlib-ng/zlib-ng
 
 To obtain the original zlib-1.2.11, visit:

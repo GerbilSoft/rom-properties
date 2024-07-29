@@ -749,17 +749,10 @@ bool zlib_is_ng(void)
 
 // Use zlibng_version()?
 #ifdef ZLIBNG_VERSION
-// FIXME: zlibng_version() isn't exported on Windows
-// if building with ZLIB_COMPAT.
-#  ifdef _WIN32
-#    if defined(ZLIB_IS_DLL) && defined(ZLIB_COMPAT)
-       // zlib is a DLL, and ZLIB_COMPAT is enabled.
-#    else
-#      define USE_ZLIBNG_VERSION 1
-#    endif
-#  else /* !_WIN32 */
+// FIXME: zlibng_version() isn't exported if building with ZLIB_COMPAT.
+#  ifndef ZLIB_COMPAT
 #    define USE_ZLIBNG_VERSION 1
-#  endif /* _WIN32 */
+#  endif /* !ZLIB_COMPAT */
 #endif /* ZLIBNG_VERSION */
 
 #ifdef USE_ZLIBNG_VERSION

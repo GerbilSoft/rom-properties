@@ -26,7 +26,7 @@ BEGIN
 #else
       VALUE "InternalName",	"zlib-ng1.dll\0"
 #endif
-      VALUE "LegalCopyright",	"(C) 1995-2013 Jean-loup Gailly & Mark Adler\0"
+      VALUE "LegalCopyright",	"(C) 1995-2024 Jean-loup Gailly & Mark Adler\0"
 #ifdef _DEBUG
       VALUE "OriginalFilename",	"zlib-ng1d.dll\0"
 #else
