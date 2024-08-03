@@ -156,8 +156,10 @@ add_library(lz4 INTERFACE)
 list(APPEND LZ4_LIBRARIES_BUILT lz4)
 if(BUILD_SHARED_LIBS)
   target_link_libraries(lz4 INTERFACE lz4_shared)
+  set(LZ4_LINK_LIBRARY lz4_shared) # rom-properties
 else()
   target_link_libraries(lz4 INTERFACE lz4_static)
+  set(LZ4_LINK_LIBRARY lz4_static) # rom-properties
 endif()
 
 # xxhash namespace
