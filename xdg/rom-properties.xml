@@ -58,6 +58,16 @@
     </magic>
   </mime-type>
 
+  <!-- DMG -->
+  <mime-type type="application/x-analogue-pocket-rom">
+    <comment>Analogue Pocket ROM</comment>
+    <generic-icon name="application-x-executable"/>
+    <magic>
+      <match type="string" value="\x01\x10\xce\xef\x00\x00\x44\xaa\x00\x74\x00\x18\x11\x95\x00\x34\x00\x1a\x00\xd5\x00\x22\x00\x69" offset="260"/>
+    </magic>
+    <glob pattern="*.pocket"/>
+  </mime-type>
+
   <!-- GBS -->
   <mime-type type="audio/x-gbs">
     <comment>Game Boy Sound System audio</comment>

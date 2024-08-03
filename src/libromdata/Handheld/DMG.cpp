@@ -230,6 +230,10 @@ const char *const DMGPrivate::mimeTypes[] = {
 	"application/x-gameboy-rom",
 	"application/x-gameboy-color-rom",
 
+	// Unofficial MIME types.
+	// TODO: Get these upstreamed on FreeDesktop.org.
+	"application/x-analogue-pocket-rom",
+
 	nullptr
 };
 const RomDataInfo DMGPrivate::romDataInfo = {
@@ -849,9 +853,9 @@ DMG::DMG(const IRpFilePtr &file)
 	}
 
 	// Set the MIME type. (unofficial)
-	d->mimeType = (d->romType == DMGPrivate::RomType::CGB)
-			? "application/x-gameboy-color-rom"
-			: "application/x-gameboy-rom";
+	assert((int)d->romType >= 0);
+	assert((int)d->romType < ARRAY_SIZE_I(d->mimeTypes));
+	d->mimeType = d->mimeTypes[(int)d->romType];
 }
 
 /** ROM detection functions. **/
