@@ -78,6 +78,7 @@ application/x-xbox360-patch		# Xbox360_XEX
 # Handheld
 application/x-gameboy-rom		# DMG
 application/x-gameboy-color-rom		# DMG
+application/x-analogue-pocket-rom	# DMG
 application/x-gba-rom			# GameBoyAdvance
 application/x-gameboy-advance-rom	# GameBoyAdvance (mGBA)
 application/x-agb-rom			# GameBoyAdvance (mGBA)
