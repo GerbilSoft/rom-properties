@@ -37,6 +37,7 @@
     * Nintendo Virtual Boy ROM images
     * Nintendo Wii save files
     * Windows/DOS executables
+  * DMG: Detect Analogue Pocket ROM images.
 
 * Bug fixes:
   * On Linux, rp-config now correctly detects KDE Plasma 6 and uses the

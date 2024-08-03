@@ -140,6 +140,8 @@ public:
 		DMG	= 0,	// Game Boy
 		CGB	= 1,	// Game Boy Color
 
+		AP	= 2,	// Analogue Pocket
+
 		Max
 	};
 	RomType romType;
@@ -215,8 +217,11 @@ const char *const DMGPrivate::exts[] = {
 	".gb",  ".sgb", ".sgb2",
 	".gbc", ".cgb",
 
-	// ROMs with GBX footer.
+	// ROMs with GBX footer
 	".gbx",
+
+	// Analogue Pocket
+	".pocket",
 
 	nullptr
 };
@@ -778,10 +783,12 @@ DMG::DMG(const IRpFilePtr &file)
 	// Save the header for later.
 	// TODO: Save the RST table?
 
-	// Check the first DWORD of the Nintendo logo
-	// to determine if a copier header is present.
-	if (unlikely(header.u32[0x104/4] != cpu_to_be32(0xCEED6666))) {
-		// No Nintendo logo. Assume a copier header is present.
+	// Check the first DWORD of the logo area to determine
+	// if a copier header is present.
+	if (unlikely(header.u32[0x104/4] != cpu_to_be32(0xCEED6666) &&
+		     header.u32[0x104/4] != cpu_to_be32(0x0110CEEF)))
+	{
+		// Not a supported logo. Assume a copier header is present.
 		d->copier_offset = 0x200;
 	}
 	const int64_t fileSize = d->file->size() - d->copier_offset;
@@ -869,29 +876,52 @@ int DMG::isRomSupported_static(const DetectInfo *info)
 	}
 
 	/**
-	* Nintendo's logo which is checked by bootrom.
-	* (Top half only.)
-	*
-	* NOTE: CGB bootrom only checks the top half of the logo.
-	* (see 0x00D1 of CGB IPL)
-	*/
-	static constexpr array<uint8_t, 0x18> dmg_nintendo_logo = {{
+	 * Nintendo's logo which is checked by bootrom.
+	 * (Top half only.)
+	 *
+	 * NOTE: CGB bootrom only checks the top half of the logo.
+	 * (see 0x00D1 of CGB IPL)
+	 */
+	static const array<uint8_t, 0x18> dmg_nintendo_logo = {{
 		0xCE, 0xED, 0x66, 0x66, 0xCC, 0x0D, 0x00, 0x0B,
 		0x03, 0x73, 0x00, 0x83, 0x00, 0x0C, 0x00, 0x0D,
 		0x00, 0x08, 0x11, 0x1F, 0x88, 0x89, 0x00, 0x0E
 	}};
 
-	// Check for the ROM header at 0x100. (standard location)
-	const DMG_RomHeader *romHeader =
-		reinterpret_cast<const DMG_RomHeader*>(&info->header.pData[0x100]);
-	if (!memcmp(romHeader->nintendo, dmg_nintendo_logo.data(), dmg_nintendo_logo.size())) {
-		// Found at the standard location.
-		DMGPrivate::RomType romType;
-		if (romHeader->cgbflag & 0x80) {
-			romType = DMGPrivate::RomType::CGB; // CGB supported
-		} else {
-			romType = DMGPrivate::RomType::DMG;
+	/**
+	 * Analogue Pocket logo. (Top half only.)
+	 *
+	 * NOTE: CGB bootrom only checks the top half of the logo.
+	 * (see 0x00D1 of CGB IPL)
+	 */
+	static const array<uint8_t, 0x18> dmg_analogue_pocket_logo = {{
+		0x01, 0x10, 0xCE, 0xEF, 0x00, 0x00, 0x44, 0xAA,
+		0x00, 0x74, 0x00, 0x18, 0x11, 0x95, 0x00, 0x34,
+		0x00, 0x1A, 0x00, 0xD5, 0x00, 0x22, 0x00, 0x69
+	}};
+
+	auto check_header_at = [](const uint8_t *pData) -> DMGPrivate::RomType {
+		const DMG_RomHeader *const romHeader =
+			reinterpret_cast<const DMG_RomHeader*>(pData);
+		if (!memcmp(romHeader->nintendo, dmg_nintendo_logo.data(), dmg_nintendo_logo.size())) {
+			// Nintendo logo found
+			if (romHeader->cgbflag & 0x80) {
+				return DMGPrivate::RomType::CGB; // CGB supported
+			} else {
+				return DMGPrivate::RomType::DMG;
+			}
+		} else if (!memcmp(romHeader->nintendo, dmg_analogue_pocket_logo.data(), dmg_analogue_pocket_logo.size())) {
+			// Analogue Pocket logo found
+			return DMGPrivate::RomType::AP;
 		}
+
+		// No supported logo found
+		return DMGPrivate::RomType::Unknown;
+	};
+
+	// Check for the ROM header at 0x100. (standard location)
+	DMGPrivate::RomType romType = check_header_at(&info->header.pData[0x100]);
+	if (romType != DMGPrivate::RomType::Unknown) {
 		return (int)romType;
 	}
 
@@ -908,22 +938,12 @@ int DMG::isRomSupported_static(const DetectInfo *info)
 		    pData32[0x18/4] == 0 && pData32[0x1C/4] == 0)
 		{
 			// Check the headered location.
-			romHeader = reinterpret_cast<const DMG_RomHeader*>(&info->header.pData[0x300]);
-			if (!memcmp(romHeader->nintendo, dmg_nintendo_logo.data(), dmg_nintendo_logo.size())) {
-				// Found at the headered location.
-				DMGPrivate::RomType romType;
-				if (romHeader->cgbflag & 0x80) {
-					romType = DMGPrivate::RomType::CGB; // CGB supported
-				} else {
-					romType = DMGPrivate::RomType::DMG;
-				}
-				return (int)romType;
-			}
+			romType = check_header_at(&info->header.pData[0x300]);
 		}
 	}
 
 	// Not supported.
-	return (int)DMGPrivate::RomType::Unknown;
+	return (int)romType;
 }
 
 /**
@@ -942,19 +962,21 @@ const char *DMG::systemName(unsigned int type) const
 	// TODO: Abbreviation might be different... (Japan uses DMG/CGB?)
 	static_assert(SYSNAME_TYPE_MASK == 3,
 		"DMG::systemName() array index optimization needs to be updated.");
-	static_assert((int)DMGPrivate::RomType::Max == 2,
+	static_assert((int)DMGPrivate::RomType::Max == 3,
 		"DMG::systemName() array index optimization needs to be updated.");
 
 	// Bits 0-1: Type. (long, short, abbreviation)
-	// Bit 2: Game Boy Color. (DMG-specific)
-	static const char *const sysNames[2][4] = {
+	// Bits 2-3: System type. (DMG-specific)
+	static const char *const sysNames[4][4] = {
 		{"Nintendo Game Boy", "Game Boy", "GB", nullptr},
-		{"Nintendo Game Boy Color", "Game Boy Color", "GBC", nullptr}
+		{"Nintendo Game Boy Color", "Game Boy Color", "GBC", nullptr},
+		{"Analogue Pocket", "Analogue Pocket", "AP", nullptr},
+		{nullptr, nullptr, nullptr, nullptr},
 	};
 
 	// NOTE: This might return an incorrect system name if
 	// d->romType is ROM_TYPE_UNKNOWN.
-	return sysNames[(int)d->romType & 1][type & SYSNAME_TYPE_MASK];
+	return sysNames[(int)d->romType & 3][type & SYSNAME_TYPE_MASK];
 }
 
 /**
