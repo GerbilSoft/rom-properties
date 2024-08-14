@@ -225,6 +225,9 @@ int WiiTicketPrivate::getEncKey(void)
 	} else if (ca == 4 && xs == 0xf) {
 		// CAT debug
 		encKey = WiiTicket::EncryptionKeys::Key_CAT_Starbuck_WiiU_Common;
+	} else if (ca == 4 && xs == 0x9) {
+		// CAT debug (early titles; same as CTR debug)
+		encKey = WiiTicket::EncryptionKeys::Key_CAT_Starbuck_WiiU_Common;
 	} else {
 		// Unsupported CA/XS combination.
 		return -EINVAL;

@@ -85,6 +85,7 @@
     * Affects: v2.3
   * GameCubeSave: Adjust icon delays.
     * Reported by @Louis322.
+  * WiiTicket: Recognize CA04-XS09 from early Wii U titles.
 
 ## v2.3 (released 2024/03/03)
 
