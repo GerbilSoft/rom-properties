@@ -1220,10 +1220,12 @@ int EXE::checkViewedAchievements(void) const
 
 		case 0x01C0:	// ARM
 		case 0x01C4:	// ARMV7
-		default:
 			if (d->pe_subsystem == IMAGE_SUBSYSTEM_WINDOWS_CE_GUI) {
 				return 0;
 			}
+			break;
+
+		default:
 			break;
 	}
 
