@@ -1214,16 +1214,11 @@ int EXE::checkViewedAchievements(void) const
 		case IMAGE_FILE_MACHINE_AMD64:
 		case IMAGE_FILE_MACHINE_CEE:
 		case IMAGE_FILE_MACHINE_POWERPCBE:
+		case 0x01C0:	// ARM
+		case 0x01C4:	// ARMV7
 		case IMAGE_FILE_MACHINE_ARM64:
 		case 0x0EBC:	// EBC (EFI byte code)
 			return 0;
-
-		case 0x01C0:	// ARM
-		case 0x01C4:	// ARMV7
-			if (d->pe_subsystem == IMAGE_SUBSYSTEM_WINDOWS_CE_GUI) {
-				return 0;
-			}
-			break;
 
 		default:
 			break;
