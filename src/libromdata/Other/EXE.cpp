@@ -1217,6 +1217,7 @@ int EXE::checkViewedAchievements(void) const
 		case 0x01C0:	// ARM
 		case 0x01C4:	// ARMV7
 		case IMAGE_FILE_MACHINE_ARM64:
+		case 0xA641:	// ARM64EC
 		case 0x0EBC:	// EBC (EFI byte code)
 			return 0;
 
