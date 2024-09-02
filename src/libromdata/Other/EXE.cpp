@@ -1207,15 +1207,23 @@ int EXE::checkViewedAchievements(void) const
 			return 0;
 	}
 
-	// Machine type should NOT be x86, amd64, CIL (.NET),
+	// Machine type should NOT be a well-known type,
 	// or PowerPC big-endian (Xenon).
 	switch (le16_to_cpu(d->hdr.pe.FileHeader.Machine)) {
 		case IMAGE_FILE_MACHINE_I386:
 		case IMAGE_FILE_MACHINE_AMD64:
 		case IMAGE_FILE_MACHINE_CEE:
 		case IMAGE_FILE_MACHINE_POWERPCBE:
+		case IMAGE_FILE_MACHINE_ARM64:
+		case 0x0EBC:	// EBC (EFI byte code)
 			return 0;
+
+		case 0x01C0:	// ARM
+		case 0x01C4:	// ARMV7
 		default:
+			if (d->pe_subsystem == IMAGE_SUBSYSTEM_WINDOWS_CE_GUI) {
+				return 0;
+			}
 			break;
 	}
 
