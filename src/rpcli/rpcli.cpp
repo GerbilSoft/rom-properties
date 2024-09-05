@@ -163,7 +163,7 @@ static void ExtractImages(const RomData *romData, const vector<ExtractParam> &ex
 				} else {
 					cerr << "-- " <<
 						// tr: %s == output filename
-						rp_sprintf_p(C_("rpcli", "Extracting mipmap level %d into '%s'"),
+						rp_sprintf_p(C_("rpcli", "Extracting mipmap level %1$d into '%2$s'"),
 							p.mipmapLevel, T2U8c(p.filename)) << '\n';
 				}
 				cerr.flush();

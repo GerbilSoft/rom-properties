@@ -10009,7 +10009,7 @@ msgstr ""
 #: ../src/rpcli/rpcli.cpp:166
 #, c-format
 msgctxt "rpcli"
-msgid "Extracting mipmap level %d into '%s'"
+msgid "Extracting mipmap level %1$d into '%2$s'"
 msgstr ""
 
 #. tr: %1$s == filename, %2%s == error message
