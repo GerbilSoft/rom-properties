@@ -54,8 +54,8 @@ public:
 	uint32_t file_offset_factor;
 
 	// String table, converted to Unicode.
-	// - Key: String offset in the FST string table.
-	// - Value: string.
+	// - Key: String offset in the FST string table
+	// - Value: UTF-8 string
 	mutable unordered_map<uint32_t, string> u8_string_table;
 
 	/**
@@ -473,13 +473,12 @@ IFst::Dir *WiiUFst::opendir(const char *path)
 		return nullptr;
 	}
 
-	IFst::Dir *dirp = new IFst::Dir;
+	IFst::Dir *dirp = new IFst::Dir(this);
 	d->fstDirCount++;
-	dirp->parent = this;
 	// TODO: Better way to get dir_idx?
 	dirp->dir_idx = static_cast<int>(fst_entry - d->fstEntries);
 
-	// Initialize the entry to the root directory.
+	// Initialize the entry to this directory.
 	// readdir() will automatically seek to the next entry.
 	dirp->entry.ptnum = be16_to_cpu(fst_entry->storage_cluster_index);
 	dirp->entry.idx = dirp->dir_idx;

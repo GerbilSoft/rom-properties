@@ -45,8 +45,8 @@ public:
 	uint32_t string_table_sz;
 
 	// String table, converted to Unicode.
-	// - Key: String offset in the FST string table.
-	// - Value: string.
+	// - Key: String offset in the FST string table
+	// - Value: UTF-8 string
 	mutable unordered_map<uint32_t, string> u8_string_table;
 
 	/**
@@ -408,8 +408,6 @@ bool GcnFst::hasErrors(void) const
  */
 IFst::Dir *GcnFst::opendir(const char *path)
 {
-	// TODO: Ignoring path right now.
-	// Always reading the root directory.
 	if (!d->fstData) {
 		// No FST.
 		return nullptr;
@@ -428,14 +426,14 @@ IFst::Dir *GcnFst::opendir(const char *path)
 		return nullptr;
 	}
 
-	IFst::Dir *dirp = new IFst::Dir;
+	IFst::Dir *dirp = new IFst::Dir(this);
 	d->fstDirCount++;
-	dirp->parent = this;
 	// TODO: Better way to get dir_idx?
 	dirp->dir_idx = static_cast<int>(fst_entry - d->fstData);
 
-	// Initialize the entry to the root directory.
+	// Initialize the entry to this directory.
 	// readdir() will automatically seek to the next entry.
+	dirp->entry.ptnum = 0;	// not used for GCN/Wii
 	dirp->entry.idx = dirp->dir_idx;
 	dirp->entry.type = DT_DIR;
 	dirp->entry.name = d->entry_name(fst_entry);
@@ -518,9 +516,9 @@ IFst::DirEnt *GcnFst::readdir(IFst::Dir *dirp)
 
 	// Save the entry information.
 	const bool is_fst_dir = d->is_dir(fst_entry);
+	dirp->entry.ptnum = 0;	// not used for GCN/Wii
 	dirp->entry.type = is_fst_dir ? DT_DIR : DT_REG;
 	dirp->entry.name = pName;
-	dirp->entry.ptnum = 0;
 	if (is_fst_dir) {
 		// offset and size are not valid for directories.
 		dirp->entry.offset = 0;
@@ -580,9 +578,9 @@ int GcnFst::find_file(const char *filename, DirEnt *dirent)
 
 	// Copy the relevant information to dirent.
 	const bool is_fst_dir = d->is_dir(fst_entry);
+	dirent->ptnum = 0;	// not used for GCN/Wii
 	dirent->type = is_fst_dir ? DT_DIR : DT_REG;
 	dirent->name = d->entry_name(fst_entry);
-	dirent->ptnum = 0;	// not used for GCN/Wii
 	if (is_fst_dir) {
 		// offset and size are not valid for directories.
 		dirent->offset = 0;
