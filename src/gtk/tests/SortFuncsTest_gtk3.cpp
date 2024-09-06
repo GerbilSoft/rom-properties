@@ -32,15 +32,15 @@ using std::string;
 
 namespace LibRomData { namespace Tests {
 
-class ListDataSortProxyModelTest : public ::testing::Test
+class SortFuncsTest_gtk3 : public ::testing::Test
 {
 	protected:
-		ListDataSortProxyModelTest()
+		SortFuncsTest_gtk3()
 			: listStore(nullptr)
 			, sortProxy(nullptr)
 		{ }
 
-		~ListDataSortProxyModelTest() override
+		~SortFuncsTest_gtk3() override
 		{
 			g_clear_object(&sortProxy);
 			g_clear_object(&listStore);
@@ -55,7 +55,7 @@ class ListDataSortProxyModelTest : public ::testing::Test
 		GtkTreeModel *sortProxy;	// Sort proxy
 };
 
-void ListDataSortProxyModelTest::SetUp()
+void SortFuncsTest_gtk3::SetUp()
 {
 	// Create the GtkListStore and sort proxy tree models.
 	listStore = gtk_list_store_new(4, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
@@ -89,7 +89,7 @@ void ListDataSortProxyModelTest::SetUp()
 	}
 }
 
-void ListDataSortProxyModelTest::TearDown()
+void SortFuncsTest_gtk3::TearDown()
 {
 	g_clear_object(&sortProxy);
 	g_clear_object(&listStore);
@@ -98,7 +98,7 @@ void ListDataSortProxyModelTest::TearDown()
 /**
  * Test sorting each column in ascending order.
  */
-TEST_F(ListDataSortProxyModelTest, ascendingSort)
+TEST_F(SortFuncsTest_gtk3, ascendingSort)
 {
 	static constexpr int columnCount = 4;
 	const int rowCount = gtk_tree_model_iter_n_children(GTK_TREE_MODEL(listStore), nullptr);
@@ -133,7 +133,7 @@ TEST_F(ListDataSortProxyModelTest, ascendingSort)
 /**
  * Test sorting each column in descending order.
  */
-TEST_F(ListDataSortProxyModelTest, descendingSort)
+TEST_F(SortFuncsTest_gtk3, descendingSort)
 {
 	static constexpr int columnCount = 4;
 	const int rowCount = gtk_tree_model_iter_n_children(GTK_TREE_MODEL(listStore), nullptr);
@@ -174,7 +174,7 @@ TEST_F(ListDataSortProxyModelTest, descendingSort)
  */
 extern "C" int gtest_main(int argc, TCHAR *argv[])
 {
-	fprintf(stderr, "GTK%d UI frontend test suite: ListDataSortProxyModel tests.\n\n", GTK_MAJOR_VERSION);
+	fprintf(stderr, "GTK%d UI frontend test suite: SortFuncs tests.\n\n", GTK_MAJOR_VERSION);
 	fflush(nullptr);
 
 	// coverity[fun_call_w_exception]: uncaught exceptions cause nonzero exit anyway, so don't warn.

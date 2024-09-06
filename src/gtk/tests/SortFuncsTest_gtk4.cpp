@@ -32,15 +32,15 @@ using std::string;
 
 namespace LibRomData { namespace Tests {
 
-class ListDataSortProxyModelTest : public ::testing::Test
+class SortFuncsTest_gtk4 : public ::testing::Test
 {
 	protected:
-		ListDataSortProxyModelTest()
+		SortFuncsTest_gtk4()
 			: listStore(nullptr)
 			, sortProxy(nullptr)
 		{}
 
-		~ListDataSortProxyModelTest() override
+		~SortFuncsTest_gtk4() override
 		{
 			// GtkSortListModel takes ownership of listStore,
 			// so listStore will get unref()'d when sortProxy does.
@@ -85,22 +85,22 @@ class ListDataSortProxyModelTest : public ::testing::Test
 		}};
 };
 
-gint ListDataSortProxyModelTest::rp_sort_RFT_LISTDATA_standard_DESC(gconstpointer a, gconstpointer b, gpointer userdata)
+gint SortFuncsTest_gtk4::rp_sort_RFT_LISTDATA_standard_DESC(gconstpointer a, gconstpointer b, gpointer userdata)
 {
 	return -rp_sort_RFT_LISTDATA_standard(a, b, userdata);
 }
 
-gint ListDataSortProxyModelTest::rp_sort_RFT_LISTDATA_nocase_DESC(gconstpointer a, gconstpointer b, gpointer userdata)
+gint SortFuncsTest_gtk4::rp_sort_RFT_LISTDATA_nocase_DESC(gconstpointer a, gconstpointer b, gpointer userdata)
 {
 	return -rp_sort_RFT_LISTDATA_nocase(a, b, userdata);
 }
 
-gint ListDataSortProxyModelTest::rp_sort_RFT_LISTDATA_numeric_DESC(gconstpointer a, gconstpointer b, gpointer userdata)
+gint SortFuncsTest_gtk4::rp_sort_RFT_LISTDATA_numeric_DESC(gconstpointer a, gconstpointer b, gpointer userdata)
 {
 	return -rp_sort_RFT_LISTDATA_numeric(a, b, userdata);
 }
 
-void ListDataSortProxyModelTest::SetUp()
+void SortFuncsTest_gtk4::SetUp()
 {
 	// Create the GListStore and sort proxy tree models.
 	// ListDataItem will be used so we can effectively test sort_funcs.c.
@@ -123,7 +123,7 @@ void ListDataSortProxyModelTest::SetUp()
 	}
 }
 
-void ListDataSortProxyModelTest::TearDown()
+void SortFuncsTest_gtk4::TearDown()
 {
 	// GtkSortListModel takes ownership of listStore,
 	// so listStore will get unref()'d when sortProxy does.
@@ -133,7 +133,7 @@ void ListDataSortProxyModelTest::TearDown()
 /**
  * Test sorting each column in ascending order.
  */
-TEST_F(ListDataSortProxyModelTest, ascendingSort)
+TEST_F(SortFuncsTest_gtk4, ascendingSort)
 {
 	static constexpr int columnCount = 4;
 	const int rowCount = g_list_model_get_n_items(G_LIST_MODEL(listStore));
@@ -168,7 +168,7 @@ TEST_F(ListDataSortProxyModelTest, ascendingSort)
 /**
  * Test sorting each column in descending order.
  */
-TEST_F(ListDataSortProxyModelTest, descendingSort)
+TEST_F(SortFuncsTest_gtk4, descendingSort)
 {
 	static constexpr int columnCount = 4;
 	const int rowCount = g_list_model_get_n_items(G_LIST_MODEL(listStore));
@@ -209,7 +209,7 @@ TEST_F(ListDataSortProxyModelTest, descendingSort)
  */
 extern "C" int gtest_main(int argc, TCHAR *argv[])
 {
-	fprintf(stderr, "GTK%d UI frontend test suite: ListDataSortProxyModel tests.\n\n", GTK_MAJOR_VERSION);
+	fprintf(stderr, "GTK%d UI frontend test suite: SortFuncs tests.\n\n", GTK_MAJOR_VERSION);
 	fflush(nullptr);
 
 	// coverity[fun_call_w_exception]: uncaught exceptions cause nonzero exit anyway, so don't warn.
