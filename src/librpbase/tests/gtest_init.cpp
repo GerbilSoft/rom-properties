@@ -98,6 +98,14 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 		SCMP_SYS(fadvise64), SCMP_SYS(fadvise64_64),
 		SCMP_SYS(arm_fadvise64_64),	// CPU-specific syscall for Linux on 32-bit ARM
 
+		// for Google Test Death Tests when spawning a new process
+		SCMP_SYS(pipe), SCMP_SYS(pipe2),
+		SCMP_SYS(dup), SCMP_SYS(dup2),
+		SCMP_SYS(getrandom),
+		SCMP_SYS(wait4),
+		SCMP_SYS(unlink),	// to remove temporary files: /tmp/gtest_captured_stream.XXXXXX
+		//SCMP_SYS(execve),	// only used if the above syscalls fail?
+
 		-1	// End of whitelist
 	};
 	param.syscall_wl = syscall_wl;
