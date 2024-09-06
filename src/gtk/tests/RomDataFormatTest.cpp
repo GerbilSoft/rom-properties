@@ -298,7 +298,7 @@ TEST_F(RomDataFormatDeathTest, formatDimensions)
  */
 extern "C" int gtest_main(int argc, TCHAR *argv[])
 {
-	fputs("glib (GTK) UI frontend test suite: SortFuncs tests.\n\n", stderr);
+	fputs("glib (GTK) UI frontend test suite: RomDataFormat tests.\n\n", stderr);
 	fflush(nullptr);
 
 	// Use "threadsafe" tests on Linux for proper assert() handling in death tests.
