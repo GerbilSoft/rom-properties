@@ -63,7 +63,7 @@ class NOVTABLE IFst
 		};
 
 		struct Dir {
-			IFst *parent;		// IFst that owns this Dir
+			IFst *const parent;	// IFst that owns this Dir
 			int dir_idx;		// Directory index in the FST
 			DirEnt entry;		// Current DirEnt
 
