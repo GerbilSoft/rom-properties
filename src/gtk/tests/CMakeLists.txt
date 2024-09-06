@@ -9,7 +9,14 @@ INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR}/../..)
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/..)
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR}/..)
 
-### sort_funcs.c testss
+### RomDataFormat tests
+SET(RomDataFormatTest_SRCS RomDataFormatTest.cpp)
+ADD_EXECUTABLE(RomDataFormatTest_glib ${RomDataFormatTest_SRCS})
+TARGET_LINK_LIBRARIES(RomDataFormatTest_glib PRIVATE rptest)
+TARGET_LINK_LIBRARIES(RomDataFormatTest_glib PUBLIC rom-properties-glib)
+LIST(APPEND GTK_TESTS RomDataFormatTest_glib)
+
+### sort_funcs.c tests
 
 SET(SortFuncsTest_GTK_COMMON_SRCS ../sort_funcs_common.c)
 SET(SortFuncsTest_GTK_COMMON_H    ../sort_funcs_common.h)
