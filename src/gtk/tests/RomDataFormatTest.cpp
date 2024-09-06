@@ -80,7 +80,7 @@ TEST_F(RomDataFormatDeathTest, formatDateTime_0_invalid)
  * formatDateTime format 1: Date only
  * glib version uses g_date_time_format().
  */
-TEST_F(RomDataFormatDeathTest, formatDateTime_1_dateOnly)
+TEST_F(RomDataFormatTest, formatDateTime_1_dateOnly)
 {
 	// UTC is used to prevent issues caused by differing timezones on build and test systems.
 	static const unsigned int flags = RomFields::RFT_DATETIME_IS_UTC |
@@ -105,7 +105,7 @@ TEST_F(RomDataFormatDeathTest, formatDateTime_1_dateOnly)
  * formatDateTime format 2: Time only
  * glib version uses g_date_time_format().
  */
-TEST_F(RomDataFormatDeathTest, formatDateTime_2_timeOnly)
+TEST_F(RomDataFormatTest, formatDateTime_2_timeOnly)
 {
 	// UTC is used to prevent issues caused by differing timezones on build and test systems.
 	static const unsigned int flags = RomFields::RFT_DATETIME_IS_UTC |
@@ -130,7 +130,7 @@ TEST_F(RomDataFormatDeathTest, formatDateTime_2_timeOnly)
  * formatDateTime format 3: Date and time
  * glib version uses g_date_time_format().
  */
-TEST_F(RomDataFormatDeathTest, formatDateTime_3_dateAndTime)
+TEST_F(RomDataFormatTest, formatDateTime_3_dateAndTime)
 {
 	// UTC is used to prevent issues caused by differing timezones on build and test systems.
 	static const unsigned int flags = RomFields::RFT_DATETIME_IS_UTC |
@@ -189,7 +189,7 @@ TEST_F(RomDataFormatDeathTest, formatDateTime_4_invalid)
  * formatDateTime format 5: Date only (no year)
  * glib version uses g_date_time_format().
  */
-TEST_F(RomDataFormatDeathTest, formatDateTime_5_dateOnly)
+TEST_F(RomDataFormatTest, formatDateTime_5_dateOnly)
 {
 	// UTC is used to prevent issues caused by differing timezones on build and test systems.
 	static const unsigned int flags = RomFields::RFT_DATETIME_IS_UTC |
@@ -215,7 +215,7 @@ TEST_F(RomDataFormatDeathTest, formatDateTime_5_dateOnly)
  * formatDateTime format 6: Time only (no year) [technically redundant...]
  * glib version uses g_date_time_format().
  */
-TEST_F(RomDataFormatDeathTest, formatDateTime_6_timeOnly_noYear)
+TEST_F(RomDataFormatTest, formatDateTime_6_timeOnly_noYear)
 {
 	// UTC is used to prevent issues caused by differing timezones on build and test systems.
 	static const unsigned int flags = RomFields::RFT_DATETIME_IS_UTC |
@@ -241,7 +241,7 @@ TEST_F(RomDataFormatDeathTest, formatDateTime_6_timeOnly_noYear)
  * formatDateTime format 7: Date and time (no year)
  * glib version uses g_date_time_format().
  */
-TEST_F(RomDataFormatDeathTest, formatDateTime_7_dateAndTime_noYear)
+TEST_F(RomDataFormatTest, formatDateTime_7_dateAndTime_noYear)
 {
 	// UTC is used to prevent issues caused by differing timezones on build and test systems.
 	static const unsigned int flags = RomFields::RFT_DATETIME_IS_UTC |
@@ -267,7 +267,7 @@ TEST_F(RomDataFormatDeathTest, formatDateTime_7_dateAndTime_noYear)
 /**
  * formatDimensions test
  */
-TEST_F(RomDataFormatDeathTest, formatDimensions)
+TEST_F(RomDataFormatTest, formatDimensions)
 {
 	static const array<DimensionsTestData, 10> dimensionsTestData = {{
 		{{0, 0, 0}, "0"},
