@@ -3,7 +3,7 @@ PROJECT(kde-tests LANGUAGES CXX)
 
 ###### Sources
 
-### ListDataSortProxyModel test
+### ListDataSortProxyModel tests
 
 SET(ListDataSortProxyModelTest_SRCS
 	ListDataSortProxyModelTest.cpp
@@ -23,6 +23,16 @@ SET(ListDataSortProxyModelTest_H
 	../RpQt.hpp
 	)
 
+### RomDataFormat tests
+
+SET(RomDataFormatTest_SRCS
+	RomDataFormatTest.cpp
+	../RomDataFormat.cpp
+	)
+SET(RomDataFormatTest_H
+	../RomDataFormat.hpp
+	)
+	
 ###### Add version-specific subdirectories
 
 IF(BUILD_KDE4)

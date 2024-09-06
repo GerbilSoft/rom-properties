@@ -14,7 +14,7 @@ FIND_QT5_AND_KF5()
 
 IF(BUILD_KF5)
 
-### ListDataSortProxyModel test
+### ListDataSortProxyModel tests
 
 STRING(REGEX REPLACE "([^;]+)" "../\\1" ListDataSortProxyModelTest_kf5_SRCS "${ListDataSortProxyModelTest_SRCS}")
 STRING(REGEX REPLACE "([^;]+)" "../\\1" ListDataSortProxyModelTest_kf5_H    "${ListDataSortProxyModelTest_H}")
@@ -26,6 +26,24 @@ ADD_EXECUTABLE(ListDataSortProxyModelTest_kf5
 TARGET_LINK_LIBRARIES(ListDataSortProxyModelTest_kf5 PRIVATE rptest romdata)
 TARGET_LINK_LIBRARIES(ListDataSortProxyModelTest_kf5 PUBLIC Qt5::Widgets Qt5::Gui Qt5::Core)
 LIST(APPEND KF5_TESTS ListDataSortProxyModelTest_kf5)
+
+### RomDataFormat tests
+
+STRING(REGEX REPLACE "([^;]+)" "../\\1" RomDataFormatTest_kf5_SRCS "${RomDataFormatTest_SRCS}")
+STRING(REGEX REPLACE "([^;]+)" "../\\1" RomDataFormatTest_kf5_H    "${RomDataFormatTest_H}")
+
+ADD_EXECUTABLE(RomDataFormatTest_kf5
+	${RomDataFormatTest_kf5_SRCS}
+	${RomDataFormatTest_kf5_H}
+	)
+TARGET_LINK_LIBRARIES(RomDataFormatTest_kf5 PRIVATE rptest romdata)
+# NOTE: QtWidgets is still needed for stdafx.h.
+TARGET_LINK_LIBRARIES(RomDataFormatTest_kf5 PUBLIC Qt5::Widgets Qt5::Core)
+# Include directories required for stdafx.h.
+TARGET_INCLUDE_DIRECTORIES(RomDataFormatTest_kf5
+	PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/../../../librptext"
+	)
+LIST(APPEND KF5_TESTS RomDataFormatTest_kf5)
 
 ###### Add tests to CTest ######
 
