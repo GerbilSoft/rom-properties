@@ -77,7 +77,7 @@ RomFields::StringMultiMap_t *WiiCommon::getWiiBannerStrings(
 		}
 
 		uint32_t lc;
-		if (gcnRegion == GCN_REGION_JPN && id4_region == 'W' && langID == WII_LANG_JAPANESE) {
+		if (langID == WII_LANG_JAPANESE && gcnRegion == GCN_REGION_JPN && id4_region == 'W') {
 			// Special case: RVL-001(TWN) has a JPN region code.
 			// Game discs with disc ID region 'W' are localized
 			// for Taiwan and use Traditional Chinese in the
