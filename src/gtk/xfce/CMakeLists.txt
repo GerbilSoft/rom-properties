@@ -95,6 +95,7 @@ SET(${PROJECT_NAME}_SRCS
 	../gtk3/ThunarMenuProvider.c
 	../gtk3/ThunarPropertyPageProvider.cpp
 	../gtk3/MenuProviderCommon.c
+	dlopen-notes.c
 	)
 SET(${PROJECT_NAME}_H
 	${${PROJECT_NAME}_H}

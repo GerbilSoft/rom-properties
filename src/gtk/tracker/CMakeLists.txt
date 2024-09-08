@@ -27,6 +27,7 @@ SET(${PROJECT_NAME}_SRCS
 	rp-tracker.cpp
 	tracker-mini.c
 	tracker-file-utils.c
+	dlopen-notes.c
 	)
 SET(${PROJECT_NAME}_H
 	tracker-mini.h

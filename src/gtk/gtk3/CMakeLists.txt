@@ -99,6 +99,7 @@ SET(${PROJECT_NAME}_SRCS
 	ThunarPropertyPageProvider.cpp
 	ThunarMenuProvider.c
 	MenuProviderCommon.c
+	dlopen-notes.c
 	)
 SET(${PROJECT_NAME}_H
 	${${PROJECT_NAME}_H}

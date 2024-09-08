@@ -79,6 +79,7 @@ SET(${PROJECT_NAME}_SRCS
 	NautilusPropertiesModel.cpp
 	../gtk3/NautilusMenuProvider.c
 	../gtk3/MenuProviderCommon.c
+	dlopen-notes.c
 
 	../RomDataView_gtk4.cpp
 	sort_funcs.c
