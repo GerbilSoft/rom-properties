@@ -111,6 +111,17 @@ public:
 	 */
 	LibRpTexture::rp_image_const_ptr loadIcon(void);
 
+public:
+	/**
+	 * Is a directory supported by this class?
+	 * @tparam T Character type (char for UTF-8; wchar_t for Windows UTF-16)
+	 * @param path Directory to check
+	 * @param filenames_to_check Array of filenames to check
+	 * @return Class-specific system ID (>= 0) if supported; -1 if not.
+	 */
+	template<typename T>
+	static int T_isDirSupported_static(const T *path, const std::array<const T*, 3> &filenames_to_check);
+
 #ifdef ENABLE_XML
 private:
 	/**

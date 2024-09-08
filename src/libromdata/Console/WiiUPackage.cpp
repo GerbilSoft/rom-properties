@@ -496,10 +496,13 @@ int WiiUPackage::isRomSupported_static(const DetectInfo *info)
 
 /**
  * Is a directory supported by this class?
+ * @tparam T Character type (char for UTF-8; wchar_t for Windows UTF-16)
  * @param path Directory to check
+ * @param filenames_to_check Array of filenames to check
  * @return Class-specific system ID (>= 0) if supported; -1 if not.
  */
-int WiiUPackage::isDirSupported_static(const char *path)
+template<typename T>
+int WiiUPackagePrivate::T_isDirSupported_static(const T *path, const array<const T*, 3> &filenames_to_check)
 {
 	assert(path != nullptr);
 	assert(path[0] != '\0');
@@ -508,16 +511,11 @@ int WiiUPackage::isDirSupported_static(const char *path)
 		return -1;
 	}
 
-	string s_path(path);
+	std::basic_string<T> s_path(path);
 	s_path += DIR_SEP_CHR;
 	const size_t path_orig_size = s_path.size();
 
-	/// Check for the ticket, TMD, and certificate chain files.
-	static const array<const char*, 3> filenames_to_check = {{
-		"title.tik",
-		"title.tmd",
-		"title.cert",
-	}};
+	// Check for the required files.
 	for (const auto filename : filenames_to_check) {
 		s_path.resize(path_orig_size);
 		s_path += filename;
@@ -532,6 +530,22 @@ int WiiUPackage::isDirSupported_static(const char *path)
 	return 0;
 }
 
+/**
+ * Is a directory supported by this class?
+ * @param path Directory to check
+ * @return Class-specific system ID (>= 0) if supported; -1 if not.
+ */
+int WiiUPackage::isDirSupported_static(const char *path)
+{
+	static const array<const char*, 3> filenames_to_check = {{
+		"title.tik",	// Ticket
+		"title.tmd",	// TMD
+		"title.cert",	// Certificate chain
+	}};
+
+	return WiiUPackagePrivate::T_isDirSupported_static(path, filenames_to_check);
+}
+
 #ifdef _WIN32
 /**
  * Is a directory supported by this class?
@@ -540,35 +554,13 @@ int WiiUPackage::isDirSupported_static(const char *path)
  */
 int WiiUPackage::isDirSupported_static(const wchar_t *path)
 {
-	assert(path != nullptr);
-	assert(path[0] != L'\0');
-	if (!path || path[0] == L'\0') {
-		// No path specified.
-		return -1;
-	}
-
-	wstring s_path(path);
-	s_path += DIR_SEP_CHR;
-	const size_t path_orig_size = s_path.size();
-
-	/// Check for the ticket, TMD, and certificate chain files.
-	static constexpr array<const wchar_t*, 3> filenames_to_check = {{
-		L"title.tik",
-		L"title.tmd",
-		L"title.cert",
+	static const array<const wchar_t*, 3> filenames_to_check = {{
+		L"title.tik",	// Ticket
+		L"title.tmd",	// TMD
+		L"title.cert",	// Certificate chain
 	}};
-	for (const auto filename : filenames_to_check) {
-		s_path.resize(path_orig_size);
-		s_path += filename;
 
-		if (FileSystem::access(s_path.c_str(), R_OK) != 0) {
-			// File is missing.
-			return -1;
-		}
-	}
-
-	// This appears to be a Wii U NUS package.
-	return 0;
+	return WiiUPackagePrivate::T_isDirSupported_static(path, filenames_to_check);
 }
 #endif /* _WIN32 */
 
