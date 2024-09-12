@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpfile)                        *
  * XAttrReader_p.hpp: Extended Attribute reader (PRIVATE CLASS)            *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -27,9 +27,9 @@ class XAttrReaderPrivate
 {
 	public:
 		explicit XAttrReaderPrivate(const char *filename);
-#ifdef _WIN32
+#if defined(_WIN32) && defined(UNICODE)
 		explicit XAttrReaderPrivate(const wchar_t *filename);
-#endif /* _WIN32 */
+#endif /* _WIN32 && UNICODE */
 #ifndef _WIN32
 		~XAttrReaderPrivate();
 #endif /* !_WIN32 */
@@ -68,6 +68,7 @@ class XAttrReaderPrivate
 		int loadDosAttrs(void);
 
 #ifdef _WIN32
+#  ifdef UNICODE
 		/**
 		 * Load generic xattrs, if available.
 		 * (POSIX xattr on Linux; ADS on Windows)
@@ -76,6 +77,7 @@ class XAttrReaderPrivate
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
 		int loadGenericXattrs_FindFirstStreamW(void);
+#  endif /* UNICODE */
 
 		/**
 		 * Load generic xattrs, if available.

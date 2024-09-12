@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpfile)                        *
  * XAttrReader_win32.cpp: Extended Attribute reader (Windows version)      *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -51,6 +51,7 @@ XAttrReaderPrivate::XAttrReaderPrivate(const char *filename)
 	init();
 }
 
+#ifdef UNICODE
 XAttrReaderPrivate::XAttrReaderPrivate(const wchar_t *filename)
 	: filename(filename)
 	, lastError(0)
@@ -65,6 +66,7 @@ XAttrReaderPrivate::XAttrReaderPrivate(const wchar_t *filename)
 {
 	init();
 }
+#endif /* UNICODE */
 
 /**
  * Initialize attributes.
@@ -124,6 +126,7 @@ int XAttrReaderPrivate::loadDosAttrs(void)
 	return (hasDosAttributes ? 0 : -ENOTSUP);
 }
 
+#ifdef UNICODE
 /**
  * Load generic xattrs, if available.
  * (POSIX xattr on Linux; ADS on Windows)
@@ -256,6 +259,7 @@ int XAttrReaderPrivate::loadGenericXattrs_FindFirstStreamW(void)
 	hasGenericXAttrs = true;
 	return 0;
 }
+#endif /* UNICODE */
 
 /**
  * Load generic xattrs, if available.
@@ -280,6 +284,7 @@ int XAttrReaderPrivate::loadGenericXattrs(void)
 {
 	genericXAttrs.clear();
 
+#ifdef UNICODE
 	// Try FindFirstStreamW() first.
 	int ret = loadGenericXattrs_FindFirstStreamW();
 	if (ret != -ENOTSUP) {
@@ -287,6 +292,7 @@ int XAttrReaderPrivate::loadGenericXattrs(void)
 		// FindFirstStreamW() not being available.
 		return ret;
 	}
+#endif /* UNICODE */
 
 	// Try BackupRead().
 	return loadGenericXattrs_BackupRead();

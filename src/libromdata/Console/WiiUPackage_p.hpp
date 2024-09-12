@@ -47,9 +47,9 @@ class WiiUPackagePrivate final : public LibRpBase::RomDataPrivate
 {
 public:
 	WiiUPackagePrivate(const char *path);
-#ifdef _WIN32
+#if defined(_WIN32) && defined(_UNICODE)
 	WiiUPackagePrivate(const wchar_t *path);
-#endif /* _WIN32 */
+#endif /* _WIN32 && _UNICODE */
 	~WiiUPackagePrivate();
 
 private:

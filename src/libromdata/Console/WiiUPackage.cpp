@@ -76,7 +76,7 @@ WiiUPackagePrivate::WiiUPackagePrivate(const char *path)
 #endif /* ENABLE_DECRYPTION */
 }
 
-#ifdef _WIN32
+#if defined(_WIN32) && defined(_UNICODE)
 WiiUPackagePrivate::WiiUPackagePrivate(const wchar_t *path)
 	: super({}, &romDataInfo)
 	, ticket(nullptr)
@@ -94,7 +94,7 @@ WiiUPackagePrivate::WiiUPackagePrivate(const wchar_t *path)
 	memset(title_key, 0, sizeof(title_key));
 #endif /* ENABLE_DECRYPTION */
 }
-#endif /* _WIN32 */
+#endif /* _WIN32 && _UNICODE */
 
 WiiUPackagePrivate::~WiiUPackagePrivate()
 {
@@ -307,7 +307,7 @@ WiiUPackage::WiiUPackage(const char *path)
 	init();
 }
 
-#ifdef _WIN32
+#if defined(_WIN32) && defined(_UNICODE)
 /**
  * Read a Wii U NUS package.
  *
@@ -329,7 +329,7 @@ WiiUPackage::WiiUPackage(const wchar_t *path)
 {
 	init();
 }
-#endif /* _WIN32 */
+#endif /* _WIN32 && _UNICODE */
 
 /**
  * Internal initialization function for the two constructors.

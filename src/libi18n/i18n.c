@@ -51,6 +51,12 @@ static bool i18n_is_init = false;
 #  error Unsupported CPU architecture.
 #endif
 
+#ifdef _UNICODE
+#  define tbindtextdomain(domainname, dirname) wbindtextdomain((domainname), (dirname))
+#else /* !_UNICODE */
+#  define tbindtextdomain(domainname, dirname) bindtextdomain((domainname), (dirname))
+#endif /* _UNICODE */
+
 /**
  * Initialize the internationalization subsystem.
  * (Windows version)
@@ -126,7 +132,7 @@ static void rp_i18n_init_int(void)
 
 	// Found the locale subdirectory.
 	// Bind the gettext domain.
-	base = wbindtextdomain(RP_I18N_DOMAIN, tpathname);
+	base = tbindtextdomain(RP_I18N_DOMAIN, tpathname);
 	i18n_is_init = (base != NULL);
 }
 

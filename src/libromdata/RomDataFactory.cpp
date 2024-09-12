@@ -1046,7 +1046,7 @@ RomDataPtr create(const char *filename, unsigned int attrs)
 	return T_create(filename, attrs);
 }
 
-#ifdef _WIN32
+#if defined(_WIN32) && defined(_UNICODE)
 /**
  * Create a RomData subclass for the specified ROM file.
  *
@@ -1070,7 +1070,7 @@ RomDataPtr create(const wchar_t *filename, unsigned int attrs)
 {
 	return T_create(filename, attrs);
 }
-#endif /* _WIN32 */
+#endif /* _WIN32 && _UNICODE */
 
 #ifdef ROMDATAFACTORY_USE_FILE_EXTENSIONS
 namespace Private {

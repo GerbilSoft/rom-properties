@@ -36,7 +36,7 @@ public:
 	 */
 	WiiUPackage(const char *path);
 
-#ifdef _WIN32
+#if defined(_WIN32) && defined(_UNICODE)
 	/**
 	 * Read a Wii U NUS package.
 	 *
@@ -54,7 +54,7 @@ public:
 	 * @param path Local directory path (UTF-16)
 	 */
 	WiiUPackage(const wchar_t *path);
-#endif /* _WIN32 */
+#endif /* _WIN32 && _UNICODE */
 
 private:
 	/**

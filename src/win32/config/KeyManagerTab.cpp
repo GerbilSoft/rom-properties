@@ -1667,7 +1667,11 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 	}
 
 	// U+2022 (BULLET) == \xE2\x80\xA2
-	static constexpr wchar_t nl_bullet[] = L"\r\n\x2022 ";
+#ifdef _UNICODE
+	static constexpr TCHAR nl_bullet[] = _T("\r\n\x2022 ");
+#else /* !_UNICODE */
+	static constexpr TCHAR nl_bullet[] = _T("\r\n* ");
+#endif /* _UNICODE */
 
 	// TODO: Numeric formatting.
 	if (showKeyStats) {

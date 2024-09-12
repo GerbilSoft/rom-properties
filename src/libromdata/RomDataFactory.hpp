@@ -95,7 +95,7 @@ LibRpBase::RomDataPtr create(const LibRpFile::IRpFilePtr &file, unsigned int att
 RP_LIBROMDATA_PUBLIC
 LibRpBase::RomDataPtr create(const char *filename, unsigned int attrs = 0);
 
-#ifdef _WIN32
+#if defined(_WIN32) && defined(_UNICODE)
 /**
  * Create a RomData subclass for the specified ROM file.
  *
@@ -117,7 +117,7 @@ LibRpBase::RomDataPtr create(const char *filename, unsigned int attrs = 0);
  */
 RP_LIBROMDATA_PUBLIC
 LibRpBase::RomDataPtr create(const wchar_t *filename, unsigned int attrs = 0);
-#endif /* _WIN32 */
+#endif /* _WIN32 && _UNICODE */
 
 #ifdef ROMDATAFACTORY_USE_FILE_EXTENSIONS
 struct ExtInfo {
