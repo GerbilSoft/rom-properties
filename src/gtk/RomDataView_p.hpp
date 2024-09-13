@@ -134,8 +134,10 @@ struct _RpRomDataView {
 
 	/** Other **/
 
-	// Description label format type.
+	// Description label format type
 	RpDescFormatType	desc_format_type;
+	PangoAttrList		*pango_attr_desc_label;
+	PangoAttrList		*pango_attr_warning;
 
 	// Inhibit checkbox toggling for RFT_BITFIELD while updating.
 	bool inhibit_checkbox_no_toggle;

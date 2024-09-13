@@ -179,31 +179,67 @@ rp_rom_data_view_class_init(RpRomDataViewClass *klass)
 }
 
 /**
- * Set the label format type.
+ * (Re-)Initialize the Pango attribute lists for the current RpDescFormatType.
  * @param page RomDataView
- * @param label GtkLabel
- * @param desc_format_type Format type
  */
 static inline void
-set_label_format_type(GtkLabel *label, RpDescFormatType desc_format_type)
+init_pango_attr_lists(RpRomDataView *page)
 {
-	PangoAttrList *const attr_lst = pango_attr_list_new();
+	pango_attr_list_unref(page->pango_attr_desc_label);
+	pango_attr_list_unref(page->pango_attr_warning);
+
+	page->pango_attr_desc_label = pango_attr_list_new();
+	page->pango_attr_warning = pango_attr_list_new();
+
+	// Check for DE-specific formatting.
+	switch (page->desc_format_type) {
+		case RP_DFT_XFCE:
+		default:
+			// Text style: Bold
+			pango_attr_list_insert(page->pango_attr_desc_label, pango_attr_weight_new(PANGO_WEIGHT_BOLD));
+			break;
+
+		case RP_DFT_GNOME:
+			// GNOME style. (Also used for MATE and Cinnamon.)
+			// TODO: Changes for GNOME 2.
+
+			// Text style: Normal (no Pango attributes)
+			break;
+	}
+
+	// Set the "Warning" format.
+	pango_attr_list_insert(page->pango_attr_warning, pango_attr_weight_new(PANGO_WEIGHT_BOLD));
+	pango_attr_list_insert(page->pango_attr_warning, pango_attr_foreground_new(65535, 0, 0));
+}
+
+/**
+ * Set the formatting attributes for the specified label.
+ * @param page RomDataView
+ * @param label GtkLabel
+ */
+static inline void
+set_label_format_type(RpRomDataView *page, GtkLabel *label)
+{
+	// Make sure the Pango attribute lists have been initialized.
+	if (unlikely(!page->pango_attr_desc_label)) {
+		init_pango_attr_lists(page);
+	}
 
 	// Check if this label has the "Warning" flag set.
 	const gboolean is_warning = (gboolean)GPOINTER_TO_UINT(
 		g_object_get_qdata(G_OBJECT(label), RFT_STRING_warning_quark));
-	if (is_warning) {
+	if (unlikely(is_warning)) {
 		// Use the "Warning" format.
-		pango_attr_list_insert(attr_lst,
-			pango_attr_weight_new(PANGO_WEIGHT_BOLD));
-		pango_attr_list_insert(attr_lst,
-			pango_attr_foreground_new(65535, 0, 0));
+		gtk_label_set_attributes(label, page->pango_attr_warning);
+	} else {
+		// Use the regular format.
+		gtk_label_set_attributes(label, page->pango_attr_desc_label);
 	}
 
 	// Check for DE-specific formatting.
 	GtkJustification justify;
 	float xalign, yalign;
-	switch (desc_format_type) {
+	switch (page->desc_format_type) {
 		case RP_DFT_XFCE:
 		default:
 			// XFCE style.
@@ -213,12 +249,6 @@ set_label_format_type(GtkLabel *label, RpDescFormatType desc_format_type)
 			justify = GTK_JUSTIFY_RIGHT;
 			xalign = 1.0f;
 			yalign = 0.0f;
-
-			if (!is_warning) {
-				// Text style: Bold
-				pango_attr_list_insert(attr_lst,
-					pango_attr_weight_new(PANGO_WEIGHT_BOLD));
-			}
 			break;
 
 		case RP_DFT_GNOME:
@@ -229,8 +259,6 @@ set_label_format_type(GtkLabel *label, RpDescFormatType desc_format_type)
 			justify = GTK_JUSTIFY_LEFT;
 			xalign = 0.0f;
 			yalign = 0.0f;
-
-			// Text style: Normal (no Pango attributes)
 			break;
 	}
 
@@ -248,9 +276,6 @@ set_label_format_type(GtkLabel *label, RpDescFormatType desc_format_type)
 	// GtkSizeGroup prior to GTK+ 3.16.
 	gtk_misc_set_alignment(GTK_MISC(label), xalign, yalign);
 #endif /* GTK_CHECK_VERSION(3,16,0) */
-
-	gtk_label_set_attributes(label, attr_lst);
-	pango_attr_list_unref(attr_lst);
 }
 
 static void
@@ -371,6 +396,12 @@ rp_rom_data_view_dispose(GObject *object)
 	// Delete the icon frames and tabs.
 	rp_rom_data_view_delete_tabs(page);
 
+	// Unreference the Pango attribute lists.
+	pango_attr_list_unref(page->pango_attr_desc_label);
+	pango_attr_list_unref(page->pango_attr_warning);
+	page->pango_attr_desc_label = nullptr;
+	page->pango_attr_warning = nullptr;
+
 	// Call the superclass dispose() function.
 	G_OBJECT_CLASS(rp_rom_data_view_parent_class)->dispose(object);
 }
@@ -409,8 +440,8 @@ rp_rom_data_view_new_with_romData(const gchar *uri, const RomDataPtr &romData, R
 	// At least URI needs to be set.
 	assert(uri != nullptr);
 
-	RpRomDataView *const page = static_cast<RpRomDataView*>(g_object_new(RP_TYPE_ROM_DATA_VIEW, nullptr));
-	page->desc_format_type = desc_format_type;
+	RpRomDataView *const page = static_cast<RpRomDataView*>(
+		g_object_new(RP_TYPE_ROM_DATA_VIEW, "desc_format_type", desc_format_type, nullptr));
 	if (uri) {
 		page->uri = g_strdup(uri);
 		if (romData) {
@@ -581,8 +612,11 @@ rp_rom_data_view_desc_format_type_changed(RpRomDataView	*page,
 	g_return_if_fail(RP_IS_ROM_DATA_VIEW(page));
 	g_return_if_fail(desc_format_type >= RP_DFT_XFCE && desc_format_type < RP_DFT_LAST);
 
+	// TODO: If we already have PangoAttrLists, is it possible to
+	// update them in place?
+	init_pango_attr_lists(page);
 	for (GtkLabel *label : page->cxx->vecDescLabels) {
-		set_label_format_type(label, desc_format_type);
+		set_label_format_type(page, label);
 	}
 }
 
@@ -1494,7 +1528,7 @@ rp_rom_data_view_update_display(RpRomDataView *page)
 		GtkWidget *const lblDesc = gtk_label_new(txt.c_str());
 		// NOTE: No name for this GtkWidget.
 		gtk_label_set_use_underline(GTK_LABEL(lblDesc), false);
-		set_label_format_type(GTK_LABEL(lblDesc), page->desc_format_type);
+		set_label_format_type(page, GTK_LABEL(lblDesc));
 		page->cxx->vecDescLabels.emplace_back(GTK_LABEL(lblDesc));
 #if !GTK_CHECK_VERSION(4,0,0)
 		gtk_widget_show(lblDesc);
