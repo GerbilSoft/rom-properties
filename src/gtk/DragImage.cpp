@@ -227,10 +227,7 @@ rp_drag_image_dispose(GObject *object)
 	RpDragImage *const image = RP_DRAG_IMAGE(object);
 
 	// Unreference the current frame if we still have it.
-	if (image->curFrame) {
-		PIMGTYPE_unref(image->curFrame);
-		image->curFrame = nullptr;
-	}
+	g_clear_pointer(&image->curFrame, PIMGTYPE_unref);
 
 	// Unregister the animation timer if it's set.
 	if (image->cxx->anim) {
@@ -306,10 +303,7 @@ rp_drag_image_update_pixmaps(RpDragImage *image)
 		return bRet;
 	}
 
-	if (image->curFrame) {
-		PIMGTYPE_unref(image->curFrame);
-		image->curFrame = nullptr;
-	}
+	g_clear_pointer(&image->curFrame, PIMGTYPE_unref);
 
 #if GTK_CHECK_VERSION(3,0,0)
 	// NOTE: In testing, the two sizes (minimum and natural) returned by
@@ -332,10 +326,7 @@ rp_drag_image_update_pixmaps(RpDragImage *image)
 		// Convert the frames to PIMGTYPE.
 		for (int i = iconAnimData->count-1; i >= 0; i--) {
 			// Remove the existing frame first.
-			if (anim->iconFrames[i]) {
-				PIMGTYPE_unref(anim->iconFrames[i]);
-				anim->iconFrames[i] = nullptr;
-			}
+			g_clear_pointer(&anim->iconFrames[i], PIMGTYPE_unref);
 
 			const rp_image_const_ptr &frame = iconAnimData->frames[i];
 			if (frame && frame->isValid()) {
@@ -916,10 +907,7 @@ rp_drag_image_drag_source_drag_end(GtkDragSource *source, GdkDrag *drag, gboolea
 	RP_UNUSED(delete_data);
 
 	_RpDragImageCxx *const cxx = image->cxx;
-	if (cxx->pngBytes) {
-		g_bytes_unref(cxx->pngBytes);
-		cxx->pngBytes = nullptr;
-	}
+	g_clear_pointer(&cxx->pngBytes, g_bytes_unref);
 	cxx->pngData.reset();
 }
 #else /* !GTK_CHECK_VERSION(4,0,0) */

@@ -162,10 +162,7 @@ rp_language_combo_box_item_dispose(GObject *object)
 {
 	RpLanguageComboBoxItem *const item = RP_LANGUAGE_COMBO_BOX_ITEM(object);
 
-	if (item->icon) {
-		PIMGTYPE_unref(item->icon);
-		item->icon = NULL;
-	}
+	g_clear_pointer(&item->icon, PIMGTYPE_unref);
 
 	// Call the superclass dispose() function.
 	G_OBJECT_CLASS(rp_language_combo_box_item_parent_class)->dispose(object);

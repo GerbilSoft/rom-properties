@@ -503,23 +503,21 @@ rp_config_dialog_apply(RpConfigDialog *dialog)
 	// NOTE: g_key_file_save_to_file() was added in glib-2.40.
 	// We'll use g_key_file_to_data() instead.
 	gsize length = 0;
-	gchar *keyFileData = g_key_file_to_data(keyFile, &length, nullptr);
+	gchar *const keyFileData = g_key_file_to_data(keyFile, &length, nullptr);
+	g_key_file_unref(keyFile);
 	if (!keyFileData) {
 		// Failed to get the key file data.
-		g_key_file_unref(keyFile);
 		return;
 	}
 	FILE *f_conf = fopen(filename, "w");
 	if (!f_conf) {
 		// Failed to open the configuration file for writing.
 		g_free(keyFileData);
-		g_key_file_unref(keyFile);
 		return;
 	}
 	fwrite(keyFileData, 1, length, f_conf);
 	fclose(f_conf);
 	g_free(keyFileData);
-	g_key_file_unref(keyFile);
 
 #ifdef ENABLE_DECRYPTION
 	// KeyManager needs to save to keys.conf.
@@ -546,23 +544,21 @@ rp_config_dialog_apply(RpConfigDialog *dialog)
 		// NOTE: g_key_file_save_to_file() was added in glib-2.40.
 		// We'll use g_key_file_to_data() instead.
 		gsize length = 0;
-		gchar *keyFileData = g_key_file_to_data(keyFile, &length, nullptr);
+		gchar *const keyFileData = g_key_file_to_data(keyFile, &length, nullptr);
+		g_key_file_unref(keyFile);
 		if (!keyFileData) {
 			// Failed to get the key file data.
-			g_key_file_unref(keyFile);
 			return;
 		}
 		FILE *f_conf = fopen(filename, "w");
 		if (!f_conf) {
 			// Failed to open the configuration file for writing.
 			g_free(keyFileData);
-			g_key_file_unref(keyFile);
 			return;
 		}
 		fwrite(keyFileData, 1, length, f_conf);
 		fclose(f_conf);
 		g_free(keyFileData);
-		g_key_file_unref(keyFile);
 	}
 #endif /* ENABLE_DECRYPTION */
 

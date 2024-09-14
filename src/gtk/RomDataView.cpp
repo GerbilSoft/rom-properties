@@ -397,10 +397,8 @@ rp_rom_data_view_dispose(GObject *object)
 	rp_rom_data_view_delete_tabs(page);
 
 	// Unreference the Pango attribute lists.
-	pango_attr_list_unref(page->pango_attr_desc_label);
-	pango_attr_list_unref(page->pango_attr_warning);
-	page->pango_attr_desc_label = nullptr;
-	page->pango_attr_warning = nullptr;
+	g_clear_pointer(&page->pango_attr_desc_label, pango_attr_list_unref);
+	g_clear_pointer(&page->pango_attr_warning, pango_attr_list_unref);
 
 	// Call the superclass dispose() function.
 	G_OBJECT_CLASS(rp_rom_data_view_parent_class)->dispose(object);
