@@ -151,19 +151,14 @@ bind_listitem_cb(GtkListItemFactory *factory, GtkListItem *list_item, gpointer u
 			// Unlock time
 			bool is_set = false;
 
-			const time_t unlock_time = rp_achievement_item_get_unlock_time(item);
-			const bool unlocked = (unlock_time != -1);
-			if (unlocked) {
-				GDateTime *const dateTime = g_date_time_new_from_unix_local(unlock_time);
-				assert(dateTime != nullptr);
-				if (dateTime) {
-					gchar *const str = g_date_time_format(dateTime, "%x %X");
-					if (str) {
-						gtk_label_set_text(GTK_LABEL(widget), str);
-						g_free(str);
-						is_set = true;
-					}
-					g_date_time_unref(dateTime);
+			// dateTime is NULL if the achievement is locked.
+			GDateTime *const dateTime = rp_achievement_item_get_unlock_time(item);
+			if (dateTime) {
+				gchar *const str = g_date_time_format(dateTime, "%x %X");
+				if (str) {
+					gtk_label_set_text(GTK_LABEL(widget), str);
+					g_free(str);
+					is_set = true;
 				}
 			}
 
@@ -249,6 +244,8 @@ rp_achievements_tab_init(RpAchievementsTab *tab)
 	}
 #else /* !USE_GTK_COLUMN_VIEW */
 	// Create the GtkListStore and GtkTreeView.
+	// NOTE: Storing an already-formatted GDateTime as a string,
+	// since there is no GDateTime cell renderer.
 	tab->listStore = gtk_list_store_new(3, PIMGTYPE_GOBJECT_TYPE, G_TYPE_STRING, G_TYPE_STRING);
 	tab->treeView = gtk_tree_view_new_with_model(GTK_TREE_MODEL(tab->listStore));
 	gtk_widget_set_name(tab->treeView, "treeView");
@@ -351,7 +348,11 @@ rp_achievements_tab_reset(RpAchievementsTab *tab)
 
 		// Add the list item.
 #ifdef USE_GTK_COLUMN_VIEW
-		RpAchievementItem *const item = rp_achievement_item_new(icon, s_ach.c_str(), timestamp);
+		GDateTime *const dateTime = (timestamp != -1) ? g_date_time_new_from_unix_local(timestamp) : NULL;
+		RpAchievementItem *const item = rp_achievement_item_new(icon, s_ach.c_str(), dateTime);
+		if (dateTime) {
+			g_date_time_unref(dateTime);
+		}
 		g_list_store_append(tab->listStore, item);
 		PIMGTYPE_unref(icon);
 		g_object_unref(item);

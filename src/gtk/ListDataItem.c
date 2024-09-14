@@ -18,7 +18,7 @@ typedef enum {
 	PROP_ICON,
 	PROP_CHECKED,
 	PROP_COLUMN_COUNT,
-	// NOTE: Column text is not a property.
+	PROP_COLUMN_TEXT,
 
 	PROP_LAST
 } RpAchievementPropID;
@@ -49,9 +49,7 @@ struct _RpListDataItem {
 	PIMGTYPE	 icon;
 	RpListDataItemCol0Type col0_type;
 	gboolean	 checked;
-
-	int		 column_count;
-	char		**text;
+	GPtrArray	*text;
 };
 
 // NOTE: G_DEFINE_TYPE() doesn't work in C++ mode with gcc-6.2
@@ -90,6 +88,14 @@ rp_list_data_item_class_init(RpListDataItemClass *klass)
 		1, 16, 1,
 		(GParamFlags)(G_PARAM_READABLE | G_PARAM_STATIC_STRINGS | G_PARAM_EXPLICIT_NOTIFY));
 
+	// Technically read/write, but callers should use the
+	// convenience functions to edit individual strings
+	// instead of getting the GPtrArray object pointer.
+	props[PROP_COLUMN_TEXT] = g_param_spec_boxed(
+		"column-text", "Column Text", "Array of column text",
+		G_TYPE_PTR_ARRAY,
+		(GParamFlags)(G_PARAM_READABLE | G_PARAM_STATIC_STRINGS | G_PARAM_EXPLICIT_NOTIFY));
+
 	// Install the properties.
 	g_object_class_install_properties(gobject_class, PROP_LAST, props);
 }
@@ -108,11 +114,13 @@ rp_list_data_item_new(int column_count, RpListDataItemCol0Type col0_type)
 	RpListDataItem *const item = g_object_new(RP_TYPE_LIST_DATA_ITEM, NULL);
 
 	// Setting column count manually because set_property() won't set it.
-	item->column_count = column_count;
 	item->col0_type = col0_type;
 
 	// Allocate the string array.
-	item->text = calloc(column_count, sizeof(*item->text));
+	item->text = g_ptr_array_new_full(column_count, g_free);
+	for (int i = 0; i < column_count; i++) {
+		g_ptr_array_add(item->text, NULL);
+	}
 
 	return item;
 }
@@ -134,6 +142,10 @@ rp_list_data_item_set_property(GObject		*object,
 
 		case PROP_CHECKED:
 			rp_list_data_item_set_checked(item, g_value_get_boolean(value));
+			break;
+
+		case PROP_COLUMN_TEXT:
+			rp_list_data_item_set_column_text_array(item, (GPtrArray*)g_value_get_boxed(value));
 			break;
 
 		// TODO: Handling read-only properties?
@@ -170,7 +182,11 @@ rp_list_data_item_get_property(GObject		*object,
 			break;
 
 		case PROP_COLUMN_COUNT:
-			g_value_set_int(value, item->column_count);
+			g_value_set_int(value, (item->text ? item->text->len : 0));
+			break;
+
+		case PROP_COLUMN_TEXT:
+			g_value_set_boxed(value, item->text);
 			break;
 
 		default:
@@ -186,10 +202,8 @@ rp_list_data_item_dispose(GObject *object)
 {
 	RpListDataItem *const item = RP_LIST_DATA_ITEM(object);
 
-	if (item->icon) {
-		PIMGTYPE_unref(item->icon);
-		item->icon = NULL;
-	}
+	g_clear_pointer(&item->icon, PIMGTYPE_unref);
+	g_clear_pointer(&item->text, g_ptr_array_unref);
 
 	// Call the superclass dispose() function.
 	G_OBJECT_CLASS(rp_list_data_item_parent_class)->dispose(object);
@@ -199,17 +213,6 @@ rp_list_data_item_dispose(GObject *object)
 static void
 rp_list_data_item_finalize(GObject *object)
 {
-	RpListDataItem *const item = RP_LIST_DATA_ITEM(object);
-
-	if (item->text) {
-		// Free all of the strings first.
-		for (int i = 0; i < item->column_count; i++) {
-			g_free(item->text[i]);
-		}
-		g_free(item->text);
-		item->text = NULL;
-	}
-
 	// Call the superclass finalize() function.
 	G_OBJECT_CLASS(rp_list_data_item_parent_class)->finalize(object);
 }
@@ -269,24 +272,64 @@ rp_list_data_item_get_checked(RpListDataItem *item)
 }
 
 void
+rp_list_data_item_set_column_text_array(RpListDataItem *item, GPtrArray *text)
+{
+	g_return_if_fail(RP_IS_LIST_DATA_ITEM(item));
+
+	if (item->text == text) {
+		// Same array...
+		return;
+	}
+
+	const uint column_count_old = item->text->len;
+	uint column_count_new;
+	if (item->text) {
+		g_ptr_array_unref(item->text);
+	}
+	if (text) {
+		item->text = g_ptr_array_ref(text);
+		column_count_new = text->len;
+	} else {
+		// No text array...
+		item->text = NULL;
+		column_count_new = 0;
+	}
+
+	if (column_count_new != column_count_old) {
+		g_object_notify_by_pspec(G_OBJECT(item), props[PROP_COLUMN_COUNT]);
+	}
+	g_object_notify_by_pspec(G_OBJECT(item), props[PROP_COLUMN_TEXT]);
+}
+
+GPtrArray*
+rp_list_data_item_get_column_text_array(RpListDataItem *item)
+{
+	g_return_val_if_fail(RP_IS_LIST_DATA_ITEM(item), NULL);
+	return item->text;
+}
+
+void
 rp_list_data_item_set_column_text(RpListDataItem *item, int column, const char *text)
 {
 	g_return_if_fail(RP_IS_LIST_DATA_ITEM(item));
-	g_return_if_fail(column >= 0 && column < item->column_count);
+	g_return_if_fail(item->text != NULL);
+	g_return_if_fail(column >= 0 && column < (int)item->text->len);
 
-	if (item->text[column]) {
-		g_free(item->text[column]);
+	if (item->text->pdata[column]) {
+		g_free(item->text->pdata[column]);
 	}
-	item->text[column] = g_strdup(text);
-	// TODO: Signal that text has changed?
+	item->text->pdata[column] = g_strdup(text);
+	// TODO: Signal that only a single column has changed?
+	g_object_notify_by_pspec(G_OBJECT(item), props[PROP_COLUMN_TEXT]);
 }
 
 const char*
 rp_list_data_item_get_column_text(RpListDataItem *item, int column)
 {
 	g_return_val_if_fail(RP_IS_LIST_DATA_ITEM(item), NULL);
-	g_return_val_if_fail(column >= 0 && column < item->column_count, NULL);
+	g_return_val_if_fail(item->text != NULL, NULL);
+	g_return_val_if_fail(column >= 0 && column < (int)item->text->len, NULL);
 
 	// String is owned by this object.
-	return item->text[column];
+	return item->text->pdata[column];
 }

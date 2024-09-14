@@ -113,10 +113,12 @@ bind_listitem_cb(GtkListItemFactory *factory, GtkListItem *list_item, gpointer u
 		default:
 			assert(!"Unsupported col0_type!");
 			return;
+
 		case RP_LIST_DATA_ITEM_COL0_TYPE_TEXT:
 			// No icon or checkbox.
 			gtk_label_set_markup(GTK_LABEL(widget), rp_list_data_item_get_column_text(item, column));
 			break;
+
 		case RP_LIST_DATA_ITEM_COL0_TYPE_CHECKBOX:
 			// Column 0 is a checkbox.
 			if (column == 0) {
@@ -131,6 +133,7 @@ bind_listitem_cb(GtkListItemFactory *factory, GtkListItem *list_item, gpointer u
 				gtk_label_set_markup(GTK_LABEL(widget), rp_list_data_item_get_column_text(item, column-1));
 			}
 			break;
+
 		case RP_LIST_DATA_ITEM_COL0_TYPE_ICON:
 			// Column 0 is an icon.
 			if (column == 0) {

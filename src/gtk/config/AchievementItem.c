@@ -45,10 +45,7 @@ struct _RpAchievementItem {
 
 	PIMGTYPE	 icon;
 	char		*description;
-
-	// NOTE: GObject's property system doesn't appear to support GDateTime.
-	// The property will be gint64 without GDateTime support.
-	gint64		unlock_time;
+	GDateTime	*unlock_time;
 };
 
 // NOTE: G_DEFINE_TYPE() doesn't work in C++ mode with gcc-6.2
@@ -77,9 +74,9 @@ rp_achievement_item_class_init(RpAchievementItemClass *klass)
 		"",
 		(GParamFlags)(G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS | G_PARAM_EXPLICIT_NOTIFY));
 
-	props[PROP_UNLOCK_TIME] = g_param_spec_int64(
+	props[PROP_UNLOCK_TIME] = g_param_spec_boxed(
 		"unlock-time", "Unlock Time", "Timestamp when this achievement was unlocked",
-		G_MININT64, G_MAXINT64, -1LL,
+		G_TYPE_DATE_TIME,
 		(GParamFlags)(G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS | G_PARAM_EXPLICIT_NOTIFY));
 
 	// Install the properties.
@@ -93,12 +90,12 @@ rp_achievement_item_init(RpAchievementItem *item)
 }
 
 RpAchievementItem*
-rp_achievement_item_new(PIMGTYPE icon, const char *description, time_t unlock_time)
+rp_achievement_item_new(PIMGTYPE icon, const char *description, GDateTime *unlock_time)
 {
 	return g_object_new(RP_TYPE_ACHIEVEMENT_ITEM,
 			"icon", icon,
 			"description", description,
-			"unlock-time", (gint64)unlock_time,
+			"unlock-time", unlock_time,
 			NULL);
 }
 
@@ -122,8 +119,7 @@ rp_achievement_item_set_property(GObject	*object,
 			break;
 
 		case PROP_UNLOCK_TIME:
-			// FIXME: May cause truncation on systems where time_t is still 32-bit.
-			rp_achievement_item_set_unlock_time(item, g_value_get_int64(value));
+			rp_achievement_item_set_unlock_time(item, (GDateTime*)g_value_get_boxed(value));
 			break;
 
 		default:
@@ -153,7 +149,7 @@ rp_achievement_item_get_property(GObject	*object,
 			break;
 
 		case PROP_UNLOCK_TIME:
-			g_value_set_int64(value, item->unlock_time);
+			g_value_set_boxed(value, item->unlock_time);
 			break;
 
 		default:
@@ -169,10 +165,8 @@ rp_achievement_item_dispose(GObject *object)
 {
 	RpAchievementItem *const item = RP_ACHIEVEMENT_ITEM(object);
 
-	if (item->icon) {
-		PIMGTYPE_unref(item->icon);
-		item->icon = NULL;
-	}
+	g_clear_pointer(&item->icon, PIMGTYPE_unref);
+	g_clear_pointer(&item->unlock_time, g_date_time_unref);
 
 	// Call the superclass dispose() function.
 	G_OBJECT_CLASS(rp_achievement_item_parent_class)->dispose(object);
@@ -240,19 +234,35 @@ rp_achievement_item_get_description(RpAchievementItem *item)
 }
 
 void
-rp_achievement_item_set_unlock_time(RpAchievementItem *item, time_t unlock_time)
+rp_achievement_item_set_unlock_time(RpAchievementItem *item, GDateTime *unlock_time)
 {
 	g_return_if_fail(RP_IS_ACHIEVEMENT_ITEM(item));
 
-	if (item->unlock_time != (gint64)unlock_time) {
-		item->unlock_time = (gint64)unlock_time;
+	if (item->unlock_time == unlock_time) {
+		// Same GDateTime struct.
+		return;
+	} else if (!item->unlock_time) {
+		// We don't have a GDateTime struct right now.
+		item->unlock_time = g_date_time_ref(unlock_time);
 		g_object_notify_by_pspec(G_OBJECT(item), props[PROP_UNLOCK_TIME]);
+		return;
 	}
+
+	// Free the current GDateTime struct.
+	g_date_time_unref(item->unlock_time);
+	if (unlock_time) {
+		// Reference the new GDateTime struct.
+		item->unlock_time = g_date_time_ref(unlock_time);
+	} else {
+		// New GDateTime struct is NULL.
+		item->unlock_time = NULL;
+	}
+	g_object_notify_by_pspec(G_OBJECT(item), props[PROP_UNLOCK_TIME]);
 }
 
-time_t
+GDateTime*
 rp_achievement_item_get_unlock_time(RpAchievementItem *item)
 {
-	g_return_val_if_fail(RP_IS_ACHIEVEMENT_ITEM(item), -1);
+	g_return_val_if_fail(RP_IS_ACHIEVEMENT_ITEM(item), NULL);
 	return item->unlock_time;
 }

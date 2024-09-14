@@ -37,6 +37,9 @@ gboolean	rp_list_data_item_get_checked		(RpListDataItem *item);
 
 int		rp_list_data_item_get_column_count	(RpListDataItem *item);
 
+void		rp_list_data_item_set_column_text_array	(RpListDataItem *item, GPtrArray *text);
+GPtrArray*	rp_list_data_item_get_column_text_array	(RpListDataItem *item);
+
 void		rp_list_data_item_set_column_text	(RpListDataItem *item, int column, const char *text);
 const char*	rp_list_data_item_get_column_text	(RpListDataItem *item, int column);	// owned by this object
 
