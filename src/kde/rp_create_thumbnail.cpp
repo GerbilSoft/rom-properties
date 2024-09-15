@@ -17,12 +17,17 @@
 // Other rom-properties libraries
 #include "libromdata/RomDataFactory.hpp"
 #include "librpfile/FileSystem.hpp"
+using LibRpBase::Config;
+using LibRpBase::RomDataPtr;
+using LibRpBase::RpPngWriter;
 using LibRpText::rp_sprintf;
+using LibRpTexture::rp_image;
 using namespace LibRpFile;
 using namespace LibRomData;
 
 // C++ STL classes
 using std::string;
+using std::unique_ptr;
 
 /**
  * Thumbnail creator function for wrapper programs. (v2)

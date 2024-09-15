@@ -10,10 +10,6 @@
 #include "ImageTypesTab.hpp"
 #include "res/resource.h"
 
-// librpbase, librpfile
-using namespace LibRpBase;
-using namespace LibRpFile;
-
 // libwin32ui
 #include "libwin32ui/LoadResource_i18n.hpp"
 using LibWin32UI::LoadDialog_i18n;
@@ -28,8 +24,14 @@ using std::vector;
 
 // TImageTypesConfig is a templated class,
 // so we have to #include the .cpp file here.
+#include "libromdata/config/ImageTypesConfig.hpp"
 #include "libromdata/config/TImageTypesConfig.cpp"
 using namespace LibRomData;
+
+// Other rom-properties libraries
+using LibRpBase::Config;
+using LibRpBase::RomData;
+using namespace LibRpFile;
 
 class ImageTypesTabPrivate final : public TImageTypesConfig<HWND>
 {

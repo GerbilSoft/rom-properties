@@ -16,7 +16,6 @@
 
 // librpbase
 #include "librpbase/RomData.hpp"	// for IMG_* constants
-using namespace LibRpBase;
 
 // libi18n
 #include "libi18n/i18n.h"
@@ -112,6 +111,8 @@ void TImageTypesConfig<ComboBox>::createGrid(void)
 template<typename ComboBox>
 bool TImageTypesConfig<ComboBox>::reset_int(bool loadDefaults)
 {
+	using LibRpBase::Config;
+
 	bool hasChanged = false;
 
 	// CBID map of ComboBoxes that have had a priority set.
@@ -317,6 +318,7 @@ int TImageTypesConfig<ComboBox>::save(void)
 			"ExtBox",
 			"ExtTitleScreen",
 		}};
+		static_assert(conf_imageTypeNames.size() == LibRpBase::RomData::IMG_EXT_MAX+1, "conf_imageTypeNames[] is out of sync!");
 
 		bool hasOne = false;
 		for (uint8_t imageType : imgTypePrio) {

@@ -38,7 +38,7 @@ public:
 	 * @param img rp_image
 	 * @return ImgClass
 	 */
-	inline QImage rpImageToImgClass(const rp_image_const_ptr &img) const final
+	inline QImage rpImageToImgClass(const LibRpTexture::rp_image_const_ptr &img) const final
 	{
 		return rpToQImage(img);
 	}

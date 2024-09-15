@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * TCreateThumbnail.cpp: Thumbnail creator template.                       *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -22,12 +22,9 @@
 #include "librpbase/config/Config.hpp"
 #include "librpbase/img/RpImageLoader.hpp"
 #include "librpfile/RpFile.hpp"
-using namespace LibRpBase;
-using namespace LibRpFile;
 
 // librptexture
 #include "librptexture/img/rp_image.hpp"
-using namespace LibRpTexture;
 
 // libromdata
 #include "../RomDataFactory.hpp"
@@ -35,10 +32,6 @@ using namespace LibRpTexture;
 // C includes (C++ namespace)
 #include <cassert>
 #include <cstring>
-
-// C++ includes
-using std::shared_ptr;
-using std::unique_ptr;
 
 namespace LibRomData {
 
@@ -52,11 +45,14 @@ namespace LibRomData {
  */
 template<typename ImgClass>
 ImgClass TCreateThumbnail<ImgClass>::getInternalImage(
-	const RomDataPtr &romData,
-	RomData::ImageType imageType,
+	const LibRpBase::RomDataPtr &romData,
+	LibRpBase::RomData::ImageType imageType,
 	ImgSize *pOutSize,
-	rp_image::sBIT_t *sBIT)
+	LibRpTexture::rp_image::sBIT_t *sBIT)
 {
+	using LibRpBase::RomData;
+	using LibRpTexture::rp_image_const_ptr;
+
 	assert(imageType >= RomData::IMG_INT_MIN && imageType <= RomData::IMG_INT_MAX);
 	if (imageType < RomData::IMG_INT_MIN || imageType > RomData::IMG_INT_MAX) {
 		// Out of range.
@@ -112,11 +108,16 @@ ImgClass TCreateThumbnail<ImgClass>::getInternalImage(
  */
 template<typename ImgClass>
 ImgClass TCreateThumbnail<ImgClass>::getExternalImage(
-	const RomDataPtr &romData,
-	RomData::ImageType imageType,
+	const LibRpBase::RomDataPtr &romData,
+	LibRpBase::RomData::ImageType imageType,
 	int reqSize, ImgSize *pOutSize,
-	rp_image::sBIT_t *sBIT)
+	LibRpTexture::rp_image::sBIT_t *sBIT)
 {
+	using namespace LibRpBase;
+	using LibRpFile::IRpFilePtr;
+	using LibRpFile::RpFile;
+	using LibRpTexture::rp_image_const_ptr;
+
 	assert(imageType >= RomData::IMG_EXT_MIN && imageType <= RomData::IMG_EXT_MAX);
 	if (imageType < RomData::IMG_EXT_MIN || imageType > RomData::IMG_EXT_MAX) {
 		// Out of range.
@@ -175,7 +176,7 @@ ImgClass TCreateThumbnail<ImgClass>::getExternalImage(
 			continue;
 
 		// Attempt to load the image.
-		shared_ptr<RpFile> file = std::make_shared<RpFile>(cache_filename, RpFile::FM_OPEN_READ);
+		IRpFilePtr file = std::make_shared<RpFile>(cache_filename, RpFile::FM_OPEN_READ);
 		if (file->isOpen()) {
 			const rp_image_const_ptr dl_img = RpImageLoader::load(file);
 			if (dl_img && dl_img->isValid()) {
@@ -247,8 +248,12 @@ inline void TCreateThumbnail<ImgClass>::rescale_aspect(ImgSize &rs_size, ImgSize
  * @return 0 on success; non-zero on error.
  */
 template<typename ImgClass>
-int TCreateThumbnail<ImgClass>::getThumbnail(const RomDataPtr &romData, int reqSize, GetThumbnailOutParams_t *pOutParams)
+int TCreateThumbnail<ImgClass>::getThumbnail(const LibRpBase::RomDataPtr &romData, int reqSize, GetThumbnailOutParams_t *pOutParams)
 {
+	using LibRpBase::Config;
+	using LibRpBase::RomData;
+	using LibRpBase::RomFields;
+
 	assert(romData != nullptr);
 	assert(reqSize >= 0);
 	assert(pOutParams != nullptr);
@@ -510,8 +515,10 @@ skip_image_check:
  * @return 0 on success; non-zero on error.
  */
 template<typename ImgClass>
-int TCreateThumbnail<ImgClass>::getThumbnail(const IRpFilePtr &file, int reqSize, GetThumbnailOutParams_t *pOutParams)
+int TCreateThumbnail<ImgClass>::getThumbnail(const LibRpFile::IRpFilePtr &file, int reqSize, GetThumbnailOutParams_t *pOutParams)
 {
+	using LibRpBase::RomDataPtr;
+
 	assert(file != nullptr);
 	assert(reqSize > 0);
 	assert(pOutParams != nullptr);
@@ -542,6 +549,10 @@ int TCreateThumbnail<ImgClass>::getThumbnail(const IRpFilePtr &file, int reqSize
 template<typename ImgClass>
 int TCreateThumbnail<ImgClass>::getThumbnail(const char *filename, int reqSize, GetThumbnailOutParams_t *pOutParams)
 {
+	using LibRpBase::RomDataPtr;
+	using LibRpFile::IRpFilePtr;
+	using LibRpFile::RpFile;
+
 	assert(filename != nullptr);
 	assert(reqSize > 0);
 	assert(pOutParams != nullptr);
@@ -553,7 +564,7 @@ int TCreateThumbnail<ImgClass>::getThumbnail(const char *filename, int reqSize, 
 	// Attempt to open the ROM file.
 	// TODO: OS-specific wrappers, e.g. RpQFile or RpGVfsFile.
 	// For now, using RpFile, which is an stdio wrapper.
-	shared_ptr<RpFile> file = std::make_shared<RpFile>(filename, RpFile::FM_OPEN_READ_GZ);
+	IRpFilePtr file = std::make_shared<RpFile>(filename, RpFile::FM_OPEN_READ_GZ);
 	if (!file->isOpen()) {
 		// Could not open the file.
 		return RPCT_ERROR_CANNOT_OPEN_SOURCE_FILE;

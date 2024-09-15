@@ -24,13 +24,14 @@ ADD_DEFINITIONS(-D_GNU_SOURCE=1)
 # Test for common CFLAGS and CXXFLAGS.
 # NOTE: Not adding -Werror=format-nonliteral because there are some
 # legitimate uses of non-literal format strings.
-SET(CFLAGS_WARNINGS -Wall -Wextra -Wno-multichar -Werror=return-type)
+SET(CFLAGS_WARNINGS -Wall -Wextra -Wno-multichar -Werror=return-type -Werror=header-hygiene)
 SET(CFLAGS_WERROR_FORMAT -Werror=format -Werror=format-security -Werror=format-signedness -Werror=format-truncation -Werror=format-y2k)
+SET(CFLAGS_OPTIONS -fstrict-aliasing -Werror=strict-aliasing -fno-common -fcf-protection -fno-math-errno)
 IF(MINGW)
 	# MinGW: Ignore warnings caused by casting from GetProcAddress().
 	SET(CFLAGS_WARNINGS ${CFLAGS_WARNINGS} -Wno-cast-function-type)
 ENDIF(MINGW)
-FOREACH(FLAG_TEST ${CFLAGS_WARNINGS} ${CFLAGS_WERROR_FORMAT} "-fstrict-aliasing" "-Werror=strict-aliasing" "-fno-common" "-fcf-protection" "-fno-math-errno")
+FOREACH(FLAG_TEST ${CFLAGS_WARNINGS} ${CFLAGS_WERROR_FORMAT} ${CFLAGS_OPTIONS})
 	# CMake doesn't like certain characters in variable names.
 	STRING(REGEX REPLACE "/|:|=" "_" FLAG_TEST_VARNAME "${FLAG_TEST}")
 
@@ -48,7 +49,8 @@ FOREACH(FLAG_TEST ${CFLAGS_WARNINGS} ${CFLAGS_WERROR_FORMAT} "-fstrict-aliasing"
 ENDFOREACH(FLAG_TEST)
 
 # Certain warnings should be errors. (C only)
-FOREACH(FLAG_TEST -Werror=implicit -Werror=implicit-function-declaration -Werror=incompatible-pointer-types -Werror=int-conversion)
+SET(CFLAGS_WERROR_C_ONLY -Werror=implicit -Werror=implicit-function-declaration -Werror=incompatible-pointer-types -Werror=int-conversion)
+FOREACH(FLAG_TEST ${CFLAGS_WERROR_C_ONLY})
 	# CMake doesn't like certain characters in variable names.
 	STRING(REGEX REPLACE "/|:|=" "_" FLAG_TEST_VARNAME "${FLAG_TEST}")
 

@@ -13,14 +13,15 @@
 #include "gtk-compat.h"
 #include "RpGtk.h"
 
-// librpbase
-using namespace LibRpBase;
-
 // TImageTypesConfig is a templated class,
 // so we have to #include the .cpp file here.
 #include "libromdata/config/ImageTypesConfig.hpp"
 #include "libromdata/config/TImageTypesConfig.cpp"
 using namespace LibRomData;
+
+// Other rom-properties libraries
+using LibRpBase::RomData;
+using namespace LibRpText;
 
 #if GTK_CHECK_VERSION(3,0,0)
 typedef GtkBoxClass superclass;

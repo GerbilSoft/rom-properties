@@ -16,9 +16,13 @@
 #include "RpQImageBackend.hpp"
 #include "RpQUrl.hpp"
 
-// libromdata
+// Other rom-properties libraries
 #include "libromdata/RomDataFactory.hpp"
+using LibRpBase::Config;
+using LibRpBase::RomDataPtr;
+using LibRpTexture::rp_image;
 using namespace LibRomData;
+using namespace LibRpFile;
 
 // C++ STL classes
 using std::string;

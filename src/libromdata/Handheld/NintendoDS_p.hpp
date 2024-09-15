@@ -22,8 +22,6 @@
 #include "librpbase/RomFields.hpp"
 #include "librpbase/img/IconAnimData.hpp"
 #include "librptexture/img/rp_image.hpp"
-using namespace LibRpFile;
-using namespace LibRpTexture;
 
 namespace LibRomData {
 

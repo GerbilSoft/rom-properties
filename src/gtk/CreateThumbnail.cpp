@@ -16,7 +16,10 @@
 // Other rom-properties libraries
 #include "libromdata/RomDataFactory.hpp"
 #include "librpfile/FileSystem.hpp"
-using namespace LibRpBase;
+using LibRpBase::Config;
+using LibRpBase::RomDataPtr;
+using LibRpBase::RpPngWriter;
+using namespace LibRpFile;
 using namespace LibRpTexture;
 using namespace LibRomData;
 
