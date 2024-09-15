@@ -11,7 +11,7 @@
 
 #include <glib.h>
 
-G_BEGIN_DECLS
+#ifdef __cplusplus
 
 /**
  * Convert Win32/Qt-style accelerator notation ('&') to GTK-style ('_').
@@ -20,4 +20,4 @@ G_BEGIN_DECLS
  */
 std::string convert_accel_to_gtk(const char *str);
 
-G_END_DECLS
+#endif /* __cplusplus */
