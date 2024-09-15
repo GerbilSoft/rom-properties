@@ -34,14 +34,15 @@ protected:
 	 * @param gray		[in] If true, load the grayscale version
 	 * @return 0 on success; non-zero on error.
 	 */
+	ATTR_ACCESS_SIZE(write_only, 2, 3)
 	int getFilename(char *buf, size_t size, int width, int height, bool gray = false) const final;
 
 public:
 	/**
-	* Get a flag icon.
-	* @param lc		[in]  Language code
-	* @param forcePAL	[in,opt] If true, force PAL regions, e.g. always use the 'gb' flag for English.
-	* @return Flag icon, or nullptr on error. (caller must free the icon)
-	*/
+	 * Get a flag icon.
+	 * @param lc		[in]  Language code
+	 * @param forcePAL	[in,opt] If true, force PAL regions, e.g. always use the 'gb' flag for English.
+	 * @return Flag icon, or nullptr on error. (caller must free the icon)
+	 */
 	PIMGTYPE getIcon(uint32_t lc, bool forcePAL = false) const;
 };

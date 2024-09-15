@@ -37,6 +37,7 @@ protected:
 	 * @param gray		[in] If true, load the grayscale version
 	 * @return 0 on success; non-zero on error.
 	 */
+	ATTR_ACCESS_SIZE(write_only, 2, 3)
 	int getFilename(char *buf, size_t size, int width, int height, bool gray = false) const final;
 
 public:
