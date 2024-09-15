@@ -29,7 +29,7 @@ private:
 
 protected:
 	/**
-	 * Get the gresource filename for a sprite sheet.
+	 * Get the qresource filename for a sprite sheet.
 	 * @param width		[in] Icon width
 	 * @param height	[in] Icon height
 	 * @param gray		[in] If true, load the grayscale version
