@@ -25,21 +25,17 @@ FlagSpriteSheet::FlagSpriteSheet(int iconSize)
 
 /**
  * Get the gresource filename for a sprite sheet.
- * @param buf		[out] Filename buffer
- * @param size		[in] Size of buf
  * @param width		[in] Icon width
  * @param height	[in] Icon height
  * @param gray		[in] If true, load the grayscale version
- * @return 0 on success; non-zero on error.
+ * @return Filename on success; empty string on error.
  */
-int FlagSpriteSheet::getFilename(char *buf, size_t size, int width, int height, bool gray) const
+QString FlagSpriteSheet::getFilename(int width, int height, bool gray) const
 {
 	// NOTE: Gray is not used for flags.
 	RP_UNUSED(gray);
-	snprintf(buf, size,
-		":/flags/flags-%dx%d.png",
-		width, height);
-	return 0;
+	return QString::fromLatin1(":/flags/flags-%1x%2.png")
+		.arg(width).arg(height);
 }
 
 /**

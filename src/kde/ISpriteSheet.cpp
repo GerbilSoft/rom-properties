@@ -47,14 +47,13 @@ QPixmap ISpriteSheet::getIcon(int col, int row, bool gray) const
 		: const_cast<ISpriteSheet*>(this)->m_img;
 	if (imgSpriteSheet.isNull()) {
 		// Load the sprite sheet.
-		char qres_filename[64];
-		int ret = getFilename(qres_filename, sizeof(qres_filename), m_width, m_height, gray);
-		if (ret != 0) {
+		QString qres_filename = getFilename(m_width, m_height, gray);
+		if (qres_filename.isEmpty()) {
 			// Unable to get the filename.
 			return {};
 		}
 
-		imgSpriteSheet.load(QString::fromUtf8(qres_filename));
+		imgSpriteSheet.load(qres_filename);
 		assert(!imgSpriteSheet.isNull());
 		if (imgSpriteSheet.isNull()) {
 			// Unable to load the sprite sheet.

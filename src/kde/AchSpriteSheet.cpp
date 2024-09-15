@@ -24,19 +24,16 @@ AchSpriteSheet::AchSpriteSheet(int iconSize)
 
 /**
  * Get the qresource filename for a sprite sheet.
- * @param buf		[out] Filename buffer
- * @param size		[in] Size of buf
  * @param width		[in] Icon width
  * @param height	[in] Icon height
  * @param gray		[in] If true, load the grayscale version
- * @return 0 on success; non-zero on error.
+ * @return Filename on success; empty string on error.
  */
-int AchSpriteSheet::getFilename(char *buf, size_t size, int width, int height, bool gray) const
+QString AchSpriteSheet::getFilename(int width, int height, bool gray) const
 {
-	snprintf(buf, size,
-		":/ach/ach%s-%dx%d.png",
-		(gray ? "-gray" : ""), width, height);
-	return 0;
+	return QString::fromLatin1(":/ach/ach%1-%2x%3.png")
+		.arg(gray ? QString::fromLatin1("-gray") : QString())
+		.arg(width).arg(height);
 }
 
 /**

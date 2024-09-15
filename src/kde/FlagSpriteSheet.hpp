@@ -27,14 +27,12 @@ private:
 protected:
 	/**
 	 * Get the gresource filename for a sprite sheet.
-	 * @param buf		[out] Filename buffer
-	 * @param size		[in] Size of buf
 	 * @param width		[in] Icon width
 	 * @param height	[in] Icon height
 	 * @param gray		[in] If true, load the grayscale version
-	 * @return 0 on success; non-zero on error.
+	 * @return Filename on success; empty string on error.
 	 */
-	int getFilename(char *buf, size_t size, int width, int height, bool gray = false) const final;
+	QString getFilename(int width, int height, bool gray = false) const final;
 
 public:
 	/**
