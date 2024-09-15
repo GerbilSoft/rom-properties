@@ -24,7 +24,7 @@ ADD_DEFINITIONS(-D_GNU_SOURCE=1)
 # Test for common CFLAGS and CXXFLAGS.
 # NOTE: Not adding -Werror=format-nonliteral because there are some
 # legitimate uses of non-literal format strings.
-SET(CFLAGS_WARNINGS -Wall -Wextra -Wno-multichar -Werror=return-type -Werror=header-hygiene)
+SET(CFLAGS_WARNINGS -Wall -Wextra -Wno-multichar -Werror=return-type -Wheader-hygiene)
 SET(CFLAGS_WERROR_FORMAT -Werror=format -Werror=format-security -Werror=format-signedness -Werror=format-truncation -Werror=format-y2k)
 SET(CFLAGS_OPTIONS -fstrict-aliasing -Werror=strict-aliasing -fno-common -fcf-protection -fno-math-errno)
 IF(MINGW)
