@@ -881,7 +881,7 @@ const char *KeyStoreUI::sectName(int sectIdx) const
 		NOP_C_("KeyStoreUI|Section", "Nintendo 3DS AES Keys"),
 		NOP_C_("KeyStoreUI|Section", "Microsoft Xbox 360 AES Keys"),
 	}};
-	static_assert(sectNames.size() == d->encKeyFns.size(),
+	static_assert(sectNames.size() == KeyStoreUIPrivate::encKeyFns.size(),
 		"sectNames[] is out of sync with d->encKeyFns[].");
 
 	return pgettext_expr("KeyStoreUI|Section", sectNames[sectIdx]);
