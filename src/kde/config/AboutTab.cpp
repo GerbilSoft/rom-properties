@@ -580,7 +580,7 @@ void AboutTabPrivate::checkForUpdates(void)
 	Q_Q(AboutTab);
 
 	// Run the update check thread.
-	ui.lblUpdateCheck->setText(U82Q(C_("AboutTab", "Checking for updates...")));
+	ui.lblUpdateCheck->setText(QC_("AboutTab", "Checking for updates..."));
 	thrUpdate.start();
 }
 
@@ -648,7 +648,7 @@ void AboutTab::updChecker_error(const QString &error)
 	Q_D(AboutTab);
 
 	// tr: Error message template. (Qt version, with formatting)
-	const QString errTemplate = U82Q(C_("ConfigDialog", "<b>ERROR:</b> %1"));
+	const QString errTemplate = QC_("ConfigDialog", "<b>ERROR:</b> %1");
 	d->ui.lblUpdateCheck->setText(errTemplate.arg(error));
 }
 

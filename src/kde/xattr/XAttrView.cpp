@@ -181,10 +181,10 @@ int XAttrViewPrivate::loadPosixXattrs(void)
 	const XAttrReader::XAttrList &xattrList = xattrReader->genericXAttrs();
 	for (const auto &xattr : xattrList) {
 		QTreeWidgetItem *const treeWidgetItem = new QTreeWidgetItem(ui.treeXAttr);
-		treeWidgetItem->setData(0, Qt::DisplayRole, QString::fromUtf8(xattr.first.c_str(), xattr.first.size()));
+		treeWidgetItem->setData(0, Qt::DisplayRole, U82Q(xattr.first));
 		// NOTE: Trimming leading and trailing spaces from the value.
 		// TODO: If copy is added, include the spaces.
-		treeWidgetItem->setData(1, Qt::DisplayRole, QString::fromUtf8(xattr.second.c_str(), xattr.second.size()).trimmed());
+		treeWidgetItem->setData(1, Qt::DisplayRole, U82Q(xattr.second).trimmed());
 	}
 
 	// Set column stretch modes.

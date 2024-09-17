@@ -52,6 +52,17 @@ static inline QString U82Q(const char *str, int len = -1)
 	return QString::fromUtf8(str, len);
 }
 
+// Helper macro for using C_() with U82Q().
+// NOTE: Must include i18n.h before using this macro!
+#define Q_(msgid)				U82Q(_(msgid))
+#define QC_(msgctxt, msgid)			U82Q(C_(msgctxt, msgid))
+#define QN_(msgid1, msgid2, n)			U82Q(N_(msgid1, msgid2, n))
+#define QNC_(msgctxt, msgid1, msgid2, n)	U82Q(NC_(msgctxt, msgid1, msgid2, n))
+#define qpgettext_expr(msgctxt, msgid)				U82Q(pgettext_expr(msgctxt, msgid))
+#define qdpgettext_expr(domain, msgctxt, msgid)			U82Q(dpgettext_expr(domain, msgctxt, msgid))
+#define qnpgettext_expr(msgctxt, msgid1, msgid2, n)		U82Q(npgettext_expr(msgctxt, msgid1, msgid2, n))
+#define qdnpgettext_expr(domain, msgctxt, msgid1, msgid2, n)	U82Q(dnpgettext_expr(domain, msgctxt, msgid1, msgid2, n))
+
 /**
  * Get const char* from QString.
  * NOTE: This is temporary; assign to an std::string immediately.

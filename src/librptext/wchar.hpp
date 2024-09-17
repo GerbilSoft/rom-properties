@@ -3,7 +3,7 @@
  * wchar.hpp: wchar_t text conversion macros                               *
  * Generally only used on Windows.                                         *
  *                                                                         *
- * Copyright (c) 2009-2023 by David Korth.                                 *
+ * Copyright (c) 2009-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -218,4 +218,16 @@ static inline std::string T2U8(const std::tstring &tcs)
 }
 
 #endif /* UNICODE */
+
+// Helper macro for using C_() with U82T_c().
+// NOTE: Must include i18n.h before using this macro!
+#define T_(msgid)				U82T_c(_(msgid))
+#define TC_(msgctxt, msgid)			U82T_c(C_(msgctxt, msgid))
+#define TN_(msgid1, msgid2, n)			U82T_c(N_(msgid1, msgid2, n))
+#define TNC_(msgctxt, msgid1, msgid2, n)	U82T_c(NC_(msgctxt, msgid1, msgid2, n))
+#define tpgettext_expr(msgctxt, msgid)				U82T_c(pgettext_expr(msgctxt, msgid))
+#define tdpgettext_expr(domain, msgctxt, msgid)			U82T_c(dpgettext_expr(domain, msgctxt, msgid))
+#define tnpgettext_expr(msgctxt, msgid1, msgid2, n)		U82T_c(npgettext_expr(msgctxt, msgid1, msgid2, n))
+#define tdnpgettext_expr(domain, msgctxt, msgid1, msgid2, n)	U82T_c(dnpgettext_expr(domain, msgctxt, msgid1, msgid2, n))
+
 #endif /* _WIN32 */

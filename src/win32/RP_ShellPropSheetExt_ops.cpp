@@ -382,8 +382,8 @@ void RP_ShellPropSheetExt_Private::btnOptions_action_triggered(int menuId)
 			}
 
 			const tstring tfilename = LibWin32UI::getSaveFileName(hDlgSheet,
-				U82T_c(pgettext_expr("RomDataView", info.title)),
-				U82T_c(pgettext_expr("RomDataView", info.filter)),
+				tpgettext_expr("RomDataView", info.title),
+				tpgettext_expr("RomDataView", info.filter),
 				defaultFileName.c_str());
 			if (tfilename.empty())
 				return;

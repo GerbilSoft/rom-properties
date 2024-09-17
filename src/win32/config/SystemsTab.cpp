@@ -470,7 +470,7 @@ HPROPSHEETPAGE SystemsTab::getHPropSheetPage(void)
 	}
 
 	// tr: Tab title.
-	const tstring tsTabTitle = U82T_c(C_("SystemsTab", "Systems"));
+	const tstring tsTabTitle = TC_("SystemsTab", "Systems");
 
 	PROPSHEETPAGE psp;
 	psp.dwSize = sizeof(psp);

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE)                              *
  * UpdateChecker.hpp: Update checker object for AboutTab.                  *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -57,7 +57,7 @@ void UpdateChecker::run(void)
 	const string cache_filename = cache.download(updateVersionCacheKey);
 	if (cache_filename.empty()) {
 		// Unable to download the version file.
-		emit error(U82Q(C_("UpdateChecker", "Failed to download version file.")));
+		emit error(QC_("UpdateChecker", "Failed to download version file."));
 		emit finished();
 		return;
 	}
@@ -66,7 +66,7 @@ void UpdateChecker::run(void)
 	QFile file(U82Q(cache_filename));
 	if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
 		// TODO: Error code?
-		emit error(U82Q(C_("UpdateChecker", "Failed to open version file.")));
+		emit error(QC_("UpdateChecker", "Failed to open version file."));
 		emit finished();
 		return;
 	}
@@ -75,7 +75,7 @@ void UpdateChecker::run(void)
 	const QString sVersion = U82Q(file.readLine().constData()).trimmed();
 	const QStringList sVersionArray = sVersion.split(QChar(L'.'));
 	if (sVersion.isEmpty() || sVersionArray.size() != 4) {
-		emit error(U82Q(C_("UpdateChecker", "Version file is invalid.")));
+		emit error(QC_("UpdateChecker", "Version file is invalid."));
 		emit finished();
 		return;
 	}
@@ -86,7 +86,7 @@ void UpdateChecker::run(void)
 	for (unsigned int i = 0; i < 3; i++, updateVersion <<= 16U) {
 		const int x = sVersionArray[i].toInt(&ok);
 		if (!ok || x < 0) {
-			emit error(U82Q(C_("UpdateChecker", "Version file is invalid.")));
+			emit error(QC_("UpdateChecker", "Version file is invalid."));
 			emit finished();
 			return;
 		}

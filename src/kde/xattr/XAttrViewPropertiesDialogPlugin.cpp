@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                             *
  * XAttrViewPropertiesDialogPlugin.cpp: KPropertiesDialogPlugin implementation *
  *                                                                             *
- * Copyright (c) 2016-2023 by David Korth.                                     *
+ * Copyright (c) 2016-2024 by David Korth.                                     *
  * SPDX-License-Identifier: GPL-2.0-or-later                                   *
  *******************************************************************************/
 
@@ -80,6 +80,6 @@ XAttrViewPropertiesDialogPlugin::XAttrViewPropertiesDialogPlugin(QObject *parent
 	XAttrView *const xattrView = createXAttrView(fileItem, props);
 	if (xattrView) {
 		// tr: XAttrView tab title
-		props->addPage(xattrView, U82Q(C_("XAttrView", "xattrs")));
+		props->addPage(xattrView, QC_("XAttrView", "xattrs"));
 	}
 }

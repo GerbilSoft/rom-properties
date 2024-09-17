@@ -245,7 +245,7 @@ void ImageTypesTabPrivate::addComboBoxStrings(unsigned int cbid, int max_prio)
 	assert(max_prio <= static_cast<int>(ImageTypesConfig::imageTypeCount()));
 	const bool blockCbo = cbo->blockSignals(true);
 	// tr: Don't use this image type for this particular system.
-	cbo->addItem(U82Q(C_("ImageTypesTab|Values", "No")));
+	cbo->addItem(QC_("ImageTypesTab|Values", "No"));
 	for (int i = 1; i <= max_prio; i++) {
 		cbo->addItem(QString::number(i));
 	}
@@ -353,14 +353,12 @@ void ImageTypesTabPrivate::cboImageType_setPriorityValue(unsigned int cbid, unsi
  */
 void ImageTypesTabPrivate::initStrings(void)
 {
-	QString sCredits = U82Q(
-		// tr: External image credits.
-		C_("ImageTypesTab",
-			"GameCube, Wii, Wii U, Nintendo DS, and Nintendo 3DS external images\n"
-			"are provided by <a href=\"https://www.gametdb.com/\">GameTDB</a>.\n"
-			"amiibo images are provided by <a href=\"https://amiibo.life/\">amiibo.life</a>,"
-			" the Unofficial amiibo Database.")
-		);
+	// tr: External image credits.
+	QString sCredits = QC_("ImageTypesTab",
+		"GameCube, Wii, Wii U, Nintendo DS, and Nintendo 3DS external images\n"
+		"are provided by <a href=\"https://www.gametdb.com/\">GameTDB</a>.\n"
+		"amiibo images are provided by <a href=\"https://amiibo.life/\">amiibo.life</a>,"
+		" the Unofficial amiibo Database.");
 
 	// Replace "\n" with "<br/>".
 	sCredits.replace(QChar(L'\n'), QLatin1String("<br/>"));

@@ -37,7 +37,7 @@ OptionsMenuButton::OptionsMenuButton(QWidget *parent)
 	, romOps_firstActionIndex(-1)
 {
 	// tr: "Options" button.
-	const QString s_options = U82Q(C_("OptionsMenuButton", "&Options"));
+	const QString s_options = QC_("OptionsMenuButton", "&Options");
 	this->setText(s_options);
 
 	// Create the menu.
@@ -67,7 +67,7 @@ void OptionsMenuButton::reinitMenu(const LibRpBase::RomData *romData)
 	// Add the standard actions.
 	for (const option_menu_action_t &p : stdacts) {
 		QAction *const action = menuOptions->addAction(
-			U82Q(pgettext_expr("OptionsMenuButton", p.desc)));
+			qpgettext_expr("OptionsMenuButton", p.desc));
 #ifdef RP_OMB_USE_LAMBDA_FUNCTIONS
 		// Qt5: Use a lambda function.
 		const int id = p.id;	// only capture id, not the whole reference

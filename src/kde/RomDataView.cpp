@@ -688,7 +688,7 @@ QLabel *RomDataViewPrivate::initDateTime(QLabel *lblDesc,
 	// Date/Time
 	if (field.data.date_time == -1) {
 		// tr: Invalid date/time
-		return initString(lblDesc, field, U82Q(C_("RomDataView", "Unknown")));
+		return initString(lblDesc, field, QC_("RomDataView", "Unknown"));
 	}
 
 	QString str = formatDateTime(field.data.date_time, field.flags);
@@ -717,7 +717,7 @@ QLabel *RomDataViewPrivate::initAgeRatings(QLabel *lblDesc,
 	// Convert the age ratings field to a string.
 	const QString str = (age_ratings
 		? U82Q(RomFields::ageRatingsDecode(age_ratings))
-		: U82Q(C_("RomDataView", "ERROR")));
+		: QC_("RomDataView", "ERROR"));
 	return initString(lblDesc, field, str);
 }
 

@@ -92,11 +92,11 @@ KeyStoreModelPrivate::KeyStoreModelPrivate(KeyStoreModel *q)
 	// Translate and cache the column names.
 
 	// tr: Column 0: Key Name.
-	columnNames[0] = U82Q(C_("KeyManagerTab", "Key Name"));
+	columnNames[0] = QC_("KeyManagerTab", "Key Name");
 	// tr: Column 1: Value.
-	columnNames[1] = U82Q(C_("KeyManagerTab", "Value"));
+	columnNames[1] = QC_("KeyManagerTab", "Value");
 	// tr: Column 2: Verification status.
-	columnNames[2] = U82Q(C_("KeyManagerTab", "Valid?"));
+	columnNames[2] = QC_("KeyManagerTab", "Valid?");
 }
 
 /**

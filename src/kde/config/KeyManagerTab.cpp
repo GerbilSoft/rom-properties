@@ -323,7 +323,7 @@ KeyManagerTab::KeyManagerTab(QWidget *parent)
 	d->ui.treeKeyStore->setItemDelegate(new KeyStoreItemDelegate(this));
 
 	// Create the dropdown menu for the "Import" button.
-	QMenu *const menuImport = new QMenu(U82Q(C_("KeyManagerTab", "I&mport")), d->ui.btnImport);
+	QMenu *const menuImport = new QMenu(QC_("KeyManagerTab", "I&mport"), d->ui.btnImport);
 	menuImport->setObjectName(QLatin1String("menuImport"));
 	menuImport->addAction(d->ui.actionImportWiiKeysBin);
 	menuImport->addAction(d->ui.actionImportWiiUOtpBin);
@@ -449,7 +449,7 @@ void KeyManagerTab::on_actionImportWiiKeysBin_triggered(void)
 	Q_D(KeyManagerTab);
 	const QString filename = QFileDialog::getOpenFileName(this,
 		// tr: Wii keys.bin dialog title
-		U82Q(C_("KeyManagerTab", "Select Wii keys.bin File")),
+		QC_("KeyManagerTab", "Select Wii keys.bin File"),
 		d->keyFileDir,	// dir
 		// tr: Wii keys.bin file filter (RP format)
 		rpFileDialogFilterToQt(
@@ -471,7 +471,7 @@ void KeyManagerTab::on_actionImportWiiUOtpBin_triggered(void)
 	Q_D(KeyManagerTab);
 	const QString filename = QFileDialog::getOpenFileName(this,
 		// tr: Wii U otp.bin dialog title
-		U82Q(C_("KeyManagerTab", "Select Wii U otp.bin File")),
+		QC_("KeyManagerTab", "Select Wii U otp.bin File"),
 		d->keyFileDir,	// dir
 		// tr: Wii U otp.bin file filter (RP format)
 		rpFileDialogFilterToQt(
@@ -493,7 +493,7 @@ void KeyManagerTab::on_actionImport3DSboot9bin_triggered(void)
 	Q_D(KeyManagerTab);
 	const QString filename = QFileDialog::getOpenFileName(this,
 		// tr: Nintendo 3DS boot9.bin dialog title
-		U82Q(C_("KeyManagerTab", "Select 3DS boot9.bin File")),
+		QC_("KeyManagerTab", "Select 3DS boot9.bin File"),
 		d->keyFileDir,	// dir
 		// tr: Nintendo 3DS boot9.bin file filter (RP format)
 		rpFileDialogFilterToQt(
@@ -515,7 +515,7 @@ void KeyManagerTab::on_actionImport3DSaeskeydb_triggered(void)
 	Q_D(KeyManagerTab);
 	const QString filename = QFileDialog::getOpenFileName(this,
 		// tr: Nintendo 3DS aeskeydb.bin dialog title
-		U82Q(C_("KeyManagerTab", "Select 3DS aeskeydb.bin File")),
+		QC_("KeyManagerTab", "Select 3DS aeskeydb.bin File"),
 		d->keyFileDir,	// dir
 		// tr: Nintendo 3DS aeskeydb.bin file filter (RP format)
 		rpFileDialogFilterToQt(

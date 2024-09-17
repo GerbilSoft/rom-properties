@@ -243,7 +243,7 @@ LRESULT CALLBACK ConfigDialogPrivate::subclassProc(
 			}
 
 			// tr: Dialog title.
-			const tstring tsTitle = U82T_c(C_("ConfigDialog", "ROM Properties Page configuration"));
+			const tstring tsTitle = TC_("ConfigDialog", "ROM Properties Page configuration");
 			SetWindowText(hWnd, tsTitle.c_str());
 
 			// Create the "Reset" and "Defaults" buttons.
@@ -289,7 +289,7 @@ LRESULT CALLBACK ConfigDialogPrivate::subclassProc(
 
 			HWND hBtnReset = CreateWindowEx(0, WC_BUTTON,
 				// tr: "Reset" button.
-				U82T_c(C_("ConfigDialog", "&Reset")),
+				TC_("ConfigDialog", "&Reset"),
 				WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_GROUP | BS_CENTER,
 				ptBtn.x, ptBtn.y, szBtn.cx, szBtn.cy,
 				hWnd, (HMENU)IDC_RP_RESET, nullptr, nullptr);
@@ -306,7 +306,7 @@ LRESULT CALLBACK ConfigDialogPrivate::subclassProc(
 			ptBtn.x += szBtn.cx + (rect_btnCancel.left - rect_btnOK.right);
 			HWND hBtnDefaults = CreateWindowEx(0, WC_BUTTON,
 				// tr: "Defaults" button.
-				U82T_c(C_("ConfigDialog", "Defaults")),
+				TC_("ConfigDialog", "Defaults"),
 				WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_GROUP | BS_CENTER,
 				ptBtn.x, ptBtn.y, szBtn.cx, szBtn.cy,
 				hWnd, (HMENU)IDC_RP_DEFAULTS, nullptr, nullptr);

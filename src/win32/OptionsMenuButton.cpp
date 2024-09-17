@@ -91,7 +91,7 @@ OptionsMenuButtonPrivate::OptionsMenuButtonPrivate(HWND hWnd)
 		SetWindowLong(hWnd, GWL_STYLE, lStyle);
 
 		// tr: "Options" button.
-		SetWindowText(hWnd, U82T_c(C_("OptionsMenuButton", "&Options")));
+		SetWindowText(hWnd, TC_("OptionsMenuButton", "&Options"));
 
 		// Button split.
 		BUTTON_SPLITINFO bsi;
@@ -104,7 +104,7 @@ OptionsMenuButtonPrivate::OptionsMenuButtonPrivate(HWND hWnd)
 		// Maybe we *should* use ownerdraw...
 
 		// tr: "Options" button. (WinXP version, with ellipsis.)
-		SetWindowText(hWnd, U82T_c(C_("OptionsMenuButton", "&Options...")));
+		SetWindowText(hWnd, TC_("OptionsMenuButton", "&Options..."));
 	}
 }
 
@@ -134,7 +134,7 @@ void OptionsMenuButtonPrivate::reinitMenu(const RomData *romData)
 	// Add the standard actions.
 	for (const option_menu_action_t &p : stdacts) {
 		AppendMenu(hMenuOptions, MF_STRING, IDM_OPTIONS_MENU_BASE + p.id,
-			U82T_c(pgettext_expr("RomDataView|Options", p.desc)));
+			tpgettext_expr("RomDataView|Options", p.desc));
 	}
 
 	/** ROM operations. **/

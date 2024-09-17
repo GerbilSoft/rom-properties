@@ -187,7 +187,7 @@ int AchQtDBus::notifyFunc(Achievements::ID id)
 		hints.insert(QLatin1String("icon_data"), var);
 	}
 
-	const QString qs_summary = U82Q(C_("Achievements", "Achievement Unlocked"));
+	const QString qs_summary = QC_("Achievements", "Achievement Unlocked");
 	iface.Notify(
 		QLatin1String("rom-properties"),	// app-name [s]
 		0,					// replaces_id [u]

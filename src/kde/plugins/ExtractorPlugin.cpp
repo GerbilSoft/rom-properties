@@ -125,8 +125,7 @@ void ExtractorPlugin::extract_properties(KFileMetaData::ExtractionResult *result
 
 				const string *str = prop.data.str;
 				if (str) {
-					result->add(static_cast<KFileMetaData::Property::Property>(prop_name),
-						QString::fromUtf8(str->data(), static_cast<int>(str->size())));
+					result->add(static_cast<KFileMetaData::Property::Property>(prop_name), U82Q(*str));
 				}
 				break;
 			}

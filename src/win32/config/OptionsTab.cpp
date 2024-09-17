@@ -440,9 +440,9 @@ INT_PTR CALLBACK OptionsTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam,
 			d->lastDarkModeEnabled = g_darkModeEnabled;
 
 			// Populate the combo boxes.
-			const tstring s_dl_None = U82T_c(C_("OptionsTab", "Don't download any images"));
-			const tstring s_dl_NormalRes = U82T_c(C_("OptionsTab", "Download normal-resolution images"));
-			const tstring s_dl_HighRes = U82T_c(C_("OptionsTab", "Download high-resolution images"));
+			const tstring s_dl_None = TC_("OptionsTab", "Don't download any images");
+			const tstring s_dl_NormalRes = TC_("OptionsTab", "Download normal-resolution images");
+			const tstring s_dl_HighRes = TC_("OptionsTab", "Download high-resolution images");
 			HWND cboUnmeteredDL = GetDlgItem(hDlg, IDC_OPTIONS_CBO_UNMETERED_DL);
 			ComboBox_AddString(cboUnmeteredDL, s_dl_None.c_str());
 			ComboBox_AddString(cboUnmeteredDL, s_dl_NormalRes.c_str());
@@ -683,7 +683,7 @@ HPROPSHEETPAGE OptionsTab::getHPropSheetPage(void)
 	}
 
 	// tr: Tab title.
-	const tstring tsTabTitle = U82T_c(C_("OptionsTab", "Options"));
+	const tstring tsTabTitle = TC_("OptionsTab", "Options");
 
 	PROPSHEETPAGE psp;
 	psp.dwSize = sizeof(psp);

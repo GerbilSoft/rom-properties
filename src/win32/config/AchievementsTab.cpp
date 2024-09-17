@@ -553,13 +553,13 @@ void AchievementsTabPrivate::reset(void)
 		lvColumn.mask = LVCF_TEXT | LVCF_FMT;
 
 		// Column 0: Achievement
-		tstring tstr = U82T_c(C_("AchievementsTab", "Achievement"));
+		tstring tstr = TC_("AchievementsTab", "Achievement");
 		lvColumn.pszText = const_cast<LPTSTR>(tstr.c_str());
 		lvColumn.fmt = LVCFMT_LEFT;
 		ListView_InsertColumn(hListView, 0, &lvColumn);
 
 		// Column 1: Unlock Time
-		tstr = U82T_c(C_("AchievementsTab", "Unlock Time"));
+		tstr = TC_("AchievementsTab", "Unlock Time");
 		lvColumn.pszText = const_cast<LPTSTR>(tstr.c_str());
 		lvColumn.fmt = LVCFMT_LEFT;
 		ListView_InsertColumn(hListView, 1, &lvColumn);
@@ -664,7 +664,7 @@ HPROPSHEETPAGE AchievementsTab::getHPropSheetPage(void)
 	}
 
 	// tr: Tab title.
-	const tstring tsTabTitle = U82T_c(C_("AchievementsTab", "Achievements"));
+	const tstring tsTabTitle = TC_("AchievementsTab", "Achievements");
 
 	PROPSHEETPAGE psp;
 	psp.dwSize = sizeof(psp);

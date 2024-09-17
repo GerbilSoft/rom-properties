@@ -286,7 +286,7 @@ int AchWin32Private::notifyFunc(Achievements::ID id)
 	}
 	nid.hBalloonIcon = hBalloonIcon;
 
-	const tstring ts_summary = U82T_c(C_("Achievements", "Achievement Unlocked"));
+	const tstring ts_summary = TC_("Achievements", "Achievement Unlocked");
 	_tcsncpy(nid.szInfoTitle, ts_summary.c_str(), _countof(nid.szInfoTitle));
 	nid.szInfoTitle[_countof(nid.szInfoTitle)-1] = _T('\0');
 

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * ListDataModel.cpp: QAbstractListModel for RFT_LISTDATA.                 *
  *                                                                         *
- * Copyright (c) 2012-2023 by David Korth.                                 *
+ * Copyright (c) 2012-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -234,7 +234,7 @@ vector<QString> ListDataModelPrivate::convertListDataToVector(const RomFields::L
 				if (likely(!str.isEmpty())) {
 					data.emplace_back(std::move(str));
 				} else {
-					data.emplace_back(U82Q(C_("RomData", "Unknown")));
+					data.emplace_back(QC_("RomData", "Unknown"));
 				}
 			} else {
 				data.emplace_back(U82Q(u8_str));

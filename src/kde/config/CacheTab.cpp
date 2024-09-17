@@ -141,13 +141,13 @@ void CacheTabPrivate::clearCacheDir(CacheCleaner::CacheDir cacheDir)
 	switch (cacheDir) {
 		default:
 			assert(!"Invalid cache directory specified.");
-			q->ccCleaner_error(U82Q(C_("CacheTab", "Invalid cache directory specified.")));
+			q->ccCleaner_error(QC_("CacheTab", "Invalid cache directory specified."));
 			return;
 		case CacheCleaner::CD_System:
-			s_label = U82Q(C_("CacheTab", "Clearing the system thumbnail cache..."));
+			s_label = QC_("CacheTab", "Clearing the system thumbnail cache...");
 			break;
 		case CacheCleaner::CD_RomProperties:
-			s_label = U82Q(C_("CacheTab", "Clearing the ROM Properties Page cache..."));
+			s_label = QC_("CacheTab", "Clearing the ROM Properties Page cache...");
 			break;
 	}
 	ui.lblStatus->setText(s_label);
@@ -252,7 +252,7 @@ void CacheTab::ccCleaner_error(const QString &error)
 	d->ui.pbStatus->setValue(1);
 	d->ui.pbStatus->setError(true);
 	// tr: Error message template. (Qt version, with formatting)
-	const QString qs_msg = U82Q(C_("ConfigDialog", "<b>ERROR:</b> %1")).arg(error);
+	const QString qs_msg = QC_("ConfigDialog", "<b>ERROR:</b> %1").arg(error);
 	d->ui.lblStatus->setText(qs_msg);
 	MessageSound::play(QMessageBox::Warning, qs_msg, this);
 }
@@ -267,13 +267,13 @@ void CacheTab::ccCleaner_cacheIsEmpty(CacheCleaner::CacheDir cacheDir)
 	switch (cacheDir) {
 		default:
 			assert(!"Invalid cache directory specified.");
-			qs_msg = U82Q(C_("CacheTab", "Invalid cache directory specified."));
+			qs_msg = QC_("CacheTab", "Invalid cache directory specified.");
 			break;
 		case CacheCleaner::CD_System:
-			qs_msg = U82Q(C_("CacheTab", "System thumbnail cache is empty. Nothing to do."));
+			qs_msg = QC_("CacheTab", "System thumbnail cache is empty. Nothing to do.");
 			break;
 		case CacheCleaner::CD_RomProperties:
-			qs_msg = U82Q(C_("CacheTab", "rom-properties cache is empty. Nothing to do."));
+			qs_msg = QC_("CacheTab", "rom-properties cache is empty. Nothing to do.");
 			break;
 	}
 
@@ -296,8 +296,8 @@ void CacheTab::ccCleaner_cacheCleared(CacheCleaner::CacheDir cacheDir, unsigned 
 
 	if (dirErrs > 0 || fileErrs > 0) {
 		// tr: Error message template. (Qt version, with formatting)
-		const QString qs_msg = U82Q(C_("ConfigDialog", "<b>ERROR:</b> %1")).arg(
-			U82Q(rp_sprintf_p(C_("CacheTab", "Unable to delete %1$u file(s) and/or %2$u dir(s)."),
+		const QString qs_msg = QC_("ConfigDialog", "<b>ERROR:</b> %1")
+			.arg(U82Q(rp_sprintf_p(C_("CacheTab", "Unable to delete %1$u file(s) and/or %2$u dir(s)."),
 				fileErrs, dirErrs)));
 		d->ui.lblStatus->setText(qs_msg);
 		MessageSound::play(QMessageBox::Warning, qs_msg, this);
@@ -309,15 +309,15 @@ void CacheTab::ccCleaner_cacheCleared(CacheCleaner::CacheDir cacheDir, unsigned 
 	switch (cacheDir) {
 		default:
 			assert(!"Invalid cache directory specified.");
-			qs_msg = U82Q(C_("CacheTab", "Invalid cache directory specified."));
+			qs_msg = QC_("CacheTab", "Invalid cache directory specified.");
 			icon = QMessageBox::Warning;
 			break;
 		case CacheCleaner::CD_System:
-			qs_msg = U82Q(C_("CacheTab", "System thumbnail cache cleared successfully."));
+			qs_msg = QC_("CacheTab", "System thumbnail cache cleared successfully.");
 			icon = QMessageBox::Information;
 			break;
 		case CacheCleaner::CD_RomProperties:
-			qs_msg = U82Q(C_("CacheTab", "rom-properties cache cleared successfully."));
+			qs_msg = QC_("CacheTab", "rom-properties cache cleared successfully.");
 			icon = QMessageBox::Information;
 			break;
 	}

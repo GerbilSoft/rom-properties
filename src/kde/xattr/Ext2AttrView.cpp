@@ -84,7 +84,7 @@ void Ext2AttrViewPrivate::retranslateUi_nonDesigner(void)
 			pgettext_expr("Ext2AttrView", p->label));
 
 		checkBoxes[i]->setText(U82Q(buf));
-		checkBoxes[i]->setToolTip(U82Q(pgettext_expr("Ext2AttrView", p->tooltip)));
+		checkBoxes[i]->setToolTip(qpgettext_expr("Ext2AttrView", p->tooltip));
 	}
 }
 

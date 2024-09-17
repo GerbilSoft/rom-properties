@@ -401,7 +401,7 @@ void ImageTypesTabPrivate::addComboBoxStrings(unsigned int cbid, int max_prio)
 	// since "No" counts as an entry.
 	assert(max_prio <= static_cast<int>(ImageTypesConfig::imageTypeCount()));
 	// tr: Don't use this image type for this particular system.
-	ComboBox_AddString(cboImageType, U82T_c(C_("ImageTypesTab|Values", "No")));
+	ComboBox_AddString(cboImageType, TC_("ImageTypesTab|Values", "No"));
 	for (int i = 1; i <= max_prio; i++) {
 		TCHAR buf[16];
 		_sntprintf(buf, _countof(buf), _T("%d"), i);
@@ -525,14 +525,12 @@ void ImageTypesTabPrivate::cboImageType_setPriorityValue(unsigned int cbid, unsi
  */
 void ImageTypesTabPrivate::initStrings(void)
 {
-	SetWindowText(GetDlgItem(hWndPropSheet, IDC_IMAGETYPES_CREDITS), U82T_c(
-		// tr: External image credits.
-		C_("ImageTypesTab",
-			"GameCube, Wii, Wii U, Nintendo DS, and Nintendo 3DS external images\n"
-			"are provided by <a href=\"https://www.gametdb.com/\">GameTDB</a>.\n"
-			"amiibo images are provided by <a href=\"https://amiibo.life/\">amiibo.life</a>,"
-			" the Unofficial amiibo Database.")
-	));
+	// tr: External image credits.
+	SetWindowText(GetDlgItem(hWndPropSheet, IDC_IMAGETYPES_CREDITS), TC_("ImageTypesTab",
+		"GameCube, Wii, Wii U, Nintendo DS, and Nintendo 3DS external images\n"
+		"are provided by <a href=\"https://www.gametdb.com/\">GameTDB</a>.\n"
+		"amiibo images are provided by <a href=\"https://amiibo.life/\">amiibo.life</a>,"
+		" the Unofficial amiibo Database."));
 }
 
 /**
@@ -793,7 +791,7 @@ HPROPSHEETPAGE ImageTypesTab::getHPropSheetPage(void)
 	// FIXME: SysLink controls won't work in ANSI builds.
 
 	// tr: Tab title.
-	const tstring tsTabTitle = U82T_c(C_("ImageTypesTab", "Image Types"));
+	const tstring tsTabTitle = TC_("ImageTypesTab", "Image Types");
 
 	PROPSHEETPAGE psp;
 	psp.dwSize = sizeof(psp);

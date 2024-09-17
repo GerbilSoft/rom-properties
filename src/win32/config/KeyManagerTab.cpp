@@ -349,7 +349,7 @@ void KeyManagerTabPrivate::initDialog(void)
 		// COMCTL32 is older than v6.10. Use a regular button.
 		// NOTE: The Unicode down arrow doesn't show on on Windows XP.
 		// Maybe we *should* use ownerdraw...
-		SetWindowText(hBtnImport, U82T_c(C_("KeyManagerTab", "I&mport...")));
+		SetWindowText(hBtnImport, TC_("KeyManagerTab", "I&mport..."));
 	}
 
 	// Ensure the images are loaded before initializing the ListView.
@@ -367,7 +367,7 @@ void KeyManagerTabPrivate::initDialog(void)
 	tstring tsColTitle;
 
 	// tr: Column 0: Key Name.
-	tsColTitle = U82T_c(C_("KeyManagerTab", "Key Name"));
+	tsColTitle = TC_("KeyManagerTab", "Key Name");
 	LVCOLUMN lvCol;
 	memset(&lvCol, 0, sizeof(lvCol));
 	lvCol.mask = LVCF_FMT | LVCF_TEXT | LVCF_SUBITEM;
@@ -376,12 +376,12 @@ void KeyManagerTabPrivate::initDialog(void)
 	ListView_InsertColumn(hListView, 0, &lvCol);
 
 	// tr: Column 1: Value.
-	tsColTitle = U82T_c(C_("KeyManagerTab", "Value"));
+	tsColTitle = TC_("KeyManagerTab", "Value");
 	lvCol.pszText = const_cast<LPTSTR>(tsColTitle.c_str());
 	ListView_InsertColumn(hListView, 1, &lvCol);
 
 	// tr: Column 2: Verification status.
-	tsColTitle = U82T_c(C_("KeyManagerTab", "Valid?"));
+	tsColTitle = TC_("KeyManagerTab", "Valid?");
 	lvCol.pszText = const_cast<LPTSTR>(tsColTitle.c_str());
 	ListView_InsertColumn(hListView, 2, &lvCol);
 
@@ -1590,29 +1590,29 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 	switch (iret.status) {
 		case KeyStoreUI::ImportStatus::InvalidParams:
 		default:
-			msg = LibWin32UI::unix2dos(U82T_s(C_("KeyManagerTab",
+			msg = LibWin32UI::unix2dos(TC_("KeyManagerTab",
 				"An invalid parameter was passed to the key importer.\n"
-				"THIS IS A BUG; please report this to the developers!")));
+				"THIS IS A BUG; please report this to the developers!"));
 			type = MB_ICONSTOP;
 			break;
 
 		case KeyStoreUI::ImportStatus::UnknownKeyID:
-			msg = LibWin32UI::unix2dos(U82T_s(C_("KeyManagerTab",
+			msg = LibWin32UI::unix2dos(TC_("KeyManagerTab",
 				"An unknown key ID was passed to the key importer.\n"
-				"THIS IS A BUG; please report this to the developers!")));
+				"THIS IS A BUG; please report this to the developers!"));
 			type = MB_ICONSTOP;
 			break;
 
 		case KeyStoreUI::ImportStatus::OpenError:
 			if (iret.error_code != 0) {
 				// tr: %1$s == filename, %2$s == error message
-				msg = rp_stprintf_p(U82T_c(C_("KeyManagerTab",
-					"An error occurred while opening '%1$s': %2$s")),
+				msg = rp_stprintf_p(TC_("KeyManagerTab",
+					"An error occurred while opening '%1$s': %2$s"),
 					fileNoPath.c_str(), _wcserror(iret.error_code));
 			} else {
 				// tr: %s == filename
-				msg = rp_stprintf(U82T_c(C_("KeyManagerTab",
-					"An error occurred while opening '%s'.")),
+				msg = rp_stprintf(TC_("KeyManagerTab",
+					"An error occurred while opening '%s'."),
 					fileNoPath.c_str());
 			}
 			type = MB_ICONSTOP;
@@ -1622,13 +1622,13 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 			// TODO: Error code for short reads.
 			if (iret.error_code != 0) {
 				// tr: %1$s == filename, %2$s == error message
-				msg = rp_stprintf_p(U82T_c(C_("KeyManagerTab",
-					"An error occurred while reading '%1$s': %2$s")),
+				msg = rp_stprintf_p(TC_("KeyManagerTab",
+					"An error occurred while reading '%1$s': %2$s"),
 					fileNoPath, _wcserror(iret.error_code));
 			} else {
 				// tr: %s == filename
-				msg = rp_stprintf(U82T_c(C_("KeyManagerTab",
-					"An error occurred while reading '%s'.")),
+				msg = rp_stprintf(TC_("KeyManagerTab",
+					"An error occurred while reading '%s'."),
 					fileNoPath.c_str());
 			}
 			type = MB_ICONSTOP;
@@ -1636,16 +1636,16 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 
 		case KeyStoreUI::ImportStatus::InvalidFile:
 			// tr: %1$s == filename, %2$s == type of file
-			msg = rp_stprintf_p(U82T_c(C_("KeyManagerTab",
-				"The file '%1$s' is not a valid %2$s file.")),
+			msg = rp_stprintf_p(TC_("KeyManagerTab",
+				"The file '%1$s' is not a valid %2$s file."),
 				fileNoPath.c_str(), keyType);
 			type = MB_ICONWARNING;
 			break;
 
 		case KeyStoreUI::ImportStatus::NoKeysImported:
 			// tr: %s == filename
-			msg = rp_stprintf(U82T_c(C_("KeyManagerTab",
-				"No keys were imported from '%s'.")),
+			msg = rp_stprintf(TC_("KeyManagerTab",
+				"No keys were imported from '%s'."),
 				fileNoPath.c_str());
 			type = MB_ICONINFORMATION;
 			showKeyStats = true;
@@ -1655,10 +1655,10 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 			const unsigned int keyCount = iret.keysImportedVerify + iret.keysImportedNoVerify;
 			toss << keyCount;
 			// tr: %1$s == number of keys (formatted), %2$u == filename
-			msg = rp_stprintf_p(U82T_c(NC_("KeyManagerTab",
+			msg = rp_stprintf_p(TNC_("KeyManagerTab",
 				"%1$s key was imported from '%2$s'.",
 				"%1$s keys were imported from '%2$s'.",
-				keyCount)),
+				keyCount),
 				toss.str().c_str(), fileNoPath.c_str());
 			type = MB_ICONINFORMATION;
 			showKeyStats = true;
@@ -1681,10 +1681,10 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 			toss << iret.keysExist;
 			msg += nl_bullet;
 			// tr: %s == number of keys (formatted)
-			msg += rp_stprintf(U82T_c(NC_("KeyManagerTab",
+			msg += rp_stprintf(TNC_("KeyManagerTab",
 				"%s key already exists in the Key Manager.",
 				"%s keys already exist in the Key Manager.",
-				iret.keysExist)),
+				iret.keysExist),
 				toss.str().c_str());
 		}
 		if (iret.keysInvalid > 0) {
@@ -1693,10 +1693,10 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 			toss << iret.keysInvalid;
 			msg += nl_bullet;
 			// tr: %s == number of keys (formatted)
-			msg += rp_stprintf(U82T_c(NC_("KeyManagerTab",
+			msg += rp_stprintf(TNC_("KeyManagerTab",
 				"%s key was not imported because it is incorrect.",
 				"%s keys were not imported because they are incorrect.",
-				iret.keysInvalid)),
+				iret.keysInvalid),
 				toss.str().c_str());
 		}
 		if (iret.keysNotUsed > 0) {
@@ -1705,10 +1705,10 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 			toss << iret.keysNotUsed;
 			msg += nl_bullet;
 			// tr: %s == number of keys (formatted)
-			msg += rp_stprintf(U82T_c(NC_("KeyManagerTab",
+			msg += rp_stprintf(TNC_("KeyManagerTab",
 				"%s key was not imported because it isn't used by rom-properties.",
 				"%s keys were not imported because they aren't used by rom-properties.",
-				iret.keysNotUsed)),
+				iret.keysNotUsed),
 				toss.str().c_str());
 		}
 		if (iret.keysCantDecrypt > 0) {
@@ -1717,10 +1717,10 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 			toss << iret.keysCantDecrypt;
 			msg += nl_bullet;
 			// tr: %s == number of keys (formatted)
-			msg += rp_stprintf(U82T_c(NC_("KeyManagerTab",
+			msg += rp_stprintf(TNC_("KeyManagerTab",
 				"%s key was not imported because it is encrypted and the master key isn't available.",
 				"%s keys were not imported because they are encrypted and the master key isn't available.",
-				iret.keysCantDecrypt)),
+				iret.keysCantDecrypt),
 				toss.str().c_str());
 		}
 		if (iret.keysImportedVerify > 0) {
@@ -1729,10 +1729,10 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 			toss << iret.keysImportedVerify;
 			msg += nl_bullet;
 			// tr: %s == number of keys (formatted)
-			msg += rp_stprintf(U82T_c(NC_("KeyManagerTab",
+			msg += rp_stprintf(TNC_("KeyManagerTab",
 				"%s key has been imported and verified as correct.",
 				"%s keys have been imported and verified as correct.",
-				iret.keysImportedVerify)),
+				iret.keysImportedVerify),
 				toss.str().c_str());
 		}
 		if (iret.keysImportedNoVerify > 0) {
@@ -1740,10 +1740,10 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 			toss.clear();
 			toss << iret.keysImportedVerify;
 			msg += nl_bullet;
-			msg += rp_stprintf(U82T_c(NC_("KeyManagerTab",
+			msg += rp_stprintf(TNC_("KeyManagerTab",
 				"%s key has been imported without verification.",
 				"%s keys have been imported without verification.",
-				iret.keysImportedNoVerify)),
+				iret.keysImportedNoVerify),
 				toss.str().c_str());
 		}
 	}
@@ -1816,6 +1816,10 @@ void KeyManagerTabPrivate::importKeysFromBin(KeyStoreUI::ImportFileID id)
 	    id > KeyStoreUI::ImportFileID::N3DSaeskeydb)
 		return;
 
+	assert(hWndPropSheet != nullptr);
+	if (!hWndPropSheet)
+		return;
+
 	static constexpr char dialog_titles_tbl[][32] = {
 		// tr: Wii keys.bin dialog title
 		NOP_C_("KeyManagerTab", "Select Wii keys.bin File"),
@@ -1838,15 +1842,10 @@ void KeyManagerTabPrivate::importKeysFromBin(KeyStoreUI::ImportFileID id)
 		NOP_C_("KeyManagerTab", "aeskeydb.bin|aeskeydb.bin|-|Binary Files|*.bin|-|All Files|*|-"),
 	};
 
-	const char *const s_title = pgettext_expr("KeyManagerTab", dialog_titles_tbl[(int)id]);
-	const char *const s_filter = pgettext_expr("KeyManagerTab", file_filters_tbl[(int)id]);
-
-	assert(hWndPropSheet != nullptr);
-	if (!hWndPropSheet)
-		return;
-
 	const tstring tfilename = LibWin32UI::getOpenFileName(hWndPropSheet,
-		U82T_c(s_title), U82T_c(s_filter), ts_keyFileDir.c_str());
+		tpgettext_expr("KeyManagerTab", dialog_titles_tbl[(int)id]),
+		tpgettext_expr("KeyManagerTab", file_filters_tbl[(int)id]),
+		ts_keyFileDir.c_str());
 	if (tfilename.empty())
 		return;
 
@@ -1886,7 +1885,7 @@ HPROPSHEETPAGE KeyManagerTab::getHPropSheetPage(void)
 	}
 
 	// tr: Tab title.
-	const tstring tsTabTitle = U82T_c(C_("KeyManagerTab", "Key Manager"));
+	const tstring tsTabTitle = TC_("KeyManagerTab", "Key Manager");
 
 	PROPSHEETPAGE psp;
 	psp.dwSize = sizeof(psp);

@@ -1007,7 +1007,7 @@ int RP_ShellPropSheetExt_Private::initListData(_In_ HWND hWndTab,
 					tstr = formatDateTime(time_string.time,
 						listDataDesc.col_attrs.dtflags);
 					if (unlikely(tstr.empty())) {
-						tstr = U82T_c(C_("RomData", "Unknown"));
+						tstr = TC_("RomData", "Unknown");
 					}
 				} else {
 					tstr = U82T_s(data_str);
@@ -1278,7 +1278,7 @@ int RP_ShellPropSheetExt_Private::initDateTime(_In_ HWND hWndTab,
 	if (field.data.date_time == -1) {
 		// Invalid date/time.
 		return initString(hWndTab, pt_start, size, field, fieldIdx,
-			U82T_c(C_("RomDataView", "Unknown")));
+			TC_("RomDataView", "Unknown"));
 	}
 
 	// Format the date/time.
@@ -1286,7 +1286,7 @@ int RP_ShellPropSheetExt_Private::initDateTime(_In_ HWND hWndTab,
 
 	// Initialize the string.
 	return initString(hWndTab, pt_start, size, field, fieldIdx,
-		(likely(!dateTimeStr.empty()) ? dateTimeStr.c_str() : U82T_c(C_("RomDataView", "Unknown"))));
+		(likely(!dateTimeStr.empty()) ? dateTimeStr.c_str() : TC_("RomDataView", "Unknown")));
 }
 
 /**
@@ -1308,7 +1308,7 @@ int RP_ShellPropSheetExt_Private::initAgeRatings(_In_ HWND hWndTab,
 	if (!age_ratings) {
 		// No age ratings data.
 		return initString(hWndTab, pt_start, size, field, fieldIdx,
-			U82T_c(C_("RomDataView", "ERROR")));
+			TC_("RomDataView", "ERROR"));
 	}
 
 	// Convert the age ratings field to a string.
@@ -1508,7 +1508,7 @@ void RP_ShellPropSheetExt_Private::updateMulti(uint32_t user_lc)
 						tstr = formatDateTime(time_string.time,
 							listDataDesc.col_attrs.dtflags);
 						if (unlikely(tstr.empty())) {
-							tstr = U82T_c(C_("RomData", "Unknown"));
+							tstr = TC_("RomData", "Unknown");
 						}
 					} else {
 						tstr = U82T_s(*iter_sdr);
@@ -2281,7 +2281,7 @@ IFACEMETHODIMP RP_ShellPropSheetExt::AddPages(_In_ LPFNADDPROPSHEETPAGE pfnAddPa
 	}
 
 	// tr: Tab title.
-	const tstring tsTabTitle = U82T_c(C_("RomDataView", "ROM Properties"));
+	const tstring tsTabTitle = TC_("RomDataView", "ROM Properties");
 
 	// Create a property sheet page.
 	PROPSHEETPAGE psp;

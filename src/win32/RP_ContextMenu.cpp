@@ -479,7 +479,7 @@ IFACEMETHODIMP RP_ContextMenu::QueryContextMenu(_In_ HMENU hMenu, _In_ UINT inde
 	HBITMAP hbmPng = d->getPngIcon();
 
 	// Menu item text
-	const tstring ts_text = U82T_c(C_("ServiceMenu", "Convert to PNG"));
+	const tstring ts_text = TC_("ServiceMenu", "Convert to PNG");
 
 	// Add "Convert to PNG".
 	// TODO: Verify that it can be converted to PNG first.

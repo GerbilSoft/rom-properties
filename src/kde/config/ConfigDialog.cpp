@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE)                              *
  * ConfigDialog.cpp: Configuration dialog.                                 *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -76,7 +76,7 @@ ConfigDialogPrivate::ConfigDialogPrivate(ConfigDialog* q)
 void ConfigDialogPrivate::retranslateUi_nonDesigner(void)
 {
 	ui.tabWidget->setTabText(ui.tabWidget->indexOf(tabKeyManager),
-		U82Q(C_("ConfigDialog", "&Key Manager")));
+		QC_("ConfigDialog", "&Key Manager"));
 }
 #endif /* ENABLE_DECRYPTION */
 

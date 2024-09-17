@@ -121,6 +121,6 @@ RomPropertiesDialogPlugin::RomPropertiesDialogPlugin(QObject *parent, const QVar
 	RomDataView *const romDataView = createRomDataView(fileItem, props);
 	if (romDataView) {
 		// tr: RomDataView tab title
-		props->addPage(romDataView, U82Q(C_("RomDataView", "ROM Properties")));
+		props->addPage(romDataView, QC_("RomDataView", "ROM Properties"));
 	}
 }
