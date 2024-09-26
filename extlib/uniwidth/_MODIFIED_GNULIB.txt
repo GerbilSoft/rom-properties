@@ -1,7 +1,7 @@
 This copy of uniwidth is a modified subset of gnulib.
 
-commit c8e351542405558d06af899761b30c3db6409486
-math: More clang -Winclude-next-absolute-path silencing.
+commit 2bbbc32f1527981473ed403d87c7f3ddbb906634
+string-buffer: Enable resource leak warnings from clang.
 
 The following changes have been made to the original:
 
