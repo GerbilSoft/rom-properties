@@ -45,8 +45,13 @@
 
 #include "png.h"
 
+/* This hack was introduced for historical reasons, and we are
+ * still keeping it in libpng-1.6.x for compatibility reasons.
+ */
+#define STDERR stdout
+
 /* Generate a compiler error if there is an old png.h in the search path. */
-typedef png_libpng_version_1_6_43 Your_png_h_is_not_version_1_6_43;
+typedef png_libpng_version_1_6_44 Your_png_h_is_not_version_1_6_44;
 
 /* Ensure that all version numbers in png.h are consistent with one another. */
 #if (PNG_LIBPNG_VER != PNG_LIBPNG_VER_MAJOR * 10000 + \
@@ -102,11 +107,6 @@ typedef png_libpng_version_1_6_43 Your_png_h_is_not_version_1_6_43;
 #ifndef PNG_STDIO_SUPPORTED
 typedef FILE * png_FILE_p;
 #endif
-
-/* This hack was introduced for historical reasons, and we are
- * still keeping it in libpng-1.6.x for compatibility reasons.
- */
-#define STDERR stdout
 
 #ifndef PNG_DEBUG
 #  define PNG_DEBUG 0
@@ -518,9 +518,9 @@ static int maximum_allocation = 0;
 static int total_allocation = 0;
 static int num_allocations = 0;
 
-png_voidp PNGCBAPI png_debug_malloc PNGARG((png_structp png_ptr,
-    png_alloc_size_t size));
-void PNGCBAPI png_debug_free PNGARG((png_structp png_ptr, png_voidp ptr));
+png_voidp PNGCBAPI png_debug_malloc(png_structp png_ptr,
+    png_alloc_size_t size);
+void PNGCBAPI png_debug_free(png_structp png_ptr, png_voidp ptr);
 
 png_voidp
 PNGCBAPI png_debug_malloc(png_structp png_ptr, png_alloc_size_t size)
@@ -1523,6 +1523,7 @@ test_one_file(const char *inname, const char *outname)
             pngtest_debug1("Writing row data for pass %d", pass);
             for (y = 0; y < pass_height; y++)
             {
+#ifndef SINGLE_ROWBUF_ALLOC
                pngtest_debug2("Allocating row buffer (pass %d, y = %u)...", pass, y);
 
                row_buf = (png_bytep)png_malloc(read_ptr,
@@ -1531,6 +1532,7 @@ test_one_file(const char *inname, const char *outname)
                pngtest_debug2("\t0x%08lx (%lu bytes)", (unsigned long)row_buf,
                   (unsigned long)png_get_rowbytes(read_ptr, read_info_ptr));
 
+#endif /* !SINGLE_ROWBUF_ALLOC */
                png_read_rows(read_ptr, (png_bytepp)&row_buf, NULL, 1);
 
 #ifdef PNG_WRITE_SUPPORTED
@@ -1547,9 +1549,11 @@ test_one_file(const char *inname, const char *outname)
 #endif
 #endif /* PNG_WRITE_SUPPORTED */
 
+#ifndef SINGLE_ROWBUF_ALLOC
                pngtest_debug2("Freeing row buffer (pass %d, y = %u)", pass, y);
                png_free(read_ptr, row_buf);
                row_buf = NULL;
+#endif /* !SINGLE_ROWBUF_ALLOC */
             }
          }
 #ifdef PNG_WRITE_APNG_SUPPORTED
