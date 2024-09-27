@@ -1,6 +1,5 @@
 ---
 WarningsAsErrors: false
-AnalyzeTemporaryDtors: false
 HeaderFilterRegex: '.*'
 FormatStyle: none
 
