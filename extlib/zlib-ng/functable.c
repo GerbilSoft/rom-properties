@@ -8,7 +8,6 @@
 
 // rom-properties: MSVC ARM64EC build fails if intrin.h is included here for some reason...
 #if defined(_MSC_VER) && !defined(_M_ARM64EC)
-#if defined(_MSC_VER)
 #  include <intrin.h>
 #endif
 
