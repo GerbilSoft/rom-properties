@@ -73,6 +73,6 @@ BEGIN
 	IDSF_ISR_REGSVR32_FAIL_LOAD, L"فشلت عملية REGSVR32: %s\%s ليست مكتبة ديناميكية صالحة.\0"
 	IDSF_ISR_REGSVR32_FAIL_ENTRY, L"فشلت عملية REGSVR32: %s\%s يفتقد %s().\0"
 	IDSF_ISR_REGSVR32_FAIL_REG, L"فشلت عملية REGSVR32: %s() أرجعت خطأ.\0"
-	IDSF_ISR_REGSVR32_UNKNOWN_EXIT_CODE, L"فشلت عملية REGSVR32: exit code غير معروف: %u\0"
+	IDSF_ISR_REGSVR32_UNKNOWN_EXIT_CODE, L"فشلت عملية REGSVR32: exit code غير معروف: 0x%08X\0"
 	IDSF_ERROR_COULD_NOT_OPEN_URL, L"تعذر فتح عنوان الرابط.\n\nرمز خطأ Win32: %d\0"
 END
