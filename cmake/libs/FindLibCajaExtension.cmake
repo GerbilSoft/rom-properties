@@ -5,6 +5,7 @@
 # - LibCajaExtension_LIBRARIES: libcaja-extension libraries.
 # - LibCajaExtension_DEFINITIONS: Compiler switches required for using libcaja-extension.
 # - LibCajaExtension_EXTENSION_DIR: Extensions directory. (for installation)
+# - LibCajaExtension_EXTENSION_DESC_DIR: Extensions description directory. (for installation)
 #
 # In addition, a target Gnome::libcaja-extension will be created with all of
 # these definitions.
@@ -22,9 +23,13 @@ FIND_LIBRARY_PKG_CONFIG(LibCajaExtension
 	Mate::libcaja-extension				# imported target
 	)
 
-# Extensions directory.
+# Extensions library directory
 IF(LibCajaExtension_FOUND AND NOT LibCajaExtension_EXTENSION_DIR)
 	MESSAGE(WARNING "LibCajaExtension_EXTENSION_DIR is not set; using defaults.")
 	INCLUDE(DirInstallPaths)
 	SET(LibCajaExtension_EXTENSION_DIR "${CMAKE_INSTALL_PREFIX}/${DIR_INSTALL_LIB}/caja/extensions-2.0" CACHE INTERNAL "LibCajaExtension_EXTENSION_DIR")
 ENDIF(LibCajaExtension_FOUND AND NOT LibCajaExtension_EXTENSION_DIR)
+
+# Extensions descriptions directory
+# NOTE: Not in the pkgconfig file.
+SET(LibCajaExtension_EXTENSION_DESC_DIR "${CMAKE_INSTALL_PREFIX}/share/caja/extensions" CACHE INTERNAL "LibCajaExtension_EXTENSION_DESC_DIR")

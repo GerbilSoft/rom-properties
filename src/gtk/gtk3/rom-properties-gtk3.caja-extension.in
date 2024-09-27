@@ -1,0 +1,8 @@
+[Caja Extension]
+Icon=media-flash
+Name=ROM Properties Page shell extension
+Description=Provides a properties page and thumbnails for various ROM image, disc image, and texture file formats.
+Author=David Korth <gerbilsoft@gerbilsoft.com>
+Copyright=Copyright (c) 2016-2024 by David Korth
+Version=@VERSION_STRING@
+Website=https://github.com/GerbilSoft/rom-properties

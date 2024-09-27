@@ -86,6 +86,9 @@ IF(ENABLE_ACHIEVEMENTS)
 	SET(${PROJECT_NAME}-notify_SRCS ${${PROJECT_NAME}-notify_SRCS})
 ENDIF(ENABLE_ACHIEVEMENTS)
 
+# Write the caja-extension file.
+CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/${PROJECT_NAME}.caja-extension.in" "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.caja-extension")
+
 # Sources and headers (GTK3-specific)
 SET(${PROJECT_NAME}_SRCS
 	${${PROJECT_NAME}_SRCS}
@@ -198,6 +201,12 @@ IF(BUILD_GTK3)
 	INSTALL(FILES "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/${PROJECT_NAME}.symlink.so"
 		DESTINATION "${ThunarX3_EXTENSIONS_DIR}"
 		RENAME "${PROJECT_NAME}.so"
+		COMPONENT "plugin"
+		)
+
+	# Install the Caja extension description file.
+	INSTALL(FILES "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.caja-extension"
+		DESTINATION "${LibCajaExtension_EXTENSION_DESC_DIR}"
 		COMPONENT "plugin"
 		)
 
