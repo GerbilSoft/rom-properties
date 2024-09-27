@@ -45,9 +45,9 @@ rp_nemo_name_and_desc_provider_get_name_and_desc(NemoNameAndDescProvider *provid
 	GList *ret = NULL;
 
 	if (RP_IS_NAUTILUS_PROPERTY_PAGE_PROVIDER(provider)) {
-		ret = g_list_append(NULL, g_strdup("RpNautilusPropertyPageProvider:::ROM Properties Page - property page extension"));
+		ret = g_list_append(NULL, g_strdup("ROM Properties Page:::Property page extension"));
 	} else if (RP_IS_NAUTILUS_MENU_PROVIDER(provider)) {
-		ret = g_list_append(NULL, g_strdup("RpNautilusMenuProvider:::ROM Properties Page - menu extension"));
+		ret = g_list_append(NULL, g_strdup("ROM Properties Page:::Menu extension"));
 	} else {
 		assert(!"Not a supported GObject class!");
 	}
