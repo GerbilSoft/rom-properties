@@ -83,6 +83,12 @@ rp_caja_run_config(CajaConfigurable *provider)
 	gtk_widget_set_name(configDialog, "configDialog");
 	gtk_widget_set_visible(configDialog, TRUE);
 
+	// NOTE: Since this is run in the Caja process, it defaults to
+	// the Caja icon. Override it with "media-flash".
+	// TODO: Custom rom-properties icon?
+	// FIXME: Doesn't work on Wayland...
+	gtk_window_set_icon_name(GTK_WINDOW(configDialog), "media-flash");
+
 	// NOTE: We can't access the GtkApplication here, so we'll
 	// have to use the "delete-event" signal instead.
 	g_signal_connect(configDialog, "delete-event", G_CALLBACK(config_dialog_delete_event), NULL);
