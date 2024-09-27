@@ -60,6 +60,11 @@ public:
 	array<QString, 3> columnNames;
 
 	/**
+	 * (Re-)Translate the column names.
+	 */
+	void retranslateUi(void);
+
+	/**
 	 * Cached copy of keyStore->sectCount().
 	 * This value is needed after the KeyStore is destroyed,
 	 * so we need to cache it here, since the destroyed()
@@ -89,14 +94,7 @@ KeyStoreModelPrivate::KeyStoreModelPrivate(KeyStoreModel *q)
 	, keyStore(nullptr)
 	, sectCount(0)
 {
-	// Translate and cache the column names.
-
-	// tr: Column 0: Key Name.
-	columnNames[0] = QC_("KeyManagerTab", "Key Name");
-	// tr: Column 1: Value.
-	columnNames[1] = QC_("KeyManagerTab", "Value");
-	// tr: Column 2: Verification status.
-	columnNames[2] = QC_("KeyManagerTab", "Valid?");
+	retranslateUi();
 }
 
 /**
@@ -131,6 +129,21 @@ void KeyStoreModelPrivate::style_t::init_icons(void)
 				.pixmap(pxmIsValid_size, pxmIsValid_size);
 	pxmIsValid_good    = style->standardIcon(QStyle::SP_DialogApplyButton)
 				.pixmap(pxmIsValid_size, pxmIsValid_size);
+}
+
+/**
+ * (Re-)Translate the column names.
+ */
+void KeyStoreModelPrivate::retranslateUi(void)
+{
+	// Translate and cache the column names.
+
+	// tr: Column 0: Key Name.
+	columnNames[0] = QC_("KeyManagerTab", "Key Name");
+	// tr: Column 1: Value.
+	columnNames[1] = QC_("KeyManagerTab", "Value");
+	// tr: Column 2: Verification status.
+	columnNames[2] = QC_("KeyManagerTab", "Valid?");
 }
 
 /** KeyStoreModel **/
@@ -573,12 +586,26 @@ void KeyStoreModel::keyStore_allKeysChanged_slot(void)
 /** Public slots **/
 
 /**
+ * System language has changed.
+ *
+ * Call this from the parent widget's changeEvent() function
+ * on QEvent::FontChange.
+ */
+void KeyStoreModel::eventLanguageChange(void)
+{
+	Q_D(KeyStoreModel);
+	d->retranslateUi();
+	emit headerDataChanged(Qt::Horizontal, 0, static_cast<int>(d->columnNames.size()-1));
+	// FIXME: Re-translate section names?
+}
+
+/**
  * System font has changed.
  *
  * Call this from the parent widget's changeEvent() function
  * on QEvent::FontChange.
  */
-void KeyStoreModel::systemFontChanged(void)
+void KeyStoreModel::eventFontChange(void)
 {
 	// Reinitialize the fonts.
 	Q_D(KeyStoreModel);
@@ -594,7 +621,7 @@ void KeyStoreModel::systemFontChanged(void)
  * Call this from the parent widget's changeEvent() function
  * on QEvent::PaletteChange.
  */
-void KeyStoreModel::systemPaletteChanged(void)
+void KeyStoreModel::eventPaletteChange(void)
 {
 	// Reinitialize the icons.
 	Q_D(KeyStoreModel);

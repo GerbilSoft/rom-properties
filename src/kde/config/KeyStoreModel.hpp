@@ -93,14 +93,28 @@ private slots:
 	 */
 	void keyStore_allKeysChanged_slot(void);
 
-public slots:
+public:
+	/**
+	 * KeyStoreModel derives from QObject, not QWidget, so it doesn't
+	 * have QWidget::changeEvent(). These functions should be called
+	 * by the owner's QWidget::changeEvent() function.
+	 */
+
+	/**
+	 * System language has changed.
+	 *
+	 * Call this from the parent widget's changeEvent() function
+	 * on QEvent::FontChange.
+	 */
+	void eventLanguageChange(void);
+
 	/**
 	 * System font has changed.
 	 *
 	 * Call this from the parent widget's changeEvent() function
 	 * on QEvent::FontChange.
 	 */
-	void systemFontChanged(void);
+	void eventFontChange(void);
 
 	/**
 	 * System color scheme has changed.
@@ -109,5 +123,5 @@ public slots:
 	 * Call this from the parent widget's changeEvent() function
 	 * on QEvent::PaletteChange.
 	 */
-	void systemPaletteChanged(void);
+	void eventPaletteChange(void);
 };
