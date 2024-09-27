@@ -73,6 +73,6 @@ BEGIN
 	IDSF_ISR_REGSVR32_FAIL_LOAD, L"REGSVR32 a eșuat: %s\\%s nu este un DLL.\0"
 	IDSF_ISR_REGSVR32_FAIL_ENTRY, L"REGSVR32 nu a reușit: %s\\%s lipsește %s().\0"
 	IDSF_ISR_REGSVR32_FAIL_REG, L"REGSVR32 nu a reușit: %s() a returnat o eroare.\0"
-	IDSF_ISR_REGSVR32_UNKNOWN_EXIT_CODE, L"REGSVR32 a esuat: Cod de iesire necunoscut: %u\0"
+	IDSF_ISR_REGSVR32_UNKNOWN_EXIT_CODE, L"REGSVR32 a esuat: Cod de iesire necunoscut: 0x%08X\0"
 	IDSF_ERROR_COULD_NOT_OPEN_URL, L"Adresa URL nu a putut fi deschisă.\n\ncodul de eroare Win32: %d\0"
 END
