@@ -73,6 +73,6 @@ BEGIN
 	IDSF_ISR_REGSVR32_FAIL_LOAD, L"REGSVR32 non riuscito: %s\\%s non è una DLL valida.\0"
 	IDSF_ISR_REGSVR32_FAIL_ENTRY, L"REGSVR32 non riuscito: A %s\\%s manca %s().\0"
 	IDSF_ISR_REGSVR32_FAIL_REG, L"REGSVR32 non riuscito: %s() ha restituito un errore.\0"
-	IDSF_ISR_REGSVR32_UNKNOWN_EXIT_CODE, L"REGSVR32 non riuscito: Codice di uscita sconosciuto: %u\0"
+	IDSF_ISR_REGSVR32_UNKNOWN_EXIT_CODE, L"REGSVR32 non riuscito: Codice di uscita sconosciuto: 0x%08X\0"
 	IDSF_ERROR_COULD_NOT_OPEN_URL, L"Impossibile aprire l'URL.\n\nCodice di errore Win32: %d\0"
 END
