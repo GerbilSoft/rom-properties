@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpfile)                        *
  * RelatedFile.hpp: Open a related file.                                   *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -79,7 +79,7 @@ IRpFile *openRelatedFile_rawptr(const char *filename, const char *basename, cons
 	// Check for uppercase extensions first.
 	string s_ext = ext;
 	std::transform(s_ext.begin(), s_ext.end(), s_ext.begin(),
-		[](unsigned char c) noexcept -> char { return std::toupper(c); });
+		[](char c) noexcept -> char { return std::toupper(c); });
 
 	// Attempt to open the related file.
 	string s_rel_filename = s_dir + s_basename + s_ext;
@@ -90,7 +90,7 @@ IRpFile *openRelatedFile_rawptr(const char *filename, const char *basename, cons
 
 		// Try again with a lowercase extension.
 		std::transform(s_ext.begin(), s_ext.end(), s_ext.begin(),
-			[](unsigned char c) noexcept -> char { return std::tolower(c); });
+			[](char c) noexcept -> char { return std::tolower(c); });
 		s_rel_filename.replace(s_rel_filename.size() - s_ext.size(), s_ext.size(), s_ext);
 		test_file = new RpFile(s_rel_filename, RpFile::FM_OPEN_READ);
 		if (!test_file->isOpen()) {
