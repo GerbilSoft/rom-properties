@@ -20,11 +20,11 @@ class PartitionFile final : public LibRpFile::IRpFile
 		 * Open a file from an IPartition.
 		 * NOTE: These files are read-only.
 		 *
-		 * @param partition	[in] IPartition (or IDiscReader) object.
-		 * @param offset	[in] File starting offset.
-		 * @param size		[in] File size.
+		 * @param partition	[in] IPartition (or IDiscReader) object
+		 * @param offset	[in] File starting offset
+		 * @param size		[in] File size
 		 */
-		PartitionFile(IDiscReaderPtr partition, off64_t offset, off64_t size);
+		PartitionFile(const IDiscReaderPtr& partition, off64_t offset, off64_t size);
 	public:
 		~PartitionFile() final = default;
 

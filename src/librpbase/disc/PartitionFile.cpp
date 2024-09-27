@@ -18,11 +18,11 @@ namespace LibRpBase {
  * Open a file from an IPartition.
  * NOTE: These files are read-only.
  *
- * @param partition	[in] IPartition (or IDiscReader) object.
- * @param offset	[in] File starting offset.
- * @param size		[in] File size.
+ * @param partition	[in] IPartition (or IDiscReader) object
+ * @param offset	[in] File starting offset
+ * @param size		[in] File size
  */
-PartitionFile::PartitionFile(IDiscReaderPtr partition, off64_t offset, off64_t size)
+PartitionFile::PartitionFile(const IDiscReaderPtr& partition, off64_t offset, off64_t size)
 	: super()
 	, m_partition(partition)
 	, m_offset(offset)
