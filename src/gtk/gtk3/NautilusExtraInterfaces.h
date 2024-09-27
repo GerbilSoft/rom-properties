@@ -17,9 +17,40 @@ G_BEGIN_DECLS
 #if GTK_CHECK_VERSION(3,0,0) && !GTK_CHECK_VERSION(4,0,0)
 // NOTE: We only have extra interfaces in GTK3 right now.
 #  define HAVE_EXTRA_INTERFACES 1
+// Caja is GTK3 only for now.
+#  define HAVE_CAJA_INTERFACES 1
 // Nemo is GTK3 only for now.
 #  define HAVE_NEMO_INTERFACES 1
 #endif /* GTK_CHECK_VERSION(3,0,0) && !GTK_CHECK_VERSION(4,0,0) */
+
+#ifdef HAVE_CAJA_INTERFACES
+// Caja-specific interfaces
+struct _CajaConfigurable;
+typedef struct _CajaConfigurable CajaConfigurable;
+
+/**
+ * CajaConfigurableIface:
+ * @g_iface: The parent interface.
+ * @run: Starts the configuration panel (should use g_dialog_run)
+ *
+ * Interface for extensions to provide additional menu items.
+ */
+
+struct _CajaConfigurableIface {
+	GTypeInterface g_iface;
+
+	void (*run_config) (CajaConfigurable *provider);
+};
+typedef struct _CajaConfigurableIface CajaConfigurableIface;
+
+typedef GType (*PFN_CAJA_CONFIGURABLE_GET_TYPE)(void);
+extern PFN_CAJA_CONFIGURABLE_GET_TYPE pfn_caja_configurable_get_type;
+
+#define CAJA_TYPE_CONFIGURABLE			(pfn_caja_configurable_get_type ())
+#define CAJA_CONFIGURABLE(obj)			(G_TYPE_CHECK_INSTANCE_CAST ((obj), CAJA_TYPE_CONFIGURABLE, CajaConfigurable))
+#define CAJA_IS_CONFIGURABLE(obj)		(G_TYPE_CHECK_INSTANCE_TYPE ((obj), CAJA_TYPE_CONFIGURABLE))
+#define CAJA_CONFIGURABLE_GET_IFACE(obj)	(G_TYPE_INSTANCE_GET_INTERFACE ((obj), CAJA_TYPE_CONFIGURABLE, CajaConfigurableIface))
+#endif /* HAVE_CAJA_INTERFACES */
 
 #ifdef HAVE_NEMO_INTERFACES
 // Nemo-specific interfaces
@@ -46,8 +77,14 @@ extern PFN_NEMO_NAME_AND_DESC_PROVIDER_GET_TYPE pfn_nemo_name_and_desc_provider_
 
 #ifdef HAVE_NEMO_INTERFACES
 /**
- * Initialize Nemo-specific function pointers.
+ * Initialize Caja-specific function pointers.
  * @param libextension_so dlopen()'d handle to libcaja-extension.so.
+ */
+void rp_caja_init(void *libextension_so);
+
+/**
+ * Initialize Nemo-specific function pointers.
+ * @param libextension_so dlopen()'d handle to libnemo-extension.so.
  */
 void rp_nemo_init(void *libextension_so);
 #endif /* HAVE_NEMO_INTERFACES */

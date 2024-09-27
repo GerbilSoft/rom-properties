@@ -107,6 +107,9 @@ caja_module_initialize(GTypeModule *g_module)
 {
 	NAUTILUS_MODULE_INITIALIZE_FUNC_INT(caja);
 
+	// Initialize Caja-specific function pointers.
+	rp_caja_init(libextension_so);
+
 	// Symbols loaded. Register our types
 	rp_nautilus_register_types(g_module);
 }
