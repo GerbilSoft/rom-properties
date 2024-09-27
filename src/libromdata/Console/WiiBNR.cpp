@@ -21,7 +21,6 @@ using namespace LibRpText;
 // C++ STL classes
 using std::array;
 using std::string;
-using std::vector;
 
 // Uninitialized vector class
 #include "uvector.h"

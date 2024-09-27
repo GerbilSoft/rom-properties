@@ -12,9 +12,6 @@
 // librpbase
 using LibRpBase::Config;
 
-// C++ STL classes
-using std::array;
-
 #include "ui_OptionsTab.h"
 class OptionsTabPrivate
 {

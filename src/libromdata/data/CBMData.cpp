@@ -9,9 +9,6 @@
 #include "stdafx.h"
 #include "CBMData.hpp"
 
-// C++ STL classes
-using std::array;
-
 namespace LibRomData { namespace CBMData {
 
 // Cartridge types are synchronized with VICE 3.8.

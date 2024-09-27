@@ -22,9 +22,6 @@
 using namespace LibRpBase;
 using namespace LibRpFile;
 
-// C++ STL classes
-using std::unique_ptr;
-
 namespace LibRomData {
 
 class WiiUH3ReaderPrivate final

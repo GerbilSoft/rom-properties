@@ -26,7 +26,6 @@ using namespace LibRpFile;
 
 // C++ STL classes
 using std::string;
-using std::unique_ptr;
 
 /**
  * Factory method for ThumbCreator. (KDE4/KF5 only; dropped in KF6)
