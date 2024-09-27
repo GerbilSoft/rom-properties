@@ -21,11 +21,17 @@
 #else /* !GTK_CHECK_VERSION(4,0,0) */
 #  include "NautilusPlugin.hpp"
 #  include "nautilus-extension-mini.h"
+#  define HAVE_NEMO_INTERFACE 1
 #endif /* GTK_CHECK_VERSION(4,0,0) */
 
 static GQuark rp_item_convert_to_png_quark;
 
-static void   rp_nautilus_menu_provider_page_provider_init	(NautilusMenuProviderInterface *iface);
+static void	rp_nautilus_menu_provider_page_provider_init		(NautilusMenuProviderInterface *iface);
+
+#ifdef HAVE_NEMO_INTERFACE
+static void	rp_nemo_name_and_desc_provider_init			(NemoNameAndDescProviderInterface *iface);
+static GList*	rp_nemo_name_and_desc_provider_get_name_and_desc	(NemoNameAndDescProvider *provider);
+#endif /* !HAVE_NEMO_INTERFACE */
 
 static GList *rp_nautilus_menu_provider_get_file_items(
 	NautilusMenuProvider *provider,
@@ -54,8 +60,11 @@ struct _RpNautilusMenuProvider {
 // due to an implicit int to GTypeFlags conversion.
 G_DEFINE_DYNAMIC_TYPE_EXTENDED(RpNautilusMenuProvider, rp_nautilus_menu_provider,
 	G_TYPE_OBJECT, (GTypeFlags)0,
-	G_IMPLEMENT_INTERFACE_DYNAMIC(NAUTILUS_TYPE_MENU_PROVIDER,
-		rp_nautilus_menu_provider_page_provider_init));
+	G_IMPLEMENT_INTERFACE_DYNAMIC(NAUTILUS_TYPE_MENU_PROVIDER, rp_nautilus_menu_provider_page_provider_init)
+#ifdef HAVE_NEMO_INTERFACE
+	G_IMPLEMENT_INTERFACE_DYNAMIC(NEMO_TYPE_NAME_AND_DESC_PROVIDER, rp_nemo_name_and_desc_provider_init)
+#endif /* HAVE_NEMO_INTERFACE */
+);
 
 #if !GLIB_CHECK_VERSION(2,59,1)
 #  if defined(__GNUC__) && __GNUC__ > 8
@@ -95,6 +104,14 @@ rp_nautilus_menu_provider_page_provider_init(NautilusMenuProviderInterface *ifac
 {
 	iface->get_file_items = rp_nautilus_menu_provider_get_file_items;
 }
+
+#ifdef HAVE_NEMO_INTERFACE
+static void
+rp_nemo_name_and_desc_provider_init(NemoNameAndDescProviderInterface *iface)
+{
+	iface->get_name_and_desc = rp_nemo_name_and_desc_provider_get_name_and_desc;
+}
+#endif /* HAVE_NEMO_INTERFACE */
 
 static gpointer
 rp_item_convert_to_png_ThreadFunc(GList *files)
@@ -199,3 +216,13 @@ rp_nautilus_menu_provider_get_file_items(
 		g_cclosure_new_object(G_CALLBACK(rp_item_convert_to_png), G_OBJECT(item)), TRUE);
 	return g_list_prepend(NULL, item);
 }
+
+#ifdef HAVE_NEMO_INTERFACE
+static GList*
+rp_nemo_name_and_desc_provider_get_name_and_desc(NemoNameAndDescProvider *provider)
+{
+	RP_UNUSED(provider);
+	g_return_val_if_fail(RP_IS_NAUTILUS_MENU_PROVIDER(provider), NULL);
+	return g_list_append(NULL, g_strdup("RpNautilusMenuProvider:::ROM Properties Page - menu extension"));
+}
+#endif /* HAVE_NEMO_INTERFACE */

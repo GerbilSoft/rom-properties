@@ -102,4 +102,16 @@ extern PFN_NAUTILUS_PROPERTY_PAGE_NEW			pfn_nautilus_property_page_new;
 #define NAUTILUS_IS_PROPERTY_PAGE_PROVIDER(obj)		(G_TYPE_CHECK_INSTANCE_TYPE((obj), NAUTILUS_TYPE_PROPERTY_PAGE_PROVIDER))
 #define NAUTILUS_PROPERTY_PAGE_PROVIDER_GET_IFACE(obj)	(G_TYPE_INSTANCE_GET_INTERFACE((obj),  NAUTILUS_TYPE_PROPERTY_PAGE_PROVIDER, NautilusPropertyPageProviderInterface))
 
+// Nemo-specific interfaces
+struct _NemoNameAndDescProvider;
+typedef struct _NemoNameAndDescProvider NemoNameAndDescProvider;
+
+typedef GType (*PFN_NEMO_NAME_AND_DESC_PROVIDER_GET_TYPE)(void);
+extern PFN_NEMO_NAME_AND_DESC_PROVIDER_GET_TYPE pfn_nemo_name_and_desc_provider_get_type;
+
+#define NEMO_TYPE_NAME_AND_DESC_PROVIDER		(pfn_nemo_name_and_desc_provider_get_type ())
+#define NEMO_NAME_AND_DESC_PROVIDER(obj)		(G_TYPE_CHECK_INSTANCE_CAST((obj), NEMO_TYPE_NAME_AND_DESC_PROVIDER, NemoNameAndDescProvider))
+#define NEMO_IS_NAME_AND_DESC_PROVIDER(obj)		(G_TYPE_CHECK_INSTANCE_TYPE((obj), NEMO_TYPE_NAME_AND_DESC_PROVIDER))
+#define NEMO_NAME_AND_DESC_PROVIDER_GET_IFACE(obj)	(G_TYPE_INSTANCE_GET_INTERFACE((obj),  NEMO_TYPE_NAME_AND_DESC_PROVIDER, NemoNameAndDescProviderInterface))
+
 G_END_DECLS;

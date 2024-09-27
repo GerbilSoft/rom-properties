@@ -36,6 +36,9 @@ static GList *rp_nautilus_property_page_provider_get_pages		(NautilusPropertyPag
 									 GList					*files)
 									G_GNUC_MALLOC G_GNUC_WARN_UNUSED_RESULT;
 
+static void	rp_nemo_name_and_desc_provider_init			(NemoNameAndDescProviderInterface *iface);
+static GList*	rp_nemo_name_and_desc_provider_get_name_and_desc	(NemoNameAndDescProvider *provider);
+
 struct _RpNautilusPropertyPageProviderClass {
 	GObjectClass __parent__;
 };
@@ -56,8 +59,9 @@ struct _RpNautilusPropertyPageProvider {
 // due to an implicit int to GTypeFlags conversion.
 G_DEFINE_DYNAMIC_TYPE_EXTENDED(RpNautilusPropertyPageProvider, rp_nautilus_property_page_provider,
 	G_TYPE_OBJECT, 0,
-	G_IMPLEMENT_INTERFACE_DYNAMIC(NAUTILUS_TYPE_PROPERTY_PAGE_PROVIDER,
-		rp_nautilus_property_page_provider_page_provider_init));
+	G_IMPLEMENT_INTERFACE_DYNAMIC(NAUTILUS_TYPE_PROPERTY_PAGE_PROVIDER, rp_nautilus_property_page_provider_page_provider_init)
+	G_IMPLEMENT_INTERFACE_DYNAMIC(NEMO_TYPE_NAME_AND_DESC_PROVIDER, rp_nemo_name_and_desc_provider_init)
+);
 
 #if !GLIB_CHECK_VERSION(2,59,1)
 #  if defined(__GNUC__) && __GNUC__ > 8
@@ -93,6 +97,12 @@ static void
 rp_nautilus_property_page_provider_page_provider_init(NautilusPropertyPageProviderInterface *iface)
 {
 	iface->get_pages = rp_nautilus_property_page_provider_get_pages;
+}
+
+static void
+rp_nemo_name_and_desc_provider_init(NemoNameAndDescProviderInterface *iface)
+{
+	iface->get_name_and_desc = rp_nemo_name_and_desc_provider_get_name_and_desc;
 }
 
 /**
@@ -197,4 +207,12 @@ rp_nautilus_property_page_provider_get_pages(NautilusPropertyPageProvider *provi
 
 	g_free(uri);
 	return list;
+}
+
+static GList*
+rp_nemo_name_and_desc_provider_get_name_and_desc(NemoNameAndDescProvider *provider)
+{
+	RP_UNUSED(provider);
+	g_return_val_if_fail(RP_IS_NAUTILUS_PROPERTY_PAGE_PROVIDER(provider), nullptr);
+	return g_list_append(nullptr, g_strdup("RpNautilusPropertyPageProvider:::ROM Properties Page - property page extension"));
 }

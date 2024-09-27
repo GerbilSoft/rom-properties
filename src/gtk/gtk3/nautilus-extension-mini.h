@@ -39,4 +39,13 @@ struct _NautilusMenuProviderInterface {
 };
 typedef struct _NautilusMenuProviderInterface NautilusMenuProviderInterface;
 
+// Nemo: Name and description provider interface
+// For the plugin manager.
+struct _NemoNameAndDescProviderInterface {
+	GTypeInterface g_iface;
+
+	GList *(*get_name_and_desc) (NemoNameAndDescProvider *provider);
+};
+typedef struct _NemoNameAndDescProviderInterface NemoNameAndDescProviderInterface;
+
 G_END_DECLS
