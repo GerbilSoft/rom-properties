@@ -184,7 +184,8 @@ static RomDataPtr openFromFilenameOrURI(const char *source_file, string &s_uri, 
 	RomDataPtr romData;
 
 	s_uri.clear();
-	const bool enableThumbnailOnNetworkFS = Config::instance()->getBoolConfigOption(Config::BoolConfig::Options_EnableThumbnailOnNetworkFS);
+	const bool enableThumbnailOnNetworkFS =
+		Config::instance()->getBoolConfigOption(Config::BoolConfig::Options_EnableThumbnailOnNetworkFS);
 
 	char *const uri_scheme = g_uri_parse_scheme(source_file);
 	if (uri_scheme != nullptr) {
@@ -207,7 +208,8 @@ static RomDataPtr openFromFilenameOrURI(const char *source_file, string &s_uri, 
 				// File: Open the file and call RomDataFactory::create() with the opened file.
 
 				// Attempt to open the ROM file.
-				const IRpFilePtr file = std::make_shared<RpFile>(source_filename, RpFile::FM_OPEN_READ_GZ);
+				const IRpFilePtr file =
+					std::make_shared<RpFile>(source_filename, RpFile::FM_OPEN_READ_GZ);
 				if (!file) {
 					// Could not open the file.
 					if (p_err) {
@@ -437,7 +439,8 @@ G_MODULE_EXPORT int RP_C_API rp_create_thumbnail2(
 				G_FILE_QUERY_INFO_NONE, nullptr, &error);
 			if (!error) {
 				// Get the modification time.
-				const guint64 mtime = g_file_info_get_attribute_uint64(fi_src, G_FILE_ATTRIBUTE_TIME_MODIFIED);
+				const guint64 mtime =
+					g_file_info_get_attribute_uint64(fi_src, G_FILE_ATTRIBUTE_TIME_MODIFIED);
 				if (mtime > 0) {
 					snprintf(mtime_str, sizeof(mtime_str), "%" PRId64, (int64_t)mtime);
 				}

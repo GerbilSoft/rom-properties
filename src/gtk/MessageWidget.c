@@ -39,20 +39,20 @@ gtk_revealer_transition_type_get_type(void)
 {
 	static gsize static_g_enum_type_id;
 
-	if (g_once_init_enter (&static_g_enum_type_id)) {
+	if (g_once_init_enter(&static_g_enum_type_id)) {
 		static const GEnumValue values[] = {
-			{ GTK_REVEALER_TRANSITION_TYPE_NONE, "GTK_REVEALER_TRANSITION_TYPE_NONE", "None" },
-			{ GTK_REVEALER_TRANSITION_TYPE_CROSSFADE, "GTK_REVEALER_TRANSITION_TYPE_CROSSFADE", "Crossfade" },
-			{ GTK_REVEALER_TRANSITION_TYPE_SLIDE_RIGHT, "GTK_REVEALER_TRANSITION_TYPE_SLIDE_RIGHT", "Right" },
-			{ GTK_REVEALER_TRANSITION_TYPE_SLIDE_LEFT, "GTK_REVEALER_TRANSITION_TYPE_SLIDE_LEFT", "Left" },
-			{ GTK_REVEALER_TRANSITION_TYPE_SLIDE_UP, "GTK_REVEALER_TRANSITION_TYPE_SLIDE_UP", "Up" },
-			{ GTK_REVEALER_TRANSITION_TYPE_SLIDE_DOWN, "GTK_REVEALER_TRANSITION_TYPE_SLIDE_DOWN", "Down" },
-			{ 0, NULL, NULL }
+			{GTK_REVEALER_TRANSITION_TYPE_NONE, "GTK_REVEALER_TRANSITION_TYPE_NONE", "None"},
+			{GTK_REVEALER_TRANSITION_TYPE_CROSSFADE, "GTK_REVEALER_TRANSITION_TYPE_CROSSFADE", "Crossfade"},
+			{GTK_REVEALER_TRANSITION_TYPE_SLIDE_RIGHT, "GTK_REVEALER_TRANSITION_TYPE_SLIDE_RIGHT", "Right"},
+			{GTK_REVEALER_TRANSITION_TYPE_SLIDE_LEFT, "GTK_REVEALER_TRANSITION_TYPE_SLIDE_LEFT", "Left"},
+			{GTK_REVEALER_TRANSITION_TYPE_SLIDE_UP, "GTK_REVEALER_TRANSITION_TYPE_SLIDE_UP", "Up"},
+			{GTK_REVEALER_TRANSITION_TYPE_SLIDE_DOWN, "GTK_REVEALER_TRANSITION_TYPE_SLIDE_DOWN", "Down"},
+			{0, NULL, NULL}
 		};
 
-		GType g_enum_type_id = g_enum_register_static ("GtkRevealerTransitionType", values);
+		GType g_enum_type_id = g_enum_register_static("GtkRevealerTransitionType", values);
 
-		g_once_init_leave (&static_g_enum_type_id, g_enum_type_id);
+		g_once_init_leave(&static_g_enum_type_id, g_enum_type_id);
 	}
 	return static_g_enum_type_id;
 }

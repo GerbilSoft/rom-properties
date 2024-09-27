@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * DragImageTreeView.hpp: Drag & Drop QTreeView subclass.                  *
  *                                                                         *
- * Copyright (c) 2019-2023 by David Korth.                                 *
+ * Copyright (c) 2019-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -16,11 +16,12 @@
 
 class DragImageTreeView : public QTreeView
 {
-Q_OBJECT
+	Q_OBJECT
 
 public:
 	explicit DragImageTreeView(QWidget *parent = nullptr)
-		: super(parent) { }
+		: super(parent)
+	{}
 
 private:
 	typedef QTreeView super;

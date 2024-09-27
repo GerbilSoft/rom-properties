@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * LanguageComboBox.hpp: Language QComboBox subclass.                      *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -19,10 +19,10 @@
 
 class LanguageComboBox : public QComboBox
 {
-Q_OBJECT
+	Q_OBJECT
 
-Q_PROPERTY(uint32_t selectedLC READ selectedLC WRITE setSelectedLC NOTIFY lcChanged)
-Q_PROPERTY(bool forcePAL READ isForcePAL WRITE setForcePAL)
+	Q_PROPERTY(uint32_t selectedLC READ selectedLC WRITE setSelectedLC NOTIFY lcChanged)
+	Q_PROPERTY(bool forcePAL READ isForcePAL WRITE setForcePAL)
 
 public:
 	explicit LanguageComboBox(QWidget *parent = nullptr);

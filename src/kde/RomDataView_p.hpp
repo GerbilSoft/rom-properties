@@ -71,7 +71,10 @@ public:
 		QFormLayout *form;
 		QLabel *lblCredits;
 
-		tab() : vbox(nullptr), form(nullptr), lblCredits(nullptr)
+		tab()
+			: vbox(nullptr)
+			, form(nullptr)
+			, lblCredits(nullptr)
 		{}
 	};
 	std::vector<tab> tabs;

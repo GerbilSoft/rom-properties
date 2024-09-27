@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * OptionsMenuButton.hpp: Options menu button QPushButton subclass.        *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -35,7 +35,7 @@ enum StandardOptionID {
 
 class OptionsMenuButton : public QPushButton
 {
-Q_OBJECT
+	Q_OBJECT
 
 public:
 	explicit OptionsMenuButton(QWidget *parent = nullptr);

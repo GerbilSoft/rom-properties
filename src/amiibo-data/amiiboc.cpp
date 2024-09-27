@@ -43,12 +43,12 @@ static bool verbose = false;
 
 // String table.
 static vector<char> stringTable;
-static unordered_map<string, uint32_t> stringTableMap;		// string table indexes
+static unordered_map<string, uint32_t> stringTableMap; // string table indexes
 
 // amiibo data.
 static AmiiboBinHeader binHeader;
-static vector<uint32_t> charSeriesTable;			// index is char series ID; value is string table offset
-static map<uint16_t, CharTableEntry> charTable;			// key is char ID
+static vector<uint32_t> charSeriesTable;        // index is char series ID; value is string table offset
+static map<uint16_t, CharTableEntry> charTable; // key is char ID
 
 // Character Variant table:
 // key: char ID
@@ -56,8 +56,8 @@ static map<uint16_t, CharTableEntry> charTable;			// key is char ID
 typedef map<uint8_t, CharVariantTableEntry> CharVariantMap;
 static map<uint16_t, CharVariantMap> charVarTable;
 
-static vector<uint32_t> amiiboSeriesTable;			// index is amiibo series ID; value is string table offset
-static vector<AmiiboIDTableEntry> amiiboTable;			// index is amiibo ID
+static vector<uint32_t> amiiboSeriesTable;     // index is amiibo series ID; value is string table offset
+static vector<AmiiboIDTableEntry> amiiboTable; // index is amiibo ID
 
 /**
  * Get the string table offset for the specified string.
@@ -122,27 +122,26 @@ static int set_security_options(void)
 	// Set OS-specific security options.
 	rp_secure_param_t param;
 #if defined(_WIN32)
-	param.bHighSec = 1;	// Disable Win32k syscalls. (NTUser/GDI)
+	param.bHighSec = 1; // Disable Win32k syscalls. (NTUser/GDI)
 #elif defined(HAVE_SECCOMP)
 	static constexpr int syscall_wl[] = {
 		// Syscalls used by amiiboc.
-		SCMP_SYS(close),
-		SCMP_SYS(fstat),     SCMP_SYS(fstat64),		// __GI___fxstat() [printf()]
-		SCMP_SYS(fstatat64), SCMP_SYS(newfstatat),	// Ubuntu 19.10 (32-bit)
-		SCMP_SYS(gettimeofday),	// 32-bit only?
+		SCMP_SYS(close), SCMP_SYS(fstat), SCMP_SYS(fstat64), // __GI___fxstat() [printf()]
+		SCMP_SYS(fstatat64), SCMP_SYS(newfstatat),           // Ubuntu 19.10 (32-bit)
+		SCMP_SYS(gettimeofday),                              // 32-bit only?
 		SCMP_SYS(lseek), SCMP_SYS(_llseek),
-		SCMP_SYS(open),		// Ubuntu 16.04
-		SCMP_SYS(openat),	// glibc-2.31
-#if defined(__SNR_openat2)
-		SCMP_SYS(openat2),	// Linux 5.6
-#elif defined(__NR_openat2)
-		__NR_openat2,		// Linux 5.6
-#endif /* __SNR_openat2 || __NR_openat2 */
+		SCMP_SYS(open),   // Ubuntu 16.04
+		SCMP_SYS(openat), // glibc-2.31
+#  if defined(__SNR_openat2)
+		SCMP_SYS(openat2), // Linux 5.6
+#  elif defined(__NR_openat2)
+		__NR_openat2, // Linux 5.6
+#  endif /* __SNR_openat2 || __NR_openat2 */
 
 		// Ubuntu 16.04: mmap() is used by fgets() for some reason. (glibc-2.23)
 		SCMP_SYS(mmap), SCMP_SYS(mmap2), SCMP_SYS(munmap),
 
-		-1	// End of whitelist
+		-1 // End of whitelist
 	};
 	param.syscall_wl = syscall_wl;
 	param.threading = false;
@@ -187,7 +186,7 @@ int _tmain(int argc, TCHAR *argv[])
 
 	// Initialize the header and tables.
 	memset(&binHeader, 0, sizeof(binHeader));
-	charSeriesTable.reserve(0x3A4/4);
+	charSeriesTable.reserve(0x3A4 / 4);
 	amiiboSeriesTable.reserve(32);
 	amiiboTable.reserve(0x1000);
 
@@ -199,7 +198,7 @@ int _tmain(int argc, TCHAR *argv[])
 	stringTableMap.emplace("", 0);
 
 	// Parse the file.
-	bool foundHeader = false;	// true if we found the header line
+	bool foundHeader = false; // true if we found the header line
 	bool err = false;
 	int line = 1;
 	char buf[256];
@@ -216,10 +215,10 @@ int _tmain(int argc, TCHAR *argv[])
 		}
 		size_t plen = strlen(p);
 		while (plen > 0) {
-			if (!ISSPACE(p[plen-1]))
+			if (!ISSPACE(p[plen - 1]))
 				break;
 
-			p[plen-1] = '\0';
+			p[plen - 1] = '\0';
 			plen--;
 		}
 		if (plen == 0)
@@ -272,7 +271,9 @@ int _tmain(int argc, TCHAR *argv[])
 				err = true;
 				break;
 			} else if (id > 16384) {
-				_ftprintf(stderr, _T("*** ERROR: Line %d: 'CS' command: ID is out of range: %u (0x%04X)\n"), line, id, id);
+				_ftprintf(stderr,
+					_T("*** ERROR: Line %d: 'CS' command: ID is out of range: %u (0x%04X)\n"), line,
+					id, id);
 				err = true;
 				break;
 			}
@@ -280,14 +281,17 @@ int _tmain(int argc, TCHAR *argv[])
 			// Name
 			token = strtok_r(nullptr, ":", &saveptr);
 			if (!token || token[0] == '\0') {
-				_ftprintf(stderr, _T("*** ERROR: Line %d: 'CS' command is missing Name field.\n"), line);
+				_ftprintf(
+					stderr, _T("*** ERROR: Line %d: 'CS' command is missing Name field.\n"), line);
 				err = true;
 				break;
 			}
 
 			// Check if the ID is a multiple of 4.
 			if (id % 4 != 0) {
-				_ftprintf(stderr, _T("*** ERROR: Line %d: 'CS' command has non-multiple-of-4 ID: %u (0x%04X)\n"), line, id, id);
+				_ftprintf(stderr,
+					_T("*** ERROR: Line %d: 'CS' command has non-multiple-of-4 ID: %u (0x%04X)\n"),
+					line, id, id);
 				err = true;
 				break;
 			}
@@ -296,12 +300,14 @@ int _tmain(int argc, TCHAR *argv[])
 			const unsigned int idx = id / 4;
 			if (idx < charSeriesTable.size()) {
 				if (charSeriesTable[idx] != 0) {
-					_ftprintf(stderr, _T("*** ERROR: Line %d: 'CS' command has duplicate ID: %u (0x%04X)\n"), line, id, id);
+					_ftprintf(stderr,
+						_T("*** ERROR: Line %d: 'CS' command has duplicate ID: %u (0x%04X)\n"),
+						line, id, id);
 					err = true;
 					break;
 				}
 			} else {
-				charSeriesTable.resize(idx+1);
+				charSeriesTable.resize(idx + 1);
 			}
 
 			// Add the name to the string table and save the series name.
@@ -327,7 +333,9 @@ int _tmain(int argc, TCHAR *argv[])
 				err = true;
 				break;
 			} else if (id > 0xFFFF) {
-				_ftprintf(stderr, _T("*** ERROR: Line %d: 'C' command: ID is out of range: %u (0x%04X)\n"), line, id, id);
+				_ftprintf(stderr,
+					_T("*** ERROR: Line %d: 'C' command: ID is out of range: %u (0x%04X)\n"), line,
+					id, id);
 				err = true;
 				break;
 			}
@@ -343,7 +351,8 @@ int _tmain(int argc, TCHAR *argv[])
 			// Check if we already have this character.
 			auto iter = charTable.find(id);
 			if (iter != charTable.end()) {
-				_ftprintf(stderr, _T("*** ERROR: Line %d: 'C' command has duplicate ID: %u (0x%04X)\n"), line, id, id);
+				_ftprintf(stderr, _T("*** ERROR: Line %d: 'C' command has duplicate ID: %u (0x%04X)\n"),
+					line, id, id);
 				err = true;
 				break;
 			}
@@ -374,7 +383,9 @@ int _tmain(int argc, TCHAR *argv[])
 				err = true;
 				break;
 			} else if (id > 0xFFFF) {
-				_ftprintf(stderr, _T("*** ERROR: Line %d: 'CV' command: ID is out of range: %u (0x%04X)\n"), line, id, id);
+				_ftprintf(stderr,
+					_T("*** ERROR: Line %d: 'CV' command: ID is out of range: %u (0x%04X)\n"), line,
+					id, id);
 				err = true;
 				break;
 			}
@@ -382,7 +393,8 @@ int _tmain(int argc, TCHAR *argv[])
 			// VarID
 			token = strtok_r(nullptr, ":", &saveptr);
 			if (!token) {
-				_ftprintf(stderr, _T("*** ERROR: Line %d: 'CV' command is missing VarID field.\n"), line);
+				_ftprintf(
+					stderr, _T("*** ERROR: Line %d: 'CV' command is missing VarID field.\n"), line);
 				err = true;
 				break;
 			}
@@ -392,7 +404,9 @@ int _tmain(int argc, TCHAR *argv[])
 				err = true;
 				break;
 			} else if (var_id > 0xFF) {
-				_ftprintf(stderr, _T("*** ERROR: Line %d: 'CV' command: VarID is out of range: %u (0x%04X)\n"), line, var_id, var_id);
+				_ftprintf(stderr,
+					_T("*** ERROR: Line %d: 'CV' command: VarID is out of range: %u (0x%04X)\n"),
+					line, var_id, var_id);
 				err = true;
 				break;
 			}
@@ -400,7 +414,8 @@ int _tmain(int argc, TCHAR *argv[])
 			// Name
 			token = strtok_r(nullptr, ":", &saveptr);
 			if (!token || token[0] == '\0') {
-				_ftprintf(stderr, _T("*** ERROR: Line %d: 'CV' command is missing Name field.\n"), line);
+				_ftprintf(
+					stderr, _T("*** ERROR: Line %d: 'CV' command is missing Name field.\n"), line);
 				err = true;
 				break;
 			}
@@ -408,7 +423,9 @@ int _tmain(int argc, TCHAR *argv[])
 			// Check if this character was set.
 			auto iter = charTable.find(id);
 			if (iter == charTable.end()) {
-				_ftprintf(stderr, _T("*** ERROR: Line %d: 'CV' command has unassigned char ID: %u (0x%04X)\n"), line, id, id);
+				_ftprintf(stderr,
+					_T("*** ERROR: Line %d: 'CV' command has unassigned char ID: %u (0x%04X)\n"),
+					line, id, id);
 				err = true;
 				break;
 			}
@@ -424,7 +441,10 @@ int _tmain(int argc, TCHAR *argv[])
 				pMap = &(iterV->second);
 				auto iterV2 = pMap->find(var_id);
 				if (iterV2 != pMap->end()) {
-					_ftprintf(stderr, _T("*** ERROR: Line %d: 'C' command has duplicate variant ID: %u:%u (0x%04X:0x%02X)\n"), line, id, var_id, id, var_id);
+					_ftprintf(stderr,
+						_T("*** ERROR: Line %d: 'C' command has duplicate variant ID: %u:%u ")
+					        _T("(0x%04X:0x%02X)\n"),
+						line, id, var_id, id, var_id);
 					err = true;
 					break;
 				}
@@ -462,7 +482,9 @@ int _tmain(int argc, TCHAR *argv[])
 				err = true;
 				break;
 			} else if (id > 0xFF) {
-				_ftprintf(stderr, _T("*** ERROR: Line %d: 'AS' command: ID is out of range: %u (0x%02X)\n"), line, id, id);
+				_ftprintf(stderr,
+					_T("*** ERROR: Line %d: 'AS' command: ID is out of range: %u (0x%02X)\n"), line,
+					id, id);
 				err = true;
 				break;
 			}
@@ -470,7 +492,8 @@ int _tmain(int argc, TCHAR *argv[])
 			// Name
 			token = strtok_r(nullptr, ":", &saveptr);
 			if (!token || token[0] == '\0') {
-				_ftprintf(stderr, _T("*** ERROR: Line %d: 'AS' command is missing Name field.\n"), line);
+				_ftprintf(
+					stderr, _T("*** ERROR: Line %d: 'AS' command is missing Name field.\n"), line);
 				err = true;
 				break;
 			}
@@ -478,12 +501,14 @@ int _tmain(int argc, TCHAR *argv[])
 			// Check if we already have this amiibo series.
 			if (id < amiiboSeriesTable.size()) {
 				if (amiiboSeriesTable[id] != 0) {
-					_ftprintf(stderr, _T("*** ERROR: Line %d: 'AS' command has duplicate ID: %u (0x%04X)\n"), line, id, id);
+					_ftprintf(stderr,
+						_T("*** ERROR: Line %d: 'AS' command has duplicate ID: %u (0x%04X)\n"),
+						line, id, id);
 					err = true;
 					break;
 				}
 			} else {
-				amiiboSeriesTable.resize(id+1);
+				amiiboSeriesTable.resize(id + 1);
 			}
 
 			// Add the name to the string table and save the series name.
@@ -509,7 +534,9 @@ int _tmain(int argc, TCHAR *argv[])
 				err = true;
 				break;
 			} else if (id > 0xFFFF) {
-				_ftprintf(stderr, _T("*** ERROR: Line %d: 'A' command: ID is out of range: %u (0x%04X)\n"), line, id, id);
+				_ftprintf(stderr,
+					_T("*** ERROR: Line %d: 'A' command: ID is out of range: %u (0x%04X)\n"), line,
+					id, id);
 				err = true;
 				break;
 			}
@@ -517,17 +544,22 @@ int _tmain(int argc, TCHAR *argv[])
 			// Release No.
 			token = strtok_r(nullptr, ":", &saveptr);
 			if (!token) {
-				_ftprintf(stderr, _T("*** ERROR: Line %d: 'A' command is missing Release No. field.\n"), line);
+				_ftprintf(stderr, _T("*** ERROR: Line %d: 'A' command is missing Release No. field.\n"),
+					line);
 				err = true;
 				break;
 			}
 			const unsigned int release_no = strtoul(token, &endptr, 0);
 			if (*endptr != '\0') {
-				fprintf(stderr, "*** ERROR: Line %d: 'A' command: Invalid Release No. '%s'.\n", line, token);
+				fprintf(stderr, "*** ERROR: Line %d: 'A' command: Invalid Release No. '%s'.\n", line,
+					token);
 				err = true;
 				break;
 			} else if (release_no > 0xFFFF) {
-				_ftprintf(stderr, _T("*** ERROR: Line %d: 'A' command: Release No. is out of range: %u (0x%04X)\n"), line, id, id);
+				_ftprintf(stderr,
+					_T("*** ERROR: Line %d: 'A' command: Release No. is out of range: %u ")
+				        _T("(0x%04X)\n"),
+					line, id, id);
 				err = true;
 				break;
 			}
@@ -545,7 +577,9 @@ int _tmain(int argc, TCHAR *argv[])
 				err = true;
 				break;
 			} else if (wave_no > 0xFF) {
-				_ftprintf(stderr, _T("*** ERROR: Line %d: 'A' command: Wave is out of range: %u (0x%02X)\n"), line, id, id);
+				_ftprintf(stderr,
+					_T("*** ERROR: Line %d: 'A' command: Wave is out of range: %u (0x%02X)\n"),
+					line, id, id);
 				err = true;
 				break;
 			}
@@ -561,12 +595,14 @@ int _tmain(int argc, TCHAR *argv[])
 			// Check if we already have this amiibo.
 			if (id < amiiboTable.size()) {
 				if (amiiboTable[id].name != 0) {
-					_ftprintf(stderr, _T("*** ERROR: Line %d: 'A' command has duplicate ID: %u (0x%04X)\n"), line, id, id);
+					_ftprintf(stderr,
+						_T("*** ERROR: Line %d: 'A' command has duplicate ID: %u (0x%04X)\n"),
+						line, id, id);
 					err = true;
 					break;
 				}
 			} else {
-				amiiboTable.resize(id+1);
+				amiiboTable.resize(id + 1);
 			}
 
 			// Add the name to the string table and save the amiibo.
@@ -576,8 +612,8 @@ int _tmain(int argc, TCHAR *argv[])
 			entry.reserved = 0;
 			entry.name = getStringTableOffset(token);
 			if (verbose) {
-				printf("A: ID=%04X, release_no=%u, wave_no=%u, name=%s, offset=%u\n",
-					id, release_no, wave_no, token, entry.name);
+				printf("A: ID=%04X, release_no=%u, wave_no=%u, name=%s, offset=%u\n", id, release_no,
+					wave_no, token, entry.name);
 			}
 		} else {
 			// Invalid command.
@@ -643,8 +679,8 @@ int _tmain(int argc, TCHAR *argv[])
 #if SYS_BYTEORDER != SYS_LIL_ENDIAN
 		// Byteswap the entry first.
 		CharTableEntry entry = p.second;
-		entry.char_id	= cpu_to_le32(entry.char_id);
-		entry.name	= cpu_to_le32(entry.name);
+		entry.char_id = cpu_to_le32(entry.char_id);
+		entry.name = cpu_to_le32(entry.name);
 		fwrite(&entry, 1, sizeof(entry), f_out);
 #else /* SYS_BYTEORDER == SYS_LIL_ENDIAN */
 		// No byteswap is needed.
@@ -661,8 +697,8 @@ int _tmain(int argc, TCHAR *argv[])
 #if SYS_BYTEORDER != SYS_LIL_ENDIAN
 			// Byteswap the entry first.
 			CharVariantTableEntry entry = q.second;
-			entry.char_id	= cpu_to_le16(entry.char_id);
-			entry.name	= cpu_to_le32(entry.name);
+			entry.char_id = cpu_to_le16(entry.char_id);
+			entry.name = cpu_to_le32(entry.name);
 			fwrite(&entry, 1, sizeof(entry), f_out);
 #else /* SYS_BYTEORDER == SYS_LIL_ENDIAN */
 			// No byteswap is needed.
@@ -693,8 +729,8 @@ int _tmain(int argc, TCHAR *argv[])
 	// Byteswapping is needed, so we have to process each entry.
 	for (const AmiiboIDTableEntry &p : amiiboTable) {
 		AmiiboIDTableEntry entry = p;
-		entry.release_no	= cpu_to_le16(entry.release_no);
-		entry.name		= cpu_to_le32(entry.name);
+		entry.release_no = cpu_to_le16(entry.release_no);
+		entry.name = cpu_to_le32(entry.name);
 		fwrite(&entry, 1, sizeof(entry), f_out);
 	}
 #else /* SYS_BYTEORDER == SYS_LIL_ENDIAN */

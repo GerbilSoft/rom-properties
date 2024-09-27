@@ -60,7 +60,8 @@ bind_listitem_cb(GtkListItemFactory	*factory,
 		return;
 	}
 
-	RpLanguageComboBoxItem *const item = RP_LANGUAGE_COMBO_BOX_ITEM(gtk_list_item_get_item(list_item));
+	RpLanguageComboBoxItem *const item =
+		RP_LANGUAGE_COMBO_BOX_ITEM(gtk_list_item_get_item(list_item));
 	if (!item) {
 		return;
 	}
@@ -135,8 +136,8 @@ rp_language_combo_box_rebuild_icons(struct _RpLanguageComboBox *widget)
 
 	const guint n_items = g_list_model_get_n_items(G_LIST_MODEL(widget->listStore));
 	for (guint i = 0; i < n_items; i++) {
-		RpLanguageComboBoxItem *const item = RP_LANGUAGE_COMBO_BOX_ITEM(
-			g_list_model_get_item(G_LIST_MODEL(widget->listStore), i));
+		RpLanguageComboBoxItem *const item =
+			RP_LANGUAGE_COMBO_BOX_ITEM(g_list_model_get_item(G_LIST_MODEL(widget->listStore), i));
 		assert(item != nullptr);
 		if (!item)
 			continue;
@@ -219,8 +220,8 @@ rp_language_combo_box_get_lcs(RpLanguageComboBox *widget)
 	uint32_t *const p_end = lcs_array + count;
 
 	for (guint i = 0; i < (guint)count && p < p_end; i++) {
-		RpLanguageComboBoxItem *const item = RP_LANGUAGE_COMBO_BOX_ITEM(
-			g_list_model_get_item(G_LIST_MODEL(widget->listStore), i));
+		RpLanguageComboBoxItem *const item =
+			RP_LANGUAGE_COMBO_BOX_ITEM(g_list_model_get_item(G_LIST_MODEL(widget->listStore), i));
 		assert(item != nullptr);
 		if (!item)
 			continue;
@@ -286,8 +287,8 @@ rp_language_combo_box_set_selected_lc(RpLanguageComboBox *widget, uint32_t lc)
 
 		const guint n_items = g_list_model_get_n_items(G_LIST_MODEL(widget->listStore));
 		for (guint i = 0; i < n_items; i++) {
-			RpLanguageComboBoxItem *const item = RP_LANGUAGE_COMBO_BOX_ITEM(
-				g_list_model_get_item(G_LIST_MODEL(widget->listStore), i));
+			RpLanguageComboBoxItem *const item =
+				RP_LANGUAGE_COMBO_BOX_ITEM(g_list_model_get_item(G_LIST_MODEL(widget->listStore), i));
 			assert(item != nullptr);
 			if (!item)
 				continue;

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * DragImageLabel.hpp: Drag & Drop image label.                            *
  *                                                                         *
- * Copyright (c) 2019-2023 by David Korth.                                 *
+ * Copyright (c) 2019-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -25,10 +25,10 @@
 
 class DragImageLabel : public QLabel
 {
-Q_OBJECT
+	Q_OBJECT
 
-Q_PROPERTY(QSize minimumImageSize READ minimumImageSize WRITE setMinimumImageSize)
-Q_PROPERTY(bool ecksBawks READ ecksBawks WRITE setEcksBawks)
+	Q_PROPERTY(QSize minimumImageSize READ minimumImageSize WRITE setMinimumImageSize)
+	Q_PROPERTY(bool ecksBawks READ ecksBawks WRITE setEcksBawks)
 
 // TODO: Adjust minimum image size based on DPI.
 #define DIL_MIN_IMAGE_SIZE 32
@@ -168,8 +168,10 @@ private:
 		anim_vars()
 			: tmrIconAnim(nullptr)
 			, last_frame_number(0)
-			, anim_running(false) { }
-		~anim_vars() {
+			, anim_running(false)
+		{}
+		~anim_vars()
+		{
 			delete tmrIconAnim;
 		}
 	};

@@ -17,10 +17,10 @@
 class RomDataViewPrivate;
 class RomDataView : public QWidget
 {
-Q_OBJECT
+	Q_OBJECT
 
-// FIXME: Not compatible with std::shared_ptr<>.
-//Q_PROPERTY(LibRpBase::RomData* romData READ romData WRITE setRomData NOTIFY romDataChanged)
+	// FIXME: Not compatible with std::shared_ptr<>.
+	//Q_PROPERTY(LibRpBase::RomData* romData READ romData WRITE setRomData NOTIFY romDataChanged)
 
 public:
 	explicit RomDataView(QWidget *parent = nullptr);

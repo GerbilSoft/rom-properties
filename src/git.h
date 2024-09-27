@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * git.h: Git version macros.                                              *
  *                                                                         *
- * Copyright (c) 2008-2023 by David Korth.                                 *
+ * Copyright (c) 2008-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -18,7 +18,7 @@
 #    ifdef GIT_SHAID
 #      define RP_GIT_TMP_SHAID "/" GIT_SHAID
 #    else /* !GIT_SHAID */
-#       define RP_GIT_TMP_SHAID
+#      define RP_GIT_TMP_SHAID
 #    endif /* GIT_SHAID */
 #  else /* !GIT_BRANCH */
 #    define RP_GIT_TMP_BRANCH

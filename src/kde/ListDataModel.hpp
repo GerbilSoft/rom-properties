@@ -21,11 +21,11 @@
 class ListDataModelPrivate;
 class ListDataModel : public QAbstractListModel
 {
-Q_OBJECT
-typedef QAbstractListModel super;
+	Q_OBJECT
+	typedef QAbstractListModel super;
 
-Q_PROPERTY(uint32_t lc READ lc WRITE setLC NOTIFY lcChanged)
-Q_PROPERTY(QSize iconSize READ iconSize WRITE setIconSize NOTIFY iconSizeChanged)
+	Q_PROPERTY(uint32_t lc READ lc WRITE setLC NOTIFY lcChanged)
+	Q_PROPERTY(QSize iconSize READ iconSize WRITE setIconSize NOTIFY iconSizeChanged)
 
 public:
 	explicit ListDataModel(QObject *parent = nullptr);
