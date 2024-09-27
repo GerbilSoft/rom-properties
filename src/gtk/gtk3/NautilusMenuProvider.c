@@ -61,9 +61,6 @@ struct _RpNautilusMenuProvider {
 G_DEFINE_DYNAMIC_TYPE_EXTENDED(RpNautilusMenuProvider, rp_nautilus_menu_provider,
 	G_TYPE_OBJECT, (GTypeFlags)0,
 	G_IMPLEMENT_INTERFACE_DYNAMIC(NAUTILUS_TYPE_MENU_PROVIDER, rp_nautilus_menu_provider_page_provider_init)
-#ifdef HAVE_NEMO_INTERFACE
-	G_IMPLEMENT_INTERFACE_DYNAMIC(NEMO_TYPE_NAME_AND_DESC_PROVIDER, rp_nemo_name_and_desc_provider_init)
-#endif /* HAVE_NEMO_INTERFACE */
 );
 
 #if !GLIB_CHECK_VERSION(2,59,1)
@@ -73,9 +70,20 @@ G_DEFINE_DYNAMIC_TYPE_EXTENDED(RpNautilusMenuProvider, rp_nautilus_menu_provider
 #endif /* !GLIB_CHECK_VERSION(2,59,1) */
 
 void
-rp_nautilus_menu_provider_register_type_ext(GTypeModule *plugin)
+rp_nautilus_menu_provider_register_type_ext(GTypeModule *g_module)
 {
-	rp_nautilus_menu_provider_register_type(G_TYPE_MODULE(plugin));
+	rp_nautilus_menu_provider_register_type(G_TYPE_MODULE(g_module));
+
+#ifdef HAVE_NEMO_INTERFACE
+	// If running in Nemo, add the NemoNameAndDescProvider interface.
+	if (pfn_nemo_name_and_desc_provider_get_type) {
+		static const GInterfaceInfo g_implement_interface_info = {
+			(GInterfaceInitFunc)(void (*)(void))rp_nemo_name_and_desc_provider_init, NULL, NULL
+		};
+		g_type_module_add_interface(g_module, RP_TYPE_NAUTILUS_MENU_PROVIDER,
+			NEMO_TYPE_NAME_AND_DESC_PROVIDER, &g_implement_interface_info);
+	}
+#endif /* HAVE_NEMO_INTERFACE */
 }
 
 static void
