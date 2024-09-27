@@ -98,6 +98,7 @@ SET(${PROJECT_NAME}_SRCS
 	NautilusPlugin.cpp
 	NautilusPropertyPageProvider.cpp
 	NautilusMenuProvider.c
+	NautilusExtraInterfaces.c
 	ThunarPlugin.cpp
 	ThunarPropertyPageProvider.cpp
 	ThunarMenuProvider.c
@@ -112,6 +113,7 @@ SET(${PROJECT_NAME}_H
 	NautilusPlugin.hpp
 	NautilusPropertyPageProvider.hpp
 	NautilusMenuProvider.h
+	NautilusExtraInterfaces.h
 	ThunarPlugin.hpp
 	ThunarPropertyPageProvider.hpp
 	ThunarMenuProvider.h

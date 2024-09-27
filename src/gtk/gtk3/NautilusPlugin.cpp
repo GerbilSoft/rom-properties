@@ -13,6 +13,7 @@
 #include "AchGDBus.hpp"
 #include "NautilusMenuProvider.h"
 #include "NautilusPropertyPageProvider.hpp"
+#include "NautilusExtraInterfaces.h"
 #include "plugin-helper.h"
 
 static GType type_list[2];
@@ -33,9 +34,6 @@ PFN_NAUTILUS_MENU_ITEM_NEW			pfn_nautilus_menu_item_new;
 PFN_NAUTILUS_MENU_PROVIDER_GET_TYPE		pfn_nautilus_menu_provider_get_type;
 PFN_NAUTILUS_PROPERTY_PAGE_PROVIDER_GET_TYPE	pfn_nautilus_property_page_provider_get_type;
 PFN_NAUTILUS_PROPERTY_PAGE_NEW			pfn_nautilus_property_page_new;
-
-// Nemo-specific function pointers
-PFN_NEMO_NAME_AND_DESC_PROVIDER_GET_TYPE	pfn_nemo_name_and_desc_provider_get_type;
 
 static void
 rp_nautilus_register_types(GTypeModule *g_module)
@@ -118,8 +116,8 @@ nemo_module_initialize(GTypeModule *g_module)
 {
 	NAUTILUS_MODULE_INITIALIZE_FUNC_INT(nemo);
 
-	// Get Nemo-specific symbols.
-	DLSYM(nemo_name_and_desc_provider_get_type, nemo_name_and_desc_provider_get_type);
+	// Initialize Nemo-specific function pointers.
+	rp_nemo_init(libextension_so);
 
 	// Symbols loaded. Register our types
 	rp_nautilus_register_types(g_module);

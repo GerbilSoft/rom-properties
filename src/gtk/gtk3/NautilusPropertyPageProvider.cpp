@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ 3.x)                              *
  * NautilusPropertyPageProvider.cpp: Nautilus Property Page Provider Definition *
  *                                                                              *
- * Copyright (c) 2017-2022 by David Korth.                                      *
+ * Copyright (c) 2017-2024 by David Korth.                                      *
  * SPDX-License-Identifier: GPL-2.0-or-later                                    *
  ********************************************************************************/
 
@@ -17,6 +17,7 @@
 
 #include "stdafx.h"
 #include "NautilusPropertyPageProvider.hpp"
+#include "NautilusExtraInterfaces.h"
 
 #include "is-supported.hpp"
 #include "NautilusPlugin.hpp"
@@ -35,9 +36,6 @@ static void   rp_nautilus_property_page_provider_page_provider_init	(NautilusPro
 static GList *rp_nautilus_property_page_provider_get_pages		(NautilusPropertyPageProvider		*provider,
 									 GList					*files)
 									G_GNUC_MALLOC G_GNUC_WARN_UNUSED_RESULT;
-
-static void	rp_nemo_name_and_desc_provider_init			(NemoNameAndDescProviderInterface *iface);
-static GList*	rp_nemo_name_and_desc_provider_get_name_and_desc	(NemoNameAndDescProvider *provider);
 
 struct _RpNautilusPropertyPageProviderClass {
 	GObjectClass __parent__;
@@ -69,18 +67,14 @@ G_DEFINE_DYNAMIC_TYPE_EXTENDED(RpNautilusPropertyPageProvider, rp_nautilus_prope
 #endif /* !GLIB_CHECK_VERSION(2,59,1) */
 
 void
-rp_nautilus_property_page_provider_register_type_ext(GTypeModule *module)
+rp_nautilus_property_page_provider_register_type_ext(GTypeModule *g_module)
 {
-	rp_nautilus_property_page_provider_register_type(module);
+	rp_nautilus_property_page_provider_register_type(g_module);
 
-	// If running in Nemo, add the NemoNameAndDescProvider interface.
-	if (pfn_nemo_name_and_desc_provider_get_type) {
-		static const GInterfaceInfo g_implement_interface_info = {
-			(GInterfaceInitFunc)(void (*)(void))rp_nemo_name_and_desc_provider_init, nullptr, nullptr
-		};
-		g_type_module_add_interface(module, RP_TYPE_NAUTILUS_PROPERTY_PAGE_PROVIDER,
-			NEMO_TYPE_NAME_AND_DESC_PROVIDER, &g_implement_interface_info);
-	}
+#ifdef HAVE_EXTRA_INTERFACES
+	// Add extra fork-specific interfaces.
+	rp_nautilus_extra_interfaces_add(g_module, RP_TYPE_NAUTILUS_PROPERTY_PAGE_PROVIDER);
+#endif /* HAVE_EXTRA_INTERFACES */
 }
 
 static void
@@ -105,12 +99,6 @@ static void
 rp_nautilus_property_page_provider_page_provider_init(NautilusPropertyPageProviderInterface *iface)
 {
 	iface->get_pages = rp_nautilus_property_page_provider_get_pages;
-}
-
-static void
-rp_nemo_name_and_desc_provider_init(NemoNameAndDescProviderInterface *iface)
-{
-	iface->get_name_and_desc = rp_nemo_name_and_desc_provider_get_name_and_desc;
 }
 
 /**
@@ -215,12 +203,4 @@ rp_nautilus_property_page_provider_get_pages(NautilusPropertyPageProvider *provi
 
 	g_free(uri);
 	return list;
-}
-
-static GList*
-rp_nemo_name_and_desc_provider_get_name_and_desc(NemoNameAndDescProvider *provider)
-{
-	RP_UNUSED(provider);
-	g_return_val_if_fail(RP_IS_NAUTILUS_PROPERTY_PAGE_PROVIDER(provider), nullptr);
-	return g_list_append(nullptr, g_strdup("RpNautilusPropertyPageProvider:::ROM Properties Page - property page extension"));
 }

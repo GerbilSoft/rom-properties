@@ -11,6 +11,7 @@
 #include "stdafx.h"
 #include "NautilusMenuProvider.h"
 #include "MenuProviderCommon.h"
+#include "NautilusExtraInterfaces.h"
 
 #include "../RomDataView.hpp"
 
@@ -21,17 +22,11 @@
 #else /* !GTK_CHECK_VERSION(4,0,0) */
 #  include "NautilusPlugin.hpp"
 #  include "nautilus-extension-mini.h"
-#  define HAVE_NEMO_INTERFACE 1
 #endif /* GTK_CHECK_VERSION(4,0,0) */
 
 static GQuark rp_item_convert_to_png_quark;
 
 static void	rp_nautilus_menu_provider_page_provider_init		(NautilusMenuProviderInterface *iface);
-
-#ifdef HAVE_NEMO_INTERFACE
-static void	rp_nemo_name_and_desc_provider_init			(NemoNameAndDescProviderInterface *iface);
-static GList*	rp_nemo_name_and_desc_provider_get_name_and_desc	(NemoNameAndDescProvider *provider);
-#endif /* !HAVE_NEMO_INTERFACE */
 
 static GList *rp_nautilus_menu_provider_get_file_items(
 	NautilusMenuProvider *provider,
@@ -74,16 +69,10 @@ rp_nautilus_menu_provider_register_type_ext(GTypeModule *g_module)
 {
 	rp_nautilus_menu_provider_register_type(G_TYPE_MODULE(g_module));
 
-#ifdef HAVE_NEMO_INTERFACE
-	// If running in Nemo, add the NemoNameAndDescProvider interface.
-	if (pfn_nemo_name_and_desc_provider_get_type) {
-		static const GInterfaceInfo g_implement_interface_info = {
-			(GInterfaceInitFunc)(void (*)(void))rp_nemo_name_and_desc_provider_init, NULL, NULL
-		};
-		g_type_module_add_interface(g_module, RP_TYPE_NAUTILUS_MENU_PROVIDER,
-			NEMO_TYPE_NAME_AND_DESC_PROVIDER, &g_implement_interface_info);
-	}
-#endif /* HAVE_NEMO_INTERFACE */
+#ifdef HAVE_EXTRA_INTERFACES
+	// Add extra fork-specific interfaces.
+	rp_nautilus_extra_interfaces_add(g_module, RP_TYPE_NAUTILUS_MENU_PROVIDER);
+#endif /* HAVE_EXTRA_INTERFACES */
 }
 
 static void
@@ -112,14 +101,6 @@ rp_nautilus_menu_provider_page_provider_init(NautilusMenuProviderInterface *ifac
 {
 	iface->get_file_items = rp_nautilus_menu_provider_get_file_items;
 }
-
-#ifdef HAVE_NEMO_INTERFACE
-static void
-rp_nemo_name_and_desc_provider_init(NemoNameAndDescProviderInterface *iface)
-{
-	iface->get_name_and_desc = rp_nemo_name_and_desc_provider_get_name_and_desc;
-}
-#endif /* HAVE_NEMO_INTERFACE */
 
 static gpointer
 rp_item_convert_to_png_ThreadFunc(GList *files)
@@ -224,13 +205,3 @@ rp_nautilus_menu_provider_get_file_items(
 		g_cclosure_new_object(G_CALLBACK(rp_item_convert_to_png), G_OBJECT(item)), TRUE);
 	return g_list_prepend(NULL, item);
 }
-
-#ifdef HAVE_NEMO_INTERFACE
-static GList*
-rp_nemo_name_and_desc_provider_get_name_and_desc(NemoNameAndDescProvider *provider)
-{
-	RP_UNUSED(provider);
-	g_return_val_if_fail(RP_IS_NAUTILUS_MENU_PROVIDER(provider), NULL);
-	return g_list_append(NULL, g_strdup("RpNautilusMenuProvider:::ROM Properties Page - menu extension"));
-}
-#endif /* HAVE_NEMO_INTERFACE */
