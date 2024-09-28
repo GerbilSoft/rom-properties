@@ -161,8 +161,8 @@ void RP_ShellPropSheetExt_Private::loadImages(void)
 	if (!ok) {
 		// No icon, or unable to load the icon.
 		// Delete the DragImageLabel if it was created previously.
-		delete lblBanner;
-		lblBanner = nullptr;
+		delete lblIcon;
+		lblIcon = nullptr;
 	}
 }
 
