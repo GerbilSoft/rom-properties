@@ -513,47 +513,30 @@ void ImageDecoderTest::decodeBenchmark_internal(void)
 	// TODO: RomDataFactory function to retrieve a constructor function?
 	auto fn_ctor = [](const IRpFilePtr &file) -> RomDataPtr { return RomDataFactory::create(file); };
 
-	// For certain types, increase the number of iterations.
+	// For certain types, increase the number of iterations. (10x increase)
+	// [usually because the files are significantly smaller or less complex than "usual"]
 	ASSERT_GT(mode.dds_gz_filename.size(), 4U);
-	if (mode.dds_gz_filename.size() >= 8U &&
-	    !mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-8, 8, ".smdh.gz"))
-	{
-		// Nintendo 3DS SMDH file
-		// NOTE: Increased iterations due to smaller files.
-		max_iterations *= 10;
-	} else if (mode.dds_gz_filename.size() >= 7U &&
-		   !mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".gci.gz")) {
-		// Nintendo GameCube save file
-		// NOTE: Increased iterations due to smaller files.
-		max_iterations *= 10;
-	} else if (mode.dds_gz_filename.size() >= 4U &&
-		   !mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-4, 4, ".VMS")) {
-		// Sega Dreamcast save file
-		// NOTE: RomDataFactory and DreamcastSave don't support gzip at the moment.
-		// NOTE: Increased iterations due to smaller files.
-		max_iterations *= 10;
-	} else if (mode.dds_gz_filename.size() >= 7U &&
-		   !mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".PSV.gz")) {
-		// Sony PlayStation save file
-		// NOTE: Increased iterations due to smaller files.
-		max_iterations *= 10;
-	} else if (mode.dds_gz_filename.size() >= 11U &&
-		   !mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-11, 11, ".nds.bnr.gz")) {
-		// Nintendo DS ROM image
-		// NOTE: Increased iterations due to smaller files.
-		max_iterations *= 10;
-	} else if (mode.dds_gz_filename.size() >= 7U &&
-		   (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".cab.gz") ||
-		    !mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".prb.gz"))) {
-		// Nintendo Badge Arcade texture
-		// NOTE: Increased iterations due to smaller files.
-		max_iterations *= 10;
-	} else if (mode.dds_gz_filename.size() >= 4U &&
-		   !mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-4, 4, ".tex")) {
-		// Leapster Didj texture
-		// NOTE: Increased iterations due to smaller files.
-		// NOTE: Using RpTextureWrapper.
-		max_iterations *= 10;
+	struct IterationIncrease_t {
+		uint8_t size;
+		char ext[15];
+	};
+	static const IterationIncrease_t iterInc_tbl[] = {
+		{ 8, ".smdh.gz"},	// Nintendo 3DS SMDH file
+		{ 7, ".gci.gz"},	// Nintendo GameCube save file
+		{ 4, ".VMS"},		// Sega Dreamcast save file (NOTE: No gzip support at the moment)
+		{ 7, ".PSV.gz"},	// Sony PlayStation save file
+		{11, ".nds.bnr.gz"},	// Nintendo DS ROM image
+		{ 7, ".cab.gz"},	// Nintendo Badge Arcade texture
+		{ 7, ".prb.gz"},	// Nintendo Badge Arcade texture
+		{ 4, ".tex"}		// Leapster Didj texture
+	};
+	for (const auto &p : iterInc_tbl) {
+		if (mode.dds_gz_filename.size() >= p.size &&
+		    !mode.dds_gz_filename.compare(mode.dds_gz_filename.size() - p.size, p.size, ".smdh.gz"))
+		{
+			max_iterations *= 10;
+			break;
+		}
 	}
 
 	rp_image_const_ptr img_dds;
