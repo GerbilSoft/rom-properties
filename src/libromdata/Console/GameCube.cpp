@@ -459,6 +459,15 @@ int GameCubePrivate::loadOpeningBnr(void)
 		return 0;
 	}
 
+	// FIXME: No DiscReader for WIA or RVZ yet.
+	switch (discType & DISC_FORMAT_MASK) {
+		default:
+			break;
+		case DISC_FORMAT_WIA:
+		case DISC_FORMAT_RVZ:
+			return -EIO;
+	}
+
 	assert((bool)discReader);
 	assert((discType & DISC_SYSTEM_MASK) != DISC_SYSTEM_TRIFORCE);
 	if (!discReader) {
