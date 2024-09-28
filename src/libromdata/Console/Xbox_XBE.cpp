@@ -685,33 +685,40 @@ int Xbox_XBE::loadFieldData(void)
 	}
 
 	// Title ID
-	// FIXME: Verify behavior on big-endian.
-	// TODO: Consolidate implementations into a shared function.
-	string tid_str;
-	char hexbuf[4];
-	if (ISUPPER(xbeCertificate->title_id.a)) {
-		tid_str += (char)xbeCertificate->title_id.a;
-	} else {
-		tid_str += "\\x";
-		snprintf(hexbuf, sizeof(hexbuf), "%02X",
-			(uint8_t)xbeCertificate->title_id.a);
-		tid_str.append(hexbuf, 2);
-	}
-	if (ISUPPER(xbeCertificate->title_id.b)) {
-		tid_str += (char)xbeCertificate->title_id.b;
-	} else {
-		tid_str += "\\x";
-		snprintf(hexbuf, sizeof(hexbuf), "%02X",
-			(uint8_t)xbeCertificate->title_id.b);
-		tid_str.append(hexbuf, 2);
-	}
+	const char *const s_title_id_desc = C_("Xbox_XBE", "Title ID");
+	if (likely(xbeCertificate->title_id.u32 != 0)) {
+		// FIXME: Verify behavior on big-endian.
+		// TODO: Consolidate implementations into a shared function.
+		string tid_str;
+		char hexbuf[4];
+		if (ISUPPER(xbeCertificate->title_id.a)) {
+			tid_str += (char)xbeCertificate->title_id.a;
+		} else {
+			tid_str += "\\x";
+			snprintf(hexbuf, sizeof(hexbuf), "%02X",
+				(uint8_t)xbeCertificate->title_id.a);
+			tid_str.append(hexbuf, 2);
+		}
+		if (ISUPPER(xbeCertificate->title_id.b)) {
+			tid_str += (char)xbeCertificate->title_id.b;
+		} else {
+			tid_str += "\\x";
+			snprintf(hexbuf, sizeof(hexbuf), "%02X",
+				(uint8_t)xbeCertificate->title_id.b);
+			tid_str.append(hexbuf, 2);
+		}
 
-	d->fields.addField_string(C_("Xbox_XBE", "Title ID"),
-		rp_sprintf_p(C_("Xbox_XBE", "%1$08X (%2$s-%3$03u)"),
-			le32_to_cpu(xbeCertificate->title_id.u32),
-			tid_str.c_str(),
-			le16_to_cpu(xbeCertificate->title_id.u16)),
-		RomFields::STRF_MONOSPACE);
+		d->fields.addField_string(s_title_id_desc,
+			rp_sprintf_p(C_("Xbox_XBE", "%1$08X (%2$s-%3$03u)"),
+				le32_to_cpu(xbeCertificate->title_id.u32),
+				tid_str.c_str(),
+				le16_to_cpu(xbeCertificate->title_id.u16)),
+			RomFields::STRF_MONOSPACE);
+	} else {
+		// Title ID is zero.
+		d->fields.addField_string(s_title_id_desc,
+			rp_sprintf("%08X", le32_to_cpu(xbeCertificate->title_id.u32)));
+	}
 
 	// Publisher
 	d->fields.addField_string(C_("RomData", "Publisher"), d->getPublisher());
