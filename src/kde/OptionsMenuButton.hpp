@@ -19,6 +19,9 @@
 #  define RP_OMB_USE_LAMBDA_FUNCTIONS 1
 #endif /* QT_VERSION >= QT_VERSION_CHECK(5,0,0) */
 
+// RpQt.hpp for rp_qsizetype
+#include "RpQt.hpp"
+
 // Qt classes and includes
 #include <QPushButton>
 class QMenu;
@@ -72,5 +75,5 @@ private:
 #ifndef RP_OMB_USE_LAMBDA_FUNCTIONS
 	QSignalMapper *mapperOptionsMenu;
 #endif /* RP_OMB_USE_LAMBDA_FUNCTIONS */
-	int romOps_firstActionIndex;
+	rp_qsizetype romOps_firstActionIndex;
 };

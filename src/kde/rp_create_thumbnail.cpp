@@ -215,7 +215,7 @@ Q_DECL_EXPORT int RP_C_API rp_create_thumbnail2(const char *source_file, const c
 	// Initialize the row pointers.
 	unique_ptr<const uint8_t*[]> row_pointers(new const uint8_t*[height]);
 	const uint8_t *bits = outParams.retImg.bits();
-	const int bytesPerLine = outParams.retImg.bytesPerLine();
+	const rp_qsizetype bytesPerLine = outParams.retImg.bytesPerLine();
 	for (int y = 0; y < height; y++, bits += bytesPerLine) {
 		row_pointers[y] = bits;
 	}

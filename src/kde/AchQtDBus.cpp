@@ -168,7 +168,7 @@ int AchQtDBus::notifyFunc(Achievements::ID id)
 		NotifyIconStruct nis;
 		nis.width = icon.width();
 		nis.height = icon.height();
-		nis.rowstride = icon.bytesPerLine();
+		nis.rowstride = static_cast<int>(icon.bytesPerLine());
 		nis.has_alpha = true;
 		nis.bits_per_sample = 8;	// 8 bits per *channel*.
 		nis.channels = 4;

@@ -21,8 +21,8 @@ using LibRpBase::RomFields;
  */
 qlonglong ListDataSortProxyModel::parseQString(const QString &str, bool *pbAllNumeric)
 {
-	int pos = 0;
-	const int str_size = str.size();
+	rp_qsizetype pos = 0;
+	const rp_qsizetype str_size = str.size();
 	for (; pos < str_size; pos++) {
 		if (!str[pos].isDigit())
 			break;

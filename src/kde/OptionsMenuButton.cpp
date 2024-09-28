@@ -130,7 +130,7 @@ void OptionsMenuButton::updateOp(int id, const LibRpBase::RomData::RomOp *op)
 	}
 
 	const QObjectList &objList = menuOptions->children();
-	const int actionIndex = id + romOps_firstActionIndex;
+	const rp_qsizetype actionIndex = static_cast<rp_qsizetype>(id) + romOps_firstActionIndex;
 	assert(actionIndex < objList.size());
 	if (actionIndex >= objList.size())
 		return;

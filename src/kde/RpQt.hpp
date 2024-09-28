@@ -34,9 +34,9 @@
 // Qt6 uses qsizetype for string lengths, which is ssize_t on Linux systems.
 // Qt5 uses int for string lengths. (qsizetype introduced in Qt 5.10)
 #if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
-typedef qsizetype rp_qstringsizetype;
+typedef qsizetype rp_qsizetype;
 #else /* QT_VERSION < QT_VERSION_CHECK(6,0,0) */
-typedef int rp_qstringsizetype;
+typedef int rp_qsizetype;
 #endif /* QT_VERSION >= QT_VERSION_CHECK(6,0,0) */
 
 /**
@@ -46,7 +46,7 @@ typedef int rp_qstringsizetype;
  */
 static inline QString U82Q(const std::string &str)
 {
-	return QString::fromUtf8(str.data(), static_cast<rp_qstringsizetype>(str.size()));
+	return QString::fromUtf8(str.data(), static_cast<rp_qsizetype>(str.size()));
 }
 
 /**
@@ -55,7 +55,7 @@ static inline QString U82Q(const std::string &str)
  * @param len Length of str, in characters. (optional; -1 for C string)
  * @return QString
  */
-static inline QString U82Q(const char *str, rp_qstringsizetype len = -1)
+static inline QString U82Q(const char *str, rp_qsizetype len = -1)
 {
 	return QString::fromUtf8(str, len);
 }
