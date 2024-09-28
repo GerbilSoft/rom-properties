@@ -372,7 +372,7 @@ rp_image_ptr fromLinear16_sse2(PixelFormat px_format,
 				px_dest += dest_stride_adj; \
 			} \
 			/* Set the sBIT metadata. */ \
-			img->set_sBIT(&sBIT); \
+			img->set_sBIT(&(sBIT)); \
 		} break
 
 	// Macro for 16-bit formats with an alpha channel.
@@ -398,7 +398,7 @@ rp_image_ptr fromLinear16_sse2(PixelFormat px_format,
 				px_dest += dest_stride_adj; \
 			} \
 			/* Set the sBIT metadata. */ \
-			img->set_sBIT(&sBIT); \
+			img->set_sBIT(&(sBIT)); \
 		} break
 
 	switch (px_format) {

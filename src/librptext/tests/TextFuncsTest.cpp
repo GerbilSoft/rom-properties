@@ -27,8 +27,8 @@ using std::array;
 using std::string;
 using std::u16string;
 
-#define C8(x) reinterpret_cast<const char*>(x.data())
-#define C16(x) reinterpret_cast<const char16_t*>(x.data())
+#define C8(x) reinterpret_cast<const char*>((x).data())
+#define C16(x) reinterpret_cast<const char16_t*>((x).data())
 
 #define C16_ARRAY_SIZE(x) (sizeof(x)/sizeof(char16_t))
 #define C16_ARRAY_SIZE_I(x) static_cast<int>(sizeof(x)/sizeof(char16_t))
