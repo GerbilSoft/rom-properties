@@ -266,6 +266,9 @@ const IsoPartitionPrivate::DirData_t *IsoPartitionPrivate::getDirectory(const ch
 	// Should be 2048, but other values are possible.
 	const unsigned int block_size = pvd.logical_block_size.he;
 
+	// Determine the directory size and address.
+	DirData_t dir;
+	off64_t dir_addr;
 	if (path[0] == '\0') {
 		// Loading the root directory.
 
@@ -307,67 +310,44 @@ const IsoPartitionPrivate::DirData_t *IsoPartitionPrivate::getDirectory(const ch
 			iso_start_offset = static_cast<int>(rootdir->block.he - 20);
 		}
 
-		// Load the root directory.
-		// NOTE: Due to variable-length entries, we need to load
-		// the entire root directory all at once.
-		DirData_t dir;
 		dir.resize(rootdir->size.he);
-		const off64_t rootDir_addr = partition_offset +
-			static_cast<off64_t>(rootdir->block.he - iso_start_offset) * block_size;
-		size_t size = q->m_file->seekAndRead(rootDir_addr, dir.data(), dir.size());
-		if (size != dir.size()) {
-			// Seek and/or read error.
-			dir.clear();
-			q->m_lastError = q->m_file->lastError();
-			if (q->m_lastError == 0) {
-				q->m_lastError = EIO;
-			}
-			if (pError) {
-				*pError = q->m_lastError;
-			}
+		dir_addr = partition_offset + static_cast<off64_t>(rootdir->block.he - iso_start_offset) * block_size;
+	} else {
+		// Get the parent directory.
+		const DirData_t *pDir;
+		const char *const sl = findLastSlash(path);
+		if (!sl) {
+			// No slash. Parent is root.
+			pDir = getDirectory("");
+		} else {
+			// Found a slash.
+			const string s_parentDir(path, (sl - path));
+			path = sl + 1;
+			pDir = getDirectory(s_parentDir.c_str());
+		}
+
+		if (!pDir) {
+			// Can't find the parent directory.
+			// getDirectory() already set q->lastError().
 			return nullptr;
 		}
 
-		// Root directory loaded.
-		auto ins = dir_data.emplace("", std::move(dir));
-		return &(ins.first->second);
+		// Find this directory.
+		const ISO_DirEntry *const entry = lookup_int(pDir, path, true);
+		if (!entry) {
+			// Not found.
+			// lookup_int() already set q->lastError().
+			return nullptr;
+		}
+
+		dir.resize(entry->size.he);
+		dir_addr = partition_offset + static_cast<off64_t>(entry->block.he - iso_start_offset) * block_size;
 	}
 
-	// Get the parent directory.
-	const DirData_t *pDir;
-	const char *const sl = findLastSlash(path);
-	if (!sl) {
-		// No slash. Parent is root.
-		pDir = getDirectory("");
-	} else {
-		// Found a slash.
-		const string s_parentDir(path, (sl - path));
-		path = sl + 1;
-		pDir = getDirectory(s_parentDir.c_str());
-	}
-
-	if (!pDir) {
-		// Can't find the parent directory.
-		// getDirectory() already set q->lastError().
-		return nullptr;
-	}
-
-	// Find this directory.
-	const ISO_DirEntry *const entry = lookup_int(pDir, path, true);
-	if (!entry) {
-		// Not found.
-		// lookup_int() already set q->lastError().
-		return nullptr;
-	}
-
-	// Load the subdirectory.
+	// Load the directory.
 	// NOTE: Due to variable-length entries, we need to load
-	// the entire root directory all at once.
-	DirData_t dir;
-	dir.resize(entry->size.he);
-	const off64_t rootDir_addr = partition_offset +
-		static_cast<off64_t>(entry->block.he - iso_start_offset) * block_size;
-	size_t size = q->m_file->seekAndRead(rootDir_addr, dir.data(), dir.size());
+	// the entire directory all at once.
+	size_t size = q->m_file->seekAndRead(dir_addr, dir.data(), dir.size());
 	if (size != dir.size()) {
 		// Seek and/or read error.
 		dir.clear();
@@ -381,7 +361,7 @@ const IsoPartitionPrivate::DirData_t *IsoPartitionPrivate::getDirectory(const ch
 		return nullptr;
 	}
 
-	// Subdirectory loaded.
+	// Directory loaded.
 	auto ins = dir_data.emplace(path, std::move(dir));
 	return &(ins.first->second);
 }
