@@ -443,6 +443,9 @@ QVariant KeyStoreModel::headerData(int section, Qt::Orientation orientation, int
 		case Qt::TextAlignmentRole:
 			// Center-align the text.
 			return Qt::AlignHCenter;
+
+		default:
+			break;
 	}
 
 	// Default value.
