@@ -32,7 +32,7 @@ using namespace LibRpFile;
 using namespace LibRomData;
 
 // C includes (C++ namespace)
-#include <stdlib.h>
+#include <cstdlib>
 
 static void
 add_metadata_properties_v1(const RomMetaData *metaData, TrackerSparqlBuilder *builder)

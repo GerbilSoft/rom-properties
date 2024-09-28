@@ -14,16 +14,17 @@
 #ifdef __cplusplus
 /** C++ **/
 
-// C includes. (C++ namespace)
+// C includes (C++ namespace)
 #include <cassert>
 #include <cerrno>
 #include <cstddef>
+#include <cstdint>
 #include <cstdio>
+#include <cstdlib>
 #include <cstring>
 #include <ctime>
-#include <stdlib.h>
 
-// C++ includes.
+// C++ includes
 #include <algorithm>
 #include <array>
 #include <memory>
@@ -38,10 +39,11 @@
 #else /* !__cplusplus */
 /** C **/
 
-// C includes.
+// C includes
 #include <assert.h>
 #include <errno.h>
 #include <stddef.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

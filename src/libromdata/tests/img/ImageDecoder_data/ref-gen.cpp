@@ -1,6 +1,6 @@
 #include <QImage>
 #include <cassert>
-#include <stdlib.h>
+#include <cstdlib>
 
 /**
  * Function to generate the ImageDecoderTest reference image.

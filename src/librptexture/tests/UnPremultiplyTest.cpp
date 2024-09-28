@@ -20,11 +20,9 @@
 #endif /* _WIN32 */
 using namespace LibRpTexture;
 
-// C includes
-#include <stdint.h>
-#include <stdlib.h>
-
 // C includes (C++ namespace)
+#include <cstdint>
+#include <cstdlib>
 #include <cstring>
 
 // C++ includes

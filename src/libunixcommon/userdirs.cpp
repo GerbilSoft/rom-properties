@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libunixcommon)                    *
  * userdirs.cpp: Find user directories.                                    *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -16,11 +16,11 @@
 #include <fcntl.h>	// AT_FDCWD
 #include <pwd.h>	// getpwuid_r()
 #include <sys/stat.h>	// stat(), statx(), S_ISDIR()
-#include <stdlib.h>
 #include <unistd.h>
 
 // C includes (C++ namespace)
 #include <cassert>
+#include <cstdlib>
 
 // C++ includes
 #include <memory>

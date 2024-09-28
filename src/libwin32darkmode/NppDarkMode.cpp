@@ -11,8 +11,8 @@
 #include "DarkMode.hpp"
 #include "DarkModeCtrl.hpp"	// for dark mode colors
 
-// C includes (for _countof())
-#include <stdlib.h>
+// C includes (C++ namespace) [for _countof()]
+#include <cstdlib>
 
 // Extra Win32 includes
 #include "libwin32common/sdk/windowsx_ts.h"

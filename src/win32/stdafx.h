@@ -61,10 +61,10 @@
 
 // C includes. (C++ namespace)
 #include <cassert>
+#include <cstdint>
 #include <cstdio>
+#include <cstdlib>
 #include <cstring>
-#include <stdlib.h>
-#include <stdint.h>
 
 // C++ includes.
 #include <algorithm>
@@ -86,6 +86,7 @@
 
 // C includes.
 #include <assert.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

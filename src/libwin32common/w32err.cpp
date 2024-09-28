@@ -8,10 +8,10 @@
 
 #include "w32err.hpp"
 
-// C includes
-#include <errno.h>
-#include <stdint.h>
-#include <stdlib.h>
+// C includes (C++ namespace)
+#include <cerrno>
+#include <cstdint>
+#include <cstdlib>
 
 // C++ includes
 #include <algorithm>

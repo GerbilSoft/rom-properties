@@ -14,12 +14,10 @@ using LibRomData::GcnFst;
 // i18n
 #include "libi18n/i18n.h"
 
-// C includes
-#include <stdlib.h>
-
 // C includes (C++ namespace)
 #include <cerrno>
 #include <cstdio>
+#include <cstdlib>
 #include <cstring>
 
 // C++ includes

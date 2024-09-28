@@ -46,12 +46,10 @@ using namespace LibRpFile;
 #include "librptexture/img/rp_image.hpp"
 using namespace LibRpTexture;
 
-// C includes
-#include <stdint.h>
-#include <stdlib.h>
-
 // C includes (C++ namespace)
 #include "ctypex.h"
+#include <cstdint>
+#include <cstdlib>
 #include <cstring>
 
 // C++ includes

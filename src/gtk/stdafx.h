@@ -31,8 +31,8 @@
 #include <cinttypes>
 #include <climits>
 #include <cmath>
-#include <stdint.h>
-#include <stdlib.h>
+#include <cstdint>
+#include <cstdlib>
 
 // C++ includes
 #include <algorithm>

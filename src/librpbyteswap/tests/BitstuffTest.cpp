@@ -13,11 +13,9 @@
 // bit stuff
 #include "librpbyteswap/bitstuff.h"
 
-// C includes
-#include <stdlib.h>
-
 // C includes (C++ namespace)
 #include <cstdio>
+#include <cstdlib>
 #include <ctime>
 
 namespace LibRpCpu { namespace Tests {

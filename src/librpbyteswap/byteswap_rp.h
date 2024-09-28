@@ -8,8 +8,12 @@
 
 #pragma once
 
-// C includes.
-#include <stdint.h>
+// C includes
+#ifdef __cplusplus
+#  include <cstdint>
+#else /* !__cplusplus */
+#  include <stdint.h>
+#endif /* __cplusplus */
 
 #include "librpcpuid/config.librpcpuid.h"
 #include "librpcpuid/cpu_dispatch.h"
@@ -39,15 +43,19 @@
 #if defined(_MSC_VER)
 
 /* Use the MSVC byteswap intrinsics. */
-#include <stdlib.h>
-#define __swab16(x) _byteswap_ushort(x)
-#define __swab32(x) _byteswap_ulong(x)
-#define __swab64(x) _byteswap_uint64(x)
+#  ifdef __cplusplus
+#    include <cstdlib>
+#  else /* !__cplusplus */
+#    include <stdlib.h>
+#  endif /* __cplusplus */
+#  define __swab16(x) _byteswap_ushort(x)
+#  define __swab32(x) _byteswap_ulong(x)
+#  define __swab64(x) _byteswap_uint64(x)
 
 /* `inline` might not be defined in older versions. */
-#ifndef inline
-#  define inline __inline
-#endif
+#  ifndef inline
+#    define inline __inline
+#  endif
 
 #else /* !defined(_MSC_VER) */
 
