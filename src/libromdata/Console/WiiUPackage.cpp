@@ -475,6 +475,7 @@ void WiiUPackage::init(void)
 	if (!fst->isOpen()) {
 		// FST is invalid?
 		// NOTE: boot1 does not have an FST.
+		delete fst;
 		return;
 	}
 	d->fst = fst;
