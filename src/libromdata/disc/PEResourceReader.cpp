@@ -194,10 +194,10 @@ int PEResourceReaderPrivate::loadResDir(uint32_t addr, rsrc_dir_t &dir)
 
 	// Total number of entries.
 	unsigned int entryCount = le16_to_cpu(root.NumberOfNamedEntries) + le16_to_cpu(root.NumberOfIdEntries);
-	assert(entryCount <= 64);
-	if (entryCount > 64) {
+	assert(entryCount <= 8192);
+	if (entryCount > 8192) {
 		// Sanity check; constrain to 64 entries.
-		entryCount = 64;
+		entryCount = 8192;
 	}
 	uint32_t szToRead = static_cast<uint32_t>(entryCount * sizeof(IMAGE_RESOURCE_DIRECTORY_ENTRY));
 	unique_ptr<IMAGE_RESOURCE_DIRECTORY_ENTRY[]> irdEntries(new IMAGE_RESOURCE_DIRECTORY_ENTRY[entryCount]);
