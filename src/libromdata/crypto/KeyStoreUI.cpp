@@ -45,7 +45,6 @@ class KeyStoreUIPrivate
 {
 public:
 	explicit KeyStoreUIPrivate(KeyStoreUI *q);
-	~KeyStoreUIPrivate();
 
 private:
 	KeyStoreUI *const q_ptr;
@@ -71,7 +70,7 @@ public:
 	vector<Section> sections;
 
 	// IAesCipher for verifying keys
-	IAesCipher *cipher;
+	unique_ptr<IAesCipher> cipher;
 
 public:
 	/**
@@ -250,8 +249,7 @@ KeyStoreUIPrivate::KeyStoreUIPrivate(KeyStoreUI *q)
 	} else {
 		// Cipher is not usable.
 		// We won't be able to verify keys.
-		delete cipher;
-		cipher = nullptr;
+		cipher.reset();
 	}
 
 	// Load the key names from the various classes.
@@ -313,11 +311,6 @@ KeyStoreUIPrivate::KeyStoreUIPrivate(KeyStoreUI *q)
 	// Keys will NOT be auto-loaded due to multiple inheritance issues.
 	// The subclass must load the keys.
 	//reset();
-}
-
-KeyStoreUIPrivate::~KeyStoreUIPrivate()
-{
-	delete cipher;
 }
 
 /**

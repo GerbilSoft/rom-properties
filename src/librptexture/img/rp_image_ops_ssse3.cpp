@@ -3,7 +3,7 @@
  * rp_image_ops.cpp: Image class. (operations)                             *
  * SSSE3-optimized version.                                                *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -33,7 +33,7 @@ namespace LibRpTexture {
 int rp_image::swizzle_ssse3(const char *swz_spec)
 {
 	RP_D(rp_image);
-	rp_image_backend *const backend = d->backend;
+	rp_image_backend *const backend = d->backend.get();
 	assert(backend->format == rp_image::Format::ARGB32);
 	if (backend->format != rp_image::Format::ARGB32) {
 		// ARGB32 is required.

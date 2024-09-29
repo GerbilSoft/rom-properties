@@ -99,9 +99,6 @@ WiiUPackagePrivate::WiiUPackagePrivate(const wchar_t *path)
 WiiUPackagePrivate::~WiiUPackagePrivate()
 {
 	free(path);
-	delete ticket;
-	delete tmd;
-	delete fst;
 }
 
 /**
@@ -110,14 +107,9 @@ WiiUPackagePrivate::~WiiUPackagePrivate()
 void WiiUPackagePrivate::reset(void)
 {
 	free(path);
-	delete ticket;
-	delete tmd;
-	delete fst;
-
-	path = nullptr;
-	ticket = nullptr;
-	tmd = nullptr;
-	path = nullptr;
+	ticket.reset();
+	tmd.reset();
+	fst.reset();
 }
 
 /**
@@ -381,7 +373,7 @@ void WiiUPackage::init(void)
 		d->isValid = false;
 		return;
 	}
-	d->ticket = ticket;
+	d->ticket.reset(ticket);
 
 	// Open the TMD.
 	WiiTMD *tmd = nullptr;
@@ -410,7 +402,7 @@ void WiiUPackage::init(void)
 		d->isValid = false;
 		return;
 	}
-	d->tmd = tmd;
+	d->tmd.reset(tmd);
 
 	// NOTE: From this point on, if an error occurs, we won't reset fields.
 	// This will allow Ticket and TMD to be displayed, even if we can't
@@ -478,7 +470,7 @@ void WiiUPackage::init(void)
 		delete fst;
 		return;
 	}
-	d->fst = fst;
+	d->fst.reset(fst);
 
 	// FST loaded.
 }

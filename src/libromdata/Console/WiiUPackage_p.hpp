@@ -33,6 +33,7 @@
 #include "tcharx.h"
 
 // C++ STL includes
+#include <memory>
 #include <vector>
 
 // TinyXML2
@@ -67,9 +68,9 @@ public:
 	TCHAR *path;
 
 	// Ticket, TMD, and FST
-	WiiTicket *ticket;
-	WiiTMD *tmd;
-	WiiUFst *fst;
+	std::unique_ptr<WiiTicket> ticket;
+	std::unique_ptr<WiiTMD> tmd;
+	std::unique_ptr<WiiUFst> fst;
 
 	// Icon (loaded from "/meta/iconTex.tga")
 	LibRpTexture::rp_image_const_ptr img_icon;

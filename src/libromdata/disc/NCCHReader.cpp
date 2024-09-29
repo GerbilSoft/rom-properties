@@ -39,7 +39,6 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q,
 	, verifyResult(KeyManager::VerifyResult::Unknown)
 #ifdef ENABLE_DECRYPTION
 	, tid_be(0)
-	, cipher(nullptr)
 	, tmd_content_index(0)
 	, isDebug(false)
 #endif /* ENABLE_DECRYPTION */
@@ -156,7 +155,7 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q,
 	{
 		// Initialize the AES cipher.
 		// TODO: Check for errors.
-		cipher = AesCipherFactory::create();
+		cipher.reset(AesCipherFactory::create());
 		cipher->setChainingMode(IAesCipher::ChainingMode::CTR);
 		u128_t ctr;
 
@@ -192,8 +191,7 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q,
 				// NOTE: Some badly-decrypted NCSDs don't set the NoCrypto flag,
 				// so we'll try it as NoCrypto anyway.
 				memset(ncch_keys, 0, sizeof(ncch_keys));
-				delete cipher;
-				cipher = nullptr;
+				cipher.reset();
 				forceNoCrypto = true;
 				break;
 			}
@@ -209,8 +207,7 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q,
 				// NOTE: Some badly-decrypted NCSDs don't set the NoCrypto flag,
 				// so we'll try it as NoCrypto anyway.
 				memset(ncch_keys, 0, sizeof(ncch_keys));
-				delete cipher;
-				cipher = nullptr;
+				cipher.reset();
 				forceNoCrypto = true;
 				break;
 			}
@@ -235,8 +232,7 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q,
 			// NOTE: Some badly-decrypted NCSDs don't set the NoCrypto flag,
 			// so we'll try it as NoCrypto anyway.
 			memset(ncch_keys, 0, sizeof(ncch_keys));
-			delete cipher;
-			cipher = nullptr;
+			cipher.reset();
 			forceNoCrypto = true;
 		} } while (0);
 
@@ -321,13 +317,6 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q,
 			std::sort(encSections.begin(), encSections.end());
 		}
 	}
-#endif /* ENABLE_DECRYPTION */
-}
-
-NCCHReaderPrivate::~NCCHReaderPrivate()
-{
-#ifdef ENABLE_DECRYPTION
-	delete cipher;
 #endif /* ENABLE_DECRYPTION */
 }
 

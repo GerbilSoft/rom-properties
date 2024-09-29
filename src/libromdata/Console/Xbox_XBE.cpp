@@ -41,7 +41,6 @@ class Xbox_XBE_Private final : public RomDataPrivate
 {
 public:
 	Xbox_XBE_Private(const IRpFilePtr &file);
-	~Xbox_XBE_Private() final;
 
 private:
 	typedef RomDataPrivate super;
@@ -64,7 +63,7 @@ public:
 
 	// RomData subclasses
 	// TODO: Also get the save image? ($$XSIMAGE)
-	EXE *pe_exe;		// PE executable
+	unique_ptr<EXE> pe_exe;		// PE executable
 
 	// Title image.
 	// NOTE: May be a PNG image on some discs.
@@ -129,7 +128,6 @@ const RomDataInfo Xbox_XBE_Private::romDataInfo = {
 
 Xbox_XBE_Private::Xbox_XBE_Private(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
-	, pe_exe(nullptr)
 {
 	// Clear the XBE structs.
 	memset(&xbeHeader, 0, sizeof(xbeHeader));
@@ -138,11 +136,6 @@ Xbox_XBE_Private::Xbox_XBE_Private(const IRpFilePtr &file)
 	// No xtImage initially.
 	xtImage.isInit = false;
 	xtImage.isPng = false;
-}
-
-Xbox_XBE_Private::~Xbox_XBE_Private()
-{
-	delete pe_exe;
 }
 
 /**
@@ -316,7 +309,7 @@ const EXE *Xbox_XBE_Private::initEXE(void)
 {
 	if (pe_exe) {
 		// EXE is already initialized.
-		return pe_exe;
+		return pe_exe.get();
 	}
 
 	if (!file || !file->isOpen()) {
@@ -341,7 +334,7 @@ const EXE *Xbox_XBE_Private::initEXE(void)
 		EXE *const pe_exe_tmp = new EXE(subFile);
 		if (pe_exe_tmp->isOpen()) {
 			// EXE opened.
-			this->pe_exe = pe_exe_tmp;
+			this->pe_exe.reset(pe_exe_tmp);
 		} else {
 			// Failed to open the EXE.
 			delete pe_exe_tmp;
@@ -349,7 +342,7 @@ const EXE *Xbox_XBE_Private::initEXE(void)
 	}
 
 	// EXE loaded.
-	return this->pe_exe;
+	return this->pe_exe.get();
 }
 
 /**

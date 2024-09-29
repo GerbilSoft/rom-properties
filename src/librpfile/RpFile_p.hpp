@@ -11,14 +11,11 @@
 #include "config.librpfile.h"
 #include "RpFile.hpp"
 
-// C includes. (C++ namespace)
+// C includes (C++ namespace)
 #include <cassert>
 
-// C++ includes.
-#include <string>
-#include <vector>
-using std::string;
-using std::vector;
+// C++ includes
+#include <memory>
 
 // zlib for transparent gzip decompression.
 #include <zlib.h>
@@ -94,14 +91,14 @@ class RpFilePrivate
 		// Only used if the underlying file
 		// is a device node.
 		struct DeviceInfo {
-			off64_t device_pos;	// Device position.
-			off64_t device_size;	// Device size.
-			uint32_t sector_size;	// Sector size. (bytes per sector)
+			off64_t device_pos;	// Device position
+			off64_t device_size;	// Device size
+			uint32_t sector_size;	// Sector size (bytes per sector)
 			bool isKreonUnlocked;	// Is Kreon mode unlocked?
 
-			// Sector cache.
-			uint8_t *sector_cache;	// Sector cache.
-			uint32_t lba_cache;	// Last LBA cached.
+			// Sector cache
+			std::unique_ptr<uint8_t[]> sector_cache;	// Sector cache
+			uint32_t lba_cache;				// Last LBA cached
 
 			// OS-specific variables.
 #ifdef USING_FREEBSD_CAMLIB
@@ -113,7 +110,6 @@ class RpFilePrivate
 				, device_size(0)
 				, sector_size(0)
 				, isKreonUnlocked(false)
-				, sector_cache(nullptr)
 				, lba_cache(~0U)
 #ifdef USING_FREEBSD_CAMLIB
 				, cam(nullptr)
@@ -122,7 +118,6 @@ class RpFilePrivate
 
 			~DeviceInfo()
 			{
-				delete[] sector_cache;
 #ifdef USING_FREEBSD_CAMLIB
 				if (cam) {
 					cam_close_device(cam);
@@ -136,15 +131,14 @@ class RpFilePrivate
 				assert(sector_size <= 65536);
 				if (!sector_cache) {
 					if (sector_size >= 512 && sector_size <= 65536) {
-						sector_cache = new uint8_t[sector_size];
+						sector_cache.reset(new uint8_t[sector_size]);
 					}
 				}
 			}
 
 			void close(void)
 			{
-				delete[] sector_cache;
-				sector_cache = nullptr;
+				sector_cache.reset();
 
 #ifdef USING_FREEBSD_CAMLIB
 				if (cam) {
@@ -155,7 +149,7 @@ class RpFilePrivate
 			}
 		};
 
-		DeviceInfo *devInfo;
+		std::unique_ptr<DeviceInfo> devInfo;
 
 	public:
 #ifdef _WIN32

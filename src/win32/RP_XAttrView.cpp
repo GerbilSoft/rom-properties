@@ -34,7 +34,6 @@ using LibWin32UI::LoadDialog_i18n;
 // C++ STL classes
 using std::array;
 using std::tstring;
-using std::unique_ptr;
 
 // Win32 dark mode
 #include "libwin32darkmode/DarkMode.hpp"

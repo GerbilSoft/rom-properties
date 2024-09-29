@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * RpGdiplusBackend.hpp: rp_image_backend using GDI+.                      *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -14,7 +14,7 @@
 #include "rp_image_backend.hpp"
 #include "libwin32common/RpWin32_sdk.h"
 
-// C++ includes.
+// C++ includes
 #include <memory>
 
 // Gdiplus for HBITMAP conversion.
@@ -213,7 +213,7 @@ class RpGdiplusBackend final : public rp_image_backend
 		HBITMAP convBmpData_CI8(const Gdiplus::BitmapData *pBmpData);
 
 	protected:
-		Gdiplus::Bitmap *m_pGdipBmp;
+		std::unique_ptr<Gdiplus::Bitmap> m_pGdipBmp;
 
 		// BitmapData for locking.
 		bool m_isLocked;

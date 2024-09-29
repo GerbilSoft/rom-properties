@@ -26,20 +26,13 @@ DragImageLabel::DragImageLabel(const QString &text, QWidget *parent, Qt::WindowF
 	: super(text, parent, f)
 	, m_minimumImageSize(DIL_MIN_IMAGE_SIZE, DIL_MIN_IMAGE_SIZE)
 	, m_ecksBawks(false)
-	, m_anim(nullptr)
 {}
 
 DragImageLabel::DragImageLabel(QWidget *parent, Qt::WindowFlags f)
 	: super(parent, f)
 	, m_minimumImageSize(DIL_MIN_IMAGE_SIZE, DIL_MIN_IMAGE_SIZE)
 	, m_ecksBawks(false)
-	, m_anim(nullptr)
 {}
-
-DragImageLabel::~DragImageLabel()
-{
-	delete m_anim;
-}
 
 void DragImageLabel::setEcksBawks(bool newEcksBawks)
 {
@@ -107,7 +100,7 @@ bool DragImageLabel::setRpImage(const rp_image_const_ptr &img)
 bool DragImageLabel::setIconAnimData(const IconAnimDataConstPtr &iconAnimData)
 {
 	if (!m_anim) {
-		m_anim = new anim_vars();
+		m_anim.reset(new anim_vars());
 	}
 
 	// NOTE: We're not checking if the image pointer matches the

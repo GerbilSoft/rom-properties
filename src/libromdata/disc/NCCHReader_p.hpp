@@ -20,10 +20,13 @@
 #include "../crypto/N3DSVerifyKeys.hpp"
 #endif /* ENABLE_DECRYPTION */
 
-// C includes.
-#include <stdint.h>
+// C includes (C++ namespace)
+#include <cstdint>
 
-// C++ includes.
+// C++ includes
+#ifdef ENABLE_DECRYPTION
+#  include <memory>
+#endif /* ENABLE_DECRYPTION */
 #include <vector>
 
 #ifdef ENABLE_DECRYPTION
@@ -39,7 +42,6 @@ class NCCHReaderPrivate
 public:
 	NCCHReaderPrivate(NCCHReader *q, uint8_t media_unit_shift,
 		off64_t ncch_offset, uint32_t ncch_length);
-	~NCCHReaderPrivate();
 
 private:
 	RP_DISABLE_COPY(NCCHReaderPrivate)
@@ -131,7 +133,7 @@ protected:
 #ifdef ENABLE_DECRYPTION
 	uint64_t tid_be;		// Title ID (for AES-CTR init)
 	u128_t ncch_keys[2];		// Encryption keys
-	LibRpBase::IAesCipher *cipher;	// NCCH cipher
+	std::unique_ptr<LibRpBase::IAesCipher> cipher;	// NCCH cipher
 
 	uint16_t tmd_content_index;
 	bool isDebug;			// Are we using debug keys?

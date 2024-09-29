@@ -18,6 +18,7 @@ using namespace LibRpText;
 
 // C++ STL classes
 using std::string;
+using std::unique_ptr;
 using std::vector;
 
 namespace LibRomData {
@@ -26,7 +27,6 @@ class WiiTMDPrivate final : public RomDataPrivate
 {
 public:
 	WiiTMDPrivate(const IRpFilePtr &file);
-	~WiiTMDPrivate();
 
 private:
 	typedef RomDataPrivate super;
@@ -43,7 +43,7 @@ public:
 	RVL_TMD_Header tmdHeader;
 
 	// TMD v1: CMD group header
-	WUP_CMD_GroupHeader *cmdGroupHeader;
+	unique_ptr<WUP_CMD_GroupHeader> cmdGroupHeader;
 
 public:
 	/**
@@ -76,15 +76,9 @@ const RomDataInfo WiiTMDPrivate::romDataInfo = {
 
 WiiTMDPrivate::WiiTMDPrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
-	, cmdGroupHeader(nullptr)
 {
 	// Clear the TMD header struct.
 	memset(&tmdHeader, 0, sizeof(tmdHeader));
-}
-
-WiiTMDPrivate::~WiiTMDPrivate()
-{
-	delete cmdGroupHeader;
 }
 
 /**
@@ -117,7 +111,7 @@ int WiiTMDPrivate::loadCmdGroupHeader(void)
 		return -EIO;
 	}
 
-	this->cmdGroupHeader = grpHdr;
+	this->cmdGroupHeader.reset(grpHdr);
 	return 0;
 }
 

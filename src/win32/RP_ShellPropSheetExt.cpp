@@ -74,8 +74,6 @@ RP_ShellPropSheetExt_Private::RP_ShellPropSheetExt_Private(RP_ShellPropSheetExt 
 	, tfilename(tfilename)
 	, fontHandler(nullptr)
 	, lblSysInfo(nullptr)
-	, lblBanner(nullptr)
-	, lblIcon(nullptr)
 	, tabWidget(nullptr)
 	, curTabIndex(0)
 	, lblDescHeight(0)
@@ -95,10 +93,6 @@ RP_ShellPropSheetExt_Private::RP_ShellPropSheetExt_Private(RP_ShellPropSheetExt 
 
 RP_ShellPropSheetExt_Private::~RP_ShellPropSheetExt_Private()
 {
-	// Delete the banner and icon frames.
-	delete lblBanner;
-	delete lblIcon;
-
 	// Delete the copy of the RomData object's filename.
 	free(tfilename);
 }
@@ -124,7 +118,7 @@ void RP_ShellPropSheetExt_Private::loadImages(void)
 		const rp_image_const_ptr banner = romData->image(RomData::IMG_INT_BANNER);
 		if (banner && banner->isValid()) {
 			if (!lblBanner) {
-				lblBanner = new DragImageLabel(hDlgSheet);
+				lblBanner.reset(new DragImageLabel(hDlgSheet));
 				// TODO: Required size? For now, disabling scaling.
 				lblBanner->setRequiredSize(0, 0);
 			}
@@ -135,8 +129,7 @@ void RP_ShellPropSheetExt_Private::loadImages(void)
 	if (!ok) {
 		// No banner, or unable to load the banner.
 		// Delete the DragImageLabel if it was created previously.
-		delete lblBanner;
-		lblBanner = nullptr;
+		lblBanner.reset();
 	}
 
 	// Icon
@@ -146,7 +139,7 @@ void RP_ShellPropSheetExt_Private::loadImages(void)
 		const rp_image_const_ptr icon = romData->image(RomData::IMG_INT_ICON);
 		if (icon && icon->isValid()) {
 			if (!lblIcon) {
-				lblIcon = new DragImageLabel(hDlgSheet);
+				lblIcon.reset(new DragImageLabel(hDlgSheet));
 			}
 
 			// Is this an animated icon?
@@ -161,8 +154,7 @@ void RP_ShellPropSheetExt_Private::loadImages(void)
 	if (!ok) {
 		// No icon, or unable to load the icon.
 		// Delete the DragImageLabel if it was created previously.
-		delete lblIcon;
-		lblIcon = nullptr;
+		lblIcon.reset();
 	}
 }
 

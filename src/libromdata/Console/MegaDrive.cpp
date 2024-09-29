@@ -28,6 +28,7 @@ using namespace LibRpText;
 // C++ STL classes
 using std::array;
 using std::string;
+using std::unique_ptr;
 using std::vector;
 
 namespace LibRomData {
@@ -36,7 +37,6 @@ class MegaDrivePrivate final : public RomDataPrivate
 {
 public:
 	MegaDrivePrivate(const IRpFilePtr &file);
-	~MegaDrivePrivate() final;
 
 private:
 	typedef RomDataPrivate super;
@@ -185,8 +185,8 @@ public:
 	uint32_t gt_crc;		// Game Toshokan: CRC32 of $20000-$200FF.
 
 	// Extra headers
-	SMD_Header *pSmdHeader;		// SMD header.
-	MD_RomHeader *pRomHeaderLockOn;	// Locked-on ROM header.
+	//unique_ptr<SMD_Header> pSmdHeader;		// SMD header (NOTE: Not used anywhere right now.)
+	unique_ptr<MD_RomHeader> pRomHeaderLockOn;	// Locked-on ROM header
 
 public:
 	/**
@@ -238,18 +238,10 @@ MegaDrivePrivate::MegaDrivePrivate(const IRpFilePtr &file)
 	, romType(ROM_UNKNOWN)
 	, md_region(0)
 	, gt_crc(0)
-	, pSmdHeader(nullptr)
-	, pRomHeaderLockOn(nullptr)
 {
 	// Clear the various structs.
 	memset(&vectors, 0, sizeof(vectors));
 	memset(&romHeader, 0, sizeof(romHeader));
-}
-
-MegaDrivePrivate::~MegaDrivePrivate()
-{
-	delete pSmdHeader;
-	delete pRomHeaderLockOn;
 }
 
 /** Internal ROM data **/
@@ -754,8 +746,9 @@ MegaDrive::MegaDrive(const IRpFilePtr &file)
 
 			case MegaDrivePrivate::ROM_FORMAT_CART_SMD: {
 				// Save the SMD header.
-				d->pSmdHeader = new SMD_Header;
-				memcpy(d->pSmdHeader, header, sizeof(*d->pSmdHeader));
+				// NOTE: Not actually used anywhere; disabling for now.
+				//d->pSmdHeader.reset(new SMD_Header);
+				//memcpy(d->pSmdHeader.get(), header, sizeof(SMD_Header));
 
 				// First bank needs to be deinterleaved.
 				auto block = aligned_uptr<uint8_t>(16, SuperMagicDrive::SMD_BLOCK_SIZE * 2);
@@ -924,18 +917,17 @@ MegaDrive::MegaDrive(const IRpFilePtr &file)
 				if (size == SuperMagicDrive::SMD_BLOCK_SIZE) {
 					// Deinterleave the block.
 					SuperMagicDrive::decodeBlock(bin_data, smd_data);
-					d->pRomHeaderLockOn = new MD_RomHeader;
-					memcpy(d->pRomHeaderLockOn, &bin_data[0x100], sizeof(*d->pRomHeaderLockOn));
+					d->pRomHeaderLockOn.reset(new MD_RomHeader);
+					memcpy(d->pRomHeaderLockOn.get(), &bin_data[0x100], sizeof(MD_RomHeader));
 				}
 			}
 		} else {
 			// Load the header directly.
-			d->pRomHeaderLockOn = new MD_RomHeader;
-			size_t size = d->file->seekAndRead((2*1024*1024)+0x100, d->pRomHeaderLockOn, sizeof(*d->pRomHeaderLockOn));
+			d->pRomHeaderLockOn.reset(new MD_RomHeader);
+			size_t size = d->file->seekAndRead((2*1024*1024)+0x100, d->pRomHeaderLockOn.get(), sizeof(MD_RomHeader));
 			if (size != sizeof(*d->pRomHeaderLockOn)) {
 				// Error loading the ROM header.
-				delete d->pRomHeaderLockOn;
-				d->pRomHeaderLockOn = nullptr;
+				d->pRomHeaderLockOn.reset();
 			}
 		}
 
@@ -951,8 +943,7 @@ MegaDrive::MegaDrive(const IRpFilePtr &file)
 			{
 				// "SEGA" magic not found.
 				// Assume this is invalid.
-				delete d->pRomHeaderLockOn;
-				d->pRomHeaderLockOn = nullptr;
+				d->pRomHeaderLockOn.reset();
 			}
 		}
 	}
@@ -1086,7 +1077,7 @@ int MegaDrive::isRomSupported_static(const DetectInfo *info)
 		    memcmp(&pHeader[0x101], sega_magic, sizeof(sega_magic)) != 0)
 		{
 			// "SEGA" is not in the header. This might be SMD.
-			const SMD_Header *pSmdHeader = reinterpret_cast<const SMD_Header*>(pHeader);
+			const SMD_Header *const pSmdHeader = reinterpret_cast<const SMD_Header*>(pHeader);
 			if (pSmdHeader->id[0] == 0xAA && pSmdHeader->id[1] == 0xBB &&
 			    pSmdHeader->smd.file_data_type == SMD_FDT_68K_PROGRAM &&
 			    pSmdHeader->file_type == SMD_FT_SMD_GAME_FILE)
@@ -1393,7 +1384,7 @@ int MegaDrive::loadFieldData(void)
 	if (d->pRomHeaderLockOn) {
 		// Locked-on ROM is present.
 		d->fields.addTab(C_("MegaDrive", "Locked-On ROM Header"));
-		d->addFields_romHeader(d->pRomHeaderLockOn, true);
+		d->addFields_romHeader(d->pRomHeaderLockOn.get(), true);
 	}
 
 	// Try to open the ISO-9660 object.
@@ -1505,7 +1496,7 @@ int MegaDrive::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) 
 	// If this is S&K plus a locked-on ROM, use the
 	// locked-on ROM's serial number with region "S&K".
 	const MD_RomHeader *const pRomHeader = (d->pRomHeaderLockOn != nullptr
-						? d->pRomHeaderLockOn
+						? d->pRomHeaderLockOn.get()
 						: &d->romHeader);
 
 	const bool isEarlyRomHeader = d->checkIfEarlyRomHeader(pRomHeader);

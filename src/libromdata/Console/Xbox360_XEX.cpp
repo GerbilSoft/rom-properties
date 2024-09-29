@@ -53,7 +53,6 @@ class Xbox360_XEX_Private final : public RomDataPrivate
 {
 public:
 	Xbox360_XEX_Private(const IRpFilePtr &file);
-	~Xbox360_XEX_Private() final;
 
 private:
 	typedef RomDataPrivate super;
@@ -207,8 +206,8 @@ public:
 	// CBC reader for encrypted PE executables.
 	// Also used for unencrypted executables.
 	CBCReaderPtr peReader;
-	EXE *pe_exe;
-	Xbox360_XDBF *pe_xdbf;
+	unique_ptr<EXE> pe_exe;
+	unique_ptr<Xbox360_XDBF> pe_xdbf;
 
 	/**
 	 * Initialize the PE executable reader.
@@ -293,20 +292,12 @@ Xbox360_XEX_Private::Xbox360_XEX_Private(const IRpFilePtr &file)
 	, xexType(XexType::Unknown)
 	, isExecutionIDLoaded(false)
 	, keyInUse(-1)
-	, pe_exe(nullptr)
-	, pe_xdbf(nullptr)
 {
 	// Clear the headers.
 	memset(&xex2Header, 0, sizeof(xex2Header));
 	memset(&secInfo, 0, sizeof(secInfo));
 	memset(&executionID, 0, sizeof(executionID));
 	memset(&fileFormatInfo, 0, sizeof(fileFormatInfo));
-}
-
-Xbox360_XEX_Private::~Xbox360_XEX_Private()
-{
-	delete pe_xdbf;
-	delete pe_exe;
 }
 
 /**
@@ -1175,7 +1166,7 @@ const EXE *Xbox360_XEX_Private::initEXE(void)
 {
 	if (pe_exe) {
 		// EXE is already initialized.
-		return pe_exe;
+		return pe_exe.get();
 	}
 
 	// Initialize the PE reader.
@@ -1194,7 +1185,7 @@ const EXE *Xbox360_XEX_Private::initEXE(void)
 		if (peFile_tmp->isOpen()) {
 			EXE *const pe_exe_tmp = new EXE(peFile_tmp);
 			if (pe_exe_tmp->isOpen()) {
-				pe_exe = pe_exe_tmp;
+				pe_exe.reset(pe_exe_tmp);
 			} else {
 				delete pe_exe_tmp;
 			}
@@ -1204,13 +1195,13 @@ const EXE *Xbox360_XEX_Private::initEXE(void)
 	{
 		EXE *const pe_exe_tmp = new EXE(peReader);
 		if (pe_exe_tmp->isOpen()) {
-			pe_exe = pe_exe_tmp;
+			pe_exe.reset(pe_exe_tmp);
 		} else {
 			delete pe_exe_tmp;
 		}
 	}
 
-	return pe_exe;
+	return pe_exe.get();
 }
 
 /**
@@ -1221,7 +1212,7 @@ const Xbox360_XDBF *Xbox360_XEX_Private::initXDBF(void)
 {
 	if (pe_xdbf) {
 		// XDBF is already initialized.
-		return pe_xdbf;
+		return pe_xdbf.get();
 	}
 
 	// Initialize the PE reader.
@@ -1272,13 +1263,13 @@ const Xbox360_XDBF *Xbox360_XEX_Private::initXDBF(void)
 		// FIXME: XEX1 XDBF is either encrypted or garbage...
 		Xbox360_XDBF *const pe_xdbf_tmp = new Xbox360_XDBF(peFile_tmp, true);
 		if (pe_xdbf_tmp->isOpen()) {
-			pe_xdbf = pe_xdbf_tmp;
+			pe_xdbf.reset(pe_xdbf_tmp);
 		} else {
 			delete pe_xdbf_tmp;
 		}
 	}
 
-	return pe_xdbf;
+	return pe_xdbf.get();
 }
 
 /**

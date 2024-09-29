@@ -31,7 +31,7 @@ namespace LibRpTexture {
 rp_image_ptr rp_image::dup(void) const
 {
 	RP_D(const rp_image);
-	const rp_image_backend *const backend = d->backend;
+	const rp_image_backend *const backend = d->backend.get();
 
 	const int width = backend->width;
 	const int height = backend->height;
@@ -90,7 +90,7 @@ rp_image_ptr rp_image::dup(void) const
 rp_image_ptr rp_image::dup_ARGB32(void) const
 {
 	RP_D(const rp_image);
-	const rp_image_backend *const backend = d->backend;
+	const rp_image_backend *const backend = d->backend.get();
 
 	if (backend->format == Format::ARGB32) {
 		// Already in ARGB32.
@@ -172,7 +172,7 @@ rp_image_ptr rp_image::squared(void) const
 	// Add extra transparent columns/rows before
 	// converting to HBITMAP.
 	RP_D(const rp_image);
-	const rp_image_backend *const backend = d->backend;
+	const rp_image_backend *const backend = d->backend.get();
 
 	const int width = backend->width;
 	const int height = backend->height;
@@ -218,7 +218,7 @@ rp_image_ptr rp_image::squared(void) const
 		src_row_bytes = this->row_bytes();
 	} else {
 		// Using a temporary image.
-		const rp_image_backend *const tmp_backend = tmp_rp_image->d_ptr->backend;
+		const rp_image_backend *const tmp_backend = tmp_rp_image->d_ptr->backend.get();
 		src = static_cast<const uint8_t*>(tmp_backend->data());
 		src_stride = tmp_backend->stride;
 		src_row_bytes = tmp_rp_image->row_bytes();
@@ -312,7 +312,7 @@ rp_image_ptr rp_image::resized(int width, int height, Alignment alignment, uint3
 	}
 
 	RP_D(const rp_image);
-	const rp_image_backend *const backend = d->backend;
+	const rp_image_backend *const backend = d->backend.get();
 
 	const int orig_width = backend->width;
 	const int orig_height = backend->height;
@@ -514,7 +514,7 @@ rp_image_ptr rp_image::resized(int width, int height, Alignment alignment, uint3
 int rp_image::apply_chroma_key_cpp(uint32_t key)
 {
 	RP_D(rp_image);
-	rp_image_backend *const backend = d->backend;
+	rp_image_backend *const backend = d->backend.get();
 
 	assert(backend->format == Format::ARGB32);
 	if (backend->format != Format::ARGB32) {
@@ -580,7 +580,7 @@ rp_image_ptr rp_image::flip(FlipOp op) const
 	}
 
 	RP_D(const rp_image);
-	rp_image_backend *const backend = d->backend;
+	rp_image_backend *const backend = d->backend.get();
 
 	const int width = backend->width;
 	const int height = backend->height;
@@ -711,7 +711,7 @@ int rp_image::swizzle_cpp(const char *swz_spec)
 {
 	// TODO: Improve C performance.
 	RP_D(rp_image);
-	rp_image_backend *const backend = d->backend;
+	rp_image_backend *const backend = d->backend.get();
 	assert(backend->format == rp_image::Format::ARGB32);
 	if (backend->format != rp_image::Format::ARGB32) {
 		// ARGB32 is required.
@@ -826,7 +826,7 @@ int rp_image::unswizzle_YCoCg(void)
 {
 	// TODO: SSE-optimized version.
 	RP_D(rp_image);
-	rp_image_backend *const backend = d->backend;
+	rp_image_backend *const backend = d->backend.get();
 	assert(backend->format == rp_image::Format::ARGB32);
 	if (backend->format != rp_image::Format::ARGB32) {
 		// ARGB32 is required.
@@ -878,7 +878,7 @@ int rp_image::unswizzle_YCoCg_scaled(void)
 {
 	// TODO: SSE-optimized version.
 	RP_D(rp_image);
-	rp_image_backend *const backend = d->backend;
+	rp_image_backend *const backend = d->backend.get();
 	assert(backend->format == rp_image::Format::ARGB32);
 	if (backend->format != rp_image::Format::ARGB32) {
 		// ARGB32 is required.
@@ -937,7 +937,7 @@ int rp_image::unswizzle_AExp(void)
 {
 	// TODO: SSE-optimized version.
 	RP_D(rp_image);
-	rp_image_backend *const backend = d->backend;
+	rp_image_backend *const backend = d->backend.get();
 	assert(backend->format == rp_image::Format::ARGB32);
 	if (backend->format != rp_image::Format::ARGB32) {
 		// ARGB32 is required.

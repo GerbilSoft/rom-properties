@@ -52,7 +52,7 @@ DELAYLOAD_TEST_FUNCTION_IMPL0(get_crc_table);
 
 RpFilePrivate::RpFilePrivate(RpFile *q, const wchar_t *filenameW, RpFile::FileMode mode)
 	: q_ptr(q), file(INVALID_HANDLE_VALUE), filename(nullptr)
-	, mode(mode), gzfd(nullptr), gzsz(-1), devInfo(nullptr)
+	, mode(mode), gzfd(nullptr), gzsz(-1)
 {
 	assert(filenameW != nullptr);
 	this->filenameW = wcsdup(filenameW);
@@ -68,7 +68,6 @@ RpFilePrivate::~RpFilePrivate()
 	}
 	free(filename);
 	free(filenameW);
-	delete devInfo;
 }
 
 /**
@@ -208,7 +207,7 @@ int RpFilePrivate::reOpenFile(void)
 		// This is a device. Allocate devInfo.
 		// NOTE: This is kept around until RpFile is deleted,
 		// even if the device can't be opeend for some reason.
-		devInfo = new DeviceInfo();
+		devInfo.reset(new DeviceInfo());
 
 		if (mode & RpFile::FM_WRITE) {
 			// Writing to block devices is not allowed.

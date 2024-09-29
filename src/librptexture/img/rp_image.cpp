@@ -196,15 +196,15 @@ rp_image_private::rp_image_private(int width, int height, rp_image::Format forma
 	    (format != rp_image::Format::CI8 && format != rp_image::Format::ARGB32))
 	{
 		// Invalid image specifications.
-		this->backend = new rp_image_backend_default(0, 0, rp_image::Format::None);
+		this->backend.reset(new rp_image_backend_default(0, 0, rp_image::Format::None));
 		return;
 	}
 
 	// Allocate a storage object for the image.
 	if (backend_fn != nullptr) {
-		this->backend = backend_fn(width, height, format);
+		this->backend.reset(backend_fn(width, height, format));
 	} else {
-		this->backend = new rp_image_backend_default(width, height, format);
+		this->backend.reset(new rp_image_backend_default(width, height, format));
 	}
 }
 
@@ -222,11 +222,6 @@ rp_image_private::rp_image_private(rp_image_backend *backend)
 	// Clear the metadata.
 	// TODO: Store sBIT in the backend and copy it?
 	memset(&sBIT, 0, sizeof(sBIT));
-}
-
-rp_image_private::~rp_image_private()
-{
-	delete backend;
 }
 
 /** rp_image **/
@@ -288,7 +283,7 @@ rp_image::rp_image_backend_creator_fn rp_image::backendCreatorFn(void)
 const rp_image_backend *rp_image::backend(void) const
 {
 	RP_D(const rp_image);
-	return d->backend;
+	return d->backend.get();
 }
 
 /** Properties. **/

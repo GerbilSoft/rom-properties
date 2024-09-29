@@ -76,7 +76,7 @@ int RpFilePrivate::readOneLBA(uint32_t lba)
 	// Read the first block.
 	if (devInfo->isKreonUnlocked) {
 		// Kreon drive. Use SCSI commands.
-		int sret = scsi_read(lba, 1, devInfo->sector_cache, devInfo->sector_size);
+		int sret = scsi_read(lba, 1, devInfo->sector_cache.get(), devInfo->sector_size);
 		if (sret != 0) {
 			// Read error.
 			// TODO: Handle this properly?
@@ -99,7 +99,7 @@ int RpFilePrivate::readOneLBA(uint32_t lba)
 		}
 
 		DWORD bytesRead;
-		bRet = ReadFile(file, devInfo->sector_cache, devInfo->sector_size, &bytesRead, nullptr);
+		bRet = ReadFile(file, devInfo->sector_cache.get(), devInfo->sector_size, &bytesRead, nullptr);
 		if (bRet == 0 || bytesRead != devInfo->sector_size) {
 			// Read error.
 			devInfo->lba_cache = ~0U;
@@ -114,7 +114,7 @@ int RpFilePrivate::readOneLBA(uint32_t lba)
 			q->m_lastError = errno;
 			return -q->m_lastError;
 		}
-		size_t bytesRead = fread(devInfo->sector_cache, 1, devInfo->sector_size, file);
+		size_t bytesRead = fread(devInfo->sector_cache.get(), 1, devInfo->sector_size, file);
 		if (ferror(file) || bytesRead != devInfo->sector_size) {
 			// Read error.
 			devInfo->lba_cache = ~0U;
@@ -305,7 +305,7 @@ size_t RpFilePrivate::readUsingBlocks(void *ptr, size_t size)
 		}
 
 		// Copy the data from the sector buffer.
-		memcpy(ptr8, devInfo->sector_cache, size);
+		memcpy(ptr8, devInfo->sector_cache.get(), size);
 
 		devInfo->device_pos += size;
 		ret += size;

@@ -20,6 +20,10 @@
 #include "librpfile/IRpFile.hpp"
 using namespace LibRpFile;
 
+#ifdef ENABLE_DECRYPTION
+using std::unique_ptr;
+#endif /* ENABLE_DECRYPTION */
+
 namespace LibRpBase {
 
 class CBCReaderPrivate
@@ -27,7 +31,6 @@ class CBCReaderPrivate
 	public:
 		CBCReaderPrivate(CBCReader *q, off64_t offset, off64_t length,
 			const uint8_t *key, const uint8_t *iv);
-		~CBCReaderPrivate();
 
 	private:
 		RP_DISABLE_COPY(CBCReaderPrivate)
@@ -43,8 +46,8 @@ class CBCReaderPrivate
 		off64_t pos;
 
 #ifdef ENABLE_DECRYPTION
-		// Encryption cipher.
-		LibRpBase::IAesCipher *cipher;
+		// Encryption cipher
+		unique_ptr<IAesCipher> cipher;
 		uint8_t key[16];
 		uint8_t iv[16];
 #endif /* ENABLE_DECRYPTION */
@@ -59,9 +62,6 @@ CBCReaderPrivate::CBCReaderPrivate(CBCReader *q,
 	, offset(offset)
 	, length(length)
 	, pos(0)
-#ifdef ENABLE_DECRYPTION
-	, cipher(nullptr)
-#endif
 {
 	assert((bool)q->m_file);
 	if (!q->m_file) {
@@ -88,7 +88,7 @@ CBCReaderPrivate::CBCReaderPrivate(CBCReader *q,
 	}
 
 	// Create the cipher.
-	cipher = AesCipherFactory::create();
+	cipher.reset(AesCipherFactory::create());
 	if (!cipher) {
 		// Unable to initialize decryption.
 		// TODO: Error code.
@@ -108,13 +108,6 @@ CBCReaderPrivate::CBCReaderPrivate(CBCReader *q,
 	assert(iv == nullptr);
 	RP_UNUSED(key);
 	RP_UNUSED(iv);
-#endif /* ENABLE_DECRYPTION */
-}
-
-CBCReaderPrivate::~CBCReaderPrivate()
-{
-#ifdef ENABLE_DECRYPTION
-	delete cipher;
 #endif /* ENABLE_DECRYPTION */
 }
 

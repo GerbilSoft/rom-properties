@@ -36,7 +36,6 @@ class DragImageLabel : public QLabel
 public:
 	explicit DragImageLabel(const QString &text, QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
 	explicit DragImageLabel(QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
-	~DragImageLabel() override;
 
 private:
 	typedef QLabel super;
@@ -175,5 +174,5 @@ private:
 			delete tmrIconAnim;
 		}
 	};
-	anim_vars *m_anim;
+	std::unique_ptr<anim_vars> m_anim;
 };

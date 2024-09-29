@@ -34,6 +34,7 @@ using LibWin32UI::LoadDialog_i18n;
 using std::string;
 using std::wstring;
 using std::u16string;
+using std::unique_ptr;
 
 // Maximum number of tabs.
 // NOTE: Must be adjusted if more tabs are added!
@@ -139,7 +140,7 @@ public:
 	void checkForUpdates(void);
 
 	bool bCheckedForUpdates;	// Checked for updates yet?
-	UpdateChecker *updChecker;
+	unique_ptr<UpdateChecker> updChecker;
 
 	/**
 	 * An error occurred while trying to retrieve the update version.
@@ -259,7 +260,6 @@ AboutTabPrivate::AboutTabPrivate()
 	, hFontBold(nullptr)
 	, bUseFriendlyLinks(false)
 	, bCheckedForUpdates(false)
-	, updChecker(nullptr)
 	, hRichEdit(nullptr)
 	, hUpdateCheck(nullptr)
 	, hbrBkgnd(nullptr)
@@ -288,10 +288,6 @@ AboutTabPrivate::~AboutTabPrivate()
 #endif /* MSFTEDIT_USE_41 */
 	if (hRichEd20_dll) {
 		FreeLibrary(hRichEd20_dll);
-	}
-
-	if (updChecker) {
-		delete updChecker;
 	}
 
 	// Dark mode background brush
@@ -587,7 +583,7 @@ void AboutTabPrivate::checkForUpdates(void)
 	SendMessage(hUpdateCheck, EM_STREAMIN, SF_RTF, (LPARAM)&es);
 
 	if (!updChecker) {
-		updChecker = new UpdateChecker();
+		updChecker.reset(new UpdateChecker());
 	}
 	if (!updChecker->run(hWndPropSheet)) {
 		// Failed to run the Update Checker.

@@ -30,6 +30,9 @@ namespace Gdiplus {
 // for IsThemeActive()
 #include <uxtheme.h>
 
+// C++ STL classes
+using std::unique_ptr;
+
 class DragImageLabelPrivate
 {
 public:
@@ -81,7 +84,7 @@ public:
 			}
 		}
 	};
-	anim_vars *anim;
+	unique_ptr<anim_vars> anim;
 
 	// Use nearest-neighbor scaling?
 	bool useNearestNeighbor;
@@ -142,8 +145,6 @@ DragImageLabelPrivate::DragImageLabelPrivate(HWND hwndParent)
 
 DragImageLabelPrivate::~DragImageLabelPrivate()
 {
-	delete anim;
-
 	if (hbmpImg) {
 		DeleteBitmap(hbmpImg);
 	}
@@ -529,9 +530,9 @@ bool DragImageLabel::setIconAnimData(const IconAnimDataConstPtr &iconAnimData)
 	RP_D(DragImageLabel);
 
 	if (!d->anim) {
-		d->anim = new DragImageLabelPrivate::anim_vars(d->hwndParent);
+		d->anim.reset(new DragImageLabelPrivate::anim_vars(d->hwndParent));
 	}
-	auto *const anim = d->anim;
+	auto *const anim = d->anim.get();
 
 	// NOTE: We're not checking if the image pointer matches the
 	// previously stored image, since the underlying image may

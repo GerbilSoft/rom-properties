@@ -57,7 +57,7 @@ static FORCEINLINE void un_premultiply_pixel_sse41(argb32_t &px)
 int rp_image::un_premultiply_sse41(void)
 {
 	RP_D(const rp_image);
-	rp_image_backend *const backend = d->backend;
+	rp_image_backend *const backend = d->backend.get();
 	assert(backend->format == rp_image::Format::ARGB32);
 	if (backend->format != rp_image::Format::ARGB32) {
 		// Incorrect format...

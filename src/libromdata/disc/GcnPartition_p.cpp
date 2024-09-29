@@ -23,7 +23,6 @@ GcnPartitionPrivate::GcnPartitionPrivate(GcnPartition *q,
 	, data_size(-1)
 	, bootLoaded(false)
 	, offsetShift(offsetShift)
-	, fst(nullptr)
 {
 	// NOTE: The discReader parameter is needed because
 	// WiiPartitionPrivate is created *before* the
@@ -37,11 +36,6 @@ GcnPartitionPrivate::GcnPartitionPrivate(GcnPartition *q,
 	this->data_offset    = partition_offset;
 	this->data_size      = data_size;
 	this->partition_size = data_size;
-}
-
-GcnPartitionPrivate::~GcnPartitionPrivate()
-{
-	delete fst;
 }
 
 /**
@@ -168,7 +162,7 @@ int GcnPartitionPrivate::loadFst(void)
 		q->m_lastError = EIO;
 		return -EIO;
 	}
-	this->fst = gcnFst;
+	this->fst.reset(gcnFst);
 	return 0;
 }
 

@@ -35,7 +35,6 @@ namespace LibRpTexture {
  */
 RpGdiplusBackend::RpGdiplusBackend(int width, int height, rp_image::Format format)
 	: super(width, height, format)
-	, m_pGdipBmp(nullptr)
 	, m_isLocked(false)
 	, m_bytesppShift(0)
 	, m_gdipFmt(0)
@@ -64,7 +63,7 @@ RpGdiplusBackend::RpGdiplusBackend(int width, int height, rp_image::Format forma
 			clear_properties();
 			return;
 	}
-	m_pGdipBmp = new Gdiplus::Bitmap(width, height, m_gdipFmt);
+	m_pGdipBmp.reset(new Gdiplus::Bitmap(width, height, m_gdipFmt));
 
 	// Do the initial lock.
 	if (doInitialLock() != 0)
@@ -84,8 +83,7 @@ RpGdiplusBackend::RpGdiplusBackend(int width, int height, rp_image::Format forma
 		uint8_t *const pPalData = static_cast<uint8_t*>(aligned_malloc(16, gdipPalette_sz + 8));
 		if (!pPalData) {
 			// ENOMEM
-			delete m_pGdipBmp;
-			m_pGdipBmp = nullptr;
+			m_pGdipBmp.reset();
 			clear_properties();
 			return;
 		}
@@ -146,8 +144,7 @@ RpGdiplusBackend::RpGdiplusBackend(Gdiplus::Bitmap *pGdipBmp)
 		default:
 			// Unsupported format.
 			assert(!"Unsupported Gdiplus::PixelFormat.");
-			delete m_pGdipBmp;
-			m_pGdipBmp = nullptr;
+			m_pGdipBmp.reset();
 			return;
 	}
 
@@ -162,8 +159,7 @@ RpGdiplusBackend::RpGdiplusBackend(Gdiplus::Bitmap *pGdipBmp)
 		m_pGdipPalette = (Gdiplus::ColorPalette*)malloc(gdipPalette_sz);
 		if (!m_pGdipPalette) {
 			// ENOMEM
-			delete m_pGdipBmp;
-			m_pGdipBmp = nullptr;
+			m_pGdipBmp.reset();
 			m_gdipFmt = 0;
 			clear_properties();
 			return;
@@ -178,8 +174,7 @@ RpGdiplusBackend::RpGdiplusBackend(Gdiplus::Bitmap *pGdipBmp)
 			// Failed to retrieve the palette.
 			free(m_pGdipPalette);
 			m_pGdipPalette = nullptr;
-			delete m_pGdipBmp;
-			m_pGdipBmp = nullptr;
+			m_pGdipBmp.reset();
 			m_gdipFmt = 0;
 			clear_properties();
 			return;
@@ -205,7 +200,6 @@ RpGdiplusBackend::~RpGdiplusBackend()
 		if (m_isLocked) {
 			m_pGdipBmp->UnlockBits(&m_gdipBmpData);
 		}
-		delete m_pGdipBmp;
 	}
 
 	// Palette is adjusted by 8 bytes in order to ensure
@@ -229,8 +223,7 @@ int RpGdiplusBackend::doInitialLock(void)
 	Gdiplus::Status status = lock();
 	if (status != Gdiplus::Status::Ok) {
 		// Error locking the GDI+ bitmap.
-		delete m_pGdipBmp;
-		m_pGdipBmp = nullptr;
+		m_pGdipBmp.reset();
 		m_gdipFmt = 0;
 		this->width = 0;
 		this->height = 0;
@@ -331,8 +324,8 @@ int RpGdiplusBackend::shrink(int width, int height)
 		return -EIO;
 	}
 
-	Gdiplus::Bitmap *const pGdipBmp_old = m_pGdipBmp;
-	m_pGdipBmp = pGdipBmp_old->Clone(0, 0, width, height, m_gdipFmt);
+	Gdiplus::Bitmap *const pGdipBmp_old = m_pGdipBmp.release();
+	m_pGdipBmp.reset(pGdipBmp_old->Clone(0, 0, width, height, m_gdipFmt));
 	this->width = width;
 	this->height = height;
 	delete pGdipBmp_old;
@@ -624,7 +617,7 @@ HBITMAP RpGdiplusBackend::toHBITMAP(uint32_t bgColor, SIZE size, bool nearest)
 	} else {
 		// Use the regular bitmap.
 		unlock();
-		status = g.DrawImage(m_pGdipBmp, 0, 0, size.cx, size.cy);
+		status = g.DrawImage(m_pGdipBmp.get(), 0, 0, size.cx, size.cy);
 		lock();
 	}
 
@@ -775,7 +768,7 @@ HBITMAP RpGdiplusBackend::toHBITMAP_alpha(SIZE size, bool nearest)
 		g.DrawImage(pTmpBmp.get(), 0, 0, size.cx, size.cy);
 	} else {
 		// Use the regular bitmap.
-		g.DrawImage(m_pGdipBmp, 0, 0, size.cx, size.cy);
+		g.DrawImage(m_pGdipBmp.get(), 0, 0, size.cx, size.cy);
 	}
 
 	if (!pTmpBmp) {

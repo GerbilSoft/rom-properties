@@ -2,13 +2,16 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * rp_image_p.hpp: Image class. (Private class)                            *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #pragma once
 
 #include "rp_image.hpp"
+
+// C++ includes
+#include <memory>
 
 namespace LibRpTexture {
 
@@ -37,8 +40,6 @@ class rp_image_private
 		 */
 		explicit rp_image_private(rp_image_backend *backend);
 
-		~rp_image_private();
-
 	private:
 		RP_DISABLE_COPY(rp_image_private)
 
@@ -46,10 +47,10 @@ class rp_image_private
 		static rp_image::rp_image_backend_creator_fn backend_fn;
 
 	public:
-		// Image backend.
-		rp_image_backend *backend;
+		// Image backend
+		std::unique_ptr<rp_image_backend> backend;
 
-		// Metadata.
+		// Metadata
 		bool has_sBIT;
 		rp_image::sBIT_t sBIT;
 };

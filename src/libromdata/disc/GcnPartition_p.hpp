@@ -8,17 +8,20 @@
 
 #pragma once
 
-#include <stdint.h>
+#include <cstdint>
 #include "../Console/gcn_structs.h"
+
+// C++ includes
+#include <memory>
 
 namespace LibRpBase {
 	class IDiscReader;
 }
+#include "../disc/GcnFst.hpp"
 
 namespace LibRomData {
 
 class GcnPartition;
-class GcnFst;
 
 class GcnPartitionPrivate
 {
@@ -26,7 +29,7 @@ public:
 	GcnPartitionPrivate(GcnPartition *q,
 		off64_t partition_offset, off64_t data_size,
 		uint8_t offsetShift = 0);
-	virtual ~GcnPartitionPrivate();
+	virtual ~GcnPartitionPrivate() = default;
 
 private:
 	RP_DISABLE_COPY(GcnPartitionPrivate)
@@ -63,7 +66,7 @@ public:
 	int loadBootBlockAndInfo(void);
 
 	// Filesystem table
-	GcnFst *fst;
+	std::unique_ptr<GcnFst> fst;
 
 	/**
 	 * Load the FST.

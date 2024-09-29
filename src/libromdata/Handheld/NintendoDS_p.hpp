@@ -12,6 +12,7 @@
 #include "nds_structs.h"
 
 // C++ includes
+#include <memory>
 #include <vector>
 
 // Icon/title data
@@ -29,7 +30,6 @@ class NintendoDSPrivate final : public LibRpBase::RomDataPrivate
 {
 public:
 	NintendoDSPrivate(const LibRpFile::IRpFilePtr &file, bool cia);
-	~NintendoDSPrivate() final;;
 
 private:
 	typedef LibRpBase::RomDataPrivate super;
@@ -97,7 +97,7 @@ public:
 	NDS_RomHeader romHeader;
 
 	// Icon/title data
-	NintendoDS_BNR *nds_icon_title;
+	std::unique_ptr<NintendoDS_BNR> nds_icon_title;
 
 	// Cached ROM size to determine trimmed or untrimmed.
 	off64_t romSize;

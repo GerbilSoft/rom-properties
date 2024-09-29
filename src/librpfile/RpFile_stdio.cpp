@@ -24,13 +24,16 @@
 #include <sys/stat.h>	// stat(), statx()
 #include <unistd.h>	// ftruncate()
 
+// C++ STL classes
+using std::string;
+
 namespace LibRpFile {
 
 /** RpFilePrivate **/
 
 RpFilePrivate::RpFilePrivate(RpFile *q, const char *filename, RpFile::FileMode mode)
 	: q_ptr(q), file(INVALID_HANDLE_VALUE)
-	, mode(mode), gzfd(nullptr), gzsz(-1), devInfo(nullptr)
+	, mode(mode), gzfd(nullptr), gzsz(-1)
 {
 	assert(filename != nullptr);
 	this->filename = strdup(filename);
@@ -45,7 +48,6 @@ RpFilePrivate::~RpFilePrivate()
 		fclose(file);
 	}
 	free(filename);
-	delete devInfo;
 }
 
 /**
@@ -213,7 +215,7 @@ int RpFilePrivate::reOpenFile(void)
 		// Allocate devInfo.
 		// NOTE: This is kept around until RpFile is deleted,
 		// even if the device can't be opeend for some reason.
-		devInfo = new DeviceInfo();
+		devInfo.reset(new DeviceInfo());
 
 		// Get the device size from the OS.
 		q->rereadDeviceSizeOS();

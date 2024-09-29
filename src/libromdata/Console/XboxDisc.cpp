@@ -29,6 +29,7 @@ using namespace LibRpTexture;
 // C++ STL classes
 using std::array;
 using std::string;
+using std::unique_ptr;
 using std::vector;
 
 namespace LibRomData {
@@ -72,7 +73,7 @@ public:
 	XDVDFSPartitionPtr xdvdfsPartition;
 
 	// default.xbe / default.xex
-	RomData *defaultExeData;
+	unique_ptr<RomData> defaultExeData;
 
 	enum class ExeType {
 		Unknown	= -1,
@@ -151,7 +152,6 @@ XboxDiscPrivate::XboxDiscPrivate(const IRpFilePtr &file)
 	, wave(0)
 	, isKreon(false)
 	, xdvdfs_addr(0)
-	, defaultExeData(nullptr)
 	, exeType(ExeType::Unknown)
 {
 }
@@ -161,8 +161,6 @@ XboxDiscPrivate::~XboxDiscPrivate()
 	if (isKreon) {
 		lockKreonDrive();
 	}
-
-	delete defaultExeData;
 }
 
 /**
@@ -177,7 +175,7 @@ RomData *XboxDiscPrivate::openDefaultExe(ExeType *pExeType)
 		if (pExeType) {
 			*pExeType = exeType;
 		}
-		return defaultExeData;
+		return defaultExeData.get();
 	}
 
 	if (!xdvdfsPartition || !xdvdfsPartition->isOpen()) {
@@ -191,7 +189,7 @@ RomData *XboxDiscPrivate::openDefaultExe(ExeType *pExeType)
 		RomData *const xexData = new Xbox360_XEX(f_defaultExe);
 		if (xexData->isValid()) {
 			// default.xex is open and valid.
-			defaultExeData = xexData;
+			defaultExeData.reset(xexData);
 			exeType = ExeType::XEX;
 			if (pExeType) {
 				*pExeType = ExeType::XEX;
@@ -210,7 +208,7 @@ RomData *XboxDiscPrivate::openDefaultExe(ExeType *pExeType)
 		RomData *const xbeData = new Xbox_XBE(f_defaultExe);
 		if (xbeData->isValid()) {
 			// default.xbe is open and valid.
-			defaultExeData = xbeData;
+			defaultExeData.reset(xbeData);
 			exeType = ExeType::XBE;
 			if (pExeType) {
 				*pExeType = ExeType::XBE;

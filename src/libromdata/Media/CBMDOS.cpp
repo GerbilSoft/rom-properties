@@ -34,6 +34,7 @@ using namespace LibRpTexture;
 using std::array;
 using std::bitset;
 using std::string;
+using std::unique_ptr;
 using std::vector;
 
 // Uninitialized vector class
@@ -45,7 +46,6 @@ class CBMDOSPrivate final : public RomDataPrivate
 {
 public:
 	CBMDOSPrivate(const IRpFilePtr &file);
-	~CBMDOSPrivate();
 
 private:
 	typedef RomDataPrivate super;
@@ -134,7 +134,7 @@ public:
 	struct GCR_track_buffer_t {
 		uint8_t sectors[21][CBMDOS_SECTOR_SIZE];
 	};
-	GCR_track_buffer_t *GCR_track_buffer;
+	unique_ptr<GCR_track_buffer_t> GCR_track_buffer;
 
 	// GCR track size (usually 7,928; we'll allow up to 8,192)
 	unsigned int GCR_track_size;
@@ -264,16 +264,10 @@ CBMDOSPrivate::CBMDOSPrivate(const IRpFilePtr &file)
 	, GCR_track_cache_number(0)
 	, err_bytes_count(0)
 	, err_bytes_offset(0)
-	, GCR_track_buffer(nullptr)
 	, GCR_track_size(0)
 {
 	// Clear the ROM header struct.
 	memset(&diskHeader, 0, sizeof(diskHeader));
-}
-
-CBMDOSPrivate::~CBMDOSPrivate()
-{
-	delete GCR_track_buffer;
 }
 
 /**
@@ -614,7 +608,7 @@ int CBMDOSPrivate::read_GCR_track(uint8_t track)
 
 	// Make sure the GCR track buffer is allocated.
 	if (!GCR_track_buffer) {
-		GCR_track_buffer = new GCR_track_buffer_t;
+		GCR_track_buffer.reset(new GCR_track_buffer_t);
 	}
 
 	// NOTE: C1541 normally writes 40 '1' bits (FF FF FF FF FF),

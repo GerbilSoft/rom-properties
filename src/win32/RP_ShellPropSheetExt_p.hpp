@@ -33,6 +33,7 @@ namespace LibRpBase {
 #include "tcharx.h"
 
 // C++ includes
+#include <memory>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -125,11 +126,11 @@ public:
 	 */
 	inline int ListView_CustomDraw(NMLVCUSTOMDRAW *plvcd) const;
 
-	// Banner and icon.
-	DragImageLabel *lblBanner;
-	DragImageLabel *lblIcon;
+	// Banner and icon
+	std::unique_ptr<DragImageLabel> lblBanner;
+	std::unique_ptr<DragImageLabel> lblIcon;
 
-	// Tab layout.
+	// Tab layout
 	HWND tabWidget;
 	struct tab {
 		HWND hDlg;		// Tab child dialog.

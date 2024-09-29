@@ -65,7 +65,6 @@ const RomDataInfo NintendoDSPrivate::romDataInfo = {
 NintendoDSPrivate::NintendoDSPrivate(const IRpFilePtr &file, bool cia)
 	: super(file, &romDataInfo)
 	, romType(RomType::Unknown)
-	, nds_icon_title(nullptr)
 	, romSize(0)
 	, secData(0)
 	, secArea(NDS_SECAREA_UNKNOWN)
@@ -75,11 +74,6 @@ NintendoDSPrivate::NintendoDSPrivate(const IRpFilePtr &file, bool cia)
 {
 	// Clear the various structs.
 	memset(&romHeader, 0, sizeof(romHeader));
-}
-
-NintendoDSPrivate::~NintendoDSPrivate()
-{
-	delete nds_icon_title;
 }
 
 /**
@@ -118,7 +112,7 @@ int NintendoDSPrivate::loadIconTitleData(void)
 	}
 
 	// Save the banner file.
-	this->nds_icon_title = bnrFile;
+	this->nds_icon_title.reset(bnrFile);
 	return 0;
 }
 

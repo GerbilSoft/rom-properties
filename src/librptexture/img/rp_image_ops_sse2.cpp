@@ -3,7 +3,7 @@
  * rp_image_ops.cpp: Image class. (operations)                             *
  * SSE2-optimized version.                                                 *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -37,7 +37,7 @@ namespace LibRpTexture {
 int rp_image::apply_chroma_key_sse2(uint32_t key)
 {
 	RP_D(rp_image);
-	rp_image_backend *const backend = d->backend;
+	rp_image_backend *const backend = d->backend.get();
 	assert(backend->format == Format::ARGB32);
 	if (backend->format != Format::ARGB32) {
 		// ARGB32 only.

@@ -99,7 +99,7 @@ static FORCEINLINE uint32_t un_premultiply_pixel(uint32_t px)
 int rp_image::un_premultiply_cpp(void)
 {
 	RP_D(const rp_image);
-	rp_image_backend *const backend = d->backend;
+	rp_image_backend *const backend = d->backend.get();
 	assert(backend->format == rp_image::Format::ARGB32);
 	if (backend->format != rp_image::Format::ARGB32) {
 		// Incorrect format...
@@ -172,7 +172,7 @@ int rp_image::premultiply(void)
 	// TODO: Qt doesn't have SSE-optimized builds.
 
 	RP_D(const rp_image);
-	rp_image_backend *const backend = d->backend;
+	rp_image_backend *const backend = d->backend.get();
 	assert(backend->format == rp_image::Format::ARGB32);
 	if (backend->format != rp_image::Format::ARGB32) {
 		// Incorrect format...
