@@ -1695,7 +1695,7 @@ msgstr "Durata Dissolvenza"
 #: ../src/libromdata/Audio/PSF.cpp:624
 msgctxt "RomData|Audio"
 msgid "Comment"
-msgstr ""
+msgstr "Commento"
 
 #: ../src/libromdata/Audio/SAP.cpp:576 ../src/libromdata/Audio/SID.cpp:231
 msgctxt "RomData|Audio"
