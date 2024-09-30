@@ -69,9 +69,9 @@ int EXEPrivate::loadPESectionTable(void)
 
 	// Read the section table, up to SizeOfHeaders.
 	const uint32_t section_count = (SizeOfHeaders - section_table_start) / sizeof(IMAGE_SECTION_HEADER);
-	assert(section_count <= 128);
-	if (section_count > 128) {
-		// Sanity check: Maximum of 128 sections.
+	assert(section_count <= 256);
+	if (section_count > 256) {
+		// Sanity check: Maximum of 256 sections.
 		return -ENOMEM;
 	}
 	pe_sections.resize(section_count);
