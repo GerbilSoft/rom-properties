@@ -57,9 +57,9 @@ public:
 	static Achievements instance;
 
 public:
-	// Notification function.
+	// Notification function
 	Achievements::NotifyFunc notifyFunc;
-	intptr_t user_data;
+	void *user_data;
 
 public:
 	// Achievement types
@@ -236,7 +236,7 @@ Achievements AchievementsPrivate::instance;
 
 AchievementsPrivate::AchievementsPrivate()
 	: notifyFunc(nullptr)
-	, user_data(0)
+	, user_data(nullptr)
 	, loaded(false)
 { }
 
@@ -734,10 +734,10 @@ Achievements *Achievements::instance(void)
 /**
  * Set the notification function.
  * This is used for the UI frontends.
- * @param func Notification function.
- * @param user_data User data.
+ * @param func Notification function
+ * @param user_data User data
  */
-void Achievements::setNotifyFunction(NotifyFunc func, intptr_t user_data)
+void Achievements::setNotifyFunction(NotifyFunc func, void *user_data)
 {
 	RP_D(Achievements);
 	if (d) {
@@ -752,10 +752,10 @@ void Achievements::setNotifyFunction(NotifyFunc func, intptr_t user_data)
  * If both func and user_data match the existing values,
  * then both are cleared.
  *
- * @param func Notification function.
- * @param user_data User data.
+ * @param func Notification function
+ * @param user_data User data
  */
-void Achievements::clearNotifyFunction(NotifyFunc func, intptr_t user_data)
+void Achievements::clearNotifyFunction(NotifyFunc func, void *user_data)
 {
 	RP_D(Achievements);
 	if (d && d->notifyFunc == func && d->user_data == user_data) {

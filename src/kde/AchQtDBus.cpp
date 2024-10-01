@@ -76,9 +76,9 @@ AchQtDBus AchQtDBus::m_instance;
  * @param id		[in] Achievement ID
  * @return 0 on success; negative POSIX error code on error.
  */
-int RP_C_API AchQtDBus::notifyFunc(intptr_t user_data, Achievements::ID id)
+int RP_C_API AchQtDBus::notifyFunc(void *user_data, Achievements::ID id)
 {
-	AchQtDBus *const q = reinterpret_cast<AchQtDBus*>(user_data);
+	AchQtDBus *const q = static_cast<AchQtDBus*>(user_data);
 	return q->notifyFunc(id);
 }
 
@@ -216,7 +216,7 @@ AchQtDBus::~AchQtDBus()
 {
 	if (m_hasRegistered) {
 		Achievements *const pAch = Achievements::instance();
-		pAch->clearNotifyFunction(notifyFunc, reinterpret_cast<intptr_t>(this));
+		pAch->clearNotifyFunction(notifyFunc, this);
 	}
 }
 
@@ -238,7 +238,7 @@ AchQtDBus *AchQtDBus::instance(void)
 	// Registering here instead.
 	if (!q->m_hasRegistered) {
 		Achievements *const pAch = Achievements::instance();
-		pAch->setNotifyFunction(notifyFunc, reinterpret_cast<intptr_t>(q));
+		pAch->setNotifyFunction(notifyFunc, q);
 		q->m_hasRegistered = true;
 	}
 

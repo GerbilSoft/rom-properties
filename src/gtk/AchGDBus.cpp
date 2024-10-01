@@ -35,9 +35,9 @@ AchGDBus AchGDBus::m_instance;
  * @param id		[in] Achievement ID.
  * @return 0 on success; negative POSIX error code on error.
  */
-int RP_C_API AchGDBus::notifyFunc(intptr_t user_data, Achievements::ID id)
+int RP_C_API AchGDBus::notifyFunc(void *user_data, Achievements::ID id)
 {
-	AchGDBus *const q = reinterpret_cast<AchGDBus*>(user_data);
+	AchGDBus *const q = static_cast<AchGDBus*>(user_data);
 	return q->notifyFunc(id);
 }
 
@@ -235,7 +235,7 @@ AchGDBus::~AchGDBus()
 {
 	if (m_hasRegistered) {
 		Achievements *const pAch = Achievements::instance();
-		pAch->clearNotifyFunction(notifyFunc, reinterpret_cast<intptr_t>(this));
+		pAch->clearNotifyFunction(notifyFunc, this);
 	}
 }
 
@@ -257,7 +257,7 @@ AchGDBus *AchGDBus::instance(void)
 	// Registering here instead.
 	if (!q->m_hasRegistered) {
 		Achievements *const pAch = Achievements::instance();
-		pAch->setNotifyFunction(AchGDBus::notifyFunc, reinterpret_cast<intptr_t>(q));
+		pAch->setNotifyFunction(AchGDBus::notifyFunc, q);
 		q->m_hasRegistered = true;
 	}
 

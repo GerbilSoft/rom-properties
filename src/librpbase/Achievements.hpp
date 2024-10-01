@@ -74,20 +74,20 @@ class Achievements
 	public:
 		/**
 		 * Notification function.
-		 * @param user_data	[in] User data from registerNotifyFunction().
-		 * @param id		[in] Achievement ID.
+		 * @param user_data	[in] User data from registerNotifyFunction()
+		 * @param id		[in] Achievement ID
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		typedef int (RP_C_API *NotifyFunc)(intptr_t user_data, ID id);
+		typedef int (RP_C_API *NotifyFunc)(void *user_data, ID id);
 
 		/**
 		 * Set the notification function.
 		 * This is used for the UI frontends.
-		 * @param func Notification function.
-		 * @param user_data User data.
+		 * @param func Notification function
+		 * @param user_data User data
 		 */
 		RP_LIBROMDATA_PUBLIC
-		void setNotifyFunction(NotifyFunc func, intptr_t user_data);
+		void setNotifyFunction(NotifyFunc func, void *user_data);
 
 		/**
 		 * Unregister a notification function if set.
@@ -95,11 +95,11 @@ class Achievements
 		 * If both func and user_data match the existing values,
 		 * then both are cleared.
 		 *
-		 * @param func Notification function.
-		 * @param user_data User data.
+		 * @param func Notification function
+		 * @param user_data User data
 		 */
 		RP_LIBROMDATA_PUBLIC
-		void clearNotifyFunction(NotifyFunc func, intptr_t user_data);
+		void clearNotifyFunction(NotifyFunc func, void *user_data);
 
 	public:
 		/**

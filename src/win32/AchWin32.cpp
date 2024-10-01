@@ -60,11 +60,11 @@ public:
 public:
 	/**
 	 * Notification function. (static)
-	 * @param user_data	[in] User data. (this)
-	 * @param id		[in] Achievement ID.
+	 * @param user_data	[in] User data (this)
+	 * @param id		[in] Achievement ID
 	 * @return 0 on success; negative POSIX error code on error.
 	 */
-	static int RP_C_API notifyFunc(intptr_t user_data, Achievements::ID id);
+	static int RP_C_API notifyFunc(void *user_data, Achievements::ID id);
 
 	/**
 	 * Notification function. (non-static)
@@ -133,7 +133,7 @@ AchWin32Private::~AchWin32Private()
 {
 	if (hasRegistered) {
 		Achievements *const pAch = Achievements::instance();
-		pAch->clearNotifyFunction(notifyFunc, reinterpret_cast<intptr_t>(this));
+		pAch->clearNotifyFunction(notifyFunc, this);
 	}
 
 	// TODO: Verify that the threads are still valid.
@@ -154,13 +154,13 @@ AchWin32Private::~AchWin32Private()
 
 /**
  * Notification function. (static)
- * @param user_data	[in] User data. (this)
- * @param id		[in] Achievement ID.
+ * @param user_data	[in] User data (this)
+ * @param id		[in] Achievement ID
  * @return 0 on success; negative POSIX error code on error.
  */
-int RP_C_API AchWin32Private::notifyFunc(intptr_t user_data, Achievements::ID id)
+int RP_C_API AchWin32Private::notifyFunc(void *user_data, Achievements::ID id)
 {
-	auto *const pAchWinP = reinterpret_cast<AchWin32Private*>(user_data);
+	auto *const pAchWinP = static_cast<AchWin32Private*>(user_data);
 	return pAchWinP->notifyFunc(id);
 }
 
@@ -438,7 +438,7 @@ AchWin32 *AchWin32::instance(void)
 	// the Achievements instance might not be fully initialized yet.
 	// Registering here instead.
 	Achievements *const pAch = Achievements::instance();
-	pAch->setNotifyFunction(AchWin32Private::notifyFunc, reinterpret_cast<intptr_t>(q->d_ptr));
+	pAch->setNotifyFunction(AchWin32Private::notifyFunc, q->d_ptr);
 
 	return q;
 }

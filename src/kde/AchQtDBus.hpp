@@ -43,7 +43,7 @@ private:
 	 * @param id		[in] Achievement ID
 	 * @return 0 on success; negative POSIX error code on error.
 	 */
-	static int RP_C_API notifyFunc(intptr_t user_data, LibRpBase::Achievements::ID id);
+	static int RP_C_API notifyFunc(void *user_data, LibRpBase::Achievements::ID id);
 
 	/**
 	 * Notification function (non-static)
