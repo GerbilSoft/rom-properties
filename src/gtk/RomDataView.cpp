@@ -1682,7 +1682,7 @@ rp_rom_data_view_load_rom_data(RpRomDataView *page)
 	// Do we have a RomData object loaded already?
 	if (page->cxx->romData) {
 		// Make sure the animation timer is stopped.
-		rp_rom_data_view_unmap_signal_handler(page, 0);
+		rp_rom_data_view_unmap_signal_handler(page, nullptr);
 
 		// Unload the existing RomData object.
 		page->cxx->romData.reset();
@@ -1716,7 +1716,7 @@ rp_rom_data_view_load_rom_data(RpRomDataView *page)
 	// Animation timer will be started when the page
 	// receives the "map" signal.
 	if (gtk_widget_get_mapped(GTK_WIDGET(page))) {
-		rp_rom_data_view_map_signal_handler(page, 0);
+		rp_rom_data_view_map_signal_handler(page, nullptr);
 	}
 
 	// Clear the timeout.

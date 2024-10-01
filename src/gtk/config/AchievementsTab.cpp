@@ -348,7 +348,7 @@ rp_achievements_tab_reset(RpAchievementsTab *tab)
 
 		// Add the list item.
 #ifdef USE_GTK_COLUMN_VIEW
-		GDateTime *const dateTime = (timestamp != -1) ? g_date_time_new_from_unix_local(timestamp) : NULL;
+		GDateTime *const dateTime = (timestamp != -1) ? g_date_time_new_from_unix_local(timestamp) : nullptr;
 		RpAchievementItem *const item = rp_achievement_item_new(icon, s_ach.c_str(), dateTime);
 		if (dateTime) {
 			g_date_time_unref(dateTime);
