@@ -269,7 +269,7 @@ static inline RP_Frontend check_xdg_desktop_name(const char *name)
 			// Check parent processes to determine the version.
 			// NOTE: Assuming KF5 if unable to determine the KDE version.
 			// TODO: Check for KF6?
-			RP_Frontend ret = walk_proc_tree();
+			ret = walk_proc_tree();
 			if (ret >= RP_FE_MAX) {
 				// Not set. Assume KF5.
 				ret = RP_FE_KF5;
