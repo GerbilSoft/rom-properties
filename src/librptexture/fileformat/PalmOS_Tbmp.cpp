@@ -787,7 +787,6 @@ const char *PalmOS_Tbmp::pixelFormat(void) const
 					px_fmt = "RGB565 (little-endian)";
 					break;
 			}
-			px_fmt = "RGB565 (big-endian)";
 			break;
 		}
 	}
