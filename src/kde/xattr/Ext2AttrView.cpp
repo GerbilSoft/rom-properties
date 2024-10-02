@@ -110,7 +110,6 @@ void Ext2AttrViewPrivate::updateFlagsString(void)
 		{ 25, 'x' }, { 30, 'F' }, { 28, 'N' }, { 29, 'P' },
 		{ 20, 'V' }, { 10, 'm' }
 	}};
-	// FIXME: checkBoxes.size() can't be used here because it's this->checkBoxes.
 	static_assert(flags_array.size() == EXT2_ATTR_CHECKBOX_MAX, "flags_array[] and checkBoxes[] are out of sync!");
 
 	// NOTE: Need to use `unsigned int` because `size_t` results in an ambiguous overload error.
@@ -128,6 +127,7 @@ void Ext2AttrViewPrivate::updateFlagsString(void)
  */
 void Ext2AttrViewPrivate::updateFlagsCheckboxes(void)
 {
+	// FIXME: checkBoxes.size() can't be used here because it's apparently not constexpr...
 	static_assert(ARRAY_SIZE(checkBoxes) == EXT2_ATTR_CHECKBOX_MAX,
 		"checkBoxes and EXT2_ATTR_CHECKBOX_MAX are out of sync!");
 
@@ -138,7 +138,6 @@ void Ext2AttrViewPrivate::updateFlagsCheckboxes(void)
 		30,  4, 12, 14, 10, 28, 29,  0,
 		 3, 15, 17,  1, 25, 20
 	}};
-	// FIXME: checkBoxes.size() can't be used here because it's this->checkBoxes.
 	static_assert(flag_order.size() == EXT2_ATTR_CHECKBOX_MAX, "flag_order[] and checkBoxes[] are out of sync!");
 
 	for (size_t i = 0; i < checkBoxes.size(); i++) {
