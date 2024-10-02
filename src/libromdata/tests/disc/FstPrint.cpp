@@ -26,7 +26,7 @@ using namespace LibRpText;
 #  define PRId64 "I64d"
 #else
 #  define __STDC_FORMAT_MACROS
-#  include <inttypes.h>
+#  include <cinttypes>
 #endif
 
 // C includes (C++ namespace)
