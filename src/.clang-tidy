@@ -6,11 +6,14 @@ FormatStyle: none
 Checks: >
   bugprone-*,
   -bugprone-easily-swappable-parameters,
+  -bugprone-implicit-widening-of-multiplication-result,
+  -bugprone-narrowing-conversions,
   -bugprone-reserved-identifier,
   clang-analyzer-*,
   -clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling,
   clang-diagnostic-*,
   misc-*,
+  -misc-const-correctness,
   -misc-include-cleaner,
   -misc-non-private-member-variables-in-classes,
   -misc-use-anonymous-namespace,
@@ -27,6 +30,7 @@ Checks: >
   objc-*,
   openmp-*,
   performance-*,
+  -performance-enum-size,
   portability-*,
 CheckOptions:
   - key: IgnoreClassesWithAllMemberVariablesBeingPublic
