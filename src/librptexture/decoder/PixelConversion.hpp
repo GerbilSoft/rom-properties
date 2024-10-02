@@ -14,8 +14,8 @@
 // argb32_t
 #include "argb32_t.hpp"
 
-// C includes
-#include <stdint.h>
+// C includes (C++ namespace)
+#include <cstdint>
 
 // C++ includes
 #include <array>

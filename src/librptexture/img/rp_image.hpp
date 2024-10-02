@@ -11,9 +11,9 @@
 #include "common.h"
 #include "dll-macros.h"
 
-// C includes
-#include <stddef.h>	/* size_t */
-#include <stdint.h>
+// C includes (C++ namespace)
+#include <cstddef>	/* size_t */
+#include <cstdint>
 
 // C++ includes
 #include <array>

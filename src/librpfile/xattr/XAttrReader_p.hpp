@@ -13,8 +13,8 @@
 #include "dll-macros.h"	// for RP_LIBROMDATA_PUBLIC
 #include "tcharx.h"
 
-// C includes
-#include <stdint.h>
+// C includes (C++ namespace)
+#include <cstdint>
 
 // C++ includes
 #include <list>

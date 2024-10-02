@@ -4,13 +4,13 @@
  * that use sparse and/or compressed blocks, e.g. CISO, WBFS, GCZ.         *
  * (PRIVATE CLASS)                                                         *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #pragma once
 
-#include <stdint.h>
+#include <cstdint>
 #include "common.h"
 
 namespace LibRpBase {

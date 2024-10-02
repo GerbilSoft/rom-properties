@@ -14,9 +14,9 @@
 // C includes (C++ namespace)
 #include <cassert>
 #include <cerrno>
+#include <cstdint>
 #include <cstring>
 #include <ctime>
-#include <stdint.h>
 
 #ifdef _WIN32
 #  include <cwctype>

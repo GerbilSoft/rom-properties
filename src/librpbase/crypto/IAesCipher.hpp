@@ -10,9 +10,9 @@
 
 #include "common.h"
 
-// C includes.
-#include <stddef.h>	/* size_t */
-#include <stdint.h>
+// C includes (C++ namespace)
+#include <cstddef>	/* size_t */
+#include <cstdint>
 
 namespace LibRpBase {
 

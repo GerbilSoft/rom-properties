@@ -8,10 +8,10 @@
 
 #pragma once
 
-// C includes.
-#include <stdint.h>
+// C includes (C++ namespace)
+#include <cstdint>
 
-// Qt includes.
+// Qt includes
 #include <QSortFilterProxyModel>
 
 class ListDataSortProxyModelPrivate;

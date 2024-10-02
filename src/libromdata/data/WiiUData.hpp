@@ -13,7 +13,8 @@
 
 #pragma once
 
-#include <stdint.h>
+// C includes (C++ namespace)
+#include <cstdint>
 
 namespace LibRomData { namespace WiiUData {
 

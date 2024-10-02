@@ -11,8 +11,9 @@
 #include "common.h"	// for ATTR_PRINTF()
 #include "dll-macros.h"	// for RP_LIBROMDATA_PUBLIC
 
-// C includes
-#include <stdint.h>
+// C includes (C++ namespace)
+#include <cstddef>	/* size_t */
+#include <cstdint>
 
 namespace LibRpText {
 

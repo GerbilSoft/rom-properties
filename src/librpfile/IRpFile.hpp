@@ -9,12 +9,12 @@
 #pragma once
 
 // C includes
-#include <stdint.h>
 #include <sys/types.h>	// for off64_t
 
 // C includes (C++ namespace)
 #include <cerrno>
 #include <cstddef>	// for size_t
+#include <cstdint>
 
 // C++ includes
 #include <memory>

@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <stdint.h>
+#include <cstdint>
 #include "dll-macros.h"	// for RP_LIBROMDATA_PUBLIC
 
 // access() macros.

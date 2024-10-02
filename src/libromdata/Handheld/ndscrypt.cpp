@@ -18,12 +18,10 @@
 #include "ndscrypt.hpp"
 #include "nds_crc.hpp"
 
-// C includes
-#include <stdint.h>
-
 // C includes (C++ namespace)
 #include <cassert>
 #include <cerrno>
+#include <cstdint>
 
 // librpbase, librpfile, librpthreads
 #include "librpbase/crypto/Hash.hpp"

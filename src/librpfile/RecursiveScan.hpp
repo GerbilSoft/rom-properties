@@ -2,13 +2,13 @@
  * ROM Properties Page shell extension. (librpfile)                        *
  * RecursiveScan.cpp: Recursively scan for cache files to delete.          *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #pragma once
 
-#include <stdint.h>
+#include <cstdint>
 #include "dll-macros.h"	// for RP_LIBROMDATA_PUBLIC
 
 #include "tcharx.h"

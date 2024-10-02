@@ -13,9 +13,9 @@
 #include "dll-macros.h"	// for RP_LIBROMDATA_PUBLIC
 #include "RomData_decl.hpp"
 
-// C includes
-#include <stddef.h>	/* size_t */
-#include <stdint.h>
+// C includes (C++ namespace)
+#include <cstddef>	/* size_t */
+#include <cstdint>
 
 // C++ includes
 #include <memory>

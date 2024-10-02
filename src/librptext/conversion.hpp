@@ -17,10 +17,10 @@
 #include "common.h"
 #include "dll-macros.h"	// for RP_LIBROMDATA_PUBLIC
 
-// C includes
-#include <stdarg.h>
-#include <stddef.h>	/* size_t */
-#include <stdint.h>
+// C includes (C++ namespace)
+#include <cstdarg>
+#include <cstddef>	/* size_t */
+#include <cstdint>
 
 // C++ includes
 #include <string>

@@ -11,7 +11,8 @@
 #include "common.h"
 #include "dll-macros.h"	// for RP_LIBROMDATA_PUBLIC
 
-#include <stdint.h>
+// C includes (C++ namespace)
+#include <cstdint>
 
 #include "librpcpuid/cpu_dispatch.h"
 #if defined(RP_CPU_I386) || defined(RP_CPU_AMD64)

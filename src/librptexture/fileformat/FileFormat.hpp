@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * FileFormat.hpp: Texture file format base class.                         *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -12,8 +12,10 @@
 #include "librptexture/config.librptexture.h"
 
 // C includes
-#include <stdint.h>
 #include <sys/types.h>	// for off64_t
+
+// C includes (C++ namespace)
+#include <cstdint>
 
 // C++ includes
 #include <memory>

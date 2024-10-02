@@ -8,11 +8,9 @@
 
 #pragma once
 
-// C includes
-#include <stdint.h>
-
 // C includes (C++ namespace)
-#include <cstddef>
+#include <cstddef>	/* size_t */
+#include <cstdint>
 
 // common macros
 #include "common.h"

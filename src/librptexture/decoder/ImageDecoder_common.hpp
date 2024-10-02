@@ -13,8 +13,8 @@
 #include "common.h"
 #include "librpcpuid/cpu_dispatch.h"
 
-// C includes
-#include <stdint.h>
+// C includes (C++ namespace)
+#include <cstdint>
 
 // C++ includes
 #include <memory>

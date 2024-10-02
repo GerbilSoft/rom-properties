@@ -11,8 +11,8 @@
 #include "librpbase/config.librpbase.h"
 #include "common.h"
 
-// C includes.
-#include <stdint.h>
+// C includes (C++ namespace)
+#include <cstdint>
 
 // Directory type values.
 // Based on dirent.h from glibc-2.23.
