@@ -25,7 +25,6 @@ using namespace LibRpFile;
 
 // C++ STL classes
 using std::string;
-using std::unique_ptr;
 
 /** RomThumbnailCreator (KF5 5.100 and later) **/
 
