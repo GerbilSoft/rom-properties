@@ -553,7 +553,7 @@ rp_rom_data_view_update_multi_RFT_LISTDATA_MULTI(RpRomDataView *page, uint32_t u
 			// As a workaround, remove the GtkColumnView's model, then re-add it.
 			GtkSelectionModel *const selModel = gtk_column_view_get_model(GTK_COLUMN_VIEW(vldm.columnView));
 			g_object_ref(selModel);
-			gtk_column_view_set_model(GTK_COLUMN_VIEW(vldm.columnView), NULL);
+			gtk_column_view_set_model(GTK_COLUMN_VIEW(vldm.columnView), nullptr);
 			gtk_column_view_set_model(GTK_COLUMN_VIEW(vldm.columnView), GTK_SELECTION_MODEL(selModel));
 			g_object_unref(selModel);
 
