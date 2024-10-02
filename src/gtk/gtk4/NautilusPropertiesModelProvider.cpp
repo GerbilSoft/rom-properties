@@ -91,7 +91,10 @@ rp_nautilus_properties_model_provider_page_provider_init(NautilusPropertiesModel
 static GList*
 rp_nautilus_properties_model_provider_get_models(NautilusPropertiesModelProvider *provider, GList *files)
 {
-	RP_UNUSED(provider);
+	assert(RP_IS_NAUTILUS_PROPERTIES_MODEL_PROVIDER(provider));
+	assert(files != nullptr);
+	g_return_val_if_fail(RP_IS_NAUTILUS_PROPERTIES_MODEL_PROVIDER(provider), nullptr);
+	g_return_val_if_fail(files != nullptr, nullptr);
 
 	assert(files->prev == nullptr);	// `files` should be the list head
 	GList *const file = g_list_first(files);

@@ -160,7 +160,10 @@ rp_nautilus_property_page_provider_get_XAttrView(const gchar *uri)
 static GList*
 rp_nautilus_property_page_provider_get_pages(NautilusPropertyPageProvider *provider, GList *files)
 {
-	RP_UNUSED(provider);
+	assert(RP_IS_NAUTILUS_PROPERTY_PAGE_PROVIDER(provider));
+	assert(files != nullptr);
+	g_return_val_if_fail(RP_IS_NAUTILUS_PROPERTY_PAGE_PROVIDER(provider), nullptr);
+	g_return_val_if_fail(files != nullptr, nullptr);
 
 	assert(files->prev == nullptr);	// `files` should be the list head
 	GList *const file = g_list_first(files);
