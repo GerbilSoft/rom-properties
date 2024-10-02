@@ -760,7 +760,7 @@ void Achievements::clearNotifyFunction(NotifyFunc func, void *user_data)
 	RP_D(Achievements);
 	if (d && d->notifyFunc == func && d->user_data == user_data) {
 		d->notifyFunc = nullptr;
-		d->user_data = 0;
+		d->user_data = nullptr;
 	}
 }
 
