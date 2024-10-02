@@ -274,7 +274,6 @@ WiiUPackage::WiiUPackage(const IRpFilePtr &file)
 {
 	// Not supported!
 	RP_UNUSED(file);
-	return;
 }
 
 /**

@@ -255,20 +255,16 @@ rp_cache_tab_has_defaults(RpCacheTab *tab)
 static void
 rp_cache_tab_reset(RpCacheTab *tab)
 {
-	g_return_if_fail(RP_IS_CACHE_TAB(tab));
-
 	// Not implemented.
-	return;
+	g_return_if_fail(RP_IS_CACHE_TAB(tab));
 }
 
 static void
 rp_cache_tab_save(RpCacheTab *tab, GKeyFile *keyFile)
 {
+	// Not implemented.
 	g_return_if_fail(RP_IS_CACHE_TAB(tab));
 	g_return_if_fail(keyFile != nullptr);
-
-	// Not implemented.
-	return;
 }
 
 /** Miscellaneous **/

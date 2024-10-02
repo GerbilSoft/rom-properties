@@ -242,5 +242,4 @@ rp_update_checker_run(RpUpdateChecker *updChecker)
 
 	// Run the update check in a separate thread.
 	updChecker->thread = g_thread_new("updChecker", (GThreadFunc)rp_update_checker_thread_run, updChecker);
-	return;
 }

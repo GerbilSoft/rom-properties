@@ -215,7 +215,6 @@ void rp_tracker_free_pfn(void)
 	}
 
 	rp_tracker_api = 0;
-	return;
 }
 
 G_END_DECLS

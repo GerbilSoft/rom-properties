@@ -385,9 +385,7 @@ rp_achievements_tab_reset(RpAchievementsTab *tab)
 static void
 rp_achievements_tab_save(RpAchievementsTab *tab, GKeyFile *keyFile)
 {
+	// Not implemented.
 	g_return_if_fail(RP_IS_ACHIEVEMENTS_TAB(tab));
 	g_return_if_fail(keyFile != nullptr);
-
-	// Not implemented.
-	return;
 }

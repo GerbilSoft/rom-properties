@@ -395,11 +395,9 @@ rp_about_tab_reset(RpAboutTab *tab)
 static void
 rp_about_tab_save(RpAboutTab *tab, GKeyFile *keyFile)
 {
+	// Not implemented.
 	g_return_if_fail(RP_IS_ABOUT_TAB(tab));
 	g_return_if_fail(keyFile != nullptr);
-
-	// Not implemented.
-	return;
 }
 
 /** Label initialization **/
