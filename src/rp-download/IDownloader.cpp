@@ -307,7 +307,9 @@ tstring IDownloader::getOSRelease(void)
 	}
 	if (!ctx.field_name) {
 		// No field name...
-		fclose(f_in);
+		if (!f_in) {
+			fclose(f_in);
+		}
 		return {};
 	}
 
