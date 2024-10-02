@@ -694,6 +694,7 @@ int Xbox360_XEX_Private::initPeReader(void)
 
 	// Check the compression type.
 	switch (fileFormatInfo.compression_type) {
+		default:
 		case XEX2_COMPRESSION_TYPE_NONE:
 			// No compression.
 			break;
