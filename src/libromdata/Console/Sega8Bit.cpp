@@ -16,6 +16,7 @@ using namespace LibRpFile;
 using namespace LibRpText;
 
 // C++ STL classes
+using std::array;
 using std::string;
 
 namespace LibRomData {
@@ -314,12 +315,9 @@ const char *Sega8Bit::systemName(unsigned int type) const
 	static_assert(SYSNAME_TYPE_MASK == 3,
 		"Sega8Bit::systemName() array index optimization needs to be updated.");
 
-	static const char *const sysNames[4] = {
-		"Sega Master System",
-		"Master System",
-		"SMS",
-		nullptr
-	};
+	static const array<const char*, 4> sysNames = {{
+		"Sega Master System", "Master System", "SMS", nullptr
+	}};
 
 	return sysNames[type & SYSNAME_TYPE_MASK];
 }
@@ -565,4 +563,4 @@ int Sega8Bit::loadMetaData(void)
 	return (d->metaData ? static_cast<int>(d->metaData->count()) : -ENOENT);
 }
 
-}
+} // namespace LibRomData

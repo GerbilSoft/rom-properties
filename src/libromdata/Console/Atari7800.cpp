@@ -166,9 +166,9 @@ const char *Atari7800::systemName(unsigned int type) const
 		"Atari7800::systemName() array index optimization needs to be updated.");
 
 	// Bits 0-1: Type. (long, short, abbreviation)
-	static const char *const sysNames[4] = {
+	static const array<const char*, 4> sysNames = {{
 		"Atari 7800", "Atari 7800", "7800", nullptr
-	};
+	}};
 
 	return sysNames[type & SYSNAME_TYPE_MASK];
 }
@@ -295,4 +295,4 @@ int Atari7800::loadMetaData(void)
 	return (d->metaData ? static_cast<int>(d->metaData->count()) : -ENOENT);
 }
 
-}
+} // namespace LibRomData

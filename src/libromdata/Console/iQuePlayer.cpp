@@ -23,6 +23,7 @@ using namespace LibRpTexture;
 #include "librptext/libc.h"
 
 // C++ STL classes
+using std::array;
 using std::string;
 using std::vector;
 
@@ -530,9 +531,9 @@ const char *iQuePlayer::systemName(unsigned int type) const
 		"iQuePlayer::systemName() array index optimization needs to be updated.");
 
 	// Bits 0-1: Type. (long, short, abbreviation)
-	static const char *const sysNames[4] = {
+	static const array<const char*, 4> sysNames = {{
 		"iQue Player", "iQue Player", "iQue", nullptr
-	};
+	}};
 
 	return sysNames[type & SYSNAME_TYPE_MASK];
 }
@@ -780,4 +781,4 @@ int iQuePlayer::loadInternalImage(ImageType imageType, rp_image_const_ptr &pImag
 	return ((bool)pImage ? 0 : -EIO);
 }
 
-}
+} // namespace LibRomData

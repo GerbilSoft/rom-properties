@@ -16,6 +16,7 @@ using namespace LibRpBase;
 using namespace LibRpFile;
 
 // C++ STL classes
+using std::array;
 using std::string;
 
 namespace LibRomData {
@@ -625,18 +626,18 @@ const char *Lua::systemName(unsigned int type) const
 	static_assert((int)LuaPrivate::LuaVersion::Max == 10,
 		"Lua::systemName() array index optimization needs to be updated.");
 
-	static const char *const sysNames[10][4] = {
-		{"PUC Lua 2.4", "Lua 2.4", "Lua", nullptr},
-		{"PUC Lua 2.5/3.0", "Lua 2.5/3.0", "Lua", nullptr},
-		{"PUC Lua 3.1", "Lua 3.1", "Lua", nullptr},
-		{"PUC Lua 3.2", "Lua 3.2", "Lua", nullptr},
-		{"PUC Lua 4.0", "Lua 4.0", "Lua", nullptr},
-		{"PUC Lua 5.0", "Lua 5.0", "Lua", nullptr},
-		{"PUC Lua 5.1", "Lua 5.1", "Lua", nullptr},
-		{"PUC Lua 5.2", "Lua 5.2", "Lua", nullptr},
-		{"PUC Lua 5.3", "Lua 5.3", "Lua", nullptr},
-		{"PUC Lua 5.4", "Lua 5.4", "Lua", nullptr},
-	};
+	static const array<array<const char*, 4>, 10> sysNames = {{
+		{{"PUC Lua 2.4", "Lua 2.4", "Lua", nullptr}},
+		{{"PUC Lua 2.5/3.0", "Lua 2.5/3.0", "Lua", nullptr}},
+		{{"PUC Lua 3.1", "Lua 3.1", "Lua", nullptr}},
+		{{"PUC Lua 3.2", "Lua 3.2", "Lua", nullptr}},
+		{{"PUC Lua 4.0", "Lua 4.0", "Lua", nullptr}},
+		{{"PUC Lua 5.0", "Lua 5.0", "Lua", nullptr}},
+		{{"PUC Lua 5.1", "Lua 5.1", "Lua", nullptr}},
+		{{"PUC Lua 5.2", "Lua 5.2", "Lua", nullptr}},
+		{{"PUC Lua 5.3", "Lua 5.3", "Lua", nullptr}},
+		{{"PUC Lua 5.4", "Lua 5.4", "Lua", nullptr}},
+	}};
 
 	const int i = (int)d->luaVersion;
 	if (i < 0 || i >= (int)LuaPrivate::LuaVersion::Max)
@@ -727,4 +728,4 @@ int Lua::loadFieldData(void)
 	return static_cast<int>(d->fields.count());
 }
 
-}
+} // namespace LibRomData

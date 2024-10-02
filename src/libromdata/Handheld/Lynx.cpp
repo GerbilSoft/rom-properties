@@ -16,6 +16,9 @@ using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;
 
+// C++ STL classes
+using std::array;
+
 namespace LibRomData {
 
 class LynxPrivate final : public RomDataPrivate
@@ -169,9 +172,9 @@ const char *Lynx::systemName(unsigned int type) const
 		"Lynx::systemName() array index optimization needs to be updated.");
 
 	// Bits 0-1: Type. (long, short, abbreviation)
-	static const char *const sysNames[4] = {
+	static const array<const char*, 4> sysNames = {{
 		"Atari Lynx", "Lynx", "LNX", nullptr,
-	};
+	}};
 
 	return sysNames[type & SYSNAME_TYPE_MASK];
 }
@@ -264,4 +267,4 @@ int Lynx::loadMetaData(void)
 	return static_cast<int>(d->metaData->count());
 }
 
-}
+} // namespace LibRomData

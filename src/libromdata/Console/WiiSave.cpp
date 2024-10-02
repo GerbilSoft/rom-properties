@@ -351,9 +351,9 @@ const char *WiiSave::systemName(unsigned int type) const
 	static_assert(SYSNAME_TYPE_MASK == 3,
 		"WiiSave::systemName() array index optimization needs to be updated.");
 
-	static const char *const sysNames[4] = {
+	static const array<const char*, 4> sysNames = {{
 		"Nintendo Wii", "Wii", "Wii", nullptr
-	};
+	}};
 
 	return sysNames[type & SYSNAME_TYPE_MASK];
 }
@@ -563,4 +563,4 @@ IconAnimDataConstPtr WiiSave::iconAnimData(void) const
 	return nullptr;
 }
 
-}
+} // namespace LibRomData

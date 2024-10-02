@@ -26,6 +26,7 @@ using namespace LibRpTexture;
 #include "Other/EXE.hpp"
 
 // C++ STL classes
+using std::array;
 using std::ostringstream;
 using std::shared_ptr;
 using std::string;
@@ -513,9 +514,9 @@ const char *Xbox_XBE::systemName(unsigned int type) const
 		"Xbox_XBE::systemName() array index optimization needs to be updated.");
 
 	// Bits 0-1: Type. (long, short, abbreviation)
-	static const char *const sysNames[4] = {
+	static const array<const char*, 4> sysNames = {{
 		"Microsoft Xbox", "Xbox", "Xbox", nullptr
-	};
+	}};
 
 	return sysNames[type & SYSNAME_TYPE_MASK];
 }
@@ -901,4 +902,4 @@ int Xbox_XBE::loadInternalImage(ImageType imageType, rp_image_const_ptr &pImage)
 	return ((bool)pImage ? 0 : -EIO);
 }
 
-}
+} // namespace LibRomData

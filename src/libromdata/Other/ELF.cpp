@@ -1439,16 +1439,16 @@ const char *ELF::systemName(unsigned int type) const
 
 	if (d->isWiiU) {
 		// This is a Wii U RPX/RPL executable.
-		static const char *const sysNames_WiiU[4] = {
+		static const array<const char*, 4> sysNames_WiiU = {{
 			"Nintendo Wii U", "Wii U", "Wii U", nullptr
-		};
+		}};
 		return sysNames_WiiU[type];
 	}
 
 	// Standard ELF executable.
-	static const char *const sysNames[4] = {
+	static const array<const char*, 4> sysNames = {{
 		"Executable and Linkable Format", "ELF", "ELF", nullptr
-	};
+	}};
 
 	return sysNames[type];
 }
@@ -2130,4 +2130,4 @@ int ELF::loadFieldData(void)
 	return static_cast<int>(d->fields.count());
 }
 
-}
+} // namespace LibRomData

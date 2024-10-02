@@ -176,12 +176,9 @@ const char *PokemonMini::systemName(unsigned int type) const
 	static_assert(SYSNAME_TYPE_MASK == 3,
 		"PokemonMini::systemName() array index optimization needs to be updated.");
 
-	static const char *const sysNames[4] = {
-		"Pok\xC3\xA9mon Mini",
-		"Pok\xC3\xA9mon Mini",
-		"Pkmn Mini",
-		nullptr
-	};
+	static const array<const char*, 4> sysNames = {{
+		"Pok\xC3\xA9mon Mini", "Pok\xC3\xA9mon Mini", "Pkmn Mini", nullptr
+	}};
 
 	return sysNames[type & SYSNAME_TYPE_MASK];
 }
@@ -380,4 +377,4 @@ int PokemonMini::loadMetaData(void)
 	return static_cast<int>(d->metaData->count());
 }
 
-}
+} // namespace LibRomData

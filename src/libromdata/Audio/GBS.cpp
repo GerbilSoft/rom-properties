@@ -16,6 +16,7 @@ using namespace LibRpFile;
 using namespace LibRpText;
 
 // C++ STL classes
+using std::array;
 using std::string;
 
 namespace LibRomData {
@@ -192,10 +193,10 @@ const char *GBS::systemName(unsigned int type) const
 
 	// Bits 0-1: Type. (long, short, abbreviation)
 	// Bit 2: GBS or GBR.
-	static const char *const sysNames[2][4] = {
-		{"Game Boy Sound System", "GBS", "GBS", nullptr},
-		{"Game Boy Ripped", "GBR", "GBR", nullptr},
-	};
+	static const array<array<const char*, 4>, 2> sysNames = {{
+		{{"Game Boy Sound System", "GBS", "GBS", nullptr}},
+		{{"Game Boy Ripped", "GBR", "GBR", nullptr}},
+	}};
 
 	return sysNames[((int)d->audioFormat) & 1][type & SYSNAME_TYPE_MASK];
 }
@@ -368,4 +369,4 @@ int GBS::loadMetaData(void)
 	return static_cast<int>(d->metaData->count());
 }
 
-}
+} // namespace LibRomData

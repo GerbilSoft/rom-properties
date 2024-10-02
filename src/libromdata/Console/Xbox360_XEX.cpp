@@ -1499,9 +1499,9 @@ const char *Xbox360_XEX::systemName(unsigned int type) const
 
 	// Bits 0-1: Type. (long, short, abbreviation)
 	// TODO: XEX-specific, or just use Xbox 360?
-	static const char *const sysNames[4] = {
+	static const array<const char*, 4> sysNames = {{
 		"Microsoft Xbox 360", "Xbox 360", "X360", nullptr
-	};
+	}};
 
 	return sysNames[type & SYSNAME_TYPE_MASK];
 }
@@ -2102,4 +2102,4 @@ const uint8_t *Xbox360_XEX::encryptionVerifyData_static(int keyIdx)
 }
 #endif /* ENABLE_DECRYPTION */
 
-}
+} // namespace LibRomData

@@ -1325,12 +1325,12 @@ SegaPVR::SegaPVR(const IRpFilePtr &file)
 	d->dimensions[1] = d->pvrHeader.height;
 
 	// Set the MIME type and texture format name.
-	static const char *const sysNames[(int)SegaPVRPrivate::PVRType::Max] = {
+	static const array<const char*, static_cast<size_t>(SegaPVRPrivate::PVRType::Max)> sysNames = {{
 		"Sega Dreamcast PVR",
 		"Sega GVR for GameCube",
 		"Sega SVR for PlayStation 2",
 		"Sega PVRX for Xbox",
-	};
+	}};
 
 	static_assert(ARRAY_SIZE(d->mimeTypes)-1 == ARRAY_SIZE(sysNames), "d->mimeTypes[] and sysNames[] are out of sync");
 	if ((int)d->pvrType < ARRAY_SIZE_I(d->mimeTypes)-1) {
@@ -1569,4 +1569,4 @@ rp_image_const_ptr SegaPVR::mipmap(int mip) const
 	return nullptr;
 }
 
-}
+} // namespace LibRpTexture

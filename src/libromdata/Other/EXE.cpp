@@ -806,33 +806,33 @@ const char *EXE::systemName(unsigned int type) const
 	static_assert(SYSNAME_TYPE_MASK == 3,
 		"EXE::systemName() array index optimization needs to be updated.");
 
-	static const char *const sysNames_Windows[4] = {
+	static const array<const char*, 4> sysNames_Windows = {{
 		"Microsoft Windows", "Windows", "Windows", nullptr
-	};
+	}};
 
 	// New Executable (and Linear Executable) operating systems.
-	static const char *const sysNames_NE[6][4] = {
+	static const array<array<const char*, 4>, 6> sysNames_NE = {{
 		// NE_OS_UNKNOWN
 		// NOTE: Windows 1.0 executables have this value.
-		{"Microsoft Windows", "Windows", "Windows", nullptr},
+		{{"Microsoft Windows", "Windows", "Windows", nullptr}},
 		// NE_OS_OS2
-		{"IBM OS/2", "OS/2", "OS/2", nullptr},
+		{{"IBM OS/2", "OS/2", "OS/2", nullptr}},
 		// NE_OS_WIN
-		{"Microsoft Windows", "Windows", "Windows", nullptr},
+		{{"Microsoft Windows", "Windows", "Windows", nullptr}},
 		// NE_OS_DOS4
-		{"European MS-DOS 4.x", "EuroDOS 4.x", "EuroDOS 4.x", nullptr},
+		{{"European MS-DOS 4.x", "EuroDOS 4.x", "EuroDOS 4.x", nullptr}},
 		// NE_OS_WIN386 (TODO)
-		{"Microsoft Windows", "Windows", "Windows", nullptr},
+		{{"Microsoft Windows", "Windows", "Windows", nullptr}},
 		// NE_OS_BOSS
-		{"Borland Operating System Services", "BOSS", "BOSS", nullptr},
-	};
+		{{"Borland Operating System Services", "BOSS", "BOSS", nullptr}},
+	}};
 
 	switch (d->exeType) {
 		case EXEPrivate::ExeType::MZ: {
 			// DOS executable.
-			static const char *const sysNames_DOS[4] = {
+			static const array<const char*, 4> sysNames_DOS = {{
 				"Microsoft MS-DOS", "MS-DOS", "DOS", nullptr
-			};
+			}};
 			return sysNames_DOS[type & SYSNAME_TYPE_MASK];
 		}
 
@@ -841,10 +841,10 @@ const char *EXE::systemName(unsigned int type) const
 			if (d->hdr.ne.targOS > NE_OS_BOSS) {
 				// Check for Phar Lap 286 extenders.
 				// Reference: https://github.com/weheartwebsites/exeinfo/blob/master/exeinfo.cpp
-				static const char *const sysNames_NE_PharLap[2][4] = {
-					{"Phar Lap 286|DOS Extender, OS/2", "Phar Lap 286 OS/2", "Phar Lap 286 OS/2", nullptr},	// 0x81
-					{"Phar Lap 286|DOS Extender, Windows", "Phar Lap 286 Windows", "Phar Lap 286 Windows", nullptr},	// 0x82
-				};
+				static const array<array<const char*, 4>, 2> sysNames_NE_PharLap = {{
+					{{"Phar Lap 286|DOS Extender, OS/2", "Phar Lap 286 OS/2", "Phar Lap 286 OS/2", nullptr}},		// 0x81
+					{{"Phar Lap 286|DOS Extender, Windows", "Phar Lap 286 Windows", "Phar Lap 286 Windows", nullptr}},	// 0x82
+				}};
 				if (d->hdr.ne.targOS == 0x81) {
 					return sysNames_NE_PharLap[0][type & SYSNAME_TYPE_MASK];
 				} else if (d->hdr.ne.targOS == 0x82) {
@@ -860,9 +860,9 @@ const char *EXE::systemName(unsigned int type) const
 		case EXEPrivate::ExeType::COM_NE: {
 			// 16-bit COM/NE hybrid.
 			// Used by Multitasking MS-DOS 4.0's IBMDOS.COM.
-			static const char *const sysNames_MultiDOS[4] = {
+			static const array<const char*, 4> sysNames_MultiDOS = {{
 				"Multitasking MS-DOS 4.0", "European DOS", "EuroDOS", nullptr
-			};
+			}};
 			return sysNames_MultiDOS[type & SYSNAME_TYPE_MASK];
 		}
 
@@ -895,19 +895,19 @@ const char *EXE::systemName(unsigned int type) const
 				case IMAGE_SUBSYSTEM_EFI_RUNTIME_DRIVER:
 				case IMAGE_SUBSYSTEM_EFI_ROM: {
 					// EFI executable
-					static const char *const sysNames_EFI[4] = {
+					static const array<const char*, 4> sysNames_EFI = {{
 						"Extensible Firmware Interface", "EFI", "EFI", nullptr
-					};
+					}};
 					return sysNames_EFI[type & SYSNAME_TYPE_MASK];
 				}
 
 				case IMAGE_SUBSYSTEM_XBOX: {
 					// Check the CPU type.
-					static const char *const sysNames_Xbox[3][4] = {
+					static const array<array<const char*, 4>, 3> sysNames_Xbox = {{
 						{"Microsoft Xbox", "Xbox", "Xbox", nullptr},
 						{"Microsoft Xbox 360", "Xbox 360", "X360", nullptr},
 						{"Microsoft Xbox One", "Xbox One", "Xbone", nullptr},
-					};
+					}};
 					switch (le16_to_cpu(d->hdr.pe.FileHeader.Machine)) {
 						default:
 						case IMAGE_FILE_MACHINE_I386:
@@ -1231,4 +1231,4 @@ int EXE::checkViewedAchievements(void) const
 	return 1;
 }
 
-}
+} // namespace LibRomData

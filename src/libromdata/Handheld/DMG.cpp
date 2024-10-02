@@ -1017,12 +1017,12 @@ const char *DMG::systemName(unsigned int type) const
 
 	// Bits 0-1: Type. (long, short, abbreviation)
 	// Bits 2-3: System type. (DMG-specific)
-	static const char *const sysNames[4][4] = {
-		{"Nintendo Game Boy", "Game Boy", "GB", nullptr},
-		{"Nintendo Game Boy Color", "Game Boy Color", "GBC", nullptr},
-		{"Analogue Pocket", "Analogue Pocket", "AP", nullptr},
-		{nullptr, nullptr, nullptr, nullptr},
-	};
+	static const array<array<const char*, 4>, 4> sysNames = {{
+		{{"Nintendo Game Boy", "Game Boy", "GB", nullptr}},
+		{{"Nintendo Game Boy Color", "Game Boy Color", "GBC", nullptr}},
+		{{"Analogue Pocket", "Analogue Pocket", "AP", nullptr}},
+		{{nullptr, nullptr, nullptr, nullptr}},
+	}};
 
 	// NOTE: This might return an incorrect system name if
 	// d->romType is ROM_TYPE_UNKNOWN.
@@ -1610,4 +1610,4 @@ int DMG::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 	return 0;
 }
 
-}
+} // namespace LibRomData

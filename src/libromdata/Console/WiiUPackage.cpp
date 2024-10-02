@@ -574,9 +574,9 @@ const char *WiiUPackage::systemName(unsigned int type) const
 		"WiiUPackage::systemName() array index optimization needs to be updated.");
 
 	// Bits 0-1: Type. (long, short, abbreviation)
-	static const char *const sysNames[4] = {
+	static const array<const char*, 4> sysNames = {{
 		"Nintendo Wii U", "Wii U", "Wii U", nullptr
-	};
+	}};
 
 	return sysNames[type & SYSNAME_TYPE_MASK];
 }
@@ -753,4 +753,4 @@ int WiiUPackage::loadInternalImage(ImageType imageType, rp_image_const_ptr &pIma
 		d->loadIcon);	// func
 }
 
-}
+} // namespace LibRomData

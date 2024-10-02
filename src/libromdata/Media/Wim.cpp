@@ -36,6 +36,7 @@ using namespace LibRpText;
 #include <ctime>
 
 // C++ STL classes
+using std::array;
 using std::string;
 using std::vector;
 
@@ -570,12 +571,9 @@ const char* Wim::systemName(unsigned int type) const
 	static_assert(SYSNAME_TYPE_MASK == 3,
 		"Wim::systemName() array index optimization needs to be updated.");
 
-	static const char *const sysNames[4] = {
-		"Microsoft WIM",
-		"WIM Image",
-		"WIM",
-		nullptr
-	};
+	static const array<const char*, 4> sysNames = {{
+		"Microsoft WIM", "WIM Image", "WIM", nullptr
+	}};
 
 	return sysNames[type & SYSNAME_TYPE_MASK];
 }
@@ -673,4 +671,4 @@ int Wim::loadFieldData(void)
 	return static_cast<int>(d->fields.count());
 }
 
-}
+} // namespace LibRomData

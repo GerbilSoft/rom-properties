@@ -1760,9 +1760,9 @@ const char *Xbox360_XDBF::systemName(unsigned int type) const
 
 	// Bits 0-1: Type. (long, short, abbreviation)
 	// TODO: XDBF-specific, or just use Xbox 360?
-	static const char *const sysNames[4] = {
+	static const array<const char*, 4> sysNames = {{
 		"Microsoft Xbox 360", "Xbox 360", "X360", nullptr
-	};
+	}};
 
 	return sysNames[type & SYSNAME_TYPE_MASK];
 }
@@ -1993,4 +1993,4 @@ string Xbox360_XDBF::getString(LibRpBase::Property property) const
 	return s_ret;
 }
 
-}
+} // namespace LibRomData

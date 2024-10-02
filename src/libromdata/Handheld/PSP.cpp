@@ -29,6 +29,7 @@ using namespace LibRpTexture;
 #include "Other/ELF.hpp"
 
 // C++ STL classes
+using std::array;
 using std::string;
 using std::vector;
 
@@ -369,10 +370,10 @@ const char *PSP::systemName(unsigned int type) const
 	static_assert(SYSNAME_TYPE_MASK == 3,
 		"PSP::systemName() array index optimization needs to be updated.");
 
-	static const char *const sysNames[2][4] = {
-		{"Sony PlayStation Portable", "PlayStation Portable", "PSP", nullptr},
-		{"Universal Media Disc", "Universal Media Disc", "UMD", nullptr},
-	};
+	static const array<array<const char*, 4>, 2> sysNames = {{
+		{{"Sony PlayStation Portable", "PlayStation Portable", "PSP", nullptr}},
+		{{"Universal Media Disc", "Universal Media Disc", "UMD", nullptr}},
+	}};
 	return sysNames[(unsigned int)(d->discType) & 1][type & SYSNAME_TYPE_MASK];
 }
 
@@ -590,4 +591,4 @@ int PSP::loadMetaData(void)
 	return static_cast<int>(d->metaData->count());
 }
 
-}
+} // namespace LibRomData

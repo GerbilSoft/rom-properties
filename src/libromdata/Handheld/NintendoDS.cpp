@@ -500,7 +500,7 @@ const char *NintendoDS::systemName(unsigned int type) const
 	// Bits 0-1: Type. (long, short, abbreviation)
 	// Bit 2: 0 for NDS, 1 for DSi-exclusive.
 	// Bit 3: 0 for worldwide, 1 for China. (iQue DS)
-	static const char *const sysNames[16] = {
+	static const array<const char*, 4*4> sysNames = {{
 		// Nintendo (worldwide)
 		"Nintendo DS", "Nintendo DS", "NDS", nullptr,
 		"Nintendo DSi", "Nintendo DSi", "DSi", nullptr,
@@ -508,7 +508,7 @@ const char *NintendoDS::systemName(unsigned int type) const
 		// iQue (China)
 		"iQue DS", "iQue DS", "NDS", nullptr,
 		"iQue DSi", "iQue DSi", "DSi", nullptr
-	};
+	}};
 
 	// "iQue" is only used if the localized system name is requested
 	// *and* the ROM's region code is China only.
@@ -1290,4 +1290,4 @@ bool NintendoDS::hasDangerousPermissions(void) const
 	return false;
 }
 
-}
+} // namespace LibRomData

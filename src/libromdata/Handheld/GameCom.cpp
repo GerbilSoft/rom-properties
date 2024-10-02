@@ -590,12 +590,9 @@ const char *GameCom::systemName(unsigned int type) const
 	static_assert(SYSNAME_TYPE_MASK == 3,
 		"GameCom::systemName() array index optimization needs to be updated.");
 
-	static const char *const sysNames[4] = {
-		"Tiger game.com",
-		"game.com",
-		"game.com",
-		nullptr
-	};
+	static const array<const char*, 4> sysNames = {{
+		"Tiger game.com", "game.com", "game.com", nullptr
+	}};
 
 	return sysNames[type & SYSNAME_TYPE_MASK];
 }
@@ -801,4 +798,4 @@ int GameCom::loadInternalImage(ImageType imageType, rp_image_const_ptr &pImage)
 	return ((bool)pImage ? 0 : -EIO);
 }
 
-}
+} // namespace LibRomData

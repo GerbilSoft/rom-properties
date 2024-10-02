@@ -1480,7 +1480,7 @@ const char *Nintendo3DS::systemName(unsigned int type) const
 	// Bit 2: *New* Nintendo 3DS
 	// Bit 3: iQue
 	// TODO: Compare code gen for 2D vs. 1D arrays.
-	static const char *const sysNames[4*4] = {
+	static const array<const char*, 4*4> sysNames = {{
 		"Nintendo 3DS", "Nintendo 3DS", "3DS", nullptr,
 		"*New* Nintendo 3DS", "*New* Nintendo 3DS", "N3DS", nullptr,
 
@@ -1488,7 +1488,7 @@ const char *Nintendo3DS::systemName(unsigned int type) const
 		// NOTE: *New* iQue 3DS wasn't actually released...
 		"iQue 3DS", "iQue 3DS", "3DS", nullptr,
 		"*New* iQue 3DS", "*New* iQue 3DS", "N3DS", nullptr,
-	};
+	}};
 
 	return sysNames[type];
 }
@@ -2791,4 +2791,4 @@ int Nintendo3DS::checkViewedAchievements(void) const
 #endif /* ENABLE_DECRYPTION */
 }
 
-}
+} // namespace LibRomData

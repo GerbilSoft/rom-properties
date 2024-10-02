@@ -914,22 +914,16 @@ const char *NES::systemName(unsigned int type) const
 	switch (d->romType & NESPrivate::ROM_SYSTEM_MASK) {
 		case NESPrivate::ROM_SYSTEM_NES:
 		default: {
-			static const char *const sysNames_NES[3][4] = {
+			static const array<array<const char*, 4>, 3> sysNames_NES = {{
 				// NES (International)
-				{"Nintendo Entertainment System",
-				 "Nintendo Entertainment System",
-				 "NES", nullptr},
+				{{"Nintendo Entertainment System", "Nintendo Entertainment System", "NES", nullptr}},
 
 				// Famicom (Japan)
-				{"Nintendo Famicom",
-				 "Famicom",
-				 "FC", nullptr},
+				{{"Nintendo Famicom", "Famicom", "FC", nullptr}},
 
 				// Hyundai Comboy (South Korea)
-				{"Hyundai Comboy",
-				 "Comboy",
-				 "CB", nullptr},
-			};
+				{{"Hyundai Comboy", "Comboy", "CB", nullptr}},
+			}};
 
 			if ((type & SYSNAME_REGION_MASK) == SYSNAME_REGION_GENERIC) {
 				// Use the international name.
@@ -948,29 +942,23 @@ const char *NES::systemName(unsigned int type) const
 		}
 
 		case NESPrivate::ROM_SYSTEM_FDS: {
-			static const char *const sysNames_FDS[] = {
-				"Nintendo Famicom Disk System",
-				"Famicom Disk System",
-				"FDS", nullptr
-			};
+			static const array<const char*, 4> sysNames_FDS = {{
+				"Nintendo Famicom Disk System", "Famicom Disk System", "FDS", nullptr
+			}};
 			return sysNames_FDS[idx];
 		}
 
 		case NESPrivate::ROM_SYSTEM_VS: {
-			static const char *const sysNames_VS[] = {
-				"Nintendo VS. System",
-				"VS. System",
-				"VS", nullptr
-			};
+			static const array<const char*, 4> sysNames_VS = {{
+				"Nintendo VS. System", "VS. System", "VS", nullptr
+			}};
 			return sysNames_VS[idx];
 		}
 
 		case NESPrivate::ROM_SYSTEM_PC10: {
-			static const char *const sysNames_PC10[] = {
-				"Nintendo PlayChoice-10",
-				"PlayChoice-10",
-				"PC10", nullptr
-			};
+			static const array<const char*, 4> sysNames_PC10 = {{
+				"Nintendo PlayChoice-10", "PlayChoice-10", "PC10", nullptr
+			}};
 			return sysNames_PC10[idx];
 		}
 	};
@@ -1577,4 +1565,4 @@ int NES::loadFieldData(void)
 	return static_cast<int>(d->fields.count());
 }
 
-}
+} // namespace LibRomData

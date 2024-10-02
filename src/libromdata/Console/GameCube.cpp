@@ -1166,12 +1166,12 @@ const char *GameCube::systemName(unsigned int type) const
 
 	// Bits 0-1: Type. (long, short, abbreviation)
 	// Bits 2-3: DISC_SYSTEM_MASK (GCN, Wii, Triforce)
-	static const char *const sysNames[4][4] = {
-		{"Nintendo GameCube", "GameCube", "GCN", nullptr},
-		{"Nintendo/Sega/Namco Triforce", "Triforce", "TF", nullptr},
-		{"Nintendo Wii", "Wii", "Wii", nullptr},
-		{nullptr, nullptr, nullptr, nullptr},
-	};
+	static const array<array<const char*, 4>, 4> sysNames = {{
+		{{"Nintendo GameCube", "GameCube", "GCN", nullptr}},
+		{{"Nintendo/Sega/Namco Triforce", "Triforce", "TF", nullptr}},
+		{{"Nintendo Wii", "Wii", "Wii", nullptr}},
+		{{nullptr, nullptr, nullptr, nullptr}},
+	}};
 
 	// Special check for GCN abbreviation in Japan.
 	if ((type & SYSNAME_REGION_MASK) == SYSNAME_REGION_ROM_LOCAL) {
@@ -2138,4 +2138,4 @@ int GameCube::checkViewedAchievements(void) const
 	return ret;
 }
 
-}
+} // namespace LibRomData

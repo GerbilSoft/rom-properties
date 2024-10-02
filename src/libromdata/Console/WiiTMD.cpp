@@ -17,6 +17,7 @@ using namespace LibRpFile;
 using namespace LibRpText;
 
 // C++ STL classes
+using std::array;
 using std::string;
 using std::unique_ptr;
 using std::vector;
@@ -289,16 +290,16 @@ const char *WiiTMD::systemName(unsigned int type) const
 		"WiiTMD::systemName() array index optimization needs to be updated.");
 
 	// Use the title ID to determine the system.
-	static const char *const sysNames[8][4] = {
-		{"Nintendo Wii", "Wii", "Wii", nullptr},	// Wii IOS
-		{"Nintendo Wii", "Wii", "Wii", nullptr},	// Wii
-		{"GBA NetCard", "NetCard", "NetCard", nullptr},	// GBA NetCard
-		{"Nintendo DSi", "DSi", "DSi", nullptr},	// DSi
-		{"Nintendo 3DS", "3DS", "3DS", nullptr},	// 3DS
-		{"Nintendo Wii U", "Wii U", "Wii U", nullptr},	// Wii U
-		{nullptr, nullptr, nullptr, nullptr},		// unused
-		{"Nintendo Wii U", "Wii U", "Wii U", nullptr},	// Wii U (vWii)
-	};
+	static const array<array<const char*, 4>, 8> sysNames = {{
+		{{"Nintendo Wii", "Wii", "Wii", nullptr}},		// Wii IOS
+		{{"Nintendo Wii", "Wii", "Wii", nullptr}},		// Wii
+		{{"GBA NetCard", "NetCard", "NetCard", nullptr}},	// GBA NetCard
+		{{"Nintendo DSi", "DSi", "DSi", nullptr}},		// DSi
+		{{"Nintendo 3DS", "3DS", "3DS", nullptr}},		// 3DS
+		{{"Nintendo Wii U", "Wii U", "Wii U", nullptr}},	// Wii U
+		{{nullptr, nullptr, nullptr, nullptr}},			// unused
+		{{"Nintendo Wii U", "Wii U", "Wii U", nullptr}},	// Wii U (vWii)
+	}};
 
 	const unsigned int sysID = be16_to_cpu(d->tmdHeader.title_id.sysID);
 	return (likely(sysID < ARRAY_SIZE(sysNames)))
@@ -610,4 +611,4 @@ rp::uvector<WUP_Content_Entry> WiiTMD::contentsTableV1(unsigned int grpIdx)
 	return {};
 }
 
-}
+} // namespace LibRomData

@@ -579,16 +579,16 @@ const char *PlayStationDisc::systemName(unsigned int type) const
 	switch (d->consoleType) {
 		default:
 		case PlayStationDiscPrivate::ConsoleType::PS1: {
-			static const char *const sysNames_PS1[4] = {
+			static const array<const char*, 4> sysNames_PS1 = {{
 				"Sony PlayStation", "PlayStation", "PS1", nullptr
-			};
+			}};
 			return sysNames_PS1[type & SYSNAME_TYPE_MASK];
 		}
 
 		case PlayStationDiscPrivate::ConsoleType::PS2: {
-			static const char *const sysNames_PS2[4] = {
+			static const array<const char*, 4> sysNames_PS2 = {{
 				"Sony PlayStation 2", "PlayStation 2", "PS2", nullptr
-			};
+			}};
 			return sysNames_PS2[type & SYSNAME_TYPE_MASK];
 		}
 	}
@@ -1013,4 +1013,4 @@ int PlayStationDisc::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int 
 	return 0;
 }
 
-}
+} // namespace LibRomData

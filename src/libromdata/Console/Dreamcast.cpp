@@ -29,6 +29,7 @@ using namespace LibRpTexture;
 #include "Media/ISO.hpp"
 
 // C++ STL classes
+using std::array;
 using std::shared_ptr;
 using std::string;
 using std::vector;
@@ -516,9 +517,9 @@ const char *Dreamcast::systemName(unsigned int type) const
 		"Dreamcast::systemName() array index optimization needs to be updated.");
 
 	// Bits 0-1: Type. (long, short, abbreviation)
-	static const char *const sysNames[4] = {
+	static const array<const char*, 4> sysNames = {{
 		"Sega Dreamcast", "Dreamcast", "DC", nullptr
-	};
+	}};
 
 	return sysNames[type & SYSNAME_TYPE_MASK];
 }
@@ -866,4 +867,4 @@ int Dreamcast::loadInternalImage(ImageType imageType, rp_image_const_ptr &pImage
 		d->load0GDTEX);	// func
 }
 
-}
+} // namespace LibRomData

@@ -745,11 +745,11 @@ const char *ISO::systemName(unsigned int type) const
 		"ISO::systemName() array index optimization needs to be updated.");
 
 	// TODO: UDF, HFS, others?
-	static const char *const sysNames[3][4] = {
-		{"ISO-9660", "ISO", "ISO", nullptr},
-		{"High Sierra Format", "High Sierra", "HSF", nullptr},
-		{"Compact Disc Interactive", "CD-i", "CD-i", nullptr},
-	};
+	static const array<array<const char*, 4>, 3> sysNames = {{
+		{{"ISO-9660", "ISO", "ISO", nullptr}},
+		{{"High Sierra Format", "High Sierra", "HSF", nullptr}},
+		{{"Compact Disc Interactive", "CD-i", "CD-i", nullptr}},
+	}};
 
 	unsigned int sysID = 0;
 	if ((int)d->discType >= 0 && d->discType < ISOPrivate::DiscType::Max) {
@@ -930,4 +930,4 @@ int ISO::checkViewedAchievements(void) const
 	return ret;
 }
 
-}
+} // namespace LibRomData

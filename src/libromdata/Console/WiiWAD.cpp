@@ -40,6 +40,7 @@ using namespace LibRpTexture;
 #include "Handheld/NintendoDS.hpp"
 
 // C++ STL classes
+using std::array;
 using std::string;
 using std::unique_ptr;
 using std::vector;
@@ -589,18 +590,18 @@ const char *WiiWAD::systemName(unsigned int type) const
 		case NINTENDO_SYSID_IOS:
 		case NINTENDO_SYSID_RVL: {
 			// Wii
-			static const char *const sysNames_Wii[4] = {
+			static const array<const char*, 4> sysNames_Wii = {{
 				"Nintendo Wii", "Wii", "Wii", nullptr
-			};
+			}};
 			return sysNames_Wii[type];
 		}
 
 		case NINTENDO_SYSID_TWL: {
 			// DSi
 			// TODO: iQue DSi for China?
-			static const char *const sysNames_DSi[4] = {
+			static const array<const char*, 4> sysNames_DSi = {{
 				"Nintendo DSi", "DSi", "DSi", nullptr
-			};
+			}};
 			return sysNames_DSi[type];
 		}
 	}
@@ -1408,4 +1409,4 @@ int WiiWAD::checkViewedAchievements(void) const
 	return ret;
 }
 
-}
+} // namespace LibRomData

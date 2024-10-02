@@ -21,6 +21,7 @@ using namespace LibRpText;
 using namespace LibRpTexture;
 
 // C++ STL classes
+using std::array;
 using std::string;
 using std::vector;
 
@@ -532,10 +533,10 @@ const char *GameCubeBNR::systemName(unsigned int type) const
 		"GameCubeBNR::systemName() array index optimization needs to be updated.");
 
 	// Bits 0-1: Type. (long, short, abbreviation)
-	static const char *const sysNames[4] = {
+	static const array<const char*, 4> sysNames = {{
 		// FIXME: "NGC" in Japan?
 		"Nintendo GameCube", "GameCube", "GCN", nullptr,
-	};
+	}};
 
 	return sysNames[type & SYSNAME_TYPE_MASK];
 }
@@ -935,4 +936,4 @@ int GameCubeBNR::addField_gameInfo(LibRpBase::RomFields *fields) const
 	return 0;
 }
 
-}
+} // namespace LibRomData

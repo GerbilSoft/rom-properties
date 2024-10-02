@@ -1049,7 +1049,7 @@ const char *SNES::systemName(unsigned int type) const
 	unsigned int idx = (type & SYSNAME_TYPE_MASK);
 
 	// Localized SNES/SFC system names.
-	static const char *const sysNames[16] = {
+	static const array<const char*, 4*4> sysNames = {{
 		// Japan: Super Famicom
 		"Nintendo Super Famicom", "Super Famicom", "SFC", nullptr,
 		// South Korea: Super Comboy
@@ -1058,12 +1058,12 @@ const char *SNES::systemName(unsigned int type) const
 		"Super Nintendo Entertainment System", "Super NES", "SNES", nullptr,
 		// Reserved.
 		nullptr, nullptr, nullptr, nullptr
-	};
+	}};
 
 	// BS-X system names.
-	static const char *const sysNames_BSX[4] = {
+	static const array<const char*, 4> sysNames_BSX = {{
 		"Satellaview BS-X", "Satellaview", "BS-X", nullptr
-	};
+	}};
 
 	switch (d->romType) {
 		case SNESPrivate::RomType::SNES:
@@ -1642,4 +1642,4 @@ int SNES::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 	return 0;
 }
 
-}
+} // namespace LibRomData

@@ -18,6 +18,7 @@ using namespace LibRpFile;
 using namespace LibRpText;
 
 // C++ STL classes
+using std::array;
 using std::string;
 using std::vector;
 
@@ -238,9 +239,9 @@ const char *Intellivision::systemName(unsigned int type) const
 		"Intellivision::systemName() array index optimization needs to be updated.");
 
 	// Bits 0-1: Type. (long, short, abbreviation)
-	static const char *const sysNames[4] = {
+	static const array<const char*, 4> sysNames = {{
 		"Intellivision", "Intellivision", "INTV", nullptr
-	};
+	}};
 
 	return sysNames[type & SYSNAME_TYPE_MASK];
 }
@@ -348,4 +349,4 @@ int Intellivision::loadMetaData(void)
 	return (d->metaData ? static_cast<int>(d->metaData->count()) : -ENOENT);
 }
 
-}
+} // namespace LibRomData

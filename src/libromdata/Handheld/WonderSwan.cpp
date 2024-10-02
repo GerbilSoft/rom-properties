@@ -415,10 +415,10 @@ const char *WonderSwan::systemName(unsigned int type) const
 	static_assert(SYSNAME_TYPE_MASK == 3,
 		"WonderSwan::systemName() array index optimization needs to be updated.");
 	
-	static const char *const sysNames[2][4] = {
-		{"Bandai WonderSwan", "WonderSwan", "WS", nullptr},
-		{"Bandai WonderSwan Color", "WonderSwan Color", "WSC", nullptr},
-	};
+	static const array<array<const char*, 4>, 2> sysNames = {{
+		{{"Bandai WonderSwan", "WonderSwan", "WS", nullptr}},
+		{{"Bandai WonderSwan Color", "WonderSwan Color", "WSC", nullptr}},
+	}};
 
 	return sysNames[d->romFooter.system_id & 1][type & SYSNAME_TYPE_MASK];
 }
@@ -758,4 +758,4 @@ int WonderSwan::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size)
 	return 0;
 }
 
-}
+} // namespace LibRomData

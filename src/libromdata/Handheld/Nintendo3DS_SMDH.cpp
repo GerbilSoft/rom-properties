@@ -341,10 +341,10 @@ const char *Nintendo3DS_SMDH::systemName(unsigned int type) const
 	// Bits 0-1: Type. (long, short, abbreviation)
 	// Bit 2: iQue
 	// TODO: Is it possible to identify "*New*" Nintendo 3DS" from just the SMDH?
-	static const char *const sysNames[4*4] = {
+	static const array<const char*, 2*4> sysNames = {{
 		"Nintendo 3DS", "Nintendo 3DS", "3DS", nullptr,
 		"iQue 3DS", "iQue 3DS", "3DS", nullptr,
-	};
+	}};
 
 	return sysNames[idx];
 }
@@ -725,4 +725,4 @@ uint32_t Nintendo3DS_SMDH::getRegionCode(void) const
 	return le32_to_cpu(d->smdh.header.settings.region_code);
 }
 
-}
+} // namespace LibRomData

@@ -341,10 +341,10 @@ const char *WiiWIBN::systemName(unsigned int type) const
 		"WiiWIBN::systemName() array index optimization needs to be updated.");
 
 	// Bits 0-1: Type. (long, short, abbreviation)
-	static const char *const sysNames[4] = {
+	static const array<const char*, 4> sysNames = {{
 		// NOTE: Same as Wii.
 		"Nintendo Wii", "Wii", "Wii", nullptr
-	};
+	}};
 
 	return sysNames[type & SYSNAME_TYPE_MASK];
 }
@@ -607,4 +607,4 @@ IconAnimDataConstPtr WiiWIBN::iconAnimData(void) const
 	return d->iconAnimData;
 }
 
-}
+} // namespace LibRomData

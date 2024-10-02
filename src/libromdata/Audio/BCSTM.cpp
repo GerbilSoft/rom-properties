@@ -343,9 +343,9 @@ const char *BCSTM::systemName(unsigned int type) const
 		case BCSTMPrivate::AudioFormat::BCSTM:
 		case BCSTMPrivate::AudioFormat::BCWAV: {
 			// Nintendo 3DS
-			static const char *const sysNames_3DS[4] = {
+			static const array<const char*, 4> sysNames_3DS = {{
 				"Nintendo 3DS", "Nintendo 3DS", "3DS", nullptr
-			};
+			}};
 			return sysNames_3DS[type & SYSNAME_TYPE_MASK];
 		}
 
@@ -353,15 +353,15 @@ const char *BCSTM::systemName(unsigned int type) const
 			// Wii U and/or Switch
 			if (d->bcstmHeader.bom == cpu_to_be16(BCSTM_BOM_HOST)) {
 				// Big-Endian
-				static const char *const sysNames_WiiU[4] = {
+				static const array<const char*, 4> sysNames_WiiU = {{
 					"Nintendo Wii U", "Wii U", "Wii U", nullptr
-				};
+				}};
 				return sysNames_WiiU[type & SYSNAME_TYPE_MASK];
 			} else /*if (d->bcstmHeader.bom == cpu_to_le16(BCSTM_BOM_HOST))*/ {
 				// Little-Endian
-				static const char *const sysNames_Switch[4] = {
+				static const array<const char*, 4> sysNames_Switch = {{
 					"Nintendo Switch", "Switch", "NSW", nullptr
-				};
+				}};
 				return sysNames_Switch[type & SYSNAME_TYPE_MASK];
 			}
 		}
@@ -584,4 +584,4 @@ int BCSTM::loadMetaData(void)
 	return static_cast<int>(d->metaData->count());
 }
 
-}
+} // namespace LibRomData

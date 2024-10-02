@@ -23,6 +23,7 @@ using namespace LibRpText;
 using namespace LibRpTexture;
 
 // C++ STL classes
+using std::array;
 using std::vector;
 
 namespace LibRomData {
@@ -377,9 +378,9 @@ const char *PlayStationSave::systemName(unsigned int type) const
 		"PlayStationSave::systemName() array index optimization needs to be updated.");
 
 	// Bits 0-1: Type. (long, short, abbreviation)
-	static const char *const sysNames[4] = {
+	static const array<const char*, 4> sysNames = {{
 		"Sony PlayStation", "PlayStation", "PS1", nullptr
-	};
+	}};
 
 	return sysNames[type & SYSNAME_TYPE_MASK];
 }
@@ -609,4 +610,4 @@ IconAnimDataConstPtr PlayStationSave::iconAnimData(void) const
 	return d->iconAnimData;
 }
 
-}
+} // namespace LibRomData

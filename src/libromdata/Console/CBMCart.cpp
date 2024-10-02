@@ -18,6 +18,7 @@ using namespace LibRpFile;
 using namespace LibRpText;
 
 // C++ STL classes
+using std::array;
 using std::string;
 using std::unique_ptr;
 using std::vector;
@@ -220,14 +221,14 @@ const char *CBMCart::systemName(unsigned int type) const
 	static_assert(SYSNAME_TYPE_MASK == 3,
 		"CBMCart::systemName() array index optimization needs to be updated.");
 
-	static const char *const sysNames[][4] = {
-		{"Commodore 64", "C64", "C64", nullptr},
-		{"Commodore 128", "C128", "C128", nullptr},
-		{"Commodore CBM-II", "CBM-II", "CBM-II", nullptr},
-		{"Commodore VIC-20", "VIC-20", "VIC-20", nullptr},
-		{"Commodore Plus/4", "Plus/4", "Plus/4", nullptr},
-	};
-	static_assert(ARRAY_SIZE(sysNames) == static_cast<int>(CBMCartPrivate::RomType::Max),
+	static const array<array<const char*, 4>, 5> sysNames = {{
+		{{"Commodore 64", "C64", "C64", nullptr}},
+		{{"Commodore 128", "C128", "C128", nullptr}},
+		{{"Commodore CBM-II", "CBM-II", "CBM-II", nullptr}},
+		{{"Commodore VIC-20", "VIC-20", "VIC-20", nullptr}},
+		{{"Commodore Plus/4", "Plus/4", "Plus/4", nullptr}},
+	}};
+	static_assert(sysNames.size() == static_cast<int>(CBMCartPrivate::RomType::Max),
 		"CBMCart: sysNames[] is missing entries!");
 
 	int i = static_cast<int>(d->romType);
@@ -600,4 +601,4 @@ int CBMCart::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) co
 	return 0;
 }
 
-}
+} // namespace LibRomData

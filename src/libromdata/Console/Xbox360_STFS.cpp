@@ -724,9 +724,9 @@ const char *Xbox360_STFS::systemName(unsigned int type) const
 
 	// Bits 0-1: Type. (long, short, abbreviation)
 	// TODO: STFS-specific, or just use Xbox 360?
-	static const char *const sysNames[4] = {
+	static const array<const char*, 4> sysNames = {{
 		"Microsoft Xbox 360", "Xbox 360", "X360", nullptr
-	};
+	}};
 
 	return sysNames[type & SYSNAME_TYPE_MASK];
 }
@@ -1119,4 +1119,4 @@ int Xbox360_STFS::loadInternalImage(ImageType imageType, rp_image_const_ptr &pIm
 		d->loadIcon);	// func
 }
 
-}
+} // namespace LibRomData
