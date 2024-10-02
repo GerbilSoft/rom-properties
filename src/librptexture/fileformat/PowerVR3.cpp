@@ -332,7 +332,7 @@ rp_image_const_ptr PowerVR3Private::loadImage(int mip)
 		expected_size = ImageSizeCalc::T_calcImageSize(pvr3Header.width, height, bytespp);
 	} else {
 		// Compressed format.
-		int8_t fmts[2] = {PVR3_CHTYPE_UBYTE_NORM, PVR3_CHTYPE_UBYTE};
+		array<int8_t, 2> fmts = {{PVR3_CHTYPE_UBYTE_NORM, PVR3_CHTYPE_UBYTE}};
 		switch (pvr3Header.pixel_format) {
 #ifdef ENABLE_PVRTC
 			case PVR3_PXF_PVRTC_2bpp_RGB:
@@ -422,7 +422,7 @@ rp_image_const_ptr PowerVR3Private::loadImage(int mip)
 
 		// Make sure the channel type is correct.
 		bool isOK = false;
-		for (const int fmt : fmts) {
+		for (const int8_t fmt : fmts) {
 			if (fmt < 0)
 				break;
 

@@ -9,9 +9,6 @@
 #include "stdafx.h"
 #include "ImageDecoder_C64.hpp"
 
-// C++ STL classes
-using std::array;
-
 namespace LibRpTexture { namespace ImageDecoder {
 
 /**
