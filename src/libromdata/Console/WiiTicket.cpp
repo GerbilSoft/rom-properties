@@ -30,7 +30,7 @@ namespace LibRomData {
 class WiiTicketPrivate final : public RomDataPrivate
 {
 public:
-	WiiTicketPrivate(const IRpFilePtr &file);
+	explicit WiiTicketPrivate(const IRpFilePtr &file);
 
 private:
 	typedef RomDataPrivate super;

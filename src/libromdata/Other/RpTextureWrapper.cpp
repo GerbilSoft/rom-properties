@@ -24,8 +24,7 @@ namespace LibRomData {
 class RpTextureWrapperPrivate final : public RomDataPrivate
 {
 public:
-	RpTextureWrapperPrivate(const IRpFilePtr &file);
-	~RpTextureWrapperPrivate() final = default;
+	explicit RpTextureWrapperPrivate(const IRpFilePtr &file);
 
 private:
 	typedef RomDataPrivate super;

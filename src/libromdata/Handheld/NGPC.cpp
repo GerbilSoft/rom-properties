@@ -25,7 +25,7 @@ namespace LibRomData {
 class NGPCPrivate final : public RomDataPrivate
 {
 public:
-	NGPCPrivate(const IRpFilePtr &file);
+	explicit NGPCPrivate(const IRpFilePtr &file);
 
 private:
 	typedef RomDataPrivate super;

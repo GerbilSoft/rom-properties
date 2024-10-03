@@ -26,7 +26,7 @@ namespace LibRomData {
 class WonderSwanPrivate final : public RomDataPrivate
 {
 public:
-	WonderSwanPrivate(const IRpFilePtr &file);
+	explicit WonderSwanPrivate(const IRpFilePtr &file);
 
 private:
 	typedef RomDataPrivate super;

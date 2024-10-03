@@ -29,7 +29,7 @@ namespace LibRomData {
 class SAPPrivate final : public RomDataPrivate
 {
 public:
-	SAPPrivate(const IRpFilePtr &file);
+	explicit SAPPrivate(const IRpFilePtr &file);
 
 private:
 	typedef RomDataPrivate super;

@@ -33,8 +33,7 @@ namespace LibRomData {
 class Nintendo3DS_SMDH_Private final : public RomDataPrivate
 {
 public:
-	Nintendo3DS_SMDH_Private(const IRpFilePtr &file);
-	~Nintendo3DS_SMDH_Private() final = default;
+	explicit Nintendo3DS_SMDH_Private(const IRpFilePtr &file);
 
 private:
 	typedef RomDataPrivate super;

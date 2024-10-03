@@ -43,8 +43,7 @@ namespace LibRomData {
 class PalmOSPrivate final : public RomDataPrivate
 {
 public:
-	PalmOSPrivate(const IRpFilePtr &file);
-	~PalmOSPrivate() final = default;
+	explicit PalmOSPrivate(const IRpFilePtr &file);
 
 private:
 	typedef RomDataPrivate super;

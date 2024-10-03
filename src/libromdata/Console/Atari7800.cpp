@@ -24,7 +24,7 @@ namespace LibRomData {
 class Atari7800Private final : public RomDataPrivate
 {
 public:
-	Atari7800Private(const IRpFilePtr &file);
+	explicit Atari7800Private(const IRpFilePtr &file);
 
 private:
 	typedef RomDataPrivate super;

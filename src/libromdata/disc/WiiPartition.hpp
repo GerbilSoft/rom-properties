@@ -52,7 +52,6 @@ public:
 	 */
 	WiiPartition(const LibRpBase::IDiscReaderPtr &discReader, off64_t partition_offset,
 		off64_t partition_size, CryptoMethod crypto = CM_STANDARD);
-	~WiiPartition() final = default;
 
 private:
 	typedef GcnPartition super;

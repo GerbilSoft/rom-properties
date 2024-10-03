@@ -24,7 +24,7 @@ namespace LibRomData {
 class LynxPrivate final : public RomDataPrivate
 {
 public:
-	LynxPrivate(const IRpFilePtr &file);
+	explicit LynxPrivate(const IRpFilePtr &file);
 
 private:
 	typedef RomDataPrivate super;

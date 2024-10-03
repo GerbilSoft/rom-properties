@@ -27,7 +27,7 @@ namespace LibRpBase {
 class HashPrivate
 {
 public:
-	HashPrivate(Hash::Algorithm algorithm);
+	explicit HashPrivate(Hash::Algorithm algorithm);
 
 public:
 	Hash::Algorithm algorithm;

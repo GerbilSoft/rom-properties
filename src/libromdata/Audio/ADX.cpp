@@ -24,7 +24,7 @@ namespace LibRomData {
 class ADXPrivate final : public RomDataPrivate
 {
 public:
-	ADXPrivate(const IRpFilePtr &file);
+	explicit ADXPrivate(const IRpFilePtr &file);
 
 private:
 	typedef RomDataPrivate super;

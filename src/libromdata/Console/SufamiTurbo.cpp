@@ -25,7 +25,7 @@ namespace LibRomData {
 class SufamiTurboPrivate final : public RomDataPrivate
 {
 public:
-	SufamiTurboPrivate(const IRpFilePtr &file);
+	explicit SufamiTurboPrivate(const IRpFilePtr &file);
 
 private:
 	typedef RomDataPrivate super;

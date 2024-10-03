@@ -24,7 +24,7 @@ namespace LibRomData {
 class LuaPrivate final : public RomDataPrivate
 {
 public:
-	LuaPrivate(const IRpFilePtr &file);
+	explicit LuaPrivate(const IRpFilePtr &file);
 
 public:
 	/** RomDataInfo **/

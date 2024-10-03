@@ -29,8 +29,7 @@ namespace LibRomData {
 class GameCubeSavePrivate final : public RomDataPrivate
 {
 public:
-	GameCubeSavePrivate(const IRpFilePtr &file);
-	~GameCubeSavePrivate() final = default;
+	explicit GameCubeSavePrivate(const IRpFilePtr &file);
 
 private:
 	typedef RomDataPrivate super;

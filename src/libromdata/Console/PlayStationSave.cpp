@@ -31,8 +31,7 @@ namespace LibRomData {
 class PlayStationSavePrivate final : public RomDataPrivate
 {
 public:
-	PlayStationSavePrivate(const IRpFilePtr &file);
-	~PlayStationSavePrivate() final = default;
+	explicit PlayStationSavePrivate(const IRpFilePtr &file);
 
 private:
 	typedef RomDataPrivate super;

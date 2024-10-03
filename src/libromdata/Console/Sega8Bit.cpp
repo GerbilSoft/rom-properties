@@ -24,7 +24,7 @@ namespace LibRomData {
 class Sega8BitPrivate final : public RomDataPrivate
 {
 public:
-	Sega8BitPrivate(const IRpFilePtr &file);
+	explicit Sega8BitPrivate(const IRpFilePtr &file);
 
 private:
 	typedef RomDataPrivate super;

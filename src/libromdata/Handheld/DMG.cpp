@@ -35,7 +35,7 @@ namespace LibRomData {
 class DMGPrivate final : public RomDataPrivate
 {
 public:
-	DMGPrivate(const IRpFilePtr &file);
+	explicit DMGPrivate(const IRpFilePtr &file);
 
 private:
 	typedef RomDataPrivate super;

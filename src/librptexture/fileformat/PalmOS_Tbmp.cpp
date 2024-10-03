@@ -38,7 +38,6 @@ class PalmOS_Tbmp_Private final : public FileFormatPrivate
 {
 public:
 	PalmOS_Tbmp_Private(PalmOS_Tbmp *q, const IRpFilePtr &file, off64_t bitmapTypeAddr = 0);
-	~PalmOS_Tbmp_Private() final = default;
 
 private:
 	typedef FileFormatPrivate super;

@@ -59,7 +59,7 @@ DELAYLOAD_TEST_FUNCTION_IMPL0(lzo_version);
 class CisoPspReaderPrivate : public SparseDiscReaderPrivate
 {
 public:
-	CisoPspReaderPrivate(CisoPspReader *q);
+	explicit CisoPspReaderPrivate(CisoPspReader *q);
 
 private:
 	typedef SparseDiscReaderPrivate super;

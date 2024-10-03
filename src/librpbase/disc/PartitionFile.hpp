@@ -25,8 +25,6 @@ class PartitionFile final : public LibRpFile::IRpFile
 		 * @param size		[in] File size
 		 */
 		PartitionFile(const IDiscReaderPtr& partition, off64_t offset, off64_t size);
-	public:
-		~PartitionFile() final = default;
 
 	private:
 		typedef IRpFile super;

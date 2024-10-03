@@ -41,7 +41,6 @@ class WiiPartitionPrivate final : public GcnPartitionPrivate
 public:
 	WiiPartitionPrivate(WiiPartition *q, off64_t data_size,
 		off64_t partition_offset, WiiPartition::CryptoMethod cryptoMethod);
-	~WiiPartitionPrivate() final = default;
 
 private:
 	typedef GcnPartitionPrivate super;

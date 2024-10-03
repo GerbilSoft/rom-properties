@@ -46,7 +46,6 @@ class GodotSTEXPrivate final : public FileFormatPrivate
 {
 	public:
 		GodotSTEXPrivate(GodotSTEX *q, const IRpFilePtr &file);
-		~GodotSTEXPrivate() final = default;
 
 	private:
 		typedef FileFormatPrivate super;

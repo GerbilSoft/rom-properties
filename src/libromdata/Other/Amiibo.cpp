@@ -26,7 +26,7 @@ namespace LibRomData {
 class AmiiboPrivate final : public RomDataPrivate
 {
 public:
-	AmiiboPrivate(const IRpFilePtr &file);
+	explicit AmiiboPrivate(const IRpFilePtr &file);
 
 private:
 	typedef RomDataPrivate super;

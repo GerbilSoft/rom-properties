@@ -45,7 +45,7 @@ class klass##Private; \
 class klass final : public LibRpTexture::FileFormat { \
 public: \
 	explicit klass(const LibRpFile::IRpFilePtr &file); \
-	~klass() final = default; \
+\
 private: \
 	typedef FileFormat super; \
 	friend class klass##Private; \

@@ -38,7 +38,7 @@ namespace LibRomData {
 class SNDHPrivate final : public RomDataPrivate
 {
 public:
-	SNDHPrivate(const IRpFilePtr &file);
+	explicit SNDHPrivate(const IRpFilePtr &file);
 
 private:
 	typedef RomDataPrivate super;

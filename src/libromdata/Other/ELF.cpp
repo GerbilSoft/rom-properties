@@ -45,7 +45,7 @@ namespace LibRomData {
 class ELFPrivate final : public RomDataPrivate
 {
 public:
-	ELFPrivate(const IRpFilePtr &file);
+	explicit ELFPrivate(const IRpFilePtr &file);
 
 private:
 	typedef RomDataPrivate super;

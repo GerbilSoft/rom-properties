@@ -27,8 +27,7 @@ namespace LibRomData {
 class GameComPrivate final : public RomDataPrivate
 {
 public:
-	GameComPrivate(const IRpFilePtr &file);
-	~GameComPrivate() final = default;
+	explicit GameComPrivate(const IRpFilePtr &file);
 
 private:
 	typedef RomDataPrivate super;

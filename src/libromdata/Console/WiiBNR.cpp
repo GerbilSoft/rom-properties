@@ -30,8 +30,7 @@ namespace LibRomData {
 class WiiBNRPrivate final : public RomDataPrivate
 {
 public:
-	WiiBNRPrivate(const IRpFilePtr &file, uint32_t gcnRegion = ~0U, char id4_region = 'A');
-	~WiiBNRPrivate() final = default;
+	explicit WiiBNRPrivate(const IRpFilePtr &file, uint32_t gcnRegion = ~0U, char id4_region = 'A');
 
 private:
 	typedef RomDataPrivate super;

@@ -32,7 +32,7 @@ class klass##Private; \
 class klass final : public LibRpBase::RomData { \
 public: \
 	explicit klass(const LibRpFile::IRpFilePtr &file); \
-	~klass() final = default; \
+\
 private: \
 	typedef RomData super; \
 	friend class klass##Private; \

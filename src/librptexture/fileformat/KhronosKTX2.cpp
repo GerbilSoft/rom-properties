@@ -53,7 +53,6 @@ class KhronosKTX2Private final : public FileFormatPrivate
 {
 	public:
 		KhronosKTX2Private(KhronosKTX2 *q, const IRpFilePtr &file);
-		~KhronosKTX2Private() final = default;
 
 	private:
 		typedef FileFormatPrivate super;

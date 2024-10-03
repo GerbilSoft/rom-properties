@@ -30,8 +30,6 @@ class IStreamWrapper final : public LibWin32Common::ComBase<IStream>
 		explicit IStreamWrapper(const LibRpFile::IRpFilePtr &file)
 			: m_file(file)
 		{}
-	public:
-		~IStreamWrapper() final = default;
 
 	private:
 		typedef LibWin32Common::ComBase<IStream> super;

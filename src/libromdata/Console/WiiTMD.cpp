@@ -27,7 +27,7 @@ namespace LibRomData {
 class WiiTMDPrivate final : public RomDataPrivate
 {
 public:
-	WiiTMDPrivate(const IRpFilePtr &file);
+	explicit WiiTMDPrivate(const IRpFilePtr &file);
 
 private:
 	typedef RomDataPrivate super;

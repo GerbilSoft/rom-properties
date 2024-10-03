@@ -28,7 +28,7 @@ namespace LibRomData {
 class PSFPrivate final : public RomDataPrivate
 {
 public:
-	PSFPrivate(const IRpFilePtr &file);
+	explicit PSFPrivate(const IRpFilePtr &file);
 
 private:
 	typedef RomDataPrivate super;

@@ -44,8 +44,7 @@ DELAYLOAD_TEST_FUNCTION_IMPL0(get_crc_table);
 class iQuePlayerPrivate final : public RomDataPrivate
 {
 public:
-	iQuePlayerPrivate(const IRpFilePtr &file);
-	~iQuePlayerPrivate() final = default;
+	explicit iQuePlayerPrivate(const IRpFilePtr &file);
 
 private:
 	typedef RomDataPrivate super;

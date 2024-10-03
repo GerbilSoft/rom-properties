@@ -25,7 +25,7 @@ namespace LibRomData {
 class NSFPrivate final : public RomDataPrivate
 {
 public:
-	NSFPrivate(const IRpFilePtr &file);
+	explicit NSFPrivate(const IRpFilePtr &file);
 
 private:
 	typedef RomDataPrivate super;

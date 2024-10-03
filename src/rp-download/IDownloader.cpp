@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (rp-download)                      *
  * IDownloader.cpp: Downloader interface.                                  *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -182,7 +182,7 @@ struct inih_ctx {
 	const char *field_name;
 	char ret_value[64];
 
-	inih_ctx(const char *field_name = nullptr)
+	explicit inih_ctx(const char *field_name = nullptr)
 		: field_name(field_name)
 	{
 		ret_value[0] = '\0';

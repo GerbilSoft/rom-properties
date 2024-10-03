@@ -34,7 +34,6 @@ class SegaPVRPrivate final : public FileFormatPrivate
 {
 	public:
 		SegaPVRPrivate(SegaPVR *q, const IRpFilePtr &file);
-		~SegaPVRPrivate() final = default;
 
 	private:
 		typedef FileFormatPrivate super;

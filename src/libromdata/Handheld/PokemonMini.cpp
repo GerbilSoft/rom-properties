@@ -25,7 +25,7 @@ namespace LibRomData {
 class PokemonMiniPrivate final : public RomDataPrivate
 {
 public:
-	PokemonMiniPrivate(const IRpFilePtr &file);
+	explicit PokemonMiniPrivate(const IRpFilePtr &file);
 
 private:
 	typedef RomDataPrivate super;

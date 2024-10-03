@@ -52,7 +52,7 @@ namespace LibRomData {
 class GameCubePrivate final : public RomDataPrivate
 {
 public:
-	GameCubePrivate(const IRpFilePtr &file);
+	explicit GameCubePrivate(const IRpFilePtr &file);
 	~GameCubePrivate() final;
 
 private:

@@ -28,7 +28,7 @@ namespace LibRomData {
 class CBMCartPrivate final : public RomDataPrivate
 {
 public:
-	CBMCartPrivate(const IRpFilePtr &file);
+	explicit CBMCartPrivate(const IRpFilePtr &file);
 
 private:
 	typedef RomDataPrivate super;

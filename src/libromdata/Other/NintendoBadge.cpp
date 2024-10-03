@@ -30,8 +30,7 @@ namespace LibRomData {
 class NintendoBadgePrivate final : public RomDataPrivate
 {
 public:
-	NintendoBadgePrivate(const IRpFilePtr &file);
-	~NintendoBadgePrivate() final = default;
+	explicit NintendoBadgePrivate(const IRpFilePtr &file);
 
 private:
 	typedef RomDataPrivate super;

@@ -31,7 +31,7 @@ namespace LibRomData {
 class ISOPrivate final : public RomDataPrivate
 {
 public:
-	ISOPrivate(const IRpFilePtr &file);
+	explicit ISOPrivate(const IRpFilePtr &file);
 
 private:
 	typedef RomDataPrivate super;

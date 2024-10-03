@@ -35,7 +35,7 @@ namespace LibRomData {
 class NintendoDS_BNR_Private final : public RomDataPrivate
 {
 public:
-	NintendoDS_BNR_Private(const IRpFilePtr &file);
+	explicit NintendoDS_BNR_Private(const IRpFilePtr &file);
 
 private:
 	typedef RomDataPrivate super;

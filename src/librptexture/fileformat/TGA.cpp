@@ -36,7 +36,6 @@ class TGAPrivate final : public FileFormatPrivate
 {
 	public:
 		TGAPrivate(TGA *q, const IRpFilePtr &file);
-		~TGAPrivate() final = default;
 
 	private:
 		typedef FileFormatPrivate super;

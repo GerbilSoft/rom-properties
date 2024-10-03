@@ -35,7 +35,6 @@ class EXEPrivate final : public LibRpBase::RomDataPrivate
 {
 public:
 	EXEPrivate(const LibRpFile::IRpFilePtr &file);
-	~EXEPrivate() final = default;
 
 private:
 	typedef RomDataPrivate super;

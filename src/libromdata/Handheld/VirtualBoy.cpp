@@ -26,7 +26,7 @@ namespace LibRomData {
 class VirtualBoyPrivate final : public RomDataPrivate
 {
 public:
-	VirtualBoyPrivate(const IRpFilePtr &file);
+	explicit VirtualBoyPrivate(const IRpFilePtr &file);
 
 private:
 	typedef RomDataPrivate super;

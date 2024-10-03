@@ -33,7 +33,7 @@ namespace LibRomData {
 class SegaSaturnPrivate final : public RomDataPrivate
 {
 public:
-	SegaSaturnPrivate(const IRpFilePtr &file);
+	explicit SegaSaturnPrivate(const IRpFilePtr &file);
 
 private:
 	typedef RomDataPrivate super;

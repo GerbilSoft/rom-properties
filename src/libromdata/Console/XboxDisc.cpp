@@ -37,7 +37,7 @@ namespace LibRomData {
 class XboxDiscPrivate final : public RomDataPrivate
 {
 public:
-	XboxDiscPrivate(const IRpFilePtr &file);
+	explicit XboxDiscPrivate(const IRpFilePtr &file);
 	~XboxDiscPrivate() final;
 
 private:

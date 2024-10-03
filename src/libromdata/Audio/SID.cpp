@@ -24,7 +24,7 @@ namespace LibRomData {
 class SIDPrivate final : public RomDataPrivate
 {
 public:
-	SIDPrivate(const IRpFilePtr &file);
+	explicit SIDPrivate(const IRpFilePtr &file);
 
 private:
 	typedef RomDataPrivate super;

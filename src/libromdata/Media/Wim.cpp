@@ -45,7 +45,8 @@ namespace LibRomData {
 class WimPrivate final : public RomDataPrivate
 {
 public:
-	WimPrivate(const IRpFilePtr &file);  
+	explicit WimPrivate(const IRpFilePtr &file);
+
 private:
 	typedef RomDataPrivate super;
 	RP_DISABLE_COPY(WimPrivate)

@@ -42,7 +42,6 @@ class DirectDrawSurfacePrivate final : public FileFormatPrivate
 {
 	public:
 		DirectDrawSurfacePrivate(DirectDrawSurface *q, const IRpFilePtr &file);
-		~DirectDrawSurfacePrivate() final = default;
 
 	private:
 		typedef FileFormatPrivate super;

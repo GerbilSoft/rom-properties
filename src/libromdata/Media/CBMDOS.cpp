@@ -45,7 +45,7 @@ namespace LibRomData {
 class CBMDOSPrivate final : public RomDataPrivate
 {
 public:
-	CBMDOSPrivate(const IRpFilePtr &file);
+	explicit CBMDOSPrivate(const IRpFilePtr &file);
 
 private:
 	typedef RomDataPrivate super;

@@ -36,7 +36,7 @@ namespace LibRomData {
 class MegaDrivePrivate final : public RomDataPrivate
 {
 public:
-	MegaDrivePrivate(const IRpFilePtr &file);
+	explicit MegaDrivePrivate(const IRpFilePtr &file);
 
 private:
 	typedef RomDataPrivate super;

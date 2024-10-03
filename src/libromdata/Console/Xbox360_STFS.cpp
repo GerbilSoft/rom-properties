@@ -41,7 +41,7 @@ namespace LibRomData {
 class Xbox360_STFS_Private final : public RomDataPrivate
 {
 public:
-	Xbox360_STFS_Private(const IRpFilePtr &file);
+	explicit Xbox360_STFS_Private(const IRpFilePtr &file);
 
 private:
 	typedef RomDataPrivate super;

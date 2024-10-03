@@ -27,7 +27,6 @@ class ValveVTF3Private final : public FileFormatPrivate
 {
 	public:
 		ValveVTF3Private(ValveVTF3 *q, const IRpFilePtr &file);
-		~ValveVTF3Private() final = default;
 
 	private:
 		typedef FileFormatPrivate super;

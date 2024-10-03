@@ -45,7 +45,6 @@ class DidjTexPrivate final : public FileFormatPrivate
 {
 	public:
 		DidjTexPrivate(DidjTex *q, const IRpFilePtr &file);
-		~DidjTexPrivate() final = default;
 
 	private:
 		typedef FileFormatPrivate super;

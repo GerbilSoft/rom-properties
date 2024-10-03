@@ -28,8 +28,7 @@ namespace LibRomData {
 class WiiWIBNPrivate final : public RomDataPrivate
 {
 public:
-	WiiWIBNPrivate(const IRpFilePtr &file);
-	~WiiWIBNPrivate() final = default;
+	explicit WiiWIBNPrivate(const IRpFilePtr &file);
 
 private:
 	typedef RomDataPrivate super;

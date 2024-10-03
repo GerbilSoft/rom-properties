@@ -26,14 +26,13 @@ class DualFile final : public IRpFile
 		 * @param file1 Second file.
 		 */
 		DualFile(const IRpFilePtr &file0, const IRpFilePtr &file1);
+
 	protected:
 		/**
 		 * Internal constructor for use by subclasses.
 		 * This initializes everything to nullptr.
 		 */
 		DualFile();
-	public:
-		~DualFile() final = default;
 
 	private:
 		typedef IRpFile super;

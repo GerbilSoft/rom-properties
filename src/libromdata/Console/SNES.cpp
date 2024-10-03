@@ -28,7 +28,7 @@ namespace LibRomData {
 class SNESPrivate final : public RomDataPrivate
 {
 public:
-	SNESPrivate(const IRpFilePtr &file);
+	explicit SNESPrivate(const IRpFilePtr &file);
 
 private:
 	typedef RomDataPrivate super;

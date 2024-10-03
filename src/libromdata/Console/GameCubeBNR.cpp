@@ -33,8 +33,7 @@ namespace LibRomData {
 class GameCubeBNRPrivate final : public RomDataPrivate
 {
 public:
-	GameCubeBNRPrivate(const IRpFilePtr &file, uint32_t gcnRegion = ~0U);
-	~GameCubeBNRPrivate() final = default;
+	explicit GameCubeBNRPrivate(const IRpFilePtr &file, uint32_t gcnRegion = ~0U);
 
 private:
 	typedef RomDataPrivate super;

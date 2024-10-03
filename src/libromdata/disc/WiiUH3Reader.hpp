@@ -25,7 +25,6 @@ public:
 	 * @param keyLen	[in] Length of pKey  (should be 16)
 	 */
 	WiiUH3Reader(const LibRpFile::IRpFilePtr &discReader, const uint8_t *pKey, size_t keyLen);
-	~WiiUH3Reader() final = default;
 
 private:
 	typedef IPartition super;

@@ -26,7 +26,7 @@ namespace LibRomData {
 class VGMPrivate final : public RomDataPrivate
 {
 public:
-	VGMPrivate(const IRpFilePtr &file);
+	explicit VGMPrivate(const IRpFilePtr &file);
 
 private:
 	typedef RomDataPrivate super;

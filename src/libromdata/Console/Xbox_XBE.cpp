@@ -41,7 +41,7 @@ namespace LibRomData {
 class Xbox_XBE_Private final : public RomDataPrivate
 {
 public:
-	Xbox_XBE_Private(const IRpFilePtr &file);
+	explicit Xbox_XBE_Private(const IRpFilePtr &file);
 
 private:
 	typedef RomDataPrivate super;

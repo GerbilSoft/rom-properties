@@ -24,7 +24,7 @@ namespace LibRomData {
 class BRSTMPrivate final : public RomDataPrivate
 {
 public:
-	BRSTMPrivate(const IRpFilePtr &file);
+	explicit BRSTMPrivate(const IRpFilePtr &file);
 
 private:
 	typedef RomDataPrivate super;

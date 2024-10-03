@@ -30,7 +30,7 @@ namespace LibRomData {
 class Nintendo3DSFirmPrivate final : public RomDataPrivate
 {
 public:
-	Nintendo3DSFirmPrivate(const IRpFilePtr &file);
+	explicit Nintendo3DSFirmPrivate(const IRpFilePtr &file);
 
 private:
 	typedef RomDataPrivate super;

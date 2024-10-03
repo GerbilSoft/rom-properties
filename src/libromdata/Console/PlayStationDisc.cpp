@@ -42,8 +42,7 @@ namespace LibRomData {
 class PlayStationDiscPrivate final : public RomDataPrivate
 {
 public:
-	PlayStationDiscPrivate(const IRpFilePtr &file);
-	~PlayStationDiscPrivate() final = default;
+	explicit PlayStationDiscPrivate(const IRpFilePtr &file);
 
 private:
 	typedef RomDataPrivate super;

@@ -29,7 +29,7 @@ namespace LibRomData {
 class MachOPrivate final : public RomDataPrivate
 {
 public:
-	MachOPrivate(const IRpFilePtr &file);
+	explicit MachOPrivate(const IRpFilePtr &file);
 
 private:
 	typedef RomDataPrivate super;

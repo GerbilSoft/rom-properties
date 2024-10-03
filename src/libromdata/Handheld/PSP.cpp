@@ -38,8 +38,7 @@ namespace LibRomData {
 class PSPPrivate final : public LibRpBase::RomDataPrivate
 {
 public:
-	PSPPrivate(const IRpFilePtr &file);
-	~PSPPrivate() final = default;
+	explicit PSPPrivate(const IRpFilePtr &file);
 
 private:
 	typedef RomDataPrivate super;

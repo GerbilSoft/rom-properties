@@ -24,7 +24,7 @@ namespace LibRomData {
 class BCSTMPrivate final : public RomDataPrivate
 {
 public:
-	BCSTMPrivate(const IRpFilePtr &file);
+	explicit BCSTMPrivate(const IRpFilePtr &file);
 
 private:
 	typedef RomDataPrivate super;

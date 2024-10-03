@@ -39,8 +39,7 @@ namespace LibRomData {
 class DreamcastPrivate final : public RomDataPrivate
 {
 public:
-	DreamcastPrivate(const IRpFilePtr &file);
-	~DreamcastPrivate() final = default;
+	explicit DreamcastPrivate(const IRpFilePtr &file);
 
 private:
 	typedef RomDataPrivate super;

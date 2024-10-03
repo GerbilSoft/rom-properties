@@ -24,7 +24,7 @@ namespace LibRomData {
 class N64Private final : public RomDataPrivate
 {
 public:
-	N64Private(const IRpFilePtr &file);
+	explicit N64Private(const IRpFilePtr &file);
 
 private:
 	typedef RomDataPrivate super;
