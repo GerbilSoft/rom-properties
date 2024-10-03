@@ -180,12 +180,13 @@ void GcnFstTest::SetUp(void)
 	// Check for NKit FST recovery data.
 	// These FSTs have an extra header at the top, indicating what
 	// disc the FST belongs to.
+	static const off64_t NKIT_FST_HEADER_SIZE = 0x50;
 	unsigned int fst_start_offset = 0;
 	static constexpr array<uint8_t, 10> root_dir_data = {{1,0,0,0,0,0,0,0,0,0}};
 	if (m_fst_buf.size() >= 0x60) {
-		if (!memcmp(&m_fst_buf[0x50], root_dir_data.data(), root_dir_data.size())) {
+		if (!memcmp(&m_fst_buf[NKIT_FST_HEADER_SIZE], root_dir_data.data(), root_dir_data.size())) {
 			// Found an NKit FST.
-			fst_start_offset = 0x50;
+			fst_start_offset = NKIT_FST_HEADER_SIZE;
 		}
 	}
 
