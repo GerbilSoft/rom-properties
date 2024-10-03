@@ -391,7 +391,7 @@ rp_drag_image_update_pixmaps(RpDragImage *image)
 		// Set a drag source.
 		// TODO: Use text/uri-list and extract to a temporary directory?
 		// FIXME: application/octet-stream works on Nautilus, but not Thunar...
-		static const GtkTargetEntry targetEntries[2] = {
+		static const array<GtkTargetEntry, 2> targetEntries = {{
 			{(char*)"image/png",			// target
 			 GTK_TARGET_OTHER_APP,			// flags
 			 1},					// info
@@ -399,8 +399,8 @@ rp_drag_image_update_pixmaps(RpDragImage *image)
 			{(char*)"application/octet-stream",	// target
 			 GTK_TARGET_OTHER_APP,			// flags
 			 2},					// info
-		};
-		gtk_drag_source_set(GTK_WIDGET(image), GDK_BUTTON1_MASK, targetEntries, ARRAY_SIZE(targetEntries), GDK_ACTION_COPY);
+		}};
+		gtk_drag_source_set(GTK_WIDGET(image), GDK_BUTTON1_MASK, targetEntries.data(), targetEntries.size(), GDK_ACTION_COPY);
 	} else {
 		// No image or animated icon data.
 		// Unset the drag source.
@@ -879,11 +879,11 @@ rp_drag_image_drag_source_prepare(GtkDragSource *source, double x, double y, RpD
 	const std::vector<uint8_t> &pngVec = cxx->pngData->vector();
 	cxx->pngBytes = g_bytes_new_static(pngVec.data(), pngVec.size());
 
-	GdkContentProvider *providers[2] = {
+	array<GdkContentProvider*, 2> providers = {{
 		gdk_content_provider_new_for_bytes("image/png", cxx->pngBytes),
 		gdk_content_provider_new_for_bytes("application/octet-stream", cxx->pngBytes),
-	};
-	return gdk_content_provider_new_union(providers, ARRAY_SIZE(providers));
+	}};
+	return gdk_content_provider_new_union(providers.data(), providers.size());
 }
 
 static void

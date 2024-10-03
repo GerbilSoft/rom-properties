@@ -337,7 +337,7 @@ void EXEPrivate::addFields_NE(void)
 		pgettext_expr("EXE|DGroupType", dgroupTypes[hdr.ne.ProgFlags & 3]));
 
 	// Program flags
-	static const char *const ProgFlags_names[] = {
+	static const array<const char*, 8> ProgFlags_names = {{
 		nullptr, nullptr,	// DGroup Type
 		NOP_C_("EXE|ProgFlags", "Global Init"),
 		NOP_C_("EXE|ProgFlags", "Protected Mode Only"),
@@ -345,9 +345,9 @@ void EXEPrivate::addFields_NE(void)
 		NOP_C_("EXE|ProgFlags", "80286 insns"),
 		NOP_C_("EXE|ProgFlags", "80386 insns"),
 		NOP_C_("EXE|ProgFlags", "FPU insns"),
-	};
+	}};
 	vector<string> *const v_ProgFlags_names = RomFields::strArrayToVector_i18n(
-		"EXE|ProgFlags", ProgFlags_names, ARRAY_SIZE(ProgFlags_names));
+		"EXE|ProgFlags", ProgFlags_names.data(), ProgFlags_names.size());
 	fields.addField_bitfield("Program Flags",
 		v_ProgFlags_names, 2, hdr.ne.ProgFlags);
 
@@ -376,7 +376,7 @@ void EXEPrivate::addFields_NE(void)
 		pgettext_expr("EXE|ApplType", applType));
 
 	// Application flags
-	static const char *const ApplFlags_names[] = {
+	static const array<const char*, 8> ApplFlags_names = {{
 		nullptr, nullptr,	// Application type
 		nullptr,
 		NOP_C_("EXE|ApplFlags", "OS/2 Application"),
@@ -384,9 +384,9 @@ void EXEPrivate::addFields_NE(void)
 		NOP_C_("EXE|ApplFlags", "Image Error"),
 		NOP_C_("EXE|ApplFlags", "Non-Conforming"),
 		NOP_C_("EXE|ApplFlags", "DLL"),
-	};
+	}};
 	vector<string> *const v_ApplFlags_names = RomFields::strArrayToVector_i18n(
-		"EXE|ApplFlags", ApplFlags_names, ARRAY_SIZE(ApplFlags_names));
+		"EXE|ApplFlags", ApplFlags_names.data(), ApplFlags_names.size());
 	fields.addField_bitfield(C_("EXE", "Application Flags"),
 		v_ApplFlags_names, 2, hdr.ne.ApplFlags);
 
@@ -396,14 +396,14 @@ void EXEPrivate::addFields_NE(void)
 	// References:
 	// - http://wiki.osdev.org/NE
 	// - http://www.program-transformation.org/Transform/PcExeFormat
-	static const char *const OtherFlags_names[] = {
+	static const array<const char*, 4> OtherFlags_names = {{
 		NOP_C_("EXE|OtherFlags", "Long File Names"),
 		NOP_C_("EXE|OtherFlags", "Protected Mode"),
 		NOP_C_("EXE|OtherFlags", "Proportional Fonts"),
 		NOP_C_("EXE|OtherFlags", "Gangload Area"),
-	};
+	}};
 	vector<string> *const v_OtherFlags_names = RomFields::strArrayToVector_i18n(
-		"EXE|OtherFlags", OtherFlags_names, ARRAY_SIZE(OtherFlags_names));
+		"EXE|OtherFlags", OtherFlags_names.data(), OtherFlags_names.size());
 	fields.addField_bitfield(C_("EXE", "Other Flags"),
 		v_OtherFlags_names, 2, hdr.ne.OS2EXEFlags);
 
@@ -704,14 +704,14 @@ int EXEPrivate::addFields_NE_Entry(void)
 		fields.addTab(C_("EXE", "Entries"));
 		fields.reserve(1);
 
-		static const char *const field_names[] = {
+		static const array<const char*, 4> field_names = {{
 			NOP_C_("EXE|Exports", "Ordinal"),
 			NOP_C_("EXE|Exports", "Name"),
 			NOP_C_("EXE|Exports", "Address"),
 			NOP_C_("EXE|Exports", "Flags"),
-		};
+		}};
 		vector<string> *const v_field_names = RomFields::strArrayToVector_i18n(
-			"EXE|Exports", field_names, ARRAY_SIZE(field_names));
+			"EXE|Exports", field_names.data(), field_names.size());
 
 		RomFields::AFLD_PARAMS params;
 		params.flags = RomFields::RFT_LISTDATA_SEPARATE_ROW;
@@ -887,13 +887,13 @@ int EXEPrivate::addFields_NE_Import(void)
 	fields.reserve(1);
 
 	// Intentionally sharing the translation context with the exports tab.
-	static const char *const field_names[] = {
+	static const array<const char*, 3> field_names = {{
 		NOP_C_("EXE|Exports", "Name"),
 		NOP_C_("EXE|Exports", "Ordinal"),
 		NOP_C_("EXE|Exports", "Module")
-	};
+	}};
 	vector<string> *const v_field_names = RomFields::strArrayToVector_i18n(
-		"EXE|Exports", field_names, ARRAY_SIZE(field_names));
+		"EXE|Exports", field_names.data(), field_names.size());
 
 	RomFields::AFLD_PARAMS params;
 	params.flags = RomFields::RFT_LISTDATA_SEPARATE_ROW;

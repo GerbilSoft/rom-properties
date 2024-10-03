@@ -129,16 +129,16 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 			pVsFfi->dwProductVersionLS & 0xFFFF));
 
 	// File flags
-	static const char *const FileFlags_names[] = {
+	static const array<const char*, 6> FileFlags_names = {{
 		NOP_C_("EXE|FileFlags", "Debug"),
 		NOP_C_("EXE|FileFlags", "Prerelease"),
 		NOP_C_("EXE|FileFlags", "Patched"),
 		NOP_C_("EXE|FileFlags", "Private Build"),
 		NOP_C_("EXE|FileFlags", "Info Inferred"),
 		NOP_C_("EXE|FileFlags", "Special Build"),
-	};
+	}};
 	vector<string> *const v_FileFlags_names = RomFields::strArrayToVector_i18n(
-		"EXE|FileFlags", FileFlags_names, ARRAY_SIZE(FileFlags_names));
+		"EXE|FileFlags", FileFlags_names.data(), FileFlags_names.size());
 	fields.addField_bitfield(C_("EXE", "File Flags"),
 		v_FileFlags_names, 3, pVsFfi->dwFileFlags & pVsFfi->dwFileFlagsMask);
 
@@ -330,12 +330,12 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 	}
 
 	// Fields
-	static const char *const field_names[] = {
+	static const array<const char*, 2> field_names = {{
 		NOP_C_("EXE|StringFileInfo", "Key"),
 		NOP_C_("EXE|StringFileInfo", "Value"),
-	};
+	}};
 	vector<string> *const v_field_names = RomFields::strArrayToVector_i18n(
-		"EXE|StringFileInfo", field_names, ARRAY_SIZE(field_names));
+		"EXE|StringFileInfo", field_names.data(), field_names.size());
 
 	// Add the StringFileInfo.
 	RomFields::AFLD_PARAMS params;

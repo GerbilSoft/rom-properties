@@ -786,7 +786,7 @@ int ValveVTF::getFields(RomFields *fields) const
 
 	// Flags.
 	// TODO: Show "deprecated" flags for older versions.
-	static const char *const flags_names[] = {
+	static const array<const char*, 30> flags_names = {{
 		// 0x1-0x8
 		NOP_C_("ValveVTF|Flags", "Point Sampling"),
 		NOP_C_("ValveVTF|Flags", "Trilinear Sampling"),
@@ -825,7 +825,7 @@ int ValveVTF::getFields(RomFields *fields) const
 		// 0x10000000-0x20000000
 		nullptr,
 		NOP_C_("ValveVTF|Flags", "Border"),
-	};
+	}};
 
 	// Convert to ListData_t for RFT_LISTDATA.
 	auto vv_flags = new RomFields::ListData_t();

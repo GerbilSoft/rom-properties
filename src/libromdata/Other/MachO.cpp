@@ -523,7 +523,7 @@ int MachO::loadFieldData(void)
 
 		// Flags.
 		// I/O support bitfield.
-		static const char *const flags_bitfield_names[] = {
+		static const array<const char*, 32> flags_bitfield_names = {{
 			// 0x00000000
 			"NoUndefs", "IncrLink", "DyldLink", "BindAtLoad",
 			// 0x00000010
@@ -540,9 +540,9 @@ int MachO::loadFieldData(void)
 			"NoHeapExec", "AppExtSafe", "NListOutOfSync", "SimSupport",
 			// 0x10000000
 			nullptr, nullptr, nullptr, "DylibInCache",
-		};
+		}};
 		vector<string> *const v_flags_bitfield_names = RomFields::strArrayToVector(
-			flags_bitfield_names, ARRAY_SIZE(flags_bitfield_names));
+			flags_bitfield_names.data(), flags_bitfield_names.size());
 		d->fields.addField_bitfield(C_("RomData", "Flags"),
 			v_flags_bitfield_names, 3, machHeader->flags);
 	}

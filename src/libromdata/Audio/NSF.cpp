@@ -244,9 +244,9 @@ int NSF::loadFieldData(void)
 	// TV System.
 	// TODO: NTSC/PAL framerates?
 	// NOTE: NSF uses an enum, not a bitfield.
-	static const char *const tv_system_bitfield_names[] = {
+	static const array<const char*, 2> tv_system_bitfield_names = {{
 		"NTSC", "PAL",
-	};
+	}};
 	uint32_t bfval = nsfHeader->tv_system;
 	if (bfval < NSF_TV_MAX) {
 		bfval++;
@@ -254,17 +254,17 @@ int NSF::loadFieldData(void)
 		bfval = 0;
 	}
 	vector<string> *const v_tv_system_bitfield_names = RomFields::strArrayToVector(
-		tv_system_bitfield_names, ARRAY_SIZE(tv_system_bitfield_names));
+		tv_system_bitfield_names.data(), tv_system_bitfield_names.size());
 	d->fields.addField_bitfield(C_("NSF", "TV System"),
 		v_tv_system_bitfield_names, 0, bfval);
 
 	// Expansion audio.
-	static const char *const expansion_bitfield_names[] = {
+	static const array<const char*, 6> expansion_bitfield_names = {{
 		"Konami VRC6", "Konami VRC7", "2C33 (FDS)",
 		"MMC5", "Namco N163", "Sunsoft 5B",
-	};
+	}};
 	vector<string> *const v_expansion_bitfield_names = RomFields::strArrayToVector(
-		expansion_bitfield_names, ARRAY_SIZE(expansion_bitfield_names));
+		expansion_bitfield_names.data(), expansion_bitfield_names.size());
 	d->fields.addField_bitfield(C_("NSF", "Expansion"),
 		v_expansion_bitfield_names, 3, nsfHeader->expansion_audio);
 

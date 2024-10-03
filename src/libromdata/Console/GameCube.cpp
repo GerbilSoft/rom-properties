@@ -1737,7 +1737,7 @@ int GameCube::loadFieldData(void)
 		}
 
 		// Fields
-		static const char *const partitions_names[] = {
+		static const array<const char*, 5> partitions_names = {{
 			// tr: Partition number.
 			NOP_C_("Wii|Partition", "#"),
 			// tr: Partition type.
@@ -1748,9 +1748,9 @@ int GameCube::loadFieldData(void)
 			NOP_C_("Wii|Partition", "Used Size"),
 			// tr: Total size of the partition.
 			NOP_C_("Wii|Partition", "Total Size"),
-		};
+		}};
 		vector<string> *const v_partitions_names = RomFields::strArrayToVector_i18n(
-			"Wii|Partition", partitions_names, ARRAY_SIZE(partitions_names));
+			"Wii|Partition", partitions_names.data(), partitions_names.size());
 
 		RomFields::AFLD_PARAMS params;
 		params.headers = v_partitions_names;

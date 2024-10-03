@@ -1324,7 +1324,7 @@ int NES::loadFieldData(void)
 				if ((d->romType & NESPrivate::ROM_FORMAT_MASK) == NESPrivate::ROM_FORMAT_NES2) {
 					if ((d->header.ines.mapper_hi & INES_F7_SYSTEM_MASK) == INES_F7_SYSTEM_EXTD) {
 						// NES 2.0 Extended Console Type
-						static constexpr const char *const ext_hw_types[] = {
+						static const array<const char*, 12> ext_hw_types = {{
 							"NES/Famicom/Dendy",	// Not normally used.
 							"Nintendo VS. System",	// Not normally used.
 							"PlayChoice-10",	// Not normally used.
@@ -1337,10 +1337,10 @@ int NES::loadFieldData(void)
 							"V.R. Technology VT32",
 							"V.R. Technology VT369",
 							"UMC UM6578",
-						};
+						}};
 
 						const unsigned int extd_ct = (d->header.ines.nes2.vs_hw & 0x0F);
-						if (extd_ct < ARRAY_SIZE(ext_hw_types)) {
+						if (extd_ct < ext_hw_types.size()) {
 							s_extd_ct = ext_hw_types[extd_ct];
 						}
 					}
@@ -1349,7 +1349,7 @@ int NES::loadFieldData(void)
 					misc_roms = d->header.ines.nes2.misc_roms & 3;
 
 					// Default expansion hardware.
-					static constexpr const char *const exp_hw_tbl[] = {
+					static const array<const char*, 48> exp_hw_tbl = {{
 						// 0x00
 						NOP_C_("NES|Expansion", "Unspecified"),
 						NOP_C_("NES|Expansion", "NES/Famicom Controllers"),
@@ -1403,10 +1403,10 @@ int NES::loadFieldData(void)
 						NOP_C_("NES|Expansion", "U-Force"),
 						NOP_C_("NES|Expansion", "R.O.B. Stack-Up"),
 						NOP_C_("NES|Expansion", "City Patrolman Lightgun"),
-					};
+					}};
 
 					const unsigned int exp_hw = (d->header.ines.nes2.expansion & 0x3F);
-					if (exp_hw < ARRAY_SIZE(exp_hw_tbl)) {
+					if (exp_hw < exp_hw_tbl.size()) {
 						s_exp_hw = pgettext_expr("NES|Expansion", exp_hw_tbl[exp_hw]);
 					}
 				}

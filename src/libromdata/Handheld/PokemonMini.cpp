@@ -318,13 +318,13 @@ int PokemonMini::loadFieldData(void)
 		data_row.emplace_back(std::move(s_address));
 	}
 
-	static const char *const vectors_headers[] = {
+	static const array<const char*, 3> vectors_headers = {{
 		NOP_C_("RomData|VectorTable", "#"),
 		NOP_C_("RomData|VectorTable", "Vector"),
 		NOP_C_("RomData|VectorTable", "Address"),
-	};
+	}};
 	vector<string> *const v_vectors_headers = RomFields::strArrayToVector_i18n(
-		"RomData|VectorTable", vectors_headers, ARRAY_SIZE(vectors_headers));
+		"RomData|VectorTable", vectors_headers.data(), vectors_headers.size());
 
 	RomFields::AFLD_PARAMS params(RomFields::RFT_LISTDATA_SEPARATE_ROW, 8);
 	params.headers = v_vectors_headers;

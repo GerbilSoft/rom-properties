@@ -1004,13 +1004,13 @@ int Xbox360_XDBF_Private::addFields_achievements_SPA(void)
 	// a virtual column, much like checkboxes.
 
 	// Columns
-	static const char *const xach_col_names[] = {
+	static const array<const char*, 3> xach_col_names = {{
 		NOP_C_("Xbox360_XDBF|Achievements", "ID"),
 		NOP_C_("Xbox360_XDBF|Achievements", "Description"),
 		NOP_C_("Xbox360_XDBF|Achievements", "Gamerscore"),
-	};
+	}};
 	vector<string> *const v_xach_col_names = RomFields::strArrayToVector_i18n(
-		"Xbox360_XDBF|Achievements", xach_col_names, ARRAY_SIZE(xach_col_names));
+		"Xbox360_XDBF|Achievements", xach_col_names.data(), xach_col_names.size());
 
 	// Vectors.
 	array<RomFields::ListData_t*, XDBF_LANGUAGE_MAX> pvv_xach;
@@ -1217,12 +1217,12 @@ int Xbox360_XDBF_Private::addFields_avatarAwards_SPA(void)
 	// a virtual column, much like checkboxes.
 
 	// Columns
-	static const char *const xgaa_col_names[] = {
+	static const array<const char*, 2> xgaa_col_names = {
 		NOP_C_("Xbox360_XDBF|AvatarAwards", "ID"),
 		NOP_C_("Xbox360_XDBF|AvatarAwards", "Description"),
 	};
 	vector<string> *const v_xgaa_col_names = RomFields::strArrayToVector_i18n(
-		"Xbox360_XDBF|AvatarAwards", xgaa_col_names, ARRAY_SIZE(xgaa_col_names));
+		"Xbox360_XDBF|AvatarAwards", xgaa_col_names.data(), xgaa_col_names.size());
 
 	// Vectors.
 	array<RomFields::ListData_t*, XDBF_LANGUAGE_MAX> pvv_xgaa;
@@ -1397,13 +1397,13 @@ int Xbox360_XDBF_Private::addFields_achievements_GPD(void)
 	// a virtual column, much like checkboxes.
 
 	// Columns
-	static const char *const xach_col_names[] = {
+	static const array<const char*, 3> xach_col_names = {{
 		NOP_C_("Xbox360_XDBF|Achievements", "ID"),
 		NOP_C_("Xbox360_XDBF|Achievements", "Description"),
 		NOP_C_("Xbox360_XDBF|Achievements", "Gamerscore"),
-	};
+	}};
 	vector<string> *const v_xach_col_names = RomFields::strArrayToVector_i18n(
-		"Xbox360_XDBF|Achievements", xach_col_names, ARRAY_SIZE(xach_col_names));
+		"Xbox360_XDBF|Achievements", xach_col_names.data(), xach_col_names.size());
 
 	RomFields::ListData_t *vv_xach = new RomFields::ListData_t();
 	auto vv_icons = new RomFields::ListDataIcons_t();

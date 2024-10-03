@@ -403,7 +403,7 @@ void MegaDrivePrivate::addFields_romHeader(const MD_RomHeader *pRomHeader, bool 
 	}
 
 	// I/O support bitfield.
-	static const char *const io_bitfield_names[] = {
+	static const array<const char*, 16> io_bitfield_names = {{
 		NOP_C_("MegaDrive|I/O", "Joypad"),
 		NOP_C_("MegaDrive|I/O", "6-button"),
 		// tr: Use a locale-specific abbreviation for Sega Master System, e.g. MK3 or similar.
@@ -422,7 +422,7 @@ void MegaDrivePrivate::addFields_romHeader(const MD_RomHeader *pRomHeader, bool 
 		// tr: Brand name; only translate if the name was changed in your region.
 		NOP_C_("MegaDrive|I/O", "Activator"),
 		NOP_C_("MegaDrive|I/O", "Mega Mouse"),
-	};
+	}};
 	// NOTE: Using a plain text field because most games only support
 	// one or two devices, so we don't need to list them all.
 	const uint32_t io_support = parseIOSupport(s_io_support, sizeof(pRomHeader->io_support));
@@ -517,14 +517,14 @@ void MegaDrivePrivate::addFields_romHeader(const MD_RomHeader *pRomHeader, bool 
 		? parseRegionCodes(pRomHeader)
 		: this->md_region;
 
-	static const char *const region_code_bitfield_names[] = {
+	static const array<const char*, 4> region_code_bitfield_names = {{
 		NOP_C_("Region", "Japan"),
 		NOP_C_("Region", "Asia"),
 		NOP_C_("Region", "USA"),
 		NOP_C_("Region", "Europe"),
-	};
+	}};
 	vector<string> *const v_region_code_bitfield_names = RomFields::strArrayToVector_i18n(
-		"Region", region_code_bitfield_names, ARRAY_SIZE(region_code_bitfield_names));
+		"Region", region_code_bitfield_names.data(), region_code_bitfield_names.size());
 	fields.addField_bitfield(C_("RomData", "Region Code"),
 		v_region_code_bitfield_names, 0, md_region_check);
 
@@ -614,13 +614,13 @@ void MegaDrivePrivate::addFields_vectorTable(const M68K_VectorTable *pVectors)
 		data_row.emplace_back(rp_sprintf("$%08X", be32_to_cpu(pVectors->vectors[vector_index])));
 	}
 
-	static const char *const vectors_headers[] = {
+	static const array<const char*, 3> vectors_headers = {{
 		NOP_C_("RomData|VectorTable", "#"),
 		NOP_C_("RomData|VectorTable", "Vector"),
 		NOP_C_("RomData|VectorTable", "Address"),
-	};
+	}};
 	vector<string> *const v_vectors_headers = RomFields::strArrayToVector_i18n(
-		"RomData|VectorTable", vectors_headers, ARRAY_SIZE(vectors_headers));
+		"RomData|VectorTable", vectors_headers.data(), vectors_headers.size());
 
 	RomFields::AFLD_PARAMS params(RomFields::RFT_LISTDATA_SEPARATE_ROW, 8);
 	params.headers = v_vectors_headers;
@@ -933,9 +933,9 @@ MegaDrive::MegaDrive(const IRpFilePtr &file)
 
 		if (d->pRomHeaderLockOn) {
 			// Verify the "SEGA" magic.
-			static constexpr char sega_magic[4] = {'S','E','G','A'};
-			if (!memcmp(&d->pRomHeaderLockOn->system[0], sega_magic, sizeof(sega_magic)) ||
-			    !memcmp(&d->pRomHeaderLockOn->system[1], sega_magic, sizeof(sega_magic)))
+			static constexpr array<char, 4> sega_magic = {{'S','E','G','A'}};
+			if (!memcmp(&d->pRomHeaderLockOn->system[0], sega_magic.data(), sega_magic.size()) ||
+			    !memcmp(&d->pRomHeaderLockOn->system[1], sega_magic.data(), sega_magic.size()))
 			{
 				// Found the "SEGA" magic.
 			}
@@ -974,10 +974,10 @@ int MegaDrive::isRomSupported_static(const DetectInfo *info)
 	const uint8_t *const pHeader = info->header.pData;
 
 	// Magic strings. (NOTE: **NOT** NULL-terminated!)
-	static constexpr char sega_magic[4] = {'S','E','G','A'};
-	static constexpr char segacd_magic[16] =  {'S','E','G','A','D','I','S','C','S','Y','S','T','E','M',' ',' '};
+	static constexpr array<char,  4> sega_magic    = {{'S','E','G','A'}};
+	static constexpr array<char, 16> segacd_magic  = {{'S','E','G','A','D','I','S','C','S','Y','S','T','E','M',' ',' '}};
 	// NOTE: Only used for Sega CD 32X.
-	static constexpr char sega32x_magic[16] = {'S','E','G','A',' ','3','2','X',' ',' ',' ',' ',' ',' ',' ',' '};
+	static constexpr array<char, 16> sega32x_magic = {{'S','E','G','A',' ','3','2','X',' ',' ',' ',' ',' ',' ',' ',' '}};
 
 	// Extra system types from:
 	// - https://www.plutiedev.com/rom-header#system
@@ -988,7 +988,7 @@ int MegaDrive::isRomSupported_static(const DetectInfo *info)
 		uint8_t sys_name_len;	// Length to check at $100; for $101, subtract 1.
 		uint32_t system_id;
 	};
-	static const cart_magic_sega_t cart_magic_sega[] = {
+	static const array<cart_magic_sega_t, 10> cart_magic_sega = {{
 		{" 32X      ",   10, MegaDrivePrivate::ROM_SYSTEM_32X},
 		{" SSF        ", 12, MegaDrivePrivate::ROM_SYSTEM_MD |
 		                     MegaDrivePrivate::ROM_EXT_SSF2},
@@ -1004,19 +1004,19 @@ int MegaDrive::isRomSupported_static(const DetectInfo *info)
 		{"TOYS PICO   ", 12, MegaDrivePrivate::ROM_SYSTEM_PICO},	// Late 90s
 		{" TOYS PICO  ", 12, MegaDrivePrivate::ROM_SYSTEM_PICO},	// Late 90s
 		{" IAC        ", 12, MegaDrivePrivate::ROM_SYSTEM_PICO},	// Some JP ROMs
-	};
+	}};
 
 	// Ohter non-Sega system IDs. (Sega Pico, Sega Picture Magic)
 	struct cart_magic_other_t {
 		char sys_name[17];
 		uint8_t system_id;
 	};
-	static const cart_magic_other_t cart_magic_other[] = {
+	static const array<cart_magic_other_t, 4> cart_magic_other = {{
 		{"SAMSUNG PICO    ", MegaDrivePrivate::ROM_SYSTEM_PICO},	// TODO: Indicate Korean.
 		{"IMA IKUNOUJYUKU ", MegaDrivePrivate::ROM_SYSTEM_PICO},	// Some JP ROMs
 		{"IMA IKUNOJYUKU  ", MegaDrivePrivate::ROM_SYSTEM_PICO},	// Some JP ROMs
 		{"Picture Magic   ", MegaDrivePrivate::ROM_SYSTEM_32X},		// Picture Magic
-	};
+	}};
 
 	// Check for Sega CD.
 	// TODO: Gens/GS II lists "ISO/2048", "ISO/2352",
@@ -1025,10 +1025,10 @@ int MegaDrive::isRomSupported_static(const DetectInfo *info)
 	// TODO: Detect Sega CD 32X.
 	// TODO: Use a struct instead of raw bytes?
 	int mcd_offset = -1;
-	if (!memcmp(&pHeader[0x10], segacd_magic, sizeof(segacd_magic))) {
+	if (!memcmp(&pHeader[0x10], segacd_magic.data(), segacd_magic.size())) {
 		// Found a Sega CD disc image. (2352-byte sectors)
 		mcd_offset = 0x10;
-	} else if (!memcmp(&pHeader[0], segacd_magic, sizeof(segacd_magic))) {
+	} else if (!memcmp(&pHeader[0], segacd_magic.data(), segacd_magic.size())) {
 		// Found a Sega CD disc image. (2048-byte sectors)
 		mcd_offset = 0;
 	}
@@ -1041,7 +1041,7 @@ int MegaDrive::isRomSupported_static(const DetectInfo *info)
 			? MegaDrivePrivate::ROM_FORMAT_DISC_2352
 			: MegaDrivePrivate::ROM_FORMAT_DISC_2048;
 
-		if (unlikely(!memcmp(&pMcdHeader[0x0100], sega32x_magic, sizeof(sega32x_magic)))) {
+		if (unlikely(!memcmp(&pMcdHeader[0x0100], sega32x_magic.data(), sega32x_magic.size()))) {
 			// This is a Sega CD 32X disc image.
 			// TODO: Check for 32X security code?
 			return discSectorSize | MegaDrivePrivate::ROM_SYSTEM_MCD32X;
@@ -1073,8 +1073,8 @@ int MegaDrive::isRomSupported_static(const DetectInfo *info)
 	if (info->header.size >= 0x300) {
 		// Check if "SEGA" is in the header in the correct place
 		// for a plain binary ROM.
-		if (memcmp(&pHeader[0x100], sega_magic, sizeof(sega_magic)) != 0 &&
-		    memcmp(&pHeader[0x101], sega_magic, sizeof(sega_magic)) != 0)
+		if (memcmp(&pHeader[0x100], sega_magic.data(), sega_magic.size()) != 0 &&
+		    memcmp(&pHeader[0x101], sega_magic.data(), sega_magic.size()) != 0)
 		{
 			// "SEGA" is not in the header. This might be SMD.
 			const SMD_Header *const pSmdHeader = reinterpret_cast<const SMD_Header*>(pHeader);
@@ -1093,7 +1093,7 @@ int MegaDrive::isRomSupported_static(const DetectInfo *info)
 
 	// Check for other MD-based cartridge formats.
 	int sysId = MegaDrivePrivate::ROM_UNKNOWN;
-	if (!memcmp(&pHeader[0x100], sega_magic, sizeof(sega_magic))) {
+	if (!memcmp(&pHeader[0x100], sega_magic.data(), sega_magic.size())) {
 		// "SEGA" is at 0x100.
 		for (const auto &p : cart_magic_sega) {
 			if (!memcmp(&pHeader[0x104], p.sys_name, p.sys_name_len)) {
@@ -1107,7 +1107,7 @@ int MegaDrive::isRomSupported_static(const DetectInfo *info)
 			// NOTE: "Virtua Racing Deluxe (USA).32x" has "SEGA 32X U".
 			sysId = MegaDrivePrivate::ROM_SYSTEM_MD;
 		}
-	} else if (!memcmp(&pHeader[0x101], sega_magic, sizeof(sega_magic))) {
+	} else if (!memcmp(&pHeader[0x101], sega_magic.data(), sega_magic.size())) {
 		// "SEGA" is at 0x101.
 		for (const auto &p : cart_magic_sega) {
 			if (!memcmp(&pHeader[0x105], p.sys_name, p.sys_name_len-1)) {

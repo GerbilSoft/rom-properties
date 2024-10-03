@@ -1166,7 +1166,7 @@ int GodotSTEX::getFields(RomFields *fields) const
 			}
 
 			// Flags (Godot 3 only)
-			static const char *const flags_bitfield_names[] = {
+			static const array<const char*, 13> flags_bitfield_names = {{
 				NOP_C_("GodotSTEX|Flags", "Mipmaps"),
 				NOP_C_("GodotSTEX|Flags", "Repeat"),
 				NOP_C_("GodotSTEX|Flags", "Filter"),
@@ -1176,9 +1176,9 @@ int GodotSTEX::getFields(RomFields *fields) const
 				nullptr, nullptr, nullptr, nullptr, nullptr,
 				NOP_C_("GodotSTEX|Flags", "Cubemap"),
 				NOP_C_("GodotSTEX|Flags", "For Streaming"),
-			};
+			}};
 			vector<string> *const v_flags_bitfield_names = RomFields::strArrayToVector_i18n(
-				"GodotSTEX|Flags", flags_bitfield_names, ARRAY_SIZE(flags_bitfield_names));
+				"GodotSTEX|Flags", flags_bitfield_names.data(), flags_bitfield_names.size());
 			fields->addField_bitfield(C_("GodotSTEX", "Flags"),
 				v_flags_bitfield_names, 3, d->stexHeader.v3.flags);
 			break;
@@ -1206,7 +1206,7 @@ int GodotSTEX::getFields(RomFields *fields) const
 	}
 
 	// Format flags (v3) (starting at bit 20)
-	static const char *const format_flags_bitfield_names_v3[] = {
+	static const array<const char*, 7> format_flags_bitfield_names_v3 = {{
 		NOP_C_("GodotSTEX|FormatFlags", "Lossless"),		// 20
 		NOP_C_("GodotSTEX|FormatFlags", "Lossy"),		// 21
 		NOP_C_("GodotSTEX|FormatFlags", "Stream"),		// 22
@@ -1214,9 +1214,9 @@ int GodotSTEX::getFields(RomFields *fields) const
 		NOP_C_("GodotSTEX|FormatFlags", "Detect 3D"),		// 24
 		NOP_C_("GodotSTEX|FormatFlags", "Detect sRGB"),		// 25
 		NOP_C_("GodotSTEX|FormatFlags", "Detect Normal"),	// 26
-	};
+	}};
 	// Format flags (v4) (starting at bit 20)
-	static const char *const format_flags_bitfield_names_v4[] = {
+	static const array<const char*, 8> format_flags_bitfield_names_v4 = {{
 		nullptr,						// 20
 		nullptr,						// 21
 		NOP_C_("GodotSTEX|FormatFlags", "Stream"),		// 22
@@ -1225,7 +1225,7 @@ int GodotSTEX::getFields(RomFields *fields) const
 		nullptr,						// 25
 		NOP_C_("GodotSTEX|FormatFlags", "Detect Normal"),	// 26
 		NOP_C_("GodotSTEX|FormatFlags", "Detect Roughness"),	// 27
-	};
+	}};
 
 	vector<string> *v_format_flags_bitfield_names = nullptr;
 	switch (d->stexVersion) {
@@ -1234,13 +1234,13 @@ int GodotSTEX::getFields(RomFields *fields) const
 			break;
 		case 3:
 			v_format_flags_bitfield_names = RomFields::strArrayToVector_i18n(
-				"GodotSTEX|FormatFlags", format_flags_bitfield_names_v3,
-					ARRAY_SIZE(format_flags_bitfield_names_v3));
+				"GodotSTEX|FormatFlags", format_flags_bitfield_names_v3.data(),
+					format_flags_bitfield_names_v3.size());
 			break;
 		case 4:
 			v_format_flags_bitfield_names = RomFields::strArrayToVector_i18n(
-				"GodotSTEX|FormatFlags", format_flags_bitfield_names_v4,
-					ARRAY_SIZE(format_flags_bitfield_names_v4));
+				"GodotSTEX|FormatFlags", format_flags_bitfield_names_v4.data(),
+					format_flags_bitfield_names_v4.size());
 			break;
 	}
 

@@ -534,14 +534,14 @@ int SegaSaturn::loadFieldData(void)
 	// compared to Dreamcast. The region code is parsed in the
 	// constructor, since it might be used for branding purposes
 	// later.
-	static const char *const region_code_bitfield_names[] = {
+	static const array<const char*, 4> region_code_bitfield_names = {{
 		NOP_C_("Region", "Japan"),
 		NOP_C_("Region", "Taiwan"),
 		NOP_C_("Region", "USA"),
 		NOP_C_("Region", "Europe"),
-	};
+	}};
 	vector<string> *const v_region_code_bitfield_names = RomFields::strArrayToVector_i18n(
-		"Region", region_code_bitfield_names, ARRAY_SIZE(region_code_bitfield_names));
+		"Region", region_code_bitfield_names.data(), region_code_bitfield_names.size());
 	d->fields.addField_bitfield(C_("RomData", "Region Code"),
 		v_region_code_bitfield_names, 0, d->saturn_region);
 
@@ -557,7 +557,7 @@ int SegaSaturn::loadFieldData(void)
 	}
 
 	// Peripherals.
-	static const char *const peripherals_bitfield_names[] = {
+	static const array<const char*, 15> peripherals_bitfield_names = {{
 		NOP_C_("SegaSaturn|Peripherals", "Control Pad"),
 		NOP_C_("SegaSaturn|Peripherals", "Analog Controller"),
 		NOP_C_("SegaSaturn|Peripherals", "Mouse"),
@@ -573,9 +573,9 @@ int SegaSaturn::loadFieldData(void)
 		NOP_C_("SegaSaturn|Peripherals", "Floppy Drive"),
 		NOP_C_("SegaSaturn|Peripherals", "ROM Cartridge"),
 		NOP_C_("SegaSaturn|Peripherals", "MPEG Card"),
-	};
+	}};
 	vector<string> *const v_peripherals_bitfield_names = RomFields::strArrayToVector_i18n(
-		"SegaSaturn|Peripherals", peripherals_bitfield_names, ARRAY_SIZE(peripherals_bitfield_names));
+		"SegaSaturn|Peripherals", peripherals_bitfield_names.data(), peripherals_bitfield_names.size());
 	// Parse peripherals.
 	const uint32_t peripherals = d->parsePeripherals(discHeader->peripherals, sizeof(discHeader->peripherals));
 	d->fields.addField_bitfield(C_("SegaSaturn", "Peripherals"),

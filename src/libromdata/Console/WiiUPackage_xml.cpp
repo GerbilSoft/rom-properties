@@ -312,9 +312,9 @@ int WiiUPackagePrivate::addFields_System_XMLs(void)
 	}};
 
 	if (metaRootNode) {
-		const char *longnames[WiiU_LC_COUNT];
-		const char *shortnames[WiiU_LC_COUNT];
-		const char *publishers[WiiU_LC_COUNT];
+		array<const char*, WiiU_LC_COUNT> longnames;
+		array<const char*, WiiU_LC_COUNT> shortnames;
+		array<const char*, WiiU_LC_COUNT> publishers;
 		string longname_key = "longname_";
 		string shortname_key = "shortname_";
 		string publisher_key = "publisher_";
@@ -462,7 +462,7 @@ int WiiUPackagePrivate::addFields_System_XMLs(void)
 		// Maps directly to the region field.
 		const uint32_t region_code = parseHexBinary(metaRootNode, "region");
 
-		static const char *const wiiu_region_bitfield_names[] = {
+		static const array<const char*, 7> wiiu_region_bitfield_names = {{
 			NOP_C_("Region", "Japan"),
 			NOP_C_("Region", "USA"),
 			NOP_C_("Region", "Europe"),
@@ -470,9 +470,9 @@ int WiiUPackagePrivate::addFields_System_XMLs(void)
 			NOP_C_("Region", "China"),
 			NOP_C_("Region", "South Korea"),
 			NOP_C_("Region", "Taiwan"),
-		};
+		}};
 		vector<string> *const v_wiiu_region_bitfield_names = RomFields::strArrayToVector_i18n(
-			"Region", wiiu_region_bitfield_names, ARRAY_SIZE(wiiu_region_bitfield_names));
+			"Region", wiiu_region_bitfield_names.data(), wiiu_region_bitfield_names.size());
 		fields.addField_bitfield(C_("RomData", "Region Code"),
 			v_wiiu_region_bitfield_names, 3, region_code);
 
@@ -547,16 +547,16 @@ int WiiUPackagePrivate::addFields_System_XMLs(void)
 			}
 		}
 
-		static const char *const controllers_bitfield_names[] = {
+		static const array<const char*, 6> controllers_bitfield_names = {{
 			NOP_C_("WiiU|Controller", "Nunchuk"),
 			NOP_C_("WiiU|Controller", "Classic"),
 			NOP_C_("WiiU|Controller", "Pro"),
 			NOP_C_("WiiU|Controller", "Balance Board"),
 			NOP_C_("WiiU|Controller", "USB Keyboard"),
 			NOP_C_("WiiU|Controller", "Gamepad"),
-		};
+		}};
 		vector<string> *const v_controllers_bitfield_names = RomFields::strArrayToVector_i18n(
-			"WiiU|Controller", controllers_bitfield_names, ARRAY_SIZE(controllers_bitfield_names));
+			"WiiU|Controller", controllers_bitfield_names.data(), controllers_bitfield_names.size());
 		fields.addField_bitfield(C_("WiiU", "Controllers"),
 			v_controllers_bitfield_names, 3, controllers);
 	}

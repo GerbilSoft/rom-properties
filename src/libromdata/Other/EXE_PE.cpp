@@ -677,7 +677,7 @@ void EXEPrivate::addFields_PE(void)
 
 	// PE flags (characteristics)
 	// NOTE: Only important flags will be listed.
-	static const char *const pe_flags_names[] = {
+	static const array<const char*, 16> pe_flags_names = {{
 		nullptr,
 		NOP_C_("EXE|PEFlags", "Executable"),
 		nullptr, nullptr, nullptr,
@@ -687,14 +687,14 @@ void EXEPrivate::addFields_PE(void)
 		nullptr,
 		NOP_C_("EXE|PEFlags", "DLL"),
 		nullptr, nullptr,
-	};
+	}};
 	vector<string> *const v_pe_flags_names = RomFields::strArrayToVector_i18n(
-		"EXE|PEFlags", pe_flags_names, ARRAY_SIZE(pe_flags_names));
+		"EXE|PEFlags", pe_flags_names.data(), pe_flags_names.size());
 	fields.addField_bitfield(C_("EXE", "PE Flags"),
 		v_pe_flags_names, 3, pe_flags);
 
 	// DLL flags (characteristics)
-	static const char *const dll_flags_names[] = {
+	static const array<const char*, 16> dll_flags_names = {{
 		nullptr, nullptr, nullptr, nullptr, nullptr,
 		NOP_C_("EXE|DLLFlags", "High Entropy VA"),
 		NOP_C_("EXE|DLLFlags", "Dynamic Base"),
@@ -707,9 +707,9 @@ void EXEPrivate::addFields_PE(void)
 		NOP_C_("EXE|DLLFlags", "WDM Driver"),
 		NOP_C_("EXE|DLLFlags", "Control Flow Guard"),
 		NOP_C_("EXE|DLLFlags", "TS Aware"),
-	};
+	}};
 	vector<string> *const v_dll_flags_names = RomFields::strArrayToVector_i18n(
-		"EXE|DLLFlags", dll_flags_names, ARRAY_SIZE(dll_flags_names));
+		"EXE|DLLFlags", dll_flags_names.data(), dll_flags_names.size());
 	fields.addField_bitfield(C_("EXE", "DLL Flags"),
 		v_dll_flags_names, 3, dll_flags);
 
@@ -933,15 +933,15 @@ int EXEPrivate::addFields_PE_Export(void)
 		fields.addTab(C_("EXE", "Exports"));
 		fields.reserve(1);
 
-		static const char *const field_names[] = {
+		static const array<const char*, 5> field_names = {{
 			NOP_C_("EXE|Exports", "Name"),
 			NOP_C_("EXE|Exports", "Ordinal"),
 			NOP_C_("EXE|Exports", "Hint"),
 			NOP_C_("EXE|Exports", "Virtual Address"),
 			NOP_C_("EXE|Exports", "File Offset"),
-		};
+		}};
 		vector<string> *const v_field_names = RomFields::strArrayToVector_i18n(
-			"EXE|Exports", field_names, ARRAY_SIZE(field_names));
+			"EXE|Exports", field_names.data(), field_names.size());
 
 		RomFields::AFLD_PARAMS params;
 		params.flags = RomFields::RFT_LISTDATA_SEPARATE_ROW;
@@ -1155,13 +1155,13 @@ int EXEPrivate::addFields_PE_Import(void)
 	fields.reserve(1);
 
 	// Intentionally sharing the translation context with the exports tab.
-	static const char *const field_names[] = {
+	static const array<const char*, 3> field_names = {{
 		NOP_C_("EXE|Exports", "Name"),
 		NOP_C_("EXE|Exports", "Hint"),
 		NOP_C_("EXE|Exports", "Module"),
-	};
+	}};
 	vector<string> *const v_field_names = RomFields::strArrayToVector_i18n(
-		"EXE|Exports", field_names, ARRAY_SIZE(field_names));
+		"EXE|Exports", field_names.data(), field_names.size());
 
 	RomFields::AFLD_PARAMS params;
 	params.flags = RomFields::RFT_LISTDATA_SEPARATE_ROW;

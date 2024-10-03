@@ -288,7 +288,7 @@ int Intellivision::loadFieldData(void)
 		flags &= ~INTV_SKIP_ECS;
 	}
 
-	static const char *const flags_bitfield_names[] = {
+	static const array<const char*, 9> flags_bitfield_names = {{
 		// Bits 0-5: Keyclick bits (TODO)
 		nullptr, nullptr, nullptr, nullptr, nullptr,
 
@@ -296,9 +296,9 @@ int Intellivision::loadFieldData(void)
 		NOP_C_("Intellivision|Flags", "Intellivision 2"),
 		NOP_C_("Intellivision|Flags", "Run code after title string"),
 		NOP_C_("Intellivision|Flags", "Skip ECS title screen"),
-	};
+	}};
 	vector<string> *const v_flags_bitfield_names = RomFields::strArrayToVector_i18n(
-		"Region", flags_bitfield_names, ARRAY_SIZE(flags_bitfield_names));
+		"Region", flags_bitfield_names.data(), flags_bitfield_names.size());
 	d->fields.addField_bitfield(C_("RomData", "Flags"),
 		v_flags_bitfield_names, 2, flags);
 

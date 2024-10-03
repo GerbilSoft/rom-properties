@@ -820,7 +820,7 @@ SNES::SNES(const IRpFilePtr &file)
 	if (d->romType == SNESPrivate::RomType::Unknown) {
 		// Check for BS-X "Memory Pack" headers.
 		static constexpr array<uint16_t, 2> bsx_addrs = {{0x7F00, 0xFF00}};
-		static constexpr uint8_t bsx_mempack_magic[6] = {'M', 0, 'P', 0, 0, 0};
+		static constexpr array<uint8_t, 6> bsx_mempack_magic = {{'M', 0, 'P', 0, 0, 0}};
 		uint8_t buf[7];
 
 		for (const uint16_t bsx_addr : bsx_addrs) {
@@ -831,7 +831,7 @@ SNES::SNES(const IRpFilePtr &file)
 				return;
 			}
 
-			if (!memcmp(buf, bsx_mempack_magic, sizeof(bsx_mempack_magic))) {
+			if (!memcmp(buf, bsx_mempack_magic.data(), bsx_mempack_magic.size())) {
 				// Found BS-X memory pack magic.
 				// Check the memory pack type.
 				// (7 is ROM; 1 to 4 is FLASH.)

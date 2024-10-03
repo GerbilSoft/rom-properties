@@ -315,10 +315,10 @@ int PlayStationSave::isRomSupported_static(const DetectInfo *info)
 			const uint8_t *const header = info->header.pData;
 
 			// Check the block magic.
-			static constexpr uint8_t block_magic[4] = {
+			static constexpr array<uint8_t, 4> block_magic = {{
 				PS1_ENTRY_ALLOC_FIRST, 0x00, 0x00, 0x00,
-			};
-			if (memcmp(header, block_magic, sizeof(block_magic)) != 0) {
+			}};
+			if (memcmp(header, block_magic.data(), block_magic.size()) != 0) {
 				// Block magic is incorrect.
 				return static_cast<int>(PlayStationSavePrivate::SaveType::Unknown);
 			}

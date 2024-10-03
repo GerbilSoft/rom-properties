@@ -663,14 +663,14 @@ int iQuePlayer::loadFieldData(void)
 
 	// Hardware access rights.
 	// TODO: Localization?
-	static const char *const hw_access_names[] = {
+	static const array<const char*, 10> hw_access_names = {{
 		"PI Buffer", "NAND Flash", "Memory Mapper",
 		"AES Engine", "New PI DMA", "GPIO",
 		"External I/O", "New PI Errors", "USB",
 		"SK Stack RAM"
-	};
+	}};
 	vector<string> *const v_hw_access_names = RomFields::strArrayToVector(
-		hw_access_names, ARRAY_SIZE(hw_access_names));
+		hw_access_names.data(), hw_access_names.size());
 
 	d->fields.addField_bitfield(C_("iQuePlayer", "HW Access"),
 		v_hw_access_names, 3, be32_to_cpu(bbContentMetaDataHead->hwAccessRights));

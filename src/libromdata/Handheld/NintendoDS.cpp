@@ -306,7 +306,7 @@ vector<uint16_t> NintendoDSPrivate::ndsRegionToGameTDB(
  */
 RomFields::ListData_t *NintendoDSPrivate::getDSiFlagsStringVector(void)
 {
-	static const char *const dsi_flags_bitfield_names[] = {
+	static const array<const char*, 8> dsi_flags_bitfield_names = {{
 		// tr: Uses the DSi-specific touchscreen protocol.
 		NOP_C_("NintendoDS|DSi_Flags", "DSi Touchscreen"),
 		// tr: Game requires agreeing to the Nintendo online services agreement.
@@ -319,7 +319,7 @@ RomFields::ListData_t *NintendoDSPrivate::getDSiFlagsStringVector(void)
 		NOP_C_("NintendoDS|DSi_Flags", "NDS Icon SHA-1"),
 		NOP_C_("NintendoDS|DSi_Flags", "NDS Header RSA"),
 		NOP_C_("NintendoDS|DSi_Flags", "Developer"),
-	};
+	}};
 
 	// Convert to RomFields::ListData_t for RFT_LISTDATA.
 	auto vv_dsi_flags = new RomFields::ListData_t(ARRAY_SIZE(dsi_flags_bitfield_names));
@@ -739,13 +739,13 @@ int NintendoDS::loadFieldData(void)
 		romHeader->rom_version, RomFields::Base::Dec, 2);
 
 	// Is the security data present?
-	static const char *const nds_security_data_names[] = {
+	static const array<const char*, 3> nds_security_data_names = {{
 		NOP_C_("NintendoDS|SecurityData", "Blowfish Tables"),
 		NOP_C_("NintendoDS|SecurityData", "Static Data"),
 		NOP_C_("NintendoDS|SecurityData", "Random Data"),
-	};
+	}};
 	vector<string> *const v_nds_security_data_names = RomFields::strArrayToVector_i18n(
-		"NintendoDS|SecurityData", nds_security_data_names, ARRAY_SIZE(nds_security_data_names));
+		"NintendoDS|SecurityData", nds_security_data_names.data(), nds_security_data_names.size());
 	d->fields.addField_bitfield(C_("NintendoDS", "Security Data"),
 		v_nds_security_data_names, 0, d->secData);
 	d->fieldIdx_secData = static_cast<int>(d->fields.count()-1);
@@ -764,11 +764,11 @@ int NintendoDS::loadFieldData(void)
 		hw_type = NintendoDSPrivate::DS_HW_DS;
 	}
 
-	static const char *const hw_bitfield_names[] = {
+	static const array<const char*, 2> hw_bitfield_names = {{
 		"Nintendo DS", "Nintendo DSi"
-	};
+	}};
 	vector<string> *const v_hw_bitfield_names = RomFields::strArrayToVector(
-		hw_bitfield_names, ARRAY_SIZE(hw_bitfield_names));
+		hw_bitfield_names.data(), hw_bitfield_names.size());
 	d->fields.addField_bitfield(C_("NintendoDS", "Hardware"),
 		v_hw_bitfield_names, 0, hw_type);
 
@@ -788,13 +788,13 @@ int NintendoDS::loadFieldData(void)
 		nds_region = NintendoDSPrivate::NDS_REGION_FREE;
 	}
 
-	static const char *const nds_region_bitfield_names[] = {
+	static const array<const char*, 3> nds_region_bitfield_names = {{
 		NOP_C_("Region", "Region-Free"),
 		NOP_C_("Region", "South Korea"),
 		NOP_C_("Region", "China"),
-	};
+	}};
 	vector<string> *const v_nds_region_bitfield_names = RomFields::strArrayToVector_i18n(
-		"Region", nds_region_bitfield_names, ARRAY_SIZE(nds_region_bitfield_names));
+		"Region", nds_region_bitfield_names.data(), nds_region_bitfield_names.size());
 	d->fields.addField_bitfield(C_("NintendoDS", "DS Region Code"),
 		v_nds_region_bitfield_names, 0, nds_region);
 
@@ -888,16 +888,16 @@ int NintendoDS::loadFieldData(void)
 
 	// DSi Region
 	// Maps directly to the header field.
-	static const char *const dsi_region_bitfield_names[] = {
+	static const array<const char*, 6> dsi_region_bitfield_names = {{
 		NOP_C_("Region", "Japan"),
 		NOP_C_("Region", "USA"),
 		NOP_C_("Region", "Europe"),
 		NOP_C_("Region", "Australia"),
 		NOP_C_("Region", "China"),
 		NOP_C_("Region", "South Korea"),
-	};
+	}};
 	vector<string> *const v_dsi_region_bitfield_names = RomFields::strArrayToVector_i18n(
-		"Region", dsi_region_bitfield_names, ARRAY_SIZE(dsi_region_bitfield_names));
+		"Region", dsi_region_bitfield_names.data(), dsi_region_bitfield_names.size());
 	d->fields.addField_bitfield(region_code_name,
 		v_dsi_region_bitfield_names, 3, le32_to_cpu(romHeader->dsi.region_code));
 
@@ -942,7 +942,7 @@ int NintendoDS::loadFieldData(void)
 	d->fields.addTab("Permissions");
 
 	// Permissions
-	static const char *const dsi_permissions_bitfield_names[] = {
+	static const array<const char*, 17> dsi_permissions_bitfield_names = {{
 		NOP_C_("NintendoDS|DSi_Permissions", "Common Key"),
 		NOP_C_("NintendoDS|DSi_Permissions", "AES Slot B"),
 		NOP_C_("NintendoDS|DSi_Permissions", "AES Slot C"),
@@ -971,7 +971,7 @@ int NintendoDS::loadFieldData(void)
 
 		NOP_C_("NintendoDS|DSi_Permissions", "Debug Key"),
 		*/
-	};
+	}};
 
 	// Convert to RomFields::ListData_t for RFT_LISTDATA.
 	auto vv_dsi_perm = new RomFields::ListData_t(ARRAY_SIZE(dsi_permissions_bitfield_names));

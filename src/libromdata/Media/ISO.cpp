@@ -806,11 +806,11 @@ int ISO::loadFieldData(void)
 				// TODO: More comprehensive boot catalog.
 				// For now, only showing boot platforms, and
 				// only if a boot catalog is present.
-				static const char *const boot_platforms_names[] = {
+				static const array<const char*, 2> boot_platforms_names = {{
 					"x86", "EFI"
-				};
+				}};
 				vector<string> *const v_boot_platforms_names = RomFields::strArrayToVector(
-					boot_platforms_names, ARRAY_SIZE(boot_platforms_names));
+					boot_platforms_names.data(), boot_platforms_names.size());
 				d->fields.addField_bitfield(C_("ISO", "Boot Platforms"),
 					v_boot_platforms_names, 0, d->boot_platforms);
 

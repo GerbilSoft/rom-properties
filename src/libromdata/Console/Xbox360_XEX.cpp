@@ -1057,39 +1057,39 @@ void Xbox360_XEX_Private::convertGameRatings(
 	// - If rating A is 0, and rating B is 2:
 	//   - The value for "A" gets slot 0.
 	//   - The value for "B" gets slots 1 and 2.
-	static constexpr int8_t region_values[14][16] = {
+	static const array<array<int8_t, 16>, 14> region_values = {{
 		// USA (ESRB)
-		{3, 6, 6, 10, 10, 13, 13, 17, 17, 18, 18, 18, 18, 18, 18, -1},
+		{{3, 6, 6, 10, 10, 13, 13, 17, 17, 18, 18, 18, 18, 18, 18, -1}},
 		// Europe (PEGI)
-		{3, 4, 4, 4, 4, 12, 12, 12, 12, 12, 16, 16, 16, 16, 18, -1},
+		{{3, 4, 4, 4, 4, 12, 12, 12, 12, 12, 16, 16, 16, 16, 18, -1}},
 		// Finland (PEGI-FI/MEKU)
-		{3, 7, 7, 7, 7, 11, 11, 11, 11, 15, 15, 15, 15, 18, 18, -1},
+		{{3, 7, 7, 7, 7, 11, 11, 11, 11, 15, 15, 15, 15, 18, 18, -1}},
 		// Portugal (PEGI-PT)
-		{4, 4, 6, 6, 12, 12, 12, 12, 12, 12, 16, 16, 16, 16, 18, -1},
+		{{4, 4, 6, 6, 12, 12, 12, 12, 12, 12, 16, 16, 16, 16, 18, -1}},
 		// England (BBFC)
 		// TODO: How are Universal and PG handled for Nintendo?
-		{3, 3, 7, 7, 7, 7, 12, 12, 12, 12, 15, 15, 15, 16, 18, -1},
+		{{3, 3, 7, 7, 7, 7, 12, 12, 12, 12, 15, 15, 15, 16, 18, -1}},
 		// Japan (CERO)
-		{0, 12, 12, 15, 15, 17, 17, 18, 18,    -1,-1,-1,-1,-1,-1,-1},
+		{{0, 12, 12, 15, 15, 17, 17, 18, 18,    -1,-1,-1,-1,-1,-1,-1}},
 		// Germany (USK)
-		{0, 6, 6, 12, 12, 16, 16, 18, 18,      -1,-1,-1,-1,-1,-1,-1},
+		{{0, 6, 6, 12, 12, 16, 16, 18, 18,      -1,-1,-1,-1,-1,-1,-1}},
 		// Australia (OFLC_AU)
 		// TODO: Is R18+ available on Xbox 360?
-		{0, 7, 7, 14, 14, 15, 15, -1,       -1,-1,-1,-1,-1,-1,-1,-1},
+		{{0, 7, 7, 14, 14, 15, 15, -1,       -1,-1,-1,-1,-1,-1,-1,-1}},
 		// TODO: NZ
-		{-1,-1,-1,-1,-1,-1,-1,-1,           -1,-1,-1,-1,-1,-1,-1,-1},
+		{{-1,-1,-1,-1,-1,-1,-1,-1,           -1,-1,-1,-1,-1,-1,-1,-1}},
 		// South Korea (KMRB/GRB)
-		{0, 12, 12, 15, 15, 18, 18, -1,     -1,-1,-1,-1,-1,-1,-1,-1},
+		{{0, 12, 12, 15, 15, 18, 18, -1,     -1,-1,-1,-1,-1,-1,-1,-1}},
 
 		// TODO: Brazil
-		{-1,-1,-1,-1,-1,-1,-1,-1, -1,-1,-1,-1,-1,-1,-1,-1},
+		{{-1,-1,-1,-1,-1,-1,-1,-1, -1,-1,-1,-1,-1,-1,-1,-1}},
 		// TODO: FPB?
-		{-1,-1,-1,-1,-1,-1,-1,-1, -1,-1,-1,-1,-1,-1,-1,-1},
+		{{-1,-1,-1,-1,-1,-1,-1,-1, -1,-1,-1,-1,-1,-1,-1,-1}},
 		// TODO: Taiwan
-		{-1,-1,-1,-1,-1,-1,-1,-1, -1,-1,-1,-1,-1,-1,-1,-1},
+		{{-1,-1,-1,-1,-1,-1,-1,-1, -1,-1,-1,-1,-1,-1,-1,-1}},
 		// TODO: Singapore
-		{-1,-1,-1,-1,-1,-1,-1,-1, -1,-1,-1,-1,-1,-1,-1,-1},
-	};
+		{{-1,-1,-1,-1,-1,-1,-1,-1, -1,-1,-1,-1,-1,-1,-1,-1}},
+	}};
 
 	// 14 ratings for Xbox 360 games.
 	for (unsigned int ridx = 0; ridx < 14; ridx++) {
@@ -1671,7 +1671,7 @@ int Xbox360_XEX::loadFieldData(void)
 	d->fields.addField_string(C_("Xbox360_XEX", "Min. Kernel"), s_minver);
 
 	// Module flags
-	static const char *const module_flags_tbl[] = {
+	static const array<const char*, 8> module_flags_tbl = {{
 		NOP_C_("Xbox360_XEX", "Title"),
 		NOP_C_("Xbox360_XEX", "Exports"),
 		NOP_C_("Xbox360_XEX", "Debugger"),
@@ -1680,9 +1680,9 @@ int Xbox360_XEX::loadFieldData(void)
 		NOP_C_("Xbox360_XEX", "Full Patch"),
 		NOP_C_("Xbox360_XEX", "Delta Patch"),
 		NOP_C_("Xbox360_XEX", "User Mode"),
-	};
+	}};
 	vector<string> *const v_module_flags = RomFields::strArrayToVector_i18n(
-		"Xbox360_XEX", module_flags_tbl, ARRAY_SIZE(module_flags_tbl));
+		"Xbox360_XEX", module_flags_tbl.data(), module_flags_tbl.size());
 	d->fields.addField_bitfield(C_("Xbox360_XEX", "Module Flags"),
 		v_module_flags, 4, xex2Header->module_flags);
 
@@ -1764,7 +1764,7 @@ int Xbox360_XEX::loadFieldData(void)
 
 	// Region code
 	// TODO: Special handling for region-free?
-	static const char *const region_code_tbl[] = {
+	static const array<const char*, 7> region_code_tbl = {{
 		NOP_C_("Region", "USA"),
 		NOP_C_("Region", "Japan"),
 		NOP_C_("Region", "China"),
@@ -1772,7 +1772,7 @@ int Xbox360_XEX::loadFieldData(void)
 		NOP_C_("Region", "Europe"),
 		NOP_C_("Region", "Australia"),
 		NOP_C_("Region", "New Zealand"),
-	};
+	}};
 
 	// Convert region code to a bitfield.
 	const uint32_t region_code_xbx = be32_to_cpu(
@@ -1801,7 +1801,7 @@ int Xbox360_XEX::loadFieldData(void)
 	}
 
 	vector<string> *const v_region_code = RomFields::strArrayToVector_i18n(
-		"Region", region_code_tbl, ARRAY_SIZE(region_code_tbl));
+		"Region", region_code_tbl.data(), region_code_tbl.size());
 	d->fields.addField_bitfield(C_("RomData", "Region Code"),
 		v_region_code, 4, region_code);
 

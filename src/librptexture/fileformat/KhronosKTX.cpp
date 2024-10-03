@@ -1106,15 +1106,15 @@ int KhronosKTX::getFields(RomFields *fields) const
 	// Key/Value data.
 	d->loadKeyValueData();
 	if (!d->kv_data.empty()) {
-		static const char *const kv_field_names[] = {
+		static const array<const char*, 2> kv_field_names = {{
 			NOP_C_("KhronosKTX|KeyValue", "Key"),
 			NOP_C_("KhronosKTX|KeyValue", "Value"),
-		};
+		}};
 
 		// NOTE: Making a copy.
 		RomFields::ListData_t *const p_kv_data = new RomFields::ListData_t(d->kv_data);
 		vector<string> *const v_kv_field_names = RomFields::strArrayToVector_i18n(
-			"KhronosKTX|KeyValue", kv_field_names, ARRAY_SIZE(kv_field_names));
+			"KhronosKTX|KeyValue", kv_field_names.data(), kv_field_names.size());
 
 		RomFields::AFLD_PARAMS params;
 		params.headers = v_kv_field_names;

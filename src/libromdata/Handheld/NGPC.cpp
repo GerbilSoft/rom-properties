@@ -315,11 +315,11 @@ int NGPC::loadFieldData(void)
 		romHeader->version, RomFields::Base::Dec, 2);
 
 	// System
-	static const char *const system_bitfield_names[] = {
+	static const array<const char*, 2> system_bitfield_names = {{
 		"NGP (Monochrome)", "NGP Color"
-	};
+	}};
 	vector<string> *const v_system_bitfield_names = RomFields::strArrayToVector(
-		system_bitfield_names, ARRAY_SIZE(system_bitfield_names));
+		system_bitfield_names.data(), system_bitfield_names.size());
 	d->fields.addField_bitfield(C_("NGPC", "System"),
 		v_system_bitfield_names, 0,
 			(d->romType == NGPCPrivate::RomType::NGPC ? 3 : 1));

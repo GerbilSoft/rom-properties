@@ -520,7 +520,7 @@ void ImageDecoderTest::decodeBenchmark_internal(void)
 		uint8_t size;
 		char ext[15];
 	};
-	static const IterationIncrease_t iterInc_tbl[] = {
+	static const array<IterationIncrease_t, 8> iterInc_tbl = {{
 		{ 8, ".smdh.gz"},	// Nintendo 3DS SMDH file
 		{ 7, ".gci.gz"},	// Nintendo GameCube save file
 		{ 4, ".VMS"},		// Sega Dreamcast save file (NOTE: No gzip support at the moment)
@@ -529,7 +529,7 @@ void ImageDecoderTest::decodeBenchmark_internal(void)
 		{ 7, ".cab.gz"},	// Nintendo Badge Arcade texture
 		{ 7, ".prb.gz"},	// Nintendo Badge Arcade texture
 		{ 4, ".tex"}		// Leapster Didj texture
-	};
+	}};
 	for (const auto &p : iterInc_tbl) {
 		if (mode.dds_gz_filename.size() >= p.size &&
 		    !mode.dds_gz_filename.compare(mode.dds_gz_filename.size() - p.size, p.size, ".smdh.gz"))

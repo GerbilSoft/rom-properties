@@ -354,11 +354,11 @@ int SufamiTurbo::loadFieldData(void)
 #endif
 
 	// Features
-	static const char *const features_bitfield_names[] = {
+	static const array<const char*, 4> features_bitfield_names = {{
 		"SlowROM", "FastROM", "SRAM", "Special"
-	};
+	}};
 	vector<string> *const v_features_bitfield_names = RomFields::strArrayToVector(
-		features_bitfield_names, ARRAY_SIZE(features_bitfield_names));
+		features_bitfield_names.data(), features_bitfield_names.size());
 	uint32_t features = 0;
 	switch (romHeader->rom_speed) {
 		default:

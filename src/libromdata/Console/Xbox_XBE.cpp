@@ -775,14 +775,14 @@ int Xbox_XBE::loadFieldData(void)
 
 	// Initialization flags
 	const uint32_t init_flags = le32_to_cpu(xbeHeader->init_flags);
-	static const char *const init_flags_tbl[] = {
+	static const array<const char*, 4> init_flags_tbl = {{
 		NOP_C_("Xbox_XBE|InitFlags", "Mount Utility Drive"),
 		NOP_C_("Xbox_XBE|InitFlags", "Format Utility Drive"),
 		NOP_C_("Xbox_XBE|InitFlags", "Limit RAM to 64 MB"),
 		NOP_C_("Xbox_XBE|InitFlags", "Don't Setup HDD"),
-	};
+	}};
 	vector<string> *const v_init_flags = RomFields::strArrayToVector_i18n(
-		"Region", init_flags_tbl, ARRAY_SIZE(init_flags_tbl));
+		"Region", init_flags_tbl.data(), init_flags_tbl.size());
 	d->fields.addField_bitfield(C_("Xbox_XBE", "Init Flags"),
 		v_init_flags, 2, init_flags);
 
@@ -794,14 +794,14 @@ int Xbox_XBE::loadFieldData(void)
 		region_code &= ~XBE_REGION_CODE_MANUFACTURING;
 		region_code |= 8;
 	}
-	static const char *const region_code_tbl[] = {
+	static const array<const char*, 4> region_code_tbl = {{
 		NOP_C_("Region", "North America"),
 		NOP_C_("Region", "Japan"),
 		NOP_C_("Region", "Rest of World"),
 		NOP_C_("Region", "Manufacturing"),
-	};
+	}};
 	vector<string> *const v_region_code = RomFields::strArrayToVector_i18n(
-		"Region", region_code_tbl, ARRAY_SIZE(region_code_tbl));
+		"Region", region_code_tbl.data(), region_code_tbl.size());
 	d->fields.addField_bitfield(C_("RomData", "Region Code"),
 		v_region_code, 3, region_code);
 

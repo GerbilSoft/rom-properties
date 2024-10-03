@@ -869,14 +869,14 @@ int ELFPrivate::addPtDynamicFields(void)
 
 		if (has_dtag[DT_FLAGS]) {
 			// DT_FLAGS
-			static const char *const dt_flags_names[] = {
+			static const array<const char*, 5> dt_flags_names = {{
 				// 0x00000000
 				"ORIGIN", "SYMBOLIC", "TEXTREL", "BIND_NOW",
 				// 0x00000010
 				"STATIC_TLS",
-			};
+			}};
 			vector<string> *const v_dt_flags_names = RomFields::strArrayToVector(
-				dt_flags_names, ARRAY_SIZE(dt_flags_names));
+				dt_flags_names.data(), dt_flags_names.size());
 			fields.addField_bitfield("DT_FLAGS",
 				v_dt_flags_names, 3, static_cast<uint32_t>(val_dtag[DT_FLAGS]));
 		}
@@ -884,7 +884,7 @@ int ELFPrivate::addPtDynamicFields(void)
 		if (has_flags1) {
 			// DT_FLAGS_1
 			// NOTE: Internal-use symbols are left as nullptr.
-			static const char *const dt_flags_1_names[] = {
+			static const array<const char*, 28> dt_flags_1_names = {{
 				// 0x00000000
 				"Now", "Global", "Group", "NoDelete",
 				// 0x00000010
@@ -899,9 +899,9 @@ int ELFPrivate::addPtDynamicFields(void)
 				nullptr /*"NoHdr"*/, "Edited", nullptr /*"NoReloc"*/, "SymIntpose",
 				// 0x01000000
 				"GlobAudit", "Singleton", "Stub", "PIE"
-			};
+			}};
 			vector<string> *const v_dt_flags_1_names = RomFields::strArrayToVector(
-				dt_flags_1_names, ARRAY_SIZE(dt_flags_1_names));
+				dt_flags_1_names.data(), dt_flags_1_names.size());
 			fields.addField_bitfield("DT_FLAGS_1",
 				v_dt_flags_1_names, 3, static_cast<uint32_t>(val_flags1));
 		}
@@ -928,11 +928,11 @@ int ELFPrivate::addPtDynamicFields(void)
 				vv_data->emplace_back(std::move(row));
 			}
 
-			static const char *const field_names[] = {
+			static const array<const char*, 1> field_names = {{
 				NOP_C_("ELF", "Name"),
-			};
+			}};
 			vector<string> *const v_field_names = RomFields::strArrayToVector_i18n(
-				"ELF", field_names, ARRAY_SIZE(field_names));
+				"ELF", field_names.data(), field_names.size());
 
 			RomFields::AFLD_PARAMS params;
 			params.flags = 0;
@@ -1094,7 +1094,7 @@ int ELFPrivate::addSymbolFields(span<const char> dynsym_strtab)
 
 		fields.addTab(name);
 
-		static const char *const field_names[] = {
+		static const array<const char*, 7> field_names = {{
 			NOP_C_("ELF|Symbol", "Name"),
 			NOP_C_("ELF|Symbol", "Binding"),
 			NOP_C_("ELF|Symbol", "Type"),
@@ -1102,9 +1102,9 @@ int ELFPrivate::addSymbolFields(span<const char> dynsym_strtab)
 			NOP_C_("ELF|Symbol", "Section"),
 			NOP_C_("ELF|Symbol", "Value"),
 			NOP_C_("ELF|Symbol", "Size"),
-		};
+		}};
 		vector<string> *const v_field_names = RomFields::strArrayToVector_i18n(
-			"ELF|Symbol", field_names, ARRAY_SIZE(field_names));
+			"ELF|Symbol", field_names.data(), field_names.size());
 
 		RomFields::AFLD_PARAMS params;
 		params.flags = RomFields::RFT_LISTDATA_SEPARATE_ROW;
@@ -1579,7 +1579,7 @@ int ELF::loadFieldData(void)
 				pgettext_expr("ELF|SPARC_MM", sparc_mm[e_flags & 3]));
 
 			// SPARC CPU flags. (rshifted by 8)
-			static const char *const sparc_flags_names[] = {
+			static const array<const char*, 16> sparc_flags_names = {{
 				// 0x100-0x800
 				"SPARC V8+", "UltraSPARC I", "HaL R1", "UltraSPARC III",
 				// 0x1000-0x8000
@@ -1590,9 +1590,9 @@ int ELF::loadFieldData(void)
 				nullptr, nullptr, nullptr,
 				// tr: Little-Endian Data
 				NOP_C_("ELF|SPARCFlags", "LE Data")
-			};
+			}};
 			vector<string> *const v_sparc_flags_names = RomFields::strArrayToVector_i18n(
-				"ELF|SPARCFlags", sparc_flags_names, ARRAY_SIZE(sparc_flags_names));
+				"ELF|SPARCFlags", sparc_flags_names.data(), sparc_flags_names.size());
 			d->fields.addField_bitfield(C_("ELF", "CPU Flags"),
 				v_sparc_flags_names, 4, (e_flags >> 8));
 			break;
@@ -1624,7 +1624,7 @@ int ELF::loadFieldData(void)
 			// MIPS CPU flags.
 			// NOTE: Shifting ASE flags from bits 24-27 to bits 12-15.
 			const unsigned int mips_cpu_flags = (e_flags & 0xFFF) | ((e_flags >> 12) & 0xF000);
-			static const char *const mips_flags_names[] = {
+			static const array<const char*, 16> mips_flags_names = {{
 				// 0x1-0x8
 				NOP_C_("ELF|MIPSFlags", "No Reorder"),
 				"PIC", "CPIC", "XGOT",
@@ -1636,9 +1636,9 @@ int ELF::loadFieldData(void)
 				nullptr,
 				// 0x1000-0x8000 (shifted from 0x01000000-0x08000000)
 				nullptr, "MicroMIPS", "MIPS-16", "MDMX",
-			};
+			}};
 			vector<string> *const v_mips_flags_names = RomFields::strArrayToVector_i18n(
-				"ELF|MIPSFlags", mips_flags_names, ARRAY_SIZE(mips_flags_names));
+				"ELF|MIPSFlags", mips_flags_names.data(), mips_flags_names.size());
 			d->fields.addField_bitfield(C_("ELF", "CPU Flags"),
 				v_mips_flags_names, 4, mips_cpu_flags);
 			break;
@@ -1668,7 +1668,7 @@ int ELF::loadFieldData(void)
 			d->fields.addField_string(C_("ELF", "PA-RISC Version"), parisc_version);
 
 			// PA-RISC CPU flags.
-			static const char *const parisc_flags_names[] = {
+			static const array<const char*, 7> parisc_flags_names = {{
 				// 0x1-0x8
 				NOP_C_("ELF|PARISCFlags", "Trap NULL"),
 				"EXT", "LSB",
@@ -1677,9 +1677,9 @@ int ELF::loadFieldData(void)
 				NOP_C_("ELF|PARISCFlags", "No KABP"),
 				nullptr,
 				NOP_C_("ELF|PARISCFlags", "Lazy Swap"),
-			};
+			}};
 			vector<string> *const v_parisc_flags_names = RomFields::strArrayToVector_i18n(
-				"ELF|PARISCFlags", parisc_flags_names, ARRAY_SIZE(parisc_flags_names));
+				"ELF|PARISCFlags", parisc_flags_names.data(), parisc_flags_names.size());
 			d->fields.addField_bitfield(C_("ELF", "CPU Flags"),
 				v_parisc_flags_names, 4, ((e_flags >> 16) & 0x7F));
 			break;
@@ -1714,7 +1714,7 @@ int ELF::loadFieldData(void)
 
 			// ARM CPU flags.
 			// NOTE: Most of these are deprecated. (pre-EABI)
-			static const char *const arm_flags_names[] = {
+			static const array<const char*, 12> arm_flags_names = {{
 				// 0x1-0x8
 				"RelExec", nullptr, "Interwork", "APCS 26",
 				// 0x10-0x80
@@ -1727,9 +1727,9 @@ int ELF::loadFieldData(void)
 				NOP_C_("ELF|ARMFlags", "Soft Float"),
 				NOP_C_("ELF|ARMFlags", "VFP Float"),
 				NOP_C_("ELF|ARMFlags", "Maverick Float"),
-			};
+			}};
 			vector<string> *const v_arm_flags_names = RomFields::strArrayToVector_i18n(
-				"ELF|ARMFlags", arm_flags_names, ARRAY_SIZE(arm_flags_names));
+				"ELF|ARMFlags", arm_flags_names.data(), arm_flags_names.size());
 			d->fields.addField_bitfield(C_("ELF", "CPU Flags"),
 				v_arm_flags_names, 4, (e_flags & 0xFFF));
 			break;
@@ -1740,13 +1740,13 @@ int ELF::loadFieldData(void)
 			// binutils: include/elf/alpha.h
 
 			// Alpha CPU flags.
-			static const char *const alpha_flags_names[] = {
+			static const array<const char*, 2> alpha_flags_names = {{
 				// 0x1-0x2
 				NOP_C_("ELF|AlphaFlags", "Addresses <= 2GB"),
 				NOP_C_("ELF|AlphaFlags", "Relaxed Code Movement"),
-			};
+			}};
 			vector<string> *const v_alpha_flags_names = RomFields::strArrayToVector_i18n(
-				"ELF|AlphaFlags", alpha_flags_names, ARRAY_SIZE(alpha_flags_names));
+				"ELF|AlphaFlags", alpha_flags_names.data(), alpha_flags_names.size());
 			d->fields.addField_bitfield(C_("ELF", "CPU Flags"),
 				v_alpha_flags_names, 2, (e_flags & 0x03));
 			break;
@@ -1778,15 +1778,15 @@ int ELF::loadFieldData(void)
 			}
 
 			// SuperH CPU flags. (rshifted by 8)
-			static const char *const superh_flags_names[] = {
+			static const array<const char*, 8> superh_flags_names = {{
 				// 0x100-0x800
 				"PIC", nullptr, nullptr, nullptr,
 
 				// 0x1000-0x8000
 				nullptr, nullptr, nullptr, "FDPIC",
-			};
+			}};
 			vector<string> *const v_superh_flags_names = RomFields::strArrayToVector(
-				superh_flags_names, ARRAY_SIZE(superh_flags_names));
+				superh_flags_names.data(), superh_flags_names.size());
 			d->fields.addField_bitfield(C_("ELF", "CPU Flags"),
 				v_superh_flags_names, 2, (e_flags >> 8));
 			break;
@@ -1820,12 +1820,12 @@ int ELF::loadFieldData(void)
 			}
 
 			// ARC CPU flags. (rshifted by 8)
-			static const char *const arc_flags_names[] = {
+			static const array<const char*, 1> arc_flags_names = {{
 				// 0x100
 				"PIC",
-			};
+			}};
 			vector<string> *const v_arc_flags_names = RomFields::strArrayToVector(
-				arc_flags_names, ARRAY_SIZE(arc_flags_names));
+				arc_flags_names.data(), arc_flags_names.size());
 			d->fields.addField_bitfield(C_("ELF", "CPU Flags"),
 				v_arc_flags_names, 1, ((e_flags >> 8) & 1));
 			break;
@@ -1930,12 +1930,12 @@ int ELF::loadFieldData(void)
 			}
 
 			// M32R new instructions field.
-			static const char *const m32r_flags_names[] = {
+			static const array<const char*, 4> m32r_flags_names = {{
 				// 0x1-0x8
 				"Parallel", "m32rx", "Bit Insns", "FP Insns",
-			};
+			}};
 			vector<string> *const v_m32r_flags_names = RomFields::strArrayToVector_i18n(
-				"ELF|M32RFlags", m32r_flags_names, ARRAY_SIZE(m32r_flags_names));
+				"ELF|M32RFlags", m32r_flags_names.data(), m32r_flags_names.size());
 			d->fields.addField_bitfield(C_("ELF", "M32R New Insns"),
 				v_m32r_flags_names, 4, ((e_flags >> 16) & 0x0FFF));
 
@@ -1968,15 +1968,15 @@ int ELF::loadFieldData(void)
 			// binutils: include/elf/bfin.h
 
 			// Blackfin CPU flags.
-			static const char *const blackfin_flags_names[] = {
+			static const array<const char*, 6> blackfin_flags_names = {{
 				// 0x1-0x8
 				"PIC", "FDPIC", nullptr, nullptr,
 				// 0x10-0x20
 				NOP_C_("ELF|BlackfinFlags", "Code in L1"),
 				NOP_C_("ELF|BlackfinFlags", "Data in L1"),
-			};
+			}};
 			vector<string> *const v_blackfin_flags_names = RomFields::strArrayToVector_i18n(
-				"ELF|BlackfinFlags", blackfin_flags_names, ARRAY_SIZE(blackfin_flags_names));
+				"ELF|BlackfinFlags", blackfin_flags_names.data(), blackfin_flags_names.size());
 			d->fields.addField_bitfield(C_("ELF", "CPU Flags"),
 				v_blackfin_flags_names, 2, (e_flags & 0x33));
 			break;
@@ -2039,12 +2039,12 @@ int ELF::loadFieldData(void)
 				pgettext_expr("ELF|RISCVFPABI", riscv_fpabi_tbl[((e_flags & 0x0006) >> 1)]));
 
 			// RISC-V CPU flags
-			static const char *const riscv_flags_names[] = {
+			static const array<const char*, 4> riscv_flags_names = {{
 				// 0x1-0x8
 				"RVC", nullptr, nullptr, "RV32E",
-			};
+			}};
 			vector<string> *const v_riscv_flags_names = RomFields::strArrayToVector(
-				riscv_flags_names, ARRAY_SIZE(riscv_flags_names));
+				riscv_flags_names.data(), riscv_flags_names.size());
 			d->fields.addField_bitfield(C_("ELF", "CPU Flags"),
 				v_riscv_flags_names, 2, (e_flags & 0x0F));
 			break;

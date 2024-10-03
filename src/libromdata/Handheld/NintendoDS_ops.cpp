@@ -17,7 +17,8 @@
 using namespace LibRpBase;
 using namespace LibRpText;
 
-// C++ STL classes.
+// C++ STL classes
+using std::array;
 using std::ostringstream;
 using std::string;
 using std::unique_ptr;
@@ -156,13 +157,13 @@ NintendoDSPrivate::NDS_SecureArea NintendoDSPrivate::checkNDSSecureArea(void)
  */
 const char *NintendoDSPrivate::getNDSSecureAreaString(void)
 {
-	static const char *const nds_secure_area_type[] = {
+	static const array<const char*, 5> nds_secure_area_type = {{
 		nullptr,
 		NOP_C_("NintendoDS|SecureArea", "Homebrew"),
 		NOP_C_("NintendoDS|SecureArea", "Multiboot"),
 		NOP_C_("NintendoDS|SecureArea", "Decrypted"),
 		NOP_C_("NintendoDS|SecureArea", "Encrypted"),
-	};
+	}};
 
 	if (secArea >= NintendoDSPrivate::NDS_SECAREA_HOMEBREW &&
 	    secArea <= NintendoDSPrivate::NDS_SECAREA_ENCRYPTED)

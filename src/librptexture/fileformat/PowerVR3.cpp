@@ -1028,13 +1028,13 @@ int PowerVR3::getFields(RomFields *fields) const
 	// Flags
 	// NOTE: "Compressed" is listed in the PowerVR Native SDK,
 	// but I'm not sure what it's used for...
-	static const char *const flags_names[] = {
+	static const array<const char*, 2> flags_names = {{
 		NOP_C_("PowerVR3|Flags", "Compressed"),
 		NOP_C_("PowerVR3|Flags", "Premultipled Alpha"),
-	};
+	}};
 	// TODO: i18n
 	vector<string> *const v_flags_names = RomFields::strArrayToVector(
-		/*"PowerVR3|Flags",*/ flags_names, ARRAY_SIZE(flags_names));
+		/*"PowerVR3|Flags",*/ flags_names.data(), flags_names.size());
 	fields->addField_bitfield(C_("PowerVR3", "Flags"),
 		v_flags_names, 3, pvr3Header->flags);
 

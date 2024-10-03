@@ -1372,7 +1372,7 @@ int DirectDrawSurface::getFields(RomFields *fields) const
 	}
 
 	// dwFlags
-	static const char *const dwFlags_names[] = {
+	static const array<const char*, 24> dwFlags_names = {{
 		// 0x1-0x8
 		NOP_C_("DirectDrawSurface|dwFlags", "Caps"),
 		NOP_C_("DirectDrawSurface|dwFlags", "Height"),
@@ -1393,25 +1393,25 @@ int DirectDrawSurface::getFields(RomFields *fields) const
 		// 0x100000-0x800000
 		nullptr, nullptr, nullptr,
 		NOP_C_("DirectDrawSurface|dwFlags", "Depth"),
-	};
+	}};
 	vector<string> *const v_dwFlags_names = RomFields::strArrayToVector_i18n(
-		"DirectDrawSurface|dwFlags", dwFlags_names, ARRAY_SIZE(dwFlags_names));
+		"DirectDrawSurface|dwFlags", dwFlags_names.data(), dwFlags_names.size());
 	fields->addField_bitfield(C_("DirectDrawSurface", "Flags"),
 		v_dwFlags_names, 3, ddsHeader->dwFlags);
 
 	// ddspf.dwFlags (high bits; nVidia-specific)
 	const uint32_t pf_flags_high = (ddsHeader->ddspf.dwFlags >> 30);
-	static const char *const ddspf_dwFlags_names[] = {
+	static const array<const char*, 2> ddspf_dwFlags_names = {{
 		"sRGB",	// Not translatable
 		NOP_C_("DirectDrawSurface|ddspf", "Normal Map"),
-	};
+	}};
 	vector<string> *const v_ddspf_dwFlags_names = RomFields::strArrayToVector_i18n(
-		"DirectDrawSurface|ddspf", ddspf_dwFlags_names, ARRAY_SIZE(ddspf_dwFlags_names));
+		"DirectDrawSurface|ddspf", ddspf_dwFlags_names.data(), ddspf_dwFlags_names.size());
 	fields->addField_bitfield(C_("DirectDrawSurface", "PF Flags"),
 		v_ddspf_dwFlags_names, 4, pf_flags_high);
 
 	// dwCaps
-	static const char *const dwCaps_names[] = {
+	static const array<const char*, 23> dwCaps_names = {{
 		// 0x1-0x8
 		nullptr, nullptr, nullptr,
 		NOP_C_("DirectDrawSurface|dwCaps", "Complex"),
@@ -1427,9 +1427,9 @@ int DirectDrawSurface::getFields(RomFields *fields) const
 		// 0x100000-0x400000
 		nullptr, nullptr,
 		NOP_C_("DirectDrawSurface|dwCaps", "Mipmap"),
-	};
+	}};
 	vector<string> *const v_dwCaps_names = RomFields::strArrayToVector_i18n(
-		"DirectDrawSurface|dwFlags", dwCaps_names, ARRAY_SIZE(dwCaps_names));
+		"DirectDrawSurface|dwFlags", dwCaps_names.data(), dwCaps_names.size());
 	fields->addField_bitfield(C_("DirectDrawSurface", "Caps"),
 		v_dwCaps_names, 3, ddsHeader->dwCaps);
 

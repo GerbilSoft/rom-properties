@@ -595,13 +595,13 @@ int SAP::loadFieldData(void)
 	}
 
 	// Flags: NTSC/PAL, Stereo
-	static const char *const flags_names[] = {
+	static const array<const char*, 2> flags_names = {{
 		// tr: PAL is default; if set, the file is for NTSC.
 		"NTSC",
 		NOP_C_("SAP|Flags", "Stereo"),
-	};
+	}};
 	vector<string> *const v_flags_names = RomFields::strArrayToVector_i18n(
-		"SAP|Flags", flags_names, ARRAY_SIZE(flags_names));
+		"SAP|Flags", flags_names.data(), flags_names.size());
 	// TODO: Use a bitfield in tags?
 	uint32_t flags = 0;
 	if (tags.ntsc)   flags |= (1U << 0);
@@ -685,13 +685,13 @@ int SAP::loadFieldData(void)
 			data_row.emplace_back(src_iter->second ? s_yes : s_no);
 		}
 
-		static const char *const song_list_hdr[3] = {
+		static const array<const char*, 3> song_list_hdr = {{
 			NOP_C_("SAP|SongList", "#"),
 			NOP_C_("RomData|Audio", "Duration"),
 			NOP_C_("SAP|SongList", "Looping"),
-		};
+		}};
 		vector<string> *const v_song_list_hdr = RomFields::strArrayToVector_i18n(
-			"SAP|SongList", song_list_hdr, ARRAY_SIZE(song_list_hdr));
+			"SAP|SongList", song_list_hdr.data(), song_list_hdr.size());
 
 		RomFields::AFLD_PARAMS params;
 		params.headers = v_song_list_hdr;

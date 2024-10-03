@@ -403,7 +403,7 @@ int WimPrivate::addFields_XML()
 		data_row.emplace_back(windowsinfo.languages.language);
 	}	
 
-	static const char *const field_names[] = {
+	static const array<const char*, 10> field_names = {{
 		NOP_C_("Wim|Images", "#"),
 		NOP_C_("Wim|Images", "Name"),
 		NOP_C_("Wim|Images", "Description"),
@@ -414,9 +414,9 @@ int WimPrivate::addFields_XML()
 		NOP_C_("Wim|Images", "Edition"),
 		NOP_C_("Wim|Images", "Architecture"),
 		NOP_C_("Wim|Images", "Language"),
-	};
+	}};
 	vector<string> *const v_field_names = RomFields::strArrayToVector_i18n(
-		"Wim|Images", field_names, ARRAY_SIZE(field_names));
+		"Wim|Images", field_names.data(), field_names.size());
 
 	RomFields::AFLD_PARAMS params;
 	params.flags = RomFields::RFT_LISTDATA_SEPARATE_ROW;
@@ -611,7 +611,7 @@ int Wim::loadFieldData(void)
 		return 0;
 	}
 
-	static const char* const wim_flag_names[] = {
+	static const array<const char*, 7> wim_flag_names = {{
 		nullptr,
 		NOP_C_("Wim|Flags", "Compressed"),
 		NOP_C_("Wim|Flags", "Read-only"),
@@ -619,12 +619,12 @@ int Wim::loadFieldData(void)
 		NOP_C_("Wim|Flags", "Resource Only"),
 		NOP_C_("Wim|Flags", "Metadata Only"),
 		NOP_C_("Wim|Flags", "Write in progress"),
-	};
+	}};
 
 	const uint32_t wimflags = d->wimHeader.flags;
 
 	vector<string> *const v_wim_flag_names = RomFields::strArrayToVector_i18n(
-		"RomData", wim_flag_names, ARRAY_SIZE(wim_flag_names));
+		"RomData", wim_flag_names.data(), wim_flag_names.size());
 	d->fields.addField_bitfield(C_("RomData", "Flags"),
 		v_wim_flag_names, 3, wimflags);
 
