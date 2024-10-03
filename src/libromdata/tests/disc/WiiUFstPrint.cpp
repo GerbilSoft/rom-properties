@@ -104,23 +104,10 @@ int RP_C_API main(int argc, char *argv[])
 		return EXIT_FAILURE;
 	}
 
-	// Check for NKit FST recovery data.
-	// These FSTs have an extra header at the top, indicating what
-	// disc the FST belongs to.
-	unsigned int fst_start_offset = 0;
-	static constexpr array<uint8_t, 10> root_dir_data = {{1,0,0,0,0,0,0,0,0,0}};
-	if (fileSize >= 0x60) {
-		if (!memcmp(&fstData[0x50], root_dir_data.data(), root_dir_data.size())) {
-			// Found an NKit FST.
-			fst_start_offset = 0x50;
-		}
-	}
-
 	// Parse the FST.
 	// TODO: Validate the FST and return an error if it doesn't
 	// "look" like an FST?
-	unique_ptr<IFst> fst(new WiiUFst(&fstData[fst_start_offset],
-		static_cast<uint32_t>(fileSize - fst_start_offset)));
+	unique_ptr<IFst> fst(new WiiUFst(fstData.get(), static_cast<uint32_t>(fileSize)));
 	if (!fst->isOpen()) {
 		fprintf(stderr, C_("WiiUFstPrint", "*** ERROR: Could not parse '%s' as WiiUFst."), argv[1]);
 		fputc('\n', stderr);
