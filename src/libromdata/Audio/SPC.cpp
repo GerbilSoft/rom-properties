@@ -584,23 +584,23 @@ unsigned int SPCPrivate::getDurationMs(const SPCPrivate::spc_tags_t &kv)
 	// the intro field. Hence, we'll handle all of them the same way.
 	const int loopCount = data.ivalue;
 
-#define FIELD_DATA_GET_xID6_DURATION(var, tag) do { \
-	const auto leniter = kv.find(tag); \
-	if (leniter != kv.cend()) { \
-		const auto &lendata = leniter->second; \
-		assert(!lendata.isStrIdx); \
-		if (!lendata.isStrIdx) { \
-			var = lendata.uvalue; \
-		} \
-	} \
-} while (0)
+	auto get_xID6_duration = [&kv](SPC_xID6_Item_e tag) -> unsigned int {
+		const auto lenIter = kv.find(tag);
+		if (lenIter != kv.cend()) {
+			const auto &lenData = lenIter->second;
+			assert(!lenData.isStrIdx);
+			if (!lenData.isStrIdx) {
+				return lenData.uvalue;
+			}
+		}
+		return 0;
+	};
 
 	// Get the durations.
-	unsigned int intro = 0, loop = 0, end = 0, fadeout = 0;
-	FIELD_DATA_GET_xID6_DURATION(intro, SPC_xID6_ITEM_INTRO_LENGTH);
-	FIELD_DATA_GET_xID6_DURATION(loop, SPC_xID6_ITEM_LOOP_LENGTH);
-	FIELD_DATA_GET_xID6_DURATION(end, SPC_xID6_ITEM_END_LENGTH);
-	FIELD_DATA_GET_xID6_DURATION(fadeout, SPC_xID6_ITEM_FADE_LENGTH);
+	const unsigned int intro = get_xID6_duration(SPC_xID6_ITEM_INTRO_LENGTH);
+	const unsigned int loop = get_xID6_duration(SPC_xID6_ITEM_LOOP_LENGTH);
+	const unsigned int end = get_xID6_duration(SPC_xID6_ITEM_END_LENGTH);
+	const unsigned int fadeout = get_xID6_duration(SPC_xID6_ITEM_FADE_LENGTH);
 
 	uint64_t total_duration = static_cast<uint64_t>(intro) + static_cast<uint64_t>(end);
 	if (loopCount < 0) {
