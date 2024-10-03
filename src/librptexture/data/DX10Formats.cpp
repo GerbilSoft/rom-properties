@@ -44,6 +44,16 @@ const char *lookup_dxgiFormat(unsigned int dxgiFormat)
 				texFormat = "PVRTC 4bpp RGBA";
 				break;
 
+			case DXGI_FORMAT_FAKE_ATC:
+				texFormat = "ATC";
+				break;
+			case DXGI_FORMAT_FAKE_ATCE:
+				texFormat = "ATC (explicit alpha)";
+				break;
+			case DXGI_FORMAT_FAKE_ATCI:
+				texFormat = "ATC (interpolated alpha)";
+				break;
+
 			default:
 				break;
 		}

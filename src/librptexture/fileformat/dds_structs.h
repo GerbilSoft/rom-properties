@@ -82,6 +82,11 @@ typedef enum {
 	DDPF_FOURCC_PTC2	= 'PTC2',	// PVRTC 2bpp (RGBA)
 	DDPF_FOURCC_PTC4	= 'PTC4',	// PVRTC 4bpp (RGBA)
 
+	// AMD texture compression
+	DDPF_FOURCC_ATC		= 'ATC ',
+	DDPF_FOURCC_ATCE	= 'ATCE',	// explicit alpha
+	DDPF_FOURCC_ATCI	= 'ATCI',	// interpolated alpha
+
 	// ASTC (non-standard)
 	DDPF_FOURCC_ASTC4x4	= 'AS44',
 	DDPF_FOURCC_ASTC5x4	= 'AS54',
@@ -403,10 +408,16 @@ typedef enum {
 	// NOTE: These are NOT actual DXGI format values.
 	// These are here because DirectDrawSurface converts FourCC to DXGI_FORMAT,
 	// so we need fake DXGI values for PVRTC.
-	DXGI_FORMAT_FAKE_START			= 248,
+	DXGI_FORMAT_FAKE_START			= 240,
 	DXGI_FORMAT_FAKE_PVRTC_2bpp		= DXGI_FORMAT_FAKE_START + 1,
 	DXGI_FORMAT_FAKE_PVRTC_4bpp		= DXGI_FORMAT_FAKE_START + 2,
-	DXGI_FORMAT_FAKE_END			= DXGI_FORMAT_FAKE_PVRTC_4bpp,
+
+	// AMD texture compression (https://registry.khronos.org/OpenGL/extensions/AMD/AMD_compressed_ATC_texture.txt)
+	DXGI_FORMAT_FAKE_ATC			= DXGI_FORMAT_FAKE_START + 3,
+	DXGI_FORMAT_FAKE_ATCE			= DXGI_FORMAT_FAKE_START + 4,	// explicit alpha
+	DXGI_FORMAT_FAKE_ATCI			= DXGI_FORMAT_FAKE_START + 5,	// interpolated alpha
+
+	DXGI_FORMAT_FAKE_END			= DXGI_FORMAT_FAKE_ATCI,
 } DXGI_FORMAT;
 
 /**

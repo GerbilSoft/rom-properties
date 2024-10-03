@@ -384,7 +384,7 @@ int DirectDrawSurfacePrivate::updatePixelFormat(void)
 			uint8_t dxgi_format;
 			uint8_t dxgi_alpha;
 		};
-		static const array<fourCC_dxgi_tbl_t, 28> fourCC_dxgi_tbl = {{
+		static const array<fourCC_dxgi_tbl_t, 31> fourCC_dxgi_tbl = {{
 			{DDPF_FOURCC_DXT1, DXGI_FORMAT_BC1_UNORM, DDS_ALPHA_MODE_STRAIGHT},
 			{DDPF_FOURCC_DXT2, DXGI_FORMAT_BC2_UNORM, DDS_ALPHA_MODE_PREMULTIPLIED},
 			{DDPF_FOURCC_DXT3, DXGI_FORMAT_BC2_UNORM, DDS_ALPHA_MODE_STRAIGHT},
@@ -402,6 +402,10 @@ int DirectDrawSurfacePrivate::updatePixelFormat(void)
 			// TODO: PVRTC no-alpha formats?
 			{DDPF_FOURCC_PTC2, DXGI_FORMAT_FAKE_PVRTC_2bpp, DDS_ALPHA_MODE_STRAIGHT},
 			{DDPF_FOURCC_PTC4, DXGI_FORMAT_FAKE_PVRTC_4bpp, DDS_ALPHA_MODE_STRAIGHT},
+
+			{DDPF_FOURCC_ATC, DXGI_FORMAT_FAKE_ATC, DDS_ALPHA_MODE_STRAIGHT},
+			{DDPF_FOURCC_ATCE, DXGI_FORMAT_FAKE_ATCE, DDS_ALPHA_MODE_STRAIGHT},
+			{DDPF_FOURCC_ATCI, DXGI_FORMAT_FAKE_ATCI, DDS_ALPHA_MODE_STRAIGHT},
 
 			{DDPF_FOURCC_ASTC4x4, DXGI_FORMAT_ASTC_4X4_UNORM, DDS_ALPHA_MODE_STRAIGHT},
 			{DDPF_FOURCC_ASTC5x4, DXGI_FORMAT_ASTC_5X4_UNORM, DDS_ALPHA_MODE_STRAIGHT},
@@ -629,6 +633,7 @@ unsigned int DirectDrawSurfacePrivate::calcExpectedSize(int width, int height, i
 		case DXGI_FORMAT_BC4_TYPELESS:
 		case DXGI_FORMAT_BC4_UNORM:
 		//case DXGI_FORMAT_BC4_SNORM:
+		case DXGI_FORMAT_FAKE_ATC:
 			// 16 pixels compressed into 64 bits. (4bpp)
 			// NOTE: Width and height must be rounded to the nearest tile. (4x4)
 			expected_size = ImageSizeCalc::T_calcImageSize(ALIGN_BYTES(4, width), ALIGN_BYTES(4, height)) / 2;
@@ -649,6 +654,8 @@ unsigned int DirectDrawSurfacePrivate::calcExpectedSize(int width, int height, i
 		case DXGI_FORMAT_BC7_TYPELESS:
 		case DXGI_FORMAT_BC7_UNORM:
 		case DXGI_FORMAT_BC7_UNORM_SRGB:
+		case DXGI_FORMAT_FAKE_ATCE:
+		case DXGI_FORMAT_FAKE_ATCI:
 			// 16 pixels compressed into 128 bits. (8bpp)
 			// NOTE: Width and height must be rounded to the nearest tile. (4x4)
 			expected_size = ImageSizeCalc::T_calcImageSize(ALIGN_BYTES(4, width), ALIGN_BYTES(4, height));
