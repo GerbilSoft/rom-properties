@@ -17,10 +17,6 @@ using std::string;
 
 namespace RpDownload {
 
-CurlDownloader::CurlDownloader()
-	: super()
-{}
-
 CurlDownloader::CurlDownloader(const TCHAR *url)
 	: super(url)
 {}

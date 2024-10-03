@@ -372,8 +372,7 @@ const GCN_FST_Entry *GcnFstPrivate::find_path(const char *path) const
  * @param offsetShift File offset shift. (0 = GCN, 2 = Wii)
  */
 GcnFst::GcnFst(const uint8_t *fstData, uint32_t len, uint8_t offsetShift)
-	: super()
-	, d(new GcnFstPrivate(fstData, len, offsetShift))
+	: d(new GcnFstPrivate(fstData, len, offsetShift))
 { }
 
 GcnFst::~GcnFst()

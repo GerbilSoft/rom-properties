@@ -23,8 +23,7 @@ namespace LibRpBase {
  * @param size		[in] File size
  */
 PartitionFile::PartitionFile(const IDiscReaderPtr& partition, off64_t offset, off64_t size)
-	: super()
-	, m_partition(partition)
+	: m_partition(partition)
 	, m_offset(offset)
 	, m_size(size)
 	, m_pos(0)

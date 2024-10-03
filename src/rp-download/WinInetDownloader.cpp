@@ -24,10 +24,6 @@ using std::wstring;
 
 namespace RpDownload {
 
-WinInetDownloader::WinInetDownloader()
-	: super()
-{}
-
 WinInetDownloader::WinInetDownloader(const TCHAR *url)
 	: super(url)
 {}

@@ -417,8 +417,7 @@ const WUP_FST_Entry *WiiUFstPrivate::find_path(const char *path) const
  * @param len Length of fstData, in bytes
  */
 WiiUFst::WiiUFst(const uint8_t *fstData, uint32_t len)
-	: super()
-	, d(new WiiUFstPrivate(fstData, len))
+	: d(new WiiUFstPrivate(fstData, len))
 { }
 
 WiiUFst::~WiiUFst()

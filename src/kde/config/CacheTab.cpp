@@ -63,7 +63,6 @@ public:
 CacheTabPrivate::CacheTabPrivate(CacheTab *q)
 	: q_ptr(q)
 	, thrCleaner(q)
-	, ccCleaner()
 {
 	thrCleaner.setObjectName(QLatin1String("thrCleaner"));
 

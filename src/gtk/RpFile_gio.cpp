@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * RpFile_gio.cpp: IRpFile implementation using GIO/GVfs.                  *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -88,8 +88,7 @@ int RpFileGioPrivate::gioerr_to_posix(gint gioerr)
  * @param uri GVfs URI.
  */
 RpFileGio::RpFileGio(const char *uri)
-	: super()
-	, d_ptr(new RpFileGioPrivate(uri))
+	: d_ptr(new RpFileGioPrivate(uri))
 {
 	init();
 }
@@ -100,8 +99,7 @@ RpFileGio::RpFileGio(const char *uri)
  * @param uri GVfs URI.
  */
 RpFileGio::RpFileGio(const string &uri)
-	: super()
-	, d_ptr(new RpFileGioPrivate(uri))
+	: d_ptr(new RpFileGioPrivate(uri))
 {
 	init();
 }

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (rp-download)                      *
  * CurlDownloader.hpp: libcurl-based file downloader.                      *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -15,7 +15,7 @@ namespace RpDownload {
 class CurlDownloader final : public IDownloader
 {
 public:
-	CurlDownloader();
+	CurlDownloader() = default;
 	explicit CurlDownloader(const TCHAR *url);
 	explicit CurlDownloader(const std::tstring &url);
 

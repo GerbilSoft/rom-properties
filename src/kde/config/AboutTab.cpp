@@ -116,7 +116,6 @@ public:
 AboutTabPrivate::AboutTabPrivate(AboutTab *q)
 	: q_ptr(q)
 	, thrUpdate(q)
-	, updChecker()
 	, checkedForUpdates(false)
 {
 	thrUpdate.setObjectName(QLatin1String("thrUpdate"));

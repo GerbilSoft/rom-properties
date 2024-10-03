@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpfile)                        *
  * MemFile.cpp: IRpFile implementation using a memory buffer.              *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -25,8 +25,7 @@ namespace LibRpFile {
  * @param size Size of memory buffer.
  */
 MemFile::MemFile(const void *buf, size_t size)
-	: super()
-	, m_buf(buf)
+	: m_buf(buf)
 	, m_size(static_cast<off64_t>(size))
 	, m_pos(0)
 	, m_filename(nullptr)
@@ -44,8 +43,7 @@ MemFile::MemFile(const void *buf, size_t size)
  * This initializes everything to nullptr.
  */
 MemFile::MemFile()
-	: super()
-	, m_buf(nullptr)
+	: m_buf(nullptr)
 	, m_size(0)
 	, m_pos(0)
 	, m_filename(nullptr)

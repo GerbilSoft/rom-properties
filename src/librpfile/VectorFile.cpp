@@ -29,8 +29,7 @@ static constexpr off64_t VECTOR_FILE_MAX_SIZE = 128U*1024U*1024U;
  * The resulting IRpFile is writable.
  */
 VectorFile::VectorFile()
-	: super()
-	, m_pVector(new std::vector<uint8_t>())
+	: m_pVector(new std::vector<uint8_t>())
 	, m_pos(0)
 {
 	// Reserve at least 16 KB.

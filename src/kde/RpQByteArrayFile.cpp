@@ -20,8 +20,7 @@ static constexpr off64_t QBYTEARRAYFILE_MAX_SIZE = 128U*1024*1024;
  * The resulting IRpFile is writable.
  */
 RpQByteArrayFile::RpQByteArrayFile()
-	: super()
-	, m_pos(0)
+	: m_pos(0)
 {
 	// Reserve at least 16 KB.
 	m_byteArray.reserve(16*1024);
