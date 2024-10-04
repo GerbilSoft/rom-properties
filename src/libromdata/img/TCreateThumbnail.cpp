@@ -33,6 +33,9 @@
 #include <cassert>
 #include <cstring>
 
+// C++ STL classes
+using std::array;
+
 namespace LibRomData {
 
 /**
@@ -365,7 +368,7 @@ skip_image_check:
 	if (imgpf & RomData::IMGPF_RESCALE_RFT_DIMENSIONS_2) {
 		// Find the second RFT_DIMENSIONS field.
 		const RomFields *const fields = romData->fields();
-		const RomFields::Field *field[2] = {nullptr, nullptr};
+		array<const RomFields::Field*, 2> field = {{nullptr, nullptr}};
 		const auto iter_end = fields->cend();
 		for (auto iter = fields->cbegin(); iter != iter_end; ++iter) {
 			if (iter->type != RomFields::RFT_DIMENSIONS)
@@ -380,7 +383,7 @@ skip_image_check:
 		}
 
 		if (field[1]) {
-			// Found dimensions.
+			// Found rescale dimensions.
 			ImgSize rescaleSize = {
 				field[1]->data.dimensions[0],
 				field[1]->data.dimensions[1],
