@@ -709,7 +709,7 @@ int ELFPrivate::checkSectionHeaders(void)
 					break;
 				}
 
-				// Build ID.
+				// Build ID
 				switch (nhdr->n_descsz) {
 					case 8:
 						build_id_type = "xxHash";
@@ -719,6 +719,9 @@ int ELFPrivate::checkSectionHeaders(void)
 						break;
 					case 20:
 						build_id_type = "sha1";
+						break;
+					case 32:
+						build_id_type = "sha256";
 						break;
 					default:
 						build_id_type = nullptr;
