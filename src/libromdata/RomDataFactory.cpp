@@ -613,19 +613,16 @@ RomDataPtr checkISO(const IRpFilePtr &file)
 #define GetRomDataFns_ISO(sys) \
 	{sys::isRomSupported_static, \
 	 RomData_ctor<sys>}
-	static const RomDataFns_ISO romDataFns_ISO[] = {
+	static const array<RomDataFns_ISO, 3> romDataFns_ISO = {{
 		GetRomDataFns_ISO(PlayStationDisc),
 		GetRomDataFns_ISO(PSP),
 		GetRomDataFns_ISO(XboxDisc),
+	}};
 
-		{nullptr, nullptr}
-	};
-
-	const RomDataFns_ISO *fns = &romDataFns_ISO[0];
-	for (; fns->isRomSupported != nullptr; fns++) {
-		if (fns->isRomSupported(pvd) >= 0) {
+	for (const auto &fns : romDataFns_ISO) {
+		if (fns.isRomSupported(pvd) >= 0) {
 			// This might be the correct RomData subclass.
-			RomDataPtr romData = fns->newRomData(file);
+			RomDataPtr romData = fns.newRomData(file);
 			if (romData->isValid()) {
 				// Found the correct RomData subclass.
 				return romData;
