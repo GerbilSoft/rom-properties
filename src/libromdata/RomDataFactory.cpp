@@ -1095,7 +1095,7 @@ void init_supportedFileExtensions(void)
 
 	for (const auto &tblptr : Private::romDataFns_tbl)
 	{
-		const RomDataFns *fns = tblptr->tbl;
+		const RomDataFns *fns = tblptr.tbl;
 		for (size_t i = tblptr.size; i > 0; i--, fns++) {
 			const char *const *sys_exts = fns->romDataInfo()->exts;
 			if (!sys_exts)
