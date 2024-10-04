@@ -297,7 +297,9 @@ void init_supportedFileExtensions(void)
 	// The actual data is stored in the vector<const char*>.
 	unordered_set<string> set_exts;
 
-	static constexpr size_t reserve_size = ARRAY_SIZE(FileFormatFns_magic);
+	static constexpr size_t reserve_size =
+		(ARRAY_SIZE(Private::FileFormatFns_magic) +
+		 ARRAY_SIZE(Private::FileFormatFns_mime)) * 2;
 	vec_exts.reserve(reserve_size);
 #ifdef HAVE_UNORDERED_SET_RESERVE
 	set_exts.reserve(reserve_size);
@@ -371,7 +373,9 @@ void init_supportedMimeTypes(void)
 	vector<const char*> vec_mimeTypes;
 	unordered_set<string> set_mimeTypes;
 
-	static constexpr size_t reserve_size = ARRAY_SIZE(FileFormatFns_magic) * 2;
+	static constexpr size_t reserve_size =
+		(ARRAY_SIZE(Private::FileFormatFns_magic) +
+		 ARRAY_SIZE(Private::FileFormatFns_mime)) * 2;
 	vec_mimeTypes.reserve(reserve_size);
 #ifdef HAVE_UNORDERED_SET_RESERVE
 	set_mimeTypes.reserve(reserve_size);
