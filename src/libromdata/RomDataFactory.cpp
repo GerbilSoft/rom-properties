@@ -388,7 +388,7 @@ static IDiscReaderPtr IDiscReader_ctor(const IRpFilePtr &file)
 	 magic}
 
 #define P99_PROTECT(...) __VA_ARGS__	/* Reference: https://stackoverflow.com/a/5504336 */
-static const IDiscReaderFns iDiscReaderFns[] = {
+static const array<IDiscReaderFns, 6> iDiscReaderFns = {{
 	GetIDiscReaderFns(CisoGcnReader,	P99_PROTECT({'CISO'})),
 	// NOTE: MSVC doesn't like putting #ifdef within the P99_PROTECT macro.
 	// TODO: Disable ZISO and JISO if LZ4 and LZO aren't available?
@@ -398,9 +398,7 @@ static const IDiscReaderFns iDiscReaderFns[] = {
 	GetIDiscReaderFns(NASOSReader,		P99_PROTECT({'GCML', 'GCMM', 'WII5', 'WII9'})),
 	//GetIDiscReaderFns(WbfsReader,		P99_PROTECT({'WBFS'})),	// Handled separately
 	GetIDiscReaderFns(WuxReader,		P99_PROTECT({'WUX0'})),	// NOTE: Not checking second magic here.
-
-	{nullptr, nullptr, {0}}
-};
+}};
 
 /**
  * Attempt to open the other file in a Dreamcast .VMI+.VMS pair.
@@ -530,16 +528,15 @@ static IDiscReaderPtr openIDiscReader(const IRpFilePtr &file, uint32_t magic0)
 	// NOTE: This was originally for SparseDiscReader subclasses.
 	// DpfReader does not derive from SparseDiscReader, so it was
 	// changed to IDiscReader subclasses.
-	const IDiscReaderFns *sdfns = iDiscReaderFns;
-	for (; sdfns->newIDiscReader != nullptr; sdfns++) {
+	for (const auto &sdfns : iDiscReaderFns) {
 		// Check all four magic numbers.
-		for (unsigned int i = 0; i < ARRAY_SIZE(sdfns->magic); i++) {
-			if (sdfns->magic[i] == 0) {
+		for (unsigned int i = 0; i < ARRAY_SIZE(sdfns.magic); i++) {
+			if (sdfns.magic[i] == 0) {
 				// End of the magic list.
 				break;
-			} else if (sdfns->magic[i] == magic0) {
+			} else if (sdfns.magic[i] == magic0) {
 				// Found a matching magic.
-				IDiscReaderPtr sd = sdfns->newIDiscReader(file);
+				IDiscReaderPtr sd = sdfns.newIDiscReader(file);
 				if (sd->isOpen()) {
 					// IDiscReader obtained.
 					return sd;
