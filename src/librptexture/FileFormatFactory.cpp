@@ -84,6 +84,10 @@ static FileFormatPtr FileFormat_ctor(const IRpFilePtr &file)
 vector<const char*> vec_exts;
 pthread_once_t once_exts = PTHREAD_ONCE_INIT;
 #endif /* FILEFORMATFACTORY_USE_FILE_EXTENSIONS */
+#ifdef FILEFORMATFACTORY_USE_MIME_TYPES
+vector<const char*> vec_mimeTypes;
+pthread_once_t once_mimeTypes = PTHREAD_ONCE_INIT;
+#endif /* FILEFORMATFACTORY_USE_MIME_TYPES */
 
 // FileFormat subclasses that use a header at 0 and
 // definitely have a 32-bit magic number at address 0.
@@ -293,14 +297,14 @@ void init_supportedFileExtensions(void)
 	// The actual data is stored in the vector<const char*>.
 	unordered_set<string> set_exts;
 
-	static constexpr size_t reserve_size = ARRAY_SIZE(Private::FileFormatFns_magic);
+	static constexpr size_t reserve_size = ARRAY_SIZE(FileFormatFns_magic);
 	vec_exts.reserve(reserve_size);
 #ifdef HAVE_UNORDERED_SET_RESERVE
 	set_exts.reserve(reserve_size);
 #endif /* HAVE_UNORDERED_SET_RESERVE */
 
-	const Private::FileFormatFns *fns =
-		&Private::FileFormatFns_magic[0];
+	const FileFormatFns *fns =
+		&FileFormatFns_magic[0];
 	for (; fns->textureInfo != nullptr; fns++) {
 		const char *const *sys_exts = fns->textureInfo()->exts;
 		if (!sys_exts)
@@ -316,7 +320,7 @@ void init_supportedFileExtensions(void)
 	}
 
 	// Also handle FileFormat subclasses that have custom magic checks.
-	fns = &Private::FileFormatFns_mime[0];
+	fns = &FileFormatFns_mime[0];
 	for (; fns->textureInfo != nullptr; fns++) {
 		const char *const *sys_exts = fns->textureInfo()->exts;
 		if (!sys_exts)
@@ -348,13 +352,15 @@ const vector<const char*> &FileFormatFactory::supportedFileExtensions(void)
 #endif /* FILEFORMATFACTORY_USE_FILE_EXTENSIONS */
 
 #ifdef FILEFORMATFACTORY_USE_MIME_TYPES
+namespace Private {
+
 /**
- * Get all supported MIME types.
+ * Initialize the vector of supported MIME types.
  * Used for KFileMetaData.
  *
- * @return All supported MIME types.
+ * Internal function; must be called using pthread_once().
  */
-vector<const char*> FileFormatFactory::supportedMimeTypes(void)
+void init_supportedMimeTypes(void)
 {
 	// TODO: Add generic types, e.g. application/octet-stream?
 
@@ -365,14 +371,14 @@ vector<const char*> FileFormatFactory::supportedMimeTypes(void)
 	vector<const char*> vec_mimeTypes;
 	unordered_set<string> set_mimeTypes;
 
-	static constexpr size_t reserve_size = ARRAY_SIZE(Private::FileFormatFns_magic) * 2;
+	static constexpr size_t reserve_size = ARRAY_SIZE(FileFormatFns_magic) * 2;
 	vec_mimeTypes.reserve(reserve_size);
 #ifdef HAVE_UNORDERED_SET_RESERVE
 	set_mimeTypes.reserve(reserve_size);
 #endif /* HAVE_UNORDERED_SET_RESERVE */
 
-	const Private::FileFormatFns *fns =
-		&Private::FileFormatFns_magic[0];
+	const FileFormatFns *fns =
+		&FileFormatFns_magic[0];
 	for (; fns->textureInfo != nullptr; fns++) {
 		const char *const *sys_mimeTypes = fns->textureInfo()->mimeTypes;
 		if (!sys_mimeTypes)
@@ -388,7 +394,7 @@ vector<const char*> FileFormatFactory::supportedMimeTypes(void)
 	}
 
 	// Also handle FileFormat subclasses that have custom magic checks.
-	fns = &Private::FileFormatFns_mime[0];
+	fns = &FileFormatFns_mime[0];
 	for (; fns->textureInfo != nullptr; fns++) {
 		const char *const *sys_mimeTypes = fns->textureInfo()->mimeTypes;
 		if (!sys_mimeTypes)
@@ -402,8 +408,20 @@ vector<const char*> FileFormatFactory::supportedMimeTypes(void)
 			}
 		}
 	}
+}
 
-	return vec_mimeTypes;
+} // namespace Private
+
+/**
+ * Get all supported MIME types.
+ * Used for KFileMetaData.
+ *
+ * @return All supported MIME types.
+ */
+vector<const char*> FileFormatFactory::supportedMimeTypes(void)
+{
+	pthread_once(&Private::once_mimeTypes, Private::init_supportedMimeTypes);
+	return Private::vec_mimeTypes;
 }
 #endif /* FILEFORMATFACTORY_USE_MIME_TYPES */
 
