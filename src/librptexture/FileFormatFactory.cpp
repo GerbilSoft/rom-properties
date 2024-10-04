@@ -22,6 +22,7 @@ using namespace LibRpFile;
 #include "librpthreads/pthread_once.h"
 
 // C++ STL classes
+using std::array;
 using std::string;
 using std::unordered_set;
 using std::vector;
@@ -92,7 +93,7 @@ pthread_once_t once_mimeTypes = PTHREAD_ONCE_INIT;
 // FileFormat subclasses that use a header at 0 and
 // definitely have a 32-bit magic number at address 0.
 // TODO: Add support for multiple magic numbers per class.
-const FileFormatFns FileFormatFns_magic[] = {
+const array<FileFormatFns, 15> FileFormatFns_magic = {{
 	GetFileFormatFns(ASTC, 0x13ABA15C),	// Needs to be in multi-char constant format.
 	GetFileFormatFns(DirectDrawSurface, 'DDS '),
 	GetFileFormatFns(GodotSTEX, 'GDST'),
@@ -110,19 +111,15 @@ const FileFormatFns FileFormatFns_magic[] = {
 
 	// Less common formats.
 	GetFileFormatFns(DidjTex, (uint32_t)0x03000000),
-
-	{nullptr, nullptr, 0}
-};
+}};
 
 // FileFormat subclasses that have special checks.
 // This array is for file extensions and MIME types only.
-const FileFormatFns FileFormatFns_mime[] = {
+const array<FileFormatFns, 3> FileFormatFns_mime = {{
 	GetFileFormatFns(KhronosKTX, 0),
 	GetFileFormatFns(KhronosKTX2, 0),
 	GetFileFormatFns(TGA, 0),
-
-	{nullptr, nullptr, 0}
-};
+}};
 
 } // namespace Private
 
@@ -255,15 +252,13 @@ FileFormatPtr FileFormatFactory::create(const IRpFilePtr &file)
 
 	// Check FileFormat subclasses that take a header at 0
 	// and definitely have a 32-bit magic number at address 0.
-	const Private::FileFormatFns *fns =
-		&Private::FileFormatFns_magic[0];
-	for (; fns->textureInfo != nullptr; fns++) {
+	for (const auto &fns : Private::FileFormatFns_magic) {
 		// Check the magic number.
-		if (magic.u32[0] == fns->magic) {
+		if (magic.u32[0] == fns.magic) {
 			// Found a matching magic number.
 			// TODO: Implement fns->isTextureSupported.
 			/*if (fns->isTextureSupported(&info) >= 0)*/ {
-				FileFormatPtr fileFormat = fns->newFileFormat(file);
+				FileFormatPtr fileFormat = fns.newFileFormat(file);
 				if (fileFormat->isValid()) {
 					// FileFormat subclass obtained.
 					return FileFormatPtr(fileFormat);
@@ -298,17 +293,15 @@ void init_supportedFileExtensions(void)
 	unordered_set<string> set_exts;
 
 	static constexpr size_t reserve_size =
-		(ARRAY_SIZE(Private::FileFormatFns_magic) +
-		 ARRAY_SIZE(Private::FileFormatFns_mime)) * 2;
+		(FileFormatFns_magic.size() +
+		 FileFormatFns_mime.size()) * 2;
 	vec_exts.reserve(reserve_size);
 #ifdef HAVE_UNORDERED_SET_RESERVE
 	set_exts.reserve(reserve_size);
 #endif /* HAVE_UNORDERED_SET_RESERVE */
 
-	const FileFormatFns *fns =
-		&FileFormatFns_magic[0];
-	for (; fns->textureInfo != nullptr; fns++) {
-		const char *const *sys_exts = fns->textureInfo()->exts;
+	for (const auto &fns : FileFormatFns_magic) {
+		const char *const *sys_exts = fns.textureInfo()->exts;
 		if (!sys_exts)
 			continue;
 
@@ -322,9 +315,8 @@ void init_supportedFileExtensions(void)
 	}
 
 	// Also handle FileFormat subclasses that have custom magic checks.
-	fns = &FileFormatFns_mime[0];
-	for (; fns->textureInfo != nullptr; fns++) {
-		const char *const *sys_exts = fns->textureInfo()->exts;
+	for (const auto &fns : FileFormatFns_mime) {
+		const char *const *sys_exts = fns.textureInfo()->exts;
 		if (!sys_exts)
 			continue;
 
@@ -374,17 +366,15 @@ void init_supportedMimeTypes(void)
 	unordered_set<string> set_mimeTypes;
 
 	static constexpr size_t reserve_size =
-		(ARRAY_SIZE(Private::FileFormatFns_magic) +
-		 ARRAY_SIZE(Private::FileFormatFns_mime)) * 2;
+		(Private::FileFormatFns_magic.size() +
+		 Private::FileFormatFns_mime.size()) * 2;
 	vec_mimeTypes.reserve(reserve_size);
 #ifdef HAVE_UNORDERED_SET_RESERVE
 	set_mimeTypes.reserve(reserve_size);
 #endif /* HAVE_UNORDERED_SET_RESERVE */
 
-	const FileFormatFns *fns =
-		&FileFormatFns_magic[0];
-	for (; fns->textureInfo != nullptr; fns++) {
-		const char *const *sys_mimeTypes = fns->textureInfo()->mimeTypes;
+	for (const auto &fns : FileFormatFns_magic) {
+		const char *const *sys_mimeTypes = fns.textureInfo()->mimeTypes;
 		if (!sys_mimeTypes)
 			continue;
 
@@ -398,9 +388,8 @@ void init_supportedMimeTypes(void)
 	}
 
 	// Also handle FileFormat subclasses that have custom magic checks.
-	fns = &FileFormatFns_mime[0];
-	for (; fns->textureInfo != nullptr; fns++) {
-		const char *const *sys_mimeTypes = fns->textureInfo()->mimeTypes;
+	for (const auto &fns : FileFormatFns_mime) {
+		const char *const *sys_mimeTypes = fns.textureInfo()->mimeTypes;
 		if (!sys_mimeTypes)
 			continue;
 
