@@ -129,6 +129,12 @@ ADD_CUSTOM_TARGET(rom-properties.pot
 		--add-comments=tr:
 		--keyword=_ --keyword=C_:1c,2 --keyword=N_:1,2 --keyword=NC_:1c,2,3
 		--keyword=NOP_ --keyword=NOP_C_:1c,2 --keyword=NOP_N_:1,2 --keyword=NOP_NC_:1c,2,3
+		--keyword=T_ --keyword=TC_:1c,2 --keyword=TN_:1,2 --keyword=TNC_:1c,2,3
+		--keyword=tpgettext_expr:1c,2 --keyword=tdpgettext_expr:2c,3
+		--keyword=tnpgettext_expr:1c,2,3 --keyword=tdnpgettext_expr:2c,3,4
+		--keyword=Q_ --keyword=QC_:1c,2 --keyword=QN_:1,2 --keyword=QNC_:1c,2,3
+		--keyword=qpgettext_expr:1c,2 --keyword=qdpgettext_expr:2c,3
+		--keyword=qnpgettext_expr:1c,2,3 --keyword=qdnpgettext_expr:2c,3,4
 		--keyword=translate:1c,2
 		--language=C++
 		--exclude-file=exclusions.po
