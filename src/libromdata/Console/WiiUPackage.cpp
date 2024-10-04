@@ -107,6 +107,8 @@ WiiUPackagePrivate::~WiiUPackagePrivate()
 void WiiUPackagePrivate::reset(void)
 {
 	free(path);
+	path = nullptr;
+
 	ticket.reset();
 	tmd.reset();
 	fst.reset();
