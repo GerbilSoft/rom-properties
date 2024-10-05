@@ -1031,9 +1031,8 @@ int PowerVR3::getFields(RomFields *fields) const
 		NOP_C_("PowerVR3|Flags", "Compressed"),
 		NOP_C_("PowerVR3|Flags", "Premultipled Alpha"),
 	}};
-	// TODO: i18n
-	vector<string> *const v_flags_names = RomFields::strArrayToVector(
-		/*"PowerVR3|Flags",*/ flags_names.data(), flags_names.size());
+	vector<string> *const v_flags_names = RomFields::strArrayToVector_i18n(
+		"PowerVR3|Flags", flags_names.data(), flags_names.size());
 	fields->addField_bitfield(C_("PowerVR3", "Flags"),
 		v_flags_names, 3, pvr3Header->flags);
 
