@@ -472,7 +472,7 @@ int WiiUPackagePrivate::addFields_System_XMLs(void)
 			NOP_C_("Region", "Taiwan"),
 		}};
 		vector<string> *const v_wiiu_region_bitfield_names = RomFields::strArrayToVector_i18n(
-			"Region", wiiu_region_bitfield_names.data(), wiiu_region_bitfield_names.size());
+			"Region", wiiu_region_bitfield_names);
 		fields.addField_bitfield(C_("RomData", "Region Code"),
 			v_wiiu_region_bitfield_names, 3, region_code);
 
@@ -556,7 +556,7 @@ int WiiUPackagePrivate::addFields_System_XMLs(void)
 			NOP_C_("WiiU|Controller", "Gamepad"),
 		}};
 		vector<string> *const v_controllers_bitfield_names = RomFields::strArrayToVector_i18n(
-			"WiiU|Controller", controllers_bitfield_names.data(), controllers_bitfield_names.size());
+			"WiiU|Controller", controllers_bitfield_names);
 		fields.addField_bitfield(C_("WiiU", "Controllers"),
 			v_controllers_bitfield_names, 3, controllers);
 	}

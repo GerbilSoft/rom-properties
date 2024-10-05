@@ -688,8 +688,7 @@ void EXEPrivate::addFields_PE(void)
 		NOP_C_("EXE|PEFlags", "DLL"),
 		nullptr, nullptr,
 	}};
-	vector<string> *const v_pe_flags_names = RomFields::strArrayToVector_i18n(
-		"EXE|PEFlags", pe_flags_names.data(), pe_flags_names.size());
+	vector<string> *const v_pe_flags_names = RomFields::strArrayToVector_i18n("EXE|PEFlags", pe_flags_names);
 	fields.addField_bitfield(C_("EXE", "PE Flags"),
 		v_pe_flags_names, 3, pe_flags);
 
@@ -708,8 +707,7 @@ void EXEPrivate::addFields_PE(void)
 		NOP_C_("EXE|DLLFlags", "Control Flow Guard"),
 		NOP_C_("EXE|DLLFlags", "TS Aware"),
 	}};
-	vector<string> *const v_dll_flags_names = RomFields::strArrayToVector_i18n(
-		"EXE|DLLFlags", dll_flags_names.data(), dll_flags_names.size());
+	vector<string> *const v_dll_flags_names = RomFields::strArrayToVector_i18n("EXE|DLLFlags", dll_flags_names);
 	fields.addField_bitfield(C_("EXE", "DLL Flags"),
 		v_dll_flags_names, 3, dll_flags);
 
@@ -940,8 +938,7 @@ int EXEPrivate::addFields_PE_Export(void)
 			NOP_C_("EXE|Exports", "Virtual Address"),
 			NOP_C_("EXE|Exports", "File Offset"),
 		}};
-		vector<string> *const v_field_names = RomFields::strArrayToVector_i18n(
-			"EXE|Exports", field_names.data(), field_names.size());
+		vector<string> *const v_field_names = RomFields::strArrayToVector_i18n("EXE|Exports", field_names);
 
 		RomFields::AFLD_PARAMS params;
 		params.flags = RomFields::RFT_LISTDATA_SEPARATE_ROW;
@@ -1160,8 +1157,7 @@ int EXEPrivate::addFields_PE_Import(void)
 		NOP_C_("EXE|Exports", "Hint"),
 		NOP_C_("EXE|Exports", "Module"),
 	}};
-	vector<string> *const v_field_names = RomFields::strArrayToVector_i18n(
-		"EXE|Exports", field_names.data(), field_names.size());
+	vector<string> *const v_field_names = RomFields::strArrayToVector_i18n("EXE|Exports", field_names);
 
 	RomFields::AFLD_PARAMS params;
 	params.flags = RomFields::RFT_LISTDATA_SEPARATE_ROW;

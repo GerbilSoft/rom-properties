@@ -253,8 +253,7 @@ int NSF::loadFieldData(void)
 	} else {
 		bfval = 0;
 	}
-	vector<string> *const v_tv_system_bitfield_names = RomFields::strArrayToVector(
-		tv_system_bitfield_names.data(), tv_system_bitfield_names.size());
+	vector<string> *const v_tv_system_bitfield_names = RomFields::strArrayToVector(tv_system_bitfield_names);
 	d->fields.addField_bitfield(C_("NSF", "TV System"),
 		v_tv_system_bitfield_names, 0, bfval);
 
@@ -263,8 +262,7 @@ int NSF::loadFieldData(void)
 		"Konami VRC6", "Konami VRC7", "2C33 (FDS)",
 		"MMC5", "Namco N163", "Sunsoft 5B",
 	}};
-	vector<string> *const v_expansion_bitfield_names = RomFields::strArrayToVector(
-		expansion_bitfield_names.data(), expansion_bitfield_names.size());
+	vector<string> *const v_expansion_bitfield_names = RomFields::strArrayToVector(expansion_bitfield_names);
 	d->fields.addField_bitfield(C_("NSF", "Expansion"),
 		v_expansion_bitfield_names, 3, nsfHeader->expansion_audio);
 

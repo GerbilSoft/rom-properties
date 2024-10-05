@@ -555,8 +555,7 @@ int WonderSwan::loadFieldData(void)
 		"WonderSwan", "WonderSwan Color"
 	}};
 	// TODO: Localize?
-	vector<string> *const v_system_bitfield_names = RomFields::strArrayToVector(
-		system_bitfield_names.data(), system_bitfield_names.size());
+	vector<string> *const v_system_bitfield_names = RomFields::strArrayToVector(system_bitfield_names);
 	const uint32_t ws_system = (romFooter->system_id & 1) ? 3 : 1;
 	d->fields.addField_bitfield(C_("WonderSwan", "System"),
 		v_system_bitfield_names, 0, ws_system);
@@ -620,7 +619,7 @@ int WonderSwan::loadFieldData(void)
 		NOP_C_("WonderSwan|Features", "RTC Present"),
 	}};
 	vector<string> *const v_ws_feature_bitfield_names = RomFields::strArrayToVector_i18n(
-		"WonderSwan|Features", ws_feature_bitfield_names.data(), ws_feature_bitfield_names.size());
+		"WonderSwan|Features", ws_feature_bitfield_names);
 	d->fields.addField_bitfield(C_("WonderSwan", "Features"),
 		v_ws_feature_bitfield_names, 0, romFooter->rtc_present);
 

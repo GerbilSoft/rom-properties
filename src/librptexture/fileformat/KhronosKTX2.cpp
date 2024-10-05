@@ -1004,8 +1004,7 @@ int KhronosKTX2::getFields(RomFields *fields) const
 
 		// NOTE: Making a copy.
 		RomFields::ListData_t *const p_kv_data = new RomFields::ListData_t(d->kv_data);
-		vector<string> *const v_kv_field_names = RomFields::strArrayToVector_i18n(
-			"KhronosKTX2|KeyValue", kv_field_names.data(), kv_field_names.size());
+		vector<string> *const v_kv_field_names = RomFields::strArrayToVector_i18n("KhronosKTX2|KeyValue", kv_field_names);
 
 		RomFields::AFLD_PARAMS params;
 		params.headers = v_kv_field_names;

@@ -297,8 +297,7 @@ int Intellivision::loadFieldData(void)
 		NOP_C_("Intellivision|Flags", "Run code after title string"),
 		NOP_C_("Intellivision|Flags", "Skip ECS title screen"),
 	}};
-	vector<string> *const v_flags_bitfield_names = RomFields::strArrayToVector_i18n(
-		"Region", flags_bitfield_names.data(), flags_bitfield_names.size());
+	vector<string> *const v_flags_bitfield_names = RomFields::strArrayToVector_i18n("Region", flags_bitfield_names);
 	d->fields.addField_bitfield(C_("RomData", "Flags"),
 		v_flags_bitfield_names, 2, flags);
 

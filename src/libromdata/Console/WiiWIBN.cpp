@@ -467,8 +467,7 @@ int WiiWIBN::loadFieldData(void)
 	static const array<const char*, 1> flags_names = {{
 		NOP_C_("WiiWIBN|Flags", "No Copy"),
 	}};
-	vector<string> *const v_flags_names = RomFields::strArrayToVector_i18n(
-		"WiiWIBN|Flags", flags_names.data(), flags_names.size());
+	vector<string> *const v_flags_names = RomFields::strArrayToVector_i18n("WiiWIBN|Flags", flags_names);
 	d->fields.addField_bitfield(C_("RomData", "Flags"),
 		v_flags_names, 0, be32_to_cpu(wibnHeader->flags));
 

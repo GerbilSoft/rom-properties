@@ -322,7 +322,7 @@ int EXEPrivate::addFields_PE_Manifest(void)
 
 			// Show the bitfield.
 			vector<string> *const v_WindowsSettings_names = RomFields::strArrayToVector_i18n(
-				"EXE|Manifest|WinSettings", WindowsSettings_names.data(), WindowsSettings_names.size());
+				"EXE|Manifest|WinSettings", WindowsSettings_names);
 			fields.addField_bitfield(C_("EXE|Manifest", "Settings"),
 				v_WindowsSettings_names, 2, settings);
 
@@ -409,7 +409,7 @@ int EXEPrivate::addFields_PE_Manifest(void)
 
 			// Show the bitfield.
 			vector<string> *const v_OS_Compatibility_names = RomFields::strArrayToVector_i18n(
-				"EXE|Manifest|OSCompatibility", OS_Compatibility_names.data(), OS_Compatibility_names.size());
+				"EXE|Manifest|OSCompatibility", OS_Compatibility_names);
 			fields.addField_bitfield(C_("EXE|Manifest", "Compatibility"),
 				v_OS_Compatibility_names, 2, compat);
 		}

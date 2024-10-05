@@ -499,7 +499,7 @@ int VGM::loadFieldData(void)
 			NOP_C_("VGM|PSGFlags", "/8 Clock Divider"),
 		}};
 		vector<string> *const v_psg_flags_bitfield_names = RomFields::strArrayToVector_i18n(
-			"VGM|PSGFlags", psg_flags_bitfield_names.data(), psg_flags_bitfield_names.size());
+			"VGM|PSGFlags", psg_flags_bitfield_names);
 		d->fields.addField_bitfield(rp_sprintf(s_flags, chip_name).c_str(),
 			v_psg_flags_bitfield_names, 2, psg_flags);
 	}
@@ -569,7 +569,7 @@ int VGM::loadFieldData(void)
 
 				// TODO: Is AY8910 type needed?
 				vector<string> *const v_ay8910_flags_bitfield_names = RomFields::strArrayToVector_i18n(
-					"VGM|AY8910Flags", ay8910_flags_bitfield_names.data(), ay8910_flags_bitfield_names.size());
+					"VGM|AY8910Flags", ay8910_flags_bitfield_names);
 				d->fields.addField_bitfield(rp_sprintf(s_flags, "YM2203 (AY8910)").c_str(),
 					v_ay8910_flags_bitfield_names, 2, vgmHeader->ym2203_ay8910_flags);
 			}
@@ -589,7 +589,7 @@ int VGM::loadFieldData(void)
 
 				// TODO: Is AY8910 type needed?
 				vector<string> *const v_ay8910_flags_bitfield_names = RomFields::strArrayToVector_i18n(
-					"VGM|AY8910Flags", ay8910_flags_bitfield_names.data(), ay8910_flags_bitfield_names.size());
+					"VGM|AY8910Flags", ay8910_flags_bitfield_names);
 				d->fields.addField_bitfield(rp_sprintf(s_flags, "YM2608 (AY8910)").c_str(),
 					v_ay8910_flags_bitfield_names, 2, vgmHeader->ym2608_ay8910_flags);
 			}
@@ -674,7 +674,7 @@ int VGM::loadFieldData(void)
 						(clk_full & VGM_CLK_FLAG_DUALCHIP) ? d->s_yes : d->s_no);
 
 				vector<string> *const v_ay8910_flags_bitfield_names = RomFields::strArrayToVector_i18n(
-					"VGM|AY8910Flags", ay8910_flags_bitfield_names.data(), ay8910_flags_bitfield_names.size());
+					"VGM|AY8910Flags", ay8910_flags_bitfield_names);
 				d->fields.addField_bitfield(rp_sprintf(s_flags, chip_name).c_str(),
 					v_ay8910_flags_bitfield_names, 2, vgmHeader->ay8910_flags);
 			}

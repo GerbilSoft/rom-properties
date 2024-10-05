@@ -1681,8 +1681,7 @@ int Xbox360_XEX::loadFieldData(void)
 		NOP_C_("Xbox360_XEX", "Delta Patch"),
 		NOP_C_("Xbox360_XEX", "User Mode"),
 	}};
-	vector<string> *const v_module_flags = RomFields::strArrayToVector_i18n(
-		"Xbox360_XEX", module_flags_tbl.data(), module_flags_tbl.size());
+	vector<string> *const v_module_flags = RomFields::strArrayToVector_i18n("Xbox360_XEX", module_flags_tbl);
 	d->fields.addField_bitfield(C_("Xbox360_XEX", "Module Flags"),
 		v_module_flags, 4, xex2Header->module_flags);
 
@@ -1800,8 +1799,7 @@ int Xbox360_XEX::loadFieldData(void)
 		region_code |= (1U << 5) | (1U << 6);
 	}
 
-	vector<string> *const v_region_code = RomFields::strArrayToVector_i18n(
-		"Region", region_code_tbl.data(), region_code_tbl.size());
+	vector<string> *const v_region_code = RomFields::strArrayToVector_i18n("Region", region_code_tbl);
 	d->fields.addField_bitfield(C_("RomData", "Region Code"),
 		v_region_code, 4, region_code);
 

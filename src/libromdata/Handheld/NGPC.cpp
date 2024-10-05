@@ -318,8 +318,7 @@ int NGPC::loadFieldData(void)
 	static const array<const char*, 2> system_bitfield_names = {{
 		"NGP (Monochrome)", "NGP Color"
 	}};
-	vector<string> *const v_system_bitfield_names = RomFields::strArrayToVector(
-		system_bitfield_names.data(), system_bitfield_names.size());
+	vector<string> *const v_system_bitfield_names = RomFields::strArrayToVector(system_bitfield_names);
 	d->fields.addField_bitfield(C_("NGPC", "System"),
 		v_system_bitfield_names, 0,
 			(d->romType == NGPCPrivate::RomType::NGPC ? 3 : 1));

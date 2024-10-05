@@ -668,8 +668,7 @@ int iQuePlayer::loadFieldData(void)
 		"External I/O", "New PI Errors", "USB",
 		"SK Stack RAM"
 	}};
-	vector<string> *const v_hw_access_names = RomFields::strArrayToVector(
-		hw_access_names.data(), hw_access_names.size());
+	vector<string> *const v_hw_access_names = RomFields::strArrayToVector(hw_access_names);
 
 	d->fields.addField_bitfield(C_("iQuePlayer", "HW Access"),
 		v_hw_access_names, 3, be32_to_cpu(bbContentMetaDataHead->hwAccessRights));

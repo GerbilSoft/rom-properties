@@ -647,7 +647,7 @@ int Dreamcast::loadFieldData(void)
 		NOP_C_("Region", "Europe"),
 	}};
 	vector<string> *const v_region_code_bitfield_names = RomFields::strArrayToVector_i18n(
-		"Region", region_code_bitfield_names.data(), region_code_bitfield_names.size());
+		"Region", region_code_bitfield_names);
 	d->fields.addField_bitfield(C_("RomData", "Region Code"),
 		v_region_code_bitfield_names, 0, region_code);
 
@@ -714,7 +714,7 @@ int Dreamcast::loadFieldData(void)
 			NOP_C_("Dreamcast|OSSupport", "VGA Box"),
 		}};
 		vector<string> *const v_os_bitfield_names = RomFields::strArrayToVector_i18n(
-			"Dreamcast|OSSupport", os_bitfield_names.data(), os_bitfield_names.size());
+			"Dreamcast|OSSupport", os_bitfield_names);
 		d->fields.addField_bitfield(C_("Dreamcast", "OS Support"),
 			v_os_bitfield_names, 0, peripherals);
 
@@ -727,7 +727,7 @@ int Dreamcast::loadFieldData(void)
 			NOP_C_("Dreamcast|Expansion", "VMU"),
 		}};
 		vector<string> *const v_expansion_bitfield_names = RomFields::strArrayToVector_i18n(
-			"Dreamcast|Expansion", expansion_bitfield_names.data(), expansion_bitfield_names.size());
+			"Dreamcast|Expansion", expansion_bitfield_names);
 		d->fields.addField_bitfield(C_("Dreamcast", "Expansion Units"),
 			v_expansion_bitfield_names, 0, peripherals >> 8);
 
@@ -748,7 +748,7 @@ int Dreamcast::loadFieldData(void)
 			NOP_C_("Dreamcast|ReqCtrl", "Analog V2"),
 		}};
 		vector<string> *const v_req_controller_bitfield_names = RomFields::strArrayToVector_i18n(
-			"Dreamcast|ReqCtrl", req_controller_bitfield_names.data(), req_controller_bitfield_names.size());
+			"Dreamcast|ReqCtrl", req_controller_bitfield_names);
 		// tr: Required controller features.
 		d->fields.addField_bitfield(C_("Dreamcast", "Req. Controller"),
 			v_req_controller_bitfield_names, 3, peripherals >> 12);
@@ -760,7 +760,7 @@ int Dreamcast::loadFieldData(void)
 			NOP_C_("Dreamcast|OptCtrl", "Mouse"),
 		}};
 		vector<string> *const v_opt_controller_bitfield_names = RomFields::strArrayToVector_i18n(
-			"Dreamcast|OptCtrl", opt_controller_bitfield_names.data(), opt_controller_bitfield_names.size());
+			"Dreamcast|OptCtrl", opt_controller_bitfield_names);
 		// tr: Optional controller features.
 		d->fields.addField_bitfield(C_("Dreamcast", "Opt. Controller"),
 			v_opt_controller_bitfield_names, 0, peripherals >> 25);

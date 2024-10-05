@@ -510,7 +510,7 @@ void MegaDrivePrivate::addFields_romHeader(const MD_RomHeader *pRomHeader, bool 
 		}
 	}
 
-	// Region code.
+	// Region code
 	// NOTE: bRedetectRegion is only used for S&K lock-on,
 	// so we don't need to worry about the Mega CD security program.
 	const uint32_t md_region_check = (unlikely(bRedetectRegion))
@@ -524,7 +524,7 @@ void MegaDrivePrivate::addFields_romHeader(const MD_RomHeader *pRomHeader, bool 
 		NOP_C_("Region", "Europe"),
 	}};
 	vector<string> *const v_region_code_bitfield_names = RomFields::strArrayToVector_i18n(
-		"Region", region_code_bitfield_names.data(), region_code_bitfield_names.size());
+		"Region", region_code_bitfield_names);
 	fields.addField_bitfield(C_("RomData", "Region Code"),
 		v_region_code_bitfield_names, 0, md_region_check);
 
@@ -620,7 +620,7 @@ void MegaDrivePrivate::addFields_vectorTable(const M68K_VectorTable *pVectors)
 		NOP_C_("RomData|VectorTable", "Address"),
 	}};
 	vector<string> *const v_vectors_headers = RomFields::strArrayToVector_i18n(
-		"RomData|VectorTable", vectors_headers.data(), vectors_headers.size());
+		"RomData|VectorTable", vectors_headers);
 
 	RomFields::AFLD_PARAMS params(RomFields::RFT_LISTDATA_SEPARATE_ROW, 8);
 	params.headers = v_vectors_headers;

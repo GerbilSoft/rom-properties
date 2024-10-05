@@ -1400,8 +1400,7 @@ int DirectDrawSurface::getFields(RomFields *fields) const
 		nullptr, nullptr, nullptr,
 		NOP_C_("DirectDrawSurface|dwFlags", "Depth"),
 	}};
-	vector<string> *const v_dwFlags_names = RomFields::strArrayToVector_i18n(
-		"DirectDrawSurface|dwFlags", dwFlags_names.data(), dwFlags_names.size());
+	vector<string> *const v_dwFlags_names = RomFields::strArrayToVector_i18n("DirectDrawSurface|dwFlags", dwFlags_names);
 	fields->addField_bitfield(C_("DirectDrawSurface", "Flags"),
 		v_dwFlags_names, 3, ddsHeader->dwFlags);
 
@@ -1411,8 +1410,7 @@ int DirectDrawSurface::getFields(RomFields *fields) const
 		"sRGB",	// Not translatable
 		NOP_C_("DirectDrawSurface|ddspf", "Normal Map"),
 	}};
-	vector<string> *const v_ddspf_dwFlags_names = RomFields::strArrayToVector_i18n(
-		"DirectDrawSurface|ddspf", ddspf_dwFlags_names.data(), ddspf_dwFlags_names.size());
+	vector<string> *const v_ddspf_dwFlags_names = RomFields::strArrayToVector_i18n("DirectDrawSurface|ddspf", ddspf_dwFlags_names);
 	fields->addField_bitfield(C_("DirectDrawSurface", "PF Flags"),
 		v_ddspf_dwFlags_names, 4, pf_flags_high);
 
@@ -1434,13 +1432,12 @@ int DirectDrawSurface::getFields(RomFields *fields) const
 		nullptr, nullptr,
 		NOP_C_("DirectDrawSurface|dwCaps", "Mipmap"),
 	}};
-	vector<string> *const v_dwCaps_names = RomFields::strArrayToVector_i18n(
-		"DirectDrawSurface|dwFlags", dwCaps_names.data(), dwCaps_names.size());
+	vector<string> *const v_dwCaps_names = RomFields::strArrayToVector_i18n("DirectDrawSurface|dwFlags", dwCaps_names);
 	fields->addField_bitfield(C_("DirectDrawSurface", "Caps"),
 		v_dwCaps_names, 3, ddsHeader->dwCaps);
 
 	// dwCaps2 (rshifted by 8)
-	static const char *const dwCaps2_names[] = {
+	static const array<const char*, 14> dwCaps2_names = {{
 		// 0x100-0x800
 		nullptr,
 		NOP_C_("DirectDrawSurface|dwCaps2", "Cubemap"),
@@ -1456,9 +1453,8 @@ int DirectDrawSurface::getFields(RomFields *fields) const
 		// 0x100000-0x200000
 		nullptr,
 		NOP_C_("DirectDrawSurface|dwCaps2", "Volume"),
-	};
-	vector<string> *const v_dwCaps2_names = RomFields::strArrayToVector_i18n(
-		"DirectDrawSurface|dwCaps2", dwCaps2_names, ARRAY_SIZE(dwCaps2_names));
+	}};
+	vector<string> *const v_dwCaps2_names = RomFields::strArrayToVector_i18n("DirectDrawSurface|dwCaps2", dwCaps2_names);
 	fields->addField_bitfield(C_("DirectDrawSurface", "Caps2"),
 		v_dwCaps2_names, 4, (ddsHeader->dwCaps2 >> 8));
 

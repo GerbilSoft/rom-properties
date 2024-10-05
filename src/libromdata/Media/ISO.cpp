@@ -809,8 +809,7 @@ int ISO::loadFieldData(void)
 				static const array<const char*, 2> boot_platforms_names = {{
 					"x86", "EFI"
 				}};
-				vector<string> *const v_boot_platforms_names = RomFields::strArrayToVector(
-					boot_platforms_names.data(), boot_platforms_names.size());
+				vector<string> *const v_boot_platforms_names = RomFields::strArrayToVector(boot_platforms_names);
 				d->fields.addField_bitfield(C_("ISO", "Boot Platforms"),
 					v_boot_platforms_names, 0, d->boot_platforms);
 

@@ -541,8 +541,7 @@ int MachO::loadFieldData(void)
 			// 0x10000000
 			nullptr, nullptr, nullptr, "DylibInCache",
 		}};
-		vector<string> *const v_flags_bitfield_names = RomFields::strArrayToVector(
-			flags_bitfield_names.data(), flags_bitfield_names.size());
+		vector<string> *const v_flags_bitfield_names = RomFields::strArrayToVector(flags_bitfield_names);
 		d->fields.addField_bitfield(C_("RomData", "Flags"),
 			v_flags_bitfield_names, 3, machHeader->flags);
 	}

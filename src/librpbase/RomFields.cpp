@@ -791,8 +791,8 @@ void RomFields::reserve(int n)
 /**
  * Convert an array of char strings to a vector of std::string.
  * This can be used for addField_bitfield() and addField_listData().
- * @param strArray Array of strings.
- * @param count Number of strings. (nullptrs will be handled as empty strings)
+ * @param strArray Array of strings
+ * @param count Number of strings (nullptrs will be handled as empty strings)
  * @return Allocated std::vector<std::string>.
  */
 vector<string> *RomFields::strArrayToVector(const char *const *strArray, size_t count)
@@ -820,9 +820,9 @@ vector<string> *RomFields::strArrayToVector(const char *const *strArray, size_t 
 /**
  * Convert an array of char strings to a vector of std::string.
  * This can be used for addField_bitfield() and addField_listData().
- * @param msgctxt i18n context.
- * @param strArray Array of strings.
- * @param count Number of strings. (nullptrs will be handled as empty strings)
+ * @param msgctxt i18n context
+ * @param strArray Array of strings
+ * @param count Number of strings (nullptrs will be handled as empty strings)
  * @return Allocated std::vector<std::string>.
  */
 vector<string> *RomFields::strArrayToVector_i18n(const char *msgctxt, const char *const *strArray, size_t count)

@@ -1344,8 +1344,7 @@ int CBMDOS::loadFieldData(void)
 		NOP_C_("CBMDOS|Directory", "Filename"),
 		NOP_C_("CBMDOS|Directory", "Type"),
 	}};
-	vector<string> *const v_dir_headers = RomFields::strArrayToVector_i18n(
-		"CBMDOS|Directory", dir_headers.data(), dir_headers.size());
+	vector<string> *const v_dir_headers = RomFields::strArrayToVector_i18n("CBMDOS|Directory", dir_headers);
 
 	RomFields::AFLD_PARAMS params(has_icons ? (unsigned int)RomFields::RFT_LISTDATA_ICONS : 0, 8);
 	params.headers = v_dir_headers;

@@ -628,8 +628,7 @@ void DMGPrivate::addFields_romHeader(const DMG_RomHeader *pRomHeader)
 	static const array<const char*, 3> system_bitfield_names = {{
 		"DMG", "SGB", "CGB"
 	}};
-	vector<string> *const v_system_bitfield_names = RomFields::strArrayToVector(
-		system_bitfield_names.data(), system_bitfield_names.size());
+	vector<string> *const v_system_bitfield_names = RomFields::strArrayToVector(system_bitfield_names);
 	fields.addField_bitfield(C_("DMG", "System"),
 		v_system_bitfield_names, 0, dmg_system);
 
@@ -682,7 +681,7 @@ void DMGPrivate::addFields_romHeader(const DMG_RomHeader *pRomHeader)
 		NOP_C_("DMG|Features", "Tilt Sensor"),
 	}};
 	vector<string> *const v_feature_bitfield_names = RomFields::strArrayToVector_i18n(
-		"DMG|Features", feature_bitfield_names.data(), feature_bitfield_names.size());
+		"DMG|Features", feature_bitfield_names);
 	fields.addField_bitfield(C_("DMG", "Features"),
 		v_feature_bitfield_names, 3, cart_type.features);
 
@@ -1307,7 +1306,7 @@ int DMG::loadFieldData(void)
 			NOP_C_("DMG|Features", "Timer"),
 		}};
 		vector<string> *const v_gbx_feature_bitfield_names = RomFields::strArrayToVector_i18n(
-			"DMG|Features", gbx_feature_bitfield_names.data(), gbx_feature_bitfield_names.size());
+			"DMG|Features", gbx_feature_bitfield_names);
 		d->fields.addField_bitfield(C_("DMG", "Features"),
 			v_gbx_feature_bitfield_names, 0, gbx_features);
 

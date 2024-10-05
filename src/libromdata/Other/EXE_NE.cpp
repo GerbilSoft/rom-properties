@@ -346,8 +346,7 @@ void EXEPrivate::addFields_NE(void)
 		NOP_C_("EXE|ProgFlags", "80386 insns"),
 		NOP_C_("EXE|ProgFlags", "FPU insns"),
 	}};
-	vector<string> *const v_ProgFlags_names = RomFields::strArrayToVector_i18n(
-		"EXE|ProgFlags", ProgFlags_names.data(), ProgFlags_names.size());
+	vector<string> *const v_ProgFlags_names = RomFields::strArrayToVector_i18n("EXE|ProgFlags", ProgFlags_names);
 	fields.addField_bitfield("Program Flags",
 		v_ProgFlags_names, 2, hdr.ne.ProgFlags);
 
@@ -385,8 +384,7 @@ void EXEPrivate::addFields_NE(void)
 		NOP_C_("EXE|ApplFlags", "Non-Conforming"),
 		NOP_C_("EXE|ApplFlags", "DLL"),
 	}};
-	vector<string> *const v_ApplFlags_names = RomFields::strArrayToVector_i18n(
-		"EXE|ApplFlags", ApplFlags_names.data(), ApplFlags_names.size());
+	vector<string> *const v_ApplFlags_names = RomFields::strArrayToVector_i18n("EXE|ApplFlags", ApplFlags_names);
 	fields.addField_bitfield(C_("EXE", "Application Flags"),
 		v_ApplFlags_names, 2, hdr.ne.ApplFlags);
 
@@ -402,8 +400,7 @@ void EXEPrivate::addFields_NE(void)
 		NOP_C_("EXE|OtherFlags", "Proportional Fonts"),
 		NOP_C_("EXE|OtherFlags", "Gangload Area"),
 	}};
-	vector<string> *const v_OtherFlags_names = RomFields::strArrayToVector_i18n(
-		"EXE|OtherFlags", OtherFlags_names.data(), OtherFlags_names.size());
+	vector<string> *const v_OtherFlags_names = RomFields::strArrayToVector_i18n("EXE|OtherFlags", OtherFlags_names);
 	fields.addField_bitfield(C_("EXE", "Other Flags"),
 		v_OtherFlags_names, 2, hdr.ne.OS2EXEFlags);
 
@@ -710,8 +707,7 @@ int EXEPrivate::addFields_NE_Entry(void)
 			NOP_C_("EXE|Exports", "Address"),
 			NOP_C_("EXE|Exports", "Flags"),
 		}};
-		vector<string> *const v_field_names = RomFields::strArrayToVector_i18n(
-			"EXE|Exports", field_names.data(), field_names.size());
+		vector<string> *const v_field_names = RomFields::strArrayToVector_i18n("EXE|Exports", field_names);
 
 		RomFields::AFLD_PARAMS params;
 		params.flags = RomFields::RFT_LISTDATA_SEPARATE_ROW;
@@ -892,8 +888,7 @@ int EXEPrivate::addFields_NE_Import(void)
 		NOP_C_("EXE|Exports", "Ordinal"),
 		NOP_C_("EXE|Exports", "Module")
 	}};
-	vector<string> *const v_field_names = RomFields::strArrayToVector_i18n(
-		"EXE|Exports", field_names.data(), field_names.size());
+	vector<string> *const v_field_names = RomFields::strArrayToVector_i18n("EXE|Exports", field_names);
 
 	RomFields::AFLD_PARAMS params;
 	params.flags = RomFields::RFT_LISTDATA_SEPARATE_ROW;

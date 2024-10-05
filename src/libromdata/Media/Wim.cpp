@@ -416,8 +416,7 @@ int WimPrivate::addFields_XML()
 		NOP_C_("Wim|Images", "Architecture"),
 		NOP_C_("Wim|Images", "Language"),
 	}};
-	vector<string> *const v_field_names = RomFields::strArrayToVector_i18n(
-		"Wim|Images", field_names.data(), field_names.size());
+	vector<string> *const v_field_names = RomFields::strArrayToVector_i18n("Wim|Images", field_names);
 
 	RomFields::AFLD_PARAMS params;
 	params.flags = RomFields::RFT_LISTDATA_SEPARATE_ROW;
@@ -624,8 +623,7 @@ int Wim::loadFieldData(void)
 
 	const uint32_t wimflags = d->wimHeader.flags;
 
-	vector<string> *const v_wim_flag_names = RomFields::strArrayToVector_i18n(
-		"RomData", wim_flag_names.data(), wim_flag_names.size());
+	vector<string> *const v_wim_flag_names = RomFields::strArrayToVector_i18n("RomData", wim_flag_names);
 	d->fields.addField_bitfield(C_("RomData", "Flags"),
 		v_wim_flag_names, 3, wimflags);
 

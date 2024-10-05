@@ -1176,8 +1176,7 @@ int GodotSTEX::getFields(RomFields *fields) const
 				NOP_C_("GodotSTEX|Flags", "Cubemap"),
 				NOP_C_("GodotSTEX|Flags", "For Streaming"),
 			}};
-			vector<string> *const v_flags_bitfield_names = RomFields::strArrayToVector_i18n(
-				"GodotSTEX|Flags", flags_bitfield_names.data(), flags_bitfield_names.size());
+			vector<string> *const v_flags_bitfield_names = RomFields::strArrayToVector_i18n("GodotSTEX|Flags", flags_bitfield_names);
 			fields->addField_bitfield(C_("GodotSTEX", "Flags"),
 				v_flags_bitfield_names, 3, d->stexHeader.v3.flags);
 			break;
@@ -1233,13 +1232,11 @@ int GodotSTEX::getFields(RomFields *fields) const
 			break;
 		case 3:
 			v_format_flags_bitfield_names = RomFields::strArrayToVector_i18n(
-				"GodotSTEX|FormatFlags", format_flags_bitfield_names_v3.data(),
-					format_flags_bitfield_names_v3.size());
+				"GodotSTEX|FormatFlags", format_flags_bitfield_names_v3);
 			break;
 		case 4:
 			v_format_flags_bitfield_names = RomFields::strArrayToVector_i18n(
-				"GodotSTEX|FormatFlags", format_flags_bitfield_names_v4.data(),
-					format_flags_bitfield_names_v4.size());
+				"GodotSTEX|FormatFlags", format_flags_bitfield_names_v4);
 			break;
 	}
 

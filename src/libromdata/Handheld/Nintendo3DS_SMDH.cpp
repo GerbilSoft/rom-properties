@@ -530,8 +530,7 @@ int Nintendo3DS_SMDH::loadFieldData(void)
 		NOP_C_("Region", "South Korea"),
 		NOP_C_("Region", "Taiwan"),
 	}};
-	vector<string> *const v_n3ds_region_bitfield_names = RomFields::strArrayToVector_i18n(
-		"Region", n3ds_region_bitfield_names.data(), n3ds_region_bitfield_names.size());
+	vector<string> *const v_n3ds_region_bitfield_names = RomFields::strArrayToVector_i18n("Region", n3ds_region_bitfield_names);
 	d->fields.addField_bitfield(C_("RomData", "Region Code"),
 		v_n3ds_region_bitfield_names, 3, le32_to_cpu(smdhHeader->settings.region_code));
 

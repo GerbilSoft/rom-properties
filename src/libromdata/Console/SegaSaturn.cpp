@@ -496,7 +496,7 @@ int SegaSaturn::loadFieldData(void)
 		return -EIO;
 	}
 
-	// Sega Saturn disc header.
+	// Sega Saturn disc header
 	const Saturn_IP0000_BIN_t *const discHeader = &d->discHeader;
 	d->fields.reserve(8);	// Maximum of 8 fields.
 	d->fields.setTabName(0, C_("SegaSaturn", "Saturn"));
@@ -506,46 +506,44 @@ int SegaSaturn::loadFieldData(void)
 		latin1_to_utf8(discHeader->title, sizeof(discHeader->title)),
 		RomFields::STRF_TRIM_END);
 
-	// Publisher.
+	// Publisher
 	d->fields.addField_string(C_("RomData", "Publisher"), d->getPublisher());
 
 	// TODO: Latin-1, cp1252, or Shift-JIS?
 
-	// Product number.
+	// Product number
 	d->fields.addField_string(C_("SegaSaturn", "Product #"),
 		latin1_to_utf8(discHeader->product_number, sizeof(discHeader->product_number)),
 		RomFields::STRF_TRIM_END);
 
-	// Product version.
+	// Product version
 	d->fields.addField_string(C_("RomData", "Version"),
 		latin1_to_utf8(discHeader->product_version, sizeof(discHeader->product_version)),
 		RomFields::STRF_TRIM_END);
 
-	// Release date.
+	// Release date
 	const time_t release_date = d->ascii_yyyymmdd_to_unix_time(discHeader->release_date);
 	d->fields.addField_dateTime(C_("RomData", "Release Date"), release_date,
 		RomFields::RFT_DATETIME_HAS_DATE |
 		RomFields::RFT_DATETIME_IS_UTC  // Date only.
 	);
 
-	// Region code.
+	// Region code
 	// Sega Saturn uses position-independent region code flags.
-	// This is similar to older Mega Drive games, but different
-	// compared to Dreamcast. The region code is parsed in the
-	// constructor, since it might be used for branding purposes
-	// later.
+	// This is similar to older Mega Drive games, but different compared
+	// to Dreamcast. The region code is parsed in the constructor, since
+	// it might be used for branding purposes later.
 	static const array<const char*, 4> region_code_bitfield_names = {{
 		NOP_C_("Region", "Japan"),
 		NOP_C_("Region", "Taiwan"),
 		NOP_C_("Region", "USA"),
 		NOP_C_("Region", "Europe"),
 	}};
-	vector<string> *const v_region_code_bitfield_names = RomFields::strArrayToVector_i18n(
-		"Region", region_code_bitfield_names.data(), region_code_bitfield_names.size());
+	vector<string> *const v_region_code_bitfield_names = RomFields::strArrayToVector_i18n("Region", region_code_bitfield_names);
 	d->fields.addField_bitfield(C_("RomData", "Region Code"),
 		v_region_code_bitfield_names, 0, d->saturn_region);
 
-	// Disc number.
+	// Disc number
 	uint8_t disc_num, disc_total;
 	d->parseDiscNumber(disc_num, disc_total);
 	if (disc_num != 0 && disc_total > 1) {
@@ -556,7 +554,7 @@ int SegaSaturn::loadFieldData(void)
 				disc_num, disc_total));
 	}
 
-	// Peripherals.
+	// Peripherals
 	static const array<const char*, 15> peripherals_bitfield_names = {{
 		NOP_C_("SegaSaturn|Peripherals", "Control Pad"),
 		NOP_C_("SegaSaturn|Peripherals", "Analog Controller"),
@@ -575,7 +573,7 @@ int SegaSaturn::loadFieldData(void)
 		NOP_C_("SegaSaturn|Peripherals", "MPEG Card"),
 	}};
 	vector<string> *const v_peripherals_bitfield_names = RomFields::strArrayToVector_i18n(
-		"SegaSaturn|Peripherals", peripherals_bitfield_names.data(), peripherals_bitfield_names.size());
+		"SegaSaturn|Peripherals", peripherals_bitfield_names);
 	// Parse peripherals.
 	const uint32_t peripherals = d->parsePeripherals(discHeader->peripherals, sizeof(discHeader->peripherals));
 	d->fields.addField_bitfield(C_("SegaSaturn", "Peripherals"),
@@ -622,23 +620,23 @@ int SegaSaturn::loadMetaData(void)
 	// Create the metadata object.
 	d->metaData = new RomMetaData();
 
-	// Sega Saturn disc header.
+	// Sega Saturn disc header
 	const Saturn_IP0000_BIN_t *const discHeader = &d->discHeader;
 	d->metaData->reserve(4);	// Maximum of 4 metadata properties.
 
-	// Title. (TODO: Encoding?)
+	// Title (TODO: Encoding?)
 	d->metaData->addMetaData_string(Property::Title,
 		latin1_to_utf8(discHeader->title, sizeof(discHeader->title)),
 		RomMetaData::STRF_TRIM_END);
 
-	// Publisher.
+	// Publisher
 	d->metaData->addMetaData_string(Property::Publisher, d->getPublisher());
 
-	// Release date.
+	// Release date
 	d->metaData->addMetaData_timestamp(Property::CreationDate,
 		d->ascii_yyyymmdd_to_unix_time(discHeader->release_date));
 
-	// Disc number. (multiple disc sets only)
+	// Disc number (multiple disc sets only)
 	uint8_t disc_num, disc_total;
 	d->parseDiscNumber(disc_num, disc_total);
 	if (disc_num != 0 && disc_total > 1) {

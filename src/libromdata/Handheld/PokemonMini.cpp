@@ -323,8 +323,7 @@ int PokemonMini::loadFieldData(void)
 		NOP_C_("RomData|VectorTable", "Vector"),
 		NOP_C_("RomData|VectorTable", "Address"),
 	}};
-	vector<string> *const v_vectors_headers = RomFields::strArrayToVector_i18n(
-		"RomData|VectorTable", vectors_headers.data(), vectors_headers.size());
+	vector<string> *const v_vectors_headers = RomFields::strArrayToVector_i18n("RomData|VectorTable", vectors_headers);
 
 	RomFields::AFLD_PARAMS params(RomFields::RFT_LISTDATA_SEPARATE_ROW, 8);
 	params.headers = v_vectors_headers;

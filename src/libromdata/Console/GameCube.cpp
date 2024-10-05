@@ -1750,7 +1750,7 @@ int GameCube::loadFieldData(void)
 			NOP_C_("Wii|Partition", "Total Size"),
 		}};
 		vector<string> *const v_partitions_names = RomFields::strArrayToVector_i18n(
-			"Wii|Partition", partitions_names.data(), partitions_names.size());
+			"Wii|Partition", partitions_names);
 
 		RomFields::AFLD_PARAMS params;
 		params.headers = v_partitions_names;

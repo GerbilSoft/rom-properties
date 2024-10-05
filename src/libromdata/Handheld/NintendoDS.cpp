@@ -745,7 +745,7 @@ int NintendoDS::loadFieldData(void)
 		NOP_C_("NintendoDS|SecurityData", "Random Data"),
 	}};
 	vector<string> *const v_nds_security_data_names = RomFields::strArrayToVector_i18n(
-		"NintendoDS|SecurityData", nds_security_data_names.data(), nds_security_data_names.size());
+		"NintendoDS|SecurityData", nds_security_data_names);
 	d->fields.addField_bitfield(C_("NintendoDS", "Security Data"),
 		v_nds_security_data_names, 0, d->secData);
 	d->fieldIdx_secData = static_cast<int>(d->fields.count()-1);
@@ -767,8 +767,7 @@ int NintendoDS::loadFieldData(void)
 	static const array<const char*, 2> hw_bitfield_names = {{
 		"Nintendo DS", "Nintendo DSi"
 	}};
-	vector<string> *const v_hw_bitfield_names = RomFields::strArrayToVector(
-		hw_bitfield_names.data(), hw_bitfield_names.size());
+	vector<string> *const v_hw_bitfield_names = RomFields::strArrayToVector(hw_bitfield_names);
 	d->fields.addField_bitfield(C_("NintendoDS", "Hardware"),
 		v_hw_bitfield_names, 0, hw_type);
 
@@ -793,8 +792,7 @@ int NintendoDS::loadFieldData(void)
 		NOP_C_("Region", "South Korea"),
 		NOP_C_("Region", "China"),
 	}};
-	vector<string> *const v_nds_region_bitfield_names = RomFields::strArrayToVector_i18n(
-		"Region", nds_region_bitfield_names.data(), nds_region_bitfield_names.size());
+	vector<string> *const v_nds_region_bitfield_names = RomFields::strArrayToVector_i18n("Region", nds_region_bitfield_names);
 	d->fields.addField_bitfield(C_("NintendoDS", "DS Region Code"),
 		v_nds_region_bitfield_names, 0, nds_region);
 
@@ -896,8 +894,7 @@ int NintendoDS::loadFieldData(void)
 		NOP_C_("Region", "China"),
 		NOP_C_("Region", "South Korea"),
 	}};
-	vector<string> *const v_dsi_region_bitfield_names = RomFields::strArrayToVector_i18n(
-		"Region", dsi_region_bitfield_names.data(), dsi_region_bitfield_names.size());
+	vector<string> *const v_dsi_region_bitfield_names = RomFields::strArrayToVector_i18n("Region", dsi_region_bitfield_names);
 	d->fields.addField_bitfield(region_code_name,
 		v_dsi_region_bitfield_names, 3, le32_to_cpu(romHeader->dsi.region_code));
 
