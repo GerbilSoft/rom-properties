@@ -530,11 +530,11 @@ static IDiscReaderPtr openIDiscReader(const IRpFilePtr &file, uint32_t magic0)
 	// changed to IDiscReader subclasses.
 	for (const auto &sdfns : iDiscReaderFns) {
 		// Check all four magic numbers.
-		for (unsigned int i = 0; i < ARRAY_SIZE(sdfns.magic); i++) {
-			if (sdfns.magic[i] == 0) {
+		for (const uint32_t magic : sdfns.magic) {
+			if (magic == 0) {
 				// End of the magic list.
 				break;
-			} else if (sdfns.magic[i] == magic0) {
+			} else if (magic == magic0) {
 				// Found a matching magic.
 				IDiscReaderPtr sd = sdfns.newIDiscReader(file);
 				if (sd->isOpen()) {
@@ -1093,8 +1093,7 @@ void init_supportedFileExtensions(void)
 	map_exts.reserve(reserve_size);
 #endif /* HAVE_UNORDERED_MAP_RESERVE */
 
-	for (const auto &tblptr : Private::romDataFns_tbl)
-	{
+	for (const auto &tblptr : Private::romDataFns_tbl) {
 		const RomDataFns *fns = tblptr.tbl;
 		for (size_t i = tblptr.size; i > 0; i--, fns++) {
 			const char *const *sys_exts = fns->romDataInfo()->exts;
@@ -1185,8 +1184,7 @@ void init_supportedMimeTypes(void)
 	set_mimeTypes.reserve(reserve_size);
 #endif /* HAVE_UNORDERED_SET_RESERVE */
 
-	for (const auto &tblptr : Private::romDataFns_tbl)
-	{
+	for (const auto &tblptr : Private::romDataFns_tbl) {
 		const RomDataFns *fns = tblptr.tbl;
 		for (size_t i = tblptr.size; i > 0; i--, fns++) {
 			const char *const *sys_mimeTypes = fns->romDataInfo()->mimeTypes;
