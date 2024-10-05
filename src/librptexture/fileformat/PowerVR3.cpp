@@ -105,9 +105,19 @@ class PowerVR3Private final : public FileFormatPrivate
 		static const array<FmtLkup_t,  0> fmtLkup_tbl_U32;
 #endif
 
+	private:
+		/**
+		 * Calculate the expected size for the image.
+		 * NOTE: Only calculates mipmap 0 (full image).
+		 * @param out_fmt	[out,opt] FmtLkup_t describing the format, if available.
+		 * @return Expected size, or 0 on error.
+		 */
+		size_t calcExpectedSizeForMip0(const FmtLkup_t **out_fmt = nullptr) const;
+
+	public:
 		/**
 		 * Load the image.
-		 * @param mip Mipmap number. (0 == full image)
+		 * @param mip Mipmap number (0 == full image)
 		 * @return Image, or nullptr on error.
 		 */
 		rp_image_const_ptr loadImage(int mip);
@@ -213,8 +223,180 @@ PowerVR3Private::PowerVR3Private(PowerVR3 *q, const IRpFilePtr &file)
 }
 
 /**
+ * Calculate the expected size for the image.
+ * NOTE: Only calculates mipmap 0 (full image).
+ * @param out_fmt	[out,opt] FmtLkup_t describing the format, if available.
+ * @return Expected size, or 0 on error.
+ */
+size_t PowerVR3Private::calcExpectedSizeForMip0(const FmtLkup_t **out_fmt) const
+{
+	const int height = (pvr3Header.height > 0 ? pvr3Header.height : 1);
+
+	if (pvr3Header.channel_depth != 0) {
+		// Uncompressed format
+		// Find a supported format that matches.
+
+		// Only unsigned byte formats are supported right now.
+		// TODO: How do we handle "normalized" versions?
+		if (pvr3Header.channel_type != PVR3_CHTYPE_UBYTE &&
+		    pvr3Header.channel_type != PVR3_CHTYPE_UBYTE_NORM)
+		{
+			// Not unsigned byte.
+			if (out_fmt) {
+				*out_fmt = nullptr;
+			}
+			return 0;
+		}
+
+		// TODO: Check fmtLkup_tbl_U16 too? Need some test files...
+		const FmtLkup_t *fmtLkup = nullptr;
+		for (const auto &p : fmtLkup_tbl_U8) {
+			if (p.pixel_format == pvr3Header.pixel_format &&
+			    p.channel_depth == pvr3Header.channel_depth)
+			{
+				fmtLkup = &p;
+				break;
+			}
+		}
+		if (!fmtLkup) {
+			// Not found.
+			if (out_fmt) {
+				*out_fmt = nullptr;
+			}
+			return 0;
+		}
+
+		// Convert to bytes, rounding up.
+		const unsigned int bytespp = ((fmtLkup->bits + 7) & ~7) / 8;
+
+		// TODO: Minimum row width?
+		// TODO: Does 'rgb' use 24-bit or 32-bit?
+		if (out_fmt) {
+			*out_fmt = fmtLkup;
+		}
+		return ImageSizeCalc::T_calcImageSize(pvr3Header.width, height, bytespp);
+	}
+
+	// Compressed format
+	size_t expected_size = 0;
+	array<int8_t, 2> fmts = {{PVR3_CHTYPE_UBYTE_NORM, PVR3_CHTYPE_UBYTE}};
+	switch (pvr3Header.pixel_format) {
+#ifdef ENABLE_PVRTC
+		case PVR3_PXF_PVRTC_2bpp_RGB:
+		case PVR3_PXF_PVRTC_2bpp_RGBA:
+			// 2bpp formats (PVRTC)
+			// NOTE: Image dimensions must be a power of 2 for PVRTC-I.
+			expected_size = ImageSizeCalc::T_calcImageSizePVRTC_PoT<true>(pvr3Header.width, height);
+			break;
+
+		case PVR3_PXF_PVRTCII_2bpp:
+			// 2bpp formats (PVRTC-II)
+			// NOTE: Width and height must be rounded to the nearest tile. (8x4)
+			// FIXME: Our PVRTC-II decoder requires power-of-2 textures right now.
+			//expected_size = ALIGN_BYTES(8, width) *
+			//                ALIGN_BYTES(4, height) / 4;
+			expected_size = ImageSizeCalc::T_calcImageSizePVRTC_PoT<true>(pvr3Header.width, height);
+			break;
+
+		case PVR3_PXF_PVRTC_4bpp_RGB:
+		case PVR3_PXF_PVRTC_4bpp_RGBA:
+			// 4bpp formats (PVRTC)
+			// NOTE: Image dimensions must be a power of 2 for PVRTC-I.
+			expected_size = ImageSizeCalc::T_calcImageSizePVRTC_PoT<false>(pvr3Header.width, height);
+			break;
+
+		case PVR3_PXF_PVRTCII_4bpp:
+			// 4bpp formats (PVRTC-II)
+			// NOTE: Width and height must be rounded to the nearest tile. (4x4)
+			// FIXME: Our PVRTC-II decoder requires power-of-2 textures right now.
+			//expected_size = ALIGN_BYTES(4, width) *
+			//                ALIGN_BYTES(4, height) / 2;
+			expected_size = ImageSizeCalc::T_calcImageSizePVRTC_PoT<false>(pvr3Header.width, height);
+			break;
+#endif /* ENABLE_PVRTC */
+
+		case PVR3_PXF_ETC1:
+		case PVR3_PXF_DXT1:
+		case PVR3_PXF_BC4:
+		case PVR3_PXF_ETC2_RGB:
+		case PVR3_PXF_ETC2_RGB_A1:
+		case PVR3_PXF_EAC_R11:
+			// 4bpp formats
+			expected_size = ImageSizeCalc::T_calcImageSize(pvr3Header.width, height) / 2;
+			break;
+
+		case PVR3_PXF_DXT2:
+		case PVR3_PXF_DXT3:
+		case PVR3_PXF_DXT4:
+		case PVR3_PXF_DXT5:
+		case PVR3_PXF_BC5:
+		case PVR3_PXF_BC6:
+		case PVR3_PXF_BC7:
+		case PVR3_PXF_ETC2_RGBA:
+		case PVR3_PXF_EAC_RG11:
+			// 8bpp formats
+			expected_size = ImageSizeCalc::T_calcImageSize(pvr3Header.width, height);
+			break;
+
+		case PVR3_PXF_R9G9B9E5:
+			// Uncompressed "special" 32bpp formats.
+			// NOTE: This is a floating-point format.
+			fmts[0] = PVR3_CHTYPE_FLOAT;
+			fmts[1] = -1;
+			expected_size = ImageSizeCalc::T_calcImageSize(pvr3Header.width, height, sizeof(uint32_t));
+			break;
+
+		default:
+#ifdef ENABLE_ASTC
+			if (pvr3Header.pixel_format >= PVR3_PXF_ASTC_4x4 &&
+			    pvr3Header.pixel_format <= PVR3_PXF_ASTC_12x12)
+			{
+				// TODO: PVR3 ASTC 3D formats.
+				static_assert(PVR3_PXF_ASTC_12x12 - PVR3_PXF_ASTC_4x4 + 1 == ARRAY_SIZE(ImageDecoder::astc_lkup_tbl),
+					"ASTC lookup table size is wrong!");
+				const unsigned int astc_idx = pvr3Header.pixel_format - PVR3_PXF_ASTC_4x4;
+				expected_size = ImageSizeCalc::calcImageSizeASTC(pvr3Header.width, height,
+					ImageDecoder::astc_lkup_tbl[astc_idx][0],
+					ImageDecoder::astc_lkup_tbl[astc_idx][1]);
+				break;
+			}
+#endif /* ENABLE_ASTC */
+
+			// TODO: Other formats that aren't actually compressed.
+			//assert(!"Unsupported PowerVR3 compressed format.");
+			break;
+	}
+
+	// No FmtLkup_t for compressed formats.
+	if (out_fmt) {
+		*out_fmt = nullptr;
+	}
+
+	// Make sure the channel type is correct.
+	bool isOK = false;
+	for (const int8_t fmt : fmts) {
+		if (fmt < 0) {
+			break;
+		}
+
+		if (pvr3Header.channel_type == static_cast<uint8_t>(fmt)) {
+			// Found a match.
+			isOK = true;
+			break;
+		}
+	}
+
+	if (!isOK) {
+		// Channel type is incorrect.
+		expected_size = 0;
+	}
+
+	return expected_size;
+}
+
+/**
  * Load the image.
- * @param mip Mipmap number. (0 == full image)
+ * @param mip Mipmap number (0 == full image)
  * @return Image, or nullptr on error.
  */
 rp_image_const_ptr PowerVR3Private::loadImage(int mip)
@@ -294,148 +476,11 @@ rp_image_const_ptr PowerVR3Private::loadImage(int mip)
 	int height = (pvr3Header.height > 0 ? pvr3Header.height : 1);
 
 	// Calculate the expected size.
-	size_t expected_size;
 	const FmtLkup_t *fmtLkup = nullptr;
-	if (pvr3Header.channel_depth != 0) {
-		// Uncompressed format.
-		// Find a supported format that matches.
-
-		// Only unsigned byte formats are supported right now.
-		// TODO: How do we handle "normalized" versions?
-		if (pvr3Header.channel_type != PVR3_CHTYPE_UBYTE &&
-		    pvr3Header.channel_type != PVR3_CHTYPE_UBYTE_NORM)
-		{
-			// Not unsigned byte.
-			return nullptr;
-		}
-
-		// TODO: Check fmtLkup_tbl_U16 too? Need some test files...
-		for (const auto &p : fmtLkup_tbl_U8) {
-			if (p.pixel_format == pvr3Header.pixel_format &&
-			    p.channel_depth == pvr3Header.channel_depth)
-			{
-				fmtLkup = &p;
-				break;
-			}
-		}
-		if (!fmtLkup) {
-			// Not found.
-			return nullptr;
-		}
-
-		// Convert to bytes, rounding up.
-		const unsigned int bytespp = ((fmtLkup->bits + 7) & ~7) / 8;
-
-		// TODO: Minimum row width?
-		// TODO: Does 'rgb' use 24-bit or 32-bit?
-		expected_size = ImageSizeCalc::T_calcImageSize(pvr3Header.width, height, bytespp);
-	} else {
-		// Compressed format.
-		array<int8_t, 2> fmts = {{PVR3_CHTYPE_UBYTE_NORM, PVR3_CHTYPE_UBYTE}};
-		switch (pvr3Header.pixel_format) {
-#ifdef ENABLE_PVRTC
-			case PVR3_PXF_PVRTC_2bpp_RGB:
-			case PVR3_PXF_PVRTC_2bpp_RGBA:
-				// 2bpp formats (PVRTC)
-				// NOTE: Image dimensions must be a power of 2 for PVRTC-I.
-				expected_size = ImageSizeCalc::T_calcImageSizePVRTC_PoT<true>(width, height);
-				break;
-
-			case PVR3_PXF_PVRTCII_2bpp:
-				// 2bpp formats (PVRTC-II)
-				// NOTE: Width and height must be rounded to the nearest tile. (8x4)
-				// FIXME: Our PVRTC-II decoder requires power-of-2 textures right now.
-				//expected_size = ALIGN_BYTES(8, width) *
-				//                ALIGN_BYTES(4, height) / 4;
-				expected_size = ImageSizeCalc::T_calcImageSizePVRTC_PoT<true>(width, height);
-				break;
-
-			case PVR3_PXF_PVRTC_4bpp_RGB:
-			case PVR3_PXF_PVRTC_4bpp_RGBA:
-				// 4bpp formats (PVRTC)
-				// NOTE: Image dimensions must be a power of 2 for PVRTC-I.
-				expected_size = ImageSizeCalc::T_calcImageSizePVRTC_PoT<false>(width, height);
-				break;
-
-			case PVR3_PXF_PVRTCII_4bpp:
-				// 4bpp formats (PVRTC-II)
-				// NOTE: Width and height must be rounded to the nearest tile. (4x4)
-				// FIXME: Our PVRTC-II decoder requires power-of-2 textures right now.
-				//expected_size = ALIGN_BYTES(4, width) *
-				//                ALIGN_BYTES(4, height) / 2;
-				expected_size = ImageSizeCalc::T_calcImageSizePVRTC_PoT<false>(width, height);
-				break;
-#endif /* ENABLE_PVRTC */
-
-			case PVR3_PXF_ETC1:
-			case PVR3_PXF_DXT1:
-			case PVR3_PXF_BC4:
-			case PVR3_PXF_ETC2_RGB:
-			case PVR3_PXF_ETC2_RGB_A1:
-			case PVR3_PXF_EAC_R11:
-				// 4bpp formats
-				expected_size = ImageSizeCalc::T_calcImageSize(width, height) / 2;
-				break;
-
-			case PVR3_PXF_DXT2:
-			case PVR3_PXF_DXT3:
-			case PVR3_PXF_DXT4:
-			case PVR3_PXF_DXT5:
-			case PVR3_PXF_BC5:
-			case PVR3_PXF_BC6:
-			case PVR3_PXF_BC7:
-			case PVR3_PXF_ETC2_RGBA:
-			case PVR3_PXF_EAC_RG11:
-				// 8bpp formats
-				expected_size = ImageSizeCalc::T_calcImageSize(width, height);
-				break;
-
-			case PVR3_PXF_R9G9B9E5:
-				// Uncompressed "special" 32bpp formats.
-				// NOTE: This is a floating-point format.
-				fmts[0] = PVR3_CHTYPE_FLOAT;
-				fmts[1] = -1;
-				expected_size = ImageSizeCalc::T_calcImageSize(width, height, sizeof(uint32_t));
-				break;
-
-			default:
-#ifdef ENABLE_ASTC
-				if (pvr3Header.pixel_format >= PVR3_PXF_ASTC_4x4 &&
-				    pvr3Header.pixel_format <= PVR3_PXF_ASTC_12x12)
-				{
-					// TODO: PVR3 ASTC 3D formats.
-					static_assert(PVR3_PXF_ASTC_12x12 - PVR3_PXF_ASTC_4x4 + 1 == ARRAY_SIZE(ImageDecoder::astc_lkup_tbl),
-						"ASTC lookup table size is wrong!");
-					const unsigned int astc_idx = pvr3Header.pixel_format - PVR3_PXF_ASTC_4x4;
-					expected_size = ImageSizeCalc::calcImageSizeASTC(width, height,
-						ImageDecoder::astc_lkup_tbl[astc_idx][0],
-						ImageDecoder::astc_lkup_tbl[astc_idx][1]);
-					break;
-				}
-#endif /* ENABLE_ASTC */
-
-				// TODO: Other formats that aren't actually compressed.
-				//assert(!"Unsupported PowerVR3 compressed format.");
-				return nullptr;
-		}
-
-		// Make sure the channel type is correct.
-		bool isOK = false;
-		for (const int8_t fmt : fmts) {
-			if (fmt < 0)
-				break;
-
-			if (pvr3Header.channel_type == static_cast<uint8_t>(fmt)) {
-				// Found a match.
-				isOK = true;
-				break;
-			}
-		}
-
-		if (!isOK) {
-			// Channel type is incorrect.
-			return nullptr;
-		}
+	size_t expected_size = calcExpectedSizeForMip0(&fmtLkup);
+	if (unlikely(expected_size == 0)) {
+		// Unable to calculate the expected size.
+		return nullptr;
 	}
 
 	// If we're requesting a mipmap level higher than 0 (full image),
@@ -474,7 +519,7 @@ rp_image_const_ptr PowerVR3Private::loadImage(int mip)
 	// Decode the image.
 	rp_image_ptr img;
 	if (pvr3Header.channel_depth != 0) {
-		// Uncompressed format.
+		// Uncompressed format
 		assert(fmtLkup != nullptr);
 		if (!fmtLkup) {
 			// Shouldn't happen...
@@ -520,7 +565,7 @@ rp_image_const_ptr PowerVR3Private::loadImage(int mip)
 				return nullptr;
 		}
 	} else {
-		// Compressed format.
+		// Compressed format
 		switch (pvr3Header.pixel_format) {
 #ifdef ENABLE_PVRTC
 			case PVR3_PXF_PVRTC_2bpp_RGB:
@@ -894,8 +939,9 @@ PowerVR3::PowerVR3(const IRpFilePtr &file)
 const char *PowerVR3::pixelFormat(void) const
 {
 	RP_D(const PowerVR3);
-	if (!d->isValid)
+	if (!d->isValid) {
 		return nullptr;
+	}
 
 	if (d->invalid_pixel_format[0] != '\0') {
 		return d->invalid_pixel_format;
@@ -959,8 +1005,9 @@ const char *PowerVR3::pixelFormat(void) const
 	uint32_t channel_depth = d->pvr3Header.channel_depth;
 	for (unsigned int i = 0; i < 4 && p_chcnt < &s_chcnt[sizeof(s_chcnt)]; i++, pixel_format >>= 8, channel_depth >>= 8) {
 		const uint8_t pxf = (pixel_format & 0xFF);
-		if (pxf == 0)
+		if (pxf == 0) {
 			break;
+		}
 
 		*p_pxf++ = TOUPPER(pxf);
 		p_chcnt += snprintf(p_chcnt, sizeof(s_chcnt) - (p_chcnt - s_chcnt), "%u", channel_depth & 0xFF);
@@ -989,8 +1036,9 @@ const char *PowerVR3::pixelFormat(void) const
 int PowerVR3::getFields(RomFields *fields) const
 {
 	assert(fields != nullptr);
-	if (!fields)
+	if (!fields) {
 		return 0;
+	}
 
 	RP_D(const PowerVR3);
 	if (!d->isValid) {
@@ -1005,23 +1053,17 @@ int PowerVR3::getFields(RomFields *fields) const
 	// TODO: Handle PVR 1.0 and 2.0 headers.
 	fields->addField_string(C_("PowerVR3", "Version"), "3.0.0");
 
-	// Endianness.
-	const char *endian_str;
-	if (pvr3Header->version == PVR3_VERSION_HOST) {
-		// Matches host-endian.
+	// Endianness
 #if SYS_BYTEORDER == SYS_LIL_ENDIAN
-		endian_str = C_("PowerVR3", "Little-Endian");
-#else /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
-		endian_str = C_("PowerVR3", "Big-Endian");
+#  define HOST_ENDIAN C_("PowerVR3", "Little-Endian")
+#  define SWAP_ENDIAN C_("PowerVR3", "Big-Endian")
+#else /* SYS_BYTEORDER != SYS_LIL_ENDIAN */
+#  define HOST_ENDIAN C_("PowerVR3", "Big-Endian")
+#  define SWAP_ENDIAN C_("PowerVR3", "Little-Endian")
 #endif
-	} else {
-		// Does not match host-endian.
-#if SYS_BYTEORDER == SYS_LIL_ENDIAN
-		endian_str = C_("PowerVR3", "Big-Endian");
-#else /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
-		endian_str = C_("PowerVR3", "Little-Endian");
-#endif
-	}
+	const char *const endian_str = (pvr3Header->version == PVR3_VERSION_HOST)
+		? HOST_ENDIAN
+		: SWAP_ENDIAN;
 	fields->addField_string(C_("PowerVR3", "Endianness"), endian_str);
 
 	// Flags
