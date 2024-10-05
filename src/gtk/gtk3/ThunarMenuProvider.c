@@ -131,7 +131,6 @@ rp_thunar_menu_provider_get_file_menu_items(ThunarxMenuProvider *provider, GtkWi
 {
 	RP_UNUSED(window);
 	assert(RP_IS_THUNAR_MENU_PROVIDER(provider));
-	assert(files != NULL);
 	g_return_val_if_fail(RP_IS_THUNAR_MENU_PROVIDER(provider), NULL);
 	g_return_val_if_fail(files != NULL, NULL);
 

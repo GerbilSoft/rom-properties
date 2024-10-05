@@ -147,7 +147,6 @@ rp_nautilus_menu_provider_get_file_items(
 	GList *files)
 {
 	assert(RP_IS_NAUTILUS_MENU_PROVIDER(provider));
-	assert(files != NULL);
 	g_return_val_if_fail(RP_IS_NAUTILUS_MENU_PROVIDER(provider), NULL);
 	g_return_val_if_fail(files != NULL, NULL);
 #if !GTK_CHECK_VERSION(4,0,0)
