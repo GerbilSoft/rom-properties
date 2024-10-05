@@ -44,7 +44,7 @@ using std::vector;
 // TGA structs.
 #include "fileformat/tga_structs.h"
 
-namespace LibRpTexture {
+namespace LibRpTexture { namespace FileFormatFactory {
 
 namespace Private {
 
@@ -139,7 +139,7 @@ const array<FileFormatFns, 3> FileFormatFns_mime = {{
  * @param file Texture file
  * @return FileFormat subclass, or nullptr if the texture file isn't supported.
  */
-FileFormatPtr FileFormatFactory::create(const IRpFilePtr &file)
+FileFormatPtr create(const IRpFilePtr &file)
 {
 	assert(file != nullptr);
 	if (!file || file->isDevice()) {
@@ -338,7 +338,7 @@ void init_supportedFileExtensions(void)
  *
  * @return All supported file extensions, including the leading dot.
  */
-const vector<const char*> &FileFormatFactory::supportedFileExtensions(void)
+const vector<const char*> &supportedFileExtensions(void)
 {
 	pthread_once(&Private::once_exts, Private::init_supportedFileExtensions);
 	return Private::vec_exts;
@@ -411,11 +411,11 @@ void init_supportedMimeTypes(void)
  *
  * @return All supported MIME types.
  */
-vector<const char*> FileFormatFactory::supportedMimeTypes(void)
+vector<const char*> supportedMimeTypes(void)
 {
 	pthread_once(&Private::once_mimeTypes, Private::init_supportedMimeTypes);
 	return Private::vec_mimeTypes;
 }
 #endif /* FILEFORMATFACTORY_USE_MIME_TYPES */
 
-} // namespace FileFormatFactory
+} }

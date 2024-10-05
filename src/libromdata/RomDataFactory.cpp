@@ -24,7 +24,7 @@ using namespace LibRpFile;
 
 // librptexture
 #include "librptexture/FileFormatFactory.hpp"
-using LibRpTexture::FileFormatFactory;
+using namespace LibRpTexture;
 
 // C++ STL classes
 using std::array;
