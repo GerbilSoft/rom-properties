@@ -2042,7 +2042,6 @@ int GameCube::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) c
 
 	pExtURLs->resize(vsz);
 	auto extURL_iter = pExtURLs->begin();
-	const auto tdb_lc_cend = tdb_lc.cend();
 
 	// Is this not the first disc?
 	if (isDisc2) {
@@ -2052,27 +2051,25 @@ int GameCube::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) c
 		snprintf(discName, sizeof(discName), "%.16s%u",
 			 imageTypeName, static_cast<unsigned int>(discHeader->disc_number) + 1);
 
-		for (auto tdb_iter = tdb_lc.cbegin();
-		     tdb_iter != tdb_lc_cend; ++tdb_iter, ++extURL_iter)
-		{
-			const string lc_str = SystemRegion::lcToStringUpper(*tdb_iter);
+		for (const uint16_t lc : tdb_lc) {
+			const string lc_str = SystemRegion::lcToStringUpper(lc);
 			extURL_iter->url = d->getURL_GameTDB("wii", discName, lc_str.c_str(), id6, ".png");
 			extURL_iter->cache_key = d->getCacheKey_GameTDB("wii", discName, lc_str.c_str(), id6, ".png");
 			extURL_iter->width = sizeDef->width;
 			extURL_iter->height = sizeDef->height;
+			++extURL_iter;
 		}
 	}
 
 	// First disc, or not a disc scan.
-	for (auto tdb_iter = tdb_lc.cbegin();
-	     tdb_iter != tdb_lc_cend; ++tdb_iter, ++extURL_iter)
-	{
-		const string lc_str = SystemRegion::lcToStringUpper(*tdb_iter);
+	for (const uint16_t lc : tdb_lc) {
+		const string lc_str = SystemRegion::lcToStringUpper(lc);
 		extURL_iter->url = d->getURL_GameTDB("wii", imageTypeName, lc_str.c_str(), id6, ".png");
 		extURL_iter->cache_key = d->getCacheKey_GameTDB("wii", imageTypeName, lc_str.c_str(), id6, ".png");
 		extURL_iter->width = sizeDef->width;
 		extURL_iter->height = sizeDef->height;
 		extURL_iter->high_res = false;	// Only one size is available.
+		++extURL_iter;
 	}
 
 	// All URLs added.
