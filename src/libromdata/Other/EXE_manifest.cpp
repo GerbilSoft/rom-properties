@@ -105,11 +105,13 @@ int EXEPrivate::loadWin32ManifestResource(XMLDocument &doc, const char **ppResNa
 
 	// Search for a PE manifest resource.
 	IRpFilePtr f_manifest;
-	unsigned int id_idx;
-	for (id_idx = 0; id_idx < resource_id_tbl.size(); id_idx++) {
-		f_manifest = rsrcReader->open(RT_MANIFEST, resource_id_tbl[id_idx].id, -1);
-		if (f_manifest)
+	const char *res_name = nullptr;
+	for (const resource_id_t &id_idx : resource_id_tbl) {
+		f_manifest = rsrcReader->open(RT_MANIFEST, id_idx.id, -1);
+		if (f_manifest) {
+			res_name = id_idx.name;
 			break;
+		}
 	}
 
 	if (!f_manifest) {
@@ -188,7 +190,7 @@ int EXEPrivate::loadWin32ManifestResource(XMLDocument &doc, const char **ppResNa
 
 	// XML document loaded.
 	if (ppResName) {
-		*ppResName = resource_id_tbl[id_idx].name;
+		*ppResName = res_name;
 	}
 	return 0;
 }
