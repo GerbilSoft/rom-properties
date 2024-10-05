@@ -39,8 +39,8 @@ using LibWin32UI::RegKey;
 // For file extensions
 #include "libromdata/RomDataFactory.hpp"
 #include "librptexture/FileFormatFactory.hpp"
-using LibRpTexture::FileFormatFactory;
 using namespace LibRomData;
+using namespace FileFormatFactory;
 
 // C++ STL classes
 using std::array;
