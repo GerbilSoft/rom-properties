@@ -919,7 +919,7 @@ int SNDH::loadFieldData(void)
 			// No durations. Don't bother showing the list.
 			delete vv_subtune_list;
 		} else {
-			static const char *subtune_list_hdr[3] = {
+			const char *subtune_list_hdr[3] = {
 				NOP_C_("SNDH|SubtuneList", "#"),
 				nullptr, nullptr
 			};
