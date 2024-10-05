@@ -40,7 +40,7 @@ using LibWin32UI::RegKey;
 #include "libromdata/RomDataFactory.hpp"
 #include "librptexture/FileFormatFactory.hpp"
 using namespace LibRomData;
-using namespace FileFormatFactory;
+using namespace LibRpTexture;
 
 // C++ STL classes
 using std::array;
