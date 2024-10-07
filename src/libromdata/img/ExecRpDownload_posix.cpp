@@ -20,7 +20,9 @@
 #endif /* HAVE_POSIX_SPAWN */
 
 // C++ includes
+#include <array>
 #include <string>
+using std::array;
 using std::string;
 
 namespace LibRomData {
@@ -36,17 +38,17 @@ int CacheManager::execRpDownload(const string &filteredCacheKey)
  	static constexpr char rp_download_exe[] = DIR_INSTALL_LIBEXEC "/rp-download";
 
 	// Parameters.
-	const char *const argv[3] = {
+	const std::array<const char*, 3> argv = {{
 		rp_download_exe,
 		filteredCacheKey.c_str(),
 		nullptr
-	};
+	}};
 
 	// Define a minimal environment for cURL.
 	// This will include http_proxy and https_proxy if the proxy URL is set.
 	// TODO: Separate proxies for http and https?
 	// TODO: Only build this once?
-	int pos[5] = {-1, -1, -1, -1, -1};
+	array<int, 5> pos = {{-1, -1, -1, -1, -1}};
 	int count = 0;
 	std::string s_env;
 	s_env.reserve(1024);
@@ -93,7 +95,7 @@ int CacheManager::execRpDownload(const string &filteredCacheKey)
 	}
 
 	// Build envp.
-	const char *envp[5] = {nullptr, nullptr, nullptr, nullptr, nullptr};
+	array<const char*, 5> envp = {{nullptr, nullptr, nullptr, nullptr, nullptr}};
 	unsigned int envp_idx = 0;
 	for (unsigned int i = 0; i < 5; i++) {
 		if (pos[i] >= 0) {
@@ -109,7 +111,8 @@ int CacheManager::execRpDownload(const string &filteredCacheKey)
 	int ret = posix_spawn(&pid, rp_download_exe,
 		nullptr,	// file_actions
 		nullptr,	// attrp
-		(char *const *)argv, (char *const *)envp);
+		(char *const *)argv.data(),
+		(char *const *)envp.data());
 	if (ret != 0) {
 		// Error creating the child process.
 		int err = errno;
@@ -124,7 +127,7 @@ int CacheManager::execRpDownload(const string &filteredCacheKey)
 	pid_t pid = fork();
 	if (pid == 0) {
 		// Child process.
-		int ret = execve(rp_download_exe, (char *const *)argv, (char *const *)envp);
+		int ret = execve(rp_download_exe, (char *const *)argv.data(), (char *const *)envp.data());
 		if (ret != 0) {
 			// execve() failed.
 			exit(EXIT_FAILURE);
@@ -192,4 +195,4 @@ int CacheManager::execRpDownload(const string &filteredCacheKey)
 	return 0;
 }
 
-}
+} // namespace LibRomData

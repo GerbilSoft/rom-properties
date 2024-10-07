@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * CacheManager.hpp: Local cache manager.                                  *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -121,7 +121,7 @@ protected:
 	 * @param filtered_cache_key Filtered cache key.
 	 * @return 0 on success; negative POSIX error code on error.
 	 */
-	int execRpDownload(const std::string &filtered_cache_key);
+	int execRpDownload(const std::string &filteredCacheKey);
 
 protected:
 	std::string m_proxyUrl;
