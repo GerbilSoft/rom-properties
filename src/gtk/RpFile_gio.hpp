@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * RpFile_gio.hpp: IRpFile implementation using GIO/GVfs.                  *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -18,12 +18,19 @@ public:
 	/**
 	 * Open a file.
 	 * NOTE: Files are always opened as read-only in binary mode.
-	 * @param uri GVfs URI.
+	 * @param uri GVfs URI
 	 */
 	explicit RpFileGio(const char *uri);
-	explicit RpFileGio(const std::string &uri);
-private:
-	void init(void);
+
+	/**
+	 * Open a file.
+	 * NOTE: Files are always opened as read-only in binary mode.
+	 * @param uri GVfs URI
+	 */
+	explicit RpFileGio(const std::string &uri)
+		: RpFileGio(uri.c_str())
+	{}
+
 public:
 	~RpFileGio() final;
 

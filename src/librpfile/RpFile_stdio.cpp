@@ -235,27 +235,6 @@ int RpFilePrivate::reOpenFile(void)
 RpFile::RpFile(const char *filename, FileMode mode)
 	: d_ptr(new RpFilePrivate(this, filename, mode))
 {
-	init();
-}
-
-/**
- * Open a file.
- * NOTE: Files are always opened in binary mode.
- * @param filename Filename
- * @param mode File mode
- */
-RpFile::RpFile(const string &filename, FileMode mode)
-	: d_ptr(new RpFilePrivate(this, filename.c_str(), mode))
-{
-	init();
-}
-
-/**
- * Common initialization function for RpFile's constructors.
- * Filename must be set in d->filename.
- */
-void RpFile::init(void)
-{
 	RP_D(RpFile);
 
 #ifndef NDEBUG
@@ -330,6 +309,16 @@ void RpFile::init(void)
 		::fflush(d->file);
 	}
 }
+
+/**
+ * Open a file.
+ * NOTE: Files are always opened in binary mode.
+ * @param filename Filename
+ * @param mode File mode
+ */
+RpFile::RpFile(const string &filename, FileMode mode)
+	: RpFile(filename.c_str(), mode)
+{}
 
 RpFile::~RpFile()
 {
@@ -659,4 +648,4 @@ int RpFile::makeWritable(void)
 	return 0;
 }
 
-}
+} // namespace LibRpFile

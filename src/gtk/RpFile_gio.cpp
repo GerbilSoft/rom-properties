@@ -90,26 +90,6 @@ int RpFileGioPrivate::gioerr_to_posix(gint gioerr)
 RpFileGio::RpFileGio(const char *uri)
 	: d_ptr(new RpFileGioPrivate(uri))
 {
-	init();
-}
-
-/**
- * Open a file.
- * NOTE: Files are always opened as read-only in binary mode.
- * @param uri GVfs URI.
- */
-RpFileGio::RpFileGio(const string &uri)
-	: d_ptr(new RpFileGioPrivate(uri))
-{
-	init();
-}
-
-/**
- * Common initialization function for RpFile's constructors.
- * Filename must be set in d->filename.
- */
-void RpFileGio::init(void)
-{
 	RP_D(RpFileGio);
 	GError *err = nullptr;
 

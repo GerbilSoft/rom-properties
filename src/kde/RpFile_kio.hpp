@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * RpFile_kio.hpp: IRpFile implementation using KIO.                       *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -34,13 +34,24 @@ public:
 	/**
 	 * Open a file.
 	 * NOTE: Files are always opened as read-only in binary mode.
-	 * @param uri KIO URI.
+	 * @param uri KIO URI
 	 */
-	RpFileKio(const char *uri);
-	RpFileKio(const std::string &uri);
-	RpFileKio(const QUrl &uri);
+	explicit RpFileKio(const char *uri);
+
+	/**
+	 * Open a file.
+	 * NOTE: Files are always opened as read-only in binary mode.
+	 * @param uri KIO URI
+	 */
+	explicit RpFileKio(const std::string &uri)
+		: RpFileKio(uri.c_str())
+	{}
+
+	explicit RpFileKio(const QUrl &uri);
+
 private:
 	void init(void);
+
 public:
 	~RpFileKio() override;
 

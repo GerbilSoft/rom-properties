@@ -374,35 +374,8 @@ string GameCubeBNRPrivate::getGameInfoString(const gcn_banner_comment_t *comment
  *
  * @param file Open banner file
  */
-GameCubeBNR::GameCubeBNR(const IRpFilePtr &file)
-	: super(new GameCubeBNRPrivate(file))
-{
-	init();
-}
-
-/**
- * Read a Nintendo GameCube banner file.
- *
- * A save file must be opened by the caller. The file handle
- * will be ref()'d and must be kept open in order to load
- * data from the disc image.
- *
- * To close the file, either delete this object or call close().
- *
- * NOTE: Check isValid() to determine if this is a valid ROM.
- *
- * @param file Open banner file
- */
 GameCubeBNR::GameCubeBNR(const IRpFilePtr &file, uint32_t gcnRegion)
 	: super(new GameCubeBNRPrivate(file, gcnRegion))
-{
-	init();
-}
-
-/**
- * Common initialization function for the constructors.
- */
-void GameCubeBNR::init(void)
 {
 	// This class handles banner files.
 	// NOTE: This will be handled using the same

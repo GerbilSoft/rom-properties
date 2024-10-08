@@ -159,8 +159,8 @@ ENDIF(ENABLE_ACHIEVEMENTS)
 
 # RpFile_kio requires KDE Frameworks 5.
 # FIXME: Dolphin ends up hanging for some reason...
-#SET(rom-properties-kio_SRCS RpFile_kio.cpp)
-#SET(rom-properties-kio_H RpFile_kio.hpp)
+#SET(${PROJECT_NAME}_SRCS ${${PROJECT_NAME}_SRCS} RpFile_kio.cpp)
+#SET(${PROJECT_NAME}_H ${${PROJECT_NAME}_H} RpFile_kio.hpp)
 
 # Qt options:
 # - Fast QString concatenation. (Qt 4.6+, plus 4.8-specific version)

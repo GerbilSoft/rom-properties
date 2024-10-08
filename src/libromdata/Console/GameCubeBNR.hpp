@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * GameCubeBNR.hpp: Nintendo GameCube banner reader.                       *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -12,9 +12,26 @@
 
 namespace LibRomData {
 
-ROMDATA_DECL_BEGIN(GameCubeBNR)
+ROMDATA_DECL_BEGIN_NO_CTOR(GameCubeBNR)
 
 public:
+	/**
+	 * Read a Nintendo GameCube banner file.
+	 *
+	 * A ROM image must be opened by the caller. The file handle
+	 * will be ref()'d and must be kept open in order to load
+	 * data from the ROM image.
+	 *
+	 * To close the file, either delete this object or call close().
+	 *
+	 * NOTE: Check isValid() to determine if this is a valid ROM.
+	 *
+	 * @param file Open banner file
+	 */
+	explicit GameCubeBNR(const LibRpFile::IRpFilePtr &file)
+		: GameCubeBNR(file, ~0U)
+	{}
+
 	/**
 	 * Read a Nintendo GameCube banner file.
 	 *
@@ -31,12 +48,7 @@ public:
 	 */
 	explicit GameCubeBNR(const LibRpFile::IRpFilePtr &file, uint32_t gcnRegion);
 
-private:
-	/**
-	 * Common initialization function for the constructors.
-	 */
-	void init(void);
-
+ROMDATA_DECL_COMMON_FNS()
 ROMDATA_DECL_METADATA()
 ROMDATA_DECL_IMGSUPPORT()
 ROMDATA_DECL_IMGPF()
@@ -58,4 +70,4 @@ public:
 
 ROMDATA_DECL_END()
 
-}
+} // namespace LibRomData

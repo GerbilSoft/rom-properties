@@ -86,25 +86,6 @@ WiiBNRPrivate::WiiBNRPrivate(const IRpFilePtr &file, uint32_t gcnRegion, char id
 /**
  * Read a Nintendo Wii banner file.
  *
- * A save file must be opened by the caller. The file handle
- * will be ref()'d and must be kept open in order to load
- * data from the disc image.
- *
- * To close the file, either delete this object or call close().
- *
- * NOTE: Check isValid() to determine if this is a valid ROM.
- *
- * @param file Open banner file
- */
-WiiBNR::WiiBNR(const IRpFilePtr &file)
-	: super(new WiiBNRPrivate(file))
-{
-	init();
-}
-
-/**
- * Read a Nintendo Wii banner file.
- *
  * A ROM image must be opened by the caller. The file handle
  * will be ref()'d and must be kept open in order to load
  * data from the ROM image.
@@ -119,14 +100,6 @@ WiiBNR::WiiBNR(const IRpFilePtr &file)
  */
 WiiBNR::WiiBNR(const LibRpFile::IRpFilePtr &file, uint32_t gcnRegion, char id4_region)
 	: super(new WiiBNRPrivate(file, gcnRegion, id4_region))
-{
-	init();
-}
-
-/**
- * Common initialization function for the constructors.
- */
-void WiiBNR::init(void)
 {
 	// This class handles banner files.
 	// NOTE: This will be handled using the same

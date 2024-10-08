@@ -346,32 +346,7 @@ RomFields::ListData_t *NintendoDSPrivate::getDSiFlagsStringVector(void)
  *
  * NOTE: Check isValid() to determine if this is a valid ROM.
  *
- * @param file Open ROM image.
- */
-NintendoDS::NintendoDS(const IRpFilePtr &file)
-	: super(new NintendoDSPrivate(file, false))
-{
-	RP_D(NintendoDS);
-	if (!d->file) {
-		// Could not ref() the file handle.
-		return;
-	}
-
-	init();
-}
-
-/**
- * Read a Nintendo DS ROM image.
- *
- * A ROM image must be opened by the caller. The file handle
- * will be ref()'d and must be kept open in order to load
- * data from the ROM image.
- *
- * To close the file, either delete this object or call close().
- *
- * NOTE: Check isValid() to determine if this is a valid ROM.
- *
- * @param file Open ROM image.
+ * @param file Open ROM image
  * @param cia If true, hide fields that aren't relevant to DSiWare in 3DS CIA packages.
  */
 NintendoDS::NintendoDS(const IRpFilePtr &file, bool cia)
@@ -382,16 +357,6 @@ NintendoDS::NintendoDS(const IRpFilePtr &file, bool cia)
 		// Could not ref() the file handle.
 		return;
 	}
-
-	init();
-}
-
-/**
- * Common initialization function for the constructors.
- */
-void NintendoDS::init(void)
-{
-	RP_D(NintendoDS);
 
 	// Read the ROM header.
 	d->file->rewind();

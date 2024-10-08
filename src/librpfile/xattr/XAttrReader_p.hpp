@@ -35,14 +35,6 @@ class XAttrReaderPrivate
 #endif /* !_WIN32 */
 
 	private:
-		/**
-		 * Initialize attributes.
-		 * Internal fd (filename on Windows) must be set.
-		 * @return 0 on success; negative POSIX error code on error.
-		 */
-		int init(void);
-
-	private:
 		RP_DISABLE_COPY(XAttrReaderPrivate)
 
 	public:
@@ -120,4 +112,4 @@ class XAttrReaderPrivate
 		XAttrReader::XAttrList genericXAttrs;
 };
 
-}
+} // namespace LibRpFile

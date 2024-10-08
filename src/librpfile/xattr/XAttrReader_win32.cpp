@@ -36,23 +36,15 @@ namespace LibRpFile {
 
 /** XAttrReaderPrivate **/
 
+#ifdef _UNICODE
 XAttrReaderPrivate::XAttrReaderPrivate(const char *filename)
-	: filename(U82T_c(filename))
-	, lastError(0)
-	, hasExt2Attributes(false)
-	, hasXfsAttributes(false)
-	, hasDosAttributes(false)
-	, hasGenericXAttrs(false)
-	, ext2Attributes(0)
-	, xfsXFlags(0)
-	, xfsProjectId(0)
-	, dosAttributes(0)
-{
-	init();
-}
+	: XAttrReaderPrivate(U82T_c(filename))
+{}
 
-#ifdef UNICODE
 XAttrReaderPrivate::XAttrReaderPrivate(const wchar_t *filename)
+#else /* !_UNICODE */
+XAttrReaderPrivate::XAttrReaderPrivate(const char *filename)
+#endif /* _UNICODE */
 	: filename(filename)
 	, lastError(0)
 	, hasExt2Attributes(false)
@@ -64,17 +56,6 @@ XAttrReaderPrivate::XAttrReaderPrivate(const wchar_t *filename)
 	, xfsProjectId(0)
 	, dosAttributes(0)
 {
-	init();
-}
-#endif /* UNICODE */
-
-/**
- * Initialize attributes.
- * Internal fd (filename on Windows) must be set.
- * @return 0 on success; negative POSIX error code on error.
- */
-int XAttrReaderPrivate::init(void)
-{
 	// NOTE: While there is a GetFileInformationByHandle() function,
 	// there's no easy way to get alternate data streams using a
 	// handle from the file, so we'll just use the filename.
@@ -84,7 +65,6 @@ int XAttrReaderPrivate::init(void)
 	loadXfsAttrs();
 	loadDosAttrs();
 	loadGenericXattrs();
-	return 0;
 }
 
 /**
@@ -298,4 +278,4 @@ int XAttrReaderPrivate::loadGenericXattrs(void)
 	return loadGenericXattrs_BackupRead();
 }
 
-}
+} // namespace LibRpFile

@@ -149,7 +149,12 @@ XAttrReaderPrivate::XAttrReaderPrivate(const char *filename)
 	}
 
 	// Initialize attributes.
-	lastError = init();
+	loadExt2Attrs();
+	loadXfsAttrs();
+	loadDosAttrs();
+	loadGenericXattrs();
+
+	lastError = 0;
 	close(fd);
 	fd = -1;
 }
@@ -160,55 +165,6 @@ XAttrReaderPrivate::~XAttrReaderPrivate()
 	if (fd >= 0) {
 		close(fd);
 	}
-}
-
-/**
- * Initialize attributes.
- * Internal fd (filename on Windows) must be set.
- * @return 0 on success; negative POSIX error code on error.
- */
-int XAttrReaderPrivate::init(void)
-{
-	// Verify the file type again using fstat().
-	mode_t mode;
-
-#ifdef HAVE_STATX
-	struct statx sbx;
-	int ret = statx(fd, "", AT_EMPTY_PATH, STATX_TYPE, &sbx);
-	if (ret != 0 || !(sbx.stx_mask & STATX_TYPE)) {
-		// An error occurred.
-		int err = -errno;
-		if (err == 0) {
-			err = -EIO;
-		}
-		return err;
-	}
-	mode = sbx.stx_mode;
-#else /* !HAVE_STATX */
-	struct stat sb;
-	errno = 0;
-	if (fstat(fd, &sb) != 0) {
-		// fstat() failed.
-		int err = -errno;
-		if (err == 0) {
-			err = -EIO;
-		}
-		return err;
-	}
-	mode = sb.st_mode;
-#endif /* HAVE_STATX */
-
-	if (!S_ISREG(mode) && !S_ISDIR(mode)) {
-		// This is neither a regular file nor a directory.
-		return -ENOTSUP;
-	}
-
-	// Load the attributes.
-	loadExt2Attrs();
-	loadXfsAttrs();
-	loadDosAttrs();
-	loadGenericXattrs();
-	return 0;
 }
 
 /**
@@ -500,4 +456,4 @@ int XAttrReaderPrivate::loadGenericXattrs(void)
 	return 0;
 }
 
-}
+} // namespace LibRpFile

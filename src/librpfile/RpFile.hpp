@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpfile)                        *
  * RpFile.hpp: Standard file object.                                       *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -68,8 +68,6 @@ class RpFile final : public IRpFile
 		RpFile(const std::wstring &filenameW, FileMode mode);
 #endif /* _WIN32 */
 
-	private:
-		void init(void);
 	public:
 		RP_LIBROMDATA_PUBLIC
 		~RpFile() final;
@@ -288,4 +286,4 @@ class RpFile final : public IRpFile
 		int setKreonLockState(KreonLockState lockState);
 };
 
-}
+} // namespace LibRpFile

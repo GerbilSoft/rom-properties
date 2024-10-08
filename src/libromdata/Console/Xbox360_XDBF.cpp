@@ -1553,37 +1553,7 @@ int Xbox360_XDBF_Private::addFields_achievements_GPD(void)
  *
  * NOTE: Check isValid() to determine if this is a valid ROM.
  *
- * @param file Open XDBF file and/or section.
- */
-Xbox360_XDBF::Xbox360_XDBF(const IRpFilePtr &file)
-	: super(new Xbox360_XDBF_Private(file, false))
-{
-	// This class handles XDBF files and/or sections only.
-	// NOTE: Using the same image settings as Xbox360_XEX.
-	RP_D(Xbox360_XDBF);
-	d->mimeType = "application/x-xbox360-xdbf";	// unofficial, not on fd.o
-	d->fileType = FileType::ResourceFile;
-
-	if (!d->file) {
-		// Could not ref() the file handle.
-		return;
-	}
-
-	init();
-}
-
-/**
- * Read an Xbox 360 XDBF file and/or section.
- *
- * A ROM image must be opened by the caller. The file handle
- * will be ref()'d and must be kept open in order to load
- * data from the file.
- *
- * To close the file, either delete this object or call close().
- *
- * NOTE: Check isValid() to determine if this is a valid ROM.
- *
- * @param file Open XDBF file and/or section.
+ * @param file Open XDBF file and/or section
  * @param xex If true, hide fields that are displayed separately in XEX executables.
  */
 Xbox360_XDBF::Xbox360_XDBF(const IRpFilePtr &file, bool xex)
@@ -1598,16 +1568,6 @@ Xbox360_XDBF::Xbox360_XDBF(const IRpFilePtr &file, bool xex)
 		// Could not ref() the file handle.
 		return;
 	}
-
-	init();
-}
-
-/**
- * Common initialization function for the constructors.
- */
-void Xbox360_XDBF::init(void)
-{
-	RP_D(Xbox360_XDBF);
 
 	// Read the Xbox360_XDBF header.
 	// NOTE: Reading 512 bytes so we can detect SPA vs. GPD.

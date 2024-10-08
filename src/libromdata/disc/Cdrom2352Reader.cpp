@@ -54,22 +54,16 @@ Cdrom2352ReaderPrivate::Cdrom2352ReaderPrivate(Cdrom2352Reader *q, unsigned int 
 
 /** Cdrom2352Reader **/
 
-Cdrom2352Reader::Cdrom2352Reader(const IRpFilePtr &file)
-	: super(new Cdrom2352ReaderPrivate(this, 2352), file)
-{
-	init();
-}
-
+/**
+ * Construct a Cdrom2352Reader with the specified file.
+ * The file is ref()'d, so the original file can be
+ * unref()'d by the caller afterwards.
+ *
+ * @param file File to read from
+ * @param physBlockSize Sector size (2352, 2446)
+ */
 Cdrom2352Reader::Cdrom2352Reader(const IRpFilePtr &file, unsigned int physBlockSize)
 	: super(new Cdrom2352ReaderPrivate(this, physBlockSize), file)
-{
-	init();
-}
-
-/**
- * Common initialization function.
- */
-void Cdrom2352Reader::init(void)
 {
 	if (!m_file) {
 		// File could not be ref()'d.
@@ -209,4 +203,4 @@ int Cdrom2352Reader::readBlock(uint32_t blockIdx, int pos, void *ptr, size_t siz
 	return static_cast<int>(size);
 }
 
-}
+} // namespace LibRomData

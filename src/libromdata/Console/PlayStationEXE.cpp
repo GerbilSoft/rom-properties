@@ -87,37 +87,8 @@ PlayStationEXEPrivate::PlayStationEXEPrivate(const IRpFilePtr &file, uint32_t sp
  *
  * NOTE: Check isValid() to determine if this is a valid ROM.
  *
- * @param file Open PS-X executable file.
- */
-PlayStationEXE::PlayStationEXE(const IRpFilePtr &file)
-	: super(new PlayStationEXEPrivate(file, 0))
-{
-	// This class handles executables.
-	RP_D(PlayStationEXE);
-	d->mimeType = "application/x-ps1-executable";	// unofficial, not on fd.o
-	d->fileType = FileType::Executable;
-
-	if (!d->file) {
-		// Could not ref() the file handle.
-		return;
-	}
-
-	init();
-}
-
-/**
- * Read a PlayStation PS-X executable file.
- *
- * A ROM image must be opened by the caller. The file handle
- * will be ref()'d and must be kept open in order to load
- * data from the disc image.
- *
- * To close the file, either delete this object or call close().
- *
- * NOTE: Check isValid() to determine if this is a valid ROM.
- *
- * @param file Open PS-X executable file.
- * @param sp_override Stack pointer override.
+ * @param file Open PS-X executable file
+ * @param sp_override Stack pointer override (0 for none)
  */
 PlayStationEXE::PlayStationEXE(const IRpFilePtr &file, uint32_t sp_override)
 	: super(new PlayStationEXEPrivate(file, sp_override))
@@ -131,16 +102,6 @@ PlayStationEXE::PlayStationEXE(const IRpFilePtr &file, uint32_t sp_override)
 		// Could not ref() the file handle.
 		return;
 	}
-
-	init();
-}
-
-/**
- * Common initialization function for the constructors.
- */
-void PlayStationEXE::init(void)
-{
-	RP_D(PlayStationEXE);
 
 	// Read the PS-X EXE header.
 	d->file->rewind();

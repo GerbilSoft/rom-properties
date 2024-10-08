@@ -119,18 +119,6 @@ RpFileKio::RpFileKio(const char *uri)
  * NOTE: Files are always opened as read-only in binary mode.
  * @param uri KIO URI.
  */
-RpFileKio::RpFileKio(const string &uri)
-	: super()
-	, d_ptr(new RpFileKioPrivate(this, uri.c_str()))
-{
-	init();
-}
-
-/**
- * Open a file.
- * NOTE: Files are always opened as read-only in binary mode.
- * @param uri KIO URI.
- */
 RpFileKio::RpFileKio(const QUrl &uri)
 	: super()
 	, d_ptr(new RpFileKioPrivate(this, uri))

@@ -661,38 +661,11 @@ rp_image_const_ptr PalmOS_Tbmp_Private::loadTbmp(void)
  *
  * NOTE: Check isValid() to determine if this is a valid ROM.
  *
- * @param file Open image file.
- */
-PalmOS_Tbmp::PalmOS_Tbmp(const IRpFilePtr &file)
-	: super(new PalmOS_Tbmp_Private(this, file, 0))
-{
-	init();
-}
-
-/**
- * Read a Palm OS Tbmp image file.
- *
- * A ROM image must be opened by the caller. The file handle
- * will be ref()'d and must be kept open in order to load
- * data from the ROM image.
- *
- * To close the file, either delete this object or call close().
- *
- * NOTE: Check isValid() to determine if this is a valid ROM.
- *
- * @param file Open file.
+ * @param file Open Palm OS Tbmp image file
  * @param bitmapTypeAddr Starting address of the BitmapType header in the file.
  */
 PalmOS_Tbmp::PalmOS_Tbmp(const IRpFilePtr &file, off64_t bitmapTypeAddr)
 	: super(new PalmOS_Tbmp_Private(this, file, bitmapTypeAddr))
-{
-	init();
-}
-
-/**
- * Internal initialization function.
- */
-void PalmOS_Tbmp::init(void)
 {
 	RP_D(PalmOS_Tbmp);
 	d->mimeType = "image/x-palm-tbmp";	// unofficial, not on fd.o
@@ -869,4 +842,4 @@ rp_image_const_ptr PalmOS_Tbmp::image(void) const
 	return const_cast<PalmOS_Tbmp_Private*>(d)->loadTbmp();
 }
 
-}
+} // namespace LibRpTexture

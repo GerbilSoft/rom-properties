@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * RomData_decl.hpp: ROM data base class. (Subclass macros)                *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * Copyright (c) 2016-2018 by Egor.                                        *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
@@ -24,20 +24,44 @@ namespace LibRpBase {
 
 /**
  * Initial declaration for a RomData subclass.
- * Declares functions common to all RomData subclasses.
+ *
+ * No constructor is included with this version.
+ * ROMDATA_DECL_COMMON_FNS() must be used afterwards.
+ *
  * @param klass Class name
  */
-#define ROMDATA_DECL_BEGIN(klass) \
+#define ROMDATA_DECL_BEGIN_NO_CTOR(klass) \
 class klass##Private; \
 class klass final : public LibRpBase::RomData { \
-public: \
-	explicit klass(const LibRpFile::IRpFilePtr &file); \
-\
 private: \
 	typedef RomData super; \
 	friend class klass##Private; \
 	RP_DISABLE_COPY(klass); \
-\
+
+/**
+ * Default constructor for a RomData subclass.
+ */
+#define ROMDATA_DECL_CTOR_DEFAULT(klass) \
+public: \
+	/**
+	 * Read a ROM image. \
+	 * \
+	 * A ROM image must be opened by the caller. The file handle \
+	 * will be ref()'d and must be kept open in order to load \
+	 * data from the ROM image. \
+	 * \
+	 * To close the file, either delete this object or call close(). \
+	 * \
+	 * NOTE: Check isValid() to determine if this is a valid ROM. \
+	 * \
+	 * @param file Open ROM image \
+	 */ \
+	explicit klass(const LibRpFile::IRpFilePtr &file);
+
+/**
+ * Common functions for a RomData subclass.
+ */
+#define ROMDATA_DECL_COMMON_FNS() \
 public: \
 	/** \
 	 * Is a ROM image supported by this class? \
@@ -74,6 +98,16 @@ protected: \
 	 */ \
 	RP_LIBROMDATA_LOCAL \
 	int loadFieldData(void) final;
+
+/**
+ * Initial declaration for a RomData subclass.
+ * Declares functions common to all RomData subclasses.
+ * @param klass Class name
+ */
+#define ROMDATA_DECL_BEGIN(klass) \
+ROMDATA_DECL_BEGIN_NO_CTOR(klass) \
+ROMDATA_DECL_CTOR_DEFAULT(klass) \
+ROMDATA_DECL_COMMON_FNS()
 
 /**
  * RomData subclass function declaration for loading metadata properties.

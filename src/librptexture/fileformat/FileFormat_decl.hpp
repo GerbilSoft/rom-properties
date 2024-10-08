@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * FileFormat_decl.hpp: Texture file format base class. (Subclass macros)  *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * Copyright (c) 2016-2018 by Egor.                                        *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
@@ -38,19 +38,44 @@ public: \
 
 /**
  * Initial declaration for a FileFormat subclass.
- * Declares functions common to all FileFormat subclasses.
+ *
+ * No constructor is included with this version.
+ * ROMDATA_DECL_COMMON_FNS() must be used afterwards.
+ *
+ * @param klass Class name
  */
-#define FILEFORMAT_DECL_BEGIN(klass) \
+#define FILEFORMAT_DECL_BEGIN_NO_CTOR(klass) \
 class klass##Private; \
 class klass final : public LibRpTexture::FileFormat { \
-public: \
-	explicit klass(const LibRpFile::IRpFilePtr &file); \
-\
 private: \
 	typedef FileFormat super; \
 	friend class klass##Private; \
 	RP_DISABLE_COPY(klass); \
-\
+
+/**
+ * Default constructor for a FileFormat subclass.
+ */
+#define FILEFORMAT_DECL_CTOR_DEFAULT(klass) \
+public: \
+	/** \
+	 * Read a texture file file. \
+	 * \
+	 * A ROM image must be opened by the caller. The file handle \
+	 * will be ref()'d and must be kept open in order to load \
+	 * data from the ROM image. \
+	 * \
+	 * To close the file, either delete this object or call close(). \
+	 * \
+	 * NOTE: Check isValid() to determine if this is a valid ROM. \
+	 * \
+	 * @param file Open texture file \
+	 */ \
+	explicit klass(const LibRpFile::IRpFilePtr &file);
+
+/**
+ * Common functions for a FileFormat subclass.
+ */
+#define FILEFORMAT_DECL_COMMON_FNS() \
 public: \
 	/** Class-specific functions that can be used even if isValid() is false. **/ \
 \
@@ -81,6 +106,16 @@ public: \
 	 * @return Image, or nullptr on error. \
 	 */ \
 	LibRpTexture::rp_image_const_ptr image(void) const final; \
+
+/**
+ * Initial declaration for a RomData subclass.
+ * Declares functions common to all RomData subclasses.
+ * @param klass Class name
+ */
+#define FILEFORMAT_DECL_BEGIN(klass) \
+FILEFORMAT_DECL_BEGIN_NO_CTOR(klass) \
+FILEFORMAT_DECL_CTOR_DEFAULT(klass) \
+FILEFORMAT_DECL_COMMON_FNS()
 
 /**
  * FileFormat subclass function declaration for closing the internal file handle.

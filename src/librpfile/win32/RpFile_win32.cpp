@@ -298,60 +298,11 @@ int RpFilePrivate::reOpenFile(void)
 /**
  * Open a file.
  * NOTE: Files are always opened in binary mode.
- * @param filename Filename (UTF-8)
- * @param mode File mode
- */
-RpFile::RpFile(const char *filename, FileMode mode)
-	: super()
-	, d_ptr(new RpFilePrivate(this, U82W_c(filename), mode))
-{
-	init();
-}
-
-/**
- * Open a file.
- * NOTE: Files are always opened in binary mode.
- * @param filename Filename (UTF-8)
- * @param mode File mode
- */
-RpFile::RpFile(const string &filename, FileMode mode)
-	: super()
-	, d_ptr(new RpFilePrivate(this, U82W_s(filename), mode))
-{
-	init();
-}
-
-/**
- * Open a file.
- * NOTE: Files are always opened in binary mode.
  * @param filename Filename (UTF-16)
  * @param mode File mode
  */
 RpFile::RpFile(const wchar_t *filenameW, FileMode mode)
-	: super()
-	, d_ptr(new RpFilePrivate(this, filenameW, mode))
-{
-	init();
-}
-
-/**
- * Open a file.
- * NOTE: Files are always opened in binary mode.
- * @param filename Filename (UTF-16)
- * @param mode File mode
- */
-RpFile::RpFile(const wstring &filenameW, FileMode mode)
-	: super()
-	, d_ptr(new RpFilePrivate(this, filenameW.c_str(), mode))
-{
-	init();
-}
-
-/**
- * Common initialization function for RpFile's constructors.
- * Filename must be set in d->filename.
- */
-void RpFile::init(void)
+	: d_ptr(new RpFilePrivate(this, filenameW, mode))
 {
 	RP_D(RpFile);
 
@@ -464,6 +415,36 @@ void RpFile::init(void)
 		FlushFileBuffers(d->file);
 	}
 }
+
+/**
+ * Open a file.
+ * NOTE: Files are always opened in binary mode.
+ * @param filename Filename (UTF-8)
+ * @param mode File mode
+ */
+RpFile::RpFile(const char *filename, FileMode mode)
+	: RpFile(U82W_c(filename), mode)
+{}
+
+/**
+ * Open a file.
+ * NOTE: Files are always opened in binary mode.
+ * @param filename Filename (UTF-8)
+ * @param mode File mode
+ */
+RpFile::RpFile(const string &filename, FileMode mode)
+	: RpFile(U82W_s(filename), mode)
+{}
+
+/**
+ * Open a file.
+ * NOTE: Files are always opened in binary mode.
+ * @param filename Filename (UTF-16)
+ * @param mode File mode
+ */
+RpFile::RpFile(const wstring &filenameW, FileMode mode)
+	: RpFile(filenameW.c_str(), mode)
+{}
 
 RpFile::~RpFile()
 {
@@ -852,4 +833,4 @@ int RpFile::makeWritable(void)
 	return 0;
 }
 
-}
+} // namespace LibRpFile
