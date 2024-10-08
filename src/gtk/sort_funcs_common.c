@@ -66,8 +66,8 @@ gint rp_sort_string_numeric(const char *strA, const char *strB)
 	// Handle NULL strings as if they're 0.
 	// TODO: Allow arbitrary bases?
 	gchar *endptrA = (gchar*)"", *endptrB = (gchar*)"";
-	gint64 valA = (strA ? g_ascii_strtoll(strA, &endptrA, 10) : 0);
-	gint64 valB = (strB ? g_ascii_strtoll(strB, &endptrB, 10) : 0);
+	int64_t valA = (strA ? g_ascii_strtoll(strA, &endptrA, 10) : 0);
+	int64_t valB = (strB ? g_ascii_strtoll(strB, &endptrB, 10) : 0);
 
 	// If the values match, do a case-insensitive string comparison
 	// if the strings didn't fully convert to numbers.

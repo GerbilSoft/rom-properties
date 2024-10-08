@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * UpdateChecker.hpp: Update checker object for AboutTab.                  *
  *                                                                         *
- * Copyright (c) 2017-2023 by David Korth.                                 *
+ * Copyright (c) 2017-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -22,7 +22,7 @@ RpUpdateChecker	*rp_update_checker_new		(void) G_GNUC_INTERNAL G_GNUC_MALLOC;
  * The update check is run asynchronously in a separate thread.
  *
  * Results will be sent as signals:
- * - 'retrieved': Update version retrieved. (guint64 parameter with the version)
+ * - 'retrieved': Update version retrieved. (uint64_t parameter with the version)
  * - 'error': An error occurred. (gchar* parameter with the error message)
  *
  * @param updChecker Update checker

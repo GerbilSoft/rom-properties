@@ -103,7 +103,7 @@ static void	updChecker_error			(RpUpdateChecker	*updChecker,
 							 const gchar		*error,
 							 RpAboutTab		*tab);
 static void	updChecker_retrieved			(RpUpdateChecker	*updChecker,
-							 guint64		 updateVersion,
+							 uint64_t		 updateVersion,
 							 RpAboutTab		*tab);
 #endif /* ENABLE_UPDATE_CHECK */
 
@@ -849,7 +849,7 @@ updChecker_error(RpUpdateChecker	*updChecker,
 
 static void
 updChecker_retrieved(RpUpdateChecker	*updChecker,
-		     guint64	 	 updateVersion,
+		     uint64_t	 	 updateVersion,
 		     RpAboutTab		*tab)
 {
 	RP_UNUSED(updChecker);

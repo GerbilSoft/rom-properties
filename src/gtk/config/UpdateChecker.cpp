@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * UpdateChecker.cpp: Update checker object for AboutTab.                  *
  *                                                                         *
- * Copyright (c) 2017-2023 by David Korth.                                 *
+ * Copyright (c) 2017-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -201,7 +201,7 @@ rp_update_checker_thread_run(RpUpdateChecker *updChecker)
 	uint64_t updateVersion = 0;
 	for (unsigned int i = 0; i < 3; i++, updateVersion <<= 16U) {
 		gchar *endptr;
-		const gint64 x = g_ascii_strtoll(sVersionArray[i], &endptr, 10);
+		const int64_t x = g_ascii_strtoll(sVersionArray[i], &endptr, 10);
 		if (x < 0 || *endptr != '\0') {
 			g_signal_emit(updChecker, signals[SIGNAL_ERROR], 0,
 				C_("UpdateChecker", "Version file is invalid."));
@@ -223,7 +223,7 @@ rp_update_checker_thread_run(RpUpdateChecker *updChecker)
  * The update check is run asynchronously in a separate thread.
  *
  * Results will be sent as signals:
- * - 'retrieved': Update version retrieved. (guint64 parameter with the version)
+ * - 'retrieved': Update version retrieved. (uint64_t parameter with the version)
  * - 'error': An error occurred. (gchar* parameter with the error message)
  *
  * @param updChecker Update checker
