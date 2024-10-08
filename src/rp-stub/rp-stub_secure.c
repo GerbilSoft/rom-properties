@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (rp-stub)                          *
  * rp-stub_secure.c: Security options for rp-stub.                         *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -96,7 +96,7 @@ int rp_stub_do_security_options(bool config)
 
 		// librpbase/libromdata
 		SCMP_SYS(dup),		// gzdopen()
-		SCMP_SYS(ftruncate),	// LibRpBase::RpFile::truncate() [from LibRpBase::RpPngWriterPrivate::init()]
+		SCMP_SYS(ftruncate),	// LibRpBase::RpFile::truncate() [from LibRpBase::RpPngWriterPrivate ctors]
 		SCMP_SYS(ftruncate64),
 		SCMP_SYS(futex),	// pthread_once()
 		SCMP_SYS(getuid), SCMP_SYS(geteuid),	// TODO: Only use geteuid()?

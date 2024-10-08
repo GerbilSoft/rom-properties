@@ -38,7 +38,7 @@ int rpt_do_security_options(void)
 		SCMP_SYS(fcntl),     SCMP_SYS(fcntl64),		// gcc profiling
 		SCMP_SYS(fstat),     SCMP_SYS(fstat64),		// __GI___fxstat() [printf()]
 		SCMP_SYS(fstatat64), SCMP_SYS(newfstatat),	// Ubuntu 19.10 (32-bit)
-		SCMP_SYS(ftruncate),	// LibRpBase::RpFile::truncate() [from LibRpBase::RpPngWriterPrivate::init()]
+		SCMP_SYS(ftruncate),	// LibRpBase::RpFile::truncate() [from LibRpBase::RpPngWriterPrivate ctors]
 		SCMP_SYS(ftruncate64),
 		SCMP_SYS(futex),	// iconv_open(), dlopen()
 		SCMP_SYS(gettimeofday),	// 32-bit only?

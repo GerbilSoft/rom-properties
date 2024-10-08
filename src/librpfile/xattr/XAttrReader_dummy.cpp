@@ -41,17 +41,6 @@ XAttrReaderPrivate::~XAttrReaderPrivate()
 }
 
 /**
- * Initialize attributes.
- * Internal fd (filename on Windows) must be set.
- * @return 0 on success; negative POSIX error code on error.
- */
-int XAttrReaderPrivate::init(void)
-{
-	RP_UNUSED(fd);
-	return -ENOTSUP;
-}
-
-/**
  * Load Ext2 attributes, if available.
  * Internal fd (filename on Windows) must be set.
  * @return 0 on success; negative POSIX error code on error.
