@@ -138,6 +138,7 @@ const char *const DreamcastPrivate::mimeTypes[] = {
 	// TODO: Get the above types upstreamed and get rid of this.
 	"application/x-dreamcast-rom",
 	"application/x-gd-rom-cue",
+	"application/x-discjuggler-cd-image",
 
 	nullptr
 };
@@ -404,7 +405,7 @@ Dreamcast::Dreamcast(const IRpFilePtr &file)
 				mimeType = "application/x-gd-rom-cue";
 			} else /*if (d->discType == DreamcastPrivate::DiscType::CDI)*/ {
 				d->discReader = std::make_shared<CdiReader>(d->file);
-				mimeType = "application/x-cdi";
+				mimeType = "application/x-discjuggler-cd-image";
 			}
 
 			MultiTrackSparseDiscReader *const mtsDiscReader = static_cast<MultiTrackSparseDiscReader*>(d->discReader.get());
