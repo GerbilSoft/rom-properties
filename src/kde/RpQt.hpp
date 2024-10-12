@@ -22,6 +22,11 @@
 #define CONCAT_FN(fn, suffix)		CONCAT_FN_INT(fn, suffix)
 #define CONCAT_FN_INT(fn, suffix)	fn ## suffix
 
+// NOTE: Using QT_VERSION_CHECK causes errors on moc-qt4 due to CMAKE_AUTOMOC.
+// Reference: https://bugzilla.redhat.com/show_bug.cgi?id=1396755
+// QT_VERSION_CHECK(6,0,0) -> 0x60000
+// QT_VERSION_CHECK(5,0,0) -> 0x50000
+
 /** Text conversion **/
 
 /**
@@ -33,11 +38,11 @@
 
 // Qt6 uses qsizetype for string lengths, which is ssize_t on Linux systems.
 // Qt5 uses int for string lengths. (qsizetype introduced in Qt 5.10)
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+#if QT_VERSION >= 0x60000
 typedef qsizetype rp_qsizetype;
-#else /* QT_VERSION < QT_VERSION_CHECK(6,0,0) */
+#else /* QT_VERSION < 0x60000 */
 typedef int rp_qsizetype;
-#endif /* QT_VERSION >= QT_VERSION_CHECK(6,0,0) */
+#endif /* QT_VERSION >= 0x60000 */
 
 /**
  * Convert an std::string to QString.
@@ -107,9 +112,9 @@ static inline QString lcToQString(uint32_t lc)
 template<typename T>
 static inline T findDirectChild(QObject *obj, const QString &aName = QString())
 {
-#if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
+#if QT_VERSION >= 0x50000
 	return obj->findChild<T>(aName, Qt::FindDirectChildrenOnly);
-#else /* QT_VERSION < QT_VERSION_CHECK(5,0,0) */
+#else /* QT_VERSION < 0x50000 */
 	for (QObject *child : obj->children()) {
 		T qchild = qobject_cast<T>(child);
 		if (qchild != nullptr) {
@@ -119,7 +124,7 @@ static inline T findDirectChild(QObject *obj, const QString &aName = QString())
 		}
 	}
 	return nullptr;
-#endif /* QT_VERSION >= QT_VERSION_CHECK(5,0,0) */
+#endif /* QT_VERSION >= 0x50000 */
 }
 
 /** Image conversion **/
