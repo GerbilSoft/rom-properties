@@ -38,6 +38,7 @@
     * Nintendo Wii save files
     * Windows/DOS executables
   * DMG: Detect Analogue Pocket ROM images.
+  * Dreamcast: CDI format disc images are now supported.
 
 * Bug fixes:
   * On Linux, rp-config now correctly detects KDE Plasma 6 and uses the
