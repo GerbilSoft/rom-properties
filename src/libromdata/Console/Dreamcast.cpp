@@ -198,28 +198,20 @@ rp_image_const_ptr DreamcastPrivate::load0GDTEX(void)
 	// Create the ISO-9660 file system reader if it isn't already opened.
 	if (!isoPartition) {
 		switch (discType) {
-			case DiscType::GDI: {
-				// Open track 3 as ISO-9660.
-				GdiReader *const gdiReader = dynamic_cast<GdiReader*>(discReader.get());
-				assert(gdiReader != nullptr);
-				if (!gdiReader) {
-					return {};
-				}
-				isoPartition = gdiReader->openIsoPartition(3);
-				break;
-			}
-
+			case DiscType::GDI:
 			case DiscType::CDI: {
 				// Open track 3 as ISO-9660.
-				CdiReader *const cdiReader = dynamic_cast<CdiReader*>(discReader.get());
-				if (!cdiReader) {
+				MultiTrackSparseDiscReader *const mtsDiscReader = dynamic_cast<MultiTrackSparseDiscReader*>(discReader.get());
+				assert(mtsDiscReader != nullptr);
+				if (!mtsDiscReader) {
 					return {};
 				}
-				isoPartition = cdiReader->openIsoPartition(3);
+
+				isoPartition = mtsDiscReader->openIsoPartition(3);
 				if (!isoPartition) {
-					// NOTE: Some CDIs only hvae two tracks.
+					// NOTE: Some CDIs only have two tracks.
 					// Try reading track 2 instead.
-					isoPartition = cdiReader->openIsoPartition(2);
+					isoPartition = mtsDiscReader->openIsoPartition(2);
 				}
 				break;
 			}
@@ -401,37 +393,27 @@ Dreamcast::Dreamcast(const IRpFilePtr &file)
 			break;
 		}
 
-		case DreamcastPrivate::DiscType::GDI: {
-			// GD-ROM cuesheet
-			// iso_start_offset isn't used for GDI.
-			d->discReader = std::make_shared<GdiReader>(d->file);
-			GdiReader *const gdiReader = static_cast<GdiReader*>(d->discReader.get());
-			// Read the actual track 3 disc header.
-			const int lba_track03 = gdiReader->startingLBA(3);
-			if (lba_track03 < 0) {
-				// Error getting the track 03 LBA.
-				d->discReader.reset();
-				d->file.reset();
-				return;
-			}
-			// TODO: Don't hard-code 2048?
-			gdiReader->seekAndRead(lba_track03*2048, &d->discHeader, sizeof(d->discHeader));
-			d->mimeType = "application/x-gd-rom-cue";	// unofficial
-			break;
-		}
-
+		case DreamcastPrivate::DiscType::GDI:
 		case DreamcastPrivate::DiscType::CDI: {
-			// DiscJuggler image
-			// iso_start_offset isn't used for CDI.
-			// TODO: Base class for multi-track disc images, i.e. GDI and CDI?
-			d->discReader = std::make_shared<CdiReader>(d->file);
-			CdiReader *const cdiReader = static_cast<CdiReader*>(d->discReader.get());
+			// GD-ROM cuesheet or DiscJuggler image
+			// GDI does't use iso_start_offset.
+			// CDI manages its own iso_start_offset.
+			const char *mimeType;
+			if (d->discType == DreamcastPrivate::DiscType::GDI) {
+				d->discReader = std::make_shared<CdiReader>(d->file);
+				mimeType = "application/x-gd-rom-cue";
+			} else /*if (d->discType == DreamcastPrivate::DiscType::CDI)*/ {
+				d->discReader = std::make_shared<CdiReader>(d->file);
+				mimeType = "application/x-cdi";
+			}
+
+			MultiTrackSparseDiscReader *const mtsDiscReader = static_cast<MultiTrackSparseDiscReader*>(d->discReader.get());
 			// Read the actual track 3 disc header.
-			int lba_track03 = cdiReader->startingLBA(3);
+			int lba_track03 = mtsDiscReader->startingLBA(3);
 			if (lba_track03 < 0) {
 				// NOTE: Some CDIs only hvae two tracks.
 				// Try reading track 2 instead.
-				lba_track03 = cdiReader->startingLBA(2);
+				lba_track03 = mtsDiscReader->startingLBA(2);
 				if (lba_track03 < 0) {
 					// Error getting the track 03 LBA.
 					d->discReader.reset();
@@ -439,9 +421,10 @@ Dreamcast::Dreamcast(const IRpFilePtr &file)
 					return;
 				}
 			}
+
 			// TODO: Don't hard-code 2048?
-			cdiReader->seekAndRead(lba_track03*2048, &d->discHeader, sizeof(d->discHeader));
-			d->mimeType = "application/x-cdi";	// unofficial
+			mtsDiscReader->seekAndRead(lba_track03*2048, &d->discHeader, sizeof(d->discHeader));
+			d->mimeType = mimeType;
 			break;
 		}
 
@@ -822,22 +805,18 @@ int Dreamcast::loadFieldData(void)
 	// are used for field info only.
 	ISOPtr isoData;
 	switch (d->discType) {
-		case DreamcastPrivate::DiscType::GDI: {
-			// Open track 3 as ISO-9660.
-			GdiReader *const gdiReader = dynamic_cast<GdiReader*>(d->discReader.get());
-			assert(gdiReader != nullptr);
-			if (gdiReader) {
-				isoData = gdiReader->openIsoRomData(3);
-			}
-			break;
-		}
-
+		case DreamcastPrivate::DiscType::GDI:
 		case DreamcastPrivate::DiscType::CDI: {
 			// Open track 3 as ISO-9660.
-			CdiReader *const cdiReader = dynamic_cast<CdiReader*>(d->discReader.get());
-			assert(cdiReader != nullptr);
-			if (cdiReader) {
-				isoData = cdiReader->openIsoRomData(3);
+			MultiTrackSparseDiscReader *const mtsDiscReader = dynamic_cast<MultiTrackSparseDiscReader*>(d->discReader.get());
+			assert(mtsDiscReader != nullptr);
+			if (mtsDiscReader) {
+				isoData = mtsDiscReader->openIsoRomData(3);
+				if (!isoData) {
+					// NOTE: Some CDIs only have two tracks.
+					// Try reading track 2 instead.
+					isoData = mtsDiscReader->openIsoRomData(2);
+				}
 			}
 			break;
 		}

@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "librpbase/disc/SparseDiscReader.hpp"
+#include "MultiTrackSparseDiscReader.hpp"
 #include "IsoPartition.hpp"
 
 // for ISOPtr
@@ -17,7 +17,7 @@
 namespace LibRomData {
 
 class CdiReaderPrivate;
-class CdiReader : public LibRpBase::SparseDiscReader
+class CdiReader : public MultiTrackSparseDiscReader
 {
 public:
 	/**
@@ -29,7 +29,7 @@ public:
 	explicit CdiReader(const LibRpFile::IRpFilePtr &file);
 
 private:
-	typedef SparseDiscReader super;
+	typedef MultiTrackSparseDiscReader super;
 	RP_DISABLE_COPY(CdiReader)
 private:
 	friend class CdiReaderPrivate;
@@ -84,34 +84,34 @@ protected:
 	int readBlock(uint32_t blockIdx, int pos, void *ptr, size_t size) final;
 
 public:
-	/** CDI-specific functions **/
+	/** MultiTrackSparseDiscReader functions **/
 
 	/**
 	 * Get the track count.
 	 * @return Track count.
 	 */
-	int trackCount(void) const;
+	int trackCount(void) const final;
 
 	/**
 	 * Get the starting LBA of the specified track number.
 	 * @param trackNumber Track number. (1-based)
 	 * @return Starting LBA, or -1 if the track number is invalid.
 	 */
-	int startingLBA(int trackNumber) const;
+	int startingLBA(int trackNumber) const final;
 
 	/**
 	 * Open a track using IsoPartition.
 	 * @param trackNumber Track number. (1-based)
 	 * @return IsoPartition, or nullptr on error.
 	 */
-	IsoPartitionPtr openIsoPartition(int trackNumber);
+	IsoPartitionPtr openIsoPartition(int trackNumber) final;
 
 	/**
 	 * Create an ISO RomData object for a given track number.
 	 * @param trackNumber Track number. (1-based)
 	 * @return ISO object, or nullptr on error.
 	 */
-	ISOPtr openIsoRomData(int trackNumber);
+	ISOPtr openIsoRomData(int trackNumber) final;
 };
 
 typedef std::shared_ptr<CdiReader> CdiReaderPtr;

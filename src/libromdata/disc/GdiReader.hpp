@@ -2,13 +2,13 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * GdiReader.hpp: GD-ROM reader for Dreamcast GDI images.                  *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #pragma once
 
-#include "librpbase/disc/SparseDiscReader.hpp"
+#include "MultiTrackSparseDiscReader.hpp"
 #include "IsoPartition.hpp"
 
 // for ISOPtr
@@ -17,7 +17,7 @@
 namespace LibRomData {
 
 class GdiReaderPrivate;
-class GdiReader : public LibRpBase::SparseDiscReader
+class GdiReader : public MultiTrackSparseDiscReader
 {
 public:
 	/**
@@ -29,7 +29,7 @@ public:
 	explicit GdiReader(const LibRpFile::IRpFilePtr &file);
 
 private:
-	typedef SparseDiscReader super;
+	typedef MultiTrackSparseDiscReader super;
 	RP_DISABLE_COPY(GdiReader)
 private:
 	friend class GdiReaderPrivate;
@@ -90,28 +90,28 @@ public:
 	 * Get the track count.
 	 * @return Track count.
 	 */
-	int trackCount(void) const;
+	int trackCount(void) const final;
 
 	/**
 	 * Get the starting LBA of the specified track number.
 	 * @param trackNumber Track number. (1-based)
 	 * @return Starting LBA, or -1 if the track number is invalid.
 	 */
-	int startingLBA(int trackNumber) const;
+	int startingLBA(int trackNumber) const final;
 
 	/**
 	 * Open a track using IsoPartition.
 	 * @param trackNumber Track number. (1-based)
 	 * @return IsoPartition, or nullptr on error.
 	 */
-	IsoPartitionPtr openIsoPartition(int trackNumber);
+	IsoPartitionPtr openIsoPartition(int trackNumber) final;
 
 	/**
 	 * Create an ISO RomData object for a given track number.
 	 * @param trackNumber Track number. (1-based)
 	 * @return ISO object, or nullptr on error.
 	 */
-	ISOPtr openIsoRomData(int trackNumber);
+	ISOPtr openIsoRomData(int trackNumber) final;
 };
 
 typedef std::shared_ptr<GdiReader> GdiReaderPtr;

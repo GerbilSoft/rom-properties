@@ -343,6 +343,7 @@ SET(${PROJECT_NAME}_H
 	disc/GdiReader.hpp
 	disc/IResourceReader.hpp
 	disc/IsoPartition.hpp
+	disc/MultiTrackSparseDiscReader.hpp
 	disc/NASOSReader.hpp
 	disc/NCCHReader.hpp
 	disc/NCCHReader_p.hpp
