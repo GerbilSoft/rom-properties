@@ -88,6 +88,8 @@
   * GameCubeSave: Adjust icon delays.
     * Reported by @Louis322.
   * WiiTicket: Recognize CA04-XS09 from early Wii U titles.
+  * Windows: Reverted an rpcli manifest change from v2.1 that broke
+    compatibility with Windows XP.
 
 ## v2.3 (released 2024/03/03)
 
