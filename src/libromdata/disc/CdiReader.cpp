@@ -322,8 +322,7 @@ int CdiReaderPrivate::parseCdiFile(void)
 		}
 
 		// Go to the next session.
-		q->m_file->seek_cur(4);
-		q->m_file->seek_cur(8);
+		q->m_file->seek_cur(4 + 8);
 		if (cdiFooter.version != CdiVersion::CDI_V2) {
 			q->m_file->seek_cur(1);
 		}
