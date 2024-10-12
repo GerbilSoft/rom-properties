@@ -430,46 +430,6 @@ CdiReader::CdiReader(const IRpFilePtr &file)
 }
 
 /**
- * Is a disc image supported by this class?
- * @param pHeader Disc image header.
- * @param szHeader Size of header.
- * @return Class-specific disc format ID (>= 0) if supported; -1 if not.
- */
-int CdiReader::isDiscSupported_static(const uint8_t *pHeader, size_t szHeader)
-{
-	// NOTE: There's no magic number, so we'll just check if the
-	// first line seems to be correct.
-	if (szHeader < 4) {
-		// Not enough data to check.
-		return -1;
-	}
-
-	int trackCount = 0;
-	for (unsigned int i = 0; i < 4; i++) {
-		if (pHeader[i] == '\r' || pHeader[i] == '\n') {
-			// End of line.
-			break;
-		} else if (ISDIGIT(pHeader[i])) {
-			// Digit.
-			trackCount *= 10;
-			trackCount += (pHeader[i] & 0xF);
-		} else {
-			// Invalid character.
-			trackCount = 0;
-			break;
-		}
-	}
-
-	if (trackCount >= 1 && trackCount <= 99) {
-		// Valid track count.
-		return 0;
-	}
-
-	// Invalid track count.
-	return -1;
-}
-
-/**
  * Is a disc image supported by this object?
  * @param pHeader Disc image header.
  * @param szHeader Size of header.
@@ -477,7 +437,11 @@ int CdiReader::isDiscSupported_static(const uint8_t *pHeader, size_t szHeader)
  */
 int CdiReader::isDiscSupported(const uint8_t *pHeader, size_t szHeader) const
 {
-	return isDiscSupported_static(pHeader, szHeader);
+	// FIXME: This function doesn't work, since the CDI version number
+	// is stored at the end of the file.
+	RP_UNUSED(pHeader);
+	RP_UNUSED(szHeader);
+	return -1;
 }
 
 /** SparseDiscReader functions **/
