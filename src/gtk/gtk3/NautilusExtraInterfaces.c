@@ -126,16 +126,21 @@ rp_nemo_init(void *libextension_so)
 static GList*
 rp_nemo_name_and_desc_provider_get_name_and_desc(NemoNameAndDescProvider *provider)
 {
-	GList *ret = NULL;
-
+	const char *s_plugin_desc = NULL;
+	
 	if (RP_IS_NAUTILUS_PROPERTY_PAGE_PROVIDER(provider)) {
-		ret = g_list_append(NULL, g_strdup("ROM Properties Page:::Property page extension"));
+		s_plugin_desc = C_("NautilusExtraInterfaces", "Property page extension");
 	} else if (RP_IS_NAUTILUS_MENU_PROVIDER(provider)) {
-		ret = g_list_append(NULL, g_strdup("ROM Properties Page:::Menu extension"));
+		s_plugin_desc = C_("NautilusExtraInterfaces", "Menu extension");
 	} else {
 		assert(!"Not a supported GObject class!");
 	}
 
+	GList *ret = NULL;
+	if (s_plugin_desc) {
+		const char *const s_ext_name = C_("NautilusExtraInterfaces", "ROM Properties Page");
+		ret = g_list_prepend(NULL, g_strdup_printf("%s:::%s", s_ext_name, s_plugin_desc));
+	}
 	return ret;
 }
 
