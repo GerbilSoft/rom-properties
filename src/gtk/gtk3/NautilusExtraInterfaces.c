@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ 3.x)                             *
  * NautilusExtraInterfaces.c: Extra interfaces in Nautilus-based file managers *
  *                                                                             *
- * Copyright (c) 2017-2023 by David Korth.                                     *
+ * Copyright (c) 2017-2024 by David Korth.                                     *
  * SPDX-License-Identifier: GPL-2.0-or-later                                   *
  *******************************************************************************/
 
@@ -71,6 +71,8 @@ config_dialog_delete_event(RpConfigDialog *dialog, GdkEvent *event, gpointer use
 static void
 rp_caja_run_config(CajaConfigurable *provider)
 {
+	RP_UNUSED(provider);
+
 	// Show the configuration dialog.
 	if (configDialog) {
 		// Configuration dialog is already created.
