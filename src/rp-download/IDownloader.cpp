@@ -249,8 +249,12 @@ tstring IDownloader::getOSRelease(void)
 	}
 	s_os_release += _T(' ');
 
-	// Version number.
+	// Version number
 	TCHAR buf[32];
+	if (osvi.dwMajorVersion == 10 && osvi.dwBuildNumber >= 20000) {
+		// Windows 11
+		osvi.dwMajorVersion = 11;
+	}
 	_sntprintf(buf, _countof(buf), _T("%lu.%lu"), osvi.dwMajorVersion, osvi.dwMinorVersion);
 	s_os_release += buf;
 
