@@ -253,13 +253,6 @@ int CdiReaderPrivate::parseCdiFile(void)
 				q->m_lastError = EIO;
 				return -EIO;
 			}
-#if SYS_BYTEORDER == SYS_BIG_ENDIAN
-			lengthFields.pregap_length = le32_to_cpu(lengthFields.pregap_length);
-			lengthFields.length = le32_to_cpu(lengthFields.length);
-			lengthFields.mode = le32_to_cpu(lengthFields.mode);
-			lengthFields.start_lba = le32_to_cpu(lengthFields.start_lba);
-			lengthFields.total_length = le32_to_cpu(lengthFields.total_length);
-#endif /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
 
 			// Sector size ID
 			uint32_t sectorSizeID;
@@ -281,28 +274,38 @@ int CdiReaderPrivate::parseCdiFile(void)
 			}
 			const uint32_t sectorSize = sectorSizeIDtoSizeMap[sectorSizeID];
 
-			// Save the track information.
-			const size_t idx = blockRanges.size();
-			assert(idx <= std::numeric_limits<int8_t>::max());
-			if (idx > std::numeric_limits<int8_t>::max()) {
-				// Too many tracks. (More than 127???)
-				return -ENOMEM;
-			}
-			blockRanges.resize(idx+1);
-			BlockRange &blockRange = blockRanges[idx];
-			blockRange.blockStart = lengthFields.start_lba + lengthFields.pregap_length;
-			blockRange.blockEnd = blockRange.blockStart + lengthFields.length - 1;
-			blockRange.pregapLength = lengthFields.pregap_length;
-			blockRange.sectorSize = sectorSize;
-			blockRange.trackNumber = static_cast<uint8_t>(trackNumber);
-			blockRange.reserved = 0;
-			blockRange.trackStart = track_offset + (static_cast<off64_t>(lengthFields.pregap_length) * sectorSize);
+			// Check the track mode.
+			// Data tracks are saved; audio tracks are not.
+			// NOTE: This field appears to be 2 for data tracks in my test images,
+			// but dcparser.py accepts anything that's non-zero.
+			if (lengthFields.mode != 0) {
+				// Save the track information.
+				const size_t idx = blockRanges.size();
+				assert(idx <= std::numeric_limits<int8_t>::max());
+				if (idx > std::numeric_limits<int8_t>::max()) {
+					// Too many tracks. (More than 127???)
+					return -ENOMEM;
+				}
+				const uint32_t pregap_length = le32_to_cpu(lengthFields.pregap_length);
+				blockRanges.resize(idx+1);
+				BlockRange &blockRange = blockRanges[idx];
+				blockRange.blockStart = le32_to_cpu(lengthFields.start_lba) + pregap_length;
+				blockRange.blockEnd = blockRange.blockStart + le32_to_cpu(lengthFields.length) - 1;
+				blockRange.pregapLength = pregap_length;
+				blockRange.sectorSize = sectorSize;
+				blockRange.trackNumber = static_cast<uint8_t>(trackNumber);
+				blockRange.reserved = 0;
+				blockRange.trackStart = track_offset + (static_cast<off64_t>(pregap_length) * sectorSize);
 
-			// Save the track mapping.
-			trackMappings.push_back(static_cast<int8_t>(idx));
+				// Save the track mapping.
+				trackMappings.push_back(static_cast<int8_t>(idx));
+			} else {
+				// Not a data track.
+				trackMappings.push_back(-1);
+			}
 
 			// Go to the next track.
-			track_offset += static_cast<off64_t>(lengthFields.total_length) * static_cast<off64_t>(sectorSize);
+			track_offset += static_cast<off64_t>(le32_to_cpu(lengthFields.total_length)) * static_cast<off64_t>(sectorSize);
 			q->m_file->seek_cur(29);
 			if (cdiFooter.version != CdiVersion::CDI_V2) {
 				q->m_file->seek_cur(5);
