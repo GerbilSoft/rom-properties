@@ -122,7 +122,7 @@ void GdiReaderPrivate::close(void)
 	blockRanges.clear();
 	trackMappings.clear();
 
-	// GDI file.
+	// GDI file
 	RP_Q(GdiReader);
 	q->m_file.reset();
 }
@@ -435,6 +435,11 @@ GdiReader::GdiReader(const IRpFilePtr &file)
 			m_lastError = -ret;
 			return;
 		}
+	} else if (lastDataTrack <= 0) {
+		// No data track.
+		d->close();
+		m_lastError = EIO;
+		return;
 	}
 
 	const int mapping_lastBlockRange = d->trackMappings[lastDataTrack-1];
