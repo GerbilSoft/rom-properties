@@ -625,7 +625,6 @@ ISOPtr CdiReader::openIsoRomData(int trackNumber)
 		return nullptr;
 	}
 
-	// FIXME: Adjust for pregap_length?
 	PartitionFilePtr isoFile = std::make_shared<PartitionFile>(this->shared_from_this(),
 		static_cast<off64_t>(lba_start) * 2048,
 		static_cast<off64_t>(lba_size) * 2048);
