@@ -74,6 +74,12 @@ using namespace RpDownload;
 static const TCHAR *argv0 = nullptr;
 static bool verbose = false;
 
+#if defined(_WIN32) && defined(_UNICODE)
+// Cannot do ATTR_PRINTF on Win32 if using Unicode.
+#else
+#  define ATTR_TPRINTF ATTR_PRINTF
+#endif
+
 /**
  * Show command usage.
  */
@@ -88,11 +94,7 @@ static void show_usage(void)
  * @param format printf() format string.
  * @param ... printf() format parameters.
  */
-static void
-#if !defined(_MSC_VER) && !defined(_UNICODE)
-__attribute__((format (printf, 1, 2)))
-#endif /* !_MSC_VER && !_UNICODE */
-show_error(const TCHAR *format, ...)
+static void ATTR_PRINTF(1, 2) show_error(const TCHAR *format, ...)
 {
 	va_list ap;
 
@@ -111,11 +113,7 @@ show_error(const TCHAR *format, ...)
  * @param format printf() format string.
  * @param ... printf() format parameters.
  */
-static void
-#if !defined(_MSC_VER) && !defined(_UNICODE)
-__attribute__((format (printf, 1, 2)))
-#endif /* !_MSC_VER && !_UNICODE */
-show_info(const TCHAR *format, ...)
+static void ATTR_PRINTF(1, 2) show_info(const TCHAR *format, ...)
 {
 	va_list ap;
 
