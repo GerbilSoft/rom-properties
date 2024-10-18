@@ -13,6 +13,10 @@
 #include "librpsecure/os-secure.h"
 #include "librpsecure/restrict-dll.h"
 
+// librpfile
+#include "librpfile/FileSystem.hpp"
+using namespace LibRpFile;
+
 // C includes.
 #ifndef _WIN32
 #  include <fcntl.h>
@@ -51,13 +55,6 @@ using std::unique_ptr;
 // libcachecommon
 #include "libcachecommon/CacheDir.hpp"
 #include "libcachecommon/CacheKeys.hpp"
-
-#ifdef _WIN32
-#  include <direct.h>
-#  define _TMKDIR(dirname, mode) _tmkdir(dirname)
-#else /* !_WIN32 */
-#  define _TMKDIR(dirname, mode) _tmkdir((dirname), (mode))
-#endif /* _WIN32 */
 
 #ifndef _countof
 #  define _countof(x) (sizeof(x)/sizeof(x[0]))
@@ -215,78 +212,6 @@ static int get_file_size_and_mtime(const TCHAR *filename, off64_t *pFileSize, ti
 	*pMtime = sb.st_mtime;
 #endif
 
-	return 0;
-}
-
-/**
- * Recursively mkdir() subdirectories.
- * (Copied from librpbase's FileSystem_win32.cpp.)
- *
- * The last element in the path will be ignored, so if
- * the entire pathname is a directory, a trailing slash
- * must be included.
- *
- * NOTE: Only native separators ('\\' on Windows, '/' on everything else)
- * are supported by this function.
- *
- * @param path Path to recursively mkdir. (last component is ignored)
- * @param mode Mode for newly-created directories.
- * @return 0 on success; negative POSIX error code on error.
- */
-static int rmkdir(const tstring &path, int mode)
-{
-#ifdef _WIN32
-	RP_UNUSED(mode);
-
-	// Check if "\\\\?\\" or "\\??\\" is at the beginning of path.
-	// Reference: https://groups.google.com/g/golang-announce/c/4tU8LZfBFkY?pli=1
-	tstring tpath;
-	if (path.size() >= 4 && (!_tcsncmp(path.data(), _T("\\\\?\\"), 4) || !_tcsncmp(path.data(), _T("\\??\\"), 4))) {
-		// It's at the beginning of the path.
-		// We don't want to use it here, though.
-		tpath = path.substr(4);
-	} else {
-		// It's not at the beginning of the path.
-		tpath = path;
-	}
-#else /* !_WIN32 */
-	// Use the path as-is.
-	tstring tpath = path;
-#endif /* _WIN32 */
-
-	if (tpath.size() == 3) {
-		// 3 characters. Root directory is always present.
-		return 0;
-	} else if (tpath.size() < 3) {
-		// Less than 3 characters. Path isn't valid.
-		return -EINVAL;
-	}
-
-	// Find all backslashes and ensure the directory component exists.
-	// (Skip the drive letter and root backslash.)
-	size_t slash_pos = 4;
-	while ((slash_pos = tpath.find(DIR_SEP_CHR, slash_pos)) != tstring::npos) {
-		// Temporarily NULL out this slash.
-		tpath[slash_pos] = _T('\0');
-
-		// Attempt to create this directory.
-		if (::_TMKDIR(tpath.c_str(), mode) != 0) {
-			// Could not create the directory.
-			// If it exists already, that's fine.
-			// Otherwise, something went wrong.
-			const int err = errno;
-			if (err != EEXIST) {
-				// Something went wrong.
-				return -err;
-			}
-		}
-
-		// Put the slash back in.
-		tpath[slash_pos] = DIR_SEP_CHR;
-		slash_pos++;
-	}
-
-	// rmkdir() succeeded.
 	return 0;
 }
 
@@ -724,7 +649,7 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 	} else if (ret == -ENOENT) {
 		// File not found. We'll need to download it.
 		// Make sure the path structure exists.
-		int ret = rmkdir(cache_filename, 0700);
+		int ret = FileSystem::rmkdir(cache_filename, 0700);
 		if (ret != 0) {
 			SHOW_ERROR(_T("Error creating directory structure: %s"), _tcserror(-ret));
 			return EXIT_FAILURE;

@@ -51,11 +51,12 @@ namespace LibRpFile { namespace FileSystem {
  * NOTE: Only native separators ('\\' on Windows, '/' on everything else)
  * are supported by this function.
  *
- * @param path Path to recursively mkdir. (last component is ignored)
+ * @param path Path to recursively mkdir (last component is ignored)
+ * @param mode File mode (defaults to 0777; ignored on Windows)
  * @return 0 on success; non-zero on error.
  */
 RP_LIBROMDATA_PUBLIC
-int rmkdir(const std::string &path);
+int rmkdir(const std::string &path, int mode = 0777);
 
 /**
  * Does a file exist?

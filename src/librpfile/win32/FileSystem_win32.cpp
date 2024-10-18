@@ -231,13 +231,15 @@ static inline tstring makeWinPath(const wstring &filename)
  * NOTE: Only native separators ('\\' on Windows, '/' on everything else)
  * are supported by this function.
  *
- * @param path Path to recursively mkdir. (last component is ignored)
+ * @param path Path to recursively mkdir (last component is ignored)
+ * @param mode File mode (defaults to 0777; ignored on Windows)
  * @return 0 on success; negative POSIX error code on error.
  */
-int rmkdir(const string &path)
+int rmkdir(const string &path, int mode)
 {
 	// Windows uses UTF-16 natively, so handle it as UTF-16.
 	static_assert(sizeof(wchar_t) == sizeof(char16_t), "wchar_t is not 16-bit!");
+	RP_UNUSED(mode);
 
 	// TODO: makeWinPath()?
 	tstring tpath = U82T_s(path);

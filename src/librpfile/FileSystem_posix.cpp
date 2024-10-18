@@ -78,10 +78,11 @@ namespace LibRpFile { namespace FileSystem {
  * NOTE: Only native separators ('\\' on Windows, '/' on everything else)
  * are supported by this function.
  *
- * @param path Path to recursively mkdir. (last component is ignored)
+ * @param path Path to recursively mkdir (last component is ignored)
+ * @param mode File mode (defaults to 0777; ignored on Windows)
  * @return 0 on success; negative POSIX error code on error.
  */
-int rmkdir(const string &path)
+int rmkdir(const string &path, int mode)
 {
 	// Linux (and most other systems) use UTF-8 natively.
 	string path8 = path;
@@ -98,7 +99,7 @@ int rmkdir(const string &path)
 		path8[slash_pos] = 0;
 
 		// Attempt to create this directory.
-		if (::mkdir(path8.c_str(), 0777) != 0) {
+		if (::mkdir(path8.c_str(), mode) != 0) {
 			// Could not create the directory.
 			// If it exists already, that's fine.
 			// Otherwise, something went wrong.
