@@ -6,6 +6,10 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+// References:
+// - https://gist.github.com/Holzhaus/ae3dacf6a2e83dd00421
+// - https://problemkaputt.de/psxspx-cdrom-disk-images-cdi-discjuggler.htm
+
 #include "stdafx.h"
 #include "CdiReader.hpp"
 #include "librpbase/disc/SparseDiscReader_p.hpp"
@@ -44,6 +48,19 @@ public:
 	// GDI filename
 	string filename;
 
+	enum class SectorReadMode : uint8_t {
+		Mode1_2048	= 0,
+		Mode2_2336	= 1,
+		Audio_2352	= 2,
+		RawPQ_2352_16	= 3,
+		RawPW_2352_96	= 4,
+
+		Max
+	};
+
+	// SectorReadMode to sector size map
+	static const array<uint32_t, static_cast<uint32_t>(SectorReadMode::Max)> sectorReadModeToSizeMap;
+
 	// Block range mapping
 	// NOTE: This currently *only* contains data tracks.
 	struct BlockRange {
@@ -51,8 +68,8 @@ public:
 		unsigned int blockEnd;		// Last LBA (inclusive) (0 if the file hasn't been opened yet)
 		unsigned int pregapLength;	// Pregap length
 		uint16_t sectorSize;		// 2048, 2336, or 2352
+		SectorReadMode sectorReadMode;
 		uint8_t trackNumber;		// 01 through 99
-		uint8_t reserved;
 		// TODO: Data vs. audio?
 		off64_t trackStart;		// Track starting address in the .cdi file
 	};
@@ -99,6 +116,11 @@ public:
 };
 
 /** CdiReaderPrivate **/
+
+// SectorReadMode to sector size map
+const array<uint32_t, static_cast<uint32_t>(CdiReaderPrivate::SectorReadMode::Max)> CdiReaderPrivate::sectorReadModeToSizeMap = {{
+	2048, 2336, 2352, 2352+16, 2352+96
+}};
 
 CdiReaderPrivate::CdiReaderPrivate(CdiReader *q)
 	: super(q)
@@ -178,6 +200,10 @@ int CdiReaderPrivate::parseCdiFile(void)
 	num_sessions = le16_to_cpu(num_sessions);
 #endif /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
 
+	// Track index length data
+	vector<uint32_t> track_indexes;
+	track_indexes.reserve(2);
+
 	// Read each session.
 	int trackNumber = 1;	// starts at 1, not 0
 	off64_t track_offset = 0;
@@ -235,17 +261,54 @@ int CdiReaderPrivate::parseCdiFile(void)
 				// DiscJuggler 4: Skip the next 8 bytes.
 				q->m_file->seek_cur(8);
 			}
-			q->m_file->seek_cur(2);
+
+			// Read the lengths.
+			// If two indexes are present, there will be a pregap and main length.
+			// For one index, there's only a main length.
+			uint16_t num_indexes;
+			size = q->m_file->read(&num_indexes, sizeof(num_indexes));
+			if (size != sizeof(num_indexes)) {
+				q->m_lastError = EIO;
+				return -EIO;
+			}
+#if SYS_BYTEORDER == SYS_BIG_ENDIAN
+			num_indexes = le16_to_cpu(num_indexes);
+#endif /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
+			if (num_indexes == 0 || num_indexes > 16) {
+				// No indexes, or too many indexes.
+				q->m_lastError = EIO;
+				return -EIO;
+			}
+			track_indexes.resize(num_indexes);
+			size = q->m_file->read(track_indexes.data(), track_indexes.size() * sizeof(uint32_t));
+			if (size != track_indexes.size() * sizeof(uint32_t)) {
+				q->m_lastError = EIO;
+				return -EIO;
+			}
+
+			// TODO: Handle more than 2 indexes?
+			uint32_t pregap_length, data_length;
+			if (num_indexes >= 2) {
+				pregap_length = le32_to_cpu(track_indexes[0]);
+				data_length = le32_to_cpu(track_indexes[1]);
+			} else {
+				pregap_length = 0;
+				data_length = le32_to_cpu(track_indexes[0]);
+			}
 
 #pragma pack(2)
 			struct PACKED {
-				uint32_t pregap_length;
-				uint32_t length;
-				uint8_t unused1[6];
-				uint32_t mode;
-				uint8_t unused2[12];
+				uint32_t cd_text_count;		// TODO: If non-zero, there will be CD-Text blocks here.
+				uint8_t unknown1[2];		// 0x00 0x00
+				uint32_t mode;			// Track mode (0=Audio, 1=Mode1, 2=Mode2/Mixed)
+				uint8_t unknown2[4];
+				uint32_t session_number;	// starts at 0
+				uint32_t track_number;		// non-BCD, starts at 0
 				uint32_t start_lba;
 				uint32_t total_length;
+				uint8_t unknown3[12];		// Unknown (all 0)
+				uint8_t unknown4[4];		// Unknown (0 or 1)
+				uint32_t read_mode;		// Read mode (sector size, possibly subchannels)
 			} lengthFields;
 #pragma pack()
 			size = q->m_file->read(&lengthFields, sizeof(lengthFields));
@@ -254,25 +317,21 @@ int CdiReaderPrivate::parseCdiFile(void)
 				return -EIO;
 			}
 
-			// Sector size ID
-			uint32_t sectorSizeID;
-			q->m_file->seek_cur(16);
-			size = q->m_file->read(&sectorSizeID, sizeof(sectorSizeID));
-			if (size != sizeof(sectorSizeID)) {
+			// FIXME: Need to handle CD-Text blocks.
+			if (lengthFields.cd_text_count != 0) {
 				q->m_lastError = EIO;
 				return -EIO;
 			}
-#if SYS_BYTEORDER == SYS_BIG_ENDIAN
-			sectorSizeID = le32_to_cpu(sectorSizeID);
-#endif /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
+
+			// Sector read mode
+			const uint32_t read_mode = le32_to_cpu(lengthFields.read_mode);
+			if (read_mode >= static_cast<uint32_t>(SectorReadMode::Max)) {
+				q->m_lastError = EIO;
+				return -EIO;
+			}
 
 			// Convert the sector size ID to an actual sector size.
-			static const array<uint32_t, 3> sectorSizeIDtoSizeMap = {{2048, 2336, 2352}};
-			if (sectorSizeID >= sectorSizeIDtoSizeMap.size()) {
-				q->m_lastError = EIO;
-				return -EIO;
-			}
-			const uint32_t sectorSize = sectorSizeIDtoSizeMap[sectorSizeID];
+			const uint32_t sectorSize = sectorReadModeToSizeMap[read_mode];
 
 			// Check the track mode.
 			// Data tracks are saved; audio tracks are not.
@@ -281,20 +340,19 @@ int CdiReaderPrivate::parseCdiFile(void)
 			if (lengthFields.mode != 0) {
 				// Save the track information.
 				const size_t idx = blockRanges.size();
-				assert(idx <= std::numeric_limits<int8_t>::max());
-				if (idx > std::numeric_limits<int8_t>::max()) {
+				assert(idx < std::numeric_limits<int8_t>::max());
+				if (idx >= std::numeric_limits<int8_t>::max()) {
 					// Too many tracks. (More than 127???)
 					return -ENOMEM;
 				}
-				const uint32_t pregap_length = le32_to_cpu(lengthFields.pregap_length);
 				blockRanges.resize(idx+1);
 				BlockRange &blockRange = blockRanges[idx];
 				blockRange.blockStart = le32_to_cpu(lengthFields.start_lba) + pregap_length;
-				blockRange.blockEnd = blockRange.blockStart + le32_to_cpu(lengthFields.length) - 1;
+				blockRange.blockEnd = blockRange.blockStart + data_length - 1;
 				blockRange.pregapLength = pregap_length;
 				blockRange.sectorSize = sectorSize;
+				blockRange.sectorReadMode = static_cast<SectorReadMode>(read_mode);
 				blockRange.trackNumber = static_cast<uint8_t>(trackNumber);
-				blockRange.reserved = 0;
 				blockRange.trackStart = track_offset + (static_cast<off64_t>(pregap_length) * sectorSize);
 
 				// Save the track mapping.
@@ -524,8 +582,9 @@ int CdiReader::readBlock(uint32_t blockIdx, int pos, void *ptr, size_t size)
 
 	// Read the full block
 	const off64_t phys_pos = blockRange->trackStart + (static_cast<off64_t>(blockIdx - blockRange->blockStart) * blockRange->sectorSize);
-	if (blockRange->sectorSize == 2352) {
+	if (blockRange->sectorSize >= 2352) {
 		// 2352-byte sectors
+		// NOTE: May include subchannels, which are located after the 2352 bytes.
 		// TODO: Handle audio tracks properly?
 		CDROM_2352_Sector_t sector;
 		size_t sz_read = m_file->seekAndRead(phys_pos, &sector, sizeof(sector));
