@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (libromdata)                       *
- * GdiReader.hpp: GD-ROM reader for Dreamcast GDI images.                  *
+ * CdiReader.hpp: DiscJuggler CDI image reader.                            *
  *                                                                         *
  * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
@@ -16,35 +16,26 @@
 
 namespace LibRomData {
 
-class GdiReaderPrivate;
-class GdiReader : public MultiTrackSparseDiscReader
+class CdiReaderPrivate;
+class CdiReader : public MultiTrackSparseDiscReader
 {
 public:
 	/**
-	 * Construct a GdiReader with the specified file.
+	 * Construct a CdiReader with the specified file.
 	 * The file is ref()'d, so the original file can be
 	 * unref()'d by the caller afterwards.
 	 * @param file File to read from.
 	 */
-	explicit GdiReader(const LibRpFile::IRpFilePtr &file);
+	explicit CdiReader(const LibRpFile::IRpFilePtr &file);
 
 private:
 	typedef MultiTrackSparseDiscReader super;
-	RP_DISABLE_COPY(GdiReader)
+	RP_DISABLE_COPY(CdiReader)
 private:
-	friend class GdiReaderPrivate;
+	friend class CdiReaderPrivate;
 
 public:
 	/** Disc image detection functions **/
-
-	/**
-	 * Is a disc image supported by this class?
-	 * @param pHeader Disc image header.
-	 * @param szHeader Size of header.
-	 * @return Class-specific disc format ID (>= 0) if supported; -1 if not.
-	 */
-	ATTR_ACCESS_SIZE(read_only, 1, 2)
-	static int isDiscSupported_static(const uint8_t *pHeader, size_t szHeader);
 
 	/**
 	 * Is a disc image supported by this object?
@@ -84,7 +75,7 @@ protected:
 	int readBlock(uint32_t blockIdx, int pos, void *ptr, size_t size) final;
 
 public:
-	/** GDI-specific functions **/
+	/** MultiTrackSparseDiscReader functions **/
 
 	/**
 	 * Get the track count.
@@ -114,6 +105,6 @@ public:
 	ISOPtr openIsoRomData(int trackNumber) final;
 };
 
-typedef std::shared_ptr<GdiReader> GdiReaderPtr;
+typedef std::shared_ptr<CdiReader> CdiReaderPtr;
 
-}
+} // namespace LibRomData

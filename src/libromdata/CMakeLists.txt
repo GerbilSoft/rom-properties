@@ -114,6 +114,7 @@ SET(${PROJECT_NAME}_SRCS
 	data/Xbox360_STFS_ContentType.cpp
 
 	disc/Cdrom2352Reader.cpp
+	disc/CdiReader.cpp
 	disc/CIAReader.cpp
 	disc/CisoGcnReader.cpp
 	disc/CisoPspReader.cpp
@@ -329,6 +330,7 @@ SET(${PROJECT_NAME}_H
 	data/XboxPublishers_data.h
 	data/Xbox360_STFS_ContentType.hpp
 
+	disc/CdiReader.hpp
 	disc/Cdrom2352Reader.hpp
 	disc/CIAReader.hpp
 	disc/CisoGcnReader.hpp
@@ -341,6 +343,7 @@ SET(${PROJECT_NAME}_H
 	disc/GdiReader.hpp
 	disc/IResourceReader.hpp
 	disc/IsoPartition.hpp
+	disc/MultiTrackSparseDiscReader.hpp
 	disc/NASOSReader.hpp
 	disc/NCCHReader.hpp
 	disc/NCCHReader_p.hpp

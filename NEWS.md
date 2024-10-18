@@ -38,6 +38,8 @@
     * Nintendo Wii save files
     * Windows/DOS executables
   * DMG: Detect Analogue Pocket ROM images.
+  * Dreamcast: CDI format disc images are now supported.
+    * Fixes #107: Dreamcast: CDI support.
 
 * Bug fixes:
   * On Linux, rp-config now correctly detects KDE Plasma 6 and uses the
@@ -86,6 +88,8 @@
   * GameCubeSave: Adjust icon delays.
     * Reported by @Louis322.
   * WiiTicket: Recognize CA04-XS09 from early Wii U titles.
+  * Windows: Reverted an rpcli manifest change from v2.1 that broke
+    compatibility with Windows XP.
 
 ## v2.3 (released 2024/03/03)
 

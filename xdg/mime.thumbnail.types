@@ -26,6 +26,8 @@ application/x-cbm2-cartridge		# CBMCart
 application/x-vic20-cartridge		# CBMCart
 application/x-plus4-cartridge		# CBMCart
 application/pkix-cert			# CBMCart (NOTE: Workaround; .crt is detected as this)
+application/x-cdi			# Dreamcast
+application/x-discjuggler-cd-image	# Dreamcast
 application/x-dreamcast-rom		# Dreamcast
 application/x-dreamcast-iso-image	# Dreamcast
 application/x-dc-rom			# Dreamcast
