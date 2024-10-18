@@ -36,10 +36,12 @@ SET(${PROJECT_NAME}_SRCS
 	rp-download.cpp
 	IDownloader.cpp
 	http-status.cpp
+	CacheKeyVerify.cpp
 	)
 SET(${PROJECT_NAME}_H
 	IDownloader.hpp
 	http-status.hpp
+	CacheKeyVerify.hpp
 	)
 
 # Determine which IDownloader backend to use.

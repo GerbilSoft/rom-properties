@@ -56,10 +56,6 @@ using std::unique_ptr;
 #include "libcachecommon/CacheDir.hpp"
 #include "libcachecommon/CacheKeys.hpp"
 
-#ifndef _countof
-#  define _countof(x) (sizeof(x)/sizeof(x[0]))
-#endif
-
 // TODO: IDownloaderFactory?
 #ifdef _WIN32
 #  include "WinInetDownloader.hpp"
@@ -69,8 +65,11 @@ using std::unique_ptr;
 #include "SetFileOriginInfo.hpp"
 using namespace RpDownload;
 
-// HTTP status codes.
+// HTTP status codes
 #include "http-status.hpp"
+
+// CacheKeyVerify
+#include "CacheKeyVerify.hpp"
 
 static const TCHAR *argv0 = nullptr;
 static bool verbose = false;
@@ -402,177 +401,25 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 	}
 	const TCHAR *const cache_key = argv[optind];
 
-	// Check the cache key prefix. The prefix indicates the system
-	// and identifies the online database used.
-	// [key] indicates the cache key without the prefix.
-	// - wii:    https://art.gametdb.com/wii/[key]
-	// - wiiu:   https://art.gametdb.com/wiiu/[key]
-	// - 3ds:    https://art.gametdb.com/3ds/[key]
-	// - ds:     https://art.gametdb.com/3ds/[key]
-	// - amiibo: https://amiibo.life/[key]/image
-	// - gba:    https://rpdb.gerbilsoft.com/gba/[key]
-	// - gb:     https://rpdb.gerbilsoft.com/gb/[key]
-	// - snes:   https://rpdb.gerbilsoft.com/snes/[key]
-	// - ngp:    https://rpdb.gerbilsoft.com/ngp/[key]
-	// - ngpc:   https://rpdb.gerbilsoft.com/ngpc/[key]
-	// - ws:     https://rpdb.gerbilsoft.com/ws/[key]
-	// - c64:    https://rpdb.gerbilsoft.com/c64/[key]
-	// - c128:   https://rpdb.gerbilsoft.com/c128/[key]
-	// - cbmII:  https://rpdb.gerbilsoft.com/cbmII/[key]
-	// - vic20:  https://rpdb.gerbilsoft.com/vic20/[key]
-	// - plus4:  https://rpdb.gerbilsoft.com/plus4/[key]
-	// - ps1:    https://rpdb.gerbilsoft.com/ps1/[key]
-	// - ps2:    https://rpdb.gerbilsoft.com/ps2/[key]
-	// - sys:    https://rpdb.gerbilsoft.com/sys/[key] [system info, e.g. update version]
-	const TCHAR *slash_pos = _tcschr(cache_key, _T('/'));
-	if (slash_pos == nullptr || slash_pos == cache_key ||
-		slash_pos[1] == '\0')
-	{
-		// Invalid cache key:
-		// - Does not contain any slashes.
-		// - First slash is either the first or the last character.
-		SHOW_ERROR(_T("Cache key '%s' is invalid."), cache_key);
-		return EXIT_FAILURE;
-	}
+	tstring full_url;
+	bool check_newer = false;
+	CacheKeyError ckerr = verifyCacheKey(full_url, check_newer, cache_key);
+	switch (ckerr) {
+		case CacheKeyError::OK:
+			break;
 
-	const ptrdiff_t prefix_len = (slash_pos - cache_key);
-	if (prefix_len <= 0) {
-		// Empty prefix.
-		SHOW_ERROR(_T("Cache key '%s' is invalid."), cache_key);
-		return EXIT_FAILURE;
-	}
-
-	// Cache key must include a lowercase file extension.
-	const TCHAR *const lastdot = _tcsrchr(cache_key, _T('.'));
-	if (!lastdot) {
-		// No dot...
-		SHOW_ERROR(_T("Cache key '%s' is invalid."), cache_key);
-		return EXIT_FAILURE;
-	}
-	if ((!_tcscmp(lastdot, _T(".png"))) != 0 ||
-	    (!_tcscmp(lastdot, _T(".jpg"))) != 0)
-	{
-		// Image file extension is supported.
-	}
-	else if (!_tcscmp(lastdot, _T(".txt")))
-	{
-		// .txt is supported for sys/ only.
-		if (_tcsncmp(cache_key, _T("sys/"), 4) != 0) {
+		default:
+		case CacheKeyError::Invalid:
 			SHOW_ERROR(_T("Cache key '%s' is invalid."), cache_key);
 			return EXIT_FAILURE;
-		}
-	} else {
-		// Not a supported file extension.
-		SHOW_ERROR(_T("Cache key '%s' is invalid."), cache_key);
-		return EXIT_FAILURE;
-	}
 
-	// urlencode the cache key.
-	const tstring cache_key_urlencode = LibCacheCommon::urlencode(cache_key);
-	// Update the slash position based on the urlencoded string.
-	slash_pos = _tcschr(cache_key_urlencode.data(), _T('/'));
-	assert(slash_pos != nullptr);
-	if (!slash_pos) {
-		// Shouldn't happen, since a slash was found earlier...
-		SHOW_ERROR(_T("Cache key '%s' is invalid."), cache_key);
-		return EXIT_FAILURE;
-	}
-
-	// Determine the full URL based on the cache key.
-	bool ok = false;
-	bool check_newer = false;	// for [sys]: always check, but only download if newer
-	TCHAR full_url[256];
-	if ((prefix_len == 3 && (!_tcsncmp(cache_key, _T("wii"), 3) || !_tcsncmp(cache_key, _T("3ds"), 3))) ||
-	    (prefix_len == 4 && !_tcsncmp(cache_key, _T("wiiu"), 4)) ||
-	    (prefix_len == 2 && !_tcsncmp(cache_key, _T("ds"), 2)))
-	{
-		// GameTDB: Wii, Wii U, Nintendo 3DS, Nintendo DS
-		ok = true;
-		_sntprintf(full_url, _countof(full_url),
-			_T("https://art.gametdb.com/%s"), cache_key_urlencode.c_str());
-	} else if (prefix_len == 6 && !_tcsncmp(cache_key, _T("amiibo"), 6)) {
-		// amiibo.life: amiibo images
-		// NOTE: We need to remove the file extension.
-		size_t filename_len = _tcslen(slash_pos+1);
-		if (filename_len <= 4) {
-			// Can't remove the extension...
-			SHOW_ERROR(_T("Cache key '%s' is invalid."), cache_key);
+		case CacheKeyError::PrefixNotSupported:
+			SHOW_ERROR(_T("Cache key '%s' has an unsupported prefix."), cache_key);
 			return EXIT_FAILURE;
-		}
-		filename_len -= 4;
-
-		ok = true;
-		_sntprintf(full_url, _countof(full_url),
-			_T("https://amiibo.life/nfc/%.*s/image"),
-			static_cast<int>(filename_len), slash_pos+1);
-	} else {
-		// RPDB: Title screen images for various systems.
-		switch (prefix_len) {
-			default:
-				break;
-			case 2:
-				if (!_tcsncmp(cache_key, _T("gb"), 2) ||
-				    !_tcsncmp(cache_key, _T("ws"), 2) ||
-				    !_tcsncmp(cache_key, _T("md"), 2))
-				{
-					ok = true;
-				}
-				break;
-			case 3:
-				if (!_tcsncmp(cache_key, _T("gba"), 3) ||
-				    !_tcsncmp(cache_key, _T("mcd"), 3) ||
-				    !_tcsncmp(cache_key, _T("32x"), 3) ||
-				    !_tcsncmp(cache_key, _T("c64"), 3) ||
-				    !_tcsncmp(cache_key, _T("ps1"), 3) ||
-				    !_tcsncmp(cache_key, _T("ps2"), 3))
-				{
-					ok = true;
-				}
-				else if (!_tcsncmp(cache_key, _T("sys"), 3))
-				{
-					ok = true;
-					check_newer = true;
-				}
-				break;
-			case 4:
-				if (!_tcsncmp(cache_key, _T("snes"), 4) ||
-				    !_tcsncmp(cache_key, _T("ngpc"), 4) ||
-				    !_tcsncmp(cache_key, _T("pico"), 4) ||
-				    !_tcsncmp(cache_key, _T("tera"), 4) ||
-				    !_tcsncmp(cache_key, _T("c128"), 4))
-				{
-					ok = true;
-				}
-				break;
-			case 5:
-				if (!_tcsncmp(cache_key, _T("cbmII"), 5) ||
-				    !_tcsncmp(cache_key, _T("vic20"), 5) ||
-				    !_tcsncmp(cache_key, _T("plus4"), 5))
-				{
-					ok = true;
-				}
-				break;
-			case 6:
-				if (!_tcsncmp(cache_key, _T("mcd32x"), 6)) {
-					ok = true;
-				}
-				break;
-		}
-
-		if (ok) {
-			_sntprintf(full_url, _countof(full_url),
-				_T("https://rpdb.gerbilsoft.com/%s"), cache_key_urlencode.c_str());
-		}
-	}
-
-	if (!ok) {
-		// Prefix is not supported.
-		SHOW_ERROR(_T("Cache key '%s' has an unsupported prefix."), cache_key);
-		return EXIT_FAILURE;
 	}
 
 	if (verbose) {
-		_ftprintf(stderr, _T("URL: %s\n"), full_url);
+		_ftprintf(stderr, _T("URL: %s\n"), full_url.c_str());
 	}
 
 	// Make sure we have a valid cache directory.
@@ -734,9 +581,9 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 	// Save the file origin information.
 #ifdef _WIN32
 	// TODO: Figure out how to setFileOriginInfo() on Windows using an open file handle.
-	setFileOriginInfo(f_out, cache_filename.c_str(), full_url, m_downloader->mtime());
+	setFileOriginInfo(f_out, cache_filename.c_str(), full_url.c_str(), m_downloader->mtime());
 #else /* !_WIN32 */
-	setFileOriginInfo(f_out, full_url, m_downloader->mtime());
+	setFileOriginInfo(f_out, full_url.c_str(), m_downloader->mtime());
 #endif /* _WIN32 */
 	fclose(f_out);
 
