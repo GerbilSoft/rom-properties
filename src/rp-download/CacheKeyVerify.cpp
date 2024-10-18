@@ -24,7 +24,7 @@ namespace RpDownload {
  * @param cache_key	[in] Cache key
  * @return CacheKeyError
  */
-CacheKeyError verifyCacheKey(std::string &outURL, bool &check_newer, const TCHAR *cache_key)
+CacheKeyError verifyCacheKey(tstring &outURL, bool &check_newer, const TCHAR *cache_key)
 {
 	// Check the cache key prefix. The prefix indicates the system
 	// and identifies the online database used.
