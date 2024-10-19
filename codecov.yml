@@ -1,2 +1,4 @@
 ignore:
   - "extlib/"
+  - "src/libi18n/gettext.h"
+  - "**/tests/"
