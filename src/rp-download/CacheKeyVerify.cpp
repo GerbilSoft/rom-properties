@@ -37,7 +37,6 @@ CacheKeyError verifyCacheKey(tstring &outURL, bool &check_newer, const TCHAR *ca
 	// - gba:    https://rpdb.gerbilsoft.com/gba/[key]
 	// - gb:     https://rpdb.gerbilsoft.com/gb/[key]
 	// - snes:   https://rpdb.gerbilsoft.com/snes/[key]
-	// - ngp:    https://rpdb.gerbilsoft.com/ngp/[key]
 	// - ngpc:   https://rpdb.gerbilsoft.com/ngpc/[key]
 	// - ws:     https://rpdb.gerbilsoft.com/ws/[key]
 	// - c64:    https://rpdb.gerbilsoft.com/c64/[key]
