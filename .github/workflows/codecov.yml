@@ -15,12 +15,16 @@ jobs:
       - name: Run Ninja
         run: ninja
       - name: Run tests
-        run: ctest -V -C Release
+        run: ctest -V -C Release --output-junit junit.xml
         env:
           LD_LIBRARY_PATH: ${{ github.workspace }}/lib
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
-        env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         with:
           gcov: true
+          token: ${{ secrets.CODECOV_TOKEN }}
+      - name: Upload test results to Codecov
+        if: ${{ !cancelled() }}
+        uses: codecov/test-results-action@v1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
