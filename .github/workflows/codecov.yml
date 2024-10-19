@@ -27,5 +27,5 @@ jobs:
         if: ${{ !cancelled() }}
         uses: codecov/test-results-action@v1
         with:
-          files: ./junit.xml,!./extlib
+          files: ./junit.xml
           token: ${{ secrets.CODECOV_TOKEN }}
