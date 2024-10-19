@@ -260,7 +260,7 @@ int rmkdir(const string &path, int mode)
  * @return 0 on success; non-zero on error.
  */
 RP_LIBROMDATA_PUBLIC
-int rmkdir(const wstring &path, int mode = 0777)
+int rmkdir(const wstring &path, int mode)
 {
 	// Windows uses UTF-16 natively, so handle it as UTF-16.
 	static_assert(sizeof(wchar_t) == sizeof(char16_t), "wchar_t is not 16-bit!");

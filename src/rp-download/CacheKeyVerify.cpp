@@ -126,7 +126,7 @@ CacheKeyError verifyCacheKey(tstring &outURL, bool &check_newer, const TCHAR *ca
 		ok = true;
 		outURL = _T("https://amiibo.life/nfc/");
 		outURL.append(slash_pos + 1, filename_len);
-		outURL += "/image";
+		outURL += _T("/image");
 	} else {
 		// RPDB: Title screen images for various systems.
 		switch (prefix_len) {
