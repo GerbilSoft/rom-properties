@@ -1414,6 +1414,10 @@ INSTANTIATE_TEST_SUITE_P(VMS, ImageDecoderTest,
 		ImageDecoderTest_mode(
 			"Misc/SONIC2C.VMS",
 			"Misc/SONIC2C.png",
+			RomData::IMG_INT_ICON),
+		ImageDecoderTest_mode(
+			"Misc/SONIC2C.DCI",
+			"Misc/SONIC2C.png",
 			RomData::IMG_INT_ICON))
 	, ImageDecoderTest::test_case_suffix_generator);
 
