@@ -138,6 +138,11 @@ IF(MINGW)
 	SET(CMAKE_RC_FLAGS "${CMAKE_RC_FLAGS} -I \"${CMAKE_CURRENT_BINARY_DIR}\"")
 ENDIF(MINGW)
 
+# Test suite
+IF(BUILD_TESTING)
+	ADD_SUBDIRECTORY(tests)
+ENDIF(BUILD_TESTING)
+
 ###########################
 # Install the executable. #
 ###########################
