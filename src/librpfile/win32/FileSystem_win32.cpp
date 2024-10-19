@@ -280,7 +280,7 @@ int rmkdir(const wstring &path, int mode = 0777)
 	// Find all backslashes and ensure the directory component exists.
 	// (Skip the drive letter and root backslash.)
 	size_t slash_pos = 4;
-	while ((slash_pos = tpath.find(static_cast<char16_t>(DIR_SEP_CHR), slash_pos)) != string::npos) {
+	while ((slash_pos = tpath.find(static_cast<char16_t>(DIR_SEP_CHR), slash_pos)) != tstring::npos) {
 		// Temporarily NULL out this slash.
 		tpath[slash_pos] = _T('\0');
 
