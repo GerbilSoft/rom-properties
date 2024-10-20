@@ -1392,8 +1392,8 @@ INSTANTIATE_TEST_SUITE_P(GCI_Banner_2, ImageDecoderTest,
 		GCI_BANNER_TEST("8P-GM2E-super_monkey_ball_2.dat"),
 		GCI_BANNER_TEST("8P-GMBE-smkb0058556041f42afb"),
 		GCI_BANNER_TEST("8P-GMBE-super_monkey_ball.sys"),
-		//GCI_BANNER_TEST("8P-GPUE-Puyo Pop Fever Replay01"),
-		//GCI_BANNER_TEST("8P-GPUE-Puyo Pop Fever System"),
+		//GCI_BANNER_TEST("8P-GPUE-Puyo Pop Fever Replay01"),	// no banner in this file
+		//GCI_BANNER_TEST("8P-GPUE-Puyo Pop Fever System"),	// no banner in this file
 		GCI_BANNER_TEST("8P-GSNE-SONIC2B__5f____5f__S01"),
 		GCI_BANNER_TEST("8P-GSOE-S_MEGA_SYS"),
 		GCI_BANNER_TEST("8P-GUPE-SHADOWTHEHEDGEHOG"),
