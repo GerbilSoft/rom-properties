@@ -40,6 +40,7 @@
   * DMG: Detect Analogue Pocket ROM images.
   * Dreamcast: CDI format disc images are now supported.
     * Fixes #107: Dreamcast: CDI support.
+  * MegaDrive: Add a title encoding heuristic for JIS X 0208.
 
 * Bug fixes:
   * On Linux, rp-config now correctly detects KDE Plasma 6 and uses the

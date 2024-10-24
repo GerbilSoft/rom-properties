@@ -164,22 +164,22 @@ static inline char16_t *u16_memchr(char16_t *wcs, char16_t c, size_t n)
 // NULL characters from strings.
 
 #ifndef CP_ACP
-# define CP_ACP 0
+#  define CP_ACP 0
 #endif
 #ifndef CP_LATIN1
-# define CP_LATIN1 28591
+#  define CP_LATIN1 28591
 #endif
 #ifndef CP_UTF8
-# define CP_UTF8 65001
+#  define CP_UTF8 65001
 #endif
 #ifndef CP_SJIS
-# define CP_SJIS 932
+#  define CP_SJIS 932
 #endif
 #ifndef CP_GB2312
-# define CP_GB2312 936
+#  define CP_GB2312 936
 #endif
 
-// Specialized code pages.
+// Specialized code pages
 #define CP_RP_BASE			0x10000
 #define CP_RP_ATARIST			(CP_RP_BASE | 0)
 #define CP_RP_ATASCII			(CP_RP_BASE | 1)
@@ -191,6 +191,9 @@ typedef enum {
 	// Enable cp1252 fallback if the text fails to
 	// decode using the specified code page.
 	TEXTCONV_FLAG_CP1252_FALLBACK		= (1U << 0),
+
+	// Attempt JIS X 0208 decoding before Shift-JIS.
+	TEXTCONV_FLAG_JIS_X_0208		= (1U << 1),
 } TextConv_Flags_e;
 
 /**
@@ -401,6 +404,33 @@ static inline std::string cp1252_sjis_to_utf8(const std::string &str)
 {
 	return cpN_to_utf8(932, str.data(), static_cast<int>(str.size()),
 		TEXTCONV_FLAG_CP1252_FALLBACK);
+}
+
+/* JIS X 0208 with Shift-JIS (cp932) + cp1252 fallback */
+
+/**
+ * Convert JIS X 0208, Shift-JIS (cp932), or cp1252 text to UTF-8.
+ * Trailing NULL bytes will be removed.
+ * @param str	[in] JIS X 0208, Shift-JIS (cp932), or cp1252 text
+ * @param len	[in] Length of str, in bytes (-1 for NULL-terminated string)
+ * @return UTF-8 string
+ */
+static inline std::string cp1252_sjis_jisx0208_to_utf8(const char *str, int len)
+{
+	return cpN_to_utf8(932, str, len,
+		TEXTCONV_FLAG_CP1252_FALLBACK | TEXTCONV_FLAG_JIS_X_0208);
+}
+
+/**
+ * Convert JIS X 0208, Shift-JIS (cp932), or cp1252 text to UTF-8.
+ * Trailing NULL bytes will be removed.
+ * @param str	[in] JIS X 0208, Shift-JIS (cp932), or cp1252 text
+ * @return UTF-8 string
+ */
+static inline std::string cp1252_sjis_jisx0208_to_utf8(const std::string &str)
+{
+	return cpN_to_utf8(932, str.data(), static_cast<int>(str.size()),
+		TEXTCONV_FLAG_CP1252_FALLBACK | TEXTCONV_FLAG_JIS_X_0208);
 }
 
 /* Latin-1 (ISO-8859-1) */

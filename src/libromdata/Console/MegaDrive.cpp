@@ -389,7 +389,7 @@ void MegaDrivePrivate::addFields_romHeader(const MD_RomHeader *pRomHeader, bool 
 
 	// Titles, serial number, and checksum.
 	fields.addField_string(C_("MegaDrive", "Domestic Title"),
-		cp1252_sjis_to_utf8(s_title_domestic, title_len), RomFields::STRF_TRIM_END);
+		cp1252_sjis_jisx0208_to_utf8(s_title_domestic, title_len), RomFields::STRF_TRIM_END);
 	fields.addField_string(C_("MegaDrive", "Export Title"),
 		cp1252_sjis_to_utf8(s_title_export, title_len), RomFields::STRF_TRIM_END);
 	// NOTE: Serial number should be ASCII only.

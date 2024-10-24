@@ -111,12 +111,47 @@ string cpN_to_utf8(unsigned int cp, const char *str, int len, unsigned int flags
 
 	// Convert from `cp` to UTF-16.
 	u16string s_wcs;
-	if (W32U_mbs_to_UTF16(s_wcs, str, len, cp, dwFlags) != 0) {
-		if (flags & TEXTCONV_FLAG_CP1252_FALLBACK) {
-			// Try again using cp1252.
-			if (W32U_mbs_to_UTF16(s_wcs, str, len, 1252, 0) != 0) {
-				// Failed.
+
+	if ((flags & TEXTCONV_FLAG_JIS_X_0208) && len >= 1) {
+		// Check if the string might be JIS X 0208.
+		// If it is, make it EUC-JP compatible, then convert it.
+		bool is0208 = false;
+		// Heuristic: First character should be 0x21-0x24.
+		if (*str >= 0x21 && *str <= 0x24) {
+			is0208 = true;
+			const char *const p_end = str + len;
+			for (const char *p = str + 1; p < p_end; p++) {
+				const uint8_t chr = static_cast<uint8_t>(*p);
+				if (chr == 0) {
+					// End of string
+					break;
+				} else if (chr & 0x80) {
+					// High bit cannot be set
+					is0208 = false;
+				}
+			}
+		}
+
+		if (is0208) {
+			// Make the string EUC-JP compatible.
+			string eucJP(str, 0, len);
+			for (char &c : eucJP) {
+				c |= 0x80;
+			}
+			if (W32U_mbs_to_UTF16(s_wcs, eucJP.c_str(), eucJP.size(), 20932, dwFlags) != 0) {
 				s_wcs.clear();
+			}
+		}
+	}
+
+	if (s_wcs.empty()) {
+		if (W32U_mbs_to_UTF16(s_wcs, str, len, cp, dwFlags) != 0) {
+			if (flags & TEXTCONV_FLAG_CP1252_FALLBACK) {
+				// Try again using cp1252.
+				if (W32U_mbs_to_UTF16(s_wcs, str, len, 1252, 0) != 0) {
+					// Failed.
+					s_wcs.clear();
+				}
 			}
 		}
 	}
@@ -162,12 +197,47 @@ u16string cpN_to_utf16(unsigned int cp, const char *str, int len, unsigned int f
 
 	// Convert from `cp` to UTF-16.
 	u16string s_wcs;
-	if (W32U_mbs_to_UTF16(s_wcs, str, len, cp, dwFlags) != 0) {
-		if (flags & TEXTCONV_FLAG_CP1252_FALLBACK) {
-			// Try again using cp1252.
-			if (W32U_mbs_to_UTF16(s_wcs, str, len, 1252, 0) != 0) {
-				// Failed.
+
+	if ((flags & TEXTCONV_FLAG_JIS_X_0208) && len >= 1) {
+		// Check if the string might be JIS X 0208.
+		// If it is, make it EUC-JP compatible, then convert it.
+		bool is0208 = false;
+		// Heuristic: First character should be 0x21-0x24.
+		if (*str >= 0x21 && *str <= 0x24) {
+			is0208 = true;
+			const char *const p_end = str + len;
+			for (const char *p = str + 1; p < p_end; p++) {
+				const uint8_t chr = static_cast<uint8_t>(*p);
+				if (chr == 0) {
+					// End of string
+					break;
+				} else if (chr & 0x80) {
+					// High bit cannot be set
+					is0208 = false;
+				}
+			}
+		}
+
+		if (is0208) {
+			// Make the string EUC-JP compatible.
+			string eucJP(str, 0, len);
+			for (char &c : eucJP) {
+				c |= 0x80;
+			}
+			if (W32U_mbs_to_UTF16(s_wcs, eucJP.c_str(), eucJP.size(), 20932, dwFlags) != 0) {
 				s_wcs.clear();
+			}
+		}
+	}
+
+	if (s_wcs.empty()) {
+		if (W32U_mbs_to_UTF16(s_wcs, str, len, cp, dwFlags) != 0) {
+			if (flags & TEXTCONV_FLAG_CP1252_FALLBACK) {
+				// Try again using cp1252.
+				if (W32U_mbs_to_UTF16(s_wcs, str, len, 1252, 0) != 0) {
+					// Failed.
+					s_wcs.clear();
+				}
 			}
 		}
 	}

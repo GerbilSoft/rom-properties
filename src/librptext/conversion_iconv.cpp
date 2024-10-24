@@ -222,7 +222,43 @@ string cpN_to_utf8(unsigned int cp, const char *str, int len, unsigned int flags
 	// NOTE: "//IGNORE" sometimes doesn't work, so we won't
 	// check for TEXTCONV_FLAG_CP1252_FALLBACK here.
 	string ret;
-	char *mbs = reinterpret_cast<char*>(rp_iconv((char*)str, len*sizeof(*str), cp_name, "UTF-8", ignoreErr));
+	char *mbs =nullptr;
+
+	if ((flags & TEXTCONV_FLAG_JIS_X_0208) && len >= 1) {
+		// Check if the string might be JIS X 0208.
+		// If it is, make it EUC-JP compatible, then convert it.
+		bool is0208 = false;
+		// Heuristic: First character should be 0x21-0x24.
+		if (*str >= 0x21 && *str <= 0x24) {
+			is0208 = true;
+			const char *const p_end = str + len;
+			for (const char *p = str + 1; p < p_end; p++) {
+				const uint8_t chr = static_cast<uint8_t>(*p);
+				if (chr == 0) {
+					// End of string
+					break;
+				} else if (chr & 0x80) {
+					// High bit cannot be set
+					is0208 = false;
+				}
+			}
+		}
+
+		if (is0208) {
+			// Make the string EUC-JP compatible.
+			string eucJP(str, 0, len);
+			for (char &c : eucJP) {
+				c |= 0x80;
+			}
+			mbs = reinterpret_cast<char*>(rp_iconv((char*)eucJP.data(), eucJP.size(), "EUC-JP", "UTF-8", ignoreErr));
+		}
+	}
+
+	if (!mbs) {
+		// Standard string conversion
+		mbs = reinterpret_cast<char*>(rp_iconv((char*)str, len*sizeof(*str), cp_name, "UTF-8", ignoreErr));
+	}
+
 	if (!mbs /*&& (flags & TEXTCONV_FLAG_CP1252_FALLBACK)*/) {
 		// Try cp1252 fallback.
 		// NOTE: Sometimes cp1252 fails, even with ignore set.
@@ -289,7 +325,43 @@ u16string cpN_to_utf16(unsigned int cp, const char *str, int len, unsigned int f
 	// NOTE: "//IGNORE" sometimes doesn't work, so we won't
 	// check for TEXTCONV_FLAG_CP1252_FALLBACK here.
 	u16string ret;
-	char16_t *wcs = reinterpret_cast<char16_t*>(rp_iconv((char*)str, len*sizeof(*str), cp_name, RP_ICONV_UTF16_ENCODING, ignoreErr));
+	char16_t *wcs = nullptr;
+
+	if ((flags & TEXTCONV_FLAG_JIS_X_0208) && len >= 1) {
+		// Check if the string might be JIS X 0208.
+		// If it is, make it EUC-JP compatible, then convert it.
+		bool is0208 = false;
+		// Heuristic: First character should be 0x21-0x24.
+		if (*str >= 0x21 && *str <= 0x24) {
+			is0208 = true;
+			const char *const p_end = str + len;
+			for (const char *p = str + 1; p < p_end; p++) {
+				const uint8_t chr = static_cast<uint8_t>(*p);
+				if (chr == 0) {
+					// End of string
+					break;
+				} else if (chr & 0x80) {
+					// High bit cannot be set
+					is0208 = false;
+				}
+			}
+		}
+
+		if (is0208) {
+			// Make the string EUC-JP compatible.
+			string eucJP(str, 0, len);
+			for (char &c : eucJP) {
+				c |= 0x80;
+			}
+			wcs = reinterpret_cast<char16_t*>(rp_iconv((char*)eucJP.data(), eucJP.size(), "EUC-JP", RP_ICONV_UTF16_ENCODING, ignoreErr));
+		}
+	}
+
+	if (!wcs) {
+		// Standard string conversion
+		wcs = reinterpret_cast<char16_t*>(rp_iconv((char*)str, len*sizeof(*str), cp_name, RP_ICONV_UTF16_ENCODING, ignoreErr));
+	}
+
 	if (!wcs /*&& (flags & TEXTCONV_FLAG_CP1252_FALLBACK)*/) {
 		// Try cp1252 fallback.
 		// NOTE: Sometimes cp1252 fails, even with ignore set.
