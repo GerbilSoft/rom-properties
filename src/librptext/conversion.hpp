@@ -202,11 +202,11 @@ typedef enum {
  *
  * The specified code page number will be used.
  *
- * @param cp	[in] Code page number.
- * @param str	[in] 8-bit text.
- * @param len	[in] Length of str, in bytes. (-1 for NULL-terminated string)
- * @param flags	[in] Flags. (See TextConv_Flags_e.)
- * @return UTF-8 string.
+ * @param cp	[in] Code page number
+ * @param str	[in] 8-bit text
+ * @param len	[in] Length of str, in bytes (-1 for NULL-terminated string)
+ * @param flags	[in] Flags (See TextConv_Flags_e)
+ * @return UTF-8 string
  */
 RP_LIBROMDATA_PUBLIC
 std::string cpN_to_utf8(unsigned int cp, const char *str, int len, unsigned int flags = 0);
@@ -215,10 +215,10 @@ std::string cpN_to_utf8(unsigned int cp, const char *str, int len, unsigned int 
  * Convert 8-bit text to UTF-8 using an RP-custom code page.
  * Code page number must be CP_RP_*.
  *
- * @param cp	[in] Code page number.
- * @param str	[in] 8-bit text.
- * @param len	[in] Length of str, in bytes. (-1 for NULL-terminated string)
- * @return UTF-8 string.
+ * @param cp	[in] Code page number
+ * @param str	[in] 8-bit text
+ * @param len	[in] Length of str, in bytes (-1 for NULL-terminated string)
+ * @return UTF-8 string
  */
 std::string cpRP_to_utf8(unsigned int cp, const char *str, int len);
 
@@ -228,11 +228,11 @@ std::string cpRP_to_utf8(unsigned int cp, const char *str, int len);
  *
  * The specified code page number will be used.
  *
- * @param cp	[in] Code page number.
- * @param str	[in] 8-bit text.
- * @param len	[in] Length of str, in bytes. (-1 for NULL-terminated string)
- * @param flags	[in] Flags. (See TextConv_Flags_e.)
- * @return UTF-16 string.
+ * @param cp	[in] Code page number
+ * @param str	[in] 8-bit text
+ * @param len	[in] Length of str, in bytes (-1 for NULL-terminated string)
+ * @param flags	[in] Flags (See TextConv_Flags_e)
+ * @return UTF-16 string
  */
 RP_LIBROMDATA_PUBLIC
 std::u16string cpN_to_utf16(unsigned int cp, const char *str, int len, unsigned int flags = 0);
@@ -244,10 +244,10 @@ std::u16string cpN_to_utf16(unsigned int cp, const char *str, int len, unsigned 
  * The specified code page number will be used.
  * Invalid characters will be ignored.
  *
- * @param cp	[in] Code page number.
- * @param str	[in] UTF-8 text.
- * @param len	[in] Length of str, in bytes. (-1 for NULL-terminated string)
- * @return 8-bit text.
+ * @param cp	[in] Code page number
+ * @param str	[in] UTF-8 text
+ * @param len	[in] Length of str, in bytes (-1 for NULL-terminated string)
+ * @return 8-bit text
  */
 RP_LIBROMDATA_PUBLIC
 std::string utf8_to_cpN(unsigned int cp, const char *str, int len);
