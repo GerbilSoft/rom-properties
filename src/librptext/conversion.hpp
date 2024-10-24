@@ -403,18 +403,6 @@ static inline std::string cp1252_sjis_to_utf8(const std::string &str)
 		TEXTCONV_FLAG_CP1252_FALLBACK);
 }
 
-/**
- * Convert cp1252 or Shift-JIS (cp932) text to UTF-16.
- * Trailing NULL bytes will be removed.
- * @param str	[in] cp1252 or Shift-JIS (cp932) text.
- * @param len	[in] Length of str, in bytes. (-1 for NULL-terminated string)
- * @return UTF-16 string.
- */
-static inline std::u16string cp1252_sjis_to_utf16(const char *str, int len)
-{
-	return cpN_to_utf16(932, str, len, TEXTCONV_FLAG_CP1252_FALLBACK);
-}
-
 /* Latin-1 (ISO-8859-1) */
 
 /**

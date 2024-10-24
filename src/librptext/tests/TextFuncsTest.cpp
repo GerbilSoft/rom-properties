@@ -64,7 +64,6 @@ class TextFuncsTest : public ::testing::Test
 		 * cp1252 to UTF-16 test string.
 		 * Contains the expected result from:
 		 * - cp1252_to_utf16(cp1252_data, sizeof(cp1252_data))
-		 * - cp1252_sjis_to_utf16(cp1252_data, sizeof(cp1252_data))
 		 */
 		static const array<char16_t, 250> cp1252_utf16_data;
 
@@ -85,13 +84,6 @@ class TextFuncsTest : public ::testing::Test
 		static const array<uint8_t, 53> sjis_utf8_data;
 
 		/**
-		 * Shift-JIS to UTF-16 test string.
-		 * Contains the expected result from:
-		 * - cp1252_sjis_to_utf16(sjis_data, ARRAY_SIZE_I(sjis_data))
-		 */
-		static const array<char16_t, 19> sjis_utf16_data;
-
-		/**
 		 * Shift-JIS test string with a cp1252 copyright symbol. (0xA9)
 		 * This string is incorrectly detected as Shift-JIS because
 		 * all bytes are valid.
@@ -103,12 +95,6 @@ class TextFuncsTest : public ::testing::Test
 		 * - cp1252_sjis_to_utf8(sjis_copyright_in, sizeof(sjis_copyright_in))
 		 */
 		static const array<uint8_t, 18> sjis_copyright_out_utf8;
-
-		/**
-		 * UTF-16 result from:
-		 * - cp1252_sjis_to_utf16(sjis_copyright_in, sizeof(sjis_copyright_in))
-		 */
-		static const array<char16_t, 16> sjis_copyright_out_utf16;
 
 		/**
 		 * UTF-8 test string.
@@ -382,118 +368,6 @@ TEST_F(TextFuncsTest, cp1252_sjis_to_utf8_japanese)
 	str = cp1252_sjis_to_utf8(C8(sjis_data), (int)sjis_data.size());
 	EXPECT_EQ(sjis_utf8_data.size()-1, str.size());
 	EXPECT_EQ(C8(sjis_utf8_data), str);
-}
-
-/**
- * Test cp1252_sjis_to_utf16() fallback functionality.
- * This strings should be detected as cp1252 due to
- * Shift-JIS decoding errors.
- */
-TEST_F(TextFuncsTest, cp1252_sjis_to_utf16_fallback)
-{
-	// Test with implicit length.
-	u16string str = cp1252_sjis_to_utf16(C8(cp1252_data), -1);
-	EXPECT_EQ(cp1252_utf16_data.size()-1, str.size());
-	EXPECT_EQ(cp1252_utf16_data.data(), str);
-
-	// Test with explicit length.
-	str = cp1252_sjis_to_utf16(C8(cp1252_data), (int)cp1252_data.size()-1);
-	EXPECT_EQ(cp1252_utf16_data.size()-1, str.size());
-	EXPECT_EQ(cp1252_utf16_data.data(), str);
-
-	// Test with explicit length and an extra NULL.
-	// The extra NULL should be trimmed.
-	str = cp1252_sjis_to_utf16(C8(cp1252_data), (int)cp1252_data.size());
-	EXPECT_EQ(cp1252_utf16_data.size()-1, str.size());
-	EXPECT_EQ(cp1252_utf16_data.data(), str);
-}
-
-/**
- * Test cp1252_sjis_to_utf8() fallback functionality.
- * This string is incorrectly detected as Shift-JIS because
- * all bytes are valid.
- */
-TEST_F(TextFuncsTest, cp1252_sjis_to_utf16_copyright)
-{
-	// cp1252 code point 0xA9 is the copyright symbol,
-	// but it's also halfwidth katakana "U" in Shift-JIS.
-
-	// Test with implicit length.
-	u16string str = cp1252_sjis_to_utf16(C8(sjis_copyright_in), -1);
-	EXPECT_EQ(sjis_copyright_out_utf16.size()-1, str.size());
-	EXPECT_EQ(sjis_copyright_out_utf16.data(), str);
-
-	// Test with explicit length.
-	str = cp1252_sjis_to_utf16(C8(sjis_copyright_in), (int)sjis_copyright_in.size()-1);
-	EXPECT_EQ(sjis_copyright_out_utf16.size()-1, str.size());
-	EXPECT_EQ(sjis_copyright_out_utf16.data(), str);
-
-	// Test with explicit length and an extra NULL.
-	// The extra NULL should be trimmed.
-	str = cp1252_sjis_to_utf16(C8(sjis_copyright_in), (int)sjis_copyright_in.size());
-	EXPECT_EQ(sjis_copyright_out_utf16.size()-1, str.size());
-	EXPECT_EQ(sjis_copyright_out_utf16.data(), str);
-}
-
-/**
- * Test cp1252_sjis_to_utf16() with ASCII strings.
- * Note that backslashes will *not* be converted to
- * yen symbols, so this should be a no-op.
- *
- * FIXME: Backslash may be converted to yen symbols
- * on Windows if the system has a Japanese locale.
- */
-TEST_F(TextFuncsTest, cp1252_sjis_to_utf16_ascii)
-{
-	static constexpr char cp1252_in[] = "C:\\Windows\\System32";
-
-	// NOTE: Need to manually initialize the char16_t[] array
-	// due to the way _RP() is implemented for versions of
-	// MSVC older than 2015.
-	static constexpr array<char16_t, 19+1> utf16_out = {{
-		'C',':','\\','W','i','n','d','o',
-		'w','s','\\','S','y','s','t','e',
-		'm','3','2',0
-	}};
-
-	// Test with implicit length.
-	u16string str = cp1252_sjis_to_utf16(cp1252_in, -1);
-	EXPECT_EQ(utf16_out.size()-1, str.size());
-	EXPECT_EQ(utf16_out.data(), str);
-
-	// Test with explicit length.
-	str = cp1252_sjis_to_utf16(cp1252_in, ARRAY_SIZE_I(cp1252_in)-1);
-	EXPECT_EQ(utf16_out.size()-1, str.size());
-	EXPECT_EQ(utf16_out.data(), str);
-
-	// Test with explicit length and an extra NULL.
-	// The extra NULL should be trimmed.
-	str = cp1252_sjis_to_utf16(cp1252_in, ARRAY_SIZE_I(cp1252_in));
-	EXPECT_EQ(utf16_out.size()-1, str.size());
-	EXPECT_EQ(utf16_out.data(), str);
-}
-
-/**
- * Test cp1252_sjis_to_utf16() with Japanese text.
- * This includes a wave dash character (8160).
- */
-TEST_F(TextFuncsTest, cp1252_sjis_to_utf16_japanese)
-{
-	// Test with implicit length.
-	u16string str = cp1252_sjis_to_utf16(C8(sjis_data), -1);
-	EXPECT_EQ(sjis_utf16_data.size()-1, str.size());
-	EXPECT_EQ(sjis_utf16_data.data(), str);
-
-	// Test with explicit length.
-	str = cp1252_sjis_to_utf16(C8(sjis_data), (int)sjis_data.size()-1);
-	EXPECT_EQ(sjis_utf16_data.size()-1, str.size());
-	EXPECT_EQ(sjis_utf16_data.data(), str);
-
-	// Test with explicit length and an extra NULL.
-	// The extra NULL should be trimmed.
-	str = cp1252_sjis_to_utf16(C8(sjis_data), (int)sjis_data.size());
-	EXPECT_EQ(sjis_utf16_data.size()-1, str.size());
-	EXPECT_EQ(sjis_utf16_data.data(), str);
 }
 
 /** UTF-8 to UTF-16 and vice-versa **/

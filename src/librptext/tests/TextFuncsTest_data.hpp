@@ -197,17 +197,6 @@ const std::array<uint8_t, 53> TextFuncsTest::sjis_utf8_data = {{
 }};
 
 /**
- * Shift-JIS to UTF-16 test string.
- * Contains the expected result from:
- * - cp1252_sjis_to_utf16(sjis_data, ARRAY_SIZE_I(sjis_data))
- */
-const std::array<char16_t, 19> TextFuncsTest::sjis_utf16_data = {{
-    0x30DD, 0x30B1, 0x30E2, 0x30F3, 0x30B3, 0x30ED, 0x30B7, 0x30A2,
-    0x30E0, 0x000A, 0x30BB, 0x30FC, 0x30D6, 0x30D5, 0x30A1, 0x30A4,
-    0x30EB, 0xFF5E, 0x0000
-}};
-
-/**
  * Shift-JIS test string with a cp1252 copyright symbol. (0xA9)
  * This string is incorrectly detected as Shift-JIS because
  * all bytes are valid.
@@ -225,15 +214,6 @@ const std::array<uint8_t, 18> TextFuncsTest::sjis_copyright_out_utf8 = {{
 	0xEF,0xBD,0xA9,0x20,0x32,0x30,0x30,0x32,
 	0x20,0x4E,0x69,0x6E,0x74,0x65,0x6E,0x64,
 	0x6F,0x00
-}};
-
-/**
- * UTF-16 result from:
- * - cp1252_sjis_to_utf16(sjis_copyright_in, sizeof(sjis_copyright_in))
- */
-const std::array<char16_t, 16> TextFuncsTest::sjis_copyright_out_utf16 = {{
-	0xFF69,0x0020,0x0032,0x0030,0x0030,0x0032,0x0020,0x004E,
-	0x0069,0x006E,0x0074,0x0065,0x006E,0x0064,0x006F,0x0000
 }};
 
 /**
