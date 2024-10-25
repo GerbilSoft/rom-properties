@@ -646,7 +646,7 @@ int EXEPrivate::addFields_NE_Entry(void)
 	const char *const s_address_movable = C_("EXE|Exports", "Movable");
 	const char *const s_address_fixed = C_("EXE|Exports", "Fixed");
 
-	auto vv_data = new RomFields::ListData_t();
+	auto *const vv_data = new RomFields::ListData_t();
 	vv_data->reserve(ents.size());
 	for (const Entry &ent : ents) {
 		vv_data->emplace_back();
@@ -821,7 +821,7 @@ int EXEPrivate::addFields_NE_Import(void)
 
 	const char *const s_no_name = C_("EXE|Exports", "(No name)");
 
-	auto vv_data = new RomFields::ListData_t();
+	auto *const vv_data = new RomFields::ListData_t();
 	vv_data->reserve(ordinal_set.size() + name_set.size());
 	for (const auto &imp : ordinal_set) {
 		string modname;

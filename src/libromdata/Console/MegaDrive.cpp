@@ -593,7 +593,7 @@ void MegaDrivePrivate::addFields_vectorTable(const M68K_VectorTable *pVectors)
 	static_assert(vectors_offtbl.size() == vectors_map.size(),
 		"vectors_offtbl[] and vectors_map[] are out of sync.");
 
-	auto vv_vectors = new RomFields::ListData_t(vectors_offtbl.size());
+	auto *const vv_vectors = new RomFields::ListData_t(vectors_offtbl.size());
 	auto iter = vv_vectors->begin();
 	const auto vv_vectors_end = vv_vectors->end();
 	for (size_t i = 0; i < vectors_offtbl.size() && iter != vv_vectors_end; ++i, ++iter) {

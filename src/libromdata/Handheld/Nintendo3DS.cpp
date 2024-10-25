@@ -1128,7 +1128,7 @@ int Nintendo3DSPrivate::addFields_permissions(void)
 	}};
 
 	// Convert to vector<vector<string> > for RFT_LISTDATA.
-	auto vv_fs = new RomFields::ListData_t(perm_fs_access.size());
+	auto *const vv_fs = new RomFields::ListData_t(perm_fs_access.size());
 	for (int i = static_cast<int>(perm_fs_access.size())-1; i >= 0; i--) {
 		auto &data_row = vv_fs->at(i);
 		data_row.emplace_back(perm_fs_access[i]);
@@ -1161,7 +1161,7 @@ int Nintendo3DSPrivate::addFields_permissions(void)
 	    perm.ioAccessVersion == 3)
 	{
 		// Convert to RomFields::ListData_t for RFT_LISTDATA.
-		auto vv_arm9 = new RomFields::ListData_t(perm_arm9_access.size());
+		auto *const vv_arm9 = new RomFields::ListData_t(perm_arm9_access.size());
 		for (int i = static_cast<int>(perm_arm9_access.size())-1; i >= 0; i--) {
 			auto &data_row = vv_arm9->at(i);
 			data_row.emplace_back(perm_arm9_access[i]);
@@ -1176,7 +1176,7 @@ int Nintendo3DSPrivate::addFields_permissions(void)
 	// The field is NULL-padded, though if the service name
 	// is 8 characters long, there won't be any NULLs.
 	// TODO: How to determine 32 or 34? (descriptor version?)
-	auto vv_svc = new RomFields::ListData_t();
+	auto *const vv_svc = new RomFields::ListData_t();
 	vv_svc->reserve(N3DS_SERVICE_MAX);
 	const char *svc = perm.services[0];
 	for (unsigned int i = 0; i < N3DS_SERVICE_MAX; i++, svc += N3DS_SERVICE_LEN) {
@@ -1953,7 +1953,7 @@ int Nintendo3DS::loadFieldData(void)
 		}
 
 		// Partition table.
-		auto vv_partitions = new RomFields::ListData_t();
+		auto *const vv_partitions = new RomFields::ListData_t();
 		vv_partitions->reserve(8);
 
 		// Process the partition table.
@@ -2114,7 +2114,7 @@ int Nintendo3DS::loadFieldData(void)
 			RomFields::STRF_MONOSPACE);
 
 		// Contents table.
-		auto vv_contents = new RomFields::ListData_t();
+		auto *const vv_contents = new RomFields::ListData_t();
 		vv_contents->reserve(d->content_chunks.size());
 
 		// Process the contents.

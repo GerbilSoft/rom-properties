@@ -841,13 +841,17 @@ int ELFPrivate::addPtDynamicFields(void)
 	};
 
 	if (Elf_Header.primary.e_class == ELFCLASS64) {
-		for (auto &dyn : reinterpret_span<const Elf64_Dyn>(pt_dyn_buf))
-			if (process_dtag(elf64_to_cpu(dyn.d_tag), elf64_to_cpu(dyn.d_un.d_val)))
+		for (const auto &dyn : reinterpret_span<const Elf64_Dyn>(pt_dyn_buf)) {
+			if (process_dtag(elf64_to_cpu(dyn.d_tag), elf64_to_cpu(dyn.d_un.d_val))) {
 				break;
+			}
+		}
 	} else {
-		for (auto &dyn : reinterpret_span<const Elf32_Dyn>(pt_dyn_buf))
-			if (process_dtag(elf32_to_cpu(dyn.d_tag), elf32_to_cpu(dyn.d_un.d_val)))
+		for (const auto &dyn : reinterpret_span<const Elf32_Dyn>(pt_dyn_buf)) {
+			if (process_dtag(elf32_to_cpu(dyn.d_tag), elf32_to_cpu(dyn.d_un.d_val))) {
 				break;
+			}
+		}
 	}
 
 	rp::uvector<uint8_t> strtab_buf;
@@ -919,7 +923,7 @@ int ELFPrivate::addPtDynamicFields(void)
 			fields.addField_string("DT_RUNPATH", &strtab[val_dtag[DT_RUNPATH]]);
 
 		if (strtab.size() != 0 && needed.size() != 0) {
-			auto vv_data = new RomFields::ListData_t();
+			auto *const vv_data = new RomFields::ListData_t();
 			for (const auto offset : needed) {
 				assert(offset < strtab.size());
 				if (offset >= strtab.size())
@@ -1036,7 +1040,7 @@ int ELFPrivate::addSymbolFields(span<const char> dynsym_strtab)
 		const char *const elf_sym_absolute = C_("ELF|Symbol", "(Absolute)");
 		const char *const elf_sym_common = C_("ELF|Symbol", "(COMMON)");
 
-		auto vv_data = new RomFields::ListData_t();
+		auto *const vv_data = new RomFields::ListData_t();
 		for (const auto &sym : tab) {
 			assert(sym.st_name < strtab.size());
 			if (sym.st_name >= strtab.size()) {

@@ -64,7 +64,7 @@ void SortFuncsTest_gtk3::SetUp()
 	// Add the "randomized" list data.
 	// NOTE: Outer vector is rows, not columns!
 	// TODO: Add from the sorted data, then do a random sort?
-	for (auto *p : list_data_randomized) {
+	for (const auto *const p : list_data_randomized) {
 		GtkTreeIter treeIter;
 		gtk_list_store_append(listStore, &treeIter);
 		gtk_list_store_set(listStore, &treeIter, 0, p[0], 1, p[1], 2, p[2], 3, p[3], -1);

@@ -338,7 +338,7 @@ int WimPrivate::addFields_XML()
 		currentimage = currentimage->NextSiblingElement();
 	}
 
-	auto vv_data = new RomFields::ListData_t();
+	auto *const vv_data = new RomFields::ListData_t();
 	vv_data->reserve(number_of_images);
 
 	// loop for the rows

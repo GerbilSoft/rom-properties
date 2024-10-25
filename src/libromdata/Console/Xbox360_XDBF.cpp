@@ -1020,7 +1020,7 @@ int Xbox360_XDBF_Private::addFields_achievements_SPA(void)
 			? new RomFields::ListData_t(xach_count)
 			: nullptr;
 	}
-	auto vv_icons = new RomFields::ListDataIcons_t(xach_count);
+	auto *const vv_icons = new RomFields::ListDataIcons_t(xach_count);
 	auto icon_iter = vv_icons->begin();
 	for (unsigned int i = 0; p < p_end && i < xach_count; p++, i++, ++icon_iter) {
 		// NOTE: Not deduplicating strings here.
@@ -1232,7 +1232,7 @@ int Xbox360_XDBF_Private::addFields_avatarAwards_SPA(void)
 			? new RomFields::ListData_t(xgaa_count)
 			: nullptr;
 	}
-	auto vv_icons = new RomFields::ListDataIcons_t(xgaa_count);
+	auto *const vv_icons = new RomFields::ListDataIcons_t(xgaa_count);
 	auto icon_iter = vv_icons->begin();
 	for (unsigned int i = 0; p < p_end && i < xgaa_count; p++, i++, ++icon_iter) {
 		// NOTE: Not deduplicating strings here.
@@ -1406,7 +1406,7 @@ int Xbox360_XDBF_Private::addFields_achievements_GPD(void)
 		"Xbox360_XDBF|Achievements", xach_col_names);
 
 	RomFields::ListData_t *vv_xach = new RomFields::ListData_t();
-	auto vv_icons = new RomFields::ListDataIcons_t();
+	auto *const vv_icons = new RomFields::ListDataIcons_t();
 	vv_xach->reserve(16);
 	vv_icons->reserve(16);
 

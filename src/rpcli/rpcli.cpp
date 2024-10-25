@@ -508,7 +508,7 @@ static void ShowUsage(void)
 		{"  -a:  ", NOP_C_("rpcli", "Extract the animated icon to outfile in APNG format.")},
 	};
 
-	for (auto &p : cmds) {
+	for (const auto &p : cmds) {
 		fputs(p.opt, stderr);
 		fputs(pgettext_expr("rpcli", p.desc), stderr);
 		fputc('\n', stderr);
@@ -525,7 +525,7 @@ static void ShowUsage(void)
 
 	fputs(C_("rpcli", "Special options for devices:"), stderr);
 	fputc('\n', stderr);
-	for (auto &p : cmds_dev) {
+	for (const auto &p : cmds_dev) {
 		fputs(p.opt, stderr);
 		fputs(pgettext_expr("rpcli", p.desc), stderr);
 		fputc('\n', stderr);

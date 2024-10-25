@@ -603,7 +603,7 @@ void ListDataModel::setField(const RomFields::Field *pField)
 		// NOTE: Assuming all languages have the same number of rows.
 		rowCount = static_cast<int>(multi->cbegin()->second.size());
 
-		for (auto &pdm : *multi) {
+		for (const auto &pdm : *multi) {
 			assert(static_cast<int>(pdm.second.size()) == rowCount);
 			auto pair = d->map_data.emplace(pdm.first,
 				d->convertListDataToVector(&(pdm.second), pField));

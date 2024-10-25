@@ -883,7 +883,7 @@ int SNDH::loadFieldData(void)
 		uint64_t duration_total = 0;
 
 		const size_t count = std::max(tags.subtune_names.size(), tags.subtune_lengths.size());
-		auto vv_subtune_list = new RomFields::ListData_t(count);
+		auto *const vv_subtune_list = new RomFields::ListData_t(count);
 		unsigned int idx = 0;
 		for (vector<string> &data_row : *vv_subtune_list) {
 			data_row.reserve(col_count);	// 2 or 3 fields per row.

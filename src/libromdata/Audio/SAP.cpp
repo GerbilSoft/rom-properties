@@ -665,7 +665,7 @@ int SAP::loadFieldData(void)
 		const char *const s_no = C_("RomData", "No");
 
 		unsigned int song_num = 0;
-		auto song_list = new RomFields::ListData_t(tags.durations.size());
+		auto *const song_list = new RomFields::ListData_t(tags.durations.size());
 		auto src_iter = tags.durations.cbegin();
 		auto dest_iter = song_list->begin();
 		const auto song_list_end = song_list->end();

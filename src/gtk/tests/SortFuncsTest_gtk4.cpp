@@ -112,7 +112,7 @@ void SortFuncsTest_gtk4::SetUp()
 	// Add the "randomized" list data.
 	// NOTE: Outer vector is rows, not columns!
 	// TODO: Add from the sorted data, then do a random sort?
-	for (auto *p : list_data_randomized) {
+	for (const auto *const p : list_data_randomized) {
 		RpListDataItem *const item = rp_list_data_item_new(4, RP_LIST_DATA_ITEM_COL0_TYPE_TEXT);
 		rp_list_data_item_set_column_text(item, 0, p[0]);
 		rp_list_data_item_set_column_text(item, 1, p[1]);

@@ -354,7 +354,7 @@ JSONROMOutput::JSONROMOutput(const RomData *romdata, uint32_t lc, unsigned int f
 	, crlf_(false) { }
 RP_LIBROMDATA_PUBLIC
 std::ostream& operator<<(std::ostream& os, const JSONROMOutput& fo) {
-	auto romdata = fo.romdata;
+	const auto *const romdata = fo.romdata;
 	assert(romdata && romdata->isValid());
 
 	const char *const systemName = romdata->systemName(RomData::SYSNAME_TYPE_LONG | RomData::SYSNAME_REGION_ROM_LOCAL);

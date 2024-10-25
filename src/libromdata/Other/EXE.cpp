@@ -319,7 +319,7 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 	// random due to unordered_map<>.
 	// TODO: Show certain entries as their own fields?
 	const auto &st = pVsSfi->begin()->second;
-	auto vv_data = new RomFields::ListData_t(st.size());
+	auto *const vv_data = new RomFields::ListData_t(st.size());
 	for (size_t i = 0; i < st.size(); i++) {
 		const auto &st_row = st.at(i);
 		auto &data_row = vv_data->at(i);

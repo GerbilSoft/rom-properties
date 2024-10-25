@@ -935,7 +935,7 @@ ROMOutput::ROMOutput(const RomData *romdata, uint32_t lc, unsigned int flags)
 	, flags(flags) { }
 RP_LIBROMDATA_PUBLIC
 std::ostream& operator<<(std::ostream& os, const ROMOutput& fo) {
-	auto romdata = fo.romdata;
+	const auto *const romdata = fo.romdata;
 	const char *const systemName = romdata->systemName(RomData::SYSNAME_TYPE_LONG | RomData::SYSNAME_REGION_ROM_LOCAL);
 	const char *const fileType = romdata->fileType_string();
 	assert(systemName != nullptr);

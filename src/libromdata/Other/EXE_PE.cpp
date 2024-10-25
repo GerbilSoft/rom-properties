@@ -900,7 +900,7 @@ int EXEPrivate::addFields_PE_Export(void)
 		});
 
 	// Convert to ListData
-	auto vv_data = new RomFields::ListData_t();
+	auto *const vv_data = new RomFields::ListData_t();
 	vv_data->reserve(ents.size());
 	for (const ExportEntry &ent : ents) {
 		// Filter out any unused ordinals.
@@ -1099,7 +1099,7 @@ int EXEPrivate::addFields_PE_Import(void)
 	}
 
 	// Generate list data
-	auto vv_data = new RomFields::ListData_t();
+	auto *const vv_data = new RomFields::ListData_t();
 	vv_data->reserve(import_count);
 	for (IltIterator it(ilt_end); iltAdvance(it); ) {
 		vv_data->emplace_back();
@@ -1111,7 +1111,8 @@ int EXEPrivate::addFields_PE_Import(void)
 		} else {
 			// RVA to hint number followed by NUL terminated name.
 			// FIXME: How does XEX handle this?
-			auto ent = &dll_hint_data[it.value - dll_hint_base];
+			const char *const ent = &dll_hint_data[it.value - dll_hint_base];
+			// FIXME: This may break on non-i386/amd64 systems...
 			const uint16_t hint = le16_to_cpu(*reinterpret_cast<const uint16_t*>(ent));
 			row.emplace_back(ent+2);
 			row.emplace_back(rp_sprintf("%u", hint));

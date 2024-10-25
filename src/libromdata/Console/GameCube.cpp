@@ -1653,7 +1653,7 @@ int GameCube::loadFieldData(void)
 		}
 
 		// Partition table.
-		auto vv_partitions = new RomFields::ListData_t();
+		auto *const vv_partitions = new RomFields::ListData_t();
 		vv_partitions->resize(d->wiiPtbl.size());
 
 		auto src_iter = d->wiiPtbl.cbegin();

@@ -1216,8 +1216,8 @@ int CBMDOS::loadFieldData(void)
 	// since it might be incorrect. Assuming dir_track/dir_first_sector.
 	bitset<64> sectors_read(1);	// Sector 0 is not allowed here, so mark it as 'read'.
 
-	vector<vector<string> > *const vv_dir = new vector<vector<string> >();
-	auto vv_icons = new RomFields::ListDataIcons_t;	// for GEOS files only
+	auto *const vv_dir = new vector<vector<string> >();
+	auto *const vv_icons = new RomFields::ListDataIcons_t;	// for GEOS files only
 	bool has_icons = false;
 
 	const unsigned int sector_count = d->track_offsets[d->dir_track-1].sector_count;

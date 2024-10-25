@@ -510,7 +510,7 @@ int WiiUPackagePrivate::T_isDirSupported_static(const T *path, const array<const
 	const size_t path_orig_size = s_path.size();
 
 	// Check for the required files.
-	for (const auto filename : filenames_to_check) {
+	for (const auto *const filename : filenames_to_check) {
 		s_path.resize(path_orig_size);
 		s_path += filename;
 

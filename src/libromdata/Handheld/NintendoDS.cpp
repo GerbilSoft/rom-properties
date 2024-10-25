@@ -322,7 +322,7 @@ RomFields::ListData_t *NintendoDSPrivate::getDSiFlagsStringVector(void)
 	}};
 
 	// Convert to RomFields::ListData_t for RFT_LISTDATA.
-	auto vv_dsi_flags = new RomFields::ListData_t(ARRAY_SIZE(dsi_flags_bitfield_names));
+	auto *const vv_dsi_flags = new RomFields::ListData_t(ARRAY_SIZE(dsi_flags_bitfield_names));
 	for (int i = ARRAY_SIZE(dsi_flags_bitfield_names)-1; i >= 0; i--) {
 		auto &data_row = vv_dsi_flags->at(i);
 		data_row.emplace_back(
@@ -768,7 +768,7 @@ int NintendoDS::loadFieldData(void)
 			// NOTE: These are present in NDS games released after the DSi,
 			// even if the game isn't DSi-enhanced.
 			d->fields.addTab("DSi");
-			auto vv_dsi_flags = d->getDSiFlagsStringVector();
+			auto *const vv_dsi_flags = d->getDSiFlagsStringVector();
 			RomFields::AFLD_PARAMS params(RomFields::RFT_LISTDATA_CHECKBOXES, 8);
 			params.headers = nullptr;
 			params.data.single = vv_dsi_flags;
@@ -936,7 +936,7 @@ int NintendoDS::loadFieldData(void)
 	}};
 
 	// Convert to RomFields::ListData_t for RFT_LISTDATA.
-	auto vv_dsi_perm = new RomFields::ListData_t(ARRAY_SIZE(dsi_permissions_bitfield_names));
+	auto *const vv_dsi_perm = new RomFields::ListData_t(ARRAY_SIZE(dsi_permissions_bitfield_names));
 	for (int i = ARRAY_SIZE(dsi_permissions_bitfield_names)-1; i >= 0; i--) {
 		auto &data_row = vv_dsi_perm->at(i);
 		data_row.emplace_back(
@@ -951,7 +951,7 @@ int NintendoDS::loadFieldData(void)
 	d->fields.addField_listData(C_("NintendoDS", "Permissions"), &params);
 
 	// DSi flags
-	auto vv_dsi_flags = d->getDSiFlagsStringVector();
+	auto *const vv_dsi_flags = d->getDSiFlagsStringVector();
 	params.headers = nullptr;
 	params.data.single = vv_dsi_flags;
 	params.mxd.checkboxes = romHeader->dsi.flags;
