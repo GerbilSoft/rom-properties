@@ -71,10 +71,11 @@ $ make
 $ sudo make install
 (KDE 4.x) $ kbuildsycoca4 --noincremental
 (KDE 5.x) $ kbuildsycoca5 --noincremental
+(KDE 6.x) $ kbuildsycoca6 --noincremental
 ```
 
-NOTE: Neither KDE 4.x nor KDE 5.x will find the rom-properties plugin if it's
-installed in /usr/local/. It must be installed in /usr/.
+NOTE: KDE will not find the rom-properties plugin if it's installed in
+/usr/local/. It must be installed in /usr/.
 
 After installing, the plugin needs to be enabled in the Dolphin file browser:
 * Close all instances of Dolphin.
