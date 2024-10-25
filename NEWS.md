@@ -41,6 +41,9 @@
   * Dreamcast: CDI format disc images are now supported.
     * Fixes #107: Dreamcast: CDI support.
   * MegaDrive: Add a title encoding heuristic for JIS X 0208.
+  * PowerVR3: Preliminary support for PowerVR v2.0 files.
+    * Only uncompressed v2.0 textures are supported right now.
+    * Not all formats are implemented yet.
 
 * Bug fixes:
   * On Linux, rp-config now correctly detects KDE Plasma 6 and uses the

@@ -58,6 +58,17 @@ class PowerVR3Private final : public FileFormatPrivate
 		static const TextureInfo textureInfo;
 
 	public:
+		enum class PVRType {
+			Unknown = -1,
+
+			PVR3	= 0,	// PowerVR 3.0.0
+			PVR2	= 1,	// PowerVR 2.0 (Legacy format)
+
+			Max
+		};
+		PVRType pvrType;
+
+	public:
 		// PVR3 header
 		PowerVR3_Header pvr3Header;
 
@@ -86,7 +97,7 @@ class PowerVR3Private final : public FileFormatPrivate
 		unsigned int texDataStartAddr;
 
 		/**
-		 * Uncompressed format lookup table.
+		 * Uncompressed format lookup table
 		 * NOTE: pixel_format appears byteswapped here because trailing '\0'
 		 * isn't supported by MSVC, so e.g. 'rgba' is 'abgr', and
 		 * 'i\0\0\0' is '\0\0\0i'. This *does* match the LE format, though.
@@ -104,6 +115,13 @@ class PowerVR3Private final : public FileFormatPrivate
 #if 0
 		static const array<FmtLkup_t,  0> fmtLkup_tbl_U32;
 #endif
+
+		/**
+		 * Legacy format lookup table
+		 * Index == PowerVR_Legacy_Pixel_Format_e
+		 * TODO: Compressed formats?
+		 */
+		static const array<FmtLkup_t, 32> fmtLkup_tbl_legacy;
 
 	private:
 		/**
@@ -127,6 +145,13 @@ class PowerVR3Private final : public FileFormatPrivate
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
 		int loadPvr3Metadata(void);
+
+		/**
+		 * Convert a legacy PowerVR pixel format to PowerVR3.
+		 * This applies the specified format to this->pvr3Header.
+		 * @param pixel_format Legacy PowerVR pixel format
+		 */
+		void legacyPowerVRPixelFormatToPVR3(PowerVR_Legacy_Pixel_Format_e pixel_format);
 };
 
 FILEFORMAT_IMPL(PowerVR3)
@@ -150,7 +175,7 @@ const TextureInfo PowerVR3Private::textureInfo = {
 	exts, mimeTypes
 };
 
-// Uncompressed format lookup table. (UBYTE, UBYTE_NORM)
+// Uncompressed format lookup table (UBYTE, UBYTE_NORM)
 const array<PowerVR3Private::FmtLkup_t, 11> PowerVR3Private::fmtLkup_tbl_U8 = {{
 	//{   'i', 0x00000008, ImageDecoder::PixelFormat::I8,		 8},
 	//{   'r', 0x00000008, ImageDecoder::PixelFormat::R8,		 8},
@@ -184,7 +209,7 @@ const array<PowerVR3Private::FmtLkup_t, 11> PowerVR3Private::fmtLkup_tbl_U8 = {{
 #endif
 }};
 
-// Uncompressed format lookup table. (USHORT, USHORT_NORM)
+// Uncompressed format lookup table (USHORT, USHORT_NORM)
 const array<PowerVR3Private::FmtLkup_t, 1> PowerVR3Private::fmtLkup_tbl_U16 = {{
 	//{'\0\0\0r', 0x00000010, ImageDecoder::PixelFormat::R16,		16},
 	{ '\0\0gr', 0x00001010, ImageDecoder::PixelFormat::G16R16,	32},
@@ -195,7 +220,7 @@ const array<PowerVR3Private::FmtLkup_t, 1> PowerVR3Private::fmtLkup_tbl_U16 = {{
 }};
 
 #if 0
-// Uncompressed format lookup table. (UINT, UINT_NORM)
+// Uncompressed format lookup table (UINT, UINT_NORM)
 const array<PowerVR3Private::FmtLkup_t, 0> PowerVR3Private::fmtLkup_tbl_U32 = {{
 	//{'\0\0\0r', 0x00000020, ImageDecoder::PixelFormat::R32,			32},
 	//{ '\0\0gr', 0x00002020, ImageDecoder::PixelFormat::G32R32,		32},
@@ -209,8 +234,54 @@ const array<PowerVR3Private::FmtLkup_t, 0> PowerVR3Private::fmtLkup_tbl_U32 = {{
 }};
 #endif
 
+/**
+ * Legacy format lookup table
+ * Index == PowerVR_Legacy_Pixel_Format_e
+ * TODO: Compressed formats?
+ */
+const array<PowerVR3Private::FmtLkup_t, 32> PowerVR3Private::fmtLkup_tbl_legacy = {{
+	// TODO: Test these formats.
+
+	// MGL Formats
+	{ 'argb', 0x04040404, ImageDecoder::PixelFormat::ARGB8888, 16},	// MGL_ARGB_4444 = 0x00
+	{ 'argb', 0x01050505, ImageDecoder::PixelFormat::ARGB1555, 16},	// MGL_ARGB_1555
+	{'\0rgb', 0x00050605, ImageDecoder::PixelFormat::RGB565,   16},	// MGL_RGB_565
+	{'\0rgb', 0x00050505, ImageDecoder::PixelFormat::RGB555,   15},	// MGL_RGB_555
+	{'\0rgb', 0x00080808, ImageDecoder::PixelFormat::RGB888,   24},	// MGL_RGB_888
+	{ 'argb', 0x08080808, ImageDecoder::PixelFormat::ARGB8888, 32},	// MGL_ARGB_8888
+	{ 'argb', 0x08030302, ImageDecoder::PixelFormat::ARGB8332, 16},	// MGL_ARGB_8332
+	{      0,          0, ImageDecoder::PixelFormat::Unknown,   0},	// MGL_I_8 [TODO]
+	{      0,          0, ImageDecoder::PixelFormat::Unknown,   0},	// MGL_AI_88 [TODO]
+	{      0,          0, ImageDecoder::PixelFormat::Unknown,   0},	// MGL_1_BPP [TODO]
+	{      0,          0, ImageDecoder::PixelFormat::Unknown,   0},	// MGL_VY1UY0 [TODO]
+	{      0,          0, ImageDecoder::PixelFormat::Unknown,   0},	// MGL_Y1VY0U [TODO]
+	{      0,          0, ImageDecoder::PixelFormat::Unknown,   0},	// MGL_PVRTC2 [TODO]
+	{      0,          0, ImageDecoder::PixelFormat::Unknown,   0},	// MGL_PVRTC4 [TODO]
+	{      0,          0, ImageDecoder::PixelFormat::Unknown,   0},
+	{      0,          0, ImageDecoder::PixelFormat::Unknown,   0},
+
+	// openGL Formats
+	{ 'rgba', 0x04040404, ImageDecoder::PixelFormat::RGBA4444, 16},	// GL_RGBA_4444 = 0x10
+	{ 'rgba', 0x05050501, ImageDecoder::PixelFormat::RGBA5551, 16},	// GL_RGBA_5551
+	{'\0rgb', 0x00050605, ImageDecoder::PixelFormat::RGB565,   16},	// GL_RGB_565
+	{'\0rgb', 0x00050505, ImageDecoder::PixelFormat::RGB555,   15},	// GL_RGB_555
+	{'\0rgb', 0x00080808, ImageDecoder::PixelFormat::RGB888,   24},	// GL_RGB_888
+	{      0,          0, ImageDecoder::PixelFormat::Unknown,   0},	// GL_I_8 [TODO]
+	{      0,          0, ImageDecoder::PixelFormat::Unknown,   0},	// GL_AI_88 [TODO]
+	{      0,          0, ImageDecoder::PixelFormat::Unknown,   0},	// GL_PVRTC2 [TODO]
+	{      0,          0, ImageDecoder::PixelFormat::Unknown,   0},	// GL_PVRTC4 [TODO]
+	{ 'bgra', 0x08080808, ImageDecoder::PixelFormat::BGRA8888, 32},	// GL_BGRA_8888
+	{      0,          0, ImageDecoder::PixelFormat::Unknown,   0},	// GL_A_8 [TODO]
+	{      0,          0, ImageDecoder::PixelFormat::Unknown,   0},	// GL_PVRTCII4 [TODO]
+	{      0,          0, ImageDecoder::PixelFormat::Unknown,   0},	// GL_PVRTCII2 [TODO]
+	{      0,          0, ImageDecoder::PixelFormat::Unknown,   0},
+	{      0,          0, ImageDecoder::PixelFormat::Unknown,   0},
+	{      0,          0, ImageDecoder::PixelFormat::Unknown,   0},
+}};
+
 PowerVR3Private::PowerVR3Private(PowerVR3 *q, const IRpFilePtr &file)
 	: super(q, file, &textureInfo)
+	, pvrType(PVRType::Unknown)
 	, isByteswapNeeded(false)
 	, flipOp(rp_image::FLIP_NONE)
 	, orientation_valid(false)
@@ -248,16 +319,39 @@ size_t PowerVR3Private::calcExpectedSizeForMip0(const FmtLkup_t **out_fmt) const
 			return 0;
 		}
 
-		// TODO: Check fmtLkup_tbl_U16 too? Need some test files...
 		const FmtLkup_t *fmtLkup = nullptr;
-		for (const auto &p : fmtLkup_tbl_U8) {
-			if (p.pixel_format == pvr3Header.pixel_format &&
-			    p.channel_depth == pvr3Header.channel_depth)
-			{
-				fmtLkup = &p;
+		switch (pvrType) {
+			default:
+				// Invalid PVR type...
+				if (out_fmt) {
+					*out_fmt = nullptr;
+				}
+				return 0;
+
+			case PVRType::PVR3:
+				// TODO: Check fmtLkup_tbl_U16 too? Need some test files...
+				for (const auto &p : fmtLkup_tbl_U8) {
+					if (p.pixel_format == pvr3Header.pixel_format &&
+					    p.channel_depth == pvr3Header.channel_depth)
+					{
+						fmtLkup = &p;
+						break;
+					}
+				}
 				break;
-			}
+
+			case PVRType::PVR2:
+				for (const auto &p : fmtLkup_tbl_legacy) {
+					if (p.pixel_format == pvr3Header.pixel_format &&
+					    p.channel_depth == pvr3Header.channel_depth)
+					{
+						fmtLkup = &p;
+						break;
+					}
+				}
+				break;
 		}
+
 		if (!fmtLkup) {
 			// Not found.
 			if (out_fmt) {
@@ -478,6 +572,7 @@ rp_image_const_ptr PowerVR3Private::loadImage(int mip)
 	// Calculate the expected size.
 	const FmtLkup_t *fmtLkup = nullptr;
 	size_t expected_size = calcExpectedSizeForMip0(&fmtLkup);
+	printf("expected_size: %zu\n", expected_size);
 	if (unlikely(expected_size == 0)) {
 		// Unable to calculate the expected size.
 		return nullptr;
@@ -815,6 +910,24 @@ int PowerVR3Private::loadPvr3Metadata(void)
 	return ret;
 }
 
+/**
+ * Convert a legacy PowerVR pixel format to PowerVR3.
+ * This applies the specified format to this->pvr3Header.
+ * @param pixel_format Legacy PowerVR pixel format
+ */
+void PowerVR3Private::legacyPowerVRPixelFormatToPVR3(PowerVR_Legacy_Pixel_Format_e pixel_format)
+{
+	if (static_cast<size_t>(pixel_format) > fmtLkup_tbl_legacy.size()) {
+		// Out of range.
+		pvr3Header.pixel_format = 0;
+		pvr3Header.channel_depth = 0;
+		return;
+	}
+
+	pvr3Header.pixel_format = fmtLkup_tbl_legacy[pixel_format].pixel_format;
+	pvr3Header.channel_depth = fmtLkup_tbl_legacy[pixel_format].channel_depth;
+}
+
 /** PowerVR3 **/
 
 /**
@@ -835,7 +948,6 @@ PowerVR3::PowerVR3(const IRpFilePtr &file)
 {
 	RP_D(PowerVR3);
 	d->mimeType = "image/x-pvr";	// unofficial, not on fd.o
-	d->textureFormatName = "PowerVR 3.0.0";
 
 	if (!d->file) {
 		// Could not ref() the file handle.
@@ -843,58 +955,175 @@ PowerVR3::PowerVR3(const IRpFilePtr &file)
 	}
 
 	// Read the PowerVR3 header.
+	union {
+		PowerVR3_Header pvr3;
+		PowerVR_Legacy_Header pvrLegacy;
+		uint8_t u8[sizeof(d->pvr3Header)];
+	} header;
+
 	d->file->rewind();
-	size_t size = d->file->read(&d->pvr3Header, sizeof(d->pvr3Header));
+	size_t size = d->file->read(header.u8, sizeof(header.u8));
 	if (size != sizeof(d->pvr3Header)) {
 		d->file.reset();
 		return;
 	}
 
-	// Verify the PVR3 magic/version.
-	if (d->pvr3Header.version == PVR3_VERSION_HOST) {
-		// Host-endian. Byteswapping is not needed.
-		d->isByteswapNeeded = false;
+	// Check if this PVR image is supported.
+	const DetectInfo info = {
+		{0, sizeof(header.u8), header.u8},
+		nullptr,	// ext (not needed for PowerVR3)
+		file->size()	// szFile
+	};
+	d->pvrType = static_cast<PowerVR3Private::PVRType>(isRomSupported_static(&info));
+	d->isValid = ((int)d->pvrType >= 0);
 
-#if SYS_BYTEORDER == SYS_BIG_ENDIAN
-		// Pixel format and channel depth need to be swapped if this is
-		// a big-endian file, since it's technically a 64-bit field.
-		std::swap(d->pvr3Header.pixel_format, d->pvr3Header.channel_depth);
-#endif /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
-	} else if (d->pvr3Header.version == PVR3_VERSION_SWAP) {
-		// Swap-endian. Byteswapping is needed.
-		// NOTE: Keeping `version` unswapped in case
-		// the actual image data needs to be byteswapped.
-		d->pvr3Header.flags		= __swab32(d->pvr3Header.flags);
-
-#if SYS_BYTEORDER == SYS_LIL_ENDIAN
-		// Pixel format and channel depth need to be swapped if this is
-		// a big-endian file, since it's technically a 64-bit field.
-		const uint32_t channel_depth	= __swab32(d->pvr3Header.pixel_format);
-		const uint32_t pixel_format	= __swab32(d->pvr3Header.channel_depth);
-		d->pvr3Header.pixel_format	= pixel_format;
-		d->pvr3Header.channel_depth	= channel_depth;
-#else /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
-		// Little-endian file. Simply byteswap the two fields.
-		d->pvr3Header.pixel_format	= __swab32(d->pvr3Header.pixel_format);
-		d->pvr3Header.channel_depth	= __swab32(d->pvr3Header.channel_depth);
-#endif
-
-		d->pvr3Header.color_space	= __swab32(d->pvr3Header.color_space);
-		d->pvr3Header.channel_type	= __swab32(d->pvr3Header.channel_type);
-		d->pvr3Header.height		= __swab32(d->pvr3Header.height);
-		d->pvr3Header.width		= __swab32(d->pvr3Header.width);
-		d->pvr3Header.depth		= __swab32(d->pvr3Header.depth);
-		d->pvr3Header.num_surfaces	= __swab32(d->pvr3Header.num_surfaces);
-		d->pvr3Header.num_faces		= __swab32(d->pvr3Header.num_faces);
-		d->pvr3Header.mipmap_count	= __swab32(d->pvr3Header.mipmap_count);
-		d->pvr3Header.metadata_size	= __swab32(d->pvr3Header.metadata_size);
-
-		// Convenience flag.
-		d->isByteswapNeeded = true;
-	} else {
-		// Invalid magic.
+	if (!d->isValid) {
 		d->file.reset();
 		return;
+	}
+
+	switch (d->pvrType) {
+		default:
+			d->file.reset();
+			d->isValid = false;
+			return;
+
+		case PowerVR3Private::PVRType::PVR3:
+			// Verify the PVR3 magic/version.
+			if (header.pvr3.version == PVR3_VERSION_HOST) {
+				// Host-endian. Byteswapping is not needed.
+				d->isByteswapNeeded = false;
+				memcpy(&d->pvr3Header, &header.pvr3, sizeof(d->pvr3Header));
+
+#if SYS_BYTEORDER == SYS_BIG_ENDIAN
+				// Pixel format and channel depth need to be swapped if this is
+				// a big-endian file, since it's technically a 64-bit field.
+				std::swap(d->pvr3Header.pixel_format, d->pvr3Header.channel_depth);
+#endif /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
+			} else if (d->pvr3Header.version == PVR3_VERSION_SWAP) {
+				// Swap-endian. Byteswapping is needed.
+				// NOTE: Keeping `version` unswapped in case
+				// the actual image data needs to be byteswapped.
+				d->pvr3Header.version		= header.pvr3.version;
+				d->pvr3Header.flags		= __swab32(header.pvr3.flags);
+
+#if SYS_BYTEORDER == SYS_LIL_ENDIAN
+				// Pixel format and channel depth need to be swapped if this is
+				// a big-endian file, since it's technically a 64-bit field.
+				d->pvr3Header.channel_depth	= __swab32(header.pvr3.pixel_format);
+				d->pvr3Header.pixel_format	= __swab32(header.pvr3.channel_depth);
+#else /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
+				// Little-endian file. Simply byteswap the two fields.
+				d->pvr3Header.pixel_format	= __swab32(header.pvr3.pixel_format);
+				d->pvr3Header.channel_depth	= __swab32(header.pvr3.channel_depth);
+#endif
+
+				d->pvr3Header.color_space	= __swab32(header.pvr3.color_space);
+				d->pvr3Header.channel_type	= __swab32(header.pvr3.channel_type);
+				d->pvr3Header.height		= __swab32(header.pvr3.height);
+				d->pvr3Header.width		= __swab32(header.pvr3.width);
+				d->pvr3Header.depth		= __swab32(header.pvr3.depth);
+				d->pvr3Header.num_surfaces	= __swab32(header.pvr3.num_surfaces);
+				d->pvr3Header.num_faces		= __swab32(header.pvr3.num_faces);
+				d->pvr3Header.mipmap_count	= __swab32(header.pvr3.mipmap_count);
+				d->pvr3Header.metadata_size	= __swab32(header.pvr3.metadata_size);
+
+				// Convenience flag
+				d->isByteswapNeeded = true;
+			} else {
+				// Invalid magic.
+				d->file.reset();
+				d->isValid = false;
+				return;
+			}
+
+			d->textureFormatName = "PowerVR 3.0.0";
+			break;
+
+		case PowerVR3Private::PVRType::PVR2: {
+			// Convert the header from PVR2 to PVR3.
+			uint32_t pixel_format_and_flags;
+			if (header.pvrLegacy.magic == PVR2_MAGIC_HOST) {
+				// Host-endian. Byteswapping is not needed.
+				d->pvr3Header.version		= header.pvrLegacy.magic;
+				d->pvr3Header.flags		= 0;	// TODO
+
+				d->pvr3Header.height		= header.pvrLegacy.height;
+				d->pvr3Header.width		= header.pvrLegacy.width;
+
+				pixel_format_and_flags = header.pvrLegacy.pixel_format_and_flags;
+				const bool isCubeMap = !!(pixel_format_and_flags & PVR_LEGACY_FLAG_CUBEMAP);
+
+				if (pixel_format_and_flags & PVR_LEGACY_FLAG_VOLUME_TEXTURE) {
+					d->pvr3Header.depth = header.pvrLegacy.num_surfaces;
+					if (isCubeMap) {
+						d->pvr3Header.depth /= 6;
+					}
+					d->pvr3Header.num_surfaces = 1;
+				} else {
+					d->pvr3Header.depth = 1;
+					d->pvr3Header.num_surfaces = header.pvrLegacy.num_surfaces;
+					if (isCubeMap) {
+						d->pvr3Header.num_surfaces /= 6;
+					}
+				}
+
+				// Mipmap count in legacy headers is 0 for toplevel only.
+				// In PVR3, it's 1 for toplevel only.
+				d->pvr3Header.mipmap_count = header.pvrLegacy.mipmap_count + 1;
+			} else if (header.pvrLegacy.magic == PVR2_MAGIC_SWAP) {
+				// Swap-endian. Byteswapping is needed.
+				// NOTE: Keeping `version` unswapped in case.
+				// Host-endian. Byteswapping is not needed.
+				d->pvr3Header.version		= header.pvrLegacy.magic;
+				d->pvr3Header.flags		= 0;	// TODO
+
+				d->pvr3Header.height		= __swab32(header.pvrLegacy.height);
+				d->pvr3Header.width		= __swab32(header.pvrLegacy.width);
+
+				pixel_format_and_flags = __swab32(header.pvrLegacy.pixel_format_and_flags);
+				const bool isCubeMap = !!(pixel_format_and_flags & PVR_LEGACY_FLAG_CUBEMAP);
+
+				if (pixel_format_and_flags & PVR_LEGACY_FLAG_VOLUME_TEXTURE) {
+					d->pvr3Header.depth = __swab32(header.pvrLegacy.num_surfaces);
+					if (isCubeMap) {
+						d->pvr3Header.depth /= 6;
+					}
+					d->pvr3Header.num_surfaces = 1;
+				} else {
+					d->pvr3Header.depth = 1;
+					d->pvr3Header.num_surfaces = __swab32(header.pvrLegacy.num_surfaces);
+					if (isCubeMap) {
+						d->pvr3Header.num_surfaces /= 6;
+					}
+				}
+
+				// Mipmap count in legacy headers is 0 for toplevel only.
+				// In PVR3, it's 1 for toplevel only.
+				d->pvr3Header.mipmap_count = __swab32(header.pvrLegacy.mipmap_count) + 1;
+			} else {
+				// Invalid magic.
+				d->file.reset();
+				d->isValid = false;
+				return;
+			}
+
+			d->pvr3Header.color_space	= PVR3_COLOR_SPACE_RGB;
+			d->pvr3Header.channel_type	= PVR3_CHTYPE_UBYTE_NORM;
+
+			// There's a bug where num_surfaces is sometimes 0.
+			if (d->pvr3Header.num_surfaces == 0) {
+				d->pvr3Header.num_surfaces = 1;
+			}
+
+			// No metadata. (TODO: Vertical flip?)
+			d->pvr3Header.metadata_size = 0;
+
+			// Determine the pixel format.
+			d->legacyPowerVRPixelFormatToPVR3(static_cast<PowerVR_Legacy_Pixel_Format_e>(pixel_format_and_flags & PVR_LEGACY_PIXEL_FORMAT_MASK));
+			d->textureFormatName = "PowerVR 2.0";
+			break;
+		}
 	}
 
 	// File is valid.
@@ -928,6 +1157,51 @@ PowerVR3::PowerVR3(const IRpFilePtr &file)
 			d->dimensions[2] = d->pvr3Header.depth;
 		}
 	}
+}
+
+/**
+ * Is a ROM image supported by this class?
+ * TODO: Add isTextureSupported() to FileFormat
+ * @param info DetectInfo containing ROM detection information.
+ * @return Class-specific system ID (>= 0) if supported; -1 if not.
+ */
+int PowerVR3::isRomSupported_static(const DetectInfo *info)
+{
+	assert(info != nullptr);
+	assert(info->header.pData != nullptr);
+	assert(info->header.addr == 0);
+	if (!info || !info->header.pData ||
+	    info->header.addr != 0 ||
+	    info->header.size < std::max(sizeof(PowerVR3_Header), sizeof(PowerVR_Legacy_Header)))
+	{
+		// Either no detection information was specified,
+		// or the header is too small.
+		return -1;
+	}
+
+	// Check for a PVR3 texture.
+	const PowerVR3_Header *const pvr3Header =
+		reinterpret_cast<const PowerVR3_Header*>(info->header.pData);
+	if (pvr3Header->version == PVR3_VERSION_HOST ||
+	    pvr3Header->version == PVR3_VERSION_SWAP)
+	{
+		// This is a PVR3 texture.
+		return static_cast<int>(PowerVR3Private::PVRType::PVR3);
+	}
+
+	// Check for a PVR2 texture.
+	// TODO: Check for V1? (No magic number, though...)
+	const PowerVR_Legacy_Header *const pvrLegacyHeader =
+		reinterpret_cast<const PowerVR_Legacy_Header*>(info->header.pData);
+	if (pvrLegacyHeader->magic == PVR2_MAGIC_HOST ||
+	    pvrLegacyHeader->magic == PVR2_MAGIC_SWAP)
+	{
+		// This is a PVR2 texture.
+		return static_cast<int>(PowerVR3Private::PVRType::PVR2);
+	}
+
+	// Not supported.
+	return -1;
 }
 
 /** Property accessors **/

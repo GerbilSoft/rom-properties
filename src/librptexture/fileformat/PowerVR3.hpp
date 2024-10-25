@@ -14,6 +14,10 @@ namespace LibRpTexture {
 
 FILEFORMAT_DECL_BEGIN(PowerVR3)
 FILEFORMAT_DECL_MIPMAP()
+
+public:
+	static int isRomSupported_static(const DetectInfo *info);
+
 FILEFORMAT_DECL_END()
 
 }

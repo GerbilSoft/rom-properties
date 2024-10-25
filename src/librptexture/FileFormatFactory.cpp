@@ -151,8 +151,8 @@ FileFormatPtr create(const IRpFilePtr &file)
 
 	// Read the file's magic number.
 	union {
-		uint8_t u8[32];
-		uint32_t u32[32/4];
+		uint8_t u8[64];
+		uint32_t u32[64/4];
 	} magic;
 	file->rewind();
 	size_t size = file->read(&magic, sizeof(magic));
@@ -264,6 +264,16 @@ FileFormatPtr create(const IRpFilePtr &file)
 					return FileFormatPtr(fileFormat);
 				}
 			}
+		}
+	}
+
+	// Special case: Check for PowerVR v2.
+	if (magic.u32[0x2C/4] == 0x21525650U || magic.u32[0x2C/4] == 0x50565221U) {
+		// Found a matching magic number.
+		FileFormatPtr fileFormat = std::make_shared<PowerVR3>(file);
+		if (fileFormat->isValid()) {
+			// FileFormat subclass obtained.
+			return FileFormatPtr(fileFormat);
 		}
 	}
 
