@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpsecure)                      *
  * os-secure_linux.c: OS security functions. (Linux)                       *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -71,6 +71,11 @@ int rp_secure_enable(rp_secure_param_t param)
 		SCMP_SYS(read),
 		SCMP_SYS(rt_sigreturn),
 		SCMP_SYS(write),
+#ifdef ENABLE_NIXOS
+		// NixOS: std::locale ctor ends up calling getdents64().
+		// This doesn't happen on any other Linux system I know of...
+		SCMP_SYS(getdents64),
+#endif /* ENABLE_NIXOS */
 
 		SCMP_SYS(access),
 		SCMP_SYS(faccessat),	// Linux on aarch64 does not have an access() syscall

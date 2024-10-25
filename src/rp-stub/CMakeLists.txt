@@ -38,8 +38,14 @@ INCLUDE(DirInstallPaths)
 
 # Create symlinks for rp-thumbnail and rp-config.
 # Reference: https://stackoverflow.com/questions/34578362/how-can-i-package-a-symlink-with-cpack
+IF(ENABLE_NIXOS)
+	# NixOS ends up with a double-path issue if CMAKE_INSTALL_PREFIX is specified here.
+	SET(SYMLINK_SRC "${DIR_INSTALL_EXE}/${PROJECT_NAME}")
+ELSE(ENABLE_NIXOS)
+	SET(SYMLINK_SRC "${CMAKE_INSTALL_PREFIX}/${DIR_INSTALL_EXE}/${PROJECT_NAME}")
+ENDIF(ENABLE_NIXOS)
 ADD_CUSTOM_COMMAND(TARGET ${PROJECT_NAME} POST_BUILD
-	COMMAND ln -sf "${CMAKE_INSTALL_PREFIX}/${DIR_INSTALL_EXE}/${PROJECT_NAME}" rp-thumbnail
+	COMMAND ln -sf "${SYMLINK_SRC}" rp-thumbnail
 	WORKING_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}"
 	VERBATIM
 	)

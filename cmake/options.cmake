@@ -100,7 +100,7 @@ ELSE()
 	SET(ENABLE_PCH OFF CACHE INTERNAL "Enable precompiled headers for faster builds." FORCE)
 ENDIF()
 
-# Link-time optimization.
+# Link-time optimization
 # FIXME: Not working in clang builds and Ubuntu's gcc...
 IF(MSVC)
 	SET(LTO_DEFAULT ON)
@@ -109,7 +109,7 @@ ELSE()
 ENDIF()
 OPTION(ENABLE_LTO "Enable link-time optimization in release builds." ${LTO_DEFAULT})
 
-# Split debug information into a separate file.
+# Split debug information into a separate file
 # FIXME: macOS `strip` shows an error:
 # error: symbols referenced by indirect symbol table entries that can't be stripped in: [library]
 # NOTE: Disabled on Emscripten because it's JavaScript/WebAssembly.
@@ -120,7 +120,7 @@ ELSE(APPLE)
 	OPTION(SPLIT_DEBUG "Split debug information into a separate file." ON)
 ENDIF(APPLE)
 
-# Install the split debug file.
+# Install the split debug file
 OPTION(INSTALL_DEBUG "Install the split debug files." ON)
 IF(INSTALL_DEBUG AND NOT SPLIT_DEBUG)
 	# Cannot install debug files if we're not splitting them.
@@ -128,13 +128,13 @@ IF(INSTALL_DEBUG AND NOT SPLIT_DEBUG)
 ENDIF(INSTALL_DEBUG AND NOT SPLIT_DEBUG)
 ENDIF(NOT EMSCRIPTEN)
 
-# Enable coverage checking. (gcc/clang only)
+# Enable coverage checking (gcc/clang only)
 OPTION(ENABLE_COVERAGE "Enable code coverage checking. (gcc/clang only)" OFF)
 IF(ENABLE_COVERAGE)
 	ADD_DEFINITIONS(-DGCOV)
 ENDIF(ENABLE_COVERAGE)
 
-# Enable NLS. (internationalization)
+# Enable NLS (internationalization)
 IF(NOT WIN32 OR NOT MSVC)
 	OPTION(ENABLE_NLS "Enable NLS using gettext for localized messages." ON)
 ELSEIF(MSVC AND _MSVC_C_ARCHITECTURE_FAMILY MATCHES "^([iI]?[xX3]86)|([xX]64)$")
@@ -143,11 +143,16 @@ ELSE()
 	SET(ENABLE_NLS OFF CACHE INTERNAL "Enable NLS using gettext for localized messages." FORCE)
 ENDIF()
 
-# Linux security options.
+# Linux security options
 IF(CMAKE_SYSTEM_NAME STREQUAL "Linux")
 	OPTION(INSTALL_APPARMOR "Install AppArmor profiles." ON)
 ELSE(CMAKE_SYSTEM_NAME STREQUAL "Linux")
 	SET(INSTALL_APPARMOR OFF)
+ENDIF(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+
+# Special handling for NixOS
+IF(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+	OPTION(ENABLE_NIXOS "Enable special handling for NixOS builds." OFF)
 ENDIF(CMAKE_SYSTEM_NAME STREQUAL "Linux")
 
 # Achievements. (TODO: "AUTO" option?)
