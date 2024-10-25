@@ -167,7 +167,7 @@ public:
 	 * @param lm16 LSB/MSB 16-bit value.
 	 * @return Host-endian value.
 	 */
-	inline uint16_t host16(const uint16_lsb_msb_t &lm16)
+	inline uint16_t host16(const uint16_lsb_msb_t &lm16) const
 	{
 		return (likely(discType != DiscType::CDi) ? lm16.he : be16_to_cpu(lm16.be));
 	}
@@ -177,7 +177,7 @@ public:
 	 * @param lm32 LSB/MSB 32-bit value.
 	 * @return Host-endian value.
 	 */
-	inline uint32_t host32(const uint32_lsb_msb_t &lm32)
+	inline uint32_t host32(const uint32_lsb_msb_t &lm32) const
 	{
 		return (likely(discType != DiscType::CDi) ? lm32.he : be16_to_cpu(lm32.be));
 	}
