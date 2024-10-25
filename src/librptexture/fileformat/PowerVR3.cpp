@@ -243,40 +243,40 @@ const array<PowerVR3Private::FmtLkup_t, 32> PowerVR3Private::fmtLkup_tbl_legacy 
 	// TODO: Test these formats.
 
 	// MGL Formats
-	{ 'argb', 0x04040404, ImageDecoder::PixelFormat::ARGB8888, 16},	// MGL_ARGB_4444 = 0x00
-	{ 'argb', 0x01050505, ImageDecoder::PixelFormat::ARGB1555, 16},	// MGL_ARGB_1555
-	{'\0rgb', 0x00050605, ImageDecoder::PixelFormat::RGB565,   16},	// MGL_RGB_565
-	{'\0rgb', 0x00050505, ImageDecoder::PixelFormat::RGB555,   15},	// MGL_RGB_555
-	{'\0rgb', 0x00080808, ImageDecoder::PixelFormat::RGB888,   24},	// MGL_RGB_888
-	{ 'argb', 0x08080808, ImageDecoder::PixelFormat::ARGB8888, 32},	// MGL_ARGB_8888
-	{ 'argb', 0x08030302, ImageDecoder::PixelFormat::ARGB8332, 16},	// MGL_ARGB_8332
-	{      0,          0, ImageDecoder::PixelFormat::Unknown,   0},	// MGL_I_8 [TODO]
-	{      0,          0, ImageDecoder::PixelFormat::Unknown,   0},	// MGL_AI_88 [TODO]
-	{      0,          0, ImageDecoder::PixelFormat::Unknown,   0},	// MGL_1_BPP [TODO]
-	{      0,          0, ImageDecoder::PixelFormat::Unknown,   0},	// MGL_VY1UY0 [TODO]
-	{      0,          0, ImageDecoder::PixelFormat::Unknown,   0},	// MGL_Y1VY0U [TODO]
-	{      0,          0, ImageDecoder::PixelFormat::Unknown,   0},	// MGL_PVRTC2 [TODO]
-	{      0,          0, ImageDecoder::PixelFormat::Unknown,   0},	// MGL_PVRTC4 [TODO]
-	{      0,          0, ImageDecoder::PixelFormat::Unknown,   0},
-	{      0,          0, ImageDecoder::PixelFormat::Unknown,   0},
+	{   'argb', 0x04040404, ImageDecoder::PixelFormat::ARGB8888, 16},	// MGL_ARGB_4444 = 0x00
+	{   'argb', 0x01050505, ImageDecoder::PixelFormat::ARGB1555, 16},	// MGL_ARGB_1555
+	{  '\0rgb', 0x00050605, ImageDecoder::PixelFormat::RGB565,   16},	// MGL_RGB_565
+	{  '\0rgb', 0x00050505, ImageDecoder::PixelFormat::RGB555,   15},	// MGL_RGB_555
+	{  '\0rgb', 0x00080808, ImageDecoder::PixelFormat::RGB888,   24},	// MGL_RGB_888
+	{   'argb', 0x08080808, ImageDecoder::PixelFormat::ARGB8888, 32},	// MGL_ARGB_8888
+	{   'argb', 0x08030302, ImageDecoder::PixelFormat::ARGB8332, 16},	// MGL_ARGB_8332
+	{'\0\0\0i', 0x00000008, ImageDecoder::PixelFormat::L8,        0},	// MGL_I_8 [TODO] [may need I8?]
+	{ '\0\0ia', 0x00000808, ImageDecoder::PixelFormat::IA8,       0},	// MGL_AI_88 [TODO]
+	{        0,          0, ImageDecoder::PixelFormat::Unknown,   0},	// MGL_1_BPP [TODO]
+	{        0,          0, ImageDecoder::PixelFormat::Unknown,   0},	// MGL_VY1UY0 [TODO]
+	{        0,          0, ImageDecoder::PixelFormat::Unknown,   0},	// MGL_Y1VY0U [TODO]
+	{        0,          0, ImageDecoder::PixelFormat::Unknown,   0},	// MGL_PVRTC2 [TODO]
+	{        0,          0, ImageDecoder::PixelFormat::Unknown,   0},	// MGL_PVRTC4 [TODO]
+	{        0,          0, ImageDecoder::PixelFormat::Unknown,   0},
+	{        0,          0, ImageDecoder::PixelFormat::Unknown,   0},
 
 	// openGL Formats
-	{ 'rgba', 0x04040404, ImageDecoder::PixelFormat::RGBA4444, 16},	// GL_RGBA_4444 = 0x10
-	{ 'rgba', 0x05050501, ImageDecoder::PixelFormat::RGBA5551, 16},	// GL_RGBA_5551
-	{'\0rgb', 0x00050605, ImageDecoder::PixelFormat::RGB565,   16},	// GL_RGB_565
-	{'\0rgb', 0x00050505, ImageDecoder::PixelFormat::RGB555,   15},	// GL_RGB_555
-	{'\0rgb', 0x00080808, ImageDecoder::PixelFormat::RGB888,   24},	// GL_RGB_888
-	{      0,          0, ImageDecoder::PixelFormat::Unknown,   0},	// GL_I_8 [TODO]
-	{      0,          0, ImageDecoder::PixelFormat::Unknown,   0},	// GL_AI_88 [TODO]
-	{      0,          0, ImageDecoder::PixelFormat::Unknown,   0},	// GL_PVRTC2 [TODO]
-	{      0,          0, ImageDecoder::PixelFormat::Unknown,   0},	// GL_PVRTC4 [TODO]
-	{ 'bgra', 0x08080808, ImageDecoder::PixelFormat::BGRA8888, 32},	// GL_BGRA_8888
-	{      0,          0, ImageDecoder::PixelFormat::Unknown,   0},	// GL_A_8 [TODO]
-	{      0,          0, ImageDecoder::PixelFormat::Unknown,   0},	// GL_PVRTCII4 [TODO]
-	{      0,          0, ImageDecoder::PixelFormat::Unknown,   0},	// GL_PVRTCII2 [TODO]
-	{      0,          0, ImageDecoder::PixelFormat::Unknown,   0},
-	{      0,          0, ImageDecoder::PixelFormat::Unknown,   0},
-	{      0,          0, ImageDecoder::PixelFormat::Unknown,   0},
+	{   'rgba', 0x04040404, ImageDecoder::PixelFormat::RGBA4444, 16},	// GL_RGBA_4444 = 0x10
+	{   'rgba', 0x05050501, ImageDecoder::PixelFormat::RGBA5551, 16},	// GL_RGBA_5551
+	{  '\0rgb', 0x00050605, ImageDecoder::PixelFormat::RGB565,   16},	// GL_RGB_565
+	{  '\0rgb', 0x00050505, ImageDecoder::PixelFormat::RGB555,   15},	// GL_RGB_555
+	{  '\0rgb', 0x00080808, ImageDecoder::PixelFormat::RGB888,   24},	// GL_RGB_888
+	{'\0\0\0l', 0x00000008, ImageDecoder::PixelFormat::L8,        0},	// GL_I_8
+	{ '\0\0la', 0x00000808, ImageDecoder::PixelFormat::L8A8,      0},	// GL_AI_88
+	{        0,          0, ImageDecoder::PixelFormat::Unknown,   0},	// GL_PVRTC2 [TODO]
+	{        0,          0, ImageDecoder::PixelFormat::Unknown,   0},	// GL_PVRTC4 [TODO]
+	{   'bgra', 0x08080808, ImageDecoder::PixelFormat::BGRA8888, 32},	// GL_BGRA_8888
+	{        0,          0, ImageDecoder::PixelFormat::Unknown,   0},	// GL_A_8 [TODO]
+	{        0,          0, ImageDecoder::PixelFormat::Unknown,   0},	// GL_PVRTCII4 [TODO]
+	{        0,          0, ImageDecoder::PixelFormat::Unknown,   0},	// GL_PVRTCII2 [TODO]
+	{        0,          0, ImageDecoder::PixelFormat::Unknown,   0},
+	{        0,          0, ImageDecoder::PixelFormat::Unknown,   0},
+	{        0,          0, ImageDecoder::PixelFormat::Unknown,   0},
 }};
 
 PowerVR3Private::PowerVR3Private(PowerVR3 *q, const IRpFilePtr &file)
