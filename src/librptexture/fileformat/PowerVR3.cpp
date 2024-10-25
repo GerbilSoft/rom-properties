@@ -1121,6 +1121,10 @@ PowerVR3::PowerVR3(const IRpFilePtr &file)
 
 			// Determine the pixel format.
 			d->legacyPowerVRPixelFormatToPVR3(static_cast<PowerVR_Legacy_Pixel_Format_e>(pixel_format_and_flags & PVR_LEGACY_PIXEL_FORMAT_MASK));
+			if (pixel_format_and_flags & PVR_LEGACY_FLAG_VERTICAL_FLIP) {
+				d->flipOp = rp_image::FlipOp::FLIP_V;
+			}
+
 			d->textureFormatName = "PowerVR 2.0";
 			break;
 		}
