@@ -79,7 +79,7 @@ unsigned int popcount_c(unsigned int x);
 ATTR_CONST
 static inline unsigned int popcount(unsigned int x)
 {
-#if defined(__GNUC__)
+#ifdef __GNUC__
 	return __builtin_popcount(x);
 #else
 	return popcount_c(x);
@@ -88,7 +88,7 @@ static inline unsigned int popcount(unsigned int x)
 
 /**
  * Check if a value is a power of 2. (also must be non-zero)
- * @tparam t Type
+ * @tparam T Type
  * @param x Value
  * @return True if this is value is a power of 2 and is non-zero; false if not.
  */
@@ -109,11 +109,26 @@ static inline bool isPow2(unsigned int x)
 
 /**
  * Get the next power of 2.
+ * @tparam T Type
  * @param x Value
  * @return Next power of 2.
  */
+#ifdef __cplusplus
+template<typename T>
+ATTR_CONST
+#  ifndef _MSC_VER
+static inline constexpr T nextPow2(T x)
+#  else /* _MSC_VER */
+static inline T nextPow2(T x)
+#  endif /* !_MSC_VER */
+#else /* !__cplusplus */
 static inline unsigned int nextPow2(unsigned int x)
+#endif /* __cplusplus */
 {
 	// FIXME: _BitScanReverse() [in uilog2()] is not constexpr on MSVC 2022.
+#ifdef __cplusplus
+	return static_cast<T>(1U << (uilog2(static_cast<unsigned int>(x)) + 1));
+#else /* !__cplusplus */
 	return (1U << (uilog2(x) + 1));
+#endif /* __cplusplus */
 }
