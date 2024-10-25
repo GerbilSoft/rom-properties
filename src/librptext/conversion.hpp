@@ -544,9 +544,9 @@ static inline std::u16string utf8_to_utf16(const std::string &str)
 /**
  * Convert UTF-16LE text to UTF-8.
  * Trailing NULL bytes will be removed.
- * @param wcs	[in] UTF-16LE text.
- * @param len	[in] Length of wcs, in characters. (-1 for NULL-terminated string)
- * @return UTF-8 string.
+ * @param wcs	[in] UTF-16LE text
+ * @param len	[in] Length of wcs, in characters (-1 for NULL-terminated string)
+ * @return UTF-8 string
  */
 RP_LIBROMDATA_PUBLIC
 std::string utf16le_to_utf8(const char16_t *wcs, int len);
@@ -554,9 +554,9 @@ std::string utf16le_to_utf8(const char16_t *wcs, int len);
 /**
  * Convert UTF-16BE text to UTF-8.
  * Trailing NULL bytes will be removed.
- * @param wcs	[in] UTF-16BE text.
- * @param len	[in] Length of wcs, in characters. (-1 for NULL-terminated string)
- * @return UTF-8 string.
+ * @param wcs	[in] UTF-16BE text
+ * @param len	[in] Length of wcs, in characters (-1 for NULL-terminated string)
+ * @return UTF-8 string
  */
 RP_LIBROMDATA_PUBLIC
 std::string utf16be_to_utf8(const char16_t *wcs, int len);
@@ -564,9 +564,9 @@ std::string utf16be_to_utf8(const char16_t *wcs, int len);
 /**
  * Convert UTF-16 text to UTF-8. (host-endian)
  * Trailing NULL bytes will be removed.
- * @param wcs UTF-16 text.
- * @param len Length of wcs, in characters. (-1 for NULL-terminated string)
- * @return UTF-8 string.
+ * @param wcs UTF-16 text
+ * @param len Length of wcs, in characters (-1 for NULL-terminated string)
+ * @return UTF-8 string
  */
 static inline std::string utf16_to_utf8(const char16_t *wcs, int len)
 {

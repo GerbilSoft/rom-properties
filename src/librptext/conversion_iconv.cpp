@@ -196,7 +196,7 @@ static inline void codePageToEncName(char *enc_name, size_t len, unsigned int cp
  * The specified code page number will be used.
  *
  * @tparam T char (UTF-8) or char16_t (UTF-16)
- * @param encoding [out] Output encoding
+ * @param out_encoding [in] Output encoding
  * @param cp	[in] Code page number
  * @param str	[in] 8-bit text
  * @param len	[in] Length of str, in bytes (-1 for NULL-terminated string)
@@ -204,7 +204,7 @@ static inline void codePageToEncName(char *enc_name, size_t len, unsigned int cp
  * @return UTF-8 string
  */
 template<typename T>
-std::basic_string<T> T_cpN_to_unicode(const char *out_encoding, unsigned int cp, const char *str, int len, unsigned int flags)
+static std::basic_string<T> T_cpN_to_unicode(const char *out_encoding, unsigned int cp, const char *str, int len, unsigned int flags)
 {
 	len = check_NULL_terminator(str, len);
 
@@ -401,19 +401,20 @@ string utf16_to_cpN(unsigned int cp, const char16_t *wcs, int len)
 /** Specialized UTF-16 conversion functions. **/
 
 /**
- * Convert UTF-16LE text to UTF-8.
+ * Convert 16-bit Unicode text to UTF-8.
  * Trailing NULL bytes will be removed.
- * @param wcs	[in] UTF-16LE text.
- * @param len	[in] Length of wcs, in characters. (-1 for NULL-terminated string)
- * @return UTF-8 string.
+ * @param src_encoding [in] Source encoding
+ * @param wcs	[in] 16-bit Unicode text
+ * @param len	[in] Length of wcs, in characters (-1 for NULL-terminated string)
+ * @return UTF-8 string
  */
-string utf16le_to_utf8(const char16_t *wcs, int len)
+static string INT_utf16_to_utf8(const char *src_encoding, const char16_t *wcs, int len)
 {
 	len = check_NULL_terminator(wcs, len);
 
 	// Attempt to convert the text from UTF-16LE to UTF-8.
 	string ret;
-	char *mbs = reinterpret_cast<char*>(rp_iconv((char*)wcs, len*sizeof(*wcs), "UTF-16LE", "UTF-8"));
+	char *mbs = reinterpret_cast<char*>(rp_iconv((char*)wcs, len*sizeof(*wcs), src_encoding, "UTF-8"));
 	if (mbs) {
 		ret.assign(mbs);
 		free(mbs);
@@ -422,24 +423,27 @@ string utf16le_to_utf8(const char16_t *wcs, int len)
 }
 
 /**
+ * Convert UTF-16LE text to UTF-8.
+ * Trailing NULL bytes will be removed.
+ * @param wcs	[in] UTF-16LE text
+ * @param len	[in] Length of wcs, in characters (-1 for NULL-terminated string)
+ * @return UTF-8 string
+ */
+string utf16le_to_utf8(const char16_t *wcs, int len)
+{
+	return INT_utf16_to_utf8("UTF-16LE", wcs, len);
+}
+
+/**
  * Convert UTF-16BE text to UTF-8.
  * Trailing NULL bytes will be removed.
- * @param wcs	[in] UTF-16BE text.
- * @param len	[in] Length of wcs, in characters. (-1 for NULL-terminated string)
- * @return UTF-8 string.
+ * @param wcs	[in] UTF-16BE text
+ * @param len	[in] Length of wcs, in characters (-1 for NULL-terminated string)
+ * @return UTF-8 string
  */
 string utf16be_to_utf8(const char16_t *wcs, int len)
 {
-	len = check_NULL_terminator(wcs, len);
-
-	// Attempt to convert the text from UTF-16BE to UTF-8.
-	string ret;
-	char *mbs = reinterpret_cast<char*>(rp_iconv((char*)wcs, len*sizeof(*wcs), "UTF-16BE", "UTF-8"));
-	if (mbs) {
-		ret.assign(mbs);
-		free(mbs);
-	}
-	return ret;
+	return INT_utf16_to_utf8("UTF-16BE", wcs, len);
 }
 
 }

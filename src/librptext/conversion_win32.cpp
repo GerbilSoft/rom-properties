@@ -272,9 +272,9 @@ string utf16_to_cpN(unsigned int cp, const char16_t *wcs, int len)
 /**
  * Convert UTF-16LE text to UTF-8.
  * Trailing NULL bytes will be removed.
- * @param wcs	[in] UTF-16LE text.
- * @param len	[in] Length of wcs, in characters. (-1 for NULL-terminated string)
- * @return UTF-8 string.
+ * @param wcs	[in] UTF-16LE text
+ * @param len	[in] Length of wcs, in characters (-1 for NULL-terminated string)
+ * @return UTF-8 string
  */
 string utf16le_to_utf8(const char16_t *wcs, int len)
 {
@@ -285,9 +285,9 @@ string utf16le_to_utf8(const char16_t *wcs, int len)
 /**
  * Convert UTF-16BE text to UTF-8.
  * Trailing NULL bytes will be removed.
- * @param wcs	[in] UTF-16BE text.
- * @param len	[in] Length of wcs, in characters. (-1 for NULL-terminated string)
- * @return UTF-8 string.
+ * @param wcs	[in] UTF-16BE text
+ * @param len	[in] Length of wcs, in characters (-1 for NULL-terminated string)
+ * @return UTF-8 string
  */
 string utf16be_to_utf8(const char16_t *wcs, int len)
 {
