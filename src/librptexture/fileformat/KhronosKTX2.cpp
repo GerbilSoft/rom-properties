@@ -51,63 +51,81 @@ namespace LibRpTexture {
 
 class KhronosKTX2Private final : public FileFormatPrivate
 {
-	public:
-		KhronosKTX2Private(KhronosKTX2 *q, const IRpFilePtr &file);
+public:
+	KhronosKTX2Private(KhronosKTX2 *q, const IRpFilePtr &file);
 
-	private:
-		typedef FileFormatPrivate super;
-		RP_DISABLE_COPY(KhronosKTX2Private)
+private:
+	typedef FileFormatPrivate super;
+	RP_DISABLE_COPY(KhronosKTX2Private)
 
-	public:
-		/** TextureInfo **/
-		static const char *const exts[];
-		static const char *const mimeTypes[];
-		static const TextureInfo textureInfo;
+public:
+	/** TextureInfo **/
+	static const char *const exts[];
+	static const char *const mimeTypes[];
+	static const TextureInfo textureInfo;
 
-	public:
-		// KTX2 header
-		KTX2_Header ktx2Header;
+public:
+	// KTX2 header
+	KTX2_Header ktx2Header;
 
-		// Is HFlip/VFlip needed?
-		// Some textures may be stored upside-down due to
-		// the way GL texture coordinates are interpreted.
-		// Default without KTXorientation is HFlip=false, VFlip=true
-		rp_image::FlipOp flipOp;
+	// Is HFlip/VFlip needed?
+	// Some textures may be stored upside-down due to
+	// the way GL texture coordinates are interpreted.
+	// Default without KTXorientation is HFlip=false, VFlip=true
+	rp_image::FlipOp flipOp;
 
-		// Mipmap offsets
-		rp::uvector<KTX2_Mipmap_Index> mipmap_data;
+	// Mipmap offsets
+	rp::uvector<KTX2_Mipmap_Index> mipmap_data;
 
-		// Decoded mipmaps
-		// Mipmap 0 is the full image.
-		vector<rp_image_ptr> mipmaps;
+	// Decoded mipmaps
+	// Mipmap 0 is the full image.
+	vector<rp_image_ptr> mipmaps;
 
-		// Invalid pixel format message
-		char invalid_pixel_format[24];
+	// Invalid pixel format message
+	char invalid_pixel_format[24];
 
-		// Key/Value data
-		// NOTE: Stored as vector<vector<string> > instead of
-		// vector<pair<string, string> > for compatibility with
-		// RFT_LISTDATA.
-		RomFields::ListData_t kv_data;
+	// Key/Value data
+	// NOTE: Stored as vector<vector<string> > instead of
+	// vector<pair<string, string> > for compatibility with
+	// RFT_LISTDATA.
+	RomFields::ListData_t kv_data;
 
-		// KTXswizzle, if specified.
-		// Four bytes indicate the values of each channel.
-		// Each byte can be: [rgba01], where rgba corresponds
-		// to each channel, 0 is 0, and 1 is 1.
-		// If byte 0 is a literal \0, no KTXswizzle tag was found.
-		char ktx_swizzle[4];
+	// KTXswizzle, if specified.
+	// Four bytes indicate the values of each channel.
+	// Each byte can be: [rgba01], where rgba corresponds
+	// to each channel, 0 is 0, and 1 is 1.
+	// If byte 0 is a literal \0, no KTXswizzle tag was found.
+	char ktx_swizzle[4];
 
-		/**
-		 * Load the image.
-		 * @param mip Mipmap number. (0 == full image)
-		 * @return Image, or nullptr on error.
-		 */
-		rp_image_const_ptr loadImage(int mip);
+	/**
+	 * Load the image.
+	 * @param mip Mipmap number. (0 == full image)
+	 * @return Image, or nullptr on error.
+	 */
+	rp_image_const_ptr loadImage(int mip);
 
-		/**
-		 * Load key/value data.
-		 */
-		void loadKeyValueData(void);
+	/**
+	 * Load key/value data.
+	 */
+	void loadKeyValueData(void);
+
+	/**
+	 * Read a little-endian 32-bit value from an unaligned memory block.
+	 * @param p Memory block
+	 * @return Little-endian 32-bit value
+	 */
+	static inline uint32_t read_le32(const char *p)
+	{
+#if defined(_M_IX86) || defined(__i386__) || \
+    defined(_M_X64) || defined(_M_AMD64) || \
+    defined(__amd64__) || defined(__x86_64__)
+		// i386/amd64: Unaligned accesses are allowed, and are usually fast.
+		return le32_to_cpu(*(reinterpret_cast<const uint32_t*>(p)));
+#else
+		// Other CPU: Unaligned accesses are either not allowed or are slow.
+		return (p[0] | (p[1] << 8) | (p[2] << 16) | (p[3] << 24));
+#endif
+	}
 };
 
 FILEFORMAT_IMPL(KhronosKTX2)
@@ -663,7 +681,7 @@ void KhronosKTX2Private::loadKeyValueData(void)
 
 	while (p < p_end-3) {
 		// Check the next key/value size.
-		const uint32_t sz = le32_to_cpu(*((const uint32_t*)p));
+		const uint32_t sz = read_le32(p);
 		if (sz < 2) {
 			// Must be at least 2 bytes for an empty key and its NULL terminator.
 			// TODO: Show an error?
