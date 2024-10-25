@@ -1328,8 +1328,21 @@ int PowerVR3::getFields(RomFields *fields) const
 	const int initial_count = fields->count();
 	fields->reserve(initial_count + 8);	// Maximum of 8 fields.
 
-	// TODO: Handle PVR 1.0 and 2.0 headers.
-	fields->addField_string(C_("PowerVR3", "Version"), "3.0.0");
+	const char *s_version;
+	switch (d->pvrType) {
+		default:
+			s_version = nullptr;
+			break;
+		case PowerVR3Private::PVRType::PVR3:
+			s_version = "3.0.0";
+			break;
+		case PowerVR3Private::PVRType::PVR2:
+			s_version = "2.0";
+			break;
+	}
+	if (s_version) {
+		fields->addField_string(C_("PowerVR3", "Version"), s_version);
+	}
 
 	// Endianness
 #if SYS_BYTEORDER == SYS_LIL_ENDIAN
