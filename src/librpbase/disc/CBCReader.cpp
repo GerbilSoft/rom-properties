@@ -29,13 +29,10 @@ namespace LibRpBase {
 class CBCReaderPrivate
 {
 	public:
-		CBCReaderPrivate(CBCReader *q, off64_t offset, off64_t length,
-			const uint8_t *key, const uint8_t *iv);
+		CBCReaderPrivate(CBCReader *q, off64_t offset, off64_t length, const uint8_t *key, const uint8_t *iv);
 
 	private:
 		RP_DISABLE_COPY(CBCReaderPrivate)
-	protected:
-		CBCReader *const q_ptr;
 
 	public:
 		const off64_t offset;		// Encrypted data start offset, in bytes.
@@ -55,11 +52,8 @@ class CBCReaderPrivate
 
 /** CBCReaderPrivate **/
 
-CBCReaderPrivate::CBCReaderPrivate(CBCReader *q,
-	off64_t offset, off64_t length,
-	const uint8_t *key, const uint8_t *iv)
-	: q_ptr(q)
-	, offset(offset)
+CBCReaderPrivate::CBCReaderPrivate(CBCReader *q, off64_t offset, off64_t length, const uint8_t *key, const uint8_t *iv)
+	: offset(offset)
 	, length(length)
 	, pos(0)
 {
