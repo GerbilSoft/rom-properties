@@ -572,7 +572,6 @@ rp_image_const_ptr PowerVR3Private::loadImage(int mip)
 	// Calculate the expected size.
 	const FmtLkup_t *fmtLkup = nullptr;
 	size_t expected_size = calcExpectedSizeForMip0(&fmtLkup);
-	printf("expected_size: %zu\n", expected_size);
 	if (unlikely(expected_size == 0)) {
 		// Unable to calculate the expected size.
 		return nullptr;
