@@ -29,6 +29,7 @@ packages:
 * Optional decompression: libzstd-devel lz4-devel lzo-devel
 * KDE 4.x: qt-devel kdelibs-devel
 * KDE 5.x: qt5-qtbase-devel qt5-qttools extra-cmake-modules kf5-kio-devel kf5-kwidgetsaddons-devel kf5-kfilemetadata-devel
+* KDE 6.x: qt6-qtbase-devel qt6-qttools extra-cmake-modules kf6-kio-devel kf6-kwidgetsaddons-devel kf6-kfilemetadata-devel
 * XFCE (GTK+ 2.x): glib2-devel gtk2-devel gdk-pixbuf2-devel Thunar-devel gsound-devel
 * XFCE (GTK+ 3.x): glib2-devel gtk3-devel cairo-devel Thunar-devel gsound-devel
 * GNOME, MATE, Cinnamon: glib2-devel gtk3-devel cairo-devel nautilus-devel gsound-devel
@@ -41,8 +42,10 @@ following development packages:
 * All: curl zlib libpng libjpeg-turbo nettle pkgconf tinyxml2 gettext libseccomp
 * Optional decompression: zstd lz4 lzo
 * KDE 5.x: qt5-base qt5-tools extra-cmake-modules kio kwidgetsaddons kfilemetadata
+* KDE 6.x: qt6-base qt6-tools extra-cmake-modules kio kwidgetsaddons kfilemetadata
 * XFCE (GTK+ 3.x): glib2 gtk3 cairo gsound
 * GNOME, MATE, Cinnamon: glib2 gtk3 cairo libnautilus-extension gsound
+* GNOME 43: glib2 gtk4 gdk-pixbuf2 nautilus gsound
 
 NOTE: If gsound is not available, use libcanberra instead.
 
