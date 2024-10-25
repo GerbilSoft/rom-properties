@@ -88,11 +88,11 @@ static int W32U_UTF16_to_mbs(
  *
  * The specified code page number will be used.
  *
- * @param cp	[in] Code page number.
- * @param str	[in] ANSI text.
- * @param len	[in] Length of str, in bytes. (-1 for NULL-terminated string)
- * @param flags	[in] Flags. (See TextConv_Flags_e.)
- * @return UTF-8 string.
+ * @param cp	[in] Code page number
+ * @param str	[in] ANSI text
+ * @param len	[in] Length of str, in bytes (-1 for NULL-terminated string)
+ * @param flags	[in] Flags (See TextConv_Flags_e)
+ * @return UTF-8 string
  */
 string cpN_to_utf8(unsigned int cp, const char *str, int len, unsigned int flags)
 {
@@ -127,11 +127,11 @@ string cpN_to_utf8(unsigned int cp, const char *str, int len, unsigned int flags
  *
  * The specified code page number will be used.
  *
- * @param cp	[in] Code page number.
- * @param str	[in] ANSI text.
- * @param len	[in] Length of str, in bytes. (-1 for NULL-terminated string)
- * @param flags	[in] Flags. (See TextConv_Flags_e.)
- * @return UTF-16 string.
+ * @param cp	[in] Code page number
+ * @param str	[in] ANSI text
+ * @param len	[in] Length of str, in bytes (-1 for NULL-terminated string)
+ * @param flags	[in] Flags (See TextConv_Flags_e)
+ * @return UTF-16 string
  */
 u16string cpN_to_utf16(unsigned int cp, const char *str, int len, unsigned int flags)
 {
@@ -162,6 +162,7 @@ u16string cpN_to_utf16(unsigned int cp, const char *str, int len, unsigned int f
 				} else if (chr & 0x80) {
 					// High bit cannot be set
 					is0208 = false;
+					break;
 				}
 			}
 		}

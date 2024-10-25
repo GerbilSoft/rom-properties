@@ -238,6 +238,7 @@ std::basic_string<T> T_cpN_to_unicode(const char *out_encoding, unsigned int cp,
 				} else if (chr & 0x80) {
 					// High bit cannot be set
 					is0208 = false;
+					break;
 				}
 			}
 		}
