@@ -172,10 +172,12 @@ int AchQtDBus::notifyFunc(Achievements::ID id)
 		nis.has_alpha = true;
 		nis.bits_per_sample = 8;	// 8 bits per *channel*.
 		nis.channels = 4;
-		// TODO: constBits(), sizeInBytes()
-		// NOTE: byteCount() doesn't work with deprecated functions disabled.
-		nis.data = QByteArray::fromRawData((const char*)icon.bits(),
-			icon.bytesPerLine() * icon.height());
+#if QT_VERSION >= QT_VERSION_CHECK(5, 10, 0)
+		const qsizetype sizeInBytes = icon.sizeInBytes();
+#else /* QT_VERSION < QT_VERSION_CHECK(5, 10, 0) */
+		const int sizeInBytes = icon.byteCount();
+#endif
+		nis.data = QByteArray::fromRawData(reinterpret_cast<const char*>(icon.bits()), sizeInBytes);
 
 		// NOTE: The hint name changed in various versions of the specification.
 		// We'll use the oldest version for compatibility purposes.
