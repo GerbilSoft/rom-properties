@@ -17,6 +17,7 @@
 using namespace LibRpTexture::PixelConversion;
 
 // C++ STL classes
+using std::array;
 using std::unique_ptr;
 
 // One-time initialization.
@@ -30,8 +31,8 @@ namespace LibRpTexture { namespace ImageDecoder {
  *
  * Supports textures up to 4096x4096.
  */
-#define DC_TMAP_SIZE 4096
-static unique_ptr<unsigned int[]> dc_tmap;
+static constexpr size_t DC_TMAP_SIZE = 4096;
+static unique_ptr<array<unsigned int, DC_TMAP_SIZE> > dc_tmap;
 
 // pthread_once() control variable.
 static pthread_once_t dc_tmap_once_control = PTHREAD_ONCE_INIT;
@@ -44,8 +45,8 @@ static pthread_once_t dc_tmap_once_control = PTHREAD_ONCE_INIT;
  */
 static void initDreamcastTwiddleMap_int(void)
 {
-	dc_tmap.reset(new unsigned int[DC_TMAP_SIZE]);
-	unsigned int *const p_tmap = dc_tmap.get();
+	dc_tmap.reset(new array<unsigned int, DC_TMAP_SIZE>);
+	unsigned int *const p_tmap = dc_tmap.get()->data();
 
 	for (unsigned int i = 0; i < DC_TMAP_SIZE; i++) {
 		p_tmap[i] = 0;
@@ -93,7 +94,7 @@ rp_image_ptr fromDreamcastSquareTwiddled16(PixelFormat px_format,
 
 	// Initialize the twiddle map.
 	initDreamcastTwiddleMap();
-	const unsigned int *const p_tmap = dc_tmap.get();
+	const unsigned int *const p_tmap = dc_tmap.get()->data();
 
 	// Create an rp_image.
 	rp_image_ptr img = std::make_shared<rp_image>(width, height, rp_image::Format::ARGB32);
@@ -194,7 +195,7 @@ rp_image_ptr fromDreamcastVQ16(PixelFormat px_format,
 
 	// Initialize the twiddle map.
 	initDreamcastTwiddleMap();
-	const unsigned int *const p_tmap = dc_tmap.get();
+	const unsigned int *const p_tmap = dc_tmap.get()->data();
 
 	// Create an rp_image.
 	rp_image_ptr img = std::make_shared<rp_image>(width, height, rp_image::Format::ARGB32);
