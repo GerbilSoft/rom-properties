@@ -9,6 +9,9 @@
 #include "stdafx.h"
 #include "XboxPublishers.hpp"
 
+// C++ STL classes
+using std::array;
+
 namespace LibRomData { namespace XboxPublishers {
 
 #include "XboxPublishers_data.h"
@@ -27,12 +30,12 @@ const char *lookup(uint16_t code)
 		return nullptr;
 	}
 
-	const char s_code[3] = {
+	const array<char, 3> s_code = {{
 		(char)(code >> 8),
 		(char)(code & 0xFF),
 		'\0'
-	};
-	return lookup(s_code);
+	}};
+	return lookup(s_code.data());
 }
 
 /**

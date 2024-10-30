@@ -689,21 +689,21 @@ int KeyStoreUIPrivate::verifyKeyData(const uint8_t *keyData, const uint8_t *veri
 	}
 
 	// Attempt to decrypt the verification data using the key.
-	uint8_t testData[16];
-	memcpy(testData, verifyData, sizeof(testData));
+	array<uint8_t, 16> testData;
+	memcpy(testData.data(), verifyData, testData.size());
 	int ret = cipher->setKey(keyData, len);
 	if (ret != 0) {
 		// Error setting the key.
 		return -EIO;
 	}
-	size_t size = cipher->decrypt(testData, sizeof(testData));
-	if (size != sizeof(testData)) {
+	size_t size = cipher->decrypt(testData.data(), testData.size());
+	if (size != testData.size()) {
 		// Error decrypting the data.
 		return -EIO;
 	}
 
 	// Check if the decrypted data is correct.
-	return (memcmp(testData, KeyManager::verifyTestString, sizeof(testData)) != 0);
+	return (memcmp(testData.data(), KeyManager::verifyTestString, testData.size()) != 0);
 }
 
 /**
@@ -747,8 +747,8 @@ void KeyStoreUIPrivate::verifyKey(int sectIdx, int keyIdx)
 
 	// Convert the key to bytes.
 	// TODO: Support keys that aren't 128-bit.
-	uint8_t keyBytes[16];
-	int ret = KeyManager::hexStringToBytes(key.value.c_str(), keyBytes, sizeof(keyBytes));
+	array<uint8_t, 16> keyBytes;
+	int ret = KeyManager::hexStringToBytes(key.value.c_str(), keyBytes.data(), keyBytes.size());
 	if (ret != 0) {
 		// Invalid character(s) encountered.
 		key.status = KeyStoreUI::Key::Status::NotAKey;
@@ -756,7 +756,7 @@ void KeyStoreUIPrivate::verifyKey(int sectIdx, int keyIdx)
 	}
 
 	// Verify the key.
-	ret = verifyKeyData(keyBytes, verifyData, sizeof(keyBytes));
+	ret = verifyKeyData(keyBytes.data(), verifyData, keyBytes.size());
 	if (ret == 0) {
 		// Decrypted data is correct.
 		key.status = KeyStoreUI::Key::Status::OK;
@@ -1250,7 +1250,7 @@ KeyStoreUI::ImportReturn KeyStoreUIPrivate::importN3DSboot9bin(IRpFile *file)
 	}
 
 	// Read the protected section into memory.
-	unique_ptr<uint8_t[]> buf(new uint8_t[32768]);
+	unique_ptr<array<uint8_t, 32768> > buf(new array<uint8_t, 32768>);
 	if (fileSize == 65536) {
 		// 64 KiB (Unprotected + Protected boot9)
 		// Seek to the second half.
@@ -1266,7 +1266,7 @@ KeyStoreUI::ImportReturn KeyStoreUIPrivate::importN3DSboot9bin(IRpFile *file)
 		// Rewind to the beginning of the file.
 		file->rewind();
 	}
-	size_t size = file->read(buf.get(), 32768);
+	size_t size = file->read(buf->data(), buf->size());
 	if (size != 32768) {
 		// Read error.
 		iret.status = KeyStoreUI::ImportStatus::ReadError;
@@ -1279,7 +1279,7 @@ KeyStoreUI::ImportReturn KeyStoreUIPrivate::importN3DSboot9bin(IRpFile *file)
 		// Check the CRC32.
 		// NOTE: CRC32 isn't particularly strong, so we'll still
 		// verify the keys before importing them.
-		crc32Hash.process(buf.get(), 32768);
+		crc32Hash.process(buf->data(), buf->size());
 		const uint32_t crc = crc32Hash.getHash32();
 		if (crc != 0x9D50A525) {
 			// Incorrect CRC32.
@@ -1301,7 +1301,7 @@ KeyStoreUI::ImportReturn KeyStoreUIPrivate::importN3DSboot9bin(IRpFile *file)
 
 	// Import the keys.
 	return importKeysFromBlob(KeyStoreUIPrivate::SectionID::N3DSVerifyKeys,
-		keyBinAddress.data(), keyBinAddress.size(), buf.get(), 32768);
+		keyBinAddress.data(), keyBinAddress.size(), buf->data(), buf->size());
 }
 
 /**

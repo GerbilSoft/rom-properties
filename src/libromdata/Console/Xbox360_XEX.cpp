@@ -236,10 +236,10 @@ public:
 #ifdef ENABLE_DECRYPTION
 public:
 	// Verification key names.
-	static const array<const char*, (int)Xbox360_XEX::EncryptionKeys::Key_Max> EncryptionKeyNames;
+	static const array<const char*, static_cast<size_t>(Xbox360_XEX::EncryptionKeys::Key_Max)> EncryptionKeyNames;
 
 	// Verification key data.
-	static const uint8_t EncryptionKeyVerifyData[(int)Xbox360_XEX::EncryptionKeys::Key_Max][16];
+	static const uint8_t EncryptionKeyVerifyData[static_cast<size_t>(Xbox360_XEX::EncryptionKeys::Key_Max)][16];
 #endif
 };
 
@@ -268,7 +268,7 @@ const RomDataInfo Xbox360_XEX_Private::romDataInfo = {
 
 #ifdef ENABLE_DECRYPTION
 // Verification key names.
-const std::array<const char*, (int)Xbox360_XEX::EncryptionKeys::Key_Max> Xbox360_XEX_Private::EncryptionKeyNames = {{
+const std::array<const char*, static_cast<size_t>(Xbox360_XEX::EncryptionKeys::Key_Max)> Xbox360_XEX_Private::EncryptionKeyNames = {{
 	// XEX1
 	"xbox360-xex1",
 
@@ -276,7 +276,7 @@ const std::array<const char*, (int)Xbox360_XEX::EncryptionKeys::Key_Max> Xbox360
 	"xbox360-xex2",
 }};
 
-const uint8_t Xbox360_XEX_Private::EncryptionKeyVerifyData[(int)Xbox360_XEX::EncryptionKeys::Key_Max][16] = {
+const uint8_t Xbox360_XEX_Private::EncryptionKeyVerifyData[static_cast<size_t>(Xbox360_XEX::EncryptionKeys::Key_Max)][16] = {
 	// xbox360-xex1
 	{0xB9,0x41,0x44,0x80,0xA4,0xE1,0x94,0x82,
 	 0xA2,0x9B,0xCD,0x7E,0xC4,0x68,0xB8,0xF0},
@@ -350,7 +350,7 @@ size_t Xbox360_XEX_Private::getOptHdrData(uint32_t header_id, uint32_t *pOut32)
 		return 0;
 	}
 
-	if ((int)xexType < 0) {
+	if (static_cast<int>(xexType) < 0) {
 		// Invalid XEX type.
 		return 0;
 	} else if (!file) {
@@ -402,7 +402,7 @@ size_t Xbox360_XEX_Private::getOptHdrData(uint32_t header_id, rp::uvector<uint8_
 		return 0;
 	}
 
-	if ((int)xexType < 0) {
+	if (static_cast<int>(xexType) < 0) {
 		// Invalid XEX type.
 		return 0;
 	}
@@ -448,7 +448,7 @@ size_t Xbox360_XEX_Private::getOptHdrData(uint32_t header_id, rp::uvector<uint8_
  */
 const XEX2_Resource_Info *Xbox360_XEX_Private::getXdbfResInfo(const char *resource_id)
 {
-	if ((int)xexType < 0) {
+	if (static_cast<int>(xexType) < 0) {
 		// Invalid XEX type.
 		return nullptr;
 	}
@@ -609,9 +609,9 @@ int Xbox360_XEX_Private::initPeReader(void)
 
 		// Get the common keys.
 
-		// Zero data.
-		uint8_t zero16[16];
-		memset(zero16, 0, sizeof(zero16));
+		// Zero data
+		array<uint8_t, 16> zero16;
+		memset(zero16.data(), 0, zero16.size());
 
 		// Key data.
 		// - 0: retail
@@ -620,8 +620,8 @@ int Xbox360_XEX_Private::initPeReader(void)
 		unsigned int idx0 = 0;
 
 		// Debug key
-		keyData[1].key = zero16;
-		keyData[1].length = 16;
+		keyData[1].key = zero16.data();
+		keyData[1].length = zero16.size();
 
 		// Determine which retail key to use.
 		const uint32_t image_flags = (xexType != Xbox360_XEX_Private::XexType::XEX1)
@@ -665,15 +665,15 @@ int Xbox360_XEX_Private::initPeReader(void)
 			}
 
 			// Decrypt the title key.
-			uint8_t dec_title_key[16];
-			memcpy(dec_title_key, pTitleKey, sizeof(dec_title_key));
-			if (cipher->decrypt(dec_title_key, sizeof(dec_title_key), zero16, sizeof(zero16)) != sizeof(dec_title_key)) {
+			array<uint8_t, 16> dec_title_key;
+			memcpy(dec_title_key.data(), pTitleKey, dec_title_key.size());
+			if (cipher->decrypt(dec_title_key.data(), dec_title_key.size(), zero16.data(), zero16.size()) != dec_title_key.size()) {
 				// Error decrypting the title key.
 				continue;
 			}
 
 			// Initialize the CBCReader.
-			reader[i] = std::make_shared<CBCReader>(file, xex2Header.pe_offset, pe_length, dec_title_key, zero16);
+			reader[i] = std::make_shared<CBCReader>(file, xex2Header.pe_offset, pe_length, dec_title_key.data(), zero16.data());
 			if (!reader[i]->isOpen()) {
 				// Unable to open the CBCReader.
 				reader[i].reset();
@@ -762,7 +762,8 @@ int Xbox360_XEX_Private::initPeReader(void)
 			const uint32_t window_size = be32_to_cpu(*pWindowSize);
 
 			// First block.
-			XEX2_Compression_Normal_Info first_block, lzx_blocks[2];
+			XEX2_Compression_Normal_Info first_block;
+			array<XEX2_Compression_Normal_Info, 2> lzx_blocks;
 			unsigned int lzx_idx = 0;
 			memcpy(&first_block, p+sizeof(window_size), sizeof(first_block));
 #if SYS_BYTEORDER == SYS_LIL_ENDIAN
@@ -1094,7 +1095,7 @@ void Xbox360_XEX_Private::convertGameRatings(
 	// 14 ratings for Xbox 360 games.
 	for (unsigned int ridx = 0; ridx < 14; ridx++) {
 		const RomFields::AgeRatingsCountry ar_idx = region_conv[ridx];
-		if ((int)ar_idx < 0) {
+		if (static_cast<int>(ar_idx) < 0) {
 			// Not supported.
 			continue;
 		}
@@ -1111,7 +1112,7 @@ void Xbox360_XEX_Private::convertGameRatings(
 			continue;
 		}
 
-		age_ratings[(int)ar_idx] = static_cast<uint8_t>(rf_val) | RomFields::AGEBF_ACTIVE;
+		age_ratings[static_cast<size_t>(ar_idx)] = static_cast<uint8_t>(rf_val) | RomFields::AGEBF_ACTIVE;
 	}
 }
 
@@ -1357,7 +1358,7 @@ Xbox360_XEX::Xbox360_XEX(const IRpFilePtr &file)
 		0		// szFile (not needed for Xbox360_XEX)
 	};
 	d->xexType = static_cast<Xbox360_XEX_Private::XexType>(isRomSupported_static(&info));
-	d->isValid = ((int)d->xexType >= 0);
+	d->isValid = (static_cast<int>(d->xexType) >= 0);
 
 	if (!d->isValid) {
 		d->file.reset();
@@ -1575,7 +1576,7 @@ int Xbox360_XEX::loadFieldData(void)
 	} else if (!d->file || !d->file->isOpen()) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!d->isValid || (int)d->xexType < 0) {
+	} else if (!d->isValid || static_cast<int>(d->xexType) < 0) {
 		// XEX file isn't valid.
 		return -EIO;
 	}
@@ -1974,7 +1975,7 @@ int Xbox360_XEX::loadMetaData(void)
 	} else if (!d->file) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!d->isValid || (int)d->xexType < 0) {
+	} else if (!d->isValid || static_cast<int>(d->xexType) < 0) {
 		// XEX file isn't valid.
 		return -EIO;
 	}
@@ -2068,7 +2069,7 @@ int Xbox360_XEX::checkViewedAchievements(void) const
  */
 int Xbox360_XEX::encryptionKeyCount_static(void)
 {
-	return (int)EncryptionKeys::Key_Max;
+	return static_cast<int>(EncryptionKeys::Key_Max);
 }
 
 /**
@@ -2079,8 +2080,8 @@ int Xbox360_XEX::encryptionKeyCount_static(void)
 const char *Xbox360_XEX::encryptionKeyName_static(int keyIdx)
 {
 	assert(keyIdx >= 0);
-	assert(keyIdx < (int)EncryptionKeys::Key_Max);
-	if (keyIdx < 0 || keyIdx >= (int)EncryptionKeys::Key_Max)
+	assert(keyIdx < static_cast<int>(EncryptionKeys::Key_Max));
+	if (keyIdx < 0 || keyIdx >= static_cast<int>(EncryptionKeys::Key_Max))
 		return nullptr;
 	return Xbox360_XEX_Private::EncryptionKeyNames[keyIdx];
 }
@@ -2093,8 +2094,8 @@ const char *Xbox360_XEX::encryptionKeyName_static(int keyIdx)
 const uint8_t *Xbox360_XEX::encryptionVerifyData_static(int keyIdx)
 {
 	assert(keyIdx >= 0);
-	assert(keyIdx < (int)EncryptionKeys::Key_Max);
-	if (keyIdx < 0 || keyIdx >= (int)EncryptionKeys::Key_Max)
+	assert(keyIdx < static_cast<int>(EncryptionKeys::Key_Max));
+	if (keyIdx < 0 || keyIdx >= static_cast<int>(EncryptionKeys::Key_Max))
 		return nullptr;
 	return Xbox360_XEX_Private::EncryptionKeyVerifyData[keyIdx];
 }

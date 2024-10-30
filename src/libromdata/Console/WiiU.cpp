@@ -331,16 +331,17 @@ int WiiU::loadFieldData(void)
 
 	// Publisher
 	// Look up the publisher ID.
-	char publisher_code[5];
 	const char *publisher = nullptr;
 	string s_publisher;
 
 	const uint32_t publisher_id = WiiUData::lookup_disc_publisher(discHeader->id4);
-	publisher_code[0] = (publisher_id >> 24) & 0xFF;
-	publisher_code[1] = (publisher_id >> 16) & 0xFF;
-	publisher_code[2] = (publisher_id >>  8) & 0xFF;
-	publisher_code[3] =  publisher_id & 0xFF;
-	publisher_code[4] = 0;
+	const array<char, 5> publisher_code = {{
+		static_cast<char>((publisher_id >> 24) & 0xFF),
+		static_cast<char>((publisher_id >> 16) & 0xFF),
+		static_cast<char>((publisher_id >>  8) & 0xFF),
+		static_cast<char>( publisher_id & 0xFF),
+		'\0'
+	}};
 	if (publisher_id != 0 && (publisher_id & 0xFFFF0000) == 0x30300000) {
 		// Publisher ID is a valid two-character ID.
 		publisher = NintendoPublishers::lookup(&publisher_code[2]);
@@ -351,7 +352,7 @@ int WiiU::loadFieldData(void)
 		if (ISALNUM(publisher_code[0]) && ISALNUM(publisher_code[1]) &&
 		    ISALNUM(publisher_code[2]) && ISALNUM(publisher_code[3]))
 		{
-			s_publisher = rp_sprintf(C_("RomData", "Unknown (%.4s)"), publisher_code);
+			s_publisher = rp_sprintf(C_("RomData", "Unknown (%.4s)"), publisher_code.data());
 		} else {
 			s_publisher = rp_sprintf(C_("RomData", "Unknown (%02X %02X %02X %02X)"),
 				static_cast<uint8_t>(publisher_code[0]),
@@ -369,12 +370,12 @@ int WiiU::loadFieldData(void)
 
 	// OS version
 	// TODO: Validate the version characters.
-	const char s_os_version[] = {
+	const array<char, 6> s_os_version = {{
 		discHeader->os_version[0], '.',
 		discHeader->os_version[1], '.',
 		discHeader->os_version[2], '\0'
-	};
-	d->fields.addField_string(C_("RomData", "OS Version"), s_os_version);
+	}};
+	d->fields.addField_string(C_("RomData", "OS Version"), s_os_version.data());
 
 	// Region
 	// TODO: Compare against list of regions and show the fancy name.
@@ -496,7 +497,7 @@ int WiiU::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 	// If we're downloading a "high-resolution" image (M or higher),
 	// also add the default image to ExtURLs in case the user has
 	// high-resolution image downloads disabled.
-	const ImageSizeDef *szdefs_dl[2];
+	array<const ImageSizeDef*, 2> szdefs_dl;
 	szdefs_dl[0] = sizeDef;
 	unsigned int szdef_count;
 	if (sizeDef->index > 0) {

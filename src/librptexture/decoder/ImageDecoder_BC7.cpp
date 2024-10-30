@@ -279,14 +279,14 @@ static int decodeBC7Block(array<argb32_t, 4*4> &tileBuf, const uint64_t *bc7_src
 	// If no alpha is present, this will be 255.
 	// For modes with alpha components, there is always
 	// one alpha channel per endpoint.
-	uint8_t alpha[4];
+	array<uint8_t, 4> alpha;
 
 	// Anchor indexes.
 	// Subset 0 is always anchored at 0.
 	// Other subsets depend on subset count and partition number.
 	// NOTE: Index 3 is invalid. It's present here for alignment
 	// and because the subset index is 2-bit.
-	uint8_t anchor_index[4];
+	array<uint8_t, 4> anchor_index;
 	anchor_index[0] = 0;
 
 	/** END: Temporary values. **/

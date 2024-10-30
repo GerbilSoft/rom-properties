@@ -1324,9 +1324,9 @@ int DMG::loadFieldData(void)
 	// Check for GBS.
 	// NOTE: Loaded on demand, since GBS isn't used for metadata at the moment.
 	// TODO: Maybe it should be?
-	uint8_t gbs_jmp[3];
-	size_t size = d->file->seekAndRead(0, gbs_jmp, sizeof(gbs_jmp));
-	if (size == sizeof(gbs_jmp) && gbs_jmp[0] == 0xC3) {
+	array<uint8_t, 3> gbs_jmp;
+	size_t size = d->file->seekAndRead(0, gbs_jmp.data(), gbs_jmp.size());
+	if (size == gbs_jmp.size() && gbs_jmp[0] == 0xC3) {
 		// Read the jump address.
 		// GBS header is at the jump address minus sizeof(GBS_Header).
 		uint16_t jp_addr = (gbs_jmp[2] << 8) | gbs_jmp[1];

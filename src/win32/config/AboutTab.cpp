@@ -31,6 +31,7 @@ using LibWin32UI::LoadDialog_i18n;
 #include "libwin32darkmode/DarkModeCtrl.hpp"
 
 // C++ STL classes
+using std::array;
 using std::string;
 using std::wstring;
 using std::u16string;
@@ -660,11 +661,11 @@ void AboutTabPrivate::updChecker_retrieved(void)
 
 	// Format the latest version string.
 	char sUpdVersion[32];
-	const unsigned int upd[3] = {
+	const array<unsigned int, 3> upd = {{
 		RP_PROGRAM_VERSION_MAJOR(updateVersion),
 		RP_PROGRAM_VERSION_MINOR(updateVersion),
 		RP_PROGRAM_VERSION_REVISION(updateVersion)
-	};
+	}};
 
 	if (upd[2] == 0) {
 		snprintf(sUpdVersion, sizeof(sUpdVersion), "%u.%u", upd[0], upd[1]);

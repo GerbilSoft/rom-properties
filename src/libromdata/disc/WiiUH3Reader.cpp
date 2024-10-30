@@ -23,6 +23,7 @@ using namespace LibRpBase;
 using namespace LibRpFile;
 
 #ifdef ENABLE_DECRYPTION
+using std::array;
 using std::unique_ptr;
 #endif /* ENABLE_DECRYPTION */
 
@@ -155,9 +156,9 @@ int WiiUH3ReaderPrivate::readSector(uint32_t sector_num)
 		return -1;
 	}
 	// Decrypt the hashes. (IV is zero)
-	uint8_t iv[16];
-	memset(iv, 0, sizeof(iv));
-	size_t size = cipher->decrypt(reinterpret_cast<uint8_t*>(&sector_buf.hashes), sizeof(sector_buf.hashes), iv, sizeof(iv));
+	array<uint8_t, 16> iv;
+	memset(iv.data(), 0, iv.size());
+	size_t size = cipher->decrypt(reinterpret_cast<uint8_t*>(&sector_buf.hashes), sizeof(sector_buf.hashes), iv.data(), iv.size());
 	if (size != sizeof(sector_buf.hashes)) {
 		// Decryption failed.
 		// NOTE: sector_buf may be invalid.

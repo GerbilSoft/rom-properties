@@ -18,6 +18,7 @@ using namespace LibRpBase;
 using namespace LibRpText;
 
 // C++ STL classes
+using std::array;
 using std::string;
 
 // Qt includes
@@ -664,11 +665,11 @@ void AboutTab::updChecker_retrieved(quint64 updateVersion)
 
 	// Format the latest version string.
 	char sUpdVersion[32];
-	const unsigned int upd[3] = {
+	const array<unsigned int, 3> upd = {{
 		RP_PROGRAM_VERSION_MAJOR(updateVersion),
 		RP_PROGRAM_VERSION_MINOR(updateVersion),
 		RP_PROGRAM_VERSION_REVISION(updateVersion)
-	};
+	}};
 
 	if (upd[2] == 0) {
 		snprintf(sUpdVersion, sizeof(sUpdVersion), "%u.%u", upd[0], upd[1]);

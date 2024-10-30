@@ -27,12 +27,12 @@ namespace LibRomData { namespace NintendoPublishers {
  */
 const char *lookup(uint16_t code)
 {
-	const char s_code[3] = {
+	const array<char, 3> s_code = {{
 		static_cast<char>(code >> 8),
 		static_cast<char>(code & 0xFF),
 		'\0'
-	};
-	return lookup(s_code);
+	}};
+	return lookup(s_code.data());
 }
 
 /**
@@ -90,12 +90,12 @@ const char *lookup_old(uint8_t code)
 		'0','1','2','3','4','5','6','7',
 		'8','9','A','B','C','D','E','F'
 	}};
-	const char s_code[3] = {
+	const array<char, 3> s_code = {{
 		hex_lookup[code >> 4],
 		hex_lookup[code & 0x0F],
 		'\0'
-	};
-	return lookup(s_code);
+	}};
+	return lookup(s_code.data());
 }
 
 /**
