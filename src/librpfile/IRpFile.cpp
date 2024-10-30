@@ -84,7 +84,7 @@ int IRpFile::copyTo(IRpFile *pDestFile, off64_t size,
 		const size_t cbRead = this->read(buf, COPYTO_BUFFER_SIZE);
 		cbReadTotal += cbRead;
 		if (cbRead != COPYTO_BUFFER_SIZE &&
-		    (size < COPYTO_BUFFER_SIZE && cbRead != (size_t)size))
+		    (size < COPYTO_BUFFER_SIZE && cbRead != static_cast<size_t>(size)))
 		{
 			// Short read. We'll continue with a final write.
 			ret = -this->m_lastError;

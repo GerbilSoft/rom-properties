@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptext)                        *
  * specialized.cpp: Text encoding functions (specialized conversions)      *
  *                                                                         *
- * Copyright (c) 2009-2023 by David Korth.                                 *
+ * Copyright (c) 2009-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -66,17 +66,17 @@ static string str8_to_utf8(const array<char16_t, 256>& tbl, const char *str, int
 		// NOTE: The (uint8_t) cast is required.
 		// Otherwise, *str is interpreted as a signed char,
 		// which causes all sorts of shenanigans.
-		const char16_t ch16 = tbl[(uint8_t)*str];
+		const char16_t ch16 = tbl[static_cast<uint8_t>(*str)];
 		// NOTE: Masks for the first byte might not be needed...
 		if (ch16 < 0x0080) {
-			s_utf8 += (char)(ch16 & 0x7F);
+			s_utf8 += static_cast<char>(ch16 & 0x7F);
 		} else if (ch16 < 0x0800) {
-			s_utf8 += (char)(0xC0 | ((ch16 >>  6) & 0x1F));
-			s_utf8 += (char)(0x80 | ((ch16 >>  0) & 0x3F));
+			s_utf8 += static_cast<char>(0xC0 | ((ch16 >>  6) & 0x1F));
+			s_utf8 += static_cast<char>(0x80 | ((ch16 >>  0) & 0x3F));
 		} else /*if (ch16 < 0x10000)*/ {
-			s_utf8 += (char)(0xE0 | ((ch16 >> 12) & 0x0F));
-			s_utf8 += (char)(0x80 | ((ch16 >>  6) & 0x3F));
-			s_utf8 += (char)(0x80 | ((ch16 >>  0) & 0x3F));
+			s_utf8 += static_cast<char>(0xE0 | ((ch16 >> 12) & 0x0F));
+			s_utf8 += static_cast<char>(0x80 | ((ch16 >>  6) & 0x3F));
+			s_utf8 += static_cast<char>(0x80 | ((ch16 >>  0) & 0x3F));
 		}
 	}
 

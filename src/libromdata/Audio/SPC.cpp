@@ -153,7 +153,7 @@ public:
 		 */
 		inline void insertStr(SPC_xID6_Item_e key, const string &str)
 		{
-			val_t val((unsigned int)strs.size());
+			val_t val(static_cast<unsigned int>(strs.size()));
 			val.isStrIdx = true;
 			strs.emplace_back(str);
 			map.emplace(key, val);
@@ -413,7 +413,7 @@ SPCPrivate::spc_tags_t SPCPrivate::parseTags(void)
 	// due to DWORD alignment requirements.
 	unique_ptr<uint8_t[]> data(new uint8_t[len]);
 	size = file->read(data.get(), len);
-	if (size != (size_t)len) {
+	if (size != static_cast<size_t>(len)) {
 		// Read error.
 		return kv;
 	}
@@ -463,7 +463,7 @@ SPCPrivate::spc_tags_t SPCPrivate::parseTags(void)
 
 				// NOTE: Strings are encoded using cp1252.
 				kv.insertStr(static_cast<SPC_xID6_Item_e>(data[i]),
-					cp1252_to_utf8(reinterpret_cast<const char*>(&data[i+4]), (size_t)slen));
+					cp1252_to_utf8(reinterpret_cast<const char*>(&data[i+4]), static_cast<int>(slen)));
 
 				// DWORD alignment.
 				i += 4 + slen;

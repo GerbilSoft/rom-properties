@@ -83,7 +83,7 @@ int filterCacheKey(char *pCacheKey)
 
 	for (char *p = pCacheKey; *p != '\0'; p++) {
 		// See valid_ascii_table for a description of valid characters.
-		const uint8_t chr = (uint8_t)*p;
+		const unsigned char chr = static_cast<unsigned char>(*p);
 		if (chr & 0x80) {
 			// Start of UTF-8 sequence.
 			// Verify that the sequence is valid.

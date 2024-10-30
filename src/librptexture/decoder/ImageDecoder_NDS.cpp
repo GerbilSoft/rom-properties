@@ -37,10 +37,11 @@ rp_image_ptr fromNDS_CI4(int width, int height,
 	assert(pal_buf != nullptr);
 	assert(width > 0);
 	assert(height > 0);
-	assert(img_siz >= (((size_t)width * (size_t)height) / 2));
+	assert(img_siz >= (static_cast<size_t>(width) * static_cast<size_t>(height) / 2));
 	assert(pal_siz >= 16*2);
 	if (!img_buf || !pal_buf || width <= 0 || height <= 0 ||
-	    img_siz < (((size_t)width * (size_t)height) / 2) || pal_siz < 16*2)
+	    img_siz < (static_cast<size_t>(width) * static_cast<size_t>(height) / 2) ||
+	    pal_siz < 16*2)
 	{
 		return nullptr;
 	}

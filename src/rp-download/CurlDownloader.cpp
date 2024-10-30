@@ -113,7 +113,7 @@ size_t CurlDownloader::parse_header(char *ptr, size_t size, size_t nitems, void 
 			// Content-Length is too small.
 			return 0;
 		} else if (curlDL->m_maxSize > 0 &&
-			   fileSize > (off64_t)curlDL->m_maxSize)
+			   fileSize > static_cast<off64_t>(curlDL->m_maxSize))
 		{
 			// Content-Length is too big.
 			return 0;
@@ -250,7 +250,7 @@ int CurlDownloader::download(void)
 				// TODO: Return a cURL error code and/or message...
 				return -EIO;
 			}
-			ret = (int)response_code;
+			ret = static_cast<int>(response_code);
 			break;
 	}
 

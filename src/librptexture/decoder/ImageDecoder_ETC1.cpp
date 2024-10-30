@@ -617,9 +617,9 @@ rp_image_ptr fromETC1(int width, int height,
 	assert(img_buf != nullptr);
 	assert(width > 0);
 	assert(height > 0);
-	assert(img_siz >= (((size_t)width * (size_t)height) / 2));
+	assert(img_siz >= (static_cast<size_t>(width) * static_cast<size_t>(height) / 2));
 	if (!img_buf || width <= 0 || height <= 0 ||
-	    img_siz < (((size_t)width * (size_t)height) / 2))
+	    img_siz < (static_cast<size_t>(width) * static_cast<size_t>(height) / 2))
 	{
 		return nullptr;
 	}
@@ -683,9 +683,9 @@ rp_image_ptr fromETC2_RGB(int width, int height,
 	assert(img_buf != nullptr);
 	assert(width > 0);
 	assert(height > 0);
-	assert(img_siz >= (((size_t)width * (size_t)height) / 2));
+	assert(img_siz >= (static_cast<size_t>(width) * static_cast<size_t>(height) / 2));
 	if (!img_buf || width <= 0 || height <= 0 ||
-	    img_siz < (((size_t)width * (size_t)height) / 2))
+	    img_siz < (static_cast<size_t>(width) * static_cast<size_t>(height) / 2))
 	{
 		return nullptr;
 	}
@@ -793,9 +793,9 @@ rp_image_ptr fromETC2_RGBA(int width, int height,
 	assert(img_buf != nullptr);
 	assert(width > 0);
 	assert(height > 0);
-	assert(img_siz >= ((size_t)width * (size_t)height));
+	assert(img_siz >= (static_cast<size_t>(width) * static_cast<size_t>(height)));
 	if (!img_buf || width <= 0 || height <= 0 ||
-	    img_siz < ((size_t)width * (size_t)height))
+	    img_siz < (static_cast<size_t>(width) * static_cast<size_t>(height)))
 	{
 		return nullptr;
 	}
@@ -863,9 +863,9 @@ rp_image_ptr fromETC2_RGB_A1(int width, int height,
 	assert(img_buf != nullptr);
 	assert(width > 0);
 	assert(height > 0);
-	assert(img_siz >= (((size_t)width * (size_t)height) / 2));
+	assert(img_siz >= (static_cast<size_t>(width) * static_cast<size_t>(height) / 2));
 	if (!img_buf || width <= 0 || height <= 0 ||
-	    img_siz < (((size_t)width * (size_t)height) / 2))
+	    img_siz < (static_cast<size_t>(width) * static_cast<size_t>(height) / 2))
 	{
 		return nullptr;
 	}
@@ -929,9 +929,9 @@ rp_image_ptr fromEAC_R11(int width, int height,
 	assert(img_buf != nullptr);
 	assert(width > 0);
 	assert(height > 0);
-	assert(img_siz >= (((size_t)width * (size_t)height) / 2));
+	assert(img_siz >= (static_cast<size_t>(width) * static_cast<size_t>(height) / 2));
 	if (!img_buf || width <= 0 || height <= 0 ||
-	    img_siz < (((size_t)width * (size_t)height) / 2))
+	    img_siz < (static_cast<size_t>(width) * static_cast<size_t>(height) / 2))
 	{
 		return nullptr;
 	}
@@ -999,9 +999,9 @@ rp_image_ptr fromEAC_RG11(int width, int height,
 	assert(img_buf != nullptr);
 	assert(width > 0);
 	assert(height > 0);
-	assert(img_siz >= ((size_t)width * (size_t)height));
+	assert(img_siz >= (static_cast<size_t>(width) * static_cast<size_t>(height)));
 	if (!img_buf || width <= 0 || height <= 0 ||
-	    img_siz < ((size_t)width * (size_t)height))
+	    img_siz < (static_cast<size_t>(width) * static_cast<size_t>(height)))
 	{
 		return nullptr;
 	}

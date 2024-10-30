@@ -313,7 +313,7 @@ unsigned int DreamcastSavePrivate::readAndVerifyVmsHeader(uint32_t address)
 	// Monochrome icon is usually within the first 256 bytes
 	// of the start of the file.
 	if ((loaded_headers & DC_IS_ICONDATA_VMS) ||
-	    ((unsigned int)vms_header.dc_description[0] >= sizeof(DC_VMS_ICONDATA_Header) &&
+	    (static_cast<unsigned int>(vms_header.dc_description[0]) >= sizeof(DC_VMS_ICONDATA_Header) &&
 	     vms_header.dc_description[1] == 0 &&
 	     vms_header.dc_description[2] == 0 &&
 	     vms_header.dc_description[3] == 0))
@@ -846,7 +846,7 @@ DreamcastSave::DreamcastSave(const IRpFilePtr &file)
 		}
 
 		// Nothing else to do here for standalone VMI files.
-		d->mimeType = d->mimeTypes[(int)d->saveType];
+		d->mimeType = d->mimeTypes[static_cast<int>(d->saveType)];
 		d->isValid = true;
 		return;
 	} else {
@@ -857,7 +857,7 @@ DreamcastSave::DreamcastSave(const IRpFilePtr &file)
 	}
 
 	// Set the MIME type.
-	d->mimeType = d->mimeTypes[(int)d->saveType];
+	d->mimeType = d->mimeTypes[static_cast<int>(d->saveType)];
 
 	// TODO: Load both VMI and VMS timestamps?
 	// Currently, only the VMS timestamp is loaded.
@@ -1239,7 +1239,7 @@ int DreamcastSave::loadFieldData(void)
 	} else if (!d->file || !d->file->isOpen()) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!d->isValid || (int)d->saveType < 0) {
+	} else if (!d->isValid || static_cast<int>(d->saveType) < 0) {
 		// Unknown save file type.
 		return -EIO;
 	}
@@ -1458,7 +1458,7 @@ int DreamcastSave::loadMetaData(void)
 	} else if (!d->file) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!d->isValid || (int)d->saveType < 0) {
+	} else if (!d->isValid || static_cast<int>(d->saveType) < 0) {
 		// Unknown save type.
 		return -EIO;
 	}
@@ -1550,7 +1550,7 @@ int DreamcastSave::loadInternalImage(ImageType imageType, rp_image_const_ptr &pI
 	}
 
 	// TODO: -ENOENT if the file doesn't actually have an icon/banner.
-	return ((bool)pImage ? 0 : -EIO);
+	return (pImage) ? 0 : -EIO;
 }
 
 /**

@@ -632,7 +632,7 @@ INT_PTR CALLBACK ImageTypesTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 			cbid -= IDC_IMAGETYPES_CBOIMAGETYPE_BASE;
 
 			const int idx = ComboBox_GetCurSel((HWND)lParam);
-			const unsigned int prio = (unsigned int)(idx <= 0 ? 0xFF : idx-1);
+			const unsigned int prio = static_cast<unsigned int>(idx <= 0 ? 0xFF : idx-1);
 			if (d->cboImageType_priorityValueChanged(cbid, prio)) {
 				// Configuration has been changed.
 				PropSheet_Changed(GetParent(d->hWndPropSheet), d->hWndPropSheet);

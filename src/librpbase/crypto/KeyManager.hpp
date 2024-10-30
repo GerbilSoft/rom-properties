@@ -37,9 +37,9 @@ class KeyManager : public ConfReader
 
 	public:
 		/**
-		 * Key verification result.
+		 * Key verification result
 		 */
-		enum class VerifyResult {
+		enum class VerifyResult : int8_t {
 			Unknown			= -1,	// Unknown status.
 			OK			= 0,	// Key obtained/verified.
 			InvalidParams		= 1,	// Parameters are invalid.

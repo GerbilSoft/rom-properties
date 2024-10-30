@@ -137,8 +137,8 @@ rp_image_const_ptr WiiWIBNPrivate::loadIcon(void)
 		return nullptr;
 	}
 
-	// Number of icons read.
-	const unsigned int icons_read = (unsigned int)(size / BANNER_WIBN_ICON_SIZE);
+	// Number of icons read
+	const unsigned int icons_read = static_cast<unsigned int>(size / BANNER_WIBN_ICON_SIZE);
 
 	this->iconAnimData = std::make_shared<IconAnimData>();
 	iconAnimData->count = 0;
@@ -568,7 +568,7 @@ int WiiWIBN::loadInternalImage(ImageType imageType, rp_image_const_ptr &pImage)
 	}
 
 	// TODO: -ENOENT if the file doesn't actually have an icon/banner.
-	return ((bool)pImage ? 0 : -EIO);
+	return (pImage) ? 0 : -EIO;
 }
 
 /**

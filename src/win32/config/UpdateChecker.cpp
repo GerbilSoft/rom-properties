@@ -113,7 +113,7 @@ unsigned int WINAPI UpdateChecker::ThreadProc(LPVOID lpParameter)
 			SendMessage(updChecker->m_hWnd, WM_UPD_ERROR, 0, 0);
 			return 6;
 		}
-		updateVersion |= ((uint64_t)x & 0xFFFFU);
+		updateVersion |= (static_cast<uint64_t>(x) & 0xFFFFU);
 
 		// Next token
 		token = strtok_r(nullptr, ".", &saveptr);

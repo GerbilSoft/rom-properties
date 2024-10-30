@@ -518,7 +518,7 @@ EXE::EXE(const IRpFilePtr &file)
 	};
 	d->exeType = static_cast<EXEPrivate::ExeType>(isRomSupported_static(&info));
 
-	d->isValid = ((int)d->exeType >= 0);
+	d->isValid = (static_cast<int>(d->exeType) >= 0);
 	if (!d->isValid) {
 		// Not an MZ executable.
 		d->file.reset();
@@ -762,7 +762,7 @@ int EXE::isRomSupported_static(const DetectInfo *info)
 	if (pData[0] == 0xEB) {
 		// JMP8
 		// Second byte must be a forward jump. (>= 0)
-		if (((int8_t)pData[1]) >= 0) {
+		if (static_cast<int8_t>(pData[1]) >= 0) {
 			has_x86_jmp = true;
 		}
 	} else if (pData[0] == 0xE9) {
@@ -771,7 +771,7 @@ int EXE::isRomSupported_static(const DetectInfo *info)
 		// end of the executable, and cannot be in the PSP.
 		const int16_t offset = (pData[1] | (pData[2] << 8));
 		if (offset > 0 || offset < -259) {
-			const uint16_t u_offset = (uint16_t)offset;
+			const uint16_t u_offset = static_cast<uint16_t>(offset);
 			if (u_offset < info->szFile) {
 				has_x86_jmp = true;
 			}
@@ -948,7 +948,7 @@ int EXE::loadFieldData(void)
 	} else if (!d->file || !d->file->isOpen()) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!d->isValid || (int)d->exeType < 0) {
+	} else if (!d->isValid || static_cast<int>(d->exeType) < 0) {
 		// Unknown EXE type.
 		return -EIO;
 	}
@@ -980,7 +980,7 @@ int EXE::loadFieldData(void)
 
 	const char *const type_title = C_("RomData", "Type");
 	if (d->exeType >= EXEPrivate::ExeType::MZ && d->exeType < EXEPrivate::ExeType::Max) {
-		const unsigned int offset = exeTypes_offtbl[(int)d->exeType];
+		const unsigned int offset = exeTypes_offtbl[static_cast<size_t>(d->exeType)];
 		d->fields.addField_string(type_title, &exeTypes_strtbl[offset]);
 	} else {
 		d->fields.addField_string(type_title, C_("EXE", "Unknown"));
@@ -1038,7 +1038,7 @@ int EXE::loadMetaData(void)
 	} else if (!d->file || !d->file->isOpen()) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!d->isValid || (int)d->exeType < 0) {
+	} else if (!d->isValid || static_cast<int>(d->exeType) < 0) {
 		// Unknown EXE type.
 		return -EIO;
 	}

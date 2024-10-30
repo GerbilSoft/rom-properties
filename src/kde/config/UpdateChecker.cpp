@@ -90,7 +90,7 @@ void UpdateChecker::run(void)
 			emit finished();
 			return;
 		}
-		updateVersion |= ((uint64_t)x & 0xFFFFU);
+		updateVersion |= (static_cast<uint64_t>(x) & 0xFFFFU);
 	}
 
 	// Update version retrieved.

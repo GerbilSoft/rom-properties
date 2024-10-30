@@ -71,7 +71,7 @@ public:
 	template<typename T>
 	static inline constexpr T toNext64(T val)
 	{
-		return (val + (T)63) & ~((T)63);
+		return (val + static_cast<T>(63)) & ~(static_cast<T>(63));
 	}
 
 #ifdef ENABLE_DECRYPTION
@@ -159,13 +159,12 @@ WiiSave::WiiSave(const IRpFilePtr &file)
 	// - Reading with save file header, banner, max number of icons, and the Bk header.
 	// - Bk header is the only unencrypted header.
 	// - Need to get encryption keys.
-	static constexpr unsigned int svSizeMin = (unsigned int)(
+	static constexpr size_t svSizeMin =
 		sizeof(Wii_SaveGame_Header_t) +
 		sizeof(Wii_WIBN_Header_t) +
 		BANNER_WIBN_IMAGE_SIZE + BANNER_WIBN_ICON_SIZE +
-		sizeof(Wii_Bk_Header_t));
-	static constexpr unsigned int svSizeTotal = (unsigned int)(
-		svSizeMin + (BANNER_WIBN_ICON_SIZE * (CARD_MAXICONS-1)));
+		sizeof(Wii_Bk_Header_t);
+	static constexpr size_t svSizeTotal = svSizeMin + (BANNER_WIBN_ICON_SIZE * (CARD_MAXICONS - 1));
 	auto svData = aligned_uptr<uint8_t>(16, svSizeTotal);
 
 	d->file->rewind();
@@ -180,8 +179,7 @@ WiiSave::WiiSave(const IRpFilePtr &file)
 	}
 
 	// Check for the Bk header at the designated locations.
-	unsigned int bkHeaderAddr = (unsigned int)(
-		svSizeMin - sizeof(Wii_Bk_Header_t));
+	size_t bkHeaderAddr = svSizeMin - sizeof(Wii_Bk_Header_t);
 	for (; bkHeaderAddr < size; bkHeaderAddr += BANNER_WIBN_ICON_SIZE) {
 		const Wii_Bk_Header_t *bkHeader =
 			reinterpret_cast<const Wii_Bk_Header_t*>(svData.get() + bkHeaderAddr);

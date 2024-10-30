@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * AesNettle.cpp: AES decryption class using GNU Nettle.                   *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -144,22 +144,22 @@ int AesNettle::setKey(const uint8_t *RESTRICT pKey, size_t size)
 #ifdef HAVE_NETTLE_3
 	switch (size) {
 		case 16:
-			d->decrypt_fn = (nettle_cipher_func*)aes128_decrypt;
-			d->encrypt_fn = (nettle_cipher_func*)aes128_encrypt;
-			d->setkey_dec_fn = (nettle_set_key_func*)aes128_set_decrypt_key;
-			d->setkey_enc_fn = (nettle_set_key_func*)aes128_set_encrypt_key;
+			d->decrypt_fn = reinterpret_cast<nettle_cipher_func*>(aes128_decrypt);
+			d->encrypt_fn = reinterpret_cast<nettle_cipher_func*>(aes128_encrypt);
+			d->setkey_dec_fn = reinterpret_cast<nettle_set_key_func*>(aes128_set_decrypt_key);
+			d->setkey_enc_fn = reinterpret_cast<nettle_set_key_func*>(aes128_set_encrypt_key);
 			break;
 		case 24:
-			d->decrypt_fn = (nettle_cipher_func*)aes192_decrypt;
-			d->encrypt_fn = (nettle_cipher_func*)aes192_encrypt;
-			d->setkey_dec_fn = (nettle_set_key_func*)aes192_set_decrypt_key;
-			d->setkey_enc_fn = (nettle_set_key_func*)aes192_set_encrypt_key;
+			d->decrypt_fn = reinterpret_cast<nettle_cipher_func*>(aes192_decrypt);
+			d->encrypt_fn = reinterpret_cast<nettle_cipher_func*>(aes192_encrypt);
+			d->setkey_dec_fn = reinterpret_cast<nettle_set_key_func*>(aes192_set_decrypt_key);
+			d->setkey_enc_fn = reinterpret_cast<nettle_set_key_func*>(aes192_set_encrypt_key);
 			break;
 		case 32:
-			d->decrypt_fn = (nettle_cipher_func*)aes256_decrypt;
-			d->encrypt_fn = (nettle_cipher_func*)aes256_encrypt;
-			d->setkey_dec_fn = (nettle_set_key_func*)aes256_set_decrypt_key;
-			d->setkey_enc_fn = (nettle_set_key_func*)aes256_set_encrypt_key;
+			d->decrypt_fn = reinterpret_cast<nettle_cipher_func*>(aes256_decrypt);
+			d->encrypt_fn = reinterpret_cast<nettle_cipher_func*>(aes256_encrypt);
+			d->setkey_dec_fn = reinterpret_cast<nettle_set_key_func*>(aes256_set_decrypt_key);
+			d->setkey_enc_fn = reinterpret_cast<nettle_set_key_func*>(aes256_set_encrypt_key);
 			break;
 		default:
 			return -EINVAL;

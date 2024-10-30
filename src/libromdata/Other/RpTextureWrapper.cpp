@@ -387,7 +387,7 @@ int RpTextureWrapper::loadInternalMipmap(int mipmapLevel, LibRpTexture::rp_image
 
 	// Get the mipmap.
 	pImage = d->texture->mipmap(mipmapLevel);
-	return ((bool)pImage ? 0 : -EIO);
+	return (pImage) ? 0 : -EIO;
 }
 
 /** Pixel format **/

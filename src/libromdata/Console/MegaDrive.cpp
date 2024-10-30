@@ -1422,7 +1422,7 @@ int MegaDrive::loadMetaData(void)
 	} else if (!d->file) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!d->isValid || (int)d->romType < 0) {
+	} else if (!d->isValid || static_cast<int>(d->romType) < 0) {
 		// Unknown ROM image type.
 		return -EIO;
 	}
@@ -1476,7 +1476,7 @@ int MegaDrive::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) 
 	pExtURLs->clear();
 
 	RP_D(const MegaDrive);
-	if (!d->isValid || (int)d->romType < 0) {
+	if (!d->isValid || static_cast<int>(d->romType) < 0) {
 		// ROM image isn't valid.
 		return -EIO;
 	}
@@ -1754,7 +1754,7 @@ int MegaDrive::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) 
 				if (ISDIGIT(d->mcd_hdr[0x1A])) {
 					// Append the disc number.
 					gameID += ".disc";
-					gameID += (char)d->mcd_hdr[0x1A];
+					gameID += static_cast<char>(d->mcd_hdr[0x1A]);
 				}
 			} else {
 				switch (d->md_region) {

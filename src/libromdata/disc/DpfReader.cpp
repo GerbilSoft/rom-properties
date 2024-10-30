@@ -294,14 +294,14 @@ size_t DpfReader::read(void *ptr, size_t size)
 			if (p.size == 0)
 				continue;
 
-			if (d->pos < (int64_t)p.virt_offset) {
+			if (d->pos < static_cast<off64_t>(p.virt_offset)) {
 				// Requested position is before this entry. This means we don't have a valid entry...
 				phys_offset = -1;
 				break;
 			}
 
-			const int64_t virt_end = static_cast<int64_t>(p.virt_offset) + p.size;
-			if (d->pos >= (int64_t)p.virt_offset && d->pos < virt_end) {
+			const off64_t virt_end = static_cast<off64_t>(p.virt_offset) + p.size;
+			if (d->pos >= static_cast<off64_t>(p.virt_offset) && d->pos < virt_end) {
 				// Requested position starts within this entry.
 				virt_start = p.virt_offset;
 				virt_size = static_cast<size_t>(p.size);

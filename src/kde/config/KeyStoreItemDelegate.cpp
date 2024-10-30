@@ -104,7 +104,7 @@ void KeyStoreItemDelegate::paint(QPainter *painter,
 	const QStyleOptionViewItem &option,
 	const QModelIndex &index) const
 {
-	if (!index.isValid() || index.column() != (int)KeyStoreModel::Column::IsValid) {
+	if (!index.isValid() || index.column() != static_cast<int>(KeyStoreModel::Column::IsValid)) {
 		// Index is invalid, or this isn't the "Is Valid?" column.
 		// Use the default paint().
 		super::paint(painter, option, index);

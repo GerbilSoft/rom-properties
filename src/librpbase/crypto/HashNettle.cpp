@@ -170,7 +170,7 @@ size_t Hash::hashLength(void) const
 	RP_D(const Hash);
 
 	// Lookup table
-	static constexpr array<uint8_t, (int)Algorithm::Max> hash_length_tbl = {{
+	static constexpr array<uint8_t, static_cast<size_t>(Algorithm::Max)> hash_length_tbl = {{
 		0,			// Unknown
 
 		sizeof(uint32_t),	// CRC32
@@ -183,9 +183,9 @@ size_t Hash::hashLength(void) const
 	}};
 
 	assert(d->algorithm > Algorithm::Unknown);
-	assert(d->algorithm < (Hash::Algorithm)hash_length_tbl.size());
-	if (d->algorithm > Algorithm::Unknown && d->algorithm < (Hash::Algorithm)hash_length_tbl.size()) {
-		return hash_length_tbl[static_cast<int>(d->algorithm)];
+	assert(static_cast<size_t>(d->algorithm) < hash_length_tbl.size());
+	if (d->algorithm > Algorithm::Unknown && static_cast<size_t>(d->algorithm) < hash_length_tbl.size()) {
+		return hash_length_tbl[static_cast<size_t>(d->algorithm)];
 	}
 
 	// Invalid algorithm.

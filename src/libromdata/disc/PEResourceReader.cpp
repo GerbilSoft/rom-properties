@@ -229,7 +229,7 @@ int PEResourceReaderPrivate::loadResDir(uint32_t addr, rsrc_dir_t &dir)
 
 	// Shrink the vector in case we skipped some types.
 	dir.resize(entriesRead);
-	return (int)entriesRead;
+	return static_cast<int>(entriesRead);
 }
 
 /**

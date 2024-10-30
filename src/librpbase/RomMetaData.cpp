@@ -38,10 +38,10 @@ public:
 	// Mapping of Property to metaData indexes.
 	// Index == Property
 	// Value == metaData index (-1 for none)
-	array<Property, (int)Property::PropertyCount> map_metaData;
+	array<Property, static_cast<size_t>(Property::PropertyCount)> map_metaData;
 
 	// Property type mapping
-	static const array<PropertyType, (int)Property::PropertyCount> PropertyTypeMap;
+	static const array<PropertyType, static_cast<size_t>(Property::PropertyCount)> PropertyTypeMap;
 
 	/**
 	 * Add or overwrite a Property.
@@ -54,7 +54,7 @@ public:
 /** RomMetaDataPrivate **/
 
 // Property type mapping
-const array<PropertyType, (int)Property::PropertyCount> RomMetaDataPrivate::PropertyTypeMap = {
+const array<PropertyType, static_cast<size_t>(Property::PropertyCount)> RomMetaDataPrivate::PropertyTypeMap = {
 	PropertyType::FirstPropertyType,	// first type is invalid
 
 	// Audio
@@ -160,7 +160,7 @@ const array<PropertyType, (int)Property::PropertyCount> RomMetaDataPrivate::Prop
 
 RomMetaDataPrivate::RomMetaDataPrivate()
 {
-	static_assert(ARRAY_SIZE(RomMetaDataPrivate::PropertyTypeMap) == (int)Property::PropertyCount,
+	static_assert(ARRAY_SIZE(RomMetaDataPrivate::PropertyTypeMap) == static_cast<size_t>(Property::PropertyCount),
 		      "PropertyTypeMap needs to be updated!");
 	map_metaData.fill(Property::Invalid);
 }
@@ -182,9 +182,9 @@ RomMetaData::MetaData *RomMetaDataPrivate::addProperty(Property name)
 
 	// Check if this metadata property was already added.
 	RomMetaData::MetaData *pMetaData;
-	if (map_metaData[(int)name] > Property::Invalid) {
+	if (map_metaData[static_cast<size_t>(name)] > Property::Invalid) {
 		// Already added. Overwrite it.
-		pMetaData = &metaData[(int)map_metaData[(int)name]];
+		pMetaData = &metaData[static_cast<size_t>(map_metaData[static_cast<size_t>(name)])];
 		// If a string is present, delete it.
 		if (pMetaData->type == PropertyType::String) {
 			delete pMetaData->data.str;
@@ -198,7 +198,7 @@ RomMetaData::MetaData *RomMetaDataPrivate::addProperty(Property name)
 			return nullptr;
 		}
 
-		metaData.emplace_back(name, static_cast<PropertyType>(PropertyTypeMap[static_cast<int>(name)]));
+		metaData.emplace_back(name, static_cast<PropertyType>(PropertyTypeMap[static_cast<size_t>(name)]));
 		const size_t idx = metaData.size() - 1;
 		pMetaData = &metaData[idx];
 		map_metaData[static_cast<int>(name)] = static_cast<Property>(idx);
@@ -545,7 +545,7 @@ int RomMetaData::addMetaData_integer(Property name, int value)
 	}
 
 	pMetaData->data.ivalue = value;
-	return static_cast<int>(d->map_metaData[(int)name]);
+	return static_cast<int>(d->map_metaData[static_cast<size_t>(name)]);
 }
 
 /**
@@ -575,7 +575,7 @@ int RomMetaData::addMetaData_uint(Property name, unsigned int value)
 	}
 
 	pMetaData->data.uvalue = value;
-	return static_cast<int>(d->map_metaData[(int)name]);
+	return static_cast<int>(d->map_metaData[static_cast<size_t>(name)]);
 }
 
 /**
@@ -625,7 +625,7 @@ int RomMetaData::addMetaData_string(Property name, const char *str, unsigned int
 	}
 
 	pMetaData->data.str = nstr;
-	return static_cast<int>(d->map_metaData[(int)name]);
+	return static_cast<int>(d->map_metaData[static_cast<size_t>(name)]);
 }
 
 /**
@@ -675,7 +675,7 @@ int RomMetaData::addMetaData_string(Property name, const string &str, unsigned i
 	}
 
 	pMetaData->data.str = nstr;
-	return static_cast<int>(d->map_metaData[(int)name]);
+	return static_cast<int>(d->map_metaData[static_cast<size_t>(name)]);
 }
 
 /**
@@ -705,7 +705,7 @@ int RomMetaData::addMetaData_timestamp(Property name, time_t timestamp)
 	}
 
 	pMetaData->data.timestamp = timestamp;
-	return static_cast<int>(d->map_metaData[(int)name]);
+	return static_cast<int>(d->map_metaData[static_cast<size_t>(name)]);
 }
 
 /**
@@ -735,7 +735,7 @@ int RomMetaData::addMetaData_double(Property name, double dvalue)
 	}
 
 	pMetaData->data.dvalue = dvalue;
-	return static_cast<int>(d->map_metaData[(int)name]);
+	return static_cast<int>(d->map_metaData[static_cast<size_t>(name)]);
 }
 
 }

@@ -551,11 +551,11 @@ rp_image_const_ptr PowerVR3Private::loadImage(int mip)
 		return nullptr;
 	}
 
-	if (file->size() > 128*1024*1024) {
+	const off64_t fileSize = file->size();
+	if (fileSize > 128*1024*1024) {
 		// Sanity check: PowerVR3 files shouldn't be more than 128 MB.
 		return nullptr;
 	}
-	const uint32_t file_sz = (uint32_t)file->size();
 
 	// Seek to the start of the texture data.
 	int ret = file->seek(texDataStartAddr);
@@ -597,7 +597,7 @@ rp_image_const_ptr PowerVR3Private::loadImage(int mip)
 	}
 
 	// Verify file size.
-	if ((start_addr + expected_size) > file_sz) {
+	if ((start_addr + expected_size) > static_cast<size_t>(fileSize)) {
 		// File is too small.
 		return nullptr;
 	}
@@ -974,7 +974,7 @@ PowerVR3::PowerVR3(const IRpFilePtr &file)
 		file->size()	// szFile
 	};
 	d->pvrType = static_cast<PowerVR3Private::PVRType>(isRomSupported_static(&info));
-	d->isValid = ((int)d->pvrType >= 0);
+	d->isValid = (static_cast<int>(d->pvrType) >= 0);
 
 	if (!d->isValid) {
 		d->file.reset();

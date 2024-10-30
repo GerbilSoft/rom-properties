@@ -472,8 +472,8 @@ void RP_ShellPropSheetExt_Private::btnOptions_action_triggered(int menuId)
 	// TODO: Don't keep rebuilding this vector...
 	vector<RomData::RomOp> ops = romData->romOps();
 	const int id = menuId - IDM_OPTIONS_MENU_BASE;
-	assert(id < (int)ops.size());
-	if (id >= (int)ops.size()) {
+	assert(id < static_cast<int>(ops.size()));
+	if (id < static_cast<int>(ops.size())) {
 		// ID is out of range.
 		return;
 	}
@@ -520,8 +520,8 @@ void RP_ShellPropSheetExt_Private::btnOptions_action_triggered(int menuId)
 		// Update the RomOp menu entry in case it changed.
 		// NOTE: Assuming the RomOps vector order hasn't changed.
 		ops = romData->romOps();
-		assert(id < (int)ops.size());
-		if (id < (int)ops.size()) {
+		assert(id < static_cast<int>(ops.size()));
+		if (id < static_cast<int>(ops.size())) {
 			OptionsMenuButton_UpdateOp(hBtnOptions, id, &ops[id]);
 		}
 	} else {

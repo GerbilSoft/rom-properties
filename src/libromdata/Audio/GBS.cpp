@@ -131,11 +131,11 @@ GBS::GBS(const IRpFilePtr &file)
 	};
 	d->audioFormat = static_cast<GBSPrivate::AudioFormat>(isRomSupported_static(&info));
 
-	if ((int)d->audioFormat < 0) {
+	if (static_cast<int>(d->audioFormat) < 0) {
 		d->file.reset();
 		return;
-	} else if ((int)d->audioFormat < ARRAY_SIZE_I(d->mimeTypes)-1) {
-		d->mimeType = d->mimeTypes[(int)d->audioFormat];
+	} else if (static_cast<int>(d->audioFormat) < ARRAY_SIZE_I(d->mimeTypes)-1) {
+		d->mimeType = d->mimeTypes[static_cast<int>(d->audioFormat)];
 		d->isValid = true;
 	}
 }
@@ -198,7 +198,7 @@ const char *GBS::systemName(unsigned int type) const
 		{{"Game Boy Ripped", "GBR", "GBR", nullptr}},
 	}};
 
-	return sysNames[((int)d->audioFormat) & 1][type & SYSNAME_TYPE_MASK];
+	return sysNames[(static_cast<int>(d->audioFormat)) & 1][type & SYSNAME_TYPE_MASK];
 }
 
 /**

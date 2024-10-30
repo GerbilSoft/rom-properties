@@ -453,7 +453,7 @@ rp_key_manager_getOpenFileDialog_callback(GFile *file, open_data_t *open_data)
 	KeyStoreUI *const keyStoreUI = rp_key_store_gtk_get_key_store_ui(tab->keyStore);
 	const KeyStoreUI::ImportReturn iret = keyStoreUI->importKeysFromBin(open_data->id, filename);
 
-	rp_key_manager_tab_show_key_import_return_status(tab, filename, import_menu_actions[(int)open_data->id], iret);
+	rp_key_manager_tab_show_key_import_return_status(tab, filename, import_menu_actions[static_cast<size_t>(open_data->id)], iret);
 	g_free(filename);
 	g_free(open_data);
 }
@@ -467,10 +467,10 @@ rp_key_manager_getOpenFileDialog_callback(GFile *file, open_data_t *open_data)
 static void
 rp_key_manager_tab_handle_menu_action(RpKeyManagerTab *tab, gint id)
 {
-	assert(id >= (int)KeyStoreUI::ImportFileID::WiiKeysBin);
-	assert(id <= (int)KeyStoreUI::ImportFileID::N3DSaeskeydb);
-	if (id < (int)KeyStoreUI::ImportFileID::WiiKeysBin ||
-	    id > (int)KeyStoreUI::ImportFileID::N3DSaeskeydb)
+	assert(id >= static_cast<int>(KeyStoreUI::ImportFileID::WiiKeysBin));
+	assert(id <= static_cast<int>(KeyStoreUI::ImportFileID::N3DSaeskeydb));
+	if (id < static_cast<int>(KeyStoreUI::ImportFileID::WiiKeysBin) ||
+	    id > static_cast<int>(KeyStoreUI::ImportFileID::N3DSaeskeydb))
 		return;
 
 	static constexpr char dialog_titles_tbl[][32] = {

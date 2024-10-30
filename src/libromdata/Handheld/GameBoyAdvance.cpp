@@ -329,7 +329,7 @@ int GameBoyAdvance::loadFieldData(void)
 	} else if (!d->file) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!d->isValid || (int)d->romType < 0) {
+	} else if (!d->isValid || static_cast<int>(d->romType) < 0) {
 		// Unknown ROM image type.
 		return -EIO;
 	}
@@ -429,7 +429,7 @@ int GameBoyAdvance::loadMetaData(void)
 	} else if (!d->file) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!d->isValid || (int)d->romType < 0) {
+	} else if (!d->isValid || static_cast<int>(d->romType) < 0) {
 		// Unknown ROM image type.
 		return -EIO;
 	}
@@ -475,7 +475,7 @@ int GameBoyAdvance::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int s
 
 	// Check for GBA ROMs that don't have external images.
 	RP_D(const GameBoyAdvance);
-	if (!d->isValid || (int)d->romType < 0) {
+	if (!d->isValid || static_cast<int>(d->romType) < 0) {
 		// ROM image isn't valid.
 		return -EIO;
 	} else if (d->romType == GameBoyAdvancePrivate::RomType::NDS_Expansion) {

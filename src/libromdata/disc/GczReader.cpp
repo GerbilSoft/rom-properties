@@ -187,7 +187,7 @@ GczReader::GczReader(const IRpFilePtr &file)
 		// Round it up, then check.
 		expected_data_size = ALIGN_BYTES(d->block_size, d->gczHeader.data_size);
 	}
-	if (((uint64_t)d->block_size * (uint64_t)d->gczHeader.num_blocks) != expected_data_size) {
+	if ((static_cast<uint64_t>(d->block_size) * static_cast<uint64_t>(d->gczHeader.num_blocks)) != expected_data_size) {
 		// Not a multiple.
 		m_file.reset();
 		m_lastError = EIO;
@@ -328,7 +328,7 @@ int GczReader::isDiscSupported_static(const uint8_t *pHeader, size_t szHeader)
 		// Round it up, then check.
 		expected_data_size = ALIGN_BYTES(block_size, data_size);
 	}
-	if (((uint64_t)block_size * (uint64_t)num_blocks) != expected_data_size) { 
+	if ((static_cast<uint64_t>(block_size) * static_cast<uint64_t>(num_blocks)) != expected_data_size) { 
 		// Incorrect size.
 		return -1;
 	}
@@ -390,7 +390,7 @@ int GczReader::readBlock(uint32_t blockIdx, int pos, void *ptr, size_t size)
 	// NOTE: This can only be called by SparseDiscReader,
 	// so the main assertions are already checked there.
 	RP_D(GczReader);
-	assert(pos >= 0 && pos < (int)d->block_size);
+	assert(pos >= 0 && pos < static_cast<int>(d->block_size));
 	assert(size <= d->block_size);
 	// TODO: Make sure overflow doesn't occur.
 	assert(static_cast<off64_t>(pos + size) <= static_cast<off64_t>(d->block_size));

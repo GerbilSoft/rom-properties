@@ -76,7 +76,7 @@ class RpJpegPrivate
 
 		// JPEG source manager struct.
 		// Based on libjpeg-turbo 1.5.1's jpeg_stdio_src(). (jdatasrc.c)
-		static constexpr unsigned int INPUT_BUF_SIZE = 4096;
+		static constexpr size_t INPUT_BUF_SIZE = 4096U;
 		struct MySourceMgr {
 			jpeg_source_mgr pub;
 

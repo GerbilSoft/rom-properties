@@ -900,7 +900,7 @@ DMG::DMG(const IRpFilePtr &file)
 	// Set the MIME type. (unofficial)
 	assert((int)d->romType >= 0);
 	assert((int)d->romType < ARRAY_SIZE_I(d->mimeTypes));
-	d->mimeType = d->mimeTypes[(int)d->romType];
+	d->mimeType = d->mimeTypes[static_cast<int>(d->romType)];
 }
 
 /** ROM detection functions. **/
@@ -1025,7 +1025,7 @@ const char *DMG::systemName(unsigned int type) const
 
 	// NOTE: This might return an incorrect system name if
 	// d->romType is ROM_TYPE_UNKNOWN.
-	return sysNames[(int)d->romType & 3][type & SYSNAME_TYPE_MASK];
+	return sysNames[static_cast<size_t>(d->romType) & 3U][type & SYSNAME_TYPE_MASK];
 }
 
 /**
@@ -1121,7 +1121,7 @@ int DMG::loadFieldData(void)
 	} else if (!d->file || !d->file->isOpen()) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!d->isValid || (int)d->romType < 0) {
+	} else if (!d->isValid || static_cast<int>(d->romType) < 0) {
 		// Unknown ROM image type.
 		return -EIO;
 	}
@@ -1376,7 +1376,7 @@ int DMG::loadMetaData(void)
 	} else if (!d->file) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!d->isValid || (int)d->romType < 0) {
+	} else if (!d->isValid || static_cast<int>(d->romType) < 0) {
 		// Unknown ROM image type.
 		return -EIO;
 	}
@@ -1427,7 +1427,7 @@ int DMG::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 	pExtURLs->clear();
 
 	RP_D(const DMG);
-	if (!d->isValid || (int)d->romType < 0) {
+	if (!d->isValid || static_cast<int>(d->romType) < 0) {
 		// ROM image isn't valid.
 		return -EIO;
 	}

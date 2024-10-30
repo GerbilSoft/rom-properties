@@ -253,7 +253,7 @@ NDS_Language_ID NintendoDS_BNR_Private::getLanguageID(void) const
 {
 	// Version number check is required for ZH and KO.
 	const uint16_t version = le16_to_cpu(nds_icon_title.version);
-	NDS_Language_ID langID = (NDS_Language_ID)NintendoLanguage::getNDSLanguage(version);
+	NDS_Language_ID langID = static_cast<NDS_Language_ID>(NintendoLanguage::getNDSLanguage(version));
 
 	// Check that the field is valid.
 	if (nds_icon_title.title[langID][0] == cpu_to_le16('\0')) {

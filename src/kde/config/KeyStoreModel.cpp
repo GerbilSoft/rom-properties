@@ -180,7 +180,7 @@ int KeyStoreModel::rowCount(const QModelIndex& parent) const
 			return 0;
 		}
 		// Check the internal ID.
-		const uint32_t id = (uint32_t)parent.internalId();
+		const uint32_t id = static_cast<uint32_t>(parent.internalId());
 		if (HIWORD(id) == 0xFFFF) {
 			// Section header.
 			return d->keyStore->keyCount(LOWORD(id));
@@ -202,7 +202,7 @@ int KeyStoreModel::columnCount(const QModelIndex& parent) const
 
 	// NOTE: We have to return Column::Max for everything.
 	// Otherwise, it acts a bit wonky.
-	return (int)Column::Max;
+	return static_cast<int>(Column::Max);
 }
 
 QModelIndex KeyStoreModel::index(int row, int column, const QModelIndex& parent) const
@@ -220,7 +220,7 @@ QModelIndex KeyStoreModel::index(int row, int column, const QModelIndex& parent)
 		return createIndex(row, column, MAKELONG(row, 0xFFFF));
 	} else {
 		// Check the internal ID.
-		const uint32_t id = (uint32_t)parent.internalId();
+		const uint32_t id = static_cast<uint32_t>(parent.internalId());
 		if (HIWORD(id) == 0xFFFF) {
 			// Section header.
 			if (row < 0 || row >= d->keyStore->keyCount(LOWORD(id))) {
@@ -242,7 +242,7 @@ QModelIndex KeyStoreModel::parent(const QModelIndex& index) const
 		return {};
 
 	// Check the internal ID.
-	const uint32_t id = (uint32_t)index.internalId();
+	const uint32_t id = static_cast<uint32_t>(index.internalId());
 	if (HIWORD(id) == 0xFFFF) {
 		// Section header. Parent is root.
 		return {};
@@ -259,7 +259,7 @@ QVariant KeyStoreModel::data(const QModelIndex& index, int role) const
 		return {};
 
 	// Check the internal ID.
-	const uint32_t id = (uint32_t)index.internalId();
+	const uint32_t id = static_cast<uint32_t>(index.internalId());
 	if (HIWORD(id) == 0xFFFF) {
 		// Section header.
 		if (index.column() != 0) {
@@ -285,10 +285,10 @@ QVariant KeyStoreModel::data(const QModelIndex& index, int role) const
 
 	switch (role) {
 		case Qt::DisplayRole:
-			switch (index.column()) {
-				case (int)Column::KeyName:
+			switch (static_cast<Column>(index.column())) {
+				case Column::KeyName:
 					return U82Q(key->name);
-				case (int)Column::Value:
+				case Column::Value:
 					return U82Q(key->value);
 				default:
 					break;
@@ -296,8 +296,8 @@ QVariant KeyStoreModel::data(const QModelIndex& index, int role) const
 			break;
 
 		case Qt::EditRole:
-			switch (index.column()) {
-				case (int)Column::Value:
+			switch (static_cast<Column>(index.column())) {
+				case Column::Value:
 					return U82Q(key->value);
 				default:
 					break;
@@ -307,8 +307,8 @@ QVariant KeyStoreModel::data(const QModelIndex& index, int role) const
 		case Qt::DecorationRole:
 			// Images must use Qt::DecorationRole.
 			// TODO: Add a QStyledItemDelegate to center-align the icon.
-			switch (index.column()) {
-				case (int)Column::IsValid:
+			switch (static_cast<Column>(index.column())) {
+				case Column::IsValid:
 					switch (key->status) {
 						default:
 						case KeyStoreQt::Key::Status::Unknown:
@@ -339,11 +339,11 @@ QVariant KeyStoreModel::data(const QModelIndex& index, int role) const
 			// weirdness when editing, especially since if the
 			// key is short, the editor will start in the middle
 			// of the column instead of the left side.
-			return (int)(Qt::AlignLeft | Qt::AlignVCenter);
+			return static_cast<int>(Qt::AlignLeft | Qt::AlignVCenter);
 
 		case Qt::FontRole:
-			switch (index.column()) {
-				case (int)Column::Value:
+			switch (static_cast<Column>(index.column())) {
+				case Column::Value:
 					// The key value should use a monospace font.
 					return d->style.fntMonospace;
 
@@ -353,14 +353,13 @@ QVariant KeyStoreModel::data(const QModelIndex& index, int role) const
 			break;
 
 		case Qt::SizeHintRole:
-			switch (index.column()) {
-				case (int)Column::Value:
+			switch (static_cast<Column>(index.column())) {
+				case Column::Value:
 					// Use the monospace size hint.
 					return d->style.szValueHint;
-				case (int)Column::IsValid:
+				case Column::IsValid:
 					// Increase row height by 4px.
-					return QSize(d->style.pxmIsValid_size,
-						(d->style.pxmIsValid_size + 4));
+					return QSize(d->style.pxmIsValid_size, (d->style.pxmIsValid_size + 4));
 				default:
 					break;
 			}
@@ -384,7 +383,7 @@ bool KeyStoreModel::setData(const QModelIndex& index, const QVariant& value, int
 		return false;
 
 	// Check the internal ID.
-	const uint32_t id = (uint32_t)index.internalId();
+	const uint32_t id = static_cast<uint32_t>(index.internalId());
 	if (HIWORD(id) == 0xFFFF) {
 		// Section header. Not editable.
 		return false;
@@ -393,7 +392,7 @@ bool KeyStoreModel::setData(const QModelIndex& index, const QVariant& value, int
 	// Key index.
 
 	// Only Column::Value can be edited, and only text.
-	if (index.column() != (int)Column::Value || role != Qt::EditRole)
+	if (index.column() != static_cast<int>(Column::Value) || role != Qt::EditRole)
 		return false;
 
 	// Edit the value.
@@ -417,8 +416,8 @@ Qt::ItemFlags KeyStoreModel::flags(const QModelIndex &index) const
 	}
 
 	// Key index.
-	switch (index.column()) {
-		case (int)Column::Value:
+	switch (static_cast<Column>(index.column())) {
+		case Column::Value:
 			// Value can be edited.
 			return Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsEditable;
 		default:
@@ -434,7 +433,7 @@ QVariant KeyStoreModel::headerData(int section, Qt::Orientation orientation, int
 	switch (role) {
 		case Qt::DisplayRole: {
 			RP_D(const KeyStoreModel);
-			if (section >= 0 && section < (int)d->columnNames.size()) {
+			if (section >= 0 && section < static_cast<int>(d->columnNames.size())) {
 				return d->columnNames[section];
 			}
 			break;
@@ -567,7 +566,7 @@ void KeyStoreModel::keyStore_keyChanged_slot(int sectIdx, int keyIdx)
 {
 	const uint32_t parent_id = MAKELONG(sectIdx, 0xFFFF);
 	const QModelIndex qmi_left = createIndex(keyIdx, 0, parent_id);
-	const QModelIndex qmi_right = createIndex(keyIdx, (int)Column::Max-1, parent_id);
+	const QModelIndex qmi_right = createIndex(keyIdx, static_cast<int>(Column::Max) - 1, parent_id);
 	emit dataChanged(qmi_left, qmi_right);
 }
 
@@ -582,7 +581,7 @@ void KeyStoreModel::keyStore_allKeysChanged_slot(void)
 
 	// TODO: Enumerate all child keys too?
 	const QModelIndex qmi_left = createIndex(0, 0);
-	const QModelIndex qmi_right = createIndex(d->sectCount-1, (int)Column::Max-1);
+	const QModelIndex qmi_right = createIndex(d->sectCount - 1, static_cast<int>(Column::Max) - 1);
 	emit dataChanged(qmi_left, qmi_right);
 }
 

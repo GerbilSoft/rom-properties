@@ -176,12 +176,12 @@ void RpJpegPrivate::jpeg_IRpFile_src(j_decompress_ptr cinfo, IRpFile *infile)
 	if (!cinfo->src) {
 		// No JPEG source manager set.
 		cinfo->src = static_cast<jpeg_source_mgr*>(
-			(*cinfo->mem->alloc_small)((j_common_ptr)cinfo, JPOOL_PERMANENT,
-						   sizeof(MySourceMgr)));
+			(*cinfo->mem->alloc_small)(reinterpret_cast<j_common_ptr>(cinfo),
+				JPOOL_PERMANENT, sizeof(MySourceMgr)));
 		MySourceMgr *src = reinterpret_cast<MySourceMgr*>(cinfo->src);
 		src->buffer = static_cast<JOCTET*>(
-			(*cinfo->mem->alloc_small)((j_common_ptr)cinfo, JPOOL_PERMANENT,
-						   INPUT_BUF_SIZE * sizeof(JOCTET)));
+			(*cinfo->mem->alloc_small)(reinterpret_cast<j_common_ptr>(cinfo),
+				JPOOL_PERMANENT, INPUT_BUF_SIZE * sizeof(JOCTET)));
 	} else if (cinfo->src->init_source != init_source) {
 		// Cannot reuse the existing source manager if it wasn't
 		// created by our init_source function.
@@ -449,7 +449,7 @@ rp_image_ptr RpJpeg::load(const IRpFilePtr &file)
 		// NOTE: jmemmgr's memory alignment is sizeof(double), so we'll
 		// need to allocate a bit more to get 16-byte alignment.
 		JSAMPARRAY buffer = (*cinfo.mem->alloc_sarray)
-			((j_common_ptr)&cinfo, JPOOL_IMAGE, row_stride + 16, 1);
+			(reinterpret_cast<j_common_ptr>(&cinfo), JPOOL_IMAGE, row_stride + 16, 1);
 		buffer[0] = reinterpret_cast<JSAMPROW>(
 			(ALIGN_BYTES(16, reinterpret_cast<uintptr_t>(buffer[0]))));
 

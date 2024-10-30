@@ -376,7 +376,7 @@ NintendoDS::NintendoDS(const IRpFilePtr &file, bool cia)
 		d->romSize	// szFile
 	};
 	d->romType = static_cast<NintendoDSPrivate::RomType>(isRomSupported_static(&info));
-	d->isValid = ((int)d->romType >= 0);
+	d->isValid = (static_cast<int>(d->romType) >= 0);
 
 	if (!d->isValid) {
 		d->file.reset();
@@ -428,10 +428,10 @@ int NintendoDS::isRomSupported_static(const DetectInfo *info)
 	    romHeader->nintendo_logo_checksum == cpu_to_le16(0xCF56)) {
 		// Nintendo logo is valid. (Slot-1)
 		static constexpr array<int8_t, 4> nds_romType = {{
-			(int8_t)NintendoDSPrivate::RomType::NDS,		// 0x00 == Nintendo DS
-			(int8_t)NintendoDSPrivate::RomType::NDS,		// 0x01 == invalid (assuming DS)
-			(int8_t)NintendoDSPrivate::RomType::DSi_Enhanced,	// 0x02 == DSi-enhanced
-			(int8_t)NintendoDSPrivate::RomType::DSi_Exclusive,	// 0x03 == DSi-only
+			static_cast<int8_t>(NintendoDSPrivate::RomType::NDS),		// 0x00 == Nintendo DS
+			static_cast<int8_t>(NintendoDSPrivate::RomType::NDS),		// 0x01 == invalid (assuming DS)
+			static_cast<int8_t>(NintendoDSPrivate::RomType::DSi_Enhanced),	// 0x02 == DSi-enhanced
+			static_cast<int8_t>(NintendoDSPrivate::RomType::DSi_Exclusive),	// 0x03 == DSi-only
 		}};
 		return nds_romType[romHeader->unitcode & 3];
 	} else if (!memcmp(romHeader->nintendo_logo, nintendo_ds_logo_slot2.data(), nintendo_ds_logo_slot2.size()) &&
@@ -602,7 +602,7 @@ int NintendoDS::loadFieldData(void)
 	} else if (!d->file) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!d->isValid || (int)d->romType < 0) {
+	} else if (!d->isValid || static_cast<int>(d->romType) < 0) {
 		// ROM image isn't valid.
 		return -EIO;
 	}
@@ -975,7 +975,7 @@ int NintendoDS::loadMetaData(void)
 	} else if (!d->file) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!d->isValid || (int)d->romType < 0) {
+	} else if (!d->isValid || static_cast<int>(d->romType) < 0) {
 		// ROM image isn't valid.
 		return -EIO;
 	}
@@ -1089,7 +1089,7 @@ int NintendoDS::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size)
 
 	// Check for DS ROMs that don't have boxart.
 	RP_D(const NintendoDS);
-	if (!d->isValid || (int)d->romType < 0) {
+	if (!d->isValid || static_cast<int>(d->romType) < 0) {
 		// ROM image isn't valid.
 		return -EIO;
 	} else if (!memcmp(d->romHeader.id4, "NTRJ", 4) ||

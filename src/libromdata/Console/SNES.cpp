@@ -1518,7 +1518,7 @@ int SNES::loadMetaData(void)
 	} else if (!d->file) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!d->isValid || (int)d->romType < 0) {
+	} else if (!d->isValid || static_cast<int>(d->romType) < 0) {
 		// Unknown ROM image type.
 		return -EIO;
 	}
@@ -1564,7 +1564,7 @@ int SNES::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 	pExtURLs->clear();
 
 	RP_D(const SNES);
-	if (!d->isValid || (int)d->romType < 0) {
+	if (!d->isValid || static_cast<int>(d->romType) < 0) {
 		// ROM image isn't valid.
 		return -EIO;
 	}

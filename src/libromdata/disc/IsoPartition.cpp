@@ -285,7 +285,7 @@ const IsoPartitionPrivate::DirData_t *IsoPartitionPrivate::getDirectory(const ch
 
 		if (iso_start_offset >= 0) {
 			// ISO start address was already determined.
-			if (rootdir->block.he < ((unsigned int)iso_start_offset + 2)) {
+			if (rootdir->block.he < (static_cast<unsigned int>(iso_start_offset) + 2)) {
 				// Starting block is invalid.
 				q->m_lastError = EIO;
 				if (pError) {

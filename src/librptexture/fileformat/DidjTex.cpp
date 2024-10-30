@@ -414,7 +414,7 @@ DidjTex::DidjTex(const IRpFilePtr &file)
 const char *DidjTex::pixelFormat(void) const
 {
 	RP_D(const DidjTex);
-	if (!d->isValid || (int)d->texType < 0) {
+	if (!d->isValid || static_cast<int>(d->texType) < 0) {
 		// Not supported.
 		return nullptr;
 	}
@@ -458,7 +458,7 @@ int DidjTex::getFields(RomFields *fields) const
 		return 0;
 
 	RP_D(const DidjTex);
-	if (!d->isValid || (int)d->texType < 0) {
+	if (!d->isValid || static_cast<int>(d->texType) < 0) {
 		// Not valid.
 		return -EIO;
 	}
@@ -487,7 +487,7 @@ int DidjTex::getFields(RomFields *fields) const
 rp_image_const_ptr DidjTex::image(void) const
 {
 	RP_D(const DidjTex);
-	if (!d->isValid || (int)d->texType < 0) {
+	if (!d->isValid || static_cast<int>(d->texType) < 0) {
 		// Unknown file type.
 		return nullptr;
 	}

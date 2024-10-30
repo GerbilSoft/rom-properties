@@ -131,7 +131,7 @@ rp_image_const_ptr PlayStationSavePrivate::loadIcon(void)
 		return iconAnimData->frames[0];
 	}
 
-	if ((int)saveType < 0) {
+	if (static_cast<int>(saveType) < 0) {
 		// Invalid save type...
 		return nullptr;
 	}
@@ -465,7 +465,7 @@ int PlayStationSave::loadFieldData(void)
 	} else if (!d->file) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!d->isValid || (int)d->saveType < 0) {
+	} else if (!d->isValid || static_cast<int>(d->saveType) < 0) {
 		// ROM image isn't valid.
 		return -EIO;
 	}
@@ -574,7 +574,7 @@ int PlayStationSave::loadInternalImage(ImageType imageType, rp_image_const_ptr &
 	// Load the icon.
 	// TODO: -ENOENT if the file doesn't actually have an icon.
 	pImage = d->loadIcon();
-	return ((bool)pImage ? 0 : -EIO);
+	return (pImage) ? 0 : -EIO;
 }
 
 /**

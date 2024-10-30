@@ -456,11 +456,11 @@ void CBMDOSPrivate::init_track_offsets_G64(const cbmdos_G64_header_t *header)
 	if (header->magic[6] == '7') {
 		// GCR-1571: Up to 84 tracks (168 half-tracks)
 		assert(header->track_count <= 168U);
-		track_count = std::min((uint8_t)168U, header->track_count);
+		track_count = std::min(static_cast<uint8_t>(168U), header->track_count);
 	} else /*if (header->magic[6] == '4')*/ {
 		// GCR-1541: Up to 42 tracks (84 half-tracks)
 		assert(header->track_count <= 84U);
-		track_count = std::min((uint8_t)84U, header->track_count);
+		track_count = std::min(static_cast<uint8_t>(84U), header->track_count);
 	}
 	track_count = (track_count / 2) + (track_count % 2);
 	track_offsets.reserve(track_count);
@@ -556,11 +556,11 @@ int CBMDOSPrivate::decode_GCR_bytes(uint8_t *data, const uint8_t *gcr)
 	}};
 
 	// Combine five GCR bytes into a uint64_t.
-	uint64_t gcr_data = ((uint64_t)gcr[0] << 32) |
-	                    ((uint64_t)gcr[1] << 24) |
-	                    ((uint64_t)gcr[2] << 16) |
-	                    ((uint64_t)gcr[3] <<  8) |
-	                     (uint64_t)gcr[4];
+	uint64_t gcr_data = (static_cast<uint64_t>(gcr[0]) << 32) |
+	                    (static_cast<uint64_t>(gcr[1]) << 24) |
+	                    (static_cast<uint64_t>(gcr[2]) << 16) |
+	                    (static_cast<uint64_t>(gcr[3]) <<  8) |
+	                     static_cast<uint64_t>(gcr[4]);
 
 	// Decode GCR quintets into nybbles, backwards.
 	for (int i = 3; i >= 0; i--) {
@@ -600,7 +600,7 @@ int CBMDOSPrivate::read_GCR_track(uint8_t track)
 	assert(GCR_track_size > 0);
 	assert(GCR_track_size <= GCR_MAX_TRACK_SIZE);
 	array<uint8_t, GCR_MAX_TRACK_SIZE> gcr_buf;
-	size_t gcr_len = file->seekAndRead(this_track.start_offset, gcr_buf.data(), std::min((size_t)GCR_track_size, gcr_buf.size()));
+	size_t gcr_len = file->seekAndRead(this_track.start_offset, gcr_buf.data(), std::min(static_cast<size_t>(GCR_track_size), gcr_buf.size()));
 	if (gcr_len == 0) {
 		// Unable to read any GCR data...
 		return -EIO;
@@ -781,7 +781,7 @@ size_t CBMDOSPrivate::remove_A0_padding(const char *buf, size_t siz)
 
 	buf += (siz - 1);
 	for (; siz > 0; buf--, siz--) {
-		if ((uint8_t)*buf != 0xA0)
+		if (static_cast<uint8_t>(*buf) != 0xA0)
 			break;
 	}
 
@@ -1023,7 +1023,7 @@ CBMDOS::CBMDOS(const IRpFilePtr &file)
 	}
 
 	// This is avalid CBM DOS disk image.
-	d->mimeType = d->mimeTypes[(int)d->diskType];
+	d->mimeType = d->mimeTypes[static_cast<int>(d->diskType)];
 	d->isValid = true;
 }
 
@@ -1122,8 +1122,8 @@ const char *CBMDOS::systemName(unsigned int type) const
 	}};
 
 	unsigned int sysID = 0;
-	if ((int)d->diskType >= 0 && d->diskType < CBMDOSPrivate::DiskType::Max) {
-		sysID = (int)d->diskType;
+	if (static_cast<int>(d->diskType) >= 0 && d->diskType < CBMDOSPrivate::DiskType::Max) {
+		sysID = static_cast<unsigned int>(d->diskType);
 	}
 	return sysNames[sysID][type & SYSNAME_TYPE_MASK];
 }
@@ -1204,8 +1204,8 @@ int CBMDOS::loadFieldData(void)
 	const uint8_t max_file_type = (d->diskType == CBMDOSPrivate::DiskType::D81) ? 6 : 5;
 
 	// Make sure the directory track number is valid.
-	assert((size_t)d->dir_track-1 < d->track_offsets.size());
-	if ((size_t)d->dir_track-1 >= d->track_offsets.size()) {
+	assert(static_cast<size_t>(d->dir_track) - 1 < d->track_offsets.size());
+	if (static_cast<size_t>(d->dir_track) - 1 >= d->track_offsets.size()) {
 		// Unable to read the directory track...
 		// TODO: Show an error?
 		return static_cast<int>(d->fields.count());
@@ -1271,7 +1271,7 @@ int CBMDOS::loadFieldData(void)
 			p_list.emplace_back(filesize);
 
 			// Filename
-			const int filename_len = (int)d->remove_A0_padding(p_dir->filename, sizeof(p_dir->filename));
+			const int filename_len = static_cast<int>(d->remove_A0_padding(p_dir->filename, sizeof(p_dir->filename)));
 			if (unlikely(is_geos_file)) {
 				// GEOS file: The filename is encoded as ASCII.
 				// NOTE: Using Latin-1...
@@ -1346,7 +1346,7 @@ int CBMDOS::loadFieldData(void)
 	}};
 	vector<string> *const v_dir_headers = RomFields::strArrayToVector_i18n("CBMDOS|Directory", dir_headers);
 
-	RomFields::AFLD_PARAMS params(has_icons ? (unsigned int)RomFields::RFT_LISTDATA_ICONS : 0, 8);
+	RomFields::AFLD_PARAMS params(has_icons ? static_cast<unsigned int>(RomFields::RFT_LISTDATA_ICONS) : 0U, 8);
 	params.headers = v_dir_headers;
 	params.data.single = vv_dir;
 	params.col_attrs.align_headers	= AFLD_ALIGN3(TXA_D, TXA_D, TXA_D);

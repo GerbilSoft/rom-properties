@@ -79,10 +79,10 @@ class KeyManagerPrivate : public ConfReaderPrivate
 		/**
 		 * Map of invalid key names to errors.
 		 * These are stored for better error reporting.
-		 * - Key: Key name.
-		 * - Value: Verification result.
+		 * - Key: Key name
+		 * - Value: Verification result
 		 */
-		unordered_map<string, uint8_t> mapInvalidKeyNames;
+		unordered_map<string, KeyManager::VerifyResult> mapInvalidKeyNames;
 #endif /* ENABLE_DECRYPTION */
 };
 
@@ -231,7 +231,7 @@ KeyManager::KeyManager()
  */
 const char *KeyManager::verifyResultToString(VerifyResult res)
 {
-	static const array<const char*, (int)KeyManager::VerifyResult::Max> errTbl = {{
+	static const array<const char*, static_cast<size_t>(KeyManager::VerifyResult::Max)> errTbl = {{
 		// tr: VerifyResult::OK
 		NOP_C_("KeyManager|VerifyResult", "Something happened."),
 		// tr: VerifyResult::InvalidParams
@@ -256,10 +256,10 @@ const char *KeyManager::verifyResultToString(VerifyResult res)
 		NOP_C_("KeyManager|VerifyResult", "The partition contains incrementing values."),
 	}};
 
-	assert(res >= (KeyManager::VerifyResult)0);
-	assert(res < (KeyManager::VerifyResult)errTbl.size());
-	return (res >= (KeyManager::VerifyResult)0 && res < (KeyManager::VerifyResult)errTbl.size())
-		? pgettext_expr("KeyManager|VerifyResult", errTbl[(int)res])
+	assert(res >= static_cast<KeyManager::VerifyResult>(0));
+	assert(res <  static_cast<KeyManager::VerifyResult>(errTbl.size()));
+	return (res >= static_cast<KeyManager::VerifyResult>(0) && res < static_cast<KeyManager::VerifyResult>(errTbl.size()))
+		? pgettext_expr("KeyManager|VerifyResult", errTbl[static_cast<size_t>(res)])
 		: nullptr;
 }
 
@@ -307,7 +307,7 @@ KeyManager::VerifyResult KeyManager::get(const char *keyName, KeyData_t *pKeyDat
 		auto iter2 = d->mapInvalidKeyNames.find(keyName);
 		if (iter2 != d->mapInvalidKeyNames.end()) {
 			// An error occurred when parsing the key.
-			return (VerifyResult)iter2->second;
+			return iter2->second;
 		}
 
 		// Key was not found.

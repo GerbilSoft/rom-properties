@@ -246,7 +246,7 @@ void ExtractorPlugin::extract(ExtractionResult *result)
 
 	// File type
 	// NOTE: KFileMetaData has a limited set of file types as of v5.107.
-	static_assert((int)RomData::FileType::Max == (int)RomData::FileType::Ticket + 1, "Update KFileMetaData file types!");
+	static_assert(static_cast<size_t>(RomData::FileType::Max) == static_cast<size_t>(RomData::FileType::Ticket) + 1, "Update KFileMetaData file types!");
 	switch (romData->fileType()) {
 		default:
 			// No KFileMetaData::Type is applicable here.

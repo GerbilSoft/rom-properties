@@ -9,7 +9,7 @@
 #include "stdafx.h"
 #include "RpQByteArrayFile.hpp"
 
-// C++ STL classes.
+// C++ STL classes
 using std::string;
 
 // 128 MB *should* be a reasonable maximum...
@@ -136,7 +136,7 @@ int RpQByteArrayFile::seek(off64_t pos)
  */
 off64_t RpQByteArrayFile::tell(void)
 {
-	return (off64_t)m_pos;
+	return static_cast<off64_t>(m_pos);
 }
 
 /**

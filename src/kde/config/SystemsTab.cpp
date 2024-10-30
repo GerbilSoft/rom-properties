@@ -100,8 +100,8 @@ void SystemsTab::reset(void)
 	}
 
 	// The SGB and CGB dropdowns have all three.
-	d->ui.cboSGB->setCurrentIndex((int)config->dmgTitleScreenMode(Config::DMG_TitleScreen_Mode::SGB));
-	d->ui.cboCGB->setCurrentIndex((int)config->dmgTitleScreenMode(Config::DMG_TitleScreen_Mode::CGB));
+	d->ui.cboSGB->setCurrentIndex(static_cast<int>(config->dmgTitleScreenMode(Config::DMG_TitleScreen_Mode::SGB)));
+	d->ui.cboCGB->setCurrentIndex(static_cast<int>(config->dmgTitleScreenMode(Config::DMG_TitleScreen_Mode::CGB)));
 
 	// Restore the signal block state.
 	d->ui.cboDMG->blockSignals(blockDMG);
@@ -116,9 +116,9 @@ void SystemsTab::reset(void)
  */
 void SystemsTab::loadDefaults(void)
 {
-	const int idxDMG_default = (int)Config::dmgTitleScreenMode_default(Config::DMG_TitleScreen_Mode::DMG);
-	const int idxSGB_default = (int)Config::dmgTitleScreenMode_default(Config::DMG_TitleScreen_Mode::SGB);
-	const int idxCGB_default = (int)Config::dmgTitleScreenMode_default(Config::DMG_TitleScreen_Mode::CGB);
+	const Config::DMG_TitleScreen_Mode idxDMG_default = Config::dmgTitleScreenMode_default(Config::DMG_TitleScreen_Mode::DMG);
+	const Config::DMG_TitleScreen_Mode idxSGB_default = Config::dmgTitleScreenMode_default(Config::DMG_TitleScreen_Mode::SGB);
+	const Config::DMG_TitleScreen_Mode idxCGB_default = Config::dmgTitleScreenMode_default(Config::DMG_TitleScreen_Mode::CGB);
 	bool isDefChanged = false;
 
 	Q_D(SystemsTab);
@@ -128,16 +128,16 @@ void SystemsTab::loadDefaults(void)
 	const bool blockSGB = d->ui.cboSGB->blockSignals(true);
 	const bool blockCGB = d->ui.cboCGB->blockSignals(true);
 
-	if (d->ui.cboDMG->currentIndex() != idxDMG_default) {
-		d->ui.cboDMG->setCurrentIndex(idxDMG_default);
+	if (d->ui.cboDMG->currentIndex() != static_cast<int>(idxDMG_default)) {
+		d->ui.cboDMG->setCurrentIndex(static_cast<int>(idxDMG_default));
 		isDefChanged = true;
 	}
-	if (d->ui.cboSGB->currentIndex() != idxSGB_default) {
-		d->ui.cboSGB->setCurrentIndex(idxSGB_default);
+	if (d->ui.cboSGB->currentIndex() != static_cast<int>(idxSGB_default)) {
+		d->ui.cboSGB->setCurrentIndex(static_cast<int>(idxSGB_default));
 		isDefChanged = true;
 	}
-	if (d->ui.cboCGB->currentIndex() != idxCGB_default) {
-		d->ui.cboCGB->setCurrentIndex(idxCGB_default);
+	if (d->ui.cboCGB->currentIndex() != static_cast<int>(idxCGB_default)) {
+		d->ui.cboCGB->setCurrentIndex(static_cast<int>(idxCGB_default));
 		isDefChanged = true;
 	}
 

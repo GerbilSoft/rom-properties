@@ -491,7 +491,7 @@ int SegaSaturn::loadFieldData(void)
 	} else if (!d->file) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!d->isValid || (int)d->discType < 0) {
+	} else if (!d->isValid || static_cast<int>(d->discType) < 0) {
 		// Unknown ROM image type.
 		return -EIO;
 	}
@@ -612,7 +612,7 @@ int SegaSaturn::loadMetaData(void)
 	} else if (!d->file) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!d->isValid || (int)d->discType < 0) {
+	} else if (!d->isValid || static_cast<int>(d->discType) < 0) {
 		// Unknown disc image type.
 		return -EIO;
 	}

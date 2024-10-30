@@ -434,7 +434,7 @@ iQuePlayer::iQuePlayer(const IRpFilePtr &file)
 		fileSize	// szFile
 	};
 	d->iQueFileType = static_cast<iQuePlayerPrivate::IQueFileType>(isRomSupported_static(&info));
-	d->isValid = ((int)d->iQueFileType >= 0);
+	d->isValid = (static_cast<int>(d->iQueFileType) >= 0);
 
 	if (!d->isValid) {
 		d->file.reset();
@@ -510,7 +510,7 @@ int iQuePlayer::isRomSupported_static(const DetectInfo *info)
 		}
 	}
 
-	return (int)iQueFileType;
+	return static_cast<int>(iQueFileType);
 }
 
 /**
@@ -617,7 +617,7 @@ int iQuePlayer::loadFieldData(void)
 	} else if (!d->file || !d->file->isOpen()) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!d->isValid || (int)d->iQueFileType < 0) {
+	} else if (!d->isValid || static_cast<int>(d->iQueFileType) < 0) {
 		// Unknown ROM image type.
 		return -EIO;
 	}
@@ -691,7 +691,7 @@ int iQuePlayer::loadMetaData(void)
 	} else if (!d->file) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!d->isValid || (int)d->iQueFileType < 0) {
+	} else if (!d->isValid || static_cast<int>(d->iQueFileType) < 0) {
 		// Unknown ROM image type.
 		return -EIO;
 	}
@@ -756,7 +756,7 @@ int iQuePlayer::loadInternalImage(ImageType imageType, rp_image_const_ptr &pImag
 	if (!d->file) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!d->isValid || (int)d->iQueFileType < 0) {
+	} else if (!d->isValid || static_cast<int>(d->iQueFileType) < 0) {
 		// Save file isn't valid.
 		return -EIO;
 	}
@@ -776,7 +776,7 @@ int iQuePlayer::loadInternalImage(ImageType imageType, rp_image_const_ptr &pImag
 	}
 
 	// TODO: -ENOENT if the file doesn't actually have an icon/banner.
-	return ((bool)pImage ? 0 : -EIO);
+	return (pImage) ? 0 : -EIO;
 }
 
 } // namespace LibRomData

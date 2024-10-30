@@ -31,9 +31,9 @@ rp_image_ptr fromLinearMono(int width, int height,
 	assert(img_buf != nullptr);
 	assert(width > 0);
 	assert(height > 0);
-	assert(img_siz >= (((size_t)width * (size_t)height) / 8));
+	assert(img_siz >= (static_cast<size_t>(width) * static_cast<size_t>(height) / 8));
 	if (!img_buf || width <= 0 || height <= 0 ||
-	    img_siz < (((size_t)width * (size_t)height) / 8))
+	    img_siz < (static_cast<size_t>(width) * static_cast<size_t>(height) / 8))
 	{
 		return {};
 	}
@@ -112,9 +112,9 @@ rp_image_ptr fromLinearGray2bpp(int width, int height,
 	assert(img_buf != nullptr);
 	assert(width > 0);
 	assert(height > 0);
-	assert(img_siz >= (((size_t)width * (size_t)height) / 4));
+	assert(img_siz >= (static_cast<size_t>(width) * static_cast<size_t>(height) / 4));
 	if (!img_buf || width <= 0 || height <= 0 ||
-	    img_siz < (((size_t)width * (size_t)height) / 4))
+	    img_siz < (static_cast<size_t>(width) * static_cast<size_t>(height) / 4))
 	{
 		return {};
 	}

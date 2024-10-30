@@ -923,7 +923,7 @@ int PlayStationDisc::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int 
 	pExtURLs->clear();
 
 	RP_D(const PlayStationDisc);
-	if (!d->isValid || (int)d->consoleType < 0) {
+	if (!d->isValid || static_cast<int>(d->consoleType) < 0) {
 		// Disc image isn't valid.
 		return -EIO;
 	}
@@ -940,7 +940,7 @@ int PlayStationDisc::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int 
 	};
 	if (d->consoleType >= PlayStationDiscPrivate::ConsoleType::Max)
 		return -ENOENT;
-	const char *const sys = sys_tbl[(int)d->consoleType];
+	const char *const sys = sys_tbl[static_cast<size_t>(d->consoleType)];
 
 	// Game ID format: SLUS-20718
 	// Boot filename format: SLUS_207.18

@@ -309,7 +309,7 @@ static void PrintSystemRegion(void)
 		for (unsigned int i = 4; i > 0; i--, lc >>= 8) {
 			if ((lc & 0xFF) == 0)
 				continue;
-			buf += (char)(lc & 0xFF);
+			buf += static_cast<char>(lc & 0xFF);
 		}
 	}
 	printf(C_("rpcli", "System language code: %s"),
@@ -322,7 +322,7 @@ static void PrintSystemRegion(void)
 		for (unsigned int i = 4; i > 0; i--, cc >>= 8) {
 			if ((cc & 0xFF) == 0)
 				continue;
-			buf += (char)(cc & 0xFF);
+			buf += static_cast<char>(cc & 0xFF);
 		}
 	}
 	printf(C_("rpcli", "System country code: %s"),
@@ -705,7 +705,7 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 				int pos;
 				for (pos = 0; pos < 4 && s_lang[pos] != _T('\0'); pos++) {
 					new_lc <<= 8;
-					new_lc |= (uint8_t)s_lang[pos];
+					new_lc |= static_cast<uint8_t>(s_lang[pos]);
 				}
 				if (pos == 4 && s_lang[pos] != _T('\0')) {
 					// Invalid language code.

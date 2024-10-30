@@ -51,7 +51,7 @@ string rp_vsprintf(const char *fmt, va_list ap)
 	if (len <= 0) {
 		// Nothing to format...
 		return {};
-	} else if (len < (int)sizeof(locbuf)) {
+	} else if (len < static_cast<int>(sizeof(locbuf))) {
 		// The string fits in the local buffer.
 		vsnprintf(locbuf, sizeof(locbuf), fmt, ap);
 		return {locbuf, static_cast<size_t>(len)};
@@ -64,7 +64,7 @@ string rp_vsprintf(const char *fmt, va_list ap)
 	if (len <= 0) {
 		// Nothing to format...
 		return {};
-	} else if (len < (int)sizeof(locbuf)) {
+	} else if (len < static_cast<int>(sizeof(locbuf))) {
 		// The string fits in the local buffer.
 		return {locbuf, static_cast<size_t>(len)};
 	}
@@ -116,7 +116,7 @@ string rp_vsprintf_p(const char *fmt, va_list ap)
 	if (len <= 0) {
 		// Nothing to format...
 		return {};
-	} else if (len < (int)sizeof(locbuf)) {
+	} else if (len < static_cast<int>(sizeof(locbuf))) {
 		// The string fits in the local buffer.
 		_vsprintf_p(locbuf, sizeof(locbuf), fmt, ap);
 		return string(locbuf, len);
@@ -162,7 +162,7 @@ wstring rp_vswprintf(const wchar_t *fmt, va_list ap)
 	if (len <= 0) {
 		// Nothing to format...
 		return {};
-	} else if (len < (int)_countof(locbuf)) {
+	} else if (len < static_cast<int>(_countof(locbuf))) {
 		// The string fits in the local buffer.
 		vswprintf(locbuf, _countof(locbuf), fmt, ap);
 		return wstring(locbuf, len);
@@ -175,7 +175,7 @@ wstring rp_vswprintf(const wchar_t *fmt, va_list ap)
 	if (len <= 0) {
 		// Nothing to format...
 		return {};
-	} else if (len < (int)_countof(locbuf)) {
+	} else if (len < static_cast<int>(_countof(locbuf))) {
 		// The string fits in the local buffer.
 		return wstring(locbuf, len);
 	}
@@ -222,7 +222,7 @@ wstring rp_vswprintf_p(const wchar_t *fmt, va_list ap)
 	if (len <= 0) {
 		// Nothing to format...
 		return {};
-	} else if (len < (int)_countof(locbuf)) {
+	} else if (len < static_cast<int>(_countof(locbuf))) {
 		// The string fits in the local buffer.
 		_vswprintf_p(locbuf, _countof(locbuf), fmt, ap);
 		return wstring(locbuf, len);

@@ -320,21 +320,21 @@ rp_systems_tab_load_defaults(RpSystemsTab *tab)
 	g_return_if_fail(RP_IS_SYSTEMS_TAB(tab));
 	tab->inhibit = true;
 
-	const int idxDMG_default = (int)Config::dmgTitleScreenMode_default(Config::DMG_TitleScreen_Mode::DMG);
-	const int idxSGB_default = (int)Config::dmgTitleScreenMode_default(Config::DMG_TitleScreen_Mode::SGB);
-	const int idxCGB_default = (int)Config::dmgTitleScreenMode_default(Config::DMG_TitleScreen_Mode::CGB);
+	const Config::DMG_TitleScreen_Mode idxDMG_default = Config::dmgTitleScreenMode_default(Config::DMG_TitleScreen_Mode::DMG);
+	const Config::DMG_TitleScreen_Mode idxSGB_default = Config::dmgTitleScreenMode_default(Config::DMG_TitleScreen_Mode::SGB);
+	const Config::DMG_TitleScreen_Mode idxCGB_default = Config::dmgTitleScreenMode_default(Config::DMG_TitleScreen_Mode::CGB);
 	bool isDefChanged = false;
 
-	if (COMPARE_CBO(tab->cboDMG, idxDMG_default)) {
-		SET_CBO(tab->cboDMG, idxDMG_default);
+	if (COMPARE_CBO(tab->cboDMG, static_cast<int>(idxDMG_default))) {
+		SET_CBO(tab->cboDMG, static_cast<int>(idxDMG_default));
 		isDefChanged = true;
 	}
-	if (COMPARE_CBO(tab->cboSGB, idxSGB_default)) {
-		SET_CBO(tab->cboSGB, idxSGB_default);
+	if (COMPARE_CBO(tab->cboSGB, static_cast<int>(idxSGB_default))) {
+		SET_CBO(tab->cboSGB, static_cast<int>(idxSGB_default));
 		isDefChanged = true;
 	}
-	if (COMPARE_CBO(tab->cboCGB, idxCGB_default)) {
-		SET_CBO(tab->cboCGB, idxCGB_default);
+	if (COMPARE_CBO(tab->cboCGB, static_cast<int>(idxCGB_default))) {
+		SET_CBO(tab->cboCGB, static_cast<int>(idxCGB_default));
 		isDefChanged = true;
 	}
 

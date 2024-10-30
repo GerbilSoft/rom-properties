@@ -342,7 +342,7 @@ int WiiUPackagePrivate::addFields_System_XMLs(void)
 		RomFields::StringMultiMap_t *const pMap_longname = new RomFields::StringMultiMap_t();
 		RomFields::StringMultiMap_t *const pMap_shortname = new RomFields::StringMultiMap_t();
 		RomFields::StringMultiMap_t *const pMap_publisher = new RomFields::StringMultiMap_t();
-		for (int langID = 0; langID < (int)xml_lc_map.size(); langID++) {
+		for (int langID = 0; langID < static_cast<int>(xml_lc_map.size()); langID++) {
 			// Check for empty strings first.
 			if ((!longnames[langID] || longnames[langID][0] == '\0') &&
 			(!shortnames[langID] || shortnames[langID][0] == '\0') &&
@@ -489,7 +489,7 @@ int WiiUPackagePrivate::addFields_System_XMLs(void)
 			"pc_cob", "pc_grb", "pc_cgsrr", "pc_oflc",
 			/*"pc_reserved0", "pc_reserved1", "pc_reserved2", "pc_reserved3",*/
 		}};
-		static_assert(age_rating_nodes.size() == (int)RomFields::AgeRatingsCountry::MaxAllocated, "age_rating_nodes is out of sync with age_ratings_t");
+		static_assert(age_rating_nodes.size() == static_cast<size_t>(RomFields::AgeRatingsCountry::MaxAllocated), "age_rating_nodes is out of sync with age_ratings_t");
 
 		for (int i = static_cast<int>(age_ratings.size())-1; i >= 0; i--) {
 			if (!(valid_ratings & (1U << i))) {

@@ -727,7 +727,7 @@ int PalmOS::loadInternalImage(ImageType imageType, rp_image_const_ptr &pImage)
 	}
 
 	pImage = d->loadIcon();
-	return ((bool)pImage ? 0 : -EIO);
+	return (pImage) ? 0 : -EIO;
 }
 
 } // namespace LibRomData

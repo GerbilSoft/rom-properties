@@ -28,8 +28,8 @@ namespace LibRomData { namespace NintendoPublishers {
 const char *lookup(uint16_t code)
 {
 	const char s_code[3] = {
-		(char)(code >> 8),
-		(char)(code & 0xFF),
+		static_cast<char>(code >> 8),
+		static_cast<char>(code & 0xFF),
 		'\0'
 	};
 	return lookup(s_code);

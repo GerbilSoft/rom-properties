@@ -1899,7 +1899,7 @@ int Xbox360_XDBF::loadInternalImage(ImageType imageType, rp_image_const_ptr &pIm
 
 	// Load the icon.
 	pImage = d->loadIcon();
-	return ((bool)pImage ? 0 : -EIO);
+	return (pImage) ? 0 : -EIO;
 }
 
 /** Special XDBF accessor functions **/

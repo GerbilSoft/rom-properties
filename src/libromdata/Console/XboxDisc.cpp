@@ -685,7 +685,7 @@ int XboxDisc::loadFieldData(void)
 	} else if (!d->file || !d->file->isOpen()) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!d->isValid || (int)d->discType < 0) {
+	} else if (!d->isValid || static_cast<int>(d->discType) < 0) {
 		// Unknown disc type.
 		return -EIO;
 	}
@@ -817,7 +817,7 @@ int XboxDisc::loadMetaData(void)
 	} else if (!d->file) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!d->isValid || (int)d->discType < 0) {
+	} else if (!d->isValid || static_cast<int>(d->discType) < 0) {
 		// Unknown disc type.
 		return -EIO;
 	}

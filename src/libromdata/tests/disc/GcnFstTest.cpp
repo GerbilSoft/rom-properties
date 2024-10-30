@@ -172,7 +172,7 @@ void GcnFstTest::SetUp(void)
 			zip_filename = "Wii.fst.bin.zip";
 			break;
 		default:
-			ASSERT_TRUE(false) << "offsetShift is " << (int)mode.offsetShift << "; should be either 0 or 2.";
+			ASSERT_TRUE(false) << "offsetShift is " << static_cast<int>(mode.offsetShift) << "; should be either 0 or 2.";
 	}
 
 	ASSERT_GT(getFileFromZip(zip_filename, mode.fst_filename.c_str(), m_fst_buf, MAX_GCN_FST_BIN_FILESIZE), 0);
@@ -418,7 +418,7 @@ TEST_P(GcnFstTest, FstPrint)
 			zip_filename = "Wii.fst.txt.zip";
 			break;
 		default:
-			ASSERT_TRUE(false) << "offsetShift is " << (int)mode.offsetShift << "; should be either 0 or 2.";
+			ASSERT_TRUE(false) << "offsetShift is " << static_cast<int>(mode.offsetShift) << "; should be either 0 or 2.";
 	}
 
 	// Replace ".bin" in the FST filename with ".txt".
@@ -445,8 +445,8 @@ TEST_P(GcnFstTest, FstPrint)
 	// NOTE: Only Unix line endings are supported.
 	char line_buf_actual[1024], line_buf_expected[1024];
 	for (int line_num = 1; /* condition is defined in the loop */; line_num++) {
-		bool ok_actual = (bool)fst_text_actual.getline(line_buf_actual, sizeof(line_buf_actual), '\n');
-		bool ok_expected = (bool)fst_text_expected.getline(line_buf_expected, sizeof(line_buf_expected), '\n');
+		bool ok_actual = static_cast<bool>(fst_text_actual.getline(line_buf_actual, sizeof(line_buf_actual), '\n'));
+		bool ok_expected = static_cast<bool>(fst_text_expected.getline(line_buf_expected, sizeof(line_buf_expected), '\n'));
 		if (!ok_actual && !ok_expected) {
 			// End of both files.
 			break;
@@ -495,7 +495,7 @@ std::vector<GcnFstTest_mode> GcnFstTest::ReadTestCasesFromDisk(uint8_t offsetShi
 			zip_filename = "Wii.fst.bin.zip";
 			break;
 		default:
-			EXPECT_TRUE(false) << "offsetShift is " << (int)offsetShift << "; should be either 0 or 2.";
+			EXPECT_TRUE(false) << "offsetShift is " << static_cast<int>(offsetShift) << "; should be either 0 or 2.";
 			return files;
 	}
 

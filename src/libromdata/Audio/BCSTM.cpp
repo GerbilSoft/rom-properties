@@ -161,11 +161,11 @@ BCSTM::BCSTM(const IRpFilePtr &file)
 	};
 	d->audioFormat = static_cast<BCSTMPrivate::AudioFormat>(isRomSupported_static(&info));
 
-	if ((int)d->audioFormat < 0) {
+	if (static_cast<int>(d->audioFormat) < 0) {
 		d->file.reset();
 		return;
-	} else if ((int)d->audioFormat < ARRAY_SIZE_I(d->mimeTypes)-1) {
-		d->mimeType = d->mimeTypes[(int)d->audioFormat];
+	} else if (static_cast<int>(d->audioFormat) < ARRAY_SIZE_I(d->mimeTypes)-1) {
+		d->mimeType = d->mimeTypes[static_cast<int>(d->audioFormat)];
 	}
 
 	// Is byteswapping needed?
@@ -405,12 +405,12 @@ int BCSTM::loadFieldData(void)
 	};
 	const char *const type_title = C_("RomData", "Type");
 	if (d->audioFormat > BCSTMPrivate::AudioFormat::Unknown &&
-	    (int)d->audioFormat < ARRAY_SIZE_I(type_tbl))
+	    static_cast<int>(d->audioFormat) < ARRAY_SIZE_I(type_tbl))
 	{
-		d->fields.addField_string(type_title, type_tbl[(int)d->audioFormat]);
+		d->fields.addField_string(type_title, type_tbl[static_cast<int>(d->audioFormat)]);
 	} else {
 		d->fields.addField_string(type_title,
-			rp_sprintf(C_("RomData", "Unknown (%d)"), (int)d->audioFormat));
+			rp_sprintf(C_("RomData", "Unknown (%d)"), static_cast<int>(d->audioFormat)));
 	}
 
 	// TODO: Show the version field?

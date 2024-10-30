@@ -146,24 +146,24 @@ void SystemsTabPrivate::loadDefaults(void)
 	if (!hWndPropSheet)
 		return;
 
-	const int idxDMG_default = (int)Config::dmgTitleScreenMode_default(Config::DMG_TitleScreen_Mode::DMG);
-	const int idxSGB_default = (int)Config::dmgTitleScreenMode_default(Config::DMG_TitleScreen_Mode::SGB);
-	const int idxCGB_default = (int)Config::dmgTitleScreenMode_default(Config::DMG_TitleScreen_Mode::CGB);
+	const Config::DMG_TitleScreen_Mode idxDMG_default = Config::dmgTitleScreenMode_default(Config::DMG_TitleScreen_Mode::DMG);
+	const Config::DMG_TitleScreen_Mode idxSGB_default = Config::dmgTitleScreenMode_default(Config::DMG_TitleScreen_Mode::SGB);
+	const Config::DMG_TitleScreen_Mode idxCGB_default = Config::dmgTitleScreenMode_default(Config::DMG_TitleScreen_Mode::CGB);
 	bool isDefChanged = false;
 
 	HWND hwndDmgTs = GetDlgItem(hWndPropSheet, IDC_SYSTEMS_DMGTS_DMG);
-	if (ComboBox_GetCurSel(hwndDmgTs) != idxDMG_default) {
-		ComboBox_SetCurSel(hwndDmgTs, idxDMG_default);
+	if (ComboBox_GetCurSel(hwndDmgTs) != static_cast<int>(idxDMG_default)) {
+		ComboBox_SetCurSel(hwndDmgTs, static_cast<int>(idxDMG_default));
 		isDefChanged = true;
 	}
 	hwndDmgTs = GetDlgItem(hWndPropSheet, IDC_SYSTEMS_DMGTS_SGB);
-	if (ComboBox_GetCurSel(hwndDmgTs) != idxSGB_default) {
-		ComboBox_SetCurSel(hwndDmgTs, idxSGB_default);
+	if (ComboBox_GetCurSel(hwndDmgTs) != static_cast<int>(idxSGB_default)) {
+		ComboBox_SetCurSel(hwndDmgTs, static_cast<int>(idxSGB_default));
 		isDefChanged = true;
 	}
 	hwndDmgTs = GetDlgItem(hWndPropSheet, IDC_SYSTEMS_DMGTS_CGB);
-	if (ComboBox_GetCurSel(hwndDmgTs) != idxCGB_default) {
-		ComboBox_SetCurSel(hwndDmgTs, idxCGB_default);
+	if (ComboBox_GetCurSel(hwndDmgTs) != static_cast<int>(idxCGB_default)) {
+		ComboBox_SetCurSel(hwndDmgTs, static_cast<int>(idxCGB_default));
 		isDefChanged = true;
 	}
 

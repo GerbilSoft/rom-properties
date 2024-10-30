@@ -623,7 +623,7 @@ const char *Lua::systemName(unsigned int type) const
 
 	static_assert(SYSNAME_TYPE_MASK == 3,
 		"Lua::systemName() array index optimization needs to be updated.");
-	static_assert((int)LuaPrivate::LuaVersion::Max == 10,
+	static_assert(static_cast<int>(LuaPrivate::LuaVersion::Max) == 10,
 		"Lua::systemName() array index optimization needs to be updated.");
 
 	static const array<array<const char*, 4>, 10> sysNames = {{

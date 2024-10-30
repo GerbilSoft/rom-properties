@@ -566,7 +566,7 @@ const char *RomData::fileType_to_string(FileType fileType)
 		fileType = FileType::Unknown;
 	}
 
-	static const array<const char*, (int)FileType::Max> fileType_names = {{
+	static const array<const char*, static_cast<size_t>(FileType::Max)> fileType_names = {{
 		// FileType::Unknown
 		NOP_C_("RomData|FileType", "(unknown file type)"),
 		// tr: FileType::ROM_Image
@@ -629,7 +629,7 @@ const char *RomData::fileType_to_string(FileType fileType)
 		NOP_C_("RomData|FileType", "Ticket"),
 	}};
  
-	const char *const s_fileType = fileType_names[(int)fileType];
+	const char *const s_fileType = fileType_names[static_cast<size_t>(fileType)];
 	assert(s_fileType != nullptr);
 	return pgettext_expr("RomData|FileType", s_fileType);
 }
@@ -1027,9 +1027,9 @@ int RomData::doRomOp(int id, RomOpParams *pParams)
 	// TODO: Function to retrieve only a single RomOp.
 	const vector<RomOp> v_ops = romOps_int();
 	assert(id >= 0);
-	assert(id < (int)v_ops.size());
+	assert(id < static_cast<int>(v_ops.size()));
 	assert(pParams != nullptr);
-	if (id < 0 || id >= (int)v_ops.size() || !pParams) {
+	if (id < 0 || id >= static_cast<int>(v_ops.size()) || !pParams) {
 		return -EINVAL;
 	}
 

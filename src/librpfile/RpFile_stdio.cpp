@@ -183,7 +183,7 @@ int RpFilePrivate::reOpenFile(void)
 #ifndef NO_PATTERNS_FOR_THIS_OS
 		bool isMatch = false;
 		for (const auto &pattern : fileNamePatterns) {
-			if (!strncasecmp(filename, &pattern[1], (uint8_t)pattern[0])) {
+			if (!strncasecmp(filename, &pattern[1], static_cast<uint8_t>(pattern[0]))) {
 				// Found a match!
 				isMatch = true;
 				break;
@@ -281,7 +281,7 @@ RpFile::RpFile(const char *filename, FileMode mode)
 		// NOTE: Uncompressed size might be smaller than the real filesize
 		// in cases where gzip doesn't help much.
 		// TODO: Add better verification heuristics?
-		d->gzsz = (off64_t)uncomp_sz;
+		d->gzsz = static_cast<off64_t>(uncomp_sz);
 
 		// Make sure the CRC32 table is initialized.
 		get_crc_table();
@@ -384,7 +384,7 @@ size_t RpFile::read(void *ptr, size_t size)
 	if (d->gzfd != nullptr) {
 		int iret = gzread(d->gzfd, ptr, size);
 		if (iret >= 0) {
-			ret = (size_t)iret;
+			ret = static_cast<size_t>(iret);
 		} else {
 			// An error occurred.
 			ret = 0;
@@ -487,7 +487,7 @@ off64_t RpFile::tell(void)
 	}
 
 	if (d->gzfd != nullptr) {
-		return (off64_t)gztell(d->gzfd);
+		return static_cast<off64_t>(gztell(d->gzfd));
 	}
 	return ftello(d->file);
 }
@@ -644,7 +644,7 @@ int RpFile::makeWritable(void)
 
 	// Restore the seek position.
 	fseeko(d->file, prev_pos, SEEK_SET);
-	d->mode = (RpFile::FileMode)(d->mode | FM_WRITE);
+	d->mode = static_cast<RpFile::FileMode>(d->mode | FM_WRITE);
 	return 0;
 }
 

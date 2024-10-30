@@ -132,7 +132,7 @@ uint8_t *PalmOS_Tbmp_Private::decompress_scanline(const uint8_t *compr_data, siz
 
 	const int height = be16_to_cpu(bitmapType.height);
 	const unsigned int rowBytes = be16_to_cpu(bitmapType.rowBytes);
-	const size_t icon_data_len = (size_t)rowBytes * (size_t)height;
+	const size_t icon_data_len = static_cast<size_t>(rowBytes) * static_cast<size_t>(height);
 
 	unique_ptr<uint8_t[]> decomp_buf(new uint8_t[icon_data_len]);
 	uint8_t *dest = decomp_buf.get();
@@ -188,7 +188,7 @@ uint8_t *PalmOS_Tbmp_Private::decompress_RLE(const uint8_t *compr_data, size_t c
 
 	const int height = dimensions[1];
 	const unsigned int rowBytes = be16_to_cpu(bitmapType.rowBytes);
-	const size_t icon_data_len = (size_t)rowBytes * (size_t)height;
+	const size_t icon_data_len = static_cast<size_t>(rowBytes) * static_cast<size_t>(height);
 
 	unique_ptr<uint8_t[]> decomp_buf(new uint8_t[icon_data_len]);
 	const uint8_t *const dest_end = &decomp_buf[icon_data_len];
@@ -252,7 +252,7 @@ uint8_t *PalmOS_Tbmp_Private::decompress_PackBits8(const uint8_t *compr_data, si
 
 	const int height = dimensions[1];
 	const unsigned int rowBytes = be16_to_cpu(bitmapType.rowBytes);
-	const size_t icon_data_len = (size_t)rowBytes * (size_t)height;
+	const size_t icon_data_len = static_cast<size_t>(rowBytes) * static_cast<size_t>(height);
 
 	unique_ptr<uint8_t[]> decomp_buf(new uint8_t[icon_data_len]);
 	uint8_t *dest = decomp_buf.get();
@@ -341,7 +341,7 @@ rp_image_const_ptr PalmOS_Tbmp_Private::loadTbmp(void)
 		return {};
 	}
 	const unsigned int rowBytes = be16_to_cpu(bitmapType.rowBytes);
-	size_t icon_data_len = (size_t)rowBytes * (size_t)height;
+	const size_t icon_data_len = static_cast<size_t>(rowBytes) * static_cast<size_t>(height);
 	const uint16_t flags = be16_to_cpu(bitmapType.flags);
 
 	PalmOS_BitmapDirectInfoType_t bitmapDirectInfoType;

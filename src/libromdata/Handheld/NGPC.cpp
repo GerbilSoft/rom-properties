@@ -130,7 +130,7 @@ NGPC::NGPC(const IRpFilePtr &file)
 		0		// szFile (not needed for NGPC)
 	};
 	d->romType = static_cast<NGPCPrivate::RomType>(isRomSupported_static(&info));
-	d->isValid = ((int)d->romType >= 0);
+	d->isValid = (static_cast<int>(d->romType) >= 0);
 
 	if (!d->isValid) {
 		d->file.reset();
@@ -138,8 +138,8 @@ NGPC::NGPC(const IRpFilePtr &file)
 	}
 
 	// Set the MIME type.
-	if ((int)d->romType < ARRAY_SIZE_I(d->mimeTypes)-1) {
-		d->mimeType = d->mimeTypes[(int)d->romType];
+	if (static_cast<int>(d->romType) < ARRAY_SIZE_I(d->mimeTypes)-1) {
+		d->mimeType = d->mimeTypes[static_cast<int>(d->romType)];
 	}
 }
 
@@ -205,7 +205,7 @@ const char *NGPC::systemName(unsigned int type) const
 	// ignore the region selection.
 	static_assert(SYSNAME_TYPE_MASK == 3,
 		"NGPC::systemName() array index optimization needs to be updated.");
-	static_assert((int)NGPCPrivate::RomType::Max == 2,
+	static_assert(static_cast<int>(NGPCPrivate::RomType::Max) == 2,
 		"NGPC::systemName() array index optimization needs to be updated.");
 
 	// Bits 0-1: Type. (long, short, abbreviation)
@@ -217,7 +217,7 @@ const char *NGPC::systemName(unsigned int type) const
 
 	// NOTE: This might return an incorrect system name if
 	// d->romType is RomType::TYPE_UNKNOWN.
-	return sysNames[(int)d->romType & 1][type & SYSNAME_TYPE_MASK];
+	return sysNames[static_cast<size_t>(d->romType) & 1U][type & SYSNAME_TYPE_MASK];
 }
 
 /**
@@ -291,7 +291,7 @@ int NGPC::loadFieldData(void)
 	} else if (!d->file || !d->file->isOpen()) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!d->isValid || (int)d->romType < 0) {
+	} else if (!d->isValid || static_cast<int>(d->romType) < 0) {
 		// Unknown ROM image type.
 		return -EIO;
 	}
@@ -365,7 +365,7 @@ int NGPC::loadMetaData(void)
 	} else if (!d->file) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!d->isValid || (int)d->romType < 0) {
+	} else if (!d->isValid || static_cast<int>(d->romType) < 0) {
 		// Unknown ROM image type.
 		return -EIO;
 	}
@@ -408,7 +408,7 @@ int NGPC::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 	pExtURLs->clear();
 
 	RP_D(const NGPC);
-	if (!d->isValid || (int)d->romType < 0) {
+	if (!d->isValid || static_cast<int>(d->romType) < 0) {
 		// ROM image isn't valid.
 		return -EIO;
 	}
@@ -463,7 +463,7 @@ int NGPC::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 			memcpy(game_id, romHeader->title, sizeof(romHeader->title));
 			game_id[sizeof(game_id)-1] = '\0';
 			// Trim spaces from the game ID.
-			for (int i = (int)sizeof(game_id)-2; i > 0; i--) {
+			for (int i = static_cast<int>(sizeof(game_id)) - 2; i > 0; i--) {
 				if (game_id[i] != '\0' && game_id[i] != ' ')
 					break;
 				game_id[i] = '\0';

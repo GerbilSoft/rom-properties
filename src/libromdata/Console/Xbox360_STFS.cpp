@@ -197,7 +197,7 @@ rp_image_const_ptr Xbox360_STFS_Private::loadIcon(void)
 	if (img_icon) {
 		// Icon has already been loaded.
 		return img_icon;
-	} else if (!this->isValid || (int)this->stfsType < 0) {
+	} else if (!this->isValid || static_cast<int>(this->stfsType) < 0) {
 		// Can't load the icon.
 		return nullptr;
 	}
@@ -299,7 +299,7 @@ int Xbox360_STFS_Private::loadHeader(unsigned int header)
 	if (!this->file) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!this->isValid || (int)this->stfsType < 0) {
+	} else if (!this->isValid || static_cast<int>(this->stfsType) < 0) {
 		// STFS file isn't valid.
 		return -EIO;
 	}
@@ -396,7 +396,7 @@ int Xbox360_STFS_Private::loadFileTable(void)
 	if (!this->file) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!this->isValid || (int)this->stfsType < 0) {
+	} else if (!this->isValid || static_cast<int>(this->stfsType) < 0) {
 		// STFS file isn't valid.
 		return -EIO;
 	}
@@ -796,7 +796,7 @@ int Xbox360_STFS::loadFieldData(void)
 	} else if (!d->file || !d->file->isOpen()) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!d->isValid || (int)d->stfsType < 0) {
+	} else if (!d->isValid || static_cast<int>(d->stfsType) < 0) {
 		// STFS file isn't valid.
 		return -EIO;
 	}
@@ -912,7 +912,7 @@ int Xbox360_STFS::loadFieldData(void)
 	// File type
 	// TODO: Show console-specific information for 'CON '.
 	const char *const s_package_type_title = C_("Xbox360_STFS", "Package Type");
-	static const array<const char*, (int)Xbox360_STFS_Private::StfsType::Max> file_type_tbl = {{
+	static const array<const char*, static_cast<size_t>(Xbox360_STFS_Private::StfsType::Max)> file_type_tbl = {{
 		NOP_C_("Xbox360_STFS|FileType", "Console-Specific Package"),
 		NOP_C_("Xbox360_STFS|FileType", "Non-Xbox Live Package"),
 		NOP_C_("Xbox360_STFS|FileType", "Xbox Live Package"),
@@ -951,19 +951,19 @@ int Xbox360_STFS::loadFieldData(void)
 	string tid_str;
 	char hexbuf[4];
 	if (ISUPPER(stfsMetadata->title_id.a)) {
-		tid_str += (char)stfsMetadata->title_id.a;
+		tid_str += stfsMetadata->title_id.a;
 	} else {
 		tid_str += "\\x";
 		snprintf(hexbuf, sizeof(hexbuf), "%02X",
-			(uint8_t)stfsMetadata->title_id.a);
+			static_cast<uint8_t>(stfsMetadata->title_id.a));
 		tid_str.append(hexbuf, 2);
 	}
 	if (ISUPPER(stfsMetadata->title_id.b)) {
-		tid_str += (char)stfsMetadata->title_id.b;
+		tid_str += stfsMetadata->title_id.b;
 	} else {
 		tid_str += "\\x";
 		snprintf(hexbuf, sizeof(hexbuf), "%02X",
-			(uint8_t)stfsMetadata->title_id.b);
+			static_cast<uint8_t>(stfsMetadata->title_id.b));
 		tid_str.append(hexbuf, 2);
 	}
 
@@ -1057,7 +1057,7 @@ int Xbox360_STFS::loadMetaData(void)
 	} else if (!d->file) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!d->isValid || (int)d->stfsType < 0) {
+	} else if (!d->isValid || static_cast<int>(d->stfsType) < 0) {
 		// STFS file isn't valid.
 		return -EIO;
 	}

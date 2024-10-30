@@ -321,7 +321,7 @@ WonderSwan::WonderSwan(const IRpFilePtr &file)
 	// MIME type.
 	// TODO: Set to application/x-pocket-challenge-v2-rom if the extension is .pc2?
 	if ((int)d->romType >= 0) {
-		d->mimeType = d->mimeTypes[(int)d->romType];
+		d->mimeType = d->mimeTypes[static_cast<int>(d->romType)];
 	}
 }
 
@@ -658,7 +658,7 @@ int WonderSwan::loadMetaData(void)
 	} else if (!d->file) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!d->isValid || (int)d->romType < 0) {
+	} else if (!d->isValid || static_cast<int>(d->romType) < 0) {
 		// Unknown ROM image type.
 		return -EIO;
 	}

@@ -752,8 +752,8 @@ const char *ISO::systemName(unsigned int type) const
 	}};
 
 	unsigned int sysID = 0;
-	if ((int)d->discType >= 0 && d->discType < ISOPrivate::DiscType::Max) {
-		sysID = (int)d->discType;
+	if (static_cast<int>(d->discType) >= 0 && d->discType < ISOPrivate::DiscType::Max) {
+		sysID = static_cast<unsigned int>(d->discType);
 	}
 	return sysNames[sysID][type & SYSNAME_TYPE_MASK];
 }
@@ -873,7 +873,7 @@ int ISO::loadMetaData(void)
 	if (d->metaData != nullptr) {
 		// Metadata *has* been loaded...
 		return 0;
-	} else if (!d->isValid || (int)d->discType < 0) {
+	} else if (!d->isValid || static_cast<int>(d->discType) < 0) {
 		// Unknown disc image type.
 		return -EIO;
 	}

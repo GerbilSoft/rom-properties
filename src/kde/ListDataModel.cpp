@@ -407,14 +407,14 @@ QVariant ListDataModel::data(const QModelIndex &index, int role) const
 		case Qt::DecorationRole:
 			if (column != 0 || d->icons.empty())
 				break;
-			if (row <= (int)d->icons.size())
+			if (row <= static_cast<int>(d->icons.size()))
 				return d->icons[row];
 			break;
 
 		case RpImageRole:
 			if (column != 0 || d->icons.empty())
 				break;
-			if (row <= (int)d->icons.size()) {
+			if (row <= static_cast<int>(d->icons.size())) {
 				// NOTE: We can't put an std::shared_ptr<> in QVariant.
 				// Pass a pointer to the std::shared_ptr<> instead.
 				if (d->icons_rp[row]) {
@@ -457,7 +457,7 @@ QVariant ListDataModel::headerData(int section, Qt::Orientation orientation, int
 		case Qt::DisplayRole:
 			// NOTE: d->headers[] might be empty if the RFT_LISTDATA
 			// field doesn't have column names.
-			if (section >= (int)d->headers.size())
+			if (section >= static_cast<int>(d->headers.size()))
 				break;
 			return d->headers[section];
 

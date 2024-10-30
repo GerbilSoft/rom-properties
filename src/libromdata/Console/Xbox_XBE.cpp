@@ -352,8 +352,8 @@ const EXE *Xbox_XBE_Private::initEXE(void)
  */
 string Xbox_XBE_Private::getPublisher(void) const
 {
-	const uint16_t pub_id = ((unsigned int)xbeCertificate.title_id.a << 8) |
-	                        ((unsigned int)xbeCertificate.title_id.b);
+	const uint16_t pub_id = (static_cast<unsigned int>(xbeCertificate.title_id.a) << 8) |
+	                        (static_cast<unsigned int>(xbeCertificate.title_id.b));
 	const char *const publisher = XboxPublishers::lookup(pub_id);
 	if (publisher) {
 		return publisher;
@@ -686,19 +686,19 @@ int Xbox_XBE::loadFieldData(void)
 		string tid_str;
 		char hexbuf[4];
 		if (ISUPPER(xbeCertificate->title_id.a)) {
-			tid_str += (char)xbeCertificate->title_id.a;
+			tid_str += xbeCertificate->title_id.a;
 		} else {
 			tid_str += "\\x";
 			snprintf(hexbuf, sizeof(hexbuf), "%02X",
-				(uint8_t)xbeCertificate->title_id.a);
+				static_cast<uint8_t>(xbeCertificate->title_id.a));
 			tid_str.append(hexbuf, 2);
 		}
 		if (ISUPPER(xbeCertificate->title_id.b)) {
-			tid_str += (char)xbeCertificate->title_id.b;
+			tid_str += xbeCertificate->title_id.b;
 		} else {
 			tid_str += "\\x";
 			snprintf(hexbuf, sizeof(hexbuf), "%02X",
-				(uint8_t)xbeCertificate->title_id.b);
+				static_cast<uint8_t>(xbeCertificate->title_id.b));
 			tid_str.append(hexbuf, 2);
 		}
 
@@ -897,7 +897,7 @@ int Xbox_XBE::loadInternalImage(ImageType imageType, rp_image_const_ptr &pImage)
 		pImage = d->xtImage.png;
 	}
 
-	return ((bool)pImage ? 0 : -EIO);
+	return (pImage) ? 0 : -EIO;
 }
 
 } // namespace LibRomData

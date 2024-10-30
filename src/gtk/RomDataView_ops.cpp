@@ -351,8 +351,8 @@ rp_rom_data_view_getSaveFileDialog_callback(GFile *file, save_data_t *save_data)
 		// TODO: Don't keep rebuilding this vector...
 		// NOTE: Assuming the RomOps vector order hasn't changed.
 		vector<RomData::RomOp> ops = romData->romOps();
-		assert(id < (int)ops.size());
-		if (id < (int)ops.size()) {
+		assert(id < static_cast<int>(ops.size()));
+		if (id < static_cast<int>(ops.size())) {
 			rp_options_menu_button_update_op(RP_OPTIONS_MENU_BUTTON(page->btnOptions), id, &ops[id]);
 		}
 
@@ -519,8 +519,8 @@ btnOptions_triggered_signal_handler(RpOptionsMenuButton *menuButton,
 	// Run a ROM operation.
 	// TODO: Don't keep rebuilding this vector...
 	vector<RomData::RomOp> ops = romData->romOps();
-	assert(id < (int)ops.size());
-	if (id >= (int)ops.size()) {
+	assert(id < static_cast<int>(ops.size()));
+	if (id < static_cast<int>(ops.size())) {
 		// ID is out of range.
 		return;
 	}

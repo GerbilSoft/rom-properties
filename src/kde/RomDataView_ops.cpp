@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * RomDataView.cpp: RomData viewer. (ROM operations)                       *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -305,8 +305,8 @@ void RomDataView::btnOptions_triggered(int id)
 	// Run a ROM operation.
 	// TODO: Don't keep rebuilding this vector...
 	vector<RomData::RomOp> ops = d->romData->romOps();
-	assert(id < (int)ops.size());
-	if (id >= (int)ops.size()) {
+	assert(id < static_cast<int>(ops.size()));
+	if (id < static_cast<int>(ops.size())) {
 		// ID is out of range.
 		return;
 	}
@@ -349,8 +349,8 @@ void RomDataView::btnOptions_triggered(int id)
 		// Update the RomOp menu entry in case it changed.
 		// NOTE: Assuming the RomOps vector order hasn't changed.
 		ops = d->romData->romOps();
-		assert(id < (int)ops.size());
-		if (id < (int)ops.size()) {
+		assert(id < static_cast<int>(ops.size()));
+		if (id < static_cast<int>(ops.size())) {
 			d->btnOptions->updateOp(id, &ops[id]);
 		}
 

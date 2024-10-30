@@ -453,7 +453,7 @@ int CBMCart::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) co
 	pExtURLs->clear();
 
 	RP_D(CBMCart);
-	if (!d->isValid || (int)d->romType < 0) {
+	if (!d->isValid || static_cast<int>(d->romType) < 0) {
 		// ROM image isn't valid.
 		return -EIO;
 	}

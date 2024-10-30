@@ -636,7 +636,7 @@ XboxXPR::XboxXPR(const IRpFilePtr &file)
 const char *XboxXPR::pixelFormat(void) const
 {
 	RP_D(const XboxXPR);
-	if (!d->isValid || (int)d->xprType < 0) {
+	if (!d->isValid || static_cast<int>(d->xprType) < 0) {
 		// Not supported.
 		return nullptr;
 	}
@@ -725,7 +725,7 @@ int XboxXPR::getFields(RomFields *fields) const
 		return 0;
 
 	RP_D(const XboxXPR);
-	if (!d->isValid || (int)d->xprType < 0) {
+	if (!d->isValid || static_cast<int>(d->xprType) < 0) {
 		// Unknown XPR image type.
 		return -EIO;
 	}
@@ -739,12 +739,12 @@ int XboxXPR::getFields(RomFields *fields) const
 		"XPR0", "XPR1", "XPR2"
 	};
 	if (d->xprType > XboxXPRPrivate::XPRType::Unknown &&
-	    (int)d->xprType < ARRAY_SIZE_I(type_tbl))
+	    static_cast<int>(d->xprType) < ARRAY_SIZE_I(type_tbl))
 	{
-		fields->addField_string(s_type_title, type_tbl[(int)d->xprType]);
+		fields->addField_string(s_type_title, type_tbl[static_cast<size_t>(d->xprType)]);
 	} else {
 		fields->addField_string(s_type_title,
-			rp_sprintf(C_("RomData", "Unknown (%d)"), (int)d->xprType));
+			rp_sprintf(C_("RomData", "Unknown (%d)"), static_cast<int>(d->xprType)));
 	}
 
 	// Finished reading the field data.
@@ -763,7 +763,7 @@ int XboxXPR::getFields(RomFields *fields) const
 rp_image_const_ptr XboxXPR::image(void) const
 {
 	RP_D(const XboxXPR);
-	if (!d->isValid || (int)d->xprType < 0) {
+	if (!d->isValid || static_cast<int>(d->xprType) < 0) {
 		// Unknown file type.
 		return nullptr;
 	}

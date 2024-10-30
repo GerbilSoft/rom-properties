@@ -24,12 +24,12 @@ using std::array;
 namespace LibRomData { namespace CtrKeyScrambler {
 
 // Verification key names.
-static const array<const char*, (int)EncryptionKeys::Key_Max> EncryptionKeyNames = {{
+static const array<const char*, static_cast<size_t>(EncryptionKeys::Key_Max)> EncryptionKeyNames = {{
 	"twl-scrambler",
 	"ctr-scrambler",
 }};
 
-static constexpr uint8_t EncryptionKeyVerifyData[(int)EncryptionKeys::Key_Max][16] = {
+static constexpr uint8_t EncryptionKeyVerifyData[static_cast<size_t>(EncryptionKeys::Key_Max)][16] = {
 	// twl-scrambler
 	{0x65,0xCF,0x82,0xC5,0xDB,0x79,0x93,0x8C,
 	 0x01,0x33,0x65,0x87,0x72,0xDF,0x60,0x94},
@@ -55,8 +55,8 @@ int encryptionKeyCount_static(void)
 const char *encryptionKeyName_static(int keyIdx)
 {
 	assert(keyIdx >= 0);
-	assert(keyIdx < (int)EncryptionKeys::Key_Max);
-	if (keyIdx < 0 || keyIdx >= (int)EncryptionKeys::Key_Max)
+	assert(keyIdx < static_cast<int>(EncryptionKeys::Key_Max));
+	if (keyIdx < 0 || keyIdx >= static_cast<int>(EncryptionKeys::Key_Max))
 		return nullptr;
 	return EncryptionKeyNames[keyIdx];
 }
@@ -69,8 +69,8 @@ const char *encryptionKeyName_static(int keyIdx)
 const uint8_t *encryptionVerifyData_static(int keyIdx)
 {
 	assert(keyIdx >= 0);
-	assert(keyIdx < (int)EncryptionKeys::Key_Max);
-	if (keyIdx < 0 || keyIdx >= (int)EncryptionKeys::Key_Max)
+	assert(keyIdx < static_cast<int>(EncryptionKeys::Key_Max));
+	if (keyIdx < 0 || keyIdx >= static_cast<int>(EncryptionKeys::Key_Max))
 		return nullptr;
 	return EncryptionKeyVerifyData[keyIdx];
 }
@@ -175,8 +175,8 @@ int CtrScramble(u128_t *keyNormal,
 
 	KeyManager::KeyData_t keyData;
 	KeyManager::VerifyResult res = keyManager->getAndVerify(
-		EncryptionKeyNames[(int)EncryptionKeys::Key_Ctr_Scrambler], &keyData,
-		EncryptionKeyVerifyData[(int)EncryptionKeys::Key_Ctr_Scrambler], 16);
+		EncryptionKeyNames[static_cast<size_t>(EncryptionKeys::Key_Ctr_Scrambler)], &keyData,
+		EncryptionKeyVerifyData[static_cast<size_t>(EncryptionKeys::Key_Ctr_Scrambler)], 16);
 	if (res != KeyManager::VerifyResult::OK) {
 		// Key error.
 		// TODO: Return the key error?

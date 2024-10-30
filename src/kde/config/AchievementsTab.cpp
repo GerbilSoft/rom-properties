@@ -82,9 +82,9 @@ void AchievementsTab::reset(void)
 	treeWidget->setIconSize(QSize(iconSize, iconSize));
 
 	const Achievements *const pAch = Achievements::instance();
-	for (int i = 0; i < (int)Achievements::ID::Max; i++) {
+	for (int i = 0; i < static_cast<int>(Achievements::ID::Max); i++) {
 		// Is the achievement unlocked?
-		const Achievements::ID id = (Achievements::ID)i;
+		const Achievements::ID id = static_cast<Achievements::ID>(i);
 		const time_t timestamp = pAch->isUnlocked(id);
 		const bool unlocked = (timestamp != -1);
 

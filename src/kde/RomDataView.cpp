@@ -165,7 +165,7 @@ void RomDataViewPrivate::initHeaderRow(void)
 				if (bannerSize.height() != imgStdHeight) {
 					// Need to scale the banner label to match the aspect ratio.
 					const QSize bannerScaledSize(rintf(
-						(float)imgStdHeight * ((float)bannerSize.width() / (float)bannerSize.height())),
+						static_cast<float>(imgStdHeight) * (static_cast<float>(bannerSize.width()) / static_cast<float>(bannerSize.height()))),
 						imgStdHeight);
 					ui.lblBanner->setMinimumSize(bannerScaledSize);
 					ui.lblBanner->setMaximumSize(bannerScaledSize);
@@ -220,7 +220,7 @@ void RomDataViewPrivate::initHeaderRow(void)
 				if (iconSize.height() != imgStdHeight) {
 					// Need to scale the icon label to match the aspect ratio.
 					const QSize iconScaledSize(rintf(
-						(float)imgStdHeight * ((float)iconSize.width() / (float)iconSize.height())),
+						static_cast<float>(imgStdHeight) * (static_cast<float>(iconSize.width()) / static_cast<float>(iconSize.height()))),
 						imgStdHeight);
 					ui.lblIcon->setMinimumSize(iconScaledSize);
 					ui.lblIcon->setMaximumSize(iconScaledSize);
@@ -582,7 +582,7 @@ QTreeView *RomDataViewPrivate::initListData(QLabel *lblDesc,
 			pHeader->setStretchLastSection(false);
 			unsigned int sizing = listDataDesc.col_attrs.sizing;
 			for (int i = 0; i < colCount; i++, sizing >>= RomFields::COLSZ_BITS) {
-				pHeader->setSectionResizeMode(i, (QHeaderView::ResizeMode)(sizing & RomFields::COLSZ_MASK));
+				pHeader->setSectionResizeMode(i, static_cast<QHeaderView::ResizeMode>(sizing & RomFields::COLSZ_MASK));
 			}
 		}
 	} else
@@ -997,8 +997,8 @@ void RomDataViewPrivate::initDisplayWidgets(void)
 
 		// Verify the tab index.
 		const int tabIdx = field.tabIdx;
-		assert(tabIdx >= 0 && tabIdx < (int)tabs.size());
-		if (tabIdx < 0 || tabIdx >= (int)tabs.size()) {
+		assert(tabIdx >= 0 && tabIdx < static_cast<int>(tabs.size()));
+		if (tabIdx < 0 || tabIdx >= static_cast<int>(tabs.size())) {
 			// Tab index is out of bounds.
 			continue;
 		} else if (!tabs[tabIdx].form) {
@@ -1179,7 +1179,7 @@ void RomDataView::paintEvent(QPaintEvent *event)
 {
 	// Check for "viewed" achievements.
 	Q_D(RomDataView);
-	if (!d->hasCheckedAchievements && (bool)d->romData) {
+	if (!d->hasCheckedAchievements && d->romData) {
 		d->romData->checkViewedAchievements();
 		d->hasCheckedAchievements = true;
 	}
@@ -1312,7 +1312,7 @@ void RomDataView::setRomData(const RomDataPtr &romData)
 	d->romData = romData;
 	d->initDisplayWidgets();
 
-	if ((bool)romData && prevAnimTimerRunning) {
+	if (romData && prevAnimTimerRunning) {
 		// Restart the animation timer.
 		// FIXME: Ensure frame 0 is drawn?
 		d->ui.lblIcon->startAnimTimer();

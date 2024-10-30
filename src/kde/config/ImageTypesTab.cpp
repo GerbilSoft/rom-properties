@@ -466,7 +466,7 @@ void ImageTypesTab::cboImageType_currentIndexChanged(void)
 	const unsigned int cbid = cbo->property("rp-config.cbid").toUInt();
 
 	const int idx = cbo->currentIndex();
-	const unsigned int prio = (unsigned int)(idx <= 0 ? 0xFF : idx-1);
+	const unsigned int prio = static_cast<unsigned int>(idx <= 0 ? 0xFF : idx-1);
 	if (d->cboImageType_priorityValueChanged(cbid, prio)) {
 		// Configuration has been changed.
 		emit modified();

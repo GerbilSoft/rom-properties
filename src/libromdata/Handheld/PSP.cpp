@@ -249,7 +249,7 @@ PSP::PSP(const IRpFilePtr &file)
 
 	// Verify the system ID.
 	d->discType = static_cast<PSPPrivate::DiscType>(isRomSupported_static(&d->pvd));
-	if ((int)d->discType < 0) {
+	if (static_cast<int>(d->discType) < 0) {
 		// Incorrect system ID.
 		d->file.reset();
 		return;
@@ -299,7 +299,7 @@ int PSP::isRomSupported_static(const DetectInfo *info)
 	RP_UNUSED(info);
 	// NOTE: Cannot check the PVD here, and compressed disc images are
 	// handled by RomDataFactory.
-	return (int)PSPPrivate::DiscType::Unknown;
+	return static_cast<int>(PSPPrivate::DiscType::Unknown);
 }
 
 /**
@@ -315,7 +315,7 @@ int PSP::isRomSupported_static(
 	assert(pvd != nullptr);
 	if (!pvd) {
 		// Bad.
-		return (int)discType;
+		return static_cast<int>(discType);
 	}
 
 	// PlayStation Portable game discs have the system ID "PSP GAME".
@@ -331,7 +331,7 @@ int PSP::isRomSupported_static(
 
 	if (pos < 0) {
 		// Not valid.
-		return (int)PSPPrivate::DiscType::Unknown;
+		return static_cast<int>(PSPPrivate::DiscType::Unknown);
 	}
 
 	// Make sure the rest of the system ID is either spaces or NULLs.
@@ -346,11 +346,11 @@ int PSP::isRomSupported_static(
 
 	if (isOK) {
 		// Valid PVD.
-		return (int)discType;
+		return static_cast<int>(discType);
 	}
 
 	// Not a PlayStation Portable disc.
-	return (int)PSPPrivate::DiscType::Unknown;
+	return static_cast<int>(PSPPrivate::DiscType::Unknown);
 }
 
 /**
@@ -373,7 +373,7 @@ const char *PSP::systemName(unsigned int type) const
 		{{"Sony PlayStation Portable", "PlayStation Portable", "PSP", nullptr}},
 		{{"Universal Media Disc", "Universal Media Disc", "UMD", nullptr}},
 	}};
-	return sysNames[(unsigned int)(d->discType) & 1][type & SYSNAME_TYPE_MASK];
+	return sysNames[static_cast<size_t>(d->discType) & 1U][type & SYSNAME_TYPE_MASK];
 }
 
 /**
@@ -441,7 +441,7 @@ int PSP::loadFieldData(void)
 	} else if (!d->file || !d->file->isOpen()) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!d->isValid || (int)d->discType < 0) {
+	} else if (!d->isValid || static_cast<int>(d->discType) < 0) {
 		// Unknown disc type.
 		return -EIO;
 	}
@@ -546,7 +546,7 @@ int PSP::loadMetaData(void)
 	if (d->metaData != nullptr) {
 		// Metadata *has* been loaded...
 		return 0;
-	} else if (!d->isValid || (int)d->discType < 0) {
+	} else if (!d->isValid || static_cast<int>(d->discType) < 0) {
 		// Unknown disc image type.
 		return -EIO;
 	}

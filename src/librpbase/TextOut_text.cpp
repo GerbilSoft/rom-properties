@@ -147,10 +147,10 @@ private:
 			if (cp.width && *p == '\n') {
 				escaped += '\n';
 				escaped.append(cp.width + (cp.quotes ? 1 : 0), ' ');
-			} else if ((unsigned char)*p < 0x20) {
+			} else if (static_cast<unsigned char>(*p) < 0x20) {
 				// Encode control characters using U+2400 through U+241F.
 				escaped += "\xE2\x90";
-				escaped += (char)(0x80 + (unsigned char)*p);
+				escaped += static_cast<char>(0x80 + static_cast<unsigned char>(*p));
 			} else {
 				escaped += *p;
 			}
@@ -966,11 +966,11 @@ std::ostream& operator<<(std::ostream& os, const ROMOutput& fo) {
 				if (!(imgbf & (1U << i)))
 					continue;
 
-				auto image = romdata->image((RomData::ImageType)i);
+				auto image = romdata->image(static_cast<RomData::ImageType>(i));
 				if (image && image->isValid()) {
 					// tr: Image Type name, followed by Image Type ID
 					os << "-- " << rp_sprintf_p(C_("TextOut", "%1$s is present (use -x%2$d to extract)"),
-						RomData::getImageTypeName((RomData::ImageType)i), i) << '\n';
+						RomData::getImageTypeName(static_cast<RomData::ImageType>(i)), i) << '\n';
 					// TODO: After localizing, add enough spaces for alignment.
 					os << "   Format : " << rp_image::getFormatName(image->format()) << '\n';
 					os << "   Size   : " << image->width() << " x " << image->height() << '\n';
@@ -994,13 +994,13 @@ std::ostream& operator<<(std::ostream& os, const ROMOutput& fo) {
 			extURLs.clear();	// NOTE: May not be needed...
 			// TODO: Customize the image size parameter?
 			// TODO: Option to retrieve supported image size?
-			int ret = romdata->extURLs((RomData::ImageType)i, &extURLs, RomData::IMAGE_SIZE_DEFAULT);
+			int ret = romdata->extURLs(static_cast<RomData::ImageType>(i), &extURLs, RomData::IMAGE_SIZE_DEFAULT);
 			if (ret != 0 || extURLs.empty())
 				continue;
 
 			for (const RomData::ExtURL &extURL : extURLs) {
 				os << "-- " <<
-					RomData::getImageTypeName((RomData::ImageType)i) << ": " << urlPartialUnescape(extURL.url) <<
+					RomData::getImageTypeName(static_cast<RomData::ImageType>(i)) << ": " << urlPartialUnescape(extURL.url) <<
 					" (cache_key: " << extURL.cache_key << ')' << '\n';
 			}
 		}

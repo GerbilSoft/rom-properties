@@ -215,7 +215,7 @@ MachO::MachO(const IRpFilePtr &file)
 			d->machHeaders.resize(1);
 			memcpy(&d->machHeaders[0], header, sizeof(mach_header));
 			d->machFormats[0] = d->checkMachMagicNumber(d->machHeaders[0].magic);
-			d->isValid = ((int)d->machFormats[0] >= 0);
+			d->isValid = (static_cast<int>(d->machFormats[0]) >= 0);
 			break;
 
 		case MachOPrivate::Exec_Format::Fat: {
@@ -308,18 +308,18 @@ MachO::MachO(const IRpFilePtr &file)
 	// Determine the file and MIME types.
 	// NOTE: This assumes all architectures have the same file type.
 	static constexpr array<uint8_t, 12> fileTypes_tbl = {{
-		(uint8_t)FileType::Unknown,		// 0
-		(uint8_t)FileType::RelocatableObject,	// MH_OBJECT
-		(uint8_t)FileType::Executable,		// MH_EXECUTE
-		(uint8_t)FileType::SharedLibrary,	// MH_FVMLIB: "Fixed VM" library file. (TODO: Add a separate FTYPE?)
-		(uint8_t)FileType::CoreDump,		// MH_CORE
-		(uint8_t)FileType::Executable,		// MH_PRELOAD (TODO: Special FTYPE?)
-		(uint8_t)FileType::SharedLibrary,	// MH_DYLIB
-		(uint8_t)FileType::Unknown,		// MH_DYLINKER (TODO)
-		(uint8_t)FileType::Bundle,		// MH_BUNDLE
-		(uint8_t)FileType::Unknown,		// MH_DYLIB_STUB (TODO)
-		(uint8_t)FileType::Unknown,		// MH_DSYM (TODO)
-		(uint8_t)FileType::Unknown,		// MH_KEXT_BUNDLE (TODO)
+		static_cast<uint8_t>(FileType::Unknown),		// 0
+		static_cast<uint8_t>(FileType::RelocatableObject),	// MH_OBJECT
+		static_cast<uint8_t>(FileType::Executable),		// MH_EXECUTE
+		static_cast<uint8_t>(FileType::SharedLibrary),		// MH_FVMLIB: "Fixed VM" library file. (TODO: Add a separate FTYPE?)
+		static_cast<uint8_t>(FileType::CoreDump),		// MH_CORE
+		static_cast<uint8_t>(FileType::Executable),		// MH_PRELOAD (TODO: Special FTYPE?)
+		static_cast<uint8_t>(FileType::SharedLibrary),		// MH_DYLIB
+		static_cast<uint8_t>(FileType::Unknown),		// MH_DYLINKER (TODO)
+		static_cast<uint8_t>(FileType::Bundle),			// MH_BUNDLE
+		static_cast<uint8_t>(FileType::Unknown),		// MH_DYLIB_STUB (TODO)
+		static_cast<uint8_t>(FileType::Unknown),		// MH_DSYM (TODO)
+		static_cast<uint8_t>(FileType::Unknown),		// MH_KEXT_BUNDLE (TODO)
 	}};
 	static const array<const char*, 12> mimeTypes_tbl = {{
 		nullptr,				// 0
@@ -495,10 +495,10 @@ int MachO::loadFieldData(void)
 		}};
 		const char *const format_title = C_("MachO", "Format");
 		if (machFormat > MachOPrivate::Mach_Format::Unknown &&
-		    (int)machFormat < static_cast<int>(exec_type_tbl.size()))
+		    static_cast<size_t>(machFormat) < exec_type_tbl.size())
 		{
 			d->fields.addField_string(format_title,
-				pgettext_expr("RomData|ExecType", exec_type_tbl[(int)machFormat]));
+				pgettext_expr("RomData|ExecType", exec_type_tbl[static_cast<size_t>(machFormat)]));
 		} else {
 			// TODO: Show individual values.
 			// NOTE: This shouldn't happen...

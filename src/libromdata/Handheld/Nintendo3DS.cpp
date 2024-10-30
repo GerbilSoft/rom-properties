@@ -156,7 +156,7 @@ int Nintendo3DSPrivate::loadSMDH(void)
 			// Do we have a meta section?
 			// FBI's meta section is 15,040 bytes, but the SMDH section
 			// only takes up 14,016 bytes.
-			if (le32_to_cpu(mxh.cia_header.meta_size) >= (uint32_t)N3DS_SMDH_Section_Size) {
+			if (le32_to_cpu(mxh.cia_header.meta_size) >= static_cast<uint32_t>(N3DS_SMDH_Section_Size)) {
 				// Determine the SMDH starting address.
 				const uint32_t addr =
 					toNext64(le32_to_cpu(mxh.cia_header.header_size)) +
@@ -164,7 +164,7 @@ int Nintendo3DSPrivate::loadSMDH(void)
 					toNext64(le32_to_cpu(mxh.cia_header.ticket_size)) +
 					toNext64(le32_to_cpu(mxh.cia_header.tmd_size)) +
 					toNext64(static_cast<uint32_t>(le64_to_cpu(mxh.cia_header.content_size))) +
-					(uint32_t)sizeof(N3DS_CIA_Meta_Header_t);
+					static_cast<uint32_t>(sizeof(N3DS_CIA_Meta_Header_t));
 
 				// Open the SMDH section.
 				// TODO: Verify that this works.
@@ -190,7 +190,7 @@ int Nintendo3DSPrivate::loadSMDH(void)
 			if (!ncch_f_icon) {
 				// Failed to open "icon".
 				return -7;
-			} else if (ncch_f_icon->size() < (off64_t)N3DS_SMDH_Section_Size) {
+			} else if (ncch_f_icon->size() < static_cast<off64_t>(N3DS_SMDH_Section_Size)) {
 				// Icon is too small.
 				return -8;
 			}
@@ -322,7 +322,7 @@ int Nintendo3DSPrivate::loadNCCH(int idx, NCCHReaderPtr &pOutNcchReader)
 
 	// Is this encrypted using CIA title key encryption?
 	CIAReaderPtr ciaReader;
-	if (romType == RomType::CIA && idx < (int)content_chunks.size()) {
+	if (romType == RomType::CIA && idx >= 0 && idx < static_cast<int>(content_chunks.size())) {
 		// Check if this content is encrypted.
 		// If it is, we'll need to create a CIAReader.
 		N3DS_Ticket_t *ticket = nullptr;
@@ -1301,7 +1301,7 @@ Nintendo3DS::Nintendo3DS(const IRpFilePtr &file)
 	}
 
 	// Set the MIME type.
-	d->mimeType = d->mimeTypes[(int)d->romType];
+	d->mimeType = d->mimeTypes[static_cast<int>(d->romType)];
 
 	// File is valid.
 	d->isValid = true;
@@ -1628,7 +1628,7 @@ int Nintendo3DS::loadFieldData(void)
 	} else if (!d->file || !d->file->isOpen()) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!d->isValid || (int)d->romType < 0) {
+	} else if (!d->isValid || static_cast<int>(d->romType) < 0) {
 		// Unknown ROM type.
 		return -EIO;
 	}
@@ -2381,7 +2381,7 @@ int Nintendo3DS::loadMetaData(void)
 	} else if (!d->file) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!d->isValid || (int)d->romType < 0) {
+	} else if (!d->isValid || static_cast<int>(d->romType) < 0) {
 		// ROM image isn't valid.
 		return -EIO;
 	}
@@ -2456,7 +2456,7 @@ int Nintendo3DS::loadInternalImage(ImageType imageType, rp_image_const_ptr &pIma
 
 	// Get the icon from the main content.
 	pImage = d->mainContent->image(imageType);
-	return ((bool)pImage ? 0 : -EIO);
+	return (pImage) ? 0 : -EIO;
 }
 
 /**

@@ -53,13 +53,14 @@ static int processConfigLine(void *user, const char *section, const char *name, 
 	{
 		// Found the key.
 		// Parse the value.
+		bool *const pbUser = reinterpret_cast<bool*>(user);
 		if (!strcasecmp(value, _T("false")) || !strcmp(value, "0")) {
-			// Disabled.
-			*(bool*)user = false;
+			// Disabled
+			*pbUser = false;
 			return 0;
 		} else {
-			// Enabled.
-			*(bool*)user = true;
+			// Enabled
+			*pbUser = true;
 			return 0;
 		}
 	}

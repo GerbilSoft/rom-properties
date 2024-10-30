@@ -214,11 +214,11 @@ int WiiTicketPrivate::getEncKey(void)
 	if (ca == 1 && xs == 3) {
 		// RVL retail
 		encKey = static_cast<WiiTicket::EncryptionKeys>(
-			(int)WiiTicket::EncryptionKeys::Key_RVL_Common + common_key_index);
+			static_cast<int>(WiiTicket::EncryptionKeys::Key_RVL_Common) + common_key_index);
 	} else if (ca == 2 && xs == 6) {
 		// RVT debug (TODO: There's also XS00000004)
 		encKey = static_cast<WiiTicket::EncryptionKeys>(
-			(int)WiiTicket::EncryptionKeys::Key_RVT_Debug + common_key_index);
+			static_cast<int>(WiiTicket::EncryptionKeys::Key_RVT_Debug) + common_key_index);
 	} else if (ca == 3 && xs == 0xc) {
 		// CTR/WUP retail
 		encKey = WiiTicket::EncryptionKeys::Key_WUP_Starbuck_WiiU_Common;
@@ -667,7 +667,7 @@ WiiTicket::EncryptionKeys WiiTicket::encKey(void) const
  */
 const char *WiiTicket::encKeyName_static(EncryptionKeys encKey)
 {
-	static const std::array<const char*, (int)EncryptionKeys::Max> wii_key_tbl = {{
+	static const std::array<const char*, static_cast<size_t>(EncryptionKeys::Max)> wii_key_tbl = {{
 		// tr: Key_RVL_Common - Retail Wii encryption key
 		NOP_C_("Wii|EncKey", "Retail"),
 		// tr: Key_RVL_Korean - Korean Wii encryption key
@@ -700,8 +700,8 @@ const char *WiiTicket::encKeyName_static(EncryptionKeys encKey)
 	}};
 
 	const char *s_key_name;
-	if ((int)encKey >= 0 && encKey < EncryptionKeys::Max) {
-		s_key_name = pgettext_expr("Wii|KeyIdx", wii_key_tbl[(int)encKey]);
+	if (static_cast<int>(encKey) >= 0 && encKey < EncryptionKeys::Max) {
+		s_key_name = pgettext_expr("Wii|KeyIdx", wii_key_tbl[static_cast<size_t>(encKey)]);
 	} else if (encKey == WiiTicket::EncryptionKeys::None) {
 		// tr: EncryptionKeys::None - No encryption.
 		s_key_name = C_("Wii|EncKey", "None");

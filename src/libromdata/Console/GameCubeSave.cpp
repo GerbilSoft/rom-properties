@@ -915,7 +915,7 @@ int GameCubeSave::loadFieldData(void)
 	} else if (!d->file || !d->file->isOpen()) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!d->isValid || (int)d->saveType < 0 || d->dataOffset < 0) {
+	} else if (!d->isValid || static_cast<int>(d->saveType) < 0 || d->dataOffset < 0) {
 		// Unknown save file type.
 		return -EIO;
 	}
@@ -996,7 +996,7 @@ int GameCubeSave::loadMetaData(void)
 	} else if (!d->file) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!d->isValid || (int)d->saveType < 0 || d->dataOffset < 0) {
+	} else if (!d->isValid || static_cast<int>(d->saveType) < 0 || d->dataOffset < 0) {
 		// Unknown save file type.
 		return -EIO;
 	}
@@ -1088,7 +1088,7 @@ int GameCubeSave::loadInternalImage(ImageType imageType, rp_image_const_ptr &pIm
 	}
 
 	// TODO: -ENOENT if the file doesn't actually have an icon/banner.
-	return ((bool)pImage ? 0 : -EIO);
+	return (pImage) ? 0 : -EIO;
 }
 
 /**

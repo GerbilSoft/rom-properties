@@ -437,5 +437,5 @@ std::vector<RomData::ImageSizeDef> klass::supportedImageSizes(ImageType imageTyp
 	} \
 	\
 	(pImage) = (func)(); \
-	return ((bool)pImage ? 0 : -EIO); \
+	return (pImage) ? 0 : -EIO; \
 } while (0)

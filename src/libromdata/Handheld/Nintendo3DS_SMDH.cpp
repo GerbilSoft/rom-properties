@@ -704,7 +704,7 @@ int Nintendo3DS_SMDH::loadInternalImage(ImageType imageType, rp_image_const_ptr 
 
 	// Load the icon.
 	pImage = d->loadIcon(idx);
-	return ((bool)pImage ? 0 : -EIO);
+	return (pImage) ? 0 : -EIO;
 }
 
 /** Special SMDH accessor functions **/

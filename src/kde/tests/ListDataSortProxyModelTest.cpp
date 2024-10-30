@@ -109,7 +109,7 @@ void ListDataSortProxyModelTest::SetUp()
 	listDataDesc.col_attrs.sort_col = -1;
 	listDataDesc.col_attrs.sort_dir = RomFields::COLSORTORDER_ASCENDING;
 	listDataDesc.col_attrs.is_timestamp = 0;
-	listDataDesc.col_attrs.dtflags = (RomFields::DateTimeFlags)0;
+	listDataDesc.col_attrs.dtflags = static_cast<RomFields::DateTimeFlags>(0);
 
 	// Add the actual list_data data.
 	// - Column 0 and 1: Strings. 0 is standard sort, 1 is case-insensitive.

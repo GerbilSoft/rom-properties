@@ -156,8 +156,8 @@ NintendoBadgePrivate::NintendoBadgePrivate(const IRpFilePtr &file)
  */
 rp_image_const_ptr NintendoBadgePrivate::loadImage(int idx)
 {
-	assert(idx >= 0 || idx < (int)img_badges.size());
-	if (idx < 0 || idx >= (int)img_badges.size()) {
+	assert(idx >= 0 || static_cast<size_t>(idx) < img_badges.size());
+	if (idx < 0 || static_cast<size_t>(idx) >= img_badges.size()) {
 		// Invalid image index.
 		return nullptr;
 	}
@@ -198,7 +198,7 @@ rp_image_const_ptr NintendoBadgePrivate::loadImage(int idx)
 
 			// The 64x64 badge is located before the 32x32 badge
 			// in the file, but we have the smaller one listed first.
-			if ((idx & 1) == (int)BadgeIndex_PRBS::Small) {
+			if ((idx & 1) == static_cast<int>(BadgeIndex_PRBS::Small)) {
 				// 32x32 badge. (0xA00+0x200)
 				badge_rgb_sz = badge32_rgb_sz;
 				badge_a4_sz = badge32_a4_sz;
@@ -499,7 +499,7 @@ NintendoBadge::NintendoBadge(const IRpFilePtr &file)
 		0		// szFile (not needed for NintendoBadge)
 	};
 	d->badgeType = static_cast<NintendoBadgePrivate::BadgeType>(isRomSupported_static(&info));
-	d->isValid = ((int)d->badgeType >= 0);
+	d->isValid = (static_cast<int>(d->badgeType) >= 0);
 	d->megaBadge = false;	// check later
 
 	if (!d->isValid) {
@@ -525,8 +525,8 @@ NintendoBadge::NintendoBadge(const IRpFilePtr &file)
 	}
 
 	// Set the MIME type.
-	if ((int)d->badgeType < ARRAY_SIZE_I(d->mimeTypes)-1) {
-		d->mimeType = d->mimeTypes[(int)d->badgeType];
+	if (static_cast<int>(d->badgeType) < ARRAY_SIZE_I(d->mimeTypes)-1) {
+		d->mimeType = d->mimeTypes[static_cast<int>(d->badgeType)];
 	}
 }
 
@@ -622,8 +622,8 @@ vector<RomData::ImageSizeDef> NintendoBadge::supportedImageSizes(ImageType image
 			if (imageType == IMG_INT_ICON || !d->megaBadge) {
 				// Not a mega badge.
 				return {
-					{nullptr, BADGE_SIZE_SMALL_W, BADGE_SIZE_SMALL_H, (int)NintendoBadgePrivate::BadgeIndex_PRBS::Small},
-					{nullptr, BADGE_SIZE_LARGE_W, BADGE_SIZE_LARGE_H, (int)NintendoBadgePrivate::BadgeIndex_PRBS::Large},
+					{nullptr, BADGE_SIZE_SMALL_W, BADGE_SIZE_SMALL_H, static_cast<int>(NintendoBadgePrivate::BadgeIndex_PRBS::Small)},
+					{nullptr, BADGE_SIZE_LARGE_W, BADGE_SIZE_LARGE_H, static_cast<int>(NintendoBadgePrivate::BadgeIndex_PRBS::Large)},
 				};
 			}
 
@@ -633,10 +633,10 @@ vector<RomData::ImageSizeDef> NintendoBadge::supportedImageSizes(ImageType image
 			const unsigned int mb_height = d->badgeHeader.prbs.mb_height;
 
 			return {
-				{nullptr, BADGE_SIZE_SMALL_W, BADGE_SIZE_SMALL_H, (int)NintendoBadgePrivate::BadgeIndex_PRBS::Small},
-				{nullptr, BADGE_SIZE_LARGE_W, BADGE_SIZE_LARGE_H, (int)NintendoBadgePrivate::BadgeIndex_PRBS::Large},
-				{nullptr, (uint16_t)(BADGE_SIZE_SMALL_W*mb_width), (uint16_t)(BADGE_SIZE_SMALL_H*mb_height), (int)NintendoBadgePrivate::BadgeIndex_PRBS::MegaSmall},
-				{nullptr, (uint16_t)(BADGE_SIZE_LARGE_W*mb_width), (uint16_t)(BADGE_SIZE_LARGE_H*mb_height), (int)NintendoBadgePrivate::BadgeIndex_PRBS::MegaLarge},
+				{nullptr, BADGE_SIZE_SMALL_W, BADGE_SIZE_SMALL_H, static_cast<int>(NintendoBadgePrivate::BadgeIndex_PRBS::Small)},
+				{nullptr, BADGE_SIZE_LARGE_W, BADGE_SIZE_LARGE_H, static_cast<int>(NintendoBadgePrivate::BadgeIndex_PRBS::Large)},
+				{nullptr, static_cast<uint16_t>(BADGE_SIZE_SMALL_W * mb_width), static_cast<uint16_t>(BADGE_SIZE_SMALL_H * mb_height), static_cast<int>(NintendoBadgePrivate::BadgeIndex_PRBS::MegaSmall)},
+				{nullptr, static_cast<uint16_t>(BADGE_SIZE_LARGE_W * mb_width), static_cast<uint16_t>(BADGE_SIZE_LARGE_H * mb_height), static_cast<int>(NintendoBadgePrivate::BadgeIndex_PRBS::MegaLarge)},
 			};
 		}
 
@@ -696,7 +696,7 @@ int NintendoBadge::loadFieldData(void)
 		// No file.
 		// A closed file is OK, since we already loaded the header.
 		return -EBADF;
-	} else if (!d->isValid || (int)d->badgeType < 0) {
+	} else if (!d->isValid || static_cast<int>(d->badgeType) < 0) {
 		// Unknown badge type.
 		return -EIO;
 	}
@@ -826,7 +826,7 @@ int NintendoBadge::loadMetaData(void)
 		// No file.
 		// A closed file is OK, since we already loaded the header.
 		return -EBADF;
-	} else if (!d->isValid || (int)d->badgeType < 0) {
+	} else if (!d->isValid || static_cast<int>(d->badgeType) < 0) {
 		// Unknown badge type.
 		return -EIO;
 	}
@@ -924,8 +924,8 @@ int NintendoBadge::loadInternalImage(ImageType imageType, rp_image_const_ptr &pI
 	}
 
 	// Load the image.
-	pImage = d->loadImage((int)idx);
-	return ((bool)pImage ? 0 : -EIO);
+	pImage = d->loadImage(static_cast<int>(idx));
+	return (pImage) ? 0 : -EIO;
 }
 
 } // namespace LibRomData

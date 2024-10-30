@@ -364,7 +364,7 @@ Dreamcast::Dreamcast(const IRpFilePtr &file)
 	};
 	d->discType = static_cast<DreamcastPrivate::DiscType>(isRomSupported_static(&info));
 
-	if ((int)d->discType < 0) {
+	if (static_cast<int>(d->discType) < 0) {
 		d->file.reset();
 		return;
 	}
@@ -619,7 +619,7 @@ int Dreamcast::loadFieldData(void)
 	} else if (!d->file) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!d->isValid || (int)d->discType < 0) {
+	} else if (!d->isValid || static_cast<int>(d->discType) < 0) {
 		// Unknown disc image type.
 		return -EIO;
 	}
@@ -856,7 +856,7 @@ int Dreamcast::loadMetaData(void)
 	} else if (!d->file) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!d->isValid || (int)d->discType < 0) {
+	} else if (!d->isValid || static_cast<int>(d->discType) < 0) {
 		// Unknown disc image type.
 		return -EIO;
 	}

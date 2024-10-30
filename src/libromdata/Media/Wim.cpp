@@ -189,7 +189,7 @@ int WimPrivate::addFields_XML()
 	file->rewind();
 	file->seek(wimHeader.xml_resource.offset_of_xml); 
 	// if seek is invalid
-	if (file->tell() != (off64_t)wimHeader.xml_resource.offset_of_xml) {
+	if (file->tell() != static_cast<off64_t>(wimHeader.xml_resource.offset_of_xml)) {
 		return -EIO;
 	}
 
@@ -483,7 +483,7 @@ Wim::Wim(const IRpFilePtr &file)
 	};
 	d->versionType = static_cast<WIM_Version_Type>(isRomSupported_static(&info));
 
-	d->isValid = ((int)d->versionType >= 0);
+	d->isValid = (static_cast<int>(d->versionType) >= 0);
 	if (!d->isValid) {
 		d->file.reset();
 		return;

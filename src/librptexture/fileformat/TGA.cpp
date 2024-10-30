@@ -240,7 +240,7 @@ rp_image_const_ptr TGAPrivate::loadImage(void)
 	}
 
 	// Image data starts immediately after the TGA header.
-	const unsigned int img_data_offset = (unsigned int)sizeof(tgaHeader) + tgaHeader.id_length;
+	const unsigned int img_data_offset = static_cast<unsigned int>(sizeof(tgaHeader) + tgaHeader.id_length);
 	if (file->seek(img_data_offset) != 0) {
 		// Seek error.
 		return nullptr;
@@ -291,7 +291,7 @@ rp_image_const_ptr TGAPrivate::loadImage(void)
 	// Allocate a buffer for the image.
 	// NOTE: Assuming scanlines are not padded. (pitch == width)
 	const unsigned int bytespp = (tgaHeader.img.bpp == 15 ? 2 : (tgaHeader.img.bpp / 8));
-	const size_t img_siz = (size_t)tgaHeader.img.width * (size_t)tgaHeader.img.height * bytespp;
+	const size_t img_siz = static_cast<size_t>(tgaHeader.img.width) * static_cast<size_t>(tgaHeader.img.height) * bytespp;
 	auto img_data = aligned_uptr<uint8_t>(16, img_siz);
 
 	if (tgaHeader.image_type == TGA_IMAGETYPE_HUFFMAN_COLORMAP) {
@@ -592,8 +592,8 @@ TGA::TGA(const IRpFilePtr &file)
 	if (d->texType == TGAPrivate::TexType::TGA2) {
 		// Check for an extension area.
 		const uint32_t ext_offset = le32_to_cpu(d->tgaFooter.ext_offset);
-		if (ext_offset != 0 && fileSize > (off64_t)sizeof(d->tgaExtArea) &&
-		    (ext_offset < (fileSize - (off64_t)sizeof(d->tgaExtArea))))
+		if (ext_offset != 0 && fileSize > static_cast<off64_t>(sizeof(d->tgaExtArea)) &&
+		    (ext_offset < (fileSize - static_cast<off64_t>(sizeof(d->tgaExtArea)))))
 		{
 			// We have an extension area.
 			size = d->file->seekAndRead(ext_offset, &d->tgaExtArea, sizeof(d->tgaExtArea));
@@ -650,7 +650,7 @@ TGA::TGA(const IRpFilePtr &file)
 const char *TGA::pixelFormat(void) const
 {
 	RP_D(const TGA);
-	if (!d->isValid || (int)d->texType < 0) {
+	if (!d->isValid || static_cast<int>(d->texType) < 0) {
 		// Not supported.
 		return nullptr;
 	}
@@ -766,7 +766,7 @@ int TGA::getFields(RomFields *fields) const
 		return 0;
 
 	RP_D(const TGA);
-	if (!d->isValid || (int)d->texType < 0) {
+	if (!d->isValid || static_cast<int>(d->texType) < 0) {
 		// Not valid.
 		return -EIO;
 	}
@@ -808,7 +808,7 @@ int TGA::getFields(RomFields *fields) const
 		NOP_C_("TGA|AlphaType", "Present"),
 		NOP_C_("TGA|AlphaType", "Premultiplied"),
 	}};
-	s_alphaType = alphaType_tbl[d->alphaType >= 0 && (int)d->alphaType < (int)alphaType_tbl.size()
+	s_alphaType = alphaType_tbl[d->alphaType >= 0 && static_cast<size_t>(d->alphaType) < alphaType_tbl.size()
 		? d->alphaType : TGA_ALPHATYPE_UNDEFINED_IGNORE];
 	fields->addField_string(C_("TGA", "Alpha Type"), s_alphaType);
 
@@ -902,8 +902,9 @@ int TGA::getFields(RomFields *fields) const
 
 		// Gamma value
 		if (tgaExtArea->gamma_value.denominator != cpu_to_le16(0)) {
-			const int gamma = (int)(((double)tgaExtArea->gamma_value.numerator /
-						 (double)tgaExtArea->gamma_value.denominator) * 10);
+			const int gamma = static_cast<int>(
+				static_cast<double>(tgaExtArea->gamma_value.numerator) /
+				static_cast<double>(tgaExtArea->gamma_value.denominator) * 10);
 			fields->addField_string(C_("TGA", "Gamma Value"),
 				rp_sprintf("%u.%u",
 					static_cast<unsigned int>(gamma / 10),
@@ -927,7 +928,7 @@ int TGA::getFields(RomFields *fields) const
 rp_image_const_ptr TGA::image(void) const
 {
 	RP_D(const TGA);
-	if (!d->isValid || (int)d->texType < 0) {
+	if (!d->isValid || static_cast<int>(d->texType) < 0) {
 		// Unknown file type.
 		return nullptr;
 	}

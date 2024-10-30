@@ -84,10 +84,10 @@ rp_image_ptr fromDreamcastSquareTwiddled16(PixelFormat px_format,
 	assert(height > 0);
 	assert(width == height);
 	assert(width <= 4096);
-	assert(img_siz >= (((size_t)width * (size_t)height) * 2));
+	assert(img_siz >= (static_cast<size_t>(width) * static_cast<size_t>(height) * 2));
 	if (!img_buf || width <= 0 || height <= 0 ||
 	    width != height || width > 4096 ||
-	    img_siz < (((size_t)width * (size_t)height) * 2))
+	    img_siz < (static_cast<size_t>(width) * static_cast<size_t>(height) * 2))
 	{
 		return nullptr;
 	}
@@ -184,9 +184,9 @@ rp_image_ptr fromDreamcastVQ16(PixelFormat px_format,
 	}
 
 	assert(pal_entry_count % 2 == 0);
-	assert((size_t)pal_entry_count * 2 >= pal_siz);
+	assert(static_cast<size_t>(pal_entry_count) * 2 >= pal_siz);
 	if ((pal_entry_count % 2 != 0) ||
-	    ((size_t)pal_entry_count * 2 < pal_siz))
+	    (static_cast<size_t>(pal_entry_count) * 2 < pal_siz))
 	{
 		// Palette isn't large enough,
 		// or palette isn't an even multiple.
