@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2024-10-04 18:38-0400\n"
-"PO-Revision-Date: 2024-10-04 22:55\n"
+"PO-Revision-Date: 2024-10-30 11:23\n"
 "Last-Translator: \n"
 "Language-Team: Italian\n"
 "Language: it_IT\n"
@@ -1279,7 +1279,7 @@ msgstr "Sample Rate"
 #, c-format
 msgctxt "RomData"
 msgid "%u Hz"
-msgstr ""
+msgstr "%u Hz"
 
 #: ../src/libromdata/Audio/ADX.cpp:299 ../src/libromdata/Audio/BCSTM.cpp:494
 #: ../src/libromdata/Audio/BRSTM.cpp:358
@@ -1913,215 +1913,225 @@ msgstr "Note"
 #: ../src/libromdata/Audio/VGM.cpp:420
 msgctxt "VGM"
 msgid "Loop Offset"
-msgstr ""
+msgstr "Offset Ciclo"
 
 #: ../src/libromdata/Audio/VGM.cpp:427
 msgctxt "VGM"
 msgid "Frame Rate"
-msgstr ""
+msgstr "Frame Rate"
 
 #: ../src/libromdata/Audio/VGM.cpp:433
 msgctxt "VGM"
 msgid "Sound Chips"
-msgstr ""
+msgstr "Chips Audio"
 
 #: ../src/libromdata/Audio/VGM.cpp:441
 #, c-format
 msgctxt "VGM"
 msgid "%s Clock Rate"
-msgstr ""
+msgstr "%s Clock Rate"
 
 #: ../src/libromdata/Audio/VGM.cpp:442
 #, c-format
 msgctxt "VGM"
 msgid "%s Dual-Chip"
-msgstr ""
+msgstr "%s Dual-Chip"
 
 #: ../src/libromdata/Audio/VGM.cpp:447
 #, c-format
 msgctxt "VGM"
 msgid "%s Flags"
-msgstr ""
+msgstr "%s Flags"
 
 #: ../src/libromdata/Audio/VGM.cpp:480
 #, c-format
 msgctxt "VGM"
 msgid "%s LFSR pattern"
-msgstr ""
+msgstr "%s LFSR pattern"
 
 #: ../src/libromdata/Audio/VGM.cpp:483
 #, c-format
 msgctxt "VGM"
 msgid "%s LFSR width"
-msgstr ""
+msgstr "%s larghezza LFSR"
 
 #: ../src/libromdata/Audio/VGM.cpp:496
 msgctxt "VGM|PSGFlags"
 msgid "Freq 0 is 0x400"
-msgstr ""
+msgstr "La Freq 0 è 0x400"
 
 #: ../src/libromdata/Audio/VGM.cpp:497
 msgctxt "VGM|PSGFlags"
 msgid "Output Negate"
-msgstr ""
+msgstr "Uscita Negata"
 
 #: ../src/libromdata/Audio/VGM.cpp:498
 msgctxt "VGM|PSGFlags"
 msgid "Stereo"
-msgstr ""
+msgstr "Stereo"
 
 #: ../src/libromdata/Audio/VGM.cpp:499
 msgctxt "VGM|PSGFlags"
 msgid "/8 Clock Divider"
-msgstr ""
+msgstr "/8 Divisore di clock"
 
 #: ../src/libromdata/Audio/VGM.cpp:540
 #, c-format
 msgctxt "VGM"
 msgid "%s IF reg"
-msgstr ""
+msgstr "%s IF reg"
 
 #: ../src/libromdata/Audio/VGM.cpp:552
 msgctxt "VGM|AY8910Flags"
 msgid "Legacy Output"
-msgstr ""
+msgstr "Uscita Legacy"
 
 #: ../src/libromdata/Audio/VGM.cpp:553
 msgctxt "VGM|AY8910Flags"
 msgid "Single Output"
-msgstr ""
+msgstr "Uscita Singola"
 
 #: ../src/libromdata/Audio/VGM.cpp:554
 msgctxt "VGM|AY8910Flags"
 msgid "Discrete Output"
-msgstr ""
+msgstr "Uscita Discreta"
 
 #: ../src/libromdata/Audio/VGM.cpp:555
 msgctxt "VGM|AY8910Flags"
 msgid "Raw Output"
-msgstr ""
+msgstr "Uscita Grezza"
 
 #: ../src/libromdata/Audio/VGM.cpp:702
 msgctxt "VGM|NESExpansion"
 msgid "Famicom Disk System"
-msgstr ""
+msgstr "Famicom Disk System"
 
 #: ../src/libromdata/Audio/VGM.cpp:703
 msgctxt "VGM|NESExpansion"
 msgid "(none)"
-msgstr ""
+msgstr "(nessuna)"
 
 #: ../src/libromdata/Audio/VGM.cpp:705
 #, c-format
 msgctxt "VGM"
 msgid "%s Expansions"
-msgstr ""
+msgstr "%s Espansioni"
 
 #: ../src/libromdata/Audio/VGM.cpp:775 ../src/libromdata/Audio/VGM.cpp:797
 #, c-format
 msgctxt "VGM"
 msgid "%s # of Channels"
-msgstr ""
+msgstr "%s # di canali"
 
 #: ../src/libromdata/Audio/VGM.cpp:818
 #, c-format
 msgctxt "VGM"
 msgid "%s Clock Divider"
-msgstr ""
+msgstr "Divisore Clock %s"
 
 #. tr: IMG_INT_ICON
 #: ../src/libromdata/config/ImageTypesConfig.cpp:92
 msgctxt "ImageTypesConfig|ImageTypeDisp"
 msgid "Internal\n"
 "Icon"
-msgstr ""
+msgstr "Icona\n"
+"Interna"
 
 #. tr: IMG_INT_BANNER
 #: ../src/libromdata/config/ImageTypesConfig.cpp:94
 msgctxt "ImageTypesConfig|ImageTypeDisp"
 msgid "Internal\n"
 "Banner"
-msgstr ""
+msgstr "Banner\n"
+"Interno"
 
 #. tr: IMG_INT_MEDIA
 #: ../src/libromdata/config/ImageTypesConfig.cpp:96
 msgctxt "ImageTypesConfig|ImageTypeDisp"
 msgid "Internal\n"
 "Media"
-msgstr ""
+msgstr "Media\n"
+"Interno"
 
 #. tr: IMG_INT_IMAGE
 #: ../src/libromdata/config/ImageTypesConfig.cpp:98
 msgctxt "ImageTypesConfig|ImageTypeDisp"
 msgid "Internal\n"
 "Image"
-msgstr ""
+msgstr "Immagine\n"
+"Interna"
 
 #. tr: IMG_EXT_MEDIA
 #: ../src/libromdata/config/ImageTypesConfig.cpp:103
 msgctxt "ImageTypesConfig|ImageTypeDisp"
 msgid "External\n"
 "Media"
-msgstr ""
+msgstr "Media\n"
+"Esterno"
 
 #. tr: IMG_EXT_COVER
 #: ../src/libromdata/config/ImageTypesConfig.cpp:105
 msgctxt "ImageTypesConfig|ImageTypeDisp"
 msgid "External\n"
 "Cover"
-msgstr ""
+msgstr "Copertina\n"
+"Esterna"
 
 #. tr: IMG_EXT_COVER_3D
 #: ../src/libromdata/config/ImageTypesConfig.cpp:107
 msgctxt "ImageTypesConfig|ImageTypeDisp"
 msgid "External\n"
 "3D Cover"
-msgstr ""
+msgstr "Copertina 3D\n"
+"Esterna"
 
 #. tr: IMG_EXT_COVER_FULL
 #: ../src/libromdata/config/ImageTypesConfig.cpp:109
 msgctxt "ImageTypesConfig|ImageTypeDisp"
 msgid "External\n"
 "Full Cover"
-msgstr ""
+msgstr "Copertina Completa\n"
+"Esterna"
 
 #. tr: IMG_EXT_BOX
 #: ../src/libromdata/config/ImageTypesConfig.cpp:111
 msgctxt "ImageTypesConfig|ImageTypeDisp"
 msgid "External\n"
 "Box"
-msgstr ""
+msgstr "Scatola\n"
+"Esterna"
 
 #. tr: IMG_EXT_TITLE_SCREEN
 #: ../src/libromdata/config/ImageTypesConfig.cpp:113
 msgctxt "ImageTypesConfig|ImageTypeDisp"
 msgid "External\n"
 "Title Screen"
-msgstr ""
+msgstr "Schermata Titolo\n"
+"Esterna"
 
 #. tr: amiibo
 #: ../src/libromdata/config/ImageTypesConfig.cpp:141
 msgctxt "ImageTypesConfig|SysName"
 msgid "amiibo"
-msgstr ""
+msgstr "amiibo"
 
 #. tr: NintendoBadge
 #: ../src/libromdata/config/ImageTypesConfig.cpp:143
 msgctxt "ImageTypesConfig|SysName"
 msgid "Badge Arcade"
-msgstr ""
+msgstr "Badge Arcade"
 
 #. tr: DreamcastSave
 #: ../src/libromdata/config/ImageTypesConfig.cpp:145
 msgctxt "ImageTypesConfig|SysName"
 msgid "Dreamcast Saves"
-msgstr ""
+msgstr "Salvataggi Dreamcast"
 
 #. tr: GameCube
 #: ../src/libromdata/config/ImageTypesConfig.cpp:147
 msgctxt "ImageTypesConfig|SysName"
 msgid "GameCube / Wii"
-msgstr ""
+msgstr "GameCube / Wii"
 
 #. tr: GameCubeSave
 #: ../src/libromdata/config/ImageTypesConfig.cpp:149
