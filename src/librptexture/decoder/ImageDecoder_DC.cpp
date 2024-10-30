@@ -46,7 +46,7 @@ static pthread_once_t dc_tmap_once_control = PTHREAD_ONCE_INIT;
 static void initDreamcastTwiddleMap_int(void)
 {
 	dc_tmap.reset(new array<unsigned int, DC_TMAP_SIZE>);
-	unsigned int *const p_tmap = dc_tmap.get()->data();
+	unsigned int *const p_tmap = dc_tmap->data();
 
 	for (unsigned int i = 0; i < DC_TMAP_SIZE; i++) {
 		p_tmap[i] = 0;
@@ -94,7 +94,7 @@ rp_image_ptr fromDreamcastSquareTwiddled16(PixelFormat px_format,
 
 	// Initialize the twiddle map.
 	initDreamcastTwiddleMap();
-	const unsigned int *const p_tmap = dc_tmap.get()->data();
+	const unsigned int *const p_tmap = dc_tmap->data();
 
 	// Create an rp_image.
 	rp_image_ptr img = std::make_shared<rp_image>(width, height, rp_image::Format::ARGB32);
@@ -195,7 +195,7 @@ rp_image_ptr fromDreamcastVQ16(PixelFormat px_format,
 
 	// Initialize the twiddle map.
 	initDreamcastTwiddleMap();
-	const unsigned int *const p_tmap = dc_tmap.get()->data();
+	const unsigned int *const p_tmap = dc_tmap->data();
 
 	// Create an rp_image.
 	rp_image_ptr img = std::make_shared<rp_image>(width, height, rp_image::Format::ARGB32);
