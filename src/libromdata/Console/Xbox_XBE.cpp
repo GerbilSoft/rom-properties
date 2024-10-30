@@ -147,7 +147,6 @@ Xbox_XBE_Private::Xbox_XBE_Private(const IRpFilePtr &file)
  */
 int Xbox_XBE_Private::findXbeSectionHeader(const char *name, XBE_Section_Header *pOutHeader)
 {
-	// Load the section headers.
 	if (!file || !file->isOpen()) {
 		// File is not open.
 		return -EBADF;
@@ -158,7 +157,7 @@ int Xbox_XBE_Private::findXbeSectionHeader(const char *name, XBE_Section_Header 
 	// TODO: Find any exceptions?
 	static constexpr size_t XBE_READ_SIZE = 64*1024;
 
-	// Load the section headers.
+	// Load the section headers
 	const uint32_t base_address = le32_to_cpu(xbeHeader.base_address);
 	const uint32_t section_headers_address = le32_to_cpu(xbeHeader.section_headers_address);
 	if (section_headers_address <= base_address) {
@@ -173,15 +172,15 @@ int Xbox_XBE_Private::findXbeSectionHeader(const char *name, XBE_Section_Header 
 		return -EIO;
 	}
 
-	// Read the XBE header.
-	unique_ptr<uint8_t[]> first64KB(new uint8_t[XBE_READ_SIZE]);
-	size_t size = file->seekAndRead(0, first64KB.get(), XBE_READ_SIZE);
+	// Read the XBE header
+	unique_ptr<array<uint8_t, XBE_READ_SIZE> > first64KB(new array<uint8_t, XBE_READ_SIZE>);
+	size_t size = file->seekAndRead(0, first64KB->data(), first64KB->size());
 	if (size != XBE_READ_SIZE) {
 		// Seek and/or read error.
 		return -EIO;
 	}
 
-	// Section count.
+	// Section count
 	unsigned int section_count = le32_to_cpu(xbeHeader.section_count);
 	// If this goes over the 64 KB limit, reduce the section count.
 	if (shdr_address_phys + (section_count * sizeof(XBE_Section_Header)) > XBE_READ_SIZE) {
@@ -191,7 +190,7 @@ int Xbox_XBE_Private::findXbeSectionHeader(const char *name, XBE_Section_Header 
 
 	// First section header.
 	const XBE_Section_Header *pHdr = reinterpret_cast<const XBE_Section_Header*>(
-		&first64KB[shdr_address_phys]);
+		&(*first64KB)[shdr_address_phys]);
 	const XBE_Section_Header *const pHdr_end = pHdr + section_count;
 
 	// Find the $$XTIMAGE section.
