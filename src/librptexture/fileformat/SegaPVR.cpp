@@ -741,7 +741,7 @@ rp_image_const_ptr SegaPVRPrivate::loadPvrImage(void)
 				true, true,
 				pvrHeader.width, pvrHeader.height,
 				buf.get(), expected_size,
-				reinterpret_cast<const uint16_t*>(svr_pal_buf.data()), (int)svr_pal_buf.size());
+				reinterpret_cast<const uint16_t*>(svr_pal_buf.data()), svr_pal_buf.size());
 			break;
 		}
 
@@ -770,7 +770,7 @@ rp_image_const_ptr SegaPVRPrivate::loadPvrImage(void)
 			img = ImageDecoder::fromLinearCI4(px_format, false,
 				pvrHeader.width, pvrHeader.height,
 				buf.get(), expected_size,
-				svr_pal_buf.data(), (int)svr_pal_buf.size());
+				svr_pal_buf.data(), svr_pal_buf.size());
 
 			// Puyo Tools: Minimum swizzle size for 4-bit is 128x128.
 			if (pvrHeader.width >= 128 && pvrHeader.height >= 128) {
@@ -820,7 +820,7 @@ rp_image_const_ptr SegaPVRPrivate::loadPvrImage(void)
 			img = ImageDecoder::fromLinearCI8(px_format,
 				pvrHeader.width, pvrHeader.height,
 				buf.get(), expected_size,
-				svr_pal_buf.data(), (int)svr_pal_buf.size());
+				svr_pal_buf.data(), svr_pal_buf.size());
 
 			// Puyo Tools: Minimum swizzle size for 8-bit is 128x64.
 			if (pvrHeader.width >= 128 && pvrHeader.height >= 64) {
