@@ -306,7 +306,7 @@ void RomDataView::btnOptions_triggered(int id)
 	// TODO: Don't keep rebuilding this vector...
 	vector<RomData::RomOp> ops = d->romData->romOps();
 	assert(id < static_cast<int>(ops.size()));
-	if (id < static_cast<int>(ops.size())) {
+	if (id >= static_cast<int>(ops.size())) {
 		// ID is out of range.
 		return;
 	}

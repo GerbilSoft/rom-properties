@@ -520,7 +520,7 @@ btnOptions_triggered_signal_handler(RpOptionsMenuButton *menuButton,
 	// TODO: Don't keep rebuilding this vector...
 	vector<RomData::RomOp> ops = romData->romOps();
 	assert(id < static_cast<int>(ops.size()));
-	if (id < static_cast<int>(ops.size())) {
+	if (id >= static_cast<int>(ops.size())) {
 		// ID is out of range.
 		return;
 	}

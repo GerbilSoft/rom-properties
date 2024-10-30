@@ -473,7 +473,7 @@ void RP_ShellPropSheetExt_Private::btnOptions_action_triggered(int menuId)
 	vector<RomData::RomOp> ops = romData->romOps();
 	const int id = menuId - IDM_OPTIONS_MENU_BASE;
 	assert(id < static_cast<int>(ops.size()));
-	if (id < static_cast<int>(ops.size())) {
+	if (id >= static_cast<int>(ops.size())) {
 		// ID is out of range.
 		return;
 	}
