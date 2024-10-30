@@ -665,7 +665,7 @@ rp_image_ptr fromBC7(int width, int height,
 	const int physWidth = ALIGN_BYTES(4, width);
 	const int physHeight = ALIGN_BYTES(4, height);
 
-	assert(img_siz >= ((size_t)width * (size_t)height));
+	assert(img_siz >= ((size_t)physWidth * (size_t)physHeight));
 	if (!img_buf || width <= 0 || height <= 0 ||
 	    img_siz < ((size_t)physWidth * (size_t)physHeight))
 	{
