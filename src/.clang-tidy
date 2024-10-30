@@ -3,6 +3,7 @@ WarningsAsErrors: false
 HeaderFilterRegex: '.*'
 FormatStyle: none
 
+# see https://github.com/MythTV/mythtv/blob/master/.clang-tidy
 Checks: >
   bugprone-*,
   -bugprone-easily-swappable-parameters,
@@ -12,19 +13,38 @@ Checks: >
   clang-analyzer-*,
   -clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling,
   clang-diagnostic-*,
+  cppcoreguidelines-*,
+  -cppcoreguidelines-avoid-c-arrays,
+  -cppcoreguidelines-avoid-magic-numbers,
+  -cppcoreguidelines-avoid-non-const-global-variables,
+  -cppcoreguidelines-owning-memory,
+  -cppcoreguidelines-pro-bounds-array-to-pointer-decay,
+  -cppcoreguidelines-pro-bounds-constant-array-index,
+  -cppcoreguidelines-pro-bounds-pointer-arithmetic,
+  -cppcoreguidelines-pro-type-reinterpret-cast,
+  -cppcoreguidelines-pro-type-union-access,
+  -cppcoreguidelines-pro-type-vararg,
+  -cppcoreguidelines-use-default-member-init,
+  google-*,
+  -google-build-using-namespace,
+  -google-readability-avoid-underscore-in-googletest-name,
+  -google-readability-todo,
+  -google-runtime-int,
+  -google-runtime-references,
   misc-*,
   -misc-const-correctness,
   -misc-include-cleaner,
-  -misc-non-private-member-variables-in-classes,
+  #-misc-non-private-member-variables-in-classes,
   -misc-use-anonymous-namespace,
   modernize-*,
-  -modernize-avoid-c-arrays,
+  #-modernize-avoid-c-arrays,
   -modernize-concat-nested-namespaces,
   -modernize-use-default-member-init,
   -modernize-macro-to-enum,
+  -modernize-pass-by-value,
   -modernize-redundant-void-arg,
-  -modernize-use-auto,
-  -modernize-use-nodiscard,
+  #-modernize-use-auto,
+  #-modernize-use-nodiscard,
   -modernize-use-trailing-return-type,
   -modernize-use-using,
   objc-*,
@@ -32,7 +52,18 @@ Checks: >
   performance-*,
   -performance-enum-size,
   portability-*,
+  readability-*,
+  # requires C++20
+  -readability-container-contains,
+  -readability-identifier-length,
+  -readability-implicit-bool-conversion,
+  -readability-magic-numbers,
 CheckOptions:
-  - key: IgnoreClassesWithAllMemberVariablesBeingPublic
-    value: '1'
+  cppcoreguidelines-avoid-do-while.IgnoreMacros: 'true'
+  performance-inefficient-vector-operation.VectorLikeClasses: '::std::vector;QList;QByteARray;QByteArrayList;QItemSelection;QQueue;QStringList'
+  misc-non-private-member-variables-in-classes.IgnoreClassesWithAllMemberVariablesBeingPublic: '1'
+  modernize-avoid-c-arrays.AllowStringArrays: 'true'
+  readability-function-cognitive-complexity.IgnoreMacros: 'true'
+  readability-implicit-bool-conversion.AllowPointerConditions: 'true'
+  readability-simplify-subscript-expr.Types: '::std::basic_string;::std::basic_string_view;::std::vector;::std::array;::std::span;QByteArray;QString'
 ...
