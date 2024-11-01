@@ -988,21 +988,23 @@ void RomDataViewPrivate::initDisplayWidgets(void)
 	// Create the data widgets.
 	int prevTabIdx = 0;
 	int fieldIdx = 0;
-	const auto pFields_cend = pFields->cend();
-	for (auto iter = pFields->cbegin(); iter != pFields_cend; ++iter, fieldIdx++) {
-		const RomFields::Field &field = *iter;
+	for (const RomFields::Field &field : *pFields) {
 		assert(field.isValid());
-		if (!field.isValid())
+		if (!field.isValid()) {
+			fieldIdx++;
 			continue;
+		}
 
 		// Verify the tab index.
 		const int tabIdx = field.tabIdx;
 		assert(tabIdx >= 0 && tabIdx < static_cast<int>(tabs.size()));
 		if (tabIdx < 0 || tabIdx >= static_cast<int>(tabs.size())) {
 			// Tab index is out of bounds.
+			fieldIdx++;
 			continue;
 		} else if (!tabs[tabIdx].form) {
 			// Tab name is empty. Tab is hidden.
+			fieldIdx++;
 			continue;
 		}
 
@@ -1064,6 +1066,8 @@ void RomDataViewPrivate::initDisplayWidgets(void)
 			// Set RFT_fieldIdx for ROM operations.
 			obj->setProperty("RFT_fieldIdx", fieldIdx);
 		}
+
+		fieldIdx++;
 	}
 
 	// Initial update of RFT_STRING_MULTI and RFT_LISTDATA_MULTI fields.

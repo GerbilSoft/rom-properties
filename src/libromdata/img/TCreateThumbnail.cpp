@@ -368,16 +368,16 @@ skip_image_check:
 	if (imgpf & RomData::IMGPF_RESCALE_RFT_DIMENSIONS_2) {
 		// Find the second RFT_DIMENSIONS field.
 		const RomFields *const fields = romData->fields();
+		assert(fields != nullptr);
 		array<const RomFields::Field*, 2> field = {{nullptr, nullptr}};
-		const auto iter_end = fields->cend();
-		for (auto iter = fields->cbegin(); iter != iter_end; ++iter) {
-			if (iter->type != RomFields::RFT_DIMENSIONS)
+		for (const RomFields::Field &pf : *fields) {
+			if (pf.type != RomFields::RFT_DIMENSIONS)
 				continue;
 			// Found an RFT_DIMENSIONS.
 			if (!field[0]) {
-				field[0] = &(*iter);
+				field[0] = &pf;
 			} else {
-				field[1] = &(*iter);
+				field[1] = &pf;
 				break;
 			}
 		}
@@ -585,4 +585,4 @@ int TCreateThumbnail<ImgClass>::getThumbnail(const char *filename, int reqSize, 
 	return getThumbnail(romData, reqSize, pOutParams);
 }
 
-}
+} // namespace LibRomData

@@ -236,12 +236,11 @@ rp_nautilus_properties_model_load_from_romData(RpNautilusPropertiesModel *self,
 
 	const uint32_t def_lc = pFields->defaultLanguageCode();
 
-	const auto pFields_cend = pFields->cend();
-	for (auto iter = pFields->cbegin(); iter != pFields_cend; ++iter) {
-		const RomFields::Field &field = *iter;
+	for (const RomFields::Field &field : *pFields) {
 		assert(field.isValid());
-		if (!field.isValid())
+		if (!field.isValid()) {
 			continue;
+		}
 
 		switch (field.type) {
 			case RomFields::RFT_INVALID:
@@ -260,7 +259,7 @@ rp_nautilus_properties_model_load_from_romData(RpNautilusPropertiesModel *self,
 				rp_nautilus_properties_model_init_bitfield(self, field);
 				break;
 			case RomFields::RFT_LISTDATA:
-				// Can't easily do RFT_LISTDATA here.
+				// TODO: Allow single-column RFT_LISTDATA?
 				break;
 			case RomFields::RFT_DATETIME:
 				rp_nautilus_properties_model_init_datetime(self, field);

@@ -257,17 +257,37 @@ class RomMetaData
 
 		/**
 		 * Get a const iterator pointing to the beginning of the RomMetaData.
-		 * @return Const iterator.
+		 * @return Const iterator
 		 */
 		RP_LIBROMDATA_PUBLIC
 		const_iterator cbegin(void) const;
 
 		/**
 		 * Get a const iterator pointing to the end of the RomMetaData.
-		 * @return Const iterator.
+		 * @return Const iterator
 		 */
 		RP_LIBROMDATA_PUBLIC
 		const_iterator cend(void) const;
+
+		/**
+		 * Get a const iterator pointing to the beginning of the RomMetaData.
+		 * Alias function required for range-based `for` loops.
+		 * @return Const iterator
+		 */
+		const_iterator begin(void) const
+		{
+			return cbegin();
+		}
+
+		/**
+		 * Get a const iterator pointing to the end of the RomMetaData.
+		 * Alias function required for range-based `for` loops.
+		 * @return Const iterator
+		 */
+		const_iterator end(void) const
+		{
+			return cend();
+		}
 
 	public:
 		/** Convenience functions for RomData subclasses. **/
@@ -360,4 +380,4 @@ class RomMetaData
 		int addMetaData_double(Property name, double dvalue);
 };
 
-}
+} // namespace LibRpBase

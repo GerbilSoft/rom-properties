@@ -1707,9 +1707,7 @@ void RP_ShellPropSheetExt_Private::initDialog(void)
 
 	// tr: Field description label.
 	const char *const desc_label_fmt = C_("RomDataView", "%s:");
-	const auto pFields_cend = pFields->cend();
-	for (auto iter = pFields->cbegin(); iter != pFields_cend; ++iter) {
-		const RomFields::Field &field = *iter;
+	for (const RomFields::Field &field : *pFields) {
 		assert(field.isValid());
 		if (!field.isValid())
 			continue;
@@ -1924,22 +1922,26 @@ void RP_ShellPropSheetExt_Private::initDialog(void)
 	}
 
 	int fieldIdx = 0;	// needed for control IDs
-	auto iter_desc = t_desc_text.cbegin();
-	for (auto iter = pFields->cbegin(); iter != pFields_cend; ++iter, ++iter_desc, fieldIdx++) {
-		assert(iter_desc != t_desc_text.cend());
-		const RomFields::Field &field = *iter;
+	for (const RomFields::Field &field : *pFields) {
 		assert(field.isValid());
-		if (!field.isValid())
+		if (!field.isValid()) {
+			++iter_desc;
+			fieldIdx++;
 			continue;
+		}
 
 		// Verify the tab index.
 		const int tabIdx = field.tabIdx;
 		assert(tabIdx >= 0 && tabIdx < (int)tabs.size());
 		if (tabIdx < 0 || tabIdx >= (int)tabs.size()) {
 			// Tab index is out of bounds.
+			++iter_desc;
+			fieldIdx++;
 			continue;
 		} else if (!tabs[tabIdx].hDlg) {
 			// Tab name is empty. Tab is hidden.
+			++iter_desc;
+			fieldIdx++;
 			continue;
 		}
 
@@ -2071,6 +2073,9 @@ void RP_ShellPropSheetExt_Private::initDialog(void)
 			// Remove the description label.
 			DestroyWindow(hStatic);
 		}
+
+		++iter_desc;
+		fieldIdx++;
 	}
 
 	// Update scrollbar settings.

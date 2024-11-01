@@ -263,10 +263,7 @@ IFACEMETHODIMP RP_PropertyStore::Initialize(_In_ IStream *pstream, DWORD grfMode
 	assert(count > 0);
 	d->prop_key.reserve(count);
 	d->prop_val.reserve(count);
-	const auto iter_end = metaData->cend();
-	for (auto iter = metaData->cbegin(); iter != iter_end; ++iter) {
-		const RomMetaData::MetaData &prop = *iter;
-
+	for (const RomMetaData::MetaData &prop : *metaData) {
 		if (prop.name <= Property::Invalid || static_cast<size_t>(prop.name) >= d->metaDataConv.size()) {
 			// FIXME: Should assert here, but Windows doesn't support
 			// certain properties...

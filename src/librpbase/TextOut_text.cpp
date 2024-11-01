@@ -862,9 +862,7 @@ public:
 		const uint32_t user_lc = (fo.lc != 0 ? fo.lc : def_lc);
 
 		bool printed_first = false;
-		const auto fields_cend = fo.fields.cend();
-		for (auto iter = fo.fields.cbegin(); iter != fields_cend; ++iter) {
-			const auto &romField = *iter;
+		for (const RomFields::Field &romField : fo.fields) {
 			assert(romField.isValid());
 			if (!romField.isValid())
 				continue;
@@ -1010,4 +1008,4 @@ std::ostream& operator<<(std::ostream& os, const ROMOutput& fo) {
 	return os;
 }
 
-}
+} // namespace LibRpBase

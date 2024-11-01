@@ -78,10 +78,7 @@ void ExtractorPlugin::extract_properties(KFileMetaData::ExtractionResult *result
 	}
 
 	// Process the metadata.
-	const auto iter_end = metaData->cend();
-	for (auto iter = metaData->cbegin(); iter != iter_end; ++iter) {
-		const RomMetaData::MetaData &prop = *iter;
-
+	for (const RomMetaData::MetaData &prop : *metaData) {
 		// RomMetaData's property indexes match KFileMetaData.
 		// No conversion is necessary.
 		switch (prop.type) {
@@ -283,4 +280,4 @@ void ExtractorPlugin::extract(ExtractionResult *result)
 	// Finished extracting metadata.
 }
 
-} //namespace RomPropertiesKDE
+} // namespace RomPropertiesKDE

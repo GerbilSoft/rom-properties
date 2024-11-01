@@ -111,9 +111,7 @@ private:
 public:
 	void writeToJSON(Value &fields_array, Allocator &allocator)
 	{
-		const auto fields_cend = fields.cend();
-		for (auto iter = fields.cbegin(); iter != fields_cend; ++iter) {
-			const auto &romField = *iter;
+		for (const RomFields::Field &romField : fields) {
 			assert(romField.isValid());
 			if (!romField.isValid())
 				continue;
@@ -489,4 +487,4 @@ std::ostream& operator<<(std::ostream& os, const JSONROMOutput& fo) {
 	return os;
 }
 
-}
+} // namespace LibRpBase

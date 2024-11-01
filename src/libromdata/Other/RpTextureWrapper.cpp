@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * RpTextureWrapper.hpp: librptexture file format wrapper.                 *
  *                                                                         *
- * Copyright (c) 2019-2023 by David Korth.                                 *
+ * Copyright (c) 2019-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -426,11 +426,10 @@ const char *RpTextureWrapper::dx10Format(void) const
 	// NOTE: The string is localized, but our Google Test initializer
 	// sets LC_ALL=C, which disables localization.
 	// NOTE 2: This should not be used outside of tests for now!
-	const auto fields_cend = d->fields.cend();
-	for (auto iter = d->fields.cbegin(); iter != fields_cend; ++iter) {
-		if (iter->type == RomFields::RFT_STRING && !strcmp(iter->name, "DX10 Format")) {
+	for (const RomFields::Field &field : d->fields) {
+		if (field.type == RomFields::RFT_STRING && !strcmp(field.name, "DX10 Format")) {
 			// Found the DX10 format.
-			return iter->data.str;
+			return field.data.str;
 		}
 	}
 
@@ -438,4 +437,4 @@ const char *RpTextureWrapper::dx10Format(void) const
 	return nullptr;
 }
 
-}
+} // namespace LibRomData

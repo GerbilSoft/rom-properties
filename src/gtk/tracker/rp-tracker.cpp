@@ -40,10 +40,7 @@ using std::array;
 static void
 add_metadata_properties_v1(const RomMetaData *metaData, TrackerSparqlBuilder *builder)
 {
-	const auto iter_end = metaData->cend();
-	for (auto iter = metaData->cbegin(); iter != iter_end; ++iter) {
-		const RomMetaData::MetaData &prop = *iter;
-
+	for (const RomMetaData::MetaData &prop : *metaData) {
 		switch (prop.name) {
 			default:
 				// TODO
@@ -146,10 +143,7 @@ static void
 add_metadata_properties_v2(const RomMetaData *metaData, TrackerResource *resource)
 {
 	// TODO: Make use of tracker_resource_set_relation(), like in tracker-extract-mp3.c?
-	const auto iter_end = metaData->cend();
-	for (auto iter = metaData->cbegin(); iter != iter_end; ++iter) {
-		const RomMetaData::MetaData &prop = *iter;
-
+	for (const RomMetaData::MetaData &prop : *metaData) {
 		switch (prop.name) {
 			default:
 				// TODO

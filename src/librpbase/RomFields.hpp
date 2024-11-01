@@ -455,6 +455,26 @@ class RomFields
 		RP_LIBROMDATA_PUBLIC
 		const_iterator cend(void) const;
 
+		/**
+		 * Get a const iterator pointing to the beginning of the RomMetaData.
+		 * Alias function required for range-based `for` loops.
+		 * @return Const iterator
+		 */
+		const_iterator begin(void) const
+		{
+			return cbegin();
+		}
+
+		/**
+		 * Get a const iterator pointing to the end of the RomMetaData.
+		 * Alias function required for range-based `for` loops.
+		 * @return Const iterator
+		 */
+		const_iterator end(void) const
+		{
+			return cend();
+		}
+
 	public:
 		/**
 		 * Get the abbreviation of an age rating organization.
@@ -856,4 +876,4 @@ class RomFields
 			uint32_t def_lc = 'en', unsigned int flags = 0);
 };
 
-}
+} // namespace LibRpBase

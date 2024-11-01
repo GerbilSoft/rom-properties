@@ -6,7 +6,7 @@
  * a generic list, RomMetaData stores specific properties that can be used *
  * by the desktop environment's indexer.                                   *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -468,10 +468,7 @@ int RomMetaData::addMetaData_metaData(const RomMetaData *other)
 	// - Use absolute or relative tab offset.
 	d->metaData.reserve(d->metaData.size() + other->count());
 
-	const auto iter_end = other->cend();
-	for (auto iter = other->cbegin(); iter != iter_end; ++iter) {
-		const RomMetaData::MetaData &pSrc = *iter;
-
+	for (const RomMetaData::MetaData &pSrc : *other) {
 		assert(pSrc.name > Property::FirstProperty);
 		assert(pSrc.name < Property::PropertyCount);
 		if (pSrc.name <= Property::FirstProperty ||
@@ -738,4 +735,4 @@ int RomMetaData::addMetaData_double(Property name, double dvalue)
 	return static_cast<int>(d->map_metaData[static_cast<size_t>(name)]);
 }
 
-}
+} // namespace LibRpBase
