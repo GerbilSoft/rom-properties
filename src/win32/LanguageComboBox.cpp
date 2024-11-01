@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * LanguageComboBox.cpp: Language ComboBoxEx superclass.                   *
  *                                                                         *
- * Copyright (c) 2017-2023 by David Korth.                                 *
+ * Copyright (c) 2017-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -15,9 +15,7 @@
 using namespace LibRpBase;
 
 // C++ STL classes
-using std::shared_ptr;
 using std::tstring;
-using std::vector;
 
 static ATOM atom_languageComboBox;
 static WNDPROC pfnComboBoxExWndProc;

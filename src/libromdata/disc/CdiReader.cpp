@@ -30,7 +30,6 @@ using namespace LibRpText;
 #include <limits>
 using std::array;
 using std::string;
-using std::unique_ptr;
 using std::vector;
 
 namespace LibRomData {

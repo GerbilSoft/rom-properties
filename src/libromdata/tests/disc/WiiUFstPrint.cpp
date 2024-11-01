@@ -28,7 +28,6 @@ using LibRomData::WiiUFst;
 #include <memory>
 #include <sstream>
 #include <string>
-using std::array;
 using std::locale;
 using std::ostream;
 using std::ostringstream;
