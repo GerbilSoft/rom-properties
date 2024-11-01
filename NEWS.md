@@ -98,6 +98,9 @@
     for NixOS to enable the workarounds.
     * Fixes #406: Building on NixOS returns "invalid system call"
       * Reported by @Whovian9369.
+  * Add qtpaths6 location on Arch Linux.
+    * PR #424: Fix qtpaths6 on Arch
+      * Submitted by @Kesefon.
 
 ## v2.3 (released 2024/03/03)
 
