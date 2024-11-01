@@ -46,12 +46,13 @@ MACRO(FIND_QT6_AND_KF6)
 			#
 			# Arch:
 			# - Expected: lib/qt/plugins
-			# - Actual:   (FIXME)
+			# - Actual:   lib/qt6/plugins
 			#
 
 			# Find the qtpaths6 executable.
 			FIND_PROGRAM(QTPATHS6 NAMES qtpaths6 qtpaths
 				PATHS /usr/local/lib/qt6/bin	# FreeBSD
+				/usr/lib/qt6/bin	#Archlinux
 				)
 			IF(NOT QTPATHS6)
 				MESSAGE(FATAL_ERROR "qtpaths6 not found. Install one of these packages:
