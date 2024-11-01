@@ -48,6 +48,7 @@ class CBCReaderPrivate
 		unique_ptr<IAesCipher> cipher;
 		array<uint8_t, 16> key;
 		array<uint8_t, 16> iv;
+		bool usesIV;
 #endif /* ENABLE_DECRYPTION */
 };
 
@@ -57,12 +58,17 @@ CBCReaderPrivate::CBCReaderPrivate(CBCReader *q, off64_t offset, off64_t length,
 	: offset(offset)
 	, length(length)
 	, pos(0)
+	, usesIV(iv != nullptr)
 {
-	assert((bool)q->m_file);
+	assert(q->m_file);
 	if (!q->m_file) {
 		// No file...
 		return;
 	}
+
+	// Length must be a multiple of 16.
+	assert(length % 16LL == 0);
+	length &= ~15LL;
 
 #ifdef ENABLE_DECRYPTION
 	if (!key) {
@@ -195,44 +201,50 @@ size_t CBCReader::read(void *ptr, size_t size)
 		size = static_cast<size_t>(d->length - d->pos);
 	}
 
-	array<uint8_t, 16> iv;
-
 	// Read the first block.
 	// NOTE: If we're in the middle of a block, round it down.
 	const off64_t pos_block = d->pos & ~15LL;
 
-	// Total number of bytes read.
-	size_t total_sz_read = 0;
+	if (d->usesIV) {
+		// Initialize the IV for this position.
+		array<uint8_t, 16> iv;
 
-	// Get the IV.
-	if (pos_block == 0) {
-		// Start of data.
-		// Use the specified IV.
-		iv = d->iv;
-		m_file->seek(d->offset);
-	} else {
-		// Not start of data.
-		// Read the IV from the previous 16 bytes.
-		// TODO: Cache it!
-		m_file->seek(d->offset + pos_block - 16);
-		size_t sz_read = m_file->read(iv.data(), iv.size());
-		if (sz_read != iv.size()) {
-			// Read error.
-			m_lastError = m_file->lastError();
-			if (m_lastError == 0) {
-				m_lastError = EIO;
+		// Get the IV.
+		if (pos_block == 0) {
+			// Start of data.
+			// Use the specified IV.
+			iv = d->iv;
+			m_file->seek(d->offset);
+		} else {
+			// Not start of data.
+			// Read the IV from the previous 16 bytes.
+			// TODO: Cache it!
+			m_file->seek(d->offset + pos_block - 16);
+			size_t sz_read = m_file->read(iv.data(), iv.size());
+			if (sz_read != iv.size()) {
+				// Read error.
+				m_lastError = m_file->lastError();
+				if (m_lastError == 0) {
+					m_lastError = EIO;
+				}
+				return 0;
 			}
+		}
+
+		// Set the IV.
+		int ret = d->cipher->setIV(iv.data(), iv.size());
+		if (ret != 0) {
+			// setIV() failed.
+			m_lastError = EIO;
 			return 0;
 		}
+	} else {
+		// No IV is needed. Seek directly to the data.
+		m_file->seek(d->offset + pos_block);
 	}
 
-	// Set the IV.
-	int ret = d->cipher->setIV(iv.data(), iv.size());
-	if (ret != 0) {
-		// setIV() failed.
-		m_lastError = EIO;
-		return 0;
-	}
+	// Total number of bytes read.
+	size_t total_sz_read = 0;
 
 	array<uint8_t, 16> block_tmp;
 	if (d->pos != pos_block) {

@@ -11,6 +11,8 @@
 // librpbase
 #include "IDiscReader.hpp"
 
+#include "dll-macros.h"	// for RP_LIBROMDATA_PUBLIC
+
 namespace LibRpBase {
 
 class CBCReaderPrivate;
@@ -29,9 +31,11 @@ public:
 	 * @param key		[in] Encryption key. (Must be 128-bit) [If NULL, acts like no encryption.]
 	 * @param iv		[in] Initialization vector. (Must be 128-bit) [If NULL, uses ECB instead of CBC.]
 	 */
+	RP_LIBROMDATA_PUBLIC
 	CBCReader(const LibRpFile::IRpFilePtr &file, off64_t offset, off64_t length,
 		const uint8_t *key, const uint8_t *iv);
 public:
+	RP_LIBROMDATA_PUBLIC
 	~CBCReader() final;
 
 private:
@@ -65,6 +69,7 @@ public:
 	 */
 	/* FIXME: ATTR_ACCESS_SIZE() is causing an ICE on gcc-13.1.0.
 	ATTR_ACCESS_SIZE(write_only, 2, 3) */
+	RP_LIBROMDATA_PUBLIC
 	size_t read(void *ptr, size_t size) final;
 
 	/**
@@ -78,6 +83,7 @@ public:
 	 * Get the partition position.
 	 * @return Partition position on success; -1 on error.
 	 */
+	RP_LIBROMDATA_PUBLIC
 	off64_t tell(void) final;
 
 	/**
@@ -86,6 +92,7 @@ public:
 	 * and it's adjusted to exclude hashes.
 	 * @return Data size, or -1 on error.
 	 */
+	RP_LIBROMDATA_PUBLIC
 	off64_t size(void) final;
 };
 
