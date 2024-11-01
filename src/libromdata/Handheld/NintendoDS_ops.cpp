@@ -57,8 +57,8 @@ uint32_t NintendoDSPrivate::checkNDSSecurityData(void)
 	}
 
 	array<uint32_t, 0x3000/4> security_data;
-	size_t size = file->seekAndRead(0x1000, security_data.data(), security_data.size());
-	if (size != security_data.size()) {
+	size_t size = file->seekAndRead(0x1000, security_data.data(), security_data.size() * sizeof(uint32_t));
+	if (size != security_data.size() * sizeof(uint32_t)) {
 		// Seek and/or read error.
 		return 0;
 	}
@@ -118,8 +118,8 @@ NintendoDSPrivate::NDS_SecureArea NintendoDSPrivate::checkNDSSecureArea(void)
 	// we're reading the first four because CIAReader only
 	// supports multiples of 16 bytes right now.
 	array<uint32_t, 4> secure_area;
-	size_t size = file->seekAndRead(0x4000, secure_area.data(), secure_area.size());
-	if (size != secure_area.size()) {
+	size_t size = file->seekAndRead(0x4000, secure_area.data(), secure_area.size() * sizeof(uint32_t));
+	if (size != secure_area.size() * sizeof(uint32_t)) {
 		// Seek and/or read error.
 		return NDS_SECAREA_UNKNOWN;
 	}

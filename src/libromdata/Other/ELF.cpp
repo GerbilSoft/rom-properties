@@ -599,7 +599,7 @@ int ELFPrivate::checkSectionHeaders(void)
 						break;
 					}
 					array<uint32_t, 4> desc;
-					memcpy(desc.data(), pData, desc.size());
+					memcpy(desc.data(), pData, desc.size() * sizeof(uint32_t));
 
 					const uint32_t os_id = elf32_to_cpu(desc[0]);
 					static constexpr char os_tbl[][12] = {
