@@ -112,6 +112,8 @@ static void init_tracker_v2(void)
 
 	tracker_sparql_pfns.v2.resource._new = dlsym(libtracker_sparql_so, "tracker_resource_new");
 
+	DLSYM(libtracker_sparql_so, tracker_sparql_pfns, v2, resource, tracker_resource, get_first_relation);
+
 	DLSYM(libtracker_sparql_so, tracker_sparql_pfns, v2, resource, tracker_resource, set_gvalue);
 	DLSYM(libtracker_sparql_so, tracker_sparql_pfns, v2, resource, tracker_resource, set_boolean);
 	DLSYM(libtracker_sparql_so, tracker_sparql_pfns, v2, resource, tracker_resource, set_double);
@@ -136,6 +138,9 @@ static void init_tracker_v2(void)
 
 	init_tracker_extract_v1();
 	DLSYM(libtracker_extract_so, tracker_extract_pfns, v2, info, tracker_extract_info, set_resource);
+
+	DLSYM(libtracker_extract_so, tracker_extract_pfns, v2, _new, tracker_extract_new, artist);
+	DLSYM(libtracker_extract_so, tracker_extract_pfns, v2, _new, tracker_extract_new, music_album_disc);
 
 	rp_tracker_api = 2;
 }

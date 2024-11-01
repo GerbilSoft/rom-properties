@@ -142,7 +142,12 @@ add_metadata_properties_v1(const RomMetaData *metaData, TrackerSparqlBuilder *bu
 static void
 add_metadata_properties_v2(const RomMetaData *metaData, TrackerResource *resource)
 {
-	// TODO: Make use of tracker_resource_set_relation(), like in tracker-extract-mp3.c?
+	// for album relations
+	TrackerResource *album_artist = nullptr;
+	const char *album_name = nullptr;
+	int disc_number = 0;
+	bool has_disc_number = false;
+
 	for (const RomMetaData::MetaData &prop : *metaData) {
 		switch (prop.name) {
 			default:
@@ -176,17 +181,26 @@ add_metadata_properties_v2(const RomMetaData *metaData, TrackerResource *resourc
 				// TODO
 				break;
 			case Property::Album:
-				tracker_sparql_pfns.v2.resource.set_string(resource, "nmm:musicAlbum", prop.data.str->c_str());
+				// NOTE: Property is added later.
+				//tracker_sparql_pfns.v2.resource.set_string(resource, "nmm:musicAlbum", prop.data.str->c_str());
+				album_name = prop.data.str->c_str();
 				break;
 			case Property::AlbumArtist:
-				// TODO
+				// NOTE: Property is added later. (as part of Album, or standalone if not specified)
+				// TODO: Separate from composer?
+				//tracker_sparql_pfns.v2.resource.set_string(resource, "nmm:composer", prop.data.str->c_str());
+				album_artist = tracker_extract_pfns.v2._new.artist(prop.data.str->c_str());
 				break;
-			case Property::Composer:
-				tracker_sparql_pfns.v2.resource.set_string(resource, "nmm:composer", prop.data.str->c_str());
+			case Property::Composer: {
+				TrackerResource *const composer = tracker_extract_pfns.v2._new.artist(prop.data.str->c_str());
+				tracker_sparql_pfns.v2.resource.add_take_relation(resource, "nmm:composer", composer);
 				break;
-			case Property::Lyricist:
-				tracker_sparql_pfns.v2.resource.set_string(resource, "nmm:lyricist", prop.data.str->c_str());
+			}
+			case Property::Lyricist: {
+				TrackerResource *const lyricist = tracker_extract_pfns.v2._new.artist(prop.data.str->c_str());
+				tracker_sparql_pfns.v2.resource.add_take_relation(resource, "nmm:lyricist", lyricist);
 				break;
+			}
 
 			// Document
 			case Property::Author:
@@ -219,10 +233,33 @@ add_metadata_properties_v2(const RomMetaData *metaData, TrackerResource *resourc
 
 			// Audio
 			case Property::DiscNumber:
-				tracker_sparql_pfns.v2.resource.set_int(resource, "nmm:setNumber", prop.data.ivalue);
+				// NOTE: Property is added later. (as part of Album, or standalone if not specified)
+				disc_number = prop.data.ivalue;
+				has_disc_number = true;
 				break;
 		}
 	}
+
+	if (album_name) {
+		// Create an Album relation.
+		// TODO: Release date
+		TrackerResource *const album_disc = tracker_extract_pfns.v2._new.music_album_disc(
+			album_name, album_artist, (disc_number > 0) ? disc_number : 1, "");
+
+		tracker_sparql_pfns.v2.resource.set_take_relation(resource, "nmm:musicAlbumDisc", album_disc);
+
+		TrackerResource *const album = tracker_sparql_pfns.v2.resource.get_first_relation(album_disc, "nmm:albumDiscAlbum");
+		tracker_sparql_pfns.v2.resource.set_relation(resource, "nmm:musicAlbum", album);
+	} else {
+		// Set other properties.
+		if (has_disc_number) {
+			tracker_sparql_pfns.v2.resource.set_int(resource, "nmm:setNumber", disc_number);
+		}
+
+		// TODO: album_artist?
+	}
+
+	g_clear_object(&album_artist);
 }
 
 // NOTE: The "error" parameter was added in tracker-3.0.
