@@ -50,24 +50,24 @@ typedef struct _tracker_sparql_2_0_pfns_t {
 
 		__typeof__(tracker_resource_get_first_relation)	*get_first_relation;
 
-		__typeof__(tracker_resource_set_gvalue)		*set_gvalue;
-		__typeof__(tracker_resource_set_boolean)	*set_boolean;
-		__typeof__(tracker_resource_set_double)		*set_double;
+		//__typeof__(tracker_resource_set_gvalue)		*set_gvalue;
+		//__typeof__(tracker_resource_set_boolean)	*set_boolean;
+		//__typeof__(tracker_resource_set_double)		*set_double;
 		__typeof__(tracker_resource_set_int)		*set_int;
-		__typeof__(tracker_resource_set_int64)		*set_int64;
+		//__typeof__(tracker_resource_set_int64)		*set_int64;
 		__typeof__(tracker_resource_set_relation)	*set_relation;
 		__typeof__(tracker_resource_set_take_relation)	*set_take_relation;
 		__typeof__(tracker_resource_set_string)		*set_string;
-		__typeof__(tracker_resource_set_uri)		*set_uri;
+		//__typeof__(tracker_resource_set_uri)		*set_uri;
 
-		__typeof__(tracker_resource_add_gvalue)		*add_gvalue;
-		__typeof__(tracker_resource_add_boolean)	*add_boolean;
-		__typeof__(tracker_resource_add_double)		*add_double;
-		__typeof__(tracker_resource_add_int)		*add_int;
-		__typeof__(tracker_resource_add_int64)		*add_int64;
-		__typeof__(tracker_resource_add_relation)	*add_relation;
+		//__typeof__(tracker_resource_add_gvalue)		*add_gvalue;
+		//__typeof__(tracker_resource_add_boolean)	*add_boolean;
+		//__typeof__(tracker_resource_add_double)		*add_double;
+		//__typeof__(tracker_resource_add_int)		*add_int;
+		//__typeof__(tracker_resource_add_int64)		*add_int64;
+		//__typeof__(tracker_resource_add_relation)	*add_relation;
 		__typeof__(tracker_resource_add_take_relation)	*add_take_relation;
-		__typeof__(tracker_resource_add_string)		*add_string;
+		//__typeof__(tracker_resource_add_string)		*add_string;
 		__typeof__(tracker_resource_add_uri)		*add_uri;
 	} resource;
 } tracker_sparql_2_0_pfns_t;

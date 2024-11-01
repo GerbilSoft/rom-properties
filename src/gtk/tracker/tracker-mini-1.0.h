@@ -49,26 +49,26 @@ void tracker_sparql_builder_append (TrackerSparqlBuilder* self, const gchar* raw
 
 typedef struct _tracker_sparql_1_0_pfns_t {
 	struct {
-		__typeof__(tracker_sparql_builder_get_type)		*get_type;
-		__typeof__(tracker_sparql_builder_state_get_type)	*state_get_type;
-		__typeof__(tracker_sparql_builder_subject_variable)	*subject_variable;
-		__typeof__(tracker_sparql_builder_object_variable)	*object_variable;
-		__typeof__(tracker_sparql_builder_subject_iri)		*subject_iri;
-		__typeof__(tracker_sparql_builder_subject)		*subject;
-		__typeof__(tracker_sparql_builder_predicate_iri)	*predicate_iri;
+		//__typeof__(tracker_sparql_builder_get_type)		*get_type;
+		//__typeof__(tracker_sparql_builder_state_get_type)	*state_get_type;
+		//__typeof__(tracker_sparql_builder_subject_variable)	*subject_variable;
+		//__typeof__(tracker_sparql_builder_object_variable)	*object_variable;
+		//__typeof__(tracker_sparql_builder_subject_iri)		*subject_iri;
+		//__typeof__(tracker_sparql_builder_subject)		*subject;
+		//__typeof__(tracker_sparql_builder_predicate_iri)	*predicate_iri;
 		__typeof__(tracker_sparql_builder_predicate)		*predicate;
-		__typeof__(tracker_sparql_builder_object_iri)		*object_iri;
+		//__typeof__(tracker_sparql_builder_object_iri)		*object_iri;
 		__typeof__(tracker_sparql_builder_object)		*object;
 		__typeof__(tracker_sparql_builder_object_string)	*object_string;
-		__typeof__(tracker_sparql_builder_object_unvalidated)	*object_unvalidated;
-		__typeof__(tracker_sparql_builder_object_boolean)	*object_boolean;
+		//__typeof__(tracker_sparql_builder_object_unvalidated)	*object_unvalidated;
+		//__typeof__(tracker_sparql_builder_object_boolean)	*object_boolean;
 		__typeof__(tracker_sparql_builder_object_int64)		*object_int64;
-		__typeof__(tracker_sparql_builder_object_date)		*object_date;
-		__typeof__(tracker_sparql_builder_object_double)	*object_double;
-		__typeof__(tracker_sparql_builder_object_blank_open)	*object_blank_open;
-		__typeof__(tracker_sparql_builder_object_blank_close)	*object_blank_close;
-		__typeof__(tracker_sparql_builder_prepend)		*prepend;
-		__typeof__(tracker_sparql_builder_append)		*append;
+		//__typeof__(tracker_sparql_builder_object_date)		*object_date;
+		//__typeof__(tracker_sparql_builder_object_double)	*object_double;
+		//__typeof__(tracker_sparql_builder_object_blank_open)	*object_blank_open;
+		//__typeof__(tracker_sparql_builder_object_blank_close)	*object_blank_close;
+		//__typeof__(tracker_sparql_builder_prepend)		*prepend;
+		//__typeof__(tracker_sparql_builder_append)		*append;
 	} builder;
 } tracker_sparql_1_0_pfns_t;
 
@@ -88,13 +88,13 @@ TrackerSparqlBuilder *tracker_extract_info_get_metadata_builder   (TrackerExtrac
 
 typedef struct _tracker_extract_1_0_pfns_t {
 	struct {
-		__typeof__(tracker_extract_info_get_type)		*get_type;
-		__typeof__(tracker_extract_info_ref)			*ref;
-		__typeof__(tracker_extract_info_unref)			*unref;
+		//__typeof__(tracker_extract_info_get_type)		*get_type;
+		//__typeof__(tracker_extract_info_ref)			*ref;
+		//__typeof__(tracker_extract_info_unref)			*unref;
 		__typeof__(tracker_extract_info_get_file)		*get_file;
-		__typeof__(tracker_extract_info_get_mimetype)		*get_mimetype;
-		__typeof__(tracker_extract_info_get_preupdate_builder)	*get_preupdate_builder;
-		__typeof__(tracker_extract_info_get_postupdate_builder)	*get_postupdate_builder;
+		//__typeof__(tracker_extract_info_get_mimetype)		*get_mimetype;
+		//__typeof__(tracker_extract_info_get_preupdate_builder)	*get_preupdate_builder;
+		//__typeof__(tracker_extract_info_get_postupdate_builder)	*get_postupdate_builder;
 		__typeof__(tracker_extract_info_get_metadata_builder)	*get_metadata_builder;
 	} info;
 } tracker_extract_1_0_pfns_t;
