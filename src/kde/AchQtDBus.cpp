@@ -49,7 +49,7 @@ static inline QDBusArgument &operator<<(QDBusArgument &argument, const NotifyIco
 	return argument;
 }
 
-inline const QDBusArgument &operator>>(const QDBusArgument &argument, NotifyIconStruct &nis)
+static inline const QDBusArgument &operator>>(const QDBusArgument &argument, NotifyIconStruct &nis)
 {
 	argument.beginStructure();
 	argument >> nis.width;
@@ -142,8 +142,10 @@ int AchQtDBus::notifyFunc(Achievements::ID id)
 
 		// NOTE: The R and B channels need to be swapped for XDG notifications.
 		// Swap the R and B channels in place.
-		// TODO: Qt 6.0 will have an in-place rgbSwap() function.
 		// TODO: SSSE3-optimized version?
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+		icon.rgbSwap();
+#else /* QT_VERSION < QT_VERSION_CHECK(6, 0, 0) */
 		argb32_t *bits = reinterpret_cast<argb32_t*>(icon.bits());
 		const int strideDiff = icon.bytesPerLine() - (icon.width() * sizeof(uint32_t));
 		for (unsigned int y = (unsigned int)icon.height(); y > 0; y--) {
@@ -163,6 +165,7 @@ int AchQtDBus::notifyFunc(Achievements::ID id)
 			// Next line.
 			bits += strideDiff;
 		}
+#endif /* QT_VERSION >= QT_VERSION_CHECK(6, 0, 0) */
 
 		// Set up the NotifyIconStruct.
 		NotifyIconStruct nis;
