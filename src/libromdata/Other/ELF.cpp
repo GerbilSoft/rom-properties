@@ -598,8 +598,8 @@ int ELFPrivate::checkSectionHeaders(void)
 						// Header is too small...
 						break;
 					}
-					uint32_t desc[4];
-					memcpy(desc, pData, sizeof(desc));
+					array<uint32_t, 4> desc;
+					memcpy(desc.data(), pData, desc.size());
 
 					const uint32_t os_id = elf32_to_cpu(desc[0]);
 					static constexpr char os_tbl[][12] = {
@@ -808,10 +808,14 @@ int ELFPrivate::addPtDynamicFields(void)
 	// Process headers.
 	// NOTE: Separate loops for 32-bit vs. 64-bit.
 	vector<uint64_t> needed;
-	uint64_t val_dtag[DT_NUM] = {0};
+	array<uint64_t, DT_NUM> val_dtag;
 	uint64_t val_flags1 = 0;
-	bool has_dtag[DT_NUM] = {0};
+	array<bool, DT_NUM> has_dtag;
 	bool has_flags1 = false;
+
+	// TODO: Compare std::array<>::fill() to memset().
+	val_dtag.fill(0);
+	has_dtag.fill(false);
 
 	// Returns true when needs to break out of the loop
 	auto process_dtag = [&](uint64_t d_tag, uint64_t d_val) -> bool {

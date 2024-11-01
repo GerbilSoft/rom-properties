@@ -56,9 +56,9 @@ uint32_t NintendoDSPrivate::checkNDSSecurityData(void)
 		return ret;
 	}
 
-	uint32_t security_data[0x3000/4];
-	size_t size = file->seekAndRead(0x1000, security_data, sizeof(security_data));
-	if (size != sizeof(security_data)) {
+	array<uint32_t, 0x3000/4> security_data;
+	size_t size = file->seekAndRead(0x1000, security_data.data(), security_data.size());
+	if (size != security_data.size()) {
 		// Seek and/or read error.
 		return 0;
 	}
@@ -117,9 +117,9 @@ NintendoDSPrivate::NDS_SecureArea NintendoDSPrivate::checkNDSSecureArea(void)
 	// NOTE: We only need to check the first two DWORDs, but
 	// we're reading the first four because CIAReader only
 	// supports multiples of 16 bytes right now.
-	uint32_t secure_area[4];
-	size_t size = file->seekAndRead(0x4000, secure_area, sizeof(secure_area));
-	if (size != sizeof(secure_area)) {
+	array<uint32_t, 4> secure_area;
+	size_t size = file->seekAndRead(0x4000, secure_area.data(), secure_area.size());
+	if (size != secure_area.size()) {
 		// Seek and/or read error.
 		return NDS_SECAREA_UNKNOWN;
 	}
@@ -457,12 +457,13 @@ int NintendoDS::doRomOp_int(int id, RomOpParams *pParams)
 			}
 
 			// NDS secure area: Load the ROM header, static area, and NDS Secure Area.
-#define NDS_SEC_AREA_SIZE (0x1000*8)
-#define DSi_SEC_AREA_SIZE (0x1000*7)
-			unique_ptr<uint8_t[]> ndsbuf(new uint8_t[NDS_SEC_AREA_SIZE]);
+			static constexpr size_t NDS_SEC_AREA_SIZE = 0x1000U * 8U;
+			typedef array<uint8_t, NDS_SEC_AREA_SIZE> nds_sec_area_t;
+
+			unique_ptr<nds_sec_area_t> ndsbuf(new nds_sec_area_t);
 			d->file->rewind();
-			size_t size = d->file->read(ndsbuf.get(), NDS_SEC_AREA_SIZE);
-			if (size != NDS_SEC_AREA_SIZE) {
+			size_t size = d->file->read(ndsbuf->data(), ndsbuf->size());
+			if (size != ndsbuf->size()) {
 				// Seek and/or read error.
 				ret = -d->file->lastError();
 				if (ret == 0) {
@@ -475,8 +476,8 @@ int NintendoDS::doRomOp_int(int id, RomOpParams *pParams)
 
 			// Run the actual encryption/decryption.
 			ret = doEncrypt
-				? ndscrypt_encrypt_secure_area(ndsbuf.get(), NDS_SEC_AREA_SIZE, NDSCRYPT_BF_NDS)
-				: ndscrypt_decrypt_secure_area(ndsbuf.get(), NDS_SEC_AREA_SIZE, NDSCRYPT_BF_NDS);
+				? ndscrypt_encrypt_secure_area(ndsbuf->data(), ndsbuf->size(), NDSCRYPT_BF_NDS)
+				: ndscrypt_decrypt_secure_area(ndsbuf->data(), ndsbuf->size(), NDSCRYPT_BF_NDS);
 			if (ret != 0) {
 				// Error encrypting/decrypting.
 				pParams->status = -EIO;
@@ -490,10 +491,12 @@ int NintendoDS::doRomOp_int(int id, RomOpParams *pParams)
 			if (dsi) {
 				// DSi secure area: Load the static area and DSi Secure Area.
 				// ROM header is kept from the NDS section.
-				unique_ptr<uint8_t[]> dsibuf(new uint8_t[NDS_SEC_AREA_SIZE]);
-				memcpy(dsibuf.get(), ndsbuf.get(), 0x1000);
+				static constexpr size_t DSi_SEC_AREA_SIZE = 0x1000 * 7;
+
+				unique_ptr<nds_sec_area_t> dsibuf(new nds_sec_area_t);
+				memcpy(dsibuf->data(), ndsbuf->data(), 0x1000);
 				const uint32_t dsisec_offset = arm9i_rom_offset - 0x3000;
-				size_t size = d->file->seekAndRead(dsisec_offset, &dsibuf[0x1000], DSi_SEC_AREA_SIZE);
+				size_t size = d->file->seekAndRead(dsisec_offset, &(dsibuf->data())[0x1000], DSi_SEC_AREA_SIZE);
 				if (size != DSi_SEC_AREA_SIZE) {
 					// Seek and/or read error.
 					ret = -d->file->lastError();
@@ -508,8 +511,8 @@ int NintendoDS::doRomOp_int(int id, RomOpParams *pParams)
 				// Run the actual encryption/decryption.
 				// TODO: DSi development cartridge detection.
 				ret = doEncrypt
-					? ndscrypt_encrypt_secure_area(dsibuf.get(), NDS_SEC_AREA_SIZE, NDSCRYPT_BF_DSi)
-					: ndscrypt_decrypt_secure_area(dsibuf.get(), NDS_SEC_AREA_SIZE, NDSCRYPT_BF_DSi);
+					? ndscrypt_encrypt_secure_area(dsibuf->data(), dsibuf->size(), NDSCRYPT_BF_DSi)
+					: ndscrypt_decrypt_secure_area(dsibuf->data(), dsibuf->size(), NDSCRYPT_BF_DSi);
 				if (ret != 0) {
 					// Error encrypting/decrypting.
 					pParams->status = -EIO;
@@ -520,7 +523,7 @@ int NintendoDS::doRomOp_int(int id, RomOpParams *pParams)
 				}
 
 				// Write the DSi Secure Area back to the ROM.
-				size = d->file->seekAndWrite(dsisec_offset, &dsibuf[0x1000], DSi_SEC_AREA_SIZE);
+				size = d->file->seekAndWrite(dsisec_offset, &(dsibuf->data())[0x1000], DSi_SEC_AREA_SIZE);
 				if (size != DSi_SEC_AREA_SIZE) {
 					// Seek and/or write error.
 					ret = -d->file->lastError();
@@ -536,7 +539,7 @@ int NintendoDS::doRomOp_int(int id, RomOpParams *pParams)
 
 			// Write the NDS Secure Area back to the ROM.
 			d->file->rewind();
-			size = d->file->write(ndsbuf.get(), NDS_SEC_AREA_SIZE);
+			size = d->file->write(ndsbuf->data(), ndsbuf->size());
 			if (size != NDS_SEC_AREA_SIZE) {
 				// Seek and/or write error.
 				ret = -d->file->lastError();
