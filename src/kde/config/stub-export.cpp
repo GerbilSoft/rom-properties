@@ -138,6 +138,7 @@ Q_DECL_EXPORT int RP_C_API rp_show_config_dialog(int argc, char *argv[])
 		QLatin1String("https://github.com/GerbilSoft/rom-properties"),		// homePageAddress
 		QLatin1String("https://github.com/GerbilSoft/rom-properties/issues")	// bugAddress
 	);
+	KAboutData::setApplicationData(aboutData);
 #else /* QT_VERSION < QT_VERSION_CHECK(5, 0, 0) */
 	KAboutData aboutData(
 		QByteArray("rp-config"),		// appName
@@ -146,13 +147,13 @@ Q_DECL_EXPORT int RP_C_API rp_show_config_dialog(int argc, char *argv[])
 		app->applicationVersion().toUtf8(),	// version
 		KLocalizedString() /*displayName*/,	// shortDescription (TODO: Better value?)
 		KAboutData::License_GPL_V2,		// licenseType
-		KLocalizeString(), /*QString::fromUtf8(copyrightString)*/	// copyrightStatement
+		KLocalizedString(), /*QString::fromUtf8(copyrightString)*/	// copyrightStatement
 		KLocalizedString(),			// otherText
 		QByteArray("https://github.com/GerbilSoft/rom-properties"),		// homePageAddress
 		QByteArray("https://github.com/GerbilSoft/rom-properties/issues")	// bugAddress
 	);
+	// FIXME: KAboutData::setAboutData() equivalent on KDE4.
 #endif /* QT_VERSION >= QT_VERSION_CHECK(5, 0, 0) */
-	KAboutData::setApplicationData(aboutData);
 
 	// Initialize KCrash.
 	// FIXME: It shows bugs.kde.org as the bug reporting address, which isn't wanted...
