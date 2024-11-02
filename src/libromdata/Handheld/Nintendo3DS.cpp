@@ -2120,15 +2120,14 @@ int Nintendo3DS::loadFieldData(void)
 		// Process the contents.
 		// TODO: Content types?
 		unsigned int i = 0;
-		const auto content_chunks_cend = d->content_chunks.cend();
-		for (auto iter = d->content_chunks.cbegin();
-		     iter != content_chunks_cend; ++iter, ++i)
-		{
+		for (const N3DS_Content_Chunk_Record_t &content : d->content_chunks) {
 			// Make sure the content exists first.
 			NCCHReaderPtr pNcch;
 			int ret = d->loadNCCH(i, pNcch);
-			if (ret == -ENOENT)
+			if (ret == -ENOENT) {
+				i++;
 				continue;
+			}
 
 			const size_t vidx = vv_contents->size();
 			vv_contents->resize(vidx+1);
@@ -2155,7 +2154,7 @@ int Nintendo3DS::loadFieldData(void)
 				// TODO: Are there CIAs with discontiguous content indexes?
 				// (Themes, DLC...)
 				const char *crypto = nullptr;
-				if (iter->type & cpu_to_be16(N3DS_CONTENT_CHUNK_ENCRYPTED)) {
+				if (content.type & cpu_to_be16(N3DS_CONTENT_CHUNK_ENCRYPTED)) {
 					// CIA encryption
 					crypto = "CIA";
 				}
@@ -2183,7 +2182,9 @@ int Nintendo3DS::loadFieldData(void)
 				data_row.emplace_back();
 
 				// Content size
-				data_row.emplace_back(LibRpText::formatFileSize(be64_to_cpu(iter->size)));
+				data_row.emplace_back(LibRpText::formatFileSize(be64_to_cpu(content.size)));
+
+				i++;
 				continue;
 			}
 
@@ -2192,7 +2193,7 @@ int Nintendo3DS::loadFieldData(void)
 
 			// Encryption
 			NCCHReader::CryptoType cryptoType;
-			bool isCIAcrypto = !!(iter->type & cpu_to_be16(N3DS_CONTENT_CHUNK_ENCRYPTED));
+			bool isCIAcrypto = !!(content.type & cpu_to_be16(N3DS_CONTENT_CHUNK_ENCRYPTED));
 			ret = NCCHReader::cryptoType_static(&cryptoType, content_ncch_header);
 			if (ret != 0) {
 				// Unknown encryption.
@@ -2228,6 +2229,9 @@ int Nintendo3DS::loadFieldData(void)
 
 			// Content size
 			data_row.emplace_back(LibRpText::formatFileSize(pNcch->partition_size()));
+
+			// Next content
+			i++;
 		}
 
 		// Add the contents table.

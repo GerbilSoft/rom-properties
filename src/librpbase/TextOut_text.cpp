@@ -236,11 +236,11 @@ public:
 		StreamStateSaver state(os);
 		col = 0;
 		uint32_t bitfield = romField.data.bitfield;
-		const auto names_cend = bitfieldDesc.names->cend();
-		for (auto iter = bitfieldDesc.names->cbegin(); iter != names_cend; ++iter, bitfield >>= 1) {
-			const string &name = *iter;
-			if (name.empty())
+		for (const string &name : *(bitfieldDesc.names)) {
+			if (name.empty()) {
+				bitfield >>= 1;
 				continue;
+			}
 
 			// Update the current column number before printing.
 			// This prevents an empty row from being printed
@@ -258,7 +258,9 @@ public:
 			for (size_t x = str_sz; x < colSize[col]; x++) {
 				os << ' ';
 			}
+
 			col++;
+			bitfield >>= 1;
 		}
 		return os;
 	}

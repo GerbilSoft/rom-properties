@@ -594,10 +594,8 @@ void MegaDrivePrivate::addFields_vectorTable(const M68K_VectorTable *pVectors)
 		"vectors_offtbl[] and vectors_map[] are out of sync.");
 
 	auto *const vv_vectors = new RomFields::ListData_t(vectors_offtbl.size());
-	auto iter = vv_vectors->begin();
-	const auto vv_vectors_end = vv_vectors->end();
-	for (size_t i = 0; i < vectors_offtbl.size() && iter != vv_vectors_end; ++i, ++iter) {
-		auto &data_row = *iter;
+	unsigned int i = 0;
+	for (auto &data_row : *vv_vectors) {
 		data_row.reserve(3);
 
 		// Actual vector number.
@@ -612,6 +610,8 @@ void MegaDrivePrivate::addFields_vectorTable(const M68K_VectorTable *pVectors)
 
 		// Address
 		data_row.emplace_back(rp_sprintf("$%08X", be32_to_cpu(pVectors->vectors[vector_index])));
+
+		i++;
 	}
 
 	static const array<const char*, 3> vectors_headers = {{

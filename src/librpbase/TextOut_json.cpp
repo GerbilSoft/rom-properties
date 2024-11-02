@@ -78,8 +78,7 @@ private:
 
 		const bool has_checkboxes = !!(romField.flags & RomFields::RFT_LISTDATA_CHECKBOXES);
 		uint32_t checkboxes = romField.data.list_data.mxd.checkboxes;
-		const auto list_data_cend = list_data->cend();
-		for (auto it = list_data->cbegin(); it != list_data_cend; ++it) {
+		for (const auto &it : *list_data) {
 			Value row_array(kArrayType);
 			if (has_checkboxes) {
 				// TODO: Better JSON schema for RFT_LISTDATA_CHECKBOXES?
@@ -88,18 +87,19 @@ private:
 			}
 
 			unsigned int is_timestamp = romField.desc.list_data.col_attrs.is_timestamp;
-			const auto it_cend = it->cend();
-			for (auto jt = it->cbegin(); jt != it_cend; ++jt, is_timestamp >>= 1) {
-				if (unlikely((is_timestamp & 1) && jt->size() == sizeof(int64_t))) {
+			for (const string &jt : it) {
+				if (unlikely((is_timestamp & 1) && jt.size() == sizeof(int64_t))) {
 					// Timestamp column. Print the timestamp directly, similar to RFT_DATETIME.
 					RomFields::TimeString_t time_string;
-					memcpy(time_string.str, jt->data(), 8);
+					memcpy(time_string.str, jt.data(), 8);
 					row_array.PushBack(time_string.time, allocator);
 				} else {
 					// Not a timestamp column. Use the string as-is.
 					// TODO: Some way to indicate a numeric data column?
-					row_array.PushBack(StringRef(*jt), allocator);
+					row_array.PushBack(StringRef(jt), allocator);
 				}
+
+				is_timestamp >>= 1;
 			}
 
 			data_array.PushBack(row_array, allocator);
