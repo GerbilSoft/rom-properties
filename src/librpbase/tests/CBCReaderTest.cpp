@@ -368,15 +368,21 @@ TEST_P(CBCReaderTest, decryptLast8Bytes)
 }
 #endif /* ENABLE_DECRYPTION */
 
+#ifdef ENABLE_DECRYPTION
+INSTANTIATE_TEST_SUITE_P(CBCReaderTest, CBCReaderTest,
+	::testing::Values(
+		CBCReaderTest_mode(CryptoMode::Passthru),
+		CBCReaderTest_mode(CryptoMode::ECB),
+		CBCReaderTest_mode(CryptoMode::CBC)
+		)
+	, CBCReaderTest::test_case_suffix_generator);
+#else /* !ENABLE_DECRYPTION */
 INSTANTIATE_TEST_SUITE_P(CBCReaderTest, CBCReaderTest,
 	::testing::Values(
 		CBCReaderTest_mode(CryptoMode::Passthru)
-#ifdef ENABLE_DECRYPTION
-		, CBCReaderTest_mode(CryptoMode::ECB)
-		, CBCReaderTest_mode(CryptoMode::CBC)
-#endif /* ENABLE_DECRYPTION */
-		   )
+		)
 	, CBCReaderTest::test_case_suffix_generator);
+#endif /* ENABLE_DECRYPTION */
 
 } }
 
