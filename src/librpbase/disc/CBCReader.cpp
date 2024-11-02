@@ -58,7 +58,9 @@ CBCReaderPrivate::CBCReaderPrivate(CBCReader *q, off64_t offset, off64_t length,
 	: offset(offset)
 	, length(length)
 	, pos(0)
+#ifdef ENABLE_DECRYPTION
 	, usesIV(iv != nullptr)
+#endif /* ENABLE_DECRYPTION */
 {
 	assert(q->m_file);
 	if (!q->m_file) {
