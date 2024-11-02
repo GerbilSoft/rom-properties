@@ -129,6 +129,8 @@
       will also be considered GPLv3.
     * Dark Mode is also partially supported in the properties pages when using
       tools such as StartAllBack, though it has some issues right now.
+      * Fixes #399: ROM Properties page displays incorrectly with StartAllBack installed
+        * Reported by @kristibektashi.
   * Sparse disc images, e.g. CISO and GCZ, are now handled by the RomDataFactory
     class instead of requiring each RomData subclass to handle it. This means
     that all supported sparse disc images can be used for any console.
