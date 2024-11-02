@@ -61,10 +61,12 @@ inline ::std::ostream& operator<<(::std::ostream& os, const CBCReaderTest_mode& 
 	switch (mode.cryptoMode) {
 		case CryptoMode::Passthru:
 			return os << "Passthru";
+#ifdef ENABLE_DECRYPTION
 		case CryptoMode::ECB:
 			return os << "ECB";
 		case CryptoMode::CBC:
 			return os << "CBC";
+#endif /* ENABLE_DECRYPTION */
 		default:
 			assert(!"Invalid CryptoMode");
 			return os << "INVALID";
@@ -128,10 +130,12 @@ string CBCReaderTest::test_case_suffix_generator(const ::testing::TestParamInfo<
 	switch (info.param.cryptoMode) {
 		case CryptoMode::Passthru:
 			return "Passthru";
+#ifdef ENABLE_DECRYPTION
 		case CryptoMode::ECB:
 			return "ECB";
 		case CryptoMode::CBC:
 			return "CBC";
+#endif /* ENABLE_DECRYPTION */
 		default:
 			assert(!"Invalid CryptoMode");
 			return "INVALID";
@@ -249,6 +253,7 @@ void CBCReaderTest::SetUp(void)
 			m_cbcReader = std::make_shared<CBCReader>(m_memFile, 0, sizeof(plaintext), nullptr, nullptr);
 			break;
 
+#ifdef ENABLE_DECRYPTION
 		case CryptoMode::ECB:
 			m_memFile = std::make_shared<MemFile>(ciphertext_ecb.data(), ciphertext_ecb.size());
 			m_cbcReader = std::make_shared<CBCReader>(m_memFile, 0, ciphertext_ecb.size(), aes_key.data(), nullptr);
@@ -258,6 +263,7 @@ void CBCReaderTest::SetUp(void)
 			m_memFile = std::make_shared<MemFile>(ciphertext_cbc.data(), ciphertext_cbc.size());
 			m_cbcReader = std::make_shared<CBCReader>(m_memFile, 0, ciphertext_cbc.size(), aes_key.data(), aes_iv.data());
 			break;
+#endif /* ENABLE_DECRYPTION */
 
 		default:
 			assert(!"Invalid CryptoMode");
