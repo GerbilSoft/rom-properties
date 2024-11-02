@@ -33,6 +33,10 @@ using namespace LibRpTexture;
 #  include "../GettextTranslator.hpp"
 #endif
 
+// KCrash
+#include <KAboutData>
+#include <KCrash>
+
 // C++ STL classes
 using std::string;
 
@@ -116,6 +120,43 @@ Q_DECL_EXPORT int RP_C_API rp_show_config_dialog(int argc, char *argv[])
 	const QString applicationDisplayName = QCoreApplication::translate(
 		"ConfigDialog", "ROM Properties Page configuration", nullptr);
 	QApplication *const app = initQApp(argc, argv, applicationDisplayName);
+
+	// Set up KAboutData.
+	const QString displayName = ConfigDialog::tr("ROM Properties Page configuration");
+	const char *const copyrightString =
+		AboutTabText::getProgramInfoString(AboutTabText::ProgramInfoStringID::Copyright);
+	assert(copyrightString != nullptr);
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+	KAboutData aboutData(
+		QLatin1String("rp-config"),	// componentName
+		displayName,			// displayName
+		app->applicationVersion(),	// version
+		displayName,			// shortDescription (TODO: Better value?)
+		KAboutLicense::GPL_V2,		// licenseType
+		QString::fromUtf8(copyrightString),	// copyrightStatement
+		QString(),			// otherText
+		QLatin1String("https://github.com/GerbilSoft/rom-properties"),		// homePageAddress
+		QLatin1String("https://github.com/GerbilSoft/rom-properties/issues")	// bugAddress
+	);
+#else /* QT_VERSION < QT_VERSION_CHECK(5, 0, 0) */
+	KAboutData aboutData(
+		QByteArray("rp-config"),		// appName
+		QByteArray("rom-properties"),		// catalogName
+		KLocalizedString() /*displayName*/,	// programName
+		app->applicationVersion().toUtf8(),	// version
+		KLocalizedString() /*displayName*/,	// shortDescription (TODO: Better value?)
+		KAboutData::License_GPL_V2,		// licenseType
+		KLocalizeString(), /*QString::fromUtf8(copyrightString)*/	// copyrightStatement
+		KLocalizedString(),			// otherText
+		QByteArray("https://github.com/GerbilSoft/rom-properties"),		// homePageAddress
+		QByteArray("https://github.com/GerbilSoft/rom-properties/issues")	// bugAddress
+	);
+#endif /* QT_VERSION >= QT_VERSION_CHECK(5, 0, 0) */
+	KAboutData::setApplicationData(aboutData);
+
+	// Initialize KCrash.
+	// FIXME: It shows bugs.kde.org as the bug reporting address, which isn't wanted...
+	//KCrash::initialize();
 
 	// Create and run the ConfigDialog.
 	// TODO: Get the return value?
