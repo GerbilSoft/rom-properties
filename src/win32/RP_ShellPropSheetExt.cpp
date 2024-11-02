@@ -1923,6 +1923,7 @@ void RP_ShellPropSheetExt_Private::initDialog(void)
 
 	int fieldIdx = 0;	// needed for control IDs
 	auto iter_desc = t_desc_text.cbegin();
+	const auto pFields_cend = pFields->cend();
 	for (auto iter = pFields->cbegin(); iter != pFields_cend; ++iter, ++iter_desc, fieldIdx++) {
 		assert(iter_desc != t_desc_text.cend());
 		const RomFields::Field &field = *iter;
