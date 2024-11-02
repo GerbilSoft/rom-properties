@@ -355,7 +355,7 @@ TEST_P(CBCReaderTest, decryptLast8Bytes)
 	array<uint8_t, 16> decrypted;
 	decrypted.fill(0x55);
 
-	EXPECT_EQ(8, m_cbcReader->seekAndRead(0x38, decrypted.data(), 16));
+	EXPECT_EQ(8U, m_cbcReader->seekAndRead(0x38, decrypted.data(), 16));
 	EXPECT_EQ(sizeof(plaintext), m_cbcReader->tell());
 
 	// Compare the decrypted data to the known plaintext.
