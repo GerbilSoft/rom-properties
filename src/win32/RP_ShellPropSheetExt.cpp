@@ -1922,11 +1922,12 @@ void RP_ShellPropSheetExt_Private::initDialog(void)
 	}
 
 	int fieldIdx = 0;	// needed for control IDs
-	for (const RomFields::Field &field : *pFields) {
+	auto iter_desc = t_desc_text.cbegin();
+	for (auto iter = pFields->cbegin(); iter != pFields_cend; ++iter, ++iter_desc, fieldIdx++) {
+		assert(iter_desc != t_desc_text.cend());
+		const RomFields::Field &field = *iter;
 		assert(field.isValid());
 		if (!field.isValid()) {
-			++iter_desc;
-			fieldIdx++;
 			continue;
 		}
 
@@ -1935,13 +1936,9 @@ void RP_ShellPropSheetExt_Private::initDialog(void)
 		assert(tabIdx >= 0 && tabIdx < (int)tabs.size());
 		if (tabIdx < 0 || tabIdx >= (int)tabs.size()) {
 			// Tab index is out of bounds.
-			++iter_desc;
-			fieldIdx++;
 			continue;
 		} else if (!tabs[tabIdx].hDlg) {
 			// Tab name is empty. Tab is hidden.
-			++iter_desc;
-			fieldIdx++;
 			continue;
 		}
 
@@ -2073,9 +2070,6 @@ void RP_ShellPropSheetExt_Private::initDialog(void)
 			// Remove the description label.
 			DestroyWindow(hStatic);
 		}
-
-		++iter_desc;
-		fieldIdx++;
 	}
 
 	// Update scrollbar settings.
