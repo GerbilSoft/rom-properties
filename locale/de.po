@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2024-10-04 18:38-0400\n"
-"PO-Revision-Date: 2024-10-04 22:55\n"
+"PO-Revision-Date: 2024-11-03 19:17\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
 "Language: de_DE\n"
@@ -1275,7 +1275,7 @@ msgstr "Sample Rate"
 #, c-format
 msgctxt "RomData"
 msgid "%u Hz"
-msgstr ""
+msgstr "%u Hz"
 
 #: ../src/libromdata/Audio/ADX.cpp:299 ../src/libromdata/Audio/BCSTM.cpp:494
 #: ../src/libromdata/Audio/BRSTM.cpp:358
@@ -2819,7 +2819,7 @@ msgstr "Unbekannt (0x%08X)"
 #: ../src/libromdata/Handheld/NintendoDS.cpp:823
 msgctxt "Nintendo"
 msgid "Title ID"
-msgstr "Title ID"
+msgstr "Titel-ID"
 
 #: ../src/libromdata/Console/GameCube.cpp:1431
 #: ../src/libromdata/Console/WiiTMD.cpp:440
@@ -3062,12 +3062,12 @@ msgstr "Intellivision 2"
 #: ../src/libromdata/Console/Intellivision.cpp:297
 msgctxt "Intellivision|Flags"
 msgid "Run code after title string"
-msgstr ""
+msgstr "Code nach Titel-String ausführen"
 
 #: ../src/libromdata/Console/Intellivision.cpp:298
 msgctxt "Intellivision|Flags"
 msgid "Skip ECS title screen"
-msgstr ""
+msgstr "ECS-Titelbildschirm überspringen"
 
 #: ../src/libromdata/Console/iQuePlayer.cpp:640
 #: ../src/libromdata/Handheld/Nintendo3DS_SMDH.cpp:592
@@ -3964,7 +3964,7 @@ msgstr ""
 #: ../src/libromdata/Console/Sega8Bit.cpp:473
 msgctxt "Sega8Bit"
 msgid "SDSC Version"
-msgstr ""
+msgstr "SDSC Version"
 
 #: ../src/libromdata/Console/Sega8Bit.cpp:478
 msgctxt "Sega8Bit"
@@ -4280,7 +4280,7 @@ msgstr "Retail (Wii U)"
 #: ../src/libromdata/Console/WiiTicket.cpp:699
 msgctxt "Wii|EncKey"
 msgid "Debug (Wii U)"
-msgstr ""
+msgstr "Debug (Wii U)"
 
 #. tr: EncryptionKeys::None - No encryption.
 #: ../src/libromdata/Console/WiiTicket.cpp:707
@@ -4309,7 +4309,7 @@ msgstr "Unbekannt (%02X %02X %02X %02X)"
 #: ../src/libromdata/Console/WiiUPackage.cpp:651
 msgctxt "RomData"
 msgid "XML parsing is disabled in this build."
-msgstr ""
+msgstr "XML-Parsing ist in diesem Build deaktiviert."
 
 #: ../src/libromdata/Console/WiiUPackage_xml.cpp:383
 #: ../src/libromdata/Handheld/Nintendo3DS_SMDH.cpp:497
@@ -4408,7 +4408,7 @@ msgstr "ROM-Operation-ID ist für dieses Objekt ungültig."
 #: ../src/libromdata/Handheld/Nintendo3DS_ops.cpp:79
 msgctxt "RomData"
 msgid "Save filename was not specified."
-msgstr ""
+msgstr "Dateiname für die Speicherung wurde nicht angegeben."
 
 #: ../src/libromdata/Console/WiiWAD_ops.cpp:85
 msgctxt "WiiWAD"
@@ -4490,25 +4490,25 @@ msgstr "Xbox Live Paket"
 #: ../src/libromdata/Console/Xbox360_STFS.cpp:932
 msgctxt "Xbox360_STFS"
 msgid "Content Type"
-msgstr ""
+msgstr "Inhaltstyp"
 
 #: ../src/libromdata/Console/Xbox360_STFS.cpp:944
 msgctxt "Xbox360_STFS"
 msgid "Media ID"
-msgstr ""
+msgstr "Medien-ID"
 
 #: ../src/libromdata/Console/Xbox360_STFS.cpp:970
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1850
 msgctxt "Xbox360_XEX"
 msgid "Title ID"
-msgstr ""
+msgstr "Titel-ID"
 
 #: ../src/libromdata/Console/Xbox360_STFS.cpp:971
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1851
 #, c-format
 msgctxt "Xbox360_XEX"
 msgid "%1$08X (%2$s-%3$04u)"
-msgstr ""
+msgstr "%1$08X (%2$s-%3$04u)"
 
 #: ../src/libromdata/Console/Xbox360_STFS.cpp:988
 msgctxt "Xbox360_XEX"
@@ -4523,7 +4523,7 @@ msgstr "Konsolen-ID"
 #: ../src/libromdata/Console/Xbox360_STFS.cpp:1006
 msgctxt "Xbox360_XEX"
 msgid "Part Number"
-msgstr ""
+msgstr "Teilenummer"
 
 #: ../src/libromdata/Console/Xbox360_STFS.cpp:1014
 msgctxt "Xbox360_XEX|ConsoleType"
@@ -4538,7 +4538,7 @@ msgstr "Retail"
 #: ../src/libromdata/Console/Xbox360_STFS.cpp:1023
 msgctxt "Xbox360_XEX"
 msgid "Console Type"
-msgstr ""
+msgstr "Konsolen Typ"
 
 #: ../src/libromdata/Console/Xbox360_XDBF.cpp:837
 msgctxt "Xbox360_XDBF|TitleType"
@@ -4564,7 +4564,7 @@ msgstr ""
 #: ../src/libromdata/Console/Xbox360_XDBF.cpp:1401
 msgctxt "Xbox360_XDBF|Achievements"
 msgid "ID"
-msgstr ""
+msgstr "ID"
 
 #: ../src/libromdata/Console/Xbox360_XDBF.cpp:1009
 #: ../src/libromdata/Console/Xbox360_XDBF.cpp:1402
@@ -4756,12 +4756,12 @@ msgstr ""
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1729
 msgctxt "Xbox360_XEX"
 msgid "Xbox Live Signed Package"
-msgstr ""
+msgstr "Xbox Live signiertes Paket"
 
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1731
 msgctxt "Xbox360_XEX"
 msgid "Xbox Package"
-msgstr ""
+msgstr "Xbox Paket"
 
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1762
 msgctxt "Xbox360_XEX"
@@ -4776,7 +4776,7 @@ msgstr "Neuseeland"
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1809
 msgctxt "Xbox360_XEX"
 msgid "Media ID"
-msgstr ""
+msgstr "Medien-ID"
 
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1819
 msgctxt "Xbox360_XEX"
@@ -5240,17 +5240,17 @@ msgstr "Software-Tastatur (SAFE_MODE)"
 #: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:79
 msgctxt "Nintendo3DSSysTitles"
 msgid "Mii picker"
-msgstr ""
+msgstr "Mii-Auswahl"
 
 #: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:80
 msgctxt "Nintendo3DSSysTitles"
 msgid "Picture picker"
-msgstr ""
+msgstr "Bilder-Auswahl"
 
 #: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:81
 msgctxt "Nintendo3DSSysTitles"
 msgid "Voice memo picker"
-msgstr ""
+msgstr "Sprachnotiz-Auswahl"
 
 #: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:82
 msgctxt "Nintendo3DSSysTitles"
@@ -5420,12 +5420,12 @@ msgstr ""
 #: ../src/libromdata/Handheld/DMG.cpp:633
 msgctxt "DMG"
 msgid "System"
-msgstr ""
+msgstr "System"
 
 #: ../src/libromdata/Handheld/DMG.cpp:673
 msgctxt "DMG"
 msgid "Hardware"
-msgstr ""
+msgstr "Hardware"
 
 #: ../src/libromdata/Handheld/DMG.cpp:678
 msgctxt "DMG|Features"
@@ -5459,13 +5459,13 @@ msgstr "Neigungssensor"
 #: ../src/libromdata/Handheld/DMG.cpp:1311
 msgctxt "DMG"
 msgid "Features"
-msgstr ""
+msgstr "Funktionen"
 
 #: ../src/libromdata/Handheld/DMG.cpp:690
 #: ../src/libromdata/Handheld/DMG.cpp:1315
 msgctxt "DMG"
 msgid "ROM Size"
-msgstr ""
+msgstr "ROM-Größe"
 
 #: ../src/libromdata/Handheld/DMG.cpp:693
 msgctxt "DMG"
@@ -5492,7 +5492,7 @@ msgstr "%u KiB"
 #: ../src/libromdata/Handheld/DMG.cpp:1320
 msgctxt "DMG"
 msgid "RAM Size"
-msgstr ""
+msgstr "RAM-Größe"
 
 #. tr: MBC2 internal memory - Not really RAM, but whatever.
 #: ../src/libromdata/Handheld/DMG.cpp:714
@@ -5536,7 +5536,7 @@ msgstr ""
 #: ../src/libromdata/Handheld/DMG.cpp:1213
 msgctxt "DMG"
 msgid "GBX Version"
-msgstr ""
+msgstr "GBX Version"
 
 #: ../src/libromdata/Handheld/DMG.cpp:1266
 #: ../src/libromdata/Handheld/DMG.cpp:1276
@@ -5619,17 +5619,17 @@ msgstr "Debug-Modus"
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:658
 msgctxt "Nintendo3DS"
 msgid "Media ID"
-msgstr ""
+msgstr "Medien-ID"
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:684
 msgctxt "Nintendo3DS"
 msgid "Program ID"
-msgstr ""
+msgstr "Programm-ID"
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:697
 msgctxt "Nintendo3DS"
 msgid "Content Type"
-msgstr ""
+msgstr "Inhaltstyp"
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:705
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:1951
@@ -5770,12 +5770,12 @@ msgstr ""
 #, c-format
 msgctxt "Nintendo3DS|CDev"
 msgid "Unknown (SDK2=0x%1$02X, SDK3=0x%2$02X)"
-msgstr ""
+msgstr "Unbekannt (SDK2=0x%1$02X, SDK3=0x%2$02X)"
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:1939
 msgctxt "Nintendo3DS"
 msgid "Card Revision"
-msgstr ""
+msgstr "Kartenrevision"
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2054
 msgctxt "Nintendo3DS"
@@ -5805,7 +5805,7 @@ msgstr "Verschlüsselung"
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2240
 msgctxt "Nintendo3DS|CtNames"
 msgid "Version"
-msgstr ""
+msgstr "Version"
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2241
 msgctxt "Nintendo3DS|CtNames"
@@ -5820,25 +5820,25 @@ msgstr "Inhalte"
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2261
 msgctxt "Nintendo3DS"
 msgid "Process Name"
-msgstr ""
+msgstr "Prozess-Name"
 
 #. tr: N3DS_NCCH_EXHEADER_ACI_ResLimit_Categry_APPLICATION
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2267
 msgctxt "Nintendo3DS|ApplType"
 msgid "Application"
-msgstr ""
+msgstr "Anwendung"
 
 #. tr: N3DS_NCCH_EXHEADER_ACI_ResLimit_Categry_SYS_APPLET
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2269
 msgctxt "Nintendo3DS|ApplType"
 msgid "System Applet"
-msgstr ""
+msgstr "System Applet"
 
 #. tr: N3DS_NCCH_EXHEADER_ACI_ResLimit_Categry_LIB_APPLET
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2271
 msgctxt "Nintendo3DS|ApplType"
 msgid "Library Applet"
-msgstr ""
+msgstr "Bibliothek-Applet"
 
 #. tr: N3DS_NCCH_EXHEADER_ACI_ResLimit_Categry_OTHER
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2273
@@ -5852,12 +5852,12 @@ msgstr ""
 #, c-format
 msgctxt "Nintendo3DS"
 msgid "Invalid (0x%02X)"
-msgstr ""
+msgstr "Ungültig (0x%02X)"
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2313
 msgctxt "Nintendo3DS"
 msgid "Old3DS Sys Mode"
-msgstr ""
+msgstr "Old3DS Sys-Modus"
 
 #. tr: %1$s == Old3DS system mode; %2$u == RAM allocation, in megabytes
 #. tr: %1$s == New3DS system mode; %2$u == RAM allocation, in megabytes
@@ -5950,7 +5950,7 @@ msgstr "SRL konnte nicht geöffnet werden."
 #: ../src/libromdata/Handheld/Nintendo3DS_ops.cpp:99
 msgctxt "Nintendo3DS"
 msgid "An unknown error occurred attempting to open the SRL."
-msgstr ""
+msgstr "Beim Öffnen der SRL trat ein unbekannter Fehler auf."
 
 #: ../src/libromdata/Handheld/Nintendo3DS_ops.cpp:133
 msgctxt "Nintendo3DS"
@@ -6054,24 +6054,24 @@ msgstr ""
 #: ../src/libromdata/Handheld/NintendoDS.cpp:772
 msgctxt "NintendoDS"
 msgid "Hardware"
-msgstr ""
+msgstr "Hardware"
 
 #: ../src/libromdata/Handheld/NintendoDS.cpp:798
 msgctxt "NintendoDS"
 msgid "DS Region Code"
-msgstr ""
+msgstr "DS Region Code"
 
 #. tr: DSi-enhanced or DSi-exclusive cartridge.
 #: ../src/libromdata/Handheld/NintendoDS.cpp:834
 msgctxt "NintendoDS|DSiFileType"
 msgid "Cartridge"
-msgstr ""
+msgstr "Karte"
 
 #. tr: DSiWare (download-only title)
 #: ../src/libromdata/Handheld/NintendoDS.cpp:836
 msgctxt "NintendoDS|DSiFileType"
 msgid "DSiWare"
-msgstr ""
+msgstr "DSiWare"
 
 #. tr: DSi_FTYPE_SYSTEM_FUN_TOOL
 #: ../src/libromdata/Handheld/NintendoDS.cpp:838
@@ -6083,7 +6083,7 @@ msgstr ""
 #: ../src/libromdata/Handheld/NintendoDS.cpp:840
 msgctxt "NintendoDS|DSiFileType"
 msgid "Non-Executable Data File"
-msgstr ""
+msgstr "Nicht ausführbare Datendatei"
 
 #. tr: DSi_FTYPE_SYSTEM_BASE_TOOL
 #: ../src/libromdata/Handheld/NintendoDS.cpp:842
@@ -6095,7 +6095,7 @@ msgstr ""
 #: ../src/libromdata/Handheld/NintendoDS.cpp:844
 msgctxt "NintendoDS|DSiFileType"
 msgid "System Menu"
-msgstr ""
+msgstr "Systemmenü"
 
 #: ../src/libromdata/Handheld/NintendoDS.cpp:858
 msgctxt "NintendoDS"
@@ -6105,7 +6105,7 @@ msgstr "DSi ROM Typ"
 #: ../src/libromdata/Handheld/NintendoDS.cpp:887
 msgctxt "NintendoDS"
 msgid "DSi Region Code"
-msgstr ""
+msgstr "DSi Region Code"
 
 #: ../src/libromdata/Handheld/NintendoDS.cpp:946
 msgctxt "NintendoDS|DSi_Permissions"
@@ -6140,7 +6140,7 @@ msgstr ""
 #: ../src/libromdata/Handheld/NintendoDS.cpp:952
 msgctxt "NintendoDS|DSi_Permissions"
 msgid "Shared2 File"
-msgstr ""
+msgstr "Shared2 Datei"
 
 #: ../src/libromdata/Handheld/NintendoDS.cpp:953
 msgctxt "NintendoDS|DSi_Permissions"
@@ -6175,12 +6175,12 @@ msgstr ""
 #: ../src/libromdata/Handheld/NintendoDS.cpp:959
 msgctxt "NintendoDS|DSi_Permissions"
 msgid "SD Card Read Access"
-msgstr ""
+msgstr "Lesezugriff auf SD-Karte"
 
 #: ../src/libromdata/Handheld/NintendoDS.cpp:960
 msgctxt "NintendoDS|DSi_Permissions"
 msgid "SD Card Write Access"
-msgstr ""
+msgstr "Schreibzugriff auf SD-Karte"
 
 #: ../src/libromdata/Handheld/NintendoDS.cpp:961
 msgctxt "NintendoDS|DSi_Permissions"
@@ -6378,7 +6378,7 @@ msgstr "Keine"
 #: ../src/libromdata/Handheld/PSP.cpp:472
 msgctxt "RomData"
 msgid "Video Title"
-msgstr ""
+msgstr "Video Titel"
 
 #: ../src/libromdata/Handheld/WonderSwan.cpp:537
 msgctxt "WonderSwan"
@@ -6434,7 +6434,7 @@ msgstr ""
 #: ../src/libromdata/Handheld/WonderSwan.cpp:620
 msgctxt "WonderSwan|Features"
 msgid "RTC Present"
-msgstr ""
+msgstr "RTC vorhanden"
 
 #: ../src/libromdata/Handheld/WonderSwan.cpp:624
 msgctxt "WonderSwan"
@@ -8100,14 +8100,14 @@ msgstr "Keine"
 #, c-format
 msgctxt "NintendoBadge"
 msgid "%1$s (New3DS) (%2$s)"
-msgstr ""
+msgstr "%1$s (New3DS) (%2$s)"
 
 #. tr: Title name
 #: ../src/libromdata/Other/NintendoBadge.cpp:774
 #, c-format
 msgctxt "NintendoBadge"
 msgid "%s (New3DS)"
-msgstr ""
+msgstr "%s (New3DS)"
 
 #. tr: %1$s == Title name, %2$s == Region
 #: ../src/libromdata/Other/NintendoBadge.cpp:779
