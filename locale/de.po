@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2024-10-04 18:38-0400\n"
-"PO-Revision-Date: 2024-11-03 19:17\n"
+"PO-Revision-Date: 2024-11-03 20:21\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
 "Language: de_DE\n"
@@ -4450,7 +4450,7 @@ msgstr ""
 #: ../src/libromdata/Console/WiiWAD_ops.cpp:168
 msgctxt "WiiWAD"
 msgid "SRL extraction is not supported in NoCrypto builds."
-msgstr ""
+msgstr "SRL-Extraktion wird in NoCrypto-Builds nicht unterstützt."
 
 #: ../src/libromdata/Console/WiiWIBN.cpp:454
 msgctxt "WiiWIBN"
@@ -4857,7 +4857,7 @@ msgstr "PE Dateiname"
 #: ../src/libromdata/Console/Xbox_XBE.cpp:682
 msgctxt "Xbox_XBE"
 msgid "Title ID"
-msgstr "Title ID"
+msgstr "Titel-ID"
 
 #: ../src/libromdata/Console/Xbox_XBE.cpp:706
 #, c-format
@@ -5764,7 +5764,7 @@ msgstr "Bluetooth"
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:1927
 msgctxt "Nintendo3DS"
 msgid "Card Device"
-msgstr ""
+msgstr "Kartentyp"
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:1933
 #, c-format
@@ -5844,7 +5844,7 @@ msgstr "Bibliothek-Applet"
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2273
 msgctxt "Nintendo3DS|ApplType"
 msgid "SysModule"
-msgstr ""
+msgstr "SysModul"
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2282
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2325
@@ -5975,12 +5975,12 @@ msgstr "Beim Extrahieren der SRL ist ein unbekannter Fehler aufgetreten."
 #: ../src/libromdata/Handheld/Nintendo3DS_SMDH.cpp:596
 msgctxt "RomData"
 msgid "Contract Reg. No."
-msgstr ""
+msgstr "Vertrag Reg. Nr."
 
 #: ../src/libromdata/Handheld/Nintendo3DS_SMDH.cpp:603
 msgctxt "RomData"
 msgid "Publishing Approval No."
-msgstr ""
+msgstr "Freigabe-Nr."
 
 #. tr: Uses the DSi-specific touchscreen protocol.
 #: ../src/libromdata/Handheld/NintendoDS.cpp:311
@@ -6494,7 +6494,7 @@ msgstr ""
 #: ../src/libromdata/Media/CBMDOS.cpp:1196
 msgctxt "CBMDOS"
 msgid "Disk ID"
-msgstr ""
+msgstr "Disk-ID"
 
 #: ../src/libromdata/Media/CBMDOS.cpp:1200
 msgctxt "CBMDOS"
@@ -6549,12 +6549,12 @@ msgstr ""
 #: ../src/libromdata/Media/ISO.cpp:434
 msgctxt "ISO"
 msgid "System ID"
-msgstr ""
+msgstr "System-ID"
 
 #: ../src/libromdata/Media/ISO.cpp:439
 msgctxt "ISO"
 msgid "Volume ID"
-msgstr ""
+msgstr "Volume-ID"
 
 #: ../src/libromdata/Media/ISO.cpp:444
 msgctxt "ISO"
@@ -8088,7 +8088,7 @@ msgstr ""
 #: ../src/libromdata/Other/NintendoBadge.cpp:747
 msgctxt "NintendoBadge"
 msgid "Launch Title ID"
-msgstr "Start Titel ID"
+msgstr "Start Titel-ID"
 
 #: ../src/libromdata/Other/NintendoBadge.cpp:751
 msgctxt "NintendoBadge"
@@ -8114,7 +8114,7 @@ msgstr "%s (New3DS)"
 #, c-format
 msgctxt "NintendoBadge"
 msgid "%1$s (%2$s)"
-msgstr ""
+msgstr "%1$s (%2$s)"
 
 #: ../src/libromdata/Other/NintendoBadge.cpp:784
 msgctxt "NintendoBadge"
@@ -8658,7 +8658,7 @@ msgstr ""
 #, c-format
 msgctxt "TextOut"
 msgid "%1$s is present (use -x%2$d to extract)"
-msgstr ""
+msgstr "%1$s ist vorhanden (verwende -x%2$d zum Extrahieren)"
 
 #: ../src/librpbase/TextOut_text.cpp:978
 msgctxt "TextOut"
@@ -10489,13 +10489,13 @@ msgstr ""
 #: ../src/win32/config/AboutTab.cpp:1565
 msgctxt "AboutTab"
 msgid "About"
-msgstr ""
+msgstr "Über"
 
 #. tr: Tab title.
 #: ../src/win32/config/AchievementsTab.cpp:667
 msgctxt "AchievementsTab"
 msgid "Achievements"
-msgstr ""
+msgstr "Errungenschaften"
 
 #. tr: Windows Vista and later. Has a centralized thumbnails cache.
 #: ../src/win32/config/CacheTab.cpp:178
@@ -10571,13 +10571,13 @@ msgstr ""
 #: ../src/win32/config/CacheTab.cpp:1026
 msgctxt "CacheTab"
 msgid "Thumbnail Cache"
-msgstr ""
+msgstr "Vorschaubilder Cache"
 
 #. tr: Tab title.
 #: ../src/win32/config/ImageTypesTab.cpp:794
 msgctxt "ImageTypesTab"
 msgid "Image Types"
-msgstr ""
+msgstr "Bildtypen"
 
 #: ../src/win32/config/KeyManagerTab.cpp:352
 msgctxt "KeyManagerTab"
@@ -10594,7 +10594,7 @@ msgstr ""
 #: ../src/win32/config/SystemsTab.cpp:473
 msgctxt "SystemsTab"
 msgid "Systems"
-msgstr ""
+msgstr "Systeme"
 
 #: ../src/win32/config/UpdateChecker.cpp:166
 msgctxt "UpdateChecker"
