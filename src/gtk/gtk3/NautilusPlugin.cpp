@@ -49,7 +49,7 @@ rp_nautilus_register_types(GTypeModule *g_module)
 	type_list[1] = RP_TYPE_NAUTILUS_MENU_PROVIDER;
 }
 
-/** Per-frontend initialization functions. **/
+/** Per-frontend initialization functions **/
 
 #define NAUTILUS_MODULE_INITIALIZE_FUNC_INT(prefix) do { \
 	CHECK_UID(); \
