@@ -86,8 +86,13 @@ void DosAttrViewPrivate::updateAttrsDisplay(void)
  */
 inline void DosAttrViewPrivate::connectCheckboxSignal(QCheckBox *checkBox, DosAttrView *receiver)
 {
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+	QObject::connect(checkBox, &QCheckBox::clicked,
+	                 receiver, &DosAttrView::checkBox_clicked_slot);
+#else /* QT_VERSION < QT_VERSION_CHECK(5, 0, 0) */
 	QObject::connect(checkBox, SIGNAL(clicked(bool)),
 	                 receiver, SLOT(checkBox_clicked_slot(bool)));
+#endif /* QT_VERSION >= QT_VERSION_CHECK(5, 0, 0) */
 }
 
 /** DosAttrView **/
