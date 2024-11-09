@@ -66,14 +66,23 @@ public:
 	// IsoPartition
 	IsoPartitionPtr isoPartition;
 
-	// Icon
+	// Internal images
 	rp_image_ptr img_icon;
+	rp_image_ptr img_banner;
 
 	/**
 	 * Load the icon.
 	 * @return Icon, or nullptr on error.
 	 */
 	rp_image_const_ptr loadIcon(void);
+
+	/**
+	 * Load the banner.
+	 * @return Banner, or nullptr on error.
+	 */
+	rp_image_const_ptr loadBanner(void);
+
+	// TODO: PIC1.PNG? (wallpaper)
 
 	// Boot executable (EBOOT.BIN)
 	RomDataPtr bootExeData;
@@ -86,7 +95,7 @@ public:
 };
 
 ROMDATA_IMPL(PSP)
-ROMDATA_IMPL_IMG_TYPES(PSP)
+ROMDATA_IMPL_IMG(PSP)
 
 /** PSPPrivate **/
 
@@ -164,6 +173,37 @@ rp_image_const_ptr PSPPrivate::loadIcon(void)
 	// TODO: For rpcli, shortcut to extract the PNG directly.
 	this->img_icon = RpPng::load(f_icon);
 	return this->img_icon;
+}
+
+/**
+ * Load the banner.
+ * @return Icon, or nullptr on error.
+ */
+rp_image_const_ptr PSPPrivate::loadBanner(void)
+{
+	if (img_banner) {
+		// Banner has already been loaded.
+		return img_banner;
+	} else if (!this->isValid || !this->isoPartition) {
+		// Can't load the banner.
+		return nullptr;
+	}
+
+	// Banner is located on disc as a regular PNG image.
+	const char *const banner_filename =
+		(unlikely(discType == DiscType::UmdVideo)
+			? "/UMD_VIDEO/PIC0.PNG"
+			: "/PSP_GAME/PIC0.PNG");
+	const IRpFilePtr f_banner(isoPartition->open(banner_filename));
+	if (!f_banner) {
+		// Unable to open the banner file.
+		return nullptr;
+	}
+
+	// Decode the image.
+	// TODO: For rpcli, shortcut to extract the PNG directly.
+	this->img_banner = RpPng::load(f_banner);
+	return this->img_banner;
 }
 
 /**
@@ -382,27 +422,7 @@ const char *PSP::systemName(unsigned int type) const
  */
 uint32_t PSP::supportedImageTypes_static(void)
 {
-	return IMGBF_INT_ICON;
-}
-
-/**
- * Get a list of all available image sizes for the specified image type.
- * @param imageType Image type.
- * @return Vector of available image sizes, or empty vector if no images are available.
- */
-vector<RomData::ImageSizeDef> PSP::supportedImageSizes(ImageType imageType) const
-{
-	ASSERT_supportedImageSizes(imageType);
-
-	RP_D(const PSP);
-	if (!d->isValid || imageType != IMG_INT_ICON) {
-		// Only IMG_INT_ICON is supported.
-		return {};
-	}
-
-	// TODO: Actually check the icon size.
-	// Assuming 144x80 for now.
-	return {{nullptr, 144, 80, 0}};
+	return IMGBF_INT_ICON | IMGBF_INT_BANNER;
 }
 
 /**
@@ -418,13 +438,18 @@ vector<RomData::ImageSizeDef> PSP::supportedImageSizes_static(ImageType imageTyp
 {
 	ASSERT_supportedImageSizes(imageType);
 
-	if (imageType != IMG_INT_ICON) {
-		// Only icons are supported.
-		return {};
+	switch (imageType) {
+		case IMG_INT_ICON:
+			// NOTE: Icon may be 144x80 or 80x80.
+			return {{nullptr, 144, 80, 0}};
+		case IMG_INT_BANNER:
+			return {{nullptr, 310, 180, 0}};
+		default:
+			break;
 	}
 
-	// NOTE: Assuming the icon is 144x80.
-	return {{nullptr, 144, 80, 0}};
+	// Unsupported image type.
+	return {};
 }
 
 /**
@@ -525,14 +550,53 @@ int PSP::loadFieldData(void)
 int PSP::loadInternalImage(ImageType imageType, rp_image_const_ptr &pImage)
 {
 	ASSERT_loadInternalImage(imageType, pImage);
+
 	RP_D(PSP);
-	ROMDATA_loadInternalImage_single(
-		IMG_INT_ICON,	// ourImageType
-		d->file,	// file
-		d->isValid,	// isValid
-		d->discType,	// romType
-		d->img_icon,	// imgCache
-		d->loadIcon);	// func
+	switch (imageType) {
+		case IMG_INT_ICON:
+			if (d->img_icon) {
+				// Icon is loaded.
+				pImage = d->img_icon;
+				return 0;
+			}
+			break;
+		case IMG_INT_BANNER:
+			if (d->img_banner) {
+				// Banner is loaded.
+				pImage = d->img_banner;
+				return 0;
+			}
+			break;
+		default:
+			// Unsupported image type.
+			pImage.reset();
+			return 0;
+	}
+
+	if (!d->file) {
+		// File isn't open.
+		return -EBADF;
+	} else if (!d->isValid) {
+		// Save file isn't valid.
+		return -EIO;
+	}
+
+	// Load the image.
+	switch (imageType) {
+		case IMG_INT_ICON:
+			pImage = d->loadIcon();
+			break;
+		case IMG_INT_BANNER:
+			pImage = d->loadBanner();
+			break;
+		default:
+			// Unsupported.
+			pImage.reset();
+			return -ENOENT;
+	}
+
+	// TODO: -ENOENT if the file doesn't actually have an icon/banner.
+	return ((bool)pImage ? 0 : -EIO);
 }
 
 /**

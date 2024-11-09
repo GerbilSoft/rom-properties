@@ -1,6 +1,6 @@
 # Changes
 
-## v2.4 (released 2024/03/??)
+## v2.4 (released 2024/11/??)
 
 * New features:
   * IFUNC resolvers have been rewritten to use our own CPUID code again,
@@ -44,6 +44,7 @@
   * PowerVR3: Preliminary support for PowerVR v2.0 files.
     * Only uncompressed v2.0 textures are supported right now.
     * Not all formats are implemented yet.
+  * PSP: PIC0.PNG is now presented as the "Banner" image.
 
 * Bug fixes:
   * On Linux, rp-config now correctly detects KDE Plasma 6 and uses the
