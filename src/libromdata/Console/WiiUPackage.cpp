@@ -172,11 +172,11 @@ IDiscReaderPtr WiiUPackagePrivate::openContentFile(unsigned int idx)
 		// Content is not H3-hashed.
 
 		// IV is the 2-byte content index, followed by zeroes.
-		uint8_t iv[16];
-		memcpy(iv, &entry.index, 2);
-		memset(&iv[2], 0, 14);
+		array<uint8_t, 16> iv;
+		iv.fill(0);
+		memcpy(iv.data(), &entry.index, 2);
 
-		discReader = std::make_shared<CBCReader>(subfile, 0, subfile->size(), title_key, iv);
+		discReader = std::make_shared<CBCReader>(subfile, 0, subfile->size(), title_key, iv.data());
 	}
 	if (!discReader->isOpen()) {
 		// Unable to open the CBC reader.
