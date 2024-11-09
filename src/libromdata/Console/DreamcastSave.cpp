@@ -114,6 +114,14 @@ public:
 	bool isGameFile;
 
 	/**
+	 * Check a Dreamcast VMS field for invalid characters.
+	 * @param field Field
+	 * @param size Size of field, in bytes
+	 * @return True if OK; false if any invalid characters were found.
+	 */
+	bool checkField(const void *field, size_t size);
+
+	/**
 	 * Read and verify the VMS header.
 	 * This function sets vms_header and vms_header_offset.
 	 * @param address Address to check.
@@ -268,6 +276,45 @@ time_t DreamcastSavePrivate::vmi_to_unix_time(const DC_VMI_Timestamp *vmi_tm)
 }
 
 /**
+ * Check a Dreamcast VMS field for invalid characters.
+ * @param field Field
+ * @param size Size of field, in bytes
+ * @return True if OK; false if any invalid characters were found.
+ */
+bool DreamcastSavePrivate::checkField(const void *field, size_t size)
+{
+	// Validate the description fields.
+	// The description fields cannot contain any control characters
+	// other than 0x00 (NULL). In the case of a game file, the first
+	// 512 bytes is program code, so there will almost certainly be
+	// some control character.
+	// In addition, the first 8 characters of each field must not be NULL.
+	// NOTE: Need to use unsigned here.
+	assert(size >= 8);
+
+	const uint8_t *chr = reinterpret_cast<const uint8_t*>(field);
+	for (int i = 8; i > 0; i--, chr++) {
+		// First 8 characters must not be a control code or NULL.
+		if (*chr < 0x20) {
+			// Invalid character
+			return false;
+		}
+	}
+
+	for (int i = static_cast<int>(size) - 8; i > 0; i--, chr++) {
+		// Remaining characters must not be a control code,
+		// but may be NULL.
+		if (*chr < 0x20 && *chr != 0) {
+			// Invalid character
+			return false;
+		}
+	}
+
+	// Field is valid
+	return true;
+}
+
+/**
  * Read and verify the VMS header.
  * This function sets vms_header and vms_header_offset.
  * @param address Address to check.
@@ -281,33 +328,11 @@ unsigned int DreamcastSavePrivate::readAndVerifyVmsHeader(uint32_t address)
 		return DC_HAVE_UNKNOWN;
 	}
 
-	// Validate the description fields.
-	// The description fields cannot contain any control characters
-	// other than 0x00 (NULL). In the case of a game file, the first
-	// 512 bytes is program code, so there will almost certainly be
-	// some control character.
-	// In addition, the first 8 characters of each field must not be NULL.
-	// NOTE: Need to use unsigned here.
-#define CHECK_FIELD(field) \
-	do { \
-		const uint8_t *chr = reinterpret_cast<const uint8_t*>(field); \
-		for (int i = 8; i > 0; i--, chr++) { \
-			/* First 8 characters must not be a control code or NULL. */ \
-			if (*chr < 0x20) { \
-				/* Invalid character. */ \
-				return DC_HAVE_UNKNOWN; \
-			} \
-		} \
-		for (int i = ARRAY_SIZE(field)-8; i > 0; i--, chr++) { \
-			/* Remaining characters must not be a control code, * \
-			 * but may be NULL.                                 */ \
-			if (*chr < 0x20 && *chr != 0) { \
-				/* Invalid character. */ \
-				return DC_HAVE_UNKNOWN; \
-			} \
-		} \
-	} while (0)
-	CHECK_FIELD(vms_header.vms_description);
+	// Validate the VMS description field
+	if (!checkField(vms_header.vms_description, sizeof(vms_header.vms_description))) {
+		// Field has an invalid character
+		return DC_HAVE_UNKNOWN;
+	}
 
 	// Check for ICONDATA_VMS.
 	// Monochrome icon is usually within the first 256 bytes
@@ -333,7 +358,11 @@ unsigned int DreamcastSavePrivate::readAndVerifyVmsHeader(uint32_t address)
 		return DC_IS_ICONDATA_VMS;
 	}
 
-	CHECK_FIELD(vms_header.dc_description);
+	// Validate the DC description field
+	if (!checkField(vms_header.dc_description, sizeof(vms_header.dc_description))) {
+		// Field has an invalid character
+		return DC_HAVE_UNKNOWN;
+	}
 
 	// Description fields are valid.
 
