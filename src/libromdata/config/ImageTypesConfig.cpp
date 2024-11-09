@@ -27,6 +27,7 @@ using namespace LibRpBase;
 #include "Console/PlayStationDisc.hpp"
 #include "Console/PlayStationSave.hpp"
 #include "Console/WiiU.hpp"
+#include "Console/WiiUPackage.hpp"
 #include "Console/WiiWAD.hpp"
 
 // C++ STL classes
@@ -37,7 +38,7 @@ namespace LibRomData { namespace ImageTypesConfig {
 // Number of image types. (columns)
 static constexpr unsigned int IMG_TYPE_COUNT = LibRpBase::RomData::IMG_EXT_MAX+1;
 // Number of systems. (rows)
-static constexpr unsigned int SYS_COUNT = 11;
+static constexpr unsigned int SYS_COUNT = 12;
 
 namespace Private {
 
@@ -63,6 +64,7 @@ static const array<SysData_t, SYS_COUNT> sysData = {{
 	SysDataEntry(PlayStationDisc),
 	SysDataEntry(PlayStationSave),
 	SysDataEntry(WiiU),
+	SysDataEntry(WiiUPackage),
 	SysDataEntry(WiiWAD),
 }};
 
@@ -157,6 +159,8 @@ const char *sysName(unsigned int sys)
 		NOP_C_("ImageTypesConfig|SysName", "PlayStation Saves"),
 		// tr: WiiU
 		NOP_C_("ImageTypesConfig|SysName", "Wii U"),
+		// tr: WiiUPackage
+		NOP_C_("ImageTypesConfig|SysName", "Wii U Packages"),
 		// tr: WiiWAD
 		NOP_C_("ImageTypesConfig|SysName", "Wii WAD Files"),
 	}};
