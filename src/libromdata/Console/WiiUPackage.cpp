@@ -7,14 +7,18 @@
  ***************************************************************************/
 
 #include "stdafx.h"
+
 #include "WiiUPackage.hpp"
 #include "WiiUPackage_p.hpp"
+#include "data/WiiUData.hpp"
+#include "GameCubeRegions.hpp"
 
 // TGA FileFormat
 #include "librptexture/fileformat/TGA.hpp"
 
 // Other rom-properties libraries
 #include "librpbase/disc/PartitionFile.hpp"
+#include "librpbase/SystemRegion.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;
@@ -588,7 +592,21 @@ const char *WiiUPackage::systemName(unsigned int type) const
  */
 uint32_t WiiUPackage::supportedImageTypes_static(void)
 {
-	return IMGBF_INT_ICON;;
+#ifdef ENABLE_XML
+
+#ifdef HAVE_JPEG
+	return IMGBF_INT_ICON |
+	       IMGBF_EXT_MEDIA |
+	       IMGBF_EXT_COVER | IMGBF_EXT_COVER_3D |
+	       IMGBF_EXT_COVER_FULL;
+#else /* !HAVE_JPEG */
+	return IMGBF_INT_ICON |
+	       IMGBF_EXT_MEDIA | IMGBF_EXT_COVER_3D;
+#endif /* HAVE_JPEG */
+
+#else /* !ENABLE_XML */
+	return IMGBF_INT_ICON;
+#endif /* ENABLE_XML */
 }
 
 /**
@@ -602,8 +620,34 @@ vector<RomData::ImageSizeDef> WiiUPackage::supportedImageSizes_static(ImageType 
 
 	switch (imageType) {
 		case IMG_INT_ICON:
-			// Wii U icons are usually 128x128.
+			// Wii U icons are usually 128x128
 			return {{nullptr, 128, 128, 0}};
+
+#ifdef ENABLE_XML
+		case IMG_EXT_MEDIA:
+			return {
+				{nullptr, 160, 160, 0},
+				{"M", 500, 500, 1},
+			};
+#ifdef HAVE_JPEG
+		case IMG_EXT_COVER:
+			return {
+				{nullptr, 160, 224, 0},
+				{"M", 350, 500, 1},
+				{"HQ", 768, 1080, 2},
+			};
+#endif /* HAVE_JPEG */
+		case IMG_EXT_COVER_3D:
+			return {{nullptr, 176, 248, 0}};
+#ifdef HAVE_JPEG
+		case IMG_EXT_COVER_FULL:
+			return {
+				{nullptr, 340, 224, 0},
+				{"M", 752, 500, 1},
+				{"HQ", 1632, 1080, 2},
+			};
+#endif /* HAVE_JPEG */
+#endif /* ENABLE_XML */
 		default:
 			break;
 	}
@@ -752,6 +796,166 @@ int WiiUPackage::loadInternalImage(ImageType imageType, rp_image_const_ptr &pIma
 		0,		// romType
 		d->img_icon,	// imgCache
 		d->loadIcon);	// func
+}
+
+/**
+ * Get a list of URLs for an external image type.
+ *
+ * A thumbnail size may be requested from the shell.
+ * If the subclass supports multiple sizes, it should
+ * try to get the size that most closely matches the
+ * requested size.
+ *
+ * @param imageType	[in]     Image type.
+ * @param pExtURLs	[out]    Output vector.
+ * @param size		[in,opt] Requested image size. This may be a requested
+ *                               thumbnail size in pixels, or an ImageSizeType
+ *                               enum value.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int WiiUPackage::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
+{
+#ifdef ENABLE_XML
+	ASSERT_extURLs(imageType, pExtURLs);
+	pExtURLs->clear();
+
+	RP_D(const WiiUPackage);
+	if (!d->isValid) {
+		// Package isn't valid.
+		return -EIO;
+	}
+
+	// Get the image sizes and sort them based on the
+	// requested image size.
+	vector<ImageSizeDef> sizeDefs = supportedImageSizes(imageType);
+	if (sizeDefs.empty()) {
+		// No image sizes.
+		return -ENOENT;
+	}
+
+	// Select the best size.
+	const ImageSizeDef *const sizeDef = d->selectBestSize(sizeDefs, size);
+	if (!sizeDef) {
+		// No size available...
+		return -ENOENT;
+	}
+
+	// NOTE: Only downloading the first size as per the
+	// sort order, since GameTDB basically guarantees that
+	// all supported sizes for an image type are available.
+	// TODO: Add cache keys for other sizes in case they're
+	// downloaded and none of these are available?
+
+	// Determine the image type name.
+	const char *imageTypeName_base;
+	const char *ext;
+	switch (imageType) {
+		case IMG_EXT_MEDIA:
+			imageTypeName_base = "disc";
+			ext = ".png";
+			break;
+#ifdef HAVE_JPEG
+		case IMG_EXT_COVER:
+			imageTypeName_base = "cover";
+			ext = ".jpg";
+			break;
+#endif /* HAVE_JPEG */
+		case IMG_EXT_COVER_3D:
+			imageTypeName_base = "cover3D";
+			ext = ".png";
+			break;
+#ifdef HAVE_JPEG
+		case IMG_EXT_COVER_FULL:
+			imageTypeName_base = "coverfull";
+			ext = ".jpg";
+			break;
+#endif /* HAVE_JPEG */
+		default:
+			// Unsupported image type.
+			return -ENOENT;
+	}
+
+	// Get the game ID from the system XML.
+	// Format: "WUP-X-ABCD"
+	const string productCode = const_cast<WiiUPackagePrivate*>(d)->getProductCode_meta_xml();
+	if (productCode.empty() || productCode.size() != 10 || productCode.compare(0, 4, "WUP-", 4) != 0 || productCode[5] != '-') {
+		// Invalid product code.
+		// TODO: Check 'X'?
+		return -ENOENT;
+	}
+	const char *const id4 = &productCode[6];
+
+	// Look up the publisher ID.
+	const uint32_t publisher_id = WiiUData::lookup_disc_publisher(id4);
+	if (publisher_id == 0 || (publisher_id & 0xFFFF0000) != 0x30300000) {
+		// Either the publisher ID is unknown, or it's a
+		// 4-character ID, which isn't supported by
+		// GameTDB at the moment.
+		return -ENOENT;
+	}
+
+	// Determine the GameTDB language code(s).
+	// TODO: Figure out the actual Wii U region code.
+	// Using the game ID for now.
+	const vector<uint16_t> tdb_lc = GameCubeRegions::gcnRegionToGameTDB(~0U, id4[3]);
+
+	// Game ID
+	// Replace any non-printable characters with underscores.
+	// (GameCube NDDEMO has ID6 "00\0E01".)
+	char id6[7];
+	for (unsigned int i = 0; i < 4; i++) {
+		id6[i] = (ISPRINT(id4[i]))
+			? id4[i]
+			: '_';
+	}
+
+	// Publisher ID
+	id6[4] = (publisher_id >> 8) & 0xFF;
+	id6[5] = publisher_id & 0xFF;
+	id6[6] = 0;
+
+	// If we're downloading a "high-resolution" image (M or higher),
+	// also add the default image to ExtURLs in case the user has
+	// high-resolution image downloads disabled.
+	array<const ImageSizeDef*, 2> szdefs_dl;
+	szdefs_dl[0] = sizeDef;
+	unsigned int szdef_count;
+	if (sizeDef->index > 0) {
+		// M or higher.
+		szdefs_dl[1] = &sizeDefs[0];
+		szdef_count = 2;
+	} else {
+		// Default or S.
+		szdef_count = 1;
+	}
+
+	// Add the URLs.
+	pExtURLs->resize(szdef_count * tdb_lc.size());
+	auto extURL_iter = pExtURLs->begin();
+	for (unsigned int i = 0; i < szdef_count; i++) {
+		// Current image type.
+		char imageTypeName[16];
+		snprintf(imageTypeName, sizeof(imageTypeName), "%s%s",
+			 imageTypeName_base, (szdefs_dl[i]->name ? szdefs_dl[i]->name : ""));
+
+		// Add the images.
+		for (const uint16_t lc : tdb_lc) {
+			const string lc_str = SystemRegion::lcToStringUpper(lc);
+			extURL_iter->url = d->getURL_GameTDB("wiiu", imageTypeName, lc_str.c_str(), id6, ext);
+			extURL_iter->cache_key = d->getCacheKey_GameTDB("wiiu", imageTypeName, lc_str.c_str(), id6, ext);
+			extURL_iter->width = szdefs_dl[i]->width;
+			extURL_iter->height = szdefs_dl[i]->height;
+			extURL_iter->high_res = (szdefs_dl[i]->index > 0);
+			++extURL_iter;
+		}
+	}
+
+	// All URLs added.
+	return 0;
+#else /* !ENABLE_XML */
+	// Cannot check the system XML without XML support.
+	return -ENOTSUP;
+#endif /* ENABLE_XML */
 }
 
 } // namespace LibRomData

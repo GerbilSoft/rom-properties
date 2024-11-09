@@ -185,6 +185,12 @@ public:
 	 * @return 0 on success; negative POSIX error code on error.
 	 */
 	int addMetaData_System_XMLs(void);
+
+	/**
+	 * Get the product code from meta.xml.
+	 * @return Product code, or empty string on error.
+	 */
+	std::string getProductCode_meta_xml(void);
 #endif /* ENABLE_XML */
 };
 

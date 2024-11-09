@@ -639,4 +639,27 @@ int WiiUPackagePrivate::addMetaData_System_XMLs(void)
 	return 0;
 }
 
+/**
+ * Get the product code from meta.xml.
+ * @return Product code, or empty string on error.
+ */
+string WiiUPackagePrivate::getProductCode_meta_xml(void)
+{
+	XMLDocument metaXml;
+	int retMeta = loadSystemXml(metaXml, "/meta/meta.xml", "menu");
+	if (retMeta != 0) {
+		// Unable to load meta.xml.
+		return {};
+	}
+
+	const XMLElement *const metaRootNode = metaXml.FirstChildElement("menu");
+	if (!metaRootNode) {
+		// No root node.
+		return {};
+	}
+
+	const char *const text = getText(metaRootNode, "product_code");
+	return (text) ? text : string();
+}
+
 }
