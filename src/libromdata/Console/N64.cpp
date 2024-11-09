@@ -54,6 +54,16 @@ public:
 	// ROM header.
 	// NOTE: Fields have been byteswapped in the constructor.
 	N64_RomHeader romHeader;
+
+	/**
+	 * Un-wordswap a 32-bit DWORD from a SWAP2-format ROM image.
+	 * @param x 32-bit DWORD
+	 * @return Un-wordswapped DWORD
+	 */
+	static constexpr inline uint32_t UNSWAP2(uint32_t x)
+	{
+		return (x >> 16) | (x << 16);
+	}
 };
 
 ROMDATA_IMPL(N64)
@@ -140,9 +150,8 @@ N64::N64(const IRpFilePtr &file)
 		case N64Private::RomType::SWAP2:
 			// swap2 format. (wordswapped)
 			// Convert the header to Z64 first.
-			#define UNSWAP2(x) (uint32_t)(((x) >> 16) | ((x) << 16))
 			for (size_t i = 0; i < ARRAY_SIZE(d->romHeader.u32); i++) {
-				d->romHeader.u32[i] = UNSWAP2(d->romHeader.u32[i]);
+				d->romHeader.u32[i] = N64Private::UNSWAP2(d->romHeader.u32[i]);
 			}
 			break;
 

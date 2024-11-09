@@ -67,6 +67,20 @@ public:
 	SaveType saveType;
 
 	/**
+	 * PDP-swap a DWORD from a .sav save file.
+	 * @param x Original DWORD
+	 * @return PDP-swapped DWORD
+	 */
+	static inline uint32_t PDP_SWAP(uint32_t x)
+	{
+		union { uint16_t w[2]; uint32_t d; } tmp;
+		tmp.d = be32_to_cpu(x);
+		tmp.w[0] = __swab16(tmp.w[0]);
+		tmp.w[1] = __swab16(tmp.w[1]);
+		return tmp.d;
+	}
+
+	/**
 	 * Byteswap a card_direntry struct.
 	 * @param direntry card_direntry struct.
 	 * @param saveType Apply quirks for a specific save type.
@@ -262,21 +276,13 @@ bool GameCubeSavePrivate::isCardDirEntry(const uint8_t *buffer, uint32_t data_si
 	// minus 64 bytes for the GCI header.
 	// NOTE: 0xFFFFFFFF indicates "no icon" or "no comment".
 	// Used by some SDK tools.
-#define PDP_SWAP(dest, src) \
-	do { \
-		union { uint16_t w[2]; uint32_t d; } tmp; \
-		tmp.d = be32_to_cpu(src); \
-		tmp.w[0] = __swab16(tmp.w[0]); \
-		tmp.w[1] = __swab16(tmp.w[1]); \
-		(dest) = tmp.d; \
-	} while (0)
 	uint32_t iconaddr, commentaddr;
-	if (saveType != SaveType::SAV) {
+	if (unlikely(saveType == SaveType::SAV)) {
+		iconaddr = PDP_SWAP(direntry->iconaddr);
+		commentaddr = PDP_SWAP(direntry->commentaddr);
+	} else {
 		iconaddr = be32_to_cpu(direntry->iconaddr);
 		commentaddr = be32_to_cpu(direntry->commentaddr);
-	} else {
-		PDP_SWAP(iconaddr, direntry->iconaddr);
-		PDP_SWAP(commentaddr, direntry->commentaddr);
 	}
 	if ((iconaddr >= data_size && iconaddr != 0xFFFFFFFFU) ||
 	    (commentaddr >= data_size && commentaddr != 0xFFFFFFFFU))
