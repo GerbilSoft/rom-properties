@@ -279,7 +279,7 @@ int WiiUPackagePrivate::addFields_System_XMLs(void)
 	if (!appRootNode && !cosRootNode && !metaRootNode) {
 		// Missing root elements from all three XMLs.
 		// TODO: Better error code.
-		//return -EIO;
+		return -EIO;
 	}
 
 	// Title (shortname), full title (longname), publisher
