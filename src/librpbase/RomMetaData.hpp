@@ -25,7 +25,7 @@ namespace LibRpBase {
 
 // Properties.
 // This matches KFileMetaData::Property.
-enum class Property : int {
+enum class Property : int8_t {
 	Invalid = -1,
 	FirstProperty = 0,
 	Empty = 0,

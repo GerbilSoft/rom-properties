@@ -32,7 +32,7 @@ private:
 	RP_DISABLE_COPY(RomMetaDataPrivate)
 
 public:
-	// ROM field structs.
+	// ROM field structs
 	vector<RomMetaData::MetaData> metaData;
 
 	// Mapping of Property to metaData indexes.
