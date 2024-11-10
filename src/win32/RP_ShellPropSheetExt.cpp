@@ -1589,6 +1589,7 @@ void RP_ShellPropSheetExt_Private::updateMulti(uint32_t user_lc)
 		vec_lc.reserve(set_lc.size() + 1);
 		vec_lc.assign(set_lc.cbegin(), set_lc.cend());
 		vec_lc.emplace_back(0);
+		LanguageComboBox_SetForcePAL(cboLanguage, romData->isPAL());
 		LanguageComboBox_SetLCs(cboLanguage, vec_lc.data());
 
 		// Get the minimum size for the combobox.

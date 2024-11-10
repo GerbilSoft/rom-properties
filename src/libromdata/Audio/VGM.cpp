@@ -249,6 +249,12 @@ VGM::VGM(const IRpFilePtr &file)
 
 	if (!d->isValid) {
 		d->file.reset();
+		return;
+	}
+
+	// Is PAL?
+	if (le32_to_cpu(d->vgmHeader.version) >= 0x0101) {
+		d->isPAL = (le32_to_cpu(d->vgmHeader.frame_rate) == 50);
 	}
 }
 

@@ -115,7 +115,11 @@ NSF::NSF(const IRpFilePtr &file)
 
 	if (!d->isValid) {
 		d->file.reset();
+		return;
 	}
+
+	// Is PAL?
+	d->isPAL = (d->nsfHeader.tv_system == NSF_TV_PAL);
 }
 
 /**

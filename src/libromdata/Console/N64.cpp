@@ -181,6 +181,9 @@ N64::N64(const IRpFilePtr &file)
 	d->romHeader.crc[0]     = be32_to_cpu(d->romHeader.crc[0]);
 	d->romHeader.crc[1]     = be32_to_cpu(d->romHeader.crc[1]);
 #endif /* SYS_BYTEORDER != SYS_BIG_ENDIAN */
+
+	// Is PAL?
+	d->isPAL = (d->romHeader.id4[3] == 'P');
 }
 
 /** ROM detection functions. **/

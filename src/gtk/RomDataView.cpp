@@ -1098,6 +1098,7 @@ rp_rom_data_view_update_multi(RpRomDataView *page, uint32_t user_lc)
 		vec_lc.reserve(set_lc.size() + 1);
 		vec_lc.assign(set_lc.cbegin(), set_lc.cend());
 		vec_lc.emplace_back(0);
+		rp_language_combo_box_set_force_pal(RP_LANGUAGE_COMBO_BOX(page->cboLanguage), cxx->romData->isPAL());
 		rp_language_combo_box_set_lcs(RP_LANGUAGE_COMBO_BOX(page->cboLanguage), vec_lc.data());
 
 		// Select the default language.

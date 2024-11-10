@@ -276,6 +276,14 @@ Nintendo3DS_SMDH::Nintendo3DS_SMDH(const IRpFilePtr &file)
 		d->file.reset();
 		return;
 	}
+
+	// Is PAL?
+	const uint32_t region_code = le32_to_cpu(d->smdh.header.settings.region_code);
+	if (region_code & (N3DS_REGION_EUROPE | N3DS_REGION_AUSTRALIA)) {
+		if (!(region_code & ~(N3DS_REGION_EUROPE | N3DS_REGION_AUSTRALIA))) {
+			d->isPAL = true;
+		}
+	}
 }
 
 /** ROM detection functions. **/

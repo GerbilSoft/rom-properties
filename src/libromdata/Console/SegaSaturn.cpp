@@ -405,6 +405,9 @@ SegaSaturn::SegaSaturn(const IRpFilePtr &file)
 	// Parse the Saturn region code.
 	d->saturn_region = d->parseRegionCodes(
 		d->discHeader.area_symbols, sizeof(d->discHeader.area_symbols));
+
+	// Is PAL? (TODO: Multi-region?)
+	d->isPAL = (d->saturn_region == SegaSaturnPrivate::SATURN_REGION_EUROPE);
 }
 
 /**

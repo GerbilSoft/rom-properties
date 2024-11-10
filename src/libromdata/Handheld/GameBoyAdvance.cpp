@@ -168,7 +168,11 @@ GameBoyAdvance::GameBoyAdvance(const IRpFilePtr &file)
 	d->isValid = ((int)d->romType >= 0);
 	if (!d->isValid) {
 		d->file.reset();
+		return;
 	}
+
+	// Is PAL?
+	d->isPAL = (d->romHeader.id4[3] == 'P');
 }
 
 /**

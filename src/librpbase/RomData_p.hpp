@@ -63,6 +63,7 @@ class NOVTABLE RomDataPrivate
 	public:
 		/** These fields are set by RomData's own constructor. **/
 		bool isCompressed;		// True if the file is compressed. (transparent decompression)
+		bool isPAL;			// Is PAL?
 		LibRpFile::IRpFilePtr file;	// Open file
 		char *filename;			// Copy of the filename (UTF-8)
 #ifdef _WIN32

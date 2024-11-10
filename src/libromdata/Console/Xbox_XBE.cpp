@@ -431,7 +431,10 @@ Xbox_XBE::Xbox_XBE(const IRpFilePtr &file)
 	if (cert_address > base_address) {
 		size = d->file->seekAndRead(cert_address - base_address,
 			&d->xbeCertificate, sizeof(d->xbeCertificate));
-		if (size != sizeof(d->xbeCertificate)) {
+		if (size == sizeof(d->xbeCertificate)) {
+			// Is PAL?
+			d->isPAL = (le32_to_cpu(d->xbeCertificate.region_code) == XBE_REGION_CODE_RESTOFWORLD);
+		} else {
 			// Unable to load the certificate.
 			// Continue anyway.
 			d->xbeCertificate.size = 0;

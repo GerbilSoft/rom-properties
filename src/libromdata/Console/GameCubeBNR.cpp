@@ -438,8 +438,13 @@ GameCubeBNR::GameCubeBNR(const IRpFilePtr &file, uint32_t gcnRegion)
 		if (size != expSize) {
 			// Seek and/or read error.
 			d->comments.clear();
+			d->isValid = false;
+			return;
 		}
 	}
+
+	// Is PAL?
+	d->isPAL = (d->bannerType == GameCubeBNRPrivate::BannerType::BNR2);
 }
 
 /** ROM detection functions. **/

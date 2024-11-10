@@ -435,6 +435,9 @@ Dreamcast::Dreamcast(const IRpFilePtr &file)
 	}
 
 	d->isValid = true;
+
+	// Is PAL? (TODO: Multi-region)
+	d->isPAL = (d->discHeader.area_symbols[2] == 'E');
 }
 
 /**

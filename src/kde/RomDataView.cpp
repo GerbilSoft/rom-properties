@@ -852,6 +852,8 @@ void RomDataViewPrivate::updateMulti(uint32_t user_lc)
 		ui.hboxHeaderRow->addWidget(cboLanguage);
 
 		// Set the languages.
+		printf("isPAL: %d\n", romData->isPAL());
+		cboLanguage->setForcePAL(romData->isPAL());
 		cboLanguage->setLCs(set_lc);
 
 		// Select the default language.

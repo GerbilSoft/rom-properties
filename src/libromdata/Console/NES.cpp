@@ -716,6 +716,13 @@ NES::NES(const IRpFilePtr &file)
 	}
 
 	d->isValid = true;
+
+	// Is PAL?
+	if (d->romType == NESPrivate::ROM_FORMAT_NES2 &&
+	    (d->header.ines.nes2.tv_mode & 3) == NES2_F12_PAL)
+	{
+		d->isPAL = true;
+	}
 }
 
 /** ROM detection functions. **/

@@ -244,6 +244,15 @@ public:
 	RP_LIBROMDATA_PUBLIC
 	const char *mimeType(void) const;
 
+	/**
+	 * Is this a PAL-region title?
+	 * Mostly used to select between US/GB flags in the
+	 * language dropdown box for multi-language titles.
+	 * @return True if it's definitely PAL; false if not or unknown.
+	 */
+	RP_LIBROMDATA_PUBLIC
+	bool isPAL(void) const;
+
 	// TODO:
 	// - List of supported systems.
 	// - Get logo from current system and/or other system?

@@ -170,7 +170,11 @@ VirtualBoy::VirtualBoy(const IRpFilePtr &file)
 
 	if (!d->isValid) {
 		d->file.reset();
+		return;
 	}
+
+	// Is PAL?
+	d->isPAL = (d->romFooter.gameid[3] == 'P');
 }
 
 /** ROM detection functions. **/

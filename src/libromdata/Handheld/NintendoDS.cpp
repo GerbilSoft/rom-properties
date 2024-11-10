@@ -383,6 +383,9 @@ NintendoDS::NintendoDS(const IRpFilePtr &file, bool cia)
 		return;
 	}
 
+	// Is PAL?
+	d->isPAL = (d->romHeader.id4[3] == 'P');
+
 	// Check the secure area status.
 	d->secData = d->checkNDSSecurityData();
 	d->secArea = d->checkNDSSecureArea();

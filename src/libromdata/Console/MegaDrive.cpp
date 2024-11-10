@@ -872,6 +872,19 @@ MegaDrive::MegaDrive(const IRpFilePtr &file)
 		d->mimeType = d->mimeTypes[sysID];
 	}
 
+	// Is PAL? (PAL *only*, not multi-region)
+	switch (d->md_region) {
+		case MegaDriveRegions::MD_REGION_EUROPE:
+		case MegaDriveRegions::MD_REGION_ASIA:
+		case MegaDriveRegions::MD_REGION_EUROPE |
+		     MegaDriveRegions::MD_REGION_ASIA:
+			d->isPAL = true;
+			break;
+		default:
+			d->isPAL = false;
+			break;
+	}
+
 	// Special ROM checks. (MD only for now)
 	if (sysID != MegaDrivePrivate::ROM_SYSTEM_MD)
 		return;

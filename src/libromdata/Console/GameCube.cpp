@@ -979,6 +979,9 @@ GameCube::GameCube(const IRpFilePtr &file)
 		}
 	}
 
+	// Is PAL?
+	d->isPAL = (d->gcnRegion == GCN_REGION_EUR);
+
 	// Disc image loaded successfully.
 	return;
 

@@ -156,6 +156,9 @@ WiiU::WiiU(const IRpFilePtr &file)
 		d->file.reset();
 		return;
 	}
+
+	// Is PAL? (TODO: Proper region check.)
+	d->isPAL = (d->discHeader.region[0] == 'E');	// for "EUR"
 }
 
 /** ROM detection functions. **/

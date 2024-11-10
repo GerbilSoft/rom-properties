@@ -38,6 +38,7 @@ RomDataPrivate::RomDataPrivate(const IRpFilePtr &file, const RomDataInfo *pRomDa
 	, fileType(RomData::FileType::ROM_Image)
 	, isValid(false)
 	, isCompressed(false)
+	, isPAL(false)
 	, file(file)
 	, filename(nullptr)
 #ifdef _WIN32
@@ -651,6 +652,18 @@ const char *RomData::mimeType(void) const
 {
 	RP_D(const RomData);
 	return d->mimeType;
+}
+
+/**
+ * Is this a PAL-region title?
+ * Mostly used to select between US/GB flags in the
+ * language dropdown box for multi-language titles.
+ * @return True if it's definitely PAL; false if not or unknown.
+ */
+bool RomData::isPAL(void) const
+{
+	RP_D(const RomData);
+	return d->isPAL;
 }
 
 /**

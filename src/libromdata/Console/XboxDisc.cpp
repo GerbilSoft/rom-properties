@@ -427,6 +427,12 @@ XboxDisc::XboxDisc(const IRpFilePtr &file)
 	// Disc image is ready.
 	// NOTE: Kreon drives are left unlocked until the object is deleted.
 	d->isValid = true;
+
+	// Check the PAL status from the executable.
+	RomData *const defaultExeData = d->openDefaultExe();
+	if (defaultExeData) {
+		d->isPAL = defaultExeData->isPAL();
+	}
 }
 
 /**

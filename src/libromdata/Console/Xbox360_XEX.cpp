@@ -1414,6 +1414,17 @@ Xbox360_XEX::Xbox360_XEX(const IRpFilePtr &file)
 	d->optHdrTbl.resize(opt_header_count);
 	const size_t opt_header_sz = (size_t)opt_header_count * sizeof(XEX2_Optional_Header_Tbl);
 	memcpy(d->optHdrTbl.data(), &header[sizeof(d->xex2Header)], opt_header_sz);
+
+	// Is PAL?
+	const uint32_t region_code_xbx = be32_to_cpu(
+		(d->xexType != Xbox360_XEX_Private::XexType::XEX1
+			? d->secInfo.xex2.region_code
+			: d->secInfo.xex1.region_code));
+	if (region_code_xbx & (XEX2_REGION_CODE_PAL_AU_NZ | XEX2_REGION_CODE_PAL_OTHER)) {
+		if (!(region_code_xbx & ~(XEX2_REGION_CODE_PAL_AU_NZ | XEX2_REGION_CODE_PAL_OTHER))) {
+			d->isPAL = true;
+		}
+	}
 }
 
 /**

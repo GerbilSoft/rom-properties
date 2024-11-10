@@ -114,7 +114,11 @@ PokemonMini::PokemonMini(const IRpFilePtr &file)
 
 	if (!d->isValid) {
 		d->file.reset();
+		return;
 	}
+
+	// Is PAL?
+	d->isPAL = (d->romHeader.game_id[3] == 'P');
 }
 
 /**
