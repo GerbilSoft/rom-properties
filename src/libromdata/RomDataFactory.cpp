@@ -762,10 +762,15 @@ RomDataPtr create(const IRpFilePtr &file, unsigned int attrs)
 			continue;
 		}
 
-		// Check the magic number.
-		// TODO: Verify alignment restrictions.
 		assert(fns.address % 4 == 0);
 		assert(fns.address + sizeof(uint32_t) <= sizeof(header.u32));
+		if (fns.address + sizeof(uint32_t) > info.header.size) {
+			// The header size is less than the read address of this magic number.
+			continue;
+		}
+
+		// Check the magic number.
+		// TODO: Verify alignment restrictions.
 		const uint32_t magic = be32_to_cpu(header.u32[fns.address/4]);
 		if (magic == fns.size) {
 			// Found a matching magic number.
