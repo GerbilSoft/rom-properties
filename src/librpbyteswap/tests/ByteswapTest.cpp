@@ -29,7 +29,7 @@ class ByteswapTest : public ::testing::Test
 {
 	protected:
 		ByteswapTest()
-			: align_buf(aligned_uptr<uint8_t>(16, 0))
+			: align_buf(aligned_uptr<uint8_t>(16, 8))
 		{
 			// Dummy align_buf initialization to
 			// prevent compiler errors.
@@ -99,7 +99,7 @@ void ByteswapTest::SetUp(void)
 void ByteswapTest::TearDown(void)
 {
 	// NOTE: Can't simply reset it to nullptr.
-	align_buf = aligned_uptr<uint8_t>(16, 0);
+	align_buf = aligned_uptr<uint8_t>(16, 8);
 }
 
 /**
