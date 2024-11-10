@@ -31,7 +31,7 @@ class SuperMagicDriveTest : public ::testing::Test
 {
 	protected:
 		SuperMagicDriveTest()
-			: align_buf(aligned_uptr<uint8_t>(16, 0))
+			: align_buf(aligned_uptr<uint8_t>(16, 8))
 		{
 			// Dummy align_buf initialization to
 			// prevent compiler errors.
@@ -107,7 +107,7 @@ void SuperMagicDriveTest::SetUp(void)
 void SuperMagicDriveTest::TearDown(void)
 {
 	// NOTE: Can't simply reset it to nullptr.
-	align_buf = aligned_uptr<uint8_t>(16, 0);
+	align_buf = aligned_uptr<uint8_t>(16, 8);
 }
 
 /**
