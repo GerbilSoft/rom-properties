@@ -18,7 +18,7 @@
 #include <cstdlib>
 #include <ctime>
 
-namespace LibRpCpu { namespace Tests {
+namespace LibRpByteswap { namespace Tests {
 
 class BitstuffTest : public ::testing::Test
 { };
@@ -234,7 +234,7 @@ TEST_F(BitstuffTest, nextPow2)
  */
 extern "C" int gtest_main(int argc, TCHAR *argv[])
 {
-	fputs("LibRpCpu test suite: bitstuff.h tests\n\n", stderr);
+	fputs("LibRpByteswap test suite: bitstuff.h tests\n\n", stderr);
 	fflush(nullptr);
 
 	// Initialize the random number generator.

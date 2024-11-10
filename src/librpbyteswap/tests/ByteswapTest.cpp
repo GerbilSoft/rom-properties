@@ -19,11 +19,11 @@
 
 // C++ includes
 // NOTE: This must be here and *not* in ByteswapTest_data.hpp because
-// ByteswapTest_data.hpp is contained within the LibRpCpu::Tests namespace.
+// ByteswapTest_data.hpp is contained within the LibRpByteswap::Tests namespace.
 #include <array>
 using std::array;
 
-namespace LibRpCpu { namespace Tests {
+namespace LibRpByteswap { namespace Tests {
 
 class ByteswapTest : public ::testing::Test
 {
@@ -430,8 +430,8 @@ DO_ARRAY_32_BENCHMARK		(dispatch, 4, true, "")
  */
 extern "C" int gtest_main(int argc, TCHAR *argv[])
 {
-	fputs("LibRpCpu test suite: Byteswap tests.\n\n", stderr);
-	fprintf(stderr, "Benchmark iterations: %u\n", LibRpCpu::Tests::ByteswapTest::BENCHMARK_ITERATIONS);
+	fputs("LibRpByteswap test suite: Byteswap tests.\n\n", stderr);
+	fprintf(stderr, "Benchmark iterations: %u\n", LibRpByteswap::Tests::ByteswapTest::BENCHMARK_ITERATIONS);
 	fflush(nullptr);
 
 	// coverity[fun_call_w_exception]: uncaught exceptions cause nonzero exit anyway, so don't warn.
