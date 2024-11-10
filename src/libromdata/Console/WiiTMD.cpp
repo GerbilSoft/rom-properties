@@ -434,10 +434,10 @@ int WiiTMD::loadFieldData(void)
 
 	// Access rights
 	if (sysID == NINTENDO_SYSID_RVL || sysID == NINTENDO_SYSID_WUP) {
-		vector<string> *const v_access_rights_hdr = new vector<string>();
-		v_access_rights_hdr->reserve(2);
-		v_access_rights_hdr->emplace_back("AHBPROT");
-		v_access_rights_hdr->emplace_back(C_("Wii", "DVD Video"));
+		vector<string> *const v_access_rights_hdr = new vector<string>({
+			"AHBPROT",
+			C_("Wii", "DVD Video")
+		});
 		d->fields.addField_bitfield(C_("Wii", "Access Rights"),
 			v_access_rights_hdr, 0, be32_to_cpu(tmdHeader->access_rights));
 	}
