@@ -186,6 +186,13 @@ FOREACH(_target ${TARGETS})
 		TARGET_LINK_LIBRARIES(${_target} PRIVATE rptext${_target_suffix})
 	ENDIF(WIN32)
 
+	# libwin32common / libunixcommon
+	IF(WIN32)
+		TARGET_LINK_LIBRARIES(${_target} PRIVATE win32common${_target_suffix})
+	ELSE(WIN32)
+		TARGET_LINK_LIBRARIES(${_target} PRIVATE unixcommon${_target_suffix})
+	ENDIF(WIN32)
+
 	# Include paths:
 	# - Public: Current source and binary directories.
 	# - Private: Parent source and binary directories,
@@ -202,7 +209,7 @@ FOREACH(_target ${TARGETS})
 		TARGET_LINK_LIBRARIES(${_target} PRIVATE delayimp)
 	ENDIF(MSVC)
 
-	# Other libraries.
+	# Other libraries
 	IF(ZLIB_FOUND)
 		TARGET_LINK_LIBRARIES(${_target} PRIVATE ${ZLIB_LIBRARIES})
 		TARGET_INCLUDE_DIRECTORIES(${_target} PRIVATE ${ZLIB_INCLUDE_DIRS})
