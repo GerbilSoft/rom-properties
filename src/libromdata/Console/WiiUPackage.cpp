@@ -13,6 +13,9 @@
 #include "data/WiiUData.hpp"
 #include "GameCubeRegions.hpp"
 
+// for extURLs_int()
+#include "WiiU.hpp"
+
 // TGA FileFormat
 #include "librptexture/fileformat/TGA.hpp"
 
@@ -815,66 +818,13 @@ int WiiUPackage::loadInternalImage(ImageType imageType, rp_image_const_ptr &pIma
  */
 int WiiUPackage::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 {
-#ifdef ENABLE_XML
-	ASSERT_extURLs(imageType, pExtURLs);
-	pExtURLs->clear();
-
 	RP_D(const WiiUPackage);
 	if (!d->isValid) {
 		// Package isn't valid.
 		return -EIO;
 	}
 
-	// Get the image sizes and sort them based on the
-	// requested image size.
-	vector<ImageSizeDef> sizeDefs = supportedImageSizes(imageType);
-	if (sizeDefs.empty()) {
-		// No image sizes.
-		return -ENOENT;
-	}
-
-	// Select the best size.
-	const ImageSizeDef *const sizeDef = d->selectBestSize(sizeDefs, size);
-	if (!sizeDef) {
-		// No size available...
-		return -ENOENT;
-	}
-
-	// NOTE: Only downloading the first size as per the
-	// sort order, since GameTDB basically guarantees that
-	// all supported sizes for an image type are available.
-	// TODO: Add cache keys for other sizes in case they're
-	// downloaded and none of these are available?
-
-	// Determine the image type name.
-	const char *imageTypeName_base;
-	const char *ext;
-	switch (imageType) {
-		case IMG_EXT_MEDIA:
-			imageTypeName_base = "disc";
-			ext = ".png";
-			break;
-#ifdef HAVE_JPEG
-		case IMG_EXT_COVER:
-			imageTypeName_base = "cover";
-			ext = ".jpg";
-			break;
-#endif /* HAVE_JPEG */
-		case IMG_EXT_COVER_3D:
-			imageTypeName_base = "cover3D";
-			ext = ".png";
-			break;
-#ifdef HAVE_JPEG
-		case IMG_EXT_COVER_FULL:
-			imageTypeName_base = "coverfull";
-			ext = ".jpg";
-			break;
-#endif /* HAVE_JPEG */
-		default:
-			// Unsupported image type.
-			return -ENOENT;
-	}
-
+#ifdef ENABLE_XML
 	// Get the game ID from the system XML.
 	// Format: "WUP-X-ABCD"
 	const string productCode = const_cast<WiiUPackagePrivate*>(d)->getProductCode_meta_xml();
@@ -885,73 +835,7 @@ int WiiUPackage::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size
 	}
 	const char *const id4 = &productCode[6];
 
-	// Look up the publisher ID.
-	const uint32_t publisher_id = WiiUData::lookup_disc_publisher(id4);
-	if (publisher_id == 0 || (publisher_id & 0xFFFF0000) != 0x30300000) {
-		// Either the publisher ID is unknown, or it's a
-		// 4-character ID, which isn't supported by
-		// GameTDB at the moment.
-		return -ENOENT;
-	}
-
-	// Determine the GameTDB language code(s).
-	// TODO: Figure out the actual Wii U region code.
-	// Using the game ID for now.
-	const vector<uint16_t> tdb_lc = GameCubeRegions::gcnRegionToGameTDB(~0U, id4[3]);
-
-	// Game ID
-	// Replace any non-printable characters with underscores.
-	// (GameCube NDDEMO has ID6 "00\0E01".)
-	char id6[7];
-	for (unsigned int i = 0; i < 4; i++) {
-		id6[i] = (ISPRINT(id4[i]))
-			? id4[i]
-			: '_';
-	}
-
-	// Publisher ID
-	id6[4] = (publisher_id >> 8) & 0xFF;
-	id6[5] = publisher_id & 0xFF;
-	id6[6] = 0;
-
-	// If we're downloading a "high-resolution" image (M or higher),
-	// also add the default image to ExtURLs in case the user has
-	// high-resolution image downloads disabled.
-	array<const ImageSizeDef*, 2> szdefs_dl;
-	szdefs_dl[0] = sizeDef;
-	unsigned int szdef_count;
-	if (sizeDef->index > 0) {
-		// M or higher.
-		szdefs_dl[1] = &sizeDefs[0];
-		szdef_count = 2;
-	} else {
-		// Default or S.
-		szdef_count = 1;
-	}
-
-	// Add the URLs.
-	pExtURLs->resize(szdef_count * tdb_lc.size());
-	auto extURL_iter = pExtURLs->begin();
-	for (unsigned int i = 0; i < szdef_count; i++) {
-		// Current image type.
-		char imageTypeName[16];
-		snprintf(imageTypeName, sizeof(imageTypeName), "%s%s",
-			 imageTypeName_base, (szdefs_dl[i]->name ? szdefs_dl[i]->name : ""));
-
-		// Add the images.
-		for (const uint16_t lc : tdb_lc) {
-			const string lc_str = SystemRegion::lcToStringUpper(lc);
-			extURL_iter->url = d->getURL_GameTDB("wiiu", imageTypeName, lc_str.c_str(), id6, ext);
-			extURL_iter->cache_key = d->getCacheKey_GameTDB("wiiu", imageTypeName, lc_str.c_str(), id6, ext);
-			extURL_iter->width = szdefs_dl[i]->width;
-			extURL_iter->height = szdefs_dl[i]->height;
-			extURL_iter->high_res = (szdefs_dl[i]->index > 0);
-			++extURL_iter;
-		}
-	}
-
-	// All URLs added.
-	return 0;
+	return WiiU::extURLs_int(id4, imageType, pExtURLs, size);
 #else /* !ENABLE_XML */
 	// Cannot check the system XML without XML support.
 	return -ENOTSUP;

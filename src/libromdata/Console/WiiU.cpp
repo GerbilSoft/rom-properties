@@ -388,12 +388,14 @@ int WiiU::loadFieldData(void)
 
 /**
  * Get a list of URLs for an external image type.
+ * Common function used by both WiiU and WiiUPackage.
  *
  * A thumbnail size may be requested from the shell.
  * If the subclass supports multiple sizes, it should
  * try to get the size that most closely matches the
  * requested size.
  *
+ * @param id4		[in]     Game ID (ID4)
  * @param imageType	[in]     Image type.
  * @param pExtURLs	[out]    Output vector.
  * @param size		[in,opt] Requested image size. This may be a requested
@@ -401,27 +403,21 @@ int WiiU::loadFieldData(void)
  *                               enum value.
  * @return 0 on success; negative POSIX error code on error.
  */
-int WiiU::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
+int WiiU::extURLs_int(const char *id4, ImageType imageType, vector<ExtURL> *pExtURLs, int size)
 {
 	ASSERT_extURLs(imageType, pExtURLs);
 	pExtURLs->clear();
 
-	RP_D(const WiiU);
-	if (!d->isValid) {
-		// Disc image isn't valid.
-		return -EIO;
-	}
-
 	// Get the image sizes and sort them based on the
 	// requested image size.
-	vector<ImageSizeDef> sizeDefs = supportedImageSizes(imageType);
+	vector<ImageSizeDef> sizeDefs = supportedImageSizes_static(imageType);
 	if (sizeDefs.empty()) {
 		// No image sizes.
 		return -ENOENT;
 	}
 
 	// Select the best size.
-	const ImageSizeDef *const sizeDef = d->selectBestSize(sizeDefs, size);
+	const ImageSizeDef *const sizeDef = RomDataPrivate::selectBestSize(sizeDefs, size);
 	if (!sizeDef) {
 		// No size available...
 		return -ENOENT;
@@ -462,11 +458,8 @@ int WiiU::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 			return -ENOENT;
 	}
 
-	// Disc header is read in the constructor.
-	const WiiU_DiscHeader *const discHeader = &d->discHeader;
-
 	// Look up the publisher ID.
-	const uint32_t publisher_id = WiiUData::lookup_disc_publisher(discHeader->id4);
+	const uint32_t publisher_id = WiiUData::lookup_disc_publisher(id4);
 	if (publisher_id == 0 || (publisher_id & 0xFFFF0000) != 0x30300000) {
 		// Either the publisher ID is unknown, or it's a
 		// 4-character ID, which isn't supported by
@@ -477,15 +470,15 @@ int WiiU::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 	// Determine the GameTDB language code(s).
 	// TODO: Figure out the actual Wii U region code.
 	// Using the game ID for now.
-	const vector<uint16_t> tdb_lc = GameCubeRegions::gcnRegionToGameTDB(~0U, discHeader->id4[3]);
+	const vector<uint16_t> tdb_lc = GameCubeRegions::gcnRegionToGameTDB(~0U, id4[3]);
 
 	// Game ID.
 	// Replace any non-printable characters with underscores.
 	// (GameCube NDDEMO has ID6 "00\0E01".)
 	char id6[7];
 	for (unsigned int i = 0; i < 4; i++) {
-		id6[i] = (ISPRINT(discHeader->id4[i]))
-			? discHeader->id4[i]
+		id6[i] = (ISPRINT(id4[i]))
+			? id4[i]
 			: '_';
 	}
 
@@ -521,8 +514,8 @@ int WiiU::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 		// Add the images.
 		for (const uint16_t lc : tdb_lc) {
 			const string lc_str = SystemRegion::lcToStringUpper(lc);
-			extURL_iter->url = d->getURL_GameTDB("wiiu", imageTypeName, lc_str.c_str(), id6, ext);
-			extURL_iter->cache_key = d->getCacheKey_GameTDB("wiiu", imageTypeName, lc_str.c_str(), id6, ext);
+			extURL_iter->url = RomDataPrivate::getURL_GameTDB("wiiu", imageTypeName, lc_str.c_str(), id6, ext);
+			extURL_iter->cache_key = RomDataPrivate::getCacheKey_GameTDB("wiiu", imageTypeName, lc_str.c_str(), id6, ext);
 			extURL_iter->width = szdefs_dl[i]->width;
 			extURL_iter->height = szdefs_dl[i]->height;
 			extURL_iter->high_res = (szdefs_dl[i]->index > 0);
@@ -532,6 +525,17 @@ int WiiU::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 
 	// All URLs added.
 	return 0;
+}
+
+int WiiU::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
+{
+	RP_D(const WiiU);
+	if (!d->isValid) {
+		// Disc image isn't valid.
+		return -EIO;
+	}
+
+	return extURLs_int(d->discHeader.id4, imageType, pExtURLs, size);
 }
 
 } // namespace LibRomData
