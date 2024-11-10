@@ -187,10 +187,11 @@ public:
 	int addMetaData_System_XMLs(void);
 
 	/**
-	 * Get the product code from meta.xml.
+	 * Get the product code from meta.xml, and application type from app.xml.
+	 * @param pApplType	[out] Pointer to uint32_t for application type
 	 * @return Product code, or empty string on error.
 	 */
-	std::string getProductCode_meta_xml(void);
+	std::string getProductCodeAndApplType_xml(uint32_t *pApplType);
 #endif /* ENABLE_XML */
 };
 

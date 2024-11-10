@@ -640,10 +640,11 @@ int WiiUPackagePrivate::addMetaData_System_XMLs(void)
 }
 
 /**
- * Get the product code from meta.xml.
+ * Get the product code from meta.xml, and application type from app.xml.
+ * @param pApplType	[out] Pointer to uint32_t for application type
  * @return Product code, or empty string on error.
  */
-string WiiUPackagePrivate::getProductCode_meta_xml(void)
+string WiiUPackagePrivate::getProductCodeAndApplType_xml(uint32_t *pApplType)
 {
 	XMLDocument metaXml;
 	int retMeta = loadSystemXml(metaXml, "/meta/meta.xml", "menu");
@@ -658,8 +659,24 @@ string WiiUPackagePrivate::getProductCode_meta_xml(void)
 		return {};
 	}
 
-	const char *const text = getText(metaRootNode, "product_code");
-	return (text) ? text : string();
+	const char *const product_code = getText(metaRootNode, "product_code");
+
+	if (pApplType) {
+		// Get the application type.
+		XMLDocument appXml;
+		int retApp = loadSystemXml(appXml, "/code/app.xml", "app");
+		if (retApp == 0) {
+			const XMLElement *const appRootNode = appXml.FirstChildElement("app");
+			if (appRootNode) {
+				*pApplType = parseHexBinary(appRootNode, "app_type");
+			}
+		} else {
+			// Unable to load app.xml.
+			*pApplType = 0;
+		}
+	}
+
+	return (product_code) ? product_code : string();
 }
 
 }

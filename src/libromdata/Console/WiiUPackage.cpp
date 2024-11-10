@@ -822,14 +822,19 @@ int WiiUPackage::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size
 	}
 
 #ifdef ENABLE_XML
-	// Get the game ID from the system XML.
+	// Get the game ID and application type from the system XML.
 	// Format: "WUP-X-ABCD"
-	const string productCode = const_cast<WiiUPackagePrivate*>(d)->getProductCode_meta_xml();
+	uint32_t applType = 0;
+	const string productCode = const_cast<WiiUPackagePrivate*>(d)->getProductCodeAndApplType_xml(&applType);
 	if (productCode.empty() || productCode.size() != 10 || productCode.compare(0, 4, "WUP-", 4) != 0 || productCode[5] != '-') {
 		// Invalid product code.
 		// TODO: Check 'X'?
 		return -ENOENT;
+	} else if (applType != 0x80000000) {
+		// Not a game.
+		return -ENOENT;
 	}
+
 	const char *const id4 = &productCode[6];
 
 	return WiiU::extURLs_int(id4, imageType, pExtURLs, size);
