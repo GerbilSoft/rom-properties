@@ -607,7 +607,7 @@ int PSP::loadInternalImage(ImageType imageType, rp_image_const_ptr &pImage)
 int PSP::loadMetaData(void)
 {
 	RP_D(PSP);
-	if (d->metaData != nullptr) {
+	if (!d->metaData.empty()) {
 		// Metadata *has* been loaded...
 		return 0;
 	} else if (!d->isValid || static_cast<int>(d->discType) < 0) {
@@ -615,12 +615,10 @@ int PSP::loadMetaData(void)
 		return -EIO;
 	}
 
-	// Create the metadata object.
-	d->metaData = new RomMetaData();
-	d->metaData->reserve(3);	// Maximum of 3 metadata properties.
+	d->metaData.reserve(4);	// Maximum of 4 metadata properties.
 
 	// Add the PVD metadata.
-	ISO::addMetaData_PVD(d->metaData, &d->pvd);
+	ISO::addMetaData_PVD(&d->metaData, &d->pvd);
 
 	// Add the disc ID and/or title from UMD_DATA.BIN.
 	// The PVD title is useless in most cases.
@@ -643,7 +641,7 @@ int PSP::loadMetaData(void)
 		const char *p = static_cast<const char*>(memchr(buf, '|', sizeof(buf)));
 		if (p) {
 			// Game ID field on UMD Video discs is the video title.
-			d->metaData->addMetaData_string(Property::Title,
+			d->metaData.addMetaData_string(Property::Title,
 				latin1_to_utf8(buf, static_cast<int>(p - buf)));
 		}
 	}
@@ -651,7 +649,7 @@ int PSP::loadMetaData(void)
 	// TODO: More PSP-specific metadata?
 
 	// Finished reading the metadata.
-	return static_cast<int>(d->metaData->count());
+	return static_cast<int>(d->metaData.count());
 }
 
 } // namespace LibRomData

@@ -236,7 +236,7 @@ int Lynx::loadFieldData(void)
 int Lynx::loadMetaData(void)
 {
 	RP_D(Lynx);
-	if (d->metaData != nullptr) {
+	if (!d->metaData.empty()) {
 		// Metadata *has* been loaded...
 		return 0;
 	} else if (!d->file) {
@@ -248,23 +248,20 @@ int Lynx::loadMetaData(void)
 		return -EIO;
 	}
 
-	// Create the metadata object.
-	d->metaData = new RomMetaData();
-	d->metaData->reserve(2);	// Maximum of 2 metadata properties.
-
 	// Lynx ROM header
 	const Lynx_RomHeader *const romHeader = &d->romHeader;
+	d->metaData.reserve(2);	// Maximum of 2 metadata properties.
 
 	// Title
-	d->metaData->addMetaData_string(Property::Title,
+	d->metaData.addMetaData_string(Property::Title,
 		latin1_to_utf8(romHeader->cartname, sizeof(romHeader->cartname)));
 
 	// Publisher (aka manufacturer)
-	d->metaData->addMetaData_string(Property::Publisher,
+	d->metaData.addMetaData_string(Property::Publisher,
 		latin1_to_utf8(romHeader->manufname, sizeof(romHeader->manufname)));
 
 	// Finished reading the metadata.
-	return static_cast<int>(d->metaData->count());
+	return static_cast<int>(d->metaData.count());
 }
 
 } // namespace LibRomData

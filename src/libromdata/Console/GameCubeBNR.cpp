@@ -723,7 +723,7 @@ int GameCubeBNR::loadFieldData(void)
 int GameCubeBNR::loadMetaData(void)
 {
 	RP_D(GameCubeBNR);
-	if (d->metaData != nullptr) {
+	if (!d->metaData.empty()) {
 		// Metadata *has* been loaded...
 		return 0;
 	} else if (!d->file) {
@@ -740,9 +740,7 @@ int GameCubeBNR::loadMetaData(void)
 		return 0;
 	}
 
-	// Create the metadata object.
-	d->metaData = new RomMetaData();
-	d->metaData->reserve(3);	// Maximum of 3 metadata properties.
+	d->metaData.reserve(3);	// Maximum of 3 metadata properties.
 
 	// TODO: Show both full and normal?
 	// Currently showing full if it's there; otherwise, normal.
@@ -782,16 +780,16 @@ int GameCubeBNR::loadMetaData(void)
 	}
 
 	// Game name
-	d->metaData->addMetaData_string(Property::Title, d->getGameNameString(comment));
+	d->metaData.addMetaData_string(Property::Title, d->getGameNameString(comment));
 
 	// Company
-	d->metaData->addMetaData_string(Property::Publisher, d->getCompanyString(comment));
+	d->metaData.addMetaData_string(Property::Publisher, d->getCompanyString(comment));
 
 	// Game description
-	d->metaData->addMetaData_string(Property::Description, d->getGameDescriptionString(comment));
+	d->metaData.addMetaData_string(Property::Description, d->getGameDescriptionString(comment));
 
 	// Finished reading the metadata.
-	return static_cast<int>(d->metaData->count());
+	return static_cast<int>(d->metaData.count());
 }
 
 /**

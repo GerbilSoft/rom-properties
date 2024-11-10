@@ -1032,7 +1032,7 @@ int EXE::loadFieldData(void)
 int EXE::loadMetaData(void)
 {
 	RP_D(EXE);
-	if (d->metaData != nullptr) {
+	if (!d->metaData.empty()) {
 		// Metadata *has* been loaded...
 		return 0;
 	} else if (!d->file || !d->file->isOpen()) {
@@ -1089,9 +1089,7 @@ int EXE::loadMetaData(void)
 		return 0;
 	}
 
-	// Create the metadata object.
-	d->metaData = new RomMetaData();
-	d->metaData->reserve(4);	// Maximum of 4 metadata properties.
+	d->metaData.reserve(4);	// Maximum of 4 metadata properties.
 
 	// Simple lambda function to find a string in IResourceReader::StringTable.
 	auto findval = [](const IResourceReader::StringTable &st, const char *key) -> const char* {
@@ -1112,31 +1110,31 @@ int EXE::loadMetaData(void)
 		}
 	}
 	if (val) {
-		d->metaData->addMetaData_string(Property::Title, val);
+		d->metaData.addMetaData_string(Property::Title, val);
 	}
 
 	// Publisher (CompanyName)
 	val = findval(st, "CompanyName");
 	if (val) {
-		d->metaData->addMetaData_string(Property::Publisher, val);
+		d->metaData.addMetaData_string(Property::Publisher, val);
 	}
 
 	// Description (FileDescription)
 	val = findval(st, "FileDescription");
 	if (val) {
-		d->metaData->addMetaData_string(Property::Description, val);
+		d->metaData.addMetaData_string(Property::Description, val);
 	}
 
 	// Copyright (LegalCopyright)
 	val = findval(st, "LegalCopyright");
 	if (val) {
-		d->metaData->addMetaData_string(Property::Copyright, val);
+		d->metaData.addMetaData_string(Property::Copyright, val);
 	}
 
 	// TODO: Comments? On KDE Dolphin, "Comments" is assumed to be user-added...
 
 	// Finished reading the metadata.
-	return static_cast<int>(d->metaData->count());
+	return static_cast<int>(d->metaData.count());
 }
 
 /**

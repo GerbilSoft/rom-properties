@@ -811,7 +811,7 @@ int XboxDisc::loadFieldData(void)
 int XboxDisc::loadMetaData(void)
 {
 	RP_D(XboxDisc);
-	if (d->metaData != nullptr) {
+	if (!d->metaData.empty()) {
 		// Metadata *has* been loaded...
 		return 0;
 	} else if (!d->file) {
@@ -833,19 +833,16 @@ int XboxDisc::loadMetaData(void)
 		return 0;
 	}
 
-	// Create the metadata object.
-	d->metaData = new RomMetaData();
-
 	// Add metadata properties from the default executable.
 	// ISO PVD is skipped because it's the same for all discs
 	// of a given XGD wave.
-	d->metaData->addMetaData_metaData(defaultExeData->metaData());
+	d->metaData.addMetaData_metaData(defaultExeData->metaData());
 
 	// Re-lock the Kreon drive.
 	d->lockKreonDrive();
 
 	// Finished reading the metadata.
-	return static_cast<int>(d->metaData->count());
+	return static_cast<int>(d->metaData.count());
 }
 
 /**

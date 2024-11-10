@@ -637,7 +637,7 @@ int PSF::loadFieldData(void)
 int PSF::loadMetaData(void)
 {
 	RP_D(PSF);
-	if (d->metaData != nullptr) {
+	if (!d->metaData.empty()) {
 		// Metadata *has* been loaded...
 		return 0;
 	} else if (!d->file) {
@@ -650,6 +650,7 @@ int PSF::loadMetaData(void)
 
 	// PSF header
 	const PSF_Header *const psfHeader = &d->psfHeader;
+	d->metaData.reserve(8);	// Maximum of 8 metadata properties.
 
 	// Attempt to parse the tags before doing anything else.
 	const off64_t tag_addr = (off64_t)sizeof(*psfHeader) +
@@ -662,27 +663,23 @@ int PSF::loadMetaData(void)
 		return -EIO;
 	}
 
-	// Create the metadata object.
-	d->metaData = new RomMetaData();
-	d->metaData->reserve(8);	// Maximum of 8 metadata properties.
-
 	// Title
 	auto iter = tags.find("title");
 	if (iter != tags.end()) {
-		d->metaData->addMetaData_string(Property::Title, iter->second);
+		d->metaData.addMetaData_string(Property::Title, iter->second);
 	}
 
 	// Artist
 	iter = tags.find("artist");
 	if (iter != tags.end()) {
-		d->metaData->addMetaData_string(Property::Artist, iter->second);
+		d->metaData.addMetaData_string(Property::Artist, iter->second);
 	}
 
 	// Game
 	iter = tags.find("game");
 	if (iter != tags.end()) {
 		// NOTE: Not exactly "album"...
-		d->metaData->addMetaData_string(Property::Album, iter->second);
+		d->metaData.addMetaData_string(Property::Album, iter->second);
 	}
 
 	// Release Date
@@ -700,7 +697,7 @@ int PSF::loadMetaData(void)
 			// - No negatives.
 			// - Four-digit only. (lol Y10K)
 			if (year >= 0 && year < 10000) {
-				d->metaData->addMetaData_uint(Property::ReleaseYear, (unsigned int)year);
+				d->metaData.addMetaData_uint(Property::ReleaseYear, (unsigned int)year);
 			}
 		}
 	}
@@ -708,13 +705,13 @@ int PSF::loadMetaData(void)
 	// Genre
 	iter = tags.find("genre");
 	if (iter != tags.end()) {
-		d->metaData->addMetaData_string(Property::Genre, iter->second);
+		d->metaData.addMetaData_string(Property::Genre, iter->second);
 	}
 
 	// Copyright
 	iter = tags.find("copyright");
 	if (iter != tags.end()) {
-		d->metaData->addMetaData_string(Property::Copyright, iter->second);
+		d->metaData.addMetaData_string(Property::Copyright, iter->second);
 	}
 
 #if 0
@@ -725,13 +722,13 @@ int PSF::loadMetaData(void)
 	iter = tags.find(ripped_by_tag);
 	if (iter != tags.end()) {
 		// FIXME: No property for this...
-		d->metaData->addMetaData_string(Property::RippedBy, iter->second);
+		d->metaData.addMetaData_string(Property::RippedBy, iter->second);
 	} else {
 		// Try "psfby" if the system-specific one isn't there.
 		iter = tags.find("psfby");
 		if (iter != tags.end()) {
 			// FIXME: No property for this...
-			d->metaData->addMetaData_string(Property::RippedBy, iter->second);
+			d->metaData.addMetaData_string(Property::RippedBy, iter->second);
 		}
 	}
 #endif
@@ -749,7 +746,7 @@ int PSF::loadMetaData(void)
 	if (iter != tags.end()) {
 		// Convert the length string to milliseconds.
 		const unsigned int ms = d->lengthToMs(iter->second.c_str());
-		d->metaData->addMetaData_integer(Property::Duration, ms);
+		d->metaData.addMetaData_integer(Property::Duration, ms);
 	}
 
 	// Comment
@@ -757,11 +754,11 @@ int PSF::loadMetaData(void)
 	if (iter != tags.end()) {
 		// NOTE: Property::Comment is assumed to be user-added
 		// on KDE Dolphin 18.08.1. Use Property::Description.
-		d->metaData->addMetaData_string(Property::Description, iter->second);
+		d->metaData.addMetaData_string(Property::Description, iter->second);
 	}
 
 	// Finished reading the metadata.
-	return static_cast<int>(d->metaData->count());
+	return static_cast<int>(d->metaData.count());
 }
 
 } // namespace LibRomData

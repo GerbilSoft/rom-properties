@@ -452,7 +452,7 @@ int ColecoVision::loadFieldData(void)
 int ColecoVision::loadMetaData(void)
 {
 	RP_D(ColecoVision);
-	if (d->metaData != nullptr) {
+	if (!d->metaData.empty()) {
 		// Metadata *has* been loaded...
 		return 0;
 	} else if (!d->file) {
@@ -463,26 +463,23 @@ int ColecoVision::loadMetaData(void)
 		return -EIO;
 	}
 
-	// Create the metadata object.
-	d->metaData = new RomMetaData();
-	d->metaData->reserve(2);	// Maximum of 2 metadata properties.
-
 	//const ColecoVision_ROMHeader *const romHeader = &d->romHeader;
+	d->metaData.reserve(2);	// Maximum of 2 metadata properties.
 
 	// Title
 	int year = -1;
 	const string title = d->getTitle(&year);
 	if (!title.empty()) {
-		d->metaData->addMetaData_string(Property::Title, title);
+		d->metaData.addMetaData_string(Property::Title, title);
 	}
 
 	// Release year (actually copyright year)
 	if (year >= 0) {
-		d->metaData->addMetaData_uint(Property::ReleaseYear, static_cast<unsigned int>(year));
+		d->metaData.addMetaData_uint(Property::ReleaseYear, static_cast<unsigned int>(year));
 	}
 
 	// Finished reading the metadata.
-	return (d->metaData ? static_cast<int>(d->metaData->count()) : -ENOENT);
+	return static_cast<int>(d->metaData.count());
 }
 
 } // namespace LibRomData

@@ -43,7 +43,6 @@ RomDataPrivate::RomDataPrivate(const IRpFilePtr &file, const RomDataInfo *pRomDa
 #ifdef _WIN32
 	, filenameW(nullptr)
 #endif /* _WIN32 */
-	, metaData(nullptr)
 {
 	assert(pRomDataInfo != nullptr);
 
@@ -75,7 +74,6 @@ RomDataPrivate::RomDataPrivate(const IRpFilePtr &file, const RomDataInfo *pRomDa
 
 RomDataPrivate::~RomDataPrivate()
 {
-	delete metaData;
 	free(filename);
 #ifdef _WIN32
 	free(filenameW);
@@ -817,14 +815,14 @@ const RomFields *RomData::fields(void) const
 const RomMetaData *RomData::metaData(void) const
 {
 	RP_D(const RomData);
-	if (!d->metaData || d->metaData->empty()) {
+	if (d->metaData.empty()) {
 		// Data has not been loaded.
 		// Load it now.
 		int ret = const_cast<RomData*>(this)->loadMetaData();
 		if (ret < 0)
 			return nullptr;
 	}
-	return d->metaData;
+	return &d->metaData;
 }
 
 /**

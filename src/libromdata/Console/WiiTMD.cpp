@@ -456,7 +456,7 @@ int WiiTMD::loadFieldData(void)
 int WiiTMD::loadMetaData(void)
 {
 	RP_D(WiiTMD);
-	if (d->metaData != nullptr) {
+	if (!d->metaData.empty()) {
 		// Metadata *has* been loaded...
 		return 0;
 	} else if (!d->file) {
@@ -467,22 +467,19 @@ int WiiTMD::loadMetaData(void)
 		return -EIO;
 	}
 
-	// Create the metadata object.
-	d->metaData = new RomMetaData();
-	d->metaData->reserve(1);	// Maximum of 1 metadata property.
-
 	// TMD header is read in the constructor.
 	const RVL_TMD_Header *const tmdHeader = &d->tmdHeader;
+	d->metaData.reserve(1);	// Maximum of 1 metadata property.
 
 	// Title ID (using as Title)
 	char s_title_id[24];
 	snprintf(s_title_id, sizeof(s_title_id), "%08X-%08X",
 		be32_to_cpu(tmdHeader->title_id.hi),
 		be32_to_cpu(tmdHeader->title_id.lo));
-	d->metaData->addMetaData_string(Property::Title, s_title_id);
+	d->metaData.addMetaData_string(Property::Title, s_title_id);
 
 	// Finished reading the metadata.
-	return static_cast<int>(d->metaData->count());
+	return static_cast<int>(d->metaData.count());
 }
 
 /** TMD accessors **/

@@ -339,7 +339,7 @@ int ADX::loadFieldData(void)
 int ADX::loadMetaData(void)
 {
 	RP_D(ADX);
-	if (d->metaData != nullptr) {
+	if (!d->metaData.empty()) {
 		// Metadata *has* been loaded...
 		return 0;
 	} else if (!d->file) {
@@ -350,29 +350,26 @@ int ADX::loadMetaData(void)
 		return -EIO;
 	}
 
-	// Create the metadata object.
-	d->metaData = new RomMetaData();
-	d->metaData->reserve(3);	// Maximum of 3 metadata properties.
-
 	// ADX header
 	const ADX_Header *const adxHeader = &d->adxHeader;
+	d->metaData.reserve(3);	// Maximum of 3 metadata properties.
 
 	// Number of channels
-	d->metaData->addMetaData_integer(Property::Channels, adxHeader->channel_count);
+	d->metaData.addMetaData_integer(Property::Channels, adxHeader->channel_count);
 
 	// Sample rate and sample count
 	const uint32_t sample_rate = be32_to_cpu(adxHeader->sample_rate);
 	const uint32_t sample_count = be32_to_cpu(adxHeader->sample_count);
 
 	// Sample rate
-	d->metaData->addMetaData_integer(Property::SampleRate, sample_rate);
+	d->metaData.addMetaData_integer(Property::SampleRate, sample_rate);
 
 	// Length, in milliseconds (non-looping)
-	d->metaData->addMetaData_integer(Property::Duration,
+	d->metaData.addMetaData_integer(Property::Duration,
 		convSampleToMs(sample_count, sample_rate));
 
 	// Finished reading the metadata.
-	return static_cast<int>(d->metaData->count());
+	return static_cast<int>(d->metaData.count());
 }
 
 } // namespace LibRomData

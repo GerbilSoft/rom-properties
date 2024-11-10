@@ -1969,7 +1969,7 @@ int Xbox360_XEX::loadFieldData(void)
 int Xbox360_XEX::loadMetaData(void)
 {
 	RP_D(Xbox360_XEX);
-	if (d->metaData != nullptr) {
+	if (!d->metaData.empty()) {
 		// Metadata *has* been loaded...
 		return 0;
 	} else if (!d->file) {
@@ -1987,21 +1987,19 @@ int Xbox360_XEX::loadMetaData(void)
 		return 0;
 	}
 
-	// Create the metadata object.
-	d->metaData = new RomMetaData();
-	d->metaData->reserve(2);	// Maximum of 2 metadata properties.
+	d->metaData.reserve(2);	// Maximum of 2 metadata properties.
 
 	// NOTE: RomMetaData ignores empty strings, so we don't need to
 	// check for them here.
 
 	// Title
-	d->metaData->addMetaData_string(Property::Title, xdbf->getString(Property::Title));
+	d->metaData.addMetaData_string(Property::Title, xdbf->getString(Property::Title));
 
 	// Publisher
-	d->metaData->addMetaData_string(Property::Publisher, d->getPublisher());
+	d->metaData.addMetaData_string(Property::Publisher, d->getPublisher());
 
 	// Finished reading the metadata.
-	return static_cast<int>(d->metaData->count());
+	return static_cast<int>(d->metaData.count());
 }
 
 /**

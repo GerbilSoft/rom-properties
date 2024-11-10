@@ -625,14 +625,14 @@ int WiiUPackagePrivate::addMetaData_System_XMLs(void)
 	// Title
 	// TODO: Shortname vs. longname?
 	if (shortname) {
-		metaData->addMetaData_string(Property::Title, shortname);
+		metaData.addMetaData_string(Property::Title, shortname);
 	}
 
 	// Publisher
 	snprintf(nodeName, sizeof(nodeName), "publisher_%s", s_def_lc.c_str());
 	const char *const publisher = getText(metaRootNode, nodeName);
 	if (publisher) {
-		metaData->addMetaData_string(Property::Publisher, publisher);
+		metaData.addMetaData_string(Property::Publisher, publisher);
 	}
 
 	// System XML files read successfully.

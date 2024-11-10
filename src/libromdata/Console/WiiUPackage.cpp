@@ -749,7 +749,7 @@ int WiiUPackage::loadFieldData(void)
 int WiiUPackage::loadMetaData(void)
 {
 	RP_D(WiiUPackage);
-	if (d->metaData != nullptr) {
+	if (!d->metaData.empty()) {
 		// Metadata *has* been loaded...
 		return 0;
 	} else if (!d->path) {
@@ -760,16 +760,13 @@ int WiiUPackage::loadMetaData(void)
 		return -EIO;
 	}
 
-	// Create the metadata object.
-	d->metaData = new RomMetaData();
-	d->metaData->reserve(2);	// Maximum of 2 metadata properties.
-
 #ifdef ENABLE_XML
 	// Check if the decryption keys were loaded.
 	const KeyManager::VerifyResult verifyResult = d->ticket->verifyResult();
 	if (verifyResult == KeyManager::VerifyResult::OK) {
 		// Decryption keys were loaded. We can add XML fields.
 		// Parse the Wii U System XMLs.
+		d->metaData.reserve(2);	// Maximum of 2 metadata properties.
 		d->addMetaData_System_XMLs();
 	}
 #endif /* ENABLE_XML */
@@ -778,7 +775,7 @@ int WiiUPackage::loadMetaData(void)
 	// "Title" property, which is the Title ID.
 
 	// Finished reading the metadata.
-	return static_cast<int>(d->metaData->count());
+	return static_cast<int>(d->metaData.count());
 }
 
 /**

@@ -1370,7 +1370,7 @@ int DMG::loadFieldData(void)
 int DMG::loadMetaData(void)
 {
 	RP_D(DMG);
-	if (d->metaData != nullptr) {
+	if (!d->metaData.empty()) {
 		// Metadata *has* been loaded...
 		return 0;
 	} else if (!d->file) {
@@ -1381,12 +1381,9 @@ int DMG::loadMetaData(void)
 		return -EIO;
 	}
 
-	// Create the metadata object.
-	d->metaData = new RomMetaData();
-	d->metaData->reserve(2);	// Maximum of 2 metadata properties.
-
 	// DMG ROM header
 	//const DMG_RomHeader *const romHeader = &d->romHeader;
+	d->metaData.reserve(2);	// Maximum of 2 metadata properties.
 
 	// Title
 	// NOTE: We don't actually need the game ID right now,
@@ -1395,15 +1392,15 @@ int DMG::loadMetaData(void)
 	string s_title, s_gameID;
 	d->getTitleAndGameID(s_title, s_gameID);
 	if (!s_title.empty()) {
-		d->metaData->addMetaData_string(Property::Title,
+		d->metaData.addMetaData_string(Property::Title,
 			s_title, RomMetaData::STRF_TRIM_END);
 	}
 
 	// Publisher
-	d->metaData->addMetaData_string(Property::Publisher, d->getPublisher());
+	d->metaData.addMetaData_string(Property::Publisher, d->getPublisher());
 
 	// Finished reading the metadata.
-	return static_cast<int>(d->metaData->count());
+	return static_cast<int>(d->metaData.count());
 }
 
 /**

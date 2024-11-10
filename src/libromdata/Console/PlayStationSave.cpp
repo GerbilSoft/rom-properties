@@ -513,7 +513,7 @@ int PlayStationSave::loadFieldData(void)
 int PlayStationSave::loadMetaData(void)
 {
 	RP_D(PlayStationSave);
-	if (d->metaData != nullptr) {
+	if (!d->metaData.empty()) {
 		// Metadata *has* been loaded...
 		return 0;
 	} else if (!d->file) {
@@ -524,19 +524,16 @@ int PlayStationSave::loadMetaData(void)
 		return -EIO;
 	}
 
-	// Create the metadata object.
-	d->metaData = new RomMetaData();
-	d->metaData->reserve(1);	// Maximum of 1 metadata property.
-
 	// PSV (PS1 on PS3) save file header.
 	const PS1_SC_Struct *const scHeader = &d->scHeader;
+	d->metaData.reserve(1);	// Maximum of 1 metadata property.
 
 	// Title. (Description)
-	d->metaData->addMetaData_string(Property::Title,
+	d->metaData.addMetaData_string(Property::Title,
 		cp1252_sjis_to_utf8(scHeader->title, sizeof(scHeader->title)));
 
 	// Finished reading the metadata.
-	return static_cast<int>(d->metaData->count());
+	return static_cast<int>(d->metaData.count());
 }
 
 /**

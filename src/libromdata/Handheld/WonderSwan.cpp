@@ -652,7 +652,7 @@ int WonderSwan::loadFieldData(void)
 int WonderSwan::loadMetaData(void)
 {
 	RP_D(WonderSwan);
-	if (d->metaData != nullptr) {
+	if (!d->metaData.empty()) {
 		// Metadata *has* been loaded...
 		return 0;
 	} else if (!d->file) {
@@ -663,21 +663,18 @@ int WonderSwan::loadMetaData(void)
 		return -EIO;
 	}
 
-	// Create the metadata object.
-	d->metaData = new RomMetaData();
-	d->metaData->reserve(1);	// Maximum of 1 metadata property.
-
 	// WonderSwan ROM footer
 	const WS_RomFooter *const romFooter = &d->romFooter;
+	d->metaData.reserve(1);	// Maximum of 1 metadata property.
 
 	// Publisher
 	const char *const publisher = WonderSwanPublishers::lookup_name(romFooter->publisher);
 	if (publisher) {
-		d->metaData->addMetaData_string(Property::Publisher, publisher);
+		d->metaData.addMetaData_string(Property::Publisher, publisher);
 	}
 
 	// Finished reading the metadata.
-	return static_cast<int>(d->metaData->count());
+	return static_cast<int>(d->metaData.count());
 }
 
 /**

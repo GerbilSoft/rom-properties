@@ -685,7 +685,7 @@ int iQuePlayer::loadFieldData(void)
 int iQuePlayer::loadMetaData(void)
 {
 	RP_D(iQuePlayer);
-	if (d->metaData != nullptr) {
+	if (!d->metaData.empty()) {
 		// Metadata *has* been loaded...
 		return 0;
 	} else if (!d->file) {
@@ -696,9 +696,7 @@ int iQuePlayer::loadMetaData(void)
 		return -EIO;
 	}
 
-	// Create the metadata object.
-	d->metaData = new RomMetaData();
-	d->metaData->reserve(1);	// Maximum of 1 metadata property.
+	d->metaData.reserve(1);	// Maximum of 1 metadata property.
 
 	// Get the title and ISBN.
 	// TODO: Trim trailing newlines?
@@ -707,17 +705,17 @@ int iQuePlayer::loadMetaData(void)
 	if (ret == 0) {
 		// Title.
 		if (!rom_title.empty()) {
-			d->metaData->addMetaData_string(Property::Title, rom_title);
+			d->metaData.addMetaData_string(Property::Title, rom_title);
 		}
 
 		// TODO: ISBN.
 		/*if (!rom_isbn.empty()) {
-			d->metaData->addMetaData_string(Property::ISBN, rom_isbn);
+			d->metaData.addMetaData_string(Property::ISBN, rom_isbn);
 		}*/
 	}
 
 	// Finished reading the metadata.
-	return static_cast<int>(d->metaData->count());
+	return static_cast<int>(d->metaData.count());
 }
 
 /**

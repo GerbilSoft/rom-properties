@@ -278,7 +278,7 @@ int NSF::loadFieldData(void)
 int NSF::loadMetaData(void)
 {
 	RP_D(NSF);
-	if (d->metaData != nullptr) {
+	if (!d->metaData.empty()) {
 		// Metadata *has* been loaded...
 		return 0;
 	} else if (!d->file) {
@@ -289,33 +289,30 @@ int NSF::loadMetaData(void)
 		return -EIO;
 	}
 
-	// Create the metadata object.
-	d->metaData = new RomMetaData();
-	d->metaData->reserve(3);	// Maximum of 3 metadata properties.
-
 	// NSF header.
 	const NSF_Header *const nsfHeader = &d->nsfHeader;
+	d->metaData.reserve(3);	// Maximum of 3 metadata properties.
 
 	// Title.
 	if (nsfHeader->title[0] != 0) {
-		d->metaData->addMetaData_string(Property::Title,
+		d->metaData.addMetaData_string(Property::Title,
 			cp1252_sjis_to_utf8(nsfHeader->title, sizeof(nsfHeader->title)));
 	}
 
 	// Composer.
 	if (nsfHeader->composer[0] != 0) {
-		d->metaData->addMetaData_string(Property::Composer,
+		d->metaData.addMetaData_string(Property::Composer,
 			cp1252_sjis_to_utf8(nsfHeader->composer, sizeof(nsfHeader->composer)));
 	}
 
 	// Copyright.
 	if (nsfHeader->copyright[0] != 0) {
-		d->metaData->addMetaData_string(Property::Copyright,
+		d->metaData.addMetaData_string(Property::Copyright,
 			cp1252_sjis_to_utf8(nsfHeader->copyright, sizeof(nsfHeader->copyright)));
 	}
 
 	// Finished reading the metadata.
-	return static_cast<int>(d->metaData->count());
+	return static_cast<int>(d->metaData.count());
 }
 
 } // namespace LibRomData

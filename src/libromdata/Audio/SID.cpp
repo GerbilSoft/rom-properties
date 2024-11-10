@@ -277,7 +277,7 @@ int SID::loadFieldData(void)
 int SID::loadMetaData(void)
 {
 	RP_D(SID);
-	if (d->metaData != nullptr) {
+	if (!d->metaData.empty()) {
 		// Metadata *has* been loaded...
 		return 0;
 	} else if (!d->file) {
@@ -288,34 +288,31 @@ int SID::loadMetaData(void)
 		return -EIO;
 	}
 
-	// Create the metadata object.
-	d->metaData = new RomMetaData();
-	d->metaData->reserve(3);	// Maximum of 3 metadata properties.
-
 	// SID header.
 	const SID_Header *const sidHeader = &d->sidHeader;
+	d->metaData.reserve(3);	// Maximum of 3 metadata properties.
 
 	// Title. (Name)
 	if (sidHeader->name[0] != 0) {
-		d->metaData->addMetaData_string(Property::Title,
+		d->metaData.addMetaData_string(Property::Title,
 			latin1_to_utf8(sidHeader->name, sizeof(sidHeader->name)));
 	}
 
 	// Author.
 	if (sidHeader->author[0] != 0) {
 		// TODO: Composer instead of Author?
-		d->metaData->addMetaData_string(Property::Author,
+		d->metaData.addMetaData_string(Property::Author,
 			latin1_to_utf8(sidHeader->author, sizeof(sidHeader->author)));
 	}
 
 	// Copyright.
 	if (sidHeader->copyright[0] != 0) {
-		d->metaData->addMetaData_string(Property::Copyright,
+		d->metaData.addMetaData_string(Property::Copyright,
 			latin1_to_utf8(sidHeader->copyright, sizeof(sidHeader->copyright)));
 	}
 
 	// Finished reading the metadata.
-	return static_cast<int>(d->metaData->count());
+	return static_cast<int>(d->metaData.count());
 }
 
 } // namespace LibRomData

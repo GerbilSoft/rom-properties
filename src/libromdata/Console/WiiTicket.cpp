@@ -492,7 +492,7 @@ int WiiTicket::loadFieldData(void)
 int WiiTicket::loadMetaData(void)
 {
 	RP_D(WiiTicket);
-	if (d->metaData != nullptr) {
+	if (!d->metaData.empty()) {
 		// Metadata *has* been loaded...
 		return 0;
 	} else if (!d->file) {
@@ -503,22 +503,19 @@ int WiiTicket::loadMetaData(void)
 		return -EIO;
 	}
 
-	// Create the metadata object.
-	d->metaData = new RomMetaData();
-	d->metaData->reserve(1);	// Maximum of 1 metadata property.
-
 	// Ticket is read in the constructor.
 	const RVL_Ticket *const ticket = &d->ticket.v0;
+	d->metaData.reserve(1);	// Maximum of 1 metadata property.
 
 	// Title ID (using as Title)
 	char s_title_id[24];
 	snprintf(s_title_id, sizeof(s_title_id), "%08X-%08X",
 		be32_to_cpu(ticket->title_id.hi),
 		be32_to_cpu(ticket->title_id.lo));
-	d->metaData->addMetaData_string(Property::Title, s_title_id);
+	d->metaData.addMetaData_string(Property::Title, s_title_id);
 
 	// Finished reading the metadata.
-	return static_cast<int>(d->metaData->count());
+	return static_cast<int>(d->metaData.count());
 }
 
 /** Ticket accessors **/

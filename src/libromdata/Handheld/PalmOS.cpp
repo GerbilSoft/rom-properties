@@ -673,7 +673,7 @@ int PalmOS::loadFieldData(void)
 int PalmOS::loadMetaData(void)
 {
 	RP_D(PalmOS);
-	if (d->metaData != nullptr) {
+	if (!d->metaData.empty()) {
 		// Metadata *has* been loaded...
 		return 0;
 	} else if (!d->file) {
@@ -684,20 +684,17 @@ int PalmOS::loadMetaData(void)
 		return -EIO;
 	}
 
-	// Create the metadata object.
-	d->metaData = new RomMetaData();
-	d->metaData->reserve(1);	// Maximum of 1 metadata property.
-
 	// TODO: Text encoding?
 	const PalmOS_PRC_Header_t *const prcHeader = &d->prcHeader;
+	d->metaData.reserve(1);	// Maximum of 1 metadata property.
 
 	// Title
-	d->metaData->addMetaData_string(Property::Title,
+	d->metaData.addMetaData_string(Property::Title,
 		latin1_to_utf8(prcHeader->name, sizeof(prcHeader->name)),
 		RomMetaData::STRF_TRIM_END);
 
 	// Finished reading the metadata.
-	return static_cast<int>(d->metaData->count());
+	return static_cast<int>(d->metaData.count());
 }
 
 /**

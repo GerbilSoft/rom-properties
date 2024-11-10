@@ -2379,7 +2379,7 @@ int Nintendo3DS::loadFieldData(void)
 int Nintendo3DS::loadMetaData(void)
 {
 	RP_D(Nintendo3DS);
-	if (d->metaData != nullptr) {
+	if (!d->metaData.empty()) {
 		// Metadata *has* been loaded...
 		return 0;
 	} else if (!d->file) {
@@ -2399,12 +2399,11 @@ int Nintendo3DS::loadMetaData(void)
 
 	if (ret == 0 && (bool)d->mainContent) {
 		// Add the metadata.
-		d->metaData = new RomMetaData();
-		d->metaData->addMetaData_metaData(d->mainContent->metaData());
+		d->metaData.addMetaData_metaData(d->mainContent->metaData());
 	}
 
 	// Finished reading the metadata.
-	return (d->metaData ? static_cast<int>(d->metaData->count()) : 0);
+	return static_cast<int>(d->metaData.count());
 }
 
 /**

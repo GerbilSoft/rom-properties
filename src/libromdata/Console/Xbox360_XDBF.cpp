@@ -1842,7 +1842,7 @@ int Xbox360_XDBF::loadFieldData(void)
 int Xbox360_XDBF::loadMetaData(void)
 {
 	RP_D(Xbox360_XDBF);
-	if (d->metaData != nullptr) {
+	if (!d->metaData.empty()) {
 		// Metadata *has* been loaded...
 		return 0;
 	} else if (!d->file) {
@@ -1853,18 +1853,16 @@ int Xbox360_XDBF::loadMetaData(void)
 		return -EIO;
 	}
 
-	// Create the metadata object.
-	d->metaData = new RomMetaData();
-	d->metaData->reserve(1);	// Maximum of 1 metadata property.
+	d->metaData.reserve(1);	// Maximum of 1 metadata property.
 
 	// NOTE: RomMetaData ignores empty strings, so we don't need to
 	// check for them here.
 
 	// Title
-	d->metaData->addMetaData_string(Property::Title, getString(Property::Title));
+	d->metaData.addMetaData_string(Property::Title, getString(Property::Title));
 
 	// Finished reading the metadata.
-	return static_cast<int>(d->metaData->count());
+	return static_cast<int>(d->metaData.count());
 }
 
 /**

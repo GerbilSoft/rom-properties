@@ -405,7 +405,7 @@ int SufamiTurbo::loadFieldData(void)
 int SufamiTurbo::loadMetaData(void)
 {
 	RP_D(SufamiTurbo);
-	if (d->metaData != nullptr) {
+	if (!d->metaData.empty()) {
 		// Metadata *has* been loaded...
 		return 0;
 	} else if (!d->file) {
@@ -416,18 +416,15 @@ int SufamiTurbo::loadMetaData(void)
 		return -EIO;
 	}
 
-	// Create the metadata object.
-	d->metaData = new RomMetaData();
-	d->metaData->reserve(1);	// Maximum of 1 metadata property.
-
 	// ROM header is read in the constructor.
 	//const ST_RomHeader *const romHeader = &d->romHeader;
+	d->metaData.reserve(1);	// Maximum of 1 metadata property.
 
 	// Title
-	d->metaData->addMetaData_string(Property::Title, d->getRomTitle());
+	d->metaData.addMetaData_string(Property::Title, d->getRomTitle());
 
 	// Finished reading the metadata.
-	return static_cast<int>(d->metaData->count());
+	return static_cast<int>(d->metaData.count());
 }
 
 /**

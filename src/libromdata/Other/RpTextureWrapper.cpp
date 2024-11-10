@@ -300,7 +300,7 @@ int RpTextureWrapper::loadFieldData(void)
 int RpTextureWrapper::loadMetaData(void)
 {
 	RP_D(RpTextureWrapper);
-	if (d->metaData != nullptr) {
+	if (!d->metaData.empty()) {
 		// Metadata *has* been loaded...
 		return 0;
 	} else if (!d->file) {
@@ -311,24 +311,22 @@ int RpTextureWrapper::loadMetaData(void)
 		return -EIO;
 	}
 
-	// Create the metadata object.
-	d->metaData = new RomMetaData();
-	d->metaData->reserve(2);	// Maximum of 2 metadata properties.
+	d->metaData.reserve(2);	// Maximum of 2 metadata properties.
 
 	// Dimensions
 	int dimensions[3];
 	int ret = d->texture->getDimensions(dimensions);
 	if (ret == 0) {
 		if (dimensions[0] > 0) {
-			d->metaData->addMetaData_integer(Property::Width, dimensions[0]);
+			d->metaData.addMetaData_integer(Property::Width, dimensions[0]);
 		}
 		if (dimensions[1] > 0) {
-			d->metaData->addMetaData_integer(Property::Height, dimensions[1]);
+			d->metaData.addMetaData_integer(Property::Height, dimensions[1]);
 		}
 	}
 
 	// Finished reading the metadata.
-	return static_cast<int>(d->metaData->count());
+	return static_cast<int>(d->metaData.count());
 }
 
 /**

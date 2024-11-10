@@ -507,7 +507,7 @@ int Sega8Bit::loadFieldData(void)
 int Sega8Bit::loadMetaData(void)
 {
 	RP_D(Sega8Bit);
-	if (d->metaData != nullptr) {
+	if (!d->metaData.empty()) {
 		// Metadata *has* been loaded...
 		return 0;
 	} else if (!d->file) {
@@ -522,45 +522,43 @@ int Sega8Bit::loadMetaData(void)
 	    static_cast<uint32_t>(le16_to_cpu(d->romHeader.codemasters.checksum_compl)))
 	{
 		// Codemasters checksums match.
-		d->metaData = new RomMetaData();
-		d->metaData->reserve(1);	// Maximum of 1 metadata property.
+		d->metaData.reserve(1);	// Maximum of 1 metadata property.
 		const Sega8_Codemasters_RomHeader *const codemasters = &d->romHeader.codemasters;
 
 		// Build time.
 		// NOTE: CreationDate is currently handled as QDate on KDE.
 		time_t ctime = d->codemasters_timestamp_to_unix_time(&codemasters->timestamp);
-		d->metaData->addMetaData_timestamp(Property::CreationDate, ctime);
+		d->metaData.addMetaData_timestamp(Property::CreationDate, ctime);
 	} else if (d->romHeader.sdsc.magic == cpu_to_be32(SDSC_MAGIC)) {
 		// SDSC header is present.
-		d->metaData = new RomMetaData();
-		d->metaData->reserve(4);	// Maximum of 4 metadata properties.
+		d->metaData.reserve(4);	// Maximum of 4 metadata properties.
 		const Sega8_SDSC_RomHeader *const sdsc = &d->romHeader.sdsc;
 
 		// Build date
 		const time_t ctime = d->sdsc_date_to_unix_time(&sdsc->date);
-		d->metaData->addMetaData_timestamp(Property::CreationDate, ctime);
+		d->metaData.addMetaData_timestamp(Property::CreationDate, ctime);
 
 		// Author
 		string str = d->getSdscString(le16_to_cpu(sdsc->author_ptr));
 		if (!str.empty()) {
-			d->metaData->addMetaData_string(Property::Author, str);
+			d->metaData.addMetaData_string(Property::Author, str);
 		}
 
 		// Name (Title)
 		str = d->getSdscString(le16_to_cpu(sdsc->name_ptr));
 		if (!str.empty()) {
-			d->metaData->addMetaData_string(Property::Title, str);
+			d->metaData.addMetaData_string(Property::Title, str);
 		}
 
 		// Description
                 str = d->getSdscString(le16_to_cpu(sdsc->desc_ptr));
 		if (!str.empty()) {
-			d->metaData->addMetaData_string(Property::Description, str);
+			d->metaData.addMetaData_string(Property::Description, str);
 		}
 	}
 
 	// Finished reading the metadata.
-	return (d->metaData ? static_cast<int>(d->metaData->count()) : -ENOENT);
+	return static_cast<int>(d->metaData.count());
 }
 
 } // namespace LibRomData

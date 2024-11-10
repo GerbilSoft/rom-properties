@@ -375,7 +375,7 @@ int VirtualBoy::loadFieldData(void)
 int VirtualBoy::loadMetaData(void)
 {
 	RP_D(VirtualBoy);
-	if (d->metaData != nullptr) {
+	if (!d->metaData.empty()) {
 		// Metadata *has* been loaded...
 		return 0;
 	} else if (!d->file) {
@@ -387,22 +387,19 @@ int VirtualBoy::loadMetaData(void)
 		return -EIO;
 	}
 
-	// Create the metadata object.
-	d->metaData = new RomMetaData();
-	d->metaData->reserve(2);	// Maximum of 2 metadata properties.
-
 	// Virtual Boy ROM footer, excluding the vector table.
 	const VB_RomFooter *const romFooter = &d->romFooter;
+	d->metaData.reserve(2);	// Maximum of 2 metadata properties.
 
 	// Title
-	d->metaData->addMetaData_string(Property::Title,
+	d->metaData.addMetaData_string(Property::Title,
 		cp1252_sjis_to_utf8(romFooter->title, sizeof(romFooter->title)));
 
 	// Publisher (aka manufacturer)
 	// Look up the publisher.
 	const char *const publisher = NintendoPublishers::lookup(romFooter->publisher);
 	if (publisher) {
-		d->metaData->addMetaData_string(Property::Publisher, publisher);
+		d->metaData.addMetaData_string(Property::Publisher, publisher);
 	} else {
 		string s_publisher;
 		if (ISALNUM(romFooter->publisher[0]) &&
@@ -415,11 +412,11 @@ int VirtualBoy::loadMetaData(void)
 				static_cast<uint8_t>(romFooter->publisher[0]),
 				static_cast<uint8_t>(romFooter->publisher[1]));
 		}
-		d->metaData->addMetaData_string(Property::Publisher, s_publisher);
+		d->metaData.addMetaData_string(Property::Publisher, s_publisher);
 	}
 
 	// Finished reading the metadata.
-	return static_cast<int>(d->metaData->count());
+	return static_cast<int>(d->metaData.count());
 }
 
 } // namespace LibRomData

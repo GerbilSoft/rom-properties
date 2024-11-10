@@ -342,7 +342,7 @@ int PokemonMini::loadFieldData(void)
 int PokemonMini::loadMetaData(void)
 {
 	RP_D(PokemonMini);
-	if (d->metaData != nullptr) {
+	if (!d->metaData.empty()) {
 		// Metadata *has* been loaded...
 		return 0;
 	} else if (!d->file) {
@@ -353,14 +353,11 @@ int PokemonMini::loadMetaData(void)
 		return -EIO;
 	}
 
-	// Create the metadata object.
-	d->metaData = new RomMetaData();
-	d->metaData->reserve(1);	// Maximum of 1 metadata property.
-
 	// Pokémon Mini ROM header.
 	const PokemonMini_RomHeader *const romHeader = &d->romHeader;
+	d->metaData.reserve(1);	// Maximum of 1 metadata property.
 
-	// Title.
+	// Title
 	string title;
 	if (romHeader->game_id[3] == 'J') {
 		// Japanese title. Assume it's Shift-JIS.
@@ -370,10 +367,10 @@ int PokemonMini::loadMetaData(void)
 		// Assume other regions are cp1252.
 		title = cp1252_to_utf8(romHeader->title, sizeof(romHeader->title));
 	}
-	d->metaData->addMetaData_string(Property::Title, title, RomMetaData::STRF_TRIM_END);
+	d->metaData.addMetaData_string(Property::Title, title, RomMetaData::STRF_TRIM_END);
 
 	// Finished reading the metadata.
-	return static_cast<int>(d->metaData->count());
+	return static_cast<int>(d->metaData.count());
 }
 
 } // namespace LibRomData

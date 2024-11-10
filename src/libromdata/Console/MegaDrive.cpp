@@ -1416,7 +1416,7 @@ int MegaDrive::loadFieldData(void)
 int MegaDrive::loadMetaData(void)
 {
 	RP_D(MegaDrive);
-	if (d->metaData != nullptr) {
+	if (!d->metaData.empty()) {
 		// Metadata *has* been loaded...
 		return 0;
 	} else if (!d->file) {
@@ -1427,13 +1427,10 @@ int MegaDrive::loadMetaData(void)
 		return -EIO;
 	}
 
-	// Create the metadata object.
-	d->metaData = new RomMetaData();
-	d->metaData->reserve(2);	// Maximum of 2 metadata properties.
-
 	// MD ROM header
 	// TODO: Lock-on support?
 	const MD_RomHeader *const romHeader = &d->romHeader;
+	d->metaData.reserve(2);	// Maximum of 2 metadata properties.
 
 	// Title
 	// TODO: Domestic vs. export; space elimination?
@@ -1444,15 +1441,15 @@ int MegaDrive::loadMetaData(void)
 		s_title = cp1252_sjis_to_utf8(romHeader->title_domestic, sizeof(romHeader->title_domestic));
 	}
 	if (!s_title.empty()) {
-		d->metaData->addMetaData_string(Property::Title, s_title);
+		d->metaData.addMetaData_string(Property::Title, s_title);
 	}
 
 	// Publisher
 	// TODO: Don't show if the publisher is unknown?
-	d->metaData->addMetaData_string(Property::Publisher, d->getPublisher(romHeader));
+	d->metaData.addMetaData_string(Property::Publisher, d->getPublisher(romHeader));
 
 	// Finished reading the metadata.
-	return static_cast<int>(d->metaData->count());
+	return static_cast<int>(d->metaData.count());
 }
 
 /**

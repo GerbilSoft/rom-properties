@@ -483,7 +483,7 @@ int WiiWIBN::loadFieldData(void)
 int WiiWIBN::loadMetaData(void)
 {
 	RP_D(WiiWIBN);
-	if (d->metaData != nullptr) {
+	if (!d->metaData.empty()) {
 		// Metadata *has* been loaded...
 		return 0;
 	} else if (!d->file) {
@@ -495,19 +495,16 @@ int WiiWIBN::loadMetaData(void)
 		return -EIO;
 	}
 
-	// Create the metadata object.
-	d->metaData = new RomMetaData();
-	d->metaData->reserve(1);	// Maximum of 1 metadata property.
-
 	// Wii WIBN header
 	const Wii_WIBN_Header_t *const wibnHeader = &d->wibnHeader;
+	d->metaData.reserve(1);	// Maximum of 1 metadata property.
 
 	// Title [TODO: Also subtitle?]
-	d->metaData->addMetaData_string(Property::Title,
+	d->metaData.addMetaData_string(Property::Title,
 		utf16be_to_utf8(wibnHeader->gameTitle, ARRAY_SIZE_I(wibnHeader->gameTitle)));
 
 	// Finished reading the metadata.
-	return static_cast<int>(d->metaData->count());
+	return static_cast<int>(d->metaData.count());
 }
 
 /**

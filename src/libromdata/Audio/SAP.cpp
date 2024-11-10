@@ -709,7 +709,7 @@ int SAP::loadFieldData(void)
 int SAP::loadMetaData(void)
 {
 	RP_D(SAP);
-	if (d->metaData != nullptr) {
+	if (!d->metaData.empty()) {
 		// Metadata *has* been loaded...
 		return 0;
 	} else if (!d->file) {
@@ -727,24 +727,22 @@ int SAP::loadMetaData(void)
 		return 0;
 	}
 
-	// Create the metadata object.
-	d->metaData = new RomMetaData();
-	d->metaData->reserve(4);	// Maximum of 4 metadata properties.
+	d->metaData.reserve(4);	// Maximum of 4 metadata properties.
 
 	// Composer
 	if (!tags.author.empty()) {
-		d->metaData->addMetaData_string(Property::Composer, tags.author);
+		d->metaData.addMetaData_string(Property::Composer, tags.author);
 	}
 
 	// Song title
 	if (!tags.name.empty()) {
-		d->metaData->addMetaData_string(Property::Title, tags.name);
+		d->metaData.addMetaData_string(Property::Title, tags.name);
 	}
 
 	// TODO: Date
 
 	// Number of channels
-	d->metaData->addMetaData_integer(Property::Channels, (tags.stereo ? 2 : 1));
+	d->metaData.addMetaData_integer(Property::Channels, (tags.stereo ? 2 : 1));
 
 	// NOTE: Including all songs in the duration.
 	const uint32_t duration = std::accumulate(tags.durations.cbegin(), tags.durations.cend(), 0U,
@@ -753,11 +751,11 @@ int SAP::loadMetaData(void)
 		}
 	);
 	if (duration > 0) {
-		d->metaData->addMetaData_integer(Property::Duration, static_cast<int>(duration));
+		d->metaData.addMetaData_integer(Property::Duration, static_cast<int>(duration));
 	}
 
 	// Finished reading the metadata.
-	return static_cast<int>(d->metaData->count());
+	return static_cast<int>(d->metaData.count());
 }
 
 } // namespace LibRomData

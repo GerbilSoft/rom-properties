@@ -423,7 +423,7 @@ int GameBoyAdvance::loadFieldData(void)
 int GameBoyAdvance::loadMetaData(void)
 {
 	RP_D(GameBoyAdvance);
-	if (d->metaData != nullptr) {
+	if (!d->metaData.empty()) {
 		// Metadata *has* been loaded...
 		return 0;
 	} else if (!d->file) {
@@ -434,23 +434,20 @@ int GameBoyAdvance::loadMetaData(void)
 		return -EIO;
 	}
 
-	// Create the metadata object.
-	d->metaData = new RomMetaData();
-	d->metaData->reserve(1);	// Maximum of 1 metadata property.
-
 	// ROM header is read in the constructor.
 	const GBA_RomHeader *const romHeader = &d->romHeader;
+	d->metaData.reserve(2);	// Maximum of 2 metadata properties.
 
 	// Title
-	d->metaData->addMetaData_string(Property::Title,
+	d->metaData.addMetaData_string(Property::Title,
 		cpN_to_utf8(437, romHeader->title, sizeof(romHeader->title)),
 		RomMetaData::STRF_TRIM_END);
 
 	// Publisher
-	d->metaData->addMetaData_string(Property::Publisher, d->getPublisher());
+	d->metaData.addMetaData_string(Property::Publisher, d->getPublisher());
 
 	// Finished reading the metadata.
-	return static_cast<int>(d->metaData->count());
+	return static_cast<int>(d->metaData.count());
 }
 
 /**

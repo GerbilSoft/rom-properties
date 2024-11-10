@@ -350,7 +350,7 @@ int N64::loadFieldData(void)
 int N64::loadMetaData(void)
 {
 	RP_D(N64);
-	if (d->metaData != nullptr) {
+	if (!d->metaData.empty()) {
 		// Metadata *has* been loaded...
 		return 0;
 	} else if (!d->file) {
@@ -361,22 +361,19 @@ int N64::loadMetaData(void)
 		return -EIO;
 	}
 
-	// Create the metadata object.
-	d->metaData = new RomMetaData();
-	d->metaData->reserve(1);	// Maximum of 1 metadata property.
-
 	// ROM file header is read and byteswapped in the constructor.
 	// TODO: Indicate the byteswapping format?
 	const N64_RomHeader *const romHeader = &d->romHeader;
+	d->metaData.reserve(1);	// Maximum of 1 metadata property.
 
 	// Title.
 	// TODO: Space elimination.
-	d->metaData->addMetaData_string(Property::Title,
+	d->metaData.addMetaData_string(Property::Title,
 		cp1252_sjis_to_utf8(romHeader->title, sizeof(romHeader->title)),
 		RomMetaData::STRF_TRIM_END);
 
 	// Finished reading the metadata.
-	return static_cast<int>(d->metaData->count());
+	return static_cast<int>(d->metaData.count());
 }
 
 } // namespace LibRomData

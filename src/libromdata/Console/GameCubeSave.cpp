@@ -996,7 +996,7 @@ int GameCubeSave::loadFieldData(void)
 int GameCubeSave::loadMetaData(void)
 {
 	RP_D(GameCubeSave);
-	if (d->metaData != nullptr) {
+	if (!d->metaData.empty()) {
 		// Metadata *has* been loaded...
 		return 0;
 	} else if (!d->file) {
@@ -1009,31 +1009,28 @@ int GameCubeSave::loadMetaData(void)
 
 	// Save file header is read and byteswapped in the constructor.
 	const card_direntry *const direntry = &d->direntry;
-
-	// Create the metadata object.
-	d->metaData = new RomMetaData();
-	d->metaData->reserve(3);	// Maximum of 4 metadata properties.
+	d->metaData.reserve(3);	// Maximum of 4 metadata properties.
 
 	// Look up the publisher.
 	const char *publisher = NintendoPublishers::lookup(direntry->company);
 	if (publisher) {
-		d->metaData->addMetaData_string(Property::Publisher, publisher);
+		d->metaData.addMetaData_string(Property::Publisher, publisher);
 	}
 
 	// Description (using this as the Title)
 	string description = d->getComment();
 	if (likely(!description.empty())) {
-		d->metaData->addMetaData_string(Property::Title, description);
+		d->metaData.addMetaData_string(Property::Title, description);
 	}
 
 	// Last Modified timestamp
 	// NOTE: Using "CreationDate".
 	// TODO: Adjust for local timezone, since it's UTC.
-	d->metaData->addMetaData_timestamp(Property::CreationDate,
+	d->metaData.addMetaData_timestamp(Property::CreationDate,
 		static_cast<time_t>(direntry->lastmodified) + GC_UNIX_TIME_DIFF);
 
 	// Finished reading the metadata.
-	return static_cast<int>(d->metaData->count());
+	return static_cast<int>(d->metaData.count());
 }
 
 /**

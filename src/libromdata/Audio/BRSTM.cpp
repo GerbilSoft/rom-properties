@@ -378,7 +378,7 @@ int BRSTM::loadFieldData(void)
 int BRSTM::loadMetaData(void)
 {
 	RP_D(BRSTM);
-	if (d->metaData != nullptr) {
+	if (!d->metaData.empty()) {
 		// Metadata *has* been loaded...
 		return 0;
 	} else if (!d->file) {
@@ -389,29 +389,26 @@ int BRSTM::loadMetaData(void)
 		return -EIO;
 	}
 
-	// Create the metadata object.
-	d->metaData = new RomMetaData();
-	d->metaData->reserve(3);	// Maximum of 3 metadata properties.
-
 	// BRSTM header chunk 1
 	const BRSTM_HEAD_Chunk1 *const headChunk1 = &d->headChunk1;
+	d->metaData.reserve(3);	// Maximum of 3 metadata properties.
 
 	// Number of channels
-	d->metaData->addMetaData_integer(Property::Channels, headChunk1->channel_count);
+	d->metaData.addMetaData_integer(Property::Channels, headChunk1->channel_count);
 
 	// Sample rate and sample count
 	const uint16_t sample_rate = d->brstm16_to_cpu(headChunk1->sample_rate);
 	const uint32_t sample_count = d->brstm32_to_cpu(headChunk1->sample_count);
 
 	// Sample rate
-	d->metaData->addMetaData_integer(Property::SampleRate, sample_rate);
+	d->metaData.addMetaData_integer(Property::SampleRate, sample_rate);
 
 	// Length, in milliseconds (non-looping)
-	d->metaData->addMetaData_integer(Property::Duration,
+	d->metaData.addMetaData_integer(Property::Duration,
 		convSampleToMs(sample_count, sample_rate));
 
 	// Finished reading the metadata.
-	return static_cast<int>(d->metaData->count());
+	return static_cast<int>(d->metaData.count());
 }
 
 } // namespace LibRomData

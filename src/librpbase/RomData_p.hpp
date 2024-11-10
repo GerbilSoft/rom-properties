@@ -69,8 +69,8 @@ class NOVTABLE RomDataPrivate
 		wchar_t *filenameW;		// Copy of the filename (UTF-16; Windows only)
 #endif /* _WIN32 */
 	public:
-		RomFields fields;		// ROM fields (always allocated)
-		RomMetaData *metaData;		// ROM metadata (NOTE: nullptr initially)
+		RomFields fields;		// ROM fields
+		RomMetaData metaData;		// ROM metadata
 
 	public:
 		/** Convenience functions. **/

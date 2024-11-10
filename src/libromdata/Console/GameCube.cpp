@@ -1773,7 +1773,7 @@ int GameCube::loadFieldData(void)
 int GameCube::loadMetaData(void)
 {
 	RP_D(GameCube);
-	if (d->metaData != nullptr) {
+	if (!d->metaData.empty()) {
 		// Metadata *has* been loaded...
 		return 0;
 	} else if (!d->file) {
@@ -1784,12 +1784,9 @@ int GameCube::loadMetaData(void)
 		return -EIO;
 	}
 
-	// Create the metadata object.
-	d->metaData = new RomMetaData();
-	d->metaData->reserve(3);	// Maximum of 3 metadata properties.
-
 	// Disc header is read in the constructor.
 	const GCN_DiscHeader *const discHeader = &d->discHeader;
+	d->metaData.reserve(3);	// Maximum of 3 metadata properties.
 
 	// Add opening.bnr metadata if it's available.
 	bool addedBnrMetaData = false;
@@ -1808,7 +1805,7 @@ int GameCube::loadMetaData(void)
 		// Get the metadata from opening.bnr.
 		const RomMetaData *const bnrMetaData = d->opening_bnr.romData->metaData();
 		if (bnrMetaData && !bnrMetaData->empty()) {
-			int ret = d->metaData->addMetaData_metaData(bnrMetaData);
+			int ret = d->metaData.addMetaData_metaData(bnrMetaData);
 			if (ret >= 0) {
 				// Metadata added successfully.
 				addedBnrMetaData = true;
@@ -1829,7 +1826,7 @@ int GameCube::loadMetaData(void)
 			case GCN_REGION_ALL:	// TODO: Assume JP?
 			default:
 				// USA/PAL uses cp1252.
-				d->metaData->addMetaData_string(Property::Title,
+				d->metaData.addMetaData_string(Property::Title,
 					cp1252_to_utf8(
 						discHeader->game_title, sizeof(discHeader->game_title)));
 				break;
@@ -1839,20 +1836,20 @@ int GameCube::loadMetaData(void)
 			case GCN_REGION_CHN:
 			case GCN_REGION_TWN:
 				// Japan uses Shift-JIS.
-				d->metaData->addMetaData_string(Property::Title,
+				d->metaData.addMetaData_string(Property::Title,
 					cp1252_sjis_to_utf8(
 						discHeader->game_title, sizeof(discHeader->game_title)));
 				break;
 		}
 
 		// Publisher.
-		d->metaData->addMetaData_string(Property::Publisher, d->getPublisher());
+		d->metaData.addMetaData_string(Property::Publisher, d->getPublisher());
 	}
 
 	// TODO: Disc number?
 
 	// Finished reading the metadata.
-	return static_cast<int>(d->metaData->count());
+	return static_cast<int>(d->metaData.count());
 }
 
 /**

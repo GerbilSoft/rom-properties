@@ -936,7 +936,7 @@ int SPC::loadFieldData(void)
 int SPC::loadMetaData(void)
 {
 	RP_D(SPC);
-	if (d->metaData != nullptr) {
+	if (!d->metaData.empty()) {
 		// Metadata *has* been loaded...
 		return 0;
 	} else if (!d->file) {
@@ -955,9 +955,7 @@ int SPC::loadMetaData(void)
 		return -ENOENT;
 	}
 
-	// Create the metadata object.
-	d->metaData = new RomMetaData();
-	d->metaData->reserve(10);	// Maximum of 10 metadata properties.
+	d->metaData.reserve(10);	// Maximum of 10 metadata properties.
 
 	// TODO: Add more tags.
 	// TODO: Duration.
@@ -968,7 +966,7 @@ int SPC::loadMetaData(void)
 		const auto &data = iter->second;
 		assert(data.isStrIdx);
 		if (data.isStrIdx) {
-			d->metaData->addMetaData_string(Property::Title, kv.getStr(data));
+			d->metaData.addMetaData_string(Property::Title, kv.getStr(data));
 		}
 	}
 
@@ -978,7 +976,7 @@ int SPC::loadMetaData(void)
 		const auto &data = iter->second;
 		assert(data.isStrIdx);
 		if (data.isStrIdx) {
-			d->metaData->addMetaData_string(Property::Album, kv.getStr(data));
+			d->metaData.addMetaData_string(Property::Album, kv.getStr(data));
 		}
 	}
 
@@ -988,7 +986,7 @@ int SPC::loadMetaData(void)
 		const auto &data = iter->second;
 		assert(data.isStrIdx);
 		if (data.isStrIdx) {
-			d->metaData->addMetaData_string(Property::Artist, kv.getStr(data));
+			d->metaData.addMetaData_string(Property::Artist, kv.getStr(data));
 		}
 	}
 
@@ -998,7 +996,7 @@ int SPC::loadMetaData(void)
 		const auto &data = iter->second;
 		assert(!data.isStrIdx);
 		if (!data.isStrIdx) {
-			d->metaData->addMetaData_uint(Property::ReleaseYear, data.uvalue);
+			d->metaData.addMetaData_uint(Property::ReleaseYear, data.uvalue);
 		}
 	}
 
@@ -1006,7 +1004,7 @@ int SPC::loadMetaData(void)
 	const unsigned int duration = d->getDurationMs(kv);
 	if (duration > 0) {
 		// NOTE: Property::Duration uses int, not unsigned int.
-		d->metaData->addMetaData_integer(Property::Duration, static_cast<int>(duration));
+		d->metaData.addMetaData_integer(Property::Duration, static_cast<int>(duration));
 	}
 
 #if 0
@@ -1017,7 +1015,7 @@ int SPC::loadMetaData(void)
 		const auto &data = iter->second;
 		assert(data.isStrIdx);
 		if (data.isStrIdx) {
-			d->metaData->addMetaData_string(Property::Dumper, kv.getStr(data));
+			d->metaData.addMetaData_string(Property::Dumper, kv.getStr(data));
 		}
 	}
 #endif
@@ -1028,7 +1026,7 @@ int SPC::loadMetaData(void)
 		const auto &data = iter->second;
 		assert(!data.isStrIdx);
 		if (!data.isStrIdx) {
-			d->metaData->addMetaData_timestamp(Property::CreationDate, data.timestamp);
+			d->metaData.addMetaData_timestamp(Property::CreationDate, data.timestamp);
 		}
 	}
 
@@ -1040,7 +1038,7 @@ int SPC::loadMetaData(void)
 		if (data.isStrIdx) {
 			// NOTE: Property::Comment is assumed to be user-added
 			// on KDE Dolphin 18.08.1. Use Property::Description.
-			d->metaData->addMetaData_string(Property::Description, kv.getStr(data));
+			d->metaData.addMetaData_string(Property::Description, kv.getStr(data));
 		}
 	}
 
@@ -1056,7 +1054,7 @@ int SPC::loadMetaData(void)
 		const auto &data = iter->second;
 		assert(data.isStrIdx);
 		if (data.isStrIdx) {
-			d->metaData->addMetaData_string(Property::Compilation, kv.getStr(data));
+			d->metaData.addMetaData_string(Property::Compilation, kv.getStr(data));
 		}
 	}
 
@@ -1067,7 +1065,7 @@ int SPC::loadMetaData(void)
 		assert(!data.isStrIdx);
 		if (!data.isStrIdx) {
 			// TODO: Int or UInt on KDE?
-			d->metaData->addMetaData_uint(Property::DiscNumber, data.uvalue);
+			d->metaData.addMetaData_uint(Property::DiscNumber, data.uvalue);
 		}
 	}
 
@@ -1083,12 +1081,12 @@ int SPC::loadMetaData(void)
 			// TODO: How to represent the letter here?
 			// TODO: Int or UInt on KDE?
 			const uint8_t track_num = data.uvalue >> 8;
-			d->metaData->addMetaData_uint(Property::TrackNumber, track_num);
+			d->metaData.addMetaData_uint(Property::TrackNumber, track_num);
 		}
 	}
 
 	// Finished reading the metadata.
-	return static_cast<int>(d->metaData->count());
+	return static_cast<int>(d->metaData.count());
 }
 
 } // namespace LibRomData

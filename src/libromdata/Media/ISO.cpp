@@ -870,7 +870,7 @@ int ISO::loadFieldData(void)
 int ISO::loadMetaData(void)
 {
 	RP_D(ISO);
-	if (d->metaData != nullptr) {
+	if (!d->metaData.empty()) {
 		// Metadata *has* been loaded...
 		return 0;
 	} else if (!d->isValid || static_cast<int>(d->discType) < 0) {
@@ -878,9 +878,7 @@ int ISO::loadMetaData(void)
 		return -EIO;
 	}
 
-	// Create the metadata object.
-	d->metaData = new RomMetaData();
-	d->metaData->reserve(3);	// Maximum of 3 metadata properties.
+	d->metaData.reserve(3);	// Maximum of 3 metadata properties.
 
 	switch (d->discType) {
 		default:
@@ -890,18 +888,18 @@ int ISO::loadMetaData(void)
 
 		case ISOPrivate::DiscType::ISO9660:
 		case ISOPrivate::DiscType::CDi:
-			d->addPVDCommon_metaData(d->metaData, &d->pvd.iso);
-			d->addPVDTimestamps_metaData(d->metaData, &d->pvd.iso);
+			d->addPVDCommon_metaData(&d->metaData, &d->pvd.iso);
+			d->addPVDTimestamps_metaData(&d->metaData, &d->pvd.iso);
 			break;
 
 		case ISOPrivate::DiscType::HighSierra:
-			d->addPVDCommon_metaData(d->metaData, &d->pvd.hsfs);
-			d->addPVDTimestamps_metaData(d->metaData, &d->pvd.hsfs);
+			d->addPVDCommon_metaData(&d->metaData, &d->pvd.hsfs);
+			d->addPVDTimestamps_metaData(&d->metaData, &d->pvd.hsfs);
 			break;
 	}
 
 	// Finished reading the metadata.
-	return static_cast<int>(d->metaData->count());
+	return static_cast<int>(d->metaData.count());
 }
 
 /**

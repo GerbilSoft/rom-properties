@@ -836,7 +836,7 @@ int VGM::loadFieldData(void)
 int VGM::loadMetaData(void)
 {
 	RP_D(VGM);
-	if (d->metaData != nullptr) {
+	if (!d->metaData.empty()) {
 		// Metadata *has* been loaded...
 		return 0;
 	} else if (!d->file) {
@@ -847,15 +847,12 @@ int VGM::loadMetaData(void)
 		return -EIO;
 	}
 
-	// Create the metadata object.
-	d->metaData = new RomMetaData();
-	d->metaData->reserve(6);	// Maximum of 6 metadata properties.
-
-	// VGM header.
+	// VGM header
 	const VGM_Header *const vgmHeader = &d->vgmHeader;
+	d->metaData.reserve(6);	// Maximum of 6 metadata properties.
 
 	// Length, in milliseconds. (non-looping)
-	d->metaData->addMetaData_integer(Property::Duration,
+	d->metaData.addMetaData_integer(Property::Duration,
 		convSampleToMs(le32_to_cpu(vgmHeader->sample_count), VGM_SAMPLE_RATE));
 
 	// Attempt to load the GD3 tags.
@@ -903,12 +900,12 @@ int VGM::loadMetaData(void)
 						// - No negatives.
 						// - Four-digit only. (lol Y10K)
 						if (year >= 0 && year < 10000) {
-							d->metaData->addMetaData_uint(Property::ReleaseYear, (unsigned int)year);
+							d->metaData.addMetaData_uint(Property::ReleaseYear, (unsigned int)year);
 						}
 					}
 				} else {
 					// Standard string property.
-					d->metaData->addMetaData_string(p.prop, str);
+					d->metaData.addMetaData_string(p.prop, str);
 				}
 			}
 
@@ -917,7 +914,7 @@ int VGM::loadMetaData(void)
 	}
 
 	// Finished reading the metadata.
-	return static_cast<int>(d->metaData->count());
+	return static_cast<int>(d->metaData.count());
 }
 
 } // namespace LibRomData

@@ -970,7 +970,7 @@ int SNDH::loadFieldData(void)
 int SNDH::loadMetaData(void)
 {
 	RP_D(SNDH);
-	if (d->metaData != nullptr) {
+	if (!d->metaData.empty()) {
 		// Metadata *has* been loaded...
 		return 0;
 	} else if (!d->file) {
@@ -988,25 +988,23 @@ int SNDH::loadMetaData(void)
 		return 0;
 	}
 
-	// Create the metadata object.
-	d->metaData = new RomMetaData();
-	d->metaData->reserve(4);	// Maximum of 3 metadata properties.
+	d->metaData.reserve(4);	// Maximum of 4 metadata properties.
 
 	// Song title.
 	if (!tags.title.empty()) {
-		d->metaData->addMetaData_string(Property::Title,
+		d->metaData.addMetaData_string(Property::Title,
 			tags.title, RomFields::STRF_TRIM_END);
 	}
 
 	// Composer.
 	if (!tags.composer.empty()) {
-		d->metaData->addMetaData_string(Property::Composer,
+		d->metaData.addMetaData_string(Property::Composer,
 			tags.composer, RomFields::STRF_TRIM_END);
 	}
 
 	// Year of release.
 	if (tags.year != 0) {
-		d->metaData->addMetaData_uint(Property::ReleaseYear, tags.year);
+		d->metaData.addMetaData_uint(Property::ReleaseYear, tags.year);
 	}
 
 	// Duration.
@@ -1017,11 +1015,11 @@ int SNDH::loadMetaData(void)
 	if (duration != 0) {
 		// NOTE: Length is in milliseconds, so we need to
 		// multiply duration by 1000.
-		d->metaData->addMetaData_integer(Property::Duration, duration * 1000);
+		d->metaData.addMetaData_integer(Property::Duration, duration * 1000);
 	}
 
 	// Finished reading the metadata.
-	return static_cast<int>(d->metaData->count());
+	return static_cast<int>(d->metaData.count());
 }
 
 } // namespace LibRomData

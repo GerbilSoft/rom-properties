@@ -1512,7 +1512,7 @@ int SNES::loadFieldData(void)
 int SNES::loadMetaData(void)
 {
 	RP_D(SNES);
-	if (d->metaData != nullptr) {
+	if (!d->metaData.empty()) {
 		// Metadata *has* been loaded...
 		return 0;
 	} else if (!d->file) {
@@ -1523,24 +1523,21 @@ int SNES::loadMetaData(void)
 		return -EIO;
 	}
 
-	// Create the metadata object.
-	d->metaData = new RomMetaData();
-	d->metaData->reserve(2);	// Maximum of 2 metadata properties.
-
 	// ROM header is read in the constructor.
 	//const SNES_RomHeader *const romHeader = &d->romHeader;
+	d->metaData.reserve(2);	// Maximum of 2 metadata properties.
 
 	// Title
 	const string s_title = d->getRomTitle();
 	if (!s_title.empty()) {
-		d->metaData->addMetaData_string(Property::Title, s_title);
+		d->metaData.addMetaData_string(Property::Title, s_title);
 	}
 
 	// Publisher
-	d->metaData->addMetaData_string(Property::Publisher, d->getPublisher());
+	d->metaData.addMetaData_string(Property::Publisher, d->getPublisher());
 
 	// Finished reading the metadata.
-	return static_cast<int>(d->metaData->count());
+	return static_cast<int>(d->metaData.count());
 }
 
 /**

@@ -1481,7 +1481,7 @@ int DreamcastSave::loadFieldData(void)
 int DreamcastSave::loadMetaData(void)
 {
 	RP_D(DreamcastSave);
-	if (d->metaData != nullptr) {
+	if (!d->metaData.empty()) {
 		// Metadata *has* been loaded...
 		return 0;
 	} else if (!d->file) {
@@ -1492,20 +1492,18 @@ int DreamcastSave::loadMetaData(void)
 		return -EIO;
 	}
 
-	// Create the metadata object.
-	d->metaData = new RomMetaData();
-	d->metaData->reserve(2);	// Maximum of 4 metadata properties.
+	d->metaData.reserve(2);	// Maximum of 4 metadata properties.
 
 	// TODO: More metadata properties?
 
 	// Title
 	if (d->loaded_headers & DreamcastSavePrivate::DC_HAVE_VMS) {
-		d->metaData->addMetaData_string(Property::Title,
+		d->metaData.addMetaData_string(Property::Title,
 				cp1252_sjis_to_utf8(
 					d->vms_header.dc_description, sizeof(d->vms_header.dc_description)),
 					RomFields::STRF_TRIM_END);
 	} else if (d->loaded_headers & DreamcastSavePrivate::DC_HAVE_VMI) {
-		d->metaData->addMetaData_string(Property::Title,
+		d->metaData.addMetaData_string(Property::Title,
 			cp1252_sjis_to_utf8(
 				d->vmi_header.description, sizeof(d->vmi_header.description)),
 				RomFields::STRF_TRIM_END);
@@ -1514,11 +1512,11 @@ int DreamcastSave::loadMetaData(void)
 	// Creation time
 	if (d->loaded_headers & DreamcastSavePrivate::DC_HAVE_DIR_ENTRY) {
 		// TODO: Dreamcast doesn't support timezones.
-		d->metaData->addMetaData_timestamp(Property::CreationDate, d->ctime);
+		d->metaData.addMetaData_timestamp(Property::CreationDate, d->ctime);
 	}
 
 	// Finished reading the metadata.
-	return static_cast<int>(d->metaData->count());
+	return static_cast<int>(d->metaData.count());
 }
 
 /**

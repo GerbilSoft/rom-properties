@@ -520,7 +520,7 @@ int BCSTM::loadFieldData(void)
 int BCSTM::loadMetaData(void)
 {
 	RP_D(BCSTM);
-	if (d->metaData != nullptr) {
+	if (!d->metaData.empty()) {
 		// Metadata *has* been loaded...
 		return 0;
 	} else if (!d->file) {
@@ -531,9 +531,7 @@ int BCSTM::loadMetaData(void)
 		return -EIO;
 	}
 
-	// Create the metadata object.
-	d->metaData = new RomMetaData();
-	d->metaData->reserve(3);	// Maximum of 3 metadata properties.
+	d->metaData.reserve(3);	// Maximum of 3 metadata properties.
 
 	// Get stream info data.
 	uint8_t channel_count;
@@ -568,20 +566,20 @@ int BCSTM::loadMetaData(void)
 	}
 
 	// Number of channels
-	d->metaData->addMetaData_integer(Property::Channels, channel_count);
+	d->metaData.addMetaData_integer(Property::Channels, channel_count);
 
 	// Sample rate
-	d->metaData->addMetaData_integer(Property::SampleRate, sample_rate);
+	d->metaData.addMetaData_integer(Property::SampleRate, sample_rate);
 
 	// Length, in milliseconds (non-looping)
 	// TODO: Figure this out for BCWAV.
 	if (d->audioFormat != BCSTMPrivate::AudioFormat::BCWAV) {
-		d->metaData->addMetaData_integer(Property::Duration,
+		d->metaData.addMetaData_integer(Property::Duration,
 			convSampleToMs(sample_count, sample_rate));
 	}
 
 	// Finished reading the metadata.
-	return static_cast<int>(d->metaData->count());
+	return static_cast<int>(d->metaData.count());
 }
 
 } // namespace LibRomData

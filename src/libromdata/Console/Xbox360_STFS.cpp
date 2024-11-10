@@ -1051,7 +1051,7 @@ int Xbox360_STFS::loadFieldData(void)
 int Xbox360_STFS::loadMetaData(void)
 {
 	RP_D(Xbox360_STFS);
-	if (d->metaData != nullptr) {
+	if (!d->metaData.empty()) {
 		// Metadata *has* been loaded...
 		return 0;
 	} else if (!d->file) {
@@ -1069,34 +1069,31 @@ int Xbox360_STFS::loadMetaData(void)
 		return ret;
 	}
 
-	// Create the metadata object.
-	d->metaData = new RomMetaData();
-	d->metaData->reserve(2);	// Maximum of 2 metadata properties.
-
 	const STFS_Package_Metadata *const stfsMetadata = &d->stfsMetadata;
+	d->metaData.reserve(2);	// Maximum of 2 metadata properties.
 
 	// Display name and/or title
 	// TODO: Which one to prefer?
 	// TODO: Language ID?
 	if (stfsMetadata->display_name[0][0] != 0) {
-		d->metaData->addMetaData_string(Property::Title,
+		d->metaData.addMetaData_string(Property::Title,
 			utf16be_to_utf8(stfsMetadata->display_name[0],
 				ARRAY_SIZE(stfsMetadata->display_name[0])));
 	} else if (stfsMetadata->title_name[0] != 0) {
-		d->metaData->addMetaData_string(Property::Title,
+		d->metaData.addMetaData_string(Property::Title,
 			utf16be_to_utf8(stfsMetadata->title_name,
 				ARRAY_SIZE(stfsMetadata->title_name)));
 	}		
 
 	// Publisher
 	if (stfsMetadata->publisher_name[0] != 0) {
-		d->metaData->addMetaData_string(Property::Publisher,
+		d->metaData.addMetaData_string(Property::Publisher,
 			utf16be_to_utf8(stfsMetadata->publisher_name,
 				ARRAY_SIZE(stfsMetadata->publisher_name)));
 	}
 
 	// Finished reading the metadata.
-	return static_cast<int>(d->metaData->count());
+	return static_cast<int>(d->metaData.count());
 }
 
 /**

@@ -263,7 +263,7 @@ int WiiBNR::loadFieldData(void)
 int WiiBNR::loadMetaData(void)
 {
 	RP_D(WiiBNR);
-	if (d->metaData != nullptr) {
+	if (!d->metaData.empty()) {
 		// Metadata *has* been loaded...
 		return 0;
 	} else if (!d->file) {
@@ -275,17 +275,15 @@ int WiiBNR::loadMetaData(void)
 		return -EIO;
 	}
 
-	// Create the metadata object.
-	d->metaData = new RomMetaData();
-	d->metaData->reserve(1);	// Maximum of 1 metadata property.
+	d->metaData.reserve(1);	// Maximum of 1 metadata property.
 
 	// Using WiiCommon to get an RFT_STRING field.
-	d->metaData->addMetaData_string(Property::Description,
+	d->metaData.addMetaData_string(Property::Description,
 		WiiCommon::getWiiBannerStringForSysLC(
 			&d->imet, d->gcnRegion, d->id4_region));
 
 	// Finished reading the metadata.
-	return static_cast<int>(d->metaData->count());
+	return static_cast<int>(d->metaData.count());
 }
 
 } // namespace LibRomData

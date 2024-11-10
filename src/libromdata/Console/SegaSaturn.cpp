@@ -606,7 +606,7 @@ int SegaSaturn::loadFieldData(void)
 int SegaSaturn::loadMetaData(void)
 {
 	RP_D(SegaSaturn);
-	if (d->metaData != nullptr) {
+	if (!d->metaData.empty()) {
 		// Metadata *has* been loaded...
 		return 0;
 	} else if (!d->file) {
@@ -617,34 +617,31 @@ int SegaSaturn::loadMetaData(void)
 		return -EIO;
 	}
 
-	// Create the metadata object.
-	d->metaData = new RomMetaData();
-
 	// Sega Saturn disc header
 	const Saturn_IP0000_BIN_t *const discHeader = &d->discHeader;
-	d->metaData->reserve(4);	// Maximum of 4 metadata properties.
+	d->metaData.reserve(4);	// Maximum of 4 metadata properties.
 
 	// Title (TODO: Encoding?)
-	d->metaData->addMetaData_string(Property::Title,
+	d->metaData.addMetaData_string(Property::Title,
 		latin1_to_utf8(discHeader->title, sizeof(discHeader->title)),
 		RomMetaData::STRF_TRIM_END);
 
 	// Publisher
-	d->metaData->addMetaData_string(Property::Publisher, d->getPublisher());
+	d->metaData.addMetaData_string(Property::Publisher, d->getPublisher());
 
 	// Release date
-	d->metaData->addMetaData_timestamp(Property::CreationDate,
+	d->metaData.addMetaData_timestamp(Property::CreationDate,
 		d->ascii_yyyymmdd_to_unix_time(discHeader->release_date));
 
 	// Disc number (multiple disc sets only)
 	uint8_t disc_num, disc_total;
 	d->parseDiscNumber(disc_num, disc_total);
 	if (disc_num != 0 && disc_total > 1) {
-		d->metaData->addMetaData_integer(Property::DiscNumber, disc_num);
+		d->metaData.addMetaData_integer(Property::DiscNumber, disc_num);
 	}
 
 	// Finished reading the metadata.
-	return static_cast<int>(d->metaData->count());
+	return static_cast<int>(d->metaData.count());
 }
 
 } // namespace LibRomData

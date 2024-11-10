@@ -969,7 +969,7 @@ int NintendoDS::loadFieldData(void)
 int NintendoDS::loadMetaData(void)
 {
 	RP_D(NintendoDS);
-	if (d->metaData != nullptr) {
+	if (!d->metaData.empty()) {
 		// Metadata *has* been loaded...
 		return 0;
 	} else if (!d->file) {
@@ -980,12 +980,9 @@ int NintendoDS::loadMetaData(void)
 		return -EIO;
 	}
 
-	// Create the metadata object.
-	d->metaData = new RomMetaData();
-	d->metaData->reserve(2);	// Maximum of 2 metadata properties.
-
 	// ROM header is read in the constructor.
 	const NDS_RomHeader *const romHeader = &d->romHeader;
+	d->metaData.reserve(2);	// Maximum of 2 metadata properties.
 
 	// Title
 	bool has_full_title = false;
@@ -997,7 +994,7 @@ int NintendoDS::loadMetaData(void)
 		const RomMetaData *const other = d->nds_icon_title->metaData();
 		assert(other != nullptr);
 		if (other) {
-			d->metaData->addMetaData_metaData(other);
+			d->metaData.addMetaData_metaData(other);
 			has_full_title = true;	// TODO: Verify?
 		}
 	}
@@ -1005,7 +1002,7 @@ int NintendoDS::loadMetaData(void)
 	if (!has_full_title) {
 		// Full title is not available.
 		// Use the short title from the NDS header.
-		d->metaData->addMetaData_string(Property::Title,
+		d->metaData.addMetaData_string(Property::Title,
 			latin1_to_utf8(romHeader->title, ARRAY_SIZE_I(romHeader->title)),
 			RomMetaData::STRF_TRIM_END);
 	}
@@ -1013,12 +1010,12 @@ int NintendoDS::loadMetaData(void)
 	// Publisher
 	// TODO: Use publisher from the full title?
 	const char *const publisher = NintendoPublishers::lookup(romHeader->company);
-	d->metaData->addMetaData_string(Property::Publisher,
+	d->metaData.addMetaData_string(Property::Publisher,
 		publisher ? publisher :
 			rp_sprintf(C_("RomData", "Unknown (%.2s)"), romHeader->company));
 
 	// Finished reading the metadata.
-	return static_cast<int>(d->metaData->count());
+	return static_cast<int>(d->metaData.count());
 }
 
 /**
