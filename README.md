@@ -11,46 +11,20 @@ video game ROM and disc images.
 [![CodeFactor](https://www.codefactor.io/repository/github/gerbilsoft/rom-properties/badge)](https://www.codefactor.io/repository/github/gerbilsoft/rom-properties/overview)
 [![codecov](https://codecov.io/gh/GerbilSoft/rom-properties/graph/badge.svg?token=oIiL6oVPwZ)](https://codecov.io/gh/GerbilSoft/rom-properties)
 
-## v2.3
+## v2.4
 
-![KDE Dolphin showing a Commodore 1541 disk image from GEOS.](doc/img/rp-v2.3-kde5.CBMDOS.png)
+![Thunar showing Wii U packages.](doc/img/rp-v2.4-thunar.WiiUPackage.png)
 
-Major changes in v2.3 include:
+Major changes in v2.4 include:
 
-* xattrs tab on Linux now shows XFS attributes.
+* Support for Palm OS executables.
 
-* rpcli now supports extracting mipmap levels from most supported texture formats.
-  * Mipmaps are now supported for DirectDrawSurface and KhronosKTX.
+* Support for Wii U NUS packages.
 
-* Windows: Dark Mode is now supported on Windows 10 1809 and later in the
-  installation program and rp-config.
-  * Dark Mode is also partially supported in the properties pages when using
-    tools such as StartAllBack, though it has some issues right now.
+* Support for Analogue Pocket ROM images. (slightly modified variant
+  of Nintendo Game Boy ROMs)
 
-* Sparse disc images, e.g. CISO and GCZ, are now handled by the RomDataFactory
-  class instead of requiring each RomData subclass to handle it. This means
-  that all supported sparse disc images can be used for any console.
-  * This was originally implemented to support ZISO and PSP CISO for PS2 disc
-    images, but it also allows unusual combinations like DAX and JISO for
-    GameCube disc images.
-
-* Windows Image files (.wim) are now supported. Contributed by @ecumber.
-
-* Game Boy now has special handling MMC01 and MBC1M multicarts. The main header
-  is now detected correctly and used for the thumbnail image. All games in the
-  multicart are now shown as individual tabs.
-
-* Commodore DOS disk images (e.g. for Commodore 1541) are now supported,
-  including icons for GEOS files. File formats supported currently include
-  D64, D71, D80, D82, D81, D67, G64, and G71.
-
-* ColecoVision ROM images are now supported, including the text displayed
-  on the ColecoVision logo screen.
-
-* Intellivision ROM images are now supported, including the game title
-  and copyright year.
-
-* New translations: Romanian and Italian
+* Support for CDI-format Dreamcast disc images.
 
 Translators wanted; if you can translate rom-properties from English to another
 language, check out the [Crowdin project](https://crowdin.com/project/rom-properties).
@@ -58,7 +32,7 @@ language, check out the [Crowdin project](https://crowdin.com/project/rom-proper
 Crowdin project page, file an issue here on GitHub with the requested
 language.)
 
-See [`NEWS.md`](NEWS.md) for a full list of changes in v2.3.
+See [`NEWS.md`](NEWS.md) for a full list of changes in v2.4.
 
 ## Feedback
 
@@ -147,7 +121,8 @@ button.
 | Nintendo Wii Discs        |       Yes      |    Yes   |        No       |   Disc, Covers  |
 | Nintendo Wii WADs         |       Yes      |    Yes   |       Yes*      |  Title, Covers  |
 | Nintendo Wii Saves        |       Yes      |    Yes   |       Yes       |       N/A       |
-| Nintendo Wii U            |       Yes      |    No    |        No       |   Disc, Covers  |
+| Nintendo Wii U (Disc)     |       Yes      |    No    |        No       |   Disc, Covers  |
+| Nintendo Wii U (NUS)      |       Yes      |    Yes   |       Icon      |   Disc, Covers  |
 | Sega 8-bit (SMS, GG)      |       Yes      |    Yes   |       N/A       |        No       |
 | Sega Mega Drive           |       Yes      |    Yes   |       N/A       |      Title      |
 | Sega Dreamcast            |       Yes      |    Yes   |      Media      |        No       |
@@ -174,8 +149,9 @@ button.
 | Nintendo DS(i)                |       Yes      |    Yes   |       Icon      |   Covers, Box   |
 | Nintendo DSi TADs*            |     Partial    |    No    |        No       |        No       |
 | Nintendo 3DS                  |       Yes      |    Yes   |       Icon      |   Covers, Box   |
+| Palm OS                       |       Yes      |    Yes   |       Icon      |       N/A       |
 | Pokémon Mini                  |       Yes      |    Yes   |       N/A       |        No       |
-| Sony PlayStation Portable     |       Yes      |    Yes   |       Icon      |        No       |
+| Sony PlayStation Portable     |       Yes      |    Yes   |   Icon, Banner  |        No       |
 | Tiger game.com                |       Yes      |    Yes   |       Icon      |        No       |
 
 \* The Nintendo DSi TAD parser supports development TADs that are normally

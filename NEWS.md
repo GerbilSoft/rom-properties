@@ -1,6 +1,6 @@
 # Changes
 
-## v2.4 (released 2024/11/??)
+## v2.4 (released 2024/11/10)
 
 * New features:
   * IFUNC resolvers have been rewritten to use our own CPUID code again,
