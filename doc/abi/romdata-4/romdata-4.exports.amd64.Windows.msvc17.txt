@@ -39,10 +39,10 @@ public: __cdecl LibRpTexture::rp_image::~rp_image(void)
 public: virtual __cdecl LibRpFile::IRpFile::~IRpFile(void)
 class std::basic_ostream<char,struct std::char_traits<char> > & __cdecl LibRpBase::operator<<(class std::basic_ostream<char,struct std::char_traits<char> > &,class LibRpBase::JSONROMOutput const &)
 class std::basic_ostream<char,struct std::char_traits<char> > & __cdecl LibRpBase::operator<<(class std::basic_ostream<char,struct std::char_traits<char> > &,class LibRpBase::ROMOutput const &)
-const LibRpBase::ConfReader::`vftable')
-const LibRpBase::Config::`vftable')
-const LibRpFile::MemFile::`vftable')
-const LibRpFile::VectorFile::`vftable')
+const LibRpBase::ConfReader::`vftable'
+const LibRpBase::Config::`vftable'
+const LibRpFile::MemFile::`vftable'
+const LibRpFile::VectorFile::`vftable'
 bool __cdecl LibWin32Common::ComBase_isReferenced(void)
 int __cdecl LibRomData::CtrKeyScrambler::CtrScramble(union LibRomData::u128_t *,union LibRomData::u128_t const *,union LibRomData::u128_t const *,union LibRomData::u128_t const *)
 int __cdecl LibRomData::CtrKeyScrambler::CtrScramble(union LibRomData::u128_t *,union LibRomData::u128_t const *,union LibRomData::u128_t const *)
