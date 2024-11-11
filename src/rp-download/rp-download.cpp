@@ -76,6 +76,7 @@ static bool verbose = false;
 
 #if defined(_WIN32) && defined(_UNICODE)
 // Cannot do ATTR_PRINTF on Win32 if using Unicode.
+#  define ATTR_TPRINTF(fmt, args)
 #else
 #  define ATTR_TPRINTF ATTR_PRINTF
 #endif
@@ -94,7 +95,7 @@ static void show_usage(void)
  * @param format printf() format string.
  * @param ... printf() format parameters.
  */
-static void ATTR_PRINTF(1, 2) show_error(const TCHAR *format, ...)
+static void ATTR_TPRINTF(1, 2) show_error(const TCHAR *format, ...)
 {
 	va_list ap;
 
@@ -113,7 +114,7 @@ static void ATTR_PRINTF(1, 2) show_error(const TCHAR *format, ...)
  * @param format printf() format string.
  * @param ... printf() format parameters.
  */
-static void ATTR_PRINTF(1, 2) show_info(const TCHAR *format, ...)
+static void ATTR_TPRINTF(1, 2) show_info(const TCHAR *format, ...)
 {
 	va_list ap;
 
