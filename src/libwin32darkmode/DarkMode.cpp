@@ -86,6 +86,15 @@ void AllowDarkModeForApp(bool allow)
 		_SetPreferredAppMode(allow ? AllowDark : Default);
 }
 
+static HTHEME WINAPI MyOpenThemeData(HWND hWnd, LPCWSTR classList)
+{
+	if (lstrcmpW(classList, L"ScrollBar") == 0) {
+		hWnd = nullptr;
+		classList = L"Explorer::ScrollBar";
+	}
+	return _OpenNcThemeData(hWnd, classList);
+};
+
 void FixDarkScrollBar(void)
 {
 	HMODULE hComctl = LoadLibraryEx(_T("comctl32.dll"), nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
@@ -99,14 +108,6 @@ void FixDarkScrollBar(void)
 	DWORD oldProtect;
 	if (!VirtualProtect(addr, sizeof(IMAGE_THUNK_DATA), PAGE_READWRITE, &oldProtect))
 		return;
-
-	auto MyOpenThemeData = [](HWND hWnd, LPCWSTR classList) -> HTHEME {
-		if (lstrcmpW(classList, L"ScrollBar") == 0) {
-			hWnd = nullptr;
-			classList = L"Explorer::ScrollBar";
-		}
-		return _OpenNcThemeData(hWnd, classList);
-	};
 
 	addr->u1.Function = reinterpret_cast<ULONG_PTR>(static_cast<fnOpenNcThemeData>(MyOpenThemeData));
 	VirtualProtect(addr, sizeof(IMAGE_THUNK_DATA), oldProtect, &oldProtect);
