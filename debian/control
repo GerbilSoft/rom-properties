@@ -22,8 +22,10 @@ Build-Depends:
  libkf5filemetadata-dev,
  libkf5crash-dev,
  libglib2.0-dev,
+ libgdk-pixbuf2.0-dev,
  libgtk-3-dev,
  libcairo2-dev,
+ libgtk-4-dev,
  libnautilus-extension-dev,
  libcaja-extension-dev,
  libnemo-extension-dev,
@@ -39,7 +41,7 @@ Vcs-Browser: https://github.com/GerbilSoft/rom-properties
 
 Package: rom-properties-all
 Architecture: any
-Depends: ${misc:Depends}, libromdata5, rom-properties-kf5, rom-properties-gtk3, rom-properties-cli, rom-properties-tracker, rom-properties-utils, rom-properties-lang, rom-properties-thumbnailer-dbus
+Depends: ${misc:Depends}, libromdata5, rom-properties-kf5, rom-properties-gtk3, rom-properties-gtk4, rom-properties-cli, rom-properties-tracker, rom-properties-utils, rom-properties-lang, rom-properties-thumbnailer-dbus
 Description: ROM Properties Page shell extension
  This shell extension provides thumbnailing and property page functionality
  for ROM images, disc images, and save files for various game consoles,
@@ -101,6 +103,22 @@ Description: ROM Properties Page shell extension
  .
  The thumbnailer-dbus package is required for thumbnailing on
  some XFCE versions.
+
+Package: rom-properties-gtk4
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, libromdata2, rom-properties-utils, rom-properties-xdg
+Recommends: rom-properties-lang
+Conflicts: rom-properties-gnome, rom-properties-mate, rom-properties-cinnamon, rom-properties-gtk3-common
+Replaces: rom-properties-gnome, rom-properties-mate, rom-properties-cinnamon, rom-properties-gtk3-common
+Description: ROM Properties Page shell extension
+ This shell extension provides thumbnailing and property page functionality
+ for ROM images, disc images, and save files for various game consoles,
+ including Nintendo GameCube and Wii.
+ .
+ This package contains the GTK4 version, which supports Nautilus
+ (GNOME) version 43 and later.
+ .
+ The utils package is required for thumbnailing.
 
 Package: rom-properties-cli
 Architecture: any
