@@ -1,3 +1,9 @@
+rom-properties (2.4-1ppa6~oracular3) oracular; urgency=medium
+
+  * Actually enable KF6.
+
+ -- David Korth <gerbilsoft@gerbilsoft.com>  Mon, 11 Nov 2024 20:50:37 -0500
+
 rom-properties (2.4-1ppa6~oracular2) oracular; urgency=medium
 
   * Fix KF6 paths.
