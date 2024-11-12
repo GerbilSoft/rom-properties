@@ -106,7 +106,7 @@ Description: ROM Properties Page shell extension
 
 Package: rom-properties-gtk4
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, libromdata2, rom-properties-utils, rom-properties-xdg
+Depends: ${shlibs:Depends}, ${misc:Depends}, libromdata5, rom-properties-utils, rom-properties-xdg
 Recommends: rom-properties-lang
 Conflicts: rom-properties-gnome, rom-properties-mate, rom-properties-cinnamon, rom-properties-gtk3-common
 Replaces: rom-properties-gnome, rom-properties-mate, rom-properties-cinnamon, rom-properties-gtk3-common

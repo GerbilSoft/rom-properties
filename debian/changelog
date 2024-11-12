@@ -1,3 +1,9 @@
+rom-properties (2.4-1ppa6~noble3) noble; urgency=medium
+
+  * rom-properties-gtk4: Depend on libromdata5, not libromdata2.
+
+ -- David Korth <gerbilsoft@gerbilsoft.com>  Tue, 12 Nov 2024 18:15:13 -0500
+
 rom-properties (2.4-1ppa6~noble2) noble; urgency=medium
 
   * Fix RomThumbnailCreator-kf5.so filename.
