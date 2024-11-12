@@ -1,6 +1,6 @@
 usr/lib/*/qt5/plugins/kf5/propertiesdialog/rom-properties-kf5.so
 usr/lib/*/qt5/plugins/kf5/propertiesdialog/xattrview-kf5.so
-usr/lib/*/qt5/plugins/kf5/thumbcreator/rom-properties-kf5.so
+usr/lib/*/qt5/plugins/kf5/thumbcreator/RomThumbnailCreator-kf5.so
 usr/lib/*/qt5/plugins/kf5/kfilemetadata/kfilemetadata_rom-properties-kf5.so
 usr/lib/*/qt5/plugins/kf5/overlayicon/overlayiconplugin_rom-properties-kf5.so
 
