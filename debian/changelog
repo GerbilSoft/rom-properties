@@ -1,3 +1,11 @@
+rom-properties (2.4-1ppa6~oracular1) oracular; urgency=medium
+
+  * Build for Ubuntu 24.10 "Oracular" Oriole.
+
+  * Enabled KF6 builds.
+
+ -- David Korth <gerbilsoft@gerbilsoft.com>  Mon, 11 Nov 2024 20:06:25 -0500
+
 rom-properties (2.4-1ppa6~noble2) noble; urgency=medium
 
   * Fix RomThumbnailCreator-kf5.so filename.
