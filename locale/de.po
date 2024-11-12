@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2024-11-10 19:14-0500\n"
-"PO-Revision-Date: 2024-11-11 01:46\n"
+"PO-Revision-Date: 2024-11-12 17:50\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
 "Language: de_DE\n"
@@ -9716,7 +9716,7 @@ msgstr ""
 #: ../src/librptexture/fileformat/TGA.cpp:786
 msgctxt "TGA"
 msgid "Orientation"
-msgstr ""
+msgstr "Ausrichtung"
 
 #: ../src/librptexture/fileformat/TGA.cpp:791
 msgctxt "TGA|Compression"
@@ -9731,12 +9731,12 @@ msgstr ""
 #: ../src/librptexture/fileformat/TGA.cpp:797
 msgctxt "TGA|Compression"
 msgid "None"
-msgstr ""
+msgstr "Keine"
 
 #: ../src/librptexture/fileformat/TGA.cpp:799
 msgctxt "TGA"
 msgid "Compression"
-msgstr ""
+msgstr "Komprimierung"
 
 #: ../src/librptexture/fileformat/TGA.cpp:805
 msgctxt "TGA|AlphaType"
@@ -9746,7 +9746,7 @@ msgstr "Keine"
 #: ../src/librptexture/fileformat/TGA.cpp:806
 msgctxt "TGA|AlphaType"
 msgid "Undefined (ignore)"
-msgstr ""
+msgstr "Undefiniert (ignorieren)"
 
 #: ../src/librptexture/fileformat/TGA.cpp:807
 msgctxt "TGA|AlphaType"
@@ -9756,7 +9756,7 @@ msgstr ""
 #: ../src/librptexture/fileformat/TGA.cpp:808
 msgctxt "TGA|AlphaType"
 msgid "Present"
-msgstr ""
+msgstr "Vorhanden"
 
 #: ../src/librptexture/fileformat/TGA.cpp:809
 msgctxt "TGA|AlphaType"
@@ -9766,12 +9766,12 @@ msgstr ""
 #: ../src/librptexture/fileformat/TGA.cpp:813
 msgctxt "TGA"
 msgid "Alpha Type"
-msgstr ""
+msgstr "Alpha-Kanal"
 
 #: ../src/librptexture/fileformat/TGA.cpp:838
 msgctxt "RomData"
 msgid "Comments"
-msgstr ""
+msgstr "Kommentare"
 
 #: ../src/librptexture/fileformat/TGA.cpp:844
 msgctxt "TGA"
