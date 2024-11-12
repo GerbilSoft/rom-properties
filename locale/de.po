@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2024-11-10 19:14-0500\n"
-"PO-Revision-Date: 2024-11-12 17:50\n"
+"PO-Revision-Date: 2024-11-12 19:00\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
 "Language: de_DE\n"
@@ -8165,7 +8165,7 @@ msgstr "Skalieren nach"
 #: ../src/libromdata/Other/RpTextureWrapper.cpp:277
 msgctxt "RpTextureWrapper"
 msgid "Pixel Format"
-msgstr ""
+msgstr "Pixel Format"
 
 #: ../src/libromdata/Other/RpTextureWrapper.cpp:283
 msgctxt "RpTextureWrapper"
@@ -9265,7 +9265,7 @@ msgstr ""
 #: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1392
 msgctxt "DirectDrawSurface|dwFlags"
 msgid "Pixel Format"
-msgstr ""
+msgstr "Pixel Format"
 
 #: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1396
 msgctxt "DirectDrawSurface|dwFlags"
@@ -9721,12 +9721,12 @@ msgstr "Ausrichtung"
 #: ../src/librptexture/fileformat/TGA.cpp:791
 msgctxt "TGA|Compression"
 msgid "Huffman+Delta"
-msgstr ""
+msgstr "Huffman+Delta"
 
 #: ../src/librptexture/fileformat/TGA.cpp:793
 msgctxt "TGA|Compression"
 msgid "Huffman+Delta, 4-pass"
-msgstr ""
+msgstr "Huffman+Delta, 4-Pass"
 
 #: ../src/librptexture/fileformat/TGA.cpp:797
 msgctxt "TGA|Compression"
@@ -9751,7 +9751,7 @@ msgstr "Undefiniert (ignorieren)"
 #: ../src/librptexture/fileformat/TGA.cpp:807
 msgctxt "TGA|AlphaType"
 msgid "Undefined (retain)"
-msgstr ""
+msgstr "Undefiniert (behalten)"
 
 #: ../src/librptexture/fileformat/TGA.cpp:808
 msgctxt "TGA|AlphaType"
@@ -9776,7 +9776,7 @@ msgstr "Kommentare"
 #: ../src/librptexture/fileformat/TGA.cpp:844
 msgctxt "TGA"
 msgid "Last Saved Time"
-msgstr ""
+msgstr "Zuletzt gespeichert"
 
 #: ../src/librptexture/fileformat/TGA.cpp:852
 msgctxt "TGA"
@@ -9791,12 +9791,12 @@ msgstr ""
 #: ../src/librptexture/fileformat/TGA.cpp:871
 msgctxt "TGA"
 msgid "Software ID"
-msgstr ""
+msgstr "Software-ID"
 
 #: ../src/librptexture/fileformat/TGA.cpp:883
 msgctxt "TGA"
 msgid "Software Version"
-msgstr ""
+msgstr "Software-Version"
 
 #: ../src/librptexture/fileformat/TGA.cpp:891
 msgctxt "TGA"
@@ -9806,12 +9806,12 @@ msgstr ""
 #: ../src/librptexture/fileformat/TGA.cpp:898
 msgctxt "TGA"
 msgid "Pixel Aspect Ratio"
-msgstr ""
+msgstr "Pixel Seitenverhältnis"
 
 #: ../src/librptexture/fileformat/TGA.cpp:908
 msgctxt "TGA"
 msgid "Gamma Value"
-msgstr ""
+msgstr "Gamma Wert"
 
 #: ../src/librptexture/fileformat/ValveVTF.cpp:736
 #: ../src/librptexture/fileformat/ValveVTF.cpp:876
