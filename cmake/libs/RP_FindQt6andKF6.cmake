@@ -7,6 +7,7 @@ MACRO(FIND_QT6_AND_KF6)
 
 	SET(ENV{QT_SELECT} qt6)
 	SET(QT_DEFAULT_MAJOR_VERSION 6)
+	SET(QT_NO_CREATE_VERSIONLESS_TARGETS TRUE)
 
 	# FIXME: Search for Qt6 first instead of ECM?
 	SET(KF6_MIN 5.248.0)
@@ -73,7 +74,9 @@ MACRO(FIND_QT6_AND_KF6)
 			SET(QT_PLUGIN_INSTALL_DIR "${KF6_PLUGIN_INSTALL_DIR}")
 
 			# Find KF6.
-			FIND_PACKAGE(KF6 ${REQUIRE_KF6} ${KF6_MIN} COMPONENTS KIO WidgetsAddons FileMetaData Crash)
+			# FIXME: Specifying the minimum version here breaks on Kubuntu 24.10.
+			#FIND_PACKAGE(KF6 ${REQUIRE_KF6} ${KF6_MIN} COMPONENTS KIO WidgetsAddons FileMetaData Crash)
+			FIND_PACKAGE(KF6 ${REQUIRE_KF6} COMPONENTS KIO WidgetsAddons FileMetaData Crash)
 			IF(NOT KF6KIO_FOUND OR NOT KF6WidgetsAddons_FOUND OR NOT KF6FileMetaData_FOUND OR NOT KF6Crash_FOUND)
 				# KF6 not found.
 				SET(BUILD_KF6 OFF CACHE INTERNAL "Build the KDE Frameworks 6 plugin." FORCE)

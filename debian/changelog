@@ -2,7 +2,9 @@ rom-properties (2.4-1ppa6~oracular5) oracular; urgency=medium
 
   * Add statx() to syscall whitelist to fix SIGSYS in amiiboc on armhf.
 
- -- David Korth <gerbilsoft@gerbilsoft.com>  Tue, 12 Nov 2024 19:57:50 -0500
+  * Fix Qt6 CMake build system issues
+
+ -- David Korth <gerbilsoft@gerbilsoft.com>  Tue, 12 Nov 2024 20:38:28 -0500
 
 rom-properties (2.4-1ppa6~oracular4) oracular; urgency=medium
 
