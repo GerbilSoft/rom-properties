@@ -255,8 +255,6 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 		SCMP_SYS(close),
 		SCMP_SYS(fcntl),     SCMP_SYS(fcntl64),		// gcc profiling
 		SCMP_SYS(fsetxattr),
-		SCMP_SYS(fstat),     SCMP_SYS(fstat64),		// __GI___fxstat() [printf()]
-		SCMP_SYS(fstatat64), SCMP_SYS(newfstatat),	// Ubuntu 19.10 (32-bit)
 		SCMP_SYS(futex),
 		SCMP_SYS(getdents), SCMP_SYS(getdents64),
 		SCMP_SYS(getppid),	// for bubblewrap verification
@@ -278,11 +276,6 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 		SCMP_SYS(stat), SCMP_SYS(stat64),
 		SCMP_SYS(unlink),	// to delete expired cache files
 		SCMP_SYS(utimensat),
-
-#if defined(__SNR_statx) || defined(__NR_statx)
-		SCMP_SYS(getcwd),	// called by glibc's statx()
-		SCMP_SYS(statx),
-#endif /* __SNR_statx || __NR_statx */
 
 		// glibc ncsd
 		// TODO: Restrict connect() to AF_UNIX.

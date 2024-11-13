@@ -85,6 +85,16 @@ int rp_secure_enable(rp_secure_param_t param)
 		__NR_faccessat2		// Required for Gentoo's sandbox (amiiboc)
 #endif /* __SNR_faccessat2 || __NR_faccessat2 */
 
+		// stat()
+		SCMP_SYS(fstat), SCMP_SYS(fstat64), 		// __GI___fxstat() [printf()]
+		SCMP_SYS(fstatat64), SCMP_SYS(newfstatat),	// Ubuntu 19.10 (32-bit)
+
+#if defined(__SNR_statx) || defined(__NR_statx)
+		// statx()
+		SCMP_SYS(getcwd),	// called by glibc's statx()
+		SCMP_SYS(statx),
+#endif /* __SNR_statx || __NR_statx */
+
 		// restart_syscall() is called by glibc to restart
 		// certain syscalls if they're interrupted.
 		SCMP_SYS(restart_syscall),
