@@ -36,8 +36,6 @@ int rpcli_do_security_options(void)
 		SCMP_SYS(close),
 		SCMP_SYS(dup),		// gzdopen()
 		SCMP_SYS(fcntl),     SCMP_SYS(fcntl64),		// gcc profiling
-		SCMP_SYS(fstat),     SCMP_SYS(fstat64),		// __GI___fxstat() [printf()]
-		SCMP_SYS(fstatat64), SCMP_SYS(newfstatat),	// Ubuntu 19.10 (32-bit)
 		SCMP_SYS(ftruncate),	// LibRpBase::RpFile::truncate() [from LibRpBase::RpPngWriterPrivate ctors]
 		SCMP_SYS(ftruncate64),
 		SCMP_SYS(futex),
@@ -68,11 +66,6 @@ int rpcli_do_security_options(void)
 #elif defined(__NR_clock_gettime64)
 		__NR_clock_gettime64,
 #endif /* __SNR_clock_gettime64 || __NR_clock_gettime64 */
-
-#if defined(__SNR_statx) || defined(__NR_statx)
-		SCMP_SYS(getcwd),	// called by glibc's statx()
-		SCMP_SYS(statx),
-#endif /* __SNR_statx || __NR_statx */
 
 		// glibc ncsd
 		// TODO: Restrict connect() to AF_UNIX.

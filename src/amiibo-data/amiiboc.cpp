@@ -126,8 +126,7 @@ static int set_security_options(void)
 #elif defined(HAVE_SECCOMP)
 	static constexpr int syscall_wl[] = {
 		// Syscalls used by amiiboc.
-		SCMP_SYS(close), SCMP_SYS(fstat), SCMP_SYS(fstat64), // __GI___fxstat() [printf()]
-		SCMP_SYS(fstatat64), SCMP_SYS(newfstatat),           // Ubuntu 19.10 (32-bit)
+		SCMP_SYS(close),
 		SCMP_SYS(gettimeofday),                              // 32-bit only?
 		SCMP_SYS(lseek), SCMP_SYS(_llseek),
 		SCMP_SYS(open),   // Ubuntu 16.04

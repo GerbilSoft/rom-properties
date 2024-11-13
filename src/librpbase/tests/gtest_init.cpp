@@ -49,8 +49,6 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 		SCMP_SYS(clock_gettime64),
 #endif /* __SNR_clock_gettime64 || __NR_clock_gettime64 */
 		SCMP_SYS(fcntl),     SCMP_SYS(fcntl64),		// gcc profiling
-		SCMP_SYS(fstat),     SCMP_SYS(fstat64),		// __GI___fxstat() [printf()]
-		SCMP_SYS(fstatat64), SCMP_SYS(newfstatat),	// Ubuntu 19.10 (32-bit)
 		SCMP_SYS(futex),	// iconv_open()
 		SCMP_SYS(gettimeofday),	// 32-bit only? [testing::internal::GetTimeInMillis()]
 		SCMP_SYS(mmap),		// iconv_open()
@@ -88,11 +86,6 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 		// glibc ncsd
 		// TODO: Restrict connect() to AF_UNIX.
 		SCMP_SYS(connect), SCMP_SYS(recvmsg), SCMP_SYS(sendto),
-
-#if defined(__SNR_statx) || defined(__NR_statx)
-		//SCMP_SYS(getcwd),	// called by glibc's statx() [referenced above]
-		SCMP_SYS(statx),
-#endif /* __SNR_statx || __NR_statx */
 
 		// for posix_fadvise()
 		SCMP_SYS(fadvise64), SCMP_SYS(fadvise64_64),
