@@ -1,5 +1,13 @@
 # Changes
 
+## v2.4.1 (released 2024/11/12)
+
+* Bug fixes:
+  * Windows: Fix an issue with directory thumbnailing that broke Windows'
+    built-in directory thumbnailer if the directory isn't supported.
+    * Fixes #427: No Thumbnails after install
+      * Reported by @Conan179.
+
 ## v2.4 (released 2024/11/10)
 
 * New features:
