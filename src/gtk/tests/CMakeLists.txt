@@ -10,12 +10,12 @@ INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/..)
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR}/..)
 
 ### RomDataFormat tests
-# FIXME: Tests are failing on Launchpad on armhf/arm64.
-IF(0)
 SET(RomDataFormatTest_SRCS RomDataFormatTest.cpp)
 ADD_EXECUTABLE(RomDataFormatTest_glib ${RomDataFormatTest_SRCS})
 TARGET_LINK_LIBRARIES(RomDataFormatTest_glib PRIVATE rptest)
 TARGET_LINK_LIBRARIES(RomDataFormatTest_glib PUBLIC rom-properties-glib)
+# FIXME: Tests are failing on Launchpad on armhf/arm64.
+IF(0)
 LIST(APPEND GTK_TESTS RomDataFormatTest_glib)
 ENDIF(0)
 
