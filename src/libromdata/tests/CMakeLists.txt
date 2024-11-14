@@ -103,8 +103,7 @@ ENDIF(PNG_LIBRARY)
 DO_SPLIT_DEBUG(ImageDecoderTest)
 SET_WINDOWS_SUBSYSTEM(ImageDecoderTest CONSOLE)
 SET_WINDOWS_ENTRYPOINT(ImageDecoderTest wmain OFF)
-# FIXME: Tests are failing on Launchpad on armhf/arm64.
-#ADD_TEST(NAME ImageDecoderTest COMMAND ImageDecoderTest --gtest_brief --gtest_filter=-*Benchmark*)
+ADD_TEST(NAME ImageDecoderTest COMMAND ImageDecoderTest --gtest_brief --gtest_filter=-*Benchmark*)
 IF(NOT WIN32 AND NOT CMAKE_RUNTIME_OUTPUT_DIRECTORY STREQUAL "")
 	# Create a symlink to the ImageDecoder_data directory.
 	ADD_CUSTOM_COMMAND(TARGET ImageDecoderTest POST_BUILD
@@ -151,8 +150,7 @@ IF(ENABLE_ZSTD)
 	DO_SPLIT_DEBUG(RomHeaderTest)
 	SET_WINDOWS_SUBSYSTEM(RomHeaderTest CONSOLE)
 	SET_WINDOWS_ENTRYPOINT(RomHeaderTest wmain OFF)
-	# FIXME: Tests are failing on Launchpad on armhf/arm64.
-	#ADD_TEST(NAME RomHeaderTest COMMAND RomHeaderTest --gtest_brief)
+	ADD_TEST(NAME RomHeaderTest COMMAND RomHeaderTest --gtest_brief)
 	IF(NOT WIN32 AND NOT CMAKE_RUNTIME_OUTPUT_DIRECTORY STREQUAL "")
 		# Create a symlink to the RomHeaders directory.
 		ADD_CUSTOM_COMMAND(TARGET RomHeaderTest POST_BUILD
