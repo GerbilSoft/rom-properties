@@ -273,7 +273,6 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 		__NR_openat2,		// Linux 5.6
 #endif /* __SNR_openat2 || __NR_openat2 */
 		SCMP_SYS(poll), SCMP_SYS(select),
-		SCMP_SYS(stat), SCMP_SYS(stat64),
 		SCMP_SYS(unlink),	// to delete expired cache files
 		SCMP_SYS(utimensat),
 

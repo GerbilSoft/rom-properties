@@ -55,9 +55,6 @@ int rpcli_do_security_options(void)
 #endif /* __SNR_openat2 || __NR_openat2 */
 		SCMP_SYS(readlink),	// realpath() [LibRpBase::FileSystem::resolve_symlink()]
 
-		// KeyManager (keys.conf)
-		SCMP_SYS(access),	// LibUnixCommon::isWritableDirectory()
-		SCMP_SYS(stat), SCMP_SYS(stat64),	// LibUnixCommon::isWritableDirectory()
 		// ConfReader checks timestamps between rpcli runs.
 		// NOTE: Only seems to get triggered on PowerPC...
 		SCMP_SYS(clock_gettime),

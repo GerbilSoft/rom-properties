@@ -64,7 +64,6 @@ int rp_stub_do_security_options(bool config)
 #if defined(__SNR_prlimit64) || defined(__NR_prlimit64)
 		SCMP_SYS(prlimit64),
 #endif /* __SNR_prlimit64 || __NR_prlimit64*/
-		SCMP_SYS(stat), SCMP_SYS(stat64),
 		SCMP_SYS(statfs), SCMP_SYS(statfs64),
 
 		// NPTL __pthread_initialize_minimal_internal()

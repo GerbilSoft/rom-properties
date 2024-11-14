@@ -57,7 +57,6 @@ int rpt_do_security_options(void)
 		__NR_openat2,		// Linux 5.6
 #endif /* __SNR_openat2 || __NR_openat2 */
 		SCMP_SYS(readlink),	// realpath() [LibRpBase::FileSystem::resolve_symlink()]
-		SCMP_SYS(stat), SCMP_SYS(stat64),	// LibUnixCommon::isWritableDirectory()
 		SCMP_SYS(statfs), SCMP_SYS(statfs64),	// LibRpBase::FileSystem::isOnBadFS()
 
 		// ConfReader checks timestamps between rpcli runs.

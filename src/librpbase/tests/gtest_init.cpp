@@ -81,7 +81,6 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 
 		// MiniZip
 		SCMP_SYS(close),			// mktime() [mz_zip_dosdate_to_time_t()]
-		SCMP_SYS(stat), SCMP_SYS(stat64),	// mktime() [mz_zip_dosdate_to_time_t()]
 
 		// glibc ncsd
 		// TODO: Restrict connect() to AF_UNIX.

@@ -86,6 +86,7 @@ int rp_secure_enable(rp_secure_param_t param)
 #endif /* __SNR_faccessat2 || __NR_faccessat2 */
 
 		// stat()
+		SCMP_SYS(stat), SCMP_SYS(stat64),		// LibUnixCommon::isWritableDirectory()
 		SCMP_SYS(fstat), SCMP_SYS(fstat64), 		// __GI___fxstat() [printf()]
 		SCMP_SYS(fstatat64), SCMP_SYS(newfstatat),	// Ubuntu 19.10 (32-bit)
 
