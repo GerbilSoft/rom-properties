@@ -38,7 +38,7 @@ int rpcli_do_security_options(void)
 		SCMP_SYS(fcntl),     SCMP_SYS(fcntl64),		// gcc profiling
 		SCMP_SYS(ftruncate),	// LibRpBase::RpFile::truncate() [from LibRpBase::RpPngWriterPrivate ctors]
 		SCMP_SYS(ftruncate64),
-		SCMP_SYS(futex),
+		SCMP_SYS(futex), SCMP_SYS(futex_time64),
 		SCMP_SYS(gettimeofday),	// 32-bit only?
 		SCMP_SYS(ioctl),	// for devices; also afl-fuzz
 		SCMP_SYS(lseek), SCMP_SYS(_llseek),

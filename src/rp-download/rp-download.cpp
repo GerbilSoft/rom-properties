@@ -255,7 +255,7 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 		SCMP_SYS(close),
 		SCMP_SYS(fcntl),     SCMP_SYS(fcntl64),		// gcc profiling
 		SCMP_SYS(fsetxattr),
-		SCMP_SYS(futex),
+		SCMP_SYS(futex), SCMP_SYS(futex_time64),
 		SCMP_SYS(getdents), SCMP_SYS(getdents64),
 		SCMP_SYS(getppid),	// for bubblewrap verification
 		SCMP_SYS(getrusage),

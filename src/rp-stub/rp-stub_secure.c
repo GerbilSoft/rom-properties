@@ -91,10 +91,10 @@ int rp_stub_do_security_options(bool config)
 		SCMP_SYS(dup),		// gzdopen()
 		SCMP_SYS(ftruncate),	// LibRpBase::RpFile::truncate() [from LibRpBase::RpPngWriterPrivate ctors]
 		SCMP_SYS(ftruncate64),
-		SCMP_SYS(futex),	// pthread_once()
-		SCMP_SYS(getuid), SCMP_SYS(geteuid),	// TODO: Only use geteuid()?
+		SCMP_SYS(futex), SCMP_SYS(futex_time64),	// pthread_once()
+		SCMP_SYS(getuid), SCMP_SYS(geteuid),		// TODO: Only use geteuid()?
 		SCMP_SYS(lseek), SCMP_SYS(_llseek),
-		SCMP_SYS(lstat), SCMP_SYS(lstat64),	// realpath() [LibRpBase::FileSystem::resolve_symlink()]
+		SCMP_SYS(lstat), SCMP_SYS(lstat64),		// realpath() [LibRpBase::FileSystem::resolve_symlink()]
 		SCMP_SYS(readlink),	// realpath() [LibRpBase::FileSystem::resolve_symlink()]
 
 		// ExecRpDownload_posix.cpp
