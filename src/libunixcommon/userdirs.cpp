@@ -161,11 +161,10 @@ string getHomeDirectory(void)
  *
  * @param xdgvar XDG variable name.
  * @param relpath Default path relative to the user's home directory (without leading slash).
- * @param mode Mode for mkdir() if the directory doesn't exist.
  *
  * @return XDG directory (without trailing slash), or empty string on error.
  */
-static string getXDGDirectory(const char *xdgvar, const char *relpath, int mode)
+static string getXDGDirectory(const char *xdgvar, const char *relpath)
 {
 	assert(xdgvar != nullptr);
 	assert(relpath != nullptr);
@@ -176,11 +175,6 @@ static string getXDGDirectory(const char *xdgvar, const char *relpath, int mode)
 	// Check the XDG variable first.
 	const char *const xdg_env = getenv(xdgvar);
 	if (xdg_env && xdg_env[0] == '/') {
-		// If the directory doesn't exist, create it.
-		if (access(xdg_env, F_OK) != 0) {
-			mkdir(xdg_env, mode);
-		}
-
 		// Make sure this is a writable directory.
 		if (isWritableDirectory(xdg_env)) {
 			// This is a writable directory.
@@ -203,11 +197,6 @@ static string getXDGDirectory(const char *xdgvar, const char *relpath, int mode)
 
 	xdg_dir += '/';
 	xdg_dir += relpath;
-
-	// If the directory doesn't exist, create it.
-	if (access(xdg_dir.c_str(), F_OK) != 0) {
-		mkdir(xdg_dir.c_str(), mode);
-	}
 	return xdg_dir;
 }
 
@@ -226,7 +215,7 @@ static string getXDGDirectory(const char *xdgvar, const char *relpath, int mode)
  */
 string getCacheDirectory(void)
 {
-	return getXDGDirectory("XDG_CACHE_HOME", ".cache", 0700);
+	return getXDGDirectory("XDG_CACHE_HOME", ".cache");
 }
 
 /**
@@ -239,7 +228,7 @@ string getCacheDirectory(void)
  */
 string getConfigDirectory(void)
 {
-	return getXDGDirectory("XDG_CONFIG_HOME", ".config", 0777);
+	return getXDGDirectory("XDG_CONFIG_HOME", ".config");
 }
 
 }
