@@ -611,7 +611,7 @@ int Xbox360_XEX_Private::initPeReader(void)
 
 		// Zero data
 		array<uint8_t, 16> zero16;
-		memset(zero16.data(), 0, zero16.size());
+		zero16.fill(0);
 
 		// Key data.
 		// - 0: retail

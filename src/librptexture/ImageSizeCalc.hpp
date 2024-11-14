@@ -89,6 +89,23 @@ unsigned int calcImageSize_tbl(
 	unsigned int format, unsigned int width, unsigned int height);
 
 /**
+ * Calculate an image size using the specified format opcode table.
+ * @tparam tbl_size std::array<> size
+ * @param op_tbl Opcode table
+ * @param format Image format ID
+ * @param width Image width
+ * @param height Image height
+ * @return Image size, in bytes
+ */
+template<size_t tbl_size>
+static inline unsigned int calcImageSize_tbl(
+	const std::array<OpCode, tbl_size> &op_tbl, unsigned int format,
+	unsigned int width, unsigned int height)
+{
+	return calcImageSize_tbl(op_tbl.data(), op_tbl.size(), format, width, height);
+}
+
+/**
  * Calculate the expected size of a PVRTC-I compressed 2D image.
  * PVRTC-I requires power-of-2 dimensions.
  * @tparam is2bpp True for 2bpp; false for 4bpp.

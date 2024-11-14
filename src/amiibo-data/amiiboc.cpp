@@ -24,10 +24,12 @@
 #include <cstring>
 
 // C++ includes
+#include <array>
 #include <map>
 #include <string>
 #include <unordered_map>
 #include <vector>
+using std::array;
 using std::map;
 using std::string;
 using std::unordered_map;
@@ -103,10 +105,10 @@ static void alignFileTo16Bytes(FILE *f)
 	if (offset_mod16 == 0)
 		return;
 
-	uint8_t zerobytes[16];
-	memset(zerobytes, 0, sizeof(zerobytes));
+	array<uint8_t, 16> zerobytes;
+	zerobytes.fill(0);
 	const unsigned int count = 16 - offset_mod16;
-	fwrite(zerobytes, 1, count, f);
+	fwrite(zerobytes.data(), 1, count, f);
 }
 
 /**

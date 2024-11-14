@@ -21,6 +21,9 @@
 using namespace LibRpBase;
 using namespace LibRpFile;
 
+// C++ STL classes
+using std::array;
+
 namespace LibRomData {
 
 class CIAReaderPrivate
@@ -151,24 +154,24 @@ CIAReaderPrivate::CIAReaderPrivate(CIAReader *q,
 	// CIA IV is the title ID in big-endian.
 	// The ticket title ID is already in big-endian,
 	// so copy it over directly.
-	u128_t cia_iv;
-	memcpy(cia_iv.u8, &ticket->title_id.id, sizeof(ticket->title_id.id));
-	memset(&cia_iv.u8[8], 0, 8);
-	cipher->setIV(cia_iv.u8, sizeof(cia_iv.u8));
+	array<uint8_t, 16> cia_iv;
+	memcpy(cia_iv.data(), &ticket->title_id.id, sizeof(ticket->title_id.id));
+	memset(&cia_iv[8], 0, 8);
+	cipher->setIV(cia_iv.data(), cia_iv.size());
 
 	// Decrypt the title key.
-	uint8_t title_key[16];
-	memcpy(title_key, ticket->title_key, sizeof(title_key));
-	cipher->decrypt(title_key, sizeof(title_key));
+	array<uint8_t, 16> title_key;
+	memcpy(title_key.data(), ticket->title_key, title_key.size());
+	cipher->decrypt(title_key.data(), title_key.size());
 	delete cipher;
 
 	// Data area: IV is the TMD content index.
-	cia_iv.u8[0] = tmd_content_index >> 8;
-	cia_iv.u8[1] = tmd_content_index & 0xFF;
-	memset(&cia_iv.u8[2], 0, sizeof(cia_iv.u8)-2);
+	cia_iv.fill(0);
+	cia_iv[0] = tmd_content_index >> 8;
+	cia_iv[1] = tmd_content_index & 0xFF;
 
 	// Create a CBC reader to decrypt the CIA.
-	cbcReader = std::make_shared<CBCReader>(q->m_file, content_offset, content_length, title_key, cia_iv.u8);
+	cbcReader = std::make_shared<CBCReader>(q->m_file, content_offset, content_length, title_key.data(), cia_iv.data());
 #else /* !ENABLE_DECRYPTION */
 	// Cannot decrypt the CIA.
 	// TODO: Set an error.

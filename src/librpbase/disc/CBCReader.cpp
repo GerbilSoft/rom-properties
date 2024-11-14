@@ -75,8 +75,8 @@ CBCReaderPrivate::CBCReaderPrivate(CBCReader *q, off64_t offset, off64_t length,
 #ifdef ENABLE_DECRYPTION
 	if (!key) {
 		// No key. Assuming passthru with no encryption.
-		memset(this->key.data(), 0, this->key.size());
-		memset(this->iv.data(), 0, this->iv.size());
+		this->key.fill(0);
+		this->iv.fill(0);
 		return;
 	}
 
@@ -87,7 +87,7 @@ CBCReaderPrivate::CBCReaderPrivate(CBCReader *q, off64_t offset, off64_t length,
 		memcpy(this->iv.data(), iv, 16);
 	} else {
 		// No IV specified. Using ECB.
-		memset(this->iv.data(), 0, this->iv.size());
+		this->iv.fill(0);
 	}
 
 	// Create the cipher.

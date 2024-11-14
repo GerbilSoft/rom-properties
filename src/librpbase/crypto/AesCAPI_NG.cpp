@@ -29,6 +29,9 @@
 // Workaround for RP_D() expecting the no-underscore naming convention.
 #define AesCAPI_NGPrivate AesCAPI_NG_Private
 
+// C++ STL classes
+using std::array;
+
 namespace LibRpBase {
 
 class AesCAPI_NG_Private
@@ -73,18 +76,18 @@ class AesCAPI_NG_Private
 		uint8_t *pbKeyObject;
 		ULONG cbKeyObject;
 
-		// Key data.
+		// Key data
 		// If the cipher mode is changed, the key
 		// has to be reinitialized.
-		uint8_t key[32];
+		array<uint8_t, 32> key;
 		unsigned int key_len;
 
-		// Chaining mode.
+		// Chaining mode
 		IAesCipher::ChainingMode chainingMode;
 
-		// CBC: Initialization vector.
-		// CTR: Counter.
-		uint8_t iv[16];
+		// CBC: Initialization vector
+		// CTR: Counter
+		array<uint8_t, 16> iv;
 };
 
 /** AesCAPI_NG_Private **/
@@ -112,8 +115,8 @@ AesCAPI_NG_Private::AesCAPI_NG_Private()
 	, chainingMode(IAesCipher::ChainingMode::ECB)
 {
 	// Clear the key and IV.
-	memset(key, 0, sizeof(key));
-	memset(iv, 0, sizeof(iv));
+	key.fill(0);
+	iv.fill(0);
 
 	// Increment the reference counter.
 	assert(ref_cnt >= 0);
@@ -361,7 +364,7 @@ int AesCAPI_NG::setKey(const uint8_t *RESTRICT pKey, size_t size)
 	free(pbOldKeyObject);
 
 	// Save the key data.
-	memcpy(d->key, pKey, size);
+	memcpy(d->key.data(), pKey, size);
 	d->key_len = static_cast<unsigned int>(size);
 	return 0;
 }
@@ -417,7 +420,7 @@ int AesCAPI_NG::setChainingMode(ChainingMode mode)
 
 	// Re-apply the key.
 	// Otherwise, the chaining mode won't take effect.
-	setKey(d->key, d->key_len);
+	setKey(d->key.data(), d->key_len);
 	return 0;
 }
 
@@ -460,8 +463,8 @@ int AesCAPI_NG::setIV(const uint8_t *RESTRICT pIV, size_t size)
 	}
 
 	// Set the IV.
-	assert(sizeof(d->iv) == 16);
-	memcpy(d->iv, pIV, sizeof(d->iv));
+	assert(d->iv.size() == 16);
+	memcpy(d->iv.data(), pIV, d->iv.size());
 	return 0;
 }
 
@@ -522,7 +525,7 @@ size_t AesCAPI_NG::decrypt(uint8_t *RESTRICT pData, size_t size)
 			status = d->pBCryptDecrypt(d->hKey,
 						pData, (ULONG)size,
 						nullptr,
-						d->iv, (ULONG)sizeof(d->iv),
+						d->iv.data(), (ULONG)d->iv.size(),
 						pData, (ULONG)size,
 						&cbResult, 0);
 			break;
@@ -546,7 +549,7 @@ size_t AesCAPI_NG::decrypt(uint8_t *RESTRICT pData, size_t size)
 			cbResult = 0;
 			for (; size > 0; size -= 16, ctr_data++) {
 				// Encrypt the current counter.
-				memcpy(ctr_crypt.u8, d->iv, sizeof(ctr_crypt.u8));
+				memcpy(ctr_crypt.u8, d->iv.data(), sizeof(ctr_crypt.u8));
 				status = d->pBCryptEncrypt(d->hKey,
 						ctr_crypt.u8, sizeof(ctr_crypt.u8),
 						nullptr,

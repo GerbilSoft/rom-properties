@@ -117,8 +117,8 @@ bool TImageTypesConfig<ComboBox>::reset_int(bool loadDefaults)
 
 	// CBID map of ComboBoxes that have had a priority set.
 	// NOTE: Will need expansion if either sysCount or imageTypeCount exceed 4 bits.
-	bool cbid_needsReset[256];
-	memset(cbid_needsReset, true, sizeof(cbid_needsReset));
+	std::array<bool, 256> cbid_needsReset;
+	cbid_needsReset.fill(true);
 
 	const Config *const config = Config::instance();
 	Config::ImgTypePrio_t imgTypePrio;

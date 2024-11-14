@@ -92,7 +92,7 @@ WiiWADPrivate::WiiWADPrivate(const IRpFilePtr &file)
 	memset(&tmdHeader, 0, sizeof(tmdHeader));
 
 #ifdef ENABLE_DECRYPTION
-	memset(dec_title_key, 0, sizeof(dec_title_key));
+	dec_title_key.fill(0);
 	memset(&imet, 0, sizeof(imet));
 #endif /* ENABLE_DECRYPTION */
 }
@@ -179,12 +179,12 @@ int WiiWADPrivate::openSRL(void)
 		// Data area IV:
 		// - First two bytes are the big-endian content index.
 		// - Remaining bytes are zero.
-		uint8_t iv[16];
-		memcpy(iv, &pIMETContent->index, sizeof(pIMETContent->index));
-		memset(&iv[2], 0, sizeof(iv)-2);
+		array<uint8_t, 16> iv;
+		iv.fill(0);
+		memcpy(iv.data(), &pIMETContent->index, sizeof(pIMETContent->index));
 
 		cbcReader = std::make_shared<CBCReader>(file,
-			data_offset, data_size, dec_title_key, iv);
+			data_offset, data_size, dec_title_key.data(), iv.data());
 		if (!cbcReader->isOpen()) {
 			// Unable to open a CBC reader.
 			int ret = -cbcReader->lastError();
@@ -405,7 +405,7 @@ WiiWAD::WiiWAD(const IRpFilePtr &file)
 	// Initialize the CBC reader for the main data area.
 
 	// First, decrypt the title key.
-	int ret = d->wiiTicket->decryptTitleKey(d->dec_title_key, sizeof(d->dec_title_key));
+	int ret = d->wiiTicket->decryptTitleKey(d->dec_title_key.data(), d->dec_title_key.size());
 	d->key_status = d->wiiTicket->verifyResult();
 	if (ret != 0) {
 		// Failed to decrypt the title key.
@@ -420,14 +420,14 @@ WiiWAD::WiiWAD(const IRpFilePtr &file)
 	// Data area IV:
 	// - First two bytes are the big-endian content index.
 	// - Remaining bytes are zero.
-	uint8_t iv[16];
-	memcpy(iv, &d->pIMETContent->index, sizeof(d->pIMETContent->index));
-	memset(&iv[2], 0, sizeof(iv)-2);
+	array<uint8_t, 16> iv;
+	iv.fill(0);
+	memcpy(iv.data(), &d->pIMETContent->index, sizeof(d->pIMETContent->index));
 
 	// Create a CBC reader to decrypt the data section.
 	// TODO: Verify some known data?
 	d->cbcReader = std::make_shared<CBCReader>(d->file,
-		d->data_offset, d->data_size, d->dec_title_key, iv);
+		d->data_offset, d->data_size, d->dec_title_key.data(), iv.data());
 
 	if (d->tmdHeader.title_id.sysID != cpu_to_be16(3)) {
 		// Wii: Contents may be one of the following:

@@ -60,12 +60,12 @@ public:
 		string ripper;		// Ripper name
 		string converter;	// Converter name
 
-		unsigned int subtunes;		// Subtune count (If 0 or 1, entire file is one song.)
-						// NOTE: 0 (or missing) means SNDHv1; 1 means SNDHv2.
-		unsigned int vblank_freq;	// VBlank frequency (50/60)
-		unsigned int timer_freq[4];	// Timer frequencies (A, B, C, D) [0 if not specified]
-		unsigned int year;		// Year of release
-		unsigned int def_subtune;	// Default subtune
+		unsigned int subtunes;			// Subtune count (If 0 or 1, entire file is one song.)
+							// NOTE: 0 (or missing) means SNDHv1; 1 means SNDHv2.
+		unsigned int vblank_freq;		// VBlank frequency (50/60)
+		array<unsigned int, 4> timer_freq;	// Timer frequencies (A, B, C, D) [0 if not specified]
+		unsigned int year;			// Year of release
+		unsigned int def_subtune;		// Default subtune
 
 		// TODO: Use std::pair<>?
 		// The SNDH format uses separate tags for each, though...
@@ -75,7 +75,7 @@ public:
 		TagData() : tags_read(false), subtunes(0), vblank_freq(0), year(0), def_subtune(0)
 		{
 			// Clear the timer frequencies.
-			memset(&timer_freq, 0, sizeof(timer_freq));
+			timer_freq.fill(0);
 		}
 	};
 

@@ -9,6 +9,7 @@
 #pragma once
 
 // C++ includes
+#include <array>
 #include <memory>
 
 namespace LibRpFile {
@@ -50,16 +51,16 @@ class FileFormatPrivate
 
 	public:
 		/** These fields must be set by FileFormat subclasses in their constructors. **/
-		const TextureInfo *pTextureInfo;// FileFormat subclass information
-		const char *mimeType;		// MIME type (ASCII) (default is nullptr)
-		const char *textureFormatName;	// Texture format name
-		int dimensions[3];		// Dimensions (width, height, depth)
-						// 2D textures have depth=0
-		int rescale_dimensions[2];	// Rescale dimensions, (width, height)
-						// Needed for e.g. ETC2 where a power-of-2 size
-						// is used but the image should be rescaled before
-						// displaying in a UI frontend.
-		int mipmapCount;		// Mipmap count (0 == none; -1 == not supported)
+		const TextureInfo *pTextureInfo;	// FileFormat subclass information
+		const char *mimeType;			// MIME type (ASCII) (default is nullptr)
+		const char *textureFormatName;		// Texture format name
+		std::array<int, 3> dimensions;		// Dimensions (width, height, depth)
+							// 2D textures have depth=0
+		std::array<int, 2> rescale_dimensions;	// Rescale dimensions, (width, height)
+							// Needed for e.g. ETC2 where a power-of-2 size
+							// is used but the image should be rescaled before
+							// displaying in a UI frontend.
+		int mipmapCount;			// Mipmap count (0 == none; -1 == not supported)
 };
 
 }

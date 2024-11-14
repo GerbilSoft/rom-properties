@@ -157,7 +157,7 @@ int WiiUH3ReaderPrivate::readSector(uint32_t sector_num)
 	}
 	// Decrypt the hashes. (IV is zero)
 	array<uint8_t, 16> iv;
-	memset(iv.data(), 0, iv.size());
+	iv.fill(0);
 	size_t size = cipher->decrypt(reinterpret_cast<uint8_t*>(&sector_buf.hashes), sizeof(sector_buf.hashes), iv.data(), iv.size());
 	if (size != sizeof(sector_buf.hashes)) {
 		// Decryption failed.

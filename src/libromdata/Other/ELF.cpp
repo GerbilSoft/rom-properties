@@ -813,7 +813,6 @@ int ELFPrivate::addPtDynamicFields(void)
 	array<bool, DT_NUM> has_dtag;
 	bool has_flags1 = false;
 
-	// TODO: Compare std::array<>::fill() to memset().
 	val_dtag.fill(0);
 	has_dtag.fill(false);
 

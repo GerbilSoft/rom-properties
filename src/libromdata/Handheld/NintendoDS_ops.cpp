@@ -287,9 +287,10 @@ int NintendoDS::doRomOp_int(int id, RomOpParams *pParams)
 					return -EIO;
 				}
 
-#define UNTRIM_BLOCK_SIZE (64*1024)
-				unique_ptr<uint8_t[]> ff_block(new uint8_t[UNTRIM_BLOCK_SIZE]);
-				memset(ff_block.get(), 0xFF, UNTRIM_BLOCK_SIZE);
+				static constexpr size_t UNTRIM_BLOCK_SIZE = 64U * 1024U;
+				typedef array<uint8_t, UNTRIM_BLOCK_SIZE> ff_block_t;
+				unique_ptr<ff_block_t> ff_block(new ff_block_t);
+				ff_block->fill(0xFF);
 
 				off64_t pos = static_cast<off64_t>(total_used_rom_size);
 				int ret = d->file->seek(pos);
@@ -309,7 +310,7 @@ int NintendoDS::doRomOp_int(int id, RomOpParams *pParams)
 				const unsigned int partial = static_cast<unsigned int>(pos % UNTRIM_BLOCK_SIZE);
 				if (partial != 0) {
 					const unsigned int toWrite = UNTRIM_BLOCK_SIZE - partial;
-					size_t size = d->file->write(ff_block.get(), toWrite);
+					size_t size = d->file->write(ff_block->data(), toWrite);
 					if (size != toWrite) {
 						// Write error.
 						ret = -d->file->lastError();
@@ -325,7 +326,7 @@ int NintendoDS::doRomOp_int(int id, RomOpParams *pParams)
 
 				// Write remaining full blocks.
 				for (; pos < next_pow2; pos += UNTRIM_BLOCK_SIZE) {
-					size_t size = d->file->write(ff_block.get(), UNTRIM_BLOCK_SIZE);
+					size_t size = d->file->write(ff_block->data(), UNTRIM_BLOCK_SIZE);
 					if (size != UNTRIM_BLOCK_SIZE) {
 						// Write error.
 						ret = -d->file->lastError();

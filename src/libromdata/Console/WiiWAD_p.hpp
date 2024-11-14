@@ -110,7 +110,7 @@ public:
 	LibRpBase::RomDataPtr mainContent;	// WiiWIBN or NintendoDS
 
 	// Decrypted title key
-	uint8_t dec_title_key[16];
+	std::array<uint8_t, 16> dec_title_key;
 
 	// Main data headers
 	Wii_IMET_t imet;	// NOTE: May be WIBN.
