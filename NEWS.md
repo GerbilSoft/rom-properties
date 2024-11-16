@@ -1,5 +1,12 @@
 # Changes
 
+## v2.5 (released 2024/??/??)
+
+* New parser features:
+  * WiiUPackage: Add support for extracted Wii U packages.
+    * Fixes #430: Add support for extracted WiiU games
+      * Requested by @Masamune3210.
+
 ## v2.4.1 (released 2024/11/12)
 
 * Bug fixes:

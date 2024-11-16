@@ -64,6 +64,17 @@ public:
 	static const LibRpBase::RomDataInfo romDataInfo;
 
 public:
+	// Package type
+	enum class PackageType {
+		Unknown	= -1,
+
+		NUS		= 0,	// NUS format
+		Extracted	= 1,	// Extracted
+
+		Max
+	};
+	PackageType packageType;
+
 	// Directory path (strdup()'d)
 	TCHAR *path;
 
@@ -118,10 +129,10 @@ public:
 	 * @tparam T Character type (char for UTF-8; wchar_t for Windows UTF-16)
 	 * @param path Directory to check
 	 * @param filenames_to_check Array of filenames to check
-	 * @return Class-specific system ID (>= 0) if supported; -1 if not.
+	 * @return True if all files are found; false if at least one file is missing.
 	 */
 	template<typename T>
-	static int T_isDirSupported_static(const T *path, const std::array<const T*, 3> &filenames_to_check);
+	static bool T_isDirSupported_static(const T *path, const std::array<const T*, 3> &filenames_to_check);
 
 #ifdef ENABLE_XML
 private:

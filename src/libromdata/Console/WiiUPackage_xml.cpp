@@ -63,9 +63,8 @@ extern int DelayLoad_test_TinyXML2(void);
 int WiiUPackagePrivate::loadSystemXml(XMLDocument &doc, const char *filename, const char *rootNode)
 {
 	assert(this->isValid);
-	assert(this->fst != nullptr);
 	assert(rootNode != nullptr);	// not checking in release builds
-	if (!this->isValid || !this->fst) {
+	if (!this->isValid) {
 		// Can't load the XML file.
 		return -EIO;
 	}
