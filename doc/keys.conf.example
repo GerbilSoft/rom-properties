@@ -30,13 +30,21 @@ rvl-sd-aes=
 rvl-sd-iv=
 rvl-sd-md5=
 
+######## Nintendo Wii U ########
+
+# Wii U common key
+wup-starbuck-wiiu-common=
+
+# Wii U debug common key
+cat-starbuck-wiiu-common=
+
 ######## Nintendo 3DS ########
 
 ### NOTE: For keys that don't depend on title contents,
 ### if KeyNormal is present, it will be used. Otherwise,
 ### KeyX, KeyY, and the scrambling constant will be used.
 
-### Key scrambler constants.
+### Key scrambler constants
 ### "<<<" == rotate left
 
 # TWL key scrambler: KeyNormal = ((KeyX ^ KeyY) + constant) <<< 42
@@ -107,6 +115,13 @@ ctr-dev-Slot0x3DKeyNormal-2=
 ctr-dev-Slot0x3DKeyNormal-3=
 ctr-dev-Slot0x3DKeyNormal-4=
 ctr-dev-Slot0x3DKeyNormal-5=
+
+# Fixed Crypto Key, used by certain titles on devkits (title_id.hi & 0x10)
+ctr-dev-FixedCryptoKey=
+
+# SPI boot keys, used for ntrboothax in some cases
+ctr-spi-boot=
+ctr-dev-spi-boot=
 
 ######## Microsoft Xbox 360 ########
 
