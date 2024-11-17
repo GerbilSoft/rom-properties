@@ -507,14 +507,14 @@ int ConfigPrivate::processConfigLine(const char *section, const char *name, cons
 
 		if (count > 0) {
 			// Convert the class name to lowercase.
-			string className(name);
-			std::transform(className.begin(), className.end(), className.begin(),
-				[](unsigned char c) noexcept -> char { return std::tolower(c); });
+			string className_lower(name);
+			std::transform(className_lower.begin(), className_lower.end(), className_lower.begin(),
+				[](char c) noexcept -> char { return std::tolower(c); });
 
 			// Add the class name information to the map.
 			uint32_t keyIdx = static_cast<uint32_t>(vStartPos);
 			keyIdx |= (count << 24);
-			mapImgTypePrio.emplace(className, keyIdx);
+			mapImgTypePrio.emplace(className_lower, keyIdx);
 		}
 	}
 
@@ -568,7 +568,8 @@ Config::ImgTypeResult Config::getImgTypePrio(const char *className, ImgTypePrio_
 	// Find the class name in the map.
 	RP_D(const Config);
 	string className_lower(className);
-	std::transform(className_lower.begin(), className_lower.end(), className_lower.begin(), ::tolower);
+	std::transform(className_lower.begin(), className_lower.end(), className_lower.begin(),
+		[](char c) noexcept -> char { return std::tolower(c); });
 	auto iter = d->mapImgTypePrio.find(className_lower);
 	if (iter == d->mapImgTypePrio.end()) {
 		// Class name not found.
