@@ -639,31 +639,26 @@ const char *AmiiboData::lookup_char_name(uint32_t char_id) const
 		const uint8_t variant_id = (char_id >> 8) & 0xFF;
 		const CharVariantTableEntry key = {cv_char_id, variant_id, 0, 0};
 
-		// Find the character ID entries first.
-		// NOTE: Checking both char ID and variant ID in the lambda function
-		// is causing an assertion when compiled with _GLIBCXX_DEBUG.
 		const CharVariantTableEntry *const pCharVarTblEnd = d->pCharVarTbl + d->charVarTbl_count;
 		auto pCVTEntry = std::lower_bound(d->pCharVarTbl, pCharVarTblEnd, key,
 			[](const CharVariantTableEntry &key1, const CharVariantTableEntry &key2) noexcept -> bool {
-				return (le16_to_cpu(key1.char_id) < key2.char_id);
+				const uint16_t key1_char_id = le16_to_cpu(key1.char_id);
+
+				// Compare the character ID first.
+				if (key1_char_id < key2.char_id) {
+					return true;
+				} else if (key1_char_id > key2.char_id) {
+					return false;
+				}
+
+				// Compare the variant ID.
+				return (key1.var_id < key2.var_id);
 			});
 
-		bool found = false;
-		if (pCVTEntry != pCharVarTblEnd && le16_to_cpu(pCVTEntry->char_id) == cv_char_id) {
-			// Find a matching character variant ID.
-			for (; pCVTEntry < pCharVarTblEnd; pCVTEntry++) {
-				if (le16_to_cpu(pCVTEntry->char_id) != cv_char_id) {
-					// All variant entries checked for this character.
-					break;
-				} else if (pCVTEntry->var_id == variant_id) {
-					// Found a matching variant.
-					found = true;
-					break;
-				}
-			}
-		}
-
-		if (found) {
+		if (pCVTEntry != pCharVarTblEnd &&
+		    le16_to_cpu(pCVTEntry->char_id) == cv_char_id &&
+		    pCVTEntry->var_id == variant_id)
+		{
 			// Character variant ID found.
 			name = d->strTbl_lookup(le32_to_cpu(pCVTEntry->name));
 		} else {
