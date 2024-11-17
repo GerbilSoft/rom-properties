@@ -143,7 +143,7 @@ int FileFormat::getDimensions(int pBuf[3]) const
 		return -EBADF;
 	}
 
-	memcpy(pBuf, d->dimensions.data(), d->dimensions.size());
+	memcpy(pBuf, d->dimensions.data(), d->dimensions.size() * sizeof(int));
 	return 0;
 }
 
@@ -170,7 +170,7 @@ int FileFormat::getRescaleDimensions(int pBuf[2]) const
 		return -ENOENT;
 	}
 
-	memcpy(pBuf, d->rescale_dimensions.data(), d->rescale_dimensions.size());
+	memcpy(pBuf, d->rescale_dimensions.data(), d->rescale_dimensions.size() * sizeof(int));
 	return 0;
 }
 
