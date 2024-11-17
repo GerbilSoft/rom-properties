@@ -225,7 +225,18 @@ IRpFilePtr WiiUPackagePrivate::open(const char *filename)
 			filename++;
 		}
 
+#ifdef _WIN32
+		const size_t old_sz = s_full_filename.size();
+#endif /* _WIN32 */
 		s_full_filename += U82T_c(filename);
+#ifdef _WIN32
+		// Replace all slashes with backslashes.
+		const auto start_iter = s_full_filename.begin() + old_sz;
+		std::transform(start_iter, s_full_filename.end(), start_iter, [](TCHAR c) {
+			return (c == '/') ? DIR_SEP_CHR : c;
+		});
+#endif /* _WIN32 */
+
 		return std::make_shared<RpFile>(s_full_filename.c_str(), RpFile::FM_OPEN_READ);
 	}
 
@@ -388,7 +399,7 @@ void WiiUPackage::init(void)
 	tstring s_path(d->path);
 	s_path += DIR_SEP_CHR;
 	if (d->packageType == WiiUPackagePrivate::PackageType::Extracted) {
-		s_path += "code";
+		s_path += _T("code");
 		s_path += DIR_SEP_CHR;
 	}
 	s_path += _T("title.tik");
@@ -422,7 +433,7 @@ void WiiUPackage::init(void)
 
 	s_path.resize(s_path.size()-9);
 	if (d->packageType == WiiUPackagePrivate::PackageType::Extracted) {
-		s_path += "code";
+		s_path += _T("code");
 		s_path += DIR_SEP_CHR;
 	}
 	s_path += _T("title.tmd");
