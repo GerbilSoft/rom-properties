@@ -7,6 +7,10 @@
     * Fixes #430: Add support for extracted WiiU games
       * Requested by @Masamune3210.
 
+* Bug fixes:
+  * Amiibo: Fix an error that can cause the wrong Character Variant to be
+    displayed for certain amiibo.
+
 ## v2.4.1 (released 2024/11/12)
 
 * Bug fixes:
