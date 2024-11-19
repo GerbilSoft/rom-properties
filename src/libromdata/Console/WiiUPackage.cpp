@@ -150,6 +150,7 @@ IDiscReaderPtr WiiUPackagePrivate::openContentFile(unsigned int idx)
 	const WUP_Content_Entry &entry = contentsTable[idx];
 	tstring s_path(this->path);
 	s_path += DIR_SEP_CHR;
+	const size_t orig_path_size = s_path.size();
 
 	// Try with lowercase hex first.
 	const uint32_t content_id = be32_to_cpu(entry.content_id);
@@ -161,7 +162,7 @@ IDiscReaderPtr WiiUPackagePrivate::openContentFile(unsigned int idx)
 	if (!subfile->isOpen()) {
 		// Try with uppercase hex.
 		_sntprintf(fnbuf, ARRAY_SIZE(fnbuf), _T("%08X.app"), content_id);
-		s_path.resize(s_path.size()-12);
+		s_path.resize(orig_path_size);
 		s_path += fnbuf;
 
 		subfile = std::make_shared<RpFile>(s_path.c_str(), RpFile::FM_OPEN_READ);
@@ -398,6 +399,7 @@ void WiiUPackage::init(void)
 
 	tstring s_path(d->path);
 	s_path += DIR_SEP_CHR;
+	const size_t orig_path_size = s_path.size();
 	if (d->packageType == WiiUPackagePrivate::PackageType::Extracted) {
 		s_path += _T("code");
 		s_path += DIR_SEP_CHR;
@@ -431,12 +433,13 @@ void WiiUPackage::init(void)
 	// NOTE: May not be present in extracted packages.
 	WiiTMD *tmd = nullptr;
 
-	s_path.resize(s_path.size()-9);
+	s_path.resize(orig_path_size);
 	if (d->packageType == WiiUPackagePrivate::PackageType::Extracted) {
 		s_path += _T("code");
 		s_path += DIR_SEP_CHR;
 	}
 	s_path += _T("title.tmd");
+	printf("path: %s\n", s_path.c_str());
 	subfile = std::make_shared<RpFile>(s_path, RpFile::FM_OPEN_READ);
 	if (subfile->isOpen()) {
 		tmd = new WiiTMD(subfile);
