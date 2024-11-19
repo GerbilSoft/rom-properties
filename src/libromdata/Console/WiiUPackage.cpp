@@ -439,7 +439,6 @@ void WiiUPackage::init(void)
 		s_path += DIR_SEP_CHR;
 	}
 	s_path += _T("title.tmd");
-	printf("path: %s\n", s_path.c_str());
 	subfile = std::make_shared<RpFile>(s_path, RpFile::FM_OPEN_READ);
 	if (subfile->isOpen()) {
 		tmd = new WiiTMD(subfile);
