@@ -421,7 +421,18 @@ string J2MEPrivate::getIconFilenameFromMIDlet1(void)
 		return {};
 	}
 
-	return string(midlet_1, comma1, comma2 - comma1);
+	string s_ret(midlet_1, comma1, comma2 - comma1);
+
+	// Remove trailing spaces.
+	while (!s_ret.empty()) {
+		const size_t size_minus_one = s_ret.size() - 1;
+		if (s_ret[size_minus_one] != ' ') {
+			break;
+		}
+		s_ret.resize(size_minus_one);
+	}
+
+	return s_ret;
 }
 
 /**
@@ -444,51 +455,57 @@ rp_image_const_ptr J2MEPrivate::loadIcon(void)
 		return {};
 	}
 
+	// PNG data buffer
+	rp::uvector<uint8_t> png_buf;
+
 	// Get the icon filename.
 	// First, try "MIDlet-Icon".
-	string s_icon_filename;
 	auto iter = map.find(static_cast<uint8_t>(manifest_tag_t::MIDlet_Icon));
 	if (iter != map.end()) {
 		// NOTE: The icon filename might have a leading slash.
-		s_icon_filename = iter->second.c_str();
-	}
-	// TODO: If we have "MIDlet-Icon", but the actual filename isn't found, try "MIDlet-1".
-	// Currently, we only try "MIDlet-1" if the "MIDlet-Icon" key is missing entirely.
-	if (s_icon_filename.empty()) {
-		// Not found. Try "MIDlet-1".
-		s_icon_filename = getIconFilenameFromMIDlet1();
-	}
+		const char *icon_filename = iter->second.c_str();
 
-	if (s_icon_filename.empty()) {
-		// No icon filename.
-		return {};
-	}
-
-	// Remove trailing spaces.
-	while (!s_icon_filename.empty()) {
-		const size_t size_minus_one = s_icon_filename.size() - 1;
-		if (s_icon_filename[size_minus_one] != ' ') {
-			break;
+		// Remove leading slashes.
+		while (*icon_filename == '/') {
+			icon_filename++;
 		}
-		s_icon_filename.resize(size_minus_one);
-	}
-	if (s_icon_filename.empty()) {
-		// No icon filename.
-		return {};
+
+		if (*icon_filename == '\0') {
+			// No filename.
+			return {};
+		}
+
+		// Remove trailing spaces.
+		// "Siberian_Strike_1.jar" (and later versions) have extra spaces in "MIDlet-Icon".
+		string s_icon_filename(icon_filename);
+		while (!s_icon_filename.empty()) {
+			const size_t size_minus_one = s_icon_filename.size() - 1;
+			if (s_icon_filename[size_minus_one] != ' ') {
+				break;
+			}
+			s_icon_filename.resize(size_minus_one);
+		}
+		if (s_icon_filename.empty()) {
+			// No filename.
+			return {};
+		}
+
+		// Attempt to load the file.
+		png_buf = loadFileFromZip(s_icon_filename.c_str(), ICON_PNG_FILE_SIZE_MAX);
 	}
 
-	// Remove leading slashes.
-	const char *icon_filename = s_icon_filename.c_str();
-	while (*icon_filename == '/') {
-		icon_filename++;
-	}
-	if (*icon_filename == '\0') {
-		// No icon filename.
-		return {};
+	if (png_buf.empty()) {
+		// "MIDlet-Icon" was not found. Try "MIDlet-1".
+		string s_icon_filename = getIconFilenameFromMIDlet1();
+		if (s_icon_filename.empty()) {
+			// No filename.
+			return {};
+		}
+
+		// Attempt to load the file.
+		png_buf = loadFileFromZip(s_icon_filename.c_str(), ICON_PNG_FILE_SIZE_MAX);
 	}
 
-	// Load the icon file.
-	rp::uvector<uint8_t> png_buf = loadFileFromZip(icon_filename, ICON_PNG_FILE_SIZE_MAX);
 	if (png_buf.empty()) {
 		// Unable to load the icon file.
 		return {};
