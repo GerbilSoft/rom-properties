@@ -738,7 +738,8 @@ uint32_t J2ME::imgpf(ImageType imageType) const
 	switch (imageType) {
 		case IMG_INT_ICON:
 			// Use nearest-neighbor scaling when resizing.
-			ret = IMGPF_RESCALE_NEAREST;
+			// Image is internally stored in PNG format.
+			ret = IMGPF_RESCALE_NEAREST | IMGPF_INTERNAL_PNG_FORMAT;
 			break;
 
 		default:

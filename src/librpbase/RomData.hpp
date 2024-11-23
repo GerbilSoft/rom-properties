@@ -373,6 +373,10 @@ public:
 		// be rendered with a smaller size)
 		// FIXME: Better way to get the rescale size.
 		IMGPF_RESCALE_RFT_DIMENSIONS_2	= (1U << 5),
+
+		// Image is internally stored as a PNG file.
+		// (Internal images only)
+		IMGPF_INTERNAL_PNG_FORMAT	= (1U << 6),
 	};
 
 	struct ImageSizeDef {

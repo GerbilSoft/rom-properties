@@ -783,6 +783,33 @@ vector<RomData::ImageSizeDef> Xbox360_STFS::supportedImageSizes_static(ImageType
 }
 
 /**
+ * Get image processing flags.
+ *
+ * These specify post-processing operations for images,
+ * e.g. applying transparency masks.
+ *
+ * @param imageType Image type.
+ * @return Bitfield of ImageProcessingBF operations to perform.
+ */
+uint32_t Xbox360_STFS::imgpf(ImageType imageType) const
+{
+	ASSERT_imgpf(imageType);
+
+	uint32_t ret = 0;
+	switch (imageType) {
+		case IMG_INT_ICON:
+			// Use nearest-neighbor scaling when resizing.
+			// Image is internally stored in PNG format.
+			ret = IMGPF_RESCALE_NEAREST | IMGPF_INTERNAL_PNG_FORMAT;
+			break;
+
+		default:
+			break;
+	}
+	return ret;
+}
+
+/**
  * Load field data.
  * Called by RomData::fields() if the field data hasn't been loaded yet.
  * @return Number of fields read on success; negative POSIX error code on error.

@@ -1771,9 +1771,11 @@ uint32_t Xbox360_XDBF::imgpf(ImageType imageType) const
 	uint32_t ret = 0;
 	switch (imageType) {
 		case IMG_INT_ICON:
-			// Use nearest-neighbor scaling.
-			ret = IMGPF_RESCALE_NEAREST;
+			// Use nearest-neighbor scaling when resizing.
+			// Image is internally stored in PNG format.
+			ret = IMGPF_RESCALE_NEAREST | IMGPF_INTERNAL_PNG_FORMAT;
 			break;
+
 		default:
 			break;
 	}
