@@ -30,10 +30,10 @@ using namespace LibRpFile;
 
 namespace LibRomData {
 
-#ifdef _MSC_VER
+#if defined(_MSC_VER) && defined(ZLIB_IS_DLL)
 // DelayLoad test implementation.
 DELAYLOAD_TEST_FUNCTION_IMPL0(get_crc_table);
-#endif /* _MSC_VER */
+#endif /* _MSC_VER && ZLIB_IS_DLL */
 
 class GczReaderPrivate : public SparseDiscReaderPrivate
 {
@@ -128,11 +128,11 @@ GczReader::GczReader(const IRpFilePtr &file)
 		m_file.reset();
 		return;
 	}
-#else /* !defined(_MSC_VER) || !defined(ZLIB_IS_DLL) */
-		// zlib isn't in a DLL, but we need to ensure that the
-		// CRC table is initialized anyway.
-		get_crc_table();
-#endif /* defined(_MSC_VER) && defined(ZLIB_IS_DLL) */
+#else /* !(_MSC_VER && ZLIB_IS_DLL) */
+	// zlib isn't in a DLL, but we need to ensure that the
+	// CRC table is initialized anyway.
+	get_crc_table();
+#endif /* _MSC_VER && ZLIB_IS_DLL */
 
 	// Read the GCZ header.
 	RP_D(GczReader);

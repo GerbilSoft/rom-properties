@@ -28,7 +28,23 @@ using std::unique_ptr;
 using std::unordered_map;
 using std::vector;
 
+#ifdef _MSC_VER
+// MSVC: Exception handling for /DELAYLOAD.
+#  include "libwin32common/DelayLoadHelper.h"
+#endif /* _MSC_VER */
+
 namespace LibRomData {
+
+#ifdef _MSC_VER
+// DelayLoad test implementations
+#  ifdef ZLIB_IS_DLL
+DELAYLOAD_TEST_FUNCTION_IMPL0(get_crc_table);
+#  endif /* ZLIB_IS_DLL */
+#  ifdef MINIZIP_IS_DLL
+// unzClose() can safely take nullptr; it won't do anything.
+DELAYLOAD_TEST_FUNCTION_IMPL1(unzClose, nullptr);
+#  endif /* MINIZIP_IS_DLL */
+#endif /* _MSC_VER */
 
 class J2MEPrivate final : public RomDataPrivate
 {
@@ -346,6 +362,37 @@ J2ME::J2ME(const IRpFilePtr &file)
 		// Could not ref() the file handle.
 		return;
 	}
+
+#ifdef _MSC_VER
+	// Delay load verification.
+	// TODO: Only if linked with /DELAYLOAD?
+
+#  ifdef ZLIB_IS_DLL
+	// Only if zlib is a DLL.
+	if (DelayLoad_test_get_crc_table() != 0) {
+		// Delay load failed.
+		// J2ME packages cannot be read without MiniZip.
+		// (TODO: .jad files?)
+		d->file.reset();
+		return;
+	}
+#  else /* !ZLIB_IS_DLL */
+	// zlib isn't in a DLL, but we need to ensure that the
+	// CRC table is initialized anyway.
+	get_crc_table();
+#  endif /* ZLIB_IS_DLL */
+
+#  ifdef MINIZIP_IS_DLL
+	// Only if MiniZip is a DLL.
+	if (DelayLoad_test_unzClose() != 0) {
+		// Delay load failed.
+		// J2ME packages cannot be read without MiniZip.
+		// (TODO: .jad files?)
+		d->file.reset();
+		return;
+	}
+#  endif /* MINIZIP_IS_DLL */
+#endif /* _MSC_VER */
 
 	// Attempt to open as a .zip file first.
 	d->jarFile = d->openZip(file->filename());

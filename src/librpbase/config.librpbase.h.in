@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * config.librpbase.h.in: LibRpBase configuration. (source file)           *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -19,7 +19,7 @@
 
 /* Define to 1 if zlib is a DLL. */
 #if !defined(USE_INTERNAL_ZLIB) || defined(USE_INTERNAL_ZLIB_DLL)
-# define ZLIB_IS_DLL 1
+#  define ZLIB_IS_DLL 1
 #endif
 
 /* Define to 1 if you have libpng. */
@@ -33,7 +33,7 @@
 
 /* Define to 1 if libpng is a DLL. */
 #if !defined(USE_INTERNAL_PNG) || defined(USE_INTERNAL_PNG_DLL)
-# define PNG_IS_DLL 1
+#  define PNG_IS_DLL 1
 #endif
 
 /* Define to 1 if you have libjpeg. */
@@ -65,7 +65,18 @@
 
 /* Define to 1 if TinyXML2 is a DLL. */
 #if !defined(USE_INTERNAL_XML) || defined(USE_INTERNAL_XML_DLL)
-# define XML_IS_DLL 1
+#  define XML_IS_DLL 1
+#endif
+
+/* Define to 1 if we're using the internal copy of MiniZip. */
+#cmakedefine USE_INTERNAL_MINIZIP 1
+
+/* Define to 1 if we're using the internal copy of MiniZip as a DLL. */
+#cmakedefine USE_INTERNAL_MINIZIP_DLL 1
+
+/* Define to 1 if MiniZip is a DLL. */
+#if !defined(USE_INTERNAL_MINIZIP) || defined(USE_INTERNAL_MINIZIP_DLL)
+#  define MINIZIP_IS_DLL 1
 #endif
 
 /** iconv **/

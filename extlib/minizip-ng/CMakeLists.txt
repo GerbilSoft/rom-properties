@@ -727,7 +727,10 @@ if(MINIZIP_LFG)
 endif()
 if(MSVC)
     # VS debugger has problems when executable and static library are named the same
-    set_target_properties(${MINIZIP_TARGET} PROPERTIES OUTPUT_NAME lib${MINIZIP_TARGET})
+    # rom-properties: Only do this if not building shared libraries.
+    IF(NOT BUILD_SHARED_LIBS)
+        set_target_properties(${MINIZIP_TARGET} PROPERTIES OUTPUT_NAME lib${MINIZIP_TARGET})
+    ENDIF()
 endif()
 if(MZ_LZMA)
     set_target_properties(${MINIZIP_TARGET} PROPERTIES C_STANDARD 99)
