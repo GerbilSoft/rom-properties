@@ -57,6 +57,22 @@ using std::vector;
 // Uninitialized vector class
 #include "uvector.h"
 
+#ifdef _MSC_VER
+// MSVC: Exception handling for /DELAYLOAD.
+#  include "libwin32common/DelayLoadHelper.h"
+#endif /* _MSC_VER */
+
+#ifdef _MSC_VER
+// DelayLoad test implementations
+#  ifdef ZLIB_IS_DLL
+DELAYLOAD_TEST_FUNCTION_IMPL0(get_crc_table);
+#  endif /* ZLIB_IS_DLL */
+#  ifdef MINIZIP_IS_DLL
+// unzClose() can safely take nullptr; it won't do anything.
+DELAYLOAD_TEST_FUNCTION_IMPL1(unzClose, nullptr);
+#  endif /* MINIZIP_IS_DLL */
+#endif /* _MSC_VER */
+
 namespace LibRomData { namespace Tests {
 
 struct GcnFstTest_mode
@@ -587,11 +603,44 @@ INSTANTIATE_TEST_SUITE_P(Wii, GcnFstTest,
 
 extern "C" int gtest_main(int argc, TCHAR *argv[])
 {
-	fprintf(stderr, "LibRomData test suite: GcnFst tests.\n\n");
+	fputs("LibRomData test suite: GcnFst tests.\n\n", stderr);
 	fflush(nullptr);
 
-	// Make sure the CRC32 table is initialized.
+#ifdef _MSC_VER
+#  ifdef NDEBUG
+#    define DEBUG_SUFFIX ""
+#  else
+#    define DEBUG_SUFFIX "d"
+#  endif
+#else
+#  define DEBUG_SUFFIX ""
+#endif
+
+#ifdef _MSC_VER
+	// Delay load verification.
+	// TODO: Only if linked with /DELAYLOAD?
+#  ifdef ZLIB_IS_DLL
+	// Only if zlib is a DLL.
+	if (DelayLoad_test_get_crc_table() != 0) {
+		// Delay load failed.
+		fputs("*** ERROR: zlib1" DEBUG_SUFFIX ".dll not found. Cannot run tests.", stderr);
+		return EXIT_FAILURE;
+	}
+#  else /* !ZLIB_IS_DLL */
+	// zlib isn't in a DLL, but we need to ensure that the
+	// CRC table is initialized anyway.
 	get_crc_table();
+#  endif /* ZLIB_IS_DLL */
+
+#  ifdef MINIZIP_IS_DLL
+	// Only if MiniZip is a DLL.
+	if (DelayLoad_test_unzClose() != 0) {
+		// Delay load failed.
+		fputs("*** ERROR: minizip" DEBUG_SUFFIX ".dll not found. Cannot run tests.", stderr);
+		return EXIT_FAILURE;
+	}
+#  endif /* MINIZIP_IS_DLL */
+#endif /* _MSC_VER */
 
 #ifdef _WIN32
 	// Check for the fst_data directory and chdir() into it.
