@@ -512,8 +512,9 @@ J2ME::J2ME(const IRpFilePtr &file)
 	}
 
 	// Check if MANIFEST.MF has the required J2ME tags.
-	static const array<J2MEPrivate::manifest_tag_t, 3> required_tags = {{
-		J2MEPrivate::manifest_tag_t::ManifestVersion,
+	static const array<J2MEPrivate::manifest_tag_t, 2> required_tags = {{
+		// FIXME: Some JARs (e.g. GrandSlamChamp.jar) are missing ManifestVersion.
+		//J2MEPrivate::manifest_tag_t::ManifestVersion,
 		J2MEPrivate::manifest_tag_t::MicroEdition_Configuration,
 		J2MEPrivate::manifest_tag_t::MicroEdition_Profile,
 	}};
