@@ -76,6 +76,7 @@ using std::vector;
 #include "Handheld/DMG.hpp"
 #include "Handheld/GameBoyAdvance.hpp"
 #include "Handheld/GameCom.hpp"
+#include "Handheld/J2ME.hpp"
 #include "Handheld/Lynx.hpp"
 #include "Handheld/NGPC.hpp"
 #include "Handheld/Nintendo3DS.hpp"
@@ -201,7 +202,7 @@ pthread_once_t once_mimeTypes = PTHREAD_ONCE_INIT;
  *
  * TODO: Add support for multiple magic numbers per class.
  */
-static const array<RomDataFns, 37> romDataFns_magic = {{
+static const array<RomDataFns, 38> romDataFns_magic = {{
 	// Consoles
 	GetRomDataFns_addr(Atari7800, ATTR_HAS_METADATA, 4, 'RI78'),	// "ATARI7800"
 	GetRomDataFns_addr(PlayStationEXE, 0, 0, 'PS-X'),
@@ -220,6 +221,7 @@ static const array<RomDataFns, 37> romDataFns_magic = {{
 	GetRomDataFns_addr(DMG, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0x304, 0xCEED6666),	// headered
 	GetRomDataFns_addr(DMG, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0x104, 0x0110CEEF),	// Analogue Pocket
 	GetRomDataFns_addr(GameBoyAdvance, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0x04, 0x24FFAE51),
+	GetRomDataFns_addr(J2ME, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 0x504B0304U),	// .jar files (TODO: Other .jar files?)
 	GetRomDataFns_addr(Lynx, ATTR_HAS_METADATA, 0, 'LYNX'),
 	GetRomDataFns_addr(NGPC, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 12, ' SNK'),
 	GetRomDataFns_addr(Nintendo3DSFirm, ATTR_NONE, 0, 'FIRM'),
