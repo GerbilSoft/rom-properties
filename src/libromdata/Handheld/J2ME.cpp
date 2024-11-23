@@ -29,6 +29,9 @@ using std::unique_ptr;
 using std::unordered_map;
 using std::vector;
 
+// Uninitialized vector class
+#include "uvector.h"
+
 #ifdef _MSC_VER
 // MSVC: Exception handling for /DELAYLOAD.
 #  include "libwin32common/DelayLoadHelper.h"
@@ -131,6 +134,14 @@ public:
 	static unzFile openZip(const char *filename);
 
 	/**
+	 * Load a file from the opened .jar file.
+	 * @param filename Filename to load
+	 * @param max_size Maximum size
+	 * @return rp::uvector with the file data, or empty vector on error
+	 */
+	rp::uvector<uint8_t> loadFileFromZip(const char *filename, size_t max_size = ~0ULL);
+
+	/**
 	 * Load MANIFEST.MF from this->jarFile.
 	 * this->jarFile must have already been opened.
 	 * On success, the MANIFEST.MF tags will be loaded into this->map.
@@ -224,6 +235,65 @@ unzFile J2MEPrivate::openZip(const char *filename)
 }
 
 /**
+ * Load a file from the opened .jar file.
+ * @param filename Filename to load
+ * @param max_size Maximum size
+ * @return rp::uvector with the file data, or empty vector on error
+ */
+rp::uvector<uint8_t> J2MEPrivate::loadFileFromZip(const char *filename, size_t max_size)
+{
+	// TODO: This is also used by GcnFstTest. Move to a common utility file?
+	int ret = unzLocateFile(jarFile, filename, nullptr);
+	if (ret != UNZ_OK) {
+		return {};
+	}
+
+	// Get file information.
+	unz_file_info64 file_info;
+	ret = unzGetCurrentFileInfo64(jarFile,
+		&file_info, nullptr, 0, nullptr, 0, nullptr, 0);
+	if (ret != UNZ_OK || file_info.uncompressed_size >= max_size) {
+		// Error getting file information, or the uncompressed size is too big.
+		return {};
+	}
+
+	ret = unzOpenCurrentFile(jarFile);
+	if (ret != UNZ_OK) {
+		return {};
+	}
+
+	rp::uvector<uint8_t> buf;
+	buf.resize(file_info.uncompressed_size);
+
+	// Read the file.
+	// NOTE: zlib and minizip are only guaranteed to be able to
+	// read UINT16_MAX (64 KB) at a time, and the updated MiniZip
+	// from https://github.com/nmoinvaz/minizip enforces this.
+	uint8_t *p = buf.data();
+	size_t size = file_info.uncompressed_size;
+	while (size > 0) {
+		int to_read = static_cast<int>(size > UINT16_MAX ? UINT16_MAX : size);
+		ret = unzReadCurrentFile(jarFile, p, to_read);
+		if (ret != to_read) {
+			return {};
+		}
+
+		// ret == number of bytes read.
+		p += ret;
+		size -= ret;
+	}
+
+	// Close the file.
+	// An error will occur here if the CRC is incorrect.
+	ret = unzCloseCurrentFile(jarFile);
+	if (ret != UNZ_OK) {
+		return {};
+	}
+
+	return buf;
+}
+
+/**
  * Load MANIFEST.MF from this->jarFile.
  * this->jarFile must have already been opened.
  * On success, the MANIFEST.MF tags will be loaded into this->map.
@@ -233,61 +303,20 @@ int J2MEPrivate::loadManifestMF(void)
 {
 	assert(jarFile != nullptr);
 
-	int ret = unzLocateFile(jarFile, "META-INF/MANIFEST.MF", nullptr);
-	if (ret != UNZ_OK) {
-		// No MANIFEST.MF means it's not a .jar file.
+	// Load MANIFEST.MF.
+	rp::uvector<uint8_t> manifest_buf = loadFileFromZip("META-INF/MANIFEST.MF", MANIFEST_MF_FILE_SIZE_MAX);
+	if (manifest_buf.empty()) {
+		// Unable to load MANIFEST.MF.
 		return -EIO;
 	}
 
-	// Get file information.
-	unz_file_info64 file_info;
-	ret = unzGetCurrentFileInfo64(jarFile,
-		&file_info, nullptr, 0, nullptr, 0, nullptr, 0);
-	if (ret != UNZ_OK) {
-		// Error getting file information.
-		return -EIO;
-	} else if (file_info.uncompressed_size >= J2MEPrivate::MANIFEST_MF_FILE_SIZE_MAX) {
-		// The uncompressed size is too big.
-		return -ENOMEM;
-	}
-
-	ret = unzOpenCurrentFile(jarFile);
-	if (ret != UNZ_OK) {
-		return -EIO;
-	}
-
-	unique_ptr<char[]> manifest_buf(new char[file_info.uncompressed_size + 1]);
-
-	// Read the MANIFEST.MF file.
-	// NOTE: zlib and minizip are only guaranteed to be able to
-	// read UINT16_MAX (64 KB) at a time, and the updated MiniZip
-	// from https://github.com/nmoinvaz/minizip enforces this.
-	char *p = manifest_buf.get();
-	size_t size = file_info.uncompressed_size;
-	while (size > 0) {
-		int to_read = static_cast<int>(size > UINT16_MAX ? UINT16_MAX : size);
-		ret = unzReadCurrentFile(jarFile, p, to_read);
-		if (ret != to_read) {
-			return -EIO;
-		}
-
-		// ret == number of bytes read.
-		p += ret;
-		size -= ret;
-	}
-	manifest_buf[file_info.uncompressed_size] = '\0';
-
-	// Close the MANIFEST.MF file.
-	// An error will occur here if the CRC is incorrect.
-	ret = unzCloseCurrentFile(jarFile);
-	if (ret != UNZ_OK) {
-		return -EIO;
-	}
+	// Add a NULL byte at the end.
+	manifest_buf.push_back(0);
 
 	// Parse the MANIFEST.MF tags.
 	// NOTE: May have LF or CRLF line endings.
 	map.clear();
-	p = manifest_buf.get();
+	char *p = reinterpret_cast<char*>(manifest_buf.data());
 	char *line_saveptr = nullptr;
 	for (char *line = strtok_r(p, "\n", &line_saveptr); line != nullptr;
 	     line = strtok_r(nullptr, "\n", &line_saveptr))
@@ -440,56 +469,16 @@ rp_image_const_ptr J2MEPrivate::loadIcon(void)
 		return {};
 	}
 
-	int ret = unzLocateFile(jarFile, icon_filename, nullptr);
-	if (ret != UNZ_OK) {
-		// Icon not found.
+	// Load the icon file.
+	rp::uvector<uint8_t> png_buf = loadFileFromZip(icon_filename, ICON_PNG_FILE_SIZE_MAX);
+	if (png_buf.empty()) {
+		// Unable to load the icon file.
 		return {};
-	}
-
-	// Get file information.
-	unz_file_info64 file_info;
-	ret = unzGetCurrentFileInfo64(jarFile,
-		&file_info, nullptr, 0, nullptr, 0, nullptr, 0);
-	if (ret != UNZ_OK || file_info.uncompressed_size >= J2MEPrivate::ICON_PNG_FILE_SIZE_MAX) {
-		// Error getting file information, or the uncompressed size is too big.
-		return {};
-	}
-
-	ret = unzOpenCurrentFile(jarFile);
-	if (ret != UNZ_OK) {
-		return nullptr;
-	}
-
-	unique_ptr<uint8_t[]> png_buf(new uint8_t[file_info.uncompressed_size]);
-
-	// Read the PNG file.
-	// NOTE: zlib and minizip are only guaranteed to be able to
-	// read UINT16_MAX (64 KB) at a time, and the updated MiniZip
-	// from https://github.com/nmoinvaz/minizip enforces this.
-	uint8_t *p = png_buf.get();
-	size_t size = file_info.uncompressed_size;
-	while (size > 0) {
-		int to_read = static_cast<int>(size > UINT16_MAX ? UINT16_MAX : size);
-		ret = unzReadCurrentFile(jarFile, p, to_read);
-		if (ret != to_read) {
-			return {};
-		}
-
-		// ret == number of bytes read.
-		p += ret;
-		size -= ret;
-	}
-
-	// Close the PNG file.
-	// An error will occur here if the CRC is incorrect.
-	ret = unzCloseCurrentFile(jarFile);
-	if (ret != UNZ_OK) {
-		return nullptr;
 	}
 
 	// Create a MemFile and decode the image.
 	// TODO: For rpcli, shortcut to extract the PNG directly.
-	MemFilePtr f_mem = std::make_shared<MemFile>(png_buf.get(), file_info.uncompressed_size);
+	MemFilePtr f_mem = std::make_shared<MemFile>(png_buf.data(), png_buf.size());
 	this->img_icon = RpPng::load(f_mem);
 	return this->img_icon;
 }
