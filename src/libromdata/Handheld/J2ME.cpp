@@ -363,10 +363,10 @@ int J2MEPrivate::loadManifestMF(void)
 		// Convert to an std::string so we can emplace it in the map next.
 		string s_value(value);
 
-		// Remove any trailing CRs.
+		// Remove any trailing CRs and spaces.
 		while (!s_value.empty()) {
 			const size_t size_minus_one = s_value.size() - 1;
-			if (s_value[size_minus_one] != '\r') {
+			if (s_value[size_minus_one] != '\r' && s_value[size_minus_one] != ' ') {
 				break;
 			}
 			s_value.resize(size_minus_one);
@@ -481,23 +481,8 @@ rp_image_const_ptr J2MEPrivate::loadIcon(void)
 			return {};
 		}
 
-		// Remove trailing spaces.
-		// "Siberian_Strike_1.jar" (and later versions) have extra spaces in "MIDlet-Icon".
-		string s_icon_filename(icon_filename);
-		while (!s_icon_filename.empty()) {
-			const size_t size_minus_one = s_icon_filename.size() - 1;
-			if (s_icon_filename[size_minus_one] != ' ') {
-				break;
-			}
-			s_icon_filename.resize(size_minus_one);
-		}
-		if (s_icon_filename.empty()) {
-			// No filename.
-			return {};
-		}
-
 		// Attempt to load the file.
-		png_buf = loadFileFromZip(s_icon_filename.c_str(), ICON_PNG_FILE_SIZE_MAX);
+		png_buf = loadFileFromZip(icon_filename, ICON_PNG_FILE_SIZE_MAX);
 	}
 
 	if (png_buf.empty()) {
