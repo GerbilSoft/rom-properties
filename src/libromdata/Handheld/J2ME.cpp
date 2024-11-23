@@ -16,6 +16,7 @@
 
 // Other rom-properties libraries
 #include "librpbase/img/RpPng.hpp"
+#include "librpfile/MemFile.hpp"
 using namespace LibRpBase;
 using namespace LibRpText;
 using namespace LibRpFile;
@@ -76,6 +77,9 @@ public:
 	// Opened .jar file
 	unzFile jarFile;
 
+	// Icon
+	rp_image_ptr img_icon;
+
 public:
 	enum class manifest_tag_t : uint8_t {
 		// MANIFEST.MF and .jad
@@ -114,8 +118,9 @@ public:
 	typedef unordered_map<uint8_t, std::string> map_t;
 	map_t map;
 
-	// Maximum size for MANIFEST.MF.
+	// Maximum size for various files.
 	static constexpr size_t MANIFEST_MF_FILE_SIZE_MAX = 16384U;
+	static constexpr size_t ICON_PNG_FILE_SIZE_MAX = 16384U;
 
 public:
 	/**
@@ -132,6 +137,12 @@ public:
 	 * @return 0 on success; negative POSIX error code on error.
 	 */
 	int loadManifestMF(void);
+
+	/**
+	 * Load the icon.
+	 * @return Icon, or nullptr on error.
+	 */
+	rp_image_const_ptr loadIcon(void);
 };
 
 ROMDATA_IMPL(J2ME)
@@ -335,6 +346,93 @@ int J2MEPrivate::loadManifestMF(void)
 	}
 
 	return (unlikely(map.empty()) ? -ENOENT : 0);
+}
+
+/**
+ * Load the icon.
+ * @return Icon, or nullptr on error.
+ */
+rp_image_const_ptr J2MEPrivate::loadIcon(void)
+{
+	if (img_icon) {
+		// Icon has already been loaded.
+		return img_icon;
+	} else if (!this->isValid || static_cast<int>(this->jfileType) < 0) {
+		// Can't load the icon.
+		return {};
+	}
+
+	// Make sure the .jar file is open.
+	if (!jarFile) {
+		// Not open...
+		return {};
+	}
+
+	// Get the icon filename.
+	auto iter = map.find(static_cast<uint8_t>(manifest_tag_t::MIDlet_Icon));
+	if (iter == map.end()) {
+		// No icon filename.
+		return {};
+	}
+
+	// NOTE: The icon filename might have a leading slash.
+	const char *icon_filename = iter->second.c_str();
+	while (*icon_filename == '/') {
+		icon_filename++;
+	}
+
+	int ret = unzLocateFile(jarFile, icon_filename, nullptr);
+	if (ret != UNZ_OK) {
+		// Icon not found.
+		return {};
+	}
+
+	// Get file information.
+	unz_file_info64 file_info;
+	ret = unzGetCurrentFileInfo64(jarFile,
+		&file_info, nullptr, 0, nullptr, 0, nullptr, 0);
+	if (ret != UNZ_OK || file_info.uncompressed_size >= J2MEPrivate::ICON_PNG_FILE_SIZE_MAX) {
+		// Error getting file information, or the uncompressed size is too big.
+		return {};
+	}
+
+	ret = unzOpenCurrentFile(jarFile);
+	if (ret != UNZ_OK) {
+		return nullptr;
+	}
+
+	unique_ptr<uint8_t[]> png_buf(new uint8_t[file_info.uncompressed_size]);
+
+	// Read the PNG file.
+	// NOTE: zlib and minizip are only guaranteed to be able to
+	// read UINT16_MAX (64 KB) at a time, and the updated MiniZip
+	// from https://github.com/nmoinvaz/minizip enforces this.
+	uint8_t *p = png_buf.get();
+	size_t size = file_info.uncompressed_size;
+	while (size > 0) {
+		int to_read = static_cast<int>(size > UINT16_MAX ? UINT16_MAX : size);
+		ret = unzReadCurrentFile(jarFile, p, to_read);
+		if (ret != to_read) {
+			return {};
+		}
+
+		// ret == number of bytes read.
+		p += ret;
+		size -= ret;
+	}
+
+	// Close the PNG file.
+	// An error will occur here if the CRC is incorrect.
+	ret = unzCloseCurrentFile(jarFile);
+	if (ret != UNZ_OK) {
+		return nullptr;
+	}
+
+	// Create a MemFile and decode the image.
+	// TODO: For rpcli, shortcut to extract the PNG directly.
+	MemFilePtr f_mem = std::make_shared<MemFile>(png_buf.get(), file_info.uncompressed_size);
+	this->img_icon = RpPng::load(f_mem);
+	return this->img_icon;
 }
 
 /** J2ME **/
@@ -640,8 +738,6 @@ int J2ME::loadMetaData(void)
 int J2ME::loadInternalImage(ImageType imageType, rp_image_const_ptr &pImage)
 {
 	ASSERT_loadInternalImage(imageType, pImage);
-	// TODO
-#if 0
 	RP_D(J2ME);
 	ROMDATA_loadInternalImage_single(
 		IMG_INT_ICON,	// ourImageType
@@ -650,8 +746,6 @@ int J2ME::loadInternalImage(ImageType imageType, rp_image_const_ptr &pImage)
 		d->jfileType,	// romType
 		d->img_icon,	// imgCache
 		d->loadIcon);	// func
-#endif
-	return -ENOENT;
 }
 
 } // namespace LibRomData
