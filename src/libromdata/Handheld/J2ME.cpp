@@ -373,11 +373,17 @@ int J2MEPrivate::loadManifestMF(void)
 		}
 
 		auto status = map.emplace(static_cast<uint8_t>(tag), std::move(s_value));
-		if (!status.second) {
+		// FIXME: Some .jar files have duplicate tags in MANIFEST.MF:
+		// - Bejeweled.jar
+		// - Bejeweled__v600_.jar
+		// - Gamester.Smb.In.Demand.v1.00.S30.Java.Retail-BiNPDA.jar
+		// - Midtown Madness 3.jar
+		// - Space Warrior.jar
+		/*if (!status.second) {
 			// Failed to emplace the value. (Duplicate tag?)
 			map.clear();
 			return -EIO;
-		}
+		}*/
 	}
 
 	return (unlikely(map.empty()) ? -ENOENT : 0);
