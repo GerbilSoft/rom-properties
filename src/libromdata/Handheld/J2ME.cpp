@@ -370,19 +370,15 @@ rp_image_const_ptr J2MEPrivate::loadIcon(void)
 
 	// Get the icon filename.
 	// First, try "MIDlet-Icon".
-	string icon_filename;
+	string s_icon_filename;
 	auto iter = map.find(static_cast<uint8_t>(manifest_tag_t::MIDlet_Icon));
 	if (iter != map.end()) {
 		// NOTE: The icon filename might have a leading slash.
-		const char *midlet_icon = iter->second.c_str();
-		while (*midlet_icon == '/') {
-			midlet_icon++;
-		}
-		icon_filename = midlet_icon;
+		s_icon_filename = iter->second.c_str();
 	}
 	// TODO: If we have "MIDlet-Icon", but the actual filename isn't found, try "MIDlet-1".
 	// Currently, we only try "MIDlet-1" if the "MIDlet-Icon" key is missing entirely.
-	if (icon_filename.empty()) {
+	if (s_icon_filename.empty()) {
 		// Not found. Try "MIDlet-1".
 		auto iter = map.find(static_cast<uint8_t>(manifest_tag_t::MIDlet_1));
 		if (iter != map.end()) {
@@ -412,16 +408,39 @@ rp_image_const_ptr J2MEPrivate::loadIcon(void)
 				return {};
 			}
 
-			icon_filename.assign(midlet_1, comma1, comma2 - comma1);
+			s_icon_filename.assign(midlet_1, comma1, comma2 - comma1);
 		}
 	}
 
-	if (icon_filename.empty()) {
+	if (s_icon_filename.empty()) {
 		// No icon filename.
 		return {};
 	}
 
-	int ret = unzLocateFile(jarFile, icon_filename.c_str(), nullptr);
+	// Remove trailing spaces.
+	while (!s_icon_filename.empty()) {
+		const size_t size_minus_one = s_icon_filename.size() - 1;
+		if (s_icon_filename[size_minus_one] != ' ') {
+			break;
+		}
+		s_icon_filename.resize(size_minus_one);
+	}
+	if (s_icon_filename.empty()) {
+		// No icon filename.
+		return {};
+	}
+
+	// Remove leading slashes.
+	const char *icon_filename = s_icon_filename.c_str();
+	while (*icon_filename == '/') {
+		icon_filename++;
+	}
+	if (*icon_filename == '\0') {
+		// No icon filename.
+		return {};
+	}
+
+	int ret = unzLocateFile(jarFile, icon_filename, nullptr);
 	if (ret != UNZ_OK) {
 		// Icon not found.
 		return {};
