@@ -115,7 +115,7 @@ public:
 	// - https://stackoverflow.com/questions/18837857/cant-use-enum-class-as-unordered-map-key
 	// - https://github.com/dropbox/djinni/issues/213
 	// - https://gcc.gnu.org/bugzilla/show_bug.cgi?id=60970
-	typedef unordered_map<uint8_t, std::string> map_t;
+	typedef unordered_map<uint8_t, string> map_t;
 	map_t map;
 
 	// Maximum size for various files.
@@ -369,19 +369,59 @@ rp_image_const_ptr J2MEPrivate::loadIcon(void)
 	}
 
 	// Get the icon filename.
+	// First, try "MIDlet-Icon".
+	string icon_filename;
 	auto iter = map.find(static_cast<uint8_t>(manifest_tag_t::MIDlet_Icon));
-	if (iter == map.end()) {
+	if (iter != map.end()) {
+		// NOTE: The icon filename might have a leading slash.
+		const char *midlet_icon = iter->second.c_str();
+		while (*midlet_icon == '/') {
+			midlet_icon++;
+		}
+		icon_filename = midlet_icon;
+	}
+	// TODO: If we have "MIDlet-Icon", but the actual filename isn't found, try "MIDlet-1".
+	// Currently, we only try "MIDlet-1" if the "MIDlet-Icon" key is missing entirely.
+	if (icon_filename.empty()) {
+		// Not found. Try "MIDlet-1".
+		auto iter = map.find(static_cast<uint8_t>(manifest_tag_t::MIDlet_1));
+		if (iter != map.end()) {
+			// "MIDlet-1" has three values, separated by commas:
+			// - Title
+			// - Icon filename
+			// - Java package name (maybe?)
+			const string &midlet_1 = iter->second;
+			size_t comma1 = midlet_1.find(',');
+			if (comma1 == string::npos) {
+				return {};
+			}
+			// Skip spaces past the comma, and also leading slsahes.
+			for (comma1++; comma1 < midlet_1.size(); comma1++) {
+				const char chr = midlet_1[comma1];
+				if (chr != ' ' && chr != '/') {
+					break;
+				}
+			}
+			if (comma1 >= midlet_1.size()) {
+				// Too far.
+				return {};
+			}
+
+			size_t comma2 = midlet_1.find(',', comma1 + 1);
+			if (comma2 == string::npos) {
+				return {};
+			}
+
+			icon_filename.assign(midlet_1, comma1, comma2 - comma1);
+		}
+	}
+
+	if (icon_filename.empty()) {
 		// No icon filename.
 		return {};
 	}
 
-	// NOTE: The icon filename might have a leading slash.
-	const char *icon_filename = iter->second.c_str();
-	while (*icon_filename == '/') {
-		icon_filename++;
-	}
-
-	int ret = unzLocateFile(jarFile, icon_filename, nullptr);
+	int ret = unzLocateFile(jarFile, icon_filename.c_str(), nullptr);
 	if (ret != UNZ_OK) {
 		// Icon not found.
 		return {};
