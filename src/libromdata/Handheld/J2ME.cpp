@@ -150,6 +150,12 @@ public:
 	int loadManifestMF(void);
 
 	/**
+	 * Get the icon filename from the "MIDlet-1" tag.
+	 * @return Icon filename, or empty string if the tag was not found or malformed.
+	 */
+	string getIconFilenameFromMIDlet1(void);
+
+	/**
 	 * Load the icon.
 	 * @return Icon, or nullptr on error.
 	 */
@@ -378,6 +384,47 @@ int J2MEPrivate::loadManifestMF(void)
 }
 
 /**
+ * Get the icon filename from the "MIDlet-1" tag.
+ * @return Icon filename, or empty string if the tag was not found or malformed.
+ */
+string J2MEPrivate::getIconFilenameFromMIDlet1(void)
+{
+	auto iter = map.find(static_cast<uint8_t>(manifest_tag_t::MIDlet_1));
+	if (iter == map.end()) {
+		// "MIDlet-1 was not found.
+		return {};
+	}
+
+	// "MIDlet-1" has three values, separated by commas:
+	// - Title
+	// - Icon filename
+	// - Java package name (maybe?)
+	const string &midlet_1 = iter->second;
+	size_t comma1 = midlet_1.find(',');
+	if (comma1 == string::npos) {
+		return {};
+	}
+	// Skip spaces past the comma, and also leading slsahes.
+	for (comma1++; comma1 < midlet_1.size(); comma1++) {
+		const char chr = midlet_1[comma1];
+		if (chr != ' ' && chr != '/') {
+			break;
+		}
+	}
+	if (comma1 >= midlet_1.size()) {
+		// Too far.
+		return {};
+	}
+
+	size_t comma2 = midlet_1.find(',', comma1 + 1);
+	if (comma2 == string::npos) {
+		return {};
+	}
+
+	return string(midlet_1, comma1, comma2 - comma1);
+}
+
+/**
  * Load the icon.
  * @return Icon, or nullptr on error.
  */
@@ -409,36 +456,7 @@ rp_image_const_ptr J2MEPrivate::loadIcon(void)
 	// Currently, we only try "MIDlet-1" if the "MIDlet-Icon" key is missing entirely.
 	if (s_icon_filename.empty()) {
 		// Not found. Try "MIDlet-1".
-		auto iter = map.find(static_cast<uint8_t>(manifest_tag_t::MIDlet_1));
-		if (iter != map.end()) {
-			// "MIDlet-1" has three values, separated by commas:
-			// - Title
-			// - Icon filename
-			// - Java package name (maybe?)
-			const string &midlet_1 = iter->second;
-			size_t comma1 = midlet_1.find(',');
-			if (comma1 == string::npos) {
-				return {};
-			}
-			// Skip spaces past the comma, and also leading slsahes.
-			for (comma1++; comma1 < midlet_1.size(); comma1++) {
-				const char chr = midlet_1[comma1];
-				if (chr != ' ' && chr != '/') {
-					break;
-				}
-			}
-			if (comma1 >= midlet_1.size()) {
-				// Too far.
-				return {};
-			}
-
-			size_t comma2 = midlet_1.find(',', comma1 + 1);
-			if (comma2 == string::npos) {
-				return {};
-			}
-
-			s_icon_filename.assign(midlet_1, comma1, comma2 - comma1);
-		}
+		s_icon_filename = getIconFilenameFromMIDlet1();
 	}
 
 	if (s_icon_filename.empty()) {
