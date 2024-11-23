@@ -369,7 +369,7 @@ struct IDiscReaderFns {
 	// Up to 4 magic numbers can be specified for multiple formats.
 	// 0 == end of magic list
 	// NOTE: Must be in Big-Endian format!
-	uint32_t magic[4];
+	array<uint32_t, 4> magic;
 };
 
 /**
@@ -389,15 +389,15 @@ static IDiscReaderPtr IDiscReader_ctor(const IRpFilePtr &file)
 
 #define P99_PROTECT(...) __VA_ARGS__	/* Reference: https://stackoverflow.com/a/5504336 */
 static const array<IDiscReaderFns, 6> iDiscReaderFns = {{
-	GetIDiscReaderFns(CisoGcnReader,	P99_PROTECT({'CISO'})),
+	GetIDiscReaderFns(CisoGcnReader,	P99_PROTECT({{'CISO'}})),
 	// NOTE: MSVC doesn't like putting #ifdef within the P99_PROTECT macro.
 	// TODO: Disable ZISO and JISO if LZ4 and LZO aren't available?
-	GetIDiscReaderFns(CisoPspReader,	P99_PROTECT({'CISO', 'ZISO', 0x44415800, 'JISO'})),
-	GetIDiscReaderFns(DpfReader,		P99_PROTECT({0x863EFC23, 0x6A2BF9E0})),
-	GetIDiscReaderFns(GczReader,		P99_PROTECT({0xB10BC001})),
-	GetIDiscReaderFns(NASOSReader,		P99_PROTECT({'GCML', 'GCMM', 'WII5', 'WII9'})),
-	//GetIDiscReaderFns(WbfsReader,		P99_PROTECT({'WBFS'})),	// Handled separately
-	GetIDiscReaderFns(WuxReader,		P99_PROTECT({'WUX0'})),	// NOTE: Not checking second magic here.
+	GetIDiscReaderFns(CisoPspReader,	P99_PROTECT({{'CISO', 'ZISO', 0x44415800, 'JISO'}})),
+	GetIDiscReaderFns(DpfReader,		P99_PROTECT({{0x863EFC23, 0x6A2BF9E0}})),
+	GetIDiscReaderFns(GczReader,		P99_PROTECT({{0xB10BC001}})),
+	GetIDiscReaderFns(NASOSReader,		P99_PROTECT({{'GCML', 'GCMM', 'WII5', 'WII9'}})),
+	//GetIDiscReaderFns(WbfsReader,		P99_PROTECT({{'WBFS'}})),	// Handled separately
+	GetIDiscReaderFns(WuxReader,		P99_PROTECT({{'WUX0'}})),	// NOTE: Not checking second magic here.
 }};
 
 /**
