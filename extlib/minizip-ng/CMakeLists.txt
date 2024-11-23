@@ -753,6 +753,14 @@ if(NOT SKIP_INSTALL_LIBRARIES AND NOT SKIP_INSTALL_ALL)
     target_include_directories(${MINIZIP_TARGET} PUBLIC
         $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/${MINIZIP_TARGET}>)
 
+    # rom-properties:
+    # - Disabled installation of everything except binaries (.dll files).
+    # - Install PDB files.
+    # - Use DirInstallPaths.
+    install(TARGETS ${MINIZIP_TARGET} ${MINIZIP_DEP}
+            EXPORT ${MINIZIP_TARGET}
+            RUNTIME DESTINATION "${DIR_INSTALL_DLL}")
+    IF(0)
     install(TARGETS ${MINIZIP_TARGET} ${MINIZIP_DEP}
             EXPORT ${MINIZIP_TARGET}
             INCLUDES DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/${MINIZIP_TARGET}"
@@ -762,6 +770,33 @@ if(NOT SKIP_INSTALL_LIBRARIES AND NOT SKIP_INSTALL_ALL)
     install(EXPORT ${MINIZIP_TARGET}
             DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${MINIZIP_TARGET}"
             NAMESPACE "MINIZIP::")
+    ENDIF(0) # rom-properties
+
+    IF(INSTALL_DEBUG)
+        # FIXME: Generator expression $<TARGET_PROPERTY:${_target},PDB> didn't work with CPack-3.6.1.
+        INCLUDE(DirInstallPaths)
+        GET_TARGET_PROPERTY(DEBUG_FILENAME zlib PDB)
+        IF(WIN32)
+            # TODO: Test on MinGW.
+            # FIXME: Generator PDB expression doesn't have the debug postfix for some reason,
+            # so cpack fails in debug builds if we get the PDB property.
+            SET(PDB_FILENAME_D "$<TARGET_FILE_DIR:${MINIZIP_TARGET}>/minizip${CMAKE_DEBUG_POSTFIX}.pdb")
+            SET(PDB_FILENAME_R "$<TARGET_FILE_DIR:${MINIZIP_TARGET}>/minizip${CMAKE_RELEASE_POSTFIX}.pdb")
+            INSTALL(FILES "${PDB_FILENAME_D}" "${PDB_FILENAME_R}"
+                    DESTINATION "${DIR_INSTALL_DLL_DEBUG}"
+                    COMPONENT "debug"
+                    OPTIONAL
+                    )
+            UNSET(PDB_FILENAME_D)
+            UNSET(PDB_FILENAME_R)
+        ELSE(WIN32)
+            INSTALL(FILES "${DEBUG_FILENAME}"
+                    DESTINATION "${DIR_INSTALL_DLL_DEBUG}"
+                    COMPONENT "debug"
+                    )
+        ENDIF(WIN32)
+        UNSET(DEBUG_FILENAME)
+    ENDIF(INSTALL_DEBUG)
 
     # Create and install CMake package config version file to allow find_package()
     include(CMakePackageConfigHelpers)
