@@ -194,6 +194,7 @@ WonderSwan::WonderSwan(const IRpFilePtr &file)
 
 	if (!d->isValid) {
 		d->file.reset();
+		return;
 	}
 
 	// Check for certain ROMs that have incorrect footers.
