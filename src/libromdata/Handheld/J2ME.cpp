@@ -329,6 +329,10 @@ int J2MEPrivate::loadManifestMF(void)
 	{
 		char *token_saveptr = nullptr;
 		const char *tag_name = strtok_r(line, ":", &token_saveptr);
+		if (!tag_name) {
+			// No ':'. This line is invalid.
+			continue;
+		}
 
 		// Determine if this tag is known.
 		manifest_tag_t tag = manifest_tag_t::Unknown;
