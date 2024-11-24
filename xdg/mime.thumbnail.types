@@ -85,6 +85,7 @@ application/x-gba-rom			# GameBoyAdvance
 application/x-gameboy-advance-rom	# GameBoyAdvance (mGBA)
 application/x-agb-rom			# GameBoyAdvance (mGBA)
 application/x-game-com-rom		# GameCom
+application/java-archive		# J2ME (possibly other Java archives, too...)
 application/x-neo-geo-pocket-rom	# NGPC
 application/x-neo-geo-pocket-color-rom	# NGPC
 model/x.stl-binary			# Nintendo3DS (?)

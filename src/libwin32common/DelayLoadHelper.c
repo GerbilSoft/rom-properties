@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libwin32common)                   *
  * DelayLoadHelper.c: DelayLoad helper functions and macros.               *
  *                                                                         *
- * Copyright (c) 2017-2023 by David Korth.                                 *
+ * Copyright (c) 2017-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -74,6 +74,7 @@ static const char *const dll_whitelist[] = {
 	"lz4" DEBUG_SUFFIX ".dll",
 	"minilzo" DEBUG_SUFFIX ".dll",
 	"libgnuintl-8.dll",
+	"minizip" DEBUG_SUFFIX ".dll",
 };
 
 /**

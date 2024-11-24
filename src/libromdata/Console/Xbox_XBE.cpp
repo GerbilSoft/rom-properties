@@ -609,7 +609,7 @@ uint32_t Xbox_XBE::imgpf(ImageType imageType) const
 			// XPR0 image
 			if (d->xtImage.xpr0->width() <= 64 && d->xtImage.xpr0->height() <= 64) {
 				// 64x64 or smaller.
-				ret = IMGPF_RESCALE_NEAREST;
+				ret = IMGPF_RESCALE_NEAREST | IMGPF_INTERNAL_PNG_FORMAT;
 			}
 		} else {
 			// PNG image

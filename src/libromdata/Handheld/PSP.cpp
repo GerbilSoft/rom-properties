@@ -453,6 +453,33 @@ vector<RomData::ImageSizeDef> PSP::supportedImageSizes_static(ImageType imageTyp
 }
 
 /**
+ * Get image processing flags.
+ *
+ * These specify post-processing operations for images,
+ * e.g. applying transparency masks.
+ *
+ * @param imageType Image type.
+ * @return Bitfield of ImageProcessingBF operations to perform.
+ */
+uint32_t PSP::imgpf(ImageType imageType) const
+{
+	ASSERT_imgpf(imageType);
+
+	uint32_t ret = 0;
+	switch (imageType) {
+		case IMG_INT_ICON:
+		case IMG_INT_BANNER:
+			// Image is internally stored in PNG format.
+			ret = IMGPF_INTERNAL_PNG_FORMAT;
+			break;
+
+		default:
+			break;
+	}
+	return ret;
+}
+
+/**
  * Load field data.
  * Called by RomData::fields() if the field data hasn't been loaded yet.
  * @return Number of fields read on success; negative POSIX error code on error.

@@ -51,6 +51,7 @@ SET(${PROJECT_NAME}_SRCS
 	Handheld/DMG.cpp
 	Handheld/GameBoyAdvance.cpp
 	Handheld/GameCom.cpp
+	Handheld/J2ME.cpp
 	Handheld/Lynx.cpp
 	Handheld/NGPC.cpp
 	Handheld/Nintendo3DS.cpp
@@ -222,6 +223,7 @@ SET(${PROJECT_NAME}_H
 	Handheld/DMG.hpp
 	Handheld/GameBoyAdvance.hpp
 	Handheld/GameCom.hpp
+	Handheld/J2ME.hpp
 	Handheld/Lynx.hpp
 	Handheld/NGPC.hpp
 	Handheld/Nintendo3DS.hpp
@@ -721,6 +723,9 @@ IF(ZLIB_FOUND)
 	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE ${ZLIB_LIBRARIES})
 	TARGET_INCLUDE_DIRECTORIES(${PROJECT_NAME} PUBLIC ${ZLIB_INCLUDE_DIRS})
 	TARGET_COMPILE_DEFINITIONS(${PROJECT_NAME} PRIVATE ${ZLIB_DEFINITIONS})
+
+	# MiniZip (used by J2ME)
+	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE minizip)
 ELSE(ZLIB_FOUND)
 	MESSAGE(FATAL_ERROR "ZLIB_LIBRARIES has not been set by CheckZLIB.cmake.")
 ENDIF(ZLIB_FOUND)
