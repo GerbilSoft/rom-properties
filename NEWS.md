@@ -2,6 +2,11 @@
 
 ## v2.5 (released 2024/??/??)
 
+* New parsers:
+  * J2ME: Parser for Java 2 Micro Edition .jar packages. This currently
+    only supports J2ME packages; other .jar files will be ignored.
+    Android packages (.apk) are also not currently supported.
+
 * New parser features:
   * WiiUPackage: Add support for extracted Wii U packages.
     * Fixes #430: Add support for extracted WiiU games
