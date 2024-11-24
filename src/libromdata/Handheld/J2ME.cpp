@@ -24,9 +24,9 @@ using namespace LibRpTexture;
 
 // C++ STL classes
 using std::array;
+using std::map;
 using std::string;
 using std::unique_ptr;
-using std::unordered_map;
 using std::vector;
 
 // Uninitialized vector class
@@ -112,14 +112,8 @@ public:
 	// Map of MANIFEST.MF
 	// - Key: manifest_tag_t
 	// - Value: std::string
-	// NOTE: gcc-6.1 added support for using enums as keys for unordered_map.
-	// Older gcc requires uint8_t instead.
-	// References:
-	// - https://stackoverflow.com/questions/18837857/cant-use-enum-class-as-unordered-map-key
-	// - https://github.com/dropbox/djinni/issues/213
-	// - https://gcc.gnu.org/bugzilla/show_bug.cgi?id=60970
-	typedef unordered_map<uint8_t, string> map_t;
-	map_t map;
+	typedef map<manifest_tag_t, string> map_t;
+	map_t m_map;
 
 	// Maximum size for various files.
 	static constexpr size_t MANIFEST_MF_FILE_SIZE_MAX = 16384U;
@@ -144,7 +138,7 @@ public:
 	/**
 	 * Load MANIFEST.MF from this->jarFile.
 	 * this->jarFile must have already been opened.
-	 * On success, the MANIFEST.MF tags will be loaded into this->map.
+	 * On success, the MANIFEST.MF tags will be loaded into this->m_map.
 	 * @return 0 on success; negative POSIX error code on error.
 	 */
 	int loadManifestMF(void);
@@ -302,7 +296,7 @@ rp::uvector<uint8_t> J2MEPrivate::loadFileFromZip(const char *filename, size_t m
 /**
  * Load MANIFEST.MF from this->jarFile.
  * this->jarFile must have already been opened.
- * On success, the MANIFEST.MF tags will be loaded into this->map.
+ * On success, the MANIFEST.MF tags will be loaded into this->m_map.
  * @return 0 on success; negative POSIX error code on error.
  */
 int J2MEPrivate::loadManifestMF(void)
@@ -321,7 +315,7 @@ int J2MEPrivate::loadManifestMF(void)
 
 	// Parse the MANIFEST.MF tags.
 	// NOTE: May have LF or CRLF line endings.
-	map.clear();
+	m_map.clear();
 	char *p = reinterpret_cast<char*>(manifest_buf.data());
 	char *line_saveptr = nullptr;
 	for (char *line = strtok_r(p, "\n", &line_saveptr); line != nullptr;
@@ -376,7 +370,7 @@ int J2MEPrivate::loadManifestMF(void)
 			s_value.resize(size_minus_one);
 		}
 
-		auto status = map.emplace(static_cast<uint8_t>(tag), std::move(s_value));
+		auto status = m_map.emplace(tag, std::move(s_value));
 		// FIXME: Some .jar files have duplicate tags in MANIFEST.MF:
 		// - Bejeweled.jar
 		// - Bejeweled__v600_.jar
@@ -385,12 +379,12 @@ int J2MEPrivate::loadManifestMF(void)
 		// - Space Warrior.jar
 		/*if (!status.second) {
 			// Failed to emplace the value. (Duplicate tag?)
-			map.clear();
+			m_map.clear();
 			return -EIO;
 		}*/
 	}
 
-	return (unlikely(map.empty()) ? -ENOENT : 0);
+	return (unlikely(m_map.empty()) ? -ENOENT : 0);
 }
 
 /**
@@ -399,8 +393,8 @@ int J2MEPrivate::loadManifestMF(void)
  */
 string J2MEPrivate::getIconFilenameFromMIDlet1(void)
 {
-	auto iter = map.find(static_cast<uint8_t>(manifest_tag_t::MIDlet_1));
-	if (iter == map.end()) {
+	auto iter = m_map.find(manifest_tag_t::MIDlet_1);
+	if (iter == m_map.end()) {
 		// "MIDlet-1 was not found.
 		return {};
 	}
@@ -470,8 +464,8 @@ rp_image_const_ptr J2MEPrivate::loadIcon(void)
 
 	// Get the icon filename.
 	// First, try "MIDlet-Icon".
-	auto iter = map.find(static_cast<uint8_t>(manifest_tag_t::MIDlet_Icon));
-	if (iter != map.end()) {
+	auto iter = m_map.find(manifest_tag_t::MIDlet_Icon);
+	if (iter != m_map.end()) {
 		// NOTE: The icon filename might have a leading slash.
 		const char *icon_filename = iter->second.c_str();
 
@@ -597,8 +591,8 @@ J2ME::J2ME(const IRpFilePtr &file)
 		J2MEPrivate::manifest_tag_t::MicroEdition_Profile,
 	}};
 	for (J2MEPrivate::manifest_tag_t tag : required_tags) {
-		auto iter = d->map.find(static_cast<uint8_t>(tag));
-		if (iter == d->map.end()) {
+		auto iter = d->m_map.find(tag);
+		if (iter == d->m_map.end()) {
 			// Required tag is missing.
 			unzClose(d->jarFile);
 			d->jarFile = nullptr;
@@ -769,15 +763,11 @@ int J2ME::loadFieldData(void)
 
 	// Show the raw MANIFEST.MF tag data.
 	// TODO: Fancier names and/or leave some out?
-	// NOTE: Using manifest_tag_t ordering.
-	for (uint8_t i = 1; i < static_cast<uint8_t>(J2MEPrivate::manifest_tag_t::Manifest_Tag_Max); i++) {
-		auto iter = d->map.find(i);
-		if (iter == d->map.end()) {
-			continue;
-		}
-		assert(iter->first < J2MEPrivate::manifest_tag_names.size());
+	const auto iter_end = d->m_map.end();
+	for (auto iter = d->m_map.cbegin(); iter != iter_end; ++iter) {
+		assert(static_cast<uint8_t>(iter->first) < J2MEPrivate::manifest_tag_names.size());
 
-		d->fields.addField_string(J2MEPrivate::manifest_tag_names[iter->first], iter->second);
+		d->fields.addField_string(J2MEPrivate::manifest_tag_names[static_cast<uint8_t>(iter->first)], iter->second);
 	}
 
 	return static_cast<int>(d->fields.count());
