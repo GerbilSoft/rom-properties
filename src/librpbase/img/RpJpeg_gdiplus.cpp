@@ -28,16 +28,14 @@ namespace Gdiplus {
 }
 #include <gdiplus.h>
 
-namespace LibRpBase {
-
-/** RpJpeg **/
+namespace LibRpBase { namespace RpJpeg {
 
 /**
  * Load a JPEG image from an IRpFile.
  * @param file IRpFile to load from.
  * @return rp_image*, or nullptr on error.
  */
-rp_image_ptr RpJpeg::load(const IRpFilePtr &file)
+rp_image_ptr load(IRpFile *file)
 {
 	if (!file)
 		return nullptr;
@@ -59,4 +57,4 @@ rp_image_ptr RpJpeg::load(const IRpFilePtr &file)
 	return std::make_shared<rp_image>(backend);
 }
 
-}
+} }

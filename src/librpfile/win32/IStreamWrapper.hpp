@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpfile)                        *
  * IStreamWrapper.hpp: IStream wrapper for IRpFile. (Win32)                *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -24,10 +24,11 @@ class IStreamWrapper final : public LibWin32Common::ComBase<IStream>
 	public:
 		/**
 		 * Create an IStream wrapper for IRpFile.
-		 * The IRpFile is dup()'d.
-		 * @param file IRpFile.
+		 * NOTE: The original IRpFile must not be deleted while this wrapper is in use!
+		 * The IRpFile ownership is *not* changed.
+		 * @param file IRpFile
 		 */
-		explicit IStreamWrapper(const LibRpFile::IRpFilePtr &file)
+		explicit IStreamWrapper(LibRpFile::IRpFile *file)
 			: m_file(file)
 		{}
 
@@ -38,19 +39,19 @@ class IStreamWrapper final : public LibWin32Common::ComBase<IStream>
 	public:
 		/**
 		 * Get the IRpFile.
-		 * NOTE: The IRpFile is still owned by this object.
-		 * @return IRpFile.
+		 * NOTE: The IRpFile is *not* owned by this object.
+		 * @return IRpFile
 		 */
 		inline IRpFile *file(void) const
 		{
-			return m_file.get();
+			return m_file;
 		}
 
 		/**
 		 * Set the IRpFile.
-		 * @param file New IRpFile.
+		 * @param file New IRpFile (must *not* be deleted while in use)
 		 */
-		void setFile(const LibRpFile::IRpFilePtr &file)
+		void setFile(LibRpFile::IRpFile *file)
 		{
 			m_file = file;
 		}
@@ -75,7 +76,7 @@ class IStreamWrapper final : public LibWin32Common::ComBase<IStream>
 		IFACEMETHODIMP Clone(IStream **ppstm) final;
 
 	protected:
-		LibRpFile::IRpFilePtr m_file;
+		IRpFile *m_file;
 };
 
 }
