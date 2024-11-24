@@ -29,7 +29,17 @@ namespace RpPng {
  * @return rp_image*, or nullptr on error
  */
 RP_LIBROMDATA_PUBLIC
-LibRpTexture::rp_image_ptr load(const LibRpFile::IRpFilePtr &file);
+LibRpTexture::rp_image_ptr load(LibRpFile::IRpFile *file);
+
+/**
+ * Load a PNG image from an IRpFile.
+ * @param file IRpFile to load from
+ * @return rp_image*, or nullptr on error
+ */
+static inline LibRpTexture::rp_image_ptr load(const LibRpFile::IRpFilePtr &file)
+{
+	return load(file.get());
+}
 
 /**
  * Save an image in PNG format to an IRpFile.

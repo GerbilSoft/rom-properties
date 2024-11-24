@@ -471,7 +471,7 @@ static rp_image_ptr loadPng(png_structp png_ptr, png_infop info_ptr)
  * @param file IRpFile to load from
  * @return rp_image*, or nullptr on error
  */
-rp_image_ptr load(const IRpFilePtr &file)
+rp_image_ptr load(IRpFile *file)
 {
 	if (!file)
 		return nullptr;
@@ -512,7 +512,7 @@ rp_image_ptr load(const IRpFilePtr &file)
 #endif /* PNG_WARNINGS_SUPPORTED */
 
 	// Initialize the custom I/O handler for IRpFile.
-	png_set_read_fn(png_ptr, file.get(), png_io_IRpFile_read);
+	png_set_read_fn(png_ptr, file, png_io_IRpFile_read);
 
 	// Call the actual PNG image reading function.
 	const rp_image_ptr img = loadPng(png_ptr, info_ptr);
