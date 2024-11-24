@@ -10,7 +10,6 @@
 #include "config.librpbase.h"
 
 #include "RpJpeg.hpp"
-#include "RpJpeg_p.hpp"
 #include "librpfile/IRpFile.hpp"
 
 // libi18n
@@ -20,29 +19,56 @@
 using namespace LibRpFile;
 using namespace LibRpTexture;
 
-#ifdef RPJPEG_HAS_SSSE3
-#  include "librpcpuid/cpuflags_x86.h"
-#endif /* RPJPEG_HAS_SSSE3 */
-
 // C includes (C++ namespace)
 #include <csetjmp>
+#include <cstdio>	// jpeglib.h needs stdio included first
 
 #ifdef _WIN32
-// For OutputDebugStringA().
+// For OutputDebugStringA()
 #  include <windows.h>
 #endif /* _WIN32 */
 
-namespace LibRpBase {
+// libjpeg
+#include <jpeglib.h>
+#include <jerror.h>
 
-/** RpJpegPrivate **/
+// JPEGCALL might not be defined if we're using the system libjpeg.
+#ifndef JPEGCALL
+# ifdef _MSC_VER
+#  define JPEGCALL __cdecl
+# else
+#  define JPEGCALL
+# endif
+#endif /* !JPEGCALL */
 
-/** Error handling functions. **/
+#if defined(__i386__) || defined(__x86_64__) || \
+    defined(_M_IX86) || defined(_M_X64)
+# define RPJPEG_HAS_SSSE3 1
+#endif
+
+#ifdef RPJPEG_HAS_SSSE3
+#  include "librpcpuid/cpuflags_x86.h"
+#  include "RpJpeg_ssse3.hpp"
+#endif /* RPJPEG_HAS_SSSE3 */
+
+namespace LibRpBase { namespace RpJpeg {
+
+namespace Private {
+
+/** Error handling functions **/
+
+// Error manager.
+// Based on libjpeg-turbo 1.5.1's read_JPEG_file(). (example.c)
+struct my_error_mgr {
+	jpeg_error_mgr pub;	// "public" fields
+	jmp_buf setjmp_buffer;	// for return to caller
+};
 
 /**
  * error_exit replacement for JPEG.
  * @param cinfo j_common_ptr
  */
-void JPEGCALL RpJpegPrivate::my_error_exit(j_common_ptr cinfo)
+void JPEGCALL my_error_exit(j_common_ptr cinfo)
 {
 	// Based on libjpeg-turbo 1.5.1's read_JPEG_file(). (example.c)
 	my_error_mgr *myerr = reinterpret_cast<my_error_mgr*>(cinfo->err);
@@ -61,7 +87,7 @@ void JPEGCALL RpJpegPrivate::my_error_exit(j_common_ptr cinfo)
  * output_message replacement for JPEG.
  * @param cinfo j_common_ptr
  */
-void JPEGCALL RpJpegPrivate::my_output_message(j_common_ptr cinfo)
+void JPEGCALL my_output_message(j_common_ptr cinfo)
 {
 	// Format the string.
 	char buffer[JMSG_LENGTH_MAX];
@@ -79,13 +105,24 @@ void JPEGCALL RpJpegPrivate::my_output_message(j_common_ptr cinfo)
 #endif /* _WIN32 */
 }
 
-/** I/O functions. **/
+/** I/O functions **/
+
+// JPEG source manager struct
+// Based on libjpeg-turbo 1.5.1's jpeg_stdio_src(). (jdatasrc.c)
+static constexpr size_t INPUT_BUF_SIZE = 4096U;
+struct MySourceMgr {
+	jpeg_source_mgr pub;
+
+	LibRpFile::IRpFile *infile;	// Source stream.
+	JOCTET *buffer;		// Start of buffer.
+	bool start_of_file;	// Have we gotten any data yet?
+};
 
 /**
  * Initialize MySourceMgr.
  * @param cinfo j_decompress_ptr
  */
-void JPEGCALL RpJpegPrivate::init_source(j_decompress_ptr cinfo)
+static void JPEGCALL init_source(j_decompress_ptr cinfo)
 {
 	MySourceMgr *const src = reinterpret_cast<MySourceMgr*>(cinfo->src);
 
@@ -100,7 +137,7 @@ void JPEGCALL RpJpegPrivate::init_source(j_decompress_ptr cinfo)
  * @param cinfo j_decompress_ptr
  * @return TRUE on success. (NOTE: 'boolean' is a JPEG typedef.)
  */
-boolean JPEGCALL RpJpegPrivate::fill_input_buffer(j_decompress_ptr cinfo)
+static boolean JPEGCALL fill_input_buffer(j_decompress_ptr cinfo)
 {
 	MySourceMgr *const src = reinterpret_cast<MySourceMgr*>(cinfo->src);
 	size_t nbytes;
@@ -131,7 +168,7 @@ boolean JPEGCALL RpJpegPrivate::fill_input_buffer(j_decompress_ptr cinfo)
  * @param cinfo j_decompress_ptr
  * @param num_bytes Number of bytes to skip.
  */
-void JPEGCALL RpJpegPrivate::skip_input_data(j_decompress_ptr cinfo, long num_bytes)
+static void JPEGCALL skip_input_data(j_decompress_ptr cinfo, long num_bytes)
 {
 	jpeg_source_mgr *const src = cinfo->src;
 
@@ -159,7 +196,7 @@ void JPEGCALL RpJpegPrivate::skip_input_data(j_decompress_ptr cinfo, long num_by
  *
  * @param cinfo j_decompress_ptr
  */
-void JPEGCALL RpJpegPrivate::term_source(j_decompress_ptr cinfo)
+static void JPEGCALL term_source(j_decompress_ptr cinfo)
 {
 	// Nothing to do here...
 	RP_UNUSED(cinfo);
@@ -170,7 +207,7 @@ void JPEGCALL RpJpegPrivate::term_source(j_decompress_ptr cinfo)
  * @param cinfo j_decompress_ptr
  * @param file IRpFile
  */
-void RpJpegPrivate::jpeg_IRpFile_src(j_decompress_ptr cinfo, IRpFile *infile)
+static void jpeg_IRpFile_src(j_decompress_ptr cinfo, IRpFile *infile)
 {
 	// Based on libjpeg-turbo 1.5.1's jpeg_stdio_src(). (jdatasrc.c)
 	if (!cinfo->src) {
@@ -200,6 +237,8 @@ void RpJpegPrivate::jpeg_IRpFile_src(j_decompress_ptr cinfo, IRpFile *infile)
 	src->pub.next_input_byte = nullptr; /* until buffer loaded */
 }
 
+} // namespace Private
+
 /** RpJpeg **/
 
 /**
@@ -207,15 +246,16 @@ void RpJpegPrivate::jpeg_IRpFile_src(j_decompress_ptr cinfo, IRpFile *infile)
  * @param file IRpFile to load from.
  * @return rp_image*, or nullptr on error.
  */
-rp_image_ptr RpJpeg::load(const IRpFilePtr &file)
+rp_image_ptr load(IRpFile *file)
 {
-	if (!file)
+	if (!file) {
 		return nullptr;
+	}
 
 	// Rewind the file.
 	file->rewind();
 
-	RpJpegPrivate::my_error_mgr jerr;
+	Private::my_error_mgr jerr;
 	jpeg_decompress_struct cinfo;
 	rp_image *img = nullptr;	// Image
 	int row_stride;			// Physical row width in output buffer
@@ -233,8 +273,8 @@ rp_image_ptr RpJpeg::load(const IRpFilePtr &file)
 
 	// Set up error handling.
 	cinfo.err = jpeg_std_error(&jerr.pub);
-	jerr.pub.error_exit = RpJpegPrivate::my_error_exit;
-	jerr.pub.output_message = RpJpegPrivate::my_output_message;
+	jerr.pub.error_exit = Private::my_error_exit;
+	jerr.pub.output_message = Private::my_output_message;
 
 	// Multi-level setjmp() so we can test for JCS_EXT_BGRA.
 	int jmperr = setjmp(jerr.setjmp_buffer);
@@ -266,7 +306,7 @@ rp_image_ptr RpJpeg::load(const IRpFilePtr &file)
 	jpeg_create_decompress(&cinfo);
 
 	/** Step 2: Specify data source. **/
-	RpJpegPrivate::jpeg_IRpFile_src(&cinfo, file.get());
+	Private::jpeg_IRpFile_src(&cinfo, file);
 
 	/** Step 3: Read file parameters with jpeg_read_header(). */
 	// Return value is not useful here since:
@@ -461,7 +501,7 @@ rp_image_ptr RpJpeg::load(const IRpFilePtr &file)
 				// conversion step.
 #ifdef RPJPEG_HAS_SSSE3
 				if (RP_CPU_HasSSSE3()) {
-					RpJpegPrivate::decodeBGRtoARGB(img, &cinfo, buffer);
+					ssse3::decodeBGRtoARGB(img, &cinfo, buffer);
 					break;
 				}
 #endif /* RPJPEG_HAS_SSSE3 */
@@ -591,4 +631,4 @@ rp_image_ptr RpJpeg::load(const IRpFilePtr &file)
 	return rp_image_ptr(img);
 }
 
-}
+} }

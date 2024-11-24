@@ -1,24 +1,30 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (librpbase)                        *
- * RpJpeg.cpp: JPEG image handler.                                         *
+ * RpJpeg_ssse3.cpp: JPEG image handler.                                   *
  * SSSE3-optimized version.                                                *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "stdafx.h"
-#include "RpJpeg_p.hpp"
 
 // librptexture
+#include "librptexture/img/rp_image.hpp"
 using LibRpTexture::rp_image;
 using LibRpTexture::argb32_t;
 
-// SSSE3 intrinsics.
+// C includes (C++ namespace)
+#include <cstdio>	// jpeglib.h needs stdio included first
+
+// libjpeg
+#include <jpeglib.h>
+
+// SSSE3 intrinsics
 #include <emmintrin.h>
 #include <tmmintrin.h>
 
-namespace LibRpBase {
+namespace LibRpBase { namespace RpJpeg { namespace ssse3 {
 
 /**
  * Decode a 24-bit BGR JPEG to 32-bit ARGB.
@@ -28,7 +34,7 @@ namespace LibRpBase {
  * @param cinfo		[in/out] JPEG decompression struct.
  * @param buffer 	[in/out] Line buffer. (Must be 16-byte aligned!)
  */
-void RpJpegPrivate::decodeBGRtoARGB(rp_image *RESTRICT img, jpeg_decompress_struct *RESTRICT cinfo, JSAMPARRAY buffer)
+void decodeBGRtoARGB(rp_image *RESTRICT img, jpeg_decompress_struct *RESTRICT cinfo, JSAMPARRAY buffer)
 {
 	ASSERT_ALIGNMENT(16, buffer);
 	assert(img->format() == rp_image::Format::ARGB32);
@@ -81,4 +87,4 @@ void RpJpegPrivate::decodeBGRtoARGB(rp_image *RESTRICT img, jpeg_decompress_stru
 	}
 }
 
-}
+} } }

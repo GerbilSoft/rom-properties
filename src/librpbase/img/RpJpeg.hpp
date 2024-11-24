@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * RpJpeg.hpp: JPEG image handler.                                         *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -16,22 +16,23 @@
 
 namespace LibRpBase {
 
-class RpJpeg
+namespace RpJpeg {
+
+/**
+ * Load a JPEG image from an IRpFile.
+ * @param file IRpFile to load from.
+ * @return rp_image*, or nullptr on error.
+ */
+LibRpTexture::rp_image_ptr load(LibRpFile::IRpFile *file);
+
+/**
+ * Load a JPEG image from an IRpFile.
+ * @param file IRpFile to load from.
+ * @return rp_image*, or nullptr on error.
+ */
+static inline LibRpTexture::rp_image_ptr load(const LibRpFile::IRpFilePtr &file)
 {
-	public:
-		// Static class
-		RpJpeg() = delete;
-		~RpJpeg() = delete;
-	private:
-		RP_DISABLE_COPY(RpJpeg)
-
-	public:
-		/**
-		 * Load a JPEG image from an IRpFile.
-		 * @param file IRpFile to load from.
-		 * @return rp_image*, or nullptr on error.
-		 */
-		static LibRpTexture::rp_image_ptr load(const LibRpFile::IRpFilePtr &file);
-};
-
+	return load(file.get());
 }
+
+} }
