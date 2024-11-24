@@ -138,15 +138,17 @@ HBITMAP ISpriteSheet::getIcon(int col, int row, bool gray, UINT dpi) const
 			return nullptr;
 		}
 
-		shared_ptr<RpFile_windres> f_res = std::make_shared<RpFile_windres>(
+		RpFile_windres *const f_res = std::make_shared<RpFile_windres>(
 			HINST_THISCOMPONENT, resourceID, MAKEINTRESOURCE(RT_PNG));
 		assert(f_res->isOpen());
 		if (!f_res->isOpen()) {
 			// Unable to open the resource.
+			delete f_res;
 			return nullptr;
 		}
 
 		imgSpriteSheet = RpPng::load(f_res);
+		delete f_res;
 		assert((bool)imgSpriteSheet);
 		if (!imgSpriteSheet) {
 			// Unable to load the resource as a PNG image.
