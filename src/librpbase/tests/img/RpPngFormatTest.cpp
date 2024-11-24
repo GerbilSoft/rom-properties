@@ -878,7 +878,7 @@ TEST_P(RpPngFormatTest, loadTest)
 	EXPECT_EQ(mode.ihdr.interlace_method,	ihdr.interlace_method);
 
 	// Create a MemFile.
-	shared_ptr<MemFile> png_mem_file = std::make_shared<MemFile>(m_png_buf.data(), m_png_buf.size());
+	MemFilePtr png_mem_file = std::make_shared<MemFile>(m_png_buf.data(), m_png_buf.size());
 	ASSERT_TRUE(png_mem_file->isOpen());
 
 	// Load the PNG image from memory.

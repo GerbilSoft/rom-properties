@@ -180,7 +180,7 @@ class ImageDecoderTest : public ::testing::TestWithParam<ImageDecoderTest_mode>
 		// Placed here so it can be freed by TearDown() if necessary.
 		// The underlying MemFile is here as well, since we can't
 		// delete it before deleting the RomData object.
-		shared_ptr<MemFile> m_f_dds;
+		MemFilePtr m_f_dds;
 		RomDataPtr m_romData;
 
 	public:
@@ -404,7 +404,7 @@ void ImageDecoderTest::decodeTest_internal(void)
 	const ImageDecoderTest_mode &mode = GetParam();
 
 	// Load the PNG image.
-	shared_ptr<MemFile> f_png = std::make_shared<MemFile>(m_png_buf.data(), m_png_buf.size());
+	MemFilePtr f_png = std::make_shared<MemFile>(m_png_buf.data(), m_png_buf.size());
 	ASSERT_TRUE(f_png->isOpen()) << "Could not create MemFile for the PNG image.";
 	rp_image_const_ptr img_png(RpPng::load(f_png));
 	ASSERT_NE(img_png,nullptr) << "Could not load the PNG image as rp_image.";
