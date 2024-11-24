@@ -48,7 +48,7 @@ static constexpr array<uint8_t, 4> exif_magic = {{'E','x','i','f'}};
  * @param file IRpFile to load from.
  * @return rp_image*, or nullptr on error.
  */
-rp_image_ptr load(const IRpFilePtr &file)
+rp_image_ptr load(IRpFile *file)
 {
 	file->rewind();
 
