@@ -35,6 +35,7 @@ rp_image_ptr fromGcn16(PixelFormat px_format,
  * @param pal_siz Size of palette data. [must be >= 256*2]
  * @return rp_image, or nullptr on error.
  */
+ATTR_ACCESS_SIZE(read_only, 3, 4)
 rp_image_ptr fromGcnCI8(int width, int height,
 	const uint8_t *RESTRICT img_buf, size_t img_siz,
 	const uint16_t *RESTRICT pal_buf, size_t pal_siz);

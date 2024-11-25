@@ -24,6 +24,7 @@ namespace LibRpText {
  * @param fourCC	[in] FourCC
  * @return 0 on success; negative POSIX error code on error.
  */
+ATTR_ACCESS_SIZE(write_only, 1, 2)
 int fourCCtoString(char *buf, size_t size, uint32_t fourCC);
 
 }

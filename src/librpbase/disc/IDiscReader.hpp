@@ -40,6 +40,7 @@ class NOVTABLE IDiscReader : public LibRpFile::IRpFile, public std::enable_share
 		 * @param szHeader Size of header.
 		 * @return Class-specific disc format ID (>= 0) if supported; -1 if not.
 		 */
+		ATTR_ACCESS_SIZE(read_only, 2, 3)
 		virtual int isDiscSupported(const uint8_t *pHeader, size_t szHeader) const = 0;
 
 	public:

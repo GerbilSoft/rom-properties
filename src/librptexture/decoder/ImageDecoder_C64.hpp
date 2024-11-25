@@ -19,6 +19,7 @@ namespace LibRpTexture { namespace ImageDecoder {
  * @param img_siz Size of image data [must be >= 12*21/4 (63)]
  * @return rp_image, or nullptr on error.
  */
+ATTR_ACCESS_SIZE(read_only, 1, 2)
 rp_image_ptr fromC64_MultiColor_Sprite(
 	const uint8_t *RESTRICT img_buf, size_t img_siz);
 

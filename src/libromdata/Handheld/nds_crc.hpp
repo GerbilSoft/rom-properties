@@ -25,8 +25,10 @@ extern "C" {
  * @return CRC16
  */
 #ifdef __cplusplus
+ATTR_ACCESS_SIZE(read_only, 1, 2)
 uint16_t crc16_0x8005(const uint8_t *buf, size_t size, uint16_t crc = 0xFFFFU);
 #else /* !__cplusplus */
+ATTR_ACCESS_SIZE(read_only, 1, 2)
 uint16_t crc16_0x8005(const uint8_t *buf, size_t size, uint16_t crc);
 #endif /* __cplusplus */
 

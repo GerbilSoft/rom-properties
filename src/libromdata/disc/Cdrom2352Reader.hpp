@@ -55,6 +55,7 @@ public:
 	 * @param szHeader Size of header.
 	 * @return Class-specific disc format ID (>= 0) if supported; -1 if not.
 	 */
+	ATTR_ACCESS_SIZE(read_only, 1, 2)
 	static int isDiscSupported_static(const uint8_t *pHeader, size_t szHeader);
 
 	/**
@@ -63,6 +64,7 @@ public:
 	 * @param szHeader Size of header.
 	 * @return Class-specific disc format ID (>= 0) if supported; -1 if not.
 	 */
+	ATTR_ACCESS_SIZE(read_only, 2, 3)
 	int isDiscSupported(const uint8_t *pHeader, size_t szHeader) const final;
 
 protected:

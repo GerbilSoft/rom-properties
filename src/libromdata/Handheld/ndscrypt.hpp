@@ -41,6 +41,7 @@ int ndscrypt_load_blowfish_bin(BlowfishKey bfkey);
  * @param bfkey Blowfish key.
  * @return 0 on success; non-zero on error.
  */
+ATTR_ACCESS_SIZE(read_write, 1, 2)
 int ndscrypt_encrypt_secure_area(uint8_t *pRom, size_t len, BlowfishKey bfkey);
 
 /**
@@ -50,6 +51,7 @@ int ndscrypt_encrypt_secure_area(uint8_t *pRom, size_t len, BlowfishKey bfkey);
  * @param bfkey Blowfish key.
  * @return 0 on success; non-zero on error.
  */
+ATTR_ACCESS_SIZE(read_write, 1, 2)
 int ndscrypt_decrypt_secure_area(uint8_t *pRom, size_t len, BlowfishKey bfkey);
 
 #ifdef __cplusplus

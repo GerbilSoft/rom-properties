@@ -107,6 +107,7 @@ protected:
 	 * @param size		[in] Amount of data to read.
 	 * @return Number of bytes read, or 0 on error.
 	 */
+	ATTR_ACCESS_SIZE(write_only, 3, 4)
 	size_t readFromROM(uint32_t offset, void *ptr, size_t size);
 
 	/**
