@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * vk_defs.h: Vulkan definitions.                                          *
  *                                                                         *
- * Copyright (c) 2019-2023 by David Korth.                                 *
+ * Copyright (c) 2019-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -271,7 +271,10 @@ typedef enum VkFormat {
 	VK_FORMAT_PVRTC2_2BPP_SRGB_BLOCK_IMG = 1000054006,
 	VK_FORMAT_PVRTC2_4BPP_SRGB_BLOCK_IMG = 1000054007,
 
-	VK_FORMAT_R16G16_S10_5_NV = 1000464000,
+	VK_FORMAT_R16G16_SFIXED5_NV = 1000464000,
+	VK_FORMAT_R16G16_S10_5_NV = VK_FORMAT_R16G16_SFIXED5_NV,
+	VK_FORMAT_A1B5G5R5_UNORM_PACK16_KHR = 1000470000,
+	VK_FORMAT_A8_UNORM_KHR = 1000470001,
 
 	// FIXME: This fails on CodeQL (gcc-9.4.0) for some reason.
 	// We don't actually use these definitions right now anyway,

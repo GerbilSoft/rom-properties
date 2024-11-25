@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * VkEnumStrings.cpp: Vulkan string tables.                                *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -66,8 +66,12 @@ const char *lookup_vkFormat(unsigned int vkFormat)
 		tbl = vkEnum_ASTC_strtbl;
 		offset = vkEnum_ASTC_offtbl[vkFormat - VK_FORMAT_ASTC_4x4_SFLOAT_BLOCK];
 	}
-	else if (vkFormat == VK_FORMAT_R16G16_S10_5_NV) {
-		return "R16G16_S10_5_NV";
+	else if (vkFormat == VK_FORMAT_R16G16_SFIXED5_NV) {
+		return "R16G16_SFIXED5_NV";
+	} else if (vkFormat == VK_FORMAT_A1B5G5R5_UNORM_PACK16_KHR) {
+		return "A1B5G5R5_UNORM_PACK16_KHR";
+	} else if (vkFormat == VK_FORMAT_A8_UNORM_KHR) {
+		return "A8_UNORM_KHR";
 	}
 
 	if (!tbl || offset == 0) {
