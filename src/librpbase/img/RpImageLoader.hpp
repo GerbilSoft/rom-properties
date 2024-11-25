@@ -29,7 +29,7 @@ LibRpTexture::rp_image_ptr load(LibRpFile::IRpFile *file);
  * @param file IRpFile to load from.
  * @return rp_image*, or nullptr on error.
  */
-LibRpTexture::rp_image_ptr load(const LibRpFile::IRpFilePtr &file)
+static inline LibRpTexture::rp_image_ptr load(const LibRpFile::IRpFilePtr &file)
 {
 	return load(file.get());
 }
