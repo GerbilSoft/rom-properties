@@ -35,8 +35,8 @@ private:
 
 public:
 	/** RomDataInfo **/
-	static const char *const exts[];
-	static const char *const mimeTypes[];
+	static const array<const char*, 1+1> exts;
+	static const array<const char*, 1+1> mimeTypes;
 	static const RomDataInfo romDataInfo;
 
 public:
@@ -59,20 +59,20 @@ ROMDATA_IMPL(WiiTMD)
 /** WiiTMDPrivate **/
 
 /* RomDataInfo */
-const char *const WiiTMDPrivate::exts[] = {
+const array<const char*, 1+1> WiiTMDPrivate::exts = {{
 	".tmd",
 
 	nullptr
-};
-const char *const WiiTMDPrivate::mimeTypes[] = {
+}};
+const array<const char*, 1+1> WiiTMDPrivate::mimeTypes = {{
 	// Unofficial MIME types.
 	// TODO: Get these upstreamed on FreeDesktop.org.
 	"application/x-nintendo-tmd",
 
 	nullptr
-};
+}};
 const RomDataInfo WiiTMDPrivate::romDataInfo = {
-	"WiiTMD", exts, mimeTypes
+	"WiiTMD", exts.data(), mimeTypes.data()
 };
 
 WiiTMDPrivate::WiiTMDPrivate(const IRpFilePtr &file)
@@ -187,7 +187,7 @@ int WiiTMD::isRomSupported_static(const DetectInfo *info)
 
 	// NOTE: File extension must match.
 	bool ok = false;
-	for (const char *const *ext = WiiTMDPrivate::exts;
+	for (const char *const *ext = WiiTMDPrivate::exts.data();
 	     *ext != nullptr; ext++)
 	{
 		if (!strcasecmp(info->ext, *ext)) {

@@ -21,6 +21,9 @@ using LibRpBase::RomFields;
 #include "img/rp_image.hpp"
 #include "decoder/ImageDecoder_S3TC.hpp"
 
+// C++ STL classes
+using std::array;
+
 namespace LibRpTexture {
 
 class ValveVTF3Private final : public FileFormatPrivate
@@ -34,8 +37,8 @@ class ValveVTF3Private final : public FileFormatPrivate
 
 	public:
 		/** TextureInfo **/
-		static const char *const exts[];
-		static const char *const mimeTypes[];
+		static const array<const char*, 1+1> exts;
+		static const array<const char*, 1+1> mimeTypes;
 		static const TextureInfo textureInfo;
 
 	public:
@@ -75,21 +78,21 @@ FILEFORMAT_IMPL(ValveVTF3)
 /** ValveVTF3Private **/
 
 /* TextureInfo */
-const char *const ValveVTF3Private::exts[] = {
+const array<const char*, 1+1> ValveVTF3Private::exts = {{
 	".vtf",
 	//".vtx",	// TODO: Some files might use the ".vtx" extension.
 
 	nullptr
-};
-const char *const ValveVTF3Private::mimeTypes[] = {
+}};
+const array<const char*, 1+1> ValveVTF3Private::mimeTypes = {{
 	// Unofficial MIME types.
 	// TODO: Get these upstreamed on FreeDesktop.org.
 	"image/x-vtf3",
 
 	nullptr
-};
+}};
 const TextureInfo ValveVTF3Private::textureInfo = {
-	exts, mimeTypes
+	exts.data(), mimeTypes.data()
 };
 
 ValveVTF3Private::ValveVTF3Private(ValveVTF3 *q, const IRpFilePtr &file)
@@ -310,4 +313,4 @@ rp_image_const_ptr ValveVTF3::image(void) const
 	return const_cast<ValveVTF3Private*>(d)->loadImage();
 }
 
-}
+} // namespace LibRpTexture

@@ -37,8 +37,8 @@ private:
 
 public:
 	/** RomDataInfo **/
-	static const char *const exts[];
-	static const char *const mimeTypes[];
+	static const array<const char*, 3+1> exts;
+	static const array<const char*, 1+1> mimeTypes;
 	static const RomDataInfo romDataInfo;
 
 public:
@@ -130,22 +130,22 @@ ROMDATA_IMPL_IMG(GameCubeSave)
 /** GameCubeSavePrivate **/
 
 /* RomDataInfo */
-const char *const GameCubeSavePrivate::exts[] = {
+const array<const char*, 3+1> GameCubeSavePrivate::exts = {{
 	".gci",	// USB Memory Adapter
 	".gcs",	// GameShark
 	".sav",	// MaxDrive (TODO: Too generic?)
 
 	nullptr
-};
-const char *const GameCubeSavePrivate::mimeTypes[] = {
+}};
+const array<const char*, 1+1> GameCubeSavePrivate::mimeTypes = {{
 	// Unofficial MIME types.
 	// TODO: Get these upstreamed on FreeDesktop.org.
 	"application/x-gamecube-save",
 
 	nullptr
-};
+}};
 const RomDataInfo GameCubeSavePrivate::romDataInfo = {
-	"GameCubeSave", exts, mimeTypes
+	"GameCubeSave", exts.data(), mimeTypes.data()
 };
 
 GameCubeSavePrivate::GameCubeSavePrivate(const IRpFilePtr &file)

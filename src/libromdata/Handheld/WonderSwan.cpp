@@ -34,8 +34,8 @@ private:
 
 public:
 	/** RomDataInfo **/
-	static const char *const exts[];
-	static const char *const mimeTypes[];
+	static const array<const char*, 3+1> exts;
+	static const array<const char*, 3+1> mimeTypes;
 	static const RomDataInfo romDataInfo;
 
 public:
@@ -68,7 +68,7 @@ ROMDATA_IMPL(WonderSwan)
 /** WonderSwanPrivate **/
 
 /* RomDataInfo */
-const char *const WonderSwanPrivate::exts[] = {
+const array<const char*, 3+1> WonderSwanPrivate::exts = {{
 	// NOTE: These extensions may cause conflicts on
 	// Windows if fallback handling isn't working.
 
@@ -77,8 +77,8 @@ const char *const WonderSwanPrivate::exts[] = {
 	".pc2",	// Pocket Challenge V2
 
 	nullptr
-};
-const char *const WonderSwanPrivate::mimeTypes[] = {
+}};
+const array<const char*, 3+1> WonderSwanPrivate::mimeTypes = {{
 	// NOTE: Ordering matches RomType.
 
 	// Unofficial MIME types from FreeDesktop.org.
@@ -90,9 +90,9 @@ const char *const WonderSwanPrivate::mimeTypes[] = {
 	"application/x-pocket-challenge-v2-rom",
 
 	nullptr
-};
+}};
 const RomDataInfo WonderSwanPrivate::romDataInfo = {
-	"WonderSwan", exts, mimeTypes
+	"WonderSwan", exts.data(), mimeTypes.data()
 };
 
 WonderSwanPrivate::WonderSwanPrivate(const IRpFilePtr &file)

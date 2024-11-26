@@ -51,8 +51,8 @@ private:
 
 public:
 	/** RomDataInfo **/
-	static const char *const exts[];
-	static const char *const mimeTypes[];
+	static const array<const char*, 1+1> exts;
+	static const array<const char*, 3+1> mimeTypes;
 	static const RomDataInfo romDataInfo;
 
 public:
@@ -94,12 +94,12 @@ ROMDATA_IMPL(PalmOS)
 /** PalmOSPrivate **/
 
 /* RomDataInfo */
-const char *const PalmOSPrivate::exts[] = {
+const array<const char*, 1+1> PalmOSPrivate::exts = {{
 	".prc",
 
 	nullptr
-};
-const char *const PalmOSPrivate::mimeTypes[] = {
+}};
+const array<const char*, 3+1> PalmOSPrivate::mimeTypes = {{
 	// Vendor-specific MIME types from FreeDesktop.org.
 	"application/vnd.palm",
 
@@ -109,9 +109,9 @@ const char *const PalmOSPrivate::mimeTypes[] = {
 	"application/x-mobipocket-ebook",	// May show up on some systems, so reference it here.
 
 	nullptr
-};
+}};
 const RomDataInfo PalmOSPrivate::romDataInfo = {
-	"PalmOS", exts, mimeTypes
+	"PalmOS", exts.data(), mimeTypes.data()
 };
 
 PalmOSPrivate::PalmOSPrivate(const IRpFilePtr &file)
@@ -458,7 +458,7 @@ int PalmOS::isRomSupported_static(const DetectInfo *info)
 
 	// NOTE: File extension must match, and the type field must be non-zero.
 	bool ok = false;
-	for (const char *const *ext = PalmOSPrivate::exts;
+	for (const char *const *ext = PalmOSPrivate::exts.data();
 	     *ext != nullptr; ext++)
 	{
 		if (!strcasecmp(info->ext, *ext)) {

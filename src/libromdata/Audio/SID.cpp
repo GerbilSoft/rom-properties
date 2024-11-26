@@ -32,8 +32,8 @@ private:
 
 public:
 	/** RomDataInfo **/
-	static const char *const exts[];
-	static const char *const mimeTypes[];
+	static const array<const char*, 2+1> exts;
+	static const array<const char*, 1+1> mimeTypes;
 	static const RomDataInfo romDataInfo;
 
 public:
@@ -47,19 +47,19 @@ ROMDATA_IMPL(SID)
 /** SIDPrivate **/
 
 /* RomDataInfo */
-const char *const SIDPrivate::exts[] = {
+const array<const char*, 2+1> SIDPrivate::exts = {{
 	".sid", ".psid",
 
 	nullptr
-};
-const char *const SIDPrivate::mimeTypes[] = {
+}};
+const array<const char*, 1+1> SIDPrivate::mimeTypes = {{
 	// Official MIME types.
 	"audio/prs.sid",
 
 	nullptr
-};
+}};
 const RomDataInfo SIDPrivate::romDataInfo = {
-	"SID", exts, mimeTypes
+	"SID", exts.data(), mimeTypes.data()
 };
 
 SIDPrivate::SIDPrivate(const IRpFilePtr &file)

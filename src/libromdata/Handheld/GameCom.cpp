@@ -35,8 +35,8 @@ private:
 
 public:
 	/** RomDataInfo **/
-	static const char *const exts[];
-	static const char *const mimeTypes[];
+	static const array<const char*, 2+1> exts;
+	static const array<const char*, 1+1> mimeTypes;
 	static const RomDataInfo romDataInfo;
 
 public:
@@ -86,21 +86,21 @@ ROMDATA_IMPL(GameCom)
 /** GameComPrivate **/
 
 /* RomDataInfo */
-const char *const GameComPrivate::exts[] = {
+const array<const char*, 2+1> GameComPrivate::exts = {{
 	".bin",	// Most common (only one supported by the official emulator)
 	".tgc",	// Less common
 
 	nullptr
-};
-const char *const GameComPrivate::mimeTypes[] = {
+}};
+const array<const char*, 1+1> GameComPrivate::mimeTypes = {{
 	// Unofficial MIME types.
 	// TODO: Get these upstreamed on FreeDesktop.org.
 	"application/x-game-com-rom",
 
 	nullptr
-};
+}};
 const RomDataInfo GameComPrivate::romDataInfo = {
-	"GameCom", exts, mimeTypes
+	"GameCom", exts.data(), mimeTypes.data()
 };
 
 // Palette

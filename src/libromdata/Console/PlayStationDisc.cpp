@@ -50,8 +50,8 @@ private:
 
 public:
 	/** RomDataInfo **/
-	static const char *const exts[];
-	static const char *const mimeTypes[];
+	static const array<const char*, 3+1> exts;
+	static const array<const char*, 3+1> mimeTypes;
 	static const RomDataInfo romDataInfo;
 
 public:
@@ -116,15 +116,15 @@ ROMDATA_IMPL(PlayStationDisc)
 /** PlayStationDiscPrivate **/
 
 /* RomDataInfo */
-const char *const PlayStationDiscPrivate::exts[] = {
+const array<const char*, 3+1> PlayStationDiscPrivate::exts = {{
 	".iso",		// ISO
 	".bin",		// BIN/CUE
 	".img",		// CCD/IMG
 	// TODO: More?
 
 	nullptr
-};
-const char *const PlayStationDiscPrivate::mimeTypes[] = {
+}};
+const array<const char*, 3+1> PlayStationDiscPrivate::mimeTypes = {{
 	// Unofficial MIME types from FreeDesktop.org.
 	"application/x-cd-image",
 	"application/x-iso9660-image",
@@ -134,9 +134,9 @@ const char *const PlayStationDiscPrivate::mimeTypes[] = {
 
 	// TODO: PS1/PS2?
 	nullptr
-};
+}};
 const RomDataInfo PlayStationDiscPrivate::romDataInfo = {
-	"PlayStationDisc", exts, mimeTypes
+	"PlayStationDisc", exts.data(), mimeTypes.data()
 };
 
 PlayStationDiscPrivate::PlayStationDiscPrivate(const IRpFilePtr &file)

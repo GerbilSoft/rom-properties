@@ -49,8 +49,8 @@ private:
 
 public:
 	/** RomDataInfo **/
-	static const char *const exts[];
-	static const char *const mimeTypes[];
+	static const array<const char*, 1+1> exts;
+	static const array<const char*, 1+1> mimeTypes;
 	static const RomDataInfo romDataInfo;
 
 public:
@@ -111,20 +111,20 @@ ROMDATA_IMPL(Xbox_XBE)
 /** Xbox_XBE_Private **/
 
 /* RomDataInfo */
-const char *const Xbox_XBE_Private::exts[] = {
+const array<const char*, 1+1> Xbox_XBE_Private::exts = {{
 	".xbe",
 
 	nullptr
-};
-const char *const Xbox_XBE_Private::mimeTypes[] = {
+}};
+const array<const char*, 1+1> Xbox_XBE_Private::mimeTypes = {{
 	// Unofficial MIME types.
 	// TODO: Get these upstreamed on FreeDesktop.org.
 	"application/x-xbox-executable",
 
 	nullptr
-};
+}};
 const RomDataInfo Xbox_XBE_Private::romDataInfo = {
-	"Xbox_XBE", exts, mimeTypes
+	"Xbox_XBE", exts.data(), mimeTypes.data()
 };
 
 Xbox_XBE_Private::Xbox_XBE_Private(const IRpFilePtr &file)

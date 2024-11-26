@@ -32,8 +32,8 @@ private:
 
 public:
 	/** RomDataInfo **/
-	static const char *const exts[];
-	static const char *const mimeTypes[];
+	static const array<const char*, 2+1> exts;
+	static const array<const char*, 1+1> mimeTypes;
 	static const RomDataInfo romDataInfo;
 
 public:
@@ -48,7 +48,7 @@ ROMDATA_IMPL(ADX)
 /** ADXPrivate **/
 
 /* RomDataInfo */
-const char *const ADXPrivate::exts[] = {
+const array<const char*, 2+1> ADXPrivate::exts = {{
 	".adx",
 	".ahx",	// TODO: Is this used for AHX format?
 
@@ -56,16 +56,16 @@ const char *const ADXPrivate::exts[] = {
 	//".aax",
 
 	nullptr
-};
-const char *const ADXPrivate::mimeTypes[] = {
+}};
+const array<const char*, 1+1> ADXPrivate::mimeTypes = {{
 	// Unofficial MIME types.
 	// TODO: Get these upstreamed on FreeDesktop.org.
 	"audio/x-adx",
 
 	nullptr
-};
+}};
 const RomDataInfo ADXPrivate::romDataInfo = {
-	"ADX", exts, mimeTypes
+	"ADX", exts.data(), mimeTypes.data()
 };
 
 ADXPrivate::ADXPrivate(const IRpFilePtr &file)

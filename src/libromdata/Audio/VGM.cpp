@@ -34,8 +34,8 @@ private:
 
 public:
 	/** RomDataInfo **/
-	static const char *const exts[];
-	static const char *const mimeTypes[];
+	static const array<const char*, 2+1> exts;
+	static const array<const char*, 1+1> mimeTypes;
 	static const RomDataInfo romDataInfo;
 
 public:
@@ -75,21 +75,21 @@ ROMDATA_IMPL(VGM)
 /** VGMPrivate **/
 
 /* RomDataInfo */
-const char *const VGMPrivate::exts[] = {
+const array<const char*, 2+1> VGMPrivate::exts = {{
 	".vgm",
 	".vgz",	// gzipped
 	//".vgm.gz",	// NOTE: Windows doesn't support this.
 
 	nullptr
-};
-const char *const VGMPrivate::mimeTypes[] = {
+}};
+const array<const char*, 1+1> VGMPrivate::mimeTypes = {{
 	// Unofficial MIME types.
 	"audio/x-vgm",
 
 	nullptr
-};
+}};
 const RomDataInfo VGMPrivate::romDataInfo = {
-	"VGM", exts, mimeTypes
+	"VGM", exts.data(), mimeTypes.data()
 };
 
 VGMPrivate::VGMPrivate(const IRpFilePtr &file)

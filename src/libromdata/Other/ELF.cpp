@@ -53,8 +53,8 @@ private:
 
 public:
 	/** RomDataInfo **/
-	static const char *const exts[];
-	static const char *const mimeTypes[];
+	static const array<const char*, 7+1> exts;
+	static const array<const char*, 4+1> mimeTypes;
 	static const RomDataInfo romDataInfo;
 
 public:
@@ -223,7 +223,7 @@ ROMDATA_IMPL(ELF)
 /** ELFPrivate **/
 
 /* RomDataInfo */
-const char *const ELFPrivate::exts[] = {
+const array<const char*, 7+1> ELFPrivate::exts = {{
 	//".",		// FIXME: Does this work for files with no extension?
 	".elf",		// Common for Wii homebrew.
 	".so",		// Shared libraries. (TODO: Versioned .so files.)
@@ -236,8 +236,8 @@ const char *const ELFPrivate::exts[] = {
 	".rpl",		// Cafe OS library
 
 	nullptr
-};
-const char *const ELFPrivate::mimeTypes[] = {
+}};
+const array<const char*, 4+1> ELFPrivate::mimeTypes = {{
 	// Unofficial MIME types from FreeDesktop.org.
 	"application/x-object",
 	"application/x-executable",
@@ -245,9 +245,9 @@ const char *const ELFPrivate::mimeTypes[] = {
 	"application/x-core",
 
 	nullptr
-};
+}};
 const RomDataInfo ELFPrivate::romDataInfo = {
-	"ELF", exts, mimeTypes
+	"ELF", exts.data(), mimeTypes.data()
 };
 
 ELFPrivate::ELFPrivate(const IRpFilePtr &file)

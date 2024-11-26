@@ -46,8 +46,8 @@ private:
 
 public:
 	/** RomDataInfo **/
-	static const char *const exts[];
-	static const char *const mimeTypes[];
+	static const array<const char*, 1+1> exts;
+	static const array<const char*, 1+1> mimeTypes;
 	static const RomDataInfo romDataInfo;
 
 public:
@@ -109,20 +109,20 @@ ROMDATA_IMPL(SNDH)
 /** SNDHPrivate **/
 
 /* RomDataInfo */
-const char *const SNDHPrivate::exts[] = {
+const array<const char*, 1+1> SNDHPrivate::exts = {{
 	".sndh",
 
 	nullptr
-};
-const char *const SNDHPrivate::mimeTypes[] = {
+}};
+const array<const char*, 1+1> SNDHPrivate::mimeTypes = {{
 	// Unofficial MIME types.
 	// TODO: Get these upstreamed on FreeDesktop.org.
 	"audio/x-sndh",
 
 	nullptr
-};
+}};
 const RomDataInfo SNDHPrivate::romDataInfo = {
-	"SNDH", exts, mimeTypes
+	"SNDH", exts.data(), mimeTypes.data()
 };
 
 SNDHPrivate::SNDHPrivate(const IRpFilePtr &file)

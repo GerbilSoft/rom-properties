@@ -44,8 +44,8 @@ private:
 
 public:
 	/** RomDataInfo **/
-	static const char *const exts[];
-	static const char *const mimeTypes[];
+	static const array<const char*, 9+1> exts;
+	static const array<const char*, 6+1> mimeTypes;
 	static const RomDataInfo romDataInfo;
 
 public:
@@ -203,7 +203,7 @@ ROMDATA_IMPL_IMG(MegaDrive)
 /** MegaDrivePrivate **/
 
 /* RomDataInfo */
-const char *const MegaDrivePrivate::exts[] = {
+const array<const char*, 9+1> MegaDrivePrivate::exts = {{
 	".gen", ".smd",
 	".32x", ".pco",
 	".sgd",	".68k", // Official extensions
@@ -215,8 +215,8 @@ const char *const MegaDrivePrivate::exts[] = {
 	".iso",	// too generic
 
 	nullptr
-};
-const char *const MegaDrivePrivate::mimeTypes[] = {
+}};
+const array<const char*, 6+1> MegaDrivePrivate::mimeTypes = {{
 	// NOTE: Ordering matches MD_RomType's system IDs.
 
 	// Unofficial MIME types from FreeDesktop.org.
@@ -228,9 +228,9 @@ const char *const MegaDrivePrivate::mimeTypes[] = {
 	"application/x-sega-teradrive-rom",
 
 	nullptr
-};
+}};
 const RomDataInfo MegaDrivePrivate::romDataInfo = {
-	"MegaDrive", exts, mimeTypes
+	"MegaDrive", exts.data(), mimeTypes.data()
 };
 
 MegaDrivePrivate::MegaDrivePrivate(const IRpFilePtr &file)

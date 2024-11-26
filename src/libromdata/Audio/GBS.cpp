@@ -43,8 +43,8 @@ public:
 	AudioFormat audioFormat;
 
 	/** RomDataInfo **/
-	static const char *const exts[];
-	static const char *const mimeTypes[];
+	static const array<const char*, 2+1> exts;
+	static const array<const char*, 2+1> mimeTypes;
 	static const RomDataInfo romDataInfo;
 
 public:
@@ -61,13 +61,13 @@ ROMDATA_IMPL(GBS)
 /** GBSPrivate **/
 
 /* RomDataInfo */
-const char *const GBSPrivate::exts[] = {
+const array<const char*, 2+1> GBSPrivate::exts = {{
 	".gbs",
 	".gbr",
 
 	nullptr
-};
-const char *const GBSPrivate::mimeTypes[] = {
+}};
+const array<const char*, 2+1> GBSPrivate::mimeTypes = {{
 	// NOTE: Ordering matches AudioFormat.
 
 	// Unofficial MIME types.
@@ -76,9 +76,9 @@ const char *const GBSPrivate::mimeTypes[] = {
 	"audio/x-gbr",
 
 	nullptr
-};
+}};
 const RomDataInfo GBSPrivate::romDataInfo = {
-	"GBS", exts, mimeTypes
+	"GBS", exts.data(), mimeTypes.data()
 };
 
 GBSPrivate::GBSPrivate(const IRpFilePtr &file)

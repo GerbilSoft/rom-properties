@@ -21,6 +21,9 @@ using LibRpBase::RomFields;
 #include "img/rp_image.hpp"
 #include "decoder/ImageDecoder_ASTC.hpp"
 
+// C++ STL classes
+using std::array;
+
 namespace LibRpTexture {
 
 class ASTCPrivate final : public FileFormatPrivate
@@ -34,8 +37,8 @@ class ASTCPrivate final : public FileFormatPrivate
 
 	public:
 		/** TextureInfo **/
-		static const char *const exts[];
-		static const char *const mimeTypes[];
+		static const array<const char*, 2+1> exts;
+		static const array<const char*, 1+1> mimeTypes;
 		static const TextureInfo textureInfo;
 
 	public:
@@ -60,20 +63,20 @@ FILEFORMAT_IMPL(ASTC)
 /** ASTCPrivate **/
 
 /* TextureInfo */
-const char *const ASTCPrivate::exts[] = {
+const array<const char*, 2+1> ASTCPrivate::exts = {{
 	".astc",
 	".dds",	// Some .dds files are actually ASTC.
 
 	nullptr
-};
-const char *const ASTCPrivate::mimeTypes[] = {
+}};
+const array<const char*, 1+1> ASTCPrivate::mimeTypes = {{
 	// Official MIME types.
 	"image/astc",
 
 	nullptr
-};
+}};
 const TextureInfo ASTCPrivate::textureInfo = {
-	exts, mimeTypes
+	exts.data(), mimeTypes.data()
 };
 
 ASTCPrivate::ASTCPrivate(ASTC *q, const IRpFilePtr &file)
@@ -296,4 +299,4 @@ rp_image_const_ptr ASTC::image(void) const
 	return const_cast<ASTCPrivate*>(d)->loadImage();
 }
 
-}
+} // namespace LibRpTexture

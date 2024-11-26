@@ -38,8 +38,8 @@ private:
 
 public:
 	/** RomDataInfo **/
-	static const char *const exts[];
-	static const char *const mimeTypes[];
+	static const array<const char*, 1+1> exts;
+	static const array<const char*, 1+1> mimeTypes;
 	static const RomDataInfo romDataInfo;
 
 public:
@@ -75,20 +75,20 @@ ROMDATA_IMPL(WiiTicket)
 /** WiiTicketPrivate **/
 
 /* RomDataInfo */
-const char *const WiiTicketPrivate::exts[] = {
+const array<const char*, 1+1> WiiTicketPrivate::exts = {{
 	".tik",
 
 	nullptr
-};
-const char *const WiiTicketPrivate::mimeTypes[] = {
+}};
+const array<const char*, 1+1> WiiTicketPrivate::mimeTypes = {{
 	// Unofficial MIME types.
 	// TODO: Get these upstreamed on FreeDesktop.org.
 	"application/x-nintendo-ticket",
 
 	nullptr
-};
+}};
 const RomDataInfo WiiTicketPrivate::romDataInfo = {
-	"WiiTicket", exts, mimeTypes
+	"WiiTicket", exts.data(), mimeTypes.data()
 };
 
 #ifdef ENABLE_DECRYPTION
@@ -308,7 +308,7 @@ int WiiTicket::isRomSupported_static(const DetectInfo *info)
 
 	// NOTE: File extension must match.
 	bool ok = false;
-	for (const char *const *ext = WiiTicketPrivate::exts;
+	for (const char *const *ext = WiiTicketPrivate::exts.data();
 	     *ext != nullptr; ext++)
 	{
 		if (!strcasecmp(info->ext, *ext)) {

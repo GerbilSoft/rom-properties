@@ -53,8 +53,8 @@ private:
 
 public:
 	/** RomDataInfo **/
-	static const char *const exts[];
-	static const char *const mimeTypes[];
+	static const array<const char*, 10+1> exts;
+	static const array<const char*, 18+1> mimeTypes;
 	static const RomDataInfo romDataInfo;
 
 public:
@@ -202,7 +202,7 @@ ROMDATA_IMPL(CBMDOS)
 /** CBMDOSPrivate **/
 
 /* RomDataInfo */
-const char *const CBMDOSPrivate::exts[] = {
+const array<const char*, 10+1> CBMDOSPrivate::exts = {{
 	".d64",	".d41",	// Standard C1541 disk image
 	".d71",		// Standard C1571 disk image
 	".d80",		// Standard C8050 disk image
@@ -216,8 +216,8 @@ const char *const CBMDOSPrivate::exts[] = {
 	// TODO: More?
 
 	nullptr
-};
-const char *const CBMDOSPrivate::mimeTypes[] = {
+}};
+const array<const char*, 18+1> CBMDOSPrivate::mimeTypes = {{
 	// NOTE: Ordering matches the DiskType enum.
 
 	// Unofficial MIME types.
@@ -247,9 +247,9 @@ const char *const CBMDOSPrivate::mimeTypes[] = {
 	"application/x-c64-rawdisk",	// G64
 
 	nullptr
-};
+}};
 const RomDataInfo CBMDOSPrivate::romDataInfo = {
-	"CBMDOS", exts, mimeTypes
+	"CBMDOS", exts.data(), mimeTypes.data()
 };
 
 // U+FFFD: Unicode replacement character

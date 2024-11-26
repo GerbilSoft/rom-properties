@@ -47,7 +47,7 @@ ROMDATA_IMPL_IMG_SIZES(Nintendo3DS)
 /** Nintendo3DSPrivate **/
 
 /* RomDataInfo */
-const char *const Nintendo3DSPrivate::exts[] = {
+const array<const char*, 10+1> Nintendo3DSPrivate::exts = {{
 	".3dsx",	// Homebrew application.
 	".3ds",		// ROM image (NOTE: Conflicts with 3DS Max.)
 	".3dz",		// ROM image (with private header for Gateway 3DS)
@@ -60,8 +60,8 @@ const char *const Nintendo3DSPrivate::exts[] = {
 	".csu",		// CTR System Update (CCI)
 
 	nullptr
-};
-const char *const Nintendo3DSPrivate::mimeTypes[] = {
+}};
+const array<const char*, 10+1> Nintendo3DSPrivate::mimeTypes = {{
 	// NOTE: Ordering matches N3DS_RomType.
 
 	// Unofficial MIME types.
@@ -84,9 +84,9 @@ const char *const Nintendo3DSPrivate::mimeTypes[] = {
 	"application/x-ctr-cxi",
 
 	nullptr
-};
+}};
 const RomDataInfo Nintendo3DSPrivate::romDataInfo = {
-	"Nintendo3DS", exts, mimeTypes
+	"Nintendo3DS", exts.data(), mimeTypes.data()
 };
 
 Nintendo3DSPrivate::Nintendo3DSPrivate(const IRpFilePtr &file)

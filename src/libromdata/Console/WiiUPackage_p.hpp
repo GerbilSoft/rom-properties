@@ -59,8 +59,8 @@ private:
 
 public:
 	/** RomDataInfo **/
-	static const char *const exts[];
-	static const char *const mimeTypes[];
+	static const std::array<const char*, 0+1> exts;
+	static const std::array<const char*, 1+1> mimeTypes;
 	static const LibRpBase::RomDataInfo romDataInfo;
 
 public:
@@ -206,4 +206,4 @@ public:
 #endif /* ENABLE_XML */
 };
 
-}
+} // namespace LibRomData

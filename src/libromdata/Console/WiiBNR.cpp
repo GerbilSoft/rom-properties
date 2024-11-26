@@ -38,8 +38,8 @@ private:
 
 public:
 	/** RomDataInfo **/
-	static const char *const exts[];
-	static const char *const mimeTypes[];
+	static const array<const char*, 1+1> exts;
+	static const array<const char*, 1+1> mimeTypes;
 	static const RomDataInfo romDataInfo;
 
 public:
@@ -59,20 +59,20 @@ ROMDATA_IMPL(WiiBNR)
 /* RomDataInfo */
 // NOTE: This will be handled using the same
 // settings as GameCube.
-const char *const WiiBNRPrivate::exts[] = {
+const array<const char*, 1+1> WiiBNRPrivate::exts = {{
 	".bnr",
 
 	nullptr
-};
-const char *const WiiBNRPrivate::mimeTypes[] = {
+}};
+const array<const char*, 1+1> WiiBNRPrivate::mimeTypes = {{
 	// Unofficial MIME types.
 	// TODO: Get these upstreamed on FreeDesktop.org.
 	"application/x-wii-bnr",	// .bnr
 
 	nullptr
-};
+}};
 const RomDataInfo WiiBNRPrivate::romDataInfo = {
-	"GameCube", exts, mimeTypes
+	"GameCube", exts.data(), mimeTypes.data()
 };
 
 WiiBNRPrivate::WiiBNRPrivate(const IRpFilePtr &file, uint32_t gcnRegion, char id4_region)

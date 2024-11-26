@@ -37,8 +37,8 @@ private:
 
 public:
 	/** RomDataInfo **/
-	static const char *const exts[];
-	static const char *const mimeTypes[];
+	static const std::array<const char*, 4+1> exts;
+	static const std::array<const char*, 3+1> mimeTypes;
 	static const LibRpBase::RomDataInfo romDataInfo;
 
 public:
@@ -213,4 +213,4 @@ public:
 	static LibRpBase::RomFields::ListData_t *getDSiFlagsStringVector(void);
 };
 
-}
+} // namespace LibRomData

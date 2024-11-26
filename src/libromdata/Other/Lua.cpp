@@ -28,8 +28,8 @@ public:
 
 public:
 	/** RomDataInfo **/
-	static const char *const exts[];
-	static const char *const mimeTypes[];
+	static const array<const char*, 2+1> exts;
+	static const array<const char*, 1+1> mimeTypes;
 	static const RomDataInfo romDataInfo;
 
 private:
@@ -170,7 +170,7 @@ ROMDATA_IMPL(Lua)
 /** LuaPrivate **/
 
 /* RomDataInfo */
-const char *const LuaPrivate::exts[] = {
+const array<const char*, 2+1> LuaPrivate::exts = {{
 	// NOTE: These extensions may cause conflicts on
 	// Windows if fallback handling isn't working.
 	".lub", // Lua binary
@@ -178,15 +178,16 @@ const char *const LuaPrivate::exts[] = {
 
 	// TODO: Others?
 	nullptr
-};
-const char *const LuaPrivate::mimeTypes[] = {
+}};
+const array<const char*, 1+1> LuaPrivate::mimeTypes = {{
 	// Unofficial MIME types from FreeDesktop.org.
 	// FIXME: Source MIME type is "text/x-lua"; using "application/x-lua" for binary.
 	"application/x-lua",
+
 	nullptr
-};
+}};
 const RomDataInfo LuaPrivate::romDataInfo = {
-	"Lua", exts, mimeTypes
+	"Lua", exts.data(), mimeTypes.data()
 };
 
 LuaPrivate::LuaPrivate(const IRpFilePtr &file)

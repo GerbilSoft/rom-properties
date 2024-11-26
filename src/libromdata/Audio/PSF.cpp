@@ -36,8 +36,8 @@ private:
 
 public:
 	/** RomDataInfo **/
-	static const char *const exts[];
-	static const char *const mimeTypes[];
+	static const array<const char*, (9*2)+1> exts;
+	static const array<const char*, 2+1> mimeTypes;
 	static const RomDataInfo romDataInfo;
 
 public:
@@ -80,7 +80,7 @@ ROMDATA_IMPL(PSF)
 /** PSFPrivate **/
 
 /* RomDataInfo */
-const char *const PSFPrivate::exts[] = {
+const array<const char*, (9*2)+1> PSFPrivate::exts = {{
 	// NOTE: The .*lib files are not listed, since they
 	// contain samples, not songs.
 
@@ -98,16 +98,16 @@ const char *const PSFPrivate::exts[] = {
 	".qsf", ".miniqsf",
 
 	nullptr
-};
-const char *const PSFPrivate::mimeTypes[] = {
+}};
+const array<const char*, 2+1> PSFPrivate::mimeTypes = {{
 	// Unofficial MIME types from FreeDesktop.org.
 	"audio/x-psf",
 	"audio/x-minipsf",
 
 	nullptr
-};
+}};
 const RomDataInfo PSFPrivate::romDataInfo = {
-	"PSF", exts, mimeTypes
+	"PSF", exts.data(), mimeTypes.data()
 };
 
 // PSF types

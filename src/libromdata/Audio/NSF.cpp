@@ -33,8 +33,8 @@ private:
 
 public:
 	/** RomDataInfo **/
-	static const char *const exts[];
-	static const char *const mimeTypes[];
+	static const array<const char*, 1+1> exts;
+	static const array<const char*, 1+1> mimeTypes;
 	static const RomDataInfo romDataInfo;
 
 public:
@@ -48,19 +48,19 @@ ROMDATA_IMPL(NSF)
 /** NSFPrivate **/
 
 /* RomDataInfo */
-const char *const NSFPrivate::exts[] = {
+const array<const char*, 1+1> NSFPrivate::exts = {{
 	".nsf",
 
 	nullptr
-};
-const char *const NSFPrivate::mimeTypes[] = {
+}};
+const array<const char*, 1+1> NSFPrivate::mimeTypes = {{
 	// Unofficial MIME types.
 	"audio/x-nsf",
 
 	nullptr
-};
+}};
 const RomDataInfo NSFPrivate::romDataInfo = {
-	"NSF", exts, mimeTypes
+	"NSF", exts.data(), mimeTypes.data()
 };
 
 NSFPrivate::NSFPrivate(const IRpFilePtr &file)

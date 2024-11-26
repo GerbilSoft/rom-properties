@@ -36,8 +36,8 @@ private:
 
 public:
 	/** RomDataInfo **/
-	static const char *const exts[];
-	static const char *const mimeTypes[];
+	static const array<const char*, 2+1> exts;
+	static const array<const char*, 1+1> mimeTypes;
 	static const RomDataInfo romDataInfo;
 
 public:
@@ -76,22 +76,22 @@ ROMDATA_IMPL_IMG(WiiWIBN)
 /* RomDataInfo */
 // NOTE: This will be handled using the same
 // settings as WiiSave.
-const char *const WiiWIBNPrivate::exts[] = {
+const array<const char*, 2+1> WiiWIBNPrivate::exts = {{
 	// Save banner is usually "banner.bin" in the save directory.
 	".bin",
 	".wibn",	// Custom
 
 	nullptr
-};
-const char *const WiiWIBNPrivate::mimeTypes[] = {
+}};
+const array<const char*, 1+1> WiiWIBNPrivate::mimeTypes = {{
 	// Unofficial MIME types.
 	// TODO: Get these upstreamed on FreeDesktop.org.
 	"application/x-wii-wibn",	// .wibn
 
 	nullptr
-};
+}};
 const RomDataInfo WiiWIBNPrivate::romDataInfo = {
-	"WiiSave", exts, mimeTypes
+	"WiiSave", exts.data(), mimeTypes.data()
 };
 
 WiiWIBNPrivate::WiiWIBNPrivate(const IRpFilePtr &file)

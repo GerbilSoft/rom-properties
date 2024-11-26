@@ -39,8 +39,8 @@ private:
 
 public:
 	/** RomDataInfo **/
-	static const char *const exts[];
-	static const char *const mimeTypes[];
+	static const array<const char*, 5+1> exts;
+	static const array<const char*, 3+1> mimeTypes;
 	static const RomDataInfo romDataInfo;
 
 public:
@@ -188,7 +188,7 @@ ROMDATA_IMPL(ISO)
 /** ISOPrivate **/
 
 /* RomDataInfo */
-const char *const ISOPrivate::exts[] = {
+const array<const char*, 5+1> ISOPrivate::exts = {{
 	".iso",		// ISO
 	".iso9660",	// ISO (listed in shared-mime-info)
 	".bin",		// BIN (2352-byte)
@@ -198,8 +198,8 @@ const char *const ISOPrivate::exts[] = {
 	// TODO: Is there a separate extension for High Sierra or CD-i?
 
 	nullptr
-};
-const char *const ISOPrivate::mimeTypes[] = {
+}};
+const array<const char*, 3+1> ISOPrivate::mimeTypes = {{
 	// Vendor-specific MIME types from FreeDesktop.org.
 	"application/vnd.efi.iso",
 
@@ -210,9 +210,9 @@ const char *const ISOPrivate::mimeTypes[] = {
 	// TODO: BIN (2352)?
 	// TODO: Is there a separate MIME for High Sierra or CD-i?
 	nullptr
-};
+}};
 const RomDataInfo ISOPrivate::romDataInfo = {
-	"ISO", exts, mimeTypes
+	"ISO", exts.data(), mimeTypes.data()
 };
 
 ISOPrivate::ISOPrivate(const IRpFilePtr &file)
@@ -714,7 +714,7 @@ int ISO::isRomSupported_static(const DetectInfo *info)
 		return -1;
 	}
 
-	for (const char *const *ext = ISOPrivate::exts;
+	for (const char *const *ext = ISOPrivate::exts.data();
 	     *ext != nullptr; ext++)
 	{
 		if (!strcasecmp(info->ext, *ext)) {

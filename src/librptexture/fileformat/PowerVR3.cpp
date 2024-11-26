@@ -53,8 +53,8 @@ class PowerVR3Private final : public FileFormatPrivate
 
 	public:
 		/** TextureInfo **/
-		static const char *const exts[];
-		static const char *const mimeTypes[];
+		static const array<const char*, 1+1> exts;
+		static const array<const char*, 1+1> mimeTypes;
 		static const TextureInfo textureInfo;
 
 	public:
@@ -159,20 +159,20 @@ FILEFORMAT_IMPL(PowerVR3)
 /** PowerVR3Private **/
 
 /* TextureInfo */
-const char *const PowerVR3Private::exts[] = {
+const array<const char*, 1+1> PowerVR3Private::exts = {{
 	".pvr",		// NOTE: Same as SegaPVR.
 
 	nullptr
-};
-const char *const PowerVR3Private::mimeTypes[] = {
+}};
+const array<const char*, 1+1> PowerVR3Private::mimeTypes = {{
 	// Unofficial MIME types.
 	// TODO: Get these upstreamed on FreeDesktop.org.
 	"image/x-pvr",
 
 	nullptr
-};
+}};
 const TextureInfo PowerVR3Private::textureInfo = {
-	exts, mimeTypes
+	exts.data(), mimeTypes.data()
 };
 
 // Uncompressed format lookup table (UBYTE, UBYTE_NORM)
@@ -1472,4 +1472,4 @@ rp_image_const_ptr PowerVR3::mipmap(int mip) const
 	return const_cast<PowerVR3Private*>(d)->loadImage(mip);
 }
 
-}
+} // namespace LibRpTexture

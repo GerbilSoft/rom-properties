@@ -55,8 +55,8 @@ class KhronosKTXPrivate final : public FileFormatPrivate
 
 	public:
 		/** TextureInfo **/
-		static const char *const exts[];
-		static const char *const mimeTypes[];
+		static const array<const char*, 1+1> exts;
+		static const array<const char*, 1+1> mimeTypes;
 		static const TextureInfo textureInfo;
 
 	public:
@@ -107,19 +107,19 @@ FILEFORMAT_IMPL(KhronosKTX)
 /** KhronosKTXPrivate **/
 
 /* TextureInfo */
-const char *const KhronosKTXPrivate::exts[] = {
+const array<const char*, 1+1> KhronosKTXPrivate::exts = {{
 	".ktx",
 
 	nullptr
-};
-const char *const KhronosKTXPrivate::mimeTypes[] = {
+}};
+const array<const char*, 1+1> KhronosKTXPrivate::mimeTypes = {{
 	// Official MIME types.
 	"image/ktx",
 
 	nullptr
-};
+}};
 const TextureInfo KhronosKTXPrivate::textureInfo = {
-	exts, mimeTypes
+	exts.data(), mimeTypes.data()
 };
 
 KhronosKTXPrivate::KhronosKTXPrivate(KhronosKTX *q, const IRpFilePtr &file)
@@ -1157,4 +1157,4 @@ rp_image_const_ptr KhronosKTX::mipmap(int mip) const
 	return const_cast<KhronosKTXPrivate*>(d)->loadImage(mip);
 }
 
-}
+} // namespace LibRpTexture

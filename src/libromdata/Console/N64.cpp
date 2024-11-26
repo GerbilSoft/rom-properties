@@ -32,8 +32,8 @@ private:
 
 public:
 	/** RomDataInfo **/
-	static const char *const exts[];
-	static const char *const mimeTypes[];
+	static const array<const char*, 3+1> exts;
+	static const array<const char*, 1+1> mimeTypes;
 	static const RomDataInfo romDataInfo;
 
 public:
@@ -71,19 +71,19 @@ ROMDATA_IMPL(N64)
 /** N64Private **/
 
 /* RomDataInfo */
-const char *const N64Private::exts[] = {
+const array<const char*, 3+1> N64Private::exts = {{
 	".z64", ".n64", ".v64",
 
 	nullptr
-};
-const char *const N64Private::mimeTypes[] = {
+}};
+const array<const char*, 1+1> N64Private::mimeTypes = {{
 	// Unofficial MIME types from FreeDesktop.org.
 	"application/x-n64-rom",
 
 	nullptr
-};
+}};
 const RomDataInfo N64Private::romDataInfo = {
-	"N64", exts, mimeTypes
+	"N64", exts.data(), mimeTypes.data()
 };
 
 N64Private::N64Private(const IRpFilePtr &file)

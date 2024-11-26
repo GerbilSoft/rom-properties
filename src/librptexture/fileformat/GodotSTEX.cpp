@@ -53,8 +53,8 @@ class GodotSTEXPrivate final : public FileFormatPrivate
 
 	public:
 		/** TextureInfo **/
-		static const char *const exts[];
-		static const char *const mimeTypes[];
+		static const array<const char*, 2+1> exts;
+		static const array<const char*, 2+1> mimeTypes;
 		static const TextureInfo textureInfo;
 
 	public:
@@ -117,22 +117,22 @@ FILEFORMAT_IMPL(GodotSTEX)
 /** GodotSTEXPrivate **/
 
 /* TextureInfo */
-const char *const GodotSTEXPrivate::exts[] = {
+const array<const char*, 2+1> GodotSTEXPrivate::exts = {{
 	".stex",
 	".ctex",
 
 	nullptr
-};
-const char *const GodotSTEXPrivate::mimeTypes[] = {
+}};
+const array<const char*, 2+1> GodotSTEXPrivate::mimeTypes = {{
 	// Unofficial MIME types.
 	// TODO: Get these upstreamed on FreeDesktop.org.
 	"image/x-godot-stex",
 	"image/x-godot-ctex",
 
 	nullptr
-};
+}};
 const TextureInfo GodotSTEXPrivate::textureInfo = {
-	exts, mimeTypes
+	exts.data(), mimeTypes.data()
 };
 
 // Image format table (STEX v3)
@@ -1283,4 +1283,4 @@ rp_image_const_ptr GodotSTEX::mipmap(int mip) const
 	return const_cast<GodotSTEXPrivate*>(d)->loadImage(mip);
 }
 
-}
+} // namespace LibRpTexture

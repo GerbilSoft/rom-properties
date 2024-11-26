@@ -17,6 +17,7 @@ using namespace LibRpFile;
 using namespace LibRpTexture;
 
 // C++ STL classes
+using std::array;
 using std::vector;
 
 namespace LibRomData {
@@ -32,8 +33,8 @@ private:
 
 public:
 	/** RomDataInfo **/
-	static const char *const exts[];
-	static const char *const mimeTypes[];
+	static const array<const char*, 0+1> exts;
+	static const array<const char*, 0+1> mimeTypes;
 	static const RomDataInfo romDataInfo;
 
 public:
@@ -49,14 +50,14 @@ ROMDATA_IMPL_IMG_TYPES(RpTextureWrapper)
 /* RomDataInfo */
 // NOTE: RomDataFactory queries extensions and MIME types from
 // FileFormatFactory directly, so these aren't used.
-const char *const RpTextureWrapperPrivate::exts[] = {
+const array<const char*, 0+1> RpTextureWrapperPrivate::exts = {{
 	nullptr
-};
-const char *const RpTextureWrapperPrivate::mimeTypes[] = {
+}};
+const array<const char*, 0+1> RpTextureWrapperPrivate::mimeTypes = {{
 	nullptr
-};
+}};
 const RomDataInfo RpTextureWrapperPrivate::romDataInfo = {
-	"RpTextureWrapper", exts, mimeTypes
+	"RpTextureWrapper", exts.data(), mimeTypes.data()
 };
 
 RpTextureWrapperPrivate::RpTextureWrapperPrivate(const IRpFilePtr &file)

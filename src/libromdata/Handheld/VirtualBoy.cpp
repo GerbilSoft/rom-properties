@@ -34,8 +34,8 @@ private:
 
 public:
 	/** RomDataInfo **/
-	static const char *const exts[];
-	static const char *const mimeTypes[];
+	static const array<const char*, 1+1> exts;
+	static const array<const char*, 1+1> mimeTypes;
 	static const RomDataInfo romDataInfo;
 
 public:
@@ -89,22 +89,22 @@ ROMDATA_IMPL(VirtualBoy)
 /** VirtualBoyPrivate **/
 
 /* RomDataInfo */
-const char *const VirtualBoyPrivate::exts[] = {
+const array<const char*, 1+1> VirtualBoyPrivate::exts = {{
 	// NOTE: These extensions may cause conflicts on
 	// Windows if fallback handling isn't working.
 
 	".vb",	// Visual Basic .NET source files
 
 	nullptr
-};
-const char *const VirtualBoyPrivate::mimeTypes[] = {
+}};
+const array<const char*, 1+1> VirtualBoyPrivate::mimeTypes = {{
 	// Unofficial MIME types from FreeDesktop.org.
 	"application/x-virtual-boy-rom",
 
 	nullptr
-};
+}};
 const RomDataInfo VirtualBoyPrivate::romDataInfo = {
-	"VirtualBoy", exts, mimeTypes
+	"VirtualBoy", exts.data(), mimeTypes.data()
 };
 
 VirtualBoyPrivate::VirtualBoyPrivate(const IRpFilePtr &file)

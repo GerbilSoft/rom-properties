@@ -52,8 +52,8 @@ private:
 
 public:
 	/** RomDataInfo **/
-	static const char *const exts[];
-	static const char *const mimeTypes[];
+	static const array<const char*, 2+1> exts;
+	static const array<const char*, 2+1> mimeTypes;
 	static const RomDataInfo romDataInfo;
 
 public:
@@ -122,7 +122,7 @@ ROMDATA_IMPL_IMG(iQuePlayer)
 /** iQuePlayerPrivate **/
 
 /* RomDataInfo */
-const char *const iQuePlayerPrivate::exts[] = {
+const array<const char*, 2+1> iQuePlayerPrivate::exts = {{
 	// NOTE: These extensions may cause conflicts on
 	// Windows if fallback handling isn't working.
 
@@ -130,17 +130,17 @@ const char *const iQuePlayerPrivate::exts[] = {
 	".dat",		// NOTE: Conflicts with lots of files.
 
 	nullptr
-};
-const char *const iQuePlayerPrivate::mimeTypes[] = {
+}};
+const array<const char*, 2+1> iQuePlayerPrivate::mimeTypes = {{
 	// Unofficial MIME types.
 	// TODO: Get these upstreamed on FreeDesktop.org.
 	"application/x-ique-cmd",
 	"application/x-ique-dat",
 
 	nullptr
-};
+}};
 const RomDataInfo iQuePlayerPrivate::romDataInfo = {
-	"iQuePlayer", exts, mimeTypes
+	"iQuePlayer", exts.data(), mimeTypes.data()
 };
 
 iQuePlayerPrivate::iQuePlayerPrivate(const IRpFilePtr &file)

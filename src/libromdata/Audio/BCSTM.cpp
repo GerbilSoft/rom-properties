@@ -32,8 +32,8 @@ private:
 
 public:
 	/** RomDataInfo **/
-	static const char *const exts[];
-	static const char *const mimeTypes[];
+	static const array<const char*, 3+1> exts;
+	static const array<const char*, 3+1> mimeTypes;
 	static const RomDataInfo romDataInfo;
 
 public:
@@ -87,14 +87,14 @@ ROMDATA_IMPL(BCSTM)
 /** BCSTMPrivate **/
 
 /* RomDataInfo */
-const char *const BCSTMPrivate::exts[] = {
+const array<const char*, 3+1> BCSTMPrivate::exts = {{
 	".bcstm",
 	".bfstm",
 	".bcwav",
 
 	nullptr
-};
-const char *const BCSTMPrivate::mimeTypes[] = {
+}};
+const array<const char*, 3+1> BCSTMPrivate::mimeTypes = {{
 	// NOTE: Ordering matches AudioFormat.
 
 	// Unofficial MIME types.
@@ -104,9 +104,9 @@ const char *const BCSTMPrivate::mimeTypes[] = {
 	"audio/x-bcwav",
 
 	nullptr
-};
+}};
 const RomDataInfo BCSTMPrivate::romDataInfo = {
-	"BCSTM", exts, mimeTypes
+	"BCSTM", exts.data(), mimeTypes.data()
 };
 
 BCSTMPrivate::BCSTMPrivate(const IRpFilePtr &file)

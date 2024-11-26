@@ -43,8 +43,8 @@ class TGAPrivate final : public FileFormatPrivate
 
 	public:
 		/** TextureInfo **/
-		static const char *const exts[];
-		static const char *const mimeTypes[];
+		static const array<const char*, 1+1> exts;
+		static const array<const char*, 8+1> mimeTypes;
 		static const TextureInfo textureInfo;
 
 	public:
@@ -109,13 +109,13 @@ FILEFORMAT_IMPL(TGA)
 /** TGAPrivate **/
 
 /* TextureInfo */
-const char *const TGAPrivate::exts[] = {
+const array<const char*, 1+1> TGAPrivate::exts = {{
 	".tga",
 	// TODO: Other obsolete file extensions?
 
 	nullptr
-};
-const char *const TGAPrivate::mimeTypes[] = {
+}};
+const array<const char*, 8+1> TGAPrivate::mimeTypes = {{
 	// Unofficial MIME types from FreeDesktop.org.
 	"image/x-tga",
 	"image/x-targa",
@@ -129,9 +129,9 @@ const char *const TGAPrivate::mimeTypes[] = {
 	"application/x-tga",
 
 	nullptr
-};
+}};
 const TextureInfo TGAPrivate::textureInfo = {
-	exts, mimeTypes
+	exts.data(), mimeTypes.data()
 };
 
 TGAPrivate::TGAPrivate(TGA *q, const IRpFilePtr &file)
@@ -937,4 +937,4 @@ rp_image_const_ptr TGA::image(void) const
 	return const_cast<TGAPrivate*>(d)->loadImage();
 }
 
-}
+} // namespace LibRpTexture

@@ -32,8 +32,8 @@ private:
 
 public:
 	/** RomDataInfo **/
-	static const char *const exts[];
-	static const char *const mimeTypes[];
+	static const array<const char*, 1+1> exts;
+	static const array<const char*, 1+1> mimeTypes;
 	static const RomDataInfo romDataInfo;
 
 public:
@@ -71,20 +71,20 @@ ROMDATA_IMPL(BRSTM)
 /** BRSTMPrivate **/
 
 /* RomDataInfo */
-const char *const BRSTMPrivate::exts[] = {
+const array<const char*, 1+1> BRSTMPrivate::exts = {{
 	".brstm",
 
 	nullptr
-};
-const char *const BRSTMPrivate::mimeTypes[] = {
+}};
+const array<const char*, 1+1> BRSTMPrivate::mimeTypes = {{
 	// Unofficial MIME types.
 	// TODO: Get these upstreamed on FreeDesktop.org.
 	"audio/x-brstm",
 
 	nullptr
-};
+}};
 const RomDataInfo BRSTMPrivate::romDataInfo = {
-	"BRSTM", exts, mimeTypes
+	"BRSTM", exts.data(), mimeTypes.data()
 };
 
 BRSTMPrivate::BRSTMPrivate(const IRpFilePtr &file)

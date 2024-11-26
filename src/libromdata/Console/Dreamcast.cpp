@@ -48,8 +48,8 @@ private:
 
 public:
 	/** RomDataInfo **/
-	static const char *const exts[];
-	static const char *const mimeTypes[];
+	static const array<const char*, 4+1> exts;
+	static const array<const char*, 6+1> mimeTypes;
 	static const RomDataInfo romDataInfo;
 
 public:
@@ -117,7 +117,7 @@ ROMDATA_IMPL_IMG_TYPES(Dreamcast)
 /** DreamcastPrivate **/
 
 /* RomDataInfo */
-const char *const DreamcastPrivate::exts[] = {
+const array<const char*, 4+1> DreamcastPrivate::exts = {{
 	".iso",	// ISO-9660 (2048-byte)
 	".bin",	// Raw (2352-byte)
 	".gdi",	// GD-ROM cuesheet
@@ -127,8 +127,8 @@ const char *const DreamcastPrivate::exts[] = {
 	//".nrg",	// Nero
 
 	nullptr
-};
-const char *const DreamcastPrivate::mimeTypes[] = {
+}};
+const array<const char*, 6+1> DreamcastPrivate::mimeTypes = {{
 	// Unofficial MIME types.
 	"application/x-dreamcast-iso-image",
 	"application/x-dc-rom",
@@ -141,9 +141,9 @@ const char *const DreamcastPrivate::mimeTypes[] = {
 	"application/x-discjuggler-cd-image",
 
 	nullptr
-};
+}};
 const RomDataInfo DreamcastPrivate::romDataInfo = {
-	"Dreamcast", exts, mimeTypes
+	"Dreamcast", exts.data(), mimeTypes.data()
 };
 
 DreamcastPrivate::DreamcastPrivate(const IRpFilePtr &file)

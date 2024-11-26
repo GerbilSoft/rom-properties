@@ -33,8 +33,8 @@ private:
 
 public:
 	/** RomDataInfo **/
-	static const char *const exts[];
-	static const char *const mimeTypes[];
+	static const array<const char*, 1+1> exts;
+	static const array<const char*, 1+1> mimeTypes;
 	static const RomDataInfo romDataInfo;
 
 public:
@@ -47,20 +47,20 @@ ROMDATA_IMPL(PokemonMini)
 /** PokemonMiniPrivate **/
 
 /* RomDataInfo */
-const char *const PokemonMiniPrivate::exts[] = {
+const array<const char*, 1+1> PokemonMiniPrivate::exts = {{
 	".min",
 
 	nullptr
-};
-const char *const PokemonMiniPrivate::mimeTypes[] = {
+}};
+const array<const char*, 1+1> PokemonMiniPrivate::mimeTypes = {{
 	// Unofficial MIME types.
 	// TODO: Get these upstreamed on FreeDesktop.org.
 	"application/x-pokemon-mini-rom",
 
 	nullptr
-};
+}};
 const RomDataInfo PokemonMiniPrivate::romDataInfo = {
-	"PokemonMini", exts, mimeTypes
+	"PokemonMini", exts.data(), mimeTypes.data()
 };
 
 PokemonMiniPrivate::PokemonMiniPrivate(const IRpFilePtr &file)

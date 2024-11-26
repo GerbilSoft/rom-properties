@@ -38,8 +38,8 @@ private:
 
 public:
 	/** RomDataInfo **/
-	static const char *const exts[];
-	static const char *const mimeTypes[];
+	static const array<const char*, 2+1> exts;
+	static const array<const char*, 1+1> mimeTypes;
 	static const RomDataInfo romDataInfo;
 
 public:
@@ -53,21 +53,21 @@ ROMDATA_IMPL(Nintendo3DSFirm)
 /** Nintendo3DSFirmPrivate **/
 
 /* RomDataInfo */
-const char *const Nintendo3DSFirmPrivate::exts[] = {
+const array<const char*, 2+1> Nintendo3DSFirmPrivate::exts = {{
 	".firm",	// boot9strap
 	".bin",		// older
 
 	nullptr
-};
-const char *const Nintendo3DSFirmPrivate::mimeTypes[] = {
+}};
+const array<const char*, 1+1> Nintendo3DSFirmPrivate::mimeTypes = {{
 	// Unofficial MIME types.
 	// TODO: Get these upstreamed on FreeDesktop.org.
 	"application/x-nintendo-3ds-firm",
 
 	nullptr
-};
+}};
 const RomDataInfo Nintendo3DSFirmPrivate::romDataInfo = {
-	"Nintendo3DSFirm", exts, mimeTypes
+	"Nintendo3DSFirm", exts.data(), mimeTypes.data()
 };
 
 Nintendo3DSFirmPrivate::Nintendo3DSFirmPrivate(const IRpFilePtr &file)

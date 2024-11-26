@@ -32,8 +32,8 @@ private:
 
 public:
 	/** RomDataInfo **/
-	static const char *const exts[];
-	static const char *const mimeTypes[];
+	static const array<const char*, 2+1> exts;
+	static const array<const char*, 1+1> mimeTypes;
 	static const RomDataInfo romDataInfo;
 
 public:
@@ -46,20 +46,20 @@ ROMDATA_IMPL(Lynx)
 /** LynxPrivate **/
 
 /* RomDataInfo */
-const char *const LynxPrivate::exts[] = {
+const array<const char*, 2+1> LynxPrivate::exts = {{
 	".lnx",
 	".lyx",
 
 	nullptr
-};
-const char *const LynxPrivate::mimeTypes[] = {
+}};
+const array<const char*, 1+1> LynxPrivate::mimeTypes = {{
 	// Unofficial MIME types from FreeDesktop.org.
 	"application/x-atari-lynx-rom",
 
 	nullptr
-};
+}};
 const RomDataInfo LynxPrivate::romDataInfo = {
-	"Lynx", exts, mimeTypes
+	"Lynx", exts.data(), mimeTypes.data()
 };
 
 LynxPrivate::LynxPrivate(const IRpFilePtr &file)

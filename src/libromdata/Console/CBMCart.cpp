@@ -36,8 +36,8 @@ private:
 
 public:
 	/** RomDataInfo **/
-	static const char *const exts[];
-	static const char *const mimeTypes[];
+	static const array<const char*, 1+1> exts;
+	static const array<const char*, 5+1> mimeTypes;
 	static const RomDataInfo romDataInfo;
 
 public:
@@ -69,12 +69,12 @@ ROMDATA_IMPL_IMG(CBMCart)
 /** CBMCartPrivate **/
 
 /* RomDataInfo */
-const char *const CBMCartPrivate::exts[] = {
+const array<const char*, 1+1> CBMCartPrivate::exts = {{
 	".crt",
 
 	nullptr
-};
-const char *const CBMCartPrivate::mimeTypes[] = {
+}};
+const array<const char*, 5+1> CBMCartPrivate::mimeTypes = {{
 	// Unofficial MIME types.
 	// TODO: Get these upstreamed on FreeDesktop.org.
 	"application/x-c64-cartridge",
@@ -84,9 +84,9 @@ const char *const CBMCartPrivate::mimeTypes[] = {
 	"application/x-plus4-cartridge",
 
 	nullptr
-};
+}};
 const RomDataInfo CBMCartPrivate::romDataInfo = {
-	"CBMCart", exts, mimeTypes
+	"CBMCart", exts.data(), mimeTypes.data()
 };
 
 CBMCartPrivate::CBMCartPrivate(const IRpFilePtr &file)

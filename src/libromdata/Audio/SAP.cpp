@@ -37,8 +37,8 @@ private:
 
 public:
 	/** RomDataInfo **/
-	static const char *const exts[];
-	static const char *const mimeTypes[];
+	static const array<const char*, 1+1> exts;
+	static const array<const char*, 1+1> mimeTypes;
 	static const RomDataInfo romDataInfo;
 
 public:
@@ -96,19 +96,19 @@ ROMDATA_IMPL(SAP)
 /** SAPPrivate **/
 
 /* RomDataInfo */
-const char *const SAPPrivate::exts[] = {
+const array<const char*, 1+1> SAPPrivate::exts = {{
 	".sap",
 
 	nullptr
-};
-const char *const SAPPrivate::mimeTypes[] = {
+}};
+const array<const char*, 1+1> SAPPrivate::mimeTypes = {{
 	// Unofficial MIME types.
 	"audio/x-sap",
 
 	nullptr
-};
+}};
 const RomDataInfo SAPPrivate::romDataInfo = {
-	"SAP", exts, mimeTypes
+	"SAP", exts.data(), mimeTypes.data()
 };
 
 SAPPrivate::SAPPrivate(const IRpFilePtr &file)

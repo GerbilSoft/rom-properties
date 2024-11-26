@@ -33,8 +33,8 @@ private:
 
 public:
 	/** RomDataInfo **/
-	static const char *const exts[];
-	static const char *const mimeTypes[];
+	static const array<const char*, 3+1> exts;
+	static const array<const char*, 2+1> mimeTypes;
 	static const RomDataInfo romDataInfo;
 
 public:
@@ -62,12 +62,12 @@ ROMDATA_IMPL_IMG(NGPC)
 /** NGPCPrivate **/
 
 /* RomDataInfo */
-const char *const NGPCPrivate::exts[] = {
+const array<const char*, 3+1> NGPCPrivate::exts = {{
 	".ngp",  ".ngc", ".ngpc",
 
 	nullptr
-};
-const char *const NGPCPrivate::mimeTypes[] = {
+}};
+const array<const char*, 2+1> NGPCPrivate::mimeTypes = {{
 	// NOTE: Ordering matches RomType.
 
 	// Unofficial MIME types from FreeDesktop.org.
@@ -75,9 +75,9 @@ const char *const NGPCPrivate::mimeTypes[] = {
 	"application/x-neo-geo-pocket-color-rom",
 
 	nullptr
-};
+}};
 const RomDataInfo NGPCPrivate::romDataInfo = {
-	"NGPC", exts, mimeTypes
+	"NGPC", exts.data(), mimeTypes.data()
 };
 
 NGPCPrivate::NGPCPrivate(const IRpFilePtr &file)

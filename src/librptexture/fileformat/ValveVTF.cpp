@@ -48,8 +48,8 @@ class ValveVTFPrivate final : public FileFormatPrivate
 
 	public:
 		/** TextureInfo **/
-		static const char *const exts[];
-		static const char *const mimeTypes[];
+		static const array<const char*, 1+1> exts;
+		static const array<const char*, 2+1> mimeTypes;
 		static const TextureInfo textureInfo;
 
 	public:
@@ -111,13 +111,13 @@ FILEFORMAT_IMPL(ValveVTF)
 /** ValveVTFPrivate **/
 
 /* TextureInfo */
-const char *const ValveVTFPrivate::exts[] = {
+const array<const char*, 1+1> ValveVTFPrivate::exts = {{
 	".vtf",
 	//".vtx",	// TODO: Some files might use the ".vtx" extension.
 
 	nullptr
-};
-const char *const ValveVTFPrivate::mimeTypes[] = {
+}};
+const array<const char*, 2+1> ValveVTFPrivate::mimeTypes = {{
 	// Vendor-specific MIME types.
 	// TODO: Get these upstreamed on FreeDesktop.org.
 	"image/vnd.valve.source.texture",
@@ -127,9 +127,9 @@ const char *const ValveVTFPrivate::mimeTypes[] = {
 	"image/x-vtf",
 
 	nullptr
-};
+}};
 const TextureInfo ValveVTFPrivate::textureInfo = {
-	exts, mimeTypes
+	exts.data(), mimeTypes.data()
 };
 
 // Image format table
@@ -939,4 +939,4 @@ rp_image_const_ptr ValveVTF::mipmap(int mip) const
 	return const_cast<ValveVTFPrivate*>(d)->loadImage(mip);
 }
 
-}
+} // namespace LibRpTexture

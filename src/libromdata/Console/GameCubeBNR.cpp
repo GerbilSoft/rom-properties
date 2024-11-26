@@ -41,8 +41,8 @@ private:
 
 public:
 	/** RomDataInfo **/
-	static const char *const exts[];
-	static const char *const mimeTypes[];
+	static const array<const char*, 1+1> exts;
+	static const array<const char*, 1+1> mimeTypes;
 	static const RomDataInfo romDataInfo;
 
 public:
@@ -129,20 +129,20 @@ ROMDATA_IMPL_IMG(GameCubeBNR)
 /* RomDataInfo */
 // NOTE: This will be handled using the same
 // settings as GameCube.
-const char *const GameCubeBNRPrivate::exts[] = {
+const array<const char*, 1+1> GameCubeBNRPrivate::exts = {{
 	".bnr",
 
 	nullptr
-};
-const char *const GameCubeBNRPrivate::mimeTypes[] = {
+}};
+const array<const char*, 1+1> GameCubeBNRPrivate::mimeTypes = {{
 	// Unofficial MIME types.
 	// TODO: Get these upstreamed on FreeDesktop.org.
 	"application/x-gamecube-bnr",	// .bnr
 
 	nullptr
-};
+}};
 const RomDataInfo GameCubeBNRPrivate::romDataInfo = {
-	"GameCube", exts, mimeTypes
+	"GameCube", exts.data(), mimeTypes.data()
 };
 
 GameCubeBNRPrivate::GameCubeBNRPrivate(const IRpFilePtr &file, uint32_t gcnRegion)

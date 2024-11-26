@@ -60,8 +60,8 @@ private:
 
 public:
 	/** RomDataInfo **/
-	static const char *const exts[];
-	static const char *const mimeTypes[];
+	static const array<const char*, 2+1> exts;
+	static const array<const char*, 2+1> mimeTypes;
 	static const RomDataInfo romDataInfo;
 
 public:
@@ -248,22 +248,22 @@ ROMDATA_IMPL(Xbox360_XEX)
 /** Xbox360_XEX_Private **/
 
 /* RomDataInfo */
-const char *const Xbox360_XEX_Private::exts[] = {
+const array<const char*, 2+1> Xbox360_XEX_Private::exts = {{
 	".xex",		// Executable
 	".xexp",	// Patch
 
 	nullptr
-};
-const char *const Xbox360_XEX_Private::mimeTypes[] = {
+}};
+const array<const char*, 2+1> Xbox360_XEX_Private::mimeTypes = {{
 	// Unofficial MIME types.
 	// TODO: Get these upstreamed on FreeDesktop.org.
 	"application/x-xbox360-executable",
 	"application/x-xbox360-patch",
 
 	nullptr
-};
+}};
 const RomDataInfo Xbox360_XEX_Private::romDataInfo = {
-	"Xbox360_XEX", exts, mimeTypes
+	"Xbox360_XEX", exts.data(), mimeTypes.data()
 };
 
 #ifdef ENABLE_DECRYPTION

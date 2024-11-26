@@ -37,8 +37,8 @@ private:
 
 public:
 	/** RomDataInfo **/
-	static const char *const exts[];
-	static const char *const mimeTypes[];
+	static const array<const char*, 4+1> exts;
+	static const array<const char*, 6+1> mimeTypes;
 	static const RomDataInfo romDataInfo;
 
 public:
@@ -99,7 +99,7 @@ ROMDATA_IMPL(MachO)
 /** MachOPrivate **/
 
 /* RomDataInfo */
-const char *const MachOPrivate::exts[] = {
+const array<const char*, 4+1> MachOPrivate::exts = {{
 	//".",		// FIXME: Does this work for files with no extension?
 	".bin",
 	".so",		// Shared libraries. (TODO: Versioned .so files.)
@@ -108,8 +108,8 @@ const char *const MachOPrivate::exts[] = {
 	// TODO: More?
 
 	nullptr
-};
-const char *const MachOPrivate::mimeTypes[] = {
+}};
+const array<const char*, 6+1> MachOPrivate::mimeTypes = {{
 	// Unofficial MIME types.
 
 	// FIXME: Defining the magic numbers for Mach-O executables in
@@ -124,9 +124,9 @@ const char *const MachOPrivate::mimeTypes[] = {
 	"application/x-mach-fat-binary",
 
 	nullptr
-};
+}};
 const RomDataInfo MachOPrivate::romDataInfo = {
-	"MachO", exts, mimeTypes
+	"MachO", exts.data(), mimeTypes.data()
 };
 
 MachOPrivate::MachOPrivate(const IRpFilePtr &file)

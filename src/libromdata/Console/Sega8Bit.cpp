@@ -32,8 +32,8 @@ private:
 
 public:
 	/** RomDataInfo **/
-	static const char *const exts[];
-	static const char *const mimeTypes[];
+	static const array<const char*, 2+1> exts;
+	static const array<const char*, 2+1> mimeTypes;
 	static const RomDataInfo romDataInfo;
 
 public:
@@ -74,22 +74,22 @@ ROMDATA_IMPL(Sega8Bit)
 /** Sega8BitPrivate **/
 
 /* RomDataInfo */
-const char *const Sega8BitPrivate::exts[] = {
+const array<const char*, 2+1> Sega8BitPrivate::exts = {{
 	".sms",	// Sega Master System
 	".gg",	// Sega Game Gear
 	// TODO: Other Sega 8-bit formats?
 
 	nullptr
-};
-const char *const Sega8BitPrivate::mimeTypes[] = {
+}};
+const array<const char*, 2+1> Sega8BitPrivate::mimeTypes = {{
 	// Unofficial MIME types from FreeDesktop.org.
 	"application/x-sms-rom",
 	"application/x-gamegear-rom",
 
 	nullptr
-};
+}};
 const RomDataInfo Sega8BitPrivate::romDataInfo = {
-	"Sega8Bit", exts, mimeTypes
+	"Sega8Bit", exts.data(), mimeTypes.data()
 };
 
 Sega8BitPrivate::Sega8BitPrivate(const IRpFilePtr &file)

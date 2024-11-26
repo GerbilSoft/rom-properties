@@ -33,8 +33,8 @@ private:
 
 public:
 	/** RomDataInfo **/
-	static const char *const exts[];
-	static const char *const mimeTypes[];
+	static const array<const char*, 1+1> exts;
+	static const array<const char*, 3+1> mimeTypes;
 	static const RomDataInfo romDataInfo;
 
 public:
@@ -60,13 +60,13 @@ ROMDATA_IMPL_IMG(SufamiTurbo)
 
 /* RomDataInfo */
 // NOTE: Handling Sufami Turbo ROMs as if they're Super NES.
-const char *const SufamiTurboPrivate::exts[] = {
+const array<const char*, 1+1> SufamiTurboPrivate::exts = {{
 	// NOTE: Not including ".smc" here.
 	".st",
 
 	nullptr
-};
-const char *const SufamiTurboPrivate::mimeTypes[] = {
+}};
+const array<const char*, 3+1> SufamiTurboPrivate::mimeTypes = {{
 	// Vendor-specific MIME types from FreeDesktop.org.
 	"application/vnd.nintendo.snes.rom",
 
@@ -75,9 +75,9 @@ const char *const SufamiTurboPrivate::mimeTypes[] = {
 	"application/x-sufami-turbo-rom",
 
 	nullptr
-};
+}};
 const RomDataInfo SufamiTurboPrivate::romDataInfo = {
-	"SNES", exts, mimeTypes
+	"SNES", exts.data(), mimeTypes.data()
 };
 
 SufamiTurboPrivate::SufamiTurboPrivate(const IRpFilePtr &file)

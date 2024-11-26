@@ -49,8 +49,8 @@ private:
 
 public:
 	/** RomDataInfo **/
-	static const char *const exts[];
-	static const char *const mimeTypes[];
+	static const array<const char*, 2+1> exts;
+	static const array<const char*, 1+1> mimeTypes;
 	static const RomDataInfo romDataInfo;
 
 public:
@@ -158,22 +158,22 @@ ROMDATA_IMPL_IMG_TYPES(Xbox360_STFS)
 /** Xbox360_STFS_Private **/
 
 /* RomDataInfo */
-const char *const Xbox360_STFS_Private::exts[] = {
+const array<const char*, 2+1> Xbox360_STFS_Private::exts = {{
 	//".stfs",	// FIXME: Not actually used...
 	".fxs",		// Fallout
 	".exs",		// Skyrim
 
 	nullptr
-};
-const char *const Xbox360_STFS_Private::mimeTypes[] = {
+}};
+const array<const char*, 1+1> Xbox360_STFS_Private::mimeTypes = {{
 	// Unofficial MIME types.
 	// TODO: Get these upstreamed on FreeDesktop.org.
 	"application/x-xbox360-stfs",
 
 	nullptr
-};
+}};
 const RomDataInfo Xbox360_STFS_Private::romDataInfo = {
-	"Xbox360_STFS", exts, mimeTypes
+	"Xbox360_STFS", exts.data(), mimeTypes.data()
 };
 
 Xbox360_STFS_Private::Xbox360_STFS_Private(const IRpFilePtr &file)

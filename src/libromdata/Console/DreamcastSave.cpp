@@ -36,8 +36,8 @@ private:
 
 public:
 	/** RomDataInfo **/
-	static const char *const exts[];
-	static const char *const mimeTypes[];
+	static const array<const char*, 3+1> exts;
+	static const array<const char*, 3+1> mimeTypes;
 	static const RomDataInfo romDataInfo;
 
 public:
@@ -192,12 +192,12 @@ ROMDATA_IMPL(DreamcastSave)
 /** DreamcastSavePrivate **/
 
 /* RomDataInfo */
-const char *const DreamcastSavePrivate::exts[] = {
+const array<const char*, 3+1> DreamcastSavePrivate::exts = {{
 	".vms", ".vmi", ".dci",
 
 	nullptr
-};
-const char *const DreamcastSavePrivate::mimeTypes[] = {
+}};
+const array<const char*, 3+1> DreamcastSavePrivate::mimeTypes = {{
 	// NOTE: Ordering matches SaveType.
 
 	// Unofficial MIME types used by Sega.
@@ -210,9 +210,9 @@ const char *const DreamcastSavePrivate::mimeTypes[] = {
 	"application/x-dreamcast-dci",
 
 	nullptr
-};
+}};
 const RomDataInfo DreamcastSavePrivate::romDataInfo = {
-	"DreamcastSave", exts, mimeTypes
+	"DreamcastSave", exts.data(), mimeTypes.data()
 };
 
 // Graphic eyecatch sizes (in bytes)

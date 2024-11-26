@@ -53,8 +53,8 @@ private:
 
 public:
 	/** RomDataInfo **/
-	static const char *const exts[];
-	static const char *const mimeTypes[];
+	static const array<const char*, 3+1> exts;
+	static const array<const char*, 1+1> mimeTypes;
 	static const RomDataInfo romDataInfo;
 
 public:
@@ -78,22 +78,22 @@ public:
 
 ROMDATA_IMPL(Wim)
 
-const char *const WimPrivate::exts[] = {
+const array<const char*, 3+1> WimPrivate::exts = {{
 	".wim",
 	".esd",
 	".swm",
 	// TODO: More?
-	nullptr
-};
 
-const char *const WimPrivate::mimeTypes[] = {
+	nullptr
+}};
+const array<const char*, 1+1> WimPrivate::mimeTypes = {{
 	// Unofficial MIME types.
 	"application/x-ms-wim",
-	nullptr
-};
 
+	nullptr
+}};
 const RomDataInfo WimPrivate::romDataInfo = {
-	"WIM", exts, mimeTypes
+	"WIM", exts.data(), mimeTypes.data()
 };
 
 struct WimWindowsLanguages {

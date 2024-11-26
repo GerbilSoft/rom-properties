@@ -34,8 +34,8 @@ private:
 
 public:
 	/** RomDataInfo **/
-	static const char *const exts[];
-	static const char *const mimeTypes[];
+	static const array<const char*, 3+1> exts;
+	static const array<const char*, 1+1> mimeTypes;
 	static const RomDataInfo romDataInfo;
 
 public:
@@ -58,7 +58,7 @@ ROMDATA_IMPL_IMG(Amiibo)
 /** AmiiboPrivate **/
 
 /* RomDataInfo */
-const char *const AmiiboPrivate::exts[] = {
+const array<const char*, 3+1> AmiiboPrivate::exts = {{
 	// NOTE: These extensions may cause conflicts on
 	// Windows if fallback handling isn't working.
 	".bin",	// too generic
@@ -69,16 +69,16 @@ const char *const AmiiboPrivate::exts[] = {
 	".nfc", ".nfp",
 
 	nullptr
-};
-const char *const AmiiboPrivate::mimeTypes[] = {
+}};
+const array<const char*, 1+1> AmiiboPrivate::mimeTypes = {{
 	// Unofficial MIME types.
 	// TODO: Get these upstreamed on FreeDesktop.org.
 	"application/x-nintendo-amiibo",
 
 	nullptr
-};
+}};
 const RomDataInfo AmiiboPrivate::romDataInfo = {
-	"Amiibo", exts, mimeTypes
+	"Amiibo", exts.data(), mimeTypes.data()
 };
 
 AmiiboPrivate::AmiiboPrivate(const IRpFilePtr &file)

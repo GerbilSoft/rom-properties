@@ -46,8 +46,8 @@ private:
 
 public:
 	/** RomDataInfo **/
-	static const char *const exts[];
-	static const char *const mimeTypes[];
+	static const std::array<const char*, 10+1> exts;
+	static const std::array<const char*, 10+1> mimeTypes;
 	static const LibRpBase::RomDataInfo romDataInfo;
 
 public:
@@ -258,4 +258,4 @@ public:
 	int addFields_permissions(void);
 };
 
-}
+} // namespace LibRomData

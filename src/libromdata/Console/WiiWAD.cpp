@@ -52,14 +52,14 @@ ROMDATA_IMPL(WiiWAD)
 /** WiiWADPrivate **/
 
 /* RomDataInfo */
-const char *const WiiWADPrivate::exts[] = {
+const array<const char*, 3+1> WiiWADPrivate::exts = {{
 	".wad",		// Nintendo WAD Format
 	".bwf",		// BroadOn WAD Format
 	".tad",		// DSi TAD (similar to Nintendo WAD)
 
 	nullptr
-};
-const char *const WiiWADPrivate::mimeTypes[] = {
+}};
+const array<const char*, 3+1> WiiWADPrivate::mimeTypes = {{
 	// Unofficial MIME types from FreeDesktop.org.
 	"application/x-wii-wad",
 
@@ -71,9 +71,9 @@ const char *const WiiWADPrivate::mimeTypes[] = {
 	"application/x-doom-wad",
 
 	nullptr
-};
+}};
 const RomDataInfo WiiWADPrivate::romDataInfo = {
-	"WiiWAD", exts, mimeTypes
+	"WiiWAD", exts.data(), mimeTypes.data()
 };
 
 WiiWADPrivate::WiiWADPrivate(const IRpFilePtr &file)

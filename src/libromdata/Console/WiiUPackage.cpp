@@ -48,18 +48,18 @@ ROMDATA_IMPL_IMG(WiiUPackage)
 /** WiiUPackagePrivate **/
 
 /* RomDataInfo */
-const char *const WiiUPackagePrivate::exts[] = {
+const array<const char*, 0+1> WiiUPackagePrivate::exts = {{
 	// No file extensions; NUS packages are directories.
 	nullptr
-};
-const char *const WiiUPackagePrivate::mimeTypes[] = {
+}};
+const array<const char*, 1+1> WiiUPackagePrivate::mimeTypes = {{
 	// NUS packages are directories.
 	"inode/directory",
 
 	nullptr
-};
+}};
 const RomDataInfo WiiUPackagePrivate::romDataInfo = {
-	"WiiUPackage", exts, mimeTypes
+	"WiiUPackage", exts.data(), mimeTypes.data()
 };
 
 WiiUPackagePrivate::WiiUPackagePrivate(const char *path)

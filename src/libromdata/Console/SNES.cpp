@@ -36,8 +36,8 @@ private:
 
 public:
 	/** RomDataInfo **/
-	static const char *const exts[];
-	static const char *const mimeTypes[];
+	static const array<const char*, 8+1> exts;
+	static const array<const char*, 3+1> mimeTypes;
 	static const RomDataInfo romDataInfo;
 
 public:
@@ -121,7 +121,7 @@ ROMDATA_IMPL_IMG(SNES)
 /** SNESPrivate **/
 
 /* RomDataInfo */
-const char *const SNESPrivate::exts[] = {
+const array<const char*, 8+1> SNESPrivate::exts = {{
 	".smc", ".swc", ".sfc",
 	".fig", ".ufo", ".mgd",
 
@@ -132,8 +132,8 @@ const char *const SNESPrivate::exts[] = {
 	//".ic1",
 
 	nullptr
-};
-const char *const SNESPrivate::mimeTypes[] = {
+}};
+const array<const char*, 3+1> SNESPrivate::mimeTypes = {{
 	// Vendor-specific MIME types from FreeDesktop.org.
 	"application/vnd.nintendo.snes.rom",
 
@@ -145,9 +145,9 @@ const char *const SNESPrivate::mimeTypes[] = {
 	"application/x-satellaview-rom",
 
 	nullptr
-};
+}};
 const RomDataInfo SNESPrivate::romDataInfo = {
-	"SNES", exts, mimeTypes
+	"SNES", exts.data(), mimeTypes.data()
 };
 
 SNESPrivate::SNESPrivate(const IRpFilePtr &file)
@@ -983,7 +983,7 @@ int SNES::isRomSupported_static(const DetectInfo *info)
 	// SNES ROMs don't necessarily have a header at the start of the file.
 	// Therefore, we're using the file extension.
 	if (info->ext && info->ext[0] != 0) {
-		for (const char *const *ext = SNESPrivate::exts;
+		for (const char *const *ext = SNESPrivate::exts.data();
 		     *ext != nullptr; ext++)
 		{
 			if (!strcasecmp(info->ext, *ext)) {

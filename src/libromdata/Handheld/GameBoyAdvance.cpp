@@ -34,8 +34,8 @@ private:
 
 public:
 	/** RomDataInfo **/
-	static const char *const exts[];
-	static const char *const mimeTypes[];
+	static const array<const char*, 4+1> exts;
+	static const array<const char*, 3+1> mimeTypes;
 	static const RomDataInfo romDataInfo;
 
 public:
@@ -67,15 +67,15 @@ ROMDATA_IMPL_IMG(GameBoyAdvance)
 /** GameBoyAdvancePrivate **/
 
 /* RomDataInfo */
-const char *const GameBoyAdvancePrivate::exts[] = {
+const array<const char*, 4+1> GameBoyAdvancePrivate::exts = {{
 	".gba",	// Most common
 	".agb",	// Less common
 	".mb",	// Multiboot (may conflict with AutoDesk Maya)
 	".srl",	// Official SDK extension
 
 	nullptr
-};
-const char *const GameBoyAdvancePrivate::mimeTypes[] = {
+}};
+const array<const char*, 3+1> GameBoyAdvancePrivate::mimeTypes = {{
 	// Unofficial MIME types from FreeDesktop.org.
 	"application/x-gba-rom",
 
@@ -84,9 +84,9 @@ const char *const GameBoyAdvancePrivate::mimeTypes[] = {
 	"application/x-agb-rom",
 
 	nullptr
-};
+}};
 const RomDataInfo GameBoyAdvancePrivate::romDataInfo = {
-	"GameBoyAdvance", exts, mimeTypes
+	"GameBoyAdvance", exts.data(), mimeTypes.data()
 };
 
 GameBoyAdvancePrivate::GameBoyAdvancePrivate(const IRpFilePtr &file)

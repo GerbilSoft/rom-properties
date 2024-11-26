@@ -61,8 +61,8 @@ private:
 
 public:
 	/** RomDataInfo **/
-	static const char *const exts[];
-	static const char *const mimeTypes[];
+	static const array<const char*, 13+1> exts;
+	static const array<const char*, 14+1> mimeTypes;
 	static const RomDataInfo romDataInfo;
 
 public:
@@ -205,7 +205,7 @@ ROMDATA_IMPL_IMG(GameCube)
 /** GameCubePrivate **/
 
 /* RomDataInfo */
-const char *const GameCubePrivate::exts[] = {
+const array<const char*, 13+1> GameCubePrivate::exts = {{
 	".gcm", ".rvm",
 	".wbfs",
 	".ciso", ".cso",
@@ -223,8 +223,8 @@ const char *const GameCubePrivate::exts[] = {
 	".iso",
 
 	nullptr
-};
-const char *const GameCubePrivate::mimeTypes[] = {
+}};
+const array<const char*, 14+1> GameCubePrivate::mimeTypes = {{
 	// Unofficial MIME types from FreeDesktop.org.
 	"application/x-gamecube-rom",
 	"application/x-gamecube-iso-image",
@@ -245,9 +245,9 @@ const char *const GameCubePrivate::mimeTypes[] = {
 	"application/x-rvz-image",
 
 	nullptr
-};
+}};
 const RomDataInfo GameCubePrivate::romDataInfo = {
-	"GameCube", exts, mimeTypes
+	"GameCube", exts.data(), mimeTypes.data()
 };
 
 // NDDEMO header

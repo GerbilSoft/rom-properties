@@ -43,8 +43,8 @@ private:
 
 public:
 	/** RomDataInfo **/
-	static const char *const exts[];
-	static const char *const mimeTypes[];
+	static const array<const char*, 7+1> exts;
+	static const array<const char*, 3+1> mimeTypes;
 	static const RomDataInfo romDataInfo;
 
 public:
@@ -220,7 +220,7 @@ ROMDATA_IMPL(DMG)
 /** DMGPrivate **/
 
 /* RomDataInfo */
-const char *const DMGPrivate::exts[] = {
+const array<const char*, 7+1> DMGPrivate::exts = {{
 	".gb",  ".sgb", ".sgb2",
 	".gbc", ".cgb",
 
@@ -231,8 +231,8 @@ const char *const DMGPrivate::exts[] = {
 	".pocket",
 
 	nullptr
-};
-const char *const DMGPrivate::mimeTypes[] = {
+}};
+const array<const char*, 3+1> DMGPrivate::mimeTypes = {{
 	// Unofficial MIME types from FreeDesktop.org.
 	"application/x-gameboy-rom",
 	"application/x-gameboy-color-rom",
@@ -242,9 +242,9 @@ const char *const DMGPrivate::mimeTypes[] = {
 	"application/x-analogue-pocket-rom",
 
 	nullptr
-};
+}};
 const RomDataInfo DMGPrivate::romDataInfo = {
-	"DMG", exts, mimeTypes
+	"DMG", exts.data(), mimeTypes.data()
 };
 
 /** Internal ROM data **/

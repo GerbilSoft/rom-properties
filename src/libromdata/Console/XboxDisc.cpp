@@ -46,8 +46,8 @@ private:
 
 public:
 	/** RomDataInfo **/
-	static const char *const exts[];
-	static const char *const mimeTypes[];
+	static const array<const char*, 2+1> exts;
+	static const array<const char*, 2+1> mimeTypes;
 	static const RomDataInfo romDataInfo;
 
 public:
@@ -127,23 +127,23 @@ ROMDATA_IMPL(XboxDisc)
 /** XboxDiscPrivate **/
 
 /* RomDataInfo */
-const char *const XboxDiscPrivate::exts[] = {
+const array<const char*, 2+1> XboxDiscPrivate::exts = {{
 	".iso",		// ISO
 	".xiso",	// Xbox ISO image
 	// TODO: More?
 
 	nullptr
-};
-const char *const XboxDiscPrivate::mimeTypes[] = {
+}};
+const array<const char*, 2+1> XboxDiscPrivate::mimeTypes = {{
 	// Unofficial MIME types from FreeDesktop.org..
 	"application/x-cd-image",
 	"application/x-iso9660-image",
 
 	// TODO: XDVDFS?
 	nullptr
-};
+}};
 const RomDataInfo XboxDiscPrivate::romDataInfo = {
-	"XboxDisc", exts, mimeTypes
+	"XboxDisc", exts.data(), mimeTypes.data()
 };
 
 XboxDiscPrivate::XboxDiscPrivate(const IRpFilePtr &file)

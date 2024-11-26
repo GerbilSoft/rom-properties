@@ -32,8 +32,8 @@ private:
 
 public:
 	/** RomDataInfo **/
-	static const char *const exts[];
-	static const char *const mimeTypes[];
+	static const array<const char*, 1+1> exts;
+	static const array<const char*, 1+1> mimeTypes;
 	static const RomDataInfo romDataInfo;
 
 public:
@@ -50,20 +50,20 @@ ROMDATA_IMPL(PlayStationEXE)
 /** PlayStationEXEPrivate **/
 
 /* RomDataInfo */
-const char *const PlayStationEXEPrivate::exts[] = {
+const array<const char*, 1+1> PlayStationEXEPrivate::exts = {{
 	".exe",	// NOTE: Conflicts with Windows executables.
 
 	nullptr
-};
-const char *const PlayStationEXEPrivate::mimeTypes[] = {
+}};
+const array<const char*, 1+1> PlayStationEXEPrivate::mimeTypes = {{
 	// Unofficial MIME types.
 	// TODO: Get these upstreamed on FreeDesktop.org.
 	"application/x-ps1-executable",
 
 	nullptr
-};
+}};
 const RomDataInfo PlayStationEXEPrivate::romDataInfo = {
-	"PlayStationEXE", exts, mimeTypes
+	"PlayStationEXE", exts.data(), mimeTypes.data()
 };
 
 PlayStationEXEPrivate::PlayStationEXEPrivate(const IRpFilePtr &file, uint32_t sp_override)

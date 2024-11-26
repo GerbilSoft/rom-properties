@@ -52,8 +52,8 @@ class DidjTexPrivate final : public FileFormatPrivate
 
 	public:
 		/** TextureInfo **/
-		static const char *const exts[];
-		static const char *const mimeTypes[];
+		static const array<const char*, 2+1> exts;
+		static const array<const char*, 1+1> mimeTypes;
 		static const TextureInfo textureInfo;
 
 	public:
@@ -88,21 +88,21 @@ FILEFORMAT_IMPL(DidjTex)
 /** DidjTexPrivate **/
 
 /* TextureInfo */
-const char *const DidjTexPrivate::exts[] = {
+const array<const char*, 2+1> DidjTexPrivate::exts = {{
 	".tex",		// NOTE: Too generic...
 	".texs",	// NOTE: Has multiple textures.
 
 	nullptr
-};
-const char *const DidjTexPrivate::mimeTypes[] = {
+}};
+const array<const char*, 1+1> DidjTexPrivate::mimeTypes = {{
 	// Unofficial MIME types.
 	// TODO: Get these upstreamed on FreeDesktop.org.
 	"image/x-didj-texture",
 
 	nullptr
-};
+}};
 const TextureInfo DidjTexPrivate::textureInfo = {
-	exts, mimeTypes
+	exts.data(), mimeTypes.data()
 };
 
 DidjTexPrivate::DidjTexPrivate(DidjTex *q, const IRpFilePtr &file)
@@ -496,4 +496,4 @@ rp_image_const_ptr DidjTex::image(void) const
 	return const_cast<DidjTexPrivate*>(d)->loadDidjTexImage();
 }
 
-}
+} // namespace LibRpTexture

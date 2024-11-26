@@ -41,8 +41,8 @@ private:
 
 public:
 	/** RomDataInfo **/
-	static const char *const exts[];
-	static const char *const mimeTypes[];
+	static const array<const char*, 2+1> exts;
+	static const array<const char*, 1+1> mimeTypes;
 	static const RomDataInfo romDataInfo;
 
 public:
@@ -148,7 +148,7 @@ public:
 ROMDATA_IMPL(SegaSaturn)
 
 /* RomDataInfo */
-const char *const SegaSaturnPrivate::exts[] = {
+const array<const char*, 2+1> SegaSaturnPrivate::exts = {{
 	".iso",	// ISO-9660 (2048-byte)
 	".bin",	// Raw (2352-byte)
 
@@ -157,15 +157,15 @@ const char *const SegaSaturnPrivate::exts[] = {
 	//".nrg",	// Nero
 
 	nullptr
-};
-const char *const SegaSaturnPrivate::mimeTypes[] = {
+}};
+const array<const char*, 1+1> SegaSaturnPrivate::mimeTypes = {{
 	// Unofficial MIME types from FreeDesktop.org.
 	"application/x-saturn-rom",
 
 	nullptr
-};
+}};
 const RomDataInfo SegaSaturnPrivate::romDataInfo = {
-	"SegaSaturn", exts, mimeTypes
+	"SegaSaturn", exts.data(), mimeTypes.data()
 };
 
 SegaSaturnPrivate::SegaSaturnPrivate(const IRpFilePtr &file)

@@ -39,8 +39,8 @@ private:
 
 public:
 	/** RomDataInfo **/
-	static const char *const exts[];
-	static const char *const mimeTypes[];
+	static const array<const char*, 7+1> exts;
+	static const array<const char*, 1+1> mimeTypes;
 	static const RomDataInfo romDataInfo;
 
 public:
@@ -87,23 +87,23 @@ ROMDATA_IMPL_IMG(PlayStationSave)
 /** PlayStationSavePrivate **/
 
 /* RomDataInfo */
-const char *const PlayStationSavePrivate::exts[] = {
+const array<const char*, 7+1> PlayStationSavePrivate::exts = {{
 	".psv",
 	".mcb", ".mcx", ".pda", ".psx",
 	".mcs", ".ps1",
 
 	// TODO: support RAW?
 	nullptr
-};
-const char *const PlayStationSavePrivate::mimeTypes[] = {
+}};
+const array<const char*, 1+1> PlayStationSavePrivate::mimeTypes = {{
 	// Unofficial MIME types.
 	// TODO: Get these upstreamed on FreeDesktop.org.
 	"application/x-ps1-save",
 
 	nullptr
-};
+}};
 const RomDataInfo PlayStationSavePrivate::romDataInfo = {
-	"PlayStationSave", exts, mimeTypes
+	"PlayStationSave", exts.data(), mimeTypes.data()
 };
 
 PlayStationSavePrivate::PlayStationSavePrivate(const IRpFilePtr &file)

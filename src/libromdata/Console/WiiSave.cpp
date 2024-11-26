@@ -49,8 +49,8 @@ private:
 
 public:
 	/** RomDataInfo **/
-	static const char *const exts[];
-	static const char *const mimeTypes[];
+	static const array<const char*, 1+1> exts;
+	static const array<const char*, 1+1> mimeTypes;
 	static const RomDataInfo romDataInfo;
 
 public:
@@ -92,21 +92,21 @@ ROMDATA_IMPL_IMG(WiiSave)
 /** WiiSavePrivate **/
 
 /* RomDataInfo */
-const char *const WiiSavePrivate::exts[] = {
+const array<const char*, 1+1> WiiSavePrivate::exts = {{
 	".bin",
 	// TODO: Custom extension?
 
 	nullptr
-};
-const char *const WiiSavePrivate::mimeTypes[] = {
+}};
+const array<const char*, 1+1> WiiSavePrivate::mimeTypes = {{
 	// Unofficial MIME types.
 	// TODO: Get these upstreamed on FreeDesktop.org.
 	"application/x-wii-save",
 
 	nullptr
-};
+}};
 const RomDataInfo WiiSavePrivate::romDataInfo = {
-	"WiiSave", exts, mimeTypes
+	"WiiSave", exts.data(), mimeTypes.data()
 };
 
 // Wii_Bk_Header_t magic
@@ -319,7 +319,7 @@ int WiiSave::isRomSupported_static(const DetectInfo *info)
 	// read by RomDataFactory, so we ca'nt rely on it.
 	// Therefore, we're using the file extension.
 	if (info->ext && info->ext[0] != 0) {
-		for (const char *const *ext = WiiSavePrivate::exts;
+		for (const char *const *ext = WiiSavePrivate::exts.data();
 		     *ext != nullptr; ext++)
 		{
 			if (!strcasecmp(info->ext, *ext)) {

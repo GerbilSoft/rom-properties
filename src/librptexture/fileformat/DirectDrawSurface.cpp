@@ -49,8 +49,8 @@ class DirectDrawSurfacePrivate final : public FileFormatPrivate
 
 	public:
 		/** TextureInfo **/
-		static const char *const exts[];
-		static const char *const mimeTypes[];
+		static const array<const char*, 1+1> exts;
+		static const array<const char*, 2+1> mimeTypes;
 		static const TextureInfo textureInfo;
 
 	public:
@@ -148,12 +148,12 @@ FILEFORMAT_IMPL(DirectDrawSurface)
 /** DirectDrawSurfacePrivate **/
 
 /* TextureInfo */
-const char *const DirectDrawSurfacePrivate::exts[] = {
+const array<const char*, 1+1> DirectDrawSurfacePrivate::exts = {{
 	".dds",	// DirectDraw Surface
 
 	nullptr
-};
-const char *const DirectDrawSurfacePrivate::mimeTypes[] = {
+}};
+const array<const char*, 2+1> DirectDrawSurfacePrivate::mimeTypes = {{
 	// Vendor-specific MIME types.
 	// TODO: Get these upstreamed on FreeDesktop.org.
 	"image/vnd.ms-dds",
@@ -162,9 +162,9 @@ const char *const DirectDrawSurfacePrivate::mimeTypes[] = {
 	"image/x-dds",
 
 	nullptr
-};
+}};
 const TextureInfo DirectDrawSurfacePrivate::textureInfo = {
-	exts, mimeTypes
+	exts.data(), mimeTypes.data()
 };
 
 // Supported 16-bit uncompressed RGB formats
@@ -1508,4 +1508,4 @@ rp_image_const_ptr DirectDrawSurface::mipmap(int mip) const
 	return const_cast<DirectDrawSurfacePrivate*>(d)->loadImage(mip);
 }
 
-}
+} // namespace LibRpTexture

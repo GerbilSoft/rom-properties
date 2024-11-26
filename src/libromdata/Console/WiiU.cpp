@@ -40,8 +40,8 @@ private:
 
 public:
 	/** RomDataInfo **/
-	static const char *const exts[];
-	static const char *const mimeTypes[];
+	static const array<const char*, 3+1> exts;
+	static const array<const char*, 1+1> mimeTypes;
 	static const RomDataInfo romDataInfo;
 
 public:
@@ -55,7 +55,7 @@ ROMDATA_IMPL_IMG(WiiU)
 /** WiiUPrivate **/
 
 /* RomDataInfo */
-const char *const WiiUPrivate::exts[] = {
+const array<const char*, 3+1> WiiUPrivate::exts = {{
 	".wud", ".wux",
 
 	// NOTE: May cause conflicts on Windows
@@ -63,16 +63,16 @@ const char *const WiiUPrivate::exts[] = {
 	".iso",
 
 	nullptr
-};
-const char *const WiiUPrivate::mimeTypes[] = {
+}};
+const array<const char*, 1+1> WiiUPrivate::mimeTypes = {{
 	// Unofficial MIME types.
 	// TODO: Get these upstreamed on FreeDesktop.org.
 	"application/x-wii-u-rom",
 
 	nullptr
-};
+}};
 const RomDataInfo WiiUPrivate::romDataInfo = {
-	"WiiU", exts, mimeTypes
+	"WiiU", exts.data(), mimeTypes.data()
 };
 
 WiiUPrivate::WiiUPrivate(const IRpFilePtr &file)

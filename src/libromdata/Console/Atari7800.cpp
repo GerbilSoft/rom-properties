@@ -32,8 +32,8 @@ private:
 
 public:
 	/** RomDataInfo **/
-	static const char *const exts[];
-	static const char *const mimeTypes[];
+	static const array<const char*, 1+1> exts;
+	static const array<const char*, 1+1> mimeTypes;
 	static const RomDataInfo romDataInfo;
 
 public:
@@ -46,19 +46,19 @@ ROMDATA_IMPL(Atari7800)
 /** Atari7800Private **/
 
 /* RomDataInfo */
-const char *const Atari7800Private::exts[] = {
+const array<const char*, 1+1> Atari7800Private::exts = {{
 	".a78",
 
 	nullptr
-};
-const char *const Atari7800Private::mimeTypes[] = {
+}};
+const array<const char*, 1+1> Atari7800Private::mimeTypes = {{
 	// Unofficial MIME types from FreeDesktop.org.
 	"application/x-atari-7800-rom",
 
 	nullptr
-};
+}};
 const RomDataInfo Atari7800Private::romDataInfo = {
-	"Atari7800", exts, mimeTypes
+	"Atari7800", exts.data(), mimeTypes.data()
 };
 
 Atari7800Private::Atari7800Private(const IRpFilePtr &file)

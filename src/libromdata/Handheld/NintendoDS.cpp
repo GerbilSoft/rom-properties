@@ -37,15 +37,15 @@ ROMDATA_IMPL_IMG(NintendoDS)
 
 /* RomDataInfo */
 // NOTE: Using the same image settings as Nintendo3DS.
-const char *const NintendoDSPrivate::exts[] = {
+const array<const char*, 4+1> NintendoDSPrivate::exts = {{
 	".nds",	// Nintendo DS
 	".dsi",	// Nintendo DSi (devkitARM r46)
 	".ids",	// iQue DS (no-intro)
 	".srl",	// Official SDK extension
 
 	nullptr
-};
-const char *const NintendoDSPrivate::mimeTypes[] = {
+}};
+const array<const char*, 3+1> NintendoDSPrivate::mimeTypes = {{
 	// Unofficial MIME types from FreeDesktop.org.
 	"application/x-nintendo-ds-rom",
 
@@ -57,9 +57,9 @@ const char *const NintendoDSPrivate::mimeTypes[] = {
 	"application/x-nintendo-dsi-rom",
 
 	nullptr
-};
+}};
 const RomDataInfo NintendoDSPrivate::romDataInfo = {
-	"NintendoDS", exts, mimeTypes
+	"NintendoDS", exts.data(), mimeTypes.data()
 };
 
 NintendoDSPrivate::NintendoDSPrivate(const IRpFilePtr &file, bool cia)

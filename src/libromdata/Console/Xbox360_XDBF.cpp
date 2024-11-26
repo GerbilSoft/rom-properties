@@ -45,8 +45,8 @@ private:
 
 public:
 	/** RomDataInfo **/
-	static const char *const exts[];
-	static const char *const mimeTypes[];
+	static const array<const char*, 3+1> exts;
+	static const array<const char*, 1+1> mimeTypes;
 	static const RomDataInfo romDataInfo;
 
 public:
@@ -270,22 +270,22 @@ ROMDATA_IMPL_IMG_SIZES(Xbox360_XDBF)
 
 /* RomDataInfo */
 // NOTE: Using the same image settings as Xbox360_XEX.
-const char *const Xbox360_XDBF_Private::exts[] = {
+const array<const char*, 3+1> Xbox360_XDBF_Private::exts = {{
 	".xdbf",
 	".spa",		// XEX XDBF files
 	".gpd",		// Gamer Profile Data
 
 	nullptr
-};
-const char *const Xbox360_XDBF_Private::mimeTypes[] = {
+}};
+const array<const char*, 1+1> Xbox360_XDBF_Private::mimeTypes = {{
 	// Unofficial MIME types.
 	// TODO: Get these upstreamed on FreeDesktop.org.
 	"application/x-xbox360-xdbf",
 
 	nullptr
-};
+}};
 const RomDataInfo Xbox360_XDBF_Private::romDataInfo = {
-	"Xbox360_XEX", exts, mimeTypes
+	"Xbox360_XEX", exts.data(), mimeTypes.data()
 };
 
 Xbox360_XDBF_Private::Xbox360_XDBF_Private(const IRpFilePtr &file, bool xex)

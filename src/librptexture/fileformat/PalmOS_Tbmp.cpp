@@ -45,8 +45,8 @@ private:
 
 public:
 	/** TextureInfo **/
-	static const char *const exts[];
-	static const char *const mimeTypes[];
+	static const array<const char*, 1+1> exts;
+	static const array<const char*, 1+1> mimeTypes;
 	static const TextureInfo textureInfo;
 
 public:
@@ -95,21 +95,21 @@ FILEFORMAT_IMPL(PalmOS_Tbmp)
 /** PalmOS_Tbmp_Private **/
 
 /* TextureInfo */
-const char *const PalmOS_Tbmp_Private::exts[] = {
+const array<const char*, 1+1> PalmOS_Tbmp_Private::exts = {{
 	".tbmp",
 
 	nullptr
-};
-const char *const PalmOS_Tbmp_Private::mimeTypes[] = {
+}};
+const array<const char*, 1+1> PalmOS_Tbmp_Private::mimeTypes = {{
 	// Unofficial MIME types.
 	// TODO: Get these upstreamed on FreeDesktop.org.
 	// TODO: Add additional MIME types for XPR1/XPR2. (archive files)
 	"image/x-palm-tbmp",
 
 	nullptr
-};
+}};
 const TextureInfo PalmOS_Tbmp_Private::textureInfo = {
-	exts, mimeTypes
+	exts.data(), mimeTypes.data()
 };
 
 PalmOS_Tbmp_Private::PalmOS_Tbmp_Private(PalmOS_Tbmp *q, const IRpFilePtr &file, off64_t bitmapTypeAddr)

@@ -35,8 +35,8 @@ private:
 
 public:
 	/** RomDataInfo **/
-	static const char *const exts[];
-	static const char *const mimeTypes[];
+	static const array<const char*, 1+1> exts;
+	static const array<const char*, 1+1> mimeTypes;
 	static const RomDataInfo romDataInfo;
 
 public:
@@ -191,19 +191,19 @@ ROMDATA_IMPL(SPC)
 /** SPCPrivate **/
 
 /* RomDataInfo */
-const char *const SPCPrivate::exts[] = {
+const array<const char*, 1+1> SPCPrivate::exts = {{
 	".spc",
 
 	nullptr
-};
-const char *const SPCPrivate::mimeTypes[] = {
+}};
+const array<const char*, 1+1> SPCPrivate::mimeTypes = {{
 	// Unofficial MIME types.
 	"audio/x-spc",
 
 	nullptr
-};
+}};
 const RomDataInfo SPCPrivate::romDataInfo = {
-	"SPC", exts, mimeTypes
+	"SPC", exts.data(), mimeTypes.data()
 };
 
 SPCPrivate::SPCPrivate(const IRpFilePtr &file)

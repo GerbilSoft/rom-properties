@@ -41,8 +41,8 @@ class SegaPVRPrivate final : public FileFormatPrivate
 
 	public:
 		/** TextureInfo **/
-		static const char *const exts[];
-		static const char *const mimeTypes[];
+		static const array<const char*, 3+1> exts;
+		static const array<const char*, 4+1> mimeTypes;
 		static const TextureInfo textureInfo;
 
 	public:
@@ -134,14 +134,14 @@ FILEFORMAT_IMPL(SegaPVR)
 /** SegaPVRPrivate **/
 
 /* TextureInfo */
-const char *const SegaPVRPrivate::exts[] = {
+const array<const char*, 3+1> SegaPVRPrivate::exts = {{
 	".pvr",	// Sega Dreamcast PVR
 	".gvr",	// GameCube GVR
 	".svr",	// PlayStation 2 SVR
 
 	nullptr
-};
-const char *const SegaPVRPrivate::mimeTypes[] = {
+}};
+const array<const char*, 4+1> SegaPVRPrivate::mimeTypes = {{
 	// NOTE: Ordering matches PVRType.
 
 	// Unofficial MIME types.
@@ -152,9 +152,9 @@ const char *const SegaPVRPrivate::mimeTypes[] = {
 	"image/x-sega-pvrx",
 
 	nullptr
-};
+}};
 const TextureInfo SegaPVRPrivate::textureInfo = {
-	exts, mimeTypes
+	exts.data(), mimeTypes.data()
 };
 
 SegaPVRPrivate::SegaPVRPrivate(SegaPVR *q, const IRpFilePtr &file)

@@ -38,8 +38,8 @@ private:
 
 public:
 	/** RomDataInfo **/
-	static const char *const exts[];
-	static const char *const mimeTypes[];
+	static const array<const char*, 2+1> exts;
+	static const array<const char*, 2+1> mimeTypes;
 	static const RomDataInfo romDataInfo;
 
 public:
@@ -109,7 +109,7 @@ ROMDATA_IMPL_IMG_TYPES(NintendoBadge)
 /** NintendoBadgePrivate **/
 
 /* RomDataInfo */
-const char *const NintendoBadgePrivate::exts[] = {
+const array<const char*, 2+1> NintendoBadgePrivate::exts = {{
 	// NOTE: These extensions may cause conflicts on
 	// Windows if fallback handling isn't working.
 
@@ -117,8 +117,8 @@ const char *const NintendoBadgePrivate::exts[] = {
 	".cab",	// CABS file (NOTE: Conflicts with Microsoft CAB) [TODO: Unregister?]
 
 	nullptr
-};
-const char *const NintendoBadgePrivate::mimeTypes[] = {
+}};
+const array<const char*, 2+1> NintendoBadgePrivate::mimeTypes = {{
 	// NOTE: Ordering matches BadgeType.
 
 	// Unofficial MIME types.
@@ -127,9 +127,9 @@ const char *const NintendoBadgePrivate::mimeTypes[] = {
 	"application/x-nintendo-badge-set",
 
 	nullptr
-};
+}};
 const RomDataInfo NintendoBadgePrivate::romDataInfo = {
-	"NintendoBadge", exts, mimeTypes
+	"NintendoBadge", exts.data(), mimeTypes.data()
 };
 
 NintendoBadgePrivate::NintendoBadgePrivate(const IRpFilePtr &file)

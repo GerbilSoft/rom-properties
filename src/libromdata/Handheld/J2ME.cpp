@@ -62,8 +62,8 @@ private:
 
 public:
 	/** RomDataInfo **/
-	static const char *const exts[];
-	static const char *const mimeTypes[];
+	static const array<const char*, 1+1> exts;
+	static const array<const char*, 1+1> mimeTypes;
 	static const RomDataInfo romDataInfo;
 
 public:
@@ -162,13 +162,13 @@ ROMDATA_IMPL_IMG_SIZES(J2ME)
 /** J2MEPrivate **/
 
 /* RomDataInfo */
-const char *const J2MEPrivate::exts[] = {
+const array<const char*, 1+1> J2MEPrivate::exts = {{
 	".jar",
 	//".jad",	// TODO
 
 	nullptr
-};
-const char *const J2MEPrivate::mimeTypes[] = {
+}};
+const array<const char*, 1+1> J2MEPrivate::mimeTypes = {{
 	// Official MIME types from FreeDesktop.org.
 	"application/java-archive",
 
@@ -176,9 +176,9 @@ const char *const J2MEPrivate::mimeTypes[] = {
 	//"text/vnd.sun.j2me.app-descriptor",	// TODO
 
 	nullptr
-};
+}};
 const RomDataInfo J2MEPrivate::romDataInfo = {
-	"J2ME", exts, mimeTypes
+	"J2ME", exts.data(), mimeTypes.data()
 };
 
 // Manifest tag names

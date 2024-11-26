@@ -35,8 +35,8 @@ private:
 
 public:
 	/** RomDataInfo **/
-	static const char *const exts[];
-	static const char *const mimeTypes[];
+	static const array<const char*, 2+1> exts;
+	static const array<const char*, 1+1> mimeTypes;
 	static const RomDataInfo romDataInfo;
 
 public:
@@ -57,22 +57,22 @@ ROMDATA_IMPL(Intellivision)
 /** IntellivisionPrivate **/
 
 /* RomDataInfo */
-const char *const IntellivisionPrivate::exts[] = {
+const array<const char*, 2+1> IntellivisionPrivate::exts = {{
 	".int", ".itv",
 
 	//".bin",	// NOTE: Too generic...
 
 	nullptr
-};
-const char *const IntellivisionPrivate::mimeTypes[] = {
+}};
+const array<const char*, 1+1> IntellivisionPrivate::mimeTypes = {{
 	// Unofficial MIME types.
 	// TODO: Get these upstreamed on FreeDesktop.org.
 	"application/x-intellivision-rom",
 
 	nullptr
-};
+}};
 const RomDataInfo IntellivisionPrivate::romDataInfo = {
-	"Intellivision", exts, mimeTypes
+	"Intellivision", exts.data(), mimeTypes.data()
 };
 
 IntellivisionPrivate::IntellivisionPrivate(const IRpFilePtr &file)
@@ -209,7 +209,7 @@ int Intellivision::isRomSupported_static(const DetectInfo *info)
 	// The Intellivision ROM header doesn't have enough magic
 	// to conclusively determine if it's a Intellivision ROM,
 	// so check the file extension.
-	for (const char *const *ext = IntellivisionPrivate::exts;
+	for (const char *const *ext = IntellivisionPrivate::exts.data();
 	     *ext != nullptr; ext++)
 	{
 		if (!strcasecmp(info->ext, *ext)) {

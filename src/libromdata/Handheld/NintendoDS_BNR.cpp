@@ -43,8 +43,8 @@ private:
 
 public:
 	/** RomDataInfo **/
-	static const char *const exts[];
-	static const char *const mimeTypes[];
+	static const array<const char*, 1+1> exts;
+	static const array<const char*, 1+1> mimeTypes;
 	static const RomDataInfo romDataInfo;
 
 public:
@@ -102,20 +102,20 @@ ROMDATA_IMPL_IMG_SIZES(NintendoDS_BNR)
 
 /* RomDataInfo */
 // NOTE: Using the same image settings as Nintendo3DS.
-const char *const NintendoDS_BNR_Private::exts[] = {
+const array<const char*, 1+1> NintendoDS_BNR_Private::exts = {{
 	".bnr",		// Banner file
 
 	nullptr
-};
-const char *const NintendoDS_BNR_Private::mimeTypes[] = {
+}};
+const array<const char*, 1+1> NintendoDS_BNR_Private::mimeTypes = {{
 	// Unofficial MIME types.
 	// TODO: Get these upstreamed on FreeDesktop.org.
 	"application/x-nintendo-ds-bnr",
 
 	nullptr
-};
+}};
 const RomDataInfo NintendoDS_BNR_Private::romDataInfo = {
-	"Nintendo3DS", exts, mimeTypes
+	"Nintendo3DS", exts.data(), mimeTypes.data()
 };
 
 NintendoDS_BNR_Private::NintendoDS_BNR_Private(const IRpFilePtr &file)
@@ -747,4 +747,4 @@ IconAnimDataConstPtr NintendoDS_BNR::iconAnimData(void) const
 	return d->iconAnimData;
 }
 
-}
+} // namespace LibRomData

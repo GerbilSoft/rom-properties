@@ -39,8 +39,8 @@ class XboxXPRPrivate final : public FileFormatPrivate
 
 	public:
 		/** TextureInfo **/
-		static const char *const exts[];
-		static const char *const mimeTypes[];
+		static const array<const char*, 2+1> exts;
+		static const array<const char*, 1+1> mimeTypes;
 		static const TextureInfo textureInfo;
 
 	public:
@@ -157,21 +157,21 @@ FILEFORMAT_IMPL(XboxXPR)
 /** XboxXPRPrivate **/
 
 /* TextureInfo */
-const char *const XboxXPRPrivate::exts[] = {
+const array<const char*, 2+1> XboxXPRPrivate::exts = {{
 	".xbx", ".xpr",
 
 	nullptr
-};
-const char *const XboxXPRPrivate::mimeTypes[] = {
+}};
+const array<const char*, 1+1> XboxXPRPrivate::mimeTypes = {{
 	// Unofficial MIME types.
 	// TODO: Get these upstreamed on FreeDesktop.org.
 	// TODO: Add additional MIME types for XPR1/XPR2. (archive files)
 	"image/x-xbox-xpr0",
 
 	nullptr
-};
+}};
 const TextureInfo XboxXPRPrivate::textureInfo = {
-	exts, mimeTypes
+	exts.data(), mimeTypes.data()
 };
 
 XboxXPRPrivate::XboxXPRPrivate(XboxXPR *q, const IRpFilePtr &file)
@@ -772,4 +772,4 @@ rp_image_const_ptr XboxXPR::image(void) const
 	return const_cast<XboxXPRPrivate*>(d)->loadXboxXPR0Image();
 }
 
-}
+} // namespace LibRpTexture

@@ -36,8 +36,8 @@ private:
 
 public:
 	/** RomDataInfo **/
-	static const char *const exts[];
-	static const char *const mimeTypes[];
+	static const array<const char*, 5+1> exts;
+	static const array<const char*, 2+1> mimeTypes;
 	static const RomDataInfo romDataInfo;
 
 public:
@@ -143,7 +143,7 @@ ROMDATA_IMPL(NES)
 /** NESPrivate **/
 
 /* RomDataInfo */
-const char *const NESPrivate::exts[] = {
+const array<const char*, 5+1> NESPrivate::exts = {{
 	// NOTE: .fds is missing block checksums.
 	// .qd has block checksums, as does .tds (which is basically
 	// a 16-byte header, FDS BIOS, and a .qd file).
@@ -159,16 +159,16 @@ const char *const NESPrivate::exts[] = {
 	".tds",	// FDS (3DS Virtual Console)
 
 	nullptr
-};
-const char *const NESPrivate::mimeTypes[] = {
+}};
+const array<const char*, 2+1> NESPrivate::mimeTypes = {{
 	// Unofficial MIME types from FreeDesktop.org.
 	"application/x-nes-rom",
 	"application/x-fds-disk",
 
 	nullptr
-};
+}};
 const RomDataInfo NESPrivate::romDataInfo = {
-	"NES", exts, mimeTypes
+	"NES", exts.data(), mimeTypes.data()
 };
 
 // Internal footer: PRG ROM sizes (as powers of two)

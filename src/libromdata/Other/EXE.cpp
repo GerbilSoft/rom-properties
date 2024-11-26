@@ -35,7 +35,7 @@ ROMDATA_IMPL(EXE)
 /** EXEPrivate **/
 
 /* RomDataInfo */
-const char *const EXEPrivate::exts[] = {
+const array<const char*, (8*2)+1> EXEPrivate::exts = {{
 	// References:
 	// - https://en.wikipedia.org/wiki/Portable_Executable
 
@@ -54,8 +54,8 @@ const char *const EXEPrivate::exts[] = {
 	".vxd", ".386",
 
 	nullptr
-};
-const char *const EXEPrivate::mimeTypes[] = {
+}};
+const array<const char*, 5+1> EXEPrivate::mimeTypes = {{
 	// Unofficial MIME types from FreeDesktop.org.
 	"application/x-ms-dos-executable",
 	"application/x-ms-ne-executable",
@@ -70,9 +70,9 @@ const char *const EXEPrivate::mimeTypes[] = {
 	"application/vnd.microsoft.portable-executable",
 
 	nullptr
-};
+}};
 const RomDataInfo EXEPrivate::romDataInfo = {
-	"EXE", exts, mimeTypes
+	"EXE", exts.data(), mimeTypes.data()
 };
 
 // NE target OSes.

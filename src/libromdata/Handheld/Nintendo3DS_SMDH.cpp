@@ -41,8 +41,8 @@ private:
 
 public:
 	/** RomDataInfo **/
-	static const char *const exts[];
-	static const char *const mimeTypes[];
+	static const array<const char*, 1+1> exts;
+	static const array<const char*, 2+1> mimeTypes;
 	static const RomDataInfo romDataInfo;
 
 public:
@@ -86,12 +86,12 @@ ROMDATA_IMPL_IMG_SIZES(Nintendo3DS_SMDH)
 
 /* RomDataInfo */
 // NOTE: Using the same image settings as Nintendo3DS.
-const char *const Nintendo3DS_SMDH_Private::exts[] = {
+const array<const char*, 1+1> Nintendo3DS_SMDH_Private::exts = {{
 	".smdh",	// SMDH (icon) file.
 
 	nullptr
-};
-const char *const Nintendo3DS_SMDH_Private::mimeTypes[] = {
+}};
+const array<const char*, 2+1> Nintendo3DS_SMDH_Private::mimeTypes = {{
 	// Unofficial MIME types.
 	// TODO: Get these upstreamed on FreeDesktop.org.
 	"application/x-nintendo-3ds-smdh",
@@ -100,9 +100,9 @@ const char *const Nintendo3DS_SMDH_Private::mimeTypes[] = {
 	"application/x-ctr-smdh",
 
 	nullptr
-};
+}};
 const RomDataInfo Nintendo3DS_SMDH_Private::romDataInfo = {
-	"Nintendo3DS", exts, mimeTypes
+	"Nintendo3DS", exts.data(), mimeTypes.data()
 };
 
 Nintendo3DS_SMDH_Private::Nintendo3DS_SMDH_Private(const IRpFilePtr &file)

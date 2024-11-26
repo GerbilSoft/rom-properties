@@ -34,8 +34,8 @@ private:
 
 public:
 	/** RomDataInfo **/
-	static const char *const exts[];
-	static const char *const mimeTypes[];
+	static const array<const char*, 1+1> exts;
+	static const array<const char*, 1+1> mimeTypes;
 	static const RomDataInfo romDataInfo;
 
 public:
@@ -65,20 +65,20 @@ ROMDATA_IMPL(ColecoVision)
 /** ColecoVisionPrivate **/
 
 /* RomDataInfo */
-const char *const ColecoVisionPrivate::exts[] = {
+const array<const char*, 1+1> ColecoVisionPrivate::exts = {{
 	".col",
 
 	nullptr
-};
-const char *const ColecoVisionPrivate::mimeTypes[] = {
+}};
+const array<const char*, 1+1> ColecoVisionPrivate::mimeTypes = {{
 	// Unofficial MIME types.
 	// TODO: Get these upstreamed on FreeDesktop.org.
 	"application/x-colecovision-rom",
 
 	nullptr
-};
+}};
 const RomDataInfo ColecoVisionPrivate::romDataInfo = {
-	"ColecoVision", exts, mimeTypes
+	"ColecoVision", exts.data(), mimeTypes.data()
 };
 
 ColecoVisionPrivate::ColecoVisionPrivate(const IRpFilePtr &file)
@@ -356,7 +356,7 @@ int ColecoVision::isRomSupported_static(const DetectInfo *info)
 	// to conclusively determine if it's a ColecoVision ROM,
 	// so check the file extension.
 	// TODO: Also check for AA55/55AA?
-	for (const char *const *ext = ColecoVisionPrivate::exts;
+	for (const char *const *ext = ColecoVisionPrivate::exts.data();
 	     *ext != nullptr; ext++)
 	{
 		if (!strcasecmp(info->ext, *ext)) {
