@@ -1808,35 +1808,37 @@ int Nintendo3DS::loadFieldData(void)
 		// TODO: Add more fields?
 		const N3DS_NCSD_Header_NoSig_t *const ncsd_header = &d->mxh.ncsd_header;
 
-		// Partition type names.
+		// Partition type names
 		// TODO: Translate?
-		static const char *const partition_types[2][8] = {
-			// CCI
-			{"Game", "Manual", "Download Play",
-			 nullptr, nullptr, nullptr,
-			 "N3DS Update", "O3DS Update"},
-			// eMMC
-			{"TWL NAND", "AGB SAVE",
-			 "FIRM0", "FIRM1", "CTR NAND",
-			 nullptr, nullptr, nullptr},
-		};
+		typedef array<const char*, 8> pt_types_t;
+		static const pt_types_t partition_types_CCI = {{
+			"Game", "Manual", "Download Play",
+			nullptr, nullptr, nullptr,
+			"N3DS Update", "O3DS Update"
+		}};
+		static const pt_types_t partition_types_eMMC = {{
+			"TWL NAND", "AGB SAVE",
+			"FIRM0", "FIRM1", "CTR NAND",
+			nullptr, nullptr, nullptr
+		}};
 
-		// eMMC keyslots.
-		static constexpr uint8_t emmc_keyslots[2][8] = {
-			// Old3DS keyslots.
-			{0x03, 0x07, 0x06, 0x06, 0x04, 0x00, 0x00, 0x00},
-			// New3DS keyslots.
-			{0x03, 0x07, 0x06, 0x06, 0x05, 0x00, 0x00, 0x00},
-		};
+		// eMMC keyslots
+		typedef array<uint8_t, 8> eMMC_keyslots_t;
+		static const eMMC_keyslots_t eMMC_keyslots_Old3DS = {{
+			0x03, 0x07, 0x06, 0x06, 0x04, 0x00, 0x00, 0x00
+		}};
+		static const eMMC_keyslots_t eMMC_keyslots_New3DS = {{
+			0x03, 0x07, 0x06, 0x06, 0x05, 0x00, 0x00, 0x00
+		}};
 
-		const char *const *pt_types;
-		const uint8_t *keyslots = nullptr;
+		const pt_types_t *pt_types;
+		const eMMC_keyslots_t *keyslots = nullptr;
 		vector<string> *v_partitions_names;
 		if (d->romType != Nintendo3DSPrivate::RomType::eMMC) {
 			// CCI (3DS cartridge dump)
 
 			// Partition type names.
-			pt_types = partition_types[0];
+			pt_types = &partition_types_CCI;
 
 			// Columns for the partition table.
 			static const array<const char*, 5> cci_partitions_names = {{
@@ -1859,10 +1861,10 @@ int Nintendo3DS::loadFieldData(void)
 
 			// Partition type names.
 			// TODO: Show TWL NAND partitions?
-			pt_types = partition_types[1];
+			pt_types = &partition_types_eMMC;
 
 			// Keyslots.
-			keyslots = emmc_keyslots[new3ds];
+			keyslots = (new3ds) ? &eMMC_keyslots_New3DS : &eMMC_keyslots_Old3DS;
 
 			// Columns for the partition table.
 			static const array<const char*, 4> emmc_partitions_names = {{
@@ -1978,7 +1980,7 @@ int Nintendo3DS::loadFieldData(void)
 
 			// Partition type.
 			// TODO: Use the partition ID to determine the type?
-			const char *const s_ptype = (pt_types[i] ? pt_types[i] : s_unknown);
+			const char *const s_ptype = ((*pt_types)[i] ? (*pt_types)[i] : s_unknown);
 			data_row.emplace_back(s_ptype);
 
 			if (d->romType != Nintendo3DSPrivate::RomType::eMMC) {
@@ -2037,7 +2039,7 @@ int Nintendo3DS::loadFieldData(void)
 
 			if (keyslots) {
 				// Keyslot.
-				data_row.emplace_back(rp_sprintf("0x%02X", keyslots[i]));
+				data_row.emplace_back(rp_sprintf("0x%02X", (*keyslots)[i]));
 			}
 
 			// Partition size.
