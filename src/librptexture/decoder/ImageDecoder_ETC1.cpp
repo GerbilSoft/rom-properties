@@ -333,12 +333,12 @@ static void decodeBlock_ETC_RGB(array<uint32_t, 4*4> &tileBuf, const etc1_block 
 	// For ETC1 mode, these are used as base colors for the two subblocks.
 	// For 'T' and 'H' mode, these are used to calculate the paint colors.
 	// For 'Planar' mode, three colors are used as 'O', 'H', and 'V'.
-	ColorRGB base_color[3];
+	array<ColorRGB, 3> base_color;
 
 	// 'T', 'H' modes: Paint colors are used instead of base colors.
 	// Intensity modifications are not supported, so we'll store the
 	// final xRGB32 values instead of ColorRGB.
-	uint32_t paint_color[4];
+	array<uint32_t, 4> paint_color;
 
 	// ETC2 block mode.
 	etc2_block_mode block_mode = etc2_block_mode::Unknown;
@@ -511,7 +511,7 @@ static void decodeBlock_ETC_RGB(array<uint32_t, 4*4> &tileBuf, const etc1_block 
 			// ETC1 block mode.
 
 			// Intensities for the table codewords.
-			const int16_t *tbl[2];
+			array<const int16_t*, 2> tbl;
 			if ((mode & ETC2_DM_A1) && !(etc1_src->control & 0x02)) {
 				// ETC2, punchthrough alpha: Opaque bit is unset.
 				tbl[0] = etc2_intensity_a1[ etc1_src->control >> 5];

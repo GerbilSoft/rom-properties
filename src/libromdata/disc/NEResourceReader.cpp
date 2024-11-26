@@ -17,6 +17,7 @@ using namespace LibRpFile;
 using namespace LibRpText;
 
 // C++ STL classes
+using std::array;
 using std::string;
 using std::unique_ptr;
 using std::unordered_map;
@@ -283,9 +284,10 @@ int NEResourceReaderPrivate::loadResTbl(void)
 int NEResourceReaderPrivate::load_VS_VERSION_INFO_header(IRpFile *file, const char *key, uint16_t *pLen, uint16_t *pValueLen)
 {
 	// Read fields.
-	uint16_t fields[2];	// wLength, wValueLength
-	size_t size = file->read(fields, sizeof(fields));
-	if (size != sizeof(fields)) {
+	array<uint16_t, 2> fields;	// wLength, wValueLength
+	static constexpr size_t sizeof_fields = fields.size() * sizeof(uint16_t);
+	size_t size = file->read(fields.data(), sizeof_fields);
+	if (size != sizeof_fields) {
 		// Read error.
 		return -EIO;
 	}
@@ -294,7 +296,7 @@ int NEResourceReaderPrivate::load_VS_VERSION_INFO_header(IRpFile *file, const ch
 	// NOTE: NE uses SBCS/MBCS/DBCS, so the length is in bytes.
 	const unsigned int key_len = static_cast<unsigned int>(strlen(key));
 	// DWORD alignment: Make sure we end on a multiple of 4 bytes.
-	// NOTE: sizeof(fields) == 4, so it's already WORD-aligned.
+	// NOTE: sizeof_fields == 4, so it's already WORD-aligned.
 	unsigned int keyData_len = key_len + 1;
 	keyData_len = ALIGN_BYTES(4, keyData_len);
 	unique_ptr<char[]> keyData(new char[keyData_len]);
@@ -339,9 +341,10 @@ int NEResourceReaderPrivate::load_StringTable(IRpFile *file, IResourceReader::St
 
 	// Read fields.
 	const off64_t pos_start = file->tell();
-	uint16_t fields[2];	// wLength, wValueLength
-	size_t size = file->read(fields, sizeof(fields));
-	if (size != sizeof(fields)) {
+	array<uint16_t, 2> fields;	// wLength, wValueLength
+	static constexpr size_t sizeof_fields = fields.size() * sizeof(uint16_t);
+	size_t size = file->read(fields.data(), sizeof_fields);
+	if (size != sizeof_fields) {
 		// Read error.
 		return -EIO;
 	}
@@ -406,10 +409,10 @@ int NEResourceReaderPrivate::load_StringTable(IRpFile *file, IResourceReader::St
 	int tblPos = 0;
 	while (tblPos < strTblData_len) {
 		// wLength, wValueLength
-		memcpy(fields, &strTblData[tblPos], sizeof(fields));
+		memcpy(fields.data(), &strTblData[tblPos], sizeof_fields);
 
 		const uint16_t wLength = le16_to_cpu(fields[0]);
-		if (wLength < sizeof(fields)) {
+		if (wLength < sizeof_fields) {
 			// Invalid length.
 			return -EIO;
 		}
@@ -419,10 +422,10 @@ int NEResourceReaderPrivate::load_StringTable(IRpFile *file, IResourceReader::St
 			return -EIO;
 		}
 
-		// Key length, in bytes: wLength - wValueLength - sizeof(fields)
+		// Key length, in bytes: wLength - wValueLength - sizeof_fields
 		// Last character must be NULL.
-		tblPos += sizeof(fields);
-		const int key_len = (wLength - wValueLength - sizeof(fields)) - 1;
+		tblPos += (fields.size() * sizeof(uint16_t));
+		const int key_len = (wLength - wValueLength - sizeof_fields) - 1;
 		if (key_len <= 0) {
 			// Invalid key length.
 			return -EIO;
