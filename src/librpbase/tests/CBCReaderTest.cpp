@@ -27,11 +27,9 @@ using LibRpFile::MemFile;
 #include <array>
 #include <sstream>
 #include <string>
-#include <vector>
 using std::array;
 using std::ostringstream;
 using std::string;
-using std::vector;
 
 namespace LibRpBase { namespace Tests {
 
