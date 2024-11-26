@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libunixcommon)                    *
  * dll-search.h: Function to search for a usable rom-properties library.   *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -27,7 +27,7 @@ extern "C" {
  */
 ATTR_ACCESS_SIZE(write_only, 2, 3)
 ATTR_ACCESS(write_only, 4)
-int rp_get_process_name(pid_t pid, char *buf, size_t len, pid_t *ppid);
+int rp_get_process_name(pid_t pid, char *pidname, size_t len, pid_t *ppid);
 
 #define LEVEL_DEBUG 0
 #define LEVEL_ERROR 1

@@ -119,8 +119,9 @@ int rp_get_process_name(pid_t pid, char *pidname, size_t len, pid_t *ppid)
 	}
 
 	while (!feof(f) && fgets(buf, sizeof(buf), f) != NULL) {
-		if (buf[0] == 0)
+		if (buf[0] == 0) {
 			break;
+		}
 
 		// "Name:\t" is always the first line.
 		if (!strncmp(buf, "Name:\t", 6)) {
@@ -129,8 +130,9 @@ int rp_get_process_name(pid_t pid, char *pidname, size_t len, pid_t *ppid)
 			const size_t s_value_sz = sizeof(buf)-6;
 
 			const char *const chr = memchr(s_value, '\n', s_value_sz);
-			if (!chr)
+			if (!chr) {
 				continue;
+			}
 
 			size_t namelen = (int)(chr - s_value);
 			if (namelen > len - 1) {
@@ -246,7 +248,7 @@ static inline RP_Frontend check_xdg_desktop_name(const char *name)
 		if (ksv) {
 			// Convert the environment variable to a number.
 			char *endptr = NULL;
-			long ver = strtoul(ksv, &endptr, 10);
+			unsigned long ver = strtoul(ksv, &endptr, 10);
 			if (endptr && *endptr == '\0') {
 				switch (ver) {
 					default:
@@ -408,8 +410,9 @@ int rp_dll_search(const char *symname, void **ppDll, void **ppfn, PFN_RP_DLL_DEB
 	for (unsigned int j = 0; !*ppfn && j < 2; j++) {
 		// Attempt to open this plugin.
 		const char *const plugin_path = RP_Extension_Path[prio[i]][j];
-		if (!plugin_path)
+		if (!plugin_path) {
 			continue;
+		}
 
 		if (pfnDebug) {
 			pfnDebug(LEVEL_DEBUG, "Attempting to open: %s", plugin_path);
