@@ -48,6 +48,8 @@ extern "C" {
 namespace LibRpBase {
 
 class StreamStateSaver {
+	RP_DISABLE_COPY(StreamStateSaver)
+
 	std::ios &stream;	// Stream being adjusted.
 	std::ios state;		// Copy of original flags.
 public:
@@ -172,7 +174,7 @@ public:
 		return os << process(cp);
 	}
 
-	operator string() {
+	operator string() const {
 		return process(*this);
 	}
 };
@@ -219,8 +221,9 @@ public:
 		// Determine the column widths.
 		unsigned int col = 0;
 		for (const string &name : *(bitfieldDesc.names)) {
-			if (name.empty())
+			if (name.empty()) {
 				continue;
+			}
 
 			colSize[col] = max(utf8_disp_strlen(name), colSize[col]);
 			col++;
@@ -280,8 +283,7 @@ static int formatDateTime(char *buf, size_t size, time_t timestamp, RomFields::D
 	struct tm *ret;
 	if (dtflags & RomFields::RFT_DATETIME_IS_UTC) {
 		ret = gmtime_r(&timestamp, &tm_struct);
-	}
-	else {
+	} else {
 		tzset();
 		ret = localtime_r(&timestamp, &tm_struct);
 	}
@@ -752,7 +754,7 @@ public:
 		char str[128];
 		str[0] = '\0';
 		int ret = formatDateTime(str, sizeof(str),
-			static_cast<time_t>(romField.data.date_time),
+			romField.data.date_time,
 			static_cast<RomFields::DateTimeFlags>(romField.flags));
 		if (likely(ret == 0)) {
 			os << str;
@@ -866,11 +868,13 @@ public:
 		bool printed_first = false;
 		for (const RomFields::Field &romField : fo.fields) {
 			assert(romField.isValid());
-			if (!romField.isValid())
+			if (!romField.isValid()) {
 				continue;
+			}
 
-			if (printed_first)
+			if (printed_first) {
 				os << '\n';
+			}
 
 			// New tab?
 			if (tabCount > 1 && tabIdx != romField.tabIdx) {
@@ -963,8 +967,9 @@ std::ostream& operator<<(std::ostream& os, const ROMOutput& fo) {
 		// Internal images
 		if (!(fo.flags & OF_SkipInternalImages)) {
 			for (int i = RomData::IMG_INT_MIN; i <= RomData::IMG_INT_MAX; i++) {
-				if (!(imgbf & (1U << i)))
+				if (!(imgbf & (1U << i))) {
 					continue;
+				}
 
 				auto image = romdata->image(static_cast<RomData::ImageType>(i));
 				if (image && image->isValid()) {
@@ -974,7 +979,7 @@ std::ostream& operator<<(std::ostream& os, const ROMOutput& fo) {
 					// TODO: After localizing, add enough spaces for alignment.
 					os << "   Format : " << rp_image::getFormatName(image->format()) << '\n';
 					os << "   Size   : " << image->width() << " x " << image->height() << '\n';
-					if (romdata->imgpf((RomData::ImageType) i)  & RomData::IMGPF_ICON_ANIMATED) {
+					if (romdata->imgpf(static_cast<RomData::ImageType>(i))  & RomData::IMGPF_ICON_ANIMATED) {
 						os << "   " << C_("TextOut", "Animated icon is present (use -a to extract)") << '\n';
 					}
 				}
@@ -985,8 +990,9 @@ std::ostream& operator<<(std::ostream& os, const ROMOutput& fo) {
 		// NOTE: IMGPF_ICON_ANIMATED won't ever appear in external images.
 		std::vector<RomData::ExtURL> extURLs;
 		for (int i = RomData::IMG_EXT_MIN; i <= RomData::IMG_EXT_MAX; i++) {
-			if (!(imgbf & (1U << i)))
+			if (!(imgbf & (1U << i))) {
 				continue;
+			}
 
 			// NOTE: extURLs may be empty even though the class supports it.
 			// Check extURLs before doing anything else.
@@ -995,8 +1001,9 @@ std::ostream& operator<<(std::ostream& os, const ROMOutput& fo) {
 			// TODO: Customize the image size parameter?
 			// TODO: Option to retrieve supported image size?
 			int ret = romdata->extURLs(static_cast<RomData::ImageType>(i), &extURLs, RomData::IMAGE_SIZE_DEFAULT);
-			if (ret != 0 || extURLs.empty())
+			if (ret != 0 || extURLs.empty()) {
 				continue;
+			}
 
 			for (const RomData::ExtURL &extURL : extURLs) {
 				os << "-- " <<
