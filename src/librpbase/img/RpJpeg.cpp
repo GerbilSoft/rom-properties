@@ -68,7 +68,7 @@ struct my_error_mgr {
  * error_exit replacement for JPEG.
  * @param cinfo j_common_ptr
  */
-void JPEGCALL my_error_exit(j_common_ptr cinfo)
+static void JPEGCALL my_error_exit(j_common_ptr cinfo)
 {
 	// Based on libjpeg-turbo 1.5.1's read_JPEG_file(). (example.c)
 	my_error_mgr *myerr = reinterpret_cast<my_error_mgr*>(cinfo->err);
@@ -87,7 +87,7 @@ void JPEGCALL my_error_exit(j_common_ptr cinfo)
  * output_message replacement for JPEG.
  * @param cinfo j_common_ptr
  */
-void JPEGCALL my_output_message(j_common_ptr cinfo)
+static void JPEGCALL my_output_message(j_common_ptr cinfo)
 {
 	// Format the string.
 	char buffer[JMSG_LENGTH_MAX];
