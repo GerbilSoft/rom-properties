@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * RomDataFormat.hpp: Common RomData string formatting functions.          *
  *                                                                         *
- * Copyright (c) 2017-2023 by David Korth.                                 *
+ * Copyright (c) 2017-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -25,6 +25,6 @@ QString formatDateTime(time_t date_time, unsigned int flags);
 /**
  * Format an RFT_DIMENSIONS.
  * @param dimensions	[in] Dimensions
- * @return Formatted RFT_DIMENSIONS, or nullptr on error. (allocated string; free with g_free)
+ * @return Formatted RFT_DIMENSIONS, or nullptr on error.
  */
 QString formatDimensions(const int dimensions[3]);
