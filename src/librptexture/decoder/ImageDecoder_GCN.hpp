@@ -65,7 +65,7 @@ rp_image_ptr fromGcnI8(int width, int height,
  */
 ATTR_ACCESS_SIZE(read_only, 3, 4)
 rp_image_ptr fromGcnCI4(int width, int height,
-	const uint8_t *RESTRICT img_buf, int img_siz,
-	const uint16_t *RESTRICT pal_buf, int pal_siz);
+	const uint8_t *RESTRICT img_buf, size_t img_siz,
+	const uint16_t *RESTRICT pal_buf, size_t pal_siz);
 
 } }
