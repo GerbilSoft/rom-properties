@@ -346,8 +346,9 @@ rp_key_manager_tab_save(RpKeyManagerTab *tab, GKeyFile *keyFile)
 	for (int i = 0; i < totalKeyCount; i++) {
 		const KeyStoreUI::Key *const key = keyStoreUI->getKey(i);
 		assert(key != nullptr);
-		if (!key || !key->modified)
+		if (!key || !key->modified) {
 			continue;
+		}
 
 		// Save this key.
 		g_key_file_set_string(keyFile, "Keys", key->name.c_str(), key->value.c_str());
@@ -371,8 +372,8 @@ rp_key_manager_tab_save(RpKeyManagerTab *tab, GKeyFile *keyFile)
 static void
 btnImport_menu_pos_func(GtkMenu *menu, gint *x, gint *y, gboolean *push_in, gpointer user_data)
 {
-	GtkWidget *const button = (GtkWidget*)GTK_BUTTON(user_data);
-	GdkWindow *const window = gtk_widget_get_window(button);
+	GtkButton *const button = GTK_BUTTON(user_data);
+	GdkWindow *const window = gtk_widget_get_window(GTK_WIDGET(button));
 
 	// FIXME: GTK2: First run results in the menu going down, not up.
 	GtkAllocation button_alloc, menu_alloc;
@@ -715,7 +716,7 @@ action_triggered_signal_handler(GSimpleAction *action, GVariant *parameter, RpKe
 	RP_UNUSED(parameter);
 	g_return_if_fail(RP_IS_KEY_MANAGER_TAB(tab));
 
-	const gint id = (gboolean)GPOINTER_TO_INT(g_object_get_qdata(G_OBJECT(action), menuImport_id_quark));
+	const gint id = GPOINTER_TO_INT(g_object_get_qdata(G_OBJECT(action), menuImport_id_quark));
 	rp_key_manager_tab_handle_menu_action(tab, id);
 }
 #else /* !USE_G_MENU_MODEL */
@@ -729,7 +730,7 @@ menuImport_triggered_signal_handler(GtkMenuItem *menuItem, RpKeyManagerTab *tab)
 {
 	g_return_if_fail(RP_IS_KEY_MANAGER_TAB(tab));
 
-	const gint id = (gboolean)GPOINTER_TO_INT(g_object_get_qdata(G_OBJECT(menuItem), menuImport_id_quark));
+	const gint id = GPOINTER_TO_INT(g_object_get_qdata(G_OBJECT(menuItem), menuImport_id_quark));
 	rp_key_manager_tab_handle_menu_action(tab, id);
 }
 #endif /* USE_G_MENU_MODEL */
