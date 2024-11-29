@@ -128,7 +128,7 @@ public:
 	// Amount of data we'll read for the PE header.
 	// NOTE: Changed from `static const unsigned int` to #define
 	// due to shared_ptr causing problems in debug builds.
-#define PE_HEADER_SIZE 8192U
+	static constexpr unsigned int PE_HEADER_SIZE = 8192U;
 
 #ifdef ENABLE_LIBMSPACK
 	// Decompressed EXE header.

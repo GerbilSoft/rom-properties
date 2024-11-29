@@ -19,7 +19,7 @@
 // C++ STL classes
 using std::array;
 
-#define LINE_COUNT 2
+static constexpr size_t LINE_COUNT = 2U;
 
 AchievementsItemDelegate::AchievementsItemDelegate(QObject *parent)
 	: super(parent)

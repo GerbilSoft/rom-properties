@@ -290,7 +290,7 @@ int WiiUPackagePrivate::addFields_System_XMLs(void)
 	// Most Wii U language codes match standard codes,
 	// except for "zht" ('hant') and "zhs" ('hans').
 	// Ordering matches Wii U meta.xml, which is likely the internal ordering.
-#define WiiU_LC_COUNT 12
+	static constexpr size_t WiiU_LC_COUNT = 12U;
 	struct xml_lc_map_t {
 		char xml_lc[4];	// LC in the XML file
 		uint32_t lc;	// Our LC

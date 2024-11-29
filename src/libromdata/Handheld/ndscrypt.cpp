@@ -304,8 +304,8 @@ void NDSCrypt::init0(BlowfishKey bfkey)
 }
 
 // ARM9 decryption check values
-#define MAGIC30		0x72636E65
-#define MAGIC34		0x6A624F79
+static constexpr uint32_t MAGIC30 = 0x72636E65U;
+static constexpr uint32_t MAGIC34 = 0x6A624F79U;
 
 /*
  * decrypt_arm9

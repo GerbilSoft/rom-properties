@@ -108,7 +108,7 @@ string getHomeDirectory(void)
 	// TODO: Check for ENOMEM?
 	const char *pw_dir = nullptr;
 #if defined(HAVE_GETPWUID_R) && defined(_SC_GETPW_R_SIZE_MAX)
-#  define GETPW_BUF_SIZE 16384
+	static constexpr size_t GETPW_BUF_SIZE = 16384U;
 	unique_ptr<char[]> buf(new char[GETPW_BUF_SIZE]);
 	struct passwd pwd;
 	struct passwd *pwd_result;

@@ -21,7 +21,7 @@
 
 namespace LibRpTexture {
 
-/** Image operations. **/
+/** Image operations **/
 
 /**
  * Swizzle the image channels.
@@ -94,7 +94,13 @@ int rp_image::swizzle_ssse3(const char *swz_spec)
 		pshufb_mask_vals[0]+12,	pshufb_mask_vals[1]+12,	pshufb_mask_vals[2]+12,	pshufb_mask_vals[3]+12
 	);
 	const __m128i por_mask = _mm_setr_epi32(por_mask_vals.u32, por_mask_vals.u32, por_mask_vals.u32, por_mask_vals.u32);
-	
+
+	// Channel indexes
+	static constexpr unsigned int SWZ_CH_B = 0U;
+	static constexpr unsigned int SWZ_CH_G = 1U;
+	static constexpr unsigned int SWZ_CH_R = 2U;
+	static constexpr unsigned int SWZ_CH_A = 3U;
+
 	uint32_t *bits = static_cast<uint32_t*>(backend->data());
 	const unsigned int stride_diff = (backend->stride - this->row_bytes()) / sizeof(uint32_t);
 	const int width = backend->width;
@@ -121,18 +127,6 @@ int rp_image::swizzle_ssse3(const char *swz_spec)
 			cur.u32 = *bits;
 
 		// TODO: Verify on big-endian.
-#if SYS_BYTEORDER == SYS_LIL_ENDIAN
-#  define SWZ_CH_B 0
-#  define SWZ_CH_G 1
-#  define SWZ_CH_R 2
-#  define SWZ_CH_A 3
-#else /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
-#  define SWZ_CH_B 3
-#  define SWZ_CH_G 2
-#  define SWZ_CH_R 1
-#  define SWZ_CH_A 0
-#endif /* SYS_BYTEORDER == SYS_LIL_ENDIAN */
-
 #define SWIZZLE_CHANNEL(n) do { \
 				switch (swz_ch.u8[n]) { \
 					case 'b':	swz.u8[n] = cur.u8[SWZ_CH_B];	break; \

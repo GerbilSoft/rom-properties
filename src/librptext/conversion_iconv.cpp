@@ -19,9 +19,9 @@
 // Determine the system encodings.
 #include "librpbyteswap/byteorder.h"
 #if SYS_BYTEORDER == SYS_BIG_ENDIAN
-#  define RP_ICONV_UTF16_ENCODING "UTF-16BE"
+static const char RP_ICONV_UTF16_ENCODING[] = "UTF-16BE";
 #else
-#  define RP_ICONV_UTF16_ENCODING "UTF-16LE"
+static const char RP_ICONV_UTF16_ENCODING[] = "UTF-16LE";
 #endif
 
 // iconv

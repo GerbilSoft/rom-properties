@@ -742,6 +742,13 @@ int rp_image::swizzle_cpp(const char *swz_spec)
 	swz_ch.u32 = (swz_ch.u32 >>  8) | (swz_ch.u32 << 24);
 #endif /* SYS_BYTEORDER == SYS_LIL_ENDIAN */
 
+	// Channel indexes
+	// FIXME: Reverse for big-endian?
+	static constexpr unsigned int SWZ_CH_B = 3U;
+	static constexpr unsigned int SWZ_CH_G = 2U;
+	static constexpr unsigned int SWZ_CH_R = 1U;
+	static constexpr unsigned int SWZ_CH_A = 0U;
+
 	uint32_t *bits = static_cast<uint32_t*>(backend->data());
 	const unsigned int stride_diff = (backend->stride - this->row_bytes()) / sizeof(uint32_t);
 	const int width = backend->width;
@@ -749,11 +756,6 @@ int rp_image::swizzle_cpp(const char *swz_spec)
 		for (int x = width; x > 0; x--, bits++) {
 			u8_32 cur, swz;
 			cur.u32 = *bits;
-
-#define SWZ_CH_B 3
-#define SWZ_CH_G 2
-#define SWZ_CH_R 1
-#define SWZ_CH_A 0
 
 #define SWIZZLE_CHANNEL(n) do { \
 				switch (swz_ch.u8[n]) { \

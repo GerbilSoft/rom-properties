@@ -125,16 +125,19 @@ class RomFields
 
 		// Display flags for RFT_DATETIME.
 		enum DateTimeFlags : uint8_t {
-			// Show the date value.
+			// Default formatting
+			RFT_DATETIME_DEFAULT = 0U,
+
+			// Show the date value
 			RFT_DATETIME_HAS_DATE = (1U << 0),
 
-			// Show the time value.
+			// Show the time value
 			RFT_DATETIME_HAS_TIME = (1U << 1),
 
-			// Date does not have a valid year value.
+			// Date does not have a valid year value
 			RFT_DATETIME_NO_YEAR = (1U << 2),
 
-			// Mask for date/time display values.
+			// Mask for date/time display values
 			RFT_DATETIME_HAS_DATETIME_MASK = RFT_DATETIME_HAS_DATE | RFT_DATETIME_HAS_TIME,
 			RFT_DATETIME_HAS_DATETIME_NO_YEAR_MASK = RFT_DATETIME_HAS_DATE | RFT_DATETIME_HAS_TIME | RFT_DATETIME_NO_YEAR,
 
@@ -168,12 +171,12 @@ class RomFields
 
 		// Age Ratings bitfields.
 		enum AgeRatingsBitfield : uint16_t {
-			AGEBF_MIN_AGE_MASK	= 0x001F,	// Low 5 bits indicate the minimum age.
-			AGEBF_ACTIVE		= 0x0020,	// Rating is only valid if this is set.
-			AGEBF_PENDING		= 0x0040,	// Rating is pending.
-			AGEBF_NO_RESTRICTION	= 0x0080,	// No age restriction.
-			AGEBF_ONLINE_PLAY	= 0x0100,	// Rating may change due to online play.
-			AGEBF_PROHIBITED	= 0x0200,	// Game is specifically prohibited.
+			AGEBF_MIN_AGE_MASK	= 0x001FU,	// Low 5 bits indicate the minimum age.
+			AGEBF_ACTIVE		= 0x0020U,	// Rating is only valid if this is set.
+			AGEBF_PENDING		= 0x0040U,	// Rating is pending.
+			AGEBF_NO_RESTRICTION	= 0x0080U,	// No age restriction.
+			AGEBF_ONLINE_PLAY	= 0x0100U,	// Rating may change due to online play.
+			AGEBF_PROHIBITED	= 0x0200U,	// Game is specifically prohibited.
 		};
 
 		// Age Ratings type.
@@ -296,7 +299,7 @@ class RomFields
 			}
 
 			/**
-			 * Destructor.
+			 * Destructor
 			 *
 			 * NOTE: Exported for test case purposes.
 			 */
@@ -320,10 +323,10 @@ class RomFields
 				return (type != RFT_INVALID);
 			}
 
-			// Field description.
+			// Field description
 			union _desc {
 				struct _bitfield {
-					// Bit flag names.
+					// Bit flag names
 					// Must be a vector of at least 'elements' strings.
 					// If a name is nullptr, that element is skipped.
 					const std::vector<std::string> *names;
@@ -345,9 +348,9 @@ class RomFields
 				} list_data;
 			} desc;
 
-			// Field data.
+			// Field data
 			union _data {
-				// Generic data for NULL.
+				// Generic data for NULL
 				uint64_t generic;
 
 				// RFT_STRING
@@ -418,7 +421,7 @@ class RomFields
 		typedef std::vector<Field>::const_iterator const_iterator;
 
 	public:
-		/** Field accessors. **/
+		/** Field accessors **/
 
 		/**
 		 * Get the number of fields.
@@ -443,14 +446,14 @@ class RomFields
 
 		/**
 		 * Get a const iterator pointing to the beginning of the RomFields.
-		 * @return Const iterator.
+		 * @return Const iterator
 		 */
 		RP_LIBROMDATA_PUBLIC
 		const_iterator cbegin(void) const;
 
 		/**
 		 * Get a const iterator pointing to the end of the RomFields.
-		 * @return Const iterator.
+		 * @return Const iterator
 		 */
 		RP_LIBROMDATA_PUBLIC
 		const_iterator cend(void) const;

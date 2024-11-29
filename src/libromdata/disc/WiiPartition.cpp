@@ -32,10 +32,6 @@ using std::unique_ptr;
 #include "GcnPartition_p.hpp"
 namespace LibRomData {
 
-#define SECTOR_SIZE_ENCRYPTED 0x8000
-#define SECTOR_SIZE_DECRYPTED 0x7C00
-#define SECTOR_SIZE_DECRYPTED_OFFSET 0x400
-
 class WiiPartitionPrivate final : public GcnPartitionPrivate
 {
 public:
@@ -73,6 +69,11 @@ public:
 	// Decrypted read position. (0x7C00 bytes out of 0x8000)
 	// NOTE: Actual read position if ((cryptoMethod & CM_MASK_SECTOR) == CM_32K).
 	off64_t pos_7C00;
+
+	// Sector size and offset values
+	static constexpr unsigned int SECTOR_SIZE_ENCRYPTED = 0x8000U;
+	static constexpr unsigned int SECTOR_SIZE_DECRYPTED = 0x7C00U;
+	static constexpr unsigned int SECTOR_SIZE_DECRYPTED_OFFSET = 0x400U;
 
 	// Decrypted sector cache.
 	// NOTE: Actual data starts at 0x400.
@@ -468,17 +469,17 @@ size_t WiiPartition::read(void *ptr, size_t size)
 		// Full 32K sectors. (implies no encryption)
 
 		// Check if we're not starting on a block boundary.
-		const uint32_t blockStartOffset = d->pos_7C00 % SECTOR_SIZE_ENCRYPTED;
+		const uint32_t blockStartOffset = d->pos_7C00 % WiiPartitionPrivate::SECTOR_SIZE_ENCRYPTED;
 		if (blockStartOffset != 0) {
 			// Not a block boundary.
 			// Read the end of the block.
-			uint32_t read_sz = SECTOR_SIZE_ENCRYPTED - blockStartOffset;
+			uint32_t read_sz = WiiPartitionPrivate::SECTOR_SIZE_ENCRYPTED - blockStartOffset;
 			if (size < static_cast<size_t>(read_sz)) {
 				read_sz = static_cast<uint32_t>(size);
 			}
 
 			// Read and decrypt the sector.
-			const uint32_t blockStart = static_cast<uint32_t>(d->pos_7C00 / SECTOR_SIZE_ENCRYPTED);
+			const uint32_t blockStart = static_cast<uint32_t>(d->pos_7C00 / WiiPartitionPrivate::SECTOR_SIZE_ENCRYPTED);
 			d->readSector(blockStart);
 
 			// Copy data from the sector.
@@ -492,18 +493,18 @@ size_t WiiPartition::read(void *ptr, size_t size)
 		}
 
 		// Read entire blocks.
-		for (; size >= SECTOR_SIZE_ENCRYPTED;
-		     size -= SECTOR_SIZE_ENCRYPTED, ptr8 += SECTOR_SIZE_ENCRYPTED,
-		     ret += SECTOR_SIZE_ENCRYPTED, d->pos_7C00 += SECTOR_SIZE_ENCRYPTED)
+		for (; size >= WiiPartitionPrivate::SECTOR_SIZE_ENCRYPTED;
+		     size -= WiiPartitionPrivate::SECTOR_SIZE_ENCRYPTED, ptr8 += WiiPartitionPrivate::SECTOR_SIZE_ENCRYPTED,
+		     ret += WiiPartitionPrivate::SECTOR_SIZE_ENCRYPTED, d->pos_7C00 += WiiPartitionPrivate::SECTOR_SIZE_ENCRYPTED)
 		{
-			assert(d->pos_7C00 % SECTOR_SIZE_ENCRYPTED == 0);
+			assert(d->pos_7C00 % WiiPartitionPrivate::SECTOR_SIZE_ENCRYPTED == 0);
 
 			// Read the sector.
-			const uint32_t blockStart = static_cast<uint32_t>(d->pos_7C00 / SECTOR_SIZE_ENCRYPTED);
+			const uint32_t blockStart = static_cast<uint32_t>(d->pos_7C00 / WiiPartitionPrivate::SECTOR_SIZE_ENCRYPTED);
 			d->readSector(blockStart);
 
 			// Copy data from the sector.
-			memcpy(ptr8, d->sector_buf.fulldata, SECTOR_SIZE_ENCRYPTED);
+			memcpy(ptr8, d->sector_buf.fulldata, WiiPartitionPrivate::SECTOR_SIZE_ENCRYPTED);
 		}
 
 		// Check if we still have data left. (not a full block)
@@ -511,8 +512,8 @@ size_t WiiPartition::read(void *ptr, size_t size)
 			// Not a full block.
 
 			// Read the sector.
-			assert(d->pos_7C00 % SECTOR_SIZE_ENCRYPTED == 0);
-			const uint32_t blockEnd = static_cast<uint32_t>(d->pos_7C00 / SECTOR_SIZE_ENCRYPTED);
+			assert(d->pos_7C00 % WiiPartitionPrivate::SECTOR_SIZE_ENCRYPTED == 0);
+			const uint32_t blockEnd = static_cast<uint32_t>(d->pos_7C00 / WiiPartitionPrivate::SECTOR_SIZE_ENCRYPTED);
 			d->readSector(blockEnd);
 
 			// Copy data from the sector.
@@ -554,17 +555,17 @@ size_t WiiPartition::read(void *ptr, size_t size)
 		}
 
 		// Check if we're not starting on a block boundary.
-		const uint32_t blockStartOffset = d->pos_7C00 % SECTOR_SIZE_DECRYPTED;
+		const uint32_t blockStartOffset = d->pos_7C00 % WiiPartitionPrivate::SECTOR_SIZE_DECRYPTED;
 		if (blockStartOffset != 0) {
 			// Not a block boundary.
 			// Read the end of the block.
-			uint32_t read_sz = SECTOR_SIZE_DECRYPTED - blockStartOffset;
+			uint32_t read_sz = WiiPartitionPrivate::SECTOR_SIZE_DECRYPTED - blockStartOffset;
 			if (size < static_cast<size_t>(read_sz)) {
 				read_sz = static_cast<uint32_t>(size);
 			}
 
 			// Read and decrypt the sector.
-			const uint32_t blockStart = static_cast<uint32_t>(d->pos_7C00 / SECTOR_SIZE_DECRYPTED);
+			const uint32_t blockStart = static_cast<uint32_t>(d->pos_7C00 / WiiPartitionPrivate::SECTOR_SIZE_DECRYPTED);
 			d->readSector(blockStart);
 
 			// Copy data from the sector.
@@ -578,18 +579,18 @@ size_t WiiPartition::read(void *ptr, size_t size)
 		}
 
 		// Read entire blocks.
-		for (; size >= SECTOR_SIZE_DECRYPTED;
-		size -= SECTOR_SIZE_DECRYPTED, ptr8 += SECTOR_SIZE_DECRYPTED,
-		ret += SECTOR_SIZE_DECRYPTED, d->pos_7C00 += SECTOR_SIZE_DECRYPTED)
+		for (; size >= WiiPartitionPrivate::SECTOR_SIZE_DECRYPTED;
+		    size -= WiiPartitionPrivate::SECTOR_SIZE_DECRYPTED, ptr8 += WiiPartitionPrivate::SECTOR_SIZE_DECRYPTED,
+		    ret += WiiPartitionPrivate::SECTOR_SIZE_DECRYPTED, d->pos_7C00 += WiiPartitionPrivate::SECTOR_SIZE_DECRYPTED)
 		{
-			assert(d->pos_7C00 % SECTOR_SIZE_DECRYPTED == 0);
+			assert(d->pos_7C00 % WiiPartitionPrivate::SECTOR_SIZE_DECRYPTED == 0);
 
 			// Read and decrypt the sector.
-			const uint32_t blockStart = static_cast<uint32_t>(d->pos_7C00 / SECTOR_SIZE_DECRYPTED);
+			const uint32_t blockStart = static_cast<uint32_t>(d->pos_7C00 / WiiPartitionPrivate::SECTOR_SIZE_DECRYPTED);
 			d->readSector(blockStart);
 
 			// Copy data from the sector.
-			memcpy(ptr8, d->sector_buf.data, SECTOR_SIZE_DECRYPTED);
+			memcpy(ptr8, d->sector_buf.data, WiiPartitionPrivate::SECTOR_SIZE_DECRYPTED);
 		}
 
 		// Check if we still have data left. (not a full block)
@@ -597,8 +598,8 @@ size_t WiiPartition::read(void *ptr, size_t size)
 			// Not a full block.
 
 			// Read and decrypt the sector.
-			assert(d->pos_7C00 % SECTOR_SIZE_DECRYPTED == 0);
-			const uint32_t blockEnd = static_cast<uint32_t>(d->pos_7C00 / SECTOR_SIZE_DECRYPTED);
+			assert(d->pos_7C00 % WiiPartitionPrivate::SECTOR_SIZE_DECRYPTED == 0);
+			const uint32_t blockEnd = static_cast<uint32_t>(d->pos_7C00 / WiiPartitionPrivate::SECTOR_SIZE_DECRYPTED);
 			d->readSector(blockEnd);
 
 			// Copy data from the sector.
