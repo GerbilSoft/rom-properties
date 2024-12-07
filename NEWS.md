@@ -15,6 +15,11 @@
 * Bug fixes:
   * Amiibo: Fix an error that can cause the wrong Character Variant to be
     displayed for certain amiibo.
+  * Windows: Fix seemingly random crashes and glitches (mostly on Windows 10)
+    that may occur when viewing the ROM Properties tab for a file type that
+    shows ListViews, e.g. EXE and DLL files.
+    * Fixes #432: [Bug Report] EXE/DLL files causes a crash
+      * Reported by @xxmichibxx.
 
 ## v2.4.1 (released 2024/11/12)
 

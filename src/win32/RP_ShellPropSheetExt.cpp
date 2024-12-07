@@ -889,7 +889,6 @@ int RP_ShellPropSheetExt_Private::initListData(_In_ HWND hWndTab,
 	if (listDataDesc.names) {
 		auto iter = listDataDesc.names->cbegin();
 		for (int col = 0; col < colCount; ++iter, col++, align >>= RomFields::TXA_BITS) {
-			lvColumn.mask = LVCF_TEXT | LVCF_FMT;
 			lvColumn.fmt = align_tbl[align & RomFields::TXA_MASK];
 
 			const string &str = *iter;
@@ -904,13 +903,14 @@ int RP_ShellPropSheetExt_Private::initListData(_In_ HWND hWndTab,
 					tstr += _T("...");
 				}
 				lvData.col_widths[col] = LibWin32UI::measureStringForListView(hDC, tstr);
+				lvColumn.mask = LVCF_TEXT | LVCF_FMT;
 				lvColumn.pszText = const_cast<LPTSTR>(tstr.c_str());
 				ListView_InsertColumn(hListView, col, &lvColumn);
 			} else {
 				// Don't show this column.
 				// FIXME: Zero-width column is a bad hack...
 				lvColumn.pszText = const_cast<LPTSTR>(_T(""));
-				lvColumn.mask |= LVCF_WIDTH;
+				lvColumn.mask = LVCF_TEXT | LVCF_FMT | LVCF_WIDTH;
 				lvColumn.cx = 0;
 				ListView_InsertColumn(hListView, col, &lvColumn);
 			}

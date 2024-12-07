@@ -103,6 +103,7 @@ void LvData::setInitialSort(int column, RomFields::ColSortOrder direction)
 
 	// Update the header item.
 	HDITEM hdi;
+	hdi.mask = HDI_FORMAT;
 	Header_GetItem(hHeader, column, &hdi);
 	switch (direction) {
 		default:
@@ -140,11 +141,13 @@ BOOL LvData::toggleSortColumn(int iSubItem)
 		return FALSE;
 	}
 
+	HDITEM hdi;
+	hdi.mask = HDI_FORMAT;
+
 	// Adjust header item states.
 	RomFields::ColSortOrder direction = RomFields::COLSORTORDER_ASCENDING;
 	const int itemCount = Header_GetItemCount(hHeader);
 	for (int i = 0; i < itemCount; i++) {
-		HDITEM hdi;
 		Header_GetItem(hHeader, i, &hdi);
 
 		if (i == iSubItem) {
