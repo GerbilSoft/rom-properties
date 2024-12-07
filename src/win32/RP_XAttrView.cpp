@@ -121,8 +121,8 @@ int RP_XAttrView_Private::loadADS(void)
 	const XAttrReader::XAttrList &xattrList = xattrReader->genericXAttrs();
 
 	LVITEM lvItem;
-	memset(&lvItem, 0, sizeof(lvItem));
 	lvItem.mask = LVIF_TEXT;
+	lvItem.iItem = 0;
 	for (const auto &xattr : xattrList) {
 		tstring tstr = U82T_c(xattr.first.c_str());
 		lvItem.iSubItem = 0;

@@ -363,27 +363,30 @@ void KeyManagerTabPrivate::initDialog(void)
 	ListView_SetItemCountEx(hListView, keyStore->totalKeyCount(),
 		LVSICF_NOINVALIDATEALL | LVSICF_NOSCROLL);
 
-	// Column title.
+	// Column title
 	tstring tsColTitle;
 
-	// tr: Column 0: Key Name.
+	// tr: Column 0: Key Name
 	tsColTitle = TC_("KeyManagerTab", "Key Name");
-	LVCOLUMN lvCol;
-	memset(&lvCol, 0, sizeof(lvCol));
-	lvCol.mask = LVCF_FMT | LVCF_TEXT | LVCF_SUBITEM;
-	lvCol.fmt = LVCFMT_LEFT;
-	lvCol.pszText = const_cast<LPTSTR>(tsColTitle.c_str());
-	ListView_InsertColumn(hListView, 0, &lvCol);
+	LVCOLUMN lvColumn;
+	lvColumn.mask = LVCF_FMT | LVCF_TEXT | LVCF_SUBITEM;
+	lvColumn.fmt = LVCFMT_LEFT;
+	lvColumn.pszText = const_cast<LPTSTR>(tsColTitle.c_str());
+	lvColumn.iItem = 0;
+	lvColumn.iSubItem = 0;
+	ListView_InsertColumn(hListView, 0, &lvColumn);
 
-	// tr: Column 1: Value.
+	// tr: Column 1: Value
 	tsColTitle = TC_("KeyManagerTab", "Value");
-	lvCol.pszText = const_cast<LPTSTR>(tsColTitle.c_str());
-	ListView_InsertColumn(hListView, 1, &lvCol);
+	lvColumn.pszText = const_cast<LPTSTR>(tsColTitle.c_str());
+	lvColumn.iSubItem = 1;
+	ListView_InsertColumn(hListView, 1, &lvColumn);
 
-	// tr: Column 2: Verification status.
+	// tr: Column 2: Verification status
 	tsColTitle = TC_("KeyManagerTab", "Valid?");
-	lvCol.pszText = const_cast<LPTSTR>(tsColTitle.c_str());
-	ListView_InsertColumn(hListView, 2, &lvCol);
+	lvColumn.pszText = const_cast<LPTSTR>(tsColTitle.c_str());
+	lvColumn.iSubItem = 2;
+	ListView_InsertColumn(hListView, 2, &lvColumn);
 
 	if (isComCtl32_v610) {
 		// Set the IOwnerDataCallback.

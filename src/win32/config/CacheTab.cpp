@@ -259,7 +259,6 @@ void CacheTabPrivate::enumDrivesXP(void)
 	TCHAR path[] = _T("X:\\");
 	SHFILEINFO sfi;
 	LVITEM lvi;
-	memset(&lvi, 0, sizeof(lvi));
 	lvi.mask = LVIF_IMAGE | LVIF_PARAM | LVIF_TEXT;
 	for (unsigned int i = 0; i < 26 && dwDrives != 0; i++, dwDrives >>= 1) {
 		// Ignore missing drives and network drives.
@@ -299,8 +298,6 @@ void CacheTabPrivate::updateDrivesXP(DWORD unitmask)
 	TCHAR path[] = _T("X:\\");
 	SHFILEINFO sfi;
 	LVITEM lviNew, lviCur;
-	memset(&lviNew, 0, sizeof(lviNew));
-	memset(&lviCur, 0, sizeof(lviCur));
 	lviNew.mask = LVIF_IMAGE | LVIF_PARAM | LVIF_TEXT;
 	lviCur.mask = LVIF_PARAM;
 
