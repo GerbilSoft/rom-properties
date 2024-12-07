@@ -372,7 +372,6 @@ void KeyManagerTabPrivate::initDialog(void)
 	lvColumn.mask = LVCF_FMT | LVCF_TEXT | LVCF_SUBITEM;
 	lvColumn.fmt = LVCFMT_LEFT;
 	lvColumn.pszText = const_cast<LPTSTR>(tsColTitle.c_str());
-	lvColumn.iItem = 0;
 	lvColumn.iSubItem = 0;
 	ListView_InsertColumn(hListView, 0, &lvColumn);
 
