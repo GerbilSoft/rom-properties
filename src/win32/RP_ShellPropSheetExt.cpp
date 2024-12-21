@@ -75,7 +75,6 @@ RP_ShellPropSheetExt_Private::RP_ShellPropSheetExt_Private(RP_ShellPropSheetExt 
 	, fontHandler(nullptr)
 	, lblSysInfo(nullptr)
 	, tabWidget(nullptr)
-	, curTabIndex(0)
 	, lblDescHeight(0)
 	, hBtnOptions(nullptr)
 	, hMessageWidget(nullptr)
@@ -2329,7 +2328,7 @@ IFACEMETHODIMP RP_ShellPropSheetExt::ReplacePage(UINT uPageID,
 /** Property sheet callback functions. **/
 
 /**
- * ListView GetDispInfo function.
+ * ListView GetDispInfo function
  * @param plvdi	[in/out] NMLVDISPINFO
  * @return TRUE if handled; FALSE if not.
  */
@@ -2415,7 +2414,7 @@ inline BOOL RP_ShellPropSheetExtPrivate::ListView_GetDispInfo(NMLVDISPINFO *plvd
 }
 
 /**
- * ListView ColumnClick function.
+ * ListView ColumnClick function
  * @param plv	[in] NMLISTVIEW (only iSubItem is significant)
  * @return TRUE if handled; FALSE if not.
  */
@@ -2438,7 +2437,7 @@ inline BOOL RP_ShellPropSheetExt_Private::ListView_ColumnClick(const NMLISTVIEW 
 }
 
 /**
- * Header DividerDblClick function.
+ * Header DividerDblClick function
  * @param phd	[in] NMHEADER
  * @return TRUE if handled; FALSE if not.
  */
@@ -2478,7 +2477,7 @@ inline BOOL RP_ShellPropSheetExt_Private::Header_DividerDblClick(const NMHEADER 
 }
 
 /**
- * ListView CustomDraw function.
+ * ListView CustomDraw function
  * @param plvcd	[in/out] NMLVCUSTOMDRAW
  * @return Return value.
  */
@@ -2560,17 +2559,33 @@ INT_PTR RP_ShellPropSheetExt_Private::DlgProc_WM_NOTIFY(HWND hDlg, NMHDR *pHdr)
 			break;
 		}
 
-		case TCN_SELCHANGE: {
-			// Tab change. Make sure this is the correct WC_TABCONTROL.
-			if (!tabWidget || tabWidget != pHdr->hwndFrom)
+		case TCN_SELCHANGING: {
+			if (!tabWidget || tabWidget != pHdr->hwndFrom) {
 				break;
+			}
 
-			// Tab widget. Show the selected tab.
-			const int newTabIndex = TabCtrl_GetCurSel(tabWidget);
-			ShowWindow(tabs[curTabIndex].hDlg, SW_HIDE);
-			curTabIndex = newTabIndex;
-			auto &newTab = tabs[newTabIndex];
-			ShowWindow(newTab.hDlg, SW_SHOW);
+			// Selected tab is changing. Hide the currently-selected tab.
+			const int tabIndex = TabCtrl_GetCurSel(tabWidget);
+			assert(tabIndex >= 0);
+			assert(tabIndex < static_cast<int>(tabs.size()));
+			if (tabIndex >= 0 && tabIndex < static_cast<int>(tabs.size())) {
+				ShowWindow(tabs[tabIndex].hDlg, SW_HIDE);
+			}
+			break;
+		}
+
+		case TCN_SELCHANGE: {
+			if (!tabWidget || tabWidget != pHdr->hwndFrom) {
+				break;
+			}
+
+			// Selected tab has changed. Show the newly-selected tab.
+			const int tabIndex = TabCtrl_GetCurSel(tabWidget);
+			assert(tabIndex >= 0);
+			assert(tabIndex < static_cast<int>(tabs.size()));
+			if (tabIndex >= 0 && tabIndex < static_cast<int>(tabs.size())) {
+				ShowWindow(tabs[tabIndex].hDlg, SW_SHOW);
+			}
 			break;
 		}
 
@@ -2918,7 +2933,12 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 			}
 
 			// Forward the message to the active child dialog.
-			SendMessage(d->tabs[d->curTabIndex].hDlg, uMsg, wParam, lParam);
+			const int tabIndex = TabCtrl_GetCurSel(d->tabWidget);
+			assert(tabIndex >= 0);
+			assert(tabIndex < static_cast<int>(d->tabs.size()));
+			if (tabIndex >= 0 && tabIndex < static_cast<int>(d->tabs.size())) {
+				SendMessage(d->tabs[tabIndex].hDlg, uMsg, wParam, lParam);
+			}
 			return TRUE;
 		}
 

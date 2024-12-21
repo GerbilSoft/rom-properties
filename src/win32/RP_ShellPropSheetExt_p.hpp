@@ -3,7 +3,7 @@
  * RP_ShellPropSheetExt_p.hpp: IShellPropSheetExt implementation.          *
  * (Private class)                                                         *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -83,7 +83,7 @@ public:
 	// Font handler
 	FontHandler fontHandler;
 
-	// Header row widgets.
+	// Header row widgets
 	HWND lblSysInfo;
 	POINT ptSysInfo;
 	RECT rectHeader;
@@ -93,34 +93,34 @@ public:
 	// ListView controls (for toggling LVS_EX_DOUBLEBUFFER)
 	std::vector<HWND> hwndListViewControls;
 
-	// ListView data.
+	// ListView data
 	// - Key: ListView dialog ID
 	// - Value: LvData.
 	std::unordered_map<uint16_t, LvData> map_lvData;
 
 	/**
-	 * ListView GetDispInfo function.
+	 * ListView GetDispInfo function
 	 * @param plvdi	[in/out] NMLVDISPINFO
 	 * @return TRUE if handled; FALSE if not.
 	 */
 	inline BOOL ListView_GetDispInfo(NMLVDISPINFO *plvdi);
 
 	/**
-	 * ListView ColumnClick function.
+	 * ListView ColumnClick function
 	 * @param plv	[in] NMLISTVIEW (only iSubItem is significant)
 	 * @return TRUE if handled; FALSE if not.
 	 */
 	inline BOOL ListView_ColumnClick(const NMLISTVIEW *plv);
 
 	/**
-	 * Header DividerDblClick function.
+	 * Header DividerDblClick function
 	 * @param phd	[in] NMHEADER
 	 * @return TRUE if handled; FALSE if not.
 	 */
 	inline BOOL Header_DividerDblClick(const NMHEADER *phd);
 
 	/**
-	 * ListView CustomDraw function.
+	 * ListView CustomDraw function
 	 * @param plvcd	[in/out] NMLVCUSTOMDRAW
 	 * @return Return value.
 	 */
@@ -143,9 +143,8 @@ public:
 		}
 	};
 	std::vector<tab> tabs;
-	int curTabIndex;
 
-	// Sizes.
+	// Sizes
 	int lblDescHeight;	// Description label height.
 	SIZE dlgSize;		// Visible dialog size.
 
@@ -158,11 +157,11 @@ public:
 	int iTabHeightOrig;
 
 public:
-	// Multi-language functionality.
+	// Multi-language functionality
 	uint32_t def_lc;	// Default language code from RomFields.
 	HWND cboLanguage;
 
-	// RFT_STRING_MULTI value labels.
+	// RFT_STRING_MULTI value labels
 	typedef std::pair<HWND, const LibRpBase::RomFields::Field*> Data_StringMulti_t;
 	std::vector<Data_StringMulti_t> vecStringMulti;
 
