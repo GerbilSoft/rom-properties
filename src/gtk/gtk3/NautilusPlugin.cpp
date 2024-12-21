@@ -47,6 +47,11 @@ rp_nautilus_register_types(GTypeModule *g_module)
 	/* Setup the plugin provider type list */
 	type_list[0] = RP_TYPE_NAUTILUS_PROPERTY_PAGE_PROVIDER;
 	type_list[1] = RP_TYPE_NAUTILUS_MENU_PROVIDER;
+
+#ifdef ENABLE_ACHIEVEMENTS
+	// Register AchGDBus.
+	AchGDBus::instance();
+#endif /* ENABLE_ACHIEVEMENTS */
 }
 
 /** Per-frontend initialization functions **/
@@ -89,11 +94,6 @@ nautilus_module_initialize(GTypeModule *g_module)
 {
 	NAUTILUS_MODULE_INITIALIZE_FUNC_INT(nautilus);
 
-#ifdef ENABLE_ACHIEVEMENTS
-	// Register AchGDBus.
-	AchGDBus::instance();
-#endif /* ENABLE_ACHIEVEMENTS */
-
 	// Symbols loaded. Register our types.
 	rp_nautilus_register_types(g_module);
 }
@@ -106,11 +106,6 @@ caja_module_initialize(GTypeModule *g_module)
 	// Initialize Caja-specific function pointers.
 	rp_caja_init(libextension_so);
 
-#ifdef ENABLE_ACHIEVEMENTS
-	// Register AchGDBus.
-	AchGDBus::instance();
-#endif /* ENABLE_ACHIEVEMENTS */
-
 	// Symbols loaded. Register our types.
 	rp_nautilus_register_types(g_module);
 }
@@ -122,11 +117,6 @@ nemo_module_initialize(GTypeModule *g_module)
 
 	// Initialize Nemo-specific function pointers.
 	rp_nemo_init(libextension_so);
-
-#ifdef ENABLE_ACHIEVEMENTS
-	// Register AchGDBus.
-	AchGDBus::instance();
-#endif /* ENABLE_ACHIEVEMENTS */
 
 	// Symbols loaded. Register our types.
 	rp_nautilus_register_types(g_module);

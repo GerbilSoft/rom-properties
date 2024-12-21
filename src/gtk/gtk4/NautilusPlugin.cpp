@@ -49,6 +49,11 @@ rp_nautilus_register_types(GTypeModule *module)
 	/* Setup the plugin provider type list */
 	type_list[0] = RP_TYPE_NAUTILUS_PROPERTIES_MODEL_PROVIDER;
 	type_list[1] = RP_TYPE_NAUTILUS_MENU_PROVIDER;
+
+#ifdef ENABLE_ACHIEVEMENTS
+	// Register AchGDBus.
+	AchGDBus::instance();
+#endif /* ENABLE_ACHIEVEMENTS */
 }
 
 /** Per-frontend initialization functions **/
@@ -93,11 +98,6 @@ extern "C" G_MODULE_EXPORT void
 nautilus_module_initialize(GTypeModule *g_module)
 {
 	NAUTILUS_MODULE_INITIALIZE_FUNC_INT(nautilus);
-
-#ifdef ENABLE_ACHIEVEMENTS
-	// Register AchGDBus.
-	AchGDBus::instance();
-#endif /* ENABLE_ACHIEVEMENTS */
 
 	// Symbols loaded. Register our types.
 	rp_nautilus_register_types(g_module);
