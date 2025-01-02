@@ -76,6 +76,10 @@ STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}_H    "${rom-properties-g
 STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}_GTK3MAX_SRCS "${rom-properties-gtk_GTK3MAX_SRCS}")
 STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}_GTK3MAX_H    "${rom-properties-gtk_GTK3MAX_H}")
 
+# Sources and headers (GTK3 minimum)
+STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}_GTK3MIN_SRCS "${rom-properties-gtk_GTK3MIN_SRCS}")
+STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}_GTK3MIN_H    "${rom-properties-gtk_GTK3MIN_H}")
+
 # CairoImageConv (GTK+ 3.x)
 SET(${PROJECT_NAME}_SRCS ${${PROJECT_NAME}_SRCS} CairoImageConv.cpp)
 SET(${PROJECT_NAME}_H    ${${PROJECT_NAME}_H}    CairoImageConv.hpp)
@@ -93,6 +97,7 @@ CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/${PROJECT_NAME}.caja-extension.in" "
 SET(${PROJECT_NAME}_SRCS
 	${${PROJECT_NAME}_SRCS}
 	${${PROJECT_NAME}_GTK3MAX_SRCS}
+	${${PROJECT_NAME}_GTK3MIN_SRCS}
 	${${PROJECT_NAME}-notify_SRCS}
 	${${PROJECT_NAME}_IFUNC_SRCS}
 	NautilusPlugin.cpp
@@ -108,6 +113,7 @@ SET(${PROJECT_NAME}_SRCS
 SET(${PROJECT_NAME}_H
 	${${PROJECT_NAME}_H}
 	${${PROJECT_NAME}_GTK3MAX_H}
+	${${PROJECT_NAME}_GTK3MIN_H}
 	${${PROJECT_NAME}-notify_H}
 	../plugin-helper.h
 	NautilusPlugin.hpp

@@ -53,6 +53,10 @@ ADD_DEFINITIONS(-DGLIB_VERSION_MIN_REQUIRED=GLIB_VERSION_2_66 -DGLIB_VERSION_MAX
 STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}_SRCS "${rom-properties-gtk_SRCS}")
 STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}_H    "${rom-properties-gtk_H}")
 
+# Sources and headers (GTK3 minimum)
+STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}_GTK3MIN_SRCS "${rom-properties-gtk_GTK3MIN_SRCS}")
+STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}_GTK3MIN_H    "${rom-properties-gtk_GTK3MIN_H}")
+
 # Sources and headers (GTK4 minimum)
 STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}_GTK4MIN_SRCS "${rom-properties-gtk_GTK4MIN_SRCS}")
 STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}_GTK4MIN_H    "${rom-properties-gtk_GTK4MIN_H}")
@@ -70,6 +74,7 @@ ENDIF(ENABLE_ACHIEVEMENTS)
 # Sources and headers (GTK4-specific)
 SET(${PROJECT_NAME}_SRCS
 	${${PROJECT_NAME}_SRCS}
+	${${PROJECT_NAME}_GTK3MIN_SRCS}
 	${${PROJECT_NAME}_GTK4MIN_SRCS}
 	${${PROJECT_NAME}-notify_SRCS}
 	${${PROJECT_NAME}_IFUNC_SRCS}
@@ -87,6 +92,7 @@ SET(${PROJECT_NAME}_SRCS
 	)
 SET(${PROJECT_NAME}_H
 	${${PROJECT_NAME}_H}
+	${${PROJECT_NAME}_GTK3MIN_H}
 	${${PROJECT_NAME}_GTK4MIN_H}
 	${${PROJECT_NAME}-notify_H}
 	../plugin-helper.h

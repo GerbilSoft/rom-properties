@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * RomDataView.cpp: RomData viewer widget.                                 *
  *                                                                         *
- * Copyright (c) 2017-2024 by David Korth.                                 *
+ * Copyright (c) 2017-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -15,6 +15,9 @@
 #include "is-supported.hpp"
 #include "rp-gtk-enums.h"
 
+// libadwaita/libhandy function pointers
+#include "pfn_adwaita.h"
+
 // Custom widgets
 #include "DragImage.hpp"
 #include "LanguageComboBox.hpp"
@@ -24,16 +27,6 @@
 using namespace LibRpBase;
 using namespace LibRpText;
 using namespace LibRpTexture;
-
-// libdl
-#ifdef HAVE_DLVSYM
-#  ifndef _GNU_SOURCE
-#    define _GNU_SOURCE 1
-#  endif /* _GNU_SOURCE */
-#else /* !HAVE_DLVSYM */
-#  define dlvsym(handle, symbol, version) dlsym((handle), (symbol))
-#endif /* HAVE_DLVSYM */
-#include <dlfcn.h>
 
 // C++ STL classes
 using std::set;
@@ -92,21 +85,6 @@ static void	cboLanguage_notify_selected_lc_handler(RpLanguageComboBox *widget,
 						       GParamSpec	*pspec,
 						       RpRomDataView	*page);
 
-#if GTK_CHECK_VERSION(3,0,0)
-// libadwaita/libhandy function pointers.
-// Only initialized if libadwaita/libhandy is linked into the process.
-// NOTE: The function pointers are essentially the same, but
-// libhandy was renamed to libadwaita for the GTK4 conversion.
-// We'll use libadwaita terminology everywhere.
-struct AdwHeaderBar;
-typedef GType (*pfnGlibGetType_t)(void);
-typedef GType (*pfnAdwHeaderBarPackEnd_t)(AdwHeaderBar *self, GtkWidget *child);
-static bool has_checked_adw = false;
-static pfnGlibGetType_t pfn_adw_deck_get_type = nullptr;
-static pfnGlibGetType_t pfn_adw_header_bar_get_type = nullptr;
-static pfnAdwHeaderBarPackEnd_t pfn_adw_header_bar_pack_end = nullptr;
-#endif /* GTK_CHECK_VERSION(3,0,0) */
-
 // NOTE: G_DEFINE_TYPE() doesn't work in C++ mode with gcc-6.2
 // due to an implicit int to GTypeFlags conversion.
 G_DEFINE_TYPE_EXTENDED(RpRomDataView, rp_rom_data_view,
@@ -150,32 +128,8 @@ rp_rom_data_view_class_init(RpRomDataViewClass *klass)
 	// Install the properties.
 	g_object_class_install_properties(gobject_class, PROP_LAST, props);
 
-#if GTK_CHECK_VERSION(3,0,0)
-	/** libadwaita/libhandy **/
-
-	// Check if libadwaita-1 is loaded in the process.
-	// TODO: Verify that it is in fact 1.x if symbol versioning isn't available.
-	if (!has_checked_adw) {
-		has_checked_adw = true;
-#  if GTK_CHECK_VERSION(4,0,0)
-	// GTK4: libadwaita
-#    define ADW_SYM_PREFIX "adw_"
-#    define ADW_SYM_VERSION "LIBADWAITA_1_0"
-#  else /* !GTK_CHECK_VERSION(4,0,0) */
-	// GTK3: libhandy
-#    define ADW_SYM_PREFIX "hdy_"
-#    define ADW_SYM_VERSION "LIBHANDY_1_0"
-#  endif
-		pfn_adw_deck_get_type = (pfnGlibGetType_t)dlvsym(
-			RTLD_DEFAULT, ADW_SYM_PREFIX "deck_get_type", ADW_SYM_VERSION);
-		if (pfn_adw_deck_get_type) {
-			pfn_adw_header_bar_get_type = (pfnGlibGetType_t)dlvsym(
-				RTLD_DEFAULT, ADW_SYM_PREFIX "header_bar_get_type", ADW_SYM_VERSION);
-			pfn_adw_header_bar_pack_end = (pfnAdwHeaderBarPackEnd_t)dlvsym(
-				RTLD_DEFAULT, ADW_SYM_PREFIX "header_bar_pack_end", ADW_SYM_VERSION);
-		}
-	}
-#endif /* GTK_CHECK_VERSION(3,0,0) */
+	// Initialize libadwaita/libhandy function pointers.
+	rp_init_pfn_adwaita();
 }
 
 /**
@@ -1127,8 +1081,9 @@ static void
 rp_rom_data_view_create_options_button(RpRomDataView *page)
 {
 	assert(!page->btnOptions);
-	if (page->btnOptions != nullptr)
+	if (page->btnOptions != nullptr) {
 		return;
+	}
 
 	GtkWidget *parent = gtk_widget_get_parent(GTK_WIDGET(page));
 	if (page->desc_format_type == RP_DFT_XFCE) {
@@ -1169,12 +1124,14 @@ rp_rom_data_view_create_options_button(RpRomDataView *page)
 	parent = gtk_widget_get_parent(parent);
 #if GTK_CHECK_VERSION(3,0,0)
 	assert(GTK_IS_BOX(parent));
-	if (!GTK_IS_BOX(parent))
+	if (!GTK_IS_BOX(parent)) {
 		return;
+	}
 #else /* !GTK_CHECK_VERSION(3,0,0) */
 	assert(GTK_IS_VBOX(parent));
-	if (!GTK_IS_VBOX(parent))
+	if (!GTK_IS_VBOX(parent)) {
 		return;
+	}
 #endif /* GTK_CHECK_VERSION(3,0,0) */
 
 	// Next: GtkDialog subclass.
@@ -1191,7 +1148,7 @@ rp_rom_data_view_create_options_button(RpRomDataView *page)
 	}
 #endif /* GTK_CHECK_VERSION(4,0,0) */
 
-#if GTK_CHECK_VERSION(3,0,0)
+#ifdef RP_MAY_HAVE_ADWAITA
 	bool isLibAdwaita = false;
 	if (!GTK_IS_DIALOG(parent)) {
 		// NOTE: As of Nautilus 40, there may be an AdwDeck/HdyDeck here.
@@ -1206,15 +1163,17 @@ rp_rom_data_view_create_options_button(RpRomDataView *page)
 		// Main window is based on AdwWindow/HdyWindow, which is derived from
 		// GtkWindow, not GtkDialog.
 		assert(GTK_IS_WINDOW(parent));
-		if (!GTK_IS_WINDOW(parent))
+		if (!GTK_IS_WINDOW(parent)) {
 			return;
+		}
 	} else
-#endif /* GTK_CHECK_VERSION(3,0,0) */
+#endif /* RP_MAY_HAVE_ADWAITA */
 	{
 		// Main window is derived from GtkDialog.
 		assert(GTK_IS_DIALOG(parent));
-		if (!GTK_IS_DIALOG(parent))
+		if (!GTK_IS_DIALOG(parent)) {
 			return;
+		}
 	}
 
 	// Create the RpOptionsMenuButton.
@@ -1225,11 +1184,11 @@ rp_rom_data_view_create_options_button(RpRomDataView *page)
 	// (Normally not mapped in a properties dialog; but it *is* mapped in the test program.)
 	gtk_widget_set_visible(page->btnOptions, gtk_widget_get_mapped(GTK_WIDGET(page)));
 
-#if GTK_CHECK_VERSION(3,0,0)
+#ifdef RP_MAY_HAVE_ADWAITA
 	if (isLibAdwaita) {
 		// LibAdwaita/LibHandy version doesn't use GtkDialog.
 	} else
-#endif /* GTK_CHECK_VERSION(3,0,0) */
+#endif /* RP_MAY_HAVE_ADWAITA */
 	{
 		// Not using LibAdwaita/LibHandy, so add the widget to the GtkDialog.
 		gtk_dialog_add_action_widget(GTK_DIALOG(parent), page->btnOptions, GTK_RESPONSE_NONE);

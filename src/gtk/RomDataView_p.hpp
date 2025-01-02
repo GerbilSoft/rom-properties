@@ -2,13 +2,12 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * RomDataView.cpp: RomData viewer widget. (Private functions)             *
  *                                                                         *
- * Copyright (c) 2017-2024 by David Korth.                                 *
+ * Copyright (c) 2017-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #pragma once
 
-#include "config.gtk.h"
 #include <gtk/gtk.h>
 
 #include "OptionsMenuButton.hpp"

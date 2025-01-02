@@ -161,7 +161,15 @@ SET(${PROJECT_NAME}_GTK3MAX_H
 	gtk3/sort_funcs.h
 	)
 
-# Sources and headers (GTK4+ only)
+# Sources and headers (GTK3+)
+SET(${PROJECT_NAME}_GTK3MIN_SRCS
+	pfn_adwaita.c
+	)
+SET(${PROJECT_NAME}_GTK3MIN_H
+	pfn_adwaita.h
+	)
+
+# Sources and headers (GTK4+)
 SET(${PROJECT_NAME}_GTK4MIN_SRCS
 	LanguageComboBox_gtk4.cpp
 	LanguageComboBoxItem.c
