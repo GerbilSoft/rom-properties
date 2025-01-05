@@ -79,9 +79,6 @@ public:
 #endif
 	};
 
-	// Maximum number of Mach-O headers to read.
-	static constexpr unsigned int MAX_MACH_HEADERS = 16U;
-
 	// Mach-O formats and headers.
 	vector<Mach_Format> machFormats;
 	rp::uvector<mach_header> machHeaders;
@@ -187,11 +184,14 @@ MachO::MachO(const IRpFilePtr &file)
 		return;
 	}
 
+	// Maximum number of Mach-O headers to read.
+	static constexpr unsigned int MAX_MACH_HEADERS = 16U;
+
 	// Read the file header.
 	// - Mach-O header: 7 DWORDs
 	// - Universal header: 2 DWORDs, plus 5 DWORDs per architecture.
 	// Assuming up to 16 architectures, read 2+(5*16) = 82 DWORDs, or 328 bytes.
-	uint8_t header[(2 + (5 * MachOPrivate::MAX_MACH_HEADERS)) * sizeof(uint32_t)];
+	uint8_t header[(2 + (5 * MAX_MACH_HEADERS)) * sizeof(uint32_t)];
 	d->file->rewind();
 	size_t size = d->file->read(header, sizeof(header));
 	if (size != sizeof(header)) {
@@ -223,7 +223,7 @@ MachO::MachO(const IRpFilePtr &file)
 			const fat_header *const fatHeader =
 				reinterpret_cast<const fat_header*>(info.header.pData);
 			const unsigned int nfat_arch = std::min<uint32_t>(
-				MachOPrivate::MAX_MACH_HEADERS, be32_to_cpu(fatHeader->nfat_arch));
+				MAX_MACH_HEADERS, be32_to_cpu(fatHeader->nfat_arch));
 			d->machFormats.reserve(nfat_arch);
 			d->machHeaders.reserve(nfat_arch);
 
