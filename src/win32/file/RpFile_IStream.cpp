@@ -57,8 +57,9 @@ RpFile_IStream::RpFile_IStream(IStream *pStream, bool gzip)
 	m_isWritable = true;
 
 	// The rest of this function is only needed for gzipped files.
-	if (!gzip)
+	if (!gzip) {
 		return;
+	}
 
 	do {
 #if defined(_MSC_VER) && defined(ZLIB_IS_DLL)
@@ -92,25 +93,32 @@ RpFile_IStream::RpFile_IStream(IStream *pStream, bool gzip)
 		ULARGE_INTEGER uliFileSize;
 		li.QuadPart = -4;
 		hr = m_pStream->Seek(li, STREAM_SEEK_END, &uliFileSize);
-		if (FAILED(hr))
+		if (FAILED(hr)) {
 			break;
+		}
 
 		uliFileSize.QuadPart += 4;
 		hr = m_pStream->Read(&m_z_uncomp_sz, (ULONG)sizeof(m_z_uncomp_sz), &cbRead);
-		if (FAILED(hr) || cbRead != (ULONG)sizeof(m_z_uncomp_sz))
+		if (FAILED(hr) || cbRead != (ULONG)sizeof(m_z_uncomp_sz)) {
 			break;
-
+		}
 		m_z_uncomp_sz = le32_to_cpu(m_z_uncomp_sz);
-		if (m_z_uncomp_sz <= uliFileSize.QuadPart-(10+8))
+
+		// NOTE: Uncompressed size might be smaller than the real filesize
+		// in cases where gzip doesn't help much.
+		// TODO: Add better verification heuristics?
+		/*if (m_z_uncomp_sz <= uliFileSize.QuadPart-(10+8)) {
 			break;
+		}*/
 
 		// Valid filesize.
 		// Initialize zlib.
 		// NOTE: m_pZstm *must* be zero-initialized.
 		// Otherwise, inflateInit() will crash.
 		m_pZstm = static_cast<z_stream*>(calloc(1, sizeof(z_stream)));
-		if (!m_pZstm)
+		if (!m_pZstm) {
 			break;
+		}
 
 		// Make sure the CRC32 table is initialized.
 		get_crc_table();
