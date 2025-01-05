@@ -496,7 +496,7 @@ rp_rom_data_view_get_uri(RpRomDataView *page)
  **/
 void
 rp_rom_data_view_set_uri(RpRomDataView	*page,
-		      const gchar	*uri)
+			 const gchar	*uri)
 {
 	g_return_if_fail(RP_IS_ROM_DATA_VIEW(page));
 
@@ -506,8 +506,7 @@ rp_rom_data_view_set_uri(RpRomDataView	*page,
 
 	/* Disconnect from the previous file (if any) */
 	if (G_LIKELY(page->uri != nullptr)) {
-		g_free(page->uri);
-		page->uri = nullptr;
+		g_clear_pointer(&page->uri, g_free);
 
 		// Unreference the existing RomData object.
 		page->cxx->romData.reset();
