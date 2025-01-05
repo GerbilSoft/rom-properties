@@ -16,12 +16,6 @@ CHECK_HIDDEN_VISIBILITY()
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_INCLUDE_CURRENT_DIR_IN_INTERFACE ON)
 
-# rom-properties:
-# Unix: Add -fpic/-fPIC in order to use this static library in plugins.
-IF(UNIX AND NOT APPLE)
-	SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fpic -fPIC")
-ENDIF(UNIX AND NOT APPLE)
-
 # Disable certain warning flags.
 IF(NOT MSVC)
 	FOREACH(FLAG_TEST "-Wno-empty-body" "-Wno-shift-negative-value")

@@ -90,8 +90,11 @@ FOREACH(_target ${TARGETS})
 		)
 	INCLUDE(SetMSVCDebugPath)
 	SET_MSVC_DEBUG_PATH(${_target})
-	# Exclude from ALL builds.
-	SET_TARGET_PROPERTIES(${_target} PROPERTIES EXCLUDE_FROM_ALL TRUE)
+	# Exclude from ALL builds; enable PIC.
+	SET_TARGET_PROPERTIES(${_target} PROPERTIES
+		EXCLUDE_FROM_ALL TRUE
+		POSITION_INDEPENDENT_CODE TRUE
+		)
 
 	# DLL targets need the appropriate macros.
 	IF(${_target} MATCHES "-dll$")
@@ -127,12 +130,6 @@ IF(NOT TARGET ${PROJECT_NAME}-dll)
 	# On other platforms, the dll target will be an alias to the regular target.
 	ADD_LIBRARY(${PROJECT_NAME}-dll ALIAS ${PROJECT_NAME})
 ENDIF()
-
-# Unix: Add -fpic/-fPIC in order to use this static library in plugins.
-IF(UNIX AND NOT APPLE)
-	SET(CMAKE_C_FLAGS	"${CMAKE_C_FLAGS} -fpic -fPIC")
-	SET(CMAKE_CXX_FLAGS	"${CMAKE_CXX_FLAGS} -fpic -fPIC")
-ENDIF(UNIX AND NOT APPLE)
 
 # Test suite.
 IF(BUILD_TESTING)

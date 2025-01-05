@@ -262,7 +262,11 @@ IF(BUILD_XFCE OR BUILD_GTK3 OR BUILD_GTK4)
 		${${PROJECT_NAME}_GLib_SRCS}
 		${${PROJECT_NAME}_GLib_H}
 		)
-	SET_TARGET_PROPERTIES(rom-properties-glib PROPERTIES EXCLUDE_FROM_ALL TRUE)
+	# Exclude from ALL builds; enable PIC.
+	SET_TARGET_PROPERTIES(rom-properties-glib PROPERTIES
+		EXCLUDE_FROM_ALL TRUE
+		POSITION_INDEPENDENT_CODE TRUE
+		)
 	TARGET_INCLUDE_DIRECTORIES(rom-properties-glib
 		PUBLIC	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>		# gtk
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>		# gtk
@@ -273,13 +277,6 @@ IF(BUILD_XFCE OR BUILD_GTK3 OR BUILD_GTK4)
 	TARGET_LINK_LIBRARIES(rom-properties-glib PUBLIC GLib2::gio-unix GLib2::gio GLib2::gobject GLib2::glib)
 	TARGET_LINK_LIBRARIES(rom-properties-glib PRIVATE romdata)		# for config.librptext.h
 ENDIF(BUILD_XFCE OR BUILD_GTK3 OR BUILD_GTK4)
-
-# Unix: Add -fpic/-fPIC in order to use this static library in plugins.
-# NOTE: This will be propagated to subprojects.
-IF(UNIX AND NOT APPLE)
-	SET(CMAKE_C_FLAGS	"${CMAKE_C_FLAGS} -fpic -fPIC")
-	SET(CMAKE_CXX_FLAGS	"${CMAKE_CXX_FLAGS} -fpic -fPIC")
-ENDIF(UNIX AND NOT APPLE)
 
 # Build GTK+ 2.x frontends.
 IF(BUILD_XFCE)

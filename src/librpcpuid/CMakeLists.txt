@@ -36,8 +36,11 @@ ADD_LIBRARY(${PROJECT_NAME} STATIC
 	)
 INCLUDE(SetMSVCDebugPath)
 SET_MSVC_DEBUG_PATH(${PROJECT_NAME})
-# Exclude from ALL builds.
-SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES EXCLUDE_FROM_ALL TRUE)
+# Exclude from ALL builds; enable PIC.
+SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES
+	EXCLUDE_FROM_ALL TRUE
+	POSITION_INDEPENDENT_CODE TRUE
+	)
 
 # rpthreads is needed for atomic functions.
 # FIXME: Not using it in the static rpcpuid library right now.
@@ -54,9 +57,3 @@ TARGET_INCLUDE_DIRECTORIES(${PROJECT_NAME}
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/..>	# src
 		$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>			# build
 	)
-
-# Unix: Add -fpic/-fPIC in order to use this static library in plugins.
-IF(UNIX AND NOT APPLE)
-	SET(CMAKE_C_FLAGS	"${CMAKE_C_FLAGS} -fpic -fPIC")
-	SET(CMAKE_CXX_FLAGS	"${CMAKE_CXX_FLAGS} -fpic -fPIC")
-ENDIF(UNIX AND NOT APPLE)

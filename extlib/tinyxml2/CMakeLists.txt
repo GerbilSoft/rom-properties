@@ -7,13 +7,6 @@ include(CTest)
 option(tinyxml2_BUILD_TESTING "Build tests for tinyxml2" "${BUILD_TESTING}")
 ENDIF(0)
 
-# rom-properties:
-# Unix: Add -fpic/-fPIC in order to use this static library in plugins.
-IF(UNIX AND NOT APPLE)
-	SET(CMAKE_C_FLAGS	"${CMAKE_C_FLAGS} -fpic -fPIC")
-	SET(CMAKE_CXX_FLAGS	"${CMAKE_CXX_FLAGS} -fpic -fPIC")
-ENDIF(UNIX AND NOT APPLE)
-
 ##
 ## Honor tinyxml2_SHARED_LIBS to match install interface
 ##
