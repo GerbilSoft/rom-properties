@@ -259,24 +259,22 @@ RpFile::RpFile(const char *filename, FileMode mode)
 	if (tryGzip) { do {
 		uint16_t gzmagic;
 		size_t size = fread(&gzmagic, 1, sizeof(gzmagic), d->file);
-		if (size != sizeof(gzmagic) || gzmagic != be16_to_cpu(0x1F8B))
+		if (size != sizeof(gzmagic) || gzmagic != be16_to_cpu(0x1F8B)) {
 			break;
+		}
 
 		// This is a gzipped file.
 		// Get the uncompressed size at the end of the file.
-		fseeko(d->file, 0, SEEK_END);
-		off64_t real_sz = ftello(d->file);
-		if (real_sz <= 10+8)
+		if (fseeko(d->file, -4, SEEK_END) != 0) {
 			break;
-
-		if (fseeko(d->file, real_sz-4, SEEK_SET) != 0)
-			break;
+		}
 
 		uint32_t uncomp_sz;
 		size = fread(&uncomp_sz, 1, sizeof(uncomp_sz), d->file);
 		uncomp_sz = le32_to_cpu(uncomp_sz);
-		if (size != sizeof(uncomp_sz) /*|| uncomp_sz < real_sz-(10+8)*/)
+		if (size != sizeof(uncomp_sz) /*|| uncomp_sz < real_sz-(10+8)*/) {
 			break;
+		}
 
 		// NOTE: Uncompressed size might be smaller than the real filesize
 		// in cases where gzip doesn't help much.

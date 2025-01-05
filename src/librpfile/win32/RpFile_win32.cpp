@@ -349,26 +349,24 @@ RpFile::RpFile(const wchar_t *filenameW, FileMode mode)
 		DWORD bytesRead;
 		uint16_t gzmagic;
 		BOOL bRet = ReadFile(d->file, &gzmagic, sizeof(gzmagic), &bytesRead, nullptr);
-		if (!bRet || bytesRead != sizeof(gzmagic) || gzmagic != be16_to_cpu(0x1F8B))
+		if (!bRet || bytesRead != sizeof(gzmagic) || gzmagic != be16_to_cpu(0x1F8B)) {
 			break;
+		}
 
 		// This is a gzipped file.
 		// Get the uncompressed size at the end of the file.
-		LARGE_INTEGER liFileSize;
-		bRet = GetFileSizeEx(d->file, &liFileSize);
-		if (!bRet || liFileSize.QuadPart <= 10+8)
-			break;
-
 		LARGE_INTEGER liSeekPos;
-		liSeekPos.QuadPart = liFileSize.QuadPart - 4;
-		if (!SetFilePointerEx(d->file, liSeekPos, nullptr, FILE_BEGIN))
+		liSeekPos.QuadPart = -4;
+		if (!SetFilePointerEx(d->file, liSeekPos, nullptr, FILE_END)) {
 			break;
+		}
 
 		uint32_t uncomp_sz;
 		bRet = ReadFile(d->file, &uncomp_sz, sizeof(uncomp_sz), &bytesRead, nullptr);
 		uncomp_sz = le32_to_cpu(uncomp_sz);
-		if (!bRet || bytesRead != sizeof(uncomp_sz) /*|| uncomp_sz < liFileSize.QuadPart-(10+8)*/)
+		if (!bRet || bytesRead != sizeof(uncomp_sz) /*|| uncomp_sz < liFileSize.QuadPart-(10+8)*/) {
 			break;
+		}
 
 		// NOTE: Uncompressed size might be smaller than the real filesize
 		// in cases where gzip doesn't help much.
@@ -390,12 +388,13 @@ RpFile::RpFile(const wchar_t *filenameW, FileMode mode)
 			0,			// dwDesiredAccess
 			FALSE,			// bInheritHandle
 			DUPLICATE_SAME_ACCESS);	// dwOptions
-		if (!bRet)
+		if (!bRet) {
 			break;
+		}
 
 		// NOTE: close() on gzfd_dup() will close the
 		// underlying Windows handle.
-		int gzfd_dup = _open_osfhandle((intptr_t)hGzDup, _O_RDONLY);
+		int gzfd_dup = _open_osfhandle(reinterpret_cast<intptr_t>(hGzDup), _O_RDONLY);
 		if (gzfd_dup >= 0) {
 			d->gzfd = gzdopen(gzfd_dup, "r");
 			if (d->gzfd) {
