@@ -28,18 +28,6 @@ using std::vector;
 // TODO: Ideal icon size? Using 32x32 for now.
 static constexpr int icon_sz = 32;
 
-// Format tables.
-// Pango enum values are known to fit in uint8_t.
-static constexpr array<gfloat, 4> align_tbl_xalign = {{
-	// Order: TXA_D, TXA_L, TXA_C, TXA_R
-	0.0f, 0.0f, 0.5f, 1.0f
-}};
-static constexpr array<uint8_t, 4> align_tbl_halign = {{
-	// Order: TXA_D, TXA_L, TXA_C, TXA_R
-	GTK_ALIGN_START, GTK_ALIGN_START,
-	GTK_ALIGN_CENTER, GTK_ALIGN_END
-}};
-
 // GtkSignalListItemFactory signal handlers
 // Reference: https://blog.gtk.org/2020/09/05/a-primer-on-gtklistview/
 // NOTE: user_data is RpListDataItemCol0Type.
@@ -81,6 +69,18 @@ static void
 setup_listitem_cb_text(GtkListItemFactory *factory, GtkListItem *list_item, gpointer user_data)
 {
 	RP_UNUSED(factory);
+
+	// Format tables.
+	// Pango enum values are known to fit in uint8_t.
+	static constexpr array<gfloat, 4> align_tbl_xalign = {{
+		// Order: TXA_D, TXA_L, TXA_C, TXA_R
+		0.0f, 0.0f, 0.5f, 1.0f
+	}};
+	static constexpr array<uint8_t, 4> align_tbl_halign = {{
+		// Order: TXA_D, TXA_L, TXA_C, TXA_R
+		GTK_ALIGN_START, GTK_ALIGN_START,
+		GTK_ALIGN_CENTER, GTK_ALIGN_END
+	}};
 
 	const uint32_t align_data = (GPOINTER_TO_UINT(user_data) & RomFields::TXA_MASK);
 
@@ -278,13 +278,6 @@ rp_rom_data_view_init_listdata(RpRomDataView *page, const RomFields::Field &fiel
 		GtkColumnViewColumn *const column = gtk_column_view_column_new(
 			(listDataDesc.names ? listDataDesc.names->at(i).c_str() : ""), factory);
 		gtk_column_view_append_column(GTK_COLUMN_VIEW(columnView), column);
-
-#if 0
-		// Header/data alignment
-		g_object_set(column,
-			"alignment", align_tbl_xalign[col_attrs.align_headers & RomFields::TXA_MASK],
-			nullptr);
-#endif
 
 		// Column sizing
 		// NOTE: We don't have direct equivalents to QHeaderView::ResizeMode.
