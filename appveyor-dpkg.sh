@@ -28,6 +28,7 @@ apt-get -y install \
 	libkf5kio-dev \
 	libkf5widgetsaddons-dev \
 	libkf5filemetadata-dev \
+	libkf5crash-dev \
 	\
 	libglib2.0-dev \
 	libgtk2.0-dev \
