@@ -1,5 +1,12 @@
 # Find Qt4 and KDE4.
 MACRO(FIND_QT4_AND_KDE4)
+	# NOTE: KDE4's .cmake files overwrite the per-configuration CFLAGS/CXXFLAGS variables.
+	# We'll need to preserve them here.
+	FOREACH(_config RELWITHDEBINFO RELEASE DEBUG DEBUGFULL PROFILE DEBIAN)
+		SET(OLD_CMAKE_C_FLAGS_${_config}   "${CMAKE_C_FLAGS_${_config}}")
+		SET(OLD_CMAKE_CXX_FLAGS_${_config} "${CMAKE_CXX_FLAGS_${_config}}")
+	ENDFOREACH(_config)
+
 	SET(ENV{QT_SELECT} qt4)
 	SET(QT_DEFAULT_MAJOR_VERSION 4)
 	SET(QT_NO_CREATE_VERSIONLESS_TARGETS TRUE)
@@ -45,4 +52,14 @@ MACRO(FIND_QT4_AND_KDE4)
 		# Qt4 not found.
 		SET(BUILD_KDE4 OFF CACHE INTERNAL "Build the KDE4 plugin." FORCE)
 	ENDIF(QT4_FOUND)
+
+	# NOTE: KDE4's .cmake files overwrite the per-configuration CFLAGS/CXXFLAGS variables.
+	# We'll need to preserve them here.
+	FOREACH(_config RELWITHDEBINFO RELEASE DEBUG DEBUGFULL PROFILE DEBIAN)
+		SET(CMAKE_C_FLAGS_${_config}   "${OLD_CMAKE_C_FLAGS_${_config}}")
+		SET(CMAKE_CXX_FLAGS_${_config} "${OLD_CMAKE_CXX_FLAGS_${_config}}")
+
+		UNSET(OLD_CMAKE_C_FLAGS_${_config})
+		UNSET(OLD_CMAKE_CXX_FLAGS_${_config})
+	ENDFOREACH(_config)
 ENDMACRO(FIND_QT4_AND_KDE4)
