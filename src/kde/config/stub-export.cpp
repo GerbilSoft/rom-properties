@@ -236,8 +236,6 @@ Q_DECL_EXPORT int RP_C_API rp_show_RomDataView_dialog(int argc, char *argv[])
 	bool hasPlugins = false;
 	KPageWidget *const kpw = findDirectChild<KPageWidget*>(dialog);
 	if (kpw) {
-		// Remove tabs that aren't for our plugins.
-		// TODO
 		KPageWidgetModel *const model = findDirectChild<KPageWidgetModel*>(kpw);
 
 		// Assuming a single "column".
