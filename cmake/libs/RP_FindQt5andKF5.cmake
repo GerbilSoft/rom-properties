@@ -23,12 +23,8 @@ MACRO(FIND_QT5_AND_KF5)
 
 		# Include KF5 CMake modules.
 		LIST(APPEND CMAKE_MODULE_PATH ${ECM_MODULE_PATH} ${ECM_KDE_MODULE_DIR})
-		INCLUDE(KDEInstallDirs)
+		#INCLUDE(KDEInstallDirs)
 		INCLUDE(KDECMakeSettings)
-
-		# Qt5 requires "-fpic -fPIC" due to reduced relocations.
-		SET(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} -fpic -fPIC")
-		SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fpic -fPIC")
 
 		# Find Qt5.
 		SET(Qt5_NO_LINK_QTMAIN 1)
@@ -62,7 +58,8 @@ MACRO(FIND_QT5_AND_KF5)
 
 			# Get the plugin directory and Qt prefix.
 			# Prefix will be removed from the plugin directory if necessary.
-			EXEC_PROGRAM(${QTPATHS5} ARGS --plugin-dir OUTPUT_VARIABLE KF5_PLUGIN_INSTALL_DIR)
+			EXECUTE_PROCESS(COMMAND ${QTPATHS5} --plugin-dir OUTPUT_VARIABLE KF5_PLUGIN_INSTALL_DIR)
+			STRING(STRIP "${KF5_PLUGIN_INSTALL_DIR}" KF5_PLUGIN_INSTALL_DIR)
 			IF(NOT KF5_PLUGIN_INSTALL_DIR)
 				MESSAGE(FATAL_ERROR "`qtpaths5` isn't working correctly.")
 			ENDIF(NOT KF5_PLUGIN_INSTALL_DIR)
