@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * RomData_p.hpp: ROM data base class. (PRIVATE CLASS)                     *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -60,10 +60,10 @@ class NOVTABLE RomDataPrivate
 		const char *mimeType;		// MIME type (ASCII) (default is nullptr)
 		RomData::FileType fileType;	// File type (default is FileType::ROM_Image)
 		bool isValid;			// Subclass must set this to true if the ROM is valid.
+		bool isPAL;			// Is PAL?
 	public:
 		/** These fields are set by RomData's own constructor. **/
 		bool isCompressed;		// True if the file is compressed. (transparent decompression)
-		bool isPAL;			// Is PAL?
 		LibRpFile::IRpFilePtr file;	// Open file
 		char *filename;			// Copy of the filename (UTF-8)
 #ifdef _WIN32

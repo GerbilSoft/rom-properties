@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * RomData.cpp: ROM data base class.                                       *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth                                  *
+ * Copyright (c) 2016-2025 by David Korth                                  *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -37,8 +37,8 @@ RomDataPrivate::RomDataPrivate(const IRpFilePtr &file, const RomDataInfo *pRomDa
 	, mimeType(nullptr)
 	, fileType(RomData::FileType::ROM_Image)
 	, isValid(false)
-	, isCompressed(false)
 	, isPAL(false)
+	, isCompressed(false)
 	, file(file)
 	, filename(nullptr)
 #ifdef _WIN32
