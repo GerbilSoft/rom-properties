@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (gtk/tests)                        *
  * SortFuncsTest_gtk4.cpp: sort_funcs.c test (GTK4)                        *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -149,16 +149,13 @@ TEST_F(SortFuncsTest_gtk4, ascendingSort)
 		for (row = 0; row < rowCount; row++) {
 			RpListDataItem *const item = RP_LIST_DATA_ITEM(g_list_model_get_item(G_LIST_MODEL(sortProxy), row));
 			EXPECT_NE(item, nullptr) << "Unexpected NULL item received";
-			if (!item)
+			if (!item) {
 				continue;
+			}
 
 			// Get the string from this column.
 			const char *str = rp_list_data_item_get_column_text(item, col);
-			EXPECT_NE(str, nullptr) << "Unexpected NULL string pointer";
-			if (str) {
-				EXPECT_NE(str[0], '\0') << "Unexpected empty string";
-				EXPECT_STREQ(sorted_strings_asc[col][row], str) << "sorting column " << col << ", checking row " << row;
-			}
+			EXPECT_STREQ(sorted_strings_asc[col][row], str) << "sorting column " << col << ", checking row " << row;
 		};
 
 		ASSERT_EQ(rowCount, row) << "Row count does not match the number of rows received";
@@ -184,18 +181,14 @@ TEST_F(SortFuncsTest_gtk4, descendingSort)
 		for (row = 0; row < rowCount; row++) {
 			RpListDataItem *const item = RP_LIST_DATA_ITEM(g_list_model_get_item(G_LIST_MODEL(sortProxy), row));
 			EXPECT_NE(item, nullptr) << "Unexpected NULL item received";
-			if (!item)
+			if (!item) {
 				continue;
+			}
 
 			// Get the string from this column.
 			const char *str = rp_list_data_item_get_column_text(item, col);
-			EXPECT_NE(str, nullptr) << "Unexpected NULL string pointer";
-			if (str) {
-				EXPECT_NE(str[0], '\0') << "Unexpected empty string";
-
-				const int drow = ARRAY_SIZE(sorted_strings_asc[row]) - row - 1;
-				EXPECT_STREQ(sorted_strings_asc[col][drow], str) << "sorting column " << col << ", checking row " << row;
-			}
+			const int drow = ARRAY_SIZE(sorted_strings_asc[row]) - row - 1;
+			EXPECT_STREQ(sorted_strings_asc[col][drow], str) << "sorting column " << col << ", checking row " << row;
 		};
 
 		ASSERT_EQ(rowCount, row) << "Row count does not match the number of rows received";
