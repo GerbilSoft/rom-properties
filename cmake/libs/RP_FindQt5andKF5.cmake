@@ -23,7 +23,7 @@ MACRO(FIND_QT5_AND_KF5)
 
 		# Include KF5 CMake modules.
 		LIST(APPEND CMAKE_MODULE_PATH ${ECM_MODULE_PATH} ${ECM_KDE_MODULE_DIR})
-		#INCLUDE(KDEInstallDirs)
+		INCLUDE(KDEInstallDirs)
 		INCLUDE(KDECMakeSettings)
 
 		# Find Qt5.

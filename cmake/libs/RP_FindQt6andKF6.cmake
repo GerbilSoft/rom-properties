@@ -23,7 +23,7 @@ MACRO(FIND_QT6_AND_KF6)
 
 		# Include KF6 CMake modules.
 		LIST(APPEND CMAKE_MODULE_PATH ${ECM_MODULE_PATH} ${ECM_KDE_MODULE_DIR})
-		#INCLUDE(KDEInstallDirs6)
+		INCLUDE(KDEInstallDirs6)
 		INCLUDE(KDECMakeSettings)
 
 		# Find Qt6.
