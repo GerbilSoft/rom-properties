@@ -8,9 +8,12 @@ FUNCTION(SET_EXTLIB_PROPERTIES)
 			# Exclude from ALL builds.
 			# NOTE: Cannot remove targets from all builds
 			# if they're being installed.
-			IF(NOT SKIP_INSTALL_ALL)
+			IF(SKIP_INSTALL_LIBRARIES OR SKIP_INSTALL_ALL)
+				# Nothing to do here.
+			ELSE()
+				# Exclude this target from ALL builds.
 				SET_TARGET_PROPERTIES(${_target} PROPERTIES EXCLUDE_FROM_ALL TRUE)
-			ENDIF(NOT SKIP_INSTALL_ALL)
+			ENDIF()
 
 			# Enable PIC.
 			SET_TARGET_PROPERTIES(${_target} PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
@@ -18,7 +21,7 @@ FUNCTION(SET_EXTLIB_PROPERTIES)
 	ENDFOREACH(_target ${ARGV})
 ENDFUNCTION(SET_EXTLIB_PROPERTIES)
 
-FUNCTION(SET_EXTLIB_PROPERTIES_PIC)
+FUNCTION(SET_EXTLIB_PROPERTIES_PIC_ONLY)
 	FOREACH(_target ${ARGV})
 		IF(TARGET ${_target})
 			# Exclude from ALL builds; enable PIC.
@@ -27,7 +30,7 @@ FUNCTION(SET_EXTLIB_PROPERTIES_PIC)
 				)
 		ENDIF(TARGET ${_target})
 	ENDFOREACH(_target ${ARGV})
-ENDFUNCTION(SET_EXTLIB_PROPERTIES_PIC)
+ENDFUNCTION(SET_EXTLIB_PROPERTIES_PIC_ONLY)
 
 # zlib: Assembly optimizations.
 # TODO: Test on all archs and fix Z_PREFIX issues.
@@ -123,6 +126,7 @@ IF(USE_INTERNAL_ZLIB)
 	# NOTE: Cannot remove targets from all builds
 	# if they're being installed.
 	#SET_EXTLIB_PROPERTIES(zlib)
+	SET_EXTLIB_PROPERTIES_PIC_ONLY(zlib)
 	SET_EXTLIB_PROPERTIES(zlibstatic)
 ENDIF(USE_INTERNAL_ZLIB)
 
@@ -161,6 +165,7 @@ IF(USE_INTERNAL_PNG)
 	# NOTE: Cannot remove targets from all builds
 	# if they're being installed.
 	#SET_EXTLIB_PROPERTIES(png_shared)
+	SET_EXTLIB_PROPERTIES_PIC_ONLY(png_shared)
 	SET_EXTLIB_PROPERTIES(png_static)
 ENDIF(USE_INTERNAL_PNG)
 
@@ -187,6 +192,7 @@ IF(USE_INTERNAL_ZSTD)
 	# NOTE: Cannot remove targets from all builds
 	# if they're being installed.
 	#SET_EXTLIB_PROPERTIES(zstd)
+	SET_EXTLIB_PROPERTIES_PIC_ONLY(zstd)
 	SET_EXTLIB_PROPERTIES(zstdstatic)
 ELSE(USE_INTERNAL_ZSTD)
 	SET(ZSTD_LIBRARY zstd)
@@ -382,7 +388,7 @@ IF(BUILD_TESTING)
 	IF(WIN32)
 		# GTest is a DLL, so we need to set this.
 		TARGET_COMPILE_DEFINITIONS(gtest INTERFACE GTEST_LINKED_AS_SHARED_LIBRARY=1)
-		TARGET_COMPILE_DEFINITIONS(gtest_main INTERFACE GTEST_LINKED_AS_SHARED_LIBRARY=1)
+		#TARGET_COMPILE_DEFINITIONS(gtest_main INTERFACE GTEST_LINKED_AS_SHARED_LIBRARY=1)
 	ENDIF(WIN32)
 ENDIF(BUILD_TESTING)
 
