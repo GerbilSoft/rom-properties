@@ -2,16 +2,21 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * RpQt.hpp: Qt wrappers for some libromdata functionality.                *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #pragma once
 
 // Qt includes
+#include <QtCore/QDateTime>
 #include <QtCore/QObject>
 #include <QtCore/QString>
 #include <QtGui/QImage>
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 7, 0)
+#  include <QtCore/QTimeZone>
+#endif /* QT_VERSION >= QT_VERSION_CHECK(6, 7, 0) */
 
 // RomPropertiesKDE namespace info
 #include "RpQtNS.hpp"
@@ -169,3 +174,32 @@ static inline QImage rpToQImage(const LibRpTexture::rp_image_const_ptr &image)
  * @return Qt file dialog filter.
  */
 QString rpFileDialogFilterToQt(const char *filter);
+
+/**
+ * Get a QDateTime from milliseconds.
+ *
+ * Uses a QDateTime helper function with QTimeZone or Qt::TimeSpec,
+ * depending on Qt version.
+ *
+ * @param msecs Milliseconds since 1970/01/01 00:00:00 UTC
+ * @param utc If true, use UTC; otherwise, use localtime.
+ * @return QDateTime
+ */
+static inline QDateTime msecsToQDateTime(qint64 msecs, bool utc)
+{
+#if QT_VERSION >= QT_VERSION_CHECK(6, 7, 0)
+	// FIXME: The QTimeZone version was also introduced in Qt 5.2.
+	// Use it unconditionally for Qt 5.2+, or only 6.7+?
+	QDateTime dateTime = QDateTime::fromMSecsSinceEpoch(msecs,
+		QTimeZone(utc ? QTimeZone::UTC : QTimeZone::LocalTime));
+#elif QT_VERSION >= QT_VERSION_CHECK(5, 2, 0)
+	QDateTime dateTime = QDateTime::fromMSecsSinceEpoch(msecs,
+		utc ? Qt::UTC : Qt::LocalTime);
+#else /* QT_VERSION < QT_VERSION_CHECK(5, 2, 0) */
+	QDateTime dateTime;
+	dateTime.setTimeSpec(utc ? Qt::UTC : Qt::LocalTime);
+	dateTime.setMSecsSinceEpoch(msecs);
+#endif
+
+	return dateTime;
+}

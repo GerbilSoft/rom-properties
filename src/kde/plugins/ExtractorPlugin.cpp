@@ -8,7 +8,7 @@
  * most of the important code is split out into libromdata.so, so the      *
  * forwarder version is unnecessary.                                       *
  *                                                                         *
- * Copyright (c) 2018-2024 by David Korth.                                 *
+ * Copyright (c) 2018-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -129,13 +129,10 @@ void ExtractorPlugin::extract_properties(KFileMetaData::ExtractionResult *result
 
 			case PropertyType::Timestamp: {
 				// TODO: Verify timezone handling.
-				// NOTE: fromMSecsSinceEpoch() with TZ spec was added in Qt 5.2.
-				// Maybe write a wrapper function? (RomDataView uses this, too.)
 				// NOTE: Some properties might need the full QDateTime.
 				// CreationDate seems to work fine with just QDate.
-				QDateTime dateTime;
-				dateTime.setTimeSpec(Qt::UTC);
-				dateTime.setMSecsSinceEpoch((qint64)prop.data.timestamp * 1000);
+				const qint64 msecs = static_cast<qint64>(prop.data.timestamp) * 1000;
+				const QDateTime dateTime = msecsToQDateTime(msecs, true);
 				result->add(static_cast<KFileMetaData::Property::Property>(prop.name),
 					dateTime.date());
 				break;

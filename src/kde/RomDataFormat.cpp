@@ -21,17 +21,8 @@ using LibRpBase::RomFields;
  */
 QString formatDateTime(time_t date_time, unsigned int flags)
 {
-	QDateTime dateTime;
-#if QT_VERSION >= QT_VERSION_CHECK(6, 7, 0)
-	dateTime.setTimeZone(QTimeZone(
-		(flags & RomFields::RFT_DATETIME_IS_UTC)
-			? QTimeZone::UTC : QTimeZone::LocalTime));
-#else /* QT_VERSION < QT_VERSION_CHECK(6, 7, 0) */
-	dateTime.setTimeSpec(
-		(flags & RomFields::RFT_DATETIME_IS_UTC)
-			? Qt::UTC : Qt::LocalTime);
-#endif /* QT_VERSION >= QT_VERSION_CHECK(6, 7, 0) */
-	dateTime.setMSecsSinceEpoch(static_cast<qint64>(date_time) * 1000);
+	const qint64 msecs = static_cast<qint64>(date_time) * 1000;
+	const QDateTime dateTime = msecsToQDateTime(msecs, !!(flags & RomFields::RFT_DATETIME_IS_UTC));
 
 	QString str;
 	const QLocale locale = QLocale::system();
