@@ -131,8 +131,7 @@ void ExtractorPlugin::extract_properties(KFileMetaData::ExtractionResult *result
 				// TODO: Verify timezone handling.
 				// NOTE: Some properties might need the full QDateTime.
 				// CreationDate seems to work fine with just QDate.
-				const qint64 msecs = static_cast<qint64>(prop.data.timestamp) * 1000;
-				const QDateTime dateTime = msecsToQDateTime(msecs, true);
+				const QDateTime dateTime = unixTimeToQDateTime(prop.data.timestamp, true);
 				result->add(static_cast<KFileMetaData::Property::Property>(prop.name),
 					dateTime.date());
 				break;

@@ -21,8 +21,7 @@ using LibRpBase::RomFields;
  */
 QString formatDateTime(time_t date_time, unsigned int flags)
 {
-	const qint64 msecs = static_cast<qint64>(date_time) * 1000;
-	const QDateTime dateTime = msecsToQDateTime(msecs, !!(flags & RomFields::RFT_DATETIME_IS_UTC));
+	const QDateTime dateTime = unixTimeToQDateTime(date_time, !!(flags & RomFields::RFT_DATETIME_IS_UTC));
 
 	QString str;
 	const QLocale locale = QLocale::system();

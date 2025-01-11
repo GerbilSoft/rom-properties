@@ -176,17 +176,19 @@ static inline QImage rpToQImage(const LibRpTexture::rp_image_const_ptr &image)
 QString rpFileDialogFilterToQt(const char *filter);
 
 /**
- * Get a QDateTime from milliseconds.
+ * Convert a Unix timestamp to milliseconds.
  *
  * Uses a QDateTime helper function with QTimeZone or Qt::TimeSpec,
  * depending on Qt version.
  *
- * @param msecs Milliseconds since 1970/01/01 00:00:00 UTC
+ * @param timestamp Unix timestamp
  * @param utc If true, use UTC; otherwise, use localtime.
  * @return QDateTime
  */
-static inline QDateTime msecsToQDateTime(qint64 msecs, bool utc)
+static inline QDateTime unixTimeToQDateTime(time_t timestamp, bool utc)
 {
+	const qint64 msecs = static_cast<qint64>(timestamp) * 1000;
+
 #if QT_VERSION >= QT_VERSION_CHECK(6, 7, 0)
 	// FIXME: The QTimeZone version was also introduced in Qt 5.2.
 	// Use it unconditionally for Qt 5.2+, or only 6.7+?
