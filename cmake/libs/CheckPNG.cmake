@@ -13,8 +13,17 @@ IF(NOT USE_INTERNAL_PNG)
 	FIND_PACKAGE(PNG)
 	IF(PNG_FOUND)
 		# Found system libpng.
-		# TODO: APNG check?
 		SET(HAVE_PNG 1)
+
+		# Check for APNG support.
+		INCLUDE(CheckFunctionExists)
+		SET(CMAKE_REQUIRED_LIBRARIES "${PNG_LIBRARY}")
+		CHECK_FUNCTION_EXISTS("png_get_acTL" HAVE_PNG_APNG)
+		UNSET(CMAKE_REQUIRED_LIBRARIES)
+
+		IF(NOT HAVE_PNG_APNG)
+			MESSAGE(WARNING "System libpng does not support APNG.\nAPNG output will be disabled.")
+		ENDIF(NOT HAVE_PNG_APNG)
 	ELSE()
 		# System libpng was not found.
 		MESSAGE(STATUS "Using the internal copy of libpng since a system version was not found.")
@@ -28,6 +37,7 @@ IF(USE_INTERNAL_PNG)
 	# Using the internal PNG library.
 	SET(PNG_FOUND 1)
 	SET(HAVE_PNG 1)
+	SET(HAVE_PNG_APNG 1 CACHE INTERNAL "Have function png_get_acTL" FORCE)
 	IF(WIN32 OR APPLE)
 		# Using DLLs on Windows and Mac OS X.
 		SET(USE_INTERNAL_PNG_DLL ON)
