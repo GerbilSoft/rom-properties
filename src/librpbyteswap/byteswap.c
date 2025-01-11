@@ -45,6 +45,7 @@ void RP_C_API rp_byte_swap_16_array_c(uint16_t *ptr, size_t n)
 		// Byteswap the first WORD to fix alignment.
 		*ptr = __swab16(*ptr);
 		ptr++;
+		n -= 2;
 	}
 
 	// Process 8 WORDs per iteration,
