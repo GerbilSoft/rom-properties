@@ -102,7 +102,7 @@ void AchievementsTab::reset(void)
 		treeWidgetItem->setData(1, Qt::DisplayRole, s_ach);
 		treeWidgetItem->setData(1, Qt::UserRole, unlocked);
 		if (unlocked) {
-			treeWidgetItem->setData(2, Qt::DisplayRole, QDateTime::fromMSecsSinceEpoch(timestamp * 1000));
+			treeWidgetItem->setData(2, Qt::DisplayRole, unixTimeToQDateTime(timestamp, false));
 		}
 	}
 
