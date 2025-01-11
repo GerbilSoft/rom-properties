@@ -5,14 +5,29 @@ INCLUDE(SetMSVCDebugPath)
 FUNCTION(SET_EXTLIB_PROPERTIES)
 	FOREACH(_target ${ARGV})
 		IF(TARGET ${_target})
+			# Exclude from ALL builds.
+			# NOTE: Cannot remove targets from all builds
+			# if they're being installed.
+			IF(NOT SKIP_INSTALL_ALL)
+				SET_TARGET_PROPERTIES(${_target} PROPERTIES EXCLUDE_FROM_ALL TRUE)
+			ENDIF(NOT SKIP_INSTALL_ALL)
+
+			# Enable PIC.
+			SET_TARGET_PROPERTIES(${_target} PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
+		ENDIF(TARGET ${_target})
+	ENDFOREACH(_target ${ARGV})
+ENDFUNCTION(SET_EXTLIB_PROPERTIES)
+
+FUNCTION(SET_EXTLIB_PROPERTIES_PIC)
+	FOREACH(_target ${ARGV})
+		IF(TARGET ${_target})
 			# Exclude from ALL builds; enable PIC.
 			SET_TARGET_PROPERTIES(${_target} PROPERTIES
-				EXCLUDE_FROM_ALL TRUE
 				POSITION_INDEPENDENT_CODE TRUE
 				)
 		ENDIF(TARGET ${_target})
 	ENDFOREACH(_target ${ARGV})
-ENDFUNCTION(SET_EXTLIB_PROPERTIES)
+ENDFUNCTION(SET_EXTLIB_PROPERTIES_PIC)
 
 # zlib: Assembly optimizations.
 # TODO: Test on all archs and fix Z_PREFIX issues.
@@ -255,11 +270,7 @@ IF(USE_INTERNAL_XML)
 
 	# Build TinyXML2.
 	ADD_SUBDIRECTORY(tinyxml2)
-
-	# NOTE: Cannot remove targets from all builds
-	# if they're being installed.
-	SET_EXTLIB_PROPERTIES(tinyxml2_static)
-	#SET_EXTLIB_PROPERTIES(tinyxml2)
+	SET_EXTLIB_PROPERTIES(tinyxml2)
 
 	# TODO: Set TinyXML2::tinyxml2 and use it in libromdata?
 ENDIF(USE_INTERNAL_XML)
@@ -307,9 +318,7 @@ IF(USE_INTERNAL_LZ4)
 	ENDIF()
 	SET(LZ4_BUNDLED_MODE ON)
 	ADD_SUBDIRECTORY(lz4/build/cmake)
-	# NOTE: Cannot remove targets from all builds
-	# if they're being installed.
-	#SET_EXTLIB_PROPERTIES(lz4_shared)
+	SET_EXTLIB_PROPERTIES(lz4_shared)
 	SET_EXTLIB_PROPERTIES(lz4_static)
 	# lz4 programs that we don't need.
 	SET_EXTLIB_PROPERTIES(lz4cli lz4c)
@@ -331,9 +340,7 @@ IF(USE_INTERNAL_LZO)
 		SET(BUILD_STATIC_LIBS ON)
 	ENDIF()
 	ADD_SUBDIRECTORY(minilzo)
-	# NOTE: Cannot remove targets from all builds
-	# if they're being installed.
-	#SET_EXTLIB_PROPERTIES(minilzo)
+	SET_EXTLIB_PROPERTIES(minilzo)
 ENDIF(USE_INTERNAL_LZO)
 
 # rapidjson
