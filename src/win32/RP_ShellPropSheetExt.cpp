@@ -1679,8 +1679,11 @@ void RP_ShellPropSheetExt_Private::initDialog(void)
 	// Reference: https://docs.microsoft.com/en-us/windows/win32/api/commctrl/ns-commctrl-initcommoncontrolsex
 	INITCOMMONCONTROLSEX initCommCtrl;
 	initCommCtrl.dwSize = sizeof(initCommCtrl);
-	initCommCtrl.dwICC = ICC_LISTVIEW_CLASSES | ICC_LINK_CLASS |
-	                     ICC_TAB_CLASSES | ICC_USEREX_CLASSES;
+	initCommCtrl.dwICC =
+		ICC_LISTVIEW_CLASSES |
+		ICC_LINK_CLASS |
+		ICC_TAB_CLASSES |
+		ICC_USEREX_CLASSES;
 	// TODO: Also ICC_STANDARD_CLASSES on XP+?
 	InitCommonControlsEx(&initCommCtrl);
 
