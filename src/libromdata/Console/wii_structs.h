@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * wii_structs.h: Nintendo Wii data structures.                            *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -193,8 +193,7 @@ ASSERT_STRUCT(RVL_Ticket, 0x2A4);
  *
  * All fields are big-endian.
  */
-#pragma pack(1)
-typedef struct PACKED _RVL_Ticket_v1_Header {
+typedef struct _RVL_Ticket_v1_Header {
 	uint16_t header_version;		// [0x2A4] v1 header version (usually 1)
 	uint16_t size_header;			// [0x2A6] Size of the v1 header
 	uint32_t size_data;			// [0x2A8] Size of the v1 data (including header) [usually 0xAC or 172]
@@ -211,8 +210,7 @@ ASSERT_STRUCT(RVL_Ticket_v1_Header, 0x14);
  *
  * All fields are big-endian.
  */
-#pragma pack(1)
-typedef struct PACKED _RVL_Ticket_v1_Section_Header {
+typedef struct _RVL_Ticket_v1_Section_Header {
 	uint32_t offset;		// [0x000] Offset to the records
 	uint32_t num_records;		// [0x004] Number of records
 	uint32_t size_of_each;		// [0x008] Size of each record in this section
@@ -220,7 +218,6 @@ typedef struct PACKED _RVL_Ticket_v1_Section_Header {
 	uint16_t section_type;		// [0x010] Section type
 	uint16_t flags;			// [0x012] Flags (TODO)
 } RVL_Ticket_v1_Section_Header;
-#pragma pack()
 ASSERT_STRUCT(RVL_Ticket_v1_Section_Header, 0x14);
 
 /**
@@ -230,8 +227,7 @@ ASSERT_STRUCT(RVL_Ticket_v1_Section_Header, 0x14);
  *
  * All fields are big-endian.
  */
-#pragma pack(1)
-typedef struct PACKED _RVL_Ticket_V1 {
+typedef struct _RVL_Ticket_V1 {
 	RVL_Ticket v0;					// [0x000] Same as RVL_Ticket v0; v0.ticket_format_version == 1
 	RVL_Ticket_v1_Header v1;			// [0x2A4] RVL Ticket v1 header
 
