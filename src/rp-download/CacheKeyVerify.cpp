@@ -83,7 +83,7 @@ CacheKeyError verifyCacheKey(tstring &outURL, bool &check_newer, const TCHAR *ca
 	else if (!_tcscmp(lastdot, _T(".txt")))
 	{
 		// .txt is supported for sys/ only.
-		if (_tcsncmp(cache_key, _T("sys/"), 4) != 0) {
+		if (prefix_len == 3 && _tmemcmp_inline(cache_key, _T("sys"), 3) != 0) {
 			return CacheKeyError::Invalid;
 		}
 	} else {
@@ -105,15 +105,15 @@ CacheKeyError verifyCacheKey(tstring &outURL, bool &check_newer, const TCHAR *ca
 	check_newer = false;	// for [sys]: always check, but only download if newer
 	bool ok = false;
 	outURL.reserve(64);
-	if ((prefix_len == 3 && (!_tcsncmp(cache_key, _T("wii"), 3) || !_tcsncmp(cache_key, _T("3ds"), 3))) ||
-	    (prefix_len == 4 && !_tcsncmp(cache_key, _T("wiiu"), 4)) ||
-	    (prefix_len == 2 && !_tcsncmp(cache_key, _T("ds"), 2)))
+	if ((prefix_len == 3 && (!_tmemcmp_inline(cache_key, _T("wii"), 3) || !_tmemcmp_inline(cache_key, _T("3ds"), 3))) ||
+	    (prefix_len == 4 && !_tmemcmp_inline(cache_key, _T("wiiu"), 4)) ||
+	    (prefix_len == 2 && !_tmemcmp_inline(cache_key, _T("ds"), 2)))
 	{
 		// GameTDB: Wii, Wii U, Nintendo 3DS, Nintendo DS
 		ok = true;
 		outURL = _T("https://art.gametdb.com/");
 		outURL += cache_key_urlencode;
-	} else if (prefix_len == 6 && !_tcsncmp(cache_key, _T("amiibo"), 6)) {
+	} else if (prefix_len == 6 && !_tmemcmp_inline(cache_key, _T("amiibo"), 6)) {
 		// amiibo.life: amiibo images
 		// NOTE: We need to remove the file extension.
 		size_t filename_len = _tcslen(slash_pos+1);
@@ -133,49 +133,49 @@ CacheKeyError verifyCacheKey(tstring &outURL, bool &check_newer, const TCHAR *ca
 			default:
 				break;
 			case 2:
-				if (!_tcsncmp(cache_key, _T("gb"), 2) ||
-				    !_tcsncmp(cache_key, _T("ws"), 2) ||
-				    !_tcsncmp(cache_key, _T("md"), 2))
+				if (!_tmemcmp_inline(cache_key, _T("gb"), 2) ||
+				    !_tmemcmp_inline(cache_key, _T("ws"), 2) ||
+				    !_tmemcmp_inline(cache_key, _T("md"), 2))
 				{
 					ok = true;
 				}
 				break;
 			case 3:
-				if (!_tcsncmp(cache_key, _T("gba"), 3) ||
-				    !_tcsncmp(cache_key, _T("mcd"), 3) ||
-				    !_tcsncmp(cache_key, _T("32x"), 3) ||
-				    !_tcsncmp(cache_key, _T("c64"), 3) ||
-				    !_tcsncmp(cache_key, _T("ps1"), 3) ||
-				    !_tcsncmp(cache_key, _T("ps2"), 3))
+				if (!_tmemcmp_inline(cache_key, _T("gba"), 3) ||
+				    !_tmemcmp_inline(cache_key, _T("mcd"), 3) ||
+				    !_tmemcmp_inline(cache_key, _T("32x"), 3) ||
+				    !_tmemcmp_inline(cache_key, _T("c64"), 3) ||
+				    !_tmemcmp_inline(cache_key, _T("ps1"), 3) ||
+				    !_tmemcmp_inline(cache_key, _T("ps2"), 3))
 				{
 					ok = true;
 				}
-				else if (!_tcsncmp(cache_key, _T("sys"), 3))
+				else if (!_tmemcmp_inline(cache_key, _T("sys"), 3))
 				{
 					ok = true;
 					check_newer = true;
 				}
 				break;
 			case 4:
-				if (!_tcsncmp(cache_key, _T("snes"), 4) ||
-				    !_tcsncmp(cache_key, _T("ngpc"), 4) ||
-				    !_tcsncmp(cache_key, _T("pico"), 4) ||
-				    !_tcsncmp(cache_key, _T("tera"), 4) ||
-				    !_tcsncmp(cache_key, _T("c128"), 4))
+				if (!_tmemcmp_inline(cache_key, _T("snes"), 4) ||
+				    !_tmemcmp_inline(cache_key, _T("ngpc"), 4) ||
+				    !_tmemcmp_inline(cache_key, _T("pico"), 4) ||
+				    !_tmemcmp_inline(cache_key, _T("tera"), 4) ||
+				    !_tmemcmp_inline(cache_key, _T("c128"), 4))
 				{
 					ok = true;
 				}
 				break;
 			case 5:
-				if (!_tcsncmp(cache_key, _T("cbmII"), 5) ||
-				    !_tcsncmp(cache_key, _T("vic20"), 5) ||
-				    !_tcsncmp(cache_key, _T("plus4"), 5))
+				if (!_tmemcmp_inline(cache_key, _T("cbmII"), 5) ||
+				    !_tmemcmp_inline(cache_key, _T("vic20"), 5) ||
+				    !_tmemcmp_inline(cache_key, _T("plus4"), 5))
 				{
 					ok = true;
 				}
 				break;
 			case 6:
-				if (!_tcsncmp(cache_key, _T("mcd32x"), 6)) {
+				if (!_tmemcmp_inline(cache_key, _T("mcd32x"), 6)) {
 					ok = true;
 				}
 				break;

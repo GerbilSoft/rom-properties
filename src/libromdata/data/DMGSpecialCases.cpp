@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * DMGSpecialCases.cpp: Game Boy special cases for RPDB images.            *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -232,10 +232,16 @@ bool is_rpdb_checksum_needed_TitleBased(const DMG_RomHeader *romHeader)
 			continue;
 		} else if (strncmp(p->title, title, title_len) != 0) {
 			// Title does not match.
+			// NOTE: memcmp() cannot be inlined without a constant length.
+			// NOTE: Cannot use memcmp() here because title_len
+			// may include the game ID, or in some cases, invalid data.
+			// (Title is NULL-terminated, not space-padded.)
+			// - "Bugs Bunny & Lola Bunny - Operation Carrots (E) (M6) [C][t1].gbc"
+			// - "Legend of Zelda, The - Link's Awakening DX (U) (V1.0) [C][T-Pol].gbc"
 			continue;
 		}
 
-		if (p->publisher[0] != '\0' && strcmp(pbcode, p->publisher) != 0) {
+		if (p->publisher[0] != '\0' && memcmp(pbcode, p->publisher, 2) != 0) {
 			// Publisher is being checked and does not match.
 			continue;
 		}
@@ -264,7 +270,7 @@ bool is_rpdb_checksum_needed_ID6(const char *id6)
 	for (const char *p = &cgbSpecialCases[0][0];
 	     count > 0; p += sizeof(cgbSpecialCases[0]), count--)
 	{
-		if (!strncmp(p, id6, 6)) {
+		if (!memcmp(p, id6, 6)) {
 			// Game ID matches.
 			return true;
 		}

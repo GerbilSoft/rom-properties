@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * PSP.hpp: PlayStation Portable disc image reader.                        *
  *                                                                         *
- * Copyright (c) 2019-2024 by David Korth.                                 *
+ * Copyright (c) 2019-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -361,10 +361,10 @@ int PSP::isRomSupported_static(
 	// PlayStation Portable game discs have the system ID "PSP GAME".
 	// UMD video discs have the system ID "UMD VIDEO".
 	int pos = -1;
-	if (!strncmp(pvd->sysID, "PSP GAME ", 9)) {
+	if (!memcmp(pvd->sysID, "PSP GAME ", 9)) {
 		discType = PSPPrivate::DiscType::PspGame;
 		pos = 9;
-	} else if (!strncmp(pvd->sysID, "UMD VIDEO ", 10)) {
+	} else if (!memcmp(pvd->sysID, "UMD VIDEO ", 10)) {
 		discType = PSPPrivate::DiscType::UmdVideo;
 		pos = 10;
 	}

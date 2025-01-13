@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * PlayStationDisc.cpp: PlayStation 1 and 2 disc image reader.             *
  *                                                                         *
- * Copyright (c) 2019-2024 by David Korth.                                 *
+ * Copyright (c) 2019-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -523,13 +523,13 @@ int PlayStationDisc::isRomSupported_static(
 	// NOTE: Some PS2 prototypes have incorrect system IDs. We'll
 	// check for those here, and then verify SYSTEM.CNF later.
 	int pos = -1;
-	if (!strncmp(pvd->sysID, "PLAYSTATION ", 12)) {
+	if (!memcmp(pvd->sysID, "PLAYSTATION ", 12)) {
 		pos = 12;
-	} else if (!strncmp(pvd->sysID, "CD-RTOS CD-BRIDGE ", 18)) {
+	} else if (!memcmp(pvd->sysID, "CD-RTOS CD-BRIDGE ", 18)) {
 		// CD-i system ID
 		// Some PS2 prototypes have this for some reason.
 		pos = 18;
-	} else if (!strncmp(pvd->sysID, "Win32 ", 6)) {
+	} else if (!memcmp(pvd->sysID, "Win32 ", 6)) {
 		// No idea why some PS2 prototypes have this one...
 		pos = 6;
 	}

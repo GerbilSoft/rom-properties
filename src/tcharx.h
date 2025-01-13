@@ -28,6 +28,27 @@
 #  endif /* _UNICODE */
 #endif /* __cplusplus && !tstring */
 
+#ifdef _UNICODE
+#  define _tmemcmp(s1, s2, n)	wmemcmp((s1), (s2), (n))
+
+/**
+ * _tmemcmp_inline() for Windows unicode strings.
+ * Neither gcc nor MSVC will inline wmemcmp(), so
+ * convert it to memcmp().
+ * @param s1
+ * @param s2
+ * @param n
+ */
+static inline int _tmemcmp_inline(const TCHAR *s1, const TCHAR *s2, size_t n)
+{
+	return memcmp(s1, s2, n * sizeof(TCHAR));
+}
+
+#else /* !_UNICODE */
+#  define _tmemcmp(s1, s2, n)		memcmp((s1), (s2), (n))
+#  define _tmemcmp_inline(s1, s2, n)	memcmp((s1), (s2), (n))
+#endif /* _UNICODE */
+
 #else /* !_WIN32 */
 
 // Other systems: Define TCHAR and related macros.
@@ -74,6 +95,8 @@ typedef char TCHAR;
 #define _tcslen(s)			strlen(s)
 #define _tcsncmp(s1, s2, n)		strncmp((s1), (s2), (n))
 #define _tcsrchr(s, c)			strrchr((s), (c))
+#define _tmemcmp(s1, s2, n)		memcmp((s1), (s2), (n))
+#define _tmemcmp_inline(s1, s2, n)	memcmp((s1), (s2), (n))
 
 // direct.h (unistd.h)
 #define _tgetcwd(buf, size)		getcwd((buf), (size))

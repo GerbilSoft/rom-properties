@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * DreamcastSave.cpp: Sega Dreamcast save file reader.                     *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -857,7 +857,9 @@ DreamcastSave::DreamcastSave(const IRpFilePtr &file)
 		d->loaded_headers |= DreamcastSavePrivate::DC_HAVE_DIR_ENTRY;
 
 		// Is this ICONDATA_VMS?
-		if (!strncmp(d->vms_dirent.filename, "ICONDATA_VMS", sizeof(d->vms_dirent.filename))) {
+		// TODO: Also check the file size and description field?
+		static_assert(sizeof("ICONDATA_VMS") == sizeof(d->vms_dirent.filename) + 1, "ICONDATA_VMS size error");
+		if (!memcmp(d->vms_dirent.filename, "ICONDATA_VMS", sizeof(d->vms_dirent.filename))) {
 			// This is ICONDATA_VMS.
 			d->loaded_headers |= DreamcastSavePrivate::DC_IS_ICONDATA_VMS;
 		}
@@ -1000,7 +1002,9 @@ DreamcastSave::DreamcastSave(const IRpFilePtr &vms_file, const IRpFilePtr &vmi_f
 	}
 
 	// Is this ICONDATA_VMS?
-	if (!strncmp(d->vms_dirent.filename, "ICONDATA_VMS", sizeof(d->vms_dirent.filename))) {
+	// TODO: Also check the file size and description field?
+	static_assert(sizeof("ICONDATA_VMS") == sizeof(d->vms_dirent.filename) + 1, "ICONDATA_VMS size error");
+	if (!memcmp(d->vms_dirent.filename, "ICONDATA_VMS", sizeof(d->vms_dirent.filename))) {
 		// This is ICONDATA_VMS.
 		d->loaded_headers |= DreamcastSavePrivate::DC_IS_ICONDATA_VMS;
 	} else {
