@@ -16,7 +16,7 @@ G_BEGIN_DECLS
 #if GTK_CHECK_VERSION(3,0,0)
 G_DECLARE_FINAL_TYPE(RpDosAttrView, rp_dos_attr_view, RP, DOS_ATTR_VIEW, GtkBox)
 #else /* !GTK_CHECK_VERSION(3,0,0) */
-G_DECLARE_FINAL_TYPE(RpDosAttrView, rp_dos_attr_view, RP, DOS_ATTR_VIEW, GtkHBox)
+G_DECLARE_FINAL_TYPE(RpDosAttrView, rp_dos_attr_view, RP, DOS_ATTR_VIEW, GtkVBox)
 #endif
 
 /* this function is implemented automatically by the G_DEFINE_TYPE macro */

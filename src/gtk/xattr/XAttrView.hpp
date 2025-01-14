@@ -16,7 +16,7 @@ G_BEGIN_DECLS
 #if GTK_CHECK_VERSION(3,0,0)
 G_DECLARE_FINAL_TYPE(RpXAttrView, rp_xattr_view, RP, XATTR_VIEW, GtkBox)
 #else /* !GTK_CHECK_VERSION(3,0,0) */
-G_DECLARE_FINAL_TYPE(RpXAttrView, rp_xattr_view, RP, XATTR_VIEW, GtkHBox)
+G_DECLARE_FINAL_TYPE(RpXAttrView, rp_xattr_view, RP, XATTR_VIEW, GtkVBox)
 #endif
 
 /* this function is implemented automatically by the G_DEFINE_TYPE macro */
