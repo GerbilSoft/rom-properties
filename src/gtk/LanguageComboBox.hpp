@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * LanguageComboBox.hpp: Language ComboBox                                 *
  *                                                                         *
- * Copyright (c) 2017-2023 by David Korth.                                 *
+ * Copyright (c) 2017-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -13,11 +13,16 @@
 G_BEGIN_DECLS
 
 #define RP_TYPE_LANGUAGE_COMBO_BOX (rp_language_combo_box_get_type())
+
 #if GTK_CHECK_VERSION(3,0,0)
-G_DECLARE_FINAL_TYPE(RpLanguageComboBox, rp_language_combo_box, RP, LANGUAGE_COMBO_BOX, GtkBox)
+#  define _RpLanguageComboBox_super		GtkBox
+#  define _RpLanguageComboBox_superClass	GtkBoxClass
 #else /* !GTK_CHECK_VERSION(3,0,0) */
-G_DECLARE_FINAL_TYPE(RpLanguageComboBox, rp_language_combo_box, RP, LANGUAGE_COMBO_BOX, GtkHBox)
-#endif
+#  define _RpLanguageComboBox_super		GtkHBox
+#  define _RpLanguageComboBox_superClass	GtkHBoxClass
+#endif /* GTK_CHECK_VERSION(3,0,0) */
+
+G_DECLARE_FINAL_TYPE(RpLanguageComboBox, rp_language_combo_box, RP, LANGUAGE_COMBO_BOX, _RpLanguageComboBox_super)
 
 /* this function is implemented automatically by the G_DEFINE_TYPE macro */
 void		rp_language_combo_box_register_type	(GtkWidget *widget) G_GNUC_INTERNAL;

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * MessageWidget.h: Message widget (similar to KMessageWidget)             *
  *                                                                         *
- * Copyright (c) 2017-2024 by David Korth.                                 *
+ * Copyright (c) 2017-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -13,11 +13,16 @@
 G_BEGIN_DECLS
 
 #define RP_TYPE_MESSAGE_WIDGET (rp_message_widget_get_type())
+
 #if GTK_CHECK_VERSION(4,0,0)
-G_DECLARE_FINAL_TYPE(RpMessageWidget, rp_message_widget, RP, MESSAGE_WIDGET, GtkBox)
+#  define _RpMessageWidget_super	GtkBox
+#  define _RpMessageWidget_superClass	GtkBoxClass
 #else /* !GTK_CHECK_VERSION(4,0,0) */
-G_DECLARE_FINAL_TYPE(RpMessageWidget, rp_message_widget, RP, MESSAGE_WIDGET, GtkEventBox)
+#  define _RpMessageWidget_super	GtkEventBox
+#  define _RpMessageWidget_superClass	GtkEventBoxClass
 #endif /* GTK_CHECK_VERSION(4,0,0) */
+
+G_DECLARE_FINAL_TYPE(RpMessageWidget, rp_message_widget, RP, MESSAGE_WIDGET, _RpMessageWidget_super)
 
 GtkWidget	*rp_message_widget_new		(void) G_GNUC_MALLOC;
 

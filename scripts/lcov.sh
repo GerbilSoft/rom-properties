@@ -23,6 +23,7 @@ coverage_cleaned="${coverage_info}.cleaned"
 outputname="$3"
 
 # Cleanup lcov.
+set -v
 lcov --directory . --zerocounters
 
 # Create baseline coverage data file.
@@ -30,7 +31,8 @@ lcov --directory . --zerocounters
 # References:
 # - https://stackoverflow.com/questions/44203156/can-lcov-genhtml-show-files-that-were-never-executed
 # - https://stackoverflow.com/a/45105825
-lcov -c -i -d . -o ${coverage_base_info}
+lcov --ignore-errors inconsistent \
+	-c -i -d . -o "${coverage_base_info}"
 
 # Run tests.
 ctest -C "${CONFIG}"
@@ -39,13 +41,18 @@ if [ "$?" != "0" ]; then
 fi
 
 # Capture lcov output from the unit tests.
-lcov -c -d . -o ${coverage_test_info}
+lcov --ignore-errors inconsistent \
+	-c -d . -o "${coverage_test_info}"
 
 # Combine baseline and unit test output.
-lcov -a ${coverage_base_info} -a ${coverage_test_info} -o ${coverage_info}
+lcov --ignore-errors inconsistent,corrupt \
+	-a "${coverage_base_info}" \
+	-a "${coverage_test_info}" \
+	-o "${coverage_info}"
 
 # Remove third-party libraries and generated sources.
-lcov -o ${coverage_cleaned} -r ${coverage_info} \
+lcov --ignore-errors unused \
+	-o "${coverage_cleaned}" -r "${coverage_info}" \
 	'*/tests/*' '/usr/*' '*/extlib/*' \
 	'*/moc_*.cpp' '*.moc' '*/ui_*.h' '*/qrc_*.cpp' \
 	'*/glibresources.c' \
@@ -57,10 +64,9 @@ lcov -o ${coverage_cleaned} -r ${coverage_info} \
 	'*/notificationsinterface.h' \
 	'*/SpecializedThumbnailer1.c' \
 	'*/SpecializedThumbnailer1.h' \
-	'*/src/librpbase/img/pngcheck/pngcheck.cpp' \
 	'*/libi18n/gettext.h'
 
 # Generate the HTML report.
-genhtml -o ${outputname} ${coverage_cleaned}
-rm -f ${coverage_base_info} ${coverage_test_info} ${coverage_info} ${coverage_cleaned}
+genhtml -o "${outputname}" "${coverage_cleaned}"
+rm -f "${coverage_base_info}" "${coverage_test_info}" "${coverage_info}" "${coverage_cleaned}"
 exit 0

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ 3.x)                         *
  * ThunarMenuProvider.c: ThunarX Menu Provider Definition                  *
  *                                                                         *
- * Copyright (c) 2017-2023 by David Korth.                                 *
+ * Copyright (c) 2017-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -104,12 +104,13 @@ rp_item_convert_to_png_ThreadFunc(GList *files)
 }
 
 #if GTK_CHECK_VERSION(3,0,0)
-static void
-rp_item_convert_to_png(ThunarxMenuItem *item, gpointer user_data)
+typedef ThunarxMenuItem MenuItem_t;
 #else /* !GTK_CHECK_VERSION(3,0,0) */
-static void
-rp_item_convert_to_png(GtkAction *item, gpointer user_data)
+typedef GtkAction MenuItem_t;
 #endif /* GTK_CHECK_VERSION(3,0,0) */
+
+static void
+rp_item_convert_to_png(MenuItem_t *item, gpointer user_data)
 {
 	RP_UNUSED(user_data);
 
