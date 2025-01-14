@@ -23,7 +23,6 @@ coverage_cleaned="${coverage_info}.cleaned"
 outputname="$3"
 
 # Cleanup lcov.
-set -v
 lcov --directory . --zerocounters
 
 # Create baseline coverage data file.
