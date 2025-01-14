@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * DllRegisterServer.cpp: COM registration handler.                        *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -639,8 +639,10 @@ STDAPI DllRegisterServer(void)
 	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 	lResult = RP_ExtractImage::RegisterFileType(hkcr, _T("Directory"));
 	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
-	lResult = RP_ThumbnailProvider::RegisterFileType(hkcr, _T("Directory"));
-	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
+	// NOTE: IThumbnailProvider does not work on directories.
+	// Unregistering it in case it was registered before.
+	lResult = RP_ThumbnailProvider::UnregisterFileType(hkcr, _T("Directory"));
+	//if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 
 	// Register RP_XAttrView for all file types.
 	// TODO: Also for drives?
@@ -773,6 +775,8 @@ STDAPI DllUnregisterServer(void)
 	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 	lResult = RP_ExtractImage::UnregisterFileType(hkcr, _T("Directory"));
 	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
+	// NOTE: IThumbnailProvider does not work on directories.
+	// Unregistering it in case it was registered before.
 	lResult = RP_ThumbnailProvider::UnregisterFileType(hkcr, _T("Directory"));
 	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 
