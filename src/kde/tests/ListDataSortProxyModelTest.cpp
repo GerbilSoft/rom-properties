@@ -168,6 +168,9 @@ void ListDataSortProxyModelTest::TearDown()
 
 	delete listDataModel;
 	listDataModel = nullptr;
+
+	delete field;
+	field = nullptr;
 }
 
 /**
