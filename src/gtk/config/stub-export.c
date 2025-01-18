@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK)                              *
  * stub-export.c: Exported function for the rp-config stub.                *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -365,6 +365,7 @@ int RP_C_API rp_show_RomDataView_dialog(int argc, char *argv[])
 #endif
 
 	CHECK_UID_RET(EXIT_FAILURE);
+	fputs("*** GTK" GTK_MAJOR_STR " rp_show_RomDataView_dialog(): Starting main loop.\n", stderr);
 #if GTK_CHECK_VERSION(2,90,2)
 	app = gtk_application_new("com.gerbilsoft.rom-properties.rp-config", G_APPLICATION_FLAGS_NONE);
 	// NOTE: GApplication is supposed to set this, but KDE isn't seeing it...
@@ -384,8 +385,9 @@ int RP_C_API rp_show_RomDataView_dialog(int argc, char *argv[])
 	// because GTK2 desktops likely wouldn't support it, anyway.
 	gtk_init(NULL, NULL);
 	rp_RomDataView_app_activate(NULL, uri);
-	if (status == 0)
+	if (status == 0) {
 		gtk_main();
+	}
 #endif /* GTK_CHECK_VERSION(2,90,2) */
 
 	return status;
