@@ -1,6 +1,14 @@
 # KDE 4.x UI frontend
 PROJECT(rom-properties-kde4 LANGUAGES CXX)
 
+# Enable the "new" automoc policy for KDE4.
+# Otherwise, CMake complains because the old policy doesn't run
+# automoc on generated sources, e.g. from uic or rcc.
+# NOTE: Only on Qt4; CMake doesn't show this for Qt5/Qt6.
+IF(POLICY CMP0071)
+	CMAKE_POLICY(SET CMP0071 NEW)
+ENDIF(POLICY CMP0071)
+
 # Find Qt4 and KDE4.
 INCLUDE(RP_FindQt4andKDE4)
 FIND_QT4_AND_KDE4()
@@ -34,6 +42,9 @@ IF(HAVE_QtDBus)
 		QT4_ADD_DBUS_INTERFACES(${PROJECT_NAME}_DBUS_IFACE_SRCS
 			"${CMAKE_CURRENT_SOURCE_DIR}/../../dbus/org.freedesktop.NetworkManager.xml"
 			)
+		# NOTE: Setting CMAKE_POLICY(SET CMP0071 NEW) causes the generated D-Bus .moc
+		# to be included twice. Work around this by setting SKIP_AUTOMOC.
+		SET_PROPERTY(SOURCE "${CMAKE_CURRENT_BINARY_DIR}/networkmanagerinterface.h" PROPERTY SKIP_AUTOMOC ON)
 	ENDIF(0)
 	IF(HAVE_QtDBus_NOTIFY)
 		STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}-notify_SRCS "${rom-properties-kde-notify_SRCS}")
@@ -41,6 +52,9 @@ IF(HAVE_QtDBus)
 		QT4_ADD_DBUS_INTERFACES(${PROJECT_NAME}_DBUS_IFACE_SRCS_2
 			"${CMAKE_CURRENT_SOURCE_DIR}/../../dbus/org.freedesktop.Notifications.xml"
 			)
+		# NOTE: Setting CMAKE_POLICY(SET CMP0071 NEW) causes the generated D-Bus .moc
+		# to be included twice. Work around this by setting SKIP_AUTOMOC.
+		SET_PROPERTY(SOURCE "${CMAKE_CURRENT_BINARY_DIR}/notificationsinterface.h" PROPERTY SKIP_AUTOMOC ON)
 	ENDIF(HAVE_QtDBus_NOTIFY)
 ENDIF(HAVE_QtDBus)
 
@@ -163,14 +177,14 @@ IF(BUILD_KDE4)
 	INSTALL(FILES "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.KPropertiesDialog.desktop"
 		      "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.ThumbCreator.desktop"
 		      "${XATTRVIEW_NAME}.desktop"
-		DESTINATION "${SERVICES_INSTALL_DIR}"
+		DESTINATION "${KDE4_SERVICES_INSTALL_DIR}"
 		COMPONENT "plugin"
 		)
 	# FIXME: Run kbuildsycoca4?
 
 	# Service menus
 	INSTALL(FILES ../servicemenus/rp-convert-to-png.desktop
-		DESTINATION "${SERVICES_INSTALL_DIR}/ServiceMenus"
+		DESTINATION "${KDE4_SERVICES_INSTALL_DIR}/ServiceMenus"
 		PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
 		COMPONENT "plugin")
 
