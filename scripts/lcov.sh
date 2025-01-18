@@ -42,19 +42,16 @@ if [ "$?" != "0" ]; then
 	echo "*** WARNING: Some tests failed. Generating the lcov report anyway." >&2
 fi
 
-echo "*** A"
 # Capture lcov output from the unit tests.
 lcov ${LCOV_RC} --ignore-errors inconsistent,mismatch \
 	-c -d . -o "${coverage_test_info}"
 
-echo "*** B"
 # Combine baseline and unit test output.
 lcov ${LCOV_RC} --ignore-errors inconsistent,corrupt,mismatch \
 	-a "${coverage_base_info}" \
 	-a "${coverage_test_info}" \
 	-o "${coverage_info}"
 
-echo "*** C"
 # Remove third-party libraries and generated sources.
 lcov ${LCOV_RC} --ignore-errors unused \
 	-o "${coverage_cleaned}" -r "${coverage_info}" \
