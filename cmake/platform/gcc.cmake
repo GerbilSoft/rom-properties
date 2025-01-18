@@ -89,7 +89,7 @@ IF(ENABLE_COVERAGE)
 
 	# Don't bother checking for the coverage options.
 	# We're assuming they're always supported.
-	SET(RP_C_FLAGS_COVERAGE "--coverage -fprofile-arcs -ftest-coverage")
+	SET(RP_C_FLAGS_COVERAGE "--coverage -fprofile-arcs -ftest-coverage -fprofile-update=atomic")
 	SET(RP_C_FLAGS_COMMON "${RP_C_FLAGS_COMMON} ${RP_C_FLAGS_COVERAGE}")
 	SET(RP_CXX_FLAGS_COMMON "${RP_CXX_FLAGS_COMMON} ${RP_C_FLAGS_COVERAGE}")
 	SET(RP_EXE_LINKER_FLAGS_COMMON "${RP_CXX_FLAGS_COMMON} ${RP_C_FLAGS_COVERAGE}")

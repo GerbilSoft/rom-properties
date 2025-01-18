@@ -44,7 +44,7 @@ fi
 
 echo "*** A"
 # Capture lcov output from the unit tests.
-lcov ${LCOV_RC} --ignore-errors inconsistent,mismatch,negative \
+lcov ${LCOV_RC} --ignore-errors inconsistent,mismatch \
 	-c -d . -o "${coverage_test_info}"
 
 echo "*** B"
