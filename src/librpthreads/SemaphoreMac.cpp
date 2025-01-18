@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpthreads)                     *
  * SemaphoreMac.cpp: Mac OS X semaphore implementation.                    *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -10,7 +10,7 @@
 #include <mach/mach_traps.h>
 #include <mach/semaphore.h>
 
-// C includes. (C++ namespace)
+// C includes (C++ namespace)
 #include <cassert>
 #include <cerrno>
 
@@ -22,47 +22,40 @@ namespace LibRpThreads {
 
 class Semaphore
 {
-	public:
-		/**
-		 * Create a semaphore.
-		 * @param count Number of times the semaphore can be obtained before blocking.
-		 */
-		inline explicit Semaphore(int count);
+public:
+	/**
+	 * Create a semaphore.
+	 * @param count Number of times the semaphore can be obtained before blocking.
+	 */
+	inline explicit Semaphore(int count);
 
-		/**
-		 * Delete the semaphore.
-		 * WARNING: Semaphore MUST be fully released!
-		 */
-		inline ~Semaphore();
+	/**
+	 * Delete the semaphore.
+ 	 * WARNING: Semaphore MUST be fully released!
+	 */
+	inline ~Semaphore();
 
-		// Disable copy/assignment constructors.
-#if __cplusplus >= 201103L
-	public:
-		Semaphore(const Semaphore &) = delete;
-		Semaphore &operator=(const Semaphore &) = delete;
-#else /* __cplusplus < 201103L */
-	private:
-		Semaphore(const Semaphore &);
-		Semaphore &operator=(const Semaphore &);
-#endif /* __cplusplus */
+	// Disable copy/assignment constructors.
+	Semaphore(const Semaphore &) = delete;
+	Semaphore &operator=(const Semaphore &) = delete;
 
-	public:
-		/**
-		 * Obtain the semaphore.
-		 * If the semaphore is at zero, this function will block
-		 * until another thread releases the semaphore.
-		 * @return 0 on success; non-zero on error.
-		 */
-		inline int obtain(void);
+public:
+	/**
+	 * Obtain the semaphore.
+	 * If the semaphore is at zero, this function will block
+	 * until another thread releases the semaphore.
+	 * @return 0 on success; non-zero on error.
+	 */
+	inline int obtain(void);
 
-		/**
-		 * Release a lock on the semaphore.
-		 * @return 0 on success; non-zero on error.
-		 */
-		inline int release(void);
+	/**
+	 * Release a lock on the semaphore.
+	 * @return 0 on success; non-zero on error.
+	 */
+	inline int release(void);
 
-	private:
-		semaphore_t m_sem;
+private:
+	semaphore_t m_sem;
 };
 
 /**

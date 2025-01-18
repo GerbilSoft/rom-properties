@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpthreads)                     *
  * Semaphore.hpp: System-specific semaphore implementation.                *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -30,31 +30,24 @@ namespace LibRpThreads {
  */
 class SemaphoreLocker
 {
-	public:
-		inline explicit SemaphoreLocker(Semaphore &sem)
-			: m_sem(sem)
-		{
-			m_sem.obtain();
-		}
+public:
+	inline explicit SemaphoreLocker(Semaphore &sem)
+		: m_sem(sem)
+	{
+		m_sem.obtain();
+	}
 
-		inline ~SemaphoreLocker()
-		{
-			m_sem.release();
-		}
+	inline ~SemaphoreLocker()
+	{
+		m_sem.release();
+	}
 
-		// Disable copy/assignment constructors.
-#if __cplusplus >= 201103L
-	public:
-		SemaphoreLocker(const SemaphoreLocker &) = delete;
-		SemaphoreLocker &operator=(const SemaphoreLocker &) = delete;
-#else /* __cplusplus < 201103L */
-	private:
-		SemaphoreLocker(const SemaphoreLocker &);
-		SemaphoreLocker &operator=(const SemaphoreLocker &);
-#endif /* __cplusplus */
+	// Disable copy/assignment constructors.
+	SemaphoreLocker(const SemaphoreLocker &) = delete;
+	SemaphoreLocker &operator=(const SemaphoreLocker &) = delete;
 
-	private:
-		Semaphore &m_sem;
+private:
+	Semaphore &m_sem;
 };
 
 }

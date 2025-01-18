@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension.                                    *
  * common.h: Common types and macros.                                      *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -81,17 +81,10 @@
 #  define RP_Q(klass) klass *const q = static_cast<klass*>(q_ptr)
 
 // RP equivalent of Q_DISABLE_COPY().
-#  if __cplusplus >= 201103L
-#    define RP_DISABLE_COPY(klass) \
-	public: \
-		klass(const klass &) = delete; \
-		klass &operator=(const klass &) = delete;
-#  else /* __cplusplus < 201103L */
-#    define RP_DISABLE_COPY(klass) \
-	private: \
-		klass(const klass &); \
-		klass &operator=(const klass &);
-#  endif /* __cplusplus >= 201103L */
+#  define RP_DISABLE_COPY(klass) \
+public: \
+	klass(const klass &) = delete; \
+	klass &operator=(const klass &) = delete;
 #endif /* __cplusplus */
 // NOLINTEND(bugprone-macro-parentheses, cppcoreguidelines-pro-type-static-cast-downcast)
 

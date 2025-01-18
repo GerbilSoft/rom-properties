@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libwin32ui)                                *
  * WTSSessionNotification.hpp: WTSRegisterSessionNotification() RAII wrapper class. *
  *                                                                                  *
- * Copyright (c) 2016-2023 by David Korth.                                          *
+ * Copyright (c) 2016-2025 by David Korth.                                          *
  * SPDX-License-Identifier: GPL-2.0-or-later                                        *
  ************************************************************************************/
 
@@ -88,15 +88,9 @@ public:
 	}
 
 	// Disable copy/assignment constructors.
-#if __cplusplus >= 201103L
 public:
 	WTSSessionNotification(const WTSSessionNotification &) = delete;
 	WTSSessionNotification &operator=(const WTSSessionNotification &) = delete;
-#else /* __cplusplus < 201103L */
-private:
-	WTSSessionNotification(const WTSSessionNotification &);
-	WTSSessionNotification &operator=(const WTSSessionNotification &);
-#endif /* __cplusplus */
 
 private:
 	// TODO: Make it static and use reference counting?

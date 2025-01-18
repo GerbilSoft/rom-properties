@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libwin32ui)                       *
  * RegKey.hpp: Registry key wrapper.                                       *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -43,15 +43,8 @@ public:
 	~RegKey();
 
 	// Disable copy/assignment constructors.
-#if __cplusplus >= 201103L
-public:
 	RegKey(const RegKey &) = delete;
 	RegKey &operator=(const RegKey &) = delete;
-#else /* __cplusplus < 201103L */
-private:
-	RegKey(const RegKey &);
-	RegKey &operator=(const RegKey &);
-#endif /* __cplusplus */
 
 public:
 	/**

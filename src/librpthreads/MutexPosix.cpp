@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpthreads)                     *
  * MutexPosix.cpp: POSIX mutex implementation.                             *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -16,47 +16,40 @@ namespace LibRpThreads {
 
 class Mutex
 {
-	public:
-		/**
-		 * Create a mutex.
-		 */
-		inline explicit Mutex();
+public:
+	/**
+	 * Create a mutex.
+	 */
+	inline explicit Mutex();
 
-		/**
-		 * Delete the mutex.
-		 * WARNING: Mutex MUST be unlocked!
-		 */
-		inline ~Mutex();
+	/**
+	 * Delete the mutex.
+	 * WARNING: Mutex MUST be unlocked!
+	 */
+	inline ~Mutex();
 
-		// Disable copy/assignment constructors.
-#if __cplusplus >= 201103L
-	public:
-		Mutex(const Mutex &) = delete;
-		Mutex &operator=(const Mutex &) = delete;
-#else /* __cplusplus < 201103L */
-	private:
-		Mutex(const Mutex &);
-		Mutex &operator=(const Mutex &);
-#endif /* __cplusplus */
+	// Disable copy/assignment constructors.
+	Mutex(const Mutex &) = delete;
+	Mutex &operator=(const Mutex &) = delete;
 
-	public:
-		/**
-		 * Lock the mutex.
-		 * If the mutex is locked, this function will block until
-		 * the previous locker unlocks it.
-		 * @return 0 on success; non-zero on error.
-		 */
-		inline int lock(void);
+public:
+	/**
+	 * Lock the mutex.
+	 * If the mutex is locked, this function will block until
+	 * the previous locker unlocks it.
+	 * @return 0 on success; non-zero on error.
+	 */
+	inline int lock(void);
 
-		/**
-		 * Unlock the mutex.
-		 * @return 0 on success; non-zero on error.
-		 */
-		inline int unlock(void);
+	/**
+	 * Unlock the mutex.
+	 * @return 0 on success; non-zero on error.
+	 */
+	inline int unlock(void);
 
-	private:
-		pthread_mutex_t m_mutex;
-		bool m_isInit;
+private:
+	pthread_mutex_t m_mutex;
+	bool m_isInit;
 };
 
 /**

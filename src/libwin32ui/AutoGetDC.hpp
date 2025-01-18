@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libwin32ui)                       *
  * AutoGetDC.hpp: GetDC() RAII wrapper class.                              *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -41,20 +41,13 @@ public:
 		ReleaseDC(m_hWnd, m_hDC);
 	}
 
+	// Disable copy/assignment constructors.
+	AutoGetDC(const AutoGetDC &) = delete;
+	AutoGetDC &operator=(const AutoGetDC &) = delete;
+
 	inline operator HDC() {
 		return m_hDC;
 	}
-
-	// Disable copy/assignment constructors.
-#if __cplusplus >= 201103L
-public:
-	AutoGetDC(const AutoGetDC &) = delete;
-	AutoGetDC &operator=(const AutoGetDC &) = delete;
-#else /* __cplusplus < 201103L */
-private:
-	AutoGetDC(const AutoGetDC &);
-	AutoGetDC &operator=(const AutoGetDC &);
-#endif /* __cplusplus */
 
 private:
 	HWND m_hWnd;
@@ -85,20 +78,13 @@ public:
 		ReleaseDC(m_hWnd, m_hDC);
 	}
 
+	// Disable copy/assignment constructors.
+	AutoGetDC_font(const AutoGetDC_font &) = delete;
+	AutoGetDC_font &operator=(const AutoGetDC_font &) = delete;
+
 	inline operator HDC() {
 		return m_hDC;
 	}
-
-	// Disable copy/assignment constructors.
-#if __cplusplus >= 201103L
-public:
-	AutoGetDC_font(const AutoGetDC_font &) = delete;
-	AutoGetDC_font &operator=(const AutoGetDC_font &) = delete;
-#else /* __cplusplus < 201103L */
-private:
-	AutoGetDC_font(const AutoGetDC_font &);
-	AutoGetDC_font &operator=(const AutoGetDC_font &);
-#endif /* __cplusplus */
 
 private:
 	HWND m_hWnd;
