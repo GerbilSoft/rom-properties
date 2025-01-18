@@ -22,15 +22,18 @@ coverage_info="$2.info"
 coverage_cleaned="${coverage_info}.cleaned"
 outputname="$3"
 
+# lcov configuration overrides
+LCOV_RC="--rc max_message_count=5 --rc branch_coverage=1"
+
 # Cleanup lcov.
-lcov --directory . --zerocounters
+lcov ${LCOV_RC} --directory . --zerocounters
 
 # Create baseline coverage data file.
 # This ensures we get data for files that aren't loaded.
 # References:
 # - https://stackoverflow.com/questions/44203156/can-lcov-genhtml-show-files-that-were-never-executed
 # - https://stackoverflow.com/a/45105825
-lcov --ignore-errors inconsistent \
+lcov ${LCOV_RC} --ignore-errors inconsistent,mismatch \
 	-c -i -d . -o "${coverage_base_info}"
 
 # Run tests.
@@ -39,18 +42,21 @@ if [ "$?" != "0" ]; then
 	echo "*** WARNING: Some tests failed. Generating the lcov report anyway." >&2
 fi
 
+echo "*** A"
 # Capture lcov output from the unit tests.
-lcov --ignore-errors inconsistent \
+lcov ${LCOV_RC} --ignore-errors inconsistent,mismatch,negative \
 	-c -d . -o "${coverage_test_info}"
 
+echo "*** B"
 # Combine baseline and unit test output.
-lcov --ignore-errors inconsistent,corrupt \
+lcov ${LCOV_RC} --ignore-errors inconsistent,corrupt,mismatch \
 	-a "${coverage_base_info}" \
 	-a "${coverage_test_info}" \
 	-o "${coverage_info}"
 
+echo "*** C"
 # Remove third-party libraries and generated sources.
-lcov --ignore-errors unused \
+lcov ${LCOV_RC} --ignore-errors unused \
 	-o "${coverage_cleaned}" -r "${coverage_info}" \
 	'*/tests/*' '/usr/*' '*/extlib/*' \
 	'*/moc_*.cpp' '*.moc' '*/ui_*.h' '*/qrc_*.cpp' \
@@ -66,6 +72,6 @@ lcov --ignore-errors unused \
 	'*/libi18n/gettext.h'
 
 # Generate the HTML report.
-genhtml -o "${outputname}" "${coverage_cleaned}"
+genhtml ${LCOV_RC} -o "${outputname}" "${coverage_cleaned}"
 rm -f "${coverage_base_info}" "${coverage_test_info}" "${coverage_info}" "${coverage_cleaned}"
 exit 0
