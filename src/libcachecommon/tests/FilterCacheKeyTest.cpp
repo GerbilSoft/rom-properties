@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libcachecommon/tests)             *
  * FilterCacheKeyTest.cpp: CacheManager::filterCacheKey() test.            *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -227,6 +227,147 @@ INSTANTIATE_TEST_SUITE_P(CacheManagerTest, FilterCacheKeyTest,
 
 		// TODO: UTF-16 test for invalid surrogate pairs.
 	));
+
+/**
+ * Test CacheManager::filterCacheKey() with invalid parameters.
+ * (UTF-8 version)
+ */
+TEST_F(FilterCacheKeyTest, filterCacheKey_EINVAL)
+{
+	char cache_key[2] = {'\0', '\0'};
+
+	// Test NULL pointer.
+	EXPECT_EQ(-EINVAL, LibCacheCommon::filterCacheKey(nullptr));
+
+	// Test an empty string.
+	EXPECT_EQ(-EINVAL, LibCacheCommon::filterCacheKey(cache_key));
+
+	// Test a string containing: '/'
+	cache_key[0] = '/';
+	EXPECT_EQ(-EINVAL, LibCacheCommon::filterCacheKey(cache_key));
+
+	// Test a string containing: '\\'
+	cache_key[0] = '\\';
+	EXPECT_EQ(-EINVAL, LibCacheCommon::filterCacheKey(cache_key));
+}
+
+#ifdef RP_WIS16
+/**
+ * Test CacheManager::filterCacheKey() with invalid parameters.
+ * (UTF-16 version)
+ */
+TEST_F(FilterCacheKeyTest, filterCacheKey_EINVAL_wchar_t)
+{
+	wchar_t cache_key[2] = {L'\0', L'\0'};
+
+	// Test NULL pointer.
+	EXPECT_EQ(-EINVAL, LibCacheCommon::filterCacheKey(static_cast,const wchar_t*>(nullptr)));
+
+	// Test an empty string.
+	EXPECT_EQ(-EINVAL, LibCacheCommon::filterCacheKey(cache_key));
+
+	// Test a string containing: '/'
+	cache_key[0] = L'/';
+	EXPECT_EQ(-EINVAL, LibCacheCommon::filterCacheKey(cache_key));
+
+	// Test a string containing: '\\'
+	cache_key[0] = L'\\';
+	EXPECT_EQ(-EINVAL, LibCacheCommon::filterCacheKey(cache_key));
+}
+#endif /* RP_WIS16 */
+
+/**
+ * Test CacheManager::filterCacheKey() with invalid UTF-8 sequences.
+ * (UTF-8 version)
+ */
+TEST_F(FilterCacheKeyTest, filterCacheKey_invalid_UTF8)
+{
+	// NOTE: Only the first byte of invalid sequences is
+	// overwritten with '_'.
+	char cache_key[8];
+
+	// Two-byte UTF-8 sequence: invalid second byte
+	cache_key[0] = '\xC0';
+	cache_key[1] = 'A';
+	cache_key[2] = 'B';
+	cache_key[3] = '\x0';
+	EXPECT_EQ(0, LibCacheCommon::filterCacheKey(cache_key));
+	EXPECT_STREQ("_AB", cache_key);
+
+	// Three-byte UTF-8 sequence: invalid second byte
+	cache_key[0] = '\xE0';
+	cache_key[1] = 'A';
+	cache_key[2] = 'B';
+	cache_key[3] = 'C';
+	cache_key[4] = '\x0';
+	EXPECT_EQ(0, LibCacheCommon::filterCacheKey(cache_key));
+	EXPECT_STREQ("_ABC", cache_key);
+
+	// Three-byte UTF-8 sequence: invalid third byte
+	cache_key[0] = '\xE0';
+	cache_key[1] = '\x80';
+	cache_key[2] = 'A';
+	cache_key[3] = 'B';
+	cache_key[4] = '\x0';
+	EXPECT_EQ(0, LibCacheCommon::filterCacheKey(cache_key));
+	EXPECT_STREQ("__AB", cache_key);
+
+	// Four-byte UTF-8 sequence: invalid second byte
+	cache_key[0] = '\xF0';
+	cache_key[1] = 'A';
+	cache_key[2] = 'B';
+	cache_key[3] = 'C';
+	cache_key[4] = 'D';
+	cache_key[5] = '\x0';
+	EXPECT_EQ(0, LibCacheCommon::filterCacheKey(cache_key));
+	EXPECT_STREQ("_ABCD", cache_key);
+
+	// Four-byte UTF-8 sequence: invalid third byte
+	cache_key[0] = '\xF0';
+	cache_key[1] = '\x80';
+	cache_key[2] = 'A';
+	cache_key[3] = 'B';
+	cache_key[4] = 'C';
+	cache_key[5] = '\x0';
+	EXPECT_EQ(0, LibCacheCommon::filterCacheKey(cache_key));
+	EXPECT_STREQ("__ABC", cache_key);
+
+	// Four-byte UTF-8 sequence: invalid fourth byte
+	cache_key[0] = '\xF0';
+	cache_key[1] = '\x80';
+	cache_key[2] = '\x80';
+	cache_key[3] = 'A';
+	cache_key[4] = 'B';
+	cache_key[5] = '\x0';
+	EXPECT_EQ(0, LibCacheCommon::filterCacheKey(cache_key));
+	EXPECT_STREQ("___AB", cache_key);
+
+	// Five-byte UTF-8 sequence (invalid in general)
+	cache_key[0] = '\xF8';
+	cache_key[1] = 'A';
+	cache_key[2] = 'B';
+	cache_key[3] = 'C';
+	cache_key[4] = 'D';
+	cache_key[5] = 'E';
+	cache_key[6] = '\x0';
+	EXPECT_EQ(0, LibCacheCommon::filterCacheKey(cache_key));
+	EXPECT_STREQ("_ABCDE", cache_key);
+
+	// Six-byte UTF-8 sequence (invalid in general)
+	cache_key[0] = '\xFC';
+	cache_key[1] = 'A';
+	cache_key[2] = 'B';
+	cache_key[3] = 'C';
+	cache_key[4] = 'D';
+	cache_key[5] = 'E';
+	cache_key[6] = 'F';
+	cache_key[7] = '\x0';
+	EXPECT_EQ(0, LibCacheCommon::filterCacheKey(cache_key));
+	EXPECT_STREQ("_ABCDEF", cache_key);
+}
+
+// TODO: Invalid UTF-16 sequence test for Windows.
+
 } } //namespace LibCacheCommon::Tests
 
 /**
