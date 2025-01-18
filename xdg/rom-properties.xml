@@ -579,11 +579,13 @@
   <mime-type type="application/x-nintendo-dsi-tad">
     <comment>Nintendo DSi TAD package</comment>
     <generic-icon name="application-x-executable"/>
+    <!-- FIXME: This heuristic is incorrect.
     <magic priority="90">
       <match type="string" value="Is\0\0" offset="4">
         <match type="string" value="Root" offset="640"/>
       </match>
     </magic>
+    -->
     <glob pattern="*.tad"/>
   </mime-type>
 
