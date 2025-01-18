@@ -93,13 +93,14 @@ IF(BUILD_TRACKER_EXTRACTOR)
 	ELSEIF(TRACKER_INSTALL_API_VERSION LESS 1 OR TRACKER_INSTALL_API_VERSION GREATER 3)
 		MESSAGE(FATAL_ERROR "TRACKER_INSTALL_API_VERSION '${TRACKER_INSTALL_API_VERSION}' is invalid.")
 	ENDIF()
+	UNSET(_desc)
 
 	# Determine paths based on API version.
 
 	# Rule files
 	# - tracker-1.0: share/tracker/extract-rules/
 	# - tracker-2.0: share/tracker-miners/extract-rules/
-	# - tracker-3.0: share/tracker3-miners/extract-rules
+	# - tracker-3.0: share/tracker3-miners/extract-rules/
 
 	# Extractor module
 	# - tracker-1.0: lib/[arch]/tracker-1.0/extract-modules/libextract-[module].so
