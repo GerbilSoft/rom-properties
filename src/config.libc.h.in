@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension.                                    *
  * config.libc.h.in: Common libc function detection. (source file)         *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -62,3 +62,20 @@
 
 /* Define to 1 if you have the `memalign` function. */
 #cmakedefine HAVE_MEMALIGN 1
+
+/* Define to 1 if you have the <features.h> header file. */
+#cmakedefine HAVE_FEATURES_H 1
+
+// O_CLOEXEC support in fopen()
+#ifdef HAVE_FEATURES_H
+#  include <features.h>
+#  if defined(__GLIBC__) && (__GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ >= 7))
+#    define HAVE_FOPEN_CLOEXEC 1
+#    define FOPEN_CLOEXEC_FLAG "e"
+#    define _TFOPEN_CLOEXEC_FLAG _T("e")
+#  endif /* defined(__GLIBC__) && (__GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ >= 7)) */
+#endif /* HAVE_FEATURES_H */
+#ifndef HAVE_FOPEN_CLOEXEC
+#  define FOPEN_CLOEXEC_FLAG
+#  define _TFOPEN_CLOEXEC_FLAG
+#endif /* !HAVE_FOPEN_CLOEXEC */

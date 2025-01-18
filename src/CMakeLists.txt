@@ -52,6 +52,9 @@ IF(NOT HAVE_MSVC_ALIGNED_MALLOC AND NOT HAVE_ALIGNED_ALLOC AND NOT HAVE_POSIX_ME
 	MESSAGE(FATAL_ERROR "System does not have an aligned malloc() function.")
 ENDIF()
 
+# Check for glibc features.h.
+CHECK_INCLUDE_FILE("features.h" HAVE_FEATURES_H)
+
 # Write the libc configuration file.
 CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.libc.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.libc.h")
 

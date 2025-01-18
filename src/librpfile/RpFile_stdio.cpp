@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpfile)                        *
  * RpFile_stdio.cpp: Standard file object. (stdio implementation)          *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -20,7 +20,7 @@
 #include "librpbyteswap/byteswap_rp.h"
 
 // C includes
-#include <fcntl.h>	// AT_EMPTY_PATH
+#include <fcntl.h>	// AT_EMPTY_PATH, FD_CLOEXEC
 #include <sys/stat.h>	// stat(), statx()
 #include <unistd.h>	// ftruncate()
 
@@ -59,12 +59,12 @@ inline const char *RpFilePrivate::mode_to_str(RpFile::FileMode mode)
 {
 	switch (mode & RpFile::FM_MODE_MASK) {
 		case RpFile::FM_OPEN_READ:
-			return "rb";
+			return "rb" FOPEN_CLOEXEC_FLAG;
 		case RpFile::FM_OPEN_WRITE:
-			return "rb+";
+			return "rb+" FOPEN_CLOEXEC_FLAG;
 		case RpFile::FM_CREATE|RpFile::FM_READ /*RpFile::FM_CREATE_READ*/ :
 		case RpFile::FM_CREATE_WRITE:
-			return "wb+";
+			return "wb+" FOPEN_CLOEXEC_FLAG;
 		default:
 			// Invalid mode.
 			return nullptr;
@@ -210,6 +210,10 @@ int RpFilePrivate::reOpenFile(void)
 		}
 		return q->m_lastError;
 	}
+
+#if !defined(HAVE_FOPEN_CLOEXEC) && defined(FD_CLOEXEC)
+	set_FD_CLOEXEC_flag(file, true);
+#endif /* !defined(HAVE_FOPEN_CLOEXEC) && defined(FD_CLOEXEC) */
 
 	if (q->isDevice()) {
 		// Allocate devInfo.
@@ -626,15 +630,21 @@ int RpFile::makeWritable(void)
 	RP_D(RpFile);
 	off64_t prev_pos = ftello(d->file);
 	fclose(d->file);
-	d->file = fopen(d->filename, "rb+");
+	d->file = fopen(d->filename, "rb+" FOPEN_CLOEXEC_FLAG);
 	if (d->file) {
 		// File is now writable.
+#if !defined(HAVE_FOPEN_CLOEXEC) && defined(FD_CLOEXEC)
+		d->set_FD_CLOEXEC_flag(d->file, true);
+#endif /* !defined(HAVE_FOPEN_CLOEXEC) && defined(FD_CLOEXEC) */
 		m_isWritable = true;
 	} else {
 		// Failed to open the file as writable.
 		// Try reopening as read-only.
-		d->file = fopen(d->filename, "rb");
+		d->file = fopen(d->filename, "rb" FOPEN_CLOEXEC_FLAG);
 		if (d->file) {
+#if !defined(HAVE_FOPEN_CLOEXEC) && defined(FD_CLOEXEC)
+			d->set_FD_CLOEXEC_flag(d->file, true);
+#endif /* !defined(HAVE_FOPEN_CLOEXEC) && defined(FD_CLOEXEC) */
 			fseeko(d->file, prev_pos, SEEK_SET);
 		}
 		return -ENOTSUP;
@@ -645,5 +655,31 @@ int RpFile::makeWritable(void)
 	d->mode = static_cast<RpFile::FileMode>(d->mode | FM_WRITE);
 	return 0;
 }
+
+#if !defined(_WIN32) && !defined(HAVE_FOPEN_CLOEXEC) && defined(FD_CLOEXEC)
+/**
+ * Set FD_CLOEXEC on the specified file.
+ * @param file File
+ * @param value True to set FD_CLOEXEC; false to clear it.
+ * @return 0 on success; non-zero on error.
+ */
+int RpFilePrivate::set_FD_CLOEXEC_flag(FILE *file, bool value)
+{
+	const int fd = fileno(file);
+
+	int oldflags = fcntl(fd, F_GETFD, 0);
+	if (oldflags < 0) {
+		return oldflags;
+	}
+
+	if (value) {
+		oldflags |= FD_CLOEXEC;
+	} else {
+		oldflags &= ~FD_CLOEXEC;
+	}
+
+	return fcntl(fd, F_SETFD, oldflags);
+}
+#endif /* !defined(_WIN32) && !defined(HAVE_FOPEN_CLOEXEC) && defined(FD_CLOEXEC) */
 
 } // namespace LibRpFile
