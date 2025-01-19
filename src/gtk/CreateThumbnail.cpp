@@ -2,16 +2,20 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * CreateThumbnail.cpp: Thumbnail creator for wrapper programs.            *
  *                                                                         *
- * Copyright (c) 2017-2024 by David Korth.                                 *
+ * Copyright (c) 2017-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "stdafx.h"
+#include "config.gtk.h"
+
 #include "CreateThumbnail.hpp"
 #include "check-uid.h"
-
-#include "ProxyForUrl.hpp"
 #include "RpGtk.h"
+
+#ifdef ENABLE_NETWORKING
+#  include "ProxyForUrl.hpp"
+#endif /* ENABLE_NETWORKING */
 
 // Other rom-properties libraries
 #include "libromdata/RomDataFactory.hpp"
@@ -120,7 +124,12 @@ public:
 	 */
 	inline string proxyForUrl(const char *url) const final
 	{
+#ifdef ENABLE_NETWORKING
 		return ::proxyForUrl(url);
+#else /* !ENABLE_NETWORKING */
+		RP_UNUSED(url);
+		return {};
+#endif /* ENABLE_NETWORKING */
 	}
 
 	/**

@@ -39,7 +39,7 @@ ENDIF(QT4_FOUND)
 IF(HAVE_QtDBus)
 	# FIXME: Broken on Qt4.
 	IF(0)
-		QT4_ADD_DBUS_INTERFACES(${PROJECT_NAME}_DBUS_IFACE_SRCS
+		QT4_ADD_DBUS_INTERFACES(${PROJECT_NAME}_DBUS_IFACE_NM_SRCS
 			"${CMAKE_CURRENT_SOURCE_DIR}/../../dbus/org.freedesktop.NetworkManager.xml"
 			)
 		# NOTE: Setting CMAKE_POLICY(SET CMP0071 NEW) causes the generated D-Bus .moc
@@ -49,7 +49,7 @@ IF(HAVE_QtDBus)
 	IF(HAVE_QtDBus_NOTIFY)
 		STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}-notify_SRCS "${rom-properties-kde-notify_SRCS}")
 		STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}-notify_H    "${rom-properties-kde-notify_H}")
-		QT4_ADD_DBUS_INTERFACES(${PROJECT_NAME}_DBUS_IFACE_SRCS_2
+		QT4_ADD_DBUS_INTERFACES(${PROJECT_NAME}_DBUS_IFACE_NOTIFY_SRCS
 			"${CMAKE_CURRENT_SOURCE_DIR}/../../dbus/org.freedesktop.Notifications.xml"
 			)
 		# NOTE: Setting CMAKE_POLICY(SET CMP0071 NEW) causes the generated D-Bus .moc
@@ -63,8 +63,8 @@ SET(${PROJECT_NAME}_SRCS
 	${${PROJECT_NAME}_SRCS}
 	${${PROJECT_NAME}_RomThumbCreator_SRCS}
 	${${PROJECT_NAME}-notify_SRCS}
-	${${PROJECT_NAME}_DBUS_IFACE_SRCS}
-	${${PROJECT_NAME}_DBUS_IFACE_SRCS_2}
+	${${PROJECT_NAME}_DBUS_IFACE_NM_SRCS}
+	${${PROJECT_NAME}_DBUS_IFACE_NOTIFY_SRCS}
 	${${PROJECT_NAME}_RCC_O}
 	PluginFactoryKDE4.cpp
 	)

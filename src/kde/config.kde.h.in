@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE)                              *
  * config.kde.h.in: KDE frontend configuration. (source file)              *
  *                                                                         *
- * Copyright (c) 2020-2023 by David Korth.                                 *
+ * Copyright (c) 2020-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -19,3 +19,6 @@
 
 /* Define to 1 if the KIOGui/KIO/ThumbnailCreator header file is available. */
 #cmakedefine HAVE_KIOGUI_KIO_THUMBNAILCREATOR_H 1
+
+/* Define to 1 if networking is enabled. */
+#cmakedefine ENABLE_NETWORKING 1

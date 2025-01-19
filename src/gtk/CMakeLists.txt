@@ -64,25 +64,33 @@ SET(${PROJECT_NAME}_GLib_SRCS
 	RomDataFormat.cpp
 	RpFile_gio.cpp
 	is-supported.cpp
-	ProxyForUrl.cpp
 	RpGtkCpp.cpp
 	sort_funcs_common.c
 
 	config/CacheCleaner.cpp
-	config/UpdateChecker.cpp
 	)
 SET(${PROJECT_NAME}_GLib_H
 	RomDataFormat.hpp
 	RpFile_gio.hpp
 	is-supported.hpp
-	ProxyForUrl.hpp
 	glib-compat.h
 	RpGtkCpp.hpp
 	sort_funcs_common.h
 
 	config/CacheCleaner.hpp
-	config/UpdateChecker.hpp
 	)
+
+IF(ENABLE_NETWORKING)
+	# GLib common: Networking code, e.g. update checker
+	SET(${PROJECT_NAME}_GLib_NETWORKING_SRCS
+		ProxyForUrl.cpp
+		config/UpdateChecker.cpp
+		)
+	SET(${PROJECT_NAME}_GLib_NETWORKING_H
+		ProxyForUrl.hpp
+		config/UpdateChecker.hpp
+		)
+ENDIF(ENABLE_NETWORKING)
 
 # Sources and headers
 SET(${PROJECT_NAME}_SRCS
@@ -259,8 +267,8 @@ CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.gtk.h.in" "${CMAKE_CURRENT_BI
 IF(BUILD_XFCE OR BUILD_GTK3 OR BUILD_GTK4)
 	# GLib common library
 	ADD_LIBRARY(rom-properties-glib STATIC
-		${${PROJECT_NAME}_GLib_SRCS}
-		${${PROJECT_NAME}_GLib_H}
+		${${PROJECT_NAME}_GLib_SRCS} ${${PROJECT_NAME}_GLib_H}
+		${${PROJECT_NAME}_GLib_NETWORKING_SRCS} ${${PROJECT_NAME}_GLib_NETWORKING_H}
 		)
 	# Exclude from ALL builds; enable PIC.
 	SET_TARGET_PROPERTIES(rom-properties-glib PROPERTIES

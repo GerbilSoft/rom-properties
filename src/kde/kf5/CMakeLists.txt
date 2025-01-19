@@ -46,13 +46,13 @@ IF(Qt5Core_FOUND)
 		)
 ENDIF(Qt5Core_FOUND)
 IF(HAVE_QtDBus)
-	QT5_ADD_DBUS_INTERFACES(${PROJECT_NAME}_DBUS_IFACE_SRCS
+	QT5_ADD_DBUS_INTERFACES(${PROJECT_NAME}_DBUS_IFACE_NM_SRCS
 		"${CMAKE_CURRENT_SOURCE_DIR}/../../dbus/org.freedesktop.NetworkManager.xml"
 		)
 	IF(HAVE_QtDBus_NOTIFY)
 		STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}-notify_SRCS "${rom-properties-kde-notify_SRCS}")
 		STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}-notify_H    "${rom-properties-kde-notify_H}")
-		QT5_ADD_DBUS_INTERFACES(${PROJECT_NAME}_DBUS_IFACE_SRCS_2
+		QT5_ADD_DBUS_INTERFACES(${PROJECT_NAME}_DBUS_IFACE_NOTIFY_SRCS
 			"${CMAKE_CURRENT_SOURCE_DIR}/../../dbus/org.freedesktop.Notifications.xml"
 			)
 	ENDIF(HAVE_QtDBus_NOTIFY)
@@ -65,8 +65,8 @@ SET(${PROJECT_NAME}_SRCS
 	${${PROJECT_NAME}_RomThumbCreator_SRCS}
 	${rom-properties-kio5_SRCS}
 	${${PROJECT_NAME}-notify_SRCS}
-	${${PROJECT_NAME}_DBUS_IFACE_SRCS}
-	${${PROJECT_NAME}_DBUS_IFACE_SRCS_2}
+	${${PROJECT_NAME}_DBUS_IFACE_NM_SRCS}
+	${${PROJECT_NAME}_DBUS_IFACE_NOTIFY_SRCS}
 	${${PROJECT_NAME}_RCC_O}
 	PluginFactoryKF5.cpp
 	)
@@ -143,6 +143,9 @@ IF(BUILD_KF5)
 		../RpQImageBackend.hpp
 		../RpQUrl.hpp
 		../RpQt.hpp
+
+		# NetworkManager D-Bus interface
+		${${PROJECT_NAME}_DBUS_IFACE_NM_SRCS}
 		)
 	# TODO: Enable PCH?
 	#IF(ENABLE_PCH)

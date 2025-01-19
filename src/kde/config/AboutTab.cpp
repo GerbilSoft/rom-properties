@@ -2,12 +2,13 @@
  * ROM Properties Page shell extension. (KDE)                              *
  * AboutTab.hpp: About tab for rp-config.                                  *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "stdafx.h"
 #include "config.librpbase.h"
+#include "config.kde.h"
 
 #include "AboutTab.hpp"
 #include "UpdateChecker.hpp"
@@ -91,18 +92,20 @@ public:
 	 */
 	void init(void);
 
+#ifdef ENABLE_NETWORKING
+public:
 	/**
 	 * Check for updates.
 	 */
 	void checkForUpdates(void);
 
-public:
 	// Update checker object and thread.
 	QThread thrUpdate;
 	UpdateChecker updChecker;
 
 	// Checked for updates yet?
 	bool checkedForUpdates;
+#endif /* ENABLE_NETWORKING */
 };
 
 /** AboutTabPrivate **/
@@ -116,9 +119,12 @@ public:
 
 AboutTabPrivate::AboutTabPrivate(AboutTab *q)
 	: q_ptr(q)
+#ifdef ENABLE_NETWORKING
 	, thrUpdate(q)
 	, checkedForUpdates(false)
+#endif /* ENABLE_NETWORKING */
 {
+#ifdef ENABLE_NETWORKING
 	thrUpdate.setObjectName(QLatin1String("thrUpdate"));
 
 	updChecker.setObjectName(QLatin1String("updChecker"));
@@ -135,10 +141,12 @@ AboutTabPrivate::AboutTabPrivate(AboutTab *q)
 			 &updChecker, SLOT(run()));
 	QObject::connect(&updChecker, SIGNAL(finished()),
 			 &thrUpdate, SLOT(quit()));
+#endif /* ENABLE_NETWORKING */
 }
 
 AboutTabPrivate::~AboutTabPrivate()
 {
+#ifdef ENABLE_NETWORKING
 	if (thrUpdate.isRunning()) {
 		// Make sure the thread is stopped.
 		thrUpdate.quit();
@@ -148,6 +156,7 @@ AboutTabPrivate::~AboutTabPrivate()
 			thrUpdate.terminate();
 		}
 	}
+#endif /* ENABLE_NETWORKING */
 }
 
 /**
@@ -571,6 +580,7 @@ void AboutTabPrivate::init(void)
 	initSupportTab();
 }
 
+#ifdef ENABLE_NETWORKING
 /**
  * Check for updates.
  */
@@ -583,6 +593,7 @@ void AboutTabPrivate::checkForUpdates(void)
 	ui.lblUpdateCheck->setText(QC_("AboutTab", "Checking for updates..."));
 	thrUpdate.start();
 }
+#endif /* ENABLE_NETWORKING */
 
 /** AboutTab **/
 
@@ -629,17 +640,22 @@ void AboutTab::showEvent(QShowEvent *event)
 {
 	Q_UNUSED(event)
 
+#ifdef ENABLE_NETWORKING
 	Q_D(AboutTab);
 	if (!d->checkedForUpdates) {
 		d->checkedForUpdates = true;
 		d->checkForUpdates();
 	}
+#endif /* ENABLE_NETWORKING */
 
 	// Pass the event to the base class.
 	super::showEvent(event);
 }
 
 /** UpdateChecker slots **/
+
+// NOTE: moc doesn't handle conditional definitions of slots,
+// so these will always be defined, even in no-network builds.
 
 /**
  * An error occurred while trying to retrieve the update version.
@@ -648,11 +664,15 @@ void AboutTab::showEvent(QShowEvent *event)
  */
 void AboutTab::updChecker_error(const QString &error)
 {
+#ifdef ENABLE_NETWORKING
 	Q_D(AboutTab);
 
 	// tr: Error message template. (Qt version, with formatting)
 	const QString errTemplate = QC_("ConfigDialog", "<b>ERROR:</b> %1");
 	d->ui.lblUpdateCheck->setText(errTemplate.arg(error));
+#else /* !ENABLE_NETWORKING */
+	Q_UNUSED(error)
+#endif /* ENABLE_NETWORKING */
 }
 
 /**
@@ -661,6 +681,7 @@ void AboutTab::updChecker_error(const QString &error)
  */
 void AboutTab::updChecker_retrieved(quint64 updateVersion)
 {
+#ifdef ENABLE_NETWORKING
 	Q_D(AboutTab);
 
 	// Our version. (ignoring the development flag)
@@ -694,4 +715,7 @@ void AboutTab::updChecker_retrieved(quint64 updateVersion)
 	}
 
 	d->ui.lblUpdateCheck->setText(U82Q(sVersionLabel));
+#else /* !ENABLE_NETWORKING */
+	Q_UNUSED(updateVersion)
+#endif /* ENABLE_NETWORKING */
 }
