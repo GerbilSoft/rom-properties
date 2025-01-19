@@ -709,6 +709,12 @@ set(MINIZIP_TARGET minizip${MZ_LIB_SUFFIX})
 set(MINIZIP_PC ${CMAKE_CURRENT_BINARY_DIR}/${MINIZIP_TARGET}.pc)
 configure_file(minizip.pc.cmakein ${MINIZIP_PC} @ONLY)
 
+# rom-properties: Only export symbols if building shared libraries.
+IF(NOT BUILD_SHARED_LIBS)
+    INCLUDE(CheckHiddenVisibility)
+    CHECK_HIDDEN_VISIBILITY()
+ENDIF(NOT BUILD_SHARED_LIBS)
+
 # Create minizip library and aliases
 add_library(${MINIZIP_TARGET} ${MINIZIP_SRC} ${MINIZIP_HDR})
 add_library(MINIZIP::${MINIZIP_TARGET} ALIAS ${MINIZIP_TARGET})
@@ -719,8 +725,12 @@ endif()
 set_target_properties(${MINIZIP_TARGET} PROPERTIES
                       VERSION ${VERSION}
                       SOVERSION ${SOVERSION}
-                      LINKER_LANGUAGE C
-                      DEFINE_SYMBOL "MZ_EXPORTS")
+                      LINKER_LANGUAGE C)
+# rom-properties: Only export symbols if building shared libraries.
+IF(BUILD_SHARED_LIBS)
+    set_target_properties(${MINIZIP_TARGET} PROPERTIES
+                          DEFINE_SYMBOL "MZ_EXPORTS")
+ENDIF(BUILD_SHARED_LIBS)
 
 if(MINIZIP_LFG)
     set_target_properties(${MINIZIP_TARGET} PROPERTIES LINK_FLAGS ${MINIZIP_LFG})
