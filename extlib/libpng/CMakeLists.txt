@@ -788,8 +788,9 @@ endif()
 
 if(PNG_STATIC)
   # rom-properties: Hide all symbols so they're not exported by libromdata.
-  INCLUDE(CheckHiddenVisibility)
-  CHECK_HIDDEN_VISIBILITY()
+  CMAKE_POLICY(SET CMP0063 NEW)
+  SET(CMAKE_C_VISIBILITY_PRESET "hidden")
+  SET(CMAKE_VISIBILITY_INLINES_HIDDEN ON)
 
   add_library(png_static STATIC ${libpng_sources})
   add_dependencies(png_static png_genfiles)

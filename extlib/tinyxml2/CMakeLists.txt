@@ -30,11 +30,6 @@ set(CMAKE_DEBUG_POSTFIX "d")
 IF(WIN32 AND BUILD_SHARED_LIBS)
     SET(TINYXML2_RC "tinyxml2.rc")
 ENDIF(WIN32 AND BUILD_SHARED_LIBS)
-IF(NOT (WIN32 OR APPLE) AND NOT BUILD_SHARED_LIBS)
-    # rom-properties: Hide all symbols so they're not exported by libromdata.
-    INCLUDE(CheckHiddenVisibility)
-    CHECK_HIDDEN_VISIBILITY()
-ENDIF(NOT (WIN32 OR APPLE) AND NOT BUILD_SHARED_LIBS)
 add_library(tinyxml2 tinyxml2.cpp tinyxml2.h ${TINYXML2_RC})
 add_library(tinyxml2::tinyxml2 ALIAS tinyxml2)
 

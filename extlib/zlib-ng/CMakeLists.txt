@@ -1165,8 +1165,9 @@ if(1)   #(NOT DEFINED BUILD_SHARED_LIBS)
         set(ZLIB_INSTALL_LIBRARIES zlib)
     ELSE(WIN32 OR APPLE)
         # rom-properties: Hide all symbols so they're not exported by libromdata.
-        INCLUDE(CheckHiddenVisibility)
-        CHECK_HIDDEN_VISIBILITY()
+        CMAKE_POLICY(SET CMP0063 NEW)
+        SET(CMAKE_C_VISIBILITY_PRESET "hidden")
+        SET(CMAKE_VISIBILITY_INLINES_HIDDEN ON)
 
         add_library(zlibstatic STATIC ${ZLIB_ALL_SRCS})
 

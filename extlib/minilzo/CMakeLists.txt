@@ -17,8 +17,9 @@ ELSE(BUILD_SHARED_LIBS)
 	SET(minilzo_LIB_TYPE STATIC)
 
 	# rom-properties: Hide all symbols so they're not exported by libromdata.
-	INCLUDE(CheckHiddenVisibility)
-	CHECK_HIDDEN_VISIBILITY()
+	CMAKE_POLICY(SET CMP0063 NEW)
+	SET(CMAKE_C_VISIBILITY_PRESET "hidden")
+	SET(CMAKE_VISIBILITY_INLINES_HIDDEN ON)
 ENDIF(BUILD_SHARED_LIBS)
 
 ADD_LIBRARY(minilzo ${minilzo_LIB_TYPE}

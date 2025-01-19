@@ -132,8 +132,9 @@ if(BUILD_SHARED_LIBS)
 endif()
 if(BUILD_STATIC_LIBS)
   # rom-properties: Hide all symbols so they're not exported by libromdata.
-  INCLUDE(CheckHiddenVisibility)
-  CHECK_HIDDEN_VISIBILITY()
+  CMAKE_POLICY(SET CMP0063 NEW)
+  SET(CMAKE_C_VISIBILITY_PRESET "hidden")
+  SET(CMAKE_VISIBILITY_INLINES_HIDDEN ON)
 
   set(STATIC_LIB_NAME lz4)
   if (MSVC AND BUILD_SHARED_LIBS)

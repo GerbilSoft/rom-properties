@@ -71,9 +71,10 @@ ELSE(MSVC)
 	SET(CMAKE_CXX_FLAGS	"${CMAKE_CXX_FLAGS} -include ${RP_CONFIG_LIBC_H} -include ${RP_COMPILER_COMPAT_H}")
 ENDIF(MSVC)
 
-# Check for hidden visibility flags.
-INCLUDE(CheckHiddenVisibility)
-CHECK_HIDDEN_VISIBILITY()
+# Set CMake hidden visibility options.
+SET(CMAKE_C_VISIBILITY_PRESET "hidden")
+SET(CMAKE_CXX_VISIBILITY_PRESET "hidden")
+SET(CMAKE_VISIBILITY_INLINES_HIDDEN ON)
 
 # Check for stdbool.h.
 INCLUDE(CheckIncludeFile)

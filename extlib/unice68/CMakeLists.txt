@@ -5,8 +5,9 @@ project(unice68 C)
 
 # rom-properties: Hide symbols by default, since we don't want them
 # leaking from the static library to the plugins.
-INCLUDE(CheckHiddenVisibility)
-CHECK_HIDDEN_VISIBILITY()
+CMAKE_POLICY(SET CMP0063 NEW)
+SET(CMAKE_C_VISIBILITY_PRESET "hidden")
+SET(CMAKE_VISIBILITY_INLINES_HIDDEN ON)
 
 # ======================================================================
 # cmake setup

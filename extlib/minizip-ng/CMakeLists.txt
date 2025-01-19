@@ -711,8 +711,9 @@ configure_file(minizip.pc.cmakein ${MINIZIP_PC} @ONLY)
 
 # rom-properties: Only export symbols if building shared libraries.
 IF(NOT BUILD_SHARED_LIBS)
-    INCLUDE(CheckHiddenVisibility)
-    CHECK_HIDDEN_VISIBILITY()
+    CMAKE_POLICY(SET CMP0063 NEW)
+    SET(CMAKE_C_VISIBILITY_PRESET "hidden")
+    SET(CMAKE_VISIBILITY_INLINES_HIDDEN ON)
 ENDIF(NOT BUILD_SHARED_LIBS)
 
 # Create minizip library and aliases
