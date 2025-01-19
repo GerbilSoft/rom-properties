@@ -634,6 +634,9 @@ void AboutTab::showEvent(QShowEvent *event)
 		d->checkedForUpdates = true;
 		d->checkForUpdates();
 	}
+
+	// Pass the event to the base class.
+	super::showEvent(event);
 }
 
 /** UpdateChecker slots **/
