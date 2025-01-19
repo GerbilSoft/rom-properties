@@ -14,9 +14,12 @@
 #include <QtCore/QString>
 #include <QtGui/QImage>
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 7, 0)
+// NOTE: Using QT_VERSION_CHECK causes errors on moc-qt4 due to CMAKE_AUTOMOC.
+// Reference: https://bugzilla.redhat.com/show_bug.cgi?id=1396755
+// QT_VERSION_CHECK(6, 7, 0) -> 0x60700
+#if QT_VERSION >= 0x60700
 #  include <QtCore/QTimeZone>
-#endif /* QT_VERSION >= QT_VERSION_CHECK(6, 7, 0) */
+#endif /* QT_VERSION >= 0x60700 */
 
 // RomPropertiesKDE namespace info
 #include "RpQtNS.hpp"
@@ -189,15 +192,19 @@ static inline QDateTime unixTimeToQDateTime(time_t timestamp, bool utc)
 {
 	const qint64 msecs = static_cast<qint64>(timestamp) * 1000;
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 7, 0)
+// NOTE: Using QT_VERSION_CHECK causes errors on moc-qt4 due to CMAKE_AUTOMOC.
+// Reference: https://bugzilla.redhat.com/show_bug.cgi?id=1396755
+// QT_VERSION_CHECK(6, 7, 0) -> 0x60700
+// QT_VERSION_CHECK(5, 2, 0) -> 0x50200
+#if QT_VERSION >= 0x60700
 	// FIXME: The QTimeZone version was also introduced in Qt 5.2.
 	// Use it unconditionally for Qt 5.2+, or only 6.7+?
 	QDateTime dateTime = QDateTime::fromMSecsSinceEpoch(msecs,
 		QTimeZone(utc ? QTimeZone::UTC : QTimeZone::LocalTime));
-#elif QT_VERSION >= QT_VERSION_CHECK(5, 2, 0)
+#elif QT_VERSION >= 0x50200
 	QDateTime dateTime = QDateTime::fromMSecsSinceEpoch(msecs,
 		utc ? Qt::UTC : Qt::LocalTime);
-#else /* QT_VERSION < QT_VERSION_CHECK(5, 2, 0) */
+#else /* QT_VERSION < 0x50200 */
 	QDateTime dateTime;
 	dateTime.setTimeSpec(utc ? Qt::UTC : Qt::LocalTime);
 	dateTime.setMSecsSinceEpoch(msecs);
