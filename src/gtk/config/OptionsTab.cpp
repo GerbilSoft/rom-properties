@@ -2,11 +2,13 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * OptionsTab.cpp: Options tab for rp-config.                              *
  *                                                                         *
- * Copyright (c) 2017-2024 by David Korth.                                 *
+ * Copyright (c) 2017-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "stdafx.h"
+#include "config.gtk.h"
+
 #include "OptionsTab.hpp"
 #include "RpConfigTab.h"
 
@@ -128,6 +130,11 @@ rp_options_tab_init(RpOptionsTab *tab)
 	gtk_container_add(GTK_CONTAINER(alignDownloads), vboxDownloads);
 	gtk_frame_set_child(GTK_FRAME(fraDownloads), alignDownloads);
 #endif /* GTK_CHECK_VERSION(2,91,0) */
+
+#ifndef ENABLE_NETWORKING
+	// No-network build: Disable the "Downloads" frame.
+	gtk_widget_set_sensitive(fraDownloads, FALSE);
+#endif /* !ENABLE_NETWORKING */
 
 	// Image bandwidth options
 	tab->fraExtImgDownloads = gtk_frame_new(nullptr);

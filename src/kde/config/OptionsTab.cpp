@@ -2,11 +2,13 @@
  * ROM Properties Page shell extension. (KDE)                              *
  * OptionsTab.cpp: Options tab for rp-config.                              *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "stdafx.h"
+#include "config.kde.h"
+
 #include "OptionsTab.hpp"
 
 // librpbase
@@ -43,6 +45,11 @@ OptionsTab::OptionsTab(QWidget *parent)
 {
 	Q_D(OptionsTab);
 	d->ui.setupUi(this);
+
+#ifndef ENABLE_NETWORKING
+	// No-network build: Disable the "Downloads" frame.
+	d->ui.grpDownloads->setEnabled(false);
+#endif /* ENABLE_NETWORKING */
 
 	// Initialize the PAL language dropdown.
 	d->ui.cboGameTDBPAL->setForcePAL(true);
