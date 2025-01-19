@@ -52,12 +52,12 @@ FUNCTION(GDBUS_CODEGEN _outvar _prefix _xml)
 ENDFUNCTION(GDBUS_CODEGEN)
 
 # D-Bus bindings
-IF(ENABLE_NETWORKING)
-	GDBUS_CODEGEN(NetworkManager_GDBus_SRCS NetworkManager "${CMAKE_CURRENT_SOURCE_DIR}/../dbus/org.freedesktop.NetworkManager.xml")
-ENDIF(ENABLE_NETWORKING)
 IF(ENABLE_ACHIEVEMENTS)
 	GDBUS_CODEGEN(Notifications_GDBus_SRCS Notifications "${CMAKE_CURRENT_SOURCE_DIR}/../dbus/org.freedesktop.Notifications.xml")
 ENDIF(ENABLE_ACHIEVEMENTS)
+IF(ENABLE_NETWORKING)
+	GDBUS_CODEGEN(NetworkManager_GDBus_SRCS NetworkManager "${CMAKE_CURRENT_SOURCE_DIR}/../dbus/org.freedesktop.NetworkManager.xml")
+ENDIF(ENABLE_NETWORKING)
 
 # Sources and headers (GLib common; no GTK dependencies)
 SET(${PROJECT_NAME}_GLib_SRCS
@@ -81,18 +81,6 @@ SET(${PROJECT_NAME}_GLib_H
 
 	config/CacheCleaner.hpp
 	)
-
-IF(ENABLE_NETWORKING)
-	# GLib common: Networking code, e.g. update checker
-	SET(${PROJECT_NAME}_GLib_NETWORKING_SRCS
-		ProxyForUrl.cpp
-		config/UpdateChecker.cpp
-		)
-	SET(${PROJECT_NAME}_GLib_NETWORKING_H
-		ProxyForUrl.hpp
-		config/UpdateChecker.hpp
-		)
-ENDIF(ENABLE_NETWORKING)
 
 # Sources and headers
 SET(${PROJECT_NAME}_SRCS
@@ -213,6 +201,18 @@ IF(ENABLE_ACHIEVEMENTS)
 	SET(${PROJECT_NAME}-notify_SRCS AchGDBus.cpp)
 	SET(${PROJECT_NAME}-notify_H    AchGDBus.hpp)
 ENDIF(ENABLE_ACHIEVEMENTS)
+
+IF(ENABLE_NETWORKING)
+	# GLib common: Networking code, e.g. update checker
+	SET(${PROJECT_NAME}_GLib_NETWORKING_SRCS
+		ProxyForUrl.cpp
+		config/UpdateChecker.cpp
+		)
+	SET(${PROJECT_NAME}_GLib_NETWORKING_H
+		ProxyForUrl.hpp
+		config/UpdateChecker.hpp
+		)
+ENDIF(ENABLE_NETWORKING)
 
 # Common libraries required for both GTK+ 2.x and 3.x.
 FIND_PACKAGE(GLib2 ${GLIB_MIN_VERSION})
