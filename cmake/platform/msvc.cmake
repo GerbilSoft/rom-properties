@@ -106,9 +106,12 @@ ENDIF()
 
 # MSVC: C++ conformance settings
 INCLUDE(CheckCXXCompilerFlag)
-SET(CXX_CONFORMANCE_FLAGS "/Zc:__cplusplus" "/Zc:rvalueCast" "/Zc:ternary")
+SET(CXX_CONFORMANCE_FLAGS "/Zc:__cplusplus" "/Zc:checkGwOdr" "/Zc:rvalueCast" "/Zc:templateScope" "/Zc:ternary")
 IF(NOT CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-	SET(CXX_CONFORMANCE_FLAGS "/Zc:externC" "/Zc:noexceptTypes")
+	# clang-cl enables certain conformance options by default,
+	# and these cause warnings to be printed if specified.
+	# Only enable these for original MSVC.
+	SET(CXX_CONFORMANCE_FLAGS ${CXX_CONFORMANCE_FLAGS} "/Zc:externC" "/Zc:noexceptTypes" "/Zc:throwingNew")
 ENDIF(NOT CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 FOREACH(FLAG_TEST ${CXX_CONFORMANCE_FLAGS})
 	# CMake doesn't like certain characters in variable names.
@@ -120,18 +123,6 @@ FOREACH(FLAG_TEST ${CXX_CONFORMANCE_FLAGS})
 	ENDIF(CXXFLAG_${FLAG_TEST_VARNAME})
 	UNSET(CXXFLAG_${FLAG_TEST_VARNAME})
 ENDFOREACH()
-
-# "/Zc:throwingNew" is always enabled on clang-cl, and causes
-# warnings to be printed if it's specified.
-# NOTE: "/Zc:throwingNew" was added in MSVC 2015.
-IF(NOT CMAKE_CXX_COMPILER_ID STREQUAL Clang)
-	INCLUDE(CheckCXXCompilerFlag)
-	CHECK_CXX_COMPILER_FLAG("/Zc:throwingNew" CXXFLAG__Zc_throwingNew)
-	IF(CXXFLAG__Zc_throwingNew)
-		SET(RP_CXX_FLAGS_COMMON "${RP_CXX_FLAGS_COMMON} /Zc:throwingNew")
-	ENDIF(CXXFLAG__Zc_throwingNew)
-	UNSET(CXXFLAG__Zc_throwingNew)
-ENDIF(NOT CMAKE_CXX_COMPILER_ID STREQUAL Clang)
 
 # Disable warning C4996 (deprecated), then re-enable it.
 # Otherwise, it gets handled as an error due to /sdl.
