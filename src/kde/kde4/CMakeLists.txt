@@ -38,14 +38,14 @@ IF(QT4_FOUND)
 ENDIF(QT4_FOUND)
 IF(HAVE_QtDBus)
 	# FIXME: Broken on Qt4.
-	IF(0)
+	IF(0 AND ENABLE_NETWORKING)
 		QT4_ADD_DBUS_INTERFACES(${PROJECT_NAME}_DBUS_IFACE_NM_SRCS
 			"${CMAKE_CURRENT_SOURCE_DIR}/../../dbus/org.freedesktop.NetworkManager.xml"
 			)
 		# NOTE: Setting CMAKE_POLICY(SET CMP0071 NEW) causes the generated D-Bus .moc
 		# to be included twice. Work around this by setting SKIP_AUTOMOC.
 		SET_PROPERTY(SOURCE "${CMAKE_CURRENT_BINARY_DIR}/networkmanagerinterface.h" PROPERTY SKIP_AUTOMOC ON)
-	ENDIF(0)
+	ENDIF(0 AND ENABLE_NETWORKING)
 	IF(HAVE_QtDBus_NOTIFY)
 		STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}-notify_SRCS "${rom-properties-kde-notify_SRCS}")
 		STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}-notify_H    "${rom-properties-kde-notify_H}")

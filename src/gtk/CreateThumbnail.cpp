@@ -13,10 +13,6 @@
 #include "check-uid.h"
 #include "RpGtk.h"
 
-#ifdef ENABLE_NETWORKING
-#  include "ProxyForUrl.hpp"
-#endif /* ENABLE_NETWORKING */
-
 // Other rom-properties libraries
 #include "libromdata/RomDataFactory.hpp"
 #include "librpfile/FileSystem.hpp"
@@ -32,9 +28,12 @@ using namespace LibRomData;
 #include "libromdata/img/TCreateThumbnail.cpp"
 using LibRomData::TCreateThumbnail;
 
+#ifdef ENABLE_NETWORKING
+#  include "ProxyForUrl.hpp"
 // NetworkManager D-Bus interface to determine if the connection is metered.
-#include <glib-object.h>
-#include "NetworkManager.h"
+#  include <glib-object.h>
+#  include "NetworkManager.h"
+#endif /* ENABLE_NETWORKING */
 
 // C++ STL classes
 using std::string;
@@ -143,6 +142,7 @@ public:
 	 */
 	bool isMetered(void) final
 	{
+#ifdef ENABLE_NETWORKING
 		// Connect to the service using gdbus-codegen's generated code.
 		Manager *proxy = nullptr;
 		GError *error = nullptr;
@@ -172,6 +172,10 @@ public:
 		const NMMetered metered = static_cast<NMMetered>(manager_get_metered(proxy));
 		g_object_unref(proxy);
 		return (metered == NM_METERED_YES || metered == NM_METERED_GUESS_YES);
+#else /* !ENABLE_NETWORKING */
+		// No-network build
+		return false;
+#endif /* ENABLE_NETWORKING */
 	}
 };
 

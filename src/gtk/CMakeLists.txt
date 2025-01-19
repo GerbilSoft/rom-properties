@@ -51,8 +51,10 @@ FUNCTION(GDBUS_CODEGEN _outvar _prefix _xml)
 	SET(${_outvar} "${_prefix}.c" "${_prefix}.h" PARENT_SCOPE)
 ENDFUNCTION(GDBUS_CODEGEN)
 
-# D-Bus bindings for NetworkManager.
-GDBUS_CODEGEN(NetworkManager_GDBus_SRCS NetworkManager "${CMAKE_CURRENT_SOURCE_DIR}/../dbus/org.freedesktop.NetworkManager.xml")
+# D-Bus bindings
+IF(ENABLE_NETWORKING)
+	GDBUS_CODEGEN(NetworkManager_GDBus_SRCS NetworkManager "${CMAKE_CURRENT_SOURCE_DIR}/../dbus/org.freedesktop.NetworkManager.xml")
+ENDIF(ENABLE_NETWORKING)
 IF(ENABLE_ACHIEVEMENTS)
 	GDBUS_CODEGEN(Notifications_GDBus_SRCS Notifications "${CMAKE_CURRENT_SOURCE_DIR}/../dbus/org.freedesktop.Notifications.xml")
 ENDIF(ENABLE_ACHIEVEMENTS)
