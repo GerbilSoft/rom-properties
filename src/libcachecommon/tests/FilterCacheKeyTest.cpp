@@ -237,7 +237,7 @@ TEST_F(FilterCacheKeyTest, filterCacheKey_EINVAL)
 	char cache_key[2] = {'\0', '\0'};
 
 	// Test NULL pointer.
-	EXPECT_EQ(-EINVAL, LibCacheCommon::filterCacheKey(static_cast<char*>(nullptr));
+	EXPECT_EQ(-EINVAL, LibCacheCommon::filterCacheKey(static_cast<char*>(nullptr)));
 
 	// Test an empty string.
 	EXPECT_EQ(-EINVAL, LibCacheCommon::filterCacheKey(cache_key));
