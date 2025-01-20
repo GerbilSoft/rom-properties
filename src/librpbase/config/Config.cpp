@@ -215,11 +215,11 @@ void ConfigPrivate::reset(void)
 	storeFileOriginInfo = storeFileOriginInfo_default;
 
 	// Image bandwidth options
-	imgBandwidthUnmetered = Config::ImgBandwidth::HighRes;
-	imgBandwidthMetered = Config::ImgBandwidth::NormalRes;
+	imgBandwidthUnmetered = imgBandwidthUnmetered_default;
+	imgBandwidthMetered = imgBandwidthMetered_default;
 	// Compatibility with older settings
 	isNewBandwidthOptionSet = false;
-	downloadHighResScans = false;
+	downloadHighResScans = true;
 
 	// DMG title screen mode
 	dmgTSMode = dmgTSMode_default;
