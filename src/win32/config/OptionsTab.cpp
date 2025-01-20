@@ -2,11 +2,13 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * OptionsTab.cpp: Options tab for rp-config.                              *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "stdafx.h"
+#include "config.win32.h"
+
 #include "OptionsTab.hpp"
 #include "res/resource.h"
 
@@ -27,7 +29,9 @@ using LibWin32UI::LoadDialog_i18n;
 #include "libwin32darkmode/DarkModeCtrl.hpp"
 
 // Netowrk status
-#include "NetworkStatus.h"
+#ifdef ENABLE_NETWORKING
+#  include "NetworkStatus.h"
+#endif /* ENABLE_NETWORKING */
 
 // C++ STL classes
 using std::array;
@@ -396,6 +400,7 @@ void OptionsTabPrivate::updateGrpExtImgDl(void)
 	// The dropdowns will be enabled if:
 	// - chkExtImgDl is enabled
 	// - Metered/unmetered detection is available
+#ifdef ENABLE_NETWORKING
 	bool enable = bstCheckedToBool(IsDlgButtonChecked(hWndPropSheet, IDC_OPTIONS_CHKEXTIMGDL));
 	if (!rp_win32_can_identify_if_metered()) {
 		enable = false;
@@ -405,6 +410,12 @@ void OptionsTabPrivate::updateGrpExtImgDl(void)
 	EnableWindow(GetDlgItem(hWndPropSheet, IDC_OPTIONS_CBO_UNMETERED_DL), enable);
 	EnableWindow(GetDlgItem(hWndPropSheet, IDC_OPTIONS_LBL_METERED_DL), enable);
 	EnableWindow(GetDlgItem(hWndPropSheet, IDC_OPTIONS_CBO_METERED_DL), enable);
+#else /* !ENABLE_NETWORKING */
+	// No-network build: Disable *all* controls related to downloads.
+	for (uint16_t i = IDC_OPTIONS_GRPDOWNLOADS; i <= IDC_OPTIONS_PALLANGUAGEFORGAMETDB; i++) {
+		EnableWindow(GetDlgItem(hWndPropSheet, i), FALSE);
+	}
+#endif /* ENABLE_NETWORKING */
 }
 
 /**

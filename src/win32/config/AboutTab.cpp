@@ -2,16 +2,20 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * AboutTab.cpp: About tab for rp-config.                                  *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "stdafx.h"
 #include "config.librpbase.h"
+#include "config.win32.h"
 
 #include "AboutTab.hpp"
-#include "UpdateChecker.hpp"
 #include "res/resource.h"
+
+#ifdef ENABLE_NETWORKING
+#  include "UpdateChecker.hpp"
+#endif /* ENABLE_NETWORKING */
 
 // Other rom-properties libraries
 #include "librpbase/config/AboutTabText.hpp"
@@ -134,6 +138,7 @@ public:
 #endif /* MSFTEDIT_USE_41 */
 	bool bUseFriendlyLinks;
 
+#ifdef ENABLE_NETWORKING
 public:
 	/**
 	 * Check for updates.
@@ -155,6 +160,7 @@ public:
 	 * Called by the WM_UPD_RETRIEVED handler.
 	 */
 	void updChecker_retrieved(void);
+#endif /* ENABLE_NETWORKING */
 
 protected:
 	// Current RichText streaming context
@@ -194,14 +200,17 @@ protected:
 
 protected:
 	// Tab text (RichText format)
-	string sVersionLabel;	// UpdateCheck
 	string sCredits;
 	string sLibraries;
 	string sSupport;
 
-	// RichEdit controls
-	HWND hRichEdit;		// Main RichEdit control
+#ifdef ENABLE_NETWORKING
 	HWND hUpdateCheck;	// UpdateCheck label
+	string sVersionLabel;	// Version string
+#endif /* ENABLE_NETWORKING */
+
+	// Main RichEdit control
+	HWND hRichEdit;
 
 	/**
 	 * Initialize the RTF color table.
@@ -260,9 +269,11 @@ AboutTabPrivate::AboutTabPrivate()
 	, hWndPropSheet(nullptr)
 	, hFontBold(nullptr)
 	, bUseFriendlyLinks(false)
+#ifdef ENABLE_NETWORKING
 	, bCheckedForUpdates(false)
-	, hRichEdit(nullptr)
 	, hUpdateCheck(nullptr)
+#endif /* ENABLE_NETWORKING */
+	, hRichEdit(nullptr)
 	, hbrBkgnd(nullptr)
 	, lastDarkModeEnabled(false)
 {
@@ -336,6 +347,7 @@ INT_PTR CALLBACK AboutTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, L
 			return TRUE;
 		}
 
+#ifdef ENABLE_NETWORKING
 		case WM_SHOWWINDOW: {
 			auto *const d = reinterpret_cast<AboutTabPrivate*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
 			if (!d) {
@@ -351,6 +363,7 @@ INT_PTR CALLBACK AboutTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, L
 
 			break;
 		}
+#endif /* ENABLE_NETWORKING */
 
 		case WM_NOTIFY: {
 			auto *const d = reinterpret_cast<AboutTabPrivate*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
@@ -418,6 +431,7 @@ INT_PTR CALLBACK AboutTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, L
 			break;
 		}
 
+#ifdef ENABLE_NETWORKING
 		case WM_UPD_ERROR: {
 			auto *const d = reinterpret_cast<AboutTabPrivate*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
 			if (!d) {
@@ -439,6 +453,7 @@ INT_PTR CALLBACK AboutTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, L
 			d->updChecker_retrieved();
 			return TRUE;
 		}
+#endif /* ENABLE_NETWORKING */
 
 		/** Dark Mode **/
 
@@ -487,8 +502,10 @@ INT_PTR CALLBACK AboutTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, L
 					// adjust its background and text colors.
 
 					// Set the RichEdit colors.
-					DarkMode_InitRichEdit(d->hRichEdit);
+#ifdef ENABLE_NETWORKING
 					DarkMode_InitRichEdit(d->hUpdateCheck);
+#endif /* ENABLE_NETWORKING */
+					DarkMode_InitRichEdit(d->hRichEdit);
 
 					// Update the RTF color tables.
 					// This fixes text colors on Win10 21H2. (On 1809, it worked without this.)
@@ -558,6 +575,7 @@ void AboutTabPrivate::initBoldFont(HFONT hFont)
 	}
 }
 
+#ifdef ENABLE_NETWORKING
 /**
  * Check for updates.
  */
@@ -702,6 +720,7 @@ void AboutTabPrivate::updChecker_retrieved(void)
 	EDITSTREAM es = { (DWORD_PTR)&rtfCtx_upd, 0, EditStreamCallback };
 	SendMessage(hUpdateCheck, EM_STREAMIN, SF_RTF, (LPARAM)&es);
 }
+#endif /* ENABLE_NETWORKING */
 
 /**
  * RTF EditStream callback.
@@ -1345,9 +1364,11 @@ void AboutTabPrivate::updateRtfColorTablesInRtfStrings(void)
 	const size_t pos = sizeof(RTF_START) - 1;
 	const size_t len = strlen(rtfColorTable);
 
+#ifdef ENABLE_NETWORKING
 	if (!sVersionLabel.empty()) {
 		sVersionLabel.replace(pos, len, rtfColorTable);
 	}
+#endif /* ENABLE_NETWORKING */
 
 	bool areTabsEmpty = true;
 	if (!sCredits.empty()) {
@@ -1374,6 +1395,7 @@ void AboutTabPrivate::updateRtfColorTablesInRtfStrings(void)
 		}
 	}
 
+#ifdef ENABLE_NETWORKING
 	// Update the version label.
 	// FIXME: Only if we're not currently checking for updates?
 	if (!sVersionLabel.empty()) {
@@ -1385,6 +1407,7 @@ void AboutTabPrivate::updateRtfColorTablesInRtfStrings(void)
 		EDITSTREAM es = { (DWORD_PTR)&rtfCtx_upd, 0, EditStreamCallback };
 		SendMessage(hUpdateCheck, EM_STREAMIN, SF_RTF, (LPARAM)&es);
 	}
+#endif /* ENABLE_NETWORKING */
 }
 
 /**
@@ -1414,13 +1437,20 @@ void AboutTabPrivate::initDialog(void)
 		return;
 	}
 
+#ifdef ENABLE_NETWORKING
+	hUpdateCheck = GetDlgItem(hWndPropSheet, IDC_ABOUT_UPDATE_CHECK);
+	assert(hUpdateCheck != nullptr);
+	if (unlikely(!hUpdateCheck)) {
+		// Something went wrong...
+		return;
+	}
+#endif /* ENABLE_NETWORKING */
+
 	// NOTE: We can't seem to set the dialog ID correctly
 	// when using CreateWindowEx(), so we'll save hRichEdit here.
 	hRichEdit = GetDlgItem(hWndPropSheet, IDC_ABOUT_RICHEDIT);
-	hUpdateCheck = GetDlgItem(hWndPropSheet, IDC_ABOUT_UPDATE_CHECK);
 	assert(hRichEdit != nullptr);
-	assert(hUpdateCheck != nullptr);
-	if (unlikely(!hRichEdit || !hUpdateCheck)) {
+	if (unlikely(!hRichEdit)) {
 		// Something went wrong...
 		return;
 	}
@@ -1454,6 +1484,7 @@ void AboutTabPrivate::initDialog(void)
 			bUseFriendlyLinks = true;
 		}
 
+#ifdef ENABLE_NETWORKING
 		// IDC_ABOUT_UPDATE_CHECK
 		RECT rectUpdateCheck;
 		GetClientRect(hUpdateCheck, &rectUpdateCheck);
@@ -1474,6 +1505,7 @@ void AboutTabPrivate::initDialog(void)
 			// FIXME: Not working...
 			SetWindowLong(hUpdateCheck41, GWL_ID, IDC_ABOUT_UPDATE_CHECK);
 		}
+#endif /* ENABLE_NETWORKING */
 	}
 #endif /* MSFTEDIT_USE_41 */
 
@@ -1492,11 +1524,13 @@ void AboutTabPrivate::initDialog(void)
 	// NOTE: Might only work on Win8+.
 	SendMessage(hRichEdit, EM_AUTOURLDETECT, AURL_ENABLEEMAILADDR, 0);
 
+#ifdef ENABLE_NETWORKING
 	// RichEdit adjustments for IDC_ABOUT_UPDATE_CHECK.
 	// Enable links.
 	eventMask = SendMessage(hUpdateCheck, EM_GETEVENTMASK, 0, 0);
 	SendMessage(hUpdateCheck, EM_SETEVENTMASK, 0, (LPARAM)(eventMask | ENM_LINK));
 	SendMessage(hUpdateCheck, EM_AUTOURLDETECT, AURL_ENABLEURL, 0);
+#endif /* ENABLE_NETWORKING */
 
 	// Initialize the tab text.
 	initCreditsTab();
@@ -1505,14 +1539,16 @@ void AboutTabPrivate::initDialog(void)
 
 	// Subclass the RichEdit controls.
 	// TODO: Error handling?
-	SetWindowSubclass(hRichEdit,
-		LibWin32UI::MultiLineEditProc,
-		IDC_ABOUT_RICHEDIT,
-		reinterpret_cast<DWORD_PTR>(GetParent(hWndPropSheet)));
+#ifdef ENABLE_NETWORKING
 	SetWindowSubclass(hUpdateCheck,
 		LibWin32UI::MultiLineEditProc,
 		IDC_ABOUT_UPDATE_CHECK,
 		reinterpret_cast<DWORD_PTR>(GetParent(hWndPropSheet)));
+#endif /* ENABLE_NETWORKING */
+	SetWindowSubclass(hRichEdit,
+			  LibWin32UI::MultiLineEditProc,
+		   IDC_ABOUT_RICHEDIT,
+		   reinterpret_cast<DWORD_PTR>(GetParent(hWndPropSheet)));
 
 	// Remove the dummy tab.
 	TabCtrl_DeleteItem(hTabControl, MAX_TABS);
@@ -1524,8 +1560,10 @@ void AboutTabPrivate::initDialog(void)
 		// adjust its background and text colors.
 
 		// NOTE: These functions must be called again on theme change!
-		DarkMode_InitRichEdit(hRichEdit);
+#ifdef ENABLE_NETWORKING
 		DarkMode_InitRichEdit(hUpdateCheck);
+#endif /* ENABLE_NETWORKING */
+		DarkMode_InitRichEdit(hRichEdit);
 		// ...but not this function.
 		DarkMode_InitTabControl(hTabControl);
 	}

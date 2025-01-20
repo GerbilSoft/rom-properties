@@ -2,14 +2,19 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * CreateThumbnail.cpp: TCreateThumbnail<HBITMAP> implementation.          *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "stdafx.h"
+#include "config.win32.h"
+
 #include "CreateThumbnail.hpp"
 #include "RpImageWin32.hpp"
-#include "NetworkStatus.h"
+
+#ifdef ENABLE_NETWORKING
+#  include "NetworkStatus.h"
+#endif /* ENABLE_NETWORKING */
 
 // librptexture
 #include "librptexture/img/RpGdiplusBackend.hpp"
@@ -127,7 +132,12 @@ int CreateThumbnail::getImgClassSize(const HBITMAP &imgClass, ImgSize *pOutSize)
  */
 bool CreateThumbnail::isMetered(void)
 {
+#ifdef ENABLE_NETWORKING
 	return rp_win32_is_metered();
+#else /* !ENABLE_NETWORKING */
+	// No-network build
+	return false;
+#endif /* ENABLE_NETWORKING */
 }
 
 /** CreateThumbnailNoAlpha **/
