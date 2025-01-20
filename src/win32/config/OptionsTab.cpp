@@ -397,7 +397,7 @@ void OptionsTabPrivate::save(void)
  */
 void OptionsTabPrivate::updateGrpExtImgDl(void)
 {
-	// The dropdowns will be enabled if:
+	// The metered-specific dropdown will be enabled if:
 	// - chkExtImgDl is enabled
 	// - Metered/unmetered detection is available
 #ifdef ENABLE_NETWORKING
@@ -406,8 +406,6 @@ void OptionsTabPrivate::updateGrpExtImgDl(void)
 		enable = false;
 	}
 
-	EnableWindow(GetDlgItem(hWndPropSheet, IDC_OPTIONS_LBL_UNMETERED_DL), enable);
-	EnableWindow(GetDlgItem(hWndPropSheet, IDC_OPTIONS_CBO_UNMETERED_DL), enable);
 	EnableWindow(GetDlgItem(hWndPropSheet, IDC_OPTIONS_LBL_METERED_DL), enable);
 	EnableWindow(GetDlgItem(hWndPropSheet, IDC_OPTIONS_CBO_METERED_DL), enable);
 #else /* !ENABLE_NETWORKING */
