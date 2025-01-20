@@ -67,7 +67,6 @@ SET(${PROJECT_NAME}_SRCS
 	LvData.cpp
 	LanguageComboBox.cpp
 	OptionsMenuButton.cpp
-	NetworkStatus.c
 	RomDataFormat.cpp
 	ISpriteSheet.cpp
 	AchSpriteSheet.cpp
@@ -81,7 +80,6 @@ SET(${PROJECT_NAME}_SRCS
 	config/CacheTab.cpp
 	config/AchievementsTab.cpp
 	config/AboutTab.cpp
-	config/UpdateChecker.cpp
 	file/RpFile_IStream.cpp
 	file/RpFile_windres.cpp
 	)
@@ -110,7 +108,6 @@ SET(${PROJECT_NAME}_H
 	LvData.hpp
 	LanguageComboBox.hpp
 	OptionsMenuButton.hpp
-	NetworkStatus.h
 	RomDataFormat.hpp
 	ISpriteSheet.hpp
 	AchSpriteSheet.hpp
@@ -125,7 +122,6 @@ SET(${PROJECT_NAME}_H
 	config/CacheTab.hpp
 	config/AchievementsTab.hpp
 	config/AboutTab.hpp
-	config/UpdateChecker.hpp
 	file/RpFile_IStream.hpp
 	file/RpFile_windres.hpp
 	res/resource.h
@@ -176,6 +172,18 @@ IF(ENABLE_ACHIEVEMENTS)
 	SET(${PROJECT_NAME}_ACH_H AchWin32.hpp)
 ENDIF(ENABLE_ACHIEVEMENTS)
 
+IF(ENABLE_NETWORKING)
+	# Networking code, e.g. update checker
+	SET(${PROJECT_NAME}_NETWORKING_SRC
+		NetworkStatus.c
+		config/UpdateChecker.cpp
+		)
+	SET(${PROJECT_NAME}_NETWORKING_H
+		NetworkStatus.h
+		config/UpdateChecker.hpp
+		)
+ENDIF(ENABLE_NETWORKING)
+
 IF(MSVC)
 	# Delay-load sources.
 	SET(${PROJECT_NAME}-DELAYLOAD_SRC ../libwin32common/DelayLoadHelper.c)
@@ -199,8 +207,8 @@ IF(RP_LIBROMDATA_IS_DLL AND MSVC)
 	# Otherwise, we won't be able to load it if it's in an
 	# architecture-specific subdirectory.
 	# TODO: Global variable with the libromdata SOVERSION?
-	SET(DL_DEBUG_FLAGS "${DL_DEBUG_FLAGS} /DELAYLOAD:romdata-5d.dll")
-	SET(DL_RELEASE_FLAGS "${DL_RELEASE_FLAGS} /DELAYLOAD:romdata-5.dll")
+	SET(DL_DEBUG_FLAGS "${DL_DEBUG_FLAGS} /DELAYLOAD:romdata-6d.dll")
+	SET(DL_RELEASE_FLAGS "${DL_RELEASE_FLAGS} /DELAYLOAD:romdata-6.dll")
 
 	SET(CMAKE_SHARED_LINKER_FLAGS_DEBUG	"${CMAKE_SHARED_LINKER_FLAGS_DEBUG} ${DL_DEBUG_FLAGS}")
 	SET(CMAKE_SHARED_LINKER_FLAGS_RELEASE	"${CMAKE_SHARED_LINKER_FLAGS_RELEASE} ${DL_RELEASE_FLAGS}")
@@ -215,6 +223,7 @@ ADD_LIBRARY(${PROJECT_NAME} SHARED
 	${${PROJECT_NAME}-PropKey_SRCS} ${${PROJECT_NAME}-PropKey_H}
 	${${PROJECT_NAME}_CRYPTO_SRCS} ${${PROJECT_NAME}_CRYPTO_H}
 	${${PROJECT_NAME}_ACH_SRC} ${${PROJECT_NAME}_ACH_H}
+	${${PROJECT_NAME}_NETWORKING_SRC} ${${PROJECT_NAME}_NETWORKING_H}
 	${${PROJECT_NAME}_RC}
 	)
 IF(ENABLE_PCH)
