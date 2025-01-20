@@ -1657,10 +1657,6 @@ INSTANTIATE_TEST_SUITE_P(DidjTex, ImageDecoderTest,
 INSTANTIATE_TEST_SUITE_P(PowerVR3, ImageDecoderTest,
 	::testing::Values(
 		//PowerVR3_IMAGE_TEST("brdfLUT", "RG1616"),					// TODO: R16fG16f
-#ifdef ENABLE_PVRTC
-		//PowerVR3_IMAGE_TEST("GnomeHorde-bigMushroom_texture", "PVRTC 4bpp RGB"),	// FIXME: Failing (PVRTC-I 4bpp RGB)
-		//PowerVR3_IMAGE_TEST("GnomeHorde-fern", "PVRTC 4bpp RGBA"),			// FIXME: Failing (PVRTC-I 4bpp RGBA)
-#endif /* ENABLE_PVRTC */
 		//PowerVR3_IMAGE_TEST("Navigation3D-Road", "LA88"),				// FIXME: Failing (LA88)
 		//PowerVR3_IMAGE_TEST("Satyr-Table", "RGBA8888"),				// FIXME: Failing (RGBA8888)
 		PowerVR3_IMAGE_TEST("text-fri", "RGBA8888"),					// 32x16, caused rp_image::flip(FLIP_V) to break
@@ -1678,6 +1674,17 @@ INSTANTIATE_TEST_SUITE_P(PowerVR3, ImageDecoderTest,
 		PowerVR3_MIPMAP_TEST("Navigation3D-font",  9, "A8"),
 		PowerVR3_MIPMAP_TEST("Navigation3D-font", 10, "A8"))
 	, ImageDecoderTest::test_case_suffix_generator);
+
+#ifdef ENABLE_PVRTC
+// FIXME: These tests are both failing. (PVRTC-I 4bpp RGB)
+#  if 0
+INSTANTIATE_TEST_SUITE_P(PowerVR3, ImageDecoderTest_PVRTC,
+	 ::testing::Values(
+		PowerVR3_IMAGE_TEST("GnomeHorde-bigMushroom_texture", "PVRTC 4bpp RGB"),
+		PowerVR3_IMAGE_TEST("GnomeHorde-fern", "PVRTC 4bpp RGBA"))
+	, ImageDecoderTest::test_case_suffix_generator);
+#  endif /* 0 */
+#endif /* ENABLE_PVRTC */
 
 // PowerVR 2.0 tests (implemented in the PowerVR3 decoder)
 #define PowerVR2_IMAGE_TEST(file, format) ImageDecoderTest_mode( \
