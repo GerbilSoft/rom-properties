@@ -35,6 +35,11 @@ using std::string;
 using std::unordered_map;
 using std::vector;
 
+// libfmt
+#include <fmt/core.h>
+#include <fmt/format.h>
+#define FSTR FMT_STRING
+
 // tchar
 #include "tcharx.h"
 
@@ -168,7 +173,7 @@ int _tmain(int argc, TCHAR *argv[])
 
 	// TODO: Better command line parsing.
 	if (argc < 3) {
-		_ftprintf(stderr, _T("syntax: %s [-v] amiibo-data.txt amiibo.bin\n"), argv[0]);
+		fmt::print(stderr, FSTR(_T("syntax: {:s} [-v] amiibo-data.txt amiibo.bin\n")), argv[0]);
 		return EXIT_FAILURE;
 	}
 
@@ -181,7 +186,7 @@ int _tmain(int argc, TCHAR *argv[])
 
 	FILE *f_in = _tfopen(argv[optind++], _T("r"));
 	if (!f_in) {
-		_ftprintf(stderr, _T("*** ERROR opening input file '%s': %s\n"), argv[1], _tcserror(errno));
+		fmt::print(stderr, FSTR(_T("*** ERROR opening input file '{:s}': {:s}\n")), argv[1], _tcserror(errno));
 		return EXIT_FAILURE;
 	}
 
@@ -235,7 +240,7 @@ int _tmain(int argc, TCHAR *argv[])
 		if (!strcmp(token, AMIIBO_BIN_MAGIC)) {
 			if (foundHeader) {
 				// Duplicate file header.
-				fprintf(stderr, "*** ERROR: Line %d: Duplicate %s header.\n", line, AMIIBO_BIN_MAGIC);
+				fmt::print(stderr, "*** ERROR: Line {:d}: Duplicate {:s} header.\n", line, AMIIBO_BIN_MAGIC);
 				err = true;
 				break;
 			} else {
@@ -248,7 +253,7 @@ int _tmain(int argc, TCHAR *argv[])
 
 		// For anything else, the header must have been found already.
 		if (!foundHeader) {
-			fprintf(stderr, "*** ERROR: Missing %s header.\n", AMIIBO_BIN_MAGIC);
+			fmt::print(stderr, FSTR("*** ERROR: Missing {:s} header.\n"), AMIIBO_BIN_MAGIC);
 			err = true;
 			break;
 		}
@@ -261,19 +266,19 @@ int _tmain(int argc, TCHAR *argv[])
 			// ID
 			token = strtok_r(nullptr, ":", &saveptr);
 			if (!token) {
-				_ftprintf(stderr, _T("*** ERROR: Line %d: 'CS' command is missing ID field.\n"), line);
+				fmt::print(stderr, FSTR(_T("*** ERROR: Line {:d}: 'CS' command is missing ID field.\n")), line);
 				err = true;
 				break;
 			}
 			char *endptr;
 			const unsigned int id = strtoul(token, &endptr, 0);
 			if (*endptr != '\0') {
-				fprintf(stderr, "*** ERROR: Line %d: 'CS' command: Invalid ID '%s'.\n", line, token);
+				fmt::print(stderr, FSTR("*** ERROR: Line {:d}: 'CS' command: Invalid ID '{:s}'.\n"), line, token);
 				err = true;
 				break;
 			} else if (id > 16384) {
-				_ftprintf(stderr,
-					_T("*** ERROR: Line %d: 'CS' command: ID is out of range: %u (0x%04X)\n"), line,
+				fmt::print(stderr,
+					FSTR(_T("*** ERROR: Line {:d}: 'CS' command: ID is out of range: {:d} (0x{:0>4X})\n")), line,
 					id, id);
 				err = true;
 				break;
@@ -282,16 +287,16 @@ int _tmain(int argc, TCHAR *argv[])
 			// Name
 			token = strtok_r(nullptr, ":", &saveptr);
 			if (!token || token[0] == '\0') {
-				_ftprintf(
-					stderr, _T("*** ERROR: Line %d: 'CS' command is missing Name field.\n"), line);
+				fmt::print(stderr,
+					FSTR(_T("*** ERROR: Line {:d}: 'CS' command is missing Name field.\n")), line);
 				err = true;
 				break;
 			}
 
 			// Check if the ID is a multiple of 4.
 			if (id % 4 != 0) {
-				_ftprintf(stderr,
-					_T("*** ERROR: Line %d: 'CS' command has non-multiple-of-4 ID: %u (0x%04X)\n"),
+				fmt::print(stderr,
+					FSTR(_T("*** ERROR: Line {:d}: 'CS' command has non-multiple-of-4 ID: {:d} (0x{:0>4X})\n")),
 					line, id, id);
 				err = true;
 				break;
@@ -301,8 +306,8 @@ int _tmain(int argc, TCHAR *argv[])
 			const unsigned int idx = id / 4;
 			if (idx < charSeriesTable.size()) {
 				if (charSeriesTable[idx] != 0) {
-					_ftprintf(stderr,
-						_T("*** ERROR: Line %d: 'CS' command has duplicate ID: %u (0x%04X)\n"),
+					fmt::print(stderr,
+						FSTR(_T("*** ERROR: Line {:d}: 'CS' command has duplicate ID: {:d} (0x{:0>4X})\n")),
 						line, id, id);
 					err = true;
 					break;
@@ -314,7 +319,7 @@ int _tmain(int argc, TCHAR *argv[])
 			// Add the name to the string table and save the series name.
 			charSeriesTable[idx] = getStringTableOffset(token);
 			if (verbose) {
-				printf("CS: ID=%04X, name=%s, offset=%u\n", id, token, charSeriesTable[idx]);
+				fmt::print(FSTR("CS: ID={:0>4X}, name={:s}, offset={:d}\n"), id, token, charSeriesTable[idx]);
 			}
 		} else if (!strcmp(token, "C")) {
 			// Character
@@ -323,20 +328,20 @@ int _tmain(int argc, TCHAR *argv[])
 			// ID
 			token = strtok_r(nullptr, ":", &saveptr);
 			if (!token) {
-				_ftprintf(stderr, _T("*** ERROR: Line %d: 'C' command is missing ID field.\n"), line);
+				fmt::print(stderr, FSTR(_T("*** ERROR: Line {:d}: 'C' command is missing ID field.\n")), line);
 				err = true;
 				break;
 			}
 			char *endptr;
 			const unsigned int id = strtoul(token, &endptr, 0);
 			if (*endptr != '\0') {
-				fprintf(stderr, "*** ERROR: Line %d: 'C' command: Invalid ID '%s'.\n", line, token);
+				fmt::print(stderr, FSTR("*** ERROR: Line {:d}: 'C' command: Invalid ID '{:s}'.\n"), line, token);
 				err = true;
 				break;
 			} else if (id > 0xFFFF) {
-				_ftprintf(stderr,
-					_T("*** ERROR: Line %d: 'C' command: ID is out of range: %u (0x%04X)\n"), line,
-					id, id);
+				fmt::print(stderr,
+					FSTR(_T("*** ERROR: Line {:d}: 'C' command: ID is out of range: {:d} (0x{:0>4X})\n")),
+					line, id, id);
 				err = true;
 				break;
 			}
@@ -344,7 +349,7 @@ int _tmain(int argc, TCHAR *argv[])
 			// Name
 			token = strtok_r(nullptr, ":", &saveptr);
 			if (!token || token[0] == '\0') {
-				_ftprintf(stderr, _T("*** ERROR: Line %d: 'C' command is missing Name field.\n"), line);
+				fmt::print(stderr, FSTR(_T("*** ERROR: Line {:d}: 'C' command is missing Name field.\n")), line);
 				err = true;
 				break;
 			}
@@ -352,7 +357,8 @@ int _tmain(int argc, TCHAR *argv[])
 			// Check if we already have this character.
 			auto iter = charTable.find(id);
 			if (iter != charTable.end()) {
-				_ftprintf(stderr, _T("*** ERROR: Line %d: 'C' command has duplicate ID: %u (0x%04X)\n"),
+				fmt::print(stderr,
+					FSTR(_T("*** ERROR: Line {:d}: 'C' command has duplicate ID: {:d} (0x{:0>4X})\n")),
 					line, id, id);
 				err = true;
 				break;
@@ -363,7 +369,7 @@ int _tmain(int argc, TCHAR *argv[])
 			charTableEntry.char_id = id;
 			charTableEntry.name = getStringTableOffset(token);
 			if (verbose) {
-				printf("C: ID=%04X, name=%s, offset=%u\n", id, token, charTableEntry.name);
+				fmt::print(FSTR("C: ID={:0>4X}, name={:s}, offset={:d}\n"), id, token, charTableEntry.name);
 			}
 			charTable[id] = std::move(charTableEntry);
 		} else if (!strcmp(token, "CV")) {
@@ -373,20 +379,20 @@ int _tmain(int argc, TCHAR *argv[])
 			// ID
 			token = strtok_r(nullptr, ":", &saveptr);
 			if (!token) {
-				_ftprintf(stderr, _T("*** ERROR: Line %d: 'CV' command is missing ID field.\n"), line);
+				fmt::print(stderr, FSTR(_T("*** ERROR: Line {:d}: 'CV' command is missing ID field.\n")), line);
 				err = true;
 				break;
 			}
 			char *endptr;
 			const unsigned int id = strtoul(token, &endptr, 0);
 			if (*endptr != '\0') {
-				fprintf(stderr, "*** ERROR: Line %d: 'CV' command: Invalid ID '%s'.\n", line, token);
+				fmt::print(stderr, FSTR("*** ERROR: Line {:d}: 'CV' command: Invalid ID '{:s}'.\n"), line, token);
 				err = true;
 				break;
 			} else if (id > 0xFFFF) {
-				_ftprintf(stderr,
-					_T("*** ERROR: Line %d: 'CV' command: ID is out of range: %u (0x%04X)\n"), line,
-					id, id);
+				fmt::print(stderr,
+					FSTR(_T("*** ERROR: Line {:d}: 'CV' command: ID is out of range: {:d} (0x{:0>4X})\n")),
+					line, id, id);
 				err = true;
 				break;
 			}
@@ -394,19 +400,18 @@ int _tmain(int argc, TCHAR *argv[])
 			// VarID
 			token = strtok_r(nullptr, ":", &saveptr);
 			if (!token) {
-				_ftprintf(
-					stderr, _T("*** ERROR: Line %d: 'CV' command is missing VarID field.\n"), line);
+				fmt::print(stderr, FSTR(_T("*** ERROR: Line {:d}: 'CV' command is missing VarID field.\n")), line);
 				err = true;
 				break;
 			}
 			const unsigned int var_id = strtoul(token, &endptr, 0);
 			if (*endptr != '\0') {
-				fprintf(stderr, "*** ERROR: Line %d: 'CV' command: Invalid VarID '%s'.\n", line, token);
+				fmt::print(stderr, FSTR("*** ERROR: Line {:d}: 'CV' command: Invalid VarID '{:s}'.\n"), line, token);
 				err = true;
 				break;
 			} else if (var_id > 0xFF) {
-				_ftprintf(stderr,
-					_T("*** ERROR: Line %d: 'CV' command: VarID is out of range: %u (0x%04X)\n"),
+				fmt::print(stderr,
+					FSTR(_T("*** ERROR: Line {:d}: 'CV' command: VarID is out of range: {:d} (0x{:0>4X})\n")),
 					line, var_id, var_id);
 				err = true;
 				break;
@@ -415,8 +420,7 @@ int _tmain(int argc, TCHAR *argv[])
 			// Name
 			token = strtok_r(nullptr, ":", &saveptr);
 			if (!token || token[0] == '\0') {
-				_ftprintf(
-					stderr, _T("*** ERROR: Line %d: 'CV' command is missing Name field.\n"), line);
+				fmt::print(stderr, FSTR(_T("*** ERROR: Line {:d}: 'CV' command is missing Name field.\n")), line);
 				err = true;
 				break;
 			}
@@ -424,8 +428,8 @@ int _tmain(int argc, TCHAR *argv[])
 			// Check if this character was set.
 			auto iter = charTable.find(id);
 			if (iter == charTable.end()) {
-				_ftprintf(stderr,
-					_T("*** ERROR: Line %d: 'CV' command has unassigned char ID: %u (0x%04X)\n"),
+				fmt::print(stderr,
+					FSTR(_T("*** ERROR: Line {:d}: 'CV' command has unassigned char ID: {:d} (0x{:0>4X})\n")),
 					line, id, id);
 				err = true;
 				break;
@@ -442,9 +446,9 @@ int _tmain(int argc, TCHAR *argv[])
 				pMap = &(iterV->second);
 				auto iterV2 = pMap->find(var_id);
 				if (iterV2 != pMap->end()) {
-					_ftprintf(stderr,
-						_T("*** ERROR: Line %d: 'C' command has duplicate variant ID: %u:%u ")
-					        _T("(0x%04X:0x%02X)\n"),
+					fmt::print(stderr,
+						FSTR(_T("*** ERROR: Line {:d}: 'C' command has duplicate variant ID: {:d}:{:d} ")
+						     _T("(0x{:0>4X}:0x{:0>2X})\n")),
 						line, id, var_id, id, var_id);
 					err = true;
 					break;
@@ -462,7 +466,7 @@ int _tmain(int argc, TCHAR *argv[])
 			entry.reserved = 0;
 			entry.name = getStringTableOffset(token);
 			if (verbose) {
-				printf("CV: ID=%04X, VarID=%02X, name=%s, offset=%u\n", id, var_id, token, entry.name);
+				fmt::print(FSTR("CV: ID={:0>4X}, VarID={:0>2X}, name={:s}, offset={:d}\n"), id, var_id, token, entry.name);
 			}
 			pMap->emplace(var_id, std::move(entry));
 		} else if (!strcmp(token, "AS")) {
@@ -472,20 +476,20 @@ int _tmain(int argc, TCHAR *argv[])
 			// ID
 			token = strtok_r(nullptr, ":", &saveptr);
 			if (!token) {
-				_ftprintf(stderr, _T("*** ERROR: Line %d: 'AS' command is missing ID field.\n"), line);
+				fmt::print(stderr, FSTR(_T("*** ERROR: Line {:d}: 'AS' command is missing ID field.\n")), line);
 				err = true;
 				break;
 			}
 			char *endptr;
 			const unsigned int id = strtoul(token, &endptr, 0);
 			if (*endptr != '\0') {
-				fprintf(stderr, "*** ERROR: Line %d: 'AS' command: Invalid ID '%s'.\n", line, token);
+				fmt::print(stderr, FSTR("*** ERROR: Line {:d}: 'AS' command: Invalid ID '{:s}'.\n"), line, token);
 				err = true;
 				break;
 			} else if (id > 0xFF) {
-				_ftprintf(stderr,
-					_T("*** ERROR: Line %d: 'AS' command: ID is out of range: %u (0x%02X)\n"), line,
-					id, id);
+				fmt::print(stderr,
+					FSTR(_T("*** ERROR: Line {:d}: 'AS' command: ID is out of range: {:d} (0x{:0>2X})\n")),
+					line, id, id);
 				err = true;
 				break;
 			}
@@ -493,8 +497,7 @@ int _tmain(int argc, TCHAR *argv[])
 			// Name
 			token = strtok_r(nullptr, ":", &saveptr);
 			if (!token || token[0] == '\0') {
-				_ftprintf(
-					stderr, _T("*** ERROR: Line %d: 'AS' command is missing Name field.\n"), line);
+				fmt::print(stderr, FSTR(_T("*** ERROR: Line {:d}: 'AS' command is missing Name field.\n")), line);
 				err = true;
 				break;
 			}
@@ -502,8 +505,8 @@ int _tmain(int argc, TCHAR *argv[])
 			// Check if we already have this amiibo series.
 			if (id < amiiboSeriesTable.size()) {
 				if (amiiboSeriesTable[id] != 0) {
-					_ftprintf(stderr,
-						_T("*** ERROR: Line %d: 'AS' command has duplicate ID: %u (0x%04X)\n"),
+					fmt::print(stderr,
+						FSTR(_T("*** ERROR: Line {:d}: 'AS' command has duplicate ID: {:d} (0x{:0>4X})\n")),
 						line, id, id);
 					err = true;
 					break;
@@ -515,7 +518,7 @@ int _tmain(int argc, TCHAR *argv[])
 			// Add the name to the string table and save the series name.
 			amiiboSeriesTable[id] = getStringTableOffset(token);
 			if (verbose) {
-				printf("AS: ID=%04X, name=%s, offset=%u\n", id, token, amiiboSeriesTable[id]);
+				fmt::print(FSTR("AS: ID={:0>4X}, name={:s}, offset={:d}\n"), id, token, amiiboSeriesTable[id]);
 			}
 		} else if (!strcmp(token, "A")) {
 			// amiibo
@@ -524,20 +527,20 @@ int _tmain(int argc, TCHAR *argv[])
 			// ID
 			token = strtok_r(nullptr, ":", &saveptr);
 			if (!token) {
-				_ftprintf(stderr, _T("*** ERROR: Line %d: 'A' command is missing ID field.\n"), line);
+				fmt::print(stderr, FSTR(_T("*** ERROR: Line {:d}: 'A' command is missing ID field.\n")), line);
 				err = true;
 				break;
 			}
 			char *endptr;
 			const unsigned int id = strtoul(token, &endptr, 0);
 			if (*endptr != '\0') {
-				fprintf(stderr, "*** ERROR: Line %d: 'A' command: Invalid ID '%s'.\n", line, token);
+				fmt::print(stderr, FSTR("*** ERROR: Line {:d}: 'A' command: Invalid ID '{:s}'.\n"), line, token);
 				err = true;
 				break;
 			} else if (id > 0xFFFF) {
-				_ftprintf(stderr,
-					_T("*** ERROR: Line %d: 'A' command: ID is out of range: %u (0x%04X)\n"), line,
-					id, id);
+				fmt::print(stderr,
+					FSTR(_T("*** ERROR: Line {:d}: 'A' command: ID is out of range: {:d} (0x{:0>4X})\n")),
+					line, id, id);
 				err = true;
 				break;
 			}
@@ -545,21 +548,19 @@ int _tmain(int argc, TCHAR *argv[])
 			// Release No.
 			token = strtok_r(nullptr, ":", &saveptr);
 			if (!token) {
-				_ftprintf(stderr, _T("*** ERROR: Line %d: 'A' command is missing Release No. field.\n"),
-					line);
+				fmt::print(stderr, FSTR(_T("*** ERROR: Line {:d}: 'A' command is missing Release No. field.\n")), line);
 				err = true;
 				break;
 			}
 			const unsigned int release_no = strtoul(token, &endptr, 0);
 			if (*endptr != '\0') {
-				fprintf(stderr, "*** ERROR: Line %d: 'A' command: Invalid Release No. '%s'.\n", line,
-					token);
+				fmt::print(stderr, FSTR("*** ERROR: Line {:d}: 'A' command: Invalid Release No. '{:s}'.\n"), line, token);
 				err = true;
 				break;
 			} else if (release_no > 0xFFFF) {
-				_ftprintf(stderr,
-					_T("*** ERROR: Line %d: 'A' command: Release No. is out of range: %u ")
-				        _T("(0x%04X)\n"),
+				fmt::print(stderr,
+					FSTR(_T("*** ERROR: Line {:d}: 'A' command: Release No. is out of range: {:d} ")
+					     _T("(0x{:0>4X})\n")),
 					line, id, id);
 				err = true;
 				break;
@@ -568,18 +569,18 @@ int _tmain(int argc, TCHAR *argv[])
 			// Wave
 			token = strtok_r(nullptr, ":", &saveptr);
 			if (!token) {
-				_ftprintf(stderr, _T("*** ERROR: Line %d: 'A' command is missing Wave field.\n"), line);
+				fmt::print(stderr, FSTR(_T("*** ERROR: Line {:d}: 'A' command is missing Wave field.\n")), line);
 				err = true;
 				break;
 			}
 			const unsigned int wave_no = strtoul(token, &endptr, 0);
 			if (*endptr != '\0') {
-				fprintf(stderr, "*** ERROR: Line %d: 'A' command: Invalid Wave. '%s'.\n", line, token);
+				fmt::print(stderr, FSTR("*** ERROR: Line {:d}: 'A' command: Invalid Wave. '{:s}'.\n"), line, token);
 				err = true;
 				break;
 			} else if (wave_no > 0xFF) {
-				_ftprintf(stderr,
-					_T("*** ERROR: Line %d: 'A' command: Wave is out of range: %u (0x%02X)\n"),
+				fmt::print(stderr,
+					FSTR(_T("*** ERROR: Line {:d}: 'A' command: Wave is out of range: {:d} (0x{:0>2X})\n")),
 					line, id, id);
 				err = true;
 				break;
@@ -588,7 +589,7 @@ int _tmain(int argc, TCHAR *argv[])
 			// Name
 			token = strtok_r(nullptr, ":", &saveptr);
 			if (!token || token[0] == '\0') {
-				_ftprintf(stderr, _T("*** ERROR: Line %d: 'A' command is missing Name field.\n"), line);
+				fmt::print(stderr, FSTR(_T("*** ERROR: Line {:d}: 'A' command is missing Name field.\n")), line);
 				err = true;
 				break;
 			}
@@ -596,8 +597,8 @@ int _tmain(int argc, TCHAR *argv[])
 			// Check if we already have this amiibo.
 			if (id < amiiboTable.size()) {
 				if (amiiboTable[id].name != 0) {
-					_ftprintf(stderr,
-						_T("*** ERROR: Line %d: 'A' command has duplicate ID: %u (0x%04X)\n"),
+					fmt::print(stderr,
+						FSTR(_T("*** ERROR: Line {:d}: 'A' command has duplicate ID: {:d} (0x{:0>4X})\n")),
 						line, id, id);
 					err = true;
 					break;
@@ -613,12 +614,12 @@ int _tmain(int argc, TCHAR *argv[])
 			entry.reserved = 0;
 			entry.name = getStringTableOffset(token);
 			if (verbose) {
-				printf("A: ID=%04X, release_no=%u, wave_no=%u, name=%s, offset=%u\n", id, release_no,
-					wave_no, token, entry.name);
+				fmt::print(FSTR("A: ID={:0>4X}, release_no={:d}, wave_no={:d}, name={:s}, offset={:d}\n"),
+					id, release_no, wave_no, token, entry.name);
 			}
 		} else {
 			// Invalid command.
-			fprintf(stderr, "*** ERROR: Line %d: Invalid command '%s'.\n", line, token);
+			fmt::print(stderr, FSTR("*** ERROR: Line {:d}: Invalid command '{:s}'.\n"), line, token);
 			err = true;
 			break;
 		}
@@ -650,7 +651,7 @@ int _tmain(int argc, TCHAR *argv[])
 	// Write the binary data.
 	FILE *f_out = _tfopen(argv[optind++], _T("wb"));
 	if (!f_out) {
-		_ftprintf(stderr, _T("*** ERROR opening output file '%s': %s\n"), argv[2], _tcserror(errno));
+		fmt::print(stderr, FSTR(_T("*** ERROR opening output file '{:s}': {:s}\n")), argv[2], _tcserror(errno));
 		return EXIT_FAILURE;
 	}
 
