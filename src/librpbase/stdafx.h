@@ -80,7 +80,6 @@
 #ifdef __cplusplus
 // librpbase C++ headers
 #include "librptext/conversion.hpp"
-#include "librptext/printf.hpp"
 
 // Uninitialized vector class.
 // Reference: http://andreoffringa.org/?q=uvector

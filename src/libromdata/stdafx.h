@@ -98,5 +98,4 @@
 
 // librptext C++ headers
 #include "librptext/conversion.hpp"
-#include "librptext/printf.hpp"
 #endif /* !__cplusplus */
