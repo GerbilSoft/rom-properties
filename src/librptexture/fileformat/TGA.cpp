@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * TGA.cpp: TrueVision TGA reader.                                         *
  *                                                                         *
- * Copyright (c) 2019-2024 by David Korth.                                 *
+ * Copyright (c) 2019-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -860,7 +860,7 @@ int TGA::getFields(RomFields *fields) const
 		    tgaExtArea->job_time.secs != cpu_to_le16(0))
 		{
 			fields->addField_string(C_("TGA", "Job Time"),
-				rp_sprintf("%u'%u\"%u",
+				fmt::format(FSTR("{:d}'{:d}\"{:d}"),
 					le16_to_cpu(tgaExtArea->job_time.hours),
 					le16_to_cpu(tgaExtArea->job_time.mins),
 					le16_to_cpu(tgaExtArea->job_time.secs)));
@@ -876,13 +876,14 @@ int TGA::getFields(RomFields *fields) const
 		if (tgaExtArea->sw_version.number != 0 ||
 		    tgaExtArea->sw_version.letter != ' ')
 		{
-			char lstr[2] = {tgaExtArea->sw_version.letter, '\0'};
+			array<char, 2> lstr = {{tgaExtArea->sw_version.letter, '\0'}};
 			if (lstr[0] == ' ')
 				lstr[0] = '\0';
 
 			fields->addField_string(C_("TGA", "Software Version"),
-				rp_sprintf("%01u.%02u%s", tgaExtArea->sw_version.number / 100,
-					tgaExtArea->sw_version.number % 100, lstr));
+				fmt::format(FSTR("{:0>1d}.{:0>2d}{:s}"),
+					tgaExtArea->sw_version.number / 100,
+					tgaExtArea->sw_version.number % 100, lstr.data()));
 		}
 
 		// Key color
@@ -896,7 +897,8 @@ int TGA::getFields(RomFields *fields) const
 		// Pixel aspect ratio
 		if (tgaExtArea->pixel_aspect_ratio.denominator != cpu_to_le16(0)) {
 			fields->addField_string(C_("TGA", "Pixel Aspect Ratio"),
-				rp_sprintf("%u:%u", tgaExtArea->pixel_aspect_ratio.numerator,
+				fmt::format(FSTR("{:d}:{:d}"),
+					tgaExtArea->pixel_aspect_ratio.numerator,
 					tgaExtArea->pixel_aspect_ratio.denominator));
 		}
 
@@ -906,7 +908,7 @@ int TGA::getFields(RomFields *fields) const
 				static_cast<double>(tgaExtArea->gamma_value.numerator) /
 				static_cast<double>(tgaExtArea->gamma_value.denominator) * 10);
 			fields->addField_string(C_("TGA", "Gamma Value"),
-				rp_sprintf("%u.%u",
+				fmt::format(FSTR("{:d}.{:d}"),
 					static_cast<unsigned int>(gamma / 10),
 					static_cast<unsigned int>(gamma % 10)));
 		}

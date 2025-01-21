@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * GodotSTEX.cpp: Godot STEX image reader.                                 *
  *                                                                         *
- * Copyright (c) 2017-2024 by David Korth.                                 *
+ * Copyright (c) 2017-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -1197,7 +1197,7 @@ int GodotSTEX::getFields(RomFields *fields) const
 						data_format_tbl[d->stexHeader.v4.data_format]));
 			} else {
 				fields->addField_string(s_title,
-					rp_sprintf(C_("RomData", "Unknown (%u)"),
+					fmt::format(C_("RomData", "Unknown ({:d})"),
 						d->stexHeader.v4.data_format));
 			}
 			break;

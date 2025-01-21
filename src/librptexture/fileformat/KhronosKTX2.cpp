@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * KhronosKTX2.cpp: Khronos KTX2 image reader.                             *
  *                                                                         *
- * Copyright (c) 2017-2024 by David Korth.                                 *
+ * Copyright (c) 2017-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -26,7 +26,6 @@
 #include "libi18n/i18n.h"
 using namespace LibRpFile;
 using LibRpBase::RomFields;
-using LibRpText::rp_sprintf;
 
 // librptexture
 #include "ImageSizeCalc.hpp"
@@ -986,7 +985,7 @@ int KhronosKTX2::getFields(RomFields *fields) const
 			supercompression_tbl[ktx2Header->supercompressionScheme]);
 	} else {
 		fields->addField_string(C_("KhronosKTX2", "Supercompression"),
-			rp_sprintf(C_("RomData", "Unknown (%u)"),
+			fmt::format(C_("RomData", "Unknown ({:d})"),
 				ktx2Header->supercompressionScheme));
 	}
 

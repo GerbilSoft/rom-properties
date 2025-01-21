@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * ValveVTF.cpp: Valve VTF image reader.                                   *
  *                                                                         *
- * Copyright (c) 2017-2024 by David Korth.                                 *
+ * Copyright (c) 2017-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -21,7 +21,6 @@
 #include "libi18n/i18n.h"
 using namespace LibRpFile;
 using LibRpBase::RomFields;
-using LibRpText::rp_sprintf;
 
 // librptexture
 #include "ImageSizeCalc.hpp"
@@ -781,7 +780,7 @@ int ValveVTF::getFields(RomFields *fields) const
 
 	// VTF version.
 	fields->addField_string(C_("ValveVTF", "VTF Version"),
-		rp_sprintf("%u.%u", vtfHeader->version[0], vtfHeader->version[1]));
+		fmt::format(FSTR("{:d}.{:d}"), vtfHeader->version[0], vtfHeader->version[1]));
 
 	// Flags.
 	// TODO: Show "deprecated" flags for older versions.
@@ -856,14 +855,14 @@ int ValveVTF::getFields(RomFields *fields) const
 
 	// Reflectivity vector.
 	fields->addField_string(C_("ValveVTF", "Reflectivity Vector"),
-		rp_sprintf("(%0.1f, %0.1f, %0.1f)",
+		fmt::format(FSTR("({:0.1f}, {:0.1f}, {:0.1f})"),
 			vtfHeader->reflectivity[0],
 			vtfHeader->reflectivity[1],
 			vtfHeader->reflectivity[2]));
 
 	// Bumpmap scale.
 	fields->addField_string(C_("ValveVTF", "Bumpmap Scale"),
-		rp_sprintf("%0.1f", vtfHeader->bumpmapScale));
+		fmt::format(FSTR("{:0.1f}"), vtfHeader->bumpmapScale));
 
 	// Low-resolution image format.
 	const char *img_format;
@@ -890,7 +889,7 @@ int ValveVTF::getFields(RomFields *fields) const
 			vtfHeader->lowResImageHeight);
 	} else {
 		fields->addField_string(low_res_image_format_title,
-			rp_sprintf(C_("RomData", "Unknown (%d)"), vtfHeader->lowResImageFormat));
+			fmt::format(C_("RomData", "Unknown ({:d})"), vtfHeader->lowResImageFormat));
 	}
 
 	if (vtfHeader->version[0] > 7 ||

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * XboxXPR.cpp: Microsoft Xbox XPR0 texture reader.                        *
  *                                                                         *
- * Copyright (c) 2019-2024 by David Korth.                                 *
+ * Copyright (c) 2019-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -16,7 +16,6 @@
 #include "libi18n/i18n.h"
 using namespace LibRpFile;
 using LibRpBase::RomFields;
-using LibRpText::rp_sprintf;
 
 // librptexture
 #include "img/rp_image.hpp"
@@ -744,7 +743,7 @@ int XboxXPR::getFields(RomFields *fields) const
 		fields->addField_string(s_type_title, type_tbl[static_cast<size_t>(d->xprType)]);
 	} else {
 		fields->addField_string(s_type_title,
-			rp_sprintf(C_("RomData", "Unknown (%d)"), static_cast<int>(d->xprType)));
+			fmt::format(C_("RomData", "Unknown ({:d})"), static_cast<int>(d->xprType)));
 	}
 
 	// Finished reading the field data.

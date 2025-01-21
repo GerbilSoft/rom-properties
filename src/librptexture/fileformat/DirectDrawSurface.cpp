@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * DirectDrawSurface.hpp: DirectDraw Surface image reader.                 *
  *                                                                         *
- * Copyright (c) 2017-2024 by David Korth.                                 *
+ * Copyright (c) 2017-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -20,7 +20,6 @@
 #include "librptext/fourCC.hpp"
 using namespace LibRpFile;
 using LibRpBase::RomFields;
-using LibRpText::rp_sprintf;
 
 // librptexture
 #include "ImageSizeCalc.hpp"
@@ -1352,14 +1351,14 @@ int DirectDrawSurface::getFields(RomFields *fields) const
 		const char *const texFormat = DX10Formats::lookup_dxgiFormat(d->dxgi_format);
 		fields->addField_string(C_("DirectDrawSurface", "DX10 Format"),
 			(texFormat ? texFormat :
-				rp_sprintf(C_("FileFormat", "Unknown (0x%08X)"), d->dxgi_format)));
+				fmt::format(C_("FileFormat", "Unknown (0x{:0>8X})"), d->dxgi_format)));
 	}
 
 	// nVidia Texture Tools header
 	if (ddsHeader->nvtt.dwNvttMagic == cpu_to_be32(NVTT_MAGIC)) {
 		const uint32_t nvtt_version = le32_to_cpu(ddsHeader->nvtt.dwNvttVersion);
 		fields->addField_string(C_("DirectDrawSurface", "NVTT Version"),
-			rp_sprintf("%u.%u.%u",
+			fmt::format(FSTR("{:d}.{:d}.{:d}"),
 				   (nvtt_version >> 16) & 0xFF,
 				   (nvtt_version >>  8) & 0xFF,
 				    nvtt_version        & 0xFF));
