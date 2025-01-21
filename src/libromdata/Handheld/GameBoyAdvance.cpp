@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * GameBoyAdvance.hpp: Nintendo Game Boy Advance ROM reader.               *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -111,10 +111,14 @@ string GameBoyAdvancePrivate::getPublisher(void) const
 		if (ISALNUM(romHeader.company[0]) &&
 		    ISALNUM(romHeader.company[1]))
 		{
-			s_publisher = rp_sprintf(C_("RomData", "Unknown (%.2s)"),
-				romHeader.company);
+			const array<char, 3> s_company = {{
+				romHeader.company[0],
+				romHeader.company[1],
+				'\0'
+			}};
+			s_publisher = fmt::format(C_("RomData", "Unknown ({:s})"), s_company.data());
 		} else {
-			s_publisher = rp_sprintf(C_("RomData", "Unknown (%02X %02X)"),
+			s_publisher = fmt::format(C_("RomData", "Unknown ({:0>2X} {:0>2X})"),
 				static_cast<uint8_t>(romHeader.company[0]),
 				static_cast<uint8_t>(romHeader.company[1]));
 		}

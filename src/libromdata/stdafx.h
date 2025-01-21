@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * stdafx.h: Common definitions and includes.                              *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -35,6 +35,11 @@
 #include <unordered_set>
 #include <utility>
 #include <vector>
+
+// libfmt
+#include <fmt/core.h>
+#include <fmt/format.h>
+#define FSTR FMT_STRING
 
 #else /* !__cplusplus */
 /** C **/

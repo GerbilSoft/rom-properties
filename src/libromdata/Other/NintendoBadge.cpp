@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * NintendoBadge.hpp: Nintendo Badge Arcade image reader.                  *
  *                                                                         *
- * Copyright (c) 2017-2024 by David Korth.                                 *
+ * Copyright (c) 2017-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -752,7 +752,7 @@ int NintendoBadge::loadFieldData(void)
 			} else {
 				// Title ID is present.
 				d->fields.addField_string(launch_title_id_title,
-					rp_sprintf("%08X-%08X",
+					fmt::format("{:0>8X}-{:0>8X}",
 						le32_to_cpu(prbs->title_id.hi),
 						le32_to_cpu(prbs->title_id.lo)));
 
@@ -767,16 +767,16 @@ int NintendoBadge::loadFieldData(void)
 					const bool isN3DS = !!(le32_to_cpu(prbs->title_id.lo) & 0x20000000);
 					if (isN3DS) {
 						if (region) {
-							// tr: %1$s == Title name, %2$s == Region
-							str = rp_sprintf_p(C_("NintendoBadge", "%1$s (New3DS) (%2$s)"), title, region);
+							// tr: {0:s} == Title name, {1:s} == Region
+							str = fmt::format(C_("NintendoBadge", "{0:s} (New3DS) ({1:s})"), title, region);
 						} else {
 							// tr: Title name
-							str = rp_sprintf(C_("NintendoBadge", "%s (New3DS)"), title);
+							str = fmt::format(C_("NintendoBadge", "{:s} (New3DS)"), title);
 						}
 					} else {
 						if (region) {
-							// tr: %1$s == Title name, %2$s == Region
-							str = rp_sprintf_p(C_("NintendoBadge", "%1$s (%2$s)"), title, region);
+							// tr: {0:s} == Title name, {1:s} == Region
+							str = fmt::format(C_("NintendoBadge", "{0:s} ({1:s})"), title, region);
 						} else {
 							str = title;
 						}

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * EXE.cpp: DOS/Windows executable reader.                                 *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -114,7 +114,7 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 
 	// File version
 	fields.addField_string(C_("EXE", "File Version"),
-		rp_sprintf("%u.%u.%u.%u",
+		fmt::format(FSTR("{:d}.{:d}.{:d}.{:d}"),
 			pVsFfi->dwFileVersionMS >> 16,
 			pVsFfi->dwFileVersionMS & 0xFFFF,
 			pVsFfi->dwFileVersionLS >> 16,
@@ -122,7 +122,7 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 
 	// Product version
 	fields.addField_string(C_("EXE", "Product Version"),
-		rp_sprintf("%u.%u.%u.%u",
+		fmt::format(FSTR("{:d}.{:d}.{:d}.{:d}"),
 			pVsFfi->dwProductVersionMS >> 16,
 			pVsFfi->dwProductVersionMS & 0xFFFF,
 			pVsFfi->dwProductVersionLS >> 16,
@@ -186,7 +186,7 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 		fields.addField_string(fileOS_title, s_fileOS);
 	} else {
 		fields.addField_string(fileOS_title,
-			rp_sprintf(C_("RomData", "Unknown (0x%08X)"), dwFileOS));
+			fmt::format(C_("RomData", "Unknown (0x{:0>8X})"), dwFileOS));
 	}
 
 	// File type
@@ -219,7 +219,7 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 			fields.addField_string(fileType_title, C_("RomData", "Unknown"));
 		} else {
 			fields.addField_string(fileType_title,
-				rp_sprintf(C_("RomData", "Unknown (0x%08X)"), pVsFfi->dwFileType));
+				fmt::format(C_("RomData", "Unknown (0x{:0>8X})"), pVsFfi->dwFileType));
 		}
 	}
 
@@ -292,7 +292,7 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 				pgettext_expr("EXE|FileSubType", fileSubtype));
 		} else {
 			fields.addField_string(fileSubType_title,
-				rp_sprintf(C_("RomData", "Unknown (0x%02X)"), pVsFfi->dwFileSubtype));
+				fmt::format(C_("RomData", "Unknown (0x{:0>2X})"), pVsFfi->dwFileSubtype));
 		}
 	}
 
@@ -410,9 +410,9 @@ void EXEPrivate::addFields_MZ(void)
 
 	// Initial CS:IP/SS:SP
 	fields.addField_string(C_("EXE", "Initial CS:IP"),
-		rp_sprintf("%04X:%04X", le16_to_cpu(mz.e_cs), le16_to_cpu(mz.e_ip)), RomFields::STRF_MONOSPACE);
+		fmt::format(FSTR("{:0>4X}:{:0>4X}"), le16_to_cpu(mz.e_cs), le16_to_cpu(mz.e_ip)), RomFields::STRF_MONOSPACE);
 	fields.addField_string(C_("EXE", "Initial SS:SP"),
-		rp_sprintf("%04X:%04X", le16_to_cpu(mz.e_ss), le16_to_cpu(mz.e_sp)), RomFields::STRF_MONOSPACE);
+		fmt::format(FSTR("{:0>4X}:{:0>4X}"), le16_to_cpu(mz.e_ss), le16_to_cpu(mz.e_sp)), RomFields::STRF_MONOSPACE);
 
 	/* Linkers will happily put 0:0 in SS:SP if the stack is not defined.
 	 * In this case, at least DOS 5 and later will do the following hacks:
@@ -458,7 +458,7 @@ void EXEPrivate::addFields_LE(void)
 		fields.addField_string(cpu_title, cpu);
 	} else {
 		fields.addField_string(cpu_title,
-			rp_sprintf(C_("RomData", "Unknown (0x%04X)"), cpu_type));
+			fmt::format(C_("RomData", "Unknown (0x{:0>4X})"), cpu_type));
 	}
 
 	// Target OS
@@ -469,7 +469,7 @@ void EXEPrivate::addFields_LE(void)
 		fields.addField_string(targetOS_title, NE_TargetOSes[targOS]);
 	} else {
 		fields.addField_string(targetOS_title,
-			rp_sprintf(C_("RomData", "Unknown (0x%02X)"), targOS));
+			fmt::format(C_("RomData", "Unknown (0x{:0>2X})"), targOS));
 	}
 }
 

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * NGPC.cpp: Neo Geo Pocket (Color) ROM reader.                            *
  *                                                                         *
- * Copyright (c) 2019-2024 by David Korth.                                 *
+ * Copyright (c) 2019-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -308,7 +308,7 @@ int NGPC::loadFieldData(void)
 
 	// Product ID
 	d->fields.addField_string(C_("RomData", "Product ID"),
-		rp_sprintf("NEOP%02X%02X", romHeader->id_code[1], romHeader->id_code[0]));
+		fmt::format(FSTR("NEOP{:0>2X}{:0>2X}"), romHeader->id_code[1], romHeader->id_code[0]));
 
 	// Revision
 	d->fields.addField_string_numeric(C_("RomData", "Revision"),
@@ -344,7 +344,7 @@ int NGPC::loadFieldData(void)
 		d->fields.addField_string(C_("NGPC", "Debug Mode"), s_debug);
 	} else {
 		d->fields.addField_string(C_("NGPC", "Debug Mode"),
-			rp_sprintf(C_("RomData", "Unknown (0x%02X)"), entry_point >> 24));
+			fmt::format(C_("RomData", "Unknown (0x{:0>2X})"), entry_point >> 24));
 	}
 
 	// Finished reading the field data.
@@ -449,7 +449,7 @@ int NGPC::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 
 	switch (id_code) {
 		default:
-			// No special handling for tihs game.
+			// No special handling for this game.
 			snprintf(game_id, sizeof(game_id), "NEOP%04X", id_code);
 			break;
 

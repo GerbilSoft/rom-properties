@@ -3,7 +3,7 @@
  * Nintendo3DS.hpp: Nintendo 3DS ROM reader.                               *
  * Handles CCI/3DS, CIA, and SMDH files.                                   *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -669,7 +669,8 @@ void Nintendo3DSPrivate::addTitleIdAndProductCodeFields(bool showContentType)
 	}
 
 	if (tid_desc) {
-		fields.addField_string(tid_desc, rp_sprintf("%08X-%08X", tid_hi, tid_lo));
+		fields.addField_string(tid_desc,
+			fmt::format(FSTR("{:0>8X}-{:0>8X}"), tid_hi, tid_lo));
 	}
 
 	if (!ncch_header) {
@@ -682,7 +683,7 @@ void Nintendo3DSPrivate::addTitleIdAndProductCodeFields(bool showContentType)
 		const uint32_t pid_lo = le32_to_cpu(ncch_header->program_id.lo);
 		const uint32_t pid_hi = le32_to_cpu(ncch_header->program_id.hi);
 		fields.addField_string(C_("Nintendo3DS", "Program ID"),
-			rp_sprintf("%08X-%08X", pid_hi, pid_lo));
+			fmt::format(FSTR("{:0>8X}-{:0>8X}"), pid_hi, pid_lo));
 	}
 
 	// Product code.
@@ -720,7 +721,7 @@ void Nintendo3DSPrivate::addTitleIdAndProductCodeFields(bool showContentType)
 					: s_unknown);
 		} else {
 			fields.addField_string(s_encryption,
-				rp_sprintf("%s%s (0x%02X)",
+				fmt::format(FSTR("{:s}{:s} (0x{:0>2X})"),
 					(cryptoType.name ? cryptoType.name : s_unknown),
 					(cryptoType.seed ? "+Seed" : ""),
 					cryptoType.keyslot));
@@ -1896,7 +1897,7 @@ int Nintendo3DS::loadFieldData(void)
 					media_type_tbl[media_type]);
 			} else {
 				d->fields.addField_string(media_type_title,
-					rp_sprintf(C_("RomData", "Unknown (0x%02X)"), media_type));
+					fmt::format(C_("RomData", "Unknown (0x{:0>2X})"), media_type));
 			}
 
 			if (ncsd_header->cci.partition_flags[N3DS_NCSD_PARTITION_FLAG_MEDIA_TYPE_INDEX] == N3DS_NCSD_MEDIA_TYPE_CARD2) {
@@ -1930,7 +1931,7 @@ int Nintendo3DS::loadFieldData(void)
 					pgettext_expr("Nintendo3DS|CDev", card_dev_tbl[card_dev_id]));
 			} else {
 				d->fields.addField_string(card_device_title,
-					rp_sprintf_p(C_("Nintendo3DS|CDev", "Unknown (SDK2=0x%1$02X, SDK3=0x%2$02X)"),
+					fmt::format(C_("Nintendo3DS|CDev", "Unknown (SDK2=0x{0:0>2X}, SDK3=0x{1:0>2X})"),
 						ncsd_header->cci.partition_flags[N3DS_NCSD_PARTITION_FLAG_MEDIA_CARD_DEVICE_SDK2],
 						ncsd_header->cci.partition_flags[N3DS_NCSD_PARTITION_FLAG_MEDIA_CARD_DEVICE_SDK3]));
 			}
@@ -1976,7 +1977,7 @@ int Nintendo3DS::loadFieldData(void)
 			data_row.reserve(5);
 
 			// Partition number.
-			data_row.emplace_back(rp_sprintf("%u", i));
+			data_row.emplace_back(fmt::format(FSTR("{:d}"), i));
 
 			// Partition type.
 			// TODO: Use the partition ID to determine the type?
@@ -2001,7 +2002,7 @@ int Nintendo3DS::loadFieldData(void)
 						// TODO: Show an error if this should be NoCrypto.
 						// This is detected for the main NCCH in the initial
 						// NCSD check, but not here...
-						data_row.emplace_back(rp_sprintf("%s%s (0x%02X)",
+						data_row.emplace_back(fmt::format(FSTR("{:s}{:s} (0x{:0>2X})"),
 							(cryptoType.name ? cryptoType.name : s_unknown),
 							(cryptoType.seed ? "+Seed" : ""),
 							cryptoType.keyslot));
@@ -2039,7 +2040,7 @@ int Nintendo3DS::loadFieldData(void)
 
 			if (keyslots) {
 				// Keyslot.
-				data_row.emplace_back(rp_sprintf("0x%02X", (*keyslots)[i]));
+				data_row.emplace_back(fmt::format(FSTR("0x{:0>2X}"), (*keyslots)[i]));
 			}
 
 			// Partition size.
@@ -2112,7 +2113,7 @@ int Nintendo3DS::loadFieldData(void)
 		// NOTE: Technically part of the ticket.
 		// NOTE: Not including the "0x" hex prefix.
 		d->fields.addField_string(C_("Nintendo", "Console ID"),
-			rp_sprintf("%08X", be32_to_cpu(d->mxh.ticket.console_id)),
+			fmt::format(FSTR("{:0>8X}"), be32_to_cpu(d->mxh.ticket.console_id)),
 			RomFields::STRF_MONOSPACE);
 
 		// Contents table.
@@ -2137,7 +2138,7 @@ int Nintendo3DS::loadFieldData(void)
 			data_row.reserve(5);
 
 			// Content index
-			data_row.emplace_back(rp_sprintf("%u", i));
+			data_row.emplace_back(fmt::format(FSTR("{:d}"), i));
 
 			// TODO: Use content_chunk->index?
 			const N3DS_NCCH_Header_NoSig_t *content_ncch_header = nullptr;
@@ -2218,7 +2219,7 @@ int Nintendo3DS::loadFieldData(void)
 				}
 			} else {
 				// Encrypted.
-				data_row.emplace_back(rp_sprintf("%s%s%s (0x%02X)",
+				data_row.emplace_back(fmt::format(FSTR("{:s}{:s}{:s} (0x{:0>2X})"),
 					(isCIAcrypto ? "CIA+" : ""),
 					(cryptoType.name ? cryptoType.name : s_unknown),
 					(cryptoType.seed ? "+Seed" : ""),
@@ -2282,7 +2283,7 @@ int Nintendo3DS::loadFieldData(void)
 				pgettext_expr("Nintendo3DS|ApplType", appl_type_tbl[appl_type]));
 		} else {
 			d->fields.addField_string(type_title,
-				rp_sprintf(C_("Nintendo3DS", "Invalid (0x%02X)"), appl_type));
+				fmt::format(C_("Nintendo3DS", "Invalid (0x{:0>2X})"), appl_type));
 		}
 
 		// Flags.
@@ -2321,10 +2322,10 @@ int Nintendo3DS::loadFieldData(void)
 			const auto &ptbl = old3ds_sys_mode_tbl[old3ds_sys_mode];
 			d->fields.addField_string(old3ds_sys_mode_title,
 				// tr: %1$s == Old3DS system mode; %2$u == RAM allocation, in megabytes
-				rp_sprintf_p(C_("Nintendo3DS", "%1$s (%2$u MiB)"), ptbl.name, ptbl.mb));
+				fmt::format(C_("Nintendo3DS", "{0:s} ({1:d} MiB)"), ptbl.name, ptbl.mb));
 		} else {
 			d->fields.addField_string(old3ds_sys_mode_title,
-				rp_sprintf(C_("Nintendo3DS", "Invalid (0x%02X)"), old3ds_sys_mode));
+				fmt::format(C_("Nintendo3DS", "Invalid (0x{:0>2X})"), old3ds_sys_mode));
 		}
 
 		// New3DS System Mode
@@ -2342,10 +2343,10 @@ int Nintendo3DS::loadFieldData(void)
 			const auto &ptbl = new3ds_sys_mode_tbl[new3ds_sys_mode];
 			d->fields.addField_string(new3ds_sys_mode_title,
 				// tr: %1$s == New3DS system mode; %2$u == RAM allocation, in megabytes
-				rp_sprintf_p(C_("Nintendo3DS", "%1$s (%2$u MiB)"), ptbl.name, ptbl.mb));
+				fmt::format(C_("Nintendo3DS", "{0:s} ({1:d} MiB)"), ptbl.name, ptbl.mb));
 		} else {
 			d->fields.addField_string(new3ds_sys_mode_title,
-				rp_sprintf(C_("Nintendo3DS", "Invalid (0x%02X)"), new3ds_sys_mode));
+				fmt::format(C_("Nintendo3DS", "Invalid (0x{:0>2X})"), new3ds_sys_mode));
 		}
 
 		// New3DS CPU Mode
@@ -2692,16 +2693,15 @@ int Nintendo3DS::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size
 	pExtURLs->resize(szdef_count * tdb_lc.size());
 	auto extURL_iter = pExtURLs->begin();
 	for (unsigned int i = 0; i < szdef_count; i++) {
-		// Current image type.
-		char imageTypeName[16];
-		snprintf(imageTypeName, sizeof(imageTypeName), "%s%s",
-			 imageTypeName_base, (szdefs_dl[i]->name ? szdefs_dl[i]->name : ""));
+		// Current image type
+		const string imageTypeName = fmt::format(FSTR("{:s}{:s}"),
+			imageTypeName_base, (szdefs_dl[i]->name ? szdefs_dl[i]->name : ""));
 
 		// Add the images.
 		for (const uint16_t lc : tdb_lc) {
 			const string lc_str = SystemRegion::lcToStringUpper(lc);
-			extURL_iter->url = d->getURL_GameTDB("3ds", imageTypeName, lc_str.c_str(), id4, ext);
-			extURL_iter->cache_key = d->getCacheKey_GameTDB("3ds", imageTypeName, lc_str.c_str(), id4, ext);
+			extURL_iter->url = d->getURL_GameTDB("3ds", imageTypeName.c_str(), lc_str.c_str(), id4, ext);
+			extURL_iter->cache_key = d->getCacheKey_GameTDB("3ds", imageTypeName.c_str(), lc_str.c_str(), id4, ext);
 			extURL_iter->width = szdefs_dl[i]->width;
 			extURL_iter->height = szdefs_dl[i]->height;
 			extURL_iter->high_res = (szdefs_dl[i]->index >= 2);

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * WiiTMD.hpp: Nintendo Wii (and Wii U) title metadata reader.             *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -331,11 +331,11 @@ int WiiTMD::loadFieldData(void)
 	d->fields.reserve(4);	// Maximum of 4 fields.
 
 	// Title ID
-	char s_title_id[24];
-	snprintf(s_title_id, sizeof(s_title_id), "%08X-%08X",
-		be32_to_cpu(tmdHeader->title_id.hi),
-		be32_to_cpu(tmdHeader->title_id.lo));
-	d->fields.addField_string(C_("Nintendo", "Title ID"), s_title_id, RomFields::STRF_MONOSPACE);
+	d->fields.addField_string(C_("Nintendo", "Title ID"),
+		fmt::format(FSTR("{:0>8X}-{:0>8X}"),
+			be32_to_cpu(tmdHeader->title_id.hi),
+			be32_to_cpu(tmdHeader->title_id.lo)),
+		RomFields::STRF_MONOSPACE);
 
 	// Issuer
 	d->fields.addField_string(C_("Nintendo", "Issuer"),
@@ -346,15 +346,15 @@ int WiiTMD::loadFieldData(void)
 	// TODO: Might be different on 3DS?
 	const unsigned int title_version = be16_to_cpu(tmdHeader->title_version);
 	d->fields.addField_string(C_("Nintendo", "Title Version"),
-		rp_sprintf("%u.%u (v%u)", title_version >> 8, title_version & 0xFF, title_version));
+		fmt::format(FSTR("{:d}.{:d} (v{:d})"),
+			title_version >> 8, title_version & 0xFF, title_version));
 
 	// OS version (if non-zero)
 	const Nintendo_TitleID_BE_t os_tid = tmdHeader->sys_version;
 	const unsigned int sysID = be16_to_cpu(os_tid.sysID);
 	if (os_tid.id != 0) {
 		// OS display depends on the system ID.
-		char buf[24];
-		buf[0] = '\0';
+		string s_os_name;
 
 		switch (sysID) {
 			default:
@@ -369,27 +369,27 @@ int WiiTMD::loadFieldData(void)
 				const uint32_t tid_lo = be32_to_cpu(os_tid.lo);
 				switch (tid_lo) {
 					case 1:
-						strcpy(buf, "boot2");
+						s_os_name = "boot2";
 						break;
 					case 2:
 						// TODO: Localize this?
-						strcpy(buf, "System Menu");
+						s_os_name = "System Menu";
 						break;
 					case 256:
-						strcpy(buf, "BC");
+						s_os_name = "BC";
 						break;
 					case 257:
-						strcpy(buf, "MIOS");
+						s_os_name = "MIOS";
 						break;
 					case 512:
-						strcpy(buf, "BC-NAND");
+						s_os_name = "BC-NAND";
 						break;
 					case 513:
-						strcpy(buf, "BC-WFS");
+						s_os_name = "BC-WFS";
 						break;
 					default:
 						if (tid_lo < 256) {
-							snprintf(buf, sizeof(buf), "IOS%u", tid_lo);
+							s_os_name = fmt::format(FSTR("IOS{:d}"), tid_lo);
 						}
 						break;
 				}
@@ -417,19 +417,20 @@ int WiiTMD::loadFieldData(void)
 					break;
 				}
 
-				snprintf(buf, sizeof(buf), "OSv%u %s", (tid_lo & 0xFF),
+				s_os_name = fmt::format(FSTR("OSv{:d} {:s}"),
+					(tid_lo & 0xFF),
 					(likely(debug_flag == 0x4000)) ? "NDEBUG" : "DEBUG");
 				break;
 			}
 		}
 
-		if (unlikely(buf[0] == '\0')) {
+		if (unlikely(s_os_name.empty())) {
 			// Print the OS title ID.
-			snprintf(buf, sizeof(buf), "%08X-%08X",
+			s_os_name = fmt::format(FSTR("{:0>8X}-{:0>8X}"),
 				be32_to_cpu(os_tid.hi),
 				be32_to_cpu(os_tid.lo));
 		}
-		d->fields.addField_string(C_("RomData", "OS Version"), buf);
+		d->fields.addField_string(C_("RomData", "OS Version"), s_os_name);
 	}
 
 	// Access rights
@@ -472,11 +473,10 @@ int WiiTMD::loadMetaData(void)
 	d->metaData.reserve(1);	// Maximum of 1 metadata property.
 
 	// Title ID (using as Title)
-	char s_title_id[24];
-	snprintf(s_title_id, sizeof(s_title_id), "%08X-%08X",
-		be32_to_cpu(tmdHeader->title_id.hi),
-		be32_to_cpu(tmdHeader->title_id.lo));
-	d->metaData.addMetaData_string(Property::Title, s_title_id);
+	d->metaData.addMetaData_string(Property::Title,
+		fmt::format(FSTR("{:0>8X}-{:0>8X}"),
+			be32_to_cpu(tmdHeader->title_id.hi),
+			be32_to_cpu(tmdHeader->title_id.lo)));
 
 	// Finished reading the metadata.
 	return static_cast<int>(d->metaData.count());

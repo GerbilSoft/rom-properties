@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata/tests)                 *
  * GcnFstPrint.cpp: GameCube/Wii FST printer.                              *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -32,6 +32,11 @@ using std::ostream;
 using std::ostringstream;
 using std::string;
 using std::unique_ptr;
+
+// libfmt
+#include <fmt/core.h>
+#include <fmt/format.h>
+#define FSTR FMT_STRING
 
 // librpsecure
 #include "librpsecure/os-secure.h"
@@ -64,7 +69,7 @@ int RP_C_API main(int argc, char *argv[])
 	rp_i18n_init();
 
 	if (argc < 2 || argc > 3) {
-		fprintf(stderr, C_("GcnFstPrint", "Syntax: %s fst.bin [offsetShift]"), argv[0]);
+		fmt::print(stderr, C_("GcnFstPrint", "Syntax: {:s} fst.bin [offsetShift]"), argv[0]);
 		fputc('\n', stderr);
 		fputs(C_("GcnFstPrint", "offsetShift should be 0 for GameCube, 2 for Wii. (default is 0)"), stderr);
 		fputc('\n', stderr);
@@ -77,7 +82,7 @@ int RP_C_API main(int argc, char *argv[])
 		char *endptr = nullptr;
 		long ltmp = strtol(argv[2], &endptr, 10);
 		if (*endptr != '\0' || (ltmp != 0 && ltmp != 2)) {
-			fprintf(stderr, C_("GcnFstPrint", "Invalid offset shift '%s' specified."), argv[2]);
+			fmt::print(stderr, C_("GcnFstPrint", "Invalid offset shift '{:s}' specified."), argv[2]);
 			fputc('\n', stderr);
 			fputs(C_("GcnFstPrint", "offsetShift should be 0 for GameCube, 2 for Wii. (default is 0)"), stderr);
 			fputc('\n', stderr);
@@ -89,8 +94,8 @@ int RP_C_API main(int argc, char *argv[])
 	// Open and read the FST file.
 	FILE *f = fopen(argv[1], "rb");
 	if (!f) {
-		// tr: %1$s == filename, %2$s == error message
-		fprintf_p(stderr, C_("GcnFstPrint", "Error opening '%1$s': '%2$s'"), argv[1], strerror(errno));
+		// tr: {0:s} == filename, {1:s} == error message
+		fmt::print(stderr, C_("GcnFstPrint", "Error opening '{0:s}': '{1:s}'"), argv[1], strerror(errno));
 		fputc('\n', stderr);
 		return EXIT_FAILURE;
 	}
@@ -112,9 +117,9 @@ int RP_C_API main(int argc, char *argv[])
 	size_t rd_size = fread(fstData.get(), 1, fileSize, f);
 	fclose(f);
 	if (rd_size != fileSize) {
-		// tr: %1$u == number of bytes read, %2$u == number of bytes expected to read
-		fprintf_p(stderr, C_("GcnFstPrint", "ERROR: Read %1$u bytes, expected %2$u bytes."),
-			(unsigned int)rd_size, (unsigned int)fileSize);
+		// tr: {0:d} == number of bytes read, {1:d} == number of bytes expected to read
+		fmt::print(stderr, C_("GcnFstPrint", "ERROR: Read {0:Ld} bytes, expected {1:Ld} bytes."),
+			rd_size, fileSize);
 		fputc('\n', stderr);
 		return EXIT_FAILURE;
 	}
@@ -137,7 +142,7 @@ int RP_C_API main(int argc, char *argv[])
 	unique_ptr<IFst> fst(new GcnFst(&fstData[fst_start_offset],
 		static_cast<uint32_t>(fileSize - fst_start_offset), offsetShift));
 	if (!fst->isOpen()) {
-		fprintf(stderr, C_("GcnFstPrint", "*** ERROR: Could not parse '%s' as GcnFst."), argv[1]);
+		fmt::print(stderr, C_("GcnFstPrint", "*** ERROR: Could not parse '{:s}' as GcnFst."), argv[1]);
 		fputc('\n', stderr);
 		return EXIT_FAILURE;
 	}

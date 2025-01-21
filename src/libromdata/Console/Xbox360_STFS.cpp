@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * Xbox360_STFS.cpp: Microsoft Xbox 360 package reader.                    *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -965,39 +965,32 @@ int Xbox360_STFS::loadFieldData(void)
 		d->fields.addField_string(s_content_type_title, s_content_type);
 	} else {
 		d->fields.addField_string(s_content_type_title,
-			rp_sprintf(C_("RomData", "Unknown (0x%08X)"),
+			fmt::format(C_("RomData", "Unknown (0x{:0>8X})"),
 				be32_to_cpu(stfsMetadata->content_type)));
 	}
 
 	// Media ID
 	d->fields.addField_string(C_("Xbox360_STFS", "Media ID"),
-		rp_sprintf("%08X", be32_to_cpu(stfsMetadata->media_id)),
+		fmt::format(FSTR("{:0>8X}"), be32_to_cpu(stfsMetadata->media_id)),
 		RomFields::STRF_MONOSPACE);
 
 	// Title ID
 	// FIXME: Verify behavior on big-endian.
 	// TODO: Consolidate implementations into a shared function.
 	string tid_str;
-	char hexbuf[4];
 	if (ISUPPER(stfsMetadata->title_id.a)) {
 		tid_str += stfsMetadata->title_id.a;
 	} else {
-		tid_str += "\\x";
-		snprintf(hexbuf, sizeof(hexbuf), "%02X",
-			static_cast<uint8_t>(stfsMetadata->title_id.a));
-		tid_str.append(hexbuf, 2);
+		tid_str += fmt::format(FSTR("\\x{:0>2X}"), static_cast<uint8_t>(stfsMetadata->title_id.a));
 	}
 	if (ISUPPER(stfsMetadata->title_id.b)) {
 		tid_str += stfsMetadata->title_id.b;
 	} else {
-		tid_str += "\\x";
-		snprintf(hexbuf, sizeof(hexbuf), "%02X",
-			static_cast<uint8_t>(stfsMetadata->title_id.b));
-		tid_str.append(hexbuf, 2);
+		tid_str += fmt::format(FSTR("\\x{:0>2X}"), static_cast<uint8_t>(stfsMetadata->title_id.b));
 	}
 
 	d->fields.addField_string(C_("Xbox360_XEX", "Title ID"),
-		rp_sprintf_p(C_("Xbox360_XEX", "%1$08X (%2$s-%3$04u)"),
+		fmt::format(C_("Xbox360_XEX", "{0:0>8X} ({1:s}-{2:0>4d})"),
 			be32_to_cpu(stfsMetadata->title_id.u32),
 			tid_str.c_str(),
 			be16_to_cpu(stfsMetadata->title_id.u16)),
@@ -1009,19 +1002,19 @@ int Xbox360_STFS::loadFieldData(void)
 	ver.u32 = be32_to_cpu(stfsMetadata->version.u32);
 	basever.u32 = be32_to_cpu(stfsMetadata->base_version.u32);
 	d->fields.addField_string(C_("RomData", "Version"),
-		rp_sprintf("%u.%u.%u.%u",
+		fmt::format(FSTR("{:d}.{:d}.{:d}.{:d}"),
 			static_cast<unsigned int>(ver.major),
 			static_cast<unsigned int>(ver.minor),
 			static_cast<unsigned int>(ver.build),
 			static_cast<unsigned int>(ver.qfe)));
 	d->fields.addField_string(C_("Xbox360_XEX", "Base Version"),
-		rp_sprintf("%u.%u.%u.%u",
+		fmt::format(FSTR("{:d}.{:d}.{:d}.{:d}"),
 			static_cast<unsigned int>(basever.major),
 			static_cast<unsigned int>(basever.minor),
 			static_cast<unsigned int>(basever.build),
 			static_cast<unsigned int>(basever.qfe)));
 
-	// Console-specific packages.
+	// Console-specific packages
 	if (stfsHeader->magic == cpu_to_be32(STFS_MAGIC_CON)) {
 		// NOTE: addField_string_numeric() is limited to 32-bit.
 		// Print the console ID as a hexdump instead.
@@ -1054,7 +1047,7 @@ int Xbox360_STFS::loadFieldData(void)
 			d->fields.addField_string(s_console_type_title, s_console_type);
 		} else {
 			d->fields.addField_string(s_console_type_title,
-				rp_sprintf(C_("RomData", "Unknown (%u)"), stfsHeader->console.console_type));
+				fmt::format(C_("RomData", "Unknown ({:d})"), stfsHeader->console.console_type));
 		}
 	}
 

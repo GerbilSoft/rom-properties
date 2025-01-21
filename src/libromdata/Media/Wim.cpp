@@ -3,7 +3,7 @@
  * Wim.cpp: Microsoft WIM header reader                                    *
  *                                                                         *
  * Copyright (c) 2023 by ecumber.                                          *
- * Copyright (c) 2019-2024 by David Korth.                                 *
+ * Copyright (c) 2019-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -347,7 +347,7 @@ int WimPrivate::addFields_XML()
 		vv_data->resize(vv_data->size()+1);
 		auto &data_row = vv_data->at(vv_data->size()-1);
 		data_row.reserve(10);
-		data_row.emplace_back(rp_sprintf("%u", idx++));
+		data_row.emplace_back(fmt::format(FSTR("{:d}"), idx++));
 		data_row.emplace_back(image.name);
 		data_row.emplace_back(image.description);
 		data_row.emplace_back(image.dispname);
@@ -368,9 +368,9 @@ int WimPrivate::addFields_XML()
 
 		const auto &windowsver = image.windowsinfo.version;
 		data_row.emplace_back(
-			rp_sprintf("%u.%u.%u.%u", windowsver.majorversion,
-				windowsver.minorversion, windowsver.buildnumber,
-				windowsver.spbuildnumber));
+			fmt::format(FSTR("{:d}.{:d}.{:d}.{:d}"),
+				windowsver.majorversion, windowsver.minorversion,
+				windowsver.buildnumber, windowsver.spbuildnumber));
 
 		const auto &windowsinfo = image.windowsinfo;
 		data_row.emplace_back(windowsinfo.editionid);
@@ -398,7 +398,7 @@ int WimPrivate::addFields_XML()
 		if (archstring) {
 			data_row.emplace_back(archstring);
 		} else {
-			data_row.emplace_back(rp_sprintf(C_("RomData", "Unknown (%d)"),
+			data_row.emplace_back(fmt::format(C_("RomData", "Unknown ({:d})"),
 				static_cast<int>(windowsinfo.arch)));
 		}
 		data_row.emplace_back(windowsinfo.languages.language);
@@ -598,13 +598,13 @@ int Wim::loadFieldData(void)
 	}
 
 	d->fields.reserve(6);	// Maximum of 6 fields. (5 if XML is disabled)
-	char buffer[32];
 
-	// if the version number is 14, add an indicator that it is an ESD
-	snprintf(buffer, sizeof(buffer), "%u.%02u%s",
-		d->wimHeader.version.major_version, d->wimHeader.version.minor_version,
-		(d->wimHeader.version.minor_version == 14) ? " (ESD)" : "");
-	d->fields.addField_string(C_("Wim", "WIM Version"), buffer, RomFields::STRF_TRIM_END);
+	// If the version number is 14, add an indicator that it is an ESD.
+	d->fields.addField_string(C_("Wim", "WIM Version"),
+		fmt::format(FSTR("{:d}.{:0>2d}{:s}"),
+			d->wimHeader.version.major_version, d->wimHeader.version.minor_version,
+			(d->wimHeader.version.minor_version == 14) ? " (ESD)" : ""),
+		RomFields::STRF_TRIM_END);
 
 	if (d->versionType != Wim113_014) {
 		// The rest of the fields require Wim113_014 or later.
@@ -658,7 +658,7 @@ int Wim::loadFieldData(void)
 	}
 	d->fields.addField_string(C_("Wim", "Compression Method"), compression_method);
 	d->fields.addField_string(C_("Wim", "Part Number"),
-		rp_sprintf("%u/%u", d->wimHeader.part_number, d->wimHeader.total_parts));
+		fmt::format(FSTR("{:d}/{:d}"), d->wimHeader.part_number, d->wimHeader.total_parts));
 	d->fields.addField_string_numeric(C_("Wim", "Total Images"), d->wimHeader.number_of_images);
 
 #ifdef ENABLE_XML

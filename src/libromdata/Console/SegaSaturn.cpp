@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * SegaSaturn.hpp: Sega Saturn disc image reader.                          *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -553,7 +553,7 @@ int SegaSaturn::loadFieldData(void)
 		const char *const disc_number_title = C_("RomData", "Disc #");
 		d->fields.addField_string(disc_number_title,
 			// tr: Disc X of Y (for multi-disc games)
-			rp_sprintf_p(C_("RomData|Disc", "%1$u of %2$u"),
+			fmt::format(C_("RomData|Disc", "{0:d} of {1:d}"),
 				disc_num, disc_total));
 	}
 

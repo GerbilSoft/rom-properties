@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * VirtualBoy.cpp: Nintendo Virtual Boy ROM reader.                        *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * Copyright (c) 2016-2018 by Egor.                                        *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
@@ -333,10 +333,14 @@ int VirtualBoy::loadFieldData(void)
 		if (ISALNUM(romFooter->publisher[0]) &&
 		    ISALNUM(romFooter->publisher[1]))
 		{
-			s_publisher = rp_sprintf(C_("RomData", "Unknown (%.2s)"),
-				romFooter->publisher);
+			const array<char, 3> s_company = {{
+				romFooter->publisher[0],
+				romFooter->publisher[1],
+				'\0'
+			}};
+			s_publisher = fmt::format(C_("RomData", "Unknown ({:s})"), s_company.data());
 		} else {
-			s_publisher = rp_sprintf(C_("RomData", "Unknown (%02X %02X)"),
+			s_publisher = fmt::format(C_("RomData", "Unknown ({:0>2X} {:0>2X})"),
 				static_cast<uint8_t>(romFooter->publisher[0]),
 				static_cast<uint8_t>(romFooter->publisher[1]));
 		}
@@ -364,7 +368,7 @@ int VirtualBoy::loadFieldData(void)
 		d->fields.addField_string(C_("RomData", "Region Code"), s_region);
 	} else {
 		d->fields.addField_string(C_("RomData", "Region Code"),
-			rp_sprintf(C_("RomData", "Unknown (0x%02X)"),
+			fmt::format(C_("RomData", "Unknown (0x{:0>2X})"),
 				static_cast<uint8_t>(romFooter->gameid[3])));
 	}
 
@@ -409,10 +413,14 @@ int VirtualBoy::loadMetaData(void)
 		if (ISALNUM(romFooter->publisher[0]) &&
 		    ISALNUM(romFooter->publisher[1]))
 		{
-			s_publisher = rp_sprintf(C_("RomData", "Unknown (%.2s)"),
-				romFooter->publisher);
+			const array<char, 3> s_company = {{
+				romFooter->publisher[0],
+				romFooter->publisher[1],
+				'\0'
+			}};
+			s_publisher = fmt::format(C_("RomData", "Unknown ({:s})"), s_company.data());
 		} else {
-			s_publisher = rp_sprintf(C_("RomData", "Unknown (%02X %02X)"),
+			s_publisher = fmt::format(C_("RomData", "Unknown ({:0>2X} {:0>2X})"),
 				static_cast<uint8_t>(romFooter->publisher[0]),
 				static_cast<uint8_t>(romFooter->publisher[1]));
 		}

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * CBMCart.cpp: Commodore ROM cartridge reader.                            *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -387,7 +387,7 @@ int CBMCart::loadFieldData(void)
 			d->fields.addField_string(s_type_title, s_type);
 		} else {
 			d->fields.addField_string(s_type_title,
-				rp_sprintf(C_("RomData", "Unknown (%u)"), type));
+				fmt::format(C_("RomData", "Unknown ({:d})"), type));
 		}
 	}
 
@@ -544,8 +544,7 @@ int CBMCart::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) co
 	}
 
 	// Lowercase hex CRC32s are used.
-	char s_crc32[16];
-	snprintf(s_crc32, sizeof(s_crc32), "%08x", d->rom_16k_crc32);
+	const string s_crc32 = fmt::format(FSTR("{:0>2x}"), d->rom_16k_crc32);
 
 	// NOTE: We only have one size for CBMCart right now.
 	// TODO: Determine the actual image size.
@@ -577,19 +576,19 @@ int CBMCart::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) co
 	// FIXME: Use a better subdirectory scheme instead of just "crt" for cartridge?
 	// NOTE: For C64 cartridges, using a second level subdirectory
 	// for the cartridge type.
-	char s_subdir[16];
+	string s_subdir;
 	if (d->romType == CBMCartPrivate::RomType::C64) {
 		// TODO: Separate dir for UltiMax?
-		snprintf(s_subdir, sizeof(s_subdir), "crt/%u", be16_to_cpu(romHeader->type));
+		s_subdir = fmt::format(FSTR("crt/{:d}"), be16_to_cpu(romHeader->type));
 	} else {
-		memcpy(s_subdir, "crt", 4);
+		s_subdir = "crt";
 	}
 
 	// Add the URLs.
 	pExtURLs->resize(1);
 	auto extURL_iter = pExtURLs->begin();
-	extURL_iter->url = d->getURL_RPDB(sys, imageTypeName, s_subdir, s_crc32, ext);
-	extURL_iter->cache_key = d->getCacheKey_RPDB(sys, imageTypeName, s_subdir, s_crc32, ext);
+	extURL_iter->url = d->getURL_RPDB(sys, imageTypeName, s_subdir.c_str(), s_crc32.c_str(), ext);
+	extURL_iter->cache_key = d->getCacheKey_RPDB(sys, imageTypeName, s_subdir.c_str(), s_crc32.c_str(), ext);
 	extURL_iter->width = sizeDefs[0].width;
 	extURL_iter->height = sizeDefs[0].height;
 	extURL_iter->high_res = (sizeDefs[0].index >= 2);

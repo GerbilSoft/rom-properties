@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * BCSTM.cpp: Nintendo 3DS BCSTM and Nintendo Wii U BFSTM audio reader.    *
  *                                                                         *
- * Copyright (c) 2019-2024 by David Korth.                                 *
+ * Copyright (c) 2019-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -410,7 +410,7 @@ int BCSTM::loadFieldData(void)
 		d->fields.addField_string(type_title, type_tbl[static_cast<int>(d->audioFormat)]);
 	} else {
 		d->fields.addField_string(type_title,
-			rp_sprintf(C_("RomData", "Unknown (%d)"), static_cast<int>(d->audioFormat)));
+			fmt::format(C_("RomData", "Unknown ({:d})"), static_cast<int>(d->audioFormat)));
 	}
 
 	// TODO: Show the version field?
@@ -477,7 +477,7 @@ int BCSTM::loadFieldData(void)
 			pgettext_expr("BCSTM|Codec", codec_tbl[codec]));
 	} else {
 		d->fields.addField_string(codec_title,
-			rp_sprintf(C_("RomData", "Unknown (%u)"), codec));
+			fmt::format(C_("RomData", "Unknown ({:d})"), codec));
 	}
 
 	// Number of channels
@@ -486,7 +486,7 @@ int BCSTM::loadFieldData(void)
 	// Sample rate
 	// NOTE: Using ostringstream for localized numeric formatting.
 	d->fields.addField_string(C_("RomData|Audio", "Sample Rate"),
-		rp_sprintf(C_("RomData", "%u Hz"), sample_rate));
+		fmt::format(C_("RomData", "{:Ld} Hz"), sample_rate));
 
 	// Length (non-looping)
 	// TODO: Figure this out for BCWAV.

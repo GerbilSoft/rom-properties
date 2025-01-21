@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata/tests)                 *
  * WiiUFstPrint.cpp: Wii U FST printer                                     *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -33,6 +33,11 @@ using std::ostream;
 using std::ostringstream;
 using std::string;
 using std::unique_ptr;
+
+// libfmt
+#include <fmt/core.h>
+#include <fmt/format.h>
+#define FSTR FMT_STRING
 
 // librpsecure
 #include "librpsecure/os-secure.h"
@@ -65,7 +70,7 @@ int RP_C_API main(int argc, char *argv[])
 	rp_i18n_init();
 
 	if (argc < 2 || argc > 3) {
-		fprintf(stderr, C_("WiiUFstPrint", "Syntax: %s fst.bin"), argv[0]);
+		fmt::print(stderr, C_("WiiUFstPrint", "Syntax: {:s} fst.bin"), argv[0]);
 		fputc('\n', stderr);
 		return EXIT_FAILURE;
 	}
@@ -73,8 +78,8 @@ int RP_C_API main(int argc, char *argv[])
 	// Open and read the FST file.
 	FILE *f = fopen(argv[1], "rb");
 	if (!f) {
-		// tr: %1$s == filename, %2$s == error message
-		fprintf_p(stderr, C_("GcnFstPrint", "Error opening '%1$s': '%2$s'"), argv[1], strerror(errno));
+		// tr: {0:s} == filename, {1:s} == error message
+		fmt::print(stderr, C_("GcnFstPrint", "Error opening '{0:s}': '{1:s}'"), argv[1], strerror(errno));
 		fputc('\n', stderr);
 		return EXIT_FAILURE;
 	}
@@ -83,7 +88,7 @@ int RP_C_API main(int argc, char *argv[])
 	fseeko(f, 0, SEEK_END);
 	const off64_t fileSize_o = ftello(f);
 	if (fileSize_o > (16*1024*1024)) {
-		fputs(C_("GcnFstPrint", "ERROR: FST is too big. (Maximum of 16 MB.)"), stderr);
+		fmt::print(stderr, C_("GcnFstPrint", "ERROR: FST is too big. (Maximum of 16 MB.)"));
 		fputc('\n', stderr);
 		fclose(f);
 		return EXIT_FAILURE;
@@ -96,10 +101,10 @@ int RP_C_API main(int argc, char *argv[])
 	size_t rd_size = fread(fstData.get(), 1, fileSize, f);
 	fclose(f);
 	if (rd_size != fileSize) {
-		// tr: %1$u == number of bytes read, %2$u == number of bytes expected to read
-		fprintf_p(stderr, C_("GcnFstPrint", "ERROR: Read %1$u bytes, expected %2$u bytes."),
-			(unsigned int)rd_size, (unsigned int)fileSize);
-		putchar('\n');
+		// tr: {0:Ld} == number of bytes read, {1:Ld} == number of bytes expected to read
+		fmt::print(stderr, C_("GcnFstPrint", "ERROR: Read {0:Ld} bytes, expected {1:Ld} bytes."),
+			rd_size, fileSize);
+		fputc('\n', stderr);
 		return EXIT_FAILURE;
 	}
 
@@ -108,7 +113,7 @@ int RP_C_API main(int argc, char *argv[])
 	// "look" like an FST?
 	unique_ptr<IFst> fst(new WiiUFst(fstData.get(), static_cast<uint32_t>(fileSize)));
 	if (!fst->isOpen()) {
-		fprintf(stderr, C_("WiiUFstPrint", "*** ERROR: Could not parse '%s' as WiiUFst."), argv[1]);
+		fmt::print(stderr, C_("WiiUFstPrint", "*** ERROR: Could not parse '{:s}' as WiiUFst."), argv[1]);
 		fputc('\n', stderr);
 		return EXIT_FAILURE;
 	}
@@ -135,7 +140,7 @@ int RP_C_API main(int argc, char *argv[])
 
 	if (fst->hasErrors()) {
 		fputc('\n', stderr);
-		fputs(C_("WiiUFstPrint", "*** WARNING: FST has errors and may be unusable."), stderr);
+		fmt::print(stderr, C_("WiiUFstPrint", "*** WARNING: FST has errors and may be unusable."));
 		fputc('\n', stderr);
 	}
 

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * ELF.cpp: Executable and Linkable Format reader.                         *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -591,7 +591,7 @@ int ELFPrivate::checkSectionHeaders(void)
 						// Header is too small...
 						break;
 					}
-					osVersion = rp_sprintf("SuSE Linux %u.%u", pData[0], pData[1]);
+					osVersion = fmt::format(FSTR("SuSE Linux {:d}.{:d}"), pData[0], pData[1]);
 				} else if (nhdr->n_namesz == 4 && !strcmp(pName, ELF_NOTE_GNU)) {
 					// GNU system
 					if (nhdr->n_descsz < sizeof(uint32_t)*4) {
@@ -613,7 +613,7 @@ int ELFPrivate::checkSectionHeaders(void)
 						s_os = "<unknown>";
 					}
 
-					osVersion = rp_sprintf("GNU/%s %u.%u.%u",
+					osVersion = fmt::format(FSTR("GNU/{:s} {:d}.{:d}.{:d}"),
 						s_os, elf32_to_cpu(desc[1]),
 						elf32_to_cpu(desc[2]), elf32_to_cpu(desc[3]));
 				} else if (nhdr->n_namesz == 7 && !strcmp(pName, "NetBSD")) {
@@ -634,9 +634,9 @@ int ELFPrivate::checkSectionHeaders(void)
 						uint32_t ver_rel = (desc / 10000) % 100;
 						const uint32_t ver_min = (desc / 1000000) % 100;
 						const uint32_t ver_maj = desc / 100000000;
-						osVersion = rp_sprintf("NetBSD %u.%u", ver_maj, ver_min);
+						osVersion = fmt::format(FSTR("NetBSD {:d}.{:d}"), ver_maj, ver_min);
 						if (ver_rel == 0 && ver_patch != 0) {
-							osVersion += rp_sprintf(".%u", ver_patch);
+							osVersion += fmt::format(FSTR(".{:d}"), ver_patch);
 						} else if (ver_rel != 0) {
 							while (ver_rel > 26) {
 								osVersion += 'Z';
@@ -661,29 +661,30 @@ int ELFPrivate::checkSectionHeaders(void)
 					if (desc == 460002) {
 						osVersion = "FreeBSD 4.6.2";
 					} else if (desc < 460100) {
-						osVersion = rp_sprintf("FreeBSD %u.%u",
+						osVersion = fmt::format(FSTR("FreeBSD {:d}.{:d}"),
 							desc / 100000, desc / 10000 % 10);
 						if (desc / 1000 % 10 > 0) {
-							osVersion += rp_sprintf(".%u", desc / 1000 % 10);
+							osVersion += fmt::format(FSTR(".{:d}"), desc / 1000 % 10);
 						}
 						if ((desc % 1000 > 0) || (desc % 100000 == 0)) {
-							osVersion += rp_sprintf(" (%u)", desc);
+							osVersion += fmt::format(FSTR(" ({:d})"), desc);
 						}
 					} else if (desc < 500000) {
-						osVersion = rp_sprintf("FreeBSD %u.%u",
+						// FIXME: This doesn't look quite right...
+						osVersion = fmt::format(FSTR("FreeBSD {:d}.{:d}"),
 							desc / 100000, desc / 10000 % 10 + desc / 1000 % 10);
 						if (desc / 100 % 10 > 0) {
-							osVersion += rp_sprintf(" (%u)", desc);
+							osVersion += fmt::format(FSTR(" ({:d})"), desc);
 						} else if (desc / 10 % 10 > 0) {
-							osVersion += rp_sprintf(".%u", desc / 10 % 10);
+							osVersion += fmt::format(FSTR(".{:d}"), desc / 10 % 10);
 						}
 					} else {
-						osVersion = rp_sprintf("FreeBSD %u.%u",
+						osVersion = fmt::format(FSTR("FreeBSD {:d}.{:d}"),
 							desc / 100000, desc / 1000 % 100);
 						if ((desc / 100 % 10 > 0) || (desc % 100000 / 100 == 0)) {
-							osVersion += rp_sprintf(" (%u)", desc);
+							osVersion += fmt::format(FSTR(" ({:d})"), desc);
 						} else if (desc / 10 % 10 > 0) {
-							osVersion += rp_sprintf(".%u", desc / 10 % 10);
+							osVersion += fmt::format(FSTR(".{:d}"), desc / 10 % 10);
 						}
 					}
 				} else if (nhdr->n_namesz == 8 && !strcmp(pName, "OpenBSD")) {
@@ -698,7 +699,7 @@ int ELFPrivate::checkSectionHeaders(void)
 					memcpy(&desc, pData, sizeof(desc));
 					desc = elf32_to_cpu(desc);
 
-					osVersion = rp_sprintf("DragonFlyBSD %u.%u.%u",
+					osVersion = fmt::format(FSTR("DragonFlyBSD {:d}.{:d}.{:d}"),
 						desc / 100000, desc / 10000 % 10, desc % 10000);
 				}
 				break;
@@ -1077,16 +1078,17 @@ int ELFPrivate::addSymbolFields(span<const char> dynsym_strtab)
 			row.emplace_back(types[ELF64_ST_TYPE(sym.st_info)]);
 			row.emplace_back(visibilities[ELF64_ST_VISIBILITY(sym.st_other)]);
 			// TODO: output section name if possible
-			if (sym.st_shndx == SHN_UNDEF)
+			if (sym.st_shndx == SHN_UNDEF) {
 				row.emplace_back(elf_sym_undefined);
-			else if (sym.st_shndx == SHN_ABS)
+			} else if (sym.st_shndx == SHN_ABS) {
 				row.emplace_back(elf_sym_absolute);
-			else if (sym.st_shndx == SHN_COMMON)
+			} else if (sym.st_shndx == SHN_COMMON) {
 				row.emplace_back(elf_sym_common);
-			else
-				row.emplace_back(rp_sprintf("%d", sym.st_shndx));
-			row.emplace_back(rp_sprintf("0x%08" PRIX64, sym.st_value));
-			row.emplace_back(rp_sprintf("0x%08" PRIX64, sym.st_size));
+			} else {
+				row.emplace_back(fmt::format(FSTR("{:d}"), sym.st_shndx));
+			}
+			row.emplace_back(fmt::format(FSTR("0x{:0>8X}"), sym.st_value));
+			row.emplace_back(fmt::format(FSTR("0x{:0>8X}"), sym.st_size));
 			vv_data->emplace_back(std::move(row));
 		}
 		if (vv_data->empty()) {
@@ -1515,7 +1517,7 @@ int ELF::loadFieldData(void)
 		d->fields.addField_string(cpu_title, cpu);
 	} else {
 		d->fields.addField_string(cpu_title,
-			rp_sprintf(C_("RomData", "Unknown (0x%04X)"), primary->e_machine));
+			fmt::format(C_("RomData", "Unknown (0x{:0>4X})"), primary->e_machine));
 	}
 
 	// CPU flags.
@@ -1560,17 +1562,17 @@ int ELF::loadFieldData(void)
 
 		case EM_SPARC32PLUS:
 		case EM_SPARCV9: {
-			// Verify bitness.
+			// Verify bitness
 			if (primary->e_machine == EM_SPARC32PLUS &&
 			    primary->e_class != ELFCLASS32)
 			{
-				// SPARC32PLUS must be 32-bit.
+				// SPARC32PLUS must be 32-bit
 				break;
 			}
 			else if (primary->e_machine == EM_SPARCV9 &&
 				 primary->e_class != ELFCLASS64)
 			{
-				// SPARCV9 must be 64-bit.
+				// SPARCV9 must be 64-bit
 				break;
 			}
 
@@ -1611,7 +1613,7 @@ int ELF::loadFieldData(void)
 					(e_flags & 0x20) ? "N32" : "O32");
 			}
 
-			// MIPS architecture level.
+			// MIPS architecture level
 			static constexpr char mips_levels[][12] = {
 				"MIPS-I", "MIPS-II", "MIPS-III", "MIPS-IV",
 				"MIPS-V", "MIPS32", "MIPS64", "MIPS32 rel2",
@@ -1623,10 +1625,10 @@ int ELF::loadFieldData(void)
 				d->fields.addField_string(cpu_level_title, mips_levels[level]);
 			} else {
 				d->fields.addField_string(cpu_level_title,
-					rp_sprintf(C_("RomData", "Unknown (0x%02X)"), level));
+					fmt::format(C_("RomData", "Unknown (0x{:0>2X})"), level));
 			}
 
-			// MIPS CPU flags.
+			// MIPS CPU flags
 			// NOTE: Shifting ASE flags from bits 24-27 to bits 12-15.
 			const unsigned int mips_cpu_flags = (e_flags & 0xFFF) | ((e_flags >> 12) & 0xF000);
 			static const array<const char*, 16> mips_flags_names = {{
@@ -1651,7 +1653,7 @@ int ELF::loadFieldData(void)
 		case EM_PARISC: {
 			// binutils: include/elf/hppa.h
 
-			// PA-RISC version.
+			// PA-RISC version
 			string parisc_version;
 			parisc_version.reserve(12);
 			switch (e_flags & 0xFFFF) {
@@ -1671,7 +1673,7 @@ int ELF::loadFieldData(void)
 			}
 			d->fields.addField_string(C_("ELF", "PA-RISC Version"), parisc_version);
 
-			// PA-RISC CPU flags.
+			// PA-RISC CPU flags
 			static const array<const char*, 7> parisc_flags_names = {{
 				// 0x1-0x8
 				NOP_C_("ELF|PARISCFlags", "Trap NULL"),
@@ -1690,7 +1692,7 @@ int ELF::loadFieldData(void)
 
 		case EM_ARM: {
 			if (primary->e_class != ELFCLASS32) {
-				// 32-bit only.
+				// 32-bit only
 				break;
 			}
 
@@ -1710,12 +1712,11 @@ int ELF::loadFieldData(void)
 			}
 
 			// ARM EABI
-			char arm_eabi[32];
-			snprintf(arm_eabi, sizeof(arm_eabi), "EABI%u%s",
-				(e_flags >> 24), arm_byteorder);
-			d->fields.addField_string(C_("ELF", "ARM EABI"), arm_eabi);
+			d->fields.addField_string(C_("ELF", "ARM EABI"),
+				fmt::format(FSTR("EABI{:d}{:s}"),
+					(e_flags >> 24), arm_byteorder));
 
-			// ARM CPU flags.
+			// ARM CPU flags
 			// NOTE: Most of these are deprecated. (pre-EABI)
 			static const array<const char*, 12> arm_flags_names = {{
 				// 0x1-0x8
@@ -1778,7 +1779,7 @@ int ELF::loadFieldData(void)
 				d->fields.addField_string(C_("ELF", "CPU Subtype"), s_cpu_subtype);
 			}
 
-			// SuperH CPU flags. (rshifted by 8)
+			// SuperH CPU flags (rshifted by 8)
 			static const array<const char*, 8> superh_flags_names = {{
 				// 0x100-0x800
 				"PIC", nullptr, nullptr, nullptr,
@@ -1796,7 +1797,7 @@ int ELF::loadFieldData(void)
 			// binutils: include/elf/arc.h
 			// TODO: Other ARC variants?
 
-			// CPU subtypes.
+			// CPU subtypes
 			static constexpr char arc_cpu_subtypes[][8] = {
 				"", "", "ARC600", "ARC700",
 				"ARC601", "ARCv2EM", "ARCv2HS",
@@ -1812,14 +1813,14 @@ int ELF::loadFieldData(void)
 				d->fields.addField_string(C_("ELF", "CPU Subtype"), s_cpu_subtype);
 			}
 
-			// ARC Linux specific ABIs.
+			// ARC Linux specific ABIs
 			const uint8_t arc_linux_osabi = (e_flags >> 8) & 0x0F;
 			if (arc_linux_osabi != 1 && arc_linux_osabi <= 4) {
 				d->fields.addField_string(C_("ELF", "Linux OSABI"),
-					rp_sprintf("ARC Linux OSABI v%u", arc_linux_osabi));
+					fmt::format(FSTR("ARC Linux OSABI v{:d}"), arc_linux_osabi));
 			}
 
-			// ARC CPU flags. (rshifted by 8)
+			// ARC CPU flags (rshifted by 8)
 			static const array<const char*, 1> arc_flags_names = {{
 				// 0x100
 				"PIC",
@@ -1894,23 +1895,20 @@ int ELF::loadFieldData(void)
 		case EM_AVR:
 		case EM_AVR_OLD: {
 			// NOTE: Using a heuristic instead of a lookup table.
-			char s_avr_subtype[16];
+			string s_avr_subtype;
 			const uint8_t avr_subtype = (e_flags & 0xFF);
 			if (avr_subtype < 10) {
-				snprintf(s_avr_subtype, sizeof(s_avr_subtype), "AVR%u", avr_subtype);
+				s_avr_subtype = fmt::format(FSTR("AVR{:d}"), avr_subtype);
 			} else if (avr_subtype < 100) {
-				snprintf(s_avr_subtype, sizeof(s_avr_subtype), "AVR%u.%u",
+				s_avr_subtype = fmt::format(FSTR("AVR{:d}.{:d}"),
 					avr_subtype / 10, avr_subtype % 10);
 			} else if (avr_subtype == 100) {
-				strcpy(s_avr_subtype, "AVR Tiny");
+				s_avr_subtype = "AVR Tiny";
 			} else if (avr_subtype < 110) {
-				snprintf(s_avr_subtype, sizeof(s_avr_subtype), "XMEGA%u",
-					(avr_subtype % 100));
-			} else {
-				s_avr_subtype[0] = '\0';
+				s_avr_subtype = fmt::format(FSTR("XMEGA{:d}"), (avr_subtype % 100));
 			}
 
-			if (s_avr_subtype[0] != '\0') {
+			if (!s_avr_subtype.empty()) {
 				d->fields.addField_string(C_("ELF", "CPU Subtype"), s_avr_subtype);
 			}
 			break;
@@ -1944,19 +1942,17 @@ int ELF::loadFieldData(void)
 		case EM_MSP430: {
 			// binutils: include/elf/msp430.h
 			// NOTE: Using a heuristic instead of a lookup table.
-			char s_msp430_subtype[16];
+			string s_msp430_subtype;
 			const uint8_t msp430_subtype = (e_flags & 0xFF);
 			if (msp430_subtype == 45) {
-				strcpy(s_msp430_subtype, "MSP430X");
+				s_msp430_subtype = "MSP430X";
 			} else if (msp430_subtype == 110) {
-				strcpy(s_msp430_subtype, "MSP430x11x1");
+				s_msp430_subtype = "MSP430x11x1";
 			} else if (msp430_subtype <= 54) {
-				snprintf(s_msp430_subtype, sizeof(s_msp430_subtype), "MSP430x%u", msp430_subtype);
-			} else {
-				s_msp430_subtype[0] = '\0';
+				s_msp430_subtype = fmt::format(FSTR("MSP430x{:d}"), msp430_subtype);
 			}
 
-			if (s_msp430_subtype[0] != '\0') {
+			if (!s_msp430_subtype.empty()) {
 				d->fields.addField_string(C_("ELF", "CPU Subtype"), s_msp430_subtype);
 			}
 			break;
@@ -2058,7 +2054,7 @@ int ELF::loadFieldData(void)
 		d->fields.addField_string(osabi_title, osabi);
 	} else {
 		d->fields.addField_string(osabi_title,
-			rp_sprintf(C_("RomData", "Unknown (%u)"), primary->e_osabi));
+			fmt::format(C_("RomData", "Unknown ({:d})"), primary->e_osabi));
 	}
 
 	// ABI version.
@@ -2092,14 +2088,13 @@ int ELF::loadFieldData(void)
 	if (d->fileType == FileType::Executable) {
 		string entry_point;
 		if (primary->e_class == ELFCLASS64) {
-			entry_point = rp_sprintf("0x%08" PRIX64, d->Elf_Header.elf64.e_entry);
+			entry_point = fmt::format(FSTR("0x{:0>8X}"), d->Elf_Header.elf64.e_entry);
 		} else {
-			entry_point = rp_sprintf("0x%08X", d->Elf_Header.elf32.e_entry);
+			entry_point = fmt::format(FSTR("0x{:0>8X}"), d->Elf_Header.elf32.e_entry);
 		}
 		if (d->isPie) {
 			// tr: Entry point, then "Position-Independent".
-			entry_point = rp_sprintf(C_("ELF", "%s (Position-Independent)"),
-				entry_point.c_str());
+			entry_point = fmt::format(C_("ELF", "{:s} (Position-Independent)"), entry_point);
 		}
 		d->fields.addField_string(C_("RomData", "Entry Point"), entry_point);
 	}
@@ -2108,7 +2103,8 @@ int ELF::loadFieldData(void)
 	if (!d->build_id.empty()) {
 		// TODO: Put the build ID type in the field itself.
 		// Using field name for now.
-		const string fieldName = rp_sprintf("BuildID[%s]", (d->build_id_type ? d->build_id_type : "unknown"));
+		const string fieldName = fmt::format(FSTR("BuildID[{:s}]"),
+			(d->build_id_type ? d->build_id_type : "unknown"));
 		d->fields.addField_string_hexdump(fieldName.c_str(),
 			d->build_id.data(), d->build_id.size(),
 			RomFields::STRF_HEX_LOWER | RomFields::STRF_HEXDUMP_NO_SPACES | RomFields::STRF_MONOSPACE);

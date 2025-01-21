@@ -3,7 +3,7 @@
  * EXE_PE.cpp: DOS/Windows executable reader.                              *
  * 32-bit/64-bit Portable Executable format.                               *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * Copyright (c) 2022 by Egor.                                             *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
@@ -473,8 +473,8 @@ int EXEPrivate::findPERuntimeDLL(string &refDesc, string &refLink)
 		// Check for MSVC 2015-2019. (vcruntime140.dll)
 		if (!strcasecmp(dll_name, "vcruntime140.dll")) {
 			// TODO: If host OS is Windows XP or earlier, limit it to 2017?
-			refDesc = rp_sprintf(
-				C_("EXE|Runtime", "Microsoft Visual C++ %s Runtime"), "2015-2022");
+			refDesc = fmt::format(
+				C_("EXE|Runtime", "Microsoft Visual C++ {:s} Runtime"), "2015-2022");
 			switch (le16_to_cpu(hdr.pe.FileHeader.Machine)) {
 				case IMAGE_FILE_MACHINE_I386:
 					refLink = "https://aka.ms/vs/17/release/VC_redist.x86.exe";
@@ -490,8 +490,8 @@ int EXEPrivate::findPERuntimeDLL(string &refDesc, string &refLink)
 			}
 			break;
 		} else if (!strcasecmp(dll_name, "vcruntime140d.dll")) {
-			refDesc = rp_sprintf(
-				C_("EXE|Runtime", "Microsoft Visual C++ %s Debug Runtime"), "2015-2022");
+			refDesc = fmt::format(
+				C_("EXE|Runtime", "Microsoft Visual C++ {:s} Debug Runtime"), "2015-2022");
 			break;
 		}
 
@@ -508,8 +508,8 @@ int EXEPrivate::findPERuntimeDLL(string &refDesc, string &refLink)
 				for (const auto &p : msvc_dll_tbl) {
 					if (p.dll_name_version == dll_name_version) {
 						// Found a matching version.
-						refDesc = rp_sprintf(
-							C_("EXE|Runtime", "Microsoft Visual C++ %s Debug Runtime"),
+						refDesc = fmt::format(
+							C_("EXE|Runtime", "Microsoft Visual C++ {:s} Debug Runtime"),
 							p.display_version);
 						found = true;
 						break;
@@ -525,8 +525,8 @@ int EXEPrivate::findPERuntimeDLL(string &refDesc, string &refLink)
 				for (const auto &p : msvc_dll_tbl) {
 					if (p.dll_name_version == dll_name_version) {
 						// Found a matching version.
-						refDesc = rp_sprintf(
-							C_("EXE|Runtime", "Microsoft Visual C++ %s Runtime"),
+						refDesc = fmt::format(
+							C_("EXE|Runtime", "Microsoft Visual C++ {:s} Runtime"),
 							p.display_version);
 						if (is64) {
 							if (p.url_amd64) {
@@ -553,8 +553,8 @@ int EXEPrivate::findPERuntimeDLL(string &refDesc, string &refLink)
 			refDesc = C_("EXE|Runtime", "Microsoft System C++ Runtime");
 			break;
 		} else if (!strcasecmp(dll_name, "msvcrtd.dll")) {
-			refDesc = rp_sprintf(
-				C_("EXE|Runtime", "Microsoft Visual C++ %s Debug Runtime"), "6.0");
+			refDesc = fmt::format(
+				C_("EXE|Runtime", "Microsoft Visual C++ {:s} Debug Runtime"), "6.0");
 			break;
 		}
 
@@ -564,7 +564,7 @@ int EXEPrivate::findPERuntimeDLL(string &refDesc, string &refLink)
 		for (const auto &p : msvb_dll_tbl) {
 			if (!strcasecmp(dll_name, p.dll_name)) {
 				// Found a matching version.
-				refDesc = rp_sprintf(C_("EXE|Runtime", "Microsoft Visual Basic %u.%u Runtime"),
+				refDesc = fmt::format(C_("EXE|Runtime", "Microsoft Visual Basic {:d}.{:d} Runtime"),
 					p.ver_major, p.ver_minor);
 				refLink = p.url;
 				break;
@@ -643,7 +643,7 @@ void EXEPrivate::addFields_PE(void)
 		if (cpu != nullptr) {
 			s_cpu = cpu;
 		} else {
-			s_cpu = rp_sprintf(C_("RomData", "Unknown (0x%04X)"), machine);
+			s_cpu = fmt::format(C_("RomData", "Unknown (0x{:0>4X})"), machine);
 		}
 	}
 	if (dotnet) {
@@ -655,21 +655,21 @@ void EXEPrivate::addFields_PE(void)
 
 	// OS version
 	fields.addField_string(C_("RomData", "OS Version"),
-		rp_sprintf("%u.%u", os_ver_major, os_ver_minor));
+		fmt::format(FSTR("{:d}.{:d}"), os_ver_major, os_ver_minor));
 
 	// Subsystem name and version
 	string subsystem_display;
 	const char *const s_subsystem = EXEData::lookup_pe_subsystem(pe_subsystem);
 	if (s_subsystem) {
-		subsystem_display = rp_sprintf("%s %u.%u", s_subsystem,
+		subsystem_display = fmt::format(FSTR("{:s} {:d}.{:d}"), s_subsystem,
 			subsystem_ver_major, subsystem_ver_minor);
 	} else {
 		const char *const s_unknown = C_("RomData", "Unknown");
 		if (pe_subsystem == IMAGE_SUBSYSTEM_UNKNOWN) {
-			subsystem_display = rp_sprintf("%s %u.%u",
+			subsystem_display = fmt::format(FSTR("{:s} {:d}.{:d}"),
 				s_unknown, subsystem_ver_major, subsystem_ver_minor);
 		} else {
-			subsystem_display = rp_sprintf("%s (%u) %u.%u",
+			subsystem_display = fmt::format(FSTR("{:s} ({:d}) {:d}.{:d}"),
 				s_unknown, pe_subsystem, subsystem_ver_major, subsystem_ver_minor);
 		}
 	}
@@ -910,17 +910,17 @@ int EXEPrivate::addFields_PE_Export(void)
 		auto &row = vv_data->back();
 		row.reserve(5);
 		row.emplace_back(ent.name);
-		row.emplace_back(rp_sprintf("%d", ent.ordinal));
+		row.emplace_back(fmt::format(FSTR("{:d}"), ent.ordinal));
 		row.emplace_back(ent.hint != -1
-			? rp_sprintf("%d", ent.hint)
+			? fmt::format(FSTR("{:d}"), ent.hint)
 			: C_("EXE|Exports", "None"));
 		if (ent.forwarder.size() != 0) {
 			row.emplace_back(ent.forwarder);
 			row.emplace_back();
 		} else {
-			row.emplace_back(rp_sprintf("0x%08X", ent.vaddr));
+			row.emplace_back(fmt::format(FSTR("0x{:0>8X}"), ent.vaddr));
 			if (ent.paddr)
-				row.emplace_back(rp_sprintf("0x%08X", ent.paddr));
+				row.emplace_back(fmt::format("0x{:0>8X}", ent.paddr));
 			else
 				row.emplace_back(); // it's probably in the bss section
 		}
@@ -1106,7 +1106,7 @@ int EXEPrivate::addFields_PE_Import(void)
 		auto &row = vv_data->back();
 		row.reserve(3);
 		if (it.is_ordinal) {
-			row.emplace_back(rp_sprintf(C_("EXE|Exports", "Ordinal #%u"), it.value));
+			row.emplace_back(fmt::format(C_("EXE|Exports", "Ordinal #{:d}"), it.value));
 			row.emplace_back();
 		} else {
 			// RVA to hint number followed by NUL terminated name.
@@ -1115,7 +1115,7 @@ int EXEPrivate::addFields_PE_Import(void)
 			// FIXME: This may break on non-i386/amd64 systems...
 			const uint16_t hint = le16_to_cpu(*reinterpret_cast<const uint16_t*>(ent));
 			row.emplace_back(ent+2);
-			row.emplace_back(rp_sprintf("%u", hint));
+			row.emplace_back(fmt::format(FSTR("{:d}"), hint));
 		}
 		row.emplace_back(*(it.dllname));
 	}

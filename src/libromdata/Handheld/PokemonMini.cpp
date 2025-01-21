@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * PokemonMini.cpp: Pokémon Mini ROM reader.                               *
  *                                                                         *
- * Copyright (c) 2019-2024 by David Korth.                                 *
+ * Copyright (c) 2019-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -289,7 +289,7 @@ int PokemonMini::loadFieldData(void)
 		data_row.reserve(3);
 
 		// # (decimal)
-		data_row.emplace_back(rp_sprintf("%u", i));
+		data_row.emplace_back(fmt::format(FSTR("{:d}"), i));
 
 		// Vector name
 		data_row.emplace_back(vectors_names[i]);
@@ -300,13 +300,13 @@ int PokemonMini::loadFieldData(void)
 			// Standard vector jump opcode.
 			uint32_t offset = (romHeader->irqs[i][5] << 8) | romHeader->irqs[i][4];
 			offset += pc + 3 + 3 - 1;
-			s_address = rp_sprintf("0x%04X", offset);
+			s_address = fmt::format(FSTR("0x{:0>4X}"), offset);
 		} else if (romHeader->irqs[i][0] == 0xF3) {
 			// JMPW without MOV U.
 			// Seen in some homebrew.
 			uint32_t offset = (romHeader->irqs[i][2] << 8) | romHeader->irqs[i][1];
 			offset += pc + 3 - 1;
-			s_address = rp_sprintf("0x%04X", offset);
+			s_address = fmt::format(FSTR("0x{:0>4X}"), offset);
 		} else if (!memcmp(&romHeader->irqs[i][0], vec_empty_ff.data(), vec_empty_ff.size()) ||
 			   !memcmp(&romHeader->irqs[i][0], vec_empty_00.data(), vec_empty_00.size())) {
 			// Empty vector.
@@ -314,7 +314,7 @@ int PokemonMini::loadFieldData(void)
 		} else {
 			// Not a standard jump opcode.
 			// Show the hexdump.
-			s_address = rp_sprintf("%02X %02X %02X %02X %02X %02X",
+			s_address = fmt::format(FSTR("{:0>2X} {:0>2X} {:0>2X} {:0>2X} {:0>2X} {:0>2X}"),
 				romHeader->irqs[i][0], romHeader->irqs[i][1],
 				romHeader->irqs[i][2], romHeader->irqs[i][3],
 				romHeader->irqs[i][4], romHeader->irqs[i][5]);

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * BRSTM.cpp: Nintendo Wii BRSTM audio reader.                             *
  *                                                                         *
- * Copyright (c) 2019-2024 by David Korth.                                 *
+ * Copyright (c) 2019-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -320,7 +320,7 @@ int BRSTM::loadFieldData(void)
 
 	// Version
 	d->fields.addField_string(C_("RomData", "Version"),
-		rp_sprintf("%u.%u", brstmHeader->version_major, brstmHeader->version_minor));
+		fmt::format(FSTR("{:d}.{:d}"), brstmHeader->version_major, brstmHeader->version_minor));
 
 	// Endianness
 	d->fields.addField_string(C_("RomData", "Endianness"),
@@ -340,7 +340,7 @@ int BRSTM::loadFieldData(void)
 			pgettext_expr("BRSTM|Codec", codec_tbl[headChunk1->codec]));
 	} else {
 		d->fields.addField_string(codec_title,
-			rp_sprintf(C_("RomData", "Unknown (%u)"), headChunk1->codec));
+			fmt::format(C_("RomData", "Unknown ({:d})"), headChunk1->codec));
 	}
 
 	// Number of channels
@@ -352,7 +352,7 @@ int BRSTM::loadFieldData(void)
 
 	// Sample rate
 	d->fields.addField_string(C_("RomData|Audio", "Sample Rate"),
-		rp_sprintf(C_("RomData", "%u Hz"), sample_rate));
+		fmt::format(C_("RomData", "{:Ld} Hz"), sample_rate));
 
 	// Length (non-looping)
 	d->fields.addField_string(C_("RomData|Audio", "Length"),

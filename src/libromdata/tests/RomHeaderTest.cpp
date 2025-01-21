@@ -5,7 +5,7 @@
  * Parses various sample ROM headers and compares them to reference        *
  * text and JSON files.                                                    *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -41,6 +41,11 @@ using std::forward_list;
 using std::ostringstream;
 using std::shared_ptr;
 using std::string;
+
+// libfmt
+#include <fmt/core.h>
+#include <fmt/format.h>
+#define FSTR FMT_STRING
 
 // Uninitialized vector class
 #include "uvector.h"
@@ -638,7 +643,7 @@ INSTANTIATE_TEST_SUITE_P(DirectDrawSurface, RomHeaderTest,
 
 extern "C" int gtest_main(int argc, TCHAR *argv[])
 {
-	fprintf(stderr, "LibRomData test suite: RomHeader tests.\n\n");
+	fmt::print(stderr, FSTR("LibRomData test suite: RomHeader tests.\n\n"));
 	fflush(nullptr);
 
 	// Check for amiibo-data.bin in the current directory or bin/.
@@ -651,7 +656,7 @@ extern "C" int gtest_main(int argc, TCHAR *argv[])
 	if (!_taccess(AMIIBO_DATA_BIN_BASE, R_OK)) {
 		// Found in the current directory.
 		if (!_tgetcwd(amiibo_data_bin_path, ARRAY_SIZE(amiibo_data_bin_path))) {
-			_ftprintf(stderr, _T("*** ERROR: getcwd() failed: %s\n"), _tcserror(errno));
+			fmt::print(stderr, FSTR(_T("*** ERROR: getcwd() failed: {:s}\n")), _tcserror(errno));
 			return EXIT_FAILURE;
 		}
 		if (_tcslen(amiibo_data_bin_path) < (ARRAY_SIZE(amiibo_data_bin_path) - 32)) {
@@ -660,7 +665,7 @@ extern "C" int gtest_main(int argc, TCHAR *argv[])
 	} else if (!_taccess(AMIIBO_DATA_BIN_WITH_BIN_DIR, R_OK)) {
 		// Found in the current directory.
 		if (!_tgetcwd(amiibo_data_bin_path, ARRAY_SIZE(amiibo_data_bin_path))) {
-			_ftprintf(stderr, _T("*** ERROR: getcwd() failed: %s\n"), _tcserror(errno));
+			fmt::print(stderr, FSTR(_T("*** ERROR: getcwd() failed: {:s}\n")), _tcserror(errno));
 			return EXIT_FAILURE;
 		}
 		if (_tcslen(amiibo_data_bin_path) < (ARRAY_SIZE(amiibo_data_bin_path) - 32)) {
@@ -671,7 +676,7 @@ extern "C" int gtest_main(int argc, TCHAR *argv[])
 	else if (!_taccess(AMIIBO_DATA_BIN_WITH_DOTDOT_DOTDOT_DOTDOT_BIN_DIR, R_OK)) {
 		// We're in ${CMAKE_CURRENT_BINARY_DIR}.
 		if (!_tgetcwd(amiibo_data_bin_path, ARRAY_SIZE(amiibo_data_bin_path))) {
-			_ftprintf(stderr, _T("*** ERROR: getcwd() failed: %s\n"), _tcserror(errno));
+			fmt::print(stderr, FSTR(_T("*** ERROR: getcwd() failed: {:s}\n")), _tcserror(errno));
 			return EXIT_FAILURE;
 		}
 		if (_tcslen(amiibo_data_bin_path) < (ARRAY_SIZE(amiibo_data_bin_path) - 32)) {
@@ -680,10 +685,7 @@ extern "C" int gtest_main(int argc, TCHAR *argv[])
 	}
 #endif /* !_WIN32 */
 	if (amiibo_data_bin_path[0] != _T('\0')) {
-		fputs("Setting amiibo-data.bin override to:\n", stderr);
-		_fputts(amiibo_data_bin_path, stderr);
-		fputs("\n\n", stderr);
-
+		fmt::print(stderr, FSTR(_T("Setting amiibo-data.bin override to:\n{:s}\n\n")), amiibo_data_bin_path);
 		LibRomData::AmiiboData::overrideAmiiboDataBinFilename(amiibo_data_bin_path);
 	}
 

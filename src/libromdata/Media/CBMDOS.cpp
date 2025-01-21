@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * CBMDOS.cpp: Commodore DOS floppy disk image parser.                     *
  *                                                                         *
- * Copyright (c) 2019-2024 by David Korth.                                 *
+ * Copyright (c) 2019-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -1266,9 +1266,7 @@ int CBMDOS::loadFieldData(void)
 			}
 
 			// # of blocks (filesize)
-			char filesize[16];
-			snprintf(filesize, sizeof(filesize), "%u", le16_to_cpu(p_dir->sector_count));
-			p_list.emplace_back(filesize);
+			p_list.emplace_back(fmt::format(FSTR("{:d}"), le16_to_cpu(p_dir->sector_count)));
 
 			// Filename
 			const int filename_len = static_cast<int>(d->remove_A0_padding(p_dir->filename, sizeof(p_dir->filename)));
@@ -1304,9 +1302,7 @@ int CBMDOS::loadFieldData(void)
 				s_file_type += file_type_tbl[file_type];
 			} else {
 				// Print the numeric value instead.
-				char buf[16];
-				snprintf(buf, sizeof(buf), "%u", file_type);
-				s_file_type += buf;
+				s_file_type += fmt::format(FSTR("{:d}"), file_type);
 			}
 
 			// Append the other flags, if set.
@@ -1400,7 +1396,7 @@ int CBMDOS::loadFieldData(void)
 			// Track/sector to load from
 			if (autoboot.addl_sectors.track != 0 && autoboot.addl_sectors.sector != 0) {
 				d->fields.addField_string(C_("CBMDOS", "C128 boot T/S"),
-					rp_sprintf("%u/%u", autoboot.addl_sectors.track, autoboot.addl_sectors.sector));
+					fmt::format(FSTR("{:d}/{:d}"), autoboot.addl_sectors.track, autoboot.addl_sectors.sector));
 				// Bank
 				d->fields.addField_string_numeric(C_("CBMDOS", "C128 boot bank"), autoboot.bank);
 				// Load count

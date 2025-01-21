@@ -3,7 +3,7 @@
  * EXE_NE.cpp: DOS/Windows executable reader.                              *
  * 16-bit New Executable format.                                           *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * Copyright (c) 2022 by Egor.                                             *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
@@ -258,7 +258,7 @@ int EXEPrivate::findNERuntimeDLL(string &refDesc, string &refLink, bool &refHasK
 			for (const auto &p : msvb_dll_tbl) {
 				if (!strncasecmp(pDllName, p.dll_name, sizeof(p.dll_name))) {
 					// Found a matching version.
-					refDesc = rp_sprintf(C_("EXE|Runtime", "Microsoft Visual Basic %u.%u Runtime"),
+					refDesc = fmt::format(C_("EXE|Runtime", "Microsoft Visual Basic {:d}.{:d} Runtime"),
 						p.ver_major, p.ver_minor);
 					if (p.url) {
 						refLink = p.url;
@@ -323,7 +323,7 @@ void EXEPrivate::addFields_NE(void)
 		fields.addField_string(targetOS_title, targetOS);
 	} else {
 		fields.addField_string(targetOS_title,
-			rp_sprintf(C_("RomData", "Unknown (0x%02X)"), hdr.ne.targOS));
+			fmt::format(C_("RomData", "Unknown (0x{:0>2X})"), hdr.ne.targOS));
 	}
 
 	// DGroup type.
@@ -444,7 +444,7 @@ void EXEPrivate::addFields_NE(void)
 	// TODO: Is this used in OS/2 executables?
 	if (hdr.ne.targOS == NE_OS_WIN || hdr.ne.targOS == NE_OS_WIN386) {
 		fields.addField_string(C_("EXE", "Windows Version"),
-			rp_sprintf("%u.%u", hdr.ne.expctwinver[1], hdr.ne.expctwinver[0]));
+			fmt::format(FSTR("{:d}.{:d}"), hdr.ne.expctwinver[1], hdr.ne.expctwinver[0]));
 	}
 
 	// Runtime DLL
@@ -642,9 +642,10 @@ int EXEPrivate::addFields_NE_Entry(void)
 		return res;
 
 	const char *const s_no_name = C_("EXE|Exports", "(No name)");
-	const char *const s_address_mf = C_("EXE|Exports", "%1$02X:%2$04X (%3$s)");
+	const char *const s_address_mf = C_("EXE|Exports", "{0:0>2X}:{1:0>4X} ({2:s})");
 	const char *const s_address_movable = C_("EXE|Exports", "Movable");
 	const char *const s_address_fixed = C_("EXE|Exports", "Fixed");
+	const char *const s_address_constant = C_("EXE|Exports", "0x{:0>4X} (Constant)");
 
 	auto *const vv_data = new RomFields::ListData_t();
 	vv_data->reserve(ents.size());
@@ -670,7 +671,7 @@ int EXEPrivate::addFields_NE_Entry(void)
 		/* Parameter count. I haven't found any module where this is
 		 * actually used. */
 		if (ent.flags & 0xF8) {
-			flags += rp_sprintf("PARAMS=%d ", ent.flags>>3);
+			flags += fmt::format(FSTR("PARAMS={:d} "), ent.flags>>3);
 		}
 		if (ent.has_name && ent.is_resident) {
 			flags += "RESIDENTNAME ";
@@ -679,18 +680,18 @@ int EXEPrivate::addFields_NE_Entry(void)
 			flags.resize(flags.size()-1);
 		}
 
-		row.emplace_back(rp_sprintf("%d", ent.ordinal));
+		row.emplace_back(fmt::format(FSTR("{:d}"), ent.ordinal));
 		if (ent.has_name) {
 			row.emplace_back(ent.name.data(), ent.name.size());
 		} else {
 			row.emplace_back(s_no_name);
 		}
 		if (ent.is_movable) {
-			row.emplace_back(rp_sprintf_p(s_address_mf, ent.segment, ent.offset, s_address_movable));
+			row.emplace_back(fmt::format(s_address_mf, ent.segment, ent.offset, s_address_movable));
 		} else if (ent.segment != 0xFE) {
-			row.emplace_back(rp_sprintf_p(s_address_mf, ent.segment, ent.offset, s_address_fixed));
+			row.emplace_back(fmt::format(s_address_mf, ent.segment, ent.offset, s_address_fixed));
 		} else {
-			row.emplace_back(rp_sprintf(C_("EXE|Exports", "0x%04X (Constant)"), ent.offset));
+			row.emplace_back(fmt::format(s_address_constant, ent.offset));
 		}
 		row.emplace_back(std::move(flags));
 	}
@@ -832,7 +833,7 @@ int EXEPrivate::addFields_NE_Import(void)
 		row.reserve(3);
 		const char *const name = EXENEEntries::lookup_ordinal(modname.c_str(), imp.second);
 		row.emplace_back(name ? name : s_no_name);
-		row.emplace_back(rp_sprintf("%u", imp.second));
+		row.emplace_back(fmt::format(FSTR("{:d}"), imp.second));
 		row.emplace_back(std::move(modname));
 		vv_data->emplace_back(std::move(row));
 	}

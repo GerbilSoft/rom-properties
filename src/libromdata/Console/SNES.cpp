@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * SNES.cpp: Super Nintendo ROM image reader.                              *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -617,10 +617,14 @@ string SNESPrivate::getPublisher(void) const
 			if (ISALNUM(romHeader.snes.ext.new_publisher_code[0]) &&
 			    ISALNUM(romHeader.snes.ext.new_publisher_code[1]))
 			{
-				s_publisher = rp_sprintf(C_("RomData", "Unknown (%.2s)"),
-					romHeader.snes.ext.new_publisher_code);
+				const array<char, 3> s_pub_code = {{
+					romHeader.snes.ext.new_publisher_code[0],
+					romHeader.snes.ext.new_publisher_code[1],
+					'\0'
+				}};
+				s_publisher = fmt::format(C_("RomData", "Unknown ({:s})"), s_pub_code.data());
 			} else {
-				s_publisher = rp_sprintf(C_("RomData", "Unknown (%02X %02X)"),
+				s_publisher = fmt::format(C_("RomData", "Unknown ({:0>2X} {:0>2X})"),
 					static_cast<uint8_t>(romHeader.snes.ext.new_publisher_code[0]),
 					static_cast<uint8_t>(romHeader.snes.ext.new_publisher_code[1]));
 			}
@@ -631,7 +635,7 @@ string SNESPrivate::getPublisher(void) const
 		if (publisher) {
 			s_publisher = publisher;
 		} else {
-			s_publisher = rp_sprintf(C_("RomData", "Unknown (%02X)"),
+			s_publisher = fmt::format(C_("RomData", "Unknown ({:0>2X})"),
 				romHeader.snes.old_publisher_code);
 		}
 	}
@@ -1347,7 +1351,7 @@ int SNES::loadFieldData(void)
 	} else {
 		// Unknown ROM mapping.
 		d->fields.addField_string(rom_mapping_title,
-			rp_sprintf(C_("RomData", "Unknown (0x%02X)"), rom_mapping));
+			fmt::format(C_("RomData", "Unknown (0x{:0>2X})"), rom_mapping));
 	}
 
 	// Cartridge HW
@@ -1392,7 +1396,7 @@ int SNES::loadFieldData(void)
 					pgettext_expr("Region", region_lkup));
 			} else {
 				d->fields.addField_string(region_title,
-					rp_sprintf(C_("RomData", "Unknown (0x%02X)"),
+					fmt::format(C_("RomData", "Unknown (0x{:0>2X})"),
 						romHeader->snes.destination_code));
 			}
 
@@ -1463,7 +1467,7 @@ int SNES::loadFieldData(void)
 					pgettext_expr("SNES|ProgramType", program_type));
 			} else {
 				d->fields.addField_string(program_type_title,
-					rp_sprintf(C_("RomData", "Unknown (0x%08X)"),
+					fmt::format(C_("RomData", "Unknown (0x{:0>8X})"),
 						le32_to_cpu(romHeader->bsx.ext.program_type)));
 			}
 

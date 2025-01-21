@@ -3,7 +3,7 @@
  * Nintendo3DS.hpp: Nintendo 3DS ROM reader. (Private class)               *
  * Handles CCI/3DS, CIA, and SMDH files.                                   *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -237,7 +237,7 @@ public:
 	static inline std::string n3dsVersionToString(uint16_t version)
 	{
 		// Reference: https://3dbrew.org/wiki/Titles
-		return LibRpText::rp_sprintf("%u.%u.%u (v%u)",
+		return fmt::format(FSTR("{:d}.{:d}.{:d} (v{:d})"),
 			(static_cast<unsigned int>(version) >> 10),
 			(static_cast<unsigned int>(version) >>  4) & 0x1F,
 			(static_cast<unsigned int>(version) & 0x0F),

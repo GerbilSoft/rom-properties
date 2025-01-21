@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata/tests)                 *
  * ImageDecoderTest.cpp: ImageDecoder class test.                          *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -67,6 +67,11 @@ using namespace LibRpTexture;
 using std::array;
 using std::shared_ptr;
 using std::string;
+
+// libfmt
+#include <fmt/core.h>
+#include <fmt/format.h>
+#define FSTR FMT_STRING
 
 // Uninitialized vector class
 #include "uvector.h"
@@ -384,7 +389,7 @@ void ImageDecoderTest::Compare_RpImage(
 	for (int y = 0; y < height; y++) {
 		for (int x = 0; x < width; x++, pBitsExpected++, pBitsActual++) {
 			if (*pBitsExpected != *pBitsActual) {
-				printf("ERR: (%d,%d): expected %08X, got %08X\n",
+				fmt::print("ERR: ({:d},{:d}): expected {:0>8X}, got {:0>8X}\n",
 					x, y, *pBitsExpected, *pBitsActual);
 			}
 			ASSERT_EQ(*pBitsExpected, *pBitsActual) <<
@@ -596,10 +601,7 @@ string ImageDecoderTest::test_case_suffix_generator(const ::testing::TestParamIn
 		}
 	} else {
 		// Mipmap
-		char buf[16];
-		snprintf(buf, sizeof(buf), "%d", info.param.mipmapLevel);
-		suffix += "_Mipmap";
-		suffix += buf;
+		suffix += fmt::format(FSTR("_Mipmap{:d}"), info.param.mipmapLevel);
 	}
 
 	// TODO: Convert to ASCII?
@@ -2064,8 +2066,8 @@ INSTANTIATE_TEST_SUITE_P(MAME, ImageDecoderTest,
  */
 extern "C" int gtest_main(int argc, TCHAR *argv[])
 {
-	fprintf(stderr, "LibRomData test suite: ImageDecoder tests.\n\n");
-	fprintf(stderr, "Benchmark iterations: %u (%u for BC7)\n",
+	fputs("LibRomData test suite: ImageDecoder tests.\n\n", stderr);
+	fmt::print(stderr, FSTR("Benchmark iterations: {:d} ({:d} for BC7)\n"),
 		LibRomData::Tests::ImageDecoderTest::BENCHMARK_ITERATIONS,
 		LibRomData::Tests::ImageDecoderTest::BENCHMARK_ITERATIONS_BC7);
 	fflush(nullptr);

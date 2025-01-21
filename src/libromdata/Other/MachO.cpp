@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * MachO.cpp: Mach-O executable format.                                    *
  *                                                                         *
- * Copyright (c) 2019-2024 by David Korth.                                 *
+ * Copyright (c) 2019-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -480,10 +480,10 @@ int MachO::loadFieldData(void)
 		// TODO: Change addTab() behavior to set the first tab's name?
 		if (i == 0) {
 			d->fields.setTabName(i, s_cpu ? s_cpu :
-				rp_sprintf("0x%08X", machHeader->cputype).c_str());
+				fmt::format(FSTR("0x{:0>8X}"), machHeader->cputype).c_str());
 		} else {
 			d->fields.addTab(s_cpu ? s_cpu :
-				rp_sprintf("0x%08X", machHeader->cputype).c_str());
+				fmt::format(FSTR("0x{:0>8X}"), machHeader->cputype).c_str());
 		}
 
 		// Executable format.
@@ -511,7 +511,7 @@ int MachO::loadFieldData(void)
 			d->fields.addField_string(cpu_title, s_cpu);
 		} else {
 			d->fields.addField_string(cpu_title,
-				rp_sprintf(C_("RomData", "Unknown (%u)"), machHeader->cputype & 0xFFFFFF));
+				fmt::format(C_("RomData", "Unknown ({:d})"), machHeader->cputype & 0xFFFFFF));
 		}
 
 		// CPU subtype.

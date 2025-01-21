@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * PSF.hpp: PSF audio reader.                                              *
  *                                                                         *
- * Copyright (c) 2018-2024 by David Korth.                                 *
+ * Copyright (c) 2018-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -529,7 +529,7 @@ int PSF::loadFieldData(void)
 			pgettext_expr("PSF|System", sys_name));
 	} else {
 		d->fields.addField_string(system_title,
-			rp_sprintf(C_("RomData", "Unknown (0x%02X)"), psf_version));
+			fmt::format(C_("RomData", "Unknown (0x{:0>2X})"), psf_version));
 	}
 
 	// Parse the tags.

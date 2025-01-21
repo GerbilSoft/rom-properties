@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * SAP.cpp: Atari 8-bit SAP audio reader.                                  *
  *                                                                         *
- * Copyright (c) 2018-2024 by David Korth.                                 *
+ * Copyright (c) 2018-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -616,7 +616,7 @@ int SAP::loadFieldData(void)
 		d->fields.addField_string(type_title, s_tag_type);
 	} else {
 		d->fields.addField_string(type_title,
-			rp_sprintf("0x%02X", static_cast<unsigned int>(tags.type)),
+			fmt::format(FSTR("0x{:0>2X}"), static_cast<unsigned int>(tags.type)),
 			RomFields::STRF_MONOSPACE);
 	}
 
@@ -679,8 +679,8 @@ int SAP::loadFieldData(void)
 			const uint32_t min = (duration / 1000) / 60;
 			const uint32_t sec = (duration / 1000) % 60;
 			const uint32_t ms =  (duration % 1000);
-			data_row.emplace_back(rp_sprintf("%u", song_num));
-			data_row.emplace_back(rp_sprintf("%u:%02u.%03u", min, sec, ms));
+			data_row.emplace_back(fmt::format(FSTR("{:d}"), song_num));
+			data_row.emplace_back(fmt::format(FSTR("{:d}:{:0>2d}.{:0>3d}"), min, sec, ms));
 			data_row.emplace_back(src_iter->second ? s_yes : s_no);
 		}
 
