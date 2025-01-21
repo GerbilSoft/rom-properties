@@ -234,7 +234,7 @@ void AboutTabPrivate::initCreditsTab(void)
 		if (creditsData->type != AboutTabText::CreditType::Continue &&
 		    creditsData->type != lastCreditType)
 		{
-			// New credit type.
+			// New credit type
 			sCredits += BR BR B_START;
 
 			switch (creditsData->type) {
@@ -273,7 +273,7 @@ void AboutTabPrivate::initCreditsTab(void)
 			sCredits += "</a>&gt;";
 		}
 		if (creditsData->sub) {
-			// tr: Sub-credit.
+			// tr: Sub-credit
 			sCredits += fmt::format(C_("AboutTab|Credits", " ({:s})"),
 				creditsData->sub);
 		}
