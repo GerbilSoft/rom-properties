@@ -14,6 +14,7 @@ apt-get -y install \
 	libtinyxml2-dev \
 	gettext \
 	libseccomp-dev \
+	libfmt-dev \
 	\
 	libzstd-dev \
 	liblz4-dev \
