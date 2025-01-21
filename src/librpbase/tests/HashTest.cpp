@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase/tests)                  *
  * HashTest.cpp: Hash class test.                                          *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -15,15 +15,22 @@
 // Hash
 #include "../crypto/Hash.hpp"
 
-// C includes. (C++ namespace)
+// C includes (C++ namespace)
 #include <cstdio>
 
-// C++ includes.
+// C++ includes
 #include <iostream>
 #include <sstream>
 #include <string>
 using std::ostringstream;
 using std::string;
+
+// libfmt
+// FIXME: libfmt has its own "PACKED" definition.
+#undef PACKED
+#include <fmt/core.h>
+#include <fmt/format.h>
+#define FSTR FMT_STRING
 
 namespace LibRpBase { namespace Tests {
 
@@ -79,10 +86,12 @@ void HashTest::CompareByteArrays(
 	// Output format: (assume ~64 bytes per line)
 	// 0000: 01 23 45 67 89 AB CD EF  01 23 45 67 89 AB CD EF
 	const size_t bufSize = ((size / 16) + !!(size % 16)) * 64;
-	char printf_buf[16];
 	string s_expected, s_actual;
 	s_expected.reserve(bufSize);
 	s_actual.reserve(bufSize);
+
+	string s_tmp;
+	s_tmp.reserve(14);
 
 	const uint8_t *pE = expected, *pA = actual;
 	for (size_t i = 0; i < size; i++, pE++, pA++) {
@@ -94,16 +103,14 @@ void HashTest::CompareByteArrays(
 				s_actual += '\n';
 			}
 
-			snprintf(printf_buf, sizeof(printf_buf), "%04X: ", static_cast<unsigned int>(i));
-			s_expected += printf_buf;
-			s_actual += printf_buf;
+			s_tmp = fmt::format(FSTR("{:0>4X}: "), static_cast<unsigned int>(i));
+			s_expected += s_tmp;
+			s_actual += s_tmp;
 		}
 
 		// Print the byte.
-		snprintf(printf_buf, sizeof(printf_buf), "%02X", *pE);
-		s_expected += printf_buf;
-		snprintf(printf_buf, sizeof(printf_buf), "%02X", *pA);
-		s_actual += printf_buf;
+		s_expected += fmt::format(FSTR("{:0>2X}"), *pE);
+		s_actual   += fmt::format(FSTR("{:0>2X}"), *pA);
 
 		if (i % 16 == 7) {
 			s_expected += "  ";

@@ -63,6 +63,8 @@ CheckOptions:
   performance-inefficient-vector-operation.VectorLikeClasses: '::std::vector;QList;QByteARray;QByteArrayList;QItemSelection;QQueue;QStringList'
   misc-non-private-member-variables-in-classes.IgnoreClassesWithAllMemberVariablesBeingPublic: '1'
   modernize-avoid-c-arrays.AllowStringArrays: 'true'
+  modernize-use-std-print.PrintfLikeFunctions: 'printf;rp_sprintf'
+  modernize-use-std-print.ReplacementPrintFunction: 'fmt::print'
   readability-function-cognitive-complexity.IgnoreMacros: 'true'
   readability-implicit-bool-conversion.AllowPointerConditions: 'true'
   readability-simplify-subscript-expr.Types: '::std::basic_string;::std::basic_string_view;::std::vector;::std::array;::std::span;QByteArray;QString'

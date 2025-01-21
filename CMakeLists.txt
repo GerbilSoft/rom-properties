@@ -172,6 +172,7 @@ INCLUDE(CheckTinyXML2)
 INCLUDE(CheckZSTD)
 INCLUDE(CheckLZ4)
 INCLUDE(CheckLZO)
+INCLUDE(CheckLibfmt)
 
 # Reference: https://cmake.org/Wiki/RecipeAddUninstallTarget
 ########### Add uninstall target ###############

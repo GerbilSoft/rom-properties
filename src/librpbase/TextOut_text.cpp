@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * TextOut.hpp: Text output for RomData. (User-readable text)              *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * Copyright (c) 2016-2018 by Egor.                                        *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
@@ -889,7 +889,7 @@ public:
 				if (name) {
 					os << name;
 				} else {
-					os << rp_sprintf(C_("TextOut", "(tab %d)"), tabIdx);
+					os << fmt::format(C_("TextOut", "(tab {:d})"), tabIdx);
 				}
 				os << " -----" << '\n';
 			}
@@ -948,7 +948,7 @@ std::ostream& operator<<(std::ostream& os, const ROMOutput& fo) {
 	// NOTE: RomDataView context is used for the "unknown" strings.
 	{
 		// tr: "[System] [FileType] detected."
-		const string detectMsg = rp_sprintf_p(C_("TextOut", "%1$s %2$s detected"),
+		const string detectMsg = fmt::format(C_("TextOut", "{0:s} {1:s} detected"),
 			(systemName ? systemName : C_("RomDataView", "(unknown system)")),
 			(fileType ? fileType : C_("RomDataView", "(unknown filetype)")));
 
@@ -974,7 +974,7 @@ std::ostream& operator<<(std::ostream& os, const ROMOutput& fo) {
 				auto image = romdata->image(static_cast<RomData::ImageType>(i));
 				if (image && image->isValid()) {
 					// tr: Image Type name, followed by Image Type ID
-					os << "-- " << rp_sprintf_p(C_("TextOut", "%1$s is present (use -x%2$d to extract)"),
+					os << "-- " << fmt::format(C_("TextOut", "{0:s} is present (use -x{1:d} to extract)"),
 						RomData::getImageTypeName(static_cast<RomData::ImageType>(i)), i) << '\n';
 					// TODO: After localizing, add enough spaces for alignment.
 					os << "   Format : " << rp_image::getFormatName(image->format()) << '\n';

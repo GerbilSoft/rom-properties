@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase/tests)                  *
  * gtest_init.cpp: Google Test initialization.                             *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -29,6 +29,11 @@ namespace Gdiplus {
 #  include <olectl.h>
 #  include <gdiplus.h>
 #endif /* _WIN32 */
+
+// libfmt
+#include <fmt/core.h>
+#include <fmt/format.h>
+#define FSTR FMT_STRING
 
 extern "C" int gtest_main(int argc, TCHAR *argv[]);
 
@@ -126,7 +131,7 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 	ULONG_PTR gdipToken;
 	Gdiplus::Status status = GdiplusStartup(&gdipToken, &gdipSI, nullptr);
 	if (status != Gdiplus::Status::Ok) {
-		fputs("*** ERROR: GDI+ initialization failed.\n", stderr);
+		fmt::print(stderr, FSTR("*** ERROR: GDI+ initialization failed.\n"));
 		return EXIT_FAILURE;
 	}
 

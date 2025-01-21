@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * RpJpeg.cpp: JPEG image handler.                                         *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -101,7 +101,7 @@ static void JPEGCALL my_output_message(j_common_ptr cinfo)
 	OutputDebugStringA(txtbuf);
 #else /* !_WIN32 */
 	// Print to stderr.
-	fprintf(stderr, "libjpeg error: %s\n", buffer);
+	fmt::print(stderr, "libjpeg error: {:s}\n", buffer);
 #endif /* _WIN32 */
 }
 
@@ -285,14 +285,14 @@ rp_image_ptr load(IRpFile *file)
 		if (try_ext_bgra && tried_ext_bgra) {
 			// Tried using JCS_EXT_BGRA and it didn't work.
 			// Try again with JCS_RGB.
-			fputs("JCS_EXT_BGRA FAILED, trying JCS_RGB\n", stderr);
+			fmt::print(stderr, "JCS_EXT_BGRA FAILED, trying JCS_RGB\n");
 			try_ext_bgra = false;
 			direct_copy = false;
 			file->rewind();
 			jmperr = setjmp(jerr.setjmp_buffer);
 		}
 		if (jmperr) {
-			fputs("JPEG decoding FAILED\n", stderr);
+			fmt::print(stderr, "JPEG decoding FAILED\n");
 			// An error occurred while decoding the JPEG.
 			// NOTE: buffer is allocated using JPEG allocation functions,
 			// so it's automatically freed when we destroy cinfo.
