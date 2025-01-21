@@ -106,7 +106,7 @@ int VerifyKeys(void)
 					break;
 			}
 
-			fmt::print(FSTR("{:s}: "), key->name.c_str());
+			fmt::print(FSTR("{:s}: "), key->name);
 			if (isOK) {
 				fmt::print(FSTR("{:s}\n"), s_err);
 			} else {

@@ -228,9 +228,9 @@ int fstPrint(IFst *fst, ostream &os, bool pt)
 
 	os << '\n' <<
 		// tr: Parameter is a number; it's formatted elsewhere.
-		fmt::format(NC_("FstPrint", "{:s} directory", "{:s} directories", fc.dirs), dircount.str().c_str()) << ", " <<
+		fmt::format(NC_("FstPrint", "{:s} directory", "{:s} directories", fc.dirs), dircount.str()) << ", " <<
 		// tr: Parameter is a number; it's formatted elsewhere.
-		fmt::format(NC_("FstPrint", "{:s} file", "{:s} files", fc.files), filecount.str().c_str()) << '\n';
+		fmt::format(NC_("FstPrint", "{:s} file", "{:s} files", fc.files), filecount.str()) << '\n';
 
 	os.flush();
 	return 0;
