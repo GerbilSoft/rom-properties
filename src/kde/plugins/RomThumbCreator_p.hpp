@@ -2,13 +2,17 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * RomThumbCreator_p.hpp: Thumbnail creator. (PRIVATE CLASS)               *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #pragma once
 
-#include "ProxyForUrl.hpp"
+#include "config.kde.h"
+
+#ifdef ENABLE_NETWORKING
+#  include "ProxyForUrl.hpp"
+#endif /* ENABLE_NETWORKING */
 
 // Qt includes
 #include <QtGui/QImage>
@@ -101,7 +105,12 @@ public:
 	 */
 	inline std::string proxyForUrl(const char *url) const final
 	{
+#ifdef ENABLE_NETWORKING
 		return ::proxyForUrl(url);
+#else /* !ENABLE_NETWORKING */
+		Q_UNUSED(url)
+		return {};
+#endif /* ENABLE_NETWORKING */
 	}
 
 	/**

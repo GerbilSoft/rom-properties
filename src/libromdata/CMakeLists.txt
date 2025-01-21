@@ -1,10 +1,10 @@
 # RomData subclasses and factory class.
 PROJECT(romdata LANGUAGES CXX)
 
-IF(NOT WIN32)
+IF(ENABLE_NETWORKING AND NOT WIN32)
 	INCLUDE(CheckSymbolExists)
 	CHECK_SYMBOL_EXISTS(posix_spawn "spawn.h" HAVE_POSIX_SPAWN)
-ENDIF(NOT WIN32)
+ENDIF(ENABLE_NETWORKING AND NOT WIN32)
 
 # Sources.
 SET(${PROJECT_NAME}_SRCS
@@ -401,18 +401,23 @@ IF(ENABLE_DECRYPTION)
 		)
 ENDIF(ENABLE_DECRYPTION)
 
-# OS-specific sources.
-IF(WIN32)
-	SET(${PROJECT_NAME}_OS_SRCS img/ExecRpDownload_win32.cpp)
-	IF(RP_LIBROMDATA_IS_DLL)
-		SET(${PROJECT_NAME}_RC res/resource.rc)
-	ENDIF(RP_LIBROMDATA_IS_DLL)
-ELSEIF(UNIX)
-	SET(${PROJECT_NAME}_OS_SRCS img/ExecRpDownload_posix.cpp)
-ELSE()
-	# Dummy implementation for unsupported systems.
-	SET(${PROJECT_NAME}_OS_SRCS img/ExecRpDownload_dummy.cpp)
-ENDIF()
+# Network-related sources
+IF(ENABLE_NETWORKING)
+	IF(WIN32)
+		SET(${PROJECT_NAME}_NETWORKING_SRCS img/ExecRpDownload_win32.cpp)
+	ELSEIF(UNIX)
+		SET(${PROJECT_NAME}_NETWORKING_SRCS img/ExecRpDownload_posix.cpp)
+	ENDIF()
+ENDIF(ENABLE_NETWORKING)
+IF(NOT ${PROJECT_NAME}_NETWORKING_SRCS)
+	# Dummy implementation for unsupported systems, or if networking is disabled.
+	SET(${PROJECT_NAME}_NETWORKING_SRCS img/ExecRpDownload_dummy.cpp)
+ENDIF(NOT ${PROJECT_NAME}_NETWORKING_SRCS)
+
+# Windows resource file (for RomData DLL builds only)
+IF(WIN32 AND RP_LIBROMDATA_IS_DLL)
+	SET(${PROJECT_NAME}_RC res/resource.rc)
+ENDIF(WIN32 AND RP_LIBROMDATA_IS_DLL)
 
 # Optimized sources.
 INCLUDE(CPUInstructionSetFlags)
@@ -522,7 +527,7 @@ ENDIF(WIN32)
 ADD_LIBRARY(${PROJECT_NAME} ${${PROJECT_NAME}_LINKAGE}
 	${${PROJECT_NAME}-DELAYLOAD_SRC} ${${PROJECT_NAME}-DELAYLOAD_H}
 	${${PROJECT_NAME}_SRCS} ${${PROJECT_NAME}_H}
-	${${PROJECT_NAME}_OS_SRCS} ${${PROJECT_NAME}_OS_H}
+	${${PROJECT_NAME}_NETWORKING_SRCS}
 	${${PROJECT_NAME}_CRYPTO_SRCS} ${${PROJECT_NAME}_CRYPTO_H}
 	${${PROJECT_NAME}_IFUNC_SRCS}
 	${${PROJECT_NAME}_MMX_SRCS}

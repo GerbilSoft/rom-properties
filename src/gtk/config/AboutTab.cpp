@@ -2,16 +2,19 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * AboutTab.cpp: About tab for rp-config.                                  *
  *                                                                         *
- * Copyright (c) 2017-2024 by David Korth.                                 *
+ * Copyright (c) 2017-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "stdafx.h"
 #include "config.librpbase.h"
+#include "config.gtk.h"
 
 #include "AboutTab.hpp"
 #include "RpConfigTab.h"
-#include "UpdateChecker.hpp"
+#ifdef ENABLE_NETWORKING
+#  include "UpdateChecker.hpp"
+#endif /* ENABLE_NETWORKING */
 
 #include "gtk-compat.h"
 #include "RpGtk.h"
@@ -51,11 +54,11 @@ typedef GtkVBox super;
 #  define GTK_TYPE_SUPER GTK_TYPE_VBOX
 #endif /* GTK_CHECK_VERSION(3,0,0) */
 
-#if GTK_CHECK_VERSION(3,1,6)
+#if defined(ENABLE_NETWORKING) && GTK_CHECK_VERSION(3,1,6)
 // NOTE: Update check requires GtkOverlay, which was
 // added in GTK+ 3.2.0 (3.1.6).
 #  define ENABLE_UPDATE_CHECK 1
-#endif /* !GTK_CHECK_VERSION(3,1,6) */
+#endif /* defined(ENABLE_NETWORKING) && GTK_CHECK_VERSION(3,1,6) */
 
 // RpAboutTab class
 struct _RpAboutTabClass {
@@ -308,7 +311,11 @@ rp_about_tab_init(RpAboutTab *tab)
 	gtk_box_append(GTK_BOX(hboxTitle), tab->imgLogo);
 	gtk_box_append(GTK_BOX(hboxTitle), tab->lblTitle);
 
+#  ifdef ENABLE_UPDATE_CHECK
 	gtk_box_append(GTK_BOX(tab), ovlTitle);	// contains hboxTitle
+#  else /* !ENABLE_UPDATE_CHECK */
+	gtk_box_append(GTK_BOX(tab), hboxTitle);
+#  endif /* ENABLE_UPDATE_CHECK */
 	gtk_box_append(GTK_BOX(tab), tabWidget);
 #else /* !GTK_CHECK_VERSION(4,0,0) */
 
@@ -318,7 +325,7 @@ rp_about_tab_init(RpAboutTab *tab)
 #  ifndef RP_USE_GTK_ALIGNMENT
 	GTK_WIDGET_HALIGN_CENTER(hboxTitle);
 #    ifdef ENABLE_UPDATE_CHECK
-	gtk_box_pack_start(GTK_BOX(tab), ovlTitle, false, false, 0);
+	gtk_box_pack_start(GTK_BOX(tab), ovlTitle, false, false, 0);	// contains hboxTitle
 #    else /* !ENABLE_UPDATE_CHECK */
 	gtk_box_pack_start(GTK_BOX(tab), hboxTitle, false, false, 0);
 #    endif /* ENABLE_UPDATE_CHECK */

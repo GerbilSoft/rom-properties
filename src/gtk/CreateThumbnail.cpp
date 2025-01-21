@@ -2,15 +2,15 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * CreateThumbnail.cpp: Thumbnail creator for wrapper programs.            *
  *                                                                         *
- * Copyright (c) 2017-2024 by David Korth.                                 *
+ * Copyright (c) 2017-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "stdafx.h"
+#include "config.gtk.h"
+
 #include "CreateThumbnail.hpp"
 #include "check-uid.h"
-
-#include "ProxyForUrl.hpp"
 #include "RpGtk.h"
 
 // Other rom-properties libraries
@@ -28,9 +28,12 @@ using namespace LibRomData;
 #include "libromdata/img/TCreateThumbnail.cpp"
 using LibRomData::TCreateThumbnail;
 
+#ifdef ENABLE_NETWORKING
+#  include "ProxyForUrl.hpp"
 // NetworkManager D-Bus interface to determine if the connection is metered.
-#include <glib-object.h>
-#include "NetworkManager.h"
+#  include <glib-object.h>
+#  include "NetworkManager.h"
+#endif /* ENABLE_NETWORKING */
 
 // C++ STL classes
 using std::string;
@@ -120,7 +123,12 @@ public:
 	 */
 	inline string proxyForUrl(const char *url) const final
 	{
+#ifdef ENABLE_NETWORKING
 		return ::proxyForUrl(url);
+#else /* !ENABLE_NETWORKING */
+		RP_UNUSED(url);
+		return {};
+#endif /* ENABLE_NETWORKING */
 	}
 
 	/**
@@ -134,6 +142,7 @@ public:
 	 */
 	bool isMetered(void) final
 	{
+#ifdef ENABLE_NETWORKING
 		// Connect to the service using gdbus-codegen's generated code.
 		Manager *proxy = nullptr;
 		GError *error = nullptr;
@@ -163,6 +172,10 @@ public:
 		const NMMetered metered = static_cast<NMMetered>(manager_get_metered(proxy));
 		g_object_unref(proxy);
 		return (metered == NM_METERED_YES || metered == NM_METERED_GUESS_YES);
+#else /* !ENABLE_NETWORKING */
+		// No-network build
+		return false;
+#endif /* ENABLE_NETWORKING */
 	}
 };
 

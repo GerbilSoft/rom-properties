@@ -37,25 +37,25 @@ IF(QT4_FOUND)
 		)
 ENDIF(QT4_FOUND)
 IF(HAVE_QtDBus)
-	# FIXME: Broken on Qt4.
-	IF(0)
-		QT4_ADD_DBUS_INTERFACES(${PROJECT_NAME}_DBUS_IFACE_SRCS
-			"${CMAKE_CURRENT_SOURCE_DIR}/../../dbus/org.freedesktop.NetworkManager.xml"
-			)
-		# NOTE: Setting CMAKE_POLICY(SET CMP0071 NEW) causes the generated D-Bus .moc
-		# to be included twice. Work around this by setting SKIP_AUTOMOC.
-		SET_PROPERTY(SOURCE "${CMAKE_CURRENT_BINARY_DIR}/networkmanagerinterface.h" PROPERTY SKIP_AUTOMOC ON)
-	ENDIF(0)
 	IF(HAVE_QtDBus_NOTIFY)
 		STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}-notify_SRCS "${rom-properties-kde-notify_SRCS}")
 		STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}-notify_H    "${rom-properties-kde-notify_H}")
-		QT4_ADD_DBUS_INTERFACES(${PROJECT_NAME}_DBUS_IFACE_SRCS_2
+		QT4_ADD_DBUS_INTERFACES(${PROJECT_NAME}_DBUS_IFACE_NOTIFY_SRCS
 			"${CMAKE_CURRENT_SOURCE_DIR}/../../dbus/org.freedesktop.Notifications.xml"
 			)
 		# NOTE: Setting CMAKE_POLICY(SET CMP0071 NEW) causes the generated D-Bus .moc
 		# to be included twice. Work around this by setting SKIP_AUTOMOC.
 		SET_PROPERTY(SOURCE "${CMAKE_CURRENT_BINARY_DIR}/notificationsinterface.h" PROPERTY SKIP_AUTOMOC ON)
 	ENDIF(HAVE_QtDBus_NOTIFY)
+	# FIXME: Broken on Qt4.
+	IF(0 AND ENABLE_NETWORKING)
+		QT4_ADD_DBUS_INTERFACES(${PROJECT_NAME}_DBUS_IFACE_NM_SRCS
+			"${CMAKE_CURRENT_SOURCE_DIR}/../../dbus/org.freedesktop.NetworkManager.xml"
+			)
+		# NOTE: Setting CMAKE_POLICY(SET CMP0071 NEW) causes the generated D-Bus .moc
+		# to be included twice. Work around this by setting SKIP_AUTOMOC.
+		SET_PROPERTY(SOURCE "${CMAKE_CURRENT_BINARY_DIR}/networkmanagerinterface.h" PROPERTY SKIP_AUTOMOC ON)
+	ENDIF(0 AND ENABLE_NETWORKING)
 ENDIF(HAVE_QtDBus)
 
 # Main plugin
@@ -63,8 +63,8 @@ SET(${PROJECT_NAME}_SRCS
 	${${PROJECT_NAME}_SRCS}
 	${${PROJECT_NAME}_RomThumbCreator_SRCS}
 	${${PROJECT_NAME}-notify_SRCS}
-	${${PROJECT_NAME}_DBUS_IFACE_SRCS}
-	${${PROJECT_NAME}_DBUS_IFACE_SRCS_2}
+	${${PROJECT_NAME}_DBUS_IFACE_NM_SRCS}
+	${${PROJECT_NAME}_DBUS_IFACE_NOTIFY_SRCS}
 	${${PROJECT_NAME}_RCC_O}
 	PluginFactoryKDE4.cpp
 	)

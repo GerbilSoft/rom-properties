@@ -155,8 +155,11 @@ IF(CMAKE_SYSTEM_NAME STREQUAL "Linux")
 	OPTION(ENABLE_NIXOS "Enable special handling for NixOS builds." OFF)
 ENDIF(CMAKE_SYSTEM_NAME STREQUAL "Linux")
 
-# Achievements. (TODO: "AUTO" option?)
+# Achievements (TODO: "AUTO" option?)
 OPTION(ENABLE_ACHIEVEMENTS "Enable achievement pop-ups." ON)
+
+# Network support for e.g. downloads of external artwork and update checking
+OPTION(ENABLE_NETWORKING "Enable network support for e.g. downloads of external artwork and update checking" ON)
 
 # Install documentation
 OPTION(INSTALL_DOC "Install documentation." ON)

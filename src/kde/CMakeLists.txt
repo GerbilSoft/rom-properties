@@ -22,11 +22,11 @@ SET(${PROJECT_NAME}_SRCS
 	ListDataSortProxyModel.cpp
 	LanguageComboBox.cpp
 	OptionsMenuButton.cpp
-	ProxyForUrl.cpp
 	RomDataFormat.cpp
 	ISpriteSheet.cpp
 	AchSpriteSheet.cpp
 	FlagSpriteSheet.cpp
+
 	config/stub-export.cpp
 	config/ConfigDialog.cpp
 	config/ITab.cpp
@@ -39,7 +39,6 @@ SET(${PROJECT_NAME}_SRCS
 	config/AchievementsTab.cpp
 	config/AchievementsItemDelegate.cpp
 	config/AboutTab.cpp
-	config/UpdateChecker.cpp
 	)
 SET(${PROJECT_NAME}_H
 	plugins/RomPropertiesDialogPlugin.hpp
@@ -59,12 +58,12 @@ SET(${PROJECT_NAME}_H
 	ListDataSortProxyModel.hpp
 	LanguageComboBox.hpp
 	OptionsMenuButton.hpp
-	ProxyForUrl.hpp
 	check-uid.hpp
 	RomDataFormat.hpp
 	ISpriteSheet.hpp
 	AchSpriteSheet.hpp
 	FlagSpriteSheet.hpp
+
 	config/ConfigDialog.hpp
 	config/ITab.hpp
 	config/ImageTypesTab.hpp
@@ -76,7 +75,6 @@ SET(${PROJECT_NAME}_H
 	config/AchievementsTab.hpp
 	config/AchievementsItemDelegate.hpp
 	config/AboutTab.hpp
-	config/UpdateChecker.hpp
 	)
 SET(${PROJECT_NAME}_UIS
 	RomDataView.ui
@@ -156,6 +154,21 @@ IF(ENABLE_ACHIEVEMENTS)
 	SET(${PROJECT_NAME}-notify_SRCS AchQtDBus.cpp)
 	SET(${PROJECT_NAME}-notify_H    AchQtDBus.hpp)
 ENDIF(ENABLE_ACHIEVEMENTS)
+
+IF(ENABLE_NETWORKING)
+	# Networking code, e.g. update checker
+	# TODO: -networking_SRCS?
+	SET(${PROJECT_NAME}_SRCS
+		${${PROJECT_NAME}_SRCS}
+		ProxyForUrl.cpp
+		config/UpdateChecker.cpp
+		)
+	SET(${PROJECT_NAME}_H
+		${${PROJECT_NAME}_H}
+		ProxyForUrl.hpp
+		config/UpdateChecker.hpp
+		)
+ENDIF(ENABLE_NETWORKING)
 
 # RpFile_kio requires KDE Frameworks 5.
 # FIXME: Dolphin ends up hanging for some reason...

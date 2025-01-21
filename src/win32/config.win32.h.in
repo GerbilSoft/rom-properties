@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * config.win32.h.in: Win32 configuration. (source file)                   *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -23,3 +23,6 @@
 
 /* Define to 1 if achievements are enabled. */
 #cmakedefine ENABLE_ACHIEVEMENTS 1
+
+/* Define to 1 if networking is enabled. */
+#cmakedefine ENABLE_NETWORKING 1

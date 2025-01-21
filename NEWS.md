@@ -21,6 +21,12 @@
     * Fixes #432: [Bug Report] EXE/DLL files causes a crash
       * Reported by @xxmichibxx.
 
+* Other changes:
+  * CMake: Added an ENABLE_NETWORKING option to control whether or not
+    network functionality, e.g. downloading boxart and checking for updates,
+    is enabled. Defaults to ON, but can be disabled for high-security
+    environments.
+
 ## v2.4.1 (released 2024/11/12)
 
 * Bug fixes:
