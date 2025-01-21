@@ -727,7 +727,7 @@ extern "C" int gtest_main(int argc, TCHAR *argv[])
 	}
 
 	if (!is_found) {
-		fputs("*** ERROR: Cannot find the png_data test images directory.\n", stderr);
+		fputs("*** ERROR: Cannot find the RomHeaders test files directory.\n", stderr);
 		return EXIT_FAILURE;
 	}
 
