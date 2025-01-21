@@ -24,7 +24,6 @@ using std::array;
 using std::string;
 
 // libfmt
-#include <fmt/core.h>
 #include <fmt/format.h>
 #define FSTR FMT_STRING
 

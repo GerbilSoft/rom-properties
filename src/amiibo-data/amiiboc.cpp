@@ -36,7 +36,6 @@ using std::unordered_map;
 using std::vector;
 
 // libfmt
-#include <fmt/core.h>
 #include <fmt/format.h>
 #define FSTR FMT_STRING
 

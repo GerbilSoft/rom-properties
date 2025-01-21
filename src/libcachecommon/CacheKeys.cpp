@@ -27,7 +27,6 @@ using std::wstring;
 #endif /* _WIN32 */
 
 // libfmt
-#include <fmt/core.h>
 #include <fmt/format.h>
 #define FSTR FMT_STRING
 

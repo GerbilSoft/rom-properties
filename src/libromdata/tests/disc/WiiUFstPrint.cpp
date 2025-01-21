@@ -35,7 +35,6 @@ using std::string;
 using std::unique_ptr;
 
 // libfmt
-#include <fmt/core.h>
 #include <fmt/format.h>
 #define FSTR FMT_STRING
 
