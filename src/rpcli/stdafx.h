@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (rpcli)                            *
  * stdafx.h: Common includes.                                              *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -16,14 +16,18 @@
 #include "time_r.h"
 
 #ifdef __cplusplus
+/** C++ **/
+
 // C includes
 #  include <sys/types.h>
+
 // C includes (C++ namespace)
 #  include <cassert>
 #  include <cerrno>
 #  include <cstdio>
 #  include <cstdlib>
 #  include <cstring>
+
 // C++ includes
 #  include <algorithm>
 #  include <array>
@@ -34,11 +38,20 @@
 #  include <memory>
 #  include <string>
 #  include <vector>
+
+// libfmt
+#include <fmt/core.h>
+#include <fmt/format.h>
+#define FSTR FMT_STRING
+
 #else /* !__cplusplus */
+/** C **/
+
 // C includes
 #  include <assert.h>
 #  include <errno.h>
 #  include <stdio.h>
 #  include <stdlib.h>
 #  include <string.h>
+
 #endif /* __cplusplus */
