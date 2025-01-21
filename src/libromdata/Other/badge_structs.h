@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * badge_structs.h: Nintendo Badge Arcade data structures.                 *
  *                                                                         *
- * Copyright (c) 2017-2024 by David Korth.                                 *
+ * Copyright (c) 2017-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -53,7 +53,7 @@ typedef struct _Badge_PRBS_Header {
 	char filename[48];	// [0x044] Image filename (Latin-1?)
 	char setname[48];	// [0x074] Set name (Latin-1?)
 #pragma pack(1)
-	struct PACKED {
+	struct RP_PACKED {
 		Nintendo_TitleID_LE_t title_id;	// [0x0A4] Title ID for program launch.
 						// If no program is assigned, this is all 0xFF.
 	};

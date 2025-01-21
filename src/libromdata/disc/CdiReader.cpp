@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * CdiReader.cpp: DiscJuggler CDI image reader.                            *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -296,7 +296,7 @@ int CdiReaderPrivate::parseCdiFile(void)
 			}
 
 #pragma pack(2)
-			struct PACKED {
+			struct RP_PACKED {
 				uint32_t cd_text_count;		// TODO: If non-zero, there will be CD-Text blocks here.
 				uint8_t unknown1[2];		// 0x00 0x00
 				uint32_t mode;			// Track mode (0=Audio, 1=Mode1, 2=Mode2/Mixed)

@@ -28,8 +28,6 @@ using std::string;
 using std::vector;
 
 // libfmt
-// FIXME: libfmt has its own "PACKED" definition.
-#undef PACKED
 #include <fmt/core.h>
 #include <fmt/format.h>
 #define FSTR FMT_STRING

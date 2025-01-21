@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * n3ds_structs.h: Nintendo 3DS data structures.                           *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -550,7 +550,7 @@ typedef enum {
  * roots in the Wii TMD format.
  */
 #pragma pack(1)
-typedef struct PACKED _N3DS_TMD_Header_t {
+typedef struct RP_PACKED _N3DS_TMD_Header_t {
 	char signature_issuer[0x40];	// [0x00] Signature issuer.
 	uint8_t tmd_version;		// [0x40]
 	uint8_t ca_crl_version;		// [0x41]
@@ -878,7 +878,7 @@ ASSERT_STRUCT(N3DS_NCCH_ExHeader_t, 0x800);
  * roots in the Wii ticket format.
  */
 #pragma pack(1)
-typedef struct PACKED _N3DS_Ticket_t {
+typedef struct RP_PACKED _N3DS_Ticket_t {
 	char issuer[0x40];		// [0x000] Ticket issuer. Can be used to distinguish debug vs. retail.
 	uint8_t ecc_public_key[0x3C];	// [0x040] ECC public key.
 	uint8_t version;		// [0x07C] Version. (Wii == 0; 3DS == 1)

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * xbox360_stfs_structs.h: Microsoft Xbox 360 STFS data structures.        *
  *                                                                         *
- * Copyright (c) 2019-2023 by David Korth.                                 *
+ * Copyright (c) 2019-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -77,7 +77,7 @@ ASSERT_STRUCT(STFS_License_Entry, 16);
  * All fields are in big-endian.
  */
 #pragma pack(1)
-typedef struct PACKED _STFS_Volume_Descriptor {
+typedef struct RP_PACKED _STFS_Volume_Descriptor {
 	uint8_t size;				// [0x000] Size (0x24)
 	uint8_t reserved;			// [0x001]
 	uint8_t block_separation;		// [0x002]
@@ -117,7 +117,7 @@ ASSERT_STRUCT(SVOD_Volume_Descriptor, 0x24);
  */
 #define STFS_METADATA_ADDRESS 0x22C
 #pragma pack(1)
-typedef struct PACKED _STFS_Package_Metadata {
+typedef struct RP_PACKED _STFS_Package_Metadata {
 	STFS_License_Entry license_entries[16];	// [0x22C] License entries
 	uint8_t header_sha1[0x14];		// [0x32C] Header SHA1 (from 0x344 to first hash table)
 	uint32_t header_size;			// [0x340] Size of this header

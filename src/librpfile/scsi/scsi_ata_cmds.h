@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpfile)                        *
  * scsi_ata_cmd.h: SCSI/ATA wrapper commands.                              *
  *                                                                         *
- * Copyright (c) 2019-2023 by David Korth.                                 *
+ * Copyright (c) 2019-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -30,7 +30,7 @@ extern "C" {
 /** ATA PASS THROUGH(16) **/
 // This command uses 48-bit LBA addressing.
 
-typedef struct PACKED _SCSI_CDB_ATA_PASS_THROUGH_16 {
+typedef struct RP_PACKED _SCSI_CDB_ATA_PASS_THROUGH_16 {
 	uint8_t OpCode;		/* ATA PASS THROUGH(16) (0x85) */
 	uint8_t ATA_Flags0;	/* multiple_count, protocol, extend */
 	uint8_t ATA_Flags1;	/* offline, ck_cond, t_dir, byte_block, t_length */
@@ -52,7 +52,7 @@ typedef struct PACKED _SCSI_CDB_ATA_PASS_THROUGH_16 {
 /** ATA PASS THROUGH(12) **/
 // This command uses 28-bit LBA addressing.
 
-typedef struct PACKED SCSI_CDB_ATA_PASS_THROUGH_12 {
+typedef struct RP_PACKED SCSI_CDB_ATA_PASS_THROUGH_12 {
 	uint8_t OpCode;		/* ATA PASS THROUGH(12) (0xA1) (clashes with MMC BLANK) */
 	uint8_t ATA_Flags0;	/* multiple_count, protocol, extend */
 	uint8_t ATA_Flags1;	/* offline, ck_cond, t_dir, byte_block, t_length */

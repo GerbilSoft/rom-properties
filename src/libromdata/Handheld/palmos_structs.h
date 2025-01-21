@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * palmos_structs.h: Palm OS data structures.                              *
  *                                                                         *
- * Copyright (c) 2018-2024 by David Korth.                                 *
+ * Copyright (c) 2018-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -32,7 +32,7 @@ extern "C" {
  * NOTE: PDB datetime is "number of seconds since 1904/01/01 00:00:00 UTC".
  */
 #pragma pack(2)
-typedef struct PACKED _PalmOS_PRC_Header_t {
+typedef struct RP_PACKED _PalmOS_PRC_Header_t {
 	char name[32];			// [0x000] Internal name
 	uint16_t flags;			// [0x020] Flags (see PalmOS_PRC_Flags_e)
 	uint16_t version;		// [0x022] Header version
@@ -64,7 +64,7 @@ typedef enum {
  * All fields are in big-endian, with 16-bit alignment.
  */
 #pragma pack(2)
-typedef struct PACKED _PalmOS_PRC_ResHeader_t {
+typedef struct RP_PACKED _PalmOS_PRC_ResHeader_t {
 	uint32_t type;		// [0x000] Resource type (see PalmOS_PRC_ResType_e)
 	uint16_t id;		// [0x004] Resource ID
 	uint32_t addr;		// [0x006] Address of the resource data (absolute)

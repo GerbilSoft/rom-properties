@@ -26,8 +26,6 @@ using std::ostringstream;
 using std::string;
 
 // libfmt
-// FIXME: libfmt has its own "PACKED" definition.
-#undef PACKED
 #include <fmt/core.h>
 #include <fmt/format.h>
 #define FSTR FMT_STRING

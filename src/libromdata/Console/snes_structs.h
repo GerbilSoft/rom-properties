@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * snes_structs.h: Super Nintendo data structures.                         *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -119,7 +119,7 @@ typedef struct _SNES_RomHeader {
 			struct {
 				char new_publisher_code[2];	// [0x7FB0]
 #pragma pack(1)
-				union PACKED {
+				union RP_PACKED {
 					char c[4];
 					uint32_t u32;
 				} id4;				// [0x7FB2]
@@ -153,7 +153,7 @@ typedef struct _SNES_RomHeader {
 			/** Extended header **/
 			// NOTE: Invalid if 0x7FDB == 0x01
 #pragma pack(1)
-			struct PACKED {
+			struct RP_PACKED {
 				char new_publisher_code[2];	// [0x7FB0]
 				uint32_t program_type;		// [0x7FB2] See SNES_BSX_Program_Type.
 				uint8_t reserved[10];		// [0x7FB6] Usually 0x00.
@@ -166,7 +166,7 @@ typedef struct _SNES_RomHeader {
 			uint16_t limited_starts;	// [0x7FD4] Limited starts
 			// Some compilers pad this structure to a multiple of 4 bytes
 #pragma pack(1)
-			struct PACKED {
+			struct RP_PACKED {
 				uint8_t month;		// [0x7FD6] Month
 				uint8_t day;		// [0x7FD7] Day
 			} date;
@@ -200,7 +200,7 @@ typedef struct _SNES_RomHeader {
 			uint16_t res;		// [0x7FFC]
 			// Some compilers pad this structure to a multiple of 4 bytes
 #pragma pack(1)
-			union PACKED {
+			union RP_PACKED {
 				// IRQ/BRK share the same vector
 				// in 6502 emulation mode.
 				uint16_t irq;	// [0x7FFE]

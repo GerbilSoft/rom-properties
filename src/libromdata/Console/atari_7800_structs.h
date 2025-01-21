@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * atari_7800_structs.h: Atari 7800 ROM image data structures.             *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -27,7 +27,7 @@ extern "C" {
 #define ATARI_7800_A78_MAGIC		"ATARI7800"
 #define ATARI_7800_A78_END_MAGIC	"ACTUAL CART DATA STARTS HERE"
 #pragma pack(1)
-typedef struct PACKED _Atari_A78Header {
+typedef struct RP_PACKED _Atari_A78Header {
 	uint8_t version;		// [0x000] Header version
 	char magic[9];			// [0x001] Magic: ATARI_7800_A78_MAGIC
 	char magic_padding[7];		// [0x00A] Magic: Padding (NULL for v3)

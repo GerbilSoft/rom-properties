@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * gcom_structs.h: Tiger game.com data structures.                         *
  *                                                                         *
- * Copyright (c) 2018-2023 by David Korth.                                 *
+ * Copyright (c) 2018-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -50,7 +50,7 @@ typedef struct _Gcom_RomHeader {
 
 	// Some compilers pad this structure to a multiple of 4 bytes
 #pragma pack(1)
-	struct PACKED {
+	struct RP_PACKED {
 		/**
 		 * game.com ROM images are divided into 16 KB banks,
 		 * each of which makes up a 2bpp 256x256 bitmap.

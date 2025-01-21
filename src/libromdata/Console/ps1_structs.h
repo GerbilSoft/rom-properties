@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * ps1_structs.h: Sony PlayStation data structures.                        *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * Copyright (c) 2017 by Egor.                                             *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
@@ -25,7 +25,7 @@ extern "C" {
  */
 // Some compilers pad this structure to a multiple of 4 bytes
 #pragma pack(1)
-typedef struct PACKED _PS1_54_Header {
+typedef struct RP_PACKED _PS1_54_Header {
 	char filename[21];	// Filename from BlockEntry->filename
 	char title[33];		// Title from SC->title converted to ASCII
 } PS1_54_Header;
@@ -83,7 +83,7 @@ typedef enum {
 #define PS1_POCKETSTATION_MCX1	'MCX1'
 #define PS1_POCKETSTATION_CRD0	'CRD0'
 #pragma pack(1)
-typedef struct PACKED _PS1_SC_Struct {
+typedef struct RP_PACKED _PS1_SC_Struct {
 	uint16_t magic;		// [0x000] Magic. ("SC")
 	uint8_t icon_flag;	// [0x002] Icon display flag.
 	uint8_t blocks;		// [0x003] Number of PS1 blocks per save file.
@@ -114,7 +114,7 @@ ASSERT_STRUCT(PS1_SC_Struct, 512);
  */
 #define PS1_PSV_MAGIC 0x0056535000000000ULL	// "\0VSP\0\0\0\0"
 #pragma pack(1)
-typedef struct PACKED _PS1_PSV_Header {
+typedef struct RP_PACKED _PS1_PSV_Header {
 	uint64_t magic;		// [0x000] Magic. ("\0VSP\0\0\0\0")
 	uint8_t key_seed[20];	// [0x008] Key seed.
 	uint8_t sha1_hmac[20];	// [0x01C] SHA1 HMAC digest.

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * vgm_structs.h: VGM audio data structures.                               *
  *                                                                         *
- * Copyright (c) 2018-2023 by David Korth.                                 *
+ * Copyright (c) 2018-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -292,7 +292,7 @@ ASSERT_STRUCT(VGM_170_ExtraHeader, 2*sizeof(uint32_t));
  * VGM 1.70: Chip Clock entry.
  */
 #pragma pack(1)
-typedef struct PACKED _VGM_170_ChipClock {
+typedef struct RP_PACKED _VGM_170_ChipClock {
 	uint8_t chip_id;		// [0x000] Chip ID.
 	uint32_t clock_rate;		// [0x001] Clock rate.
 } VGM_170_ChipClock;

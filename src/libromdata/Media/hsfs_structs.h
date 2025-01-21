@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * hsfs_structs.h: High Sierra structs for old CD-ROM images.              *
  *                                                                         *
- * Copyright (c) 2017-2024 by David Korth.                                 *
+ * Copyright (c) 2017-2025 by David Korth.                                 *
  * Copyright (c) 2020 by Egor.                                             *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
@@ -45,7 +45,7 @@ ASSERT_STRUCT(HSFS_PVD_DateTime_t, 16);
  */
 // Some compilers pad this structure to a multiple of 4 bytes
 #pragma pack(1)
-typedef struct PACKED _HSFS_Dir_DateTime_t {
+typedef struct RP_PACKED _HSFS_Dir_DateTime_t {
 	uint8_t year;		// Number of years since 1900.
 	uint8_t month;		// Month, from 1 to 12.
 	uint8_t day;		// Day, from 1 to 31.
@@ -60,7 +60,7 @@ ASSERT_STRUCT(HSFS_Dir_DateTime_t, 6);
  * Directory entry, excluding the variable-length file identifier.
  */
 #pragma pack(1)
-typedef struct PACKED _HSFS_DirEntry {
+typedef struct RP_PACKED _HSFS_DirEntry {
 	uint8_t entry_length;			// [0x000] Length of Directory Record. (must be at least 33 + filename)
 	uint8_t xattr_length;			// [0x001] Extended Attribute Record length.
 	uint32_lsb_msb_t block;			// [0x002] Starting LBA of the file.
@@ -80,7 +80,7 @@ ASSERT_STRUCT(HSFS_DirEntry, 33);
  * Volume descriptor header.
  */
 #pragma pack(1)
-typedef struct PACKED _HSFS_Volume_Descriptor_Header {
+typedef struct RP_PACKED _HSFS_Volume_Descriptor_Header {
 	uint32_lsb_msb_t block;	// LBA of this volume descriptor.
 	uint8_t type;		// Volume descriptor type code. (See ISO_Volume_Descriptor_Type.)
 	char identifier[5];	// (strA) "CDROM"
@@ -95,7 +95,7 @@ ASSERT_STRUCT(HSFS_Volume_Descriptor_Header, 15);
  * NOTE: All fields are space-padded. (0x20, ' ')
  */
 #pragma pack(1)
-typedef struct PACKED _HSFS_Primary_Volume_Descriptor {
+typedef struct RP_PACKED _HSFS_Primary_Volume_Descriptor {
 	HSFS_Volume_Descriptor_Header header;
 
 	uint8_t reserved1;			// [0x00F] 0x00

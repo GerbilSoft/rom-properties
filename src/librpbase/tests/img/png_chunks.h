@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase/tests)                  *
  * png_chunks.h: PNG chunk definitions.                                    *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -42,7 +42,7 @@ static const uint8_t PNG_magic[8] = {0x89,'P','N','G','\r','\n',0x1A,'\n'};
 // PNG IHDR struct.
 static const char PNG_IHDR_name[4] = {'I','H','D','R'};
 #pragma pack(1)
-typedef struct PACKED _PNG_IHDR_t {
+typedef struct RP_PACKED _PNG_IHDR_t {
 	uint32_t width;		// BE32
 	uint32_t height;	// BE32
 	uint8_t bit_depth;
@@ -56,7 +56,7 @@ ASSERT_STRUCT(PNG_IHDR_t, 13);
 
 // PNG IHDR struct, with length, name, and CRC32.
 #pragma pack(1)
-typedef struct PACKED _PNG_IHDR_full_t {
+typedef struct RP_PACKED _PNG_IHDR_full_t {
 	uint32_t chunk_size;	// BE32
 	char chunk_name[4];	// "IHDR"
 	PNG_IHDR_t data;

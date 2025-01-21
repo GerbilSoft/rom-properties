@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpfile)                        *
  * scsi_protocol.h: SCSI protocol definitions.                             *
  *                                                                         *
- * Copyright (c) 2013-2023 by David Korth.                                 *
+ * Copyright (c) 2013-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -37,13 +37,13 @@
 
 /* SCSI structs are defined on the byte-level, so we must
  * prevent the compiler from adding alignment padding. */
-#if !defined(PACKED)
-# if defined(__GNUC__)
-#  define PACKED __attribute__((packed))
-# else
-#  define PACKED
-# endif /* defined(__GNUC__) */
-#endif /* !defined(PACKED) */
+#if !defined(RP_PACKED)
+#  if defined(__GNUC__)
+#    define RP_PACKED __attribute__((packed))
+#  else
+#    define RP_PACKED
+#  endif /* defined(__GNUC__) */
+#endif /* !defined(RP_PACKED) */
 
 #pragma pack(1)
 
@@ -256,7 +256,7 @@ extern "C" {
 
 /** REQUEST SENSE (0x03) **/
 
-typedef struct PACKED _SCSI_CDB_REQUEST_SENSE {
+typedef struct RP_PACKED _SCSI_CDB_REQUEST_SENSE {
 	uint8_t OpCode;		/* REQUEST SENSE (0x03) */
 	uint8_t LUN;		/* filled in by OS */
 	uint8_t Reserved[2];
@@ -264,7 +264,7 @@ typedef struct PACKED _SCSI_CDB_REQUEST_SENSE {
 	uint8_t Control;
 } SCSI_CDB_REQUEST_SENSE;
 
-typedef struct PACKED _SCSI_RESP_REQUEST_SENSE {
+typedef struct RP_PACKED _SCSI_RESP_REQUEST_SENSE {
 	uint8_t ErrorCode;		/* Error code. (0x70 or 0x71) */
 	uint8_t SegmentNum;		/* Segment number. (obsolete) */
 	uint8_t SenseKey;		/* Sense key, plus other bits. */
@@ -317,7 +317,7 @@ typedef struct PACKED _SCSI_RESP_REQUEST_SENSE {
 
 /** TEST UNIT READY (0x00) **/
 
-typedef struct PACKED _SCSI_CDB_TEST_UNIT_READY {
+typedef struct RP_PACKED _SCSI_CDB_TEST_UNIT_READY {
 	uint8_t OpCode;		/* TEST UNIT READY (0x00) */
 	uint8_t LUN;		/* filled in by OS */
 	uint8_t Reserved[3];
@@ -326,7 +326,7 @@ typedef struct PACKED _SCSI_CDB_TEST_UNIT_READY {
 
 /** INQUIRY (0x12) **/
 
-typedef struct PACKED _SCSI_CDB_INQUIRY {
+typedef struct RP_PACKED _SCSI_CDB_INQUIRY {
 	uint8_t OpCode;		/* INQUIRY (0x12) */
 	uint8_t EVPD;
 	uint8_t PageCode;
@@ -335,7 +335,7 @@ typedef struct PACKED _SCSI_CDB_INQUIRY {
 } SCSI_CDB_INQUIRY;
 
 /* INQUIRY response for Standard Inquiry Data. (EVPD == 0, PageCode == 0) */
-typedef struct PACKED _SCSI_RESP_INQUIRY_STD {
+typedef struct RP_PACKED _SCSI_RESP_INQUIRY_STD {
 	uint8_t PeripheralDeviceType;	/* High 3 bits == qualifier; low 5 bits == type */
 	uint8_t RMB_DeviceTypeModifier;
 	uint8_t Version;
@@ -389,7 +389,7 @@ typedef struct PACKED _SCSI_RESP_INQUIRY_STD {
 
 /** READ CAPACITY(10) (0x25) **/
 
-typedef struct PACKED _SCSI_CDB_READ_CAPACITY_10 {
+typedef struct RP_PACKED _SCSI_CDB_READ_CAPACITY_10 {
 	uint8_t OpCode;		/* READ CAPACITY(10) (0x25) */
 	uint8_t RelAdr;		/* 1 == relative to LBA */
 	uint32_t LBA;		/* (BE32) */
@@ -399,14 +399,14 @@ typedef struct PACKED _SCSI_CDB_READ_CAPACITY_10 {
 } SCSI_CDB_READ_CAPACITY_10;
 
 /* READ CAPACITY(10) response. */
-typedef struct PACKED _SCSI_RESP_READ_CAPACITY_10 {
+typedef struct RP_PACKED _SCSI_RESP_READ_CAPACITY_10 {
 	uint32_t LBA;		/* (BE32) Highest LBA number. */
 	uint32_t BlockLen;	/* (BE32) Block length, in bytes. */
 } SCSI_RESP_READ_CAPACITY_10;
 
 /** READ CAPACITY(16) [SERVICE ACTION IN(16)] (0x9E) **/
 
-typedef struct PACKED _SCSI_CDB_READ_CAPACITY_16 {
+typedef struct RP_PACKED _SCSI_CDB_READ_CAPACITY_16 {
 	uint8_t OpCode;		/* SERVICE ACTION IN(16) (0x9E) */
 	uint8_t SAIn_OpCode;	/* READ CAPACITY(16) SAIn OpCode (0x10) */
 	uint64_t LBA;		/* (BE64) */
@@ -416,7 +416,7 @@ typedef struct PACKED _SCSI_CDB_READ_CAPACITY_16 {
 } SCSI_CDB_READ_CAPACITY_16;
 
 /* READ CAPACITY(16) response. */
-typedef struct PACKED _SCSI_RESP_READ_CAPACITY_16 {
+typedef struct RP_PACKED _SCSI_RESP_READ_CAPACITY_16 {
 	uint64_t LBA;		/* (BE64) Highest LBA number. */
 	uint32_t BlockLen;	/* (BE32) Block length, in bytes. */
 	uint8_t Flags;		/* Bit 1 == RTO_EN; Bit 0 == PROT_EN */
@@ -425,7 +425,7 @@ typedef struct PACKED _SCSI_RESP_READ_CAPACITY_16 {
 
 /** READ(10) (0x28) **/
 
-typedef struct PACKED _SCSI_CDB_READ_10
+typedef struct RP_PACKED _SCSI_CDB_READ_10
 {
 	uint8_t OpCode;		/* READ(10) (0x28) */
 	uint8_t Flags;
@@ -441,7 +441,7 @@ typedef struct PACKED _SCSI_CDB_READ_10
 
 /** READ TOC (0x43) [CD-ROM] **/
 
-typedef struct PACKED _SCSI_CDB_READ_TOC
+typedef struct RP_PACKED _SCSI_CDB_READ_TOC
 {
 	uint8_t OpCode;		/* READ TOC (0x43) */
 	uint8_t MSF;		/* 0 == LBA; 2 == MSF */
@@ -457,7 +457,7 @@ typedef struct PACKED _SCSI_CDB_READ_TOC
 #define SCSI_BIT_READ_TOC_MSF_MSF	(1U << 2)	/* 1 == reads TOC in MSF format. */
 
 /* TOC: Track entry. */
-typedef struct PACKED _SCSI_CDROM_TOC_TRACK
+typedef struct RP_PACKED _SCSI_CDROM_TOC_TRACK
 {
 	uint8_t rsvd1;
 	uint8_t ControlADR;	/* Track type. */
@@ -467,7 +467,7 @@ typedef struct PACKED _SCSI_CDROM_TOC_TRACK
 } SCSI_CDROM_TOC_TRACK;
 
 /* Table of Contents. */
-typedef struct PACKED _SCSI_CDROM_TOC
+typedef struct RP_PACKED _SCSI_CDROM_TOC
 {
 	uint8_t FirstTrackNumber;
 	uint8_t LastTrackNumber;
@@ -475,7 +475,7 @@ typedef struct PACKED _SCSI_CDROM_TOC
 } SCSI_CDROM_TOC;
 
 /* READ TOC response. */
-typedef struct PACKED _SCSI_RESP_READ_TOC
+typedef struct RP_PACKED _SCSI_RESP_READ_TOC
 {
 	uint16_t DataLen;	/* (BE16) */
 	SCSI_CDROM_TOC toc;
@@ -483,7 +483,7 @@ typedef struct PACKED _SCSI_RESP_READ_TOC
 
 /** GET CONFIGURATION (0x46) [MMC] **/
 
-typedef struct PACKED _SCSI_CDB_GET_CONFIGURATION {
+typedef struct RP_PACKED _SCSI_CDB_GET_CONFIGURATION {
 	uint8_t OpCode;			/* GET CONFIGURATION (0x46) */
 	uint8_t RT;			/* Type of Feature Descriptors to receive. */
 	uint16_t StartingFeatureNumber;	/* (BE16) Index of first feature to receive. */
@@ -498,7 +498,7 @@ typedef struct PACKED _SCSI_CDB_GET_CONFIGURATION {
 #define SCSI_GET_CONFIGURATION_RT_ONE		0x2
 
 /* GET CONFIGURATION response header. */
-typedef struct PACKED _SCSI_RESP_GET_CONFIGURATION_HEADER {
+typedef struct RP_PACKED _SCSI_RESP_GET_CONFIGURATION_HEADER {
 	uint32_t DataLength;		/* (BE32) Total length of data returned. */
 	uint8_t Reserved[2];
 	uint16_t CurrentProfile;	/* (BE16) Current Feature Profile. */
@@ -570,7 +570,7 @@ typedef struct PACKED _SCSI_RESP_GET_CONFIGURATION_HEADER {
 
 /** READ DISC INFORMATION (0x51) [MMC] **/
 
-typedef struct PACKED _SCSI_CDB_READ_DISC_INFORMATION {
+typedef struct RP_PACKED _SCSI_CDB_READ_DISC_INFORMATION {
 	uint8_t OpCode;			/* READ DISC INFORMATION (0x51) */
 	uint8_t DataType;		/* Data type to read. */
 	uint8_t Reserved[5];
@@ -584,7 +584,7 @@ typedef struct PACKED _SCSI_CDB_READ_DISC_INFORMATION {
 #define SCSI_READ_DISC_INFORMATION_DATATYPE_POW		0x02
 
 /* READ DISC INFORMATION response: Standard disc information. */
-typedef struct PACKED _SCSI_RESP_READ_DISC_INFORMATION_STANDARD {
+typedef struct RP_PACKED _SCSI_RESP_READ_DISC_INFORMATION_STANDARD {
 	uint16_t DiscInfoLength;		/* (BE16) */
 	uint8_t DiscStatusFlags;
 	uint8_t FirstTrackNumber;
@@ -608,7 +608,7 @@ typedef struct PACKED _SCSI_RESP_READ_DISC_INFORMATION_STANDARD {
 } SCSI_RESP_READ_DISC_INFORMATION_STANDARD;
 
 /* READ DISC INFORMATION response: Track resources information. */
-typedef struct PACKED _SCSI_RESP_READ_DISC_INFORMATION_TRACK {
+typedef struct RP_PACKED _SCSI_RESP_READ_DISC_INFORMATION_TRACK {
 	uint16_t DiscInfoLength;			/* (BE16) == 10 */
 	uint8_t DiscInfoDataType;			/* == (0x1U << 5) */
 	uint8_t Reserved;
@@ -619,7 +619,7 @@ typedef struct PACKED _SCSI_RESP_READ_DISC_INFORMATION_TRACK {
 } SCSI_RESP_READ_DISC_INFORMATION_TRACK;
 
 /* READ DISC INFORMATION response: POW Resources information. */
-typedef struct PACKED _SCSI_RESP_READ_DISC_INFORMATION_POW {
+typedef struct RP_PACKED _SCSI_RESP_READ_DISC_INFORMATION_POW {
 	uint16_t DiscInfoLength;			/* (BE16) == 14 */
 	uint8_t DiscInfoDataType;			/* == (0x2U << 5) */
 	uint8_t Reserved;
@@ -630,7 +630,7 @@ typedef struct PACKED _SCSI_RESP_READ_DISC_INFORMATION_POW {
 
 /** READ CD (0xBE) **/
 
-typedef struct PACKED _SCSI_CDB_READ_CD {
+typedef struct RP_PACKED _SCSI_CDB_READ_CD {
 	uint8_t OpCode;			/* READ CD (0xBE) */
 	uint8_t SectorType;		/* Expected sector type. */
 	uint32_t StartingLBA;		/* (BE32) Starting LBA. */
@@ -667,7 +667,7 @@ typedef struct PACKED _SCSI_CDB_READ_CD {
 
 /** READ CD MSF (0xB9) **/
 
-typedef struct PACKED _SCSI_CDB_READ_CD_MSF {
+typedef struct RP_PACKED _SCSI_CDB_READ_CD_MSF {
 	uint8_t OpCode;			/* READ CD (0xBE) */
 	uint8_t SectorType;		/* Expected sector type. */
 	uint8_t Reserved;

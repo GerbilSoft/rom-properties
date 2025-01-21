@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * vtf_structs.h: Valve VTF texture format data structures.                *
  *                                                                         *
- * Copyright (c) 2017-2023 by David Korth.                                 *
+ * Copyright (c) 2017-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -26,7 +26,7 @@ extern "C" {
 #define VTF_VERSION_MAJOR 7
 #define VTF_VERSION_MINOR 2
 #pragma pack(1)
-typedef struct PACKED _VTFHEADER {
+typedef struct RP_PACKED _VTFHEADER {
 	uint32_t signature;		// 'VTF\0' (big-endian)
 	uint32_t version[2];		// Version number. (current version is 7.2)
 	uint32_t headerSize;		// Header size (16-byte aligned)

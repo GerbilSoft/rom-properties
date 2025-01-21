@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * palmos_tbmp_structs.h: Palm OS Tbmp data structures.                    *
  *                                                                         *
- * Copyright (c) 2018-2024 by David Korth.                                 *
+ * Copyright (c) 2018-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -35,7 +35,7 @@ extern "C" {
  * macros for the various struct sizes.
  */
 #pragma pack(2)
-typedef struct PACKED _PalmOS_BitmapType_t {
+typedef struct RP_PACKED _PalmOS_BitmapType_t {
 	int16_t width;		// [0x000] Width
 	int16_t height;		// [0x002] Height
 	uint16_t rowBytes;	// [0x004] Number of bytes per row
@@ -150,7 +150,7 @@ typedef enum {
  * All fields are in big-endian, with 16-bit alignment.
  */
 #pragma pack(2)
-typedef struct PACKED _PalmOS_RGBColorType_t {
+typedef struct RP_PACKED _PalmOS_RGBColorType_t {
 	uint8_t index;	// [0x000] Palette index
 	uint8_t r;	// [0x001] Red
 	uint8_t g;	// [0x002] Green
@@ -166,7 +166,7 @@ ASSERT_STRUCT(PalmOS_RGBColorType_t, 4);
  * All fields are in big-endian, with 16-bit alignment.
  */
 #pragma pack(2)
-typedef struct PACKED _PalmOS_BitmapDirectInfoType_t {
+typedef struct RP_PACKED _PalmOS_BitmapDirectInfoType_t {
 	uint8_t redBits;			// [0x000] Number of red bits (should be 5)
 	uint8_t greenBits;			// [0x001] Number of green bits (should be 6)
 	uint8_t blueBits;			// [0x002] Number of blue bits (should be 5)
