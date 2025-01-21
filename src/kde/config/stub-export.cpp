@@ -218,10 +218,10 @@ Q_DECL_EXPORT int RP_C_API rp_show_RomDataView_dialog(int argc, char *argv[])
 		: QUrl::fromUserInput(qs_uri);
 #endif /* QT_VERSION >= QT_VERSION_CHECK(5,4,0) */
 	if (localUrl.isEmpty()) {
-		fprintf(stderr, "*** " RP_KDE_UPPER " rp_show_RomDataView_dialog(): URI '%s' is invalid.\n", uri);
+		fmt::print(stderr, FSTR("*** " RP_KDE_UPPER " rp_show_RomDataView_dialog(): URI '{:s}' is invalid.\n"), uri);
 		return EXIT_FAILURE;
 	}
-	fprintf(stderr, "*** " RP_KDE_UPPER " rp_show_RomDataView_dialog(): Opening URI: '%s'\n", uri);
+	fmt::print(stderr, FSTR("*** " RP_KDE_UPPER " rp_show_RomDataView_dialog(): Opening URI: '{:s}'\n"), uri);
 
 	// Create a KPropertiesDialog.
 	// FIXME: Remove the default "General" and "Permissions" tabs.

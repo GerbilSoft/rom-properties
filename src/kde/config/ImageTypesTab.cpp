@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE)                              *
  * ImageTypesTab.cpp: Image Types tab for rp-config.                       *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -19,6 +19,9 @@ using namespace LibRomData;
 // Other rom-properties libraries
 using LibRpBase::RomData;
 using namespace LibRpText;
+
+// C++ STL classes
+using std::string;
 
 #include "ui_ImageTypesTab.h"
 class ImageTypesTabPrivate final : public TImageTypesConfig<QComboBox*>
@@ -149,6 +152,7 @@ void ImageTypesTabPrivate::createGridLabels(void)
 	const QString cssImageType = QLatin1String(
 		"QLabel { margin-left: 0.2em; margin-right: 0.2em; margin-bottom: 0.1em; }");
 	const unsigned int imageTypeCount = ImageTypesConfig::imageTypeCount();
+	string lbl_name;
 	for (unsigned int i = 0; i < imageTypeCount; i++) {
 		// TODO: Decrement the column number for >IMG_INT_MEDIA?
 		if (i == RomData::IMG_INT_MEDIA) {
@@ -157,9 +161,8 @@ void ImageTypesTabPrivate::createGridLabels(void)
 		}
 
 		QLabel *const lblImageType = new QLabel(U82Q(imageTypeName(i)), q);
-		char lbl_name[32];
-		snprintf(lbl_name, sizeof(lbl_name), "lblImageType%u", i);
-		lblImageType->setObjectName(QLatin1String(lbl_name));
+		lbl_name = fmt::format(FSTR("lblImageType{:d}"), i);
+		lblImageType->setObjectName(QLatin1String(lbl_name.c_str()));
 
 		lblImageType->setAlignment(Qt::AlignTop|Qt::AlignHCenter);
 		lblImageType->setStyleSheet(cssImageType);
@@ -172,9 +175,8 @@ void ImageTypesTabPrivate::createGridLabels(void)
 	const unsigned int sysCount = ImageTypesConfig::sysCount();
 	for (unsigned int sys = 0; sys < sysCount; sys++) {
 		QLabel *const lblSysName = new QLabel(U82Q(sysName(sys)), q);
-		char lbl_name[32];
-		snprintf(lbl_name, sizeof(lbl_name), "lblSysName%u", sys);
-		lblSysName->setObjectName(QLatin1String(lbl_name));
+		lbl_name = fmt::format(FSTR("lblSysName{:d}"), sys);
+		lblSysName->setObjectName(QLatin1String(lbl_name.c_str()));
 
 		lblSysName->setAlignment(Qt::AlignVCenter|Qt::AlignLeft);
 		lblSysName->setStyleSheet(cssSysName);
@@ -204,9 +206,8 @@ void ImageTypesTabPrivate::createComboBox(unsigned int cbid)
 	// Create the ComboBox.
 	Q_Q(ImageTypesTab);
 	QComboBox *const cbo = new QComboBox(q);
-	char cbo_name[32];
-	snprintf(cbo_name, sizeof(cbo_name), "cbo%04X", cbid);
-	cbo->setObjectName(QLatin1String(cbo_name));
+	const string cbo_name = fmt::format(FSTR("cbo{:0>4X}"), cbid);
+	cbo->setObjectName(QLatin1String(cbo_name.c_str()));
 	ui.gridImageTypes->addWidget(cbo, sys+1, imageType+1);
 	sysData.cboImageType[imageType] = cbo;
 

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                           *
  * rp_create_thumbnail.cpp: Thumbnail creation function export for rp-stub.  *
  *                                                                           *
- * Copyright (c) 2016-2024 by David Korth.                                   *
+ * Copyright (c) 2016-2025 by David Korth.                                   *
  * SPDX-License-Identifier: GPL-2.0-or-later                                 *
  *****************************************************************************/
 
@@ -20,7 +20,6 @@
 using LibRpBase::Config;
 using LibRpBase::RomDataPtr;
 using LibRpBase::RpPngWriter;
-using LibRpText::rp_sprintf;
 using LibRpTexture::rp_image;
 using namespace LibRpFile;
 using namespace LibRomData;
@@ -158,13 +157,13 @@ Q_DECL_EXPORT int RP_C_API rp_create_thumbnail2(const char *source_file, const c
 			// Modification time
 			const int64_t mtime = fi_src.lastModified().toMSecsSinceEpoch() / 1000;
 			if (mtime > 0) {
-				kv.emplace_back("Thumb::MTime", rp_sprintf("%" PRId64, mtime));
+				kv.emplace_back("Thumb::MTime", fmt::format(FSTR("{:d}"), mtime));
 			}
 
 			// File size
 			const off64_t szFile = fi_src.size();
 			if (szFile > 0) {
-				kv.emplace_back("Thumb::Size", rp_sprintf("%" PRId64, szFile));
+				kv.emplace_back("Thumb::Size", fmt::format(FSTR("{:d}"), szFile));
 			}
 		}
 
@@ -176,11 +175,8 @@ Q_DECL_EXPORT int RP_C_API rp_create_thumbnail2(const char *source_file, const c
 
 		// Original image dimensions
 		if (outParams.fullSize.width > 0 && outParams.fullSize.height > 0) {
-			char imgdim_str[16];
-			snprintf(imgdim_str, sizeof(imgdim_str), "%d", outParams.fullSize.width);
-			kv.emplace_back("Thumb::Image::Width", imgdim_str);
-			snprintf(imgdim_str, sizeof(imgdim_str), "%d", outParams.fullSize.height);
-			kv.emplace_back("Thumb::Image::Height", imgdim_str);
+			kv.emplace_back("Thumb::Image::Width", fmt::format(FSTR("{:d}"), outParams.fullSize.width));
+			kv.emplace_back("Thumb::Image::Height", fmt::format(FSTR("{:d}"), outParams.fullSize.height));
 		}
 
 		// URI

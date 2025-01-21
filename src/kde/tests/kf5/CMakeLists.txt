@@ -25,6 +25,9 @@ ADD_EXECUTABLE(ListDataSortProxyModelTest_kf5
 	)
 TARGET_LINK_LIBRARIES(ListDataSortProxyModelTest_kf5 PRIVATE rptest romdata)
 TARGET_LINK_LIBRARIES(ListDataSortProxyModelTest_kf5 PUBLIC Qt5::Widgets Qt5::Gui Qt5::Core)
+IF(Fmt_FOUND)
+	TARGET_LINK_LIBRARIES(ListDataSortProxyModelTest_kf5 PRIVATE ${Fmt_LIBRARY})
+ENDIF(Fmt_FOUND)
 LIST(APPEND KF5_TESTS ListDataSortProxyModelTest_kf5)
 
 ### RomDataFormat tests
@@ -39,6 +42,9 @@ ADD_EXECUTABLE(RomDataFormatTest_kf5
 TARGET_LINK_LIBRARIES(RomDataFormatTest_kf5 PRIVATE rptest romdata)
 # NOTE: QtWidgets is still needed for stdafx.h.
 TARGET_LINK_LIBRARIES(RomDataFormatTest_kf5 PUBLIC Qt5::Widgets Qt5::Core)
+IF(Fmt_FOUND)
+	TARGET_LINK_LIBRARIES(RomDataFormatTest_kf5 PRIVATE ${Fmt_LIBRARY})
+ENDIF(Fmt_FOUND)
 # Include directories required for stdafx.h.
 TARGET_INCLUDE_DIRECTORIES(RomDataFormatTest_kf5
 	PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/../../../librptext"

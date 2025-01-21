@@ -141,9 +141,9 @@ void RomDataViewPrivate::initHeaderRow(void)
 		fileType = C_("RomDataView", "(unknown filetype)");
 	}
 
-	const QString sysInfo = U82Q(rp_sprintf_p(
-		// tr: %1$s == system name, %2$s == file type
-		C_("RomDataView", "%1$s\n%2$s"), systemName, fileType));
+	const QString sysInfo = U82Q(fmt::format(
+		// tr: {0:s} == system name, {1:s} == file type
+		C_("RomDataView", "{0:s}\n{1:s}"), systemName, fileType));
 	ui.lblSysInfo->setText(sysInfo);
 	ui.lblSysInfo->show();
 
@@ -933,6 +933,7 @@ void RomDataViewPrivate::initDisplayWidgets(void)
 	if (tabCount > 1) {
 		tabs.resize(tabCount);
 		ui.tabWidget->show();
+		string tab_name;
 		for (int i = 0; i < tabCount; i++) {
 			// Create a tab.
 			const char *const name = pFields->tabName(i);
@@ -943,19 +944,18 @@ void RomDataViewPrivate::initDisplayWidgets(void)
 
 			auto &tab = tabs[i];
 			QWidget *const widget = new QWidget(q);
-			char tab_name[32];
-			snprintf(tab_name, sizeof(tab_name), "tab%d", i);
-			widget->setObjectName(QLatin1String(tab_name));
+			tab_name = fmt::format(FSTR("tab{:d}"), i);
+			widget->setObjectName(QLatin1String(tab_name.c_str()));
 
 			// Layouts.
 			// NOTE: We shouldn't zero out the QVBoxLayout margins here.
 			// Otherwise, we end up with no margins.
 			tab.vbox = new QVBoxLayout(widget);
-			snprintf(tab_name, sizeof(tab_name), "vboxTab%d", i);
-			tab.vbox->setObjectName(QLatin1String(tab_name));
+			tab_name = fmt::format(FSTR("vboxTab{:d}"), i);
+			tab.vbox->setObjectName(QLatin1String(tab_name.c_str()));
 			tab.form = new QFormLayout();
-			snprintf(tab_name, sizeof(tab_name), "formTab%d", i);
-			tab.form->setObjectName(QLatin1String(tab_name));
+			tab_name = fmt::format(FSTR("formTab{:d}"), i);
+			tab.form->setObjectName(QLatin1String(tab_name.c_str()));
 			tab.vbox->addLayout(tab.form, 1);
 
 			// Add the tab.
@@ -984,7 +984,7 @@ void RomDataViewPrivate::initDisplayWidgets(void)
 	// same width on all tabs.
 
 	// tr: Field description label.
-	const char *const desc_label_fmt = C_("RomDataView", "%s:");
+	const char *const desc_label_fmt = C_("RomDataView", "{:s}:");
 
 	// Create the data widgets.
 	int prevTabIdx = 0;
@@ -1019,7 +1019,7 @@ void RomDataViewPrivate::initDisplayWidgets(void)
 		}
 
 		// tr: Field description label.
-		const string txt = rp_sprintf(desc_label_fmt, field.name);
+		const string txt = fmt::format(desc_label_fmt, field.name);
 		QLabel *const lblDesc = new QLabel(U82Q(txt), q);
 		// NOTE: No name for this QObject.
 		lblDesc->setAlignment(Qt::AlignLeft | Qt::AlignTop);
