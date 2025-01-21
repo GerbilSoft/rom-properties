@@ -152,7 +152,6 @@ void ImageTypesTabPrivate::createGridLabels(void)
 	const QString cssImageType = QLatin1String(
 		"QLabel { margin-left: 0.2em; margin-right: 0.2em; margin-bottom: 0.1em; }");
 	const unsigned int imageTypeCount = ImageTypesConfig::imageTypeCount();
-	string lbl_name;
 	for (unsigned int i = 0; i < imageTypeCount; i++) {
 		// TODO: Decrement the column number for >IMG_INT_MEDIA?
 		if (i == RomData::IMG_INT_MEDIA) {
@@ -161,8 +160,8 @@ void ImageTypesTabPrivate::createGridLabels(void)
 		}
 
 		QLabel *const lblImageType = new QLabel(U82Q(imageTypeName(i)), q);
-		lbl_name = fmt::format(FSTR("lblImageType{:d}"), i);
-		lblImageType->setObjectName(QLatin1String(lbl_name.c_str()));
+		lblImageType->setObjectName(QLatin1String(
+			fmt::format(FSTR("lblImageType{:d}"), i).c_str()));
 
 		lblImageType->setAlignment(Qt::AlignTop|Qt::AlignHCenter);
 		lblImageType->setStyleSheet(cssImageType);
@@ -175,8 +174,8 @@ void ImageTypesTabPrivate::createGridLabels(void)
 	const unsigned int sysCount = ImageTypesConfig::sysCount();
 	for (unsigned int sys = 0; sys < sysCount; sys++) {
 		QLabel *const lblSysName = new QLabel(U82Q(sysName(sys)), q);
-		lbl_name = fmt::format(FSTR("lblSysName{:d}"), sys);
-		lblSysName->setObjectName(QLatin1String(lbl_name.c_str()));
+		lblSysName->setObjectName(QLatin1String(
+			fmt::format(FSTR("lblSysName{:d}"), sys).c_str()));
 
 		lblSysName->setAlignment(Qt::AlignVCenter|Qt::AlignLeft);
 		lblSysName->setStyleSheet(cssSysName);
