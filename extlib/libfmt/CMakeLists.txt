@@ -154,6 +154,9 @@ set_verbose(FMT_INC_DIR ${CMAKE_INSTALL_INCLUDEDIR} CACHE STRING
             "Installation directory for include files, a relative path that "
             "will be joined with ${CMAKE_INSTALL_PREFIX} or an absolute path.")
 
+# rom-properties: Disable these options.
+# They will be set in extlib/CMakeLists.txt.
+IF(0) # rom-properties
 option(FMT_PEDANTIC "Enable extra warnings and expensive tests." OFF)
 option(FMT_WERROR "Halt the compilation with an error on compiler warnings."
        OFF)
@@ -168,6 +171,7 @@ option(FMT_OS "Include OS-specific APIs." ON)
 option(FMT_MODULE "Build a module instead of a traditional library." OFF)
 option(FMT_SYSTEM_HEADERS "Expose headers with marking them as system." OFF)
 option(FMT_UNICODE "Enable Unicode support." ON)
+ENDIF(0) # rom-properties
 
 if (FMT_TEST AND FMT_MODULE)
   # The tests require {fmt} to be compiled as traditional library
