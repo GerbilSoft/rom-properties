@@ -880,7 +880,7 @@ updChecker_retrieved(RpUpdateChecker	*updChecker,
 	string sVersionLabel;
 	sVersionLabel.reserve(512);
 
-	sVersionLabel = fmt::format(C_("AboutTab", "Latest version: %s"), sUpdVersion);
+	sVersionLabel = fmt::format(C_("AboutTab", "Latest version: {:s}"), sUpdVersion);
 	if (updateVersion > ourVersion) {
 		sVersionLabel += "\n\n";
 		sVersionLabel += C_("AboutTab", "<b>New version available!</b>");

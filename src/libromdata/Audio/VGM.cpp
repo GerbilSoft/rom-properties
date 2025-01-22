@@ -710,7 +710,7 @@ int VGM::loadFieldData(void)
 					? C_("VGM|NESExpansion", "Famicom Disk System")
 					: C_("VGM|NESExpansion", "(none)");
 				d->fields.addField_string(
-					fmt::format(C_("VGM", "%s Expansions"), "NES APU").c_str(), nes_exp);
+					fmt::format(C_("VGM", "{:s} Expansions"), "NES APU").c_str(), nes_exp);
 			}
 		}
 
