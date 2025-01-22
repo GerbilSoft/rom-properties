@@ -330,7 +330,7 @@ void RpImageTypesTabPrivate::addComboBoxStrings(unsigned int cbid, int max_prio)
 	// tr: Don't use this image type for this particular system.
 	gtk_string_list_append(list, C_("ImageTypesTab|Values", "No"));
 	for (int i = 1; i <= max_prio; i++) {
-		gtk_string_list_append(list, fmt::format(FSTR("{:d}"), i).c_str());
+		gtk_string_list_append(list, fmt::to_string(i).c_str());
 	}
 
 	gtk_drop_down_set_model(cbo, G_LIST_MODEL(list));
@@ -341,7 +341,7 @@ void RpImageTypesTabPrivate::addComboBoxStrings(unsigned int cbid, int max_prio)
 	gtk_list_store_insert_with_values(lstCbo, nullptr, 0, 0, C_("ImageTypesTab|Values", "No"), -1);
 	for (int i = 1; i <= max_prio; i++) {
 		gtk_list_store_insert_with_values(lstCbo, nullptr, i,
-			0, fmt::format(FSTR("{:d}"), i).c_str(), -1);
+			0, fmt::to_string(i).c_str(), -1);
 	}
 
 	gtk_combo_box_set_model(cbo, GTK_TREE_MODEL(lstCbo));

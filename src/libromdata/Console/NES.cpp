@@ -1149,7 +1149,7 @@ int NES::loadFieldData(void)
 				static_cast<unsigned int>(mapper), mapper_name);
 		} else {
 			// tr: Print only the mapper ID.
-			s_mapper = fmt::format(FSTR("{:d}"), static_cast<unsigned int>(mapper));
+			s_mapper = fmt::to_string(static_cast<unsigned int>(mapper));
 		}
 		d->fields.addField_string(mapper_title, s_mapper);
 	} else {
@@ -1176,7 +1176,7 @@ int NES::loadFieldData(void)
 				static_cast<unsigned int>(submapper), submapper_name);
 		} else {
 			// tr: Print only the submapper ID.
-			s_submapper = fmt::format(FSTR("{:d}"), static_cast<unsigned int>(submapper));
+			s_submapper = fmt::to_string(static_cast<unsigned int>(submapper));
 		}
 		d->fields.addField_string(C_("NES", "Submapper"), s_submapper);
 	}
@@ -1556,7 +1556,7 @@ int NES::loadFieldData(void)
 					footer_mapper, footer_mapper_tbl[footer_mapper]);
 			} else {
 				// tr: Print only the mapper ID.
-				s_footer_mapper = fmt::format(FSTR("{:d}"), footer_mapper);
+				s_footer_mapper = fmt::to_string(static_cast<unsigned int>(footer_mapper));
 			}
 			d->fields.addField_string(C_("NES", "Board Type"), s_footer_mapper);
 

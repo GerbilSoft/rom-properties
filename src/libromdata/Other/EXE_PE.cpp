@@ -910,9 +910,9 @@ int EXEPrivate::addFields_PE_Export(void)
 		auto &row = vv_data->back();
 		row.reserve(5);
 		row.emplace_back(ent.name);
-		row.emplace_back(fmt::format(FSTR("{:d}"), ent.ordinal));
+		row.emplace_back(fmt::to_string(ent.ordinal));
 		row.emplace_back(ent.hint != -1
-			? fmt::format(FSTR("{:d}"), ent.hint)
+			? fmt::to_string(ent.hint)
 			: C_("EXE|Exports", "None"));
 		if (ent.forwarder.size() != 0) {
 			row.emplace_back(ent.forwarder);
@@ -1115,7 +1115,7 @@ int EXEPrivate::addFields_PE_Import(void)
 			// FIXME: This may break on non-i386/amd64 systems...
 			const uint16_t hint = le16_to_cpu(*reinterpret_cast<const uint16_t*>(ent));
 			row.emplace_back(ent+2);
-			row.emplace_back(fmt::format(FSTR("{:d}"), hint));
+			row.emplace_back(fmt::to_string(hint));
 		}
 		row.emplace_back(*(it.dllname));
 	}

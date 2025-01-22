@@ -91,7 +91,7 @@ QString formatDimensions(const int dimensions[3])
 				dimensions[0], dimensions[1]);
 		}
 	} else {
-		str = fmt::format(FSTR("{:d}"), dimensions[0]);
+		str = fmt::to_string(dimensions[0]);
 	}
 
 	return QString::fromLatin1(str.c_str());

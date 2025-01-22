@@ -347,7 +347,7 @@ int WimPrivate::addFields_XML()
 		vv_data->resize(vv_data->size()+1);
 		auto &data_row = vv_data->at(vv_data->size()-1);
 		data_row.reserve(10);
-		data_row.emplace_back(fmt::format(FSTR("{:d}"), idx++));
+		data_row.emplace_back(fmt::to_string(idx++));
 		data_row.emplace_back(image.name);
 		data_row.emplace_back(image.description);
 		data_row.emplace_back(image.dispname);

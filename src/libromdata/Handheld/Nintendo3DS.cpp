@@ -1977,7 +1977,7 @@ int Nintendo3DS::loadFieldData(void)
 			data_row.reserve(5);
 
 			// Partition number.
-			data_row.emplace_back(fmt::format(FSTR("{:d}"), i));
+			data_row.emplace_back(fmt::to_string(i));
 
 			// Partition type.
 			// TODO: Use the partition ID to determine the type?
@@ -2138,7 +2138,7 @@ int Nintendo3DS::loadFieldData(void)
 			data_row.reserve(5);
 
 			// Content index
-			data_row.emplace_back(fmt::format(FSTR("{:d}"), i));
+			data_row.emplace_back(fmt::to_string(i));
 
 			// TODO: Use content_chunk->index?
 			const N3DS_NCCH_Header_NoSig_t *content_ncch_header = nullptr;

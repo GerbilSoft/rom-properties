@@ -157,13 +157,13 @@ Q_DECL_EXPORT int RP_C_API rp_create_thumbnail2(const char *source_file, const c
 			// Modification time
 			const int64_t mtime = fi_src.lastModified().toMSecsSinceEpoch() / 1000;
 			if (mtime > 0) {
-				kv.emplace_back("Thumb::MTime", fmt::format(FSTR("{:d}"), mtime));
+				kv.emplace_back("Thumb::MTime", fmt::to_string(mtime));
 			}
 
 			// File size
 			const off64_t szFile = fi_src.size();
 			if (szFile > 0) {
-				kv.emplace_back("Thumb::Size", fmt::format(FSTR("{:d}"), szFile));
+				kv.emplace_back("Thumb::Size", fmt::to_string(szFile));
 			}
 		}
 
@@ -175,8 +175,8 @@ Q_DECL_EXPORT int RP_C_API rp_create_thumbnail2(const char *source_file, const c
 
 		// Original image dimensions
 		if (outParams.fullSize.width > 0 && outParams.fullSize.height > 0) {
-			kv.emplace_back("Thumb::Image::Width", fmt::format(FSTR("{:d}"), outParams.fullSize.width));
-			kv.emplace_back("Thumb::Image::Height", fmt::format(FSTR("{:d}"), outParams.fullSize.height));
+			kv.emplace_back("Thumb::Image::Width", fmt::to_string(outParams.fullSize.width));
+			kv.emplace_back("Thumb::Image::Height", fmt::to_string(outParams.fullSize.height));
 		}
 
 		// URI

@@ -195,7 +195,7 @@ rp_key_manager_tab_init(RpKeyManagerTab *tab)
 	for (int i = 0; i < ARRAY_SIZE_I(import_menu_actions); i++) {
 		// Create the action.
 		GSimpleAction *const action = g_simple_action_new(
-			fmt::format(FSTR("{:d}"), i).c_str(), nullptr);
+			fmt::to_string(i).c_str(), nullptr);
 		g_simple_action_set_enabled(action, TRUE);
 		g_object_set_qdata(G_OBJECT(action), menuImport_id_quark, GINT_TO_POINTER(i));
 		g_signal_connect(action, "activate", G_CALLBACK(action_triggered_signal_handler), tab);

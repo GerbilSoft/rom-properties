@@ -680,7 +680,7 @@ int EXEPrivate::addFields_NE_Entry(void)
 			flags.resize(flags.size()-1);
 		}
 
-		row.emplace_back(fmt::format(FSTR("{:d}"), ent.ordinal));
+		row.emplace_back(fmt::to_string(ent.ordinal));
 		if (ent.has_name) {
 			row.emplace_back(ent.name.data(), ent.name.size());
 		} else {
@@ -833,7 +833,7 @@ int EXEPrivate::addFields_NE_Import(void)
 		row.reserve(3);
 		const char *const name = EXENEEntries::lookup_ordinal(modname.c_str(), imp.second);
 		row.emplace_back(name ? name : s_no_name);
-		row.emplace_back(fmt::format(FSTR("{:d}"), imp.second));
+		row.emplace_back(fmt::to_string(imp.second));
 		row.emplace_back(std::move(modname));
 		vv_data->emplace_back(std::move(row));
 	}

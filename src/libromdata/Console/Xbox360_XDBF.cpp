@@ -1035,8 +1035,8 @@ int Xbox360_XDBF_Private::addFields_achievements_SPA(void)
 		const uint16_t unlocked_desc_id = be16_to_cpu(p->unlocked_desc_id);
 
 		// TODO: Localized numeric formatting?
-		const string s_achievement_id = fmt::format(FSTR("{:d}"), be16_to_cpu(p->achievement_id));
-		const string s_gamerscore = fmt::format(FSTR("{:d}"), be16_to_cpu(p->gamerscore));
+		const string s_achievement_id = fmt::to_string(be16_to_cpu(p->achievement_id));
+		const string s_gamerscore = fmt::to_string(be16_to_cpu(p->gamerscore));
 
 		for (int langID = XDBF_LANGUAGE_ENGLISH; langID < XDBF_LANGUAGE_MAX; langID++) {
 			if (!pvv_xach[langID]) {
@@ -1457,8 +1457,8 @@ int Xbox360_XDBF_Private::addFields_achievements_GPD(void)
 		vv_icons->push_back(loadImage(be32_to_cpu(pGPD->image_id)));
 
 		// TODO: Localized numeric formatting?
-		const string s_achievement_id = fmt::format(FSTR("{:d}"), be32_to_cpu(pGPD->achievement_id));
-		const string s_gamerscore = fmt::format(FSTR("{:d}"), be32_to_cpu(pGPD->gamerscore));
+		const string s_achievement_id = fmt::to_string(be32_to_cpu(pGPD->achievement_id));
+		const string s_gamerscore = fmt::to_string(be32_to_cpu(pGPD->gamerscore));
 
 		// Get the strings.
 		const char16_t *pTitle = nullptr, *pUnlockedDesc = nullptr, *pLockedDesc = nullptr;

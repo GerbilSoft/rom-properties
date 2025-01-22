@@ -555,7 +555,7 @@ rp_options_menu_button_reinit_menu(RpOptionsMenuButton *widget,
 	for (const option_menu_action_t &p : stdacts) {
 		// Create the action.
 		GSimpleAction *const action = g_simple_action_new(
-			fmt::format(FSTR("{:d}"), p.id).c_str(), nullptr);
+			fmt::to_string(p.id).c_str(), nullptr);
 		g_simple_action_set_enabled(action, TRUE);
 		g_object_set_qdata(G_OBJECT(action), menuOptions_id_quark, GINT_TO_POINTER(p.id));
 		g_signal_connect(action, "activate", G_CALLBACK(action_triggered_signal_handler), widget);
@@ -578,7 +578,7 @@ rp_options_menu_button_reinit_menu(RpOptionsMenuButton *widget,
 		for (const RomData::RomOp &op : ops) {
 			// Create the action.
 			GSimpleAction *const action = g_simple_action_new(
-				fmt::format(FSTR("{:d}"), i).c_str(), nullptr);
+				fmt::to_string(i).c_str(), nullptr);
 			g_simple_action_set_enabled(action, !!(op.flags & RomData::RomOp::ROF_ENABLED));
 			g_object_set_qdata(G_OBJECT(action), menuOptions_id_quark, GINT_TO_POINTER(i));
 			g_signal_connect(action, "activate", G_CALLBACK(action_triggered_signal_handler), widget);
@@ -680,7 +680,7 @@ rp_options_menu_button_update_op(RpOptionsMenuButton *widget,
 	// Look up the GAction in the map.
 	GSimpleAction *const action = G_SIMPLE_ACTION(
 		g_action_map_lookup_action(G_ACTION_MAP(widget->actionGroup),
-			fmt::format(FSTR("{:d}"), id).c_str()));
+			fmt::to_string(id).c_str()));
 	if (!action)
 		return;
 

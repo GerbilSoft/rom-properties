@@ -465,7 +465,7 @@ G_MODULE_EXPORT int RP_C_API rp_create_thumbnail2(
 
 		// Modification time
 		if (mtime > 0) {
-			kv.emplace_back("Thumb::MTime", fmt::format(FSTR("{:d}"), static_cast<int64_t>(mtime)));
+			kv.emplace_back("Thumb::MTime", fmt::to_string(static_cast<int64_t>(mtime)));
 		}
 
 		// MIME type
@@ -476,13 +476,13 @@ G_MODULE_EXPORT int RP_C_API rp_create_thumbnail2(
 
 		// File size
 		if (szFile > 0) {
-			kv.emplace_back("Thumb::Size", fmt::format(FSTR("{:d}"), szFile));
+			kv.emplace_back("Thumb::Size", fmt::to_string(szFile));
 		}
 
 		// Original image dimensions
 		if (outParams.fullSize.width > 0 && outParams.fullSize.height > 0) {
-			kv.emplace_back("Thumb::Image::Width", fmt::format(FSTR("{:d}"), outParams.fullSize.width));
-			kv.emplace_back("Thumb::Image::Height", fmt::format(FSTR("{:d}"), outParams.fullSize.height));
+			kv.emplace_back("Thumb::Image::Width", fmt::to_string(outParams.fullSize.width));
+			kv.emplace_back("Thumb::Image::Height", fmt::to_string(outParams.fullSize.height));
 		}
 
 		// URI

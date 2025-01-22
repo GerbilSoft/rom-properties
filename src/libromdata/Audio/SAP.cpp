@@ -679,7 +679,7 @@ int SAP::loadFieldData(void)
 			const uint32_t min = (duration / 1000) / 60;
 			const uint32_t sec = (duration / 1000) % 60;
 			const uint32_t ms =  (duration % 1000);
-			data_row.emplace_back(fmt::format(FSTR("{:d}"), song_num));
+			data_row.emplace_back(fmt::to_string(song_num));
 			data_row.emplace_back(fmt::format(FSTR("{:d}:{:0>2d}.{:0>3d}"), min, sec, ms));
 			data_row.emplace_back(src_iter->second ? s_yes : s_no);
 		}

@@ -289,7 +289,7 @@ int PokemonMini::loadFieldData(void)
 		data_row.reserve(3);
 
 		// # (decimal)
-		data_row.emplace_back(fmt::format(FSTR("{:d}"), i));
+		data_row.emplace_back(fmt::to_string(i));
 
 		// Vector name
 		data_row.emplace_back(vectors_names[i]);

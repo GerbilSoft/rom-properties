@@ -38,6 +38,10 @@
 
 // libfmt
 #include <fmt/format.h>
+#if FMT_VERSION < 50000
+// libfmt 4.x has std::to_string in a separate header file.
+#  include <fmt/string.h>
+#endif /* FMT_VERSION < 50000 */
 #ifdef _WIN32
 #  include <fmt/xchar.h>
 #endif /* !_WIN32 */
