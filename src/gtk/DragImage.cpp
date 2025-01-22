@@ -513,6 +513,7 @@ void rp_drag_image_set_ecks_bawks(RpDragImage *image, bool new_ecks_bawks)
 
 	for (int i = 0; i < ARRAY_SIZE_I(menu_items); i++) {
 		GtkWidget *const action = gtk_menu_item_new_with_label(menu_items[i]);
+		gtk_widget_set_name(action, fmt::format(FSTR("menuEcksBawks{:d}"), i).c_str());
 		g_object_set_qdata(G_OBJECT(action), ecksbawks_quark, GINT_TO_POINTER(i+1));
 		g_signal_connect(action, "activate", G_CALLBACK(ecksbawks_menuItem_triggered_signal_handler), image);
 		gtk_widget_show(action);

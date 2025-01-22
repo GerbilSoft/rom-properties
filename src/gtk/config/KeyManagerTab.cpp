@@ -210,11 +210,9 @@ rp_key_manager_tab_init(RpKeyManagerTab *tab)
 #else /* !USE_G_MENU_MODEL */
 	tab->menuImport = gtk_menu_new();
 	gtk_widget_set_name(tab->menuImport, "menuImport");
-	string s_menu_name;
 	for (int i = 0; i < ARRAY_SIZE_I(import_menu_actions); i++) {
 		GtkWidget *const menuItem = gtk_menu_item_new_with_label(import_menu_actions[i]);
-		s_menu_name = fmt::format(FSTR("menuImport{:d}"), i);
-		gtk_widget_set_name(menuItem, s_menu_name.c_str());
+		gtk_widget_set_name(menuItem, fmt::format(FSTR("menuImport{:d}"), i).c_str());
 		g_object_set_qdata(G_OBJECT(menuItem), menuImport_id_quark, GINT_TO_POINTER(i));
 		g_signal_connect(menuItem, "activate", G_CALLBACK(menuImport_triggered_signal_handler), tab);
 		gtk_widget_show(menuItem);
