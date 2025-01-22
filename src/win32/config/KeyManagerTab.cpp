@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * KeyManagerTab.hpp: Key Manager tab for rp-config.                       *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -1607,15 +1607,15 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 
 		case KeyStoreUI::ImportStatus::OpenError:
 			if (iret.error_code != 0) {
-				// tr: %1$s == filename, %2$s == error message
-				msg = rp_stprintf_p(TC_("KeyManagerTab",
-					"An error occurred while opening '%1$s': %2$s"),
-					fileNoPath.c_str(), _wcserror(iret.error_code));
+				// tr: {0:s} == filename, {1:s} == error message
+				msg = fmt::format(TC_("KeyManagerTab",
+					"An error occurred while opening '{0:s}': {1:s}"),
+					fileNoPath, _wcserror(iret.error_code));
 			} else {
-				// tr: %s == filename
-				msg = rp_stprintf(TC_("KeyManagerTab",
-					"An error occurred while opening '%s'."),
-					fileNoPath.c_str());
+				// tr: {:s} == filename
+				msg = fmt::format(TC_("KeyManagerTab",
+					"An error occurred while opening '{:s}'."),
+					fileNoPath);
 			}
 			type = MB_ICONSTOP;
 			break;
@@ -1623,32 +1623,32 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 		case KeyStoreUI::ImportStatus::ReadError:
 			// TODO: Error code for short reads.
 			if (iret.error_code != 0) {
-				// tr: %1$s == filename, %2$s == error message
-				msg = rp_stprintf_p(TC_("KeyManagerTab",
-					"An error occurred while reading '%1$s': %2$s"),
+				// tr: {0:s} == filename, {1:s} == error message
+				msg = fmt::format(TC_("KeyManagerTab",
+					"An error occurred while reading '{0:s}': {1:s}"),
 					fileNoPath, _wcserror(iret.error_code));
 			} else {
-				// tr: %s == filename
-				msg = rp_stprintf(TC_("KeyManagerTab",
-					"An error occurred while reading '%s'."),
-					fileNoPath.c_str());
+				// tr: {:s} == filename
+				msg = fmt::format(TC_("KeyManagerTab",
+					"An error occurred while reading '{:s}'."),
+					fileNoPath);
 			}
 			type = MB_ICONSTOP;
 			break;
 
 		case KeyStoreUI::ImportStatus::InvalidFile:
-			// tr: %1$s == filename, %2$s == type of file
-			msg = rp_stprintf_p(TC_("KeyManagerTab",
-				"The file '%1$s' is not a valid %2$s file."),
-				fileNoPath.c_str(), keyType);
+			// tr: {0:s} == filename, {1:s} == type of file
+			msg = fmt::format(TC_("KeyManagerTab",
+				"The file '{0:s}' is not a valid {1:s} file."),
+				fileNoPath, keyType);
 			type = MB_ICONWARNING;
 			break;
 
 		case KeyStoreUI::ImportStatus::NoKeysImported:
-			// tr: %s == filename
-			msg = rp_stprintf(TC_("KeyManagerTab",
-				"No keys were imported from '%s'."),
-				fileNoPath.c_str());
+			// tr: {:s} == filename
+			msg = fmt::format(TC_("KeyManagerTab",
+				"No keys were imported from '{:s}'."),
+				fileNoPath);
 			type = MB_ICONINFORMATION;
 			showKeyStats = true;
 			break;
@@ -1656,12 +1656,12 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 		case KeyStoreUI::ImportStatus::KeysImported: {
 			const unsigned int keyCount = iret.keysImportedVerify + iret.keysImportedNoVerify;
 			toss << keyCount;
-			// tr: %1$s == number of keys (formatted), %2$u == filename
-			msg = rp_stprintf_p(TNC_("KeyManagerTab",
-				"%1$s key was imported from '%2$s'.",
-				"%1$s keys were imported from '%2$s'.",
+			// tr: {0:s} == number of keys (formatted), %2$u == filename
+			msg = fmt::format(TNC_("KeyManagerTab",
+				"{0:s} key was imported from '{1:s}'.",
+				"{0:s} keys were imported from '{1:s}'.",
 				keyCount),
-				toss.str().c_str(), fileNoPath.c_str());
+				toss.str(), fileNoPath);
 			type = MB_ICONINFORMATION;
 			showKeyStats = true;
 			break;
@@ -1682,71 +1682,71 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 			toss.clear();
 			toss << iret.keysExist;
 			msg += nl_bullet;
-			// tr: %s == number of keys (formatted)
-			msg += rp_stprintf(TNC_("KeyManagerTab",
-				"%s key already exists in the Key Manager.",
-				"%s keys already exist in the Key Manager.",
+			// tr: {:s} == number of keys (formatted)
+			msg += fmt::format(TNC_("KeyManagerTab",
+				"{:s} key already exists in the Key Manager.",
+				"{:s} keys already exist in the Key Manager.",
 				iret.keysExist),
-				toss.str().c_str());
+				toss.str());
 		}
 		if (iret.keysInvalid > 0) {
 			toss.str(_T(""));
 			toss.clear();
 			toss << iret.keysInvalid;
 			msg += nl_bullet;
-			// tr: %s == number of keys (formatted)
-			msg += rp_stprintf(TNC_("KeyManagerTab",
-				"%s key was not imported because it is incorrect.",
-				"%s keys were not imported because they are incorrect.",
+			// tr: {:s} == number of keys (formatted)
+			msg += fmt::format(TNC_("KeyManagerTab",
+				"{:s} key was not imported because it is incorrect.",
+				"{:s} keys were not imported because they are incorrect.",
 				iret.keysInvalid),
-				toss.str().c_str());
+				toss.str());
 		}
 		if (iret.keysNotUsed > 0) {
 			toss.str(_T(""));
 			toss.clear();
 			toss << iret.keysNotUsed;
 			msg += nl_bullet;
-			// tr: %s == number of keys (formatted)
-			msg += rp_stprintf(TNC_("KeyManagerTab",
-				"%s key was not imported because it isn't used by rom-properties.",
-				"%s keys were not imported because they aren't used by rom-properties.",
+			// tr: {:s} == number of keys (formatted)
+			msg += fmt::format(TNC_("KeyManagerTab",
+				"{:s} key was not imported because it isn't used by rom-properties.",
+				"{:s} keys were not imported because they aren't used by rom-properties.",
 				iret.keysNotUsed),
-				toss.str().c_str());
+				toss.str());
 		}
 		if (iret.keysCantDecrypt > 0) {
 			toss.str(_T(""));
 			toss.clear();
 			toss << iret.keysCantDecrypt;
 			msg += nl_bullet;
-			// tr: %s == number of keys (formatted)
-			msg += rp_stprintf(TNC_("KeyManagerTab",
-				"%s key was not imported because it is encrypted and the master key isn't available.",
-				"%s keys were not imported because they are encrypted and the master key isn't available.",
+			// tr: {:s} == number of keys (formatted)
+			msg += fmt::format(TNC_("KeyManagerTab",
+				"{:s} key was not imported because it is encrypted and the master key isn't available.",
+				"{:s} keys were not imported because they are encrypted and the master key isn't available.",
 				iret.keysCantDecrypt),
-				toss.str().c_str());
+				toss.str());
 		}
 		if (iret.keysImportedVerify > 0) {
 			toss.str(_T(""));
 			toss.clear();
 			toss << iret.keysImportedVerify;
 			msg += nl_bullet;
-			// tr: %s == number of keys (formatted)
-			msg += rp_stprintf(TNC_("KeyManagerTab",
-				"%s key has been imported and verified as correct.",
-				"%s keys have been imported and verified as correct.",
+			// tr: {:s} == number of keys (formatted)
+			msg += fmt::format(TNC_("KeyManagerTab",
+				"{:s} key has been imported and verified as correct.",
+				"{:s} keys have been imported and verified as correct.",
 				iret.keysImportedVerify),
-				toss.str().c_str());
+				toss.str());
 		}
 		if (iret.keysImportedNoVerify > 0) {
 			toss.str(_T(""));
 			toss.clear();
 			toss << iret.keysImportedVerify;
 			msg += nl_bullet;
-			msg += rp_stprintf(TNC_("KeyManagerTab",
-				"%s key has been imported without verification.",
-				"%s keys have been imported without verification.",
+			msg += fmt::format(TNC_("KeyManagerTab",
+				"{:s} key has been imported without verification.",
+				"{:s} keys have been imported without verification.",
 				iret.keysImportedNoVerify),
-				toss.str().c_str());
+				toss.str());
 		}
 	}
 

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * RomDataFormat.hpp: Common RomData string formatting functions.          *
  *                                                                         *
- * Copyright (c) 2017-2023 by David Korth.                                 *
+ * Copyright (c) 2017-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -113,18 +113,19 @@ tstring formatDateTime(time_t date_time, unsigned int flags)
 tstring formatDimensions(const int dimensions[3])
 {
 	// TODO: 'x' or '×'? Using 'x' for now.
-	TCHAR tbuf[64];
+	tstring tstr;
+
 	if (dimensions[1] > 0) {
 		if (dimensions[2] > 0) {
-			_sntprintf(tbuf, _countof(tbuf), _T("%dx%dx%d"),
+			tstr = fmt::format(FSTR(_T("%dx%dx%d")),
 				dimensions[0], dimensions[1], dimensions[2]);
 		} else {
-			_sntprintf(tbuf, _countof(tbuf), _T("%dx%d"),
+			tstr = fmt::format(FSTR(_T("%dx%d")),
 				dimensions[0], dimensions[1]);
 		}
 	} else {
-		_sntprintf(tbuf, _countof(tbuf), _T("%d"), dimensions[0]);
+		tstr = fmt::format(FSTR(_T("%d")), dimensions[0]);
 	}
 
-	return tbuf;
+	return tstr;
 }
