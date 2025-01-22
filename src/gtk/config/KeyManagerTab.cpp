@@ -571,7 +571,7 @@ rp_key_manager_tab_show_key_import_return_status(RpKeyManagerTab	*tab,
 					"An error occurred while opening '{0:s}': {1:s}"),
 					fileNoPath, strerror(iret.error_code));
 			} else {
-				// tr: %s == filename
+				// tr: {:s} == filename
 				msg = fmt::format(C_("KeyManagerTab",
 					"An error occurred while opening '{:s}'."),
 					fileNoPath);
@@ -587,7 +587,7 @@ rp_key_manager_tab_show_key_import_return_status(RpKeyManagerTab	*tab,
 					"An error occurred while reading '{0:s}': {1:s}"),
 					fileNoPath, strerror(iret.error_code));
 			} else {
-				// tr: %s == filename
+				// tr: {:s} == filename
 				msg = fmt::format(C_("KeyManagerTab",
 					"An error occurred while reading '{:s}'."),
 					fileNoPath);
@@ -604,7 +604,7 @@ rp_key_manager_tab_show_key_import_return_status(RpKeyManagerTab	*tab,
 			break;
 
 		case KeyStoreUI::ImportStatus::NoKeysImported:
-			// tr: %s == filename
+			// tr: {:s} == filename
 			msg = fmt::format(C_("KeyManagerTab",
 				"No keys were imported from '{:s}'."),
 				fileNoPath);
@@ -637,7 +637,7 @@ rp_key_manager_tab_show_key_import_return_status(RpKeyManagerTab	*tab,
 		if (iret.keysExist > 0) {
 			snprintf(buf, sizeof(buf), "%'d", iret.keysExist);
 			msg += nl_bullet;
-			// tr: %s == number of keys (formatted)
+			// tr: {:s} == number of keys (formatted)
 			msg += fmt::format(NC_("KeyManagerTab",
 				"{:s} key already exists in the Key Manager.",
 				"{:s} keys already exist in the Key Manager.",
@@ -646,7 +646,7 @@ rp_key_manager_tab_show_key_import_return_status(RpKeyManagerTab	*tab,
 		if (iret.keysInvalid > 0) {
 			snprintf(buf, sizeof(buf), "%'d", iret.keysInvalid);
 			msg += nl_bullet;
-			// tr: %s == number of keys (formatted)
+			// tr: {:s} == number of keys (formatted)
 			msg += fmt::format(NC_("KeyManagerTab",
 				"{:s} key was not imported because it is incorrect.",
 				"{:s} keys were not imported because they are incorrect.",
@@ -655,7 +655,7 @@ rp_key_manager_tab_show_key_import_return_status(RpKeyManagerTab	*tab,
 		if (iret.keysNotUsed > 0) {
 			snprintf(buf, sizeof(buf), "%'d", iret.keysNotUsed);
 			msg += nl_bullet;
-			// tr: %s == number of keys (formatted)
+			// tr: {:s} == number of keys (formatted)
 			msg += fmt::format(NC_("KeyManagerTab",
 				"{:s} key was not imported because it isn't used by rom-properties.",
 				"{:s} keys were not imported because they aren't used by rom-properties.",
@@ -664,7 +664,7 @@ rp_key_manager_tab_show_key_import_return_status(RpKeyManagerTab	*tab,
 		if (iret.keysCantDecrypt > 0) {
 			snprintf(buf, sizeof(buf), "%'d", iret.keysCantDecrypt);
 			msg += nl_bullet;
-			// tr: %s == number of keys (formatted)
+			// tr: {:s} == number of keys (formatted)
 			msg += fmt::format(NC_("KeyManagerTab",
 				"{:s} key was not imported because it is encrypted and the master key isn't available.",
 				"{:s} keys were not imported because they are encrypted and the master key isn't available.",
@@ -673,7 +673,7 @@ rp_key_manager_tab_show_key_import_return_status(RpKeyManagerTab	*tab,
 		if (iret.keysImportedVerify > 0) {
 			snprintf(buf, sizeof(buf), "%'d", iret.keysImportedVerify);
 			msg += nl_bullet;
-			// tr: %s == number of keys (formatted)
+			// tr: {:s} == number of keys (formatted)
 			msg += fmt::format(NC_("KeyManagerTab",
 				"{:s} key has been imported and verified as correct.",
 				"{:s} keys have been imported and verified as correct.",

@@ -802,7 +802,7 @@ string AboutTabPrivate::rtfFriendlyLink(const char *link, const char *title)
 		// Reference: https://docs.microsoft.com/en-us/archive/blogs/murrays/richedit-friendly-name-hyperlinks
 		// TODO: Get the "proper" link color.
 		// TODO: Don't include cf2/cf1 on Win8+?
-		return fmt::format(FSTR("{{\\field{{\\*\\fldinst{{HYPERLINK \"{:s}\"}}}}{{\\fldrslt{{\\cf2\\ul %s\\ul0\\cf1 }}}}}}"),
+		return fmt::format(FSTR("{{\\field{{\\*\\fldinst{{HYPERLINK \"{:s}\"}}}}{{\\fldrslt{{\\cf2\\ul {:s}\\ul0\\cf1 }}}}}}"),
 			rtfEscape(link), rtfEscape(title));
 	} else {
 		// No friendly links.

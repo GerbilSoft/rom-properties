@@ -801,7 +801,7 @@ STDAPI DllUnregisterServer(void)
 
 		// "HKU\\xxx\\SOFTWARE\\Classes\\Applications" entries
 		ts_regPath = fmt::format(
-			FSTR(_T("%s\\SOFTWARE\\Classes\\Applications")), sid);
+			FSTR(_T("{:s}\\SOFTWARE\\Classes\\Applications")), sid);
 		RegKey hku_Applications(HKEY_USERS, ts_regPath.c_str(), KEY_READ | KEY_WRITE, false);
 		if (hku_Applications.isOpen()) {
 			UnregisterFromApplications(hku_Applications);

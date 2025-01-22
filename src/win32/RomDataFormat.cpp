@@ -117,14 +117,15 @@ tstring formatDimensions(const int dimensions[3])
 
 	if (dimensions[1] > 0) {
 		if (dimensions[2] > 0) {
-			tstr = fmt::format(FSTR(_T("%dx%dx%d")),
+			tstr = fmt::format(FSTR(_T("{:d}x{:d}x{:d}")),
 				dimensions[0], dimensions[1], dimensions[2]);
 		} else {
-			tstr = fmt::format(FSTR(_T("%dx%d")),
+			tstr = fmt::format(FSTR(_T("{:d}x{:d}")),
 				dimensions[0], dimensions[1]);
 		}
 	} else {
-		tstr = fmt::format(FSTR(_T("%d")), dimensions[0]);
+		// FIXME: fmt::to_tstring()?
+		tstr = fmt::to_wstring(dimensions[0]);
 	}
 
 	return tstr;

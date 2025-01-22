@@ -700,7 +700,7 @@ void AboutTab::updChecker_retrieved(quint64 updateVersion)
 	string sVersionLabel;
 	sVersionLabel.reserve(512);
 
-	sVersionLabel = fmt::format(C_("AboutTab", "Latest version: %s"), sUpdVersion);
+	sVersionLabel = fmt::format(C_("AboutTab", "Latest version: {:s}"), sUpdVersion);
 	if (updateVersion > ourVersion) {
 		sVersionLabel += BR BR;
 		sVersionLabel += C_("AboutTab", "<b>New version available!</b>");

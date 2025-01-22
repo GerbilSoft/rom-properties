@@ -178,7 +178,7 @@ static void ExtractImages(const RomData *romData, const vector<ExtractParam> &ex
 			auto iconAnimData = romData->iconAnimData();
 			if (iconAnimData && iconAnimData->count != 0 && iconAnimData->seq_count != 0) {
 				found = true;
-				cerr << "-- " << fmt::format(C_("rpcli", "Extracting animated icon into '%s'"), T2U8c(p.filename)) << '\n';
+				cerr << "-- " << fmt::format(C_("rpcli", "Extracting animated icon into '{:s}'"), T2U8c(p.filename)) << '\n';
 				cerr.flush();
 				int errcode = RpPng::save(p.filename, iconAnimData);
 				if (errcode == -ENOTSUP) {
