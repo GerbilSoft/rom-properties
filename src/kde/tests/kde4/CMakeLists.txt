@@ -25,9 +25,6 @@ ADD_EXECUTABLE(ListDataSortProxyModelTest_kde4
 	)
 TARGET_LINK_LIBRARIES(ListDataSortProxyModelTest_kde4 PRIVATE rptest romdata)
 TARGET_LINK_LIBRARIES(ListDataSortProxyModelTest_kde4 PUBLIC Qt4::QtGui Qt4::QtCore)
-IF(Fmt_FOUND)
-	TARGET_LINK_LIBRARIES(ListDataSortProxyModelTest_kde4 PRIVATE ${Fmt_LIBRARY})
-ENDIF(Fmt_FOUND)
 LIST(APPEND KDE4_TESTS ListDataSortProxyModelTest_kde4)
 
 ### RomDataFormat tests
@@ -42,9 +39,6 @@ ADD_EXECUTABLE(RomDataFormatTest_kde4
 TARGET_LINK_LIBRARIES(RomDataFormatTest_kde4 PRIVATE rptest romdata)
 # NOTE: QSortFilterProxyModel is in QtGui in Qt4. (In Qt5, it was moved to QtCore.)
 TARGET_LINK_LIBRARIES(RomDataFormatTest_kde4 PUBLIC Qt4::QtGui Qt4::QtCore)
-IF(Fmt_FOUND)
-	TARGET_LINK_LIBRARIES(RomDataFormatTest_kde4 PRIVATE ${Fmt_LIBRARY})
-ENDIF(Fmt_FOUND)
 # Include directories required for stdafx.h.
 TARGET_INCLUDE_DIRECTORIES(RomDataFormatTest_kde4
 	PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/../../../librptext"

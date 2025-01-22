@@ -52,12 +52,6 @@ IF(BUILD_XFCE)
 	#TARGET_LINK_LIBRARIES(SortFuncsTest_gtk2 PRIVATE GdkPixbuf2::gdkpixbuf2)
 	TARGET_LINK_LIBRARIES(SortFuncsTest_gtk2 PUBLIC GTK2::gtk GTK2::gdk GTK2::pango)
 	TARGET_LINK_LIBRARIES(SortFuncsTest_gtk2 PUBLIC GLib2::gio-unix GLib2::gio GLib2::gobject GLib2::glib)
-
-	# libfmt
-	IF(Fmt_FOUND)
-		TARGET_LINK_LIBRARIES(SortFuncsTest_gtk2 PRIVATE ${Fmt_LIBRARY})
-	ENDIF(Fmt_FOUND)
-
 	LIST(APPEND GTK_TESTS SortFuncsTest_gtk2)
 ENDIF(BUILD_XFCE)
 IF(BUILD_GTK3)
@@ -71,12 +65,6 @@ IF(BUILD_GTK3)
 	#TARGET_LINK_LIBRARIES(SortFuncsTest_gtk3 PRIVATE Cairo::gobject)
 	TARGET_LINK_LIBRARIES(SortFuncsTest_gtk3 PUBLIC GTK3::gtk GTK3::gdk GTK3::pango GTK3::cairo)
 	TARGET_LINK_LIBRARIES(SortFuncsTest_gtk3 PUBLIC GLib2::gio-unix GLib2::gio GLib2::gobject GLib2::glib)
-
-	# libfmt
-	IF(Fmt_FOUND)
-		TARGET_LINK_LIBRARIES(SortFuncsTest_gtk3 PRIVATE ${Fmt_LIBRARY})
-	ENDIF(Fmt_FOUND)
-
 	LIST(APPEND GTK_TESTS SortFuncsTest_gtk3)
 ENDIF(BUILD_GTK3)
 IF(BUILD_GTK4)
@@ -90,12 +78,6 @@ IF(BUILD_GTK4)
 	#TARGET_LINK_LIBRARIES(SortFuncsTest_gtk4 PRIVATE Cairo::gobject)
 	TARGET_LINK_LIBRARIES(SortFuncsTest_gtk4 PUBLIC GTK4::gtk GTK4::pango)
 	TARGET_LINK_LIBRARIES(SortFuncsTest_gtk4 PUBLIC GLib2::gio-unix GLib2::gio GLib2::gobject GLib2::glib)
-
-	# libfmt
-	IF(Fmt_FOUND)
-		TARGET_LINK_LIBRARIES(SortFuncsTest_gtk4 PRIVATE ${Fmt_LIBRARY})
-	ENDIF(Fmt_FOUND)
-
 	LIST(APPEND GTK_TESTS SortFuncsTest_gtk4)
 ENDIF(BUILD_GTK4)
 
