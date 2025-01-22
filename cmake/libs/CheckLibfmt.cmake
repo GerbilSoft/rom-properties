@@ -1,11 +1,6 @@
 # Check for libfmt.
 # If libfmt isn't found, extlib/libfmt/ will be used instead.
 
-# TODO: Add internal libfmt.
-FIND_PACKAGE(Fmt REQUIRED)
-SET(Fmt_LIBRARY "fmt::fmt")
-
-IF(0)
 IF(NOT USE_INTERNAL_FMT)
 	IF(Fmt_LIBRARY MATCHES "^fmt$" OR Fmt_LIBRARY MATCHES "^fmt")
 		# Internal libfmt was previously in use.
@@ -20,6 +15,7 @@ IF(NOT USE_INTERNAL_FMT)
 	IF(Fmt_FOUND)
 		# Found system libfmt.
 		SET(HAVE_Fmt 1)
+		SET(Fmt_LIBRARY "fmt::fmt")
 	ELSE()
 		# System libfmt was not found.
 		MESSAGE(STATUS "Using the internal copy of libfmt since a system version was not found.")
@@ -33,16 +29,16 @@ IF(USE_INTERNAL_FMT)
 	# Using the internal libfmt library.
 	SET(Fmt_FOUND 1)
 	SET(HAVE_Fmt 1)
-	SET(Fmt_VERSION 11.1.1 CACHE INTERNAL "libfmt version" FORCE)
+	SET(Fmt_VERSION 11.1.2 CACHE INTERNAL "libfmt version" FORCE)
 	# FIXME: When was it changed from LIBRARY to LIBRARIES?
-	IF(WIN32 OR APPLE)
+	IF(0 AND (WIN32 OR APPLE)) # TODO: Use DLLs on Windows and Mac OS X.
 		# Using DLLs on Windows and Mac OS X.
 		SET(USE_INTERNAL_FMT_DLL ON)
-		SET(Fmt_LIBRARY fmt CACHE INTERNAL "libfmt library" FORCE)
+		SET(Fmt_LIBRARY fmt::fmt CACHE INTERNAL "libfmt library" FORCE)
 	ELSE()
 		# Using static linking on other systems.
 		SET(USE_INTERNAL_FMT_DLL OFF)
-		SET(Fmt_LIBRARY fmt CACHE INTERNAL "libfmt library" FORCE)
+		SET(Fmt_LIBRARY fmt::fmt-header-only CACHE INTERNAL "libfmt library" FORCE)
 	ENDIF()
 	SET(Fmt_LIBRARIES ${Fmt_LIBRARY} CACHE INTERNAL "libfmt libraries" FORCE)
 	# FIXME: When was it changed from DIR to DIRS?
@@ -51,4 +47,4 @@ IF(USE_INTERNAL_FMT)
 ELSE(USE_INTERNAL_FMT)
 	SET(USE_INTERNAL_FMT_DLL OFF)
 ENDIF(USE_INTERNAL_FMT)
-ENDIF(0)
+
