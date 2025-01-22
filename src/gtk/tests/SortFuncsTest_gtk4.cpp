@@ -27,6 +27,10 @@
 using std::array;
 using std::string;
 
+// libfmt
+#include <fmt/format.h>
+#define FSTR FMT_STRING
+
 // Test data
 #include "SortFuncsTest_data.h"
 
@@ -202,7 +206,7 @@ TEST_F(SortFuncsTest_gtk4, descendingSort)
  */
 extern "C" int gtest_main(int argc, TCHAR *argv[])
 {
-	fprintf(stderr, "GTK%d UI frontend test suite: SortFuncs tests.\n\n", GTK_MAJOR_VERSION);
+	fmt::print(stderr, FSTR("GTK{:d} UI frontend test suite: SortFuncs tests.\n\n"), GTK_MAJOR_VERSION);
 	fflush(nullptr);
 
 	// coverity[fun_call_w_exception]: uncaught exceptions cause nonzero exit anyway, so don't warn.

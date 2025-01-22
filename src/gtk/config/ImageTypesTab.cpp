@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * ImageTypesTab.cpp: Image Types tab for rp-config.                       *
  *                                                                         *
- * Copyright (c) 2017-2024 by David Korth.                                 *
+ * Copyright (c) 2017-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -192,9 +192,7 @@ void RpImageTypesTabPrivate::createGridLabels(void)
 		}
 
 		GtkWidget *const lblImageType = gtk_label_new(imageTypeName(i));
-		char lbl_name[32];
-		snprintf(lbl_name, sizeof(lbl_name), "lblImageType%u", i);
-		gtk_widget_set_name(lblImageType, lbl_name);
+		gtk_widget_set_name(lblImageType, fmt::format(FSTR("lblImageType{:d}"), i).c_str());
 
 #if !GTK_CHECK_VERSION(4,0,0)
 		gtk_widget_show(lblImageType);
@@ -221,9 +219,7 @@ void RpImageTypesTabPrivate::createGridLabels(void)
 	const unsigned int sysCount = ImageTypesConfig::sysCount();
 	for (unsigned int sys = 0; sys < sysCount; sys++) {
 		GtkWidget *const lblSysName = gtk_label_new(sysName(sys));
-		char lbl_name[32];
-		snprintf(lbl_name, sizeof(lbl_name), "lblSysName%u", sys);
-		gtk_widget_set_name(lblSysName, lbl_name);
+		gtk_widget_set_name(lblSysName, fmt::format(FSTR("lblSysName{:d}"), sys).c_str());
 
 #if !GTK_CHECK_VERSION(4,0,0)
 		gtk_widget_show(lblSysName);
@@ -269,9 +265,7 @@ void RpImageTypesTabPrivate::createComboBox(unsigned int cbid)
 	GtkWidget *const cbo = gtk_combo_box_new();
 #endif /* USE_GTK_DROP_DOWN */
 
-	char cbo_name[32];
-	snprintf(cbo_name, sizeof(cbo_name), "cbo%04X", cbid);
-	gtk_widget_set_name(cbo, cbo_name);
+	gtk_widget_set_name(cbo, fmt::format(FSTR("cbo{:0>4X}"), cbid).c_str());
 
 #if !GTK_CHECK_VERSION(4,0,0)
 	gtk_widget_show(cbo);
@@ -336,9 +330,7 @@ void RpImageTypesTabPrivate::addComboBoxStrings(unsigned int cbid, int max_prio)
 	// tr: Don't use this image type for this particular system.
 	gtk_string_list_append(list, C_("ImageTypesTab|Values", "No"));
 	for (int i = 1; i <= max_prio; i++) {
-		char buf[16];
-		snprintf(buf, sizeof(buf), "%d", i);
-		gtk_string_list_append(list, buf);
+		gtk_string_list_append(list, fmt::format(FSTR("{:d}"), i).c_str());
 	}
 
 	gtk_drop_down_set_model(cbo, G_LIST_MODEL(list));
@@ -348,9 +340,8 @@ void RpImageTypesTabPrivate::addComboBoxStrings(unsigned int cbid, int max_prio)
 	GtkListStore *const lstCbo = gtk_list_store_new(1, G_TYPE_STRING);
 	gtk_list_store_insert_with_values(lstCbo, nullptr, 0, 0, C_("ImageTypesTab|Values", "No"), -1);
 	for (int i = 1; i <= max_prio; i++) {
-		char buf[16];
-		snprintf(buf, sizeof(buf), "%d", i);
-		gtk_list_store_insert_with_values(lstCbo, nullptr, i, 0, buf, -1);
+		gtk_list_store_insert_with_values(lstCbo, nullptr, i,
+			0, fmt::format(FSTR("{:d}"), i).c_str(), -1);
 	}
 
 	gtk_combo_box_set_model(cbo, GTK_TREE_MODEL(lstCbo));
