@@ -434,7 +434,7 @@ int NintendoDS::doRomOp_int(int id, RomOpParams *pParams)
 				pParams->status = -EIO;
 				switch (ret) {
 					case 1: {
-						// TODO: Show actual file size?
+						// TODO: Show the actual file size?
 						pParams->msg = fmt::format(C_("NintendoDS", "File '{0:s}' has the wrong size. (should be {1:Ld} bytes)"),
 							filename, NDS_BLOWFISH_SIZE);
 						break;
