@@ -338,7 +338,8 @@ set(FMT_DEBUG_POSTFIX d CACHE STRING "Debug library postfix.")
 set_target_properties(fmt PROPERTIES
   VERSION ${FMT_VERSION} SOVERSION ${CPACK_PACKAGE_VERSION_MAJOR}
   PUBLIC_HEADER "${FMT_HEADERS}"
-  DEBUG_POSTFIX "${FMT_DEBUG_POSTFIX}"
+  # rom-properties: DEBUG_POSTFIX will be set next.
+  #DEBUG_POSTFIX "${FMT_DEBUG_POSTFIX}"
 
   # Workaround for Visual Studio 2017:
   # Ensure the .pdb is created with the same name and in the same directory
@@ -348,12 +349,28 @@ set_target_properties(fmt PROPERTIES
   COMPILE_PDB_NAME "fmt"
   COMPILE_PDB_NAME_DEBUG "fmt${FMT_DEBUG_POSTFIX}")
 
+IF(WIN32)
+  # rom-properties: On Windows, include the SOVERSION as part of the POSTFIX for both DEBUG and RELEASE.
+  SET_TARGET_PROPERTIES(fmt PROPERTIES
+    DEBUG_POSTFIX "-${CPACK_PACKAGE_VERSION_MAJOR}${FMT_DEBUG_POSTFIX}"
+    RELEASE_POSTFIX "-${CPACK_PACKAGE_VERSION_MAJOR}"
+    )
+ELSE(WIN32)
+  # rom-properties: On other systems, just set DEBUG_POSTFIX.
+  SET_TARGET_PROPERTIES(fmt PROPERTIES
+    DEBUG_POSTFIX "${FMT_DEBUG_POSTFIX}"
+    )
+ENDIF(WIN32)
+
 # Set FMT_LIB_NAME for pkg-config fmt.pc. We cannot use the OUTPUT_NAME target
 # property because it's not set by default.
 set(FMT_LIB_NAME fmt)
+# rom-properties: Handled above.
+IF(0) # rom-properties
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
   set(FMT_LIB_NAME ${FMT_LIB_NAME}${FMT_DEBUG_POSTFIX})
 endif ()
+ENDIF(0) # rom-properties
 
 if (BUILD_SHARED_LIBS)
   target_compile_definitions(fmt PRIVATE FMT_LIB_EXPORT INTERFACE FMT_SHARED)

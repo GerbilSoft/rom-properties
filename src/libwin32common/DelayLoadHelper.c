@@ -75,6 +75,7 @@ static const char *const dll_whitelist[] = {
 	"minilzo" DEBUG_SUFFIX ".dll",
 	"libgnuintl-8.dll",
 	"minizip" DEBUG_SUFFIX ".dll",
+	"fmt-11" DEBUG_SUFFIX ".dll",
 };
 
 /**

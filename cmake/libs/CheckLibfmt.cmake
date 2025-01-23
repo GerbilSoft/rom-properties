@@ -31,7 +31,7 @@ IF(USE_INTERNAL_FMT)
 	SET(HAVE_Fmt 1)
 	SET(Fmt_VERSION 11.1.2 CACHE INTERNAL "libfmt version" FORCE)
 	# FIXME: When was it changed from LIBRARY to LIBRARIES?
-	IF(0 AND (WIN32 OR APPLE)) # TODO: Use DLLs on Windows and Mac OS X.
+	IF(WIN32 OR APPLE)
 		# Using DLLs on Windows and Mac OS X.
 		SET(USE_INTERNAL_FMT_DLL ON)
 		SET(Fmt_LIBRARY fmt::fmt CACHE INTERNAL "libfmt library" FORCE)
