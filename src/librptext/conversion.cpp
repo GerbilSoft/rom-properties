@@ -496,7 +496,7 @@ std::string formatFileSizeKiB(unsigned int size, BinaryUnitDialect dialect)
 	}
 
 	// tr: {0:Ld} == localized value, {1:s} == suffix (e.g. MiB)
-	return fmt::format(C_("LibRpText|FileSize", "{0:s} {1:s}"), size, suffix);
+	return fmt::format(C_("LibRpText|FileSize", "{0:Ld} {1:s}"), size, suffix);
 }
 
 /**
