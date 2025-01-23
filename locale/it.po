@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2024-11-10 19:14-0500\n"
-"PO-Revision-Date: 2024-11-11 01:46\n"
+"PO-Revision-Date: 2025-01-23 14:19\n"
 "Last-Translator: \n"
 "Language-Team: Italian\n"
 "Language: it_IT\n"
@@ -1005,12 +1005,12 @@ msgstr ""
 #: ../src/gtk/gtk3/NautilusExtraInterfaces.c:134
 msgctxt "NautilusExtraInterfaces"
 msgid "Menu extension"
-msgstr ""
+msgstr "Estensione menu"
 
 #: ../src/gtk/gtk3/NautilusExtraInterfaces.c:141
 msgctxt "NautilusExtraInterfaces"
 msgid "ROM Properties Page"
-msgstr ""
+msgstr "Scheda ROM Properties"
 
 #: ../src/gtk/gtk3/NautilusMenuProvider.c:194
 #: ../src/gtk/gtk3/ThunarMenuProvider.c:182 ../src/win32/RP_ContextMenu.cpp:482
@@ -2155,49 +2155,49 @@ msgstr "GameCube / Wii"
 #: ../src/libromdata/config/ImageTypesConfig.cpp:151
 msgctxt "ImageTypesConfig|SysName"
 msgid "GameCube Saves"
-msgstr ""
+msgstr "Salvataggi GameCube"
 
 #. tr: NintendoDS
 #: ../src/libromdata/config/ImageTypesConfig.cpp:153
 msgctxt "ImageTypesConfig|SysName"
 msgid "Nintendo DS(i)"
-msgstr ""
+msgstr "Nintendo DS(i)"
 
 #. tr: Nintendo3DS
 #: ../src/libromdata/config/ImageTypesConfig.cpp:155
 msgctxt "ImageTypesConfig|SysName"
 msgid "Nintendo 3DS"
-msgstr ""
+msgstr "Nintendo 3DS"
 
 #. tr: PlayStationDisc (PS1 and PS2)
 #: ../src/libromdata/config/ImageTypesConfig.cpp:157
 msgctxt "ImageTypesConfig|SysName"
 msgid "PlayStation 1 & 2"
-msgstr ""
+msgstr "PlayStation 1 & 2"
 
 #. tr: PlayStationSave
 #: ../src/libromdata/config/ImageTypesConfig.cpp:159
 msgctxt "ImageTypesConfig|SysName"
 msgid "PlayStation Saves"
-msgstr ""
+msgstr "Salvataggi PlayStation"
 
 #. tr: WiiU
 #: ../src/libromdata/config/ImageTypesConfig.cpp:161
 msgctxt "ImageTypesConfig|SysName"
 msgid "Wii U"
-msgstr ""
+msgstr "Wii U"
 
 #. tr: WiiUPackage
 #: ../src/libromdata/config/ImageTypesConfig.cpp:163
 msgctxt "ImageTypesConfig|SysName"
 msgid "Wii U Packages"
-msgstr ""
+msgstr "Pacchetti Wii U"
 
 #. tr: WiiWAD
 #: ../src/libromdata/config/ImageTypesConfig.cpp:165
 msgctxt "ImageTypesConfig|SysName"
 msgid "Wii WAD Files"
-msgstr ""
+msgstr "File WAD Wii"
 
 #: ../src/libromdata/Console/Atari7800.cpp:201
 #: ../src/libromdata/Console/CBMCart.cpp:298
@@ -2226,27 +2226,27 @@ msgstr ""
 #: ../src/libromdata/Handheld/VirtualBoy.cpp:318
 msgctxt "RomData"
 msgid "Title"
-msgstr ""
+msgstr "Titolo"
 
 #: ../src/libromdata/Console/Atari7800.cpp:209
 msgctxt "Atari7800"
 msgid "TV Type"
-msgstr ""
+msgstr "Tipo TV"
 
 #: ../src/libromdata/Console/Atari7800.cpp:226
 msgctxt "Atari7800|ControllerType"
 msgid "None"
-msgstr ""
+msgstr "Nessuno"
 
 #: ../src/libromdata/Console/Atari7800.cpp:227
 msgctxt "Atari7800|ControllerType"
 msgid "Joystick (7800)"
-msgstr ""
+msgstr "Joystick (7800)"
 
 #: ../src/libromdata/Console/Atari7800.cpp:228
 msgctxt "Atari7800|ControllerType"
 msgid "Light Gun"
-msgstr ""
+msgstr "Pistola Ottica"
 
 #: ../src/libromdata/Console/Atari7800.cpp:229
 msgctxt "Atari7800|ControllerType"
@@ -2727,7 +2727,7 @@ msgstr "Azienda"
 #: ../src/libromdata/Console/Xbox360_STFS.cpp:893
 msgctxt "RomData"
 msgid "Description"
-msgstr ""
+msgstr "Descrizione"
 
 #: ../src/libromdata/Console/GameCubeBNR.cpp:847
 #: ../src/libromdata/Console/GameCube.cpp:1504
@@ -3198,136 +3198,136 @@ msgstr "Tablet"
 #: ../src/libromdata/Console/MegaDrive.cpp:418
 msgctxt "MegaDrive|I/O"
 msgid "Trackball"
-msgstr ""
+msgstr "Trackball"
 
 #: ../src/libromdata/Console/MegaDrive.cpp:419
 msgctxt "MegaDrive|I/O"
 msgid "Paddle"
-msgstr ""
+msgstr "Paddle"
 
 #: ../src/libromdata/Console/MegaDrive.cpp:420
 msgctxt "MegaDrive|I/O"
 msgid "Floppy Drive"
-msgstr ""
+msgstr "Unità floppy"
 
 #: ../src/libromdata/Console/MegaDrive.cpp:421
 msgctxt "MegaDrive|I/O"
 msgid "CD-ROM"
-msgstr ""
+msgstr "CD-ROM"
 
 #. tr: Brand name; only translate if the name was changed in your region.
 #: ../src/libromdata/Console/MegaDrive.cpp:423
 msgctxt "MegaDrive|I/O"
 msgid "Activator"
-msgstr ""
+msgstr "Activator"
 
 #: ../src/libromdata/Console/MegaDrive.cpp:424
 msgctxt "MegaDrive|I/O"
 msgid "Mega Mouse"
-msgstr ""
+msgstr "Mega Mouse"
 
 #: ../src/libromdata/Console/MegaDrive.cpp:444
 msgctxt "MegaDrive|I/O"
 msgid "None"
-msgstr ""
+msgstr "Nessuno"
 
 #: ../src/libromdata/Console/MegaDrive.cpp:446
 msgctxt "MegaDrive"
 msgid "I/O Support"
-msgstr ""
+msgstr "Supporto I/O"
 
 #: ../src/libromdata/Console/MegaDrive.cpp:450
 msgctxt "MegaDrive"
 msgid "ROM Range"
-msgstr ""
+msgstr "Range ROM"
 
 #: ../src/libromdata/Console/MegaDrive.cpp:456
 msgctxt "MegaDrive"
 msgid "RAM Range"
-msgstr ""
+msgstr "Range RAM"
 
 #: ../src/libromdata/Console/MegaDrive.cpp:463
 msgctxt "MegaDrive"
 msgid "SRAM Range"
-msgstr ""
+msgstr "Range SRAM"
 
 #. tr: SRAM format: Even bytes only.
 #: ../src/libromdata/Console/MegaDrive.cpp:474
 msgctxt "MegaDrive|SRAM"
 msgid "(even only)"
-msgstr ""
+msgstr "(solo pari)"
 
 #. tr: SRAM format: Odd bytes only.
 #: ../src/libromdata/Console/MegaDrive.cpp:478
 msgctxt "MegaDrive|SRAM"
 msgid "(odd only)"
-msgstr ""
+msgstr "(solo dispari)"
 
 #. tr: SRAM format: 16-bit.
 #: ../src/libromdata/Console/MegaDrive.cpp:483
 msgctxt "MegaDrive|SRAM"
 msgid "(16-bit)"
-msgstr ""
+msgstr "(16-bit)"
 
 #: ../src/libromdata/Console/MegaDrive.cpp:492
 msgctxt "MegaDrive"
 msgid "None"
-msgstr ""
+msgstr "Nessuno"
 
 #: ../src/libromdata/Console/MegaDrive.cpp:507
 msgctxt "MegaDrive"
 msgid "ExtROM Range"
-msgstr ""
+msgstr "Range ExtROM"
 
 #: ../src/libromdata/Console/MegaDrive.cpp:522
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1782
 msgctxt "Region"
 msgid "Asia"
-msgstr ""
+msgstr "Asia"
 
 #: ../src/libromdata/Console/MegaDrive.cpp:618
 #: ../src/libromdata/Handheld/PokemonMini.cpp:326
 msgctxt "RomData|VectorTable"
 msgid "#"
-msgstr ""
+msgstr "#"
 
 #: ../src/libromdata/Console/MegaDrive.cpp:619
 #: ../src/libromdata/Handheld/PokemonMini.cpp:327
 msgctxt "RomData|VectorTable"
 msgid "Vector"
-msgstr ""
+msgstr "Vettore"
 
 #: ../src/libromdata/Console/MegaDrive.cpp:620
 #: ../src/libromdata/Handheld/PokemonMini.cpp:328
 msgctxt "RomData|VectorTable"
 msgid "Address"
-msgstr ""
+msgstr "Indirizzo"
 
 #: ../src/libromdata/Console/MegaDrive.cpp:628
 #: ../src/libromdata/Handheld/PokemonMini.cpp:335
 msgctxt "RomData"
 msgid "Vector Table"
-msgstr ""
+msgstr "Tabella Vettoriale"
 
 #: ../src/libromdata/Console/MegaDrive.cpp:1387
 msgctxt "MegaDrive"
 msgid "ROM Header"
-msgstr ""
+msgstr "Header ROM"
 
 #: ../src/libromdata/Console/MegaDrive.cpp:1392
 msgctxt "MegaDrive"
 msgid "Vector Table"
-msgstr ""
+msgstr "Tabella Vettoriale"
 
 #: ../src/libromdata/Console/MegaDrive.cpp:1399
 msgctxt "MegaDrive"
 msgid "Locked-On ROM Header"
-msgstr ""
+msgstr "Header ROM Locked-On"
 
 #: ../src/libromdata/Console/N64.cpp:296
 msgctxt "N64"
 msgid "Game ID"
-msgstr ""
+msgstr "ID gioco"
 
 #: ../src/libromdata/Console/N64.cpp:304 ../src/libromdata/Handheld/DMG.cpp:636
 #: ../src/libromdata/Handheld/GameBoyAdvance.cpp:369
@@ -3335,7 +3335,7 @@ msgstr ""
 #: ../src/libromdata/Handheld/NGPC.cpp:328 ../src/libromdata/Other/ELF.cpp:2105
 msgctxt "RomData"
 msgid "Entry Point"
-msgstr ""
+msgstr "Entry Point"
 
 #: ../src/libromdata/Console/N64.cpp:309
 #: ../src/libromdata/Console/WiiTMD.cpp:432
@@ -3343,37 +3343,37 @@ msgstr ""
 #: ../src/libromdata/Other/EXE_PE.cpp:657
 msgctxt "RomData"
 msgid "OS Version"
-msgstr ""
+msgstr "Versione OS"
 
 #: ../src/libromdata/Console/N64.cpp:328
 msgctxt "N64"
 msgid "Clock Rate"
-msgstr ""
+msgstr "Frequenza Clock"
 
 #: ../src/libromdata/Console/N64.cpp:332
 msgctxt "N64|ClockRate"
 msgid "0 (default)"
-msgstr ""
+msgstr "0 (Predefinito)"
 
 #: ../src/libromdata/Console/N64.cpp:341
 msgctxt "N64"
 msgid "CRCs"
-msgstr ""
+msgstr "CRCs"
 
 #: ../src/libromdata/Console/NES.cpp:1026
 msgctxt "NES|Format"
 msgid "Archaic iNES"
-msgstr ""
+msgstr "iNES arcaico"
 
 #: ../src/libromdata/Console/NES.cpp:1085
 msgctxt "NES|Format"
 msgid "TNES (Nintendo 3DS Virtual Console)"
-msgstr ""
+msgstr "TNES (Nintendo 3DS Virtual Console)"
 
 #: ../src/libromdata/Console/NES.cpp:1094
 msgctxt "NES|Format"
 msgid "FDS disk image"
-msgstr ""
+msgstr "Immagine disco FDS"
 
 #: ../src/libromdata/Console/NES.cpp:1098
 msgctxt "NES|Format"
@@ -4083,86 +4083,86 @@ msgstr ""
 #: ../src/libromdata/Console/SegaSaturn.cpp:573
 msgctxt "SegaSaturn|Peripherals"
 msgid "Pachinko"
-msgstr ""
+msgstr "Pachinko"
 
 #: ../src/libromdata/Console/SegaSaturn.cpp:574
 msgctxt "SegaSaturn|Peripherals"
 msgid "Floppy Drive"
-msgstr ""
+msgstr "Unità floppy"
 
 #: ../src/libromdata/Console/SegaSaturn.cpp:575
 msgctxt "SegaSaturn|Peripherals"
 msgid "ROM Cartridge"
-msgstr ""
+msgstr "Cartuccia ROM"
 
 #: ../src/libromdata/Console/SegaSaturn.cpp:576
 msgctxt "SegaSaturn|Peripherals"
 msgid "MPEG Card"
-msgstr ""
+msgstr "Scheda MPEG"
 
 #: ../src/libromdata/Console/SegaSaturn.cpp:582
 msgctxt "SegaSaturn"
 msgid "Peripherals"
-msgstr ""
+msgstr "Periferiche"
 
 #: ../src/libromdata/Console/SNES.cpp:634
 #: ../src/libromdata/Handheld/DMG.cpp:556
 #, c-format
 msgctxt "RomData"
 msgid "Unknown (%02X)"
-msgstr ""
+msgstr "Sconosciuto (%02X)"
 
 #: ../src/libromdata/Console/SNES.cpp:1344
 msgctxt "SNES"
 msgid "ROM Mapping"
-msgstr ""
+msgstr "Mappatura ROM"
 
 #: ../src/libromdata/Console/SNES.cpp:1355
 msgctxt "SNES"
 msgid "Cartridge HW"
-msgstr ""
+msgstr "Cartuccia HW"
 
 #: ../src/libromdata/Console/SNES.cpp:1364
 msgctxt "Region"
 msgid "Scandinavia"
-msgstr ""
+msgstr "Scandinavia"
 
 #: ../src/libromdata/Console/SNES.cpp:1374
 msgctxt "Region"
 msgid "All"
-msgstr ""
+msgstr "Tutti"
 
 #: ../src/libromdata/Console/SNES.cpp:1375
 msgctxt "Region"
 msgid "Canada"
-msgstr ""
+msgstr "Canada"
 
 #: ../src/libromdata/Console/SNES.cpp:1376
 msgctxt "Region"
 msgid "Brazil"
-msgstr ""
+msgstr "Brasile"
 
 #: ../src/libromdata/Console/SNES.cpp:1378
 #: ../src/libromdata/Console/SNES.cpp:1379
 #: ../src/libromdata/Console/SNES.cpp:1380
 msgctxt "Region"
 msgid "Other"
-msgstr ""
+msgstr "Altro"
 
 #: ../src/libromdata/Console/SNES.cpp:1400
 msgctxt "SNES"
 msgid "Revision"
-msgstr ""
+msgstr "Revisione"
 
 #: ../src/libromdata/Console/SNES.cpp:1438
 msgctxt "SNES"
 msgid "Date"
-msgstr ""
+msgstr "Data"
 
 #: ../src/libromdata/Console/SNES.cpp:1451
 msgctxt "SNES|ProgramType"
 msgid "BS-X Script"
-msgstr ""
+msgstr "Script BS-X"
 
 #: ../src/libromdata/Console/SNES.cpp:1454
 msgctxt "SNES|ProgramType"
@@ -4428,181 +4428,181 @@ msgstr "File SRL Nintendo DS|*.nds;*.srl|application/x-nintendo-ds-rom;applicati
 #: ../src/libromdata/Handheld/NintendoDS_ops.cpp:601
 msgctxt "RomData"
 msgid "ROM operation ID is invalid for this object."
-msgstr ""
+msgstr "L'ID dell'operazione ROM non è valido per questo oggetto."
 
 #: ../src/libromdata/Console/WiiWAD_ops.cpp:78
 #: ../src/libromdata/Handheld/Nintendo3DS_ops.cpp:79
 msgctxt "RomData"
 msgid "Save filename was not specified."
-msgstr ""
+msgstr "Il nome del file di salvataggio non è stato specificato."
 
 #: ../src/libromdata/Console/WiiWAD_ops.cpp:85
 msgctxt "WiiWAD"
 msgid "SRL extraction is only supported for DSi TAD packages."
-msgstr ""
+msgstr "L'estrazione SRL è supportata solo per i pacchetti DSi TAD."
 
 #: ../src/libromdata/Console/WiiWAD_ops.cpp:103
 #: ../src/libromdata/Console/WiiWAD_ops.cpp:119
 #: ../src/libromdata/Console/WiiWAD_ops.cpp:131
 msgctxt "WiiWAD"
 msgid "Unable to open the SRL."
-msgstr ""
+msgstr "Impossibile aprire l'SRL."
 
 #: ../src/libromdata/Console/WiiWAD_ops.cpp:106
 msgctxt "WiiWAD"
 msgid "An unknown error occurred attempting to open the SRL."
-msgstr ""
+msgstr "Si è verificato un errore sconosciuto nel tentativo di aprire l'SRL."
 
 #: ../src/libromdata/Console/WiiWAD_ops.cpp:140
 msgctxt "WiiWAD"
 msgid "Could not open output SRL file."
-msgstr ""
+msgstr "Impossibile aprire il file SRL di output."
 
 #: ../src/libromdata/Console/WiiWAD_ops.cpp:150
 msgctxt "WiiWAD"
 msgid "SRL file extracted successfully."
-msgstr ""
+msgstr "File SRL estratto con successo."
 
 #: ../src/libromdata/Console/WiiWAD_ops.cpp:153
 msgctxt "WiiWAD"
 msgid "An I/O error occurred while extracting the SRL."
-msgstr ""
+msgstr "Si è verificato un errore di I/O durante l'estrazione del SRL."
 
 #: ../src/libromdata/Console/WiiWAD_ops.cpp:156
 msgctxt "WiiWAD"
 msgid "An unknown error occurred while extracting the SRL."
-msgstr ""
+msgstr "Si è verificato un errore sconosciuto durante l'estrazione dell'SRL."
 
 #: ../src/libromdata/Console/WiiWAD_ops.cpp:168
 msgctxt "WiiWAD"
 msgid "SRL extraction is not supported in NoCrypto builds."
-msgstr ""
+msgstr "L'estrazione di SRL non è supportata nelle build di NoCrypto."
 
 #: ../src/libromdata/Console/WiiWIBN.cpp:454
 msgctxt "WiiWIBN"
 msgid "Title"
-msgstr ""
+msgstr "Titolo"
 
 #: ../src/libromdata/Console/WiiWIBN.cpp:462
 msgctxt "WiiWIBN"
 msgid "Subtitle"
-msgstr ""
+msgstr "Sottotitolo"
 
 #: ../src/libromdata/Console/WiiWIBN.cpp:468
 msgctxt "WiiWIBN|Flags"
 msgid "No Copy"
-msgstr ""
+msgstr "Nessuna Copia"
 
 #: ../src/libromdata/Console/Xbox360_STFS.cpp:914
 msgctxt "Xbox360_STFS"
 msgid "Package Type"
-msgstr ""
+msgstr "Tipo pacchetto"
 
 #: ../src/libromdata/Console/Xbox360_STFS.cpp:916
 msgctxt "Xbox360_STFS|FileType"
 msgid "Console-Specific Package"
-msgstr ""
+msgstr "Pacchetto Specifico Della Console"
 
 #: ../src/libromdata/Console/Xbox360_STFS.cpp:917
 msgctxt "Xbox360_STFS|FileType"
 msgid "Non-Xbox Live Package"
-msgstr ""
+msgstr "Pacchetto Live Non-Xbox"
 
 #: ../src/libromdata/Console/Xbox360_STFS.cpp:918
 msgctxt "Xbox360_STFS|FileType"
 msgid "Xbox Live Package"
-msgstr ""
+msgstr "Pacchetto Xbox Live"
 
 #: ../src/libromdata/Console/Xbox360_STFS.cpp:932
 msgctxt "Xbox360_STFS"
 msgid "Content Type"
-msgstr ""
+msgstr "Tipo di contenuto"
 
 #: ../src/libromdata/Console/Xbox360_STFS.cpp:944
 msgctxt "Xbox360_STFS"
 msgid "Media ID"
-msgstr ""
+msgstr "ID Media"
 
 #: ../src/libromdata/Console/Xbox360_STFS.cpp:970
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1860
 msgctxt "Xbox360_XEX"
 msgid "Title ID"
-msgstr ""
+msgstr "ID Titolo"
 
 #: ../src/libromdata/Console/Xbox360_STFS.cpp:971
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1861
 #, c-format
 msgctxt "Xbox360_XEX"
 msgid "%1$08X (%2$s-%3$04u)"
-msgstr ""
+msgstr "%1$08X (%2$s-%3$04u)"
 
 #: ../src/libromdata/Console/Xbox360_STFS.cpp:988
 msgctxt "Xbox360_XEX"
 msgid "Base Version"
-msgstr ""
+msgstr "Versione Base"
 
 #: ../src/libromdata/Console/Xbox360_STFS.cpp:999
 msgctxt "Xbox360_XEX"
 msgid "Console ID"
-msgstr ""
+msgstr "ID Console"
 
 #: ../src/libromdata/Console/Xbox360_STFS.cpp:1006
 msgctxt "Xbox360_XEX"
 msgid "Part Number"
-msgstr ""
+msgstr "Numero Parte"
 
 #: ../src/libromdata/Console/Xbox360_STFS.cpp:1014
 msgctxt "Xbox360_XEX|ConsoleType"
 msgid "Debug"
-msgstr ""
+msgstr "Debug"
 
 #: ../src/libromdata/Console/Xbox360_STFS.cpp:1017
 msgctxt "Xbox360_XEX|ConsoleType"
 msgid "Retail"
-msgstr ""
+msgstr "Retail"
 
 #: ../src/libromdata/Console/Xbox360_STFS.cpp:1023
 msgctxt "Xbox360_XEX"
 msgid "Console Type"
-msgstr ""
+msgstr "Tipo Console"
 
 #: ../src/libromdata/Console/Xbox360_XDBF.cpp:837
 msgctxt "Xbox360_XDBF|TitleType"
 msgid "System Title"
-msgstr ""
+msgstr "Titolo Di Sistema"
 
 #: ../src/libromdata/Console/Xbox360_XDBF.cpp:838
 msgctxt "Xbox360_XDBF|TitleType"
 msgid "Full Game"
-msgstr ""
+msgstr "Gioco Completo"
 
 #: ../src/libromdata/Console/Xbox360_XDBF.cpp:839
 msgctxt "Xbox360_XDBF|TitleType"
 msgid "Demo"
-msgstr ""
+msgstr "Demo"
 
 #: ../src/libromdata/Console/Xbox360_XDBF.cpp:840
 msgctxt "Xbox360_XDBF|TitleType"
 msgid "Download"
-msgstr ""
+msgstr "Download"
 
 #: ../src/libromdata/Console/Xbox360_XDBF.cpp:1008
 #: ../src/libromdata/Console/Xbox360_XDBF.cpp:1401
 msgctxt "Xbox360_XDBF|Achievements"
 msgid "ID"
-msgstr ""
+msgstr "ID"
 
 #: ../src/libromdata/Console/Xbox360_XDBF.cpp:1009
 #: ../src/libromdata/Console/Xbox360_XDBF.cpp:1402
 msgctxt "Xbox360_XDBF|Achievements"
 msgid "Description"
-msgstr ""
+msgstr "Descrizione"
 
 #: ../src/libromdata/Console/Xbox360_XDBF.cpp:1010
 #: ../src/libromdata/Console/Xbox360_XDBF.cpp:1403
 msgctxt "Xbox360_XDBF|Achievements"
 msgid "Gamerscore"
-msgstr ""
+msgstr "Gamerscore"
 
 #: ../src/libromdata/Console/Xbox360_XDBF.cpp:1129
 #: ../src/libromdata/Console/Xbox360_XDBF.cpp:1539
@@ -4863,48 +4863,48 @@ msgstr ""
 #: ../src/libromdata/Console/XboxDisc.cpp:731
 msgctxt "XboxDisc"
 msgid "Extracted XDVDFS"
-msgstr ""
+msgstr "XDVDFS Estratto"
 
 #: ../src/libromdata/Console/XboxDisc.cpp:750
 msgctxt "XboxDisc"
 msgid "Disc Timestamp"
-msgstr ""
+msgstr "Timestamp Disco"
 
 #: ../src/libromdata/Console/XboxDisc.cpp:773
 msgctxt "XboxDisc"
 msgid "Boot Filename"
-msgstr ""
+msgstr "Nome File Di Avvio"
 
 #: ../src/libromdata/Console/Xbox_XBE.cpp:664
 msgctxt "Xbox_XBE"
 msgid "PE Filename"
-msgstr ""
+msgstr "Nome File PE"
 
 #: ../src/libromdata/Console/Xbox_XBE.cpp:684
 msgctxt "Xbox_XBE"
 msgid "Title ID"
-msgstr ""
+msgstr "ID Titolo"
 
 #: ../src/libromdata/Console/Xbox_XBE.cpp:708
 #, c-format
 msgctxt "Xbox_XBE"
 msgid "%1$08X (%2$s-%3$03u)"
-msgstr ""
+msgstr "%1$08X (%2$s-%3$03u)"
 
 #: ../src/libromdata/Console/Xbox_XBE.cpp:724
 msgctxt "Xbox_XBE"
 msgid "Timestamp"
-msgstr ""
+msgstr "Timestamp"
 
 #: ../src/libromdata/Console/Xbox_XBE.cpp:732
 msgctxt "Xbox_XBE"
 msgid "Not set"
-msgstr ""
+msgstr "Non impostato"
 
 #: ../src/libromdata/Console/Xbox_XBE.cpp:741
 msgctxt "Xbox_XBE"
 msgid "Hard Disk"
-msgstr ""
+msgstr "Disco Rigido"
 
 #: ../src/libromdata/Console/Xbox_XBE.cpp:742
 msgctxt "Xbox_XBE"
