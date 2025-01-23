@@ -128,7 +128,6 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 {
 	KMessageWidget::MessageType type = KMessageWidget::Information;
 	QStyle::StandardPixmap icon = QStyle::SP_MessageBoxInformation;
-	const QLocale sysLocale = QLocale::system();
 	bool showKeyStats = false;
 	string msg;
 	msg.reserve(1024);
@@ -214,13 +213,12 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 
 		case KeyStoreUI::ImportStatus::KeysImported: {
 			const unsigned int keyCount = iret.keysImportedVerify + iret.keysImportedNoVerify;
-			// tr: {0:s} == number of keys (formatted), {1:s} == filename
+			// tr: {0:Ld} == number of keys, {1:s} == filename
 			msg = fmt::format(NC_("KeyManagerTab",
-				"{0:s} key was imported from '{1:s}'.",
-				"{0:s} keys were imported from '{1:s}'.",
+				"{0:Ld} key was imported from '{1:s}'.",
+				"{0:Ld} keys were imported from '{1:s}'.",
 				keyCount),
-				sysLocale.toString(keyCount).toUtf8().constData(),
-				fileNoPath.toUtf8().constData());
+				keyCount, fileNoPath.toUtf8().constData());
 			type = KMessageWidget::Positive;
 			icon = QStyle::SP_DialogOkButton;
 			showKeyStats = true;
@@ -234,57 +232,57 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 	if (showKeyStats) {
 		if (iret.keysExist > 0) {
 			msg += nl_bullet;
-			// tr: {:s} == number of keys (formatted)
+			// tr: {:Ld} == number of keys
 			msg += fmt::format(NC_("KeyManagerTab",
-				"{:s} key already exists in the Key Manager.",
-				"{:s} keys already exist in the Key Manager.",
+				"{:Ld} key already exists in the Key Manager.",
+				"{:Ld} keys already exist in the Key Manager.",
 				iret.keysExist),
-				sysLocale.toString(iret.keysExist).toUtf8().constData());
+				iret.keysExist);
 		}
 		if (iret.keysInvalid > 0) {
 			msg += nl_bullet;
-			// tr: {:s} == number of keys (formatted)
+			// tr: {:Ld} == number of keys
 			msg += fmt::format(NC_("KeyManagerTab",
-				"{:s} key was not imported because it is incorrect.",
-				"{:s} keys were not imported because they are incorrect.",
+				"{:Ld} key was not imported because it is incorrect.",
+				"{:Ld} keys were not imported because they are incorrect.",
 				iret.keysInvalid),
-				sysLocale.toString(iret.keysInvalid).toUtf8().constData());
+				iret.keysInvalid);
 		}
 		if (iret.keysNotUsed > 0) {
 			msg += nl_bullet;
-			// tr: {:s} == number of keys (formatted)
+			// tr: {:Ld} == number of keys
 			msg += fmt::format(NC_("KeyManagerTab",
-				"{:s} key was not imported because it isn't used by rom-properties.",
-				"{:s} keys were not imported because they aren't used by rom-properties.",
+				"{:Ld} key was not imported because it isn't used by rom-properties.",
+				"{:Ld} keys were not imported because they aren't used by rom-properties.",
 				iret.keysNotUsed),
-				sysLocale.toString(iret.keysNotUsed).toUtf8().constData());
+				iret.keysNotUsed);
 		}
 		if (iret.keysCantDecrypt > 0) {
 			msg += nl_bullet;
-			// tr: {:s} == number of keys (formatted)
+			// tr: {:Ld} == number of keys
 			msg += fmt::format(NC_("KeyManagerTab",
-				"{:s} key was not imported because it is encrypted and the master key isn't available.",
-				"{:s} keys were not imported because they are encrypted and the master key isn't available.",
+				"{:Ld} key was not imported because it is encrypted and the master key isn't available.",
+				"{:Ld} keys were not imported because they are encrypted and the master key isn't available.",
 				iret.keysCantDecrypt),
-				sysLocale.toString(iret.keysCantDecrypt).toUtf8().constData());
+				iret.keysCantDecrypt);
 		}
 		if (iret.keysImportedVerify > 0) {
 			msg += nl_bullet;
-			// tr: {:s} == number of keys (formatted)
+			// tr: {:Ld} == number of keys
 			msg += fmt::format(NC_("KeyManagerTab",
-				"{:s} key has been imported and verified as correct.",
-				"{:s} keys have been imported and verified as correct.",
+				"{:Ld} key has been imported and verified as correct.",
+				"{:Ld} keys have been imported and verified as correct.",
 				iret.keysImportedVerify),
-				sysLocale.toString(iret.keysImportedVerify).toUtf8().constData());
+				iret.keysImportedVerify);
 		}
 		if (iret.keysImportedNoVerify > 0) {
 			msg += nl_bullet;
-			// tr: {:s} == number of keys (formatted)
+			// tr: {:Ld} == number of keys
 			msg += fmt::format(NC_("KeyManagerTab",
-				"{:s} key has been imported without verification.",
-				"{:s} keys have been imported without verification.",
+				"{:Ld} key has been imported without verification.",
+				"{:Ld} keys have been imported without verification.",
 				iret.keysImportedNoVerify),
-				sysLocale.toString(iret.keysImportedNoVerify).toUtf8().constData());
+				iret.keysImportedNoVerify);
 		}
 	}
 
