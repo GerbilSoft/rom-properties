@@ -614,14 +614,12 @@ rp_key_manager_tab_show_key_import_return_status(RpKeyManagerTab	*tab,
 
 		case KeyStoreUI::ImportStatus::KeysImported: {
 			const int keyCount = static_cast<int>(iret.keysImportedVerify + iret.keysImportedNoVerify);
-			char buf[16];
-			snprintf(buf, sizeof(buf), "%'d", keyCount);
-
-			// tr: {0:s} == number of keys (formatted), {1:s} == filename
+			// tr: {0:Ld} == number of keys, {1:s} == filename
 			msg = fmt::format(NC_("KeyManagerTab",
-				"{0:s} key was imported from '{1:s}'.",
-				"{0:s} keys were imported from '{1:s}'.",
-				keyCount), buf, fileNoPath);
+				"{0:Ld} key was imported from '{1:s}'.",
+				"{0:Ld} keys were imported from '{1:s}'.",
+				keyCount),
+				keyCount, fileNoPath);
 			type = GTK_MESSAGE_INFO;	// NOTE: No equivalent to KMessageWidget::Positive.
 			showKeyStats = true;
 			break;
@@ -632,60 +630,59 @@ rp_key_manager_tab_show_key_import_return_status(RpKeyManagerTab	*tab,
 	static constexpr char nl_bullet[] = "\n\xE2\x80\xA2 ";
 
 	if (showKeyStats) {
-		char buf[16];
-
 		if (iret.keysExist > 0) {
-			snprintf(buf, sizeof(buf), "%'d", iret.keysExist);
 			msg += nl_bullet;
-			// tr: {:s} == number of keys (formatted)
+			// tr: {:Ld} == number of keys
 			msg += fmt::format(NC_("KeyManagerTab",
-				"{:s} key already exists in the Key Manager.",
-				"{:s} keys already exist in the Key Manager.",
-				iret.keysExist), buf);
+				"{:Ld} key already exists in the Key Manager.",
+				"{:Ld} keys already exist in the Key Manager.",
+				iret.keysExist),
+				iret.keysExist);
 		}
 		if (iret.keysInvalid > 0) {
-			snprintf(buf, sizeof(buf), "%'d", iret.keysInvalid);
 			msg += nl_bullet;
-			// tr: {:s} == number of keys (formatted)
+			// tr: {:Ld} == number of keys
 			msg += fmt::format(NC_("KeyManagerTab",
-				"{:s} key was not imported because it is incorrect.",
-				"{:s} keys were not imported because they are incorrect.",
-				iret.keysInvalid), buf);
+				"{:Ld} key was not imported because it is incorrect.",
+				"{:Ld} keys were not imported because they are incorrect.",
+				iret.keysInvalid),
+				iret.keysInvalid);
 		}
 		if (iret.keysNotUsed > 0) {
-			snprintf(buf, sizeof(buf), "%'d", iret.keysNotUsed);
 			msg += nl_bullet;
-			// tr: {:s} == number of keys (formatted)
+			// tr: {:Ld} == number of keys
 			msg += fmt::format(NC_("KeyManagerTab",
-				"{:s} key was not imported because it isn't used by rom-properties.",
-				"{:s} keys were not imported because they aren't used by rom-properties.",
-				iret.keysNotUsed), buf);
+				"{:Ld} key was not imported because it isn't used by rom-properties.",
+				"{:Ld} keys were not imported because they aren't used by rom-properties.",
+				iret.keysNotUsed),
+				iret.keysNotUsed);
 		}
 		if (iret.keysCantDecrypt > 0) {
-			snprintf(buf, sizeof(buf), "%'d", iret.keysCantDecrypt);
 			msg += nl_bullet;
-			// tr: {:s} == number of keys (formatted)
+			// tr: {:Ld} == number of keys
 			msg += fmt::format(NC_("KeyManagerTab",
-				"{:s} key was not imported because it is encrypted and the master key isn't available.",
-				"{:s} keys were not imported because they are encrypted and the master key isn't available.",
-				iret.keysCantDecrypt), buf);
+				"{:Ld} key was not imported because it is encrypted and the master key isn't available.",
+				"{:Ld} keys were not imported because they are encrypted and the master key isn't available.",
+				iret.keysCantDecrypt),
+				iret.keysCantDecrypt);
 		}
 		if (iret.keysImportedVerify > 0) {
-			snprintf(buf, sizeof(buf), "%'d", iret.keysImportedVerify);
 			msg += nl_bullet;
-			// tr: {:s} == number of keys (formatted)
+			// tr: {:Ld} == number of keys
 			msg += fmt::format(NC_("KeyManagerTab",
-				"{:s} key has been imported and verified as correct.",
-				"{:s} keys have been imported and verified as correct.",
-				iret.keysImportedVerify), buf);
+				"{:Ld} key has been imported and verified as correct.",
+				"{:Ld} keys have been imported and verified as correct.",
+				iret.keysImportedVerify),
+				iret.keysImportedVerify);
 		}
 		if (iret.keysImportedNoVerify > 0) {
-			snprintf(buf, sizeof(buf), "%'d", iret.keysImportedNoVerify);
 			msg += nl_bullet;
+			// tr: {:Ld} == number of keys
 			msg += fmt::format(NC_("KeyManagerTab",
-				"{:s} key has been imported without verification.",
-				"{:s} keys have been imported without verification.",
-				iret.keysImportedNoVerify), buf);
+				"{:Ld} key has been imported without verification.",
+				"{:Ld} keys have been imported without verification.",
+				iret.keysImportedNoVerify),
+				iret.keysImportedNoVerify);
 		}
 	}
 
