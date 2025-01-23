@@ -240,6 +240,11 @@ IF(BUILD_KF5)
 	# requires other libraries for include paths.
 	TARGET_LINK_LIBRARIES(kfilemetadata_${PROJECT_NAME} PRIVATE Qt5::Widgets Qt5::Core)
 
+	# libfmt
+	IF(Fmt_FOUND)
+		TARGET_LINK_LIBRARIES(kfilemetadata_${PROJECT_NAME} PRIVATE ${Fmt_LIBRARY})
+	ENDIF(Fmt_FOUND)
+
 	# OverlayIconPlugin
 	# TODO: Use kcoreaddons_add_plugin() for the JSON?
 	# https://github.com/owncloud/client/blob/master/shell_integration/dolphin/CMakeLists.txt
@@ -267,6 +272,11 @@ IF(BUILD_KF5)
 	# NOTE: Technically, only Qt5::Core is needed, but stdafx.h usage
 	# requires other libraries for include paths.
 	TARGET_LINK_LIBRARIES(overlayiconplugin_${PROJECT_NAME} PRIVATE Qt5::Widgets Qt5::Core)
+
+	# libfmt
+	IF(Fmt_FOUND)
+		TARGET_LINK_LIBRARIES(overlayiconplugin_${PROJECT_NAME} PRIVATE ${Fmt_LIBRARY})
+	ENDIF(Fmt_FOUND)
 ENDIF(BUILD_KF5)
 
 #######################

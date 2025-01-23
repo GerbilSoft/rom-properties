@@ -286,6 +286,11 @@ IF(BUILD_XFCE OR BUILD_GTK3 OR BUILD_GTK4)
 	TARGET_LINK_LIBRARIES(rom-properties-glib PUBLIC glibresources)
 	TARGET_LINK_LIBRARIES(rom-properties-glib PUBLIC GLib2::gio-unix GLib2::gio GLib2::gobject GLib2::glib)
 	TARGET_LINK_LIBRARIES(rom-properties-glib PRIVATE romdata)		# for config.librptext.h
+
+	# libfmt
+	IF(Fmt_FOUND)
+		TARGET_LINK_LIBRARIES(rom-properties-glib PRIVATE ${Fmt_LIBRARY})
+	ENDIF(Fmt_FOUND)
 ENDIF(BUILD_XFCE OR BUILD_GTK3 OR BUILD_GTK4)
 
 # Build GTK+ 2.x frontends.
