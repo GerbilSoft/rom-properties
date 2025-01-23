@@ -948,7 +948,7 @@ int WiiWAD::loadFieldData(void)
 
 			string s_region;
 			if (suffix) {
-				// tr: %1$s == full region name, %2$s == abbreviation
+				// tr: {0:s} == full region name, {1:s} == abbreviation
 				s_region = fmt::format(C_("Wii", "{0:s} ({1:s})"), region, suffix);
 			} else {
 				s_region = region;

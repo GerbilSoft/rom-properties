@@ -214,7 +214,7 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 
 		case KeyStoreUI::ImportStatus::KeysImported: {
 			const unsigned int keyCount = iret.keysImportedVerify + iret.keysImportedNoVerify;
-			// tr: {0:s} == number of keys (formatted), %2$u == filename
+			// tr: {0:s} == number of keys (formatted), {1:s} == filename
 			msg = fmt::format(NC_("KeyManagerTab",
 				"{0:s} key was imported from '{1:s}'.",
 				"{0:s} keys were imported from '{1:s}'.",

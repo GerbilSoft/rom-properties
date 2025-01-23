@@ -617,7 +617,7 @@ rp_key_manager_tab_show_key_import_return_status(RpKeyManagerTab	*tab,
 			char buf[16];
 			snprintf(buf, sizeof(buf), "%'d", keyCount);
 
-			// tr: {0:s} == number of keys (formatted), %2$u == filename
+			// tr: {0:s} == number of keys (formatted), {1:s} == filename
 			msg = fmt::format(NC_("KeyManagerTab",
 				"{0:s} key was imported from '{1:s}'.",
 				"{0:s} keys were imported from '{1:s}'.",

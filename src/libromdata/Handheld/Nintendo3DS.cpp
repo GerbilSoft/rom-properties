@@ -2321,7 +2321,7 @@ int Nintendo3DS::loadFieldData(void)
 		{
 			const auto &ptbl = old3ds_sys_mode_tbl[old3ds_sys_mode];
 			d->fields.addField_string(old3ds_sys_mode_title,
-				// tr: %1$s == Old3DS system mode; %2$u == RAM allocation, in megabytes
+				// tr: {0:s} == Old3DS system mode; {1:d} == RAM allocation, in megabytes
 				fmt::format(C_("Nintendo3DS", "{0:s} ({1:d} MiB)"), ptbl.name, ptbl.mb));
 		} else {
 			d->fields.addField_string(old3ds_sys_mode_title,
@@ -2342,7 +2342,7 @@ int Nintendo3DS::loadFieldData(void)
 		if (new3ds_sys_mode < new3ds_sys_mode_tbl.size()) {
 			const auto &ptbl = new3ds_sys_mode_tbl[new3ds_sys_mode];
 			d->fields.addField_string(new3ds_sys_mode_title,
-				// tr: %1$s == New3DS system mode; %2$u == RAM allocation, in megabytes
+				// tr: {0:s} == New3DS system mode; {1:d} == RAM allocation, in megabytes
 				fmt::format(C_("Nintendo3DS", "{0:s} ({1:d} MiB)"), ptbl.name, ptbl.mb));
 		} else {
 			d->fields.addField_string(new3ds_sys_mode_title,
