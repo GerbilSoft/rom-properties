@@ -19,7 +19,6 @@ using namespace LibRpText;
 
 // C++ STL classes
 using std::array;
-using std::ostringstream;
 using std::string;
 using std::unique_ptr;
 using std::vector;
@@ -436,10 +435,8 @@ int NintendoDS::doRomOp_int(int id, RomOpParams *pParams)
 				switch (ret) {
 					case 1: {
 						// TODO: Show actual file size?
-						ostringstream oss_exp;
-						oss_exp << NDS_BLOWFISH_SIZE;
-						pParams->msg = fmt::format(C_("NintendoDS", "File '{0:s}' has the wrong size. (should be {1:s} bytes)"),
-							filename, oss_exp.str().c_str());
+						pParams->msg = fmt::format(C_("NintendoDS", "File '{0:s}' has the wrong size. (should be {1:Ld} bytes)"),
+							filename, NDS_BLOWFISH_SIZE);
 						break;
 					}
 					case 2:

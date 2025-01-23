@@ -475,10 +475,11 @@ std::string formatFileSizeKiB(unsigned int size, BinaryUnitDialect dialect)
 {
 	// Localize the number.
 	// FIXME: If using C locale, don't do localization.
-	ostringstream s_value;
-	s_value << ((likely(dialect != BinaryUnitDialect::MetricBinaryDialect))
-		? (size / 1024)
-		: (size / 1000));
+	if (likely(dialect != BinaryUnitDialect::MetricBinaryDialect)) {
+		size /= 1024;
+	} else {
+		size /= 1000;
+	}
 
 	const char *suffix;
 	switch (dialect) {
@@ -494,9 +495,8 @@ std::string formatFileSizeKiB(unsigned int size, BinaryUnitDialect dialect)
 			break;
 	}
 
-	// tr: {0:s} == localized value, {1:s} == suffix (e.g. MiB)
-	return fmt::format(C_("LibRpText|FileSize", "{0:s} {1:s}"),
-		s_value.str(), suffix);
+	// tr: {0:Ld} == localized value, {1:s} == suffix (e.g. MiB)
+	return fmt::format(C_("LibRpText|FileSize", "{0:s} {1:s}"), size, suffix);
 }
 
 /**

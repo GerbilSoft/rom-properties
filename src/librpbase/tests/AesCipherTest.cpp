@@ -23,7 +23,6 @@
 #include <string>
 #include <vector>
 using std::array;
-using std::ostringstream;
 using std::string;
 using std::vector;
 
@@ -524,11 +523,6 @@ TEST_P(AesCipherTest, decryptTest_fourParam_blockAtATime)
  */
 string AesCipherTest::test_case_suffix_generator(const ::testing::TestParamInfo<AesCipherTest_mode> &info)
 {
-	ostringstream oss;
-	oss << "AES_";
-	oss << (info.param.key_len * 8);
-	oss << "_";
-
 	const char *cm_str;
 	switch (info.param.chainingMode) {
 		case IAesCipher::ChainingMode::ECB:
@@ -545,9 +539,7 @@ string AesCipherTest::test_case_suffix_generator(const ::testing::TestParamInfo<
 			break;
 	}
 
-	oss << cm_str;
-
-	return oss.str();
+	return fmt::format(FSTR("AES_{:d}_{:s}"), (info.param.key_len * 8), cm_str);
 }
 
 static constexpr array<uint8_t, 64> aes128ecb_ciphertext = {{

@@ -22,7 +22,6 @@
 #include <iostream>
 #include <sstream>
 #include <string>
-using std::ostringstream;
 using std::string;
 
 // libfmt

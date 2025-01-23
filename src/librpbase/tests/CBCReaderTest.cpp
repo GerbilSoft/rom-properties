@@ -28,7 +28,6 @@ using LibRpFile::MemFile;
 #include <sstream>
 #include <string>
 using std::array;
-using std::ostringstream;
 using std::string;
 
 // libfmt

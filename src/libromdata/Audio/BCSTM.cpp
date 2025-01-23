@@ -484,7 +484,6 @@ int BCSTM::loadFieldData(void)
 	d->fields.addField_string_numeric(C_("RomData|Audio", "Channels"), channel_count);
 
 	// Sample rate
-	// NOTE: Using ostringstream for localized numeric formatting.
 	d->fields.addField_string(C_("RomData|Audio", "Sample Rate"),
 		fmt::format(C_("RomData", "{:Ld} Hz"), sample_rate));
 

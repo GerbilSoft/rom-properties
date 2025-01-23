@@ -26,7 +26,6 @@ using namespace LibRpText;
 #include <string>
 #include <vector>
 using std::ostream;
-using std::ostringstream;
 using std::setw;
 using std::string;
 using std::vector;
@@ -218,19 +217,11 @@ int fstPrint(IFst *fst, ostream &os, bool pt)
 		return ret;
 	}
 
-	// Print the file count.
-	// NOTE: Formatting numbers using ostringstream() because
-	// MSVC's printf() doesn't support thousands separators.
-	// TODO: CMake checks?
-	ostringstream dircount, filecount;
-	dircount << fc.dirs;
-	filecount << fc.files;
-
 	os << '\n' <<
 		// tr: Parameter is a number; it's formatted elsewhere.
-		fmt::format(NC_("FstPrint", "{:s} directory", "{:s} directories", fc.dirs), dircount.str()) << ", " <<
+		fmt::format(NC_("FstPrint", "{:Ld} directory", "{:Ld} directories", fc.dirs), fc.dirs) << ", " <<
 		// tr: Parameter is a number; it's formatted elsewhere.
-		fmt::format(NC_("FstPrint", "{:s} file", "{:s} files", fc.files), filecount.str()) << '\n';
+		fmt::format(NC_("FstPrint", "{:Ld} file", "{:Ld} files", fc.files), fc.files) << '\n';
 
 	os.flush();
 	return 0;

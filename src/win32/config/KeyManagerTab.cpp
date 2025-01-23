@@ -44,9 +44,7 @@ using namespace LibRomData;
 // C++ STL classes
 using std::array;
 using std::locale;
-using std::ostringstream;
 using std::string;
-using std::wostringstream;
 using std::wstring;
 
 // KeyStoreUI::ImportFileID
@@ -1581,14 +1579,8 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 	}
 
 
-	// Using ostringstream for numeric formatting.
-	// (MSVCRT doesn't support the apostrophe printf specifier.)
-	tostringstream toss;
-	toss.imbue(std::locale(""));
-
 	// TODO: Localize POSIX error messages?
 	// TODO: Thread-safe _wcserror()?
-
 	switch (iret.status) {
 		case KeyStoreUI::ImportStatus::InvalidParams:
 		default:
@@ -1655,13 +1647,12 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 
 		case KeyStoreUI::ImportStatus::KeysImported: {
 			const unsigned int keyCount = iret.keysImportedVerify + iret.keysImportedNoVerify;
-			toss << keyCount;
-			// tr: {0:s} == number of keys (formatted), {1:s} == filename
+			// tr: {0:Ld} == number of keys, {1:s} == filename
 			msg = fmt::format(TNC_("KeyManagerTab",
-				"{0:s} key was imported from '{1:s}'.",
-				"{0:s} keys were imported from '{1:s}'.",
+				"{0:Ld} key was imported from '{1:s}'.",
+				"{0:Ld} keys were imported from '{1:s}'.",
 				keyCount),
-				toss.str(), fileNoPath);
+				keyCount, fileNoPath);
 			type = MB_ICONINFORMATION;
 			showKeyStats = true;
 			break;
@@ -1678,75 +1669,57 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 	// TODO: Numeric formatting.
 	if (showKeyStats) {
 		if (iret.keysExist > 0) {
-			toss.str(_T(""));
-			toss.clear();
-			toss << iret.keysExist;
 			msg += nl_bullet;
-			// tr: {:s} == number of keys (formatted)
+			// tr: {:Ld} == number of keys
 			msg += fmt::format(TNC_("KeyManagerTab",
-				"{:s} key already exists in the Key Manager.",
-				"{:s} keys already exist in the Key Manager.",
+				"{:Ld} key already exists in the Key Manager.",
+				"{:Ld} keys already exist in the Key Manager.",
 				iret.keysExist),
-				toss.str());
+				iret.keysExist);
 		}
 		if (iret.keysInvalid > 0) {
-			toss.str(_T(""));
-			toss.clear();
-			toss << iret.keysInvalid;
 			msg += nl_bullet;
-			// tr: {:s} == number of keys (formatted)
+			// tr: {:Ld} == number of keys
 			msg += fmt::format(TNC_("KeyManagerTab",
-				"{:s} key was not imported because it is incorrect.",
-				"{:s} keys were not imported because they are incorrect.",
+				"{:Ld} key was not imported because it is incorrect.",
+				"{:Ld} keys were not imported because they are incorrect.",
 				iret.keysInvalid),
-				toss.str());
+				iret.keysInvalid);
 		}
 		if (iret.keysNotUsed > 0) {
-			toss.str(_T(""));
-			toss.clear();
-			toss << iret.keysNotUsed;
 			msg += nl_bullet;
-			// tr: {:s} == number of keys (formatted)
+			// tr: {:Ld} == number of keys
 			msg += fmt::format(TNC_("KeyManagerTab",
-				"{:s} key was not imported because it isn't used by rom-properties.",
-				"{:s} keys were not imported because they aren't used by rom-properties.",
+				"{:Ld} key was not imported because it isn't used by rom-properties.",
+				"{:Ld} keys were not imported because they aren't used by rom-properties.",
 				iret.keysNotUsed),
-				toss.str());
+				iret.keysNotUsed);
 		}
 		if (iret.keysCantDecrypt > 0) {
-			toss.str(_T(""));
-			toss.clear();
-			toss << iret.keysCantDecrypt;
 			msg += nl_bullet;
-			// tr: {:s} == number of keys (formatted)
+			// tr: {:Ld} == number of keys
 			msg += fmt::format(TNC_("KeyManagerTab",
-				"{:s} key was not imported because it is encrypted and the master key isn't available.",
-				"{:s} keys were not imported because they are encrypted and the master key isn't available.",
+				"{:Ld} key was not imported because it is encrypted and the master key isn't available.",
+				"{:Ld} keys were not imported because they are encrypted and the master key isn't available.",
 				iret.keysCantDecrypt),
-				toss.str());
+				iret.keysCantDecrypt);
 		}
 		if (iret.keysImportedVerify > 0) {
-			toss.str(_T(""));
-			toss.clear();
-			toss << iret.keysImportedVerify;
 			msg += nl_bullet;
-			// tr: {:s} == number of keys (formatted)
+			// tr: {:Ld} == number of keys
 			msg += fmt::format(TNC_("KeyManagerTab",
-				"{:s} key has been imported and verified as correct.",
-				"{:s} keys have been imported and verified as correct.",
+				"{:Ld} key has been imported and verified as correct.",
+				"{:Ld} keys have been imported and verified as correct.",
 				iret.keysImportedVerify),
-				toss.str());
+				iret.keysImportedVerify);
 		}
 		if (iret.keysImportedNoVerify > 0) {
-			toss.str(_T(""));
-			toss.clear();
-			toss << iret.keysImportedVerify;
 			msg += nl_bullet;
 			msg += fmt::format(TNC_("KeyManagerTab",
-				"{:s} key has been imported without verification.",
-				"{:s} keys have been imported without verification.",
+				"{:Ld} key has been imported without verification.",
+				"{:Ld} keys have been imported without verification.",
 				iret.keysImportedNoVerify),
-				toss.str());
+				iret.keysImportedNoVerify);
 		}
 	}
 
