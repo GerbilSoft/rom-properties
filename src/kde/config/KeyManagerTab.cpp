@@ -137,7 +137,6 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 
 	// TODO: Localize POSIX error messages?
 	// TODO: Thread-safe strerror()?
-
 	switch (iret.status) {
 		case KeyStoreUI::ImportStatus::InvalidParams:
 		default:

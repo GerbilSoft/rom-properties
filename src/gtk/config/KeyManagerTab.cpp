@@ -544,10 +544,6 @@ rp_key_manager_tab_show_key_import_return_status(RpKeyManagerTab	*tab,
 
 	// TODO: Localize POSIX error messages?
 	// TODO: Thread-safe strerror()?
-	// NOTE: glib doesn't seem to have its own numeric formatting,
-	// so we'll use printf()'s grouping modifier.
-	// TODO: Use libfmt's "{:Ld}" for thousands.
-
 	switch (iret.status) {
 		case KeyStoreUI::ImportStatus::InvalidParams:
 		default:

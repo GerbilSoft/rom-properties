@@ -1578,7 +1578,6 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 		fileNoPath = filename;
 	}
 
-
 	// TODO: Localize POSIX error messages?
 	// TODO: Thread-safe _wcserror()?
 	switch (iret.status) {
