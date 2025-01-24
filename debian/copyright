@@ -7,7 +7,6 @@ Files-Excluded:
 Files: *
 Copyright: 2016-2021, David Korth <gerbilsoft@gerbilsoft.com>
 License: GPL-2+
-Comment:
 
 Files:
  cmake/libs/FindGTK3.cmake
@@ -19,7 +18,6 @@ Files:
  cmake/macros/GCR_CMake/*
 Copyright: 2015-2019, Makman2 <makman@alice.de>
 License: GPL-3
-Comment:
 
 Files:
  extlib/PowerVR/*
@@ -176,7 +174,6 @@ Files:
 Copyright:
  2022, Egor
 License: Apache-2.0 OR MIT
-Comment:
 
 Files:
  src/gtk/tracker/tracker-file-utils.c
@@ -204,7 +201,6 @@ Copyright:
  2016-2025, David Korth <gerbilsoft@gerbilsoft.com>
  2016-2018, Egor
 License: GPL-2+
-Comment:
 
 Files:
  src/libromdata/Other/Wim.cpp
@@ -213,14 +209,12 @@ Copyright:
  2023, ecumber
  2019-2025, David Korth <gerbilsoft@gerbilsoft.com>
 License: GPL-2+
-Comment:
 
 Files:
  src/libromdata/tests/img/ImageDecoder_data/TGA/conformance/*
 Copyright:
  (C) TrueVision, Inc.
 License: TGA-2.0
-Comment:
 
 Files:
  src/libwin32darkmode/DarkMode.?pp
@@ -252,7 +246,6 @@ Copyright:
  2017-2021, Egor
  2017-2024, David Korth <gerbilsoft@gerbilsoft.com>
 License: GPL-2+
-Comment:
 
 License: BSD-2-clause
  All rights reserved.
