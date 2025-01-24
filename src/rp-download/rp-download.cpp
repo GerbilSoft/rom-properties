@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (rp-download)                      *
  * rp-download.cpp: Standalone cache downloader.                           *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -74,55 +74,43 @@ using namespace RpDownload;
 static const TCHAR *argv0 = nullptr;
 static bool verbose = false;
 
-#if defined(_WIN32) && defined(_UNICODE)
-// Cannot do ATTR_PRINTF on Win32 if using Unicode.
-#  define ATTR_TPRINTF(fmt, args)
-#else
-#  define ATTR_TPRINTF ATTR_PRINTF
-#endif
-
 /**
  * Show command usage.
  */
 static void show_usage(void)
 {
-	_ftprintf(stderr, _T("Syntax: %s [-v] [-f] cache_key\n"), argv0);
+	fmt::print(stderr, FSTR(_T("Syntax: {:s} [-v] [-f] cache_key\n")), argv0);
 }
+
+// NOTE: show_error() and show_info() are now macros in order to
+// preserve fmt::format()'s compile-time type checking.
+// Switching to C++20 would let us use fmt::format_string<> instead.
+// Reference: https://github.com/fmtlib/fmt/issues/2391
 
 /**
  * Show an error message.
  * This includes the program's filename from argv[0].
- * @param format printf() format string.
- * @param ... printf() format parameters.
+ * @param format fmt::print() format string
+ * @param ... fmt::print() format parameters
  */
-static void ATTR_TPRINTF(1, 2) show_error(const TCHAR *format, ...)
-{
-	va_list ap;
-
-	_ftprintf(stderr, _T("%s: "), argv0);
-	va_start(ap, format);
-	_vftprintf(stderr, format, ap);
-	va_end(ap);
-	_fputtc(_T('\n'), stderr);
-}
+#define show_error(format, ...) do { \
+	fmt::print(stderr, FSTR(_T("%s: ")), argv0); \
+	fmt::print(stderr, format, ##__VA_ARGS__); \
+	_fputtc(_T('\n'), stderr); \
+} while (0)
 
 #define SHOW_ERROR(...) if (verbose) show_error(__VA_ARGS__)
 
 /**
  * Show an information message.
  * This does *not* include the program's filename from argv[0].
- * @param format printf() format string.
- * @param ... printf() format parameters.
+ * @param format fmt::print() format string
+ * @param ... fmt::print() format parameters
  */
-static void ATTR_TPRINTF(1, 2) show_info(const TCHAR *format, ...)
-{
-	va_list ap;
-
-	va_start(ap, format);
-	_vftprintf(stderr, format, ap);
-	va_end(ap);
-	_fputtc(_T('\n'), stderr);
-}
+#define show_info(format, ...) do { \
+	fmt::print(stderr, format, ##__VA_ARGS__); \
+	_fputtc(_T('\n'), stderr); \
+} while (0)
 
 #define SHOW_INFO(...) if (verbose) show_info(__VA_ARGS__)
 
@@ -378,7 +366,7 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 					break;
 				default:
 					// Invalid parameter.
-					show_error(_T("Unrecognized option: %c"), argv[optind][i]);
+					show_error(FSTR(_T("Unrecognized option: {:c}")), argv[optind][i]);
 					show_usage();
 					return EXIT_FAILURE;
 			}
@@ -386,7 +374,7 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 	}
 
 	if (optind >= argc) {
-		show_error(_T("No cache key specified."));
+		show_error(FSTR(_T("No cache key specified.")));
 		show_usage();
 		return EXIT_FAILURE;
 	}
@@ -401,24 +389,21 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 
 		default:
 		case CacheKeyError::Invalid:
-			SHOW_ERROR(_T("Cache key '%s' is invalid."), cache_key);
+			SHOW_ERROR(FSTR(_T("Cache key '{:s}' is invalid.")), cache_key);
 			return EXIT_FAILURE;
 
 		case CacheKeyError::PrefixNotSupported:
-			SHOW_ERROR(_T("Cache key '%s' has an unsupported prefix."), cache_key);
+			SHOW_ERROR(FSTR(_T("Cache key '{:s}' has an unsupported prefix.")), cache_key);
 			return EXIT_FAILURE;
 	}
-
-	if (verbose) {
-		_ftprintf(stderr, _T("URL: %s\n"), full_url.c_str());
-	}
+	SHOW_INFO(FSTR(_T("URL: {:s}")), full_url);
 
 	// Make sure we have a valid cache directory.
 	const string &cache_dir = LibCacheCommon::getCacheDirectory();
 	if (cache_dir.empty()) {
 		// Cache directory is invalid...
 		// This may happen if bubblewrap is in use.
-		SHOW_ERROR(_T("Unable to access cache directory. Check the sandbox environment!"));
+		SHOW_ERROR(FSTR(_T("Unable to access cache directory. Check the sandbox environment!")));
 		return EXIT_FAILURE;
 	}
 
@@ -426,12 +411,10 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 	tstring cache_filename = LibCacheCommon::getCacheFilename(cache_key);
 	if (cache_filename.empty()) {
 		// Invalid cache filename.
-		SHOW_ERROR(_T("Cache key '%s' is invalid."), cache_key);
+		SHOW_ERROR(FSTR(_T("Cache key '{:s}' is invalid.")), cache_key);
 		return EXIT_FAILURE;
 	}
-	if (verbose) {
-		_ftprintf(stderr, _T("Cache Filename: %s\n"), cache_filename.c_str());
-	}
+	SHOW_INFO(FSTR(_T("Cache Filename: {:s}")), cache_filename);
 
 	// If the cache_filename is >= 240 characters, prepend "\\\\?\\".
 	if (cache_filename.size() >= 240) {
@@ -455,32 +438,32 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 			if ((systime - filemtime) < (86400*7)) {
 				// Less than a week old.
 				if (likely(!force)) {
-					SHOW_INFO(_T("Negative cache file for '%s' has not expired; not redownloading."), cache_key);
+					SHOW_INFO(FSTR(_T("Negative cache file for '{:s}' has not expired; not redownloading.")), cache_key);
 					return EXIT_FAILURE;
 				} else {
-					SHOW_INFO(_T("Negative cache file for '%s' has not expired, but -f was specified. Redownloading anyway."), cache_key);
+					SHOW_INFO(FSTR(_T("Negative cache file for '{:s}' has not expired, but -f was specified. Redownloading anyway.")), cache_key);
 				}
 			}
 
 			// More than a week old.
 			// Delete the cache file and try to download it again.
 			if (_tremove(cache_filename.c_str()) != 0) {
-				SHOW_ERROR(_T("Error deleting negative cache file for '%s': %s"), cache_key, _tcserror(errno));
+				SHOW_ERROR(FSTR(_T("Error deleting negative cache file for '{:s}': {:s}")), cache_key, _tcserror(errno));
 				return EXIT_FAILURE;
 			}
 		} else if (filesize > 0) {
 			// File is larger than 0 bytes, which indicates
 			// it was previously cached successfully
 			if (unlikely(check_newer)) {
-				SHOW_INFO(_T("Cache file for '%s' is already downloaded, but this cache key is set to download-if-newer."), cache_key);
+				SHOW_INFO(FSTR(_T("Cache file for '{:s}' is already downloaded, but this cache key is set to download-if-newer.")), cache_key);
 			} else if (unlikely(force)) {
-				SHOW_INFO(_T("Cache file for '%s' is already downloaded, but -f was specified. Redownloading anyway."), cache_key);
+				SHOW_INFO(FSTR(_T("Cache file for '{:s}' is already downloaded, but -f was specified. Redownloading anyway.")), cache_key);
 				if (_tremove(cache_filename.c_str()) != 0) {
-					SHOW_ERROR(_T("Error deleting cache file for '%s': %s"), cache_key, _tcserror(errno));
+					SHOW_ERROR(FSTR(_T("Error deleting cache file for '{:s}': {:s}")), cache_key, _tcserror(errno));
 					return EXIT_FAILURE;
 				}
 			} else {
-				SHOW_INFO(_T("Cache file for '%s' is already downloaded."), cache_key);
+				SHOW_INFO(FSTR(_T("Cache file for '{:s}' is already downloaded.")), cache_key);
 				return EXIT_SUCCESS;
 			}
 		}
@@ -489,12 +472,12 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 		// Make sure the path structure exists.
 		int ret = FileSystem::rmkdir(cache_filename, 0700);
 		if (ret != 0) {
-			SHOW_ERROR(_T("Error creating directory structure: %s"), _tcserror(-ret));
+			SHOW_ERROR(FSTR(_T("Error creating directory structure: {:s}")), _tcserror(-ret));
 			return EXIT_FAILURE;
 		}
 	} else {
 		// Other error.
-		SHOW_ERROR(_T("Error checking cache file for '%s': %s"), cache_key, _tcserror(-ret));
+		SHOW_ERROR(FSTR(_T("Error checking cache file for '{:s}': {:s}")), cache_key, _tcserror(-ret));
 		return EXIT_FAILURE;
 	}
 
@@ -521,7 +504,7 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 		// Error downloading the file.
 		if (ret < 0) {
 			// POSIX error code
-			SHOW_ERROR(_T("Error downloading file: %s"), _tcserror(-ret));
+			SHOW_ERROR(FSTR(_T("Error downloading file: {:s}")), _tcserror(-ret));
 			// Create a 0-byte file to indicate an error occurred.
 			FILE *f_out = _tfopen(cache_filename.c_str(), _T("wb"));
 			if (f_out) {
@@ -529,16 +512,16 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 			}
 		} else if (ret == 304 && check_newer) {
 			// HTTP 304 Not Modified
-			SHOW_ERROR(_T("File has not been modified on the server. Not redownloading."));
+			SHOW_ERROR(FSTR(_T("File has not been modified on the server. Not redownloading.")));
 			return EXIT_SUCCESS;
 		} else /*if (ret > 0)*/ {
 			// HTTP status code
 			if (verbose) {
 				const TCHAR *msg = http_status_string(ret);
 				if (msg) {
-					show_error(_T("Error downloading file: HTTP %d %s"), ret, msg);
+					show_error(FSTR(_T("Error downloading file: HTTP {:d} {:s}")), ret, msg);
 				} else {
-					show_error(_T("Error downloading file: HTTP %d"), ret);
+					show_error(FSTR(_T("Error downloading file: HTTP {:d}")), ret);
 				}
 			}
 			// Create a 0-byte file to indicate an error occurred.
@@ -552,14 +535,14 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 
 	if (m_downloader->dataSize() <= 0) {
 		// No data downloaded...
-		SHOW_ERROR(_T("Error downloading file: 0 bytes received"));
+		SHOW_ERROR(FSTR(_T("Error downloading file: 0 bytes received")));
 		return EXIT_FAILURE;
 	}
 
 	FILE *f_out = _tfopen(cache_filename.c_str(), _T("wb"));
 	if (!f_out) {
 		// Error opening the cache file.
-		SHOW_ERROR(_T("Error writing to cache file: %s"), _tcserror(errno));
+		SHOW_ERROR(FSTR(_T("Error writing to cache file: {:s}")), _tcserror(errno));
 		return EXIT_FAILURE;
 	}
 
@@ -579,8 +562,7 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 	fclose(f_out);
 
 	// Success.
-	SHOW_INFO(_T("Downloaded cache file for '%s': %u byte%s."),
-		cache_key, static_cast<unsigned int>(dataSize),
-		unlikely(dataSize == 1) ? "" : "s");
+	SHOW_INFO(FSTR(_T("Downloaded cache file for '{:s}': {:Ld} byte{:s}.")),
+		cache_key, dataSize, unlikely(dataSize == 1) ? _T("") : _T("s"));
 	return EXIT_SUCCESS;
 }

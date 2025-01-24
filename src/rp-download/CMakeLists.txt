@@ -126,6 +126,11 @@ IF(APPLE)
 	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE ${CORESERVICES_LIBRARY})
 ENDIF(APPLE)
 
+# libfmt
+IF(Fmt_FOUND)
+	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE ${Fmt_LIBRARY})
+ENDIF(Fmt_FOUND)
+
 # Make sure git_version.h is created before compiling this target.
 IF(TARGET git_version)
 	ADD_DEPENDENCIES(${PROJECT_NAME} git_version)
