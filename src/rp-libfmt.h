@@ -3,7 +3,7 @@
  * rp-libfmt.h: libfmt wrapper header for compatibility with older versions. *
  *                                                                           *
  * Copyright (c) 2025 by David Korth.                                        *
- * SPDX-License-Identifier: GPL-2.0-or-later                                 *
+ * SPDX-License-Identifier: MIT                                              *
  *****************************************************************************/
 
 #pragma once
