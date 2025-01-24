@@ -31,8 +31,7 @@ namespace Gdiplus {
 #endif /* _WIN32 */
 
 // libfmt
-#include <fmt/format.h>
-#define FSTR FMT_STRING
+#include "rp-libfmt.h"
 
 extern "C" int gtest_main(int argc, TCHAR *argv[]);
 

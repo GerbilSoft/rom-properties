@@ -31,8 +31,7 @@ using std::string;
 using std::vector;
 
 // libfmt
-#include <fmt/format.h>
-#define FSTR FMT_STRING
+#include "rp-libfmt.h"
 
 namespace LibRomData {
 

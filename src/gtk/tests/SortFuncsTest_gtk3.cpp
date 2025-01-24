@@ -28,8 +28,7 @@ using std::array;
 using std::string;
 
 // libfmt
-#include <fmt/format.h>
-#define FSTR FMT_STRING
+#include "rp-libfmt.h"
 
 // Test data
 #include "SortFuncsTest_data.h"

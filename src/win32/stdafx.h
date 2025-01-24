@@ -82,11 +82,7 @@
 #include <vector>
 
 // libfmt
-#include <fmt/format.h>
-#ifdef _WIN32
-#  include <fmt/xchar.h>
-#endif /* !_WIN32 */
-#define FSTR FMT_STRING
+#include "rp-libfmt.h"
 
 #else /* !__cplusplus */
 /** C **/

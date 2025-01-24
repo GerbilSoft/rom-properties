@@ -27,8 +27,7 @@ using std::wstring;
 #endif /* _WIN32 */
 
 // libfmt
-#include <fmt/format.h>
-#define FSTR FMT_STRING
+#include "rp-libfmt.h"
 
 // OS-specific directory separator.
 #ifdef _WIN32

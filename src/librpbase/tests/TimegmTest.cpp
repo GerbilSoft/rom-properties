@@ -14,8 +14,7 @@
 #include "time_r.h"
 
 // libfmt
-#include <fmt/format.h>
-#define FSTR FMT_STRING
+#include "rp-libfmt.h"
 
 // NOTE: MSVCRT's documentation for _mkgmtime64() says it has a limited range:
 // - Documented: [1970/01/01, 3000/12/31]

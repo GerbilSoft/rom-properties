@@ -39,8 +39,7 @@ using std::string;
 using std::u16string;
 
 // libfmt
-#include <fmt/format.h>
-#define FSTR FMT_STRING
+#include "rp-libfmt.h"
 
 namespace LibRpText {
 

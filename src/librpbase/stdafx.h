@@ -38,8 +38,7 @@
 #include <vector>
 
 // libfmt
-#include <fmt/format.h>
-#define FSTR FMT_STRING
+#include "rp-libfmt.h"
 
 #else /* !__cplusplus */
 /** C **/

@@ -25,8 +25,7 @@
 using std::string;
 
 // libfmt
-#include <fmt/format.h>
-#define FSTR FMT_STRING
+#include "rp-libfmt.h"
 
 namespace LibRpBase { namespace Tests {
 

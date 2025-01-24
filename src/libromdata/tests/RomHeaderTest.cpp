@@ -43,11 +43,7 @@ using std::shared_ptr;
 using std::string;
 
 // libfmt
-#include <fmt/format.h>
-#ifdef _WIN32
-#  include <fmt/xchar.h>
-#endif /* !_WIN32 */
-#define FSTR FMT_STRING
+#include "rp-libfmt.h"
 
 // Uninitialized vector class
 #include "uvector.h"

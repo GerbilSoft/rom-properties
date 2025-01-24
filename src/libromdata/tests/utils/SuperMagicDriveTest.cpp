@@ -26,8 +26,7 @@ using std::array;
 #include <zlib.h>
 
 // libfmt
-#include <fmt/format.h>
-#define FSTR FMT_STRING
+#include "rp-libfmt.h"
 
 namespace LibRomData { namespace Tests {
 

@@ -35,8 +35,7 @@ using std::string;
 using std::unique_ptr;
 
 // libfmt
-#include <fmt/format.h>
-#define FSTR FMT_STRING
+#include "rp-libfmt.h"
 
 // librpsecure
 #include "librpsecure/os-secure.h"

@@ -24,8 +24,7 @@ using std::array;
 using std::string;
 
 // libfmt
-#include <fmt/format.h>
-#define FSTR FMT_STRING
+#include "rp-libfmt.h"
 
 namespace LibRomData { namespace Tests {
 
