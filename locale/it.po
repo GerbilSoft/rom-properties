@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2024-11-10 19:14-0500\n"
-"PO-Revision-Date: 2025-01-24 03:15\n"
+"PO-Revision-Date: 2025-01-24 04:27\n"
 "Last-Translator: \n"
 "Language-Team: Italian\n"
 "Language: it_IT\n"
@@ -5446,7 +5446,7 @@ msgstr ""
 #: ../src/libromdata/Handheld/DMG.cpp:632
 msgctxt "DMG"
 msgid "System"
-msgstr ""
+msgstr "Sistema"
 
 #: ../src/libromdata/Handheld/DMG.cpp:672
 msgctxt "DMG"
@@ -5624,7 +5624,7 @@ msgstr ""
 #: ../src/libromdata/Handheld/NGPC.cpp:322
 msgctxt "NGPC"
 msgid "System"
-msgstr ""
+msgstr "Sistema"
 
 #: ../src/libromdata/Handheld/NGPC.cpp:335
 msgctxt "NGPC|DebugMode"
@@ -6414,7 +6414,7 @@ msgstr "Nessuna"
 #: ../src/libromdata/Handheld/WonderSwan.cpp:560
 msgctxt "WonderSwan"
 msgid "System"
-msgstr ""
+msgstr "Sistema"
 
 #: ../src/libromdata/Handheld/WonderSwan.cpp:569
 msgctxt "WonderSwan"
