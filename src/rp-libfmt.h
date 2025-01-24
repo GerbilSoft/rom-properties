@@ -13,6 +13,9 @@
 // Base libfmt header
 #include <fmt/format.h>
 
+// Chrono functions
+#include <fmt/chrono.h>
+
 // libfmt-7.1.0 is required.
 #if FMT_VERSION < 70100
 #  error libfmt-7.1.0 or later is required!
