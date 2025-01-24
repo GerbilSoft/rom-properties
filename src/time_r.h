@@ -21,48 +21,6 @@
 #endif /* _WIN32 */
 #include <time.h>
 
-#ifndef HAVE_GMTIME_R
-#  ifdef gmtime_r
-     // Old MinGW-w64 (3.1.0, Ubuntu 14.04) has incompatible *_r() macros.
-#    undef gmtime_r
-#  endif
-static inline struct tm *gmtime_r(const time_t *timep, struct tm *result)
-{
-#ifdef HAVE_GMTIME_S
-	return (gmtime_s(result, timep) == 0 ? result : NULL);
-#else /* !HAVE_GMTIME_S */
-	// cppcheck-suppress gmtimeCalled
-	struct tm *tm = gmtime(timep);
-	if (tm && result) {
-		*result = *tm;
-		return result;
-	}
-	return NULL;
-#endif /* GMTIME_S */
-}
-#endif /* HAVE_GMTIME_R */
-
-#ifndef HAVE_LOCALTIME_R
-#  ifdef localtime_r
-     // Old MinGW-w64 (3.1.0, Ubuntu 14.04) has incompatible *_r() macros.
-#    undef localtime_r
-#  endif
-static inline struct tm *localtime_r(const time_t *timep, struct tm *result)
-{
-#ifdef HAVE_LOCALTIME_S
-	return (localtime_s(result, timep) == 0 ? result : NULL);
-#else /* !HAVE_LOCALTIME_S */
-	// cppcheck-suppress localtimeCalled
-	struct tm *tm = localtime(timep);
-	if (tm && result) {
-		*result = *tm;
-		return result;
-	}
-	return NULL;
-#endif /* HAVE_LOCALTIME_S */
-}
-#endif /* HAVE_LOCALTIME_R */
-
 /** timegm() **/
 
 /**
