@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2024-11-10 19:14-0500\n"
-"PO-Revision-Date: 2025-01-24 04:27\n"
+"PO-Revision-Date: 2025-01-24 05:35\n"
 "Last-Translator: \n"
 "Language-Team: Italian\n"
 "Language: it_IT\n"
@@ -6540,7 +6540,7 @@ msgstr "Nome del file"
 #: ../src/libromdata/Media/CBMDOS.cpp:1345
 msgctxt "CBMDOS|Directory"
 msgid "Type"
-msgstr ""
+msgstr "Tipo"
 
 #: ../src/libromdata/Media/CBMDOS.cpp:1366
 msgctxt "CBMDOS"
@@ -7782,7 +7782,7 @@ msgstr "DLL Runtime"
 #: ../src/libromdata/Other/EXE_NE.cpp:469
 msgctxt "EXE"
 msgid "Module Name"
-msgstr "Nome modulo"
+msgstr "Nome Modulo"
 
 #: ../src/libromdata/Other/EXE_NE.cpp:471
 msgctxt "EXE"
@@ -8084,7 +8084,7 @@ msgstr ""
 #: ../src/libromdata/Other/NintendoBadge.cpp:448
 msgctxt "NintendoBadge"
 msgid "Name"
-msgstr ""
+msgstr "Nome"
 
 #: ../src/libromdata/Other/NintendoBadge.cpp:708
 msgctxt "NintendoBadge"
