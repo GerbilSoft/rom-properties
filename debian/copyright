@@ -22,53 +22,29 @@ License: GPL-3
 Comment:
 
 Files:
- src/librpbase/uvector.h
-Copyright:
- 2013-2017, André Offringa
-License: GPL-3
-Comment:
+ extlib/PowerVR/*
+Copyright: (c) Imagination Technologies Ltd.
+License: MIT
 
 Files:
- src/span.hh
-Copyright:
- 2022, Egor
-License: Apache-2.0 OR MIT
-Comment:
-
-Files:
- src/libromdata/Console/NES.cpp
- src/libromdata/Console/NES.hpp
- src/libromdata/Handheld/DMG.cpp
- src/libromdata/Handheld/DMG.hpp
- src/libromdata/Handheld/VirtualBoy.cpp
- src/libromdata/Handheld/VirtualBoy.hpp
- src/libromdata/data/NESMappers.cpp
- src/libromdata/data/NESMappers.hpp
-Copyright:
- 2016-2021, David Korth <gerbilsoft@gerbilsoft.com>
- 2016-2018, Egor
-License: GPL-2+
-Comment:
-
-Files:
- src/libromdata/tests/img/ImageDecoder_data/TGA/conformance/*
-Copyright:
- (C) TrueVision, Inc.
-License: TGA-2.0
-Comment:
-
-Files:
- src/svrplus/*
-Copyright:
- 2017-2021, Egor
- 2017-2021, David Korth <gerbilsoft@gerbilsoft.com>
-License: GPL-2+
-Comment:
+ extlib/basisu_astc/*
+Copyright: Copyright 2016 The Android Open Source Project
+License: Apache-2.0
 
 Files:
  extlib/googletest/*
 Copyright: 2008-2021, Google Inc.
 License: BSD-3-clause
+
+Files:
+ extlib/inih/*
+Copyright: (c) 2009-2021, Ben Hoyt
+License: BSD-3-clause
+
+Files:
+ extlib/gettext.win32/*
+Copyright: (c) 1995-2020 GNU gettext authors
+License: GPL-3+
 
 Files:
  extlib/minizip-ng/*
@@ -79,12 +55,15 @@ Copyright:
 License: Zlib
 
 Files:
- extlib/zlib-ng/*
-Copyright:
- 1995-2017, Jean-loup Gailly
- 1995-2017, Mark Adler
- 2016-2021, Nathan Moinvaziri
-License: Zlib
+ extlib/libmspack-xenia/*
+Copyright: (C) 2003-2020 Stuart Caie
+License: LGPL-2.1
+
+Files:
+ extlib/libmspack-xenia/xenia_lzx.c
+ extlib/libmspack-xenia/xenia_lzx.h
+Copyright: 2013 Ben Vanik. All rights reserved.
+License: BSD-3-clause
 
 Files:
  extlib/libpng/*
@@ -107,57 +86,6 @@ Copyright: 1996, 1997 Andreas Dilger
 License: libpng
 
 Files:
- extlib/inih/*
-Copyright: (c) 2009-2021, Ben Hoyt
-License: BSD-3-clause
-
-Files:
- extlib/tinyxml2/*
-Copyright: 2011-2021 Lee Thomason (www.grinninglizard.com)
-License: Zlib
-
-Files:
- extlib/gettext.win32/*
-Copyright: (c) 1995-2020 GNU gettext authors
-License: GPL-3+
-
-Files:
- src/libi18n/gettext.h
-Copyright: (c) 1995-2020 GNU gettext authors
-License: LGPL-2.1+
-
-Files:
- extlib/unice68/*
-Copyright: (c) 1998-2016 Benjamin Gerard
-License: GPL-3+
-
-Files:
- extlib/libmspack-xenia/*
-Copyright: (C) 2003-2020 Stuart Caie
-License: LGPL-2.1
-
-Files:
- extlib/libmspack-xenia/xenia_lzx.c
- extlib/libmspack-xenia/xenia_lzx.h
-Copyright: 2013 Ben Vanik. All rights reserved.
-License: BSD-3-clause
-
-Files:
- extlib/PowerVR/*
-Copyright: (c) Imagination Technologies Ltd.
-License: MIT
-
-Files:
- extlib/rapidjson/*
-Copyright: Copyright (C) 2015 THL A29 Limited, a Tencent company, and Milo Yip.
-License: MIT
-
-Files:
- extlib/zstd/*
-Copyright: 2016-present, Facebook, Inc.
-License: BSD-3-clause
-
-Files:
  extlib/lz4/*
 Copyright: Copyright (C) Yann Collet 2011-present
 License: GPL-2+
@@ -168,14 +96,29 @@ Copyright: Copyright (C) Yann Collet 2011-present
 License: BSD-2-clause
 
 Files:
+ extlib/microtar/src/*
+Copyright: Copyright (c) 2017 rxi
+License: MIT
+
+Files:
  extlib/minilzo/*
 Copyright: Copyright (C) 1996-2017 Markus Franz Xaver Johannes Oberhumer
 License: GPL-2+
 
 Files:
- extlib/basisu_astc/*
-Copyright: Copyright 2016 The Android Open Source Project
-License: Apache-2.0
+ extlib/rapidjson/*
+Copyright: Copyright (C) 2015 THL A29 Limited, a Tencent company, and Milo Yip.
+License: MIT
+
+Files:
+ extlib/tinyxml2/*
+Copyright: 2011-2021 Lee Thomason (www.grinninglizard.com)
+License: Zlib
+
+Files:
+ extlib/unice68/*
+Copyright: (c) 1998-2016 Benjamin Gerard
+License: GPL-3+
 
 Files:
  extlib/uniwidth/bitmap.h
@@ -210,9 +153,24 @@ Copyright: Copyright (C) 2000-2022 Free Software Foundation, Inc.
 License: LGPL-3+
 
 Files:
- extlib/microtar/src/*
-Copyright: Copyright (c) 2017 rxi
-License: MIT
+ extlib/zlib-ng/*
+Copyright:
+ 1995-2017, Jean-loup Gailly
+ 1995-2017, Mark Adler
+ 2016-2021, Nathan Moinvaziri
+License: Zlib
+
+Files:
+ extlib/zstd/*
+Copyright: 2016-present, Facebook, Inc.
+License: BSD-3-clause
+
+Files:
+ src/span.hh
+Copyright:
+ 2022, Egor
+License: Apache-2.0 OR MIT
+Comment:
 
 Files:
  src/gtk/tracker/tracker-file-utils.c
@@ -221,6 +179,33 @@ Copyright:
  Copyright (C) 2006, Jamie McCracken <jamiemcc@gnome.org>
  Copyright (C) 2008, Nokia <ivan.frade@nokia.com>
 License: LGPL-2.1+
+
+Files:
+ src/libi18n/gettext.h
+Copyright: (c) 1995-2020 GNU gettext authors
+License: LGPL-2.1+
+
+Files:
+ src/libromdata/Console/NES.cpp
+ src/libromdata/Console/NES.hpp
+ src/libromdata/Handheld/DMG.cpp
+ src/libromdata/Handheld/DMG.hpp
+ src/libromdata/Handheld/VirtualBoy.cpp
+ src/libromdata/Handheld/VirtualBoy.hpp
+ src/libromdata/data/NESMappers.cpp
+ src/libromdata/data/NESMappers.hpp
+Copyright:
+ 2016-2021, David Korth <gerbilsoft@gerbilsoft.com>
+ 2016-2018, Egor
+License: GPL-2+
+Comment:
+
+Files:
+ src/libromdata/tests/img/ImageDecoder_data/TGA/conformance/*
+Copyright:
+ (C) TrueVision, Inc.
+License: TGA-2.0
+Comment:
 
 Files:
  src/libwin32darkmode/DarkMode.?pp
@@ -245,6 +230,14 @@ Files:
 Copyright:
  Copyright (C)2021 Don HO <don.h@free.fr>
 License: GPL-3+
+
+Files:
+ src/svrplus/*
+Copyright:
+ 2017-2021, Egor
+ 2017-2021, David Korth <gerbilsoft@gerbilsoft.com>
+License: GPL-2+
+Comment:
 
 License: BSD-2-clause
  All rights reserved.
