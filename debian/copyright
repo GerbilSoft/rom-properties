@@ -202,6 +202,15 @@ License: GPL-2+
 Comment:
 
 Files:
+ src/libromdata/Other/Wim.cpp
+ src/libromdata/Other/Wim.hpp
+Copyright:
+ 2023, ecumber
+ 2019-2025, David Korth <gerbilsoft@gerbilsoft.com>
+License: GPL-2+
+Comment:
+
+Files:
  src/libromdata/tests/img/ImageDecoder_data/TGA/conformance/*
 Copyright:
  (C) TrueVision, Inc.
