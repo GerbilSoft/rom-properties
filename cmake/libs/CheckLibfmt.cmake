@@ -11,7 +11,19 @@ IF(NOT USE_INTERNAL_FMT)
 	ENDIF()
 
 	# Check for libfmt.
-	FIND_PACKAGE(Fmt)
+	# - libfmt-6.2.0: Introduced the 'L' format specifier.
+	#   - Previously, 'n' was available.
+	#   - The 'L' specifier matches C++20 std::format().
+	# - libfmt-7.0.x: Has fixes for the 'L' format specifier; removed 'n'.
+	#   - 'n' can be re-enabled with FMT_DEPRECATED_N_SPECIFIER.
+	# - libfmt-7.1.0: Has more fixes for the 'L' format specifier.
+	# - libfmt-8.0.0: Removes the 'n' format specifier entirely.
+	#
+	# Since we use the 'L' specifier, we will set a minimum of libfmt-7.1.0.
+	# Ubuntu 20.04 has libfmt-6.1.2; Ubuntu 22.04 has libfmt-8.1.1.
+	# Also, Ubuntu 20.04's libfmt is a static library. It was changed
+	# to a shared library sometime between 20.04 and 22.04.
+	FIND_PACKAGE(Fmt 7.1.0)
 	IF(Fmt_FOUND)
 		# Found system libfmt.
 		SET(HAVE_Fmt 1)
