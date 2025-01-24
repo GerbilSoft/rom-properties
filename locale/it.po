@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2024-11-10 19:14-0500\n"
-"PO-Revision-Date: 2025-01-24 05:35\n"
+"PO-Revision-Date: 2025-01-24 15:53\n"
 "Last-Translator: \n"
 "Language-Team: Italian\n"
 "Language: it_IT\n"
@@ -2489,7 +2489,7 @@ msgstr "Microfono"
 #: ../src/libromdata/Console/Dreamcast.cpp:765
 msgctxt "Dreamcast|Expansion"
 msgid "VMU"
-msgstr "VMU"
+msgstr "VM"
 
 #: ../src/libromdata/Console/Dreamcast.cpp:769
 msgctxt "Dreamcast"
