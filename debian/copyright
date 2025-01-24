@@ -55,6 +55,11 @@ Copyright:
 License: Zlib
 
 Files:
+ extlib/libfmt/*
+Copyright: 2012-present, Victor Zverovich and {fmt} contributors
+License: MIT
+
+Files:
  extlib/libmspack-xenia/*
 Copyright: (C) 2003-2020 Stuart Caie
 License: LGPL-2.1
