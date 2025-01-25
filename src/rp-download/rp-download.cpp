@@ -93,11 +93,19 @@ static void show_usage(void)
  * @param format fmt::print() format string
  * @param ... fmt::print() format parameters
  */
+#ifdef _MSC_VER
+#define show_error(format, ...) do { \
+	fmt::print(stderr, FSTR(_T("%s: ")), argv0); \
+	fmt::print(stderr, format, __VA_ARGS__); \
+	_fputtc(_T('\n'), stderr); \
+} while (0)
+#else /* !_MSC_VER */
 #define show_error(format, ...) do { \
 	fmt::print(stderr, FSTR(_T("%s: ")), argv0); \
 	fmt::print(stderr, format, ##__VA_ARGS__); \
 	_fputtc(_T('\n'), stderr); \
 } while (0)
+#endif /* _MSC_VER */
 
 #define SHOW_ERROR(...) if (verbose) show_error(__VA_ARGS__)
 
@@ -107,10 +115,17 @@ static void show_usage(void)
  * @param format fmt::print() format string
  * @param ... fmt::print() format parameters
  */
+#ifdef _MSC_VER
+#define show_info(format, ...) do { \
+	fmt::print(stderr, format, __VA_ARGS__); \
+	_fputtc(_T('\n'), stderr); \
+} while (0)
+#else /* !_MSC_VER */
 #define show_info(format, ...) do { \
 	fmt::print(stderr, format, ##__VA_ARGS__); \
 	_fputtc(_T('\n'), stderr); \
 } while (0)
+#endif /* _MSC_VER */
 
 #define SHOW_INFO(...) if (verbose) show_info(__VA_ARGS__)
 
