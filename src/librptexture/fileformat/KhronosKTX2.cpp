@@ -81,7 +81,7 @@ public:
 	vector<rp_image_ptr> mipmaps;
 
 	// Invalid pixel format message
-	char invalid_pixel_format[24];
+	mutable string invalid_pixel_format;
 
 	// Key/Value data
 	// NOTE: Stored as vector<vector<string> > instead of
@@ -154,7 +154,6 @@ KhronosKTX2Private::KhronosKTX2Private(KhronosKTX2 *q, const IRpFilePtr &file)
 {
 	// Clear the KTX2 header struct.
 	memset(&ktx2Header, 0, sizeof(ktx2Header));
-	memset(invalid_pixel_format, 0, sizeof(invalid_pixel_format));
 	memset(ktx_swizzle, 0, sizeof(ktx_swizzle));
 }
 
@@ -940,13 +939,14 @@ const char *KhronosKTX2::pixelFormat(void) const
 	}
 
 	// Invalid pixel format.
-	if (d->invalid_pixel_format[0] == '\0') {
+	// Store an error message instead.
+	if (d->invalid_pixel_format.empty()) {
 		// TODO: Localization?
-		snprintf(const_cast<KhronosKTX2Private*>(d)->invalid_pixel_format,
-			sizeof(d->invalid_pixel_format),
-			"Unknown (%u)", d->ktx2Header.vkFormat);
+		d->invalid_pixel_format = fmt::format(
+			C_("RomData", "Unknown ({:d})"),
+			d->ktx2Header.vkFormat);
 	}
-	return d->invalid_pixel_format;
+	return d->invalid_pixel_format.c_str();
 }
 
 #ifdef ENABLE_LIBRPBASE_ROMFIELDS

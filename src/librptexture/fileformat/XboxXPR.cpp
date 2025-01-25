@@ -24,6 +24,7 @@ using LibRpBase::RomFields;
 
 // C++ STL classes
 using std::array;
+using std::string;
 
 namespace LibRpTexture {
 
@@ -61,7 +62,7 @@ class XboxXPRPrivate final : public FileFormatPrivate
 		rp_image_ptr img;
 
 		// Invalid pixel format message
-		char invalid_pixel_format[24];
+		mutable string invalid_pixel_format;
 
 		/**
 		 * Generate swizzle masks for unswizzling ARGB textures.
@@ -179,7 +180,6 @@ XboxXPRPrivate::XboxXPRPrivate(XboxXPR *q, const IRpFilePtr &file)
 {
 	// Clear the structs and arrays.
 	memset(&xpr0Header, 0, sizeof(xpr0Header));
-	memset(invalid_pixel_format, 0, sizeof(invalid_pixel_format));
 }
 
 /**
@@ -702,13 +702,12 @@ const char *XboxXPR::pixelFormat(void) const
 
 	// Invalid pixel format.
 	// Store an error message instead.
-	// TODO: Localization?
-	if (d->invalid_pixel_format[0] == '\0') {
-		snprintf(const_cast<XboxXPRPrivate*>(d)->invalid_pixel_format,
-			sizeof(d->invalid_pixel_format),
-			"Unknown (0x%02X)", d->xpr0Header.pixel_format);
+	if (d->invalid_pixel_format.empty()) {
+		d->invalid_pixel_format = fmt::format(
+			C_("RomData", "Unknown (0x{:0>2X})"),
+			d->xpr0Header.pixel_format);
 	}
-	return d->invalid_pixel_format;
+	return d->invalid_pixel_format.c_str();
 }
 
 #ifdef ENABLE_LIBRPBASE_ROMFIELDS

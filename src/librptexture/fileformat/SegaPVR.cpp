@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * SegaPVR.cpp: Sega PVR texture reader.                                   *
  *                                                                         *
- * Copyright (c) 2017-2024 by David Korth.                                 *
+ * Copyright (c) 2017-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -26,6 +26,7 @@ using LibRpBase::RomFields;
 
 // C++ STL classes
 using std::array;
+using std::string;
 using std::unique_ptr;
 
 namespace LibRpTexture {
@@ -84,7 +85,7 @@ class SegaPVRPrivate final : public FileFormatPrivate
 		rp_image_ptr img;
 
 		// Invalid pixel format message
-		char invalid_pixel_format[24];
+		mutable string invalid_pixel_format;
 
 	public:
 		/**
@@ -165,7 +166,6 @@ SegaPVRPrivate::SegaPVRPrivate(SegaPVR *q, const IRpFilePtr &file)
 {
 	// Clear the PVR header structs.
 	memset(&pvrHeader, 0, sizeof(pvrHeader));
-	memset(invalid_pixel_format, 0, sizeof(invalid_pixel_format));
 }
 
 #if SYS_BYTEORDER == SYS_BIG_ENDIAN
@@ -1454,8 +1454,7 @@ const char *SegaPVR::pixelFormat(void) const
 
 	// Invalid pixel format.
 	// Store an error message instead.
-	// TODO: Localization?
-	if (d->invalid_pixel_format[0] == '\0') {
+	if (d->invalid_pixel_format.empty()) {
 		// GVR has pixel format and image data type located at a different offset.
 		// NOTE: Using image data type for GCN.
 		uint8_t val;
@@ -1471,11 +1470,10 @@ const char *SegaPVR::pixelFormat(void) const
 				break;
 		}
 
-		snprintf(const_cast<SegaPVRPrivate*>(d)->invalid_pixel_format,
-			sizeof(d->invalid_pixel_format),
-			"Unknown (0x%02X)", val);
+		d->invalid_pixel_format = fmt::format(
+			C_("RomData", "Unknown (0x{:0>2X})"), val);
 	}
-	return d->invalid_pixel_format;
+	return d->invalid_pixel_format.c_str();
 }
 
 #ifdef ENABLE_LIBRPBASE_ROMFIELDS

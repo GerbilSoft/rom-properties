@@ -74,7 +74,7 @@ class ValveVTFPrivate final : public FileFormatPrivate
 		vector<mipmap_data_t> mipmap_data;
 
 		// Invalid pixel format message
-		char invalid_pixel_format[24];
+		mutable string invalid_pixel_format;
 
 	public:
 		// Image format table
@@ -199,7 +199,6 @@ ValveVTFPrivate::ValveVTFPrivate(ValveVTF *q, const IRpFilePtr &file)
 {
 	// Clear the structs and arrays.
 	memset(&vtfHeader, 0, sizeof(vtfHeader));
-	memset(invalid_pixel_format, 0, sizeof(invalid_pixel_format));
 }
 
 /**
@@ -736,13 +735,12 @@ const char *ValveVTF::pixelFormat(void) const
 	}
 
 	// Invalid pixel format.
-	if (d->invalid_pixel_format[0] == '\0') {
-		// TODO: Localization?
-		snprintf(const_cast<ValveVTFPrivate*>(d)->invalid_pixel_format,
-			sizeof(d->invalid_pixel_format),
-			"Unknown (%d)", fmt);
+	// Store an error message instead.
+	if (d->invalid_pixel_format.empty()) {
+		d->invalid_pixel_format = fmt::format(
+			C_("RomData", "Unknown ({:d})"), fmt);
 	}
-	return d->invalid_pixel_format;
+	return d->invalid_pixel_format.c_str();
 }
 
 #ifdef ENABLE_LIBRPBASE_ROMFIELDS
