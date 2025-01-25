@@ -712,7 +712,7 @@ int CacheTabPrivate::clearRomPropertiesCache(void)
 	if (dirErrs > 0 || fileErrs > 0) {
 		// FIXME: MinGW-w64 11.0.0 doesn't have _swprintf_p() implemented.
 		const string s_err = fmt::format(C_("CacheTab", "ERROR: {:s}"),
-			fmt::format(C_("CacheTab", "Unable to delete {0:d} file(s) and/or {1:d} dir(s)."),
+			fmt::format(C_("CacheTab", "Unable to delete {0:Ld} file(s) and/or {1:Ld} dir(s)."),
 				fileErrs, dirErrs));
 		SetWindowText(hStatusLabel, U82T_s(s_err));
 		MessageBeep(MB_ICONWARNING);
