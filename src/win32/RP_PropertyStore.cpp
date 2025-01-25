@@ -457,7 +457,7 @@ IFACEMETHODIMP RP_PropertyStore::Initialize(_In_ IStream *pstream, DWORD grfMode
 	// Special handling for System.Image.Dimensions.
 	if (dimensions.cx != 0 && dimensions.cy != 0) {
 		const wstring s_dimensions = fmt::format(
-			FSTR(L"%ldx%ld"),
+			FSTR(L"{:d}x{:d}"),
 			dimensions.cx, dimensions.cy);
 
 		PROPVARIANT prop_var;
