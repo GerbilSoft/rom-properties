@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * tga_structs.h: TrueVision TGA texture format data structures.           *
  *                                                                         *
- * Copyright (c) 2017-2023 by David Korth.                                 *
+ * Copyright (c) 2017-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -31,7 +31,7 @@ extern "C" {
  * All fields are little-endian.
  */
 #pragma pack(1)
-typedef struct PACKED _TGA_Header {
+typedef struct RP_PACKED _TGA_Header {
 	uint8_t id_length;		// [0x000] Length of ID field. (0 if not present)
 	uint8_t color_map_type;		// [0x001] Color map type: 0 if none, 1 if present.
 	uint8_t image_type;		// [0x002] Image type. (See TGA_ImageType_e.)
@@ -106,7 +106,7 @@ ASSERT_STRUCT(TGA_DateStamp, 6*sizeof(uint16_t));
  */
 // Some compilers pad this structure to a multiple of 4 bytes
 #pragma pack(1)
-typedef struct PACKED _TGA_ElapsedTime {
+typedef struct RP_PACKED _TGA_ElapsedTime {
 	uint16_t hours;	// [0x000] 0-65535
 	uint16_t mins;	// [0x002] 0-59
 	uint16_t secs;	// [0x004] 0-59
@@ -119,7 +119,7 @@ ASSERT_STRUCT(TGA_ElapsedTime, 3*sizeof(uint16_t));
  * All fields are little-endian.
  */
 #pragma pack(1)
-typedef struct PACKED _TGA_SW_Version {
+typedef struct RP_PACKED _TGA_SW_Version {
 	uint16_t number;	// [0x000] Version number * 100 (0 for unused)
 				//             Example: 213 for version 2.13
 	char letter;		// [0x002] Version letter suffix (' ' for unused)
@@ -145,7 +145,7 @@ ASSERT_STRUCT(TGA_Ratio, 2*sizeof(uint16_t));
  * All fields are little-endian.
  */
 #pragma pack(1)
-typedef struct PACKED _TGA_ExtArea {
+typedef struct RP_PACKED _TGA_ExtArea {
 	uint16_t size;			// [0x000] Extension area size. (Always 495)
 	char author_name[41];		// [0x002] Author name, NULL-terminated.
 	char author_comment[4][81];	// [0x02B] Comment lines, NULL-terminated.
@@ -186,7 +186,7 @@ typedef enum {
  */
 #define TGA_SIGNATURE "TRUEVISION-XFILE"
 #pragma pack(1)
-typedef struct PACKED _TGA_Footer {
+typedef struct RP_PACKED _TGA_Footer {
 	uint32_t ext_offset;		// [0x000] Offset from the beginning of the file.
 	uint32_t dev_area_offset;	// [0x004] Offset from the beginning of the file.
 	char signature[16];		// [0x008]

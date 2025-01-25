@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * Atari7800.cpp: Atari 7800 ROM reader.                                   *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -213,11 +213,8 @@ int Atari7800::loadFieldData(void)
 			(romHeader->tv_type & ATARI_A78_TVType_Format_Mask) ? "PAL" : "NTSC");
 	} else {
 		// Component: no artifacting
-		char s_tv_type[32];
-		snprintf(s_tv_type, sizeof(s_tv_type), "%s, %s",
-			(romHeader->tv_type & ATARI_A78_TVType_Format_Mask) ? "PAL" : "NTSC",
-			(romHeader->tv_type & ATARI_A78_TVType_Artifacts_Mask) ? "component" : "composite");
-		d->fields.addField_string(tv_type_title, s_tv_type);
+		d->fields.addField_string(tv_type_title,
+			(romHeader->tv_type & ATARI_A78_TVType_Format_Mask) ? "PAL, component" : "NTSC, component");
 	}
 
 	// Controllers
@@ -239,7 +236,7 @@ int Atari7800::loadFieldData(void)
 		"SNES2Atari"
 	}};
 	for (unsigned int i = 0; i < 2; i++) {
-		const string control_title = rp_sprintf(C_("Atari7800", "Controller %u"), i+1);
+		const string control_title = fmt::format(C_("Atari7800", "Controller {:d}"), i+1);
 		const uint8_t control_type = romHeader->control_types[i];
 
 		if (control_type < controller_tbl.size()) {
@@ -248,7 +245,7 @@ int Atari7800::loadFieldData(void)
 					controller_tbl[control_type]));
 		} else {
 			d->fields.addField_string(control_title.c_str(),
-				rp_sprintf(C_("RomData", "Unknown (%u)"), control_type));
+				fmt::format(C_("RomData", "Unknown ({:d})"), control_type));
 		}
 	}
 

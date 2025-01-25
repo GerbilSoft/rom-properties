@@ -33,12 +33,13 @@
  */
 #define ARRAY_SIZE_I(x) ((int)(ARRAY_SIZE(x)))
 
-// PACKED struct attribute.
+// RP_PACKED struct attribute.
 // Use in conjunction with #pragma pack(1).
+// (NOTE: Was previously PACKED, but that conflicts with libfmt.)
 #ifdef __GNUC__
-#  define PACKED __attribute__((packed))
+#  define RP_PACKED __attribute__((packed))
 #else
-#  define PACKED
+#  define RP_PACKED
 #endif
 
 /**

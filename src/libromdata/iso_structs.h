@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * iso9660.h: ISO-9660 structs for CD-ROM images.                          *
  *                                                                         *
- * Copyright (c) 2017-2024 by David Korth.                                 *
+ * Copyright (c) 2017-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -89,7 +89,7 @@ ASSERT_STRUCT(uint32_lsb_msb_t, 8);
  */
 // Some compilers pad this structure to a multiple of 4 bytes
 #pragma pack(1)
-typedef struct PACKED _ISO_PVD_DateTime_t {
+typedef struct RP_PACKED _ISO_PVD_DateTime_t {
 	union {
 		char full[17];
 		struct {
@@ -115,7 +115,7 @@ ASSERT_STRUCT(ISO_PVD_DateTime_t, 17);
  */
 // Some compilers pad this structure to a multiple of 4 bytes
 #pragma pack(1)
-typedef struct PACKED _ISO_Dir_DateTime_t {
+typedef struct RP_PACKED _ISO_Dir_DateTime_t {
 	uint8_t year;		// Number of years since 1900.
 	uint8_t month;		// Month, from 1 to 12.
 	uint8_t day;		// Day, from 1 to 31.
@@ -134,7 +134,7 @@ ASSERT_STRUCT(ISO_Dir_DateTime_t, 7);
  * Directory entry, excluding the variable-length file identifier.
  */
 #pragma pack(1)
-typedef struct PACKED _ISO_DirEntry {
+typedef struct RP_PACKED _ISO_DirEntry {
 	uint8_t entry_length;			// Length of Directory Record. (must be at least 33 + filename)
 	uint8_t xattr_length;			// Extended Attribute Record length.
 	uint32_lsb_msb_t block;			// Starting LBA of the file.
@@ -164,7 +164,7 @@ typedef enum {
  */
 // Some compilers pad this structure to a multiple of 4 bytes
 #pragma pack(1)
-typedef struct PACKED _ISO_Volume_Descriptor_Header {
+typedef struct RP_PACKED _ISO_Volume_Descriptor_Header {
 	uint8_t type;		// Volume descriptor type code. (See ISO_Volume_Descriptor_Type.)
 	char identifier[5];	// (strA) "CD001"
 	uint8_t version;	// Volume descriptor version. (0x01)
@@ -176,7 +176,7 @@ ASSERT_STRUCT(ISO_Volume_Descriptor_Header, 7);
  * Boot volume descriptor.
  */
 #pragma pack(1)
-typedef struct PACKED _ISO_Boot_Volume_Descriptor {
+typedef struct RP_PACKED _ISO_Boot_Volume_Descriptor {
 	ISO_Volume_Descriptor_Header header;
 	char sysID[32];		// (strA) System identifier.
 	char bootID[32];	// (strA) Boot identifier.

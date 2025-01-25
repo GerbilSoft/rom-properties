@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * ADX.hpp: CRI ADX audio reader.                                          *
  *                                                                         *
- * Copyright (c) 2018-2024 by David Korth.                                 *
+ * Copyright (c) 2018-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -293,7 +293,7 @@ int ADX::loadFieldData(void)
 
 	// Sample rate
 	d->fields.addField_string(C_("RomData|Audio", "Sample Rate"),
-		rp_sprintf(C_("RomData", "%u Hz"), sample_rate));
+		fmt::format(C_("RomData", "{:Ld} Hz"), sample_rate));
 
 	// Length. (non-looping)
 	d->fields.addField_string(C_("RomData|Audio", "Length"),
@@ -304,7 +304,7 @@ int ADX::loadFieldData(void)
 	// TODO: What does this value represent?
 	// FIXME: Disabling until I figure this out.
 	d->fields.addField_string(C_("ADX", "High-Pass Cutoff"),
-		rp_sprintf(C_("RomData", "%u Hz"), adxHeader->high_pass_cutoff));
+		fmt::format(C_("RomData", "{:Ld} Hz"), adxHeader->high_pass_cutoff));
 #endif
 
 	// Translated strings

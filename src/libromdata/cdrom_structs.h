@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * cdrom_structs.h: CD-ROM data structures.                                *
  *                                                                         *
- * Copyright (c) 2017-2024 by David Korth.                                 *
+ * Copyright (c) 2017-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -31,7 +31,7 @@ extern "C" {
  */
 // Some compilers pad this structure to a multiple of 4 bytes
 #pragma pack(1)
-typedef struct PACKED _CDROM_MSF_t {
+typedef struct RP_PACKED _CDROM_MSF_t {
 	uint8_t min;
 	uint8_t sec;	// 60
 	uint8_t frame;	// 75

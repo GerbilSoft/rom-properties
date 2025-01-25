@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libwin32ui)                       *
  * DialogBuilder.cpp: DLGTEMPLATEEX builder class.                         *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -22,7 +22,7 @@
 // Windows SDK
 #include <objbase.h>
 
-// PACKED attribute
+// RP_PACKED attribute
 #include "common.h"
 
 namespace LibWin32UI {
@@ -41,7 +41,7 @@ DialogBuilder::DialogBuilder()
  */
 
 #pragma pack(2)
-typedef struct PACKED _DLGTEMPLATEEX {
+typedef struct RP_PACKED _DLGTEMPLATEEX {
 	WORD dlgVer;
 	WORD signature;
 	DWORD helpID;
@@ -57,7 +57,7 @@ ASSERT_STRUCT(DLGTEMPLATEEX, 26);
 #pragma pack()
 
 #pragma pack(2)
-typedef struct PACKED _DLGTEMPLATEEX_FONT {
+typedef struct RP_PACKED _DLGTEMPLATEEX_FONT {
 	WORD pointsize;
 	WORD weight;
 	BYTE italic;
@@ -67,7 +67,7 @@ ASSERT_STRUCT(DLGTEMPLATEEX_FONT, 6);
 #pragma pack()
 
 #pragma pack(2)
-typedef struct PACKED _DLGITEMTEMPLATEEX {
+typedef struct RP_PACKED _DLGITEMTEMPLATEEX {
 	DWORD helpID;
 	DWORD exStyle;
 	DWORD style;

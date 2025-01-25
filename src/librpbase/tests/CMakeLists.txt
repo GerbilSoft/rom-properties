@@ -20,6 +20,11 @@ TARGET_LINK_LIBRARIES(rptest PUBLIC rpsecure)
 # librptest doesn't use gtest directly, but all tests do,
 # so add it with interface linkage.
 TARGET_LINK_LIBRARIES(rptest INTERFACE gtest)
+# librptest *does* use libfmt directly, as do most tests.
+# Add it with public linkage.
+IF(Fmt_FOUND)
+	TARGET_LINK_LIBRARIES(rptest PUBLIC ${Fmt_LIBRARY})
+ENDIF(Fmt_FOUND)
 IF(WIN32)
 	# rptest initializes GDI+, since it's used by rp_image.
 	TARGET_LINK_LIBRARIES(rptest PRIVATE gdiplus)

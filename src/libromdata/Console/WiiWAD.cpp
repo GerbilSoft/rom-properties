@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * WiiWAD.cpp: Nintendo Wii WAD file reader.                               *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -817,7 +817,7 @@ int WiiWAD::loadFieldData(void)
 			err, RomFields::STRF_WARNING);
 	}
 
-	// Type.
+	// Type
 	string s_wadType;
 	switch (d->wadType) {
 		case WiiWADPrivate::WadType::WAD: {
@@ -853,20 +853,20 @@ int WiiWAD::loadFieldData(void)
 	}
 	d->fields.addField_string(C_("RomData", "Type"), s_wadType);
 
-	// Internal name. (BroadOn WADs only)
+	// Internal name (BroadOn WADs only)
 	// FIXME: This is the same "meta" section as Nintendo WADs...
 	if (!d->wadName.empty()) {
 		d->fields.addField_string(C_("RomData", "Name"), d->wadName);
 	}
 
-	// Title ID.
+	// Title ID
 	// TODO: Make sure the ticket title ID matches the TMD title ID.
 	d->fields.addField_string(C_("Nintendo", "Title ID"),
-		rp_sprintf("%08X-%08X",
+		fmt::format(FSTR("{:0>8X}-{:0>8X}"),
 			be32_to_cpu(tmdHeader->title_id.hi),
 			be32_to_cpu(tmdHeader->title_id.lo)));
 
-	// Game ID.
+	// Game ID
 	// NOTE: Only displayed if TID lo is all alphanumeric characters.
 	// TODO: Only for certain TID hi?
 	if (ISALNUM(tmdHeader->title_id.u8[4]) &&
@@ -876,14 +876,17 @@ int WiiWAD::loadFieldData(void)
 	{
 		// Print the game ID.
 		// TODO: Is the publisher code available anywhere?
-		d->fields.addField_string(C_("RomData", "Game ID"),
-			rp_sprintf("%.4s", reinterpret_cast<const char*>(&tmdHeader->title_id.u8[4])));
+		char id4[5];
+		memcpy(id4, &tmdHeader->title_id.u8[4], 4);
+		id4[4] = '\0';
+		d->fields.addField_string(C_("RomData", "Game ID"), id4);
 	}
 
-	// Title version.
+	// Title version
 	const unsigned int title_version = be16_to_cpu(tmdHeader->title_version);
 	d->fields.addField_string(C_("Nintendo", "Title Version"),
-		rp_sprintf("%u.%u (v%u)", title_version >> 8, title_version & 0xFF, title_version));
+		fmt::format(FSTR("{:d}.{:d} (v{:d})"),
+			title_version >> 8, title_version & 0xFF, title_version));
 
 	// Wii-specific
 	unsigned int gcnRegion = ~0U;
@@ -945,8 +948,8 @@ int WiiWAD::loadFieldData(void)
 
 			string s_region;
 			if (suffix) {
-				// tr: %1$s == full region name, %2$s == abbreviation
-				s_region = rp_sprintf_p(C_("Wii", "%1$s (%2$s)"), region, suffix);
+				// tr: {0:s} == full region name, {1:s} == abbreviation
+				s_region = fmt::format(C_("Wii", "{0:s} ({1:s})"), region, suffix);
 			} else {
 				s_region = region;
 			}
@@ -954,7 +957,7 @@ int WiiWAD::loadFieldData(void)
 			d->fields.addField_string(region_code_title, s_region);
 		} else {
 			d->fields.addField_string(region_code_title,
-				rp_sprintf(C_("RomData", "Unknown (0x%02X)"), gcnRegion));
+				fmt::format(C_("RomData", "Unknown (0x{:0>2X})"), gcnRegion));
 		}
 
 		// Required IOS version.
@@ -966,12 +969,12 @@ int WiiWAD::loadFieldData(void)
 			{
 				// Standard IOS slot.
 				d->fields.addField_string(ios_version_title,
-					rp_sprintf("IOS%u", ios_lo));
+					fmt::format(FSTR("IOS{:d}"), ios_lo));
 			} else if (tmdHeader->sys_version.id != 0) {
 				// Non-standard IOS slot.
 				// Print the full title ID.
 				d->fields.addField_string(ios_version_title,
-					rp_sprintf("%08X-%08X",
+					fmt::format(FSTR("{:0>8X}-{:0>8X}"),
 						be32_to_cpu(tmdHeader->sys_version.hi),
 						be32_to_cpu(tmdHeader->sys_version.lo)));
 			}
@@ -1350,16 +1353,15 @@ int WiiWAD::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) con
 	pExtURLs->resize(szdef_count * tdb_lc.size());
 	auto extURL_iter = pExtURLs->begin();
 	for (unsigned int i = 0; i < szdef_count; i++) {
-		// Current image type.
-		char imageTypeName[16];
-		snprintf(imageTypeName, sizeof(imageTypeName), "%s%s",
-			 imageTypeName_base, (szdefs_dl[i]->name ? szdefs_dl[i]->name : ""));
+		// Current image type
+		const string imageTypeName = fmt::format(FSTR("{:s}{:s}"),
+			imageTypeName_base, (szdefs_dl[i]->name ? szdefs_dl[i]->name : ""));
 
 		// Add the images.
 		for (const uint16_t lc : tdb_lc) {
 			const string lc_str = SystemRegion::lcToStringUpper(lc);
-			extURL_iter->url = d->getURL_GameTDB(sysDir, imageTypeName, lc_str.c_str(), id4, ext);
-			extURL_iter->cache_key = d->getCacheKey_GameTDB(sysDir, imageTypeName, lc_str.c_str(), id4, ext);
+			extURL_iter->url = d->getURL_GameTDB(sysDir, imageTypeName.c_str(), lc_str.c_str(), id4, ext);
+			extURL_iter->cache_key = d->getCacheKey_GameTDB(sysDir, imageTypeName.c_str(), lc_str.c_str(), id4, ext);
 			extURL_iter->width = szdefs_dl[i]->width;
 			extURL_iter->height = szdefs_dl[i]->height;
 			extURL_iter->high_res = (szdefs_dl[i]->index >= 2);

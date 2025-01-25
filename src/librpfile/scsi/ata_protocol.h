@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpfile)                        *
  * ata_protocol.h: ATA protocol definitions.                               *
  *                                                                         *
- * Copyright (c) 2019-2023 by David Korth.                                 *
+ * Copyright (c) 2019-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -18,13 +18,13 @@
 
 /* ATA structs are defined on the byte-level, so we must
  * prevent the compiler from adding alignment padding. */
-#if !defined(PACKED)
-# if defined(__GNUC__)
-#  define PACKED __attribute__((packed))
-# else
-#  define PACKED
-# endif /* defined(__GNUC__) */
-#endif /* !defined(PACKED) */
+#if !defined(RP_PACKED)
+#  if defined(__GNUC__)
+#    define RP_PACKED __attribute__((packed))
+#  else
+#    define RP_PACKED
+#  endif /* defined(__GNUC__) */
+#endif /* !defined(RP_PACKED) */
 
 // TODO: Remove packing?
 #pragma pack(1)
@@ -42,7 +42,7 @@ extern "C" {
  * For 48-bit addressing, use all 16 bits of each
  * LBA field and don't use the device field.
  */
-typedef struct PACKED _ATA_CMD {
+typedef struct RP_PACKED _ATA_CMD {
 	uint16_t Feature;	// [0x000] Feature
 	uint16_t Sector_Count;	// [0x002] Sector count
 	uint16_t LBA_low;	// [0x004] LBA low
@@ -84,7 +84,7 @@ typedef struct PACKED _ATA_CMD {
 // NOTE: Some fields have been converted to uint32_t or uint64_t
 // to make it easier to access. These must be swapped from native
 // format before use.
-typedef struct PACKED _ATA_RESP_IDENTIFY_DEVICE {
+typedef struct RP_PACKED _ATA_RESP_IDENTIFY_DEVICE {
 	// TODO: Find obsolete info.
 
 	/** IDENTIFY DEVICE and IDENTIFY PACKET DEVICE **/

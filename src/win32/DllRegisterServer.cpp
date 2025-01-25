@@ -291,27 +291,15 @@ static tstring GetUserFileAssoc(const tstring &sid, const char *ext)
 	// Check if the user has already associated this file extension.
 	// TODO: Check all users.
 
-	// 288-character buffer:
-	// - SID length: 184 characters
-	//   - Reference: http://stackoverflow.com/questions/1140528/what-is-the-maximum-length-of-a-sid-in-sddl-format
-	// - FileExts: 61 characters
-	// - Extension: 16 characters
-	// - UserChoice: 11 characters
-	// - Extra: 16 characters
-	TCHAR regPath[288];
-	int len = _sntprintf_s(regPath, _countof(regPath),
-		_T("%s\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\%s\\UserChoice"),
-		sid.c_str(), U82T_c(ext));
-	if (len <= 0 || len >= (int)_countof(regPath)) {
-		// Buffer isn't large enough...
-		return {};
-	}
+	tstring ts_regPath = fmt::format(
+		FSTR(_T("{:s}\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\{:s}\\UserChoice")),
+			sid, U82T_c(ext));
 
 	// FIXME: This will NOT update profiles that aren't loaded.
 	// Other profiles will need to be loaded manually, or those users
 	// will have to register the DLL themselves.
 	// Reference: http://windowsitpro.com/scripting/how-can-i-update-all-profiles-machine-even-if-theyre-not-currently-loaded
-	RegKey hkcu_UserChoice(HKEY_USERS, regPath, KEY_READ, false);
+	RegKey hkcu_UserChoice(HKEY_USERS, ts_regPath.c_str(), KEY_READ, false);
 	if (!hkcu_UserChoice.isOpen()) {
 		// ERROR_FILE_NOT_FOUND is acceptable.
 		// Anything else is an error.
@@ -668,30 +656,23 @@ STDAPI DllRegisterServer(void)
 	}
 
 	// Per-user versions of the above.
+	tstring ts_regPath;
 	for (const auto &sid : user_SIDs) {
-		TCHAR regPath[288];
-
 		// Incorrect file extension registrations.
-		int len = _sntprintf_s(regPath, _countof(regPath),
-			_T("%s\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts"),
-			sid.c_str());
-		if (len > 0 && len < (int)_countof(regPath)) {
-			RegKey hkuvxd(HKEY_USERS, regPath, KEY_WRITE, false);
-			if (hkuvxd.isOpen()) {
-				hkuvxd.deleteSubKey(_T("*.vxd"));
-				hkuvxd.deleteSubKey(_T(".dylib.bundle"));
-			}
+		ts_regPath = fmt::format(
+			FSTR(_T("{:s}\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts")), sid);
+
+		RegKey hkuvxd(HKEY_USERS, ts_regPath.c_str(), KEY_WRITE, false);
+		if (hkuvxd.isOpen()) {
+			hkuvxd.deleteSubKey(_T("*.vxd"));
+			hkuvxd.deleteSubKey(_T(".dylib.bundle"));
 		}
 
 		// "HKU\\xxx\\SOFTWARE\\Classes\\Applications" entries
-		len = _sntprintf_s(regPath, _countof(regPath),
-			_T("%s\\SOFTWARE\\Classes\\Applications"),
-			sid.c_str());
-		if (len > 0 && len < (int)_countof(regPath)) {
-			RegKey hku_Applications(HKEY_USERS, regPath, KEY_READ|KEY_WRITE, false);
-			if (hku_Applications.isOpen()) {
-				UnregisterFromApplications(hku_Applications);
-			}
+		ts_regPath = fmt::format(FSTR(_T("{:s}\\SOFTWARE\\Classes\\Applications")), sid);
+		RegKey hku_Applications(HKEY_USERS, ts_regPath.c_str(), KEY_READ|KEY_WRITE, false);
+		if (hku_Applications.isOpen()) {
+			UnregisterFromApplications(hku_Applications);
 		}
 	}
 
@@ -807,30 +788,23 @@ STDAPI DllUnregisterServer(void)
 	}
 
 	// Per-user versions of the above.
+	tstring ts_regPath;
 	for (const auto &sid : user_SIDs) {
-		TCHAR regPath[288];
-
 		// Incorrect file extension registrations.
-		int len = _sntprintf_s(regPath, _countof(regPath),
-			_T("%s\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts"),
-			sid.c_str());
-		if (len > 0 && len < (int)_countof(regPath)) {
-			RegKey hkuvxd(HKEY_USERS, regPath, KEY_WRITE, false);
-			if (hkuvxd.isOpen()) {
-				hkuvxd.deleteSubKey(_T("*.vxd"));
-				hkuvxd.deleteSubKey(_T(".dylib.bundle"));
-			}
+		ts_regPath = fmt::format(
+			FSTR(_T("{:s}\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts")), sid);
+		RegKey hkuvxd(HKEY_USERS, ts_regPath.c_str(), KEY_WRITE, false);
+		if (hkuvxd.isOpen()) {
+			hkuvxd.deleteSubKey(_T("*.vxd"));
+			hkuvxd.deleteSubKey(_T(".dylib.bundle"));
 		}
 
 		// "HKU\\xxx\\SOFTWARE\\Classes\\Applications" entries
-		len = _sntprintf_s(regPath, _countof(regPath),
-			_T("%s\\SOFTWARE\\Classes\\Applications"),
-			sid.c_str());
-		if (len > 0 && len < (int)_countof(regPath)) {
-			RegKey hku_Applications(HKEY_USERS, regPath, KEY_READ | KEY_WRITE, false);
-			if (hku_Applications.isOpen()) {
-				UnregisterFromApplications(hku_Applications);
-			}
+		ts_regPath = fmt::format(
+			FSTR(_T("{:s}\\SOFTWARE\\Classes\\Applications")), sid);
+		RegKey hku_Applications(HKEY_USERS, ts_regPath.c_str(), KEY_READ | KEY_WRITE, false);
+		if (hku_Applications.isOpen()) {
+			UnregisterFromApplications(hku_Applications);
 		}
 	}
 

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * iQuePlayer.cpp: iQue Player .cmd reader.                                *
  *                                                                         *
- * Copyright (c) 2019-2024 by David Korth.                                 *
+ * Copyright (c) 2019-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -641,19 +641,19 @@ int iQuePlayer::loadFieldData(void)
 		}
 	}
 
-	// Content ID.
+	// Content ID
 	// NOTE: We don't want the "0x" prefix.
 	// This is sort of like Wii title IDs, but only the
 	// title ID low portion.
 	d->fields.addField_string(C_("iQuePlayer", "Content ID"),
-		rp_sprintf("%08X", be32_to_cpu(bbContentMetaDataHead->content_id)),
+		fmt::format(FSTR("{:0>8X}"), be32_to_cpu(bbContentMetaDataHead->content_id)),
 		RomFields::STRF_MONOSPACE);
 
 	if (d->iQueFileType == iQuePlayerPrivate::IQueFileType::DAT) {
-		// Ticket-specific fields.
+		// Ticket-specific fields
 		const iQuePlayer_BbTicketHead *const bbTicketHead = &d->bbTicketHead;
 
-		// Console ID.
+		// Console ID
 		// TODO: Hide the "0x" prefix?
 		d->fields.addField_string_numeric(C_("Nintendo", "Console ID"),
 			be32_to_cpu(bbTicketHead->bbId), RomFields::Base::Hex, 8,

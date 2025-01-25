@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * NintendoDS_ops.cpp: Nintendo DS(i) ROM reader. (ROM operations)         *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -19,7 +19,6 @@ using namespace LibRpText;
 
 // C++ STL classes
 using std::array;
-using std::ostringstream;
 using std::string;
 using std::unique_ptr;
 using std::vector;
@@ -428,23 +427,21 @@ int NintendoDS::doRomOp_int(int id, RomOpParams *pParams)
 #endif /* ENABLE_DSi_SECURE_AREA */
 			if (ret < 0) {
 				pParams->status = ret;
-				pParams->msg = rp_sprintf_p(C_("RomData", "Could not open '%1$s': %2$s"),
+				pParams->msg = fmt::format(C_("RomData", "Could not open '{0:s}': {1:s}"),
 					filename, strerror(-ret));
 				break;
 			} else if (ret > 0) {
 				pParams->status = -EIO;
 				switch (ret) {
 					case 1: {
-						// TODO: Show actual file size?
-						ostringstream oss_exp;
-						oss_exp << NDS_BLOWFISH_SIZE;
-						pParams->msg = rp_sprintf_p(C_("NintendoDS", "File '%1$s' has the wrong size. (should be %2$s bytes)"),
-							filename, oss_exp.str().c_str());
+						// TODO: Show the actual file size?
+						pParams->msg = fmt::format(C_("NintendoDS", "File '{0:s}' has the wrong size. (should be {1:Ld} bytes)"),
+							filename, NDS_BLOWFISH_SIZE);
 						break;
 					}
 					case 2:
 						// Wrong hash.
-						pParams->msg = rp_sprintf(C_("NintendoDS", "File '%s' has the wrong MD5 hash."), filename);
+						pParams->msg = fmt::format(C_("NintendoDS", "File '{:s}' has the wrong MD5 hash."), filename);
 						break;
 					default:
 						assert(!"Unhandled NDS Blowfish error code.");

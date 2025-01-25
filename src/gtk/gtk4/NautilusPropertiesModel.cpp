@@ -6,7 +6,7 @@
  * arbitrary GtkWidgets. As such, the properties returned will be more       *
  * limited than in previous versions.                                        *
  *                                                                           *
- * Copyright (c) 2017-2023 by David Korth.                                   *
+ * Copyright (c) 2017-2025 by David Korth.                                   *
  * SPDX-License-Identifier: GPL-2.0-or-later                                 *
  *****************************************************************************/
 
@@ -218,9 +218,9 @@ rp_nautilus_properties_model_load_from_romData(RpNautilusPropertiesModel *self,
 	// Add a "File Type" field with the system name and file type.
 	// Other UI frontends have dedicated widgets for this.
 	// NOTE: Using " | " separator; other UI frontends use "\n". (rpcli uses a single space)
-	const string sysInfo = rp_sprintf_p(
-		// tr: %1$s == system name, %2$s == file type
-		C_("RomDataView", "%1$s | %2$s"), systemName, fileType);
+	const string sysInfo = fmt::format(
+		// tr: {0:s} == system name, {1:s} == file type
+		C_("RomDataView", "{0:s} | {1:s}"), systemName, fileType);
 	append_item(self, C_("RomDataView", "File Type"), sysInfo.c_str());
 
 	// Process RomData fields.

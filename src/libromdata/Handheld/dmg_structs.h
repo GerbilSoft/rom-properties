@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * dmg_structs.h: Game Boy (DMG/CGB/SGB) data structures.                  *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * Copyright (c) 2016 by Egor.                                             *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
@@ -43,9 +43,9 @@ typedef struct _DMG_RomHeader {
 		struct {
 			// Some compilers pad this structure to a multiple of 4 bytes
 #pragma pack(1)
-			union PACKED {
+			union RP_PACKED {
 				char title15[15];
-				struct PACKED {
+				struct RP_PACKED {
 					char title11[11];
 					char id4[4];
 				};

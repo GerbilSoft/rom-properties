@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata/tests)                 *
  * NintendoSystemIDTest.cpp: Nintendo System ID structs test.              *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -13,8 +13,11 @@
 #include "librpbyteswap/byteswap_rp.h"
 #include "nintendo_system_id.h"
 
-// C includes. (C++ namespace)
+// C includes (C++ namespace)
 #include <cstdio>
+
+// libfmt
+#include "rp-libfmt.h"
 
 namespace LibRomData { namespace Tests {
 
@@ -63,7 +66,7 @@ TEST_F(NintendoSystemIDTest, leTest)
  */
 extern "C" int gtest_main(int argc, TCHAR *argv[])
 {
-	fprintf(stderr, "LibRomData test suite: NintendoSystemID tests.\n\n");
+	fmt::print(stderr, FSTR("LibRomData test suite: NintendoSystemID tests.\n\n"));
 	fflush(nullptr);
 
 	// coverity[fun_call_w_exception]: uncaught exceptions cause nonzero exit anyway, so don't warn.

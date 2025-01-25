@@ -299,7 +299,12 @@ FOREACH(_target ${TARGETS})
 		TARGET_LINK_LIBRARIES(${_target} PRIVATE basisu_astc)
 	ENDIF(ENABLE_ASTC)
 
-	# Other libraries.
+	# libfmt
+	IF(Fmt_FOUND)
+		TARGET_LINK_LIBRARIES(${_target} PRIVATE ${Fmt_LIBRARY})
+	ENDIF(Fmt_FOUND)
+
+	# Other libraries
 	IF(WIN32)
 		# libwin32common
 		TARGET_LINK_LIBRARIES(${_target} PRIVATE win32common${_target_suffix})

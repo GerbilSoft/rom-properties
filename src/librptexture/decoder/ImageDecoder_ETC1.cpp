@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * ImageDecoder_ETC1.cpp: Image decoding functions: ETC1                   *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -30,16 +30,16 @@ typedef union _etc1_block {
 		// - diffbit == 1: 5 MSB == base, 3 LSB == differential
 		// Some compilers pad this structure to a multiple of 4 bytes
 #pragma pack(1)
-		union PACKED {
+		union RP_PACKED {
 			// Indiv/Diff
-			struct PACKED {
+			struct RP_PACKED {
 				uint8_t R;
 				uint8_t G;
 				uint8_t B;
 			} id;
 
 			// ETC2 'T' mode
-			struct PACKED {
+			struct RP_PACKED {
 				uint8_t R1;
 				uint8_t G1B1;
 				uint8_t R2G2;
@@ -47,7 +47,7 @@ typedef union _etc1_block {
 			} t;
 
 			// ETC2 'H' mode
-			struct PACKED {
+			struct RP_PACKED {
 				uint8_t R1G1a;
 				uint8_t G1bB1aB1b;
 				uint8_t B1bR2G2;

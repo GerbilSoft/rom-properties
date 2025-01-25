@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * ValveVTF.cpp: Valve VTF image reader.                                   *
  *                                                                         *
- * Copyright (c) 2017-2024 by David Korth.                                 *
+ * Copyright (c) 2017-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -21,7 +21,6 @@
 #include "libi18n/i18n.h"
 using namespace LibRpFile;
 using LibRpBase::RomFields;
-using LibRpText::rp_sprintf;
 
 // librptexture
 #include "ImageSizeCalc.hpp"
@@ -75,7 +74,7 @@ class ValveVTFPrivate final : public FileFormatPrivate
 		vector<mipmap_data_t> mipmap_data;
 
 		// Invalid pixel format message
-		char invalid_pixel_format[24];
+		mutable string invalid_pixel_format;
 
 	public:
 		// Image format table
@@ -200,7 +199,6 @@ ValveVTFPrivate::ValveVTFPrivate(ValveVTF *q, const IRpFilePtr &file)
 {
 	// Clear the structs and arrays.
 	memset(&vtfHeader, 0, sizeof(vtfHeader));
-	memset(invalid_pixel_format, 0, sizeof(invalid_pixel_format));
 }
 
 /**
@@ -737,13 +735,12 @@ const char *ValveVTF::pixelFormat(void) const
 	}
 
 	// Invalid pixel format.
-	if (d->invalid_pixel_format[0] == '\0') {
-		// TODO: Localization?
-		snprintf(const_cast<ValveVTFPrivate*>(d)->invalid_pixel_format,
-			sizeof(d->invalid_pixel_format),
-			"Unknown (%d)", fmt);
+	// Store an error message instead.
+	if (d->invalid_pixel_format.empty()) {
+		d->invalid_pixel_format = fmt::format(
+			C_("RomData", "Unknown ({:d})"), fmt);
 	}
-	return d->invalid_pixel_format;
+	return d->invalid_pixel_format.c_str();
 }
 
 #ifdef ENABLE_LIBRPBASE_ROMFIELDS
@@ -781,7 +778,7 @@ int ValveVTF::getFields(RomFields *fields) const
 
 	// VTF version.
 	fields->addField_string(C_("ValveVTF", "VTF Version"),
-		rp_sprintf("%u.%u", vtfHeader->version[0], vtfHeader->version[1]));
+		fmt::format(FSTR("{:d}.{:d}"), vtfHeader->version[0], vtfHeader->version[1]));
 
 	// Flags.
 	// TODO: Show "deprecated" flags for older versions.
@@ -837,9 +834,7 @@ int ValveVTF::getFields(RomFields *fields) const
 		const size_t j = vv_flags->size()+1;
 		vv_flags->resize(j);
 		auto &data_row = vv_flags->at(j-1);
-		// TODO: Localization.
-		//data_row.emplace_back(pgettext_expr("ValveVTF|Flags", pFlagName));
-		data_row.emplace_back(pFlagName);
+		data_row.emplace_back(pgettext_expr("ValveVTF|Flags", pFlagName));
 	}
 
 	RomFields::AFLD_PARAMS params(RomFields::RFT_LISTDATA_CHECKBOXES, rows_visible);
@@ -856,14 +851,14 @@ int ValveVTF::getFields(RomFields *fields) const
 
 	// Reflectivity vector.
 	fields->addField_string(C_("ValveVTF", "Reflectivity Vector"),
-		rp_sprintf("(%0.1f, %0.1f, %0.1f)",
+		fmt::format(FSTR("({:0.1f}, {:0.1f}, {:0.1f})"),
 			vtfHeader->reflectivity[0],
 			vtfHeader->reflectivity[1],
 			vtfHeader->reflectivity[2]));
 
 	// Bumpmap scale.
 	fields->addField_string(C_("ValveVTF", "Bumpmap Scale"),
-		rp_sprintf("%0.1f", vtfHeader->bumpmapScale));
+		fmt::format(FSTR("{:0.1f}"), vtfHeader->bumpmapScale));
 
 	// Low-resolution image format.
 	const char *img_format;
@@ -881,16 +876,15 @@ int ValveVTF::getFields(RomFields *fields) const
 
 	const char *const low_res_image_format_title = C_("ValveVTF", "Low-Res Image Format");
 	if (img_format) {
-		// TODO: Localization.
-		fields->addField_string(low_res_image_format_title, img_format);
-			//pgettext_expr("ValveVTF|ImageFormat", img_format));
+		fields->addField_string(low_res_image_format_title,
+			pgettext_expr("ValveVTF|ImageFormat", img_format));
 		// Low-res image size.
 		fields->addField_dimensions(C_("ValveVTF", "Low-Res Size"),
 			vtfHeader->lowResImageWidth,
 			vtfHeader->lowResImageHeight);
 	} else {
 		fields->addField_string(low_res_image_format_title,
-			rp_sprintf(C_("RomData", "Unknown (%d)"), vtfHeader->lowResImageFormat));
+			fmt::format(C_("RomData", "Unknown ({:d})"), vtfHeader->lowResImageFormat));
 	}
 
 	if (vtfHeader->version[0] > 7 ||

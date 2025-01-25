@@ -26,6 +26,10 @@
     network functionality, e.g. downloading boxart and checking for updates,
     is enabled. Defaults to ON, but can be disabled for high-security
     environments.
+  * libfmt is now used for string formatting in most parts of rom-properties.
+    libfmt has faster string parsing than printf() and stringstream, and has
+    guaranteed type-safe format handling using C++ templates, whereas printf
+    can get tripped up because it uses C-style varargs.
 
 ## v2.4.1 (released 2024/11/12)
 

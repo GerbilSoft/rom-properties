@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata/tests)                 *
  * FstPrint.cpp: FST printer.                                              *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -12,22 +12,8 @@
 #include "libi18n/i18n.h"
 #include "librpbase/disc/IFst.hpp"
 #include "librptext/conversion.hpp"
-#include "librptext/printf.hpp"
 using namespace LibRpBase;
 using namespace LibRpText;
-
-// cinttypes was added in MSVC 2013.
-// For older versions, we'll need to manually define PRIX64.
-// TODO: Split into a separate header file?
-#if defined(_MSC_VER) && _MSC_VER < 1700
-// MSVC 2013 added cinttypes.h.
-// Older versions don't have it.
-#  define PRIX64 "I64X"
-#  define PRId64 "I64d"
-#else
-#  define __STDC_FORMAT_MACROS
-#  include <cinttypes>
-#endif
 
 // C includes (C++ namespace)
 #include <cerrno>
@@ -40,10 +26,12 @@ using namespace LibRpText;
 #include <string>
 #include <vector>
 using std::ostream;
-using std::ostringstream;
 using std::setw;
 using std::string;
 using std::vector;
+
+// libfmt
+#include "rp-libfmt.h"
 
 namespace LibRomData {
 
@@ -174,12 +162,12 @@ static int fstPrint(IFst *fst, ostream &os, const string &path,
 			}
 
 			// Print the attributes. (address, size)
-			char attrs[64];
+			string s_attrs;
 			if (pt) {
-				snprintf(attrs, sizeof(attrs), "[pt:0x%02x, addr:0x%08" PRIX64 ", size:%" PRId64 "]",
+				s_attrs = fmt::format(FSTR("[pt:0x{:0>2x}, addr:0x{:0>8X}, size:{:d}]"),
 					dirent->ptnum, static_cast<uint64_t>(dirent->offset), dirent->size);
 			} else {
-				snprintf(attrs, sizeof(attrs), "[addr:0x%08" PRIX64 ", size:%" PRId64 "]",
+				s_attrs = fmt::format(FSTR("[addr:0x{:0>8X}, size:{:d}]"),
 					static_cast<uint64_t>(dirent->offset), dirent->size);
 			}
 
@@ -195,7 +183,7 @@ static int fstPrint(IFst *fst, ostream &os, const string &path,
 			os << "\xE2\x94\x80\xE2\x94\x80 ";
 
 			// Print the filename and attributes.
-			os << name << setw(attr_spaces) << ' ' << setw(0) << attrs << '\n';
+			os << name << setw(attr_spaces) << ' ' << setw(0) << s_attrs << '\n';
 		}
 	}
 
@@ -228,19 +216,11 @@ int fstPrint(IFst *fst, ostream &os, bool pt)
 		return ret;
 	}
 
-	// Print the file count.
-	// NOTE: Formatting numbers using ostringstream() because
-	// MSVC's printf() doesn't support thousands separators.
-	// TODO: CMake checks?
-	ostringstream dircount, filecount;
-	dircount << fc.dirs;
-	filecount << fc.files;
-
 	os << '\n' <<
-		// tr: Parameter is a number; it's formatted elsewhere.
-		rp_sprintf(NC_("FstPrint", "%s directory", "%s directories", fc.dirs), dircount.str().c_str()) << ", " <<
-		// tr: Parameter is a number; it's formatted elsewhere.
-		rp_sprintf(NC_("FstPrint", "%s file", "%s files", fc.files), filecount.str().c_str()) << '\n';
+		// tr: {:Ld} == number of directories processed
+		fmt::format(NC_("FstPrint", "{:Ld} directory", "{:Ld} directories", fc.dirs), fc.dirs) << ", " <<
+		// tr: {:Ld} == number of files processed
+		fmt::format(NC_("FstPrint", "{:Ld} file", "{:Ld} files", fc.files), fc.files) << '\n';
 
 	os.flush();
 	return 0;

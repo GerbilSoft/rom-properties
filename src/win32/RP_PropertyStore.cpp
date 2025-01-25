@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * RP_PropertyStore.cpp: IPropertyStore implementation.                    *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -456,11 +456,12 @@ IFACEMETHODIMP RP_PropertyStore::Initialize(_In_ IStream *pstream, DWORD grfMode
 
 	// Special handling for System.Image.Dimensions.
 	if (dimensions.cx != 0 && dimensions.cy != 0) {
-		wchar_t buf[64];
-		swprintf(buf, _countof(buf), L"%ldx%ld", dimensions.cx, dimensions.cy);
+		const wstring s_dimensions = fmt::format(
+			FSTR(L"{:d}x{:d}"),
+			dimensions.cx, dimensions.cy);
 
 		PROPVARIANT prop_var;
-		InitPropVariantFromString(buf, &prop_var);
+		InitPropVariantFromString(s_dimensions.c_str(), &prop_var);
 		d->prop_key.emplace_back(&PKEY_Image_Dimensions);
 		d->prop_val.emplace_back(prop_var);
 	}

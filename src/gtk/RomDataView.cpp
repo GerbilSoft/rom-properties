@@ -611,9 +611,9 @@ rp_rom_data_view_init_header_row(RpRomDataView *page)
 		fileType = C_("RomDataView", "(unknown filetype)");
 	}
 
-	const string sysInfo = rp_sprintf_p(
-		// tr: %1$s == system name, %2$s == file type
-		C_("RomDataView", "%1$s\n%2$s"), systemName, fileType);
+	const string sysInfo = fmt::format(
+		// tr: {0:s} == system name, {1:s} == file type
+		C_("RomDataView", "{0:s}\n{1:s}"), systemName, fileType);
 	gtk_label_set_text(GTK_LABEL(page->lblSysInfo), sysInfo.c_str());
 
 	// Supported image types.
@@ -1325,9 +1325,7 @@ rp_rom_data_view_update_display(RpRomDataView *page)
 			auto &tab = *tabIter;
 
 			tab.vbox = rp_gtk_vbox_new(8);
-			char tab_name[32];
-			snprintf(tab_name, sizeof(tab_name), "vboxTab%d", i);
-			gtk_widget_set_name(tab.vbox, tab_name);
+			gtk_widget_set_name(tab.vbox, fmt::format(FSTR("vboxTab{:d}"), i).c_str());
 #if USE_GTK_GRID
 			tab.table = gtk_grid_new();
 			gtk_grid_set_row_spacing(GTK_GRID(tab.table), 2);
@@ -1338,8 +1336,7 @@ rp_rom_data_view_update_display(RpRomDataView *page)
 			gtk_table_set_row_spacings(GTK_TABLE(tab.table), 2);
 			gtk_table_set_col_spacings(GTK_TABLE(tab.table), 8);
 #endif /* USE_GTK_GRID */
-			snprintf(tab_name, sizeof(tab_name), "tableTab%d", i);
-			gtk_widget_set_name(tab.table, tab_name);
+			gtk_widget_set_name(tab.table, fmt::format(FSTR("tableTab{:d}"), i).c_str());
 
 #if GTK_CHECK_VERSION(4,0,0)
 			// FIXME: GTK4 equivalent of gtk_container_set_border_width().
@@ -1354,8 +1351,7 @@ rp_rom_data_view_update_display(RpRomDataView *page)
 
 			// Add the tab.
 			GtkWidget *const lblTabName = gtk_label_new(name);
-			snprintf(tab_name, sizeof(tab_name), "lblTab%d", i);
-			gtk_widget_set_name(lblTabName, tab_name);
+			gtk_widget_set_name(lblTabName, fmt::format(FSTR("lblTab{:d}"), i).c_str());
 			gtk_notebook_append_page(GTK_NOTEBOOK(page->tabWidget), tab.vbox, lblTabName);
 
 #if GTK_CHECK_VERSION(4,0,0)
@@ -1409,7 +1405,7 @@ rp_rom_data_view_update_display(RpRomDataView *page)
 	unique_ptr<int[]> tabRowCount(new int[tabs.size()]());
 
 	// tr: Field description label.
-	const char *const desc_label_fmt = C_("RomDataView", "%s:");
+	const char *const desc_label_fmt = C_("RomDataView", "{:s}:");
 
 	// Create the data widgets.
 	int fieldIdx = 0;
@@ -1481,7 +1477,7 @@ rp_rom_data_view_update_display(RpRomDataView *page)
 		auto &tab = tabs[tabIdx];
 
 		// tr: Field description label.
-		const string txt = rp_sprintf(desc_label_fmt, field.name);
+		const string txt = fmt::format(desc_label_fmt, field.name);
 		GtkWidget *const lblDesc = gtk_label_new(txt.c_str());
 		// NOTE: No name for this GtkWidget.
 		gtk_label_set_use_underline(GTK_LABEL(lblDesc), false);

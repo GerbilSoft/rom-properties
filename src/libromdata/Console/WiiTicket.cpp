@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * WiiTicket.cpp: Nintendo Wii (and Wii U) ticket reader.                  *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -447,11 +447,11 @@ int WiiTicket::loadFieldData(void)
 	d->fields.reserve(5);	// Maximum of 4 fields.
 
 	// Title ID
-	char s_title_id[24];
-	snprintf(s_title_id, sizeof(s_title_id), "%08X-%08X",
-		be32_to_cpu(ticket->title_id.hi),
-		be32_to_cpu(ticket->title_id.lo));
-	d->fields.addField_string(C_("Nintendo", "Title ID"), s_title_id, RomFields::STRF_MONOSPACE);
+	d->fields.addField_string(C_("Nintendo", "Title ID"),
+		fmt::format(FSTR("{:0>8X}-{:0>8X}"),
+			be32_to_cpu(ticket->title_id.hi),
+			be32_to_cpu(ticket->title_id.lo)),
+		RomFields::STRF_MONOSPACE);
 
 	// Issuer
 	d->fields.addField_string(C_("Nintendo", "Issuer"),
@@ -508,11 +508,11 @@ int WiiTicket::loadMetaData(void)
 	d->metaData.reserve(1);	// Maximum of 1 metadata property.
 
 	// Title ID (using as Title)
-	char s_title_id[24];
-	snprintf(s_title_id, sizeof(s_title_id), "%08X-%08X",
-		be32_to_cpu(ticket->title_id.hi),
-		be32_to_cpu(ticket->title_id.lo));
-	d->metaData.addMetaData_string(Property::Title, s_title_id);
+	d->metaData.addMetaData_string(Property::Title,
+       		fmt::format(FSTR("{:0>8X}-{:0>8X}"),
+			be32_to_cpu(ticket->title_id.hi),
+			be32_to_cpu(ticket->title_id.lo)));
+
 
 	// Finished reading the metadata.
 	return static_cast<int>(d->metaData.count());

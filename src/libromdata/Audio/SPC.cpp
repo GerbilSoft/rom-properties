@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * SPC.hpp: SPC audio reader.                                              *
  *                                                                         *
- * Copyright (c) 2018-2024 by David Korth.                                 *
+ * Copyright (c) 2018-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -811,7 +811,7 @@ int SPC::loadFieldData(void)
 		const unsigned int sec = static_cast<unsigned int>(duration / 100) % 60;
 		const unsigned int min = static_cast<unsigned int>(duration / 100 / 60);
 		d->fields.addField_string(C_("RomData|Audio", "Duration"),
-			rp_sprintf("%u:%02u.%02u", min, sec, cs));
+			fmt::format(FSTR("{:d}:{:0>2d}.{:0>2d}"), min, sec, cs));
 	}
 
 	// Dumper
@@ -875,7 +875,7 @@ int SPC::loadFieldData(void)
 				d->fields.addField_string(emulator_used_title, emu);
 			} else {
 				d->fields.addField_string(emulator_used_title,
-					rp_sprintf(C_("RomData", "Unknown (0x%02X)"), data.uvalue));
+					fmt::format(C_("RomData", "Unknown (0x{:0>2X})"), data.uvalue));
 			}
 		}
 	}
@@ -909,18 +909,16 @@ int SPC::loadFieldData(void)
 			// High byte: Track number. (0-99)
 			// Low byte: Optional letter.
 			// TODO: Restrict track number?
-			char buf[32];
 			const uint8_t track_num = data.uvalue >> 8;
+			string s_track_num = fmt::to_string(track_num);
+
 			const char track_letter = data.uvalue & 0xFF;
 			if (ISALNUM(track_letter)) {
-				// Valid track letter.
-				snprintf(buf, sizeof(buf), "%u%c", track_num, track_letter);
-			} else {
-				// Not a valid track letter.
-				snprintf(buf, sizeof(buf), "%u", track_num);
+				// Valid track letter
+				s_track_num += track_letter;
 			}
 
-			d->fields.addField_string(C_("SPC", "OST Track #"), buf);
+			d->fields.addField_string(C_("SPC", "OST Track #"), s_track_num);
 		}
 	}
 

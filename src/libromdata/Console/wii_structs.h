@@ -158,7 +158,7 @@ ASSERT_STRUCT(RVL_TimeLimit, 2*sizeof(uint32_t));
  * All fields are big-endian.
  */
 #pragma pack(1)
-typedef struct PACKED _RVL_Ticket {
+typedef struct RP_PACKED _RVL_Ticket {
 	uint32_t signature_type;	// [0x000] Signature type
 	uint8_t signature[0x100];	// [0x004] Signature
 	uint8_t padding_sig[0x3C];	// [0x104] Padding (always 0)
@@ -248,7 +248,7 @@ ASSERT_STRUCT(RVL_Ticket_V1, 0x350);
  * All fields are big-endian.
  */
 #pragma pack(1)
-typedef struct PACKED _RVL_TMD_Header {
+typedef struct RP_PACKED _RVL_TMD_Header {
 	uint32_t signature_type;	// [0x000] Signature type
 	uint8_t signature[0x100];	// [0x004] Signature
 	uint8_t padding_sig[0x3C];	// [0x104] Padding (always 0)
@@ -301,7 +301,7 @@ typedef enum {
  * All fields are big-endian.
  */
 #pragma pack(1)
-typedef struct PACKED _RVL_Content_Entry {
+typedef struct RP_PACKED _RVL_Content_Entry {
 	uint32_t content_id;		// [0x000] Content ID
 	uint16_t index;			// [0x004] Index
 	uint16_t type;			// [0x006] Type (see RVL_Content_Type_e)

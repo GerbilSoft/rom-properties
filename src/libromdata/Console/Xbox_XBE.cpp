@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * Xbox_XBE.cpp: Microsoft Xbox executable reader.                         *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -363,13 +363,13 @@ string Xbox_XBE_Private::getPublisher(void) const
 	    ISALNUM(xbeCertificate.title_id.b))
 	{
 		// Publisher ID is alphanumeric.
-		return rp_sprintf(C_("RomData", "Unknown (%c%c)"),
+		return fmt::format(C_("RomData", "Unknown ({:c}{:c})"),
 			xbeCertificate.title_id.a,
 			xbeCertificate.title_id.b);
 	}
 
 	// Publisher ID is not alphanumeric.
-	return rp_sprintf(C_("RomData", "Unknown (%02X %02X)"),
+	return fmt::format(C_("RomData", "Unknown ({:0>2X} {:0>2X})"),
 		static_cast<uint8_t>(xbeCertificate.title_id.a),
 		static_cast<uint8_t>(xbeCertificate.title_id.b));
 }
@@ -686,26 +686,22 @@ int Xbox_XBE::loadFieldData(void)
 		// FIXME: Verify behavior on big-endian.
 		// TODO: Consolidate implementations into a shared function.
 		string tid_str;
-		char hexbuf[4];
 		if (ISUPPER(xbeCertificate->title_id.a)) {
 			tid_str += xbeCertificate->title_id.a;
 		} else {
-			tid_str += "\\x";
-			snprintf(hexbuf, sizeof(hexbuf), "%02X",
+			tid_str += fmt::format(FSTR("\\x{:0>2X}"),
 				static_cast<uint8_t>(xbeCertificate->title_id.a));
-			tid_str.append(hexbuf, 2);
 		}
 		if (ISUPPER(xbeCertificate->title_id.b)) {
 			tid_str += xbeCertificate->title_id.b;
 		} else {
-			tid_str += "\\x";
-			snprintf(hexbuf, sizeof(hexbuf), "%02X",
+			tid_str += fmt::format(FSTR("\\x{:0>2X}"),
 				static_cast<uint8_t>(xbeCertificate->title_id.b));
-			tid_str.append(hexbuf, 2);
 		}
 
 		d->fields.addField_string(s_title_id_desc,
-			rp_sprintf_p(C_("Xbox_XBE", "%1$08X (%2$s-%3$03u)"),
+			// tr: Xbox title ID (32-bit hex, then two letters followed by a 3-digit decimal number)
+			fmt::format(C_("Xbox_XBE", "{0:0>8X} ({1:s}-{2:0>3d})"),
 				le32_to_cpu(xbeCertificate->title_id.u32),
 				tid_str.c_str(),
 				le16_to_cpu(xbeCertificate->title_id.u16)),
@@ -713,7 +709,7 @@ int Xbox_XBE::loadFieldData(void)
 	} else {
 		// Title ID is zero.
 		d->fields.addField_string(s_title_id_desc,
-			rp_sprintf("%08X", le32_to_cpu(xbeCertificate->title_id.u32)));
+			fmt::format(FSTR("{:0>8X}"), le32_to_cpu(xbeCertificate->title_id.u32)));
 	}
 
 	// Publisher

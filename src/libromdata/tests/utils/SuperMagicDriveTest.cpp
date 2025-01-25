@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata/tests)                 *
  * SuperMagicDriveTest.cpp: SuperMagicDrive class test.                    *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -24,6 +24,9 @@ using std::array;
 // zlib
 #define CHUNK 4096
 #include <zlib.h>
+
+// libfmt
+#include "rp-libfmt.h"
 
 namespace LibRomData { namespace Tests {
 
@@ -167,7 +170,7 @@ int SuperMagicDriveTest::decompress(uint8_t *pOut, unsigned int out_len, const u
 				default:
 					// An error occurred while decoding the stream.
 					inflateEnd(&strm);
-					fprintf(stderr, "*** zlib error: %d\n", ret);
+					fmt::print(stderr, FSTR("*** zlib error: {:d}\n"), ret);
 					return ret;
 			}
 
@@ -243,7 +246,7 @@ TEST_F(SuperMagicDriveTest, decodeBlock_cpp_benchmark)
 TEST_F(SuperMagicDriveTest, decodeBlock_mmx_test)
 {
 	if (!RP_CPU_HasMMX()) {
-		fprintf(stderr, "*** MMX is not supported on this CPU. Skipping test.");
+		fputs("*** MMX is not supported on this CPU. Skipping test.\n", stderr);
 		return;
 	}
 
@@ -257,7 +260,7 @@ TEST_F(SuperMagicDriveTest, decodeBlock_mmx_test)
 TEST_F(SuperMagicDriveTest, decodeBlock_mmx_benchmark)
 {
 	if (!RP_CPU_HasMMX()) {
-		fprintf(stderr, "*** MMX is not supported on this CPU. Skipping test.");
+		fputs("*** MMX is not supported on this CPU. Skipping test.\n", stderr);
 		return;
 	}
 
@@ -274,7 +277,7 @@ TEST_F(SuperMagicDriveTest, decodeBlock_mmx_benchmark)
 TEST_F(SuperMagicDriveTest, decodeBlock_sse2_test)
 {
 	if (!RP_CPU_HasSSE2()) {
-		fprintf(stderr, "*** SSE2 is not supported on this CPU. Skipping test.");
+		fputs("*** SSE2 is not supported on this CPU. Skipping test.\n", stderr);
 		return;
 	}
 
@@ -288,7 +291,7 @@ TEST_F(SuperMagicDriveTest, decodeBlock_sse2_test)
 TEST_F(SuperMagicDriveTest, decodeBlock_sse2_benchmark)
 {
 	if (!RP_CPU_HasSSE2()) {
-		fprintf(stderr, "*** SSE2 is not supported on this CPU. Skipping test.");
+		fputs("*** SSE2 is not supported on this CPU. Skipping test.\n", stderr);
 		return;
 	}
 
@@ -327,13 +330,13 @@ TEST_F(SuperMagicDriveTest, decodeBlock_dispatch_benchmark)
  */
 extern "C" int gtest_main(int argc, TCHAR *argv[])
 {
-	fprintf(stderr, "LibRomData test suite: SuperMagicDrive tests.\n\n");
-	fprintf(stderr, "Benchmark iterations: %u\n", LibRomData::Tests::SuperMagicDriveTest::BENCHMARK_ITERATIONS);
+	fputs("LibRomData test suite: SuperMagicDrive tests.\n\n", stderr);
+	fmt::print(stderr, FSTR("Benchmark iterations: {:d}\n"), LibRomData::Tests::SuperMagicDriveTest::BENCHMARK_ITERATIONS);
 	fflush(nullptr);
 
 	// Decompress the data blocks before running the tests.
 	if (LibRomData::Tests::SuperMagicDriveTest::decompress() != 0) {
-		fprintf(stderr, "*** FATAL ERROR: Could not decompress the test data.\n");
+		fputs("*** FATAL ERROR: Could not decompress the test data.\n", stderr);
 		return EXIT_FAILURE;
 	}
 

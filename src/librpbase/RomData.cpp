@@ -97,7 +97,7 @@ string RomDataPrivate::getURL_GameTDB(
 	const char *region, const char *gameID,
 	const char *ext)
 {
-	return rp_sprintf("https://art.gametdb.com/%s/%s/%s/%s%s",
+	return fmt::format(FSTR("https://art.gametdb.com/{:s}/{:s}/{:s}/{:s}{:s}"),
 		system, type, region, gameID, ext);
 }
 
@@ -115,7 +115,7 @@ string RomDataPrivate::getCacheKey_GameTDB(
 	const char *region, const char *gameID,
 	const char *ext)
 {
-	return rp_sprintf("%s/%s/%s/%s%s",
+	return fmt::format(FSTR("{:s}/{:s}/{:s}/{:s}{:s}"),
 		system, type, region, gameID, ext);
 }
 
@@ -135,9 +135,9 @@ string RomDataPrivate::getURL_RPDB(
 {
 	// Game ID may need to be urlencoded.
 	const string gameID_urlencode = LibCacheCommon::urlencode(gameID);
-	return rp_sprintf("https://rpdb.gerbilsoft.com/%s/%s/%s%s%s%s",
+	return fmt::format(FSTR("https://rpdb.gerbilsoft.com/{:s}/{:s}/{:s}{:s}{:s}{:s}"),
 		system, type, (region ? region : ""), (region ? "/" : ""),
-		gameID_urlencode.c_str(), ext);
+		gameID_urlencode, ext);
 }
 
 /**
@@ -154,7 +154,7 @@ string RomDataPrivate::getCacheKey_RPDB(
 	const char *region, const char *gameID,
 	const char *ext)
 {
-	return rp_sprintf("%s/%s/%s%s%s%s",
+	return fmt::format(FSTR("{:s}/{:s}/{:s}{:s}{:s}{:s}"),
 		system, type, (region ? region : ""), (region ? "/" : ""),
 		gameID, ext);
 }

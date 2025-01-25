@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * DirectDrawSurface.hpp: DirectDraw Surface image reader.                 *
  *                                                                         *
- * Copyright (c) 2017-2024 by David Korth.                                 *
+ * Copyright (c) 2017-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -20,7 +20,6 @@
 #include "librptext/fourCC.hpp"
 using namespace LibRpFile;
 using LibRpBase::RomFields;
-using LibRpText::rp_sprintf;
 
 // librptexture
 #include "ImageSizeCalc.hpp"
@@ -69,7 +68,7 @@ class DirectDrawSurfacePrivate final : public FileFormatPrivate
 		// Pixel format message
 		// NOTE: Used for both valid and invalid pixel formats
 		// due to various bit specifications.
-		char pixel_format[32];
+		mutable string pixel_format;
 
 		/**
 		 * Calculate the expected image size.
@@ -547,7 +546,6 @@ DirectDrawSurfacePrivate::DirectDrawSurfacePrivate(DirectDrawSurface *q, const I
 	memset(&ddsHeader, 0, sizeof(ddsHeader));
 	memset(&dxt10Header, 0, sizeof(dxt10Header));
 	memset(&xb1Header, 0, sizeof(xb1Header));
-	memset(pixel_format, 0, sizeof(pixel_format));
 }
 
 /**
@@ -1258,60 +1256,57 @@ const char *DirectDrawSurface::pixelFormat(void) const
 	if (!d->isValid)
 		return nullptr;
 
-	if (d->pixel_format[0] != '\0') {
+	if (!d->pixel_format.empty()) {
 		// We already determined the pixel format.
-		return d->pixel_format;
+		return d->pixel_format.c_str();
 	}
 
 	// Pixel format.
-	DirectDrawSurfacePrivate *const d_nc = const_cast<DirectDrawSurfacePrivate*>(d);
 	const DDS_PIXELFORMAT &ddspf = d->ddsHeader.ddspf;
 	if (ddspf.dwFlags & DDPF_FOURCC) {
 		// Compressed RGB data.
 		// NOTE: If DX10, see dxgi_format.
-		LibRpText::fourCCtoString(d_nc->pixel_format, sizeof(d_nc->pixel_format), ddspf.dwFourCC);
-		return d_nc->pixel_format;
+		d->pixel_format = LibRpText::fourCCtoString(ddspf.dwFourCC);
+		return d->pixel_format.c_str();
 	}
 
 	const char *const pxfmt = d->getPixelFormatName(ddspf);
 	if (pxfmt) {
 		// Got the pixel format name.
-		strcpy(d_nc->pixel_format, pxfmt);
-		return d_nc->pixel_format;
+		d->pixel_format = pxfmt;
+		return d->pixel_format.c_str();
 	}
 
 	// Manually determine the pixel format.
 	if (ddspf.dwFlags & DDPF_RGB) {
 		// Uncompressed RGB data
-		snprintf(d_nc->pixel_format, sizeof(d_nc->pixel_format),
-			 "RGB (%u-bit)", ddspf.dwRGBBitCount);
+		d->pixel_format = fmt::format(
+			 C_("DirectDrawSurface", "RGB ({:d}-bit)"), ddspf.dwRGBBitCount);
 	} else if (ddspf.dwFlags & DDPF_ALPHA) {
 		// Alpha channel
-		snprintf(d_nc->pixel_format, sizeof(d_nc->pixel_format),
-			C_("DirectDrawSurface", "Alpha (%u-bit)"), ddspf.dwRGBBitCount);
+		d->pixel_format = fmt::format(
+			C_("DirectDrawSurface", "Alpha ({:d}-bit)"), ddspf.dwRGBBitCount);
 	} else if (ddspf.dwFlags & DDPF_YUV) {
 		// YUV (TODO: Determine the format.)
-		snprintf(d_nc->pixel_format, sizeof(d_nc->pixel_format),
-			C_("DirectDrawSurface", "YUV (%u-bit)"), ddspf.dwRGBBitCount);
+		d->pixel_format = fmt::format(
+			C_("DirectDrawSurface", "YUV ({:d}-bit)"), ddspf.dwRGBBitCount);
 	} else if (ddspf.dwFlags & DDPF_LUMINANCE) {
 		// Luminance
 		if (ddspf.dwFlags & DDPF_ALPHAPIXELS) {
-			snprintf(d_nc->pixel_format, sizeof(d_nc->pixel_format),
-				C_("DirectDrawSurface", "Luminance + Alpha (%u-bit)"),
+			d->pixel_format = fmt::format(
+				C_("DirectDrawSurface", "Luminance + Alpha ({:d}-bit)"),
 				ddspf.dwRGBBitCount);
 		} else {
-			snprintf(d_nc->pixel_format, sizeof(d_nc->pixel_format),
-				C_("DirectDrawSurface", "Luminance (%u-bit)"),
+			d->pixel_format = fmt::format(
+				C_("DirectDrawSurface", "Luminance ({:d}-bit)"),
 				ddspf.dwRGBBitCount);
 		}
 	} else {
 		// Unknown pixel format
-		strncpy(d_nc->pixel_format,
-			C_("FileFormat", "Unknown"), sizeof(d_nc->pixel_format));
-		d_nc->pixel_format[sizeof(d_nc->pixel_format)-1] = '\0';
+		d->pixel_format = C_("RomData", "Unknown");
 	}
 
-	return d->pixel_format;
+	return d->pixel_format.c_str();
 }
 
 #ifdef ENABLE_LIBRPBASE_ROMFIELDS
@@ -1352,14 +1347,14 @@ int DirectDrawSurface::getFields(RomFields *fields) const
 		const char *const texFormat = DX10Formats::lookup_dxgiFormat(d->dxgi_format);
 		fields->addField_string(C_("DirectDrawSurface", "DX10 Format"),
 			(texFormat ? texFormat :
-				rp_sprintf(C_("FileFormat", "Unknown (0x%08X)"), d->dxgi_format)));
+				fmt::format(C_("RomData", "Unknown (0x{:0>8X})"), d->dxgi_format)));
 	}
 
 	// nVidia Texture Tools header
 	if (ddsHeader->nvtt.dwNvttMagic == cpu_to_be32(NVTT_MAGIC)) {
 		const uint32_t nvtt_version = le32_to_cpu(ddsHeader->nvtt.dwNvttVersion);
 		fields->addField_string(C_("DirectDrawSurface", "NVTT Version"),
-			rp_sprintf("%u.%u.%u",
+			fmt::format(FSTR("{:d}.{:d}.{:d}"),
 				   (nvtt_version >> 16) & 0xFF,
 				   (nvtt_version >>  8) & 0xFF,
 				    nvtt_version        & 0xFF));

@@ -440,10 +440,8 @@ G_MODULE_EXPORT int RP_C_API rp_create_thumbnail2(
 
 	if (doXDG) {
 		// Modification time and file size
-		char mtime_str[32];
-		char szFile_str[32];
-		mtime_str[0] = 0;
-		szFile_str[0] = 0;
+		uint64_t mtime = 0;
+		off64_t szFile = -1;
 		GFile *const f_src = g_file_new_for_uri(s_uri.c_str());
 		if (f_src) {
 			GError *error = nullptr;
@@ -452,17 +450,11 @@ G_MODULE_EXPORT int RP_C_API rp_create_thumbnail2(
 				G_FILE_QUERY_INFO_NONE, nullptr, &error);
 			if (!error) {
 				// Get the modification time.
-				const uint64_t mtime =
-					g_file_info_get_attribute_uint64(fi_src, G_FILE_ATTRIBUTE_TIME_MODIFIED);
-				if (mtime > 0) {
-					snprintf(mtime_str, sizeof(mtime_str), "%" PRId64, (int64_t)mtime);
-				}
+				// NOTE: This is **uint64**, not int64.
+				mtime = g_file_info_get_attribute_uint64(fi_src, G_FILE_ATTRIBUTE_TIME_MODIFIED);
 
 				// Get the file size.
-				const int64_t szFile = g_file_info_get_size(fi_src);
-				if (szFile > 0) {
-					snprintf(szFile_str, sizeof(szFile_str), "%" PRId64, szFile);
-				}
+				szFile = g_file_info_get_size(fi_src);
 
 				g_object_unref(fi_src);
 			} else {
@@ -472,8 +464,8 @@ G_MODULE_EXPORT int RP_C_API rp_create_thumbnail2(
 		}
 
 		// Modification time
-		if (mtime_str[0] != '\0') {
-			kv.emplace_back("Thumb::MTime", mtime_str);
+		if (mtime > 0) {
+			kv.emplace_back("Thumb::MTime", fmt::to_string(static_cast<int64_t>(mtime)));
 		}
 
 		// MIME type
@@ -483,17 +475,14 @@ G_MODULE_EXPORT int RP_C_API rp_create_thumbnail2(
 		}
 
 		// File size
-		if (szFile_str[0] != '\0') {
-			kv.emplace_back("Thumb::Size", szFile_str);
+		if (szFile > 0) {
+			kv.emplace_back("Thumb::Size", fmt::to_string(szFile));
 		}
 
 		// Original image dimensions
 		if (outParams.fullSize.width > 0 && outParams.fullSize.height > 0) {
-			char imgdim_str[16];
-			snprintf(imgdim_str, sizeof(imgdim_str), "%d", outParams.fullSize.width);
-			kv.emplace_back("Thumb::Image::Width", imgdim_str);
-			snprintf(imgdim_str, sizeof(imgdim_str), "%d", outParams.fullSize.height);
-			kv.emplace_back("Thumb::Image::Height", imgdim_str);
+			kv.emplace_back("Thumb::Image::Width", fmt::to_string(outParams.fullSize.width));
+			kv.emplace_back("Thumb::Image::Height", fmt::to_string(outParams.fullSize.height));
 		}
 
 		// URI
@@ -504,7 +493,7 @@ G_MODULE_EXPORT int RP_C_API rp_create_thumbnail2(
 		// References:
 		// - https://bugs.kde.org/show_bug.cgi?id=393015
 		// - https://specifications.freedesktop.org/thumbnail-spec/thumbnail-spec-latest.html
-		kv.emplace_back("Thumb::URI", s_uri.c_str());
+		kv.emplace_back("Thumb::URI", s_uri);
 	}
 
 	// Write the tEXt chunks.

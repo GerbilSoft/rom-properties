@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata/tests)                 *
  * CtrKeyScramblerTest.cpp: CtrKeyScrambler class test.                    *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -22,6 +22,9 @@
 #include <string>
 using std::array;
 using std::string;
+
+// libfmt
+#include "rp-libfmt.h"
 
 namespace LibRomData { namespace Tests {
 
@@ -102,10 +105,12 @@ void CtrKeyScramblerTest::CompareByteArrays(
 	// Output format: (assume ~64 bytes per line)
 	// 0000: 01 23 45 67 89 AB CD EF  01 23 45 67 89 AB CD EF
 	const size_t bufSize = ((size / 16) + !!(size % 16)) * 64;
-	char printf_buf[16];
 	string s_expected, s_actual;
 	s_expected.reserve(bufSize);
 	s_actual.reserve(bufSize);
+
+	string s_tmp;
+	s_tmp.reserve(14);
 
 	const uint8_t *pE = expected, *pA = actual;
 	for (size_t i = 0; i < size; i++, pE++, pA++) {
@@ -117,17 +122,14 @@ void CtrKeyScramblerTest::CompareByteArrays(
 				s_actual += '\n';
 			}
 
-			// TODO: Print a 64-bit value.
-			snprintf(printf_buf, sizeof(printf_buf), "%04X: ", static_cast<unsigned int>(i));
-			s_expected += printf_buf;
-			s_actual += printf_buf;
+			s_tmp = fmt::format(FSTR("{:0>4X}: "), static_cast<unsigned int>(i));
+			s_expected += s_tmp;
+			s_actual += s_tmp;
 		}
 
 		// Print the byte.
-		snprintf(printf_buf, sizeof(printf_buf), "%02X", *pE);
-		s_expected += printf_buf;
-		snprintf(printf_buf, sizeof(printf_buf), "%02X", *pA);
-		s_actual += printf_buf;
+		s_expected += fmt::format(FSTR("{:0>2X}"), *pE);
+		s_actual   += fmt::format(FSTR("{:0>2X}"), *pA);
 
 		if (i % 16 == 7) {
 			s_expected += "  ";
@@ -202,7 +204,7 @@ INSTANTIATE_TEST_SUITE_P(ctrScrambleTest, CtrKeyScramblerTest,
  */
 extern "C" int gtest_main(int argc, TCHAR *argv[])
 {
-	fprintf(stderr, "LibRomData test suite: CtrKeyScrambler tests.\n\n");
+	fmt::print(stderr, FSTR("LibRomData test suite: CtrKeyScrambler tests.\n\n"));
 	fflush(nullptr);
 
 	// coverity[fun_call_w_exception]: uncaught exceptions cause nonzero exit anyway, so don't warn.

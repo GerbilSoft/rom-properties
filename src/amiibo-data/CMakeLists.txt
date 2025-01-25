@@ -34,6 +34,10 @@ ELSE(CMAKE_CROSSCOMPILING)
 			$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>                  # build
 		)
 
+	IF(Fmt_FOUND)
+		TARGET_LINK_LIBRARIES(amiiboc PRIVATE ${Fmt_LIBRARY})
+	ENDIF(Fmt_FOUND)
+
 	# Make sure git_version.h is created before compiling this target.
 	IF(TARGET git_version)
 		ADD_DEPENDENCIES(amiiboc git_version)

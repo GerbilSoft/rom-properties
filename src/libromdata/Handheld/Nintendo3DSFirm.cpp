@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * Nintendo3DSFirm.hpp: Nintendo 3DS firmware reader.                      *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -249,11 +249,11 @@ int Nintendo3DSFirm::loadFieldData(void)
 			}
 		}
 	} else if (arm11_entrypoint == 0 && arm9_entrypoint != 0) {
-		// ARM9 homebrew.
+		// ARM9 homebrew
 		firmBinDesc = C_("Nintendo3DSFirm", "ARM9 Homebrew");
 		checkARM9 = true;
 	} else if (arm11_entrypoint != 0 && arm9_entrypoint == 0) {
-		// ARM11 homebrew. (Not a thing...)
+		// ARM11 homebrew (Not a thing...?)
 		firmBinDesc = C_("Nintendo3DSFirm", "ARM11 Homebrew");
 	}
 
@@ -276,22 +276,22 @@ int Nintendo3DSFirm::loadFieldData(void)
 	}
 
 	if (firmBin) {
-		// Official firmware binary fields.
+		// Official firmware binary fields
 		d->fields.addField_string(C_("RomData", "Type"),
 			(firmBinDesc ? firmBinDesc : C_("RomData", "Unknown")));
 
-		// FIRM version.
+		// FIRM version
 		d->fields.addField_string(C_("Nintendo3DSFirm", "FIRM Version"),
-			rp_sprintf("%u.%u-%u", firmBin->kernel.major,
+			fmt::format(FSTR("{:d}.{:d}-{:d}"), firmBin->kernel.major,
 				firmBin->kernel.minor, firmBin->kernel.revision));
 
-		// System version.
+		// System version
 		d->fields.addField_string(C_("Nintendo3DSFirm", "System Version"),
-			rp_sprintf("%u.%u", firmBin->sys.major, firmBin->sys.minor));
+			fmt::format(FSTR("{:d}.{:d}"), firmBin->sys.major, firmBin->sys.minor));
 	} else if (firmBuf && checkARM9) {
-		// Check for ARM9 homebrew.
+		// Check for ARM9 homebrew
 
-		// Version strings.
+		// Version strings
 		struct arm9VerStr_t {
 			const char *title;	// Application title.
 			const char *searchstr;	// Search string.

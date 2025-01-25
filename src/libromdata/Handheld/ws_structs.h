@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * ws_structs.h: Bandai WonderSwan (Color) data structures.                *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -23,7 +23,7 @@ extern "C" {
  * All fields are in little-endian.
  */
 #pragma pack(1)
-typedef struct PACKED _WS_RomFooter {
+typedef struct RP_PACKED _WS_RomFooter {
 	uint8_t zero;		// [-0x001] Must be zero
 	uint8_t publisher;	//  [0x000] Publisher ID
 	uint8_t system_id;	//  [0x001] System ID (see WS_System_ID_e)

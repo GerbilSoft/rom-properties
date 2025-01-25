@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase/tests)                  *
  * TimegmTest.cpp: timegm() test.                                          *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -12,6 +12,9 @@
 
 // timegm() and/or replacement function.
 #include "time_r.h"
+
+// libfmt
+#include "rp-libfmt.h"
 
 // NOTE: MSVCRT's documentation for _mkgmtime64() says it has a limited range:
 // - Documented: [1970/01/01, 3000/12/31]
@@ -237,13 +240,14 @@ extern "C" int gtest_main(int argc, TCHAR *argv[])
 	static constexpr char func_name[] = "timegm() (internal)";
 #endif
 
-	fputs("LibRpBase test suite: timegm() tests.\n", stderr);
-	fprintf(stderr, "Time conversion function in use: %s\n", func_name);
+	fmt::print(stderr, FSTR("LibRpBase test suite: timegm() tests.\n"));
+	fmt::print(stderr, FSTR("Time conversion function in use: {:s}\n"), func_name);
 	if (sizeof(time_t) < 8) {
-		fputs("*** WARNING: 32-bit time_t is in use.\n"
-		      "*** Disabling tests known to fail with 32-bit time_t.\n", stderr);
+		fmt::print(stderr,
+			FSTR("*** WARNING: 32-bit time_t is in use.\n"
+			     "*** Disabling tests known to fail with 32-bit time_t.\n"));
 	}
-	fputc('\n', stderr);
+	fmt::print(stderr, FSTR("\n"));
 		
 	fflush(nullptr);
 

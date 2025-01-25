@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * SNDH.hpp: Atari ST SNDH audio reader.                                   *
  *                                                                         *
- * Copyright (c) 2018-2024 by David Korth.                                 *
+ * Copyright (c) 2018-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -839,23 +839,23 @@ int SNDH::loadFieldData(void)
 	// VBL *before* timers. We'll list it before timers.
 
 	// VBlank frequency.
-	const char *const s_hz = C_("RomData", "%u Hz");
+	const char *const s_hz = C_("RomData", "{:Ld} Hz");
 	if (tags.vblank_freq != 0) {
 		d->fields.addField_string(C_("SNDH", "VBlank Freq"),
-			rp_sprintf(s_hz, tags.vblank_freq));
+			fmt::format(s_hz, tags.vblank_freq));
 	}
 
 	// Timer frequencies.
 	// TODO: Use RFT_LISTDATA?
-	// tr: Frequency of Timer A, Timer B, etc. ("Timer %c" is a single entity)
-	const char *const s_timer_freq = C_("SNDH", "Timer %c Freq");
+	// tr: Frequency of Timer A, Timer B, etc. ("Timer {:c}" is a single entity)
+	const char *const s_timer_freq = C_("SNDH", "Timer {:c} Freq");
 	for (int i = 0; i < ARRAY_SIZE_I(tags.timer_freq); i++) {
 		if (tags.timer_freq[i] == 0)
 			continue;
 
 		d->fields.addField_string(
-			rp_sprintf(s_timer_freq, 'A'+i).c_str(),
-			rp_sprintf(s_hz, tags.timer_freq[i]));
+			fmt::format(s_timer_freq, 'A'+i).c_str(),
+			fmt::format(s_hz, tags.timer_freq[i]));
 	}
 
 	// Default subtune.
@@ -888,7 +888,7 @@ int SNDH::loadFieldData(void)
 		for (vector<string> &data_row : *vv_subtune_list) {
 			data_row.reserve(col_count);	// 2 or 3 fields per row.
 
-			data_row.emplace_back(rp_sprintf("%u", idx+1));	// NOTE: First subtune is 1, not 0.
+			data_row.emplace_back(fmt::to_string(idx+1));	// NOTE: First subtune is 1, not 0.
 			if (has_SN) {
 				if (idx < tags.subtune_names.size()) {
 					data_row.emplace_back(tags.subtune_names.at(idx));
@@ -905,7 +905,7 @@ int SNDH::loadFieldData(void)
 					duration_total += duration;
 					const unsigned int min = duration / 60;
 					const unsigned int sec = duration % 60;
-					data_row.emplace_back(rp_sprintf("%u:%02u", min, sec));
+					data_row.emplace_back(fmt::format(FSTR("{:d}:{:0>2d}"), min, sec));
 				} else {
 					data_row.emplace_back();
 				}
@@ -955,7 +955,7 @@ int SNDH::loadFieldData(void)
 		const uint32_t sec = duration % 60;
 
 		d->fields.addField_string(C_("RomData|Audio", "Duration"),
-			rp_sprintf("%u:%02u", min, sec));
+			fmt::format(FSTR("{:d}:{:0>2d}"), min, sec));
 	}
 
 	// Finished reading the field data.

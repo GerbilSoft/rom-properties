@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * SufamiTurbo.cpp: Sufami Turbo ROM image reader.                         *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -346,10 +346,9 @@ int SufamiTurbo::loadFieldData(void)
 	// Game ID
 	// FIXME: This seems useless, so not including it for now...
 #if 0
-	char gameID[16];
-	snprintf(gameID, sizeof(gameID), "%02X%02X%02X",
-		romHeader->game_id[0], romHeader->game_id[1], romHeader->game_id[2]);
-	d->fields.addField_string(C_("RomData", "Game ID"), gameID,
+	d->fields.addField_string(C_("RomData", "Game ID"),
+		fmt::format(FSTR("{:0>2X}{:0>2X}{:0>2X}"),
+			romHeader->game_id[0], romHeader->game_id[1], romHeader->game_id[2]),
 		RomFields::STRF_MONOSPACE);
 #endif
 

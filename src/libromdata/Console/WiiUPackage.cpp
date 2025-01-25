@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * WiiUPackage.cpp: Wii U NUS Package reader.                              *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -154,16 +154,13 @@ IDiscReaderPtr WiiUPackagePrivate::openContentFile(unsigned int idx)
 
 	// Try with lowercase hex first.
 	const uint32_t content_id = be32_to_cpu(entry.content_id);
-	TCHAR fnbuf[16];
-	_sntprintf(fnbuf, ARRAY_SIZE(fnbuf), _T("%08x.app"), content_id);
-	s_path += fnbuf;
+	s_path += fmt::format(FSTR(_T("{:0>8x}.app")), content_id);
 
 	IRpFilePtr subfile = std::make_shared<RpFile>(s_path.c_str(), RpFile::FM_OPEN_READ);
 	if (!subfile->isOpen()) {
 		// Try with uppercase hex.
-		_sntprintf(fnbuf, ARRAY_SIZE(fnbuf), _T("%08X.app"), content_id);
 		s_path.resize(orig_path_size);
-		s_path += fnbuf;
+		s_path += fmt::format(FSTR(_T("{:0>8X}.app")), content_id);
 
 		subfile = std::make_shared<RpFile>(s_path.c_str(), RpFile::FM_OPEN_READ);
 		if (!subfile->isOpen()) {

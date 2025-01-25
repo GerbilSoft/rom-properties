@@ -244,7 +244,7 @@ TEST_F(ListDataSortProxyModelTest, descendingSort)
  */
 extern "C" int gtest_main(int argc, TCHAR *argv[])
 {
-	fprintf(stderr, "KDE (" RP_KDE_UPPER ") UI frontend test suite: ListDataSortProxyModel tests.\n\n");
+	fputs("KDE (" RP_KDE_UPPER ") UI frontend test suite: ListDataSortProxyModel tests.\n\n", stderr);
 	fflush(nullptr);
 
 	// coverity[fun_call_w_exception]: uncaught exceptions cause nonzero exit anyway, so don't warn.

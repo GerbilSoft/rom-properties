@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * stdafx.h: Common definitions and includes for COM.                      *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -81,6 +81,9 @@
 #include <utility>
 #include <vector>
 
+// libfmt
+#include "rp-libfmt.h"
+
 #else /* !__cplusplus */
 /** C **/
 
@@ -134,6 +137,5 @@
 
 // librptext C++ headers
 #include "librptext/conversion.hpp"
-#include "librptext/printf.hpp"
 #include "librptext/wchar.hpp"
 #endif /* __cplusplus */

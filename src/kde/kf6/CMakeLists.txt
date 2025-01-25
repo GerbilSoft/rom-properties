@@ -114,6 +114,11 @@ IF(BUILD_KF6)
 		TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC Qt6::DBus)
 	ENDIF(HAVE_QtDBus)
 
+	# libfmt
+	IF(Fmt_FOUND)
+		TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE ${Fmt_LIBRARY})
+	ENDIF(Fmt_FOUND)
+
 	### ThumbnailCreator plugin ###
 	SET(RomThumbnailCreator_NAME RomThumbnailCreator-kf6)
 	ADD_LIBRARY(${RomThumbnailCreator_NAME} MODULE
@@ -188,6 +193,11 @@ IF(BUILD_KF6)
 	TARGET_LINK_LIBRARIES(${XATTRVIEW_NAME} PRIVATE KF6::KIOWidgets KF6::KIOCore)
 	TARGET_LINK_LIBRARIES(${XATTRVIEW_NAME} PUBLIC Qt6::Widgets Qt6::Gui Qt6::Core)
 
+	# libfmt
+	IF(Fmt_FOUND)
+		TARGET_LINK_LIBRARIES(${XATTRVIEW_NAME} PRIVATE ${Fmt_LIBRARY})
+	ENDIF(Fmt_FOUND)
+
 	### Additional Plugins ###
 
 	# ExtractorPlugin
@@ -214,6 +224,11 @@ IF(BUILD_KF6)
 	# NOTE: Technically, only Qt6::Core is needed, but stdafx.h usage
 	# requires other libraries for include paths.
 	TARGET_LINK_LIBRARIES(kfilemetadata_${PROJECT_NAME} PRIVATE Qt6::Widgets Qt6::Core)
+
+	# libfmt
+	IF(Fmt_FOUND)
+		TARGET_LINK_LIBRARIES(kfilemetadata_${PROJECT_NAME} PRIVATE ${Fmt_LIBRARY})
+	ENDIF(Fmt_FOUND)
 
 	# OverlayIconPlugin
 	# TODO: Use kcoreaddons_add_plugin() for the JSON?
@@ -242,6 +257,11 @@ IF(BUILD_KF6)
 	# NOTE: Technically, only Qt6::Core is needed, but stdafx.h usage
 	# requires other libraries for include paths.
 	TARGET_LINK_LIBRARIES(overlayiconplugin_${PROJECT_NAME} PRIVATE Qt6::Widgets Qt6::Core)
+
+	# libfmt
+	IF(Fmt_FOUND)
+		TARGET_LINK_LIBRARIES(overlayiconplugin_${PROJECT_NAME} PRIVATE ${Fmt_LIBRARY})
+	ENDIF(Fmt_FOUND)
 ENDIF(BUILD_KF6)
 
 #######################

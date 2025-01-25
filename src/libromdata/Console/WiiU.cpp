@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * WiiU.cpp: Nintendo Wii U disc image reader.                             *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -355,9 +355,9 @@ int WiiU::loadFieldData(void)
 		if (ISALNUM(publisher_code[0]) && ISALNUM(publisher_code[1]) &&
 		    ISALNUM(publisher_code[2]) && ISALNUM(publisher_code[3]))
 		{
-			s_publisher = rp_sprintf(C_("RomData", "Unknown (%.4s)"), publisher_code.data());
+			s_publisher = fmt::format(C_("RomData", "Unknown ({:s})"), publisher_code.data());
 		} else {
-			s_publisher = rp_sprintf(C_("RomData", "Unknown (%02X %02X %02X %02X)"),
+			s_publisher = fmt::format(C_("RomData", "Unknown ({:0>2X} {:0>2X} {:0>2X} {:0>2X})"),
 				static_cast<uint8_t>(publisher_code[0]),
 				static_cast<uint8_t>(publisher_code[1]),
 				static_cast<uint8_t>(publisher_code[2]),
@@ -475,7 +475,7 @@ int WiiU::extURLs_int(const char *id4, ImageType imageType, vector<ExtURL> *pExt
 	// Using the game ID for now.
 	const vector<uint16_t> tdb_lc = GameCubeRegions::gcnRegionToGameTDB(~0U, id4[3]);
 
-	// Game ID.
+	// Game ID
 	// Replace any non-printable characters with underscores.
 	// (GameCube NDDEMO has ID6 "00\0E01".)
 	char id6[7];
@@ -485,7 +485,7 @@ int WiiU::extURLs_int(const char *id4, ImageType imageType, vector<ExtURL> *pExt
 			: '_';
 	}
 
-	// Publisher ID.
+	// Publisher ID
 	id6[4] = (publisher_id >> 8) & 0xFF;
 	id6[5] = publisher_id & 0xFF;
 	id6[6] = 0;
@@ -509,16 +509,15 @@ int WiiU::extURLs_int(const char *id4, ImageType imageType, vector<ExtURL> *pExt
 	pExtURLs->resize(szdef_count * tdb_lc.size());
 	auto extURL_iter = pExtURLs->begin();
 	for (unsigned int i = 0; i < szdef_count; i++) {
-		// Current image type.
-		char imageTypeName[16];
-		snprintf(imageTypeName, sizeof(imageTypeName), "%s%s",
-			 imageTypeName_base, (szdefs_dl[i]->name ? szdefs_dl[i]->name : ""));
+		// Current image type
+		const string imageTypeName = fmt::format(FSTR("{:s}{:s}"),
+			imageTypeName_base, (szdefs_dl[i]->name ? szdefs_dl[i]->name : ""));
 
 		// Add the images.
 		for (const uint16_t lc : tdb_lc) {
 			const string lc_str = SystemRegion::lcToStringUpper(lc);
-			extURL_iter->url = RomDataPrivate::getURL_GameTDB("wiiu", imageTypeName, lc_str.c_str(), id6, ext);
-			extURL_iter->cache_key = RomDataPrivate::getCacheKey_GameTDB("wiiu", imageTypeName, lc_str.c_str(), id6, ext);
+			extURL_iter->url = RomDataPrivate::getURL_GameTDB("wiiu", imageTypeName.c_str(), lc_str.c_str(), id6, ext);
+			extURL_iter->cache_key = RomDataPrivate::getCacheKey_GameTDB("wiiu", imageTypeName.c_str(), lc_str.c_str(), id6, ext);
 			extURL_iter->width = szdefs_dl[i]->width;
 			extURL_iter->height = szdefs_dl[i]->height;
 			extURL_iter->high_res = (szdefs_dl[i]->index > 0);

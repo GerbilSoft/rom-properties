@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (rpcli)                            *
  * verifykeys.hpp: Verify encryption keys.                                 *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * Copyright (c) 2016-2017 by Egor.                                        *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
@@ -18,8 +18,6 @@
 
 // Other rom-properties libraries
 #include "libi18n/i18n.h"
-#include "librptext/printf.hpp"
-using namespace LibRpText;
 
 // libromdata
 #include "libromdata/crypto/KeyStoreUI.hpp"
@@ -62,7 +60,7 @@ int VerifyKeys(void)
 		printedOne = true;
 
 		fputs("*** ", stdout);
-		printf(C_("rpcli", "Checking encryption keys: %s"), keyStore->sectName(sectIdx));
+		fmt::print(C_("rpcli", "Checking encryption keys: {:s}"), keyStore->sectName(sectIdx));
 		putchar('\n');
 
 		const int keyCount = keyStore->keyCount(sectIdx);
@@ -70,14 +68,14 @@ int VerifyKeys(void)
 			const KeyStoreUI::Key *const key = keyStore->getKey(sectIdx, keyIdx);
 			assert(key != nullptr);
 			if (!key) {
-				printf(C_("rpcli", "WARNING: Key [%d,%d] has no Key object. Skipping..."), sectIdx, keyIdx);
+				fmt::print(C_("rpcli", "WARNING: Key [{:d},{:d}] has no Key object. Skipping..."), sectIdx, keyIdx);
 				putchar('\n');
 				ret = 1;
 				continue;
 			}
 			assert(!key->name.empty());
 			if (key->name.empty()) {
-				printf(C_("rpcli", "WARNING: Key [%d,%d] has no name. Skipping..."), sectIdx, keyIdx);
+				fmt::print(C_("rpcli", "WARNING: Key [{:d},{:d}] has no name. Skipping..."), sectIdx, keyIdx);
 				putchar('\n');
 				ret = 1;
 				continue;
@@ -108,11 +106,11 @@ int VerifyKeys(void)
 					break;
 			}
 
-			printf("%s: ", key->name.c_str());
+			fmt::print(FSTR("{:s}: "), key->name);
 			if (isOK) {
-				printf("%s\n", s_err);
+				fmt::print(FSTR("{:s}\n"), s_err);
 			} else {
-				printf(C_("rpcli", "ERROR: %s"), s_err);
+				fmt::print(C_("rpcli", "ERROR: {:s}"), s_err);
 				putchar('\n');
 				ret = 1;
 			}

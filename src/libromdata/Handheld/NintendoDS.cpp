@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * NintendoDS.hpp: Nintendo DS(i) ROM reader.                              *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -692,11 +692,16 @@ int NintendoDS::loadFieldData(void)
 		d->fields.addField_string(publisher_title, publisher);
 	} else {
 		if (ISALNUM(romHeader->company[0]) && ISALNUM(romHeader->company[1])) {
+			const array<char, 3> s_company = {{
+				romHeader->company[0],
+				romHeader->company[1],
+				'\0'
+			}};
 			d->fields.addField_string(publisher_title,
-				rp_sprintf(C_("RomData", "Unknown (%.2s)"), romHeader->company));
+				fmt::format(C_("RomData", "Unknown ({:s})"), s_company.data()));
 		} else {
 			d->fields.addField_string(publisher_title,
-				rp_sprintf(C_("RomData", "Unknown (%02X %02X)"),
+				fmt::format(C_("RomData", "Unknown ({:0>2X} {:0>2X})"),
 					static_cast<unsigned int>(romHeader->company[0]),
 					static_cast<unsigned int>(romHeader->company[1])));
 		}
@@ -787,7 +792,7 @@ int NintendoDS::loadFieldData(void)
 	// Title ID
 	const uint32_t tid_hi = le32_to_cpu(romHeader->dsi.title_id.hi);
 	d->fields.addField_string(C_("Nintendo", "Title ID"),
-		rp_sprintf("%08X-%08X",
+		fmt::format("{:0>8X}-{:0>8X}",
 			tid_hi, le32_to_cpu(romHeader->dsi.title_id.lo)));
 
 	// DSi filetype
@@ -828,7 +833,7 @@ int NintendoDS::loadFieldData(void)
 	} else {
 		// Invalid file type.
 		d->fields.addField_string(dsi_rom_type_title,
-			rp_sprintf(C_("RomData", "Unknown (0x%02X)"), dsi_filetype));
+			fmt::format(C_("RomData", "Unknown (0x{:0>2X})"), dsi_filetype));
 	}
 
 	// Key index. Determined by title ID.
@@ -1013,9 +1018,24 @@ int NintendoDS::loadMetaData(void)
 	// Publisher
 	// TODO: Use publisher from the full title?
 	const char *const publisher = NintendoPublishers::lookup(romHeader->company);
-	d->metaData.addMetaData_string(Property::Publisher,
-		publisher ? publisher :
-			rp_sprintf(C_("RomData", "Unknown (%.2s)"), romHeader->company));
+	if (publisher) {
+		d->metaData.addMetaData_string(Property::Publisher, publisher);
+	} else {
+		if (ISALNUM(romHeader->company[0]) && ISALNUM(romHeader->company[1])) {
+			const array<char, 3> s_company = {{
+				romHeader->company[0],
+				romHeader->company[1],
+				'\0'
+			}};
+			d->metaData.addMetaData_string(Property::Publisher,
+				fmt::format(C_("RomData", "Unknown ({:s})"), s_company.data()));
+		} else {
+			d->metaData.addMetaData_string(Property::Publisher,
+				fmt::format(C_("RomData", "Unknown ({:0>2X} {:0>2X})"),
+					static_cast<unsigned int>(romHeader->company[0]),
+					static_cast<unsigned int>(romHeader->company[1])));
+		}
+	}
 
 	// Finished reading the metadata.
 	return static_cast<int>(d->metaData.count());
@@ -1199,16 +1219,15 @@ int NintendoDS::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size)
 	pExtURLs->resize(szdef_count * tdb_lc.size());
 	auto extURL_iter = pExtURLs->begin();
 	for (unsigned int i = 0; i < szdef_count; i++) {
-		// Current image type.
-		char imageTypeName[16];
-		snprintf(imageTypeName, sizeof(imageTypeName), "%s%s",
-			 imageTypeName_base, (szdefs_dl[i]->name ? szdefs_dl[i]->name : ""));
+		// Current image type
+		const string imageTypeName = fmt::format(FSTR("{:s}{:s}"),
+			imageTypeName_base, (szdefs_dl[i]->name ? szdefs_dl[i]->name : ""));
 
 		// Add the images.
 		for (const uint16_t lc : tdb_lc) {
 			const string lc_str = SystemRegion::lcToStringUpper(lc);
-			extURL_iter->url = d->getURL_GameTDB("ds", imageTypeName, lc_str.c_str(), id4, ext);
-			extURL_iter->cache_key = d->getCacheKey_GameTDB("ds", imageTypeName, lc_str.c_str(), id4, ext);
+			extURL_iter->url = d->getURL_GameTDB("ds", imageTypeName.c_str(), lc_str.c_str(), id4, ext);
+			extURL_iter->cache_key = d->getCacheKey_GameTDB("ds", imageTypeName.c_str(), lc_str.c_str(), id4, ext);
 			extURL_iter->width = szdefs_dl[i]->width;
 			extURL_iter->height = szdefs_dl[i]->height;
 			extURL_iter->high_res = (szdefs_dl[i]->index >= 2);

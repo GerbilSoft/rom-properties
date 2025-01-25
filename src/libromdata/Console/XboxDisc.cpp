@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * XboxDisc.cpp: Microsoft Xbox disc image parser.                         *
  *                                                                         *
- * Copyright (c) 2019-2024 by David Korth.                                 *
+ * Copyright (c) 2019-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -735,14 +735,14 @@ int XboxDisc::loadFieldData(void)
 			break;
 		case XboxDiscPrivate::DiscType::XGD2:
 			d->fields.addField_string(s_disc_type,
-				rp_sprintf("Xbox Game Disc 2 (Wave %u)", d->wave));
+				fmt::format(FSTR("Xbox Game Disc 2 (Wave {:d})"), d->wave));
 			break;
 		case XboxDiscPrivate::DiscType::XGD3:
 			d->fields.addField_string(s_disc_type, "Xbox Game Disc 3");
 			break;
 		default:
 			d->fields.addField_string(s_disc_type,
-				rp_sprintf(C_("RomData", "Unknown (%u)"), d->wave));
+				fmt::format(C_("RomData", "Unknown ({:d})"), d->wave));
 			break;
 	}
 

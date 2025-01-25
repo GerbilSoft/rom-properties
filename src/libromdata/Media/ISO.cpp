@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * ISO.cpp: ISO-9660 disc image parser.                                    *
  *                                                                         *
- * Copyright (c) 2019-2024 by David Korth.                                 *
+ * Copyright (c) 2019-2025 by David Korth.                                 *
  * Copyright (c) 2020 by Egor.                                             *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
@@ -455,7 +455,7 @@ void ISOPrivate::addPVDCommon(const T *pvd)
 		const char *const disc_number_title = C_("RomData", "Disc #");
 		fields.addField_string(disc_number_title,
 			// tr: Disc X of Y (for multi-disc games)
-			rp_sprintf_p(C_("RomData|Disc", "%1$u of %2$u"),
+			fmt::format(C_("RomData|Disc", "{0:d} of {1:d}"),
 				volume_seq_number, volume_set_size));
 	}
 

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * wiiu_structs.h: Nintendo Wii U data structures.                         *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -27,10 +27,10 @@ extern "C" {
 #pragma pack(1)	// NOTE: Some compilers pad this structure to a multiple of 4 bytes
 #define WIIU_MAGIC 'WUP-'
 typedef struct _WiiU_DiscHeader {
-	union PACKED {
+	union RP_PACKED {
 		uint32_t magic;		// 'WUP-'
 		char id[10];		// "WUP-P-xxxx"
-		struct PACKED {
+		struct RP_PACKED {
 			char wup[3];	// "WUP"
 			char hyphen1;	// '-'
 			char p;		// 'P'

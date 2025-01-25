@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * RP_ShellPropSheetExt.cpp: IShellPropSheetExt implementation.            *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -235,9 +235,9 @@ int RP_ShellPropSheetExt_Private::createHeaderRow(_In_ POINT pt_start, _In_ SIZE
 	}
 
 	const tstring ts_sysInfo =
-		LibWin32UI::unix2dos(U82T_s(rp_sprintf_p(
-			// tr: %1$s == system name, %2$s == file type
-			C_("RomDataView", "%1$s\n%2$s"), systemName, fileType)));
+		LibWin32UI::unix2dos(U82T_s(fmt::format(
+			// tr: {0:s} == system name, {1:s} == file type
+			C_("RomDataView", "{0:s}\n{1:s}"), systemName, fileType)));
 
 	if (!ts_sysInfo.empty()) {
 		// Determine the appropriate label size.
@@ -1709,13 +1709,13 @@ void RP_ShellPropSheetExt_Private::initDialog(void)
 	unique_ptr<int[]> a_max_text_width(new int[tabCount]());
 
 	// tr: Field description label.
-	const char *const desc_label_fmt = C_("RomDataView", "%s:");
+	const char *const desc_label_fmt = C_("RomDataView", "{:s}:");
 	for (const RomFields::Field &field : *pFields) {
 		assert(field.isValid());
 		if (!field.isValid())
 			continue;
 
-		tstring desc_text = U82T_s(rp_sprintf(desc_label_fmt, field.name));
+		tstring desc_text = U82T_s(fmt::format(desc_label_fmt, field.name));
 
 		// Get the width of this specific entry.
 		// TODO: Use measureTextSize()?

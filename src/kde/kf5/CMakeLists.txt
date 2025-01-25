@@ -127,6 +127,11 @@ IF(BUILD_KF5)
 		TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC Qt5::DBus)
 	ENDIF(HAVE_QtDBus)
 
+	# libfmt
+	IF(Fmt_FOUND)
+		TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE ${Fmt_LIBRARY})
+	ENDIF(Fmt_FOUND)
+
 	### ThumbnailCreator plugin (KF5 5.100 and later) ###
 	IF(HAVE_KIOGUI_KIO_THUMBNAILCREATOR_H)
 	SET(RomThumbnailCreator_NAME RomThumbnailCreator-kf5)
@@ -203,6 +208,11 @@ IF(BUILD_KF5)
 	TARGET_LINK_LIBRARIES(${XATTRVIEW_NAME} PRIVATE KF5::KIOWidgets KF5::KIOCore)
 	TARGET_LINK_LIBRARIES(${XATTRVIEW_NAME} PUBLIC Qt5::Widgets Qt5::Gui Qt5::Core)
 
+	# libfmt
+	IF(Fmt_FOUND)
+		TARGET_LINK_LIBRARIES(${XATTRVIEW_NAME} PRIVATE ${Fmt_LIBRARY})
+	ENDIF(Fmt_FOUND)
+
 	### Additional Plugins ###
 
 	# ExtractorPlugin
@@ -229,6 +239,11 @@ IF(BUILD_KF5)
 	# NOTE: Technically, only Qt5::Core is needed, but stdafx.h usage
 	# requires other libraries for include paths.
 	TARGET_LINK_LIBRARIES(kfilemetadata_${PROJECT_NAME} PRIVATE Qt5::Widgets Qt5::Core)
+
+	# libfmt
+	IF(Fmt_FOUND)
+		TARGET_LINK_LIBRARIES(kfilemetadata_${PROJECT_NAME} PRIVATE ${Fmt_LIBRARY})
+	ENDIF(Fmt_FOUND)
 
 	# OverlayIconPlugin
 	# TODO: Use kcoreaddons_add_plugin() for the JSON?
@@ -257,6 +272,11 @@ IF(BUILD_KF5)
 	# NOTE: Technically, only Qt5::Core is needed, but stdafx.h usage
 	# requires other libraries for include paths.
 	TARGET_LINK_LIBRARIES(overlayiconplugin_${PROJECT_NAME} PRIVATE Qt5::Widgets Qt5::Core)
+
+	# libfmt
+	IF(Fmt_FOUND)
+		TARGET_LINK_LIBRARIES(overlayiconplugin_${PROJECT_NAME} PRIVATE ${Fmt_LIBRARY})
+	ENDIF(Fmt_FOUND)
 ENDIF(BUILD_KF5)
 
 #######################

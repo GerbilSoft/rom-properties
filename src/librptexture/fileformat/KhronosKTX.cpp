@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * KhronosKTX.cpp: Khronos KTX image reader.                               *
  *                                                                         *
- * Copyright (c) 2017-2024 by David Korth.                                 *
+ * Copyright (c) 2017-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -81,7 +81,7 @@ class KhronosKTXPrivate final : public FileFormatPrivate
 		vector<rp_image_ptr> mipmaps;
 
 		// Invalid pixel format message
-		char invalid_pixel_format[24];
+		mutable string invalid_pixel_format;
 
 		// Key/Value data
 		// NOTE: Stored as vector<vector<string> > instead of
@@ -130,7 +130,6 @@ KhronosKTXPrivate::KhronosKTXPrivate(KhronosKTX *q, const IRpFilePtr &file)
 {
 	// Clear the KTX header struct.
 	memset(&ktxHeader, 0, sizeof(ktxHeader));
-	memset(invalid_pixel_format, 0, sizeof(invalid_pixel_format));
 }
 
 /**
@@ -998,13 +997,13 @@ const char *KhronosKTX::pixelFormat(void) const
 	}
 
 	// Invalid pixel format.
-	if (d->invalid_pixel_format[0] == '\0') {
-		// TODO: Localization?
-		snprintf(const_cast<KhronosKTXPrivate*>(d)->invalid_pixel_format,
-			sizeof(d->invalid_pixel_format),
-			"Unknown (0x%04X)", d->ktxHeader.glInternalFormat);
+	// Store an error message instead.
+	if (d->invalid_pixel_format.empty()) {
+		d->invalid_pixel_format = fmt::format(
+			C_("RomData", "Unknown (0x{:0>8X})"),
+			d->ktxHeader.glInternalFormat);
 	}
-	return d->invalid_pixel_format;
+	return d->invalid_pixel_format.c_str();
 }
 
 #ifdef ENABLE_LIBRPBASE_ROMFIELDS

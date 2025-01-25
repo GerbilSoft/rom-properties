@@ -61,7 +61,6 @@ SET(${PROJECT_NAME}_SRCS
 	conversion.cpp
 	fourCC.cpp
 	libc.c
-	printf.cpp
 	specialized.cpp
 	utf8_strlen.cpp)
 # Headers
@@ -70,7 +69,6 @@ SET(${PROJECT_NAME}_H
 	fourCC.hpp
 	libc.h
 	NULL-check.hpp
-	printf.hpp
 	specialized.cpp
 	utf8_strlen.hpp
 	wchar.hpp
@@ -166,6 +164,11 @@ FOREACH(_target ${TARGETS})
 	IF(ENABLE_NLS)
 		TARGET_LINK_LIBRARIES(${_target} PRIVATE i18n${_target_suffix})
 	ENDIF(ENABLE_NLS)
+
+	# libfmt
+	IF(Fmt_FOUND)
+		TARGET_LINK_LIBRARIES(${_target} PRIVATE ${Fmt_LIBRARY})
+	ENDIF(Fmt_FOUND)
 ENDFOREACH(_target)
 UNSET(_target_suffix)
 

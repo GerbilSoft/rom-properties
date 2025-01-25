@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * KhronosKTX2.cpp: Khronos KTX2 image reader.                             *
  *                                                                         *
- * Copyright (c) 2017-2024 by David Korth.                                 *
+ * Copyright (c) 2017-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -26,7 +26,6 @@
 #include "libi18n/i18n.h"
 using namespace LibRpFile;
 using LibRpBase::RomFields;
-using LibRpText::rp_sprintf;
 
 // librptexture
 #include "ImageSizeCalc.hpp"
@@ -82,7 +81,7 @@ public:
 	vector<rp_image_ptr> mipmaps;
 
 	// Invalid pixel format message
-	char invalid_pixel_format[24];
+	mutable string invalid_pixel_format;
 
 	// Key/Value data
 	// NOTE: Stored as vector<vector<string> > instead of
@@ -155,7 +154,6 @@ KhronosKTX2Private::KhronosKTX2Private(KhronosKTX2 *q, const IRpFilePtr &file)
 {
 	// Clear the KTX2 header struct.
 	memset(&ktx2Header, 0, sizeof(ktx2Header));
-	memset(invalid_pixel_format, 0, sizeof(invalid_pixel_format));
 	memset(ktx_swizzle, 0, sizeof(ktx_swizzle));
 }
 
@@ -941,13 +939,14 @@ const char *KhronosKTX2::pixelFormat(void) const
 	}
 
 	// Invalid pixel format.
-	if (d->invalid_pixel_format[0] == '\0') {
+	// Store an error message instead.
+	if (d->invalid_pixel_format.empty()) {
 		// TODO: Localization?
-		snprintf(const_cast<KhronosKTX2Private*>(d)->invalid_pixel_format,
-			sizeof(d->invalid_pixel_format),
-			"Unknown (%u)", d->ktx2Header.vkFormat);
+		d->invalid_pixel_format = fmt::format(
+			C_("RomData", "Unknown ({:d})"),
+			d->ktx2Header.vkFormat);
 	}
-	return d->invalid_pixel_format;
+	return d->invalid_pixel_format.c_str();
 }
 
 #ifdef ENABLE_LIBRPBASE_ROMFIELDS
@@ -986,7 +985,7 @@ int KhronosKTX2::getFields(RomFields *fields) const
 			supercompression_tbl[ktx2Header->supercompressionScheme]);
 	} else {
 		fields->addField_string(C_("KhronosKTX2", "Supercompression"),
-			rp_sprintf(C_("RomData", "Unknown (%u)"),
+			fmt::format(C_("RomData", "Unknown ({:d})"),
 				ktx2Header->supercompressionScheme));
 	}
 

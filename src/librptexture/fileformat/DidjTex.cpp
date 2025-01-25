@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * DidjTex.hpp: Leapster Didj .tex reader.                                 *
  *                                                                         *
- * Copyright (c) 2019-2024 by David Korth.                                 *
+ * Copyright (c) 2019-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -74,7 +74,7 @@ class DidjTexPrivate final : public FileFormatPrivate
 		rp_image_ptr img;
 
 		// Invalid pixel format message
-		char invalid_pixel_format[24];
+		mutable string invalid_pixel_format;
 
 		/**
 		 * Load the DidjTex image.
@@ -111,7 +111,6 @@ DidjTexPrivate::DidjTexPrivate(DidjTex *q, const IRpFilePtr &file)
 {
 	// Clear the structs and arrays.
 	memset(&texHeader, 0, sizeof(texHeader));
-	memset(invalid_pixel_format, 0, sizeof(invalid_pixel_format));
 }
 
 /**
@@ -436,13 +435,12 @@ const char *DidjTex::pixelFormat(void) const
 
 	// Invalid pixel format.
 	// Store an error message instead.
-	// TODO: Localization?
-	if (d->invalid_pixel_format[0] == '\0') {
-		snprintf(const_cast<DidjTexPrivate*>(d)->invalid_pixel_format,
-			sizeof(d->invalid_pixel_format),
-			"Unknown (0x%08X)", d->texHeader.px_format);
+	if (d->invalid_pixel_format.empty()) {
+		d->invalid_pixel_format = fmt::format(
+			C_("RomData", "Unknown (0x{:0>8X})"),
+			d->texHeader.px_format);
 	}
-	return d->invalid_pixel_format;
+	return d->invalid_pixel_format.c_str();
 }
 
 #ifdef ENABLE_LIBRPBASE_ROMFIELDS

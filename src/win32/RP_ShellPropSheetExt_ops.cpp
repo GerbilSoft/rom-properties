@@ -3,7 +3,7 @@
  * RP_ShellPropSheetExt_ops.cpp: IShellPropSheetExt implementation.        *
  * (ROM operations)                                                        *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -413,7 +413,7 @@ void RP_ShellPropSheetExt_Private::btnOptions_action_triggered(int menuId)
 				const uint32_t lc = cboLanguage
 					? LanguageComboBox_GetSelectedLC(cboLanguage)
 					: 0;
-				ofs << "== " << rp_sprintf(C_("RomDataView", "File: '%s'"), rom_filename) << '\n';
+				ofs << "== " << fmt::format(C_("RomDataView", "File: '{:s}'"), rom_filename) << '\n';
 				ROMOutput ro(romData.get(), lc);
 				ofs << ro;
 				ofs.flush();
@@ -432,7 +432,7 @@ void RP_ShellPropSheetExt_Private::btnOptions_action_triggered(int menuId)
 					? LanguageComboBox_GetSelectedLC(cboLanguage)
 					: 0;
 				ostringstream oss;
-				oss << "== " << rp_sprintf(C_("RomDataView", "File: '%s'"), rom_filename) << '\n';
+				oss << "== " << fmt::format(C_("RomDataView", "File: '{:s}'"), rom_filename) << '\n';
 				ROMOutput ro(romData.get(), lc);
 				oss << ro;
 				oss.flush();

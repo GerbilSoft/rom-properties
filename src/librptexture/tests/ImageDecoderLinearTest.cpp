@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture/tests)               *
  * ImageDecoderLinearTest.cpp: Linear image decoding tests with SSSE3.     *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -33,6 +33,9 @@ using namespace LibRpTexture;
 #include <memory>
 #include <string>
 using std::string;
+
+// libfmt
+#include "rp-libfmt.h"
 
 // Uninitialized vector class
 #include "uvector.h"
@@ -241,9 +244,8 @@ const char *ImageDecoderLinearTest::pxfToString(ImageDecoder::PixelFormat pxf)
  */
 inline ::std::ostream& operator<<(::std::ostream& os, const ImageDecoderLinearTest_mode& mode)
 {
-	char buf[16];
-	snprintf(buf, sizeof(buf), "0x%08X", mode.dest_pixel);
-	return os << ImageDecoderLinearTest::pxfToString(mode.src_pxf) << '_' << buf;
+	return os << fmt::format(FSTR("{:s}_0x{:0>8X}"),
+		ImageDecoderLinearTest::pxfToString(mode.src_pxf), mode.dest_pixel);
 };
 
 /**
@@ -253,15 +255,8 @@ inline ::std::ostream& operator<<(::std::ostream& os, const ImageDecoderLinearTe
  */
 string ImageDecoderLinearTest::test_case_suffix_generator(const ::testing::TestParamInfo<ImageDecoderLinearTest_mode> &info)
 {
-	char buf[16];
-	snprintf(buf, sizeof(buf), "0x%08X", info.param.dest_pixel);
-
-	string ret;
-	ret.reserve(64);
-	ret = ImageDecoderLinearTest::pxfToString(info.param.src_pxf);
-	ret += '_';
-	ret += buf;
-	return ret;
+	return fmt::format(FSTR("{:s}_{:0>8X}"),
+		ImageDecoderLinearTest::pxfToString(info.param.src_pxf), info.param.dest_pixel);
 }
 
 /**
@@ -397,7 +392,7 @@ void ImageDecoderLinearTest::Validate_RpImage(
 		const uint32_t *px = static_cast<const uint32_t*>(img->scanLine(y));
 		for (int x = 0; x < width; x++, px++) {
 			if (dest_pixel != *px) {
-				printf("ERR: (%d,%d): expected %08X, got %08X\n",
+				fmt::print("ERR: ({:d},{:d}): expected {:0>8X}, got {:0>8X}\n",
 					x, y, dest_pixel, *px);
 			}
 			ASSERT_EQ(dest_pixel, *px);
@@ -513,7 +508,7 @@ TEST_P(ImageDecoderLinearTest, fromLinear_sse2_test)
 		case 32:
 			// Not implemented...
 			if (!GTEST_FLAG_GET(brief)) {
-				fprintf(stderr, "*** SSE2 decoding is not implemented for %u-bit color.\n", mode.bpp);
+				fmt::print(stderr, FSTR("*** SSE2 decoding is not implemented for {:d}-bit color.\n"), mode.bpp);
 			}
 			return;
 
@@ -555,7 +550,7 @@ TEST_P(ImageDecoderLinearTest, fromLinear_sse2_benchmark)
 		case 32:
 			// Not implemented...
 			if (!GTEST_FLAG_GET(brief)) {
-				fprintf(stderr, "*** SSE2 decoding is not implemented for %u-bit color.\n", mode.bpp);
+				fmt::print(stderr, FSTR("*** SSE2 decoding is not implemented for {:d}-bit color.\n"), mode.bpp);
 			}
 			return;
 
@@ -584,7 +579,7 @@ TEST_P(ImageDecoderLinearTest, fromLinear_sse2_benchmark)
 TEST_P(ImageDecoderLinearTest, fromLinear_ssse3_test)
 {
 	if (!RP_CPU_HasSSSE3() && !GTEST_FLAG_GET(brief)) {
-		fprintf(stderr, "*** SSSE3 is not supported on this CPU. Skipping test.\n");
+		fputs("*** SSSE3 is not supported on this CPU. Skipping test.\n", stderr);
 		return;
 	}
 
@@ -610,7 +605,7 @@ TEST_P(ImageDecoderLinearTest, fromLinear_ssse3_test)
 		case 16:
 			// Not implemented...
 			if (!GTEST_FLAG_GET(brief)) {
-				fprintf(stderr, "*** SSSE3 decoding is not implemented for %u-bit color.\n", mode.bpp);
+				fmt::print(stderr, FSTR("*** SSSE3 decoding is not implemented for {:d}-bit color.\n"), mode.bpp);
 			}
 			return;
 
@@ -631,7 +626,7 @@ TEST_P(ImageDecoderLinearTest, fromLinear_ssse3_test)
 TEST_P(ImageDecoderLinearTest, fromLinear_ssse3_benchmark)
 {
 	if (!RP_CPU_HasSSSE3() && !GTEST_FLAG_GET(brief)) {
-		fprintf(stderr, "*** SSSE3 is not supported on this CPU. Skipping test.\n");
+		fputs("*** SSSE3 is not supported on this CPU. Skipping test.\n", stderr);
 		return;
 	}
 
@@ -663,7 +658,7 @@ TEST_P(ImageDecoderLinearTest, fromLinear_ssse3_benchmark)
 		case 16:
 			// Not implemented...
 			if (!GTEST_FLAG_GET(brief)) {
-				fprintf(stderr, "*** SSSE3 decoding is not implemented for %u-bit color.\n", mode.bpp);
+				fmt::print(stderr, FSTR("*** SSSE3 decoding is not implemented for {:d}-bit color.\n"), mode.bpp);
 			}
 			return;
 
@@ -1246,7 +1241,7 @@ INSTANTIATE_TEST_SUITE_P(fromLinear16_384, ImageDecoderLinearTest,
 extern "C" int gtest_main(int argc, TCHAR *argv[])
 {
 	fputs("LibRpTexture test suite: ImageDecoder::fromLinear*() tests.\n\n", stderr);
-	fprintf(stderr, "Benchmark iterations: %u\n",
+	fmt::print(stderr, FSTR("Benchmark iterations: {:d}\n"),
 		LibRpTexture::Tests::ImageDecoderLinearTest::BENCHMARK_ITERATIONS);
 	fflush(nullptr);
 

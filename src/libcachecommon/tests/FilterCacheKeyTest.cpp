@@ -375,7 +375,7 @@ TEST_F(FilterCacheKeyTest, filterCacheKey_invalid_UTF8)
  */
 extern "C" int gtest_main(int argc, TCHAR *argv[])
 {
-	fprintf(stderr, "LibCacheCommon test suite: LibCacheCommon::filterCacheKey() tests.\n\n");
+	fputs("LibCacheCommon test suite: LibCacheCommon::filterCacheKey() tests.\n\n", stderr);
 	fflush(nullptr);
 
 	// coverity[fun_call_w_exception]: uncaught exceptions cause nonzero exit anyway, so don't warn.

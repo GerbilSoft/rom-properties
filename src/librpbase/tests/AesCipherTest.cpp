@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase/tests)                  *
  * AesCipherTest.cpp: AesCipher class test.                                *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -23,9 +23,11 @@
 #include <string>
 #include <vector>
 using std::array;
-using std::ostringstream;
 using std::string;
 using std::vector;
+
+// libfmt
+#include "rp-libfmt.h"
 
 namespace LibRpBase { namespace Tests {
 
@@ -170,10 +172,12 @@ void AesCipherTest::CompareByteArrays(
 	// Output format: (assume ~64 bytes per line)
 	// 0000: 01 23 45 67 89 AB CD EF  01 23 45 67 89 AB CD EF
 	const size_t bufSize = ((size / 16) + !!(size % 16)) * 64;
-	char printf_buf[16];
 	string s_expected, s_actual;
 	s_expected.reserve(bufSize);
 	s_actual.reserve(bufSize);
+
+	string s_tmp;
+	s_tmp.reserve(14);
 
 	const uint8_t *pE = expected, *pA = actual;
 	for (size_t i = 0; i < size; i++, pE++, pA++) {
@@ -185,16 +189,14 @@ void AesCipherTest::CompareByteArrays(
 				s_actual += '\n';
 			}
 
-			snprintf(printf_buf, sizeof(printf_buf), "%04X: ", static_cast<unsigned int>(i));
-			s_expected += printf_buf;
-			s_actual += printf_buf;
+			s_tmp = fmt::format(FSTR("{:0>4X}: "), static_cast<unsigned int>(i));
+			s_expected += s_tmp;
+			s_actual += s_tmp;
 		}
 
 		// Print the byte.
-		snprintf(printf_buf, sizeof(printf_buf), "%02X", *pE);
-		s_expected += printf_buf;
-		snprintf(printf_buf, sizeof(printf_buf), "%02X", *pA);
-		s_actual += printf_buf;
+		s_expected += fmt::format(FSTR("{:0>2X}"), *pE);
+		s_actual   += fmt::format(FSTR("{:0>2X}"), *pA);
 
 		if (i % 16 == 7) {
 			s_expected += "  ";
@@ -227,11 +229,11 @@ void AesCipherTest::SetUp(void)
 		// Print the AesCipher implementation name.
 		const char *name = m_cipher->name();
 		ASSERT_TRUE(name != nullptr);
-		printf("AesCipher implementation: %s\n", name);
+		fmt::print(FSTR("AesCipher implementation: {:s}\n"), name);
 		pfnLastCreateIAesCipher = mode.pfnCreateIAesCipher;
 
 		if (!mode.isRequired && !m_cipher->isInit()) {
-			fputs("This implementation is not supported on this system; skipping tests.\n", stdout);
+			fmt::print(FSTR("This implementation is not supported on this system; skipping tests.\n"));
 		}
 	}
 
@@ -520,11 +522,6 @@ TEST_P(AesCipherTest, decryptTest_fourParam_blockAtATime)
  */
 string AesCipherTest::test_case_suffix_generator(const ::testing::TestParamInfo<AesCipherTest_mode> &info)
 {
-	ostringstream oss;
-	oss << "AES_";
-	oss << (info.param.key_len * 8);
-	oss << "_";
-
 	const char *cm_str;
 	switch (info.param.chainingMode) {
 		case IAesCipher::ChainingMode::ECB:
@@ -541,9 +538,7 @@ string AesCipherTest::test_case_suffix_generator(const ::testing::TestParamInfo<
 			break;
 	}
 
-	oss << cm_str;
-
-	return oss.str();
+	return fmt::format(FSTR("AES_{:d}_{:s}"), (info.param.key_len * 8), cm_str);
 }
 
 static constexpr array<uint8_t, 64> aes128ecb_ciphertext = {{
@@ -708,7 +703,7 @@ AesDecryptTestSet(Nettle, true)
  */
 extern "C" int gtest_main(int argc, TCHAR *argv[])
 {
-	fputs("LibRpBase test suite: Crypto tests.\n\n", stderr);
+	fmt::print(stderr, FSTR("LibRpBase test suite: Crypto tests.\n\n"));
 	fflush(nullptr);
 
 	// coverity[fun_call_w_exception]: uncaught exceptions cause nonzero exit anyway, so don't warn.

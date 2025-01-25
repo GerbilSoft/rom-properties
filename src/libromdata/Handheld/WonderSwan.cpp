@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * WonderSwan.cpp: Bandai WonderSwan (Color) ROM reader.                   *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -124,10 +124,8 @@ string WonderSwanPrivate::getGameID(void) const
 		sys_id = 'C';
 	}
 
-	char game_id[16];
-	snprintf(game_id, sizeof(game_id), "SWJ-%s%c%02X",
+	return fmt::format(FSTR("SWJ-{:s}{:c}{:0>2X}"),
 		publisher_code, sys_id, romFooter.game_id);
-	return {game_id};
 }
 
 /** WonderSwan **/
@@ -547,7 +545,7 @@ int WonderSwan::loadFieldData(void)
 	if (publisher) {
 		s_publisher = publisher;
 	} else {
-		s_publisher = rp_sprintf(C_("RomData", "Unknown (0x%02X)"), romFooter->publisher);
+		s_publisher = fmt::format(C_("RomData", "Unknown (0x{:0>2X})"), romFooter->publisher);
 	}
 	d->fields.addField_string(C_("RomData", "Publisher"), s_publisher);
 
@@ -573,7 +571,7 @@ int WonderSwan::loadFieldData(void)
 			formatFileSizeKiB(rom_size_tbl[romFooter->rom_size]));
 	} else {
 		d->fields.addField_string(rom_size_title,
-			rp_sprintf(C_("RomData", "Unknown (%u)"), romFooter->publisher));
+			fmt::format(C_("RomData", "Unknown ({:d})"), romFooter->publisher));
 	}
 
 	// Save size and type
@@ -586,7 +584,7 @@ int WonderSwan::loadFieldData(void)
 	} else if (romFooter->save_type < sram_size_tbl.size()) {
 		d->fields.addField_string(save_memory_title,
 			// tr: Parameter 2 indicates the save type, e.g. "SRAM" or "EEPROM".
-			rp_sprintf_p(C_("WonderSwan|SaveMemory", "%1$u KiB (%2$s)"),
+			fmt::format(C_("WonderSwan|SaveMemory", "{0:d} KiB ({1:s})"),
 				sram_size_tbl[romFooter->save_type],
 				C_("WonderSwan|SaveMemory", "SRAM")));
 	} else {
@@ -604,14 +602,14 @@ int WonderSwan::loadFieldData(void)
 			const char *fmtstr;
 			if (eeprom_bytes >= 1024) {
 				// tr: Parameter 2 indicates the save type, e.g. "SRAM" or "EEPROM".
-				fmtstr = C_("WonderSwan|SaveMemory", "%1$u KiB (%2$s)");
+				fmtstr = C_("WonderSwan|SaveMemory", "{0:d} KiB ({1:s})");
 				eeprom_bytes /= 1024;
 			} else {
 				// tr: Parameter 2 indicates the save type, e.g. "SRAM" or "EEPROM".
-				fmtstr = C_("WonderSwan|SaveMemory", "%1$u bytes (%2$s)");
+				fmtstr = C_("WonderSwan|SaveMemory", "{0:d} bytes ({1:s})");
 			}
 			d->fields.addField_string(save_memory_title,
-				rp_sprintf_p(fmtstr, eeprom_bytes, C_("WonderSwan|SaveMemory", "EEPROM")));
+				fmt::format(fmtstr, eeprom_bytes, C_("WonderSwan|SaveMemory", "EEPROM")));
 		}
 	}
 

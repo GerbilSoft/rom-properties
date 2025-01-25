@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * sega8_structs.h: Sega 8-bit (SMS/GG) data structures.                   *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -72,7 +72,7 @@ typedef enum {
  */
 // Some compilers pad this structure to a multiple of 4 bytes
 #pragma pack(1)
-typedef struct PACKED _Sega8_Codemasters_Timestamp {
+typedef struct RP_PACKED _Sega8_Codemasters_Timestamp {
 	uint8_t day;
 	uint8_t month;
 	uint8_t year;
@@ -124,7 +124,7 @@ ASSERT_STRUCT(Sega8_SDSC_Date, 4);
  */
 #define SDSC_MAGIC 'SDSC'
 #pragma pack(1)
-typedef struct PACKED _Sega8_SDSC_RomHeader {
+typedef struct RP_PACKED _Sega8_SDSC_RomHeader {
 	uint32_t magic;		// [0x000] 'SDSC'
 	uint8_t version[2];	// [0x004] Program version, in BCD.
 				//         [0] = major version

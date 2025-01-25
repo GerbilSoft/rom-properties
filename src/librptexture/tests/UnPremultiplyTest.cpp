@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture/tests)               *
  * UnPremutiplyTest.cpp: Test un_premultiply().                            *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -29,6 +29,9 @@ using namespace LibRpTexture;
 #include <memory>
 #include <string>
 using std::string;
+
+// libfmt
+#include "rp-libfmt.h"
 
 namespace LibRpTexture { namespace Tests {
 
@@ -120,7 +123,7 @@ TEST_F(UnPremultiplyTest, premultiply_cpp_benchmark)
 extern "C" int gtest_main(int argc, TCHAR *argv[])
 {
 	fputs("LibRpTexture test suite: rp_image::un_premultiply() tests.\n\n", stderr);
-	fprintf(stderr, "Benchmark iterations: %u\n",
+	fmt::print(stderr, FSTR("Benchmark iterations: {:d}\n"),
 		LibRpTexture::Tests::UnPremultiplyTest::BENCHMARK_ITERATIONS);
 	fflush(nullptr);
 

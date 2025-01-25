@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * N64.cpp: Nintendo 64 ROM image reader.                                  *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -270,21 +270,18 @@ int N64::loadFieldData(void)
 		return -EIO;
 	}
 
-	// snprintf() buffer.
-	char buf[32];
-
 	// ROM file header is read and byteswapped in the constructor.
 	// TODO: Indicate the byteswapping format?
 	const N64_RomHeader *const romHeader = &d->romHeader;
 	d->fields.reserve(7);	// Maximum of 7 fields.
 
-	// Title.
+	// Title
 	// TODO: Space elimination.
 	d->fields.addField_string(C_("RomData", "Title"),
 		cp1252_sjis_to_utf8(romHeader->title, sizeof(romHeader->title)),
 		RomFields::STRF_TRIM_END);
 
-	// Game ID.
+	// Game ID
 	// Replace any non-printable characters with underscores.
 	char id4[5];
 	for (int i = 0; i < 4; i++) {
@@ -296,26 +293,26 @@ int N64::loadFieldData(void)
 	d->fields.addField_string(C_("N64", "Game ID"),
 		latin1_to_utf8(id4, 4));
 
-	// Revision.
+	// Revision
 	d->fields.addField_string_numeric(C_("RomData", "Revision"),
 		romHeader->revision, RomFields::Base::Dec, 2);
 
-	// Entry point.
+	// Entry point
 	d->fields.addField_string_numeric(C_("RomData", "Entry Point"),
 		romHeader->entrypoint, RomFields::Base::Hex, 8, RomFields::STRF_MONOSPACE);
 
-	// OS version.
+	// OS version
 	// TODO: ISALPHA(), or ISUPPER()?
 	const char *const os_version_title = C_("RomData", "OS Version");
 	if (romHeader->os_version[0] == 0x00 &&
 	    romHeader->os_version[1] == 0x00 &&
 	    ISALPHA(romHeader->os_version[3]))
 	{
-		snprintf(buf, sizeof(buf), "OS%u.%u%c",
-			romHeader->os_version[2] / 10,
-			romHeader->os_version[2] % 10,
-			romHeader->os_version[3]);
-		d->fields.addField_string(os_version_title, buf);
+		d->fields.addField_string(os_version_title,
+			fmt::format(FSTR("OS{:d}.{:d}{:c}"),
+				romHeader->os_version[2] / 10,
+				romHeader->os_version[2] % 10,
+				romHeader->os_version[3]));
 	} else {
 		// Unrecognized Release field.
 		d->fields.addField_string_hexdump(os_version_title,
@@ -323,7 +320,7 @@ int N64::loadFieldData(void)
 			RomFields::STRF_MONOSPACE);
 	}
 
-	// Clock rate.
+	// Clock rate
 	// NOTE: Lower 0xF is masked.
 	const char *clockrate_title = C_("N64", "Clock Rate");
 	const uint32_t clockrate = (romHeader->clockrate & ~0xFU);
@@ -335,11 +332,11 @@ int N64::loadFieldData(void)
 			LibRpText::formatFrequency(clockrate));
 	}
 
-	// CRCs.
-	snprintf(buf, sizeof(buf), "0x%08X 0x%08X",
-		romHeader->crc[0], romHeader->crc[1]);
+	// CRCs
 	d->fields.addField_string(C_("N64", "CRCs"),
-		buf, RomFields::STRF_MONOSPACE);
+		fmt::format(FSTR("0x{:0>8X} 0x{:0>8X}"),
+			romHeader->crc[0], romHeader->crc[1]),
+		RomFields::STRF_MONOSPACE);
 
 	// Finished reading the field data.
 	return static_cast<int>(d->fields.count());
@@ -369,7 +366,7 @@ int N64::loadMetaData(void)
 	const N64_RomHeader *const romHeader = &d->romHeader;
 	d->metaData.reserve(1);	// Maximum of 1 metadata property.
 
-	// Title.
+	// Title
 	// TODO: Space elimination.
 	d->metaData.addMetaData_string(Property::Title,
 		cp1252_sjis_to_utf8(romHeader->title, sizeof(romHeader->title)),

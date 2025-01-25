@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * spc_structs.h: SPC audio data structures.                               *
  *                                                                         *
- * Copyright (c) 2018-2023 by David Korth.                                 *
+ * Copyright (c) 2018-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -35,13 +35,13 @@ extern "C" {
  */
 // Some compilers pad this structure to a multiple of 4 bytes
 #pragma pack(1)
-typedef struct PACKED _SPC_ID666 {
+typedef struct RP_PACKED _SPC_ID666 {
 	char song_title[32];	// [0x000, 0x02E] Song title.
 	char game_title[32];	// [0x020, 0x04E] Game title.
 	char dumper_name[16];	// [0x040, 0x06E] Name of dumper.
 	char comments[32];	// [0x050, 0x07E] Comments.
 
-	union PACKED {
+	union RP_PACKED {
 		struct {
 			char dump_date[11];		// [0x070, 0x09E] Date SPC was dumped. (MM/DD/YYYY)
 			char seconds_before_fade[3];	// [0x07B, 0x0A9] Seconds to play before fading out (24-bit!)
@@ -85,7 +85,7 @@ typedef enum {
  */
 #define SPC_MAGIC "SNES-SPC700 Sound File Data v0.30"
 #pragma pack(1)
-typedef struct PACKED _SPC_Header {
+typedef struct RP_PACKED _SPC_Header {
 	char magic[sizeof(SPC_MAGIC)-1];// [0x000] SPC_MAGIC
 	uint8_t d26[2];			// [0x021] 26, 26 (TODO: Include as part of SPC_MAGIC?)
 	uint8_t has_id666;		// [0x023] 26 = has ID666; 27 = no ID666

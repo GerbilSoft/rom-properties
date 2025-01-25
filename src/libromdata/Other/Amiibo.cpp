@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * Amiibo.cpp: Nintendo amiibo NFC dump reader.                            *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -382,9 +382,9 @@ int Amiibo::loadFieldData(void)
 	const uint32_t amiibo_id = be32_to_cpu(d->nfpData.amiibo_id.u32);
 
 	// tr: amiibo ID. Represents the character and amiibo series.
-	// TODO: Link to https://amiibo.life/nfc/%08X-%08X
+	// TODO: Link to https://amiibo.life/nfc/{:0>8X}-{:0>8X}
 	d->fields.addField_string(C_("Amiibo", "amiibo ID"),
-		rp_sprintf("%08X-%08X", char_id, amiibo_id),
+		fmt::format("{:0>8X}-{:0>8X}", char_id, amiibo_id),
 		RomFields::STRF_MONOSPACE);
 
 	// tr: amiibo type.
@@ -405,7 +405,7 @@ int Amiibo::loadFieldData(void)
 	} else {
 		// Invalid amiibo type.
 		d->fields.addField_string(amiibo_type_title,
-			rp_sprintf(C_("RomData", "Unknown (0x%02X)"), (char_id & 0xFF)));
+			fmt::format(C_("RomData", "Unknown (0x{:0>2X})"), (char_id & 0xFF)));
 	}
 
 	// Get the AmiiboData instance.
@@ -443,8 +443,8 @@ int Amiibo::loadFieldData(void)
 	}
 
 	// tr: Credits for amiibo image downloads.
-	const string credits = rp_sprintf(
-		C_("Amiibo", "amiibo images provided by %s,\nthe Unofficial amiibo Database."),
+	const string credits = fmt::format(
+		C_("Amiibo", "amiibo images provided by {:s},\nthe Unofficial amiibo Database."),
 		"<a href=\"https://amiibo.life/\">amiibo.life</a>");
 	d->fields.addField_string(C_("Amiibo", "Credits"), credits, RomFields::STRF_CREDITS);
 
@@ -493,18 +493,17 @@ int Amiibo::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) con
 	pExtURLs->resize(1);
 	auto &extURL = pExtURLs->at(0);
 
-	// Amiibo ID.
-	char amiibo_id[20];
-	snprintf(amiibo_id, sizeof(amiibo_id), "%08X-%08X",
+	// Amiibo ID
+	const string amiibo_id = fmt::format(FSTR("{:0>8X}-{:0>8X}"),
 		be32_to_cpu(d->nfpData.char_id), be32_to_cpu(d->nfpData.amiibo_id.u32));
 
-	// Cache key. (amiibo ID)
+	// Cache key (amiibo ID)
 	extURL.cache_key.reserve(32);
 	extURL.cache_key = "amiibo/";
 	extURL.cache_key += amiibo_id;
 	extURL.cache_key += ".png";
 
-	// URL.
+	// URL
 	// Format: https://amiibo.life/nfc/[Page21]-[Page22]/image
 	extURL.url.reserve(48);
 	extURL.url = "https://amiibo.life/nfc/";

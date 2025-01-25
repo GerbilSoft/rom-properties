@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * PowerVR3.cpp: PowerVR 3.0.0 texture image reader.                       *
  *                                                                         *
- * Copyright (c) 2019-2024 by David Korth.                                 *
+ * Copyright (c) 2019-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -77,7 +77,7 @@ class PowerVR3Private final : public FileFormatPrivate
 		vector<rp_image_ptr> mipmaps;
 
 		// Invalid pixel format message
-		char invalid_pixel_format[40];
+		mutable string invalid_pixel_format;
 
 		// Is byteswapping needed?
 		// (PVR3 file has the opposite endianness.)
@@ -290,7 +290,6 @@ PowerVR3Private::PowerVR3Private(PowerVR3 *q, const IRpFilePtr &file)
 	// Clear the PowerVR3 header struct.
 	memset(&pvr3Header, 0, sizeof(pvr3Header));
 	memset(&orientation, 0, sizeof(orientation));
-	memset(invalid_pixel_format, 0, sizeof(invalid_pixel_format));
 }
 
 /**
@@ -1220,11 +1219,10 @@ const char *PowerVR3::pixelFormat(void) const
 		return nullptr;
 	}
 
-	if (d->invalid_pixel_format[0] != '\0') {
-		return d->invalid_pixel_format;
+	if (!d->invalid_pixel_format.empty()) {
+		return d->invalid_pixel_format.c_str();
 	}
 
-	// TODO: Localization?
 	if (d->pvr3Header.channel_depth == 0) {
 		// Compressed texture format.
 		static const array<const char*, PVR3_PXF_MAX> pvr3PxFmt_tbl = {{
@@ -1260,10 +1258,10 @@ const char *PowerVR3::pixelFormat(void) const
 		}
 
 		// Not valid.
-		snprintf(const_cast<PowerVR3Private*>(d)->invalid_pixel_format,
-			sizeof(d->invalid_pixel_format),
-			"Unknown (Compressed: 0x%08X)", d->pvr3Header.pixel_format);
-		return d->invalid_pixel_format;
+		d->invalid_pixel_format = fmt::format(
+			C_("PowerVR3", "Unknown (Compressed: 0x{:0>8X})"),
+			d->pvr3Header.pixel_format);
+		return d->invalid_pixel_format.c_str();
 	}
 
 	// Uncompressed pixel formats.
@@ -1274,34 +1272,32 @@ const char *PowerVR3::pixelFormat(void) const
 	// little-endian files, so the low byte is the first channel.
 	// TODO: Verify big-endian.
 
-	char s_pxf[8], s_chcnt[16];
-	char *p_pxf = s_pxf;
-	char *p_chcnt = s_chcnt;
+	string s_pxf;	// pixel format
+	string s_chcnt;	// channel count
+	s_pxf.reserve(8);
+	s_chcnt.reserve(8);
 
 	uint32_t pixel_format = d->pvr3Header.pixel_format;
 	uint32_t channel_depth = d->pvr3Header.channel_depth;
-	for (unsigned int i = 0; i < 4 && p_chcnt < &s_chcnt[sizeof(s_chcnt)]; i++, pixel_format >>= 8, channel_depth >>= 8) {
+	for (unsigned int i = 0; i < 4; i++, pixel_format >>= 8, channel_depth >>= 8) {
 		const uint8_t pxf = (pixel_format & 0xFF);
 		if (pxf == 0) {
 			break;
 		}
 
-		*p_pxf++ = TOUPPER(pxf);
-		p_chcnt += snprintf(p_chcnt, sizeof(s_chcnt) - (p_chcnt - s_chcnt), "%u", channel_depth & 0xFF);
+		s_pxf += TOUPPER(pxf);
+		s_chcnt += fmt::to_string(static_cast<unsigned int>(channel_depth & 0xFF));
 	}
-	*p_pxf = '\0';
-	*p_chcnt = '\0';
 
-	if (s_pxf[0] != '\0') {
-		snprintf(const_cast<PowerVR3Private*>(d)->invalid_pixel_format,
-			 sizeof(d->invalid_pixel_format),
-			 "%s%s", s_pxf, s_chcnt);
+	if (likely(!s_pxf.empty())) {
+		// Not exactly an "invalid" pixel format...
+		d->invalid_pixel_format.reserve(s_pxf.size() + s_chcnt.size());
+		d->invalid_pixel_format = s_pxf;
+		d->invalid_pixel_format += s_chcnt;
 	} else {
-		snprintf(const_cast<PowerVR3Private*>(d)->invalid_pixel_format,
-			 sizeof(d->invalid_pixel_format),
-			 "%s", (C_("RomData", "Unknown")));
+		d->invalid_pixel_format = C_("RomData", "Unknown");
 	}
-	return d->invalid_pixel_format;
+	return d->invalid_pixel_format.c_str();
 }
 
 #ifdef ENABLE_LIBRPBASE_ROMFIELDS

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * pvr3_structs.h: PowerVR 3.0.0 texture format data structures.           *
  *                                                                         *
- * Copyright (c) 2019-2023 by David Korth.                                 *
+ * Copyright (c) 2019-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -194,7 +194,7 @@ typedef enum {
  */
 // Some compilers pad this structure to a multiple of 4 bytes
 #pragma pack(1)
-typedef struct PACKED _PowerVR3_Metadata_Orientation_t {
+typedef struct RP_PACKED _PowerVR3_Metadata_Orientation_t {
 	uint8_t x;	// 0 == increases to the right; 1 == increases to the left
 	uint8_t y;	// 0 == increases downwards; 1 == increases upwards
 	uint8_t z;	// 0 == increases inwards; 1 == increases outwards

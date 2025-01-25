@@ -3,7 +3,7 @@
  * device.cpp: Extra functions for devices.                                *
  *                                                                         *
  * Copyright (c) 2016-2018 by Egor.                                        *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -18,7 +18,6 @@
 #include "libi18n/i18n.h"
 #include "librpfile/RpFile.hpp"
 #include "librptext/conversion.hpp"
-#include "librptext/printf.hpp"
 using namespace LibRpText;
 using LibRpFile::RpFile;
 
@@ -68,7 +67,7 @@ ostream& operator<<(ostream& os, const ScsiInquiry& si)
 	int ret = si.file->scsi_inquiry(&resp);
 	if (ret != 0) {
 		// TODO: Decode the error.
-		os << "-- " << rp_sprintf(C_("rpcli", "SCSI INQUIRY failed: %08X"),
+		os << "-- " << fmt::format(C_("rpcli", "SCSI INQUIRY failed: {:0>8X}"),
 			static_cast<unsigned int>(ret)) << '\n';
 		return os;
 	}
@@ -109,7 +108,7 @@ ostream& operator<<(ostream& os, const ScsiInquiry& si)
 	}};
 	os << "Peripheral device type: ";
 	const char *const pdt = pdt_tbl[resp.PeripheralDeviceType & 0x1F];
-	os << (pdt ? pdt : rp_sprintf("0x%02X",
+	os << (pdt ? pdt : fmt::format(FSTR("0x{:0>2X}"),
 		static_cast<unsigned int>(resp.PeripheralDeviceType) & 0x1F)) << '\n';
 
 	os << "Peripheral qualifier:   ";
@@ -139,7 +138,7 @@ ostream& operator<<(ostream& os, const ScsiInquiry& si)
 		};
 		os << ver_tbl[resp.Version];
 	} else {
-		os << rp_sprintf("0x%02X", resp.Version);
+		os << fmt::format(FSTR("0x{:0>2X}"), resp.Version);
 	}
 	os << '\n';
 
@@ -176,7 +175,7 @@ ostream& operator<<(ostream& os, const AtaIdentifyDevice& si)
 
 	if (ret != 0) {
 		// TODO: Decode the error.
-		os << "-- " << rp_sprintf(C_("rpcli", "ATA %s failed: %08X"),
+		os << "-- " << fmt::format(C_("rpcli", "ATA {:s} failed: {:0>8X}"),
 			(si.packet ? "IDENTIFY PACKET DEVICE" : "IDENTIFY DEVICE"),
 			static_cast<unsigned int>(ret)) << '\n';
 		return os;
@@ -195,7 +194,7 @@ ostream& operator<<(ostream& os, const AtaIdentifyDevice& si)
 	// TODO: Byte count.
 	os << "Sector count (28-bit): " << resp.total_sectors << '\n';
 	os << "Sector count (48-bit): " << resp.total_sectors_48 << '\n';
-	os << "Integrity word:        " << rp_sprintf("%04X", resp.integrity) << '\n';
+	os << "Integrity word:        " << fmt::format(FSTR("{:0>4X}"), +resp.integrity) << '\n';
 	return os;
 }
 

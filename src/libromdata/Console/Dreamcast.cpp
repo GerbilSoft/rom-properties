@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * Dreamcast.hpp: Sega Dreamcast disc image reader.                        *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -627,50 +627,50 @@ int Dreamcast::loadFieldData(void)
 		return -EIO;
 	}
 
-	// Dreamcast disc header.
+	// Dreamcast disc header
 	const DC_IP0000_BIN_t *const discHeader = &d->discHeader;
 	d->fields.reserve(12);	// Maximum of 12 fields.
 	d->fields.setTabName(0, C_("Dreamcast", "Dreamcast"));
 
-	// Title. (TODO: Encoding?)
+	// Title (TODO: Encoding?)
 	d->fields.addField_string(C_("RomData", "Title"),
 		latin1_to_utf8(discHeader->title, sizeof(discHeader->title)),
 		RomFields::STRF_TRIM_END);
 
-	// Publisher.
+	// Publisher
 	d->fields.addField_string(C_("RomData", "Publisher"), d->getPublisher());
 
 	// TODO: Latin-1, cp1252, or Shift-JIS?
 
-	// Product number.
+	// Product number
 	d->fields.addField_string(C_("Dreamcast", "Product #"),
 		latin1_to_utf8(discHeader->product_number, sizeof(discHeader->product_number)),
 		RomFields::STRF_TRIM_END);
 
-	// Product version.
+	// Product version
 	d->fields.addField_string(C_("RomData", "Version"),
 		latin1_to_utf8(discHeader->product_version, sizeof(discHeader->product_version)),
 		RomFields::STRF_TRIM_END);
 
-	// Release date.
+	// Release date
 	const time_t release_date = d->ascii_yyyymmdd_to_unix_time(discHeader->release_date);
 	d->fields.addField_dateTime(C_("RomData", "Release Date"), release_date,
 		RomFields::RFT_DATETIME_HAS_DATE |
 		RomFields::RFT_DATETIME_IS_UTC  // Date only.
 	);
 
-	// Disc number.
+	// Disc number
 	uint8_t disc_num, disc_total;
 	d->parseDiscNumber(disc_num, disc_total);
 	if (disc_num != 0 && disc_total > 1) {
 		const char *const disc_number_title = C_("RomData", "Disc #");
 		d->fields.addField_string(disc_number_title,
 			// tr: Disc X of Y (for multi-disc games)
-			rp_sprintf_p(C_("RomData|Disc", "%1$u of %2$u"),
+			fmt::format(C_("RomData|Disc", "{0:d} of {1:d}"),
 				disc_num, disc_total));
 	}
 
-	// Region code.
+	// Region code
 	// Note that for Dreamcast, each character is assigned to
 	// a specific position, so European games will be "  E",
 	// not "E  ".
@@ -689,14 +689,14 @@ int Dreamcast::loadFieldData(void)
 	d->fields.addField_bitfield(C_("RomData", "Region Code"),
 		v_region_code_bitfield_names, 0, region_code);
 
-	// Boot filename.
+	// Boot filename
 	d->fields.addField_string(C_("Dreamcast", "Boot Filename"),
 		latin1_to_utf8(discHeader->boot_filename, sizeof(discHeader->boot_filename)),
 		RomFields::STRF_TRIM_END);
 
 	// FIXME: The CRC algorithm isn't working right...
 #if 0
-	// Product CRC16.
+	// Product CRC16
 	// TODO: Use strtoul().
 	unsigned int crc16_expected = 0;
 	const char *p = discHeader->device_info;
@@ -720,22 +720,25 @@ int Dreamcast::loadFieldData(void)
 		if (crc16_expected == crc16_actual) {
 			// CRC16 is correct.
 			d->fields.addField_string(C_("RomData", "Checksum"),
-				rp_sprintf(C_("Dreamcast", "0x%04X (valid)"), crc16_expected));
+				fmt::format(C_("Dreamcast", "0x{:0>4X} (valid)"), crc16_expected));
 		} else {
 			// CRC16 is incorrect.
 			d->fields.addField_string(C_("RomData", "Checksum"),
-				rp_sprintf_p(C_("Dreamcast", "0x%1$04X (INVALID; should be 0x%2$04X)"),
+				fmt::format(C_("Dreamcast", "0x{0:0>4X} (INVALID; should be 0x{1:0>4X})"),
 					crc16_expected, crc16_actual));
 		}
 	} else {
 		// CRC16 in header is invalid.
+		char s_crc16_invalid[5];
+		memcpy(s_crc16, discHeader->device_info, 4);
+		s_crc16[4] = '\0';
 		d->fields.addField_string(C_("RomData", "Checksum"),
-			rp_sprintf_p(C_("Dreamcast", "0x%1$04X (HEADER is INVALID: %2$.4s)"),
-				crc16_expected, discHeader->device_info));
+			fmt::format(C_("Dreamcast", "0x{0:0>4X} (HEADER is INVALID: {1:s})"),
+				crc16_expected, s_crc16_invalid));
 	}
 #endif
 
-	/** Peripeherals. **/
+	/** Peripeherals **/
 
 	// Peripherals are stored as an ASCII hex bitfield.
 	char *endptr;
@@ -745,7 +748,8 @@ int Dreamcast::loadFieldData(void)
 	    endptr <= &discHeader->peripherals[7])
 	{
 		// Peripherals decoded.
-		// OS support.
+
+		// OS support
 		static const array<const char*, 5> os_bitfield_names = {{
 			NOP_C_("Dreamcast|OSSupport", "Windows CE"),
 			nullptr, nullptr, nullptr,
@@ -756,7 +760,7 @@ int Dreamcast::loadFieldData(void)
 		d->fields.addField_bitfield(C_("Dreamcast", "OS Support"),
 			v_os_bitfield_names, 0, peripherals);
 
-		// Supported expansion units.
+		// Supported expansion units
 		static const array<const char*, 4> expansion_bitfield_names = {{
 			NOP_C_("Dreamcast|Expansion", "Other"),
 			NOP_C_("Dreamcast|Expansion", "Jump Pack"),
@@ -769,7 +773,7 @@ int Dreamcast::loadFieldData(void)
 		d->fields.addField_bitfield(C_("Dreamcast", "Expansion Units"),
 			v_expansion_bitfield_names, 0, peripherals >> 8);
 
-		// Required controller features.
+		// Required controller features
 		static const array<const char*, 13> req_controller_bitfield_names = {{
 			NOP_C_("Dreamcast|ReqCtrl", "Start, A, B, D-Pad"),
 			NOP_C_("Dreamcast|ReqCtrl", "C Button"),
@@ -787,11 +791,11 @@ int Dreamcast::loadFieldData(void)
 		}};
 		vector<string> *const v_req_controller_bitfield_names = RomFields::strArrayToVector_i18n(
 			"Dreamcast|ReqCtrl", req_controller_bitfield_names);
-		// tr: Required controller features.
+		// tr: Required controller features
 		d->fields.addField_bitfield(C_("Dreamcast", "Req. Controller"),
 			v_req_controller_bitfield_names, 3, peripherals >> 12);
 
-		// Optional controller features.
+		// Optional controller features
 		static const array<const char*, 3> opt_controller_bitfield_names = {{
 			NOP_C_("Dreamcast|OptCtrl", "Light Gun"),
 			NOP_C_("Dreamcast|OptCtrl", "Keyboard"),
@@ -799,7 +803,7 @@ int Dreamcast::loadFieldData(void)
 		}};
 		vector<string> *const v_opt_controller_bitfield_names = RomFields::strArrayToVector_i18n(
 			"Dreamcast|OptCtrl", opt_controller_bitfield_names);
-		// tr: Optional controller features.
+		// tr: Optional controller features
 		d->fields.addField_bitfield(C_("Dreamcast", "Opt. Controller"),
 			v_opt_controller_bitfield_names, 0, peripherals >> 25);
 	}
@@ -864,23 +868,23 @@ int Dreamcast::loadMetaData(void)
 		return -EIO;
 	}
 
-	// Dreamcast disc header.
+	// Dreamcast disc header
 	const DC_IP0000_BIN_t *const discHeader = &d->discHeader;
 	d->metaData.reserve(4);	// Maximum of 4 metadata properties.
 
-	// Title. (TODO: Encoding?)
+	// Title (TODO: Encoding?)
 	d->metaData.addMetaData_string(Property::Title,
 		latin1_to_utf8(discHeader->title, sizeof(discHeader->title)),
 		RomMetaData::STRF_TRIM_END);
 
-	// Publisher.
+	// Publisher
 	d->metaData.addMetaData_string(Property::Publisher, d->getPublisher());
 
-	// Release date.
+	// Release date
 	d->metaData.addMetaData_timestamp(Property::CreationDate,
 		d->ascii_yyyymmdd_to_unix_time(discHeader->release_date));
 
-	// Disc number. (multiple disc sets only)
+	// Disc number (multiple disc sets only)
 	uint8_t disc_num, disc_total;
 	d->parseDiscNumber(disc_num, disc_total);
 	if (disc_num != 0 && disc_total > 1) {

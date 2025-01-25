@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * MegaDrive.cpp: Sega Mega Drive ROM reader.                              *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -603,13 +603,14 @@ void MegaDrivePrivate::addFields_vectorTable(const M68K_VectorTable *pVectors)
 
 		// #
 		// NOTE: This is the byte address in the vector table.
-		data_row.emplace_back(rp_sprintf("$%02X", vector_index*4));
+		data_row.emplace_back(fmt::format(FSTR("${:0>2X}"), vector_index*4));
 
 		// Vector name
 		data_row.emplace_back(&vectors_strtbl[vectors_offtbl[i]]);
 
 		// Address
-		data_row.emplace_back(rp_sprintf("$%08X", be32_to_cpu(pVectors->vectors[vector_index])));
+		data_row.emplace_back(fmt::format(FSTR("${:0>8X}"),
+			be32_to_cpu(pVectors->vectors[vector_index])));
 
 		i++;
 	}
@@ -673,9 +674,7 @@ string MegaDrivePrivate::getPublisher(const MD_RomHeader *pRomHeader)
 		// Check for a T-code.
 		if (t_code > 0) {
 			// Found a T-code.
-			char buf[16];
-			snprintf(buf, sizeof(buf), "T-%u", t_code);
-			s_publisher = buf;
+			s_publisher = fmt::format(FSTR("T-{:d}"), t_code);
 		} else {
 			// Unknown publisher.
 			s_publisher = C_("RomData", "Unknown");
@@ -1689,9 +1688,7 @@ int MegaDrive::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) 
 				region_code[0] = 'G';
 				region_code[1] = 'T';
 				region_code[2] = '\0';
-				char buf[16];
-				snprintf(buf, sizeof(buf), "%08X", d->gt_crc);
-				gameID = buf;
+				gameID = fmt::format(FSTR("{:0>8X}"), d->gt_crc);
 				break;
 			}
 
@@ -1742,9 +1739,7 @@ int MegaDrive::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) 
 
 				// Found a match! Append the checksum.
 				// NOTE: Not supporting "early" ROM headers here.
-				char buf[16];
-				snprintf(buf, sizeof(buf), ".%04X", be16_to_cpu(pRomHeader->checksum));
-				gameID += buf;
+				gameID += fmt::format(FSTR(".{:0>4X}"), be16_to_cpu(pRomHeader->checksum));
 				break;
 			}
 			break;

@@ -3,7 +3,7 @@
  * Xbox360_XDBF.cpp: Microsoft Xbox 360 game resource reader.              *
  * Handles XDBF files and sections.                                        *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -1035,10 +1035,8 @@ int Xbox360_XDBF_Private::addFields_achievements_SPA(void)
 		const uint16_t unlocked_desc_id = be16_to_cpu(p->unlocked_desc_id);
 
 		// TODO: Localized numeric formatting?
-		char s_achievement_id[16];
-		snprintf(s_achievement_id, sizeof(s_achievement_id), "%u", be16_to_cpu(p->achievement_id));
-		char s_gamerscore[16];
-		snprintf(s_gamerscore, sizeof(s_gamerscore), "%u", be16_to_cpu(p->gamerscore));
+		const string s_achievement_id = fmt::to_string(be16_to_cpu(p->achievement_id));
+		const string s_gamerscore = fmt::to_string(be16_to_cpu(p->gamerscore));
 
 		for (int langID = XDBF_LANGUAGE_ENGLISH; langID < XDBF_LANGUAGE_MAX; langID++) {
 			if (!pvv_xach[langID]) {
@@ -1049,7 +1047,7 @@ int Xbox360_XDBF_Private::addFields_achievements_SPA(void)
 			data_row.reserve(3);
 
 			// Achievement ID
-			data_row.emplace_back(s_achievement_id);
+			data_row.push_back(s_achievement_id);
 
 			// Title.
 			string desc = loadString_SPA((XDBF_Language_e)langID, name_id);
@@ -1084,7 +1082,7 @@ int Xbox360_XDBF_Private::addFields_achievements_SPA(void)
 			data_row.emplace_back(std::move(desc));
 
 			// Gamerscore
-			data_row.emplace_back(s_gamerscore);
+			data_row.push_back(s_gamerscore);
 		}
 	}
 
@@ -1248,8 +1246,7 @@ int Xbox360_XDBF_Private::addFields_avatarAwards_SPA(void)
 
 		// TODO: Localized numeric formatting?
 		// FIXME: Should this be decimal instead of hex?
-		char s_avatar_award_id[16];
-		snprintf(s_avatar_award_id, sizeof(s_avatar_award_id), "%04X", be16_to_cpu(p->avatar_award_id));
+		const string s_avatar_award_id = fmt::format(FSTR("{:0>4X}"), be16_to_cpu(p->avatar_award_id));
 
 		for (int langID = XDBF_LANGUAGE_ENGLISH; langID < XDBF_LANGUAGE_MAX; langID++) {
 			if (!pvv_xgaa[langID]) {
@@ -1260,7 +1257,7 @@ int Xbox360_XDBF_Private::addFields_avatarAwards_SPA(void)
 			data_row.reserve(2);
 
 			// Avatar award ID
-			data_row.emplace_back(s_avatar_award_id);
+			data_row.push_back(s_avatar_award_id);
 
 			// Title.
 			string desc = loadString_SPA((XDBF_Language_e)langID, name_id);
@@ -1460,10 +1457,8 @@ int Xbox360_XDBF_Private::addFields_achievements_GPD(void)
 		vv_icons->push_back(loadImage(be32_to_cpu(pGPD->image_id)));
 
 		// TODO: Localized numeric formatting?
-		char s_achievement_id[16];
-		snprintf(s_achievement_id, sizeof(s_achievement_id), "%u", be32_to_cpu(pGPD->achievement_id));
-		char s_gamerscore[16];
-		snprintf(s_gamerscore, sizeof(s_gamerscore), "%u", be32_to_cpu(pGPD->gamerscore));
+		const string s_achievement_id = fmt::to_string(be32_to_cpu(pGPD->achievement_id));
+		const string s_gamerscore = fmt::to_string(be32_to_cpu(pGPD->gamerscore));
 
 		// Get the strings.
 		const char16_t *pTitle = nullptr, *pUnlockedDesc = nullptr, *pLockedDesc = nullptr;
@@ -1508,9 +1503,9 @@ int Xbox360_XDBF_Private::addFields_achievements_GPD(void)
 		// Add to RFT_LISTDATA.
 		vector<string> data_row;
 		data_row.reserve(3);
-		data_row.emplace_back(s_achievement_id);
+		data_row.push_back(s_achievement_id);
 		data_row.emplace_back(std::move(desc));
-		data_row.emplace_back(s_gamerscore);
+		data_row.push_back(s_gamerscore);
 		vv_xach->emplace_back(std::move(data_row));
 	}
 

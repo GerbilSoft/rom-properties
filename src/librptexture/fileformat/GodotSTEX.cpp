@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * GodotSTEX.cpp: Godot STEX image reader.                                 *
  *                                                                         *
- * Copyright (c) 2017-2024 by David Korth.                                 *
+ * Copyright (c) 2017-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -86,7 +86,7 @@ class GodotSTEXPrivate final : public FileFormatPrivate
 		vector<mipmap_data_t> mipmap_data;
 
 		// Invalid pixel format message
-		char invalid_pixel_format[24];
+		mutable string invalid_pixel_format;
 
 	public:
 		// Image format tables
@@ -312,7 +312,6 @@ GodotSTEXPrivate::GodotSTEXPrivate(GodotSTEX *q, const IRpFilePtr &file)
 	// Clear the structs and arrays.
 	memset(&stexHeader, 0, sizeof(stexHeader));
 	memset(&embedHeader, 0, sizeof(embedHeader));
-	memset(invalid_pixel_format, 0, sizeof(invalid_pixel_format));
 }
 
 /**
@@ -1108,13 +1107,13 @@ const char *GodotSTEX::pixelFormat(void) const
 	}
 
 	// Invalid pixel format.
-	if (d->invalid_pixel_format[0] == '\0') {
-		// TODO: Localization?
-		snprintf(const_cast<GodotSTEXPrivate*>(d)->invalid_pixel_format,
-			sizeof(d->invalid_pixel_format),
-			"Unknown (%d)", d->pixelFormat);
+	// Store an error message instead.
+	if (d->invalid_pixel_format.empty()) {
+		d->invalid_pixel_format = fmt::format(
+			C_("RomData", "Unknown ({:d})"),
+			static_cast<int>(d->pixelFormat));
 	}
-	return d->invalid_pixel_format;
+	return d->invalid_pixel_format.c_str();
 }
 
 #ifdef ENABLE_LIBRPBASE_ROMFIELDS
@@ -1197,7 +1196,7 @@ int GodotSTEX::getFields(RomFields *fields) const
 						data_format_tbl[d->stexHeader.v4.data_format]));
 			} else {
 				fields->addField_string(s_title,
-					rp_sprintf(C_("RomData", "Unknown (%u)"),
+					fmt::format(C_("RomData", "Unknown ({:d})"),
 						d->stexHeader.v4.data_format));
 			}
 			break;

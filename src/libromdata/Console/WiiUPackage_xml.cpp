@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * WiiUPackage_xml.cpp: Wii U NUS Package reader. (XML parsing)            *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -431,10 +431,9 @@ int WiiUPackagePrivate::addFields_System_XMLs(void)
 	if (appRootNode) {
 		const unsigned int sdk_version = parseUnsignedInt(appRootNode, "sdk_version");
 		if (sdk_version != 0) {
-			char s_sdk_version[32];
-			snprintf(s_sdk_version, sizeof(s_sdk_version), "%u.%02u.%02u",
-				sdk_version / 10000, (sdk_version / 100) % 100, sdk_version % 100);
-			fields.addField_string(C_("WiiU", "SDK Version"), s_sdk_version);
+			fields.addField_string(C_("WiiU", "SDK Version"),
+				fmt::format(FSTR("{:d}.{:0>2d}.{:0>2d}"),
+					sdk_version / 10000, (sdk_version / 100) % 100, sdk_version % 100));
 		}
 	}
 
@@ -597,10 +596,9 @@ int WiiUPackagePrivate::addMetaData_System_XMLs(void)
 	// Get the system language code and see if we have a matching title.
 	// NOTE: Using the same LC for all fields once we find a matching title.
 	string s_def_lc = SystemRegion::lcToString(SystemRegion::getLanguageCode());
-	char nodeName[16];
-	snprintf(nodeName, sizeof(nodeName), "shortname_%s", s_def_lc.c_str());
+	string nodeName = fmt::format(FSTR("shortname_{:s}"), s_def_lc);
 
-	const char *shortname = getText(metaRootNode, nodeName);
+	const char *shortname = getText(metaRootNode, nodeName.c_str());
 	if (!shortname) {
 		// Not valid. Check English.
 		shortname = getText(metaRootNode, "shortname_en");
@@ -628,8 +626,8 @@ int WiiUPackagePrivate::addMetaData_System_XMLs(void)
 	}
 
 	// Publisher
-	snprintf(nodeName, sizeof(nodeName), "publisher_%s", s_def_lc.c_str());
-	const char *const publisher = getText(metaRootNode, nodeName);
+	nodeName = fmt::format(FSTR("publisher_{:s}"), s_def_lc);
+	const char *const publisher = getText(metaRootNode, nodeName.c_str());
 	if (publisher) {
 		metaData.addMetaData_string(Property::Publisher, publisher);
 	}

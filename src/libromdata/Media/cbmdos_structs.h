@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * cbmdos_structs.h: Commodore DOS floppy disk structs.                    *
  *                                                                         *
- * Copyright (c) 2019-2024 by David Korth.                                 *
+ * Copyright (c) 2019-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -280,7 +280,7 @@ ASSERT_STRUCT(cbmdos_GCR_data_block_t, 260);
  * All strings are in ASCII, NULL-terminated.
  */
 #pragma pack(1)
-typedef struct PACKED _cbmdos_GEOS_info_block_t {
+typedef struct RP_PACKED _cbmdos_GEOS_info_block_t {
 	cbmdos_TS_ptr_t next;		// $00: Next sector (usually 0/255 because it's only one block)
 	uint8_t id[3];			// $01: ID bytes (03 15 BF). 03 = icon width, 15 = icon height?
 	uint8_t icon[63];		// $02: Icon bitmap (C64 high-res sprite format)

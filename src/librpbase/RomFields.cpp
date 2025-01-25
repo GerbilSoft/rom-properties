@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * RomFields.cpp: ROM fields class.                                        *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -462,8 +462,7 @@ string RomFields::ageRatingDecode(AgeRatingsCountry country, uint16_t rating)
 	} else {
 		// No string rating.
 		// Print the numeric value.
-		str = rp_sprintf("%u",
-			static_cast<unsigned int>(rating) & RomFields::AGEBF_MIN_AGE_MASK);
+		str = fmt::to_string(static_cast<unsigned int>(rating) & RomFields::AGEBF_MIN_AGE_MASK);
 	}
 
 	if (rating & RomFields::AGEBF_ONLINE_PLAY) {
@@ -514,7 +513,7 @@ string RomFields::ageRatingsDecode(const age_ratings_t *age_ratings, bool newlin
 		} else {
 			// Invalid age rating organization.
 			// Use the numeric index.
-			str += rp_sprintf("%u", i);
+			str += fmt::to_string(i);
 		}
 		str += '=';
 		str += ageRatingDecode((AgeRatingsCountry)i, rating);
@@ -956,23 +955,25 @@ int RomFields::addField_string_numeric(const char *name, uint32_t val, Base base
 	if (!name)
 		return -1;
 
-	const char *fmtstr;
+	string s;
 	switch (base) {
 		case Base::Dec:
 		default:
-			fmtstr = "%0*u";
+			s = fmt::format(FSTR("{:0>{}d}"), val, digits);
 			break;
 		case Base::Hex:
-			fmtstr = (!(flags & STRF_HEX_LOWER)) ? "0x%0*X" : "0x%0*x";
+			if (unlikely(flags & STRF_HEX_LOWER)) {
+				s = fmt::format(FSTR("0x{:0>{}x}"), val, digits);
+			} else {
+				s = fmt::format(FSTR("0x{:0>{}X}"), val, digits);
+			}
 			break;
 		case Base::Oct:
-			fmtstr = "0%0*o";
+			s = fmt::format(FSTR("0{:0>{}o}"), val, digits);
 			break;
 	}
 
-	char buf[64];
-	snprintf(buf, sizeof(buf), fmtstr, digits, val);
-	return addField_string(name, buf, flags);
+	return addField_string(name, s, flags);
 }
 
 /**
@@ -1058,16 +1059,20 @@ int RomFields::addField_string_address_range(const char *name,
 	}
 
 	// Address range
-	char buf[128];
-	int len = snprintf(buf, sizeof(buf),
-		(!(flags & STRF_HEX_LOWER)) ? "0x%0*X - 0x%0*X" : "0x%0*x - 0x%0*x",
-		digits, start, digits, end);
-	if (suffix && suffix[0] != 0 && (len > 0 && len < 126)) {
+	string s;
+	s.reserve(digits * 2 + (suffix ? 8+4 : 4));
+	if (unlikely(flags & STRF_HEX_LOWER)) {
+		s = fmt::format(FSTR("0x{:0>{}x} - 0x{:0>{}x}"), start, digits, end, digits);
+	} else {
+		s = fmt::format(FSTR("0x{:0>{}X} - 0x{:0>{}X}"), start, digits, end, digits);
+	}
+	if (suffix && suffix[0] != 0 && !s.empty()) {
 		// Append a space and the specified suffix.
-		snprintf(&buf[len], sizeof(buf)-len, " %s", suffix);
+		s += ' ';
+		s += suffix;
 	}
 
-	return addField_string(name, buf, flags);
+	return addField_string(name, s, flags);
 }
 
 /**

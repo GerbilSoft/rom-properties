@@ -72,7 +72,7 @@ typedef struct _card_header {
 	union {
 		uint32_t serial_full[8];
 #pragma pack(1)
-		struct PACKED {
+		struct RP_PACKED {
 			uint8_t serial[12];	// Serial number. (TODO: Should be 8...)
 			uint64_t formatTime;	// Format time. (OSTime value; 1 tick == 1/40,500,000 sec)
 			uint32_t sramBias;	// SRAM bias at time of format.

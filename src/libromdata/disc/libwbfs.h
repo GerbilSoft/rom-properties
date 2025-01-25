@@ -20,7 +20,7 @@ typedef uint32_t be32_t;
 typedef uint16_t be16_t;
 
 #pragma pack(1)
-typedef struct PACKED wbfs_head {
+typedef struct RP_PACKED wbfs_head {
         be32_t	magic;
         // parameters copied in the partition for easy dumping, and bug reports
         be32_t	n_hd_sec;	// total number of hd_sec in this partition

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * RomDataFormat.hpp: Common RomData string formatting functions.          *
  *                                                                         *
- * Copyright (c) 2017-2024 by David Korth.                                 *
+ * Copyright (c) 2017-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -12,6 +12,9 @@
 // librpbase
 #include "librpbase/RomFields.hpp"
 using LibRpBase::RomFields;
+
+// C++ STL classes
+using std::string;
 
 /**
  * Format an RFT_DATETIME.
@@ -77,18 +80,19 @@ QString formatDateTime(time_t date_time, unsigned int flags)
 QString formatDimensions(const int dimensions[3])
 {
 	// TODO: 'x' or '×'? Using 'x' for now.
-	char buf[64];
+	string str;
+
 	if (dimensions[1] > 0) {
 		if (dimensions[2] > 0) {
-			snprintf(buf, sizeof(buf), "%dx%dx%d",
+			str = fmt::format(FSTR("{:d}x{:d}x{:d}"),
 				dimensions[0], dimensions[1], dimensions[2]);
 		} else {
-			snprintf(buf, sizeof(buf), "%dx%d",
+			str = fmt::format(FSTR("{:d}x{:d}"),
 				dimensions[0], dimensions[1]);
 		}
 	} else {
-		snprintf(buf, sizeof(buf), "%d", dimensions[0]);
+		str = fmt::to_string(dimensions[0]);
 	}
 
-	return QString::fromLatin1(buf);
+	return QString::fromLatin1(str.c_str());
 }

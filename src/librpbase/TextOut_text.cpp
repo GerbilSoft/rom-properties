@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * TextOut.hpp: Text output for RomData. (User-readable text)              *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * Copyright (c) 2016-2018 by Egor.                                        *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
@@ -271,30 +271,25 @@ public:
 
 /**
  * Format an RFT_DATETIME field (or an `is_timestamp` column in RFT_LISTDATA).
- * @param buf		[out] Output buffer
- * @param size		[in] Size of `buf`
  * @param timestamp	[in] Timestamp to format
  * @param dtflags	[in] DateTimeFlags
- * @return 0 on success; non-zero on error.
+ * @return Formatted RFT_DATETIME on success; empty string on error.
  */
-static int formatDateTime(char *buf, size_t size, time_t timestamp, RomFields::DateTimeFlags dtflags)
+static string formatDateTime(time_t timestamp, RomFields::DateTimeFlags dtflags)
 {
-	struct tm tm_struct;
-	struct tm *ret;
-	if (dtflags & RomFields::RFT_DATETIME_IS_UTC) {
-		ret = gmtime_r(&timestamp, &tm_struct);
-	} else {
-		tzset();
-		ret = localtime_r(&timestamp, &tm_struct);
-	}
+	string s_ret;
 
-	if (!ret) {
-		// gmtime_r() or localtime_r() failed.
-		return -1;
+	struct tm tm_struct;
+	if (dtflags & RomFields::RFT_DATETIME_IS_UTC) {
+		tm_struct = fmt::gmtime(timestamp);
+	} else {
+		tzset(); // FIXME: Is this still needed?
+		tm_struct = fmt::localtime(timestamp);
 	}
 
 	if (likely(SystemRegion::getLanguageCode() != 0)) {
 		// Localized time format
+		// FIXME: Does fmt::format() support `struct tm`?
 		static constexpr char formats_strtbl[] =
 			"\0"		// [0] No date or time
 			"%x\0"		// [1] Date
@@ -313,15 +308,17 @@ static int formatDateTime(char *buf, size_t size, time_t timestamp, RomFields::D
 		const char *format = &formats_strtbl[formats_offtbl[offset]];
 		assert(format[0] != '\0');
 		if (likely(format[0] != '\0')) {
-			strftime(buf, size, format, &tm_struct);
-		} else {
-			return -2;
+			// TODO: fmt::format()? [may need <fmt/chrono.h>]
+			char buf[64];
+			strftime(buf, sizeof(buf), format, &tm_struct);
+			s_ret.assign(buf);
 		}
 	} else {
 		// LC_ALL=C
 		// Always use the same format regardless of platform.
 		// This is needed on Windows because LC_ALL doesn't affect
 		// MSVCRT's strftime().
+		// TODO: This might not be needed if fmt::format() is used...
 
 		// Month names for dates without years
 		static constexpr char months[12][4] = {
@@ -334,23 +331,23 @@ static int formatDateTime(char *buf, size_t size, time_t timestamp, RomFields::D
 			case RomFields::RFT_DATETIME_NO_YEAR:
 			default:
 				// Nothing to do...
-				return -3;
+				break;
 
 			case RomFields::RFT_DATETIME_HAS_DATE:
 				// Date, with year
-				snprintf(buf, size, "%04d/%02d/%02d",
+				s_ret = fmt::format(FSTR("{:0>4d}/{:0>2d}/{:0>2d}"),
 					tm_struct.tm_year + 1900, tm_struct.tm_mon + 1, tm_struct.tm_mday);
 				break;
 			case RomFields::RFT_DATETIME_HAS_TIME:
 			case RomFields::RFT_DATETIME_HAS_TIME | RomFields::RFT_DATETIME_NO_YEAR:
 				// Time
-				snprintf(buf, size, "%02d:%02d:%02d",
+				s_ret = fmt::format(FSTR("{:0>2d}:{:0>2d}:{:0>2d}"),
 					 tm_struct.tm_hour, tm_struct.tm_min, tm_struct.tm_sec);
 				break;
 			case RomFields::RFT_DATETIME_HAS_DATE |
 			     RomFields::RFT_DATETIME_HAS_TIME:
 				// Date and time (with year)
-				snprintf(buf, size, "%04d/%02d/%02d %02d:%02d:%02d",
+				s_ret = fmt::format(FSTR("{:0>4d}/{:0>2d}/{:0>2d} {:0>2d}:{:0>2d}:{:0>2d}"),
 					tm_struct.tm_year + 1900, tm_struct.tm_mon + 1, tm_struct.tm_mday,
 					tm_struct.tm_hour, tm_struct.tm_min, tm_struct.tm_sec);
 				break;
@@ -361,7 +358,7 @@ static int formatDateTime(char *buf, size_t size, time_t timestamp, RomFields::D
 					? months[tm_struct.tm_mon]
 					: "Unk";
 
-				snprintf(buf, size, "%s %02d", s_mon, tm_struct.tm_mday);
+				s_ret = fmt::format(FSTR("{:s} {:0>2d}"), s_mon, tm_struct.tm_mday);
 				break;
 			}
 
@@ -372,7 +369,7 @@ static int formatDateTime(char *buf, size_t size, time_t timestamp, RomFields::D
 					? months[tm_struct.tm_mon]
 					: "Unk";
 
-				snprintf(buf, size, "%s %02d %02d:%02d:%02d",
+				s_ret = fmt::format(FSTR("{:s} {:0>2d} {:0>2d}:{:0>2d}:{:0>2d}"),
 					s_mon, tm_struct.tm_mday,
 					tm_struct.tm_hour, tm_struct.tm_min, tm_struct.tm_sec);
 				break;
@@ -380,7 +377,7 @@ static int formatDateTime(char *buf, size_t size, time_t timestamp, RomFields::D
 		}
 	}
 
-	return 0;
+	return s_ret;
 }
 
 class ListDataField {
@@ -459,12 +456,11 @@ public:
 				if (unlikely(is_timestamp & 1)) {
 					// This is a timestamp column.
 					// Use a dummy timestamp to figure out the width.
-					char buf[128];
-					int ret = formatDateTime(buf, sizeof(buf), 0,
-						listDataDesc.col_attrs.dtflags);
-					if (likely(ret == 0)) {
+					const string s_timestamp = formatDateTime(
+						0, listDataDesc.col_attrs.dtflags);
+					if (likely(!s_timestamp.empty())) {
 						// Got the column width.
-						colSize[i] = std::max(colSize[i], utf8_disp_strlen(buf));
+						colSize[i] = std::max(colSize[i], utf8_disp_strlen(s_timestamp.c_str()));
 					}
 				}
 
@@ -480,12 +476,11 @@ public:
 				if (unlikely(is_timestamp & 1)) {
 					// This is a timestamp column.
 					// Use a dummy timestamp to figure out the width.
-					char buf[128];
-					int ret = formatDateTime(buf, sizeof(buf), 0,
-						listDataDesc.col_attrs.dtflags);
-					if (likely(ret == 0)) {
+					const string s_timestamp = formatDateTime(
+						0, listDataDesc.col_attrs.dtflags);
+					if (likely(!s_timestamp.empty())) {
 						// Got the column width.
-						colSize[i] = utf8_disp_strlen(buf);
+						colSize[i] = utf8_disp_strlen(s_timestamp.c_str());
 					}
 				}
 			}
@@ -658,13 +653,10 @@ public:
 							RomFields::TimeString_t time_string;
 							memcpy(time_string.str, jt->data(), 8);
 
-							char buf[128];
-							int ret = formatDateTime(buf, sizeof(buf),
+							str = formatDateTime(
 								static_cast<time_t>(time_string.time),
 								listDataDesc.col_attrs.dtflags);
-							if (likely(ret == 0)) {
-								str.assign(buf);
-							} else {
+							if (unlikely(str.empty())) {
 								str = C_("RomData", "Unknown");
 							}
 						} else {
@@ -751,13 +743,11 @@ public:
 			return os;
 		}
 
-		char str[128];
-		str[0] = '\0';
-		int ret = formatDateTime(str, sizeof(str),
+		const string s_timestamp = formatDateTime(
 			romField.data.date_time,
 			static_cast<RomFields::DateTimeFlags>(romField.flags));
-		if (likely(ret == 0)) {
-			os << str;
+		if (likely(!s_timestamp.empty())) {
+			os << s_timestamp;
 		} else {
 			os << C_("RomData", "Unknown");
 		}
@@ -889,7 +879,7 @@ public:
 				if (name) {
 					os << name;
 				} else {
-					os << rp_sprintf(C_("TextOut", "(tab %d)"), tabIdx);
+					os << fmt::format(C_("TextOut", "(tab {:d})"), tabIdx);
 				}
 				os << " -----" << '\n';
 			}
@@ -948,7 +938,7 @@ std::ostream& operator<<(std::ostream& os, const ROMOutput& fo) {
 	// NOTE: RomDataView context is used for the "unknown" strings.
 	{
 		// tr: "[System] [FileType] detected."
-		const string detectMsg = rp_sprintf_p(C_("TextOut", "%1$s %2$s detected"),
+		const string detectMsg = fmt::format(C_("TextOut", "{0:s} {1:s} detected"),
 			(systemName ? systemName : C_("RomDataView", "(unknown system)")),
 			(fileType ? fileType : C_("RomDataView", "(unknown filetype)")));
 
@@ -974,7 +964,7 @@ std::ostream& operator<<(std::ostream& os, const ROMOutput& fo) {
 				auto image = romdata->image(static_cast<RomData::ImageType>(i));
 				if (image && image->isValid()) {
 					// tr: Image Type name, followed by Image Type ID
-					os << "-- " << rp_sprintf_p(C_("TextOut", "%1$s is present (use -x%2$d to extract)"),
+					os << "-- " << fmt::format(C_("TextOut", "{0:s} is present (use -x{1:d} to extract)"),
 						RomData::getImageTypeName(static_cast<RomData::ImageType>(i)), i) << '\n';
 					// TODO: After localizing, add enough spaces for alignment.
 					os << "   Format : " << rp_image::getFormatName(image->format()) << '\n';

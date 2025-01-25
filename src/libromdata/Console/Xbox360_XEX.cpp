@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * Xbox360_XEX.cpp: Microsoft Xbox 360 executable reader.                  *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -229,7 +229,7 @@ public:
 
 	/**
 	 * Get the publisher.
-	 * @return Publisher.
+	 * @return Publisher
 	 */
 	string getPublisher(void) const;
 
@@ -1276,7 +1276,7 @@ const Xbox360_XDBF *Xbox360_XEX_Private::initXDBF(void)
 
 /**
  * Get the publisher.
- * @return Publisher.
+ * @return Publisher
  */
 string Xbox360_XEX_Private::getPublisher(void) const
 {
@@ -1295,18 +1295,18 @@ string Xbox360_XEX_Private::getPublisher(void) const
 		return publisher;
 	}
 
-	// Unknown publisher.
+	// Unknown publisher
 	if (ISALNUM(executionID.title_id.a) &&
 	    ISALNUM(executionID.title_id.b))
 	{
 		// Publisher ID is alphanumeric.
-		return rp_sprintf(C_("RomData", "Unknown (%c%c)"),
+		return fmt::format(C_("RomData", "Unknown ({:c}{:c})"),
 			executionID.title_id.a,
 			executionID.title_id.b);
 	}
 
 	// Publisher ID is not alphanumeric.
-	return rp_sprintf(C_("RomData", "Unknown (%02X %02X)"),
+	return fmt::format(C_("RomData", "Unknown ({:0>2X} {:0>2X})"),
 		static_cast<uint8_t>(executionID.title_id.a),
 		static_cast<uint8_t>(executionID.title_id.b));
 }
@@ -1634,7 +1634,7 @@ int Xbox360_XEX::loadFieldData(void)
 				s_xexKeyID = "XEX2";
 			}
 			d->fields.addField_string(C_("RomData", "Warning"),
-				rp_sprintf(C_("Xbox360_XEX", "The Xbox 360 %s encryption key is not available."), s_xexKeyID),
+				fmt::format(C_("Xbox360_XEX", "The Xbox 360 {:s} encryption key is not available."), s_xexKeyID),
 				RomFields::STRF_WARNING);
 		}
 	}
@@ -1668,7 +1668,7 @@ int Xbox360_XEX::loadFieldData(void)
 	const Xbox360_Version_t minver = d->getMinKernelVersion();
 	string s_minver;
 	if (minver.u32 != 0) {
-		s_minver = rp_sprintf("%u.%u.%u.%u",
+		s_minver = fmt::format(FSTR("{:d}.{:d}.{:d}.{:d}"),
 			static_cast<unsigned int>(minver.major),
 			static_cast<unsigned int>(minver.minor),
 			static_cast<unsigned int>(minver.build),
@@ -1839,26 +1839,20 @@ int Xbox360_XEX::loadFieldData(void)
 		// FIXME: Verify behavior on big-endian.
 		// TODO: Consolidate implementations into a shared function.
 		string tid_str;
-		char hexbuf[4];
 		if (ISUPPER(d->executionID.title_id.a)) {
 			tid_str += (char)d->executionID.title_id.a;
 		} else {
-			tid_str += "\\x";
-			snprintf(hexbuf, sizeof(hexbuf), "%02X",
-				(uint8_t)d->executionID.title_id.a);
-			tid_str.append(hexbuf, 2);
+			tid_str += fmt::format(FSTR("\\x{:0>2X}"), (uint8_t)d->executionID.title_id.a);
 		}
 		if (ISUPPER(d->executionID.title_id.b)) {
 			tid_str += (char)d->executionID.title_id.b;
 		} else {
-			tid_str += "\\x";
-			snprintf(hexbuf, sizeof(hexbuf), "%02X",
-				(uint8_t)d->executionID.title_id.b);
-			tid_str.append(hexbuf, 2);
+			tid_str += fmt::format(FSTR("\\x{:0>2X}"), (uint8_t)d->executionID.title_id.b);
 		}
 			
 		d->fields.addField_string(C_("Xbox360_XEX", "Title ID"),
-			rp_sprintf_p(C_("Xbox360_XEX", "%1$08X (%2$s-%3$04u)"),
+			// tr: Xbox 360 title ID (32-bit hex, then two letters followed by a 4-digit decimal number)
+			fmt::format(C_("Xbox360_XEX", "{0:0>8X} ({1:s}-{2:0>4d})"),
 				be32_to_cpu(d->executionID.title_id.u32),
 				tid_str.c_str(),
 				be16_to_cpu(d->executionID.title_id.u16)),
@@ -1875,7 +1869,7 @@ int Xbox360_XEX::loadFieldData(void)
 		if (d->executionID.disc_number != 0 && d->executionID.disc_count > 1) {
 			d->fields.addField_string(C_("RomData", "Disc #"),
 				// tr: Disc X of Y (for multi-disc games)
-				rp_sprintf_p(C_("RomData|Disc", "%1$u of %2$u"),
+				fmt::format(C_("RomData|Disc", "{0:d} of {1:d}"),
 					d->executionID.disc_number,
 					d->executionID.disc_count));
 		}
@@ -1924,7 +1918,7 @@ int Xbox360_XEX::loadFieldData(void)
 				compression_tbl[d->fileFormatInfo.compression_type]));
 	} else {
 		d->fields.addField_string(C_("Xbox360_XEX", "Compression"),
-			rp_sprintf(C_("RomData", "Unknown (0x%02X)"),
+			fmt::format(C_("RomData", "Unknown (0x{:0>2X})"),
 				d->fileFormatInfo.compression_type));
 	}
 

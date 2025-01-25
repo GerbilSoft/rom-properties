@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * xbox360_xdbf_structs.h: Microsoft Xbox 360 game resource structures.    *
  *                                                                         *
- * Copyright (c) 2019-2023 by David Korth.                                 *
+ * Copyright (c) 2019-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -55,7 +55,7 @@ ASSERT_STRUCT(XDBF_Header, 6*sizeof(uint32_t));
  * All fields are in big-endian.
  */
 #pragma pack(1)
-typedef struct PACKED _XDBF_Entry {
+typedef struct RP_PACKED _XDBF_Entry {
 	uint16_t namespace_id;		// [0x000] See XDBF_Namespace_e
 	uint64_t resource_id;		// [0x002] ID
 	uint32_t offset;		// [0x00A] Offset specifier
@@ -146,7 +146,7 @@ typedef enum {
 #define XDBF_XSTR_MAGIC 'XSTR'
 #define XDBF_XSTR_VERSION 1
 #pragma pack(1)
-typedef struct PACKED _XDBF_XSTR_Header {
+typedef struct RP_PACKED _XDBF_XSTR_Header {
 	uint32_t magic;		// [0x000] 'XSTR'
 	uint32_t version;	// [0x004] Version (1)
 	uint32_t size;		// [0x008] Size
@@ -187,7 +187,7 @@ ASSERT_STRUCT(XDBF_Title_ID, sizeof(uint32_t));
 #define XDBF_XACH_MAGIC 'XACH'
 #define XDBF_XACH_VERSION 1
 #pragma pack(1)
-typedef struct PACKED _XDBF_XACH_Header {
+typedef struct RP_PACKED _XDBF_XACH_Header {
 	uint32_t magic;		// [0x000] 'XACH'
 	uint32_t version;	// [0x004] Version (1)
 	uint32_t size;		// [0x008] Structure size, minus magic
@@ -222,7 +222,7 @@ ASSERT_STRUCT(XDBF_XACH_Entry_SPA, 0x24);
  * All fields are in big-endian.
  */
 #pragma pack(1)
-typedef struct PACKED _XDBF_XACH_Entry_Header_GPD {
+typedef struct RP_PACKED _XDBF_XACH_Entry_Header_GPD {
 	uint32_t size;			// [0x000] Struct size (0x1C)
 	uint32_t achievement_id;	// [0x004] Achievement ID
 	uint32_t image_id;		// [0x008] Image ID
@@ -299,7 +299,7 @@ typedef enum {
 #define XDBF_XGAA_MAGIC 'XGAA'
 #define XDBF_XGAA_VERSION 1
 #pragma pack(1)
-typedef struct PACKED _XDBF_XGAA_Header {
+typedef struct RP_PACKED _XDBF_XGAA_Header {
 	uint32_t magic;		// [0x000] 'XGAA'
 	uint32_t version;	// [0x004] Version (1)
 	uint32_t size;		// [0x008] Size (must be at least 14)

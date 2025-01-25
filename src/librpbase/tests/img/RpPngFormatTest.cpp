@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase/tests)                  *
  * RpPngFormatTest.cpp: RpPng format test.                                 *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -60,6 +60,9 @@ using namespace LibRpTexture;
 using std::array;
 using std::shared_ptr;
 using std::string;
+
+// libfmt
+#include "rp-libfmt.h"
 
 namespace LibRpBase { namespace Tests {
 
@@ -1317,7 +1320,7 @@ INSTANTIATE_TEST_SUITE_P(happy_mac_mono_png, RpPngFormatTest,
  */
 extern "C" int gtest_main(int argc, TCHAR *argv[])
 {
-	fputs("LibRpBase test suite: RpPng format test.\n\n", stderr);
+	fmt::print(stderr, FSTR("LibRpBase test suite: RpPng format test.\n\n"));
 	fflush(nullptr);
 
 	// Make sure the CRC32 table is initialized.
@@ -1363,7 +1366,7 @@ extern "C" int gtest_main(int argc, TCHAR *argv[])
 	}
 
 	if (!is_found) {
-		fputs("*** ERROR: Cannot find the png_data test images directory.\n", stderr);
+		fmt::print(stderr, FSTR("*** ERROR: Cannot find the png_data test images directory.\n"));
 		return EXIT_FAILURE;
 	}
 

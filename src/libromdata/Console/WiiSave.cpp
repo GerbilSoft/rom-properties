@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * WiiSave.cpp: Nintendo Wii save game file reader.                        *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -440,17 +440,17 @@ int WiiSave::loadFieldData(void)
 	const bool isSvValid = (svHeader->savegame_id.id != 0);
 	const bool isBkValid = (!memcmp(bkHeader->full_magic, d->bk_header_magic.data(), d->bk_header_magic.size()));
 
-	// Savegame header.
+	// Savegame header
 	if (isSvValid) {
-		// Savegame ID. (title ID)
+		// Savegame ID (title ID)
 		d->fields.addField_string(C_("WiiSave", "Savegame ID"),
-			rp_sprintf("%08X-%08X",
+			fmt::format(FSTR("{:0>8X}-{:0>8X}"),
 				be32_to_cpu(svHeader->savegame_id.hi),
 				be32_to_cpu(svHeader->savegame_id.lo)));
 
 	}
 
-	// Game ID.
+	// Game ID
 	// NOTE: Uses the ID from the Bk header.
 	// TODO: Check if it matches the savegame header?
 	if (isBkValid) {
@@ -466,7 +466,7 @@ int WiiSave::loadFieldData(void)
 		}
 	}
 
-	// Permissions.
+	// Permissions
 	if (isSvValid) {
 		// Unix-style permissions field.
 		char s_perms[] = "----------";
@@ -499,10 +499,10 @@ int WiiSave::loadFieldData(void)
 	}
 #endif /* ENABLE_DECRYPTION */
 
-	// MAC address.
+	// MAC address
 	if (isBkValid) {
 		d->fields.addField_string(C_("WiiSave", "MAC Address"),
-			rp_sprintf("%02X:%02X:%02X:%02X:%02X:%02X",
+			fmt::format(FSTR("{:0>2X}:{:0>2X}:{:0>2X}:{:0>2X}:{:0>2X}:{:0>2X}"),
 				bkHeader->wii_mac[0], bkHeader->wii_mac[1],
 				bkHeader->wii_mac[2], bkHeader->wii_mac[3],
 				bkHeader->wii_mac[4], bkHeader->wii_mac[5]));
