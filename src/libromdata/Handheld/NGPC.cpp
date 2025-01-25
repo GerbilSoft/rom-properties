@@ -444,42 +444,41 @@ int NGPC::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 	// TODO: Special cases for duplicates?
 	const uint16_t id_code = (romHeader->id_code[1] << 8) | romHeader->id_code[0];
 	const char *p_extra_subdir = nullptr;
-	char extra_subdir[12];
-	char game_id[13];	// original size is 12
+	string extra_subdir;
+	string game_id;	// original size is 12
 
 	switch (id_code) {
 		default:
 			// No special handling for this game.
-			snprintf(game_id, sizeof(game_id), "NEOP%04X", id_code);
+			game_id = fmt::format(FSTR("NEOP{:0>4X}"), id_code);
 			break;
 
 		case 0x0000:	// Homebrew
 		case 0x1234:	// Some samples
 			// Use the game ID as the extra subdirectory,
 			// and the ROM title as the game ID.
-			memcpy(game_id, romHeader->title, sizeof(romHeader->title));
-			game_id[sizeof(game_id)-1] = '\0';
+			game_id.assign(romHeader->title, sizeof(romHeader->title));
 			// Trim spaces from the game ID.
-			for (int i = static_cast<int>(sizeof(game_id)) - 2; i > 0; i--) {
+			for (int i = static_cast<int>(game_id.size()) - 1; i > 0; i--) {
 				if (game_id[i] != '\0' && game_id[i] != ' ')
 					break;
-				game_id[i] = '\0';
+				game_id.resize(i - 1);
 			}
-			if (game_id[0] == '\0') {
+			if (game_id.empty()) {
 				// Title is empty.
 				return -ENOENT;
 			}
 
-			snprintf(extra_subdir, sizeof(extra_subdir), "NEOP%04X", id_code);
-			p_extra_subdir = extra_subdir;
+			extra_subdir = fmt::format(FSTR("NEOP{:0>4X}"), id_code);
+			p_extra_subdir = extra_subdir.c_str();
 			break;
 	}
 
 	// Add the URLs.
 	pExtURLs->resize(1);
 	auto extURL_iter = pExtURLs->begin();
-	extURL_iter->url = d->getURL_RPDB("ngpc", imageTypeName, p_extra_subdir, game_id, ext);
-	extURL_iter->cache_key = d->getCacheKey_RPDB("ngpc", imageTypeName, p_extra_subdir, game_id, ext);
+	extURL_iter->url = d->getURL_RPDB("ngpc", imageTypeName, p_extra_subdir, game_id.c_str(), ext);
+	extURL_iter->cache_key = d->getCacheKey_RPDB("ngpc", imageTypeName, p_extra_subdir, game_id.c_str(), ext);
 	extURL_iter->width = sizeDefs[0].width;
 	extURL_iter->height = sizeDefs[0].height;
 	extURL_iter->high_res = (sizeDefs[0].index >= 2);
