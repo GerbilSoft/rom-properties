@@ -1272,27 +1272,28 @@ const char *PowerVR3::pixelFormat(void) const
 	// little-endian files, so the low byte is the first channel.
 	// TODO: Verify big-endian.
 
-	char s_pxf[8], s_chcnt[16];
-	char *p_pxf = s_pxf;
-	char *p_chcnt = s_chcnt;
+	string s_pxf;	// pixel format
+	string s_chcnt;	// channel count
+	s_pxf.reserve(8);
+	s_chcnt.reserve(8);
 
 	uint32_t pixel_format = d->pvr3Header.pixel_format;
 	uint32_t channel_depth = d->pvr3Header.channel_depth;
-	for (unsigned int i = 0; i < 4 && p_chcnt < &s_chcnt[sizeof(s_chcnt)]; i++, pixel_format >>= 8, channel_depth >>= 8) {
+	for (unsigned int i = 0; i < 4; i++, pixel_format >>= 8, channel_depth >>= 8) {
 		const uint8_t pxf = (pixel_format & 0xFF);
 		if (pxf == 0) {
 			break;
 		}
 
-		*p_pxf++ = TOUPPER(pxf);
-		p_chcnt += snprintf(p_chcnt, sizeof(s_chcnt) - (p_chcnt - s_chcnt), "%u", channel_depth & 0xFF);
+		s_pxf += TOUPPER(pxf);
+		s_chcnt += fmt::to_string(static_cast<unsigned int>(channel_depth & 0xFF));
 	}
-	*p_pxf = '\0';
-	*p_chcnt = '\0';
 
-	if (s_pxf[0] != '\0') {
+	if (likely(!s_pxf.empty())) {
 		// Not exactly an "invalid" pixel format...
-		d->invalid_pixel_format = fmt::format(FSTR("{:s}{:s}"), s_pxf, s_chcnt);
+		d->invalid_pixel_format.reserve(s_pxf.size() + s_chcnt.size());
+		d->invalid_pixel_format = s_pxf;
+		d->invalid_pixel_format += s_chcnt;
 	} else {
 		d->invalid_pixel_format = C_("RomData", "Unknown");
 	}
