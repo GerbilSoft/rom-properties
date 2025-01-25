@@ -382,7 +382,7 @@ int Amiibo::loadFieldData(void)
 	const uint32_t amiibo_id = be32_to_cpu(d->nfpData.amiibo_id.u32);
 
 	// tr: amiibo ID. Represents the character and amiibo series.
-	// TODO: Link to https://amiibo.life/nfc/%08X-%08X
+	// TODO: Link to https://amiibo.life/nfc/{:0>8X}-{:0>8X}
 	d->fields.addField_string(C_("Amiibo", "amiibo ID"),
 		fmt::format("{:0>8X}-{:0>8X}", char_id, amiibo_id),
 		RomFields::STRF_MONOSPACE);

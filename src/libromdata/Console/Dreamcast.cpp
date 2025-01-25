@@ -733,7 +733,7 @@ int Dreamcast::loadFieldData(void)
 		memcpy(s_crc16, discHeader->device_info, 4);
 		s_crc16[4] = '\0';
 		d->fields.addField_string(C_("RomData", "Checksum"),
-			fmt::format(C_("Dreamcast", "0x{0:0>4X} (HEADER is INVALID: %{1:s})"),
+			fmt::format(C_("Dreamcast", "0x{0:0>4X} (HEADER is INVALID: {1:s})"),
 				crc16_expected, s_crc16_invalid));
 	}
 #endif

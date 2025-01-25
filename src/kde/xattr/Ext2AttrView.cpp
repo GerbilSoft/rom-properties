@@ -73,7 +73,7 @@ public:
  */
 void Ext2AttrViewPrivate::retranslateUi_nonDesigner(void)
 {
-	// tr: format string for Ext2 attribute checkbox labels (%c == lsattr character)
+	// tr: format string for Ext2 attribute checkbox labels ({:c} == lsattr character)
 	const char *const s_lsattr_fmt = C_("Ext2AttrView", "{:c}: {:s}");
 
 	string s_label;
