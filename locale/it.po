@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2024-11-10 19:14-0500\n"
-"PO-Revision-Date: 2025-01-24 15:53\n"
+"PO-Revision-Date: 2025-01-25 04:40\n"
 "Last-Translator: \n"
 "Language-Team: Italian\n"
 "Language: it_IT\n"
@@ -457,7 +457,7 @@ msgstr "ID del Progetto:"
 #: ../src/win32/AchWin32.cpp:289
 msgctxt "Achievements"
 msgid "Achievement Unlocked"
-msgstr "Achievement sbloccato"
+msgstr "Obiettivo sbloccato"
 
 #. tr: Uses Pango's HTML subset for formatting.
 #: ../src/gtk/config/AboutTab.cpp:454
