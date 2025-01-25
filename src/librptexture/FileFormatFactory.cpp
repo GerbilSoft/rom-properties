@@ -293,7 +293,7 @@ namespace Private {
  * NOTE: The return value is a struct that includes a flag
  * indicating if the file type handler supports thumbnails.
  */
-void init_supportedFileExtensions(void)
+static void init_supportedFileExtensions(void)
 {
 	// In order to handle multiple FileFormat subclasses
 	// that support the same extensions, we're using
@@ -364,7 +364,7 @@ namespace Private {
  *
  * Internal function; must be called using pthread_once().
  */
-void init_supportedMimeTypes(void)
+static void init_supportedMimeTypes(void)
 {
 	// TODO: Add generic types, e.g. application/octet-stream?
 
