@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * ASTC.hpp: ASTC image reader.                                            *
  *                                                                         *
- * Copyright (c) 2017-2023 by David Korth.                                 *
+ * Copyright (c) 2017-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -23,6 +23,7 @@ using LibRpBase::RomFields;
 
 // C++ STL classes
 using std::array;
+using std::string;
 
 namespace LibRpTexture {
 
@@ -49,7 +50,7 @@ class ASTCPrivate final : public FileFormatPrivate
 		rp_image_ptr img;
 
 		// Pixel format message
-		char pixel_format[20];
+		mutable string pixel_format;
 
 		/**
 		 * Load the image.
@@ -84,7 +85,6 @@ ASTCPrivate::ASTCPrivate(ASTC *q, const IRpFilePtr &file)
 {
 	// Clear the structs and arrays.
 	memset(&astcHeader, 0, sizeof(astcHeader));
-	memset(pixel_format, 0, sizeof(pixel_format));
 }
 
 /**
@@ -237,23 +237,20 @@ ASTC::ASTC(const IRpFilePtr &file)
 const char *ASTC::pixelFormat(void) const
 {
 	RP_D(const ASTC);
-	if (!d->isValid)
+	if (!d->isValid) {
 		return nullptr;
+	}
 
-	if (d->pixel_format[0] == '\0') {
+	if (d->pixel_format.empty()) {
 		if (d->dimensions[2] <= 1) {
-			snprintf(const_cast<ASTCPrivate*>(d)->pixel_format,
-				sizeof(d->pixel_format),
-				"ASTC_%dx%d",
+			d->pixel_format = fmt::format(FSTR("ASTC_%dx%d"),
 				d->astcHeader.blockdimX, d->astcHeader.blockdimY);
 		} else {
-			snprintf(const_cast<ASTCPrivate*>(d)->pixel_format,
-				sizeof(d->pixel_format),
-				"ASTC_%dx%dx%d",
+			d->pixel_format = fmt::format(FSTR("ASTC_%dx%dx%d"),
 				d->astcHeader.blockdimX, d->astcHeader.blockdimY, d->astcHeader.blockdimZ);
 		}
 	}
-	return d->pixel_format;
+	return d->pixel_format.c_str();
 }
 
 #ifdef ENABLE_LIBRPBASE_ROMFIELDS
