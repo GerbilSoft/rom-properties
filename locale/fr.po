@@ -181,7 +181,7 @@ msgstr ""
 #: ../src/gtk/xattr/Ext2AttrView.c:121
 msgctxt "Ext2AttrView"
 msgid "lsattr:"
-msgstr "lsattr :"
+msgstr "lsattr :"
 
 #: ../build/src/kde/kf5/ui_ImageTypesTab.h:81
 #: ../build/src/kde/kf6/ui_ImageTypesTab.h:81
@@ -336,7 +336,7 @@ msgstr ""
 #: ../src/gtk/config/SystemsTab.cpp:120
 msgctxt "SystemsTab"
 msgid "Game &Boy:"
-msgstr "Game &Boy :"
+msgstr "Game &Boy :"
 
 #: ../build/src/kde/kf5/ui_SystemsTab.h:126
 #: ../build/src/kde/kf5/ui_SystemsTab.h:130
@@ -365,7 +365,7 @@ msgstr "Game Boy Color"
 #: ../src/gtk/config/SystemsTab.cpp:121
 msgctxt "SystemsTab"
 msgid "&Super Game Boy:"
-msgstr "&Super Game Boy :"
+msgstr "&Super Game Boy :"
 
 #: ../build/src/kde/kf5/ui_SystemsTab.h:131
 #: ../build/src/kde/kf5/ui_SystemsTab.h:136
@@ -381,7 +381,7 @@ msgstr "Super Game Boy"
 #: ../src/gtk/config/SystemsTab.cpp:122
 msgctxt "SystemsTab"
 msgid "Game Boy &Color:"
-msgstr "Game Boy &Color :"
+msgstr "Game Boy &Color :"
 
 #: ../build/src/kde/kf5/ui_SystemsTab.h:139
 #: ../build/src/kde/kf6/ui_SystemsTab.h:139
@@ -569,7 +569,7 @@ msgstr ""
 #, c++-format
 msgctxt "ConfigDialog"
 msgid "<b>ERROR:</b> {:s}"
-msgstr "<b>ERREUR :</b> {:s}"
+msgstr "<b>ERREUR :</b> {:s}"
 
 #: ../src/gtk/config/AboutTab.cpp:883 ../src/kde/config/AboutTab.cpp:703
 #: ../src/win32/config/AboutTab.cpp:687
@@ -1124,7 +1124,7 @@ msgstr ""
 #, c++-format
 msgctxt "RomDataView"
 msgid "{:s}:"
-msgstr "{:s} :"
+msgstr "{:s} :"
 
 #. tr: EncryptionKeys::Unknown
 #: ../src/gtk/RomDataView_gtk3.cpp:272 ../src/gtk/RomDataView_gtk3.cpp:551
@@ -1247,7 +1247,7 @@ msgstr ""
 #: ../src/kde/config/CacheTab.cpp:298
 msgctxt "ConfigDialog"
 msgid "<b>ERROR:</b> %1"
-msgstr "<b>ERREUR :</b> %1"
+msgstr "<b>ERREUR :</b> %1"
 
 #. tr: format string for Ext2 attribute checkbox labels ({:c} == lsattr character)
 #: ../src/kde/xattr/Ext2AttrView.cpp:77
@@ -2890,7 +2890,7 @@ msgstr ""
 #, c++-format
 msgctxt "GameCube"
 msgid "ERROR: {:s}"
-msgstr "ERREUR : {:s}"
+msgstr "ERREUR : {:s}"
 
 #: ../src/libromdata/Console/GameCube.cpp:1520
 msgctxt "GameCube"
@@ -10241,7 +10241,7 @@ msgstr ""
 #: ../src/rpcli/rpcli.cpp:533
 msgctxt "rpcli"
 msgid "Examples:"
-msgstr "Exemples :"
+msgstr "Exemples :"
 
 #: ../src/rpcli/rpcli.cpp:535
 msgctxt "rpcli"
@@ -10335,7 +10335,7 @@ msgstr "OK"
 #, c++-format
 msgctxt "rpcli"
 msgid "ERROR: {:s}"
-msgstr "ERREUR : {:s}"
+msgstr "ERREUR : {:s}"
 
 #: ../src/rp-stub/rp-stub.c:90
 msgctxt "rp_stub"
@@ -10519,7 +10519,7 @@ msgstr ""
 #: ../src/win32/config/AboutTab.cpp:638
 msgctxt "AboutTab"
 msgid "ERROR:"
-msgstr "ERREUR :"
+msgstr "ERREUR :"
 
 #: ../src/win32/config/AboutTab.cpp:691
 msgctxt "AboutTab"
@@ -10624,7 +10624,7 @@ msgstr ""
 #, c++-format
 msgctxt "CacheTab"
 msgid "ERROR: {:s}"
-msgstr "ERREUR : {:s}"
+msgstr "ERREUR : {:s}"
 
 #: ../src/win32/config/CacheTab.cpp:605
 msgctxt "CacheTab"
