@@ -576,7 +576,7 @@ int CacheTabPrivate::clearRomPropertiesCache(void)
 		[](TCHAR chr) noexcept -> bool { return (chr == L'\\'); });
 
 	if (cacheDir.size() < 8 || bscount < 6) {
-		const string s_err = fmt::format(C_("CacheTab", "ERROR: {:s})"),
+		const string s_err = fmt::format(C_("CacheTab", "ERROR: {:s}"),
 			C_("CacheCleaner", "Unable to get the rom-properties cache directory."));
 		SetWindowText(hStatusLabel, U82T_s(s_err));
 		SendMessage(hProgressBar, PBM_SETRANGE, 0, MAKELONG(0, 1));
