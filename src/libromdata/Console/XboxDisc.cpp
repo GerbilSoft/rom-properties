@@ -276,7 +276,6 @@ IRpFilePtr XboxDiscPrivate::open(const char *filename)
 
 	// Extracted disc file system.
 	// Append the filename to the selected path and try to open it.
-	// FIXME: Try some adjustments for case-sensitive file systems if the file is not found.
 	tstring ts_full_filename(this->path);
 	ts_full_filename += DIR_SEP_CHR;
 
@@ -289,9 +288,7 @@ IRpFilePtr XboxDiscPrivate::open(const char *filename)
 		return {};
 	}
 
-#ifdef _WIN32
 	const size_t old_sz = ts_full_filename.size();
-#endif /* _WIN32 */
 	ts_full_filename += U82T_c(filename);
 #ifdef _WIN32
 	// Replace all slashes with backslashes.
@@ -301,7 +298,27 @@ IRpFilePtr XboxDiscPrivate::open(const char *filename)
 	});
 #endif /* _WIN32 */
 
-	return std::make_shared<RpFile>(ts_full_filename, RpFile::FM_OPEN_READ);
+	IRpFilePtr f = std::make_shared<RpFile>(ts_full_filename, RpFile::FM_OPEN_READ);
+	if (f && f->isOpen()) {
+		return f;
+	}
+
+	// Try some permutations for case-sensitive host file systems.
+	// TODO: Handle subdirectories?
+
+	// Make the first character uppercase.
+	ts_full_filename[old_sz] = TOUPPER(ts_full_filename[old_sz]);
+	f = std::make_shared<RpFile>(ts_full_filename, RpFile::FM_OPEN_READ);
+	if (f && f->isOpen()) {
+		return f;
+	}
+
+	// Make the whole thing uppercase.
+	const auto toupper_iter = ts_full_filename.begin() + old_sz + 1;
+	std::transform(toupper_iter, ts_full_filename.end(), toupper_iter, [](TCHAR c) {
+		return TOUPPER(c);
+	});
+	return std::make_shared<RpFile>(ts_full_filename, RpFile::FM_OPEN_READ);;
 }
 
 /**
@@ -800,9 +817,15 @@ int XboxDisc::isRomSupported_static(
 int XboxDisc::isDirSupported_static(const char *path)
 {
 	// Check for an extracted Xbox disc file system.
-	static const array<const char*, 2> Xbox_exe_filenames = {{
+	static const array<const char*, 6> Xbox_exe_filenames = {{
 		"default.xbe",	// Original Xbox
 		"default.xex",	// Xbox 360
+
+		// Case permutations for case-sensitive host file systems.
+		// NOTE: Not common on Windows, except for WSL...
+		// TODO: Find more variants?
+		"Default.xbe", "DEFAULT.XBE",
+		"Default.xex", "DEFAULT.XEX",
 	}};
 
 	if (RomDataPrivate::T_isDirSupported_anyFile_static(path, Xbox_exe_filenames)) {
@@ -822,9 +845,15 @@ int XboxDisc::isDirSupported_static(const char *path)
 int XboxDisc::isDirSupported_static(const wchar_t *path)
 {
 	// Check for an extracted Xbox disc file system.
-	static const array<const wchar_t*, 2> Xbox_exe_filenames = {{
+	static const array<const wchar_t*, 6> Xbox_exe_filenames = {{
 		L"default.xbe",	// Original Xbox
 		L"default.xex",	// Xbox 360
+
+		// Case permutations for case-sensitive host file systems.
+		// NOTE: Not common on Windows, except for WSL...
+		// TODO: Find more variants?
+		L"Default.xbe", L"DEFAULT.XBE",
+		L"Default.xex", L"DEFAULT.XEX",
 	}};
 
 	if (XboxDiscPrivate::T_isDirSupported_anyFile_static(path, Xbox_exe_filenames)) {
