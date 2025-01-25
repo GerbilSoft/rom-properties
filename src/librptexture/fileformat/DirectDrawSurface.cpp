@@ -1304,7 +1304,6 @@ const char *DirectDrawSurface::pixelFormat(void) const
 	} else {
 		// Unknown pixel format
 		d->pixel_format = C_("RomData", "Unknown");
-		d->pixel_format[sizeof(d->pixel_format)-1] = '\0';
 	}
 
 	return d->pixel_format.c_str();
