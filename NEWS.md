@@ -11,6 +11,10 @@
   * WiiUPackage: Add support for extracted Wii U packages.
     * Fixes #430: Add support for extracted WiiU games
       * Requested by @Masamune3210.
+  * XboxDisc: Extracted disc file systems are now supported.
+    * Handled similarly to WiiUPackage.
+    * Fixes #436: Add folder icon support for OG Xbox games
+      * Requested by @Masamune3210.
 
 * Bug fixes:
   * Amiibo: Fix an error that can cause the wrong Character Variant to be
