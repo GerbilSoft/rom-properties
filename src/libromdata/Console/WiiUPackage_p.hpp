@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * WiiUPackage_p.hpp: Wii U NUS Package reader. (PRIVATE CLASS)            *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -122,17 +122,6 @@ public:
 	 * @return Icon, or nullptr on error.
 	 */
 	LibRpTexture::rp_image_const_ptr loadIcon(void);
-
-public:
-	/**
-	 * Is a directory supported by this class?
-	 * @tparam T Character type (char for UTF-8; wchar_t for Windows UTF-16)
-	 * @param path Directory to check
-	 * @param filenames_to_check Array of filenames to check
-	 * @return True if all files are found; false if at least one file is missing.
-	 */
-	template<typename T>
-	static bool T_isDirSupported_static(const T *path, const std::array<const T*, 3> &filenames_to_check);
 
 #ifdef ENABLE_XML
 private:

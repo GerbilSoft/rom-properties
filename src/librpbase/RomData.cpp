@@ -13,6 +13,7 @@
 // Other rom-properties libraries
 #include "libi18n/i18n.h"
 #include "libcachecommon/CacheKeys.hpp"
+#include "librpfile/FileSystem.hpp"
 using namespace LibRpFile;
 using namespace LibRpText;
 using namespace LibRpTexture;
@@ -81,7 +82,9 @@ RomDataPrivate::~RomDataPrivate()
 #endif /* _WIN32 */
 }
 
-/** Convenience functions. **/
+/** Convenience functions **/
+
+/** External image URL functions **/
 
 /**
  * Get the GameTDB URL for a given game.
@@ -256,6 +259,8 @@ const RomData::ImageSizeDef *RomDataPrivate::selectBestSize(const vector<RomData
 
 	return ret;
 }
+
+/** Time conversion functions **/
 
 /**
  * Convert an ASCII release date in YYYYMMDD format to Unix time_t.
@@ -445,6 +450,96 @@ time_t RomDataPrivate::pvd_time_to_unix_time(const char pvd_time[16], int8_t tz_
 	}
 	return unixtime;
 }
+
+/** Functions for RomData subclasses that handle directories **/
+
+/**
+ * Is a directory supported by this class?
+ * This version checks that *all* of the specified files are found.
+ *
+ * @tparam CharType Character type (char for UTF-8; wchar_t for Windows UTF-16)
+ * @param path Directory to check
+ * @param filenames_to_check Array of filenames to check
+ * @param size Size of filenames_to_check
+ * @return True if all of the files are found; false if any files are missing.
+ */
+template<typename CharType>
+bool RomDataPrivate::T_isDirSupported_allFiles_static(const CharType *path, const CharType *const *filenames_to_check, size_t size)
+{
+	assert(path != nullptr);
+	assert(path[0] != '\0');
+	if (!path || path[0] == '\0') {
+		// No path specified.
+		return false;
+	}
+
+	std::basic_string<CharType> s_path(path);
+	s_path += DIR_SEP_CHR;
+	const size_t path_orig_size = s_path.size();
+
+	// Check for the required files.
+	for (; size > 0; filenames_to_check++, size--) {
+		s_path.resize(path_orig_size);
+		s_path += *filenames_to_check;
+
+		if (FileSystem::access(s_path.c_str(), R_OK) != 0) {
+			// File is missing.
+			return false;
+		}
+	}
+
+	// All files are present.
+	return true;
+}
+
+template bool RomDataPrivate::T_isDirSupported_allFiles_static<char>(const char *path, const char *const *filenames_to_check, size_t size);
+#if defined(_WIN32) && defined(_UNICODE)
+template bool RomDataPrivate::T_isDirSupported_allFiles_static<wchar_t>(const wchar_t *path, const wchar_t *const *filenames_to_check, size_t size);
+#endif /* defined(_WIN32) && defined(_UNICODE) */
+
+/**
+ * Is a directory supported by this class?
+ * This version checks that *any* of the specified files are found.
+ *
+ * @tparam CharType Character type (char for UTF-8; wchar_t for Windows UTF-16)
+ * @param path Directory to check
+ * @param filenames_to_check Array of filenames to check
+ * @param size Size of filenames_to_check
+ * @return True if any of the files are found; false if all files are missing.
+ */
+template<typename CharType>
+bool RomDataPrivate::T_isDirSupported_anyFile_static(const CharType *path, const CharType *const *filenames_to_check, size_t size)
+{
+	assert(path != nullptr);
+	assert(path[0] != '\0');
+	if (!path || path[0] == '\0') {
+		// No path specified.
+		return false;
+	}
+
+	std::basic_string<CharType> s_path(path);
+	s_path += DIR_SEP_CHR;
+	const size_t path_orig_size = s_path.size();
+
+	// Check for the required files.
+	for (; size > 0; filenames_to_check++, size--) {
+		s_path.resize(path_orig_size);
+		s_path += *filenames_to_check;
+
+		if (FileSystem::access(s_path.c_str(), R_OK) != 0) {
+			// Found a matching file.
+			return true;
+		}
+	}
+
+	// None of the files were found.
+	return false;
+}
+
+template bool RomDataPrivate::T_isDirSupported_anyFile_static<char>(const char *path, const char *const *filenames_to_check, size_t size);
+#if defined(_WIN32) && defined(_UNICODE)
+template bool RomDataPrivate::T_isDirSupported_anyFile_static<wchar_t>(const wchar_t *path, const wchar_t *const *filenames_to_check, size_t size);
+#endif /* defined(_WIN32) && defined(_UNICODE) */
 
 /** RomData **/
 

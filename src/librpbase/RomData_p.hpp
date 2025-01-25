@@ -74,7 +74,9 @@ public:
 	RomMetaData metaData;		// ROM metadata
 
 public:
-	/** Convenience functions. **/
+	/** Convenience functions **/
+
+	/** External image URL functions **/
 
 	/**
 	 * Get the GameTDB URL for a given game.
@@ -140,6 +142,8 @@ public:
 	 */
 	static const RomData::ImageSizeDef *selectBestSize(const std::vector<RomData::ImageSizeDef> &sizeDefs, int size);
 
+	/** Time conversion functions **/
+
 	/**
 	 * Convert an ASCII release date in YYYYMMDD format to Unix time_t.
 	 * This format is used by Sega Saturn and Dreamcast.
@@ -167,6 +171,66 @@ public:
 	 * @return UNIX time, or -1 if invalid or not set.
 	 */
 	static time_t pvd_time_to_unix_time(const char pvd_time[16], int8_t tz_offset);
+
+	/** Functions for RomData subclasses that handle directories **/
+
+	/**
+	 * Is a directory supported by this class?
+	 * This version checks that *all* of the specified files are found.
+	 *
+	 * @tparam CharType Character type (char for UTF-8; wchar_t for Windows UTF-16)
+	 * @param path Directory to check
+	 * @param filenames_to_check Array of filenames to check
+	 * @param size Size of filenames_to_check
+	 * @return True if all of the files are found; false if any files are missing.
+	 */
+	template<typename CharType>
+	static bool T_isDirSupported_allFiles_static(const CharType *path, const CharType *const *filenames_to_check, size_t size);
+
+	/**
+	 * Is a directory supported by this class?
+	 * This version checks that *all* of the specified files are found.
+	 *
+	 * @tparam CharType Character type (char for UTF-8; wchar_t for Windows UTF-16)
+	 * @tparam size std::array<> size
+	 * @param path Directory to check
+	 * @param filenames_to_check Array of filenames to check
+	 * @return True if all of the files are found; false if any files are missing.
+	 */
+	template<typename CharType, size_t size>
+	static bool T_isDirSupported_allFiles_static(const CharType *path, const std::array<const CharType*, size> &filenames_to_check)
+	{
+		return T_isDirSupported_allFiles_static(path, filenames_to_check.data(), filenames_to_check.size());
+	}
+
+	/**
+	 * Is a directory supported by this class?
+	 * This version checks that *any* of the specified files are found.
+	 *
+	 * @tparam CharType Character type (char for UTF-8; wchar_t for Windows UTF-16)
+	 * @param path Directory to check
+	 * @param filenames_to_check Array of filenames to check
+	 * @param size Size of filenames_to_check
+	 * @return True if any of the files are found; false if all files are missing.
+	 */
+	template<typename CharType>
+	static bool T_isDirSupported_anyFile_static(const CharType *path, const CharType *const *filenames_to_check, size_t size);
+
+	/**
+	 * Is a directory supported by this class?
+	 * This version checks that *any* of the specified files are found.
+	 *
+	 * @tparam CharType Character type (char for UTF-8; wchar_t for Windows UTF-16)
+	 * @tparam size std::array<> size
+	 * @param path Directory to check
+	 * @param filenames_to_check Array of filenames to check
+	 * @return True if any of the files are found; false if all files are missing.
+	 */
+	template<typename CharType, size_t size>
+	static bool T_isDirSupported_anyFile_static(const CharType *path, const std::array<const CharType*, size> &filenames_to_check)
+	{
+		return T_isDirSupported_anyFile_static(path, filenames_to_check.data(), filenames_to_check.size());
+	}
 };
 
 }

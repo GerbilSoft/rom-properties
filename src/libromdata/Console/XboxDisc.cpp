@@ -101,17 +101,6 @@ public:
 	off64_t xdvdfs_addr;
 
 public:
-	/**
-	 * Is a directory supported by this class?
-	 * @param CharType Character type (char for UTF-8; wchar_t for Windows UTF-16)
-	 * @param path Directory to check
-	 * @param filenames_to_check Array of filenames to check
-	 * @return True if any of the files are found; false if all files are missing.
-	 */
-	template<typename CharType>
-	static bool T_isDirSupported_static(const CharType *path, const array<const CharType*, 2> &filenames_to_check);
-
-public:
 	// XDVDFSPartition
 	XDVDFSPartitionPtr xdvdfsPartition;
 
@@ -805,45 +794,6 @@ int XboxDisc::isRomSupported_static(
 
 /**
  * Is a directory supported by this class?
- * @tparam CharType Character type (char for UTF-8; wchar_t for Windows UTF-16)
- * @param path Directory to check
- * @param filenames_to_check Array of filenames to check
- * @return True if any of the files are found; false if all files are missing.
- */
-template<typename CharType>
-bool XboxDiscPrivate::T_isDirSupported_static(const CharType *path, const array<const CharType*, 2> &filenames_to_check)
-{
-	// TODO: Combine with the WiiUPackage version.
-	// NOTE: This version checks for *any* file; WiiUPackage checks for *all* files.
-	assert(path != nullptr);
-	assert(path[0] != '\0');
-	if (!path || path[0] == '\0') {
-		// No path specified.
-		return false;
-	}
-
-	std::basic_string<CharType> s_path(path);
-	s_path += DIR_SEP_CHR;
-	const size_t path_orig_size = s_path.size();
-
-	// Check for the required files.
-	for (const auto *const filename : filenames_to_check) {
-		s_path.resize(path_orig_size);
-		s_path += filename;
-
-		if (FileSystem::access(s_path.c_str(), R_OK) != 0) {
-			// Found a file!
-			// This appears to be an extracted Xbox disc file system.
-			return true;
-		}
-	}
-
-	// None of the files were found.
-	return false;
-}
-
-/**
- * Is a directory supported by this class?
  * @param path Directory to check
  * @return Class-specific system ID (>= 0) if supported; -1 if not.
  */
@@ -855,7 +805,7 @@ int XboxDisc::isDirSupported_static(const char *path)
 		"default.xex",	// Xbox 360
 	}};
 
-	if (XboxDiscPrivate::T_isDirSupported_static(path, Xbox_exe_filenames)) {
+	if (RomDataPrivate::T_isDirSupported_anyFile_static(path, Xbox_exe_filenames)) {
 		return static_cast<int>(XboxDiscPrivate::DiscType::Extracted);
 	}
 
@@ -877,7 +827,7 @@ int XboxDisc::isDirSupported_static(const wchar_t *path)
 		L"default.xex",	// Xbox 360
 	}};
 
-	if (XboxDiscPrivate::T_isDirSupported_static(path, Xbox_exe_filenames)) {
+	if (XboxDiscPrivate::T_isDirSupported_anyFile_static(path, Xbox_exe_filenames)) {
 		return static_cast<int>(XboxDiscPrivate::DiscType::Extracted);
 	}
 
