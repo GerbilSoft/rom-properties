@@ -528,6 +528,10 @@ void XboxDisc::init()
 		d->mimeType = "inode/directory";
 		d->fileType = FileType::ApplicationPackage;
 
+		// NOTE: No need to call isDirSupported_static() here,
+		// since we're effectively doing that by attempting to
+		// open the default executable.
+
 		// Nothing else to check other than if default.xbe/default.xex is present.
 
 		// Check the PAL status of the executable.
