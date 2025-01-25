@@ -215,27 +215,31 @@ IRpFilePtr WiiUPackagePrivate::open(const char *filename)
 	if (packageType == PackageType::Extracted) {
 		// Extracted package format. Open the file directly.
 		// TODO: Change slashes to backslashes on Windows?
-		tstring s_full_filename(path);
-		s_full_filename += DIR_SEP_CHR;
+		tstring ts_full_filename(path);
+		ts_full_filename += DIR_SEP_CHR;
 
 		// Remove leading slashes, if present.
 		while (*filename == _T('/')) {
 			filename++;
 		}
+		if (*filename == '\0') {
+			// Oops, no filename...
+			return {};
+		}
 
 #ifdef _WIN32
-		const size_t old_sz = s_full_filename.size();
+		const size_t old_sz = ts_full_filename.size();
 #endif /* _WIN32 */
-		s_full_filename += U82T_c(filename);
+		ts_full_filename += U82T_c(filename);
 #ifdef _WIN32
 		// Replace all slashes with backslashes.
-		const auto start_iter = s_full_filename.begin() + old_sz;
-		std::transform(start_iter, s_full_filename.end(), start_iter, [](TCHAR c) {
+		const auto start_iter = ts_full_filename.begin() + old_sz;
+		std::transform(start_iter, ts_full_filename.end(), start_iter, [](TCHAR c) {
 			return (c == '/') ? DIR_SEP_CHR : c;
 		});
 #endif /* _WIN32 */
 
-		return std::make_shared<RpFile>(s_full_filename.c_str(), RpFile::FM_OPEN_READ);
+		return std::make_shared<RpFile>(ts_full_filename.c_str(), RpFile::FM_OPEN_READ);
 	}
 
 	assert(fst != nullptr);
@@ -373,6 +377,7 @@ WiiUPackage::WiiUPackage(const wchar_t *path)
 void WiiUPackage::init(void)
 {
 	RP_D(WiiUPackage);
+	d->mimeType = "inode/directory";
 	d->fileType = FileType::ApplicationPackage;
 
 	if (!d->path) {
@@ -551,42 +556,6 @@ int WiiUPackage::isRomSupported_static(const DetectInfo *info)
 
 /**
  * Is a directory supported by this class?
- * @tparam T Character type (char for UTF-8; wchar_t for Windows UTF-16)
- * @param path Directory to check
- * @param filenames_to_check Array of filenames to check
- * @return True if all files are found; false if at least one file is missing.
- */
-template<typename T>
-bool WiiUPackagePrivate::T_isDirSupported_static(const T *path, const array<const T*, 3> &filenames_to_check)
-{
-	assert(path != nullptr);
-	assert(path[0] != '\0');
-	if (!path || path[0] == '\0') {
-		// No path specified.
-		return false;
-	}
-
-	std::basic_string<T> s_path(path);
-	s_path += DIR_SEP_CHR;
-	const size_t path_orig_size = s_path.size();
-
-	// Check for the required files.
-	for (const auto *const filename : filenames_to_check) {
-		s_path.resize(path_orig_size);
-		s_path += filename;
-
-		if (FileSystem::access(s_path.c_str(), R_OK) != 0) {
-			// File is missing.
-			return false;
-		}
-	}
-
-	// This appears to be a Wii U NUS package.
-	return true;
-}
-
-/**
- * Is a directory supported by this class?
  * @param path Directory to check
  * @return Class-specific system ID (>= 0) if supported; -1 if not.
  */
@@ -599,7 +568,7 @@ int WiiUPackage::isDirSupported_static(const char *path)
 		"title.cert",	// Certificate chain
 	}};
 
-	if (WiiUPackagePrivate::T_isDirSupported_static(path, NUS_package_filenames)) {
+	if (RomDataPrivate::T_isDirSupported_allFiles_static(path, NUS_package_filenames)) {
 		return static_cast<int>(WiiUPackagePrivate::PackageType::NUS);
 	}
 
@@ -611,7 +580,7 @@ int WiiUPackage::isDirSupported_static(const char *path)
 		"meta/meta.xml",
 	}};
 
-	if (WiiUPackagePrivate::T_isDirSupported_static(path, extracted_package_filenames)) {
+	if (RomDataPrivate::T_isDirSupported_allFiles_static(path, extracted_package_filenames)) {
 		return static_cast<int>(WiiUPackagePrivate::PackageType::Extracted);
 	}
 
@@ -619,7 +588,7 @@ int WiiUPackage::isDirSupported_static(const char *path)
 	return static_cast<int>(WiiUPackagePrivate::PackageType::Unknown);
 }
 
-#ifdef _WIN32
+#if defined(_WIN32) && defined(_UNICODE)
 /**
  * Is a directory supported by this class?
  * @param path Directory to check
@@ -634,7 +603,7 @@ int WiiUPackage::isDirSupported_static(const wchar_t *path)
 		L"title.cert",	// Certificate chain
 	}};
 
-	if (WiiUPackagePrivate::T_isDirSupported_static(path, NUS_package_filenames)) {
+	if (RomDataPrivate::T_isDirSupported_allFiles_static(path, NUS_package_filenames)) {
 		return static_cast<int>(WiiUPackagePrivate::PackageType::NUS);
 	}
 
@@ -646,14 +615,14 @@ int WiiUPackage::isDirSupported_static(const wchar_t *path)
 		L"meta/meta.xml",
 	}};
 
-	if (WiiUPackagePrivate::T_isDirSupported_static(path, extracted_package_filenames)) {
+	if (RomDataPrivate::T_isDirSupported_allFiles_static(path, extracted_package_filenames)) {
 		return static_cast<int>(WiiUPackagePrivate::PackageType::Extracted);
 	}
 
 	// Not supported.
 	return static_cast<int>(WiiUPackagePrivate::PackageType::Unknown);
 }
-#endif /* _WIN32 */
+#endif /* defined(_WIN32) && defined(_UNICODE) */
 
 /**
  * Get the name of the system the loaded ROM is designed for.

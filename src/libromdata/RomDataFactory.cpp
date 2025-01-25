@@ -991,8 +991,6 @@ RomDataPtr create(const IRpFilePtr &file, unsigned int attrs)
 template<typename CharType>
 static RomDataPtr T_create(const CharType *filename, unsigned int attrs)
 {
-	RomDataPtr romData;
-
 	// Check if this is a file or a directory.
 	// If it's a file, we'll create an RpFile and then
 	// call create(IRpFile*,unsigned int).
@@ -1000,22 +998,34 @@ static RomDataPtr T_create(const CharType *filename, unsigned int attrs)
 		// Not a directory.
 		shared_ptr<RpFile> file = std::make_shared<RpFile>(filename, RpFile::FM_OPEN_READ_GZ);
 		if (file->isOpen()) {
-			romData = create(file, attrs);
-		}
-	} else {
-		// This is a directory. We currently only have one
-		// RomData subclass that takes directories, so we'll
-		// try that out here.
-		// TODO: Separate function?
-		if (WiiUPackage::isDirSupported_static(filename) >= 0) {
-			romData = std::make_shared<WiiUPackage>(filename);
-			if (!romData->isValid()) {
-				romData.reset();
-			}
+			return create(file, attrs);
 		}
 	}
 
-	return romData;
+	// This is a directory.
+	// TODO: Array of function pointers for RomData subclasses
+	// that take directories? We currently only have two...
+	// TODO: Common RomData declarations for directories
+	// instead of the ad-hoc method currently in use.
+
+	// WiiUPackage
+	if (WiiUPackage::isDirSupported_static(filename) >= 0) {
+		RomDataPtr romData = std::make_shared<WiiUPackage>(filename);
+		if (romData->isValid()) {
+			return romData;
+		}
+	}
+
+	// XboxDisc
+	if (XboxDisc::isDirSupported_static(filename) >= 0) {
+		RomDataPtr romData = std::make_shared<XboxDisc>(filename);
+		if (romData->isValid()) {
+			return romData;
+		}
+	}
+
+	// Not a supported directory.
+	return {};
 }
 
 /**

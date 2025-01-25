@@ -16,6 +16,12 @@ using namespace LibRpFile;
 using namespace LibRpText;
 using namespace LibRpTexture;
 
+#ifdef _WIN32
+#  include "librptext/wchar.hpp"
+#else /* !_WIN32 */
+#  define U82T_c(str) (str)
+#endif /* _WIN32 */
+
 // XDVDFSPartition
 #include "../iso_structs.h"
 #include "../disc/xdvdfs_structs.h"
@@ -28,7 +34,7 @@ using namespace LibRpTexture;
 
 // C++ STL classes
 using std::array;
-using std::string;
+using std::tstring;
 using std::unique_ptr;
 using std::vector;
 
@@ -37,7 +43,25 @@ namespace LibRomData {
 class XboxDiscPrivate final : public RomDataPrivate
 {
 public:
+	/**
+	 * Open an Xbox disc image or XDVDFS partition.
+	 * @param file Xbox disc image or XDVDFS partition
+	 */
 	explicit XboxDiscPrivate(const IRpFilePtr &file);
+
+	/**
+	 * Open an extracted Xbox disc file system.
+	 * @param path Path to extracted Xbox disc file system (UTF-8)
+	 */
+	explicit XboxDiscPrivate(const char *path);
+#if defined(_WIN32) && defined(_UNICODE)
+	/**
+	 * Open an extracted Xbox disc file system.
+	 * @param path Path to extracted Xbox disc file system (UTF-16)
+	 */
+	explicit XboxDiscPrivate(const wchar_t *path);
+#endif /* defined(_WIN32) && defined(_UNICODE) */
+
 	~XboxDiscPrivate() final;
 
 private:
@@ -52,13 +76,17 @@ public:
 
 public:
 	// Disc type
-	enum class DiscType {
+	enum class DiscType : int8_t {
 		Unknown	= -1,
 
-		Extracted	= 0,	// Extracted XDVDFS
-		XGD1		= 1,	// XGD1 (Original Xbox)
-		XGD2		= 2,	// XGD2 (Xbox 360)
-		XGD3		= 3,	// XGD3 (Xbox 360)
+		// Not a full disc image; no ISO PVD, etc.
+		XDVDFS		= 0,	// Standalone XDVDFS partition
+		Extracted	= 1,	// Extracted disc file system
+
+		// Full disc image, with ISO PVD
+		XGD1		= 2,	// XGD1 (Original Xbox)
+		XGD2		= 3,	// XGD2 (Xbox 360)
+		XGD3		= 4,	// XGD3 (Xbox 360)
 
 		Max
 	};
@@ -66,9 +94,13 @@ public:
 	uint8_t wave;	// XGD2: Wave number
 	bool isKreon;	// Are we using a Kreon drive?
 
+	// Directory path (strdup()'d) [for DiscType::Extracted only]
+	TCHAR *path;
+
 	// XDVDFS starting address
 	off64_t xdvdfs_addr;
 
+public:
 	// XDVDFSPartition
 	XDVDFSPartitionPtr xdvdfsPartition;
 
@@ -84,6 +116,13 @@ public:
 		Max
 	};
 	ExeType exeType;
+
+	/**
+	 * Open a file from the disc image or extracted file system directory.
+	 * @param filename Filename (ASCII only?)
+	 * @return Opened file, or nullptr on error.
+	 */
+	IRpFilePtr open(const char *filename);
 
 	/**
 	 * Open default.xbe / default.xex.
@@ -146,21 +185,140 @@ const RomDataInfo XboxDiscPrivate::romDataInfo = {
 	"XboxDisc", exts.data(), mimeTypes.data()
 };
 
+/**
+ * Open an Xbox disc image or XDVDFS partition.
+ * @param file Xbox disc image or XDVDFS partition
+ */
 XboxDiscPrivate::XboxDiscPrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
+	, discType(DiscType::Unknown)
+	, wave(0)
+	, isKreon(false)
+	, path(nullptr)
+	, xdvdfs_addr(0)
+	, exeType(ExeType::Unknown)
+{}
+
+/**
+ * Open an extracted Xbox disc file system.
+ * @param path Path to extracted Xbox disc file system (UTF-8)
+ */
+XboxDiscPrivate::XboxDiscPrivate(const char *path)
+	: super({}, &romDataInfo)
 	, discType(DiscType::Unknown)
 	, wave(0)
 	, isKreon(false)
 	, xdvdfs_addr(0)
 	, exeType(ExeType::Unknown)
 {
+	if (path && path[0] != '\0') {
+#ifdef _WIN32
+		// Windows: Storing the path as UTF-16 internally.
+		this->path = _tcsdup(U82T_c(path));
+#else /* !_WIN32 */
+		this->path = strdup(path);
+#endif /* _WIN32 */
+	} else {
+		this->path = nullptr;
+	}
 }
+
+#if defined(_WIN32) && defined(_UNICODE)
+/**
+ * Open an extracted Xbox disc file system.
+ * @param path Path to extracted Xbox disc file system (UTF-16)
+ */
+XboxDiscPrivate::XboxDiscPrivate(const wchar_t *path)
+	: super({}, &romDataInfo)
+	, discType(DiscType::Unknown)
+	, wave(0)
+	, isKreon(false)
+	, xdvdfs_addr(0)
+	, exeType(ExeType::Unknown)
+{
+	if (path && path[0] != '\0') {
+		this->path = _tcsdup(path);
+	} else {
+		this->path = nullptr;
+	}
+}
+#endif /* defined(_WIN32) && defined(_UNICODE) */
 
 XboxDiscPrivate::~XboxDiscPrivate()
 {
 	if (isKreon) {
 		lockKreonDrive();
 	}
+
+	free(path);
+}
+
+/**
+ * Open a file from the disc image or extracted file system directory.
+ * @param filename Filename (ASCII only?)
+ * @return Opened file, or nullptr on error.
+ */
+IRpFilePtr XboxDiscPrivate::open(const char *filename)
+{
+	// NOTE: Cannot check discType here, since it might not be initialized yet.
+	// If this is an extracted disc file system, d->file will be nullptr.
+	if (likely(this->file)) {
+		// Disc image or partition image.
+		// Make sure the XDVDFS partition is open.
+		if (!xdvdfsPartition || !xdvdfsPartition->isOpen()) {
+			// XDVDFS partition is not open.
+			return {};
+		}
+
+		// Open the file from the XDVDFS partition.
+		return xdvdfsPartition->open(filename);
+	}
+
+	// Extracted disc file system.
+	// Append the filename to the selected path and try to open it.
+	tstring ts_full_filename(this->path);
+	ts_full_filename += DIR_SEP_CHR;
+
+	// Remove leading slashes, if present.
+	while (*filename == _T('/')) {
+		filename++;
+	}
+	if (*filename == '\0') {
+		// Oops, no filename...
+		return {};
+	}
+
+	const size_t old_sz = ts_full_filename.size();
+	ts_full_filename += U82T_c(filename);
+#ifdef _WIN32
+	// Replace all slashes with backslashes.
+	const auto start_iter = ts_full_filename.begin() + old_sz;
+	std::transform(start_iter, ts_full_filename.end(), start_iter, [](TCHAR c) {
+		return (c == '/') ? DIR_SEP_CHR : c;
+	});
+#endif /* _WIN32 */
+
+	IRpFilePtr f = std::make_shared<RpFile>(ts_full_filename, RpFile::FM_OPEN_READ);
+	if (f && f->isOpen()) {
+		return f;
+	}
+
+	// Try some permutations for case-sensitive host file systems.
+	// TODO: Handle subdirectories?
+
+	// Make the first character uppercase.
+	ts_full_filename[old_sz] = TOUPPER(ts_full_filename[old_sz]);
+	f = std::make_shared<RpFile>(ts_full_filename, RpFile::FM_OPEN_READ);
+	if (f && f->isOpen()) {
+		return f;
+	}
+
+	// Make the whole thing uppercase.
+	const auto toupper_iter = ts_full_filename.begin() + old_sz + 1;
+	std::transform(toupper_iter, ts_full_filename.end(), toupper_iter, [](TCHAR c) {
+		return TOUPPER(c);
+	});
+	return std::make_shared<RpFile>(ts_full_filename, RpFile::FM_OPEN_READ);;
 }
 
 /**
@@ -178,13 +336,8 @@ RomData *XboxDiscPrivate::openDefaultExe(ExeType *pExeType)
 		return defaultExeData.get();
 	}
 
-	if (!xdvdfsPartition || !xdvdfsPartition->isOpen()) {
-		// XDVDFS partition is not open.
-		return nullptr;
-	}
-
 	// Try to open default.xex.
-	IRpFilePtr f_defaultExe(xdvdfsPartition->open("/default.xex"));
+	IRpFilePtr f_defaultExe(this->open("/default.xex"));
 	if (f_defaultExe) {
 		RomData *const xexData = new Xbox360_XEX(f_defaultExe);
 		if (xexData->isValid()) {
@@ -203,7 +356,7 @@ RomData *XboxDiscPrivate::openDefaultExe(ExeType *pExeType)
 
 	// Try to open default.xbe.
 	// TODO: What about discs that have both?
-	f_defaultExe = xdvdfsPartition->open("/default.xbe");
+	f_defaultExe = this->open("/default.xbe");
 	if (f_defaultExe) {
 		RomData *const xbeData = new Xbox_XBE(f_defaultExe);
 		if (xbeData->isValid()) {
@@ -259,7 +412,7 @@ XboxDiscPrivate::ConsoleType XboxDiscPrivate::getConsoleType(void) const
 		return ConsoleType::Xbox360;
 	}
 
-	// Assume Xbox for XGD1 and extracted XDVDFS.
+	// Assume Xbox for XGD1, XDVDFS partition, and extracted disc file system.
 	return ConsoleType::Xbox;
 }
 
@@ -268,8 +421,9 @@ XboxDiscPrivate::ConsoleType XboxDiscPrivate::getConsoleType(void) const
  */
 inline void XboxDiscPrivate::unlockKreonDrive(void)
 {
-	if (!isKreon || !this->file)
+	if (!isKreon || !this->file) {
 		return;
+	}
 
 	RpFile *const rpFile = dynamic_cast<RpFile*>(this->file.get());
 	if (rpFile) {
@@ -283,8 +437,9 @@ inline void XboxDiscPrivate::unlockKreonDrive(void)
  */
 inline void XboxDiscPrivate::lockKreonDrive(void)
 {
-	if (!isKreon || !this->file)
+	if (!isKreon || !this->file) {
 		return;
+	}
 
 	RpFile *const rpFile = dynamic_cast<RpFile*>(this->file.get());
 	if (rpFile) {
@@ -311,17 +466,85 @@ inline void XboxDiscPrivate::lockKreonDrive(void)
 XboxDisc::XboxDisc(const IRpFilePtr &file)
 	: super(new XboxDiscPrivate(file))
 {
+	init();
+}
+
+/**
+ * Read a Microsoft Xbox disc image.
+ *
+ * A ROM file must be opened by the caller. The file handle
+ * will be ref()'d and must be kept open in order to load
+ * data from the ROM.
+ *
+ * To close the file, either delete this object or call close().
+ *
+ * NOTE: Check isValid() to determine if this is a valid ROM.
+ *
+ * @param path Local directory path (UTF-8)
+ */
+XboxDisc::XboxDisc(const char *path)
+	: super(new XboxDiscPrivate(path))
+{
+	init();
+}
+
+#if defined(_WIN32) && defined(_UNICODE)
+/**
+ * Read an extracted Microsoft Xbox disc file system.
+ *
+ * NOTE: Extracted Xbox disc file systems are directories.
+ * This constructor takes a local directory path.
+ *
+ * A ROM file must be opened by the caller. The file handle
+ * will be ref()'d and must be kept open in order to load
+ * data from the ROM.
+ *
+ * To close the file, either delete this object or call close().
+ *
+ * NOTE: Check isValid() to determine if this is a valid ROM.
+ *
+ * @param path Local directory path (UTF-16)
+ */
+XboxDisc::XboxDisc(const TCHAR *path)
+	: super(new XboxDiscPrivate(path))
+{
+	init();
+}
+#endif /* defined(_WIN32) && defined(_UNICODE) */
+
+/**
+ * Internal initialization function for the three constructors.
+ */
+void XboxDisc::init()
+{
 	// This class handles disc images.
 	RP_D(XboxDisc);
 	d->mimeType = "application/x-cd-image";	// unofficial
 	d->fileType = FileType::DiscImage;
 
-	if (!d->file) {
+	if (d->path) {
+		// We're handling an extracted disc file system.
+		// TODO: File type for "extracted file system"?
+		d->mimeType = "inode/directory";
+		d->fileType = FileType::ApplicationPackage;
+
+		// Nothing else to check other than if default.xbe/default.xex is present.
+
+		// Check the PAL status of the executable.
+		RomData *const defaultExeData = d->openDefaultExe();
+		if (!defaultExeData) {
+			// Could not open default.xbe/default.xex???
+			return;
+		}
+
+		d->discType = XboxDiscPrivate::DiscType::Extracted;
+		d->isPAL = defaultExeData->isPAL();
+		d->isValid = true;
+		return;
+	} else if (!d->file) {
 		// Could not ref() the file handle.
 		return;
 	}
-
-	// TODO: Also check for trimmed XDVDFS. (offset == 0)
 
 	// Read the ISO-9660 PVD.
 	// NOTE: Only 2048-byte sectors, since this is DVD.
@@ -348,7 +571,7 @@ XboxDisc::XboxDisc(const IRpFilePtr &file)
 			d->xdvdfs_addr = XDVDFS_LBA_OFFSET_XGD3 * XDVDFS_BLOCK_SIZE;
 			break;
 		default:
-			// This might be an extracted XDVDFS.
+			// This might be a standalone XDVDFS partition.
 			d->xdvdfs_addr = 0;
 			break;
 	}
@@ -420,8 +643,8 @@ XboxDisc::XboxDisc(const IRpFilePtr &file)
 
 	// XDVDFS partition is open.
 	if (d->discType <= XboxDiscPrivate::DiscType::Unknown) {
-		// This is an extracted XDVDFS.
-		d->discType = XboxDiscPrivate::DiscType::Extracted;
+		// This is a standalone XDVDFS partition.
+		d->discType = XboxDiscPrivate::DiscType::XDVDFS;
 	}
 
 	// Disc image is ready.
@@ -499,10 +722,13 @@ int XboxDisc::isRomSupported_static(
 
 	// Compare to known times.
 	// TODO: Enum with XGD waves?
+	// NOTE: XGD1 is no longer '1', so we're using the
+	// XboxDiscPrivate::DiscType enum now.
+	using DiscType = XboxDiscPrivate::DiscType;
 
 	struct xgd_pvd_t {
-		uint8_t xgd;	// XGD type. (1, 2, 3)
-		uint8_t wave;	// Manufacturing wave.
+		DiscType xgd;	// XGD type
+		uint8_t wave;			// Manufacturing wave.
 
 		// NOTE: Using int32_t as an optimization, since
 		// there won't be any Xbox 360 games released
@@ -512,29 +738,29 @@ int XboxDisc::isRomSupported_static(
 
 	static const array<xgd_pvd_t, 21> xgd_tbl = {{
 		// XGD1
-		{1,  0, 1000334575},	// XGD1: 2001-09-13 10:42:55.00 '0' (+12:00)
+		{DiscType::XGD1,  0, 1000334575},	// XGD1: 2001-09-13 10:42:55.00 '0' (+12:00)
 
 		// XGD2
-		{2,  1, 1128716326},	// XGD2 Wave 1:  2005-10-07 12:18:46.00 -08:00
-		{2,  2, 1141708147},	// XGD2 Wave 2:  2006-03-06 21:09:07.00 -08:00
-		{2,  3, 1231977600},	// XGD2 Wave 3:  2009-01-14 16:00:00.00 -08:00
-		{2,  4, 1251158400},	// XGD2 Wave 4:  2009-08-24 17:00:00.00 -07:00
-		{2,  5, 1254787200},	// XGD2 Wave 5:  2009-10-05 17:00:00.00 -07:00
-		{2,  6, 1256860800},	// XGD2 Wave 6:  2009-10-29 17:00:00.00 -07:00
-		{2,  7, 1266796800},	// XGD2 Wave 7:  2010-02-21 16:00:00.00 -08:00
-		{2,  8, 1283644800},	// XGD2 Wave 8:  2010-09-04 17:00:00.00 -07:00
-		{2,  9, 1284595200},	// XGD2 Wave 9:  2010-09-15 17:00:00.00 -07:00
-		{2, 10, 1288310400},	// XGD2 Wave 10: 2010-10-28 17:00:00.00 -07:00
-		{2, 11, 1295395200},	// XGD2 Wave 11: 2011-01-18 16:00:00.00 -08:00
-		{2, 12, 1307923200},	// XGD2 Wave 12: 2011-06-12 17:00:00.00 -07:00
-		{2, 13, 1310515200},	// XGD2 Wave 13: 2011-07-12 17:00:00.00 -07:00
-		{2, 14, 1323302400},	// XGD2 Wave 14: 2011-12-07 16:00:00.00 -08:00
-		{2, 15, 1329868800},	// XGD2 Wave 15: 2012-02-21 16:00:00.00 -08:00
-		{2, 16, 1340323200},	// XGD2 Wave 16: 2012-06-21 17:00:00.00 -07:00
-		{2, 17, 1352332800},	// XGD2 Wave 17: 2012-11-07 16:00:00.00 -08:00
-		{2, 18, 1353283200},	// XGD2 Wave 18: 2012-11-18 16:00:00.00 -08:00
-		{2, 19, 1377561600},	// XGD2 Wave 19: 2013-08-26 17:00:00.00 -07:00
-		{2, 20, 1430092800},	// XGD2 Wave 20: 2015-04-26 17:00:00.00 -07:00
+		{DiscType::XGD2,  1, 1128716326},	// XGD2 Wave 1:  2005-10-07 12:18:46.00 -08:00
+		{DiscType::XGD2,  2, 1141708147},	// XGD2 Wave 2:  2006-03-06 21:09:07.00 -08:00
+		{DiscType::XGD2,  3, 1231977600},	// XGD2 Wave 3:  2009-01-14 16:00:00.00 -08:00
+		{DiscType::XGD2,  4, 1251158400},	// XGD2 Wave 4:  2009-08-24 17:00:00.00 -07:00
+		{DiscType::XGD2,  5, 1254787200},	// XGD2 Wave 5:  2009-10-05 17:00:00.00 -07:00
+		{DiscType::XGD2,  6, 1256860800},	// XGD2 Wave 6:  2009-10-29 17:00:00.00 -07:00
+		{DiscType::XGD2,  7, 1266796800},	// XGD2 Wave 7:  2010-02-21 16:00:00.00 -08:00
+		{DiscType::XGD2,  8, 1283644800},	// XGD2 Wave 8:  2010-09-04 17:00:00.00 -07:00
+		{DiscType::XGD2,  9, 1284595200},	// XGD2 Wave 9:  2010-09-15 17:00:00.00 -07:00
+		{DiscType::XGD2, 10, 1288310400},	// XGD2 Wave 10: 2010-10-28 17:00:00.00 -07:00
+		{DiscType::XGD2, 11, 1295395200},	// XGD2 Wave 11: 2011-01-18 16:00:00.00 -08:00
+		{DiscType::XGD2, 12, 1307923200},	// XGD2 Wave 12: 2011-06-12 17:00:00.00 -07:00
+		{DiscType::XGD2, 13, 1310515200},	// XGD2 Wave 13: 2011-07-12 17:00:00.00 -07:00
+		{DiscType::XGD2, 14, 1323302400},	// XGD2 Wave 14: 2011-12-07 16:00:00.00 -08:00
+		{DiscType::XGD2, 15, 1329868800},	// XGD2 Wave 15: 2012-02-21 16:00:00.00 -08:00
+		{DiscType::XGD2, 16, 1340323200},	// XGD2 Wave 16: 2012-06-21 17:00:00.00 -07:00
+		{DiscType::XGD2, 17, 1352332800},	// XGD2 Wave 17: 2012-11-07 16:00:00.00 -08:00
+		{DiscType::XGD2, 18, 1353283200},	// XGD2 Wave 18: 2012-11-18 16:00:00.00 -08:00
+		{DiscType::XGD2, 19, 1377561600},	// XGD2 Wave 19: 2013-08-26 17:00:00.00 -07:00
+		{DiscType::XGD2, 20, 1430092800},	// XGD2 Wave 20: 2015-04-26 17:00:00.00 -07:00
 
 		// XGD3 does not have shared PVDs per wave,
 		// but the timestamps all have a similar pattern:
@@ -555,7 +781,7 @@ int XboxDisc::isRomSupported_static(
 		if (pWave) {
 			*pWave = iter->wave;
 		}
-		return iter->xgd;
+		return static_cast<int>(iter->xgd);
 	}
 
 	// No match in the XGD table.
@@ -575,13 +801,69 @@ int XboxDisc::isRomSupported_static(
 			if (pWave) {
 				*pWave = 0;
 			}
-			return static_cast<int>(XboxDiscPrivate::DiscType::XGD3);
+			return static_cast<int>(DiscType::XGD3);
 		}
 	}
 
 	// Not XGD.
+	return static_cast<int>(DiscType::Unknown);
+}
+
+/**
+ * Is a directory supported by this class?
+ * @param path Directory to check
+ * @return Class-specific system ID (>= 0) if supported; -1 if not.
+ */
+int XboxDisc::isDirSupported_static(const char *path)
+{
+	// Check for an extracted Xbox disc file system.
+	static const array<const char*, 6> Xbox_exe_filenames = {{
+		"default.xbe",	// Original Xbox
+		"default.xex",	// Xbox 360
+
+		// Case permutations for case-sensitive host file systems.
+		// NOTE: Not common on Windows, except for WSL...
+		// TODO: Find more variants?
+		"Default.xbe", "DEFAULT.XBE",
+		"Default.xex", "DEFAULT.XEX",
+	}};
+
+	if (RomDataPrivate::T_isDirSupported_anyFile_static(path, Xbox_exe_filenames)) {
+		return static_cast<int>(XboxDiscPrivate::DiscType::Extracted);
+	}
+
+	// Not supported.
 	return static_cast<int>(XboxDiscPrivate::DiscType::Unknown);
 }
+
+#if defined(_WIN32) && defined(_UNICODE)
+/**
+ * Is a directory supported by this class?
+ * @param path Directory to check
+ * @return Class-specific system ID (>= 0) if supported; -1 if not.
+ */
+int XboxDisc::isDirSupported_static(const wchar_t *path)
+{
+	// Check for an extracted Xbox disc file system.
+	static const array<const wchar_t*, 6> Xbox_exe_filenames = {{
+		L"default.xbe",	// Original Xbox
+		L"default.xex",	// Xbox 360
+
+		// Case permutations for case-sensitive host file systems.
+		// NOTE: Not common on Windows, except for WSL...
+		// TODO: Find more variants?
+		L"Default.xbe", L"DEFAULT.XBE",
+		L"Default.xex", L"DEFAULT.XEX",
+	}};
+
+	if (XboxDiscPrivate::T_isDirSupported_anyFile_static(path, Xbox_exe_filenames)) {
+		return static_cast<int>(XboxDiscPrivate::DiscType::Extracted);
+	}
+
+	// Not supported.
+	return static_cast<int>(XboxDiscPrivate::DiscType::Unknown);
+}
+#endif /* defined(_WIN32) && defined(_UNICODE) */
 
 /**
  * Get the name of the system the loaded ROM is designed for.
@@ -688,25 +970,31 @@ int XboxDisc::loadFieldData(void)
 	if (!d->fields.empty()) {
 		// Field data *has* been loaded...
 		return 0;
-	} else if (!d->file || !d->file->isOpen()) {
-		// File isn't open.
+	} else if ((!d->file || !d->file->isOpen()) && !d->path) {
+		// File/directory isn't open.
 		return -EBADF;
 	} else if (!d->isValid || static_cast<int>(d->discType) < 0) {
 		// Unknown disc type.
 		return -EIO;
 	}
 
-	// Unlock the Kreon drive in order to read the executable.
-	d->unlockKreonDrive();
+	const XDVDFSPartition *xdvdfsPartition = nullptr;
+	if (d->file) {
+		// Unlock the Kreon drive in order to read the executable.
+		d->unlockKreonDrive();
 
-	// XDVDFS partition. (NOTE: Using the raw pointer.)
-	const XDVDFSPartition *const xdvdfsPartition = d->xdvdfsPartition.get();
-	if (!xdvdfsPartition) {
-		// XDVDFS partition isn't open.
-		d->lockKreonDrive();
-		return 0;
+		// XDVDFS partition. (NOTE: Using the raw pointer.)
+		xdvdfsPartition = d->xdvdfsPartition.get();
+		if (!xdvdfsPartition) {
+			// XDVDFS partition isn't open.
+			d->lockKreonDrive();
+			return 0;
+		}
+		d->fields.reserve(3);	// Maximum of 3 fields.
+	} else {
+		// Extracted Xbox disc file system
+		d->fields.reserve(1);	// Maximum of 1 field.
 	}
-	d->fields.reserve(3);	// Maximum of 3 fields.
 
 	// Get the console name.
 	const XboxDiscPrivate::ConsoleType consoleType = d->getConsoleType();
@@ -726,9 +1014,13 @@ int XboxDisc::loadFieldData(void)
 	const char *const s_disc_type = C_("XboxDisc", "Disc Type");
 	// NOTE: Not translating "Xbox Game Disc".
 	switch (d->discType) {
+		case XboxDiscPrivate::DiscType::XDVDFS:
+			d->fields.addField_string(s_disc_type,
+				C_("XboxDisc", "XDVDFS Partition"));
+			break;
 		case XboxDiscPrivate::DiscType::Extracted:
 			d->fields.addField_string(s_disc_type,
-				C_("XboxDisc", "Extracted XDVDFS"));
+				C_("XboxDisc", "Extracted Disc File System"));
 			break;
 		case XboxDiscPrivate::DiscType::XGD1:
 			d->fields.addField_string(s_disc_type, "Xbox Game Disc 1");
@@ -746,11 +1038,13 @@ int XboxDisc::loadFieldData(void)
 			break;
 	}
 
-	// Timestamp
-	d->fields.addField_dateTime(C_("XboxDisc", "Disc Timestamp"),
-		xdvdfsPartition->xdvdfsTimestamp(),
-		RomFields::RFT_DATETIME_HAS_DATE |
-		RomFields::RFT_DATETIME_HAS_TIME);
+	// Timestamp (from the XDVDFS partition)
+	if (xdvdfsPartition) {
+		d->fields.addField_dateTime(C_("XboxDisc", "Disc Timestamp"),
+			xdvdfsPartition->xdvdfsTimestamp(),
+			RomFields::RFT_DATETIME_HAS_DATE |
+			RomFields::RFT_DATETIME_HAS_TIME);
+	}
 
 	// Do we have an XBE or XEX?
 	// If so, add it to the current tab.
@@ -802,8 +1096,10 @@ int XboxDisc::loadFieldData(void)
 		delete isoData;
 	}
 
-	// Re-lock the Kreon drive.
-	d->lockKreonDrive();
+	if (d->file) {
+		// Re-lock the Kreon drive.
+		d->lockKreonDrive();
+	}
 
 	// Finished reading the field data.
 	return static_cast<int>(d->fields.count());
@@ -820,8 +1116,8 @@ int XboxDisc::loadMetaData(void)
 	if (!d->metaData.empty()) {
 		// Metadata *has* been loaded...
 		return 0;
-	} else if (!d->file) {
-		// File isn't open.
+	} else if ((!d->file || !d->file->isOpen()) && !d->path) {
+		// File/directory isn't open.
 		return -EBADF;
 	} else if (!d->isValid || static_cast<int>(d->discType) < 0) {
 		// Unknown disc type.
