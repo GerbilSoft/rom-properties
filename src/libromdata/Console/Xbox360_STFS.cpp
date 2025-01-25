@@ -990,6 +990,7 @@ int Xbox360_STFS::loadFieldData(void)
 	}
 
 	d->fields.addField_string(C_("Xbox360_XEX", "Title ID"),
+		// tr: Xbox 360 title ID (32-bit hex, then two letters followed by a 4-digit decimal number)
 		fmt::format(C_("Xbox360_XEX", "{0:0>8X} ({1:s}-{2:0>4d})"),
 			be32_to_cpu(stfsMetadata->title_id.u32),
 			tid_str.c_str(),

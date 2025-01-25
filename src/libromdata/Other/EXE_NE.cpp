@@ -642,6 +642,7 @@ int EXEPrivate::addFields_NE_Entry(void)
 		return res;
 
 	const char *const s_no_name = C_("EXE|Exports", "(No name)");
+	// tr: Segment:Offset (and segment type)
 	const char *const s_address_mf = C_("EXE|Exports", "{0:0>2X}:{1:0>4X} ({2:s})");
 	const char *const s_address_movable = C_("EXE|Exports", "Movable");
 	const char *const s_address_fixed = C_("EXE|Exports", "Fixed");

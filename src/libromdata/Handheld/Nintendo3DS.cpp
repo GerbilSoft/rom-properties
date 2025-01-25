@@ -1931,6 +1931,7 @@ int Nintendo3DS::loadFieldData(void)
 					pgettext_expr("Nintendo3DS|CDev", card_dev_tbl[card_dev_id]));
 			} else {
 				d->fields.addField_string(card_device_title,
+					// tr: Unrecognized card device (the raw SDK2 and SDK3 values are shown)
 					fmt::format(C_("Nintendo3DS|CDev", "Unknown (SDK2=0x{0:0>2X}, SDK3=0x{1:0>2X})"),
 						ncsd_header->cci.partition_flags[N3DS_NCSD_PARTITION_FLAG_MEDIA_CARD_DEVICE_SDK2],
 						ncsd_header->cci.partition_flags[N3DS_NCSD_PARTITION_FLAG_MEDIA_CARD_DEVICE_SDK3]));

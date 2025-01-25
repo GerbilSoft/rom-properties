@@ -700,6 +700,7 @@ int Xbox_XBE::loadFieldData(void)
 		}
 
 		d->fields.addField_string(s_title_id_desc,
+			// tr: Xbox title ID (32-bit hex, then two letters followed by a 3-digit decimal number)
 			fmt::format(C_("Xbox_XBE", "{0:0>8X} ({1:s}-{2:0>3d})"),
 				le32_to_cpu(xbeCertificate->title_id.u32),
 				tid_str.c_str(),
