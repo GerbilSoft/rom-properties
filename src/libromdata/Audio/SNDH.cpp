@@ -847,7 +847,7 @@ int SNDH::loadFieldData(void)
 
 	// Timer frequencies.
 	// TODO: Use RFT_LISTDATA?
-	// tr: Frequency of Timer A, Timer B, etc. ("Timer %c" is a single entity)
+	// tr: Frequency of Timer A, Timer B, etc. ("Timer {:c}" is a single entity)
 	const char *const s_timer_freq = C_("SNDH", "Timer {:c} Freq");
 	for (int i = 0; i < ARRAY_SIZE_I(tags.timer_freq); i++) {
 		if (tags.timer_freq[i] == 0)
