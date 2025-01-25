@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (rp-stub)                          *
  * rp-stub.c: Stub program to invoke the rom-properties library.           *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -88,7 +88,7 @@ static void show_version(void)
 {
 	puts(RP_DESCRIPTION);
 	puts(C_("rp_stub", "Shared library stub program."));
-	puts(C_("rp-stub", "Copyright (c) 2016-2024 by David Korth."));
+	puts(C_("rp-stub", "Copyright (c) 2016-2025 by David Korth."));
 	putchar('\n');
 	printf(C_("rp-stub", "rom-properties version: %s"), RP_VERSION_STRING);
 	putchar('\n');
@@ -150,17 +150,15 @@ static void show_help(const char *argv0)
 		puts(C_("rp-stub|Help", "Other options:"));
 		for (const struct opt_t *p = other_opts; p != other_opts_end; p++) {
 			fputs(p->opt, stdout);
+			putchar('\t');
 			if (likely(p->opt[3] != 'R')) {
-				fputs("\t\t", stdout);
-			} else {
-				fputs("\t", stdout);
+				putchar('\t');
 			}
 			puts(pgettext_expr("rp-stub|Help", p->desc));
 		}
 	} else {
 		printf(C_("rp-stub|Help", "Usage: %s"), argv0);
-		putchar('\n');
-		putchar('\n');
+		fputs("\n\n", stdout);
 		puts(C_("rp-stub|Help",
 			"When invoked as rp-config, this program will open the configuration dialog\n"
 			"using an installed plugin that most closely matches the currently running\n"
@@ -207,12 +205,12 @@ static int ATTR_PRINTF(2, 3) print_opt_error(const char *argv0, const char *form
 		va_list args;
 		va_start(args, format);
 		ret = vfprintf(stderr, format, args);
-		putc('\n', stderr);
+		fputc('\n', stderr);
 		va_end(args);
 	}
 
 	fprintf(stderr, C_("rp-stub", "Try '%s --help' for more information."), argv0);
-	putc('\n', stderr);
+	fputc('\n', stderr);
 	return ret;
 }
 
@@ -428,7 +426,7 @@ int main(int argc, char *argv[])
 				// tr: Only localize "Calling function:".
 				fprintf(stderr, C_("rp-stub", "Calling function: %s(\"%s\", \"%s\", %d, %u);"),
 					symname, source_file, output_file, maximum_size, flags);
-				putc('\n', stderr);
+				fputc('\n', stderr);
 			}
 			ret = ((PFN_RP_CREATE_THUMBNAIL2)pfn)(source_file, output_file, maximum_size, flags);
 
@@ -441,7 +439,7 @@ int main(int argc, char *argv[])
 			// Show the configuration dialog.
 			if (is_debug) {
 				fprintf(stderr, C_("rp-stub", "Calling function: %s();"), symname);
-				putc('\n', stderr);
+				fputc('\n', stderr);
 			}
 			// NOTE: argc/argv may be manipulated by getopt().
 			// TODO: New argv[] with [0] == argv[0], [1] == optind
@@ -452,7 +450,7 @@ int main(int argc, char *argv[])
 			// Show the configuration dialog.
 			if (is_debug) {
 				fprintf(stderr, C_("rp-stub", "Calling function: %s();"), symname);
-				putc('\n', stderr);
+				fputc('\n', stderr);
 			}
 			// NOTE: argc/argv may be manipulated by getopt().
 			// TODO: New argv[] with [0] == argv[0], [1] == optind
@@ -465,12 +463,12 @@ int main(int argc, char *argv[])
 		if (is_debug) {
 			// tr: %1$s == function name, %2$d == return value
 			fprintf_p(stderr, C_("rp-stub", "%1$s() returned %2$d."), symname, ret);
-			putc('\n', stderr);
+			fputc('\n', stderr);
 		}
 	} else {
 		// tr: %1$s == function name, %2$d == return value
 		fprintf_p(stderr, C_("rp-stub", "*** ERROR: %1$s() returned %2$d."), symname, ret);
-		putc('\n', stderr);
+		fputc('\n', stderr);
 	}
 	return ret;
 }
