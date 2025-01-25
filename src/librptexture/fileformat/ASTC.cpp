@@ -243,10 +243,10 @@ const char *ASTC::pixelFormat(void) const
 
 	if (d->pixel_format.empty()) {
 		if (d->dimensions[2] <= 1) {
-			d->pixel_format = fmt::format(FSTR("ASTC_%dx%d"),
+			d->pixel_format = fmt::format(FSTR("ASTC_{:d}x{:d}"),
 				d->astcHeader.blockdimX, d->astcHeader.blockdimY);
 		} else {
-			d->pixel_format = fmt::format(FSTR("ASTC_%dx%dx%d"),
+			d->pixel_format = fmt::format(FSTR("ASTC_{:d}x{:d}x{:d}"),
 				d->astcHeader.blockdimX, d->astcHeader.blockdimY, d->astcHeader.blockdimZ);
 		}
 	}
