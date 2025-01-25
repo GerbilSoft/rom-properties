@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * RP_ContextMenu.hpp: IContextMenu implementation.                        *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -447,7 +447,7 @@ IFACEMETHODIMP RP_ContextMenu::Initialize(
 
 		if (is_texture) {
 			// It's a supported texture. Save the filename.
-			d->tfilenames->emplace_back(tfilename);
+			d->tfilenames->push_back(tfilename);
 		} else {
 			// Not a supported texture.
 			free(tfilename);

@@ -1079,7 +1079,7 @@ int Xbox360_XDBF_Private::addFields_achievements_SPA(void)
 			}
 
 			// TODO: Formatting value indicating that the first line should be bold.
-			data_row.emplace_back(std::move(desc));
+			data_row.push_back(std::move(desc));
 
 			// Gamerscore
 			data_row.push_back(s_gamerscore);

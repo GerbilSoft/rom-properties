@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * WiiWAD_ops.cpp: Nintendo Wii WAD file reader. (ROM operations)          *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -50,7 +50,7 @@ vector<RomData::RomOp> WiiWAD::romOps_int(void) const
 	op.flags &= ~RomOp::ROF_ENABLED;
 #endif /* ENABLE_DECRYPTION */
 
-	ops.emplace_back(std::move(op));
+	ops.push_back(std::move(op));
 	return ops;
 }
 

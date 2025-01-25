@@ -938,7 +938,7 @@ vector<uint16_t> Nintendo3DSPrivate::n3dsRegionToGameTDB(uint32_t smdhRegion, ch
 			const Config *const config = Config::instance();
 			const uint32_t lc = config->palLanguageForGameTDB();
 			if (lc != 0 && lc < 65536) {
-				ret.emplace_back(static_cast<uint16_t>(lc));
+				ret.push_back(static_cast<uint16_t>(lc));
 				// Don't add English again if that's what the
 				// user-specified fallback language is.
 				if (lc != 'en' && lc != 'EN') {
@@ -1190,7 +1190,7 @@ int Nintendo3DSPrivate::addFields_permissions(void)
 		// TODO: Service descriptions?
 		vv_svc->resize(vv_svc->size()+1);
 		auto &data_row = vv_svc->at(vv_svc->size()-1);
-		data_row.emplace_back(latin1_to_utf8(svc, N3DS_SERVICE_LEN));
+		data_row.push_back(latin1_to_utf8(svc, N3DS_SERVICE_LEN));
 	}
 
 	if (likely(!vv_svc->empty())) {
@@ -1956,7 +1956,7 @@ int Nintendo3DS::loadFieldData(void)
 #endif /* ENABLE_DECRYPTION */
 		}
 
-		// Partition table.
+		// Partition table
 		auto *const vv_partitions = new RomFields::ListData_t();
 		vv_partitions->reserve(8);
 
@@ -1977,10 +1977,10 @@ int Nintendo3DS::loadFieldData(void)
 			auto &data_row = vv_partitions->at(vidx);
 			data_row.reserve(5);
 
-			// Partition number.
-			data_row.emplace_back(fmt::to_string(i));
+			// Partition number
+			data_row.push_back(fmt::to_string(i));
 
-			// Partition type.
+			// Partition type
 			// TODO: Use the partition ID to determine the type?
 			const char *const s_ptype = ((*pt_types)[i] ? (*pt_types)[i] : s_unknown);
 			data_row.emplace_back(s_ptype);
@@ -1995,7 +1995,7 @@ int Nintendo3DS::loadFieldData(void)
 					if (ret != 0 || !cryptoType.encrypted || cryptoType.keyslot >= 0x40) {
 						// Not encrypted, or not using a predefined keyslot.
 						if (cryptoType.name) {
-							data_row.emplace_back(latin1_to_utf8(cryptoType.name, -1));
+							data_row.push_back(latin1_to_utf8(cryptoType.name, -1));
 						} else {
 							data_row.emplace_back(s_unknown);
 						}
@@ -2030,7 +2030,7 @@ int Nintendo3DS::loadFieldData(void)
 						// This is usually 1.1.0, though some might be 1.0.0.
 						data_row.emplace_back("1.x.x");
 					} else {
-						data_row.emplace_back(d->n3dsVersionToString(version));
+						data_row.push_back(d->n3dsVersionToString(version));
 					}
 				} else {
 					// Unable to load the NCCH header.
@@ -2041,12 +2041,12 @@ int Nintendo3DS::loadFieldData(void)
 
 			if (keyslots) {
 				// Keyslot.
-				data_row.emplace_back(fmt::format(FSTR("0x{:0>2X}"), (*keyslots)[i]));
+				data_row.push_back(fmt::format(FSTR("0x{:0>2X}"), (*keyslots)[i]));
 			}
 
 			// Partition size.
 			const off64_t length_bytes = static_cast<off64_t>(length) << d->media_unit_shift;
-			data_row.emplace_back(LibRpText::formatFileSize(length_bytes));
+			data_row.push_back(LibRpText::formatFileSize(length_bytes));
 		}
 
 		// Add the partitions list data.
@@ -2139,7 +2139,7 @@ int Nintendo3DS::loadFieldData(void)
 			data_row.reserve(5);
 
 			// Content index
-			data_row.emplace_back(fmt::to_string(i));
+			data_row.push_back(fmt::to_string(i));
 
 			// TODO: Use content_chunk->index?
 			const N3DS_NCCH_Header_NoSig_t *content_ncch_header = nullptr;
@@ -2186,7 +2186,7 @@ int Nintendo3DS::loadFieldData(void)
 				data_row.emplace_back();
 
 				// Content size
-				data_row.emplace_back(LibRpText::formatFileSize(be64_to_cpu(content.size)));
+				data_row.push_back(LibRpText::formatFileSize(be64_to_cpu(content.size)));
 
 				i++;
 				continue;
@@ -2214,13 +2214,13 @@ int Nintendo3DS::loadFieldData(void)
 			if (!cryptoType.encrypted || cryptoType.keyslot >= 0x40) {
 				// Not encrypted, or not using a predefined keyslot.
 				if (cryptoType.name) {
-					data_row.emplace_back(latin1_to_utf8(cryptoType.name, -1));
+					data_row.push_back(latin1_to_utf8(cryptoType.name, -1));
 				} else {
 					data_row.emplace_back(s_unknown);
 				}
 			} else {
 				// Encrypted.
-				data_row.emplace_back(fmt::format(FSTR("{:s}{:s}{:s} (0x{:0>2X})"),
+				data_row.push_back(fmt::format(FSTR("{:s}{:s}{:s} (0x{:0>2X})"),
 					(isCIAcrypto ? "CIA+" : ""),
 					(cryptoType.name ? cryptoType.name : s_unknown),
 					(cryptoType.seed ? "+Seed" : ""),
@@ -2228,11 +2228,11 @@ int Nintendo3DS::loadFieldData(void)
 			}
 
 			// Version [FIXME: Might not be right...]
-			data_row.emplace_back(d->n3dsVersionToString(
+			data_row.push_back(d->n3dsVersionToString(
 				le16_to_cpu(content_ncch_header->version)));
 
 			// Content size
-			data_row.emplace_back(LibRpText::formatFileSize(pNcch->partition_size()));
+			data_row.push_back(LibRpText::formatFileSize(pNcch->partition_size()));
 
 			// Next content
 			i++;

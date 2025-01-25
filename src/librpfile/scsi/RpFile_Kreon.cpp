@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpfile)                        *
  * RpFile_Kreon.cpp: Standard file object. (Kreon-specific functions)      *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -153,7 +153,7 @@ vector<RpFile::KreonFeature> RpFile::getKreonFeatureList(void)
 	for (const uint16_t feature : feature_buf) {
 		if (feature == 0)
 			break;
-		vec.emplace_back(static_cast<KreonFeature>(be16_to_cpu(feature)));
+		vec.push_back(static_cast<KreonFeature>(be16_to_cpu(feature)));
 	}
 
 	if (vec.size() < 2 ||

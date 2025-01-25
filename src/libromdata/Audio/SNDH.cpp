@@ -397,7 +397,7 @@ SNDHPrivate::TagData SNDHPrivate::parseTags(void)
 						// An error occured.
 						break;
 					}
-					tags.subtune_names.emplace_back(std::move(str));
+					tags.subtune_names.push_back(std::move(str));
 
 					if (p_str > p_next) {
 						// This string is the farthest ahead so far.
@@ -888,10 +888,10 @@ int SNDH::loadFieldData(void)
 		for (vector<string> &data_row : *vv_subtune_list) {
 			data_row.reserve(col_count);	// 2 or 3 fields per row.
 
-			data_row.emplace_back(fmt::to_string(idx+1));	// NOTE: First subtune is 1, not 0.
+			data_row.push_back(fmt::to_string(idx+1));	// NOTE: First subtune is 1, not 0.
 			if (has_SN) {
 				if (idx < tags.subtune_names.size()) {
-					data_row.emplace_back(tags.subtune_names.at(idx));
+					data_row.push_back(tags.subtune_names.at(idx));
 				} else {
 					data_row.emplace_back();
 				}
@@ -905,7 +905,7 @@ int SNDH::loadFieldData(void)
 					duration_total += duration;
 					const unsigned int min = duration / 60;
 					const unsigned int sec = duration % 60;
-					data_row.emplace_back(fmt::format(FSTR("{:d}:{:0>2d}"), min, sec));
+					data_row.push_back(fmt::format(FSTR("{:d}:{:0>2d}"), min, sec));
 				} else {
 					data_row.emplace_back();
 				}

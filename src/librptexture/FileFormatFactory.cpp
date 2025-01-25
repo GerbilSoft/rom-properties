@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * FileFormatFactory.cpp: FileFormat factory class.                        *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -318,8 +318,8 @@ static void init_supportedFileExtensions(void)
 		for (; *sys_exts != nullptr; sys_exts++) {
 			auto iter = set_exts.find(*sys_exts);
 			if (iter == set_exts.end()) {
-				set_exts.insert(*sys_exts);
-				vec_exts.emplace_back(*sys_exts);
+				set_exts.emplace(*sys_exts);
+				vec_exts.push_back(*sys_exts);
 			}
 		}
 	}
@@ -333,8 +333,8 @@ static void init_supportedFileExtensions(void)
 		for (; *sys_exts != nullptr; sys_exts++) {
 			auto iter = set_exts.find(*sys_exts);
 			if (iter == set_exts.end()) {
-				set_exts.insert(*sys_exts);
-				vec_exts.emplace_back(*sys_exts);
+				set_exts.emplace(*sys_exts);
+				vec_exts.push_back(*sys_exts);
 			}
 		}
 	}
@@ -391,8 +391,8 @@ static void init_supportedMimeTypes(void)
 		for (; *sys_mimeTypes != nullptr; sys_mimeTypes++) {
 			auto iter = set_mimeTypes.find(*sys_mimeTypes);
 			if (iter == set_mimeTypes.end()) {
-				set_mimeTypes.insert(*sys_mimeTypes);
-				vec_mimeTypes.emplace_back(*sys_mimeTypes);
+				set_mimeTypes.emplace(*sys_mimeTypes);
+				vec_mimeTypes.push_back(*sys_mimeTypes);
 			}
 		}
 	}
@@ -406,8 +406,8 @@ static void init_supportedMimeTypes(void)
 		for (; *sys_mimeTypes != nullptr; sys_mimeTypes++) {
 			auto iter = set_mimeTypes.find(*sys_mimeTypes);
 			if (iter == set_mimeTypes.end()) {
-				set_mimeTypes.insert(*sys_mimeTypes);
-				vec_mimeTypes.emplace_back(*sys_mimeTypes);
+				set_mimeTypes.emplace(*sys_mimeTypes);
+				vec_mimeTypes.push_back(*sys_mimeTypes);
 			}
 		}
 	}

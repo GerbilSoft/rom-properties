@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * KeyManagerTab_gtk4.cpp: Key Manager tab for rp-config. (GTK4)           *
  *                                                                         *
- * Copyright (c) 2017-2024 by David Korth.                                 *
+ * Copyright (c) 2017-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -398,7 +398,7 @@ void rp_key_manager_tab_init_keys(RpKeyManagerTab *tab)
 			g_list_store_append(listStore, item);
 			g_object_unref(item);
 		}
-		tab->vSectionListStore->emplace_back(listStore);
+		tab->vSectionListStore->push_back(listStore);
 
 		// Add the root list node now that the child node has been created.
 		RpKeyStoreItem *const section = rp_key_store_item_new_section(keyStoreUI->sectName(sectIdx), nullptr, sectIdx);

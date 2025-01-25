@@ -848,7 +848,7 @@ int EXEPrivate::addFields_PE_Export(void)
 			const char *fwd = reinterpret_cast<const char *>(expDirTbl.data() + (ent.vaddr - rvaMin));
 			ent.forwarder.assign(fwd, strnlen(fwd, rvaMax - ent.vaddr));
 		}
-		ents.emplace_back(std::move(ent));
+		ents.push_back(std::move(ent));
 	}
 
 	// Read name table
@@ -870,7 +870,7 @@ int EXEPrivate::addFields_PE_Export(void)
 			ents[ord].name = std::move(oldname);
 			ent.name = std::move(name);
 			ent.hint = i;
-			ents.emplace_back(std::move(ent));
+			ents.push_back(std::move(ent));
 		} else {
 			ents[ord].name = std::move(name);
 			ents[ord].hint = i;
@@ -909,18 +909,20 @@ int EXEPrivate::addFields_PE_Export(void)
 		vv_data->emplace_back();
 		auto &row = vv_data->back();
 		row.reserve(5);
-		row.emplace_back(ent.name);
-		row.emplace_back(fmt::to_string(ent.ordinal));
-		row.emplace_back(ent.hint != -1
-			? fmt::to_string(ent.hint)
-			: C_("EXE|Exports", "None"));
+		row.push_back(ent.name);
+		row.push_back(fmt::to_string(ent.ordinal));
+		if (ent.hint != -1) {
+			row.push_back(fmt::to_string(ent.hint));
+		} else {
+			row.emplace_back(C_("EXE|Exports", "None"));
+		}
 		if (ent.forwarder.size() != 0) {
-			row.emplace_back(ent.forwarder);
+			row.push_back(ent.forwarder);
 			row.emplace_back();
 		} else {
-			row.emplace_back(fmt::format(FSTR("0x{:0>8X}"), ent.vaddr));
+			row.push_back(fmt::format(FSTR("0x{:0>8X}"), ent.vaddr));
 			if (ent.paddr)
-				row.emplace_back(fmt::format("0x{:0>8X}", ent.paddr));
+				row.push_back(fmt::format("0x{:0>8X}", ent.paddr));
 			else
 				row.emplace_back(); // it's probably in the bss section
 		}
@@ -1106,7 +1108,7 @@ int EXEPrivate::addFields_PE_Import(void)
 		auto &row = vv_data->back();
 		row.reserve(3);
 		if (it.is_ordinal) {
-			row.emplace_back(fmt::format(C_("EXE|Exports", "Ordinal #{:d}"), it.value));
+			row.push_back(fmt::format(C_("EXE|Exports", "Ordinal #{:d}"), it.value));
 			row.emplace_back();
 		} else {
 			// RVA to hint number followed by NUL terminated name.
@@ -1115,9 +1117,9 @@ int EXEPrivate::addFields_PE_Import(void)
 			// FIXME: This may break on non-i386/amd64 systems...
 			const uint16_t hint = le16_to_cpu(*reinterpret_cast<const uint16_t*>(ent));
 			row.emplace_back(ent+2);
-			row.emplace_back(fmt::to_string(hint));
+			row.push_back(fmt::to_string(hint));
 		}
-		row.emplace_back(*(it.dllname));
+		row.push_back(*(it.dllname));
 	}
 
 	// Sort the list data by (module, name, hint).

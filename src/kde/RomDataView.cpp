@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE)                              *
  * RomDataView.cpp: RomData viewer.                                        *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -785,7 +785,7 @@ void RomDataViewPrivate::updateMulti(uint32_t user_lc)
 			// Need to add all supported languages.
 			// TODO: Do we need to do this for all of them, or just one?
 			for (const auto &psm : *pStr_multi) {
-				set_lc.emplace(psm.first);
+				set_lc.insert(psm.first);
 			}
 		}
 

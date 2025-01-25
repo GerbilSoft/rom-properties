@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * LanguageComboBox.cpp: Language QComboBox subclass.                      *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -103,7 +103,7 @@ void LanguageComboBox::setLCs(const uint32_t *p_lc)
 	// Convert the array to std::set<uint32_t> first.
 	std::set<uint32_t> set_lc;
 	for (; *p_lc != 0; p_lc++) {
-		set_lc.emplace(*p_lc);
+		set_lc.insert(*p_lc);
 	}
 	setLCs(set_lc);
 }
@@ -119,7 +119,7 @@ void LanguageComboBox::setLCs(const uint32_t *p_lc, size_t len)
 	// Convert the array to std::set<uint32_t> first.
 	std::set<uint32_t> set_lc;
 	for (; len > 0; len--, p_lc++) {
-		set_lc.emplace(*p_lc);
+		set_lc.insert(*p_lc);
 	}
 	setLCs(set_lc);
 }

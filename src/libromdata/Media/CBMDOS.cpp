@@ -1266,14 +1266,14 @@ int CBMDOS::loadFieldData(void)
 			}
 
 			// # of blocks (filesize)
-			p_list.emplace_back(fmt::to_string(le16_to_cpu(p_dir->sector_count)));
+			p_list.push_back(fmt::to_string(le16_to_cpu(p_dir->sector_count)));
 
 			// Filename
 			const int filename_len = static_cast<int>(d->remove_A0_padding(p_dir->filename, sizeof(p_dir->filename)));
 			if (unlikely(is_geos_file)) {
 				// GEOS file: The filename is encoded as ASCII.
 				// NOTE: Using Latin-1...
-				p_list.emplace_back(latin1_to_utf8(p_dir->filename, filename_len));
+				p_list.push_back(latin1_to_utf8(p_dir->filename, filename_len));
 			} else {
 				string s_filename = cpN_to_utf8(codepage, p_dir->filename, filename_len);
 				if (codepage == CP_RP_PETSCII_Unshifted && s_filename.find(d->uFFFD) != string::npos) {
@@ -1282,7 +1282,7 @@ int CBMDOS::loadFieldData(void)
 					codepage = CP_RP_PETSCII_Shifted;
 					s_filename = cpN_to_utf8(codepage, p_dir->filename, filename_len);
 				}
-				p_list.emplace_back(std::move(s_filename));
+				p_list.push_back(std::move(s_filename));
 			}
 
 			// File type
@@ -1312,7 +1312,7 @@ int CBMDOS::loadFieldData(void)
 			if (p_dir->file_type & CBMDOS_FileType_Locked) {
 				s_file_type += '>';
 			}
-			p_list.emplace_back(std::move(s_file_type));
+			p_list.push_back(std::move(s_file_type));
 
 			// If this is a GEOS file, get the icon.
 			rp_image_ptr icon;
@@ -1331,7 +1331,7 @@ int CBMDOS::loadFieldData(void)
 			if (icon) {
 				has_icons = true;
 			}
-			vv_icons->emplace_back(std::move(icon));
+			vv_icons->push_back(std::move(icon));
 		}
 	}
 

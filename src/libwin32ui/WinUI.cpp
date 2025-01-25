@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libwin32ui)                       *
  * WinUI.hpp: Windows UI common functions.                                 *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -467,7 +467,7 @@ static inline HRESULT getFileName_int_IFileDialog(tstring &ts_ret, HWND hWnd,
 		// FIXME: Hide display name if pszName == pszSpec.
 		// Setting pszName = nullptr results in failure.
 		cdfs.pszSpec = token;
-		v_cdfs.emplace_back(std::move(cdfs));
+		v_cdfs.push_back(std::move(cdfs));
 
 		// Separator 3: Between MIME types and the next display name.
 		// NOTE: May be missing if this is the end of the string

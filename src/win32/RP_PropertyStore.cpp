@@ -449,8 +449,8 @@ IFACEMETHODIMP RP_PropertyStore::Initialize(_In_ IStream *pstream, DWORD grfMode
 		}
 
 		if (prop_var.vt != VT_EMPTY) {
-			d->prop_key.emplace_back(conv.pkey);
-			d->prop_val.emplace_back(std::move(prop_var));
+			d->prop_key.push_back(conv.pkey);
+			d->prop_val.push_back(std::move(prop_var));
 		}
 	}
 
@@ -462,8 +462,8 @@ IFACEMETHODIMP RP_PropertyStore::Initialize(_In_ IStream *pstream, DWORD grfMode
 
 		PROPVARIANT prop_var;
 		InitPropVariantFromString(s_dimensions.c_str(), &prop_var);
-		d->prop_key.emplace_back(&PKEY_Image_Dimensions);
-		d->prop_val.emplace_back(prop_var);
+		d->prop_key.push_back(&PKEY_Image_Dimensions);
+		d->prop_val.push_back(std::move(prop_var));
 	}
 
 	return S_OK;

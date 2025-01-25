@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * RomDataView_gtk3.cpp: RomData viewer widget. (GTK4-specific)            *
  *                                                                         *
- * Copyright (c) 2017-2024 by David Korth.                                 *
+ * Copyright (c) 2017-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -501,7 +501,7 @@ rp_rom_data_view_update_multi_RFT_LISTDATA_MULTI(RpRomDataView *page, uint32_t u
 			// Need to add all supported languages.
 			// TODO: Do we need to do this for all of them, or just one?
 			for (const auto &pldm : *pListData_multi) {
-				set_lc.emplace(pldm.first);
+				set_lc.insert(pldm.first);
 			}
 		}
 

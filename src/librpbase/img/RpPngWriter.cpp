@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * RpPngWriter.cpp: PNG image writer.                                      *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -1415,7 +1415,7 @@ int RpPngWriter::write_tEXt(const kv_vector &kv)
 			case 1: {
 				// Latin-1. Convert it.
 				char *const latin1_str = strdup(utf8_to_latin1(value).c_str());
-				vU8toL1.emplace_back(latin1_str);
+				vU8toL1.push_back(latin1_str);
 				pTxt->compression = (compress ? PNG_TEXT_COMPRESSION_zTXt : PNG_TEXT_COMPRESSION_NONE);
 				pTxt->key = (png_charp)iter->first;
 				pTxt->text = (png_charp)latin1_str;

@@ -1672,13 +1672,13 @@ int GameCube::loadFieldData(void)
 			vector<string> &data_row = *dest_iter;
 			data_row.reserve(5);	// 5 fields per row.
 
-			// Partition entry.
+			// Partition entry
 			const GameCubePrivate::WiiPartEntry &entry = *src_iter;
 
-			// Partition number.
+			// Partition number
 			data_row.emplace_back(fmt::format(FSTR("{:d}p{:d}"), entry.vg, entry.pt));
 
-			// Partition type.
+			// Partition type
 			string s_ptype;
 			static const array<const char*, 3> part_type_tbl = {{
 				// tr: GameCubePrivate::RVL_PT_GAME (Game partition)
@@ -1710,7 +1710,7 @@ int GameCube::loadFieldData(void)
 					s_ptype = fmt::format(FSTR("{:0>8X}"), entry.type);
 				}
 			}
-			data_row.emplace_back(std::move(s_ptype));
+			data_row.push_back(std::move(s_ptype));
 
 			// Encryption key
 			WiiTicket::EncryptionKeys encKey;
@@ -1732,17 +1732,17 @@ int GameCube::loadFieldData(void)
 			}
 			data_row.emplace_back(s_key_name);
 
-			// Used size.
+			// Used size
 			const off64_t used_size = entry.partition->partition_size_used();
 			if (used_size >= 0) {
-				data_row.emplace_back(LibRpText::formatFileSize(used_size));
+				data_row.push_back(LibRpText::formatFileSize(used_size));
 			} else {
 				// tr: Unknown used size.
 				data_row.emplace_back(C_("Wii|Partition", "Unknown"));
 			}
 
-			// Partition size.
-			data_row.emplace_back(LibRpText::formatFileSize(entry.partition->partition_size()));
+			// Partition size
+			data_row.push_back(LibRpText::formatFileSize(entry.partition->partition_size()));
 		}
 
 		// Fields

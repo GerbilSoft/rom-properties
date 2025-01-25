@@ -903,7 +903,7 @@ int RomFields::addFields_romFields(const RomFields *other, int tabOffset)
 	for (const Field &field_src : other->d_ptr->fields) {
 		// Copy the field directly into the fields vector,
 		// then adjust the tab index.
-		d->fields.emplace_back(field_src);
+		d->fields.push_back(field_src);
 		Field &field_dest = *(d->fields.rbegin());
 		field_dest.tabIdx = (tabOffset != -1 ? (field_dest.tabIdx + tabOffset) : d->tabIdx);
 	}

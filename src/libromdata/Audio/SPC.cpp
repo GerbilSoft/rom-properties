@@ -46,7 +46,7 @@ public:
 
 	// Tag struct
 	struct spc_tags_t {
-		// Vector of strings.
+		// Vector of strings
 		// Contains all string data.
 		vector<string> strs;
 
@@ -155,7 +155,7 @@ public:
 		{
 			val_t val(static_cast<unsigned int>(strs.size()));
 			val.isStrIdx = true;
-			strs.emplace_back(str);
+			strs.push_back(str);
 			map.emplace(key, val);
 		}
 

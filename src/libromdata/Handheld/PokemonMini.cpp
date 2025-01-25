@@ -289,7 +289,7 @@ int PokemonMini::loadFieldData(void)
 		data_row.reserve(3);
 
 		// # (decimal)
-		data_row.emplace_back(fmt::to_string(i));
+		data_row.push_back(fmt::to_string(i));
 
 		// Vector name
 		data_row.emplace_back(vectors_names[i]);
@@ -319,7 +319,7 @@ int PokemonMini::loadFieldData(void)
 				romHeader->irqs[i][2], romHeader->irqs[i][3],
 				romHeader->irqs[i][4], romHeader->irqs[i][5]);
 		}
-		data_row.emplace_back(std::move(s_address));
+		data_row.push_back(std::move(s_address));
 	}
 
 	static const array<const char*, 3> vectors_headers = {{

@@ -615,7 +615,7 @@ int RP_ShellPropSheetExt_Private::initBitfield(_In_ HWND hWndTab,
 	tnames.reserve(count);
 	for (const string &name : *(bitfieldDesc.names)) {
 		if (!name.empty()) {
-			tnames.emplace_back(U82T_s(name));
+			tnames.push_back(U82T_s(name));
 		} else {
 			// Skip U82T_s() for empty strings.
 			tnames.emplace_back();
@@ -630,7 +630,7 @@ int RP_ShellPropSheetExt_Private::initBitfield(_In_ HWND hWndTab,
 	if (elemsPerRow == 1) {
 		// Optimization: Use the entire width of the dialog.
 		// TODO: Testing; right margin.
-		col_widths.emplace_back(max_width);
+		col_widths.push_back(max_width);
 	} else if (elemsPerRow > 1) {
 		// Determine the widest entry in each column.
 		// If the columns are wider than the available area,
@@ -826,7 +826,7 @@ int RP_ShellPropSheetExt_Private::initListData(_In_ HWND hWndTab,
 		pt_start.x, pt_start.y, size.cx, size.cy,
 		hWndTab, (HMENU)(INT_PTR)cId, nullptr, nullptr);
 	SetWindowFont(hListView, hFontDlg, false);
-	hwndListViewControls.emplace_back(hListView);
+	hwndListViewControls.push_back(hListView);
 
 	// Set extended ListView styles.
 	DWORD lvsExStyle = LVS_EX_FULLROWSELECT;
@@ -1017,7 +1017,7 @@ int RP_ShellPropSheetExt_Private::initListData(_In_ HWND hWndTab,
 				nl_max = std::max(nl_max, nl_count);
 
 				// TODO: Store the icon index if necessary.
-				lv_row_data.emplace_back(std::move(tstr));
+				lv_row_data.push_back(std::move(tstr));
 
 				// Next column.
 				is_timestamp >>= 1;
@@ -1077,7 +1077,7 @@ int RP_ShellPropSheetExt_Private::initListData(_In_ HWND hWndTab,
 				rp_image_const_ptr icon = *iter;
 				if (!icon) {
 					// No icon for this row.
-					lvData.vImageList.emplace_back(-1);
+					lvData.vImageList.push_back(-1);
 					continue;
 				}
 
@@ -1150,7 +1150,7 @@ int RP_ShellPropSheetExt_Private::initListData(_In_ HWND hWndTab,
 				}
 
 				// Save the ImageList index for later.
-				lvData.vImageList.emplace_back(iImage);
+				lvData.vImageList.push_back(iImage);
 			}
 		}
 	}
@@ -1378,7 +1378,7 @@ void RP_ShellPropSheetExt_Private::updateMulti(uint32_t user_lc)
 			// Need to add all supported languages.
 			// TODO: Do we need to do this for all of them, or just one?
 			for (const auto &psm : *pStr_multi) {
-				set_lc.emplace(psm.first);
+				set_lc.insert(psm.first);
 			}
 		}
 
@@ -1416,7 +1416,7 @@ void RP_ShellPropSheetExt_Private::updateMulti(uint32_t user_lc)
 			// Need to add all supported languages.
 			// TODO: Do we need to do this for all of them, or just one?
 			for (const auto &pldm : *pListData_multi) {
-				set_lc.emplace(pldm.first);
+				set_lc.insert(pldm.first);
 			}
 		}
 
@@ -1587,7 +1587,7 @@ void RP_ShellPropSheetExt_Private::updateMulti(uint32_t user_lc)
 		vector<uint32_t> vec_lc;
 		vec_lc.reserve(set_lc.size() + 1);
 		vec_lc.assign(set_lc.cbegin(), set_lc.cend());
-		vec_lc.emplace_back(0);
+		vec_lc.push_back(0);
 		LanguageComboBox_SetForcePAL(cboLanguage, romData->isPAL());
 		LanguageComboBox_SetLCs(cboLanguage, vec_lc.data());
 
@@ -1751,7 +1751,7 @@ void RP_ShellPropSheetExt_Private::initDialog(void)
 		}
 
 		// Save for later.
-		t_desc_text.emplace_back(std::move(desc_text));
+		t_desc_text.push_back(std::move(desc_text));
 	}
 
 	// Add additional spacing between the ':' and the field.

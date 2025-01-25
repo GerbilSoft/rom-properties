@@ -116,7 +116,7 @@ static int fstPrint(IFst *fst, ostream &os, const string &path,
 
 			// Check if any more entries are present.
 			dirent = fst->readdir(dirp);
-			tree_lines.emplace_back(dirent ? 1 : 0);
+			tree_lines.push_back(dirent ? 1 : 0);
 
 			// Tree line for the directory entry.
 			if (dirent) {

@@ -934,7 +934,7 @@ int ELFPrivate::addPtDynamicFields(void)
 					continue;
 				vector<string> row;
 				row.emplace_back(&strtab[offset]);
-				vv_data->emplace_back(std::move(row));
+				vv_data->push_back(std::move(row));
 			}
 
 			static const array<const char*, 1> field_names = {{
@@ -1085,11 +1085,11 @@ int ELFPrivate::addSymbolFields(span<const char> dynsym_strtab)
 			} else if (sym.st_shndx == SHN_COMMON) {
 				row.emplace_back(elf_sym_common);
 			} else {
-				row.emplace_back(fmt::to_string(sym.st_shndx));
+				row.push_back(fmt::to_string(sym.st_shndx));
 			}
-			row.emplace_back(fmt::format(FSTR("0x{:0>8X}"), sym.st_value));
-			row.emplace_back(fmt::format(FSTR("0x{:0>8X}"), sym.st_size));
-			vv_data->emplace_back(std::move(row));
+			row.push_back(fmt::format(FSTR("0x{:0>8X}"), sym.st_value));
+			row.push_back(fmt::format(FSTR("0x{:0>8X}"), sym.st_size));
+			vv_data->push_back(std::move(row));
 		}
 		if (vv_data->empty()) {
 			delete vv_data;

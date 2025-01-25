@@ -995,7 +995,7 @@ rp_rom_data_view_update_multi(RpRomDataView *page, uint32_t user_lc)
 			// Need to add all supported languages.
 			// TODO: Do we need to do this for all of them, or just one?
 			for (const auto &psm : *pStr_multi) {
-				set_lc.emplace(psm.first);
+				set_lc.insert(psm.first);
 			}
 		}
 
@@ -1050,7 +1050,7 @@ rp_rom_data_view_update_multi(RpRomDataView *page, uint32_t user_lc)
 		vector<uint32_t> vec_lc;
 		vec_lc.reserve(set_lc.size() + 1);
 		vec_lc.assign(set_lc.cbegin(), set_lc.cend());
-		vec_lc.emplace_back(0);
+		vec_lc.push_back(0);
 		rp_language_combo_box_set_force_pal(RP_LANGUAGE_COMBO_BOX(page->cboLanguage), cxx->romData->isPAL());
 		rp_language_combo_box_set_lcs(RP_LANGUAGE_COMBO_BOX(page->cboLanguage), vec_lc.data());
 
@@ -1482,7 +1482,7 @@ rp_rom_data_view_update_display(RpRomDataView *page)
 		// NOTE: No name for this GtkWidget.
 		gtk_label_set_use_underline(GTK_LABEL(lblDesc), false);
 		set_label_format_type(page, GTK_LABEL(lblDesc));
-		page->cxx->vecDescLabels.emplace_back(GTK_LABEL(lblDesc));
+		page->cxx->vecDescLabels.push_back(GTK_LABEL(lblDesc));
 #if !GTK_CHECK_VERSION(4,0,0)
 		gtk_widget_show(lblDesc);
 #endif /* !GTK_CHECK_VERSION(4,0,0) */

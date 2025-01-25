@@ -334,7 +334,7 @@ int WimPrivate::addFields_XML()
 			currentindex.dispdescription = (s_dispDesc ? s_dispDesc : s_none);
 		}
 
-		images.emplace_back(std::move(currentindex));
+		images.push_back(std::move(currentindex));
 		currentimage = currentimage->NextSiblingElement();
 	}
 
@@ -347,11 +347,11 @@ int WimPrivate::addFields_XML()
 		vv_data->resize(vv_data->size()+1);
 		auto &data_row = vv_data->at(vv_data->size()-1);
 		data_row.reserve(10);
-		data_row.emplace_back(fmt::to_string(idx++));
-		data_row.emplace_back(image.name);
-		data_row.emplace_back(image.description);
-		data_row.emplace_back(image.dispname);
-		data_row.emplace_back(image.dispdescription);
+		data_row.push_back(fmt::to_string(idx++));
+		data_row.push_back(image.name);
+		data_row.push_back(image.description);
+		data_row.push_back(image.dispname);
+		data_row.push_back(image.dispdescription);
 
 		// Pack the 64-bit time_t into a string.
 		RomFields::TimeString_t time_string;
@@ -367,13 +367,13 @@ int WimPrivate::addFields_XML()
 		}
 
 		const auto &windowsver = image.windowsinfo.version;
-		data_row.emplace_back(
+		data_row.push_back(
 			fmt::format(FSTR("{:d}.{:d}.{:d}.{:d}"),
 				windowsver.majorversion, windowsver.minorversion,
 				windowsver.buildnumber, windowsver.spbuildnumber));
 
 		const auto &windowsinfo = image.windowsinfo;
-		data_row.emplace_back(windowsinfo.editionid);
+		data_row.push_back(windowsinfo.editionid);
 		const char *archstring;
 		switch (windowsinfo.arch) {
 			default:
@@ -398,10 +398,10 @@ int WimPrivate::addFields_XML()
 		if (archstring) {
 			data_row.emplace_back(archstring);
 		} else {
-			data_row.emplace_back(fmt::format(C_("RomData", "Unknown ({:d})"),
+			data_row.push_back(fmt::format(C_("RomData", "Unknown ({:d})"),
 				static_cast<int>(windowsinfo.arch)));
 		}
-		data_row.emplace_back(windowsinfo.languages.language);
+		data_row.push_back(windowsinfo.languages.language);
 	}	
 
 	static const array<const char*, 10> field_names = {{

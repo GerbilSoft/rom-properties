@@ -3,7 +3,7 @@
  * Nintendo3DS_ops.cpp: Nintendo 3DS ROM reader. (ROM operations)          *
  * Handles CCI/3DS, CIA, and SMDH files.                                   *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -49,7 +49,7 @@ vector<RomData::RomOp> Nintendo3DS::romOps_int(void) const
 		op.sfi.title = C_("Nintendo3DS|RomOps", "Extract Nintendo DS SRL File");
 		op.sfi.filter = C_("Nintendo3DS|RomOps", "Nintendo DS SRL Files|*.nds;*.srl|application/x-nintendo-ds-rom;application/x-nintendo-dsi-rom");
 		op.sfi.ext = ".nds";
-		ops.emplace_back(std::move(op));
+		ops.push_back(std::move(op));
 	}
 
 	return ops;

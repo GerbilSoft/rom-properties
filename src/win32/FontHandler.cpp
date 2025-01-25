@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * FontHandler.cpp: Font handler.                                          *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -463,7 +463,7 @@ void FontHandler::addMonoControl(HWND hWnd)
 	if (!d->hFontMono) {
 		d->initMonospacedFont();
 	}
-	d->vecMonoControls.emplace_back(hWnd);
+	d->vecMonoControls.push_back(hWnd);
 	SetWindowFont(hWnd, d->hFontMono, false);
 }
 

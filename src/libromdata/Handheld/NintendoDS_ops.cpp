@@ -584,10 +584,10 @@ int NintendoDS::doRomOp_int(int id, RomOpParams *pParams)
 					"Secure Areas decrypted successfully.", (dsi ? 2 : 1));
 			pParams->fieldIdx.reserve(2);
 			if (d->fieldIdx_secData >= 0) {
-				pParams->fieldIdx.emplace_back(d->fieldIdx_secData);
+				pParams->fieldIdx.push_back(d->fieldIdx_secData);
 			}
 			if (d->fieldIdx_secArea >= 0) {
-				pParams->fieldIdx.emplace_back(d->fieldIdx_secArea);
+				pParams->fieldIdx.push_back(d->fieldIdx_secArea);
 			}
 			break;
 		}

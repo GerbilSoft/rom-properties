@@ -324,8 +324,8 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 		const auto &st_row = st.at(i);
 		auto &data_row = vv_data->at(i);
 		data_row.reserve(2);
-		data_row.emplace_back(st_row.first);
-		data_row.emplace_back(st_row.second);
+		data_row.push_back(st_row.first);
+		data_row.push_back(st_row.second);
 	}
 
 	// Fields

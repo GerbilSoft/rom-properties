@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * RomDataFactory.cpp: RomData factory class.                              *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -1212,7 +1212,7 @@ static void init_supportedMimeTypes(void)
 				auto iter = set_mimeTypes.find(*sys_mimeTypes);
 				if (iter == set_mimeTypes.end()) {
 					set_mimeTypes.insert(*sys_mimeTypes);
-					vec_mimeTypes.emplace_back(*sys_mimeTypes);
+					vec_mimeTypes.push_back(*sys_mimeTypes);
 				}
 			}
 		}
@@ -1224,7 +1224,7 @@ static void init_supportedMimeTypes(void)
 		auto iter = set_mimeTypes.find(mimeType);
 		if (iter == set_mimeTypes.end()) {
 			set_mimeTypes.emplace(mimeType);
-			vec_mimeTypes.emplace_back(mimeType);
+			vec_mimeTypes.push_back(mimeType);
 		}
 	}
 }

@@ -553,7 +553,7 @@ int EXEPrivate::addFields_NE_Entry(void)
 				ent.is_movable = false;
 				ent.has_name = false;
 				ent.is_resident = false;
-				ents.emplace_back(std::move(ent));
+				ents.push_back(std::move(ent));
 				p += 3;
 			}
 			break;
@@ -576,7 +576,7 @@ int EXEPrivate::addFields_NE_Entry(void)
 				ent.is_movable = true;
 				ent.has_name = false;
 				ent.is_resident = false;
-				ents.emplace_back(std::move(ent));
+				ents.push_back(std::move(ent));
 				p += 6;
 			}
 			break;
@@ -621,7 +621,7 @@ int EXEPrivate::addFields_NE_Entry(void)
 				Entry ent = *it;
 				ent.name = name;
 				ent.is_resident = is_resident;
-				ents.emplace_back(std::move(ent)); // `it` is invalidated here
+				ents.push_back(std::move(ent)); // `it` is invalidated here
 			} else {
 				it->has_name = true;
 				it->name = name;
@@ -681,20 +681,20 @@ int EXEPrivate::addFields_NE_Entry(void)
 			flags.resize(flags.size()-1);
 		}
 
-		row.emplace_back(fmt::to_string(ent.ordinal));
+		row.push_back(fmt::to_string(ent.ordinal));
 		if (ent.has_name) {
 			row.emplace_back(ent.name.data(), ent.name.size());
 		} else {
 			row.emplace_back(s_no_name);
 		}
 		if (ent.is_movable) {
-			row.emplace_back(fmt::format(s_address_mf, ent.segment, ent.offset, s_address_movable));
+			row.push_back(fmt::format(s_address_mf, ent.segment, ent.offset, s_address_movable));
 		} else if (ent.segment != 0xFE) {
-			row.emplace_back(fmt::format(s_address_mf, ent.segment, ent.offset, s_address_fixed));
+			row.push_back(fmt::format(s_address_mf, ent.segment, ent.offset, s_address_fixed));
 		} else {
-			row.emplace_back(fmt::format(s_address_constant, ent.offset));
+			row.push_back(fmt::format(s_address_constant, ent.offset));
 		}
-		row.emplace_back(std::move(flags));
+		row.push_back(std::move(flags));
 	}
 
 	// Create the tab if we have any exports.
@@ -834,9 +834,9 @@ int EXEPrivate::addFields_NE_Import(void)
 		row.reserve(3);
 		const char *const name = EXENEEntries::lookup_ordinal(modname.c_str(), imp.second);
 		row.emplace_back(name ? name : s_no_name);
-		row.emplace_back(fmt::to_string(imp.second));
-		row.emplace_back(std::move(modname));
-		vv_data->emplace_back(std::move(row));
+		row.push_back(fmt::to_string(imp.second));
+		row.push_back(std::move(modname));
+		vv_data->push_back(std::move(row));
 	}
 	for (const auto &imp : name_set) {
 		string modname;
@@ -848,10 +848,10 @@ int EXEPrivate::addFields_NE_Import(void)
 
 		std::vector<string> row;
 		row.reserve(3);
-		row.emplace_back(std::move(name));
+		row.push_back(std::move(name));
 		row.emplace_back();
-		row.emplace_back(std::move(modname));
-		vv_data->emplace_back(std::move(row));
+		row.push_back(std::move(modname));
+		vv_data->push_back(std::move(row));
 	}
 
 	// Sort the list data by (module, name, ordinal).
