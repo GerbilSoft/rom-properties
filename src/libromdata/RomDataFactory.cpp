@@ -202,9 +202,11 @@ pthread_once_t once_mimeTypes = PTHREAD_ONCE_INIT;
  *
  * TODO: Add support for multiple magic numbers per class.
  */
-static const array<RomDataFns, 38> romDataFns_magic = {{
+static const array<RomDataFns, 40> romDataFns_magic = {{
 	// Consoles
 	GetRomDataFns_addr(Atari7800, ATTR_HAS_METADATA, 4, 'RI78'),	// "ATARI7800"
+	GetRomDataFns_addr(GameCubeBNR, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'BNR1'),
+	GetRomDataFns_addr(GameCubeBNR, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'BNR2'),
 	GetRomDataFns_addr(PlayStationEXE, 0, 0, 'PS-X'),
 	GetRomDataFns_addr(SufamiTurbo, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 8, 'FC-A'),	// Less common than "BAND"
 	GetRomDataFns_addr(WiiBNR, ATTR_HAS_METADATA, 64, 'IMET'),	// common
@@ -228,7 +230,6 @@ static const array<RomDataFns, 38> romDataFns_magic = {{
 	GetRomDataFns_addr(Nintendo3DS_SMDH, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'SMDH'),
 	GetRomDataFns_addr(NintendoDS, ATTR_HAS_THUMBNAIL | ATTR_HAS_DPOVERLAY | ATTR_HAS_METADATA, 0xC0, 0x24FFAE51),
 	GetRomDataFns_addr(NintendoDS, ATTR_HAS_THUMBNAIL | ATTR_HAS_DPOVERLAY | ATTR_HAS_METADATA, 0xC0, 0xC8604FE2),
-	//GetRomDataFns_addr(PSP, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, '0000'),	// NOTE: No magic number for PSP ISO!
 
 	// Audio
 	GetRomDataFns_addr(BRSTM, ATTR_HAS_METADATA, 0, 'RSTM'),
@@ -263,13 +264,12 @@ static const array<RomDataFns, 38> romDataFns_magic = {{
  * Headers with addresses other than 0 should be
  * placed at the end of this array.
  */
-static const array<RomDataFns, 38> romDataFns_header = {{
+static const array<RomDataFns, 37> romDataFns_header = {{
 	// Consoles
 	GetRomDataFns(ColecoVision, ATTR_HAS_METADATA),
 	GetRomDataFns(Dreamcast, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA | ATTR_SUPPORTS_DEVICES),
 	GetRomDataFns(DreamcastSave, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA),
 	GetRomDataFns(GameCube, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA | ATTR_SUPPORTS_DEVICES),
-	GetRomDataFns(GameCubeBNR, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA),
 	GetRomDataFns(GameCubeSave, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA),
 	GetRomDataFns(Intellivision, ATTR_HAS_METADATA),
 	GetRomDataFns(iQuePlayer, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA),
