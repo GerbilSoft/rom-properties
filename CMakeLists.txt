@@ -5,7 +5,7 @@ CMAKE_MINIMUM_REQUIRED(VERSION 3.5)
 # Introduced in CMake 3.0.
 IF(POLICY CMP0048)
 	CMAKE_POLICY(SET CMP0048 NEW)
-ENDIF(CMP0048)
+ENDIF(POLICY CMP0048)
 
 # CMP0063: Honor visibility properties for all target types,
 # including static libraries and executables.
