@@ -1,4 +1,3 @@
-
 /* pngrutil.c - utilities to read a PNG file
  *
  * Copyright (c) 2018-2024 Cosmin Truta
@@ -17,6 +16,21 @@
 #include "pngpriv.h"
 
 #ifdef PNG_READ_SUPPORTED
+
+#ifdef PNG_READ_INTERLACING_SUPPORTED
+/* Arrays to facilitate interlacing - use pass (0 - 6) as index. */
+
+/* Start of interlace block */
+static const png_byte png_pass_start[7] = {0, 4, 0, 2, 0, 1, 0};
+/* Offset to next interlace block */
+static const png_byte png_pass_inc[7] = {8, 8, 4, 4, 2, 2, 1};
+/* Start of interlace block in the y direction */
+static const png_byte png_pass_ystart[7] = {0, 0, 4, 0, 2, 0, 1};
+/* Offset to next interlace block in the y direction */
+static const png_byte png_pass_yinc[7] = {8, 8, 8, 4, 4, 2, 2};
+
+/* TODO: Move these arrays to a common utility module to avoid duplication. */
+#endif
 
 png_uint_32 PNGAPI
 png_get_uint_31(png_const_structrp png_ptr, png_const_bytep buf)
@@ -2037,6 +2051,152 @@ png_handle_bKGD(png_structrp png_ptr, png_inforp info_ptr, png_uint_32 length)
 }
 #endif
 
+#ifdef PNG_READ_cICP_SUPPORTED
+void /* PRIVATE */
+png_handle_cICP(png_structrp png_ptr, png_inforp info_ptr, png_uint_32 length)
+{
+   png_byte buf[4];
+
+   png_debug(1, "in png_handle_cICP");
+
+   if ((png_ptr->mode & PNG_HAVE_IHDR) == 0)
+      png_chunk_error(png_ptr, "missing IHDR");
+
+   else if ((png_ptr->mode & (PNG_HAVE_IDAT|PNG_HAVE_PLTE)) != 0)
+   {
+      png_crc_finish(png_ptr, length);
+      png_chunk_benign_error(png_ptr, "out of place");
+      return;
+   }
+
+   else if (info_ptr != NULL && (info_ptr->valid & PNG_INFO_cICP) != 0)
+   {
+      png_crc_finish(png_ptr, length);
+      png_chunk_benign_error(png_ptr, "duplicate");
+      return;
+   }
+
+   else if (length != 4)
+   {
+      png_crc_finish(png_ptr, length);
+      png_chunk_benign_error(png_ptr, "invalid");
+      return;
+   }
+
+   png_crc_read(png_ptr, buf, 4);
+
+   if (png_crc_finish(png_ptr, 0) != 0)
+      return;
+
+   png_set_cICP(png_ptr, info_ptr, buf[0], buf[1],  buf[2], buf[3]);
+}
+#endif
+
+#ifdef PNG_READ_cLLI_SUPPORTED
+void /* PRIVATE */
+png_handle_cLLI(png_structrp png_ptr, png_inforp info_ptr, png_uint_32 length)
+{
+   png_byte buf[8];
+
+   png_debug(1, "in png_handle_cLLI");
+
+   if ((png_ptr->mode & PNG_HAVE_IHDR) == 0)
+      png_chunk_error(png_ptr, "missing IHDR");
+
+   else if ((png_ptr->mode & (PNG_HAVE_IDAT|PNG_HAVE_PLTE)) != 0)
+   {
+      png_crc_finish(png_ptr, length);
+      png_chunk_benign_error(png_ptr, "out of place");
+      return;
+   }
+
+   else if (info_ptr != NULL && (info_ptr->valid & PNG_INFO_cLLI) != 0)
+   {
+      png_crc_finish(png_ptr, length);
+      png_chunk_benign_error(png_ptr, "duplicate");
+      return;
+   }
+
+   else if (length != 8)
+   {
+      png_crc_finish(png_ptr, length);
+      png_chunk_benign_error(png_ptr, "invalid");
+      return;
+   }
+
+   png_crc_read(png_ptr, buf, 8);
+
+   if (png_crc_finish(png_ptr, 0) != 0)
+      return;
+
+   /* The error checking happens here, this puts it in just one place: */
+   png_set_cLLI_fixed(png_ptr, info_ptr, png_get_uint_32(buf),
+         png_get_uint_32(buf+4));
+}
+#endif
+
+#ifdef PNG_READ_mDCV_SUPPORTED
+void /* PRIVATE */
+png_handle_mDCV(png_structrp png_ptr, png_inforp info_ptr, png_uint_32 length)
+{
+   png_byte buf[24];
+
+   png_debug(1, "in png_handle_mDCV");
+
+   if ((png_ptr->mode & PNG_HAVE_IHDR) == 0)
+      png_chunk_error(png_ptr, "missing IHDR");
+
+   else if ((png_ptr->mode & (PNG_HAVE_IDAT|PNG_HAVE_PLTE)) != 0)
+   {
+      png_crc_finish(png_ptr, length);
+      png_chunk_benign_error(png_ptr, "out of place");
+      return;
+   }
+
+   else if (info_ptr != NULL && (info_ptr->valid & PNG_INFO_mDCV) != 0)
+   {
+      png_crc_finish(png_ptr, length);
+      png_chunk_benign_error(png_ptr, "duplicate");
+      return;
+   }
+
+   else if (length != 24)
+   {
+      png_crc_finish(png_ptr, length);
+      png_chunk_benign_error(png_ptr, "invalid");
+      return;
+   }
+
+   png_crc_read(png_ptr, buf, 24);
+
+   if (png_crc_finish(png_ptr, 0) != 0)
+      return;
+
+   /* The error checking happens here, this puts it in just one place.  The
+    * odd /50000 scaling factor makes it more difficult but the (x.y) values are
+    * only two bytes so a <<1 is safe.
+    *
+    * WARNING: the PNG specification defines the cHRM chunk to **start** with
+    * the white point (x,y).  The W3C PNG v3 specification puts the white point
+    * **after* R,G,B.  The x,y values in mDCV are also scaled by 50,000 and
+    * stored in just two bytes, whereas those in cHRM are scaled by 100,000 and
+    * stored in four bytes.  This is very, very confusing.  These APIs remove
+    * the confusion by copying the existing, well established, API.
+    */
+   png_set_mDCV_fixed(png_ptr, info_ptr,
+         png_get_uint_16(buf+12U) << 1U, /* white x */
+         png_get_uint_16(buf+14U) << 1U, /* white y */
+         png_get_uint_16(buf+ 0U) << 1U, /* red x */
+         png_get_uint_16(buf+ 2U) << 1U, /* red y */
+         png_get_uint_16(buf+ 4U) << 1U, /* green x */
+         png_get_uint_16(buf+ 6U) << 1U, /* green y */
+         png_get_uint_16(buf+ 8U) << 1U, /* blue x */
+         png_get_uint_16(buf+10U) << 1U, /* blue y */
+         png_get_uint_32(buf+16U), /* peak luminance */
+         png_get_uint_32(buf+20U));/* minimum perceivable luminance */
+}
+#endif
+
 #ifdef PNG_READ_eXIf_SUPPORTED
 void /* PRIVATE */
 png_handle_eXIf(png_structrp png_ptr, png_inforp info_ptr, png_uint_32 length)
@@ -3862,10 +4022,6 @@ void /* PRIVATE */
 png_do_read_interlace(png_row_infop row_info, png_bytep row, int pass,
     png_uint_32 transformations /* Because these may affect the byte layout */)
 {
-   /* Arrays to facilitate easy interlacing - use pass (0 - 6) as index */
-   /* Offset to next interlace block */
-   static const unsigned int png_pass_inc[7] = {8, 8, 4, 4, 2, 2, 1};
-
    png_debug(1, "in png_do_read_interlace");
    if (row != NULL && row_info != NULL)
    {
@@ -4537,20 +4693,6 @@ png_read_finish_IDAT(png_structrp png_ptr)
 void /* PRIVATE */
 png_read_finish_row(png_structrp png_ptr)
 {
-   /* Arrays to facilitate easy interlacing - use pass (0 - 6) as index */
-
-   /* Start of interlace block */
-   static const png_byte png_pass_start[7] = {0, 4, 0, 2, 0, 1, 0};
-
-   /* Offset to next interlace block */
-   static const png_byte png_pass_inc[7] = {8, 8, 4, 4, 2, 2, 1};
-
-   /* Start of interlace block in the y direction */
-   static const png_byte png_pass_ystart[7] = {0, 0, 4, 0, 2, 0, 1};
-
-   /* Offset to next interlace block in the y direction */
-   static const png_byte png_pass_yinc[7] = {8, 8, 8, 4, 4, 2, 2};
-
    png_debug(1, "in png_read_finish_row");
    png_ptr->row_number++;
    if (png_ptr->row_number < png_ptr->num_rows)
@@ -4602,20 +4744,6 @@ png_read_finish_row(png_structrp png_ptr)
 void /* PRIVATE */
 png_read_start_row(png_structrp png_ptr)
 {
-   /* Arrays to facilitate easy interlacing - use pass (0 - 6) as index */
-
-   /* Start of interlace block */
-   static const png_byte png_pass_start[7] = {0, 4, 0, 2, 0, 1, 0};
-
-   /* Offset to next interlace block */
-   static const png_byte png_pass_inc[7] = {8, 8, 4, 4, 2, 2, 1};
-
-   /* Start of interlace block in the y direction */
-   static const png_byte png_pass_ystart[7] = {0, 0, 4, 0, 2, 0, 1};
-
-   /* Offset to next interlace block in the y direction */
-   static const png_byte png_pass_yinc[7] = {8, 8, 8, 4, 4, 2, 2};
-
    unsigned int max_pixel_depth;
    size_t row_bytes;
 

@@ -70,7 +70,8 @@ License: BSD-3-clause
 
 Files:
  extlib/libpng/*
-Copyright: Copyright (c) 1998-2018 Glenn Randers-Pehrson
+Copyright: Copyright (c) 2018-2025 Cosmin Truta
+           Copyright (c) 1998-2018 Glenn Randers-Pehrson
 License: libpng
 
 Files:

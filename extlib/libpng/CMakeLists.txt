@@ -1,9 +1,9 @@
 
 # CMakeLists.txt - CMake lists for libpng
 #
-# Copyright (c) 2018-2024 Cosmin Truta.
-# Copyright (c) 2007-2018 Glenn Randers-Pehrson.
-# Originally written by Christian Ehrlicher, 2007.
+# Copyright (c) 2018-2025 Cosmin Truta
+# Copyright (c) 2007-2018 Glenn Randers-Pehrson
+# Originally written by Christian Ehrlicher, 2007
 #
 # Use, modification and distribution are subject to
 # the same licensing terms and conditions as libpng.
@@ -17,12 +17,12 @@
 
 # rom-properties: Disabled; use the main project policies.
 IF(0)
-cmake_minimum_required(VERSION 3.6)
+cmake_minimum_required(VERSION 3.14)
 ENDIF(0) # rom-properties
 
 set(PNGLIB_MAJOR 1)
 set(PNGLIB_MINOR 6)
-set(PNGLIB_REVISION 44)
+set(PNGLIB_REVISION 46)
 set(PNGLIB_SUBREVISION 0)
 #set(PNGLIB_SUBREVISION "git")
 set(PNGLIB_VERSION ${PNGLIB_MAJOR}.${PNGLIB_MINOR}.${PNGLIB_REVISION})
@@ -77,7 +77,7 @@ option(PNG_TESTS "Build the libpng tests" ON)
 # Same as above, but for the third-party tools.
 # Although these tools are targetted at development environments only,
 # the users are allowed to override the option to build by default.
-if (ANDROID OR IOS)
+if(ANDROID OR IOS)
   option(PNG_TOOLS "Build the libpng tools" OFF)
 else()
   option(PNG_TOOLS "Build the libpng tools" ON)
@@ -107,7 +107,7 @@ ENDIF(0) # rom-properties
 # to check CMAKE_OSX_ARCHITECTURES to identify which hardware-specific flags to
 # enable. Note that this will fail if you attempt to build a universal binary
 # in a single CMake invocation.
-if (APPLE AND CMAKE_OSX_ARCHITECTURES)
+if(APPLE AND CMAKE_OSX_ARCHITECTURES)
   string(TOLOWER "${CMAKE_OSX_ARCHITECTURES}" PNG_TARGET_ARCHITECTURE)
 else()
   string(TOLOWER "${CMAKE_SYSTEM_PROCESSOR}" PNG_TARGET_ARCHITECTURE)
@@ -115,28 +115,30 @@ endif()
 message(STATUS "Building for target architecture: ${PNG_TARGET_ARCHITECTURE}")
 
 # Allow the users to specify a custom location of zlib.
-# This option is deprecated, and no longer needed with CMake 3.12 and newer.
-# Under the CMake policy CMP0074, if zlib is being built alongside libpng as a
-# subproject, its location can be passed on to CMake via the ZLIB_ROOT variable.
+# With CMake 3.12 and newer, this option is no longer necessary.
 # rom-properties: Don't use option() here; it's set by extlib.
 IF(0)
-option(PNG_BUILD_ZLIB "Custom zlib location, else find_package is used" OFF)
+option(PNG_BUILD_ZLIB "[Deprecated; please use ZLIB_ROOT]" OFF)
 ENDIF(0) # rom-properties
 
-if(NOT PNG_BUILD_ZLIB)
-  find_package(ZLIB REQUIRED)
-elseif(POLICY CMP0074)
+if(PNG_BUILD_ZLIB)
   if("x${ZLIB_ROOT}" STREQUAL "x")
+    #message(SEND_ERROR
     message(DEPRECATION
-            "The option PNG_BUILD_ZLIB has been deprecated; please use ZLIB_ROOT instead")
+            "The option PNG_BUILD_ZLIB=${PNG_BUILD_ZLIB} is no longer supported; "
+            "please use ZLIB_ROOT instead")
   else()
     message(SEND_ERROR
-            "The option PNG_BUILD_ZLIB=${PNG_BUILD_ZLIB} and "
-            "the variable ZLIB_ROOT=\"${ZLIB_ROOT}\" are mutually exclusive")
+            "The option PNG_BUILD_ZLIB=${PNG_BUILD_ZLIB} is no longer supported; "
+            "using ZLIB_ROOT=\"${ZLIB_ROOT}\"")
   endif()
+else()
+  find_package(ZLIB REQUIRED)
 endif()
 
-if(UNIX AND NOT APPLE AND NOT BEOS AND NOT HAIKU AND NOT EMSCRIPTEN)
+if(UNIX
+   AND NOT (APPLE OR BEOS OR HAIKU)
+   AND NOT EMSCRIPTEN)
   find_library(M_LIBRARY m)
   if(M_LIBRARY)
     set(M_LIBRARY m)
@@ -149,217 +151,217 @@ endif()
 
 if(PNG_HARDWARE_OPTIMIZATIONS)
 
-# Set definitions and sources for ARM.
-if(PNG_TARGET_ARCHITECTURE MATCHES "^(arm|aarch)")
-  if(PNG_TARGET_ARCHITECTURE MATCHES "^(arm64|aarch64)")
-    set(PNG_ARM_NEON_POSSIBLE_VALUES on off)
-    set(PNG_ARM_NEON "on"
-        CACHE STRING "Enable ARM NEON optimizations: on|off; on is default")
-  else()
-    set(PNG_ARM_NEON_POSSIBLE_VALUES check on off)
-    set(PNG_ARM_NEON "off"
-        CACHE STRING "Enable ARM NEON optimizations: check|on|off; off is default")
-  endif()
-  set_property(CACHE PNG_ARM_NEON
-               PROPERTY STRINGS ${PNG_ARM_NEON_POSSIBLE_VALUES})
-  list(FIND PNG_ARM_NEON_POSSIBLE_VALUES ${PNG_ARM_NEON} index)
-  if(index EQUAL -1)
-    message(FATAL_ERROR "PNG_ARM_NEON must be one of [${PNG_ARM_NEON_POSSIBLE_VALUES}]")
-  elseif(NOT PNG_ARM_NEON STREQUAL "off")
-    set(libpng_arm_sources
-        arm/arm_init.c
-        arm/filter_neon_intrinsics.c
-        arm/palette_neon_intrinsics.c)
-    if(PNG_ARM_NEON STREQUAL "on")
-      add_definitions(-DPNG_ARM_NEON_OPT=2)
-    elseif(PNG_ARM_NEON STREQUAL "check")
-      add_definitions(-DPNG_ARM_NEON_CHECK_SUPPORTED)
-    endif()
-  else()
-    add_definitions(-DPNG_ARM_NEON_OPT=0)
-  endif()
-endif()
-
-# Set definitions and sources for PowerPC.
-if(PNG_TARGET_ARCHITECTURE MATCHES "^(powerpc|ppc64)")
-  set(PNG_POWERPC_VSX_POSSIBLE_VALUES on off)
-  set(PNG_POWERPC_VSX "on"
-      CACHE STRING "Enable POWERPC VSX optimizations: on|off; on is default")
-  set_property(CACHE PNG_POWERPC_VSX
-               PROPERTY STRINGS ${PNG_POWERPC_VSX_POSSIBLE_VALUES})
-  list(FIND PNG_POWERPC_VSX_POSSIBLE_VALUES ${PNG_POWERPC_VSX} index)
-  if(index EQUAL -1)
-    message(FATAL_ERROR "PNG_POWERPC_VSX must be one of [${PNG_POWERPC_VSX_POSSIBLE_VALUES}]")
-  elseif(NOT PNG_POWERPC_VSX STREQUAL "off")
-    set(libpng_powerpc_sources
-        powerpc/powerpc_init.c
-        powerpc/filter_vsx_intrinsics.c)
-    if(PNG_POWERPC_VSX STREQUAL "on")
-      add_definitions(-DPNG_POWERPC_VSX_OPT=2)
-    endif()
-  else()
-    add_definitions(-DPNG_POWERPC_VSX_OPT=0)
-  endif()
-endif()
-
-# Set definitions and sources for Intel.
-if(PNG_TARGET_ARCHITECTURE MATCHES "^(i[3-6]86|x86|amd64)")
-  set(PNG_INTEL_SSE_POSSIBLE_VALUES on off)
-  set(PNG_INTEL_SSE "on"
-      CACHE STRING "Enable INTEL_SSE optimizations: on|off; on is default")
-  set_property(CACHE PNG_INTEL_SSE
-               PROPERTY STRINGS ${PNG_INTEL_SSE_POSSIBLE_VALUES})
-  list(FIND PNG_INTEL_SSE_POSSIBLE_VALUES ${PNG_INTEL_SSE} index)
-  if(index EQUAL -1)
-    message(FATAL_ERROR "PNG_INTEL_SSE must be one of [${PNG_INTEL_SSE_POSSIBLE_VALUES}]")
-  elseif(NOT PNG_INTEL_SSE STREQUAL "off")
-    set(libpng_intel_sources
-        intel/intel_init.c
-        intel/filter_sse2_intrinsics.c)
-    if(PNG_INTEL_SSE STREQUAL "on")
-      add_definitions(-DPNG_INTEL_SSE_OPT=1)
-    endif()
-  else()
-    add_definitions(-DPNG_INTEL_SSE_OPT=0)
-  endif()
-endif()
-
-# rom-properties: Enable Intel SSE2 optimizations on x86.
-# Supercedes the above block.
-if(PNG_TARGET_ARCHITECTURE MATCHES "^i?86" OR
-   PNG_TARGET_ARCHITECTURE MATCHES "^x86_64*")
-	SET(libpng_sources
-		${libpng_sources}
-		intel/filter_sse2_intrinsics.c
-		intel/intel_init.c
-		)
-	ADD_DEFINITIONS(-DPNG_INTEL_SSE)
-	# Enable SSE2 for filter_sse2_intrinsics.c only.
-	# NOTE: SSE2 is always enabled on AMD64.
-	IF(MSVC AND NOT CMAKE_CL_64)
-		SET(SSE2_FLAG "/arch:SSE2")
-		IF(MSVC_VERSION LESS 1900)
-			# NOTE: We have to compile as C++ in versions
-			# of MSVC older than 2015 due to declarations
-			# of variables after code.
-			SET_SOURCE_FILES_PROPERTIES(intel/filter_sse2_intrinsics.c
-				PROPERTIES LANGUAGE CXX)
-		ENDIF(MSVC_VERSION LESS 1900)
-	ELSEIF(NOT MSVC)
-		# TODO: Other compilers?
-		SET(SSE2_FLAG "-msse2")
-	ENDIF()
-	SET_SOURCE_FILES_PROPERTIES(intel/filter_sse2_intrinsics.c
-		APPEND_STRING PROPERTIES COMPILE_FLAGS " ${SSE2_FLAG} ")
-ENDIF()
-
-# Set definitions and sources for MIPS.
-if(PNG_TARGET_ARCHITECTURE MATCHES "^(mipsel|mips64el)")
-  set(PNG_MIPS_MSA_POSSIBLE_VALUES on off)
-  set(PNG_MIPS_MSA "on"
-      CACHE STRING "Enable MIPS_MSA optimizations: on|off; on is default")
-  set_property(CACHE PNG_MIPS_MSA
-               PROPERTY STRINGS ${PNG_MIPS_MSA_POSSIBLE_VALUES})
-  list(FIND PNG_MIPS_MSA_POSSIBLE_VALUES ${PNG_MIPS_MSA} index_msa)
-  if(index_msa EQUAL -1)
-    message(FATAL_ERROR "PNG_MIPS_MSA must be one of [${PNG_MIPS_MSA_POSSIBLE_VALUES}]")
-  endif()
-
-  set(PNG_MIPS_MMI_POSSIBLE_VALUES on off)
-  set(PNG_MIPS_MMI "on"
-      CACHE STRING "Enable MIPS_MMI optimizations: on|off; on is default")
-  set_property(CACHE PNG_MIPS_MMI
-               PROPERTY STRINGS ${PNG_MIPS_MMI_POSSIBLE_VALUES})
-  list(FIND PNG_MIPS_MMI_POSSIBLE_VALUES ${PNG_MIPS_MMI} index_mmi)
-  if(index_mmi EQUAL -1)
-    message(FATAL_ERROR "PNG_MIPS_MMI must be one of [${PNG_MIPS_MMI_POSSIBLE_VALUES}]")
-  endif()
-
-  if(PNG_MIPS_MSA STREQUAL "on" AND PNG_MIPS_MMI STREQUAL "on")
-    set(libpng_mips_sources
-        mips/mips_init.c
-        mips/filter_msa_intrinsics.c
-        mips/filter_mmi_inline_assembly.c)
-    add_definitions(-DPNG_MIPS_MSA_OPT=2)
-    add_definitions(-DPNG_MIPS_MMI_OPT=1)
-  elseif(PNG_MIPS_MSA STREQUAL "on")
-    set(libpng_mips_sources
-        mips/mips_init.c
-        mips/filter_msa_intrinsics.c)
-    add_definitions(-DPNG_MIPS_MSA_OPT=2)
-    add_definitions(-DPNG_MIPS_MMI_OPT=0)
-  elseif(PNG_MIPS_MMI STREQUAL "on")
-    set(libpng_mips_sources
-        mips/mips_init.c
-        mips/filter_mmi_inline_assembly.c)
-    add_definitions(-DPNG_MIPS_MSA_OPT=0)
-    add_definitions(-DPNG_MIPS_MMI_OPT=1)
-  else()
-    add_definitions(-DPNG_MIPS_MSA_OPT=0)
-    add_definitions(-DPNG_MIPS_MMI_OPT=0)
-  endif()
-endif()
-
-# Set definitions and sources for LoongArch.
-if(PNG_TARGET_ARCHITECTURE MATCHES "^(loongarch)")
-  include(CheckCCompilerFlag)
-  set(PNG_LOONGARCH_LSX_POSSIBLE_VALUES on off)
-  set(PNG_LOONGARCH_LSX "on"
-      CACHE STRING "Enable LOONGARCH_LSX optimizations: on|off; on is default")
-  set_property(CACHE PNG_LOONGARCH_LSX
-               PROPERTY STRINGS ${PNG_LOONGARCH_LSX_POSSIBLE_VALUES})
-  list(FIND PNG_LOONGARCH_LSX_POSSIBLE_VALUES ${PNG_LOONGARCH_LSX} index)
-  if(index EQUAL -1)
-    message(FATAL_ERROR "PNG_LOONGARCH_LSX must be one of [${PNG_LOONGARCH_LSX_POSSIBLE_VALUES}]")
-  elseif(NOT PNG_LOONGARCH_LSX STREQUAL "off")
-    CHECK_C_COMPILER_FLAG("-mlsx" COMPILER_SUPPORTS_LSX)
-    if(COMPILER_SUPPORTS_LSX)
-      set(libpng_loongarch_sources
-          loongarch/loongarch_lsx_init.c
-          loongarch/filter_lsx_intrinsics.c)
-      set_source_files_properties(${libpng_loongarch_sources}
-                                  PROPERTIES
-                                  COMPILE_FLAGS "-mlsx")
-      add_definitions(-DPNG_LOONGARCH_LSX_OPT=1)
+  # Set definitions and sources for ARM.
+  if(PNG_TARGET_ARCHITECTURE MATCHES "^(arm|aarch)")
+    if(PNG_TARGET_ARCHITECTURE MATCHES "^(arm64|aarch64)")
+      set(PNG_ARM_NEON_POSSIBLE_VALUES on off)
+      set(PNG_ARM_NEON "on"
+          CACHE STRING "Enable ARM NEON optimizations: on|off; on is default")
     else()
-      message(FATAL_ERROR "Compiler does not support -mlsx option")
+      set(PNG_ARM_NEON_POSSIBLE_VALUES check on off)
+      set(PNG_ARM_NEON "off"
+          CACHE STRING "Enable ARM NEON optimizations: check|on|off; off is default")
     endif()
-  else()
-    add_definitions(-DPNG_LOONGARCH_LSX_OPT=0)
+    set_property(CACHE PNG_ARM_NEON
+                PROPERTY STRINGS ${PNG_ARM_NEON_POSSIBLE_VALUES})
+    list(FIND PNG_ARM_NEON_POSSIBLE_VALUES ${PNG_ARM_NEON} index)
+    if(index EQUAL -1)
+      message(FATAL_ERROR "PNG_ARM_NEON must be one of [${PNG_ARM_NEON_POSSIBLE_VALUES}]")
+    elseif(NOT PNG_ARM_NEON STREQUAL "off")
+      set(libpng_arm_sources
+          arm/arm_init.c
+          arm/filter_neon_intrinsics.c
+          arm/palette_neon_intrinsics.c)
+      if(PNG_ARM_NEON STREQUAL "on")
+        add_definitions(-DPNG_ARM_NEON_OPT=2)
+      elseif(PNG_ARM_NEON STREQUAL "check")
+        add_definitions(-DPNG_ARM_NEON_CHECK_SUPPORTED)
+      endif()
+    else()
+      add_definitions(-DPNG_ARM_NEON_OPT=0)
+    endif()
   endif()
-endif()
+
+  # Set definitions and sources for PowerPC.
+  if(PNG_TARGET_ARCHITECTURE MATCHES "^(powerpc|ppc64)")
+    set(PNG_POWERPC_VSX_POSSIBLE_VALUES on off)
+    set(PNG_POWERPC_VSX "on"
+        CACHE STRING "Enable POWERPC VSX optimizations: on|off; on is default")
+    set_property(CACHE PNG_POWERPC_VSX
+                PROPERTY STRINGS ${PNG_POWERPC_VSX_POSSIBLE_VALUES})
+    list(FIND PNG_POWERPC_VSX_POSSIBLE_VALUES ${PNG_POWERPC_VSX} index)
+    if(index EQUAL -1)
+      message(FATAL_ERROR "PNG_POWERPC_VSX must be one of [${PNG_POWERPC_VSX_POSSIBLE_VALUES}]")
+    elseif(NOT PNG_POWERPC_VSX STREQUAL "off")
+      set(libpng_powerpc_sources
+          powerpc/powerpc_init.c
+          powerpc/filter_vsx_intrinsics.c)
+      if(PNG_POWERPC_VSX STREQUAL "on")
+        add_definitions(-DPNG_POWERPC_VSX_OPT=2)
+      endif()
+    else()
+      add_definitions(-DPNG_POWERPC_VSX_OPT=0)
+    endif()
+  endif()
+
+  # Set definitions and sources for Intel.
+  if(PNG_TARGET_ARCHITECTURE MATCHES "^(i[3-6]86|x86|amd64)")
+    set(PNG_INTEL_SSE_POSSIBLE_VALUES on off)
+    set(PNG_INTEL_SSE "on"
+        CACHE STRING "Enable INTEL_SSE optimizations: on|off; on is default")
+    set_property(CACHE PNG_INTEL_SSE
+                PROPERTY STRINGS ${PNG_INTEL_SSE_POSSIBLE_VALUES})
+    list(FIND PNG_INTEL_SSE_POSSIBLE_VALUES ${PNG_INTEL_SSE} index)
+    if(index EQUAL -1)
+      message(FATAL_ERROR "PNG_INTEL_SSE must be one of [${PNG_INTEL_SSE_POSSIBLE_VALUES}]")
+    elseif(NOT PNG_INTEL_SSE STREQUAL "off")
+      set(libpng_intel_sources
+          intel/intel_init.c
+          intel/filter_sse2_intrinsics.c)
+      if(PNG_INTEL_SSE STREQUAL "on")
+        add_definitions(-DPNG_INTEL_SSE_OPT=1)
+      endif()
+    else()
+      add_definitions(-DPNG_INTEL_SSE_OPT=0)
+    endif()
+  endif()
+
+  # rom-properties: Enable Intel SSE2 optimizations on x86.
+  # Supercedes the above block.
+  if(PNG_TARGET_ARCHITECTURE MATCHES "^i?86" OR
+    PNG_TARGET_ARCHITECTURE MATCHES "^x86_64*")
+      SET(libpng_sources
+        ${libpng_sources}
+        intel/filter_sse2_intrinsics.c
+        intel/intel_init.c
+        )
+      ADD_DEFINITIONS(-DPNG_INTEL_SSE)
+      # Enable SSE2 for filter_sse2_intrinsics.c only.
+      # NOTE: SSE2 is always enabled on AMD64.
+      IF(MSVC AND NOT CMAKE_CL_64)
+        SET(SSE2_FLAG "/arch:SSE2")
+        IF(MSVC_VERSION LESS 1900)
+          # NOTE: We have to compile as C++ in versions
+          # of MSVC older than 2015 due to declarations
+	  # of variables after code.
+          SET_SOURCE_FILES_PROPERTIES(intel/filter_sse2_intrinsics.c
+            PROPERTIES LANGUAGE CXX)
+        ENDIF(MSVC_VERSION LESS 1900)
+      ELSEIF(NOT MSVC)
+        # TODO: Other compilers?
+        SET(SSE2_FLAG "-msse2")
+      ENDIF()
+      SET_SOURCE_FILES_PROPERTIES(intel/filter_sse2_intrinsics.c
+        APPEND_STRING PROPERTIES COMPILE_FLAGS " ${SSE2_FLAG} ")
+  ENDIF()
+
+  # Set definitions and sources for MIPS.
+  if(PNG_TARGET_ARCHITECTURE MATCHES "^(mipsel|mips64el)")
+    set(PNG_MIPS_MSA_POSSIBLE_VALUES on off)
+    set(PNG_MIPS_MSA "on"
+        CACHE STRING "Enable MIPS_MSA optimizations: on|off; on is default")
+    set_property(CACHE PNG_MIPS_MSA
+                PROPERTY STRINGS ${PNG_MIPS_MSA_POSSIBLE_VALUES})
+    list(FIND PNG_MIPS_MSA_POSSIBLE_VALUES ${PNG_MIPS_MSA} index_msa)
+    if(index_msa EQUAL -1)
+      message(FATAL_ERROR "PNG_MIPS_MSA must be one of [${PNG_MIPS_MSA_POSSIBLE_VALUES}]")
+    endif()
+
+    set(PNG_MIPS_MMI_POSSIBLE_VALUES on off)
+    set(PNG_MIPS_MMI "on"
+        CACHE STRING "Enable MIPS_MMI optimizations: on|off; on is default")
+    set_property(CACHE PNG_MIPS_MMI
+                PROPERTY STRINGS ${PNG_MIPS_MMI_POSSIBLE_VALUES})
+    list(FIND PNG_MIPS_MMI_POSSIBLE_VALUES ${PNG_MIPS_MMI} index_mmi)
+    if(index_mmi EQUAL -1)
+      message(FATAL_ERROR "PNG_MIPS_MMI must be one of [${PNG_MIPS_MMI_POSSIBLE_VALUES}]")
+    endif()
+
+    if(PNG_MIPS_MSA STREQUAL "on" AND PNG_MIPS_MMI STREQUAL "on")
+      set(libpng_mips_sources
+          mips/mips_init.c
+          mips/filter_msa_intrinsics.c
+          mips/filter_mmi_inline_assembly.c)
+      add_definitions(-DPNG_MIPS_MSA_OPT=2)
+      add_definitions(-DPNG_MIPS_MMI_OPT=1)
+    elseif(PNG_MIPS_MSA STREQUAL "on")
+      set(libpng_mips_sources
+          mips/mips_init.c
+          mips/filter_msa_intrinsics.c)
+      add_definitions(-DPNG_MIPS_MSA_OPT=2)
+      add_definitions(-DPNG_MIPS_MMI_OPT=0)
+    elseif(PNG_MIPS_MMI STREQUAL "on")
+      set(libpng_mips_sources
+          mips/mips_init.c
+          mips/filter_mmi_inline_assembly.c)
+      add_definitions(-DPNG_MIPS_MSA_OPT=0)
+      add_definitions(-DPNG_MIPS_MMI_OPT=1)
+    else()
+      add_definitions(-DPNG_MIPS_MSA_OPT=0)
+      add_definitions(-DPNG_MIPS_MMI_OPT=0)
+    endif()
+  endif()
+
+  # Set definitions and sources for LoongArch.
+  if(PNG_TARGET_ARCHITECTURE MATCHES "^(loongarch)")
+    include(CheckCCompilerFlag)
+    set(PNG_LOONGARCH_LSX_POSSIBLE_VALUES on off)
+    set(PNG_LOONGARCH_LSX "on"
+        CACHE STRING "Enable LOONGARCH_LSX optimizations: on|off; on is default")
+    set_property(CACHE PNG_LOONGARCH_LSX
+                PROPERTY STRINGS ${PNG_LOONGARCH_LSX_POSSIBLE_VALUES})
+    list(FIND PNG_LOONGARCH_LSX_POSSIBLE_VALUES ${PNG_LOONGARCH_LSX} index)
+    if(index EQUAL -1)
+      message(FATAL_ERROR "PNG_LOONGARCH_LSX must be one of [${PNG_LOONGARCH_LSX_POSSIBLE_VALUES}]")
+    elseif(NOT PNG_LOONGARCH_LSX STREQUAL "off")
+      CHECK_C_COMPILER_FLAG("-mlsx" COMPILER_SUPPORTS_LSX)
+      if(COMPILER_SUPPORTS_LSX)
+        set(libpng_loongarch_sources
+            loongarch/loongarch_lsx_init.c
+            loongarch/filter_lsx_intrinsics.c)
+        set_source_files_properties(${libpng_loongarch_sources}
+                                    PROPERTIES
+                                    COMPILE_FLAGS "-mlsx")
+        add_definitions(-DPNG_LOONGARCH_LSX_OPT=1)
+      else()
+        message(FATAL_ERROR "Compiler does not support -mlsx option")
+      endif()
+    else()
+      add_definitions(-DPNG_LOONGARCH_LSX_OPT=0)
+    endif()
+  endif()
 
 else(PNG_HARDWARE_OPTIMIZATIONS)
 
-# Set definitions and sources for ARM.
-if(PNG_TARGET_ARCHITECTURE MATCHES "^(arm|aarch)")
-  add_definitions(-DPNG_ARM_NEON_OPT=0)
-endif()
+  # Set definitions and sources for ARM.
+  if(PNG_TARGET_ARCHITECTURE MATCHES "^(arm|aarch)")
+    add_definitions(-DPNG_ARM_NEON_OPT=0)
+  endif()
 
-# Set definitions and sources for PowerPC.
-if(PNG_TARGET_ARCHITECTURE MATCHES "^(powerpc|ppc64)")
-  add_definitions(-DPNG_POWERPC_VSX_OPT=0)
-endif()
+  # Set definitions and sources for PowerPC.
+  if(PNG_TARGET_ARCHITECTURE MATCHES "^(powerpc|ppc64)")
+    add_definitions(-DPNG_POWERPC_VSX_OPT=0)
+  endif()
 
-# Set definitions and sources for Intel.
-if(PNG_TARGET_ARCHITECTURE MATCHES "^(i[3-6]86|x86|amd64)")
-  add_definitions(-DPNG_INTEL_SSE_OPT=0)
-endif()
+  # Set definitions and sources for Intel.
+  if(PNG_TARGET_ARCHITECTURE MATCHES "^(i[3-6]86|x86|amd64)")
+    add_definitions(-DPNG_INTEL_SSE_OPT=0)
+  endif()
 
-# Set definitions and sources for MIPS.
-if(PNG_TARGET_ARCHITECTURE MATCHES "^(mipsel|mips64el)")
-  add_definitions(-DPNG_MIPS_MSA_OPT=0)
-endif()
+  # Set definitions and sources for MIPS.
+  if(PNG_TARGET_ARCHITECTURE MATCHES "^(mipsel|mips64el)")
+    add_definitions(-DPNG_MIPS_MSA_OPT=0)
+  endif()
 
-# Set definitions and sources for LoongArch.
-if(PNG_TARGET_ARCHITECTURE MATCHES "^(loongarch)")
-  add_definitions(-DPNG_LOONGARCH_LSX_OPT=0)
-endif()
+  # Set definitions and sources for LoongArch.
+  if(PNG_TARGET_ARCHITECTURE MATCHES "^(loongarch)")
+    add_definitions(-DPNG_LOONGARCH_LSX_OPT=0)
+  endif()
 
 endif(PNG_HARDWARE_OPTIMIZATIONS)
 
 option(ld-version-script "Enable linker version script" ON)
-if(ld-version-script AND NOT ANDROID AND NOT APPLE)
+if(ld-version-script AND NOT (ANDROID OR APPLE))
   # Check if LD supports linker scripts.
   file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/conftest.map" "
 VERS_1 { global: sym1; local: *; };
@@ -405,12 +407,15 @@ else()
   message(STATUS "Could not find an AWK-compatible program")
 endif()
 
-if(NOT AWK OR ANDROID OR IOS)
+if(NOT AWK OR (ANDROID OR IOS))
   # No awk available to generate sources; use pre-built pnglibconf.h
   configure_file(${CMAKE_CURRENT_SOURCE_DIR}/scripts/pnglibconf.h.prebuilt
                  ${CMAKE_CURRENT_BINARY_DIR}/pnglibconf.h)
   add_custom_target(png_genfiles)
 else()
+  # Include the internal module PNGGenConfig.cmake
+  include(${CMAKE_CURRENT_SOURCE_DIR}/scripts/cmake/PNGGenConfig.cmake)
+
   # Copy the awk scripts, converting their line endings to Unix (LF)
   configure_file(${CMAKE_CURRENT_SOURCE_DIR}/scripts/checksym.awk
                  ${CMAKE_CURRENT_BINARY_DIR}/scripts/checksym.awk
@@ -424,93 +429,6 @@ else()
                  ${CMAKE_CURRENT_BINARY_DIR}/scripts/dfn.awk
                  @ONLY
                  NEWLINE_STYLE LF)
-
-  # Generate .chk from .out with awk:
-  # generate_chk(INPUT inputfile OUTPUT outputfile [DEPENDS dep1 [dep2...]])
-  function(generate_chk)
-    set(options)
-    set(oneValueArgs INPUT OUTPUT)
-    set(multiValueArgs DEPENDS)
-    cmake_parse_arguments(_GC "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
-    if(NOT _GC_INPUT)
-      message(FATAL_ERROR "generate_chk: Missing INPUT argument")
-    endif()
-    if(NOT _GC_OUTPUT)
-      message(FATAL_ERROR "generate_chk: Missing OUTPUT argument")
-    endif()
-
-    add_custom_command(OUTPUT "${_GC_OUTPUT}"
-                       COMMAND "${CMAKE_COMMAND}"
-                               "-DINPUT=${_GC_INPUT}"
-                               "-DOUTPUT=${_GC_OUTPUT}"
-                               -P "${CMAKE_CURRENT_BINARY_DIR}/scripts/cmake/genchk.cmake"
-                       DEPENDS "${_GC_INPUT}" ${_GC_DEPENDS}
-                       WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
-  endfunction()
-
-  # Generate .out from .c with awk
-  # generate_out(INPUT inputfile OUTPUT outputfile [DEPENDS dep1 [dep2...]])
-  function(generate_out)
-    set(options)
-    set(oneValueArgs INPUT OUTPUT)
-    set(multiValueArgs DEPENDS)
-    cmake_parse_arguments(_GO "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
-    if(NOT _GO_INPUT)
-      message(FATAL_ERROR "generate_out: Missing INPUT argument")
-    endif()
-    if(NOT _GO_OUTPUT)
-      message(FATAL_ERROR "generate_out: Missing OUTPUT argument")
-    endif()
-
-    add_custom_command(OUTPUT "${_GO_OUTPUT}"
-                       COMMAND "${CMAKE_COMMAND}"
-                               "-DINPUT=${_GO_INPUT}"
-                               "-DOUTPUT=${_GO_OUTPUT}"
-                               -P "${CMAKE_CURRENT_BINARY_DIR}/scripts/cmake/genout.cmake"
-                       DEPENDS "${_GO_INPUT}" ${_GO_DEPENDS}
-                       WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
-  endfunction()
-
-  # Generate specific source file with awk
-  # generate_source(OUTPUT outputfile [DEPENDS dep1 [dep2...]])
-  function(generate_source)
-    set(options)
-    set(oneValueArgs OUTPUT)
-    set(multiValueArgs DEPENDS)
-    cmake_parse_arguments(_GSO "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
-    if(NOT _GSO_OUTPUT)
-      message(FATAL_ERROR "generate_source: Missing OUTPUT argument")
-    endif()
-
-    add_custom_command(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${_GSO_OUTPUT}"
-                       COMMAND "${CMAKE_COMMAND}"
-                               "-DOUTPUT=${_GSO_OUTPUT}"
-                               -P "${CMAKE_CURRENT_BINARY_DIR}/scripts/cmake/gensrc.cmake"
-                       DEPENDS ${_GSO_DEPENDS}
-                       WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
-  endfunction()
-
-  # Copy file
-  # generate_copy(INPUT inputfile OUTPUT outputfile [DEPENDS dep1 [dep2...]])
-  function(generate_copy)
-    set(options)
-    set(oneValueArgs INPUT OUTPUT)
-    set(multiValueArgs DEPENDS)
-    cmake_parse_arguments(_GCO "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
-    if(NOT _GCO_INPUT)
-      message(FATAL_ERROR "generate_copy: Missing INPUT argument")
-    endif()
-    if(NOT _GCO_OUTPUT)
-      message(FATAL_ERROR "generate_copy: Missing OUTPUT argument")
-    endif()
-
-    add_custom_command(OUTPUT "${_GCO_OUTPUT}"
-                       COMMAND "${CMAKE_COMMAND}"
-                               -E remove "${_GCO_OUTPUT}"
-                       COMMAND "${CMAKE_COMMAND}"
-                               -E copy "${_GCO_INPUT}" "${_GCO_OUTPUT}"
-                       DEPENDS "${source}" ${_GCO_DEPENDS})
-  endfunction()
 
   # Generate scripts/pnglibconf.h
   generate_source(OUTPUT "scripts/pnglibconf.c"
@@ -633,7 +551,7 @@ else()
                             "${CMAKE_CURRENT_BINARY_DIR}/scripts/symbols.chk" png_scripts_symbols_chk
                             "${CMAKE_CURRENT_BINARY_DIR}/scripts/symbols.out" png_scripts_symbols_out
                             "${CMAKE_CURRENT_BINARY_DIR}/scripts/vers.out" png_scripts_vers_out)
-endif(NOT AWK OR ANDROID OR IOS)
+endif(NOT AWK OR (ANDROID OR IOS))
 
 # List the source code files.
 set(libpng_public_hdrs
@@ -647,7 +565,7 @@ set(libpng_private_hdrs
     pnginfo.h
     pngstruct.h
 )
-if(AWK AND NOT ANDROID AND NOT IOS)
+if(AWK AND NOT (ANDROID OR IOS))
   list(APPEND libpng_private_hdrs "${CMAKE_CURRENT_BINARY_DIR}/pngprefix.h")
 endif()
 set(libpng_sources
@@ -851,30 +769,8 @@ endif()
 if(PNG_TESTS AND PNG_SHARED)
   enable_testing()
 
-  function(png_add_test)
-    set(options)
-    set(oneValueArgs NAME COMMAND)
-    set(multiValueArgs OPTIONS FILES)
-    cmake_parse_arguments(_PAT "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
-    if(NOT _PAT_NAME)
-      message(FATAL_ERROR "png_add_test: Missing NAME argument")
-    endif()
-    if(NOT _PAT_COMMAND)
-      message(FATAL_ERROR "png_add_test: Missing COMMAND argument")
-    endif()
-
-    set(TEST_OPTIONS "${_PAT_OPTIONS}")
-    set(TEST_FILES "${_PAT_FILES}")
-
-    configure_file("${CMAKE_CURRENT_SOURCE_DIR}/scripts/cmake/test.cmake.in"
-                   "${CMAKE_CURRENT_BINARY_DIR}/tests/${_PAT_NAME}.cmake"
-                   @ONLY)
-    add_test(NAME "${_PAT_NAME}"
-             COMMAND "${CMAKE_COMMAND}"
-                     "-DLIBPNG=$<TARGET_FILE:png_shared>"
-                     "-DTEST_COMMAND=$<TARGET_FILE:${_PAT_COMMAND}>"
-                     -P "${CMAKE_CURRENT_BINARY_DIR}/tests/${_PAT_NAME}.cmake")
-  endfunction()
+  # Include the internal module PNGTest.cmake
+  include(${CMAKE_CURRENT_SOURCE_DIR}/scripts/cmake/PNGTest.cmake)
 
   # Find test PNG files by globbing, but sort lists to ensure
   # consistency between different filesystems.
@@ -882,6 +778,8 @@ if(PNG_TESTS AND PNG_SHARED)
   list(SORT PNGSUITE_PNGS)
   file(GLOB TEST_PNGS "${CMAKE_CURRENT_SOURCE_DIR}/contrib/testpngs/*.png")
   list(SORT TEST_PNGS)
+  file(GLOB TEST_PNG3_PNGS "${CMAKE_CURRENT_SOURCE_DIR}/contrib/testpngs/png-3/*.png")
+  list(SORT TEST_PNG3_PNGS)
 
   set(PNGTEST_PNG "${CMAKE_CURRENT_SOURCE_DIR}/pngtest.png")
 
@@ -891,6 +789,10 @@ if(PNG_TESTS AND PNG_SHARED)
   png_add_test(NAME pngtest
                COMMAND pngtest
                FILES "${PNGTEST_PNG}")
+
+  png_add_test(NAME pngtest-png-3
+               COMMAND pngtest
+               FILES "${TEST_PNG3_PNGS}")
 
   add_executable(pngvalid ${pngvalid_sources})
   target_link_libraries(pngvalid PRIVATE png_shared)
@@ -1048,9 +950,14 @@ if(PNG_SHARED AND PNG_TOOLS)
   list(APPEND PNG_BIN_TARGETS png-fix-itxt)
 endif()
 
-# Create a symlink from src to dest (if possible), or, alternatively,
-# copy src to dest if different.
+# Create a symlink that points to a target file (if symlinking is possible),
+# or make a copy of the target file (if symlinking is not possible):
+# create_symlink(<destfile> [FILE <file> | TARGET <target>])
 function(create_symlink DEST_FILE)
+  # TODO:
+  # Replace this implementation with CMake's built-in create_symlink function,
+  # which has been fully functional on all platforms, including Windows, since
+  # CMake version 3.13.
   cmake_parse_arguments(_SYM "" "FILE;TARGET" "" ${ARGN})
   if(NOT _SYM_FILE AND NOT _SYM_TARGET)
     message(FATAL_ERROR "create_symlink: Missing FILE or TARGET argument")

@@ -8,7 +8,7 @@ com pnglibconf.h - library build configuration
 com
 version
 com
-com Copyright (c) 2018-2024 Cosmin Truta
+com Copyright (c) 2018-2025 Cosmin Truta
 com Copyright (c) 1998-2002,2004,2006-2018 Glenn Randers-Pehrson
 com
 com This code is released under the libpng license.
@@ -846,11 +846,14 @@ setting IDAT_READ_SIZE default PNG_ZBUF_SIZE
 # Ancillary chunks
 chunk bKGD
 chunk cHRM enables COLORSPACE
+chunk cICP enables COLORSPACE, GAMMA
+chunk cLLI
 chunk eXIf
 chunk gAMA enables GAMMA
 chunk hIST
 chunk iCCP enables COLORSPACE, GAMMA
 chunk iTXt enables TEXT
+chunk mDCV
 chunk oFFs
 chunk pCAL
 chunk pHYs
