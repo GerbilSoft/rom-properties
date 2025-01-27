@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2025-01-24 22:41-0500\n"
-"PO-Revision-Date: 2025-01-25 05:48\n"
+"PO-Revision-Date: 2025-01-27 03:59\n"
 "Last-Translator: \n"
 "Language-Team: French\n"
 "Language: fr_FR\n"
@@ -189,7 +189,7 @@ msgstr ""
 #: ../src/gtk/xattr/Ext2AttrView.c:121
 msgctxt "Ext2AttrView"
 msgid "lsattr:"
-msgstr "lsattr :"
+msgstr "lsattr :"
 
 #: ../build/src/kde/kf5/ui_ImageTypesTab.h:81
 #: ../build/src/kde/kf6/ui_ImageTypesTab.h:81
@@ -335,7 +335,7 @@ msgstr ""
 #: ../src/gtk/config/SystemsTab.cpp:120
 msgctxt "SystemsTab"
 msgid "Game &Boy:"
-msgstr "Game &Boy :"
+msgstr "Game &Boy :"
 
 #: ../build/src/kde/kf5/ui_SystemsTab.h:126
 #: ../build/src/kde/kf5/ui_SystemsTab.h:130
@@ -364,7 +364,7 @@ msgstr "Game Boy Color"
 #: ../src/gtk/config/SystemsTab.cpp:121
 msgctxt "SystemsTab"
 msgid "&Super Game Boy:"
-msgstr "&Super Game Boy :"
+msgstr "&Super Game Boy :"
 
 #: ../build/src/kde/kf5/ui_SystemsTab.h:131
 #: ../build/src/kde/kf5/ui_SystemsTab.h:136
@@ -380,7 +380,7 @@ msgstr "Super Game Boy"
 #: ../src/gtk/config/SystemsTab.cpp:122
 msgctxt "SystemsTab"
 msgid "Game Boy &Color:"
-msgstr "Game Boy &Color :"
+msgstr "Game Boy &Color :"
 
 #: ../build/src/kde/kf5/ui_SystemsTab.h:139
 #: ../build/src/kde/kf6/ui_SystemsTab.h:139
@@ -10208,7 +10208,7 @@ msgstr ""
 #: ../src/rpcli/rpcli.cpp:533
 msgctxt "rpcli"
 msgid "Examples:"
-msgstr "Exemples :"
+msgstr "Exemples :"
 
 #: ../src/rpcli/rpcli.cpp:535
 msgctxt "rpcli"
@@ -10481,7 +10481,7 @@ msgstr ""
 #: ../src/win32/config/AboutTab.cpp:638
 msgctxt "AboutTab"
 msgid "ERROR:"
-msgstr "ERREUR :"
+msgstr "ERREUR :"
 
 #: ../src/win32/config/AboutTab.cpp:691
 msgctxt "AboutTab"
