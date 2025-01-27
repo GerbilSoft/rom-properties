@@ -331,13 +331,7 @@ WiiUPackage::WiiUPackage(const IRpFilePtr &file)
  * NOTE: Wii U NUS packages are directories. This constructor
  * takes a local directory path.
  *
- * A ROM image must be opened by the caller. The file handle
- * will be ref()'d and must be kept open in order to load
- * data from the ROM image.
- *
- * To close the file, either delete this object or call close().
- *
- * NOTE: Check isValid() to determine if this is a valid ROM.
+ * NOTE: Check isValid() to determine if the directory is supported by this class.
  *
  * @param path Local directory path (UTF-8)
  */
@@ -354,13 +348,7 @@ WiiUPackage::WiiUPackage(const char *path)
  * NOTE: Wii U NUS packages are directories. This constructor
  * takes a local directory path.
  *
- * A ROM image must be opened by the caller. The file handle
- * will be ref()'d and must be kept open in order to load
- * data from the ROM image.
- *
- * To close the file, either delete this object or call close().
- *
- * NOTE: Check isValid() to determine if this is a valid ROM.
+ * NOTE: Check isValid() to determine if the directory is supported by this class.
  *
  * @param path Local directory path (UTF-8)
  */

@@ -470,15 +470,12 @@ XboxDisc::XboxDisc(const IRpFilePtr &file)
 }
 
 /**
- * Read a Microsoft Xbox disc image.
+ * Read an extracted Microsoft Xbox disc file system.
  *
- * A ROM file must be opened by the caller. The file handle
- * will be ref()'d and must be kept open in order to load
- * data from the ROM.
+ * NOTE: Extracted Xbox disc file systems are directories.
+ * This constructor takes a local directory path.
  *
- * To close the file, either delete this object or call close().
- *
- * NOTE: Check isValid() to determine if this is a valid ROM.
+ * NOTE: Check isValid() to determine if the directory is supported by this class.
  *
  * @param path Local directory path (UTF-8)
  */
@@ -495,17 +492,11 @@ XboxDisc::XboxDisc(const char *path)
  * NOTE: Extracted Xbox disc file systems are directories.
  * This constructor takes a local directory path.
  *
- * A ROM file must be opened by the caller. The file handle
- * will be ref()'d and must be kept open in order to load
- * data from the ROM.
- *
- * To close the file, either delete this object or call close().
- *
- * NOTE: Check isValid() to determine if this is a valid ROM.
+ * NOTE: Check isValid() to determine if the directory is supported by this class.
  *
  * @param path Local directory path (UTF-16)
  */
-XboxDisc::XboxDisc(const TCHAR *path)
+XboxDisc::XboxDisc(const wchar_t *path)
 	: super(new XboxDiscPrivate(path))
 {
 	init();

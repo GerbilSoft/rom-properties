@@ -110,6 +110,39 @@ ROMDATA_DECL_CTOR_DEFAULT(klass) \
 ROMDATA_DECL_COMMON_FNS()
 
 /**
+ * RomData constructors for subclasses that handle directories.
+ * [INTERNAL; Use ROMDATA_DECL_CTOR_DIRECTORY() instead.]
+ *
+ * NOTE: Only static isDirSupported functions are provided.
+ */
+#define T_ROMDATA_DECL_CTOR_DIRECTORY(klass, CharType) \
+public: \
+	/** \
+	 * Read a directory. (for application packages, extracted file systems, etc.) \
+	 * \
+	 * NOTE: Check isValid() to determine if the directory is supported by this class. \
+	 * \
+	 * @param path Local directory path (char for UTF-8, wchar_t for Windows UTF-16) \
+	 */ \
+	klass(const CharType *path); \
+\
+	/** \
+	 * Is a directory supported by this class? \
+	 * @param path Directory to check \
+	 * @return Class-specific system ID (>= 0) if supported; -1 if not. \
+	 */ \
+	static int isDirSupported_static(const CharType *path);
+
+#if defined(_WIN32) && defined(_UNICODE)
+#  define ROMDATA_DECL_CTOR_DIRECTORY(klass) \
+	T_ROMDATA_DECL_CTOR_DIRECTORY(klass, char) \
+	T_ROMDATA_DECL_CTOR_DIRECTORY(klass, wchar_t)
+#else /* !defined(_WIN32) || !defined(_UNICODE) */
+#  define ROMDATA_DECL_CTOR_DIRECTORY(klass) \
+	T_ROMDATA_DECL_CTOR_DIRECTORY(klass, char)
+#endif /* defined(_WIN32) && defined(_UNICODE) */
+
+/**
  * RomData subclass function declaration for loading metadata properties.
  */
 #define ROMDATA_DECL_METADATA() \
