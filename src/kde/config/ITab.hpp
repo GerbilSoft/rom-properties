@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE)                              *
  * ITab.hpp: Configuration tab interface.                                  *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -73,6 +73,8 @@ protected:
 	 * Otherwise, it will be disabled.
 	 *
 	 * Default is true.
+	 *
+	 * NOTE: Initialized in the constructor, and then is read-only.
 	 */
-	bool m_hasDefaults;
+	const bool m_hasDefaults;
 };
