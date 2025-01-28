@@ -34,74 +34,74 @@ namespace LibRpTexture {
 
 class TGAPrivate final : public FileFormatPrivate
 {
-	public:
-		TGAPrivate(TGA *q, const IRpFilePtr &file);
+public:
+	TGAPrivate(TGA *q, const IRpFilePtr &file);
 
-	private:
-		typedef FileFormatPrivate super;
-		RP_DISABLE_COPY(TGAPrivate)
+private:
+	typedef FileFormatPrivate super;
+	RP_DISABLE_COPY(TGAPrivate)
 
-	public:
-		/** TextureInfo **/
-		static const array<const char*, 1+1> exts;
-		static const array<const char*, 8+1> mimeTypes;
-		static const TextureInfo textureInfo;
+public:
+	/** TextureInfo **/
+	static const array<const char*, 1+1> exts;
+	static const array<const char*, 8+1> mimeTypes;
+	static const TextureInfo textureInfo;
 
-	public:
-		enum class TexType {
-			Unknown		= -1,
+public:
+	enum class TexType {
+		Unknown		= -1,
 
-			TGA1		= 0,	// Old TGA (1.0)
-			TGA2		= 1,	// New TGA (2.0)
+		TGA1		= 0,	// Old TGA (1.0)
+		TGA2		= 1,	// New TGA (2.0)
 
-			Max
-		};
-		TexType texType;
+		Max
+	};
+	TexType texType;
 
-		// TGA headers
-		TGA_Header tgaHeader;
-		TGA_ExtArea tgaExtArea;
-		TGA_Footer tgaFooter;
+	// TGA headers
+	TGA_Header tgaHeader;
+	TGA_ExtArea tgaExtArea;
+	TGA_Footer tgaFooter;
 
-		// Alpha channel type
-		TGA_AlphaType_e alphaType;
+	// Is HFlip/VFlip needed?
+	// Some textures may be stored upside-down due to
+	// the way GL texture coordinates are interpreted.
+	// Default without orientation metadata is HFlip=false, VFlip=false
+	rp_image::FlipOp flipOp;
 
-		// Decoded image
-		rp_image_ptr img;
+	// Alpha channel type
+	TGA_AlphaType_e alphaType;
 
-		// Is HFlip/VFlip needed?
-		// Some textures may be stored upside-down due to
-		// the way GL texture coordinates are interpreted.
-		// Default without orientation metadata is HFlip=false, VFlip=false
-		rp_image::FlipOp flipOp;
+	// Decoded image
+	rp_image_ptr img;
 
-		/**
-		 * Decompress RLE image data.
-		 * @param pDest Output buffer.
-		 * @param dest_len Size of output buffer.
-		 * @param pSrc Input buffer.
-		 * @param src_len Size of input buffer.
-		 * @param bytespp Bytes per pixel.
-		 * @return 0 on success; non-zero on error.
-		 */
-		ATTR_ACCESS_SIZE(write_only, 1, 2)
-		ATTR_ACCESS_SIZE(read_only, 3, 4)
-		static int decompressRLE(uint8_t *pDest, size_t dest_len,
-					 const uint8_t *pSrc, size_t s_len,
-					 uint8_t bytespp);
+	/**
+	 * Decompress RLE image data.
+	 * @param pDest Output buffer.
+	 * @param dest_len Size of output buffer.
+	 * @param pSrc Input buffer.
+	 * @param src_len Size of input buffer.
+	 * @param bytespp Bytes per pixel.
+	 * @return 0 on success; non-zero on error.
+	 */
+	ATTR_ACCESS_SIZE(write_only, 1, 2)
+	ATTR_ACCESS_SIZE(read_only, 3, 4)
+	static int decompressRLE(uint8_t *pDest, size_t dest_len,
+				 const uint8_t *pSrc, size_t s_len,
+				 uint8_t bytespp);
 
-		/**
-		 * Load the TGA image.
-		 * @return Image, or nullptr on error.
-		 */
-		rp_image_const_ptr loadImage(void);
+	/**
+	 * Load the TGA image.
+	 * @return Image, or nullptr on error.
+	 */
+	rp_image_const_ptr loadImage(void);
 
-		/**
-		 * Convert a TGA timestamp to UNIX time.
-		 * @param timestamp TGA timestamp. (little-endian)
-		 * @return UNIX time, or -1 if invalid or not set.
-		 */
-		static time_t tgaTimeToUnixTime(const TGA_DateStamp *timestamp);
+	/**
+	 * Convert a TGA timestamp to UNIX time.
+	 * @param timestamp TGA timestamp. (little-endian)
+	 * @return UNIX time, or -1 if invalid or not set.
+	 */
+	static time_t tgaTimeToUnixTime(const TGA_DateStamp *timestamp);
 };
 
 FILEFORMAT_IMPL(TGA)
@@ -137,9 +137,9 @@ const TextureInfo TGAPrivate::textureInfo = {
 TGAPrivate::TGAPrivate(TGA *q, const IRpFilePtr &file)
 	: super(q, file, &textureInfo)
 	, texType(TexType::Unknown)
-	, alphaType(TGA_ALPHATYPE_PRESENT)
 	, flipOp(rp_image::FLIP_V)	// default orientation requires vertical flip
-{
+	, alphaType(TGA_ALPHATYPE_PRESENT)
+	{
 	// Clear the structs.
 	memset(&tgaHeader, 0, sizeof(tgaHeader));
 	memset(&tgaExtArea, 0, sizeof(tgaExtArea));
