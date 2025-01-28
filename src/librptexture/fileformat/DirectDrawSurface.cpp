@@ -39,107 +39,107 @@ namespace LibRpTexture {
 
 class DirectDrawSurfacePrivate final : public FileFormatPrivate
 {
-	public:
-		DirectDrawSurfacePrivate(DirectDrawSurface *q, const IRpFilePtr &file);
+public:
+	DirectDrawSurfacePrivate(DirectDrawSurface *q, const IRpFilePtr &file);
 
-	private:
-		typedef FileFormatPrivate super;
-		RP_DISABLE_COPY(DirectDrawSurfacePrivate)
+private:
+	typedef FileFormatPrivate super;
+	RP_DISABLE_COPY(DirectDrawSurfacePrivate)
 
-	public:
-		/** TextureInfo **/
-		static const array<const char*, 1+1> exts;
-		static const array<const char*, 2+1> mimeTypes;
-		static const TextureInfo textureInfo;
+public:
+	/** TextureInfo **/
+	static const array<const char*, 1+1> exts;
+	static const array<const char*, 2+1> mimeTypes;
+	static const TextureInfo textureInfo;
 
-	public:
-		// DDS header
-		DDS_HEADER ddsHeader;
-		DDS_HEADER_DXT10 dxt10Header;
-		DDS_HEADER_XBOX xb1Header;
+public:
+	// DDS header
+	DDS_HEADER ddsHeader;
+	DDS_HEADER_DXT10 dxt10Header;
+	DDS_HEADER_XBOX xb1Header;
 
-		// Texture data start address
-		unsigned int texDataStartAddr;
+	// Texture data start address
+	unsigned int texDataStartAddr;
 
-		// Decoded mipmaps
-		// Mipmap 0 is the full image.
-		vector<rp_image_ptr> mipmaps;
+	// Image format identifiers
+	ImageDecoder::PixelFormat pxf_uncomp;	// Pixel format for uncompressed images. (If 0, compressed.)
+	uint8_t bytespp;	// Bytes per pixel. (Uncompressed only; set to 0 for compressed.)
+	uint8_t dxgi_format;	// DXGI_FORMAT for compressed images. (If 0, uncompressed.)
+	uint8_t dxgi_alpha;	// DDS_DXT10_MISC_FLAGS2 - alpha format.
 
-		// Pixel format message
-		// NOTE: Used for both valid and invalid pixel formats
-		// due to various bit specifications.
-		mutable string pixel_format;
+	// Decoded mipmaps
+	// Mipmap 0 is the full image.
+	vector<rp_image_ptr> mipmaps;
 
-		/**
-		 * Calculate the expected image size.
-		 *
-		 * Width/height must be specified here for mipmap support.
-		 * Other values are determined from the DDS header.
-		 *
-		 * @param width		[in]
-		 * @param height	[in]
-		 * @param mip		[in] Mipmap level (for stride calculation)
-		 * @param pStride	[out] Stride (for uncompressed formats)
-		 * @return Expected image size, or 0 on error
-		 */
-		unsigned int calcExpectedSize(int width, int height, int mip, unsigned int *pStride);
+	// Pixel format message
+	// NOTE: Used for both valid and invalid pixel formats
+	// due to various bit specifications.
+	mutable string pixel_format;
 
-		/**
-		 * Load the image.
-		 * @param mip Mipmap number. (0 == full image)
-		 * @return Image, or nullptr on error.
-		 */
-		rp_image_const_ptr loadImage(int mip);
+	/**
+	 * Calculate the expected image size.
+	 *
+	 * Width/height must be specified here for mipmap support.
+	 * Other values are determined from the DDS header.
+	 *
+	 * @param width		[in]
+	 * @param height	[in]
+	 * @param mip		[in] Mipmap level (for stride calculation)
+	 * @param pStride	[out] Stride (for uncompressed formats)
+	 * @return Expected image size, or 0 on error
+	 */
+	unsigned int calcExpectedSize(int width, int height, int mip, unsigned int *pStride);
 
-	public:
-		// Supported uncompressed RGB formats.
-		struct RGB_Format_Table_t {
-			uint32_t Rmask;
-			uint32_t Gmask;
-			uint32_t Bmask;
-			uint32_t Amask;
-			char desc[15];
-			ImageDecoder::PixelFormat px_format;	// ImageDecoder::PixelFormat
-		};
-		ASSERT_STRUCT(RGB_Format_Table_t, sizeof(uint32_t)*4 + 15 + 1);
+	/**
+	 * Load the image.
+	 * @param mip Mipmap number. (0 == full image)
+	 * @return Image, or nullptr on error.
+	 */
+	rp_image_const_ptr loadImage(int mip);
 
-		static const array<RGB_Format_Table_t,  1> rgb_fmt_tbl_8;	// 8-bit RGB
-		static const array<RGB_Format_Table_t, 17> rgb_fmt_tbl_16;	// 16-bit RGB
-		static const array<RGB_Format_Table_t,  2> rgb_fmt_tbl_24;	// 24-bit RGB
-		static const array<RGB_Format_Table_t, 11> rgb_fmt_tbl_32;	// 32-bit RGB
-		static const array<RGB_Format_Table_t,  9> rgb_fmt_tbl_luma;	// Luminance
-		static const array<RGB_Format_Table_t,  1> rgb_fmt_tbl_alpha;	// Alpha
+public:
+	// Supported uncompressed RGB formats.
+	struct RGB_Format_Table_t {
+		uint32_t Rmask;
+		uint32_t Gmask;
+		uint32_t Bmask;
+		uint32_t Amask;
+		char desc[15];
+		ImageDecoder::PixelFormat px_format;	// ImageDecoder::PixelFormat
+	};
+	ASSERT_STRUCT(RGB_Format_Table_t, sizeof(uint32_t)*4 + 15 + 1);
 
-		/**
-		 * Get an RGB_Format_Table_t entry from an RGB format table.
-		 * @param ddspf DirectDraw Surface pixel format
-		 * @return Pointer to RGB_Format_Table_t, or nullptr if not found.
-		 */
-		static const RGB_Format_Table_t *getRGBFormatTableEntry(const DDS_PIXELFORMAT &ddspf);
+	static const array<RGB_Format_Table_t,  1> rgb_fmt_tbl_8;	// 8-bit RGB
+	static const array<RGB_Format_Table_t, 17> rgb_fmt_tbl_16;	// 16-bit RGB
+	static const array<RGB_Format_Table_t,  2> rgb_fmt_tbl_24;	// 24-bit RGB
+	static const array<RGB_Format_Table_t, 11> rgb_fmt_tbl_32;	// 32-bit RGB
+	static const array<RGB_Format_Table_t,  9> rgb_fmt_tbl_luma;	// Luminance
+	static const array<RGB_Format_Table_t,  1> rgb_fmt_tbl_alpha;	// Alpha
 
-		// Image format identifiers.
-		ImageDecoder::PixelFormat pxf_uncomp;	// Pixel format for uncompressed images. (If 0, compressed.)
-		uint8_t bytespp;	// Bytes per pixel. (Uncompressed only; set to 0 for compressed.)
-		uint8_t dxgi_format;	// DXGI_FORMAT for compressed images. (If 0, uncompressed.)
-		uint8_t dxgi_alpha;	// DDS_DXT10_MISC_FLAGS2 - alpha format.
+	/**
+	 * Get an RGB_Format_Table_t entry from an RGB format table.
+	 * @param ddspf DirectDraw Surface pixel format
+	 * @return Pointer to RGB_Format_Table_t, or nullptr if not found.
+	 */
+	static const RGB_Format_Table_t *getRGBFormatTableEntry(const DDS_PIXELFORMAT &ddspf);
 
-		/**
-		 * Get the format name of an uncompressed DirectDraw surface pixel format.
-		 * @param ddspf DDS_PIXELFORMAT
-		 * @return Format name, or nullptr if not supported.
-		 */
-		static inline const char *getPixelFormatName(const DDS_PIXELFORMAT &ddspf);
+	/**
+	 * Get the format name of an uncompressed DirectDraw surface pixel format.
+	 * @param ddspf DDS_PIXELFORMAT
+	 * @return Format name, or nullptr if not supported.
+	 */
+	static inline const char *getPixelFormatName(const DDS_PIXELFORMAT &ddspf);
 
-		/**
-		 * Get the pixel formats of the DDS texture.
-		 * DDS texture headers must have been loaded.
-		 *
-		 * If uncompressed, this sets pxf_uncomp and bytespp.
-		 * If compressed, this sets dxgi_format.
-		 *
-		 * @return 0 on success; negative POSIX error code on error.
-		 */
-		int updatePixelFormat(void);
+	/**
+	 * Get the pixel formats of the DDS texture.
+	 * DDS texture headers must have been loaded.
+	 *
+	 * If uncompressed, this sets pxf_uncomp and bytespp.
+	 * If compressed, this sets dxgi_format.
+	 *
+	 * @return 0 on success; negative POSIX error code on error.
+	 */
+	int updatePixelFormat(void);
 };
 
 FILEFORMAT_IMPL(DirectDrawSurface)
