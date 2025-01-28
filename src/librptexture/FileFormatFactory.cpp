@@ -62,7 +62,7 @@ struct FileFormatFns {
 	pfnNewFileFormat_t newFileFormat;
 	pfnTextureInfo_t textureInfo;
 
-	uint32_t magic;
+	std::array<uint32_t, 2> magic;
 };
 
 /**
@@ -79,7 +79,8 @@ static FileFormatPtr FileFormat_ctor(const IRpFilePtr &file)
 	{/*format::isRomSupported_static,*/ /* TODO */ \
 	 FileFormat_ctor<format>, \
 	 format::textureInfo, \
-	 (magic)}
+	 magic}
+#define P99_PROTECT(...) __VA_ARGS__	/* Reference: https://stackoverflow.com/a/5504336 */
 
 #ifdef FILEFORMATFACTORY_USE_FILE_EXTENSIONS
 vector<const char*> vec_exts;
@@ -94,31 +95,27 @@ pthread_once_t once_mimeTypes = PTHREAD_ONCE_INIT;
 // definitely have a 32-bit magic number at address 0.
 // TODO: Add support for multiple magic numbers per class.
 const array<FileFormatFns, 15> FileFormatFns_magic = {{
-	GetFileFormatFns(ASTC, 0x13ABA15C),	// Needs to be in multi-char constant format.
-	GetFileFormatFns(DirectDrawSurface, 'DDS '),
-	GetFileFormatFns(GodotSTEX, 'GDST'),
-	GetFileFormatFns(GodotSTEX, 'GST2'),
-	GetFileFormatFns(PowerVR3, 'PVR\x03'),
-	GetFileFormatFns(PowerVR3, '\x03RVP'),
-	GetFileFormatFns(SegaPVR, 'PVRT'),
-	GetFileFormatFns(SegaPVR, 'GVRT'),
-	GetFileFormatFns(SegaPVR, 'PVRX'),
-	GetFileFormatFns(SegaPVR, 'GBIX'),
-	GetFileFormatFns(SegaPVR, 'GCIX'),
-	GetFileFormatFns(ValveVTF, 'VTF\0'),
-	GetFileFormatFns(ValveVTF3, 'VTF3'),
-	GetFileFormatFns(XboxXPR, 'XPR0'),
+	GetFileFormatFns(ASTC,			P99_PROTECT({{0x13ABA15C, 0}})),	// Needs to be in multi-char constant format
+	GetFileFormatFns(DirectDrawSurface,	P99_PROTECT({{'DDS ', 0}})),
+	GetFileFormatFns(GodotSTEX,		P99_PROTECT({{'GDST', 'GST2'}})),
+	GetFileFormatFns(PowerVR3,		P99_PROTECT({{'PVR\x03', '\x03RVP'}})),
+	GetFileFormatFns(SegaPVR,		P99_PROTECT({{'PVRT', 'GVRT'}})),
+	GetFileFormatFns(SegaPVR,		P99_PROTECT({{'PVRX', 'GBIX'}})),
+	GetFileFormatFns(SegaPVR,		P99_PROTECT({{'GCIX', 0}})),
+	GetFileFormatFns(ValveVTF,		P99_PROTECT({{'VTF\0', 0}})),
+	GetFileFormatFns(ValveVTF3,		P99_PROTECT({{'VTF3', 0}})),
+	GetFileFormatFns(XboxXPR,		P99_PROTECT({{'XPR0', 0}})),
 
-	// Less common formats.
-	GetFileFormatFns(DidjTex, (uint32_t)0x03000000),
+	// Less common formats
+	GetFileFormatFns(DidjTex,		P99_PROTECT({{(uint32_t)0x03000000U, 0}})),
 }};
 
 // FileFormat subclasses that have special checks.
 // This array is for file extensions and MIME types only.
 const array<FileFormatFns, 3> FileFormatFns_mime = {{
-	GetFileFormatFns(KhronosKTX, 0),
-	GetFileFormatFns(KhronosKTX2, 0),
-	GetFileFormatFns(TGA, 0),
+	GetFileFormatFns(KhronosKTX,		P99_PROTECT({{0, 0}})),
+	GetFileFormatFns(KhronosKTX2,		P99_PROTECT({{0, 0}})),
+	GetFileFormatFns(TGA,			P99_PROTECT({{0, 0}})),
 }};
 
 } // namespace Private
@@ -253,8 +250,11 @@ FileFormatPtr create(const IRpFilePtr &file)
 	// Check FileFormat subclasses that take a header at 0
 	// and definitely have a 32-bit magic number at address 0.
 	for (const auto &fns : Private::FileFormatFns_magic) {
-		// Check the magic number.
-		if (magic.u32[0] == fns.magic) {
+		// Check the magic number(s).
+		static_assert(Private::FileFormatFns_magic[0].magic.size() == 2, "need to update for more than 2 magic numbers");
+		if (magic.u32[0] == fns.magic[0] ||
+		    (fns.magic[1] != 0 && magic.u32[0] == fns.magic[1]))
+		{
 			// Found a matching magic number.
 			// TODO: Implement fns->isTextureSupported.
 			/*if (fns->isTextureSupported(&info) >= 0)*/ {

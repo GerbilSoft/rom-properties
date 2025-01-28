@@ -388,8 +388,8 @@ static IDiscReaderPtr IDiscReader_ctor(const IRpFilePtr &file)
 	{discType::isDiscSupported_static, \
 	 IDiscReader_ctor<discType>, \
 	 magic}
-
 #define P99_PROTECT(...) __VA_ARGS__	/* Reference: https://stackoverflow.com/a/5504336 */
+
 static const array<IDiscReaderFns, 6> iDiscReaderFns = {{
 	GetIDiscReaderFns(CisoGcnReader,	P99_PROTECT({{'CISO'}})),
 	// NOTE: MSVC doesn't like putting #ifdef within the P99_PROTECT macro.
