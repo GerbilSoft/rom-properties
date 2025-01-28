@@ -251,7 +251,8 @@ FileFormatPtr create(const IRpFilePtr &file)
 	// and definitely have a 32-bit magic number at address 0.
 	for (const auto &fns : Private::FileFormatFns_magic) {
 		// Check the magic number(s).
-		static_assert(Private::FileFormatFns_magic[0].magic.size() == 2, "need to update for more than 2 magic numbers");
+		// FIXME: MSVC 2015 doesn't like this static_assert().
+		//static_assert(Private::FileFormatFns_magic[0].magic.size() == 2, "need to update for more than 2 magic numbers");
 		if (magic.u32[0] == fns.magic[0] ||
 		    (fns.magic[1] != 0 && magic.u32[0] == fns.magic[1]))
 		{
