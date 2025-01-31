@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * rp-en_US.rc: Win32 resource script. (it_IT)                             *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -77,7 +77,7 @@ BEGIN
     GROUPBOX        "&Opzioni", IDC_OPTIONS_GRPOPTIONS, 7, 133, 397, 90, BS_GROUPBOX, WS_EX_TRANSPARENT
     AUTOCHECKBOX    "Mostra un'icona di sicurezza per le\nROM con permessi ""pericolosi"".", IDC_OPTIONS_DANGEROUSPERMISSIONS, 15, 144, 381, 16, BS_MULTILINE, WS_EX_TRANSPARENT
     AUTOCHECKBOX    "Abilita l'estrazione delle miniature e dei metadati su file system di rete.\nQuesto potrebbe rallentare la navigazione dei file.", IDC_OPTIONS_ENABLETHUMBNAILONNETWORKFS, 15, 165, 381, 16, BS_MULTILINE, WS_EX_TRANSPARENT
-    AUTOCHECKBOX    "Enable thumbnailing and metadata extraction of directory-based\npackages, e.g. for Wii U. This may slow down file browsing.", IDC_OPTIONS_THUMBNAILDIRECTORYPACKAGES, 15, 186, 381, 16, BS_MULTILINE, WS_EX_TRANSPARENT
+    AUTOCHECKBOX    "Abilita l'estrazione delle miniature e dei metadati dei pacchetti basati su archivi,\nper esempio Wii U. Questo potrebbe rallentare la navigazione dei file.", IDC_OPTIONS_THUMBNAILDIRECTORYPACKAGES, 15, 186, 381, 16, BS_MULTILINE, WS_EX_TRANSPARENT
     AUTOCHECKBOX    "Mostra la scheda Attributi Estesi.", IDC_OPTIONS_SHOWXATTRVIEW, 15, 207, 381, 8, BS_MULTILINE, WS_EX_TRANSPARENT
 END
 
