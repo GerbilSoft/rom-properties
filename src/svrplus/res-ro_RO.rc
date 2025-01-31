@@ -3,7 +3,7 @@
  * resource.rc: Win32 resource script. (en_US)                             *
  *                                                                         *
  * Copyright (c) 2017-2022 by Egor.                                        *
- * Copyright (c) 2017-2024 by David Korth.                                 *
+ * Copyright (c) 2017-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -48,18 +48,18 @@ BEGIN
 	IDS_ISR_PROCESS_STILL_ACTIVE, L"Procesul REGSVR32 nu s-a încheiat niciodată.\0"
 	IDS_ISR_REGSVR32_FAIL_ARGS, L"REGSVR32 a eșuat: Argument nevalid.\0"
 	IDS_ISR_REGSVR32_FAIL_OLE, L"REGSVR32 a eșuat: OleInitialize() a eșuat.\0"
-	IDS_DLLS_REGISTERING, L"Înregistrare DLLchar@@0\0"
-	IDS_DLL_REGISTERING, L"Înregistrarea DLLchar@@0 \0"
-	IDS_DLLS_UNREGISTERING, L"Deînregistrarea DLL-urilorchar@@0\0"
-	IDS_DLL_UNREGISTERING, L"Deînregistrarea DLL-urilorchar@@0\0"
+	IDS_DLLS_REGISTERING, L"Înregistrare DLL-urilor...\0"
+	IDS_DLL_REGISTERING, L"Înregistrarea DLL-urilor...\0"
+	IDS_DLLS_UNREGISTERING, L"Deînregistrarea DLL-urilor...\0"
+	IDS_DLL_UNREGISTERING, L"Deînregistrarea DLL-urilor...\0"
 	IDS_DLLS_REG_OK, L"DLL-uri înregistrate cu succes.\0"
 	IDS_DLL_REG_OK, L"DLL-uri înregistrate cu succes.\0"
 	IDS_DLLS_UNREG_OK, L"DLL-uri înregistrate cu succes.\0"
-	IDS_DLL_UNREG_OK, L"DLL-uri înregistrate cu succes.\0"
+	IDS_DLL_UNREG_OK, L"DLL-uri deînregistrate cu succes.\0"
 	IDS_DLLS_REG_ERROR, L"A apărut o eroare la înregistrarea DLL-urilor:\0"
-	IDS_DLL_REG_ERROR, L"S-a produs o eroare la înregistrarea DLL:\0"
-	IDS_DLLS_UNREG_ERROR, L"A apărut o eroare la înregistrarea DLL-urilor:\0"
-	IDS_DLL_UNREG_ERROR, L"A apărut o eroare la înregistrarea DLL-urilor:\0"
+	IDS_DLL_REG_ERROR, L"S-a produs o eroare la înregistrarea DLL-urilor:\0"
+	IDS_DLLS_UNREG_ERROR, L"A apărut o eroare la deînregistrarea DLL-urilor:\0"
+	IDS_DLL_UNREG_ERROR, L"A apărut o eroare la deînregistrarea DLL-urilor:\0"
 	IDS_ERROR_STARTING_WORKER_THREAD, L"A apărut o eroare la pornirea temei de execuție.\0"
 	IDS_ERROR_COULD_NOT_OPEN_URL_TITLE, L"URL-ul nu a putut fi deschis\0"
 
