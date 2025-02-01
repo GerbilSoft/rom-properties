@@ -260,7 +260,7 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 		SCMP_SYS(fsetxattr),
 		SCMP_SYS(futex),
 #if defined(__SNR_futex_time64) || defined(__NR_futex_time64)
-		SCMP_SYS(futex_time64)
+		SCMP_SYS(futex_time64),
 #endif /* __SNR_futex_time64 || __NR_futex_time64 */
 		SCMP_SYS(getdents), SCMP_SYS(getdents64),
 		SCMP_SYS(getppid),	// for bubblewrap verification
