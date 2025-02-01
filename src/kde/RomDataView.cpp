@@ -732,8 +732,7 @@ QLabel *RomDataViewPrivate::initDimensions(QLabel *lblDesc,
 {
 	// Dimensions
 	const int *const dimensions = field.data.dimensions;
-	const QString str = formatDimensions(dimensions);
-	return initString(lblDesc, field, str);
+	return initString(lblDesc, field, formatDimensions(dimensions));
 }
 
 /**

@@ -1324,8 +1324,8 @@ int RP_ShellPropSheetExt_Private::initDimensions(_In_ HWND hWndTab,
 {
 	// TODO: 'x' or '×'? Using 'x' for now.
 	const int *const dimensions = field.data.dimensions;
-	const tstring tstr = formatDimensions(dimensions);
-	return initString(hWndTab, pt_start, size, field, fieldIdx, tstr.c_str());
+	return initString(hWndTab, pt_start, size, field, fieldIdx,
+		formatDimensions(dimensions).c_str());
 }
 
 /**
