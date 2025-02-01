@@ -627,7 +627,9 @@ EXE::EXE(const IRpFilePtr &file)
 			default:
 				// Unsupported PE executable.
 				// Fall back to MZ.
-				break;
+				d->exeType = EXEPrivate::ExeType::MZ;
+				d->fileType = FileType::Executable;
+				return;
 		}
 
 		// Portable Executable (Win32/Win64)
