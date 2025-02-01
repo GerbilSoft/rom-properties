@@ -23,6 +23,7 @@ using namespace LibRpFile;
 
 // C++ STL classes
 using std::array;
+using std::string;
 
 namespace LibRomData {
 
@@ -115,21 +116,16 @@ CIAReaderPrivate::CIAReaderPrivate(CIAReader *q,
 	// TODO: Handle invalid KeyY indexes?
 	titleKeyEncIdx |= (ticket->keyY_index << 2);
 
-	// Keyslot names.
-	char keyX_name[40];
-	char keyY_name[40];
-	char keyNormal_name[40];
-	snprintf(keyX_name, sizeof(keyNormal_name), "%s-Slot0x3DKeyX", keyPrefix);
-	snprintf(keyY_name, sizeof(keyY_name), "%s-Slot0x3DKeyY-%u",
-		keyPrefix, ticket->keyY_index);
-	snprintf(keyNormal_name, sizeof(keyNormal_name), "%s-Slot0x3DKeyNormal-%u",
-		keyPrefix, ticket->keyY_index);
+	// Keyslot names
+	const string keyX_name = fmt::format(FSTR("{:s}-Slot0x3DKeyX"), keyPrefix);
+	const string keyY_name = fmt::format(FSTR("{:s}-Slot0x3DKeyY-{:d}"), keyPrefix, ticket->keyY_index);
+	const string keyNormal_name = fmt::format(FSTR("{:s}-Slot0x3DKeyNormal-{:d}"), keyPrefix, ticket->keyY_index);
 
 	// Get the KeyNormal. If that fails, get KeyX and KeyY,
 	// then use CtrKeyScrambler to generate KeyNormal.
 	u128_t keyNormal;
 	KeyManager::VerifyResult res = N3DSVerifyKeys::loadKeyNormal(&keyNormal,
-		keyNormal_name, keyX_name, keyY_name,
+		keyNormal_name.c_str(), keyX_name.c_str(), keyY_name.c_str(),
 		keyNormal_verify, keyX_verify, keyY_verify);
 	if (res != KeyManager::VerifyResult::OK) {
 		// Unable to get the CIA encryption keys.
