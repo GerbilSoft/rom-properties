@@ -158,9 +158,7 @@ rp_nautilus_properties_model_init_age_ratings(RpNautilusPropertiesModel *self, c
 static void
 rp_nautilus_properties_model_init_dimensions(RpNautilusPropertiesModel *self, const RomFields::Field &field)
 {
-	gchar *const str = rom_data_format_dimensions(field.data.dimensions);
-	append_item(self, field.name, str);
-	g_free(str);
+	append_item(self, field.name, rom_data_format_dimensions(field.data.dimensions).c_str());
 }
 
 /**

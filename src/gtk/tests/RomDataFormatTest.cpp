@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (gtk/tests)                        *
  * RomDataFormatTest.cpp: RomDataFormat tests (glib)                       *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -19,12 +19,12 @@ using LibRpBase::RomFields;
 
 // C++ STL classes
 using std::array;
+using std::string;
 
 namespace LibRomData { namespace Tests {
 
 class RomDataFormatTest : public ::testing::Test
-{
-};
+{};
 
 #ifndef NDEBUG
 using RomDataFormatDeathTest = RomDataFormatTest;
@@ -285,9 +285,8 @@ TEST_F(RomDataFormatTest, formatDimensions)
 	}};
 
 	for (const auto &test : dimensionsTestData) {
-		gchar *const str = rom_data_format_dimensions(test.dimensions);
-		EXPECT_STREQ(test.str, str);
-		g_free(str);
+		const string str = rom_data_format_dimensions(test.dimensions);
+		EXPECT_EQ(test.str, str);
 	}
 }
 

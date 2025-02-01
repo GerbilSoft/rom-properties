@@ -939,9 +939,8 @@ static GtkWidget*
 rp_rom_data_view_init_dimensions(RpRomDataView *page,
 	const RomFields::Field &field)
 {
-	gchar *const str = rom_data_format_dimensions(field.data.dimensions);
-	GtkWidget *const widget = rp_rom_data_view_init_string(page, field, str);
-	g_free(str);
+	GtkWidget *const widget = rp_rom_data_view_init_string(page, field,
+		rom_data_format_dimensions(field.data.dimensions).c_str());
 	return widget;
 }
 

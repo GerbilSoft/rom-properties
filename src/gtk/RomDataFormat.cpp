@@ -15,6 +15,7 @@ using LibRpBase::RomFields;
 
 // C++ STL classes
 using std::array;
+using std::string;
 
 /**
  * Format an RFT_DATETIME.
@@ -69,24 +70,24 @@ rom_data_format_datetime(time_t date_time, unsigned int flags)
 /**
  * Format an RFT_DIMENSIONS.
  * @param dimensions	[in] Dimensions
- * @return Formatted RFT_DIMENSIONS, or nullptr on error. (allocated string; free with g_free)
+ * @return Formatted RFT_DIMENSIONS, or nullptr on error.
  */
-gchar *
+std::string
 rom_data_format_dimensions(const int dimensions[3])
 {
-	gchar *str;
+	string str;
 
 	// TODO: 'x' or '×'? Using 'x' for now.
 	if (dimensions[1] > 0) {
 		if (dimensions[2] > 0) {
-			str = g_strdup_printf("%dx%dx%d",
+			str = fmt::format(FSTR("{:d}x{:d}x{:d}"),
 				dimensions[0], dimensions[1], dimensions[2]);
 		} else {
-			str = g_strdup_printf("%dx%d",
+			str = fmt::format(FSTR("{:d}x{:d}"),
 				dimensions[0], dimensions[1]);
 		}
 	} else {
-		str = g_strdup_printf("%d", dimensions[0]);
+		str = fmt::to_string(dimensions[0]);
 	}
 
 	return str;
