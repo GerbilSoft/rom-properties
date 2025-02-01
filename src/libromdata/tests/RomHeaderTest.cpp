@@ -492,6 +492,20 @@ INSTANTIATE_TEST_SUITE_P(ADX_SADX, RomHeaderTest,
 
 /* Console */
 
+INSTANTIATE_TEST_SUITE_P(Atari7800, RomHeaderTest,
+	testing::ValuesIn(RomHeaderTest::ReadTestCasesFromDisk(
+		"Console/Atari7800.bin.tar.zst",
+		"Console/Atari7800.txt.tar.zst",
+		"Console/Atari7800.json.tar.zst"))
+	, RomHeaderTest::test_case_suffix_generator);
+
+INSTANTIATE_TEST_SUITE_P(ColecoVision, RomHeaderTest,
+	testing::ValuesIn(RomHeaderTest::ReadTestCasesFromDisk(
+		"Console/ColecoVision.bin.tar.zst",
+		"Console/ColecoVision.txt.tar.zst",
+		"Console/ColecoVision.json.tar.zst"))
+	, RomHeaderTest::test_case_suffix_generator);
+
 INSTANTIATE_TEST_SUITE_P(DreamcastSave, RomHeaderTest,
 	testing::ValuesIn(RomHeaderTest::ReadTestCasesFromDisk(
 		"Console/DreamcastSave.bin.tar.zst",
