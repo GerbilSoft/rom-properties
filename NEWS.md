@@ -24,6 +24,10 @@
     shows ListViews, e.g. EXE and DLL files.
     * Fixes #432: [Bug Report] EXE/DLL files causes a crash
       * Reported by @xxmichibxx.
+  * EXE: Handle PE executables with OptionalHeader.Magic=0 as PE32.
+    This fixes detection of some Win32s DLLs.
+    * Fixes #437: Old PE files from Win32s aren't recognized due to bad OptionalHeader magic
+      * Reported by @DankRank.
 
 * Other changes:
   * CMake: Added an ENABLE_NETWORKING option to control whether or not

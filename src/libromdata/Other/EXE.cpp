@@ -612,13 +612,11 @@ EXE::EXE(const IRpFilePtr &file)
 	// NOTE: MSVC handles 'PE\0\0' as 0x00504500,
 	// probably due to the embedded NULL bytes.
 	if (d->hdr.pe.Signature == cpu_to_be32(0x50450000) /*'PE\0\0'*/) {
-		// Portable Executable (Win32/Win64)
-		d->mimeType = "application/vnd.microsoft.portable-executable";
-
 		// Check if it's PE or PE32+.
 		// (.NET is checked in loadFieldData().)
 		switch (le16_to_cpu(d->hdr.pe.OptionalHeader.Magic)) {
 			case IMAGE_NT_OPTIONAL_HDR32_MAGIC:
+			case 0:	// some Win32s binaries
 				d->exeType = EXEPrivate::ExeType::PE;
 				d->pe_subsystem = le16_to_cpu(d->hdr.pe.OptionalHeader.opt32.Subsystem);
 				break;
@@ -628,10 +626,12 @@ EXE::EXE(const IRpFilePtr &file)
 				break;
 			default:
 				// Unsupported PE executable.
-				d->exeType = EXEPrivate::ExeType::Unknown;
-				d->isValid = false;
-				return;
+				// Fall back to MZ.
+				break;
 		}
+
+		// Portable Executable (Win32/Win64)
+		d->mimeType = "application/vnd.microsoft.portable-executable";
 
 		// Check the file type.
 		const uint16_t pe_flags = le16_to_cpu(d->hdr.pe.FileHeader.Characteristics);
