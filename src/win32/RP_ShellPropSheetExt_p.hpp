@@ -190,14 +190,6 @@ public:
 
 private:
 	/**
-	 * Rescale an image to be as close to the required size as possible.
-	 * @param req_sz	[in] Required size.
-	 * @param sz		[in/out] Image size.
-	 * @return True if nearest-neighbor scaling should be used (size was kept the same or enlarged); false if shrunken (so use interpolation).
-	 */
-	static bool rescaleImage(SIZE req_sz, SIZE &sz);
-
-	/**
 	 * Create the header row.
 	 * @param pt_start	[in] Starting position, in pixels.
 	 * @param size		[in] Width and height for a full-width single line label.

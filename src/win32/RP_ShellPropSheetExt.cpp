@@ -109,6 +109,9 @@ void RP_ShellPropSheetExt_Private::loadImages(void)
 {
 	// Supported image types
 	const uint32_t imgbf = romData->supportedImageTypes();
+	// FIXME: Store the standard image height somewhere else.
+	// FIXME: Adjust image sizes if the DPI changes.
+	const int imgStdHeight = rp_AdjustSizeForDpi(32, rp_GetDpiForWindow(hDlgSheet));
 
 	// Banner
 	bool ok = false;
@@ -123,6 +126,23 @@ void RP_ShellPropSheetExt_Private::loadImages(void)
 			}
 
 			ok = lblBanner->setRpImage(banner);
+			if (ok) {
+				// Adjust the banner size.
+				const SIZE bannerSize = {banner->width(), banner->height()};
+				if (bannerSize.cy != imgStdHeight) {
+					// Need to scale the banner label to match the aspect ratio.
+					const SIZE bannerScaledSize = {
+						static_cast<LONG>(rintf(
+							static_cast<float>(imgStdHeight) * (static_cast<float>(bannerSize.cx) /
+							static_cast<float>(bannerSize.cy)))),
+						imgStdHeight
+					};
+					lblBanner->setRequiredSize(bannerScaledSize);
+				} else {
+					// Use the original banner size.
+					lblBanner->setRequiredSize(bannerSize);
+				}
+			}
 		}
 	}
 	if (!ok) {
@@ -148,6 +168,24 @@ void RP_ShellPropSheetExt_Private::loadImages(void)
 				// Set the static icon.
 				ok = lblIcon->setRpImage(icon);
 			}
+
+			if (ok) {
+				// Adjust the icon size.
+				const SIZE iconSize = {icon->width(), icon->height()};
+				if (iconSize.cy != imgStdHeight) {
+					// Need to scale the icon label to match the aspect ratio.
+					const SIZE iconScaledSize = {
+						static_cast<LONG>(rintf(
+							static_cast<float>(imgStdHeight) * (static_cast<float>(iconSize.cx) /
+							static_cast<float>(iconSize.cy)))),
+						imgStdHeight
+					};
+					lblIcon->setRequiredSize(iconScaledSize);
+				} else {
+					// Use the original icon size.
+					lblIcon->setRequiredSize(iconSize);
+				}
+			}
 		}
 	}
 	if (!ok) {
@@ -155,44 +193,6 @@ void RP_ShellPropSheetExt_Private::loadImages(void)
 		// Delete the DragImageLabel if it was created previously.
 		lblIcon.reset();
 	}
-}
-
-/**
- * Rescale an image to be as close to the required size as possible.
- * @param req_sz	[in] Required size.
- * @param sz		[in/out] Image size.
- * @return True if nearest-neighbor scaling should be used (size was kept the same or enlarged); false if shrunken (so use interpolation).
- */
-bool RP_ShellPropSheetExt_Private::rescaleImage(SIZE req_sz, SIZE &sz)
-{
-	// TODO: Adjust req_sz for DPI.
-	if (sz.cx == req_sz.cx && sz.cy == req_sz.cy) {
-		// No resize necessary.
-		return true;
-	}
-
-	// Check if the image is too big.
-	if (sz.cx >= req_sz.cx || sz.cy >= req_sz.cy) {
-		// Image is too big. Shrink it.
-		// FIXME: Assuming the icon is always a power of two.
-		// Move TCreateThumbnail::rescale_aspect() into another file
-		// and make use of that.
-		sz.cx = 32;
-		sz.cy = 32;
-		return false;
-	}
-
-	// Image is too small.
-	// TODO: Ensure dimensions don't exceed req_img_size.
-	SIZE orig_sz = sz;
-	do {
-		// Increase by integer multiples until
-		// the icon is at least 32x32.
-		// TODO: Constrain to 32x32?
-		sz.cx += orig_sz.cx;
-		sz.cy += orig_sz.cy;
-	} while (sz.cx < req_sz.cx && sz.cy < req_sz.cy);
-	return true;
 }
 
 /**
@@ -254,13 +254,13 @@ int RP_ShellPropSheetExt_Private::createHeaderRow(_In_ POINT pt_start, _In_ SIZE
 
 	// Add the banner and icon widths.
 
-	// Banner.
+	// Banner
 	// TODO: Spacing between banner and text?
 	// Doesn't seem to be needed with Dreamcast saves...
 	const int banner_width = (lblBanner ? lblBanner->actualSize().cx : 0);
 	total_widget_width += banner_width;
 
-	// Icon.
+	// Icon
 	const int icon_width = (lblIcon ? lblIcon->actualSize().cx : 0);
 	if (icon_width > 0) {
 		if (total_widget_width > 0) {
@@ -269,7 +269,7 @@ int RP_ShellPropSheetExt_Private::createHeaderRow(_In_ POINT pt_start, _In_ SIZE
 		total_widget_width += icon_width;
 	}
 
-	// Starting point.
+	// Starting point
 	POINT curPt = {
 		((size.cx - total_widget_width) / 2) + pt_start.x,
 		pt_start.y
@@ -290,13 +290,13 @@ int RP_ShellPropSheetExt_Private::createHeaderRow(_In_ POINT pt_start, _In_ SIZE
 		curPt.x += size_lblSysInfo.cx + pt_start.x;
 	}
 
-	// Banner.
+	// Banner
 	if (banner_width > 0) {
 		lblBanner->setPosition(curPt);
 		curPt.x += banner_width + pt_start.x;
 	}
 
-	// Icon.
+	// Icon
 	if (icon_width > 0) {
 		lblIcon->setPosition(curPt);
 		curPt.x += icon_width + pt_start.x;
@@ -1029,7 +1029,7 @@ int RP_ShellPropSheetExt_Private::initListData(_In_ HWND hWndTab,
 		lv_row_num++;
 	}
 
-	// Icons.
+	// Icons
 	if (hasIcons) {
 		// Icon size is 32x32, adjusted for DPI. (TODO: WM_DPICHANGED)
 		// ImageList will resize the original icons to 32x32.
