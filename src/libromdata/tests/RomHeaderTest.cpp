@@ -507,6 +507,13 @@ INSTANTIATE_TEST_SUITE_P(GameCubeWiaRvz, RomHeaderTest,
 		"Console/GameCube.wia-rvz.json.tar.zst"))
 	, RomHeaderTest::test_case_suffix_generator);
 
+INSTANTIATE_TEST_SUITE_P(Intellivision, RomHeaderTest,
+	testing::ValuesIn(RomHeaderTest::ReadTestCasesFromDisk(
+		"Console/Intellivision.bin.tar.zst",
+		"Console/Intellivision.txt.tar.zst",
+		"Console/Intellivision.json.tar.zst"))
+	, RomHeaderTest::test_case_suffix_generator);
+
 INSTANTIATE_TEST_SUITE_P(MegaDrive, RomHeaderTest,
 	testing::ValuesIn(RomHeaderTest::ReadTestCasesFromDisk(
 		"Console/MegaDrive.bin.tar.zst",
