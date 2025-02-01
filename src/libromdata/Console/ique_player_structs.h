@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * ique_player_structs.h: iQue Player data structures.                     *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -17,11 +17,11 @@ extern "C" {
 
 // .cmd files are always 10,668 (0x29AC) bytes.
 #define IQUE_PLAYER_CMD_FILESIZE 10668
-// .dat (ticket) files are always 11,084 (0x2B4C0 bytes.
+// .dat (ticket) files are always 11,084 (0x2B4C) bytes.
 #define IQUE_PLAYER_DAT_FILESIZE 11084
 
 /**
- * iQue Player .cmd header.
+ * iQue Player .cmd header
  * References:
  * - https://github.com/simontime/iQueCMD/blob/master/Program.cs
  * - http://www.iquebrew.org/index.php?title=CMD
@@ -64,7 +64,7 @@ ASSERT_STRUCT(iQuePlayer_contentDesc, 0x48);
 #define IQUE_PLAYER_TITLE_SIZE (IQUE_PLAYER_TITLE_W * IQUE_PLAYER_TITLE_H * 2)
 
 /**
- * Content metadata header.
+ * Content metadata header
  * Located at 0x2800 in the .cmd file.
  *
  * Reference: http://www.iquebrew.org/index.php?title=CMD
@@ -94,7 +94,7 @@ typedef struct _iQuePlayer_BbContentMetaDataHead {
 ASSERT_STRUCT(iQuePlayer_BbContentMetaDataHead, 0x1AC);
 
 /**
- * Hardware access rights.
+ * Hardware access rights
  */
 typedef enum {
 	IQUE_PLAYER_HW_PI_BUFFER	= (1U << 0),
@@ -110,7 +110,7 @@ typedef enum {
 } iQuePlayer_hwAccessRights_e;
 
 /**
- * Ticket header.
+ * Ticket header
  * Located after the content metadata in .dat files.
  *
  * Reference: http://www.iquebrew.org/index.php?title=Ticket
@@ -134,7 +134,7 @@ typedef struct _iQuePlayer_BbTicketHead {
 ASSERT_STRUCT(iQuePlayer_BbTicketHead, 0x2B4C - IQUE_PLAYER_BBTICKETHEAD_ADDRESS);
 
 /**
- * Trial limitations.
+ * Trial limitations
  */
 typedef enum {
 	IQUE_PLAYER_TRIAL_TIME_0	= 0,	// Time-based limitation
