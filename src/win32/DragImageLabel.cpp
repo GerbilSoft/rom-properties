@@ -132,15 +132,18 @@ DragImageLabelPrivate::DragImageLabelPrivate(HWND hwndParent)
 	, ecksBawks(false)
 {
 	// TODO: Set rect/size as parameters?
-	requiredSize.cx = DIL_REQ_IMAGE_SIZE;
-	requiredSize.cy = DIL_REQ_IMAGE_SIZE;
-	actualSize.cx = DIL_REQ_IMAGE_SIZE;
-	actualSize.cy = DIL_REQ_IMAGE_SIZE;
+	// TODO: Adjust on DPI change?
+	const LONG iconSizeForDpi = rp_AdjustSizeForDpi(32, rp_GetDpiForWindow(hwndParent));
+
+	requiredSize.cx = iconSizeForDpi;
+	requiredSize.cy = iconSizeForDpi;
+	actualSize.cx = iconSizeForDpi;
+	actualSize.cy = iconSizeForDpi;
 
 	rect.left = 0;
-	rect.right = DIL_REQ_IMAGE_SIZE;
+	rect.right = iconSizeForDpi;
 	rect.top = 0;
-	rect.bottom = DIL_REQ_IMAGE_SIZE;
+	rect.bottom = iconSizeForDpi;
 }
 
 DragImageLabelPrivate::~DragImageLabelPrivate()

@@ -18,9 +18,6 @@
 class DragImageLabelPrivate;
 class DragImageLabel
 {
-// TODO: Adjust image size based on DPI.
-#define DIL_REQ_IMAGE_SIZE 32
-
 public:
 	explicit DragImageLabel(HWND hwndParent);
 	~DragImageLabel();
