@@ -52,7 +52,10 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 		SCMP_SYS(clock_gettime64),
 #endif /* __SNR_clock_gettime64 || __NR_clock_gettime64 */
 		SCMP_SYS(fcntl), SCMP_SYS(fcntl64),		// gcc profiling
-		SCMP_SYS(futex), SCMP_SYS(futex_time64),	// iconv_open()
+		SCMP_SYS(futex),				// iconv_open()
+#if defined(__SNR_futex_time64) || defined(__NR_futex_time64)
+		SCMP_SYS(futex_time64),				// iconv_open()
+#endif /* __SNR_futex_time64 || __NR_futex_time64 */
 		SCMP_SYS(gettimeofday),	// 32-bit only? [testing::internal::GetTimeInMillis()]
 		SCMP_SYS(mmap),		// iconv_open()
 		SCMP_SYS(mmap2),	// iconv_open() [might only be needed on i386...]

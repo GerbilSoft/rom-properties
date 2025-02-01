@@ -38,7 +38,10 @@ int rpt_do_security_options(void)
 		SCMP_SYS(fcntl), SCMP_SYS(fcntl64),		// gcc profiling
 		SCMP_SYS(ftruncate),	// LibRpBase::RpFile::truncate() [from LibRpBase::RpPngWriterPrivate ctors]
 		SCMP_SYS(ftruncate64),
-		SCMP_SYS(futex), SCMP_SYS(futex_time64),	// iconv_open(), dlopen()
+		SCMP_SYS(futex),				// iconv_open(), dlopen()
+#if defined(__SNR_futex_time64) || defined(__NR_futex_time64)
+		SCMP_SYS(futex_time64),				// iconv_open(), dlopen()
+#endif /* __SNR_futex_time64 || __NR_futex_time64 */
 		SCMP_SYS(gettimeofday),	// 32-bit only?
 		SCMP_SYS(getppid),	// dll-search.c: walk_proc_tree()
 		SCMP_SYS(getuid),	// TODO: Only use geteuid()?
