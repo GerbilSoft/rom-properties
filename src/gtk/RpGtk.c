@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * RpGtk.c: glib/gtk+ wrappers for some libromdata functionality.          *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -139,7 +139,7 @@ static int rpFileFilterToGtkFileChooser(GtkFileChooser *fileChooser, const char 
 }
 #endif /* !USE_GTK4_FILE_DIALOG */
 
-#if USE_GTK4_FILE_DIALOG
+#ifdef USE_GTK4_FILE_DIALOG
 /**
  * Convert an RP file dialog filter to GTK4 for GtkFileDialog.
  *
@@ -275,7 +275,7 @@ rpGtk_getFileName_fileDialog_response(GtkFileChooserDialog *fileDialog, gint res
  */
 static int rpGtk_getFileName_int(const rpGtk_getFileName_t *gfndata, bool bSave)
 {
-#if USE_GTK4_FILE_DIALOG
+#ifdef USE_GTK4_FILE_DIALOG
 	// GTK 4.10.0 introduces a new GtkFileDialog.
 	GtkFileDialog *const fileDialog = gtk_file_dialog_new();
 	if (gfndata->title) {
@@ -307,7 +307,7 @@ static int rpGtk_getFileName_int(const rpGtk_getFileName_t *gfndata, bool bSave)
 	if (gfndata->init_dir) {
 		GFile *const set_file = g_file_new_for_path(gfndata->init_dir);
 		if (set_file) {
-#  if USE_GTK4_FILE_DIALOG
+#  ifdef USE_GTK4_FILE_DIALOG
 			gtk_file_dialog_set_initial_folder(fileDialog, set_file);
 #  else /* !USE_GTK4_FILE_DIALOG */
 			gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(fileDialog), set_file, NULL);
@@ -331,7 +331,7 @@ static int rpGtk_getFileName_int(const rpGtk_getFileName_t *gfndata, bool bSave)
 
 	// Set the initial name.
 	if (gfndata->init_name) {
-#  if USE_GTK4_FILE_DIALOG
+#  ifdef USE_GTK4_FILE_DIALOG
 		gtk_file_dialog_set_initial_name(fileDialog, gfndata->init_name);
 #  else /* !USE_GTK4_FILE_DIALOG */
 		gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(fileDialog), gfndata->init_name);
@@ -340,7 +340,7 @@ static int rpGtk_getFileName_int(const rpGtk_getFileName_t *gfndata, bool bSave)
 
 	// Set the file filters.
 	if (gfndata->filter) {
-#if USE_GTK4_FILE_DIALOG
+#ifdef USE_GTK4_FILE_DIALOG
 		rpFileFilterToGtkFileDialog(fileDialog, gfndata->filter);
 #else /* !USE_GTK4_FILE_DIALOG */
 		rpFileFilterToGtkFileChooser(GTK_FILE_CHOOSER(fileDialog), gfndata->filter);
@@ -355,7 +355,7 @@ static int rpGtk_getFileName_int(const rpGtk_getFileName_t *gfndata, bool bSave)
 	gfncbdata->bSave = bSave;
 
 	// Prompt for a filename.
-#if USE_GTK4_FILE_DIALOG
+#ifdef USE_GTK4_FILE_DIALOG
 	gtk_file_dialog_set_modal(fileDialog, true);
 	if (bSave) {
 		gtk_file_dialog_save(fileDialog, gfndata->parent, NULL,
