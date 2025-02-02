@@ -2074,11 +2074,11 @@ int Nintendo3DS::loadFieldData(void)
 
 		// TODO: Required system version?
 
-		// Version.
+		// Version
 		d->fields.addField_string(C_("RomData", "Version"),
 			d->n3dsVersionToString(be16_to_cpu(tmd_header->title_version)));
 
-		// Issuer.
+		// Issuer
 		// NOTE: We're using the Ticket Issuer in the TMD tab.
 		// TODO: Verify that Ticket and TMD issuers match?
 		const char *issuer;
@@ -2103,21 +2103,21 @@ int Nintendo3DS::loadFieldData(void)
 				latin1_to_utf8(d->mxh.ticket.issuer, sizeof(d->mxh.ticket.issuer)));
 		}
 
-		// Demo use limit.
+		// Demo use limit
 		if (d->mxh.ticket.limits[0] == cpu_to_be32(4)) {
 			// Title has use limits.
 			d->fields.addField_string_numeric(C_("Nintendo3DS", "Demo Use Limit"),
 				be32_to_cpu(d->mxh.ticket.limits[1]));
 		}
 
-		// Console ID.
+		// Console ID
 		// NOTE: Technically part of the ticket.
 		// NOTE: Not including the "0x" hex prefix.
 		d->fields.addField_string(C_("Nintendo", "Console ID"),
-			fmt::format(FSTR("{:0>8X}"), be32_to_cpu(d->mxh.ticket.console_id)),
+			fmt::format(FSTR("{:0>8X}"), +be32_to_cpu(d->mxh.ticket.console_id)),
 			RomFields::STRF_MONOSPACE);
 
-		// Contents table.
+		// Contents table
 		auto *const vv_contents = new RomFields::ListData_t();
 		vv_contents->reserve(d->content_chunks.size());
 
