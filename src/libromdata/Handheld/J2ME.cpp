@@ -154,10 +154,15 @@ public:
 	int loadManifestMF(void);
 
 	/**
-	 * Get the icon filename from the "MIDlet-1" tag.
-	 * @return Icon filename, or empty string if the tag was not found or malformed.
+	 * Parse the "MIDlet-1" tag.
+	 * This tag has up to three values, separated by commas:
+	 * - Title
+	 * - Icon filename (leading slash removed, if present)
+	 * - Java class name
+	 * - Additional strings: Permissions?
+	 * @return Parsed "MIDlet-1" tag, or empty vector if the tag was not found or malformed.
 	 */
-	string getIconFilenameFromMIDlet1(void);
+	vector<string> parseMIDlet1tag(void);
 
 	/**
 	 * Load the icon.
@@ -494,10 +499,15 @@ int J2MEPrivate::loadManifestMF(void)
 }
 
 /**
- * Get the icon filename from the "MIDlet-1" tag.
- * @return Icon filename, or empty string if the tag was not found or malformed.
+ * Parse the "MIDlet-1" tag.
+ * This tag has up to three values, separated by commas:
+ * - Title
+ * - Icon filename (leading slash removed, if present)
+ * - Java class name
+ * - Additional strings: Permissions?
+ * @return Parsed "MIDlet-1" tag, or empty vector if the tag was not found or malformed.
  */
-string J2MEPrivate::getIconFilenameFromMIDlet1(void)
+vector<string> J2MEPrivate::parseMIDlet1tag(void)
 {
 	auto iter = m_map.find(manifest_tag_t::MIDlet_1);
 	if (iter == m_map.end()) {
@@ -508,41 +518,58 @@ string J2MEPrivate::getIconFilenameFromMIDlet1(void)
 	// "MIDlet-1" has three values, separated by commas:
 	// - Title
 	// - Icon filename
-	// - Java package name (maybe?)
+	// - Java class name
+	// - Additional strings: Permissions?
+	vector<string> vec;
+	vec.reserve(3);
 	const string &midlet_1 = iter->second;
-	size_t comma1 = midlet_1.find(',');
-	if (comma1 == string::npos) {
-		return {};
-	}
-	// Skip spaces past the comma, and also leading slsahes.
-	for (comma1++; comma1 < midlet_1.size(); comma1++) {
-		const char chr = midlet_1[comma1];
-		if (chr != ' ' && chr != '/') {
+
+	const size_t midlet_1_size = midlet_1.size();
+	size_t pos = 0;
+	while (pos < midlet_1_size) {
+		size_t comma = midlet_1.find(',', pos);
+		if (comma == string::npos) {
+			// End of string.
+			string str = midlet_1.substr(pos);
+			// Remove trailing spaces.
+			while (!str.empty()) {
+				const size_t size_minus_one = str.size() - 1;
+				if (str[size_minus_one] != ' ') {
+					break;
+				}
+				str.resize(size_minus_one);
+			}
+			vec.push_back(std::move(str));
 			break;
 		}
-	}
-	if (comma1 >= midlet_1.size()) {
-		// Too far.
-		return {};
-	}
 
-	size_t comma2 = midlet_1.find(',', comma1 + 1);
-	if (comma2 == string::npos) {
-		return {};
-	}
-
-	string s_ret(midlet_1, comma1, comma2 - comma1);
-
-	// Remove trailing spaces.
-	while (!s_ret.empty()) {
-		const size_t size_minus_one = s_ret.size() - 1;
-		if (s_ret[size_minus_one] != ' ') {
-			break;
+		// Add the current string.
+		// NOTE: If this is the second string (icon filename),
+		// the leading slash will be removed, if present.
+		if (vec.size() == 1 && midlet_1[pos] == '/') {
+			pos++;
 		}
-		s_ret.resize(size_minus_one);
+		string str = midlet_1.substr(pos, comma - pos);
+		// Remove trailing spaces.
+		while (!str.empty()) {
+			const size_t size_minus_one = str.size() - 1;
+			if (str[size_minus_one] != ' ') {
+				break;
+			}
+			str.resize(size_minus_one);
+		}
+		vec.push_back(std::move(str));
+
+		// Skip any spaces after the comma.
+		pos = comma + 1;
+		while (pos < midlet_1_size) {
+			if (midlet_1[pos] != ' ')
+				break;
+			pos++;
+		}
 	}
 
-	return s_ret;
+	return vec;
 }
 
 /**
@@ -591,14 +618,14 @@ rp_image_const_ptr J2MEPrivate::loadIcon(void)
 
 	if (png_buf.empty()) {
 		// "MIDlet-Icon" was not found. Try "MIDlet-1".
-		string s_icon_filename = getIconFilenameFromMIDlet1();
-		if (s_icon_filename.empty()) {
+		vector<string> vec = parseMIDlet1tag();
+		if (vec.size() < 2) {
 			// No filename.
 			return {};
 		}
 
 		// Attempt to load the file.
-		png_buf = loadFileFromZip(s_icon_filename.c_str(), ICON_PNG_FILE_SIZE_MAX);
+		png_buf = loadFileFromZip(vec[1].c_str(), ICON_PNG_FILE_SIZE_MAX);
 	}
 
 	if (png_buf.empty()) {
