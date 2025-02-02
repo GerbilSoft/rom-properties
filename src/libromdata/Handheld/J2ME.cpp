@@ -511,7 +511,7 @@ rp_image_const_ptr J2MEPrivate::loadIcon(void)
 /** J2ME **/
 
 /**
- * Read a J2ME (Color) ROM image.
+ * Read a J2ME .jar file.
  *
  * A ROM file must be opened by the caller. The file handle
  * will be ref()'d and must be kept open in order to load
@@ -680,7 +680,7 @@ const char *J2ME::systemName(unsigned int type) const
 		"J2ME::systemName() array index optimization needs to be updated.");
 
 	static const array<const char*, 4> sysNames = {{
-		"Java 2 Micro Edition", "J2ME", "WS", nullptr,
+		"Java 2 Micro Edition", "J2ME", "J2ME", nullptr,
 	}};
 
 	return sysNames[type & SYSNAME_TYPE_MASK];
