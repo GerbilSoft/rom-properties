@@ -1,4 +1,6 @@
-cmake_minimum_required(VERSION 3.8...3.28)
+# rom-properties: Allow CMake 3.5. (for Debian 8 ppc testing)
+#cmake_minimum_required(VERSION 3.8...3.28)
+cmake_minimum_required(VERSION 3.5...3.28)
 
 # Fallback for using newer policies on CMake <3.12.
 if (${CMAKE_VERSION} VERSION_LESS 3.12)
@@ -37,10 +39,13 @@ function(enable_module target)
 endfunction()
 
 set(FMT_USE_CMAKE_MODULES FALSE)
+# rom-properties: VERSION_GREATER_EQUAL was added in CMake 3.7.
+IF(CMAKE_VERSION VERSION_GREATER 3.6.99)
 if (CMAKE_VERSION VERSION_GREATER_EQUAL 3.28 AND
     CMAKE_GENERATOR STREQUAL "Ninja")
   set(FMT_USE_CMAKE_MODULES TRUE)
 endif ()
+ENDIF()
 
 # Adds a library compiled with C++20 module support.
 # `enabled` is a CMake variables that specifies if modules are enabled.
