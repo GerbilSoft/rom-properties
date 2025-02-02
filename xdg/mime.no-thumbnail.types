@@ -77,6 +77,7 @@ application/x-dosexec			# EXE
 application/x-ms-dos-executable		# EXE
 application/x-ms-ne-executable		# EXE
 application/x-msdownload		# EXE
+text/vnd.sun.j2me.app-descriptor	# J2ME
 application/x-mach-object		# MachO
 application/x-mach-executable		# MachO
 application/x-mach-sharedlib		# MachO

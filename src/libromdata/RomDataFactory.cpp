@@ -202,7 +202,7 @@ pthread_once_t once_mimeTypes = PTHREAD_ONCE_INIT;
  *
  * TODO: Add support for multiple magic numbers per class.
  */
-static const array<RomDataFns, 40> romDataFns_magic = {{
+static const array<RomDataFns, 39> romDataFns_magic = {{
 	// Consoles
 	GetRomDataFns_addr(Atari7800, ATTR_HAS_METADATA, 4, 'RI78'),	// "ATARI7800"
 	GetRomDataFns_addr(GameCubeBNR, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'BNR1'),
@@ -223,7 +223,6 @@ static const array<RomDataFns, 40> romDataFns_magic = {{
 	GetRomDataFns_addr(DMG, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0x304, 0xCEED6666),	// headered
 	GetRomDataFns_addr(DMG, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0x104, 0x0110CEEF),	// Analogue Pocket
 	GetRomDataFns_addr(GameBoyAdvance, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0x04, 0x24FFAE51),
-	GetRomDataFns_addr(J2ME, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 0x504B0304U),	// .jar files (TODO: Other .jar files?)
 	GetRomDataFns_addr(Lynx, ATTR_HAS_METADATA, 0, 'LYNX'),
 	GetRomDataFns_addr(NGPC, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 12, ' SNK'),
 	GetRomDataFns_addr(Nintendo3DSFirm, ATTR_NONE, 0, 'FIRM'),
@@ -264,7 +263,7 @@ static const array<RomDataFns, 40> romDataFns_magic = {{
  * Headers with addresses other than 0 should be
  * placed at the end of this array.
  */
-static const array<RomDataFns, 37> romDataFns_header = {{
+static const array<RomDataFns, 38> romDataFns_header = {{
 	// Consoles
 	GetRomDataFns(ColecoVision, ATTR_HAS_METADATA),
 	GetRomDataFns(Dreamcast, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA | ATTR_SUPPORTS_DEVICES),
@@ -298,6 +297,7 @@ static const array<RomDataFns, 37> romDataFns_header = {{
 
 	// Other
 	GetRomDataFns(Amiibo, ATTR_HAS_THUMBNAIL),
+	GetRomDataFns(J2ME, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA),	// .jar and .jad (TODO: Handle .zip files like .iso?)
 	GetRomDataFns(MachO, ATTR_NONE),
 	GetRomDataFns(NintendoBadge, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA),
 	GetRomDataFns(Wim, ATTR_NONE),

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * J2ME.hpp: Java 2 Micro Edition package reader.                          *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -62,8 +62,8 @@ private:
 
 public:
 	/** RomDataInfo **/
-	static const array<const char*, 1+1> exts;
-	static const array<const char*, 1+1> mimeTypes;
+	static const array<const char*, 2+1> exts;
+	static const array<const char*, 2+1> mimeTypes;
 	static const RomDataInfo romDataInfo;
 
 public:
@@ -71,7 +71,7 @@ public:
 		Unknown	= -1,
 
 		JAR	= 0,	// .jar package
-		//JAD	= 1,	// .jad file
+		JAD	= 1,	// .jad file
 
 		Max
 	};
@@ -93,6 +93,7 @@ public:
 		MicroEdition_Configuration,
 		MicroEdition_Profile,
 		MIDlet_Name,
+		MIDlet_Description,
 		MIDlet_Version,
 		MIDlet_Vendor,
 		MIDlet_Icon,
@@ -100,10 +101,19 @@ public:
 		MIDlet_1,
 
 		// .jad only
-		// TODO: Add .jad support?
 		MIDlet_Jar_URL,
+		MIDlet_Jar_Size,
 		Nokia_MIDlet_Category,
 		TC_BookReader_Logging,
+
+		// .jad: File digest tags
+		Name,
+		MD5_Digest,
+		SHA_Digest,	// deprecated alias of SHA1_Digest?
+		SHA1_Digest,
+		SHA_1_Digest,	// incorrect version found in some .jad files
+		SHA_256_Digest,	// probably not found in J2ME .jar files
+		Digest_Algorithms,
 
 		Manifest_Tag_Max
 	};
@@ -116,7 +126,7 @@ public:
 	map_t m_map;
 
 	// Maximum size for various files.
-	static constexpr size_t MANIFEST_MF_FILE_SIZE_MAX = 16384U;
+	static constexpr size_t MANIFEST_MF_FILE_SIZE_MAX = 32768U;
 	static constexpr size_t ICON_PNG_FILE_SIZE_MAX = 16384U;
 
 public:
@@ -157,23 +167,22 @@ public:
 };
 
 ROMDATA_IMPL(J2ME)
-ROMDATA_IMPL_IMG_SIZES(J2ME)
 
 /** J2MEPrivate **/
 
 /* RomDataInfo */
-const array<const char*, 1+1> J2MEPrivate::exts = {{
+const array<const char*, 2+1> J2MEPrivate::exts = {{
 	".jar",
-	//".jad",	// TODO
+	".jad",
 
 	nullptr
 }};
-const array<const char*, 1+1> J2MEPrivate::mimeTypes = {{
+const array<const char*, 2+1> J2MEPrivate::mimeTypes = {{
 	// Official MIME types from FreeDesktop.org.
-	"application/java-archive",
+	"application/java-archive",		// .jar
 
 	// Vendor-specific MIME types from FreeDesktop.org.
-	//"text/vnd.sun.j2me.app-descriptor",	// TODO
+	"text/vnd.sun.j2me.app-descriptor",	// .jad
 
 	nullptr
 }};
@@ -190,6 +199,7 @@ const array<const char*, static_cast<size_t>(J2MEPrivate::manifest_tag_t::Manife
 	"MicroEdition-Configuration",
 	"MicroEdition-Profile",
 	"MIDlet-Name",
+	"MIDlet-Description",
 	"MIDlet-Version",
 	"MIDlet-Vendor",
 	"MIDlet-Icon",
@@ -197,10 +207,19 @@ const array<const char*, static_cast<size_t>(J2MEPrivate::manifest_tag_t::Manife
 	"MIDlet-1",
 
 	// .jad only
-	// TODO: Add .jad support?
 	"MIDlet-Jar-URL",
+	"MIDlet-Jar-Size",
 	"Nokia-MIDlet-Category",
 	"TC-BookReader-Logging",
+
+	// .jad: File digest tags
+	"Name",
+	"MD5-Digest",
+	"SHA-Digest",		// deprecated alias of SHA1_Digest?
+	"SHA1-Digest",
+	"SHA-1-Digest",		// incorrect version found in some .jad files
+	"SHA-256-Digest",	// probably not found in J2ME .jar files
+	"Digest-Algorithms",
 }};
 
 J2MEPrivate::J2MEPrivate(const IRpFilePtr &file)
@@ -301,13 +320,45 @@ rp::uvector<uint8_t> J2MEPrivate::loadFileFromZip(const char *filename, size_t m
  */
 int J2MEPrivate::loadManifestMF(void)
 {
-	assert(jarFile != nullptr);
+	rp::uvector<uint8_t> manifest_buf;
 
-	// Load MANIFEST.MF.
-	rp::uvector<uint8_t> manifest_buf = loadFileFromZip("META-INF/MANIFEST.MF", MANIFEST_MF_FILE_SIZE_MAX);
-	if (manifest_buf.empty()) {
-		// Unable to load MANIFEST.MF.
-		return -EIO;
+	switch (jfileType) {
+		default:
+			assert(!"Unsupported J2ME file type.");
+			return -ENOTSUP;
+
+		case JFileType::JAR:
+			// The .jar file must have been opened already.
+			assert(jarFile != nullptr);
+			if (!jarFile) {
+				return -EIO;
+			}
+
+			// Load MANIFEST.MF.
+			manifest_buf = loadFileFromZip("META-INF/MANIFEST.MF", MANIFEST_MF_FILE_SIZE_MAX);
+			if (manifest_buf.empty()) {
+				// Unable to load MANIFEST.MF.
+				return -ENOENT;
+			}
+			break;
+
+		case JFileType::JAD: {
+			// Sanity check: Verify the JAD file size.
+			const off64_t filesize = file->size();
+			if (filesize <= 0 || filesize > static_cast<off64_t>(J2MEPrivate::MANIFEST_MF_FILE_SIZE_MAX)) {
+				// File is too big. (...or too small?)
+				return -ENOMEM;
+			}
+
+			manifest_buf.resize(static_cast<size_t>(filesize));
+			file->rewind();
+			size_t size = file->read(manifest_buf.data(), manifest_buf.size());
+			if (size != manifest_buf.size()) {
+				// Seek and/or read error.
+				return -EIO;
+			}
+			break;
+		}
 	}
 
 	// Add a NULL byte at the end.
@@ -317,14 +368,53 @@ int J2MEPrivate::loadManifestMF(void)
 	// NOTE: May have LF or CRLF line endings.
 	m_map.clear();
 	char *p = reinterpret_cast<char*>(manifest_buf.data());
+
+	// Check for a UTF-8 byte-order marker.
+	static const array<uint8_t, 3> utf8_bom = {{0xEF, 0xBB, 0xBF}};
+	if (manifest_buf.size() >= utf8_bom.size() && !memcmp(p, utf8_bom.data(), utf8_bom.size())) {
+		// Found the UTF-8 BOM. Skip it.
+		// NOTE: We're always interpreting the file contents as UTF-8.
+		p += utf8_bom.size();
+	}
+
 	char *line_saveptr = nullptr;
+	auto last_iter = m_map.end();
 	for (char *line = strtok_r(p, "\n", &line_saveptr); line != nullptr;
 	     line = strtok_r(nullptr, "\n", &line_saveptr))
 	{
+		// Check for a multi-line entry.
+		if (line[0] == ' ' && line[1] != '\0') {
+			// Found a continuation of the previous entry.
+			if (last_iter == m_map.end()) {
+				// Not a valid iterator...
+				continue;
+			}
+
+			string &s_value = last_iter->second;
+			s_value += &line[1];
+
+			// Remove any trailing CRs and spaces.
+			while (!s_value.empty()) {
+				const size_t size_minus_one = s_value.size() - 1;
+				if (s_value[size_minus_one] != '\r' && s_value[size_minus_one] != ' ') {
+					break;
+				}
+				s_value.resize(size_minus_one);
+			}
+
+			// Next line.
+			continue;
+		}
+
 		char *token_saveptr = nullptr;
 		const char *tag_name = strtok_r(line, ":", &token_saveptr);
 		if (!tag_name) {
 			// No ':'. This line is invalid.
+			continue;
+		}
+		// Check for empty lines.
+		if (tag_name[0] == '\0' || tag_name[0] == '\r' || tag_name[0] == '\n') {
+			// Found an empty line.
 			continue;
 		}
 
@@ -337,9 +427,22 @@ int J2MEPrivate::loadManifestMF(void)
 				break;
 			}
 		}
-		if (tag == manifest_tag_t::Unknown) {
-			// Not a match.
-			continue;
+
+		switch (tag) {
+			default:
+				break;
+
+			case manifest_tag_t::Unknown:
+				// Unrecognized tag.
+				continue;
+
+			case manifest_tag_t::Name:
+			case manifest_tag_t::MD5_Digest:
+			case manifest_tag_t::SHA_Digest:
+			case manifest_tag_t::SHA1_Digest:
+			case manifest_tag_t::SHA_256_Digest:
+				// Ignoring .jad file digest tags.
+				continue;
 		}
 
 		const char *value = strtok_r(nullptr, ":", &token_saveptr);
@@ -382,6 +485,9 @@ int J2MEPrivate::loadManifestMF(void)
 			m_map.clear();
 			return -EIO;
 		}*/
+
+		// Needed for multi-line entries.
+		last_iter = status.first;
 	}
 
 	return (unlikely(m_map.empty()) ? -ENOENT : 0);
@@ -511,7 +617,7 @@ rp_image_const_ptr J2MEPrivate::loadIcon(void)
 /** J2ME **/
 
 /**
- * Read a J2ME .jar file.
+ * Read a J2ME .jar or .jad file.
  *
  * A ROM file must be opened by the caller. The file handle
  * will be ref()'d and must be kept open in order to load
@@ -527,79 +633,137 @@ J2ME::J2ME(const IRpFilePtr &file)
 	: super(new J2MEPrivate(file))
 {
 	RP_D(J2ME);
-	d->fileType = FileType::ApplicationPackage;	// for .jar
 
 	if (!d->file) {
 		// Could not ref() the file handle.
 		return;
 	}
 
-#ifdef _MSC_VER
-	// Delay load verification.
-	// TODO: Only if linked with /DELAYLOAD?
+	// Seek to the beginning of the file.
+	d->file->rewind();
 
-#  ifdef ZLIB_IS_DLL
-	// Only if zlib is a DLL.
-	if (DelayLoad_test_get_crc_table() != 0) {
-		// Delay load failed.
-		// J2ME packages cannot be read without MiniZip.
-		// (TODO: .jad files?)
+	// Read the file header. (at least 32 bytes)
+	uint8_t header[32];
+	size_t size = d->file->read(header, sizeof(header));
+	if (size < 32) {
 		d->file.reset();
 		return;
 	}
+
+	// Check if this file is supported.
+	const char *const filename = file->filename();
+	const DetectInfo info = {
+		{0, sizeof(header), header},
+		FileSystem::file_ext(filename),	// ext
+		0				// szFile (not needed for J2ME)
+	};
+	d->jfileType = static_cast<J2MEPrivate::JFileType>(isRomSupported_static(&info));
+	d->isValid = (static_cast<int>(d->jfileType) >= 0);
+
+	if (!d->isValid) {
+		d->file.reset();
+		return;
+	}
+
+	switch (d->jfileType) {
+		default:
+			// Not supported.
+			assert(!"Unsupported J2ME file type.");
+			d->isValid = false;
+			d->file.reset();
+			return;
+
+		case J2MEPrivate::JFileType::JAR:
+#ifdef _MSC_VER
+			// Delay load verification.
+			// TODO: Only if linked with /DELAYLOAD?
+
+#  ifdef ZLIB_IS_DLL
+			// Only if zlib is a DLL.
+			if (DelayLoad_test_get_crc_table() != 0) {
+				// Delay load failed.
+				// J2ME packages cannot be read without MiniZip.
+				d->isValid = false;
+				d->file.reset();
+				return;
+			}
 #  else /* !ZLIB_IS_DLL */
-	// zlib isn't in a DLL, but we need to ensure that the
-	// CRC table is initialized anyway.
-	get_crc_table();
+			// zlib isn't in a DLL, but we need to ensure that the
+			// CRC table is initialized anyway.
+			get_crc_table();
 #  endif /* ZLIB_IS_DLL */
 
 #  ifdef MINIZIP_IS_DLL
-	// Only if MiniZip is a DLL.
-	if (DelayLoad_test_unzClose() != 0) {
-		// Delay load failed.
-		// J2ME packages cannot be read without MiniZip.
-		// (TODO: .jad files?)
-		d->file.reset();
-		return;
-	}
+			// Only if MiniZip is a DLL.
+			if (DelayLoad_test_unzClose() != 0) {
+				// Delay load failed.
+				// J2ME packages cannot be read without MiniZip.
+				d->isValid = false;
+				d->file.reset();
+				return;
+			}
 #  endif /* MINIZIP_IS_DLL */
 #endif /* _MSC_VER */
 
-	// Attempt to open as a .zip file first.
-	d->jarFile = d->openZip(file->filename());
-	if (!d->jarFile) {
-		// Cannot open as a .zip file.
-		// TODO: May be a .jad file?
-		d->file.reset();
-		return;
-	}
+			// Attempt to open as a .zip file first.
+			d->jarFile = d->openZip(file->filename());
+			if (!d->jarFile) {
+				// Cannot open as a .zip file.
+				d->isValid = false;
+				d->file.reset();
+				return;
+			}
 
-	// Load MANIFEST.MF.
-	int ret = d->loadManifestMF();
-	if (ret != 0) {
-		// Unable to open MANIFEST.MF.
-		unzClose(d->jarFile);
-		d->jarFile = nullptr;
-		d->file.reset();
-		return;
+			// Load MANIFEST.MF.
+			// For .jar files, this requires a Zip file lookup.
+			if (d->loadManifestMF() != 0) {
+				// Unable to open MANIFEST.MF.
+				unzClose(d->jarFile);
+				d->jarFile = nullptr;
+				d->isValid = false;
+				d->file.reset();
+				return;
+			}
+
+			d->fileType = FileType::ApplicationPackage;	// for .jar
+			break;
+
+		case J2MEPrivate::JFileType::JAD:
+			// Sanity check: Verify the JAD file size.
+			if (file->size() > static_cast<off64_t>(J2MEPrivate::MANIFEST_MF_FILE_SIZE_MAX)) {
+				// File is too big.
+				d->isValid = false;
+				d->file.reset();
+				return;
+			}
+
+			// Parse the tags.
+			// NOTE: This is MANIFEST.MF in a .jar file.
+			// In .jad files, it's the whole thing.
+			if (d->loadManifestMF() != 0) {
+				// Failed to parse the tags.
+				d->isValid = false;
+				d->file.reset();
+				return;
+			}
+
+			d->fileType = FileType::MetadataFile;		// for .jad
+			break;
 	}
 
 	// Check if MANIFEST.MF has the required J2ME tags.
-	static const array<J2MEPrivate::manifest_tag_t, 2> required_tags = {{
-		// FIXME: Some JARs (e.g. GrandSlamChamp.jar) are missing ManifestVersion.
-		//J2MEPrivate::manifest_tag_t::ManifestVersion,
-		J2MEPrivate::manifest_tag_t::MicroEdition_Configuration,
-		J2MEPrivate::manifest_tag_t::MicroEdition_Profile,
-	}};
-	for (J2MEPrivate::manifest_tag_t tag : required_tags) {
-		auto iter = d->m_map.find(tag);
-		if (iter == d->m_map.end()) {
-			// Required tag is missing.
+	// Should have either ManifestVersion or MIDlet-1.
+	if (d->m_map.find(J2MEPrivate::manifest_tag_t::ManifestVersion) == d->m_map.end() &&
+	    d->m_map.find(J2MEPrivate::manifest_tag_t::MIDlet_1) == d->m_map.end())
+	{
+		// Neither tag was found.
+		if (d->jarFile) {
 			unzClose(d->jarFile);
 			d->jarFile = nullptr;
-			d->file.reset();
-			return;
 		}
+		d->isValid = false;
+		d->file.reset();
+		return;
 	}
 
 	// All required tags were found.
@@ -611,7 +775,9 @@ J2ME::J2ME(const IRpFilePtr &file)
 			unzClose(d->jarFile);
 			d->jarFile = nullptr;
 		}
+		d->isValid = false;
 		d->file.reset();
+		return;
 	}
 
 	// MIME type
@@ -660,7 +826,13 @@ int J2ME::isRomSupported_static(const DetectInfo *info)
 		}
 	}
 
-	// TODO: Check for .jad?
+	// .jad check: It's a text file, so we have to rely on the file extension.
+	if (info->ext && !strcasecmp(info->ext, ".jad")) {
+		// File has a ".jad" extension.
+		return static_cast<int>(J2MEPrivate::JFileType::JAD);
+	}
+
+	// Not supported.
 	return static_cast<int>(J2MEPrivate::JFileType::Unknown);
 }
 
@@ -717,6 +889,32 @@ vector<RomData::ImageSizeDef> J2ME::supportedImageSizes_static(ImageType imageTy
 }
 
 /**
+ * Get a list of all available image sizes for the specified image type.
+ * @param imageType Image type.
+ * @return Vector of available image sizes, or empty vector if no images are available.
+ */
+vector<RomData::ImageSizeDef> J2ME::supportedImageSizes(ImageType imageType) const
+{
+	ASSERT_supportedImageSizes(imageType);
+	RP_D(const J2ME);
+
+	switch (imageType) {
+		case IMG_INT_ICON:
+			// TODO: Get the actual image size.
+			// NOTE: Only .jar files have icons.
+			if (d->jfileType == J2MEPrivate::JFileType::JAR) {
+				return {{nullptr, 15, 15, 0}};
+			}
+			break;
+		default:
+			break;
+	}
+
+	// Unsupported image type.
+	return {};
+}
+
+/**
  * Get image processing flags.
  *
  * These specify post-processing operations for images,
@@ -728,13 +926,17 @@ vector<RomData::ImageSizeDef> J2ME::supportedImageSizes_static(ImageType imageTy
 uint32_t J2ME::imgpf(ImageType imageType) const
 {
 	ASSERT_imgpf(imageType);
+	RP_D(const J2ME);
 
 	uint32_t ret = 0;
 	switch (imageType) {
 		case IMG_INT_ICON:
 			// Use nearest-neighbor scaling when resizing.
 			// Image is internally stored in PNG format.
-			ret = IMGPF_RESCALE_NEAREST | IMGPF_INTERNAL_PNG_FORMAT;
+			// NOTE: Only .jar files have icons.
+			if (d->jfileType == J2MEPrivate::JFileType::JAR) {
+				ret = IMGPF_RESCALE_NEAREST | IMGPF_INTERNAL_PNG_FORMAT;
+			}
 			break;
 
 		default:
@@ -810,6 +1012,12 @@ int J2ME::loadInternalImage(ImageType imageType, rp_image_const_ptr &pImage)
 {
 	ASSERT_loadInternalImage(imageType, pImage);
 	RP_D(J2ME);
+
+	// Only .jar files have icons.
+	if (d->jfileType != J2MEPrivate::JFileType::JAR) {
+		return -ENOENT;
+	}
+
 	ROMDATA_loadInternalImage_single(
 		IMG_INT_ICON,	// ourImageType
 		d->file,	// file
