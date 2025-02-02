@@ -89,7 +89,7 @@ public:
 		Unknown = 0,
 
 		ManifestVersion,
-		CreatedBy,
+		Created_By,
 		MicroEdition_Configuration,
 		MicroEdition_Profile,
 		MIDlet_Name,
