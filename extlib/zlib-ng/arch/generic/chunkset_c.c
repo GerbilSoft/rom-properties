@@ -3,7 +3,6 @@
  */
 
 #include "zbuild.h"
-#include "zmemory.h"
 
 typedef uint64_t chunk_t;
 
@@ -13,20 +12,21 @@ typedef uint64_t chunk_t;
 #define HAVE_CHUNKMEMSET_8
 
 static inline void chunkmemset_4(uint8_t *from, chunk_t *chunk) {
-    uint32_t tmp = zng_memread_4(from);
-    *chunk = tmp | ((chunk_t)tmp << 32);
+    uint8_t *dest = (uint8_t *)chunk;
+    memcpy(dest, from, sizeof(uint32_t));
+    memcpy(dest+4, from, sizeof(uint32_t));
 }
 
 static inline void chunkmemset_8(uint8_t *from, chunk_t *chunk) {
-    *chunk = zng_memread_8(from);
+    memcpy(chunk, from, sizeof(uint64_t));
 }
 
 static inline void loadchunk(uint8_t const *s, chunk_t *chunk) {
-    *chunk = zng_memread_8(s);
+    memcpy(chunk, (uint8_t *)s, sizeof(uint64_t));
 }
 
 static inline void storechunk(uint8_t *out, chunk_t *chunk) {
-    zng_memwrite_8(out, *chunk);
+    memcpy(out, chunk, sizeof(uint64_t));
 }
 
 #define CHUNKSIZE        chunksize_c

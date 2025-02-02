@@ -4,13 +4,12 @@
  */
 
 #include "zbuild.h"
-#include "zmemory.h"
 #include "fallback_builtins.h"
 
 typedef uint32_t (*compare256_rle_func)(const uint8_t* src0, const uint8_t* src1);
 
-/* 8-bit integer comparison */
-static inline uint32_t compare256_rle_8(const uint8_t *src0, const uint8_t *src1) {
+/* ALIGNED, byte comparison */
+static inline uint32_t compare256_rle_c(const uint8_t *src0, const uint8_t *src1) {
     uint32_t len = 0;
 
     do {
@@ -43,24 +42,29 @@ static inline uint32_t compare256_rle_8(const uint8_t *src0, const uint8_t *src1
     return 256;
 }
 
-/* 16-bit integer comparison */
-static inline uint32_t compare256_rle_16(const uint8_t *src0, const uint8_t *src1) {
+#ifdef UNALIGNED_OK
+/* 16-bit unaligned integer comparison */
+static inline uint32_t compare256_rle_unaligned_16(const uint8_t *src0, const uint8_t *src1) {
     uint32_t len = 0;
-    uint16_t src0_cmp;
+    uint16_t src0_cmp, src1_cmp;
 
-    src0_cmp = zng_memread_2(src0);
+    memcpy(&src0_cmp, src0, sizeof(src0_cmp));
 
     do {
-        if (src0_cmp != zng_memread_2(src1))
+        memcpy(&src1_cmp, src1, sizeof(src1_cmp));
+        if (src0_cmp != src1_cmp)
             return len + (*src0 == *src1);
         src1 += 2, len += 2;
-        if (src0_cmp != zng_memread_2(src1))
+        memcpy(&src1_cmp, src1, sizeof(src1_cmp));
+        if (src0_cmp != src1_cmp)
             return len + (*src0 == *src1);
         src1 += 2, len += 2;
-        if (src0_cmp != zng_memread_2(src1))
+        memcpy(&src1_cmp, src1, sizeof(src1_cmp));
+        if (src0_cmp != src1_cmp)
             return len + (*src0 == *src1);
         src1 += 2, len += 2;
-        if (src0_cmp != zng_memread_2(src1))
+        memcpy(&src1_cmp, src1, sizeof(src1_cmp));
+        if (src0_cmp != src1_cmp)
             return len + (*src0 == *src1);
         src1 += 2, len += 2;
     } while (len < 256);
@@ -69,26 +73,22 @@ static inline uint32_t compare256_rle_16(const uint8_t *src0, const uint8_t *src
 }
 
 #ifdef HAVE_BUILTIN_CTZ
-/* 32-bit integer comparison */
-static inline uint32_t compare256_rle_32(const uint8_t *src0, const uint8_t *src1) {
+/* 32-bit unaligned integer comparison */
+static inline uint32_t compare256_rle_unaligned_32(const uint8_t *src0, const uint8_t *src1) {
     uint32_t sv, len = 0;
     uint16_t src0_cmp;
 
-    src0_cmp = zng_memread_2(src0);
+    memcpy(&src0_cmp, src0, sizeof(src0_cmp));
     sv = ((uint32_t)src0_cmp << 16) | src0_cmp;
 
     do {
         uint32_t mv, diff;
 
-        mv = zng_memread_4(src1);
+        memcpy(&mv, src1, sizeof(mv));
 
         diff = sv ^ mv;
         if (diff) {
-#if BYTE_ORDER == LITTLE_ENDIAN
             uint32_t match_byte = __builtin_ctz(diff) / 8;
-#else
-            uint32_t match_byte = __builtin_clz(diff) / 8;
-#endif
             return len + match_byte;
         }
 
@@ -97,31 +97,28 @@ static inline uint32_t compare256_rle_32(const uint8_t *src0, const uint8_t *src
 
     return 256;
 }
+
 #endif
 
-#ifdef HAVE_BUILTIN_CTZLL
-/* 64-bit integer comparison */
-static inline uint32_t compare256_rle_64(const uint8_t *src0, const uint8_t *src1) {
+#if defined(UNALIGNED64_OK) && defined(HAVE_BUILTIN_CTZLL)
+/* 64-bit unaligned integer comparison */
+static inline uint32_t compare256_rle_unaligned_64(const uint8_t *src0, const uint8_t *src1) {
     uint32_t src0_cmp32, len = 0;
     uint16_t src0_cmp;
     uint64_t sv;
 
-    src0_cmp = zng_memread_2(src0);
+    memcpy(&src0_cmp, src0, sizeof(src0_cmp));
     src0_cmp32 = ((uint32_t)src0_cmp << 16) | src0_cmp;
     sv = ((uint64_t)src0_cmp32 << 32) | src0_cmp32;
 
     do {
         uint64_t mv, diff;
 
-        mv = zng_memread_8(src1);
+        memcpy(&mv, src1, sizeof(mv));
 
         diff = sv ^ mv;
         if (diff) {
-#if BYTE_ORDER == LITTLE_ENDIAN
             uint64_t match_byte = __builtin_ctzll(diff) / 8;
-#else
-            uint64_t match_byte = __builtin_clzll(diff) / 8;
-#endif
             return len + (uint32_t)match_byte;
         }
 
@@ -130,4 +127,8 @@ static inline uint32_t compare256_rle_64(const uint8_t *src0, const uint8_t *src
 
     return 256;
 }
+
 #endif
+
+#endif
+

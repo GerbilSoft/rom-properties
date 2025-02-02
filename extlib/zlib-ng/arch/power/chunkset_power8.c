@@ -5,7 +5,6 @@
 #ifdef POWER8_VSX
 #include <altivec.h>
 #include "zbuild.h"
-#include "zmemory.h"
 
 typedef vector unsigned char chunk_t;
 
@@ -16,15 +15,21 @@ typedef vector unsigned char chunk_t;
 #define HAVE_CHUNKMEMSET_8
 
 static inline void chunkmemset_2(uint8_t *from, chunk_t *chunk) {
-    *chunk = (vector unsigned char)vec_splats(zng_memread_2(from));
+    uint16_t tmp;
+    memcpy(&tmp, from, sizeof(tmp));
+    *chunk = (vector unsigned char)vec_splats(tmp);
 }
 
 static inline void chunkmemset_4(uint8_t *from, chunk_t *chunk) {
-    *chunk = (vector unsigned char)vec_splats(zng_memread_4(from));
+    uint32_t tmp;
+    memcpy(&tmp, from, sizeof(tmp));
+    *chunk = (vector unsigned char)vec_splats(tmp);
 }
 
 static inline void chunkmemset_8(uint8_t *from, chunk_t *chunk) {
-    *chunk = (vector unsigned char)vec_splats((unsigned long long)zng_memread_8(from));
+    uint64_t tmp;
+    memcpy(&tmp, from, sizeof(tmp));
+    *chunk = (vector unsigned char)vec_splats((unsigned long long)tmp);
 }
 
 static inline void loadchunk(uint8_t const *s, chunk_t *chunk) {

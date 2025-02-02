@@ -22,8 +22,6 @@
  *
  */
 
-#include "zmemory.h"
-
 #ifndef HASH_CALC_OFFSET
 #  define HASH_CALC_OFFSET 0
 #endif
@@ -31,12 +29,21 @@
 #  define HASH_CALC_MASK HASH_MASK
 #endif
 #ifndef HASH_CALC_READ
-#  if BYTE_ORDER == LITTLE_ENDIAN
-#    define HASH_CALC_READ \
-        val = zng_memread_4(strstart);
+#  ifdef UNALIGNED_OK
+#    if BYTE_ORDER == LITTLE_ENDIAN
+#      define HASH_CALC_READ \
+          memcpy(&val, strstart, sizeof(val));
+#    else
+#      define HASH_CALC_READ \
+          memcpy(&val, strstart, sizeof(val)); \
+          val = ZSWAP32(val);
+#    endif
 #  else
 #    define HASH_CALC_READ \
-        val = ZSWAP32(zng_memread_4(strstart));
+        val  = ((uint32_t)(strstart[0])); \
+        val |= ((uint32_t)(strstart[1]) << 8); \
+        val |= ((uint32_t)(strstart[2]) << 16); \
+        val |= ((uint32_t)(strstart[3]) << 24);
 #  endif
 #endif
 

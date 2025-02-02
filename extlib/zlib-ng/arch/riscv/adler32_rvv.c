@@ -72,7 +72,6 @@ static inline uint32_t adler32_rvv_impl(uint32_t adler, uint8_t* restrict dst, c
         /* do modulo once each block of NMAX size */
         if (++cnt >= nmax_limit) {
             v_adler32_prev_accu = __riscv_vremu_vx_u32m4(v_adler32_prev_accu, BASE, vl);
-            v_buf32_accu = __riscv_vremu_vx_u32m4(v_buf32_accu, BASE, vl);
             cnt = 0;
         }
     }
@@ -100,18 +99,15 @@ static inline uint32_t adler32_rvv_impl(uint32_t adler, uint8_t* restrict dst, c
 
     vuint32m1_t v_sum2_sum = __riscv_vmv_s_x_u32m1(0, vl);
     v_sum2_sum = __riscv_vredsum_vs_u32m4_u32m1(v_sum32_accu, v_sum2_sum, vl);
-    uint32_t sum2_sum = __riscv_vmv_x_s_u32m1_u32(v_sum2_sum) % BASE;
+    uint32_t sum2_sum = __riscv_vmv_x_s_u32m1_u32(v_sum2_sum);
 
-    sum2 += (sum2_sum + adler * ((len - left) % BASE));
+    sum2 += (sum2_sum + adler * (len - left));
 
     vuint32m1_t v_adler_sum = __riscv_vmv_s_x_u32m1(0, vl);
     v_adler_sum = __riscv_vredsum_vs_u32m4_u32m1(v_buf32_accu, v_adler_sum, vl);
-    uint32_t adler_sum = __riscv_vmv_x_s_u32m1_u32(v_adler_sum) % BASE;
+    uint32_t adler_sum = __riscv_vmv_x_s_u32m1_u32(v_adler_sum);
 
     adler += adler_sum;
-
-    sum2 %= BASE;
-    adler %= BASE;
 
     while (left--) {
         if (COPY) *dst++ = *src;
