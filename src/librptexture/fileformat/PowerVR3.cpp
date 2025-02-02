@@ -44,114 +44,114 @@ namespace LibRpTexture {
 
 class PowerVR3Private final : public FileFormatPrivate
 {
-	public:
-		PowerVR3Private(PowerVR3 *q, const IRpFilePtr &file);
+public:
+	PowerVR3Private(PowerVR3 *q, const IRpFilePtr &file);
 
-	private:
-		typedef FileFormatPrivate super;
-		RP_DISABLE_COPY(PowerVR3Private)
+private:
+	typedef FileFormatPrivate super;
+	RP_DISABLE_COPY(PowerVR3Private)
 
-	public:
-		/** TextureInfo **/
-		static const array<const char*, 1+1> exts;
-		static const array<const char*, 1+1> mimeTypes;
-		static const TextureInfo textureInfo;
+public:
+	/** TextureInfo **/
+	static const array<const char*, 1+1> exts;
+	static const array<const char*, 1+1> mimeTypes;
+	static const TextureInfo textureInfo;
 
-	public:
-		enum class PVRType {
-			Unknown = -1,
+public:
+	enum class PVRType {
+		Unknown = -1,
 
-			PVR3	= 0,	// PowerVR 3.0.0
-			PVR2	= 1,	// PowerVR 2.0 (Legacy format)
+		PVR3	= 0,	// PowerVR 3.0.0
+		PVR2	= 1,	// PowerVR 2.0 (Legacy format)
 
-			Max
-		};
-		PVRType pvrType;
+		Max
+	};
+	PVRType pvrType;
 
-	public:
-		// PVR3 header
-		PowerVR3_Header pvr3Header;
+public:
+	// PVR3 header
+	PowerVR3_Header pvr3Header;
 
-		// Decoded mipmaps
-		// Mipmap 0 is the full image.
-		vector<rp_image_ptr> mipmaps;
+	// Decoded mipmaps
+	// Mipmap 0 is the full image.
+	vector<rp_image_ptr> mipmaps;
 
-		// Invalid pixel format message
-		mutable string invalid_pixel_format;
+	// Invalid pixel format message
+	mutable string invalid_pixel_format;
 
-		// Is byteswapping needed?
-		// (PVR3 file has the opposite endianness.)
-		bool isByteswapNeeded;
+	// Is byteswapping needed?
+	// (PVR3 file has the opposite endianness.)
+	bool isByteswapNeeded;
 
-		// Is HFlip/VFlip needed?
-		// Some textures may be stored upside-down due to
-		// the way GL texture coordinates are interpreted.
-		// Default without orientation metadata is HFlip=false, VFlip=false
-		rp_image::FlipOp flipOp;
+	// Is HFlip/VFlip needed?
+	// Some textures may be stored upside-down due to
+	// the way GL texture coordinates are interpreted.
+	// Default without orientation metadata is HFlip=false, VFlip=false
+	rp_image::FlipOp flipOp;
 
-		// Metadata
-		bool orientation_valid;
-		PowerVR3_Metadata_Orientation orientation;
+	// Metadata
+	bool orientation_valid;
+	PowerVR3_Metadata_Orientation orientation;
 
-		// Texture data start address
-		unsigned int texDataStartAddr;
+	// Texture data start address
+	unsigned int texDataStartAddr;
 
-		/**
-		 * Uncompressed format lookup table
-		 * NOTE: pixel_format appears byteswapped here because trailing '\0'
-		 * isn't supported by MSVC, so e.g. 'rgba' is 'abgr', and
-		 * 'i\0\0\0' is '\0\0\0i'. This *does* match the LE format, though.
-		 * Channel depth uses the logical format, e.g. 0x00000008 or 0x00080808.
-		 */
-		struct FmtLkup_t {
-			uint32_t pixel_format;
-			uint32_t channel_depth;
-			ImageDecoder::PixelFormat pxfmt;
-			uint8_t bits;	// 8, 15, 16, 24, 32
-		};
+	/**
+	 * Uncompressed format lookup table
+	 * NOTE: pixel_format appears byteswapped here because trailing '\0'
+	 * isn't supported by MSVC, so e.g. 'rgba' is 'abgr', and
+	 * 'i\0\0\0' is '\0\0\0i'. This *does* match the LE format, though.
+	 * Channel depth uses the logical format, e.g. 0x00000008 or 0x00080808.
+	 */
+	struct FmtLkup_t {
+		uint32_t pixel_format;
+		uint32_t channel_depth;
+		ImageDecoder::PixelFormat pxfmt;
+		uint8_t bits;	// 8, 15, 16, 24, 32
+	};
 
-		static const array<FmtLkup_t, 11> fmtLkup_tbl_U8;
-		static const array<FmtLkup_t,  1> fmtLkup_tbl_U16;
+	static const array<FmtLkup_t, 11> fmtLkup_tbl_U8;
+	static const array<FmtLkup_t,  1> fmtLkup_tbl_U16;
 #if 0
-		static const array<FmtLkup_t,  0> fmtLkup_tbl_U32;
+	static const array<FmtLkup_t,  0> fmtLkup_tbl_U32;
 #endif
 
-		/**
-		 * Legacy format lookup table
-		 * Index == PowerVR_Legacy_Pixel_Format_e
-		 * TODO: Compressed formats?
-		 */
-		static const array<FmtLkup_t, 32> fmtLkup_tbl_legacy;
+	/**
+	 * Legacy format lookup table
+	 * Index == PowerVR_Legacy_Pixel_Format_e
+	 * TODO: Compressed formats?
+	 */
+	static const array<FmtLkup_t, 32> fmtLkup_tbl_legacy;
 
 	private:
-		/**
-		 * Calculate the expected size for the image.
-		 * NOTE: Only calculates mipmap 0 (full image).
-		 * @param out_fmt	[out,opt] FmtLkup_t describing the format, if available.
-		 * @return Expected size, or 0 on error.
-		 */
-		size_t calcExpectedSizeForMip0(const FmtLkup_t **out_fmt = nullptr) const;
+	/**
+	 * Calculate the expected size for the image.
+	 * NOTE: Only calculates mipmap 0 (full image).
+	 * @param out_fmt	[out,opt] FmtLkup_t describing the format, if available.
+	 * @return Expected size, or 0 on error.
+	 */
+	size_t calcExpectedSizeForMip0(const FmtLkup_t **out_fmt = nullptr) const;
 
 	public:
-		/**
-		 * Load the image.
-		 * @param mip Mipmap number (0 == full image)
-		 * @return Image, or nullptr on error.
-		 */
-		rp_image_const_ptr loadImage(int mip);
+	/**
+	 * Load the image.
+	 * @param mip Mipmap number (0 == full image)
+	 * @return Image, or nullptr on error.
+	 */
+	rp_image_const_ptr loadImage(int mip);
 
-		/**
-		 * Load PowerVR3 metadata.
-		 * @return 0 on success; negative POSIX error code on error.
-		 */
-		int loadPvr3Metadata(void);
+	/**
+	 * Load PowerVR3 metadata.
+	 * @return 0 on success; negative POSIX error code on error.
+	 */
+	int loadPvr3Metadata(void);
 
-		/**
-		 * Convert a legacy PowerVR pixel format to PowerVR3.
-		 * This applies the specified format to this->pvr3Header.
-		 * @param pixel_format Legacy PowerVR pixel format
-		 */
-		void legacyPowerVRPixelFormatToPVR3(PowerVR_Legacy_Pixel_Format_e pixel_format);
+	/**
+	 * Convert a legacy PowerVR pixel format to PowerVR3.
+	 * This applies the specified format to this->pvr3Header.
+	 * @param pixel_format Legacy PowerVR pixel format
+	 */
+	void legacyPowerVRPixelFormatToPVR3(PowerVR_Legacy_Pixel_Format_e pixel_format);
 };
 
 FILEFORMAT_IMPL(PowerVR3)
@@ -998,7 +998,7 @@ PowerVR3::PowerVR3(const IRpFilePtr &file)
 				// a big-endian file, since it's technically a 64-bit field.
 				std::swap(d->pvr3Header.pixel_format, d->pvr3Header.channel_depth);
 #endif /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
-			} else if (d->pvr3Header.version == PVR3_VERSION_SWAP) {
+			} else if (header.pvr3.version == PVR3_VERSION_SWAP) {
 				// Swap-endian. Byteswapping is needed.
 				// NOTE: Keeping `version` unswapped in case
 				// the actual image data needs to be byteswapped.

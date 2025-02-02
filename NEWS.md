@@ -1,6 +1,6 @@
 # Changes
 
-## v2.5 (released 2024/??/??)
+## v2.5 (released 2025/??/??)
 
 * New parsers:
   * J2ME: Parser for Java 2 Micro Edition .jar packages. This currently
@@ -33,6 +33,10 @@
     * Fixes #433: [Bug Report] The ROM type is not displayed correctly for some PSP Mini ROMs
       * Reported by @xxmichibxx.
       * Affects: v1.5 - v2.4.1
+  * PowerVR3: Fix detection of swapped-endian textures.
+    * Most textures are little-endian, so this mainly affects big-endian
+      systems like PowerPC.
+    * Affects: v2.4 - v2.4.1
 
 * Other changes:
   * CMake: Added an ENABLE_NETWORKING option to control whether or not
