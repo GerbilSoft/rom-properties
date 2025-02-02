@@ -123,7 +123,7 @@ public:
 	 */
 	static const array<FmtLkup_t, 32> fmtLkup_tbl_legacy;
 
-	private:
+private:
 	/**
 	 * Calculate the expected size for the image.
 	 * NOTE: Only calculates mipmap 0 (full image).
@@ -132,7 +132,7 @@ public:
 	 */
 	size_t calcExpectedSizeForMip0(const FmtLkup_t **out_fmt = nullptr) const;
 
-	public:
+public:
 	/**
 	 * Load the image.
 	 * @param mip Mipmap number (0 == full image)
