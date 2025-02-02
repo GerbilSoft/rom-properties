@@ -485,14 +485,17 @@ int J2MEPrivate::loadManifestMF(void)
 		// - Gamester.Smb.In.Demand.v1.00.S30.Java.Retail-BiNPDA.jar
 		// - Midtown Madness 3.jar
 		// - Space Warrior.jar
-		/*if (!status.second) {
+		if (status.second) {
+			// Entry added.
+			// Save the iterator for multi-line entries.
+			last_iter = status.first;
+		} else {
 			// Failed to emplace the value. (Duplicate tag?)
-			m_map.clear();
-			return -EIO;
-		}*/
-
-		// Needed for multi-line entries.
-		last_iter = status.first;
+			/*m_map.clear();
+			return -EIO;*/
+			// Invalidate the iterator to prevent a multi-line entry from being added.
+			last_iter = m_map.end();
+		}
 	}
 
 	return (unlikely(m_map.empty()) ? -ENOENT : 0);
