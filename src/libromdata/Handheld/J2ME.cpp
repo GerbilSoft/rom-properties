@@ -1022,7 +1022,32 @@ int J2ME::loadMetaData(void)
 		return -EIO;
 	}
 
-	// TODO
+	// MANIFEST.MF is read in the constructor.
+	d->metaData.reserve(3);	// Maximum of 3 metadata properties.
+
+	// Name (using this tag for Title)
+	auto iter = d->m_map.find(J2MEPrivate::manifest_tag_t::MIDlet_Name);
+	if (iter != d->m_map.end()) {
+		d->metaData.addMetaData_string(Property::Title, iter->second);
+	} else {
+		// If "MIDlet-Name" is missing, try parsing "MIDlet-1".
+		vector<string> vec = d->parseMIDlet1tag();
+		if (vec.size() >= 1) {
+			d->metaData.addMetaData_string(Property::Title, vec[0]);
+		}
+	}
+
+	// Description
+	iter = d->m_map.find(J2MEPrivate::manifest_tag_t::MIDlet_Description);
+	if (iter != d->m_map.end()) {
+		d->metaData.addMetaData_string(Property::Description, iter->second);
+	}
+
+	// Vendor (using this tag for Publisher)
+	iter = d->m_map.find(J2MEPrivate::manifest_tag_t::MIDlet_Vendor);
+	if (iter != d->m_map.end()) {
+		d->metaData.addMetaData_string(Property::Publisher, iter->second);
+	}
 
 	// Finished reading the metadata.
 	return static_cast<int>(d->metaData.count());
