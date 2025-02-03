@@ -73,13 +73,17 @@ int32_t Z_EXPORT PREFIX(inflateResetKeep)(PREFIX3(stream) *strm) {
     state->last = 0;
     state->havedict = 0;
     state->flags = -1;
-    state->dmax = 32768U;
     state->head = NULL;
     state->hold = 0;
     state->bits = 0;
     state->lencode = state->distcode = state->next = state->codes;
-    state->sane = 1;
     state->back = -1;
+#ifdef INFLATE_STRICT
+    state->dmax = 32768U;
+#endif
+#ifdef INFLATE_ALLOW_INVALID_DISTANCE_TOOFAR_ARRR
+    state->sane = 1;
+#endif
     INFLATE_RESET_KEEP_HOOK(strm);  /* hook for IBM Z DFLTCC */
     Tracev((stderr, "inflate: reset\n"));
     return Z_OK;
@@ -213,8 +217,8 @@ Z_INTERNAL void free_inflate(PREFIX3(stream) *strm) {
  * This function is hidden in ZLIB_COMPAT builds.
  */
 int32_t ZNG_CONDEXPORT PREFIX(inflateInit2)(PREFIX3(stream) *strm, int32_t windowBits) {
-    int32_t ret;
     struct inflate_state *state;
+    int32_t ret;
 
     /* Initialize functable */
     FUNCTABLE_INIT;
@@ -236,6 +240,7 @@ int32_t ZNG_CONDEXPORT PREFIX(inflateInit2)(PREFIX3(stream) *strm, int32_t windo
     state = alloc_bufs->state;
     state->window = alloc_bufs->window;
     state->alloc_bufs = alloc_bufs;
+    state->wbufsize = INFLATE_ADJUST_WINDOW_SIZE((1 << MAX_WBITS) + 64);
     Tracev((stderr, "inflate: allocated\n"));
 
     strm->state = (struct internal_state *)state;
@@ -472,12 +477,12 @@ int32_t Z_EXPORT PREFIX(inflate)(PREFIX3(stream) *strm, int32_t flush) {
     struct inflate_state *state;
     const unsigned char *next;  /* next input */
     unsigned char *put;         /* next output */
+    unsigned char *from;        /* where to copy match bytes from */
     unsigned have, left;        /* available input and output */
     uint32_t hold;              /* bit buffer */
     unsigned bits;              /* bits in bit buffer */
     uint32_t in, out;           /* save starting available input and output */
     unsigned copy;              /* number of stored or match bytes to copy */
-    unsigned char *from;        /* where to copy match bytes from */
     code here;                  /* current decoding table entry */
     code last;                  /* parent table entry */
     unsigned len;               /* length to copy for repeats, bits to drop */
@@ -539,7 +544,9 @@ int32_t Z_EXPORT PREFIX(inflate)(PREFIX3(stream) *strm, int32_t flush) {
                 SET_BAD("invalid window size");
                 break;
             }
+#ifdef INFLATE_STRICT
             state->dmax = 1U << len;
+#endif
             state->flags = 0;               /* indicate zlib header */
             Tracev((stderr, "inflate:   zlib header ok\n"));
             strm->adler = state->check = ADLER32_INITIAL_VALUE;
@@ -1049,11 +1056,11 @@ int32_t Z_EXPORT PREFIX(inflate)(PREFIX3(stream) *strm, int32_t flush) {
             if (state->offset > copy) {         /* copy from window */
                 copy = state->offset - copy;
                 if (copy > state->whave) {
+#ifdef INFLATE_ALLOW_INVALID_DISTANCE_TOOFAR_ARRR
                     if (state->sane) {
                         SET_BAD("invalid distance too far back");
                         break;
                     }
-#ifdef INFLATE_ALLOW_INVALID_DISTANCE_TOOFAR_ARRR
                     Trace((stderr, "inflate.c too far\n"));
                     copy -= state->whave;
                     copy = MIN(copy, state->length);
@@ -1065,8 +1072,10 @@ int32_t Z_EXPORT PREFIX(inflate)(PREFIX3(stream) *strm, int32_t flush) {
                     } while (--copy);
                     if (state->length == 0)
                         state->mode = LEN;
-                    break;
+#else
+                    SET_BAD("invalid distance too far back");
 #endif
+                    break;
                 }
                 if (copy > state->wnext) {
                     copy -= state->wnext;
@@ -1081,7 +1090,7 @@ int32_t Z_EXPORT PREFIX(inflate)(PREFIX3(stream) *strm, int32_t flush) {
             } else {
                 copy = MIN(state->length, left);
 
-                put = FUNCTABLE_CALL(chunkmemset_safe)(put, state->offset, copy, left);
+                put = FUNCTABLE_CALL(chunkmemset_safe)(put, put - state->offset, copy, left);
             }
             left -= copy;
             state->length -= copy;
@@ -1297,11 +1306,11 @@ static uint32_t syncsearch(uint32_t *have, const uint8_t *buf, uint32_t len) {
 }
 
 int32_t Z_EXPORT PREFIX(inflateSync)(PREFIX3(stream) *strm) {
+    struct inflate_state *state;
+    size_t in, out;             /* temporary to save total_in and total_out */
     unsigned len;               /* number of bytes to look at or looked at */
     int flags;                  /* temporary to save header status */
-    size_t in, out;             /* temporary to save total_in and total_out */
     unsigned char buf[4];       /* to restore bit buffer to byte string */
-    struct inflate_state *state;
 
     /* check parameters */
     if (inflateStateCheck(strm))
@@ -1404,17 +1413,17 @@ int32_t Z_EXPORT PREFIX(inflateCopy)(PREFIX3(stream) *dest, PREFIX3(stream) *sou
 }
 
 int32_t Z_EXPORT PREFIX(inflateUndermine)(PREFIX3(stream) *strm, int32_t subvert) {
+#ifdef INFLATE_ALLOW_INVALID_DISTANCE_TOOFAR_ARRR
     struct inflate_state *state;
 
     if (inflateStateCheck(strm))
         return Z_STREAM_ERROR;
     state = (struct inflate_state *)strm->state;
-#ifdef INFLATE_ALLOW_INVALID_DISTANCE_TOOFAR_ARRR
     state->sane = !subvert;
     return Z_OK;
 #else
+    Z_UNUSED(strm);
     Z_UNUSED(subvert);
-    state->sane = 1;
     return Z_DATA_ERROR;
 #endif
 }
