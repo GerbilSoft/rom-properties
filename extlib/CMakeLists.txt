@@ -115,19 +115,9 @@ IF(USE_INTERNAL_ZLIB)
 	SET(WITH_SSSE3 ON)
 	SET(WITH_SSE42 ON)
 	SET(WITH_PCLMULQDQ ON)
-	IF(NOT MSVC OR MSVC_VERSION GREATER 1909)
-		# Only enable AVX2 and AVX512 if not using MSVC, or using MSVC 2017 or later.
-		# Reference: https://github.com/zlib-ng/zlib-ng/issues/1861
-		SET(WITH_AVX2 ON)
-		SET(WITH_AVX512 ON)
-		SET(WITH_AVX512VNNI ON)
-	ELSE()
-		# MSVC 2015 or earlier: chunkset_avx2.c, chunkmemset_16() is miscompiled
-		# with an aligned AVX2 opcode instead of an unaligned AVX2 opcode.
-		SET(WITH_AVX2 OFF)
-		SET(WITH_AVX512 OFF)
-		SET(WITH_AVX512VNNI OFF)
-	ENDIF()
+	SET(WITH_AVX2 ON)
+	SET(WITH_AVX512 ON)
+	SET(WITH_AVX512VNNI ON)
 	SET(WITH_VPCLMULQDQ ON)
 
 	SET(INSTALL_UTILS OFF)
