@@ -62,21 +62,15 @@ private:
 	// NOTE: Windows implementation uses critical sections,
 	// since they have less overhead than mutexes.
 	CRITICAL_SECTION m_criticalSection;
-	bool m_isInit;
 };
 
 /**
  * Create a mutex.
  */
 inline Mutex::Mutex()
-	: m_isInit(false)
 {
 	// Reference: https://docs.microsoft.com/en-us/windows/win32/sync/using-critical-section-objects
-	if (!InitializeCriticalSectionAndSpinCount(&m_criticalSection, 0x400)) {
-		// FIXME: Do something if an error occurred here...
-		return;
-	}
-	m_isInit = true;
+	InitializeCriticalSectionAndSpinCount(&m_criticalSection, 0x400);
 }
 
 /**
@@ -85,10 +79,8 @@ inline Mutex::Mutex()
  */
 inline Mutex::~Mutex()
 {
-	if (m_isInit) {
-		// TODO: Error checking.
-		DeleteCriticalSection(&m_criticalSection);
-	}
+	// TODO: Error checking.
+	DeleteCriticalSection(&m_criticalSection);
 }
 
 /**
@@ -99,9 +91,6 @@ inline Mutex::~Mutex()
  */
 _Acquires_lock_(this->m_criticalSection) inline int Mutex::lock(void)
 {
-	if (!m_isInit)
-		return -EBADF;
-
 	// TODO: Error handling?
 	EnterCriticalSection(&m_criticalSection);
 	return 0;
@@ -113,9 +102,6 @@ _Acquires_lock_(this->m_criticalSection) inline int Mutex::lock(void)
  */
 _Releases_lock_(this->m_criticalSection) inline int Mutex::unlock(void)
 {
-	if (!m_isInit)
-		return -EBADF;
-
 	// TODO: Error handling?
 	LeaveCriticalSection(&m_criticalSection);
 	return 0;
