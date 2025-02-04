@@ -33,27 +33,24 @@ branches:
   except:
     - l10n_master
 
+# NOTE: Previously, we ran two builds: one with optional features
+# turned on, and one with optional features turned on.
+# AppVeyor has gotten to be very slow, and times out after 1 hour,
+# so the OFF build has been removed.
+
 # Run CMake with optional features turned off initially.
 before_build:
   - cmd: cd %APPVEYOR_BUILD_FOLDER%
-  - cmd: appveyor.cmd OFF
+  - cmd: appveyor.cmd ON
   - sh: cd ${APPVEYOR_BUILD_FOLDER}
   - sh: sudo ./appveyor-dpkg.sh
-  - sh: ./appveyor.sh OFF
+  - sh: ./appveyor.sh ON
 
 # Build once with optional features turned off,
 # then build again with optional features turned on.
 build_script:
   - cmd: cd %APPVEYOR_BUILD_FOLDER%\build
   - cmd: cmake --build . --config %CONFIGURATION%
-  - cmd: cd ..
-  - cmd: appveyor.cmd ON
-  - cmd: cd %APPVEYOR_BUILD_FOLDER%\build
-  - cmd: cmake --build . --config %CONFIGURATION%
-  - sh: cd ${APPVEYOR_BUILD_FOLDER}/build
-  - sh: cmake --build . --config ${CONFIGURATION}
-  - sh: cd ..
-  - sh: ./appveyor.sh ON
   - sh: cd ${APPVEYOR_BUILD_FOLDER}/build
   - sh: cmake --build . --config ${CONFIGURATION}
 
