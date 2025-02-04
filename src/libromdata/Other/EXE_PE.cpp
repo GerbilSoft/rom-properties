@@ -833,10 +833,9 @@ int EXEPrivate::addFields_PE_Export(void)
 	ents.reserve(std::max(szExpAddrTbl, szExpNameTbl));
 
 	// Read address table
-	const uint32_t expDirTbl_base = le32_to_cpu(pExpDirTbl->Base);
 	for (uint32_t i = 0; i < szExpAddrTbl; i++) {
 		ExportEntry ent;
-		ent.ordinal = expDirTbl_base + i;
+		ent.ordinal = ordinalBase + i;
 		ent.hint = -1;
 		ent.vaddr = le32_to_cpu(expAddrTbl[i]);
 		ent.paddr = pe_vaddr_to_paddr(ent.vaddr, 0);
