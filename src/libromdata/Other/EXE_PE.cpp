@@ -810,14 +810,14 @@ int EXEPrivate::addFields_PE_Export(void)
 	const uint32_t rvaExpNameTbl = le32_to_cpu(pExpDirTbl->AddressOfNames);
 	const uint32_t szExpNameTbl = le32_to_cpu(pExpDirTbl->NumberOfNames);
 	const uint32_t *expNameTbl = reinterpret_cast<const uint32_t*>(
-		checkBounds(rvaExpNameTbl, szExpAddrTbl*sizeof(uint32_t)));
+		checkBounds(rvaExpNameTbl, szExpNameTbl*sizeof(uint32_t)));
 	if (!expNameTbl)
 		return -ENOENT;
 
 	// Export Ordinal Table
 	const uint32_t rvaExpOrdTbl = le32_to_cpu(pExpDirTbl->AddressOfNameOrdinals);
 	const uint16_t *expOrdTbl = reinterpret_cast<const uint16_t*>(
-		checkBounds(rvaExpOrdTbl, szExpAddrTbl*sizeof(uint16_t)));
+		checkBounds(rvaExpOrdTbl, szExpNameTbl*sizeof(uint16_t)));
 	if (!expOrdTbl)
 		return -ENOENT;
 
