@@ -326,7 +326,7 @@ void AboutTabPrivate::initLibrariesTab(void)
 	sLibraries += fmt::format(sUsingDll, qtVersion);
 #endif /* QT_IS_STATIC */
 	sLibraries += BR
-		"Copyright (C) 1995-2024 The Qt Company Ltd. and/or its subsidiaries." BR
+		"Copyright (C) 1995-2025 The Qt Company Ltd. and/or its subsidiaries." BR
 		"<a href='https://www.qt.io/'>https://www.qt.io/</a>" BR;
 	// TODO: Check QT_VERSION at runtime?
 #if QT_VERSION >= QT_VERSION_CHECK(4,5,0)
