@@ -908,17 +908,17 @@ int PlayStationDisc::loadMetaData(void)
  * try to get the size that most closely matches the
  * requested size.
  *
- * @param imageType	[in]     Image type.
- * @param pExtURLs	[out]    Output vector.
+ * @param imageType	[in]     Image type
+ * @param extURLs	[out]    Output vector
  * @param size		[in,opt] Requested image size. This may be a requested
  *                               thumbnail size in pixels, or an ImageSizeType
  *                               enum value.
  * @return 0 on success; negative POSIX error code on error.
  */
-int PlayStationDisc::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
+int PlayStationDisc::extURLs(ImageType imageType, vector<ExtURL> &extURLs, int size) const
 {
-	ASSERT_extURLs(imageType, pExtURLs);
-	pExtURLs->clear();
+	extURLs.clear();
+	ASSERT_extURLs(imageType);
 
 	RP_D(const PlayStationDisc);
 	if (!d->isValid || static_cast<int>(d->consoleType) < 0) {
@@ -999,13 +999,13 @@ int PlayStationDisc::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int 
 	}
 
 	// Add the URLs.
-	pExtURLs->resize(1);
-	auto extURL_iter = pExtURLs->begin();
-	extURL_iter->url = d->getURL_RPDB(sys, imageTypeName, region_code.c_str(), gameID.c_str(), ext);
-	extURL_iter->cache_key = d->getCacheKey_RPDB(sys, imageTypeName, region_code.c_str(), gameID.c_str(), ext);
-	extURL_iter->width = sizeDefs[0].width;
-	extURL_iter->height = sizeDefs[0].height;
-	extURL_iter->high_res = (sizeDefs[0].index >= 2);
+	extURLs.resize(1);
+	ExtURL &extURL = extURLs[0];
+	extURL.url = d->getURL_RPDB(sys, imageTypeName, region_code.c_str(), gameID.c_str(), ext);
+	extURL.cache_key = d->getCacheKey_RPDB(sys, imageTypeName, region_code.c_str(), gameID.c_str(), ext);
+	extURL.width = sizeDefs[0].width;
+	extURL.height = sizeDefs[0].height;
+	extURL.high_res = (sizeDefs[0].index >= 2);
 
 	// All URLs added.
 	return 0;

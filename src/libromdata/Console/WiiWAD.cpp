@@ -1194,17 +1194,17 @@ IconAnimDataConstPtr WiiWAD::iconAnimData(void) const
  * try to get the size that most closely matches the
  * requested size.
  *
- * @param imageType	[in]     Image type.
- * @param pExtURLs	[out]    Output vector.
+ * @param imageType	[in]     Image type
+ * @param extURLs	[out]    Output vector
  * @param size		[in,opt] Requested image size. This may be a requested
  *                               thumbnail size in pixels, or an ImageSizeType
  *                               enum value.
  * @return 0 on success; negative POSIX error code on error.
  */
-int WiiWAD::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
+int WiiWAD::extURLs(ImageType imageType, vector<ExtURL> &extURLs, int size) const
 {
-	ASSERT_extURLs(imageType, pExtURLs);
-	pExtURLs->clear();
+	extURLs.clear();
+	ASSERT_extURLs(imageType);
 
 	// Check if the main content is present.
 	// If it is, and this is a Wii WAD, then this is a
@@ -1350,8 +1350,8 @@ int WiiWAD::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) con
 	}
 
 	// Add the URLs.
-	pExtURLs->resize(szdef_count * tdb_lc.size());
-	auto extURL_iter = pExtURLs->begin();
+	extURLs.resize(szdef_count * tdb_lc.size());
+	auto extURL_iter = extURLs.begin();
 	for (unsigned int i = 0; i < szdef_count; i++) {
 		// Current image type
 		const string imageTypeName = fmt::format(FSTR("{:s}{:s}"),
@@ -1360,11 +1360,12 @@ int WiiWAD::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) con
 		// Add the images.
 		for (const uint16_t lc : tdb_lc) {
 			const string lc_str = SystemRegion::lcToStringUpper(lc);
-			extURL_iter->url = d->getURL_GameTDB(sysDir, imageTypeName.c_str(), lc_str.c_str(), id4, ext);
-			extURL_iter->cache_key = d->getCacheKey_GameTDB(sysDir, imageTypeName.c_str(), lc_str.c_str(), id4, ext);
-			extURL_iter->width = szdefs_dl[i]->width;
-			extURL_iter->height = szdefs_dl[i]->height;
-			extURL_iter->high_res = (szdefs_dl[i]->index >= 2);
+			ExtURL &extURL = *extURL_iter;
+			extURL.url = d->getURL_GameTDB(sysDir, imageTypeName.c_str(), lc_str.c_str(), id4, ext);
+			extURL.cache_key = d->getCacheKey_GameTDB(sysDir, imageTypeName.c_str(), lc_str.c_str(), id4, ext);
+			extURL.width = szdefs_dl[i]->width;
+			extURL.height = szdefs_dl[i]->height;
+			extURL.high_res = (szdefs_dl[i]->index >= 2);
 			++extURL_iter;
 		}
 	}

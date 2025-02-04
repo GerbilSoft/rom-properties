@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * RomData_decl.hpp: ROM data base class. (Subclass macros)                *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * Copyright (c) 2016-2018 by Egor.                                        *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
@@ -259,14 +259,14 @@ public: \
 	 * try to get the size that most closely matches the \
 	 * requested size. \
 	 * \
-	 * @param imageType     [in]     Image type. \
-	 * @param pExtURLs      [out]    Output vector. \
+	 * @param imageType     [in]     Image type \
+	 * @param extURLs       [out]    Output vector \
 	 * @param size          [in,opt] Requested image size. This may be a requested \
 	 *                               thumbnail size in pixels, or an ImageSizeType \
 	 *                               enum value. \
 	 * @return 0 on success; negative POSIX error code on error. \
 	 */ \
-	int extURLs(ImageType imageType, std::vector<ExtURL> *pExtURLs, int size = IMAGE_SIZE_DEFAULT) const final;
+	int extURLs(ImageType imageType, std::vector<ExtURL> &extURLs, int size = IMAGE_SIZE_DEFAULT) const final;
 
 /**
  * RomData subclass function declaration for loading the animated icon.
@@ -430,16 +430,11 @@ std::vector<RomData::ImageSizeDef> klass::supportedImageSizes(ImageType imageTyp
 	} \
 } while (0)
 
-#define ASSERT_extURLs(imageType, pExtURLs) do { \
+#define ASSERT_extURLs(imageType) do { \
 	assert((imageType) >= IMG_EXT_MIN && (imageType) <= IMG_EXT_MAX); \
 	if ((imageType) < IMG_EXT_MIN || (imageType) > IMG_EXT_MAX) { \
 		/* ImageType is out of range. */ \
 		return -ERANGE; \
-	} \
-	assert((pExtURLs) != nullptr); \
-	if (!(pExtURLs)) { \
-		/* No vector. */ \
-		return -EINVAL; \
 	} \
 } while (0)
 

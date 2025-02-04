@@ -1928,17 +1928,17 @@ int GameCube::loadInternalImage(ImageType imageType, rp_image_const_ptr &pImage)
  * try to get the size that most closely matches the
  * requested size.
  *
- * @param imageType	[in]     Image type.
- * @param pExtURLs	[out]    Output vector.
+ * @param imageType	[in]     Image type
+ * @param extURLs	[out]    Output vector
  * @param size		[in,opt] Requested image size. This may be a requested
  *                               thumbnail size in pixels, or an ImageSizeType
  *                               enum value.
  * @return 0 on success; negative POSIX error code on error.
  */
-int GameCube::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
+int GameCube::extURLs(ImageType imageType, vector<ExtURL> &extURLs, int size) const
 {
-	ASSERT_extURLs(imageType, pExtURLs);
-	pExtURLs->clear();
+	extURLs.clear();
+	ASSERT_extURLs(imageType);
 
 	RP_D(const GameCube);
 	if (d->discType < 0) {
@@ -2045,8 +2045,8 @@ int GameCube::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) c
 		vsz *= 2;
 	}
 
-	pExtURLs->resize(vsz);
-	auto extURL_iter = pExtURLs->begin();
+	extURLs.resize(vsz);
+	auto extURL_iter = extURLs.begin();
 
 	// Is this not the first disc?
 	if (isDisc2) {
@@ -2057,10 +2057,11 @@ int GameCube::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) c
 
 		for (const uint16_t lc : tdb_lc) {
 			const string lc_str = SystemRegion::lcToStringUpper(lc);
-			extURL_iter->url = d->getURL_GameTDB("wii", discName.c_str(), lc_str.c_str(), id6, ".png");
-			extURL_iter->cache_key = d->getCacheKey_GameTDB("wii", discName.c_str(), lc_str.c_str(), id6, ".png");
-			extURL_iter->width = sizeDef->width;
-			extURL_iter->height = sizeDef->height;
+			ExtURL &extURL = *extURL_iter;
+			extURL.url = d->getURL_GameTDB("wii", discName.c_str(), lc_str.c_str(), id6, ".png");
+			extURL.cache_key = d->getCacheKey_GameTDB("wii", discName.c_str(), lc_str.c_str(), id6, ".png");
+			extURL.width = sizeDef->width;
+			extURL.height = sizeDef->height;
 			++extURL_iter;
 		}
 	}
@@ -2068,11 +2069,12 @@ int GameCube::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) c
 	// First disc, or not a disc scan.
 	for (const uint16_t lc : tdb_lc) {
 		const string lc_str = SystemRegion::lcToStringUpper(lc);
-		extURL_iter->url = d->getURL_GameTDB("wii", imageTypeName.c_str(), lc_str.c_str(), id6, ".png");
-		extURL_iter->cache_key = d->getCacheKey_GameTDB("wii", imageTypeName.c_str(), lc_str.c_str(), id6, ".png");
-		extURL_iter->width = sizeDef->width;
-		extURL_iter->height = sizeDef->height;
-		extURL_iter->high_res = false;	// Only one size is available.
+		ExtURL &extURL = *extURL_iter;
+		extURL.url = d->getURL_GameTDB("wii", imageTypeName.c_str(), lc_str.c_str(), id6, ".png");
+		extURL.cache_key = d->getCacheKey_GameTDB("wii", imageTypeName.c_str(), lc_str.c_str(), id6, ".png");
+		extURL.width = sizeDef->width;
+		extURL.height = sizeDef->height;
+		extURL.high_res = false;	// Only one size is available.
 		++extURL_iter;
 	}
 

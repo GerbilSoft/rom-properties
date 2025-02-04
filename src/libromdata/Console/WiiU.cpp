@@ -399,17 +399,17 @@ int WiiU::loadFieldData(void)
  * requested size.
  *
  * @param id4		[in]     Game ID (ID4)
- * @param imageType	[in]     Image type.
- * @param pExtURLs	[out]    Output vector.
+ * @param imageType	[in]     Image type
+ * @param extURLs	[out]    Output vector
  * @param size		[in,opt] Requested image size. This may be a requested
  *                               thumbnail size in pixels, or an ImageSizeType
  *                               enum value.
  * @return 0 on success; negative POSIX error code on error.
  */
-int WiiU::extURLs_int(const char *id4, ImageType imageType, vector<ExtURL> *pExtURLs, int size)
+int WiiU::extURLs_int(const char *id4, ImageType imageType, vector<ExtURL> &extURLs, int size)
 {
-	ASSERT_extURLs(imageType, pExtURLs);
-	pExtURLs->clear();
+	extURLs.clear();
+	ASSERT_extURLs(imageType);
 
 	// Get the image sizes and sort them based on the
 	// requested image size.
@@ -506,8 +506,8 @@ int WiiU::extURLs_int(const char *id4, ImageType imageType, vector<ExtURL> *pExt
 	}
 
 	// Add the URLs.
-	pExtURLs->resize(szdef_count * tdb_lc.size());
-	auto extURL_iter = pExtURLs->begin();
+	extURLs.resize(szdef_count * tdb_lc.size());
+	auto extURL_iter = extURLs.begin();
 	for (unsigned int i = 0; i < szdef_count; i++) {
 		// Current image type
 		const string imageTypeName = fmt::format(FSTR("{:s}{:s}"),
@@ -516,11 +516,12 @@ int WiiU::extURLs_int(const char *id4, ImageType imageType, vector<ExtURL> *pExt
 		// Add the images.
 		for (const uint16_t lc : tdb_lc) {
 			const string lc_str = SystemRegion::lcToStringUpper(lc);
-			extURL_iter->url = RomDataPrivate::getURL_GameTDB("wiiu", imageTypeName.c_str(), lc_str.c_str(), id6, ext);
-			extURL_iter->cache_key = RomDataPrivate::getCacheKey_GameTDB("wiiu", imageTypeName.c_str(), lc_str.c_str(), id6, ext);
-			extURL_iter->width = szdefs_dl[i]->width;
-			extURL_iter->height = szdefs_dl[i]->height;
-			extURL_iter->high_res = (szdefs_dl[i]->index > 0);
+			ExtURL &extURL = *extURL_iter;
+			extURL.url = RomDataPrivate::getURL_GameTDB("wiiu", imageTypeName.c_str(), lc_str.c_str(), id6, ext);
+			extURL.cache_key = RomDataPrivate::getCacheKey_GameTDB("wiiu", imageTypeName.c_str(), lc_str.c_str(), id6, ext);
+			extURL.width = szdefs_dl[i]->width;
+			extURL.height = szdefs_dl[i]->height;
+			extURL.high_res = (szdefs_dl[i]->index > 0);
 			++extURL_iter;
 		}
 	}
@@ -529,15 +530,31 @@ int WiiU::extURLs_int(const char *id4, ImageType imageType, vector<ExtURL> *pExt
 	return 0;
 }
 
-int WiiU::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
+/**
+ * Get a list of URLs for an external image type.
+ *
+ * A thumbnail size may be requested from the shell.
+ * If the subclass supports multiple sizes, it should
+ * try to get the size that most closely matches the
+ * requested size.
+ *
+ * @param imageType	[in]     Image type
+ * @param extURLs	[out]    Output vector
+ * @param size		[in,opt] Requested image size. This may be a requested
+ *                               thumbnail size in pixels, or an ImageSizeType
+ *                               enum value.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int WiiU::extURLs(ImageType imageType, vector<ExtURL> &extURLs, int size) const
 {
 	RP_D(const WiiU);
 	if (!d->isValid) {
 		// Disc image isn't valid.
+		extURLs.clear();
 		return -EIO;
 	}
 
-	return extURLs_int(d->discHeader.id4, imageType, pExtURLs, size);
+	return extURLs_int(d->discHeader.id4, imageType, extURLs, size);
 }
 
 } // namespace LibRomData

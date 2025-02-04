@@ -1005,29 +1005,20 @@ rp_image_const_ptr RomData::mipmap(int mipmapLevel) const
  * try to get the size that most closely matches the
  * requested size.
  *
- * @param imageType	[in]     Image type.
- * @param pExtURLs	[out]    Output vector.
+ * @param imageType	[in]     Image type
+ * @param extURLs	[out]    Output vector
  * @param size		[in,opt] Requested image size. This may be a requested
  *                               thumbnail size in pixels, or an ImageSizeType
  *                               enum value.
  * @return 0 on success; negative POSIX error code on error.
  */
-int RomData::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
+int RomData::extURLs(ImageType imageType, vector<ExtURL> &extURLs, int size) const
 {
-	assert(imageType >= IMG_EXT_MIN && imageType <= IMG_EXT_MAX);
-	if (imageType < IMG_EXT_MIN || imageType > IMG_EXT_MAX) {
-		// ImageType is out of range.
-		return -EINVAL;
-	}
-	assert(pExtURLs != nullptr);
-	if (!pExtURLs) {
-		// No vector.
-		return -EINVAL;
-	}
+	RP_UNUSED(size);
+	extURLs.clear();
+	ASSERT_extURLs(imageType);
 
 	// No external URLs by default.
-	RP_UNUSED(size);
-	pExtURLs->clear();
 	return -ENOENT;
 }
 

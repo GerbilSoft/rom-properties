@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * TCreateThumbnail.cpp: Thumbnail creator template.                       *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -133,7 +133,7 @@ ImgClass TCreateThumbnail<ImgClass>::getExternalImage(
 	// Synchronously download from the source URLs.
 	// TODO: Image size selection.
 	std::vector<RomData::ExtURL> extURLs;
-	int ret = romData->extURLs(imageType, &extURLs, reqSize);
+	int ret = romData->extURLs(imageType, extURLs, reqSize);
 	if (ret != 0 || extURLs.empty()) {
 		// No URLs.
 		if (sBIT) {

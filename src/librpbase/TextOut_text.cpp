@@ -990,7 +990,7 @@ std::ostream& operator<<(std::ostream& os, const ROMOutput& fo) {
 			extURLs.clear();	// NOTE: May not be needed...
 			// TODO: Customize the image size parameter?
 			// TODO: Option to retrieve supported image size?
-			int ret = romdata->extURLs(static_cast<RomData::ImageType>(i), &extURLs, RomData::IMAGE_SIZE_DEFAULT);
+			int ret = romdata->extURLs(static_cast<RomData::ImageType>(i), extURLs, RomData::IMAGE_SIZE_DEFAULT);
 			if (ret != 0 || extURLs.empty()) {
 				continue;
 			}

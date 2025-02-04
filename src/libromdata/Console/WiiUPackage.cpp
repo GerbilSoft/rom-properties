@@ -863,15 +863,17 @@ int WiiUPackage::loadInternalImage(ImageType imageType, rp_image_const_ptr &pIma
  * try to get the size that most closely matches the
  * requested size.
  *
- * @param imageType	[in]     Image type.
- * @param pExtURLs	[out]    Output vector.
+ * @param imageType	[in]     Image type
+ * @param extURLs	[out]    Output vector
  * @param size		[in,opt] Requested image size. This may be a requested
  *                               thumbnail size in pixels, or an ImageSizeType
  *                               enum value.
  * @return 0 on success; negative POSIX error code on error.
  */
-int WiiUPackage::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
+int WiiUPackage::extURLs(ImageType imageType, vector<ExtURL> &extURLs, int size) const
 {
+	extURLs.clear();
+
 	RP_D(const WiiUPackage);
 	if (!d->isValid) {
 		// Package isn't valid.
@@ -894,7 +896,7 @@ int WiiUPackage::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size
 
 	const char *const id4 = &productCode[6];
 
-	return WiiU::extURLs_int(id4, imageType, pExtURLs, size);
+	return WiiU::extURLs_int(id4, imageType, extURLs, size);
 #else /* !ENABLE_XML */
 	// Cannot check the system XML without XML support.
 	return -ENOTSUP;

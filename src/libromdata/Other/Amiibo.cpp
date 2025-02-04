@@ -460,17 +460,17 @@ int Amiibo::loadFieldData(void)
  * try to get the size that most closely matches the
  * requested size.
  *
- * @param imageType	[in]     Image type.
- * @param pExtURLs	[out]    Output vector.
+ * @param imageType	[in]     Image type
+ * @param extURLs	[out]    Output vector
  * @param size		[in,opt] Requested image size. This may be a requested
  *                               thumbnail size in pixels, or an ImageSizeType
  *                               enum value.
  * @return 0 on success; negative POSIX error code on error.
  */
-int Amiibo::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
+int Amiibo::extURLs(ImageType imageType, vector<ExtURL> &extURLs, int size) const
 {
-	ASSERT_extURLs(imageType, pExtURLs);
-	pExtURLs->clear();
+	extURLs.clear();
+	ASSERT_extURLs(imageType);
 
 	// Only one size is available.
 	RP_UNUSED(size);
@@ -490,8 +490,8 @@ int Amiibo::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) con
 	}
 
 	// Only one URL.
-	pExtURLs->resize(1);
-	auto &extURL = pExtURLs->at(0);
+	extURLs.resize(1);
+	ExtURL &extURL = extURLs[0];
 
 	// Amiibo ID
 	const string amiibo_id = fmt::format(FSTR("{:0>8X}-{:0>8X}"),

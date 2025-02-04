@@ -684,17 +684,17 @@ int WonderSwan::loadMetaData(void)
  * try to get the size that most closely matches the
  * requested size.
  *
- * @param imageType	[in]     Image type.
- * @param pExtURLs	[out]    Output vector.
+ * @param imageType	[in]     Image type
+ * @param extURLs	[out]    Output vector
  * @param size		[in,opt] Requested image size. This may be a requested
  *                               thumbnail size in pixels, or an ImageSizeType
  *                               enum value.
  * @return 0 on success; negative POSIX error code on error.
  */
-int WonderSwan::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
+int WonderSwan::extURLs(ImageType imageType, vector<ExtURL> &extURLs, int size) const
 {
-	ASSERT_extURLs(imageType, pExtURLs);
-	pExtURLs->clear();
+	extURLs.clear();
+	ASSERT_extURLs(imageType);
 
 	// "Pocket Challenge v2" ROMs don't have a publisher or
 	// game ID set, so we can't get a title screen.
@@ -742,13 +742,13 @@ int WonderSwan::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size)
 	subdir[1] = '\0';
 
 	// Add the URLs.
-	pExtURLs->resize(1);
-	auto extURL_iter = pExtURLs->begin();
-	extURL_iter->url = d->getURL_RPDB("ws", imageTypeName, subdir, game_id.c_str(), ext);
-	extURL_iter->cache_key = d->getCacheKey_RPDB("ws", imageTypeName, subdir, game_id.c_str(), ext);
-	extURL_iter->width = sizeDefs[0].width;
-	extURL_iter->height = sizeDefs[0].height;
-	extURL_iter->high_res = (sizeDefs[0].index >= 2);
+	extURLs.resize(1);
+	ExtURL &extURL = extURLs[0];
+	extURL.url = d->getURL_RPDB("ws", imageTypeName, subdir, game_id.c_str(), ext);
+	extURL.cache_key = d->getCacheKey_RPDB("ws", imageTypeName, subdir, game_id.c_str(), ext);
+	extURL.width = sizeDefs[0].width;
+	extURL.height = sizeDefs[0].height;
+	extURL.high_res = (sizeDefs[0].index >= 2);
 
 	// All URLs added.
 	return 0;

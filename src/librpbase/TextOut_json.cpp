@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * TextOut.hpp: Text output for RomData. (JSON output)                     *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * Copyright (c) 2016-2018 by Egor.                                        *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
@@ -445,7 +445,7 @@ std::ostream& operator<<(std::ostream& os, const JSONROMOutput& fo) {
 			extURLs.clear();	// NOTE: May not be needed...
 			// TODO: Customize the image size parameter?
 			// TODO: Option to retrieve supported image size?
-			int ret = romdata->extURLs(static_cast<RomData::ImageType>(i), &extURLs, RomData::IMAGE_SIZE_DEFAULT);
+			int ret = romdata->extURLs(static_cast<RomData::ImageType>(i), extURLs, RomData::IMAGE_SIZE_DEFAULT);
 			if (ret != 0 || extURLs.empty())
 				continue;
 

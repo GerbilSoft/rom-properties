@@ -534,14 +534,14 @@ public:
 	 * try to get the size that most closely matches the
 	 * requested size.
 	 *
-	 * @param imageType	[in]     Image type.
-	 * @param pExtURLs	[out]    Output vector.
+	 * @param imageType	[in]     Image type
+	 * @param extURLs	[out]    Output vector
 	 * @param size		[in,opt] Requested image size. This may be a requested
 	 *                               thumbnail size in pixels, or an ImageSizeType
 	 *                               enum value.
 	 * @return 0 on success; negative POSIX error code on error.
 	 */
-	virtual int extURLs(ImageType imageType, std::vector<ExtURL> *pExtURLs, int size = IMAGE_SIZE_DEFAULT) const;
+	virtual int extURLs(ImageType imageType, std::vector<ExtURL> &extURLs, int size = IMAGE_SIZE_DEFAULT) const;
 
 	/**
 	 * Get the name of an image type

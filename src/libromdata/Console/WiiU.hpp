@@ -31,14 +31,14 @@ private:
 	 * requested size.
 	 *
 	 * @param id4		[in]     Game ID (ID4)
-	 * @param imageType	[in]     Image type.
-	 * @param pExtURLs	[out]    Output vector.
+	 * @param imageType	[in]     Image type
+	 * @param extURLs	[out]    Output vector
 	 * @param size		[in,opt] Requested image size. This may be a requested
 	 *                               thumbnail size in pixels, or an ImageSizeType
 	 *                               enum value.
 	 * @return 0 on success; negative POSIX error code on error.
 	 */
-	static int extURLs_int(const char *id4, ImageType imageType, std::vector<ExtURL> *pExtURLs, int size);
+	static int extURLs_int(const char *id4, ImageType imageType, std::vector<ExtURL> &extURLs, int size);
 
 ROMDATA_DECL_END()
 
