@@ -29,6 +29,9 @@
     This fixes detection of some Win32s DLLs.
     * Fixes #437: Old PE files from Win32s aren't recognized due to bad OptionalHeader magic
       * Reported by @DankRank.
+    * Also fix a bad bounds check that broke the Exports table on these DLLs.
+      * Pull request: #438
+        * Submitted by @DankRank.
   * Windows: Properly rescale  the icon and banner sizes.
     * PSP Minis would show a giant banner that messes up the tab display.
     * Fixes #433: [Bug Report] The ROM type is not displayed correctly for some PSP Mini ROMs
