@@ -24,6 +24,10 @@ G_BEGIN_DECLS
 gchar *
 rom_data_format_datetime(time_t date_time, unsigned int flags) G_GNUC_MALLOC;
 
+G_END_DECLS
+
+#ifdef __cplusplus
+
 /**
  * Format an RFT_DIMENSIONS.
  * @param dimensions	[in] Dimensions
@@ -32,4 +36,4 @@ rom_data_format_datetime(time_t date_time, unsigned int flags) G_GNUC_MALLOC;
 std::string
 rom_data_format_dimensions(const int dimensions[3]);
 
-G_END_DECLS
+#endif /* __cplusplus */
