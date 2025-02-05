@@ -810,14 +810,14 @@ int EXEPrivate::addFields_PE_Export(void)
 	const uint32_t rvaExpNameTbl = le32_to_cpu(pExpDirTbl->AddressOfNames);
 	const uint32_t szExpNameTbl = le32_to_cpu(pExpDirTbl->NumberOfNames);
 	const uint32_t *expNameTbl = reinterpret_cast<const uint32_t*>(
-		checkBounds(rvaExpNameTbl, szExpAddrTbl*sizeof(uint32_t)));
+		checkBounds(rvaExpNameTbl, szExpNameTbl*sizeof(uint32_t)));
 	if (!expNameTbl)
 		return -ENOENT;
 
 	// Export Ordinal Table
 	const uint32_t rvaExpOrdTbl = le32_to_cpu(pExpDirTbl->AddressOfNameOrdinals);
 	const uint16_t *expOrdTbl = reinterpret_cast<const uint16_t*>(
-		checkBounds(rvaExpOrdTbl, szExpAddrTbl*sizeof(uint16_t)));
+		checkBounds(rvaExpOrdTbl, szExpNameTbl*sizeof(uint16_t)));
 	if (!expOrdTbl)
 		return -ENOENT;
 
@@ -833,10 +833,9 @@ int EXEPrivate::addFields_PE_Export(void)
 	ents.reserve(std::max(szExpAddrTbl, szExpNameTbl));
 
 	// Read address table
-	const uint32_t expDirTbl_base = le32_to_cpu(pExpDirTbl->Base);
 	for (uint32_t i = 0; i < szExpAddrTbl; i++) {
 		ExportEntry ent;
-		ent.ordinal = expDirTbl_base + i;
+		ent.ordinal = ordinalBase + i;
 		ent.hint = -1;
 		ent.vaddr = le32_to_cpu(expAddrTbl[i]);
 		ent.paddr = pe_vaddr_to_paddr(ent.vaddr, 0);
