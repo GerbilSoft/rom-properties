@@ -74,7 +74,7 @@ int rpt_do_security_options(void)
 		SCMP_SYS(getpid), SCMP_SYS(uname),
 
 		// glib / D-Bus
-		SCMP_SYS(eventfd2),
+		SCMP_SYS(eventfd2),		// curl-8.11.1 (actually added in 8.9.0, but didn't work until 8.11.1)
 		SCMP_SYS(fcntl), SCMP_SYS(fcntl64),
 		SCMP_SYS(getdents), SCMP_SYS(getdents64)	// g_file_new_for_uri() [rp_create_thumbnail()]
 		SCMP_SYS(getegid), SCMP_SYS(geteuid), SCMP_SYS(poll),

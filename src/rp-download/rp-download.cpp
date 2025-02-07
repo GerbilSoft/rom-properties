@@ -294,6 +294,7 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 
 		// cURL and OpenSSL
 		SCMP_SYS(bind),		// getaddrinfo() [curl_thread_create_thunk(), curl-7.68.0]
+		SCMP_SYS(eventfd2),	// curl-8.11.1 (actually added in 8.9.0, but didn't work until 8.11.1)
 #ifdef __SNR_getrandom
 		SCMP_SYS(getrandom),
 #endif /* __SNR_getrandom */
