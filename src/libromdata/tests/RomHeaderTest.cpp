@@ -614,6 +614,13 @@ INSTANTIATE_TEST_SUITE_P(SufamiTurbo, RomHeaderTest,
 
 /* Handheld */
 
+INSTANTIATE_TEST_SUITE_P(AtariLynx, RomHeaderTest,
+	testing::ValuesIn(RomHeaderTest::ReadTestCasesFromDisk(
+		"Handheld/AtariLynx.bin.tar.zst",
+		"Handheld/AtariLynx.txt.tar.zst",
+		"Handheld/AtariLynx.json.tar.zst"))
+	, RomHeaderTest::test_case_suffix_generator);
+
 INSTANTIATE_TEST_SUITE_P(DMG, RomHeaderTest,
 	testing::ValuesIn(RomHeaderTest::ReadTestCasesFromDisk(
 		"Handheld/DMG.bin.tar.zst",
