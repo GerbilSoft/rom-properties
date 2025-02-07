@@ -6,7 +6,7 @@
  * a generic list, RomMetaData stores specific properties that can be used *
  * by the desktop environment's indexer.                                   *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -256,7 +256,7 @@ RomMetaData::MetaData::~MetaData()
 			break;
 
 		case PropertyType::String:
-			delete const_cast<string*>(this->data.str);
+			free(const_cast<char*>(this->data.str));
 			break;
 	}
 }
@@ -297,7 +297,7 @@ RomMetaData::MetaData::MetaData(const MetaData &other)
 
 		case PropertyType::String:
 			this->data.str = (other.data.str)
-				? new string(*other.data.str)
+				? strdup(other.data.str)
 				: nullptr;
 			break;
 	}
@@ -496,7 +496,7 @@ int RomMetaData::addMetaData_metaData(const RomMetaData *other)
 			case PropertyType::String:
 				// TODO: Don't add a property if the string value is nullptr?
 				assert(pSrc.data.str != nullptr);
-				pDest->data.str = (pSrc.data.str ? new string(*pSrc.data.str) : nullptr);
+				pDest->data.str = (pSrc.data.str) ? strdup(pSrc.data.str) : nullptr;
 				break;
 			case PropertyType::Timestamp:
 				pDest->data.timestamp = pSrc.data.timestamp;
@@ -593,14 +593,14 @@ int RomMetaData::addMetaData_string(Property name, const char *str, unsigned int
 		return -1;
 	}
 
-	string *const nstr = new string(str);
+	char *const nstr = strdup(str);
 	// Trim the string if requested.
 	if (nstr && (flags & STRF_TRIM_END)) {
-		trimEnd(*nstr);
+		trimEnd(nstr);
 	}
-	if (nstr->empty()) {
+	if (nstr[0] == '\0') {
 		// String is now empty. Ignore it.
-		delete nstr;
+		free(nstr);
 		return -1;
 	}
 
@@ -608,7 +608,7 @@ int RomMetaData::addMetaData_string(Property name, const char *str, unsigned int
 	MetaData *const pMetaData = d->addProperty(name);
 	assert(pMetaData != nullptr);
 	if (!pMetaData) {
-		delete nstr;
+		free(nstr);
 		return -1;
 	}
 
@@ -616,58 +616,8 @@ int RomMetaData::addMetaData_string(Property name, const char *str, unsigned int
 	assert(pMetaData->type == PropertyType::String);
 	if (pMetaData->type != PropertyType::String) {
 		// TODO: Delete the property in this case?
-		pMetaData->data.iptrvalue = 0;
-		delete nstr;
-		return -1;
-	}
-
-	pMetaData->data.str = nstr;
-	return static_cast<int>(d->map_metaData[static_cast<size_t>(name)]);
-}
-
-/**
- * Add a string metadata property.
- *
- * If a metadata property with the same name already exists,
- * it will be overwritten.
- *
- * @param name Property name
- * @param str String value
- * @param flags Formatting flags
- * @return Metadata index, or -1 on error.
- */
-int RomMetaData::addMetaData_string(Property name, const string &str, unsigned int flags)
-{
-	if (str.empty()) {
-		// Ignore empty strings.
-		return -1;
-	}
-
-	string *const nstr = new string(str);
-	// Trim the string if requested.
-	if (nstr && (flags & STRF_TRIM_END)) {
-		trimEnd(*nstr);
-	}
-	if (nstr->empty()) {
-		// String is now empty. Ignore it.
-		delete nstr;
-		return -1;
-	}
-
-	RP_D(RomMetaData);
-	MetaData *const pMetaData = d->addProperty(name);
-	assert(pMetaData != nullptr);
-	if (!pMetaData) {
-		delete nstr;
-		return -1;
-	}
-
-	// Make sure this is a string property.
-	assert(pMetaData->type == PropertyType::String);
-	if (pMetaData->type != PropertyType::String) {
-		// TODO: Delete the property in this case?
-		pMetaData->data.iptrvalue = 0;
-		delete nstr;
+		pMetaData->data.str = nullptr;
+		free(nstr);
 		return -1;
 	}
 

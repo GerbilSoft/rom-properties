@@ -6,7 +6,7 @@
  * a generic list, RomMetaData stores specific properties that can be used *
  * by the desktop environment's indexer.                                   *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -203,7 +203,7 @@ class RomMetaData
 				unsigned int uvalue;
 
 				// String property
-				const std::string *str;
+				const char *str;
 
 				// UNIX timestamp
 				time_t timestamp;
@@ -353,7 +353,14 @@ class RomMetaData
 		 * @param flags Formatting flags
 		 * @return Metadata index, or -1 on error.
 		 */
-		int addMetaData_string(Property name, const std::string &str, unsigned int flags = 0);
+		int addMetaData_string(Property name, const std::string &str, unsigned int flags = 0)
+		{
+			if (str.empty()) {
+				// Ignore empty strings.
+				return -1;
+			}
+			return addMetaData_string(name, str.c_str(), flags);
+		}
 
 		/**
 		 * Add a timestamp metadata property.

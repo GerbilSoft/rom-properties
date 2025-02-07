@@ -287,8 +287,9 @@ IFACEMETHODIMP RP_PropertyStore::Initialize(_In_ IStream *pstream, DWORD grfMode
 			case VT_UI8: {
 				// FIXME: 64-bit values?
 				assert(prop.type == PropertyType::Integer || prop.type == PropertyType::UnsignedInteger);
-				if (prop.type != PropertyType::Integer && prop.type != PropertyType::UnsignedInteger)
+				if (prop.type != PropertyType::Integer && prop.type != PropertyType::UnsignedInteger) {
 					continue;
+				}
 
 				// Special handling for some properties.
 				uint64_t uvalue64 = static_cast<uint64_t>(prop.data.uvalue);
@@ -307,8 +308,9 @@ IFACEMETHODIMP RP_PropertyStore::Initialize(_In_ IStream *pstream, DWORD grfMode
 
 			case VT_UI4: {
 				assert(prop.type == PropertyType::Integer || prop.type == PropertyType::UnsignedInteger);
-				if (prop.type != PropertyType::Integer && prop.type != PropertyType::UnsignedInteger)
+				if (prop.type != PropertyType::Integer && prop.type != PropertyType::UnsignedInteger) {
 					continue;
+				}
 
 				// Special handling for some properties.
 				uint32_t uvalue = prop.data.uvalue;
@@ -339,16 +341,18 @@ IFACEMETHODIMP RP_PropertyStore::Initialize(_In_ IStream *pstream, DWORD grfMode
 
 			case VT_UI2:
 				assert(prop.type == PropertyType::Integer || prop.type == PropertyType::UnsignedInteger);
-				if (prop.type != PropertyType::Integer && prop.type != PropertyType::UnsignedInteger)
+				if (prop.type != PropertyType::Integer && prop.type != PropertyType::UnsignedInteger) {
 					continue;
+				}
 
 				InitPropVariantFromUInt16(static_cast<uint16_t>(prop.data.uvalue), &prop_var);
 				break;
 
 			case VT_UI1:
 				assert(prop.type == PropertyType::Integer || prop.type == PropertyType::UnsignedInteger);
-				if (prop.type != PropertyType::Integer && prop.type != PropertyType::UnsignedInteger)
+				if (prop.type != PropertyType::Integer && prop.type != PropertyType::UnsignedInteger) {
 					continue;
+				}
 
 				InitPropVariantFromUInt8(static_cast<uint8_t>(prop.data.uvalue), &prop_var);
 				break;
@@ -356,42 +360,47 @@ IFACEMETHODIMP RP_PropertyStore::Initialize(_In_ IStream *pstream, DWORD grfMode
 			case VT_I8:
 				// FIXME: 64-bit values?
 				assert(prop.type == PropertyType::Integer || prop.type == PropertyType::UnsignedInteger);
-				if (prop.type != PropertyType::Integer && prop.type != PropertyType::UnsignedInteger)
+				if (prop.type != PropertyType::Integer && prop.type != PropertyType::UnsignedInteger) {
 					continue;
+				}
 
 				InitPropVariantFromInt64(static_cast<int64_t>(prop.data.ivalue), &prop_var);
 				break;
 
 			case VT_I4:
 				assert(prop.type == PropertyType::Integer || prop.type == PropertyType::UnsignedInteger);
-				if (prop.type != PropertyType::Integer && prop.type != PropertyType::UnsignedInteger)
+				if (prop.type != PropertyType::Integer && prop.type != PropertyType::UnsignedInteger) {
 					continue;
+				}
 
 				InitPropVariantFromInt32(static_cast<int32_t>(prop.data.ivalue), &prop_var);
 				break;
 
 			case VT_I2:
 				assert(prop.type == PropertyType::Integer || prop.type == PropertyType::UnsignedInteger);
-				if (prop.type != PropertyType::Integer && prop.type != PropertyType::UnsignedInteger)
+				if (prop.type != PropertyType::Integer && prop.type != PropertyType::UnsignedInteger) {
 					continue;
+				}
 
 				InitPropVariantFromInt16(static_cast<int16_t>(prop.data.ivalue), &prop_var);
 				break;
 
 			case VT_I1:
 				assert(prop.type == PropertyType::Integer || prop.type == PropertyType::UnsignedInteger);
-				if (prop.type != PropertyType::Integer && prop.type != PropertyType::UnsignedInteger)
+				if (prop.type != PropertyType::Integer && prop.type != PropertyType::UnsignedInteger) {
 					continue;
+				}
 
 				InitPropVariantFromInt8(static_cast<int8_t>(prop.data.ivalue), &prop_var);
 				break;
 
 			case VT_BSTR:
 				assert(prop.type == PropertyType::String);
-				if (prop.type != PropertyType::String)
+				if (prop.type != PropertyType::String) {
 					continue;
+				}
 				if (prop.data.str) {
-					InitPropVariantFromString(U82W_s(*prop.data.str), &prop_var);
+					InitPropVariantFromString(U82W_s(prop.data.str), &prop_var);
 				}
 				break;
 
