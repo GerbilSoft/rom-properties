@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * Lynx.hpp: Atari Lynx ROM reader.                                        *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * Copyright (c) 2017-2018 by Egor.                                        *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
@@ -99,25 +99,21 @@ Lynx::Lynx(const IRpFilePtr &file)
 	d->file->rewind();
 
 	// Read the ROM header. [0x40 bytes]
-	uint8_t header[0x40];
-	size_t size = d->file->read(header, sizeof(header));
-	if (size != sizeof(header)) {
+	size_t size = d->file->read(&d->romHeader, sizeof(d->romHeader));
+	if (size != sizeof(d->romHeader)) {
 		d->file.reset();
 		return;
 	}
 
 	// Check if this ROM is supported.
 	const DetectInfo info = {
-		{0, sizeof(header), header},
+		{0, sizeof(d->romHeader), reinterpret_cast<const uint8_t*>(&d->romHeader)},
 		nullptr,	// ext (not needed for Lynx)
 		0		// szFile (not needed for Lynx)
 	};
 	d->isValid = (isRomSupported_static(&info) >= 0);
 
-	if (d->isValid) {
-		// Save the header for later.
-		memcpy(&d->romHeader, header, sizeof(d->romHeader));
-	} else {
+	if (!d->isValid) {
 		d->file.reset();
 	}
 }
