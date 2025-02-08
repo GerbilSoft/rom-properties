@@ -663,6 +663,13 @@ INSTANTIATE_TEST_SUITE_P(PokemonMini, RomHeaderTest,
 		"Handheld/PokemonMini.json.tar.zst"))
 	, RomHeaderTest::test_case_suffix_generator);
 
+INSTANTIATE_TEST_SUITE_P(WonderSwan, RomHeaderTest,
+	testing::ValuesIn(RomHeaderTest::ReadTestCasesFromDisk(
+		"Handheld/WonderSwan.bin.tar.zst",
+		"Handheld/WonderSwan.txt.tar.zst",
+		"Handheld/WonderSwan.json.tar.zst"))
+	, RomHeaderTest::test_case_suffix_generator);
+
 /* Other */
 
 INSTANTIATE_TEST_SUITE_P(Amiibo, RomHeaderTest,
