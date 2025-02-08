@@ -41,6 +41,7 @@
     * Most textures are little-endian, so this mainly affects big-endian
       systems like PowerPC.
     * Affects: v2.4 - v2.4.1
+  * KDE rp-config: ImageTypesTab: Fix tab ordering for the Credits label.
 
 * Other changes:
   * CMake: Added an ENABLE_NETWORKING option to control whether or not
