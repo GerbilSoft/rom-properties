@@ -407,9 +407,13 @@ IFACEMETHODIMP RP_PropertyStore::Initialize(_In_ IStream *pstream, DWORD grfMode
 			case VT_VECTOR|VT_BSTR: {
 				// For now, assuming an array with a single string.
 				assert(prop.type == PropertyType::String);
-				if (prop.type != PropertyType::String)
+				if (prop.type != PropertyType::String) {
 					continue;
-				const wstring wstr = (prop.data.str ? U82W_s(*prop.data.str) : L"");
+				}
+				if (!prop.data.str || prop.data.str[0] == '\0') {
+					continue;
+				}
+				const wstring wstr = U82W_c(*prop.data.str);
 				const wchar_t *vstr[] = {wstr.c_str()};
 
 				InitPropVariantFromStringVector(vstr, 1, &prop_var);
