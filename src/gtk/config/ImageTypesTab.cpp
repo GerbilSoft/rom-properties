@@ -98,11 +98,6 @@ public:
 	void initStrings(void);
 
 public:
-	// Last ComboBox added.
-	// Needed in order to set the correct
-	// tab order for the credits label.
-	OurComboBox *cboImageType_lastAdded;
-
 	// Temporary GKeyFile object.
 	// Set and cleared by ImageTypesTab::save();
 	GKeyFile *keyFile;
@@ -158,16 +153,11 @@ G_DEFINE_TYPE_EXTENDED(RpImageTypesTab, rp_image_types_tab,
 
 RpImageTypesTabPrivate::RpImageTypesTabPrivate(RpImageTypesTab* q)
 	: q(q)
-	, cboImageType_lastAdded(nullptr)
 	, keyFile(nullptr)
 { }
 
 RpImageTypesTabPrivate::~RpImageTypesTabPrivate()
 {
-	// cboImageType_lastAdded should be nullptr.
-	// (Cleared by finishComboBoxes().)
-	assert(cboImageType_lastAdded == nullptr);
-
 	// keyFile should be nullptr,
 	// since it's only used when saving.
 	assert(keyFile == nullptr);
@@ -292,14 +282,6 @@ void RpImageTypesTabPrivate::createComboBox(unsigned int cbid)
 #else /* !USE_GTK_DROP_DOWN */
 	g_signal_connect(cbo, "changed", G_CALLBACK(rp_image_types_tab_modified_handler), q);
 #endif /* USE_GTK_DROP_DOWN */
-
-	// Adjust the tab order. [TODO]
-#if 0
-	if (cboImageType_lastAdded) {
-		q->setTabOrder(cboImageType_lastAdded, cbo);
-	}
-	cboImageType_lastAdded = cbo;
-#endif /* 0 */
 }
 
 /**
@@ -363,17 +345,7 @@ void RpImageTypesTabPrivate::addComboBoxStrings(unsigned int cbid, int max_prio)
  */
 void RpImageTypesTabPrivate::finishComboBoxes(void)
 {
-	if (!cboImageType_lastAdded) {
-		// Nothing to do here.
-		return;
-	}
-
-	/* TODO
-	// Set the tab order for the credits label.
-	Q_Q(RpImageTypesTab);
-	q->setTabOrder(cboImageType_lastAdded, ui.lblCredits);
-	cboImageType_lastAdded = nullptr;
-	*/
+	// Nothing to do here.
 }
 
 /**
