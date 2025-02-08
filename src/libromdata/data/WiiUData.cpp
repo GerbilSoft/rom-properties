@@ -158,11 +158,11 @@ static const array<WiiUDiscPublisher, 199> disc_publishers_noregion = {{
 	{'AUMx', '00DU'},	// Minecraft: Wii U Edition
 	{'AUNx', '00AF'},	// One Piece: Unlimited World Red
 	{'AURx', '0001'},	// Mario & Sonic at the Sochi 2014 Olympic Winter Games
+	{'AV3x', '0052'},	// Wipeout 3
+	{'AV4x', '0052'},	// Wipeout: Create & Crash
 	{'AVAJ', '00HF'},	// Youkai Watch Dance: Just Dance Special Version
 	{'AVCx', '0052'},	// The Voice: I Want You
 	{'AVXx', '0001'},	// Mario Tennis: Ultra Smash
-	{'AV3x', '0052'},	// Wipeout 3
-	{'AV4x', '0052'},	// Wipeout: Create & Crash
 	{'AWCx', '0041'},	// Watch Dogs
 	{'AWDx', '0052'},	// The Walking Dead: Survival Instinct
 	{'AWFx', '0078'},	// Wheel of Fortune
@@ -224,11 +224,11 @@ static const array<WiiUDiscPublisher, 199> disc_publishers_noregion = {{
 	// Disc versions of eShop titles.
 	{'WAFx', '0001'},	// Mairo vs. Donkey Kong: Tipping Stars
 	{'WAHx', '0001'},	// Wii Karaoke U (Trial Disc)
-	{'WNCx', '0001'},	// Pokémon Rumble U: Special Edition
 	{'WDKx', '0008'},	// DuckTales: Remastered
 	{'WGDx', '003A'},	// Teslagrad
 	{'WGSx', '00CX'},	// Giana Sisters: Twisted Dreams - Director's Cut
 	{'WKNx', '00AY'},	// Shovel Knight
+	{'WNCx', '0001'},	// Pokémon Rumble U: Special Edition
 	{'WTBx', '00EY'},	// Shakedown: Hawaii
 }};
 
@@ -339,8 +339,8 @@ struct WiiUApplicationType {
  */
 static const array<WiiUApplicationType, 45> wiiu_application_types = {{
 	{0x0000001D, "Compat User"},
-	{0x0800001B, "Game Update"},
 	{0x0800000E, "Game DLC"},
+	{0x0800001B, "Game Update"},
 	{0x10000009, "boot1"},
 	{0x1000000A, "IOSU"},
 	{0x10000011, "Compat System"},

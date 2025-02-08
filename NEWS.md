@@ -42,6 +42,9 @@
       systems like PowerPC.
     * Affects: v2.4 - v2.4.1
   * KDE rp-config: ImageTypesTab: Fix tab ordering for the Credits label.
+  * WiiUData: Fix some sorting issues that may have resulted in incorrect
+    publisher or application type information for some games.
+    * This also resulted in libstdc++ assertions in debug builds.
 
 * Other changes:
   * CMake: Added an ENABLE_NETWORKING option to control whether or not
