@@ -68,7 +68,10 @@ protected:
 	/**
 	 * Finish adding the ComboBoxes.
 	 */
-	void finishComboBoxes(void) final;
+	void finishComboBoxes(void) final
+	{
+		// Nothing to do here.
+	}
 
 	/**
 	 * Write an ImageType configuration entry.
@@ -338,14 +341,6 @@ void RpImageTypesTabPrivate::addComboBoxStrings(unsigned int cbid, int max_prio)
 
 	SET_CBO(cbo, 0);
 	q->inhibit = prev_inhibit;
-}
-
-/**
- * Finish adding the ComboBoxes.
- */
-void RpImageTypesTabPrivate::finishComboBoxes(void)
-{
-	// Nothing to do here.
 }
 
 /**

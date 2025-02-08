@@ -62,7 +62,10 @@ protected:
 	/**
 	 * Finish adding the ComboBoxes.
 	 */
-	void finishComboBoxes(void) final;
+	void finishComboBoxes(void) final
+	{
+		// Nothing to do here.
+	}
 
 	/**
 	 * Initialize the Save subsystem.
@@ -243,15 +246,6 @@ void ImageTypesTabPrivate::addComboBoxStrings(unsigned int cbid, int max_prio)
 	}
 	cbo->setCurrentIndex(0);
 	cbo->blockSignals(blockCbo);
-}
-
-/**
- * Finish adding the ComboBoxes.
- */
-void ImageTypesTabPrivate::finishComboBoxes(void)
-{
-	// Nothing to do here.
-	return;
 }
 
 /**
