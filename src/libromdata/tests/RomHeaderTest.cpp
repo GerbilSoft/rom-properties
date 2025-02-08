@@ -80,7 +80,7 @@ inline ::std::ostream& operator<<(::std::ostream& os, const RomHeaderTest_mode& 
 };
 
 // Maximum file size for files within the .tar archives.
-static constexpr uint64_t MAX_BIN_FILESIZE  =  4U*1024U*1024U;	// 4 MB (for MD lock-on)
+static constexpr uint64_t MAX_BIN_FILESIZE  =  8U*1024U*1024U;	// 8 MB (for MD lock-on and some WonderSwan titles)
 static constexpr uint64_t MAX_TXT_FILESIZE  = 32U*1024U;	// 32 KB
 static constexpr uint64_t MAX_JSON_FILESIZE = 32U*1024U;	// 32 KB
 
@@ -623,7 +623,7 @@ INSTANTIATE_TEST_SUITE_P(AtariLynx, RomHeaderTest,
 
 INSTANTIATE_TEST_SUITE_P(DMG, RomHeaderTest,
 	testing::ValuesIn(RomHeaderTest::ReadTestCasesFromDisk(
-		"Handheld/DMG.bin.tar.zst",
+			"Handheld/DMG.bin.tar.zst",
 		"Handheld/DMG.txt.tar.zst",
 		"Handheld/DMG.json.tar.zst"))
 	, RomHeaderTest::test_case_suffix_generator);
