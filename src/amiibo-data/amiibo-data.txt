@@ -1282,6 +1282,12 @@ A:0x0433:0:7:Shiver
 A:0x0434:0:7:Frye
 A:0x0435:0:7:Big Man
 
+# Splatoon: Wave 8 [0x0436-0x0439]
+A:0x0436:0:8:Callie (Alterna)
+A:0x0437:0:8:Marie (Alterna)
+A:0x0438:0:8:Pearl (Side Order)
+A:0x0439:0:8:Marina (Side Order)
+
 # Diablo [0x0391]
 A:0x0391:0:0:Loot Goblin
 
@@ -1996,6 +2002,9 @@ A:0x03A0:5:1:Toad Power-Up Band
 A:0x039F:6:1:Yoshi Power-Up Band
 # Super Nintendo World: Gold Power-Up Bands [0x0430]
 A:0x0430:7:1:Gold Mairo Power-Up Band
+# Super Nintendo World: Donkey Kong Power-Up Bands [0x0431-0x0432]
+A:0x0431:8:1:Donkey Kong Power-Up Band
+A:0x0432:9:1:Diddy Kong Power-Up Band
 
 # SSBU: Wave 14 (Ultimate Fighter Pass 1) [0x03A1-0x03A5]
 A:0x03A1:83:14:Joker
