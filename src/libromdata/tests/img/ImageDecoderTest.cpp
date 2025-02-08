@@ -1783,30 +1783,27 @@ INSTANTIATE_TEST_SUITE_P(STEX3, ImageDecoderTest,
 // NOTE: Godot 4 uses different encoders for DXTn and ETCn,
 // so the decompressed images will not match STEX3.
 #define STEX4_IMAGE_TEST(file, format) ImageDecoderTest_mode( \
-			"STEX4/" file ".stex.gz", \
-			"STEX4/" file ".png", (format))
-#define CTEX4_IMAGE_TEST(file, format) ImageDecoderTest_mode( \
 			"STEX4/" file ".ctex.gz", \
 			"STEX4/" file ".png", (format))
 INSTANTIATE_TEST_SUITE_P(STEX4, ImageDecoderTest,
 	::testing::Values(
 		STEX4_IMAGE_TEST("argb.DXT5", "DXT5"),
 		STEX4_IMAGE_TEST("argb.ETC2_RGBA8", "ETC2_RGBA8"),
-		ImageDecoderTest_mode("STEX4/argb.RGBA8.stex.gz", "argb-reference.png", "RGBA8"),
+		ImageDecoderTest_mode("STEX4/argb.RGBA8.ctex.gz", "argb-reference.png", "RGBA8"),
 
 		// Godot 4 encodes rgb-reference.png using DXT5 instead of DXT1 for some reason.
 		STEX4_IMAGE_TEST("rgb.DXT5", "DXT5"),
 		STEX4_IMAGE_TEST("rgb.ETC2_RGB8", "ETC2_RGB8"),
-		ImageDecoderTest_mode("STEX4/rgb.RGB8.stex.gz", "rgb-reference.png", "RGB8"),
+		ImageDecoderTest_mode("STEX4/rgb.RGB8.ctex.gz", "rgb-reference.png", "RGB8"),
 
 		STEX4_IMAGE_TEST("gray.DXT1", "DXT1"),
 		STEX4_IMAGE_TEST("gray.ETC", "ETC"),
-		ImageDecoderTest_mode("STEX4/gray.L8.stex.gz", "gray-reference.png"),
+		ImageDecoderTest_mode("STEX4/gray.L8.ctex.gz", "gray-reference.png"),
 
 		// Godot 4 prefers the .ctex extension now, so any new
 		// tests added after this point should use .ctex.
-		CTEX4_IMAGE_TEST("argb.ASTC_4x4", "ASTC_4x4"),
-		CTEX4_IMAGE_TEST("argb.BPTC_RGBA", "BPTC_RGBA"),
+		STEX4_IMAGE_TEST("argb.ASTC_4x4", "ASTC_4x4"),
+		STEX4_IMAGE_TEST("argb.BPTC_RGBA", "BPTC_RGBA"),
 
 		// NOTE: No pixel format for embedded PNGs.
 		ImageDecoderTest_mode("STEX4/argb.PNG.mipmaps.ctex", "argb-reference.png", ""),
