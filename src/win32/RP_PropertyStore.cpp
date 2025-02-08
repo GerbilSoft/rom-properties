@@ -413,7 +413,7 @@ IFACEMETHODIMP RP_PropertyStore::Initialize(_In_ IStream *pstream, DWORD grfMode
 				if (!prop.data.str || prop.data.str[0] == '\0') {
 					continue;
 				}
-				const wstring wstr = U82W_c(*prop.data.str);
+				const wstring wstr = U82W_c(prop.data.str);
 				const wchar_t *vstr[] = {wstr.c_str()};
 
 				InitPropVariantFromStringVector(vstr, 1, &prop_var);
