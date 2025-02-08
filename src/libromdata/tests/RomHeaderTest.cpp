@@ -656,6 +656,13 @@ INSTANTIATE_TEST_SUITE_P(NintendoDS, RomHeaderTest,
 		"Handheld/NintendoDS.json.tar.zst"))
 	, RomHeaderTest::test_case_suffix_generator);
 
+INSTANTIATE_TEST_SUITE_P(PokemonMini, RomHeaderTest,
+	testing::ValuesIn(RomHeaderTest::ReadTestCasesFromDisk(
+		"Handheld/PokemonMini.bin.tar.zst",
+		"Handheld/PokemonMini.txt.tar.zst",
+		"Handheld/PokemonMini.json.tar.zst"))
+	, RomHeaderTest::test_case_suffix_generator);
+
 /* Other */
 
 INSTANTIATE_TEST_SUITE_P(Amiibo, RomHeaderTest,
