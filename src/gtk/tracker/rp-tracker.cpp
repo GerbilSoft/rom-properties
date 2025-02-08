@@ -41,7 +41,7 @@ static void
 add_metadata_properties_v1(const RomMetaData *metaData, TrackerSparqlBuilder *builder)
 {
 	for (const RomMetaData::MetaData &prop : *metaData) {
-		if (prop.type == PropertyType::String && !prop.data.str) {
+		if (prop.type == PropertyType::String && (!prop.data.str || prop.data.str[0] == '\0')) {
 			// Should not happen...
 			assert(!"nullptr string detected");
 			break;

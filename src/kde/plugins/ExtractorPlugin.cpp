@@ -120,7 +120,7 @@ void ExtractorPlugin::extract_properties(KFileMetaData::ExtractionResult *result
 				}
 #endif /* KCOREADDONS_VERSION < QT_VERSION_CHECK(5,53,0) */
 
-				if (prop.data.str) {
+				if (prop.data.str && prop.data.str[0] != '\0') {
 					result->add(static_cast<KFileMetaData::Property::Property>(prop_name), U82Q(prop.data.str));
 				}
 				break;
