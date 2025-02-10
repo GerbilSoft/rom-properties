@@ -296,7 +296,9 @@ static int decodeBC7Block(array<argb32_t, 4*4> &tileBuf, const uint64_t *bc7_src
 
 	// Check the block mode.
 	const int mode = get_mode(static_cast<uint32_t>(block.lsb));
-	if (mode < 0) {
+	assert(mode >= 0);
+	assert(mode < 8);
+	if (mode < 0 || mode >= 8) {
 		// Invalid mode.
 		return -EIO;
 	}
