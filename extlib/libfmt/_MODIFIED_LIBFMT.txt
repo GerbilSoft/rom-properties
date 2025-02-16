@@ -1,13 +1,13 @@
-This copy of libfmt 11.1.2 is a modified version of the original.
+This copy of libfmt 11.1.3 is a modified version of the original.
 
-commit 8303d140a1a11f19b982a9f664bbe59a1ccda3f4
+commit 9cf9f38eded63e5e0fb95cd536ba51be601d7fa2
 Update version
     
-Tag: 11.1.2
+Tag: 11.1.3
 
 The following changes have been made to the original:
 
 - Removed documentation and test suites.
 
-To obtain the original libfmt-11.1.2, visit:
+To obtain the original libfmt-11.1.3, visit:
 https://github.com/fmtlib/fmt
