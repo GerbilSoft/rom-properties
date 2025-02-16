@@ -191,21 +191,21 @@ public:
 private:
 	/**
 	 * Create the header row.
-	 * @param pt_start	[in] Starting position, in pixels.
-	 * @param size		[in] Width and height for a full-width single line label.
+	 * @param pt_start	[in] Starting position, in pixels
+	 * @param size		[in] Width and height for a full-width single line label
 	 * @return Row height, in pixels.
 	 */
 	int createHeaderRow(_In_ POINT pt_start, _In_ SIZE size);
 
 	/**
 	 * Initialize a string field. (Also used for Date/Time.)
-	 * @param hWndTab	[in] Tab window. (for the actual control)
-	 * @param pt_start	[in] Starting position, in pixels.
-	 * @param size		[in] Width and height for a single line label.
+	 * @param hWndTab	[in] Tab window (for the actual control)
+	 * @param pt_start	[in] Starting position, in pixels
+	 * @param size		[in] Width and height for a single line label
 	 * @param field		[in] RomFields::Field
 	 * @param fieldIdx	[in] Field index
-	 * @param str		[in,opt] String data. (If nullptr, field data is used.)
-	 * @param pOutHWND	[out,opt] Retrieves the control's HWND.
+	 * @param str		[in,opt] String data (If nullptr, field data is used.)
+	 * @param pOutHWND	[out,opt] Retrieves the control's HWND
 	 * @return Field height, in pixels.
 	 */
 	int initString(_In_ HWND hWndTab,
@@ -214,9 +214,28 @@ private:
 		_In_ LPCTSTR str = nullptr, _Outptr_opt_ HWND *pOutHWND = nullptr);
 
 	/**
+	 * Initialize a string field. (Also used for Date/Time.)
+	 * @param hWndTab	[in] Tab window (for the actual control)
+	 * @param pt_start	[in] Starting position, in pixels
+	 * @param size		[in] Width and height for a single line label
+	 * @param field		[in] RomFields::Field
+	 * @param fieldIdx	[in] Field index
+	 * @param str		[in] String data
+	 * @param pOutHWND	[out,opt] Retrieves the control's HWND
+	 * @return Field height, in pixels.
+	 */
+	int initString(_In_ HWND hWndTab,
+		_In_ POINT pt_start, _In_ SIZE size,
+		_In_ const LibRpBase::RomFields::Field &field, _In_ int fieldIdx,
+		_In_ const std::tstring &str, _Outptr_opt_ HWND *pOutHWND = nullptr)
+	{
+		return initString(hWndTab, pt_start, size, field, fieldIdx, str.c_str(), pOutHWND);
+	}
+
+	/**
 	 * Initialize a bitfield layout.
-	 * @param hWndTab	[in] Tab window. (for the actual control)
-	 * @param pt_start	[in] Starting position, in pixels.
+	 * @param hWndTab	[in] Tab window (for the actual control)
+	 * @param pt_start	[in] Starting position, in pixels
 	 * @param field		[in] RomFields::Field
 	 * @param fieldIdx	[in] Field index
 	 * @return Field height, in pixels.
@@ -226,9 +245,9 @@ private:
 
 	/**
 	 * Initialize a ListData field.
-	 * @param hWndTab	[in] Tab window. (for the actual control)
-	 * @param pt_start	[in] Starting position, in pixels.
-	 * @param size		[in] Width and height for a default ListView.
+	 * @param hWndTab	[in] Tab window (for the actual control)
+	 * @param pt_start	[in] Starting position, in pixels
+	 * @param size		[in] Width and height for a default ListView
 	 * @param doResize	[in] If true, resize the ListView to accomodate rows_visible.
 	 * @param field		[in] RomFields::Field
 	 * @param fieldIdx	[in] Field index
@@ -241,9 +260,9 @@ private:
 	/**
 	 * Initialize a Date/Time field.
 	 * This function internally calls initString().
-	 * @param hWndTab	[in] Tab window. (for the actual control)
-	 * @param pt_start	[in] Starting position, in pixels.
-	 * @param size		[in] Width and height for a single line label.
+	 * @param hWndTab	[in] Tab window (for the actual control)
+	 * @param pt_start	[in] Starting position, in pixels
+	 * @param size		[in] Width and height for a single line label
 	 * @param field		[in] RomFields::Field
 	 * @param fieldIdx	[in] Field index
 	 * @return Field height, in pixels.
@@ -255,9 +274,9 @@ private:
 	/**
 	 * Initialize an Age Ratings field.
 	 * This function internally calls initString().
-	 * @param hWndTab	[in] Tab window. (for the actual control)
-	 * @param pt_start	[in] Starting position, in pixels.
-	 * @param size		[in] Width and height for a single line label.
+	 * @param hWndTab	[in] Tab window (for the actual control)
+	 * @param pt_start	[in] Starting position, in pixels
+	 * @param size		[in] Width and height for a single line label
 	 * @param field		[in] RomFields::Field
 	 * @param fieldIdx	[in] Field index
 	 * @return Field height, in pixels.
@@ -269,9 +288,9 @@ private:
 	/**
 	 * Initialize a Dimensions field.
 	 * This function internally calls initString().
-	 * @param hWndTab	[in] Tab window. (for the actual control)
-	 * @param pt_start	[in] Starting position, in pixels.
-	 * @param size		[in] Width and height for a single line label.
+	 * @param hWndTab	[in] Tab window (for the actual control)
+	 * @param pt_start	[in] Starting position, in pixels
+	 * @param size		[in] Width and height for a single line label
 	 * @param field		[in] RomFields::Field
 	 * @param fieldIdx	[in] Field index
 	 * @return Field height, in pixels.
@@ -282,9 +301,9 @@ private:
 
 	/**
 	 * Initialize a multi-language string field.
-	 * @param hWndTab	[in] Tab window. (for the actual control)
-	 * @param pt_start	[in] Starting position, in pixels.
-	 * @param size		[in] Width and height for a single line label.
+	 * @param hWndTab	[in] Tab window (for the actual control)
+	 * @param pt_start	[in] Starting position, in pixels
+	 * @param size		[in] Width and height for a single line label
 	 * @param field		[in] RomFields::Field
 	 * @param fieldIdx	[in] Field index
 	 * @return Field height, in pixels.

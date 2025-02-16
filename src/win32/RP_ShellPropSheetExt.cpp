@@ -197,9 +197,9 @@ void RP_ShellPropSheetExt_Private::loadImages(void)
 
 /**
  * Create the header row.
- * @param hDlg		[in] Dialog window.
- * @param pt_start	[in] Starting position, in pixels.
- * @param size		[in] Width and height for a full-width single line label.
+ * @param hDlg		[in] Dialog window
+ * @param pt_start	[in] Starting position, in pixels
+ * @param size		[in] Width and height for a full-width single line label
  * @return Row height, in pixels.
  */
 int RP_ShellPropSheetExt_Private::createHeaderRow(_In_ POINT pt_start, _In_ SIZE size)
@@ -315,13 +315,13 @@ int RP_ShellPropSheetExt_Private::createHeaderRow(_In_ POINT pt_start, _In_ SIZE
 
 /**
  * Initialize a string field. (Also used for Date/Time.)
- * @param hWndTab	[in] Tab window. (for the actual control)
- * @param pt_start	[in] Starting position, in pixels.
- * @param size		[in] Width and height for a single line label.
+ * @param hWndTab	[in] Tab window (for the actual control)
+ * @param pt_start	[in] Starting position, in pixels
+ * @param size		[in] Width and height for a single line label
  * @param field		[in] RomFields::Field
  * @param fieldIdx	[in] Field index
- * @param str		[in,opt] String data. (If nullptr, field data is used.)
- * @param pOutHWND	[out,opt] Retrieves the control's HWND.
+ * @param str		[in,opt] String data (If nullptr, field data is used.)
+ * @param pOutHWND	[out,opt] Retrieves the control's HWND
  * @return Field height, in pixels.
  */
 int RP_ShellPropSheetExt_Private::initString(_In_ HWND hWndTab,
@@ -576,8 +576,8 @@ int RP_ShellPropSheetExt_Private::initString(_In_ HWND hWndTab,
 
 /**
  * Initialize a bitfield layout.
- * @param hWndTab	[in] Tab window. (for the actual control)
- * @param pt_start	[in] Starting position, in pixels.
+ * @param hWndTab	[in] Tab window (for the actual control)
+ * @param pt_start	[in] Starting position, in pixels
  * @param field		[in] RomFields::Field
  * @param fieldIdx	[in] Field index
  * @return Field height, in pixels.
@@ -599,8 +599,9 @@ int RP_ShellPropSheetExt_Private::initBitfield(_In_ HWND hWndTab,
 	const auto &bitfieldDesc = field.desc.bitfield;
 	int count = (int)bitfieldDesc.names->size();
 	assert(count <= 32);
-	if (count > 32)
+	if (count > 32) {
 		count = 32;
+	}
 
 	// Determine the available width for checkboxes.
 	RECT rectDlg;
@@ -752,9 +753,9 @@ int RP_ShellPropSheetExt_Private::initBitfield(_In_ HWND hWndTab,
 
 /**
  * Initialize a ListData field.
- * @param hWndTab	[in] Tab window. (for the actual control)
- * @param pt_start	[in] Starting position, in pixels.
- * @param size		[in] Width and height for a default ListView.
+ * @param hWndTab	[in] Tab window (for the actual control)
+ * @param pt_start	[in] Starting position, in pixels
+ * @param size		[in] Width and height for a default ListView
  * @param doResize	[in] If true, resize the ListView to accomodate rows_visible.
  * @param field		[in] RomFields::Field
  * @param fieldIdx	[in] Field index
@@ -1283,9 +1284,9 @@ int RP_ShellPropSheetExt_Private::initDateTime(_In_ HWND hWndTab,
 /**
  * Initialize an Age Ratings field.
  * This function internally calls initString().
- * @param hWndTab	[in] Tab window. (for the actual control)
- * @param pt_start	[in] Starting position, in pixels.
- * @param size		[in] Width and height for a single line label.
+ * @param hWndTab	[in] Tab window (for the actual control)
+ * @param pt_start	[in] Starting position, in pixels
+ * @param size		[in] Width and height for a single line label
  * @param field		[in] RomFields::Field
  * @param fieldIdx	[in] Field index
  * @return Field height, in pixels.
@@ -1302,18 +1303,17 @@ int RP_ShellPropSheetExt_Private::initAgeRatings(_In_ HWND hWndTab,
 			TC_("RomDataView", "ERROR"));
 	}
 
-	// Convert the age ratings field to a string.
-	const string str = RomFields::ageRatingsDecode(age_ratings);
-	// Initialize the string field.
-	return initString(hWndTab, pt_start, size, field, fieldIdx, U82T_s(str));
+	// Convert the age ratings field to a string and initialize the string field.
+	return initString(hWndTab, pt_start, size, field, fieldIdx,
+		U82T_s(RomFields::ageRatingsDecode(age_ratings)));
 }
 
 /**
  * Initialize a Dimensions field.
  * This function internally calls initString().
- * @param hWndTab	[in] Tab window. (for the actual control)
- * @param pt_start	[in] Starting position, in pixels.
- * @param size		[in] Width and height for a single line label.
+ * @param hWndTab	[in] Tab window (for the actual control)
+ * @param pt_start	[in] Starting position, in pixels
+ * @param size		[in] Width and height for a single line label
  * @param field		[in] RomFields::Field
  * @param fieldIdx	[in] Field index
  * @return Field height, in pixels.
@@ -1325,14 +1325,14 @@ int RP_ShellPropSheetExt_Private::initDimensions(_In_ HWND hWndTab,
 	// TODO: 'x' or '×'? Using 'x' for now.
 	const int *const dimensions = field.data.dimensions;
 	return initString(hWndTab, pt_start, size, field, fieldIdx,
-		formatDimensions(dimensions).c_str());
+		formatDimensions(dimensions));
 }
 
 /**
  * Initialize a multi-language string field.
- * @param hWndTab	[in] Tab window. (for the actual control)
- * @param pt_start	[in] Starting position, in pixels.
- * @param size		[in] Width and height for a single line label.
+ * @param hWndTab	[in] Tab window (for the actual control)
+ * @param pt_start	[in] Starting position, in pixels
+ * @param size		[in] Width and height for a single line label
  * @param field		[in] RomFields::Field
  * @param fieldIdx	[in] Field index
  * @return Field height, in pixels.
