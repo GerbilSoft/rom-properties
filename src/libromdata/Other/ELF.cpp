@@ -858,10 +858,17 @@ int ELFPrivate::addPtDynamicFields(void)
 		}
 	}
 
+	// TODO: Instead of loading the entire strtab, just load each string?
+	// May need some extra tweaking for NULL-terminated string handling.
 	rp::uvector<uint8_t> strtab_buf;
 	span<const char> strtab;
-	assert(val_dtag[DT_STRSZ] < 1*1024*1024);
-	if (has_dtag[DT_STRTAB] && has_dtag[DT_STRSZ] && val_dtag[DT_STRSZ] < 1*1024*1024) {
+	// NOTE: Larger string tables than expected on some executables on Ubuntu 18.04:
+	// - /usr/bin/clang (6.0.0-1ubuntu2) has >1MB.
+	// - /usr/bin/containerd has >2MB. (~4.5 MB)
+	// - /usr/bin/dockerd has >8MB. (~9.4 MB)
+	static constexpr uint64_t MAX_STRTAB_SIZE = 16*1024*1024U;
+	assert(val_dtag[DT_STRSZ] < MAX_STRTAB_SIZE);
+	if (has_dtag[DT_STRTAB] && has_dtag[DT_STRSZ] && val_dtag[DT_STRSZ] < MAX_STRTAB_SIZE) {
 		strtab_buf.resize(static_cast<size_t>(val_dtag[DT_STRSZ]));
 		if (readDataAtVA(val_dtag[DT_STRTAB], strtab_buf) == 0) {
 			// The first the last byte of the string table MUST be zero.
