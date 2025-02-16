@@ -62,8 +62,9 @@ int recursiveScan(const TCHAR *path, forward_list<pair<tstring, uint8_t> > &rlis
 		// Make sure we should delete this file.
 		if (!(findFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) {
 			// Thumbs.db files can be deleted.
-			if (!_tcsicmp(findFileData.cFileName, _T("Thumbs.db")))
+			if (!_tcsicmp(findFileData.cFileName, _T("Thumbs.db"))) {
 				goto isok;
+			}
 
 			// Check the extension.
 			size_t len = _tcslen(findFileData.cFileName);
@@ -93,14 +94,15 @@ int recursiveScan(const TCHAR *path, forward_list<pair<tstring, uint8_t> > &rlis
 		fullFileName += findFileData.cFileName;
 
 		// Add the filename and d_type.
-		rlist.emplace_front(fullFileName, FileSystem::win32_attrs_to_d_type(findFileData.dwFileAttributes));
+		const auto &elem = rlist.emplace_front(std::move(fullFileName),
+			FileSystem::win32_attrs_to_d_type(findFileData.dwFileAttributes));
 
 		// If this is a directory, recursively scan it.
 		// This is done *after* adding the directory because forward_list
 		// enumerates items in reverse order.
 		if (findFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
 			// Recursively scan it.
-			recursiveScan(fullFileName.c_str(), rlist);
+			recursiveScan(elem.first.c_str(), rlist);
 		}
 	} while (FindNextFile(hFindFile, &findFileData));
 	FindClose(hFindFile);

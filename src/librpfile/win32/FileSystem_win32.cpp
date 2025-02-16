@@ -241,8 +241,11 @@ int rmkdir(const string &path, int mode)
 	static_assert(sizeof(wchar_t) == sizeof(char16_t), "wchar_t is not 16-bit!");
 	RP_UNUSED(mode);
 
+	// NOTE: Explicitly calling U82W_s(), not U82T_s(), to prevent
+	// infinite recursion in ANSI builds.
+	// NOTE 2: This probably won't work in ANSI builds anyway...
 	// TODO: makeWinPath()?
-	return rmkdir(U82T_s(path));
+	return rmkdir(U82W_s(path));
 }
 
 /**
@@ -709,7 +712,7 @@ wstring resolve_symlink(const wchar_t *filename)
 {
 	assert(filename != nullptr);
 	assert(filename[0] != L'\0');
-	if (unlikely(!filename || filename[0] == '\0')) {
+	if (unlikely(!filename || filename[0] == L'\0')) {
 		return {};
 	}
 	const tstring tfilename = makeWinPath(filename);
@@ -764,12 +767,14 @@ bool is_directory(const wchar_t *filename)
  * We don't want to check files on e.g. procfs,
  * or on network file systems if the option is disabled.
  *
- * @param filename Filename (UTF-8)
+ * @tparam CharType Character type (char for UTF-8; wchar_t for Windows UTF-16)
+ * @param filename Filename
  * @param allowNetFS If true, allow network file systems.
  *
  * @return True if this file is on a "bad" file system; false if not.
  */
-bool isOnBadFS(const char *filename, bool allowNetFS)
+template<typename CharType>
+static inline bool T_isOnBadFS(const CharType *filename, bool allowNetFS)
 {
 	// TODO: More comprehensive check.
 	// For now, merely checking if it starts with "\\\\"
@@ -791,6 +796,22 @@ bool isOnBadFS(const char *filename, bool allowNetFS)
  * We don't want to check files on e.g. procfs,
  * or on network file systems if the option is disabled.
  *
+ * @param filename Filename (UTF-8)
+ * @param allowNetFS If true, allow network file systems.
+ *
+ * @return True if this file is on a "bad" file system; false if not.
+ */
+bool isOnBadFS(const char *filename, bool allowNetFS)
+{
+	return T_isOnBadFS(filename, allowNetFS);
+}
+
+/**
+ * Is a file located on a "bad" file system?
+ *
+ * We don't want to check files on e.g. procfs,
+ * or on network file systems if the option is disabled.
+ *
  * @param filename Filename (UTF-16)
  * @param allowNetFS If true, allow network file systems.
  *
@@ -798,18 +819,7 @@ bool isOnBadFS(const char *filename, bool allowNetFS)
  */
 bool isOnBadFS(const wchar_t *filename, bool allowNetFS)
 {
-	// TODO: More comprehensive check.
-	// For now, merely checking if it starts with "\\\\"
-	// and the third character is not '?' or '.'.
-	if (filename[0] == L'\\' && filename[1] == L'\\' &&
-	    filename[2] != L'\0' && filename[2] != L'?' && filename[2] != L'.')
-	{
-		// This file is located on a network share.
-		return !allowNetFS;
-	}
-
-	// Not on a network share.
-	return false;
+	return T_isOnBadFS(filename, allowNetFS);
 }
 
 /**

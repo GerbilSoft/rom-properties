@@ -144,8 +144,9 @@ int recursiveScan(const TCHAR *path, forward_list<pair<tstring, uint8_t> > &rlis
 		// Check the filename to see if we should delete it.
 		if (d_type == DT_REG || d_type == DT_UNKNOWN) {
 			// Thumbs.db files can be deleted.
-			if (!strcasecmp(dirent->d_name, "Thumbs.db"))
+			if (!strcasecmp(dirent->d_name, "Thumbs.db")) {
 				goto isok;
+			}
 
 			// Check the extension.
 			const size_t len = strlen(dirent->d_name);
@@ -171,14 +172,14 @@ int recursiveScan(const TCHAR *path, forward_list<pair<tstring, uint8_t> > &rlis
 
 	isok:
 		// Add the filename and file type.
-		rlist.emplace_front(fullpath, d_type);
+		const auto &elem = rlist.emplace_front(std::move(fullpath), d_type);
 
 		// If this is a directory, recursively scan it.
 		// This is done *after* adding the directory because forward_list
 		// enumerates items in reverse order.
 		if (d_type == DT_DIR) {
 			// Recursively scan the directory.
-			recursiveScan(fullpath.c_str(), rlist);
+			recursiveScan(elem.first.c_str(), rlist);
 		}
 	};
 	closedir(pdir);
