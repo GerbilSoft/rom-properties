@@ -582,9 +582,6 @@ void AboutTabPrivate::init(void)
  */
 void AboutTabPrivate::checkForUpdates(void)
 {
-	// Create the QThread and UpdateChecker if necessary.
-	Q_Q(AboutTab);
-
 	// Run the update check thread.
 	ui.lblUpdateCheck->setText(QC_("AboutTab", "Checking for updates..."));
 	thrUpdate.start();
