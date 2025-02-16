@@ -51,26 +51,29 @@ RomDataPrivate::RomDataPrivate(const IRpFilePtr &file, const RomDataInfo *pRomDa
 	// Initialize i18n.
 	rp_i18n_init();
 
-	if (this->file) {
-		// A file was specified. Copy important information.
-		this->isCompressed = this->file->isCompressed();
+	if (!this->file) {
+		// No file...
+		return;
+	}
+
+	// A file was specified. Copy important information.
+	this->isCompressed = this->file->isCompressed();
 
 #ifdef _WIN32
-		// If this is RpFile, get the UTF-16 filename directly.
-		RpFile *const rpFile = dynamic_cast<RpFile*>(this->file.get());
-		if (rpFile) {
-			const wchar_t *const filenameW = rpFile->filenameW();
-			if (filenameW) {
-				this->filenameW = wcsdup(filenameW);
-			}
+	// If this is RpFile, get the UTF-16 filename directly.
+	RpFile *const rpFile = dynamic_cast<RpFile*>(this->file.get());
+	if (rpFile) {
+		const wchar_t *const filenameW = rpFile->filenameW();
+		if (filenameW) {
+			this->filenameW = wcsdup(filenameW);
 		}
+	}
 #endif /* _WIN32 */
 
-		// TODO: Don't set if filenameW was set?
-		const char *const filename = this->file->filename();
-		if (filename) {
-			this->filename = strdup(filename);
-		}
+	// TODO: Don't set if filenameW was set?
+	const char *const filename = this->file->filename();
+	if (filename) {
+		this->filename = strdup(filename);
 	}
 }
 
@@ -385,7 +388,7 @@ time_t RomDataPrivate::bcd_to_unix_time(const uint8_t *bcd_tm, size_t size)
  */
 time_t RomDataPrivate::pvd_time_to_unix_time(const char pvd_time[16], int8_t tz_offset)
 {
-	// TODO: Verify tz_offset range? [-48,+52]
+	// TODO: Verify tz_offset range? [-48, +52]
 	assert(pvd_time != nullptr);
 	if (!pvd_time)
 		return -1;
@@ -399,7 +402,7 @@ time_t RomDataPrivate::pvd_time_to_unix_time(const char pvd_time[16], int8_t tz_
 	// - mm: Minute
 	// - ss: Second
 	// - cc: Centisecond (not supported in UNIX time)
-	// - z: (int8) Timezone offset in 15min intervals: [0, 100] -> [-48, 52]
+	// - z: (int8) Timezone offset in 15min intervals: [0, 100] -> [-48, +52]
 	//   - -48: GMT-1200
 	//   -  52: GMT+1300
 
@@ -910,8 +913,9 @@ const RomFields *RomData::fields(void) const
 		// Data has not been loaded.
 		// Load it now.
 		int ret = const_cast<RomData*>(this)->loadFieldData();
-		if (ret < 0)
+		if (ret < 0) {
 			return nullptr;
+		}
 	}
 	return &d->fields;
 }
@@ -927,8 +931,9 @@ const RomMetaData *RomData::metaData(void) const
 		// Data has not been loaded.
 		// Load it now.
 		int ret = const_cast<RomData*>(this)->loadMetaData();
-		if (ret < 0)
+		if (ret < 0) {
 			return nullptr;
+		}
 	}
 	return &d->metaData;
 }
@@ -975,8 +980,9 @@ rp_image_const_ptr RomData::image(ImageType imageType) const
 rp_image_const_ptr RomData::mipmap(int mipmapLevel) const
 {
 	assert(mipmapLevel >= 0);
-	if (mipmapLevel < 0)
+	if (mipmapLevel < 0) {
 		return nullptr;
+	}
 
 	// TODO: Check supportedImageTypes()?
 
