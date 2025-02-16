@@ -308,7 +308,7 @@ if(NOT WITH_RUNTIME_CPU_DETECTION)
         message(STATUS "WARNING: Microsoft Visual Studio does not support compile time detection of CPU features for \"/arch\" before \"AVX\"")
         # Workaround for MSVC. By default MSVC does not define the __SSE*__ macros.
         # Fix it if AVX is enabled.
-        set(CMAKE_REQUIRED_FLAGS "${NATIVEFLAG}")
+        set(CMAKE_REQUIRED_FLAGS "${NATIVEFLAG} ${ZNOLTOFLAG}")
         check_c_source_compiles(
             "#ifndef __AVX__
             #  error \"AVX is not enabled.\"
@@ -498,6 +498,7 @@ endif()
 #
 # Check for __builtin_assume_aligned(x,n) support in the compiler
 #
+set(CMAKE_REQUIRED_FLAGS ${ZNOLTOFLAG})
 check_c_source_compiles(
     "char *test(char *buffer) {
         char *abuffer = __builtin_assume_aligned(buffer,64);
@@ -510,10 +511,12 @@ check_c_source_compiles(
 if(HAVE_BUILTIN_ASSUME_ALIGNED)
     add_definitions(-DHAVE_BUILTIN_ASSUME_ALIGNED)
 endif()
+set(CMAKE_REQUIRED_FLAGS)
 
 #
 # check for __builtin_ctz() support in the compiler
 #
+set(CMAKE_REQUIRED_FLAGS ${ZNOLTOFLAG})
 check_c_source_compiles(
     "int main(void) {
         unsigned int zero = 0;
@@ -526,10 +529,12 @@ check_c_source_compiles(
 if(HAVE_BUILTIN_CTZ)
     add_definitions(-DHAVE_BUILTIN_CTZ)
 endif()
+set(CMAKE_REQUIRED_FLAGS)
 
 #
 # check for __builtin_ctzll() support in the compiler
 #
+set(CMAKE_REQUIRED_FLAGS ${ZNOLTOFLAG})
 check_c_source_compiles(
     "int main(void) {
         unsigned int zero = 0;
@@ -542,6 +547,7 @@ check_c_source_compiles(
 if(HAVE_BUILTIN_CTZLL)
     add_definitions(-DHAVE_BUILTIN_CTZLL)
 endif()
+set(CMAKE_REQUIRED_FLAGS)
 
 #
 # check for ptrdiff_t support
