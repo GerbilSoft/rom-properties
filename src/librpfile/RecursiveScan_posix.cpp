@@ -172,14 +172,14 @@ int recursiveScan(const TCHAR *path, forward_list<pair<tstring, uint8_t> > &rlis
 
 	isok:
 		// Add the filename and file type.
-		const auto &elem = rlist.emplace_front(std::move(fullpath), d_type);
+		rlist.emplace_front(fullpath, d_type);
 
 		// If this is a directory, recursively scan it.
 		// This is done *after* adding the directory because forward_list
 		// enumerates items in reverse order.
 		if (d_type == DT_DIR) {
 			// Recursively scan the directory.
-			recursiveScan(elem.first.c_str(), rlist);
+			recursiveScan(fullpath.c_str(), rlist);
 		}
 	};
 	closedir(pdir);

@@ -94,15 +94,14 @@ int recursiveScan(const TCHAR *path, forward_list<pair<tstring, uint8_t> > &rlis
 		fullFileName += findFileData.cFileName;
 
 		// Add the filename and d_type.
-		const auto &elem = rlist.emplace_front(std::move(fullFileName),
-			FileSystem::win32_attrs_to_d_type(findFileData.dwFileAttributes));
+		rlist.emplace_front(fullFileName, FileSystem::win32_attrs_to_d_type(findFileData.dwFileAttributes));
 
 		// If this is a directory, recursively scan it.
 		// This is done *after* adding the directory because forward_list
 		// enumerates items in reverse order.
 		if (findFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
 			// Recursively scan it.
-			recursiveScan(elem.first.c_str(), rlist);
+			recursiveScan(fullFileName.c_str(), rlist);
 		}
 	} while (FindNextFile(hFindFile, &findFileData));
 	FindClose(hFindFile);
