@@ -278,15 +278,24 @@ static std::basic_string<T> T_cpN_to_unicode(const char *out_encoding, unsigned 
 
 #ifdef HAVE_ICONV_LIBICONV
 		if (cp == CP_SJIS) {
-			// libiconv's cp932 maps Shift-JIS 8160 to U+301C. This is expected
-			// behavior for Shift-JIS, but cp932 should map it to U+FF5E.
+			// Some versions of libiconv map characters differently compared to cp932:
+			// - FreeBSD Shift-JIS: 8160: mapped to U+301C (WAVE DASH); cp932 uses U+FF5E (FULLWIDTH TILDE)
+			// - Termux libiconv: 817C: mapped to U+2212 (MINUS SIGN); cp932 uses U+FF0D (FULLWIDTH HYPHEN-MINUS)
 			const auto ret_end = ret.end();
 			for (auto p = ret.begin(); p != ret_end; ++p) {
 				if ((uint8_t)p[0] == 0xE3 && (uint8_t)p[1] == 0x80 && (uint8_t)p[2] == 0x9C) {
-					// Found a wave dash.
+					// Found U+301C: WAVE DASH
+					// Convert to U+FF5E: FULLWIDTH TILDE
 					p[0] = (uint8_t)0xEF;
 					p[1] = (uint8_t)0xBD;
 					p[2] = (uint8_t)0x9E;
+					p += 2;
+				} else if ((uint8_t)p[0] == 0xE2 && (uint8_t)p[1] == 0x88 && (uint8_t)p[2] == 0x92) {
+					// Found U+2212: MINUS SIGN
+					// Convert to U+FF0D: FULLWIDTH HYPHEN-MINUS
+					p[0] = (uint8_t)0xEF;
+					p[1] = (uint8_t)0xBC;
+					p[2] = (uint8_t)0x8D;
 					p += 2;
 				}
 			}
