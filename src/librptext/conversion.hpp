@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptext)                        *
  * conversion.hpp: Text encoding functions                                 *
  *                                                                         *
- * Copyright (c) 2009-2024 by David Korth.                                 *
+ * Copyright (c) 2009-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -62,39 +62,6 @@ size_t u16_strnlen(const char16_t *wcs, size_t maxlen);
 #endif /* RP_WIS16 */
 
 /**
- * char16_t strdup().
- * @param wcs 16-bit string.
- * @return Copy of wcs.
- */
-#ifdef RP_WIS16
-static inline char16_t *u16_strdup(const char16_t *wcs)
-{
-	return reinterpret_cast<char16_t*>(
-		wcsdup(reinterpret_cast<const wchar_t*>(wcs)));
-}
-#else /* !RP_WIS16 */
-RP_LIBROMDATA_PUBLIC
-char16_t *u16_strdup(const char16_t *wcs);
-#endif /* RP_WIS16 */
-
-/**
- * char16_t strcmp().
- * @param wcs1 16-bit string 1.
- * @param wcs2 16-bit string 2.
- * @return strcmp() result.
- */
-#ifdef RP_WIS16
-static inline int u16_strcmp(const char16_t *wcs1, const char16_t *wcs2)
-{
-	return wcscmp(reinterpret_cast<const wchar_t*>(wcs1),
-	              reinterpret_cast<const wchar_t*>(wcs2));
-}
-#else /* !RP_WIS16 */
-RP_LIBROMDATA_PUBLIC
-int u16_strcmp(const char16_t *wcs1, const char16_t *wcs2);
-#endif /* RP_WIS16 */
-
-/**
  * char16_t strncmp().
  * @param wcs1 16-bit string 1.
  * @param wcs2 16-bit string 2.
@@ -112,23 +79,6 @@ static inline int u16_strncmp(const char16_t *wcs1, const char16_t *wcs2, size_t
 ATTR_ACCESS_SIZE(read_only, 1, 3)
 ATTR_ACCESS_SIZE(read_only, 2, 3)
 int u16_strncmp(const char16_t *wcs1, const char16_t *wcs2, size_t n);
-#endif /* RP_WIS16 */
-
-/**
- * char16_t strcasecmp().
- * @param wcs1 16-bit string 1.
- * @param wcs2 16-bit string 2.
- * @return strcasecmp() result.
- */
-#ifdef RP_WIS16
-static inline int u16_strcasecmp(const char16_t *wcs1, const char16_t *wcs2)
-{
-	return wcscasecmp(reinterpret_cast<const wchar_t*>(wcs1),
-	                  reinterpret_cast<const wchar_t*>(wcs2));
-}
-#else /* !RP_WIS16 */
-RP_LIBROMDATA_PUBLIC
-int u16_strcasecmp(const char16_t *wcs1, const char16_t *wcs2);
 #endif /* RP_WIS16 */
 
 /**

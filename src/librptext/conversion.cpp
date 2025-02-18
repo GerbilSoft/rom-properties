@@ -110,38 +110,6 @@ size_t u16_strnlen(const char16_t *wcs, size_t maxlen)
 }
 
 /**
- * char16_t strdup().
- * @param wcs 16-bit string.
- * @return Copy of wcs.
- */
-char16_t *u16_strdup(const char16_t *wcs)
-{
-	const size_t len = u16_strlen(wcs)+1;	// includes terminator
-	char16_t *const ret = static_cast<char16_t*>(malloc(len * sizeof(*wcs)));
-	memcpy(ret, wcs, len*sizeof(*wcs));
-	return ret;
-}
-
-/**
- * char16_t strcmp().
- * @param wcs1 16-bit string 1.
- * @param wcs2 16-bit string 2.
- * @return strcmp() result.
- */
-int u16_strcmp(const char16_t *wcs1, const char16_t *wcs2)
-{
-	// References:
-	// - http://stackoverflow.com/questions/20004458/optimized-strcmp-implementation
-	// - http://clc-wiki.net/wiki/C_standard_library%3astring.h%3astrcmp
-	while (*wcs1 && (*wcs1 == *wcs2)) {
-		wcs1++;
-		wcs2++;
-	}
-
-	return ((int)*wcs1 - (int)*wcs2);
-}
-
-/**
  * char16_t strncmp().
  * @param wcs1 16-bit string 1.
  * @param wcs2 16-bit string 2.
@@ -162,25 +130,6 @@ int u16_strncmp(const char16_t *wcs1, const char16_t *wcs2, size_t n)
 		return 0;
 	}
 	return ((int)*wcs1 - (int)*wcs2);
-}
-
-/**
- * char16_t strcasecmp().
- * @param wcs1 16-bit string 1.
- * @param wcs2 16-bit string 2.
- * @return strcasecmp() result.
- */
-int u16_strcasecmp(const char16_t *wcs1, const char16_t *wcs2)
-{
-	// References:
-	// - http://stackoverflow.com/questions/20004458/optimized-strcmp-implementation
-	// - http://clc-wiki.net/wiki/C_standard_library%3astring.h%3astrcmp
-	while (*wcs1 && (towupper(*wcs1) == towupper(*wcs2))) {
-		wcs1++;
-		wcs2++;
-	}
-
-	return ((int)towupper(*wcs1) - (int)towupper(*wcs2));
 }
 
 /**
