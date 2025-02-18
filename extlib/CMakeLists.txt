@@ -32,24 +32,6 @@ FUNCTION(SET_EXTLIB_PROPERTIES_PIC_ONLY)
 	ENDFOREACH(_target ${ARGV})
 ENDFUNCTION(SET_EXTLIB_PROPERTIES_PIC_ONLY)
 
-# zlib: Assembly optimizations.
-# TODO: Test on all archs and fix Z_PREFIX issues.
-# TODO: Add more assembly files from contrib/ besides the
-# default ones that were listed in zlib's CMakeLists.txt.
-IF(CPU_i386 OR CPU_amd64)
-	# i386/amd64. Check sizeof(void*) for the actual architecture,
-	# since building 32-bit on 64-bit isn't considered "cross-compiling",
-	# so CMAKE_SYSTEM_PROCESSOR might not be accurate.
-	# NOTE: Checking CMAKE_CL_64 instead of sizeof(void*) for MSVC builds.
-	IF(MSVC AND CMAKE_CL_64)
-		SET(AMD64 "ON")
-	ELSEIF(NOT MSVC AND CMAKE_SIZEOF_VOID_P EQUAL 8)
-		SET(AMD64 "ON")
-	ELSE()
-		SET(ASM686 "ON")
-	ENDIF()
-ENDIF(CPU_i386 OR CPU_amd64)
-
 # Don't install any of these libraries by default.
 # zlib-ng and libpng will be installed if they're
 # built as shared libraries.
@@ -99,7 +81,6 @@ IF(USE_INTERNAL_ZLIB)
 	SET(WITH_CODE_COVERAGE OFF)
 	SET(WITH_INFLATE_STRICT OFF)
 	SET(WITH_INFLATE_ALLOW_INVALID_DIST OFF)
-	SET(WITH_UNALIGNED ON)
 
 	# CPU-specific optimizations
 	SET(WITH_ACLE ON)
@@ -118,7 +99,6 @@ IF(USE_INTERNAL_ZLIB)
 	SET(WITH_AVX2 ON)
 	SET(WITH_AVX512 ON)
 	SET(WITH_AVX512VNNI ON)
-	SET(WITH_VPCLMULQDQ ON)
 
 	SET(INSTALL_UTILS OFF)
 

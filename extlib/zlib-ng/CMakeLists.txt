@@ -98,7 +98,6 @@ option(WITH_MAINTAINER_WARNINGS "Build with project maintainer warnings" OFF)
 option(WITH_CODE_COVERAGE "Enable code coverage reporting" OFF)
 option(WITH_INFLATE_STRICT "Build with strict inflate distance checking" OFF)
 option(WITH_INFLATE_ALLOW_INVALID_DIST "Build with zero fill for inflate invalid distances" OFF)
-option(WITH_UNALIGNED "Support unaligned reads on platforms that support it" ON)
 ENDIF(0) # rom-properties: Disabled options.
 
 set(ZLIB_SYMBOL_PREFIX "" CACHE STRING "Give this prefix to all publicly exported symbols.
