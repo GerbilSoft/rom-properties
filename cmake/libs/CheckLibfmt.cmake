@@ -59,3 +59,13 @@ IF(USE_INTERNAL_FMT)
 ELSE(USE_INTERNAL_FMT)
 	SET(USE_INTERNAL_FMT_DLL OFF)
 ENDIF(USE_INTERNAL_FMT)
+
+# WORKAROUND: fmt sets INTERFACE_COMPILE_DEFINITIONS=FMT_SHARED.
+# This causes parts of `class format_error` to be exported from
+# libromdata.so, which could result in multiple definitions.
+# (Not needed for Win32.)
+IF(NOT WIN32)
+	SET_TARGET_PROPERTIES(fmt::fmt PROPERTIES
+		INTERFACE_COMPILE_DEFINITIONS ""
+		)
+ENDIF(NOT WIN32)
