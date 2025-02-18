@@ -431,7 +431,7 @@ class MatcherBase : private MatcherDescriberInterface {
 // rom-properties: Fix build with Debian 8. (gcc-4.9)
 // https://stackoverflow.com/questions/25123458/is-trivially-copyable-is-not-a-member-of-std
 // https://stackoverflow.com/a/31798726
-#if defined(__GNUG__) && __GNUC__ < 5
+#if !defined(__clang__) && defined(__GNUG__) && __GNUC__ < 5
 #  define IS_TRIVIALLY_COPY_CONSTRUCTIBLE(T)  __has_trivial_copy(T)
 #  define IS_TRIVIALLY_DESTRUCTIBLE(T)        __has_trivial_destructor(T)
 #else
