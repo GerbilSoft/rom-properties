@@ -3,34 +3,17 @@
  * RP_ShellPropSheetExt_p.hpp: IShellPropSheetExt implementation.          *
  * (Private class)                                                         *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #pragma once
 
-// Control base IDs.
-#define IDC_STATIC_BANNER		0x0100
-#define IDC_STATIC_ICON			0x0101
-#define IDC_TAB_WIDGET			0x0102
-#define IDC_CBO_LANGUAGE		0x0103
-#define IDC_MESSAGE_WIDGET		0x0104
-#define IDC_TAB_PAGE(idx)		(0x0200 + (idx))
-#define IDC_STATIC_DESC(idx)		(0x1000 + (idx))
-#define IDC_RFT_STRING(idx)		(0x1400 + (idx))
-#define IDC_RFT_LISTDATA(idx)		(0x1800 + (idx))
-
-// Bitfield is last due to multiple controls per field.
-#define IDC_RFT_BITFIELD(idx, bit)	(0x7000 + ((idx) * 32) + (bit))
-
-// librpbase
-namespace LibRpBase {
-	class RomData;
-	class RomFields;
-}
-
 // TCHAR
 #include "tcharx.h"
+
+// C includes (C++ namespace)
+#include <cstdint>
 
 // C++ includes
 #include <memory>
@@ -38,10 +21,45 @@ namespace LibRpBase {
 #include <unordered_map>
 #include <vector>
 
+// Control base IDs.
+#define IDC_STATIC_BANNER		0x0100
+#define IDC_STATIC_ICON			0x0101
+#define IDC_TAB_WIDGET			0x0102
+#define IDC_CBO_LANGUAGE		0x0103
+#define IDC_MESSAGE_WIDGET		0x0104
+
+static inline constexpr uint16_t IDC_TAB_PAGE(uint16_t idx)
+{
+	return 0x0200 + idx;
+}
+static inline constexpr uint16_t IDC_STATIC_DESC(uint16_t idx)
+{
+	return 0x1000 + idx;
+}
+static inline constexpr uint16_t IDC_RFT_STRING(uint16_t idx)
+{
+	return 0x1400 + idx;
+}
+static inline constexpr uint16_t IDC_RFT_LISTDATA(uint16_t idx)
+{
+	return 0x1800 + idx;
+}
+
+// Bitfield is last due to multiple controls per field.
+static inline constexpr uint16_t IDC_RFT_BITFIELD(uint16_t idx, int bit)
+{
+	return 0x7000 + (idx * 32) + bit;
+}
+
+// librpbase
+namespace LibRpBase {
+	class RomData;
+	class RomFields;
+}
+
 // Custom controls (pseudo-controls)
 class DragImageLabel;
 #include "FontHandler.hpp"
-
 
 // ListView Data
 #include "LvData.hpp"
