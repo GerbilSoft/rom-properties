@@ -66,9 +66,9 @@ BEGIN
     GROUPBOX        "", IDC_OPTIONS_GRPEXTIMGDL, 15, 19, 381, 47, 0, 0
     AUTOCHECKBOX    "E&xternal Image Downloads", IDC_OPTIONS_CHKEXTIMGDL, 21, 19, 101, 8, 0, 0
     RTEXT           "When using an unlimited network connection:", IDC_OPTIONS_LBL_UNMETERED_DL, 25, 31, 145, 8, 0, 0
-    COMBOBOX        IDC_OPTIONS_CBO_UNMETERED_DL, 174, 29, 132, 30, CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_OPTIONS_CBO_UNMETERED_DL, 174, 29, 132, 64, CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     RTEXT           "When using a metered network connection:", IDC_OPTIONS_LBL_METERED_DL, 25, 49, 145, 8, 0, 0
-    COMBOBOX        IDC_OPTIONS_CBO_METERED_DL, 174, 47, 132, 30, CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_OPTIONS_CBO_METERED_DL, 174, 47, 132, 64, CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     AUTOCHECKBOX    "Utilice siempre el icono interno (si está presente) para los tamaños pequeños.", IDC_OPTIONS_INTICONSMALL, 15, 73, 381, 8, 0, WS_EX_TRANSPARENT
     AUTOCHECKBOX    "Almacenar la información de origen de los archivos en caché usando atributos extendidos.\nEsto ayuda a identificar de dónde se descargaron los archivos almacenados.", IDC_OPTIONS_STOREFILEORIGININFO, 15, 87, 381, 16, BS_MULTILINE, WS_EX_TRANSPARENT
     LTEXT           "Language for PAL titles on GameTDB:", IDC_STATIC, 15, 111, 120, 8, 0, WS_EX_TRANSPARENT
