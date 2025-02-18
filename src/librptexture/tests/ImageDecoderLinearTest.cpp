@@ -495,8 +495,7 @@ TEST_P(ImageDecoderLinearTest, fromLinear_cpp_benchmark)
 TEST_P(ImageDecoderLinearTest, fromLinear_sse2_test)
 {
 	if (!RP_CPU_HasSSE2() && !GTEST_FLAG_GET(brief)) {
-		fputs("*** SSE2 is not supported on this CPU. Skipping test.\n", stderr);
-		return;
+		GTEST_SKIP() << "*** SSE2 is not supported on this CPU.";
 	}
 
 	// Parameterized test.
@@ -504,14 +503,6 @@ TEST_P(ImageDecoderLinearTest, fromLinear_sse2_test)
 
 	// Decode the image.
 	switch (mode.bpp) {
-		case 24:
-		case 32:
-			// Not implemented...
-			if (!GTEST_FLAG_GET(brief)) {
-				fmt::print(stderr, FSTR("*** SSE2 decoding is not implemented for {:d}-bit color.\n"), mode.bpp);
-			}
-			return;
-
 		case 15:
 		case 16:
 			// 15/16-bit image.
@@ -519,6 +510,11 @@ TEST_P(ImageDecoderLinearTest, fromLinear_sse2_test)
 				reinterpret_cast<const uint16_t*>(m_img_buf),
 				m_img_buf_len, mode.stride);
 			break;
+
+		case 24:
+		case 32:
+			// Not implemented...
+			GTEST_SKIP() << "*** SSE2 decoding is not implemented for " << static_cast<unsigned int>(mode.bpp) << "-bit color.";
 
 		default:
 			ASSERT_TRUE(false) << "Invalid bpp: " << mode.bpp;
@@ -537,8 +533,7 @@ TEST_P(ImageDecoderLinearTest, fromLinear_sse2_test)
 TEST_P(ImageDecoderLinearTest, fromLinear_sse2_benchmark)
 {
 	if (!RP_CPU_HasSSE2() && !GTEST_FLAG_GET(brief)) {
-		fputs("*** SSE2 is not supported on this CPU. Skipping test.\n", stderr);
-		return;
+		GTEST_SKIP() << "*** SSE2 is not supported on this CPU.";
 	}
 
 	// Parameterized test.
@@ -546,14 +541,6 @@ TEST_P(ImageDecoderLinearTest, fromLinear_sse2_benchmark)
 
 	// Decode the image.
 	switch (mode.bpp) {
-		case 24:
-		case 32:
-			// Not implemented...
-			if (!GTEST_FLAG_GET(brief)) {
-				fmt::print(stderr, FSTR("*** SSE2 decoding is not implemented for {:d}-bit color.\n"), mode.bpp);
-			}
-			return;
-
 		case 15:
 		case 16:
 			// 15/16-bit image.
@@ -564,6 +551,11 @@ TEST_P(ImageDecoderLinearTest, fromLinear_sse2_benchmark)
 				m_img.reset();
 			}
 			break;
+
+		case 24:
+		case 32:
+			// Not implemented...
+			GTEST_SKIP() << "*** SSE2 decoding is not implemented for " << static_cast<unsigned int>(mode.bpp) << "-bit color.";
 
 		default:
 			ASSERT_TRUE(false) << "Invalid bpp: " << mode.bpp;
@@ -579,8 +571,7 @@ TEST_P(ImageDecoderLinearTest, fromLinear_sse2_benchmark)
 TEST_P(ImageDecoderLinearTest, fromLinear_ssse3_test)
 {
 	if (!RP_CPU_HasSSSE3() && !GTEST_FLAG_GET(brief)) {
-		fputs("*** SSSE3 is not supported on this CPU. Skipping test.\n", stderr);
-		return;
+		GTEST_SKIP() << "*** SSSE3 is not supported on this CPU.";
 	}
 
 	// Parameterized test.
@@ -604,10 +595,7 @@ TEST_P(ImageDecoderLinearTest, fromLinear_ssse3_test)
 		case 15:
 		case 16:
 			// Not implemented...
-			if (!GTEST_FLAG_GET(brief)) {
-				fmt::print(stderr, FSTR("*** SSSE3 decoding is not implemented for {:d}-bit color.\n"), mode.bpp);
-			}
-			return;
+			GTEST_SKIP() << "*** SSSE3 decoding is not implemented for " << static_cast<unsigned int>(mode.bpp) << "-bit color.";
 
 		default:
 			ASSERT_TRUE(false) << "Invalid bpp: " << mode.bpp;
@@ -626,8 +614,7 @@ TEST_P(ImageDecoderLinearTest, fromLinear_ssse3_test)
 TEST_P(ImageDecoderLinearTest, fromLinear_ssse3_benchmark)
 {
 	if (!RP_CPU_HasSSSE3() && !GTEST_FLAG_GET(brief)) {
-		fputs("*** SSSE3 is not supported on this CPU. Skipping test.\n", stderr);
-		return;
+		GTEST_SKIP() << "*** SSE2 is not supported on this CPU.";
 	}
 
 	// Parameterized test.
@@ -657,10 +644,7 @@ TEST_P(ImageDecoderLinearTest, fromLinear_ssse3_benchmark)
 		case 15:
 		case 16:
 			// Not implemented...
-			if (!GTEST_FLAG_GET(brief)) {
-				fmt::print(stderr, FSTR("*** SSSE3 decoding is not implemented for {:d}-bit color.\n"), mode.bpp);
-			}
-			return;
+			GTEST_SKIP() << "*** SSSE3 decoding is not implemented for " << static_cast<unsigned int>(mode.bpp) << "-bit color.";
 
 		default:
 			ASSERT_TRUE(false) << "Invalid bpp: " << mode.bpp;
