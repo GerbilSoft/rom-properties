@@ -41,7 +41,7 @@ IF(USE_INTERNAL_FMT)
 	# Using the internal libfmt library.
 	SET(Fmt_FOUND 1)
 	SET(HAVE_Fmt 1)
-	SET(Fmt_VERSION 11.1.2 CACHE INTERNAL "libfmt version" FORCE)
+	SET(Fmt_VERSION 11.1.3 CACHE INTERNAL "libfmt version" FORCE)
 	# FIXME: When was it changed from LIBRARY to LIBRARIES?
 	IF(WIN32 OR APPLE)
 		# Using DLLs on Windows and Mac OS X.
