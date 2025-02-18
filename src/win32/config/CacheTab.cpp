@@ -180,10 +180,7 @@ void CacheTabPrivate::initDialog(void)
 		: C_("CacheTab", "If any image type settings were changed, you will need to clear the thumbnail cache files.\nThis version of Windows does not have a centralized thumbnail database, so it may take a while for all Thumbs.db files to be located and deleted.")));
 
 	// Set window themes for Win10's dark mode.
-	if (g_darkModeSupported) {
-		// NOTE: If Dark Mode is supported, then we're definitely
-		// running on Windows 10 or later, so this will have the
-		// Windows Vista layout.
+	if (this->isVista && g_darkModeSupported) {
 		// TODO: Progress bar?
 		DarkMode_InitButton_Dlg(hWndPropSheet, IDC_CACHE_CLEAR_SYS_THUMBS);
 		DarkMode_InitButton_Dlg(hWndPropSheet, IDC_CACHE_CLEAR_RP_DL);
