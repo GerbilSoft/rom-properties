@@ -202,8 +202,8 @@ static void initLocalizedDecimalPoint(void)
 	if (!locale || locale[0] == '\0') {
 		locale = getenv("LC_ALL");
 	}
-	if (locale && !strcmp(locale, "C")) {
-		// We're using the C locale.
+	if (locale && locale[0] == 'C' && (locale[1] == '\0' || locale[1] == '.')) {
+		// We're using the "C" locale. (or "C.UTF-8")
 		is_C_locale = true;
 		strcpy(lc_decimal, ".");
 		return;
