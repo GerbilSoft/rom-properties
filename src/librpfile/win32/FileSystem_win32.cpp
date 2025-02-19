@@ -35,12 +35,18 @@ using std::wstring;
 // Windows includes.
 #include <direct.h>
 
-#define ISDRIVELETTERA(x) ((x) >= 'A' && (x) <= 'Z')
-#define ISDRIVELETTERW(x) ((x) >= L'A' && (x) <= L'Z')
+static inline constexpr bool IsDriveLetterA(char letter)
+{
+	return (letter >= 'A') && (letter <= 'Z');
+}
+static inline constexpr bool IsDriveLetterW(wchar_t letter)
+{
+	return (letter >= L'A') && (letter <= L'Z');
+}
 #ifdef _UNICODE
-#  define ISDRIVELETTER(x) ISDRIVELETTERW(x)
+#  define IsDriveLetter(x) IsDriveLetterW(x)
 #else /* !_UNICODE */
-#  define ISDRIVELETTER(x) ISDRIVELETTERA(x)
+#  define IsDriveLetter(x) IsDriveLetterA(x)
 #endif /* _UNICODE */
 
 namespace LibRpFile { namespace FileSystem {
@@ -62,7 +68,7 @@ static inline wstring makeWinPath(const char *filename)
 
 	// TODO: Don't bother if the filename is <= 240 characters?
 	wstring filenameW;
-	if (ISDRIVELETTERA(filename[0]) &&
+	if (IsDriveLetterA(filename[0]) &&
 	    filename[1] == ':' && filename[2] == '\\')
 	{
 		// Absolute path. Prepend "\\\\?\\" to the path.
@@ -91,7 +97,7 @@ static inline wstring makeWinPath(const string &filename)
 
 	// TODO: Don't bother if the filename is <= 240 characters?
 	wstring filenameW;
-	if (ISDRIVELETTERA(filename[0]) &&
+	if (IsDriveLetterA(filename[0]) &&
 	    filename[1] == ':' && filename[2] == '\\')
 	{
 		// Absolute path. Prepend "\\\\?\\" to the path.
@@ -121,7 +127,7 @@ static inline wstring makeWinPath(const wchar_t *filename)
 
 	// TODO: Don't bother if the filename is <= 240 characters?
 	wstring filenameW;
-	if (ISDRIVELETTERA(filename[0]) &&
+	if (IsDriveLetterW(filename[0]) &&
 	    filename[1] == ':' && filename[2] == '\\')
 	{
 		// Absolute path. Prepend "\\\\?\\" to the path.
@@ -150,7 +156,7 @@ static inline wstring makeWinPath(const wstring &filename)
 
 	// TODO: Don't bother if the filename is <= 240 characters?
 	wstring filenameW;
-	if (ISDRIVELETTERA(filename[0]) &&
+	if (IsDriveLetterW(filename[0]) &&
 	    filename[1] == ':' && filename[2] == '\\')
 	{
 		// Absolute path. Prepend "\\\\?\\" to the path.
