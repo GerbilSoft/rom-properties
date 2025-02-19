@@ -151,11 +151,18 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 	// NOTE: The variable needs to be static char[] because
 	// POSIX putenv() takes `char*` and the buffer becomes
 	// part of the environment.
-	static TCHAR lc_all_env[] = _T("LC_ALL=C");
-	static TCHAR lc_messages_env[] = _T("LC_MESSAGES=C");
+#ifdef _WIN32
+#  define T_C_LOCALE _T("C")
+#  define C_LOCALE "C"
+#else /* !_WIN32 */
+#  define T_C_LOCALE _T("C.UTF-8")
+#  define C_LOCALE "C.UTF-8"
+#endif /* _WIN32 */
+	static TCHAR lc_all_env[] = _T("LC_ALL=") T_C_LOCALE;
+	static TCHAR lc_messages_env[] = _T("LC_MESSAGES=") T_C_LOCALE;
 	_tputenv(lc_all_env);
 	_tputenv(lc_messages_env);
-	locale::global(locale("C"));
+	locale::global(locale(C_LOCALE));
 
 	// Call the actual main function.
 	int ret = gtest_main(argc, argv);

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptext/tests)                  *
  * TextFuncsTest.cpp: Text conversion functions test                       *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -755,13 +755,12 @@ TEST_F(TextFuncsTest, utf8_disp_strlen)
 	EXPECT_EQ(15U, strlen(utf8_3byte_text));
 	EXPECT_EQ(5U, utf8_disp_strlen(utf8_3byte_text));
 
-#ifndef _WIN32
 	// Test string with 4-byte UTF-8 code points. (U+10000 - U+10FFFF)
-	// FIXME: Broken on Windows... (returns 7)
+	// U+1F5AC (SOFT SHELL FLOPPY DISK) is w=1 for some reason.
+	// The others are all w=2.
 	static constexpr char utf8_4byte_text[] = "😂🙄💾🖬";
 	EXPECT_EQ(16U, strlen(utf8_4byte_text));
-	EXPECT_EQ(4U, utf8_disp_strlen(utf8_4byte_text));
-#endif /* !_WIN32 */
+	EXPECT_EQ(7U, utf8_disp_strlen(utf8_4byte_text));
 }
 
 /**

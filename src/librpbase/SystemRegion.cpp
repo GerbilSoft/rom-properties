@@ -135,7 +135,8 @@ static int getSystemRegion_LC_MESSAGES(const char *locale)
 	}
 
 	// Explicitly check for the "C" locale.
-	if (!strcasecmp(locale, "C")) {
+	// Also accepts "C.UTF-8".
+	if (locale[0] == 'C' && (locale[1] == '\0' || locale[1] == '.')) {
 		// "C" locale. Use 0.
 		lc = 0;
 		cc = 0;
