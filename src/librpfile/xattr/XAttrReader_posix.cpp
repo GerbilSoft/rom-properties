@@ -136,7 +136,7 @@ XAttrReaderPrivate::XAttrReaderPrivate(const char *filename)
 	// Open the file to get attributes.
 	// TODO: Move this to librpbase or libromdata,
 	// and add configure checks for FAT_IOCTL_GET_ATTRIBUTES.
-#define OPEN_FLAGS (O_RDONLY|O_NONBLOCK|O_LARGEFILE)
+	static constexpr int OPEN_FLAGS = (O_RDONLY | O_NONBLOCK | O_LARGEFILE);
 	errno = 0;
 	fd = open(filename, OPEN_FLAGS);
 	if (fd < 0) {
