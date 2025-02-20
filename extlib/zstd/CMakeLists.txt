@@ -1,5 +1,5 @@
 # zstd: Fast compression library.
-PROJECT(zstd VERSION 1.5.6 LANGUAGES C ASM)
+PROJECT(zstd VERSION 1.5.7 LANGUAGES C ASM)
 
 # rom-properties: Enable multithreading.
 SET(ZSTD_MULTITHREAD ON)

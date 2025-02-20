@@ -32,7 +32,7 @@ IF(USE_INTERNAL_ZSTD)
 	# Using the internal zstd library.
 	SET(ZSTD_FOUND 1)
 	SET(HAVE_ZSTD 1)
-	SET(ZSTD_VERSION 1.5.6 CACHE INTERNAL "ZSTD version" FORCE)
+	SET(ZSTD_VERSION 1.5.7 CACHE INTERNAL "ZSTD version" FORCE)
 	# FIXME: When was it changed from LIBRARY to LIBRARIES?
 	IF(WIN32 OR APPLE)
 		# Using DLLs on Windows and Mac OS X.
