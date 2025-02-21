@@ -740,8 +740,7 @@ class basic_specs {
   };
 
   unsigned data_ = 1 << fill_size_shift;
-  // rom-properties; FIXME: Fails on MSVC 2015.
-  //static_assert(sizeof(data_) * CHAR_BIT >= 18, "");
+  static_assert(sizeof(basic_specs::data_) * CHAR_BIT >= 18, "");
 
   // Character (code unit) type is erased to prevent template bloat.
   char fill_data_[max_fill_size] = {' '};
