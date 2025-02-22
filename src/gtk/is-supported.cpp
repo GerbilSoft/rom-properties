@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * is-supported.hpp: Check if a URI is supported.                          *
  *                                                                         *
- * Copyright (c) 2017-2024 by David Korth.                                 *
+ * Copyright (c) 2017-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -26,7 +26,6 @@ using namespace LibRomData;
 static RomDataPtr rp_gtk_open_filename(const char *filename)
 {
 	// TODO: Check file extensions and/or MIME types?
-	RomDataPtr romData;
 
 	// Local file:
 	// - If this is a diretory: Call RomDataFactory::create() with the pathname.
@@ -34,19 +33,17 @@ static RomDataPtr rp_gtk_open_filename(const char *filename)
 	if (likely(!FileSystem::is_directory(filename))) {
 		// File: Open the file and call RomDataFactory::create() with the opened file.
 		IRpFilePtr file = std::make_shared<RpFile>(filename, RpFile::FM_OPEN_READ_GZ);
-		if (!file->isOpen()) {
-			// Unable to open the file...
-			// TODO: Return an error code?
-			return {};
+		if (file->isOpen()) {
+			return RomDataFactory::create(file);
 		}
-		romData = RomDataFactory::create(file);
 	} else {
 		// Directory: Call RomDataFactory::create() with the filename.
 		// (NOTE: Local filenames only!)
-		romData = RomDataFactory::create(filename);
+		return RomDataFactory::create(filename);
 	}
 
-	return romData;
+	// Unable to open the file.
+	return {};
 }
 
 
