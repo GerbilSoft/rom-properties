@@ -80,19 +80,16 @@ QString formatDateTime(time_t date_time, unsigned int flags)
 QString formatDimensions(const int dimensions[3])
 {
 	// TODO: 'x' or '×'? Using 'x' for now.
-	string str;
+	QString qstr = QString::number(dimensions[0]);
 
 	if (dimensions[1] > 0) {
+		qstr += QLatin1Char('x');
+		qstr += QString::number(dimensions[1]);
 		if (dimensions[2] > 0) {
-			str = fmt::format(FSTR("{:d}x{:d}x{:d}"),
-				dimensions[0], dimensions[1], dimensions[2]);
-		} else {
-			str = fmt::format(FSTR("{:d}x{:d}"),
-				dimensions[0], dimensions[1]);
+			qstr += QLatin1Char('x');
+			qstr += QString::number(dimensions[2]);
 		}
-	} else {
-		str = fmt::to_string(dimensions[0]);
 	}
 
-	return QString::fromLatin1(str.c_str());
+	return qstr;
 }
