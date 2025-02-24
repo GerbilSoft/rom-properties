@@ -14,12 +14,12 @@ static const char EXEPEMachineTypes_strtbl[] =
 	"16" "\x00" "Motorola 68000" "\x00" "DEC Alpha AXP (64-bit)" "\x00"
 	"PA-RISC" "\x00" "MIPS with FPU" "\x00" "MIPS16 with FPU" "\x00" "I"
 	"nfineon TriCore" "\x00" "PowerPC (big-endian)" "\x00" "Common Ex"
-	"ecutable Format" "\x00" "EFI Byte Code" "\x00" "RISC-V (32-bit a"
-	"ddress space)" "\x00" "RISC-V (64-bit address space)" "\x00" "RI"
-	"SC-V (128-bit address space)" "\x00" "LoongArch (32-bit)" "\x00" "L"
-	"oongArch (64-bit)" "\x00" "AMD64" "\x00" "Mitsubishi M32R" "\x00"
-	"ARM (64-bit) (emulation-compatible)" "\x00" "ARM (64-bit)" "\x00"
-	"MSIL" "\x00";
+	"ecutable Format" "\x00" "EFI Byte Code" "\x00" "CHPEv1 i386" "\x00"
+	"RISC-V (32-bit address space)" "\x00" "RISC-V (64-bit address sp"
+	"ace)" "\x00" "RISC-V (128-bit address space)" "\x00" "LoongArch "
+	"(32-bit)" "\x00" "LoongArch (64-bit)" "\x00" "AMD64" "\x00" "Mit"
+	"subishi M32R" "\x00" "ARM (64-bit) (emulation-compatible)" "\x00"
+	"CHPEv2 ARM64X" "\x00" "ARM (64-bit)" "\x00" "MSIL" "\x00";
 
 struct EXEPEMachineTypes_offtbl_t {
 	uint16_t machineType;
@@ -60,14 +60,17 @@ static const EXEPEMachineTypes_offtbl_t EXEPEMachineTypes_offtbl[] = {
 	{0x0cef, 393},
 	{0x0ebc, 418},
 
-	{0x5032, 432},
-	{0x5064, 462},
-	{0x5128, 492},
-	{0x6232, 523},
-	{0x6264, 542},
-	{0x8664, 561},
-	{0x9041, 567},
-	{0xa641, 583},
-	{0xaa64, 619},
-	{0xc0ee, 632},
+	{0x3a64, 432},
+	{0x5032, 444},
+	{0x5064, 474},
+	{0x5128, 504},
+	{0x6232, 535},
+	{0x6264, 554},
+	{0x8664, 573},
+	{0x9041, 579},
+	{0xa641, 595},
+	{0xa64e, 631},
+
+	{0xaa64, 645},
+	{0xc0ee, 658},
 };

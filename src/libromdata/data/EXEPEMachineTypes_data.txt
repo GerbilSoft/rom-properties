@@ -32,6 +32,7 @@
 0x0601|PowerPC (big-endian)
 0x0CEF|Common Executable Format
 0x0EBC|EFI Byte Code
+0x3A64|CHPEv1 i386
 0x5032|RISC-V (32-bit address space)
 0x5064|RISC-V (64-bit address space)
 0x5128|RISC-V (128-bit address space)
@@ -40,5 +41,6 @@
 0x8664|AMD64
 0x9041|Mitsubishi M32R
 0xA641|ARM (64-bit) (emulation-compatible)
+0xA64E|CHPEv2 ARM64X
 0xAA64|ARM (64-bit)
 0xC0EE|MSIL

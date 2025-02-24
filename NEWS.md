@@ -45,6 +45,9 @@
   * WiiUData: Fix some sorting issues that may have resulted in incorrect
     publisher or application type information for some games.
     * This also resulted in libstdc++ assertions in debug builds.
+  * EXE: Add machine types for CHPEv1 i386 and CHPEv2 ARM64X.
+    * Fixes #439: Missing ARM64 machine type IMAGE_FILE_MACHINE_CHPE_X86
+      * Reported by @pivotman319-owo.
 
 * Other changes:
   * CMake: Added an ENABLE_NETWORKING option to control whether or not

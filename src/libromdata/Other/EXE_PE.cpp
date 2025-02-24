@@ -626,7 +626,7 @@ void EXEPrivate::addFields_PE(void)
 	if (hybridMetadataPointer != 0) {
 		switch (machine) {
 			case IMAGE_FILE_MACHINE_I386:
-				s_cpu = "CHPE i386";
+				s_cpu = "CHPEv1 i386";
 				break;
 			case IMAGE_FILE_MACHINE_AMD64:
 				s_cpu = "CHPEv2 ARM64EC";
