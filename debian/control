@@ -43,7 +43,7 @@ Vcs-Browser: https://github.com/GerbilSoft/rom-properties
 Package: rom-properties-all
 Architecture: any
 Depends: ${misc:Depends}, libromdata6, rom-properties-kde4, rom-properties-kf5, rom-properties-xfce, rom-properties-gtk3, rom-properties-cli, rom-properties-tracker, rom-properties-utils, rom-properties-lang, rom-properties-thumbnailer-dbus
-Description: ROM Properties Page shell extension
+Description: ROM Properties Page shell extension (meta package)
  This shell extension provides thumbnailing and property page functionality
  for ROM images, disc images, and save files for various game consoles,
  including Nintendo GameCube and Wii.
@@ -53,7 +53,7 @@ Description: ROM Properties Page shell extension
 Package: libromdata6
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}, rom-properties-data
-Description: ROM Properties Page shell extension
+Description: ROM Properties Page shell extension (shared library)
  This shell extension provides thumbnailing and property page functionality
  for ROM images, disc images, and save files for various game consoles,
  including Nintendo GameCube and Wii.
@@ -65,19 +65,19 @@ Package: rom-properties-kde4
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}, libromdata6, rom-properties-utils, rom-properties-xdg
 Recommends: rom-properties-lang
-Description: ROM Properties Page shell extension
+Description: ROM Properties Page shell extension (KDE4 UI frontend)
  This shell extension provides thumbnailing and property page functionality
  for ROM images, disc images, and save files for various game consoles,
  including Nintendo GameCube and Wii.
  .
- This package contains the KDE 4 version.
+ This package contains the KDE4 UI frontend.
 
 Package: rom-properties-kio-servicemenus
 Architecture: all
 Depends: ${shlibs:Depends}, ${misc:Depends}, libromdata6, rom-properties-utils
 Conflicts: rom-properties-kf5 (<< 2.3)
 Replaces: rom-properties-kf5 (<< 2.3)
-Description: ROM Properties Page shell extension
+Description: ROM Properties Page shell extension (KF5/KF6 service menus)
  This shell extension provides thumbnailing and property page functionality
  for ROM images, disc images, and save files for various game consoles,
  including Nintendo GameCube and Wii.
@@ -90,18 +90,18 @@ Depends: ${shlibs:Depends}, ${misc:Depends}, libromdata6, rom-properties-utils, 
 Recommends: rom-properties-lang
 Conflicts: rom-properties-kde5
 Replaces: rom-properties-kde5
-Description: ROM Properties Page shell extension
+Description: ROM Properties Page shell extension (KF5 UI frontend)
  This shell extension provides thumbnailing and property page functionality
  for ROM images, disc images, and save files for various game consoles,
  including Nintendo GameCube and Wii.
  .
- This package contains the KDE Frameworks 5 version.
+ This package contains the KDE Frameworks 5 UI frontend.
 
 Package: rom-properties-xfce
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}, libromdata6, rom-properties-utils, rom-properties-xdg, rom-properties-thumbnailer-dbus
 Recommends: rom-properties-lang, rom-properties-tracker
-Description: ROM Properties Page shell extension
+Description: ROM Properties Page shell extension (GTK2 XFCE UI frontend)
  This shell extension provides thumbnailing and property page functionality
  for ROM images, disc images, and save files for various game consoles,
  including Nintendo GameCube and Wii.
@@ -117,7 +117,7 @@ Depends: ${shlibs:Depends}, ${misc:Depends}, libromdata6, rom-properties-utils, 
 Recommends: rom-properties-lang, rom-properties-tracker
 Conflicts: rom-properties-gnome, rom-properties-mate, rom-properties-cinnamon, rom-properties-gtk3-common
 Replaces: rom-properties-gnome, rom-properties-mate, rom-properties-cinnamon, rom-properties-gtk3-common
-Description: ROM Properties Page shell extension
+Description: ROM Properties Page shell extension (GTK3 UI frontend)
  This shell extension provides thumbnailing and property page functionality
  for ROM images, disc images, and save files for various game consoles,
  including Nintendo GameCube and Wii.
@@ -134,7 +134,7 @@ Package: rom-properties-cli
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}, libromdata6
 Recommends: rom-properties-lang
-Description: ROM Properties Page shell extension
+Description: ROM Properties Page shell extension (command line version)
  This shell extension provides thumbnailing and property page functionality
  for ROM images, disc images, and save files for various game consoles,
  including Nintendo GameCube and Wii.
@@ -144,7 +144,7 @@ Description: ROM Properties Page shell extension
 Package: rom-properties-tracker
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}, libromdata6
-Description: ROM Properties Page shell extension
+Description: ROM Properties Page shell extension (Tracker metadata extractor module)
  This shell extension provides thumbnailing and property page functionality
  for ROM images, disc images, and save files for various game consoles,
  including Nintendo GameCube and Wii.
@@ -158,7 +158,7 @@ Depends: ${shlibs:Depends}, ${misc:Depends}
 Recommends: rom-properties-lang
 Conflicts: rom-properties-stub
 Replaces: rom-properties-stub
-Description: ROM Properties Page shell extension
+Description: ROM Properties Page shell extension (helper executables)
  This shell extension provides thumbnailing and property page functionality
  for ROM images, disc images, and save files for various game consoles,
  including Nintendo GameCube and Wii.
@@ -170,7 +170,7 @@ Description: ROM Properties Page shell extension
 Package: rom-properties-lang
 Architecture: all
 Depends: ${shlibs:Depends}, ${misc:Depends}
-Description: ROM Properties Page shell extension
+Description: ROM Properties Page shell extension (language files)
  This shell extension provides thumbnailing and property page functionality
  for ROM images, disc images, and save files for various game consoles,
  including Nintendo GameCube and Wii.
@@ -181,7 +181,7 @@ Package: rom-properties-thumbnailer-dbus
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Recommends: rom-properties-lang
-Description: ROM Properties Page shell extension
+Description: ROM Properties Page shell extension (D-Bus Thumbnailer service)
  This shell extension provides thumbnailing and property page functionality
  for ROM images, disc images, and save files for various game consoles,
  including Nintendo GameCube and Wii.
@@ -192,7 +192,7 @@ Description: ROM Properties Page shell extension
 Package: rom-properties-xdg
 Architecture: all
 Depends: ${shlibs:Depends}, ${misc:Depends}
-Description: ROM Properties Page shell extension
+Description: ROM Properties Page shell extension (MIME package)
  This shell extension provides thumbnailing and property page functionality
  for ROM images, disc images, and save files for various game consoles,
  including Nintendo GameCube and Wii.
@@ -203,7 +203,7 @@ Description: ROM Properties Page shell extension
 Package: rom-properties-data
 Architecture: all
 Depends: ${shlibs:Depends}, ${misc:Depends}
-Description: ROM Properties Page shell extension
+Description: ROM Properties Page shell extension (data files)
  This shell extension provides thumbnailing and property page functionality
  for ROM images, disc images, and save files for various game consoles,
  including Nintendo GameCube and Wii.
