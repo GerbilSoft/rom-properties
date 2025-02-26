@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * RpQUrl.cpp: QUrl utility functions                                      *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -126,13 +126,13 @@ IRpFilePtr openQUrl(const QUrl &url, bool isThumbnail)
 
 	if (url.isEmpty()) {
 		// Empty URL. Nothing to do here.
-		return nullptr;
+		return {};
 	}
 
 	const QUrl localUrl = localizeQUrl(url);
 	if (localUrl.isEmpty()) {
 		// Unable to localize the URL.
-		return nullptr;
+		return {};
 	}
 
 	string s_local_filename;
@@ -150,13 +150,13 @@ IRpFilePtr openQUrl(const QUrl &url, bool isThumbnail)
 			// This is a local file. Check if it's on a "bad" file system.
 			if (FileSystem::isOnBadFS(s_local_filename.c_str(), enableThumbnailOnNetworkFS)) {
 				// This file is on a "bad" file system.
-				return nullptr;
+				return {};
 			}
 		} else {
 			// This is a remote file. Assume it's a "bad" file system.
 			if (!enableThumbnailOnNetworkFS) {
 				// Thumbnailing on network file systems is disabled.
-				return nullptr;
+				return {};
 			}
 		}
 	}
@@ -172,7 +172,7 @@ IRpFilePtr openQUrl(const QUrl &url, bool isThumbnail)
 		file = std::make_shared<RpFileKio>(url);
 #else /* !HAVE_RPFILE_KIO */
 		// Not supported...
-		return nullptr;
+		return {};
 #endif
 	}
 
@@ -183,5 +183,5 @@ IRpFilePtr openQUrl(const QUrl &url, bool isThumbnail)
 
 	// Unable to open the file...
 	// TODO: Return an error code?
-	return nullptr;
+	return {};
 }

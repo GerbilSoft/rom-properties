@@ -253,7 +253,7 @@ static RomDataPtr openFromFilenameOrURI(const char *source_file, string &s_uri, 
 			if (!enableThumbnailOnNetworkFS) {
 				// Thumbnailing on network file systems is disabled.
 				*p_err = RPCT_ERROR_SOURCE_FILE_BAD_FS;
-				return nullptr;
+				return {};
 			}
 
 			// Open the file using RpFileGio.
@@ -281,7 +281,7 @@ static RomDataPtr openFromFilenameOrURI(const char *source_file, string &s_uri, 
 		if (FileSystem::isOnBadFS(source_file, enableThumbnailOnNetworkFS)) {
 			// It's on a "bad" filesystem.
 			*p_err = RPCT_ERROR_SOURCE_FILE_BAD_FS;
-			return nullptr;
+			return {};
 		}
 
 		// Check if we have an absolute or relative path.
