@@ -495,7 +495,7 @@ int CBMCart::extURLs(ImageType imageType, vector<ExtURL> &extURLs, int size) con
 			return err;
 		}
 
-#define CBM_ROM_BUF_SIZ (16*1024)
+		static constexpr size_t CBM_ROM_BUF_SIZ = 16U * 1024U;
 		unique_ptr<uint8_t[]> buf(new uint8_t[CBM_ROM_BUF_SIZ]);
 		while (sz_rd_total < CBM_ROM_BUF_SIZ) {
 			CBM_CRT_CHIPHeader chipHeader;

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * Achievements.cpp: Achievements class.                                   *
  *                                                                         *
- * Copyright (c) 2020-2024 by David Korth.                                 *
+ * Copyright (c) 2020-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -101,23 +101,16 @@ public:
 		time_t timestamp;		// Time this achievement was last updated.
 	};
 
-	// Achievement map.
+	// Achievement map
 	// TODO: Map vs. unordered_map for performance?
 	unordered_map<Achievements::ID, AchData_t, EnumClassHash> mapAchData;
 	bool loaded;	// Have achievements been loaded from disk?
 
-	// Achievements filename and magic number.
-#if defined(NDEBUG) || defined(FORCE_OBFUSCATE)
-	// Release version is obfuscated.
-	#define ACH_BIN_MAGIC    "RPACH10R"
-	#define ACH_BIN_FILENAME "ach.bin"
-#else /* !NDEBUG && !FORCE_OBFUSCATE */
-	// Debug version is not obfuscated.
-	#define ACH_BIN_MAGIC    "RPACH10D"
-	#define ACH_BIN_FILENAME "achd.bin"
-#endif /* NDEBUG || FORCE_OBFUSCATE*/
+	// Achievements filename and magic number
+	static const char ACH_BIN_MAGIC[];
+	static const char ACH_BIN_FILENAME[];
 
-	// Serialized achievement header.
+	// Serialized achievement header
 	// All fields are in little-endian.
 	struct AchBinHeader {
 		char magic[8];		// [0x000] "RPACH10R" or "RPACH10D"
@@ -229,7 +222,18 @@ const array<AchievementsPrivate::AchInfo_t, 5> AchievementsPrivate::achInfo = {{
 	},
 }};
 
-// Singleton instance.
+// Achievements filename and magic number
+#if defined(NDEBUG) || defined(FORCE_OBFUSCATE)
+// Release version is obfuscated.
+const char AchievementsPrivate::ACH_BIN_MAGIC[] = "RPACH10R";
+const char AchievementsPrivate::ACH_BIN_FILENAME[] = "ach.bin";
+#else /* !NDEBUG && !FORCE_OBFUSCATE */
+// Debug version is not obfuscated.
+const char AchievementsPrivate::ACH_BIN_MAGIC[] = "RPACH10D";
+const char AchievementsPrivate::ACH_BIN_FILENAME[] = "achd.bin";
+#endif /* NDEBUG || FORCE_OBFUSCATE*/
+
+// Singleton instance
 // Using a static non-pointer variable in order to
 // handle proper destruction when the DLL is unloaded.
 Achievements AchievementsPrivate::instance;

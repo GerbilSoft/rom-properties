@@ -23,7 +23,7 @@ using std::unique_ptr;
 #include <zlib.h>
 
 // zlib buffer size.
-#define ZLIB_BUFFER_SIZE 16384
+static constexpr size_t ZLIB_BUFFER_SIZE = 16384U;
 
 #ifdef _MSC_VER
 // MSVC: Exception handling for /DELAYLOAD.

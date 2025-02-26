@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpfile)                        *
  * IRpFile.cpp: File wrapper interface.                                    *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -76,8 +76,8 @@ int IRpFile::copyTo(IRpFile *pDestFile, off64_t size,
 	off64_t cbReadTotal = 0;
 	off64_t cbWrittenTotal = 0;
 
-	// Read buffer.
-#define COPYTO_BUFFER_SIZE (64*1024)
+	// Read buffer
+	static constexpr size_t COPYTO_BUFFER_SIZE = 64U * 1024U;
 	uint8_t *buf = static_cast<uint8_t*>(malloc(COPYTO_BUFFER_SIZE));
 
 	// Copy the data.
@@ -85,7 +85,7 @@ int IRpFile::copyTo(IRpFile *pDestFile, off64_t size,
 		const size_t cbRead = this->read(buf, COPYTO_BUFFER_SIZE);
 		cbReadTotal += cbRead;
 		if (cbRead != COPYTO_BUFFER_SIZE &&
-		    (size < COPYTO_BUFFER_SIZE && cbRead != static_cast<size_t>(size)))
+		    (size < static_cast<off64_t>(COPYTO_BUFFER_SIZE) && cbRead != static_cast<size_t>(size)))
 		{
 			// Short read. We'll continue with a final write.
 			ret = -this->m_lastError;

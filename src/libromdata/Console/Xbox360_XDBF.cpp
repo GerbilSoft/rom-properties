@@ -1410,7 +1410,7 @@ int Xbox360_XDBF_Private::addFields_achievements_GPD(void)
 
 	// GPD doesn't have an achievements table.
 	// Instead, each achievement is its own entry in the main resource table.
-#define XACH_GPD_BUF_LEN 4096
+	static constexpr size_t XACH_GPD_BUF_LEN = 4096U;
 	unique_ptr<uint8_t[]> buf(new uint8_t[XACH_GPD_BUF_LEN]);
 	const XDBF_XACH_Entry_Header_GPD *const pGPD =
 		reinterpret_cast<const XDBF_XACH_Entry_Header_GPD*>(buf.get());

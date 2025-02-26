@@ -38,8 +38,8 @@ using std::vector;
 const CLSID CLSID_RP_ContextMenu =
 	{0x150715EA, 0x6843, 0x472C, {0x97, 0x09, 0x2C, 0xFA, 0x56, 0x69, 0x05, 0x01}};
 
-#define CTX_VERB_A "rp-convert-to-png"
-#define CTX_VERB_W L"rp-convert-to-png"
+static const char CTX_VERB_A[] = "rp-convert-to-png";
+static const wchar_t CTX_VERB_W[] = L"rp-convert-to-png";
 
 #define IDM_RP_CONVERT_TO_PNG 0
 

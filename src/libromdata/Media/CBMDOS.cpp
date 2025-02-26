@@ -138,7 +138,7 @@ public:
 
 	// GCR track size (usually 7,928; we'll allow up to 8,192)
 	unsigned int GCR_track_size;
-#define GCR_MAX_TRACK_SIZE 8192U
+	static constexpr unsigned int GCR_MAX_TRACK_SIZE = 8192U;
 
 public:
 	// Disk header
@@ -598,8 +598,8 @@ int CBMDOSPrivate::read_GCR_track(uint8_t track)
 
 	// Read the GCR track. (usually 7,928; we'll allow up to 8,192)
 	assert(GCR_track_size > 0);
-	assert(GCR_track_size <= GCR_MAX_TRACK_SIZE);
-	array<uint8_t, GCR_MAX_TRACK_SIZE> gcr_buf;
+	assert(GCR_track_size <= CBMDOSPrivate::GCR_MAX_TRACK_SIZE);
+	array<uint8_t, CBMDOSPrivate::GCR_MAX_TRACK_SIZE> gcr_buf;
 	size_t gcr_len = file->seekAndRead(this_track.start_offset, gcr_buf.data(), std::min(static_cast<size_t>(GCR_track_size), gcr_buf.size()));
 	if (gcr_len == 0) {
 		// Unable to read any GCR data...
@@ -1002,7 +1002,7 @@ CBMDOS::CBMDOS(const IRpFilePtr &file)
 			// TODO: Save g64_header?
 
 			d->GCR_track_size = le16_to_cpu(g64_header.track_size);
-			if (d->GCR_track_size == 0 || d->GCR_track_size > GCR_MAX_TRACK_SIZE) {
+			if (d->GCR_track_size == 0 || d->GCR_track_size > CBMDOSPrivate::GCR_MAX_TRACK_SIZE) {
 				// Track size is out of range.
 				d->file.reset();
 				return;
