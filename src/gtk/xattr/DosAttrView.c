@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * DosAttrView.c: MS-DOS file system attribute viewer widget.              *
  *                                                                         *
- * Copyright (c) 2017-2024 by David Korth.                                 *
+ * Copyright (c) 2017-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -178,7 +178,7 @@ rp_dos_attr_view_init(RpDosAttrView *widget)
 GtkWidget*
 rp_dos_attr_view_new(void)
 {
-	return (GtkWidget*)g_object_new(RP_TYPE_DOS_ATTR_VIEW, NULL);
+	return g_object_new(RP_TYPE_DOS_ATTR_VIEW, NULL);
 }
 
 /** Properties **/

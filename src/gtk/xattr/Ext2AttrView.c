@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * Ext2AttrView.c: Ext2 file system attribute viewer widget.               *
  *                                                                         *
- * Copyright (c) 2017-2024 by David Korth.                                 *
+ * Copyright (c) 2017-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -198,7 +198,7 @@ rp_ext2_attr_view_init(RpExt2AttrView *widget)
 GtkWidget*
 rp_ext2_attr_view_new(void)
 {
-	return (GtkWidget*)g_object_new(RP_TYPE_EXT2_ATTR_VIEW, NULL);
+	return g_object_new(RP_TYPE_EXT2_ATTR_VIEW, NULL);
 }
 
 /** Properties **/

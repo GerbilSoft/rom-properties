@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * XfsAttrView.c: XFS file system attribute viewer widget.                 *
  *                                                                         *
- * Copyright (c) 2017-2024 by David Korth.                                 *
+ * Copyright (c) 2017-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -198,7 +198,7 @@ rp_xfs_attr_view_init(RpXfsAttrView *widget)
 GtkWidget*
 rp_xfs_attr_view_new(void)
 {
-	return (GtkWidget*)g_object_new(RP_TYPE_XFS_ATTR_VIEW, NULL);
+	return g_object_new(RP_TYPE_XFS_ATTR_VIEW, NULL);
 }
 
 /** Properties **/
