@@ -453,21 +453,28 @@ if (FMT_INSTALL)
   endif()
 
   # Install the library and headers.
+  # rom-properites: Only install the runtime. (DLL)
   install(TARGETS ${INSTALL_TARGETS}
           COMPONENT fmt-core
           EXPORT ${targets_export_name}
-          LIBRARY DESTINATION ${FMT_LIB_DIR}
-          ARCHIVE DESTINATION ${FMT_LIB_DIR}
-          PUBLIC_HEADER DESTINATION "${FMT_INC_DIR}/fmt"
+          #LIBRARY DESTINATION ${FMT_LIB_DIR}
+          #ARCHIVE DESTINATION ${FMT_LIB_DIR}
+          #PUBLIC_HEADER DESTINATION "${FMT_INC_DIR}/fmt"
           RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-          ${INSTALL_FILE_SET})
+          #${INSTALL_FILE_SET})
+          )
 
   # Use a namespace because CMake provides better diagnostics for namespaced
   # imported targets.
+  # rom-properties: Disable this.
+  IF(0) # rom-properties
   export(TARGETS ${INSTALL_TARGETS} NAMESPACE fmt::
          FILE ${PROJECT_BINARY_DIR}/${targets_export_name}.cmake)
+  ENDIF(0) # rom-properties
 
   # Install version, config and target files.
+  # rom-properties: Disable this.
+  IF(0) # rom-properties
   install(FILES ${project_config} ${version_config}
           DESTINATION ${FMT_CMAKE_DIR}
           COMPONENT fmt-core)
@@ -477,6 +484,7 @@ if (FMT_INSTALL)
 
   install(FILES "${pkgconfig}" DESTINATION "${FMT_PKGCONFIG_DIR}"
           COMPONENT fmt-core)
+  ENDIF(0) # rom-properties
 endif ()
 
 function(add_doc_target)
