@@ -316,8 +316,6 @@ uint32_t GameBoyAdvance::imgpf(ImageType imageType) const
 			break;
 
 		default:
-			// GameTDB's Nintendo DS cover scans have alpha transparency.
-			// Hence, no image processing is required.
 			break;
 	}
 	return ret;
@@ -586,7 +584,7 @@ int GameBoyAdvance::extURLs(ImageType imageType, vector<ExtURL> &extURLs, int si
 	extURL.cache_key = d->getCacheKey_RPDB("gba", imageTypeName, region_code, name.c_str(), ext);
 	extURL.width = sizeDefs[0].width;
 	extURL.height = sizeDefs[0].height;
-	extURL.high_res = (sizeDefs[0].index >= 2);
+	extURL.high_res = false;	// Only one size is available.
 
 	// All URLs added.
 	return 0;
