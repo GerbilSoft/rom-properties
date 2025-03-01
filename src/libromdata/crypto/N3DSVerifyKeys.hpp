@@ -51,16 +51,16 @@ namespace N3DSVerifyKeys {
 
 /**
  * Attempt to load an AES normal key.
- * @param pKeyOut		[out] Output key data.
- * @param keyNormal_name	[in,opt] KeyNormal slot name.
- * @param keyX_name		[in,opt] KeyX slot name.
- * @param keyY_name		[in,opt] KeyY slot name.
- * @param keyNormal_verify	[in,opt] KeyNormal verification data. (NULL or 16 bytes)
- * @param keyX_verify		[in,opt] KeyX verification data. (NULL or 16 bytes)
- * @param keyY_verify		[in,opt] KeyY verification data. (NULL or 16 bytes)
+ * @param keyOut		[out] Output key data
+ * @param keyNormal_name	[in,opt] KeyNormal slot name
+ * @param keyX_name		[in,opt] KeyX slot name
+ * @param keyY_name		[in,opt] KeyY slot name
+ * @param keyNormal_verify	[in,opt] KeyNormal verification data (NULL or 16 bytes)
+ * @param keyX_verify		[in,opt] KeyX verification data (NULL or 16 bytes)
+ * @param keyY_verify		[in,opt] KeyY verification data (NULL or 16 bytes)
  * @return VerifyResult.
  */
-LibRpBase::KeyManager::VerifyResult loadKeyNormal(u128_t *pKeyOut,
+LibRpBase::KeyManager::VerifyResult loadKeyNormal(u128_t &keyOut,
 	const char *keyNormal_name,
 	const char *keyX_name,
 	const char *keyY_name,
@@ -80,9 +80,9 @@ LibRpBase::KeyManager::VerifyResult loadKeyNormal(u128_t *pKeyOut,
  * TODO: SEED encryption is not supported, though it isn't needed
  * for "exefs:/icon" and "exefs:/banner".
  *
- * @param pKeyOut		[out] Output key data. (array of 2 keys)
- * @param pNcchHeader		[in] NCCH header, with signature.
- * @param issuer		[in] Issuer type. (N3DS_Ticket_TitleKey_KeyY)
+ * @param pKeyOut		[out] Output key data (array of 2 keys)
+ * @param pNcchHeader		[in] NCCH header, with signature
+ * @param issuer		[in] Issuer type (N3DS_Ticket_TitleKey_KeyY)
  *                                   If unknown, will try Debug, then Retail.
  * @return VerifyResult.
  */

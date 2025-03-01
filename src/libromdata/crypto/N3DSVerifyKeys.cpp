@@ -216,16 +216,16 @@ static const uint8_t EncryptionKeyVerifyData[static_cast<size_t>(EncryptionKeys:
 
 /**
  * Attempt to load an AES normal key.
- * @param pKeyOut		[out] Output key data.
- * @param keyNormal_name	[in,opt] KeyNormal slot name.
- * @param keyX_name		[in,opt] KeyX slot name.
- * @param keyY_name		[in,opt] KeyY slot name.
- * @param keyNormal_verify	[in,opt] KeyNormal verification data. (NULL or 16 bytes)
- * @param keyX_verify		[in,opt] KeyX verification data. (NULL or 16 bytes)
- * @param keyY_verify		[in,opt] KeyY verification data. (NULL or 16 bytes)
+ * @param keyOut		[out] Output key data
+ * @param keyNormal_name	[in,opt] KeyNormal slot name
+ * @param keyX_name		[in,opt] KeyX slot name
+ * @param keyY_name		[in,opt] KeyY slot name
+ * @param keyNormal_verify	[in,opt] KeyNormal verification data (NULL or 16 bytes)
+ * @param keyX_verify		[in,opt] KeyX verification data (NULL or 16 bytes)
+ * @param keyY_verify		[in,opt] KeyY verification data (NULL or 16 bytes)
  * @return VerifyResult.
  */
-KeyManager::VerifyResult loadKeyNormal(u128_t *pKeyOut,
+KeyManager::VerifyResult loadKeyNormal(u128_t &keyOut,
 	const char *keyNormal_name,
 	const char *keyX_name,
 	const char *keyY_name,
@@ -233,12 +233,6 @@ KeyManager::VerifyResult loadKeyNormal(u128_t *pKeyOut,
 	const uint8_t *keyX_verify,
 	const uint8_t *keyY_verify)
 {
-	assert(pKeyOut);
-	if (!pKeyOut) {
-		// Invalid parameters.
-		return KeyManager::VerifyResult::InvalidParams;
-	}
-
 	// Get the Key Manager instance.
 	KeyManager *const keyManager = KeyManager::instance();
 	assert(keyManager != nullptr);
@@ -261,7 +255,7 @@ KeyManager::VerifyResult loadKeyNormal(u128_t *pKeyOut,
 
 		if (res == KeyManager::VerifyResult::OK && keyNormal_data.length == 16) {
 			// KeyNormal loaded and verified.
-			memcpy(pKeyOut->u8, keyNormal_data.key, 16);
+			memcpy(keyOut.u8, keyNormal_data.key, 16);
 			return KeyManager::VerifyResult::OK;
 		}
 
@@ -314,9 +308,9 @@ KeyManager::VerifyResult loadKeyNormal(u128_t *pKeyOut,
 	}
 
 	// Scramble the keys to get KeyNormal.
-	int ret = CtrKeyScrambler::CtrScramble(pKeyOut,
-		reinterpret_cast<const u128_t*>(keyX_data.key),
-		reinterpret_cast<const u128_t*>(keyY_data.key));
+	int ret = CtrKeyScrambler::CtrScramble(keyOut,
+		*(reinterpret_cast<const u128_t*>(keyX_data.key)),
+		*(reinterpret_cast<const u128_t*>(keyY_data.key)));
 	// TODO: Scrambling-specific error?
 	if (ret != 0) {
 		return KeyManager::VerifyResult::KeyInvalid;
@@ -336,7 +330,7 @@ KeyManager::VerifyResult loadKeyNormal(u128_t *pKeyOut,
 		if (ret != 0) {
 			return KeyManager::VerifyResult::IAesCipherInitErr;
 		}
-		ret = cipher->setKey(pKeyOut->u8, sizeof(*pKeyOut));
+		ret = cipher->setKey(keyOut.u8, sizeof(keyOut));
 		if (ret != 0) {
 			return KeyManager::VerifyResult::IAesCipherInitErr;
 		}
@@ -374,9 +368,9 @@ KeyManager::VerifyResult loadKeyNormal(u128_t *pKeyOut,
  * TODO: SEED encryption is not supported, though it isn't needed
  * for "exefs:/icon" and "exefs:/banner".
  *
- * @param pKeyOut		[out] Output key data. (array of 2 keys)
- * @param pNcchHeader		[in] NCCH header, with signature.
- * @param issuer		[in] Issuer type. (N3DS_Ticket_TitleKey_KeyY)
+ * @param pKeyOut		[out] Output key data (array of 2 keys)
+ * @param pNcchHeader		[in] NCCH header, with signature
+ * @param issuer		[in] Issuer type (N3DS_Ticket_TitleKey_KeyY)
  * @return VerifyResult.
  */
 KeyManager::VerifyResult loadNCCHKeys(u128_t pKeyOut[2],
@@ -524,9 +518,9 @@ KeyManager::VerifyResult loadNCCHKeys(u128_t pKeyOut[2],
 	}
 
 	// Scramble the primary keyslot to get KeyNormal.
-	int ret = CtrKeyScrambler::CtrScramble(&pKeyOut[0],
-		reinterpret_cast<const u128_t*>(keyX_data[0].key),
-		reinterpret_cast<const u128_t*>(pNcchHeader->signature));
+	int ret = CtrKeyScrambler::CtrScramble(pKeyOut[0],
+		*(reinterpret_cast<const u128_t*>(keyX_data[0].key)),
+		*(reinterpret_cast<const u128_t*>(pNcchHeader->signature)));
 	// TODO: Scrambling-specific error?
 	if (ret != 0) {
 		return KeyManager::VerifyResult::KeyInvalid;
@@ -535,9 +529,9 @@ KeyManager::VerifyResult loadNCCHKeys(u128_t pKeyOut[2],
 	// Do we have a secondary key?
 	if (keyX_name[1]) {
 		// Scramble the secondary keyslot to get KeyNormal.
-		ret = CtrKeyScrambler::CtrScramble(&pKeyOut[1],
-			reinterpret_cast<const u128_t*>(keyX_data[1].key),
-			reinterpret_cast<const u128_t*>(pNcchHeader->signature));
+		ret = CtrKeyScrambler::CtrScramble(pKeyOut[1],
+			*(reinterpret_cast<const u128_t*>(keyX_data[1].key)),
+			*(reinterpret_cast<const u128_t*>(pNcchHeader->signature)));
 		// TODO: Scrambling-specific error?
 		if (ret != 0) {
 			// FIXME: Ignoring errors for secondary keys for now.

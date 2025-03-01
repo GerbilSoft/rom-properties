@@ -164,10 +164,10 @@ TEST_P(CtrKeyScramblerTest, ctrScrambleTest)
 	}};
 
 	u128_t keyNormal;
-	ASSERT_EQ(0, CtrKeyScrambler::CtrScramble(&keyNormal,
-		reinterpret_cast<const u128_t*>(mode.keyX),
-		reinterpret_cast<const u128_t*>(mode.keyY),
-		reinterpret_cast<const u128_t*>(ctr_scrambler.data())));
+	ASSERT_EQ(0, CtrKeyScrambler::CtrScramble(keyNormal,
+		*(reinterpret_cast<const u128_t*>(mode.keyX)),
+		*(reinterpret_cast<const u128_t*>(mode.keyY)),
+		*(reinterpret_cast<const u128_t*>(ctr_scrambler.data()))));
 
 	// Compare the generated KeyNormal to the expected KeyNormal.
 	CompareByteArrays(mode.keyNormal, keyNormal.u8, 16, "KeyNormal");

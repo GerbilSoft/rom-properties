@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * CtrKeyScrambler.hpp: Nintendo 3DS key scrambler.                        *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -21,31 +21,30 @@
 namespace LibRomData { namespace CtrKeyScrambler {
 
 /**
- * CTR key scrambler. (for keyslots 0x04-0x3F)
- * @param keyNormal	[out] Normal key.
- * @param keyX[		in] KeyX.
- * @param keyY		[in] KeyY.
- * @param ctr_scrambler	[in] Scrambler constant.
+ * CTR key scrambler (for keyslots 0x04-0x3F)
+ * @param keyNormal	[out] Normal key
+ * @param keyX		in] KeyX
+ * @param keyY		[in] KeyY
+ * @param ctr_scrambler	[in] Scrambler constant
  * @return 0 on success; negative POSIX error code on error.
  */
 RP_LIBROMDATA_PUBLIC
-int CtrScramble(u128_t *keyNormal,
-	const u128_t *keyX, const u128_t *keyY,
-	const u128_t *ctr_scrambler);
+int CtrScramble(u128_t &keyNormal,
+	u128_t keyX, u128_t keyY, u128_t ctr_scrambler);
 
 /**
- * CTR key scrambler. (for keyslots 0x04-0x3F)
+ * CTR key scrambler (for keyslots 0x04-0x3F)
  *
  * "ctr-scrambler" is retrieved from KeyManager and is
  * used as the scrambler constant.
  *
- * @param keyNormal	[out] Normal key.
- * @param keyX		[in] KeyX.
- * @param keyY		[in] KeyY.
+ * @param keyNormal	[out] Normal key
+ * @param keyX		[in] KeyX
+ * @param keyY		[in] KeyY
  * @return 0 on success; negative POSIX error code on error.
  */
 RP_LIBROMDATA_PUBLIC
-int CtrScramble(u128_t *keyNormal, const u128_t *keyX, const u128_t *keyY);
+int CtrScramble(u128_t &keyNormal, u128_t keyX, u128_t keyY);
 
 // Encryption key indexes.
 enum class EncryptionKeys {

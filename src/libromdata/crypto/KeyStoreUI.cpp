@@ -621,7 +621,7 @@ int KeyStoreUIPrivate::getAesKeyDB_key(u128_t *pKey) const
 	memset(keyY.u8, 0, sizeof(keyY.u8));
 
 	// Scramble the key.
-	return CtrKeyScrambler::CtrScramble(pKey, &keyX, &keyY, &scrambler);
+	return CtrKeyScrambler::CtrScramble(*pKey, keyX, keyY, scrambler);
 }
 
 /**

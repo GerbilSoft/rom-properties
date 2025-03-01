@@ -81,95 +81,72 @@ const uint8_t *encryptionVerifyData_static(int keyIdx)
 
 /**
  * Byteswap a 128-bit key for use with 32/64-bit addition.
- * @param dest Destination.
- * @param src Source.
+ * NOTE: Byteswaps in-place.
+ * @param key Key
  */
-static inline void bswap_u128_t(u128_t &dest, const u128_t &src)
+static inline void bswap_u128_t(u128_t &key)
 {
-	dest.u64[0] = __swab64(src.u64[0]);
-	dest.u64[1] = __swab64(src.u64[1]);
+	key.u64[0] = __swab64(key.u64[0]);
+	key.u64[1] = __swab64(key.u64[1]);
 }
 
 /**
- * CTR key scrambler. (for keyslots 0x04-0x3F)
- * @param keyNormal	[out] Normal key.
- * @param keyX		[in] KeyX.
- * @param keyY		[in] KeyY.
- * @param ctr_scrambler	[in] Scrambler constant.
+ * CTR key scrambler (for keyslots 0x04-0x3F)
+ * @param keyNormal	[out] Normal key
+ * @param keyX		[in] KeyX
+ * @param keyY		[in] KeyY
+ * @param ctr_scrambler	[in] Scrambler constant
  * @return 0 on success; negative POSIX error code on error.
  */
-int CtrScramble(u128_t *keyNormal,
-	const u128_t *keyX, const u128_t *keyY,
-	const u128_t *ctr_scrambler)
+int CtrScramble(u128_t &keyNormal,
+	u128_t keyX, u128_t keyY, u128_t ctr_scrambler)
 {
 	// CTR key scrambler: KeyNormal = (((KeyX <<< 2) ^ KeyY) + constant) <<< 87
 	// NOTE: Since C doesn't have 128-bit types, we'll operate on
 	// 64-bit types. This requires some byteswapping, since the
 	// key is handled as if it's big-endian.
 
-	assert(keyNormal != nullptr);
-	assert(keyX != nullptr);
-	assert(keyY != nullptr);
-	assert(ctr_scrambler != nullptr);
-	if (!keyNormal || !keyX || !keyY || !ctr_scrambler) {
-		// Invalid parameters.
-		return -EINVAL;
-	}
-
 #if SYS_BYTEORDER == SYS_LIL_ENDIAN
-	u128_t keyXtmp, ctr_scrambler_tmp;
-	bswap_u128_t(keyXtmp, *keyX);
-	bswap_u128_t(ctr_scrambler_tmp, *ctr_scrambler);
-#else /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
-	const u128_t &keyXtmp = *keyX;
-	const u128_t &ctr_scrambler_tmp = *ctr_scrambler;
+	bswap_u128_t(keyX);
+	bswap_u128_t(ctr_scrambler);
 #endif
 
 	// Rotate KeyX left by two.
 	u128_t keyTmp;
-	keyTmp.u64[0] = (keyXtmp.u64[0] << 2) | (keyXtmp.u64[1] >> 62);
-	keyTmp.u64[1] = (keyXtmp.u64[1] << 2) | (keyXtmp.u64[0] >> 62);
+	keyTmp.u64[0] = (keyX.u64[0] << 2) | (keyX.u64[1] >> 62);
+	keyTmp.u64[1] = (keyX.u64[1] << 2) | (keyX.u64[0] >> 62);
 
 	// XOR by KeyY.
-	keyTmp.u64[0] ^= be64_to_cpu(keyY->u64[0]);
-	keyTmp.u64[1] ^= be64_to_cpu(keyY->u64[1]);
+	keyTmp.u64[0] ^= be64_to_cpu(keyY.u64[0]);
+	keyTmp.u64[1] ^= be64_to_cpu(keyY.u64[1]);
 
 	// Add the constant.
 	// Reference for carry functionality: https://accu.org/index.php/articles/1849
-	keyTmp.u64[1] += ctr_scrambler_tmp.u64[1];
-	keyTmp.u64[0] += ctr_scrambler_tmp.u64[0] + (keyTmp.u64[1] < ctr_scrambler_tmp.u64[1]);
+	keyTmp.u64[1] += ctr_scrambler.u64[1];
+	keyTmp.u64[0] += ctr_scrambler.u64[0] + (keyTmp.u64[1] < ctr_scrambler.u64[1]);
 
 	// Rotate left by 87.
 	// This is effectively "rotate left by 23" with adjusted DWORD indexes.
-	keyNormal->u64[1] = cpu_to_be64((keyTmp.u64[0] << 23) | (keyTmp.u64[1] >> 41));
-	keyNormal->u64[0] = cpu_to_be64((keyTmp.u64[1] << 23) | (keyTmp.u64[0] >> 41));
+	keyNormal.u64[1] = cpu_to_be64((keyTmp.u64[0] << 23) | (keyTmp.u64[1] >> 41));
+	keyNormal.u64[0] = cpu_to_be64((keyTmp.u64[1] << 23) | (keyTmp.u64[0] >> 41));
 
 	// We're done here.
 	return 0;
 }
 
 /**
- * CTR key scrambler. (for keyslots 0x04-0x3F)
+ * CTR key scrambler (for keyslots 0x04-0x3F)
  *
  * "ctr-scrambler" is retrieved from KeyManager and is
  * used as the scrambler constant.
  *
- * @param keyNormal	[out] Normal key.
- * @param keyX		[in] KeyX.
- * @param keyY		[in] KeyY.
+ * @param keyNormal	[out] Normal key
+ * @param keyX		[in] KeyX
+ * @param keyY		[in] KeyY
  * @return 0 on success; negative POSIX error code on error.
  */
-int CtrScramble(u128_t *keyNormal,
-	const u128_t *keyX, const u128_t *keyY)
+int CtrScramble(u128_t &keyNormal, u128_t keyX, u128_t keyY)
 {
-	assert(keyNormal != nullptr);
-	assert(keyX != nullptr);
-	assert(keyY != nullptr);
-	if (!keyNormal || !keyX || !keyY) {
-		// Invalid parameters.
-		return -EINVAL;
-	}
-
 	// Load the key scrambler constant.
 	KeyManager *const keyManager = KeyManager::instance();
 	if (!keyManager) {
@@ -193,7 +170,7 @@ int CtrScramble(u128_t *keyNormal,
 	}
 
 	return CtrScramble(keyNormal, keyX, keyY,
-		reinterpret_cast<const u128_t*>(keyData.key));
+		*(reinterpret_cast<const u128_t*>(keyData.key)));
 }
 
 } }
