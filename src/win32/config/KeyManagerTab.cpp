@@ -1562,7 +1562,7 @@ void KeyManagerTabPrivate::loadImages(void)
 void KeyManagerTabPrivate::showKeyImportReturnStatus(
 	const tstring &filename,
 	const TCHAR *keyType,
-	const KeyStoreUI::ImportReturn &iret)
+	KeyStoreUI::ImportReturn iret)
 {
 	unsigned int type = MB_ICONINFORMATION;
 	bool showKeyStats = false;

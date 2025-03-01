@@ -51,7 +51,7 @@ static gboolean	btnImport_event_signal_handler			(GtkButton		*button,
 static void rp_key_manager_tab_show_key_import_return_status	(RpKeyManagerTab	*tab,
 								 const char		*filename,
 								 const char		*keyType,
-								 const KeyStoreUI::ImportReturn &iret);
+								 KeyStoreUI::ImportReturn iret);
 
 #ifdef USE_G_MENU_MODEL
 static void	action_triggered_signal_handler			(GSimpleAction		*action,
@@ -532,7 +532,7 @@ static void
 rp_key_manager_tab_show_key_import_return_status(RpKeyManagerTab	*tab,
 					      const char	*filename,
 					      const char	*keyType,
-					      const KeyStoreUI::ImportReturn &iret)
+					      KeyStoreUI::ImportReturn iret)
 {
 	GtkMessageType type = GTK_MESSAGE_INFO;
 	bool showKeyStats = false;

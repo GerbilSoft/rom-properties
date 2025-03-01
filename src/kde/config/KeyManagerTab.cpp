@@ -79,7 +79,7 @@ public:
 	 * @param iret ImportReturn
 	 */
 	void showKeyImportReturnStatus(const QString &filename,
-		const QString &keyType, const KeyStoreUI::ImportReturn &iret);
+		const QString &keyType, KeyStoreUI::ImportReturn iret);
 };
 
 /** KeyManagerTabPrivate **/
@@ -124,7 +124,7 @@ void KeyManagerTabPrivate::resizeColumnsToContents(void)
 void KeyManagerTabPrivate::showKeyImportReturnStatus(
 	const QString &filename,
 	const QString &keyType,
-	const KeyStoreUI::ImportReturn &iret)
+	KeyStoreUI::ImportReturn iret)
 {
 	KMessageWidget::MessageType type = KMessageWidget::Information;
 	QStyle::StandardPixmap icon = QStyle::SP_MessageBoxInformation;

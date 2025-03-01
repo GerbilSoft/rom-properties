@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * KeyStoreUI.cpp: Key store UI base class.                                *
  *                                                                         *
- * Copyright (c) 2012-2024 by David Korth.                                 *
+ * Copyright (c) 2012-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -1618,13 +1618,9 @@ KeyStoreUI::ImportReturn KeyStoreUI::importKeysFromBin(ImportFileID fileID, IRpF
  */
 KeyStoreUI::ImportReturn KeyStoreUI::importKeysFromBin(ImportFileID fileID, const char *filename)
 {
-	ImportReturn iret = {ImportStatus::InvalidParams, 0, 0, 0, 0, 0, 0, 0};
-
 	unique_ptr<RpFile> file(new RpFile(filename, RpFile::FM_OPEN_READ));
 	if (!file->isOpen()) {
-		// TODO: file->lastError()?
-		iret.status = ImportStatus::OpenError;
-		iret.error_code = static_cast<uint8_t>(file->lastError());
+		const ImportReturn iret = {ImportStatus::OpenError, static_cast<uint8_t>(file->lastError()), 0, 0, 0, 0, 0, 0};
 		return iret;
 	}
 

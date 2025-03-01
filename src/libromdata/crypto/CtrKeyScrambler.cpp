@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * CtrKeyScrambler.cpp: Nintendo 3DS key scrambler.                        *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -23,6 +23,8 @@ using std::array;
 
 namespace LibRomData { namespace CtrKeyScrambler {
 
+namespace Private {
+
 // Verification key names.
 static const array<const char*, static_cast<size_t>(EncryptionKeys::Key_Max)> EncryptionKeyNames = {{
 	"twl-scrambler",
@@ -37,6 +39,8 @@ static constexpr uint8_t EncryptionKeyVerifyData[static_cast<size_t>(EncryptionK
 	{0xEF,0x4F,0x47,0x3C,0x04,0xAD,0xAA,0xAE,
 	 0x66,0x98,0x29,0xCB,0xC2,0x4D,0x9D,0xB0},
 };
+
+}
 
 /**
  * Get the total number of encryption key names.
@@ -58,7 +62,7 @@ const char *encryptionKeyName_static(int keyIdx)
 	assert(keyIdx < static_cast<int>(EncryptionKeys::Key_Max));
 	if (keyIdx < 0 || keyIdx >= static_cast<int>(EncryptionKeys::Key_Max))
 		return nullptr;
-	return EncryptionKeyNames[keyIdx];
+	return Private::EncryptionKeyNames[keyIdx];
 }
 
 /**
@@ -72,7 +76,7 @@ const uint8_t *encryptionVerifyData_static(int keyIdx)
 	assert(keyIdx < static_cast<int>(EncryptionKeys::Key_Max));
 	if (keyIdx < 0 || keyIdx >= static_cast<int>(EncryptionKeys::Key_Max))
 		return nullptr;
-	return EncryptionKeyVerifyData[keyIdx];
+	return Private::EncryptionKeyVerifyData[keyIdx];
 }
 
 /**
@@ -175,8 +179,8 @@ int CtrScramble(u128_t *keyNormal,
 
 	KeyManager::KeyData_t keyData;
 	KeyManager::VerifyResult res = keyManager->getAndVerify(
-		EncryptionKeyNames[static_cast<size_t>(EncryptionKeys::Key_Ctr_Scrambler)], &keyData,
-		EncryptionKeyVerifyData[static_cast<size_t>(EncryptionKeys::Key_Ctr_Scrambler)], 16);
+		Private::EncryptionKeyNames[static_cast<size_t>(EncryptionKeys::Key_Ctr_Scrambler)], &keyData,
+		Private::EncryptionKeyVerifyData[static_cast<size_t>(EncryptionKeys::Key_Ctr_Scrambler)], 16);
 	if (res != KeyManager::VerifyResult::OK) {
 		// Key error.
 		// TODO: Return the key error?
