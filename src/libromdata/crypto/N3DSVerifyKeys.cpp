@@ -12,9 +12,7 @@
 // librpbase
 #include "librpbase/crypto/IAesCipher.hpp"
 #include "librpbase/crypto/AesCipherFactory.hpp"
-using LibRpBase::IAesCipher;
-using LibRpBase::AesCipherFactory;
-using LibRpBase::KeyManager;
+using namespace LibRpBase;
 
 // libromdata
 #include "CtrKeyScrambler.hpp"

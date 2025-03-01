@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * AesCipherFactory.cpp: IAesCipher factory class.                         *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -18,7 +18,7 @@
 #  include "AesNettle.hpp"
 #endif
 
-namespace LibRpBase {
+namespace LibRpBase { namespace AesCipherFactory {
 
 /**
  * Create an IAesCipher class.
@@ -29,7 +29,7 @@ namespace LibRpBase {
  *
  * @return IAesCipher class, or nullptr if decryption isn't supported
  */
-IAesCipher *AesCipherFactory::create(void)
+IAesCipher *create(void)
 {
 #ifdef ENABLE_DECRYPTION
 
@@ -73,7 +73,7 @@ IAesCipher *AesCipherFactory::create(void)
  *
  * @return IAesCipher class, or nullptr if decryption or the selected implementation isn't supported
  */
-IAesCipher *AesCipherFactory::create(Implementation implementation)
+IAesCipher *create(Implementation implementation)
 {
 	IAesCipher *cipher = nullptr;
 
@@ -103,4 +103,4 @@ IAesCipher *AesCipherFactory::create(Implementation implementation)
 	return cipher;
 }
 
-}
+} }
