@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * SystemsTab.cpp: Systems tab for rp-config.                              *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -201,7 +201,7 @@ void SystemsTabPrivate::save(void)
 
 	const tstring tfilename = U82T_c(filename);
 
-	const TCHAR s_dmg_dmg[][4] = {_T("DMG"), _T("CGB")};
+	static const TCHAR s_dmg_dmg[][4] = {_T("DMG"), _T("CGB")};
 	const int idxDMG = ComboBox_GetCurSel(GetDlgItem(hWndPropSheet, IDC_SYSTEMS_DMGTS_DMG));
 	assert(idxDMG >= 0);
 	assert(idxDMG < ARRAY_SIZE_I(s_dmg_dmg));
@@ -209,7 +209,7 @@ void SystemsTabPrivate::save(void)
 		WritePrivateProfileString(_T("DMGTitleScreenMode"), _T("DMG"), s_dmg_dmg[idxDMG], tfilename.c_str());
 	}
 
-	const TCHAR s_dmg_other[][4] = {_T("DMG"), _T("SGB"), _T("CGB")};
+	static const TCHAR s_dmg_other[][4] = {_T("DMG"), _T("SGB"), _T("CGB")};
 	const int idxSGB = ComboBox_GetCurSel(GetDlgItem(hWndPropSheet, IDC_SYSTEMS_DMGTS_SGB));
 	const int idxCGB = ComboBox_GetCurSel(GetDlgItem(hWndPropSheet, IDC_SYSTEMS_DMGTS_CGB));
 
