@@ -787,6 +787,10 @@ int Xbox360_XEX_Private::initPeReader(void)
 
 			// Compressed EXE buffer.
 			// We have to de-block the compressed data first.
+			if (fileSize < xex2Header.pe_offset) {
+				// File is smaller than the PE offset!
+				return -EIO;
+			}
 			const size_t compressed_size = static_cast<size_t>(fileSize) - xex2Header.pe_offset;
 			unique_ptr<uint8_t[]> compressed_deblock(new uint8_t[compressed_size]);
 
