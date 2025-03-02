@@ -49,6 +49,9 @@
     * Fixes #439: Missing ARM64 machine type IMAGE_FILE_MACHINE_CHPE_X86
       * Reported by @pivotman319-owo.
   * Xbox360_XEX: Fix Australian (ACB) age ratings in some XBLA titles.
+  * Xbox360_STFS: Fix reading XEXes that overlap a hash block boundary.
+    * NOTE: The entire XEX is now read into memory, which may cause slowdown.
+      This will be improved later.
 
 * Other changes:
   * CMake: Added an ENABLE_NETWORKING option to control whether or not

@@ -21,6 +21,7 @@
 #include "librpbase/img/RpPng.hpp"
 #include "librpfile/MemFile.hpp"
 #include "librpfile/SubFile.hpp"
+#include "librpfile/VectorFile.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;
@@ -513,24 +514,46 @@ Xbox360_XEX *Xbox360_STFS_Private::openDefaultXex(void)
 
 	// Offset and filesize.
 	// NOTE: Block number is **little-endian** here.
-	const int32_t blockNumber =
+	const int32_t startingBlockNumber =
 		(dirEntry->block_number[2] << 16) |
 		(dirEntry->block_number[1] <<  8) |
 		 dirEntry->block_number[0];
-	const int32_t offset = blockNumberToOffset(dataBlockNumberToPhys(blockNumber));
 	const uint32_t filesize = be32_to_cpu(dirEntry->filesize);
 
-	// Load default.xexp.
-	// FIXME: Maybe add a reader class to handle the hashes,
-	// though we only need the XEX header right now.
-	shared_ptr<SubFile> xexFile_tmp = std::make_shared<SubFile>(this->file, offset, filesize);
-	if (xexFile_tmp->isOpen()) {
-		Xbox360_XEX *const xex_tmp = new Xbox360_XEX(xexFile_tmp);
-		if (xex_tmp->isOpen()) {
-			this->xex.reset(xex_tmp);
-		} else {
-			delete xex_tmp;
-		}
+	// FIXME: There are hash blocks after so many blocks, and files are not necessarily contiguous.
+	// Implement a better non-contiguous reader using the FAT-equivalent later.
+	// For now, we'll skip the hash blocks and load the entire file into memory
+	// instead of using SubFile.
+	// TODO:
+	// - Create a SparseDiscReader instead of reading the entire file into memory.
+	// - Handle non-contiguous files.
+	VectorFilePtr xexFile_tmp = std::make_shared<VectorFile>();
+	vector<uint8_t> &vec = xexFile_tmp->vector();
+	vec.resize(filesize);
+
+	const unsigned int block_count = static_cast<unsigned int>(filesize / STFS_BLOCK_SIZE);
+	int32_t blockNumber = startingBlockNumber;
+	uint8_t *pVec = vec.data();
+	for (unsigned int p = 0; p < block_count; p++, blockNumber++, pVec += STFS_BLOCK_SIZE) {
+		// Read the block.
+		const int32_t offset = blockNumberToOffset(dataBlockNumberToPhys(blockNumber));
+		this->file->seekAndRead(offset, pVec, STFS_BLOCK_SIZE);
+	}
+
+	const unsigned int partial_block_size = static_cast<unsigned int>(filesize % STFS_BLOCK_SIZE);
+	if (partial_block_size != 0) {
+		// Not a multiple of the block size?
+		// Read the partial block.
+		const int32_t offset = blockNumberToOffset(dataBlockNumberToPhys(blockNumber));
+		this->file->seekAndRead(offset, pVec, partial_block_size);
+	}
+
+	// Open the XEX.
+	Xbox360_XEX *const xex_tmp = new Xbox360_XEX(xexFile_tmp);
+	if (xex_tmp->isOpen()) {
+		this->xex.reset(xex_tmp);
+	} else {
+		delete xex_tmp;
 	}
 
 	return this->xex.get();
