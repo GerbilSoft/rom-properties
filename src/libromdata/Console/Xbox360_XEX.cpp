@@ -1076,7 +1076,7 @@ void Xbox360_XEX_Private::convertGameRatings(
 		{{0, 6, 6, 12, 12, 16, 16, 18, 18,      -1,-1,-1,-1,-1,-1,-1}},
 		// Australia (OFLC_AU)
 		// TODO: Is R18+ available on Xbox 360?
-		{{0, 7, 7, 14, 14, 15, 15, -1,       -1,-1,-1,-1,-1,-1,-1,-1}},
+		{{0, 0, 7, 7, 14, 14, 15, 15,        -1,-1,-1,-1,-1,-1,-1,-1}},
 		// TODO: NZ
 		{{-1,-1,-1,-1,-1,-1,-1,-1,           -1,-1,-1,-1,-1,-1,-1,-1}},
 		// South Korea (KMRB/GRB)
@@ -1103,6 +1103,7 @@ void Xbox360_XEX_Private::convertGameRatings(
 		const uint8_t xb_val = game_ratings.ratings[ridx];
 		if (xb_val >= 16) {
 			// Invalid rating.
+			// NOTE: 0xFF == not rated for this region
 			continue;
 		}
 

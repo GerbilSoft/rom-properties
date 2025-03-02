@@ -48,6 +48,7 @@
   * EXE: Add machine types for CHPEv1 i386 and CHPEv2 ARM64X.
     * Fixes #439: Missing ARM64 machine type IMAGE_FILE_MACHINE_CHPE_X86
       * Reported by @pivotman319-owo.
+  * Xbox360_XEX: Fix Australian (ACB) age ratings in some XBLA titles.
 
 * Other changes:
   * CMake: Added an ENABLE_NETWORKING option to control whether or not
