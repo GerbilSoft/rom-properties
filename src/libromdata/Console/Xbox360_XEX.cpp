@@ -1149,6 +1149,11 @@ Xbox360_Version_t Xbox360_XEX_Private::getMinKernelVersion(void)
 		// Check the minimum version of this import library.
 		const XEX2_Import_Library_Entry *const entry =
 			reinterpret_cast<const XEX2_Import_Library_Entry*>(p);
+		if (entry->size == 0) {
+			// Corrupt entry data!
+			break;
+		}
+
 		const uint32_t vmin = be32_to_cpu(entry->version_min.u32);
 		if (vmin > rver.u32) {
 			rver.u32 = vmin;
