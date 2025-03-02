@@ -239,7 +239,7 @@ public:
 	 * @param iret ImportReturn
 	 */
 	void showKeyImportReturnStatus(const tstring &filename,
-		const TCHAR *keyType, const KeyStoreUI::ImportReturn &iret);
+		const TCHAR *keyType, KeyStoreUI::ImportReturn iret);
 
 	/**
 	 * Import keys from a binary file.
