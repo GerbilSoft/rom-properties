@@ -120,7 +120,8 @@ const char *lookup_pe_subsystem(uint16_t subsystem)
 	if (subsystem >= subsystemNames.size())
 		return nullptr;
 
-	return pgettext_expr("EXE|Subsystem", subsystemNames[subsystem]);
+	const char *const name = subsystemNames[subsystem];
+	return (name) ? pgettext_expr("EXE|Subsystem", name) : nullptr;
 }
 
 } }
