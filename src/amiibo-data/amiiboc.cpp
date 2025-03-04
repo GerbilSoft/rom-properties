@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (amiibo-data)                      *
  * amiiboc.cpp: Nintendo amiibo binary data compiler.                      *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -238,7 +238,7 @@ int _tmain(int argc, TCHAR *argv[])
 		if (!strcmp(token, AMIIBO_BIN_MAGIC)) {
 			if (foundHeader) {
 				// Duplicate file header.
-				fmt::print(stderr, "*** ERROR: Line {:d}: Duplicate {:s} header.\n", line, AMIIBO_BIN_MAGIC);
+				fmt::print(stderr, FSTR("*** ERROR: Line {:d}: Duplicate {:s} header.\n"), line, AMIIBO_BIN_MAGIC);
 				err = true;
 				break;
 			} else {
