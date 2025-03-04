@@ -627,11 +627,12 @@ int CBMDOSPrivate::read_GCR_track(uint8_t track)
 
 		// Find the header sync. (at least 16 '1' bits, FF FF)
 		uint8_t sync_count = 0;
-		for (; sync_count < 2 && p < p_end; p++) {
-			if (*p == 0xFF)
+		for (; sync_count < 2 && p < p_end; ++p) {
+			if (*p == 0xFF) {
 				sync_count++;
-			else
+			} else {
 				sync_count = 0;
+			}
 		}
 		if (sync_count < 2) {
 			// Out of sync...
@@ -641,9 +642,10 @@ int CBMDOSPrivate::read_GCR_track(uint8_t track)
 
 		// Find the sector header. (10 GCR bytes, starts with $52 encoded)
 		bool found_header = false;
-		for (; p + 10 < p_end; p++) {
-			if (*p != 0x52)
+		for (; p + 10 < p_end; ++p) {
+			if (*p != 0x52) {
 				continue;
+			}
 
 			// Found the sector header.
 			// TODO: Decode and verify?
@@ -663,11 +665,12 @@ int CBMDOSPrivate::read_GCR_track(uint8_t track)
 
 		// Find the data sync. (at least 16 '1' bits, FF FF)
 		sync_count = 0;
-		for (; sync_count < 2 && p < p_end; p++) {
-			if (*p == 0xFF)
+		for (; sync_count < 2 && p < p_end; ++p) {
+			if (*p == 0xFF) {
 				sync_count++;
-			else
+			} else {
 				sync_count = 0;
+			}
 		}
 		if (sync_count < 2) {
 			// Out of sync...
@@ -677,9 +680,10 @@ int CBMDOSPrivate::read_GCR_track(uint8_t track)
 
 		// Find the data block. (325 GCR bytes decodes to 260 data bytes, starts with $55 encoded)
 		bool found_data = false;
-		for (; p + 325 < p_end; p++) {
-			if (*p != 0x55)
+		for (; p + 325 < p_end; ++p) {
+			if (*p != 0x55) {
 				continue;
+			}
 
 			// Found the data header.
 			// Decode the GCR data.

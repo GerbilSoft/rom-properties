@@ -757,9 +757,10 @@ int ELFPrivate::readDataAtVA(uint64_t vaddr, rp::uvector<uint8_t> &out)
 		[](uint64_t lhs, const Elf64_Phdr &rhs) noexcept -> bool {
 			return lhs < (uint64_t)rhs.p_vaddr;
 		});
-	if (it == pt_load.begin())
+	if (it == pt_load.begin()) {
 		return -ENOENT;
-	it--;
+	}
+	--it;
 
 	// Check the bounds
 	const uint64_t sstart = it->p_vaddr;
