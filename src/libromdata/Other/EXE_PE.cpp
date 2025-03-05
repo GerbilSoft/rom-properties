@@ -870,13 +870,15 @@ int EXEPrivate::addFields_PE_Export(void)
 		string name(pName, strnlen(pName, rvaMax - rvaName));
 		if (ents[ord].hint != -1) {
 			// This ordinal already has a name.
-			// Temporarily move the old name out to avoid a copy.
-			string oldname = std::move(ents[ord].name);
 			// Duplicate the entry, replace name and hint in the copy.
-			ExportEntry ent = ents[ord];
-			ents[ord].name = std::move(oldname);
-			ent.name = std::move(name);
+			const ExportEntry &src = ents[ord];
+			ExportEntry ent;
+			ent.ordinal = src.ordinal;
 			ent.hint = i;
+			ent.vaddr = src.vaddr;
+			ent.paddr = src.paddr;
+			ent.name = std::move(name);
+			ent.forwarder =  src.forwarder;
 			ents.push_back(std::move(ent));
 		} else {
 			ents[ord].name = std::move(name);
