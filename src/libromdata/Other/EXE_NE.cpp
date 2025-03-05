@@ -776,8 +776,8 @@ int EXEPrivate::addFields_NE_Import(void)
 	 *   target2 --> imported names offset
 	 */
 	struct hash2x16 {
-		size_t operator()(const std::pair<uint16_t, uint16_t> &p) const {
-			return std::hash<uint32_t>()(p.first<<16 | p.second);
+		size_t operator()(std::pair<uint16_t, uint16_t> p) const {
+			return std::hash<uint32_t>()((p.first << 16) | p.second);
 		}
 	};
 	std::unordered_set<std::pair<uint16_t, uint16_t>, hash2x16> ordinal_set, name_set;

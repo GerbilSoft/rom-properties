@@ -91,7 +91,7 @@ struct RpPngFormatTest_mode
 	RpPngFormatTest_mode(
 		const char *png_filename,
 		const char *bmp_gz_filename,
-		const PNG_IHDR_t &ihdr,
+		PNG_IHDR_t ihdr,
 		const BITMAPINFOHEADER &bih,
 		const tRNS_CI8_t &bmp_tRNS,
 		rp_image::Format rp_format)
@@ -107,7 +107,7 @@ struct RpPngFormatTest_mode
 	RpPngFormatTest_mode(
 		const char *png_filename,
 		const char *bmp_gz_filename,
-		const PNG_IHDR_t &ihdr,
+		PNG_IHDR_t ihdr,
 		const BITMAPINFOHEADER &bih,
 		rp_image::Format rp_format)
 		: png_filename(png_filename)
@@ -150,8 +150,8 @@ struct RpPngFormatTest_mode
 };
 
 // Maximum file size for images.
-static const off64_t MAX_PNG_IMAGE_FILESIZE =    512*1024;
-static const off64_t MAX_BMP_IMAGE_FILESIZE = 2*1024*1024;
+static constexpr off64_t MAX_PNG_IMAGE_FILESIZE =    512*1024;
+static constexpr off64_t MAX_BMP_IMAGE_FILESIZE = 2*1024*1024;
 
 class RpPngFormatTest : public ::testing::TestWithParam<RpPngFormatTest_mode>
 {

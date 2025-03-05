@@ -194,7 +194,7 @@ public:
 	 * @param game_ratings XEX2_Game_Ratings
 	 */
 	static void convertGameRatings(RomFields::age_ratings_t &age_ratings,
-		const XEX2_Game_Ratings &game_ratings);
+		XEX2_Game_Ratings game_ratings);
 
 	/**
 	 * Get the minimum kernel version required for this XEX.
@@ -1023,7 +1023,7 @@ string Xbox360_XEX_Private::formatMediaID(const uint8_t *pId)
  */
 void Xbox360_XEX_Private::convertGameRatings(
 	RomFields::age_ratings_t &age_ratings,
-	const XEX2_Game_Ratings &game_ratings)
+	XEX2_Game_Ratings game_ratings)
 {
 	// RomFields::age_ratings_t uses a format that matches
 	// Nintendo's systems.
