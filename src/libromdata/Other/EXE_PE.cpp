@@ -803,23 +803,31 @@ int EXEPrivate::addFields_PE_Export(void)
 	szExpAddrTbl = std::min(65536-ordinalBase, szExpAddrTbl);
 	const uint32_t *expAddrTbl = reinterpret_cast<const uint32_t*>(
 		checkBounds(rvaExpAddrTbl, szExpAddrTbl*sizeof(uint32_t)));
-	if (!expAddrTbl)
+	if (!expAddrTbl) {
 		return -ENOENT;
+	}
 
 	// Export Name Table
 	const uint32_t rvaExpNameTbl = le32_to_cpu(pExpDirTbl->AddressOfNames);
 	const uint32_t szExpNameTbl = le32_to_cpu(pExpDirTbl->NumberOfNames);
-	const uint32_t *expNameTbl = reinterpret_cast<const uint32_t*>(
+	static constexpr uint32_t szExpNameTbl_MAX = 16U * 1024U * 1024U;
+	assert(szExpNameTbl <= szExpNameTbl_MAX);
+	if (szExpNameTbl > szExpNameTbl_MAX) {
+		return -ENOMEM;
+	}
+	const uint32_t *const expNameTbl = reinterpret_cast<const uint32_t*>(
 		checkBounds(rvaExpNameTbl, szExpNameTbl*sizeof(uint32_t)));
-	if (!expNameTbl)
+	if (!expNameTbl) {
 		return -ENOENT;
+	}
 
 	// Export Ordinal Table
 	const uint32_t rvaExpOrdTbl = le32_to_cpu(pExpDirTbl->AddressOfNameOrdinals);
-	const uint16_t *expOrdTbl = reinterpret_cast<const uint16_t*>(
+	const uint16_t *const expOrdTbl = reinterpret_cast<const uint16_t*>(
 		checkBounds(rvaExpOrdTbl, szExpNameTbl*sizeof(uint16_t)));
-	if (!expOrdTbl)
+	if (!expOrdTbl) {
 		return -ENOENT;
+	}
 
 	struct ExportEntry {
 		int ordinal;	// index in the address table + ordinal base
