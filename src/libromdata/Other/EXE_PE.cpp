@@ -842,7 +842,9 @@ int EXEPrivate::addFields_PE_Export(void)
 
 	// Read address table
 	for (uint32_t i = 0; i < szExpAddrTbl; i++) {
-		ExportEntry ent;
+		const size_t next_idx = ents.size();
+		ents.resize(next_idx + 1);
+		ExportEntry &ent = ents[next_idx];
 		ent.ordinal = ordinalBase + i;
 		ent.hint = -1;
 		ent.vaddr = le32_to_cpu(expAddrTbl[i]);
@@ -855,31 +857,34 @@ int EXEPrivate::addFields_PE_Export(void)
 			const char *fwd = reinterpret_cast<const char *>(expDirTbl.data() + (ent.vaddr - rvaMin));
 			ent.forwarder.assign(fwd, strnlen(fwd, rvaMax - ent.vaddr));
 		}
-		ents.push_back(std::move(ent));
 	}
 
 	// Read name table
 	for (uint32_t i = 0; i < szExpNameTbl; i++) {
 		const uint32_t rvaName = le32_to_cpu(expNameTbl[i]);
 		const uint16_t ord = le16_to_cpu(expOrdTbl[i]);
-		if (ord >= szExpAddrTbl) // out of bounds ordinal
+		if (ord >= szExpAddrTbl) {
+			// out of bounds ordinal
 			continue;
-		if (rvaName < rvaMin || rvaName >= rvaMax)
+		}
+		if (rvaName < rvaMin || rvaName >= rvaMax) {
 			continue;
+		}
 		const char *pName = reinterpret_cast<const char*>(expDirTbl.data() + (rvaName - rvaMin));
 		string name(pName, strnlen(pName, rvaMax - rvaName));
 		if (ents[ord].hint != -1) {
 			// This ordinal already has a name.
 			// Duplicate the entry, replace name and hint in the copy.
+			const size_t next_idx = ents.size();
+			ents.resize(next_idx + 1);
 			const ExportEntry &src = ents[ord];
-			ExportEntry ent;
+			ExportEntry &ent = ents[next_idx];
 			ent.ordinal = src.ordinal;
 			ent.hint = i;
 			ent.vaddr = src.vaddr;
 			ent.paddr = src.paddr;
 			ent.name = std::move(name);
 			ent.forwarder =  src.forwarder;
-			ents.push_back(std::move(ent));
 		} else {
 			ents[ord].name = std::move(name);
 			ents[ord].hint = i;
