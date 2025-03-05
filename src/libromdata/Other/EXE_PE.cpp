@@ -1123,7 +1123,7 @@ int EXEPrivate::addFields_PE_Import(void)
 		row.reserve(3);
 		if (it.is_ordinal) {
 			row.push_back(fmt::format(C_("EXE|Exports", "Ordinal #{:d}"), it.value));
-			row.emplace_back();
+			row.push_back(fmt::to_string(it.value));
 		} else {
 			// RVA to hint number followed by NUL terminated name.
 			// FIXME: How does XEX handle this?
