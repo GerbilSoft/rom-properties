@@ -187,7 +187,7 @@ public:
 		: width(width), romField(romField) { }
 	friend ostream& operator<<(ostream& os, const StringField& field) {
 		// NOTE: nullptr string is an empty string, not an error.
-		auto romField = field.romField;
+		const auto &romField = field.romField;
 		os << ColonPad(field.width, romField.name);
 		if (romField.data.str) {
 			os << SafeString(romField.data.str, true, field.width);
@@ -206,7 +206,7 @@ public:
 	BitfieldField(size_t width, const RomFields::Field &romField)
 		: width(width), romField(romField) { }
 	friend ostream& operator<<(ostream& os, const BitfieldField& field) {
-		auto romField = field.romField;
+		const auto &romField = field.romField;
 		const auto &bitfieldDesc = romField.desc.bitfield;
 		assert(bitfieldDesc.names != nullptr);
 		if (!bitfieldDesc.names) {
@@ -390,7 +390,7 @@ public:
 	ListDataField(size_t width, const RomFields::Field &romField, uint32_t def_lc, uint32_t user_lc, unsigned int flags)
 		: width(width), romField(romField), def_lc(def_lc), user_lc(user_lc), flags(flags) { }
 	friend ostream& operator<<(ostream& os, const ListDataField& field) {
-		auto romField = field.romField;
+		const auto &romField = field.romField;
 		os << ColonPad(field.width, romField.name);
 
 		const auto &listDataDesc = romField.desc.list_data;
@@ -732,7 +732,7 @@ public:
 	DateTimeField(size_t width, const RomFields::Field &romField)
 		: width(width), romField(romField) { }
 	friend ostream& operator<<(ostream& os, const DateTimeField& field) {
-		auto romField = field.romField;
+		const auto &romField = field.romField;
 
 		os << ColonPad(field.width, romField.name);
 		StreamStateSaver state(os);
@@ -762,7 +762,7 @@ public:
 	AgeRatingsField(size_t width, const RomFields::Field &romField)
 		: width(width), romField(romField) { }
 	friend ostream& operator<<(ostream& os, const AgeRatingsField& field) {
-		auto romField = field.romField;
+		const auto &romField = field.romField;
 
 		os << ColonPad(field.width, romField.name);
 		StreamStateSaver state(os);
@@ -781,7 +781,7 @@ public:
 	DimensionsField(size_t width, const RomFields::Field &romField)
 		: width(width), romField(romField) { }
 	friend ostream& operator<<(ostream& os, const DimensionsField& field) {
-		auto romField = field.romField;
+		const auto &romField = field.romField;
 
 		os << ColonPad(field.width, romField.name);
 		StreamStateSaver state(os);
@@ -812,7 +812,7 @@ public:
 	}
 	friend ostream& operator<<(ostream& os, const StringMultiField& field) {
 		// NOTE: nullptr string is an empty string, not an error.
-		auto romField = field.romField;
+		const auto &romField = field.romField;
 		os << ColonPad(field.width, romField.name);
 
 		const auto *const pStr_multi = romField.data.str_multi;
