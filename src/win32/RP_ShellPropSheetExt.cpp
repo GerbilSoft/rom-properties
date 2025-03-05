@@ -1088,7 +1088,7 @@ int RP_ShellPropSheetExt_Private::initListData(_In_ HWND hWndTab,
 					// but we can't rely on that being the case, and this option
 					// was first introduced in Windows XP.
 					// We'll flip the image here to counteract it.
-					const rp_image_const_ptr flipimg = icon->flip(rp_image::FLIP_H);
+					rp_image_const_ptr flipimg = icon->flip(rp_image::FLIP_H);
 					assert((bool)flipimg);
 					if (flipimg) {
 						icon = std::move(flipimg);
@@ -1100,7 +1100,7 @@ int RP_ShellPropSheetExt_Private::initListData(_In_ HWND hWndTab,
 				// converted to ARGB32 first. Otherwise, when
 				// resizing, the "empty" background area will be black.
 				if (icon->format() != rp_image::Format::ARGB32) {
-					const rp_image_const_ptr icon32 = icon->dup_ARGB32();
+					rp_image_const_ptr icon32 = icon->dup_ARGB32();
 					assert((bool)icon32);
 					if (icon32) {
 						icon = std::move(icon32);
@@ -1119,7 +1119,7 @@ int RP_ShellPropSheetExt_Private::initListData(_In_ HWND hWndTab,
 					// TODO: Error handling.
 
 					// Resize the icon.
-					const rp_image_const_ptr icon_resized = icon->resized(
+					rp_image_const_ptr icon_resized = icon->resized(
 						szResize.cx, szResize.cy,
 						rp_image::AlignVCenter, lvBgColor[rowColorIdx]);
 					assert((bool)icon_resized);
