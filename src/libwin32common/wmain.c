@@ -46,6 +46,10 @@ int RP_C_API wmain(int argc, wchar_t *argv[])
 		if (cbMbs <= 0) {
 			// Invalid string. Make it an empty string anyway.
 			char *const empty_str = malloc(1);
+			if (!empty_str) {
+				// Memory allocation failed.
+				return EXIT_FAILURE;
+			}
 			empty_str[0] = '\0';
 			u8argv[i] = empty_str;
 			continue;
