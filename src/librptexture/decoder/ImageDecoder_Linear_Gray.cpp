@@ -142,7 +142,7 @@ rp_image_ptr fromLinearGray2bpp(int width, int height,
 	uint32_t *palette = img->palette();
 	palette[0] = 0xFFFFFFFFU;	// white
 	palette[1] = 0xFFC0C0C0U;	// light gray
-	palette[1] = 0xFF808080U;	// dark gray
+	palette[2] = 0xFF808080U;	// dark gray
 	palette[3] = 0xFF000000U;	// black
 	img->set_tr_idx(-1);
 
