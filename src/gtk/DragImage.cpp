@@ -347,16 +347,17 @@ rp_drag_image_update_pixmaps(RpDragImage *image)
 		}
 
 		// Set up the IconAnimHelper.
-		anim->iconAnimHelper.setIconAnimData(iconAnimData);
-		if (anim->iconAnimHelper.isAnimated()) {
+		IconAnimHelper &iconAnimHelper = anim->iconAnimHelper;
+		iconAnimHelper.setIconAnimData(iconAnimData);
+		if (iconAnimHelper.isAnimated()) {
 			// Initialize the animation.
-			anim->last_frame_number = anim->iconAnimHelper.frameNumber();
+			anim->last_frame_number = iconAnimHelper.frameNumber();
 
 			// Animation timer will be set up when animation is started.
 		}
 
 		// Show the first frame.
-		image->curFrame = PIMGTYPE_ref(anim->iconFrames[anim->iconAnimHelper.frameNumber()]);
+		image->curFrame = PIMGTYPE_ref(anim->iconFrames[iconAnimHelper.frameNumber()]);
 #ifdef USE_GTK_PICTURE
 		gtk_picture_set_paintable(GTK_PICTURE(image->imageWidget), GDK_PAINTABLE(image->curFrame));
 #else /* !USE_GTK_PICTURE */
@@ -699,14 +700,20 @@ rp_drag_image_start_anim_timer(RpDragImage *image)
 	g_return_if_fail(RP_IS_DRAG_IMAGE(image));
 
 	auto *const anim = image->cxx->anim.get();
-	if (!anim || !anim->iconAnimHelper.isAnimated()) {
+	if (!anim) {
+		// Not an animated icon.
+		return;
+	}
+
+	const IconAnimHelper &iconAnimHelper = anim->iconAnimHelper;
+	if (!anim->iconAnimHelper.isAnimated()) {
 		// Not an animated icon.
 		return;
 	}
 
 	// Get the current frame information.
-	anim->last_frame_number = anim->iconAnimHelper.frameNumber();
-	const int delay = anim->iconAnimHelper.frameDelay();
+	anim->last_frame_number = iconAnimHelper.frameNumber();
+	const int delay = iconAnimHelper.frameDelay();
 	assert(delay > 0);
 	if (delay <= 0) {
 		// Invalid delay value.

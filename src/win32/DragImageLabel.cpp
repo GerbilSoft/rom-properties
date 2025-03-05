@@ -247,10 +247,11 @@ bool DragImageLabelPrivate::updateBitmaps(void)
 		}
 
 		// Set up the IconAnimHelper.
-		anim->iconAnimHelper.setIconAnimData(iconAnimData);
-		if (anim->iconAnimHelper.isAnimated()) {
+		IconAnimHelper &iconAnimHelper = anim->iconAnimHelper;
+		iconAnimHelper.setIconAnimData(iconAnimData);
+		if (iconAnimHelper.isAnimated()) {
 			// Initialize the animation.
-			anim->last_frame_number = anim->iconAnimHelper.frameNumber();
+			anim->last_frame_number = iconAnimHelper.frameNumber();
 
 			// Icon animation timer is set in startAnimTimer().
 		}
@@ -588,7 +589,13 @@ void DragImageLabel::clearRp(void)
 void DragImageLabel::startAnimTimer(void)
 {
 	RP_D(DragImageLabel);
-	if (!d->anim || !d->anim->iconAnimHelper.isAnimated()) {
+	if (!d->anim) {
+		// Not an animated icon.
+		return;
+	}
+
+	const IconAnimHelper &iconAnimHelper = d->anim->iconAnimHelper;
+	if (!iconAnimHelper.isAnimated()) {
 		// Not an animated icon.
 		return;
 	}
@@ -599,8 +606,8 @@ void DragImageLabel::startAnimTimer(void)
 	}
 
 	// Get the current frame information.
-	d->anim->last_frame_number = d->anim->iconAnimHelper.frameNumber();
-	const int delay = d->anim->iconAnimHelper.frameDelay();
+	d->anim->last_frame_number = iconAnimHelper.frameNumber();
+	const int delay = iconAnimHelper.frameDelay();
 	assert(delay > 0);
 	if (delay <= 0) {
 		// Invalid delay value.

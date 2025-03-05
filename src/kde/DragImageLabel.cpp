@@ -191,10 +191,11 @@ bool DragImageLabel::updatePixmaps(void)
 		}
 
 		// Set up the IconAnimHelper.
-		m_anim->iconAnimHelper.setIconAnimData(iconAnimData);
-		if (m_anim->iconAnimHelper.isAnimated()) {
+		IconAnimHelper &iconAnimHelper = m_anim->iconAnimHelper;
+		iconAnimHelper.setIconAnimData(iconAnimData);
+		if (iconAnimHelper.isAnimated()) {
 			// Initialize the animation.
-			m_anim->last_frame_number = m_anim->iconAnimHelper.frameNumber();
+			m_anim->last_frame_number = iconAnimHelper.frameNumber();
 			// Create the animation timer.
 			if (!m_anim->tmrIconAnim) {
 				m_anim->tmrIconAnim = new QTimer(this);
@@ -234,7 +235,7 @@ bool DragImageLabel::updatePixmaps(void)
  */
 void DragImageLabel::startAnimTimer(void)
 {
-	if (!m_anim || !m_anim->iconAnimHelper.isAnimated()) {
+	if (!m_anim) {
 		// Not an animated icon.
 		return;
 	}
@@ -242,9 +243,15 @@ void DragImageLabel::startAnimTimer(void)
 	// Sanity check: Timer should have been created already.
 	assert(m_anim->tmrIconAnim != nullptr);
 
+	const IconAnimHelper &iconAnimHelper = m_anim->iconAnimHelper;
+	if (!iconAnimHelper.isAnimated()) {
+		// Not an animated icon.
+		return;
+	}
+
 	// Get the current frame information.
-	m_anim->last_frame_number = m_anim->iconAnimHelper.frameNumber();
-	const int delay = m_anim->iconAnimHelper.frameDelay();
+	m_anim->last_frame_number = iconAnimHelper.frameNumber();
+	const int delay = iconAnimHelper.frameDelay();
 	assert(delay > 0);
 	if (delay <= 0) {
 		// Invalid delay value.
