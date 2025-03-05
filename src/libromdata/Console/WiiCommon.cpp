@@ -147,6 +147,7 @@ string WiiCommon::getWiiBannerStringForSysLC(
 		    pImet->names[langID][1][0] == '\0')
 		{
 			// Empty strings. Try Japanese.
+			langID = WII_LANG_JAPANESE;
 			if (pImet->names[langID][0][0] == '\0' &&
 			    pImet->names[langID][1][0] == '\0')
 			{
