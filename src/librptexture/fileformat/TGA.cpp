@@ -476,7 +476,7 @@ rp_image_const_ptr TGAPrivate::loadImage(void)
 	}
 
 	img = imgtmp;
-	return img;
+	return imgtmp;
 }
 
 /**

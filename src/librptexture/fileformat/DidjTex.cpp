@@ -317,7 +317,7 @@ rp_image_const_ptr DidjTexPrivate::loadDidjTexImage(void)
 	}
 
 	img = imgtmp;
-	return img;
+	return imgtmp;
 }
 
 /** DidjTex **/

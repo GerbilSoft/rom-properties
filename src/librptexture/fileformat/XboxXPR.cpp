@@ -538,7 +538,7 @@ rp_image_const_ptr XboxXPRPrivate::loadXboxXPR0Image(void)
 			width, height,
 			static_cast<uint8_t*>(imgunswz->bits()),
 			img->stride(), sizeof(uint32_t));
-		img = imgunswz;
+		img = std::move(imgunswz);
 	}
 
 	return img;
