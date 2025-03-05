@@ -1778,10 +1778,7 @@ int Nintendo3DS::loadFieldData(void)
 			// TODO: This warning probably isn't needed,
 			// since it's handled above...
 			if (!shownWarning) {
-				KeyManager::VerifyResult res = (ncch
-					? ncch->verifyResult()
-					: KeyManager::VerifyResult::Unknown);
-				const char *err = KeyManager::verifyResultToString(res);
+				const char *err = KeyManager::verifyResultToString(ncch->verifyResult());
 				if (!err) {
 					err = C_("RomData", "Unknown error. (THIS IS A BUG!)");
 				}
@@ -1916,7 +1913,7 @@ int Nintendo3DS::loadFieldData(void)
 			    card_dev_id > N3DS_NCSD_CARD_DEVICE_MAX)
 			{
 				// SDK3 field is invalid. Use SDK2.
-				card_dev_id = ncsd_header->cci.partition_flags[N3DS_NCSD_PARTITION_FLAG_MEDIA_CARD_DEVICE_SDK3];
+				card_dev_id = ncsd_header->cci.partition_flags[N3DS_NCSD_PARTITION_FLAG_MEDIA_CARD_DEVICE_SDK2];
 			}
 
 			static const array<const char*, 4> card_dev_tbl = {{
