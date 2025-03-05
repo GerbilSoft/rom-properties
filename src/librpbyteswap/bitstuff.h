@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbyteswap)                    *
  * bitstuff.h: Bit manipulation functions.                                 *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -17,13 +17,6 @@
 
 #include "stdboolx.h"
 
-// constexpr is not valid in C.
-#ifndef __cplusplus
-#  ifndef constexpr
-#    define constexpr
-#  endif /* !constexpr */
-#endif /* !__cplusplus */
-
 // const: Function does not have any effects except on the return value,
 // and it only depends on the input parameters. (similar to constexpr)
 #ifndef ATTR_CONST
@@ -33,6 +26,15 @@
 #    define ATTR_CONST
 #  endif /* __GNUC__ */
 #endif /* ATTR_CONST */
+
+// constexpr is not valid in C.
+#ifndef CONSTEXPR
+#  ifndef __cplusplus
+#    define CONSTEXPR constexpr
+#  else
+#    define CONSTEXPR
+#  endif /* !__cplusplus */
+#endif /* !CONSTEXPR */
 
 /**
  * Unsigned integer log2(n).
@@ -95,7 +97,7 @@ static inline unsigned int popcount(unsigned int x)
 #ifdef __cplusplus
 template<typename T>
 ATTR_CONST
-static inline constexpr bool isPow2(T x)
+static inline CONSTEXPR bool isPow2(T x)
 #else
 ATTR_CONST
 static inline bool isPow2(unsigned int x)
@@ -117,7 +119,7 @@ static inline bool isPow2(unsigned int x)
 template<typename T>
 ATTR_CONST
 #  ifndef _MSC_VER
-static inline constexpr T nextPow2(T x)
+static inline CONSTEXPR T nextPow2(T x)
 #  else /* _MSC_VER */
 static inline T nextPow2(T x)
 #  endif /* !_MSC_VER */
