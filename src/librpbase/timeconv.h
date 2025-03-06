@@ -29,7 +29,7 @@
 
 // constexpr is not valid in C.
 #ifndef CONSTEXPR
-#  ifndef __cplusplus
+#  ifdef __cplusplus
 #    define CONSTEXPR constexpr
 #  else
 #    define CONSTEXPR
