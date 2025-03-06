@@ -675,9 +675,14 @@ int CacheTabPrivate::clearRomPropertiesCache(void)
 			case DT_REG: {
 				// Delete the file.
 				BOOL bRet = TRUE;
-				if (p.second & FILE_ATTRIBUTE_READONLY) {
+				// Check if the file is read-only.
+				// TODO: Optimize by including the Win32 attributes in rlist instead of converting to d_type?
+				const DWORD attrs = GetFileAttributes(p.first.c_str());
+				if (unlikely(attrs == INVALID_FILE_ATTRIBUTES)) {
+					bRet = FALSE;
+				} else if (attrs & FILE_ATTRIBUTE_READONLY) {
 					// Need to remove the read-only attribute.
-					bRet = SetFileAttributes(p.first.c_str(), (p.second & ~FILE_ATTRIBUTE_READONLY));
+					bRet = SetFileAttributes(p.first.c_str(), (attrs & ~FILE_ATTRIBUTE_READONLY));
 				}
 				if (!bRet) {
 					// Error removing the read-only attribute.
