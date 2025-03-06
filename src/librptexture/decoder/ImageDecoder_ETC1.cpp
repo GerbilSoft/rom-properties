@@ -285,7 +285,7 @@ struct ColorRGB {
  * @param color ColorRGB struct.
  * @return xRGB32 value. (Alpha channel set to 0xFF)
  */
-static inline uint32_t clamp_ColorRGB(const ColorRGB &color)
+static inline uint32_t clamp_ColorRGB(ColorRGB color)
 {
 	uint32_t xrgb32 = 0;
 	if (color.B > 255) {
