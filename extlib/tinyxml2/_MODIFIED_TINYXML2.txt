@@ -1,11 +1,9 @@
-This copy of tinyxml2-10.0.0 is a modified version of the original.
+This copy of tinyxml2-10.1.0 is a modified version of the original.
 
-commit 321ea883b7190d4e85cae5512a12e5eaa8f8731f
-Merge pull request #965 from leethomason/v10.0.0
+commit 57eea48c5bfc354ac45d53b2eb499e66c80d63e0
+version to 10.1.0
 
-V10.0.0
-
-Tag: 10.0.0
+Tag: 10.1.0
 
 The following changes have been made to the original:
 
@@ -21,5 +19,5 @@ The following changes have been made to the original:
 
 - Fixed several -Wformat warnings.
 
-To obtain the original tinyxml2-10.0.0, visit:
+To obtain the original tinyxml2-10.1.0, visit:
 https://github.com/leethomason/tinyxml2
