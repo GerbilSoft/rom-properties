@@ -14,3 +14,9 @@
 6|VIC-Rabbit
 7|Super Expander
 8|Mikro Assembler
+
+# 10
+10|SID Cartridge
+11|IEEE-488
+12|IO ram cart (IO2)
+13|IO ram cart (IO3)

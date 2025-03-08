@@ -30,7 +30,9 @@ static const char CBM_C64_cart_type_strtbl[] =
 	"oppy" "\x00" "BIS-Plus" "\x00" "SD-BOX" "\x00" "MultiMAX" "\x00" "B"
 	"lackbox V9" "\x00" "Lt. Kernal Host Adaptor" "\x00" "RAMLink" "\x00"
 	"H.E.R.O." "\x00" "IEEE Flash! 64" "\x00" "Turtle Graphics II" "\x00"
-	"Freeze Frame MK2" "\x00" "Partner 64" "\x00" "Hyper-BASIC" "\x00";
+	"Freeze Frame MK2" "\x00" "Partner 64" "\x00" "Hyper-BASIC" "\x00"
+	"Universal Cartridge 1" "\x00" "Universal Cartridge 1.5" "\x00" "U"
+	"niversal Cartridge 2" "\x00";
 
 static const uint16_t CBM_C64_cart_type_offtbl[] = {
 	/* CBM_C64_cart_type 0 */
@@ -48,4 +50,5 @@ static const uint16_t CBM_C64_cart_type_offtbl[] = {
 	/* CBM_C64_cart_type 64 */
 	860,872,884,896,911,920,927,936,
 	948,972,980,989,1004,1023,1040,1051,
+	1063,1085,1109,
 };

@@ -6,10 +6,12 @@
 static const char CBM_VIC20_cart_type_strtbl[] =
 	"\x00" "generic cartridge" "\x00" "Mega-Cart" "\x00" "Behr Bonz" "\x00"
 	"Vic Flash Plugin" "\x00" "UltiMem" "\x00" "Final Expansion" "\x00"
-	"VIC-Rabbit" "\x00" "Super Expander" "\x00" "Mikro Assembler" "\x00";
+	"VIC-Rabbit" "\x00" "Super Expander" "\x00" "Mikro Assembler" "\x00"
+	"SID Cartridge" "\x00" "IEEE-488" "\x00" "IO ram cart (IO2)" "\x00"
+	"IO ram cart (IO3)" "\x00";
 
 static const uint8_t CBM_VIC20_cart_type_offtbl[] = {
 	/* CBM_VIC20_cart_type 0 */
 	1,19,29,39,56,64,80,91,
-	106,
+	106,0,122,136,145,163,
 };

@@ -99,3 +99,8 @@
 77|Freeze Frame MK2
 78|Partner 64
 79|Hyper-BASIC
+
+# 80
+80|Universal Cartridge 1
+81|Universal Cartridge 1.5
+82|Universal Cartridge 2
