@@ -109,6 +109,7 @@ class XAttrReaderPrivate
 		uint32_t xfsXFlags;
 		uint32_t xfsProjectId;
 		unsigned int dosAttributes;
+		unsigned int validDosAttributes;
 		XAttrReader::XAttrList genericXAttrs;
 };
 

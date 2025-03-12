@@ -75,7 +75,14 @@ RP_XAttrView_Private::~RP_XAttrView_Private()
 int RP_XAttrView_Private::loadDosAttrs(void)
 {
 	const bool hasDosAttributes = xattrReader->hasDosAttributes();
-	const unsigned int attrs = (likely(hasDosAttributes)) ? xattrReader->dosAttributes() : 0;
+	unsigned int attrs, validAttrs;
+	if (likely(hasDosAttributes)) {
+		attrs = xattrReader->dosAttributes();
+		validAttrs = xattrReader->validDosAttributes();
+	} else {
+		attrs = 0;
+		validAttrs = 0;
+	}
 
 	// TODO: Use a "starting resource ID" instead of specifying each one?
 	struct res_map_t {
@@ -92,7 +99,9 @@ int RP_XAttrView_Private::loadDosAttrs(void)
 	}};
 
 	for (const auto &p : res_map) {
-		Button_SetCheck(GetDlgItem(hDlgSheet, p.id), (attrs & p.attr) ? BST_CHECKED : BST_UNCHECKED);
+		HWND hCheckbox = GetDlgItem(hDlgSheet, p.id);
+		Button_SetCheck(hCheckbox, (attrs & p.attr) ? BST_CHECKED : BST_UNCHECKED);
+		EnableWindow(hCheckbox, !!(validAttrs & p.attr));
 	}
 
 	return (likely(hasDosAttributes)) ? 0 : -ENOENT;

@@ -17,6 +17,7 @@ class DosAttrView : public QWidget
 Q_OBJECT
 
 Q_PROPERTY(unsigned int attrs READ attrs WRITE setAttrs RESET clearAttrs)
+Q_PROPERTY(unsigned int validAttrs READ validAttrs WRITE setValidAttrs RESET clearValidAttrs)
 
 public:
 	explicit DosAttrView(QWidget *parent = nullptr);
@@ -44,6 +45,30 @@ public:
 	 * Clear the current MS-DOS attributes.
 	 */
 	void clearAttrs(void);
+
+	/**
+	 * Get the valid MS-DOS attributes.
+	 * @return Valid MS-DOS attributes
+	 */
+	unsigned int validAttrs(void) const;
+
+	/**
+	 * Set the valid MS-DOS attributes.
+	 * @param validAttrs Valid MS-DOS attributes
+	 */
+	void setValidAttrs(unsigned int validAttrs);
+
+	/**
+	 * Clear the valid MS-DOS attributes.
+	 */
+	void clearValidAttrs(void);
+
+	/**
+	 * Set the current *and* valid MS-DOS attributes at the same time.
+	 * @param attrs MS-DOS attributes
+	 * @param validAttrs Valid MS-DOS attributes
+	 */
+	void setCurrentAndValidAttrs(unsigned int attrs, unsigned int validAttrs);
 
 protected slots:
 	/**

@@ -30,6 +30,9 @@
 // Ext2 flags (also used for Ext3, Ext4, and other Linux file systems)
 #include "ext2_flags.h"
 
+// DOS attributes
+#include "dos_attrs.h"
+
 #ifdef __linux__
 // for the following ioctls:
 // - FS_IOC_GETFLAGS (equivalent to EXT2_IOC_GETFLAGS)
@@ -84,6 +87,17 @@ extern "C" {
 
 namespace LibRpFile {
 
+// Valid MS-DOS attributes
+static constexpr unsigned int VALID_DOS_ATTRIBUTES_FAT = \
+	FILE_ATTRIBUTE_READONLY | \
+	FILE_ATTRIBUTE_HIDDEN | \
+	FILE_ATTRIBUTE_SYSTEM | \
+	FILE_ATTRIBUTE_ARCHIVE;
+static constexpr unsigned int VALID_DOS_ATTRIBUTES_NTFS = \
+	VALID_DOS_ATTRIBUTES_FAT | \
+	FILE_ATTRIBUTE_COMPRESSED | \
+	FILE_ATTRIBUTE_ENCRYPTED;
+
 /** XAttrReaderPrivate **/
 
 XAttrReaderPrivate::XAttrReaderPrivate(const char *filename)
@@ -97,6 +111,7 @@ XAttrReaderPrivate::XAttrReaderPrivate(const char *filename)
 	, xfsXFlags(0)
 	, xfsProjectId(0)
 	, dosAttributes(0)
+	, validDosAttributes(0)
 {
 	// Make sure this is a regular file or a directory.
 	mode_t mode;
@@ -251,9 +266,10 @@ int XAttrReaderPrivate::loadDosAttrs(void)
 	// Attempt to get MS-DOS attributes.
 
 #ifdef __linux__
-	// ioctl (Linux vfat only)
+	// ioctl (Linux FAT/exFAT only)
 	if (!ioctl(fd, FAT_IOCTL_GET_ATTRIBUTES, &dosAttributes)) {
 		// ioctl() succeeded. We have MS-DOS attributes.
+		validDosAttributes = VALID_DOS_ATTRIBUTES_FAT;
 		hasDosAttributes = true;
 		return 0;
 	}
@@ -280,6 +296,7 @@ int XAttrReaderPrivate::loadDosAttrs(void)
 		ssize_t sz = fgetxattr(fd, p.name, buf.u8, sizeof(buf.u8));
 		if (sz == 4) {
 			dosAttributes = (p.be32) ? be32_to_cpu(buf.u32) : le32_to_cpu(buf.u32);
+			validDosAttributes = VALID_DOS_ATTRIBUTES_NTFS;
 			hasDosAttributes = true;
 			return 0;
 		}

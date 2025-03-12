@@ -375,8 +375,9 @@ rp_xattr_view_load_dos_attrs(RpXAttrView *widget)
 	}
 
 	// We have MS-DOS attributes.
-	rp_dos_attr_view_set_attrs(RP_DOS_ATTR_VIEW(widget->dosAttrView),
-		widget->xattrReader->dosAttributes());
+	rp_dos_attr_view_set_current_and_valid_attrs(RP_DOS_ATTR_VIEW(widget->dosAttrView),
+		widget->xattrReader->dosAttributes(),
+		widget->xattrReader->validDosAttributes());
 	gtk_widget_set_visible(widget->fraDosAttributes, true);
 	return 0;
 }

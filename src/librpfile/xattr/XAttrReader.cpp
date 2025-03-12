@@ -108,12 +108,23 @@ bool XAttrReader::hasDosAttributes(void) const
 
 /**
  * Get this file's MS-DOS attributes.
- * @return MS-DOS attributes.
+ * @return MS-DOS attributes
  */
 unsigned int XAttrReader::dosAttributes(void) const
 {
 	RP_D(const XAttrReader);
 	return d->dosAttributes;
+}
+
+/**
+ * Get this file's valid MS-DOS attributes.
+ * Compressed and Encrypted are available on NTFS but not FAT.
+ * @return Valid MS-DOS attributes
+ */
+unsigned int XAttrReader::validDosAttributes(void) const
+{
+	RP_D(const XAttrReader);
+	return d->validDosAttributes;
 }
 
 /**

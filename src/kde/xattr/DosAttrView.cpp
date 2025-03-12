@@ -22,6 +22,7 @@ class DosAttrViewPrivate
 public:
 	DosAttrViewPrivate()
 		: attrs(0)
+		, validAttrs(0)
 	{}
 
 private:
@@ -30,6 +31,7 @@ private:
 public:
 	Ui::DosAttrView ui;
 	unsigned int attrs;
+	unsigned int validAttrs;
 
 public:
 	/**
@@ -61,7 +63,9 @@ public:
 inline void DosAttrViewPrivate::updateCheckbox(unsigned int attr, QCheckBox *checkBox)
 {
 	const bool val = !!(attrs & attr);
+	const bool enable = !!(validAttrs & attr);
 	checkBox->setChecked(val);
+	checkBox->setEnabled(enable);
 	checkBox->setProperty("DosAttrView.value", val);
 }
 
@@ -145,6 +149,56 @@ void DosAttrView::clearAttrs(void)
 	Q_D(DosAttrView);
 	if (d->attrs != 0) {
 		d->attrs = 0;
+		d->updateAttrsDisplay();
+	}
+}
+
+/**
+ * Get the valid MS-DOS attributes.
+ * @return Valid MS-DOS attributes
+ */
+unsigned int DosAttrView::validAttrs(void) const
+{
+	Q_D(const DosAttrView);
+	return d->validAttrs;
+}
+
+/**
+ * Set the valid MS-DOS attributes.
+ * @param validAttrs Valid MS-DOS attributes
+ */
+void DosAttrView::setValidAttrs(unsigned int validAttrs)
+{
+	Q_D(DosAttrView);
+	if (d->validAttrs != validAttrs) {
+		d->validAttrs = validAttrs;
+		d->updateAttrsDisplay();
+	}
+}
+
+/**
+ * Clear the valid MS-DOS attributes.
+ */
+void DosAttrView::clearValidAttrs(void)
+{
+	Q_D(DosAttrView);
+	if (d->validAttrs != 0) {
+		d->validAttrs = 0;
+		d->updateAttrsDisplay();
+	}
+}
+
+/**
+ * Set the current *and* valid MS-DOS attributes at the same time.
+ * @param attrs MS-DOS attributes
+ * @param validAttrs Valid MS-DOS attributes
+ */
+void DosAttrView::setCurrentAndValidAttrs(unsigned int attrs, unsigned int validAttrs)
+{
+	Q_D(DosAttrView);
+	if (d->attrs != attrs || d->validAttrs != validAttrs) {
+		d->attrs = attrs;
+		d->validAttrs = validAttrs;
 		d->updateAttrsDisplay();
 	}
 }

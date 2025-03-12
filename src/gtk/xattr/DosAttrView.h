@@ -33,4 +33,10 @@ void		rp_dos_attr_view_set_attrs	(RpDosAttrView *widget, unsigned int attrs);
 unsigned int 	rp_dos_attr_view_get_attrs	(RpDosAttrView *widget);
 void		rp_dos_attr_view_clear_attrs	(RpDosAttrView *widget);
 
+void		rp_dos_attr_view_set_valid_attrs	(RpDosAttrView *widget, unsigned int validAttrs);
+unsigned int 	rp_dos_attr_view_get_valid_attrs	(RpDosAttrView *widget);
+void		rp_dos_attr_view_clear_valid_attrs	(RpDosAttrView *widget);
+
+void		rp_dos_attr_view_set_current_and_valid_attrs	(RpDosAttrView *widget, unsigned int attrs, unsigned int validAttrs);
+
 G_END_DECLS

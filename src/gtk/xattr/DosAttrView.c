@@ -18,6 +18,7 @@ typedef enum {
 	PROP_0,
 
 	PROP_ATTRS,
+	PROP_VALID_ATTRS,
 
 	PROP_LAST
 } RpDosAttrViewPropID;
@@ -63,6 +64,7 @@ struct _RpDosAttrView {
 	super __parent__;
 
 	unsigned int attrs;
+	unsigned int validAttrs;
 
 	// Inhibit checkbox toggling while updating.
 	gboolean inhibit_checkbox_no_toggle;
@@ -103,6 +105,11 @@ rp_dos_attr_view_class_init(RpDosAttrViewClass *klass)
 
 	props[PROP_ATTRS] = g_param_spec_uint(
 		"attrs", "attrs", "MS-DOS file attributes",
+		0U, ~0U, 0U,
+		(GParamFlags)(G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS | G_PARAM_EXPLICIT_NOTIFY));
+
+	props[PROP_VALID_ATTRS] = g_param_spec_uint(
+		"valid-attrs", "valid-attrs", "Valid MS-DOS file attributes",
 		0U, ~0U, 0U,
 		(GParamFlags)(G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS | G_PARAM_EXPLICIT_NOTIFY));
 
@@ -196,6 +203,10 @@ rp_dos_attr_view_set_property(GObject		*object,
 			rp_dos_attr_view_set_attrs(widget, g_value_get_uint(value));
 			break;
 
+		case PROP_VALID_ATTRS:
+			rp_dos_attr_view_set_valid_attrs(widget, g_value_get_uint(value));
+			break;
+
 		default:
 			G_OBJECT_WARN_INVALID_PROPERTY_ID(object, prop_id, pspec);
 			break;
@@ -213,6 +224,10 @@ rp_dos_attr_view_get_property(GObject		*object,
 	switch (prop_id) {
 		case PROP_ATTRS:
 			g_value_set_uint(value, widget->attrs);
+			break;
+
+		case PROP_VALID_ATTRS:
+			g_value_set_uint(value, widget->validAttrs);
 			break;
 
 		default:
@@ -241,7 +256,9 @@ rp_dos_attr_view_update_attrs_display(RpDosAttrView *widget)
 
 	for (size_t i = 0; i < ARRAY_SIZE(widget->checkBoxes); i++) {
 		gboolean val = !!(widget->attrs & (1U << flag_order[i]));
+		gboolean enable = !!(widget->validAttrs & (1U << flag_order[i]));
 		gtk_check_button_set_active(GTK_CHECK_BUTTON(widget->checkBoxes[i]), val);
+		gtk_widget_set_sensitive(widget->checkBoxes[i], enable);
 		g_object_set_qdata(G_OBJECT(widget->checkBoxes[i]), DosAttrView_value_quark, GUINT_TO_POINTER((guint)val));
 	}
 
@@ -287,10 +304,76 @@ void
 rp_dos_attr_view_clear_attrs(RpDosAttrView *widget)
 {
 	g_return_if_fail(RP_IS_DOS_ATTR_VIEW(widget));
+
 	if (widget->attrs != 0) {
 		widget->attrs = 0;
 		rp_dos_attr_view_update_attrs_display(widget);
 		g_object_notify_by_pspec(G_OBJECT(widget), props[PROP_ATTRS]);
+	}
+}
+
+/**
+ * Set the valid MS-DOS attributes.
+ * @param widget DosAttrView
+ * @param attrs Valid MS-DOS attributes
+ */
+void
+rp_dos_attr_view_set_valid_attrs(RpDosAttrView *widget, unsigned int validAttrs)
+{
+	g_return_if_fail(RP_IS_DOS_ATTR_VIEW(widget));
+
+	if (widget->validAttrs != validAttrs) {
+		widget->validAttrs = validAttrs;
+		rp_dos_attr_view_update_attrs_display(widget);
+		g_object_notify_by_pspec(G_OBJECT(widget), props[PROP_VALID_ATTRS]);
+	}
+}
+
+/**
+ * Get the valid MS-DOS attributes.
+ * @param widget DosAttrView
+ * @return Valid MS-DOS attributes
+ */
+unsigned int
+rp_dos_attr_view_get_valid_attrs(RpDosAttrView *widget)
+{
+	g_return_val_if_fail(RP_IS_DOS_ATTR_VIEW(widget), 0);
+	return widget->validAttrs;
+}
+
+/**
+ * Clear the valid MS-DOS attributes.
+ * @param widget DosAttrView
+ */
+void
+rp_dos_attr_view_clear_valid_attrs(RpDosAttrView *widget)
+{
+	g_return_if_fail(RP_IS_DOS_ATTR_VIEW(widget));
+
+	if (widget->validAttrs != 0) {
+		widget->validAttrs = 0;
+		rp_dos_attr_view_update_attrs_display(widget);
+		g_object_notify_by_pspec(G_OBJECT(widget), props[PROP_VALID_ATTRS]);
+	}
+}
+
+/**
+ * Set the current *and* valid MS-DOS attributes at the same time.
+ * @param attrs MS-DOS attributes
+ * @param validAttrs Valid MS-DOS attributes
+ */
+void
+rp_dos_attr_view_set_current_and_valid_attrs(RpDosAttrView *widget, unsigned int attrs, unsigned int validAttrs)
+{
+	g_return_if_fail(RP_IS_DOS_ATTR_VIEW(widget));
+
+	if (widget->attrs != attrs || widget->validAttrs != validAttrs) {
+		widget->attrs = attrs;
+		widget->validAttrs = validAttrs;
+		rp_dos_attr_view_update_attrs_display(widget);
+		// TODO: Only notify one if only one was changed?
+		g_object_notify_by_pspec(G_OBJECT(widget), props[PROP_ATTRS]);
+		g_object_notify_by_pspec(G_OBJECT(widget), props[PROP_VALID_ATTRS]);
 	}
 }
 

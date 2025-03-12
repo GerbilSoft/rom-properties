@@ -154,7 +154,7 @@ int XAttrViewPrivate::loadDosAttrs(void)
 	}
 
 	// We have MS-DOS attributes.
-	ui.dosAttrView->setAttrs(xattrReader->dosAttributes());
+	ui.dosAttrView->setCurrentAndValidAttrs(xattrReader->dosAttributes(), xattrReader->validDosAttributes());
 	ui.grpDosAttributes->show();
 	return 0;
 }
