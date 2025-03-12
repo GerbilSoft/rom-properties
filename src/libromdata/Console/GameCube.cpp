@@ -1362,7 +1362,7 @@ int GameCube::loadFieldData(void)
 	// bi2.bin and/or RVL_RegionSetting is loaded in the constructor,
 	// and the region code is stored in d->gcnRegion.
 	if (d->hasRegionCode) {
-		bool isDefault;
+		bool isDefault = true;	// assuming the ID4 represents the disc region if nothing else says otherwise
 		const char *region;
 		if ((d->discType & GameCubePrivate::DISC_SYSTEM_MASK) != GameCubePrivate::DISC_SYSTEM_WII) {
 			// GameCube: Only 0 (JPN), 1 (USA), and 2 (EUR) are valid.

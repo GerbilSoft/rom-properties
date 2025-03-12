@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * WiiUH3Reader.hpp: Wii U H3 content reader.                              *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -112,6 +112,11 @@ WiiUH3ReaderPrivate::WiiUH3ReaderPrivate(WiiUH3Reader *q, const uint8_t *pKey, s
 	q->m_lastError = ENOTSUP;
 	q->m_file.reset();
 #endif /* ENABLE_DECRYPTION */
+}
+
+WiiUH3Reader::~WiiUH3Reader()
+{
+	delete d_ptr;
 }
 
 /**

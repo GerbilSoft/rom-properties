@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * DpfReader.cpp: GameCube/Wii DPF/RPF sparse disc image reader.           *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -202,6 +202,11 @@ DpfReader::DpfReader(const IRpFilePtr &file)
 
 	// Reset the disc position.
 	d->pos = 0;
+}
+
+DpfReader::~DpfReader()
+{
+	delete d_ptr;
 }
 
 /**

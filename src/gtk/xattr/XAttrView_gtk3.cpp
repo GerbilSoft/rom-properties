@@ -32,7 +32,6 @@ rp_xattr_view_init_posix_xattrs_widgets(struct _RpXAttrView *widget, GtkScrolled
 	widget->listStore = gtk_list_store_new(2, G_TYPE_STRING, G_TYPE_STRING);
 	GtkTreeModel *const sortProxy = gtk_tree_model_sort_new_with_model(GTK_TREE_MODEL(widget->listStore));
 	widget->treeView = gtk_tree_view_new_with_model(GTK_TREE_MODEL(sortProxy));
-	g_object_unref(sortProxy);	// Needed for GTK2/GTK3; not for GTK4
 
 	gtk_widget_set_name(widget->treeView, "treeView");
 	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(widget->treeView), true);
@@ -76,6 +75,11 @@ rp_xattr_view_init_posix_xattrs_widgets(struct _RpXAttrView *widget, GtkScrolled
 
 	// Default to sorting by name.
 	gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(sortProxy), 0, GTK_SORT_ASCENDING);
+
+	// We don't need the sort proxy anymore.
+	// NOTE: g_object_unref() is needed here for the
+	// older GTK2/GTK3 GtkTreeModel, but not for GTK4.
+	g_object_unref(sortProxy);
 }
 
 /**

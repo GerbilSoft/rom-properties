@@ -223,7 +223,7 @@ static RomDataPtr openFromFilenameOrURI(const char *source_file, string &s_uri, 
 				// Attempt to open the ROM file.
 				const IRpFilePtr file =
 					std::make_shared<RpFile>(source_filename, RpFile::FM_OPEN_READ_GZ);
-				if (!file) {
+				if (!file->isOpen()) {
 					// Could not open the file.
 					if (p_err) {
 						*p_err = RPCT_ERROR_CANNOT_OPEN_SOURCE_FILE;
