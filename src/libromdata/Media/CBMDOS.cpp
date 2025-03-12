@@ -95,8 +95,7 @@ public:
 	// Track offsets
 	// Index is track number, minus one.
 	struct track_offsets_t {
-		uint8_t sector_count;		// Sectors per track
-		uint8_t reserved[3];
+		unsigned int sector_count;	// Sectors per track
 		unsigned int start_offset;	// Starting offset (in bytes)
 	};
 	rp::uvector<track_offsets_t> track_offsets;
@@ -160,6 +159,8 @@ public:
 	 * @param gcr	[in] Input buffer with 5 GCR bytes
 	 * @return 0 on success; non-zero on error.
 	 */
+	ATTR_ACCESS(write_only, 1)
+	ATTR_ACCESS(read_only, 2)
 	static int decode_GCR_bytes(uint8_t *data, const uint8_t *gcr);
 
 	/**
@@ -178,6 +179,7 @@ public:
 	 * @param sector	[in] Sector# (starts at 0)
 	 * @return Number of bytes read on success, or zero on error.
 	 */
+	ATTR_ACCESS_SIZE(write_only, 2, 3)
 	size_t read_sector(void *buf, size_t siz, uint8_t track, uint8_t sector);
 
 	/**
@@ -186,6 +188,7 @@ public:
 	 * @param siz	[in] Size of buf
 	 * @return String length with $A0 padding removed.
 	 */
+	ATTR_ACCESS_SIZE(read_only, 1, 2)
 	static size_t remove_A0_padding(const char *buf, size_t siz);
 
 	/**
