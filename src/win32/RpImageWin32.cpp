@@ -509,9 +509,9 @@ HICON toHICON(HBITMAP hBitmap)
 	HBITMAP hBmpTmp = nullptr;
 	if (!img->isSquare()) {
 		// Image is non-square.
-		const rp_image_ptr tmp_img = img->squared();
+		rp_image_ptr tmp_img = img->squared();
 		if (tmp_img) {
-			img = tmp_img;
+			img = std::move(tmp_img);
 		}
 
 		// Create a new temporary bitmap.

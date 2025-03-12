@@ -672,9 +672,9 @@ rp_image_const_ptr SegaPVRPrivate::loadPvrImage(void)
 				    pvrHeader.width >= 64 && pvrHeader.height >= 64)
 				{
 					// Need to unswizzle the texture.
-					const rp_image_ptr img_unswz = svr_unswizzle_16(img);
+					rp_image_ptr img_unswz = svr_unswizzle_16(img);
 					if (img_unswz) {
-						img = img_unswz;
+						img = std::move(img_unswz);
 					}
 				}
 				break;
@@ -775,9 +775,9 @@ rp_image_const_ptr SegaPVRPrivate::loadPvrImage(void)
 			// Puyo Tools: Minimum swizzle size for 4-bit is 128x128.
 			if (pvrHeader.width >= 128 && pvrHeader.height >= 128) {
 				// Need to unswizzle the texture.
-				const rp_image_ptr img_unswz = svr_unswizzle_4or8(img);
+				rp_image_ptr img_unswz = svr_unswizzle_4or8(img);
 				if (img_unswz) {
-					img = img_unswz;
+					img = std::move(img_unswz);
 				}
 			}
 			break;
@@ -825,9 +825,9 @@ rp_image_const_ptr SegaPVRPrivate::loadPvrImage(void)
 			// Puyo Tools: Minimum swizzle size for 8-bit is 128x64.
 			if (pvrHeader.width >= 128 && pvrHeader.height >= 64) {
 				// Need to unswizzle the texture.
-				const rp_image_ptr img_unswz = svr_unswizzle_4or8(img);
+				rp_image_ptr img_unswz = svr_unswizzle_4or8(img);
 				if (img_unswz) {
-					img = img_unswz;
+					img = std::move(img_unswz);
 				}
 			}
 			break;

@@ -469,9 +469,9 @@ rp_image_const_ptr TGAPrivate::loadImage(void)
 
 	// Post-processing: Check if a flip is needed.
 	if (imgtmp && flipOp != rp_image::FLIP_NONE) {
-		const rp_image_ptr flipimg = imgtmp->flip(flipOp);
+		rp_image_ptr flipimg = imgtmp->flip(flipOp);
 		if (flipimg) {
-			imgtmp = flipimg;
+			imgtmp = std::move(flipimg);
 		}
 	}
 

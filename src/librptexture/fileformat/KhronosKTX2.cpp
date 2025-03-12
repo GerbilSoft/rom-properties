@@ -624,9 +624,9 @@ rp_image_const_ptr KhronosKTX2Private::loadImage(int mip)
 		// Check if a flip is needed.
 		if (flipOp != rp_image::FLIP_NONE) {
 			// TODO: Assert that img dimensions match ktx2Header?
-			const rp_image_ptr flipimg = img->flip(flipOp);
+			rp_image_ptr flipimg = img->flip(flipOp);
 			if (flipimg) {
-				img = flipimg;
+				img = std::move(flipimg);
 			}
 		}
 

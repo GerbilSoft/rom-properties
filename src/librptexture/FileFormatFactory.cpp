@@ -172,7 +172,7 @@ FileFormatPtr create(const IRpFilePtr &file)
 
 		if (fileFormat && fileFormat->isValid()) {
 			// FileFormat subclass obtained.
-			return FileFormatPtr(fileFormat);
+			return fileFormat;
 		}
 	}
 

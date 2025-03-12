@@ -545,7 +545,7 @@ btnOptions_triggered_signal_handler(RpOptionsMenuButton *menuButton,
 
 		// Initial file and directory, based on the current file.
 		// NOTE: Not checking if it's a file or a directory. Assuming it's a file.
-		const string fullFilename = FileSystem::replace_ext(romData->filename(), op->sfi.ext);
+		string fullFilename = FileSystem::replace_ext(romData->filename(), op->sfi.ext);
 		string init_dir, init_name;
 		if (!fullFilename.empty()) {
 			// Split the directory and basename.
@@ -556,7 +556,7 @@ btnOptions_triggered_signal_handler(RpOptionsMenuButton *menuButton,
 				init_dir.assign(fullFilename, 0, slash_pos);
 			} else {
 				// Not a full path. We can only set the filename.
-				init_name = fullFilename;
+				init_name = std::move(fullFilename);
 			}
 		}
 

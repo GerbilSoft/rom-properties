@@ -806,9 +806,9 @@ rp_image_const_ptr PowerVR3Private::loadImage(int mip)
 
 	// Post-processing: Check if a flip is needed.
 	if (img && flipOp != rp_image::FLIP_NONE) {
-		const rp_image_ptr flipimg = img->flip(flipOp);
+		rp_image_ptr flipimg = img->flip(flipOp);
 		if (flipimg) {
-			img = flipimg;
+			img = std::move(flipimg);
 		}
 	}
 

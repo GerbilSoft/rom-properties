@@ -181,10 +181,10 @@ HBITMAP ISpriteSheet::getIcon(int col, int row, bool gray, UINT dpi) const
 
 		// If flipH is specified, flip the image horizontally.
 		if (m_flipH) {
-			const rp_image_ptr flipimg = imgSpriteSheet->flip(rp_image::FLIP_H);
+			rp_image_ptr flipimg = imgSpriteSheet->flip(rp_image::FLIP_H);
 			assert((bool)flipimg);
 			if (flipimg) {
-				imgSpriteSheet = flipimg;
+				imgSpriteSheet = std::move(flipimg);
 			}
 		}
 	}

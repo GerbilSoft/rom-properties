@@ -515,7 +515,7 @@ rp_image_ptr load(IRpFile *file)
 	png_set_read_fn(png_ptr, file, png_io_IRpFile_read);
 
 	// Call the actual PNG image reading function.
-	const rp_image_ptr img = loadPng(png_ptr, info_ptr);
+	rp_image_ptr img = loadPng(png_ptr, info_ptr);
 
 	// Free the PNG structs.
 	png_destroy_read_struct(&png_ptr, &info_ptr, nullptr);

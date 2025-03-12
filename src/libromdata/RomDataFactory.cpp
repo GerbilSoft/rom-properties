@@ -729,7 +729,7 @@ RomDataPtr create(const IRpFilePtr &file, unsigned int attrs)
 	{
 		// Dreamcast .VMI+.VMS pair.
 		// Attempt to open the other file in the pair.
-		const RomDataPtr romData = Private::openDreamcastVMSandVMI(file);
+		RomDataPtr romData = Private::openDreamcastVMSandVMI(file);
 		if (romData) {
 			// .VMI+.VMS pair opened.
 			return romData;

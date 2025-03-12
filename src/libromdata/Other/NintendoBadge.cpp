@@ -278,9 +278,9 @@ rp_image_const_ptr NintendoBadgePrivate::loadImage(int idx)
 
 		if (badgeType == BadgeType::CABS) {
 			// Need to crop the 64x64 image to 48x48.
-			const rp_image_ptr img48 = img->resized(48, 48);
+			rp_image_ptr img48 = img->resized(48, 48);
 			if (img48) {
-				img = img48;
+				img = std::move(img48);
 			}
 		}
 	} else {

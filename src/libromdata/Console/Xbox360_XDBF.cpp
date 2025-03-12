@@ -1289,7 +1289,7 @@ int Xbox360_XDBF_Private::addFields_avatarAwards_SPA(void)
 			}
 
 			// TODO: Formatting value indicating that the first line should be bold.
-			data_row.emplace_back(std::move(desc));
+			data_row.push_back(std::move(desc));
 		}
 	}
 
@@ -1457,8 +1457,8 @@ int Xbox360_XDBF_Private::addFields_achievements_GPD(void)
 		vv_icons->push_back(loadImage(be32_to_cpu(pGPD->image_id)));
 
 		// TODO: Localized numeric formatting?
-		const string s_achievement_id = fmt::to_string(be32_to_cpu(pGPD->achievement_id));
-		const string s_gamerscore = fmt::to_string(be32_to_cpu(pGPD->gamerscore));
+		string s_achievement_id = fmt::to_string(be32_to_cpu(pGPD->achievement_id));
+		string s_gamerscore = fmt::to_string(be32_to_cpu(pGPD->gamerscore));
 
 		// Get the strings.
 		const char16_t *pTitle = nullptr, *pUnlockedDesc = nullptr, *pLockedDesc = nullptr;
@@ -1503,10 +1503,10 @@ int Xbox360_XDBF_Private::addFields_achievements_GPD(void)
 		// Add to RFT_LISTDATA.
 		vector<string> data_row;
 		data_row.reserve(3);
-		data_row.push_back(s_achievement_id);
-		data_row.emplace_back(std::move(desc));
-		data_row.push_back(s_gamerscore);
-		vv_xach->emplace_back(std::move(data_row));
+		data_row.push_back(std::move(s_achievement_id));
+		data_row.push_back(std::move(desc));
+		data_row.push_back(std::move(s_gamerscore));
+		vv_xach->push_back(std::move(data_row));
 	}
 
 	// FIXME: Figure out why Dolphin segfaults if the list is empty.

@@ -365,9 +365,9 @@ void KeyStoreUIPrivate::reset(void)
 					assert(keyData.length > 0);
 					assert(keyData.length <= 32);
 					if (keyData.key != nullptr && keyData.length > 0 && keyData.length <= 32) {
-						const string value = binToHexStr(keyData.key, keyData.length);
+						string value = binToHexStr(keyData.key, keyData.length);
 						if (pKey->value != value) {
-							pKey->value = value;
+							pKey->value = std::move(value);
 							hasChanged = true;
 						}
 
@@ -529,9 +529,9 @@ KeyStoreUI::ImportReturn KeyStoreUIPrivate::importKeysFromBlob(SectionID sectIdx
 		if (!verifyData) {
 			// Can't verify this key...
 			// Import it anyway.
-			const string new_value = binToHexStr(keyData, 16);
+			string new_value = binToHexStr(keyData, 16);
 			if (pKey->value != new_value) {
-				pKey->value = new_value;
+				pKey->value = std::move(new_value);
 				pKey->status = KeyStoreUI::Key::Status::Unknown;
 				pKey->modified = true;
 				iret.keysImportedNoVerify++;
@@ -1001,7 +1001,8 @@ int KeyStoreUI::setKey(int sectIdx, int keyIdx, const char *value)
 			if (convKey.size() > expected_key_len) {
 				convKey.resize(expected_key_len);
 			}
-			new_value = convKey;
+			new_value = std::move(convKey);
+			new_value = string();
 		}
 	}
 
@@ -1028,7 +1029,7 @@ int KeyStoreUI::setKey(int sectIdx, int keyIdx, const char *value)
 	}
 
 	if (key.value != new_value) {
-		key.value = new_value;
+		key.value = std::move(new_value);
 		key.modified = true;
 		// Verify the key.
 		d->verifyKey(sectIdx, keyIdx);
@@ -1546,9 +1547,9 @@ KeyStoreUI::ImportReturn KeyStoreUIPrivate::importN3DSaeskeydb(IRpFile *file)
 			} else {
 				// Can't verify this key...
 				// Import it anyway.
-				const string new_value = binToHexStr(aesKey->key, sizeof(aesKey->key));
+				string new_value = binToHexStr(aesKey->key, sizeof(aesKey->key));
 				if (pKey->value != new_value) {
-					pKey->value = new_value;
+					pKey->value = std::move(new_value);
 					pKey->status = KeyStoreUI::Key::Status::Unknown;
 					pKey->modified = true;
 					iret.keysImportedNoVerify++;

@@ -39,7 +39,7 @@ rp_image_ptr rp_image::dup(void) const
 	assert(width > 0);
 	assert(height > 0);
 
-	const rp_image_ptr img = std::make_shared<rp_image>(width, height, format);
+	rp_image_ptr img = std::make_shared<rp_image>(width, height, format);
 	if (!img->isValid()) {
 		// Image is invalid. Return it immediately.
 		return img;
