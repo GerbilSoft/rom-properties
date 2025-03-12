@@ -281,11 +281,15 @@ rp_list_data_item_set_column_text_array(RpListDataItem *item, GPtrArray *text)
 		return;
 	}
 
-	const uint column_count_old = item->text->len;
-	uint column_count_new;
+	uint column_count_old;
 	if (item->text) {
+		column_count_old = item->text->len;
 		g_ptr_array_unref(item->text);
+	} else {
+		column_count_old = 0;
 	}
+
+	uint column_count_new;
 	if (text) {
 		item->text = g_ptr_array_ref(text);
 		column_count_new = text->len;
