@@ -32,7 +32,7 @@
     * Also fix a bad bounds check that broke the Exports table on these DLLs.
       * Pull request: #438
         * Submitted by @DankRank.
-  * Windows: Properly rescale  the icon and banner sizes.
+  * Windows: Properly rescale the icon and banner sizes.
     * PSP Minis would show a giant banner that messes up the tab display.
     * Fixes #433: [Bug Report] The ROM type is not displayed correctly for some PSP Mini ROMs
       * Reported by @xxmichibxx.
@@ -52,6 +52,11 @@
   * Xbox360_STFS: Fix reading XEXes that overlap a hash block boundary.
     * NOTE: The entire XEX is now read into memory, which may cause slowdown.
       This will be improved later.
+  * Windows: Fix handling of CD-ROM drives.
+    * This broke when support for Wii U Packages was added, since devices are
+      also considered root directories, so the directory check was done instead
+      of the device check.
+    * Affects: v2.4 - v2.4.1
 
 * Other changes:
   * CMake: Added an ENABLE_NETWORKING option to control whether or not

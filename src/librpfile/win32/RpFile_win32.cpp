@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpfile)                        *
  * RpFile_win32.cpp: Standard file object. (Win32 implementation)          *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -32,20 +32,6 @@ using std::wstring;
 // MSVC: Exception handling for /DELAYLOAD.
 #include "libwin32common/DelayLoadHelper.h"
 #endif /* _MSC_VER */
-
-static inline constexpr bool IsDriveLetterA(char letter)
-{
-	return (letter >= 'A') && (letter <= 'Z');
-}
-static inline constexpr bool IsDriveLetterW(wchar_t letter)
-{
-	return (letter >= L'A') && (letter <= L'Z');
-}
-#ifdef _UNICODE
-#  define IsDriveLetter(x) IsDriveLetterW(x)
-#else /* !_UNICODE */
-#  define IsDriveLetter(x) IsDriveLetterA(x)
-#endif /* _UNICODE */
 
 namespace LibRpFile {
 

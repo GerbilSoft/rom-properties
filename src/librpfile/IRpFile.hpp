@@ -27,6 +27,23 @@
 
 namespace LibRpFile {
 
+#ifdef _WIN32
+template<typename CharType>
+static inline constexpr bool T_IsDriveLetter(CharType letter)
+{
+	return (letter >= (CharType)'A') && (letter <= (CharType)'Z');
+}
+
+static inline constexpr bool IsDriveLetterA(char letter)
+{
+	return T_IsDriveLetter(letter);
+}
+static inline constexpr bool IsDriveLetterW(wchar_t letter)
+{
+	return T_IsDriveLetter(letter);
+}
+#endif /* _WIN32 */
+
 class RP_LIBROMDATA_PUBLIC NOVTABLE IRpFile
 {
 protected:
