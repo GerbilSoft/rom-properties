@@ -197,7 +197,7 @@ rp_image_const_ptr GameComPrivate::loadIcon(void)
 
 	// Create the icon.
 	// TODO: Split into an ImageDecoder function?
-	const rp_image_ptr tmp_icon = std::make_shared<rp_image>(GCOM_ICON_W, GCOM_ICON_H, rp_image::Format::CI8);
+	rp_image_ptr tmp_icon = std::make_shared<rp_image>(GCOM_ICON_W, GCOM_ICON_H, rp_image::Format::CI8);
 
 	uint32_t *const palette = tmp_icon->palette();
 	assert(palette != nullptr);
@@ -432,7 +432,7 @@ rp_image_const_ptr GameComPrivate::loadIconRLE(void)
 
 	// Create the icon.
 	// TODO: Split into an ImageDecoder function?
-	const rp_image_ptr tmp_icon = std::make_shared<rp_image>(GCOM_ICON_W, GCOM_ICON_H, rp_image::Format::CI8);
+	rp_image_ptr tmp_icon = std::make_shared<rp_image>(GCOM_ICON_W, GCOM_ICON_H, rp_image::Format::CI8);
 
 	uint32_t *const palette = tmp_icon->palette();
 	assert(palette != nullptr);

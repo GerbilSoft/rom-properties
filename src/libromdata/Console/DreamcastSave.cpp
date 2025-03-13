@@ -628,7 +628,7 @@ rp_image_const_ptr DreamcastSavePrivate::loadIcon_ICONDATA_VMS(void)
 		}
 
 		// Convert the icon to rp_image.
-		const rp_image_ptr img = ImageDecoder::fromLinearCI4(
+		rp_image_ptr img = ImageDecoder::fromLinearCI4(
 			ImageDecoder::PixelFormat::ARGB4444, true,
 			DC_VMS_ICON_W, DC_VMS_ICON_H,
 			buf.icon_color.u8, sizeof(buf.icon_color.u8),
@@ -655,7 +655,7 @@ rp_image_const_ptr DreamcastSavePrivate::loadIcon_ICONDATA_VMS(void)
 	}
 
 	// Convert the icon to rp_image.
-	const rp_image_ptr img = ImageDecoder::fromLinearMono(
+	rp_image_ptr img = ImageDecoder::fromLinearMono(
 		DC_VMS_ICON_W, DC_VMS_ICON_H,
 		buf.icon_mono.u8, sizeof(buf.icon_mono.u8));
 	if (img) {
