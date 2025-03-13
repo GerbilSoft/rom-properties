@@ -47,7 +47,7 @@ RpFilePrivate::RpFilePrivate(RpFile *q, const wchar_t *filenameW, RpFile::FileMo
 	, mode(mode), gzfd(nullptr), gzsz(-1)
 {
 	assert(filenameW != nullptr);
-	this->filenameW = wcsdup(filenameW);
+	this->filenameW.assign(filenameW);
 }
 
 RpFilePrivate::~RpFilePrivate()
@@ -58,8 +58,6 @@ RpFilePrivate::~RpFilePrivate()
 	if (file && file != INVALID_HANDLE_VALUE) {
 		CloseHandle(file);
 	}
-	free(filename);
-	free(filenameW);
 }
 
 /**
@@ -113,7 +111,7 @@ inline int RpFilePrivate::mode_to_win32(RpFile::FileMode mode,
 int RpFilePrivate::reOpenFile(void)
 {
 	RP_Q(RpFile);
-	if (!filenameW || filenameW[0] == L'\0') {
+	if (unlikely(filenameW.empty())) {
 		// No filename...
 		q->m_lastError = EINVAL;
 		return -EINVAL;
@@ -134,18 +132,9 @@ int RpFilePrivate::reOpenFile(void)
 	    filenameW[1] == L':' && filenameW[2] == L'\0')
 	{
 		// Drive letter. Append '\\'.
-		wchar_t *drvfilename = static_cast<wchar_t*>(malloc(4*sizeof(wchar_t)));
-		drvfilename[0] = filenameW[0];
-		drvfilename[1] = _T(':');
-		drvfilename[2] = _T('\\');
-		drvfilename[3] = _T('\0');
-
-		std::swap(drvfilename, this->filenameW);
-		free(drvfilename);
-		if (this->filename) {
-			free(this->filename);
-			this->filename = nullptr;
-		}
+		const wchar_t drvfilename[4] = {filenameW[0], L':', L'\\', L'\0'};
+		filenameW.assign(drvfilename);
+		filename.clear();
 	}
 
 	// Adjusted filename for Windows.
@@ -163,7 +152,7 @@ int RpFilePrivate::reOpenFile(void)
 			// or if we have to resolve the physical device name.
 			// NOTE: filename is UTF-8, but we can use it as if
 			// it's ANSI for a drive letter.
-			const UINT driveType = GetDriveType(filenameW);
+			const UINT driveType = GetDriveType(filenameW.c_str());
 			switch (driveType) {
 				case DRIVE_CDROM:
 					// CD-ROM works.
@@ -764,11 +753,11 @@ off64_t RpFile::size(void)
 const char *RpFile::filename(void) const
 {
 	RP_D(const RpFile);
-	if (d->filename && d->filename[0] != '\0') {
-		return d->filename;
-	} else if (d->filenameW && d->filenameW[0] != L'\0') {
-		const_cast<RpFilePrivate*>(d)->filename = strdup(W2U8(d->filenameW).c_str());
-		return d->filename;
+	if (unlikely(!d->filename.empty())) {
+		return d->filename.c_str();
+	} else if (likely(!d->filenameW.empty())) {
+		const_cast<RpFilePrivate*>(d)->filename = W2U8(d->filenameW);
+		return d->filename.c_str();
 	}
 
 	return nullptr;
@@ -782,7 +771,7 @@ const char *RpFile::filename(void) const
 const wchar_t *RpFile::filenameW(void) const
 {
 	RP_D(const RpFile);
-	return (d->filenameW != nullptr && d->filenameW[0] != L'\0') ? d->filenameW : nullptr;
+	return (likely(!d->filenameW.empty())) ? d->filenameW.c_str() : nullptr;
 }
 
 /** Extra functions **/

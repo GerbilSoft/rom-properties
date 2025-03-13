@@ -49,7 +49,7 @@ protected:
 	 */
 	RomDataPrivate(const LibRpFile::IRpFilePtr &file, const RomDataInfo *pRomDataInfo);
 public:
-	virtual ~RomDataPrivate();
+	virtual ~RomDataPrivate() = default;
 
 private:
 	RP_DISABLE_COPY(RomDataPrivate)
@@ -65,9 +65,9 @@ public:
 	/** These fields are set by RomData's own constructor. **/
 	bool isCompressed;		// True if the file is compressed. (transparent decompression)
 	LibRpFile::IRpFilePtr file;	// Open file
-	char *filename;			// Copy of the filename (UTF-8)
+	std::string filename;		// Filename (UTF-8)
 #ifdef _WIN32
-	wchar_t *filenameW;		// Copy of the filename (UTF-16; Windows only)
+	std::wstring filenameW;		// Filename (UTF-16; Windows only)
 #endif /* _WIN32 */
 public:
 	RomFields fields;		// ROM fields

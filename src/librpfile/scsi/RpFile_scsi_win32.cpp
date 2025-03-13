@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpfile)                        *
  * RpFile_scsi_win32.cpp: Standard file object. (Win32 SCSI)               *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -63,7 +63,7 @@ int RpFile::rereadDeviceSizeOS(off64_t *pDeviceSize, uint32_t *pSectorSize)
 	DWORD w32err = 0;
 
 	RP_D(RpFile);
-	if (!d->filenameW || d->filenameW[0] == _T('\0')) {
+	if (unlikely(d->filenameW.empty())) {
 		// No filename... Assume this isn't a device.
 		return -ENODEV;
 	}

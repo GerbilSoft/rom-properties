@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * RP_ExtractIcon.cpp: IExtractIcon implementation.                        *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -28,7 +28,6 @@ const CLSID CLSID_RP_ExtractIcon =
 #include "RP_ExtractIcon_p.hpp"
 
 RP_ExtractIcon_Private::RP_ExtractIcon_Private()
-	: olefilename(nullptr)
 {
 	// Enable icon squaring only on Windows XP.
 	// On Windows 7 and 11, it causes the icon to look "squished"
@@ -39,11 +38,6 @@ RP_ExtractIcon_Private::RP_ExtractIcon_Private()
 		// Enable icon squaring.
 		thumbnailer.setDoSquaring(true);
 	}
-}
-
-RP_ExtractIcon_Private::~RP_ExtractIcon_Private()
-{
-	free(olefilename);
 }
 
 /** RP_ExtractIcon **/
@@ -105,28 +99,28 @@ IFACEMETHODIMP RP_ExtractIcon::Load(_In_ LPCOLESTR pszFileName, DWORD dwMode)
 	// the file is not supported.
 	RP_UNUSED(dwMode);	// TODO
 
+	if (unlikely(!pszFileName)) {
+		return E_POINTER;
+	}
+
 	// If we already have a RomData object, unref() it first.
 	RP_D(RP_ExtractIcon);
 	d->romData.reset();
 
 	// pszFileName is the file being worked on.
 	// TODO: If the file was already loaded, don't reload it.
-	free(d->olefilename);
-	d->olefilename = _wcsdup(pszFileName);
-	if (!d->olefilename) {
-		return E_OUTOFMEMORY;
-	}
+	d->olefilename.assign(pszFileName);
 
 	// Check for "bad" file systems.
 	const Config *const config = Config::instance();
-	if (FileSystem::isOnBadFS(d->olefilename, config->getBoolConfigOption(Config::BoolConfig::Options_EnableThumbnailOnNetworkFS))) {
+	if (FileSystem::isOnBadFS(d->olefilename.c_str(), config->getBoolConfigOption(Config::BoolConfig::Options_EnableThumbnailOnNetworkFS))) {
 		// This file is on a "bad" file system.
 		return S_OK;
 	}
 
 	// If ThumbnailDirectoryPackages is disabled, make sure this is *not* a directory.
 	if (!config->getBoolConfigOption(Config::BoolConfig::Options_ThumbnailDirectoryPackages)) {
-		if (FileSystem::is_directory(d->olefilename)) {
+		if (FileSystem::is_directory(d->olefilename.c_str())) {
 			// It's a directory. Don't thumbnail it.
 			return S_OK;
 		}
@@ -134,7 +128,7 @@ IFACEMETHODIMP RP_ExtractIcon::Load(_In_ LPCOLESTR pszFileName, DWORD dwMode)
 
 	// Get the appropriate RomData class for this ROM file.
 	// RomData class *must* support at least one image type.
-	d->romData = RomDataFactory::create(d->olefilename, RomDataFactory::RDA_HAS_THUMBNAIL);
+	d->romData = RomDataFactory::create(d->olefilename.c_str(), RomDataFactory::RDA_HAS_THUMBNAIL);
 	return S_OK;
 }
 
@@ -157,7 +151,7 @@ IFACEMETHODIMP RP_ExtractIcon::GetCurFile(_In_ LPOLESTR *ppszFileName)
 		return E_POINTER;
 
 	RP_D(const RP_ExtractIcon);
-	if (!d->olefilename) {
+	if (unlikely(d->olefilename.empty())) {
 		// No filename. Create an empty string.
 		LPOLESTR psz = static_cast<LPOLESTR>(CoTaskMemAlloc(sizeof(OLECHAR)));
 		if (!psz) {
@@ -169,13 +163,13 @@ IFACEMETHODIMP RP_ExtractIcon::GetCurFile(_In_ LPOLESTR *ppszFileName)
 	} else {
 		// Copy the filename.
 		// NOTE: Can't use _wcsdup() because we have to allocate memory using CoTaskMemAlloc().
-		const size_t cb = (wcslen(d->olefilename) + 1) * sizeof(OLECHAR);
+		const size_t cb = (d->olefilename.size() + 1) * sizeof(OLECHAR);
 		LPOLESTR psz = static_cast<LPOLESTR>(CoTaskMemAlloc(cb));
 		if (!psz) {
 			*ppszFileName = nullptr;
 			return E_OUTOFMEMORY;
 		}
-		memcpy(psz, d->olefilename, cb);
+		memcpy(psz, d->olefilename.c_str(), cb);
 		*ppszFileName = psz;
 	}
 
@@ -199,7 +193,7 @@ IFACEMETHODIMP RP_ExtractIcon::GetIconLocation(UINT uFlags,
 
 	// If the file wasn't set via IPersistFile::Load(), that's an error.
 	RP_D(RP_ExtractIcon);
-	if (!d->olefilename || d->olefilename[0] == L'\0') {
+	if (unlikely(d->olefilename.empty())) {
 		return E_UNEXPECTED;
 	}
 
@@ -233,7 +227,7 @@ IFACEMETHODIMP RP_ExtractIcon::Extract(_In_ LPCWSTR pszFile, UINT nIconIndex,
 
 	// Make sure a filename was set by calling IPersistFile::Load().
 	RP_D(RP_ExtractIcon);
-	if (!d->olefilename || d->olefilename[0] == L'\0') {
+	if (unlikely(d->olefilename.empty())) {
 		return E_UNEXPECTED;
 	}
 

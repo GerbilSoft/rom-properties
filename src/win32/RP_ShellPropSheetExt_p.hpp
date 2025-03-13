@@ -74,11 +74,9 @@ public:
 	/**
 	 * RP_ShellPropSheetExt_Private constructor
 	 * @param q
-	 * @param tfilename tfilename (RP_ShellPropSheetExt_Private takes ownership)
+	 * @param tfilename
 	 */
-	explicit RP_ShellPropSheetExt_Private(RP_ShellPropSheetExt *q, TCHAR *tfilename);
-
-	~RP_ShellPropSheetExt_Private();
+	explicit RP_ShellPropSheetExt_Private(RP_ShellPropSheetExt *q, const TCHAR *tfilename);
 
 private:
 	RP_DISABLE_COPY(RP_ShellPropSheetExt_Private)
@@ -91,12 +89,10 @@ public:
 	static const TCHAR TAB_PTR_PROP[];
 
 public:
-	HWND hDlgSheet;		// Property sheet
+	HWND hDlgSheet;			// Property sheet
 
-	// ROM filename (malloc'd; free on delete)
-	TCHAR *tfilename;
-	// ROM data (Not opened until the properties tab is shown.)
-	LibRpBase::RomDataPtr romData;
+	std::tstring tfilename;		// ROM filename
+	LibRpBase::RomDataPtr romData;	// ROM data (Not opened until the properties tab is shown.)
 
 	// Font handler
 	FontHandler fontHandler;

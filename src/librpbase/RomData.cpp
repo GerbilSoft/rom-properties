@@ -41,10 +41,6 @@ RomDataPrivate::RomDataPrivate(const IRpFilePtr &file, const RomDataInfo *pRomDa
 	, isPAL(false)
 	, isCompressed(false)
 	, file(file)
-	, filename(nullptr)
-#ifdef _WIN32
-	, filenameW(nullptr)
-#endif /* _WIN32 */
 {
 	assert(pRomDataInfo != nullptr);
 
@@ -65,7 +61,7 @@ RomDataPrivate::RomDataPrivate(const IRpFilePtr &file, const RomDataInfo *pRomDa
 	if (rpFile) {
 		const wchar_t *const filenameW = rpFile->filenameW();
 		if (filenameW) {
-			this->filenameW = wcsdup(filenameW);
+			this->filenameW.assign(filenameW);
 		}
 	}
 #endif /* _WIN32 */
@@ -73,16 +69,8 @@ RomDataPrivate::RomDataPrivate(const IRpFilePtr &file, const RomDataInfo *pRomDa
 	// TODO: Don't set if filenameW was set?
 	const char *const filename = this->file->filename();
 	if (filename) {
-		this->filename = strdup(filename);
+		this->filename.assign(filename);
 	}
-}
-
-RomDataPrivate::~RomDataPrivate()
-{
-	free(filename);
-#ifdef _WIN32
-	free(filenameW);
-#endif /* _WIN32 */
 }
 
 /** Convenience functions **/
@@ -616,7 +604,7 @@ const char *RomData::filename(void) const
 {
 	// TODO: filenameW() variant on Windows?
 	RP_D(const RomData);
-	return (d->filename != nullptr && d->filename[0] != '\0') ? d->filename : nullptr;
+	return (likely(!d->filename.empty())) ? d->filename.c_str() : nullptr;
 }
 
 /**
@@ -1144,7 +1132,7 @@ int RomData::doRomOp(int id, RomOpParams *pParams)
 		closeFileAfter = true;
 		IRpFilePtr file;
 #ifdef _WIN32
-		if (d->filenameW) {
+		if (likely(!d->filenameW.empty())) {
 			file = std::make_shared<RpFile>(d->filenameW, RpFile::FM_OPEN_WRITE);
 		} else
 #endif /* _WIN32 */

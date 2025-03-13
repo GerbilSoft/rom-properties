@@ -3,7 +3,7 @@
  * RP_ExtractIcon_Fallback.cpp: IExtractIcon implementation.               *
  * Fallback functions for unsupported files.                               *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -47,7 +47,7 @@ LONG RP_ExtractIcon_Private::DoExtractIconW(_In_ IExtractIconW *pExtractIconW,
 	}
 
 	// Load the file.
-	hr = pPersistFile->Load(this->olefilename, STGM_READ);
+	hr = pPersistFile->Load(this->olefilename.c_str(), STGM_READ);
 	if (FAILED(hr)) {
 		// Failed to load the file.
 		return ERROR_FILE_NOT_FOUND;
@@ -135,7 +135,7 @@ LONG RP_ExtractIcon_Private::DoExtractIconA(_In_ IExtractIconA *pExtractIconA,
 	}
 
 	// Load the file.
-	hr = pPersistFile->Load(this->olefilename, STGM_READ);
+	hr = pPersistFile->Load(this->olefilename.c_str(), STGM_READ);
 	if (FAILED(hr)) {
 		// Failed to load the file.
 		return ERROR_FILE_NOT_FOUND;
@@ -295,10 +295,10 @@ LONG RP_ExtractIcon_Private::Fallback(HICON *phiconLarge, HICON *phiconSmall, UI
 	// TODO: Check HKCU first.
 
 	// Get the file extension.
-	if (!olefilename || olefilename[0] == L'\0') {
+	if (unlikely(olefilename.empty())) {
 		return ERROR_FILE_NOT_FOUND;
 	}
-	const wchar_t *wfile_ext = FileSystem::file_ext(olefilename);
+	const wchar_t *wfile_ext = FileSystem::file_ext(olefilename.c_str());
 	if (!wfile_ext) {
 		// Invalid or missing file extension.
 		return ERROR_FILE_NOT_FOUND;

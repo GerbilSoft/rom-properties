@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * RP_ExtractImage.hpp: IExtractImage implementation.                      *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -29,17 +29,11 @@ const CLSID CLSID_RP_ExtractImage =
 #include "RP_ExtractImage_p.hpp"
 
 RP_ExtractImage_Private::RP_ExtractImage_Private()
-	: olefilename(nullptr)
-	, dwRecClrDepth(0)
+	: dwRecClrDepth(0)
 	, dwFlags(0)
 {
 	rgSize.cx = 0;
 	rgSize.cy = 0;
-}
-
-RP_ExtractImage_Private::~RP_ExtractImage_Private()
-{
-	free(olefilename);
 }
 
 /** RP_ExtractImage **/
@@ -101,27 +95,27 @@ IFACEMETHODIMP RP_ExtractImage::Load(_In_ LPCOLESTR pszFileName, DWORD dwMode)
 	// the file is not supported.
 	RP_UNUSED(dwMode);	// TODO
 
+	if (unlikely(!pszFileName)) {
+		return E_POINTER;
+	}
+
 	// If we already have a RomData object, unref() it first.
 	RP_D(RP_ExtractImage);
 	d->romData.reset();
 
 	// pszFileName is the file being worked on.
 	// TODO: If the file was already loaded, don't reload it.
-	free(d->olefilename);
-	d->olefilename = _wcsdup(pszFileName);
-	if (!d->olefilename) {
-		return E_OUTOFMEMORY;
-	}
+	d->olefilename.assign(pszFileName);
 
 	// Check for "bad" file systems.
 	const Config *const config = Config::instance();
-	if (FileSystem::isOnBadFS(d->olefilename, config->getBoolConfigOption(Config::BoolConfig::Options_EnableThumbnailOnNetworkFS))) {
+	if (FileSystem::isOnBadFS(d->olefilename.c_str(), config->getBoolConfigOption(Config::BoolConfig::Options_EnableThumbnailOnNetworkFS))) {
 		// This file is on a "bad" file system.
 		return S_OK;
 	}
 
 	// If ThumbnailDirectoryPackages is disabled, make sure this is *not* a directory.
-	const bool is_directory = FileSystem::is_directory(d->olefilename);
+	const bool is_directory = FileSystem::is_directory(d->olefilename.c_str());
 	if (!config->getBoolConfigOption(Config::BoolConfig::Options_ThumbnailDirectoryPackages)) {
 		if (is_directory) {
 			// It's a directory. Don't thumbnail it.
@@ -131,7 +125,7 @@ IFACEMETHODIMP RP_ExtractImage::Load(_In_ LPCOLESTR pszFileName, DWORD dwMode)
 
 	// Get the appropriate RomData class for this ROM.
 	// RomData class *must* support at least one image type.
-	d->romData = RomDataFactory::create(d->olefilename, RomDataFactory::RDA_HAS_THUMBNAIL);
+	d->romData = RomDataFactory::create(d->olefilename.c_str(), RomDataFactory::RDA_HAS_THUMBNAIL);
 	if (!d->romData && is_directory) {
 		// Unable to thumbnail this RomData class, and it's a directory.
 		// Return E_FAIL in order to allow Explorer to thumbnail the directory normally.
@@ -159,7 +153,7 @@ IFACEMETHODIMP RP_ExtractImage::GetCurFile(_Outptr_ LPOLESTR *ppszFileName)
 		return E_POINTER;
 
 	RP_D(const RP_ExtractImage);
-	if (!d->olefilename) {
+	if (unlikely(d->olefilename.empty())) {
 		// No filename. Create an empty string.
 		LPOLESTR psz = static_cast<LPOLESTR>(CoTaskMemAlloc(sizeof(OLECHAR)));
 		if (!psz) {
@@ -171,13 +165,13 @@ IFACEMETHODIMP RP_ExtractImage::GetCurFile(_Outptr_ LPOLESTR *ppszFileName)
 	} else {
 		// Copy the filename.
 		// NOTE: Can't use _wcsdup() because we have to allocate memory using CoTaskMemAlloc().
-		const size_t cb = (wcslen(d->olefilename) + 1) * sizeof(OLECHAR);
+		const size_t cb = (d->olefilename.size() + 1) * sizeof(OLECHAR);
 		LPOLESTR psz = static_cast<LPOLESTR>(CoTaskMemAlloc(cb));
 		if (!psz) {
 			*ppszFileName = nullptr;
 			return E_OUTOFMEMORY;
 		}
-		memcpy(psz, d->olefilename, cb);
+		memcpy(psz, d->olefilename.c_str(), cb);
 		*ppszFileName = psz;
 	}
 
@@ -252,7 +246,7 @@ IFACEMETHODIMP RP_ExtractImage::Extract(_Outptr_ HBITMAP *phBmpImage)
 {
 	// Make sure a filename was set by calling IPersistFile::Load().
 	RP_D(RP_ExtractImage);
-	if (!d->olefilename || d->olefilename[0] == L'\0') {
+	if (unlikely(d->olefilename.empty())) {
 		return E_UNEXPECTED;
 	}
 
@@ -292,15 +286,15 @@ IFACEMETHODIMP RP_ExtractImage::GetDateStamp(_Out_ FILETIME *pDateStamp)
 	if (!pDateStamp) {
 		// No FILETIME pointer specified.
 		return E_POINTER;
-	} else if (!d->olefilename || d->olefilename[0] == L'\0') {
+	} else if (unlikely(d->olefilename.empty())) {
 		// Filename was not set in GetLocation().
-		return E_INVALIDARG;
+		return E_UNEXPECTED;
 	}
 
 	// Open the file and get the last write time.
 	// NOTE: LibRpBase::FileSystem::get_mtime() exists,
 	// but its resolution is seconds, less than FILETIME.
-	HANDLE hFile = CreateFile(d->olefilename,
+	HANDLE hFile = CreateFile(d->olefilename.c_str(),
 		GENERIC_READ, FILE_SHARE_READ, nullptr,
 		OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
 	if (!hFile) {

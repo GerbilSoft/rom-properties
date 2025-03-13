@@ -66,9 +66,9 @@ const TCHAR RP_ShellPropSheetExt_Private::TAB_PTR_PROP[] = _T("RP_ShellPropSheet
 /**
  * RP_ShellPropSheetExt_Private constructor
  * @param q
- * @param tfilename tfilename (RP_ShellPropSheetExt_Private takes ownership)
+ * @param tfilename
  */
-RP_ShellPropSheetExt_Private::RP_ShellPropSheetExt_Private(RP_ShellPropSheetExt *q, TCHAR *tfilename)
+RP_ShellPropSheetExt_Private::RP_ShellPropSheetExt_Private(RP_ShellPropSheetExt *q, const TCHAR *tfilename)
 	: q_ptr(q)
 	, hDlgSheet(nullptr)
 	, tfilename(tfilename)
@@ -88,12 +88,6 @@ RP_ShellPropSheetExt_Private::RP_ShellPropSheetExt_Private(RP_ShellPropSheetExt 
 	// Initialize structs.
 	dlgSize.cx = 0;
 	dlgSize.cy = 0;
-}
-
-RP_ShellPropSheetExt_Private::~RP_ShellPropSheetExt_Private()
-{
-	// Delete the copy of the RomData object's filename.
-	free(tfilename);
 }
 
 /**
@@ -2189,7 +2183,7 @@ IFACEMETHODIMP RP_ShellPropSheetExt::Initialize(
 
 	HRESULT hr = E_FAIL;
 	UINT nFiles, cchFilename;
-	TCHAR *tfilename = nullptr;	// RP_ShellPropSheetExt_Private takes ownership!
+	TCHAR *tfilename = nullptr;
 
 	const Config *config;
 
@@ -2244,7 +2238,6 @@ IFACEMETHODIMP RP_ShellPropSheetExt::Initialize(
 	// Save the filename in the private class for later.
 	if (!d_ptr) {
 		d_ptr = new RP_ShellPropSheetExt_Private(this, tfilename);
-		tfilename = nullptr;
 	}
 
 	// Make sure the Dark Mode function pointers are initialized.
@@ -2785,7 +2778,7 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 			}
 
 			// Get the appropriate RomData class for this ROM.
-			d->romData = RomDataFactory::create(d->tfilename);
+			d->romData = RomDataFactory::create(d->tfilename.c_str());
 			if (!d->romData) {
 				// Unable to get a RomData object.
 				break;

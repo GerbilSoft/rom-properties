@@ -77,9 +77,9 @@ private:
 
 public:
 	FILE_TYPE file;		// File pointer
-	char *filename;		// Filename (UTF-8)
+	std::string filename;	// Filename (UTF-8)
 #ifdef _WIN32
-	wchar_t *filenameW;	// Filename (UTF-16)
+	std::wstring filenameW;	// Filename (UTF-16)
 				// NOTE: Win32 version uses this as primary.
 				// UTF-8 filename is only used for the filename() function.
 #endif /* _WIN32 */

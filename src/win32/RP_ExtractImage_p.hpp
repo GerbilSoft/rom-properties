@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * RP_ExtractImage_p.hpp: IExtractImage implementation. (PRIVATE CLASS)    *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -21,15 +21,14 @@ class RP_ExtractImage_Private
 {
 public:
 	RP_ExtractImage_Private();
-	~RP_ExtractImage_Private();
 
 private:
 	RP_DISABLE_COPY(RP_ExtractImage_Private)
 
 public:
-	// ROM filename from IPersistFile::Load().
-	// NOTE: LPOLESTR, not LPTSTR.
-	LPOLESTR olefilename;
+	// ROM filename from IPersistFile::Load()
+	// NOTE: IPersistFile::Load() gets LPOLESTR, which is LPWSTR.
+	std::wstring olefilename;
 
 	// RomData object. Loaded in IPersistFile::Load().
 	LibRpBase::RomDataPtr romData;
