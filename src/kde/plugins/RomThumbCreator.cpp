@@ -94,7 +94,7 @@ bool RomThumbCreator::create(const QString &path, int width, int height, QImage 
 		}
 
 		// Directory: Call RomDataFactory::create() with the filename.
-		romData = RomDataFactory::create(s_filename.c_str());
+		romData = RomDataFactory::create(s_filename);
 	} else {
 		// File: Open the file and call RomDataFactory::create() with the opened file.
 

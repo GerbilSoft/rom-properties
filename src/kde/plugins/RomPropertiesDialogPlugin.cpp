@@ -69,7 +69,7 @@ RomDataView *RomPropertiesDialogPlugin::createRomDataView(const KFileItem &fileI
 		}
 
 		if (likely(!s_local_filename.empty())) {
-			romData = RomDataFactory::create(s_local_filename.c_str());
+			romData = RomDataFactory::create(s_local_filename);
 		}
 	}
 

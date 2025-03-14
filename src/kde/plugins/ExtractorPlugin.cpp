@@ -210,7 +210,7 @@ void ExtractorPlugin::extract(ExtractionResult *result)
 	// Check if this is a directory.
 	const QUrl localUrl = localizeQUrl(inputUrl);
 	const string s_local_filename = localUrl.toLocalFile().toUtf8().constData();
-	if (unlikely(!s_local_filename.empty() && FileSystem::is_directory(s_local_filename.c_str()))) {
+	if (unlikely(!s_local_filename.empty() && FileSystem::is_directory(s_local_filename))) {
 		const Config *const config = Config::instance();
 		if (!config->getBoolConfigOption(Config::BoolConfig::Options_ThumbnailDirectoryPackages)) {
 			// Directory package thumbnailing is disabled.
@@ -218,7 +218,7 @@ void ExtractorPlugin::extract(ExtractionResult *result)
 		}
 
 		// Directory: Call RomDataFactory::create() with the filename.
-		romData = RomDataFactory::create(s_local_filename.c_str());
+		romData = RomDataFactory::create(s_local_filename);
 	} else {
 		// File: Open the file and call RomDataFactory::create() with the opened file.
 		IRpFilePtr file(openQUrl(localUrl, false));

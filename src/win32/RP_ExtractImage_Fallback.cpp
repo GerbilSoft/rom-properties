@@ -117,7 +117,7 @@ HRESULT RP_ExtractImage_Private::Fallback(HBITMAP *phBmpImage)
 	if (unlikely(olefilename.empty())) {
 		return E_INVALIDARG;
 	}
-	const wchar_t *wfile_ext = FileSystem::file_ext(olefilename.c_str());
+	const wchar_t *wfile_ext = FileSystem::file_ext(olefilename);
 	if (!wfile_ext) {
 		// Invalid or missing file extension.
 		return ERROR_FILE_NOT_FOUND;

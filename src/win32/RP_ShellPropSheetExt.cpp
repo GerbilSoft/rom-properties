@@ -2778,7 +2778,7 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 			}
 
 			// Get the appropriate RomData class for this ROM.
-			d->romData = RomDataFactory::create(d->tfilename.c_str());
+			d->romData = RomDataFactory::create(d->tfilename);
 			if (!d->romData) {
 				// Unable to get a RomData object.
 				break;

@@ -56,7 +56,7 @@ KIO::ThumbnailResult RomThumbnailCreator::create(const KIO::ThumbnailRequest &re
 	// Check if this is a directory.
 	const QUrl localUrl = localizeQUrl(url);
 	const string s_local_filename = localUrl.toLocalFile().toUtf8().constData();
-	if (unlikely(!s_local_filename.empty() && FileSystem::is_directory(s_local_filename.c_str()))) {
+	if (unlikely(!s_local_filename.empty() && FileSystem::is_directory(s_local_filename))) {
 		const Config *const config = Config::instance();
 		if (!config->getBoolConfigOption(Config::BoolConfig::Options_ThumbnailDirectoryPackages)) {
 			// Directory package thumbnailing is disabled.
@@ -64,7 +64,7 @@ KIO::ThumbnailResult RomThumbnailCreator::create(const KIO::ThumbnailRequest &re
 		}
 
 		// Directory: Call RomDataFactory::create() with the filename.
-		romData = RomDataFactory::create(s_local_filename.c_str());
+		romData = RomDataFactory::create(s_local_filename);
 	} else {
 		// File: Open the file and call RomDataFactory::create() with the opened file.
 

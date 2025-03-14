@@ -109,13 +109,13 @@ IFACEMETHODIMP RP_ExtractImage::Load(_In_ LPCOLESTR pszFileName, DWORD dwMode)
 
 	// Check for "bad" file systems.
 	const Config *const config = Config::instance();
-	if (FileSystem::isOnBadFS(d->olefilename.c_str(), config->getBoolConfigOption(Config::BoolConfig::Options_EnableThumbnailOnNetworkFS))) {
+	if (FileSystem::isOnBadFS(d->olefilename, config->getBoolConfigOption(Config::BoolConfig::Options_EnableThumbnailOnNetworkFS))) {
 		// This file is on a "bad" file system.
 		return S_OK;
 	}
 
 	// If ThumbnailDirectoryPackages is disabled, make sure this is *not* a directory.
-	const bool is_directory = FileSystem::is_directory(d->olefilename.c_str());
+	const bool is_directory = FileSystem::is_directory(d->olefilename);
 	if (!config->getBoolConfigOption(Config::BoolConfig::Options_ThumbnailDirectoryPackages)) {
 		if (is_directory) {
 			// It's a directory. Don't thumbnail it.
@@ -125,7 +125,7 @@ IFACEMETHODIMP RP_ExtractImage::Load(_In_ LPCOLESTR pszFileName, DWORD dwMode)
 
 	// Get the appropriate RomData class for this ROM.
 	// RomData class *must* support at least one image type.
-	d->romData = RomDataFactory::create(d->olefilename.c_str(), RomDataFactory::RDA_HAS_THUMBNAIL);
+	d->romData = RomDataFactory::create(d->olefilename, RomDataFactory::RDA_HAS_THUMBNAIL);
 	if (!d->romData && is_directory) {
 		// Unable to thumbnail this RomData class, and it's a directory.
 		// Return E_FAIL in order to allow Explorer to thumbnail the directory normally.

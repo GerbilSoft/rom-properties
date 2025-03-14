@@ -403,7 +403,7 @@ IFACEMETHODIMP RP_XAttrView::Initialize(
 	// TODO: Check for "bad" file systems before checking ADS?
 #if 0
 	config = Config::instance();
-	if (FileSystem::isOnBadFS(tfilename.c_str(), config->getBoolConfigOption(Config::BoolConfig::Options_EnableThumbnailOnNetworkFS))) {
+	if (FileSystem::isOnBadFS(tfilename, config->getBoolConfigOption(Config::BoolConfig::Options_EnableThumbnailOnNetworkFS))) {
 		// This file is on a "bad" file system.
 		goto cleanup;
 	}

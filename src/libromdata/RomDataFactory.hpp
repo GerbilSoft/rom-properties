@@ -95,6 +95,30 @@ LibRpBase::RomDataPtr create(const LibRpFile::IRpFilePtr &file, unsigned int att
 RP_LIBROMDATA_PUBLIC
 LibRpBase::RomDataPtr create(const char *filename, unsigned int attrs = 0);
 
+/**
+ * Create a RomData subclass for the specified ROM file.
+ *
+ * This version creates a base RpFile for the RomData object.
+ * It does not support extended virtual filesystems like GVfs
+ * or KIO, but it does support directories.
+ *
+ * NOTE: RomData::isValid() is checked before returning a
+ * created RomData instance, so returned objects can be
+ * assumed to be valid as long as they aren't nullptr.
+ *
+ * If imgbf is non-zero, at least one of the specified image
+ * types must be supported by the RomData subclass in order to
+ * be returned.
+ *
+ * @param filename ROM filename (UTF-8)
+ * @param attrs RomDataAttr bitfield. If set, RomData subclass must have the specified attributes.
+ * @return RomData subclass, or nullptr if the ROM isn't supported.
+ */
+static inline LibRpBase::RomDataPtr create(const std::string &filename, unsigned int attrs = 0)
+{
+	return create(filename.c_str(), attrs);
+}
+
 #if defined(_WIN32) && defined(_UNICODE)
 /**
  * Create a RomData subclass for the specified ROM file.
@@ -117,6 +141,30 @@ LibRpBase::RomDataPtr create(const char *filename, unsigned int attrs = 0);
  */
 RP_LIBROMDATA_PUBLIC
 LibRpBase::RomDataPtr create(const wchar_t *filename, unsigned int attrs = 0);
+
+/**
+ * Create a RomData subclass for the specified ROM file.
+ *
+ * This version creates a base RpFile for the RomData object.
+ * It does not support extended virtual filesystems like GVfs
+ * or KIO, but it does support directories.
+ *
+ * NOTE: RomData::isValid() is checked before returning a
+ * created RomData instance, so returned objects can be
+ * assumed to be valid as long as they aren't nullptr.
+ *
+ * If imgbf is non-zero, at least one of the specified image
+ * types must be supported by the RomData subclass in order to
+ * be returned.
+ *
+ * @param filename ROM filename (UTF-16)
+ * @param attrs RomDataAttr bitfield. If set, RomData subclass must have the specified attributes.
+ * @return RomData subclass, or nullptr if the ROM isn't supported.
+ */
+static inline LibRpBase::RomDataPtr create(const std::wstring &filename, unsigned int attrs = 0)
+{
+	return create(filename.c_str(), attrs);
+}
 #endif /* _WIN32 && _UNICODE */
 
 #ifdef ROMDATAFACTORY_USE_FILE_EXTENSIONS
