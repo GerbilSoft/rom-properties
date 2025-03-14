@@ -43,8 +43,11 @@ DELAYLOAD_TEST_FUNCTION_IMPL0(get_crc_table);
 /** RpFilePrivate **/
 
 RpFilePrivate::RpFilePrivate(RpFile *q, const wchar_t *filenameW, RpFile::FileMode mode)
-	: q_ptr(q), file(INVALID_HANDLE_VALUE), filename(nullptr)
-	, mode(mode), gzfd(nullptr), gzsz(-1)
+	: q_ptr(q)
+	, file(INVALID_HANDLE_VALUE)
+	, mode(mode)
+	, gzfd(nullptr)
+	, gzsz(-1)
 {
 	assert(filenameW != nullptr);
 	this->filenameW.assign(filenameW);
