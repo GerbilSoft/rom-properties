@@ -131,7 +131,17 @@ public: \
 	 * @param path Directory to check \
 	 * @return Class-specific system ID (>= 0) if supported; -1 if not. \
 	 */ \
-	static int isDirSupported_static(const CharType *path);
+	static int isDirSupported_static(const CharType *path); \
+\
+	/** \
+	 * Is a directory supported by this class? \
+	 * @param path Directory to check \
+	 * @return Class-specific system ID (>= 0) if supported; -1 if not. \
+	 */ \
+	static inline int isDirSupported_static(const std::basic_string<CharType> &path) \
+	{ \
+		return isDirSupported_static(path.c_str()); \
+	}
 
 #if defined(_WIN32) && defined(_UNICODE)
 #  define ROMDATA_DECL_CTOR_DIRECTORY(klass) \

@@ -72,12 +72,10 @@ WiiUPackagePrivate::WiiUPackagePrivate(const char *path)
 	if (path && path[0] != '\0') {
 #ifdef _WIN32
 		// Windows: Storing the path as UTF-16 internally.
-		this->path = _tcsdup(U82T_c(path));
+		this->path.assign(U82T_c(path));
 #else /* !_WIN32 */
-		this->path = strdup(path);
+		this->path.assign(path);
 #endif /* _WIN32 */
-	} else {
-		this->path = nullptr;
 	}
 
 #ifdef ENABLE_DECRYPTION
@@ -107,18 +105,12 @@ WiiUPackagePrivate::WiiUPackagePrivate(const wchar_t *path)
 }
 #endif /* _WIN32 && _UNICODE */
 
-WiiUPackagePrivate::~WiiUPackagePrivate()
-{
-	free(path);
-}
-
 /**
  * Clear everything.
  */
 void WiiUPackagePrivate::reset(void)
 {
-	free(path);
-	path = nullptr;
+	path.clear();
 
 	ticket.reset();
 	tmd.reset();
@@ -368,7 +360,7 @@ void WiiUPackage::init(void)
 	d->mimeType = "inode/directory";
 	d->fileType = FileType::ApplicationPackage;
 
-	if (!d->path) {
+	if (d->path.empty()) {
 		// No path specified...
 		d->reset();
 		return;
@@ -717,7 +709,7 @@ int WiiUPackage::loadFieldData(void)
 	if (!d->fields.empty()) {
 		// Field data *has* been loaded...
 		return 0;
-	} else if (!d->path) {
+	} else if (d->path.empty()) {
 		// No directory...
 		return -EBADF;
 	} else if (!d->isValid) {
@@ -809,7 +801,7 @@ int WiiUPackage::loadMetaData(void)
 	if (!d->metaData.empty()) {
 		// Metadata *has* been loaded...
 		return 0;
-	} else if (!d->path) {
+	} else if (d->path.empty()) {
 		// No directory...
 		return -EBADF;
 	} else if (!d->isValid) {
@@ -848,7 +840,7 @@ int WiiUPackage::loadInternalImage(ImageType imageType, rp_image_const_ptr &pIma
 	RP_D(WiiUPackage);
 	ROMDATA_loadInternalImage_single(
 		IMG_INT_ICON,	// ourImageType
-		d->path,	// file (NOTE: Using d->path because we don't have a "file")
+		d->path.c_str(),// file (NOTE: Using d->path because we don't have a "file")
 		d->isValid,	// isValid
 		0,		// romType
 		d->img_icon,	// imgCache

@@ -94,8 +94,8 @@ public:
 	uint8_t wave;	// XGD2: Wave number
 	bool isKreon;	// Are we using a Kreon drive?
 
-	// Directory path (strdup()'d) [for DiscType::Extracted only]
-	TCHAR *path;
+	// Directory path [for DiscType::Extracted only]
+	std::tstring path;
 
 	// XDVDFS starting address
 	off64_t xdvdfs_addr;
@@ -194,7 +194,6 @@ XboxDiscPrivate::XboxDiscPrivate(const IRpFilePtr &file)
 	, discType(DiscType::Unknown)
 	, wave(0)
 	, isKreon(false)
-	, path(nullptr)
 	, xdvdfs_addr(0)
 	, exeType(ExeType::Unknown)
 {}
@@ -214,12 +213,10 @@ XboxDiscPrivate::XboxDiscPrivate(const char *path)
 	if (path && path[0] != '\0') {
 #ifdef _WIN32
 		// Windows: Storing the path as UTF-16 internally.
-		this->path = _tcsdup(U82T_c(path));
+		this->path.assign(U82T_c(path));
 #else /* !_WIN32 */
-		this->path = strdup(path);
+		this->path.assign(path);
 #endif /* _WIN32 */
-	} else {
-		this->path = nullptr;
 	}
 }
 
@@ -237,9 +234,7 @@ XboxDiscPrivate::XboxDiscPrivate(const wchar_t *path)
 	, exeType(ExeType::Unknown)
 {
 	if (path && path[0] != '\0') {
-		this->path = _tcsdup(path);
-	} else {
-		this->path = nullptr;
+		this->path.assign(path);
 	}
 }
 #endif /* defined(_WIN32) && defined(_UNICODE) */
@@ -249,8 +244,6 @@ XboxDiscPrivate::~XboxDiscPrivate()
 	if (isKreon) {
 		lockKreonDrive();
 	}
-
-	free(path);
 }
 
 /**
@@ -513,7 +506,7 @@ void XboxDisc::init()
 	d->mimeType = "application/x-cd-image";	// unofficial
 	d->fileType = FileType::DiscImage;
 
-	if (d->path) {
+	if (!d->path.empty()) {
 		// We're handling an extracted disc file system.
 		// TODO: File type for "extracted file system"?
 		d->mimeType = "inode/directory";
@@ -965,7 +958,7 @@ int XboxDisc::loadFieldData(void)
 	if (!d->fields.empty()) {
 		// Field data *has* been loaded...
 		return 0;
-	} else if ((!d->file || !d->file->isOpen()) && !d->path) {
+	} else if ((!d->file || !d->file->isOpen()) && d->path.empty()) {
 		// File/directory isn't open.
 		return -EBADF;
 	} else if (!d->isValid || static_cast<int>(d->discType) < 0) {
@@ -1111,7 +1104,7 @@ int XboxDisc::loadMetaData(void)
 	if (!d->metaData.empty()) {
 		// Metadata *has* been loaded...
 		return 0;
-	} else if ((!d->file || !d->file->isOpen()) && !d->path) {
+	} else if ((!d->file || !d->file->isOpen()) && d->path.empty()) {
 		// File/directory isn't open.
 		return -EBADF;
 	} else if (!d->isValid || static_cast<int>(d->discType) < 0) {

@@ -51,7 +51,6 @@ public:
 #if defined(_WIN32) && defined(_UNICODE)
 	WiiUPackagePrivate(const wchar_t *path);
 #endif /* _WIN32 && _UNICODE */
-	~WiiUPackagePrivate();
 
 private:
 	typedef LibRpBase::RomDataPrivate super;
@@ -75,8 +74,8 @@ public:
 	};
 	PackageType packageType;
 
-	// Directory path (strdup()'d)
-	TCHAR *path;
+	// Directory path
+	std::tstring path;
 
 	// Ticket, TMD, and FST
 	std::unique_ptr<WiiTicket> ticket;
