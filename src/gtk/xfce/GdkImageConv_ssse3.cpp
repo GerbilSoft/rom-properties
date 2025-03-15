@@ -118,13 +118,8 @@ GdkPixbuf *GdkImageConv::rp_image_to_GdkPixbuf_ssse3(const rp_image *img)
 
 			// Get the palette.
 			static constexpr unsigned int dest_pal_len = 256;
-			uint32_t *const palette = static_cast<uint32_t*>(aligned_malloc(16, dest_pal_len*sizeof(uint32_t)));
-			assert(palette != nullptr);
-			if (unlikely(!palette)) {
-				// Unable to allocate memory for the palette.
-				g_object_unref(pixbuf);
-				return nullptr;
-			}
+			auto palette_uptr = aligned_uptr<uint32_t>(16, dest_pal_len);
+			uint32_t *const palette = palette_uptr.get();
 
 			// Process 16 colors per iteration using SSSE3.
 			const __m128i *xmm_src = reinterpret_cast<const __m128i*>(src_pal);
@@ -184,7 +179,6 @@ GdkPixbuf *GdkImageConv::rp_image_to_GdkPixbuf_ssse3(const rp_image *img)
 				px_dest += dest_stride_adj;
 			}
 
-			aligned_free(palette);
 			break;
 		}
 
