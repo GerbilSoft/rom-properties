@@ -20,15 +20,15 @@
 // librpbase
 using namespace LibRpBase;
 
-#if GTK_CHECK_VERSION(3,0,0)
+#if GTK_CHECK_VERSION(3, 0, 0)
 typedef GtkBoxClass superclass;
 typedef GtkBox super;
 #  define GTK_TYPE_SUPER GTK_TYPE_BOX
-#else /* !GTK_CHECK_VERSION(3,0,0) */
+#else /* !GTK_CHECK_VERSION(3, 0, 0) */
 typedef GtkVBoxClass superclass;
 typedef GtkVBox super;
 #  define GTK_TYPE_SUPER GTK_TYPE_VBOX
-#endif /* GTK_CHECK_VERSION(3,0,0) */
+#endif /* GTK_CHECK_VERSION(3, 0, 0) */
 
 // OptionsTab class
 struct _RpOptionsTabClass {
@@ -108,10 +108,10 @@ rp_options_tab_rp_config_tab_interface_init(RpConfigTabInterface *iface)
 static void
 rp_options_tab_init(RpOptionsTab *tab)
 {
-#if GTK_CHECK_VERSION(3,0,0)
+#if GTK_CHECK_VERSION(3, 0, 0)
 	// Make this a VBox.
 	gtk_orientable_set_orientation(GTK_ORIENTABLE(tab), GTK_ORIENTATION_VERTICAL);
-#endif /* GTK_CHECK_VERSION(3,0,0) */
+#endif /* GTK_CHECK_VERSION(3, 0, 0) */
 	gtk_box_set_spacing(GTK_BOX(tab), 8);
 
 	// Create the "Downloads" frame.
@@ -120,16 +120,16 @@ rp_options_tab_init(RpOptionsTab *tab)
 	gtk_widget_set_name(fraDownloads, "fraDownloads");
 	GtkWidget *const vboxDownloads = rp_gtk_vbox_new(6);
 	gtk_widget_set_name(vboxDownloads, "vboxDownloads");
-#if GTK_CHECK_VERSION(2,91,0)
+#if GTK_CHECK_VERSION(2, 91, 0)
 	gtk_widget_set_margin(vboxDownloads, 6);
 	gtk_frame_set_child(GTK_FRAME(fraDownloads), vboxDownloads);
-#else /* !GTK_CHECK_VERSION(2,91,0) */
+#else /* !GTK_CHECK_VERSION(2, 91, 0) */
 	GtkWidget *const alignDownloads = gtk_alignment_new(0.0f, 0.0f, 0.0f, 0.0f);
 	gtk_widget_set_name(alignDownloads, "alignDownloads");
 	gtk_alignment_set_padding(GTK_ALIGNMENT(alignDownloads), 6, 6, 6, 6);
 	gtk_container_add(GTK_CONTAINER(alignDownloads), vboxDownloads);
 	gtk_frame_set_child(GTK_FRAME(fraDownloads), alignDownloads);
-#endif /* GTK_CHECK_VERSION(2,91,0) */
+#endif /* GTK_CHECK_VERSION(2, 91, 0) */
 
 #ifndef ENABLE_NETWORKING
 	// No-network build: Disable the "Downloads" frame.
@@ -194,7 +194,7 @@ rp_options_tab_init(RpOptionsTab *tab)
 		column, "text", 0, nullptr);
 #endif /* USE_GTK_DROP_DOWN */
 
-#if GTK_CHECK_VERSION(3,0,0)
+#if GTK_CHECK_VERSION(3, 0, 0)
 	GtkWidget *const tblImgBandwidth = gtk_grid_new();
 	gtk_widget_set_name(tblImgBandwidth, "tblImgBandwidth");
 	gtk_widget_set_margin(tblImgBandwidth, 6);
@@ -205,7 +205,7 @@ rp_options_tab_init(RpOptionsTab *tab)
 	gtk_grid_attach(GTK_GRID(tblImgBandwidth), tab->lblMeteredConnection, 0, 1, 1, 1);
 	gtk_grid_attach(GTK_GRID(tblImgBandwidth), tab->cboMeteredConnection, 1, 1, 1, 1);
 	gtk_frame_set_child(GTK_FRAME(tab->fraExtImgDownloads), tblImgBandwidth);
-#else /* !GTK_CHECK_VERSION(3,0,0) */
+#else /* !GTK_CHECK_VERSION(3, 0, 0) */
 	GtkWidget *const tblImgBandwidth = gtk_table_new(2, 2, false);
 	gtk_widget_set_name(tblImgBandwidth, "tblImgBandwidth");
 	gtk_table_set_row_spacings(GTK_TABLE(tblImgBandwidth), 2);
@@ -220,7 +220,7 @@ rp_options_tab_init(RpOptionsTab *tab)
 	gtk_alignment_set_padding(GTK_ALIGNMENT(alignImgBandwidth), 6, 6, 6, 6);
 	gtk_container_add(GTK_CONTAINER(alignImgBandwidth), tblImgBandwidth);
 	gtk_frame_set_child(GTK_FRAME(tab->fraExtImgDownloads), alignImgBandwidth);
-#endif /* GTK_CHECK_VERSION(3,0,0) */
+#endif /* GTK_CHECK_VERSION(3, 0, 0) */
 
 	// "Downloads" checkboxes.
 	tab->chkUseIntIconForSmallSizes = gtk_check_button_new_with_label(
@@ -247,16 +247,16 @@ rp_options_tab_init(RpOptionsTab *tab)
 	gtk_widget_set_name(fraOptions, "fraOptions");
 	GtkWidget *const vboxOptions = rp_gtk_vbox_new(6);
 	gtk_widget_set_name(vboxOptions, "vboxOptions");
-#if GTK_CHECK_VERSION(2,91,0)
+#if GTK_CHECK_VERSION(2, 91, 0)
 	gtk_widget_set_margin(vboxOptions, 6);
 	gtk_frame_set_child(GTK_FRAME(fraOptions), vboxOptions);
-#else /* !GTK_CHECK_VERSION(2,91,0) */
+#else /* !GTK_CHECK_VERSION(2, 91, 0) */
 	GtkWidget *const alignOptions = gtk_alignment_new(0.0f, 0.0f, 0.0f, 0.0f);
 	gtk_widget_set_name(alignOptions, "alignOptions");
 	gtk_alignment_set_padding(GTK_ALIGNMENT(alignOptions), 6, 6, 6, 6);
 	gtk_container_add(GTK_CONTAINER(alignOptions), vboxOptions);
 	gtk_frame_set_child(GTK_FRAME(fraOptions), alignOptions);
-#endif /* GTK_CHECK_VERSION(2,91,0) */
+#endif /* GTK_CHECK_VERSION(2, 91, 0) */
 
 	// "Options" checkboxes.
 	tab->chkShowDangerousPermissionsOverlayIcon = gtk_check_button_new_with_label(
@@ -309,7 +309,7 @@ rp_options_tab_init(RpOptionsTab *tab)
 	g_signal_connect(tab->chkShowXAttrView, "toggled",
 		G_CALLBACK(rp_options_tab_modified_handler), tab);
 
-#if GTK_CHECK_VERSION(4,0,0)
+#if GTK_CHECK_VERSION(4, 0, 0)
 	gtk_box_append(GTK_BOX(tab), fraDownloads);
 	gtk_box_append(GTK_BOX(vboxDownloads), tab->fraExtImgDownloads);
 	gtk_box_append(GTK_BOX(vboxDownloads), tab->chkUseIntIconForSmallSizes);
@@ -324,7 +324,7 @@ rp_options_tab_init(RpOptionsTab *tab)
 	gtk_box_append(GTK_BOX(vboxOptions), tab->chkEnableThumbnailOnNetworkFS);
 	gtk_box_append(GTK_BOX(vboxOptions), tab->chkThumbnailDirectoryPackages);
 	gtk_box_append(GTK_BOX(vboxOptions), tab->chkShowXAttrView);
-#else /* !GTK_CHECK_VERSION(4,0,0) */
+#else /* !GTK_CHECK_VERSION(4, 0, 0) */
 	gtk_box_pack_start(GTK_BOX(tab), fraDownloads, false, false, 0);
 	gtk_box_pack_start(GTK_BOX(vboxDownloads), tab->fraExtImgDownloads, false, false, 0);
 	gtk_box_pack_start(GTK_BOX(vboxDownloads), tab->chkUseIntIconForSmallSizes, false, false, 0);
@@ -342,7 +342,7 @@ rp_options_tab_init(RpOptionsTab *tab)
 
 	gtk_widget_show_all(fraDownloads);
 	gtk_widget_show_all(fraOptions);
-#endif /* GTK_CHECK_VERSION(4,0,0) */
+#endif /* GTK_CHECK_VERSION(4, 0, 0) */
 
 	// Load the current configuration.
 	rp_options_tab_reset(tab);

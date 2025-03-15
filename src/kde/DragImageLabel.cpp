@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * DragImageLabel.cpp: Drag & Drop image label.                            *
  *                                                                         *
- * Copyright (c) 2019-2024 by David Korth.                                 *
+ * Copyright (c) 2019-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -43,7 +43,7 @@ void DragImageLabel::setEcksBawks(bool newEcksBawks)
 	if (!actions().isEmpty())
 		return;
 
-#if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
 	// Need to initialize Ecks Bawks actions.
 	// NOTE: Only supporting Qt 5 for lambda functions.
 	QAction *const actMenu1 = new QAction(QLatin1String("ermahgerd! an ecks bawks ISO!"), this);
@@ -58,7 +58,7 @@ void DragImageLabel::setEcksBawks(bool newEcksBawks)
 
 	addAction(actMenu1);
 	addAction(actMenu2);
-#endif /* QT_VERSION >= QT_VERSION_CHECK(5,0,0) */
+#endif /* QT_VERSION >= QT_VERSION_CHECK(5, 0, 0) */
 }
 
 /**
@@ -378,18 +378,18 @@ void DragImageLabel::mouseMoveEvent(QMouseEvent *event)
 		}
 	} else {
 		// Not animated. Use the QLabel pixmap directly.
-#if QT_VERSION >= QT_VERSION_CHECK(5,15,0)
+#if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
 #  if defined(QT_DISABLE_DEPRECATED_BEFORE) && QT_DISABLE_DEPRECATED_BEFORE >= 0x050F00
 		drag->setPixmap(this->pixmap());
 #  else /* !QT_DISABLE_DEPRECATED_BEFORE || QT_DISABLE_DEPRECATED_BEFORE < 0x050F00 */
 		drag->setPixmap(this->pixmap(Qt::ReturnByValue));
 #  endif /* QT_DISABLE_DEPRECATED_BEFORE && QT_DISABLE_DEPRECATED_BEFORE >= 0x050F00 */
-#else /* QT_VERSION < QT_VERSION_CHECK(5,15,0) */
+#else /* QT_VERSION < QT_VERSION_CHECK(5, 15, 0) */
 		const QPixmap *const qpxm = this->pixmap();
 		if (qpxm) {
 			drag->setPixmap(*qpxm);
 		}
-#endif /* QT_VERSION >= QT_VERSION_CHECK(5,15,0) */
+#endif /* QT_VERSION >= QT_VERSION_CHECK(5, 15, 0) */
 	}
 
 	drag->exec(Qt::CopyAction);

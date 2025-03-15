@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE)                              *
  * AchievementsTab.cpp: Achievements tab for rp-config.                    *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -107,13 +107,13 @@ void AchievementsTab::reset(void)
 	}
 
 	// Set column stretch modes.
-#if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
 	QHeaderView *const pHeader = treeWidget->header();
 	pHeader->setStretchLastSection(false);
 	pHeader->setSectionResizeMode(0, QHeaderView::ResizeToContents);
 	pHeader->setSectionResizeMode(1, QHeaderView::Stretch);
 	pHeader->setSectionResizeMode(2, QHeaderView::ResizeToContents);
-#else /* QT_VERSION <= QT_VERSION_CHECK(5,0,0) */
+#else /* QT_VERSION <= QT_VERSION_CHECK(5, 0, 0) */
 	// Qt 4 doesn't have QHeaderView::setSectionResizeMode().
 	// We'll run a manual resize on each column initially.
 	for (int i = 0; i < 3; i++) {

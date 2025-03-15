@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * SystemsTab.cpp: Systems tab for rp-config.                              *
  *                                                                         *
- * Copyright (c) 2017-2024 by David Korth.                                 *
+ * Copyright (c) 2017-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -16,16 +16,16 @@
 // librpbase
 using namespace LibRpBase;
 
-#if GTK_CHECK_VERSION(3,0,0)
+#if GTK_CHECK_VERSION(3, 0, 0)
 typedef GtkBoxClass superclass;
 typedef GtkBox super;
 #  define GTK_TYPE_SUPER GTK_TYPE_BOX
 #  define USE_GTK_GRID 1	// Use GtkGrid instead of GtkTable.
-#else /* !GTK_CHECK_VERSION(3,0,0) */
+#else /* !GTK_CHECK_VERSION(3, 0, 0) */
 typedef GtkVBoxClass superclass;
 typedef GtkVBox super;
 #  define GTK_TYPE_SUPER GTK_TYPE_VBOX
-#endif /* GTK_CHECK_VERSION(3,0,0) */
+#endif /* GTK_CHECK_VERSION(3, 0, 0) */
 
 // SystemsTab class
 struct _RpSystemsTabClass {
@@ -86,10 +86,10 @@ rp_systems_tab_rp_config_tab_interface_init(RpConfigTabInterface *iface)
 static void
 rp_systems_tab_init(RpSystemsTab *tab)
 {
-#if GTK_CHECK_VERSION(3,0,0)
+#if GTK_CHECK_VERSION(3, 0, 0)
 	// Make this a VBox.
 	gtk_orientable_set_orientation(GTK_ORIENTABLE(tab), GTK_ORIENTATION_VERTICAL);
-#endif /* GTK_CHECK_VERSION(3,0,0) */
+#endif /* GTK_CHECK_VERSION(3, 0, 0) */
 	gtk_box_set_spacing(GTK_BOX(tab), 8);
 
 	// Create the "Game Boy Title Screens" frame.
@@ -98,17 +98,17 @@ rp_systems_tab_init(RpSystemsTab *tab)
 	gtk_widget_set_name(fraDMG, "fraDMG");
 	GtkWidget *const vboxDMG = rp_gtk_vbox_new(6);
 	gtk_widget_set_name(vboxDMG, "vboxDMG");
-#if GTK_CHECK_VERSION(2,91,0)
+#if GTK_CHECK_VERSION(2, 91, 0)
 	gtk_widget_set_margin(vboxDMG, 6);
 	gtk_frame_set_child(GTK_FRAME(fraDMG), vboxDMG);
-#else /* !GTK_CHECK_VERSION(2,91,0) */
+#else /* !GTK_CHECK_VERSION(2, 91, 0) */
 	GtkWidget *const alignDMG = gtk_alignment_new(0.0f, 0.0f, 0.0f, 0.0f);
 	gtk_widget_set_name(alignDMG, "alignDMG");
 	gtk_alignment_set_padding(GTK_ALIGNMENT(alignDMG), 6, 6, 6, 6);
 	gtk_widget_show(alignDMG);
 	gtk_container_add(GTK_CONTAINER(alignDMG), vboxDMG);
 	gtk_frame_set_child(GTK_FRAME(fraDMG), alignDMG);
-#endif /* GTK_CHECK_VERSION(2,91,0) */
+#endif /* GTK_CHECK_VERSION(2, 91, 0) */
 
 	// FIXME: Better wrapping that doesn't require manual newlines.
 	GtkWidget *const lblDMGDescription = gtk_label_new(
@@ -236,7 +236,7 @@ rp_systems_tab_init(RpSystemsTab *tab)
 	gtk_table_attach(GTK_TABLE(tblDMG), lblCGB, 0, 1, 2, 3, GTK_FILL, GTK_FILL, 0, 0);
 	gtk_table_attach(GTK_TABLE(tblDMG), tab->cboCGB, 1, 2, 2, 3, GTK_FILL, GTK_FILL, 0, 0);
 
-#if !GTK_CHECK_VERSION(3,0,0)
+#if !GTK_CHECK_VERSION(3, 0, 0)
 	// GTK2: Vertically-center the labels. (Not needed for GTK3/GTK4...)
 	gfloat xalign;
 	gtk_misc_get_alignment(GTK_MISC(lblDMG), &xalign, nullptr);
@@ -245,22 +245,22 @@ rp_systems_tab_init(RpSystemsTab *tab)
 	gtk_misc_set_alignment(GTK_MISC(lblSGB), xalign, 0.5f);
 	gtk_misc_get_alignment(GTK_MISC(lblCGB), &xalign, nullptr);
 	gtk_misc_set_alignment(GTK_MISC(lblCGB), xalign, 0.5f);
-#endif /* !GTK_CHECK_VERSION(3,0,0) */
+#endif /* !GTK_CHECK_VERSION(3, 0, 0) */
 
 #endif /* USE_GTK_GRID */
 
-#if GTK_CHECK_VERSION(4,0,0)
+#if GTK_CHECK_VERSION(4, 0, 0)
 	gtk_box_append(GTK_BOX(tab), fraDMG);
 
 	gtk_box_append(GTK_BOX(vboxDMG), lblDMGDescription);
 	gtk_box_append(GTK_BOX(vboxDMG), tblDMG);
-#else /* !GTK_CHECK_VERSION(4,0,0) */
+#else /* !GTK_CHECK_VERSION(4, 0, 0) */
 	gtk_box_pack_start(GTK_BOX(tab), fraDMG, false, false, 0);
 	gtk_box_pack_start(GTK_BOX(vboxDMG), lblDMGDescription, false, false, 0);
 	gtk_box_pack_start(GTK_BOX(vboxDMG), tblDMG, false, false, 0);
 
 	gtk_widget_show_all(fraDMG);
-#endif /* GTK_CHECK_VERSION(4,0,0) */
+#endif /* GTK_CHECK_VERSION(4, 0, 0) */
 
 	// Load the current configuration.
 	rp_systems_tab_reset(tab);

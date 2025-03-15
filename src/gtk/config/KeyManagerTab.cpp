@@ -104,10 +104,10 @@ rp_key_manager_tab_rp_config_tab_interface_init(RpConfigTabInterface *iface)
 static void
 rp_key_manager_tab_init(RpKeyManagerTab *tab)
 {
-#if GTK_CHECK_VERSION(3,0,0)
+#if GTK_CHECK_VERSION(3, 0, 0)
 	// Make this a VBox.
 	gtk_orientable_set_orientation(GTK_ORIENTABLE(tab), GTK_ORIENTATION_VERTICAL);
-#endif /* GTK_CHECK_VERSION(3,0,0) */
+#endif /* GTK_CHECK_VERSION(3, 0, 0) */
 	gtk_box_set_spacing(GTK_BOX(tab), 8);
 
 	// MessageWidget goes at the top of the window.
@@ -122,22 +122,22 @@ rp_key_manager_tab_init(RpKeyManagerTab *tab)
 	g_signal_connect(tab->keyStore, "modified", G_CALLBACK(keyStore_modified_signal_handler), tab);
 
 	// Scroll area for the GtkTreeView.
-#if GTK_CHECK_VERSION(4,0,0)
+#if GTK_CHECK_VERSION(4, 0, 0)
 	tab->scrolledWindow = gtk_scrolled_window_new();
 	gtk_scrolled_window_set_has_frame(GTK_SCROLLED_WINDOW(tab->scrolledWindow), true);
-#else /* !GTK_CHECK_VERSION(4,0,0) */
+#else /* !GTK_CHECK_VERSION(4, 0, 0) */
 	tab->scrolledWindow = gtk_scrolled_window_new(nullptr, nullptr);
 	gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(tab->scrolledWindow), GTK_SHADOW_IN);
 #endif /* GTK_CHECK_VERSION */
 	gtk_widget_set_name(tab->scrolledWindow, "scrolledWindow");
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(tab->scrolledWindow),
 		GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
-#if GTK_CHECK_VERSION(2,91,1)
+#if GTK_CHECK_VERSION(2, 91, 1)
 	gtk_widget_set_halign(tab->scrolledWindow, GTK_ALIGN_FILL);
 	gtk_widget_set_valign(tab->scrolledWindow, GTK_ALIGN_FILL);
 	gtk_widget_set_hexpand(tab->scrolledWindow, TRUE);
 	gtk_widget_set_vexpand(tab->scrolledWindow, TRUE);
-#endif /* GTK_CHECK_VERSION(2,91,1) */
+#endif /* GTK_CHECK_VERSION(2, 91, 1) */
 
 	// Create the Gtk(Tree|Column)View and backing store.
 	rp_key_manager_tab_create_GtkTreeView(tab);
@@ -151,11 +151,11 @@ rp_key_manager_tab_init(RpKeyManagerTab *tab)
 #endif /* USE_GTK_MENU_BUTTON */
 	gtk_widget_set_name(tab->btnImport, "btnImport");
 
-#if GTK_CHECK_VERSION(4,0,0) && defined(USE_GTK_MENU_BUTTON)
+#if GTK_CHECK_VERSION(4, 0, 0) && defined(USE_GTK_MENU_BUTTON)
 	gtk_menu_button_set_label(GTK_MENU_BUTTON(tab->btnImport), s_import.c_str());
 	gtk_menu_button_set_use_underline(GTK_MENU_BUTTON(tab->btnImport), TRUE);
 	gtk_menu_button_set_direction(GTK_MENU_BUTTON(tab->btnImport), GTK_ARROW_UP);
-#else /* !GTK_CHECK_VERSION(4,0,0) || !defined(USE_GTK_MENU_BUTTON) */
+#else /* !GTK_CHECK_VERSION(4, 0, 0) || !defined(USE_GTK_MENU_BUTTON) */
 	// GtkMenuButton in GTK3 only supports a label *or* an image by default.
 	// Create a GtkBox to store both a label and image.
 	// This will also be used for the non-GtkMenuButton version.
@@ -169,12 +169,12 @@ rp_key_manager_tab_init(RpKeyManagerTab *tab)
 	gtk_widget_set_name(hboxImport, "hboxImport");
 	gtk_box_pack_start(GTK_BOX(hboxImport), lblImport, false, false, 0);
 	gtk_box_pack_start(GTK_BOX(hboxImport), imgImport, false, false, 0);
-#  if GTK_CHECK_VERSION(4,0,0)
+#  if GTK_CHECK_VERSION(4, 0, 0)
 	gtk_button_set_child(GTK_BUTTON(tab->btnImport), hboxImport);
-#  else /* !GTK_CHECK_VERSION(4,0,0) */
+#  else /* !GTK_CHECK_VERSION(4, 0, 0) */
 	gtk_container_add(GTK_CONTAINER(tab->btnImport), hboxImport);
-#  endif /* GTK_CHECK_VERSION(4,0,0) */
-#endif /* GTK_CHECK_VERSION(4,0,0) && defined(USE_GTK_MENU_BUTTON) */
+#  endif /* GTK_CHECK_VERSION(4, 0, 0) */
+#endif /* GTK_CHECK_VERSION(4, 0, 0) && defined(USE_GTK_MENU_BUTTON) */
 
 #ifndef RP_USE_GTK_ALIGNMENT
 	GTK_WIDGET_HALIGN_LEFT(tab->btnImport);
@@ -239,11 +239,11 @@ rp_key_manager_tab_init(RpKeyManagerTab *tab)
 	g_signal_connect(tab->btnImport, "event", G_CALLBACK(btnImport_event_signal_handler), tab);
 #endif /* !USE_GTK_MENU_BUTTON */
 
-#if GTK_CHECK_VERSION(4,0,0)
+#if GTK_CHECK_VERSION(4, 0, 0)
 	gtk_box_append(GTK_BOX(tab), tab->messageWidget);
 	gtk_box_append(GTK_BOX(tab), tab->scrolledWindow);
 	gtk_box_append(GTK_BOX(tab), tab->btnImport);
-#else /* !GTK_CHECK_VERSION(4,0,0) */
+#else /* !GTK_CHECK_VERSION(4, 0, 0) */
 	gtk_box_pack_start(GTK_BOX(tab), tab->messageWidget, FALSE, FALSE, 0);
 	gtk_box_pack_start(GTK_BOX(tab), tab->scrolledWindow, TRUE, TRUE, 0);
 
@@ -255,7 +255,7 @@ rp_key_manager_tab_init(RpKeyManagerTab *tab)
 
 	gtk_widget_show_all(tab->scrolledWindow);
 	gtk_widget_show_all(tab->btnImport);
-#endif /* GTK_CHECK_VERSION(4,0,0) */
+#endif /* GTK_CHECK_VERSION(4, 0, 0) */
 
 	// Initialize the GtkTreeView with the available keys.
 	rp_key_manager_tab_init_keys(tab);

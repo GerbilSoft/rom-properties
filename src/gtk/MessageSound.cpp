@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * MessageSound.cpp: Message sound effects class.                          *
  *                                                                         *
- * Copyright (c) 2018-2023 by David Korth.                                 *
+ * Copyright (c) 2018-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -11,9 +11,9 @@
 #include "MessageSound.hpp"
 
 #include <gdk/gdkdisplay.h>
-#if GTK_CHECK_VERSION(4,0,0)
+#if GTK_CHECK_VERSION(4, 0, 0)
 #  include <gdk/wayland/gdkwayland.h>
-#elif GTK_CHECK_VERSION(3,7,8)
+#elif GTK_CHECK_VERSION(3, 7, 8)
 #  include <gdk/gdkwayland.h>
 #endif
 
@@ -102,12 +102,12 @@ void play(GtkMessageType notificationType, const char *message, GtkWidget *paren
 	}
 
 	// Verify that this is an X11 display before attempting to set the attribute.
-#if GTK_CHECK_VERSION(3,7,8)
+#if GTK_CHECK_VERSION(3, 7, 8)
 	if (GDK_IS_WAYLAND_DISPLAY(display)) {
 		// Wayland. Cannot be X11.
 		name = nullptr;
 	} else
-#endif /* GTK_CHECK_VERSION(3,7,8) */
+#endif /* GTK_CHECK_VERSION(3, 7, 8) */
 	{
 		// Assuming X11.
 		name = gdk_display_get_name(display);

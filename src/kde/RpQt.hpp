@@ -32,8 +32,8 @@
 
 // NOTE: Using QT_VERSION_CHECK causes errors on moc-qt4 due to CMAKE_AUTOMOC.
 // Reference: https://bugzilla.redhat.com/show_bug.cgi?id=1396755
-// QT_VERSION_CHECK(6,0,0) -> 0x60000
-// QT_VERSION_CHECK(5,0,0) -> 0x50000
+// QT_VERSION_CHECK(6, 0, 0) -> 0x60000
+// QT_VERSION_CHECK(5, 0, 0) -> 0x50000
 
 /** Text conversion **/
 

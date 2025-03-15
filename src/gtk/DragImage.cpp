@@ -25,9 +25,9 @@ using std::unique_ptr;
 // GtkPopover was added in GTK 3.12.
 // GMenuModel is also implied by this, since GMenuModel
 // support was added to GTK+ 3.4.
-#if GTK_CHECK_VERSION(3,11,5)
+#if GTK_CHECK_VERSION(3, 11, 5)
 #  define USE_G_MENU_MODEL 1
-#endif /* GTK_CHECK_VERSION(3,11,5) */
+#endif /* GTK_CHECK_VERSION(3, 11, 5) */
 
 // GTK4 introduces GtkPicture, which supports arbitrary images.
 // GtkImage has been relegated to icons only, and only really
@@ -44,14 +44,14 @@ static void	rp_drag_image_finalize	(GObject	*object);
 // Signal handlers
 static void	rp_drag_image_map_signal_handler  (RpDragImage *image, gpointer user_data);
 static void	rp_drag_image_notify_width_or_height_signal_handler(RpDragImage *image, GParamSpec *pspec, gpointer user_data);
-#if GTK_CHECK_VERSION(4,0,0)
+#if GTK_CHECK_VERSION(4, 0, 0)
 static GdkContentProvider *rp_drag_image_drag_source_prepare(GtkDragSource *source, double x, double y, RpDragImage *image);
 static void	rp_drag_image_drag_source_drag_begin(GtkDragSource *source, GdkDrag *drag, RpDragImage *image);
 static void	rp_drag_image_drag_source_drag_end(GtkDragSource *source, GdkDrag *drag, gboolean delete_data, RpDragImage *image);
-#else /* !GTK_CHECK_VERSION(4,0,0) */
+#else /* !GTK_CHECK_VERSION(4, 0, 0) */
 static void	rp_drag_image_drag_begin(RpDragImage *image, GdkDragContext *context, gpointer user_data);
 static void	rp_drag_image_drag_data_get(RpDragImage *image, GdkDragContext *context, GtkSelectionData *data, guint info, guint time, gpointer user_data);
-#endif /* GTK_CHECK_VERSION(4,0,0) */
+#endif /* GTK_CHECK_VERSION(4, 0, 0) */
 
 #ifdef USE_G_MENU_MODEL
 static void	ecksbawks_action_triggered_signal_handler     (GSimpleAction	*action,
@@ -64,15 +64,15 @@ static void	ecksbawks_menuItem_triggered_signal_handler   (GtkMenuItem	*menuItem
 
 // GTK4 no longer needs GtkEventBox, since
 // all widgets receive events.
-#if GTK_CHECK_VERSION(4,0,0)
+#if GTK_CHECK_VERSION(4, 0, 0)
 typedef GtkBoxClass superclass;
 typedef GtkBox super;
 #  define GTK_TYPE_SUPER GTK_TYPE_BOX
-#else /* !GTK_CHECK_VERSION(4,0,0) */
+#else /* !GTK_CHECK_VERSION(4, 0, 0) */
 typedef GtkEventBoxClass superclass;
 typedef GtkEventBox super;
 #  define GTK_TYPE_SUPER GTK_TYPE_EVENT_BOX
-#endif /* GTK_CHECK_VERSION(4,0,0) */
+#endif /* GTK_CHECK_VERSION(4, 0, 0) */
 
 // DragImage class
 struct _RpDragImageClass {
@@ -87,11 +87,11 @@ struct _RpDragImageCxx {
 
 	~_RpDragImageCxx()
 	{
-#if GTK_CHECK_VERSION(4,0,0)
+#if GTK_CHECK_VERSION(4, 0, 0)
 		if (pngBytes) {
 			g_bytes_unref(pngBytes);
 		}
-#endif /* GTK_CHECK_VERSION(4,0,0) */
+#endif /* GTK_CHECK_VERSION(4, 0, 0) */
 	}
 
 	// rp_image (C++ shared_ptr)
@@ -131,11 +131,11 @@ struct _RpDragImageCxx {
 	};
 	unique_ptr<anim_vars> anim;
 
-#if GTK_CHECK_VERSION(4,0,0)
+#if GTK_CHECK_VERSION(4, 0, 0)
 	// Temporary buffer for PNG data when dragging and dropping images.
 	VectorFilePtr pngData;
 	GBytes *pngBytes;
-#endif /* GTK_CHECK_VERSION(4,0,0) */
+#endif /* GTK_CHECK_VERSION(4, 0, 0) */
 };
 
 // DragImage instance
@@ -158,9 +158,9 @@ struct _RpDragImage {
 	GtkWidget *menuEcksBawks;	// GtkMenu
 #endif /* USE_G_MENU_MODEL */
 
-#if GTK_CHECK_VERSION(4,0,0)
+#if GTK_CHECK_VERSION(4, 0, 0)
 	GtkDragSource *dragSource;
-#endif /* GTK_CHECK_VERSION(4,0,0) */
+#endif /* GTK_CHECK_VERSION(4, 0, 0) */
 };
 
 // NOTE: G_DEFINE_TYPE() doesn't work in C++ mode with gcc-6.2
@@ -196,28 +196,28 @@ rp_drag_image_init(RpDragImage *image)
 #endif /* USE_GTK_PICTURE */
 
 	gtk_widget_set_name(image->imageWidget, "imageWidget");
-#if GTK_CHECK_VERSION(4,0,0)
+#if GTK_CHECK_VERSION(4, 0, 0)
 	gtk_box_append(GTK_BOX(image), image->imageWidget);
-#else /* !GTK_CHECK_VERSION(4,0,0) */
+#else /* !GTK_CHECK_VERSION(4, 0, 0) */
 	gtk_widget_show(image->imageWidget);
 	gtk_container_add(GTK_CONTAINER(image), image->imageWidget);
-#endif /* GTK_CHECK_VERSION(4,0,0) */
+#endif /* GTK_CHECK_VERSION(4, 0, 0) */
 
 	// Pixmaps can only be updated once we have a valid size.
 	g_signal_connect(G_OBJECT(image), "map", G_CALLBACK(rp_drag_image_map_signal_handler),   nullptr);
 	g_signal_connect(G_OBJECT(image), "notify::width-request",  G_CALLBACK(rp_drag_image_notify_width_or_height_signal_handler), nullptr);
 	g_signal_connect(G_OBJECT(image), "notify::height-request", G_CALLBACK(rp_drag_image_notify_width_or_height_signal_handler), nullptr);
 
-#if GTK_CHECK_VERSION(4,0,0)
+#if GTK_CHECK_VERSION(4, 0, 0)
 	image->dragSource = gtk_drag_source_new();
 	g_signal_connect(G_OBJECT(image->dragSource), "prepare",    G_CALLBACK(rp_drag_image_drag_source_prepare),    image);
 	g_signal_connect(G_OBJECT(image->dragSource), "drag-begin", G_CALLBACK(rp_drag_image_drag_source_drag_begin), image);
 	g_signal_connect(G_OBJECT(image->dragSource), "drag-end",   G_CALLBACK(rp_drag_image_drag_source_drag_end),   image);
 	gtk_widget_add_controller(GTK_WIDGET(image), GTK_EVENT_CONTROLLER(image->dragSource));
-#else /* !GTK_CHECK_VERSION(4,0,0) */
+#else /* !GTK_CHECK_VERSION(4, 0, 0) */
 	g_signal_connect(G_OBJECT(image), "drag-begin",    G_CALLBACK(rp_drag_image_drag_begin),    nullptr);
 	g_signal_connect(G_OBJECT(image), "drag-data-get", G_CALLBACK(rp_drag_image_drag_data_get), nullptr);
-#endif /* GTK_CHECK_VERSION(4,0,0) */
+#endif /* GTK_CHECK_VERSION(4, 0, 0) */
 }
 
 static void
@@ -234,12 +234,12 @@ rp_drag_image_dispose(GObject *object)
 	}
 
 #ifdef USE_G_MENU_MODEL
-#  if !GTK_CHECK_VERSION(4,0,0)
+#  if !GTK_CHECK_VERSION(4, 0, 0)
 	if (image->popEcksBawks) {
 		gtk_widget_destroy(image->popEcksBawks);
 		image->popEcksBawks = nullptr;
 	}
-#  endif /* !GTK_CHECK_VERSION(4,0,0) */
+#  endif /* !GTK_CHECK_VERSION(4, 0, 0) */
 	g_clear_object(&image->menuEcksBawks);
 
 	// The GSimpleActionGroup owns the actions, so
@@ -304,17 +304,17 @@ rp_drag_image_update_pixmaps(RpDragImage *image)
 
 	g_clear_pointer(&image->curFrame, PIMGTYPE_unref);
 
-#if GTK_CHECK_VERSION(3,0,0)
+#if GTK_CHECK_VERSION(3, 0, 0)
 	// NOTE: In testing, the two sizes (minimum and natural) returned by
 	// gtk_widget_get_preferred_size() are both the same if
 	// gtk_widget_set_size_request() is called.
 	// If it's not called, then both are 0 x 0.
 	GtkRequisition req_sz;
 	gtk_widget_get_preferred_size(GTK_WIDGET(image), &req_sz, nullptr);
-#else /* !GTK_CHECK_VERSION(3,0,0) */
+#else /* !GTK_CHECK_VERSION(3, 0, 0) */
 	GtkRequisition req_sz;
 	gtk_widget_size_request(GTK_WIDGET(image), &req_sz);
-#endif /* GTK_CHECK_VERSION(3,0,0) */
+#endif /* GTK_CHECK_VERSION(3, 0, 0) */
 	const bool doRescaleIfNeeded = (req_sz.width > 0 && req_sz.height > 0);
 
 	// FIXME: Transparency isn't working for e.g. GALE01.gci.
@@ -387,7 +387,7 @@ rp_drag_image_update_pixmaps(RpDragImage *image)
 	}
 
 	// FIXME: GTK4 has a new Drag & Drop API.
-#if !GTK_CHECK_VERSION(4,0,0)
+#if !GTK_CHECK_VERSION(4, 0, 0)
 	if (bRet) {
 		// Image or animated icon data was set.
 		// Set a drag source.
@@ -408,7 +408,7 @@ rp_drag_image_update_pixmaps(RpDragImage *image)
 		// Unset the drag source.
 		gtk_drag_source_unset(GTK_WIDGET(image));
 	}
-#endif /* !GTK_CHECK_VERSION(4,0,0) */
+#endif /* !GTK_CHECK_VERSION(4, 0, 0) */
 
 	image->dirty = false;
 	return bRet;
@@ -420,7 +420,7 @@ bool rp_drag_image_get_ecks_bawks(RpDragImage *image)
 	return image->ecksBawks;
 }
 
-#if GTK_CHECK_VERSION(4,0,0)
+#if GTK_CHECK_VERSION(4, 0, 0)
 static void
 rp_drag_image_on_gesture_pressed_event(GtkGestureClick *self, gint n_press, gdouble x, gdouble y, RpDragImage *image)
 {
@@ -437,7 +437,7 @@ rp_drag_image_on_gesture_pressed_event(GtkGestureClick *self, gint n_press, gdou
 
 	gtk_popover_popup(GTK_POPOVER(image->popEcksBawks));
 }
-#else /* !GTK_CHECK_VERSION(4,0,0) */
+#else /* !GTK_CHECK_VERSION(4, 0, 0) */
 static void
 rp_drag_image_on_button_press_event(RpDragImage *image, GdkEventButton *event, gpointer userdata)
 {
@@ -447,11 +447,11 @@ rp_drag_image_on_button_press_event(RpDragImage *image, GdkEventButton *event, g
 
 	if (event->type == GDK_BUTTON_PRESS && event->button == 3) {
 #ifdef USE_G_MENU_MODEL
-#  if GTK_CHECK_VERSION(3,21,5)
+#  if GTK_CHECK_VERSION(3, 21, 5)
 		gtk_popover_popup(GTK_POPOVER(image->popEcksBawks));
-#  else /* !GTK_CHECK_VERSION(3,21,5) */
+#  else /* !GTK_CHECK_VERSION(3, 21, 5) */
 		gtk_widget_show(image->popEcksBawks);
-#  endif /* GTK_CHECK_VERSION(3,21,5) */
+#  endif /* GTK_CHECK_VERSION(3, 21, 5) */
 #else /* !USE_G_MENU_MODEL */
 		gtk_menu_popup(GTK_MENU(image->menuEcksBawks),
 			nullptr, nullptr, nullptr,
@@ -460,7 +460,7 @@ rp_drag_image_on_button_press_event(RpDragImage *image, GdkEventButton *event, g
 #endif /* USE_G_MENU_MODEL */
 	}
 }
-#endif /* GTK_CHECK_VERSION(4,0,0) */
+#endif /* GTK_CHECK_VERSION(4, 0, 0) */
 
 void rp_drag_image_set_ecks_bawks(RpDragImage *image, bool new_ecks_bawks)
 {
@@ -496,16 +496,16 @@ void rp_drag_image_set_ecks_bawks(RpDragImage *image, bool new_ecks_bawks)
 	}
 
 	gtk_widget_insert_action_group(GTK_WIDGET(image), s_prefix.c_str(), G_ACTION_GROUP(image->actionGroup));
-#  if GTK_CHECK_VERSION(4,0,0)
+#  if GTK_CHECK_VERSION(4, 0, 0)
 	image->popEcksBawks = gtk_popover_menu_new_from_model(G_MENU_MODEL(image->menuEcksBawks));
 	// GTK4: Need to set parent. Otherwise, gtk_popover_popup() will crash.
 	gtk_widget_set_parent(image->popEcksBawks, GTK_WIDGET(image));
-#  else /* !GTK_CHECK_VERSION(4,0,0) */
+#  else /* !GTK_CHECK_VERSION(4, 0, 0) */
 	image->popEcksBawks = gtk_popover_new_from_model(GTK_WIDGET(image), G_MENU_MODEL(image->menuEcksBawks));
-#    if GTK_CHECK_VERSION(3,15,8) && !GTK_CHECK_VERSION(3,21,5)
+#    if GTK_CHECK_VERSION(3,15,8) && !GTK_CHECK_VERSION(3, 21, 5)
 	gtk_popover_set_transitions_enabled(GTK_POPOVER(image->popEcksBawks), true);
-#    endif /* GTK_CHECK_VERSION(3,15,8) && !GTK_CHECK_VERSION(3,21,5) */
-#  endif /* GTK_CHECK_VERSION(4,0,0) */
+#    endif /* GTK_CHECK_VERSION(3,15,8) && !GTK_CHECK_VERSION(3, 21, 5) */
+#  endif /* GTK_CHECK_VERSION(4, 0, 0) */
 	gtk_widget_set_name(image->popEcksBawks, "popEcksBawks");
 #else /* !USE_G_MENU_MODEL */
 
@@ -522,19 +522,19 @@ void rp_drag_image_set_ecks_bawks(RpDragImage *image, bool new_ecks_bawks)
 	}
 #endif
 
-#if GTK_CHECK_VERSION(4,0,0)
+#if GTK_CHECK_VERSION(4, 0, 0)
 	// GTK4: Use GtkGestureClick to handle right-click.
 	// NOTE: GtkWidget takes ownership of the gesture object.
 	GtkGesture *const rightClickGesture = gtk_gesture_click_new();
 	gtk_gesture_single_set_button(GTK_GESTURE_SINGLE(rightClickGesture), GDK_BUTTON_SECONDARY);
 	gtk_widget_add_controller(GTK_WIDGET(image), GTK_EVENT_CONTROLLER(rightClickGesture));
 	g_signal_connect(rightClickGesture, "pressed", G_CALLBACK(rp_drag_image_on_gesture_pressed_event), image);
-#else /* !GTK_CHECK_VERSION(4,0,0) */
+#else /* !GTK_CHECK_VERSION(4, 0, 0) */
 	// GTK2/GTK3: Show context menu on right-click.
 	// NOTE: On my system, programs show context menus on mouse button down.
 	// On Windows, it shows the menu on mouse button up?
 	g_signal_connect(image, "button-press-event", G_CALLBACK(rp_drag_image_on_button_press_event), nullptr);
-#endif /* GTK_CHECK_VERSION(4,0,0) */
+#endif /* GTK_CHECK_VERSION(4, 0, 0) */
 }
 
 /**
@@ -865,7 +865,7 @@ rp_drag_image_create_PNG_file(RpDragImage *image)
 	return pngData;
 }
 
-#if GTK_CHECK_VERSION(4,0,0)
+#if GTK_CHECK_VERSION(4, 0, 0)
 static GdkContentProvider*
 rp_drag_image_drag_source_prepare(GtkDragSource *source, double x, double y, RpDragImage *image)
 {
@@ -914,7 +914,7 @@ rp_drag_image_drag_source_drag_end(GtkDragSource *source, GdkDrag *drag, gboolea
 	g_clear_pointer(&cxx->pngBytes, g_bytes_unref);
 	cxx->pngData.reset();
 }
-#else /* !GTK_CHECK_VERSION(4,0,0) */
+#else /* !GTK_CHECK_VERSION(4, 0, 0) */
 static void
 rp_drag_image_drag_begin(RpDragImage *image, GdkDragContext *context, gpointer user_data)
 {
@@ -946,7 +946,7 @@ rp_drag_image_drag_data_get(RpDragImage *image, GdkDragContext *context, GtkSele
 	gtk_selection_data_set(data, gdk_atom_intern_static_string("image/png"), 8,
 		pngVec.data(), static_cast<gint>(pngVec.size()));
 }
-#endif /* GTK_CHECK_VERSION(4,0,0) */
+#endif /* GTK_CHECK_VERSION(4, 0, 0) */
 
 static void
 ecksbawks_show_url(gint id)

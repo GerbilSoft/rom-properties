@@ -85,7 +85,7 @@ rp_rom_data_view_update_field(RpRomDataView *page, int fieldIdx)
 	for (const auto &tab : cxx->tabs) {
 		GtkWidget *const table = tab.table;	// GtkTable (2.x); GtkGrid (3.x)
 
-#if GTK_CHECK_VERSION(4,0,0)
+#if GTK_CHECK_VERSION(4, 0, 0)
 		// Enumerate the child widgets.
 		// NOTE: Widgets are enumerated in forwards order.
 		// TODO: Needs testing!
@@ -99,7 +99,7 @@ rp_rom_data_view_update_field(RpRomDataView *page, int fieldIdx)
 				break;
 			}
 		}
-#else /* !GTK_CHECK_VERSION(4,0,0) */
+#else /* !GTK_CHECK_VERSION(4, 0, 0) */
 		// Get the list of child widgets.
 		// NOTE: Widgets are enumerated in forwards order,
 		// since the list head is the first item.
@@ -170,7 +170,7 @@ rp_rom_data_view_update_field(RpRomDataView *page, int fieldIdx)
 			// over the bitfield description.
 			const auto &bitfieldDesc = field->desc.bitfield;
 
-#if GTK_CHECK_VERSION(4,0,0)
+#if GTK_CHECK_VERSION(4, 0, 0)
 			// Get the first child.
 			// NOTE: Widgets are enumerated in forwards order.
 			// TODO: Needs testing!
@@ -200,7 +200,7 @@ rp_rom_data_view_update_field(RpRomDataView *page, int fieldIdx)
 				gtk_check_button_set_active(GTK_CHECK_BUTTON(checkBox), value);
 				g_object_set_qdata(G_OBJECT(checkBox), RFT_BITFIELD_value_quark, GUINT_TO_POINTER((guint)value));
 			}
-#else /* !GTK_CHECK_VERSION(4,0,0) */
+#else /* !GTK_CHECK_VERSION(4, 0, 0) */
 			// Get the list of child widgets.
 			// NOTE: Widgets are enumerated in reverse order.
 			GList *const widgetList = gtk_container_get_children(GTK_CONTAINER(widget));
@@ -232,7 +232,7 @@ rp_rom_data_view_update_field(RpRomDataView *page, int fieldIdx)
 				g_object_set_qdata(G_OBJECT(checkBox), RFT_BITFIELD_value_quark, GUINT_TO_POINTER((guint)value));
 			}
 			g_list_free(widgetList);
-#endif /* GTK_CHECK_VERSION(4,0,0) */
+#endif /* GTK_CHECK_VERSION(4, 0, 0) */
 
 			// Done updating.
 			page->inhibit_checkbox_no_toggle = false;
@@ -372,11 +372,11 @@ rp_rom_data_view_getSaveFileDialog_callback(GFile *file, save_data_t *save_data)
 		if (!page->messageWidget) {
 			page->messageWidget = rp_message_widget_new();
 			rp_message_widget_set_transition_type(RP_MESSAGE_WIDGET(page->messageWidget), GTK_REVEALER_TRANSITION_TYPE_SLIDE_UP);
-#if GTK_CHECK_VERSION(4,0,0)
+#if GTK_CHECK_VERSION(4, 0, 0)
 			gtk_box_append(GTK_BOX(page), page->messageWidget);
-#else /* !GTK_CHECK_VERSION(4,0,0) */
+#else /* !GTK_CHECK_VERSION(4, 0, 0) */
 			gtk_box_pack_end(GTK_BOX(page), page->messageWidget, false, false, 0);
-#endif /* GTK_CHECK_VERSION(4,0,0) */
+#endif /* GTK_CHECK_VERSION(4, 0, 0) */
 		}
 
 		RpMessageWidget *const messageWidget = RP_MESSAGE_WIDGET(page->messageWidget);

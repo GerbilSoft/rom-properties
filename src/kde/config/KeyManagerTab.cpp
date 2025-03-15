@@ -22,11 +22,11 @@ using LibRomData::KeyStoreUI;
 using std::string;
 
 // KDE4/KF5 includes.
-#if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
 #  define HAVE_KMESSAGEWIDGET 1
 #  define HAVE_KMESSAGEWIDGET_SETICON 1
 #  include <KMessageWidget>
-#else /* !QT_VERSION >= QT_VERSION_CHECK(5,0,0) */
+#else /* !QT_VERSION >= QT_VERSION_CHECK(5, 0, 0) */
 #  include <kdeversion.h>
 #  if (KDE_VERSION_MAJOR > 4) || (KDE_VERSION_MAJOR == 4 && KDE_VERSION_MINOR >= 7)
 #    define HAVE_KMESSAGEWIDGET 1
@@ -35,7 +35,7 @@ using std::string;
 #      define HAVE_KMESSAGEWIDGET_SETICON 1
 #    endif
 #  endif
-#endif /* QT_VERSION >= QT_VERSION_CHECK(5,0,0) */
+#endif /* QT_VERSION >= QT_VERSION_CHECK(5, 0, 0) */
 
 #include "ui_KeyManagerTab.h"
 class KeyManagerTabPrivate

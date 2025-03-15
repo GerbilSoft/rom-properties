@@ -14,13 +14,13 @@ G_BEGIN_DECLS
 
 #define RP_TYPE_DOS_ATTR_VIEW (rp_dos_attr_view_get_type())
 
-#if GTK_CHECK_VERSION(3,0,0)
+#if GTK_CHECK_VERSION(3, 0, 0)
 #  define _RpDosAttrView_super		GtkBox
 #  define _RpDosAttrView_superClass	GtkBoxClass
-#else /* !GTK_CHECK_VERSION(3,0,0) */
+#else /* !GTK_CHECK_VERSION(3, 0, 0) */
 #  define _RpDosAttrView_super		GtkVBox
 #  define _RpDosAttrView_superClass	GtkVBoxClass
-#endif /* GTK_CHECK_VERSION(3,0,0) */
+#endif /* GTK_CHECK_VERSION(3, 0, 0) */
 
 G_DECLARE_FINAL_TYPE(RpDosAttrView, rp_dos_attr_view, RP, DOS_ATTR_VIEW, _RpDosAttrView_super)
 

@@ -14,13 +14,13 @@ G_BEGIN_DECLS
 
 #define RP_TYPE_KEY_MANAGER_TAB (rp_key_manager_tab_get_type())
 
-#if GTK_CHECK_VERSION(3,0,0)
+#if GTK_CHECK_VERSION(3, 0, 0)
 #  define _RpKeyManagerTab_super	GtkBox
 #  define _RpKeyManagerTab_superClass	GtkBoxClass
-#else /* !GTK_CHECK_VERSION(3,0,0) */
+#else /* !GTK_CHECK_VERSION(3, 0, 0) */
 #  define _RpKeyManagerTab_super	GtkVBox
 #  define _RpKeyManagerTab_superClass	GtkVBoxClass
-#endif /* GTK_CHECK_VERSION(3,0,0) */
+#endif /* GTK_CHECK_VERSION(3, 0, 0) */
 
 G_DECLARE_FINAL_TYPE(RpKeyManagerTab, rp_key_manager_tab, RP, KEY_MANAGER_TAB, _RpKeyManagerTab_super)
 

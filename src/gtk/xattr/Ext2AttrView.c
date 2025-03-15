@@ -46,16 +46,16 @@ static GParamSpec *props[PROP_LAST];
 
 static GQuark Ext2AttrView_value_quark;
 
-#if GTK_CHECK_VERSION(3,0,0)
+#if GTK_CHECK_VERSION(3, 0, 0)
 typedef GtkBoxClass superclass;
 typedef GtkBox super;
 #define GTK_TYPE_SUPER GTK_TYPE_BOX
 #define USE_GTK_GRID 1	// Use GtkGrid instead of GtkTable.
-#else /* !GTK_CHECK_VERSION(3,0,0) */
+#else /* !GTK_CHECK_VERSION(3, 0, 0) */
 typedef GtkVBoxClass superclass;
 typedef GtkVBox super;
 #define GTK_TYPE_SUPER GTK_TYPE_VBOX
-#endif /* GTK_CHECK_VERSION(3,0,0) */
+#endif /* GTK_CHECK_VERSION(3, 0, 0) */
 
 // Ext2AttrView class
 struct _RpExt2AttrViewClass {
@@ -110,10 +110,10 @@ rp_ext2_attr_view_class_init(RpExt2AttrViewClass *klass)
 static void
 rp_ext2_attr_view_init(RpExt2AttrView *widget)
 {
-#if GTK_CHECK_VERSION(3,0,0)
+#if GTK_CHECK_VERSION(3, 0, 0)
 	// Make this a VBox.
 	gtk_orientable_set_orientation(GTK_ORIENTABLE(widget), GTK_ORIENTATION_VERTICAL);
-#endif /* GTK_CHECK_VERSION(3,0,0) */
+#endif /* GTK_CHECK_VERSION(3, 0, 0) */
 
 	/** lsattr **/
 	GtkWidget *const hboxLsAttr = rp_gtk_hbox_new(4);
@@ -179,12 +179,12 @@ rp_ext2_attr_view_init(RpExt2AttrView *widget)
 		}
 	}
 
-#if GTK_CHECK_VERSION(4,0,0)
+#if GTK_CHECK_VERSION(4, 0, 0)
 	gtk_box_append(GTK_BOX(hboxLsAttr), lblLsAttrDesc);
 	gtk_box_append(GTK_BOX(hboxLsAttr), widget->lblLsAttr);
 	gtk_box_append(GTK_BOX(widget), hboxLsAttr);
 	gtk_box_append(GTK_BOX(widget), gridCheckboxes);
-#else /* !GTK_CHECK_VERSION(4,0,0) */
+#else /* !GTK_CHECK_VERSION(4, 0, 0) */
 	gtk_box_pack_start(GTK_BOX(hboxLsAttr), lblLsAttrDesc, FALSE, FALSE, 0);
 	gtk_box_pack_start(GTK_BOX(hboxLsAttr), widget->lblLsAttr, FALSE, FALSE, 0);
 	gtk_box_pack_start(GTK_BOX(widget), hboxLsAttr, FALSE, FALSE, 0);
@@ -192,7 +192,7 @@ rp_ext2_attr_view_init(RpExt2AttrView *widget)
 
 	gtk_box_pack_start(GTK_BOX(widget), gridCheckboxes, FALSE, FALSE, 0);
 	gtk_widget_show_all(gridCheckboxes);
-#endif /* GTK_CHECK_VERSION(4,0,0) */
+#endif /* GTK_CHECK_VERSION(4, 0, 0) */
 }
 
 GtkWidget*

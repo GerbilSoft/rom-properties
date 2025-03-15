@@ -18,11 +18,11 @@ using LibRpBase::Config;
 using namespace LibRpFile;
 
 // Qt includes
-#if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
 #  include <QtCore/QStandardPaths>
-#else /* QT_VERSION < QT_VERSION_CHECK(5,0,0) */
+#else /* QT_VERSION < QT_VERSION_CHECK(5, 0, 0) */
 #  include <QtGui/QDesktopServices>
-#endif /* QT_VERSION >= QT_VERSION_CHECK(5,0,0) */
+#endif /* QT_VERSION >= QT_VERSION_CHECK(5, 0, 0) */
 
 // C++ STL classes
 using std::string;
@@ -73,9 +73,9 @@ QUrl localizeQUrl(const QUrl &url)
 		if (!url_path.isEmpty() && url_path.at(0) == QChar(L'/')) {
 			url_path.remove(0, 1);
 		}
-#if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
 		const QString qs_local_filename = QStandardPaths::locate(QStandardPaths::DesktopLocation, url_path);
-#else /* QT_VERSION < QT_VERSION_CHECK(5,0,0) */
+#else /* QT_VERSION < QT_VERSION_CHECK(5, 0, 0) */
 		QString qs_local_filename = QDesktopServices::storageLocation(QDesktopServices::DesktopLocation);
 		if (!qs_local_filename.isEmpty()) {
 			if (qs_local_filename.at(qs_local_filename.size()-1) != QChar(L'/')) {
@@ -83,7 +83,7 @@ QUrl localizeQUrl(const QUrl &url)
 			}
 			qs_local_filename += url_path;
 		}
-#endif /* QT_VERSION >= QT_VERSION_CHECK(5,0,0) */
+#endif /* QT_VERSION >= QT_VERSION_CHECK(5, 0, 0) */
 		return QUrl::fromLocalFile(qs_local_filename);
 	}
 

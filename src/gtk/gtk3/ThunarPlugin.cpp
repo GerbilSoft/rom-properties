@@ -16,12 +16,12 @@
 #include "ThunarPropertyPageProvider.hpp"
 
 // Thunar version is based on GTK+ version.
-#if GTK_CHECK_VERSION(3,0,0)
+#if GTK_CHECK_VERSION(3, 0, 0)
 static const char LIBTHUNARX_SO_FILENAME[] = "libthunarx-3.so.0";
 static constexpr int THUNARX_MAJOR_VERSION = 1;
 static constexpr int THUNARX_MINOR_VERSION = 8;
 static constexpr int THUNARX_MICRO_VERSION = 0;
-#else /* !GTK_CHECK_VERSION(3,0,0) */
+#else /* !GTK_CHECK_VERSION(3, 0, 0) */
 static const char LIBTHUNARX_SO_FILENAME[] = "libthunarx-2.so.0";
 static constexpr int THUNARX_MAJOR_VERSION = 1;
 static constexpr int THUNARX_MINOR_VERSION = 6;
@@ -43,10 +43,10 @@ PFN_THUNARX_FILE_INFO_GET_URI pfn_thunarx_file_info_get_uri;
 PFN_THUNARX_FILE_INFO_GET_URI_SCHEME pfn_thunarx_file_info_get_uri_scheme;
 PFN_THUNARX_FILE_INFO_LIST_COPY pfn_thunarx_file_info_list_copy;
 PFN_THUNARX_FILE_INFO_LIST_FREE pfn_thunarx_file_info_list_free;
-#if GTK_CHECK_VERSION(3,0,0)
+#if GTK_CHECK_VERSION(3, 0, 0)
 PFN_THUNARX_MENU_ITEM_GET_TYPE pfn_thunarx_menu_item_get_type;
 PFN_THUNARX_MENU_ITEM_NEW pfn_thunarx_menu_item_new;
-#endif /* GTK_CHECK_VERSION(3,0,0) */
+#endif /* GTK_CHECK_VERSION(3, 0, 0) */
 PFN_THUNARX_MENU_PROVIDER_GET_TYPE pfn_thunarx_menu_provider_get_type;
 PFN_THUNARX_PROPERTY_PAGE_PROVIDER_GET_TYPE pfn_thunarx_property_page_provider_get_type;
 PFN_THUNARX_PROPERTY_PAGE_NEW pfn_thunarx_property_page_new;
@@ -111,10 +111,10 @@ thunar_extension_initialize(ThunarxProviderPlugin *plugin)
 	DLSYM(thunarx_file_info_get_uri_scheme,		thunarx_file_info_get_uri_scheme);
 	DLSYM(thunarx_file_info_list_copy,		thunarx_file_info_list_copy);
 	DLSYM(thunarx_file_info_list_free,		thunarx_file_info_list_free);
-#if GTK_CHECK_VERSION(3,0,0)
+#if GTK_CHECK_VERSION(3, 0, 0)
 	DLSYM(thunarx_menu_item_get_type,		thunarx_menu_item_get_type);
 	DLSYM(thunarx_menu_item_new,			thunarx_menu_item_new);
-#endif /* GTK_CHECK_VERSION(3,0,0) */
+#endif /* GTK_CHECK_VERSION(3, 0, 0) */
 	DLSYM(thunarx_menu_provider_get_type,		thunarx_menu_provider_get_type);
 	DLSYM(thunarx_property_page_provider_get_type,	thunarx_property_page_provider_get_type);
 	DLSYM(thunarx_property_page_new,		thunarx_property_page_new);

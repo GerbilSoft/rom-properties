@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ 3.x)                         *
  * NautilusMenuProvider.c: Nautilus (and forks) Menu Provider Definition   *
  *                                                                         *
- * Copyright (c) 2017-2024 by David Korth.                                 *
+ * Copyright (c) 2017-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -16,13 +16,13 @@
 #include "../RomDataView.hpp"
 
 // nautilus-extension.h mini replacement
-#if GTK_CHECK_VERSION(4,0,0)
+#if GTK_CHECK_VERSION(4, 0, 0)
 #  include "../gtk4/NautilusPlugin.hpp"
 #  include "../gtk4/nautilus-extension-mini.h"
-#else /* !GTK_CHECK_VERSION(4,0,0) */
+#else /* !GTK_CHECK_VERSION(4, 0, 0) */
 #  include "NautilusPlugin.hpp"
 #  include "nautilus-extension-mini.h"
-#endif /* GTK_CHECK_VERSION(4,0,0) */
+#endif /* GTK_CHECK_VERSION(4, 0, 0) */
 
 static GQuark rp_item_convert_to_png_quark;
 
@@ -30,9 +30,9 @@ static void	rp_nautilus_menu_provider_page_provider_init		(NautilusMenuProviderI
 
 static GList *rp_nautilus_menu_provider_get_file_items(
 	NautilusMenuProvider *provider,
-#if !GTK_CHECK_VERSION(4,0,0)
+#if !GTK_CHECK_VERSION(4, 0, 0)
 	GtkWidget *window,
-#endif /* !GTK_CHECK_VERSION(4,0,0) */
+#endif /* !GTK_CHECK_VERSION(4, 0, 0) */
 	GList *files) G_GNUC_MALLOC G_GNUC_WARN_UNUSED_RESULT;
 
 struct _RpNautilusMenuProviderClass {
@@ -141,16 +141,16 @@ rp_item_convert_to_png(NautilusMenuItem *item, gpointer user_data)
 static GList*
 rp_nautilus_menu_provider_get_file_items(
 	NautilusMenuProvider *provider,
-#if !GTK_CHECK_VERSION(4,0,0)
+#if !GTK_CHECK_VERSION(4, 0, 0)
 	GtkWidget *window,
-#endif /* !GTK_CHECK_VERSION(4,0,0) */
+#endif /* !GTK_CHECK_VERSION(4, 0, 0) */
 	GList *files)
 {
 	assert(RP_IS_NAUTILUS_MENU_PROVIDER(provider));
 	g_return_val_if_fail(RP_IS_NAUTILUS_MENU_PROVIDER(provider), NULL);
-#if !GTK_CHECK_VERSION(4,0,0)
+#if !GTK_CHECK_VERSION(4, 0, 0)
 	RP_UNUSED(window);
-#endif /* !GTK_CHECK_VERSION(4,0,0) */
+#endif /* !GTK_CHECK_VERSION(4, 0, 0) */
 
 	// Verify that all specified files are supported.
 	bool is_supported = false;

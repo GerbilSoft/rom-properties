@@ -14,13 +14,13 @@ G_BEGIN_DECLS
 
 #define RP_TYPE_ABOUT_TAB (rp_about_tab_get_type())
 
-#if GTK_CHECK_VERSION(3,0,0)
+#if GTK_CHECK_VERSION(3, 0, 0)
 #  define _RpAboutTab_super	GtkBox
 #  define _RpAboutTab_superClass	GtkBoxClass
-#else /* !GTK_CHECK_VERSION(3,0,0) */
+#else /* !GTK_CHECK_VERSION(3, 0, 0) */
 #  define _RpAboutTab_super	GtkVBox
 #  define _RpAboutTab_superClass	GtkVBoxClass
-#endif /* GTK_CHECK_VERSION(3,0,0) */
+#endif /* GTK_CHECK_VERSION(3, 0, 0) */
 
 G_DECLARE_FINAL_TYPE(RpAboutTab, rp_about_tab, RP, ABOUT_TAB, _RpAboutTab_super)
 

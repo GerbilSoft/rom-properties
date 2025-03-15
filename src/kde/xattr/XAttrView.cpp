@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * XAttrView.cpp: Extended attribute viewer property page.                 *
  *                                                                         *
- * Copyright (c) 2022-2024 by David Korth.                                 *
+ * Copyright (c) 2022-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -188,12 +188,12 @@ int XAttrViewPrivate::loadPosixXattrs(void)
 	}
 
 	// Set column stretch modes.
-#if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
 	QHeaderView *const pHeader = ui.treeXAttr->header();
 	pHeader->setStretchLastSection(false);
 	pHeader->setSectionResizeMode(0, QHeaderView::ResizeToContents);
 	pHeader->setSectionResizeMode(1, QHeaderView::Stretch);
-#else /* QT_VERSION <= QT_VERSION_CHECK(5,0,0) */
+#else /* QT_VERSION <= QT_VERSION_CHECK(5, 0, 0) */
 	// Qt 4 doesn't have QHeaderView::setSectionResizeMode().
 	// We'll run a manual resize on each column initially.
 	for (int i = 0; i < 2; i++) {

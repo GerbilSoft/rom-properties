@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * AchQtDBus.cpp: QtDBus notifications for achievements.                   *
  *                                                                         *
- * Copyright (c) 2020-2024 by David Korth.                                 *
+ * Copyright (c) 2020-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -16,10 +16,10 @@ using LibRpTexture::argb32_t;
 // QtDBus
 #include "notificationsinterface.h"
 
-#if QT_VERSION < QT_VERSION_CHECK(5,0,0)
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
 // for Qt::escape()
 #  include <QtGui/QTextDocument>
-#endif /* QT_VERSION < QT_VERSION_CHECK(5,0,0) */
+#endif /* QT_VERSION < QT_VERSION_CHECK(5, 0, 0) */
 
 // Achievement spritesheets
 #include "AchSpriteSheet.hpp"
@@ -110,17 +110,17 @@ int AchQtDBus::notifyFunc(Achievements::ID id)
 
 	// Build the text.
 	// TODO: Better formatting?
-#if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
 	QString text = QLatin1String("<u>");
 	text += U82Q(pAch->getName(id)).toHtmlEscaped();
 	text += QLatin1String("</u>\n");
 	text += U82Q(pAch->getDescUnlocked(id)).toHtmlEscaped();
-#else /* QT_VERSION < QT_VERSION_CHECK(5,0,0) */
+#else /* QT_VERSION < QT_VERSION_CHECK(5, 0, 0) */
 	QString text = QLatin1String("<u>");
 	text += Qt::escape(U82Q(pAch->getName(id)));
 	text += QLatin1String("</u>\n");
 	text += Qt::escape(U82Q(pAch->getDescUnlocked(id)));
-#endif /* QT_VERSION >= QT_VERSION_CHECK(5,0,0) */
+#endif /* QT_VERSION >= QT_VERSION_CHECK(5, 0, 0) */
 
 	// Hints, including image data.
 	// FIXME: Icon size. Using 32px for now.
@@ -133,11 +133,11 @@ int AchQtDBus::notifyFunc(Achievements::ID id)
 	if (!icon.isNull()) {
 		if (icon.format() != QImage::Format_ARGB32) {
 			// Need to use ARGB32 format.
-#if QT_VERSION >= QT_VERSION_CHECK(5,13,0)
+#if QT_VERSION >= QT_VERSION_CHECK(5, 13, 0)
 			icon.convertTo(QImage::Format_ARGB32);
-#else /* QT_VERSION < QT_VERSION_CHECK(5,13,0) */
+#else /* QT_VERSION < QT_VERSION_CHECK(5, 13, 0) */
 			icon = icon.convertToFormat(QImage::Format_ARGB32);
-#endif /* QT_VERSION >= QT_VERSION_CHECK(5,13,0) */
+#endif /* QT_VERSION >= QT_VERSION_CHECK(5, 13, 0) */
 		}
 
 		// NOTE: The R and B channels need to be swapped for XDG notifications.

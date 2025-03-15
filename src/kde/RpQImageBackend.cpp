@@ -2,16 +2,16 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * RpQImageBackend.cpp: rp_image_backend using QImage.                     *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "stdafx.h"
 #include "RpQImageBackend.hpp"
 
-#if QT_VERSION >= QT_VERSION_CHECK(4,0,0) && QT_VERSION < QT_VERSION_CHECK(5,0,0)
+#if QT_VERSION >= QT_VERSION_CHECK(4, 0, 0) && QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
 #  include "QImageData_qt4.hpp"
-#elif QT_VERSION < QT_VERSION_CHECK(4,0,0)
+#elif QT_VERSION < QT_VERSION_CHECK(4, 0, 0)
 #  error Unsupported Qt version.
 #endif
 
@@ -59,9 +59,9 @@ RpQImageBackend::RpQImageBackend(int width, int height, rp_image::Format format)
 	// if QImages aren't detached before the rp_image is deleted.
 
 	// Create the QImage using the allocated memory buffer.
-#if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
 	m_qImage = QImage(data, width, height, this->stride, qfmt, aligned_free, data);
-#else /* QT_VERSION < QT_VERSION_CHECK(5,0,0) */
+#else /* QT_VERSION < QT_VERSION_CHECK(5, 0, 0) */
 	m_qImage = QImage(data, width, height, this->stride, qfmt);
 #endif
 	if (m_qImage.isNull()) {
@@ -71,13 +71,13 @@ RpQImageBackend::RpQImageBackend(int width, int height, rp_image::Format format)
 		return;
 	}
 
-#if QT_VERSION < QT_VERSION_CHECK(5,0,0)
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
 	// Trick QImage into thinking it owns the data buffer.
 	// FIXME: NEEDS MASSIVE TESTING.
 	QImage::DataPtr d = m_qImage.data_ptr();
 	d->own_data = true;
 	d->ro_data = false;
-#endif /* QT_VERSION < QT_VERSION_CHECK(5,0,0) */
+#endif /* QT_VERSION < QT_VERSION_CHECK(5, 0, 0) */
 
 	// We're using the full stride for the last row
 	// to make it easier to manage. (Qt does this as well.)
@@ -116,9 +116,9 @@ const void *RpQImageBackend::data(void) const
 
 size_t RpQImageBackend::data_len(void) const
 {
-#if QT_VERSION >= QT_VERSION_CHECK(5,10,0)
+#if QT_VERSION >= QT_VERSION_CHECK(5, 10, 0)
 	return m_qImage.sizeInBytes();
-#else /* QT_VERSION < QT_VERSION_CHECK(5,10,0) */
+#else /* QT_VERSION < QT_VERSION_CHECK(5, 10, 0) */
 	return m_qImage.byteCount();
 #endif
 }

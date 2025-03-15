@@ -16,24 +16,24 @@
 #include "RpGtk.h"
 #include "gtk-i18n.h"
 
-#if !GTK_CHECK_VERSION(2,90,2)
+#if !GTK_CHECK_VERSION(2, 90, 2)
 // GtkApplication was introduced in GTK3.
 // For GTK2, make it a generic opaque pointer.
 typedef void *GtkApplication;
-#endif /* !GTK_CHECK_VERSION(2,90,2) */
+#endif /* !GTK_CHECK_VERSION(2, 90, 2) */
 
-#if GTK_CHECK_VERSION(4,0,0)
+#if GTK_CHECK_VERSION(4, 0, 0)
 #  define GTK_WIDGET_SHOW_GTK3(widget)
-#else /* !GTK_CHECK_VERSION(4,0,0) */
+#else /* !GTK_CHECK_VERSION(4, 0, 0) */
 #  define GTK_WIDGET_SHOW_GTK3(widget) gtk_widget_show(widget)
-#endif /* GTK_CHECK_VERSION(4,0,0) */
+#endif /* GTK_CHECK_VERSION(4, 0, 0) */
 
-#if GTK_CHECK_VERSION(2,90,2)
+#if GTK_CHECK_VERSION(2, 90, 2)
 static GtkApplication *app = NULL;
-#endif /* GTK_CHECK_VERSION(2,90,2) */
+#endif /* GTK_CHECK_VERSION(2, 90, 2) */
 static int status = 0;
 
-#if !GTK_CHECK_VERSION(2,90,2)
+#if !GTK_CHECK_VERSION(2, 90, 2)
 /**
  * ConfigDialog was closed by clicking the X button.
  * @param dialog ConfigDialog
@@ -53,7 +53,7 @@ config_dialog_delete_event(RpConfigDialog *dialog, GdkEvent *event, gpointer use
 	// Continue processing.
 	return FALSE;
 }
-#endif /* !GTK_CHECK_VERSION(2,90,2) */
+#endif /* !GTK_CHECK_VERSION(2, 90, 2) */
 
 /** rp-config **/
 
@@ -75,14 +75,14 @@ rp_config_app_activate(GtkApplication *app, gpointer user_data)
 	GtkWidget *const configDialog = rp_config_dialog_new();
 	gtk_widget_set_name(configDialog, "configDialog");
 	gtk_widget_set_visible(configDialog, TRUE);
-#if GTK_CHECK_VERSION(2,90,2)
+#if GTK_CHECK_VERSION(2, 90, 2)
 	gtk_application_add_window(app, GTK_WINDOW(configDialog));
-#else /* GTK_CHECK_VERSION(2,90,2) */
+#else /* GTK_CHECK_VERSION(2, 90, 2) */
 	// GTK2: No GtkApplication to manage the main loop, so we
 	// need to to ensure it exits when the window is closed.
 	RP_UNUSED(app);
 	g_signal_connect(configDialog, "delete-event", G_CALLBACK(config_dialog_delete_event), NULL);
-#endif /* !GTK_CHECK_VERSION(2,90,2) */
+#endif /* !GTK_CHECK_VERSION(2, 90, 2) */
 }
 
 /**
@@ -115,7 +115,7 @@ int RP_C_API rp_show_config_dialog(int argc, char *argv[])
 #endif
 
 	CHECK_UID_RET(EXIT_FAILURE);
-#if GTK_CHECK_VERSION(2,90,2)
+#if GTK_CHECK_VERSION(2, 90, 2)
 	GtkApplication *const app = gtk_application_new(
 		"com.gerbilsoft.rom-properties.rp-config", G_APPLICATION_FLAGS_NONE);
 	// NOTE: GApplication is supposed to set this, but KDE isn't seeing it...
@@ -129,14 +129,14 @@ int RP_C_API rp_show_config_dialog(int argc, char *argv[])
 	if (gstatus != 0 && status != 0) {
 		status = gstatus;
 	}
-#else /* !GTK_CHECK_VERSION(2,90,2) */
+#else /* !GTK_CHECK_VERSION(2, 90, 2) */
 	// NOTE: GTK2 doesn't send a startup notification.
 	// Not going to implement the Startup Notification protocol manually
 	// because GTK2 desktops likely wouldn't support it, anyway.
 	gtk_init(NULL, NULL);
 	rp_config_app_activate(NULL, 0);
 	gtk_main();
-#endif /* GTK_CHECK_VERSION(2,90,2) */
+#endif /* GTK_CHECK_VERSION(2, 90, 2) */
 
 	return status;
 }
@@ -161,11 +161,11 @@ rp_show_RomDataView_dialog_response_handler(GtkDialog	*dialog,
 		case GTK_RESPONSE_CANCEL:
 		case GTK_RESPONSE_CLOSE:
 			// Close the dialog.
-#if GTK_CHECK_VERSION(3,9,8)
+#if GTK_CHECK_VERSION(3, 9, 8)
 			gtk_window_close(GTK_WINDOW(dialog));
-#else /* !GTK_CHECK_VERSION(3,9,8) */
+#else /* !GTK_CHECK_VERSION(3, 9, 8) */
 			gtk_widget_destroy(GTK_WIDGET(dialog));
-#endif /* GTK_CHECK_VERSION(3,9,8) */
+#endif /* GTK_CHECK_VERSION(3, 9, 8) */
 			break;
 
 		default:
@@ -204,21 +204,21 @@ rp_RomDataView_app_activate(GtkApplication *app, const gchar *uri)
 	GtkWidget *const notebook = gtk_notebook_new();
 	gtk_widget_set_name(notebook, "notebook");
 	GTK_WIDGET_SHOW_GTK3(notebook);
-#if GTK_CHECK_VERSION(4,0,0)
+#if GTK_CHECK_VERSION(4, 0, 0)
 	gtk_box_append(GTK_BOX(contentArea), notebook);
-#else /* !GTK_CHECK_VERSION(4,0,0) */
+#else /* !GTK_CHECK_VERSION(4, 0, 0) */
 	gtk_box_pack_start(GTK_BOX(contentArea), notebook, TRUE, TRUE, 4);
-#endif /* GTK_CHECK_VERSION(4,0,0) */
+#endif /* GTK_CHECK_VERSION(4, 0, 0) */
 
 	// NOTE: Thunar has an extra widget between the GtkNotebook and RomDataView.
 	// TODO: Have RomDataView check for this instead of expecting it when using RP_DFT_XFCE?
 	GtkWidget *const vboxRomDataView = rp_gtk_vbox_new(4);
 	gtk_widget_set_name(vboxRomDataView, "vboxRomDataView");
 	GTK_WIDGET_SHOW_GTK3(vboxRomDataView);
-#if GTK_CHECK_VERSION(3,0,0)
+#if GTK_CHECK_VERSION(3, 0, 0)
 	gtk_widget_set_hexpand(vboxRomDataView, TRUE);
 	gtk_widget_set_vexpand(vboxRomDataView, TRUE);
-#endif /* GTK_CHECK_VERSION(3,0,0) */
+#endif /* GTK_CHECK_VERSION(3, 0, 0) */
 
 	/** RomDataView **/
 
@@ -227,11 +227,11 @@ rp_RomDataView_app_activate(GtkApplication *app, const gchar *uri)
 	GtkWidget *const romDataView = rp_rom_data_view_new_with_uri(uri, RP_DFT_XFCE);
 	GTK_WIDGET_SHOW_GTK3(romDataView);
 	gtk_widget_set_name(romDataView, "romDataView");
-#if GTK_CHECK_VERSION(4,0,0)
+#if GTK_CHECK_VERSION(4, 0, 0)
 	gtk_box_append(GTK_BOX(vboxRomDataView), romDataView);
-#else /* !GTK_CHECK_VERSION(4,0,0) */
+#else /* !GTK_CHECK_VERSION(4, 0, 0) */
 	gtk_box_pack_start(GTK_BOX(vboxRomDataView), romDataView, TRUE, TRUE, 4);
-#endif /* GTK_CHECK_VERSION(4,0,0) */
+#endif /* GTK_CHECK_VERSION(4, 0, 0) */
 
 	// Label for the tab.
 	GtkWidget *const lblRomDataViewTab = gtk_label_new("ROM Properties");
@@ -239,11 +239,11 @@ rp_RomDataView_app_activate(GtkApplication *app, const gchar *uri)
 
 	// Add the RomDataView to the GtkNotebook.
 	int page_idx = gtk_notebook_append_page(GTK_NOTEBOOK(notebook), vboxRomDataView, lblRomDataViewTab);
-#if GTK_CHECK_VERSION(4,0,0)
+#if GTK_CHECK_VERSION(4, 0, 0)
 	// GtkNotebook took a reference to the tab label,
 	// so we don't need to keep our reference.
 	g_object_unref(lblRomDataViewTab);
-#endif /* GTK_CHECK_VERSION(4,0,0) */
+#endif /* GTK_CHECK_VERSION(4, 0, 0) */
 
 	// NOTE: Need to run the idle process in order for RomDataView to process the URI.
 	// TODO: Create the RomData object here instead? (would need to convert to .cpp)
@@ -266,18 +266,18 @@ rp_RomDataView_app_activate(GtkApplication *app, const gchar *uri)
 		GtkWidget *const vboxXAttrView = rp_gtk_vbox_new(4);
 		gtk_widget_set_name(vboxXAttrView, "vboxXAttrView");
 		GTK_WIDGET_SHOW_GTK3(vboxXAttrView);
-#if GTK_CHECK_VERSION(3,0,0)
+#if GTK_CHECK_VERSION(3, 0, 0)
 		gtk_widget_set_hexpand(vboxXAttrView, TRUE);
 		gtk_widget_set_vexpand(vboxXAttrView, TRUE);
-#endif /* GTK_CHECK_VERSION(3,0,0) */
+#endif /* GTK_CHECK_VERSION(3, 0, 0) */
 
 		GTK_WIDGET_SHOW_GTK3(xattrView);
 		gtk_widget_set_name(xattrView, "xattrView");
-#if GTK_CHECK_VERSION(4,0,0)
+#if GTK_CHECK_VERSION(4, 0, 0)
 		gtk_box_append(GTK_BOX(vboxXAttrView), xattrView);
-#else /* !GTK_CHECK_VERSION(4,0,0) */
+#else /* !GTK_CHECK_VERSION(4, 0, 0) */
 		gtk_box_pack_start(GTK_BOX(vboxXAttrView), xattrView, TRUE, TRUE, 4);
-#endif /* GTK_CHECK_VERSION(4,0,0) */
+#endif /* GTK_CHECK_VERSION(4, 0, 0) */
 
 		// Label for the tab.
 		GtkWidget *const lblXAttrViewTab = gtk_label_new("xattrs");
@@ -298,19 +298,19 @@ rp_RomDataView_app_activate(GtkApplication *app, const gchar *uri)
 		fputs("*** GTK" GTK_MAJOR_STR " rp_show_RomDataView_dialog(): No tabs were created; exiting.\n", stderr);
 		status = 1;
 
-#if GTK_CHECK_VERSION(3,98,4)
+#if GTK_CHECK_VERSION(3, 98, 4)
 		gtk_window_destroy(GTK_WINDOW(dialog));
-#else /* !GTK_CHECK_VERSION(3,98,4) */
+#else /* !GTK_CHECK_VERSION(3, 98, 4) */
 		gtk_widget_destroy(dialog);
-#endif /* GTK_CHECK_VERSION(3,98,4) */
+#endif /* GTK_CHECK_VERSION(3, 98, 4) */
 
-#if GTK_CHECK_VERSION(2,90,2)
+#if GTK_CHECK_VERSION(2, 90, 2)
 		g_application_quit(G_APPLICATION(app));
-#else /* GTK_CHECK_VERSION(2,90,2) */
+#else /* GTK_CHECK_VERSION(2, 90, 2) */
 		// NOTE: Calling gtk_main_quit() for GTK2 here fails:
 		// Gtk-CRITICAL **: IA__gtk_main_quit: assertion 'main_loops != NULL' failed
 		//gtk_main_quit();
-#endif /* GTK_CHECK_VERSION(2,90,2) */
+#endif /* GTK_CHECK_VERSION(2, 90, 2) */
 
 		return;
 	}
@@ -318,14 +318,14 @@ rp_RomDataView_app_activate(GtkApplication *app, const gchar *uri)
 	// Connect the dialog response handler.
 	g_signal_connect(dialog, "response", G_CALLBACK(rp_show_RomDataView_dialog_response_handler), NULL);
 
-#if GTK_CHECK_VERSION(2,90,2)
+#if GTK_CHECK_VERSION(2, 90, 2)
 	gtk_application_add_window(app, GTK_WINDOW(dialog));
-#else /* GTK_CHECK_VERSION(2,90,2) */
+#else /* GTK_CHECK_VERSION(2, 90, 2) */
 	// GTK2: No GtkApplication to manage the main loop, so we
 	// need to to ensure it exits when the window is closed.
 	RP_UNUSED(app);
 	g_signal_connect(dialog, "delete-event", G_CALLBACK(config_dialog_delete_event), NULL);
-#endif /* !GTK_CHECK_VERSION(2,90,2) */
+#endif /* !GTK_CHECK_VERSION(2, 90, 2) */
 }
 
 /**
@@ -366,7 +366,7 @@ int RP_C_API rp_show_RomDataView_dialog(int argc, char *argv[])
 
 	CHECK_UID_RET(EXIT_FAILURE);
 	fputs("*** GTK" GTK_MAJOR_STR " rp_show_RomDataView_dialog(): Starting main loop.\n", stderr);
-#if GTK_CHECK_VERSION(2,90,2)
+#if GTK_CHECK_VERSION(2, 90, 2)
 	app = gtk_application_new("com.gerbilsoft.rom-properties.rp-config", G_APPLICATION_FLAGS_NONE);
 	// NOTE: GApplication is supposed to set this, but KDE isn't seeing it...
 	g_set_prgname("com.gerbilsoft.rom-properties.rp-config");
@@ -379,7 +379,7 @@ int RP_C_API rp_show_RomDataView_dialog(int argc, char *argv[])
 	if (gstatus != 0 && status != 0) {
 		status = gstatus;
 	}
-#else /* !GTK_CHECK_VERSION(2,90,2) */
+#else /* !GTK_CHECK_VERSION(2, 90, 2) */
 	// NOTE: GTK2 doesn't send a startup notification.
 	// Not going to implement the Startup Notification protocol manually
 	// because GTK2 desktops likely wouldn't support it, anyway.
@@ -388,7 +388,7 @@ int RP_C_API rp_show_RomDataView_dialog(int argc, char *argv[])
 	if (status == 0) {
 		gtk_main();
 	}
-#endif /* GTK_CHECK_VERSION(2,90,2) */
+#endif /* GTK_CHECK_VERSION(2, 90, 2) */
 
 	return status;
 }

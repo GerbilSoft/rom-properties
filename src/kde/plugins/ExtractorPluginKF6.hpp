@@ -8,7 +8,7 @@
  * most of the important code is split out into libromdata.so, so the      *
  * forwarder version is unnecessary.                                       *
  *                                                                         *
- * Copyright (c) 2018-2024 by David Korth.                                 *
+ * Copyright (c) 2018-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -45,9 +45,9 @@ public:
 
 private:
 	static void extract_properties(KFileMetaData::ExtractionResult *result, LibRpBase::RomData *romData);
-#if KCOREADDONS_VERSION >= QT_VERSION_CHECK(5,76,0)
+#if KCOREADDONS_VERSION >= QT_VERSION_CHECK(5, 76, 0)
 	static void extract_image(KFileMetaData::ExtractionResult *result, LibRpBase::RomData *romData);
-#endif /* KCOREADDONS_VERSION <= QT_VERSION_CHECK(5,76,0) */
+#endif /* KCOREADDONS_VERSION <= QT_VERSION_CHECK(5, 76, 0) */
 public:
 	void extract(KFileMetaData::ExtractionResult *result) final;
 };

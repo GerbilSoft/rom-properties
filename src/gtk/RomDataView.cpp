@@ -218,18 +218,18 @@ set_label_format_type(RpRomDataView *page, GtkLabel *label)
 
 	gtk_label_set_justify(label, justify);
 
-#if GTK_CHECK_VERSION(3,16,0)
+#if GTK_CHECK_VERSION(3, 16, 0)
 	// NOTE: gtk_widget_set_?align() doesn't work properly
 	// when using a GtkSizeGroup on GTK+ 3.x.
 	// gtk_label_set_?align() was introduced in GTK+ 3.16.
 	gtk_label_set_xalign(label, xalign);
 	gtk_label_set_yalign(label, yalign);
-#else /* !GTK_CHECK_VERSION(3,16,0) */
+#else /* !GTK_CHECK_VERSION(3, 16, 0) */
 	// NOTE: GtkMisc is deprecated on GTK+ 3.x, but it's
 	// needed for proper text alignment when using
 	// GtkSizeGroup prior to GTK+ 3.16.
 	gtk_misc_set_alignment(GTK_MISC(label), xalign, yalign);
-#endif /* GTK_CHECK_VERSION(3,16,0) */
+#endif /* GTK_CHECK_VERSION(3, 16, 0) */
 }
 
 static void
@@ -252,7 +252,7 @@ rp_rom_data_view_init(RpRomDataView *page)
 	// NOTE: This matches Thunar (GTK+2) and Nautilus (GTK+3).
 	g_object_set(page, "border-width", 8, nullptr);
 
-#if GTK_CHECK_VERSION(3,0,0)
+#if GTK_CHECK_VERSION(3, 0, 0)
 	// Make this a VBox.
 	gtk_orientable_set_orientation(GTK_ORIENTABLE(page), GTK_ORIENTATION_VERTICAL);
 
@@ -270,16 +270,16 @@ rp_rom_data_view_init(RpRomDataView *page)
 	gtk_widget_set_hexpand(page->hboxHeaderRow, true);
 	gtk_widget_set_vexpand(page->hboxHeaderRow, false);
 
-#  if GTK_CHECK_VERSION(4,0,0)
+#  if GTK_CHECK_VERSION(4, 0, 0)
 	gtk_widget_set_visible(page->hboxHeaderRow_outer, false);	// GTK4 shows widgets by default.
 	gtk_box_append(GTK_BOX(page), page->hboxHeaderRow_outer);
 	gtk_box_append(GTK_BOX(page->hboxHeaderRow_outer), page->hboxHeaderRow);
-#  else /* !GTK_CHECK_VERSION(4,0,0) */
+#  else /* !GTK_CHECK_VERSION(4, 0, 0) */
 	gtk_widget_show(page->hboxHeaderRow);
 	gtk_box_pack_start(GTK_BOX(page), page->hboxHeaderRow_outer, false, false, 0);
 	gtk_box_pack_start(GTK_BOX(page->hboxHeaderRow_outer), page->hboxHeaderRow, true, false, 0);
-#  endif /* GTK_CHECK_VERSION(4,0,0) */
-#else /* !GTK_CHECK_VERSION(3,0,0) */
+#  endif /* GTK_CHECK_VERSION(4, 0, 0) */
+#else /* !GTK_CHECK_VERSION(3, 0, 0) */
 	// Header row. (outer box)
 	// NOTE: Not visible initially.
 	page->hboxHeaderRow_outer = gtk_hbox_new(false, 0);
@@ -298,15 +298,15 @@ rp_rom_data_view_init(RpRomDataView *page)
 	gtk_box_pack_start(GTK_BOX(page), page->hboxHeaderRow_outer, false, false, 0);
 	gtk_box_pack_start(GTK_BOX(page->hboxHeaderRow_outer), centerAlign, true, false, 0);
 	gtk_container_add(GTK_CONTAINER(page->hboxHeaderRow_outer), page->hboxHeaderRow);
-#endif /* GTK_CHECK_VERSION(3,0,0) */
+#endif /* GTK_CHECK_VERSION(3, 0, 0) */
 
 	// System information.
 	page->lblSysInfo = gtk_label_new(nullptr);
 	gtk_widget_set_name(page->lblSysInfo, "lblSysInfo");
 	gtk_label_set_justify(GTK_LABEL(page->lblSysInfo), GTK_JUSTIFY_CENTER);
-#if !GTK_CHECK_VERSION(4,0,0)
+#if !GTK_CHECK_VERSION(4, 0, 0)
 	gtk_widget_show(page->lblSysInfo);
-#endif /* !GTK_CHECK_VERSION(4,0,0) */
+#endif /* !GTK_CHECK_VERSION(4, 0, 0) */
 
 	// Banner and icon.
 	page->imgBanner = rp_drag_image_new();
@@ -314,15 +314,15 @@ rp_rom_data_view_init(RpRomDataView *page)
 	page->imgIcon = rp_drag_image_new();
 	gtk_widget_set_name(page->imgIcon, "imgIcon");
 
-#if GTK_CHECK_VERSION(4,0,0)
+#if GTK_CHECK_VERSION(4, 0, 0)
 	gtk_box_append(GTK_BOX(page->hboxHeaderRow), page->lblSysInfo);
 	gtk_box_append(GTK_BOX(page->hboxHeaderRow), page->imgBanner);
 	gtk_box_append(GTK_BOX(page->hboxHeaderRow), page->imgIcon);
-#else /* !GTK_CHECK_VERSION(4,0,0) */
+#else /* !GTK_CHECK_VERSION(4, 0, 0) */
 	gtk_box_pack_start(GTK_BOX(page->hboxHeaderRow), page->lblSysInfo, false, false, 0);
 	gtk_box_pack_start(GTK_BOX(page->hboxHeaderRow), page->imgBanner, false, false, 0);
 	gtk_box_pack_start(GTK_BOX(page->hboxHeaderRow), page->imgIcon, false, false, 0);
-#endif /* GTK_CHECK_VERSION(4,0,0) */
+#endif /* GTK_CHECK_VERSION(4, 0, 0) */
 
 	// Make lblSysInfo bold.
 	PangoAttrList *const attr_lst = pango_attr_list_new();
@@ -717,9 +717,9 @@ rp_rom_data_view_init_string(RpRomDataView *page,
 	GtkWidget *widget = gtk_label_new(nullptr);
 	// NOTE: No name for this GtkWidget.
 	gtk_label_set_use_underline(GTK_LABEL(widget), false);
-#if !GTK_CHECK_VERSION(4,0,0)
+#if !GTK_CHECK_VERSION(4, 0, 0)
 	gtk_widget_show(widget);
-#endif /* !GTK_CHECK_VERSION(4,0,0) */
+#endif /* !GTK_CHECK_VERSION(4, 0, 0) */
 
 	if (!str) {
 		str = field.data.str;
@@ -773,12 +773,12 @@ rp_rom_data_view_init_string(RpRomDataView *page,
 			tab.lblCredits = widget;
 
 			// Credits row.
-#if GTK_CHECK_VERSION(4,0,0)
+#if GTK_CHECK_VERSION(4, 0, 0)
 			gtk_box_append(GTK_BOX(tab.vbox), widget);
 			gtk_widget_set_valign(tab.vbox, GTK_ALIGN_END);
-#else /* !GTK_CHECK_VERSION(4,0,0) */
+#else /* !GTK_CHECK_VERSION(4, 0, 0) */
 			gtk_box_pack_end(GTK_BOX(tab.vbox), widget, false, false, 0);
-#endif /* GTK_CHECK_VERSION(4,0,0) */
+#endif /* GTK_CHECK_VERSION(4, 0, 0) */
 
 			// NULL out widget to hide the description field.
 			// NOTE: Not destroying the widget since we still
@@ -835,9 +835,9 @@ rp_rom_data_view_init_bitfield(RpRomDataView *page,
 	//gtk_table_set_row_spacings(GTK_TABLE(widget), 2);
 	//gtk_table_set_col_spacings(GTK_TABLE(widget), 8);
 #endif /* USE_GTK_GRID */
-#if !GTK_CHECK_VERSION(4,0,0)
+#if !GTK_CHECK_VERSION(4, 0, 0)
 	gtk_widget_show(widget);
-#endif /* !GTK_CHECK_VERSION(4,0,0) */
+#endif /* !GTK_CHECK_VERSION(4, 0, 0) */
 
 	int row = 0, col = 0;
 	uint32_t bitfield = field.data.bitfield;
@@ -851,9 +851,9 @@ rp_rom_data_view_init_bitfield(RpRomDataView *page,
 		// NOTE: No name for this GtkWidget.
 		const gboolean value = (bitfield & 1U);
 		gtk_check_button_set_active(GTK_CHECK_BUTTON(checkBox), value);
-#if !GTK_CHECK_VERSION(4,0,0)
+#if !GTK_CHECK_VERSION(4, 0, 0)
 		gtk_widget_show(checkBox);
-#endif /* !GTK_CHECK_VERSION(4,0,0) */
+#endif /* !GTK_CHECK_VERSION(4, 0, 0) */
 
 		// Save the bitfield checkbox's value in the GObject.
 		g_object_set_qdata(G_OBJECT(checkBox), RFT_BITFIELD_value_quark, GUINT_TO_POINTER((guint)value));
@@ -1009,18 +1009,18 @@ rp_rom_data_view_update_multi(RpRomDataView *page, uint32_t user_lc)
 
 	if (!page->cboLanguage && set_lc.size() > 1) {
 		// Create a VBox for the combobox to reduce its vertical height.
-#if GTK_CHECK_VERSION(3,0,0)
+#if GTK_CHECK_VERSION(3, 0, 0)
 		GtkWidget *const vboxCboLanguage = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 		gtk_widget_set_name(vboxCboLanguage, "vboxCboLanguage");
 		gtk_widget_set_valign(vboxCboLanguage, GTK_ALIGN_START);
 
-#  if GTK_CHECK_VERSION(4,0,0)
+#  if GTK_CHECK_VERSION(4, 0, 0)
 		gtk_box_append(GTK_BOX(page->hboxHeaderRow_outer), vboxCboLanguage);
-#  else /* !GTK_CHECK_VERSION(4,0,0) */
+#  else /* !GTK_CHECK_VERSION(4, 0, 0) */
 		gtk_widget_show(vboxCboLanguage);
 		gtk_box_pack_end(GTK_BOX(page->hboxHeaderRow_outer), vboxCboLanguage, false, false, 0);
-#  endif /* GTK_CHECK_VERSION(4,0,0) */
-#else /* !GTK_CHECK_VERSION(3,0,0) */
+#  endif /* GTK_CHECK_VERSION(4, 0, 0) */
+#else /* !GTK_CHECK_VERSION(3, 0, 0) */
 		GtkWidget *const topAlign = gtk_alignment_new(0.5f, 0.0f, 0.0f, 0.0f);
 		gtk_widget_set_name(topAlign, "topAlign");
 		gtk_box_pack_end(GTK_BOX(page->hboxHeaderRow_outer), topAlign, false, false, 0);
@@ -1030,18 +1030,18 @@ rp_rom_data_view_update_multi(RpRomDataView *page, uint32_t user_lc)
 		gtk_widget_set_name(vboxCboLanguage, "vboxCboLanguage");
 		gtk_container_add(GTK_CONTAINER(topAlign), vboxCboLanguage);
 		gtk_widget_show(vboxCboLanguage);
-#endif /* GTK_CHECK_VERSION(3,0,0) */
+#endif /* GTK_CHECK_VERSION(3, 0, 0) */
 
 		// Create the language combobox.
 		page->cboLanguage = rp_language_combo_box_new();
 		gtk_widget_set_name(page->cboLanguage, "cboLanguage");
 
-#if GTK_CHECK_VERSION(4,0,0)
+#if GTK_CHECK_VERSION(4, 0, 0)
 		gtk_box_append(GTK_BOX(vboxCboLanguage), page->cboLanguage);
-#else /* !GTK_CHECK_VERSION(4,0,0) */
+#else /* !GTK_CHECK_VERSION(4, 0, 0) */
 		gtk_widget_show(page->cboLanguage);
 		gtk_box_pack_end(GTK_BOX(vboxCboLanguage), page->cboLanguage, false, false, 0);
-#endif /* GTK_CHECK_VERSION(4,0,0) */
+#endif /* GTK_CHECK_VERSION(4, 0, 0) */
 
 		// Set the languages.
 		// NOTE: LanguageComboBox uses a 0-terminated array, so we'll
@@ -1101,7 +1101,7 @@ rp_rom_data_view_create_options_button(RpRomDataView *page)
 	assert(GTK_IS_NOTEBOOK(parent) || GTK_IS_STACK(parent));
 	if (!GTK_IS_NOTEBOOK(parent) && !GTK_IS_STACK(parent))
 		return;
-#if GTK_CHECK_VERSION(4,0,0)
+#if GTK_CHECK_VERSION(4, 0, 0)
 	if (GTK_IS_STACK(parent)) {
 		// GtkStack; next widget up might be GtkNotebook.
 		GtkWidget *const nparent = gtk_widget_get_parent(parent);
@@ -1109,7 +1109,7 @@ rp_rom_data_view_create_options_button(RpRomDataView *page)
 			parent = nparent;
 		}
 	}
-#endif /* GTK_CHECK_VERSION(4,0,0) */
+#endif /* GTK_CHECK_VERSION(4, 0, 0) */
 
 	// Nemo only: We might have a GtkFrame between the GtkStack and GtkBox.
 	GtkWidget *fparent = gtk_widget_get_parent(parent);
@@ -1120,17 +1120,17 @@ rp_rom_data_view_create_options_button(RpRomDataView *page)
 	// - GTK+ 2.x: GtkVBox
 	// - GTK+ 3.x: GtkBox
 	parent = gtk_widget_get_parent(parent);
-#if GTK_CHECK_VERSION(3,0,0)
+#if GTK_CHECK_VERSION(3, 0, 0)
 	assert(GTK_IS_BOX(parent));
 	if (!GTK_IS_BOX(parent)) {
 		return;
 	}
-#else /* !GTK_CHECK_VERSION(3,0,0) */
+#else /* !GTK_CHECK_VERSION(3, 0, 0) */
 	assert(GTK_IS_VBOX(parent));
 	if (!GTK_IS_VBOX(parent)) {
 		return;
 	}
-#endif /* GTK_CHECK_VERSION(3,0,0) */
+#endif /* GTK_CHECK_VERSION(3, 0, 0) */
 
 	// Next: GtkDialog subclass.
 	// - XFCE: ThunarPropertiesDialog
@@ -1139,12 +1139,12 @@ rp_rom_data_view_create_options_button(RpRomDataView *page)
 	// - Caja: FMPropertiesWindow
 	// - Nemo: NemoPropertiesWindow
 	parent = gtk_widget_get_parent(parent);
-#if GTK_CHECK_VERSION(4,0,0)
+#if GTK_CHECK_VERSION(4, 0, 0)
 	// GTK4: There might be another GtkBox here.
 	if (GTK_IS_BOX(parent)) {
 		parent = gtk_widget_get_parent(parent);
 	}
-#endif /* GTK_CHECK_VERSION(4,0,0) */
+#endif /* GTK_CHECK_VERSION(4, 0, 0) */
 
 #ifdef RP_MAY_HAVE_ADWAITA
 	bool isLibAdwaita = false;
@@ -1205,7 +1205,7 @@ rp_rom_data_view_create_options_button(RpRomDataView *page)
 		g_signal_handler_disconnect(page->btnOptions, handler_id);
 	}
 
-#if GTK_CHECK_VERSION(3,11,5)
+#if GTK_CHECK_VERSION(3, 11, 5)
 	GtkWidget *headerBar = nullptr;
 	if (isLibAdwaita) {
 		// Nautilus 40 uses libadwaita/libhandy, which has a different arrangement of widgets.
@@ -1234,20 +1234,20 @@ rp_rom_data_view_create_options_button(RpRomDataView *page)
 		// Change the arrow to point down instead of up.
 		rp_options_menu_button_set_direction(RP_OPTIONS_MENU_BUTTON(page->btnOptions), GTK_ARROW_DOWN);
 	} else
-#endif /* GTK_CHECK_VERSION(3,11,5) */
+#endif /* GTK_CHECK_VERSION(3, 11, 5) */
 	{
 		// Reorder the "Options" button so it's to the right of "Help".
 		// NOTE: GTK+ 3.10 introduced the GtkHeaderBar, but
 		// gtk_dialog_get_header_bar() was added in GTK+ 3.12.
 		// Hence, this might not work properly on GTK+ 3.10.
 		// FIXME: GTK4 no longer has GtkButtonBox. Figure out "secondary" there.
-#if !GTK_CHECK_VERSION(4,0,0)
+#if !GTK_CHECK_VERSION(4, 0, 0)
 		GtkWidget *const btnBox = gtk_widget_get_parent(page->btnOptions);
 		//assert(GTK_IS_BUTTON_BOX(btnBox));
 		if (GTK_IS_BUTTON_BOX(btnBox)) {
 			gtk_button_box_set_child_secondary(GTK_BUTTON_BOX(btnBox), page->btnOptions, TRUE);
 		}
-#endif /* !GTK_CHECK_VERSION(4,0,0) */
+#endif /* !GTK_CHECK_VERSION(4, 0, 0) */
 	}
 
 	// Connect the RpOptionsMenuButton's triggered(int) signal.
@@ -1302,12 +1302,12 @@ rp_rom_data_view_update_display(RpRomDataView *page)
 		tabs.resize(tabCount);
 		page->tabWidget = gtk_notebook_new();
 		gtk_widget_set_name(page->tabWidget, "tabWidget");
-#if GTK_CHECK_VERSION(2,91,1)
+#if GTK_CHECK_VERSION(2, 91, 1)
 		gtk_widget_set_halign(page->tabWidget, GTK_ALIGN_FILL);
 		gtk_widget_set_valign(page->tabWidget, GTK_ALIGN_FILL);
 		gtk_widget_set_hexpand(page->tabWidget, true);
 		gtk_widget_set_vexpand(page->tabWidget, true);
-#endif /* GTK_CHECK_VERSION(2,91,1) */
+#endif /* GTK_CHECK_VERSION(2, 91, 1) */
 
 		// Add spacing between the system info header and the table.
 		g_object_set(page, "spacing", 8, nullptr);
@@ -1337,35 +1337,35 @@ rp_rom_data_view_update_display(RpRomDataView *page)
 #endif /* USE_GTK_GRID */
 			gtk_widget_set_name(tab.table, fmt::format(FSTR("tableTab{:d}"), i).c_str());
 
-#if GTK_CHECK_VERSION(4,0,0)
+#if GTK_CHECK_VERSION(4, 0, 0)
 			// FIXME: GTK4 equivalent of gtk_container_set_border_width().
 			//gtk_container_set_border_width(GTK_CONTAINER(tab.table), 8);
 			gtk_box_append(GTK_BOX(tab.vbox), tab.table);
-#else /* !GTK_CHECK_VERSION(4,0,0) */
+#else /* !GTK_CHECK_VERSION(4, 0, 0) */
 			gtk_container_set_border_width(GTK_CONTAINER(tab.table), 8);
 			gtk_box_pack_start(GTK_BOX(tab.vbox), tab.table, false, false, 0);
 			gtk_widget_show(tab.table);
 			gtk_widget_show(tab.vbox);
-#endif /* GTK_CHECK_VERSION(4,0,0) */
+#endif /* GTK_CHECK_VERSION(4, 0, 0) */
 
 			// Add the tab.
 			GtkWidget *const lblTabName = gtk_label_new(name);
 			gtk_widget_set_name(lblTabName, fmt::format(FSTR("lblTab{:d}"), i).c_str());
 			gtk_notebook_append_page(GTK_NOTEBOOK(page->tabWidget), tab.vbox, lblTabName);
 
-#if GTK_CHECK_VERSION(4,0,0)
+#if GTK_CHECK_VERSION(4, 0, 0)
 			// GtkNotebook took a reference to the tab label,
 			// so we don't need to keep our reference.
 			g_object_unref(lblTabName);
-#endif /* GTK_CHECK_VERSION(4,0,0) */
+#endif /* GTK_CHECK_VERSION(4, 0, 0) */
 		}
 
-#if GTK_CHECK_VERSION(4,0,0)
+#if GTK_CHECK_VERSION(4, 0, 0)
 		gtk_box_append(GTK_BOX(page), page->tabWidget);
-#else /* !GTK_CHECK_VERSION(4,0,0) */
+#else /* !GTK_CHECK_VERSION(4, 0, 0) */
 		gtk_widget_show(page->tabWidget);
 		gtk_box_pack_start(GTK_BOX(page), page->tabWidget, true, true, 0);
-#endif /* GTK_CHECK_VERSION(4,0,0) */
+#endif /* GTK_CHECK_VERSION(4, 0, 0) */
 	} else {
 		// No tabs.
 		// Don't create a GtkNotebook, but simulate a single
@@ -1387,15 +1387,15 @@ rp_rom_data_view_update_display(RpRomDataView *page)
 #endif /* USE_GTK_GRID */
 		gtk_widget_set_name(tab.table, "tableTab0");
 
-#if GTK_CHECK_VERSION(4,0,0)
+#if GTK_CHECK_VERSION(4, 0, 0)
 		// FIXME: GTK4 equivalent of gtk_container_set_border_width().
 		//gtk_container_set_border_width(GTK_CONTAINER(tab.table), 8);
 		gtk_box_append(GTK_BOX(page), tab.table);
-#else /* !GTK_CHECK_VERSION(4,0,0) */
+#else /* !GTK_CHECK_VERSION(4, 0, 0) */
 		gtk_widget_show(tab.table);
 		gtk_container_set_border_width(GTK_CONTAINER(tab.table), 8);
 		gtk_box_pack_start(GTK_BOX(page), tab.table, false, false, 0);
-#endif /* GTK_CHECK_VERSION(4,0,0) */
+#endif /* GTK_CHECK_VERSION(4, 0, 0) */
 	}
 
 	// Reserve enough space for vecDescLabels.
@@ -1482,9 +1482,9 @@ rp_rom_data_view_update_display(RpRomDataView *page)
 		gtk_label_set_use_underline(GTK_LABEL(lblDesc), false);
 		set_label_format_type(page, GTK_LABEL(lblDesc));
 		page->cxx->vecDescLabels.push_back(GTK_LABEL(lblDesc));
-#if !GTK_CHECK_VERSION(4,0,0)
+#if !GTK_CHECK_VERSION(4, 0, 0)
 		gtk_widget_show(lblDesc);
-#endif /* !GTK_CHECK_VERSION(4,0,0) */
+#endif /* !GTK_CHECK_VERSION(4, 0, 0) */
 
 		// Check if this is an RFT_STRING with warning set.
 		// If it is, set the "RFT_STRING_warning" flag.
@@ -1561,7 +1561,7 @@ rp_rom_data_view_update_display(RpRomDataView *page)
 #endif /* USE_GTK_GRID */
 
 				// Add the widget to the GtkBox.
-#if GTK_CHECK_VERSION(4,0,0)
+#if GTK_CHECK_VERSION(4, 0, 0)
 				if (tab.lblCredits) {
 					// Need to insert the widget before credits.
 					// TODO: Verify this.
@@ -1569,14 +1569,14 @@ rp_rom_data_view_update_display(RpRomDataView *page)
 				} else {
 					gtk_box_append(GTK_BOX(tab.vbox), widget_add);
 				}
-#else /* !GTK_CHECK_VERSION(4,0,0) */
+#else /* !GTK_CHECK_VERSION(4, 0, 0) */
 				gtk_box_pack_start(GTK_BOX(tab.vbox), widget_add, true, true, 0);
 				if (tab.lblCredits) {
 					// Need to move it before credits.
 					// TODO: Verify this.
 					gtk_box_reorder_child(GTK_BOX(tab.vbox), widget_add, 1);
 				}
-#endif /* GTK_CHECK_VERSION(4,0,0) */
+#endif /* GTK_CHECK_VERSION(4, 0, 0) */
 
 				// Increment row by one, since only one widget is
 				// actually being added to the GtkTable/GtkGrid.
@@ -1693,11 +1693,11 @@ rp_rom_data_view_delete_tabs(RpRomDataView *page)
 		// Delete the tab widget.
 		// NOTE: Must be deleted before clearing tabs
 		// due to lblTabName ownership shenanigans.
-#if GTK_CHECK_VERSION(4,0,0)
+#if GTK_CHECK_VERSION(4, 0, 0)
 		gtk_box_remove(GTK_BOX(page), page->tabWidget);
-#else /* !GTK_CHECK_VERSION(4,0,0) */
+#else /* !GTK_CHECK_VERSION(4, 0, 0) */
 		gtk_container_remove(GTK_CONTAINER(page), page->tabWidget);
-#endif /* GTK_CHECK_VERSION(4,0,0) */
+#endif /* GTK_CHECK_VERSION(4, 0, 0) */
 		page->tabWidget = nullptr;
 	}
 
@@ -1706,22 +1706,22 @@ rp_rom_data_view_delete_tabs(RpRomDataView *page)
 		// Single tab. We'll need to remove the table first.
 		GtkWidget *const table = cxx->tabs[0].table;
 		if (table) {
-#if GTK_CHECK_VERSION(4,0,0)
+#if GTK_CHECK_VERSION(4, 0, 0)
 			gtk_box_remove(GTK_BOX(page), table);
-#else /* !GTK_CHECK_VERSION(4,0,0) */
+#else /* !GTK_CHECK_VERSION(4, 0, 0) */
 			gtk_container_remove(GTK_CONTAINER(page), table);
-#endif /* GTK_CHECK_VERSION(4,0,0) */
+#endif /* GTK_CHECK_VERSION(4, 0, 0) */
 		}
 	}
 	cxx->tabs.clear();
 
 	if (page->messageWidget) {
 		// Delete the message widget.
-#if GTK_CHECK_VERSION(4,0,0)
+#if GTK_CHECK_VERSION(4, 0, 0)
 		gtk_box_remove(GTK_BOX(page), page->messageWidget);
-#else /* !GTK_CHECK_VERSION(4,0,0) */
+#else /* !GTK_CHECK_VERSION(4, 0, 0) */
 		gtk_container_remove(GTK_CONTAINER(page), page->messageWidget);
-#endif /* GTK_CHECK_VERSION(4,0,0) */
+#endif /* GTK_CHECK_VERSION(4, 0, 0) */
 		page->messageWidget = nullptr;
 	}
 
@@ -1731,19 +1731,19 @@ rp_rom_data_view_delete_tabs(RpRomDataView *page)
 		// We'll need to get the parent widget first, then remove
 		// the parent widget.
 		GtkWidget *parent = gtk_widget_get_parent(page->cboLanguage);
-#if GTK_CHECK_VERSION(3,0,0)
+#if GTK_CHECK_VERSION(3, 0, 0)
 		assert(GTK_IS_BOX(parent));
-#else /* !GTK_CHECK_VERSION(3,0,0) */
+#else /* !GTK_CHECK_VERSION(3, 0, 0) */
 		// GTK2: The GtkVBox is contained within a GtkAlignment.
 		parent = gtk_widget_get_parent(parent);
 		assert(GTK_IS_ALIGNMENT(parent));
-#endif /* GTK_CHECK_VERSION(3,0,0) */
+#endif /* GTK_CHECK_VERSION(3, 0, 0) */
 
-#if GTK_CHECK_VERSION(4,0,0)
+#if GTK_CHECK_VERSION(4, 0, 0)
 		gtk_box_remove(GTK_BOX(page->hboxHeaderRow_outer), parent);
-#else /* !GTK_CHECK_VERSION(4,0,0) */
+#else /* !GTK_CHECK_VERSION(4, 0, 0) */
 		gtk_container_remove(GTK_CONTAINER(page->hboxHeaderRow_outer), parent);
-#endif /* GTK_CHECK_VERSION(4,0,0) */
+#endif /* GTK_CHECK_VERSION(4, 0, 0) */
 		page->cboLanguage = nullptr;
 	}
 

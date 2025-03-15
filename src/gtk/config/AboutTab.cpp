@@ -44,21 +44,21 @@ using std::string;
 #  include <tinyxml2.h>
 #endif /* ENABLE_XML */
 
-#if GTK_CHECK_VERSION(3,0,0)
+#if GTK_CHECK_VERSION(3, 0, 0)
 typedef GtkBoxClass superclass;
 typedef GtkBox super;
 #  define GTK_TYPE_SUPER GTK_TYPE_BOX
-#else /* !GTK_CHECK_VERSION(3,0,0) */
+#else /* !GTK_CHECK_VERSION(3, 0, 0) */
 typedef GtkVBoxClass superclass;
 typedef GtkVBox super;
 #  define GTK_TYPE_SUPER GTK_TYPE_VBOX
-#endif /* GTK_CHECK_VERSION(3,0,0) */
+#endif /* GTK_CHECK_VERSION(3, 0, 0) */
 
-#if defined(ENABLE_NETWORKING) && GTK_CHECK_VERSION(3,1,6)
+#if defined(ENABLE_NETWORKING) && GTK_CHECK_VERSION(3, 1, 6)
 // NOTE: Update check requires GtkOverlay, which was
 // added in GTK+ 3.2.0 (3.1.6).
 #  define ENABLE_UPDATE_CHECK 1
-#endif /* defined(ENABLE_NETWORKING) && GTK_CHECK_VERSION(3,1,6) */
+#endif /* defined(ENABLE_NETWORKING) && GTK_CHECK_VERSION(3, 1, 6) */
 
 // RpAboutTab class
 struct _RpAboutTabClass {
@@ -141,21 +141,21 @@ rp_about_tab_rp_config_tab_interface_init(RpConfigTabInterface *iface)
 static void
 rp_about_tab_init(RpAboutTab *tab)
 {
-#if GTK_CHECK_VERSION(3,0,0)
+#if GTK_CHECK_VERSION(3, 0, 0)
 	// Make this a VBox.
 	gtk_orientable_set_orientation(GTK_ORIENTABLE(tab), GTK_ORIENTATION_VERTICAL);
-#endif /* GTK_CHECK_VERSION(3,0,0) */
+#endif /* GTK_CHECK_VERSION(3, 0, 0) */
 	gtk_box_set_spacing(GTK_BOX(tab), 8);
 
 	// HBox for the logo and title.
 	GtkWidget *const hboxTitle = rp_gtk_hbox_new(6);
 	gtk_widget_set_name(hboxTitle, "hboxTitle");
 	// Logo and title labels. (Will be filled in later.)
-#if GTK_CHECK_VERSION(4,0,0)
+#if GTK_CHECK_VERSION(4, 0, 0)
 	tab->imgLogo = gtk_picture_new();
-#else /* !GTK_CHECK_VERSION(4,0,0) */
+#else /* !GTK_CHECK_VERSION(4, 0, 0) */
 	tab->imgLogo = gtk_image_new();
-#endif /* GTK_CHECK_VERSION(4,0,0) */
+#endif /* GTK_CHECK_VERSION(4, 0, 0) */
 	gtk_widget_set_name(tab->imgLogo, "imgLogo");
 	tab->lblTitle = gtk_label_new(nullptr);
 	gtk_widget_set_name(tab->lblTitle, "lblTitle");
@@ -183,109 +183,109 @@ rp_about_tab_init(RpAboutTab *tab)
 	GtkWidget *const tabWidget = gtk_notebook_new();
 	gtk_widget_set_name(tabWidget, "tabWidget");
 	//gtk_widget_set_margin_bottom(tabWidget, 8);
-#if GTK_CHECK_VERSION(2,91,1)
+#if GTK_CHECK_VERSION(2, 91, 1)
 	gtk_widget_set_halign(tabWidget, GTK_ALIGN_FILL);
 	gtk_widget_set_valign(tabWidget, GTK_ALIGN_FILL);
 	gtk_widget_set_hexpand(tabWidget, TRUE);
 	gtk_widget_set_vexpand(tabWidget, TRUE);
-#endif /* GTK_CHECK_VERSION(2,91,1) */
+#endif /* GTK_CHECK_VERSION(2, 91, 1) */
 
 	// Each tab contains a scroll area and a label.
 	// FIXME: GtkScrolledWindow seems to start at the label contents,
 	// ignoring the top margin...
 
 	// Credits tab: Scroll area
-#if GTK_CHECK_VERSION(4,0,0)
+#if GTK_CHECK_VERSION(4, 0, 0)
 	GtkWidget *const scrlCredits = gtk_scrolled_window_new();
 	gtk_scrolled_window_set_has_frame(GTK_SCROLLED_WINDOW(scrlCredits), true);
-#else /* !GTK_CHECK_VERSION(4,0,0) */
+#else /* !GTK_CHECK_VERSION(4, 0, 0) */
 	GtkWidget *const scrlCredits = gtk_scrolled_window_new(nullptr, nullptr);
 	gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(scrlCredits), GTK_SHADOW_IN);
 #endif /* GTK_CHECK_VERSION */
 	gtk_widget_set_name(scrlCredits, "scrlCredits");
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrlCredits),
 		GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
-#if GTK_CHECK_VERSION(2,91,1)
+#if GTK_CHECK_VERSION(2, 91, 1)
 	gtk_widget_set_halign(scrlCredits, GTK_ALIGN_FILL);
 	gtk_widget_set_valign(scrlCredits, GTK_ALIGN_FILL);
 	gtk_widget_set_hexpand(scrlCredits, TRUE);
 	gtk_widget_set_vexpand(scrlCredits, TRUE);
-#endif /* GTK_CHECK_VERSION(2,91,1) */
+#endif /* GTK_CHECK_VERSION(2, 91, 1) */
 
 	// Credits tab: Label
 	tab->lblCredits = gtk_label_new(nullptr);
 	gtk_widget_set_name(tab->lblCredits, "lblCredits");
 	GTK_WIDGET_HALIGN_LEFT(tab->lblCredits);
 	GTK_WIDGET_VALIGN_TOP(tab->lblCredits);
-#if GTK_CHECK_VERSION(3,0,0)
+#if GTK_CHECK_VERSION(3, 0, 0)
 	gtk_widget_set_margin(tab->lblCredits, 8);
 	gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(scrlCredits), tab->lblCredits);
-#else /* !GTK_CHECK_VERSION(3,0,0) */
+#else /* !GTK_CHECK_VERSION(3, 0, 0) */
 	gtk_misc_set_padding(GTK_MISC(tab->lblCredits), 8, 8);
 	gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(scrlCredits), tab->lblCredits);
-#endif /* GTK_CHECK_VERSION(3,0,0) */
+#endif /* GTK_CHECK_VERSION(3, 0, 0) */
 
 	// Libraries tab: Scroll area
-#if GTK_CHECK_VERSION(4,0,0)
+#if GTK_CHECK_VERSION(4, 0, 0)
 	GtkWidget *const scrlLibraries = gtk_scrolled_window_new();
 	gtk_scrolled_window_set_has_frame(GTK_SCROLLED_WINDOW(scrlLibraries), true);
-#else /* !GTK_CHECK_VERSION(4,0,0) */
+#else /* !GTK_CHECK_VERSION(4, 0, 0) */
 	GtkWidget *scrlLibraries = gtk_scrolled_window_new(nullptr, nullptr);
 	gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(scrlLibraries), GTK_SHADOW_IN);
 #endif /* GTK_CHECK_VERSION */
 	gtk_widget_set_name(scrlLibraries, "scrlLibraries");
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrlLibraries),
 		GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
-#if GTK_CHECK_VERSION(2,91,1)
+#if GTK_CHECK_VERSION(2, 91, 1)
 	gtk_widget_set_halign(scrlLibraries, GTK_ALIGN_FILL);
 	gtk_widget_set_valign(scrlLibraries, GTK_ALIGN_FILL);
 	gtk_widget_set_hexpand(scrlLibraries, TRUE);
 	gtk_widget_set_vexpand(scrlLibraries, TRUE);
-#endif /* GTK_CHECK_VERSION(2,91,1) */
+#endif /* GTK_CHECK_VERSION(2, 91, 1) */
 
 	// Libraries tab: Label
 	tab->lblLibraries = gtk_label_new(nullptr);
 	gtk_widget_set_name(tab->lblLibraries, "lblLibraries");
 	GTK_WIDGET_HALIGN_LEFT(tab->lblLibraries);
 	GTK_WIDGET_VALIGN_TOP(tab->lblLibraries);
-#if GTK_CHECK_VERSION(3,0,0)
+#if GTK_CHECK_VERSION(3, 0, 0)
 	gtk_widget_set_margin(tab->lblLibraries, 8);
 	gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(scrlLibraries), tab->lblLibraries);
-#else /* !GTK_CHECK_VERSION(3,0,0) */
+#else /* !GTK_CHECK_VERSION(3, 0, 0) */
 	gtk_misc_set_padding(GTK_MISC(tab->lblLibraries), 8, 8);
 	gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(scrlLibraries), tab->lblLibraries);
-#endif /* GTK_CHECK_VERSION(3,0,0) */
+#endif /* GTK_CHECK_VERSION(3, 0, 0) */
 
 	// Support tab: Scroll area
-#if GTK_CHECK_VERSION(4,0,0)
+#if GTK_CHECK_VERSION(4, 0, 0)
 	GtkWidget *const scrlSupport = gtk_scrolled_window_new();
 	gtk_scrolled_window_set_has_frame(GTK_SCROLLED_WINDOW(scrlSupport), true);
-#else /* !GTK_CHECK_VERSION(4,0,0) */
+#else /* !GTK_CHECK_VERSION(4, 0, 0) */
 	GtkWidget *scrlSupport = gtk_scrolled_window_new(nullptr, nullptr);
 	gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(scrlSupport), GTK_SHADOW_IN);
 #endif /* GTK_CHECK_VERSION */
 	gtk_widget_set_name(scrlSupport, "scrlSupport");
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrlSupport),
 		GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
-#if GTK_CHECK_VERSION(2,91,1)
+#if GTK_CHECK_VERSION(2, 91, 1)
 	gtk_widget_set_halign(scrlSupport, GTK_ALIGN_FILL);
 	gtk_widget_set_valign(scrlSupport, GTK_ALIGN_FILL);
 	gtk_widget_set_hexpand(scrlSupport, TRUE);
 	gtk_widget_set_vexpand(scrlSupport, TRUE);
-#endif /* GTK_CHECK_VERSION(2,91,1) */
+#endif /* GTK_CHECK_VERSION(2, 91, 1) */
 
 	// Support tab: Label
 	tab->lblSupport = gtk_label_new(nullptr);
 	gtk_widget_set_name(tab->lblSupport, "lblSupport");
 	GTK_WIDGET_HALIGN_LEFT(tab->lblSupport);
 	GTK_WIDGET_VALIGN_TOP(tab->lblSupport);
-#if GTK_CHECK_VERSION(3,0,0)
+#if GTK_CHECK_VERSION(3, 0, 0)
 	gtk_widget_set_margin(tab->lblSupport, 8);
 	gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(scrlSupport), tab->lblSupport);
-#else /* !GTK_CHECK_VERSION(3,0,0) */
+#else /* !GTK_CHECK_VERSION(3, 0, 0) */
 	gtk_misc_set_padding(GTK_MISC(tab->lblSupport), 8, 8);
 	gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(scrlSupport), tab->lblSupport);
-#endif /* GTK_CHECK_VERSION(3,0,0) */
+#endif /* GTK_CHECK_VERSION(3, 0, 0) */
 
 	// Create the tabs.
 	GtkWidget *const lblTabCredits = rp_gtk_label_new_with_mnemonic(C_("AboutTab", "C&redits"));
@@ -298,15 +298,15 @@ rp_about_tab_init(RpAboutTab *tab)
 	gtk_widget_set_name(lblTabSupport, "lblSupportTab");
 	gtk_notebook_append_page(GTK_NOTEBOOK(tabWidget), scrlSupport, lblTabSupport);
 
-#if GTK_CHECK_VERSION(4,0,0)
+#if GTK_CHECK_VERSION(4, 0, 0)
 	// GtkNotebook took a reference to the tab labels,
 	// so we don't need to keep our references.
 	g_object_unref(lblTabCredits);
 	g_object_unref(lblTabLibraries);
 	g_object_unref(lblTabSupport);
-#endif /* GTK_CHECK_VERSION(4,0,0) */
+#endif /* GTK_CHECK_VERSION(4, 0, 0) */
 
-#if GTK_CHECK_VERSION(4,0,0)
+#if GTK_CHECK_VERSION(4, 0, 0)
 	GTK_WIDGET_HALIGN_CENTER(hboxTitle);
 	gtk_box_append(GTK_BOX(hboxTitle), tab->imgLogo);
 	gtk_box_append(GTK_BOX(hboxTitle), tab->lblTitle);
@@ -317,7 +317,7 @@ rp_about_tab_init(RpAboutTab *tab)
 	gtk_box_append(GTK_BOX(tab), hboxTitle);
 #  endif /* ENABLE_UPDATE_CHECK */
 	gtk_box_append(GTK_BOX(tab), tabWidget);
-#else /* !GTK_CHECK_VERSION(4,0,0) */
+#else /* !GTK_CHECK_VERSION(4, 0, 0) */
 
 	gtk_box_pack_start(GTK_BOX(hboxTitle), tab->imgLogo, false, false, 0);
 	gtk_box_pack_start(GTK_BOX(hboxTitle), tab->lblTitle, false, false, 0);
@@ -348,7 +348,7 @@ rp_about_tab_init(RpAboutTab *tab)
 	gtk_widget_show_all(hboxTitle);
 #  endif /* ENABLE_UPDATE_CHECK */
 	gtk_widget_show_all(tabWidget);
-#endif /* GTK_CHECK_VERSION(4,0,0) */
+#endif /* GTK_CHECK_VERSION(4, 0, 0) */
 
 	// Initialize the various text fields.
 	rp_about_tab_init_program_title_text(tab->imgLogo, GTK_LABEL(tab->lblTitle));
@@ -424,7 +424,7 @@ rp_about_tab_init_program_title_text(GtkWidget *imgLogo, GtkLabel *lblTitle)
 	// Get the 128x128 icon.
 	// TODO: Determine the best size.
 	static constexpr int icon_size = 128;
-#if GTK_CHECK_VERSION(4,0,0)
+#if GTK_CHECK_VERSION(4, 0, 0)
 	// TODO: Get text direction from lblTitle instead of imgLogo?
 	// FIXME: This is loading a 32x32 icon...
 	GtkIconPaintable *const icon = gtk_icon_theme_lookup_icon(
@@ -438,7 +438,7 @@ rp_about_tab_init_program_title_text(GtkWidget *imgLogo, GtkLabel *lblTitle)
 	} else {
 		gtk_picture_set_paintable(GTK_PICTURE(imgLogo), nullptr);
 	}
-#else /* !GTK_CHECK_VERSION(4,0,0) */
+#else /* !GTK_CHECK_VERSION(4, 0, 0) */
 	GdkPixbuf *const icon = gtk_icon_theme_load_icon(
 		gtk_icon_theme_get_default(), "media-flash", icon_size,
 		(GtkIconLookupFlags)0, nullptr);
@@ -448,7 +448,7 @@ rp_about_tab_init_program_title_text(GtkWidget *imgLogo, GtkLabel *lblTitle)
 	} else {
 		gtk_image_clear(GTK_IMAGE(imgLogo));
 	}
-#endif /* GTK_CHECK_VERSION(4,0,0) */
+#endif /* GTK_CHECK_VERSION(4, 0, 0) */
 
 	const char *const programVersion =
 		AboutTabText::getProgramInfoString(AboutTabText::ProgramInfoStringID::ProgramVersion);
@@ -598,14 +598,14 @@ rp_about_tab_init_libraries_tab(GtkLabel *lblLibraries)
 	// NOTE: Although the GTK+ 2.x headers export variables,
 	// the shared libraries for 2.24.33 do *not* export them,
 	// which results in undefined symbols at at runtime.
-#if GTK_CHECK_VERSION(2,90,7)
+#if GTK_CHECK_VERSION(2, 90, 7)
 	const guint gtk_major = gtk_get_major_version();
 	const string gtkVersionUsing = fmt::format(FSTR("GTK{:s} {:d}.{:d}.{:d}"),
 		(gtk_major >= 4 ? "" : "+"),
 		gtk_major, gtk_get_minor_version(),
 		gtk_get_micro_version());
 	sLibraries += fmt::format(sUsingDll, gtkVersionUsing);
-#endif /* GTK_CHECK_VERSION(2,90,7) */
+#endif /* GTK_CHECK_VERSION(2, 90, 7) */
 	sLibraries += "\n"
 		"Copyright (C) 1995-1997 Peter Mattis, Spencer Kimball and Josh MacDonald.\n"
 		"Copyright (C) 1995-2022 the GTK+ Team and others.\n"

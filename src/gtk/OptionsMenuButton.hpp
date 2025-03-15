@@ -14,13 +14,13 @@ G_BEGIN_DECLS
 
 #define RP_TYPE_OPTIONS_MENU_BUTTON (rp_options_menu_button_get_type())
 
-#if GTK_CHECK_VERSION(3,0,0)
+#if GTK_CHECK_VERSION(3, 0, 0)
 #  define _RpOptionsMenuButton_super		GtkBox
 #  define _RpOptionsMenuButton_superClass	GtkBoxClass
-#else /* !GTK_CHECK_VERSION(3,0,0) */
+#else /* !GTK_CHECK_VERSION(3, 0, 0) */
 #  define _RpOptionsMenuButton_super		GtkHBox
 #  define _RpOptionsMenuButton_superClass	GtkHBoxClass
-#endif /* GTK_CHECK_VERSION(3,0,0) */
+#endif /* GTK_CHECK_VERSION(3, 0, 0) */
 
 G_DECLARE_FINAL_TYPE(RpOptionsMenuButton, rp_options_menu_button, RP, OPTIONS_MENU_BUTTON, _RpOptionsMenuButton_super)
 

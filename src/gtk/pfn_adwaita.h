@@ -21,7 +21,7 @@ typedef struct _AdwHeaderBar AdwHeaderBar;
 typedef GType (*pfnGlibGetType_t)(void);
 typedef void (*pfnAdwHeaderBarPackEnd_t)(AdwHeaderBar *self, GtkWidget *child);
 
-#if GTK_CHECK_VERSION(3,0,0)
+#if GTK_CHECK_VERSION(3, 0, 0)
 #  define RP_MAY_HAVE_ADWAITA 1
 
 extern pfnGlibGetType_t pfn_adw_deck_get_type;
@@ -34,7 +34,7 @@ extern pfnAdwHeaderBarPackEnd_t pfn_adw_header_bar_pack_end;
  */
 gboolean rp_init_pfn_adwaita(void);
 
-#else /* !GTK_CHECK_VERSION(3,0,0) */
+#else /* !GTK_CHECK_VERSION(3, 0, 0) */
 
 // GTK2: No libadwaita/libhandy.
 static inline GType pfn_adw_deck_get_type(void)
@@ -60,6 +60,6 @@ static inline gboolean rp_init_pfn_adwaita(void)
 	return FALSE;
 }
 
-#endif /* GTK_CHECK_VERSION(3,0,0) */
+#endif /* GTK_CHECK_VERSION(3, 0, 0) */
 
 G_END_DECLS

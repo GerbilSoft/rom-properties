@@ -43,16 +43,16 @@ static GParamSpec *props[PROP_LAST];
 
 static GQuark DosAttrView_value_quark;
 
-#if GTK_CHECK_VERSION(3,0,0)
+#if GTK_CHECK_VERSION(3, 0, 0)
 typedef GtkBoxClass superclass;
 typedef GtkBox super;
 #define GTK_TYPE_SUPER GTK_TYPE_BOX
 #define USE_GTK_GRID 1	// Use GtkGrid instead of GtkTable.
-#else /* !GTK_CHECK_VERSION(3,0,0) */
+#else /* !GTK_CHECK_VERSION(3, 0, 0) */
 typedef GtkVBoxClass superclass;
 typedef GtkVBox super;
 #define GTK_TYPE_SUPER GTK_TYPE_VBOX
-#endif /* GTK_CHECK_VERSION(3,0,0) */
+#endif /* GTK_CHECK_VERSION(3, 0, 0) */
 
 // DosAttrView class
 struct _RpDosAttrViewClass {
@@ -120,10 +120,10 @@ rp_dos_attr_view_class_init(RpDosAttrViewClass *klass)
 static void
 rp_dos_attr_view_init(RpDosAttrView *widget)
 {
-#if GTK_CHECK_VERSION(3,0,0)
+#if GTK_CHECK_VERSION(3, 0, 0)
 	// Make this a VBox.
 	gtk_orientable_set_orientation(GTK_ORIENTABLE(widget), GTK_ORIENTATION_VERTICAL);
-#endif /* GTK_CHECK_VERSION(3,0,0) */
+#endif /* GTK_CHECK_VERSION(3, 0, 0) */
 
 	// Checkboxes: DOS attributes
 	GtkWidget *const hboxDOSAttrs = rp_gtk_hbox_new(4);
@@ -138,20 +138,20 @@ rp_dos_attr_view_init(RpDosAttrView *widget)
 	widget->chkSystem = rp_gtk_check_button_new_with_mnemonic(C_("DosAttrView", "&System"));
 	gtk_widget_set_name(widget->chkSystem, "chkSystem");
 
-#if GTK_CHECK_VERSION(4,0,0)
+#if GTK_CHECK_VERSION(4, 0, 0)
 	gtk_box_append(GTK_BOX(hboxDOSAttrs), widget->chkReadOnly);
 	gtk_box_append(GTK_BOX(hboxDOSAttrs), widget->chkHidden);
 	gtk_box_append(GTK_BOX(hboxDOSAttrs), widget->chkArchive);
 	gtk_box_append(GTK_BOX(hboxDOSAttrs), widget->chkSystem);
 	gtk_box_append(GTK_BOX(widget), hboxDOSAttrs);
-#else /* !GTK_CHECK_VERSION(4,0,0) */
+#else /* !GTK_CHECK_VERSION(4, 0, 0) */
 	gtk_box_pack_start(GTK_BOX(hboxDOSAttrs), widget->chkReadOnly, FALSE, FALSE, 0);
 	gtk_box_pack_start(GTK_BOX(hboxDOSAttrs), widget->chkHidden, FALSE, FALSE, 0);
 	gtk_box_pack_start(GTK_BOX(hboxDOSAttrs), widget->chkArchive, FALSE, FALSE, 0);
 	gtk_box_pack_start(GTK_BOX(hboxDOSAttrs), widget->chkSystem, FALSE, FALSE, 0);
 	gtk_box_pack_start(GTK_BOX(widget), hboxDOSAttrs, FALSE, FALSE, 0);
 	gtk_widget_show_all(hboxDOSAttrs);
-#endif /* GTK_CHECK_VERSION(4,0,0) */
+#endif /* GTK_CHECK_VERSION(4, 0, 0) */
 
 	// Checkboxes: NTFS attributes
 	GtkWidget *const hboxNTFSAttrs = rp_gtk_hbox_new(4);
@@ -162,16 +162,16 @@ rp_dos_attr_view_init(RpDosAttrView *widget)
 	widget->chkEncrypted = rp_gtk_check_button_new_with_mnemonic(C_("DosAttrView", "&Encrypted"));
 	gtk_widget_set_name(widget->chkEncrypted, "chkEncrypted");
 
-#if GTK_CHECK_VERSION(4,0,0)
+#if GTK_CHECK_VERSION(4, 0, 0)
 	gtk_box_append(GTK_BOX(hboxNTFSAttrs), widget->chkCompressed);
 	gtk_box_append(GTK_BOX(hboxNTFSAttrs), widget->chkEncrypted);
 	gtk_box_append(GTK_BOX(widget), hboxNTFSAttrs);
-#else /* !GTK_CHECK_VERSION(4,0,0) */
+#else /* !GTK_CHECK_VERSION(4, 0, 0) */
 	gtk_box_pack_start(GTK_BOX(hboxNTFSAttrs), widget->chkCompressed, FALSE, FALSE, 0);
 	gtk_box_pack_start(GTK_BOX(hboxNTFSAttrs), widget->chkEncrypted, FALSE, FALSE, 0);
 	gtk_box_pack_start(GTK_BOX(widget), hboxNTFSAttrs, FALSE, FALSE, 0);
 	gtk_widget_show_all(hboxNTFSAttrs);
-#endif /* GTK_CHECK_VERSION(4,0,0) */
+#endif /* GTK_CHECK_VERSION(4, 0, 0) */
 
 	// Disable user modifications.
 	// NOTE: Unlike Qt, both the "clicked" and "toggled" signals are

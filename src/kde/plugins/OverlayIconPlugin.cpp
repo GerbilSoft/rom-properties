@@ -8,7 +8,7 @@
  * most of the important code is split out into libromdata.so, so the      *
  * forwarder version is unnecessary.                                       *
  *                                                                         *
- * Copyright (c) 2018-2024 by David Korth.                                 *
+ * Copyright (c) 2018-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -16,11 +16,11 @@
 #include "check-uid.hpp"
 
 #include <QtCore/qglobal.h>
-#if QT_VERSION >= QT_VERSION_CHECK(7,0,0)
+#if QT_VERSION >= QT_VERSION_CHECK(7, 0, 0)
 #  error Update for new Qt!
-#elif QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+#elif QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 #  include "OverlayIconPluginKF6.hpp"
-#elif QT_VERSION >= QT_VERSION_CHECK(5,0,0)
+#elif QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
 #  include "OverlayIconPluginKF5.hpp"
 #else
 #  error Qt is too old!

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * AchievementsTab.cpp: Achievements tab for rp-config.                    *
  *                                                                         *
- * Copyright (c) 2017-2024 by David Korth.                                 *
+ * Copyright (c) 2017-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -36,15 +36,15 @@ typedef enum {
 	ACH_COL_MAX
 } AchievementColumns;
 
-#if GTK_CHECK_VERSION(3,0,0)
+#if GTK_CHECK_VERSION(3, 0, 0)
 typedef GtkBoxClass superclass;
 typedef GtkBox super;
 #  define GTK_TYPE_SUPER GTK_TYPE_BOX
-#else /* !GTK_CHECK_VERSION(3,0,0) */
+#else /* !GTK_CHECK_VERSION(3, 0, 0) */
 typedef GtkVBoxClass superclass;
 typedef GtkVBox super;
 #  define GTK_TYPE_SUPER GTK_TYPE_VBOX
-#endif /* GTK_CHECK_VERSION(3,0,0) */
+#endif /* GTK_CHECK_VERSION(3, 0, 0) */
 
 // RpAchievementsTab class
 struct _RpAchievementsTabClass {
@@ -178,29 +178,29 @@ bind_listitem_cb(GtkListItemFactory *factory, GtkListItem *list_item, gpointer u
 static void
 rp_achievements_tab_init(RpAchievementsTab *tab)
 {
-#if GTK_CHECK_VERSION(3,0,0)
+#if GTK_CHECK_VERSION(3, 0, 0)
 	// Make this a VBox.
 	gtk_orientable_set_orientation(GTK_ORIENTABLE(tab), GTK_ORIENTATION_VERTICAL);
-#endif /* GTK_CHECK_VERSION(3,0,0) */
+#endif /* GTK_CHECK_VERSION(3, 0, 0) */
 	gtk_box_set_spacing(GTK_BOX(tab), 8);
 
 	// Scroll area for the GtkTreeView.
-#if GTK_CHECK_VERSION(4,0,0)
+#if GTK_CHECK_VERSION(4, 0, 0)
 	GtkWidget *const scrolledWindow = gtk_scrolled_window_new();
 	gtk_scrolled_window_set_has_frame(GTK_SCROLLED_WINDOW(scrolledWindow), true);
-#else /* !GTK_CHECK_VERSION(4,0,0) */
+#else /* !GTK_CHECK_VERSION(4, 0, 0) */
 	GtkWidget *const scrolledWindow = gtk_scrolled_window_new(nullptr, nullptr);
 	gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(scrolledWindow), GTK_SHADOW_IN);
 #endif /* GTK_CHECK_VERSION */
 	gtk_widget_set_name(scrolledWindow, "scrolledWindow");
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolledWindow),
 		GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
-#if GTK_CHECK_VERSION(2,91,1)
+#if GTK_CHECK_VERSION(2, 91, 1)
 	gtk_widget_set_halign(scrolledWindow, GTK_ALIGN_FILL);
 	gtk_widget_set_valign(scrolledWindow, GTK_ALIGN_FILL);
 	gtk_widget_set_hexpand(scrolledWindow, TRUE);
 	gtk_widget_set_vexpand(scrolledWindow, TRUE);
-#endif /* GTK_CHECK_VERSION(2,91,1) */
+#endif /* GTK_CHECK_VERSION(2, 91, 1) */
 
 	// Column titles
 	static const array<const char*, ACH_COL_MAX> column_titles = {{
@@ -272,13 +272,13 @@ rp_achievements_tab_init(RpAchievementsTab *tab)
 	}
 #endif /* USE_GTK_COLUMN_VIEW */
 
-#if GTK_CHECK_VERSION(4,0,0)
+#if GTK_CHECK_VERSION(4, 0, 0)
 	gtk_box_append(GTK_BOX(tab), scrolledWindow);
-#else /* !GTK_CHECK_VERSION(4,0,0) */
+#else /* !GTK_CHECK_VERSION(4, 0, 0) */
 	gtk_box_pack_start(GTK_BOX(tab), scrolledWindow, true, true, 0);
 
 	gtk_widget_show_all(scrolledWindow);
-#endif /* GTK_CHECK_VERSION(4,0,0) */
+#endif /* GTK_CHECK_VERSION(4, 0, 0) */
 
 	// Load the achievements.
 	rp_achievements_tab_reset(tab);

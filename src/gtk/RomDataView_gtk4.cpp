@@ -417,11 +417,11 @@ rp_rom_data_view_init_listdata(RpRomDataView *page, const RomFields::Field &fiel
 	}
 
 	// Scroll area for the GtkTreeView.
-#if GTK_CHECK_VERSION(4,0,0)
+#if GTK_CHECK_VERSION(4, 0, 0)
 	GtkWidget *const scrolledWindow = gtk_scrolled_window_new();
 	// NOTE: No name for this GtkWidget.
 	gtk_scrolled_window_set_has_frame(GTK_SCROLLED_WINDOW(scrolledWindow), true);
-#else /* !GTK_CHECK_VERSION(4,0,0) */
+#else /* !GTK_CHECK_VERSION(4, 0, 0) */
 	GtkWidget *const scrolledWindow = gtk_scrolled_window_new(nullptr, nullptr);
 	// NOTE: No name for this GtkWidget.
 	gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(scrolledWindow), GTK_SHADOW_IN);

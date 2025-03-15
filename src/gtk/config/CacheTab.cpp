@@ -23,15 +23,15 @@ using namespace LibRpText;
 // C++ STL classes
 using std::string;
 
-#if GTK_CHECK_VERSION(3,0,0)
+#if GTK_CHECK_VERSION(3, 0, 0)
 typedef GtkBoxClass superclass;
 typedef GtkBox super;
 #  define GTK_TYPE_SUPER GTK_TYPE_BOX
-#else /* !GTK_CHECK_VERSION(3,0,0) */
+#else /* !GTK_CHECK_VERSION(3, 0, 0) */
 typedef GtkVBoxClass superclass;
 typedef GtkVBox super;
 #  define GTK_TYPE_SUPER GTK_TYPE_VBOX
-#endif /* GTK_CHECK_VERSION(3,0,0) */
+#endif /* GTK_CHECK_VERSION(3, 0, 0) */
 
 // CacheTab class
 struct _RpCacheTabClass {
@@ -105,20 +105,20 @@ rp_cache_tab_class_init(RpCacheTabClass *klass)
 	GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
 	gobject_class->dispose = rp_cache_tab_dispose;
 
-#if GTK_CHECK_VERSION(3,0,0)
+#if GTK_CHECK_VERSION(3, 0, 0)
 	// Add a CSS class for a GtkProgressBar "error" state.
 	GtkCssProvider *const provider = gtk_css_provider_new();
 	GdkDisplay *const display = gdk_display_get_default();
-#  if GTK_CHECK_VERSION(4,0,0)
+#  if GTK_CHECK_VERSION(4, 0, 0)
 	// GdkScreen no longer exists in GTK4.
 	// Style context providers are added directly to GdkDisplay instead.
 	gtk_style_context_add_provider_for_display(display,
 		GTK_STYLE_PROVIDER(provider), GTK_STYLE_PROVIDER_PRIORITY_USER);
-#  else /* !GTK_CHECK_VERSION(4,0,0) */
+#  else /* !GTK_CHECK_VERSION(4, 0, 0) */
 	GdkScreen *const screen = gdk_display_get_default_screen(display);
 	gtk_style_context_add_provider_for_screen(screen,
 		GTK_STYLE_PROVIDER(provider), GTK_STYLE_PROVIDER_PRIORITY_USER);
-#  endif /* !GTK_CHECK_VERSION(4,0,0) */
+#  endif /* !GTK_CHECK_VERSION(4, 0, 0) */
 
 	static constexpr char css_ProgressBar[] =
 		"@define-color gsrp_color_pb_error rgb(144,24,24);\n"
@@ -130,7 +130,7 @@ rp_cache_tab_class_init(RpCacheTabClass *klass)
 
 	GTK_CSS_PROVIDER_LOAD_FROM_STRING(GTK_CSS_PROVIDER(provider), css_ProgressBar);
 	g_object_unref(provider);
-#endif /* GTK_CHECK_VERSION(3,0,0) */
+#endif /* GTK_CHECK_VERSION(3, 0, 0) */
 }
 
 static void
@@ -145,10 +145,10 @@ rp_cache_tab_rp_config_tab_interface_init(RpConfigTabInterface *iface)
 static void
 rp_cache_tab_init(RpCacheTab *tab)
 {
-#if GTK_CHECK_VERSION(3,0,0)
+#if GTK_CHECK_VERSION(3, 0, 0)
 	// Make this a VBox.
 	gtk_orientable_set_orientation(GTK_ORIENTABLE(tab), GTK_ORIENTATION_VERTICAL);
-#endif /* GTK_CHECK_VERSION(3,0,0) */
+#endif /* GTK_CHECK_VERSION(3, 0, 0) */
 	gtk_box_set_spacing(GTK_BOX(tab), 8);
 
 	// FIXME: Better wrapping that doesn't require manual newlines.
@@ -176,15 +176,15 @@ rp_cache_tab_init(RpCacheTab *tab)
 	GTK_LABEL_XALIGN_LEFT(tab->lblCacheStatus);
 	tab->pbCacheStatus = gtk_progress_bar_new();
 	gtk_widget_set_name(tab->pbCacheStatus, "pbCacheStatus");
-#if GTK_CHECK_VERSION(3,0,0)
+#if GTK_CHECK_VERSION(3, 0, 0)
 	gtk_progress_bar_set_show_text(GTK_PROGRESS_BAR(tab->pbCacheStatus), TRUE);
-#endif /* !GTK_CHECK_VERSION(3,0,0) */
+#endif /* !GTK_CHECK_VERSION(3, 0, 0) */
 
 	// Connect the signal handlers for the buttons.
 	g_signal_connect(tab->btnSysCache, "clicked", G_CALLBACK(rp_cache_tab_on_btnSysCache_clicked), tab);
 	g_signal_connect(tab->btnRpCache,  "clicked", G_CALLBACK(rp_cache_tab_on_btnRpCache_clicked),  tab);
 
-#if GTK_CHECK_VERSION(4,0,0)
+#if GTK_CHECK_VERSION(4, 0, 0)
 	gtk_widget_set_visible(tab->lblCacheStatus, false);
 	gtk_widget_set_visible(tab->pbCacheStatus, false);
 
@@ -196,7 +196,7 @@ rp_cache_tab_init(RpCacheTab *tab)
 	// TODO: Spacer and/or alignment?
 	gtk_box_append(GTK_BOX(tab), tab->lblCacheStatus);
 	gtk_box_append(GTK_BOX(tab), tab->pbCacheStatus);
-#else /* !GTK_CHECK_VERSION(4,0,0) */
+#else /* !GTK_CHECK_VERSION(4, 0, 0) */
 	gtk_box_pack_start(GTK_BOX(tab), tab->lblSysCache, false, false, 0);
 	gtk_box_pack_start(GTK_BOX(tab), tab->btnSysCache, false, false, 0);
 	gtk_box_pack_start(GTK_BOX(tab), tab->lblRpCache, false, false, 0);
@@ -217,7 +217,7 @@ rp_cache_tab_init(RpCacheTab *tab)
 	gtk_widget_show(tab->btnSysCache);
 	gtk_widget_show(tab->lblRpCache);
 	gtk_widget_show(tab->btnRpCache);
-#endif /* GTK_CHECK_VERSION(4,0,0) */
+#endif /* GTK_CHECK_VERSION(4, 0, 0) */
 
 	// Load the current configuration.
 	rp_cache_tab_reset(tab);
@@ -285,9 +285,9 @@ rp_cache_tab_enable_ui_controls(RpCacheTab *tab, gboolean enable)
 
 	// Set the busy cursor if needed.
 	GtkWidget *const widget = GTK_WIDGET(tab);
-#if GTK_CHECK_VERSION(4,0,0)
+#if GTK_CHECK_VERSION(4, 0, 0)
 	gtk_widget_set_cursor_from_name(widget, (enable ? nullptr : "wait"));
-#else /* !GTK_CHECK_VERSION(4,0,0) */
+#else /* !GTK_CHECK_VERSION(4, 0, 0) */
 	GdkWindow *const gdkWindow = gtk_widget_get_window(widget);
 	if (gdkWindow) {
 		if (enable) {
@@ -297,20 +297,20 @@ rp_cache_tab_enable_ui_controls(RpCacheTab *tab, gboolean enable)
 			// Busy cursor.
 			GdkCursor *const curBusy = gdk_cursor_new_from_name(gtk_widget_get_display(widget), "wait");
 			gdk_window_set_cursor(gdkWindow, curBusy);
-#if GTK_CHECK_VERSION(3,0,0)
+#if GTK_CHECK_VERSION(3, 0, 0)
 			g_object_unref(curBusy);
-#else /* !GTK_CHECK_VERSION(3,0,0) */
+#else /* !GTK_CHECK_VERSION(3, 0, 0) */
 			gdk_cursor_unref(curBusy);
-#endif /* GTK_CHECK_VERSION(3,0,0) */
+#endif /* GTK_CHECK_VERSION(3, 0, 0) */
 		}
 	}
-#endif /* GTK_CHECK_VERSION(4,0,0) */
+#endif /* GTK_CHECK_VERSION(4, 0, 0) */
 }
 
 static inline
 void gtk_progress_bar_set_error(GtkProgressBar *pb, gboolean error)
 {
-#if GTK_CHECK_VERSION(4,0,0)
+#if GTK_CHECK_VERSION(4, 0, 0)
 	// If error, add our CSS class.
 	// Otherwise, remove our CSS class.
 	if (error) {
@@ -318,7 +318,7 @@ void gtk_progress_bar_set_error(GtkProgressBar *pb, gboolean error)
 	} else {
 		gtk_widget_remove_css_class(GTK_WIDGET(pb), "gsrp_pb_error");
 	}
-#elif GTK_CHECK_VERSION(3,0,0)
+#elif GTK_CHECK_VERSION(3, 0, 0)
 	// If error, add our CSS class.
 	// Otherwise, remove our CSS class.
 	GtkStyleContext *const context = gtk_widget_get_style_context(GTK_WIDGET(pb));
@@ -327,7 +327,7 @@ void gtk_progress_bar_set_error(GtkProgressBar *pb, gboolean error)
 	} else {
 		gtk_style_context_remove_class(context, "gsrp_pb_error");
 	}
-#else /* !GTK_CHECK_VERSION(3,0,0) */
+#else /* !GTK_CHECK_VERSION(3, 0, 0) */
 	// Reference: https://www.mail-archive.com/gtk-app-devel-list@gnome.org/msg20073.html
 	// TODO: Probably not optimal, but GTK2 is obsolete, so meh.
 	// NOTE: It causes the theming to break. I suspect the theming
@@ -372,10 +372,10 @@ rp_cache_tab_clear_cache_dir(RpCacheTab *tab, RpCacheDir cache_dir)
 	}
 	gtk_label_set_text(GTK_LABEL(tab->lblCacheStatus), s_label);
 
-#if !GTK_CHECK_VERSION(3,0,0)
+#if !GTK_CHECK_VERSION(3, 0, 0)
 	// GTK2: Clear the styling immediately to prevent shenanigans.
 	gtk_progress_bar_set_error(GTK_PROGRESS_BAR(tab->pbCacheStatus), FALSE);
-#endif /* !GTK_CHECK_VERSION(3,0,0) */
+#endif /* !GTK_CHECK_VERSION(3, 0, 0) */
 
 	// Show the progress controls.
 	gtk_widget_set_visible(tab->lblCacheStatus, true);
@@ -413,15 +413,15 @@ static inline void
 gtk_process_main_event_loop(void)
 {
 	// FIXME: This causes flickering...
-#if GTK_CHECK_VERSION(4,0,0)
+#if GTK_CHECK_VERSION(4, 0, 0)
 	while (g_main_context_pending(nullptr)) {
 		g_main_context_iteration(nullptr, TRUE);
 	}
-#else /* !GTK_CHECK_VERSION(4,0,0) */
+#else /* !GTK_CHECK_VERSION(4, 0, 0) */
 	while (gtk_events_pending()) {
 		gtk_main_iteration();
 	}
-#endif /* GTK_CHECK_VERSION(4,0,0) */
+#endif /* GTK_CHECK_VERSION(4, 0, 0) */
 }
 
 /** CacheCleaner signal handlers **/

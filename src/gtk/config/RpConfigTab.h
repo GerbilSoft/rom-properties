@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * RpConfigTab.h: Configuration tab interface.                             *
  *                                                                         *
- * Copyright (c) 2017-2023 by David Korth.                                 *
+ * Copyright (c) 2017-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -12,7 +12,7 @@
 
 G_BEGIN_DECLS
 
-#if !GTK_CHECK_VERSION(2,91,0)
+#if !GTK_CHECK_VERSION(2, 91, 0)
 // GTK2 needs a GtkAlignment widget to add padding.
 #  define RP_USE_GTK_ALIGNMENT 1
 #endif

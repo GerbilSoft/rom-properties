@@ -16,11 +16,11 @@
 #include "check-uid.hpp"
 
 #include <QtCore/qglobal.h>
-#if QT_VERSION >= QT_VERSION_CHECK(7,0,0)
+#if QT_VERSION >= QT_VERSION_CHECK(7, 0, 0)
 #  error Update for new Qt!
-#elif QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+#elif QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 #  include "ExtractorPluginKF6.hpp"
-#elif QT_VERSION >= QT_VERSION_CHECK(5,0,0)
+#elif QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
 #  include "ExtractorPluginKF5.hpp"
 #else
 #  error Qt is too old!
@@ -112,13 +112,13 @@ void ExtractorPlugin::extract_properties(KFileMetaData::ExtractionResult *result
 				LibRpBase::Property prop_name = prop.name;
 				// NOTE: kfilemetadata_version.h was added in KF5 5.94.0.
 				// Using kcoreaddons_version.h instead.
-#if KCOREADDONS_VERSION < QT_VERSION_CHECK(5,53,0)
+#if KCOREADDONS_VERSION < QT_VERSION_CHECK(5, 53, 0)
 				if (prop_name == LibRpBase::Property::Description) {
 					// KF5 5.53 added Description.
 					// Fall back to Subject since Description isn't available.
 					prop_name = LibRpBase::Property::Subject;
 				}
-#endif /* KCOREADDONS_VERSION < QT_VERSION_CHECK(5,53,0) */
+#endif /* KCOREADDONS_VERSION < QT_VERSION_CHECK(5, 53, 0) */
 
 				if (prop.data.str && prop.data.str[0] != '\0') {
 					result->add(static_cast<KFileMetaData::Property::Property>(prop_name), U82Q(prop.data.str));
@@ -150,7 +150,7 @@ void ExtractorPlugin::extract_properties(KFileMetaData::ExtractionResult *result
 	}
 }
 
-#if KCOREADDONS_VERSION >= QT_VERSION_CHECK(5,76,0)
+#if KCOREADDONS_VERSION >= QT_VERSION_CHECK(5, 76, 0)
 void ExtractorPlugin::extract_image(KFileMetaData::ExtractionResult *result, RomData *romData)
 {
 	// TODO: Get external images. For now, only using internal images.
@@ -170,7 +170,7 @@ void ExtractorPlugin::extract_image(KFileMetaData::ExtractionResult *result, Rom
 	Q_UNUSED(result)
 	Q_UNUSED(romData)
 }
-#endif /* KCOREADDONS_VERSION >= QT_VERSION_CHECK(5,76,0) */
+#endif /* KCOREADDONS_VERSION >= QT_VERSION_CHECK(5, 76, 0) */
 
 void ExtractorPlugin::extract(ExtractionResult *result)
 {
@@ -181,23 +181,23 @@ void ExtractorPlugin::extract(ExtractionResult *result)
 	}
 
 	// Which attributes are required?
-#if KCOREADDONS_VERSION >= QT_VERSION_CHECK(5,76,0)
+#if KCOREADDONS_VERSION >= QT_VERSION_CHECK(5, 76, 0)
 	static constexpr unsigned int mask = ExtractionResult::ExtractMetaData | ExtractionResult::ExtractImageData;
-#else /* KCOREADDONS_VERSION < QT_VERSION_CHECK(5,76,0) */
+#else /* KCOREADDONS_VERSION < QT_VERSION_CHECK(5, 76, 0) */
 	static constexpr unsigned int mask = ExtractionResult::ExtractMetaData;
-#endif /* KCOREADDONS_VERSION >= QT_VERSION_CHECK(5,76,0) */
+#endif /* KCOREADDONS_VERSION >= QT_VERSION_CHECK(5, 76, 0) */
 	unsigned int attrs;
 	switch (flags & mask) {
 		case ExtractionResult::ExtractMetaData:
 			// Only extract metadata.
 			attrs = RomDataFactory::RDA_HAS_METADATA;
 			break;
-#if KCOREADDONS_VERSION >= QT_VERSION_CHECK(5,76,0)
+#if KCOREADDONS_VERSION >= QT_VERSION_CHECK(5, 76, 0)
 		case ExtractionResult::ExtractImageData:
 			// Only extract images.
 			attrs = RomDataFactory::RDA_HAS_THUMBNAIL;
 			break;
-#endif /* KCOREADDONS_VERSION >= QT_VERSION_CHECK(5,76,0) */
+#endif /* KCOREADDONS_VERSION >= QT_VERSION_CHECK(5, 76, 0) */
 		default:
 			// Multiple things to extract.
 			attrs = 0;
@@ -265,12 +265,12 @@ void ExtractorPlugin::extract(ExtractionResult *result)
 		extract_properties(result, romData.get());
 	}
 
-#if KCOREADDONS_VERSION >= QT_VERSION_CHECK(5,76,0)
+#if KCOREADDONS_VERSION >= QT_VERSION_CHECK(5, 76, 0)
 	// KFileMetaData 5.76.0 added images.
 	if (flags & ExtractionResult::ExtractImageData) {
 		extract_image(result, romData.get());
 	}
-#endif /* KCOREADDONS_VERSION >= QT_VERSION_CHECK(5,76,0) */
+#endif /* KCOREADDONS_VERSION >= QT_VERSION_CHECK(5, 76, 0) */
 
 	// Finished extracting metadata.
 }

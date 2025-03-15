@@ -62,10 +62,10 @@ rp_xattr_view_class_init(RpXAttrViewClass *klass)
 static void
 rp_xattr_view_init(RpXAttrView *widget)
 {
-#if GTK_CHECK_VERSION(3,0,0)
+#if GTK_CHECK_VERSION(3, 0, 0)
 	// Make this a VBox.
 	gtk_orientable_set_orientation(GTK_ORIENTABLE(widget), GTK_ORIENTATION_VERTICAL);
-#endif /* GTK_CHECK_VERSION(3,0,0) */
+#endif /* GTK_CHECK_VERSION(3, 0, 0) */
 
 	// Ext2 attributes
 	widget->fraExt2Attributes = gtk_frame_new(C_("XAttrView", "Ext2 Attributes"));
@@ -96,38 +96,38 @@ rp_xattr_view_init(RpXAttrView *widget)
 	gtk_widget_set_name(widget->fraXAttr, "fraXAttr");
 
 	// Scroll area for the GtkTreeView.
-#if GTK_CHECK_VERSION(4,0,0)
+#if GTK_CHECK_VERSION(4, 0, 0)
 	GtkWidget *const scrlXAttr = gtk_scrolled_window_new();
 	gtk_scrolled_window_set_has_frame(GTK_SCROLLED_WINDOW(scrlXAttr), true);
-#else /* !GTK_CHECK_VERSION(4,0,0) */
+#else /* !GTK_CHECK_VERSION(4, 0, 0) */
 	GtkWidget *const scrlXAttr = gtk_scrolled_window_new(nullptr, nullptr);
 	gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(scrlXAttr), GTK_SHADOW_IN);
 #endif /* GTK_CHECK_VERSION */
 	gtk_widget_set_name(scrlXAttr, "scrlXAttr");
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrlXAttr),
 		GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
-#if GTK_CHECK_VERSION(2,91,1)
+#if GTK_CHECK_VERSION(2, 91, 1)
 	gtk_widget_set_halign(scrlXAttr, GTK_ALIGN_FILL);
 	gtk_widget_set_valign(scrlXAttr, GTK_ALIGN_FILL);
 	gtk_widget_set_hexpand(scrlXAttr, TRUE);
 	gtk_widget_set_vexpand(scrlXAttr, TRUE);
 	gtk_widget_set_margin(scrlXAttr, 6);	// TODO: GTK2 version
-#endif /* GTK_CHECK_VERSION(2,91,1) */
+#endif /* GTK_CHECK_VERSION(2, 91, 1) */
 
 	// Initialize the GtkTreeView (GTK2/GTK3) or GtkColumnView (GTK4).
 	rp_xattr_view_init_posix_xattrs_widgets(widget, GTK_SCROLLED_WINDOW(scrlXAttr));
 
-#if GTK_CHECK_VERSION(4,0,0)
+#if GTK_CHECK_VERSION(4, 0, 0)
 	gtk_box_append(GTK_BOX(vboxExt2Attributes), widget->ext2AttrView);
 	gtk_box_append(GTK_BOX(vboxXfsAttributes), widget->xfsAttrView);
 	gtk_box_append(GTK_BOX(vboxDosAttributes), widget->dosAttrView);
-#else /* !GTK_CHECK_VERSION(4,0,0) */
+#else /* !GTK_CHECK_VERSION(4, 0, 0) */
 	gtk_box_pack_start(GTK_BOX(vboxExt2Attributes), widget->ext2AttrView, FALSE, FALSE, 0);
 	gtk_box_pack_start(GTK_BOX(vboxXfsAttributes), widget->xfsAttrView, FALSE, FALSE, 0);
 	gtk_box_pack_start(GTK_BOX(vboxDosAttributes), widget->dosAttrView, FALSE, FALSE, 0);
-#endif /* GTK_CHECK_VERSION(4,0,0) */
+#endif /* GTK_CHECK_VERSION(4, 0, 0) */
 
-#if GTK_CHECK_VERSION(2,91,0)
+#if GTK_CHECK_VERSION(2, 91, 0)
 	gtk_widget_set_margin(widget->fraExt2Attributes, 6);
 	gtk_widget_set_margin(widget->fraXfsAttributes, 6);
 	gtk_widget_set_margin(widget->fraDosAttributes, 6);
@@ -139,7 +139,7 @@ rp_xattr_view_init(RpXAttrView *widget)
 	gtk_frame_set_child(GTK_FRAME(widget->fraXfsAttributes), vboxXfsAttributes);
 	gtk_frame_set_child(GTK_FRAME(widget->fraDosAttributes), vboxDosAttributes);
 	gtk_frame_set_child(GTK_FRAME(widget->fraXAttr), scrlXAttr);
-#else /* !GTK_CHECK_VERSION(2,91,0) */
+#else /* !GTK_CHECK_VERSION(2, 91, 0) */
 	// NOTE: The extra alignments outside the frame reduce the frame widths.
 	// This only affects GTK2, so meh.
 	GtkWidget *const alignVBoxExt2Attributes = gtk_alignment_new(0.0f, 0.0f, 0.0f, 0.0f);
@@ -193,9 +193,9 @@ rp_xattr_view_init(RpXAttrView *widget)
 	gtk_widget_show(alignFraXAttr);
 	gtk_alignment_set_padding(GTK_ALIGNMENT(alignFraXAttr), 6, 6, 6, 6);
 	gtk_container_add(GTK_CONTAINER(alignFraXAttr), widget->fraXAttr);
-#endif /* GTK_CHECK_VERSION(2,91,0) */
+#endif /* GTK_CHECK_VERSION(2, 91, 0) */
 
-#if GTK_CHECK_VERSION(4,0,0)
+#if GTK_CHECK_VERSION(4, 0, 0)
 	// Default to hidden. (GTK4 defaults to visible)
 	gtk_widget_set_visible(widget->fraExt2Attributes, false);
 	gtk_widget_set_visible(widget->fraXfsAttributes, false);
@@ -206,18 +206,18 @@ rp_xattr_view_init(RpXAttrView *widget)
 	gtk_box_append(GTK_BOX(widget), widget->fraXfsAttributes);
 	gtk_box_append(GTK_BOX(widget), widget->fraDosAttributes);
 	gtk_box_append(GTK_BOX(widget), widget->fraXAttr);	// TODO: Expand?
-#else /* !GTK_CHECK_VERSION(4,0,0) */
-#  if GTK_CHECK_VERSION(2,91,0)
+#else /* !GTK_CHECK_VERSION(4, 0, 0) */
+#  if GTK_CHECK_VERSION(2, 91, 0)
 	gtk_box_pack_start(GTK_BOX(widget), widget->fraExt2Attributes, FALSE, FALSE, 0);
 	gtk_box_pack_start(GTK_BOX(widget), widget->fraXfsAttributes, FALSE, FALSE, 0);
 	gtk_box_pack_start(GTK_BOX(widget), widget->fraDosAttributes, FALSE, FALSE, 0);
 	gtk_box_pack_start(GTK_BOX(widget), widget->fraXAttr, TRUE, TRUE, 0);
-#  else /* !GTK_CHECK_VERSION(2,91,0) */
+#  else /* !GTK_CHECK_VERSION(2, 91, 0) */
 	gtk_box_pack_start(GTK_BOX(widget), alignFraExt2Attributes, FALSE, FALSE, 0);
 	gtk_box_pack_start(GTK_BOX(widget), alignFraXfsAttributes, FALSE, FALSE, 0);
 	gtk_box_pack_start(GTK_BOX(widget), alignFraDosAttributes, FALSE, FALSE, 0);
 	gtk_box_pack_start(GTK_BOX(widget), alignFraXAttr, TRUE, TRUE, 0);	// FIXME: Expand isn't working here.
-#  endif /* GTK_CHECK_VERSION(2,91,0) */
+#  endif /* GTK_CHECK_VERSION(2, 91, 0) */
 	gtk_widget_show(vboxExt2Attributes);
 	gtk_widget_show(vboxXfsAttributes);
 	gtk_widget_show(vboxDosAttributes);
@@ -226,7 +226,7 @@ rp_xattr_view_init(RpXAttrView *widget)
 	gtk_widget_show(widget->dosAttrView);
 	gtk_widget_show(scrlXAttr);
 	gtk_widget_show(widget->treeView);
-#endif /* GTK_CHECK_VERSION(4,0,0) */
+#endif /* GTK_CHECK_VERSION(4, 0, 0) */
 }
 
 /**

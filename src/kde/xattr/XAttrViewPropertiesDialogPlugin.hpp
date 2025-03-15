@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                             *
  * XAttrViewPropertiesDialogPlugin.hpp: KPropertiesDialogPlugin implementation *
  *                                                                             *
- * Copyright (c) 2016-2024 by David Korth.                                     *
+ * Copyright (c) 2016-2025 by David Korth.                                     *
  * SPDX-License-Identifier: GPL-2.0-or-later                                   *
  *******************************************************************************/
 
@@ -10,11 +10,11 @@
 
 #include <QtCore/qglobal.h>
 
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 #  include <kpropertiesdialogplugin.h>
-#else /* QT_VERSION < QT_VERSION_CHECK(6,0,0) */
+#else /* QT_VERSION < QT_VERSION_CHECK(6, 0, 0) */
 #  include <kpropertiesdialog.h>
-#endif /* QT_VERSION >= QT_VERSION_CHECK(6,0,0) */
+#endif /* QT_VERSION >= QT_VERSION_CHECK(6, 0, 0) */
 
 class XAttrView;
 

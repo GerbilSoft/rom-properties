@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * MessageSound.cpp: Message sound effects class.                          *
  *                                                                         *
- * Copyright (c) 2018-2024 by David Korth.                                 *
+ * Copyright (c) 2018-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -12,7 +12,7 @@
 #include <QtCore/QPluginLoader>
 #include <QtCore/QVariant>
 
-#if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
 #  include <kmessageboxnotifyinterface.h>
 #else
 #  include <knotification.h>
@@ -30,7 +30,7 @@ namespace MessageSound {
  */
 void play(QMessageBox::Icon notificationType, const QString &message, QWidget *parent)
 {
-#if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
 	QPluginLoader lib(QStringLiteral(RP_KDE_LOWER "/FrameworkIntegrationPlugin"));
 	QObject *const rootObj = lib.instance();
 	if (rootObj) {
@@ -40,7 +40,7 @@ void play(QMessageBox::Icon notificationType, const QString &message, QWidget *p
 			iface->sendNotification(notificationType, message, parent);
 		}
 	}
-#else /* QT_VERSION < QT_VERSION_CHECK(5,0,0) */
+#else /* QT_VERSION < QT_VERSION_CHECK(5, 0, 0) */
 	// FIXME: KNotification::event() doesn't seem to work.
 	// This might not be too important nowadays, since KDE4 is ancient...
 	QString messageType;

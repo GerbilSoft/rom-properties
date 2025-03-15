@@ -14,9 +14,9 @@
 #include "stdboolx.h"
 
 // Use the new GtkFileDialog class on GTK 4.10 and later.
-#if GTK_CHECK_VERSION(4,9,1)
+#if GTK_CHECK_VERSION(4, 9, 1)
 #  define USE_GTK4_FILE_DIALOG 1
-#endif /* GTK_CHECK_VERSION(4,9,1) */
+#endif /* GTK_CHECK_VERSION(4, 9, 1) */
 
 // Simple struct for passing multiple values to the rpGtk_getFileName_int() callback functions.
 typedef struct _rpGtk_getFileName_int_callback_data_t {
@@ -250,11 +250,11 @@ rpGtk_getFileName_fileDialog_response(GtkFileChooserDialog *fileDialog, gint res
 	}
 
 	// Dialog is no longer needed.
-#if GTK_CHECK_VERSION(4,0,0)
+#if GTK_CHECK_VERSION(4, 0, 0)
 	gtk_window_destroy(GTK_WINDOW(fileDialog));
-#else /* !GTK_CHECK_VERSION(4,0,0) */
+#else /* !GTK_CHECK_VERSION(4, 0, 0) */
 	gtk_widget_destroy(GTK_WIDGET(fileDialog));
-#endif /* GTK_CHECK_VERSION(4,0,0) */
+#endif /* GTK_CHECK_VERSION(4, 0, 0) */
 
 	// Run the callback.
 	// NOTE: Callback function takes ownership of the GFile.
@@ -301,7 +301,7 @@ static int rpGtk_getFileName_int(const rpGtk_getFileName_t *gfndata, bool bSave)
 	gtk_widget_set_name(fileDialog, "rpGtk_getFileName");
 #endif /* USE_GTK4_FILE_DIALOG */
 
-#if GTK_CHECK_VERSION(4,0,0)
+#if GTK_CHECK_VERSION(4, 0, 0)
 	// GTK4, GtkFileChooserDialog and/or GtkFileDialog
 	// Set the initial folder. (A GFile is required.)
 	if (gfndata->init_dir) {
@@ -315,7 +315,7 @@ static int rpGtk_getFileName_int(const rpGtk_getFileName_t *gfndata, bool bSave)
 			g_object_unref(set_file);
 		}
 	}
-#else /* !GTK_CHECK_VERSION(4,0,0) */
+#else /* !GTK_CHECK_VERSION(4, 0, 0) */
 	// GTK2/GTK3: Require overwrite confirmation. (save dialogs only)
 	// NOTE: GTK4 has *mandatory* overwrite confirmation.
 	// Reference: https://gitlab.gnome.org/GNOME/gtk/-/commit/063ad28b1a06328e14ed72cc4b99cd4684efed12

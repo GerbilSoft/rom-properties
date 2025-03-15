@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * plugin-helper.h: Plugin helper macros.                                  *
  *                                                                         *
- * Copyright (c) 2017-2023 by David Korth.                                 *
+ * Copyright (c) 2017-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -22,7 +22,7 @@ G_BEGIN_DECLS
 #  define SHOW_INIT_MESSAGE() do { } while (0)
 #endif
 
-#if GTK_CHECK_VERSION(3,0,0)
+#if GTK_CHECK_VERSION(3, 0, 0)
 #  define VERIFY_GTK_VERSION() do { \
 	/** \
 	 * Make sure the correct GTK version is loaded. \
@@ -36,9 +36,9 @@ G_BEGIN_DECLS
 		return; \
 	} \
 } while (0)
-#else /* !GTK_CHECK_VERSION(3,0,0) */
+#else /* !GTK_CHECK_VERSION(3, 0, 0) */
 #  define VERIFY_GTK_VERSION() do { } while (0)
-#endif /* GTK_CHECK_VERSION(3,0,0) */
+#endif /* GTK_CHECK_VERSION(3, 0, 0) */
 
 #define DLSYM(symvar, symdlopen) do { \
 	pfn_##symvar = (__typeof__(pfn_##symvar))dlsym(libextension_so, #symdlopen); \

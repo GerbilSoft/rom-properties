@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * ConfigDialog.hpp: Configuration dialog.                                 *
  *                                                                         *
- * Copyright (c) 2017-2024 by David Korth.                                 *
+ * Copyright (c) 2017-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -41,9 +41,9 @@ using std::array;
 
 // Using GtkDialog on GTK2/GTK3.
 // For GTK4, using GtkWindow.
-#if !GTK_CHECK_VERSION(4,0,0)
+#if !GTK_CHECK_VERSION(4, 0, 0)
 #  define USE_GTK_DIALOG 1
-#endif /* !GTK_CHECK_VERSION(4,0,0) */
+#endif /* !GTK_CHECK_VERSION(4, 0, 0) */
 
 #define CONFIG_DIALOG_RESPONSE_RESET		0
 #define CONFIG_DIALOG_RESPONSE_DEFAULTS		1
@@ -159,10 +159,10 @@ rp_config_dialog_init(RpConfigDialog *dialog)
 	gtk_window_set_resizable(GTK_WINDOW(dialog), TRUE);
 
 	// TODO: Custom icon? For now, using "media-flash".
-#if GTK_CHECK_VERSION(4,0,0)
+#if GTK_CHECK_VERSION(4, 0, 0)
 	// GTK4 has a very easy way to set an icon using the system theme.
 	gtk_window_set_icon_name(GTK_WINDOW(dialog), "media-flash");
-#else /* !GTK_CHECK_VERSION(4,0,0) */
+#else /* !GTK_CHECK_VERSION(4, 0, 0) */
 	GtkIconTheme *const iconTheme = gtk_icon_theme_get_default();
 
 	// Set the window icon.
@@ -179,13 +179,13 @@ rp_config_dialog_init(RpConfigDialog *dialog)
 	}
 	gtk_window_set_icon_list(GTK_WINDOW(dialog), icon_list);
 	g_list_free_full(icon_list, g_object_unref);
-#endif /* GTK_CHECK_VERSION(4,0,0) */
+#endif /* GTK_CHECK_VERSION(4, 0, 0) */
 
-#if GTK_CHECK_VERSION(4,0,0)
+#if GTK_CHECK_VERSION(4, 0, 0)
 #  define GTK_WIDGET_SHOW_GTK3(widget)
-#else /* !GTK_CHECK_VERSION(4,0,0) */
+#else /* !GTK_CHECK_VERSION(4, 0, 0) */
 #  define GTK_WIDGET_SHOW_GTK3(widget) gtk_widget_show(widget)
-#endif /* GTK_CHECK_VERSION(4,0,0) */
+#endif /* GTK_CHECK_VERSION(4, 0, 0) */
 
 	// Dialog content area
 #ifdef USE_GTK_DIALOG
@@ -278,11 +278,11 @@ rp_config_dialog_init(RpConfigDialog *dialog)
 		gtk_notebook_append_page(GTK_NOTEBOOK(dialog->tabWidget), alignment, tab_label);
 #endif /* RP_USE_GTK_ALIGNMENT */
 
-#if GTK_CHECK_VERSION(4,0,0)
+#if GTK_CHECK_VERSION(4, 0, 0)
 		// GtkNotebook took a reference to the tab label,
 		// so we don't need to keep our reference.
 		g_object_unref(tab_label);
-#endif /* GTK_CHECK_VERSION(4,0,0) */
+#endif /* GTK_CHECK_VERSION(4, 0, 0) */
 	}
 
 	// Show the GtkNotebook.
@@ -432,14 +432,14 @@ rp_config_dialog_close(RpConfigDialog *dialog, gpointer user_data)
 {
 	RP_UNUSED(user_data);
 
-#if GTK_CHECK_VERSION(3,9,8)
+#if GTK_CHECK_VERSION(3, 9, 8)
 	gtk_window_close(GTK_WINDOW(dialog));
-#else /* !GTK_CHECK_VERSION(3,9,8) */
+#else /* !GTK_CHECK_VERSION(3, 9, 8) */
 	gtk_widget_destroy(GTK_WIDGET(dialog));
 	// NOTE: This doesn't send a delete-event.
 	// HACK: Call gtk_main_quit() here.
 	gtk_main_quit();
-#endif /* GTK_CHECK_VERSION(3,9,8) */
+#endif /* GTK_CHECK_VERSION(3, 9, 8) */
 }
 
 /**

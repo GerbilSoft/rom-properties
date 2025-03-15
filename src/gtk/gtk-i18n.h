@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * gtk-i18n.h: Standard strings localized by GTK.                          *
  *                                                                         *
- * Copyright (c) 2017-2024 by David Korth.                                 *
+ * Copyright (c) 2017-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -14,19 +14,19 @@
 #if defined(ENABLE_NLS) && ENABLE_NLS
 
 // i18n is enabled. Use GTK's built-in localization.
-#if GTK_CHECK_VERSION(5,0,0)
+#if GTK_CHECK_VERSION(5, 0, 0)
 #  error No GTK5 support
-#elif GTK_CHECK_VERSION(4,0,0)
+#elif GTK_CHECK_VERSION(4, 0, 0)
 #  define GTK_I18N_DOMAIN "gtk40"
-#elif GTK_CHECK_VERSION(3,0,0)
+#elif GTK_CHECK_VERSION(3, 0, 0)
 #  define GTK_I18N_DOMAIN "gtk30"
-#elif GTK_CHECK_VERSION(2,0,0)
+#elif GTK_CHECK_VERSION(2, 0, 0)
 #  define GTK_I18N_DOMAIN "gtk20"
 #else
 #  error No GTK1 support
 #endif
 
-#if GTK_CHECK_VERSION(3,0,0)
+#if GTK_CHECK_VERSION(3, 0, 0)
 // GTK3 and later: No context
 #define GTK_I18N_STR_CANCEL	dgettext(GTK_I18N_DOMAIN, "_Cancel")
 #define GTK_I18N_STR_APPLY	dgettext(GTK_I18N_DOMAIN, "_Apply")
@@ -34,7 +34,7 @@
 #define GTK_I18N_STR_SAVE	dgettext(GTK_I18N_DOMAIN, "_Save")
 #define GTK_I18N_STR_OPEN	dgettext(GTK_I18N_DOMAIN, "_Open")
 #define GTK_I18N_STR_CLOSE	dgettext(GTK_I18N_DOMAIN, "_Close")
-#else /* !GTK_CHECK_VERSION(3,0,0) */
+#else /* !GTK_CHECK_VERSION(3, 0, 0) */
 // GTK2: Context is "Stock label"
 #define GTK_I18N_STR_CANCEL	dpgettext(GTK_I18N_DOMAIN, "Stock label", "_Cancel")
 #define GTK_I18N_STR_APPLY	dpgettext(GTK_I18N_DOMAIN, "Stock label", "_Apply")
@@ -42,7 +42,7 @@
 #define GTK_I18N_STR_SAVE	dpgettext(GTK_I18N_DOMAIN, "Stock label", "_Save")
 #define GTK_I18N_STR_OPEN	dpgettext(GTK_I18N_DOMAIN, "Stock label", "_Open")
 #define GTK_I18N_STR_CLOSE	dpgettext(GTK_I18N_DOMAIN, "Stock label", "_Close")
-#endif /* GTK_CHECK_VERSION(3,0,0) */
+#endif /* GTK_CHECK_VERSION(3, 0, 0) */
 
 #else /* !ENABLE_NLS */
 

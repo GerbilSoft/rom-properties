@@ -25,7 +25,7 @@ using std::string;
 // Qt includes
 #include <QtCore/QThread>
 
-#if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
 // KIO version.
 // NOTE: Only available as a compile-time constant.
 #  include <kio_version.h>
@@ -169,7 +169,7 @@ void AboutTabPrivate::initProgramTitleText(void)
 	// Program icon.
 	// TODO: Make a custom icon instead of reusing the system icon.
 	// TODO: Fallback for older Qt?
-#if QT_VERSION >= QT_VERSION_CHECK(4,6,0)
+#if QT_VERSION >= QT_VERSION_CHECK(4, 6, 0)
 	const QIcon icon = QIcon::fromTheme(QLatin1String("media-flash"));
 	if (!icon.isNull()) {
 		// Get the 128x128 icon.
@@ -179,7 +179,7 @@ void AboutTabPrivate::initProgramTitleText(void)
 		// No icon...
 		ui.lblLogo->hide();
 	}
-#endif /* QT_VERSION >= QT_VERSION_CHECK(4,6,0) */
+#endif /* QT_VERSION >= QT_VERSION_CHECK(4, 6, 0) */
 
 	const char *const programVersion =
 		AboutTabText::getProgramInfoString(AboutTabText::ProgramInfoStringID::ProgramVersion);
@@ -329,7 +329,7 @@ void AboutTabPrivate::initLibrariesTab(void)
 		"Copyright (C) 1995-2025 The Qt Company Ltd. and/or its subsidiaries." BR
 		"<a href='https://www.qt.io/'>https://www.qt.io/</a>" BR;
 	// TODO: Check QT_VERSION at runtime?
-#if QT_VERSION >= QT_VERSION_CHECK(4,5,0)
+#if QT_VERSION >= QT_VERSION_CHECK(4, 5, 0)
 	sLibraries += fmt::format(sLicenses, "GNU LGPL v2.1+, GNU GPL v2+");
 #else
 	sLibraries += fmt::format(sLicense, "GNU GPL v2+");
@@ -337,14 +337,14 @@ void AboutTabPrivate::initLibrariesTab(void)
 
 	/** KDE **/
 	sLibraries += BR BR;
-#if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
 	// NOTE: Can't obtain the runtime version for KF5 easily...
 	sLibraries += fmt::format(sCompiledWith, "KDE Frameworks " KIO_VERSION_STRING);
 	sLibraries += BR
 		"Copyright (C) 1996-2022 KDE contributors." BR
 		"<a href='https://www.kde.org/'>https://www.kde.org/</a>" BR;
 	sLibraries += fmt::format(sLicense, "GNU LGPL v2.1+");
-#else /* QT_VERSION < QT_VERSION_CHECK(5,0,0) */
+#else /* QT_VERSION < QT_VERSION_CHECK(5, 0, 0) */
 	string kdeVersion = "KDE Libraries ";
 	kdeVersion += KDE::versionString();
 	sLibraries += fmt::format(sCompiledWith, "KDE Libraries " KDE_VERSION_STRING);
@@ -353,7 +353,7 @@ void AboutTabPrivate::initLibrariesTab(void)
 	sLibraries += BR
 		"Copyright (C) 1996-2017 KDE contributors." BR;
 	sLibraries += fmt::format(sLicense, "GNU LGPL v2.1+");
-#endif /* QT_VERSION >= QT_VERSION_CHECK(5,0,0) */
+#endif /* QT_VERSION >= QT_VERSION_CHECK(5, 0, 0) */
 
 	/** zlib **/
 #ifdef HAVE_ZLIB

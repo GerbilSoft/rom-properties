@@ -3,7 +3,7 @@
  * XAttrView_gtk3.cpp: Extended attribute viewer property page.            *
  * (GTK2/GTK3-specific)                                                    *
  *                                                                         *
- * Copyright (c) 2017-2024 by David Korth.                                 *
+ * Copyright (c) 2017-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -37,13 +37,13 @@ rp_xattr_view_init_posix_xattrs_widgets(struct _RpXAttrView *widget, GtkScrolled
 	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(widget->treeView), true);
 	gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(scrlXAttr), widget->treeView);
 
-#if !GTK_CHECK_VERSION(3,0,0)
+#if !GTK_CHECK_VERSION(3, 0, 0)
 	// GTK+ 2.x: Use the "rules hint" for alternating row colors.
 	// Deprecated in GTK+ 3.14 (and removed in GTK4), but it doesn't
 	// work with GTK+ 3.x anyway.
 	// TODO: GTK4's GtkListView might have a similar function.
 	gtk_tree_view_set_rules_hint(GTK_TREE_VIEW(widget->treeView), true);
-#endif /* !GTK_CHECK_VERSION(3,0,0) */
+#endif /* !GTK_CHECK_VERSION(3, 0, 0) */
 
 	// Column titles
 	static const array<const char*, XATTR_COL_MAX> column_titles = {{

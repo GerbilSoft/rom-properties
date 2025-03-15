@@ -14,13 +14,13 @@ G_BEGIN_DECLS
 
 #define RP_TYPE_ACHIEVEMENTS_TAB (rp_achievements_tab_get_type())
 
-#if GTK_CHECK_VERSION(3,0,0)
+#if GTK_CHECK_VERSION(3, 0, 0)
 #  define _RpAchievementsTab_super	GtkBox
 #  define _RpAchievementsTab_superClass	GtkBoxClass
-#else /* !GTK_CHECK_VERSION(3,0,0) */
+#else /* !GTK_CHECK_VERSION(3, 0, 0) */
 #  define _RpAchievementsTab_super	GtkVBox
 #  define _RpAchievementsTab_superClass	GtkVBoxClass
-#endif /* GTK_CHECK_VERSION(3,0,0) */
+#endif /* GTK_CHECK_VERSION(3, 0, 0) */
 
 G_DECLARE_FINAL_TYPE(RpAchievementsTab, rp_achievements_tab, RP, ACHIEVEMENTS_TAB, _RpAchievementsTab_super)
 

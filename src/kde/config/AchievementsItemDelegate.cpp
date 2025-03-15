@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE)                              *
  * AchievementsItemDelegate.cpp: Achievements item delegate for rp-config. *
  *                                                                         *
- * Copyright (c) 2013-2024 by David Korth.                                 *
+ * Copyright (c) 2013-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -101,9 +101,9 @@ void AchievementsItemDelegate::paint(QPainter *painter,
 	}
 
 	const QRect textRect = option.rect;
-#if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
 	QStyleOptionViewItem bgOption = option;
-#else /* QT_VERSION < QT_VERSION_CHECK(5,0,0) */
+#else /* QT_VERSION < QT_VERSION_CHECK(5, 0, 0) */
 	QStyleOptionViewItemV4 bgOption = option;
 #endif
 	// TODO: initStyleOption()?
@@ -232,9 +232,9 @@ QSize AchievementsItemDelegate::sizeHint(const QStyleOptionViewItem &option,
 		s_ach.mid(nl_pos + 1)
 	}};
 
-#if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
 	const QStyleOptionViewItem &bgOption = option;
-#else /* QT_VERSION < QT_VERSION_CHECK(5,0,0) */
+#else /* QT_VERSION < QT_VERSION_CHECK(5, 0, 0) */
 	QStyleOptionViewItemV4 bgOption = option;
 #endif
 	// TODO: initStyleOption()?

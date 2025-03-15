@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * RpQt.cpp: Qt wrappers for some libromdata functionality.                *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -56,11 +56,11 @@ QString rpFileDialogFilterToQt(const char *filter)
 	if (!filter || filter[0] == '\0')
 		return qs_ret;
 
-#if QT_VERSION >= QT_VERSION_CHECK(5,14,0)
+#if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
 #  define Qt_KeepEmptyParts Qt::KeepEmptyParts
-#else /* QT_VERSION < QT_VERSION_CHECK(5,14,0) */
+#else /* QT_VERSION < QT_VERSION_CHECK(5, 14, 0) */
 #  define Qt_KeepEmptyParts QString::KeepEmptyParts
-#endif /* QT_VERSION >= QT_VERSION_CHECK(5,14,0) */
+#endif /* QT_VERSION >= QT_VERSION_CHECK(5, 14, 0) */
 
 	// Using QString::split() instead of strtok_r() so we don't
 	// have to manually strdup() the filter.

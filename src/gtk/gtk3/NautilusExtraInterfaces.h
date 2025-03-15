@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ 3.x)                             *
  * NautilusExtraInterfaces.h: Extra interfaces in Nautilus-based file managers *
  *                                                                             *
- * Copyright (c) 2017-2023 by David Korth.                                     *
+ * Copyright (c) 2017-2025 by David Korth.                                     *
  * SPDX-License-Identifier: GPL-2.0-or-later                                   *
  *******************************************************************************/
 
@@ -14,14 +14,14 @@
 
 G_BEGIN_DECLS
 
-#if GTK_CHECK_VERSION(3,0,0) && !GTK_CHECK_VERSION(4,0,0)
+#if GTK_CHECK_VERSION(3, 0, 0) && !GTK_CHECK_VERSION(4, 0, 0)
 // NOTE: We only have extra interfaces in GTK3 right now.
 #  define HAVE_EXTRA_INTERFACES 1
 // Caja is GTK3 only for now.
 #  define HAVE_CAJA_INTERFACES 1
 // Nemo is GTK3 only for now.
 #  define HAVE_NEMO_INTERFACES 1
-#endif /* GTK_CHECK_VERSION(3,0,0) && !GTK_CHECK_VERSION(4,0,0) */
+#endif /* GTK_CHECK_VERSION(3, 0, 0) && !GTK_CHECK_VERSION(4, 0, 0) */
 
 #ifdef HAVE_CAJA_INTERFACES
 // Caja-specific interfaces

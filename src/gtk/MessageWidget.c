@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * MessageWidget.c: Message widget (similar to KMessageWidget)             *
  *                                                                         *
- * Copyright (c) 2017-2024 by David Korth.                                 *
+ * Copyright (c) 2017-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -27,11 +27,11 @@ typedef enum {
 
 // GtkRevealer was added in GTK 3.10.
 // (This is also our minimum GTK3 version.)
-#if GTK_CHECK_VERSION(3,9,0)
+#if GTK_CHECK_VERSION(3, 9, 0)
 #  define USE_GTK_REVEALER 1
-#endif /* GTK_CHECK_VERSION(3,9,0) */
+#endif /* GTK_CHECK_VERSION(3, 9, 0) */
 
-#if !GTK_CHECK_VERSION(3,9,0)
+#if !GTK_CHECK_VERSION(3, 9, 0)
 // GtkRevealerTransitionType enumeration registration
 // TODO: rp-gtk-enums instead?
 static GType
@@ -57,7 +57,7 @@ gtk_revealer_transition_type_get_type(void)
 	return static_g_enum_type_id;
 }
 #  define GTK_TYPE_REVEALER_TRANSITION_TYPE gtk_revealer_transition_type_get_type()
-#endif /* !GTK_CHECK_VERSION(3,9,0) */
+#endif /* !GTK_CHECK_VERSION(3, 9, 0) */
 
 static void	rp_message_widget_set_property	(GObject	*object,
 						 guint		 prop_id,
@@ -78,17 +78,17 @@ static void	rp_message_widget_notify_child_revealed(GtkRevealer	*revealer,
 							RpMessageWidget	*widget);
 #endif /* USE_GTK_REVEALER */
 
-#if GTK_CHECK_VERSION(3,0,0)
+#if GTK_CHECK_VERSION(3, 0, 0)
 typedef GtkBoxClass superclass;
 typedef GtkBox super;
 #define GTK_TYPE_SUPER GTK_TYPE_BOX
-#else /* !GTK_CHECK_VERSION(3,0,0) */
+#else /* !GTK_CHECK_VERSION(3, 0, 0) */
 // Top class is GtkEventBox, since we can't
 // set the background color of GtkHBox.
 typedef GtkEventBoxClass superclass;
 typedef GtkEventBox super;
 #define GTK_TYPE_SUPER GTK_TYPE_EVENT_BOX
-#endif /* GTK_CHECK_VERSION(3,0,0) */
+#endif /* GTK_CHECK_VERSION(3, 0, 0) */
 
 static GParamSpec *props[PROP_LAST];
 
@@ -166,20 +166,20 @@ rp_message_widget_class_init(RpMessageWidgetClass *klass)
 	// Install the properties.
 	g_object_class_install_properties(gobject_class, PROP_LAST, props);
 
-#if GTK_CHECK_VERSION(3,0,0)
+#if GTK_CHECK_VERSION(3, 0, 0)
 	// Initialize MessageWidget CSS.
 	GtkCssProvider *const provider = gtk_css_provider_new();
 	GdkDisplay *const display = gdk_display_get_default();
-#  if GTK_CHECK_VERSION(4,0,0)
+#  if GTK_CHECK_VERSION(4, 0, 0)
 	// GdkScreen no longer exists in GTK4.
 	// Style context providers are added directly to GdkDisplay instead.
 	gtk_style_context_add_provider_for_display(display,
 		GTK_STYLE_PROVIDER(provider), GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
-#  else /* !GTK_CHECK_VERSION(4,0,0) */
+#  else /* !GTK_CHECK_VERSION(4, 0, 0) */
 	GdkScreen *const screen = gdk_display_get_default_screen(display);
 	gtk_style_context_add_provider_for_screen(screen,
 		GTK_STYLE_PROVIDER(provider), GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
-#  endif /* !GTK_CHECK_VERSION(4,0,0) */
+#  endif /* !GTK_CHECK_VERSION(4, 0, 0) */
 
 	static const char css_MessageWidget[] =
 		"@define-color gsrp_color_info rgb(61,174,233);\n"
@@ -220,7 +220,7 @@ rp_message_widget_class_init(RpMessageWidgetClass *klass)
 
 	GTK_CSS_PROVIDER_LOAD_FROM_STRING(GTK_CSS_PROVIDER(provider), css_MessageWidget);
 	g_object_unref(provider);
-#endif /* GTK_CHECK_VERSION(3,0,0) */
+#endif /* GTK_CHECK_VERSION(3, 0, 0) */
 }
 
 static void
@@ -228,13 +228,13 @@ rp_message_widget_init(RpMessageWidget *widget)
 {
 	GtkBox *hbox;
 
-#if GTK_CHECK_VERSION(4,0,0)
+#if GTK_CHECK_VERSION(4, 0, 0)
 	// Hide the MessageWidget initially.
 	// It'll be shown when the child is revealed.
 	// NOTE: Hide/show is needed even when using GtkRevealer
 	// due to parent GtkBox spacing.
 	gtk_widget_set_visible(GTK_WIDGET(widget), FALSE);
-#endif /* GTK_CHECK_VERSION(4,0,0) */
+#endif /* GTK_CHECK_VERSION(4, 0, 0) */
 
 #ifdef USE_GTK_REVEALER
 	// Make this an HBox.
@@ -243,52 +243,52 @@ rp_message_widget_init(RpMessageWidget *widget)
 	// Create the GtkRevealer.
 	widget->revealer = gtk_revealer_new();
 	gtk_widget_set_name(widget->revealer, "revealer");
-#  if GTK_CHECK_VERSION(4,0,0)
+#  if GTK_CHECK_VERSION(4, 0, 0)
 	gtk_box_append(GTK_BOX(widget), widget->revealer);
 	gtk_widget_set_hexpand(widget->revealer, TRUE);
-#  else /* !GTK_CHECK_VERSION(4,0,0) */
+#  else /* !GTK_CHECK_VERSION(4, 0, 0) */
 	gtk_box_pack_start(GTK_BOX(widget), widget->revealer, TRUE, TRUE, 0);
-#  endif /* GTK_CHECK_VERSION(4,0,0) */
+#  endif /* GTK_CHECK_VERSION(4, 0, 0) */
 #else /* !USE_GTK_REVEALER */
 	// Add a GtkEventBox for the inner color.
-#  if GTK_CHECK_VERSION(4,0,0)
+#  if GTK_CHECK_VERSION(4, 0, 0)
 	// NOTE: GTK4 removed GtkEventBox.
 	// We should be using GtkRevealer...
 	// This code is here for testing purposes only.
 	widget->evbox_inner = rp_gtk_hbox_new(0);
 	gtk_box_append(GTK_BOX(widget), widget->evbox_inner);
 	gtk_widget_set_hexpand(widget->evbox_inner, TRUE);
-#  else /* !GTK_CHECK_VERSION(4,0,0) */
+#  else /* !GTK_CHECK_VERSION(4, 0, 0) */
 	widget->evbox_inner = gtk_event_box_new();
-#    if GTK_CHECK_VERSION(3,0,0)
+#    if GTK_CHECK_VERSION(3, 0, 0)
 	gtk_box_pack_start(GTK_BOX(widget), widget->evbox_inner, TRUE, TRUE, 0);
-#    else /* !GTK_CHECK_VERSION(3,0,0) */
+#    else /* !GTK_CHECK_VERSION(3, 0, 0) */
 	// FIXME: On GTK2, using gtk_box_pack_start() results in the box being too small?
 	gtk_container_add(GTK_CONTAINER(widget), widget->evbox_inner);
-#    endif /* GTK_CHECK_VERSION(3,0,0) */
-#  endif /* GTK_CHECK_VERSION(4,0,0) */
+#    endif /* GTK_CHECK_VERSION(3, 0, 0) */
+#  endif /* GTK_CHECK_VERSION(4, 0, 0) */
 	gtk_widget_set_name(widget->evbox_inner, "evbox_inner");
-#endif /* GTK_CHECK_VERSION(3,0,0) */
+#endif /* GTK_CHECK_VERSION(3, 0, 0) */
 
 	// Add a GtkHBox for all the other widgets.
 	widget->hbox = rp_gtk_hbox_new(4);
 	hbox = GTK_BOX(widget->hbox);
 	gtk_widget_set_name(widget->hbox, "hbox");
 
-#if GTK_CHECK_VERSION(4,0,0)
+#if GTK_CHECK_VERSION(4, 0, 0)
 	// Extra padding needed on GTK4 for some reason.
 	gtk_widget_set_margin_start(widget->hbox, 4);
 	gtk_widget_set_margin_end(widget->hbox, 4);
-#endif /* GTK_CHECK_VERSION(4,0,0) */
+#endif /* GTK_CHECK_VERSION(4, 0, 0) */
 
 #if USE_GTK_REVEALER
 	gtk_revealer_set_child(GTK_REVEALER(widget->revealer), widget->hbox);
 #else /* !USE_GTK_REVEALER */
-#  if GTK_CHECK_VERSION(4,0,0)
+#  if GTK_CHECK_VERSION(4, 0, 0)
 	gtk_box_append(GTK_BOX(widget->evbox_inner), widget->hbox);
-#  else /* !GTK_CHECK_VERSION(4,0,0) */
+#  else /* !GTK_CHECK_VERSION(4, 0, 0) */
 	gtk_container_add(GTK_CONTAINER(widget->evbox_inner), widget->hbox);
-#  endif /* GTK_CHECK_VERSION(4,0,0) */
+#  endif /* GTK_CHECK_VERSION(4, 0, 0) */
 #endif /* USE_GTK_REVEALER */
 
 	widget->messageType = GTK_MESSAGE_OTHER;
@@ -299,41 +299,41 @@ rp_message_widget_init(RpMessageWidget *widget)
 	// Need to use GtkMisc to ensure the label is left-aligned.
 	widget->label = gtk_label_new(NULL);
 	gtk_widget_set_name(widget->label, "label");
-#if GTK_CHECK_VERSION(3,16,0)
+#if GTK_CHECK_VERSION(3, 16, 0)
 	gtk_label_set_xalign(GTK_LABEL(widget->label), 0.0f);
 	gtk_label_set_yalign(GTK_LABEL(widget->label), 0.5f);
-#else /* !GTK_CHECK_VERSION(3,16,0) */
+#else /* !GTK_CHECK_VERSION(3, 16, 0) */
 	gtk_misc_set_alignment(GTK_MISC(widget->label), 0.0f, 0.5f);
-#endif /* GTK_CHECK_VERSION(3,16,0) */
-#if GTK_CHECK_VERSION(4,0,0)
+#endif /* GTK_CHECK_VERSION(3, 16, 0) */
+#if GTK_CHECK_VERSION(4, 0, 0)
 	// FIXME: On GTK3, this is causing the label to be center-aligned.
 	// On GTK4, this is *required* for the close button to be right-aligned.
 	// In GTK3, if this is set, toggling the full "expand" property in the
 	// GTK inspector "fixes" the alignment. (GTK3 bug?)
 	gtk_widget_set_hexpand(widget->label, TRUE);
-#endif /* GTK_CHECK_VERSION(3,0,0) */
+#endif /* GTK_CHECK_VERSION(3, 0, 0) */
 
 	// TODO: Align the GtkImage to the top of the first line
 	// if the label has multiple lines.
 
 	widget->close_button = gtk_button_new();
 	gtk_widget_set_name(widget->close_button, "close_button");
-#if GTK_CHECK_VERSION(4,0,0)
+#if GTK_CHECK_VERSION(4, 0, 0)
 	gtk_button_set_icon_name(GTK_BUTTON(widget->close_button), "dialog-close");
 	gtk_button_set_has_frame(GTK_BUTTON(widget->close_button), FALSE);
-#else /* !GTK_CHECK_VERSION(4,0,0) */
+#else /* !GTK_CHECK_VERSION(4, 0, 0) */
 	GtkWidget *const imageClose = gtk_image_new_from_icon_name("dialog-close", GTK_ICON_SIZE_BUTTON);
 	gtk_widget_set_name(imageClose, "imageClose");
 	gtk_button_set_image(GTK_BUTTON(widget->close_button), imageClose);
 	gtk_button_set_relief(GTK_BUTTON(widget->close_button), GTK_RELIEF_NONE);
-#endif /* GTK_CHECK_VERSION(4,0,0) */
+#endif /* GTK_CHECK_VERSION(4, 0, 0) */
 
-#if GTK_CHECK_VERSION(4,0,0)
+#if GTK_CHECK_VERSION(4, 0, 0)
 	// TODO: Padding?
 	gtk_box_append(hbox, widget->image);
 	gtk_box_append(hbox, widget->label);
 	gtk_box_append(hbox, widget->close_button);
-#else /* !GTK_CHECK_VERSION(4,0,0) */
+#else /* !GTK_CHECK_VERSION(4, 0, 0) */
 	gtk_box_pack_start(hbox, widget->image, FALSE, FALSE, 4);
 	gtk_box_pack_start(hbox, widget->label, FALSE, FALSE, 0);
 	gtk_box_pack_end(hbox, widget->close_button, FALSE, FALSE, 0);
@@ -342,7 +342,7 @@ rp_message_widget_init(RpMessageWidget *widget)
 #  else /* USE_GTK_REVEALER */
 	gtk_widget_show_all(widget->evbox_inner);
 #  endif /* USE_GTK_REVEALER */
-#endif /* GTK_CHECK_VERSION(4,0,0) */
+#endif /* GTK_CHECK_VERSION(4, 0, 0) */
 
 	g_signal_connect(widget->close_button, "clicked",
 		G_CALLBACK(rp_message_widget_close_button_clicked_handler), widget);
@@ -487,14 +487,14 @@ rp_message_widget_set_message_type(RpMessageWidget *widget, GtkMessageType messa
 
 	gtk_widget_set_visible(widget->image, (pIconInfo->icon_name[0] != '\0'));
 	if (pIconInfo->icon_name[0] != '\0') {
-#if GTK_CHECK_VERSION(4,0,0)
+#if GTK_CHECK_VERSION(4, 0, 0)
 		gtk_image_set_from_icon_name(GTK_IMAGE(widget->image), pIconInfo->icon_name);
-#else /* !GTK_CHECK_VERSION(4,0,0) */
+#else /* !GTK_CHECK_VERSION(4, 0, 0) */
 		// TODO: Better icon size?
 		gtk_image_set_from_icon_name(GTK_IMAGE(widget->image), pIconInfo->icon_name, GTK_ICON_SIZE_BUTTON);
-#endif /* GTK_CHECK_VERSION(4,0,0) */
+#endif /* GTK_CHECK_VERSION(4, 0, 0) */
 
-#if GTK_CHECK_VERSION(3,0,0)
+#if GTK_CHECK_VERSION(3, 0, 0)
 		// Dark CSS classes
 		static const char dark_css_class_tbl[][24] = {
 			"gsrp_msgw_info_dark",
@@ -504,7 +504,7 @@ rp_message_widget_set_message_type(RpMessageWidget *widget, GtkMessageType messa
 		};
 		static const IconInfo_t *const pIconInfo_tbl_end = &iconInfo_tbl[ARRAY_SIZE(iconInfo_tbl)];
 
-#  if GTK_CHECK_VERSION(4,0,0)
+#  if GTK_CHECK_VERSION(4, 0, 0)
 		// Remove all of our CSS classes first.
 		for (const IconInfo_t *p = iconInfo_tbl; p < pIconInfo_tbl_end-1; p++) {
 			gtk_widget_remove_css_class(widget->hbox, p->css_class);
@@ -519,13 +519,13 @@ rp_message_widget_set_message_type(RpMessageWidget *widget, GtkMessageType messa
 		// (gtk_style_context_lookup_color() is deprecated in GTK4)
 		bool dark = false;
 		GdkRGBA color;
-#if GTK_CHECK_VERSION(4,9,1)
+#if GTK_CHECK_VERSION(4, 9, 1)
 		gtk_widget_get_color(GTK_WIDGET(widget->hbox), &color);
-#else /* !GTK_CHECK_VERSION(4,9,1) */
+#else /* !GTK_CHECK_VERSION(4, 9, 1) */
 		gboolean bRet = gtk_style_context_lookup_color(
 			gtk_widget_get_style_context(widget->hbox), "theme_text_color", &color);
 		if (bRet)
-#endif /* GTK_CHECK_VERSION(4,9,1) */
+#endif /* GTK_CHECK_VERSION(4, 9, 1) */
 		{
 			// BT.601 grayscale conversion
 			const gfloat grayscale = (color.red   * 0.299f) +
@@ -537,7 +537,7 @@ rp_message_widget_set_message_type(RpMessageWidget *widget, GtkMessageType messa
 		// Add the new CSS class.
 		gtk_widget_add_css_class(widget->hbox,
 			(likely(!dark) ? pIconInfo->css_class : dark_css_class_tbl[messageType]));
-#  else /* !GTK_CHECK_VERSION(4,0,0) */
+#  else /* !GTK_CHECK_VERSION(4, 0, 0) */
 		// Remove all of our CSS classes first.
 		GtkStyleContext *const context = gtk_widget_get_style_context(widget->hbox);
 		for (const IconInfo_t *p = iconInfo_tbl; p < pIconInfo_tbl_end-1; p++) {
@@ -563,8 +563,8 @@ rp_message_widget_set_message_type(RpMessageWidget *widget, GtkMessageType messa
 		// Add the new CSS class.
 		gtk_style_context_add_class(context,
 			(likely(!dark) ? pIconInfo->css_class : dark_css_class_tbl[messageType]));
-#  endif /* GTK_CHECK_VERSION(4,0,0) */
-#else /* !GTK_CHECK_VERSION(3,0,0) */
+#  endif /* GTK_CHECK_VERSION(4, 0, 0) */
+#else /* !GTK_CHECK_VERSION(3, 0, 0) */
 		GdkColor color;
 		color.pixel	 = pIconInfo->border_color;
 		color.red	 = (color.pixel >> 16) & 0xFF;
@@ -585,13 +585,13 @@ rp_message_widget_set_message_type(RpMessageWidget *widget, GtkMessageType messa
 		gtk_widget_modify_bg(GTK_WIDGET(widget->evbox_inner), GTK_STATE_NORMAL, &color);
 
 		gtk_container_set_border_width(GTK_CONTAINER(widget->evbox_inner), 2);
-#endif /* GTK_CHECK_VERSION(3,0,0) */
+#endif /* GTK_CHECK_VERSION(3, 0, 0) */
 	} else {
-#if !GTK_CHECK_VERSION(3,0,0)
+#if !GTK_CHECK_VERSION(3, 0, 0)
 		gtk_container_set_border_width(GTK_CONTAINER(widget->evbox_inner), 0);
 		gtk_widget_modify_bg(GTK_WIDGET(widget), GTK_STATE_NORMAL, NULL);
 		gtk_widget_modify_bg(GTK_WIDGET(widget->evbox_inner), GTK_STATE_NORMAL, NULL);
-#endif /* !GTK_CHECK_VERSION(3,0,0) */
+#endif /* !GTK_CHECK_VERSION(3, 0, 0) */
 	}
 
 	g_object_notify_by_pspec(G_OBJECT(widget), props[PROP_MESSAGE_TYPE]);

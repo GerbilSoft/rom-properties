@@ -61,7 +61,7 @@
 //  be usable for all supported Qt4 environments.)
 
 #include <QtCore/qglobal.h>
-#if QT_VERSION >= QT_VERSION_CHECK(4,0,0) && QT_VERSION < QT_VERSION_CHECK(5,0,0)
+#if QT_VERSION >= QT_VERSION_CHECK(4, 0, 0) && QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
 
 #include <QtGui/QImage>
 #include <QtCore/QMap>
@@ -113,4 +113,4 @@ struct Q_GUI_EXPORT QImageData {        // internal image data
 	QPaintEngine *paintEngine;
 };
 
-#endif /* QT_VERSION >= QT_VERSION_CHECK(4,0,0) && QT_VERSION < QT_VERSION_CHECK(5,0,0) */
+#endif /* QT_VERSION >= QT_VERSION_CHECK(4, 0, 0) && QT_VERSION < QT_VERSION_CHECK(5, 0, 0) */

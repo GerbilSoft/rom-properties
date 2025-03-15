@@ -67,18 +67,18 @@ static QApplication *initQApp(int &argc, char *argv[], const QString &applicatio
 	}
 
 	// Set high-DPI mode on Qt 5. (not needed on Qt 6)
-#if QT_VERSION >= QT_VERSION_CHECK(5,0,0) && QT_VERSION < QT_VERSION_CHECK(6,0,0)
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0) && QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 	// Enable High DPI.
 	QApplication::setAttribute(Qt::AA_UseHighDpiPixmaps, true);
-#if QT_VERSION >= QT_VERSION_CHECK(5,6,0)
+#if QT_VERSION >= QT_VERSION_CHECK(5, 6, 0)
 	// Enable High DPI pixmaps.
 	QApplication::setAttribute(Qt::AA_EnableHighDpiScaling, true);
 #else
 	// Hardcode the value in case the user upgrades to Qt 5.6 later.
 	// http://doc.qt.io/qt-5/qt.html#ApplicationAttribute-enum
 	QApplication::setAttribute(static_cast<Qt::ApplicationAttribute>(13), true);
-#endif /* QT_VERSION >= QT_VERSION_CHECK(5,6,0) */
-#endif /* QT_VERSION >= QT_VERSION_CHECK(5,0,0) && QT_VERSION < QT_VERSION_CHECK(6,0,0) */
+#endif /* QT_VERSION >= QT_VERSION_CHECK(5, 6, 0) */
+#endif /* QT_VERSION >= QT_VERSION_CHECK(5, 0, 0) && QT_VERSION < QT_VERSION_CHECK(6, 0, 0) */
 	// Create the QApplication.
 	app = new QApplication(argc, argv);
 
@@ -93,14 +93,14 @@ static QApplication *initQApp(int &argc, char *argv[], const QString &applicatio
 	app->setApplicationName(QLatin1String("rp-config"));
 	app->setOrganizationDomain(QLatin1String("gerbilsoft.com"));
 	app->setOrganizationName(QLatin1String("GerbilSoft"));
-#if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
 	app->setApplicationDisplayName(applicationDisplayName);
-#  if QT_VERSION >= QT_VERSION_CHECK(5,7,0)
+#  if QT_VERSION >= QT_VERSION_CHECK(5, 7, 0)
 	app->setDesktopFileName(QLatin1String("com.gerbilsoft.rom-properties.rp-config"));
-#  endif /* QT_VERSION >= QT_VERSION_CHECK(5,7,0) */
-#else /* !QT_VERSION >= QT_VERSION_CHECK(5,0,0) */
+#  endif /* QT_VERSION >= QT_VERSION_CHECK(5, 7, 0) */
+#else /* !QT_VERSION >= QT_VERSION_CHECK(5, 0, 0) */
 	RP_UNUSED(applicationDisplayName);
-#endif /* QT_VERSION >= QT_VERSION_CHECK(5,0,0) */
+#endif /* QT_VERSION >= QT_VERSION_CHECK(5, 0, 0) */
 
 	const char *const programVersion =
 		AboutTabText::getProgramInfoString(AboutTabText::ProgramInfoStringID::ProgramVersion);
@@ -207,16 +207,16 @@ Q_DECL_EXPORT int RP_C_API rp_show_RomDataView_dialog(int argc, char *argv[])
 
 	// Parse the specified URI and localize it.
 	const QString qs_uri(QString::fromUtf8(uri));
-#if QT_VERSION >= QT_VERSION_CHECK(5,4,0)
+#if QT_VERSION >= QT_VERSION_CHECK(5, 4, 0)
 	const QUrl localUrl(QUrl::fromUserInput(qs_uri, QDir::current().absolutePath()));
-#else /* QT_VERSION < QT_VERSION_CHECK(5,4,0) */
+#else /* QT_VERSION < QT_VERSION_CHECK(5, 4, 0) */
 	// QUrl::fromUserInput()'s workingDirectory parameter was added in Qt 5.4.
 	// For older versions, we'll have to check the CWD ourselves.
 	const QFileInfo fileInfo(QDir::current(), qs_uri);
 	const QUrl localUrl = (fileInfo.exists())
 		? QUrl::fromLocalFile(fileInfo.absoluteFilePath())
 		: QUrl::fromUserInput(qs_uri);
-#endif /* QT_VERSION >= QT_VERSION_CHECK(5,4,0) */
+#endif /* QT_VERSION >= QT_VERSION_CHECK(5, 4, 0) */
 	if (localUrl.isEmpty()) {
 		fmt::print(stderr, FSTR("*** " RP_KDE_UPPER " rp_show_RomDataView_dialog(): URI '{:s}' is invalid.\n"), uri);
 		return EXIT_FAILURE;

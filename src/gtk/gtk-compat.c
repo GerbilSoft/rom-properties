@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * gtk-compat.c: GTK+ compatibility functions.                             *
  *                                                                         *
- * Copyright (c) 2017-2023 by David Korth.                                 *
+ * Copyright (c) 2017-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -15,7 +15,7 @@
 
 /** Functions added in GTK 4.0.0 **/
 
-#if !GTK_CHECK_VERSION(3,89,3)
+#if !GTK_CHECK_VERSION(3, 89, 3)
 GtkWidget *gtk_widget_get_first_child(GtkWidget *widget)
 {
 	GtkWidget *ret = NULL;
@@ -36,12 +36,12 @@ GtkWidget *gtk_widget_get_first_child(GtkWidget *widget)
 	g_list_free(widgetList);
 	return ret;
 }
-#endif /* !GTK_CHECK_VERSION(3,89,3) */
+#endif /* !GTK_CHECK_VERSION(3, 89, 3) */
 
 /** Functions that changed in GTK 4.0.0 but are otherwise similar enough **/
 /** to GTK2/GTK3 that a simple wrapper function or macro can be used.    **/
 
-#if GTK_CHECK_VERSION(4,0,0)
+#if GTK_CHECK_VERSION(4, 0, 0)
 void rp_gtk_main_clipboard_set_text(const char *text)
 {
 	GValue value = G_VALUE_INIT;
@@ -54,7 +54,7 @@ void rp_gtk_main_clipboard_set_text(const char *text)
 
 	g_value_unset(&value);
 }
-#endif /* GTK_CHECK_VERSION(4,0,0) */
+#endif /* GTK_CHECK_VERSION(4, 0, 0) */
 
 /** rom-properties GTK function wrappers **/
 

@@ -31,11 +31,11 @@ pfnGlibGetType_t pfn_adw_deck_get_type = NULL;
 pfnGlibGetType_t pfn_adw_header_bar_get_type = NULL;
 pfnAdwHeaderBarPackEnd_t pfn_adw_header_bar_pack_end = NULL;
 
-#if GTK_CHECK_VERSION(4,0,0)
+#if GTK_CHECK_VERSION(4, 0, 0)
    // GTK4: libadwaita
 #  define ADW_SYM_PREFIX "adw_"
 #  define ADW_SYM_VERSION "LIBADWAITA_1_0"
-#else /* !GTK_CHECK_VERSION(4,0,0) */
+#else /* !GTK_CHECK_VERSION(4, 0, 0) */
    // GTK3: libhandy
 #  define ADW_SYM_PREFIX "hdy_"
 #  define ADW_SYM_VERSION "LIBHANDY_1_0"

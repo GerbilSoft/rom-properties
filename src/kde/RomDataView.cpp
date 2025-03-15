@@ -572,7 +572,7 @@ QTreeView *RomDataViewPrivate::initListData(QLabel *lblDesc,
 	}
 
 	// Set up column sizing.
-#if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
 	if (listDataDesc.col_attrs.sizing != 0) {
 		// Explicit column sizing was specified.
 		// NOTE: RomFields' COLSZ_* enums match QHeaderView::ResizeMode.
@@ -586,7 +586,7 @@ QTreeView *RomDataViewPrivate::initListData(QLabel *lblDesc,
 			}
 		}
 	} else
-#endif /* QT_VERSION >= QT_VERSION_CHECK(5,0,0) */
+#endif /* QT_VERSION >= QT_VERSION_CHECK(5, 0, 0) */
 	{
 		// No explicit column sizing.
 		// Use default column sizing, but resize columns to contents initially.
@@ -819,7 +819,7 @@ void RomDataViewPrivate::updateMulti(uint32_t user_lc)
 		// NOTE: Only done on first load.
 		if (!cboLanguage) {
 			const int colCount = treeView->model()->columnCount();
-#if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
 			// Check if explicit column sizing was used.
 			// If so, only resize columns marked as "interactive".
 			QHeaderView *const pHeader = treeView->header();
@@ -831,7 +831,7 @@ void RomDataViewPrivate::updateMulti(uint32_t user_lc)
 					}
 				}
 			} else
-#endif /* QT_VERSION >= QT_VERSION_CHECK(5,0,0) */
+#endif /* QT_VERSION >= QT_VERSION_CHECK(5, 0, 0) */
 			{
 				for (int i = 0; i < colCount; i++) {
 					treeView->resizeColumnToContents(i);

@@ -3,7 +3,7 @@
  * LanguageComboBox.cpp: Language GtkComboBox subclass                     *
  * (PRIVATE CLASS)                                                         *
  *                                                                         *
- * Copyright (c) 2017-2024 by David Korth.                                 *
+ * Copyright (c) 2017-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -25,11 +25,11 @@ typedef enum {
 
 extern GParamSpec *rp_language_combo_box_props[PROP_LAST];
 
-#if GTK_CHECK_VERSION(3,0,0)
+#if GTK_CHECK_VERSION(3, 0, 0)
 typedef GtkBoxClass superclass;
 typedef GtkBox super;
 #  define GTK_TYPE_SUPER GTK_TYPE_BOX
-#else /* !GTK_CHECK_VERSION(3,0,0) */
+#else /* !GTK_CHECK_VERSION(3, 0, 0) */
 typedef GtkHBoxClass superclass;
 typedef GtkHBox super;
 #  define GTK_TYPE_SUPER GTK_TYPE_HBOX

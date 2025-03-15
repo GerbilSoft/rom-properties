@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * RpQtNS.hpp: RomPropertiesKDE namespace definitions.                     *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -12,8 +12,8 @@
 
 // NOTE: Using QT_VERSION_CHECK causes errors on moc-qt4 due to CMAKE_AUTOMOC.
 // Reference: https://bugzilla.redhat.com/show_bug.cgi?id=1396755
-// QT_VERSION_CHECK(6,0,0) -> 0x60000
-// QT_VERSION_CHECK(5,0,0) -> 0x50000
+// QT_VERSION_CHECK(6, 0, 0) -> 0x60000
+// QT_VERSION_CHECK(5, 0, 0) -> 0x50000
 #include <qglobal.h>
 
 #if QT_VERSION >= 0x70000

@@ -14,13 +14,13 @@ G_BEGIN_DECLS
 
 #define RP_TYPE_DRAG_IMAGE (rp_drag_image_get_type())
 
-#if GTK_CHECK_VERSION(4,0,0)
+#if GTK_CHECK_VERSION(4, 0, 0)
 #  define _RpDragImage_super		GtkBox
 #  define _RpDragImage_superClass	GtkBoxClass
-#else /* !GTK_CHECK_VERSION(4,0,0) */
+#else /* !GTK_CHECK_VERSION(4, 0, 0) */
 #  define _RpDragImage_super		GtkEventBox
 #  define _RpDragImage_superClass	GtkEventBoxClass
-#endif /* GTK_CHECK_VERSION(4,0,0) */
+#endif /* GTK_CHECK_VERSION(4, 0, 0) */
 
 G_DECLARE_FINAL_TYPE(RpDragImage, rp_drag_image, RP, DRAG_IMAGE, _RpDragImage_super)
 

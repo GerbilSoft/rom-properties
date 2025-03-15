@@ -14,13 +14,13 @@ G_BEGIN_DECLS
 
 #define RP_TYPE_ROM_DATA_VIEW (rp_rom_data_view_get_type())
 
-#if GTK_CHECK_VERSION(3,0,0)
+#if GTK_CHECK_VERSION(3, 0, 0)
 #  define _RpRomDataView_super		GtkBox
 #  define _RpRomDataView_superClass	GtkBoxClass
-#else /* !GTK_CHECK_VERSION(3,0,0) */
+#else /* !GTK_CHECK_VERSION(3, 0, 0) */
 #  define _RpRomDataView_super		GtkVBox
 #  define _RpRomDataView_superClass	GtkVBoxClass
-#endif /* GTK_CHECK_VERSION(3,0,0) */
+#endif /* GTK_CHECK_VERSION(3, 0, 0) */
 
 G_DECLARE_FINAL_TYPE(RpRomDataView, rp_rom_data_view, RP, ROM_DATA_VIEW, _RpRomDataView_super)
 

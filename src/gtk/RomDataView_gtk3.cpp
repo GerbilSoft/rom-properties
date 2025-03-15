@@ -89,28 +89,28 @@ tree_view_realize_signal_handler(GtkTreeView	*treeView,
 		}
 	}
 
-#if GTK_CHECK_VERSION(3,0,0)
+#if GTK_CHECK_VERSION(3, 0, 0)
 	// Get the GtkScrolledWindow's border, padding, and margin.
 	GtkStyleContext *context = gtk_widget_get_style_context(scrolledWindow);
 	GtkBorder border, padding, margin;
-#  if GTK_CHECK_VERSION(4,0,0)
+#  if GTK_CHECK_VERSION(4, 0, 0)
 	gtk_style_context_get_border(context, &border);
 	gtk_style_context_get_padding(context, &padding);
 	gtk_style_context_get_margin(context, &margin);
-#  else /* !GTK_CHECK_VERSION(4,0,0) */
+#  else /* !GTK_CHECK_VERSION(4, 0, 0) */
 	gtk_style_context_get_border(context, GTK_STATE_FLAG_NORMAL, &border);
 	gtk_style_context_get_padding(context, GTK_STATE_FLAG_NORMAL, &padding);
 	gtk_style_context_get_margin(context, GTK_STATE_FLAG_NORMAL, &margin);
-#  endif /* GTK_CHECK_VERSION(4,0,0) */
+#  endif /* GTK_CHECK_VERSION(4, 0, 0) */
 	height += border.top + border.bottom;
 	height += padding.top + padding.bottom;
 	height += margin.top + margin.bottom;
-#else /* !GTK_CHECK_VERSION(3,0,0) */
+#else /* !GTK_CHECK_VERSION(3, 0, 0) */
 	// Get the GtkScrolledWindow's border.
 	// NOTE: Assuming we have a border set.
 	GtkStyle *style = gtk_widget_get_style(scrolledWindow);
 	height += (style->ythickness * 2);
-#endif /* GTK_CHECK_VERSION(3,0,0) */
+#endif /* GTK_CHECK_VERSION(3, 0, 0) */
 
 	// Set the GtkScrolledWindow's height.
 	// NOTE: gtk_scrolled_window_set_max_content_height() doesn't seem to
@@ -284,11 +284,11 @@ rp_rom_data_view_init_listdata(RpRomDataView *page, const RomFields::Field &fiel
 	}
 
 	// Scroll area for the GtkTreeView.
-#if GTK_CHECK_VERSION(4,0,0)
+#if GTK_CHECK_VERSION(4, 0, 0)
 	GtkWidget *const scrolledWindow = gtk_scrolled_window_new();
 	// NOTE: No name for this GtkWidget.
 	gtk_scrolled_window_set_has_frame(GTK_SCROLLED_WINDOW(scrolledWindow), true);
-#else /* !GTK_CHECK_VERSION(4,0,0) */
+#else /* !GTK_CHECK_VERSION(4, 0, 0) */
 	GtkWidget *const scrolledWindow = gtk_scrolled_window_new(nullptr, nullptr);
 	// NOTE: No name for this GtkWidget.
 	gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(scrolledWindow), GTK_SHADOW_IN);
@@ -305,9 +305,9 @@ rp_rom_data_view_init_listdata(RpRomDataView *page, const RomFields::Field &fiel
 	// NOTE: No name for this GtkWidget.
 	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(treeView),
 		(listDataDesc.names != nullptr));
-#if !GTK_CHECK_VERSION(4,0,0)
+#if !GTK_CHECK_VERSION(4, 0, 0)
 	gtk_widget_show(treeView);
-#endif /* !GTK_CHECK_VERSION(4,0,0) */
+#endif /* !GTK_CHECK_VERSION(4, 0, 0) */
 
 	gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(scrolledWindow), treeView);
 
@@ -315,13 +315,13 @@ rp_rom_data_view_init_listdata(RpRomDataView *page, const RomFields::Field &fiel
 	// May require fixed columns...
 	// Reference: https://developer.gnome.org/gtk3/stable/GtkTreeView.html#gtk-tree-view-set-fixed-height-mode
 
-#if !GTK_CHECK_VERSION(3,0,0)
+#if !GTK_CHECK_VERSION(3, 0, 0)
 	// GTK+ 2.x: Use the "rules hint" for alternating row colors.
 	// Deprecated in GTK+ 3.14 (and removed in GTK4), but it doesn't
 	// work with GTK+ 3.x anyway.
 	// TODO: GTK4's GtkListView might have a similar function.
 	gtk_tree_view_set_rules_hint(GTK_TREE_VIEW(treeView), true);
-#endif /* !GTK_CHECK_VERSION(3,0,0) */
+#endif /* !GTK_CHECK_VERSION(3, 0, 0) */
 
 	// Extra GtkCellRenderer for icon and/or checkbox.
 	// This is prepended to column 0.

@@ -14,13 +14,13 @@ G_BEGIN_DECLS
 
 #define RP_TYPE_LANGUAGE_COMBO_BOX (rp_language_combo_box_get_type())
 
-#if GTK_CHECK_VERSION(3,0,0)
+#if GTK_CHECK_VERSION(3, 0, 0)
 #  define _RpLanguageComboBox_super		GtkBox
 #  define _RpLanguageComboBox_superClass	GtkBoxClass
-#else /* !GTK_CHECK_VERSION(3,0,0) */
+#else /* !GTK_CHECK_VERSION(3, 0, 0) */
 #  define _RpLanguageComboBox_super		GtkHBox
 #  define _RpLanguageComboBox_superClass	GtkHBoxClass
-#endif /* GTK_CHECK_VERSION(3,0,0) */
+#endif /* GTK_CHECK_VERSION(3, 0, 0) */
 
 G_DECLARE_FINAL_TYPE(RpLanguageComboBox, rp_language_combo_box, RP, LANGUAGE_COMBO_BOX, _RpLanguageComboBox_super)
 

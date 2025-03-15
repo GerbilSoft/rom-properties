@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * RpGtk.h: glib/gtk+ wrappers for some libromdata functionality.          *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -15,13 +15,13 @@ G_BEGIN_DECLS
 // GTK+ major version.
 // We can't simply use GTK_MAJOR_VERSION because
 // that has parentheses.
-#if GTK_CHECK_VERSION(5,0,0)
+#if GTK_CHECK_VERSION(5, 0, 0)
 #  error Needs updating for GTK5.
-#elif GTK_CHECK_VERSION(4,0,0)
+#elif GTK_CHECK_VERSION(4, 0, 0)
 #  define GTK_MAJOR_STR "4"
-#elif GTK_CHECK_VERSION(3,0,0)
+#elif GTK_CHECK_VERSION(3, 0, 0)
 #  define GTK_MAJOR_STR "3"
-#elif GTK_CHECK_VERSION(2,0,0)
+#elif GTK_CHECK_VERSION(2, 0, 0)
 #  define GTK_MAJOR_STR "2"
 #else
 #  error GTK+ is too old.

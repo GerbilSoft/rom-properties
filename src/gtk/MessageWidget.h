@@ -14,13 +14,13 @@ G_BEGIN_DECLS
 
 #define RP_TYPE_MESSAGE_WIDGET (rp_message_widget_get_type())
 
-#if GTK_CHECK_VERSION(4,0,0)
+#if GTK_CHECK_VERSION(4, 0, 0)
 #  define _RpMessageWidget_super	GtkBox
 #  define _RpMessageWidget_superClass	GtkBoxClass
-#else /* !GTK_CHECK_VERSION(4,0,0) */
+#else /* !GTK_CHECK_VERSION(4, 0, 0) */
 #  define _RpMessageWidget_super	GtkEventBox
 #  define _RpMessageWidget_superClass	GtkEventBoxClass
-#endif /* GTK_CHECK_VERSION(4,0,0) */
+#endif /* GTK_CHECK_VERSION(4, 0, 0) */
 
 G_DECLARE_FINAL_TYPE(RpMessageWidget, rp_message_widget, RP, MESSAGE_WIDGET, _RpMessageWidget_super)
 
@@ -40,7 +40,7 @@ gboolean	rp_message_widget_get_reveal_child	(RpMessageWidget *widget);
 void		rp_message_widget_set_transition_duration(RpMessageWidget *widget, guint duration);
 guint		rp_message_widget_get_transition_duration(RpMessageWidget *widget);
 
-#if !GTK_CHECK_VERSION(3,9,0)
+#if !GTK_CHECK_VERSION(3, 9, 0)
 // GtkRevealer is not available. Define GtkRevealerTransitionType here.
 typedef enum {
 	GTK_REVEALER_TRANSITION_TYPE_NONE,
@@ -50,7 +50,7 @@ typedef enum {
 	GTK_REVEALER_TRANSITION_TYPE_SLIDE_UP,
 	GTK_REVEALER_TRANSITION_TYPE_SLIDE_DOWN
 } GtkRevealerTransitionType;
-#endif /* !GTK_CHECK_VERSION(3,9,0) */
+#endif /* !GTK_CHECK_VERSION(3, 9, 0) */
 
 void				rp_message_widget_set_transition_type	(RpMessageWidget *widget, GtkRevealerTransitionType transition);
 GtkRevealerTransitionType	rp_message_widget_get_transition_type	(RpMessageWidget *widget);

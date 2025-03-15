@@ -3,7 +3,7 @@
  * XAttrView_p.hpp: Extended attribute viewer property page.               *
  * (PRIVATE CLASS)                                                         *
  *                                                                         *
- * Copyright (c) 2017-2024 by David Korth.                                 *
+ * Copyright (c) 2017-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -31,16 +31,16 @@ typedef enum {
 	XATTR_COL_MAX
 } XAttrColumns;
 
-#if GTK_CHECK_VERSION(3,0,0)
+#if GTK_CHECK_VERSION(3, 0, 0)
 typedef GtkBoxClass superclass;
 typedef GtkBox super;
 #define GTK_TYPE_SUPER GTK_TYPE_BOX
 #define USE_GTK_GRID 1	// Use GtkGrid instead of GtkTable.
-#else /* !GTK_CHECK_VERSION(3,0,0) */
+#else /* !GTK_CHECK_VERSION(3, 0, 0) */
 typedef GtkVBoxClass superclass;
 typedef GtkVBox super;
 #define GTK_TYPE_SUPER GTK_TYPE_VBOX
-#endif /* GTK_CHECK_VERSION(3,0,0) */
+#endif /* GTK_CHECK_VERSION(3, 0, 0) */
 
 // XAttrView class
 struct _RpXAttrViewClass {
@@ -65,13 +65,13 @@ struct _RpXAttrView {
 	GtkWidget	*dosAttrView;
 
 	GtkWidget	*fraXAttr;
-#if GTK_CHECK_VERSION(4,0,0)
+#if GTK_CHECK_VERSION(4, 0, 0)
 	GListStore	*listStore;
 	GtkWidget	*columnView;
-#else /* !GTK_CHECK_VERSION(4,0,0) */
+#else /* !GTK_CHECK_VERSION(4, 0, 0) */
 	GtkListStore	*listStore;
 	GtkWidget	*treeView;
-#endif /* GTK_CHECK_VERSION(4,0,0) */
+#endif /* GTK_CHECK_VERSION(4, 0, 0) */
 };
 
 G_BEGIN_DECLS

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * LanguageComboBox.cpp: Language GtkComboBox subclass (GTK2/GTK3-specific)*
  *                                                                         *
- * Copyright (c) 2017-2024 by David Korth.                                 *
+ * Copyright (c) 2017-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -82,7 +82,7 @@ rp_language_combo_box_rebuild_icons(struct _RpLanguageComboBox *widget)
 	// Reference: https://developer.gnome.org/gdk3/stable/gdk3-Windows.html#gdk-window-get-scale-factor
 	static constexpr int iconSize = 16;
 
-#if GTK_CHECK_VERSION(3,10,0)
+#if GTK_CHECK_VERSION(3, 10, 0)
 #  if 0
 	// FIXME: gtk_widget_get_window() doesn't work unless the window is realized.
 	// We might need to initialize the dropdown in the "realize" signal handler.
@@ -97,7 +97,7 @@ rp_language_combo_box_rebuild_icons(struct _RpLanguageComboBox *widget)
 		}
 	}
 #  endif /* 0 */
-#endif /* GTK_CHECK_VERSION(3,10,0) */
+#endif /* GTK_CHECK_VERSION(3, 10, 0) */
 
 	// Flag sprite sheet
 	FlagSpriteSheet flagSpriteSheet(iconSize);

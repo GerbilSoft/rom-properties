@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * RomDataView.hpp: RomData viewer. (Private class)                        *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -11,13 +11,13 @@
 #include "config.kde.h"
 
 // KDE4/KF5 includes
-#if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
 #  include <KAcceleratorManager>
 #  include <KPageWidget>
 #  define HAVE_KMESSAGEWIDGET 1
 #  define HAVE_KMESSAGEWIDGET_SETICON 1
 #  include <KMessageWidget>
-#else /* !QT_VERSION >= QT_VERSION_CHECK(5,0,0) */
+#else /* !QT_VERSION >= QT_VERSION_CHECK(5, 0, 0) */
 #  include <kacceleratormanager.h>
 #  include <kdeversion.h>
 #  include <kpagewidget.h>
@@ -28,7 +28,7 @@
 #      define HAVE_KMESSAGEWIDGET_SETICON 1
 #    endif
 #  endif
-#endif /* QT_VERSION >= QT_VERSION_CHECK(5,0,0) */
+#endif /* QT_VERSION >= QT_VERSION_CHECK(5, 0, 0) */
 
 // librpbase
 namespace LibRpBase {

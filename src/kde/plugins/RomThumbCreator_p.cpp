@@ -11,11 +11,11 @@
 
 #include "RomThumbCreator_p.hpp"
 
-#if defined(ENABLE_NETWORKING) && QT_VERSION >= QT_VERSION_CHECK(5,0,0) && defined(HAVE_QtDBus)
+#if defined(ENABLE_NETWORKING) && QT_VERSION >= QT_VERSION_CHECK(5, 0, 0) && defined(HAVE_QtDBus)
 // NetworkManager D-Bus interface to determine if the connection is metered.
 // FIXME: Broken on Qt4.
 #  define ENABLE_METER_CHECK 1
-#endif /* defined(ENABLE_NETWORKING) && QT_VERSION >= QT_VERSION_CHECK(5,0,0) && defined(HAVE_QtDBus) */
+#endif /* defined(ENABLE_NETWORKING) && QT_VERSION >= QT_VERSION_CHECK(5, 0, 0) && defined(HAVE_QtDBus) */
 
 #ifdef ENABLE_METER_CHECK
 // NetworkManager D-Bus interface to determine if the connection is metered.
@@ -53,11 +53,11 @@ QImage RomThumbCreatorPrivate::rescaleImgClass(const QImage &imgClass, ImgSize s
 	// being changes to QImage::Format_ARGB32_Premultiplied.
 	// Convert it back to plain ARGB32 if that happens.
 	if (img.format() == QImage::Format_ARGB32_Premultiplied) {
-#if QT_VERSION >= QT_VERSION_CHECK(5,13,0)
+#if QT_VERSION >= QT_VERSION_CHECK(5, 13, 0)
 		img.convertTo(QImage::Format_ARGB32);
-#else /* QT_VERSION < QT_VERSION_CHECK(5,13,0) */
+#else /* QT_VERSION < QT_VERSION_CHECK(5, 13, 0) */
 		img = img.convertToFormat(QImage::Format_ARGB32);
-#endif /* QT_VERSION >= QT_VERSION_CHECK(5,13,0) */
+#endif /* QT_VERSION >= QT_VERSION_CHECK(5, 13, 0) */
 	}
 
 	return img;

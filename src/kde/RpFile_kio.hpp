@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * RpFile_kio.hpp: IRpFile implementation using KIO.                       *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -15,7 +15,7 @@
 // KDE 4.x's KIO doesn't have KIO::open().
 #include <QtCore/qglobal.h>
 
-#if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
 #define HAVE_RPFILE_KIO 1
 
 // librpfile
@@ -129,6 +129,6 @@ signals:
 	void exitLoop(void);
 };
 
-#endif /* QT_VERSION >= QT_VERSION_CHECK(5,0,0) */
+#endif /* QT_VERSION >= QT_VERSION_CHECK(5, 0, 0) */
 
 #endif // FIXME: Dolphin ends up hanging for some reason...

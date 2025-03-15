@@ -14,13 +14,13 @@ G_BEGIN_DECLS
 
 #define RP_TYPE_XFS_ATTR_VIEW (rp_xfs_attr_view_get_type())
 
-#if GTK_CHECK_VERSION(3,0,0)
+#if GTK_CHECK_VERSION(3, 0, 0)
 #  define _RpXfsAttrView_super		GtkBox
 #  define _RpXfsAttrView_superClass	GtkBoxClass
-#else /* !GTK_CHECK_VERSION(3,0,0) */
+#else /* !GTK_CHECK_VERSION(3, 0, 0) */
 #  define _RpXfsAttrView_super		GtkVBox
 #  define _RpXfsAttrView_superClass	GtkVBoxClass
-#endif /* GTK_CHECK_VERSION(3,0,0) */
+#endif /* GTK_CHECK_VERSION(3, 0, 0) */
 
 G_DECLARE_FINAL_TYPE(RpXfsAttrView, rp_xfs_attr_view, RP, XFS_ATTR_VIEW, _RpXfsAttrView_super)
 

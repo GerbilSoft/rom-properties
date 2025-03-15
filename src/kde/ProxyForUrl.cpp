@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE)                              *
  * ProxyForUrl.cpp: proxyForUrl() function for the KDE UI frontend.        *
  *                                                                         *
- * Copyright (c) 2017-2024 by David Korth.                                 *
+ * Copyright (c) 2017-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -13,14 +13,14 @@
 // C++ STL classes
 using std::string;
 
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 // KF6 removed KProtocolManager::proxyForUrl() in favor of QNetworkProxyFactory.
 #  include <QtNetwork/QNetworkProxyFactory>
-#else /* QT_VERSION < QT_VERSION_CHECK(6,0,0) */
+#else /* QT_VERSION < QT_VERSION_CHECK(6, 0, 0) */
 // KDE protocol manager
 // Used to find the KDE proxy settings.
 #  include <kprotocolmanager.h>
-#endif /* QT_VERSION >= QT_VERSION_CHECK(6,0,0) */
+#endif /* QT_VERSION >= QT_VERSION_CHECK(6, 0, 0) */
 
 /**
  * Get the proxy for the specified URL.
@@ -29,7 +29,7 @@ using std::string;
  */
 string proxyForUrl(const char *url)
 {
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 	QList<QNetworkProxy> proxies = QNetworkProxyFactory::proxyForQuery(
 		QNetworkProxyQuery(QUrl(U82Q(url)), QNetworkProxyQuery::UrlRequest));
 
@@ -76,7 +76,7 @@ string proxyForUrl(const char *url)
 	proxy += QChar(L':');
 	proxy += QString::number(port);
 	return Q2U8(proxy);
-#else /* QT_VERSION < QT_VERSION_CHECK(6,0,0) */
+#else /* QT_VERSION < QT_VERSION_CHECK(6, 0, 0) */
 	const QString proxy = KProtocolManager::proxyForUrl(QUrl(U82Q(url)));
 	if (proxy.isEmpty() || proxy == QLatin1String("DIRECT")) {
 		// No proxy.
@@ -85,5 +85,5 @@ string proxyForUrl(const char *url)
 
 	// Proxy is required.
 	return Q2U8(proxy);
-#endif /* QT_VERSION >= QT_VERSION_CHECK(6,0,0) */
+#endif /* QT_VERSION >= QT_VERSION_CHECK(6, 0, 0) */
 }

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * GettextTranslator.cpp: QTranslator class using GNU Gettext.             *
  *                                                                         *
- * Copyright (c) 2017-2024 by David Korth.                                 *
+ * Copyright (c) 2017-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -19,7 +19,7 @@ QString GettextTranslator::translate(const char *context,
 	// FIXME: Make use of disambiguation.
 	Q_UNUSED(disambiguation)
 
-#if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
 	// Qt5: This function handles non-plurals as well as plurals.
 	if (n >= 0)
 #endif
@@ -34,7 +34,7 @@ QString GettextTranslator::translate(const char *context,
 		return QString::fromUtf8(txt);
 	}
 
-#if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
 	// Qt5: No plurals here.
 	const char *const txt = pgettext_expr(context, sourceText);
 	if (txt == sourceText) {
@@ -45,7 +45,7 @@ QString GettextTranslator::translate(const char *context,
 #endif
 }
 
-#if QT_VERSION < QT_VERSION_CHECK(5,0,0)
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
 QString GettextTranslator::translate(const char *context,
 	const char *sourceText, const char *disambiguation) const
 {

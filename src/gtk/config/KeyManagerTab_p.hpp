@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * KeyManagerTab_p.hpp: Key Manager tab for rp-config. (PRIVATE CLASS)     *
  *                                                                         *
- * Copyright (c) 2017-2024 by David Korth.                                 *
+ * Copyright (c) 2017-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -20,31 +20,31 @@
 extern "C" {
 #endif
 
-#if GTK_CHECK_VERSION(3,0,0)
+#if GTK_CHECK_VERSION(3, 0, 0)
 typedef GtkBoxClass superclass;
 typedef GtkBox super;
 #  define GTK_TYPE_SUPER GTK_TYPE_BOX
 #  define USE_GTK_GRID 1	// Use GtkGrid instead of GtkTable.
-#else /* !GTK_CHECK_VERSION(3,0,0) */
+#else /* !GTK_CHECK_VERSION(3, 0, 0) */
 typedef GtkVBoxClass superclass;
 typedef GtkVBox super;
 #  define GTK_TYPE_SUPER GTK_TYPE_VBOX
-#endif /* GTK_CHECK_VERSION(3,0,0) */
+#endif /* GTK_CHECK_VERSION(3, 0, 0) */
 
 // GtkMenuButton was added in GTK 3.6.
 // GMenuModel is also implied by this, since GMenuModel
 // support was added to GTK+ 3.4.
 // NOTE: GtkMenu was removed from GTK4.
-#if GTK_CHECK_VERSION(3,5,6)
+#if GTK_CHECK_VERSION(3, 5, 6)
 #  define USE_GTK_MENU_BUTTON 1
 #  define USE_G_MENU_MODEL 1
-#endif /* GTK_CHECK_VERSION(3,5,6) */
+#endif /* GTK_CHECK_VERSION(3, 5, 6) */
 
 // Uncomment to use the new GtkColumnView on GTK4.
 // FIXME: Editing is broken...
-#if GTK_CHECK_VERSION(4,0,0)
+#if GTK_CHECK_VERSION(4, 0, 0)
 //#  define RP_KEY_MANAGER_USE_GTK_COLUMN_VIEW 1
-#endif /* GTK_CHECK_VERSION(4,0,0) */
+#endif /* GTK_CHECK_VERSION(4, 0, 0) */
 
 // KeyManagerTab class
 struct _RpKeyManagerTabClass {

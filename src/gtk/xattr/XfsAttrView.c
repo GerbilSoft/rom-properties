@@ -46,16 +46,16 @@ static GParamSpec *props[PROP_LAST];
 
 static GQuark XfsAttrView_value_quark;
 
-#if GTK_CHECK_VERSION(3,0,0)
+#if GTK_CHECK_VERSION(3, 0, 0)
 typedef GtkBoxClass superclass;
 typedef GtkBox super;
 #define GTK_TYPE_SUPER GTK_TYPE_BOX
 #define USE_GTK_GRID 1	// Use GtkGrid instead of GtkTable.
-#else /* !GTK_CHECK_VERSION(3,0,0) */
+#else /* !GTK_CHECK_VERSION(3, 0, 0) */
 typedef GtkVBoxClass superclass;
 typedef GtkVBox super;
 #define GTK_TYPE_SUPER GTK_TYPE_VBOX
-#endif /* GTK_CHECK_VERSION(3,0,0) */
+#endif /* GTK_CHECK_VERSION(3, 0, 0) */
 
 // XfsAttrView class
 struct _RpXfsAttrViewClass {
@@ -116,10 +116,10 @@ rp_xfs_attr_view_class_init(RpXfsAttrViewClass *klass)
 static void
 rp_xfs_attr_view_init(RpXfsAttrView *widget)
 {
-#if GTK_CHECK_VERSION(3,0,0)
+#if GTK_CHECK_VERSION(3, 0, 0)
 	// Make this a VBox.
 	gtk_orientable_set_orientation(GTK_ORIENTABLE(widget), GTK_ORIENTATION_VERTICAL);
-#endif /* GTK_CHECK_VERSION(3,0,0) */
+#endif /* GTK_CHECK_VERSION(3, 0, 0) */
 
 	// Checkboxes
 	int col = 0, row = 0;
@@ -178,13 +178,13 @@ rp_xfs_attr_view_init(RpXfsAttrView *widget)
 	gtk_label_set_attributes(GTK_LABEL(widget->lblProjectId), attr_lst);
 	pango_attr_list_unref(attr_lst);
 
-#if GTK_CHECK_VERSION(4,0,0)
+#if GTK_CHECK_VERSION(4, 0, 0)
 	gtk_box_append(GTK_BOX(widget), gridCheckboxes);
 
 	gtk_box_append(GTK_BOX(hboxProjectId), lblProjectIdDesc);
 	gtk_box_append(GTK_BOX(hboxProjectId), widget->lblProjectId);
 	gtk_box_append(GTK_BOX(widget), hboxProjectId);
-#else /* !GTK_CHECK_VERSION(4,0,0) */
+#else /* !GTK_CHECK_VERSION(4, 0, 0) */
 	gtk_box_pack_start(GTK_BOX(widget), gridCheckboxes, FALSE, FALSE, 0);
 	gtk_widget_show_all(gridCheckboxes);
 
@@ -192,7 +192,7 @@ rp_xfs_attr_view_init(RpXfsAttrView *widget)
 	gtk_box_pack_start(GTK_BOX(hboxProjectId), widget->lblProjectId, FALSE, FALSE, 0);
 	gtk_box_pack_start(GTK_BOX(widget), hboxProjectId, FALSE, FALSE, 0);
 	gtk_widget_show_all(hboxProjectId);
-#endif /* GTK_CHECK_VERSION(4,0,0) */
+#endif /* GTK_CHECK_VERSION(4, 0, 0) */
 }
 
 GtkWidget*

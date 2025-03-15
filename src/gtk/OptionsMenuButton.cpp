@@ -29,24 +29,24 @@ using std::vector;
 // NOTE: We only have one child widget, so we don't
 // have to explicitly set H vs. V for GtkBox.
 // (default is horizontal?)
-#if GTK_CHECK_VERSION(3,0,0)
+#if GTK_CHECK_VERSION(3, 0, 0)
 typedef GtkBoxClass superclass;
 typedef GtkBox super;
 #  define GTK_TYPE_SUPER GTK_TYPE_BOX
-#else /* !GTK_CHECK_VERSION(3,0,0) */
+#else /* !GTK_CHECK_VERSION(3, 0, 0) */
 typedef GtkHBoxClass superclass;
 typedef GtkHBox super;
 #  define GTK_TYPE_SUPER GTK_TYPE_HBOX
-#endif /* GTK_CHECK_VERSION(3,0,0) */
+#endif /* GTK_CHECK_VERSION(3, 0, 0) */
 
 // GtkMenuButton was added in GTK 3.6.
 // GMenuModel is also implied by this, since GMenuModel
 // support was added to GTK+ 3.4.
 // NOTE: GtkMenu was removed from GTK4.
-#if GTK_CHECK_VERSION(3,5,6)
+#if GTK_CHECK_VERSION(3, 5, 6)
 #  define USE_GTK_MENU_BUTTON 1
 #  define USE_G_MENU_MODEL 1
-#endif /* GTK_CHECK_VERSION(3,5,6) */
+#endif /* GTK_CHECK_VERSION(3, 5, 6) */
 
 /* Property identifiers */
 typedef enum {
@@ -121,9 +121,9 @@ struct _RpOptionsMenuButton {
 	GtkWidget *menuOptions;	// GtkMenu
 #endif /* USE_G_MENU_MODEL */
 
-#if !GTK_CHECK_VERSION(4,0,0)
+#if !GTK_CHECK_VERSION(4, 0, 0)
 	GtkWidget *imgOptions;	// up/down icon
-#endif /* !GTK_CHECK_VERSION(4,0,0) */
+#endif /* !GTK_CHECK_VERSION(4, 0, 0) */
 
 #ifndef USE_GTK_MENU_BUTTON
 	GtkArrowType arrowType;
@@ -215,16 +215,16 @@ rp_options_menu_button_init(RpOptionsMenuButton *widget)
 	gtk_widget_set_name(widget->menuButton, "menuButton");
 
 	// Initialize the direction image.
-#if !GTK_CHECK_VERSION(4,0,0)
+#if !GTK_CHECK_VERSION(4, 0, 0)
 	widget->imgOptions = gtk_image_new();
 	gtk_widget_set_name(widget->imgOptions, "imgOptions");
-#endif /* !GTK_CHECK_VERSION(4,0,0) */
+#endif /* !GTK_CHECK_VERSION(4, 0, 0) */
 	rp_options_menu_button_set_direction(widget, GTK_ARROW_UP);
 
-#if GTK_CHECK_VERSION(4,0,0)
+#if GTK_CHECK_VERSION(4, 0, 0)
 	gtk_menu_button_set_label(GTK_MENU_BUTTON(widget->menuButton), s_title.c_str());
 	gtk_menu_button_set_use_underline(GTK_MENU_BUTTON(widget->menuButton), TRUE);
-#else /* !GTK_CHECK_VERSION(4,0,0) */
+#else /* !GTK_CHECK_VERSION(4, 0, 0) */
 	gtk_widget_show(widget->menuButton);	// needed for GTK2/GTK3 but not GTK4
 
 	GtkWidget *const lblOptions = gtk_label_new(nullptr);
@@ -239,21 +239,21 @@ rp_options_menu_button_init(RpOptionsMenuButton *widget)
 	gtk_box_pack_start(GTK_BOX(hboxOptions), lblOptions, false, false, 0);
 	gtk_box_pack_start(GTK_BOX(hboxOptions), widget->imgOptions, false, false, 0);
 	gtk_container_add(GTK_CONTAINER(widget->menuButton), hboxOptions);
-#endif /* GTK_CHECK_VERSION(4,0,0) */
+#endif /* GTK_CHECK_VERSION(4, 0, 0) */
 
 	// Add the menu button to the container widget.
-#if GTK_CHECK_VERSION(4,0,0)
+#if GTK_CHECK_VERSION(4, 0, 0)
 	gtk_box_append(GTK_BOX(widget), widget->menuButton);
-#else /* !GTK_CHECK_VERSION(4,0,0) */
+#else /* !GTK_CHECK_VERSION(4, 0, 0) */
 	gtk_container_add(GTK_CONTAINER(widget), widget->menuButton);
-#endif /* GTK_CHECK_VERSION(4,0,0) */
+#endif /* GTK_CHECK_VERSION(4, 0, 0) */
 
 	// Connect the wrapper signals.
 	// NOTE: GTK4 GtkMenuButton does not have a "clicked" signal.
 	// TODO: Remove the wrapped "clicked" signal?
-#if !GTK_CHECK_VERSION(4,0,0)
+#if !GTK_CHECK_VERSION(4, 0, 0)
 	g_signal_connect(widget->menuButton, "clicked", G_CALLBACK(menuButton_clicked_signal_handler), widget);
-#endif /* !GTK_CHECK_VERSION(4,0,0) */
+#endif /* !GTK_CHECK_VERSION(4, 0, 0) */
 	g_signal_connect(widget->menuButton, "activate", G_CALLBACK(menuButton_activate_signal_handler), widget);
 
 #ifndef USE_GTK_MENU_BUTTON
@@ -368,7 +368,7 @@ rp_options_menu_button_set_direction(RpOptionsMenuButton *widget, GtkArrowType a
 		return;
 #endif /* USE_GTK_MENU_BUTTON */
 
-#if !GTK_CHECK_VERSION(4,0,0)
+#if !GTK_CHECK_VERSION(4, 0, 0)
 	static constexpr char iconName_tbl[][20] = {
 		"pan-up-symbolic",
 		"pan-down-symbolic",
@@ -387,7 +387,7 @@ rp_options_menu_button_set_direction(RpOptionsMenuButton *widget, GtkArrowType a
 	} else {
 		gtk_widget_hide(widget->imgOptions);
 	}
-#endif /* GTK_CHECK_VERSION(4,0,0) */
+#endif /* GTK_CHECK_VERSION(4, 0, 0) */
 
 #ifdef USE_GTK_MENU_BUTTON
 	gtk_menu_button_set_direction(GTK_MENU_BUTTON(widget->menuButton), arrowType);
@@ -460,12 +460,12 @@ btnOptions_event_signal_handler(GtkButton *button, GdkEvent *event, RpOptionsMen
 
 	// Reference: https://developer.gnome.org/gtk-tutorial/stable/x1577.html
 	GtkMenuPositionFunc menuPositionFunc;
-#if GTK_CHECK_VERSION(3,12,0)
+#if GTK_CHECK_VERSION(3, 12, 0)
 	// If we're using a GtkHeaderBar, don't use a custom menu positioning function.
 	if (gtk_dialog_get_header_bar(gtk_widget_get_toplevel_dialog(GTK_WIDGET(widget))) != nullptr) {
 		menuPositionFunc = nullptr;
 	} else
-#endif /* GTK_CHECK_VERSION(3,12,0) */
+#endif /* GTK_CHECK_VERSION(3, 12, 0) */
 	{
 		menuPositionFunc = (GtkMenuPositionFunc)btnOptions_menu_pos_func;
 	}
