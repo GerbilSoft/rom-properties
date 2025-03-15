@@ -280,7 +280,7 @@ int _tmain(int argc, TCHAR *argv[])
 			} else if (id > 16384) {
 				fmt::print(stderr,
 					FSTR(_T("*** ERROR: Line {:d}: 'CS' command: ID is out of range: {:d} ")
-				             _T("(0x{:0>4X})\n")),
+					     _T("(0x{:0>4X})\n")),
 					line, id, id);
 				err = true;
 				break;
@@ -299,7 +299,7 @@ int _tmain(int argc, TCHAR *argv[])
 			if (id % 4 != 0) {
 				fmt::print(stderr,
 					FSTR(_T("*** ERROR: Line {:d}: 'CS' command has non-multiple-of-4 ID: {:d} ")
-				             _T("(0x{:0>4X})\n")),
+					     _T("(0x{:0>4X})\n")),
 					line, id, id);
 				err = true;
 				break;
@@ -311,7 +311,7 @@ int _tmain(int argc, TCHAR *argv[])
 				if (charSeriesTable[idx] != 0) {
 					fmt::print(stderr,
 						FSTR(_T("*** ERROR: Line {:d}: 'CS' command has duplicate ID: {:d} ")
-					             _T("(0x{:0>4X})\n")),
+						     _T("(0x{:0>4X})\n")),
 						line, id, id);
 					err = true;
 					break;
@@ -348,7 +348,7 @@ int _tmain(int argc, TCHAR *argv[])
 			} else if (id > 0xFFFF) {
 				fmt::print(stderr,
 					FSTR(_T("*** ERROR: Line {:d}: 'C' command: ID is out of range: {:d} ")
-				             _T("(0x{:0>4X})\n")),
+					     _T("(0x{:0>4X})\n")),
 					line, id, id);
 				err = true;
 				break;
@@ -368,7 +368,7 @@ int _tmain(int argc, TCHAR *argv[])
 			if (iter != charTable.end()) {
 				fmt::print(stderr,
 					FSTR(_T("*** ERROR: Line {:d}: 'C' command has duplicate ID: {:d} ")
-				             _T("(0x{:0>4X})\n")),
+					     _T("(0x{:0>4X})\n")),
 					line, id, id);
 				err = true;
 				break;
@@ -405,7 +405,7 @@ int _tmain(int argc, TCHAR *argv[])
 			} else if (id > 0xFFFF) {
 				fmt::print(stderr,
 					FSTR(_T("*** ERROR: Line {:d}: 'CV' command: ID is out of range: {:d} ")
-				             _T("(0x{:0>4X})\n")),
+					     _T("(0x{:0>4X})\n")),
 					line, id, id);
 				err = true;
 				break;
@@ -428,7 +428,7 @@ int _tmain(int argc, TCHAR *argv[])
 			} else if (var_id > 0xFF) {
 				fmt::print(stderr,
 					FSTR(_T("*** ERROR: Line {:d}: 'CV' command: VarID is out of range: {:d} ")
-				             _T("(0x{:0>4X})\n")),
+					     _T("(0x{:0>4X})\n")),
 					line, var_id, var_id);
 				err = true;
 				break;
@@ -448,7 +448,7 @@ int _tmain(int argc, TCHAR *argv[])
 			if (iter == charTable.end()) {
 				fmt::print(stderr,
 					FSTR(_T("*** ERROR: Line {:d}: 'CV' command has unassigned char ID: {:d} ")
-				             _T("(0x{:0>4X})\n")),
+					     _T("(0x{:0>4X})\n")),
 					line, id, id);
 				err = true;
 				break;
@@ -467,7 +467,7 @@ int _tmain(int argc, TCHAR *argv[])
 				if (iterV2 != pMap->end()) {
 					fmt::print(stderr,
 						FSTR(_T("*** ERROR: Line {:d}: 'C' command has duplicate variant ID: ")
-					             _T("{:d}:{:d} ")
+						     _T("{:d}:{:d} ")
 						     _T("(0x{:0>4X}:0x{:0>2X})\n")),
 						line, id, var_id, id, var_id);
 					err = true;
@@ -512,7 +512,7 @@ int _tmain(int argc, TCHAR *argv[])
 			} else if (id > 0xFF) {
 				fmt::print(stderr,
 					FSTR(_T("*** ERROR: Line {:d}: 'AS' command: ID is out of range: {:d} ")
-				             _T("(0x{:0>2X})\n")),
+					     _T("(0x{:0>2X})\n")),
 					line, id, id);
 				err = true;
 				break;
@@ -532,7 +532,7 @@ int _tmain(int argc, TCHAR *argv[])
 				if (amiiboSeriesTable[id] != 0) {
 					fmt::print(stderr,
 						FSTR(_T("*** ERROR: Line {:d}: 'AS' command has duplicate ID: {:d} ")
-					             _T("(0x{:0>4X})\n")),
+						     _T("(0x{:0>4X})\n")),
 						line, id, id);
 					err = true;
 					break;
@@ -569,7 +569,7 @@ int _tmain(int argc, TCHAR *argv[])
 			} else if (id > 0xFFFF) {
 				fmt::print(stderr,
 					FSTR(_T("*** ERROR: Line {:d}: 'A' command: ID is out of range: {:d} ")
-				             _T("(0x{:0>4X})\n")),
+					     _T("(0x{:0>4X})\n")),
 					line, id, id);
 				err = true;
 				break;
@@ -617,7 +617,7 @@ int _tmain(int argc, TCHAR *argv[])
 			} else if (wave_no > 0xFF) {
 				fmt::print(stderr,
 					FSTR(_T("*** ERROR: Line {:d}: 'A' command: Wave is out of range: {:d} ")
-				             _T("(0x{:0>2X})\n")),
+					     _T("(0x{:0>2X})\n")),
 					line, id, id);
 				err = true;
 				break;
@@ -637,7 +637,7 @@ int _tmain(int argc, TCHAR *argv[])
 				if (amiiboTable[id].name != 0) {
 					fmt::print(stderr,
 						FSTR(_T("*** ERROR: Line {:d}: 'A' command has duplicate ID: {:d} ")
-					             _T("(0x{:0>4X})\n")),
+						     _T("(0x{:0>4X})\n")),
 						line, id, id);
 					err = true;
 					break;
