@@ -9,6 +9,9 @@
 #include "stdafx.h"
 #include "IRpFile.hpp"
 
+// C++ STL classes
+using std::unique_ptr;
+
 namespace LibRpFile {
 
 IRpFile::IRpFile()
@@ -78,11 +81,11 @@ int IRpFile::copyTo(IRpFile *pDestFile, off64_t size,
 
 	// Read buffer
 	static constexpr size_t COPYTO_BUFFER_SIZE = 64U * 1024U;
-	uint8_t *buf = static_cast<uint8_t*>(malloc(COPYTO_BUFFER_SIZE));
+	unique_ptr<uint8_t[]> buf(new uint8_t[COPYTO_BUFFER_SIZE]);
 
 	// Copy the data.
 	for (; size > 0; size -= COPYTO_BUFFER_SIZE) {
-		const size_t cbRead = this->read(buf, COPYTO_BUFFER_SIZE);
+		const size_t cbRead = this->read(buf.get(), COPYTO_BUFFER_SIZE);
 		cbReadTotal += cbRead;
 		if (cbRead != COPYTO_BUFFER_SIZE &&
 		    (size < static_cast<off64_t>(COPYTO_BUFFER_SIZE) && cbRead != static_cast<size_t>(size)))
@@ -97,7 +100,7 @@ int IRpFile::copyTo(IRpFile *pDestFile, off64_t size,
 				break;
 		}
 
-		const size_t cbWritten = pDestFile->write(buf, cbRead);
+		const size_t cbWritten = pDestFile->write(buf.get(), cbRead);
 		cbWrittenTotal += cbWritten;
 		if (cbWritten != cbRead) {
 			// Short write.
@@ -115,7 +118,6 @@ int IRpFile::copyTo(IRpFile *pDestFile, off64_t size,
 	if (pcbWritten) {
 		*pcbWritten = cbWrittenTotal;
 	}
-	free(buf);
 	return ret;
 }
 
