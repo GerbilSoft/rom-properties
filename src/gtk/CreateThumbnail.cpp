@@ -376,9 +376,9 @@ G_MODULE_EXPORT int RP_C_API rp_create_thumbnail2(
 
 	// Make sure glib is initialized.
 	// NOTE: This is a no-op as of glib-2.35.1.
-#if !GLIB_CHECK_VERSION(2,35,1)
+#if !GLIB_CHECK_VERSION(2, 35, 1)
 	g_type_init();
-#endif
+#endif /* !GLIB_CHECK_VERSION(2, 35, 1) */
 
 	// NOTE: TCreateThumbnail() has wrappers for opening the
 	// ROM file and getting RomData*, but we're doing it here

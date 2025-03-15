@@ -82,12 +82,12 @@
 
 // GLib on non-Windows platforms (prior to 2.53.1) defines G_MODULE_EXPORT to a no-op.
 // This doesn't work when we use symbol visibility settings.
-#if !GLIB_CHECK_VERSION(2,53,1) && !defined(_WIN32) && (defined(__GNUC__) && __GNUC__ >= 4)
+#if !GLIB_CHECK_VERSION(2, 53, 1) && !defined(_WIN32) && (defined(__GNUC__) && __GNUC__ >= 4)
 #  ifdef G_MODULE_EXPORT
 #    undef G_MODULE_EXPORT
 #  endif
 #  define G_MODULE_EXPORT __attribute__((visibility("default")))
-#endif /* !GLIB_CHECK_VERSION(2,53,1) && !_WIN32 && __GNUC__ >= 4 */
+#endif /* !GLIB_CHECK_VERSION(2, 53, 1) && !_WIN32 && __GNUC__ >= 4 */
 
 // libi18n
 #include "libi18n/i18n.h"

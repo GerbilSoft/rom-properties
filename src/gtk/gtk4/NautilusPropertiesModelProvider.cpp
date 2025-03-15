@@ -6,7 +6,7 @@
  * arbitrary GtkWidgets. As such, the properties returned will be more       *
  * limited than in previous versions.                                        *
  *                                                                           *
- * Copyright (c) 2017-2022 by David Korth.                                   *
+ * Copyright (c) 2017-2025 by David Korth.                                   *
  * SPDX-License-Identifier: GPL-2.0-or-later                                 *
  *****************************************************************************/
 
@@ -37,13 +37,13 @@ struct _RpNautilusPropertiesModelProvider {
 	GObject __parent__;
 };
 
-#if !GLIB_CHECK_VERSION(2,59,1)
+#if !GLIB_CHECK_VERSION(2, 59, 1)
 #  if defined(__GNUC__) && __GNUC__ >= 8
 /* Disable GCC 8 -Wcast-function-type warnings. (Fixed in glib-2.59.1 upstream.) */
 #    pragma GCC diagnostic push
 #    pragma GCC diagnostic ignored "-Wcast-function-type"
 #  endif
-#endif /* !GLIB_CHECK_VERSION(2,59,1) */
+#endif /* !GLIB_CHECK_VERSION(2, 59, 1) */
 
 // NOTE: G_DEFINE_TYPE() doesn't work in C++ mode with gcc-6.2
 // due to an implicit int to GTypeFlags conversion.
@@ -52,11 +52,11 @@ G_DEFINE_DYNAMIC_TYPE_EXTENDED(RpNautilusPropertiesModelProvider, rp_nautilus_pr
 	G_IMPLEMENT_INTERFACE_DYNAMIC(NAUTILUS_TYPE_PROPERTIES_MODEL_PROVIDER,
 		rp_nautilus_properties_model_provider_page_provider_init));
 
-#if !GLIB_CHECK_VERSION(2,59,1)
+#if !GLIB_CHECK_VERSION(2, 59, 1)
 #  if defined(__GNUC__) && __GNUC__ > 8
 #    pragma GCC diagnostic pop
 #  endif
-#endif /* !GLIB_CHECK_VERSION(2,59,1) */
+#endif /* !GLIB_CHECK_VERSION(2, 59, 1) */
 
 void
 rp_nautilus_properties_model_provider_register_type_ext(GTypeModule *module)

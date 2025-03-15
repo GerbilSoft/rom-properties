@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GNOME)                            *
  * rp-thumbnailer-main.cpp: D-Bus thumbnailerer service: main()            *
  *                                                                         *
- * Copyright (c) 2017-2020 by David Korth.                                 *
+ * Copyright (c) 2017-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -104,18 +104,18 @@ int main(int argc, char *argv[])
 	CHECK_UID_RET(EXIT_FAILURE);
 	rpt_do_security_options();
 
-#if !GLIB_CHECK_VERSION(2,35,1)
+#if !GLIB_CHECK_VERSION(2, 35, 1)
 	// g_type_init() is automatic as of glib-2.35.1
 	// and is marked deprecated.
 	g_type_init();
-#endif
-#if !GLIB_CHECK_VERSION(2,32,0)
+#endif /* !GLIB_CHECK_VERSION(2, 35, 1) */
+#if !GLIB_CHECK_VERSION(2, 32, 0)
 	// g_thread_init() is automatic as of glib-2.32.0
 	// and is marked deprecated.
 	if (!g_thread_supported()) {
 		g_thread_init(NULL);
 	}
-#endif
+#endif /* !GLIB_CHECK_VERSION(2, 32, 0) */
 
 	// Get the XDG cache directory.
 	const gchar *const cache_dir = g_get_user_cache_dir();

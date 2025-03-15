@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * glib-compat.h: GLib compatibility functions.                            *
  *                                                                         *
- * Copyright (c) 2017-2023 by David Korth.                                 *
+ * Copyright (c) 2017-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -18,7 +18,7 @@ G_BEGIN_DECLS
 
 // NOTE: g_autoptr was also added in 2.44.0.
 // Not including g_autoptr functionality here.
-#if !GLIB_CHECK_VERSION(2,43,4)
+#if !GLIB_CHECK_VERSION(2, 43, 4)
 #define G_DECLARE_FINAL_TYPE(ModuleObjName, module_obj_name, MODULE, OBJ_NAME, ParentName) \
   GType module_obj_name##_get_type (void);                                                               \
   G_GNUC_BEGIN_IGNORE_DEPRECATIONS                                                                       \
@@ -44,13 +44,13 @@ G_BEGIN_DECLS
   G_GNUC_UNUSED static inline ModuleObjName##Interface * MODULE##_##OBJ_NAME##_GET_IFACE (gpointer ptr) {  \
     return G_TYPE_INSTANCE_GET_INTERFACE (ptr, module_obj_name##_get_type (), ModuleObjName##Interface); } \
   G_GNUC_END_IGNORE_DEPRECATIONS
-#endif /* !GLIB_CHECK_VERSION(2,43,4) */
+#endif /* !GLIB_CHECK_VERSION(2, 43, 4) */
 
 /** Functions added in GLib 2.56.0 **/
 
-#if !GLIB_CHECK_VERSION(2,55,0)
+#if !GLIB_CHECK_VERSION(2, 55, 0)
 typedef void (* GClearHandleFunc) (guint handle_id);
-#endif /* !GLIB_CHECK_VERSION(2,55,0) */
+#endif /* !GLIB_CHECK_VERSION(2, 55, 0) */
 
 // NOTE: Always defining g_clear_handle_id() here to prevent
 // warnings because we have a minimum GLib version set for warnings.
