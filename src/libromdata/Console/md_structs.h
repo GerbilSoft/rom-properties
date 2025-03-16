@@ -73,10 +73,11 @@ typedef struct _MD_RomHeader {
 	// Shift-JIS (cp932) or cp1252.
 	// NOTE: Offsets are based on the absolute ROM address,
 	// since the header is located at 0x100.
-	char system[16];		// [0x100] System ID
-	char copyright[16];		// [0x110] Copyright
 	union {
 		struct {
+			// Standard ROM header
+			char system[16];	// [0x100] System ID
+			char copyright[16];	// [0x110] Copyright
 			char title_domestic[48];// [0x120] Japanese ROM name
 			char title_export[48];	// [0x150] US/European ROM name
 			char serial_number[14];	// [0x180] Serial number
@@ -85,6 +86,9 @@ typedef struct _MD_RomHeader {
 			MD_RomRamInfo rom_ram;	// [0x1A0] ROM/RAM address information
 		};
 		struct {
+			// Some early ROMs have 32-byte title fields.
+			char system[16];	// [0x100] System ID
+			char copyright[16];	// [0x110] Copyright
 			char title_domestic[32];// [0x120] Japanese ROM name
 			char title_export[32];	// [0x140] US/European ROM name
 			char serial_number[14];	// [0x160] Serial number
@@ -95,6 +99,18 @@ typedef struct _MD_RomHeader {
 			// at 0x190 or 0x1B0?
 			uint8_t reserved[0x20];	// [0x190]
 		} early;
+		struct {
+			// "Juusou Kihei Leynos (Japan) (Virtual Console).gen" has an
+			// Off-by-one error in the header: System is 1 byte too small.
+			char system[15];	// [0x100] System ID
+			char copyright[16];	// [0x10F] Copyright
+			char title_domestic[49];// [0x11F] Japanese ROM name
+			char title_export[48];	// [0x150] US/European ROM name
+			char serial_number[14];	// [0x180] Serial number
+			uint16_t checksum;	// [0x18E] Checksum (excluding vector table and header)
+			char io_support[16];	// [0x190] Supported I/O devices
+			MD_RomRamInfo rom_ram;	// [0x1A0] ROM/RAM address information
+		} target_earth;
 	};
 
 	// Save RAM information.

@@ -152,6 +152,14 @@ public:
 	static bool checkIfEarlyRomHeader(const MD_RomHeader *pRomHeader);
 
 	/**
+	 * Determine if a ROM header has an off-by-one in the System field size.
+	 * "Juusou Kihei Leynos (Japan) (Virtual Console).gen" has this issue.
+	 * @param pRomHeader ROM header.
+	 * @return True if it has the off-by-one; false if standard.
+	 */
+	static bool checkIfHeaderOffByOne(const MD_RomHeader *pRomHeader);
+
+	/**
 	 * Add fields for the ROM header.
 	 *
 	 * This function will not create a new tab.
@@ -336,6 +344,25 @@ bool MegaDrivePrivate::checkIfEarlyRomHeader(const MD_RomHeader *pRomHeader)
 }
 
 /**
+ * Determine if a ROM header has an off-by-one in the System field size.
+ * "Juusou Kihei Leynos (Japan) (Virtual Console).gen" has this issue.
+ * @param pRomHeader ROM header.
+ * @return True if it has the off-by-one; false if standard.
+ */
+bool MegaDrivePrivate::checkIfHeaderOffByOne(const MD_RomHeader *pRomHeader)
+{
+	if (!memcmp(pRomHeader->serial_number, "GM T-25013 -00", 14) &&
+	    pRomHeader->system[15] == '(')
+	{
+		// This has the off-by-one.
+		return true;
+	}
+
+	// No off-by-one.
+	return false;
+}
+
+/**
  * Add fields for the ROM header.
  *
  * This function will not create a new tab.
@@ -348,50 +375,73 @@ bool MegaDrivePrivate::checkIfEarlyRomHeader(const MD_RomHeader *pRomHeader)
 void MegaDrivePrivate::addFields_romHeader(const MD_RomHeader *pRomHeader, bool bRedetectRegion)
 {
 	const bool isEarlyRomHeader = checkIfEarlyRomHeader(pRomHeader);
-
-	// Read the strings from the header.
-	fields.addField_string(C_("MegaDrive", "System"),
-		cp1252_sjis_to_utf8(pRomHeader->system, sizeof(pRomHeader->system)),
-			RomFields::STRF_TRIM_END);
-	fields.addField_string(C_("RomData", "Copyright"),
-		cp1252_sjis_to_utf8(pRomHeader->copyright, sizeof(pRomHeader->copyright)),
-			RomFields::STRF_TRIM_END);
-
-	// Publisher
-	fields.addField_string(C_("RomData", "Publisher"), getPublisher(pRomHeader));
+	const bool isHeaderOffByOne = checkIfHeaderOffByOne(pRomHeader);
 
 	// Some fields vary depending on if this is a standard ROM header
 	// or an 'early' ROM header.
+	const char *s_system, *s_copyright;
 	const char *s_title_domestic, *s_title_export;
 	const char *s_serial_number, *s_io_support;
 	const MD_RomRamInfo *pRomRam;
-	int title_len;
+	int system_len, title_domestic_len, title_export_len;
 	uint16_t checksum;
-	if (!isEarlyRomHeader) {
-		// Standard ROM header.
-		s_title_domestic = pRomHeader->title_domestic;
-		s_title_export = pRomHeader->title_export;
-		s_serial_number = pRomHeader->serial_number;
-		s_io_support = pRomHeader->io_support;
-		pRomRam = &pRomHeader->rom_ram;
-		title_len = sizeof(pRomHeader->title_domestic);
-		checksum = be16_to_cpu(pRomHeader->checksum);
-	} else {
+	if (unlikely(isEarlyRomHeader)) {
 		// 'Early' ROM header.
+		s_system = pRomHeader->early.system;
+		s_copyright = pRomHeader->early.copyright;
 		s_title_domestic = pRomHeader->early.title_domestic;
 		s_title_export = pRomHeader->early.title_export;
 		s_serial_number = pRomHeader->early.serial_number;
 		s_io_support = pRomHeader->early.io_support;
 		pRomRam = &pRomHeader->early.rom_ram;
-		title_len = sizeof(pRomHeader->early.title_domestic);
+		system_len = sizeof(pRomHeader->early.system);
+		title_domestic_len = sizeof(pRomHeader->early.title_domestic);
+		title_export_len = sizeof(pRomHeader->early.title_export);
 		checksum = be16_to_cpu(pRomHeader->early.checksum);
+	} else if (unlikely(isHeaderOffByOne)) {
+		// Copyright header size is off by one.
+		s_system = pRomHeader->target_earth.system;
+		s_copyright = pRomHeader->target_earth.copyright;
+		s_title_domestic = pRomHeader->target_earth.title_domestic;
+		s_title_export = pRomHeader->target_earth.title_export;
+		s_serial_number = pRomHeader->target_earth.serial_number;
+		s_io_support = pRomHeader->target_earth.io_support;
+		pRomRam = &pRomHeader->target_earth.rom_ram;
+		system_len = sizeof(pRomHeader->target_earth.system);
+		title_domestic_len = sizeof(pRomHeader->target_earth.title_domestic);
+		title_export_len = sizeof(pRomHeader->target_earth.title_export);
+		checksum = be16_to_cpu(pRomHeader->target_earth.checksum);
+	} else {
+		// Standard ROM header
+		s_system = pRomHeader->system;
+		s_copyright = pRomHeader->copyright;
+		s_title_domestic = pRomHeader->title_domestic;
+		s_title_export = pRomHeader->title_export;
+		s_serial_number = pRomHeader->serial_number;
+		s_io_support = pRomHeader->io_support;
+		pRomRam = &pRomHeader->rom_ram;
+		system_len = sizeof(pRomHeader->system);
+		title_domestic_len = sizeof(pRomHeader->title_domestic);
+		title_export_len = sizeof(pRomHeader->title_export);
+		checksum = be16_to_cpu(pRomHeader->checksum);
 	}
+
+	// Read the strings from the header.
+	fields.addField_string(C_("MegaDrive", "System"),
+		cp1252_sjis_to_utf8(s_system, system_len),
+			RomFields::STRF_TRIM_END);
+	fields.addField_string(C_("RomData", "Copyright"),
+		cp1252_sjis_to_utf8(s_copyright, sizeof(pRomHeader->copyright)),
+			RomFields::STRF_TRIM_END);
+
+	// Publisher
+	fields.addField_string(C_("RomData", "Publisher"), getPublisher(pRomHeader));
 
 	// Titles, serial number, and checksum.
 	fields.addField_string(C_("MegaDrive", "Domestic Title"),
-		cp1252_sjis_jisx0208_to_utf8(s_title_domestic, title_len), RomFields::STRF_TRIM_END);
+		cp1252_sjis_jisx0208_to_utf8(s_title_domestic, title_domestic_len), RomFields::STRF_TRIM_END);
 	fields.addField_string(C_("MegaDrive", "Export Title"),
-		cp1252_sjis_to_utf8(s_title_export, title_len), RomFields::STRF_TRIM_END);
+		cp1252_sjis_to_utf8(s_title_export, title_export_len), RomFields::STRF_TRIM_END);
 	// NOTE: Serial number should be ASCII only.
 	fields.addField_string(C_("MegaDrive", "Serial Number"),
 		cp1252_to_utf8(s_serial_number, sizeof(pRomHeader->serial_number)),
