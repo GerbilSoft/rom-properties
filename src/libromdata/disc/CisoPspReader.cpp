@@ -918,7 +918,9 @@ int CisoPspReader::readBlock(uint32_t blockIdx, int pos, void *ptr, size_t size)
 			// then decompress it.
 			assert(windowBits != 0);
 			if (windowBits == 0) {
+				d->blockCacheIdx = ~0U;
 				m_lastError = EINVAL;
+				return 0;
 			}
 			uint32_t z_max_size = d->block_size;
 			if (unlikely(d->isDaxWithoutNCTable)) {
@@ -929,6 +931,7 @@ int CisoPspReader::readBlock(uint32_t blockIdx, int pos, void *ptr, size_t size)
 			if (z_block_size > z_max_size) {
 				// Compressed data is larger than the uncompressed block size.
 				// This is only allowed for DAX without NC table.
+				d->blockCacheIdx = ~0U;
 				m_lastError = EIO;
 				return 0;
 			}
@@ -936,6 +939,7 @@ int CisoPspReader::readBlock(uint32_t blockIdx, int pos, void *ptr, size_t size)
 			size_t sz_read = m_file->seekAndRead(physBlockAddr, d->z_buffer.data(), z_block_size);
 			if (sz_read != z_block_size) {
 				// Seek and/or read error.
+				d->blockCacheIdx = ~0U;
 				m_lastError = m_file->lastError();
 				if (m_lastError == 0) {
 					m_lastError = EIO;
@@ -949,7 +953,13 @@ int CisoPspReader::readBlock(uint32_t blockIdx, int pos, void *ptr, size_t size)
 			strm.avail_in = z_block_size;
 			strm.next_out = d->blockCache.data();
 			strm.avail_out = d->block_size;
-			inflateInit2(&strm, windowBits);
+			int ret = inflateInit2(&strm, windowBits);
+			if (ret != Z_OK) {
+				// Error initializing zlib.
+				d->blockCacheIdx = ~0U;
+				m_lastError = EIO;
+				return 0;
+			}
 
 			int status = inflate(&strm, Z_FULL_FLUSH);
 			const uint32_t uncomp_size = d->block_size - strm.avail_out;

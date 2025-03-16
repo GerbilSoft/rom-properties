@@ -456,6 +456,7 @@ int GczReader::readBlock(uint32_t blockIdx, int pos, void *ptr, size_t size)
 		// then decompress it.
 		if (z_block_size > d->block_size) {
 			// Compressed data is larger than the uncompressed block size...
+			d->blockCacheIdx = ~0U;
 			m_lastError = EIO;
 			return 0;
 		}
@@ -463,6 +464,7 @@ int GczReader::readBlock(uint32_t blockIdx, int pos, void *ptr, size_t size)
 		size_t sz_read = m_file->seekAndRead(physBlockAddr, d->z_buffer.data(), z_block_size);
 		if (sz_read != z_block_size) {
 			// Seek and/or read error.
+			d->blockCacheIdx = ~0U;
 			m_lastError = m_file->lastError();
 			if (m_lastError == 0) {
 				m_lastError = EIO;
@@ -476,6 +478,7 @@ int GczReader::readBlock(uint32_t blockIdx, int pos, void *ptr, size_t size)
 		if (hash_calc != le32_to_cpu(d->hashes[blockIdx])) {
 			// Hash error.
 			// TODO: Print warnings and/or more comprehensive error codes.
+			d->blockCacheIdx = ~0U;
 			m_lastError = EIO;
 			return 0;
 		}
@@ -486,7 +489,13 @@ int GczReader::readBlock(uint32_t blockIdx, int pos, void *ptr, size_t size)
 		z.avail_in = z_block_size;
 		z.next_out = d->blockCache.data();
 		z.avail_out = d->block_size;
-		inflateInit(&z);
+		int ret = inflateInit(&z);
+		if (ret != Z_OK) {
+			// Error initializing zlib.
+			d->blockCacheIdx = ~0U;
+			m_lastError = EIO;
+			return 0;
+		}
 
 		int status = inflate(&z, Z_FULL_FLUSH);
 		const uint32_t uncomp_size = d->block_size - z.avail_out;
