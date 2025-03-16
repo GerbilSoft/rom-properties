@@ -466,6 +466,13 @@ rp_image_const_ptr GameCubeSavePrivate::loadIcon(void)
 
 			case CARD_ICON_CI_SHARED: {
 				// Shared CI8 palette is at the end of the data.
+				assert(iconsizetotal >= (256*2));
+				if (iconsizetotal < (256*2)) {
+					// Not enough data for a shared CI8 palette?
+					iconAnimData->frames[i] = nullptr;
+					break;
+				}
+
 				const uint16_t *const pal_CI8_shared = reinterpret_cast<const uint16_t*>(
 					icondata.get() + (iconsizetotal - (256*2)));
 
