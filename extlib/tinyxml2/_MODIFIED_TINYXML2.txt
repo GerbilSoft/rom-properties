@@ -1,9 +1,9 @@
-This copy of tinyxml2-10.1.0 is a modified version of the original.
+This copy of tinyxml2-11.0.0 is a modified version of the original.
 
-commit 57eea48c5bfc354ac45d53b2eb499e66c80d63e0
-version to 10.1.0
+commit 9148bdf719e997d1f474be6bcc7943881046dba1
+setting the version to 11.0.0
 
-Tag: 10.1.0
+Tag: 11.0.0
 
 The following changes have been made to the original:
 
@@ -19,5 +19,5 @@ The following changes have been made to the original:
 
 - Fixed several -Wformat warnings.
 
-To obtain the original tinyxml2-10.1.0, visit:
+To obtain the original tinyxml2-11.0.0, visit:
 https://github.com/leethomason/tinyxml2
