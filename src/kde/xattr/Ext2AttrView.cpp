@@ -163,7 +163,7 @@ Ext2AttrView::Ext2AttrView(QWidget *parent)
 	for (size_t i = 0; i < d->checkBoxes.size(); i++) {
 		const Ext2AttrCheckboxInfo_t *const p = ext2AttrCheckboxInfo(static_cast<Ext2AttrCheckboxID>(i));
 
-		QCheckBox *const checkBox = new QCheckBox();
+		QCheckBox *const checkBox = new QCheckBox(this);
 		checkBox->setObjectName(U82Q(p->name));
 		d->ui.gridLayout->addWidget(checkBox, row, col);
 

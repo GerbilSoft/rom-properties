@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * XfsAttrView.cpp: XFS file system attribute viewer widget.               *
  *                                                                         *
- * Copyright (c) 2022-2024 by David Korth.                                 *
+ * Copyright (c) 2022-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -124,7 +124,7 @@ XfsAttrView::XfsAttrView(QWidget *parent)
 	for (size_t i = 0; i < d->checkBoxes.size(); i++) {
 		const XfsAttrCheckboxInfo_t *const p = xfsAttrCheckboxInfo(static_cast<XfsAttrCheckboxID>(i));
 
-		QCheckBox *const checkBox = new QCheckBox();
+		QCheckBox *const checkBox = new QCheckBox(this);
 		checkBox->setObjectName(U82Q(p->name));
 		d->ui.gridLayout->addWidget(checkBox, row, col);
 
