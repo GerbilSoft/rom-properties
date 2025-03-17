@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * ValveVTF3.hpp: Valve VTF3 (PS3) image reader.                           *
  *                                                                         *
- * Copyright (c) 2017-2023 by David Korth.                                 *
+ * Copyright (c) 2017-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -28,48 +28,48 @@ namespace LibRpTexture {
 
 class ValveVTF3Private final : public FileFormatPrivate
 {
-	public:
-		ValveVTF3Private(ValveVTF3 *q, const IRpFilePtr &file);
+public:
+	ValveVTF3Private(ValveVTF3 *q, const IRpFilePtr &file);
 
-	private:
-		typedef FileFormatPrivate super;
-		RP_DISABLE_COPY(ValveVTF3Private)
+private:
+	typedef FileFormatPrivate super;
+	RP_DISABLE_COPY(ValveVTF3Private)
 
-	public:
-		/** TextureInfo **/
-		static const array<const char*, 1+1> exts;
-		static const array<const char*, 1+1> mimeTypes;
-		static const TextureInfo textureInfo;
+public:
+	/** TextureInfo **/
+	static const array<const char*, 1+1> exts;
+	static const array<const char*, 1+1> mimeTypes;
+	static const TextureInfo textureInfo;
 
-	public:
-		// VTF3 header
-		VTF3HEADER vtf3Header;
+public:
+	// VTF3 header
+	VTF3HEADER vtf3Header;
 
-		// Decoded image
-		rp_image_ptr img;
+	// Decoded image
+	rp_image_ptr img;
 
-		/**
-		 * Load the image.
-		 * @return Image, or nullptr on error.
-		 */
-		rp_image_const_ptr loadImage(void);
+	/**
+	 * Load the image.
+	 * @return Image, or nullptr on error.
+	 */
+	rp_image_const_ptr loadImage(void);
 
 #if SYS_BYTEORDER == SYS_BIG_ENDIAN
-		/**
-		 * Byteswap a float. (TODO: Move to byteswap_rp.h?)
-		 * @param f Float to byteswap.
-		 * @return Byteswapped flaot.
-		 */
-		static inline float __swabf(float f)
-		{
-			union {
-				uint32_t u32;
-				float f;
-			} u32_f;
-			u32_f.f = f;
-			u32_f.u32 = __swab32(u32_f.u32);
-			return u32_f.f;
-		}
+	/**
+	 * Byteswap a float. (TODO: Move to byteswap_rp.h?)
+	 * @param f Float to byteswap.
+	 * @return Byteswapped flaot.
+	 */
+	static inline float __swabf(float f)
+	{
+		union {
+			uint32_t u32;
+			float f;
+		} u32_f;
+		u32_f.f = f;
+		u32_f.u32 = __swab32(u32_f.u32);
+		return u32_f.f;
+	}
 #endif /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
 };
 
@@ -113,7 +113,7 @@ rp_image_const_ptr ValveVTF3Private::loadImage(void)
 		return img;
 	} else if (!this->isValid || !this->file) {
 		// Can't load the image.
-		return nullptr;
+		return {};
 	}
 
 	// Sanity check: Maximum image dimensions of 32768x32768.
@@ -125,12 +125,12 @@ rp_image_const_ptr ValveVTF3Private::loadImage(void)
 	    vtf3Header.height > 32768)
 	{
 		// Invalid image dimensions.
-		return nullptr;
+		return {};
 	}
 
 	if (file->size() > 128*1024*1024) {
 		// Sanity check: VTF files shouldn't be more than 128 MB.
-		return nullptr;
+		return {};
 	}
 	const uint32_t file_sz = static_cast<uint32_t>(file->size());
 
@@ -148,7 +148,7 @@ rp_image_const_ptr ValveVTF3Private::loadImage(void)
 
 	if (expected_size == 0 || expected_size > file_sz) {
 		// Invalid image size.
-		return nullptr;
+		return {};
 	}
 
 	// TODO: Adjust for mipmaps.
@@ -159,22 +159,15 @@ rp_image_const_ptr ValveVTF3Private::loadImage(void)
 	assert(texDataStartAddr >= sizeof(vtf3Header));
 	if (texDataStartAddr < sizeof(vtf3Header)) {
 		// Invalid texture data start address.
-		return nullptr;
-	}
-
-	// Seek to the start of the texture data.
-	int ret = file->seek(texDataStartAddr);
-	if (ret != 0) {
-		// Seek error.
-		return nullptr;
+		return {};
 	}
 
 	// Read the texture data.
 	auto buf = aligned_uptr<uint8_t>(16, expected_size);
-	size_t size = file->read(buf.get(), expected_size);
+	size_t size = file->seekAndRead(texDataStartAddr, buf.get(), expected_size);
 	if (size != expected_size) {
-		// Read error.
-		return nullptr;
+		// Seek and/or read error.
+		return {};
 	}
 
 	// Decode the image.
@@ -263,8 +256,9 @@ ValveVTF3::ValveVTF3(const IRpFilePtr &file)
 const char *ValveVTF3::pixelFormat(void) const
 {
 	RP_D(const ValveVTF3);
-	if (!d->isValid)
+	if (!d->isValid) {
 		return nullptr;
+	}
 
 	// Only two formats are supported.
 	return (d->vtf3Header.flags & VTF3_FLAG_ALPHA) ? "DXT5" : "DXT1";
@@ -279,8 +273,9 @@ const char *ValveVTF3::pixelFormat(void) const
 int ValveVTF3::getFields(RomFields *fields) const
 {
 	assert(fields != nullptr);
-	if (!fields)
+	if (!fields) {
 		return 0;
+	}
 
 	RP_D(const ValveVTF3);
 	if (!d->isValid) {
@@ -306,7 +301,7 @@ rp_image_const_ptr ValveVTF3::image(void) const
 	RP_D(const ValveVTF3);
 	if (!d->isValid) {
 		// Unknown file type.
-		return nullptr;
+		return {};
 	}
 
 	// Load the image.
