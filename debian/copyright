@@ -248,6 +248,11 @@ Copyright:
  2017-2024, David Korth <gerbilsoft@gerbilsoft.com>
 License: GPL-2+
 
+Files: src/librptexture/fileformat/qoi.h
+Copyright:
+ Copyright (c) 2021, Dominic Szablewski - https://phoboslab.org
+License: MIT
+
 License: BSD-2-clause
  All rights reserved.
  .

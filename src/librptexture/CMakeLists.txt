@@ -18,7 +18,7 @@ IF(ENABLE_OPENMP)
 	ENDIF(OpenMP_FOUND)
 ENDIF(ENABLE_OPENMP)
 
-# Sources.
+# Sources
 SET(${PROJECT_NAME}_SRCS
 	FileFormatFactory.cpp
 	ImageSizeCalc.cpp
@@ -48,6 +48,7 @@ SET(${PROJECT_NAME}_SRCS
 	fileformat/KhronosKTX2.cpp
 	fileformat/PalmOS_Tbmp.cpp
 	fileformat/PowerVR3.cpp
+	fileformat/Qoi.cpp
 	fileformat/SegaPVR.cpp
 	fileformat/TGA.cpp
 	fileformat/ValveVTF.cpp
@@ -58,7 +59,7 @@ SET(${PROJECT_NAME}_SRCS
 	data/GLenumStrings.cpp
 	data/VkEnumStrings.cpp
 	)
-# Headers.
+# Headers
 SET(${PROJECT_NAME}_H
 	FileFormatFactory.hpp
 	argb32_t.hpp
@@ -81,6 +82,7 @@ SET(${PROJECT_NAME}_H
 	decoder/ImageDecoder_BC7.hpp
 	decoder/ImageDecoder_C64.hpp
 	decoder/PixelConversion.hpp
+	decoder/qoi.h
 
 	fileformat/FileFormat.hpp
 	fileformat/FileFormat_p.hpp
@@ -93,6 +95,7 @@ SET(${PROJECT_NAME}_H
 	fileformat/KhronosKTX2.hpp
 	fileformat/PalmOS_Tbmp.hpp
 	fileformat/PowerVR3.hpp
+	fileformat/Qoi.hpp
 	fileformat/SegaPVR.hpp
 	fileformat/TGA.hpp
 	fileformat/ValveVTF.hpp

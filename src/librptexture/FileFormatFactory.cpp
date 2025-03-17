@@ -35,6 +35,7 @@ using std::vector;
 #include "fileformat/KhronosKTX.hpp"
 #include "fileformat/KhronosKTX2.hpp"
 #include "fileformat/PowerVR3.hpp"
+#include "fileformat/Qoi.hpp"
 #include "fileformat/SegaPVR.hpp"
 #include "fileformat/TGA.hpp"
 #include "fileformat/ValveVTF.hpp"
@@ -94,11 +95,12 @@ pthread_once_t once_mimeTypes = PTHREAD_ONCE_INIT;
 // FileFormat subclasses that use a header at 0 and
 // definitely have a 32-bit magic number at address 0.
 // TODO: Add support for multiple magic numbers per class.
-const array<FileFormatFns, 11> FileFormatFns_magic = {{
+const array<FileFormatFns, 12> FileFormatFns_magic = {{
 	GetFileFormatFns(ASTC,			P99_PROTECT({{0x13ABA15C, 0}})),	// Needs to be in multi-char constant format
 	GetFileFormatFns(DirectDrawSurface,	P99_PROTECT({{'DDS ', 0}})),
 	GetFileFormatFns(GodotSTEX,		P99_PROTECT({{'GDST', 'GST2'}})),
 	GetFileFormatFns(PowerVR3,		P99_PROTECT({{'PVR\x03', '\x03RVP'}})),
+	GetFileFormatFns(Qoi	,		P99_PROTECT({{'qoif', 0}})),
 	GetFileFormatFns(SegaPVR,		P99_PROTECT({{'PVRT', 'GVRT'}})),
 	GetFileFormatFns(SegaPVR,		P99_PROTECT({{'PVRX', 'GBIX'}})),
 	GetFileFormatFns(SegaPVR,		P99_PROTECT({{'GCIX', 0}})),

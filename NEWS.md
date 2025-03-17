@@ -7,6 +7,7 @@
     J2ME .jar packages and .jad metadata files only. Other .jar files
     will be ignored. Android packages (.apk) are also not currently
     supported.
+  * Qoi: Quite OK Image Format parser. Uses qoi.h from upstream.
 
 * New parser features:
   * WiiUPackage: Add support for extracted Wii U packages.

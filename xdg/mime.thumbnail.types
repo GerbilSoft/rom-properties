@@ -130,6 +130,8 @@ image/x-godot-ctex			# Godot CTEX (v4)
 image/ktx				# KhronosKTX
 image/ktx2				# KhronosKTX2
 image/x-pvr				# PowerVR3
+image/x-qoi				# Qoi
+image/qoi				# Qoi
 image/x-sega-pvr			# SegaPVR
 image/x-sega-gvr			# SegaPVR
 image/x-sega-svr			# SegaPVR
