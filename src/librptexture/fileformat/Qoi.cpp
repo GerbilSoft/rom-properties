@@ -13,7 +13,8 @@
 // Other rom-properties libraries
 #include "libi18n/i18n.h"
 
-#define QOI_IMPLEMENTATION
+#define QOI_IMPLEMENTATION 1
+#define QOI_NO_STDIO 1
 #include "decoder/qoi.h"
 
 // Other rom-properties libraries
