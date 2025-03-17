@@ -236,8 +236,7 @@ const char *Qoi::pixelFormat(void) const
 		return nullptr;
 	}
 
-	// TODO: Determine if the alpha channel is used at all.
-	return "ARGB32";
+	return (d->qoiHeader.desc.channels == 3) ? "RGB888" : "ARGB32";
 }
 
 #ifdef ENABLE_LIBRPBASE_ROMFIELDS
