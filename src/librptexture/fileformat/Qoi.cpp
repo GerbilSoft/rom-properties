@@ -27,6 +27,8 @@ using std::array;
 namespace LibRpTexture {
 
 // Qoi header, with magic number.
+// NOTE: qoi_desc should be 14 bytes, but it's padded.
+// qoi.h doesn't load the struct directly, so this isn't an issue.
 #define QOI_MAGIC_NUMBER 'qoif'
 struct QoiHeader {
 	uint32_t magic;
