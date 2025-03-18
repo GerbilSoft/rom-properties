@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * GameCubeSave.hpp: Nintendo GameCube save file reader.                   *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -121,7 +121,7 @@ public:
 	 * Get the comment from the save file.
 	 * @return Comment, or empty string on error.
 	 */
-	string getComment(void);
+	string getComment(void) const;
 };
 
 ROMDATA_IMPL(GameCubeSave)
@@ -586,7 +586,7 @@ rp_image_const_ptr GameCubeSavePrivate::loadBanner(void)
  * Get the comment from the save file.
  * @return Comment, or empty string on error.
  */
-string GameCubeSavePrivate::getComment(void)
+string GameCubeSavePrivate::getComment(void) const
 {
 	if (unlikely(direntry.commentaddr == 0xFFFFFFFFU)) {
 		// No comment.
@@ -607,10 +607,37 @@ string GameCubeSavePrivate::getComment(void)
 		return {};
 	}
 
+	// Only allow Shift-JIS for non-US/EU region codes.
+	// TODO: Use a lookup table instead of switch/case?
+	bool isShiftJIS;
+	switch (direntry.id6[3]) {
+		case 'E':	// USA
+		case 'P':	// Europe
+		case 'X':	// Multi-language release
+		case 'Y':	// Multi-language release
+		case 'L':	// Japanese import to PAL regions
+		case 'M':	// Japanese import to PAL regions
+
+		case 'D':	// Germany
+		case 'F':	// France
+		case 'H':	// Netherlands
+		case 'I':	// Italy
+		case 'R':	// Russia
+		case 'S':	// Spain
+		case 'U':	// Australia
+			isShiftJIS = false;
+			break;
+
+		default:
+			isShiftJIS = true;
+			break;
+	}
+
 	// Get the comment.
 	// NOTE: Some games have garbage after the first NULL byte
 	// in the two description fields, which prevents the rest
 	// of the field from being displayed.
+	string desc;
 
 	// Check for a NULL byte in the game description.
 	size_t desc_len = sizeof(comment.desc);
@@ -619,7 +646,11 @@ string GameCubeSavePrivate::getComment(void)
 		// Found a NULL byte.
 		desc_len = null_pos - comment.desc;
 	}
-	string desc = cp1252_sjis_to_utf8(comment.desc, static_cast<int>(desc_len));
+	if (isShiftJIS) {
+		desc = cp1252_sjis_to_utf8(comment.desc, static_cast<int>(desc_len));
+	} else {
+		desc = cp1252_to_utf8(comment.desc, static_cast<int>(desc_len));
+	}
 	// NOTE: Some games (e.g. TMNT Mutant Melee [GE5EA4]) end the field with CR.
 	if (!desc.empty() && desc[desc.size()-1] == '\r') {
 		desc.resize(desc.size()-1);
@@ -633,7 +664,11 @@ string GameCubeSavePrivate::getComment(void)
 		// Found a NULL byte.
 		desc_len = null_pos - comment.file;
 	}
-	desc += cp1252_sjis_to_utf8(comment.file, static_cast<int>(desc_len));
+	if (isShiftJIS) {
+		desc += cp1252_sjis_to_utf8(comment.file, static_cast<int>(desc_len));
+	} else {
+		desc += cp1252_to_utf8(comment.file, static_cast<int>(desc_len));
+	}
 	// NOTE: Some games (e.g. TMNT Mutant Melee [GE5EA4]) end the field with CR.
 	if (!desc.empty() && desc[desc.size()-1] == '\r') {
 		desc.resize(desc.size()-1);
