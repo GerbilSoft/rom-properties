@@ -248,7 +248,7 @@ const char *file_ext(const char *filename);
  * @param filename Filename (UTF-8)
  * @return File extension, including the leading dot; nullptr if no extension.
  */
-static inline const char *file_ext(const std::string filename)
+static inline const char *file_ext(const std::string &filename)
 {
 	return file_ext(filename.c_str());
 }
@@ -269,7 +269,7 @@ const wchar_t *file_ext(const wchar_t *filename);
  * @param filename Filename (UTF-16)
  * @return File extension, including the leading dot; nullptr if no extension.
  */
-static inline const wchar_t *file_ext(const std::wstring filename)
+static inline const wchar_t *file_ext(const std::wstring &filename)
 {
 	return file_ext(filename.c_str());
 }
