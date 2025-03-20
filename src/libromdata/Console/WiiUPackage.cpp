@@ -93,9 +93,7 @@ WiiUPackagePrivate::WiiUPackagePrivate(const wchar_t *path)
 	, fst(nullptr)
 {
 	if (path && path[0] != L'\0') {
-		this->path = _tcsdup(path);
-	} else {
-		this->path = nullptr;
+		this->path.assign(path);
 	}
 
 #ifdef ENABLE_DECRYPTION
