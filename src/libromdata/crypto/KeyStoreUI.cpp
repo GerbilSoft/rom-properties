@@ -1002,7 +1002,6 @@ int KeyStoreUI::setKey(int sectIdx, int keyIdx, const char *value)
 				convKey.resize(expected_key_len);
 			}
 			new_value = std::move(convKey);
-			new_value = string();
 		}
 	}
 
