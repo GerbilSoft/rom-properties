@@ -160,17 +160,20 @@ unsigned int WiiUPackagePrivate::parseUnsignedInt(const XMLElement *rootNode, co
 		return 0;
 
 	const char *attr = elem->Attribute("type");
-	if (!attr || strcmp(attr, "unsignedInt") != 0)
+	if (!attr || strcmp(attr, "unsignedInt") != 0) {
 		return 0;
+	}
 
 	attr = elem->Attribute("length");
-	assert(strcmp(attr, "4") == 0);
-	if (!attr || strcmp(attr, "4") != 0)
+	assert(attr && strcmp(attr, "4") == 0);
+	if (!attr || strcmp(attr, "4") != 0) {
 		return 0;
+	}
 
 	const char *const text = elem->GetText();
-	if (!text)
+	if (!text) {
 		return 0;
+	}
 
 	// Parse the value as an unsigned int.
 	char *endptr;
@@ -187,25 +190,30 @@ unsigned int WiiUPackagePrivate::parseUnsignedInt(const XMLElement *rootNode, co
  */
 uint64_t WiiUPackagePrivate::parseHexBinary(const XMLElement *rootNode, const char *name)
 {
-	if (!rootNode)
+	if (!rootNode) {
 		return 0;
+	}
 
 	const XMLElement *const elem = rootNode->FirstChildElement(name);
-	if (!elem)
+	if (!elem) {
 		return 0;
+	}
 
 	const char *attr = elem->Attribute("type");
-	if (!attr || strcmp(attr, "hexBinary") != 0)
+	if (!attr || strcmp(attr, "hexBinary") != 0) {
 		return 0;
+	}
 
 	attr = elem->Attribute("length");
-	assert(strcmp(attr, "4") == 0 || strcmp(attr, "8") == 0);
-	if (!attr || (strcmp(attr, "4") != 0 && strcmp(attr, "8") != 0))
+	assert(attr && strcmp(attr, "4") == 0 || strcmp(attr, "8") == 0);
+	if (!attr || (strcmp(attr, "4") != 0 && strcmp(attr, "8") != 0)) {
 		return 0;
+	}
 
 	const char *const text = elem->GetText();
-	if (!text)
+	if (!text) {
 		return 0;
+	}
 
 	// Parse the value as a uint64_t.
 	char *endptr;
