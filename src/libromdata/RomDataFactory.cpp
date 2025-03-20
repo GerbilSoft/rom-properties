@@ -998,7 +998,7 @@ static RomDataPtr T_create(const CharType *filename, unsigned int attrs)
 	{
 		// It's a drive letter. (volume root)
 		const CharType drvfilename[4] = {filename[0], ':', '\\', '\0'};
-		IRpFilePtr file = std::make_shared<RpFile>(filename, RpFile::FM_OPEN_READ_GZ);
+		IRpFilePtr file = std::make_shared<RpFile>(drvfilename, RpFile::FM_OPEN_READ_GZ);
 		if (file->isOpen()) {
 			RomDataPtr romData = create(file, attrs);
 			if (romData) {
