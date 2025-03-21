@@ -130,9 +130,9 @@ int RP_ContextMenu_Private::convert_to_png(LPCTSTR source_filename)
 	// tEXt chunks
 	RpPngWriter::kv_vector kv;
 
-	unique_ptr<RpPngWriter> pngWriter(new RpPngWriter(output_filename.get(),
-		img->width(), height, img->format()));
-	if (!pngWriter->isOpen()) {
+	RpPngWriter pngWriter(output_filename.get(),
+		img->width(), height, img->format());
+	if (!pngWriter.isOpen()) {
 		// Could not open the PNG writer.
 		return RPCT_ERROR_OUTPUT_FILE_FAILED;
 	}
@@ -143,7 +143,7 @@ int RP_ContextMenu_Private::convert_to_png(LPCTSTR source_filename)
 	kv.emplace_back("Software", "ROM Properties Page shell extension (Win32)");
 
 	// Write the tEXt chunks.
-	pngWriter->write_tEXt(kv);
+	pngWriter.write_tEXt(kv);
 
 	/** IHDR **/
 
@@ -153,7 +153,7 @@ int RP_ContextMenu_Private::convert_to_png(LPCTSTR source_filename)
 	if (img->get_sBIT(&sBIT) != 0) {
 		memset(&sBIT, 0, sizeof(sBIT));
 	}
-	int pwRet = pngWriter->write_IHDR(&sBIT,
+	int pwRet = pngWriter.write_IHDR(&sBIT,
 		img->palette(), img->palette_len());
 	if (pwRet != 0) {
 		// Error writing IHDR.
@@ -172,7 +172,7 @@ int RP_ContextMenu_Private::convert_to_png(LPCTSTR source_filename)
 	}
 
 	// Write the IDAT section.
-	pwRet = pngWriter->write_IDAT(row_pointers.get());
+	pwRet = pngWriter.write_IDAT(row_pointers.get());
 	if (pwRet != 0) {
 		// Error writing IDAT.
 		// TODO: Unlink the PNG image.

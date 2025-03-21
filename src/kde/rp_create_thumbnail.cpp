@@ -127,9 +127,9 @@ Q_DECL_EXPORT int RP_C_API rp_create_thumbnail2(const char *source_file, const c
 			return RPCT_ERROR_OUTPUT_FILE_FAILED;
 	}
 
-	unique_ptr<RpPngWriter> pngWriter(new RpPngWriter(output_file,
-		outParams.retImg.width(), height, format));
-	if (!pngWriter->isOpen()) {
+	RpPngWriter pngWriter(output_file,
+		outParams.retImg.width(), height, format);
+	if (!pngWriter.isOpen()) {
 		// Could not open the PNG writer.
 		return RPCT_ERROR_OUTPUT_FILE_FAILED;
 	}
@@ -186,7 +186,7 @@ Q_DECL_EXPORT int RP_C_API rp_create_thumbnail2(const char *source_file, const c
 	}
 
 	// Write the tEXt chunks.
-	pngWriter->write_tEXt(kv);
+	pngWriter.write_tEXt(kv);
 
 	/** IHDR **/
 
@@ -197,7 +197,7 @@ Q_DECL_EXPORT int RP_C_API rp_create_thumbnail2(const char *source_file, const c
 
 	// If sBIT wasn't found, all fields will be 0.
 	// RpPngWriter will ignore sBIT in this case.
-	int pwRet = pngWriter->write_IHDR(&outParams.sBIT,
+	int pwRet = pngWriter.write_IHDR(&outParams.sBIT,
 		colorTable.constData(), colorTable.size());
 	if (pwRet != 0) {
 		// Error writing IHDR.
@@ -216,7 +216,7 @@ Q_DECL_EXPORT int RP_C_API rp_create_thumbnail2(const char *source_file, const c
 	}
 
 	// Write the IDAT section.
-	pwRet = pngWriter->write_IDAT(row_pointers.get());
+	pwRet = pngWriter.write_IDAT(row_pointers.get());
 	if (pwRet != 0) {
 		// Error writing IDAT.
 		// TODO: Unlink the PNG image.

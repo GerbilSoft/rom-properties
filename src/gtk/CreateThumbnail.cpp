@@ -418,10 +418,10 @@ G_MODULE_EXPORT int RP_C_API rp_create_thumbnail2(
 	// gdk-pixbuf doesn't support CI8, so we'll assume all
 	// images are ARGB32. (Well, ABGR32, but close enough.)
 	// TODO: Verify channels, etc.?
-	unique_ptr<RpPngWriter> pngWriter(new RpPngWriter(output_file,
+	RpPngWriter pngWriter(output_file,
 		outParams.thumbSize.width, outParams.thumbSize.height,
 		rp_image::Format::ARGB32));
-	if (!pngWriter->isOpen()) {
+	if (!pngWriter.isOpen()) {
 		// Could not open the PNG writer.
 		ret = RPCT_ERROR_OUTPUT_FILE_FAILED;
 		goto cleanup;
@@ -497,13 +497,13 @@ G_MODULE_EXPORT int RP_C_API rp_create_thumbnail2(
 	}
 
 	// Write the tEXt chunks.
-	pngWriter->write_tEXt(kv);
+	pngWriter.write_tEXt(kv);
 
 	/** IHDR **/
 
 	// If sBIT wasn't found, all fields will be 0.
 	// RpPngWriter will ignore sBIT in this case.
-	pwRet = pngWriter->write_IHDR(&outParams.sBIT);
+	pwRet = pngWriter.write_IHDR(&outParams.sBIT);
 	if (pwRet != 0) {
 		// Error writing IHDR.
 		// TODO: Unlink the PNG image.
@@ -550,7 +550,7 @@ G_MODULE_EXPORT int RP_C_API rp_create_thumbnail2(
 	// GdkPixbuf use ABGR32.
 	static constexpr bool is_abgr = true;
 #endif
-	pwRet = pngWriter->write_IDAT(row_pointers.get(), is_abgr);
+	pwRet = pngWriter.write_IDAT(row_pointers.get(), is_abgr);
 #ifdef RP_GTK_USE_GDKTEXTURE
 	g_free(texdata);
 #endif /* RP_GTK_USE_GDKTEXTURE */
