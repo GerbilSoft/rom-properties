@@ -498,8 +498,8 @@ int Dreamcast::isRomSupported_static(const DetectInfo *info)
 	// Check for Dreamcast HW and Maker ID.
 
 	// Try 2048-byte sectors. (IP0000.bin located at 0x0000.)
-	if (info->header.size >= 2048) {
-		const DC_IP0000_BIN_t *ip0000_bin = reinterpret_cast<const DC_IP0000_BIN_t*>(info->header.pData);
+	{
+		const DC_IP0000_BIN_t *const ip0000_bin = reinterpret_cast<const DC_IP0000_BIN_t*>(info->header.pData);
 		if (!memcmp(ip0000_bin->hw_id, DC_IP0000_BIN_HW_ID, sizeof(ip0000_bin->hw_id)) &&
 		    !memcmp(ip0000_bin->maker_id, DC_IP0000_BIN_MAKER_ID, sizeof(ip0000_bin->maker_id)))
 		{
@@ -510,9 +510,7 @@ int Dreamcast::isRomSupported_static(const DetectInfo *info)
 	}
 
 	// Try 2352-byte sectors.
-	if (info->header.size >= 2352 &&
-	    Cdrom2352Reader::isDiscSupported_static(info->header.pData, info->header.size) >= 0)
-	{
+	if (Cdrom2352Reader::isDiscSupported_static(info->header.pData, info->header.size) >= 0) {
 		// Sync bytes are valid.
 		const CDROM_2352_Sector_t *const sector =
 			reinterpret_cast<const CDROM_2352_Sector_t*>(info->header.pData);
@@ -521,7 +519,7 @@ int Dreamcast::isRomSupported_static(const DetectInfo *info)
 		const uint8_t *const data = cdromSectorDataPtr(sector);
 
 		// Check IP0000.bin.
-		const DC_IP0000_BIN_t *ip0000_bin = reinterpret_cast<const DC_IP0000_BIN_t*>(data);
+		const DC_IP0000_BIN_t *const ip0000_bin = reinterpret_cast<const DC_IP0000_BIN_t*>(data);
 		if (!memcmp(ip0000_bin->hw_id, DC_IP0000_BIN_HW_ID, sizeof(ip0000_bin->hw_id)) &&
 		    !memcmp(ip0000_bin->maker_id, DC_IP0000_BIN_MAKER_ID, sizeof(ip0000_bin->maker_id)))
 		{
