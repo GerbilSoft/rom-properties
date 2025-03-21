@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * GcnFst.hpp: GameCube/Wii FST parser.                                    *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -35,7 +35,7 @@ private:
 
 private:
 	friend class GcnFstPrivate;
-	GcnFstPrivate *const d;
+	GcnFstPrivate *const d_ptr;
 
 public:
 	/**

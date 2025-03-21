@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * WiiUFst.cpp: Wii U FST parser                                           *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -417,12 +417,12 @@ const WUP_FST_Entry *WiiUFstPrivate::find_path(const char *path) const
  * @param len Length of fstData, in bytes
  */
 WiiUFst::WiiUFst(const uint8_t *fstData, uint32_t len)
-	: d(new WiiUFstPrivate(fstData, len))
+	: d_ptr(new WiiUFstPrivate(fstData, len))
 { }
 
 WiiUFst::~WiiUFst()
 {
-	delete d;
+	delete d_ptr;
 }
 
 /**
@@ -431,6 +431,7 @@ WiiUFst::~WiiUFst()
  */
 bool WiiUFst::isOpen(void) const
 {
+	RP_D(const WiiUFst);
 	return (d->string_table_ptr != nullptr);
 }
 
@@ -440,6 +441,7 @@ bool WiiUFst::isOpen(void) const
  */
 bool WiiUFst::hasErrors(void) const
 {
+	RP_D(const WiiUFst);
 	return d->hasErrors;
 }
 
@@ -452,8 +454,7 @@ bool WiiUFst::hasErrors(void) const
  */
 IFst::Dir *WiiUFst::opendir(const char *path)
 {
-	// TODO: Ignoring path right now.
-	// Always reading the root directory.
+	RP_D(WiiUFst);
 	if (!d->fstData) {
 		// No FST.
 		return nullptr;
@@ -499,6 +500,7 @@ IFst::Dir *WiiUFst::opendir(const char *path)
  */
 IFst::DirEnt *WiiUFst::readdir(IFst::Dir *dirp)
 {
+	RP_D(WiiUFst);
 	assert(dirp != nullptr);
 	assert(dirp->parent == this);
 	if (!dirp || dirp->parent != this) {
@@ -596,6 +598,7 @@ int WiiUFst::closedir(IFst::Dir *dirp)
 		return -EINVAL;
 	}
 
+	RP_D(WiiUFst);
 	assert(d->fstDirCount > 0);
 	delete dirp;
 	d->fstDirCount--;
@@ -616,6 +619,7 @@ int WiiUFst::find_file(const char *filename, DirEnt *dirent)
 		return -EINVAL;
 	}
 
+	RP_D(WiiUFst);
 	const WUP_FST_Entry *const fst_entry = d->find_path(filename);
 	if (!fst_entry) {
 		// Not found.
@@ -650,6 +654,7 @@ int WiiUFst::find_file(const char *filename, DirEnt *dirent)
  */
 off64_t WiiUFst::totalUsedSize(void) const
 {
+	RP_D(const WiiUFst);
 	if (!d->fstData) {
 		// No FST...
 		return -1;
