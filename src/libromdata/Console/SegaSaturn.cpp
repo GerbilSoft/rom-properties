@@ -585,17 +585,16 @@ int SegaSaturn::loadFieldData(void)
 	// Try to open the ISO-9660 object.
 	// NOTE: Only done here because the ISO-9660 fields
 	// are used for field info only.
-	ISO *const isoData = new ISO(d->file);
-	if (isoData->isOpen()) {
+	ISO isoData(d->file);
+	if (isoData.isOpen()) {
 		// Add the fields.
-		const RomFields *const isoFields = isoData->fields();
+		const RomFields *const isoFields = isoData.fields();
 		assert(isoFields != nullptr);
 		if (isoFields) {
 			d->fields.addFields_romFields(isoFields,
 				RomFields::TabOffset_AddTabs);
 		}
 	}
-	delete isoData;
 
 	// Finished reading the field data.
 	return static_cast<int>(d->fields.count());

@@ -46,13 +46,13 @@ int VerifyKeys(void)
 {
 	// Instantiate the key store.
 	// TODO: Check if load failed?
-	KeyStoreUI *const keyStore = new KeyStoreCLI();
-	keyStore->reset();
+	KeyStoreCLI keyStore;
+	keyStore.reset();
 
 	// Get keys from supported classes.
 	int ret = 0;
 	bool printedOne = false;
-	const int sectCount = keyStore->sectCount();
+	const int sectCount = keyStore.sectCount();
 	for (int sectIdx = 0; sectIdx < sectCount; sectIdx++) {
 		if (printedOne) {
 			putchar('\n');
@@ -60,12 +60,12 @@ int VerifyKeys(void)
 		printedOne = true;
 
 		fputs("*** ", stdout);
-		fmt::print(FRUN(C_("rpcli", "Checking encryption keys: {:s}")), keyStore->sectName(sectIdx));
+		fmt::print(FRUN(C_("rpcli", "Checking encryption keys: {:s}")), keyStore.sectName(sectIdx));
 		putchar('\n');
 
-		const int keyCount = keyStore->keyCount(sectIdx);
+		const int keyCount = keyStore.keyCount(sectIdx);
 		for (int keyIdx = 0; keyIdx < keyCount; keyIdx++) {
-			const KeyStoreUI::Key *const key = keyStore->getKey(sectIdx, keyIdx);
+			const KeyStoreUI::Key *const key = keyStore.getKey(sectIdx, keyIdx);
 			assert(key != nullptr);
 			if (!key) {
 				fmt::print(FRUN(C_("rpcli", "WARNING: Key [{:d},{:d}] has no Key object. Skipping...")), sectIdx, keyIdx);
@@ -117,7 +117,6 @@ int VerifyKeys(void)
 		}
 	}
 
-	delete keyStore;
 	fflush(stdout);
 	return ret;
 }

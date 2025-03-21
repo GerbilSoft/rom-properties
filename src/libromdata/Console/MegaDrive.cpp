@@ -1453,17 +1453,16 @@ int MegaDrive::loadFieldData(void)
 	// NOTE: Only done here because the ISO-9660 fields
 	// are used for field info only.
 	if (d->isDisc()) {
-		ISO *const isoData = new ISO(d->file);
-		if (isoData->isOpen()) {
+		ISO isoData(d->file);
+		if (isoData.isOpen()) {
 			// Add the fields.
-			const RomFields *const isoFields = isoData->fields();
+			const RomFields *const isoFields = isoData.fields();
 			assert(isoFields != nullptr);
 			if (isoFields) {
 				d->fields.addFields_romFields(isoFields,
 					RomFields::TabOffset_AddTabs);
 			}
 		}
-		delete isoData;
 	}
 
 	// Finished reading the field data.

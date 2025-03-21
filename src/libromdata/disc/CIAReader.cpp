@@ -136,7 +136,7 @@ CIAReaderPrivate::CIAReaderPrivate(CIAReader *q,
 	}
 
 	// Create a cipher to decrypt the title key.
-	IAesCipher *cipher = AesCipherFactory::create();
+	IAesCipher *const cipher = AesCipherFactory::create();
 
 	// Initialize parameters for title key decryption.
 	// TODO: Error checking.

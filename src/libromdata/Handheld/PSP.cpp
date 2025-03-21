@@ -552,16 +552,15 @@ int PSP::loadFieldData(void)
 	// TODO: Parse firmware update PARAM.SFO and EBOOT.BIN?
 
 	// ISO object for ISO-9660 PVD
-	ISO *const isoData = new ISO(d->file);
-	if (isoData->isOpen()) {
+	ISO isoData(d->file);
+	if (isoData.isOpen()) {
 		// Add the fields.
-		const RomFields *const isoFields = isoData->fields();
+		const RomFields *const isoFields = isoData.fields();
 		if (isoFields) {
 			d->fields.addFields_romFields(isoFields,
 				RomFields::TabOffset_AddTabs);
 		}
 	}
-	delete isoData;
 
 	// Finished reading the field data.
 	return static_cast<int>(d->fields.count());

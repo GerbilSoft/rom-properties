@@ -638,9 +638,8 @@ rp_image_const_ptr J2MEPrivate::loadIcon(void)
 
 	// Create a MemFile and decode the image.
 	// TODO: For rpcli, shortcut to extract the PNG directly.
-	MemFile *const f_mem = new MemFile(png_buf.data(), png_buf.size());
-	this->img_icon = RpPng::load(f_mem);
-	delete f_mem;
+	MemFile f_mem(png_buf.data(), png_buf.size());
+	this->img_icon = RpPng::load(&f_mem);
 	return this->img_icon;
 }
 

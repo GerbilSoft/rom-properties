@@ -233,9 +233,11 @@ rp_image_const_ptr Xbox360_STFS_Private::loadIcon(void)
 
 	// Create a MemFile and decode the image.
 	// TODO: For rpcli, shortcut to extract the PNG directly.
-	MemFile *f_mem = new MemFile(pIconData, iconSize);
-	rp_image_ptr img = RpPng::load(f_mem);
-	delete f_mem;
+	rp_image_ptr img;
+	{
+		MemFile f_mem(pIconData, iconSize);
+		img = RpPng::load(&f_mem);
+	}
 
 	if (!img) {
 		// Unable to load the title thumbnail image.
@@ -250,9 +252,8 @@ rp_image_const_ptr Xbox360_STFS_Private::loadIcon(void)
 			iconSize = sizeof(stfsThumbnails.mdv2.thumbnail_image);
 		}
 
-		f_mem = new MemFile(pIconData, iconSize);
-		img = RpPng::load(f_mem);
-		delete f_mem;
+		MemFile f_mem(pIconData, iconSize);
+		img = RpPng::load(&f_mem);
 	}
 
 	this->img_icon = img;

@@ -1344,10 +1344,10 @@ int DMG::loadFieldData(void)
 				shared_ptr<SubFile> gbsFile = std::make_shared<SubFile>(d->file, jp_addr, fileSize + d->copier_offset - jp_addr);
 				if (gbsFile->isOpen()) {
 					// Open the GBS.
-					GBS *const gbs = new GBS(gbsFile);
-					if (gbs->isOpen()) {
+					GBS gbs(gbsFile);
+					if (gbs.isOpen()) {
 						// Add the fields.
-						const RomFields *const gbsFields = gbs->fields();
+						const RomFields *const gbsFields = gbs.fields();
 						assert(gbsFields != nullptr);
 						assert(!gbsFields->empty());
 						if (gbsFields && !gbsFields->empty()) {
@@ -1355,7 +1355,6 @@ int DMG::loadFieldData(void)
 								RomFields::TabOffset_AddTabs);
 						}
 					}
-					delete gbs;
 				}
 			}
 		}

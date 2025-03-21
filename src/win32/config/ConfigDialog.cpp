@@ -537,9 +537,8 @@ int CALLBACK rp_show_config_dialog(
 	InitDarkMode();
 	lastDarkModeEnabled = g_darkModeEnabled;
 
-	ConfigDialog *cfg = new ConfigDialog();
-	INT_PTR ret = cfg->exec();
-	delete cfg;
+	ConfigDialog cfg;
+	INT_PTR ret = cfg.exec();
 
 	// Dark mode background brush
 	if (hbrBkgnd) {

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+)                             *
  * ISpriteSheet.cpp: Generic sprite sheets loader.                         *
  *                                                                         *
- * Copyright (c) 2020-2023 by David Korth.                                 *
+ * Copyright (c) 2020-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -138,17 +138,14 @@ HBITMAP ISpriteSheet::getIcon(int col, int row, bool gray, UINT dpi) const
 			return nullptr;
 		}
 
-		RpFile_windres *const f_res = new RpFile_windres(
-			HINST_THISCOMPONENT, resourceID, MAKEINTRESOURCE(RT_PNG));
-		assert(f_res->isOpen());
-		if (!f_res->isOpen()) {
+		RpFile_windres f_res(HINST_THISCOMPONENT, resourceID, MAKEINTRESOURCE(RT_PNG));
+		assert(f_res.isOpen());
+		if (!f_res.isOpen()) {
 			// Unable to open the resource.
-			delete f_res;
 			return nullptr;
 		}
 
-		imgSpriteSheet = RpPng::load(f_res);
-		delete f_res;
+		imgSpriteSheet = RpPng::load(&f_res);
 		assert((bool)imgSpriteSheet);
 		if (!imgSpriteSheet) {
 			// Unable to load the resource as a PNG image.

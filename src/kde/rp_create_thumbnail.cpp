@@ -89,10 +89,9 @@ Q_DECL_EXPORT int RP_C_API rp_create_thumbnail2(const char *source_file, const c
 	}
 
 	// Create the thumbnail.
-	RomThumbCreatorPrivate *const d = new RomThumbCreatorPrivate();
+	RomThumbCreatorPrivate rtcp;
 	RomThumbCreatorPrivate::GetThumbnailOutParams_t outParams;
-	int ret = d->getThumbnail(romData, maximum_size, &outParams);
-	delete d;
+	int ret = rtcp.getThumbnail(romData, maximum_size, &outParams);
 
 	if (ret != 0 || outParams.retImg.isNull()) {
 		// No image.

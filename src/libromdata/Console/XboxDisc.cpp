@@ -1072,16 +1072,15 @@ int XboxDisc::loadFieldData(void)
 
 	// ISO object for ISO-9660 PVD
 	if (d->discType >= XboxDiscPrivate::DiscType::XGD1) {
-		ISO *const isoData = new ISO(d->file);
-		if (isoData->isOpen()) {
+		ISO isoData(d->file);
+		if (isoData.isOpen()) {
 			// Add the fields.
-			const RomFields *const isoFields = isoData->fields();
+			const RomFields *const isoFields = isoData.fields();
 			if (isoFields) {
 				d->fields.addFields_romFields(isoFields,
 					RomFields::TabOffset_AddTabs);
 			}
 		}
-		delete isoData;
 	}
 
 	if (d->file) {
