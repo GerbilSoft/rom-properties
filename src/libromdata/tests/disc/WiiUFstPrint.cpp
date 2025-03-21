@@ -68,7 +68,7 @@ int RP_C_API main(int argc, char *argv[])
 	rp_i18n_init();
 
 	if (argc < 2 || argc > 3) {
-		fmt::print(stderr, C_("WiiUFstPrint", "Syntax: {:s} fst.bin"), argv[0]);
+		fmt::print(stderr, FRUN(C_("WiiUFstPrint", "Syntax: {:s} fst.bin")), argv[0]);
 		fputc('\n', stderr);
 		return EXIT_FAILURE;
 	}
@@ -77,7 +77,7 @@ int RP_C_API main(int argc, char *argv[])
 	FILE *f = fopen(argv[1], "rb");
 	if (!f) {
 		// tr: {0:s} == filename, {1:s} == error message
-		fmt::print(stderr, C_("GcnFstPrint", "Error opening '{0:s}': '{1:s}'"), argv[1], strerror(errno));
+		fmt::print(stderr, FRUN(C_("GcnFstPrint", "Error opening '{0:s}': '{1:s}'")), argv[1], strerror(errno));
 		fputc('\n', stderr);
 		return EXIT_FAILURE;
 	}
@@ -86,7 +86,7 @@ int RP_C_API main(int argc, char *argv[])
 	fseeko(f, 0, SEEK_END);
 	const off64_t fileSize_o = ftello(f);
 	if (fileSize_o > (16*1024*1024)) {
-		fmt::print(stderr, C_("GcnFstPrint", "ERROR: FST is too big. (Maximum of 16 MB.)"));
+		fputs(C_("GcnFstPrint", "ERROR: FST is too big. (Maximum of 16 MB.)"), stderr);
 		fputc('\n', stderr);
 		fclose(f);
 		return EXIT_FAILURE;
@@ -100,7 +100,7 @@ int RP_C_API main(int argc, char *argv[])
 	fclose(f);
 	if (rd_size != fileSize) {
 		// tr: {0:Ld} == number of bytes read, {1:Ld} == number of bytes expected to read
-		fmt::print(stderr, C_("GcnFstPrint", "ERROR: Read {0:Ld} bytes, expected {1:Ld} bytes."),
+		fmt::print(stderr, FRUN(C_("GcnFstPrint", "ERROR: Read {0:Ld} bytes, expected {1:Ld} bytes.")),
 			rd_size, fileSize);
 		fputc('\n', stderr);
 		return EXIT_FAILURE;
@@ -111,7 +111,7 @@ int RP_C_API main(int argc, char *argv[])
 	// "look" like an FST?
 	unique_ptr<IFst> fst(new WiiUFst(fstData.get(), static_cast<uint32_t>(fileSize)));
 	if (!fst->isOpen()) {
-		fmt::print(stderr, C_("WiiUFstPrint", "*** ERROR: Could not parse '{:s}' as WiiUFst."), argv[1]);
+		fmt::print(stderr, FRUN(C_("WiiUFstPrint", "*** ERROR: Could not parse '{:s}' as WiiUFst.")), argv[1]);
 		fputc('\n', stderr);
 		return EXIT_FAILURE;
 	}
@@ -138,7 +138,7 @@ int RP_C_API main(int argc, char *argv[])
 
 	if (fst->hasErrors()) {
 		fputc('\n', stderr);
-		fmt::print(stderr, C_("WiiUFstPrint", "*** WARNING: FST has errors and may be unusable."));
+		fputs(C_("WiiUFstPrint", "*** WARNING: FST has errors and may be unusable."), stderr);
 		fputc('\n', stderr);
 	}
 

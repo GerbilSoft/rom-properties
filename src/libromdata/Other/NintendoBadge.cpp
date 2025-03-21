@@ -752,7 +752,7 @@ int NintendoBadge::loadFieldData(void)
 			} else {
 				// Title ID is present.
 				d->fields.addField_string(launch_title_id_title,
-					fmt::format("{:0>8X}-{:0>8X}",
+					fmt::format(FSTR("{:0>8X}-{:0>8X}"),
 						le32_to_cpu(prbs->title_id.hi),
 						le32_to_cpu(prbs->title_id.lo)));
 
@@ -768,15 +768,15 @@ int NintendoBadge::loadFieldData(void)
 					if (isN3DS) {
 						if (region) {
 							// tr: {0:s} == Title name, {1:s} == Region
-							str = fmt::format(C_("NintendoBadge", "{0:s} (New3DS) ({1:s})"), title, region);
+							str = fmt::format(FRUN(C_("NintendoBadge", "{0:s} (New3DS) ({1:s})")), title, region);
 						} else {
 							// tr: Title name
-							str = fmt::format(C_("NintendoBadge", "{:s} (New3DS)"), title);
+							str = fmt::format(FRUN(C_("NintendoBadge", "{:s} (New3DS)")), title);
 						}
 					} else {
 						if (region) {
 							// tr: {0:s} == Title name, {1:s} == Region
-							str = fmt::format(C_("NintendoBadge", "{0:s} ({1:s})"), title, region);
+							str = fmt::format(FRUN(C_("NintendoBadge", "{0:s} ({1:s})")), title, region);
 						} else {
 							str = title;
 						}

@@ -282,7 +282,7 @@ int EXEPrivate::findNERuntimeDLL(string &refDesc, string &refLink, bool &refHasK
 			for (const auto &p : msvb_dll_tbl) {
 				if (!strncasecmp(pDllName, p.dll_name, sizeof(p.dll_name))) {
 					// Found a matching version.
-					refDesc = fmt::format(C_("EXE|Runtime", "Microsoft Visual Basic {:d}.{:d} Runtime"),
+					refDesc = fmt::format(FRUN(C_("EXE|Runtime", "Microsoft Visual Basic {:d}.{:d} Runtime")),
 						p.ver_major, p.ver_minor);
 					if (p.url) {
 						refLink = p.url;
@@ -347,7 +347,7 @@ void EXEPrivate::addFields_NE(void)
 		fields.addField_string(targetOS_title, targetOS);
 	} else {
 		fields.addField_string(targetOS_title,
-			fmt::format(C_("RomData", "Unknown (0x{:0>2X})"), hdr.ne.targOS));
+			fmt::format(FRUN(C_("RomData", "Unknown (0x{:0>2X})")), hdr.ne.targOS));
 	}
 
 	// DGroup type.
@@ -712,11 +712,11 @@ int EXEPrivate::addFields_NE_Entry(void)
 			row.emplace_back(s_no_name);
 		}
 		if (ent.is_movable) {
-			row.push_back(fmt::format(s_address_mf, ent.segment, ent.offset, s_address_movable));
+			row.push_back(fmt::format(FRUN(s_address_mf), ent.segment, ent.offset, s_address_movable));
 		} else if (ent.segment != 0xFE) {
-			row.push_back(fmt::format(s_address_mf, ent.segment, ent.offset, s_address_fixed));
+			row.push_back(fmt::format(FRUN(s_address_mf), ent.segment, ent.offset, s_address_fixed));
 		} else {
-			row.push_back(fmt::format(s_address_constant, ent.offset));
+			row.push_back(fmt::format(FRUN(s_address_constant), ent.offset));
 		}
 		row.push_back(std::move(flags));
 	}

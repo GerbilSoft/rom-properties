@@ -236,7 +236,7 @@ int Atari7800::loadFieldData(void)
 		"SNES2Atari"
 	}};
 	for (unsigned int i = 0; i < 2; i++) {
-		const string control_title = fmt::format(C_("Atari7800", "Controller {:d}"), i+1);
+		const string control_title = fmt::format(FRUN(C_("Atari7800", "Controller {:d}")), i+1);
 		const uint8_t control_type = romHeader->control_types[i];
 
 		if (control_type < controller_tbl.size()) {
@@ -245,7 +245,7 @@ int Atari7800::loadFieldData(void)
 					controller_tbl[control_type]));
 		} else {
 			d->fields.addField_string(control_title.c_str(),
-				fmt::format(C_("RomData", "Unknown ({:d})"), control_type));
+				fmt::format(FRUN(C_("RomData", "Unknown ({:d})")), control_type));
 		}
 	}
 

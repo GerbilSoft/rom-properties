@@ -1123,7 +1123,7 @@ int NES::loadFieldData(void)
 		{
 			d->fields.addField_string(format_title,
 				// tr: ROM format, e.g. iNES or FDS disk image.
-				fmt::format(C_("NES|Format", "{:s} (Wii U Virtual Console)"), rom_format));
+				fmt::format(FRUN(C_("NES|Format", "{:s} (Wii U Virtual Console)")), rom_format));
 		} else {
 			d->fields.addField_string(format_title, rom_format);
 		}
@@ -1145,7 +1145,7 @@ int NES::loadFieldData(void)
 		const char *const mapper_name = NESMappers::lookup_ines(mapper);
 		if (mapper_name) {
 			// tr: Print the mapper ID followed by the mapper name.
-			s_mapper = fmt::format(C_("NES|Mapper", "{0:d} - {1:s}"),
+			s_mapper = fmt::format(FRUN(C_("NES|Mapper", "{0:d} - {1:s}")),
 				static_cast<unsigned int>(mapper), mapper_name);
 		} else {
 			// tr: Print only the mapper ID.
@@ -1172,7 +1172,7 @@ int NES::loadFieldData(void)
 		const char *const submapper_name = NESMappers::lookup_nes2_submapper(mapper, submapper);
 		if (submapper_name) {
 			// tr: Print the submapper ID followed by the submapper name.
-			s_submapper = fmt::format(C_("NES|Mapper", "{0:d} - {1:s}"),
+			s_submapper = fmt::format(FRUN(C_("NES|Mapper", "{0:d} - {1:s}")),
 				static_cast<unsigned int>(submapper), submapper_name);
 		} else {
 			// tr: Print only the submapper ID.
@@ -1263,7 +1263,7 @@ int NES::loadFieldData(void)
 			d->fields.addField_string(publisher_title, publisher);
 		} else {
 			d->fields.addField_string(publisher_title,
-				fmt::format(C_("RomData", "Unknown (0x{:0>2X})"), header->fds.publisher_code));
+				fmt::format(FRUN(C_("RomData", "Unknown (0x{:0>2X})")), header->fds.publisher_code));
 		}
 
 		// Revision
@@ -1513,7 +1513,7 @@ int NES::loadFieldData(void)
 			if (prg_size > 0) {
 				s_prg_size = formatFileSizeKiB(prg_size);
 			} else {
-				s_prg_size = fmt::format(C_("RomData", "Unknown (0x{:0>2X})"), prg_sz_idx);
+				s_prg_size = fmt::format(FRUN(C_("RomData", "Unknown (0x{:0>2X})")), prg_sz_idx);
 			}
 			d->fields.addField_string(C_("NES", "PRG ROM Size"), s_prg_size);
 
@@ -1523,7 +1523,7 @@ int NES::loadFieldData(void)
 			if (chr_size > 0) {
 				s_chr_size = formatFileSizeKiB(chr_size);
 			} else {
-				s_chr_size = fmt::format(C_("RomData", "Unknown (0x{:0>2X})"), chr_sz_idx);
+				s_chr_size = fmt::format(FRUN(C_("RomData", "Unknown (0x{:0>2X})")), chr_sz_idx);
 			}
 			if (likely(!b_chr_ram)) {
 				d->fields.addField_string(C_("NES", "CHR ROM Size"), s_chr_size);
@@ -1552,7 +1552,7 @@ int NES::loadFieldData(void)
 			string s_footer_mapper;
 			if (footer_mapper < ARRAY_SIZE(footer_mapper_tbl)) {
 				// tr: Print the mapper ID followed by the mapper name.
-				s_footer_mapper = fmt::format(C_("NES|Mapper", "{0:d} - {1:s}"),
+				s_footer_mapper = fmt::format(FRUN(C_("NES|Mapper", "{0:d} - {1:s}")),
 					footer_mapper, footer_mapper_tbl[footer_mapper]);
 			} else {
 				// tr: Print only the mapper ID.
@@ -1568,7 +1568,7 @@ int NES::loadFieldData(void)
 				d->fields.addField_string(publisher_title, publisher);
 			} else {
 				d->fields.addField_string(publisher_title,
-					fmt::format(C_("RomData", "Unknown (0x{:0>2X})"), footer.publisher_code));
+					fmt::format(FRUN(C_("RomData", "Unknown (0x{:0>2X})")), footer.publisher_code));
 			}
 		}
 	}

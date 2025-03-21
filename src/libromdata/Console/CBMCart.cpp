@@ -387,7 +387,7 @@ int CBMCart::loadFieldData(void)
 			d->fields.addField_string(s_type_title, s_type);
 		} else {
 			d->fields.addField_string(s_type_title,
-				fmt::format(C_("RomData", "Unknown ({:d})"), type));
+				fmt::format(FRUN(C_("RomData", "Unknown ({:d})")), type));
 		}
 	}
 

@@ -410,7 +410,7 @@ int BCSTM::loadFieldData(void)
 		d->fields.addField_string(type_title, type_tbl[static_cast<int>(d->audioFormat)]);
 	} else {
 		d->fields.addField_string(type_title,
-			fmt::format(C_("RomData", "Unknown ({:d})"), static_cast<int>(d->audioFormat)));
+			fmt::format(FRUN(C_("RomData", "Unknown ({:d})")), static_cast<int>(d->audioFormat)));
 	}
 
 	// TODO: Show the version field?
@@ -477,7 +477,7 @@ int BCSTM::loadFieldData(void)
 			pgettext_expr("BCSTM|Codec", codec_tbl[codec]));
 	} else {
 		d->fields.addField_string(codec_title,
-			fmt::format(C_("RomData", "Unknown ({:d})"), codec));
+			fmt::format(FRUN(C_("RomData", "Unknown ({:d})")), codec));
 	}
 
 	// Number of channels
@@ -485,7 +485,7 @@ int BCSTM::loadFieldData(void)
 
 	// Sample rate
 	d->fields.addField_string(C_("RomData|Audio", "Sample Rate"),
-		fmt::format(C_("RomData", "{:Ld} Hz"), sample_rate));
+		fmt::format(FRUN(C_("RomData", "{:Ld} Hz")), sample_rate));
 
 	// Length (non-looping)
 	// TODO: Figure this out for BCWAV.

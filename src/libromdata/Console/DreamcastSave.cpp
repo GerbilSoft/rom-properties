@@ -1387,7 +1387,7 @@ int DreamcastSave::loadFieldData(void)
 	} else {
 		// Unknown file type.
 		d->fields.addField_string(filetype_title,
-			fmt::format(C_("RomData", "Unknown (0x{:0>2X})"), d->vms_dirent.filetype));
+			fmt::format(FRUN(C_("RomData", "Unknown (0x{:0>2X})")), d->vms_dirent.filetype));
 	}
 
 	// DC VMS directory entry
@@ -1411,7 +1411,7 @@ int DreamcastSave::loadFieldData(void)
 		} else {
 			// Unknown copy protection.
 			d->fields.addField_string(protect_title,
-				fmt::format(C_("RomData", "Unknown (0x{:0>2X})"), d->vms_dirent.protect));
+				fmt::format(FRUN(C_("RomData", "Unknown (0x{:0>2X})")), d->vms_dirent.protect));
 		}
 
 		// Filename

@@ -544,9 +544,9 @@ string DMGPrivate::getPublisher(void) const
 					romHeader.new_publisher_code[1],
 					'\0'
 				}};
-				s_publisher = fmt::format(C_("RomData", "Unknown ({:s})"), s_company.data());
+				s_publisher = fmt::format(FRUN(C_("RomData", "Unknown ({:s})")), s_company.data());
 			} else {
-				s_publisher = fmt::format(C_("RomData", "Unknown ({:0>2X} {:0>2X})"),
+				s_publisher = fmt::format(FRUN(C_("RomData", "Unknown ({:0>2X} {:0>2X})")),
 					static_cast<uint8_t>(romHeader.new_publisher_code[0]),
 					static_cast<uint8_t>(romHeader.new_publisher_code[1]));
 			}
@@ -557,7 +557,7 @@ string DMGPrivate::getPublisher(void) const
 		if (publisher) {
 			s_publisher = publisher;
 		} else {
-			s_publisher = fmt::format(C_("RomData", "Unknown ({:0>2X})"),
+			s_publisher = fmt::format(FRUN(C_("RomData", "Unknown ({:0>2X})")),
 				romHeader.old_publisher_code);
 		}
 	}
@@ -698,12 +698,12 @@ void DMGPrivate::addFields_romHeader(const DMG_RomHeader *pRomHeader)
 		if (rom_size > 32) {
 			const int banks = rom_size / 16;
 			fields.addField_string(rom_size_title,
-				fmt::format(NC_("DMG", "{0:d} KiB ({1:d} bank)", "{0:d} KiB ({1:d} banks)", banks),
+				fmt::format(FRUN(NC_("DMG", "{0:d} KiB ({1:d} bank)", "{0:d} KiB ({1:d} banks)", banks)),
 					static_cast<unsigned int>(rom_size),
 					static_cast<unsigned int>(banks)));
 		} else {
 			fields.addField_string(rom_size_title,
-				fmt::format(C_("DMG", "{:d} KiB"), static_cast<unsigned int>(rom_size)));
+				fmt::format(FRUN(C_("DMG", "{:d} KiB")), static_cast<unsigned int>(rom_size)));
 		}
 	}
 
@@ -721,12 +721,12 @@ void DMGPrivate::addFields_romHeader(const DMG_RomHeader *pRomHeader)
 			if (ram_size > 8) {
 				const int banks = ram_size / 8;
 				fields.addField_string(ram_size_title,
-					fmt::format(NC_("DMG", "{0:d} KiB ({1:d} bank)", "{0:d} KiB ({1:d} banks)", banks),
+					fmt::format(FRUN(NC_("DMG", "{0:d} KiB ({1:d} bank)", "{0:d} KiB ({1:d} banks)", banks)),
 						static_cast<unsigned int>(ram_size),
 						static_cast<unsigned int>(banks)));
 			} else {
 				fields.addField_string(ram_size_title,
-					fmt::format(C_("DMG", "{:d} KiB"), static_cast<unsigned int>(ram_size)));
+					fmt::format(FRUN(C_("DMG", "{:d} KiB")), static_cast<unsigned int>(ram_size)));
 			}
 		}
 	} else {
@@ -747,7 +747,7 @@ void DMGPrivate::addFields_romHeader(const DMG_RomHeader *pRomHeader)
 		default:
 			// Invalid value.
 			fields.addField_string(region_code_title,
-				fmt::format(C_("DMG", "0x{:0>2X} (INVALID)"), pRomHeader->region));
+				fmt::format(FRUN(C_("DMG", "0x{:0>2X} (INVALID)")), pRomHeader->region));
 			break;
 	}
 
@@ -768,11 +768,11 @@ void DMGPrivate::addFields_romHeader(const DMG_RomHeader *pRomHeader)
 	const char *const checksum_title = C_("RomData", "Checksum");
 	if (checksum - pRomHeader->header_checksum != 0) {
 		fields.addField_string(checksum_title,
-			fmt::format(C_("DMG", "0x{0:0>2X} (INVALID; should be 0x{1:0>2X})"),
+			fmt::format(FRUN(C_("DMG", "0x{0:0>2X} (INVALID; should be 0x{1:0>2X})")),
 				pRomHeader->header_checksum, checksum));
 	} else {
 		fields.addField_string(checksum_title,
-			fmt::format(C_("DMG", "0x{:0>2X} (valid)"), checksum));
+			fmt::format(FRUN(C_("DMG", "0x{:0>2X} (valid)")), checksum));
 	}
 }
 

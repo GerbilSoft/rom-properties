@@ -309,7 +309,7 @@ rp_rom_data_view_getSaveFileDialog_callback(GFile *file, save_data_t *save_data)
 					? rp_language_combo_box_get_selected_lc(RP_LANGUAGE_COMBO_BOX(page->cboLanguage))
 					: 0;
 
-				ofs << "== " << fmt::format(C_("RomDataView", "File: '{:s}'"), romData->filename()) << '\n';
+				ofs << "== " << fmt::format(FRUN(C_("RomDataView", "File: '{:s}'")), romData->filename()) << '\n';
 				ROMOutput ro(romData, sel_lc);
 				ofs << ro;
 				ofs.flush();
@@ -418,7 +418,7 @@ rp_rom_data_view_doRomOp_stdop(RpRomDataView *page, int id)
 				: 0;
 
 			ostringstream oss;
-			oss << "== " << fmt::format(C_("RomDataView", "File: '{:s}'"), rom_filename) << '\n';
+			oss << "== " << fmt::format(FRUN(C_("RomDataView", "File: '{:s}'")), rom_filename) << '\n';
 			ROMOutput ro(romData, sel_lc);
 			oss << ro;
 			oss.flush();

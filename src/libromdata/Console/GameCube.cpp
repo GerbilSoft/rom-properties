@@ -443,11 +443,11 @@ string GameCubePrivate::getPublisher(void) const
 			discHeader.company[1],
 			'\0'
 		}};
-		return fmt::format(C_("RomData", "Unknown ({:s})"), s_company.data());
+		return fmt::format(FRUN(C_("RomData", "Unknown ({:s})")), s_company.data());
 	}
 
 	// Disc ID is not alphanumeric.
-	return fmt::format(C_("RomData", "Unknown ({:0>2X} {:0>2X})"),
+	return fmt::format(FRUN(C_("RomData", "Unknown ({:0>2X} {:0>2X})")),
 		static_cast<uint8_t>(discHeader.company[0]),
 		static_cast<uint8_t>(discHeader.company[1]));
 }
@@ -1391,7 +1391,7 @@ int GameCube::loadFieldData(void)
 			string s_region;
 			if (suffix) {
 				// tr: {0:s} == full region name, {1:s} == abbreviation
-				s_region = fmt::format(C_("Wii", "{0:s} ({1:s})"), region, suffix);
+				s_region = fmt::format(FRUN(C_("Wii", "{0:s} ({1:s})")), region, suffix);
 			} else {
 				s_region = region;
 			}
@@ -1400,7 +1400,7 @@ int GameCube::loadFieldData(void)
 		} else {
 			// Invalid region code.
 			d->fields.addField_string(region_code_title,
-				fmt::format(C_("RomData", "Unknown (0x{:0>8X})"), d->gcnRegion));
+				fmt::format(FRUN(C_("RomData", "Unknown (0x{:0>8X})")), d->gcnRegion));
 		}
 
 		if ((d->discType & GameCubePrivate::DISC_SYSTEM_MASK) != GameCubePrivate::DISC_SYSTEM_WII) {
@@ -1516,7 +1516,7 @@ int GameCube::loadFieldData(void)
 				// Key error.
 				const char *status = d->wii_getCryptoStatus(d->gamePartition);
 				d->fields.addField_string(game_info_title,
-					fmt::format(C_("GameCube", "ERROR: {:s}"),
+					fmt::format(FRUN(C_("GameCube", "ERROR: {:s}")),
 						(status ? status : C_("GameCube", "Unknown"))));
 			}
 		}

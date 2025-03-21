@@ -338,9 +338,9 @@ int VirtualBoy::loadFieldData(void)
 				romFooter->publisher[1],
 				'\0'
 			}};
-			s_publisher = fmt::format(C_("RomData", "Unknown ({:s})"), s_company.data());
+			s_publisher = fmt::format(FRUN(C_("RomData", "Unknown ({:s})")), s_company.data());
 		} else {
-			s_publisher = fmt::format(C_("RomData", "Unknown ({:0>2X} {:0>2X})"),
+			s_publisher = fmt::format(FRUN(C_("RomData", "Unknown ({:0>2X} {:0>2X})")),
 				static_cast<uint8_t>(romFooter->publisher[0]),
 				static_cast<uint8_t>(romFooter->publisher[1]));
 		}
@@ -368,7 +368,7 @@ int VirtualBoy::loadFieldData(void)
 		d->fields.addField_string(C_("RomData", "Region Code"), s_region);
 	} else {
 		d->fields.addField_string(C_("RomData", "Region Code"),
-			fmt::format(C_("RomData", "Unknown (0x{:0>2X})"),
+			fmt::format(FRUN(C_("RomData", "Unknown (0x{:0>2X})")),
 				static_cast<uint8_t>(romFooter->gameid[3])));
 	}
 
@@ -418,9 +418,9 @@ int VirtualBoy::loadMetaData(void)
 				romFooter->publisher[1],
 				'\0'
 			}};
-			s_publisher = fmt::format(C_("RomData", "Unknown ({:s})"), s_company.data());
+			s_publisher = fmt::format(FRUN(C_("RomData", "Unknown ({:s})")), s_company.data());
 		} else {
-			s_publisher = fmt::format(C_("RomData", "Unknown ({:0>2X} {:0>2X})"),
+			s_publisher = fmt::format(FRUN(C_("RomData", "Unknown ({:0>2X} {:0>2X})")),
 				static_cast<uint8_t>(romFooter->publisher[0]),
 				static_cast<uint8_t>(romFooter->publisher[1]));
 		}

@@ -398,7 +398,7 @@ int WimPrivate::addFields_XML()
 		if (archstring) {
 			data_row.emplace_back(archstring);
 		} else {
-			data_row.push_back(fmt::format(C_("RomData", "Unknown ({:d})"),
+			data_row.push_back(fmt::format(FRUN(C_("RomData", "Unknown ({:d})")),
 				static_cast<int>(windowsinfo.arch)));
 		}
 		data_row.push_back(windowsinfo.languages.language);

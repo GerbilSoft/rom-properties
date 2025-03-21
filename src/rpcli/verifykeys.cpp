@@ -60,7 +60,7 @@ int VerifyKeys(void)
 		printedOne = true;
 
 		fputs("*** ", stdout);
-		fmt::print(C_("rpcli", "Checking encryption keys: {:s}"), keyStore->sectName(sectIdx));
+		fmt::print(FRUN(C_("rpcli", "Checking encryption keys: {:s}")), keyStore->sectName(sectIdx));
 		putchar('\n');
 
 		const int keyCount = keyStore->keyCount(sectIdx);
@@ -68,14 +68,14 @@ int VerifyKeys(void)
 			const KeyStoreUI::Key *const key = keyStore->getKey(sectIdx, keyIdx);
 			assert(key != nullptr);
 			if (!key) {
-				fmt::print(C_("rpcli", "WARNING: Key [{:d},{:d}] has no Key object. Skipping..."), sectIdx, keyIdx);
+				fmt::print(FRUN(C_("rpcli", "WARNING: Key [{:d},{:d}] has no Key object. Skipping...")), sectIdx, keyIdx);
 				putchar('\n');
 				ret = 1;
 				continue;
 			}
 			assert(!key->name.empty());
 			if (key->name.empty()) {
-				fmt::print(C_("rpcli", "WARNING: Key [{:d},{:d}] has no name. Skipping..."), sectIdx, keyIdx);
+				fmt::print(FRUN(C_("rpcli", "WARNING: Key [{:d},{:d}] has no name. Skipping...")), sectIdx, keyIdx);
 				putchar('\n');
 				ret = 1;
 				continue;
@@ -110,7 +110,7 @@ int VerifyKeys(void)
 			if (isOK) {
 				fmt::print(FSTR("{:s}\n"), s_err);
 			} else {
-				fmt::print(C_("rpcli", "ERROR: {:s}"), s_err);
+				fmt::print(FRUN(C_("rpcli", "ERROR: {:s}")), s_err);
 				putchar('\n');
 				ret = 1;
 			}

@@ -363,13 +363,13 @@ string Xbox_XBE_Private::getPublisher(void) const
 	    ISALNUM(xbeCertificate.title_id.b))
 	{
 		// Publisher ID is alphanumeric.
-		return fmt::format(C_("RomData", "Unknown ({:c}{:c})"),
+		return fmt::format(FRUN(C_("RomData", "Unknown ({:c}{:c})")),
 			xbeCertificate.title_id.a,
 			xbeCertificate.title_id.b);
 	}
 
 	// Publisher ID is not alphanumeric.
-	return fmt::format(C_("RomData", "Unknown ({:0>2X} {:0>2X})"),
+	return fmt::format(FRUN(C_("RomData", "Unknown ({:0>2X} {:0>2X})")),
 		static_cast<uint8_t>(xbeCertificate.title_id.a),
 		static_cast<uint8_t>(xbeCertificate.title_id.b));
 }
@@ -701,7 +701,7 @@ int Xbox_XBE::loadFieldData(void)
 
 		d->fields.addField_string(s_title_id_desc,
 			// tr: Xbox title ID (32-bit hex, then two letters followed by a 3-digit decimal number)
-			fmt::format(C_("Xbox_XBE", "{0:0>8X} ({1:s}-{2:0>3d})"),
+			fmt::format(FRUN(C_("Xbox_XBE", "{0:0>8X} ({1:s}-{2:0>3d})")),
 				le32_to_cpu(xbeCertificate->title_id.u32),
 				tid_str.c_str(),
 				le16_to_cpu(xbeCertificate->title_id.u16)),

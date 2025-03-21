@@ -1281,24 +1281,24 @@ const char *DirectDrawSurface::pixelFormat(void) const
 	if (ddspf.dwFlags & DDPF_RGB) {
 		// Uncompressed RGB data
 		d->pixel_format = fmt::format(
-			 C_("DirectDrawSurface", "RGB ({:d}-bit)"), ddspf.dwRGBBitCount);
+			 FRUN(C_("DirectDrawSurface", "RGB ({:d}-bit)")), ddspf.dwRGBBitCount);
 	} else if (ddspf.dwFlags & DDPF_ALPHA) {
 		// Alpha channel
 		d->pixel_format = fmt::format(
-			C_("DirectDrawSurface", "Alpha ({:d}-bit)"), ddspf.dwRGBBitCount);
+			FRUN(C_("DirectDrawSurface", "Alpha ({:d}-bit)")), ddspf.dwRGBBitCount);
 	} else if (ddspf.dwFlags & DDPF_YUV) {
 		// YUV (TODO: Determine the format.)
 		d->pixel_format = fmt::format(
-			C_("DirectDrawSurface", "YUV ({:d}-bit)"), ddspf.dwRGBBitCount);
+			FRUN(C_("DirectDrawSurface", "YUV ({:d}-bit)")), ddspf.dwRGBBitCount);
 	} else if (ddspf.dwFlags & DDPF_LUMINANCE) {
 		// Luminance
 		if (ddspf.dwFlags & DDPF_ALPHAPIXELS) {
 			d->pixel_format = fmt::format(
-				C_("DirectDrawSurface", "Luminance + Alpha ({:d}-bit)"),
+				FRUN(C_("DirectDrawSurface", "Luminance + Alpha ({:d}-bit)")),
 				ddspf.dwRGBBitCount);
 		} else {
 			d->pixel_format = fmt::format(
-				C_("DirectDrawSurface", "Luminance ({:d}-bit)"),
+				FRUN(C_("DirectDrawSurface", "Luminance ({:d}-bit)")),
 				ddspf.dwRGBBitCount);
 		}
 	} else {
@@ -1347,7 +1347,7 @@ int DirectDrawSurface::getFields(RomFields *fields) const
 		const char *const texFormat = DX10Formats::lookup_dxgiFormat(d->dxgi_format);
 		fields->addField_string(C_("DirectDrawSurface", "DX10 Format"),
 			(texFormat ? texFormat :
-				fmt::format(C_("RomData", "Unknown (0x{:0>8X})"), d->dxgi_format)));
+				fmt::format(FRUN(C_("RomData", "Unknown (0x{:0>8X})")), d->dxgi_format)));
 	}
 
 	// nVidia Texture Tools header

@@ -231,7 +231,7 @@ int RP_ShellPropSheetExt_Private::createHeaderRow(_In_ POINT pt_start, _In_ SIZE
 	const tstring ts_sysInfo =
 		LibWin32UI::unix2dos(U82T_s(fmt::format(
 			// tr: {0:s} == system name, {1:s} == file type
-			C_("RomDataView", "{0:s}\n{1:s}"), systemName, fileType)));
+			FRUN(C_("RomDataView", "{0:s}\n{1:s}")), systemName, fileType)));
 
 	if (!ts_sysInfo.empty()) {
 		// Determine the appropriate label size.
@@ -1709,7 +1709,7 @@ void RP_ShellPropSheetExt_Private::initDialog(void)
 		if (!field.isValid())
 			continue;
 
-		tstring desc_text = U82T_s(fmt::format(desc_label_fmt, field.name));
+		tstring desc_text = U82T_s(fmt::format(FRUN(desc_label_fmt), field.name));
 
 		// Get the width of this specific entry.
 		// TODO: Use measureTextSize()?

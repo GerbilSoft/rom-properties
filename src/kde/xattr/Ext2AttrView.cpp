@@ -81,7 +81,7 @@ void Ext2AttrViewPrivate::retranslateUi_nonDesigner(void)
 		const Ext2AttrCheckboxInfo_t *const p = ext2AttrCheckboxInfo(static_cast<Ext2AttrCheckboxID>(i));
 
 		// Prepend the lsattr character to the checkbox label.
-		s_label = fmt::format(s_lsattr_fmt, p->lsattr_chr,
+		s_label = fmt::format(FRUN(s_lsattr_fmt), p->lsattr_chr,
 			pgettext_expr("Ext2AttrView", p->label));
 
 		checkBoxes[i]->setText(U82Q(s_label));

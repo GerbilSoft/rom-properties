@@ -684,7 +684,7 @@ void AboutTabPrivate::updChecker_retrieved(void)
 
 	sVersionLabel += RTF_ALIGN_RIGHT;
 
-	const string s_latest_version = fmt::format(C_("AboutTab", "Latest version: {:s}"), sUpdVersion);
+	const string s_latest_version = fmt::format(FRUN(C_("AboutTab", "Latest version: {:s}")), sUpdVersion);
 	sVersionLabel += rtfEscape(s_latest_version.c_str());
 	if (updateVersion > ourVersion) {
 		sVersionLabel += RTF_BR RTF_BR RTF_BOLD_ON;
@@ -881,7 +881,7 @@ void AboutTabPrivate::initProgramTitleText(void)
 	const char *const gitVersion =
 		AboutTabText::getProgramInfoString(AboutTabText::ProgramInfoStringID::GitVersion);
 
-	string s_version = fmt::format(C_("AboutTab", "Version {:s}"), programVersion);
+	string s_version = fmt::format(FRUN(C_("AboutTab", "Version {:s}")), programVersion);
 	s_version.reserve(1024);
 	if (gitVersion) {
 		s_version += "\r\n";
@@ -995,7 +995,7 @@ void AboutTabPrivate::initCreditsTab(void)
 	sCredits += RTF_BR RTF_BR;
 	sCredits += fmt::format(
 		// tr: {:s} is the name of the license.
-		rtfEscape(C_("AboutTab|Credits", "This program is licensed under the {:s} or later.")),
+		FRUN(rtfEscape(C_("AboutTab|Credits", "This program is licensed under the {:s} or later."))),
 			rtfFriendlyLink(
 				"https://www.gnu.org/licenses/gpl-2.0.html",
 				C_("AboutTabl|Credits", "GNU GPL v2")));
@@ -1050,7 +1050,7 @@ void AboutTabPrivate::initCreditsTab(void)
 		}
 		if (creditsData->sub) {
 			// tr: Sub-credit
-			sCredits += fmt::format(rtfEscape(C_("AboutTab|Credits", " ({:s})")),
+			sCredits += fmt::format(FRUN(rtfEscape(C_("AboutTab|Credits", " ({:s})"))),
 				rtfEscape(creditsData->sub));
 		}
 
@@ -1102,15 +1102,15 @@ void AboutTabPrivate::initLibrariesTab(void)
 	sZlibVersion += RpPng::zlib_version_string();
 
 #if defined(USE_INTERNAL_ZLIB) && !defined(USE_INTERNAL_ZLIB_DLL)
-	sLibraries += fmt::format(sIntCopyOf, sZlibVersion);
+	sLibraries += fmt::format(FRUN(sIntCopyOf), sZlibVersion);
 #else
 #  ifdef ZLIBNG_VERSION
-	sLibraries += fmt::format(sCompiledWith, "zlib-ng " ZLIBNG_VERSION);
+	sLibraries += fmt::format(FRUN(sCompiledWith), "zlib-ng " ZLIBNG_VERSION);
 #  else /* !ZLIBNG_VERSION */
-	sLibraries += fmt::format(sCompiledWith, "zlib " ZLIB_VERSION);
+	sLibraries += fmt::format(FRUN(sCompiledWith), "zlib " ZLIB_VERSION);
 #  endif /* ZLIBNG_VERSION */
 	sLibraries += RTF_BR;
-	sLibraries += fmt::format(sUsingDll, sZlibVersion);
+	sLibraries += fmt::format(FRUN(sUsingDll), sZlibVersion);
 #endif
 	sLibraries += RTF_BR
 		"Copyright (C) 1995-2022 Jean-loup Gailly and Mark Adler." RTF_BR
@@ -1119,7 +1119,7 @@ void AboutTabPrivate::initLibrariesTab(void)
 	// TODO: Also if zlibVersion() contains "zlib-ng"?
 	sLibraries += "https://github.com/zlib-ng/zlib-ng" RTF_BR;
 #  endif /* ZLIBNG_VERSION */
-	sLibraries += fmt::format(sLicense, "zlib license");
+	sLibraries += fmt::format(FRUN(sLicense), "zlib license");
 #endif /* HAVE_ZLIB */
 
 	/** libpng **/
@@ -1136,7 +1136,7 @@ void AboutTabPrivate::initLibrariesTab(void)
 
 	sLibraries += RTF_BR RTF_BR;
 #if defined(USE_INTERNAL_PNG) && !defined(USE_INTERNAL_ZLIB_DLL)
-	sLibraries += fmt::format(sIntCopyOf, pngVersion);
+	sLibraries += fmt::format(FRUN(sIntCopyOf), pngVersion);
 #else
 	// NOTE: Gentoo's libpng has "+apng" at the end of
 	// PNG_LIBPNG_VER_STRING if APNG is enabled.
@@ -1158,9 +1158,9 @@ void AboutTabPrivate::initLibrariesTab(void)
 		fullPngVersionCompiled = fmt::format(FSTR("{:s} (No APNG support)"), pngVersionCompiled);
 	}
 
-	sLibraries += fmt::format(sCompiledWith, fullPngVersionCompiled);
+	sLibraries += fmt::format(FRUN(sCompiledWith), fullPngVersionCompiled);
 	sLibraries += RTF_BR;
-	sLibraries += fmt::format(sUsingDll, pngVersion);
+	sLibraries += fmt::format(FRUN(sUsingDll), pngVersion);
 #endif
 
 	/**
@@ -1182,7 +1182,7 @@ void AboutTabPrivate::initLibrariesTab(void)
 		sLibraries += rtfEscape(C_("AboutTab|Libraries", "APNG patch:"));
 		sLibraries += " https://sourceforge.net/projects/libpng-apng/" RTF_BR;
 	}
-	sLibraries += fmt::format(sLicense, "libpng license");
+	sLibraries += fmt::format(FRUN(sLicense), "libpng license");
 #endif /* HAVE_PNG */
 
 	/** TinyXML2 **/
@@ -1194,11 +1194,11 @@ void AboutTabPrivate::initLibrariesTab(void)
 
 	// FIXME: Runtime version?
 	sLibraries += RTF_BR RTF_BR;
-	sLibraries += fmt::format(sCompiledWith, tinyXml2Version);
+	sLibraries += fmt::format(FRUN(sCompiledWith), tinyXml2Version);
 	sLibraries += RTF_BR
 		"Copyright (C) 2000-2021 Lee Thomason" RTF_BR
 		"http://www.grinninglizard.com/" RTF_BR;
-	sLibraries += fmt::format(sLicense, "zlib license");
+	sLibraries += fmt::format(FRUN(sLicense), "zlib license");
 #endif /* ENABLE_XML */
 
 	/** GNU gettext **/
@@ -1219,11 +1219,11 @@ void AboutTabPrivate::initLibrariesTab(void)
 
 	sLibraries += RTF_BR RTF_BR;
 	// NOTE: Not actually an "internal copy"...
-	sLibraries += fmt::format(sIntCopyOf, gettextVersion);
+	sLibraries += fmt::format(FRUN(sIntCopyOf), gettextVersion);
 	sLibraries += RTF_BR
 		"Copyright (C) 1995-1997, 2000-2016, 2018-2020 Free Software Foundation, Inc." RTF_BR
 		"https://www.gnu.org/software/gettext/" RTF_BR;
-	sLibraries += fmt::format(sLicense, "GNU LGPL v2.1+");
+	sLibraries += fmt::format(FRUN(sLicense), "GNU LGPL v2.1+");
 #endif /* HAVE_GETTEXT && LIBINTL_VERSION */
 
 	sLibraries += '}';

@@ -529,7 +529,7 @@ int PSF::loadFieldData(void)
 			pgettext_expr("PSF|System", sys_name));
 	} else {
 		d->fields.addField_string(system_title,
-			fmt::format(C_("RomData", "Unknown (0x{:0>2X})"), psf_version));
+			fmt::format(FRUN(C_("RomData", "Unknown (0x{:0>2X})")), psf_version));
 	}
 
 	// Parse the tags.

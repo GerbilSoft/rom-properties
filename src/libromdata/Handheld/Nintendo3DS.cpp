@@ -1894,7 +1894,7 @@ int Nintendo3DS::loadFieldData(void)
 					media_type_tbl[media_type]);
 			} else {
 				d->fields.addField_string(media_type_title,
-					fmt::format(C_("RomData", "Unknown (0x{:0>2X})"), media_type));
+					fmt::format(FRUN(C_("RomData", "Unknown (0x{:0>2X})")), media_type));
 			}
 
 			if (ncsd_header->cci.partition_flags[N3DS_NCSD_PARTITION_FLAG_MEDIA_TYPE_INDEX] == N3DS_NCSD_MEDIA_TYPE_CARD2) {
@@ -1929,7 +1929,7 @@ int Nintendo3DS::loadFieldData(void)
 			} else {
 				d->fields.addField_string(card_device_title,
 					// tr: Unrecognized card device (the raw SDK2 and SDK3 values are shown)
-					fmt::format(C_("Nintendo3DS|CDev", "Unknown (SDK2=0x{0:0>2X}, SDK3=0x{1:0>2X})"),
+					fmt::format(FRUN(C_("Nintendo3DS|CDev", "Unknown (SDK2=0x{0:0>2X}, SDK3=0x{1:0>2X})")),
 						ncsd_header->cci.partition_flags[N3DS_NCSD_PARTITION_FLAG_MEDIA_CARD_DEVICE_SDK2],
 						ncsd_header->cci.partition_flags[N3DS_NCSD_PARTITION_FLAG_MEDIA_CARD_DEVICE_SDK3]));
 			}
@@ -2281,7 +2281,7 @@ int Nintendo3DS::loadFieldData(void)
 				pgettext_expr("Nintendo3DS|ApplType", appl_type_tbl[appl_type]));
 		} else {
 			d->fields.addField_string(type_title,
-				fmt::format(C_("Nintendo3DS", "Invalid (0x{:0>2X})"), appl_type));
+				fmt::format(FRUN(C_("Nintendo3DS", "Invalid (0x{:0>2X})")), appl_type));
 		}
 
 		// Flags.
@@ -2320,10 +2320,10 @@ int Nintendo3DS::loadFieldData(void)
 			const auto &ptbl = old3ds_sys_mode_tbl[old3ds_sys_mode];
 			d->fields.addField_string(old3ds_sys_mode_title,
 				// tr: {0:s} == Old3DS system mode; {1:d} == RAM allocation, in megabytes
-				fmt::format(C_("Nintendo3DS", "{0:s} ({1:d} MiB)"), ptbl.name, ptbl.mb));
+				fmt::format(FRUN(C_("Nintendo3DS", "{0:s} ({1:d} MiB)")), ptbl.name, ptbl.mb));
 		} else {
 			d->fields.addField_string(old3ds_sys_mode_title,
-				fmt::format(C_("Nintendo3DS", "Invalid (0x{:0>2X})"), old3ds_sys_mode));
+				fmt::format(FRUN(C_("Nintendo3DS", "Invalid (0x{:0>2X})")), old3ds_sys_mode));
 		}
 
 		// New3DS System Mode
@@ -2341,10 +2341,10 @@ int Nintendo3DS::loadFieldData(void)
 			const auto &ptbl = new3ds_sys_mode_tbl[new3ds_sys_mode];
 			d->fields.addField_string(new3ds_sys_mode_title,
 				// tr: {0:s} == New3DS system mode; {1:d} == RAM allocation, in megabytes
-				fmt::format(C_("Nintendo3DS", "{0:s} ({1:d} MiB)"), ptbl.name, ptbl.mb));
+				fmt::format(FRUN(C_("Nintendo3DS", "{0:s} ({1:d} MiB)")), ptbl.name, ptbl.mb));
 		} else {
 			d->fields.addField_string(new3ds_sys_mode_title,
-				fmt::format(C_("Nintendo3DS", "Invalid (0x{:0>2X})"), new3ds_sys_mode));
+				fmt::format(FRUN(C_("Nintendo3DS", "Invalid (0x{:0>2X})")), new3ds_sys_mode));
 		}
 
 		// New3DS CPU Mode

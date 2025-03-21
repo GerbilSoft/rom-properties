@@ -67,7 +67,7 @@ int RP_C_API main(int argc, char *argv[])
 	rp_i18n_init();
 
 	if (argc < 2 || argc > 3) {
-		fmt::print(stderr, C_("GcnFstPrint", "Syntax: {:s} fst.bin [offsetShift]"), argv[0]);
+		fmt::print(stderr, FRUN(C_("GcnFstPrint", "Syntax: {:s} fst.bin [offsetShift]")), argv[0]);
 		fputc('\n', stderr);
 		fputs(C_("GcnFstPrint", "offsetShift should be 0 for GameCube, 2 for Wii. (default is 0)"), stderr);
 		fputc('\n', stderr);
@@ -80,7 +80,7 @@ int RP_C_API main(int argc, char *argv[])
 		char *endptr = nullptr;
 		long ltmp = strtol(argv[2], &endptr, 10);
 		if (*endptr != '\0' || (ltmp != 0 && ltmp != 2)) {
-			fmt::print(stderr, C_("GcnFstPrint", "Invalid offset shift '{:s}' specified."), argv[2]);
+			fmt::print(stderr, FRUN(C_("GcnFstPrint", "Invalid offset shift '{:s}' specified.")), argv[2]);
 			fputc('\n', stderr);
 			fputs(C_("GcnFstPrint", "offsetShift should be 0 for GameCube, 2 for Wii. (default is 0)"), stderr);
 			fputc('\n', stderr);
@@ -93,7 +93,7 @@ int RP_C_API main(int argc, char *argv[])
 	FILE *f = fopen(argv[1], "rb");
 	if (!f) {
 		// tr: {0:s} == filename, {1:s} == error message
-		fmt::print(stderr, C_("GcnFstPrint", "Error opening '{0:s}': '{1:s}'"), argv[1], strerror(errno));
+		fmt::print(stderr, FRUN(C_("GcnFstPrint", "Error opening '{0:s}': '{1:s}'")), argv[1], strerror(errno));
 		fputc('\n', stderr);
 		return EXIT_FAILURE;
 	}
@@ -116,7 +116,7 @@ int RP_C_API main(int argc, char *argv[])
 	fclose(f);
 	if (rd_size != fileSize) {
 		// tr: {0:d} == number of bytes read, {1:d} == number of bytes expected to read
-		fmt::print(stderr, C_("GcnFstPrint", "ERROR: Read {0:Ld} bytes, expected {1:Ld} bytes."),
+		fmt::print(stderr, FRUN(C_("GcnFstPrint", "ERROR: Read {0:Ld} bytes, expected {1:Ld} bytes.")),
 			rd_size, fileSize);
 		fputc('\n', stderr);
 		return EXIT_FAILURE;
@@ -140,7 +140,7 @@ int RP_C_API main(int argc, char *argv[])
 	unique_ptr<IFst> fst(new GcnFst(&fstData[fst_start_offset],
 		static_cast<uint32_t>(fileSize - fst_start_offset), offsetShift));
 	if (!fst->isOpen()) {
-		fmt::print(stderr, C_("GcnFstPrint", "*** ERROR: Could not parse '{:s}' as GcnFst."), argv[1]);
+		fmt::print(stderr, FRUN(C_("GcnFstPrint", "*** ERROR: Could not parse '{:s}' as GcnFst.")), argv[1]);
 		fputc('\n', stderr);
 		return EXIT_FAILURE;
 	}

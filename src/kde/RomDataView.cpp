@@ -143,7 +143,7 @@ void RomDataViewPrivate::initHeaderRow(void)
 
 	const QString sysInfo = U82Q(fmt::format(
 		// tr: {0:s} == system name, {1:s} == file type
-		C_("RomDataView", "{0:s}\n{1:s}"), systemName, fileType));
+		FRUN(C_("RomDataView", "{0:s}\n{1:s}")), systemName, fileType));
 	ui.lblSysInfo->setText(sysInfo);
 	ui.lblSysInfo->show();
 
@@ -1018,7 +1018,7 @@ void RomDataViewPrivate::initDisplayWidgets(void)
 		}
 
 		// tr: Field description label.
-		const string txt = fmt::format(desc_label_fmt, field.name);
+		const string txt = fmt::format(FRUN(desc_label_fmt), field.name);
 		QLabel *const lblDesc = new QLabel(U82Q(txt), q);
 		// NOTE: No name for this QObject.
 		lblDesc->setAlignment(Qt::AlignLeft | Qt::AlignTop);

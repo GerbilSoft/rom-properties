@@ -218,7 +218,7 @@ rp_nautilus_properties_model_load_from_romData(RpNautilusPropertiesModel *self,
 	// NOTE: Using " | " separator; other UI frontends use "\n". (rpcli uses a single space)
 	const string sysInfo = fmt::format(
 		// tr: {0:s} == system name, {1:s} == file type
-		C_("RomDataView", "{0:s} | {1:s}"), systemName, fileType);
+		FRUN(C_("RomDataView", "{0:s} | {1:s}")), systemName, fileType);
 	append_item(self, C_("RomDataView", "File Type"), sysInfo.c_str());
 
 	// Process RomData fields.

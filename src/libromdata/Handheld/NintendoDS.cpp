@@ -698,10 +698,10 @@ int NintendoDS::loadFieldData(void)
 				'\0'
 			}};
 			d->fields.addField_string(publisher_title,
-				fmt::format(C_("RomData", "Unknown ({:s})"), s_company.data()));
+				fmt::format(FRUN(C_("RomData", "Unknown ({:s})")), s_company.data()));
 		} else {
 			d->fields.addField_string(publisher_title,
-				fmt::format(C_("RomData", "Unknown ({:0>2X} {:0>2X})"),
+				fmt::format(FRUN(C_("RomData", "Unknown ({:0>2X} {:0>2X})")),
 					static_cast<unsigned int>(romHeader->company[0]),
 					static_cast<unsigned int>(romHeader->company[1])));
 		}
@@ -792,7 +792,7 @@ int NintendoDS::loadFieldData(void)
 	// Title ID
 	const uint32_t tid_hi = le32_to_cpu(romHeader->dsi.title_id.hi);
 	d->fields.addField_string(C_("Nintendo", "Title ID"),
-		fmt::format("{:0>8X}-{:0>8X}",
+		fmt::format(FSTR("{:0>8X}-{:0>8X}"),
 			tid_hi, le32_to_cpu(romHeader->dsi.title_id.lo)));
 
 	// DSi filetype
@@ -833,7 +833,7 @@ int NintendoDS::loadFieldData(void)
 	} else {
 		// Invalid file type.
 		d->fields.addField_string(dsi_rom_type_title,
-			fmt::format(C_("RomData", "Unknown (0x{:0>2X})"), dsi_filetype));
+			fmt::format(FRUN(C_("RomData", "Unknown (0x{:0>2X})")), dsi_filetype));
 	}
 
 	// Key index. Determined by title ID.
@@ -1028,10 +1028,10 @@ int NintendoDS::loadMetaData(void)
 				'\0'
 			}};
 			d->metaData.addMetaData_string(Property::Publisher,
-				fmt::format(C_("RomData", "Unknown ({:s})"), s_company.data()));
+				fmt::format(FRUN(C_("RomData", "Unknown ({:s})")), s_company.data()));
 		} else {
 			d->metaData.addMetaData_string(Property::Publisher,
-				fmt::format(C_("RomData", "Unknown ({:0>2X} {:0>2X})"),
+				fmt::format(FRUN(C_("RomData", "Unknown ({:0>2X} {:0>2X})")),
 					static_cast<unsigned int>(romHeader->company[0]),
 					static_cast<unsigned int>(romHeader->company[1])));
 		}

@@ -842,7 +842,7 @@ int SNDH::loadFieldData(void)
 	const char *const s_hz = C_("RomData", "{:Ld} Hz");
 	if (tags.vblank_freq != 0) {
 		d->fields.addField_string(C_("SNDH", "VBlank Freq"),
-			fmt::format(s_hz, tags.vblank_freq));
+			fmt::format(FRUN(s_hz), tags.vblank_freq));
 	}
 
 	// Timer frequencies.
@@ -854,8 +854,8 @@ int SNDH::loadFieldData(void)
 			continue;
 
 		d->fields.addField_string(
-			fmt::format(s_timer_freq, 'A'+i).c_str(),
-			fmt::format(s_hz, tags.timer_freq[i]));
+			fmt::format(FRUN(s_timer_freq), 'A'+i).c_str(),
+			fmt::format(FRUN(s_hz), tags.timer_freq[i]));
 	}
 
 	// Default subtune.

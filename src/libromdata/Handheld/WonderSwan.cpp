@@ -545,7 +545,7 @@ int WonderSwan::loadFieldData(void)
 	if (publisher) {
 		s_publisher = publisher;
 	} else {
-		s_publisher = fmt::format(C_("RomData", "Unknown (0x{:0>2X})"), romFooter->publisher);
+		s_publisher = fmt::format(FRUN(C_("RomData", "Unknown (0x{:0>2X})")), romFooter->publisher);
 	}
 	d->fields.addField_string(C_("RomData", "Publisher"), s_publisher);
 
@@ -571,7 +571,7 @@ int WonderSwan::loadFieldData(void)
 			formatFileSizeKiB(rom_size_tbl[romFooter->rom_size]));
 	} else {
 		d->fields.addField_string(rom_size_title,
-			fmt::format(C_("RomData", "Unknown ({:d})"), romFooter->publisher));
+			fmt::format(FRUN(C_("RomData", "Unknown ({:d})")), romFooter->publisher));
 	}
 
 	// Save size and type
@@ -584,7 +584,7 @@ int WonderSwan::loadFieldData(void)
 	} else if (romFooter->save_type < sram_size_tbl.size()) {
 		d->fields.addField_string(save_memory_title,
 			// tr: Parameter 2 indicates the save type, e.g. "SRAM" or "EEPROM".
-			fmt::format(C_("WonderSwan|SaveMemory", "{0:d} KiB ({1:s})"),
+			fmt::format(FRUN(C_("WonderSwan|SaveMemory", "{0:d} KiB ({1:s})")),
 				sram_size_tbl[romFooter->save_type],
 				C_("WonderSwan|SaveMemory", "SRAM")));
 	} else {
@@ -609,7 +609,7 @@ int WonderSwan::loadFieldData(void)
 				fmtstr = C_("WonderSwan|SaveMemory", "{0:d} bytes ({1:s})");
 			}
 			d->fields.addField_string(save_memory_title,
-				fmt::format(fmtstr, eeprom_bytes, C_("WonderSwan|SaveMemory", "EEPROM")));
+				fmt::format(FRUN(fmtstr), eeprom_bytes, C_("WonderSwan|SaveMemory", "EEPROM")));
 		}
 	}
 

@@ -218,9 +218,9 @@ int fstPrint(IFst *fst, ostream &os, bool pt)
 
 	os << '\n' <<
 		// tr: {:Ld} == number of directories processed
-		fmt::format(NC_("FstPrint", "{:Ld} directory", "{:Ld} directories", fc.dirs), fc.dirs) << ", " <<
+		fmt::format(FRUN(NC_("FstPrint", "{:Ld} directory", "{:Ld} directories", fc.dirs)), fc.dirs) << ", " <<
 		// tr: {:Ld} == number of files processed
-		fmt::format(NC_("FstPrint", "{:Ld} file", "{:Ld} files", fc.files), fc.files) << '\n';
+		fmt::format(FRUN(NC_("FstPrint", "{:Ld} file", "{:Ld} files", fc.files)), fc.files) << '\n';
 
 	os.flush();
 	return 0;

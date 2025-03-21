@@ -67,7 +67,7 @@ ostream& operator<<(ostream& os, const ScsiInquiry& si)
 	int ret = si.file->scsi_inquiry(&resp);
 	if (ret != 0) {
 		// TODO: Decode the error.
-		os << "-- " << fmt::format(C_("rpcli", "SCSI INQUIRY failed: {:0>8X}"),
+		os << "-- " << fmt::format(FRUN(C_("rpcli", "SCSI INQUIRY failed: {:0>8X}")),
 			static_cast<unsigned int>(ret)) << '\n';
 		return os;
 	}
@@ -175,7 +175,7 @@ ostream& operator<<(ostream& os, const AtaIdentifyDevice& si)
 
 	if (ret != 0) {
 		// TODO: Decode the error.
-		os << "-- " << fmt::format(C_("rpcli", "ATA {:s} failed: {:0>8X}"),
+		os << "-- " << fmt::format(FRUN(C_("rpcli", "ATA {:s} failed: {:0>8X}")),
 			(si.packet ? "IDENTIFY PACKET DEVICE" : "IDENTIFY DEVICE"),
 			static_cast<unsigned int>(ret)) << '\n';
 		return os;

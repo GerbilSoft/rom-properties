@@ -186,7 +186,7 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 		fields.addField_string(fileOS_title, s_fileOS);
 	} else {
 		fields.addField_string(fileOS_title,
-			fmt::format(C_("RomData", "Unknown (0x{:0>8X})"), dwFileOS));
+			fmt::format(FRUN(C_("RomData", "Unknown (0x{:0>8X})")), dwFileOS));
 	}
 
 	// File type
@@ -219,7 +219,7 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 			fields.addField_string(fileType_title, C_("RomData", "Unknown"));
 		} else {
 			fields.addField_string(fileType_title,
-				fmt::format(C_("RomData", "Unknown (0x{:0>8X})"), pVsFfi->dwFileType));
+				fmt::format(FRUN(C_("RomData", "Unknown (0x{:0>8X})")), pVsFfi->dwFileType));
 		}
 	}
 
@@ -292,7 +292,7 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 				pgettext_expr("EXE|FileSubType", fileSubtype));
 		} else {
 			fields.addField_string(fileSubType_title,
-				fmt::format(C_("RomData", "Unknown (0x{:0>2X})"), pVsFfi->dwFileSubtype));
+				fmt::format(FRUN(C_("RomData", "Unknown (0x{:0>2X})")), pVsFfi->dwFileSubtype));
 		}
 	}
 
@@ -458,7 +458,7 @@ void EXEPrivate::addFields_LE(void)
 		fields.addField_string(cpu_title, cpu);
 	} else {
 		fields.addField_string(cpu_title,
-			fmt::format(C_("RomData", "Unknown (0x{:0>4X})"), cpu_type));
+			fmt::format(FRUN(C_("RomData", "Unknown (0x{:0>4X})")), cpu_type));
 	}
 
 	// Target OS
@@ -469,7 +469,7 @@ void EXEPrivate::addFields_LE(void)
 		fields.addField_string(targetOS_title, NE_TargetOSes[targOS]);
 	} else {
 		fields.addField_string(targetOS_title,
-			fmt::format(C_("RomData", "Unknown (0x{:0>2X})"), targOS));
+			fmt::format(FRUN(C_("RomData", "Unknown (0x{:0>2X})")), targOS));
 	}
 }
 

@@ -413,7 +413,7 @@ void RP_ShellPropSheetExt_Private::btnOptions_action_triggered(int menuId)
 				const uint32_t lc = cboLanguage
 					? LanguageComboBox_GetSelectedLC(cboLanguage)
 					: 0;
-				ofs << "== " << fmt::format(C_("RomDataView", "File: '{:s}'"), rom_filename) << '\n';
+				ofs << "== " << fmt::format(FRUN(C_("RomDataView", "File: '{:s}'")), rom_filename) << '\n';
 				ROMOutput ro(romData.get(), lc);
 				ofs << ro;
 				ofs.flush();
@@ -432,7 +432,7 @@ void RP_ShellPropSheetExt_Private::btnOptions_action_triggered(int menuId)
 					? LanguageComboBox_GetSelectedLC(cboLanguage)
 					: 0;
 				ostringstream oss;
-				oss << "== " << fmt::format(C_("RomDataView", "File: '{:s}'"), rom_filename) << '\n';
+				oss << "== " << fmt::format(FRUN(C_("RomDataView", "File: '{:s}'")), rom_filename) << '\n';
 				ROMOutput ro(romData.get(), lc);
 				oss << ro;
 				oss.flush();

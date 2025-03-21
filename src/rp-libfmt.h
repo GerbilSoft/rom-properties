@@ -22,7 +22,17 @@
 #endif /* FMT_VERSION < 70100 */
 
 // Our own FSTR() macro
-#define FSTR(x) FMT_STRING(x)
+#if __cplusplus >= 202002L
+// C++20 or later: FMT_STRING isn't needed.
+#  define FSTR(x) x
+#else /* __cplusplus < 202002L */
+// C++17 or earlier: FMT_STRING *is* needed.
+#  define FSTR(x) FMT_STRING(x)
+#endif /* __cplusplus >= 202002L */
+
+// FRUN() for runtime-only format strings.
+// Needed for gettext.
+#define FRUN(x) fmt::runtime(x)
 
 // Windows: xchar.h for better Unicode support [libfmt-8.0.0]
 #ifdef _WIN32

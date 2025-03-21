@@ -158,14 +158,14 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 		case KeyStoreUI::ImportStatus::OpenError:
 			if (iret.error_code != 0) {
 				// tr: {0:s} == filename, {1:s} == error message
-				msg = fmt::format(C_("KeyManagerTab",
-					"An error occurred while opening '{0:s}': {1:s}"),
+				msg = fmt::format(FRUN(C_("KeyManagerTab",
+					"An error occurred while opening '{0:s}': {1:s}")),
 					fileNoPath.toUtf8().constData(),
 					strerror(iret.error_code));
 			} else {
 				// tr: {:s} == filename
-				msg = fmt::format(C_("KeyManagerTab",
-					"An error occurred while opening '{:s}'."),
+				msg = fmt::format(FRUN(C_("KeyManagerTab",
+					"An error occurred while opening '{:s}'.")),
 					fileNoPath.toUtf8().constData());
 			}
 			type = KMessageWidget::Error;
@@ -176,14 +176,14 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 			// TODO: Error code for short reads.
 			if (iret.error_code != 0) {
 				// tr: {0:s} == filename, {1:s} == error message
-				msg = fmt::format(C_("KeyManagerTab",
-					"An error occurred while reading '{0:s}': {1:s}"),
+				msg = fmt::format(FRUN(C_("KeyManagerTab",
+					"An error occurred while reading '{0:s}': {1:s}")),
 					fileNoPath.toUtf8().constData(),
 					strerror(iret.error_code));
 			} else {
 				// tr: {:s} == filename
-				msg = fmt::format(C_("KeyManagerTab",
-					"An error occurred while reading '{:s}'."),
+				msg = fmt::format(FRUN(C_("KeyManagerTab",
+					"An error occurred while reading '{:s}'.")),
 					fileNoPath.toUtf8().constData());
 			}
 			type = KMessageWidget::Error;
@@ -192,8 +192,8 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 
 		case KeyStoreUI::ImportStatus::InvalidFile:
 			// tr: {0:s} == filename, {1:s} == type of file
-			msg = fmt::format(C_("KeyManagerTab",
-				"The file '{0:s}' is not a valid {1:s} file."),
+			msg = fmt::format(FRUN(C_("KeyManagerTab",
+				"The file '{0:s}' is not a valid {1:s} file.")),
 				fileNoPath.toUtf8().constData(),
 				keyType.toUtf8().constData());
 			type = KMessageWidget::Warning;
@@ -202,8 +202,8 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 
 		case KeyStoreUI::ImportStatus::NoKeysImported:
 			// tr: {:s} == filename
-			msg = fmt::format(C_("KeyManagerTab",
-				"No keys were imported from '{:s}'."),
+			msg = fmt::format(FRUN(C_("KeyManagerTab",
+				"No keys were imported from '{:s}'.")),
 				fileNoPath.toUtf8().constData());
 			type = KMessageWidget::Information;
 			icon = QStyle::SP_MessageBoxInformation;
@@ -213,10 +213,10 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 		case KeyStoreUI::ImportStatus::KeysImported: {
 			const unsigned int keyCount = iret.keysImportedVerify + iret.keysImportedNoVerify;
 			// tr: {0:Ld} == number of keys, {1:s} == filename
-			msg = fmt::format(NC_("KeyManagerTab",
+			msg = fmt::format(FRUN(NC_("KeyManagerTab",
 				"{0:Ld} key was imported from '{1:s}'.",
 				"{0:Ld} keys were imported from '{1:s}'.",
-				keyCount),
+				keyCount)),
 				keyCount, fileNoPath.toUtf8().constData());
 			type = KMessageWidget::Positive;
 			icon = QStyle::SP_DialogOkButton;
@@ -232,55 +232,55 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 		if (iret.keysExist > 0) {
 			msg += nl_bullet;
 			// tr: {:Ld} == number of keys
-			msg += fmt::format(NC_("KeyManagerTab",
+			msg += fmt::format(FRUN(NC_("KeyManagerTab",
 				"{:Ld} key already exists in the Key Manager.",
 				"{:Ld} keys already exist in the Key Manager.",
-				iret.keysExist),
+				iret.keysExist)),
 				iret.keysExist);
 		}
 		if (iret.keysInvalid > 0) {
 			msg += nl_bullet;
 			// tr: {:Ld} == number of keys
-			msg += fmt::format(NC_("KeyManagerTab",
+			msg += fmt::format(FRUN(NC_("KeyManagerTab",
 				"{:Ld} key was not imported because it is incorrect.",
 				"{:Ld} keys were not imported because they are incorrect.",
-				iret.keysInvalid),
+				iret.keysInvalid)),
 				iret.keysInvalid);
 		}
 		if (iret.keysNotUsed > 0) {
 			msg += nl_bullet;
 			// tr: {:Ld} == number of keys
-			msg += fmt::format(NC_("KeyManagerTab",
+			msg += fmt::format(FRUN(NC_("KeyManagerTab",
 				"{:Ld} key was not imported because it isn't used by rom-properties.",
 				"{:Ld} keys were not imported because they aren't used by rom-properties.",
-				iret.keysNotUsed),
+				iret.keysNotUsed)),
 				iret.keysNotUsed);
 		}
 		if (iret.keysCantDecrypt > 0) {
 			msg += nl_bullet;
 			// tr: {:Ld} == number of keys
-			msg += fmt::format(NC_("KeyManagerTab",
+			msg += fmt::format(FRUN(NC_("KeyManagerTab",
 				"{:Ld} key was not imported because it is encrypted and the master key isn't available.",
 				"{:Ld} keys were not imported because they are encrypted and the master key isn't available.",
-				iret.keysCantDecrypt),
+				iret.keysCantDecrypt)),
 				iret.keysCantDecrypt);
 		}
 		if (iret.keysImportedVerify > 0) {
 			msg += nl_bullet;
 			// tr: {:Ld} == number of keys
-			msg += fmt::format(NC_("KeyManagerTab",
+			msg += fmt::format(FRUN(NC_("KeyManagerTab",
 				"{:Ld} key has been imported and verified as correct.",
 				"{:Ld} keys have been imported and verified as correct.",
-				iret.keysImportedVerify),
+				iret.keysImportedVerify)),
 				iret.keysImportedVerify);
 		}
 		if (iret.keysImportedNoVerify > 0) {
 			msg += nl_bullet;
 			// tr: {:Ld} == number of keys
-			msg += fmt::format(NC_("KeyManagerTab",
+			msg += fmt::format(FRUN(NC_("KeyManagerTab",
 				"{:Ld} key has been imported without verification.",
 				"{:Ld} keys have been imported without verification.",
-				iret.keysImportedNoVerify),
+				iret.keysImportedNoVerify)),
 				iret.keysImportedNoVerify);
 		}
 	}

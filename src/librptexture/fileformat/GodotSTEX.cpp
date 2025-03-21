@@ -1110,7 +1110,7 @@ const char *GodotSTEX::pixelFormat(void) const
 	// Store an error message instead.
 	if (d->invalid_pixel_format.empty()) {
 		d->invalid_pixel_format = fmt::format(
-			C_("RomData", "Unknown ({:d})"),
+			FRUN(C_("RomData", "Unknown ({:d})")),
 			static_cast<int>(d->pixelFormat));
 	}
 	return d->invalid_pixel_format.c_str();
@@ -1196,7 +1196,7 @@ int GodotSTEX::getFields(RomFields *fields) const
 						data_format_tbl[d->stexHeader.v4.data_format]));
 			} else {
 				fields->addField_string(s_title,
-					fmt::format(C_("RomData", "Unknown ({:d})"),
+					fmt::format(FRUN(C_("RomData", "Unknown ({:d})")),
 						d->stexHeader.v4.data_format));
 			}
 			break;

@@ -1259,7 +1259,7 @@ const char *PowerVR3::pixelFormat(void) const
 
 		// Not valid.
 		d->invalid_pixel_format = fmt::format(
-			C_("PowerVR3", "Unknown (Compressed: 0x{:0>8X})"),
+			FRUN(C_("PowerVR3", "Unknown (Compressed: 0x{:0>8X})")),
 			d->pvr3Header.pixel_format);
 		return d->invalid_pixel_format.c_str();
 	}

@@ -463,7 +463,7 @@ ccCleaner_error(RpCacheCleaner *cleaner, const char *error, RpCacheTab *tab)
 	gtk_progress_bar_set_error(GTK_PROGRESS_BAR(tab->pbCacheStatus), TRUE);
 
 	// tr: Error message template. (GTK version, with C++20 formatting)
-	const string s_msg = fmt::format(C_("ConfigDialog", "<b>ERROR:</b> {:s}"), error);
+	const string s_msg = fmt::format(FRUN(C_("ConfigDialog", "<b>ERROR:</b> {:s}")), error);
 	gtk_label_set_markup(GTK_LABEL(tab->lblCacheStatus), s_msg.c_str());
 	// FIXME: Causes crashes...
 	//MessageSound::play(GTK_MESSAGE_WARNING, s_msg.c_str(), GTK_WIDGET(tab));
@@ -518,8 +518,8 @@ ccCleaner_cacheCleared(RpCacheCleaner *cleaner, RpCacheDir cache_dir, unsigned i
 
 	if (dirErrs > 0 || fileErrs > 0) {
 		// tr: Error message template. (GTK version, with C++20 formatting)
-		const string s_msg = fmt::format(C_("ConfigDialog", "<b>ERROR:</b> {:s}"),
-			fmt::format(C_("CacheTab", "Unable to delete {0:Ld} file(s) and/or {1:Ld} dir(s)."),
+		const string s_msg = fmt::format(FRUN(C_("ConfigDialog", "<b>ERROR:</b> {:s}")),
+			fmt::format(FRUN(C_("CacheTab", "Unable to delete {0:Ld} file(s) and/or {1:Ld} dir(s).")),
 				fileErrs, dirErrs).c_str());
 		gtk_label_set_markup(GTK_LABEL(tab->lblCacheStatus), s_msg.c_str());
 		// FIXME: Causes crashes...

@@ -193,7 +193,7 @@ void RomDataViewPrivate::doRomOp_stdop(int id)
 	switch (id) {
 		case OPTION_COPY_TEXT: {
 			ostringstream oss;
-			oss << "== " << fmt::format(C_("RomDataView", "File: '{:s}'"), rom_filename) << '\n';
+			oss << "== " << fmt::format(FRUN(C_("RomDataView", "File: '{:s}'")), rom_filename) << '\n';
 			ROMOutput ro(romData.get(), sel_lc);
 			oss << ro;
 			oss.flush();
@@ -263,7 +263,7 @@ void RomDataViewPrivate::doRomOp_stdop(int id)
 
 	switch (id) {
 		case OPTION_EXPORT_TEXT: {
-			ofs << "== " << fmt::format(C_("RomDataView", "File: '{:s}'"), rom_filename) << '\n';
+			ofs << "== " << fmt::format(FRUN(C_("RomDataView", "File: '{:s}'")), rom_filename) << '\n';
 			ROMOutput ro(romData.get(), sel_lc);
 			ofs << ro;
 			ofs.flush();

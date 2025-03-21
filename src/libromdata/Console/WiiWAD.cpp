@@ -949,7 +949,7 @@ int WiiWAD::loadFieldData(void)
 			string s_region;
 			if (suffix) {
 				// tr: {0:s} == full region name, {1:s} == abbreviation
-				s_region = fmt::format(C_("Wii", "{0:s} ({1:s})"), region, suffix);
+				s_region = fmt::format(FRUN(C_("Wii", "{0:s} ({1:s})")), region, suffix);
 			} else {
 				s_region = region;
 			}
@@ -957,7 +957,7 @@ int WiiWAD::loadFieldData(void)
 			d->fields.addField_string(region_code_title, s_region);
 		} else {
 			d->fields.addField_string(region_code_title,
-				fmt::format(C_("RomData", "Unknown (0x{:0>2X})"), gcnRegion));
+				fmt::format(FRUN(C_("RomData", "Unknown (0x{:0>2X})")), gcnRegion));
 		}
 
 		// Required IOS version.

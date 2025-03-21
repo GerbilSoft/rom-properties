@@ -77,9 +77,11 @@ SET(CMAKE_LINK_DEPENDS_NO_SHARED ON)
 # enough tests are added.
 ENABLE_TESTING()
 
-# Set the standards versions: C11, C++17
+# Set the standards versions. (Minimum C11, C++14)
 # C17 was added in CMake 3.21; for older versions, use C11.
 # C++17 was added in CMake 3.8; for older versions, use C++14.
+# C++20 was added in CMake 3.12; for older versions, use C++17.
+# - C++20 is needed for std::span<>.
 # NOTE: These aren't set as hard requirements, though if the compiler
 # doesn't support them, code will either be less optimal or will fail
 # to compile.
@@ -89,7 +91,10 @@ SET(CMAKE_CXX_STANDARD_REQUIRED OFF)
 SET(CMAKE_CXX_EXTENSIONS ON)
 IF(CMAKE_VERSION VERSION_GREATER 3.20)		# >= 3.21
 	SET(CMAKE_C_STANDARD 17)
-	SET(CMAKE_CXX_STANDARD 17)
+	SET(CMAKE_CXX_STANDARD 20)
+ELSEIF(CMAKE_VERSION VERSION_GREATER 3.11)	# >= 3.12
+	SET(CMAKE_C_STANDARD 11)
+	SET(CMAKE_CXX_STANDARD 20)
 ELSEIF(CMAKE_VERSION VERSION_GREATER 3.7)	# >= 3.8
 	SET(CMAKE_C_STANDARD 11)
 	SET(CMAKE_CXX_STANDARD 17)

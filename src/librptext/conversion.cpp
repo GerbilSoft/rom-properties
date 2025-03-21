@@ -401,7 +401,7 @@ string formatFileSize(off64_t size, BinaryUnitDialect dialect)
 
 	if (suffix) {
 		// tr: {0:s} == localized value, {1:s} == suffix (e.g. MiB)
-		return fmt::format(C_("LibRpText|FileSize", "{0:s} {1:s}"),
+		return fmt::format(FRUN(C_("LibRpText|FileSize", "{0:s} {1:s}")),
 			s_value.str(), suffix);
 	}
 
@@ -444,7 +444,7 @@ std::string formatFileSizeKiB(unsigned int size, BinaryUnitDialect dialect)
 	}
 
 	// tr: {0:Ld} == localized value, {1:s} == suffix (e.g. MiB)
-	return fmt::format(C_("LibRpText|FileSize", "{0:Ld} {1:s}"), size, suffix);
+	return fmt::format(FRUN(C_("LibRpText|FileSize", "{0:Ld} {1:s}")), size, suffix);
 }
 
 /**
@@ -508,7 +508,7 @@ std::string formatFrequency(uint32_t frequency)
 
 	if (suffix) {
 		// tr: {0:s} == localized value, {1:s} == suffix (e.g. MHz)
-		return fmt::format(C_("LibRpText|Frequency", "{0:s} {1:s}"),
+		return fmt::format(FRUN(C_("LibRpText|Frequency", "{0:s} {1:s}")),
 			s_value.str(), suffix);
 	}
 

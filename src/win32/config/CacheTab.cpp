@@ -378,7 +378,7 @@ int CacheTabPrivate::clearThumbnailCacheVista(void)
 		// this is only run on Vista+.
 		DWORD dwErr = GetLastError();
 		SetWindowText(hStatusLabel, fmt::format(
-			TC_("CacheTab|Win32", "ERROR: GetLogicalDrives() failed. (GetLastError() == 0x{:0>8X})"),
+			FRUN(TC_("CacheTab|Win32", "ERROR: GetLogicalDrives() failed. (GetLastError() == 0x{:0>8X})")),
 				static_cast<unsigned int>(dwErr)).c_str());
 		SendMessage(hProgressBar, PBM_SETSTATE, PBST_ERROR, 0);
 		return 1;
@@ -413,7 +413,7 @@ int CacheTabPrivate::clearThumbnailCacheVista(void)
 	if (!hKey.isOpen()) {
 		// Failed to open the registry key.
 		SetWindowText(hStatusLabel, fmt::format(
-			TC_("CacheTab|Win32", "ERROR: Thumbnail Cache cleaner not found. (res == {:d})"),
+			FRUN(TC_("CacheTab|Win32", "ERROR: Thumbnail Cache cleaner not found. (res == {:d})")),
 				hKey.lOpenRes()).c_str());
 		SendMessage(hProgressBar, PBM_SETSTATE, PBST_ERROR, 0);
 		return 3;
@@ -447,7 +447,7 @@ int CacheTabPrivate::clearThumbnailCacheVista(void)
 	if (FAILED(hr)) {
 		// Failed...
 		SetWindowText(hStatusLabel, fmt::format(
-			TC_("CacheTab|Win32", "ERROR: CoCreateInstance() failed. (hr == 0x{:0>8X})"),
+			FRUN(TC_("CacheTab|Win32", "ERROR: CoCreateInstance() failed. (hr == 0x{:0>8X})")),
 				static_cast<unsigned int>(hr)).c_str());
 		SendMessage(hProgressBar, PBM_SETSTATE, PBST_ERROR, 0);
 		return 6;
@@ -500,7 +500,7 @@ int CacheTabPrivate::clearThumbnailCacheVista(void)
 			// Some error occurred.
 			// TODO: Continue with other drives?
 			SetWindowText(hStatusLabel, fmt::format(
-				TC_("CacheTab|Win32", "ERROR: IEmptyVolumeCache::Initialize() failed on drive {:c}. (hr == 0x{:0>8X})"),
+				FRUN(TC_("CacheTab|Win32", "ERROR: IEmptyVolumeCache::Initialize() failed on drive {:c}. (hr == 0x{:0>8X})")),
 					szDrivePath[0], static_cast<unsigned int>(hr)).c_str());
 			SendMessage(hProgressBar, PBM_SETSTATE, PBST_ERROR, 0);
 			pCallback->Release();
@@ -516,7 +516,7 @@ int CacheTabPrivate::clearThumbnailCacheVista(void)
 		if (FAILED(hr)) {
 			// Cleanup failed. (TODO: Figure out why!)
 			SetWindowText(hStatusLabel, fmt::format(
-				TC_("CacheTab|Win32", "ERROR: IEmptyVolumeCache::Purge() failed on drive {:c}. (hr == 0x{:0>8X})"),
+				FRUN(TC_("CacheTab|Win32", "ERROR: IEmptyVolumeCache::Purge() failed on drive {:c}. (hr == 0x{:0>8X})")),
 					szDrivePath[0], static_cast<unsigned int>(hr)).c_str());
 			SendMessage(hProgressBar, PBM_SETSTATE, PBST_ERROR, 0);
 			pCallback->Release();
@@ -573,7 +573,7 @@ int CacheTabPrivate::clearRomPropertiesCache(void)
 		[](TCHAR chr) noexcept -> bool { return (chr == L'\\'); });
 
 	if (cacheDir.size() < 8 || bscount < 6) {
-		const string s_err = fmt::format(C_("CacheTab", "ERROR: {:s}"),
+		const string s_err = fmt::format(FRUN(C_("CacheTab", "ERROR: {:s}")),
 			C_("CacheCleaner", "Unable to get the rom-properties cache directory."));
 		SetWindowText(hStatusLabel, U82T_s(s_err));
 		SendMessage(hProgressBar, PBM_SETRANGE, 0, MAKELONG(0, 1));
@@ -628,7 +628,7 @@ int CacheTabPrivate::clearRomPropertiesCache(void)
 	int ret = recursiveScan(cacheDirT.c_str(), rlist);
 	if (ret != 0) {
 		// Non-image file found.
-		const string s_err = fmt::format(C_("CacheTab", "ERROR: {:s}"),
+		const string s_err = fmt::format(FRUN(C_("CacheTab", "ERROR: {:s}")),
 			C_("CacheCleaner", "rom-properties cache has unexpected files. Not clearing it."));
 		SetWindowText(hStatusLabel, U82T_s(s_err));
 		SendMessage(hProgressBar, PBM_SETRANGE, 0, MAKELONG(0, 1));
@@ -713,8 +713,8 @@ int CacheTabPrivate::clearRomPropertiesCache(void)
 
 	if (dirErrs > 0 || fileErrs > 0) {
 		// FIXME: MinGW-w64 11.0.0 doesn't have _swprintf_p() implemented.
-		const string s_err = fmt::format(C_("CacheTab", "ERROR: {:s}"),
-			fmt::format(C_("CacheTab", "Unable to delete {0:Ld} file(s) and/or {1:Ld} dir(s)."),
+		const string s_err = fmt::format(FRUN(C_("CacheTab", "ERROR: {:s}")),
+			fmt::format(FRUN(C_("CacheTab", "Unable to delete {0:Ld} file(s) and/or {1:Ld} dir(s).")),
 				fileErrs, dirErrs));
 		SetWindowText(hStatusLabel, U82T_s(s_err));
 		MessageBeep(MB_ICONWARNING);

@@ -738,7 +738,7 @@ const char *ValveVTF::pixelFormat(void) const
 	// Store an error message instead.
 	if (d->invalid_pixel_format.empty()) {
 		d->invalid_pixel_format = fmt::format(
-			C_("RomData", "Unknown ({:d})"), fmt);
+			FRUN(C_("RomData", "Unknown ({:d})")), fmt);
 	}
 	return d->invalid_pixel_format.c_str();
 }
@@ -884,7 +884,7 @@ int ValveVTF::getFields(RomFields *fields) const
 			vtfHeader->lowResImageHeight);
 	} else {
 		fields->addField_string(low_res_image_format_title,
-			fmt::format(C_("RomData", "Unknown ({:d})"), vtfHeader->lowResImageFormat));
+			fmt::format(FRUN(C_("RomData", "Unknown ({:d})")), vtfHeader->lowResImageFormat));
 	}
 
 	if (vtfHeader->version[0] > 7 ||

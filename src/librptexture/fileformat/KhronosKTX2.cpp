@@ -943,7 +943,7 @@ const char *KhronosKTX2::pixelFormat(void) const
 	if (d->invalid_pixel_format.empty()) {
 		// TODO: Localization?
 		d->invalid_pixel_format = fmt::format(
-			C_("RomData", "Unknown ({:d})"),
+			FRUN(C_("RomData", "Unknown ({:d})")),
 			d->ktx2Header.vkFormat);
 	}
 	return d->invalid_pixel_format.c_str();
@@ -985,7 +985,7 @@ int KhronosKTX2::getFields(RomFields *fields) const
 			supercompression_tbl[ktx2Header->supercompressionScheme]);
 	} else {
 		fields->addField_string(C_("KhronosKTX2", "Supercompression"),
-			fmt::format(C_("RomData", "Unknown ({:d})"),
+			fmt::format(FRUN(C_("RomData", "Unknown ({:d})")),
 				ktx2Header->supercompressionScheme));
 	}
 

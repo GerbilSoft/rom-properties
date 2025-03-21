@@ -384,7 +384,7 @@ int Amiibo::loadFieldData(void)
 	// tr: amiibo ID. Represents the character and amiibo series.
 	// TODO: Link to https://amiibo.life/nfc/{:0>8X}-{:0>8X}
 	d->fields.addField_string(C_("Amiibo", "amiibo ID"),
-		fmt::format("{:0>8X}-{:0>8X}", char_id, amiibo_id),
+		fmt::format(FSTR("{:0>8X}-{:0>8X}"), char_id, amiibo_id),
 		RomFields::STRF_MONOSPACE);
 
 	// tr: amiibo type.
@@ -405,7 +405,7 @@ int Amiibo::loadFieldData(void)
 	} else {
 		// Invalid amiibo type.
 		d->fields.addField_string(amiibo_type_title,
-			fmt::format(C_("RomData", "Unknown (0x{:0>2X})"), (char_id & 0xFF)));
+			fmt::format(FRUN(C_("RomData", "Unknown (0x{:0>2X})")), (char_id & 0xFF)));
 	}
 
 	// Get the AmiiboData instance.
@@ -444,7 +444,7 @@ int Amiibo::loadFieldData(void)
 
 	// tr: Credits for amiibo image downloads.
 	const string credits = fmt::format(
-		C_("Amiibo", "amiibo images provided by {:s},\nthe Unofficial amiibo Database."),
+		FRUN(C_("Amiibo", "amiibo images provided by {:s},\nthe Unofficial amiibo Database.")),
 		"<a href=\"https://amiibo.life/\">amiibo.life</a>");
 	d->fields.addField_string(C_("Amiibo", "Credits"), credits, RomFields::STRF_CREDITS);
 

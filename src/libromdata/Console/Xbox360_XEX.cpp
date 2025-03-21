@@ -1310,13 +1310,13 @@ string Xbox360_XEX_Private::getPublisher(void) const
 	    ISALNUM(executionID.title_id.b))
 	{
 		// Publisher ID is alphanumeric.
-		return fmt::format(C_("RomData", "Unknown ({:c}{:c})"),
+		return fmt::format(FRUN(C_("RomData", "Unknown ({:c}{:c})")),
 			executionID.title_id.a,
 			executionID.title_id.b);
 	}
 
 	// Publisher ID is not alphanumeric.
-	return fmt::format(C_("RomData", "Unknown ({:0>2X} {:0>2X})"),
+	return fmt::format(FRUN(C_("RomData", "Unknown ({:0>2X} {:0>2X})")),
 		static_cast<uint8_t>(executionID.title_id.a),
 		static_cast<uint8_t>(executionID.title_id.b));
 }
@@ -1644,7 +1644,7 @@ int Xbox360_XEX::loadFieldData(void)
 				s_xexKeyID = "XEX2";
 			}
 			d->fields.addField_string(C_("RomData", "Warning"),
-				fmt::format(C_("Xbox360_XEX", "The Xbox 360 {:s} encryption key is not available."), s_xexKeyID),
+				fmt::format(FRUN(C_("Xbox360_XEX", "The Xbox 360 {:s} encryption key is not available.")), s_xexKeyID),
 				RomFields::STRF_WARNING);
 		}
 	}
@@ -1862,7 +1862,7 @@ int Xbox360_XEX::loadFieldData(void)
 			
 		d->fields.addField_string(C_("Xbox360_XEX", "Title ID"),
 			// tr: Xbox 360 title ID (32-bit hex, then two letters followed by a 4-digit decimal number)
-			fmt::format(C_("Xbox360_XEX", "{0:0>8X} ({1:s}-{2:0>4d})"),
+			fmt::format(FRUN(C_("Xbox360_XEX", "{0:0>8X} ({1:s}-{2:0>4d})")),
 				be32_to_cpu(d->executionID.title_id.u32),
 				tid_str.c_str(),
 				be16_to_cpu(d->executionID.title_id.u16)),
@@ -1879,7 +1879,7 @@ int Xbox360_XEX::loadFieldData(void)
 		if (d->executionID.disc_number != 0 && d->executionID.disc_count > 1) {
 			d->fields.addField_string(C_("RomData", "Disc #"),
 				// tr: Disc X of Y (for multi-disc games)
-				fmt::format(C_("RomData|Disc", "{0:d} of {1:d}"),
+				fmt::format(FRUN(C_("RomData|Disc", "{0:d} of {1:d}")),
 					d->executionID.disc_number,
 					d->executionID.disc_count));
 		}
@@ -1928,7 +1928,7 @@ int Xbox360_XEX::loadFieldData(void)
 				compression_tbl[d->fileFormatInfo.compression_type]));
 	} else {
 		d->fields.addField_string(C_("Xbox360_XEX", "Compression"),
-			fmt::format(C_("RomData", "Unknown (0x{:0>2X})"),
+			fmt::format(FRUN(C_("RomData", "Unknown (0x{:0>2X})")),
 				d->fileFormatInfo.compression_type));
 	}
 

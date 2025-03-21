@@ -879,7 +879,7 @@ public:
 				if (name) {
 					os << name;
 				} else {
-					os << fmt::format(C_("TextOut", "(tab {:d})"), tabIdx);
+					os << fmt::format(FRUN(C_("TextOut", "(tab {:d})")), tabIdx);
 				}
 				os << " -----" << '\n';
 			}
@@ -938,7 +938,7 @@ std::ostream& operator<<(std::ostream& os, const ROMOutput& fo) {
 	// NOTE: RomDataView context is used for the "unknown" strings.
 	{
 		// tr: "[System] [FileType] detected."
-		const string detectMsg = fmt::format(C_("TextOut", "{0:s} {1:s} detected"),
+		const string detectMsg = fmt::format(FRUN(C_("TextOut", "{0:s} {1:s} detected")),
 			(systemName ? systemName : C_("RomDataView", "(unknown system)")),
 			(fileType ? fileType : C_("RomDataView", "(unknown filetype)")));
 
@@ -964,7 +964,7 @@ std::ostream& operator<<(std::ostream& os, const ROMOutput& fo) {
 				auto image = romdata->image(static_cast<RomData::ImageType>(i));
 				if (image && image->isValid()) {
 					// tr: Image Type name, followed by Image Type ID
-					os << "-- " << fmt::format(C_("TextOut", "{0:s} is present (use -x{1:d} to extract)"),
+					os << "-- " << fmt::format(FRUN(C_("TextOut", "{0:s} is present (use -x{1:d} to extract)")),
 						RomData::getImageTypeName(static_cast<RomData::ImageType>(i)), i) << '\n';
 					// TODO: After localizing, add enough spaces for alignment.
 					os << "   Format : " << rp_image::getFormatName(image->format()) << '\n';

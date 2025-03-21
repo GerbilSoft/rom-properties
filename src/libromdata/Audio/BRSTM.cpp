@@ -340,7 +340,7 @@ int BRSTM::loadFieldData(void)
 			pgettext_expr("BRSTM|Codec", codec_tbl[headChunk1->codec]));
 	} else {
 		d->fields.addField_string(codec_title,
-			fmt::format(C_("RomData", "Unknown ({:d})"), headChunk1->codec));
+			fmt::format(FRUN(C_("RomData", "Unknown ({:d})")), headChunk1->codec));
 	}
 
 	// Number of channels
@@ -352,7 +352,7 @@ int BRSTM::loadFieldData(void)
 
 	// Sample rate
 	d->fields.addField_string(C_("RomData|Audio", "Sample Rate"),
-		fmt::format(C_("RomData", "{:Ld} Hz"), sample_rate));
+		fmt::format(FRUN(C_("RomData", "{:Ld} Hz")), sample_rate));
 
 	// Length (non-looping)
 	d->fields.addField_string(C_("RomData|Audio", "Length"),

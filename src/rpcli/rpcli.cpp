@@ -153,20 +153,20 @@ static void ExtractImages(const RomData *romData, const vector<ExtractParam> &ex
 				if (likely(!isMipmap)) {
 					cerr << "-- " <<
 						// tr: {0:s} == image type name, {1:s} == output filename
-						fmt::format(C_("rpcli", "Extracting {0:s} into '{1:s}'"),
+						fmt::format(FRUN(C_("rpcli", "Extracting {0:s} into '{1:s}'")),
 							RomData::getImageTypeName(imageType),
 							T2U8c(p.filename)) << '\n';
 				} else {
 					cerr << "-- " <<
 						// tr: {0:d} == mipmap level, {1:s} == output filename
-						fmt::format(C_("rpcli", "Extracting mipmap level {0:d} into '{1:s}'"),
+						fmt::format(FRUN(C_("rpcli", "Extracting mipmap level {0:d} into '{1:s}'")),
 							p.mipmapLevel, T2U8c(p.filename)) << '\n';
 				}
 				cerr.flush();
 				int errcode = RpPng::save(p.filename, image);
 				if (errcode != 0) {
 					// tr: {0:s} == filename, {1:s} == error message
-					cerr << fmt::format(C_("rpcli", "Couldn't create file '{0:s}': {1:s}"),
+					cerr << fmt::format(FRUN(C_("rpcli", "Couldn't create file '{0:s}': {1:s}")),
 						T2U8c(p.filename), strerror(-errcode)) << '\n';
 				} else {
 					cerr << "   " << C_("rpcli", "Done") << '\n';
@@ -178,7 +178,7 @@ static void ExtractImages(const RomData *romData, const vector<ExtractParam> &ex
 			auto iconAnimData = romData->iconAnimData();
 			if (iconAnimData && iconAnimData->count != 0 && iconAnimData->seq_count != 0) {
 				found = true;
-				cerr << "-- " << fmt::format(C_("rpcli", "Extracting animated icon into '{:s}'"), T2U8c(p.filename)) << '\n';
+				cerr << "-- " << fmt::format(FRUN(C_("rpcli", "Extracting animated icon into '{:s}'")), T2U8c(p.filename)) << '\n';
 				cerr.flush();
 				int errcode = RpPng::save(p.filename, iconAnimData);
 				if (errcode == -ENOTSUP) {
@@ -189,7 +189,7 @@ static void ExtractImages(const RomData *romData, const vector<ExtractParam> &ex
 				}
 				if (errcode != 0) {
 					cerr << "   " <<
-						fmt::format(C_("rpcli", "Couldn't create file '{0:s}': {1:s}"),
+						fmt::format(FRUN(C_("rpcli", "Couldn't create file '{0:s}': {1:s}")),
 							T2U8c(p.filename), strerror(-errcode)) << '\n';
 				} else {
 					cerr << "   " << C_("rpcli", "Done") << '\n';
@@ -204,12 +204,12 @@ static void ExtractImages(const RomData *romData, const vector<ExtractParam> &ex
 				cerr << "-- " << C_("rpcli", "Animated icon not found") << '\n';
 			} else if (p.mipmapLevel >= 0) {
 				cerr << "-- " <<
-					fmt::format(C_("rpcli", "Mipmap level {:d} not found"), p.mipmapLevel) << '\n';
+					fmt::format(FRUN(C_("rpcli", "Mipmap level {:d} not found")), p.mipmapLevel) << '\n';
 			} else {
 				const RomData::ImageType imageType =
 					static_cast<RomData::ImageType>(p.imageType);
 				cerr << "-- " <<
-					fmt::format(C_("rpcli", "Image '{:s}' not found"),
+					fmt::format(FRUN(C_("rpcli", "Image '{:s}' not found")),
 						RomData::getImageTypeName(imageType)) << '\n';
 			}
 			cerr.flush();
@@ -235,7 +235,7 @@ static void DoFile(const TCHAR *filename, bool json, const vector<ExtractParam> 
 
 		// FIXME: Make T2U8c() unnecessary here.
 		fputs("== ", stderr);
-		fmt::print(stderr, C_("rpcli", "Reading file '{:s}'..."), T2U8c(filename));
+		fmt::print(stderr, FRUN(C_("rpcli", "Reading file '{:s}'...")), T2U8c(filename));
 		fputc('\n', stderr);
 		fflush(stderr);
 
@@ -243,7 +243,7 @@ static void DoFile(const TCHAR *filename, bool json, const vector<ExtractParam> 
 		if (!file->isOpen()) {
 			// TODO: Return an error code?
 			fputs("-- ", stderr);
-			fmt::print(stderr, C_("rpcli", "Couldn't open file: {:s}"), strerror(file->lastError()));
+			fmt::print(stderr, FRUN(C_("rpcli", "Couldn't open file: {:s}")), strerror(file->lastError()));
 			fputc('\n', stderr);
 			fflush(stderr);
 			if (json) {
@@ -259,7 +259,7 @@ static void DoFile(const TCHAR *filename, bool json, const vector<ExtractParam> 
 
 		// FIXME: Make T2U8c() unnecessary here.
 		fputs("== ", stderr);
-		fmt::print(stderr, C_("rpcli", "Reading directory '{:s}'..."), T2U8c(filename));
+		fmt::print(stderr, FRUN(C_("rpcli", "Reading directory '{:s}'...")), T2U8c(filename));
 		fputc('\n', stderr);
 		fflush(stderr);
 
@@ -308,7 +308,7 @@ static void PrintSystemRegion(void)
 			buf += static_cast<char>(lc & 0xFF);
 		}
 	}
-	fmt::print(C_("rpcli", "System language code: {:s}"),
+	fmt::print(FRUN(C_("rpcli", "System language code: {:s}")),
 		(!buf.empty() ? buf.c_str() : C_("rpcli", "0 (this is a bug!)")));
 	putchar('\n');
 
@@ -321,7 +321,7 @@ static void PrintSystemRegion(void)
 			buf += static_cast<char>(cc & 0xFF);
 		}
 	}
-	fmt::print(C_("rpcli", "System country code: {:s}"),
+	fmt::print(FRUN(C_("rpcli", "System country code: {:s}")),
 		(!buf.empty() ? buf.c_str() : C_("rpcli", "0 (this is a bug!)")));
 	putchar('\n');
 
@@ -364,7 +364,7 @@ static void DoScsiInquiry(const TCHAR *filename, bool json)
 {
 	// FIXME: Make T2U8c() unnecessary here.
 	fputs("== ", stderr);
-	fmt::print(stderr, C_("rpcli", "Opening device file '{:s}'..."), T2U8c(filename));
+	fmt::print(stderr, FRUN(C_("rpcli", "Opening device file '{:s}'...")), T2U8c(filename));
 	fputc('\n', stderr);
 	fflush(stderr);
 
@@ -372,7 +372,7 @@ static void DoScsiInquiry(const TCHAR *filename, bool json)
 	if (!file->isOpen()) {
 		// TODO: Return an error code?
 		fputs("-- ", stderr);
-		fmt::print(stderr, C_("rpcli", "Couldn't open file: {:s}"), strerror(file->lastError()));
+		fmt::print(stderr, FRUN(C_("rpcli", "Couldn't open file: {:s}")), strerror(file->lastError()));
 		fputc('\n', stderr);
 		fflush(stderr);
 
@@ -423,7 +423,7 @@ static void DoAtaIdentifyDevice(const TCHAR *filename, bool json, bool packet)
 {
 	// FIXME: Make T2U8c() unnecessary here.
 	fputs("== ", stderr);
-	fmt::print(stderr, C_("rpcli", "Opening device file '{:s}'..."), T2U8c(filename));
+	fmt::print(stderr, FRUN(C_("rpcli", "Opening device file '{:s}'...")), T2U8c(filename));
 	fputc('\n', stderr);
 	fflush(stderr);
 
@@ -431,7 +431,7 @@ static void DoAtaIdentifyDevice(const TCHAR *filename, bool json, bool packet)
 	if (!file->isOpen()) {
 		// TODO: Return an error code?
 		fputs("-- ", stderr);
-		fmt::print(stderr, C_("rpcli", "Couldn't open file: {:s}"), strerror(file->lastError()));
+		fmt::print(stderr, FRUN(C_("rpcli", "Couldn't open file: {:s}")), strerror(file->lastError()));
 		fputc('\n', stderr);
 		fflush(stderr);
 
@@ -706,7 +706,7 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 				}
 				if (pos == 4 && s_lang[pos] != _T('\0')) {
 					// Invalid language code.
-					fmt::print(stderr, C_("rpcli", "Warning: ignoring invalid language code '{:s}'"), T2U8c(s_lang));
+					fmt::print(stderr, FRUN(C_("rpcli", "Warning: ignoring invalid language code '{:s}'")), T2U8c(s_lang));
 					fputc('\n', stderr);
 					fflush(stderr);
 					break;
@@ -730,7 +730,7 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 				// TODO: Switch from _ttol() to _tcstol() and implement better error checking?
 				const long num = _ttol(argv[i] + 2);
 				if (num < RomData::IMG_INT_MIN || num > RomData::IMG_INT_MAX) {
-					fmt::print(stderr, C_("rpcli", "Warning: skipping unknown image type {:d}"), num);
+					fmt::print(stderr, FRUN(C_("rpcli", "Warning: skipping unknown image type {:d}")), num);
 					fputc('\n', stderr);
 					fflush(stderr);
 					i++; continue;
@@ -742,7 +742,7 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 				// TODO: Switch from _ttol() to _tcstol() and implement better error checking?
 				const long num = _ttol(argv[i] + 2);
 				if (num < -1 || num > 1024) {
-					fmt::print(stderr, C_("rpcli", "Warning: skipping invalid mipmap level {:d}"), num);
+					fmt::print(stderr, FRUN(C_("rpcli", "Warning: skipping invalid mipmap level {:d}")), num);
 					fputc('\n', stderr);
 					fflush(stderr);
 					i++; continue;
@@ -778,7 +778,7 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 							fputc('\n', stderr);
 						} else {
 							// FIXME: Unicode character on Windows.
-							fmt::print(stderr, C_("rpcli", "Warning: skipping unknown inquiry request '{:c}'"), (char)argv[i][2]);
+							fmt::print(stderr, FRUN(C_("rpcli", "Warning: skipping unknown inquiry request '{:c}'")), (char)argv[i][2]);
 							fputc('\n', stderr);
 						}
 						fflush(stderr);
@@ -788,7 +788,7 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 #endif /* RP_OS_SCSI_SUPPORTED */
 			default:
 				// FIXME: Unicode character on Windows.
-				fmt::print(stderr, C_("rpcli", "Warning: skipping unknown switch '{:c}'"), (char)argv[i][1]);
+				fmt::print(stderr, FRUN(C_("rpcli", "Warning: skipping unknown switch '{:c}'")), (char)argv[i][1]);
 				fputc('\n', stderr);
 				fflush(stderr);
 				break;

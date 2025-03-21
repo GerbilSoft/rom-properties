@@ -437,7 +437,7 @@ const char *DidjTex::pixelFormat(void) const
 	// Store an error message instead.
 	if (d->invalid_pixel_format.empty()) {
 		d->invalid_pixel_format = fmt::format(
-			C_("RomData", "Unknown (0x{:0>8X})"),
+			FRUN(C_("RomData", "Unknown (0x{:0>8X})")),
 			d->texHeader.px_format);
 	}
 	return d->invalid_pixel_format.c_str();

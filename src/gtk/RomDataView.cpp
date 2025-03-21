@@ -613,7 +613,7 @@ rp_rom_data_view_init_header_row(RpRomDataView *page)
 
 	const string sysInfo = fmt::format(
 		// tr: {0:s} == system name, {1:s} == file type
-		C_("RomDataView", "{0:s}\n{1:s}"), systemName, fileType);
+		FRUN(C_("RomDataView", "{0:s}\n{1:s}")), systemName, fileType);
 	gtk_label_set_text(GTK_LABEL(page->lblSysInfo), sysInfo.c_str());
 
 	// Supported image types.
@@ -1476,7 +1476,7 @@ rp_rom_data_view_update_display(RpRomDataView *page)
 		auto &tab = tabs[tabIdx];
 
 		// tr: Field description label.
-		const string txt = fmt::format(desc_label_fmt, field.name);
+		const string txt = fmt::format(FRUN(desc_label_fmt), field.name);
 		GtkWidget *const lblDesc = gtk_label_new(txt.c_str());
 		// NOTE: No name for this GtkWidget.
 		gtk_label_set_use_underline(GTK_LABEL(lblDesc), false);

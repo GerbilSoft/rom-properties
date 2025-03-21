@@ -296,7 +296,7 @@ void CacheTab::ccCleaner_cacheCleared(CacheCleaner::CacheDir cacheDir, unsigned 
 	if (dirErrs > 0 || fileErrs > 0) {
 		// tr: Error message template. (Qt version, with formatting)
 		const QString qs_msg = QC_("ConfigDialog", "<b>ERROR:</b> %1")
-			.arg(U82Q(fmt::format(C_("CacheTab", "Unable to delete {0:Ld} file(s) and/or {1:Ld} dir(s)."),
+			.arg(U82Q(fmt::format(FRUN(C_("CacheTab", "Unable to delete {0:Ld} file(s) and/or {1:Ld} dir(s).")),
 				fileErrs, dirErrs)));
 		d->ui.lblStatus->setText(qs_msg);
 		MessageSound::play(QMessageBox::Warning, qs_msg, this);

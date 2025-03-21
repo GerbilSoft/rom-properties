@@ -622,9 +622,9 @@ string SNESPrivate::getPublisher(void) const
 					romHeader.snes.ext.new_publisher_code[1],
 					'\0'
 				}};
-				s_publisher = fmt::format(C_("RomData", "Unknown ({:s})"), s_pub_code.data());
+				s_publisher = fmt::format(FRUN(C_("RomData", "Unknown ({:s})")), s_pub_code.data());
 			} else {
-				s_publisher = fmt::format(C_("RomData", "Unknown ({:0>2X} {:0>2X})"),
+				s_publisher = fmt::format(FRUN(C_("RomData", "Unknown ({:0>2X} {:0>2X})")),
 					static_cast<uint8_t>(romHeader.snes.ext.new_publisher_code[0]),
 					static_cast<uint8_t>(romHeader.snes.ext.new_publisher_code[1]));
 			}
@@ -635,7 +635,7 @@ string SNESPrivate::getPublisher(void) const
 		if (publisher) {
 			s_publisher = publisher;
 		} else {
-			s_publisher = fmt::format(C_("RomData", "Unknown ({:0>2X})"),
+			s_publisher = fmt::format(FRUN(C_("RomData", "Unknown ({:0>2X})")),
 				romHeader.snes.old_publisher_code);
 		}
 	}
@@ -1351,7 +1351,7 @@ int SNES::loadFieldData(void)
 	} else {
 		// Unknown ROM mapping.
 		d->fields.addField_string(rom_mapping_title,
-			fmt::format(C_("RomData", "Unknown (0x{:0>2X})"), rom_mapping));
+			fmt::format(FRUN(C_("RomData", "Unknown (0x{:0>2X})")), rom_mapping));
 	}
 
 	// Cartridge HW
@@ -1396,7 +1396,7 @@ int SNES::loadFieldData(void)
 					pgettext_expr("Region", region_lkup));
 			} else {
 				d->fields.addField_string(region_title,
-					fmt::format(C_("RomData", "Unknown (0x{:0>2X})"),
+					fmt::format(FRUN(C_("RomData", "Unknown (0x{:0>2X})")),
 						romHeader->snes.destination_code));
 			}
 
@@ -1467,7 +1467,7 @@ int SNES::loadFieldData(void)
 					pgettext_expr("SNES|ProgramType", program_type));
 			} else {
 				d->fields.addField_string(program_type_title,
-					fmt::format(C_("RomData", "Unknown (0x{:0>8X})"),
+					fmt::format(FRUN(C_("RomData", "Unknown (0x{:0>8X})")),
 						le32_to_cpu(romHeader->bsx.ext.program_type)));
 			}
 

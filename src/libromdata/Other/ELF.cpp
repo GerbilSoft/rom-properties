@@ -1525,7 +1525,7 @@ int ELF::loadFieldData(void)
 		d->fields.addField_string(cpu_title, cpu);
 	} else {
 		d->fields.addField_string(cpu_title,
-			fmt::format(C_("RomData", "Unknown (0x{:0>4X})"), primary->e_machine));
+			fmt::format(FRUN(C_("RomData", "Unknown (0x{:0>4X})")), primary->e_machine));
 	}
 
 	// CPU flags.
@@ -1633,7 +1633,7 @@ int ELF::loadFieldData(void)
 				d->fields.addField_string(cpu_level_title, mips_levels[level]);
 			} else {
 				d->fields.addField_string(cpu_level_title,
-					fmt::format(C_("RomData", "Unknown (0x{:0>2X})"), level));
+					fmt::format(FRUN(C_("RomData", "Unknown (0x{:0>2X})")), level));
 			}
 
 			// MIPS CPU flags
@@ -2062,7 +2062,7 @@ int ELF::loadFieldData(void)
 		d->fields.addField_string(osabi_title, osabi);
 	} else {
 		d->fields.addField_string(osabi_title,
-			fmt::format(C_("RomData", "Unknown ({:d})"), primary->e_osabi));
+			fmt::format(FRUN(C_("RomData", "Unknown ({:d})")), primary->e_osabi));
 	}
 
 	// ABI version.
@@ -2102,7 +2102,7 @@ int ELF::loadFieldData(void)
 		}
 		if (d->isPie) {
 			// tr: Entry point, then "Position-Independent".
-			entry_point = fmt::format(C_("ELF", "{:s} (Position-Independent)"), entry_point);
+			entry_point = fmt::format(FRUN(C_("ELF", "{:s} (Position-Independent)")), entry_point);
 		}
 		d->fields.addField_string(C_("RomData", "Entry Point"), entry_point);
 	}

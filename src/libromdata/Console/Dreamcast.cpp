@@ -666,7 +666,7 @@ int Dreamcast::loadFieldData(void)
 		const char *const disc_number_title = C_("RomData", "Disc #");
 		d->fields.addField_string(disc_number_title,
 			// tr: Disc X of Y (for multi-disc games)
-			fmt::format(C_("RomData|Disc", "{0:d} of {1:d}"),
+			fmt::format(FRUN(C_("RomData|Disc", "{0:d} of {1:d}")),
 				disc_num, disc_total));
 	}
 
@@ -720,11 +720,11 @@ int Dreamcast::loadFieldData(void)
 		if (crc16_expected == crc16_actual) {
 			// CRC16 is correct.
 			d->fields.addField_string(C_("RomData", "Checksum"),
-				fmt::format(C_("Dreamcast", "0x{:0>4X} (valid)"), crc16_expected));
+				fmt::format(FRUN(C_("Dreamcast", "0x{:0>4X} (valid)")), crc16_expected));
 		} else {
 			// CRC16 is incorrect.
 			d->fields.addField_string(C_("RomData", "Checksum"),
-				fmt::format(C_("Dreamcast", "0x{0:0>4X} (INVALID; should be 0x{1:0>4X})"),
+				fmt::format(FRUN(C_("Dreamcast", "0x{0:0>4X} (INVALID; should be 0x{1:0>4X})")),
 					crc16_expected, crc16_actual));
 		}
 	} else {
@@ -733,7 +733,7 @@ int Dreamcast::loadFieldData(void)
 		memcpy(s_crc16, discHeader->device_info, 4);
 		s_crc16[4] = '\0';
 		d->fields.addField_string(C_("RomData", "Checksum"),
-			fmt::format(C_("Dreamcast", "0x{0:0>4X} (HEADER is INVALID: {1:s})"),
+			fmt::format(FRUN(C_("Dreamcast", "0x{0:0>4X} (HEADER is INVALID: {1:s})")),
 				crc16_expected, s_crc16_invalid));
 	}
 #endif

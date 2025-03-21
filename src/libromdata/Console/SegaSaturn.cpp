@@ -553,7 +553,7 @@ int SegaSaturn::loadFieldData(void)
 		const char *const disc_number_title = C_("RomData", "Disc #");
 		d->fields.addField_string(disc_number_title,
 			// tr: Disc X of Y (for multi-disc games)
-			fmt::format(C_("RomData|Disc", "{0:d} of {1:d}"),
+			fmt::format(FRUN(C_("RomData|Disc", "{0:d} of {1:d}")),
 				disc_num, disc_total));
 	}
 

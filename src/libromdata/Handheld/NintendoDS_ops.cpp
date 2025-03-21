@@ -427,7 +427,7 @@ int NintendoDS::doRomOp_int(int id, RomOpParams *pParams)
 #endif /* ENABLE_DSi_SECURE_AREA */
 			if (ret < 0) {
 				pParams->status = ret;
-				pParams->msg = fmt::format(C_("RomData", "Could not open '{0:s}': {1:s}"),
+				pParams->msg = fmt::format(FRUN(C_("RomData", "Could not open '{0:s}': {1:s}")),
 					filename, strerror(-ret));
 				break;
 			} else if (ret > 0) {
@@ -435,13 +435,13 @@ int NintendoDS::doRomOp_int(int id, RomOpParams *pParams)
 				switch (ret) {
 					case 1: {
 						// TODO: Show the actual file size?
-						pParams->msg = fmt::format(C_("NintendoDS", "File '{0:s}' has the wrong size. (should be {1:Ld} bytes)"),
+						pParams->msg = fmt::format(FRUN(C_("NintendoDS", "File '{0:s}' has the wrong size. (should be {1:Ld} bytes)")),
 							filename, NDS_BLOWFISH_SIZE);
 						break;
 					}
 					case 2:
 						// Wrong hash.
-						pParams->msg = fmt::format(C_("NintendoDS", "File '{:s}' has the wrong MD5 hash."), filename);
+						pParams->msg = fmt::format(FRUN(C_("NintendoDS", "File '{:s}' has the wrong MD5 hash.")), filename);
 						break;
 					default:
 						assert(!"Unhandled NDS Blowfish error code.");

@@ -344,7 +344,7 @@ int NGPC::loadFieldData(void)
 		d->fields.addField_string(C_("NGPC", "Debug Mode"), s_debug);
 	} else {
 		d->fields.addField_string(C_("NGPC", "Debug Mode"),
-			fmt::format(C_("RomData", "Unknown (0x{:0>2X})"), entry_point >> 24));
+			fmt::format(FRUN(C_("RomData", "Unknown (0x{:0>2X})")), entry_point >> 24));
 	}
 
 	// Finished reading the field data.

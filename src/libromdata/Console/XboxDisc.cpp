@@ -1022,7 +1022,7 @@ int XboxDisc::loadFieldData(void)
 			break;
 		default:
 			d->fields.addField_string(s_disc_type,
-				fmt::format(C_("RomData", "Unknown ({:d})"), d->wave));
+				fmt::format(FRUN(C_("RomData", "Unknown ({:d})")), d->wave));
 			break;
 	}
 
