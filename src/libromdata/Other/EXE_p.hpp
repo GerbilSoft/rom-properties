@@ -90,6 +90,7 @@ public:
 
 	// IMAGE_LOAD_CONFIG_DIRECTORY (PE)
 	union ImageLoadConfigDirectory {
+		uint32_t Size;
 		IMAGE_LOAD_CONFIG_DIRECTORY32 ilcd32;
 		IMAGE_LOAD_CONFIG_DIRECTORY64 ilcd64;
 	};
