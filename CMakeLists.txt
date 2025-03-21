@@ -110,7 +110,7 @@ IF(MSVC AND CMAKE_VS_WINDOWS_TARGET_PLATFORM_VERSION VERSION_LESS 10.0.18362.0)
 	# C:\Program Files (x86)\Windows Kits\8.1\Include\um\oaidl.h(473,17): error C2059: syntax error: '/'
 	# Reference: https://github.com/microsoft/vcpkg/issues/15035
 	SET(CMAKE_C_STANDARD 99)
-ENDIF(MSVC AND CMAKE_SYSTEM_VERSION VERSION_LESS 10.0.18362)
+ENDIF(MSVC AND CMAKE_VS_WINDOWS_TARGET_PLATFORM_VERSION VERSION_LESS 10.0.18362.0)
 
 # Set default build options.
 INCLUDE(cmake/options.cmake)
