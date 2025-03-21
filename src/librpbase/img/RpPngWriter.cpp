@@ -106,224 +106,230 @@ static int DelayLoad_test_zlib_and_png(void)
 
 class RpPngWriterPrivate
 {
-	public:
-		RpPngWriterPrivate(const IRpFilePtr &theFile, int width, int height, rp_image::Format format);
-		RpPngWriterPrivate(const IRpFilePtr &theFile, const rp_image_const_ptr &img);
-		RpPngWriterPrivate(const IRpFilePtr &theFile, const IconAnimDataConstPtr &iconAnimData);
+public:
+	RpPngWriterPrivate(const IRpFilePtr &theFile, int width, int height, rp_image::Format format);
+	RpPngWriterPrivate(const IRpFilePtr &theFile, const rp_image_const_ptr &img);
+	RpPngWriterPrivate(const IRpFilePtr &theFile, const IconAnimDataConstPtr &iconAnimData);
 
-		RpPngWriterPrivate(const char *filename, int width, int height, rp_image::Format format)
-			: RpPngWriterPrivate(IRpFilePtr(filename ? new RpFile(filename, RpFile::FM_CREATE_WRITE) : nullptr), width, height, format)
-		{}
-		RpPngWriterPrivate(const char *filename, const rp_image_const_ptr &img)
-			: RpPngWriterPrivate(IRpFilePtr(filename ? new RpFile(filename, RpFile::FM_CREATE_WRITE) : nullptr), img)
-		{}
-		RpPngWriterPrivate(const char *filename, const IconAnimDataConstPtr &iconAnimData)
-			: RpPngWriterPrivate(IRpFilePtr(filename ? new RpFile(filename, RpFile::FM_CREATE_WRITE) : nullptr), iconAnimData)
-		{}
+	RpPngWriterPrivate(const char *filename, int width, int height, rp_image::Format format)
+		: RpPngWriterPrivate(IRpFilePtr(filename ? new RpFile(filename, RpFile::FM_CREATE_WRITE) : nullptr), width, height, format)
+	{}
+	RpPngWriterPrivate(const char *filename, const rp_image_const_ptr &img)
+		: RpPngWriterPrivate(IRpFilePtr(filename ? new RpFile(filename, RpFile::FM_CREATE_WRITE) : nullptr), img)
+	{}
+	RpPngWriterPrivate(const char *filename, const IconAnimDataConstPtr &iconAnimData)
+		: RpPngWriterPrivate(IRpFilePtr(filename ? new RpFile(filename, RpFile::FM_CREATE_WRITE) : nullptr), iconAnimData)
+	{}
 
 #ifdef _WIN32
-		RpPngWriterPrivate(const wchar_t *filename, int width, int height, rp_image::Format format)
-			: RpPngWriterPrivate(IRpFilePtr(filename ? new RpFile(filename, RpFile::FM_CREATE_WRITE) : nullptr), width, height, format)
-		{}
-		RpPngWriterPrivate(const wchar_t *filename, const rp_image_const_ptr &img)
-			: RpPngWriterPrivate(IRpFilePtr(filename ? new RpFile(filename, RpFile::FM_CREATE_WRITE) : nullptr), img)
-		{}
-		RpPngWriterPrivate(const wchar_t *filename, const IconAnimDataConstPtr &iconAnimData)
-			: RpPngWriterPrivate(IRpFilePtr(filename ? new RpFile(filename, RpFile::FM_CREATE_WRITE) : nullptr), iconAnimData)
-		{}
+	RpPngWriterPrivate(const wchar_t *filename, int width, int height, rp_image::Format format)
+		: RpPngWriterPrivate(IRpFilePtr(filename ? new RpFile(filename, RpFile::FM_CREATE_WRITE) : nullptr), width, height, format)
+	{}
+	RpPngWriterPrivate(const wchar_t *filename, const rp_image_const_ptr &img)
+		: RpPngWriterPrivate(IRpFilePtr(filename ? new RpFile(filename, RpFile::FM_CREATE_WRITE) : nullptr), img)
+	{}
+	RpPngWriterPrivate(const wchar_t *filename, const IconAnimDataConstPtr &iconAnimData)
+		: RpPngWriterPrivate(IRpFilePtr(filename ? new RpFile(filename, RpFile::FM_CREATE_WRITE) : nullptr), iconAnimData)
+	{}
 #endif /* _WIN32 */
 
-		~RpPngWriterPrivate();
+	~RpPngWriterPrivate();
 
-	private:
-		RP_DISABLE_COPY(RpPngWriterPrivate)
+private:
+	RP_DISABLE_COPY(RpPngWriterPrivate)
 
-	public:
-		// Last error value
-		int lastError;
+public:
+	// Last error value
+	int lastError;
 
-		// Open file reference
-		IRpFilePtr file;
+	// Image and/or animated image data to save.
+	enum class ImageTag : uint8_t {
+		Invalid = 0,	// Invalid image
+		Raw,		// Raw image
+		RpImage,	// rp_image
+		IconAnimData,	// iconAnimData
+	};
+	ImageTag imageTag;
 
-		// Image and/or animated image data to save.
-		enum class ImageTag {
-			Invalid = 0,	// Invalid image.
-			Raw,		// Raw image.
-			RpImage,	// rp_image
-			IconAnimData,	// iconAnimData
-		};
-		ImageTag imageTag;
-		// TODO: Union of std::shared_ptr<>, or std::variant<>?
-		rp_image_const_ptr img;
-		IconAnimDataConstPtr iconAnimData;
+	// Current state
+	bool IHDR_written;
 
-		// Cached width, height, and image format.
-		struct cache_t {
-			int width;
-			int height;
-			rp_image::Format format;
+	// Open file reference
+	IRpFilePtr file;
 
-			// Palette for CI8 images.
-			unsigned int palette_len;
-			const uint32_t *palette;
+	// TODO: Union of std::shared_ptr<>, or std::variant<>?
+	rp_image_const_ptr img;
+	IconAnimDataConstPtr iconAnimData;
+
+	// Cached width, height, and image format.
+	struct cache_t {
+		int width;
+		int height;
+		rp_image::Format format;
 
 #ifdef PNG_sBIT_SUPPORTED
-			// sBIT data. If we have sBIT, and alpha == 0,
-			// we'll skip saving the alpha channel.
-			rp_image::sBIT_t sBIT;
-			bool has_sBIT;
-			bool skip_alpha;
+		// sBIT data. If we have sBIT, and alpha == 0,
+		// we'll skip saving the alpha channel.
+		rp_image::sBIT_t sBIT;
+		bool has_sBIT;
+		bool skip_alpha;
 #endif /* PNG_sBIT_SUPPORTED */
 
-			cache_t()
-				: width(0)
-				, height(0)
-				, format(rp_image::Format::None)
-				, palette_len(0)
-				, palette(nullptr)
-			{
+		// Palette for CI8 images
+		const uint32_t *palette;
+		unsigned int palette_len;
+
+		cache_t()
+			: width(0)
+			, height(0)
+			, format(rp_image::Format::None)
 #ifdef PNG_sBIT_SUPPORTED
-				memset(&sBIT, 0, sizeof(sBIT));
+			, has_sBIT(false)
+			, skip_alpha(false)
+#endif /* PNG_sBIT_SUPPORTED */
+			, palette(nullptr)
+			, palette_len(0)
+		{
+			memset(&sBIT, 0, sizeof(sBIT));
+		}
+
+		void setFrom(const rp_image_const_ptr &img) {
+			if (!img) {
+				this->width = 0;
+				this->height = 0;
+				this->format = rp_image::Format::None;
+#ifdef PNG_sBIT_SUPPORTED
+				this->has_sBIT = false;
+				this->skip_alpha = false;
+#endif /* PNG_sBIT_SUPPORTED */
+				this->palette = nullptr;
+				this->palette_len = 0;
+				return;
+			}
+
+			this->width = img->width();
+			this->height = img->height();
+			this->format = img->format();
+#ifdef PNG_sBIT_SUPPORTED
+			// Get the rp_image's sBIT data.
+			// If alpha == 0, we can write RGB and/or skip tRNS.
+			has_sBIT = (img->get_sBIT(&sBIT) == 0);
+			skip_alpha = (has_sBIT && sBIT.alpha == 0);
+#endif /* PNG_sBIT_SUPPORTED */
+			if (this->format == rp_image::Format::CI8) {
+				// Get the palette.
+				this->palette = img->palette();
+				this->palette_len = img->palette_len();
+			} else {
+				// Clear the palette.
+				this->palette = nullptr;
+				this->palette_len = 0;
+			}
+		}
+
+		void set_sBIT(const rp_image::sBIT_t* sBIT)
+		{
+			static const rp_image::sBIT_t sBIT_invalid = {0,0,0,0,0};
+			if (sBIT && memcmp(sBIT, &sBIT_invalid, sizeof(*sBIT)) != 0) {
+				// sBIT is valid.
+				this->sBIT = *sBIT;
+				has_sBIT = true;
+				skip_alpha = (has_sBIT && this->sBIT.alpha == 0);
+			} else {
+				// No sBIT, or sBIT is invalid.
 				has_sBIT = false;
 				skip_alpha = false;
-#endif /* PNG_sBIT_SUPPORTED */
 			}
+		}
+	};
+	cache_t cache;
 
-			void setFrom(const rp_image_const_ptr &img) {
-				if (!img) {
-					this->width = 0;
-					this->height = 0;
-					this->format = rp_image::Format::None;
-					this->palette_len = 0;
-					this->palette = nullptr;
-#ifdef PNG_sBIT_SUPPORTED
-					this->has_sBIT = false;
-					this->skip_alpha = false;
-#endif /* PNG_sBIT_SUPPORTED */
-					return;
-				}
+	// PNG pointers
+	png_structp png_ptr;
+	png_infop info_ptr;
 
-				this->width = img->width();
-				this->height = img->height();
-				this->format = img->format();
-				if (this->format == rp_image::Format::CI8) {
-					// Get the palette.
-					this->palette_len = img->palette_len();
-					this->palette = img->palette();
-				}
-#ifdef PNG_sBIT_SUPPORTED
-				// Get the rp_image's sBIT data.
-				// If alpha == 0, we can write RGB and/or skip tRNS.
-				has_sBIT = (img->get_sBIT(&sBIT) == 0);
-				skip_alpha = (has_sBIT && sBIT.alpha == 0);
-#endif /* PNG_sBIT_SUPPORTED */
-			}
+public:
+	/**
+	 * Initialize the PNG write structs.
+	 * This is called by the constructor.
+	 * @return 0 on success; non-zero on error.
+	 */
+	int init_png_write_structs(void);
 
-			void set_sBIT(const rp_image::sBIT_t* sBIT)
-			{
-				static const rp_image::sBIT_t sBIT_invalid = {0,0,0,0,0};
-				if (sBIT && memcmp(sBIT, &sBIT_invalid, sizeof(*sBIT)) != 0) {
-					// sBIT is valid.
-					this->sBIT = *sBIT;
-					has_sBIT = true;
-					skip_alpha = (has_sBIT && this->sBIT.alpha == 0);
-				} else {
-					// No sBIT, or sBIT is invalid.
-					has_sBIT = false;
-					skip_alpha = false;
-				}
-			}
-		};
-		cache_t cache;
+	// Close the PNG image.
+	void close(void);
 
-		// PNG pointers.
-		png_structp png_ptr;
-		png_infop info_ptr;
+public:
+	/** I/O functions **/
 
-		// Current state.
-		bool IHDR_written;
+	/**
+	 * libpng I/O write handler for IRpFile.
+	 * @param png_ptr	[in] PNG pointer.
+	 * @param data		[in] Data to write.
+	 * @param length	[in] Size of data.
+	 */
+	static void PNGCAPI png_io_IRpFile_write(png_structp png_ptr, png_bytep data, png_size_t length);
 
-	public:
-		/**
-		 * Initialize the PNG write structs.
-		 * This is called by the constructor.
-		 * @return 0 on success; non-zero on error.
-		 */
-		int init_png_write_structs(void);
+	/**
+	 * libpng I/O flush handler for IRpFile.
+	 * @param png_ptr	[in] PNG pointer.
+	 */
+	static void PNGCAPI png_io_IRpFile_flush(png_structp png_ptr);
 
-		// Close the PNG image.
-		void close(void);
+public:
+	/** Internal functions **/
 
-	public:
-		/** I/O functions. **/
+	/**
+	 * Write the palette from a CI8 image.
+	 * @return 0 on success; negative POSIX error code on error.
+	 */
+	int write_CI8_palette(void);
 
-		/**
-		 * libpng I/O write handler for IRpFile.
-		 * @param png_ptr	[in] PNG pointer.
-		 * @param data		[in] Data to write.
-		 * @param length	[in] Size of data.
-		 */
-		static void PNGCAPI png_io_IRpFile_write(png_structp png_ptr, png_bytep data, png_size_t length);
+	/**
+	 * Write raw image data to the PNG image.
+	 *
+	 * This must be called after any other modifier functions.
+	 *
+	 * NOTE: This will automatically close the file.
+	 * TODO: Keep it open so we can write text after IDAT?
+	 *
+	 * @param row_pointers PNG row pointers. Array must have cache.height elements.
+	 * @param is_abgr If true, image data is ABGR instead of ARGB.
+	 * @return 0 on success; negative POSIX error code on error.
+	 */
+	int write_IDAT(const png_byte *const *row_pointers, bool is_abgr = false);
 
-		/**
-		 * libpng I/O flush handler for IRpFile.
-		 * @param png_ptr	[in] PNG pointer.
-		 */
-		static void PNGCAPI png_io_IRpFile_flush(png_structp png_ptr);
+	/**
+	 * Write the rp_image data to the PNG image.
+	 *
+	 * This must be called after any other modifier functions.
+	 *
+	 * NOTE: This will automatically close the file.
+	 * TODO: Keep it open so we can write text after IDAT?
+	 *
+	 * @return 0 on success; negative POSIX error code on error.
+	 */
+	int write_IDAT(void);
 
-	public:
-		/** Internal functions. **/
-
-		/**
-		 * Write the palette from a CI8 image.
-		 * @return 0 on success; negative POSIX error code on error.
-		 */
-		int write_CI8_palette(void);
-
-		/**
-		 * Write raw image data to the PNG image.
-		 *
-		 * This must be called after any other modifier functions.
-		 *
-		 * NOTE: This will automatically close the file.
-		 * TODO: Keep it open so we can write text after IDAT?
-		 *
-		 * @param row_pointers PNG row pointers. Array must have cache.height elements.
-		 * @param is_abgr If true, image data is ABGR instead of ARGB.
-		 * @return 0 on success; negative POSIX error code on error.
-		 */
-		int write_IDAT(const png_byte *const *row_pointers, bool is_abgr = false);
-
-		/**
-		 * Write the rp_image data to the PNG image.
-		 *
-		 * This must be called after any other modifier functions.
-		 *
-		 * NOTE: This will automatically close the file.
-		 * TODO: Keep it open so we can write text after IDAT?
-		 *
-		 * @return 0 on success; negative POSIX error code on error.
-		 */
-		int write_IDAT(void);
-
-		/**
-		 * Write the animated image data to the PNG image.
-		 *
-		 * This must be called after any other modifier functions.
-		 *
-		 * NOTE: This will automatically close the file.
-		 * TODO: Keep it open so we can write text after IDAT?
-		 *
-		 * @return 0 on success; negative POSIX error code on error.
-		 */
-		int write_IDAT_APNG(void);
+	/**
+	 * Write the animated image data to the PNG image.
+	 *
+	 * This must be called after any other modifier functions.
+	 *
+	 * NOTE: This will automatically close the file.
+	 * TODO: Keep it open so we can write text after IDAT?
+	 *
+	 * @return 0 on success; negative POSIX error code on error.
+	 */
+	int write_IDAT_APNG(void);
 };
 
 /** RpPngWriterPrivate **/
 
 RpPngWriterPrivate::RpPngWriterPrivate(const IRpFilePtr &theFile, int width, int height, rp_image::Format format)
-	: lastError(0), file(theFile), imageTag(ImageTag::Invalid)
-	, png_ptr(nullptr), info_ptr(nullptr), IHDR_written(false)
+	: lastError(0)
+	, imageTag(ImageTag::Invalid), IHDR_written(false)
+	, file(theFile), png_ptr(nullptr), info_ptr(nullptr)
 {
 	this->img = nullptr;
 	if (!file || width <= 0 || height <= 0 ||
@@ -392,8 +398,9 @@ RpPngWriterPrivate::RpPngWriterPrivate(const IRpFilePtr &theFile, int width, int
 }
 
 RpPngWriterPrivate::RpPngWriterPrivate(const IRpFilePtr &theFile, const rp_image_const_ptr &img)
-	: lastError(0), file(theFile), imageTag(ImageTag::Invalid)
-	, png_ptr(nullptr), info_ptr(nullptr), IHDR_written(false)
+	: lastError(0)
+	, imageTag(ImageTag::Invalid), IHDR_written(false)
+	, file(theFile), png_ptr(nullptr), info_ptr(nullptr)
 {
 	if (!file || !img || !img->isValid()) {
 		// Invalid parameters.
@@ -453,8 +460,9 @@ RpPngWriterPrivate::RpPngWriterPrivate(const IRpFilePtr &theFile, const rp_image
 }
 
 RpPngWriterPrivate::RpPngWriterPrivate(const IRpFilePtr &theFile, const IconAnimDataConstPtr &iconAnimData)
-	: lastError(0), file(theFile), imageTag(ImageTag::Invalid)
-	, png_ptr(nullptr), info_ptr(nullptr), IHDR_written(false)
+	: lastError(0)
+	, imageTag(ImageTag::Invalid), IHDR_written(false)
+	, file(theFile), png_ptr(nullptr), info_ptr(nullptr)
 {
 	if (!file || !iconAnimData || iconAnimData->seq_count <= 0) {
 		// Invalid parameters.
@@ -766,7 +774,7 @@ int RpPngWriterPrivate::write_IDAT(const png_byte *const *row_pointers, bool is_
 int RpPngWriterPrivate::write_IDAT(void)
 {
 	assert(file != nullptr);
-	assert(img != nullptr);
+	assert((bool)img);
 	assert(imageTag == ImageTag::RpImage);
 	assert(IHDR_written);
 	if (unlikely(!file || !img || imageTag != ImageTag::RpImage)) {
