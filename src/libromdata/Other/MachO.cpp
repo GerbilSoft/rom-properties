@@ -307,19 +307,19 @@ MachO::MachO(const IRpFilePtr &file)
 
 	// Determine the file and MIME types.
 	// NOTE: This assumes all architectures have the same file type.
-	static constexpr array<uint8_t, 12> fileTypes_tbl = {{
-		static_cast<uint8_t>(FileType::Unknown),		// 0
-		static_cast<uint8_t>(FileType::RelocatableObject),	// MH_OBJECT
-		static_cast<uint8_t>(FileType::Executable),		// MH_EXECUTE
-		static_cast<uint8_t>(FileType::SharedLibrary),		// MH_FVMLIB: "Fixed VM" library file. (TODO: Add a separate FTYPE?)
-		static_cast<uint8_t>(FileType::CoreDump),		// MH_CORE
-		static_cast<uint8_t>(FileType::Executable),		// MH_PRELOAD (TODO: Special FTYPE?)
-		static_cast<uint8_t>(FileType::SharedLibrary),		// MH_DYLIB
-		static_cast<uint8_t>(FileType::Unknown),		// MH_DYLINKER (TODO)
-		static_cast<uint8_t>(FileType::Bundle),			// MH_BUNDLE
-		static_cast<uint8_t>(FileType::Unknown),		// MH_DYLIB_STUB (TODO)
-		static_cast<uint8_t>(FileType::Unknown),		// MH_DSYM (TODO)
-		static_cast<uint8_t>(FileType::Unknown),		// MH_KEXT_BUNDLE (TODO)
+	static constexpr array<FileType, 12> fileTypes_tbl = {{
+		FileType::Unknown,		// 0
+		FileType::RelocatableObject,	// MH_OBJECT
+		FileType::Executable,		// MH_EXECUTE
+		FileType::SharedLibrary,	// MH_FVMLIB: "Fixed VM" library file. (TODO: Add a separate FTYPE?)
+		FileType::CoreDump,		// MH_CORE
+		FileType::Executable,		// MH_PRELOAD (TODO: Special FTYPE?)
+		FileType::SharedLibrary,	// MH_DYLIB
+		FileType::Unknown,		// MH_DYLINKER (TODO)
+		FileType::Bundle,		// MH_BUNDLE
+		FileType::Unknown,		// MH_DYLIB_STUB (TODO)
+		FileType::Unknown,		// MH_DSYM (TODO)
+		FileType::Unknown,		// MH_KEXT_BUNDLE (TODO)
 	}};
 	static const array<const char*, 12> mimeTypes_tbl = {{
 		nullptr,				// 0
@@ -341,14 +341,15 @@ MachO::MachO(const IRpFilePtr &file)
 	// if the filetype is known.
 	bool mimeIsSet = false;
 	if (d->execFormat == MachOPrivate::Exec_Format::Fat) {
-		// Fat binary.
+		// Fat binary
 		d->mimeType = "application/x-mach-fat-binary";
 		mimeIsSet = true;
 	}
-	if (d->machHeaders[0].filetype < fileTypes_tbl.size()) {
-		d->fileType = static_cast<RomData::FileType>(fileTypes_tbl[d->machHeaders[0].filetype]);
+	const uint32_t mach_filetype = d->machHeaders[0].filetype;
+	if (mach_filetype < fileTypes_tbl.size()) {
+		d->fileType = static_cast<RomData::FileType>(fileTypes_tbl[mach_filetype]);
 		if (!mimeIsSet) {
-			d->mimeType = mimeTypes_tbl[d->machHeaders[0].filetype];
+			d->mimeType = mimeTypes_tbl[mach_filetype];
 		}
 	}
 }
