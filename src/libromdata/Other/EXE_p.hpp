@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * EXE_p.hpp: DOS/Windows executable reader. (Private class)               *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -87,6 +87,13 @@ public:
 		LE_Header le;
 	} hdr;
 	#pragma pack()
+
+	// IMAGE_LOAD_CONFIG_DIRECTORY (PE)
+	union ImageLoadConfigDirectory {
+		IMAGE_LOAD_CONFIG_DIRECTORY32 ilcd32;
+		IMAGE_LOAD_CONFIG_DIRECTORY64 ilcd64;
+	};
+	std::unique_ptr<ImageLoadConfigDirectory> ilcd;
 
 	// Resource reader
 	IResourceReaderPtr rsrcReader;
@@ -319,6 +326,13 @@ public:
 	 * @return 0 on success; negative POSIX error code on error.
 	 */
 	int addFields_PE_Import(void);
+
+private:
+	/**
+	 * Load the IMAGE_LOAD_CONFIG_DIRECTORY.
+	 * @return 0 on success; negative POSIX error code on error. (-ENOENT if not found)
+	 */
+	int loadPEImageLoadConfigDirectory(void);
 
 public:
 	/**

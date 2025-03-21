@@ -1190,14 +1190,18 @@ int EXEPrivate::addFields_PE_Import(void)
 }
 
 /**
- * Get the hybrid metadata pointer, if present.
- * @return Hybrid metadata pointer, or 0 if not present.
+ * Load the IMAGE_LOAD_CONFIG_DIRECTORY.
+ * @return 0 on success; negative POSIX error code on error. (-ENOENT if not found)
  */
-uint64_t EXEPrivate::getHybridMetadataPointer(void)
+int EXEPrivate::loadPEImageLoadConfigDirectory(void)
 {
-	// Get the Load Config Table.
+	if (ilcd) {
+		// Already loaded.
+		return 0;
+	}
+
 	if (exeType == EXEPrivate::ExeType::PE) {
-		IMAGE_LOAD_CONFIG_DIRECTORY32 load_config;
+		// 32-bit version
 
 		// FIXME: How does XEX handle this?
 #if SYS_BYTEORDER == SYS_LIL_ENDIAN
@@ -1208,29 +1212,33 @@ uint64_t EXEPrivate::getHybridMetadataPointer(void)
 		dirEntry.Size = le32_to_cpu(dirEntry.Size);
 #endif /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
 
+		// TODO: Larger maximum in case it's expanded?
 		if (dirEntry.VirtualAddress == 0 || dirEntry.Size == 0 ||
-		    dirEntry.Size < (offsetof(IMAGE_LOAD_CONFIG_DIRECTORY32, CHPEMetadataPointer) + sizeof(uint32_t)) ||
-		    dirEntry.Size > sizeof(load_config))
+		    dirEntry.Size > sizeof(IMAGE_LOAD_CONFIG_DIRECTORY32))
 		{
-			return 0;
+			return -EIO;
 		}
 
 		uint32_t size = dirEntry.Size;
 		const uint32_t paddr = pe_vaddr_to_paddr(dirEntry.VirtualAddress, size);
-		if (paddr == 0)
-			return 0;
+		if (paddr == 0) {
+			return -ENOENT;
+		};
 
-		size_t sz_read = file->seekAndRead(paddr, &load_config, size);
-		if (sz_read != size)
-			return 0;
+		ilcd.reset(new ImageLoadConfigDirectory);
+		size_t sz_read = file->seekAndRead(paddr, &ilcd->ilcd32, size);
+		if (sz_read != size) {
+			ilcd.reset();
+			return -EIO;
+		}
 
-		// Verify the size of load_config.
-		if (size != le32_to_cpu(load_config.Size))
-			return 0;
-
-		return le32_to_cpu(load_config.CHPEMetadataPointer);
-	} else /*if (exeType == EXEPrivate::ExeType::PE32PLUS)*/ {
-		IMAGE_LOAD_CONFIG_DIRECTORY64 load_config;
+		// Verify the size of the loaded ILCD.
+		if (size != le32_to_cpu(ilcd->ilcd32.Size)) {
+			ilcd.reset();
+			return -EIO;
+		}
+	} else if (exeType == EXEPrivate::ExeType::PE32PLUS) {
+		// 64-bit version
 
 #if SYS_BYTEORDER == SYS_LIL_ENDIAN
 		const auto &dirEntry = hdr.pe.OptionalHeader.opt64.DataDirectory[IMAGE_DATA_DIRECTORY_LOAD_CONFIG_TABLE];
@@ -1240,27 +1248,66 @@ uint64_t EXEPrivate::getHybridMetadataPointer(void)
 		dirEntry.Size = le32_to_cpu(dirEntry.Size);
 #endif /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
 
+		// TODO: Larger maximum in case it's expanded?
 		if (dirEntry.VirtualAddress == 0 || dirEntry.Size == 0 ||
-		    dirEntry.Size < (offsetof(IMAGE_LOAD_CONFIG_DIRECTORY64, CHPEMetadataPointer) + sizeof(uint64_t)) ||
-		    dirEntry.Size > sizeof(load_config))
+		    dirEntry.Size > sizeof(IMAGE_LOAD_CONFIG_DIRECTORY64))
 		{
-			return 0;
+			return -EIO;
 		}
 
 		uint32_t size = dirEntry.Size;
 		const uint32_t paddr = pe_vaddr_to_paddr(dirEntry.VirtualAddress, size);
-		if (paddr == 0)
-			return 0;
+		if (paddr == 0) {
+			return -ENOENT;
+		};
 
-		size_t sz_read = file->seekAndRead(paddr, &load_config, size);
-		if (sz_read != size)
-			return 0;
+		ilcd.reset(new ImageLoadConfigDirectory);
+		size_t sz_read = file->seekAndRead(paddr, &ilcd->ilcd64, size);
+		if (sz_read != size) {
+			ilcd.reset();
+			return -EIO;
+		}
 
-		// Verify the size of load_config.
-		if (size != le32_to_cpu(load_config.Size))
-			return 0;
+		// Verify the size of the loaded ILCD.
+		if (size != le32_to_cpu(ilcd->ilcd64.Size)) {
+			ilcd.reset();
+			return -EIO;
+		}
+	}
 
-		return le64_to_cpu(load_config.CHPEMetadataPointer);
+	return 0;
+}
+
+/**
+ * Get the hybrid metadata pointer, if present.
+ * @return Hybrid metadata pointer, or 0 if not present.
+ */
+uint64_t EXEPrivate::getHybridMetadataPointer(void)
+{
+	if (!ilcd) {
+		// Load the ILCD.
+		if (loadPEImageLoadConfigDirectory() != 0) {
+			// Unable to load the ILCD.
+			return 0;
+		}
+	}
+
+	if (exeType == EXEPrivate::ExeType::PE) {
+		const IMAGE_LOAD_CONFIG_DIRECTORY32 ilcd32 = ilcd->ilcd32;
+		if (ilcd32.Size < (offsetof(IMAGE_LOAD_CONFIG_DIRECTORY32, CHPEMetadataPointer) + sizeof(uint32_t))) {
+			// No CHPE metadata pointer.
+			return 0;
+		}
+
+		return le32_to_cpu(ilcd32.CHPEMetadataPointer);
+	} else if (exeType == EXEPrivate::ExeType::PE32PLUS) {
+		const IMAGE_LOAD_CONFIG_DIRECTORY64 ilcd64 = ilcd->ilcd64;
+		if (ilcd64.Size < (offsetof(IMAGE_LOAD_CONFIG_DIRECTORY64, CHPEMetadataPointer) + sizeof(uint64_t))) {
+			// No CHPE metadata pointer.
+			return 0;
+		}
+
+		return le64_to_cpu(ilcd64.CHPEMetadataPointer);
 	}
 
 	// FIXME: Shouldn't get here...
