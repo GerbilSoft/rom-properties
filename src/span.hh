@@ -4,8 +4,18 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  */
 
-#ifndef VHVC_SPAN
-#define VHVC_SPAN
+#pragma once
+
+#if __cplusplus >= 202002L
+
+// C++20 has std::span<>.
+#include <span>
+namespace vhvc {
+	template<typename T>
+	using span = typename std::span<T>;
+}
+
+#else /* __cplusplus < 202002L */
 
 #include <stddef.h>	// for ::size_t
 #include <cstddef>	// for std::byte
@@ -256,7 +266,10 @@ namespace vhvc {
 			s.size_bytes());
 	}
 #endif
+}
+#endif /* __cplusplus >= 202002L */
 
+namespace vhvc {
 	// rom-properties helpers
 	template<class T>
 	span<T> reinterpret_span(span<const uint8_t> s) {
@@ -270,5 +283,3 @@ namespace vhvc {
 		return limit < ns.size() ? ns.first(limit) : ns;
 	}
 }
-
-#endif /* VHVC_SPAN */
