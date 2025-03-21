@@ -1,9 +1,14 @@
 # librptexture test suite
 PROJECT(librptexture-tests LANGUAGES CXX)
 
-# Top-level src directory.
+# Top-level src directory
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/../..)
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR}/../..)
+
+# MSVC: Set /DEPENDENTLOADFLAG:0xA00 for unit tests.
+IF(COMMAND SET_DEPENDENT_LOAD_FLAG_GTEST)
+	SET_DEPENDENT_LOAD_FLAG_GTEST()
+ENDIF(COMMAND SET_DEPENDENT_LOAD_FLAG_GTEST)
 
 # ImageDecoderLinear test
 # TODO: Move to libromdata, or move libromdata stuff here?

@@ -3,11 +3,15 @@ PROJECT(amiibo-data LANGUAGES CXX)
 
 SET(amiiboc_SRCS amiiboc.cpp)
 
+IF(MSVC)
+	# Delay-load sources.
+	SET(${PROJECT_NAME}-DELAYLOAD_SRC ../libwin32common/DelayLoadHelper.c)
+	SET(${PROJECT_NAME}-DELAYLOAD_H   ../libwin32common/DelayLoadHelper.h)
+ENDIF(MSVC)
+
 #########################
 # Build the executable. #
 #########################
-
-INCLUDE(SetMSVCDebugPath)
 
 IF(CMAKE_CROSSCOMPILING)
 	# Cross-compiling.
@@ -19,6 +23,12 @@ Set IMPORT_EXECUTABLES to the path to a CMake build for the host system's build 
 	INCLUDE("${IMPORT_EXECUTABLES}/src/amiibo-data/ImportExecutables.cmake")
 ELSE(CMAKE_CROSSCOMPILING)
 	# Not cross-compiling.
+
+	# Delay-load extlibs.
+	INCLUDE(../libwin32common/DelayLoadHelper.cmake)
+	SET_DELAYLOAD_EXTLIB_FLAGS()
+
+	INCLUDE(SetMSVCDebugPath)
 	ADD_EXECUTABLE(amiiboc ${amiiboc_SRCS})
 	DO_SPLIT_DEBUG(amiiboc)
 	SET_WINDOWS_SUBSYSTEM(amiiboc CONSOLE)

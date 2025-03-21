@@ -1,9 +1,14 @@
 # libcachecommon test suite
 PROJECT(libcachecommon-tests LANGUAGES CXX)
 
-# Top-level src directory.
+# Top-level src directory
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/../..)
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR}/../..)
+
+# MSVC: Set /DEPENDENTLOADFLAG:0xA00 for unit tests.
+IF(COMMAND SET_DEPENDENT_LOAD_FLAG_GTEST)
+	SET_DEPENDENT_LOAD_FLAG_GTEST()
+ENDIF(COMMAND SET_DEPENDENT_LOAD_FLAG_GTEST)
 
 # LibCacheCommon::filterCacheKey() test.
 ADD_EXECUTABLE(FilterCacheKeyTest FilterCacheKeyTest.cpp)
