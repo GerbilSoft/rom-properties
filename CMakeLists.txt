@@ -102,15 +102,15 @@ ELSE()
 	SET(CMAKE_C_STANDARD 11)
 	SET(CMAKE_CXX_STANDARD 14)
 ENDIF()
-IF(MSVC)
-	# FIXME: Windows SDK prior to 10.0.18362.0 has issues when compiling as either C11 or C17.
+IF(MSVC AND CMAKE_VS_WINDOWS_TARGET_PLATFORM_VERSION VERSION_LESS 10.0.18362.0)
+	# Windows SDK prior to 10.0.18362.0 has issues when compiling as either C11 or C17.
 	# C:\Program Files (x86)\Windows Kits\8.1\Include\um\winbase.h(8816,5): warning C5105: macro expansion producing 'defined' has undefined behavior
 	# C:\Program Files (x86)\Windows Kits\8.1\Include\um\oaidl.h(473,17): warning C5103: pasting '/' and '/' does not result in a valid preprocessing token
 	# C:\Program Files (x86)\Windows Kits\8.1\Include\shared\wtypes.h(742,1): message : in expansion of macro '_VARIANT_BOOL'
 	# C:\Program Files (x86)\Windows Kits\8.1\Include\um\oaidl.h(473,17): error C2059: syntax error: '/'
 	# Reference: https://github.com/microsoft/vcpkg/issues/15035
 	SET(CMAKE_C_STANDARD 99)
-ENDIF(MSVC)
+ENDIF(MSVC AND CMAKE_SYSTEM_VERSION VERSION_LESS 10.0.18362)
 
 # Set default build options.
 INCLUDE(cmake/options.cmake)
