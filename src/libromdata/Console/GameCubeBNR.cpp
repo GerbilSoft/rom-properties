@@ -601,13 +601,13 @@ int GameCubeBNR::loadFieldData(void)
 	const char *const s_company_title = C_("GameCubeBNR", "Company");
 	const char *const s_description_title = C_("RomData", "Description");
 
-	if (d->bannerType == GameCubeBNRPrivate::BannerType::BNR1) {
+	if (d->bannerType == GameCubeBNRPrivate::BannerType::BNR1 && d->comments.size() >= 1) {
 		// BNR1: Assuming Shift-JIS with cp1252 fallback.
 		// The language is either English or Japanese, so we're
 		// using RFT_STRING here.
 
 		// Only one banner comment.
-		const gcn_banner_comment_t *const comment = &d->comments.at(0);
+		const gcn_banner_comment_t *const comment = &d->comments[0];
 
 		// Game name
 		string s_tmp = d->getGameNameString(comment);
@@ -626,7 +626,7 @@ int GameCubeBNR::loadFieldData(void)
 		if (!s_tmp.empty()) {
 			d->fields.addField_string(s_description_title, s_tmp);
 		}
-	} else {
+	} else if (d->bannerType == GameCubeBNRPrivate::BannerType::BNR2) {
 		// BNR2: Assuming cp1252.
 		// Multiple languages may be present, so we're using
 		// RFT_STRING_MULTI here.
@@ -637,12 +637,13 @@ int GameCubeBNR::loadFieldData(void)
 		const bool dedupe_titles = (comment_en.gamename_full[0] != '\0') ||
 		                           (comment_en.gamename[0] != '\0');
 
-		// Fields.
+		// Fields
 		RomFields::StringMultiMap_t *const pMap_gamename = new RomFields::StringMultiMap_t();
 		RomFields::StringMultiMap_t *const pMap_company = new RomFields::StringMultiMap_t();
 		RomFields::StringMultiMap_t *const pMap_gamedesc = new RomFields::StringMultiMap_t();
-		for (int langID = 0; langID < GCN_PAL_LANG_MAX; langID++) {
-			const gcn_banner_comment_t *const comment = &d->comments.at(langID);
+		const int maxLangID = std::max(static_cast<int>(GCN_PAL_LANG_MAX), static_cast<int>(d->comments.size()));
+		for (int langID = 0; langID < maxLangID; langID++) {
+			const gcn_banner_comment_t *const comment = &d->comments[langID];
 
 			// Check for empty strings first.
 			if (comment->gamename_full[0] == '\0' &&
@@ -675,8 +676,9 @@ int GameCubeBNR::loadFieldData(void)
 
 			const uint32_t lc = NintendoLanguage::getGcnPalLanguageCode(langID);
 			assert(lc != 0);
-			if (lc == 0)
+			if (lc == 0) {
 				continue;
+			}
 
 			// Game name
 			string s_tmp = d->getGameNameString(comment);
