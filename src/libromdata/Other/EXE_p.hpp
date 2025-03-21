@@ -124,14 +124,13 @@ public:
 	static const std::array<const char*, 6> NE_TargetOSes;
 
 	/**
-	 * Load the redisent portion of NE header
+	 * Load the resident portion of NE header.
 	 * @return 0 on success; negative POSIX error code on error.
 	 */
 	int loadNEResident(void);
 
 	// Resident portion of NE header (up to the end of entry table)
 	rp::uvector<uint8_t> ne_resident;
-	bool ne_resident_loaded = false;
 	vhvc::span<const NE_Segment> ne_segment_table;
 	vhvc::span<const uint8_t> ne_resource_table;
 	vhvc::span<const char> ne_resident_name_table;
@@ -147,7 +146,6 @@ public:
 
 	// Contents of the non-resident name table (NE)
 	rp::uvector<char> ne_nonresident_name_table;
-	bool ne_nonresident_name_table_loaded = false;
 
 	/**
 	 * Load the NE resource table.

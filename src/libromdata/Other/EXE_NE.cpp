@@ -31,12 +31,13 @@ namespace LibRomData {
 /** EXEPrivate **/
 
 /**
- * Load the redisent portion of NE header
+ * Load the resident portion of NE header.
  * @return 0 on success; negative POSIX error code on error.
  */
 int EXEPrivate::loadNEResident(void)
 {
-	if (ne_resident_loaded) {
+	if (!ne_resident.empty()) {
+		// Already loaded.
 		return 0;
 	} else if (!file || !file->isOpen()) {
 		// File isn't open.
@@ -52,11 +53,19 @@ int EXEPrivate::loadNEResident(void)
 	// Offsets in the NE header are relative to the start of the header.
 	const uint32_t ne_hdr_addr = le32_to_cpu(mz.e_lfanew);
 	const uint32_t entry_table_addr = le16_to_cpu(hdr.ne.EntryTableOffset);
-	const uint32_t ne_hdr_len = entry_table_addr + le16_to_cpu(hdr.ne.EntryTableLength);
+	const unsigned int ne_hdr_len = entry_table_addr + le16_to_cpu(hdr.ne.EntryTableLength);
+	assert(ne_hdr_len != 0);
+	if (ne_hdr_len == 0) {
+		// No resident portion?
+		return -ENOENT;
+	}
 	ne_resident.resize(ne_hdr_len);
 	size_t nread = file->seekAndRead(ne_hdr_addr, ne_resident.data(), ne_resident.size());
-	if (nread != ne_resident.size())
-		return -EIO; // Short read
+	if (nread != ne_resident.size()) {
+		// Short read
+		ne_resident.clear();
+		return -EIO;
+	}
 
 	span<const uint8_t> ne_segment_raw;
 	span<const uint8_t> ne_resident_name_raw;
@@ -67,8 +76,9 @@ int EXEPrivate::loadNEResident(void)
 	// It's not possible for an NE executable to be larger than 16 MB, anyway.
 	uint32_t end = static_cast<uint32_t>(ne_resident.size());
 	auto set_span = [this, &end](span<const uint8_t> &sp, unsigned int offset) -> bool {
-		if (offset > end)
+		if (offset > end) {
 			return true;
+		}
 		sp = span<const uint8_t>(ne_resident.data() + offset, end - offset);
 		end = offset;
 		return false;
@@ -80,7 +90,9 @@ int EXEPrivate::loadNEResident(void)
 	    set_span(ne_resident_name_raw, le16_to_cpu(hdr.ne.ResidNamTable)) ||
 	    set_span(ne_resource_table,    le16_to_cpu(hdr.ne.ResTableOffset)) ||
 	    set_span(ne_segment_raw,       le16_to_cpu(hdr.ne.SegTableOffset)) ||
-	    end < sizeof(NE_Header)) {
+	    end < sizeof(NE_Header))
+	{
+		ne_resident.clear();
 		return -EIO;
 	}
 
@@ -96,8 +108,6 @@ int EXEPrivate::loadNEResident(void)
 
 	ne_imported_name_table = reinterpret_span<const char>(ne_imported_name_raw);
 
-	ne_resident_loaded = true;
-
 	return 0;
 }
 
@@ -108,7 +118,8 @@ int EXEPrivate::loadNEResident(void)
  */
 int EXEPrivate::loadNENonResidentNames(void)
 {
-	if (ne_nonresident_name_table_loaded) {
+	if (!ne_nonresident_name_table.empty()) {
+		// Already loaded.
 		return 0;
 	} else if (!file || !file->isOpen()) {
 		// File isn't open.
@@ -120,13 +131,23 @@ int EXEPrivate::loadNENonResidentNames(void)
 		// Unsupported executable type.
 		return -ENOTSUP;
 	}
-	ne_nonresident_name_table.resize(le16_to_cpu(hdr.ne.NoResNamesTabSiz));
+
+	const unsigned int ne_nnt_len = le16_to_cpu(hdr.ne.NoResNamesTabSiz);
+	assert(ne_nnt_len != 0);
+	if (ne_nnt_len == 0) {
+		// No non-resident name table?
+		return -ENOENT;
+	}
+	ne_nonresident_name_table.resize(ne_nnt_len);
 	size_t nread = file->seekAndRead(le32_to_cpu(hdr.ne.OffStartNonResTab),
 		ne_nonresident_name_table.data(),
 		ne_nonresident_name_table.size());
-	if (nread != ne_nonresident_name_table.size())
-		return -EIO; // Short read
-	ne_nonresident_name_table_loaded = true;
+	if (nread != ne_nonresident_name_table.size()) {
+		// Short read
+		ne_nonresident_name_table.clear();
+		return -EIO;
+	}
+
 	return 0;
 }
 /**
@@ -139,9 +160,7 @@ int EXEPrivate::loadNEResourceTable(void)
 		// Resource reader is already initialized.
 		return 0;
 	}
-	int res = loadNEResident();
-	if (res < 0)
-		return res;
+
 	if (!file || !file->isOpen()) {
 		// File isn't open.
 		return -EBADF;
@@ -151,6 +170,11 @@ int EXEPrivate::loadNEResourceTable(void)
 	} else if (exeType != ExeType::NE) {
 		// Unsupported executable type.
 		return -ENOTSUP;
+	}
+
+	int res = loadNEResident();
+	if (res < 0) {
+		return res;
 	}
 
 	// FIXME: NEResourceReader should be able to just take ne_resource_table.
