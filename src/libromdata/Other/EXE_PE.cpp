@@ -711,6 +711,23 @@ void EXEPrivate::addFields_PE(void)
 	fields.addField_bitfield(C_("EXE", "DLL Flags"),
 		v_dll_flags_names, 3, dll_flags);
 
+	// Dependent Load Flags (if present)
+	// NOTE: Displaying as "DLL Search Dirs".
+	uint16_t dependentLoadFlags = getDependentLoadFlags();
+	if (dependentLoadFlags != 0) {
+		// NOTE: Valid flags start at 0x200.
+		dependentLoadFlags >>= 9;
+		static const array<const char*, 4> dependent_load_flags_names = {{
+			NOP_C_("EXE|DependentLoadFlags", "Application Dir"),	// 0x200
+			NOP_C_("EXE|DependentLoadFlags", "User Dirs"),		// 0x400
+			"System32",						// 0x800 (not translatable)
+			NOP_C_("EXE|DependentLoadFlags", "Default Dirs"),	// 0x1000
+		}};
+		vector<string> *const v_dependent_load_flags_names = RomFields::strArrayToVector_i18n("EXE|DependentLoadFlags", dependent_load_flags_names);
+		fields.addField_bitfield(C_("EXE", "DLL Search Dirs"),
+			v_dependent_load_flags_names, 3, dependentLoadFlags);
+	}
+
 	// Timestamp
 	// TODO: Windows 10 modules have hashes here instead of timestamps.
 	// We should detect that by checking for obviously out-of-range values.
@@ -1308,6 +1325,43 @@ uint64_t EXEPrivate::getHybridMetadataPointer(void)
 		}
 
 		return le64_to_cpu(ilcd64.CHPEMetadataPointer);
+	}
+
+	// FIXME: Shouldn't get here...
+	assert(!"Unreachable code!");
+	return 0;
+}
+
+/**
+ * Get the Dependent Load Flags, if present.
+ * @return Dependent Load Flags, or 0 if not present.
+ */
+uint16_t EXEPrivate::getDependentLoadFlags(void)
+{
+	if (!ilcd) {
+		// Load the ILCD.
+		if (loadPEImageLoadConfigDirectory() != 0) {
+			// Unable to load the ILCD.
+			return 0;
+		}
+	}
+
+	if (exeType == EXEPrivate::ExeType::PE) {
+		const IMAGE_LOAD_CONFIG_DIRECTORY32 ilcd32 = ilcd->ilcd32;
+		if (ilcd32.Size < (offsetof(IMAGE_LOAD_CONFIG_DIRECTORY32, DependentLoadFlags) + sizeof(uint16_t))) {
+			// No Dependent Load Flags.
+			return 0;
+		}
+
+		return le16_to_cpu(ilcd32.DependentLoadFlags);
+	} else if (exeType == EXEPrivate::ExeType::PE32PLUS) {
+		const IMAGE_LOAD_CONFIG_DIRECTORY64 ilcd64 = ilcd->ilcd64;
+		if (ilcd64.Size < (offsetof(IMAGE_LOAD_CONFIG_DIRECTORY64, DependentLoadFlags) + sizeof(uint16_t))) {
+			// No Dependent Load Flags.
+			return 0;
+		}
+
+		return le16_to_cpu(ilcd64.DependentLoadFlags);
 	}
 
 	// FIXME: Shouldn't get here...

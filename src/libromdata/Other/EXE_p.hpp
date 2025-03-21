@@ -340,6 +340,12 @@ public:
 	 * @return Hybrid metadata pointer, or 0 if not present.
 	 */
 	uint64_t getHybridMetadataPointer(void);
+
+	/**
+	 * Get the Dependent Load Flags, if present.
+	 * @return Dependent Load Flags, or 0 if not present.
+	 */
+	uint16_t getDependentLoadFlags(void);
 };
 
 } // namespace LibRomData
