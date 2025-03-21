@@ -395,7 +395,7 @@ ADD_SUBDIRECTORY(microtar)
 SET_EXTLIB_PROPERTIES(microtar)
 
 IF(USE_INTERNAL_FMT)
-	# Use the internal copy of libfmt.
+	# Use the internal copy of fmt.
 	# On Windows and Mac OS X, this will build DLLs.
 	# On other systems, this will be statically-linked.
 	IF(WIN32 OR APPLE)
@@ -423,7 +423,7 @@ IF(USE_INTERNAL_FMT)
 	SET(FMT_SYSTEM_HEADERS OFF)
 	SET(FMT_UNICODE ON)
 
-	ADD_SUBDIRECTORY(libfmt)
+	ADD_SUBDIRECTORY(fmt)
 	SET_EXTLIB_PROPERTIES(fmt)
 	#SET_EXTLIB_PROPERTIES(fmt-header-only)
 ENDIF(USE_INTERNAL_FMT)

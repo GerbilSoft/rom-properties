@@ -53,7 +53,7 @@ Copyright:
 License: Zlib
 
 Files:
- extlib/libfmt/*
+ extlib/fmt/*
 Copyright: 2012-present, Victor Zverovich and {fmt} contributors
 License: MIT
 
