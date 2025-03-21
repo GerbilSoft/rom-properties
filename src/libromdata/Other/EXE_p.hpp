@@ -257,8 +257,6 @@ private:
 	std::vector<IMAGE_IMPORT_DIRECTORY> peImportDir;
 	// PE Import DLL Names (same order as the directory)
 	std::vector<std::string> peImportNames;
-	// Whether peImportDir and peImportNames were already loaded.
-	bool peImportDirLoaded = false;
 
 	/**
 	 * Read PE Import Directory (peImportDir) and DLL names (peImportNames).

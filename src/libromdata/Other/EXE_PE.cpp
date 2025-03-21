@@ -314,8 +314,9 @@ int EXEPrivate::readPENullBlock(uint32_t low, uint32_t high, uint32_t minExtra,
  */
 int EXEPrivate::readPEImportDir(void)
 {
-	if (peImportDirLoaded)
+	if (!peImportDir.empty()) {
 		return 0;
+	}
 
 	// NOTE: There appears to be two copies of the DLL listing.
 	// There's one in the file header before any sections, and
@@ -333,8 +334,9 @@ int EXEPrivate::readPEImportDir(void)
 	rp::uvector<uint8_t> impDirTbl;
 	int res = readPEImpExpDir(dataDir, IMAGE_DATA_DIRECTORY_IMPORT_TABLE,
 		sizeof(IMAGE_IMPORT_DIRECTORY), 4*1024*1024, impDirTbl);
-	if (res)
+	if (res) {
 		return res;
+	}
 
 	// Find the lowest and highest DLL name VAs in the import directory table.
 	uint32_t dll_vaddr_low = ~0U;
@@ -381,18 +383,18 @@ int EXEPrivate::readPEImportDir(void)
 	dll_name_data[dll_size_read-1] = '\0';
 
 	// Copy to peImportDir
-	peImportDir.clear();
 	peImportDir.insert(peImportDir.begin(), pImpDirTbl, p);
 
 	// Fill peImportNames
-	peImportNames.clear();
 	peImportNames.reserve(peImportDir.size());
-	for(auto &ent : peImportDir) {
+	for (const auto &ent : peImportDir) {
 		const uint32_t vaddr = le32_to_cpu(ent.rvaModuleName);
 		assert(vaddr >= dll_vaddr_low);
 		assert(vaddr <= dll_vaddr_high);
 		if (vaddr < dll_vaddr_low || vaddr > dll_vaddr_high) {
 			// Out of bounds? This shouldn't have happened...
+			peImportDir.clear();
+			peImportNames.clear();
 			return -ENOENT;
 		}
 
@@ -400,8 +402,8 @@ int EXEPrivate::readPEImportDir(void)
 		const char *const dll_name = &dll_name_data[vaddr - dll_vaddr_low];
 		peImportNames.emplace_back(dll_name);
 	}
+	assert(peImportDir.size() == peImportNames.size());
 
-	peImportDirLoaded = true;
 	return 0;
 }
 /**
