@@ -29,8 +29,8 @@ extern "C" {
 }
 
 // ADS functions (Windows Vista and later)
-typedef HANDLE (WINAPI *PFNFINDFIRSTSTREAMW)(_In_ LPCWSTR lpFileName, _In_ STREAM_INFO_LEVELS InfoLevel, _Out_ LPVOID lpFindStreamData, DWORD dwFlags);
-typedef HANDLE (WINAPI *PFNFINDNEXTSTREAMW)(_In_ HANDLE hFindStream, _Out_ LPVOID lpFindStreamData);
+typedef HANDLE (WINAPI *pfnFindFirstStreamW_t)(_In_ LPCWSTR lpFileName, _In_ STREAM_INFO_LEVELS InfoLevel, _Out_ LPVOID lpFindStreamData, DWORD dwFlags);
+typedef HANDLE (WINAPI *pfnFindNextStreamW_t)(_In_ HANDLE hFindStream, _Out_ LPVOID lpFindStreamData);
 
 namespace LibRpFile {
 
@@ -175,8 +175,10 @@ int XAttrReaderPrivate::loadGenericXattrs_FindFirstStreamW(void)
 		return -ENOMEM;
 	}
 
-	PFNFINDFIRSTSTREAMW pfnFindFirstStreamW = (PFNFINDFIRSTSTREAMW)GetProcAddress(hKernel32, "FindFirstStreamW");
-	PFNFINDNEXTSTREAMW pfnFindNextStreamW = (PFNFINDNEXTSTREAMW)GetProcAddress(hKernel32, "FindNextStreamW");
+	pfnFindFirstStreamW_t pfnFindFirstStreamW = reinterpret_cast<pfnFindFirstStreamW_t>(
+		GetProcAddress(hKernel32, "FindFirstStreamW"));
+	pfnFindNextStreamW_t pfnFindNextStreamW = reinterpret_cast<pfnFindNextStreamW_t>(
+		GetProcAddress(hKernel32, "FindNextStreamW"));
 	if (!pfnFindFirstStreamW || !pfnFindNextStreamW) {
 		// Unable to retrieve the procedure addresses.
 		return -ENOTSUP;

@@ -15,8 +15,8 @@
 #include <windows.h>
 #include <tchar.h>
 
-typedef BOOL (WINAPI *PFNSETDEFAULTDLLDIRECTORIES)(DWORD DirectoryFlags);
-typedef BOOL (WINAPI *PFNSETDLLDIRECTORYW)(LPCWSTR lpPathName);
+typedef BOOL (WINAPI *pfnSetDefaultDllDirectories_t)(DWORD DirectoryFlags);
+typedef BOOL (WINAPI *pfnSetDllDirectoryW_t)(LPCWSTR lpPathName);
 
 #ifndef LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR
 #  define LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR    0x00000100
@@ -49,8 +49,8 @@ int rp_secure_restrict_dll_lookups(void)
 	HANDLE hKernel32;
 
 	union {
-		PFNSETDEFAULTDLLDIRECTORIES pfnSetDefaultDllDirectories;
-		PFNSETDLLDIRECTORYW pfnSetDllDirectoryW;
+		pfnSetDefaultDllDirectories_t pfnSetDefaultDllDirectories;
+		pfnSetDllDirectoryW_t pfnSetDllDirectoryW;
 	} pfn;
 
 	hKernel32 = GetModuleHandle(_T("kernel32.dll"));
@@ -65,7 +65,7 @@ int rp_secure_restrict_dll_lookups(void)
 	// Reference: https://learn.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-setdefaultdlldirectories
 	// - Available on Windows 8 and later.
 	// - Also available on Windows 7 with KB2533623 installed.
-	pfn.pfnSetDefaultDllDirectories = (PFNSETDEFAULTDLLDIRECTORIES)GetProcAddress(hKernel32, "SetDefaultDllDirectories");
+	pfn.pfnSetDefaultDllDirectories = (pfnSetDefaultDllDirectories_t)GetProcAddress(hKernel32, "SetDefaultDllDirectories");
 	if (pfn.pfnSetDefaultDllDirectories) {
 		// Found SetDefaultDlLDirectories().
 		if (pfn.pfnSetDefaultDllDirectories(LOAD_LIBRARY_SEARCH_SYSTEM32)) {
@@ -80,7 +80,7 @@ int rp_secure_restrict_dll_lookups(void)
 	// Reference: https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-setdlldirectorya
 	// - Available on Windows Vista and later.
 	// - Also available on Windows XP with SP1.
-	pfn.pfnSetDllDirectoryW = (PFNSETDLLDIRECTORYW)GetProcAddress(hKernel32, "SetDllDirectoryW");
+	pfn.pfnSetDllDirectoryW = (pfnSetDllDirectoryW_t)GetProcAddress(hKernel32, "SetDllDirectoryW");
 	if (pfn.pfnSetDllDirectoryW) {
 		// Found SetDllDirectory().
 		if (pfn.pfnSetDllDirectoryW(L"")) {

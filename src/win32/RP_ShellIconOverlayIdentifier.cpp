@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * RP_ShellIconOverlayIdentifier.cpp: IShellIconOverlayIdentifier          *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -38,7 +38,7 @@ RP_ShellIconOverlayIdentifier_Private::RP_ShellIconOverlayIdentifier_Private()
 	// Get SHGetStockIconInfo().
 	hShell32_dll = LoadLibraryEx(_T("shell32.dll"), nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
 	if (hShell32_dll) {
-		pfnSHGetStockIconInfo = (PFNSHGETSTOCKICONINFO)GetProcAddress(hShell32_dll, "SHGetStockIconInfo");
+		pfnSHGetStockIconInfo = (pfnSHGetStockIconInfo_t)GetProcAddress(hShell32_dll, "SHGetStockIconInfo");
 	}
 }
 

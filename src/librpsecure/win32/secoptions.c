@@ -49,7 +49,7 @@ typedef NTSTATUS (WINAPI *pfnNTSetInformationProcess_t)(
 #endif
 
 // DEP policy. (Vista SP1; later backported to XP SP3)
-typedef BOOL (WINAPI *PFNSETPROCESSDEPPOLICY)(_In_ DWORD dwFlags);
+typedef BOOL (WINAPI *pfnSetProcessDEPPolicy_t)(_In_ DWORD dwFlags);
 #ifndef PROCESS_DEP_ENABLE
 #  define PROCESS_DEP_ENABLE 0x1
 #endif
@@ -62,7 +62,7 @@ typedef BOOL (WINAPI *PFNSETPROCESSDEPPOLICY)(_In_ DWORD dwFlags);
 // SetProcessMitigationPolicy (Win8)
 // Reference: https://git.videolan.org/?p=vlc/vlc-2.2.git;a=commitdiff;h=054cf24557164f79045d773efe7da87c4fe357de;hp=52e4b740ad47574bdff7b80aba4949311e1b88f1
 #include "secoptions_win8.h"
-typedef BOOL (WINAPI *PFNSETPROCESSMITIGATIONPOLICY)(_In_ PROCESS_MITIGATION_POLICY MitigationPolicy, _In_ PVOID lpBuffer, _In_ SIZE_T dwLength);
+typedef BOOL (WINAPI *pfnSetProcessMitigationPolicy_t)(_In_ PROCESS_MITIGATION_POLICY MitigationPolicy, _In_ PVOID lpBuffer, _In_ SIZE_T dwLength);
 
 /**
  * Harden the process's integrity level policy.
@@ -191,9 +191,9 @@ int rp_secure_win32_secoptions_init(int bHighSec)
 {
 	HMODULE hKernel32;
 #ifndef _WIN64
-	PFNSETPROCESSDEPPOLICY pfnSetProcessDEPPolicy;
+	pfnSetProcessDEPPolicy_t pfnSetProcessDEPPolicy;
 #endif /* _WIN64 */
-	PFNSETPROCESSMITIGATIONPOLICY pfnSetProcessMitigationPolicy;
+	pfnSetProcessMitigationPolicy_t pfnSetProcessMitigationPolicy;
 	BOOL bRet;
 
 #ifndef NDEBUG
@@ -232,7 +232,7 @@ int rp_secure_win32_secoptions_init(int bHighSec)
 	// just in case the linker doesn't support it.
 
 	// SetProcessDEPPolicy() was added starting with Windows XP SP3.
-	pfnSetProcessDEPPolicy = (PFNSETPROCESSDEPPOLICY)
+	pfnSetProcessDEPPolicy = (pfnSetProcessDEPPolicy_t)
 		GetProcAddress(hKernel32, "SetProcessDEPPolicy");
 	if (pfnSetProcessDEPPolicy) {
 		pfnSetProcessDEPPolicy(PROCESS_DEP_ENABLE | PROCESS_DEP_DISABLE_ATL_THUNK_EMULATION);
@@ -278,7 +278,7 @@ int rp_secure_win32_secoptions_init(int bHighSec)
 
 	// Check for SetProcessMitigationPolicy().
 	// If available, it supercedes many of these.
-	pfnSetProcessMitigationPolicy = (PFNSETPROCESSMITIGATIONPOLICY)GetProcAddress(hKernel32, "SetProcessMitigationPolicy");
+	pfnSetProcessMitigationPolicy = (pfnSetProcessMitigationPolicy_t)GetProcAddress(hKernel32, "SetProcessMitigationPolicy");
 	if (!pfnSetProcessMitigationPolicy) {
 		// SetProcessMitigationPolicy not found...
 		return -ENOENT;

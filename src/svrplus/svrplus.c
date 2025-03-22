@@ -3,7 +3,7 @@
  * svrplus.c: Win32 installer for rom-properties.                          *
  *                                                                         *
  * Copyright (c) 2017-2018 by Egor.                                        *
- * Copyright (c) 2017-2023 by David Korth.                                 *
+ * Copyright (c) 2017-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -1085,10 +1085,10 @@ static int check_system_architectures(void)
 	HMODULE hKernel32;
 
 	typedef BOOL (WINAPI *PFNISWOW64PROCESS2)(HANDLE hProcess, USHORT *pProcessMachine, USHORT *pNativeMachine);
-	typedef BOOL (WINAPI *PFNISWOW64PROCESS)(HANDLE hProcess, PBOOL Wow64Process);
+	typedef BOOL (WINAPI *pfnIsWow64Process_t)(HANDLE hProcess, PBOOL Wow64Process);
 	union {
-		PFNISWOW64PROCESS2 pfnIsWow64Process2;
-		PFNISWOW64PROCESS pfnIsWow64Process;
+		pfnIsWow64Process2_t pfnIsWow64Process2;
+		pfnIsWow64Process_t pfnIsWow64Process;
 	} pfn;
 
 	// WoW64 functions are located in kernel32.dll.
@@ -1104,7 +1104,7 @@ static int check_system_architectures(void)
 	}
 
 	// Check for IsWow64Process2().
-	pfn.pfnIsWow64Process2 = (PFNISWOW64PROCESS2)GetProcAddress(hKernel32, "IsWow64Process2");
+	pfn.pfnIsWow64Process2 = (pfnIsWow64Process2_t)GetProcAddress(hKernel32, "IsWow64Process2");
 	if (pfn.pfnIsWow64Process2) {
 		// IsWow64Process2() is available.
 		// Check the machine architecture(s).
@@ -1171,7 +1171,7 @@ static int check_system_architectures(void)
 	}
 
 	// Check for IsWow64Process().
-	pfn.pfnIsWow64Process = (PFNISWOW64PROCESS)GetProcAddress(hKernel32, "IsWow64Process");
+	pfn.pfnIsWow64Process = (pfnIsWow64Process_t)GetProcAddress(hKernel32, "IsWow64Process");
 	if (pfn.pfnIsWow64Process) {
 		// IsWow64Process() is available.
 		BOOL bWow;
