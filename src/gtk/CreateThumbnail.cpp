@@ -420,7 +420,7 @@ G_MODULE_EXPORT int RP_C_API rp_create_thumbnail2(
 	// TODO: Verify channels, etc.?
 	RpPngWriter pngWriter(output_file,
 		outParams.thumbSize.width, outParams.thumbSize.height,
-		rp_image::Format::ARGB32));
+		rp_image::Format::ARGB32);
 	if (!pngWriter.isOpen()) {
 		// Could not open the PNG writer.
 		ret = RPCT_ERROR_OUTPUT_FILE_FAILED;
