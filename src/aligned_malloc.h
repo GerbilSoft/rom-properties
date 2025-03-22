@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension.                                    *
  * aligned_malloc.h: Aligned memory allocation compatibility header.       *
  *                                                                         *
- * Copyright (c) 2015-2023 by David Korth                                  *
+ * Copyright (c) 2015-2025 by David Korth                                  *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -63,7 +63,8 @@ static FORCEINLINE void aligned_free(void *memptr)
 	_aligned_free(memptr);
 }
 
-#elif 0 //defined(HAVE_ALIGNED_ALLOC) (FIXME: Not working properly on Mac OS.)
+#elif defined(HAVE_ALIGNED_ALLOC) && !defined(__APPLE__)
+// FIXME: Not working properly on Mac OS. (only provided as of 10.15?)
 
 // C11 aligned_alloc()
 #include <stdlib.h>
