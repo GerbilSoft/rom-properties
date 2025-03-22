@@ -73,6 +73,7 @@ using std::cout;
 using std::cerr;
 using std::locale;
 using std::ofstream;
+using std::ostringstream;
 using std::shared_ptr;
 using std::string;
 using std::unique_ptr;
@@ -281,7 +282,16 @@ static void DoFile(const TCHAR *filename, bool json, const vector<ExtractParam> 
 
 			cout << JSONROMOutput(romData.get(), lc, flags) << '\n';
 		} else {
-			cout << ROMOutput(romData.get(), lc, flags) << '\n';
+#ifdef _WIN32
+			if (is_stdout_console && !does_console_support_ansi) {
+				ostringstream oss;
+				oss << ROMOutput(romData.get(), lc, flags) << '\n';
+				cout_win32_ansi_color(cout, oss.str().c_str());
+			} else
+#endif /* _WIN32 */
+			{
+				cout << ROMOutput(romData.get(), lc, flags) << '\n';
+			}
 		}
 		cout.flush();
 		ExtractImages(romData.get(), extract);

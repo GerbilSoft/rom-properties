@@ -35,3 +35,21 @@ void init_vt(void);
 #ifdef __cplusplus
 }
 #endif
+
+#ifdef __cplusplus
+
+#include <ostream>
+
+#ifdef _WIN32
+/**
+ * Write text with ANSI escape sequences to a Windows console.
+ * Color escapes will be handled using SetConsoleTextAttribute().
+ * TODO: Unicode?
+ *
+ * @param os Output stream (should be cout)
+ * @param str Source text
+ */
+void cout_win32_ansi_color(std::ostream &os, const char *str);
+#endif /* _WIN32 */
+
+#endif /* __cplusplus */
