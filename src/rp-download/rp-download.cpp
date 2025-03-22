@@ -503,22 +503,22 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 	// Attempt to download the file.
 	// TODO: IDownloaderFactory?
 #ifdef _WIN32
-	unique_ptr<IDownloader> m_downloader(new WinInetDownloader());
+	WinInetDownloader downloader;
 #else /* !_WIN32 */
-	unique_ptr<IDownloader> m_downloader(new CurlDownloader());
+	CurlDownloader downloader;
 #endif /* _WIN32 */
 
 	// TODO: Configure this somewhere?
-	m_downloader->setMaxSize(4*1024*1024);
+	downloader.setMaxSize(4*1024*1024);
 
 	if (check_newer && filemtime >= 0) {
 		// Only download if the file on the server is newer than
 		// what's in our cache directory.
-		m_downloader->setIfModifiedSince(filemtime);
+		downloader.setIfModifiedSince(filemtime);
 	}
 
-	m_downloader->setUrl(full_url);
-	ret = m_downloader->download();
+	downloader.setUrl(full_url);
+	ret = downloader.download();
 	if (ret != 0) {
 		// Error downloading the file.
 		if (ret < 0) {
@@ -552,7 +552,7 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 		return EXIT_FAILURE;
 	}
 
-	if (m_downloader->dataSize() <= 0) {
+	if (downloader.dataSize() <= 0) {
 		// No data downloaded...
 		SHOW_ERROR(FSTR(_T("Error downloading file: 0 bytes received")));
 		return EXIT_FAILURE;
@@ -567,16 +567,16 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 
 	// Write the file to the cache.
 	// TODO: Verify the size.
-	const size_t dataSize = m_downloader->dataSize();
-	size_t size = fwrite(m_downloader->data(), 1, dataSize, f_out);
+	const size_t dataSize = downloader.dataSize();
+	size_t size = fwrite(downloader.data(), 1, dataSize, f_out);
 	fflush(f_out);
 
 	// Save the file origin information.
 #ifdef _WIN32
 	// TODO: Figure out how to setFileOriginInfo() on Windows using an open file handle.
-	setFileOriginInfo(f_out, cache_filename.c_str(), full_url.c_str(), m_downloader->mtime());
+	setFileOriginInfo(f_out, cache_filename.c_str(), full_url.c_str(), downloader.mtime());
 #else /* !_WIN32 */
-	setFileOriginInfo(f_out, full_url.c_str(), m_downloader->mtime());
+	setFileOriginInfo(f_out, full_url.c_str(), downloader.mtime());
 #endif /* _WIN32 */
 	fclose(f_out);
 
