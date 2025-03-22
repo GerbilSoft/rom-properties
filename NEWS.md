@@ -60,6 +60,8 @@
     * Affects: v2.4 - v2.4.1
   * Dreamcast: Fix typo that broke GDI parsing.
     * Affects: V2.4 - v2.4.1
+  * GTK UI frontends: Ensure the description label is also bold+red if the
+    field is a "warning" field.
 
 * Other changes:
   * CMake: Added an ENABLE_NETWORKING option to control whether or not

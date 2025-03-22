@@ -1475,16 +1475,10 @@ rp_rom_data_view_update_display(RpRomDataView *page)
 		// Add the widget to the table.
 		auto &tab = tabs[tabIdx];
 
-		// tr: Field description label.
+		// tr: Field description label
 		const string txt = fmt::format(FRUN(desc_label_fmt), field.name);
 		GtkWidget *const lblDesc = gtk_label_new(txt.c_str());
 		// NOTE: No name for this GtkWidget.
-		gtk_label_set_use_underline(GTK_LABEL(lblDesc), false);
-		set_label_format_type(page, GTK_LABEL(lblDesc));
-		page->cxx->vecDescLabels.push_back(GTK_LABEL(lblDesc));
-#if !GTK_CHECK_VERSION(4, 0, 0)
-		gtk_widget_show(lblDesc);
-#endif /* !GTK_CHECK_VERSION(4, 0, 0) */
 
 		// Check if this is an RFT_STRING with warning set.
 		// If it is, set the "RFT_STRING_warning" flag.
@@ -1492,7 +1486,14 @@ rp_rom_data_view_update_display(RpRomDataView *page)
 		                          (field.flags & RomFields::STRF_WARNING));
 		g_object_set_qdata(G_OBJECT(lblDesc), RFT_STRING_warning_quark, GUINT_TO_POINTER((guint)is_warning));
 
-		// Value widget.
+		gtk_label_set_use_underline(GTK_LABEL(lblDesc), false);
+		set_label_format_type(page, GTK_LABEL(lblDesc));
+		page->cxx->vecDescLabels.push_back(GTK_LABEL(lblDesc));
+#if !GTK_CHECK_VERSION(4, 0, 0)
+		gtk_widget_show(lblDesc);
+#endif /* !GTK_CHECK_VERSION(4, 0, 0) */
+
+		// Value widget
 		int &row = tabRowCount[tabIdx];
 #if USE_GTK_GRID
 		// TODO: GTK_FILL
