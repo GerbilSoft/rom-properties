@@ -401,7 +401,7 @@ Dreamcast::Dreamcast(const IRpFilePtr &file)
 			// CDI manages its own iso_start_offset.
 			const char *mimeType;
 			if (d->discType == DreamcastPrivate::DiscType::GDI) {
-				d->discReader = std::make_shared<CdiReader>(d->file);
+				d->discReader = std::make_shared<GdiReader>(d->file);
 				mimeType = "application/x-gd-rom-cue";
 			} else /*if (d->discType == DreamcastPrivate::DiscType::CDI)*/ {
 				d->discReader = std::make_shared<CdiReader>(d->file);

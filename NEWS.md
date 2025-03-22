@@ -58,6 +58,8 @@
       also considered root directories, so the directory check was done instead
       of the device check.
     * Affects: v2.4 - v2.4.1
+  * Dreamcast: Fix typo that broke GDI parsing.
+    * Affects: V2.4 - v2.4.1
 
 * Other changes:
   * CMake: Added an ENABLE_NETWORKING option to control whether or not
