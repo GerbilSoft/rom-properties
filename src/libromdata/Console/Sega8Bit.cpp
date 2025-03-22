@@ -67,6 +67,16 @@ public:
 	 * @return Unix timestamp, or -1 on error.
 	 */
 	static time_t sdsc_date_to_unix_time(const Sega8_SDSC_Date *date);
+
+	/**
+	 * Is this a Game Gear ROM?
+	 *
+	 * NOTE: This checks the value in the "TMR SEGA" header,
+	 * and might not be 100% accurate.
+	 *
+	 * @return True if this is a Game Gear ROM; false if not.
+	 */
+	bool isGameGearROM(void) const;
 };
 
 ROMDATA_IMPL(Sega8Bit)
@@ -213,6 +223,29 @@ time_t Sega8BitPrivate::sdsc_date_to_unix_time(const Sega8_SDSC_Date *date)
 	return timegm(&sdsctime);
 }
 
+/**
+ * Is this a Game Gear ROM?
+ *
+ * NOTE: This checks the value in the "TMR SEGA" header,
+ * and might not be 100% accurate.
+ *
+ * @return True if this is a Game Gear ROM; false if not.
+ */
+bool Sega8BitPrivate::isGameGearROM(void) const
+{
+	switch ((romHeader.tmr.region_and_size >> 4) & 0xF) {
+		case Sega8_SMS_Japan:
+		case Sega8_SMS_Export:
+		default:
+			return false;
+
+		case Sega8_GG_Japan:
+		case Sega8_GG_Export:
+		case Sega8_GG_International:
+			return true;
+	}
+}
+
 /** Sega8Bit **/
 
 /**
@@ -232,7 +265,6 @@ Sega8Bit::Sega8Bit(const IRpFilePtr &file)
 	: super(new Sega8BitPrivate(file))
 {
 	RP_D(Sega8Bit);
-	d->mimeType = "application/x-sms-rom";	// unofficial (TODO: SMS vs. GG)
 
 	if (!d->file) {
 		// Could not ref() the file handle.
@@ -257,7 +289,13 @@ Sega8Bit::Sega8Bit(const IRpFilePtr &file)
 
 	if (!d->isValid) {
 		d->file.reset();
+		return;
 	}
+
+	// Set the MIME type.
+	d->mimeType = (d->isGameGearROM())
+		? "application/x-gamegear-rom"	// unofficial
+		: "application/x-sms-rom";	// unofficial
 }
 
 /**
@@ -311,15 +349,15 @@ const char *Sega8Bit::systemName(unsigned int type) const
 		return nullptr;
 
 	// TODO: Region-specific variants.
-	// Also SMS vs. GG.
 	static_assert(SYSNAME_TYPE_MASK == 3,
 		"Sega8Bit::systemName() array index optimization needs to be updated.");
 
-	static const array<const char*, 4> sysNames = {{
-		"Sega Master System", "Master System", "SMS", nullptr
+	static const array<array<const char*, 4>, 2> sysNames = {{
+		{{"Sega Master System", "Master System", "SMS", nullptr}},
+		{{"Sega Game Gear", "Game Gear", "GG", nullptr}},
 	}};
 
-	return sysNames[type & SYSNAME_TYPE_MASK];
+	return sysNames[!!d->isGameGearROM()][type & SYSNAME_TYPE_MASK];
 }
 
 /**
