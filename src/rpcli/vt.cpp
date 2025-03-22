@@ -16,6 +16,24 @@ using std::string;
 
 #ifdef _WIN32
 #  include "libwin32common/RpWin32_sdk.h"
+#  include <winternl.h>
+#  include <tchar.h>
+
+typedef struct _OBJECT_NAME_INFORMATION {
+	UNICODE_STRING Name;
+	WCHAR NameBuffer[1];	// flex array
+} OBJECT_NAME_INFORMATION, *POBJECT_NAME_INFORMATION;
+
+// NOTE: ObjectNameInformation isn't defined in the Windows 7 SDK.
+#  define ObjectNameInformation ((OBJECT_INFORMATION_CLASS)1)
+
+typedef NTSTATUS (WINAPI *pfnNtQueryObject_t)(
+	_In_opt_ HANDLE Handle,
+	_In_ OBJECT_INFORMATION_CLASS ObjectInformationClass,
+	_Out_opt_ PVOID ObjectInformation,	// FIXME: Missing bcount annotation.
+	_In_ ULONG ObjectInformationLength,
+	_Out_opt_ PULONG returnLength
+	);
 #else /* !_WIN32 */
 #  include <unistd.h>
 #endif /* _WIN32 */
@@ -30,6 +48,58 @@ bool is_stdout_console = false;
 // call SetConsoleTextAttribute().
 bool does_console_support_ansi = false;
 static WORD wAttributesOrig = 0x07;	// default is white on black
+#endif /* _WIN32 */
+
+#ifdef _WIN32
+static bool check_mintty(HANDLE hStdOut)
+{
+	// References:
+	// - https://github.com/git/git/commit/58fcd54853023b28a44016c06bd84fc91d2556ed
+	// - https://github.com/git/git/blob/master/compat/winansi.c
+	ULONG result;
+	BYTE buffer[1024];
+	POBJECT_NAME_INFORMATION nameinfo = reinterpret_cast<POBJECT_NAME_INFORMATION>(buffer);
+
+	// Check if the handle is a pipe.
+	if (GetFileType(hStdOut) != FILE_TYPE_PIPE) {
+		// Not a pipe.
+		return false;
+	}
+
+	// Get the pipe name.
+	HMODULE hNtDll = GetModuleHandle(_T("ntdll.dll"));
+	if (!hNtDll) {
+		// Can't check without NTDLL.dll.
+		return false;
+	}
+	pfnNtQueryObject_t pfnNtQueryObject = reinterpret_cast<pfnNtQueryObject_t>(
+		GetProcAddress(hNtDll, "NtQueryObject"));
+	if (!pfnNtQueryObject) {
+		// Can't check without NtQueryObject().
+		return false;
+	}
+
+	if (!NT_SUCCESS(pfnNtQueryObject(hStdOut, ObjectNameInformation,
+	                buffer, sizeof(buffer) - 2, &result)))
+	{
+		// Unable to get the pipe name.
+		return false;
+	}
+
+	PWSTR name = nameinfo->Name.Buffer;
+	name[nameinfo->Name.Length / sizeof(*name)] = 0;
+
+	// Check if this could be a MSYS2 pty pipe ('msys-XXXX-ptyN-XX')
+	// or a cygwin pty pipe ('cygwin-XXXX-ptyN-XX')
+	if ((!wcsstr(name, L"msys-") && !wcsstr(name, L"cygwin-")) ||
+	     !wcsstr(name, L"-pty"))
+	{
+		// Not a matching pipe.
+		return false;
+	}
+
+	return true;
+}
 #endif /* _WIN32 */
 
 /**
@@ -51,6 +121,15 @@ void init_vt(void)
 	DWORD dwMode = 0;
 	if (!GetConsoleMode(hStdOut, &dwMode)) {
 		// Not a console.
+		// NOTE: Might be a MinTTY fake console.
+		if (check_mintty(hStdOut)) {
+			// This is MinTTY.
+			is_stdout_console = true;
+			does_console_support_ansi = true;
+			return;
+		}
+
+		// Not MinTTY.
 		is_stdout_console = false;
 		does_console_support_ansi = false;
 		return;
