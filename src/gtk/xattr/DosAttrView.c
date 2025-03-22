@@ -367,13 +367,20 @@ rp_dos_attr_view_set_current_and_valid_attrs(RpDosAttrView *widget, unsigned int
 {
 	g_return_if_fail(RP_IS_DOS_ATTR_VIEW(widget));
 
-	if (widget->attrs != attrs || widget->validAttrs != validAttrs) {
+	bool update = false;
+	if (widget->attrs != attrs) {
 		widget->attrs = attrs;
-		widget->validAttrs = validAttrs;
-		rp_dos_attr_view_update_attrs_display(widget);
-		// TODO: Only notify one if only one was changed?
+		update = true;
 		g_object_notify_by_pspec(G_OBJECT(widget), props[PROP_ATTRS]);
+	}
+	if (widget->validAttrs != validAttrs) {
+		widget->validAttrs = validAttrs;
+		update = true;
 		g_object_notify_by_pspec(G_OBJECT(widget), props[PROP_VALID_ATTRS]);
+	}
+
+	if (update) {
+		rp_dos_attr_view_update_attrs_display(widget);
 	}
 }
 
