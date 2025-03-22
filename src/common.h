@@ -42,15 +42,28 @@
 #  define RP_PACKED
 #endif
 
+// static_assert() support
+#if defined(__cplusplus)
+// C++11 supports static_assert() with two arguments.
+#  define HAVE_STATIC_ASSERT_CXX 1
+#else /* !__cplusplus */
+#  if defined(_MSC_VER) && _MSC_VER >= 1900
+// MSVC 2015 and later supports _Static_assert() in C.
+#    define HAVE_STATIC_ASSERT_C 1
+#  elif defined(__GNUC__) && defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L
+// gcc supports _Static_assert() if compiling as C11 or later.
+#    define HAVE_STATIC_ASSERT_C 1
+#  endif
+#endif /* __cplusplus */
+
 /**
  * static_asserts size of a structure
  * Also defines a constant of form StructName_SIZE
  */
-// TODO: Check MSVC support for static_assert() in C mode.
-#if defined(__cplusplus)
+#if defined(HAVE_STATIC_ASSERT_CXX)
 #  define ASSERT_STRUCT(st,sz) /*enum { st##_SIZE = (sz), };*/ \
 	static_assert(sizeof(st)==(sz),#st " is not " #sz " bytes.")
-#elif defined(__GNUC__) && defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L
+#elif defined(HAVE_STATIC_ASSERT_C)
 #  define ASSERT_STRUCT(st,sz) /*enum { st##_SIZE = (sz), };*/ \
 	_Static_assert(sizeof(st)==(sz),#st " is not " #sz " bytes.")
 #else
@@ -61,11 +74,10 @@
  * static_asserts offset of a structure member
  * Also defines a constant of form StructName_MemberName_OFFSET
  */
-// TODO: Check MSVC support for static_assert() in C mode.
-#if defined(__cplusplus)
+#if defined(HAVE_STATIC_ASSERT_CXX)
 #  define ASSERT_STRUCT_OFFSET(st,mb,of) /*enum { st##_##mb##_OFFSET = (of), };*/ \
 	static_assert(offsetof(st,mb)==(of),#mb " is not at offset " #of " in struct " #st ".")
-#elif defined(__GNUC__) && defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L
+#elif defined(HAVE_STATIC_ASSERT_C)
 #  define ASSERT_STRUCT_OFFSET(st,mb,of) /*enum { st##_##mb##_OFFSET = (of), };*/ \
 	_Static_assert(offsetof(st,mb)==(of),#mb " is not at offset " #of " in struct " #st ".")
 #else
