@@ -692,29 +692,14 @@ int Dreamcast::loadFieldData(void)
 		latin1_to_utf8(discHeader->boot_filename, sizeof(discHeader->boot_filename)),
 		RomFields::STRF_TRIM_END);
 
-	// FIXME: The CRC algorithm isn't working right...
-#if 0
 	// Product CRC16
-	// TODO: Use strtoul().
-	unsigned int crc16_expected = 0;
-	const char *p = discHeader->device_info;
-	for (unsigned int i = 4; i > 0; i--, p++) {
-		if (ISXDIGIT(*p)) {
-			crc16_expected <<= 4;
-			if (ISDIGIT(*p)) {
-				crc16_expected |= (*p & 0xF);
-			} else {
-				crc16_expected |= ((*p & 0xF) + 10);
-			}
-		} else {
-			// Invalid digit.
-			crc16_expected = ~0;
-			break;
-		}
-	}
-
-	uint16_t crc16_actual = d->calcProductCRC16(discHeader);
-	if (crc16_expected < 0x10000) {
+	char s_crc16_expected[5];
+	memcpy(s_crc16_expected, discHeader->device_info, 4);
+	s_crc16_expected[4] = '\0';
+	char *endptr = nullptr;
+	unsigned int crc16_expected = strtoul(s_crc16_expected, &endptr, 16);
+	if (endptr != nullptr && *endptr == '\0') {
+		uint16_t crc16_actual = d->calcProductCRC16(discHeader);
 		if (crc16_expected == crc16_actual) {
 			// CRC16 is correct.
 			d->fields.addField_string(C_("RomData", "Checksum"),
@@ -726,20 +711,19 @@ int Dreamcast::loadFieldData(void)
 					crc16_expected, crc16_actual));
 		}
 	} else {
-		// CRC16 in header is invalid.
+		// The CRC16 in the disc header is invalid.
 		char s_crc16_invalid[5];
-		memcpy(s_crc16, discHeader->device_info, 4);
-		s_crc16[4] = '\0';
+		memcpy(s_crc16_invalid, discHeader->device_info, 4);
+		s_crc16_invalid[4] = '\0';
 		d->fields.addField_string(C_("RomData", "Checksum"),
 			fmt::format(FRUN(C_("Dreamcast", "0x{0:0>4X} (HEADER is INVALID: {1:s})")),
 				crc16_expected, s_crc16_invalid));
 	}
-#endif
 
 	/** Peripeherals **/
 
 	// Peripherals are stored as an ASCII hex bitfield.
-	char *endptr;
+	endptr = nullptr;
 	const unsigned int peripherals = static_cast<unsigned int>(strtoul(
 		discHeader->peripherals, &endptr, 16));
 	if (endptr > discHeader->peripherals &&
