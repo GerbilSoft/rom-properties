@@ -68,6 +68,7 @@ static bool check_mintty(HANDLE hStdOut)
 
 	// Get the pipe name.
 	HMODULE hNtDll = GetModuleHandle(_T("ntdll.dll"));
+	assert(hNtDll != nullptr);
 	if (!hNtDll) {
 		// Can't check without NTDLL.dll.
 		return false;

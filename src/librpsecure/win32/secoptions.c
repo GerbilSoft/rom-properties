@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpsecure/win32)                *
  * secoptions.c: Security options for executables.                         *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -242,6 +242,7 @@ int rp_secure_win32_secoptions_init(int bHighSec)
 		// Reference: http://www.uninformed.org/?v=2&a=4
 		// FIXME: Do SetDllDirectory() first if available?
 		HMODULE hNtDll = GetModuleHandle(_T("ntdll.dll"));
+		assert(hNtDll != nullptr);
 		if (hNtDll) {
 			pfnNTSetInformationProcess_t pfnNtSetInformationProcess =
 				(pfnNTSetInformationProcess_t)GetProcAddress(hNtDll, "NtSetInformationProcess");
