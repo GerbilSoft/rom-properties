@@ -708,7 +708,8 @@ int Dreamcast::loadFieldData(void)
 			// CRC16 is incorrect.
 			d->fields.addField_string(C_("RomData", "Checksum"),
 				fmt::format(FRUN(C_("Dreamcast", "0x{0:0>4X} (INVALID; should be 0x{1:0>4X})")),
-					crc16_expected, crc16_actual));
+					crc16_expected, crc16_actual),
+					RomFields::STRF_WARNING);
 		}
 	} else {
 		// The CRC16 in the disc header is invalid.
@@ -717,7 +718,8 @@ int Dreamcast::loadFieldData(void)
 		s_crc16_invalid[4] = '\0';
 		d->fields.addField_string(C_("RomData", "Checksum"),
 			fmt::format(FRUN(C_("Dreamcast", "0x{0:0>4X} (HEADER is INVALID: {1:s})")),
-				crc16_expected, s_crc16_invalid));
+				crc16_expected, s_crc16_invalid),
+				RomFields::STRF_WARNING);
 	}
 
 	/** Peripeherals **/
