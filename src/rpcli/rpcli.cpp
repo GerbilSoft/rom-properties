@@ -69,6 +69,7 @@ using namespace LibRpTexture;
 #include "tcharx.h"
 
 // C++ STL classes
+#include <sstream>
 using std::cout;
 using std::cerr;
 using std::locale;
