@@ -27,7 +27,7 @@
 #ifndef _WIN64
 
 // NtSetInformationProcess() (needed for DEP on XP SP2)
-typedef NTSTATUS (WINAPI *PFNNTSETINFORMATIONPROCESS)(
+typedef NTSTATUS (WINAPI *pfnNTSetInformationProcess_t)(
 	HANDLE ProcessHandle,
 	_In_ PROCESSINFOCLASS ProcessInformationClass,
 	_In_ PVOID ProcessInformation,
@@ -241,17 +241,16 @@ int rp_secure_win32_secoptions_init(int bHighSec)
 		// On Windows XP SP2, we can use NtSetInformationProcess.
 		// Reference: http://www.uninformed.org/?v=2&a=4
 		// FIXME: Do SetDllDirectory() first if available?
-		HMODULE hNtdll = LoadLibraryEx(_T("ntdll.dll"), NULL, LOAD_LIBRARY_SEARCH_SYSTEM32);
-		if (hNtdll) {
-			PFNNTSETINFORMATIONPROCESS pfnNtSetInformationProcess =
-				(PFNNTSETINFORMATIONPROCESS)GetProcAddress(hNtdll, "NtSetInformationProcess");
+		HMODULE hNtDll = GetModuleHandle(_T("ntdll.dll"));
+		if (hNtDll) {
+			pfnNTSetInformationProcess_t pfnNtSetInformationProcess =
+				(pfnNTSetInformationProcess_t)GetProcAddress(hNtDll, "NtSetInformationProcess");
 			if (pfnNtSetInformationProcess) {
 				ULONG dep = MEM_EXECUTE_OPTION_DISABLE |
 				            MEM_EXECUTE_OPTION_PERMANENT;
 				pfnNtSetInformationProcess(GetCurrentProcess(),
 					ProcessExecuteFlags, &dep, sizeof(dep));
 			}
-			FreeLibrary(hNtdll);
 		}
 	}
 #endif /* !_WIN64 */
