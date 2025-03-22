@@ -136,7 +136,7 @@ int InitDarkModePFNs(void)
 	if (g_darkModeSupported)
 		return 0;
 
-	HMODULE hNtDll = GetModuleHandle(_T("ntdll.dll");
+	HMODULE hNtDll = GetModuleHandle(_T("ntdll.dll"));
 	assert(hNtDll != nullptr);
 	if (!hNtDll) {
 		// Uh oh, something's broken...
@@ -144,7 +144,7 @@ int InitDarkModePFNs(void)
 	}
 
 	auto RtlGetNtVersionNumbers = reinterpret_cast<fnRtlGetNtVersionNumbers>(
-		GetProcAddress(hNtDll), "RtlGetNtVersionNumbers"));
+		GetProcAddress(hNtDll), "RtlGetNtVersionNumbers");
 	if (!RtlGetNtVersionNumbers) {
 		return 2;
 	}
