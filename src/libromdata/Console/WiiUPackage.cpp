@@ -279,14 +279,14 @@ rp_image_const_ptr WiiUPackagePrivate::loadIcon(void)
 	}
 
 	// Attempt to open the icon as TGA.
-	unique_ptr<TGA> tga(new TGA(f_icon));
-	if (!tga->isValid()) {
+	TGA tga(f_icon);
+	if (!tga.isValid()) {
 		// Not a valid TGA file.
 		return {};
 	}
 
 	// Get the icon.
-	img_icon = tga->image();
+	img_icon = tga.image();
 	return img_icon;
 }
 
