@@ -188,12 +188,12 @@ int Xbox_XBE_Private::findXbeSectionHeader(const char *name, XBE_Section_Header 
 		section_count = (XBE_READ_SIZE - shdr_address_phys) / sizeof(XBE_Section_Header);
 	}
 
-	// First section header.
+	// First section header
 	const XBE_Section_Header *pHdr = reinterpret_cast<const XBE_Section_Header*>(
 		&(*first64KB)[shdr_address_phys]);
 	const XBE_Section_Header *const pHdr_end = pHdr + section_count;
 
-	// Find the $$XTIMAGE section.
+	// Find the specified section.
 	// TODO: Cache a "not found" result so we don't have to
 	// re-check the section headers again?
 	for (; pHdr < pHdr_end; pHdr++) {
@@ -215,6 +215,11 @@ int Xbox_XBE_Private::findXbeSectionHeader(const char *name, XBE_Section_Header 
 
 		if (!strcmp(section_name, name)) {
 			// Found it!
+#if SYS_BYTEORDER == SYS_LIL_ENDIAN
+			// No byteswapping needed. Copy the data directly.
+			*pOutHeader = *pHdr;
+#else /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
+			// Byteswap the data.
 			pOutHeader->flags = le32_to_cpu(pHdr->flags);
 			pOutHeader->vaddr = le32_to_cpu(pHdr->vaddr);
 			pOutHeader->vsize = le32_to_cpu(pHdr->vsize);
@@ -225,6 +230,7 @@ int Xbox_XBE_Private::findXbeSectionHeader(const char *name, XBE_Section_Header 
 			pOutHeader->head_shared_page_recount_address	= le32_to_cpu(pHdr->head_shared_page_recount_address);
 			pOutHeader->tail_shared_page_recount_address	= le32_to_cpu(pHdr->tail_shared_page_recount_address);
 			memcpy(pOutHeader->sha1_digest, pHdr->sha1_digest, sizeof(pHdr->sha1_digest));
+#endif /* SYS_BYTEORDER == SYS_LIL_ENDIAN */
 			return 0;
 		}
 	}
