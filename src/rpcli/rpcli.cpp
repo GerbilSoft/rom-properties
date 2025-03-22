@@ -56,6 +56,9 @@ using namespace LibRpTexture;
 #ifdef _WIN32
 #  include "libwin32common/userdirs.hpp"
 #  define OS_NAMESPACE LibWin32Common
+#  ifndef ENABLE_VIRTUAL_TERMINAL_PROCESSING
+#    define ENABLE_VIRTUAL_TERMINAL_PROCESSING 0x4
+#  endif /* ENABLE_VIRTUAL_TERMINAL_PROCESSING */
 #else
 #  include "libunixcommon/userdirs.hpp"
 #  define OS_NAMESPACE LibUnixCommon
@@ -71,6 +74,60 @@ using std::shared_ptr;
 using std::string;
 using std::unique_ptr;
 using std::vector;
+
+// Can we do color TTY output?
+static bool is_stdout_console = false;
+#ifdef _WIN32
+// Windows 10 1607 ("Anniversary Update") adds support for ANSI escape sequences.
+// For older Windows, we'll need to parse the sequences manually and
+// call SetConsoleTextAttribute().
+static bool does_console_support_ansi = false;
+static WORD console_attrs_orig = 0x07;	// default is white on black
+
+static void check_win32_ansi_handling(void)
+{
+	// On Windows 10 1607+ ("Anniversary Update"), we can enable
+	// VT escape sequence processing.
+	HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
+	if (!hStdOut) {
+		// No stdout...
+		is_stdout_console = false;
+		does_console_support_ansi = false;
+		return;
+	}
+
+	DWORD dwMode = 0;
+	if (!GetConsoleMode(hStdOut, &dwMode)) {
+		// Not a console.
+		is_stdout_console = false;
+		does_console_support_ansi = false;
+		return;
+	}
+
+	// We have a console.
+	is_stdout_console = true;
+
+	// Does it support ANSI escape sequences?
+	dwMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+	if (!SetConsoleMode(hStdOut, dwMode)) {
+		// Failed to enable ANSI escape sequences.
+		does_console_support_ansi = false;
+
+		// Save the original console text attributes.
+		CONSOLE_SCREEN_BUFFER_INFO csbi;
+		if (GetConsoleScreenBufferInfo(hStdOut, &csbi)) {
+			console_attrs_orig = csbi.wAttributes;
+		} else {
+			// Failed to get the console text attributes.
+			// Default to white on black.
+			console_attrs_orig = 0x07;
+		}
+		return;
+	}
+
+	does_console_support_ansi = true;
+}
+#endif /* _WIN32 */
 
 #include "libi18n/config.libi18n.h"
 #ifdef _MSC_VER
@@ -625,10 +682,13 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 	vector<ExtractParam> extract;
 
 	// TODO: Add a command line option to override color output.
-	// NOTE: isatty() appears to work correctly when compiled with
-	// MSVC 2022 and run on WinXP, Win7, and Win10 1809.
-	// TODO: Test with other compilers.
-	if (isatty(fileno(stdout))) {
+#ifdef _WIN32
+	// Windows has various ways of handling color depending on how old it is.
+	check_win32_ansi_handling();
+#else /* !_WIN32 */
+	is_stdout_console = !!isatty(fileno(stdout));
+#endif /* _WIN32 */
+	if (is_stdout_console) {
 		flags |= OF_Text_UseAnsiColor;
 	}
 
