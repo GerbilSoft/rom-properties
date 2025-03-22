@@ -457,8 +457,6 @@ int VGM::loadFieldData(void)
 	// SN76489 [1.00]
 	const uint32_t sn76489_clk = le32_to_cpu(vgmHeader->sn76489_clk);
 	if ((sn76489_clk & ~PSG_T6W28) != 0) {
-		// TODO: Handle the dual-chip bit.
-
 		// Check for T6W28.
 		const bool isT6W28 = ((sn76489_clk & PSG_T6W28) == PSG_T6W28);
 		const char *const chip_name = (isT6W28 ? "T6W28" : "SN76489");

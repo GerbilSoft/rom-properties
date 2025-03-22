@@ -31,8 +31,6 @@ using std::string;
 /** Libraries **/
 
 // zlib and libpng
-// TODO: Make ZLIBNG_VERSION and ZLIB_VERSION accessible via RpPng.
-// TODO: Make PNG_LIBPNG_VER_STRING accessible via RpPng.
 #include <zlib.h>
 #include <png.h>
 #include "librpbase/img/RpPng.hpp"

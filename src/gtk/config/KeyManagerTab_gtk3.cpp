@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * KeyManagerTab_gtk3.cpp: Key Manager tab for rp-config. (GTK2/GTK3)      *
  *                                                                         *
- * Copyright (c) 2017-2024 by David Korth.                                 *
+ * Copyright (c) 2017-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -78,7 +78,6 @@ void rp_key_manager_tab_create_GtkTreeView(RpKeyManagerTab *tab)
 	gtk_tree_view_append_column(GTK_TREE_VIEW(tab->treeView), column);
 	
 	// Column 2: Value
-	// TODO: Monospace font
 	// TODO: Handle the cell editor's 'insert-text' signal and stop it
 	// if the entered text is non-hex. (with allowKanji support)
 	column = gtk_tree_view_column_new();

@@ -187,8 +187,8 @@ rp_image_const_ptr NintendoDS_BNR_Private::loadIcon(void)
 			}
 
 			// Token format: (bits)
-			// - 15:    V flip (1=yes, 0=no) [TODO]
-			// - 14:    H flip (1=yes, 0=no) [TODO]
+			// - 15:    V flip (1=yes, 0=no)
+			// - 14:    H flip (1=yes, 0=no)
 			// - 13-11: Palette index.
 			// - 10-8:  Bitmap index.
 			// - 7-0:   Frame duration. (units of 60 Hz)

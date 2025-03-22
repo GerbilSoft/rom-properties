@@ -3,7 +3,7 @@
  * Nintendo3DS_ops.cpp: Nintendo 3DS ROM reader. (ROM operations)          *
  * Handles CCI/3DS, CIA, and SMDH files.                                   *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -119,7 +119,7 @@ int Nintendo3DS::doRomOp_int(int id, RomOpParams *pParams)
 	assert((bool)srcFile);
 	if (!srcFile) {
 		// No source file...
-		// TODO: More useful message? (may need std::string)
+		// TODO: More useful message?
 		pParams->status = -EIO;
 		pParams->msg = C_("Nintendo3DS", "Unable to open the SRL.");
 		goto out;
@@ -128,7 +128,7 @@ int Nintendo3DS::doRomOp_int(int id, RomOpParams *pParams)
 	// Create the output file.
 	destFile = new RpFile(pParams->save_filename, RpFile::FM_CREATE_WRITE);
 	if (!destFile->isOpen()) {
-		// TODO: More useful message? (may need std::string)
+		// TODO: More useful message?
 		pParams->status = -destFile->lastError();
 		pParams->msg = C_("Nintendo3DS", "Could not open output SRL file.");
 		goto out;

@@ -694,7 +694,6 @@ void Nintendo3DSPrivate::addTitleIdAndProductCodeFields(bool showContentType)
 	// This is normally shown in the CIA content table.
 	if (showContentType) {
 		const char *const content_type = ncch->contentType();
-		// TODO: Remove context from "Unknown" and "Invalid" strings.
 		fields.addField_string(C_("Nintendo3DS", "Content Type"),
 			(content_type ? content_type : C_("RomData", "Unknown")));
 

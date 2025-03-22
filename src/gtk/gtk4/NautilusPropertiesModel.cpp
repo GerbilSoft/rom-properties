@@ -269,7 +269,6 @@ rp_nautilus_properties_model_load_from_romData(RpNautilusPropertiesModel *self,
 				rp_nautilus_properties_model_init_dimensions(self, field);
 				break;
 			case RomFields::RFT_STRING_MULTI:
-				// TODO: Multi-language handling?
 				rp_nautilus_properties_model_init_string_multi(self, field, def_lc);
 				break;
 		}

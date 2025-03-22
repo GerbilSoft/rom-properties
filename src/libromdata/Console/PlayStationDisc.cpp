@@ -964,8 +964,6 @@ int PlayStationDisc::extURLs(ImageType imageType, vector<ExtURL> &extURLs, int s
 		gameID.erase(pos, 1);
 	}
 
-	// NOTE: We only have one size for MegaDrive right now.
-	// TODO: Determine the actual image size.
 	RP_UNUSED(size);
 	vector<ImageSizeDef> sizeDefs = supportedImageSizes(imageType);
 	assert(sizeDefs.size() == 1);

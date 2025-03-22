@@ -13,28 +13,22 @@
 // - https://docs.microsoft.com/en-us/cpp/c-runtime-library/reference/aligned-malloc?view=msvc-160
 // - http://linux.die.net/man/3/aligned_alloc (needs _ISOC11_SOURCE ?)
 
-/**
- * TODO: Check if the following functions are present:
- * - _aligned_malloc (MSVC)
- * - aligned_alloc (C11) (FIXME: Not working properly on Mac OS.)
- * - posix_memalign
- * - memalign
- * If none of these are present, we'll use our own custom
- * aligned malloc().
- */
-
 #include "config.libc.h"
 #include "force_inline.h"
 
 /**
- * This header defines two functions if they aren't present:
+ * This header defines two functions for aligned memory allocation:
  * - aligned_malloc(): Allocate aligned memory.
  *   - Same signature as C11 aligned_alloc().
  *   - Returns NULL and sets errno on error.
+ *   - NOTE: C aligned_alloc() requires size to be a multiple of
+ *     alignment. glibc does not enforce this requirement.
  *   - NOTE: When using posix_memalign(), alignment must be a
  *     power of two multiple of sizeof(void*).
  * - aligned_free(): Free aligned memory.
  *   - Required for MSVC and custom implementations.
+ *
+ * These functions are wrappers around system-provided functions.
  */
 
 #include <errno.h>

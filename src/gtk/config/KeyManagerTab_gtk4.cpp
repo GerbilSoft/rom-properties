@@ -336,24 +336,6 @@ void rp_key_manager_tab_create_GtkTreeView(RpKeyManagerTab *tab)
 		gtk_column_view_column_set_resizable(column, true);
 		gtk_column_view_append_column(GTK_COLUMN_VIEW(tab->columnView), column);
 	}
-
-#if 0
-	// Column 2: Value
-	// TODO: Monospace font
-	// TODO: Handle the cell editor's 'insert-text' signal and stop it
-	// if the entered text is non-hex. (with allowKanji support)
-	column = gtk_tree_view_column_new();
-	gtk_tree_view_column_set_title(column, C_("KeyManagerTab", "Value"));
-	gtk_tree_view_column_set_resizable(column, TRUE);
-	renderer = gtk_cell_renderer_text_new();
-	g_object_set(renderer, "family", "Monospace", nullptr);
-	g_object_set(renderer, "mode", GTK_CELL_RENDERER_MODE_EDITABLE, nullptr);
-	g_object_set(renderer, "editable", TRUE, nullptr);
-	g_signal_connect(renderer, "edited", G_CALLBACK(renderer_edited_signal_handler), tab);
-	gtk_tree_view_column_pack_start(column, renderer, FALSE);
-	gtk_tree_view_column_add_attribute(column, renderer, "text", 1);
-	gtk_tree_view_append_column(GTK_TREE_VIEW(tab->treeView), column);
-#endif
 }
 
 /**
