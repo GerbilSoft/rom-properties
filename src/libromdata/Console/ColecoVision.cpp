@@ -95,8 +95,9 @@ ColecoVisionPrivate::ColecoVisionPrivate(const IRpFilePtr &file)
  */
 string ColecoVisionPrivate::getTitle(int *pOutYear) const
 {
-	static constexpr uint8_t magic_has_logo[2] = {0xAA, 0x55};
-	if (memcmp(romHeader.magic, magic_has_logo, sizeof(romHeader.magic)) != 0) {
+	// ROM header needs to have the "Show Logo" magic in order for
+	// the Title field to be valid.
+	if (le16_to_cpu(romHeader.magic) != COLECOVISION_MAGIC_SHOW_LOGO) {
 		// Not the correct magic. No title.
 		if (pOutYear) {
 			*pOutYear = -1;
@@ -341,8 +342,14 @@ ColecoVision::ColecoVision(const IRpFilePtr &file)
 int ColecoVision::isRomSupported_static(const DetectInfo *info)
 {
 	assert(info != nullptr);
-	if (!info || !info->ext) {
-		// Needs the file extension...
+	assert(info->header.pData != nullptr);
+	if (!info || !info->ext || !info->header.pData ||
+	    info->header.addr != 0 ||
+	    info->header.size < sizeof(ColecoVision_ROMHeader))
+	{
+		// Either no detection information was specified,
+		// or the header is too small.
+		// Also, a file extension is needed.
 		return -1;
 	}
 
@@ -355,13 +362,24 @@ int ColecoVision::isRomSupported_static(const DetectInfo *info)
 	// The ColecoVision ROM header doesn't have enough magic
 	// to conclusively determine if it's a ColecoVision ROM,
 	// so check the file extension.
-	// TODO: Also check for AA55/55AA?
 	for (const char *const *ext = ColecoVisionPrivate::exts.data();
 	     *ext != nullptr; ext++)
 	{
 		if (!strcasecmp(info->ext, *ext)) {
 			// File extension is supported.
-			return 0;
+			// Also check for a valid magic number.
+			const ColecoVision_ROMHeader *const romHeader =
+				reinterpret_cast<const ColecoVision_ROMHeader*>(info->header.pData);
+			switch (le16_to_cpu(romHeader->magic)) {
+				case COLECOVISION_MAGIC_SHOW_LOGO:
+				case COLECOVISION_MAGIC_SKIP_LOGO:
+				case COLECOVISION_MAGIC_BIOS:
+				case COLECOVISION_MAGIC_MONITOR_TEST:
+					// Magic number is valid.
+					return 0;
+				default:
+					break;
+			}
 		}
 	}
 

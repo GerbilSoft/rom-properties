@@ -16,13 +16,13 @@ extern "C" {
 #endif
 
 /**
- * ColecoVision ROM image file header.
+ * ColecoVision ROM image file header
  * Reference: https://forums.atariage.com/topic/168314-coleco-cartridge-header-from-official-documentation/
  *
  * All fields are in little-endian.
  */
 typedef struct _ColecoVision_ROMHeader {
-	uint8_t magic[2];		// [0x000] Magic (0xAA 0x55 to show CV logo; 0x55 0xAA to bypass)
+	uint16_t magic;			// [0x000] Magic (see ColecoVision_Magic_e)
 	uint16_t local_sprite_table;	// [0x002] Local sprite table address
 	uint16_t sprite_order;		// [0x004] Sprite order table address
 	uint16_t work_buffer;		// [0x006] Work buffer address
@@ -34,6 +34,18 @@ typedef struct _ColecoVision_ROMHeader {
 	char game_name[96];		// [0x024] Game name (not fixed-length; assuming max of 96 chars...)
 } ColecoVision_ROMHeader;
 ASSERT_STRUCT(ColecoVision_ROMHeader, 0x24 + 96);
+
+/**
+ * ColecoVision magic number
+ */
+typedef enum {
+	COLECOVISION_MAGIC_SHOW_LOGO	= 0x55AA,	// literal 0xAA 0x55 == show ColecoVision logo
+	COLECOVISION_MAGIC_SKIP_LOGO	= 0xAA55,	// literal 0x55 0xAA == skip ColecoVision logo
+
+	// BIOS and Monitor Test have different magic numbers.
+	COLECOVISION_MAGIC_BIOS		= 0xB931,
+	COLECOVISION_MAGIC_MONITOR_TEST	= 0xEDF3,
+} ColecoVision_Magic_e;
 
 #ifdef __cplusplus
 }
