@@ -596,26 +596,26 @@ bool is_symlink(const wchar_t *filename)
 
 // GetFinalPathnameByHandleW() lookup.
 static pthread_once_t once_gfpbh = PTHREAD_ONCE_INIT;
-typedef DWORD (WINAPI *PFNGETFINALPATHNAMEBYHANDLEA)(
+typedef DWORD (WINAPI *pfnGetFinalPathNameByHandleA_t)(
 	_In_  HANDLE hFile,
 	_Out_ LPSTR lpszFilePath,
 	_In_  DWORD  cchFilePath,
 	_In_  DWORD  dwFlags
 );
-typedef DWORD (WINAPI *PFNGETFINALPATHNAMEBYHANDLEW)(
+typedef DWORD (WINAPI *pfnGetFinalPathNameByHandleW_t)(
 	_In_  HANDLE hFile,
 	_Out_ LPWSTR lpszFilePath,
 	_In_  DWORD  cchFilePath,
 	_In_  DWORD  dwFlags
 );
 #ifdef UNICODE
-#  define PFNGETFINALPATHNAMEBYHANDLE PFNGETFINALPATHNAMEBYHANDLEW
-#  define GETFINALPATHNAMEBYHANDLE_FN "GetFinalPathNameByHandleW"
+using pfnGetFinalPathNameByHandle_t = pfnGetFinalPathNameByHandleW_t;
+static constexpr char GetFinalPathNameByHandle_fn[] = "GetFinalPathNameByHandleW";
 #else /* !UNICODE */
-#  define PFNGETFINALPATHNAMEBYHANDLE PFNGETFINALPATHNAMEBYHANDLEA
-#  define GETFINALPATHNAMEBYHANDLE_FN "GetFinalPathNameByHandleA"
+using pfnGetFinalPathNameByHandle_t = pfnGetFinalPathNameByHandleA_t;
+static constexpr char GetFinalPathNameByHandle_fn[] = "GetFinalPathNameByHandleA";
 #endif /* UNICODE */
-static PFNGETFINALPATHNAMEBYHANDLE pfnGetFinalPathnameByHandle = nullptr;
+static pfnGetFinalPathNameByHandle_t pfnGetFinalPathnameByHandle = nullptr;
 
 /**
  * Look up GetFinalPathnameByHandleW().
@@ -624,8 +624,8 @@ static void LookupGetFinalPathnameByHandle(void)
 {
 	HMODULE hKernel32 = GetModuleHandle(_T("kernel32.dll"));
 	if (hKernel32) {
-		pfnGetFinalPathnameByHandle = reinterpret_cast<PFNGETFINALPATHNAMEBYHANDLE>(
-			GetProcAddress(hKernel32, GETFINALPATHNAMEBYHANDLE_FN));
+		pfnGetFinalPathnameByHandle = reinterpret_cast<pfnGetFinalPathNameByHandle_t>(
+			GetProcAddress(hKernel32, GetFinalPathNameByHandle_fn));
 	}
 }
 

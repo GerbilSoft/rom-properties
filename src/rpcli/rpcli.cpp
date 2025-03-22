@@ -16,6 +16,9 @@
 // OS-specific security options.
 #include "rpcli_secure.h"
 
+// VT handling
+#include "vt.hpp"
+
 // librpbyteswap
 #include "librpbyteswap/byteswap_rp.h"
 
@@ -56,6 +59,9 @@ using namespace LibRpTexture;
 #ifdef _WIN32
 #  include "libwin32common/userdirs.hpp"
 #  define OS_NAMESPACE LibWin32Common
+#  ifndef ENABLE_VIRTUAL_TERMINAL_PROCESSING
+#    define ENABLE_VIRTUAL_TERMINAL_PROCESSING 0x4
+#  endif /* ENABLE_VIRTUAL_TERMINAL_PROCESSING */
 #else
 #  include "libunixcommon/userdirs.hpp"
 #  define OS_NAMESPACE LibUnixCommon
@@ -67,6 +73,7 @@ using std::cout;
 using std::cerr;
 using std::locale;
 using std::ofstream;
+using std::ostringstream;
 using std::shared_ptr;
 using std::string;
 using std::unique_ptr;
@@ -275,7 +282,16 @@ static void DoFile(const TCHAR *filename, bool json, const vector<ExtractParam> 
 
 			cout << JSONROMOutput(romData.get(), lc, flags) << '\n';
 		} else {
-			cout << ROMOutput(romData.get(), lc, flags) << '\n';
+#ifdef _WIN32
+			if (is_stdout_console && !does_console_support_ansi) {
+				ostringstream oss;
+				oss << ROMOutput(romData.get(), lc, flags) << '\n';
+				cout_win32_ansi_color(cout, oss.str().c_str());
+			} else
+#endif /* _WIN32 */
+			{
+				cout << ROMOutput(romData.get(), lc, flags) << '\n';
+			}
 		}
 		cout.flush();
 		ExtractImages(romData.get(), extract);
@@ -623,6 +639,12 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 	// DoFile parameters
 	bool json = false;
 	vector<ExtractParam> extract;
+
+	// TODO: Add a command line option to override color output.
+	init_vt();
+	if (is_stdout_console) {
+		flags |= OF_Text_UseAnsiColor;
+	}
 
 	for (int i = 1; i < argc; i++) { // figure out the json mode in advance
 		if (argv[i][0] == _T('-')) {

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libwin32common)                   *
  * userdirs.cpp: Find user directories.                                    *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -97,13 +97,13 @@ string getCacheDirectory(void)
 	}
 
 	// Check for SHGetKnownFolderPath. (Windows Vista and later)
-	typedef HRESULT (WINAPI *PFNSHGETKNOWNFOLDERPATH)(
+	typedef HRESULT (WINAPI *pfnSHGetKnownFolderPath_t)(
 		_In_ REFKNOWNFOLDERID rfid,
 		_In_ DWORD /* KNOWN_FOLDER_FLAG */ dwFlags,
 		_In_opt_ HANDLE hToken,
 		_Outptr_ PWSTR *ppszPath);
-	PFNSHGETKNOWNFOLDERPATH pfnSHGetKnownFolderPath =
-		(PFNSHGETKNOWNFOLDERPATH)GetProcAddress(hShell32_dll, "SHGetKnownFolderPath");
+	pfnSHGetKnownFolderPath_t pfnSHGetKnownFolderPath =
+		(pfnSHGetKnownFolderPath_t)GetProcAddress(hShell32_dll, "SHGetKnownFolderPath");
 	if (pfnSHGetKnownFolderPath) {
 		// We have SHGetKnownFolderPath. (NOTE: Unicode only!)
 		PWSTR pszPath = nullptr;	// free with CoTaskMemFree()

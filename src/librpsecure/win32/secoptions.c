@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpsecure/win32)                *
  * secoptions.c: Security options for executables.                         *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -27,7 +27,7 @@
 #ifndef _WIN64
 
 // NtSetInformationProcess() (needed for DEP on XP SP2)
-typedef NTSTATUS (WINAPI *PFNNTSETINFORMATIONPROCESS)(
+typedef NTSTATUS (WINAPI *pfnNTSetInformationProcess_t)(
 	HANDLE ProcessHandle,
 	_In_ PROCESSINFOCLASS ProcessInformationClass,
 	_In_ PVOID ProcessInformation,
@@ -49,7 +49,7 @@ typedef NTSTATUS (WINAPI *PFNNTSETINFORMATIONPROCESS)(
 #endif
 
 // DEP policy. (Vista SP1; later backported to XP SP3)
-typedef BOOL (WINAPI *PFNSETPROCESSDEPPOLICY)(_In_ DWORD dwFlags);
+typedef BOOL (WINAPI *pfnSetProcessDEPPolicy_t)(_In_ DWORD dwFlags);
 #ifndef PROCESS_DEP_ENABLE
 #  define PROCESS_DEP_ENABLE 0x1
 #endif
@@ -62,7 +62,7 @@ typedef BOOL (WINAPI *PFNSETPROCESSDEPPOLICY)(_In_ DWORD dwFlags);
 // SetProcessMitigationPolicy (Win8)
 // Reference: https://git.videolan.org/?p=vlc/vlc-2.2.git;a=commitdiff;h=054cf24557164f79045d773efe7da87c4fe357de;hp=52e4b740ad47574bdff7b80aba4949311e1b88f1
 #include "secoptions_win8.h"
-typedef BOOL (WINAPI *PFNSETPROCESSMITIGATIONPOLICY)(_In_ PROCESS_MITIGATION_POLICY MitigationPolicy, _In_ PVOID lpBuffer, _In_ SIZE_T dwLength);
+typedef BOOL (WINAPI *pfnSetProcessMitigationPolicy_t)(_In_ PROCESS_MITIGATION_POLICY MitigationPolicy, _In_ PVOID lpBuffer, _In_ SIZE_T dwLength);
 
 /**
  * Harden the process's integrity level policy.
@@ -191,9 +191,9 @@ int rp_secure_win32_secoptions_init(int bHighSec)
 {
 	HMODULE hKernel32;
 #ifndef _WIN64
-	PFNSETPROCESSDEPPOLICY pfnSetProcessDEPPolicy;
+	pfnSetProcessDEPPolicy_t pfnSetProcessDEPPolicy;
 #endif /* _WIN64 */
-	PFNSETPROCESSMITIGATIONPOLICY pfnSetProcessMitigationPolicy;
+	pfnSetProcessMitigationPolicy_t pfnSetProcessMitigationPolicy;
 	BOOL bRet;
 
 #ifndef NDEBUG
@@ -232,7 +232,7 @@ int rp_secure_win32_secoptions_init(int bHighSec)
 	// just in case the linker doesn't support it.
 
 	// SetProcessDEPPolicy() was added starting with Windows XP SP3.
-	pfnSetProcessDEPPolicy = (PFNSETPROCESSDEPPOLICY)
+	pfnSetProcessDEPPolicy = (pfnSetProcessDEPPolicy_t)
 		GetProcAddress(hKernel32, "SetProcessDEPPolicy");
 	if (pfnSetProcessDEPPolicy) {
 		pfnSetProcessDEPPolicy(PROCESS_DEP_ENABLE | PROCESS_DEP_DISABLE_ATL_THUNK_EMULATION);
@@ -241,17 +241,17 @@ int rp_secure_win32_secoptions_init(int bHighSec)
 		// On Windows XP SP2, we can use NtSetInformationProcess.
 		// Reference: http://www.uninformed.org/?v=2&a=4
 		// FIXME: Do SetDllDirectory() first if available?
-		HMODULE hNtdll = LoadLibraryEx(_T("ntdll.dll"), NULL, LOAD_LIBRARY_SEARCH_SYSTEM32);
-		if (hNtdll) {
-			PFNNTSETINFORMATIONPROCESS pfnNtSetInformationProcess =
-				(PFNNTSETINFORMATIONPROCESS)GetProcAddress(hNtdll, "NtSetInformationProcess");
+		HMODULE hNtDll = GetModuleHandle(_T("ntdll.dll"));
+		assert(hNtDll != nullptr);
+		if (hNtDll) {
+			pfnNTSetInformationProcess_t pfnNtSetInformationProcess =
+				(pfnNTSetInformationProcess_t)GetProcAddress(hNtDll, "NtSetInformationProcess");
 			if (pfnNtSetInformationProcess) {
 				ULONG dep = MEM_EXECUTE_OPTION_DISABLE |
 				            MEM_EXECUTE_OPTION_PERMANENT;
 				pfnNtSetInformationProcess(GetCurrentProcess(),
 					ProcessExecuteFlags, &dep, sizeof(dep));
 			}
-			FreeLibrary(hNtdll);
 		}
 	}
 #endif /* !_WIN64 */
@@ -278,7 +278,7 @@ int rp_secure_win32_secoptions_init(int bHighSec)
 
 	// Check for SetProcessMitigationPolicy().
 	// If available, it supercedes many of these.
-	pfnSetProcessMitigationPolicy = (PFNSETPROCESSMITIGATIONPOLICY)GetProcAddress(hKernel32, "SetProcessMitigationPolicy");
+	pfnSetProcessMitigationPolicy = (pfnSetProcessMitigationPolicy_t)GetProcAddress(hKernel32, "SetProcessMitigationPolicy");
 	if (!pfnSetProcessMitigationPolicy) {
 		// SetProcessMitigationPolicy not found...
 		return -ENOENT;

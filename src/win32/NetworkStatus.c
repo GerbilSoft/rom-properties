@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * NetworkStatus.c: Get network status.                                    *
  *                                                                         *
- * Copyright (c) 2022-2023 by David Korth.                                 *
+ * Copyright (c) 2022-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -36,7 +36,7 @@ typedef struct _NL_NETWORK_CONNECTIVITY_HINT {
 
 // FIXME: Can't use NTSTATUS here, so use LONG instead.
 #define NTSTATUS LONG
-typedef NTSTATUS (WINAPI *PFNGETNETWORKCONNECTIVITYHINT)(_Out_ NL_NETWORK_CONNECTIVITY_HINT *ConnectivityHint);
+typedef NTSTATUS (WINAPI *pfnGetNetworkConnectivityHint_t)(_Out_ NL_NETWORK_CONNECTIVITY_HINT *ConnectivityHint);
 
 /**
  * Can we identify if this system has a metered network connection?
@@ -52,8 +52,8 @@ bool rp_win32_can_identify_if_metered(void)
 		return false;
 	}
 
-	PFNGETNETWORKCONNECTIVITYHINT pfnGetNetworkConnectivityHint =
-		(PFNGETNETWORKCONNECTIVITYHINT)GetProcAddress(hIPhlpapiDll, "GetNetworkConnectivityHint");
+	pfnGetNetworkConnectivityHint_t pfnGetNetworkConnectivityHint =
+		(pfnGetNetworkConnectivityHint_t)GetProcAddress(hIPhlpapiDll, "GetNetworkConnectivityHint");
 	FreeLibrary(hIPhlpapiDll);
 
 	return (pfnGetNetworkConnectivityHint != NULL);
@@ -77,8 +77,8 @@ bool rp_win32_is_metered(void)
 		return bRet;
 	}
 
-	PFNGETNETWORKCONNECTIVITYHINT pfnGetNetworkConnectivityHint =
-		(PFNGETNETWORKCONNECTIVITYHINT)GetProcAddress(hIPhlpapiDll, "GetNetworkConnectivityHint");
+	pfnGetNetworkConnectivityHint_t pfnGetNetworkConnectivityHint =
+		(pfnGetNetworkConnectivityHint_t)GetProcAddress(hIPhlpapiDll, "GetNetworkConnectivityHint");
 	if (!pfnGetNetworkConnectivityHint) {
 		FreeLibrary(hIPhlpapiDll);
 		return bRet;

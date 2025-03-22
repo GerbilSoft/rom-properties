@@ -3,7 +3,7 @@
  * RP_ShellIconOverlayIdentifier_p.hpp: IShellIconOverlayIdentifier        *
  * (PRIVATE CLASS)                                                         *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -32,7 +32,7 @@ private:
 
 public:
 	// SHGetStockIconInfo() for the UAC shield icon.
-	typedef HRESULT (STDAPICALLTYPE *PFNSHGETSTOCKICONINFO)(_In_ SHSTOCKICONID siid, _In_ UINT uFlags, _Out_ SHSTOCKICONINFO *psii);
+	typedef HRESULT (STDAPICALLTYPE *pfnSHGetStockIconInfo_t)(_In_ SHSTOCKICONID siid, _In_ UINT uFlags, _Out_ SHSTOCKICONINFO *psii);
 	HMODULE hShell32_dll;
-	PFNSHGETSTOCKICONINFO pfnSHGetStockIconInfo;
+	pfnSHGetStockIconInfo_t pfnSHGetStockIconInfo;
 };

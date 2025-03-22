@@ -182,12 +182,19 @@ public:
 class StringField {
 	size_t width;
 	const RomFields::Field &romField;
+	bool useAnsiColor;
 public:
-	StringField(size_t width, const RomFields::Field &romField)
-		: width(width), romField(romField) { }
+	StringField(size_t width, const RomFields::Field &romField, bool useAnsiColor)
+		: width(width), romField(romField), useAnsiColor(useAnsiColor) { }
 	friend ostream& operator<<(ostream& os, const StringField& field) {
 		// NOTE: nullptr string is an empty string, not an error.
 		const auto &romField = field.romField;
+
+		if ((field.romField.flags & RomFields::STRF_WARNING) && field.useAnsiColor) {
+			// Field should be printed as bold red.
+			os << "\033[31;1m";
+		}
+
 		os << ColonPad(field.width, romField.name);
 		if (romField.data.str) {
 			os << SafeString(romField.data.str, true, field.width);
@@ -195,6 +202,12 @@ public:
 			// Empty string.
 			os << "''";
 		}
+
+		if ((field.romField.flags & RomFields::STRF_WARNING) && field.useAnsiColor) {
+			// Reset the formatting.
+			os << "\033[0m";
+		}
+
 		return os;
 	}
 };
@@ -839,6 +852,8 @@ public:
 	explicit FieldsOutput(const RomFields& fields, uint32_t lc = 0, unsigned int flags = 0)
 		: fields(fields), lc(lc), flags(flags) { }
 	friend std::ostream& operator<<(std::ostream& os, const FieldsOutput& fo) {
+		const bool useAnsiColor = !!(fo.flags & OF_Text_UseAnsiColor);
+
 		// FIXME: Use std::max_element() [but that requires more strlen() calls...]
 		size_t maxWidth = 0;
 		std::for_each(fo.fields.cbegin(), fo.fields.cend(),
@@ -890,7 +905,7 @@ public:
 					assert(!"Field type is RFT_INVALID");
 					break;
 				case RomFields::RFT_STRING:
-					os << StringField(maxWidth, romField);
+					os << StringField(maxWidth, romField, useAnsiColor);
 					break;
 				case RomFields::RFT_BITFIELD:
 					os << BitfieldField(maxWidth, romField);

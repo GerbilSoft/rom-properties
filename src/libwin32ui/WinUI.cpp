@@ -215,10 +215,11 @@ bool isComCtl32_v610(void)
 	if (!hComCtl32)
 		return false;
 
-	typedef HRESULT (CALLBACK *PFNDLLGETVERSION)(DLLVERSIONINFO *pdvi);
-	PFNDLLGETVERSION pfnDllGetVersion = (PFNDLLGETVERSION)GetProcAddress(hComCtl32, "DllGetVersion");
-	if (!pfnDllGetVersion)
+	typedef HRESULT (CALLBACK *pfnDllGetVersion_t)(DLLVERSIONINFO *pdvi);
+	pfnDllGetVersion_t pfnDllGetVersion = (pfnDllGetVersion_t)GetProcAddress(hComCtl32, "DllGetVersion");
+	if (!pfnDllGetVersion) {
 		return false;
+	}
 
 	bool ret = false;
 	DLLVERSIONINFO dvi;
@@ -488,34 +489,38 @@ static inline HRESULT getFileName_int_IFileDialog(tstring &ts_ret, HWND hWnd,
 	hr = pFileDlg->SetFileTypes(static_cast<int>(v_cdfs.size()), v_cdfs.data());
 	v_cdfs.clear();
 	free(tmpfilter);	// v_cdfs points within tmpfilter, so free tmpfilter after
-	if (FAILED(hr))
+	if (FAILED(hr)) {
 		return hr;
+	}
 
 	// Check if the original filename is a directory or a file.
 	if (origFilename && origFilename[0] != _T('\0')) {
 		// NOTE: SHCreateItemFromParsingName() was added in Vista, so we
 		// need to use GetProcAddress().
-		typedef HRESULT(STDAPICALLTYPE* PFNSHCREATEITEMFROMPARSINGNAME)(
+		typedef HRESULT(STDAPICALLTYPE* pfnSHCreateItemFromParsingName_t)(
 			PCWSTR pszPath, IBindCtx* pbc, REFIID riid, void** ppv);
 		HMODULE hShell32 = GetModuleHandle(_T("shell32.dll"));
 		assert(hShell32 != nullptr);
-		if (!hShell32)
+		if (!hShell32) {
 			return E_FAIL;
+		}
 
-		PFNSHCREATEITEMFROMPARSINGNAME pfnSHCreateItemFromParsingName =
-			reinterpret_cast<PFNSHCREATEITEMFROMPARSINGNAME>(
+		pfnSHCreateItemFromParsingName_t pfnSHCreateItemFromParsingName =
+			reinterpret_cast<pfnSHCreateItemFromParsingName_t>(
 				GetProcAddress(hShell32, "SHCreateItemFromParsingName"));
 		assert(pfnSHCreateItemFromParsingName != nullptr);
-		if (!pfnSHCreateItemFromParsingName)
+		if (!pfnSHCreateItemFromParsingName) {
 			return E_FAIL;
+		}
 
 		const DWORD dwAttrs = GetFileAttributes(origFilename);
 		IShellItemPtr pFolder;
 		if (dwAttrs != INVALID_FILE_ATTRIBUTES && (dwAttrs & FILE_ATTRIBUTE_DIRECTORY)) {
 			// It's a directory.
 			hr = pfnSHCreateItemFromParsingName(origFilename, nullptr, IID_PPV_ARGS(&pFolder));
-			if (FAILED(hr))
+			if (FAILED(hr)) {
 				return hr;
+			}
 		} else {
 			// It's a filename, or invalid. Get the directory portion,
 			// for IFileDialog::SetFolder(), then set the
@@ -524,37 +529,43 @@ static inline HRESULT getFileName_int_IFileDialog(tstring &ts_ret, HWND hWnd,
 			if (!bs) {
 				// No backslash. Use the whole filename.
 				hr = pFileDlg->SetFileName(origFilename);
-				if (FAILED(hr))
+				if (FAILED(hr)) {
 					return hr;
+				}
 			} else {
 				// Set the filename.
 				hr = pFileDlg->SetFileName(bs + 1);
-				if (FAILED(hr))
+				if (FAILED(hr)) {
 					return hr;
+				}
 
 				// Get the folder portion.
 				tstring ts_folder(origFilename, bs - origFilename);
 				hr = pfnSHCreateItemFromParsingName(ts_folder.c_str(),
 					nullptr, IID_PPV_ARGS(&pFolder));
-				if (FAILED(hr))
+				if (FAILED(hr)) {
 					return hr;
+				}
 			}
 
 			// Set the directory.
 			hr = pFileDlg->SetFolder(pFolder);
-			if (FAILED(hr))
+			if (FAILED(hr)) {
 				return hr;
+			}
 		}
 	}
 
 	hr = pFileDlg->SetTitle(dlgTitle);
-	if (FAILED(hr))
+	if (FAILED(hr)) {
 		return hr;
+	}
 	hr = pFileDlg->SetOptions(bSave
 		? FOS_DONTADDTORECENT | FOS_OVERWRITEPROMPT
 		: FOS_DONTADDTORECENT | FOS_FILEMUSTEXIST);
-	if (FAILED(hr))
+	if (FAILED(hr)) {
 		return hr;
+	}
 	hr = pFileDlg->Show(hWnd);
 	if (FAILED(hr)) {
 		// User cancelled the dialog box.

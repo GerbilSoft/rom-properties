@@ -53,8 +53,8 @@ public:
 		}
 
 		// Register for WTS session notifications.
-		PFNWTSREGISTERSESSIONNOTIFICATION pfnWTSRegisterSessionNotification =
-			(PFNWTSREGISTERSESSIONNOTIFICATION)GetProcAddress(m_hWtsApi32_dll, "WTSRegisterSessionNotification");
+		pfnWTSRegisterSessionNotification_t pfnWTSRegisterSessionNotification =
+			(pfnWTSRegisterSessionNotification_t)GetProcAddress(m_hWtsApi32_dll, "WTSRegisterSessionNotification");
 		if (pfnWTSRegisterSessionNotification) {
 			return pfnWTSRegisterSessionNotification(hWnd, dwFlags);
 		}
@@ -76,8 +76,8 @@ public:
 		}
 
 		// Unregister for WTS session notifications.
-		PFNWTSUNREGISTERSESSIONNOTIFICATION pfnWTSUnRegisterSessionNotification =
-			(PFNWTSUNREGISTERSESSIONNOTIFICATION)GetProcAddress(m_hWtsApi32_dll, "WTSUnRegisterSessionNotification");
+		pfnWTSUnregisterSessionNotification_t pfnWTSUnRegisterSessionNotification =
+			(pfnWTSUnregisterSessionNotification_t)GetProcAddress(m_hWtsApi32_dll, "WTSUnRegisterSessionNotification");
 		if (pfnWTSUnRegisterSessionNotification) {
 			return pfnWTSUnRegisterSessionNotification(hWnd);
 		}
@@ -95,8 +95,8 @@ public:
 private:
 	// TODO: Make it static and use reference counting?
 	HMODULE m_hWtsApi32_dll;
-	typedef BOOL (WINAPI *PFNWTSREGISTERSESSIONNOTIFICATION)(HWND hWnd, DWORD dwFlags);
-	typedef BOOL (WINAPI *PFNWTSUNREGISTERSESSIONNOTIFICATION)(HWND hWnd);
+	typedef BOOL (WINAPI *pfnWTSRegisterSessionNotification_t)(HWND hWnd, DWORD dwFlags);
+	typedef BOOL (WINAPI *pfnWTSUnregisterSessionNotification_t)(HWND hWnd);
 };
 
 }

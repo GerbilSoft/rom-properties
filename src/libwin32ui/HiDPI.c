@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libwin32ui)                       *
  * HiDPI.c: High DPI wrapper functions.                                    *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -40,10 +40,10 @@ typedef enum MONITOR_DPI_TYPE {
 /** DPI functions. **/
 
 // Windows 10 v1607
-typedef UINT (WINAPI *PFN_GetDpiForWindow)(_In_ HWND hWnd);
+typedef UINT (WINAPI *pfnGetDpiForWindow_t)(_In_ HWND hWnd);
 
 // Windows 8.1
-typedef HRESULT (WINAPI *PFN_GetDpiForMonitor)(
+typedef HRESULT (WINAPI *pfnGetDpiForMonitor_t)(
 	_In_ HMONITOR hmonitor,
 	_In_ MONITOR_DPI_TYPE dpiType,
 	_Out_ UINT *dpiX,
@@ -54,8 +54,8 @@ static pthread_once_t hidpi_once_control = PTHREAD_ONCE_INIT;
 
 // Function pointers.
 static union {
-	PFN_GetDpiForWindow pfnGetDpiForWindow;
-	PFN_GetDpiForMonitor pfnGetDpiForMonitor;
+	pfnGetDpiForWindow_t pfnGetDpiForWindow;
+	pfnGetDpiForMonitor_t pfnGetDpiForMonitor;
 } pfns;
 
 // shcore.dll (Windows 8.1)
@@ -79,7 +79,7 @@ static void rp_init_DPIQueryType(void)
 	// Try GetDpiForWindow(). (Windows 10 v1607)
 	HMODULE hUser32_dll = GetModuleHandle(_T("user32.dll"));
 	if (hUser32_dll) {
-		pfns.pfnGetDpiForWindow = (PFN_GetDpiForWindow)GetProcAddress(hUser32_dll, "GetDpiForWindow");
+		pfns.pfnGetDpiForWindow = (pfnGetDpiForWindow_t)GetProcAddress(hUser32_dll, "GetDpiForWindow");
 		if (pfns.pfnGetDpiForWindow) {
 			// Found GetDpiForWindow().
 			dpiQueryType = DPIQT_GetDpiForWindow;
@@ -90,7 +90,7 @@ static void rp_init_DPIQueryType(void)
 	// Try GetDpiForMonitor(). (Windows 8.1)
 	hShcore_dll = LoadLibraryEx(_T("shcore.dll"), NULL, LOAD_LIBRARY_SEARCH_SYSTEM32);
 	if (hShcore_dll) {
-		pfns.pfnGetDpiForMonitor = (PFN_GetDpiForMonitor)GetProcAddress(hShcore_dll, "GetDpiForMonitor");
+		pfns.pfnGetDpiForMonitor = (pfnGetDpiForMonitor_t)GetProcAddress(hShcore_dll, "GetDpiForMonitor");
 		if (pfns.pfnGetDpiForMonitor) {
 			// Found GetDpiForMonitor().
 			dpiQueryType = DPIQT_GetDpiForMonitor;

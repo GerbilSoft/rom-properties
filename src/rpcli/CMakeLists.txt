@@ -6,10 +6,12 @@ SET(${PROJECT_NAME}_SRCS
 	rpcli.cpp
 	device.cpp
 	rpcli_secure.c
+	vt.cpp
 	)
 SET(${PROJECT_NAME}_H
 	device.hpp
 	rpcli_secure.h
+	vt.hpp
 	)
 
 # Check for system security functionality.

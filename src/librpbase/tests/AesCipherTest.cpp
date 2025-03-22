@@ -31,12 +31,12 @@ using std::vector;
 
 namespace LibRpBase { namespace Tests {
 
-typedef IAesCipher* (*PFNCREATEIAESCIPHER)(void);
+typedef IAesCipher* (*pfnCreateIAesCipher_t)(void);
 
 struct AesCipherTest_mode
 {
 	// Cipher class.
-	PFNCREATEIAESCIPHER pfnCreateIAesCipher;
+	pfnCreateIAesCipher_t pfnCreateIAesCipher;
 	bool isRequired;	// True if this test is required to pass.
 
 	// Cipher settings.
@@ -48,7 +48,7 @@ struct AesCipherTest_mode
 	size_t cipherText_len;		// Cipher text length, in bytes.
 
 	AesCipherTest_mode(
-		PFNCREATEIAESCIPHER pfnCreateIAesCipher,
+		pfnCreateIAesCipher_t pfnCreateIAesCipher,
 		bool isRequired,
 		IAesCipher::ChainingMode chainingMode,
 		size_t key_len,
@@ -224,7 +224,7 @@ void AesCipherTest::SetUp(void)
 	m_cipher = mode.pfnCreateIAesCipher();
 	ASSERT_TRUE(m_cipher != nullptr);
 
-	static PFNCREATEIAESCIPHER pfnLastCreateIAesCipher = nullptr;
+	static pfnCreateIAesCipher_t pfnLastCreateIAesCipher = nullptr;
 	if (pfnLastCreateIAesCipher != mode.pfnCreateIAesCipher) {
 		// Print the AesCipher implementation name.
 		const char *name = m_cipher->name();
