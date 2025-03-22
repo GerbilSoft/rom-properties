@@ -144,7 +144,7 @@ int InitDarkModePFNs(void)
 	}
 
 	auto RtlGetNtVersionNumbers = reinterpret_cast<fnRtlGetNtVersionNumbers>(
-		GetProcAddress(hNtDll), "RtlGetNtVersionNumbers");
+		GetProcAddress(hNtDll, "RtlGetNtVersionNumbers"));
 	if (!RtlGetNtVersionNumbers) {
 		return 2;
 	}
