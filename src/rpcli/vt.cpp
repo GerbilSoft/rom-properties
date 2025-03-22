@@ -10,6 +10,7 @@
 #include "vt.hpp"
 
 // C++ STL classes
+using std::array;
 using std::ostream;
 using std::string;
 
@@ -96,6 +97,11 @@ void init_vt(void)
  */
 void cout_win32_ansi_color(ostream &os, const char *str)
 {
+	// Map ANSI colors (red=1) to Windows colors (blue=1).
+	static constexpr array<uint8_t, 8> color_map = {
+		0, 4, 2, 6, 1, 5, 3, 7
+	};
+
 	HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
 	assert(hStdOut != nullptr);
 	if (!hStdOut) {
@@ -186,14 +192,12 @@ seq_loop:
 			wAttributes |= FOREGROUND_INTENSITY;
 		} else if (num >= 30 && num <= 37) {
 			// Foreground color
-			// NOTE: Red/blue are swapped in ANSI compared to Windows!
 			wAttributes &= ~0x0007;
-			wAttributes |= (num - 30);
+			wAttributes |= color_map[num - 30];
 		} else if (num >= 40 && num <= 37) {
 			// Background color
-			// NOTE: Red/blue are swapped in ANSI compared to Windows!
 			wAttributes &= ~0x0070;
-			wAttributes |= ((num - 40) << 4);
+			wAttributes |= (color_map[num - 40] << 4);
 		} else {
 			// Not a valid escape sequence.
 			continue;
