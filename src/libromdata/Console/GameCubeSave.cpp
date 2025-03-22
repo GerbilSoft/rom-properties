@@ -897,9 +897,9 @@ vector<RomData::ImageSizeDef> GameCubeSave::supportedImageSizes_static(ImageType
 
 	switch (imageType) {
 		case IMG_INT_ICON:
-			return {{nullptr, 32, 32, 0}};
+			return {{nullptr, CARD_ICON_W, CARD_ICON_H, 0}};
 		case IMG_INT_BANNER:
-			return {{nullptr, 96, 32, 0}};
+			return {{nullptr, CARD_BANNER_W, CARD_BANNER_H, 0}};
 		default:
 			break;
 	}
