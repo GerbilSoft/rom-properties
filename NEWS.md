@@ -8,6 +8,8 @@
     will be ignored. Android packages (.apk) are also not currently
     supported.
   * Qoi: Quite OK Image Format parser. Uses qoi.h from upstream.
+  * rpcli: Text output for "warning" messages is now colorized if
+    printing to a terminal.
 
 * New parser features:
   * WiiUPackage: Add support for extracted Wii U packages.
