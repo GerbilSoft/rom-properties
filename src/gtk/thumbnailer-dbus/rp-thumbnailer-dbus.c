@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (D-Bus Thumbnailer)                *
  * rp-thumbnailer-dbus.c: D-Bus thumbnailer service.                       *
  *                                                                         *
- * Copyright (c) 2017-2024 by David Korth.                                 *
+ * Copyright (c) 2017-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -394,8 +394,11 @@ rp_thumbnailer_queue(SpecializedThumbnailer1 *skeleton,
 	req->handle = handle;
 	req->large = flavor && (g_ascii_strcasecmp(flavor, "large") == 0);
 	req->urgent = urgent;
-	// TODO Put 'urgent' requests at the front of the queue?
-	g_queue_push_tail(&thumbnailer->request_queue, req);
+	if (unlikely(urgent)) {
+		g_queue_push_head(&thumbnailer->request_queue, req);
+	} else {
+		g_queue_push_tail(&thumbnailer->request_queue, req);
+	}
 
 	// Make sure the idle process is started.
 	// TODO: Make it multi-threaded? (needs atomic compare and/or mutex...)
