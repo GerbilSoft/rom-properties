@@ -624,6 +624,14 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 	bool json = false;
 	vector<ExtractParam> extract;
 
+	// TODO: Add a command line option to override color output.
+	// NOTE: isatty() appears to work correctly when compiled with
+	// MSVC 2022 and run on WinXP, Win7, and Win10 1809.
+	// TODO: Test with other compilers.
+	if (isatty(fileno(stdout))) {
+		flags |= OF_Text_UseAnsiColor;
+	}
+
 	for (int i = 1; i < argc; i++) { // figure out the json mode in advance
 		if (argv[i][0] == _T('-')) {
 			if (argv[i][1] == _T('j')) {
