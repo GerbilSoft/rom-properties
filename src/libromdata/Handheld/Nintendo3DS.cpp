@@ -2280,7 +2280,8 @@ int Nintendo3DS::loadFieldData(void)
 				pgettext_expr("Nintendo3DS|ApplType", appl_type_tbl[appl_type]));
 		} else {
 			d->fields.addField_string(type_title,
-				fmt::format(FRUN(C_("Nintendo3DS", "Invalid (0x{:0>2X})")), appl_type));
+				fmt::format(FRUN(C_("Nintendo3DS", "INVALID (0x{:0>2X})")), appl_type),
+					RomFields::STRF_WARNING);
 		}
 
 		// Flags.
@@ -2322,7 +2323,8 @@ int Nintendo3DS::loadFieldData(void)
 				fmt::format(FRUN(C_("Nintendo3DS", "{0:s} ({1:d} MiB)")), ptbl.name, ptbl.mb));
 		} else {
 			d->fields.addField_string(old3ds_sys_mode_title,
-				fmt::format(FRUN(C_("Nintendo3DS", "Invalid (0x{:0>2X})")), old3ds_sys_mode));
+				fmt::format(FRUN(C_("Nintendo3DS", "INVALID (0x{:0>2X})")), old3ds_sys_mode),
+					RomFields::STRF_WARNING);
 		}
 
 		// New3DS System Mode
@@ -2343,7 +2345,8 @@ int Nintendo3DS::loadFieldData(void)
 				fmt::format(FRUN(C_("Nintendo3DS", "{0:s} ({1:d} MiB)")), ptbl.name, ptbl.mb));
 		} else {
 			d->fields.addField_string(new3ds_sys_mode_title,
-				fmt::format(FRUN(C_("Nintendo3DS", "Invalid (0x{:0>2X})")), new3ds_sys_mode));
+				fmt::format(FRUN(C_("Nintendo3DS", "INVALID (0x{:0>2X})")), new3ds_sys_mode),
+					RomFields::STRF_WARNING);
 		}
 
 		// New3DS CPU Mode

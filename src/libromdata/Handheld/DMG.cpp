@@ -747,7 +747,8 @@ void DMGPrivate::addFields_romHeader(const DMG_RomHeader *pRomHeader)
 		default:
 			// Invalid value.
 			fields.addField_string(region_code_title,
-				fmt::format(FRUN(C_("DMG", "0x{:0>2X} (INVALID)")), pRomHeader->region));
+				fmt::format(FRUN(C_("DMG", "0x{:0>2X} (INVALID)")), pRomHeader->region),
+					RomFields::STRF_WARNING);
 			break;
 	}
 
@@ -769,7 +770,8 @@ void DMGPrivate::addFields_romHeader(const DMG_RomHeader *pRomHeader)
 	if (checksum - pRomHeader->header_checksum != 0) {
 		fields.addField_string(checksum_title,
 			fmt::format(FRUN(C_("DMG", "0x{0:0>2X} (INVALID; should be 0x{1:0>2X})")),
-				pRomHeader->header_checksum, checksum));
+				pRomHeader->header_checksum, checksum),
+				RomFields::STRF_WARNING);
 	} else {
 		fields.addField_string(checksum_title,
 			fmt::format(FRUN(C_("DMG", "0x{:0>2X} (valid)")), checksum));
