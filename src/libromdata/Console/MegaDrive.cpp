@@ -186,8 +186,8 @@ public:
 	// ROM header
 	// NOTE: Must be byteswapped on access.
 	union {
-		M68K_VectorTable vectors;	// Interrupt vectors.
-		uint8_t mcd_hdr[256];		// TODO: MCD-specific header struct.
+		M68K_VectorTable vectors;	// Interrupt vectors
+		MCD_SystemID mcd_systemID;	// Mega CD: System ID area
 	};
 	MD_RomHeader romHeader;		// ROM header.
 	uint32_t gt_crc;		// Game Toshokan: CRC32 of $20000-$200FF.
@@ -824,10 +824,10 @@ MegaDrive::MegaDrive(const IRpFilePtr &file)
 			case MegaDrivePrivate::ROM_FORMAT_DISC_2048:
 				d->fileType = FileType::DiscImage;
 
-				// MCD-specific header is at 0.
+				// MCD System ID area is at 0.
 				// MD-style header is at 0x100.
 				// No vector table is present on the disc.
-				memcpy(&d->mcd_hdr, header, sizeof(d->mcd_hdr));
+				memcpy(&d->mcd_systemID, header, sizeof(d->mcd_systemID));
 				memcpy(&d->romHeader, &header[0x100], sizeof(d->romHeader));
 
 				// Calculate the security program CRC32.
@@ -855,10 +855,10 @@ MegaDrive::MegaDrive(const IRpFilePtr &file)
 				}
 				d->fileType = FileType::DiscImage;
 
-				// MCD-specific header is at 0x10.
+				// MCD System ID area is at 0x10.
 				// MD-style header is at 0x110.
 				// No vector table is present on the disc.
-				memcpy(&d->mcd_hdr, &header[0x10], sizeof(d->mcd_hdr));
+				memcpy(&d->mcd_systemID, &header[0x10], sizeof(d->mcd_systemID));
 				memcpy(&d->romHeader, &header[0x110], sizeof(d->romHeader));
 
 				// Calculate the security program CRC32.
@@ -1803,12 +1803,12 @@ int MegaDrive::extURLs(ImageType imageType, vector<ExtURL> &extURLs, int size) c
 			{
 				// Slam City with Scottie Pippen (MCD, MCD32X)
 				// Different discs have a different number in the
-				// MCD-specific header, but the serial number is
-				// identical on all MCD discs, and all MCD32X discs.
-				if (ISDIGIT(d->mcd_hdr[0x1A])) {
+				// MCD System ID, but the serial number is identical
+				// on all MCD discs, and all MCD32X discs.
+				if (ISDIGIT(d->mcd_systemID.volume_name[10])) {
 					// Append the disc number.
 					gameID += ".disc";
-					gameID += static_cast<char>(d->mcd_hdr[0x1A]);
+					gameID += d->mcd_systemID.volume_name[10];
 				}
 			} else {
 				switch (d->md_region) {
@@ -1828,8 +1828,8 @@ int MegaDrive::extURLs(ImageType imageType, vector<ExtURL> &extURLs, int size) c
 							// Sensible Soccer (EUR) - a demo version with a slightly
 							// different title screen has the same serial number.
 							// It can be identified by an earlier build date in the
-							// MCD-specific header.
-							if (d->mcd_hdr[0x51] == '5') {
+							// MCD System ID area.
+							if (d->mcd_systemID.build_date[1] == '5') {
 								gameID += ".demo";
 							}
 						}
@@ -1839,9 +1839,9 @@ int MegaDrive::extURLs(ImageType imageType, vector<ExtURL> &extURLs, int size) c
 						if (!memcmp(s_serial_number, "GM G-6041     ", 14)) {
 							// Ecco two-disc set (JPN) - both discs have the same
 							// serial number, but Ecco II has a '2' in the
-							// MCD-specific header.
+							// MCD System ID area.
 							gameID += ".disc";
-							gameID += (d->mcd_hdr[0x14] == '2' ? '2' : '1');
+							gameID += (d->mcd_systemID.volume_name[4] == '2' ? '2' : '1');
 						} else if (!memcmp(s_serial_number, "GM T-32024 -01", 14)) {
 							// Sega MultiMedia Studio Demo has the same
 							// serial number as Sol-Feace (JPN).

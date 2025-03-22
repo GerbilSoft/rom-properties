@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * md_structs.h: Sega Mega Drive data structures.                          *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -157,6 +157,46 @@ typedef enum {
 	MD_IO_ACTIVATOR		= 'L',
 	MD_IO_MEGA_MOUSE	= 'M',
 } MD_IO_Support;
+
+/**
+ * Sega Mega CD: System ID area
+ * Located at 0x0000 in the first sector.
+ * (This is where the M68K vector table would be in Mega Drive ROMs.)
+ *
+ * Reference: https://forums.sonicretro.org/index.php?threads/how-do-mega-cd-games-start-up.30588/#post-727202
+ *
+ * All fields are in big-endian.
+ * String fields are space-padded.
+ */
+#define MCD_SYSTEMID_SIGNATURE "SEGADISCSYSTEM  "
+typedef struct _MCD_SystemID {
+	char sega_disc_system[16];	// [0x000] "SEGADISCSYSTEM  "
+	char volume_name[11];		// [0x010] Volume name
+	char zero0;			// [0x01B] 0
+	uint16_t volume_system;		// [0x01C] Volume system
+	uint16_t volume_type;		// [0x01E] Volume type (usually 0x0001?)
+	char system_name[11];		// [0x020] System name
+	char zero1;			// [0x02B] 0
+	uint16_t system_version;	// [0x02C] System version (usually 0x0001?)
+	uint16_t zero2;			// [0x02E] 0
+
+	uint32_t ip_address;		// [0x030] Main68K Initial Program CD offset
+	uint32_t ip_size;		// [0x034] Main68K Initial Program CD size
+	uint32_t ip_entry;		// [0x038] Main68K Initial Program CD entry offset
+	uint32_t ip_wram_size;		// [0x03C] Main68K Initial Program Work RAM size
+
+	uint32_t sp_address;		// [0x040] Sub68K Initial Program CD offset
+	uint32_t sp_size;		// [0x044] Sub68K Initial Program CD size
+	uint32_t sp_entry;		// [0x048] Sub68K Initial Program CD entry offset
+	uint32_t sp_wram_size;		// [0x04C] Sub68K Initial Program Work RAM size
+
+	// The remainder of the System ID is "reserved", but there's usually
+	// a build date at the start, in "MMDDYYYY" format.
+	char build_date[8];		// [0x050] Build date, in "MMDDYYYY" format.
+
+	uint8_t reserved[168];
+} MCD_SystemID;
+ASSERT_STRUCT(MCD_SystemID, 256);
 
 /**
  * Sega 32X security program user header.
