@@ -242,7 +242,7 @@ int rp_secure_win32_secoptions_init(int bHighSec)
 		// Reference: http://www.uninformed.org/?v=2&a=4
 		// FIXME: Do SetDllDirectory() first if available?
 		HMODULE hNtDll = GetModuleHandle(_T("ntdll.dll"));
-		assert(hNtDll != nullptr);
+		assert(hNtDll != NULL);
 		if (hNtDll) {
 			pfnNTSetInformationProcess_t pfnNtSetInformationProcess =
 				(pfnNTSetInformationProcess_t)GetProcAddress(hNtDll, "NtSetInformationProcess");
