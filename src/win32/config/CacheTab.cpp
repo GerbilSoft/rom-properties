@@ -210,7 +210,7 @@ void CacheTabPrivate::initDialog(void)
 	if (hShell32_dll) {
 		// Get SHGetImageList() by ordinal.
 		pfnSHGetImageList_t pfnSHGetImageList = reinterpret_cast<pfnSHGetImageList_t>(
-			GetProcAddress(hShell32_dll, MAKEINTRESOURCEA(727));
+			GetProcAddress(hShell32_dll, MAKEINTRESOURCEA(727)));
 		if (pfnSHGetImageList) {
 			// Initialize the ListView image list.
 			// NOTE: HIMAGELIST and IImageList are compatible.
