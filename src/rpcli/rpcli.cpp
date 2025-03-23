@@ -70,6 +70,7 @@ using namespace LibRpTexture;
 
 // C++ STL classes
 #include <sstream>
+using std::array;
 using std::cout;
 using std::cerr;
 using std::locale;
@@ -508,9 +509,11 @@ static void ShowUsage(void)
 	};
 
 	// Normal commands
-	static constexpr cmd_t cmds[] = {
 #ifdef ENABLE_DECRYPTION
+	static const array<cmd_t, 9> cmds = {{
 		{"  -k:  ", NOP_C_("rpcli", "Verify encryption keys in keys.conf.")},
+#else /* !ENABLE_DECRYPTION */
+	static const array<cmd_t, 8> cmds = {{
 #endif /* ENABLE_DECRYPTION */
 		{"  -c:  ", NOP_C_("rpcli", "Print system region information.")},
 		{"  -p:  ", NOP_C_("rpcli", "Print system path information.")},
@@ -520,7 +523,7 @@ static void ShowUsage(void)
 		{"  -xN: ", NOP_C_("rpcli", "Extract image N to outfile in PNG format.")},
 		{"  -mN: ", NOP_C_("rpcli", "Extract mipmap level N to outfile in PNG format.")},
 		{"  -a:  ", NOP_C_("rpcli", "Extract the animated icon to outfile in APNG format.")},
-	};
+	}};
 
 	for (const auto &p : cmds) {
 		fputs(p.opt, stderr);
@@ -531,11 +534,11 @@ static void ShowUsage(void)
 
 #ifdef RP_OS_SCSI_SUPPORTED
 	// Commands for devices
-	static constexpr cmd_t cmds_dev[] = {
+	static const array<cmd_t, 3> cmds_dev = {{
 		{"  -is: ", NOP_C_("rpcli", "Run a SCSI INQUIRY command.")},
 		{"  -ia: ", NOP_C_("rpcli", "Run an ATA IDENTIFY DEVICE command.")},
 		{"  -ip: ", NOP_C_("rpcli", "Run an ATA IDENTIFY PACKET DEVICE command.")},
-	};
+	}};
 
 	fputs(C_("rpcli", "Special options for devices:"), stderr);
 	fputc('\n', stderr);
