@@ -1,15 +1,14 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (rpcli)                            *
- * config.rpcli.h.in: rpcli configuration. (source file)                   *
+ * rp_sixel.cpp: Sixel output for rpcli.                                   *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2025 by David Korth.                                      *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #pragma once
 
-/* Define to 1 if decryption should be enabled. */
-#cmakedefine ENABLE_DECRYPTION 1
+// librpbase
+#include "librpbase/RomData.hpp"
 
-/* Define to 1 if sixel output is eanbled. */
-#cmakedefine ENABLE_SIXEL 1
+void print_sixel_icon_banner(const LibRpBase::RomDataPtr &romData);

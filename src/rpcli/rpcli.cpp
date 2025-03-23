@@ -50,6 +50,11 @@ using namespace LibRomData;
 #endif /* _WIN32 */
 using namespace LibRpTexture;
 
+#ifdef ENABLE_SIXEL
+// Sixel
+#include "rp_sixel.hpp"
+#endif /* ENABLE_SIXEL */
+
 #ifdef ENABLE_DECRYPTION
 #  include "verifykeys.hpp"
 #endif /* ENABLE_DECRYPTION */
@@ -292,6 +297,12 @@ static void DoFile(const TCHAR *filename, bool json, const vector<ExtractParam> 
 			} else
 #endif /* _WIN32 */
 			{
+#ifdef ENABLE_SIXEL
+				// If this is a tty, print the icon/banner using libsixel.
+				if (is_stdout_console) {
+					print_sixel_icon_banner(romData);
+				}
+#endif /* ENABLE_SIXEL */
 				cout << ROMOutput(romData.get(), lc, flags) << '\n';
 			}
 		}
