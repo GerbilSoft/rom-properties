@@ -29,6 +29,9 @@ static int print_sixel_image(sixel_output_t *output, const rp_image_const_ptr &i
 	SIXELSTATUS status = SIXEL_FALSE;
 	sixel_dither_t *dither = nullptr;
 
+	const int width = image->width();
+	const int height = image->height();
+
 	switch (image->format()) {
 		default:
 			// Unsupported...
@@ -66,21 +69,25 @@ static int print_sixel_image(sixel_output_t *output, const rp_image_const_ptr &i
 			break;
 		}
 		case rp_image::Format::ARGB32:
-			// FIXME: High Color dithering isn't working...
-			dither = sixel_dither_get(SIXEL_BUILTIN_XTERM256);
-#if 0
-			status = sixel_dither_new(&dither, -1, nullptr);
+			// FIXME: High Color mode (ncolors == -1) isn't working.
+			// sixel_dither_initialize() seems to work decently enough, though.
+			// from libsixel-1.10.3's encoder.c, load_image_callback_for_palette()
+			status = sixel_dither_new(&dither, 256, nullptr);
 			if (SIXEL_FAILED(status)) {
 				// Failed to allocate a High Color dither.
 				return -EIO;
 			}
-#endif
+			status = sixel_dither_initialize(dither,
+				(uint8_t*)image->bits(), width, height,
+				SIXEL_PIXELFORMAT_BGRA8888,
+				SIXEL_LARGE_NORM, SIXEL_REP_CENTER_BOX, SIXEL_QUALITY_HIGH);
+
 			sixel_dither_set_pixelformat(dither, SIXEL_PIXELFORMAT_BGRA8888);
 			break;
 	}
 
 	// FIXME: Handle stride?
-	sixel_encode((uint8_t*)image->bits(), image->width(), image->height(), 0, dither, output);
+	sixel_encode((uint8_t*)image->bits(), width, height, 0, dither, output);
 	sixel_dither_destroy(dither);
 	return 0;
 }
