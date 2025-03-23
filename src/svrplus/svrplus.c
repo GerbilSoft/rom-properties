@@ -1084,7 +1084,7 @@ static int check_system_architectures(void)
 {
 	HMODULE hKernel32;
 
-	typedef BOOL (WINAPI *PFNISWOW64PROCESS2)(HANDLE hProcess, USHORT *pProcessMachine, USHORT *pNativeMachine);
+	typedef BOOL (WINAPI *pfnIsWow64Process2_t)(HANDLE hProcess, USHORT *pProcessMachine, USHORT *pNativeMachine);
 	typedef BOOL (WINAPI *pfnIsWow64Process_t)(HANDLE hProcess, PBOOL Wow64Process);
 	union {
 		pfnIsWow64Process2_t pfnIsWow64Process2;
