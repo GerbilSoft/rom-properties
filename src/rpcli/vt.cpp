@@ -34,6 +34,10 @@ typedef NTSTATUS (WINAPI *pfnNtQueryObject_t)(
 	_In_ ULONG ObjectInformationLength,
 	_Out_opt_ PULONG returnLength
 	);
+
+#  ifndef ENABLE_VIRTUAL_TERMINAL_PROCESSING
+#    define ENABLE_VIRTUAL_TERMINAL_PROCESSING 0x4
+#  endif /* !ENABLE_VIRTUAL_TERMINAL_PROCESSING */
 #else /* !_WIN32 */
 #  include <unistd.h>
 #endif /* _WIN32 */
