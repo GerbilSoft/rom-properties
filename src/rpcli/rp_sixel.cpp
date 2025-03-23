@@ -69,11 +69,10 @@ static int print_sixel_image(sixel_output_t *output, const rp_image_const_ptr &i
 			// FIXME: High Color dithering isn't working...
 			dither = sixel_dither_get(SIXEL_BUILTIN_XTERM256);
 #if 0
-			//status = sixel_dither_new(&dither, -1, nullptr);
+			status = sixel_dither_new(&dither, -1, nullptr);
 			if (SIXEL_FAILED(status)) {
 				// Failed to allocate a High Color dither.
-				sixel_output_destroy(output);
-				return;
+				return -EIO;
 			}
 #endif
 			sixel_dither_set_pixelformat(dither, SIXEL_PIXELFORMAT_BGRA8888);
