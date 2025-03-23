@@ -516,9 +516,12 @@ KeyManager::VerifyResult loadNCCHKeys(u128_t pKeyOut[2],
 	}
 
 	// Scramble the primary keyslot to get KeyNormal.
+	// NOTE: memcpy() is needed to work around strict-aliasing
+	// issues on Ubuntu 16.04 (gcc-5).
+	u128_t keyY_tmp;
+	memcpy(keyY_tmp.u8, pNcchHeader->signature, sizeof(keyY_tmp.u8));
 	int ret = CtrKeyScrambler::CtrScramble(pKeyOut[0],
-		*(reinterpret_cast<const u128_t*>(keyX_data[0].key)),
-		*(reinterpret_cast<const u128_t*>(pNcchHeader->signature)));
+		*(reinterpret_cast<const u128_t*>(keyX_data[0].key)), keyY_tmp);
 	// TODO: Scrambling-specific error?
 	if (ret != 0) {
 		return KeyManager::VerifyResult::KeyInvalid;
@@ -528,8 +531,7 @@ KeyManager::VerifyResult loadNCCHKeys(u128_t pKeyOut[2],
 	if (keyX_name[1]) {
 		// Scramble the secondary keyslot to get KeyNormal.
 		ret = CtrKeyScrambler::CtrScramble(pKeyOut[1],
-			*(reinterpret_cast<const u128_t*>(keyX_data[1].key)),
-			*(reinterpret_cast<const u128_t*>(pNcchHeader->signature)));
+			*(reinterpret_cast<const u128_t*>(keyX_data[1].key)), keyY_tmp);
 		// TODO: Scrambling-specific error?
 		if (ret != 0) {
 			// FIXME: Ignoring errors for secondary keys for now.
