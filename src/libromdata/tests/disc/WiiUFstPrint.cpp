@@ -57,7 +57,12 @@ int RP_C_API main(int argc, char *argv[])
 #endif /* _WIN32 */
 
 	// Set the C and C++ locales.
+#if defined(_WIN32) && defined(__MINGW32__)
+	// FIXME: MinGW-w64 12.0.0 doesn't like setting the C++ locale to "".
+	setlocale(LC_ALL, "");
+#else /* !_WIN32 || !__MINGW32__ */
 	locale::global(locale(""));
+#endif /* _WIN32 && __MINGW32__ */
 #ifdef _WIN32
 	// NOTE: Revert LC_CTYPE to "C" to fix UTF-8 output.
 	// (Needed for MSVC 2022; does nothing for MinGW-w64 11.0.0)

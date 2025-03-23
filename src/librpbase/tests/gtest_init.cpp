@@ -162,6 +162,9 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 	static TCHAR lc_messages_env[] = _T("LC_MESSAGES=") T_C_LOCALE;
 	_tputenv(lc_all_env);
 	_tputenv(lc_messages_env);
+
+	// NOTE: MinGW-w64 12.0.0 doesn't like setting the C++ locale to "".
+	// Setting it to "C" works fine, though.
 	locale::global(locale(C_LOCALE));
 
 	// Call the actual main function.
