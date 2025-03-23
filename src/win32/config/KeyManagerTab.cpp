@@ -1601,7 +1601,7 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 				// tr: {0:s} == filename, {1:s} == error message
 				msg = fmt::format(FRUN(TC_("KeyManagerTab",
 					"An error occurred while opening '{0:s}': {1:s}")),
-					fileNoPath, _wcserror(iret.error_code));
+					fileNoPath, _tcserror(iret.error_code));
 			} else {
 				// tr: {:s} == filename
 				msg = fmt::format(FRUN(TC_("KeyManagerTab",
