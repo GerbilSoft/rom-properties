@@ -697,7 +697,7 @@ string SNESPrivate::getGameID(bool doFake) const
 		char prefix[6];
 		char suffix[6];
 	};
-	static const PrefixSuffixTbl_t region_ps[] = {
+	static const array<PrefixSuffixTbl_t, 0x13> region_ps = {{
 		// 0x00
 		{"SHVC-", "-JPN"},	// Japan
 		{"SNS-",  "-USA"},	// North America
@@ -722,7 +722,7 @@ string SNESPrivate::getGameID(bool doFake) const
 		{"SNS-",  "-BRA"},	// Brazil
 		{"SNSP-", "-AUS"},	// Australia
 		{"SNSP-", "-SCN"},	// Scandinavia
-	};
+	}};
 	if (romType == RomType::BSX) {
 		// Separate BS-X titles from regular SNES titles.
 		// NOTE: This originally had a fake "BSX-" and "-JPN"
@@ -735,7 +735,7 @@ string SNESPrivate::getGameID(bool doFake) const
 			prefix = "";
 			suffix = "";
 		}
-	} else if (region < ARRAY_SIZE(region_ps)) {
+	} else if (region < region_ps.size()) {
 		prefix = region_ps[region].prefix;
 		suffix = region_ps[region].suffix;
 	} else {

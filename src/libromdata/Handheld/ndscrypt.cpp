@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * ndscrypt.cpp: Nintendo DS encryption.                                   *
  *                                                                         *
- * Copyright (c) 2020-2024 by David Korth.                                 *
+ * Copyright (c) 2020-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -64,15 +64,16 @@ static unique_ptr<blowfish_data_t> blowfish_data[3];
  */
 int ndscrypt_load_blowfish_bin(BlowfishKey bfkey)
 {
-	static constexpr const char *const filenames[] = {
+	static const array<const char*, 3> filenames = {{
 		"nds-blowfish.bin",
 		"dsi-blowfish.bin",
 		"dsi-devel-blowfish.bin",
-	};
+	}};
 	assert(bfkey >= NDSCRYPT_BF_NDS);
 	assert(bfkey < NDSCRYPT_BF_MAX);
-	if (bfkey < NDSCRYPT_BF_NDS || bfkey >= NDSCRYPT_BF_MAX)
+	if (bfkey < NDSCRYPT_BF_NDS || bfkey >= NDSCRYPT_BF_MAX) {
 		return -EINVAL;
+	}
 
 	if (blowfish_data[bfkey] != nullptr) {
 		// Blowfish data was already loaded.
