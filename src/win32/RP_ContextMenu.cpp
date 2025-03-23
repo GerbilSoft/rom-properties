@@ -563,7 +563,7 @@ IFACEMETHODIMP RP_ContextMenu::GetCommandString(_In_ UINT_PTR idCmd, _In_ UINT u
 				snprintf(pszName, cchMax, "%s", CTX_VERB_A);
 				return S_OK;
 			case GCS_VERBW:
-				_snwprintf(reinterpret_cast<LPWSTR>(pszName), cchMax, _T("%s"), CTX_VERB_W);
+				_snwprintf(reinterpret_cast<LPWSTR>(pszName), cchMax, L"%s", CTX_VERB_W);
 				return S_OK;
 
 			case GCS_HELPTEXTA:
