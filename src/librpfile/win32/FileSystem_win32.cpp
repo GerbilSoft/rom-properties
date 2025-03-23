@@ -21,6 +21,7 @@
 
 // C++ STL classes
 using std::string;
+using std::unique_ptr;
 using std::wstring;
 
 // libwin32common
@@ -276,12 +277,12 @@ int rmkdir(const wstring &path, int mode)
 	RP_UNUSED(mode);
 
 	// TODO: makeWinPath()? [and ANSI handling, or not...]
-	tstring tpath = path;
+	wstring wpath = path;
 
-	if (tpath.size() == 3) {
+	if (wpath.size() == 3) {
 		// 3 characters. Root directory is always present.
 		return 0;
-	} else if (tpath.size() < 3) {
+	} else if (wpath.size() < 3) {
 		// Less than 3 characters. Path isn't valid.
 		return -EINVAL;
 	}
@@ -289,12 +290,13 @@ int rmkdir(const wstring &path, int mode)
 	// Find all backslashes and ensure the directory component exists.
 	// (Skip the drive letter and root backslash.)
 	size_t slash_pos = 4;
-	while ((slash_pos = tpath.find(static_cast<char16_t>(DIR_SEP_CHR), slash_pos)) != tstring::npos) {
+	while ((slash_pos = wpath.find(static_cast<char16_t>(DIR_SEP_CHR), slash_pos)) != wstring::npos) {
 		// Temporarily NULL out this slash.
-		tpath[slash_pos] = _T('\0');
+		wpath[slash_pos] = _T('\0');
 
 		// Attempt to create this directory.
-		if (::_tmkdir(tpath.c_str()) != 0) {
+		// FIXME: This won't work on ANSI...
+		if (::_wmkdir(wpath.c_str()) != 0) {
 			// Could not create the directory.
 			// If it exists already, that's fine.
 			// Otherwise, something went wrong.
@@ -305,7 +307,7 @@ int rmkdir(const wstring &path, int mode)
 		}
 
 		// Put the slash back in.
-		tpath[slash_pos] = DIR_SEP_CHR;
+		wpath[slash_pos] = DIR_SEP_CHR;
 		slash_pos++;
 	}
 
@@ -594,7 +596,7 @@ bool is_symlink(const wchar_t *filename)
 	return is_symlink_int(tfilename.c_str());
 }
 
-// GetFinalPathnameByHandleW() lookup.
+// GetFinalPathnameByHandle() lookup.
 static pthread_once_t once_gfpbh = PTHREAD_ONCE_INIT;
 typedef DWORD (WINAPI *pfnGetFinalPathNameByHandleA_t)(
 	_In_  HANDLE hFile,
@@ -639,7 +641,7 @@ static void LookupGetFinalPathnameByHandle(void)
  * @param tfilename Filename of symbolic link (UTF-16; makeWinPath() must have been called)
  * @return Resolved symbolic link, or empty string on error.
  */
-static wstring resolve_symlink_int(const TCHAR *tfilename)
+static tstring resolve_symlink_int(const TCHAR *tfilename)
 {
 	pthread_once(&once_gfpbh, LookupGetFinalPathnameByHandle);
 	if (!pfnGetFinalPathnameByHandle) {
@@ -672,17 +674,15 @@ static wstring resolve_symlink_int(const TCHAR *tfilename)
 	// NOTE: cchDeref may include the NULL terminator on ANSI systems.
 	// We'll add one anyway, just in case it doesn't.
 	// TODO: Allocate std::wstring() here and read directly into data()?
-	TCHAR *szDeref = new TCHAR[cchDeref+1];
-	pfnGetFinalPathnameByHandle(hFile, szDeref, cchDeref+1, VOLUME_NAME_DOS);
+	unique_ptr<TCHAR[]> szDeref(new TCHAR[cchDeref+1]);
+	pfnGetFinalPathnameByHandle(hFile, szDeref.get(), cchDeref+1, VOLUME_NAME_DOS);
 	if (szDeref[cchDeref-1] == '\0') {
 		// Extra NULL terminator found.
 		cchDeref--;
 	}
 
-	wstring ws_ret(szDeref, cchDeref);
-	delete[] szDeref;
 	CloseHandle(hFile);
-	return ws_ret;
+	return tstring(szDeref.get(), cchDeref);
 }
 
 /**
@@ -702,7 +702,11 @@ string resolve_symlink(const char *filename)
 		return {};
 	}
 	const tstring tfilename = makeWinPath(filename);
+#ifdef UNICODE
 	return W2U8(resolve_symlink_int(tfilename.c_str()));
+#else /* !UNICODE */
+	return resolve_symlink_int(tfilename.c_str());
+#endif /* UNICODE */
 }
 
 /**
@@ -722,7 +726,11 @@ wstring resolve_symlink(const wchar_t *filename)
 		return {};
 	}
 	const tstring tfilename = makeWinPath(filename);
+#ifdef UNICODE
 	return resolve_symlink_int(tfilename.c_str());
+#else /* !UNICODE */
+	return A2W_s(resolve_symlink_int(tfilename.c_str()));
+#endif /* UNICODE */
 }
 
 /**
