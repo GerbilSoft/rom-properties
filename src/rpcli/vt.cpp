@@ -19,6 +19,7 @@ using std::string;
 #  include <winternl.h>
 #  include <tchar.h>
 
+#ifdef _MSC_VER
 typedef struct _OBJECT_NAME_INFORMATION {
 	UNICODE_STRING Name;
 	WCHAR NameBuffer[1];	// flex array
@@ -26,6 +27,7 @@ typedef struct _OBJECT_NAME_INFORMATION {
 
 // NOTE: ObjectNameInformation isn't defined in the Windows 7 SDK.
 #  define ObjectNameInformation ((OBJECT_INFORMATION_CLASS)1)
+#endif /* _MSC_VER */
 
 typedef NTSTATUS (WINAPI *pfnNtQueryObject_t)(
 	_In_opt_ HANDLE Handle,
