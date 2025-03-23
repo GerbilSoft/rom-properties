@@ -5968,8 +5968,8 @@ msgstr "Módulo de sistema"
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2350
 #, c++-format
 msgctxt "Nintendo3DS"
-msgid "Invalid (0x{:0>2X})"
-msgstr "Inválido(a) (0x{:0>2X})"
+msgid "INVALID (0x{:0>2X})"
+msgstr "INVÁLIDO(A) (0x{:0>2X})"
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2317
 msgctxt "Nintendo3DS"

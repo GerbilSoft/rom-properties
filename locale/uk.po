@@ -5931,7 +5931,7 @@ msgstr ""
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2350
 #, c++-format
 msgctxt "Nintendo3DS"
-msgid "Invalid (0x{:0>2X})"
+msgid "INVALID (0x{:0>2X})"
 msgstr ""
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2317
