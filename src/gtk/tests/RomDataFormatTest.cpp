@@ -6,6 +6,8 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "config.librpbase.h"	// for TIME64_FOUND
+
 // Google Test
 #include "gtest/gtest.h"
 #include "tcharx.h"
@@ -61,7 +63,9 @@ TEST_F(RomDataFormatDeathTest, formatDateTime_0_invalid)
 		{-2, nullptr},
 		{1, nullptr},
 		{0x7FFFFFFF, nullptr},
+#ifdef TIME64_FOUND
 		{0x80000000, nullptr},
+#endif /* TIME64_FOUND */
 	}};
 
 	for (const auto &test : dateTimeTestData) {
@@ -91,7 +95,9 @@ TEST_F(RomDataFormatTest, formatDateTime_1_dateOnly)
 		{-2, "12/31/69"},
 		{1, "01/01/70"},
 		{0x7FFFFFFF, "01/19/38"},
+#ifdef TIME64_FOUND
 		{0x80000000, "01/19/38"},
+#endif /* TIME64_FOUND */
 	}};
 
 	for (const auto &test : dateTimeTestData) {
@@ -116,7 +122,9 @@ TEST_F(RomDataFormatTest, formatDateTime_2_timeOnly)
 		{-2, "23:59:58"},
 		{1, "00:00:01"},
 		{0x7FFFFFFF, "03:14:07"},
+#ifdef TIME64_FOUND
 		{0x80000000, "03:14:08"},
+#endif /* TIME64_FOUND */
 	}};
 
 	for (const auto &test : dateTimeTestData) {
@@ -142,7 +150,9 @@ TEST_F(RomDataFormatTest, formatDateTime_3_dateAndTime)
 		{-2, "12/31/69 23:59:58"},
 		{1, "01/01/70 00:00:01"},
 		{0x7FFFFFFF, "01/19/38 03:14:07"},
+#ifdef TIME64_FOUND
 		{0x80000000, "01/19/38 03:14:08"},
+#endif /* TIME64_FOUND */
 	}};
 
 	for (const auto &test : dateTimeTestData) {
@@ -170,7 +180,9 @@ TEST_F(RomDataFormatDeathTest, formatDateTime_4_invalid)
 		{-2, nullptr},
 		{1, nullptr},
 		{0x7FFFFFFF, nullptr},
+#ifdef TIME64_FOUND
 		{0x80000000, nullptr},
+#endif /* TIME64_FOUND */
 	}};
 
 	for (const auto &test : dateTimeTestData) {
@@ -201,7 +213,9 @@ TEST_F(RomDataFormatTest, formatDateTime_5_dateOnly)
 		{-2, "Dec 31"},
 		{1, "Jan 01"},
 		{0x7FFFFFFF, "Jan 19"},
+#ifdef TIME64_FOUND
 		{0x80000000, "Jan 19"},
+#endif /* TIME64_FOUND */
 	}};
 
 	for (const auto &test : dateTimeTestData) {
@@ -227,7 +241,9 @@ TEST_F(RomDataFormatTest, formatDateTime_6_timeOnly_noYear)
 		{-2, "23:59:58"},
 		{1, "00:00:01"},
 		{0x7FFFFFFF, "03:14:07"},
+#ifdef TIME64_FOUND
 		{0x80000000, "03:14:08"},
+#endif /* TIME64_FOUND */
 	}};
 
 	for (const auto &test : dateTimeTestData) {
@@ -254,7 +270,9 @@ TEST_F(RomDataFormatTest, formatDateTime_7_dateAndTime_noYear)
 		{-2, "Dec 31 23:59:58"},
 		{1, "Jan 01 00:00:01"},
 		{0x7FFFFFFF, "Jan 19 03:14:07"},
+#ifdef TIME64_FOUND
 		{0x80000000, "Jan 19 03:14:08"},
+#endif /* TIME64_FOUND */
 	}};
 
 	for (const auto &test : dateTimeTestData) {

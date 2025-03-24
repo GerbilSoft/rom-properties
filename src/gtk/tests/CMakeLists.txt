@@ -12,7 +12,7 @@ INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR}/..)
 ### RomDataFormat tests
 SET(RomDataFormatTest_SRCS RomDataFormatTest.cpp)
 ADD_EXECUTABLE(RomDataFormatTest_glib ${RomDataFormatTest_SRCS})
-TARGET_LINK_LIBRARIES(RomDataFormatTest_glib PRIVATE rptest)
+TARGET_LINK_LIBRARIES(RomDataFormatTest_glib PRIVATE rptest romdata)
 TARGET_LINK_LIBRARIES(RomDataFormatTest_glib PUBLIC rom-properties-glib)
 LIST(APPEND GTK_TESTS RomDataFormatTest_glib)
 
