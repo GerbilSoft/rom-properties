@@ -23,6 +23,9 @@
 #include <array>
 using std::array;
 
+// libfmt
+#include "rp-libfmt.h"
+
 namespace LibRpByteswap { namespace Tests {
 
 class ByteswapTest : public ::testing::Test
@@ -431,7 +434,8 @@ DO_ARRAY_32_BENCHMARK		(dispatch, 4, true, "")
 extern "C" int gtest_main(int argc, TCHAR *argv[])
 {
 	fputs("LibRpByteswap test suite: Byteswap tests.\n\n", stderr);
-	fprintf(stderr, "Benchmark iterations: %u\n", LibRpByteswap::Tests::ByteswapTest::BENCHMARK_ITERATIONS);
+	fmt::print(stderr, FSTR("Benchmark iterations: {:d}\n"),
+		LibRpByteswap::Tests::ByteswapTest::BENCHMARK_ITERATIONS);
 	fflush(nullptr);
 
 	// coverity[fun_call_w_exception]: uncaught exceptions cause nonzero exit anyway, so don't warn.
