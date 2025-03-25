@@ -216,32 +216,10 @@ void OptionsTab::save(QSettings *pSettings)
 		lcToQString(d->ui.cboGameTDBPAL->itemData(d->ui.cboGameTDBPAL->currentIndex()).toUInt()));
 
 	// Image bandwidth options
-	// TODO: Consolidate this.
-	const char *sUnmetered, *sMetered;
-	switch (static_cast<Config::ImgBandwidth>(d->ui.cboUnmeteredConnection->currentIndex())) {
-		case Config::ImgBandwidth::None:
-			sUnmetered = "None";
-			break;
-		case Config::ImgBandwidth::NormalRes:
-			sUnmetered = "NormalRes";
-			break;
-		case Config::ImgBandwidth::HighRes:
-		default:
-			sUnmetered = "HighRes";
-			break;
-	}
-	switch (static_cast<Config::ImgBandwidth>(d->ui.cboMeteredConnection->currentIndex())) {
-		case Config::ImgBandwidth::None:
-			sMetered = "None";
-			break;
-		case Config::ImgBandwidth::NormalRes:
-		default:
-			sMetered = "NormalRes";
-			break;
-		case Config::ImgBandwidth::HighRes:
-			sMetered = "HighRes";
-			break;
-	}
+	const char *const sUnmetered = Config::imgBandwidthToConfSetting(
+		static_cast<Config::ImgBandwidth>(d->ui.cboUnmeteredConnection->currentIndex()));
+	const char *const sMetered = Config::imgBandwidthToConfSetting(
+		static_cast<Config::ImgBandwidth>(d->ui.cboMeteredConnection->currentIndex()));
 	pSettings->setValue(QLatin1String("ImgBandwidthUnmetered"), QLatin1String(sUnmetered));
 	pSettings->setValue(QLatin1String("ImgBandwidthMetered"), QLatin1String(sMetered));
 	// Remove the old option

@@ -341,34 +341,12 @@ void OptionsTabPrivate::save(void)
 		SystemRegion::lcToTString(lc).c_str(), tfilename.c_str());
 
 	// Image bandwidth options
-	// TODO: Consolidate this.
-	const TCHAR *sUnmetered, *sMetered;
-	switch (static_cast<Config::ImgBandwidth>(ComboBox_GetCurSel(GetDlgItem(hWndPropSheet, IDC_OPTIONS_CBO_UNMETERED_DL)))) {
-		case Config::ImgBandwidth::None:
-			sUnmetered = _T("None");
-			break;
-		case Config::ImgBandwidth::NormalRes:
-			sUnmetered = _T("NormalRes");
-			break;
-		case Config::ImgBandwidth::HighRes:
-		default:
-			sUnmetered = _T("HighRes");
-			break;
-	}
-	switch (static_cast<Config::ImgBandwidth>(ComboBox_GetCurSel(GetDlgItem(hWndPropSheet, IDC_OPTIONS_CBO_METERED_DL)))) {
-		case Config::ImgBandwidth::None:
-			sMetered = _T("None");
-			break;
-		case Config::ImgBandwidth::NormalRes:
-		default:
-			sMetered = _T("NormalRes");
-			break;
-		case Config::ImgBandwidth::HighRes:
-			sMetered = _T("HighRes");
-			break;
-	}
-	WritePrivateProfileString(_T("Downloads"), _T("ImgBandwidthUnmetered"), sUnmetered, tfilename.c_str());
-	WritePrivateProfileString(_T("Downloads"), _T("ImgBandwidthMetered"), sMetered, tfilename.c_str());
+	const char *const sUnmetered = Config::imgBandwidthToConfSetting(
+		static_cast<Config::ImgBandwidth>(ComboBox_GetCurSel(GetDlgItem(hWndPropSheet, IDC_OPTIONS_CBO_UNMETERED_DL))));
+	const char *const sMetered = Config::imgBandwidthToConfSetting(
+		static_cast<Config::ImgBandwidth>(ComboBox_GetCurSel(GetDlgItem(hWndPropSheet, IDC_OPTIONS_CBO_METERED_DL))));
+	WritePrivateProfileString(_T("Downloads"), _T("ImgBandwidthUnmetered"), U82T_c(sUnmetered), tfilename.c_str());
+	WritePrivateProfileString(_T("Downloads"), _T("ImgBandwidthMetered"), U82T_c(sMetered), tfilename.c_str());
 	// TODO: Remove the old key.
 
 	// Options

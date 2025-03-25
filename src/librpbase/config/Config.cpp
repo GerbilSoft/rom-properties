@@ -679,6 +679,24 @@ Config::ImgBandwidth Config::imgBandwidthMetered(void) const
 	}
 }
 
+/**
+ * Convert Config::ImgBandwidth to a configuration setting string.
+ * @param index Config::ImgBandwidth
+ * @return Configuration setting string (If the index is invalid, defaults to "HighRes".)
+ */
+const char *Config::imgBandwidthToConfSetting(Config::ImgBandwidth imgbw)
+{
+	switch (imgbw) {
+		case Config::ImgBandwidth::None:
+			return "None";
+		case Config::ImgBandwidth::NormalRes:
+			return "NormalRes";
+		case Config::ImgBandwidth::HighRes:
+		default:
+			return "HighRes";
+	}
+}
+
 /** DMG title screen mode **/
 
 /**

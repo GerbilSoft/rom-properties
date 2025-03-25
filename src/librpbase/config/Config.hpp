@@ -119,6 +119,13 @@ public:
 	 */
 	ImgBandwidth imgBandwidthMetered(void) const;
 
+	/**
+	 * Convert Config::ImgBandwidth to a configuration setting string.
+	 * @param index Config::ImgBandwidth
+	 * @return Configuration setting string (If the index is invalid, defaults to "HighRes".)
+	 */
+	static const char *imgBandwidthToConfSetting(Config::ImgBandwidth imgbw);
+
 	/** DMG title screen mode **/
 
 	enum class DMG_TitleScreen_Mode : uint8_t {

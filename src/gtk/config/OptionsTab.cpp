@@ -511,32 +511,10 @@ rp_options_tab_save(RpOptionsTab *tab, GKeyFile *keyFile)
 			RP_LANGUAGE_COMBO_BOX(tab->cboGameTDBPAL))).c_str());
 
 	// Image bandwidth options
-	// TODO: Consolidate this.
-	const char *sUnmetered, *sMetered;
-	switch (static_cast<Config::ImgBandwidth>(GET_CBO(tab->cboUnmeteredConnection))) {
-		case Config::ImgBandwidth::None:
-			sUnmetered = "None";
-			break;
-		case Config::ImgBandwidth::NormalRes:
-			sUnmetered = "NormalRes";
-			break;
-		case Config::ImgBandwidth::HighRes:
-		default:
-			sUnmetered = "HighRes";
-			break;
-	}
-	switch (static_cast<Config::ImgBandwidth>(GET_CBO(tab->cboMeteredConnection))) {
-		case Config::ImgBandwidth::None:
-			sMetered = "None";
-			break;
-		case Config::ImgBandwidth::NormalRes:
-		default:
-			sMetered = "NormalRes";
-			break;
-		case Config::ImgBandwidth::HighRes:
-			sMetered = "HighRes";
-			break;
-	}
+	const char *const sUnmetered = Config::imgBandwidthToConfSetting(
+		static_cast<Config::ImgBandwidth>(GET_CBO(tab->cboUnmeteredConnection)));
+	const char *const sMetered = Config::imgBandwidthToConfSetting(
+		static_cast<Config::ImgBandwidth>(GET_CBO(tab->cboMeteredConnection)));
 	g_key_file_set_string(keyFile, "Downloads", "ImgBandwidthUnmetered", sUnmetered);
 	g_key_file_set_string(keyFile, "Downloads", "ImgBandwidthMetered", sMetered);
 	// Remove the old option
