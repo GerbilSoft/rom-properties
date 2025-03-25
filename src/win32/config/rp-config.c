@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * rp-config.c: Configuration stub.                                        *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -138,12 +138,11 @@ int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 	// References:
 	// - https://stackoverflow.com/questions/4191465/how-to-run-only-one-instance-of-application
 	// - https://stackoverflow.com/a/33531179
-	// TODO: Localized window title?
 	hSingleInstanceMutex = CreateMutex(NULL, TRUE, _T("Local\\com.gerbilsoft.rom-properties.rp-config"));
 	if (!hSingleInstanceMutex || GetLastError() == ERROR_ALREADY_EXISTS) {
 		// Mutex already exists.
 		// Set focus to the existing instance.
-		// TODO: Localized window titles?
+		// TODO: Localized window title?
 		HWND hWnd = FindWindow(_T("#32770"), prg_title);
 		if (hWnd) {
 			SetForegroundWindow(hWnd);
