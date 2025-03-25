@@ -255,7 +255,6 @@ rp_image_ptr iQuePlayerPrivate::loadImage(off64_t address, size_t z_size, size_t
 
 #if defined(_MSC_VER) && defined(ZLIB_IS_DLL)
 	// Delay load verification.
-	// TODO: Only if linked with /DELAYLOAD?
 	if (DelayLoad_test_get_crc_table() != 0) {
 		// Delay load failed.
 		// Can't decompress the thumbnail image.

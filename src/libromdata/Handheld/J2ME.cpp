@@ -705,8 +705,6 @@ J2ME::J2ME(const IRpFilePtr &file)
 		case J2MEPrivate::JFileType::JAR:
 #ifdef _MSC_VER
 			// Delay load verification.
-			// TODO: Only if linked with /DELAYLOAD?
-
 #  ifdef ZLIB_IS_DLL
 			// Only if zlib is a DLL.
 			if (DelayLoad_test_get_crc_table() != 0) {

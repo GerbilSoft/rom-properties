@@ -478,7 +478,6 @@ rp_image_ptr load(IRpFile *file)
 
 #if defined(_MSC_VER) && (defined(ZLIB_IS_DLL) || defined(PNG_IS_DLL))
 	// Delay load verification.
-	// TODO: Only if linked with /DELAYLOAD?
 	if (DelayLoad_test_zlib_and_png() != 0) {
 		// Delay load failed.
 		return nullptr;
@@ -788,7 +787,6 @@ const char *zlib_version_string(void)
 {
 #if defined(_MSC_VER) && (defined(ZLIB_IS_DLL) || defined(PNG_IS_DLL))
 	// Delay load verification.
-	// TODO: Only if linked with /DELAYLOAD?
 	if (DelayLoad_test_zlib_and_png() != 0) {
 		// Delay load failed.
 		return "(DLL failed to load)";
@@ -811,7 +809,6 @@ bool libpng_has_APNG(void)
 {
 #if defined(_MSC_VER) && (defined(ZLIB_IS_DLL) || defined(PNG_IS_DLL))
 	// Delay load verification.
-	// TODO: Only if linked with /DELAYLOAD?
 	if (DelayLoad_test_zlib_and_png() != 0) {
 		// Delay load failed.
 		return false;
@@ -837,7 +834,6 @@ uint32_t libpng_version_number(void)
 {
 #if defined(_MSC_VER) && (defined(ZLIB_IS_DLL) || defined(PNG_IS_DLL))
 	// Delay load verification.
-	// TODO: Only if linked with /DELAYLOAD?
 	if (DelayLoad_test_zlib_and_png() != 0) {
 		// Delay load failed.
 		return 0;
@@ -855,7 +851,6 @@ const char *libpng_copyright_string(void)
 {
 #if defined(_MSC_VER) && (defined(ZLIB_IS_DLL) || defined(PNG_IS_DLL))
 	// Delay load verification.
-	// TODO: Only if linked with /DELAYLOAD?
 	if (DelayLoad_test_zlib_and_png() != 0) {
 		// Delay load failed.
 		return "(DLL failed to load)";

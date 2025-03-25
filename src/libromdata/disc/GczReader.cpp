@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * GczReader.cpp: GameCube/Wii GCZ disc image reader.                      *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -121,7 +121,6 @@ GczReader::GczReader(const IRpFilePtr &file)
 
 #if defined(_MSC_VER) && defined(ZLIB_IS_DLL)
 	// Delay load verification.
-	// TODO: Only if linked with /DELAYLOAD?
 	if (DelayLoad_test_get_crc_table() != 0) {
 		// Delay load failed.
 		// GCZ is not supported without zlib.
@@ -285,7 +284,6 @@ int GczReader::isDiscSupported_static(const uint8_t *pHeader, size_t szHeader)
 
 #if defined(_MSC_VER) && defined(ZLIB_IS_DLL)
 	// Delay load verification.
-	// TODO: Only if linked with /DELAYLOAD?
 	if (DelayLoad_test_get_crc_table() != 0) {
 		// Delay load failed.
 		// GCZ is not supported without zlib.

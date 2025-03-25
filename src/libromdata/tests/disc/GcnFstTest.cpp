@@ -617,7 +617,6 @@ extern "C" int gtest_main(int argc, TCHAR *argv[])
 
 #ifdef _MSC_VER
 	// Delay load verification.
-	// TODO: Only if linked with /DELAYLOAD?
 #  ifdef ZLIB_IS_DLL
 	// Only if zlib is a DLL.
 	if (DelayLoad_test_get_crc_table() != 0) {

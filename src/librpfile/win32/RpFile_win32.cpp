@@ -312,7 +312,6 @@ RpFile::RpFile(const wchar_t *filenameW, FileMode mode)
 	if (tryGzip) { do {
 #if defined(_MSC_VER) && defined(ZLIB_IS_DLL)
 		// Delay load verification.
-		// TODO: Only if linked with /DELAYLOAD?
 		if (DelayLoad_test_get_crc_table() != 0) {
 			// Delay load failed.
 			// Don't do any gzip checking.

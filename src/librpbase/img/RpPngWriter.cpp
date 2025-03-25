@@ -343,7 +343,6 @@ RpPngWriterPrivate::RpPngWriterPrivate(const IRpFilePtr &theFile, int width, int
 
 #if defined(_MSC_VER) && (defined(ZLIB_IS_DLL) || defined(PNG_IS_DLL))
 	// Delay load verification.
-	// TODO: Only if linked with /DELAYLOAD?
 	if (DelayLoad_test_zlib_and_png() != 0) {
 		// Delay load failed.
 		lastError = ENOTSUP;
@@ -411,7 +410,6 @@ RpPngWriterPrivate::RpPngWriterPrivate(const IRpFilePtr &theFile, const rp_image
 
 #if defined(_MSC_VER) && (defined(ZLIB_IS_DLL) || defined(PNG_IS_DLL))
 	// Delay load verification.
-	// TODO: Only if linked with /DELAYLOAD?
 	if (DelayLoad_test_zlib_and_png() != 0) {
 		// Delay load failed.
 		lastError = ENOTSUP;
@@ -473,7 +471,6 @@ RpPngWriterPrivate::RpPngWriterPrivate(const IRpFilePtr &theFile, const IconAnim
 
 #if defined(_MSC_VER) && (defined(ZLIB_IS_DLL) || defined(PNG_IS_DLL))
 	// Delay load verification.
-	// TODO: Only if linked with /DELAYLOAD?
 	if (DelayLoad_test_zlib_and_png() != 0) {
 		// Delay load failed.
 		lastError = ENOTSUP;

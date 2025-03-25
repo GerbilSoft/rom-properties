@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * EXE_manifest.cpp: DOS/Windows executable reader. (PE manifest reader)   *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -203,7 +203,6 @@ int EXEPrivate::addFields_PE_Manifest(void)
 {
 #if defined(_MSC_VER) && defined(XML_IS_DLL)
 	// Delay load verification.
-	// TODO: Only if linked with /DELAYLOAD?
 	int ret_dl = DelayLoad_test_TinyXML2();
 	if (ret_dl != 0) {
 		// Delay load failed.
@@ -427,7 +426,6 @@ bool EXEPrivate::doesExeRequireAdministrator(void) const
 {
 #if defined(_MSC_VER) && defined(XML_IS_DLL)
 	// Delay load verification.
-	// TODO: Only if linked with /DELAYLOAD?
 	int ret_dl = DelayLoad_test_TinyXML2();
 	if (ret_dl != 0) {
 		// Delay load failed.

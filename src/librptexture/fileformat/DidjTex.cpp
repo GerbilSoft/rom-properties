@@ -140,7 +140,6 @@ rp_image_const_ptr DidjTexPrivate::loadDidjTexImage(void)
 
 #if defined(_MSC_VER) && defined(ZLIB_IS_DLL)
 	// Delay load verification.
-	// TODO: Only if linked with /DELAYLOAD?
 	if (DelayLoad_test_get_crc_table() != 0) {
 		// Delay load failed.
 		// Can't decompress the thumbnail image.

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * ConfigDialog.cpp: Configuration dialog.                                 *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -498,7 +498,6 @@ int CALLBACK rp_show_config_dialog(
 
 #if defined(_MSC_VER) && defined(ENABLE_NLS)
 	// Delay load verification.
-	// TODO: Only if linked with /DELAYLOAD?
 	if (DelayLoad_test_textdomain() != 0) {
 		// Delay load failed.
 		// TODO: Use a CMake macro for the soversion?
