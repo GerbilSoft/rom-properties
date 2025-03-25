@@ -347,7 +347,7 @@ MachO::MachO(const IRpFilePtr &file)
 	}
 	const uint32_t mach_filetype = d->machHeaders[0].filetype;
 	if (mach_filetype < fileTypes_tbl.size()) {
-		d->fileType = static_cast<RomData::FileType>(fileTypes_tbl[mach_filetype]);
+		d->fileType = fileTypes_tbl[mach_filetype];
 		if (!mimeIsSet) {
 			d->mimeType = mimeTypes_tbl[mach_filetype];
 		}
