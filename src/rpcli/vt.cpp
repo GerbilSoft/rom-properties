@@ -7,12 +7,19 @@
  ***************************************************************************/
 
 #include "stdafx.h"
+#include "config.rpcli.h"
+
 #include "vt.hpp"
 
 // C++ STL classes
 using std::array;
 using std::ostream;
 using std::string;
+
+#ifdef HAVE_STD_STRING_VIEW
+#include <string_view>
+using std::string_view;
+#endif /* #ifdef HAVE_STD_STRING_VIEW */
 
 #ifdef _WIN32
 #  include "libwin32common/RpWin32_sdk.h"
@@ -212,8 +219,11 @@ void cout_win32_ansi_color(ostream &os, const char *str)
 		// Found an escape character.
 		// Send everything up to the escape.
 		if (str != pEsc) {
-			// TODO: std::string_view() if available?
+#ifdef HAVE_STD_STRING_VIEW
+			os << string_view(str, pEsc - str);
+#else /* !HAVE_STD_STRING_VIEW */
 			os << string(str, pEsc - str);
+#endif /* HAVE_STD_STRING_VIEW */
 			str = pEsc;
 		}
 

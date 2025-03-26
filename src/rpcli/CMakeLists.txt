@@ -29,6 +29,30 @@ IF(WIN32)
 	CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/${PROJECT_NAME}.exe.manifest.in" "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.exe.manifest" @ONLY)
 ENDIF(WIN32)
 
+# Check for std::string_view.
+# NOTE: CHECK_CXX_SYMBOL_EXISTS() ignores CMAKE_CXX_STANDARD,
+# and with MSVC 2022 and CMake 3.31.6, seemingly ignores CMAKE_REQUIRED_FLAGS.
+# We'll need to use CHECK_CXX_SOURCE_COMPILES() instead.
+# TODO: Maybe it didn't ignore CMAKE_REQUIRED_FLAGS; the .yaml log was appended to, not overwritten.
+# Need to test this on a gcc version that supports C++17 but not by default.
+INCLUDE(CheckCXXSourceCompiles)
+IF(MSVC)
+	SET(CMAKE_REQUIRED_FLAGS "/std:c++17")
+ELSE(MSVC)
+	# TODO: Also check -std=c++1z?
+	SET(CMAKE_REQUIRED_FLAGS "-std=c++17")
+ENDIF(MSVC)
+CHECK_CXX_SOURCE_COMPILES(
+"#include <string_view>
+#include <iostream>
+int main(void)
+{
+	std::string_view test = \"moo\";
+	std::cout << test << std::endl;
+}
+" HAVE_STD_STRING_VIEW)
+UNSET(CMAKE_REQUIRED_FLAGS)
+
 IF(ENABLE_DECRYPTION)
 	SET(${PROJECT_NAME}_CRYPTO_SRCS verifykeys.cpp)
 	SET(${PROJECT_NAME}_CRYPTO_H verifykeys.hpp)

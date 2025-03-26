@@ -13,3 +13,8 @@
 
 /* Define to 1 if sixel output is eanbled. */
 #cmakedefine ENABLE_SIXEL 1
+
+/** C++ standard library **/
+
+/* Define to 1 if you have the `std::string_view` class. */
+#cmakedefine HAVE_STD_STRING_VIEW 1
