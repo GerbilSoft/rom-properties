@@ -46,6 +46,7 @@ using namespace LibRomData;
 #include "librptexture/img/rp_image.hpp"
 #ifdef _WIN32
 #  include "libwin32common/RpWin32_sdk.h"
+#  include "libwin32common/rp_versionhelpers.h"
 #  include "librptexture/img/GdiplusHelper.hpp"
 #endif /* _WIN32 */
 using namespace LibRpTexture;
@@ -502,6 +503,16 @@ static void DoAtaIdentifyDevice(const TCHAR *filename, bool json, bool packet)
 }
 #endif /* RP_OS_SCSI_SUPPORTED */
 
+#ifdef _WIN32
+static UINT old_console_cp = 0;
+static void RestoreConsoleCP(void)
+{
+	if (old_console_cp != 0) {
+		SetConsoleOutputCP(old_console_cp);
+	}
+}
+#endif /* _WIN32 */
+
 static void ShowUsage(void)
 {
 	// TODO: Use argv[0] instead of hard-coding 'rpcli'?
@@ -642,6 +653,17 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 		return EXIT_FAILURE;
 	}
 #endif /* ENABLE_NLS && _MSC_VER */
+
+#ifdef _WIN32
+	// Enable UTF-8 console output.
+	// Tested on Windows XP (fails) and Windows 7 (works).
+	// TODO: Does it work on Windows Vista?
+	if (IsWindowsVistaOrGreater()) {
+		old_console_cp = GetConsoleOutputCP();
+		atexit(RestoreConsoleCP);
+		SetConsoleOutputCP(CP_UTF8);
+	}
+#endif /* _WIN32 */
 
 	// Initialize i18n.
 	rp_i18n_init();

@@ -20,6 +20,7 @@ using std::locale;
 // GDI+ initialization.
 // NOTE: Not linking to librptexture (libromdata).
 #  include "libwin32common/RpWin32_sdk.h"
+#  include "libwin32common/rp_versionhelpers.h"
 // NOTE: Gdiplus requires min/max.
 #  include <algorithm>
 namespace Gdiplus {
@@ -32,6 +33,16 @@ namespace Gdiplus {
 
 // libfmt
 #include "rp-libfmt.h"
+
+#ifdef _WIN32
+static UINT old_console_cp = 0;
+static void RestoreConsoleCP(void)
+{
+	if (old_console_cp != 0) {
+		SetConsoleOutputCP(old_console_cp);
+	}
+}
+#endif /* _WIN32 */
 
 extern "C" int gtest_main(int argc, TCHAR *argv[]);
 
@@ -166,6 +177,17 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 	// NOTE: MinGW-w64 12.0.0 doesn't like setting the C++ locale to "".
 	// Setting it to "C" works fine, though.
 	locale::global(locale(C_LOCALE));
+
+#ifdef _WIN32
+	// Enable UTF-8 console output.
+	// Tested on Windows XP (fails) and Windows 7 (works).
+	// TODO: Does it work on Windows Vista?
+	if (IsWindowsVistaOrGreater()) {
+		old_console_cp = GetConsoleOutputCP();
+		atexit(RestoreConsoleCP);
+		SetConsoleOutputCP(CP_UTF8);
+	}
+#endif /* _WIN32 */
 
 	// Call the actual main function.
 	int ret = gtest_main(argc, argv);
