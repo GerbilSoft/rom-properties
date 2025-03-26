@@ -339,16 +339,14 @@ MachO::MachO(const IRpFilePtr &file)
 
 	// d->fileType is set to FileType::Unknown above, so only set it
 	// if the filetype is known.
-	bool mimeIsSet = false;
 	if (d->execFormat == MachOPrivate::Exec_Format::Fat) {
 		// Fat binary
 		d->mimeType = "application/x-mach-fat-binary";
-		mimeIsSet = true;
 	}
 	const uint32_t mach_filetype = d->machHeaders[0].filetype;
 	if (mach_filetype < fileTypes_tbl.size()) {
 		d->fileType = fileTypes_tbl[mach_filetype];
-		if (!mimeIsSet) {
+		if (!d->mimeType) {
 			d->mimeType = mimeTypes_tbl[mach_filetype];
 		}
 	}
