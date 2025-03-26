@@ -17,7 +17,7 @@
 
 // librpbase, librpfile, libromdata
 #include "librpbase/RomMetaData.hpp"
-using LibRpFile::IRpFile;
+using LibRpFile::IRpFilePtr;
 using namespace LibRpBase;
 using namespace LibRomData;
 
@@ -221,7 +221,7 @@ IFACEMETHODIMP RP_PropertyStore::Initialize(_In_ IStream *pstream, DWORD grfMode
 	RP_UNUSED(grfMode);
 
 	// Create an IRpFile wrapper for the IStream.
-	shared_ptr<RpFile_IStream> file = std::make_shared<RpFile_IStream>(pstream, true);
+	IRpFilePtr file = std::make_shared<RpFile_IStream>(pstream, true);
 	if (file->lastError() != 0) {
 		// Error initializing the IRpFile.
 		return E_FAIL;
@@ -230,9 +230,8 @@ IFACEMETHODIMP RP_PropertyStore::Initialize(_In_ IStream *pstream, DWORD grfMode
 	// Update d->file().
 	// shared_ptr<> will automatically unreference the old
 	// file if one is set.
-	// TODO: Use shared_ptr::swap<> instead? (same for elsewhere...)
 	RP_D(RP_PropertyStore);
-	d->file = file;
+	std::swap(d->file, file);
 
 	// Save the IStream and grfMode.
 	d->pstream = pstream;
@@ -240,7 +239,7 @@ IFACEMETHODIMP RP_PropertyStore::Initialize(_In_ IStream *pstream, DWORD grfMode
 
 	// Attempt to create a RomData object.
 	// TODO: Do we need to keep it open?
-	d->romData = RomDataFactory::create(file, RomDataFactory::RDA_HAS_METADATA);
+	d->romData = RomDataFactory::create(d->file, RomDataFactory::RDA_HAS_METADATA);
 	if (!d->romData) {
 		// No RomData.
 		return E_FAIL;
