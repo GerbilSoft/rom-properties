@@ -283,7 +283,7 @@ Elf64_Phdr ELFPrivate::readProgramHeader(const uint8_t *phbuf)
 		out.p_flags = elf32_to_cpu(phdr->p_flags);
 		out.p_offset = elf64_to_cpu(phdr->p_offset);
 		out.p_vaddr = elf64_to_cpu(phdr->p_vaddr);
-		out.p_paddr = elf64_to_cpu(phdr->p_vaddr);
+		out.p_paddr = elf64_to_cpu(phdr->p_paddr);
 		out.p_filesz = elf64_to_cpu(phdr->p_filesz);
 		out.p_memsz = elf64_to_cpu(phdr->p_memsz);
 		out.p_align = elf64_to_cpu(phdr->p_align);
@@ -293,7 +293,7 @@ Elf64_Phdr ELFPrivate::readProgramHeader(const uint8_t *phbuf)
 		out.p_flags = elf32_to_cpu(phdr->p_flags);
 		out.p_offset = elf32_to_cpu(phdr->p_offset);
 		out.p_vaddr = elf32_to_cpu(phdr->p_vaddr);
-		out.p_paddr = elf32_to_cpu(phdr->p_vaddr);
+		out.p_paddr = elf32_to_cpu(phdr->p_paddr);
 		out.p_filesz = elf32_to_cpu(phdr->p_filesz);
 		out.p_memsz = elf32_to_cpu(phdr->p_memsz);
 		out.p_align = elf32_to_cpu(phdr->p_align);
