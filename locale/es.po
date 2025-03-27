@@ -10355,7 +10355,7 @@ msgstr "Advertencia: se ha omitido una imagen desconocida de tipo {:d}"
 #, c++-format
 msgctxt "rpcli"
 msgid "Warning: skipping invalid mipmap level {:d}"
-msgstr "Advertencia: se ha omitido una imagen desconocida de tipo {:d}"
+msgstr ""
 
 #: ../src/rpcli/rpcli.cpp:777
 msgctxt "rpcli"

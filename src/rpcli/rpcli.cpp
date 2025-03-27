@@ -737,14 +737,17 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 				break;
 			}
 #endif /* ENABLE_DECRYPTION */
+
 			case _T('c'):
 				// Print the system region information.
 				PrintSystemRegion();
 				break;
+
 			case _T('p'):
 				// Print pathnames.
 				PrintPathnames();
 				break;
+
 			case _T('l'): {
 				// Language code.
 				// NOTE: Actual language may be immediately after 'l',
@@ -780,20 +783,35 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 				lc = new_lc;
 				break;
 			}
+
 			case _T('K'): {
 				// Skip internal images. (NOTE: Not documented.)
 				flags |= LibRpBase::OF_SkipInternalImages;
 				break;
 			}
+
 			case _T('d'): {
 				// Skip RFT_LISTDATA with more than 10 items. (Text only)
 				flags |= LibRpBase::OF_SkipListDataMoreThan10;
 				break;
 			}
+
 			case _T('x'): {
-				// TODO: Switch from _ttol() to _tcstol() and implement better error checking?
-				const long num = _ttol(argv[i] + 2);
-				if (num < RomData::IMG_INT_MIN || num > RomData::IMG_INT_MAX) {
+				const TCHAR *const ts_imgType = argv[i] + 2;
+				TCHAR *endptr = nullptr;
+				const long num = _tcstol(ts_imgType, &endptr, 10);
+				if (*endptr != '\0') {
+#ifdef _WIN32
+					// fmt::print() doesn't allow mixing narrow and wide strings.
+					const string s_imgType = T2U8(ts_imgType);
+#else /* !_WIN32 */
+					const char *const s_imgType = ts_imgType;
+#endif /* _WIN32 */
+					fmt::print(stderr, FRUN(C_("rpcli", "Warning: skipping invalid image type '{:s}'")), s_imgType);
+					fputc('\n', stderr);
+					fflush(stderr);
+					i++; continue;
+				} else if (num < RomData::IMG_INT_MIN || num > RomData::IMG_INT_MAX) {
 					fmt::print(stderr, FRUN(C_("rpcli", "Warning: skipping unknown image type {:d}")), num);
 					fputc('\n', stderr);
 					fflush(stderr);
@@ -802,11 +820,24 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 				extract.emplace_back(argv[++i], num);
 				break;
 			}
+
 			case _T('m'): {
-				// TODO: Switch from _ttol() to _tcstol() and implement better error checking?
-				const long num = _ttol(argv[i] + 2);
-				if (num < -1 || num > 1024) {
-					fmt::print(stderr, FRUN(C_("rpcli", "Warning: skipping invalid mipmap level {:d}")), num);
+				const TCHAR *const ts_mipmapLevel = argv[i] + 2;
+				TCHAR *endptr = nullptr;
+				const long num = _tcstol(ts_mipmapLevel, &endptr, 10);
+				if (*endptr != '\0') {
+#ifdef _WIN32
+					// fmt::print() doesn't allow mixing narrow and wide strings.
+					const string s_mipmapLevel = T2U8(ts_mipmapLevel);
+#else /* !_WIN32 */
+					const char *const s_mipmapLevel = ts_mipmapLevel;
+#endif /* _WIN32 */
+					fmt::print(stderr, FRUN(C_("rpcli", "Warning: skipping invalid mipmap level '{:s}'")), s_mipmapLevel);
+					fputc('\n', stderr);
+					fflush(stderr);
+					i++; continue;
+				} else if (num < -1 || num > 1024) {
+					fmt::print(stderr, FRUN(C_("rpcli", "Warning: skipping out-of-range mipmap level {:d}")), num);
 					fputc('\n', stderr);
 					fflush(stderr);
 					i++; continue;
@@ -814,12 +845,15 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 				extract.emplace_back(argv[++i], RomData::IMG_INT_IMAGE, num);
 				break;
 			}
+
 			case _T('a'):
 				extract.emplace_back(argv[++i], -1);
 				break;
+
 			case _T('j'): // do nothing
 			case _T('J'): // still do nothing
 				break;
+
 #ifdef RP_OS_SCSI_SUPPORTED
 			case _T('i'):
 				// These commands take precedence over the usual rpcli functionality.
@@ -850,6 +884,7 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 				}
 				break;
 #endif /* RP_OS_SCSI_SUPPORTED */
+
 			default:
 				// FIXME: Unicode character on Windows.
 				fmt::print(stderr, FRUN(C_("rpcli", "Warning: skipping unknown switch '{:c}'")), (char)argv[i][1]);
