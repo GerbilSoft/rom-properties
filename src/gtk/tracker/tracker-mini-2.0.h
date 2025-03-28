@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GNOME Tracker)                    *
  * tracker-mini-2.0.h: tracker-2.0 function declarations and pointers      *
  *                                                                         *
- * Copyright (c) 2017-2024 by David Korth.                                 *
+ * Copyright (c) 2017-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -50,7 +50,7 @@ typedef struct _tracker_sparql_2_0_pfns_t {
 
 		__typeof__(tracker_resource_get_first_relation)	*get_first_relation;
 
-		//__typeof__(tracker_resource_set_gvalue)		*set_gvalue;
+		__typeof__(tracker_resource_set_gvalue)		*set_gvalue;
 		//__typeof__(tracker_resource_set_boolean)	*set_boolean;
 		//__typeof__(tracker_resource_set_double)		*set_double;
 		__typeof__(tracker_resource_set_int)		*set_int;

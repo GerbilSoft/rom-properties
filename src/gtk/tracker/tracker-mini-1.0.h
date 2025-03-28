@@ -63,7 +63,7 @@ typedef struct _tracker_sparql_1_0_pfns_t {
 		//__typeof__(tracker_sparql_builder_object_unvalidated)	*object_unvalidated;
 		//__typeof__(tracker_sparql_builder_object_boolean)	*object_boolean;
 		__typeof__(tracker_sparql_builder_object_int64)		*object_int64;
-		//__typeof__(tracker_sparql_builder_object_date)		*object_date;
+		__typeof__(tracker_sparql_builder_object_date)		*object_date;
 		//__typeof__(tracker_sparql_builder_object_double)	*object_double;
 		//__typeof__(tracker_sparql_builder_object_blank_open)	*object_blank_open;
 		//__typeof__(tracker_sparql_builder_object_blank_close)	*object_blank_close;

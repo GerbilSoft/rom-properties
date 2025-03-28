@@ -74,13 +74,22 @@ add_metadata_properties_v1(const RomMetaData *metaData, TrackerSparqlBuilder *bu
 				tracker_sparql_pfns.v1.builder.predicate(builder, "nmm:trackNumber");
 				tracker_sparql_pfns.v1.builder.object_int64(builder, prop.data.ivalue);
 				break;
-			case Property::ReleaseYear:
-				// FIXME: Needs to be in nie:informationElementDate foramt.
-				/*
+
+			case Property::ReleaseYear: {
+				// NOTE: Converting to YYYY-01-01 00:00:00, since this is "nie:informationElementDate".
+				// (equivalent to "xsd::dateTime")
+				// FIXME: tracker-miners does this for MP3 Release Years, but it *might*
+				// cause an off-by-one in some timezones...
+				GDateTime *const dateTime = g_date_time_new_utc(
+					static_cast<gint>(prop.data.uvalue), 1, 1, 0, 0, 0);
+				time_t unixTime = g_date_time_to_unix(dateTime);
+				g_date_time_unref(dateTime);
+
 				tracker_sparql_pfns.v1.builder.predicate(builder, "nmm:releaseDate");
-				tracker_sparql_pfns.v1.builder.object_int64(builder, prop.data.ivalue);
-				*/
+				tracker_sparql_pfns.v1.builder.object_date(builder, &unixTime);
 				break;
+			}
+
 			case Property::Artist:
 				// TODO
 				break;
@@ -122,9 +131,12 @@ add_metadata_properties_v1(const RomMetaData *metaData, TrackerSparqlBuilder *bu
 				tracker_sparql_pfns.v1.builder.predicate(builder, "nie:description");
 				tracker_sparql_pfns.v1.builder.object_string(builder, prop.data.str);
 				break;
-			case Property::CreationDate:
-				// TODO: Convert from Unix timestamp to "xsd:dateTime" for "nie:contentCreated".
+			case Property::CreationDate: {
+				tracker_sparql_pfns.v1.builder.predicate(builder, "nie:contentCreated");
+				time_t unixTime = prop.data.timestamp;
+				tracker_sparql_pfns.v1.builder.object_date(builder, &unixTime);
 				break;
+			}
 
 			// Media
 			case Property::Width:
@@ -183,12 +195,26 @@ add_metadata_properties_v2(const RomMetaData *metaData, TrackerResource *resourc
 			case Property::TrackNumber:
 				tracker_sparql_pfns.v2.resource.set_int(resource, "nmm:trackNumber", prop.data.ivalue);
 				break;
-			case Property::ReleaseYear:
-				// FIXME: Needs to be in nie:informationElementDate foramt.
-				/*
-				tracker_sparql_pfns.v2.resource.set_string(resource, "nmm:releaseDate", prop.data.ivalue);
-				*/
+
+			case Property::ReleaseYear: {
+				// NOTE: Converting to YYYY-01-01 00:00:00, since this is "nie:informationElementDate".
+				// (equivalent to "xsd::dateTime")
+				// FIXME: tracker-miners does this for MP3 Release Years, but it *might*
+				// cause an off-by-one in some timezones...
+				GDateTime *const dateTime = g_date_time_new_utc(
+					static_cast<gint>(prop.data.uvalue), 1, 1, 0, 0, 0);
+
+				GValue value = G_VALUE_INIT;
+				g_value_init(&value, G_TYPE_DATE_TIME);
+				g_value_set_boxed(&value, dateTime);
+				g_date_time_unref(dateTime);
+
+				tracker_sparql_pfns.v2.resource.set_gvalue(resource, "nmm:releaseDate", &value);
+
+				g_value_unset(&value);
 				break;
+			}
+
 			case Property::Artist:
 				// TODO
 				break;
@@ -231,9 +257,22 @@ add_metadata_properties_v2(const RomMetaData *metaData, TrackerResource *resourc
 			case Property::Description:
 				tracker_sparql_pfns.v2.resource.set_string(resource, "nie:description", prop.data.str);
 				break;
-			case Property::CreationDate:
-				// TODO: Convert from Unix timestamp to "xsd:dateTime" for "nie:contentCreated".
+
+			case Property::CreationDate: {
+				// TODO: Store UTC or Local flag? Or not, since Tracker expects UTC...
+				GDateTime *const dateTime = g_date_time_new_from_unix_utc(prop.data.timestamp);
+
+				GValue value = G_VALUE_INIT;
+				g_value_init(&value, G_TYPE_DATE_TIME);
+				g_value_set_boxed(&value, dateTime);
+				g_date_time_unref(dateTime);
+
+				// FIXME: "nie:created" or "nie:contentCreated"?
+				tracker_sparql_pfns.v2.resource.set_gvalue(resource, "nie:contentCreated", &value);
+
+				g_value_unset(&value);
 				break;
+			}
 
 			// Media
 			case Property::Width:
