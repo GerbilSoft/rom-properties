@@ -26,12 +26,10 @@ using std::wstring;
 
 // libwin32common
 #include "libwin32common/RpWin32_sdk.h"
+#include "libwin32common/MiniU82T.hpp"
 #include "libwin32common/w32err.hpp"
 #include "libwin32common/w32time.h"
-
-// librptext
-#include "librptext/conversion.hpp"
-#include "librptext/wchar.hpp"
+using namespace LibWin32Common;
 
 // Windows includes.
 #include <direct.h>

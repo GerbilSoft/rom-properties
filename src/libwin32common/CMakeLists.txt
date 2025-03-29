@@ -32,6 +32,7 @@ SET(${PROJECT_NAME}_H
 	ComBase.hpp
 	propsys_xp.h
 	userdirs.hpp
+	MiniU82T.hpp
 	sdk/QITab.h
 	sdk/IListView.hpp
 	sdk/IOwnerDataCallback.hpp

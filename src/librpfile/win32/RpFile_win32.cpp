@@ -13,10 +13,8 @@
 
 // libwin32common
 #include "libwin32common/w32err.hpp"
-
-// librptext
-#include "librptext/conversion.hpp"
-#include "librptext/wchar.hpp"
+#include "libwin32common/MiniU82T.hpp"
+using namespace LibWin32Common;
 
 // librpbyteswap
 #include "librpbyteswap/byteswap_rp.h"

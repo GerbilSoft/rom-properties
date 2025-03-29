@@ -9,9 +9,9 @@
 #include "stdafx.h"
 #include "IStreamWrapper.hpp"
 
-// librptext
-#include "librptext/conversion.hpp"
-#include "librptext/wchar.hpp"
+// libwin32common
+#include "libwin32common/MiniU82T.hpp"
+using namespace LibWin32Common;
 
 // C++ STL classes
 using std::shared_ptr;
