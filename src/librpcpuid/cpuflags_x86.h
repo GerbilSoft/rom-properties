@@ -1,5 +1,5 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (librpcpuid)                         *
+ * ROM Properties Page shell extension. (librpcpuid)                       *
  * cpuflags_x86.h: x86 CPU flags detection.                                *
  *                                                                         *
  * Copyright (c) 2017-2025 by David Korth.                                 *
