@@ -36,8 +36,6 @@ extern "C" {
 #define RP_CPUFLAG_X86_F16C		((uint32_t)(1U <<  9))
 #define RP_CPUFLAG_X86_FMA3		((uint32_t)(1U << 10))
 
-#endif /* RP_CPU_I386 || RP_CPU_AMD64 */
-
 // Don't modify these!
 extern uint32_t RP_CPU_Flags_x86;
 extern int RP_CPU_Flags_x86_IsInit;	// 1 if RP_CPU_Flags_x86 has been initialized.
@@ -81,6 +79,8 @@ CPU_FLAG_X86_CHECK(AVX)
 CPU_FLAG_X86_CHECK(AVX2)
 CPU_FLAG_X86_CHECK(F16C)
 CPU_FLAG_X86_CHECK(FMA3)
+
+#endif /* RP_CPU_I386 || RP_CPU_AMD64 */
 
 #ifdef __cplusplus
 }
