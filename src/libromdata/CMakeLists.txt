@@ -422,15 +422,6 @@ ENDIF(WIN32 AND RP_LIBROMDATA_IS_DLL)
 # Optimized sources.
 INCLUDE(CPUInstructionSetFlags)
 IF(CPU_i386 OR CPU_amd64)
-	# IFUNC requires glibc.
-	# We're not checking for glibc here, but we do have preprocessor
-	# checks, so even if this does get compiled on a non-glibc system,
-	# it won't do anything.
-	# TODO: Might be supported on other Unix-like operating systems...
-	IF(UNIX AND NOT APPLE)
-		SET(${PROJECT_NAME}_IFUNC_SRCS utils/SuperMagicDrive_ifunc.cpp)
-	ENDIF(UNIX AND NOT APPLE)
-
 	# MSVC does not support MMX intrinsics in 64-bit builds.
 	# Reference: https://docs.microsoft.com/en-us/cpp/cpp/m64?view=msvc-160
 	#
@@ -529,7 +520,6 @@ ADD_LIBRARY(${PROJECT_NAME} ${${PROJECT_NAME}_LINKAGE}
 	${${PROJECT_NAME}_SRCS} ${${PROJECT_NAME}_H}
 	${${PROJECT_NAME}_NETWORKING_SRCS}
 	${${PROJECT_NAME}_CRYPTO_SRCS} ${${PROJECT_NAME}_CRYPTO_H}
-	${${PROJECT_NAME}_IFUNC_SRCS}
 	${${PROJECT_NAME}_MMX_SRCS}
 	${${PROJECT_NAME}_SSE2_SRCS}
 	${${PROJECT_NAME}_RC}

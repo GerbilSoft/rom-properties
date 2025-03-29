@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbyteswap)                    *
  * byteswap_rp.h: Byteswapping functions.                                  *
  *                                                                         *
- * Copyright (c) 2008-2024 by David Korth.                                 *
+ * Copyright (c) 2008-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -255,28 +255,6 @@ RP_LIBROMDATA_PUBLIC
 void RP_C_API rp_byte_swap_32_array_neon(uint32_t *ptr, size_t n);
 #endif /* BYTESWAP_HAS_ARM64 */
 
-#if defined(HAVE_IFUNC) && (defined(RP_CPU_I386) || defined(RP_CPU_AMD64))
-/* System has IFUNC. Use it for dispatching. */
-
-/**
- * 16-bit byteswap function.
- * @param ptr Pointer to array to swap. (MUST be 16-bit aligned!)
- * @param n Number of bytes to swap. (Must be divisible by 2; an extra odd byte will be ignored.)
- */
-RP_LIBROMDATA_PUBLIC
-void RP_C_API rp_byte_swap_16_array(uint16_t *ptr, size_t n);
-
-/**
- * 32-bit byteswap function.
- * @param ptr Pointer to array to swap. (MUST be 32-bit aligned!)
- * @param n Number of bytes to swap. (Must be divisible by 4; extra bytes will be ignored.)
- */
-RP_LIBROMDATA_PUBLIC
-void RP_C_API rp_byte_swap_32_array(uint32_t *ptr, size_t n);
-
-#else /* !HAVE_IFUNC && !(defined(RP_CPU_I386) || defined(RP_CPU_AMD64)) */
-/* System does not have IFUNC. Use inline dispatch functions. */
-
 /**
  * 16-bit byteswap function.
  * @param ptr Pointer to array to swap. (MUST be 16-bit aligned!)
@@ -284,31 +262,31 @@ void RP_C_API rp_byte_swap_32_array(uint32_t *ptr, size_t n);
  */
 static FORCEINLINE void rp_byte_swap_16_array(uint16_t *ptr, size_t n)
 {
-#  ifdef BYTESWAP_HAS_SSSE3
+#ifdef BYTESWAP_HAS_SSSE3
 	if (RP_CPU_HasSSSE3()) {
 		rp_byte_swap_16_array_ssse3(ptr, n);
 	} else
-#  endif /* BYTESWAP_HAS_SSSE3 */
-#  ifdef BYTESWAP_ALWAYS_HAS_SSE2
+#endif /* BYTESWAP_HAS_SSSE3 */
+#ifdef BYTESWAP_ALWAYS_HAS_SSE2
 	{
 		rp_byte_swap_16_array_sse2(ptr, n);
 	}
-#  else /* !BYTESWAP_ALWAYS_HAS_SSE2 */
-#    ifdef BYTESWAP_HAS_SSE2
+#else /* !BYTESWAP_ALWAYS_HAS_SSE2 */
+#  ifdef BYTESWAP_HAS_SSE2
 	if (RP_CPU_HasSSE2()) {
 		rp_byte_swap_16_array_sse2(ptr, n);
 	} else
-#    endif /* BYTESWAP_HAS_SSE2 */
-#    ifdef BYTESWAP_HAS_MMX
+#  endif /* BYTESWAP_HAS_SSE2 */
+#  ifdef BYTESWAP_HAS_MMX
 	if (RP_CPU_HasMMX()) {
 		rp_byte_swap_16_array_mmx(ptr, n);
 	} else
-#    endif /* BYTESWAP_HAS_MMX */
+#  endif /* BYTESWAP_HAS_MMX */
 	// TODO: MMX-optimized version?
 	{
 		rp_byte_swap_16_array_c(ptr, n);
 	}
-#  endif /* BYTESWAP_ALWAYS_HAS_SSE2 */
+#endif /* BYTESWAP_ALWAYS_HAS_SSE2 */
 }
 
 /**
@@ -318,35 +296,33 @@ static FORCEINLINE void rp_byte_swap_16_array(uint16_t *ptr, size_t n)
  */
 static FORCEINLINE void rp_byte_swap_32_array(uint32_t *ptr, size_t n)
 {
-#  ifdef BYTESWAP_HAS_SSSE3
+#ifdef BYTESWAP_HAS_SSSE3
 	if (RP_CPU_HasSSSE3()) {
 		rp_byte_swap_32_array_ssse3(ptr, n);
 	} else
-#  endif /* BYTESWAP_HAS_SSSE3 */
-#  ifdef BYTESWAP_ALWAYS_HAS_SSE2
+#endif /* BYTESWAP_HAS_SSSE3 */
+#ifdef BYTESWAP_ALWAYS_HAS_SSE2
 	{
 		rp_byte_swap_32_array_sse2(ptr, n);
 	}
-#  else /* !BYTESWAP_ALWAYS_HAS_SSE2 */
-#    ifdef BYTESWAP_HAS_SSE2
+#else /* !BYTESWAP_ALWAYS_HAS_SSE2 */
+#  ifdef BYTESWAP_HAS_SSE2
 	if (RP_CPU_HasSSE2()) {
 		rp_byte_swap_32_array_sse2(ptr, n);
 	} else
-#    endif /* BYTESWAP_HAS_SSE2 */
-#    if 0 /* FIXME: The MMX version is actually *slower* than the C version. */
-#    ifdef BYTESWAP_HAS_MMX
+#  endif /* BYTESWAP_HAS_SSE2 */
+#  if 0 /* FIXME: The MMX version is actually *slower* than the C version. */
+#  ifdef BYTESWAP_HAS_MMX
 	if (RP_CPU_HasMMX()) {
 		rp_byte_swap_32_array_mmx(ptr, n);
 	} else
-#    endif /* BYTESWAP_HAS_MMX */
-#    endif /* 0 */
+#  endif /* BYTESWAP_HAS_MMX */
+#  endif /* 0 */
 	{
 		rp_byte_swap_32_array_c(ptr, n);
 	}
-#  endif /* !BYTESWAP_ALWAYS_HAS_SSE2 */
+#endif /* !BYTESWAP_ALWAYS_HAS_SSE2 */
 }
-
-#endif /* HAVE_IFUNC && (defined(RP_CPU_I386) || defined(RP_CPU_AMD64)) */
 
 #ifdef __cplusplus
 }

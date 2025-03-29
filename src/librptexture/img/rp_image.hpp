@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * rp_image.hpp: Image class.                                              *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -551,7 +551,6 @@ typedef std::shared_ptr<const rp_image> rp_image_const_ptr;
  */
 inline int rp_image::un_premultiply(void)
 {
-	// FIXME: Figure out how to get IFUNC working with C++ member functions.
 #ifdef RP_IMAGE_HAS_SSE41
 	if (RP_CPU_HasSSE41()) {
 		return un_premultiply_sse41();
@@ -575,7 +574,6 @@ inline int rp_image::un_premultiply(void)
  */
 inline int rp_image::apply_chroma_key(uint32_t key)
 {
-	// FIXME: Figure out how to get IFUNC working with C++ member functions.
 #if defined(RP_IMAGE_ALWAYS_HAS_SSE2)
 	// amd64 always has SSE2.
 	return apply_chroma_key_sse2(key);
@@ -599,7 +597,6 @@ inline int rp_image::apply_chroma_key(uint32_t key)
  */
 inline int rp_image::swizzle(const char *swz_spec)
 {
-	// FIXME: Figure out how to get IFUNC working with C++ member functions.
 #if defined(RP_IMAGE_HAS_SSSE3)
 	if (RP_CPU_HasSSSE3()) {
 		return swizzle_ssse3(swz_spec);

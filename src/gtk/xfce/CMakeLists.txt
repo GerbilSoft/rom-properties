@@ -61,13 +61,6 @@ ENDIF(ENABLE_ACHIEVEMENTS)
 # CPU-specific and optimized sources.
 INCLUDE(CPUInstructionSetFlags)
 IF(CPU_i386 OR CPU_amd64)
-	# IFUNC functionality
-	INCLUDE(CheckIfuncSupport)
-	CHECK_IFUNC_SUPPORT()
-	IF(HAVE_IFUNC)
-		SET(${PROJECT_NAME}_IFUNC_SRCS GdkImageConv_ifunc.cpp)
-	ENDIF(HAVE_IFUNC)
-
 	# NOTE: SSSE3 flags are set in subprojects, not here.
 	SET(${PROJECT_NAME}_SSSE3_SRCS GdkImageConv_ssse3.cpp)
 
@@ -89,7 +82,6 @@ SET(${PROJECT_NAME}_SRCS
 	${${PROJECT_NAME}_SRCS}
 	${${PROJECT_NAME}_GTK3MAX_SRCS}
 	${${PROJECT_NAME}-notify_SRCS}
-	${${PROJECT_NAME}_IFUNC_SRCS}
 	${${PROJECT_NAME}_SSSE3_SRCS}
 	../gtk3/ThunarPlugin.cpp
 	../gtk3/ThunarMenuProvider.c

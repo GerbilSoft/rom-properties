@@ -74,6 +74,9 @@
     libfmt has faster string parsing than printf() and stringstream, and has
     guaranteed type-safe format handling using C++ templates, whereas printf
     can get tripped up because it uses C-style varargs.
+  * Removed IFUNC support. It's only supported by glibc on Linux (and possibly
+    some of the BSDs), and it adds a lot of complexity. The regular C dispatch
+    functions only have a few instructions of overhead in most cases.
 
 ## v2.4.1 (released 2024/11/12)
 
