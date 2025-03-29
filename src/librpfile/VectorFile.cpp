@@ -14,9 +14,6 @@ using std::string;
 
 namespace LibRpFile {
 
-// 128 MB *should* be a reasonable maximum...
-static constexpr off64_t VECTOR_FILE_MAX_SIZE = 128U*1024U*1024U;
-
 /**
  * Open an IRpFile backed by an std::vector.
  * The resulting IRpFile is writable.
@@ -85,7 +82,7 @@ size_t VectorFile::write(const void *ptr, size_t size)
 	if (req_size < 0) {
 		// Overflow...
 		return 0;
-	} else if (req_size > VECTOR_FILE_MAX_SIZE) {
+	} else if (req_size > MAX_SIZE) {
 		// Too much...
 		m_lastError = -ENOMEM;
 		return 0;
@@ -131,7 +128,7 @@ int VectorFile::truncate(off64_t size)
 	if (unlikely(size < 0)) {
 		m_lastError = -EINVAL;
 		return -1;
-	} else if (size > VECTOR_FILE_MAX_SIZE) {
+	} else if (size > MAX_SIZE) {
 		m_lastError = -ENOMEM;
 		return -1;
 	}

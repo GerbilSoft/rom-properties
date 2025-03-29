@@ -29,6 +29,9 @@ class RP_LIBROMDATA_PUBLIC VectorFile final : public IRpFile
 	private:
 		typedef IRpFile super;
 		RP_DISABLE_COPY(VectorFile)
+	public:
+		// 128 MB *should* be a reasonable maximum...
+		static constexpr off64_t MAX_SIZE = 128U*1024U*1024U;
 
 	public:
 		/**
