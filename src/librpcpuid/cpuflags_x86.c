@@ -19,7 +19,7 @@
 //#include "librpthreads/pthread_once.h"
 
 uint32_t RP_CPU_Flags_x86 = 0;
-int RP_CPU_Flags_x86_IsInit = 0;	// 1 if RP_CPU_Flags has been initialized.
+int RP_CPU_Flags_x86_IsInit = 0;	// 1 if RP_CPU_Flags_x86 has been initialized.
 
 /**
  * Initialize RP_CPU_Flags. (internal function)
