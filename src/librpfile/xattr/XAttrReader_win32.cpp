@@ -13,9 +13,6 @@
 // Windows SDK
 #include "libwin32common/RpWin32_sdk.h"
 
-// librptext
-#include "librptext/wchar.hpp"
-
 // C++ STL classes
 using std::string;
 using std::tstring;
@@ -40,6 +37,63 @@ static constexpr unsigned int VALID_DOS_ATTRIBUTES_FAT = \
 	FILE_ATTRIBUTE_HIDDEN | \
 	FILE_ATTRIBUTE_SYSTEM | \
 	FILE_ATTRIBUTE_ARCHIVE;
+
+/** Mini-U82T (can't use librptext here) **/
+
+#ifdef _UNICODE
+static tstring U82T_int(const char *mbs)
+{
+	const int cchWcs = MultiByteToWideChar(CP_UTF8, 0, mbs, -1, nullptr, 0);
+	if (cchWcs <= 0) {
+		return {};
+	}
+
+	tstring tstr;
+	tstr.resize(cchWcs);
+	MultiByteToWideChar(CP_UTF8, 0, mbs, -1, &tstr[0], cchWcs);
+	return tstr;
+}
+#define U82T_c(str) (U82T_int(str).c_str())
+#else /* _UNICODE */
+static inline const char *U82T_c(const char *str)
+{
+	return str;
+}
+#endif /* _UNICODE */
+
+static string W2U8(const wchar_t *wcs)
+{
+	const int cbMbs = WideCharToMultiByte(CP_UTF8, 0, wcs, -1, nullptr, 0, nullptr, nullptr);
+	if (cbMbs <= 0) {
+		return {};
+	}
+
+	string str;
+	str.resize(cbMbs);
+	WideCharToMultiByte(CP_UTF8, 0, wcs, -1, &str[0], cbMbs, nullptr, nullptr);
+	return str;
+}
+
+static string A2U8(const char *mbs)
+{
+	const int cchWcs = MultiByteToWideChar(CP_ACP, 0, mbs, -1, nullptr, 0);
+	if (cchWcs <= 0) {
+		return {};
+	}
+
+	unique_ptr<wchar_t[]> wcs(new wchar_t[cchWcs]);
+	MultiByteToWideChar(CP_ACP, 0, mbs, -1, wcs.get(), cchWcs);
+
+	const int cbUtf8 = WideCharToMultiByte(CP_UTF8, 0, wcs.get(), -1, nullptr, 0, nullptr, nullptr);
+	if (cbUtf8 <= 0) {
+		return {};
+	}
+
+	string u8str;
+	u8str.resize(cbUtf8);
+	WideCharToMultiByte(CP_UTF8, 0, wcs.get(), -1, &u8str[0], cbUtf8, nullptr, nullptr);
+	return u8str;
+}
 
 /** XAttrReaderPrivate **/
 
