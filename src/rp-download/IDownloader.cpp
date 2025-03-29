@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (rp-download)                      *
  * IDownloader.cpp: Downloader interface.                                  *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2024 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -250,11 +250,13 @@ tstring IDownloader::getOSRelease(void)
 	s_os_release += _T(' ');
 
 	// Version number
+	TCHAR buf[32];
 	if (osvi.dwMajorVersion == 10 && osvi.dwBuildNumber >= 20000) {
 		// Windows 11
 		osvi.dwMajorVersion = 11;
 	}
-	s_os_release += fmt::format(FSTR(_T("{:d}.{:d}")), osvi.dwMajorVersion, osvi.dwMinorVersion);
+	_sntprintf(buf, _countof(buf), _T("%lu.%lu"), osvi.dwMajorVersion, osvi.dwMinorVersion);
+	s_os_release += buf;
 
 #  ifdef _WIN64
 	s_os_release += _T("; Win64");
@@ -429,8 +431,10 @@ void IDownloader::createUserAgent(void)
 	Gestalt(gestaltSystemVersionMinor, &minor);
 	//Gestalt(gestaltSystemVersionBugFix, &bugfix);
 
+	char buf[32];
+	snprintf(buf, sizeof(buf), "%d.%d", major, minor);
 	m_userAgent += _T(" (Macintosh; ") _T(MAC_CPU) _T(" Mac OS X ");
-	m_userAgent += fmt::format(FSTR("{:d}.{:d}"), major, minor);
+	m_userAgent += buf;
 	m_userAgent += _T(')');
 #elif defined(__unix__)
 	// Generic UNIX fallback.
