@@ -38,7 +38,11 @@
 #endif
 #ifdef RP_CPU_AMD64
 #  define BYTESWAP_ALWAYS_HAS_SSE2 1
-#endif
+#endif /* RP_CPU_AMD64 */
+#ifdef RP_CPU_ARM64
+#  define BYTESWAP_HAS_NEON 1
+#  define BYTESWAP_ALWAYS_HAS_NEON 1
+#endif /* RP_CPU_ARM64 */
 
 #if defined(_MSC_VER)
 
@@ -230,6 +234,26 @@ void RP_C_API rp_byte_swap_16_array_ssse3(uint16_t *ptr, size_t n);
 RP_LIBROMDATA_PUBLIC
 void RP_C_API rp_byte_swap_32_array_ssse3(uint32_t *ptr, size_t n);
 #endif /* BYTESWAP_HAS_SSSE3 */
+
+#ifdef BYTESWAP_HAS_NEON
+/**
+ * 16-bit byteswap function.
+ * NEON-optimized version.
+ * @param ptr Pointer to array to swap. (MUST be 16-bit aligned!)
+ * @param n Number of bytes to swap. (Must be divisible by 2; an extra odd byte will be ignored.)
+ */
+RP_LIBROMDATA_PUBLIC
+void RP_C_API rp_byte_swap_16_array_neon(uint16_t *ptr, size_t n);
+
+/**
+ * 32-bit byteswap function.
+ * NEON-optimized version.
+ * @param ptr Pointer to array to swap. (MUST be 32-bit aligned!)
+ * @param n Number of bytes to swap. (Must be divisible by 4; extra bytes will be ignored.)
+ */
+RP_LIBROMDATA_PUBLIC
+void RP_C_API rp_byte_swap_32_array_neon(uint32_t *ptr, size_t n);
+#endif /* BYTESWAP_HAS_ARM64 */
 
 #if defined(HAVE_IFUNC) && (defined(RP_CPU_I386) || defined(RP_CPU_AMD64))
 /* System has IFUNC. Use it for dispatching. */

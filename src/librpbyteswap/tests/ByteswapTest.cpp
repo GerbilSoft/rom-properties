@@ -354,8 +354,8 @@ DO_ARRAY_32_unQWORD_BENCHMARK	(c, true, "")
 
 DO_ARRAY_16_TEST		(c, 2, true, "")
 DO_ARRAY_16_BENCHMARK		(c, 2, true, "")
-//DO_ARRAY_32_TEST		(c, 4, true, "")
-//DO_ARRAY_32_BENCHMARK		(c, 4, true, "")
+DO_ARRAY_32_TEST		(c, 4, true, "")
+DO_ARRAY_32_BENCHMARK		(c, 4, true, "")
 
 #ifdef BYTESWAP_HAS_MMX
 // MMX-optimized tests
@@ -407,6 +407,23 @@ DO_ARRAY_16_BENCHMARK		(ssse3, 2, RP_CPU_HasSSSE3(), "*** SSSE3 is not supported
 DO_ARRAY_32_TEST		(ssse3, 4, RP_CPU_HasSSSE3(), "*** SSSE3 is not supported on this CPU. Skipping test.\n")
 DO_ARRAY_32_BENCHMARK		(ssse3, 4, RP_CPU_HasSSSE3(), "*** SSSE3 is not supported on this CPU. Skipping test.\n")
 #endif /* BYTESWAP_HAS_SSSE3 */
+
+#ifdef BYTESWAP_HAS_NEON
+// ARM64-optimized tests
+DO_ARRAY_16_TEST		(neon, 0, 1 /* TODO */, "*** NEON is not supported on this CPU. Skipping test.\n")
+DO_ARRAY_16_BENCHMARK		(neon, 0, 1 /* TODO */, "*** NEON is not supported on this CPU. Skipping test.\n")
+DO_ARRAY_16_unDWORD_TEST	(neon, 1 /* TODO */, "*** NEON is not supported on this CPU. Skipping test.\n")
+DO_ARRAY_16_unDWORD_BENCHMARK	(neon, 1 /* TODO */, "*** NEON is not supported on this CPU. Skipping test.\n")
+DO_ARRAY_32_TEST		(neon, 0, 1 /* TODO */, "*** NEON is not supported on this CPU. Skipping test.\n")
+DO_ARRAY_32_BENCHMARK		(neon, 0, 1 /* TODO */, "*** NEON is not supported on this CPU. Skipping test.\n")
+DO_ARRAY_32_unQWORD_TEST	(neon, 1 /* TODO */, "*** NEON is not supported on this CPU. Skipping test.\n")
+DO_ARRAY_32_unQWORD_BENCHMARK	(neon, 1 /* TODO */, "*** NEON is not supported on this CPU. Skipping test.\n")
+
+DO_ARRAY_16_TEST		(neon, 2, 1 /* TODO */, "*** NEON is not supported on this CPU. Skipping test.\n")
+DO_ARRAY_16_BENCHMARK		(neon, 2, 1 /* TODO */, "*** NEON is not supported on this CPU. Skipping test.\n")
+DO_ARRAY_32_TEST		(neon, 4, 1 /* TODO */, "*** NEON is not supported on this CPU. Skipping test.\n")
+DO_ARRAY_32_BENCHMARK		(neon, 4, 1 /* TODO */, "*** NEON is not supported on this CPU. Skipping test.\n")
+#endif /* BYTESWAP_HAS_NEON */
 
 // NOTE: Add more instruction sets to the #ifdef if other optimizations are added.
 #if defined(BYTESWAP_HAS_MMX) || defined(BYTESWAP_HAS_SSE2) || defined(BYTESWAP_HAS_SSSE3)
