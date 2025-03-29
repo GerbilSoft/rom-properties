@@ -12,6 +12,7 @@
 
 // TextFuncs
 #include "../conversion.hpp"
+#include "../formatting.hpp"
 #include "../utf8_strlen.hpp"
 #include "librpbyteswap/byteorder.h"
 using namespace LibRpText;

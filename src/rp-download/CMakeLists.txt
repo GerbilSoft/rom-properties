@@ -108,7 +108,7 @@ TARGET_INCLUDE_DIRECTORIES(${PROJECT_NAME}
 		$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>			# build
 	)
 IF(WIN32)
-	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE win32common rptext)
+	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE win32common rptext-noi18n)
 	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE wininet advapi32)
 	# Delay-load shell32.dll and ole32.dll to prevent a performance penalty due to gdi32.dll.
 	# Reference: https://randomascii.wordpress.com/2018/12/03/a-not-called-function-can-cause-a-5x-slowdown/

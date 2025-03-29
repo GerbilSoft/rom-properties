@@ -62,7 +62,8 @@ SET(${PROJECT_NAME}_SRCS
 	fourCC.cpp
 	libc.c
 	specialized.cpp
-	utf8_strlen.cpp)
+	utf8_strlen.cpp
+	)
 # Headers
 SET(${PROJECT_NAME}_H
 	conversion.hpp
@@ -72,7 +73,17 @@ SET(${PROJECT_NAME}_H
 	specialized.cpp
 	utf8_strlen.hpp
 	wchar.hpp
-	RP_CP_tbls.hpp)
+	RP_CP_tbls.hpp
+	)
+
+# Sources that require libi18n
+SET(${PROJECT_NAME}_i18n_SRCS
+	formatting.cpp
+	)
+# Headers that require libi18n
+SET(${PROJECT_NAME}_i18n_H
+	formatting.hpp
+	)
 
 IF(WIN32)
 	SET(${PROJECT_NAME}_OS_SRCS conversion_win32.cpp)
@@ -90,18 +101,31 @@ CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.lib${PROJECT_NAME}.h.in" "${C
 
 # NOTE: ${PROJECT_NAME} is the original target.
 # ${PROJECT_NAME}-dll is the target with dllimport/dllexport for libromdata.
+# ${PROJECT_NAME}-noi18n leaves out formatting.cpp so we don't end up
+# linking in libi18n and libgnuintl in rp-download.
 IF(RP_LIBROMDATA_IS_DLL AND WIN32)
 	# On Win32, the dll target needs dllimport/dllexport.
-	SET(TARGETS ${PROJECT_NAME} ${PROJECT_NAME}-dll)
+	SET(TARGETS ${PROJECT_NAME} ${PROJECT_NAME}-noi18n ${PROJECT_NAME}-dll)
 ELSE()
 	# On other platforms, the dll target will be an alias to the regular target.
 	# That will be set up later, since the regular target doesn't exist yet.
-	SET(TARGETS ${PROJECT_NAME})
+	SET(TARGETS ${PROJECT_NAME} ${PROJECT_NAME}-noi18n)
 ENDIF()
 
 FOREACH(_target ${TARGETS})
+	IF(NOT ${_target} STREQUAL "${PROJECT_NAME}-noi18n")
+		# Standard build: Include i18n sources.
+		SET(_target_i18n_SRCS ${${PROJECT_NAME}_i18n_SRCS})
+		SET(_target_i18n_H ${${PROJECT_NAME}_i18n_H})
+	ELSE()
+		# noi18n build: Don't include i18n sources.
+		UNSET(_target_i18n_SRCS)
+		UNSET(_target_i18n_H)
+	ENDIF()
+
 	ADD_LIBRARY(${_target} STATIC
 		${${PROJECT_NAME}_SRCS} ${${PROJECT_NAME}_H}
+		${_target_i18n_SRCS} ${_target_i18n_H}
 		${${PROJECT_NAME}_OS_SRCS} ${${PROJECT_NAME}_OS_H}
 		${${PROJECT_NAME}_CRYPTO_SRCS} ${${PROJECT_NAME}_CRYPTO_H}
 		${${PROJECT_NAME}_CRYPTO_OS_SRCS} ${${PROJECT_NAME}_CRYPTO_OS_H}
@@ -166,9 +190,12 @@ FOREACH(_target ${TARGETS})
 	ENDIF(ENABLE_NLS)
 
 	# libfmt
-	IF(Fmt_FOUND)
-		TARGET_LINK_LIBRARIES(${_target} PRIVATE ${Fmt_LIBRARY})
-	ENDIF(Fmt_FOUND)
+	IF(NOT ${_target} STREQUAL "${PROJECT_NAME}-noi18n")
+		# Standard build: libfmt is used by formatting.cpp.
+		IF(Fmt_FOUND)
+			TARGET_LINK_LIBRARIES(${_target} PRIVATE ${Fmt_LIBRARY})
+		ENDIF(Fmt_FOUND)
+	ENDIF(NOT ${_target} STREQUAL "${PROJECT_NAME}-noi18n")
 ENDFOREACH(_target)
 UNSET(_target_suffix)
 
