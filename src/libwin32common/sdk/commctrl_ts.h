@@ -254,27 +254,33 @@ static FORCEINLINE BOOL ListView_GetItemRect(_In_ HWND hwnd, _In_ int i, _Out_ R
 	return STATIC_CAST(BOOL)(STATIC_CAST(DWORD)(SNDMSG(hwnd, LVM_GETITEMRECT, STATIC_CAST(WPARAM)(i), REINTERPRET_CAST(LPARAM)(prc))));
 }
 
-#if 0 /* TODO */
-#define ListView_SetItemPosition(hwndLV, i, x, y) \
-    (BOOL)SNDMSG((hwndLV), LVM_SETITEMPOSITION, (WPARAM)(int)(i), MAKELPARAM((x), (y)))
+#undef ListView_SetItemPosition
+static FORCEINLINE BOOL ListView_SetItemPosition(_In_ HWND hwndLV, _In_ int i, _In_ int x, _In_ int y)
+	{ return STATIC_CAST(BOOL)(STATIC_CAST(DWORD)(SNDMSG(hwndLV, LVM_SETITEMPOSITION, i, MAKELPARAM(x, y)))); }
 
-#define ListView_GetItemPosition(hwndLV, i, ppt) \
-    (BOOL)SNDMSG((hwndLV), LVM_GETITEMPOSITION, (WPARAM)(int)(i), (LPARAM)(POINT *)(ppt))
+#undef ListView_GetItemPosition
+static FORCEINLINE BOOL ListView_GetItemPosition(_In_ HWND hwndLV, _In_ int i, _Out_ POINT *ppt)
+	{ return STATIC_CAST(BOOL)(STATIC_CAST(DWORD)(SNDMSG(hwndLV, LVM_GETITEMPOSITION, i, REINTERPRET_CAST(LPARAM)(ppt)))); }
 
-#define ListView_GetStringWidth(hwndLV, psz) \
-    (int)SNDMSG((hwndLV), LVM_GETSTRINGWIDTH, 0, (LPARAM)(LPCTSTR)(psz))
+#undef ListView_GetStringWidth
+static FORCEINLINE int ListView_GetStringWidth(_In_ HWND hwndLV, _In_ LPCTSTR psz)
+	{ return STATIC_CAST(int)(STATIC_CAST(DWORD)(SNDMSG(hwndLV, LVM_GETSTRINGWIDTH, 0, REINTERPRET_CAST(LPARAM)(psz)))); }
 
-#define ListView_HitTest(hwndLV, pinfo) \
-    (int)SNDMSG((hwndLV), LVM_HITTEST, 0, (LPARAM)(LV_HITTESTINFO *)(pinfo))
-#define ListView_HitTestEx(hwndLV, pinfo) \
-    (int)SNDMSG((hwndLV), LVM_HITTEST, (WPARAM)-1, (LPARAM)(LV_HITTESTINFO *)(pinfo))
+#undef ListView_HitTest
+static FORCEINLINE int ListView_HitTest(_In_ HWND hwndLV, _Inout_ LV_HITTESTINFO *pinfo)
+	{ return STATIC_CAST(int)(STATIC_CAST(DWORD)(SNDMSG(hwndLV, LVM_HITTEST, 0, REINTERPRET_CAST(LPARAM)(pinfo)))); }
 
-#define ListView_EnsureVisible(hwndLV, i, fPartialOK) \
-    (BOOL)SNDMSG((hwndLV), LVM_ENSUREVISIBLE, (WPARAM)(int)(i), MAKELPARAM((fPartialOK), 0))
+#undef ListView_HitTestEx
+static FORCEINLINE int ListView_HitTestEx(_In_ HWND hwndLV, _Inout_ LV_HITTESTINFO *pinfo)
+	{ return STATIC_CAST(int)(STATIC_CAST(DWORD)(SNDMSG(hwndLV, LVM_HITTEST, STATIC_CAST(WPARAM)(-1), REINTERPRET_CAST(LPARAM)(pinfo)))); }
 
-#define ListView_Scroll(hwndLV, dx, dy) \
-    (BOOL)SNDMSG((hwndLV), LVM_SCROLL, (WPARAM)(int)(dx), (LPARAM)(int)(dy))
-#endif /* TODO */
+#undef ListView_EnsureVisible
+static FORCEINLINE BOOL ListView_EnsureVisible(_In_ HWND hwndLV, _In_ int i, _In_ BOOL fPartialOK)
+	{ return STATIC_CAST(BOOL)(STATIC_CAST(DWORD)(SNDMSG(hwndLV, LVM_ENSUREVISIBLE, STATIC_CAST(WPARAM)(i), MAKELPARAM(fPartialOK, 0)))); }
+
+#undef ListView_Scroll
+static FORCEINLINE BOOL ListView_Scroll(_In_ HWND hwndLV, _In_ int dx, _In_ int dy)
+	{ return STATIC_CAST(BOOL)(STATIC_CAST(DWORD)(SNDMSG(hwndLV, LVM_SCROLL, STATIC_CAST(WPARAM)(dx), STATIC_CAST(LPARAM)(dy)))); }
 
 #undef ListView_RedrawItems
 static FORCEINLINE BOOL ListView_RedrawItems(_In_ HWND hwndLV, _In_ int iFirst, _In_ int iLast)
