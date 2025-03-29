@@ -426,7 +426,7 @@ DO_ARRAY_32_BENCHMARK		(neon, 4, 1 /* TODO */, "*** NEON is not supported on thi
 #endif /* BYTESWAP_HAS_NEON */
 
 // NOTE: Add more instruction sets to the #ifdef if other optimizations are added.
-#if defined(BYTESWAP_HAS_MMX) || defined(BYTESWAP_HAS_SSE2) || defined(BYTESWAP_HAS_SSSE3)
+#if defined(BYTESWAP_HAS_MMX) || defined(BYTESWAP_HAS_SSE2) || defined(BYTESWAP_HAS_SSSE3) || defined(BYTESWAP_HAS_NEON)
 // Dispatch functions
 DO_ARRAY_16_TEST		(dispatch, 0, true, "")
 DO_ARRAY_16_BENCHMARK		(dispatch, 0, true, "")
@@ -441,7 +441,7 @@ DO_ARRAY_16_TEST		(dispatch, 2, true, "")
 DO_ARRAY_16_BENCHMARK		(dispatch, 2, true, "")
 DO_ARRAY_32_TEST		(dispatch, 4, true, "")
 DO_ARRAY_32_BENCHMARK		(dispatch, 4, true, "")
-#endif /* BYTESWAP_HAS_MMX || BYTESWAP_HAS_SSE2 || BYTESWAP_HAS_SSSE3 */
+#endif /* BYTESWAP_HAS_MMX || BYTESWAP_HAS_SSE2 || BYTESWAP_HAS_SSSE3 || BYTESWAP_HAS_NEON */
 
 } }
 
