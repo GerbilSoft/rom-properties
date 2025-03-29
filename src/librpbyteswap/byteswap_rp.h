@@ -39,8 +39,11 @@
 #ifdef RP_CPU_AMD64
 #  define BYTESWAP_ALWAYS_HAS_SSE2 1
 #endif /* RP_CPU_AMD64 */
-#ifdef RP_CPU_ARM64
+#if defined(RP_CPU_ARM) || defined(RP_CPU_ARM64)
+#  include "librpcpuid/cpuflags_arm.h"
 #  define BYTESWAP_HAS_NEON 1
+#endif
+#ifdef RP_CPU_ARM64
 #  define BYTESWAP_ALWAYS_HAS_NEON 1
 #endif /* RP_CPU_ARM64 */
 
@@ -333,7 +336,7 @@ static FORCEINLINE void rp_byte_swap_32_array(uint32_t *ptr, size_t n)
 #  endif /* BYTESWAP_HAS_MMX */
 #  endif /* 0 */
 #  ifdef BYTESWAP_HAS_NEON
-	if (RP_CPU_ARM_HasNEON()) {
+	if (RP_CPU_arm_HasNEON()) {
 		rp_byte_swap_32_array_neon(ptr, n);
 	} else
 #  endif /* BYTESWAP_HAS_SSE2 */
