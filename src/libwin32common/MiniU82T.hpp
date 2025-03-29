@@ -25,14 +25,8 @@ std::wstring U82W_int(const char *mbs);
 #  define U82T_c(str) (U82W_int(str).c_str())
 #  define U82T_s(str) (U82W_int(str.c_str()).c_str())
 #else /* _UNICODE */
-static inline const char *U82T_c(const char *str)
-{
-	return str;
-}
-static inline const char *U82T_s(const std::string &str)
-{
-	return str.c_str();
-}
+#  define U82T_c(str) (str)
+#  define U82T_s(str) (str.c_str())
 #endif /* _UNICODE */
 
 std::string W2U8(const wchar_t *wcs);
