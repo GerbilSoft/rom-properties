@@ -38,7 +38,7 @@ static void RP_CPU_Flags_x86_Init_int(void)
 #endif /* RP_CPU_I386 */
 	uint8_t can_XSAVE = 0;
 
-	// Make sure the CPU flags variable is empty.
+	// Initialize the CPU flags variable.
 	RP_CPU_Flags_x86 = 0;
 
 	// Check if cpuid is supported.
