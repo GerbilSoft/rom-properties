@@ -410,19 +410,19 @@ DO_ARRAY_32_BENCHMARK		(ssse3, 4, RP_CPU_x86_HasSSSE3(), "*** SSSE3 is not suppo
 
 #ifdef BYTESWAP_HAS_NEON
 // ARM64-optimized tests
-DO_ARRAY_16_TEST		(neon, 0, 1 /* TODO */, "*** NEON is not supported on this CPU. Skipping test.\n")
-DO_ARRAY_16_BENCHMARK		(neon, 0, 1 /* TODO */, "*** NEON is not supported on this CPU. Skipping test.\n")
-DO_ARRAY_16_unDWORD_TEST	(neon, 1 /* TODO */, "*** NEON is not supported on this CPU. Skipping test.\n")
-DO_ARRAY_16_unDWORD_BENCHMARK	(neon, 1 /* TODO */, "*** NEON is not supported on this CPU. Skipping test.\n")
-DO_ARRAY_32_TEST		(neon, 0, 1 /* TODO */, "*** NEON is not supported on this CPU. Skipping test.\n")
-DO_ARRAY_32_BENCHMARK		(neon, 0, 1 /* TODO */, "*** NEON is not supported on this CPU. Skipping test.\n")
-DO_ARRAY_32_unQWORD_TEST	(neon, 1 /* TODO */, "*** NEON is not supported on this CPU. Skipping test.\n")
-DO_ARRAY_32_unQWORD_BENCHMARK	(neon, 1 /* TODO */, "*** NEON is not supported on this CPU. Skipping test.\n")
+DO_ARRAY_16_TEST		(neon, 0, RP_CPU_arm_HasNEON(), "*** NEON is not supported on this CPU. Skipping test.\n")
+DO_ARRAY_16_BENCHMARK		(neon, 0, RP_CPU_arm_HasNEON(), "*** NEON is not supported on this CPU. Skipping test.\n")
+DO_ARRAY_16_unDWORD_TEST	(neon, RP_CPU_arm_HasNEON(), "*** NEON is not supported on this CPU. Skipping test.\n")
+DO_ARRAY_16_unDWORD_BENCHMARK	(neon, RP_CPU_arm_HasNEON(), "*** NEON is not supported on this CPU. Skipping test.\n")
+DO_ARRAY_32_TEST		(neon, 0, RP_CPU_arm_HasNEON(), "*** NEON is not supported on this CPU. Skipping test.\n")
+DO_ARRAY_32_BENCHMARK		(neon, 0, RP_CPU_arm_HasNEON(), "*** NEON is not supported on this CPU. Skipping test.\n")
+DO_ARRAY_32_unQWORD_TEST	(neon, RP_CPU_arm_HasNEON(), "*** NEON is not supported on this CPU. Skipping test.\n")
+DO_ARRAY_32_unQWORD_BENCHMARK	(neon, RP_CPU_arm_HasNEON(), "*** NEON is not supported on this CPU. Skipping test.\n")
 
-DO_ARRAY_16_TEST		(neon, 2, 1 /* TODO */, "*** NEON is not supported on this CPU. Skipping test.\n")
-DO_ARRAY_16_BENCHMARK		(neon, 2, 1 /* TODO */, "*** NEON is not supported on this CPU. Skipping test.\n")
-DO_ARRAY_32_TEST		(neon, 4, 1 /* TODO */, "*** NEON is not supported on this CPU. Skipping test.\n")
-DO_ARRAY_32_BENCHMARK		(neon, 4, 1 /* TODO */, "*** NEON is not supported on this CPU. Skipping test.\n")
+DO_ARRAY_16_TEST		(neon, 2, RP_CPU_arm_HasNEON(), "*** NEON is not supported on this CPU. Skipping test.\n")
+DO_ARRAY_16_BENCHMARK		(neon, 2, RP_CPU_arm_HasNEON(), "*** NEON is not supported on this CPU. Skipping test.\n")
+DO_ARRAY_32_TEST		(neon, 4, RP_CPU_arm_HasNEON(), "*** NEON is not supported on this CPU. Skipping test.\n")
+DO_ARRAY_32_BENCHMARK		(neon, 4, RP_CPU_arm_HasNEON(), "*** NEON is not supported on this CPU. Skipping test.\n")
 #endif /* BYTESWAP_HAS_NEON */
 
 // NOTE: Add more instruction sets to the #ifdef if other optimizations are added.
