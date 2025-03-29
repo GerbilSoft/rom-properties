@@ -127,7 +127,7 @@ static inline rp_image_ptr fromLinear16(PixelFormat px_format,
 	return fromLinear16_sse2(px_format, width, height, img_buf, img_siz, stride);
 #else /* !IMAGEDECODER_ALWAYS_HAS_SSE2 */
 #  ifdef IMAGEDECODER_HAS_SSE2
-	if (RP_CPU_HasSSE2()) {
+	if (RP_CPU_x86_HasSSE2()) {
 		return fromLinear16_sse2(px_format, width, height, img_buf, img_siz, stride);
 	} else
 #  endif /* IMAGEDECODER_HAS_SSE2 */
@@ -191,7 +191,7 @@ static inline rp_image_ptr fromLinear24(PixelFormat px_format,
 	const uint8_t *RESTRICT img_buf, size_t img_siz, int stride = 0)
 {
 #ifdef IMAGEDECODER_HAS_SSSE3
-	if (RP_CPU_HasSSSE3()) {
+	if (RP_CPU_x86_HasSSSE3()) {
 		return fromLinear24_ssse3(px_format, width, height, img_buf, img_siz, stride);
 	} else
 #endif /* IMAGEDECODER_HAS_SSSE3 */
@@ -253,7 +253,7 @@ static inline rp_image_ptr fromLinear32(PixelFormat px_format,
 	const uint32_t *RESTRICT img_buf, size_t img_siz, int stride = 0)
 {
 #ifdef IMAGEDECODER_HAS_SSSE3
-	if (RP_CPU_HasSSSE3()) {
+	if (RP_CPU_x86_HasSSSE3()) {
 		return fromLinear32_ssse3(px_format, width, height, img_buf, img_siz, stride);
 	} else
 #endif /* IMAGEDECODER_HAS_SSSE3 */

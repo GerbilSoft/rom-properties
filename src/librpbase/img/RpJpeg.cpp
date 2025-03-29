@@ -500,7 +500,7 @@ rp_image_ptr load(IRpFile *file)
 				// which is preferred because it usually skips an intermediate
 				// conversion step.
 #ifdef RPJPEG_HAS_SSSE3
-				if (RP_CPU_HasSSSE3()) {
+				if (RP_CPU_x86_HasSSSE3()) {
 					ssse3::decodeBGRtoARGB(img, &cinfo, buffer);
 					break;
 				}

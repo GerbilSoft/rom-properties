@@ -50,7 +50,7 @@ GdkPixbuf *rp_image_to_GdkPixbuf_ssse3(const LibRpTexture::rp_image *img);
 inline GdkPixbuf *rp_image_to_GdkPixbuf(const LibRpTexture::rp_image *img)
 {
 #ifdef GDKIMAGECONV_HAS_SSSE3
-	if (RP_CPU_HasSSSE3()) {
+	if (RP_CPU_x86_HasSSSE3()) {
 		return rp_image_to_GdkPixbuf_ssse3(img);
 	} else
 #endif /* GDKIMAGECONV_HAS_SSSE3 */

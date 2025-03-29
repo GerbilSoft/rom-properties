@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpcpuid)                       *
  * cpuflags_x86.c: x86 CPU flags detection.                                *
  *                                                                         *
- * Copyright (c) 2017-2024 by David Korth.                                 *
+ * Copyright (c) 2017-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -18,14 +18,14 @@
 // FIXME: Cannot use librpthreads at the moment due to static linkage.
 //#include "librpthreads/pthread_once.h"
 
-uint32_t RP_CPU_Flags = 0;
-int RP_CPU_Flags_Init = 0;	// 1 if RP_CPU_Flags has been initialized.
+uint32_t RP_CPU_Flags_x86 = 0;
+int RP_CPU_Flags_x86_IsInit = 0;	// 1 if RP_CPU_Flags has been initialized.
 
 /**
  * Initialize RP_CPU_Flags. (internal function)
  * Called by pthread_once().
  */
-static void RP_CPU_InitCPUFlags_int(void)
+static void RP_CPU_Flags_x86_Init_int(void)
 {
 	unsigned int regs[4];	// %eax, %ebx, %ecx, %edx
 	unsigned int maxFunc;
@@ -39,13 +39,13 @@ static void RP_CPU_InitCPUFlags_int(void)
 	uint8_t can_XSAVE = 0;
 
 	// Make sure the CPU flags variable is empty.
-	RP_CPU_Flags = 0;
+	RP_CPU_Flags_x86 = 0;
 
 	// Check if cpuid is supported.
 	if (!is_cpuid_supported()) {
 		// CPUID is not supported.
 		// This CPU must be an early 486 or older.
-		RP_CPU_Flags_Init = 1;
+		RP_CPU_Flags_x86_IsInit = 1;
 		return;
 	}
 
@@ -56,7 +56,7 @@ static void RP_CPU_InitCPUFlags_int(void)
 	maxFunc = regs[0];
 	if (maxFunc < CPUID_PROC_INFO_FEATURE_BITS) {
 		// No CPUID functions are supported.
-		RP_CPU_Flags_Init = 1;
+		RP_CPU_Flags_x86_IsInit = 1;
 		return;
 	}
 
@@ -68,7 +68,7 @@ static void RP_CPU_InitCPUFlags_int(void)
 		// MMX is supported.
 		// NOTE: Not officially supported on amd64 in 64-bit,
 		// but all known implementations support it.
-		RP_CPU_Flags |= RP_CPUFLAG_X86_MMX;
+		RP_CPU_Flags_x86 |= RP_CPUFLAG_X86_MMX;
 	}
 
 	if (regs[REG_EDX] & CPUFLAG_IA32_EDX_SSE) {
@@ -116,29 +116,38 @@ static void RP_CPU_InitCPUFlags_int(void)
 	// amd64: MMX *does* function, but use is not recommended.
 	// Use SSE or SSE2 instead on 64-bit.
 	// Also, SSE and SSE2 are always supported on amd64.
-	RP_CPU_Flags |= (RP_CPUFLAG_X86_MMX | RP_CPUFLAG_X86_SSE | RP_CPUFLAG_X86_SSE2);
+	RP_CPU_Flags_x86 |= (RP_CPUFLAG_X86_MMX | RP_CPUFLAG_X86_SSE | RP_CPUFLAG_X86_SSE2);
 #endif /* RP_CPU_I386 */
 
 	// Check for other SSE instruction sets.
 	if (can_FXSAVE) {
 #ifdef RP_CPU_I386
-		if (regs[REG_EDX] & CPUFLAG_IA32_EDX_SSE)	// this check is *probably* not needed?
-			RP_CPU_Flags |= CPUFLAG_IA32_EDX_SSE;
-		if (regs[REG_EDX] & CPUFLAG_IA32_EDX_SSE2)
-			RP_CPU_Flags |= RP_CPUFLAG_X86_SSE2;
+		if (regs[REG_EDX] & CPUFLAG_IA32_EDX_SSE) {
+			// this check is *probably* not needed?
+			RP_CPU_Flags_x86 |= CPUFLAG_IA32_EDX_SSE;
+		}
+		if (regs[REG_EDX] & CPUFLAG_IA32_EDX_SSE2) {
+			RP_CPU_Flags_x86 |= RP_CPUFLAG_X86_SSE2;
+		}
 #endif /* RP_CPU_I386 */
-		if (regs[REG_ECX] & CPUFLAG_IA32_ECX_SSE3)
-			RP_CPU_Flags |= RP_CPUFLAG_X86_SSE3;
-		if (regs[REG_ECX] & CPUFLAG_IA32_ECX_SSSE3)
-			RP_CPU_Flags |= RP_CPUFLAG_X86_SSSE3;
-		if (regs[REG_ECX] & CPUFLAG_IA32_ECX_SSE41)
-			RP_CPU_Flags |= RP_CPUFLAG_X86_SSE41;
-		if (regs[REG_ECX] & CPUFLAG_IA32_ECX_SSE42)
-			RP_CPU_Flags |= RP_CPUFLAG_X86_SSE42;
-		if (regs[REG_ECX] & CPUFLAG_IA32_ECX_F16C)
-			RP_CPU_Flags |= RP_CPUFLAG_X86_F16C;
-		if (regs[REG_ECX] & CPUFLAG_IA32_ECX_FMA3)
-			RP_CPU_Flags |= RP_CPUFLAG_X86_FMA3;
+		if (regs[REG_ECX] & CPUFLAG_IA32_ECX_SSE3) {
+			RP_CPU_Flags_x86 |= RP_CPUFLAG_X86_SSE3;
+		}
+		if (regs[REG_ECX] & CPUFLAG_IA32_ECX_SSSE3) {
+			RP_CPU_Flags_x86 |= RP_CPUFLAG_X86_SSSE3;
+		}
+		if (regs[REG_ECX] & CPUFLAG_IA32_ECX_SSE41) {
+			RP_CPU_Flags_x86 |= RP_CPUFLAG_X86_SSE41;
+		}
+		if (regs[REG_ECX] & CPUFLAG_IA32_ECX_SSE42) {
+			RP_CPU_Flags_x86 |= RP_CPUFLAG_X86_SSE42;
+		}
+		if (regs[REG_ECX] & CPUFLAG_IA32_ECX_F16C) {
+			RP_CPU_Flags_x86 |= RP_CPUFLAG_X86_F16C;
+		}
+		if (regs[REG_ECX] & CPUFLAG_IA32_ECX_FMA3) {
+			RP_CPU_Flags_x86 |= RP_CPUFLAG_X86_FMA3;
+		}
 	}
 
 	// Check for XSAVE and OSXSAVE.
@@ -147,8 +156,9 @@ static void RP_CPU_InitCPUFlags_int(void)
 	                             (CPUFLAG_IA32_ECX_XSAVE | CPUFLAG_IA32_ECX_OSXSAVE);
 	if (can_XSAVE) {
 		// XSAVE and OSXSAVE are set.
-		if (regs[REG_ECX] & CPUFLAG_IA32_ECX_AVX)
-			RP_CPU_Flags |= RP_CPUFLAG_X86_AVX;
+		if (regs[REG_ECX] & CPUFLAG_IA32_ECX_AVX) {
+			RP_CPU_Flags_x86 |= RP_CPUFLAG_X86_AVX;
+		}
 	}
 
 	// Get extended features, including AVX2.
@@ -156,25 +166,26 @@ static void RP_CPU_InitCPUFlags_int(void)
 	if (can_XSAVE && maxFunc >= CPUID_EXT_FEATURES) {
 		cpuid_count(CPUID_EXT_FEATURES, 0, regs);
 
-		if (regs[REG_EBX] & CPUFLAG_IA32_FN7p0_EBX_AVX2)
-			RP_CPU_Flags |= RP_CPUFLAG_X86_AVX2;
+		if (regs[REG_EBX] & CPUFLAG_IA32_FN7p0_EBX_AVX2) {
+			RP_CPU_Flags_x86 |= RP_CPUFLAG_X86_AVX2;
+		}
 	}
 
 	// CPU flags initialized.
-	RP_CPU_Flags_Init = 1;
+	RP_CPU_Flags_x86_IsInit = 1;
 }
 
 /**
  * Initialize RP_CPU_Flags.
  */
-void RP_C_API RP_CPU_InitCPUFlags(void)
+void RP_C_API RP_CPU_Flags_x86_Init(void)
 {
 	// FIXME: Cannot use librpthreads at the moment due to static linkage.
 	//static pthread_once_t cpu_once_control = PTHREAD_ONCE_INIT;
-	//pthread_once(&cpu_once_control, RP_CPU_InitCPUFlags_int);
+	//pthread_once(&cpu_once_control, RP_CPU_Flags_x86_Init_int);
 	static uint8_t cpu_once_control = 0;
 	if (cpu_once_control == 0) {
-		RP_CPU_InitCPUFlags_int();
+		RP_CPU_Flags_x86_Init_int();
 		cpu_once_control = 1;
 	}
 }

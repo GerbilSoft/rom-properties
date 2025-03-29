@@ -263,7 +263,7 @@ void RP_C_API rp_byte_swap_32_array_neon(uint32_t *ptr, size_t n);
 static FORCEINLINE void rp_byte_swap_16_array(uint16_t *ptr, size_t n)
 {
 #ifdef BYTESWAP_HAS_SSSE3
-	if (RP_CPU_HasSSSE3()) {
+	if (RP_CPU_x86_HasSSSE3()) {
 		rp_byte_swap_16_array_ssse3(ptr, n);
 	} else
 #endif /* BYTESWAP_HAS_SSSE3 */
@@ -277,17 +277,17 @@ static FORCEINLINE void rp_byte_swap_16_array(uint16_t *ptr, size_t n)
 	}
 #else
 #  ifdef BYTESWAP_HAS_SSE2
-	if (RP_CPU_HasSSE2()) {
+	if (RP_CPU_x86_HasSSE2()) {
 		rp_byte_swap_16_array_sse2(ptr, n);
 	} else
 #  endif /* BYTESWAP_HAS_SSE2 */
 #  ifdef BYTESWAP_HAS_MMX
-	if (RP_CPU_HasMMX()) {
+	if (RP_CPU_x86_HasMMX()) {
 		rp_byte_swap_16_array_mmx(ptr, n);
 	} else
 #  endif /* BYTESWAP_HAS_MMX */
 #  ifdef BYTESWAP_HAS_NEON
-	if (RP_CPU_ARM_HasNEON()) {
+	if (RP_CPU_arm_HasNEON()) {
 		rp_byte_swap_16_array_neon(ptr, n);
 	} else
 #  endif /* BYTESWAP_HAS_SSE2 */
@@ -307,7 +307,7 @@ static FORCEINLINE void rp_byte_swap_32_array(uint32_t *ptr, size_t n)
 {
 
 #ifdef BYTESWAP_HAS_SSSE3
-	if (RP_CPU_HasSSSE3()) {
+	if (RP_CPU_x86_HasSSSE3()) {
 		rp_byte_swap_32_array_ssse3(ptr, n);
 	} else
 #endif /* BYTESWAP_HAS_SSSE3 */
@@ -321,13 +321,13 @@ static FORCEINLINE void rp_byte_swap_32_array(uint32_t *ptr, size_t n)
 	}
 #else
 #  ifdef BYTESWAP_HAS_SSE2
-	if (RP_CPU_HasSSE2()) {
+	if (RP_CPU_x86_HasSSE2()) {
 		rp_byte_swap_32_array_sse2(ptr, n);
 	} else
 #  endif /* BYTESWAP_HAS_SSE2 */
 #  if 0 /* FIXME: The MMX version is actually *slower* than the C version. */
 #  ifdef BYTESWAP_HAS_MMX
-	if (RP_CPU_HasMMX()) {
+	if (RP_CPU_x86_HasMMX()) {
 		rp_byte_swap_32_array_mmx(ptr, n);
 	} else
 #  endif /* BYTESWAP_HAS_MMX */

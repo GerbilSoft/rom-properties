@@ -89,12 +89,12 @@ static inline void decodeBlock(uint8_t *RESTRICT pDest, const uint8_t *RESTRICT 
 	decodeBlock_sse2(pDest, pSrc);
 #else /* SMD_ALWAYS_HAS_SSE2 */
 # ifdef SMD_HAS_SSE2
-	if (RP_CPU_HasSSE2()) {
+	if (RP_CPU_x86_HasSSE2()) {
 		decodeBlock_sse2(pDest, pSrc);
 	} else
 # endif /* SMD_HAS_SSE2 */
 # ifdef SMD_HAS_MMX
-	if (RP_CPU_HasMMX()) {
+	if (RP_CPU_x86_HasMMX()) {
 		decodeBlock_mmx(pDest, pSrc);
 	} else
 #endif /* SMD_HAS_MMX */

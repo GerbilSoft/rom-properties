@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpcpuid)                         *
  * cpuflags_x86.h: x86 CPU flags detection.                                *
  *                                                                         *
- * Copyright (c) 2017-2024 by David Korth.                                 *
+ * Copyright (c) 2017-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -39,30 +39,30 @@ extern "C" {
 #endif /* RP_CPU_I386 || RP_CPU_AMD64 */
 
 // Don't modify these!
-extern uint32_t RP_CPU_Flags;
-extern int RP_CPU_Flags_Init;	// 1 if RP_CPU_Flags has been initialized.
+extern uint32_t RP_CPU_Flags_x86;
+extern int RP_CPU_Flags_x86_IsInit;	// 1 if RP_CPU_Flags_x86 has been initialized.
 
 /**
- * Initialize RP_CPU_Flags.
+ * Initialize RP_CPU_Flags_x86.
  */
-void RP_C_API RP_CPU_InitCPUFlags(void);
+void RP_C_API RP_CPU_Flags_x86_Init(void);
 
 // Convenience macros to determine if the CPU supports a certain flag.
 
 // Macro for flags that need to be tested on both i386 and amd64 CPUs.
 #define CPU_FLAG_X86_CHECK(flag) \
-static FORCEINLINE int RP_CPU_Has##flag(void) \
+static FORCEINLINE int RP_CPU_x86_Has##flag(void) \
 { \
-	if (unlikely(!RP_CPU_Flags_Init)) { \
-		RP_CPU_InitCPUFlags(); \
+	if (unlikely(!RP_CPU_Flags_x86_IsInit)) { \
+		RP_CPU_Flags_x86_Init(); \
 	} \
-	return (int)(RP_CPU_Flags & RP_CPUFLAG_X86_##flag); \
+	return (int)(RP_CPU_Flags_x86 & RP_CPUFLAG_X86_##flag); \
 }
 
 // Macro for flags that always exist on amd64 and only need to be tested on i386.
 #ifdef RP_CPU_AMD64
 #  define CPU_FLAG_X86_CHECK_i386only(flag) \
-static FORCEINLINE int RP_CPU_Has##flag(void) \
+static FORCEINLINE int RP_CPU_x86_Has##flag(void) \
 { \
 	return 1; \
 }
