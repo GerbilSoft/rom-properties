@@ -215,7 +215,7 @@ TEST_F(ByteswapTest, rp_byte_swap_16_array_##opt##_unalign##unalign##_benchmark)
  * @param errmsg	Error message to display if the optimization cannot be used.
  */
 #define DO_ARRAY_16_unDWORD_TEST(opt, expr, errmsg) \
-TEST_F(ByteswapTest, rp_byte_swap_16_array_unDWORD_##opt##_test) \
+TEST_F(ByteswapTest, rp_byte_swap_16_array_##opt##_unDWORD_test) \
 { \
 	if (!(expr)) { \
 		fputs(errmsg, stderr); \
@@ -241,7 +241,7 @@ TEST_F(ByteswapTest, rp_byte_swap_16_array_unDWORD_##opt##_test) \
  * @param errmsg	Error message to display if the optimization cannot be used.
  */
 #define DO_ARRAY_16_unDWORD_BENCHMARK(opt, expr, errmsg) \
-TEST_F(ByteswapTest, rp_byte_swap_16_array_unDWORD_##opt##_benchmark) \
+TEST_F(ByteswapTest, rp_byte_swap_16_array_##opt##_unDWORD_benchmark) \
 { \
 	if (!(expr)) { \
 		fputs(errmsg, stderr); \
@@ -305,7 +305,7 @@ TEST_F(ByteswapTest, rp_byte_swap_32_array_##opt##_unalign##unalign##_benchmark)
  * @param errmsg	Error message to display if the optimization cannot be used.
  */
 #define DO_ARRAY_32_unQWORD_TEST(opt, expr, errmsg) \
-TEST_F(ByteswapTest, rp_byte_swap_32_array_unQWORD_##opt##_test) \
+TEST_F(ByteswapTest, rp_byte_swap_32_array_##opt##_unQWORD_test) \
 { \
 	if (!(expr)) { \
 		fputs(errmsg, stderr); \
@@ -331,7 +331,7 @@ TEST_F(ByteswapTest, rp_byte_swap_32_array_unQWORD_##opt##_test) \
  * @param errmsg	Error message to display if the optimization cannot be used.
  */
 #define DO_ARRAY_32_unQWORD_BENCHMARK(opt, expr, errmsg) \
-TEST_F(ByteswapTest, rp_byte_swap_32_array_unQWORD_##opt##_benchmark) \
+TEST_F(ByteswapTest, rp_byte_swap_32_array_##opt##_unQWORD_benchmark) \
 { \
 	if (!(expr)) { \
 		fputs(errmsg, stderr); \
