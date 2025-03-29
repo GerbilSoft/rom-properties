@@ -30,6 +30,10 @@ static inline const char *U82T_c(const char *str)
 {
 	return str;
 }
+static inline const char *U82T_s(const std::string &str)
+{
+	return str.c_str();
+}
 #endif /* _UNICODE */
 
 std::string W2U8(const wchar_t *wcs);
