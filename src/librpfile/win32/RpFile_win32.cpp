@@ -26,6 +26,9 @@ using namespace LibWin32Common;
 using std::string;
 using std::wstring;
 
+// tcharx
+#include "tcharx.h"
+
 #ifdef _MSC_VER
 // MSVC: Exception handling for /DELAYLOAD.
 #include "libwin32common/DelayLoadHelper.h"

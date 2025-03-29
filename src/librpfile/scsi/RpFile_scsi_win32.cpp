@@ -43,6 +43,7 @@
 #  pragma warning(pop)
 #endif /* _MSC_VER */
 
+// tcharx
 #include "tcharx.h"
 
 namespace LibRpFile {

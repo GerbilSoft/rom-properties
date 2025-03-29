@@ -10,7 +10,6 @@
 #pragma once
 
 #include "RpWin32_sdk.h"
-#include "tcharx.h"
 
 // C++ STL classes
 #include <memory>

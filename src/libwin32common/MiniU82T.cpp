@@ -11,7 +11,6 @@
 
 // C++ STL classes
 using std::string;
-using std::tstring;
 using std::unique_ptr;
 using std::wstring;
 
