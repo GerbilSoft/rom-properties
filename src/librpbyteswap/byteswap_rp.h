@@ -267,11 +267,15 @@ static FORCEINLINE void rp_byte_swap_16_array(uint16_t *ptr, size_t n)
 		rp_byte_swap_16_array_ssse3(ptr, n);
 	} else
 #endif /* BYTESWAP_HAS_SSSE3 */
-#ifdef BYTESWAP_ALWAYS_HAS_SSE2
+#if defined(BYTESWAP_ALWAYS_HAS_SSE2)
 	{
 		rp_byte_swap_16_array_sse2(ptr, n);
 	}
-#else /* !BYTESWAP_ALWAYS_HAS_SSE2 */
+#elif defined(BYTESWAP_ALWAYS_HAS_NEON)
+	{
+		rp_byte_swap_16_array_neon(ptr, n);
+	}
+#else
 #  ifdef BYTESWAP_HAS_SSE2
 	if (RP_CPU_HasSSE2()) {
 		rp_byte_swap_16_array_sse2(ptr, n);
@@ -282,6 +286,11 @@ static FORCEINLINE void rp_byte_swap_16_array(uint16_t *ptr, size_t n)
 		rp_byte_swap_16_array_mmx(ptr, n);
 	} else
 #  endif /* BYTESWAP_HAS_MMX */
+#  ifdef BYTESWAP_HAS_NEON
+	if (RP_CPU_ARM_HasNEON()) {
+		rp_byte_swap_16_array_neon(ptr, n);
+	} else
+#  endif /* BYTESWAP_HAS_SSE2 */
 	// TODO: MMX-optimized version?
 	{
 		rp_byte_swap_16_array_c(ptr, n);
@@ -296,16 +305,21 @@ static FORCEINLINE void rp_byte_swap_16_array(uint16_t *ptr, size_t n)
  */
 static FORCEINLINE void rp_byte_swap_32_array(uint32_t *ptr, size_t n)
 {
+
 #ifdef BYTESWAP_HAS_SSSE3
 	if (RP_CPU_HasSSSE3()) {
 		rp_byte_swap_32_array_ssse3(ptr, n);
 	} else
 #endif /* BYTESWAP_HAS_SSSE3 */
-#ifdef BYTESWAP_ALWAYS_HAS_SSE2
+#if defined(BYTESWAP_ALWAYS_HAS_SSE2)
 	{
 		rp_byte_swap_32_array_sse2(ptr, n);
 	}
-#else /* !BYTESWAP_ALWAYS_HAS_SSE2 */
+#elif defined(BYTESWAP_ALWAYS_HAS_NEON)
+	{
+		rp_byte_swap_32_array_neon(ptr, n);
+	}
+#else
 #  ifdef BYTESWAP_HAS_SSE2
 	if (RP_CPU_HasSSE2()) {
 		rp_byte_swap_32_array_sse2(ptr, n);
@@ -318,6 +332,11 @@ static FORCEINLINE void rp_byte_swap_32_array(uint32_t *ptr, size_t n)
 	} else
 #  endif /* BYTESWAP_HAS_MMX */
 #  endif /* 0 */
+#  ifdef BYTESWAP_HAS_NEON
+	if (RP_CPU_ARM_HasNEON()) {
+		rp_byte_swap_32_array_neon(ptr, n);
+	} else
+#  endif /* BYTESWAP_HAS_SSE2 */
 	{
 		rp_byte_swap_32_array_c(ptr, n);
 	}
