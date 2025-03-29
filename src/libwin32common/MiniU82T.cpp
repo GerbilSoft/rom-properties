@@ -29,50 +29,43 @@ wstring U82W_int(const char *mbs)
 	return wstr;
 }
 
-string W2U8(const wchar_t *wcs)
+string W2U8(const wchar_t *wcs, int len)
 {
-	const int cbMbs = WideCharToMultiByte(CP_UTF8, 0, wcs, -1, nullptr, 0, nullptr, nullptr);
+	const int cbMbs = WideCharToMultiByte(CP_UTF8, 0, wcs, len, nullptr, 0, nullptr, nullptr);
 	if (cbMbs <= 0) {
 		return {};
 	}
 
 	string str;
 	str.resize(cbMbs);
-	WideCharToMultiByte(CP_UTF8, 0, wcs, -1, &str[0], cbMbs, nullptr, nullptr);
-	return str;
-}
-
-string W2U8(const wstring &wstr)
-{
-	const int cbMbs = WideCharToMultiByte(CP_UTF8, 0, wstr.data(), static_cast<int>(wstr.size()), nullptr, 0, nullptr, nullptr);
-	if (cbMbs <= 0) {
-		return {};
+	WideCharToMultiByte(CP_UTF8, 0, wcs, len, &str[0], cbMbs, nullptr, nullptr);
+	if (len < 0 && str[cbMbs-1] == '\0') {
+		str.resize(cbMbs-1);
 	}
-
-	string str;
-	str.resize(cbMbs);
-	WideCharToMultiByte(CP_UTF8, 0, wstr.data(), static_cast<int>(wstr.size()), &str[0], cbMbs, nullptr, nullptr);
 	return str;
 }
 
-string A2U8(const char *mbs)
+string A2U8(const char *mbs, int len)
 {
-	const int cchWcs = MultiByteToWideChar(CP_ACP, 0, mbs, -1, nullptr, 0);
+	int cchWcs = MultiByteToWideChar(CP_ACP, 0, mbs, len, nullptr, 0);
 	if (cchWcs <= 0) {
 		return {};
 	}
 
 	unique_ptr<wchar_t[]> wcs(new wchar_t[cchWcs]);
 	MultiByteToWideChar(CP_ACP, 0, mbs, -1, wcs.get(), cchWcs);
+	if (len < 0 && wcs[cchWcs-1] == L'\0') {
+		cchWcs--;
+	}
 
-	const int cbUtf8 = WideCharToMultiByte(CP_UTF8, 0, wcs.get(), -1, nullptr, 0, nullptr, nullptr);
+	const int cbUtf8 = WideCharToMultiByte(CP_UTF8, 0, wcs.get(), cchWcs, nullptr, 0, nullptr, nullptr);
 	if (cbUtf8 <= 0) {
 		return {};
 	}
 
 	string u8str;
 	u8str.resize(cbUtf8);
-	WideCharToMultiByte(CP_UTF8, 0, wcs.get(), -1, &u8str[0], cbUtf8, nullptr, nullptr);
+	WideCharToMultiByte(CP_UTF8, 0, wcs.get(), cchWcs, &u8str[0], cbUtf8, nullptr, nullptr);
 	return u8str;
 }
 

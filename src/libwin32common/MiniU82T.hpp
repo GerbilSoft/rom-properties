@@ -29,9 +29,16 @@ std::wstring U82W_int(const char *mbs);
 #  define U82T_s(str) (str.c_str())
 #endif /* _UNICODE */
 
-std::string W2U8(const wchar_t *wcs);
-std::string W2U8(const std::wstring &wstr);
+std::string W2U8(const wchar_t *wcs, int len = -1);
+static inline std::string W2U8(const std::wstring &wstr)
+{
+	return W2U8(wstr.data(), static_cast<int>(wstr.size()));
+}
 
-std::string A2U8(const char *mbs);
+std::string A2U8(const char *mbs, int len = -1);
+static inline std::string A2U8(const std::string &astr)
+{
+	return A2U8(astr.data(), static_cast<int>(astr.size()));
+}
 
 }
