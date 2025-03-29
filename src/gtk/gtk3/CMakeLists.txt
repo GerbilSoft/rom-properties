@@ -99,7 +99,6 @@ SET(${PROJECT_NAME}_SRCS
 	${${PROJECT_NAME}_GTK3MAX_SRCS}
 	${${PROJECT_NAME}_GTK3MIN_SRCS}
 	${${PROJECT_NAME}-notify_SRCS}
-	${${PROJECT_NAME}_IFUNC_SRCS}
 	NautilusPlugin.cpp
 	NautilusPropertyPageProvider.cpp
 	NautilusMenuProvider.c

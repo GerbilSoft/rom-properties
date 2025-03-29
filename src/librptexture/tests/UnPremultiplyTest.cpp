@@ -80,7 +80,7 @@ TEST_F(UnPremultiplyTest, un_premultiply_cpp_benchmark)
  */
 TEST_F(UnPremultiplyTest, un_premultiply_sse41_benchmark)
 {
-	if (!RP_CPU_HasSSE41()) {
+	if (!RP_CPU_x86_HasSSE41()) {
 		fputs("*** SSE4.1 is not supported on this CPU. Skipping test.\n", stderr);
 		return;
 	}

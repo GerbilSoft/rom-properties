@@ -215,7 +215,7 @@ TEST_F(ByteswapTest, rp_byte_swap_16_array_##opt##_unalign##unalign##_benchmark)
  * @param errmsg	Error message to display if the optimization cannot be used.
  */
 #define DO_ARRAY_16_unDWORD_TEST(opt, expr, errmsg) \
-TEST_F(ByteswapTest, rp_byte_swap_16_array_unDWORD_##opt##_test) \
+TEST_F(ByteswapTest, rp_byte_swap_16_array_##opt##_unDWORD_test) \
 { \
 	if (!(expr)) { \
 		fputs(errmsg, stderr); \
@@ -241,7 +241,7 @@ TEST_F(ByteswapTest, rp_byte_swap_16_array_unDWORD_##opt##_test) \
  * @param errmsg	Error message to display if the optimization cannot be used.
  */
 #define DO_ARRAY_16_unDWORD_BENCHMARK(opt, expr, errmsg) \
-TEST_F(ByteswapTest, rp_byte_swap_16_array_unDWORD_##opt##_benchmark) \
+TEST_F(ByteswapTest, rp_byte_swap_16_array_##opt##_unDWORD_benchmark) \
 { \
 	if (!(expr)) { \
 		fputs(errmsg, stderr); \
@@ -305,7 +305,7 @@ TEST_F(ByteswapTest, rp_byte_swap_32_array_##opt##_unalign##unalign##_benchmark)
  * @param errmsg	Error message to display if the optimization cannot be used.
  */
 #define DO_ARRAY_32_unQWORD_TEST(opt, expr, errmsg) \
-TEST_F(ByteswapTest, rp_byte_swap_32_array_unQWORD_##opt##_test) \
+TEST_F(ByteswapTest, rp_byte_swap_32_array_##opt##_unQWORD_test) \
 { \
 	if (!(expr)) { \
 		fputs(errmsg, stderr); \
@@ -331,7 +331,7 @@ TEST_F(ByteswapTest, rp_byte_swap_32_array_unQWORD_##opt##_test) \
  * @param errmsg	Error message to display if the optimization cannot be used.
  */
 #define DO_ARRAY_32_unQWORD_BENCHMARK(opt, expr, errmsg) \
-TEST_F(ByteswapTest, rp_byte_swap_32_array_unQWORD_##opt##_benchmark) \
+TEST_F(ByteswapTest, rp_byte_swap_32_array_##opt##_unQWORD_benchmark) \
 { \
 	if (!(expr)) { \
 		fputs(errmsg, stderr); \
@@ -354,62 +354,79 @@ DO_ARRAY_32_unQWORD_BENCHMARK	(c, true, "")
 
 DO_ARRAY_16_TEST		(c, 2, true, "")
 DO_ARRAY_16_BENCHMARK		(c, 2, true, "")
-//DO_ARRAY_32_TEST		(c, 4, true, "")
-//DO_ARRAY_32_BENCHMARK		(c, 4, true, "")
+DO_ARRAY_32_TEST		(c, 4, true, "")
+DO_ARRAY_32_BENCHMARK		(c, 4, true, "")
 
 #ifdef BYTESWAP_HAS_MMX
 // MMX-optimized tests
-DO_ARRAY_16_TEST		(mmx, 0, RP_CPU_HasMMX(), "*** MMX is not supported on this CPU. Skipping test.\n")
-DO_ARRAY_16_BENCHMARK		(mmx, 0 ,RP_CPU_HasMMX(), "*** MMX is not supported on this CPU. Skipping test.\n")
-DO_ARRAY_16_unDWORD_TEST	(mmx, RP_CPU_HasMMX(), "*** MMX is not supported on this CPU. Skipping test.\n")
-DO_ARRAY_16_unDWORD_BENCHMARK	(mmx, RP_CPU_HasMMX(), "*** MMX is not supported on this CPU. Skipping test.\n")
-DO_ARRAY_32_TEST		(mmx, 0, RP_CPU_HasMMX(), "*** MMX is not supported on this CPU. Skipping test.\n")
-DO_ARRAY_32_BENCHMARK		(mmx, 0, RP_CPU_HasMMX(), "*** MMX is not supported on this CPU. Skipping test.\n")
-DO_ARRAY_32_unQWORD_TEST	(mmx, RP_CPU_HasMMX(), "*** MMX is not supported on this CPU. Skipping test.\n")
-DO_ARRAY_32_unQWORD_BENCHMARK	(mmx, RP_CPU_HasMMX(), "*** MMX is not supported on this CPU. Skipping test.\n")
+DO_ARRAY_16_TEST		(mmx, 0, RP_CPU_x86_HasMMX(), "*** MMX is not supported on this CPU. Skipping test.\n")
+DO_ARRAY_16_BENCHMARK		(mmx, 0 ,RP_CPU_x86_HasMMX(), "*** MMX is not supported on this CPU. Skipping test.\n")
+DO_ARRAY_16_unDWORD_TEST	(mmx, RP_CPU_x86_HasMMX(), "*** MMX is not supported on this CPU. Skipping test.\n")
+DO_ARRAY_16_unDWORD_BENCHMARK	(mmx, RP_CPU_x86_HasMMX(), "*** MMX is not supported on this CPU. Skipping test.\n")
+DO_ARRAY_32_TEST		(mmx, 0, RP_CPU_x86_HasMMX(), "*** MMX is not supported on this CPU. Skipping test.\n")
+DO_ARRAY_32_BENCHMARK		(mmx, 0, RP_CPU_x86_HasMMX(), "*** MMX is not supported on this CPU. Skipping test.\n")
+DO_ARRAY_32_unQWORD_TEST	(mmx, RP_CPU_x86_HasMMX(), "*** MMX is not supported on this CPU. Skipping test.\n")
+DO_ARRAY_32_unQWORD_BENCHMARK	(mmx, RP_CPU_x86_HasMMX(), "*** MMX is not supported on this CPU. Skipping test.\n")
 
-DO_ARRAY_16_TEST		(mmx, 2, RP_CPU_HasMMX(), "*** MMX is not supported on this CPU. Skipping test.\n")
-DO_ARRAY_16_BENCHMARK		(mmx, 2 ,RP_CPU_HasMMX(), "*** MMX is not supported on this CPU. Skipping test.\n")
-DO_ARRAY_32_TEST		(mmx, 4, RP_CPU_HasMMX(), "*** MMX is not supported on this CPU. Skipping test.\n")
-DO_ARRAY_32_BENCHMARK		(mmx, 4, RP_CPU_HasMMX(), "*** MMX is not supported on this CPU. Skipping test.\n")
+DO_ARRAY_16_TEST		(mmx, 2, RP_CPU_x86_HasMMX(), "*** MMX is not supported on this CPU. Skipping test.\n")
+DO_ARRAY_16_BENCHMARK		(mmx, 2 ,RP_CPU_x86_HasMMX(), "*** MMX is not supported on this CPU. Skipping test.\n")
+DO_ARRAY_32_TEST		(mmx, 4, RP_CPU_x86_HasMMX(), "*** MMX is not supported on this CPU. Skipping test.\n")
+DO_ARRAY_32_BENCHMARK		(mmx, 4, RP_CPU_x86_HasMMX(), "*** MMX is not supported on this CPU. Skipping test.\n")
 #endif /* BYTESWAP_HAS_MMX */
 
 #ifdef BYTESWAP_HAS_SSE2
 // SSE2-optimized tests
-DO_ARRAY_16_TEST		(sse2, 0, RP_CPU_HasSSE2(), "*** SSE2 is not supported on this CPU. Skipping test.\n")
-DO_ARRAY_16_BENCHMARK		(sse2, 0, RP_CPU_HasSSE2(), "*** SSE2 is not supported on this CPU. Skipping test.\n")
-DO_ARRAY_16_unDWORD_TEST	(sse2, RP_CPU_HasSSE2(), "*** SSE2 is not supported on this CPU. Skipping test.\n")
-DO_ARRAY_16_unDWORD_BENCHMARK	(sse2, RP_CPU_HasSSE2(), "*** SSE2 is not supported on this CPU. Skipping test.\n")
-DO_ARRAY_32_TEST		(sse2, 0, RP_CPU_HasSSE2(), "*** SSE2 is not supported on this CPU. Skipping test.\n")
-DO_ARRAY_32_BENCHMARK		(sse2, 0, RP_CPU_HasSSE2(), "*** SSE2 is not supported on this CPU. Skipping test.\n")
-DO_ARRAY_32_unQWORD_TEST	(sse2, RP_CPU_HasSSE2(), "*** SSE2 is not supported on this CPU. Skipping test.\n")
-DO_ARRAY_32_unQWORD_BENCHMARK	(sse2, RP_CPU_HasSSE2(), "*** SSE2 is not supported on this CPU. Skipping test.\n")
+DO_ARRAY_16_TEST		(sse2, 0, RP_CPU_x86_HasSSE2(), "*** SSE2 is not supported on this CPU. Skipping test.\n")
+DO_ARRAY_16_BENCHMARK		(sse2, 0, RP_CPU_x86_HasSSE2(), "*** SSE2 is not supported on this CPU. Skipping test.\n")
+DO_ARRAY_16_unDWORD_TEST	(sse2, RP_CPU_x86_HasSSE2(), "*** SSE2 is not supported on this CPU. Skipping test.\n")
+DO_ARRAY_16_unDWORD_BENCHMARK	(sse2, RP_CPU_x86_HasSSE2(), "*** SSE2 is not supported on this CPU. Skipping test.\n")
+DO_ARRAY_32_TEST		(sse2, 0, RP_CPU_x86_HasSSE2(), "*** SSE2 is not supported on this CPU. Skipping test.\n")
+DO_ARRAY_32_BENCHMARK		(sse2, 0, RP_CPU_x86_HasSSE2(), "*** SSE2 is not supported on this CPU. Skipping test.\n")
+DO_ARRAY_32_unQWORD_TEST	(sse2, RP_CPU_x86_HasSSE2(), "*** SSE2 is not supported on this CPU. Skipping test.\n")
+DO_ARRAY_32_unQWORD_BENCHMARK	(sse2, RP_CPU_x86_HasSSE2(), "*** SSE2 is not supported on this CPU. Skipping test.\n")
 
-DO_ARRAY_16_TEST		(sse2, 2, RP_CPU_HasSSE2(), "*** SSE2 is not supported on this CPU. Skipping test.\n")
-DO_ARRAY_16_BENCHMARK		(sse2, 2, RP_CPU_HasSSE2(), "*** SSE2 is not supported on this CPU. Skipping test.\n")
-DO_ARRAY_32_TEST		(sse2, 4, RP_CPU_HasSSE2(), "*** SSE2 is not supported on this CPU. Skipping test.\n")
-DO_ARRAY_32_BENCHMARK		(sse2, 4, RP_CPU_HasSSE2(), "*** SSE2 is not supported on this CPU. Skipping test.\n")
+DO_ARRAY_16_TEST		(sse2, 2, RP_CPU_x86_HasSSE2(), "*** SSE2 is not supported on this CPU. Skipping test.\n")
+DO_ARRAY_16_BENCHMARK		(sse2, 2, RP_CPU_x86_HasSSE2(), "*** SSE2 is not supported on this CPU. Skipping test.\n")
+DO_ARRAY_32_TEST		(sse2, 4, RP_CPU_x86_HasSSE2(), "*** SSE2 is not supported on this CPU. Skipping test.\n")
+DO_ARRAY_32_BENCHMARK		(sse2, 4, RP_CPU_x86_HasSSE2(), "*** SSE2 is not supported on this CPU. Skipping test.\n")
 #endif /* BYTESWAP_HAS_SSE2 */
 
 #ifdef BYTESWAP_HAS_SSSE3
 // SSSE3-optimized tests
-DO_ARRAY_16_TEST		(ssse3, 0, RP_CPU_HasSSSE3(), "*** SSSE3 is not supported on this CPU. Skipping test.\n")
-DO_ARRAY_16_BENCHMARK		(ssse3, 0, RP_CPU_HasSSSE3(), "*** SSSE3 is not supported on this CPU. Skipping test.\n")
-DO_ARRAY_16_unDWORD_TEST	(ssse3, RP_CPU_HasSSSE3(), "*** SSSE3 is not supported on this CPU. Skipping test.\n")
-DO_ARRAY_16_unDWORD_BENCHMARK	(ssse3, RP_CPU_HasSSSE3(), "*** SSSE3 is not supported on this CPU. Skipping test.\n")
-DO_ARRAY_32_TEST		(ssse3, 0, RP_CPU_HasSSSE3(), "*** SSSE3 is not supported on this CPU. Skipping test.\n")
-DO_ARRAY_32_BENCHMARK		(ssse3, 0, RP_CPU_HasSSSE3(), "*** SSSE3 is not supported on this CPU. Skipping test.\n")
-DO_ARRAY_32_unQWORD_TEST	(ssse3, RP_CPU_HasSSSE3(), "*** SSSE3 is not supported on this CPU. Skipping test.\n")
-DO_ARRAY_32_unQWORD_BENCHMARK	(ssse3, RP_CPU_HasSSSE3(), "*** SSSE3 is not supported on this CPU. Skipping test.\n")
+DO_ARRAY_16_TEST		(ssse3, 0, RP_CPU_x86_HasSSSE3(), "*** SSSE3 is not supported on this CPU. Skipping test.\n")
+DO_ARRAY_16_BENCHMARK		(ssse3, 0, RP_CPU_x86_HasSSSE3(), "*** SSSE3 is not supported on this CPU. Skipping test.\n")
+DO_ARRAY_16_unDWORD_TEST	(ssse3, RP_CPU_x86_HasSSSE3(), "*** SSSE3 is not supported on this CPU. Skipping test.\n")
+DO_ARRAY_16_unDWORD_BENCHMARK	(ssse3, RP_CPU_x86_HasSSSE3(), "*** SSSE3 is not supported on this CPU. Skipping test.\n")
+DO_ARRAY_32_TEST		(ssse3, 0, RP_CPU_x86_HasSSSE3(), "*** SSSE3 is not supported on this CPU. Skipping test.\n")
+DO_ARRAY_32_BENCHMARK		(ssse3, 0, RP_CPU_x86_HasSSSE3(), "*** SSSE3 is not supported on this CPU. Skipping test.\n")
+DO_ARRAY_32_unQWORD_TEST	(ssse3, RP_CPU_x86_HasSSSE3(), "*** SSSE3 is not supported on this CPU. Skipping test.\n")
+DO_ARRAY_32_unQWORD_BENCHMARK	(ssse3, RP_CPU_x86_HasSSSE3(), "*** SSSE3 is not supported on this CPU. Skipping test.\n")
 
-DO_ARRAY_16_TEST		(ssse3, 2, RP_CPU_HasSSSE3(), "*** SSSE3 is not supported on this CPU. Skipping test.\n")
-DO_ARRAY_16_BENCHMARK		(ssse3, 2, RP_CPU_HasSSSE3(), "*** SSSE3 is not supported on this CPU. Skipping test.\n")
-DO_ARRAY_32_TEST		(ssse3, 4, RP_CPU_HasSSSE3(), "*** SSSE3 is not supported on this CPU. Skipping test.\n")
-DO_ARRAY_32_BENCHMARK		(ssse3, 4, RP_CPU_HasSSSE3(), "*** SSSE3 is not supported on this CPU. Skipping test.\n")
+DO_ARRAY_16_TEST		(ssse3, 2, RP_CPU_x86_HasSSSE3(), "*** SSSE3 is not supported on this CPU. Skipping test.\n")
+DO_ARRAY_16_BENCHMARK		(ssse3, 2, RP_CPU_x86_HasSSSE3(), "*** SSSE3 is not supported on this CPU. Skipping test.\n")
+DO_ARRAY_32_TEST		(ssse3, 4, RP_CPU_x86_HasSSSE3(), "*** SSSE3 is not supported on this CPU. Skipping test.\n")
+DO_ARRAY_32_BENCHMARK		(ssse3, 4, RP_CPU_x86_HasSSSE3(), "*** SSSE3 is not supported on this CPU. Skipping test.\n")
 #endif /* BYTESWAP_HAS_SSSE3 */
 
+#ifdef BYTESWAP_HAS_NEON
+// ARM64-optimized tests
+DO_ARRAY_16_TEST		(neon, 0, RP_CPU_arm_HasNEON(), "*** NEON is not supported on this CPU. Skipping test.\n")
+DO_ARRAY_16_BENCHMARK		(neon, 0, RP_CPU_arm_HasNEON(), "*** NEON is not supported on this CPU. Skipping test.\n")
+DO_ARRAY_16_unDWORD_TEST	(neon, RP_CPU_arm_HasNEON(), "*** NEON is not supported on this CPU. Skipping test.\n")
+DO_ARRAY_16_unDWORD_BENCHMARK	(neon, RP_CPU_arm_HasNEON(), "*** NEON is not supported on this CPU. Skipping test.\n")
+DO_ARRAY_32_TEST		(neon, 0, RP_CPU_arm_HasNEON(), "*** NEON is not supported on this CPU. Skipping test.\n")
+DO_ARRAY_32_BENCHMARK		(neon, 0, RP_CPU_arm_HasNEON(), "*** NEON is not supported on this CPU. Skipping test.\n")
+DO_ARRAY_32_unQWORD_TEST	(neon, RP_CPU_arm_HasNEON(), "*** NEON is not supported on this CPU. Skipping test.\n")
+DO_ARRAY_32_unQWORD_BENCHMARK	(neon, RP_CPU_arm_HasNEON(), "*** NEON is not supported on this CPU. Skipping test.\n")
+
+DO_ARRAY_16_TEST		(neon, 2, RP_CPU_arm_HasNEON(), "*** NEON is not supported on this CPU. Skipping test.\n")
+DO_ARRAY_16_BENCHMARK		(neon, 2, RP_CPU_arm_HasNEON(), "*** NEON is not supported on this CPU. Skipping test.\n")
+DO_ARRAY_32_TEST		(neon, 4, RP_CPU_arm_HasNEON(), "*** NEON is not supported on this CPU. Skipping test.\n")
+DO_ARRAY_32_BENCHMARK		(neon, 4, RP_CPU_arm_HasNEON(), "*** NEON is not supported on this CPU. Skipping test.\n")
+#endif /* BYTESWAP_HAS_NEON */
+
 // NOTE: Add more instruction sets to the #ifdef if other optimizations are added.
-#if defined(BYTESWAP_HAS_MMX) || defined(BYTESWAP_HAS_SSE2) || defined(BYTESWAP_HAS_SSSE3)
+#if defined(BYTESWAP_HAS_MMX) || defined(BYTESWAP_HAS_SSE2) || defined(BYTESWAP_HAS_SSSE3) || defined(BYTESWAP_HAS_NEON)
 // Dispatch functions
 DO_ARRAY_16_TEST		(dispatch, 0, true, "")
 DO_ARRAY_16_BENCHMARK		(dispatch, 0, true, "")
@@ -424,7 +441,7 @@ DO_ARRAY_16_TEST		(dispatch, 2, true, "")
 DO_ARRAY_16_BENCHMARK		(dispatch, 2, true, "")
 DO_ARRAY_32_TEST		(dispatch, 4, true, "")
 DO_ARRAY_32_BENCHMARK		(dispatch, 4, true, "")
-#endif /* BYTESWAP_HAS_MMX || BYTESWAP_HAS_SSE2 || BYTESWAP_HAS_SSSE3 */
+#endif /* BYTESWAP_HAS_MMX || BYTESWAP_HAS_SSE2 || BYTESWAP_HAS_SSSE3 || BYTESWAP_HAS_NEON */
 
 } }
 

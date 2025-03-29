@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * SuperMagicDrive.cpp: Super Magic Drive deinterleaving function.         *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -76,32 +76,6 @@ void RP_LIBROMDATA_PUBLIC decodeBlock_sse2(uint8_t *RESTRICT pDest, const uint8_
 
 /** Dispatch functions. **/
 
-#if defined(HAVE_IFUNC) && (defined(RP_CPU_I386) || defined(RP_CPU_AMD64))
-#  if defined(SMD_ALWAYS_HAS_SSE2)
-
-// System does support IFUNC, but it's always guaranteed to have SSE2.
-// Eliminate the IFUNC dispatch on this system.
-
-/**
- * Decode a Super Magic Drive interleaved block.
- * NOTE: Pointers must be 16-byte aligned if using SSE2.
- * @param dest	[out] Destination block. (Must be 16 KB.)
- * @param src	[in] Source block. (Must be 16 KB.)
- */
-static inline void decodeBlock(uint8_t *RESTRICT pDest, const uint8_t *RESTRICT pSrc)
-{
-	// amd64 always has SSE2.
-	decodeBlock_sse2(pDest, pSrc);
-}
-
-#  else /* !defined(SMD_ALWAYS_HAS_SSE2) */
-// System does support IFUNC, and we have to use a dispatch function.
-void RP_LIBROMDATA_PUBLIC decodeBlock(uint8_t *RESTRICT pDest, const uint8_t *RESTRICT pSrc);
-#  endif /* defined(SMD_ALWAYS_HAS_SSE2) */
-#else /* !(HAVE_IFUNC && (RP_CPU_I386 || RP_CPU_AMD64)) */
-
-// System does not have IFUNC, or is not i386/amd64.
-
 /**
  * Decode a Super Magic Drive interleaved block.
  * NOTE: Pointers must be 16-byte aligned if using SSE2.
@@ -115,12 +89,12 @@ static inline void decodeBlock(uint8_t *RESTRICT pDest, const uint8_t *RESTRICT 
 	decodeBlock_sse2(pDest, pSrc);
 #else /* SMD_ALWAYS_HAS_SSE2 */
 # ifdef SMD_HAS_SSE2
-	if (RP_CPU_HasSSE2()) {
+	if (RP_CPU_x86_HasSSE2()) {
 		decodeBlock_sse2(pDest, pSrc);
 	} else
 # endif /* SMD_HAS_SSE2 */
 # ifdef SMD_HAS_MMX
-	if (RP_CPU_HasMMX()) {
+	if (RP_CPU_x86_HasMMX()) {
 		decodeBlock_mmx(pDest, pSrc);
 	} else
 #endif /* SMD_HAS_MMX */
@@ -129,7 +103,5 @@ static inline void decodeBlock(uint8_t *RESTRICT pDest, const uint8_t *RESTRICT 
 	}
 #endif /* SMD_ALWAYS_HAS_SSE2 */
 }
-
-#endif /* HAVE_IFUNC && (RP_CPU_I386 || RP_CPU_AMD64) */
 
 } }

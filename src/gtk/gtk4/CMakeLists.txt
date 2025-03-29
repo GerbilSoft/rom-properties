@@ -77,7 +77,6 @@ SET(${PROJECT_NAME}_SRCS
 	${${PROJECT_NAME}_GTK3MIN_SRCS}
 	${${PROJECT_NAME}_GTK4MIN_SRCS}
 	${${PROJECT_NAME}-notify_SRCS}
-	${${PROJECT_NAME}_IFUNC_SRCS}
 	${${PROJECT_NAME}_SSSE3_SRCS}
 	NautilusPlugin.cpp
 	NautilusPropertiesModelProvider.cpp

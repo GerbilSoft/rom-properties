@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * GdkImageConv.hpp: Helper functions to convert from rp_image to GDK.     *
  *                                                                         *
- * Copyright (c) 2017-2024 by David Korth.                                 *
+ * Copyright (c) 2017-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -42,17 +42,6 @@ GdkPixbuf *rp_image_to_GdkPixbuf_cpp(const LibRpTexture::rp_image *img);
 GdkPixbuf *rp_image_to_GdkPixbuf_ssse3(const LibRpTexture::rp_image *img);
 #endif /* GDKIMAGECONV_HAS_SSSE3 */
 
-#if defined(HAVE_IFUNC) && (defined(RP_CPU_I386) || defined(RP_CPU_AMD64))
-/**
- * Convert an rp_image to GdkPixbuf.
- * @param img	[in] rp_image.
- * @return GdkPixbuf, or nullptr on error.
- */
-IFUNC_INLINE GdkPixbuf *rp_image_to_GdkPixbuf(const LibRpTexture::rp_image *img);
-#else /* !(HAVE_IFUNC && (RP_CPU_I386 || RP_CPU_AMD64)) */
-// System does not support IFUNC, or we don't have optimizations for these CPUs.
-// Use standard inline dispatch.
-
 /**
  * Convert an rp_image to GdkPixbuf.
  * @param img rp_image.
@@ -61,7 +50,7 @@ IFUNC_INLINE GdkPixbuf *rp_image_to_GdkPixbuf(const LibRpTexture::rp_image *img)
 inline GdkPixbuf *rp_image_to_GdkPixbuf(const LibRpTexture::rp_image *img)
 {
 #ifdef GDKIMAGECONV_HAS_SSSE3
-	if (RP_CPU_HasSSSE3()) {
+	if (RP_CPU_x86_HasSSSE3()) {
 		return rp_image_to_GdkPixbuf_ssse3(img);
 	} else
 #endif /* GDKIMAGECONV_HAS_SSSE3 */
@@ -69,6 +58,5 @@ inline GdkPixbuf *rp_image_to_GdkPixbuf(const LibRpTexture::rp_image *img)
 		return rp_image_to_GdkPixbuf_cpp(img);
 	}
 }
-#endif /* HAVE_IFUNC && (RP_CPU_I386 || RP_CPU_AMD64) */
 
 }

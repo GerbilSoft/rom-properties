@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpcpuid)                         *
  * cpu_dispatch.h: CPU dispatch macros.                                    *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -38,25 +38,4 @@
 #  define RP_CPU_RISCV
 #elif defined(__EMSCRIPTEN__) || defined(EMSCRIPTEN)
 #  define RP_CPU_WASM32
-#endif
-
-// IFUNC attribute.
-// - IFUNC_SSE2_INLINE: inline if CPU always has SSE2.
-#ifdef HAVE_IFUNC
-#  define IFUNC_INLINE
-#  define IFUNC_STATIC_INLINE
-#  ifdef RP_CPU_AMD64
-#    define IFUNC_SSE2_INLINE inline
-#    define IFUNC_SSE2_STATIC_INLINE static inline
-#  else
-#    define IFUNC_SSE2_INLINE
-#    define IFUNC_SSE2_STATIC_INLINE
-#  endif
-#  define IFUNC_ATTR(func) __attribute__((ifunc(#func)))
-#else
-#  define IFUNC_INLINE inline
-#  define IFUNC_STATIC_INLINE static inline
-#  define IFUNC_SSE2_INLINE inline
-#  define IFUNC_SSE2_STATIC_INLINE static inline
-#  define IFUNC_ATTR(func)
 #endif
