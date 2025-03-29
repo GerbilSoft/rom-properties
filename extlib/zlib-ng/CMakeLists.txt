@@ -49,6 +49,11 @@ include(CMakePackageConfigHelpers)
 IF(0) # rom-properties
 include(FeatureSummary)
 ENDIF(0) # rom-properties
+# dummy function for rom-properties
+IF(NOT COMMAND add_feature_info)
+    FUNCTION(add_feature_info)
+    ENDFUNCTION(add_feature_info)
+ENDIF(NOT COMMAND add_feature_info)
 
 include(cmake/detect-arch.cmake)
 include(cmake/detect-install-dirs.cmake)
