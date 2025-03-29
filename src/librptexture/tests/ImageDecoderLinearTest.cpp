@@ -494,7 +494,7 @@ TEST_P(ImageDecoderLinearTest, fromLinear_cpp_benchmark)
  */
 TEST_P(ImageDecoderLinearTest, fromLinear_sse2_test)
 {
-	if (!RP_CPU_x86_HasSSE2() && !GTEST_FLAG_GET(brief)) {
+	if (!RP_CPU_x86_HasSSE2()) {
 		GTEST_SKIP() << "*** SSE2 is not supported on this CPU.";
 	}
 
@@ -532,7 +532,7 @@ TEST_P(ImageDecoderLinearTest, fromLinear_sse2_test)
  */
 TEST_P(ImageDecoderLinearTest, fromLinear_sse2_benchmark)
 {
-	if (!RP_CPU_x86_HasSSE2() && !GTEST_FLAG_GET(brief)) {
+	if (!RP_CPU_x86_HasSSE2()) {
 		GTEST_SKIP() << "*** SSE2 is not supported on this CPU.";
 	}
 
@@ -570,7 +570,7 @@ TEST_P(ImageDecoderLinearTest, fromLinear_sse2_benchmark)
  */
 TEST_P(ImageDecoderLinearTest, fromLinear_ssse3_test)
 {
-	if (!RP_CPU_x86_HasSSSE3() && !GTEST_FLAG_GET(brief)) {
+	if (!RP_CPU_x86_HasSSSE3()) {
 		GTEST_SKIP() << "*** SSSE3 is not supported on this CPU.";
 	}
 
@@ -613,7 +613,7 @@ TEST_P(ImageDecoderLinearTest, fromLinear_ssse3_test)
  */
 TEST_P(ImageDecoderLinearTest, fromLinear_ssse3_benchmark)
 {
-	if (!RP_CPU_x86_HasSSSE3() && !GTEST_FLAG_GET(brief)) {
+	if (!RP_CPU_x86_HasSSSE3()) {
 		GTEST_SKIP() << "*** SSSE3 is not supported on this CPU.";
 	}
 
