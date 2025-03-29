@@ -455,7 +455,7 @@ void WiiUPackage::init(void)
 
 #if ENABLE_DECRYPTION
 	// Decrypt the title key.
-	int ret = d->ticket->decryptTitleKey(d->title_key, sizeof(d->title_key));
+	int ret = ticket->decryptTitleKey(d->title_key, sizeof(d->title_key));
 	if (ret != 0) {
 		// Failed to decrypt the title key.
 		// TODO: verifyResult
