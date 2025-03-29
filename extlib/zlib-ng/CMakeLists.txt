@@ -1047,7 +1047,9 @@ if(WITH_OPTIM)
     endif()
 endif()
 
+IF(0) # rom-properties
 message(STATUS "Architecture-specific source files: ${ZLIB_ARCH_SRCS}")
+ENDIF(0) # rom-properties
 
 #============================================================================
 # zconf.h
