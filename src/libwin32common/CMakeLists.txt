@@ -24,6 +24,7 @@ SET(${PROJECT_NAME}_SRCS
 	ComBase.cpp
 	propsys_xp.c
 	userdirs.cpp
+	MiniU82T.cpp
 	)
 SET(${PROJECT_NAME}_H
 	RpWin32_sdk.h
