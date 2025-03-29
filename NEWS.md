@@ -77,6 +77,8 @@
   * Removed IFUNC support. It's only supported by glibc on Linux (and possibly
     some of the BSDs), and it adds a lot of complexity. The regular C dispatch
     functions only have a few instructions of overhead in most cases.
+  * Added NEON-optimized byteswap functions for 32-bit ARM (untested) and
+    64-bit ARM (tested on Android).
 
 ## v2.4.1 (released 2024/11/12)
 
