@@ -46,7 +46,9 @@ include(CheckCSourceRuns)
 include(CheckCCompilerFlag)
 include(CMakeDependentOption)
 include(CMakePackageConfigHelpers)
+IF(0) # rom-properties
 include(FeatureSummary)
+ENDIF(0) # rom-properties
 
 include(cmake/detect-arch.cmake)
 include(cmake/detect-install-dirs.cmake)
@@ -1522,7 +1524,9 @@ endif()
 
 add_feature_info(INSTALL_UTILS INSTALL_UTILS "Copy minigzip and minideflate during install")
 
+IF(0) # rom-properties
 FEATURE_SUMMARY(WHAT ALL INCLUDE_QUIET_PACKAGES)
+ENDIF(0) # rom-properties
 
 # rom-properties: Disable CPack.
 IF(0) # rom-properties
