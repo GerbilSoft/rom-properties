@@ -31,6 +31,7 @@
 #include <cwctype>
 
 // C++ includes and STL classes
+#include <iomanip>
 #include <sstream>
 #include <string>
 using std::ostringstream;
