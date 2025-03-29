@@ -30,7 +30,7 @@ std::wstring U82W_int(const char *mbs);
 #endif /* _UNICODE */
 
 std::string W2U8(const wchar_t *wcs);
-std::string W2U8(const std::wstring wstr);
+std::string W2U8(const std::wstring &wstr);
 
 std::string A2U8(const char *mbs);
 

@@ -42,7 +42,7 @@ string W2U8(const wchar_t *wcs)
 	return str;
 }
 
-string W2U8(const wstring wstr)
+string W2U8(const wstring &wstr)
 {
 	const int cbMbs = WideCharToMultiByte(CP_UTF8, 0, wstr.data(), static_cast<int>(wstr.size()), nullptr, 0, nullptr, nullptr);
 	if (cbMbs <= 0) {
