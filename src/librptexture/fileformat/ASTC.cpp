@@ -98,9 +98,10 @@ rp_image_const_ptr ASTCPrivate::loadImage(void)
 		return img;
 	} else if (!this->isValid || !this->file) {
 		// Can't load the image.
-		return nullptr;
+		return {};
 	}
 
+#ifdef ENABLE_ASTC
 	// NOTE: We can't use astcHeader's width/height fields because
 	// they're 24-bit values. Use dimensions[] instead.
 
@@ -113,17 +114,17 @@ rp_image_const_ptr ASTCPrivate::loadImage(void)
 	    dimensions[1] > 32768)
 	{
 		// Invalid image dimensions.
-		return nullptr;
+		return {};
 	}
 
 	if (dimensions[2] > 1) {
 		// 3D textures are not supported.
-		return nullptr;
+		return {};
 	}
 
 	if (file->size() > 128*1024*1024) {
 		// Sanity check: VTF files shouldn't be more than 128 MB.
-		return nullptr;
+		return {};
 	}
 	const uint32_t file_sz = static_cast<uint32_t>(file->size());
 
@@ -137,7 +138,7 @@ rp_image_const_ptr ASTCPrivate::loadImage(void)
 		astcHeader.blockdimX, astcHeader.blockdimY);
 	if (expected_size == 0 || expected_size > file_sz) {
 		// Invalid image size.
-		return nullptr;
+		return {};
 	}
 
 	// The ASTC file format does not support mipmaps.
@@ -148,7 +149,7 @@ rp_image_const_ptr ASTCPrivate::loadImage(void)
 	int ret = file->seek(texDataStartAddr);
 	if (ret != 0) {
 		// Seek error.
-		return nullptr;
+		return {};
 	}
 
 	// Read the texture data.
@@ -156,7 +157,7 @@ rp_image_const_ptr ASTCPrivate::loadImage(void)
 	size_t size = file->read(buf.get(), expected_size);
 	if (size != expected_size) {
 		// Read error.
-		return nullptr;
+		return {};
 	}
 
 	// Decode the image.
@@ -165,6 +166,10 @@ rp_image_const_ptr ASTCPrivate::loadImage(void)
 		buf.get(), expected_size,
 		astcHeader.blockdimX, astcHeader.blockdimY);
 	return img;
+#else /* !ENABLE_ASTC */
+	// ASTC decoder is disabled.
+	return {};
+#endif /* ENABLE_ASTC */
 }
 
 /** ASTC **/

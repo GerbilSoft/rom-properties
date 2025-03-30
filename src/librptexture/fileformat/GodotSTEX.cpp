@@ -842,6 +842,7 @@ rp_image_const_ptr GodotSTEXPrivate::loadImage(int mip)
 				// TODO
 				break;
 
+#ifdef ENABLE_ASTC
 			case STEX4_FORMAT_ASTC_4x4:
 				img = ImageDecoder::fromASTC(
 					mdata.width, mdata.height,
@@ -852,6 +853,7 @@ rp_image_const_ptr GodotSTEXPrivate::loadImage(int mip)
 					mdata.width, mdata.height,
 					buf.get(), mdata.size, 8, 8);
 				break;
+#endif /* ENABLE_ASTC */
 		}
 	} else {
 		assert(!"Unsupported stexVersion value.");
