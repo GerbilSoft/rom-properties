@@ -15,7 +15,7 @@
  * CreateThumbnail implementation for Windows.
  * This version uses alpha transparency.
  */
-class CreateThumbnail : public LibRomData::TCreateThumbnail<HBITMAP, HBITMAP, HBITMAP>
+class CreateThumbnail : public LibRomData::TCreateThumbnail<HBITMAP>
 {
 public:
 	explicit CreateThumbnail(bool doSquaring = false)
@@ -24,7 +24,7 @@ public:
 	}
 
 private:
-	typedef TCreateThumbnail<HBITMAP, HBITMAP, HBITMAP> super;
+	typedef TCreateThumbnail<HBITMAP> super;
 	RP_DISABLE_COPY(CreateThumbnail)
 
 public:

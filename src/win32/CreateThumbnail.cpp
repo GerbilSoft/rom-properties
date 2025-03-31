@@ -27,8 +27,8 @@ using std::string;
 // so we have to #include the .cpp file here.
 #include "libromdata/img/TCreateThumbnail.cpp"
 
-// Explicitly instantiate TCreateThumbnail<HBITMAP, HBITMAP, HBITMAP>.
-template class LibRomData::TCreateThumbnail<HBITMAP, HBITMAP, HBITMAP>;
+// Explicitly instantiate TCreateThumbnail<HBITMAP>.
+template class LibRomData::TCreateThumbnail<HBITMAP>;
 
 /** CreateThumbnail **/
 

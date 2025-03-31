@@ -41,13 +41,13 @@ using std::unique_ptr;
 
 /** CreateThumbnailPrivate **/
 
-class CreateThumbnailPrivate : public TCreateThumbnail<PIMGTYPE, PIMGTYPE, PIMGTYPE>
+class CreateThumbnailPrivate : public TCreateThumbnail<PIMGTYPE>
 {
 public:
 	CreateThumbnailPrivate() = default;
 
 private:
-	typedef TCreateThumbnail<PIMGTYPE, PIMGTYPE, PIMGTYPE> super;
+	typedef TCreateThumbnail<PIMGTYPE> super;
 	RP_DISABLE_COPY(CreateThumbnailPrivate)
 
 public:

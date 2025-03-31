@@ -46,8 +46,8 @@ namespace LibRomData {
  * @param sBIT		[out,opt] sBIT metadata
  * @return Internal image, or null ImgClass on error.
  */
-template<typename ImgClass, typename RefImgClass, typename ConstRefImgClass>
-ImgClass TCreateThumbnail<ImgClass, RefImgClass, ConstRefImgClass>::getInternalImage(
+template<typename ImgClass>
+ImgClass TCreateThumbnail<ImgClass>::getInternalImage(
 	const LibRpBase::RomDataPtr &romData,
 	LibRpBase::RomData::ImageType imageType,
 	ImgSize *pOutSize,
@@ -109,8 +109,8 @@ ImgClass TCreateThumbnail<ImgClass, RefImgClass, ConstRefImgClass>::getInternalI
  * @param sBIT		[out,opt] sBIT metadata
  * @return External image, or null ImgClass on error.
  */
-template<typename ImgClass, typename RefImgClass, typename ConstRefImgClass>
-ImgClass TCreateThumbnail<ImgClass, RefImgClass, ConstRefImgClass>::getExternalImage(
+template<typename ImgClass>
+ImgClass TCreateThumbnail<ImgClass>::getExternalImage(
 	const LibRpBase::RomDataPtr &romData,
 	LibRpBase::RomData::ImageType imageType,
 	int reqSize, ImgSize *pOutSize,
@@ -221,8 +221,8 @@ ImgClass TCreateThumbnail<ImgClass, RefImgClass, ConstRefImgClass>::getExternalI
  * @param rs_size	[in,out] Original size, which will be rescaled.
  * @param tgt_size	[in] Target size.
  */
-template<typename ImgClass, typename RefImgClass, typename ConstRefImgClass>
-inline void TCreateThumbnail<ImgClass, RefImgClass, ConstRefImgClass>::rescale_aspect(ImgSize &rs_size, ImgSize tgt_size)
+template<typename ImgClass>
+inline void TCreateThumbnail<ImgClass>::rescale_aspect(ImgSize &rs_size, ImgSize tgt_size)
 {
 	// In the original QSize::scale():
 	// - rs_*: this
@@ -250,8 +250,8 @@ inline void TCreateThumbnail<ImgClass, RefImgClass, ConstRefImgClass>::rescale_a
  * @param pOutParams	[out] Output parameters (If an error occurs, pOutParams->retImg will be null)
  * @return 0 on success; non-zero on error.
  */
-template<typename ImgClass, typename RefImgClass, typename ConstRefImgClass>
-int TCreateThumbnail<ImgClass, RefImgClass, ConstRefImgClass>::getThumbnail(const LibRpBase::RomDataPtr &romData, int reqSize, GetThumbnailOutParams_t *pOutParams)
+template<typename ImgClass>
+int TCreateThumbnail<ImgClass>::getThumbnail(const LibRpBase::RomDataPtr &romData, int reqSize, GetThumbnailOutParams_t *pOutParams)
 {
 	using LibRpBase::Config;
 	using LibRpBase::RomData;
@@ -517,8 +517,8 @@ skip_image_check:
  * @param pOutParams	[out] Output parameters (If an error occurs, pOutParams->retImg will be null)
  * @return 0 on success; non-zero on error.
  */
-template<typename ImgClass, typename RefImgClass, typename ConstRefImgClass>
-int TCreateThumbnail<ImgClass, RefImgClass, ConstRefImgClass>::getThumbnail(const LibRpFile::IRpFilePtr &file, int reqSize, GetThumbnailOutParams_t *pOutParams)
+template<typename ImgClass>
+int TCreateThumbnail<ImgClass>::getThumbnail(const LibRpFile::IRpFilePtr &file, int reqSize, GetThumbnailOutParams_t *pOutParams)
 {
 	using LibRpBase::RomDataPtr;
 
@@ -549,8 +549,8 @@ int TCreateThumbnail<ImgClass, RefImgClass, ConstRefImgClass>::getThumbnail(cons
  * @param pOutParams	[out] Output parameters (If an error occurs, pOutParams->retImg will be null)
  * @return 0 on success; non-zero on error.
  */
-template<typename ImgClass, typename RefImgClass, typename ConstRefImgClass>
-int TCreateThumbnail<ImgClass, RefImgClass, ConstRefImgClass>::getThumbnail(const char *filename, int reqSize, GetThumbnailOutParams_t *pOutParams)
+template<typename ImgClass>
+int TCreateThumbnail<ImgClass>::getThumbnail(const char *filename, int reqSize, GetThumbnailOutParams_t *pOutParams)
 {
 	using LibRpBase::RomDataPtr;
 	using LibRpFile::IRpFilePtr;

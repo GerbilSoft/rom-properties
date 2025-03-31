@@ -98,12 +98,17 @@ typedef int (RP_C_API *PFN_RP_CREATE_THUMBNAIL)(const char *source_file, const c
 
 // C++ includes
 #include <string>
+#include <type_traits>
 
 namespace LibRomData {
 
-template<typename ImgClass, typename RefImgClass = ImgClass&, typename ConstRefImgClass = const ImgClass&>
+template<typename ImgClass>
 class NOVTABLE TCreateThumbnail
 {
+public:
+	using RefImgClass = std::conditional<std::is_pointer<ImgClass>::value, ImgClass, ImgClass&>::type;
+	using ConstRefImgClass = std::conditional<std::is_pointer<ImgClass>::value, ImgClass, const ImgClass&>::type;
+
 public:
 	TCreateThumbnail() = default;
 	virtual ~TCreateThumbnail() = default;
