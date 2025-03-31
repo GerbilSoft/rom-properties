@@ -27,8 +27,8 @@ using std::string;
 // so we have to #include the .cpp file here.
 #include "libromdata/img/TCreateThumbnail.cpp"
 
-// Explicitly instantiate TCreateThumbnail<HBITMAP>.
-template class LibRomData::TCreateThumbnail<HBITMAP>;
+// Explicitly instantiate TCreateThumbnail<HBITMAP, HBITMAP, HBITMAP>.
+template class LibRomData::TCreateThumbnail<HBITMAP, HBITMAP, HBITMAP>;
 
 /** CreateThumbnail **/
 
@@ -83,7 +83,7 @@ HBITMAP CreateThumbnail::rpImageToImgClass(const rp_image_const_ptr &img) const
  * @param method Scaling method.
  * @return Rescaled ImgClass.
  */
-HBITMAP CreateThumbnail::rescaleImgClass(const HBITMAP &imgClass, ImgSize sz, ScalingMethod method) const
+HBITMAP CreateThumbnail::rescaleImgClass(HBITMAP imgClass, ImgSize sz, ScalingMethod method) const
 {
 	// Convert the HBITMAP to rp_image.
 	const rp_image_const_ptr img = RpImageWin32::fromHBITMAP(imgClass);
@@ -108,7 +108,7 @@ HBITMAP CreateThumbnail::rescaleImgClass(const HBITMAP &imgClass, ImgSize sz, Sc
  * @param pOutSize	[out] Pointer to ImgSize to store the image size.
  * @return 0 on success; non-zero on error.
  */
-int CreateThumbnail::getImgClassSize(const HBITMAP &imgClass, ImgSize *pOutSize) const
+int CreateThumbnail::getImgClassSize(HBITMAP imgClass, ImgSize *pOutSize) const
 {
 	BITMAP bmp;
 	int ret = GetObject(static_cast<HGDIOBJ>(imgClass), sizeof(bmp), &bmp);
@@ -180,7 +180,7 @@ HBITMAP CreateThumbnailNoAlpha::rpImageToImgClass(const rp_image_const_ptr &img)
  * @param method Scaling method.
  * @return Rescaled ImgClass.
  */
-HBITMAP CreateThumbnailNoAlpha::rescaleImgClass(const HBITMAP &imgClass, ImgSize sz, ScalingMethod method) const
+HBITMAP CreateThumbnailNoAlpha::rescaleImgClass(HBITMAP imgClass, ImgSize sz, ScalingMethod method) const
 {
 	// Convert the HBITMAP to rp_image.
 	const rp_image_const_ptr img = RpImageWin32::fromHBITMAP(imgClass);

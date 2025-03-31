@@ -41,13 +41,13 @@ using std::unique_ptr;
 
 /** CreateThumbnailPrivate **/
 
-class CreateThumbnailPrivate : public TCreateThumbnail<PIMGTYPE>
+class CreateThumbnailPrivate : public TCreateThumbnail<PIMGTYPE, PIMGTYPE, PIMGTYPE>
 {
 public:
 	CreateThumbnailPrivate() = default;
 
 private:
-	typedef TCreateThumbnail<PIMGTYPE> super;
+	typedef TCreateThumbnail<PIMGTYPE, PIMGTYPE, PIMGTYPE> super;
 	RP_DISABLE_COPY(CreateThumbnailPrivate)
 
 public:
@@ -70,7 +70,7 @@ public:
 	 * @param imgClass ImgClass
 	 * @return True if valid; false if not.
 	 */
-	bool isImgClassValid(const PIMGTYPE &imgClass) const final
+	bool isImgClassValid(PIMGTYPE imgClass) const final
 	{
 		return (imgClass != nullptr);
 	}
@@ -88,7 +88,7 @@ public:
 	 * Free an ImgClass object.
 	 * @param imgClass ImgClass object.
 	 */
-	inline void freeImgClass(PIMGTYPE &imgClass) const final
+	inline void freeImgClass(PIMGTYPE imgClass) const final
 	{
 		PIMGTYPE_unref(imgClass);
 	}
@@ -100,7 +100,7 @@ public:
 	 * @param method Scaling method.
 	 * @return Rescaled ImgClass.
 	 */
-	inline PIMGTYPE rescaleImgClass(const PIMGTYPE &imgClass, ImgSize sz, ScalingMethod method = ScalingMethod::Nearest) const final
+	inline PIMGTYPE rescaleImgClass(PIMGTYPE imgClass, ImgSize sz, ScalingMethod method = ScalingMethod::Nearest) const final
 	{
 		return PIMGTYPE_scale(imgClass, sz.width, sz.height, (method == ScalingMethod::Bilinear));
 	}
@@ -111,7 +111,7 @@ public:
 	 * @param pOutSize	[out] Pointer to ImgSize to store the image size.
 	 * @return 0 on success; non-zero on error.
 	 */
-	inline int getImgClassSize(const PIMGTYPE &imgClass, ImgSize *pOutSize) const final
+	inline int getImgClassSize(PIMGTYPE imgClass, ImgSize *pOutSize) const final
 	{
 		return PIMGTYPE_get_size(imgClass, &pOutSize->width, &pOutSize->height);
 	}

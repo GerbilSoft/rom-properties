@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * CreateThumbnail.hpp: TCreateThumbnail<HBITMAP> implementation.          *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -15,7 +15,7 @@
  * CreateThumbnail implementation for Windows.
  * This version uses alpha transparency.
  */
-class CreateThumbnail : public LibRomData::TCreateThumbnail<HBITMAP>
+class CreateThumbnail : public LibRomData::TCreateThumbnail<HBITMAP, HBITMAP, HBITMAP>
 {
 public:
 	explicit CreateThumbnail(bool doSquaring = false)
@@ -24,7 +24,7 @@ public:
 	}
 
 private:
-	typedef TCreateThumbnail<HBITMAP> super;
+	typedef TCreateThumbnail<HBITMAP, HBITMAP, HBITMAP> super;
 	RP_DISABLE_COPY(CreateThumbnail)
 
 public:
@@ -42,7 +42,7 @@ public:
 	 * @param imgClass ImgClass
 	 * @return True if valid; false if not.
 	 */
-	inline bool isImgClassValid(const HBITMAP &imgClass) const final
+	inline bool isImgClassValid(HBITMAP imgClass) const final
 	{
 		return (imgClass != nullptr);
 	}
@@ -60,7 +60,7 @@ public:
 	 * Free an ImgClass object.
 	 * @param imgClass ImgClass object.
 	 */
-	inline void freeImgClass(HBITMAP &imgClass) const final
+	inline void freeImgClass(HBITMAP imgClass) const final
 	{
 		DeleteBitmap(imgClass);
 	}
@@ -72,7 +72,7 @@ public:
 	 * @param method Scaling method.
 	 * @return Rescaled ImgClass.
 	 */
-	HBITMAP rescaleImgClass(const HBITMAP &imgClass, ImgSize sz, ScalingMethod method = ScalingMethod::Nearest) const override;
+	HBITMAP rescaleImgClass(HBITMAP imgClass, ImgSize sz, ScalingMethod method = ScalingMethod::Nearest) const override;
 
 	/**
 	 * Get the size of the specified ImgClass.
@@ -80,7 +80,7 @@ public:
 	 * @param pOutSize	[out] Pointer to ImgSize to store the image size.
 	 * @return 0 on success; non-zero on error.
 	 */
-	int getImgClassSize(const HBITMAP &imgClass, ImgSize *pOutSize) const final;
+	int getImgClassSize(HBITMAP imgClass, ImgSize *pOutSize) const final;
 
 	/**
 	 * Get the proxy for the specified URL.
@@ -170,5 +170,5 @@ public:
 	 * @param method Scaling method.
 	 * @return Rescaled ImgClass.
 	 */
-	HBITMAP rescaleImgClass(const HBITMAP &imgClass, ImgSize sz, ScalingMethod method = ScalingMethod::Nearest) const final;
+	HBITMAP rescaleImgClass(HBITMAP imgClass, ImgSize sz, ScalingMethod method = ScalingMethod::Nearest) const final;
 };

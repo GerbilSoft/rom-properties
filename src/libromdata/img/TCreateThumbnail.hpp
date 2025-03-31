@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * TCreateThumbnail.hpp: Thumbnail creator template.                       *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -101,7 +101,7 @@ typedef int (RP_C_API *PFN_RP_CREATE_THUMBNAIL)(const char *source_file, const c
 
 namespace LibRomData {
 
-template<typename ImgClass>
+template<typename ImgClass, typename RefImgClass = ImgClass&, typename ConstRefImgClass = const ImgClass&>
 class NOVTABLE TCreateThumbnail
 {
 public:
@@ -207,11 +207,11 @@ protected:
 	 * @param imgClass ImgClass
 	 * @return True if valid; false if not.
 	 */
-	virtual bool isImgClassValid(const ImgClass &imgClass) const = 0;
+	virtual bool isImgClassValid(ConstRefImgClass imgClass) const = 0;
 
 	/**
 	 * Wrapper function to get a "null" ImgClass.
-	 * @return "Null" ImgClass.
+	 * @return "Null" ImgClass
 	 */
 	virtual ImgClass getNullImgClass(void) const = 0;
 
@@ -221,9 +221,9 @@ protected:
 	 * This function may be a no-op in cases where ImgClass
 	 * is not a pointer, e.g. QImage in Qt frontends.
 	 *
-	 * @param imgClass ImgClass object.
+	 * @param imgClass ImgClass object
 	 */
-	virtual void freeImgClass(ImgClass &imgClass) const = 0;
+	virtual void freeImgClass(RefImgClass imgClass) const = 0;
 
 	enum class ScalingMethod {
 		Nearest = 0,
@@ -232,20 +232,20 @@ protected:
 
 	/**
 	 * Rescale an ImgClass using the specified scaling method.
-	 * @param imgClass ImgClass object.
-	 * @param sz New size.
-	 * @param method Scaling method.
-	 * @return Rescaled ImgClass.
+	 * @param imgClass ImgClass object
+	 * @param sz New size
+	 * @param method Scaling method
+	 * @return Rescaled ImgClass
 	 */
-	virtual ImgClass rescaleImgClass(const ImgClass &imgClass, ImgSize sz, ScalingMethod method = ScalingMethod::Nearest) const = 0;
+	virtual ImgClass rescaleImgClass(ConstRefImgClass imgClass, ImgSize sz, ScalingMethod method = ScalingMethod::Nearest) const = 0;
 
 	/**
 	 * Get the size of the specified ImgClass.
-	 * @param imgClass	[in] ImgClass object.
-	 * @param pOutSize	[out] Pointer to ImgSize to store the image size.
+	 * @param imgClass	[in] ImgClass object
+	 * @param pOutSize	[out] Pointer to ImgSize to store the image size
 	 * @return 0 on success; non-zero on error.
 	 */
-	virtual int getImgClassSize(const ImgClass &imgClass, ImgSize *pOutSize) const = 0;
+	virtual int getImgClassSize(ConstRefImgClass imgClass, ImgSize *pOutSize) const = 0;
 
 	/**
 	 * Get the proxy for the specified URL.
