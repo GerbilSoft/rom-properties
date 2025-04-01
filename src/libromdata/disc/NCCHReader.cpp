@@ -264,8 +264,8 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q,
 
 			// ExHeader
 			encSections.emplace_back(
-				sizeof(N3DS_NCCH_Header_t),	// Address within NCCH.
-				sizeof(N3DS_NCCH_Header_t),	// Counter base address.
+				static_cast<uint32_t>(sizeof(N3DS_NCCH_Header_t)),	// Address within NCCH.
+				static_cast<uint32_t>(sizeof(N3DS_NCCH_Header_t)),	// Counter base address.
 				le32_to_cpu(ncch_header.hdr.exheader_size),
 				0, N3DS_NCCH_SECTION_EXHEADER);
 
@@ -294,8 +294,7 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q,
 					}
 
 					encSections.emplace_back(
-						exefs_offset + sizeof(exefs_header) +	// Address within NCCH.
-							le32_to_cpu(p.offset),
+						static_cast<uint32_t>(exefs_offset + sizeof(exefs_header) + le32_to_cpu(p.offset)),	// Address within NCCH.
 						exefs_offset,				// Counter base address.
 						le32_to_cpu(p.size),
 						keyIdx, N3DS_NCCH_SECTION_EXEFS);

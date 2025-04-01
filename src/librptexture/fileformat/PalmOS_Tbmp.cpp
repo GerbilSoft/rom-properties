@@ -37,7 +37,7 @@ namespace LibRpTexture {
 class PalmOS_Tbmp_Private final : public FileFormatPrivate
 {
 public:
-	PalmOS_Tbmp_Private(PalmOS_Tbmp *q, const IRpFilePtr &file, off64_t bitmapTypeAddr = 0);
+	PalmOS_Tbmp_Private(PalmOS_Tbmp *q, const IRpFilePtr &file, uint32_t bitmapTypeAddr = 0);
 
 private:
 	typedef FileFormatPrivate super;
@@ -53,7 +53,7 @@ public:
 	// BitmapType struct
 	PalmOS_BitmapType_t bitmapType;
 	// Starting address
-	off64_t bitmapTypeAddr;
+	uint32_t bitmapTypeAddr;
 
 	// Decoded image
 	rp_image_ptr img;
@@ -112,7 +112,7 @@ const TextureInfo PalmOS_Tbmp_Private::textureInfo = {
 	exts.data(), mimeTypes.data()
 };
 
-PalmOS_Tbmp_Private::PalmOS_Tbmp_Private(PalmOS_Tbmp *q, const IRpFilePtr &file, off64_t bitmapTypeAddr)
+PalmOS_Tbmp_Private::PalmOS_Tbmp_Private(PalmOS_Tbmp *q, const IRpFilePtr &file, uint32_t bitmapTypeAddr)
 	: super(q, file, &textureInfo)
 	, bitmapTypeAddr(bitmapTypeAddr)
 {
@@ -325,7 +325,7 @@ rp_image_const_ptr PalmOS_Tbmp_Private::loadTbmp(void)
 		// Version is not supported...
 		return {};
 	}
-	off64_t addr = bitmapTypeAddr + header_size_tbl[version];
+	uint32_t addr = bitmapTypeAddr + header_size_tbl[version];
 
 	// Decode the icon.
 	const int width = dimensions[0];
@@ -364,7 +364,7 @@ rp_image_const_ptr PalmOS_Tbmp_Private::loadTbmp(void)
 	}
 
 	uint8_t compr_type;
-	uint32_t compr_data_len;
+	size_t compr_data_len;
 	if (version >= 2 && (flags & PalmOS_BitmapType_Flags_compressed)) {
 		// Bitmap data is compressed. Read the compressed size field.
 		uint8_t cbuf[4];
@@ -392,8 +392,9 @@ rp_image_const_ptr PalmOS_Tbmp_Private::loadTbmp(void)
 
 	// Sanity check: compr_data_len should *always* be <= icon_data_len.
 	assert(compr_data_len <= icon_data_len);
-	if (compr_data_len > icon_data_len)
+	if (compr_data_len > icon_data_len) {
 		return {};
+	}
 
 	// NOTE: Allocating enough memory for the uncompressed bitmap,
 	// but only reading enough data for the compressed bitmap.
@@ -636,7 +637,7 @@ rp_image_const_ptr PalmOS_Tbmp_Private::loadTbmp(void)
 					case 3:
 						// v3 stores a 16-bit RGB565 value in the transparentValue field.
 						// TODO: Is this always RGB565 BE, or can it be RGB565 LE?
-						key.u32 = PixelConversion::RGB565_to_ARGB32(be32_to_cpu(bitmapType.v3.transparentValue));
+						key.u32 = PixelConversion::RGB565_to_ARGB32(static_cast<uint16_t>(be32_to_cpu(bitmapType.v3.transparentValue)));
 						break;
 				}
 				img->apply_chroma_key(key.u32);
@@ -664,7 +665,7 @@ rp_image_const_ptr PalmOS_Tbmp_Private::loadTbmp(void)
  * @param file Open Palm OS Tbmp image file
  * @param bitmapTypeAddr Starting address of the BitmapType header in the file.
  */
-PalmOS_Tbmp::PalmOS_Tbmp(const IRpFilePtr &file, off64_t bitmapTypeAddr)
+PalmOS_Tbmp::PalmOS_Tbmp(const IRpFilePtr &file, uint32_t bitmapTypeAddr)
 	: super(new PalmOS_Tbmp_Private(this, file, bitmapTypeAddr))
 {
 	RP_D(PalmOS_Tbmp);

@@ -238,7 +238,7 @@ extern "C" int gtest_main(int argc, TCHAR *argv[])
 	fflush(nullptr);
 
 	// Initialize the random number generator.
-	srand(time(nullptr));
+	srand(static_cast<unsigned int>(time(nullptr)));
 
 	// coverity[fun_call_w_exception]: uncaught exceptions cause nonzero exit anyway, so don't warn.
 	::testing::InitGoogleTest(&argc, argv);

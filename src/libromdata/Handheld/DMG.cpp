@@ -361,7 +361,7 @@ inline DMGPrivate::dmg_cart_type DMGPrivate::CartType(uint8_t type)
 	}
 
 	// Check for high cartridge types. (closer to 0xFF)
-	const unsigned end_offset = 0x100u - dmg_cart_types_end.size();
+	static constexpr uint8_t end_offset = static_cast<uint8_t>(0x100U - dmg_cart_types_end.size());
 	if (type >= end_offset) {
 		return dmg_cart_types_end[type-end_offset];
 	}

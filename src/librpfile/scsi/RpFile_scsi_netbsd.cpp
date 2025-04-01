@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpfile)                        *
  * RpFile_scsi_netbsd.cpp: Standard file object. (NetBSD/OpenBSD SCSI)     *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -100,13 +100,14 @@ int RpFile::rereadDeviceSizeOS(off64_t *pDeviceSize, uint32_t *pSectorSize)
  * @param direction	[in] Data direction
  * @return 0 on success, positive for SCSI sense key, negative for POSIX error code.
  */
-int RpFilePrivate::scsi_send_cdb(const void *cdb, uint8_t cdb_len,
+int RpFilePrivate::scsi_send_cdb(const void *cdb, size_t cdb_len,
 	void *data, size_t data_len,
 	ScsiDirection direction)
 {
 	// Partially based on libcdio-2.1.0's run_scsi_cmd_netbsd().
 	assert(cdb_len >= 6);
-	if (cdb_len < 6) {
+	assert(cdb_len <= 260);
+	if (cdb_len < 6 || cdb_len > 260) {
 		return -EINVAL;
 	}
 
@@ -120,7 +121,7 @@ int RpFilePrivate::scsi_send_cdb(const void *cdb, uint8_t cdb_len,
 	}
 	memset(&req, 0, sizeof(req));
 	memcpy(req.cmd, cdb, cdb_len);
-	req.cmdlen = cdb_len;
+	req.cmdlen = static_cast<u_char>(cdb_len);
 	req.datalen = data_len;
 	req.databuf = static_cast<caddr_t>(data);
 	req.timeout = 20;	// TODO

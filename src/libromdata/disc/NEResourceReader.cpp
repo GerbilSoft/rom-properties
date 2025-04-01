@@ -424,7 +424,7 @@ int NEResourceReaderPrivate::load_StringTable(IRpFile *file, IResourceReader::St
 
 		// Key length, in bytes: wLength - wValueLength - sizeof_fields
 		// Last character must be NULL.
-		tblPos += (fields.size() * sizeof(uint16_t));
+		tblPos += static_cast<int>(fields.size() * sizeof(uint16_t));
 		const int key_len = (wLength - wValueLength - sizeof_fields) - 1;
 		if (key_len <= 0) {
 			// Invalid key length.

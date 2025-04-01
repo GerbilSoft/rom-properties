@@ -28,7 +28,7 @@ static inline int
 bitmap_lookup (const void *table, ucs4_t uc)
 {
   unsigned int index1 = uc >> header_0;
-  if (index1 < ((const int *) table)[0])
+  if (index1 < (unsigned int)((const int *) table)[0])
     {
       int lookup1 = ((const int *) table)[1 + index1];
       if (lookup1 >= 0)

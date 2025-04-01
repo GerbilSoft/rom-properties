@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * HashNettle.cpp: Hash class. (GNU nettle implementation)                 *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -140,7 +140,8 @@ int Hash::process(const void *pData, size_t len)
 			assert(!"Invalid hash algorithm specified.");
 			return -ENOTSUP;
 		case Algorithm::CRC32:
-			d->ctx.crc32 = crc32(d->ctx.crc32, static_cast<const uint8_t*>(pData), len);
+			d->ctx.crc32 = static_cast<uint32_t>(crc32(
+				d->ctx.crc32, static_cast<const uint8_t*>(pData), static_cast<unsigned int>(len)));
 			break;
 #ifdef ENABLE_DECRYPTION
 		case Algorithm::MD5:

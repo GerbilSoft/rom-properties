@@ -423,13 +423,13 @@ KeyManager::VerifyResult KeyManager::getAndVerify(const char *keyName, KeyData_t
 
 /**
  * Convert string data from hexadecimal to bytes.
- * @param str	[in] String data. (Must be len*2 characters.)
- * @param buf	[out] Output buffer.
- * @param len	[in] Size of buf, in bytes.
+ * @param str	[in] String data (Must be len*2 characters.)
+ * @param buf	[out] Output buffer
+ * @param len	[in] Size of buf, in bytes
  * @return 0 on success; non-zero on error.
  */
 template<typename Char>
-int KeyManager::hexStringToBytes(const Char *str, uint8_t *buf, unsigned int len)
+int KeyManager::hexStringToBytes(const Char *str, uint8_t *buf, size_t len)
 {
 	// ASCII to HEX lookup table.
 	// Reference: http://codereview.stackexchange.com/questions/22757/char-hex-string-to-byte-array
@@ -470,7 +470,7 @@ int KeyManager::hexStringToBytes(const Char *str, uint8_t *buf, unsigned int len
 }
 
 // Explicit instantiation of hexStringToBytes().
-template int KeyManager::hexStringToBytes<char>(const char *str, uint8_t *buf, unsigned int len);
+template int KeyManager::hexStringToBytes<char>(const char *str, uint8_t *buf, size_t len);
 
 #endif /* ENABLE_DECRYPTION */
 

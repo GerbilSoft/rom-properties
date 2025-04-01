@@ -264,7 +264,8 @@ int Hash::process(const void *pData, size_t len)
 			return -EIO;	// TODO: Better error code?
 		}
 #endif /* CHECK_DELAYLOAD */
-		d->ctx.crc32 = crc32(d->ctx.crc32, static_cast<const uint8_t*>(pData), len);
+		d->ctx.crc32 = static_cast<uint32_t>(crc32(
+			d->ctx.crc32, static_cast<const uint8_t*>(pData), static_cast<unsigned int>(len)));
 		return 0;
 	}
 

@@ -229,10 +229,17 @@ tstring IDownloader::getOSRelease(void)
 	tstring s_os_release;
 
 #if defined(_WIN32)
+#  ifdef _MSC_VER
+#    pragma warning(push)
+#    pragma warning(disable: 4996)
+#  endif /* _MSC_VER */
 	// Get the OS version number.
 	OSVERSIONINFO osvi;
 	osvi.dwOSVersionInfoSize = sizeof(osvi);
 	GetVersionEx(&osvi);
+#  ifdef _MSC_VER
+#    pragma warning(pop)
+#  endif /* _MSC_VER */
 
 	switch (osvi.dwPlatformId) {
 		case VER_PLATFORM_WIN32s:

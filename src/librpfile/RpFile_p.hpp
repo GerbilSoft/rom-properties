@@ -236,7 +236,7 @@ public:
 	 */
 	ATTR_ACCESS_SIZE(read_only, 2, 3)
 	ATTR_ACCESS_SIZE(read_write, 4, 5)
-	int scsi_send_cdb(const void *cdb, uint8_t cdb_len,
+	int scsi_send_cdb(const void *cdb, size_t cdb_len,
 		void *data, size_t data_len,
 		ScsiDirection direction);
 

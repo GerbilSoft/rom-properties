@@ -204,7 +204,7 @@ int SuperMagicDriveTest::decompress(uint8_t *pOut, unsigned int out_len, const u
 int SuperMagicDriveTest::decompress(void)
 {
 	m_bin_data = static_cast<uint8_t*>(aligned_malloc(16, OUT_BLOCK_UNZ_SIZE));
-	int ret = decompress(m_bin_data, OUT_BLOCK_UNZ_SIZE, bin_data_gz.data(), bin_data_gz.size());
+	int ret = decompress(m_bin_data, OUT_BLOCK_UNZ_SIZE, bin_data_gz.data(), static_cast<unsigned int>(bin_data_gz.size()));
 	if (ret != 0) {
 		aligned_free(m_bin_data);
 		m_bin_data = nullptr;
@@ -212,7 +212,7 @@ int SuperMagicDriveTest::decompress(void)
 	}
 
 	m_smd_data = static_cast<uint8_t*>(aligned_malloc(16, OUT_BLOCK_UNZ_SIZE));
-	ret = decompress(m_smd_data, OUT_BLOCK_UNZ_SIZE, smd_data_gz.data(), smd_data_gz.size());
+	ret = decompress(m_smd_data, OUT_BLOCK_UNZ_SIZE, smd_data_gz.data(), static_cast<unsigned int>(smd_data_gz.size()));
 	if (ret != 0) {
 		aligned_free(m_smd_data);
 		m_smd_data = nullptr;

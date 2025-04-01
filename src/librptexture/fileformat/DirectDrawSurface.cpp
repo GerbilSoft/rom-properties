@@ -605,7 +605,7 @@ unsigned int DirectDrawSurfacePrivate::calcExpectedSize(int width, int height, i
 
 	// NOTE: dwPitchOrLinearSize is not necessarily correct.
 	// Calculate the expected size.
-	unsigned int expected_size = 0;
+	size_t expected_size = 0;
 	if (pStride) {
 		*pStride = 0;
 	}
@@ -680,7 +680,7 @@ unsigned int DirectDrawSurfacePrivate::calcExpectedSize(int width, int height, i
 			break;
 	}
 
-	return expected_size;
+	return static_cast<unsigned int>(expected_size);
 }
 
 /**

@@ -168,7 +168,7 @@ int rp_image_backend_default::shrink(int width, int height)
 	// adjusting the image data.
 	this->width = width;
 	this->height = height;
-	m_data_len = ImageSizeCalc::T_calcImageSize(height, stride);
+	m_data_len = static_cast<unsigned int>(ImageSizeCalc::T_calcImageSize(height, stride));
 	return 0;
 }
 

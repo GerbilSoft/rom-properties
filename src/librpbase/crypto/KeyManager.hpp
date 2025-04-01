@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * KeyManager.hpp: Encryption key manager.                                 *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -74,10 +74,10 @@ class KeyManager : public ConfReader
 		static KeyManager *instance(void);
 
 	public:
-		// Encryption key data.
+		// Encryption key data
 		struct KeyData_t {
-			const uint8_t *key;	// Key data.
-			uint32_t length;	// Key length.
+			const uint8_t *key;	// Key data
+			size_t length;		// Key length
 		};
 
 		/**
@@ -115,14 +115,14 @@ class KeyManager : public ConfReader
 
 		/**
 		 * Convert string data from hexadecimal to bytes.
-		 * @param str	[in] String data. (Must be len*2 characters.)
-		 * @param buf	[out] Output buffer.
-		 * @param len	[in] Size of buf, in bytes.
+		 * @param str	[in] String data (Must be len*2 characters.)
+		 * @param buf	[out] Output buffer
+		 * @param len	[in] Size of buf, in bytes
 		 * @return 0 on success; non-zero on error.
 		 */
 		template<typename Char>
 		ATTR_ACCESS_SIZE(write_only, 2, 3)
-		static int hexStringToBytes(const Char *str, uint8_t *buf, unsigned int len);
+		static int hexStringToBytes(const Char *str, uint8_t *buf, size_t len);
 #endif /* ENABLE_DECRYPTION */
 };
 

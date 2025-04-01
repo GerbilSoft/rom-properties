@@ -449,7 +449,7 @@ int WiiUPackagePrivate::addFields_System_XMLs(void)
 
 	// app_type (TODO: Decode this!)
 	if (appRootNode) {
-		const unsigned int app_type = parseHexBinary(appRootNode, "app_type");
+		const unsigned int app_type = parseHexBinary32(appRootNode, "app_type");
 		if (app_type != 0) {
 			const char *const s_app_type_title = C_("RomData", "Type");
 			const char *const s_app_type = WiiUData::lookup_application_type(app_type);
@@ -465,7 +465,7 @@ int WiiUPackagePrivate::addFields_System_XMLs(void)
 	if (metaRootNode) {
 		// Region code
 		// Maps directly to the region field.
-		const uint32_t region_code = parseHexBinary(metaRootNode, "region");
+		const uint32_t region_code = parseHexBinary32(metaRootNode, "region");
 
 		static const array<const char*, 7> wiiu_region_bitfield_names = {{
 			NOP_C_("Region", "Japan"),
@@ -671,7 +671,7 @@ string WiiUPackagePrivate::getProductCodeAndApplType_xml(uint32_t *pApplType)
 		if (retApp == 0) {
 			const XMLElement *const appRootNode = appXml.FirstChildElement("app");
 			if (appRootNode) {
-				*pApplType = parseHexBinary(appRootNode, "app_type");
+				*pApplType = parseHexBinary32(appRootNode, "app_type");
 			}
 		} else {
 			// Unable to load app.xml.

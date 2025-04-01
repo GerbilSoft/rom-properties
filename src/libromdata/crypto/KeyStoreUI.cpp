@@ -107,12 +107,12 @@ public:
 public:
 	/**
 	 * Verify a key.
-	 * @param keyData	[in] Key data. (16 bytes)
-	 * @param verifyData	[in] Key verification data. (16 bytes)
-	 * @param len		[in] Length of keyData and verifyData. (must be 16)
+	 * @param keyData	[in] Key data (16 bytes)
+	 * @param verifyData	[in] Key verification data (16 bytes)
+	 * @param len		[in] Length of keyData and verifyData (must be 16)
 	 * @return 0 if the key is verified; non-zero if not.
 	 */
-	int verifyKeyData(const uint8_t *keyData, const uint8_t *verifyData, int len);
+	int verifyKeyData(const uint8_t *keyData, const uint8_t *verifyData, size_t len);
 
 	/**
 	 * Verify a key and update its status.
@@ -188,7 +188,7 @@ public:
 	 * @param len	[in] Length of binary key, in bytes
 	 * @return Hexadecimal string
 	 */
-	static string binToHexStr(const uint8_t *data, unsigned int len);
+	static string binToHexStr(const uint8_t *data, size_t len);
 
 public:
 	/** Key import functions **/
@@ -675,12 +675,12 @@ string KeyStoreUIPrivate::convertKanjiToHex(const char *str)
 
 /**
  * Verify a key.
- * @param keyData	[in] Key data. (16 bytes)
- * @param verifyData	[in] Key verification data. (16 bytes)
- * @param len		[in] Length of keyData and verifyData. (must be 16)
+ * @param keyData	[in] Key data (16 bytes)
+ * @param verifyData	[in] Key verification data (16 bytes)
+ * @param len		[in] Length of keyData and verifyData (must be 16)
  * @return 0 if the key is verified; non-zero if not.
  */
-int KeyStoreUIPrivate::verifyKeyData(const uint8_t *keyData, const uint8_t *verifyData, int len)
+int KeyStoreUIPrivate::verifyKeyData(const uint8_t *keyData, const uint8_t *verifyData, size_t len)
 {
 	assert(len == 16);
 	if (len != 16) {
@@ -772,7 +772,7 @@ void KeyStoreUIPrivate::verifyKey(int sectIdx, int keyIdx)
  * @param len	[in] Length of binary key, in bytes
  * @return Hexadecimal string
  */
-string KeyStoreUIPrivate::binToHexStr(const uint8_t *data, unsigned int len)
+string KeyStoreUIPrivate::binToHexStr(const uint8_t *data, size_t len)
 {
 	assert(data != nullptr);
 	assert(len > 0);
@@ -780,7 +780,7 @@ string KeyStoreUIPrivate::binToHexStr(const uint8_t *data, unsigned int len)
 	if (!data || len == 0 || len > 64)
 		return {};
 
-	const unsigned int hexlen = len*2;
+	const size_t hexlen = len * 2;
 	unique_ptr<char[]> hexstr(new char[hexlen]);
 	char *pHex = hexstr.get();
 	for (; len > 0; len--, data++, pHex += 2) {

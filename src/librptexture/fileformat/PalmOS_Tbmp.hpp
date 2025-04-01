@@ -46,7 +46,7 @@ public:
 	 * @param file Open Palm OS Tbmp image file
 	 * @param bitmapTypeAddr Starting address of the BitmapType header in the file.
 	 */
-	PalmOS_Tbmp(const LibRpFile::IRpFilePtr &file, off64_t bitmapTypeAddr);
+	PalmOS_Tbmp(const LibRpFile::IRpFilePtr &file, uint32_t bitmapTypeAddr);
 
 public:
 	/**
