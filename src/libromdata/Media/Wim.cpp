@@ -230,25 +230,14 @@ int WimPrivate::addFields_XML()
 		xml_node windowsinfo = currentimage.child("WINDOWS");
 		if (windowsinfo) {
 			currentindex.containswindowsimage = true;
-			xml_node arch = windowsinfo.child("ARCH");
-			if (arch) {
-				currentindex.windowsinfo.arch = static_cast<WimWindowsArchitecture>(arch.text().as_int(0));
-			}
-
-			xml_node editionId = windowsinfo.child("EDITIONID");
-			if (editionId) {
-				currentindex.windowsinfo.editionid = editionId.text().as_string(s_unknown);
-			} else {
-				currentindex.windowsinfo.editionid = s_unknown;
-			}
+			currentindex.windowsinfo.arch = static_cast<WimWindowsArchitecture>(
+				windowsinfo.child("ARCH").text().as_int(0));
+			currentindex.windowsinfo.editionid = windowsinfo.child("EDITIONID").text().as_string(s_unknown);
 
 			xml_node languages = windowsinfo.child("LANGUAGES");
 			if (languages) {
 				// NOTE: Only retrieving the first language.
-				xml_node language = languages.child("LANGUAGE");
-				if (language) {
-					currentindex.windowsinfo.languages.language = language.text().get();
-				}
+				currentindex.windowsinfo.languages.language = languages.child("LANGUAGE").text().get();
 			}
 			if (currentindex.windowsinfo.languages.language.empty()) {
 				currentindex.windowsinfo.languages.language = s_unknown;
@@ -256,22 +245,10 @@ int WimPrivate::addFields_XML()
 
 			xml_node version = windowsinfo.child("VERSION");
 			if (version) {
-				xml_node ver_major = version.child("MAJOR");
-				if (ver_major) {
-					currentindex.windowsinfo.version.majorversion = ver_major.text().as_int(0);
-				}
-				xml_node ver_minor = version.child("MINOR");
-				if (ver_minor) {
-					currentindex.windowsinfo.version.minorversion = ver_minor.text().as_int(0);
-				}
-				xml_node ver_build = version.child("BUILD");
-				if (ver_build) {
-					currentindex.windowsinfo.version.buildnumber = ver_build.text().as_int(0);
-				}
-				xml_node ver_spbuild = version.child("SPBUILD");
-				if (ver_spbuild) {
-					currentindex.windowsinfo.version.spbuildnumber = ver_spbuild.text().as_int(0);
-				}
+				currentindex.windowsinfo.version.majorversion = version.child("MAJOR").text().as_int(0);
+				currentindex.windowsinfo.version.minorversion = version.child("MINOR").text().as_int(0);
+				currentindex.windowsinfo.version.buildnumber = version.child("BUILD").text().as_int(0);
+				currentindex.windowsinfo.version.spbuildnumber = version.child("SPBUILD").text().as_int(0);
 			}
 		} else {
 			currentindex.containswindowsimage = false;
@@ -281,22 +258,10 @@ int WimPrivate::addFields_XML()
 		// need to set up fallbacks - the hierarchy goes
 		// display name -> name -> "(None)"
 		const char *const s_none = C_("Wim", "(none)");
-		xml_node elem_name = currentimage.child("NAME");
-		if (elem_name) {
-			currentindex.name = elem_name.text().as_string(s_none);
-		}
-		xml_node elem_desc = currentimage.child("DESCRIPTION");
-		if (elem_desc) {
-			currentindex.description = elem_desc.text().as_string(s_none);
-		}
-		xml_node elem_dispName = currentimage.child("DISPLAYNAME");
-		if (elem_dispName) {
-			currentindex.dispname = elem_dispName.text().as_string(s_none);
-		}
-		xml_node elem_dispDesc = currentimage.child("DISPLAYDESCRIPTION");
-		if (elem_dispDesc) {
-			currentindex.dispdescription = elem_dispDesc.text().as_string(s_none);
-		}
+		currentindex.name = currentimage.child("NAME").text().as_string(s_none);
+		currentindex.description = currentimage.child("DESCRIPTION").text().as_string(s_none);
+		currentindex.dispname = currentimage.child("DISPLAYNAME").text().as_string(s_none);
+		currentindex.dispdescription = currentimage.child("DISPLAYDESCRIPTION").text().as_string(s_none);
 
 		images.push_back(std::move(currentindex));
 		currentimage = currentimage.next_sibling();
