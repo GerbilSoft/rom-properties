@@ -1159,7 +1159,7 @@ bool EXE::hasDangerousPermissions(void) const
 	// Check the Windows manifest for requestedExecutionLevel == requireAdministrator.
 	return d->doesExeRequireAdministrator();
 #else /* !ENABLE_XML */
-	// Nothing to check here, since TinyXML2 is disabled...
+	// Nothing to check here, since PugiXML is disabled...
 	return false;
 #endif /* ENABLE_XML */
 }

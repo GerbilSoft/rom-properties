@@ -50,7 +50,7 @@ extern int DelayLoad_test_PugiXML(void);
  * Load a Wii U system XML file.
  *
  * The XML is loaded and parsed using the specified
- * TinyXML document.
+ * PugiXML document.
  *
  * NOTE: DelayLoad must be checked by the caller, since it's
  * passing an XMLDocument reference to this function.
