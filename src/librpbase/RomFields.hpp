@@ -659,19 +659,19 @@ class RomFields
 
 		/**
 		 * Add string field data.
-		 * @param name Field name.
-		 * @param str String.
-		 * @param flags Formatting flags.
-		 * @return Field index.
+		 * @param name Field name
+		 * @param str String
+		 * @param flags Formatting flags
+		 * @return Field index, or -1 on error.
 		 */
 		int addField_string(const char *name, const char *str, unsigned int flags = 0);
 
 		/**
 		 * Add string field data.
-		 * @param name Field name.
-		 * @param str String.
-		 * @param flags Formatting flags.
-		 * @return Field index.
+		 * @param name Field name
+		 * @param str String
+		 * @param flags Formatting flags
+		 * @return Field index, or -1 on error.
 		 */
 		int addField_string(const char *name, const std::string &str, unsigned int flags = 0)
 		{

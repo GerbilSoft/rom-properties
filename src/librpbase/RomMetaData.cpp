@@ -597,11 +597,11 @@ int RomMetaData::addMetaData_string(Property name, const char *str, unsigned int
 	// Trim the string if requested.
 	if (nstr && (flags & STRF_TRIM_END)) {
 		trimEnd(nstr);
-	}
-	if (nstr[0] == '\0') {
-		// String is now empty. Ignore it.
-		free(nstr);
-		return -1;
+		if (nstr[0] == '\0') {
+			// String is now empty. Ignore it.
+			free(nstr);
+			return -1;
+		}
 	}
 
 	RP_D(RomMetaData);

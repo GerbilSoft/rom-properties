@@ -915,29 +915,34 @@ int RomFields::addFields_romFields(const RomFields *other, int tabOffset)
 
 /**
  * Add string field data.
- * @param name Field name.
- * @param str String.
- * @param flags Formatting flags.
- * @return Field index.
+ * @param name Field name
+ * @param str String
+ * @param flags Formatting flags
+ * @return Field index, or -1 on error.
  */
 int RomFields::addField_string(const char *name, const char *str, unsigned int flags)
 {
 	assert(name != nullptr);
-	if (!name)
+	if (!name) {
 		return -1;
+	}
 
 	// RFT_STRING
+	char * nstr = (str ? strdup(str) : nullptr);
+	// Trim the string if requested.
+	if (nstr && (flags & STRF_TRIM_END)) {
+		trimEnd(nstr);
+		if (nstr[0] == '\0') {
+			// String is now empty. Free it and use nullptr instead.
+			free(nstr);
+			nstr = nullptr;
+		}
+	}
+
 	RP_D(RomFields);
 	d->fields.emplace_back(name, RFT_STRING, d->tabIdx, flags);
 	Field &field = *(d->fields.rbegin());
-
-	char *const nstr = (str ? strdup(str) : nullptr);
 	field.data.str = nstr;
-
-	// Handle string trimming flags.
-	if (nstr && (flags & STRF_TRIM_END)) {
-		trimEnd(nstr);
-	}
 	return static_cast<int>(d->fields.size() - 1);
 }
 
