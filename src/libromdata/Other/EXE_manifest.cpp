@@ -31,10 +31,10 @@ namespace LibRomData {
 
 #if defined(_MSC_VER) && defined(XML_IS_DLL)
 /**
- * Check if TinyXML2 can be delay-loaded.
+ * Check if PugiXML can be delay-loaded.
  * @return 0 on success; negative POSIX error code on error.
  */
-extern int DelayLoad_test_TinyXML2(void);
+extern int DelayLoad_test_PugiXML(void);
 #endif /* defined(_MSC_VER) && defined(XML_IS_DLL) */
 
 /** PugiXML macros **/
@@ -70,7 +70,7 @@ do { } while (0)
  * Load the Win32 manifest resource.
  *
  * The XML is loaded and parsed using the specified
- * TinyXML document.
+ * PugiXML document.
  *
  * NOTE: DelayLoad must be checked by the caller, since it's
  * passing an xml_document reference to this function.
@@ -196,7 +196,7 @@ int EXEPrivate::addFields_PE_Manifest(void)
 {
 #if defined(_MSC_VER) && defined(XML_IS_DLL)
 	// Delay load verification.
-	int ret_dl = DelayLoad_test_TinyXML2();
+	int ret_dl = DelayLoad_test_PugiXML();
 	if (ret_dl != 0) {
 		// Delay load failed.
 		return ret_dl;
@@ -418,7 +418,7 @@ bool EXEPrivate::doesExeRequireAdministrator(void) const
 {
 #if defined(_MSC_VER) && defined(XML_IS_DLL)
 	// Delay load verification.
-	int ret_dl = DelayLoad_test_TinyXML2();
+	int ret_dl = DelayLoad_test_PugiXML();
 	if (ret_dl != 0) {
 		// Delay load failed.
 		return false;
