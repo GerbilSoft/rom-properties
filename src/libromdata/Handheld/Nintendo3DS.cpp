@@ -733,11 +733,12 @@ void Nintendo3DSPrivate::addTitleIdAndProductCodeFields(bool showContentType)
 	uint32_t crc = 0;
 	const IRpFilePtr f_logo(ncch->openLogo());
 	if (f_logo) {
-		const off64_t szFile = f_logo->size();
-		if (szFile == 8192) {
+		const off64_t szFile64 = f_logo->size();
+		if (szFile64 == 8192) {
 			Hash crc32Hash(Hash::Algorithm::CRC32);
 			if (crc32Hash.isUsable()) {
 				// Calculate the CRC32.
+				const size_t szFile = static_cast<size_t>(szFile64);
 				unique_ptr<uint8_t[]> buf(new uint8_t[static_cast<unsigned int>(szFile)]);
 				size_t size = f_logo->read(buf.get(), static_cast<unsigned int>(szFile));
 				if (size == static_cast<unsigned int>(szFile)) {
@@ -745,7 +746,7 @@ void Nintendo3DSPrivate::addTitleIdAndProductCodeFields(bool showContentType)
 					crc = crc32Hash.getHash32();
 				}
 			}
-		} else if (szFile > 0) {
+		} else if (szFile64 > 0) {
 			// Some other custom logo.
 			crc = 1;
 		}

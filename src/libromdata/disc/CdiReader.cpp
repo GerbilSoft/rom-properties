@@ -339,8 +339,8 @@ int CdiReaderPrivate::parseCdiFile(void)
 			if (lengthFields.mode != 0) {
 				// Save the track information.
 				const size_t idx = blockRanges.size();
-				assert(idx < std::numeric_limits<int8_t>::max());
-				if (idx >= std::numeric_limits<int8_t>::max()) {
+				assert(idx < static_cast<size_t>(std::numeric_limits<int8_t>::max()));
+				if (idx >= static_cast<size_t>(std::numeric_limits<int8_t>::max())) {
 					// Too many tracks. (More than 127???)
 					return -ENOMEM;
 				}

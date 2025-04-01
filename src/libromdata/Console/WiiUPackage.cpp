@@ -495,11 +495,12 @@ void WiiUPackage::init(void)
 
 	// Need to load the entire FST, which will be memcpy()'d by WiiUFst.
 	// TODO: Eliminate a copy.
-	off64_t fst_size = fstReader->size();
-	if (fst_size <= 0 || fst_size > 1048576U) {
+	off64_t fst_size64 = fstReader->size();
+	if (fst_size64 <= 0 || fst_size64 > 1048576U) {
 		// FST is empty and/or too big?
 		return;
 	}
+	const size_t fst_size = static_cast<size_t>(fst_size64);
 	unique_ptr<uint8_t[]> fst_buf(new uint8_t[fst_size]);
 	size_t size = fstReader->read(fst_buf.get(), fst_size);
 	if (size != static_cast<size_t>(fst_size)) {

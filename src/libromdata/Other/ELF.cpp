@@ -836,9 +836,10 @@ int ELFPrivate::addPtDynamicFields(void)
 				// DT_NULL and DT_NEEDED also match here,
 				// but they're handled by other case statements.
 				if (d_tag < DT_NUM) {
-					assert(!has_dtag[d_tag]);
-					has_dtag[d_tag] = true;
-					val_dtag[d_tag] = d_val;
+					const size_t d_tag_szt = static_cast<size_t>(d_tag);
+					assert(!has_dtag[d_tag_szt]);
+					has_dtag[d_tag_szt] = true;
+					val_dtag[d_tag_szt] = d_val;
 				}
 				break;
 		}
@@ -924,19 +925,26 @@ int ELFPrivate::addPtDynamicFields(void)
 		}
 
 		assert(!has_dtag[DT_SONAME] || val_dtag[DT_SONAME] < strtab.size());
-		if (has_dtag[DT_SONAME] && val_dtag[DT_SONAME] < strtab.size())
-			fields.addField_string("DT_SONAME", &strtab[val_dtag[DT_SONAME]]);
+		if (has_dtag[DT_SONAME] && val_dtag[DT_SONAME] < strtab.size()) {
+			const size_t d_tag = static_cast<size_t>(val_dtag[DT_SONAME]);
+			fields.addField_string("DT_SONAME", &strtab[d_tag]);
+		}
 
 		assert(!has_dtag[DT_SONAME] || val_dtag[DT_SONAME] < strtab.size());
-		if (has_dtag[DT_RPATH] && val_dtag[DT_RPATH] < strtab.size())
-			fields.addField_string("DT_RPATH", &strtab[val_dtag[DT_RPATH]]);
+		if (has_dtag[DT_RPATH] && val_dtag[DT_RPATH] < strtab.size()) {
+			const size_t d_tag = static_cast<size_t>(val_dtag[DT_RPATH]);
+			fields.addField_string("DT_RPATH", &strtab[d_tag]);
+		}
 
-		if (has_dtag[DT_RUNPATH] && val_dtag[DT_RUNPATH] < strtab.size())
-			fields.addField_string("DT_RUNPATH", &strtab[val_dtag[DT_RUNPATH]]);
+		if (has_dtag[DT_RUNPATH] && val_dtag[DT_RUNPATH] < strtab.size()) {
+			const size_t d_tag = static_cast<size_t>(val_dtag[DT_RUNPATH]);
+			fields.addField_string("DT_RUNPATH", &strtab[d_tag]);
+		}
 
 		if (strtab.size() != 0 && needed.size() != 0) {
 			auto *const vv_data = new RomFields::ListData_t();
-			for (const auto offset : needed) {
+			for (const auto offset64 : needed) {
+				const size_t offset = static_cast<size_t>(offset64);
 				assert(offset < strtab.size());
 				if (offset >= strtab.size())
 					continue;
