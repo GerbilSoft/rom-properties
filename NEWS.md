@@ -64,6 +64,10 @@
     field is a "warning" field.
   * DpfReader: Fixed a regression that broke reading RPF files.
     * Affects: v2.4 - v2.4.1
+  * Wim: Fix image timestamp parsing. Previously, the "HIGHPART" was used
+    for both the high and low 32 bits. The date would usually be correct,
+    but the timestamp would be off by minutes. Both "HIGHPART" and "LOWPART"
+    are now correctly used to build the 64-bit FILETIME timestamp.
 
 * Other changes:
   * CMake: Added an ENABLE_NETWORKING option to control whether or not

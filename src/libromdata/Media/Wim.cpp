@@ -249,7 +249,7 @@ int WimPrivate::addFields_XML()
 				if (s_highPart && s_lowPart) {
 					// Parse HIGHPART and LOWPART, then combine them like FILETIME.
 					const uint32_t lastmodtime_high = strtoul(s_highPart, nullptr, 16);
-					const uint32_t lastmodtime_low = strtoul(s_highPart, nullptr, 16);
+					const uint32_t lastmodtime_low = strtoul(s_lowPart, nullptr, 16);
 					currentindex.lastmodificationtime = WindowsSplitTimeToUnixTime(lastmodtime_high, lastmodtime_low);
 				}
 			}
