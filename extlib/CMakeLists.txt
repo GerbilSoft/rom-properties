@@ -236,9 +236,9 @@ SET(BUILD_STATIC_LIBS ON)
 ADD_SUBDIRECTORY(inih)
 SET_EXTLIB_PROPERTIES(inih)
 
-# TinyXML2
+# PugiXML
 IF(USE_INTERNAL_XML)
-	# Use the internal copy of TinyXML2.
+	# Use the internal copy of PugiXML.
 	# On Windows, this will build DLLs.
 	# On other systems, this will be statically-linked.
 	# TODO: Build a dylib for Mac OS X.
@@ -254,11 +254,10 @@ IF(USE_INTERNAL_XML)
 		SET(BUILD_SHARED_LIBS OFF)
 	ENDIF()
 
-	# Build TinyXML2.
-	ADD_SUBDIRECTORY(tinyxml2)
-	SET_EXTLIB_PROPERTIES(tinyxml2)
-
-	# TODO: Set TinyXML2::tinyxml2 and use it in libromdata?
+	# Build PugiXML.
+	ADD_SUBDIRECTORY(pugixml)
+	SET_EXTLIB_PROPERTIES(pugixml-shared)
+	SET_EXTLIB_PROPERTIES(pugixml-static)
 ENDIF(USE_INTERNAL_XML)
 
 # UnICE68 for Atari ST SNDH files.
