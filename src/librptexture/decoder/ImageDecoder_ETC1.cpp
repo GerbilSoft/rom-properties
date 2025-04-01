@@ -736,12 +736,11 @@ rp_image_ptr fromETC2_RGB(int width, int height,
 
 /**
  * Decode an EAC (ETC2) alpha block.
- * @tparam byteOffset	[in] Byte offset. (Usually ARGB32_BYTE_OFFSET_A for alpha.)
- * @param tileBuf	[out] Destination tile buffer.
- * @param src		[in] Source alpha block.
+ * @param tileBuf	[out] Destination tile buffer
+ * @param src		[in] Source alpha block
+ * @param byteOffset	[in] Byte offset (Usually ARGB32_BYTE_OFFSET_A for alpha.)
  */
-template<unsigned int byteOffset>
-static void T_decodeBlock_EAC(array<uint32_t, 4*4> &tileBuf, const etc2_alpha *alpha)
+static void decodeBlock_EAC(array<uint32_t, 4*4> &tileBuf, const etc2_alpha *alpha, unsigned int byteOffset)
 {
 	// uint8_t* for byte offset handling.
 	uint8_t *const pU8 = reinterpret_cast<uint8_t*>(tileBuf.data());
@@ -829,7 +828,7 @@ rp_image_ptr fromETC2_RGBA(int width, int height,
 
 		// Decode the ETC2 alpha block.
 		// TODO: Don't fill in the alpha channel in decodeBlock_ETC2_RGB()?
-		T_decodeBlock_EAC<ARGB32_BYTE_OFFSET_A>(tileBuf, &etc2_src->alpha);
+		decodeBlock_EAC(tileBuf, &etc2_src->alpha, ARGB32_BYTE_OFFSET_A);
 
 		// Blit the tile to the main image buffer.
 		ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img.get(), tileBuf, x, y);
@@ -957,14 +956,14 @@ rp_image_ptr fromEAC_R11(int width, int height,
 
 	// Temporary tile buffer.
 	// NOTE: Must be initialized to 0xFF000000U, since
-	// T_decodeBlock_EAC<>() only modifies a single channel.
+	// decodeBlock_EAC() only modifies a single channel.
 	array<uint32_t, 4*4> tileBuf;
 	tileBuf.fill(0xFF000000U);
 
 	for (unsigned int y = 0; y < tilesY; y++) {
 	for (unsigned int x = 0; x < tilesX; x++, eac_block++) {
 		// Decode the EAC R11 block.
-		T_decodeBlock_EAC<ARGB32_BYTE_OFFSET_R>(tileBuf, eac_block);
+		decodeBlock_EAC(tileBuf, eac_block, ARGB32_BYTE_OFFSET_R);
 
 		// Blit the tile to the main image buffer.
 		ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img.get(), tileBuf, x, y);
@@ -1027,16 +1026,16 @@ rp_image_ptr fromEAC_RG11(int width, int height,
 
 	// Temporary tile buffer.
 	// NOTE: Must be initialized to 0xFF000000U, since
-	// T_decodeBlock_EAC<>() only modifies a single channel.
+	// decodeBlock_EAC<>() only modifies a single channel.
 	array<uint32_t, 4*4> tileBuf;
 	tileBuf.fill(0xFF000000U);
 
 	for (unsigned int y = 0; y < tilesY; y++) {
 	for (unsigned int x = 0; x < tilesX; x++, eac_block += 2) {
 		// Decode the EAC R11 block.
-		T_decodeBlock_EAC<ARGB32_BYTE_OFFSET_R>(tileBuf, &eac_block[0]);
+		decodeBlock_EAC(tileBuf, &eac_block[0], ARGB32_BYTE_OFFSET_R);
 		// Decode the EAC G11 block.
-		T_decodeBlock_EAC<ARGB32_BYTE_OFFSET_G>(tileBuf, &eac_block[1]);
+		decodeBlock_EAC(tileBuf, &eac_block[1], ARGB32_BYTE_OFFSET_G);
 
 		// Blit the tile to the main image buffer.
 		ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img.get(), tileBuf, x, y);
