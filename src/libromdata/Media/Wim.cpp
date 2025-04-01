@@ -191,7 +191,7 @@ int WimPrivate::addFields_XML()
 	}
 	size_t bytes_read = file->read(xml_data, static_cast<size_t>(size));
 	if (bytes_read != size) {
-		// Short read?
+		// Read error.
 		xml_dealloc(xml_data);
 		return -EIO;
 	}
