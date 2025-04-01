@@ -579,7 +579,6 @@ msgid "Checking for updates..."
 msgstr ""
 
 #. tr: Error message template. (GTK version, with C++20 formatting)
-#. tr: Error message template. (GTK version, with formatting)
 #: ../src/gtk/config/AboutTab.cpp:853 ../src/gtk/config/CacheTab.cpp:466
 #: ../src/gtk/config/CacheTab.cpp:521
 #, c++-format
@@ -1265,7 +1264,7 @@ msgctxt "ConfigDialog"
 msgid "<b>ERROR:</b> %1"
 msgstr ""
 
-#. tr: format string for Ext2 attribute checkbox labels (%c == lsattr character)
+#. tr: format string for Ext2 attribute checkbox labels ({:c} == lsattr character)
 #: ../src/kde/xattr/Ext2AttrView.cpp:77
 #, c++-format
 msgctxt "Ext2AttrView"
