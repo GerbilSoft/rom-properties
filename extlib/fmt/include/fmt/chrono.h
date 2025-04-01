@@ -656,14 +656,7 @@ inline void write_digit2_separated(char* buf, unsigned a, unsigned b,
   if (const_check(is_big_endian())) {
     char tmp[len];
     std::memcpy(tmp, &digits, len);
-#ifdef _MSC_VER
-#  pragma warning(push)
-#  pragma warning(disable: 4996)
-#endif /* _MSC_VER */
     std::reverse_copy(tmp, tmp + len, buf);
-#ifdef _MSC_VER
-#  pragma warning(pop)
-#endif /* _MSC_VER */
   } else {
     std::memcpy(buf, &digits, len);
   }
