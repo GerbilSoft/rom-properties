@@ -1673,7 +1673,7 @@ PNG_INTERNAL_FUNCTION(png_handle_result_code,png_ensure_sequence_number,(png_str
    png_uint_32 length),PNG_EMPTY);
 PNG_INTERNAL_FUNCTION(void,png_read_reset,(png_structrp png_ptr),PNG_EMPTY);
 PNG_INTERNAL_FUNCTION(void,png_read_reinit,(png_structrp png_ptr,
-   png_infop info_ptr),PNG_EMPTY);
+   png_inforp info_ptr),PNG_EMPTY);
 #ifdef PNG_PROGRESSIVE_READ_SUPPORTED
 PNG_INTERNAL_FUNCTION(void,png_progressive_read_reset,(png_structrp png_ptr),PNG_EMPTY);
 #endif /* PNG_PROGRESSIVE_READ_SUPPORTED */
