@@ -3132,7 +3132,7 @@ png_handle_fcTL(png_structrp png_ptr, png_inforp info_ptr, png_uint_32 length)
 }
 
 void /* PRIVATE */
-png_have_info(png_structp png_ptr, png_infop info_ptr)
+png_have_info(png_structrp png_ptr, png_inforp info_ptr)
 {
     if((info_ptr->valid & PNG_INFO_acTL) && !(info_ptr->valid & PNG_INFO_fcTL))
     {
@@ -4936,7 +4936,7 @@ defined(PNG_USER_TRANSFORM_PTR_SUPPORTED)
  * before a new IDAT is read. It resets some parts of png_ptr
  * to make them usable by the read functions again */
 void /* PRIVATE */
-png_read_reset(png_structp png_ptr)
+png_read_reset(png_structrp png_ptr)
 {
     png_ptr->mode &= ~PNG_HAVE_IDAT;
     png_ptr->mode &= ~PNG_AFTER_IDAT;
@@ -4945,7 +4945,7 @@ png_read_reset(png_structp png_ptr)
 }
 
 void /* PRIVATE */
-png_read_reinit(png_structp png_ptr, png_infop info_ptr)
+png_read_reinit(png_structrp png_ptr, png_inforp info_ptr)
 {
     png_ptr->width = info_ptr->next_frame_width;
     png_ptr->height = info_ptr->next_frame_height;
