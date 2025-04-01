@@ -7317,7 +7317,7 @@ static size_t convertSequences_noRepcodes(
  */
 size_t ZSTD_convertBlockSequences(ZSTD_CCtx* cctx,
                 const ZSTD_Sequence* const inSeqs, size_t nbSequences,
-                int repcodeResolution)
+                int const repcodeResolution)
 {
     Repcodes_t updatedRepcodes;
     size_t seqNb = 0;
