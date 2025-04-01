@@ -108,7 +108,7 @@ int WiiUPackagePrivate::loadSystemXml(xml_document &doc, const char *filename, c
 
 	// Parse the XML.
 	doc.reset();
-	xml_parse_result result = doc.load_buffer_inplace_own(xml_data, size, parse_default, encoding_utf8);
+	xml_parse_result result = doc.load_buffer_inplace_own(xml_data, xml_size, parse_default, encoding_utf8);
 	if (!result) {
 		// Error parsing the manifest XML.
 		// TODO: Better error code.

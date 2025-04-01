@@ -168,9 +168,9 @@ int WimPrivate::addFields_XML()
 
 	// XML data is UTF-16LE, so the size should be a multiple of 2.
 	// TODO: Error out if it isn't?
-	size_t size = static_cast<size_t>(size64);
-	assert(size % 2 == 0);
-	size &= ~1ULL;
+	size_t xml_size = static_cast<size_t>(size64);
+	assert(xml_size % 2 == 0);
+	xml_size &= ~1ULL;
 
 	// Read the WIM XML data.
 	file->rewind();
@@ -184,20 +184,20 @@ int WimPrivate::addFields_XML()
 	allocation_function xml_alloc = get_memory_allocation_function();
 	deallocation_function xml_dealloc = get_memory_deallocation_function();
 
-	char16_t *const xml_data = static_cast<char16_t*>(xml_alloc(size));
+	char16_t *const xml_data = static_cast<char16_t*>(xml_alloc(xml_size));
 	if (!xml_data) {
 		// malloc() failure!
 		return -ENOMEM;
 	}
-	size_t bytes_read = file->read(xml_data, static_cast<size_t>(size));
-	if (bytes_read != size) {
+	size_t size = file->read(xml_data, static_cast<size_t>(xml_size));
+	if (size != xml_size) {
 		// Read error.
 		xml_dealloc(xml_data);
 		return -EIO;
 	}
 
 	xml_document doc;
-	xml_parse_result result = doc.load_buffer_inplace_own(xml_data, size, parse_default, encoding_utf16_le);
+	xml_parse_result result = doc.load_buffer_inplace_own(xml_data, xml_size, parse_default, encoding_utf16_le);
 	if (!result) {
 		return 3;
 	}
