@@ -38,14 +38,13 @@ namespace LibRomData {
 
 #if defined(_MSC_VER) && defined(XML_IS_DLL)
 /**
- * Check if TinyXML2 can be delay-loaded.
- * FIXME: Replace with PugiXML.
+ * Check if PugiXML can be delay-loaded.
  * @return 0 on success; negative POSIX error code on error.
  */
-extern int DelayLoad_test_TinyXML2(void);
+extern int DelayLoad_test_PugiXML(void);
 #endif /* defined(_MSC_VER) && defined(XML_IS_DLL) */
 
-/** TinyXML2 macros **/
+/** PugiXML macros **/
 
 /**
  * Load a Wii U system XML file.
@@ -238,7 +237,7 @@ int WiiUPackagePrivate::addFields_System_XMLs(void)
 {
 #if defined(_MSC_VER) && defined(XML_IS_DLL)
 	// Delay load verification.
-	int ret_dl = DelayLoad_test_TinyXML2();
+	int ret_dl = DelayLoad_test_PugiXML();
 	if (ret_dl != 0) {
 		// Delay load failed.
 		return ret_dl;
@@ -563,7 +562,7 @@ int WiiUPackagePrivate::addMetaData_System_XMLs(void)
 {
 #if defined(_MSC_VER) && defined(XML_IS_DLL)
 	// Delay load verification.
-	int ret_dl = DelayLoad_test_TinyXML2();
+	int ret_dl = DelayLoad_test_PugiXML();
 	if (ret_dl != 0) {
 		// Delay load failed.
 		return ret_dl;
