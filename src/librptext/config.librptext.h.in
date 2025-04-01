@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptext)                        *
  * config.librptext.h.in: LibRpText configuration. (source file)           *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -17,7 +17,7 @@
 /* Define to 1 if you have the `memmem' function. */
 #cmakedefine HAVE_MEMMEM 1
 
-/* Define to 1 if yo uhave the `strlcat` function. */
+/* Define to 1 if you have the `strlcat` function. */
 #cmakedefine HAVE_STRLCAT 1
 
 /* Define to 1 if you have the `nl_langinfo` function. */
