@@ -23,6 +23,7 @@ using namespace LibRpFile;
 using namespace LibRpTexture;
 
 // C++ STL classes
+#include <limits>
 using std::array;
 using std::map;
 using std::string;
@@ -143,7 +144,7 @@ public:
 	 * @param max_size Maximum size
 	 * @return rp::uvector with the file data, or empty vector on error
 	 */
-	rp::uvector<uint8_t> loadFileFromZip(const char *filename, size_t max_size = static_cast<size_t>(~0ULL));
+	rp::uvector<uint8_t> loadFileFromZip(const char *filename, size_t max_size = std::numeric_limits<size_t>::max());
 
 	/**
 	 * Load MANIFEST.MF from this->jarFile.
