@@ -588,7 +588,7 @@ int WiiUPackagePrivate::addMetaData_System_XMLs(void)
 #endif /* defined(_MSC_VER) && defined(XML_IS_DLL) */
 
 	// Load meta.xml.
-	XMLDocument appXml, cosXml, metaXml;
+	XMLDocument metaXml;
 	int ret = loadSystemXml(metaXml, "/meta/meta.xml", "menu");
 	if (ret != 0)
 		return ret;
