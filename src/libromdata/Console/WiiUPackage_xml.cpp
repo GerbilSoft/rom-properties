@@ -24,9 +24,9 @@ using namespace LibRpText;
 // for the system language code
 #include "SystemRegion.hpp"
 
-// TinyXML2
-#include "tinyxml2.h"
-using namespace tinyxml2;
+// PugiXML
+#include "pugixml.hpp"
+using namespace pugi;
 
 // C++ STL classes
 using std::array;
@@ -39,6 +39,7 @@ namespace LibRomData {
 #if defined(_MSC_VER) && defined(XML_IS_DLL)
 /**
  * Check if TinyXML2 can be delay-loaded.
+ * FIXME: Replace with PugiXML.
  * @return 0 on success; negative POSIX error code on error.
  */
 extern int DelayLoad_test_TinyXML2(void);
@@ -60,7 +61,7 @@ extern int DelayLoad_test_TinyXML2(void);
  * @param rootNode	[in] Root node for verification
  * @return 0 on success; negative POSIX error code on error.
  */
-int WiiUPackagePrivate::loadSystemXml(XMLDocument &doc, const char *filename, const char *rootNode)
+int WiiUPackagePrivate::loadSystemXml(xml_document &doc, const char *filename, const char *rootNode)
 {
 	assert(this->isValid);
 	assert(rootNode != nullptr);	// not checking in release builds
@@ -83,10 +84,20 @@ int WiiUPackagePrivate::loadSystemXml(XMLDocument &doc, const char *filename, co
 		// (Or, it's negative, and wraps around due to unsigned.)
 		return -ENOMEM;
 	}
-	unique_ptr<char[]> xml(new char[xml_size+1]);
-	size_t size = f_xml->read(xml.get(), xml_size);
+
+	// PugiXML memory allocation functions
+	allocation_function xml_alloc = get_memory_allocation_function();
+	deallocation_function xml_dealloc = get_memory_deallocation_function();
+
+	char *const xml_data = static_cast<char*>(xml_alloc(xml_size));
+	if (!xml_data) {
+		// malloc() failure!
+		return -ENOMEM;
+	}
+	size_t size = f_xml->read(xml_data, xml_size);
 	if (size != xml_size) {
 		// Read error.
+		xml_dealloc(xml_data);
 		int err = f_xml->lastError();
 		if (err == 0) {
 			err = EIO;
@@ -94,33 +105,23 @@ int WiiUPackagePrivate::loadSystemXml(XMLDocument &doc, const char *filename, co
 		return -err;
 	}
 	f_xml.reset();
-	xml[xml_size] = 0;
 
 	// Parse the XML.
-	// FIXME: TinyXML2 2.0.0 added XMLDocument::Clear().
-	// Ubuntu 14.04 has an older version that doesn't have it...
-	// Assuming the original document is empty.
-#if TINYXML2_MAJOR_VERSION >= 2
-	doc.Clear();
-#endif /* TINYXML2_MAJOR_VERSION >= 2 */
-	int xerr = doc.Parse(xml.get());
-	if (xerr != XML_SUCCESS) {
+	doc.reset();
+	xml_parse_result result = doc.load_buffer_inplace_own(xml_data, size, parse_default, encoding_utf8);
+	if (!result) {
 		// Error parsing the manifest XML.
 		// TODO: Better error code.
-#if TINYXML2_MAJOR_VERSION >= 2
-		doc.Clear();
-#endif /* TINYXML2_MAJOR_VERSION >= 2 */
+		doc.reset();
 		return -EIO;
 	}
 
 	// Verify the root node.
-	const XMLElement *const theRootNode = doc.FirstChildElement(rootNode);
+	xml_node theRootNode = doc.child(rootNode);
 	if (!theRootNode) {
 		// Root node not found.
 		// TODO: Better error code.
-#if TINYXML2_MAJOR_VERSION >= 2
-		doc.Clear();
-#endif /* TINYXML2_MAJOR_VERSION >= 2 */
+		doc.reset();
 		return -EIO;
 	}
 
@@ -128,14 +129,12 @@ int WiiUPackagePrivate::loadSystemXml(XMLDocument &doc, const char *filename, co
 	// Wii U System XMLs always have 'type' and 'access' attributes.
 	// 'type' should be "complex".
 	// 'access' might not necessarily be "777", so not checking it.
-	const char *const attr_type = theRootNode->Attribute("type");
-	const char *const attr_access = theRootNode->Attribute("access");
-	if (!attr_type || !attr_access || strcmp(attr_type, "complex") != 0) {
+	xml_attribute attr_type = theRootNode.attribute("type");
+	xml_attribute attr_access = theRootNode.attribute("access");
+	if (!attr_type || !attr_access || strcmp(attr_type.value(), "complex") != 0) {
 		// Incorrect attributes.
 		// TODO: Better error code.
-#if TINYXML2_MAJOR_VERSION >= 2
-		doc.Clear();
-#endif /* TINYXML2_MAJOR_VERSION >= 2 */
+		doc.reset();
 		return -EIO;
 	}
 
@@ -150,37 +149,35 @@ int WiiUPackagePrivate::loadSystemXml(XMLDocument &doc, const char *filename, co
  * @param defval	[in] Default value to return if the node isn't found
  * @return unsignedInt data (returns 0 on error)
  */
-unsigned int WiiUPackagePrivate::parseUnsignedInt(const XMLElement *rootNode, const char *name, unsigned int defval)
+unsigned int WiiUPackagePrivate::parseUnsignedInt(xml_node rootNode, const char *name, unsigned int defval)
 {
 	if (!rootNode) {
 		return defval;
 	}
 
-	const XMLElement *const elem = rootNode->FirstChildElement(name);
+	xml_node elem = rootNode.child(name);
 	if (!elem) {
 		return defval;
 	}
 
-	const char *attr = elem->Attribute("type");
-	if (!attr || strcmp(attr, "unsignedInt") != 0) {
+	xml_attribute attr = elem.attribute("type");
+	if (!attr || strcmp(attr.value(), "unsignedInt") != 0) {
 		return defval;
 	}
 
-	attr = elem->Attribute("length");
-	assert(attr && strcmp(attr, "4") == 0);
-	if (!attr || strcmp(attr, "4") != 0) {
+	attr = elem.attribute("length");
+	assert(attr && strcmp(attr.value(), "4") == 0);
+	if (!attr || strcmp(attr.value(), "4") != 0) {
 		return defval;
 	}
 
-	const char *const text = elem->GetText();
+	xml_text text = elem.text();
 	if (!text) {
 		return defval;
 	}
 
 	// Parse the value as an unsigned int.
-	char *endptr;
-	unsigned int val = strtoul(text, &endptr, 10);
-	return (*endptr == '\0') ? val : defval;
+	return text.as_uint(defval);
 }
 
 /**
@@ -190,60 +187,46 @@ unsigned int WiiUPackagePrivate::parseUnsignedInt(const XMLElement *rootNode, co
  * @param name		[in] Node name
  * @return hexBinary data (returns 0 on error)
  */
-uint64_t WiiUPackagePrivate::parseHexBinary(const XMLElement *rootNode, const char *name)
+uint64_t WiiUPackagePrivate::parseHexBinary(xml_node rootNode, const char *name)
 {
 	if (!rootNode) {
 		return 0;
 	}
 
-	const XMLElement *const elem = rootNode->FirstChildElement(name);
+	xml_node elem = rootNode.child(name);
 	if (!elem) {
 		return 0;
 	}
 
-	const char *attr = elem->Attribute("type");
-	if (!attr || strcmp(attr, "hexBinary") != 0) {
+	xml_attribute attr = elem.attribute("type");
+	if (!attr || strcmp(attr.value(), "hexBinary") != 0) {
 		return 0;
 	}
 
-	attr = elem->Attribute("length");
-	assert(attr && (strcmp(attr, "4") == 0 || strcmp(attr, "8") == 0));
-	if (!attr || (strcmp(attr, "4") != 0 && strcmp(attr, "8") != 0)) {
+	attr = elem.attribute("length");
+	const char *const attr_value = attr.value();
+	assert(attr && (strcmp(attr_value, "4") == 0 || strcmp(attr_value, "8") == 0));
+	if (!attr || (strcmp(attr_value, "4") != 0 && strcmp(attr_value, "8") != 0)) {
 		return 0;
 	}
 
-	const char *const text = elem->GetText();
+	xml_text text = elem.text();
 	if (!text) {
 		return 0;
 	}
 
 	// Parse the value as a uint64_t.
+	// NOTE: PugiXML's as_*int*() functions expect decimal, not hex.
+	// Use strtoull() instead.
 	char *endptr;
-	uint64_t val = strtoull(text, &endptr, 16);
+	uint64_t val = strtoull(text.get(), &endptr, 16);
 	return (*endptr == '\0') ? val : 0;
 }
 
-/**
- * Get text from an XML element.
- * @param rootNode	[in] Root node
- * @param name		[in] Node name
- * @return Node text, or nullptr if not found or empty.
- */
-inline const char *WiiUPackagePrivate::getText(const tinyxml2::XMLElement *rootNode, const char *name)
-{
-	if (!rootNode)
-		return nullptr;
-
-	const XMLElement *const elem = rootNode->FirstChildElement(name);
-	if (!elem)
-		return nullptr;
-	return elem->GetText();
-}
-
 #define ADD_TEXT(rootNode, name, desc) do { \
-	const char *const text = getText(rootNode, name); \
+	xml_text text = rootNode.child(name).text(); \
 	if (text) { \
-		fields.addField_string((desc), text); \
+		fields.addField_string((desc), text.get()); \
 	} \
 } while (0)
 
@@ -263,7 +246,7 @@ int WiiUPackagePrivate::addFields_System_XMLs(void)
 #endif /* defined(_MSC_VER) && defined(XML_IS_DLL) */
 
 	// Load the three XML files.
-	XMLDocument appXml, cosXml, metaXml;
+	xml_document appXml, cosXml, metaXml;
 	{
 		int retSys = loadSystemXml(appXml, "/code/app.xml", "app");
 		int retCos = loadSystemXml(cosXml, "/code/cos.xml", "app");
@@ -278,11 +261,11 @@ int WiiUPackagePrivate::addFields_System_XMLs(void)
 	// NOTE: Not creating a separate tab.
 
 	// app.xml root node: "app"
-	const XMLElement *const appRootNode = appXml.FirstChildElement("app");
+	xml_node appRootNode = appXml.child("app");
 	// cos.xml root node: "app"
-	const XMLElement *const cosRootNode = cosXml.FirstChildElement("app");
+	xml_node cosRootNode = cosXml.child("app");
 	// meta.xml root node: "menu"
-	const XMLElement *const metaRootNode = metaXml.FirstChildElement("menu");
+	xml_node metaRootNode = metaXml.child("menu");
 
 	if (!appRootNode && !cosRootNode && !metaRootNode) {
 		// Missing root elements from all three XMLs.
@@ -338,9 +321,9 @@ int WiiUPackagePrivate::addFields_System_XMLs(void)
 			shortname_key += xml_lc_map[i].xml_lc;
 			publisher_key += xml_lc_map[i].xml_lc;
 
-			longnames[i] = getText(metaRootNode, longname_key.c_str());
-			shortnames[i] = getText(metaRootNode, shortname_key.c_str());
-			publishers[i] = getText(metaRootNode, publisher_key.c_str());
+			longnames[i] = metaRootNode.child(longname_key.c_str()).text().as_string(nullptr);
+			shortnames[i] = metaRootNode.child(shortname_key.c_str()).text().as_string(nullptr);
+			publishers[i] = metaRootNode.child(publisher_key.c_str()).text().as_string(nullptr);
 		}
 
 		// If English is valid, we'll deduplicate titles.
@@ -588,13 +571,14 @@ int WiiUPackagePrivate::addMetaData_System_XMLs(void)
 #endif /* defined(_MSC_VER) && defined(XML_IS_DLL) */
 
 	// Load meta.xml.
-	XMLDocument metaXml;
+	xml_document metaXml;
 	int ret = loadSystemXml(metaXml, "/meta/meta.xml", "menu");
-	if (ret != 0)
+	if (ret != 0) {
 		return ret;
+	}
 
 	// meta.xml root node: "menu"
-	const XMLElement *const metaRootNode = metaXml.FirstChildElement("menu");
+	xml_node metaRootNode = metaXml.child("menu");
 	if (!metaRootNode) {
 		// No "menu" element.
 		// TODO: Better error code.
@@ -606,16 +590,16 @@ int WiiUPackagePrivate::addMetaData_System_XMLs(void)
 	string s_def_lc = SystemRegion::lcToString(SystemRegion::getLanguageCode());
 	string nodeName = fmt::format(FSTR("shortname_{:s}"), s_def_lc);
 
-	const char *shortname = getText(metaRootNode, nodeName.c_str());
+	xml_text shortname = metaRootNode.child(nodeName.c_str()).text();
 	if (!shortname) {
 		// Not valid. Check English.
-		shortname = getText(metaRootNode, "shortname_en");
+		shortname = metaRootNode.child("shortname_en").text();
 		if (shortname) {
 			// English is valid.
 			s_def_lc = "en";
 		} else {
 			// Not valid. Check Japanese.
-			shortname = getText(metaRootNode, "shortname_jp");
+			shortname = metaRootNode.child("shortname_jp");
 			if (shortname) {
 				// Japanese is valid.
 				s_def_lc = "jp";
@@ -630,14 +614,14 @@ int WiiUPackagePrivate::addMetaData_System_XMLs(void)
 	// Title
 	// TODO: Shortname vs. longname?
 	if (shortname) {
-		metaData.addMetaData_string(Property::Title, shortname);
+		metaData.addMetaData_string(Property::Title, shortname.get());
 	}
 
 	// Publisher
 	nodeName = fmt::format(FSTR("publisher_{:s}"), s_def_lc);
-	const char *const publisher = getText(metaRootNode, nodeName.c_str());
+	xml_text publisher = metaRootNode.child(nodeName.c_str()).text();
 	if (publisher) {
-		metaData.addMetaData_string(Property::Publisher, publisher);
+		metaData.addMetaData_string(Property::Publisher, publisher.get());
 	}
 
 	// System XML files read successfully.
@@ -651,27 +635,27 @@ int WiiUPackagePrivate::addMetaData_System_XMLs(void)
  */
 string WiiUPackagePrivate::getProductCodeAndApplType_xml(uint32_t *pApplType)
 {
-	XMLDocument metaXml;
+	xml_document metaXml;
 	int retMeta = loadSystemXml(metaXml, "/meta/meta.xml", "menu");
 	if (retMeta != 0) {
 		// Unable to load meta.xml.
 		return {};
 	}
 
-	const XMLElement *const metaRootNode = metaXml.FirstChildElement("menu");
+	xml_node metaRootNode = metaXml.child("menu");
 	if (!metaRootNode) {
 		// No root node.
 		return {};
 	}
 
-	const char *const product_code = getText(metaRootNode, "product_code");
+	const char *const product_code = metaRootNode.child("product_code").text().as_string(nullptr);
 
 	if (pApplType) {
 		// Get the application type.
-		XMLDocument appXml;
+		xml_document appXml;
 		int retApp = loadSystemXml(appXml, "/code/app.xml", "app");
 		if (retApp == 0) {
-			const XMLElement *const appRootNode = appXml.FirstChildElement("app");
+			xml_node appRootNode = appXml.child("app");
 			if (appRootNode) {
 				*pApplType = parseHexBinary32(appRootNode, "app_type");
 			}
