@@ -4959,7 +4959,7 @@ png_read_reinit(png_structrp png_ptr, png_inforp info_ptr)
 #ifdef PNG_PROGRESSIVE_READ_SUPPORTED
 /* same as png_read_reset() but for the progressive reader */
 void /* PRIVATE */
-png_progressive_read_reset(png_structp png_ptr)
+png_progressive_read_reset(png_structrp png_ptr)
 {
 #ifdef PNG_READ_INTERLACING_SUPPORTED
    /* Arrays to facilitate easy interlacing - use pass (0 - 6) as index */
