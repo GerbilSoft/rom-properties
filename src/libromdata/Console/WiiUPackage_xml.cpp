@@ -152,27 +152,29 @@ int WiiUPackagePrivate::loadSystemXml(XMLDocument &doc, const char *filename, co
  */
 unsigned int WiiUPackagePrivate::parseUnsignedInt(const XMLElement *rootNode, const char *name, unsigned int defval)
 {
-	if (!rootNode)
-		return 0;
+	if (!rootNode) {
+		return defval;
+	}
 
 	const XMLElement *const elem = rootNode->FirstChildElement(name);
-	if (!elem)
-		return 0;
+	if (!elem) {
+		return defval;
+	}
 
 	const char *attr = elem->Attribute("type");
 	if (!attr || strcmp(attr, "unsignedInt") != 0) {
-		return 0;
+		return defval;
 	}
 
 	attr = elem->Attribute("length");
 	assert(attr && strcmp(attr, "4") == 0);
 	if (!attr || strcmp(attr, "4") != 0) {
-		return 0;
+		return defval;
 	}
 
 	const char *const text = elem->GetText();
 	if (!text) {
-		return 0;
+		return defval;
 	}
 
 	// Parse the value as an unsigned int.
