@@ -14,7 +14,7 @@
 #endif
 
 // PugiXML
-#include "pugixml.hpp"
+#include <pugixml.hpp>
 using namespace pugi;
 
 // MSVC: Exception handling for /DELAYLOAD.

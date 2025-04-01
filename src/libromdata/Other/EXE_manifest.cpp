@@ -18,7 +18,7 @@ using namespace LibRpBase;
 using namespace LibRpFile;
 
 // PugiXML
-#include "pugixml.hpp"
+#include <pugixml.hpp>
 using namespace pugi;
 
 // C++ STL classes

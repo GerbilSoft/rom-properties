@@ -26,7 +26,7 @@
 // PugiXML
 // NOTE: Cannot forward-declare the PugiXML classes...
 #ifdef ENABLE_XML
-#  include "pugixml.hpp"
+#  include <pugixml.hpp>
 #endif /* ENABLE_XML */
 
 namespace LibRomData {

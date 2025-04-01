@@ -16,7 +16,7 @@
 
 #ifdef ENABLE_XML
 // PugiXML
-#  include "pugixml.hpp"
+#  include <pugixml.hpp>
 using namespace pugi;
 #endif /* ENABLE_XML */
 
