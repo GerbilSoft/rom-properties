@@ -50,6 +50,7 @@ public:
 		if (!m_hWtsApi32_dll) {
 			// DLL not found.
 			SetLastError(ERROR_DLL_NOT_FOUND);
+			return FALSE;
 		}
 
 		// Register for WTS session notifications.
@@ -73,6 +74,7 @@ public:
 		if (!m_hWtsApi32_dll) {
 			// DLL not found.
 			SetLastError(ERROR_DLL_NOT_FOUND);
+			return FALSE;
 		}
 
 		// Unregister for WTS session notifications.
