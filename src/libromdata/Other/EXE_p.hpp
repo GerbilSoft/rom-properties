@@ -285,7 +285,7 @@ private:
 	 * Load the Win32 manifest resource.
 	 *
 	 * The XML is loaded and parsed using the specified
-	 * TinyXML document.
+	 * PugiXML document.
 	 *
 	 * NOTE: DelayLoad must be checked by the caller, since it's
 	 * passing an xml_document reference to this function.
