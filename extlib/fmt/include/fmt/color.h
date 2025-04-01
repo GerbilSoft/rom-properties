@@ -405,10 +405,17 @@ template <typename Char> struct ansi_color_escape {
     out[2] = static_cast<Char>('0' + c % 10);
     out[3] = static_cast<Char>(delimiter);
   }
+#ifdef _MSC_VER
+#  pragma warning(push)
+#  pragma warning(disable: 4800)
+#endif /* _MSC_VER */
   static FMT_CONSTEXPR auto has_emphasis(emphasis em, emphasis mask) noexcept
       -> bool {
     return static_cast<uint8_t>(em) & static_cast<uint8_t>(mask);
   }
+#ifdef _MSC_VER
+#  pragma warning(pop)
+#endif /* _MSC_VER */
 };
 
 template <typename Char>
