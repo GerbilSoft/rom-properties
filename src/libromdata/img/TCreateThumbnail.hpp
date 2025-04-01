@@ -106,8 +106,8 @@ template<typename ImgClass>
 class NOVTABLE TCreateThumbnail
 {
 public:
-	using RefImgClass = std::conditional<std::is_pointer<ImgClass>::value, ImgClass, ImgClass&>::type;
-	using ConstRefImgClass = std::conditional<std::is_pointer<ImgClass>::value, ImgClass, const ImgClass&>::type;
+	using RefImgClass = typename std::conditional<std::is_pointer<ImgClass>::value, ImgClass, ImgClass&>::type;
+	using ConstRefImgClass = typename std::conditional<std::is_pointer<ImgClass>::value, ImgClass, const ImgClass&>::type;
 
 public:
 	TCreateThumbnail() = default;

@@ -173,7 +173,7 @@ u16string cpN_to_utf16(unsigned int cp, const char *str, int len, unsigned int f
 			for (char &c : eucJP) {
 				c |= 0x80;
 			}
-			if (W32U_mbs_to_UTF16(s_wcs, eucJP.c_str(), eucJP.size(), 20932, dwFlags) != 0) {
+			if (W32U_mbs_to_UTF16(s_wcs, eucJP.c_str(), static_cast<int>(eucJP.size()), 20932, dwFlags) != 0) {
 				s_wcs.clear();
 			}
 		}
