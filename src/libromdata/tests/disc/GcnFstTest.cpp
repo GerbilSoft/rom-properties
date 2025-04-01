@@ -543,13 +543,13 @@ std::vector<GcnFstTest_mode> GcnFstTest::ReadTestCasesFromDisk(uint8_t offsetShi
 			break;
 
 		// Make sure the filename isn't empty.
-		EXPECT_GT(file_info.size_filename, 0) << "A filename in the ZIP file has no name. Skipping...";
+		EXPECT_GT(file_info.size_filename, 0UL) << "A filename in the ZIP file has no name. Skipping...";
 
 		// Make sure the file isn't too big.
 		EXPECT_LE(file_info.uncompressed_size, MAX_GCN_FST_BIN_FILESIZE) <<
 			"GCN FST file '" << filename << "' is too big. (maximum size is 1 MB)";
 
-		if (file_info.size_filename > 0 &&
+		if (file_info.size_filename > 0UL &&
 		    file_info.uncompressed_size <= MAX_GCN_FST_BIN_FILESIZE)
 		{
 			// Add this filename to the list.
