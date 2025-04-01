@@ -448,6 +448,7 @@ string RomFields::ageRatingDecode(AgeRatingsCountry country, uint16_t rating)
 						// Unknown rating.
 						break;
 				}
+				break;
 
 			default:
 				// No special handling for this country.

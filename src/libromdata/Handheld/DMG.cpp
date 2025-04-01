@@ -1565,6 +1565,7 @@ int DMG::extURLs(ImageType imageType, vector<ExtURL> &extURLs, int size) const
 			case '?':
 			case ':':
 				c = '_';
+				break;
 			default:
 				break;
 		}
