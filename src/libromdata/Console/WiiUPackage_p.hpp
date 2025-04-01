@@ -165,7 +165,7 @@ private:
 	 * @param name		[in] Node name
 	 * @return hexBinary data
 	 */
-	static uint32_t parseHexBinary32(const tinyxml2::XMLElement *rootNode, const char *name)
+	static inline uint32_t parseHexBinary32(const tinyxml2::XMLElement *rootNode, const char *name)
 	{
 		return static_cast<uint32_t>(parseHexBinary(rootNode, name));
 	}
