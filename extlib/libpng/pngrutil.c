@@ -3000,7 +3000,7 @@ png_handle_unknown(png_structrp png_ptr, png_inforp info_ptr,
 #ifdef PNG_READ_APNG_SUPPORTED
 // FIXME: Not static due to use in pngread.c, png_read_frame_head().
 png_handle_result_code /* PRIVATE */
-png_handle_acTL(png_structp png_ptr, png_infop info_ptr, png_uint_32 length)
+png_handle_acTL(png_structrp png_ptr, png_inforp info_ptr, png_uint_32 length)
 {
     png_byte data[8];
     png_uint_32 num_frames;
@@ -3048,7 +3048,7 @@ png_handle_acTL(png_structp png_ptr, png_infop info_ptr, png_uint_32 length)
 }
 
 png_handle_result_code /* PRIVATE */
-png_handle_fcTL(png_structp png_ptr, png_infop info_ptr, png_uint_32 length)
+png_handle_fcTL(png_structrp png_ptr, png_inforp info_ptr, png_uint_32 length)
 {
     png_byte data[22];
     png_uint_32 width;
@@ -3142,7 +3142,7 @@ png_have_info(png_structp png_ptr, png_infop info_ptr)
 }
 
 png_handle_result_code /* PRIVATE */
-png_handle_fdAT(png_structp png_ptr, png_infop info_ptr, png_uint_32 length)
+png_handle_fdAT(png_structrp png_ptr, png_inforp info_ptr, png_uint_32 length)
 {
     png_ensure_sequence_number(png_ptr, length);
 
@@ -3158,7 +3158,7 @@ png_handle_fdAT(png_structp png_ptr, png_infop info_ptr, png_uint_32 length)
 }
 
 png_handle_result_code /* PRIVATE */
-png_ensure_sequence_number(png_structp png_ptr, png_uint_32 length)
+png_ensure_sequence_number(png_structrp png_ptr, png_uint_32 length)
 {
     png_byte data[4];
     png_uint_32 sequence_number;

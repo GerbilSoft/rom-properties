@@ -1995,7 +1995,7 @@ png_write_tIME(png_structrp png_ptr, png_const_timep mod_time)
 
 #ifdef PNG_WRITE_APNG_SUPPORTED
 void /* PRIVATE */
-png_write_acTL(png_structp png_ptr,
+png_write_acTL(png_structrp png_ptr,
     png_uint_32 num_frames, png_uint_32 num_plays)
 {
     png_byte buf[8];
@@ -2014,7 +2014,7 @@ png_write_acTL(png_structp png_ptr,
 }
 
 void /* PRIVATE */
-png_write_fcTL(png_structp png_ptr, png_uint_32 width, png_uint_32 height,
+png_write_fcTL(png_structrp png_ptr, png_uint_32 width, png_uint_32 height,
     png_uint_32 x_offset, png_uint_32 y_offset,
     png_uint_16 delay_num, png_uint_16 delay_den, png_byte dispose_op,
     png_byte blend_op)
@@ -2051,7 +2051,7 @@ png_write_fcTL(png_structp png_ptr, png_uint_32 width, png_uint_32 height,
 }
 
 void /* PRIVATE */
-png_write_fdAT(png_structp png_ptr,
+png_write_fdAT(png_structrp png_ptr,
     png_const_bytep data, png_size_t length)
 {
     png_byte buf[4];
@@ -2925,7 +2925,7 @@ png_write_filtered_row(png_structrp png_ptr, png_bytep filtered_row,
 
 #ifdef PNG_WRITE_APNG_SUPPORTED
 void /* PRIVATE */
-png_write_reset(png_structp png_ptr)
+png_write_reset(png_structrp png_ptr)
 {
     png_ptr->row_number = 0;
     png_ptr->pass = 0;
@@ -2933,7 +2933,7 @@ png_write_reset(png_structp png_ptr)
 }
 
 void /* PRIVATE */
-png_write_reinit(png_structp png_ptr, png_infop info_ptr,
+png_write_reinit(png_structrp png_ptr, png_inforp info_ptr,
                  png_uint_32 width, png_uint_32 height)
 {
     if (png_ptr->num_frames_written == 0 &&
