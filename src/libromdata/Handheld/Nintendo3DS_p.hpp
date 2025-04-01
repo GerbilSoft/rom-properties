@@ -147,17 +147,6 @@ public:
 	LibRpBase::RomDataPtr mainContent;
 
 	/**
-	 * Round a value to the next highest multiple of 64.
-	 * @param value Value.
-	 * @return Next highest multiple of 64.
-	 */
-	template<typename T>
-	static inline constexpr T toNext64(T val)
-	{
-		return (val + static_cast<T>(63)) & ~(static_cast<T>(63));
-	}
-
-	/**
 	 * Load the SMDH section.
 	 * @return 0 on success; non-zero on error.
 	 */

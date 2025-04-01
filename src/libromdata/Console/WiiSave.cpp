@@ -63,17 +63,6 @@ public:
 	// Wii_Bk_Header_t magic
 	static const array<uint8_t, 8> bk_header_magic;
 
-	/**
-	 * Round a value to the next highest multiple of 64.
-	 * @param value Value.
-	 * @return Next highest multiple of 64.
-	 */
-	template<typename T>
-	static inline constexpr T toNext64(T val)
-	{
-		return (val + static_cast<T>(63)) & ~(static_cast<T>(63));
-	}
-
 #ifdef ENABLE_DECRYPTION
 	// CBC reader for the main data area.
 	CBCReaderPtr cbcReader;

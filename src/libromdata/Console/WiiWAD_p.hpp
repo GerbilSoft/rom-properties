@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * WiiWAD_p.hpp: Nintendo Wii WAD file reader. (Private class)             *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -92,17 +92,6 @@ public:
 	rp::uvector<RVL_Content_Entry> tmdContentsTbl;
 	const RVL_Content_Entry *pIMETContent;
 	uint32_t imetContentOffset;	// relative to start of data area
-
-	/**
-	 * Round a value to the next highest multiple of 64.
-	 * @param value Value.
-	 * @return Next highest multiple of 64.
-	 */
-	template<typename T>
-	static inline constexpr T toNext64(T val)
-	{
-		return (val + (T)63) & ~((T)63);
-	}
 
 #ifdef ENABLE_DECRYPTION
 	// CBC reader for the main data area
