@@ -17,9 +17,9 @@
 using namespace LibRpBase;
 using namespace LibRpFile;
 
-// TinyXML2
-#include "tinyxml2.h"
-using namespace tinyxml2;
+// PugiXML
+#include "pugixml.hpp"
+using namespace pugi;
 
 // C++ STL classes
 using std::array;
@@ -37,12 +37,12 @@ namespace LibRomData {
 extern int DelayLoad_test_TinyXML2(void);
 #endif /* defined(_MSC_VER) && defined(XML_IS_DLL) */
 
-/** TinyXML2 macros **/
+/** PugiXML macros **/
 
 #define FIRST_CHILD_ELEMENT_NS(var, parent_elem, child_elem_name, namespace) \
-	const XMLElement *var = parent_elem->FirstChildElement(child_elem_name); \
+	xml_node var = parent_elem.child(child_elem_name); \
 	if (!var) { \
-		var = parent_elem->FirstChildElement(namespace ":" child_elem_name); \
+		var = parent_elem.child(namespace ":" child_elem_name); \
 	} \
 do { } while (0)
 
@@ -50,18 +50,18 @@ do { } while (0)
 	FIRST_CHILD_ELEMENT_NS(var, parent_elem, child_elem_name, "asmv3")
 
 #define ADD_ATTR(elem, attr_name, desc) do { \
-	const char *const attr = elem->Attribute(attr_name); \
+	xml_attribute attr = elem.attribute(attr_name); \
 	if (attr) { \
-		fields.addField_string((desc), attr); \
+		fields.addField_string((desc), attr.value()); \
 	} \
 } while (0)
 
 #define ADD_TEXT(parent_elem, child_elem_name, desc) do { \
 	FIRST_CHILD_ELEMENT(child_elem, parent_elem, child_elem_name); \
 	if (child_elem) { \
-		const char *const text = child_elem->GetText(); \
+		xml_text text = child_elem.text(); \
 		if (text) { \
-			fields.addField_string((desc), text); \
+			fields.addField_string((desc), text.get()); \
 		} \
 	} \
 } while (0)
@@ -73,13 +73,13 @@ do { } while (0)
  * TinyXML document.
  *
  * NOTE: DelayLoad must be checked by the caller, since it's
- * passing an XMLDocument reference to this function.
+ * passing an xml_document reference to this function.
  *
- * @param doc		[in/out] XML document.
+ * @param doc		[in/out] XML document
  * @param ppResName	[out,opt] Pointer to receive the loaded resource name. (statically-allocated string)
  * @return 0 on success; negative POSIX error code on error.
  */
-int EXEPrivate::loadWin32ManifestResource(XMLDocument &doc, const char **ppResName) const
+int EXEPrivate::loadWin32ManifestResource(xml_document &doc, const char **ppResName) const
 {
 	// Make sure the resource directory is loaded.
 	int ret = const_cast<EXEPrivate*>(this)->loadPEResourceTypes();
@@ -119,6 +119,10 @@ int EXEPrivate::loadWin32ManifestResource(XMLDocument &doc, const char **ppResNa
 		return -ENOENT;
 	}
 
+	// PugiXML memory allocation functions
+	allocation_function xml_alloc = get_memory_allocation_function();
+	deallocation_function xml_dealloc = get_memory_deallocation_function();
+
 	// Read the entire resource into memory.
 	// Assuming a limit of 64 KB for manifests.
 	const size_t xml_size = static_cast<size_t>(f_manifest->size());
@@ -127,10 +131,11 @@ int EXEPrivate::loadWin32ManifestResource(XMLDocument &doc, const char **ppResNa
 		// (Or, it's negative, and wraps around due to unsigned.)
 		return -ENOMEM;
 	}
-	unique_ptr<char[]> xml(new char[xml_size+1]);
-	size_t size = f_manifest->read(xml.get(), xml_size);
+	char *const xml_data = static_cast<char*>(xml_alloc(xml_size));
+	size_t size = f_manifest->read(xml_data, xml_size);
 	if (size != xml_size) {
 		// Read error.
+		xml_dealloc(xml_data);
 		int err = f_manifest->lastError();
 		if (err == 0) {
 			err = EIO;
@@ -138,33 +143,23 @@ int EXEPrivate::loadWin32ManifestResource(XMLDocument &doc, const char **ppResNa
 		return -err;
 	}
 	f_manifest.reset();
-	xml[xml_size] = 0;
 
 	// Parse the XML.
-	// FIXME: TinyXML2 2.0.0 added XMLDocument::Clear().
-	// Ubuntu 14.04 has an older version that doesn't have it...
-	// Assuming the original document is empty.
-#if TINYXML2_MAJOR_VERSION >= 2
-	doc.Clear();
-#endif /* TINYXML2_MAJOR_VERSION >= 2 */
-	int xerr = doc.Parse(xml.get());
-	if (xerr != XML_SUCCESS) {
+	doc.reset();
+	xml_parse_result result = doc.load_buffer_inplace_own(xml_data, xml_size, parse_default, encoding_utf8);
+	if (!result) {
 		// Error parsing the manifest XML.
 		// TODO: Better error code.
-#if TINYXML2_MAJOR_VERSION >= 2
-		doc.Clear();
-#endif /* TINYXML2_MAJOR_VERSION >= 2 */
+		doc.reset();
 		return -EIO;
 	}
 
 	// Root element must be assembly.
-	const XMLElement *const assembly = doc.FirstChildElement("assembly");
+	xml_node const assembly = doc.child("assembly");
 	if (!assembly) {
 		// No assembly element.
 		// TODO: Better error code.
-#if TINYXML2_MAJOR_VERSION >= 2
-		doc.Clear();
-#endif /* TINYXML2_MAJOR_VERSION >= 2 */
+		doc.reset();
 		return -EIO;
 	}
 
@@ -174,17 +169,15 @@ int EXEPrivate::loadWin32ManifestResource(XMLDocument &doc, const char **ppResNa
 	// - It may also be an xmlns attribute.
 	// Instead, we'll simply check for both non-prefixed and prefixed
 	// element names.
-	const char *const xmlns = assembly->Attribute("xmlns");
-	const char *const manifestVersion = assembly->Attribute("manifestVersion");
+	xml_attribute xmlns = assembly.attribute("xmlns");
+	xml_attribute manifestVersion = assembly.attribute("manifestVersion");
 	if (!xmlns || !manifestVersion ||
-	    strcmp(xmlns, "urn:schemas-microsoft-com:asm.v1") != 0 ||
-	    strcmp(manifestVersion, "1.0") != 0)
+	    strcmp(xmlns.value(), "urn:schemas-microsoft-com:asm.v1") != 0 ||
+	    strcmp(manifestVersion.value(), "1.0") != 0)
 	{
 		// Incorrect assembly attributes.
 		// TODO: Better error code.
-#if TINYXML2_MAJOR_VERSION >= 2
-		doc.Clear();
-#endif /* TINYXML2_MAJOR_VERSION >= 2 */
+		doc.reset();
 		return -EIO;
 	}
 
@@ -211,7 +204,7 @@ int EXEPrivate::addFields_PE_Manifest(void)
 #endif /* defined(_MSC_VER) && defined(XML_IS_DLL) */
 
 	const char *pResName = nullptr;
-	XMLDocument doc;
+	xml_document doc;
 	int ret = loadWin32ManifestResource(doc, &pResName);
 	if (ret != 0) {
 		return ret;
@@ -220,22 +213,20 @@ int EXEPrivate::addFields_PE_Manifest(void)
 	// Add the manifest fields.
 	fields.addTab(C_("EXE", "Manifest"));
 
-	// Manifest ID.
+	// Manifest ID
 	fields.addField_string(C_("EXE|Manifest", "Manifest ID"),
 		(pResName ? pResName : C_("RomData", "Unknown")));
 
-	// Assembly element.
-	const XMLElement *const assembly = doc.FirstChildElement("assembly");
+	// Assembly element
+	xml_node const assembly = doc.child("assembly");
 	if (!assembly) {
 		// No assembly element.
 		// TODO: Better error code.
-#if TINYXML2_MAJOR_VERSION >= 2
-		doc.Clear();
-#endif /* TINYXML2_MAJOR_VERSION >= 2 */
+		doc.reset();
 		return -EIO;
 	}
 
-	// Assembly identity.
+	// Assembly identity
 	FIRST_CHILD_ELEMENT(assemblyIdentity, assembly, "assemblyIdentity");
 	if (assemblyIdentity) {
 		ADD_ATTR(assemblyIdentity, "type", C_("EXE|Manifest", "Type"));
@@ -247,10 +238,10 @@ int EXEPrivate::addFields_PE_Manifest(void)
 		ADD_ATTR(assemblyIdentity, "publicKeyToken", C_("EXE|Manifest", "publicKeyToken"));
 	}
 
-	// Description.
+	// Description
 	ADD_TEXT(assembly, "description", C_("EXE|Manifest", "Description"));
 
-	// Trust info.
+	// Trust info
 	// TODO: Fine-grained permissions?
 	// Reference: https://docs.microsoft.com/en-us/visualstudio/deployment/trustinfo-element-clickonce-application
 	FIRST_CHILD_ELEMENT_NS(trustInfo, assembly, "trustInfo", "asmv2");
@@ -268,7 +259,7 @@ int EXEPrivate::addFields_PE_Manifest(void)
 		}
 	}
 
-	// windowsSettings bitfield.
+	// windowsSettings bitfield
 	// Reference: https://docs.microsoft.com/en-us/windows/win32/sbscs/manifest-file-schema
 	// TODO: Ordering.
 	typedef enum {
@@ -291,14 +282,14 @@ int EXEPrivate::addFields_PE_Manifest(void)
 		NOP_C_("EXE|Manifest|WinSettings", "Ultra High-Res Scroll"),
 	}};
 
-	// Windows settings.
+	// Windows settings
 	// NOTE: application and windowsSettings may be
 	// prefixed with asmv3.
 	#define ADD_SETTING(settings, parent_elem, setting_name) do { \
 		FIRST_CHILD_ELEMENT(child_elem, parent_elem, #setting_name); \
 		if (child_elem) { \
-			const char *text = child_elem->GetText(); \
-			if (text && !strcasecmp(text, "true")) { \
+			xml_text text = child_elem.text(); \
+			if (text && !strcasecmp(text.get(), "true")) { \
 				settings |= (Setting_##setting_name); \
 			} \
 		} \
@@ -373,12 +364,13 @@ int EXEPrivate::addFields_PE_Manifest(void)
 
 			// Go through all "supportedOS" elements.
 			// TODO: Check for asmv1 prefixes?
-			for (const XMLElement *supportedOS = application->FirstChildElement("supportedOS");
-			     supportedOS != nullptr; supportedOS = supportedOS->NextSiblingElement())
+			for (xml_node supportedOS = application.child("supportedOS");
+			     supportedOS; supportedOS = supportedOS.next_sibling())
 			{
-				const char *Id = supportedOS->Attribute("Id");
-				if (!Id || Id[0] == 0)
+				const char *const Id = supportedOS.attribute("Id").value();
+				if (!Id || Id[0] == 0) {
 					continue;
+				}
 
 				// Check for supported OSes.
 				if (!strcasecmp(Id, "{e2011457-1546-43c5-a5fe-008deee3d3f0}")) {
@@ -397,10 +389,10 @@ int EXEPrivate::addFields_PE_Manifest(void)
 			}
 
 			// Check for long path awareness.
-			const XMLElement *const longPathAware = application->FirstChildElement("longPathAware");
+			xml_node const longPathAware = application.child("longPathAware");
 			if (longPathAware) {
-				const char *const text = longPathAware->GetText();
-				if (text && !strcasecmp(text, "true")) {
+				xml_text text = longPathAware.text();
+				if (text && !strcasecmp(text.get(), "true")) {
 					// Long path aware.
 					compat |= OS_LongPathAware;
 				}
@@ -433,14 +425,14 @@ bool EXEPrivate::doesExeRequireAdministrator(void) const
 	}
 #endif /* defined(_MSC_VER) && defined(XML_IS_DLL) */
 
-	XMLDocument doc;
+	xml_document doc;
 	if (loadWin32ManifestResource(doc) != 0) {
 		// No Win32 manifest resource.
 		return false;
 	}
 
 	// Assembly element.
-	const XMLElement *const assembly = doc.FirstChildElement("assembly");
+	xml_node const assembly = doc.child("assembly");
 	if (!assembly) {
 		// No assembly element.
 		return false;
@@ -460,10 +452,11 @@ bool EXEPrivate::doesExeRequireAdministrator(void) const
 	if (!requestedExecutionLevel)
 		return false;
 
-	const char *const attr = requestedExecutionLevel->Attribute("level");
-	if (!attr)
+	xml_attribute attr = requestedExecutionLevel.attribute("level");
+	if (!attr) {
 		return false;
-	return (!strcasecmp(attr, "requireAdministrator"));
+	}
+	return (!strcasecmp(attr.value(), "requireAdministrator"));
 }
 
 }
