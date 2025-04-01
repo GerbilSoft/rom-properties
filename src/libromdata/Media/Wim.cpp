@@ -34,7 +34,6 @@ using namespace LibRpFile;
 // C++ STL classes
 using std::array;
 using std::string;
-using std::unique_ptr;
 using std::vector;
 
 namespace LibRomData {
@@ -160,15 +159,16 @@ int WimPrivate::addFields_XML()
 
 	// the eighth byte of the "size" is used for flags so we have to AND it
 	static constexpr uint64_t XML_MAX_SIZE = 16U*1024U*1024U;
-	uint64_t size = (wimHeader.xml_resource.size & 0x00FFFFFFFFFFFFFFULL);
-	assert(size <= XML_MAX_SIZE);
-	if (size > XML_MAX_SIZE) {
+	const uint64_t size64 = (wimHeader.xml_resource.size & 0x00FFFFFFFFFFFFFFULL);
+	assert(size64 <= XML_MAX_SIZE);
+	if (size64 > XML_MAX_SIZE) {
 		// XML is larger than 16 MB, which doesn't make any sense.
 		return -ENOMEM;
 	}
 
 	// XML data is UTF-16LE, so the size should be a multiple of 2.
 	// TODO: Error out if it isn't?
+	size_t size = static_cast<size_t>(size64);
 	assert(size % 2 == 0);
 	size &= ~1ULL;
 
@@ -180,14 +180,24 @@ int WimPrivate::addFields_XML()
 		return -EIO;
 	}
 
-	unique_ptr<char16_t[]> xml_data(new char16_t[static_cast<size_t>(size / 2)]);
-	size_t bytes_read = file->read(xml_data.get(), static_cast<size_t>(size));
+	// PugiXML memory allocation functions
+	allocation_function xml_alloc = get_memory_allocation_function();
+	deallocation_function xml_dealloc = get_memory_deallocation_function();
+
+	char16_t *const xml_data = static_cast<char16_t*>(xml_alloc(size));
+	if (!xml_data) {
+		// malloc() failure!
+		return -ENOMEM;
+	}
+	size_t bytes_read = file->read(xml_data, static_cast<size_t>(size));
 	if (bytes_read != size) {
+		// Short read?
+		xml_dealloc(xml_data);
 		return -EIO;
 	}
 
 	xml_document doc;
-	xml_parse_result result = doc.load_buffer_inplace(xml_data.get(), size, parse_default, encoding_utf16_le);
+	xml_parse_result result = doc.load_buffer_inplace_own(xml_data, size, parse_default, encoding_utf16_le);
 	if (!result) {
 		return 3;
 	}
