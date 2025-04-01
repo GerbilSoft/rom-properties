@@ -11,6 +11,7 @@ include(CMakePackageConfigHelpers)
 include(CMakeDependentOption)
 include(GNUInstallDirs)
 
+IF(0) # rom-properties
 cmake_dependent_option(PUGIXML_USE_VERSIONED_LIBDIR
   "Use a private subdirectory to install the headers and libraries" OFF
   "CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR" OFF)
@@ -26,6 +27,7 @@ cmake_dependent_option(PUGIXML_STATIC_CRT
 cmake_dependent_option(PUGIXML_BUILD_TESTS
   "Build pugixml tests" OFF
   "CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR" OFF)
+ENDIF(0) # rom-properties
 
 # Custom build defines
 set(PUGIXML_BUILD_DEFINES CACHE STRING "Build defines for custom options")
@@ -35,20 +37,27 @@ separate_arguments(PUGIXML_BUILD_DEFINES)
 option(BUILD_SHARED_LIBS "Build shared instead of static library" OFF)
 
 # Expose option to build PUGIXML as static as well when the global BUILD_SHARED_LIBS variable is set
+IF(0) # rom-properties
 cmake_dependent_option(PUGIXML_BUILD_SHARED_AND_STATIC_LIBS
   "Build both shared and static libraries" OFF
   "BUILD_SHARED_LIBS" OFF)
+ENDIF(0) # rom-properties
+SET(PUGIXML_BUILD_SHARED_AND_STATIC_LIBS OFF)
 
+IF(0) # rom-properties
 # Expose options from the pugiconfig.hpp
 option(PUGIXML_WCHAR_MODE "Enable wchar_t mode" OFF)
 option(PUGIXML_COMPACT "Enable compact mode" OFF)
 option(PUGIXML_INSTALL "Enable installation rules" ON)
+ENDIF(0) # rom-properties
 
+IF(0) # rom-properties
 # Advanced options from pugiconfig.hpp
 option(PUGIXML_NO_XPATH "Disable XPath" OFF)
 option(PUGIXML_NO_STL "Disable STL" OFF)
 option(PUGIXML_NO_EXCEPTIONS "Disable Exceptions" OFF)
 mark_as_advanced(PUGIXML_NO_XPATH PUGIXML_NO_STL PUGIXML_NO_EXCEPTIONS)
+ENDIF(0) # rom-properties
 
 if (APPLE)
   option(PUGIXML_BUILD_APPLE_FRAMEWORK "Build as Apple Frameworks" OFF)
