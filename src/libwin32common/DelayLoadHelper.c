@@ -69,7 +69,7 @@ static const char *const dll_whitelist[] = {
 #endif /* RP_LIBROMDATA_IS_DLL */
 	"zlib1" DEBUG_SUFFIX ".dll",
 	"libpng16" DEBUG_SUFFIX ".dll",
-	"tinyxml2-11" DEBUG_SUFFIX ".dll",
+	"pugixml.dll",	// FIXME: pugixml needs a 'd' suffix for debug builds.
 	"zstd" DEBUG_SUFFIX ".dll",
 	"lz4" DEBUG_SUFFIX ".dll",
 	"minilzo" DEBUG_SUFFIX ".dll",

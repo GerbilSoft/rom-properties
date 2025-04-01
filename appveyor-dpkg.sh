@@ -11,7 +11,6 @@ apt-get -y install \
 	libjpeg-dev \
 	nettle-dev \
 	pkg-config \
-	libtinyxml2-dev \
 	libpugixml-dev \
 	gettext \
 	libseccomp-dev \

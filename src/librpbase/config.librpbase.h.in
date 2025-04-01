@@ -57,13 +57,13 @@
 /* Define to 1 if XML parsing is enabled. */
 #cmakedefine ENABLE_XML 1
 
-/* Define to 1 if we're using the internal copy of TinyXML2. */
+/* Define to 1 if we're using the internal copy of PugiXML. */
 #cmakedefine USE_INTERNAL_XML 1
 
-/* Define to 1 if we're using the internal copy of TinyXML2 as a DLL. */
+/* Define to 1 if we're using the internal copy of PugiXML as a DLL. */
 #cmakedefine USE_INTERNAL_XML_DLL 1
 
-/* Define to 1 if TinyXML2 is a DLL. */
+/* Define to 1 if PugiXML is a DLL. */
 #if !defined(USE_INTERNAL_XML) || defined(USE_INTERNAL_XML_DLL)
 #  define XML_IS_DLL 1
 #endif

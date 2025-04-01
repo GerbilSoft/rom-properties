@@ -13,7 +13,6 @@ Build-Depends:
  libcurl4-openssl-dev | libcurl4-gnutls-dev | libcurl4-nss-dev | libcurl-dev,
  libjpeg-dev,
  nettle-dev,
- libtinyxml2-dev,
  libpugixml-dev,
  libseccomp-dev,
  libqt4-dev,

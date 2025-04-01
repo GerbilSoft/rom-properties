@@ -1209,7 +1209,7 @@ void AboutTabPrivate::initLibrariesTab(void)
 
 	// FIXME: Runtime version?
 	sLibraries += RTF_BR RTF_BR;
-	sLibraries += fmt::format(FRUN(sCompiledWith), tinyXml2Version);
+	sLibraries += fmt::format(FRUN(sCompiledWith), pugiXmlVersion);
 	sLibraries += RTF_BR
 		"Copyright (C) 2006-2025, by Arseny Kapoulkine (arseny.kapoulkine@gmail.com)" RTF_BR
 		"https://pugixml.org/" RTF_BR;
