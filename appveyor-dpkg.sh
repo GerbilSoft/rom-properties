@@ -12,6 +12,7 @@ apt-get -y install \
 	nettle-dev \
 	pkg-config \
 	libtinyxml2-dev \
+	libpugixml-dev \
 	gettext \
 	libseccomp-dev \
 	libfmt-dev \

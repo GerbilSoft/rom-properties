@@ -14,6 +14,7 @@ Build-Depends:
  libjpeg-dev,
  nettle-dev,
  libtinyxml2-dev,
+ libpugixml-dev,
  libseccomp-dev,
  libqt4-dev,
  kdelibs5-dev,
