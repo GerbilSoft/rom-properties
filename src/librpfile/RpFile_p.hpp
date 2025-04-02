@@ -166,21 +166,12 @@ public:
 		DWORD *pdwCreationDisposition);
 #else /* !_WIN32 */
 	/**
-	 * Convert an RpFile::FileMode to an fopen() mode string.
-	 * @param mode	[in] FileMode
-	 * @return fopen() mode string.
+	 * fopen() wrapper with O_CLOEXEC handling.
+	 * @param pathname	[in] Pathname
+	 * @param mode		[in] FileMode
+	 * @return FILE*, or nullptr on error.
 	 */
-	static inline const char *mode_to_str(RpFile::FileMode mode);
-
-#  if !defined(HAVE_FOPEN_CLOEXEC) && defined(FD_CLOEXEC)
-	/**
-	 * Set FD_CLOEXEC on the specified file.
-	 * @param file File
-	 * @param value True to set FD_CLOEXEC; false to clear it.
-	 * @return 0 on success; non-zero on error.
-	 */
-	static int set_FD_CLOEXEC_flag(FILE *file, bool value);
-#  endif /* !defined(HAVE_FOPEN_CLOEXEC) && defined(FD_CLOEXEC) */
+	static FILE *fopen_cloexec(const char *pathname, RpFile::FileMode mode);
 #endif /* _WIN32 */
 
 	/**

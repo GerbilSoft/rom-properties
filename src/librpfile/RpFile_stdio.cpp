@@ -50,24 +50,51 @@ RpFilePrivate::~RpFilePrivate()
 }
 
 /**
- * Convert an RpFile::FileMode to an fopen() mode string.
- * @param mode	[in] FileMode
- * @return fopen() mode string.
+ * fopen() wrapper with O_CLOEXEC handling.
+ * @param pathname	[in] Pathname
+ * @param mode		[in] FileMode
+ * @return FILE*, or nullptr on error.
  */
-inline const char *RpFilePrivate::mode_to_str(RpFile::FileMode mode)
+FILE *RpFilePrivate::fopen_cloexec(const char *pathname, RpFile::FileMode mode)
 {
+	const char *mode_str;
 	switch (mode & RpFile::FM_MODE_MASK) {
 		case RpFile::FM_OPEN_READ:
-			return "rb" FOPEN_CLOEXEC_FLAG;
+			mode_str = "rb" FOPEN_CLOEXEC_FLAG;
+			break;
 		case RpFile::FM_OPEN_WRITE:
-			return "rb+" FOPEN_CLOEXEC_FLAG;
+			mode_str = "rb+" FOPEN_CLOEXEC_FLAG;
+			break;
 		case RpFile::FM_CREATE|RpFile::FM_READ /*RpFile::FM_CREATE_READ*/ :
 		case RpFile::FM_CREATE_WRITE:
-			return "wb+" FOPEN_CLOEXEC_FLAG;
+			mode_str = "wb+" FOPEN_CLOEXEC_FLAG;
+			break;
 		default:
 			// Invalid mode.
 			return nullptr;
 	}
+
+	FILE *f = fopen(pathname, mode_str);
+	if (!f) {
+		// Unable to open the file.
+		return nullptr;
+	}
+
+#if !defined(HAVE_FOPEN_CLOEXEC) && defined(FD_CLOEXEC)
+	// fopen() does not support the "e" mode character.
+	// Set it manually using F_SETFD with FD_CLOEXEC.
+	// TODO: Use open() with O_CLOEXEC instead?
+	// NOTE: Not checking for errors.
+	const int fd = fileno(file);
+
+	int oldflags = fcntl(fd, F_GETFD, 0);
+	if (oldflags >= 0) {
+		oldflags |= FD_CLOEXEC;
+		fcntl(fd, F_SETFD, oldflags);
+	}
+#endif /* !HAVE_FOPEN_CLOEXEC && FD_CLOEXEC */
+
+	return f;
 }
 
 /**
@@ -82,7 +109,6 @@ inline const char *RpFilePrivate::mode_to_str(RpFile::FileMode mode)
 int RpFilePrivate::reOpenFile(void)
 {
 	RP_Q(RpFile);
-	const char *const mode_str = mode_to_str(mode);
 
 	// Linux: Use UTF-8 filenames directly.
 	if (file) {
@@ -198,7 +224,7 @@ int RpFilePrivate::reOpenFile(void)
 #endif /* NO_PATTERNS_FOR_THIS_OS */
 	}
 
-	file = fopen(filename.c_str(), mode_str);
+	file = fopen_cloexec(filename.c_str(), mode);
 
 	// If fopen() failed (and returned nullptr),
 	// return the non-zero error code.
@@ -209,10 +235,6 @@ int RpFilePrivate::reOpenFile(void)
 		}
 		return q->m_lastError;
 	}
-
-#if !defined(HAVE_FOPEN_CLOEXEC) && defined(FD_CLOEXEC)
-	set_FD_CLOEXEC_flag(file, true);
-#endif /* !defined(HAVE_FOPEN_CLOEXEC) && defined(FD_CLOEXEC) */
 
 	if (q->isDevice()) {
 		// Allocate devInfo.
@@ -629,21 +651,15 @@ int RpFile::makeWritable(void)
 	RP_D(RpFile);
 	off64_t prev_pos = ftello(d->file);
 	fclose(d->file);
-	d->file = fopen(d->filename.c_str(), "rb+" FOPEN_CLOEXEC_FLAG);
+	d->file = d->fopen_cloexec(d->filename.c_str(), RpFile::FM_OPEN_WRITE);
 	if (d->file) {
 		// File is now writable.
-#if !defined(HAVE_FOPEN_CLOEXEC) && defined(FD_CLOEXEC)
-		d->set_FD_CLOEXEC_flag(d->file, true);
-#endif /* !defined(HAVE_FOPEN_CLOEXEC) && defined(FD_CLOEXEC) */
 		m_isWritable = true;
 	} else {
 		// Failed to open the file as writable.
 		// Try reopening as read-only.
-		d->file = fopen(d->filename.c_str(), "rb" FOPEN_CLOEXEC_FLAG);
+		d->file = d->fopen_cloexec(d->filename.c_str(), RpFile::FM_OPEN_READ);
 		if (d->file) {
-#if !defined(HAVE_FOPEN_CLOEXEC) && defined(FD_CLOEXEC)
-			d->set_FD_CLOEXEC_flag(d->file, true);
-#endif /* !defined(HAVE_FOPEN_CLOEXEC) && defined(FD_CLOEXEC) */
 			fseeko(d->file, prev_pos, SEEK_SET);
 		}
 		return -ENOTSUP;
@@ -654,31 +670,5 @@ int RpFile::makeWritable(void)
 	d->mode = static_cast<RpFile::FileMode>(d->mode | FM_WRITE);
 	return 0;
 }
-
-#if !defined(_WIN32) && !defined(HAVE_FOPEN_CLOEXEC) && defined(FD_CLOEXEC)
-/**
- * Set FD_CLOEXEC on the specified file.
- * @param file File
- * @param value True to set FD_CLOEXEC; false to clear it.
- * @return 0 on success; non-zero on error.
- */
-int RpFilePrivate::set_FD_CLOEXEC_flag(FILE *file, bool value)
-{
-	const int fd = fileno(file);
-
-	int oldflags = fcntl(fd, F_GETFD, 0);
-	if (oldflags < 0) {
-		return oldflags;
-	}
-
-	if (value) {
-		oldflags |= FD_CLOEXEC;
-	} else {
-		oldflags &= ~FD_CLOEXEC;
-	}
-
-	return fcntl(fd, F_SETFD, oldflags);
-}
-#endif /* !defined(_WIN32) && !defined(HAVE_FOPEN_CLOEXEC) && defined(FD_CLOEXEC) */
 
 } // namespace LibRpFile
