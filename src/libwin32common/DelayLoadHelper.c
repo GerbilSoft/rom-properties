@@ -71,7 +71,7 @@ static const char *const dll_whitelist[] = {
 #endif /* RP_LIBROMDATA_IS_DLL */
 	"zlib1" DEBUG_SUFFIX ".dll",
 	"libpng16" DEBUG_SUFFIX ".dll",
-	"pugixml" PUGI_DEBUG_SUFFIX "dll",
+	"pugixml" PUGI_DEBUG_SUFFIX ".dll",
 	"zstd" DEBUG_SUFFIX ".dll",
 	"lz4" DEBUG_SUFFIX ".dll",
 	"minilzo" DEBUG_SUFFIX ".dll",
