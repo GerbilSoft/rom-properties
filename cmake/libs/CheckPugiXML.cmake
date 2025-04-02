@@ -1,14 +1,14 @@
 # Check for PugiXML.
-# If PugiXML isn't found, extlib/tinyxml2/ will be used instead.
+# If PugiXML isn't found, extlib/pugixml/ will be used instead.
 
 IF(ENABLE_XML)
 
 IF(NOT USE_INTERNAL_XML)
-	IF(PugiXML_LIBRARY MATCHES "^pugixml")
+	IF(pugixml_LIBRARY MATCHES "^pugixml")
 		# Internal PugiXML was previously in use.
 		UNSET(XML_FOUND)
 		UNSET(HAVE_XML)
-		UNSET(PugiXML_LIBRARY CACHE)
+		UNSET(pugixml_LIBRARY CACHE)
 	ENDIF()
 
 	# Check for PugiXML.
@@ -29,7 +29,7 @@ ENDIF(NOT USE_INTERNAL_XML)
 
 IF(USE_INTERNAL_XML)
 	# Using the internal PugiXML library.
-	# NOTE: The tinyxml2 target has implicit include directories,
+	# NOTE: The pugixml target has implicit include directories,
 	# so we don't need to set the variables.
 	SET(pugixml_FOUND 1)
 	SET(HAVE_XML 1)

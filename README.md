@@ -339,7 +339,7 @@ Some bundled components have other licenses:
 * minizip-ng: zlib
 * PowerVR: MIT
 * rapidjson: MIT
-* TinyXML2: BSD 3-clause
+* PugiXML: MIT
 * unice68: GPL-3
 * uniwidth: LPGL-2.1+
 * zlib-ng: zlib
