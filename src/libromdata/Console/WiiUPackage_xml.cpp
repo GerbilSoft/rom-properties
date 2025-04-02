@@ -634,6 +634,15 @@ int WiiUPackagePrivate::addMetaData_System_XMLs(void)
  */
 string WiiUPackagePrivate::getProductCodeAndApplType_xml(uint32_t *pApplType)
 {
+#if defined(_MSC_VER) && defined(XML_IS_DLL)
+	// Delay load verification.
+	int ret_dl = DelayLoad_test_PugiXML();
+	if (ret_dl != 0) {
+		// Delay load failed.
+		return {};
+	}
+#endif /* defined(_MSC_VER) && defined(XML_IS_DLL) */
+
 	xml_document metaXml;
 	int retMeta = loadSystemXml(metaXml, "/meta/meta.xml", "menu");
 	if (retMeta != 0) {
