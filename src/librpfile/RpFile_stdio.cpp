@@ -32,7 +32,7 @@ namespace LibRpFile {
 /** RpFilePrivate **/
 
 RpFilePrivate::RpFilePrivate(RpFile *q, const char *filename, RpFile::FileMode mode)
-	: q_ptr(q), file(INVALID_HANDLE_VALUE)
+	: q_ptr(q), file(nullptr)
 	, mode(mode), gzfd(nullptr), gzsz(-1)
 {
 	assert(filename != nullptr);

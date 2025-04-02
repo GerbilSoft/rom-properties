@@ -40,12 +40,6 @@
 #  include <cstdio>
 #endif /* _WIN32 */
 
-// Windows uses INVALID_HANDLE_VALUE for invalid handles.
-// Other systems generally use nullptr.
-#ifndef _WIN32
-#  define INVALID_HANDLE_VALUE nullptr
-#endif
-
 #ifdef RP_OS_SCSI_SUPPORTED
 // OS-specific headers for DeviceInfo.
 #  if defined(__FreeBSD__) || defined(__DragonFly__)
