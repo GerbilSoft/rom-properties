@@ -277,6 +277,7 @@ SET(${PROJECT_NAME}_H
 	Media/CBMDOS.hpp
 	Media/ISO.hpp
 	Media/Wim.hpp
+	Media/Wim_p.hpp
 
 	Media/cbmdos_structs.h
 	Media/hsfs_structs.h
@@ -377,6 +378,7 @@ SET(${PROJECT_NAME}_H
 IF(ENABLE_XML)
 	SET(${PROJECT_NAME}_SRCS ${${PROJECT_NAME}_SRCS}
 		Console/WiiUPackage_xml.cpp
+		Media/Wim_xml.cpp
 		Other/EXE_manifest.cpp
 		)
 	IF(MSVC AND (NOT USE_INTERNAL_XML OR USE_INTERNAL_XML_DLL))
