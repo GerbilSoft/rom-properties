@@ -45,7 +45,7 @@ DELAYLOAD_TEST_FUNCTION_IMPL0(get_crc_table);
 
 RpFilePrivate::RpFilePrivate(RpFile *q, const wchar_t *filenameW, RpFile::FileMode mode)
 	: q_ptr(q)
-	, file(INVALID_HANDLE_VALUE)
+	, file(nullptr)
 	, mode(mode)
 	, gzfd(nullptr)
 	, gzsz(-1)
@@ -59,7 +59,7 @@ RpFilePrivate::~RpFilePrivate()
 	if (gzfd) {
 		gzclose_r(gzfd);
 	}
-	if (file && file != INVALID_HANDLE_VALUE) {
+	if (file) {
 		CloseHandle(file);
 	}
 }
@@ -229,7 +229,7 @@ int RpFilePrivate::reOpenFile(void)
 	}
 
 	// Open the file.
-	if (file && file != INVALID_HANDLE_VALUE) {
+	if (file) {
 		CloseHandle(file);
 	}
 	file = CreateFile(
@@ -256,6 +256,7 @@ int RpFilePrivate::reOpenFile(void)
 	if (!file || file == INVALID_HANDLE_VALUE) {
 		// Error opening the file.
 		q->m_lastError = w32err_to_posix(GetLastError());
+		file = nullptr;
 		return -q->m_lastError;
 	}
 
@@ -269,13 +270,13 @@ int RpFilePrivate::reOpenFile(void)
 				q->m_lastError = EIO;
 			}
 			CloseHandle(file);
-			file = INVALID_HANDLE_VALUE;
+			file = nullptr;
 			return -q->m_lastError;
 		}
 	}
 
-	// Return 0 if it's *not* nullptr or INVALID_HANDLE_VALUE.
-	return (!file || file == INVALID_HANDLE_VALUE);
+	// Return 0 if it's *not* nullptr.
+	return (!file);
 }
 
 /** RpFile **/
@@ -442,7 +443,7 @@ RpFile::~RpFile()
 bool RpFile::isOpen(void) const
 {
 	RP_D(const RpFile);
-	return (d->file != nullptr && d->file != INVALID_HANDLE_VALUE);
+	return (d->file != nullptr);
 }
 
 /**
@@ -464,9 +465,9 @@ void RpFile::close(void)
 		gzclose_r(d->gzfd);
 		d->gzfd = nullptr;
 	}
-	if (d->file && d->file != INVALID_HANDLE_VALUE) {
+	if (d->file) {
 		CloseHandle(d->file);
-		d->file = INVALID_HANDLE_VALUE;
+		d->file = nullptr;
 	}
 }
 
@@ -479,7 +480,7 @@ void RpFile::close(void)
 size_t RpFile::read(void *ptr, size_t size)
 {
 	RP_D(RpFile);
-	if (!d->file || d->file == INVALID_HANDLE_VALUE) {
+	if (!d->file) {
 		m_lastError = EBADF;
 		return 0;
 	} else if (size == 0) {
@@ -523,7 +524,7 @@ size_t RpFile::read(void *ptr, size_t size)
 size_t RpFile::write(const void *ptr, size_t size)
 {
 	RP_D(RpFile);
-	if (!d->file || d->file == INVALID_HANDLE_VALUE || !(d->mode & FM_WRITE)) {
+	if (!d->file || !(d->mode & FM_WRITE)) {
 		// Either the file isn't open,
 		// or it's read-only.
 		m_lastError = EBADF;
@@ -555,7 +556,7 @@ size_t RpFile::write(const void *ptr, size_t size)
 int RpFile::seek(off64_t pos)
 {
 	RP_D(RpFile);
-	if (!d->file || d->file == INVALID_HANDLE_VALUE) {
+	if (!d->file) {
 		m_lastError = EBADF;
 		return -1;
 	}
@@ -609,7 +610,7 @@ int RpFile::seek(off64_t pos)
 off64_t RpFile::tell(void)
 {
 	RP_D(RpFile);
-	if (!d->file || d->file == INVALID_HANDLE_VALUE) {
+	if (!d->file) {
 		m_lastError = EBADF;
 		return -1;
 	}
@@ -644,7 +645,7 @@ off64_t RpFile::tell(void)
 int RpFile::truncate(off64_t size)
 {
 	RP_D(RpFile);
-	if (!d->file || d->file == INVALID_HANDLE_VALUE || !(d->mode & FM_WRITE)) {
+	if (!d->file || !(d->mode & FM_WRITE)) {
 		// Either the file isn't open,
 		// or it's read-only.
 		m_lastError = EBADF;
@@ -721,7 +722,7 @@ int RpFile::flush(void)
 off64_t RpFile::size(void)
 {
 	RP_D(RpFile);
-	if (!d->file || d->file == INVALID_HANDLE_VALUE) {
+	if (!d->file) {
 		m_lastError = EBADF;
 		return -1;
 	}
