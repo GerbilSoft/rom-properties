@@ -55,7 +55,13 @@
 #cmakedefine HAVE_FEATURES_H 1
 
 // O_CLOEXEC support in fopen()
-#ifdef HAVE_FEATURES_H
+#if defined(__APPLE__)
+// Mac OS X does not support the "e" mode character in fopen(),
+// but it does have F_SETFD. (FD_CLOEXEC might not be defined, though.)
+#  ifndef FD_CLOEXEC
+#    define FD_CLOEXEC 1
+#  endif /* !FD_CLOEXEC */
+#elif defined(HAVE_FEATURES_H)
 #  include <features.h>
 #  if defined(__GLIBC__) && (__GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ >= 7))
 #    define HAVE_FOPEN_CLOEXEC 1
