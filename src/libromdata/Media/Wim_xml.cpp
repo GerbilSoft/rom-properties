@@ -28,6 +28,14 @@ using std::vector;
 
 namespace LibRomData {
 
+#if defined(_MSC_VER) && defined(XML_IS_DLL)
+/**
+ * Check if PugiXML can be delay-loaded.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+extern int DelayLoad_test_PugiXML(void);
+#endif /* defined(_MSC_VER) && defined(XML_IS_DLL) */
+
 struct WimWindowsLanguages {
 	string language;
 	//string default_language;	//not used right now
@@ -79,6 +87,15 @@ int WimPrivate::addFields_XML()
 	if (!file || !file->isOpen()) {
 		return -EIO;
 	}
+
+#if defined(_MSC_VER) && defined(XML_IS_DLL)
+	// Delay load verification.
+	int ret_dl = DelayLoad_test_PugiXML();
+	if (ret_dl != 0) {
+		// Delay load failed.
+		return ret_dl;
+	}
+#endif /* defined(_MSC_VER) && defined(XML_IS_DLL) */
 
 	// Sanity check: Minimum of 1 image; allow up to 256 images.
 	unsigned int number_of_images = wimHeader.number_of_images;
