@@ -45,7 +45,7 @@ static bool DoXMLDocumentTest(void)
 {
 	xml_document doc;
 	doc.reset();
-	return doc.empty();
+	return (doc.type() == node_document);
 }
 
 /**
