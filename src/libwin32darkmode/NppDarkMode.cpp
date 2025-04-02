@@ -142,7 +142,7 @@ static void NppDarkMode_TabControl_drawItem(HWND hWnd, const DRAWITEMSTRUCT *pDr
 
 	const COLORREF textColor = isSelected ? colorActiveText : colorInactiveText;
 	SetTextColor(hDC, textColor);
-	DrawText(hDC, decodedLabel, _tcslen(decodedLabel), &rect, Flags);
+	DrawText(hDC, decodedLabel, static_cast<int>(_tcslen(decodedLabel)), &rect, Flags);
 	RestoreDC(hDC, nSavedDC);
 }
 
