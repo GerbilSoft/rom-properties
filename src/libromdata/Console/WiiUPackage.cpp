@@ -749,7 +749,12 @@ int WiiUPackage::loadFieldData(void)
 	// Parse the Wii U System XMLs.
 	// NOTE: Only if the FST was loaded, or reading an extracted package.
 	if (canLoadXMLs) {
-		d->addFields_System_XMLs();
+		int ret = d->addFields_System_XMLs();
+		if (ret != 0) {
+			d->fields.addField_string(C_("RomData", "Warning"),
+				C_("RomData", "XML parsing failed."),
+				RomFields::STRF_WARNING);
+		}
 	}
 #else /* !ENABLE_XML */
 	d->fields.addField_string(C_("RomData", "Warning"),

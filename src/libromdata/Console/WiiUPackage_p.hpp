@@ -36,11 +36,11 @@
 #include <memory>
 #include <vector>
 
-// TinyXML2
-namespace tinyxml2 {
-	class XMLDocument;
-	class XMLElement;
-}
+// PugiXML
+// NOTE: Cannot forward-declare the PugiXML classes...
+#ifdef ENABLE_XML
+#  include <pugixml.hpp>
+#endif /* ENABLE_XML */
 
 namespace LibRomData {
 
@@ -128,17 +128,17 @@ private:
 	 * Load a Wii U system XML file.
 	 *
 	 * The XML is loaded and parsed using the specified
-	 * TinyXML document.
+	 * PugiXML document.
 	 *
 	 * NOTE: DelayLoad must be checked by the caller, since it's
-	 * passing an XMLDocument reference to this function.
+	 * passing an xml_document reference to this function.
 	 *
 	 * @param doc		[in/out] XML document
 	 * @param filename	[in] XML filename
 	 * @param rootNode	[in] Root node for verification
 	 * @return 0 on success; negative POSIX error code on error.
 	 */
-	int loadSystemXml(tinyxml2::XMLDocument &doc, const char *filename, const char *rootNode);
+	int loadSystemXml(pugi::xml_document &doc, const char *filename, const char *rootNode);
 
 	/**
 	 * Parse an "unsignedInt" element.
@@ -147,7 +147,7 @@ private:
 	 * @param defval	[in] Default value to return if the node isn't found
 	 * @return unsignedInt data (returns 0 on error)
 	 */
-	unsigned int parseUnsignedInt(const tinyxml2::XMLElement *rootNode, const char *name, unsigned int defval = 0);
+	unsigned int parseUnsignedInt(pugi::xml_node rootNode, const char *name, unsigned int defval = 0);
 
 	/**
 	 * Parse a "hexBinary" element.
@@ -156,7 +156,7 @@ private:
 	 * @param name		[in] Node name
 	 * @return hexBinary data
 	 */
-	static uint64_t parseHexBinary(const tinyxml2::XMLElement *rootNode, const char *name);
+	static uint64_t parseHexBinary(pugi::xml_node rootNode, const char *name);
 
 	/**
 	 * Parse a "hexBinary" element.
@@ -165,18 +165,10 @@ private:
 	 * @param name		[in] Node name
 	 * @return hexBinary data
 	 */
-	static inline uint32_t parseHexBinary32(const tinyxml2::XMLElement *rootNode, const char *name)
+	static inline uint32_t parseHexBinary32(pugi::xml_node rootNode, const char *name)
 	{
 		return static_cast<uint32_t>(parseHexBinary(rootNode, name));
 	}
-
-	/**
-	 * Get text from an XML element.
-	 * @param rootNode	[in] Root node
-	 * @param name		[in] Node name
-	 * @return Node text, or nullptr if not found or empty.
-	 */
-	static inline const char *getText(const tinyxml2::XMLElement *rootNode, const char *name);
 
 	/**
 	 * Get the default language code for the multi-string fields.

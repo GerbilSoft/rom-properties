@@ -770,7 +770,17 @@ void EXEPrivate::addFields_PE(void)
 #ifdef ENABLE_XML
 		// Parse the manifest if it's present.
 		// TODO: Support external manifests, e.g. program.exe.manifest?
-		addFields_PE_Manifest();
+		int ret = addFields_PE_Manifest();
+		if (ret != 0) {
+			fields.addField_string(C_("RomData", "Warning"),
+				C_("RomData", "XML parsing failed."),
+				RomFields::STRF_WARNING);
+		}
+#else /* !ENABLE_XML */
+		// TODO: Check if a manifest is present before showing this message.
+		fields.addField_string(C_("RomData", "Warning"),
+			C_("RomData", "XML parsing is disabled in this build."),
+			RomFields::STRF_WARNING);
 #endif /* ENABLE_XML */
 	}
 

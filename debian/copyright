@@ -116,9 +116,9 @@ Copyright: Copyright (C) 2015 THL A29 Limited, a Tencent company, and Milo Yip.
 License: MIT
 
 Files:
- extlib/tinyxml2/*
-Copyright: 2011-2023 Lee Thomason (www.grinninglizard.com)
-License: Zlib
+ extlib/pugixml/*
+Copyright: (C) 2006-2025, by Arseny Kapoulkine (arseny.kapoulkine@gmail.com)
+License: MIT
 
 Files:
  extlib/unice68/*

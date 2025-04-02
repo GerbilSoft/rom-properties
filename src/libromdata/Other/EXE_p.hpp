@@ -23,10 +23,11 @@
 
 #include "span.hh"
 
-// TinyXML2
-namespace tinyxml2 {
-	class XMLDocument;
-}
+// PugiXML
+// NOTE: Cannot forward-declare the PugiXML classes...
+#ifdef ENABLE_XML
+#  include <pugixml.hpp>
+#endif /* ENABLE_XML */
 
 namespace LibRomData {
 
@@ -284,18 +285,18 @@ private:
 	 * Load the Win32 manifest resource.
 	 *
 	 * The XML is loaded and parsed using the specified
-	 * TinyXML document.
+	 * PugiXML document.
 	 *
 	 * NOTE: DelayLoad must be checked by the caller, since it's
-	 * passing an XMLDocument reference to this function.
+	 * passing an xml_document reference to this function.
 	 *
-	 * @param doc		[in/out] XML document.
+	 * @param doc		[in/out] XML document
 	 * @param ppResName	[out,opt] Pointer to receive the loaded resource name. (statically-allocated string)
 	 * @return 0 on success; negative POSIX error code on error.
 	 */
 	ATTR_ACCESS(read_write, 2)
 	ATTR_ACCESS(write_only, 3)
-	int loadWin32ManifestResource(tinyxml2::XMLDocument &doc, const char **ppResName = nullptr) const;
+	int loadWin32ManifestResource(pugi::xml_document &doc, const char **ppResName = nullptr) const;
 
 public:
 	/**

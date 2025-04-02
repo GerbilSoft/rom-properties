@@ -45,7 +45,7 @@ using std::string;
 #  include "librpbase/crypto/AesNettle.hpp"
 #endif /* ENABLE_DECRYPTION && HAVE_NETTLE */
 #ifdef ENABLE_XML
-#  include <tinyxml2.h>
+#  include <pugixml.hpp>
 #endif /* ENABLE_XML */
 
 #include "ui_AboutTab.h"
@@ -480,24 +480,38 @@ void AboutTabPrivate::initLibrariesTab(void)
 	}
 #endif /* ENABLE_DECRYPTION && HAVE_NETTLE */
 
-	/** TinyXML2 **/
+	/** PugiXML **/
 #ifdef ENABLE_XML
+	// PugiXML 1.10 and later uses this format: 1140 == 1.14.0
+	// PugiXML 1.9 and earlier uses this format: 190 == 1.9.0
+	unsigned int pugixml_major, pugixml_minor, pugixml_patch;
+	if (PUGIXML_VERSION >= 1000) {
+		pugixml_major = PUGIXML_VERSION / 1000;
+		pugixml_minor = (PUGIXML_VERSION % 1000) / 10;
+		pugixml_patch = PUGIXML_VERSION  % 10;
+	} else {
+		pugixml_major = PUGIXML_VERSION / 100;
+		pugixml_minor = (PUGIXML_VERSION % 100) / 10;
+		pugixml_patch = PUGIXML_VERSION % 10;
+	}
+
 	sLibraries += BR BR;
-	const string tinyXml2Version = fmt::format(FSTR("TinyXML2 {:d}.{:d}.{:d}"),
-		static_cast<unsigned int>(TIXML2_MAJOR_VERSION),
-		static_cast<unsigned int>(TIXML2_MINOR_VERSION),
-		static_cast<unsigned int>(TIXML2_PATCH_VERSION));
+	string pugiXmlVersion = fmt::format(FSTR("PugiXML {:d}.{:d}"),
+		pugixml_major, pugixml_minor);
+	if (pugixml_patch > 0) {
+		pugiXmlVersion += fmt::format(FSTR(".{:d}"), pugixml_patch);
+	}
 
 #  if defined(USE_INTERNAL_XML) && !defined(USE_INTERNAL_XML_DLL)
-	sLibraries += fmt::format(FRUN(sIntCopyOf), tinyXml2Version);
+	sLibraries += fmt::format(FRUN(sIntCopyOf), pugiXmlVersion);
 #  else
 	// FIXME: Runtime version?
-	sLibraries += fmt::format(FRUN(sCompiledWith), tinyXml2Version);
+	sLibraries += fmt::format(FRUN(sCompiledWith), pugiXmlVersion);
 #  endif
 	sLibraries += BR
-		"Copyright (C) 2000-2021 Lee Thomason" BR
-		"<a href='http://www.grinninglizard.com/'>http://www.grinninglizard.com/</a>" BR;
-	sLibraries += fmt::format(FRUN(sLicense), "zlib license");
+		"Copyright (C) 2006-2025, by Arseny Kapoulkine (arseny.kapoulkine@gmail.com)" BR
+		"<a href='https://pugixml.org/'>https://pugixml.org/</a>" BR;
+	sLibraries += fmt::format(FRUN(sLicense), "MIT license");
 #endif /* ENABLE_XML */
 
 	/** GNU gettext **/

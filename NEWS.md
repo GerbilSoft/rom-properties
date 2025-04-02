@@ -85,6 +85,7 @@
     functions only have a few instructions of overhead in most cases.
   * Added NEON-optimized byteswap functions for 32-bit ARM (untested) and
     64-bit ARM (tested on Android).
+  * Switched XML parsers from TinyXML2 to PugiXML.
 
 ## v2.4.1 (released 2024/11/12)
 

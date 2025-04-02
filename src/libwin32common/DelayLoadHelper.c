@@ -55,8 +55,10 @@ static const TCHAR rp_subdir[] = _T("riscv64\\");
 #  define ROMDATA_PREFIX
 #  ifdef NDEBUG
 #    define DEBUG_SUFFIX ""
+#    define PUGI_DEBUG_SUFFIX ""
 #  else
 #    define DEBUG_SUFFIX "d"
+#    define PUGI_DEBUG_SUFFIX "_d"
 #  endif
 #else
 #  define ROMDATA_PREFIX "lib"
@@ -69,7 +71,7 @@ static const char *const dll_whitelist[] = {
 #endif /* RP_LIBROMDATA_IS_DLL */
 	"zlib1" DEBUG_SUFFIX ".dll",
 	"libpng16" DEBUG_SUFFIX ".dll",
-	"tinyxml2-11" DEBUG_SUFFIX ".dll",
+	"pugixml" PUGI_DEBUG_SUFFIX ".dll",
 	"zstd" DEBUG_SUFFIX ".dll",
 	"lz4" DEBUG_SUFFIX ".dll",
 	"minilzo" DEBUG_SUFFIX ".dll",
