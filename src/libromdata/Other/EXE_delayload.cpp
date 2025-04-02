@@ -57,7 +57,7 @@ int DelayLoad_test_PugiXML(void)
 	static int success = 0;
 	if (!success) {
 		__try {
-			// We have to create an XMLDocument to test the
+			// We have to create an xml_document to test the
 			// DLL, but __try/__except doesn't allow us to
 			// do that directly, so we'll call a function.
 			exe_dl_nc = DoXMLDocumentTest();

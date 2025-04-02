@@ -53,7 +53,7 @@ extern int DelayLoad_test_PugiXML(void);
  * PugiXML document.
  *
  * NOTE: DelayLoad must be checked by the caller, since it's
- * passing an XMLDocument reference to this function.
+ * passing an xml_document reference to this function.
  *
  * @param doc		[in/out] XML document
  * @param filename	[in] XML filename
