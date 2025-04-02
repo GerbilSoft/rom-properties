@@ -277,7 +277,16 @@ int Wim::loadFieldData(void)
 
 #ifdef ENABLE_XML
 	// Add fields from the WIM image's XML manifest.
-	d->addFields_XML();
+	int ret = d->addFields_XML();
+	if (ret != 0) {
+		d->fields.addField_string(C_("RomData", "Warning"),
+			C_("RomData", "XML parsing failed."),
+			RomFields::STRF_WARNING);
+	}
+#else /* !ENABLE_XML */
+	d->fields.addField_string(C_("RomData", "Warning"),
+		C_("RomData", "XML parsing is disabled in this build."),
+		RomFields::STRF_WARNING);
 #endif /* ENABLE_XML */
 
 	// Finished reading the field data.
