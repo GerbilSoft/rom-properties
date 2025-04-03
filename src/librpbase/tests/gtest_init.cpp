@@ -162,17 +162,22 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 	// NOTE: The variable needs to be static char[] because
 	// POSIX putenv() takes `char*` and the buffer becomes
 	// part of the environment.
-#ifdef _WIN32
+#if defined(_WIN32) || defined(__APPLE__)
 #  define T_C_LOCALE _T("C")
 #  define C_LOCALE "C"
-#else /* !_WIN32 */
+#else /* !_WIN32 && !__APPLE__ */
 #  define T_C_LOCALE _T("C.UTF-8")
 #  define C_LOCALE "C.UTF-8"
-#endif /* _WIN32 */
+#endif /* _WIN32 || __APPLE__ */
 	static TCHAR lc_all_env[] = _T("LC_ALL=") T_C_LOCALE;
 	static TCHAR lc_messages_env[] = _T("LC_MESSAGES=") T_C_LOCALE;
 	_tputenv(lc_all_env);
 	_tputenv(lc_messages_env);
+
+#ifdef __APPLE__
+	// Mac OS X also requires setting LC_CTYPE="UTF-8".
+	putenv("LC_CTYPE=UTF-8");
+#endif /* __APPLE__ */
 
 	// NOTE: MinGW-w64 12.0.0 doesn't like setting the C++ locale to "".
 	// Setting it to "C" works fine, though.
