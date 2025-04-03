@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpsecure)                      *
  * os-secure.h: OS security functions.                                     *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -19,6 +19,7 @@
 #    ifdef HAVE_SECCOMP
 #      include <linux/unistd.h>
 #      include <seccomp.h>
+#      include <stdint.h>
 #    elif HAVE_TAME
 #      include <sys/tame.h>
 #    endif
@@ -54,8 +55,8 @@ typedef struct _rp_secure_param_t {
 #if defined(_WIN32)
 	int bHighSec;		// High security mode
 #elif defined(HAVE_SECCOMP)
-	const int *syscall_wl;	// Array of allowed syscalls. (-1 terminated)
-	bool threading;		// Set to true to enable multi-threading.
+	const int16_t *syscall_wl;	// Array of allowed syscalls. (-1 terminated)
+	bool threading;			// Set to true to enable multi-threading.
 #elif defined(HAVE_PLEDGE)
 	const char *promises;	// pledge() promises
 #elif defined(HAVE_TAME)

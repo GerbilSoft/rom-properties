@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (D-Bus Thumbnailer)                *
  * rptsecure.c: Security options for rp-thumbnailer-dbus.                  *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -27,7 +27,7 @@ int rpt_do_security_options(void)
 #if defined(_WIN32)
 	param.bHighSec = FALSE;
 #elif defined(HAVE_SECCOMP)
-	static constexpr int syscall_wl[] = {
+	static constexpr int16_t syscall_wl[] = {
 		// Syscalls used by rp-download.
 		// TODO: Add more syscalls.
 		// FIXME: glibc-2.31 uses 64-bit time syscalls that may not be

@@ -53,7 +53,7 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 #if defined(_WIN32)
 	param.bHighSec = FALSE;
 #elif defined(HAVE_SECCOMP)
-	static constexpr int syscall_wl[] = {
+	static constexpr int16_t syscall_wl[] = {
 		// Syscalls used by rom-properties unit tests.
 		// TODO: Add more syscalls.
 		// FIXME: glibc-2.31 uses 64-bit time syscalls that may not be

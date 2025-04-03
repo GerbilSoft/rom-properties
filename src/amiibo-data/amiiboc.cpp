@@ -129,7 +129,7 @@ static int set_security_options(void)
 #if defined(_WIN32)
 	param.bHighSec = 1; // Disable Win32k syscalls. (NTUser/GDI)
 #elif defined(HAVE_SECCOMP)
-	static constexpr int syscall_wl[] = {
+	static constexpr int16_t syscall_wl[] = {
 		// Syscalls used by amiiboc.
 		SCMP_SYS(close),
 		SCMP_SYS(gettimeofday), // 32-bit only?

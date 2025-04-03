@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpsecure)                      *
  * os-secure_linux.c: OS security functions. (Linux)                       *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -63,7 +63,7 @@ int rp_secure_enable(rp_secure_param_t param)
 		return -ENOSYS;
 	}
 
-	static const int syscall_wl_std[] = {
+	static const int16_t syscall_wl_std[] = {
 		// Allow basic syscalls.
 		SCMP_SYS(brk),
 		SCMP_SYS(exit),
@@ -123,7 +123,7 @@ int rp_secure_enable(rp_secure_param_t param)
 	};
 
 	// Whitelist the standard syscalls.
-	for (const int *p = syscall_wl_std; *p != -1; p++) {
+	for (const int16_t *p = syscall_wl_std; *p != -1; p++) {
 		seccomp_rule_add_array(ctx, SCMP_ACT_ALLOW, *p, 0, NULL);
 	}
 
@@ -137,7 +137,7 @@ int rp_secure_enable(rp_secure_param_t param)
 			(unsigned int)(sizeof(clone_params)/sizeof(clone_params[0])), clone_params);
 
 		// Other syscalls for multi-threading.
-		static const int syscall_wl_threading[] = {
+		static const int16_t syscall_wl_threading[] = {
 			SCMP_SYS(clone),
 			SCMP_SYS(set_robust_list),
 #if defined(__SNR_clone3)
@@ -182,14 +182,14 @@ int rp_secure_enable(rp_secure_param_t param)
 			-1	// End of whitelist
 		};
 
-		for (const int *p = syscall_wl_threading; *p != -1; p++) {
+		for (const int16_t *p = syscall_wl_threading; *p != -1; p++) {
 			seccomp_rule_add_array(ctx, SCMP_ACT_ALLOW, *p, 0, NULL);
 		}
 	}
 
 	// Add syscalls from the caller's whitelist.
 	// TODO: More extensive syscall parameters?
-	for (const int *p = param.syscall_wl; *p != -1; p++) {
+	for (const int16_t *p = param.syscall_wl; *p != -1; p++) {
 		seccomp_rule_add_array(ctx, SCMP_ACT_ALLOW, *p, 0, NULL);
 	}
 
