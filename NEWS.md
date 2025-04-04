@@ -68,6 +68,9 @@
     for both the high and low 32 bits. The date would usually be correct,
     but the timestamp would be off by minutes. Both "HIGHPART" and "LOWPART"
     are now correctly used to build the 64-bit FILETIME timestamp.
+  * Fix build issues on Mac OS X.
+    * Pull request: #444
+      * Submitted by @ccawley2011.
 
 * Other changes:
   * CMake: Added an ENABLE_NETWORKING option to control whether or not
