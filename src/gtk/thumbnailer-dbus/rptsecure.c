@@ -27,7 +27,7 @@ int rpt_do_security_options(void)
 #if defined(_WIN32)
 	param.bHighSec = FALSE;
 #elif defined(HAVE_SECCOMP)
-	static constexpr int16_t syscall_wl[] = {
+	static const int16_t syscall_wl[] = {
 		// Syscalls used by rp-download.
 		// TODO: Add more syscalls.
 		// FIXME: glibc-2.31 uses 64-bit time syscalls that may not be
