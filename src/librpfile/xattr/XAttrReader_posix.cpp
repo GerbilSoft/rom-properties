@@ -432,7 +432,7 @@ int XAttrReaderPrivate::loadGenericXattrs(void)
 #if defined(HAVE_SYS_XATTR_H) && !defined(__stub_getxattr) && !defined(__APPLE__)
 			valuelen = fgetxattr(fd, name, value.data(), valuelen);
 #elif defined(__APPLE__)
-			valuelen = fgetxattr(fd, name, nullptr, value.data(), 0);
+			valuelen = fgetxattr(fd, name, value.data(), valuelen, 0, 0);
 #elif defined(HAVE_SYS_EXTATTR_H)
 			valuelen = extattr_get_fd(fd, attrnamespace, name.c_str(), nullptr, 0);
 #endif

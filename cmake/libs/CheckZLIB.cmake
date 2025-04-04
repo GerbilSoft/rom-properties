@@ -32,8 +32,8 @@ IF(USE_INTERNAL_ZLIB)
 	SET(ZLIB_FOUND 1)
 	SET(HAVE_ZLIB 1)
 	# FIXME: When was it changed from LIBRARY to LIBRARIES?
-	IF(WIN32 OR APPLE)
-		# Using DLLs on Windows and Mac OS X.
+	IF(WIN32)
+		# Using DLLs on Windows.
 		SET(USE_INTERNAL_ZLIB_DLL ON)
 		SET(ZLIB_LIBRARY zlib CACHE INTERNAL "ZLIB library" FORCE)
 	ELSE()

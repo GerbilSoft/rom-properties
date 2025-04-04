@@ -31,8 +31,8 @@ IF(USE_INTERNAL_LZ4)
 	SET(LZ4_FOUND 1)
 	SET(HAVE_LZ4 1)
 	# FIXME: When was it changed from LIBRARY to LIBRARIES?
-	IF(WIN32 OR APPLE)
-		# Using DLLs on Windows and Mac OS X.
+	IF(WIN32)
+		# Using DLLs on Windows.
 		SET(USE_INTERNAL_LZ4_DLL ON)
 		SET(LZ4_LIBRARY lz4_shared CACHE INTERNAL "LZ4 library" FORCE)
 	ELSE()

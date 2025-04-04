@@ -85,7 +85,7 @@ FILE *RpFilePrivate::fopen_cloexec(const char *pathname, RpFile::FileMode mode)
 	// Set it manually using F_SETFD with FD_CLOEXEC.
 	// TODO: Use open() with O_CLOEXEC instead?
 	// NOTE: Not checking for errors.
-	const int fd = fileno(file);
+	const int fd = fileno(f);
 
 	int oldflags = fcntl(fd, F_GETFD, 0);
 	if (oldflags >= 0) {

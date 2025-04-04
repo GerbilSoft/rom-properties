@@ -31,8 +31,8 @@ IF(USE_INTERNAL_LZO)
 	SET(LZO_FOUND 1)
 	SET(HAVE_LZO 1)
 	# FIXME: When was it changed from LIBRARY to LIBRARIES?
-	IF(WIN32 OR APPLE)
-		# Using DLLs on Windows and Mac OS X.
+	IF(WIN32)
+		# Using DLLs on Windows.
 		SET(USE_INTERNAL_LZO_DLL ON)
 		SET(LZO_LIBRARY minilzo CACHE INTERNAL "LZO library" FORCE)
 	ELSE()

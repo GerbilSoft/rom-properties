@@ -49,9 +49,9 @@ SET(INSTALL_LIB_DIR "${DIR_INSTALL_LIB}")
 
 IF(USE_INTERNAL_ZLIB)
 	# Use the internal copy of zlib-ng.
-	# On Windows and Mac OS X, this will build DLLs.
+	# On Windows, this will build DLLs.
 	# On other systems, this will be statically-linked.
-	IF(WIN32 OR APPLE)
+	IF(WIN32)
 		SET(SKIP_INSTALL_LIBRARIES OFF)
 		SET(SKIP_INSTALL_ALL OFF)
 		SET(BUILD_SHARED_LIBS ON)
@@ -118,9 +118,9 @@ IF(USE_INTERNAL_PNG)
 	ENDIF(USE_INTERNAL_ZLIB)
 
 	# Use the internal copy of libpng.
-	# On Windows and Mac OS X, this will build DLLs.
+	# On Windows, this will build DLLs.
 	# On other systems, this will be statically-linked.
-	IF(WIN32 OR APPLE)
+	IF(WIN32)
 		SET(PNG_SHARED ON)
 		SET(PNG_STATIC OFF)
 		SET(SKIP_INSTALL_LIBRARIES OFF)
@@ -151,9 +151,9 @@ ENDIF(USE_INTERNAL_PNG)
 
 IF(USE_INTERNAL_ZSTD)
 	# Use the internal copy of zstd.
-	# On Windows and Mac OS X, this will build DLLs.
+	# On Windows, this will build DLLs.
 	# On other systems, this will be statically-linked.
-	IF(WIN32 OR APPLE)
+	IF(WIN32)
 		SET(SKIP_INSTALL_LIBRARIES ON)
 		SET(SKIP_INSTALL_ALL OFF)
 		SET(BUILD_SHARED_LIBS ON)
@@ -179,12 +179,12 @@ ELSE(USE_INTERNAL_ZSTD)
 ENDIF(USE_INTERNAL_ZSTD)
 
 # minizip-ng
-# On Windows and Mac OS X, this will build DLLs.
+# On Windows, this will build DLLs.
 # On other systems, this will be statically-linked.
 # NOTE: We're always using the internal copy of MiniZip-NG.
 # TODO: Support a system-wide version on Linux?
 SET(USE_INTERNAL_MINIZIP TRUE PARENT_SCOPE)
-IF(WIN32 OR APPLE)
+IF(WIN32)
 	SET(USE_INTERNAL_MINIZIP_DLL TRUE PARENT_SCOPE)
 	SET(SKIP_INSTALL_LIBRARIES OFF)
 	SET(SKIP_INSTALL_ALL OFF)
@@ -302,9 +302,9 @@ ENDIF(ENABLE_PVRTC)
 
 IF(USE_INTERNAL_LZ4)
 	# Use the internal copy of LZ4.
-	# On Windows and Mac OS X, this will build DLLs.
+	# On Windows, this will build DLLs.
 	# On other systems, this will be statically-linked.
-	IF(WIN32 OR APPLE)
+	IF(WIN32)
 		SET(SKIP_INSTALL_LIBRARIES OFF)
 		SET(SKIP_INSTALL_ALL ON)
 		SET(BUILD_SHARED_LIBS ON)
@@ -325,9 +325,9 @@ ENDIF(USE_INTERNAL_LZ4)
 
 IF(USE_INTERNAL_LZO)
 	# Use the internal copy of LZO. (actually MiniLZO)
-	# On Windows and Mac OS X, this will build DLLs.
+	# On Windows, this will build DLLs.
 	# On other systems, this will be statically-linked.
-	IF(WIN32 OR APPLE)
+	IF(WIN32)
 		SET(SKIP_INSTALL_LIBRARIES OFF)
 		SET(SKIP_INSTALL_ALL ON)
 		SET(BUILD_SHARED_LIBS ON)
@@ -409,9 +409,9 @@ SET_EXTLIB_PROPERTIES(microtar)
 
 IF(USE_INTERNAL_FMT)
 	# Use the internal copy of fmt.
-	# On Windows and Mac OS X, this will build DLLs.
+	# On Windows, this will build DLLs.
 	# On other systems, this will be statically-linked.
-	IF(WIN32 OR APPLE)
+	IF(WIN32)
 		SET(SKIP_INSTALL_LIBRARIES OFF)
 		SET(SKIP_INSTALL_ALL ON)
 		SET(BUILD_SHARED_LIBS ON)
