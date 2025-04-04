@@ -107,9 +107,7 @@ HashPrivate::HashPrivate(Hash::Algorithm algorithm)
 		    CRYPT_VERIFYCONTEXT | CRYPT_SILENT))
 		{
 			// Failed to get a handle to the crypto provider.
-			// FIXME: MSVC is complaining if we use nullptr here:
-			// error C2440: '=': cannot convert from 'nullptr' to 'HCRYPTPROV' (also 'HCRYPTHASH')
-			ctx.hProvider = NULL;	// TODO: Is this necessary? (Verify nullptr)
+			ctx.hProvider = 0;	// TODO: Is this necessary? (Verify nullptr)
 		}
 	}
 #endif /* ENABLE_DECRYPTION */
@@ -178,7 +176,7 @@ void Hash::reset(void)
 #ifdef ENABLE_DECRYPTION
 	if (d->ctx.hHash) {
 		CryptDestroyHash(d->ctx.hHash);
-		d->ctx.hHash = NULL;
+		d->ctx.hHash = 0;
 	}
 
 	// Lookup table
@@ -202,7 +200,7 @@ void Hash::reset(void)
 	if (!CryptCreateHash(d->ctx.hProvider, id, 0, 0, &d->ctx.hHash)) {
 		// Error creating the hash object.
 		// TODO: Verify that d->hHash is nullptr here.
-		d->ctx.hHash = NULL;
+		d->ctx.hHash = 0;
 	}
 #endif /* ENABLE_DECRYPTION */
 }
@@ -234,7 +232,7 @@ bool Hash::isUsable(void) const
 	}
 
 #ifdef ENABLE_DECRYPTION
-	return (d->ctx.hHash != NULL);
+	return (d->ctx.hHash != 0);
 #else /* !ENABLE_DECRYPTION */
 	return false;
 #endif /* ENABLE_DECRYPTION */
@@ -270,7 +268,7 @@ int Hash::process(const void *pData, size_t len)
 	}
 
 #ifdef ENABLE_DECRYPTION
-	assert(d->ctx.hHash != NULL);
+	assert(d->ctx.hHash != 0);
 	if (!d->ctx.hHash)
 		return -EINVAL;
 
