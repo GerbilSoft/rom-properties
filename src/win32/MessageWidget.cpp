@@ -81,9 +81,9 @@ MessageWidgetPrivate::MessageWidgetPrivate(HWND hWnd)
 	, hbrBg(nullptr)
 	, colorBg(0)
 	, messageType(MB_ICONINFORMATION)
-	, closeButtonState(CloseButtonState::Normal)
 	, bBtnCloseEntered(false)
 	, bBtnCloseDown(false)
+	, closeButtonState(CloseButtonState::Normal)
 {
 	// TODO: Update szIcon on system DPI change.
 	szIcon.cx = GetSystemMetrics(SM_CXSMICON);
@@ -236,7 +236,7 @@ void MessageWidgetPrivate::paint(void)
 		};
 		TCHAR tbuf[128];
 		const int len = GetWindowTextLength(hWnd);
-		if (len < _countof(tbuf)) {
+		if (len < static_cast<int>(_countof(tbuf))) {
 			GetWindowText(hWnd, tbuf, _countof(tbuf));
 			DrawText(hDC, tbuf, len, &textRect, 0);
 		} else {
