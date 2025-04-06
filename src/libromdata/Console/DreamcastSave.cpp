@@ -95,7 +95,7 @@ public:
 	// Header offset (0 for standard save files; 0x200 for game files.)
 	uint32_t vms_header_offset;
 	// VMS header
-	ALIGNAS(16) DC_VMS_Header vms_header;
+	DC_VMS_Header vms_header;
 	// VMI header
 	DC_VMI_Header vmi_header;
 	// Directory entry
