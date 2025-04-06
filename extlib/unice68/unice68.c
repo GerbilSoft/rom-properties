@@ -286,6 +286,8 @@ static int set_binary_mode(FILE *file, const char * path)
 
 static int set_binary_mode(FILE *file, const char * path)
 {
+  ((void)file);
+  ((void)path);
   return 0;
 }
 
