@@ -41,7 +41,7 @@ message(STATUS "Using CMake version ${CMAKE_VERSION}")
 
 # rom-properties: FIXME: Fix these warnings.
 IF(NOT MSVC)
-    SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-error=stringop-overflow -Wno-error=stringop-truncation")
+    SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-error=stringop-overflow -Wno-error=stringop-truncation -Wno-error=maybe-uninitialized")
 ENDIF(NOT MSVC)
 
 # rom-properties: Disabled these options.
