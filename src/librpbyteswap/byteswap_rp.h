@@ -265,6 +265,9 @@ void RP_C_API rp_byte_swap_32_array_neon(uint32_t *ptr, size_t n);
  */
 static FORCEINLINE void rp_byte_swap_16_array(uint16_t *ptr, size_t n)
 {
+	if (n < 16) {
+		rp_byte_swap_16_array_c(ptr, n);
+	} else
 #ifdef BYTESWAP_HAS_SSSE3
 	if (RP_CPU_x86_HasSSSE3()) {
 		rp_byte_swap_16_array_ssse3(ptr, n);
@@ -308,7 +311,9 @@ static FORCEINLINE void rp_byte_swap_16_array(uint16_t *ptr, size_t n)
  */
 static FORCEINLINE void rp_byte_swap_32_array(uint32_t *ptr, size_t n)
 {
-
+	if (n < 16) {
+		rp_byte_swap_32_array_c(ptr, n);
+	} else
 #ifdef BYTESWAP_HAS_SSSE3
 	if (RP_CPU_x86_HasSSSE3()) {
 		rp_byte_swap_32_array_ssse3(ptr, n);

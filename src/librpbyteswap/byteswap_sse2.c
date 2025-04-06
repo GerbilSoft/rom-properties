@@ -3,7 +3,7 @@
  * byteswap_sse2.c: Byteswapping functions.                                *
  * SSE2-optimized version.                                                 *
  *                                                                         *
- * Copyright (c) 2008-2024 by David Korth                                  *
+ * Copyright (c) 2008-2025 by David Korth                                  *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -28,8 +28,6 @@ void RP_C_API rp_byte_swap_16_array_sse2(uint16_t *ptr, size_t n)
 	assert(((uintptr_t)ptr & 1) == 0);
 	assert((n & 1) == 0);
 	n &= ~1;
-
-	// TODO: Don't bother with SSE2 if n is below a certain size?
 
 	// If vptr isn't 16-byte aligned, swap WORDs
 	// manually until we get to 16-byte alignment.
@@ -78,8 +76,6 @@ void RP_C_API rp_byte_swap_32_array_sse2(uint32_t *ptr, size_t n)
 	assert(((uintptr_t)ptr & 3) == 0);
 	assert((n & 3) == 0);
 	n &= ~3;
-
-	// TODO: Don't bother with SSE2 if n is below a certain size?
 
 	// If vptr isn't 16-byte aligned, swap DWORDs
 	// manually until we get to 16-byte alignment.

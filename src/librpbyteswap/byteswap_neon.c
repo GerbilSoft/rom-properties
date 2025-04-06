@@ -29,8 +29,6 @@ void RP_C_API rp_byte_swap_16_array_neon(uint16_t *ptr, size_t n)
 	assert((n & 1) == 0);
 	n &= ~1;
 
-	// TODO: Don't bother with ARM NEON intrinsics if n is below a certain size?
-
 	// If vptr isn't 16-byte aligned, swap WORDs
 	// manually until we get to 16-byte alignment.
 	for (; ((uintptr_t)ptr % 16 != 0) && n > 0; n -= 2, ptr++) {
@@ -68,8 +66,6 @@ void RP_C_API rp_byte_swap_32_array_neon(uint32_t *ptr, size_t n)
 	assert(((uintptr_t)ptr & 3) == 0);
 	assert((n & 3) == 0);
 	n &= ~3;
-
-	// TODO: Don't bother with ARM NEON intrinsics if n is below a certain size?
 
 	// If vptr isn't 16-byte aligned, swap DWORDs
 	// manually until we get to 16-byte alignment.
