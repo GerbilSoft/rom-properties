@@ -19,6 +19,7 @@
 
 #if defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 2))
 /* gcc complains about missing field initializers. */
+#  pragma GCC diagnostic push
 #  pragma GCC diagnostic ignored "-Wmissing-field-initializers"
 #endif
 
@@ -124,3 +125,8 @@ VERSIONHELPERAPI IsWindowsServer(void) {
     OSVERSIONINFOEXW vi = {sizeof(vi),0,0,0,0,{0},0,0,0,VER_NT_WORKSTATION};
     return !VerifyVersionInfoW(&vi, VER_PRODUCT_TYPE, VerSetConditionMask(0, VER_PRODUCT_TYPE, VER_EQUAL));
 }
+
+#if defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 2))
+/* gcc complains about missing field initializers. */
+#  pragma GCC diagnostic pop
+#endif
