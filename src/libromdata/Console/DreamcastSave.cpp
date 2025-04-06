@@ -496,8 +496,8 @@ rp_image_const_ptr DreamcastSavePrivate::loadIcon(void)
 		return nullptr;
 	}
 
-	// Temporary icon buffer.
-	VmsIcon_buf_t buf;
+	// Temporary icon buffer
+	ALIGNAS(16) VmsIcon_buf_t buf;
 
 	// Load the palette.
 	size_t size = file->seekAndRead(vms_header_offset + static_cast<uint32_t>(sizeof(vms_header)),
@@ -596,7 +596,7 @@ rp_image_const_ptr DreamcastSavePrivate::loadIcon_ICONDATA_VMS(void)
 	iconAnimData->frames[0] = nullptr;
 
 	// Temporary icon buffer.
-	VmsIcon_buf_t buf;
+	ALIGNAS(16) VmsIcon_buf_t buf;
 
 	// Do we have a color icon?
 	if (vms_header.icondata_vms.color_icon_addr >= sizeof(vms_header.icondata_vms)) {
