@@ -55,13 +55,14 @@ typedef int64_t off64_t;
 #endif
 
 /** alignas() **/
-#if defined(__GNUC__) || (defined(_MSC_VER) && _MSC_VER >= 1900)
+// FIXME: Older MSVC (2015, 2017?) doesn't have stdalign.h.
+#if defined(_MSC_VER)
+#  define ALIGNAS(x) __declspec(align(x))
+#elif defined(__GNUC__) /*|| (defined(_MSC_VER) && _MSC_VER >= 1900)*/
 #  ifndef __cplusplus
 #    include <stdalign.h>
 #  endif
 #  define ALIGNAS(x) alignas(x)
-#elif defined(_MSC_VER) && _MSC_VER < 1900
-#  define ALIGNAS(x) __declspec(align(x))
 #else
 // TODO: alignas() compatibility macros.
 #  define ALIGNAS(x)
