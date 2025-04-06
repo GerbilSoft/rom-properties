@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * PalmOS_Tbmp.cpp: Palm OS Tbmp texture reader.                           *
  *                                                                         *
- * Copyright (c) 2019-2024 by David Korth.                                 *
+ * Copyright (c) 2019-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -399,7 +399,7 @@ rp_image_const_ptr PalmOS_Tbmp_Private::loadTbmp(void)
 	// NOTE: Allocating enough memory for the uncompressed bitmap,
 	// but only reading enough data for the compressed bitmap.
 	// (If the bitmap is not compressed, the sizes are the same.)
-	unique_ptr<uint8_t[]> icon_data(new uint8_t[icon_data_len]);
+	auto icon_data(aligned_uptr<uint8_t>(16, icon_data_len));
 	size_t size = file->seekAndRead(addr, icon_data.get(), compr_data_len);
 	if (size != compr_data_len) {
 		// Seek and/or read error.

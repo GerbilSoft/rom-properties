@@ -10,6 +10,8 @@
 #include "N64.hpp"
 #include "n64_structs.h"
 
+#include "common.h"
+
 // Other rom-properties libraries
 using namespace LibRpBase;
 using namespace LibRpFile;
@@ -37,6 +39,11 @@ public:
 	static const RomDataInfo romDataInfo;
 
 public:
+	// ROM header
+	// NOTE: Fields have been byteswapped in the constructor.
+	ALIGNAS(16) N64_RomHeader romHeader;
+
+public:
 	// ROM image type
 	enum class RomType {
 		Unknown	= -1,
@@ -49,11 +56,6 @@ public:
 		Max
 	};
 	RomType romType;
-
-public:
-	// ROM header.
-	// NOTE: Fields have been byteswapped in the constructor.
-	N64_RomHeader romHeader;
 
 	/**
 	 * Un-wordswap a 32-bit DWORD from a SWAP2-format ROM image.

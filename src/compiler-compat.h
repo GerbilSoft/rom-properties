@@ -1,7 +1,7 @@
 /***************************************************************************
  * compiler-compat.h: Compiler compatibility header.                       *
  *                                                                         *
- * Copyright (c) 2011-2023 by David Korth.                                 *
+ * Copyright (c) 2011-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -52,6 +52,19 @@ typedef int64_t off64_t;
  */
 #if defined(_MSC_VER) && defined(__cplusplus)
 #  define __typeof__(x) decltype(x)
+#endif
+
+/** alignas() **/
+#if defined(__GNUC__) || (defined(_MSC_VER) && _MSC_VER >= 1900)
+#  ifndef __cplusplus
+#    include <stdalign.h>
+#  endif
+#  define ALIGNAS(x) alignas(x)
+#elif defined(_MSC_VER) && _MSC_VER < 1900
+#  define ALIGNAS(x) __declspec(align(x))
+#else
+// TODO: alignas() compatibility macros.
+#  define ALIGNAS(x)
 #endif
 
 /**
