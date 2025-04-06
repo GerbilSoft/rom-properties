@@ -41,7 +41,7 @@ public:
 public:
 	// ROM header
 	// NOTE: Fields have been byteswapped in the constructor.
-	ALIGNAS(16) N64_RomHeader romHeader;
+	N64_RomHeader romHeader;
 
 public:
 	// ROM image type

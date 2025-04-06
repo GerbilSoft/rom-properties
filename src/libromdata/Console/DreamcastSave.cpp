@@ -497,19 +497,19 @@ rp_image_const_ptr DreamcastSavePrivate::loadIcon(void)
 	}
 
 	// Temporary icon buffer
-	ALIGNAS(16) VmsIcon_buf_t buf;
+	auto buf = aligned_uptr<VmsIcon_buf_t>(16, 1);
 
 	// Load the palette.
 	size_t size = file->seekAndRead(vms_header_offset + static_cast<uint32_t>(sizeof(vms_header)),
-					buf.palette.u16, sizeof(buf.palette.u16));
-	if (size != sizeof(buf.palette.u16)) {
+					buf->palette.u16, sizeof(buf->palette.u16));
+	if (size != sizeof(buf->palette.u16)) {
 		// Seek and/or read error.
 		return nullptr;
 	}
 
 	if (this->saveType == SaveType::DCI) {
 		// Apply 32-bit byteswapping to the palette.
-		rp_byte_swap_32_array(buf.palette.u32, sizeof(buf.palette.u32));
+		rp_byte_swap_32_array(buf->palette.u32, sizeof(buf->palette.u32));
 	}
 
 	this->iconAnimData = std::make_shared<IconAnimData>();
@@ -524,23 +524,23 @@ rp_image_const_ptr DreamcastSavePrivate::loadIcon(void)
 	// Load the icons. (32x32, 4bpp)
 	// Icons are stored contiguously immediately after the palette.
 	for (int i = 0; i < icon_count; i++) {
-		size = file->read(buf.icon_color.u8, sizeof(buf.icon_color.u8));
-		if (size != sizeof(buf.icon_color)) {
+		size = file->read(buf->icon_color.u8, sizeof(buf->icon_color.u8));
+		if (size != sizeof(buf->icon_color)) {
 			// Read error.
 			break;
 		}
 
 		if (this->saveType == SaveType::DCI) {
 			// Apply 32-bit byteswapping to the palette.
-			rp_byte_swap_32_array(buf.icon_color.u32, sizeof(buf.icon_color.u32));
+			rp_byte_swap_32_array(buf->icon_color.u32, sizeof(buf->icon_color.u32));
 		}
 
 		iconAnimData->delays[i] = delay;
 		iconAnimData->frames[i] = ImageDecoder::fromLinearCI4(
 			ImageDecoder::PixelFormat::ARGB4444, true,
 			DC_VMS_ICON_W, DC_VMS_ICON_H,
-			buf.icon_color.u8, sizeof(buf.icon_color.u8),
-			buf.palette.u16, sizeof(buf.palette.u16));
+			buf->icon_color.u8, sizeof(buf->icon_color.u8),
+			buf->palette.u16, sizeof(buf->palette.u16));
 		if (!iconAnimData->frames[i])
 			break;
 
@@ -595,8 +595,8 @@ rp_image_const_ptr DreamcastSavePrivate::loadIcon_ICONDATA_VMS(void)
 	iconAnimData->delays[0].ms = 0;
 	iconAnimData->frames[0] = nullptr;
 
-	// Temporary icon buffer.
-	ALIGNAS(16) VmsIcon_buf_t buf;
+	// Temporary icon buffer
+	auto buf = aligned_uptr<VmsIcon_buf_t>(16, 1);
 
 	// Do we have a color icon?
 	if (vms_header.icondata_vms.color_icon_addr >= sizeof(vms_header.icondata_vms)) {
@@ -604,35 +604,35 @@ rp_image_const_ptr DreamcastSavePrivate::loadIcon_ICONDATA_VMS(void)
 
 		// Load the palette.
 		size_t size = file->seekAndRead(vms_header_offset + vms_header.icondata_vms.color_icon_addr,
-						buf.palette.u16, sizeof(buf.palette.u16));
-		if (size != sizeof(buf.palette.u16)) {
+						buf->palette.u16, sizeof(buf->palette.u16));
+		if (size != sizeof(buf->palette.u16)) {
 			// Seek and/or read error.
 			return nullptr;
 		}
 
 		if (this->saveType == SaveType::DCI) {
 			// Apply 32-bit byteswapping to the palette.
-			rp_byte_swap_32_array(buf.palette.u32, sizeof(buf.palette.u32));
+			rp_byte_swap_32_array(buf->palette.u32, sizeof(buf->palette.u32));
 		}
 
 		// Load the icon data.
-		size = file->read(buf.icon_color.u8, sizeof(buf.icon_color.u8));
-		if (size != sizeof(buf.icon_color.u8)) {
+		size = file->read(buf->icon_color.u8, sizeof(buf->icon_color.u8));
+		if (size != sizeof(buf->icon_color.u8)) {
 			// Read error.
 			return nullptr;
 		}
 
 		if (this->saveType == SaveType::DCI) {
 			// Apply 32-bit byteswapping to the icon data.
-			rp_byte_swap_32_array(buf.icon_color.u32, sizeof(buf.icon_color.u32));
+			rp_byte_swap_32_array(buf->icon_color.u32, sizeof(buf->icon_color.u32));
 		}
 
 		// Convert the icon to rp_image.
 		rp_image_ptr img = ImageDecoder::fromLinearCI4(
 			ImageDecoder::PixelFormat::ARGB4444, true,
 			DC_VMS_ICON_W, DC_VMS_ICON_H,
-			buf.icon_color.u8, sizeof(buf.icon_color.u8),
-			buf.palette.u16, sizeof(buf.palette.u16));
+			buf->icon_color.u8, sizeof(buf->icon_color.u8),
+			buf->palette.u16, sizeof(buf->palette.u16));
 		if (img) {
 			// Icon converted successfully.
 			iconAnimData->frames[0] = img;
@@ -643,21 +643,21 @@ rp_image_const_ptr DreamcastSavePrivate::loadIcon_ICONDATA_VMS(void)
 	// We don't have a color icon.
 	// Load the monochrome icon.
 	size_t size = file->seekAndRead(vms_header_offset + vms_header.icondata_vms.mono_icon_addr,
-					buf.icon_mono.u8, sizeof(buf.icon_mono.u8));
-	if (size != sizeof(buf.icon_mono.u8)) {
+					buf->icon_mono.u8, sizeof(buf->icon_mono.u8));
+	if (size != sizeof(buf->icon_mono.u8)) {
 		// Seek and/or read error.
 		return nullptr;
 	}
 
 	if (this->saveType == SaveType::DCI) {
 		// Apply 32-bit byteswapping to the icon data.
-		rp_byte_swap_32_array(buf.icon_mono.u32, sizeof(buf.icon_mono.u32));
+		rp_byte_swap_32_array(buf->icon_mono.u32, sizeof(buf->icon_mono.u32));
 	}
 
 	// Convert the icon to rp_image.
 	rp_image_ptr img = ImageDecoder::fromLinearMono(
 		DC_VMS_ICON_W, DC_VMS_ICON_H,
-		buf.icon_mono.u8, sizeof(buf.icon_mono.u8));
+		buf->icon_mono.u8, sizeof(buf->icon_mono.u8));
 	if (img) {
 		// Adjust the palette to use a more
 		// VMU-like color scheme.
