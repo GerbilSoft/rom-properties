@@ -301,8 +301,8 @@ void CacheTabPrivate::updateDrivesXP(DWORD unitmask)
 
 	// TODO: Optimize by storing a map of drive letters
 	// to ListView indexes somewhere.
-	unsigned int mask = 1;
-	for (unsigned int i = 0; i < 26; i++, mask <<= 1) {
+	unsigned int mask = 1U;
+	for (int i = 0; i < 26; i++, mask <<= 1) {
 		// Check if this drive is specified.
 		if (!(unitmask & mask))
 			continue;

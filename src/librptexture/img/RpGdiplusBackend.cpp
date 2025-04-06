@@ -836,11 +836,11 @@ HBITMAP RpGdiplusBackend::convBmpData_ARGB32(const Gdiplus::BitmapData *pBmpData
 	// Copy the data from the GDI+ bitmap to the HBITMAP directly.
 	// HBITMAP stride is a multiple of 4, so we can assume that
 	// it's equal to row_bytes.
-	const size_t row_bytes = pBmpData->Width * 4;
+	const int row_bytes = static_cast<int>(pBmpData->Width) * 4;
 	const int gdip_stride = pBmpData->Stride;
 	if (row_bytes == gdip_stride) {
 		// Copy the entire image all at once.
-		memcpy(pvBits, pBmpData->Scan0, gdip_stride * pBmpData->Height);
+		memcpy(pvBits, pBmpData->Scan0, static_cast<size_t>(gdip_stride) * pBmpData->Height);
 	} else {
 		// Copy one line at a time.
 		const uint8_t *gdip_px = static_cast<const uint8_t*>(pBmpData->Scan0);

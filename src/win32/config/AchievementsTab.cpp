@@ -450,7 +450,7 @@ inline int AchievementsTabPrivate::ListView_CustomDraw(NMLVCUSTOMDRAW *plvcd)
 				// NOTE 2: Need to check highlighted row ID because uItemState
 				// will be 0 if the user mouses over another column on the same row.
 				if (plvcd->nmcd.uItemState == 0 &&
-				    ListView_GetHotItem(plvcd->nmcd.hdr.hwndFrom) != plvcd->nmcd.dwItemSpec)
+				    ListView_GetHotItem(plvcd->nmcd.hdr.hwndFrom) != static_cast<int>(plvcd->nmcd.dwItemSpec))
 				{
 					if (!hbrAltRow) {
 						hbrAltRow = CreateSolidBrush(colorAltRow);
@@ -465,7 +465,7 @@ inline int AchievementsTabPrivate::ListView_CustomDraw(NMLVCUSTOMDRAW *plvcd)
 					// height on XP.
 					RECT rectSubItem;
 					BOOL bRet = ListView_GetSubItemRect(plvcd->nmcd.hdr.hwndFrom,
-						(int)plvcd->nmcd.dwItemSpec, plvcd->iSubItem, LVIR_BOUNDS, &rectSubItem);
+						static_cast<int>(plvcd->nmcd.dwItemSpec), plvcd->iSubItem, LVIR_BOUNDS, &rectSubItem);
 					if (bRet) {
 						FillRect(plvcd->nmcd.hdc, &rectSubItem, hbrAltRow);
 					}

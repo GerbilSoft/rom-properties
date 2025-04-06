@@ -1436,7 +1436,7 @@ inline int KeyManagerTabPrivate::ListView_CustomDraw(NMLVCUSTOMDRAW *plvcd)
 						// NOTE 2: Need to check highlighted row ID because uItemState
 						// will be 0 if the user mouses over another column on the same row.
 						if (isOdd && plvcd->nmcd.uItemState == 0 &&
-						    ListView_GetHotItem(plvcd->nmcd.hdr.hwndFrom) != plvcd->nmcd.dwItemSpec)
+						    ListView_GetHotItem(plvcd->nmcd.hdr.hwndFrom) != static_cast<int>(plvcd->nmcd.dwItemSpec))
 						{
 							FillRect(plvcd->nmcd.hdc, pRcSubItem, hbrAltRow);
 						}
