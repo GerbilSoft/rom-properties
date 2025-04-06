@@ -1122,12 +1122,14 @@ static int check_system_architectures(void)
 		// We won't bother checking processMachine. Instead, use
 		// a hard-coded set for each host architecture.
 		switch (ifm_to_SysArch(nativeMachine)) {
+			default:
 			case CPU_unknown:
 				// Not supported. Show an error message.
 				// TODO
 				CloseHandle(g_hSingleInstanceMutex);
 				DebugBreak();
 				return -3;
+
 			case CPU_i386:
 				// g_archs[] starts with CPU_i386, so we're done.
 				break;
@@ -1140,6 +1142,7 @@ static int check_system_architectures(void)
 			case CPU_arm:
 				g_archs[g_arch_count++] = CPU_arm;
 				break;
+
 			case CPU_arm64:
 				// NOTE: Support for 32-bit ARM applications was dropped as of Windows 11 build 25905.
 				// https://blogs.windows.com/windows-insider/2023/07/12/announcing-windows-11-insider-preview-build-25905/
@@ -1160,10 +1163,13 @@ static int check_system_architectures(void)
 					g_archs[g_arch_count++] = CPU_arm64;
 				}
 				break;
+
 			case CPU_arm64ec:
 				// Should not happen...
 				assert(!"System native architecture cannot be ARM64EC.");
-				break;
+				CloseHandle(g_hSingleInstanceMutex);
+				DebugBreak();
+				return -4;
 		}
 
 		assert(g_arch_count <= _countof(g_archs));
@@ -1179,7 +1185,7 @@ static int check_system_architectures(void)
 			// Failed?! This shouldn't happen...
 			CloseHandle(g_hSingleInstanceMutex);
 			DebugBreak();
-			return -4;
+			return -5;
 		}
 
 		if (bWow) {
