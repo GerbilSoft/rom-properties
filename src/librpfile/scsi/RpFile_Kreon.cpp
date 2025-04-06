@@ -141,8 +141,10 @@ vector<RpFile::KreonFeature> RpFile::getKreonFeatureList(void)
 #ifdef RP_OS_SCSI_SUPPORTED
 	// Kreon "Get Feature List" command
 	// Reference: https://github.com/saramibreak/DiscImageCreator/blob/cb9267da4877d32ab68263c25187cbaab3435ad5/DiscImageCreator/execScsiCmdforDVD.cpp#L1223
-	static constexpr array<uint8_t, 6> cdb = {{0xFF, 0x08, 0x01, 0x10, 0x00, 0x00}};
 	array<uint16_t, 13> feature_buf;
+	feature_buf.fill(0);	// probably not needed, but the compiler complains
+
+	static constexpr array<uint8_t, 6> cdb = {{0xFF, 0x08, 0x01, 0x10, 0x00, 0x00}};
 	int ret = d->scsi_send_cdb(cdb.data(), cdb.size(), feature_buf.data(), feature_buf.size(), RpFilePrivate::ScsiDirection::In);
 	if (ret != 0) {
 		// SCSI command failed.
