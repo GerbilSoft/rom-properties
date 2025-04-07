@@ -3,7 +3,7 @@
  * XAttrView_gtk4.cpp: Extended attribute viewer property page.            *
  * (GTK4-specific)                                                         *
  *                                                                         *
- * Copyright (c) 2017-2024 by David Korth.                                 *
+ * Copyright (c) 2017-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -58,8 +58,9 @@ static void
 setup_listitem_cb(GtkListItemFactory *factory, GtkListItem *list_item, gpointer user_data)
 {
 	RP_UNUSED(factory);
+	RP_UNUSED(user_data);
 
-	// All text columns.
+	// All columns are text columns.
 	GtkWidget *const label = gtk_label_new(nullptr);
 	gtk_label_set_xalign(GTK_LABEL(label), 0.0f);
 	gtk_widget_set_halign(label, GTK_ALIGN_START);
@@ -73,16 +74,18 @@ bind_listitem_cb(GtkListItemFactory *factory, GtkListItem *list_item, gpointer u
 
 	GtkWidget *const widget = gtk_list_item_get_child(list_item);
 	assert(widget != nullptr);
-	if (!widget)
+	if (!widget) {
 		return;
+	}
 
 	// user_data is the column number.
 	// - Column 0: Name
 	// - Column 1: Value
 	RpXAttrViewItem *const item = RP_XATTRVIEW_ITEM(gtk_list_item_get_item(list_item));
 	assert(item != nullptr);
-	if (!item)
+	if (!item) {
 		return;
+	}
 
 	const int column = GPOINTER_TO_INT(user_data);
 	switch (column) {
