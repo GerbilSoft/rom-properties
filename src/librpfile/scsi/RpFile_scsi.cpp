@@ -418,17 +418,18 @@ int RpFilePrivate::scsi_read_capacity(off64_t *pDeviceSize, uint32_t *pSectorSiz
 
 /**
  * Read data from a device using SCSI commands.
- * @param lbaStart	[in] Starting LBA of the data to read.
- * @param lbaCount	[in] Number of LBAs to read.
- * @param pBuf		[out] Output buffer.
- * @param bufLen	[in] Output buffer length.
+ * @param lbaStart	[in] Starting LBA of the data to read
+ * @param lbaCount	[in] Number of LBAs to read
+ * @param pBuf		[out] Output buffer
+ * @param bufLen	[in] Output buffer length
  * @return 0 on success, positive for SCSI sense key, negative for POSIX error code.
  */
 int RpFilePrivate::scsi_read(uint32_t lbaStart, uint16_t lbaCount, uint8_t *pBuf, size_t bufLen)
 {
 	assert(pBuf != nullptr);
-	if (!pBuf)
+	if (!pBuf) {
 		return -EINVAL;
+	}
 
 	if (!devInfo) {
 		// Not a device.
