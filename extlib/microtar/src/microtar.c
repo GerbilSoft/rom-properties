@@ -108,13 +108,13 @@ static int raw_to_header(mtar_header_t *h, const mtar_raw_header_t *rh) {
   sscanf(rh->size, "%o", &h->size);
   sscanf(rh->mtime, "%o", &h->mtime);
   h->type = rh->type;
+  /* rom-properties: Use snprintf() to ensure NULL-termination of name and linkname.
+   * NOTE: Effectively limits names to 99 characters.
   strncpy(h->name, rh->name, sizeof(h->name));
   strncpy(h->linkname, rh->linkname, sizeof(h->linkname));
-
-  /* rom-properties: Ensure NULL-termination of name and linkname. */
-  /* NOTE: Effectively limits names to 99 characters. */
-  h->name[sizeof(h->name)-1] = '\0';
-  h->linkname[sizeof(h->linkname)-1] = '\0';
+  */
+  snprintf(h->name, sizeof(h->name), "%s", rh->name);
+  snprintf(h->linkname, sizeof(h->linkname), "%s", rh->linkname);
 
   return MTAR_ESUCCESS;
 }
