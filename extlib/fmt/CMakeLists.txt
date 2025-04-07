@@ -333,14 +333,14 @@ if (FMT_PEDANTIC)
   target_compile_options(fmt PRIVATE ${PEDANTIC_COMPILE_FLAGS})
 endif ()
 
-# rom-properties FIXME: CMake 3.5 doesn't handle this properly.
-IF(CMAKE_VERSION VERSION_GREATER 3.5.99)
+# rom-properties FIXME: CMake 3.6 doesn't handle this properly.
+IF(CMAKE_VERSION VERSION_GREATER 3.6.99)
 if (cxx_std_11 IN_LIST CMAKE_CXX_COMPILE_FEATURES)
   target_compile_features(fmt PUBLIC cxx_std_11)
 else ()
   message(WARNING "Feature cxx_std_11 is unknown for the CXX compiler")
 endif ()
-ENDIF(CMAKE_VERSION VERSION_GREATER 3.5.99)
+ENDIF(CMAKE_VERSION VERSION_GREATER 3.6.99)
 
 target_include_directories(fmt ${FMT_SYSTEM_HEADERS_ATTRIBUTE} BEFORE PUBLIC
   $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
@@ -406,10 +406,10 @@ else ()
 endif ()
 
 target_compile_definitions(fmt-header-only INTERFACE FMT_HEADER_ONLY=1)
-# rom-properties FIXME: CMake 3.5 doesn't handle this properly.
-IF(CMAKE_VERSION VERSION_GREATER 3.5.99)
+# rom-properties FIXME: CMake 3.6 doesn't handle this properly.
+IF(CMAKE_VERSION VERSION_GREATER 3.6.99)
 target_compile_features(fmt-header-only INTERFACE cxx_std_11)
-ENDIF(CMAKE_VERSION VERSION_GREATER 3.5.99)
+ENDIF(CMAKE_VERSION VERSION_GREATER 3.6.99)
 
 target_include_directories(fmt-header-only
   ${FMT_SYSTEM_HEADERS_ATTRIBUTE} BEFORE INTERFACE
