@@ -1158,8 +1158,10 @@ int EXEPrivate::addFields_PE_Import(void)
 			// RVA to hint number followed by NUL terminated name.
 			// FIXME: How does XEX handle this?
 			const char *const ent = &dll_hint_data[it.value - dll_hint_base];
-			// FIXME: This may break on non-i386/amd64 systems...
-			const uint16_t hint = le16_to_cpu(*reinterpret_cast<const uint16_t*>(ent));
+			// Alignment-safe le16 load
+			const uint8_t *const ent_u8 = reinterpret_cast<const uint8_t*>(ent);
+			const uint16_t hint = ent_u8[0] | (ent_u8[1] << 8);
+			// strings
 			row.emplace_back(ent+2);
 			row.push_back(fmt::to_string(hint));
 		}
