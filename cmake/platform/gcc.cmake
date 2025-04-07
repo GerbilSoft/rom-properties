@@ -274,7 +274,7 @@ IF(CFLAG_OPTIMIZE_FTREE_VECTORIZE)
 ENDIF(CFLAG_OPTIMIZE_FTREE_VECTORIZE)
 
 # Add "-Werror" *after* checking for everything else.
-SET(RP_IGNORE_ERRORS "-Wno-error=unknown-pragmas -Wno-error=address-of-packed-member -Wno-error=address -Wno-error=attributes -Wno-error=unused-parameter -Wno-error=unused-but-set-variable -Wno-error=ignored-qualifiers -Wno-error=missing-field-initializers -Wno-error=unused-variable -Wno-error=unused-function -Wno-error=type-limits -Wno-error=empty-body -Wno-error=shift-negative-value")
+SET(RP_IGNORE_ERRORS "-Wno-error=unknown-pragmas -Wno-error=address-of-packed-member -Wno-error=address -Wno-error=attributes -Wno-error=unused-parameter -Wno-error=unused-but-set-variable -Wno-error=ignored-qualifiers -Wno-error=missing-field-initializers -Wno-error=unused-variable -Wno-error=unused-function -Wno-error=type-limits -Wno-error=empty-body -Wno-error=shift-negative-value -Wno-error=clobbered")
 SET(RP_C_FLAGS_COMMON   "${RP_C_FLAGS_COMMON} -Werror ${RP_IGNORE_ERRORS}")
 SET(RP_CXX_FLAGS_COMMON "${RP_CXX_FLAGS_COMMON} -Werror ${RP_IGNORE_ERRORS}")
 
