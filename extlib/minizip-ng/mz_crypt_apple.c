@@ -20,8 +20,12 @@
 
 /***************************************************************************/
 
-/* Avoid use of private API for iOS, Apple does not allow it on App Store. Zip format doesn't need GCM. */
-#if !TARGET_OS_IPHONE
+#ifndef MZ_TARGET_APPSTORE
+#  define MZ_TARGET_APPSTORE 1
+#endif
+
+/* Avoid use of private API for App Store as Apple does not allow it. Zip format doesn't need GCM. */
+#if !MZ_TARGET_APPSTORE
 enum {
     kCCModeGCM = 11,
 };
@@ -46,21 +50,19 @@ int32_t mz_crypt_rand(uint8_t *buf, int32_t size) {
 
 typedef struct mz_crypt_sha_s {
     union {
-        CC_SHA1_CTX   ctx1;
+        CC_SHA1_CTX ctx1;
         CC_SHA256_CTX ctx256;
         CC_SHA512_CTX ctx512;
     };
-    int32_t           error;
-    int32_t           initialized;
-    uint16_t          algorithm;
+    int32_t error;
+    int32_t initialized;
+    uint16_t algorithm;
 } mz_crypt_sha;
 
 /***************************************************************************/
 
 static const uint8_t mz_crypt_sha_digest_size[] = {
-    MZ_HASH_SHA1_SIZE,                     0, MZ_HASH_SHA224_SIZE,
-    MZ_HASH_SHA256_SIZE, MZ_HASH_SHA384_SIZE, MZ_HASH_SHA512_SIZE
-};
+    MZ_HASH_SHA1_SIZE, 0, MZ_HASH_SHA224_SIZE, MZ_HASH_SHA256_SIZE, MZ_HASH_SHA384_SIZE, MZ_HASH_SHA512_SIZE};
 
 /***************************************************************************/
 
@@ -201,8 +203,8 @@ void mz_crypt_sha_delete(void **handle) {
 
 typedef struct mz_crypt_aes_s {
     CCCryptorRef crypt;
-    int32_t      mode;
-    int32_t      error;
+    int32_t mode;
+    int32_t error;
 } mz_crypt_aes;
 
 /***************************************************************************/
@@ -227,7 +229,7 @@ int32_t mz_crypt_aes_encrypt(void *handle, const void *aad, int32_t aad_size, ui
         return MZ_PARAM_ERROR;
 
     if (aes->mode == MZ_AES_MODE_GCM) {
-#if TARGET_OS_IPHONE
+#if MZ_TARGET_APPSTORE
         return MZ_SUPPORT_ERROR;
 #else
         if (aad && aad_size > 0) {
@@ -251,14 +253,14 @@ int32_t mz_crypt_aes_encrypt(void *handle, const void *aad, int32_t aad_size, ui
 
 int32_t mz_crypt_aes_encrypt_final(void *handle, uint8_t *buf, int32_t size, uint8_t *tag, int32_t tag_size) {
     mz_crypt_aes *aes = (mz_crypt_aes *)handle;
-#if !TARGET_OS_IPHONE
+#if !MZ_TARGET_APPSTORE
     size_t tag_outsize = tag_size;
 #endif
 
     if (!aes || !tag || !tag_size || !aes->crypt || aes->mode != MZ_AES_MODE_GCM)
         return MZ_PARAM_ERROR;
 
-#if TARGET_OS_IPHONE
+#if MZ_TARGET_APPSTORE
     return MZ_SUPPORT_ERROR;
 #else
     aes->error = CCCryptorGCMEncrypt(aes->crypt, buf, size, buf);
@@ -282,7 +284,7 @@ int32_t mz_crypt_aes_decrypt(void *handle, const void *aad, int32_t aad_size, ui
         return MZ_PARAM_ERROR;
 
     if (aes->mode == MZ_AES_MODE_GCM) {
-#if TARGET_OS_IPHONE
+#if MZ_TARGET_APPSTORE
         return MZ_SUPPORT_ERROR;
 #else
         if (aad && aad_size > 0) {
@@ -306,7 +308,7 @@ int32_t mz_crypt_aes_decrypt(void *handle, const void *aad, int32_t aad_size, ui
 
 int32_t mz_crypt_aes_decrypt_final(void *handle, uint8_t *buf, int32_t size, const uint8_t *tag, int32_t tag_length) {
     mz_crypt_aes *aes = (mz_crypt_aes *)handle;
-#if !TARGET_OS_IPHONE
+#if !MZ_TARGET_APPSTORE
     uint8_t tag_actual_buf[MZ_AES_BLOCK_SIZE];
     size_t tag_actual_len = sizeof(tag_actual_buf);
     uint8_t *tag_actual = tag_actual_buf;
@@ -317,7 +319,7 @@ int32_t mz_crypt_aes_decrypt_final(void *handle, uint8_t *buf, int32_t size, con
     if (!aes || !tag || !tag_length || !aes->crypt || aes->mode != MZ_AES_MODE_GCM)
         return MZ_PARAM_ERROR;
 
-#if TARGET_OS_IPHONE
+#if MZ_TARGET_APPSTORE
     return MZ_SUPPORT_ERROR;
 #else
     aes->error = CCCryptorGCMDecrypt(aes->crypt, buf, size, buf);
@@ -343,8 +345,8 @@ int32_t mz_crypt_aes_decrypt_final(void *handle, uint8_t *buf, int32_t size, con
 #endif
 }
 
-static int32_t mz_crypt_aes_set_key(void *handle, const void *key, int32_t key_length,
-    const void *iv, int32_t iv_length, CCOperation op) {
+static int32_t mz_crypt_aes_set_key(void *handle, const void *key, int32_t key_length, const void *iv,
+                                    int32_t iv_length, CCOperation op) {
     mz_crypt_aes *aes = (mz_crypt_aes *)handle;
     CCMode mode;
 
@@ -353,7 +355,7 @@ static int32_t mz_crypt_aes_set_key(void *handle, const void *key, int32_t key_l
     else if (aes->mode == MZ_AES_MODE_ECB)
         mode = kCCModeECB;
     else if (aes->mode == MZ_AES_MODE_GCM)
-#if !TARGET_OS_IPHONE
+#if !MZ_TARGET_APPSTORE
         mode = kCCModeGCM;
 #else
         return MZ_SUPPORT_ERROR;
@@ -363,13 +365,13 @@ static int32_t mz_crypt_aes_set_key(void *handle, const void *key, int32_t key_l
 
     mz_crypt_aes_reset(handle);
 
-    aes->error = CCCryptorCreateWithMode(op, mode, kCCAlgorithmAES, ccNoPadding, iv, key, key_length,
-        NULL, 0, 0, 0, &aes->crypt);
+    aes->error = CCCryptorCreateWithMode(op, mode, kCCAlgorithmAES, ccNoPadding, iv, key, key_length, NULL, 0, 0, 0,
+                                         &aes->crypt);
 
     if (aes->error != kCCSuccess)
         return MZ_HASH_ERROR;
 
-#if !TARGET_OS_IPHONE
+#if !MZ_TARGET_APPSTORE
     if (aes->mode == MZ_AES_MODE_GCM) {
         aes->error = CCCryptorGCMAddIV(aes->crypt, iv, iv_length);
 
@@ -381,13 +383,13 @@ static int32_t mz_crypt_aes_set_key(void *handle, const void *key, int32_t key_l
     return MZ_OK;
 }
 
-int32_t mz_crypt_aes_set_encrypt_key(void *handle, const void *key, int32_t key_length,
-    const void *iv, int32_t iv_length) {
+int32_t mz_crypt_aes_set_encrypt_key(void *handle, const void *key, int32_t key_length, const void *iv,
+                                     int32_t iv_length) {
     return mz_crypt_aes_set_key(handle, key, key_length, iv, iv_length, kCCEncrypt);
 }
 
-int32_t mz_crypt_aes_set_decrypt_key(void *handle, const void *key, int32_t key_length,
-    const void *iv, int32_t iv_length) {
+int32_t mz_crypt_aes_set_decrypt_key(void *handle, const void *key, int32_t key_length, const void *iv,
+                                     int32_t iv_length) {
     return mz_crypt_aes_set_key(handle, key, key_length, iv, iv_length, kCCDecrypt);
 }
 
@@ -416,10 +418,10 @@ void mz_crypt_aes_delete(void **handle) {
 /***************************************************************************/
 
 typedef struct mz_crypt_hmac_s {
-    CCHmacContext   ctx;
-    int32_t         initialized;
-    int32_t         error;
-    uint16_t        algorithm;
+    CCHmacContext ctx;
+    int32_t initialized;
+    int32_t error;
+    uint16_t algorithm;
 } mz_crypt_hmac;
 
 /***************************************************************************/

@@ -12,7 +12,8 @@
 // MiniZip
 #include <zlib.h>
 #include "mz_zip.h"
-#include "mz_compat.h"
+#include "compat/ioapi.h"
+#include "compat/unzip.h"
 
 // Other rom-properties libraries
 #include "librpbase/img/RpPng.hpp"

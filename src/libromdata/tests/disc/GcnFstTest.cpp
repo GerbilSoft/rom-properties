@@ -6,7 +6,7 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-// for HAVE_ZLIB for mz_compat.h
+// for HAVE_ZLIB for MiniZip
 #include "config.librpbase.h"
 
 // Google Test
@@ -16,7 +16,8 @@
 // MiniZip
 #include <zlib.h>
 #include "mz_zip.h"
-#include "mz_compat.h"
+#include "compat/ioapi.h"
+#include "compat/unzip.h"
 
 // Other rom-properties libraries
 #include "librpfile/FileSystem.hpp"

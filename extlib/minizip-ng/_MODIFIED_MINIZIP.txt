@@ -1,9 +1,9 @@
-This copy of minizip-ng 4.0.7 is a modified version of the original.
+This copy of minizip-ng 4.0.9 is a modified version of the original.
 
-commit fe5fedc365f7824ada0cf9a84fb79b30d5fc97a8
-Version 4.0.7.
+commit 95ba7abdd24a956bde584db54d1d55e37d511e2f
+Version 4.0.9.
 
-Tag: 4.0.7
+Tag: 4.0.9
 
 The following changes have been made to the original:
 
@@ -23,12 +23,7 @@ The following changes have been made to the original:
 - project(): Disabled DESCRIPTION and HOMEPAGE_URL due to requiring
   newer versions of CMake than what's available in Ubuntu 16.04.
 
-- Commit e6eeb4ea520915a762d2c317d0a7ad552a89de04 has been cherry-picked
-  from the develop branch. This commit slightly reduces memory usage on
-  64-bit systems. (not including the mz_crypt_openssl.c change because
-  it doesn't apply here)
-
-To obtain the original minizip-ng 4.0.7, visit:
+To obtain the original minizip-ng 4.0.9, visit:
 https://github.com/zlib-ng/minizip-ng
 
 To obtain the original minizip-1.1, visit:

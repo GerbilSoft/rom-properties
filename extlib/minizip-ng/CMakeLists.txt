@@ -8,7 +8,7 @@
 #cmake_minimum_required(VERSION 3.13)
 
 # Library version
-set(VERSION "4.0.7")
+set(VERSION "4.0.9")
 # API version
 set(SOVERSION "4")
 
@@ -650,27 +650,18 @@ endif()
 if(MZ_COMPAT)
     set(SOVERSION "1")
 
-    set(FILE_H "ioapi.h")
-    set(MZ_COMPAT_FILE "MZ_COMPAT_IOAPI")
-    configure_file(mz_compat_shim.h.in ioapi.h)
-
-    set(FILE_H "zip.h")
-    set(MZ_COMPAT_FILE "MZ_COMPAT_ZIP")
-    configure_file(mz_compat_shim.h.in zip.h)
-
-    set(FILE_H "unzip.h")
-    set(MZ_COMPAT_FILE "MZ_COMPAT_UNZIP")
-    configure_file(mz_compat_shim.h.in unzip.h)
+    list(APPEND MINIZIP_SRC 
+        compat/ioapi.c
+        compat/unzip.c
+        compat/zip.c)
+    list(APPEND MINIZIP_HDR 
+        compat/ioapi.h
+        compat/unzip.h
+        compat/zip.h)
 
     if(MZ_COMPAT_VERSION)
         list(APPEND MINIZIP_DEF -DMZ_COMPAT_VERSION=${MZ_COMPAT_VERSION})
     endif()
-
-    list(APPEND MINIZIP_SRC mz_compat.c)
-    list(APPEND MINIZIP_HDR mz_compat.h
-        ${CMAKE_CURRENT_BINARY_DIR}/ioapi.h
-        ${CMAKE_CURRENT_BINARY_DIR}/zip.h
-        ${CMAKE_CURRENT_BINARY_DIR}/unzip.h)
 endif()
 
 # Detect available sanitizers
@@ -761,6 +752,7 @@ target_include_directories(${MINIZIP_TARGET} PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
 if(MZ_COMPAT)
     target_include_directories(${MINIZIP_TARGET} PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/compat/>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>)
 endif()
 
@@ -822,7 +814,7 @@ if(NOT SKIP_INSTALL_LIBRARIES AND NOT SKIP_INSTALL_ALL)
     if(MINIZIP_DEP_PKG)
         string(APPEND MINIZIP_CONFIG_CONTENT "include(CMakeFindDependencyMacro)\n")
         foreach(pkg_name ${MINIZIP_DEP_PKG})
-            string(APPEND MINIZIP_CONFIG_CONTENT "find_dependency(${pkg_name} REQUIRED)\n")
+            string(APPEND MINIZIP_CONFIG_CONTENT "find_dependency(${pkg_name})\n")
         endforeach()
     endif()
     string(APPEND MINIZIP_CONFIG_CONTENT "include(\"\${CMAKE_CURRENT_LIST_DIR}/${MINIZIP_TARGET}.cmake\")")

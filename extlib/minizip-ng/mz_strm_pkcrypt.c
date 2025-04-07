@@ -29,45 +29,35 @@
 /***************************************************************************/
 
 static mz_stream_vtbl mz_stream_pkcrypt_vtbl = {
-    mz_stream_pkcrypt_open,
-    mz_stream_pkcrypt_is_open,
-    mz_stream_pkcrypt_read,
-    mz_stream_pkcrypt_write,
-    mz_stream_pkcrypt_tell,
-    mz_stream_pkcrypt_seek,
-    mz_stream_pkcrypt_close,
-    mz_stream_pkcrypt_error,
-    mz_stream_pkcrypt_create,
-    mz_stream_pkcrypt_delete,
-    mz_stream_pkcrypt_get_prop_int64,
-    mz_stream_pkcrypt_set_prop_int64
-};
+    mz_stream_pkcrypt_open,   mz_stream_pkcrypt_is_open,        mz_stream_pkcrypt_read,
+    mz_stream_pkcrypt_write,  mz_stream_pkcrypt_tell,           mz_stream_pkcrypt_seek,
+    mz_stream_pkcrypt_close,  mz_stream_pkcrypt_error,          mz_stream_pkcrypt_create,
+    mz_stream_pkcrypt_delete, mz_stream_pkcrypt_get_prop_int64, mz_stream_pkcrypt_set_prop_int64};
 
 /***************************************************************************/
 
 typedef struct mz_stream_pkcrypt_s {
-    mz_stream       stream;
-    int32_t         error;
-    int16_t         initialized;
-    uint8_t         buffer[UINT16_MAX];
-    int64_t         total_in;
-    int64_t         max_total_in;
-    int64_t         total_out;
-    uint32_t        keys[3];          /* keys defining the pseudo-random sequence */
-    uint8_t         verify1;
-    uint8_t         verify2;
-    const char      *password;
+    mz_stream stream;
+    int32_t error;
+    int16_t initialized;
+    uint8_t buffer[UINT16_MAX];
+    int64_t total_in;
+    int64_t max_total_in;
+    int64_t total_out;
+    uint32_t keys[3]; /* keys defining the pseudo-random sequence */
+    uint8_t verify1;
+    uint8_t verify2;
+    uint16_t verify_version;
+    const char *password;
 } mz_stream_pkcrypt;
 
 /***************************************************************************/
 
-#define mz_stream_pkcrypt_decode(strm, c)                                   \
-    (mz_stream_pkcrypt_update_keys(strm,                                    \
-        c ^= mz_stream_pkcrypt_decrypt_byte(strm)))
+#define mz_stream_pkcrypt_decode(strm, c)                                                                              \
+    (mz_stream_pkcrypt_update_keys(strm, c ^= mz_stream_pkcrypt_decrypt_byte(strm)))
 
-#define mz_stream_pkcrypt_encode(strm, c, t)                                \
-    (t = mz_stream_pkcrypt_decrypt_byte(strm),                              \
-        mz_stream_pkcrypt_update_keys(strm, (uint8_t)c), (uint8_t)(t^(c)))
+#define mz_stream_pkcrypt_encode(strm, c, t)                                                                           \
+    (t = mz_stream_pkcrypt_decrypt_byte(strm), mz_stream_pkcrypt_update_keys(strm, (uint8_t)c), (uint8_t)(t ^ (c)))
 
 /***************************************************************************/
 
@@ -161,10 +151,14 @@ int32_t mz_stream_pkcrypt_open(void *stream, const char *path, int32_t mode) {
         verify1 = mz_stream_pkcrypt_decode(stream, header[i++]);
         verify2 = mz_stream_pkcrypt_decode(stream, header[i++]);
 
-        /* Older versions used 2 byte check, newer versions use 1 byte check. */
-        MZ_UNUSED(verify1);
-        if ((verify2 != 0) && (verify2 != pkcrypt->verify2))
+        /* PKZIP 2.0 and higher use 1 byte check, older versions used 2 byte check.
+           See app note section 6.1.6. */
+        if (verify2 != pkcrypt->verify2)
             return MZ_PASSWORD_ERROR;
+        if (pkcrypt->verify_version < 2) {
+            if (verify1 != pkcrypt->verify1)
+                return MZ_PASSWORD_ERROR;
+        }
 
         pkcrypt->total_in += MZ_PKCRYPT_HEADER_SIZE;
     }
@@ -259,16 +253,18 @@ void mz_stream_pkcrypt_set_password(void *stream, const char *password) {
     pkcrypt->password = password;
 }
 
-void mz_stream_pkcrypt_set_verify(void *stream, uint8_t verify1, uint8_t verify2) {
+void mz_stream_pkcrypt_set_verify(void *stream, uint8_t verify1, uint8_t verify2, uint16_t version) {
     mz_stream_pkcrypt *pkcrypt = (mz_stream_pkcrypt *)stream;
     pkcrypt->verify1 = verify1;
     pkcrypt->verify2 = verify2;
+    pkcrypt->verify_version = version;
 }
 
-void mz_stream_pkcrypt_get_verify(void *stream, uint8_t *verify1, uint8_t *verify2) {
+void mz_stream_pkcrypt_get_verify(void *stream, uint8_t *verify1, uint8_t *verify2, uint16_t *version) {
     mz_stream_pkcrypt *pkcrypt = (mz_stream_pkcrypt *)stream;
     *verify1 = pkcrypt->verify1;
     *verify2 = pkcrypt->verify2;
+    *version = pkcrypt->verify_version;
 }
 
 int32_t mz_stream_pkcrypt_get_prop_int64(void *stream, int32_t prop, int64_t *value) {
@@ -319,8 +315,7 @@ void mz_stream_pkcrypt_delete(void **stream) {
     if (!stream)
         return;
     pkcrypt = (mz_stream_pkcrypt *)*stream;
-    if (pkcrypt)
-        free(pkcrypt);
+    free(pkcrypt);
     *stream = NULL;
 }
 
