@@ -553,7 +553,7 @@ int unzLocateFile(unzFile file, const char *filename, unzFileNameComparer filena
 /***************************************************************************/
 
 int unzGetFilePos(unzFile file, unz_file_pos *file_pos) {
-    unz64_file_pos file_pos64;
+    unz64_file_pos file_pos64 = {0, 0};
     int32_t err = 0;
 
     err = unzGetFilePos64(file, &file_pos64);

@@ -1566,7 +1566,8 @@ int32_t mz_zip_set_comment(void *handle, const char *comment) {
     zip->comment = (char *)calloc(comment_size + 1, sizeof(char));
     if (!zip->comment)
         return MZ_MEM_ERROR;
-    strncpy(zip->comment, comment, comment_size);
+    // using memcpy() instead of strncpy() to avoid -Werror=stringop-truncation
+    memcpy(zip->comment, comment, comment_size + 1);
     return MZ_OK;
 }
 
