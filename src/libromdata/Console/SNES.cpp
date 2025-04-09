@@ -401,9 +401,9 @@ bool SNESPrivate::isSnesRomHeaderValid(const SNES_RomHeader *romHeader, bool isH
 
 	// Make sure the two checksums are complementary.
 	// NOTE: Byteswapping isn't necessary here.
-	if (static_cast<uint16_t>( romHeader->snes.checksum) !=
-	    static_cast<uint16_t>(~romHeader->snes.checksum_complement))
-	{
+	const unsigned int checksum1 = romHeader->snes.checksum;
+	const unsigned int checksum2 = romHeader->snes.checksum_complement ^ 0xFFFFU;
+	if (checksum1 != checksum2) {
 		// Checksums are not complementary.
 		// NOTE: Both checksums may be 0 in prototypes.
 		if (romHeader->snes.checksum != 0 ||
