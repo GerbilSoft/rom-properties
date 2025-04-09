@@ -15,6 +15,8 @@
 #include <map>
 #include <string>
 #include <cstdint>
+#include <vector>
+#include <set>
 
 // Visibility symbols, required for Windows DLLs
 #ifndef INI_API
@@ -89,6 +91,12 @@ public:
     // and valid false values are "false", "no", "off", "0" (not case sensitive).
     INI_API bool GetBoolean(const std::string& section, const std::string& name, bool default_value) const;
 
+    // Return a newly-allocated vector of all section names, in alphabetical order.
+    INI_API std::vector<std::string> Sections() const;
+
+    // Return a newly-allocated vector of keys in the given section, in alphabetical order.
+    INI_API std::vector<std::string> Keys(const std::string& section) const;
+
     // Return true if the given section exists (section must contain at least
     // one name=value pair).
     INI_API bool HasSection(const std::string& section) const;
@@ -96,7 +104,7 @@ public:
     // Return true if a value exists with the given section and field names.
     INI_API bool HasValue(const std::string& section, const std::string& name) const;
 
-private:
+protected:
     int _error;
     std::map<std::string, std::string> _values;
     static std::string MakeKey(const std::string& section, const std::string& name);

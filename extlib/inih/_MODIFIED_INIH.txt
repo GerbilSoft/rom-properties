@@ -1,9 +1,9 @@
 This copy of inih-r58 is a modified version of the original.
 
-commit 5cc5e2c24642513aaa5b19126aad42d0e4e0923e
-Merge pull request #164 from benhoyt/ini-prefix
+commit 9de2a5fe4956447a22a324e2efc0648c5aad5285
+chore: bump meson.build version number to 60
 
-Tag: r58
+Tag: r60
 
 The following changes have been made to the original:
 

@@ -107,17 +107,20 @@ int ini_parse_stream(ini_reader reader, void* stream, ini_handler handler,
 #endif
 #if INI_ALLOW_REALLOC && !INI_USE_STACK
     char* new_line;
-    size_t offset;
 #endif
     char section[MAX_SECTION] = "";
+#if INI_ALLOW_MULTILINE
     char prev_name[MAX_NAME] = "";
+#endif
 
+    size_t offset;
     char* start;
     char* end;
     char* name;
     char* value;
     int lineno = 0;
     int error = 0;
+    char abyss[16];  /* Used to consume input when a line is too long. */
 
 #if !INI_USE_STACK
     line = (char*)ini_malloc(INI_INITIAL_ALLOC);
@@ -134,8 +137,9 @@ int ini_parse_stream(ini_reader reader, void* stream, ini_handler handler,
 
     /* Scan through stream line by line */
     while (reader(line, (int)max_line, stream) != NULL) {
-#if INI_ALLOW_REALLOC && !INI_USE_STACK
         offset = strlen(line);
+
+#if INI_ALLOW_REALLOC && !INI_USE_STACK
         while (offset == max_line - 1 && line[offset - 1] != '\n') {
             max_line *= 2;
             if (max_line > INI_MAX_LINE)
@@ -148,13 +152,23 @@ int ini_parse_stream(ini_reader reader, void* stream, ini_handler handler,
             line = new_line;
             if (reader(line + offset, (int)(max_line - offset), stream) == NULL)
                 break;
+            offset += strlen(line + offset);
             if (max_line >= INI_MAX_LINE)
                 break;
-            offset += strlen(line + offset);
         }
 #endif
 
         lineno++;
+
+        /* If line exceeded INI_MAX_LINE bytes, discard till end of line. */
+        if (offset == max_line - 1 && line[offset - 1] != '\n') {
+            while (reader(abyss, sizeof(abyss), stream) != NULL) {
+                if (!error)
+                    error = lineno;
+                if (abyss[strlen(abyss) - 1] == '\n')
+                    break;
+            }
+        }
 
         start = line;
 #if INI_ALLOW_BOM
@@ -164,7 +178,7 @@ int ini_parse_stream(ini_reader reader, void* stream, ini_handler handler,
             start += 3;
         }
 #endif
-        start = ini_lskip(ini_rstrip(start));
+        start = ini_rstrip(ini_lskip(start));
 
         if (strchr(INI_START_COMMENT_PREFIXES, *start)) {
             /* Start-of-line comment */
@@ -189,7 +203,9 @@ int ini_parse_stream(ini_reader reader, void* stream, ini_handler handler,
             if (*end == ']') {
                 *end = '\0';
                 ini_strncpy0(section, start + 1, sizeof(section));
+#if INI_ALLOW_MULTILINE
                 *prev_name = '\0';
+#endif
 #if INI_CALL_HANDLER_ON_NEW_SECTION
                 if (!HANDLER(user, section, NULL, NULL) && !error)
                     error = lineno;
@@ -215,8 +231,10 @@ int ini_parse_stream(ini_reader reader, void* stream, ini_handler handler,
                 value = ini_lskip(value);
                 ini_rstrip(value);
 
-                /* Valid name[=:]value pair found, call handler */
+#if INI_ALLOW_MULTILINE
                 ini_strncpy0(prev_name, name, sizeof(prev_name));
+#endif
+                /* Valid name[=:]value pair found, call handler */
                 if (!HANDLER(user, section, name, value) && !error)
                     error = lineno;
             }
