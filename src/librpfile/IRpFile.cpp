@@ -19,7 +19,6 @@ IRpFile::IRpFile()
 	, m_isWritable(false)
 	, m_isCompressed(false)
 	, m_fileType(DT_REG)
-	, m_padding(0)
 {
 	static_assert(sizeof(off64_t) == 8, "off64_t is not 64-bit!");
 }

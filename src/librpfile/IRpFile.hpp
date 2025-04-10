@@ -304,9 +304,6 @@ protected:
 	bool m_isWritable;	// Is this file writable?
 	bool m_isCompressed;	// Is this file compressed?
 	uint8_t m_fileType;	// File type (see d_type.h)
-
-private:
-	uint8_t m_padding;	// pad to 8 bytes
 };
 
 typedef std::shared_ptr<IRpFile> IRpFilePtr;
