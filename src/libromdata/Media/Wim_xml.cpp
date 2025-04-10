@@ -18,6 +18,12 @@
 #include "librpbase/timeconv.h"
 using namespace LibRpBase;
 
+#ifdef ENABLE_XML
+// PugiXML
+#  include <pugixml.hpp>
+using namespace pugi;
+#endif /* ENABLE_XML */
+
 // C includes
 #include <uchar.h>
 

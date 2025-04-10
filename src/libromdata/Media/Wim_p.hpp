@@ -15,12 +15,6 @@
 // librpfile
 #include "librpfile/IRpFile.hpp"
 
-#ifdef ENABLE_XML
-// PugiXML
-#  include <pugixml.hpp>
-using namespace pugi;
-#endif /* ENABLE_XML */
-
 namespace LibRomData {
 
 class WimPrivate final : public LibRpBase::RomDataPrivate
