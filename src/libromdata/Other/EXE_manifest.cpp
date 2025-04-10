@@ -262,15 +262,15 @@ int EXEPrivate::addFields_PE_Manifest(void)
 	// windowsSettings bitfield
 	// Reference: https://docs.microsoft.com/en-us/windows/win32/sbscs/manifest-file-schema
 	// TODO: Ordering.
-	typedef enum {
-		Setting_autoElevate				= (1U << 0),
-		Setting_disableTheming				= (1U << 1),
-		Setting_disableWindowFiltering			= (1U << 2),
-		Setting_highResolutionScrollingAware		= (1U << 3),
-		Setting_magicFutureSetting			= (1U << 4),
-		Setting_printerDriverIsolation			= (1U << 5),
-		Setting_ultraHighResolutionScrollingAware	= (1U << 6),
-	} WindowsSettings_t;
+	enum class WindowsSettings {
+		autoElevate				= (1U << 0),
+		disableTheming				= (1U << 1),
+		disableWindowFiltering			= (1U << 2),
+		highResolutionScrollingAware		= (1U << 3),
+		magicFutureSetting			= (1U << 4),
+		printerDriverIsolation			= (1U << 5),
+		ultraHighResolutionScrollingAware	= (1U << 6),
+	};
 
 	static const array<const char*, 7> WindowsSettings_names = {{
 		NOP_C_("EXE|Manifest|WinSettings", "Auto Elevate"),
@@ -290,7 +290,7 @@ int EXEPrivate::addFields_PE_Manifest(void)
 		if (child_elem) { \
 			xml_text text = child_elem.text(); \
 			if (text && !strcasecmp(text.get(), "true")) { \
-				settings |= (Setting_##setting_name); \
+				settings |= static_cast<uint32_t>(WindowsSettings::setting_name); \
 			} \
 		} \
 	} while (0)
@@ -333,17 +333,17 @@ int EXEPrivate::addFields_PE_Manifest(void)
 	// References:
 	// - https://docs.microsoft.com/en-us/windows/win32/sbscs/application-manifests
 	// - https://docs.microsoft.com/en-us/windows/win32/sysinfo/targeting-your-application-at-windows-8-1
-	typedef enum {
-		OS_WinVista		= (1U << 0),
-		OS_Win7			= (1U << 1),
-		OS_Win8			= (1U << 2),
-		OS_Win81		= (1U << 3),
-		OS_Win10		= (1U << 4),
+	enum class OS_Compatibility {
+		WinVista	= (1U << 0),
+		Win7		= (1U << 1),
+		Win8		= (1U << 2),
+		Win81		= (1U << 3),
+		Win10		= (1U << 4),
 
 		// Not specifically OS-compatibility, but
 		// present in the same section.
-		OS_LongPathAware	= (1U << 5),
-	} OS_Compatibility_t;
+		LongPathAware	= (1U << 5),
+	};
 
 	// NOTE: OS names aren't translatable, but "Long Path Aware" is.
 	static const array<const char*, 6> OS_Compatibility_names = {{
@@ -374,17 +374,17 @@ int EXEPrivate::addFields_PE_Manifest(void)
 
 				// Check for supported OSes.
 				if (!strcasecmp(Id, "{e2011457-1546-43c5-a5fe-008deee3d3f0}")) {
-					compat |= OS_WinVista;
+					compat |= static_cast<uint32_t>(OS_Compatibility::WinVista);
 				} else if (!strcasecmp(Id, "{35138b9a-5d96-4fbd-8e2d-a2440225f93a}")) {
-					compat |= OS_Win7;
+					compat |= static_cast<uint32_t>(OS_Compatibility::Win7);
 				} else if (!strcasecmp(Id, "{4a2f28e3-53b9-4441-ba9c-d69d4a4a6e38}")) {
-					compat |= OS_Win8;
+					compat |= static_cast<uint32_t>(OS_Compatibility::Win8);
 				} else if (!strcasecmp(Id, "{1f676c76-80e1-4239-95bb-83d0f6d0da78}")) {
-					compat |= OS_Win81;
+					compat |= static_cast<uint32_t>(OS_Compatibility::Win81);
 				} else if (!strcasecmp(Id, "{8e0f7a12-bfb3-4fe8-b9a5-48fd50a15a9a}")) {
 					// NOTE: Also used for Windows 11.
 					// Reference: https://stackoverflow.com/questions/68240304/whats-the-supportedos-guid-for-windows-11
-					compat |= OS_Win10;
+					compat |= static_cast<uint32_t>(OS_Compatibility::Win10);
 				}
 			}
 
@@ -394,7 +394,7 @@ int EXEPrivate::addFields_PE_Manifest(void)
 				xml_text text = longPathAware.text();
 				if (text && !strcasecmp(text.get(), "true")) {
 					// Long path aware.
-					compat |= OS_LongPathAware;
+					compat |= static_cast<uint32_t>(OS_Compatibility::LongPathAware);
 				}
 			}
 
