@@ -49,12 +49,11 @@ public:
 
 class JSONROMOutput {
 	const RomData *const romdata;
-	uint32_t lc;
 	unsigned int flags;
 	bool crlf_;
 public:
 	RP_LIBROMDATA_PUBLIC
-	explicit JSONROMOutput(const RomData *romdata, uint32_t lc = 0, unsigned int flags = 0);
+	explicit JSONROMOutput(const RomData *romdata, unsigned int flags = 0);
 
 	RP_LIBROMDATA_PUBLIC
 	friend std::ostream& operator<<(std::ostream& os, const JSONROMOutput& fo);

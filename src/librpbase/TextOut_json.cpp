@@ -345,9 +345,8 @@ public:
 };
 
 
-JSONROMOutput::JSONROMOutput(const RomData *romdata, uint32_t lc, unsigned int flags)
+JSONROMOutput::JSONROMOutput(const RomData *romdata, unsigned int flags)
 	: romdata(romdata)
-	, lc(lc)
 	, flags(flags)
 	, crlf_(false) { }
 RP_LIBROMDATA_PUBLIC

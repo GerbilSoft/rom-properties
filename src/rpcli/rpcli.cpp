@@ -288,7 +288,7 @@ static void DoFile(const TCHAR *filename, bool json, const vector<ExtractParam> 
 			fputc('\n', stderr);
 			fflush(stderr);
 
-			cout << JSONROMOutput(romData.get(), lc, flags) << '\n';
+			cout << JSONROMOutput(romData.get(), flags) << '\n';
 		} else {
 #ifdef _WIN32
 			if (is_stdout_console && !does_console_support_ansi) {

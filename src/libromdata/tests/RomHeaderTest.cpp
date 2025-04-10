@@ -352,7 +352,7 @@ TEST_P(RomHeaderTest, JSON)
 		ASSERT_GT(last_json_data.size(), 0U) << "Binary file is valid RomData, but JSON file is empty.";
 
 		ostringstream oss;
-		oss << JSONROMOutput(romData.get(), 0, LibRpBase::OF_JSON_NoPrettyPrint);
+		oss << JSONROMOutput(romData.get(), LibRpBase::OF_JSON_NoPrettyPrint);
 
 		// The expected JSON files have trailing newlines, but RapidJSON
 		// does not add a trailing newline when not pretty-printing.
