@@ -43,7 +43,7 @@ int filterCacheKey(char *pCacheKey);
 static inline int filterCacheKey(std::string &cacheKey)
 {
 	// Ensure cacheKey is NULL-terminated by calling c_str().
-	cacheKey.c_str();
+	(void)cacheKey.c_str();
 	return filterCacheKey(&cacheKey[0]);
 }
 
