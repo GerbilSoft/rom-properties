@@ -380,7 +380,7 @@ int main(int argc, char *argv[])
 
 	switch (mode) {
 		default:
-		case MODE_THUMBNAIL:
+		case MODE_THUMBNAIL: {
 #ifdef __GLIBC__
 			// Reduce /etc/localtime stat() calls.
 			// NOTE: Only for thumbnailing mode, since the process doesn't persist.
@@ -434,6 +434,7 @@ int main(int argc, char *argv[])
 				free(output_file);
 			}
 			break;
+		}
 
 		case MODE_CONFIG:
 			// Show the configuration dialog.
