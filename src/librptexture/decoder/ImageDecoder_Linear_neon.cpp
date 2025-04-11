@@ -258,47 +258,29 @@ rp_image_ptr fromLinear32_neon(PixelFormat px_format,
 			unsigned int x = static_cast<unsigned int>(width);
 			for (; x > 15; x -= 16, px_dest += 16, img_buf += 16) {
 #if defined(RP_CPU_ARM64)
-				uint32x4_t sa = vld1q_u32(&img_buf[0]);
-				uint32x4_t sb = vld1q_u32(&img_buf[4]);
-				uint32x4_t sc = vld1q_u32(&img_buf[8]);
-				uint32x4_t sd = vld1q_u32(&img_buf[12]);
+				uint32x4x4_t sa = vld4q_u32(img_buf);
 
-				sa = vqtbl1q_u8(sa, shuf_mask);
-				sb = vqtbl1q_u8(sb, shuf_mask);
-				sc = vqtbl1q_u8(sc, shuf_mask);
-				sd = vqtbl1q_u8(sd, shuf_mask);
+				sa.val[0] = vqtbl1q_u8(sa.val[0], shuf_mask);
+				sa.val[1] = vqtbl1q_u8(sa.val[1], shuf_mask);
+				sa.val[2] = vqtbl1q_u8(sa.val[2], shuf_mask);
+				sa.val[3] = vqtbl1q_u8(sa.val[3], shuf_mask);
 
-				vst1q_u32(&px_dest[0], sa);
-				vst1q_u32(&px_dest[4], sb);
-				vst1q_u32(&px_dest[8], sc);
-				vst1q_u32(&px_dest[12], sd);
+				vst4q_u32(px_dest, sa);
 #elif defined(RP_CPU_ARM)
-				uint32x2_t sa = vld1_u32(&img_buf[0]);
-				uint32x2_t sb = vld1_u32(&img_buf[2]);
-				uint32x2_t sc = vld1_u32(&img_buf[4]);
-				uint32x2_t sd = vld1_u32(&img_buf[6]);
-				uint32x2_t se = vld1_u32(&img_buf[8]);
-				uint32x2_t sf = vld1_u32(&img_buf[10]);
-				uint32x2_t sg = vld1_u32(&img_buf[12]);
-				uint32x2_t sh = vld1_u32(&img_buf[14]);
+				uint32x2x4_t sa = vld4_u32(&img_buf[0]);
+				uint32x2x4_t sb = vld4_u32(&img_buf[8]);
 
-				sa = vtbl1_u8(sa, shuf_mask);
-				sb = vtbl1_u8(sb, shuf_mask);
-				sc = vtbl1_u8(sc, shuf_mask);
-				sd = vtbl1_u8(sd, shuf_mask);
-				se = vtbl1_u8(se, shuf_mask);
-				sf = vtbl1_u8(sf, shuf_mask);
-				sg = vtbl1_u8(sg, shuf_mask);
-				sh = vtbl1_u8(sh, shuf_mask);
+				sa.val[0] = vtbl1_u8(sa.val[0], shuf_mask);
+				sa.val[1] = vtbl1_u8(sa.val[1], shuf_mask);
+				sa.val[2] = vtbl1_u8(sa.val[2], shuf_mask);
+				sa.val[3] = vtbl1_u8(sa.val[3], shuf_mask);
+				sb.val[0] = vtbl1_u8(sb.val[0], shuf_mask);
+				sb.val[1] = vtbl1_u8(sb.val[1], shuf_mask);
+				sb.val[2] = vtbl1_u8(sb.val[2], shuf_mask);
+				sb.val[3] = vtbl1_u8(sb.val[3], shuf_mask);
 
-				vst1_u32(&px_dest[0], sa);
-				vst1_u32(&px_dest[2], sb);
-				vst1_u32(&px_dest[4], sc);
-				vst1_u32(&px_dest[6], sd);
-				vst1_u32(&px_dest[8], se);
-				vst1_u32(&px_dest[10], sf);
-				vst1_u32(&px_dest[12], sg);
-				vst1_u32(&px_dest[14], sh);
+				vst4_u32(&px_dest[0], sa);
+				vst4_u32(&px_dest[8], sb);
 #endif
 			}
 
@@ -401,79 +383,61 @@ rp_image_ptr fromLinear32_neon(PixelFormat px_format,
 			unsigned int x = static_cast<unsigned int>(width);
 			for (; x > 15; x -= 16, px_dest += 16, img_buf += 16) {
 #if defined(RP_CPU_ARM64)
-				uint32x4_t sa = vld1q_u32(&img_buf[0]);
-				uint32x4_t sb = vld1q_u32(&img_buf[4]);
-				uint32x4_t sc = vld1q_u32(&img_buf[8]);
-				uint32x4_t sd = vld1q_u32(&img_buf[12]);
+				uint32x4x4_t sa = vld4q_u32(img_buf);
 
-				sa = vqtbl1q_u8(sa, shuf_mask);
-				sb = vqtbl1q_u8(sb, shuf_mask);
-				sc = vqtbl1q_u8(sc, shuf_mask);
-				sd = vqtbl1q_u8(sd, shuf_mask);
+				sa.val[0] = vqtbl1q_u8(sa.val[0], shuf_mask);
+				sa.val[1] = vqtbl1q_u8(sa.val[1], shuf_mask);
+				sa.val[2] = vqtbl1q_u8(sa.val[2], shuf_mask);
+				sa.val[3] = vqtbl1q_u8(sa.val[3], shuf_mask);
 
-				sa = vorrq_u32(sa, or_mask);
-				sb = vorrq_u32(sb, or_mask);
-				sc = vorrq_u32(sc, or_mask);
-				sd = vorrq_u32(sd, or_mask);
+				sa.val[0] = vorrq_u32(sa.val[0], or_mask);
+				sa.val[1] = vorrq_u32(sa.val[1], or_mask);
+				sa.val[2] = vorrq_u32(sa.val[2], or_mask);
+				sa.val[3] = vorrq_u32(sa.val[3], or_mask);
 
 				if (unlikely(img_mask_type == MASK_ALPHA_B)) {
-					sa = vandq_u32(sa, and_mask);
-					sb = vandq_u32(sb, and_mask);
-					sc = vandq_u32(sc, and_mask);
-					sd = vandq_u32(sd, and_mask);
+					sa.val[0] = vandq_u32(sa.val[0], and_mask);
+					sa.val[1] = vandq_u32(sa.val[1], and_mask);
+					sa.val[2] = vandq_u32(sa.val[2], and_mask);
+					sa.val[3] = vandq_u32(sa.val[3], and_mask);
 				}
 
-				vst1q_u32(&px_dest[0], sa);
-				vst1q_u32(&px_dest[4], sb);
-				vst1q_u32(&px_dest[8], sc);
-				vst1q_u32(&px_dest[12], sd);
+				vst4q_u32(px_dest, sa);
 #elif defined(RP_CPU_ARM)
-				uint32x2_t sa = vld1_u32(&img_buf[0]);
-				uint32x2_t sb = vld1_u32(&img_buf[2]);
-				uint32x2_t sc = vld1_u32(&img_buf[4]);
-				uint32x2_t sd = vld1_u32(&img_buf[6]);
-				uint32x2_t se = vld1_u32(&img_buf[8]);
-				uint32x2_t sf = vld1_u32(&img_buf[10]);
-				uint32x2_t sg = vld1_u32(&img_buf[12]);
-				uint32x2_t sh = vld1_u32(&img_buf[14]);
+				uint32x2x4_t sa = vld4_u32(&img_buf[0]);
+				uint32x2x4_t sb = vld4_u32(&img_buf[8]);
 
-				sa = vtbl1_u8(sa, shuf_mask);
-				sb = vtbl1_u8(sb, shuf_mask);
-				sc = vtbl1_u8(sc, shuf_mask);
-				sd = vtbl1_u8(sd, shuf_mask);
-				se = vtbl1_u8(se, shuf_mask);
-				sf = vtbl1_u8(sf, shuf_mask);
-				sg = vtbl1_u8(sg, shuf_mask);
-				sh = vtbl1_u8(sh, shuf_mask);
+				sa.val[0] = vtbl1_u8(sa.val[0], shuf_mask);
+				sa.val[1] = vtbl1_u8(sa.val[1], shuf_mask);
+				sa.val[2] = vtbl1_u8(sa.val[2], shuf_mask);
+				sa.val[3] = vtbl1_u8(sa.val[3], shuf_mask);
+				sb.val[0] = vtbl1_u8(sb.val[0], shuf_mask);
+				sb.val[1] = vtbl1_u8(sb.val[1], shuf_mask);
+				sb.val[2] = vtbl1_u8(sb.val[2], shuf_mask);
+				sb.val[3] = vtbl1_u8(sb.val[3], shuf_mask);
 
-				sa = vorr_u32(sa, or_mask);
-				sb = vorr_u32(sb, or_mask);
-				sc = vorr_u32(sc, or_mask);
-				sd = vorr_u32(sd, or_mask);
-				se = vorr_u32(se, or_mask);
-				sf = vorr_u32(sf, or_mask);
-				sg = vorr_u32(sg, or_mask);
-				sh = vorr_u32(sh, or_mask);
+				sa.val[0] = vorr_u8(sa.val[0], or_mask);
+				sa.val[1] = vorr_u8(sa.val[1], or_mask);
+				sa.val[2] = vorr_u8(sa.val[2], or_mask);
+				sa.val[3] = vorr_u8(sa.val[3], or_mask);
+				sb.val[0] = vorr_u8(sb.val[0], or_mask);
+				sb.val[1] = vorr_u8(sb.val[1], or_mask);
+				sb.val[2] = vorr_u8(sb.val[2], or_mask);
+				sb.val[3] = vorr_u8(sb.val[3], or_mask);
 
 				if (unlikely(img_mask_type == MASK_ALPHA_B)) {
-					sa = vand_u32(sa, and_mask);
-					sb = vand_u32(sb, and_mask);
-					sc = vand_u32(sc, and_mask);
-					sd = vand_u32(sd, and_mask);
-					se = vand_u32(se, and_mask);
-					sf = vand_u32(sf, and_mask);
-					sg = vand_u32(sg, and_mask);
-					sh = vand_u32(sh, and_mask);
+					sa.val[0] = vand_u32(sa.val[0], and_mask);
+					sa.val[1] = vand_u32(sa.val[1], and_mask);
+					sa.val[2] = vand_u32(sa.val[2], and_mask);
+					sa.val[3] = vand_u32(sa.val[3], and_mask);
+					sb.val[0] = vand_u32(sb.val[0], and_mask);
+					sb.val[1] = vand_u32(sb.val[1], and_mask);
+					sb.val[2] = vand_u32(sb.val[2], and_mask);
+					sb.val[3] = vand_u32(sb.val[3], and_mask);
 				}
 
-				vst1_u32(&px_dest[0], sa);
-				vst1_u32(&px_dest[2], sb);
-				vst1_u32(&px_dest[4], sc);
-				vst1_u32(&px_dest[6], sd);
-				vst1_u32(&px_dest[8], se);
-				vst1_u32(&px_dest[10], sf);
-				vst1_u32(&px_dest[12], sg);
-				vst1_u32(&px_dest[14], sh);
+				vst4_u32(&px_dest[0], sa);
+				vst4_u32(&px_dest[8], sb);
 #endif
 			}
 
