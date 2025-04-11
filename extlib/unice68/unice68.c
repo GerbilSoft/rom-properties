@@ -316,7 +316,8 @@ static void * myalloc(void * buf, int len, char * name)
 
 static int myread(void * buf, int len, FILE * inp, const char * name)
 {
-  int n = fread(buf, 1, len, inp);
+  // rom-properties FIXME: fread() returns size_t, so it can't possibly return a negative value.
+  int n = (int)fread(buf, 1, len, inp);
   if (n == -1) {
     syserror(name);
     return -1;
@@ -680,7 +681,8 @@ int UNICE68_CDECL main(int argc, char *argv[])
       syserror(fout);
       goto error;
     }
-    n = fwrite(obuffer,1,olen,out);
+    // rom-properties FIXME: fread() returns size_t, so it can't possibly return a negative value.
+    n = (int)fwrite(obuffer,1,olen,out);
     message(D,"Have written %d bytes to %s\n", n, fout);
     if (n != olen) {
       syserror(fout);
