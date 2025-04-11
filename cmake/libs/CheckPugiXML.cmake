@@ -20,8 +20,18 @@ IF(NOT USE_INTERNAL_XML)
 		SET(pugixml_LIBRARY pugixml::pugixml CACHE INTERNAL "PugiXML library" FORCE)
 	ELSE()
 		# System PugiXML was not found.
-		MESSAGE(STATUS "Using the internal copy of PugiXML since a system version was not found.")
-		SET(USE_INTERNAL_XML ON CACHE BOOL "Use the internal copy of PugiXML" FORCE)
+		# NOTE: Some older versions, e.g. 1.7-2 (Ubuntu 16.04), lack both
+		# pkgconfig and CMake files. Use FIND_LIBRARY() as a fallback.
+		FIND_LIBRARY(pugixml_LIBRARY pugixml)
+		IF(pugixml_LIBRARY)
+			# Found system PugiXML using FIND_LIBRARY().
+			SET(HAVE_XML 1)
+			SET(pugixml_FOUND 1)
+			MESSAGE(STATUS "Found pugixml: ${pugixml_LIBRARY}")
+		ELSE()
+			MESSAGE(STATUS "Using the internal copy of PugiXML since a system version was not found.")
+			SET(USE_INTERNAL_XML ON CACHE BOOL "Use the internal copy of PugiXML" FORCE)
+		ENDIF()
 	ENDIF()
 ELSE()
 	MESSAGE(STATUS "Using the internal copy of PugiXML.")
