@@ -24,6 +24,28 @@ using std::array;
 
 namespace LibRpTexture { namespace ImageDecoder {
 
+#if defined(RP_CPU_ARM64)
+static constexpr size_t VEC_LEN_U8 = 16;
+static constexpr size_t VEC_LEN_U32 = 4;
+typedef uint8x16_t uint8xVTBL_t;
+typedef uint32x4_t uint32xVTBL_t;
+#define vld1VTBL_u8  vld1q_u8
+#define vld1VTBL_u32 vld1q_u32
+#define vst1VTBL_u8  vst1q_u8
+#define vst1VTBL_u32 vst1q_u32
+#elif defined(RP_CPU_ARM)
+static constexpr size_t VEC_LEN_U8 = 8;
+static constexpr size_t VEC_LEN_U32 = 2;
+typedef uint8x8_t uint8xVTBL_t;
+typedef uint32x2_t uint32xVTBL_t;
+#define vld1VTBL_u8  vld1_u8
+#define vld1VTBL_u32 vld1_u32
+#define vst1VTBL_u8  vst1_u8
+#define vst1VTBL_u32 vst1_u32
+#else
+#  error Unsupported CPU?
+#endif
+
 /**
  * Convert a linear 32-bit RGB image to rp_image.
  * SSSE3-optimized version.
@@ -133,7 +155,7 @@ rp_image_ptr fromLinear32_neon(PixelFormat px_format,
 	uint32_t *px_dest = static_cast<uint32_t*>(img->bits());
 
 	// Determine the byte shuffle mask.
-	uint8x16_t shuf_mask;
+	uint8xVTBL_t shuf_mask;
 	enum {
 		MASK_NONE,	// for ARGB formats
 		MASK_ALPHA,	// for xRGB formats
@@ -145,20 +167,26 @@ rp_image_ptr fromLinear32_neon(PixelFormat px_format,
 			return nullptr;
 		case PixelFormat::Host_xRGB32: {
 			// TODO: Only apply the alpha mask instead of shuffling.
-			static const array<uint8_t, 16> shuf_mask_Host_xRGB32 = {{
-				0,1,2,3, 4,5,6,7, 8,9,10,11, 12,13,14,15
+			static const array<uint8_t, VEC_LEN_U8> shuf_mask_Host_xRGB32 = {{
+				0,1,2,3, 4,5,6,7,
+			#ifdef RP_CPU_ARM64
+				8,9,10,11, 12,13,14,15
+			#endif /* RP_CPU_ARM64 */
 			}};
-			shuf_mask = vld1q_u8(shuf_mask_Host_xRGB32.data());
+			shuf_mask = vld1VTBL_u8(shuf_mask_Host_xRGB32.data());
 			img_mask_type = MASK_ALPHA;
 			break;
 		}
 
 		case PixelFormat::Host_RGBA32:
 		case PixelFormat::Host_RGBx32: {
-			static const array<uint8_t, 16> shuf_mask_Host_RGBA32 = {{
-				1,2,3,0, 5,6,7,4, 9,10,11,8, 13,14,15,12
+			static const array<uint8_t, VEC_LEN_U8> shuf_mask_Host_RGBA32 = {{
+				1,2,3,0, 5,6,7,4,
+			#ifdef RP_CPU_ARM64
+				9,10,11,8, 13,14,15,12
+			#endif /* RP_CPU_ARM64 */
 			}};
-			shuf_mask = vld1q_u8(shuf_mask_Host_RGBA32.data());
+			shuf_mask = vld1VTBL_u8(shuf_mask_Host_RGBA32.data());
 			img_mask_type = (px_format == PixelFormat::Host_RGBA32) ? MASK_NONE : MASK_ALPHA;
 			break;
 		}
@@ -166,20 +194,26 @@ rp_image_ptr fromLinear32_neon(PixelFormat px_format,
 		case PixelFormat::Swap_ARGB32:
 		case PixelFormat::Swap_xRGB32: {
 			// TODO: Could optimize by using vrev instead of vtbl.
-			static const array<uint8_t, 16> shuf_mask_Swap_ARGB32 = {{
-				3,2,1,0, 7,6,5,4, 11,10,9,8, 15,14,13,12
+			static const array<uint8_t, VEC_LEN_U8> shuf_mask_Swap_ARGB32 = {{
+				3,2,1,0, 7,6,5,4,
+			#ifdef RP_CPU_ARM64
+				11,10,9,8, 15,14,13,12
+			#endif /* RP_CPU_ARM64 */
 			}};
-			shuf_mask = vld1q_u8(shuf_mask_Swap_ARGB32.data());
+			shuf_mask = vld1VTBL_u8(shuf_mask_Swap_ARGB32.data());
 			img_mask_type = (px_format == PixelFormat::Swap_ARGB32) ? MASK_NONE : MASK_ALPHA;
 			break;
 		}
 
 		case PixelFormat::Swap_RGBA32:
 		case PixelFormat::Swap_RGBx32: {
-			static const array<uint8_t, 16> shuf_mask_Swap_RGBA32 = {{
-				2,1,0,3, 6,5,4,7, 10,9,8,11, 14,13,12,15
+			static const array<uint8_t, VEC_LEN_U8> shuf_mask_Swap_RGBA32 = {{
+				2,1,0,3, 6,5,4,7,
+			#ifdef RP_CPU_ARM64
+				10,9,8,11, 14,13,12,15
+			#endif /* RP_CPU_ARM64 */
 			}};
-			shuf_mask = vld1q_u8(shuf_mask_Swap_RGBA32.data());
+			shuf_mask = vld1VTBL_u8(shuf_mask_Swap_RGBA32.data());
 			img_mask_type = (px_format == PixelFormat::Swap_RGBA32) ? MASK_NONE : MASK_ALPHA;
 			break;
 		}
@@ -189,19 +223,25 @@ rp_image_ptr fromLinear32_neon(PixelFormat px_format,
 			// NOTE: Truncates to G8R8.
 			// NOTE: vld1q_u8() doesn't appear to have an equivalent to "-1" in pshufb,
 			// so use an "alpha mask" instead.
-			static const array<uint8_t, 16> shuf_mask_G16R16 = {{
-				255,3,1,255, 255,7,5,255, 255,11,9,255, 255,15,13,255
+			static const array<uint8_t, VEC_LEN_U8> shuf_mask_G16R16 = {{
+				255,3,1,255, 255,7,5,255,
+			#ifdef RP_CPU_ARM64
+				255,11,9,255, 255,15,13,255
+			#endif /* RP_CPU_ARM64 */
 			}};
-			shuf_mask = vld1q_u8(shuf_mask_G16R16.data());
+			shuf_mask = vld1VTBL_u8(shuf_mask_G16R16.data());
 			img_mask_type = MASK_ALPHA_B;
 			break;
 		}
 
 		case PixelFormat::RABG8888: {
-			static const array<uint8_t, 16> shuf_mask_RABG8888 = {{
-				1,0,3,2, 5,4,7,6, 9,8,11,10, 13,12,15,14
+			static const array<uint8_t, VEC_LEN_U8> shuf_mask_RABG8888 = {{
+				1,0,3,2, 5,4,7,6,
+			#ifdef RP_CPU_ARM64
+				9,8,11,10, 13,12,15,14
+			#endif /* RP_CPU_ARM64 */
 			}};
-			shuf_mask = vld1q_u8(shuf_mask_RABG8888.data());
+			shuf_mask = vld1VTBL_u8(shuf_mask_RABG8888.data());
 			img_mask_type = MASK_NONE;
 			break;
 		}
@@ -217,6 +257,7 @@ rp_image_ptr fromLinear32_neon(PixelFormat px_format,
 			// Process 16 pixels per iteration using NEON.
 			unsigned int x = static_cast<unsigned int>(width);
 			for (; x > 15; x -= 16, px_dest += 16, img_buf += 16) {
+#if defined(RP_CPU_ARM64)
 				uint32x4_t sa = vld1q_u32(&img_buf[0]);
 				uint32x4_t sb = vld1q_u32(&img_buf[4]);
 				uint32x4_t sc = vld1q_u32(&img_buf[8]);
@@ -231,6 +272,34 @@ rp_image_ptr fromLinear32_neon(PixelFormat px_format,
 				vst1q_u32(&px_dest[4], sb);
 				vst1q_u32(&px_dest[8], sc);
 				vst1q_u32(&px_dest[12], sd);
+#elif defined(RP_CPU_ARM)
+				uint32x2_t sa = vld1_u32(&img_buf[0]);
+				uint32x2_t sb = vld1_u32(&img_buf[2]);
+				uint32x2_t sc = vld1_u32(&img_buf[4]);
+				uint32x2_t sd = vld1_u32(&img_buf[6]);
+				uint32x2_t se = vld1_u32(&img_buf[8]);
+				uint32x2_t sf = vld1_u32(&img_buf[10]);
+				uint32x2_t sg = vld1_u32(&img_buf[12]);
+				uint32x2_t sh = vld1_u32(&img_buf[14]);
+
+				sa = vtbl1_u8(sa, shuf_mask);
+				sb = vtbl1_u8(sb, shuf_mask);
+				sc = vtbl1_u8(sc, shuf_mask);
+				sd = vtbl1_u8(sd, shuf_mask);
+				se = vtbl1_u8(se, shuf_mask);
+				sf = vtbl1_u8(sf, shuf_mask);
+				sg = vtbl1_u8(sg, shuf_mask);
+				sh = vtbl1_u8(sh, shuf_mask);
+
+				vst1_u32(&px_dest[0], sa);
+				vst1_u32(&px_dest[2], sb);
+				vst1_u32(&px_dest[4], sc);
+				vst1_u32(&px_dest[6], sd);
+				vst1_u32(&px_dest[8], se);
+				vst1_u32(&px_dest[10], sf);
+				vst1_u32(&px_dest[12], sg);
+				vst1_u32(&px_dest[14], sh);
+#endif
 			}
 
 			// Remaining pixels.
@@ -309,22 +378,29 @@ rp_image_ptr fromLinear32_neon(PixelFormat px_format,
 		img->set_sBIT(&sBIT_A32);
 	} else {
 		// xRGB images don't have an alpha channel.
-		static const array<uint32_t, 4> or_mask_noAlpha_u32 = {{
-			0xFF000000, 0xFF000000, 0xFF000000, 0xFF000000
+		static const array<uint32_t, VEC_LEN_U32> or_mask_noAlpha_u32 = {{
+			0xFF000000, 0xFF000000,
+#ifdef RP_CPU_ARM64
+			0xFF000000, 0xFF000000
+#endif /* RP_CPU_ARM64 */
 		}};
 		// GR images don't have a blue channel.
-		static const array<uint32_t, 4> and_mask_GR_u32 = {{
-			0xFFFFFF00, 0xFFFFFF00, 0xFFFFFF00, 0xFFFFFF00
+		static const array<uint32_t, VEC_LEN_U32> and_mask_GR_u32 = {{
+			0xFFFFFF00, 0xFFFFFF00,
+#ifdef RP_CPU_ARM64
+			0xFFFFFF00, 0xFFFFFF00
+#endif /* RP_CPU_ARM64 */
 		}};
 
-		uint32x4_t or_mask = vld1q_u32(or_mask_noAlpha_u32.data());
+		uint32xVTBL_t or_mask = vld1VTBL_u32(or_mask_noAlpha_u32.data());
 		// NOTE: Only used for GR formats.
-		uint32x4_t and_mask = vld1q_u32(and_mask_GR_u32.data());
+		uint32xVTBL_t and_mask = vld1VTBL_u32(and_mask_GR_u32.data());
 
 		for (unsigned int y = static_cast<unsigned int>(height); y > 0; y--) {
 			// Process 16 pixels per iteration using SSSE3.
 			unsigned int x = static_cast<unsigned int>(width);
 			for (; x > 15; x -= 16, px_dest += 16, img_buf += 16) {
+#if defined(RP_CPU_ARM64)
 				uint32x4_t sa = vld1q_u32(&img_buf[0]);
 				uint32x4_t sb = vld1q_u32(&img_buf[4]);
 				uint32x4_t sc = vld1q_u32(&img_buf[8]);
@@ -351,6 +427,54 @@ rp_image_ptr fromLinear32_neon(PixelFormat px_format,
 				vst1q_u32(&px_dest[4], sb);
 				vst1q_u32(&px_dest[8], sc);
 				vst1q_u32(&px_dest[12], sd);
+#elif defined(RP_CPU_ARM)
+				uint32x2_t sa = vld1_u32(&img_buf[0]);
+				uint32x2_t sb = vld1_u32(&img_buf[2]);
+				uint32x2_t sc = vld1_u32(&img_buf[4]);
+				uint32x2_t sd = vld1_u32(&img_buf[6]);
+				uint32x2_t se = vld1_u32(&img_buf[8]);
+				uint32x2_t sf = vld1_u32(&img_buf[10]);
+				uint32x2_t sg = vld1_u32(&img_buf[12]);
+				uint32x2_t sh = vld1_u32(&img_buf[14]);
+
+				sa = vtbl1_u8(sa, shuf_mask);
+				sb = vtbl1_u8(sb, shuf_mask);
+				sc = vtbl1_u8(sc, shuf_mask);
+				sd = vtbl1_u8(sd, shuf_mask);
+				se = vtbl1_u8(se, shuf_mask);
+				sf = vtbl1_u8(sf, shuf_mask);
+				sg = vtbl1_u8(sg, shuf_mask);
+				sh = vtbl1_u8(sh, shuf_mask);
+
+				sa = vorr_u32(sa, or_mask);
+				sb = vorr_u32(sb, or_mask);
+				sc = vorr_u32(sc, or_mask);
+				sd = vorr_u32(sd, or_mask);
+				se = vorr_u32(se, or_mask);
+				sf = vorr_u32(sf, or_mask);
+				sg = vorr_u32(sg, or_mask);
+				sh = vorr_u32(sh, or_mask);
+
+				if (unlikely(img_mask_type == MASK_ALPHA_B)) {
+					sa = vand_u32(sa, and_mask);
+					sb = vand_u32(sb, and_mask);
+					sc = vand_u32(sc, and_mask);
+					sd = vand_u32(sd, and_mask);
+					se = vand_u32(se, and_mask);
+					sf = vand_u32(sf, and_mask);
+					sg = vand_u32(sg, and_mask);
+					sh = vand_u32(sh, and_mask);
+				}
+
+				vst1_u32(&px_dest[0], sa);
+				vst1_u32(&px_dest[2], sb);
+				vst1_u32(&px_dest[4], sc);
+				vst1_u32(&px_dest[6], sd);
+				vst1_u32(&px_dest[8], se);
+				vst1_u32(&px_dest[10], sf);
+				vst1_u32(&px_dest[12], sg);
+				vst1_u32(&px_dest[14], sh);
+#endif
 			}
 
 			// Remaining pixels.
