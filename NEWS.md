@@ -86,8 +86,11 @@
   * Removed IFUNC support. It's only supported by glibc on Linux (and possibly
     some of the BSDs), and it adds a lot of complexity. The regular C dispatch
     functions only have a few instructions of overhead in most cases.
-  * Added NEON-optimized byteswap functions for 32-bit ARM (untested) and
-    64-bit ARM (tested on Android).
+  * Added NEON-optimized functions:
+    * Array byteswap (16-bit and 32-bit)
+    * Linear image decoding (32-bit color)
+    * Tested on Android. (arm64)
+    * Compile-tested on MSVC. (arm32, arm64)
   * Switched XML parsers from TinyXML2 to PugiXML.
 
 ## v2.4.1 (released 2024/11/12)
