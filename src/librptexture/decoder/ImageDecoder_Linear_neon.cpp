@@ -48,7 +48,7 @@ typedef uint32x2_t uint32xVTBL_t;
 
 /**
  * Convert a linear 32-bit RGB image to rp_image.
- * SSSE3-optimized version.
+ * NEON-optimized version.
  * @param px_format	[in] 32-bit pixel format.
  * @param width		[in] Image width.
  * @param height	[in] Image height.
@@ -379,7 +379,7 @@ rp_image_ptr fromLinear32_neon(PixelFormat px_format,
 		uint32xVTBL_t and_mask = vld1VTBL_u32(and_mask_GR_u32.data());
 
 		for (unsigned int y = static_cast<unsigned int>(height); y > 0; y--) {
-			// Process 16 pixels per iteration using SSSE3.
+			// Process 16 pixels per iteration using NEON.
 			unsigned int x = static_cast<unsigned int>(width);
 			for (; x > 15; x -= 16, px_dest += 16, img_buf += 16) {
 #if defined(RP_CPU_ARM64)
