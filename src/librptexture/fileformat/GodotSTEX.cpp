@@ -1083,8 +1083,6 @@ const char *GodotSTEX::pixelFormat(void) const
 	if (!d->isValid)
 		return nullptr;
 
-	const char *const *img_format_tbl;
-	STEX_Format_e pixelFormatMax;
 	switch (d->stexVersion) {
 		default:
 			assert(!"Invalid STEX version.");
@@ -1092,19 +1090,18 @@ const char *GodotSTEX::pixelFormat(void) const
 		case 3:
 			// Godot 3: Pixel format is always L8 (0) if an embedded
 			// PNG or WebP image is present.
-			if (d->hasEmbeddedFile)
+			if (d->hasEmbeddedFile) {
 				return nullptr;
-			img_format_tbl = d->img_format_tbl_v3.data();
-			pixelFormatMax = STEX3_FORMAT_MAX;
+			}
+			if (d->pixelFormat >= 0 && d->pixelFormat < d->img_format_tbl_v3.size()) {
+				return d->img_format_tbl_v3[d->pixelFormat];
+			}
 			break;
 		case 4:
-			img_format_tbl = d->img_format_tbl_v4.data();
-			pixelFormatMax = STEX4_FORMAT_MAX;
+			if (d->pixelFormat >= 0 && d->pixelFormat < d->img_format_tbl_v4.size()) {
+				return d->img_format_tbl_v4[d->pixelFormat];
+			}
 			break;
-	}
-
-	if (d->pixelFormat >= 0 && d->pixelFormat < pixelFormatMax) {
-		return img_format_tbl[d->pixelFormat];
 	}
 
 	// Invalid pixel format.
