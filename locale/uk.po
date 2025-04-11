@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2025-01-24 22:41-0500\n"
-"PO-Revision-Date: 2025-01-25 05:48\n"
+"PO-Revision-Date: 2025-04-11 03:15\n"
 "Last-Translator: \n"
 "Language-Team: Ukrainian\n"
 "Language: uk_UA\n"
@@ -569,7 +569,6 @@ msgid "Checking for updates..."
 msgstr ""
 
 #. tr: Error message template. (GTK version, with C++20 formatting)
-#. tr: Error message template. (GTK version, with formatting)
 #: ../src/gtk/config/AboutTab.cpp:853 ../src/gtk/config/CacheTab.cpp:466
 #: ../src/gtk/config/CacheTab.cpp:521
 #, c++-format
@@ -1261,7 +1260,7 @@ msgctxt "ConfigDialog"
 msgid "<b>ERROR:</b> %1"
 msgstr ""
 
-#. tr: format string for Ext2 attribute checkbox labels (%c == lsattr character)
+#. tr: format string for Ext2 attribute checkbox labels ({:c} == lsattr character)
 #: ../src/kde/xattr/Ext2AttrView.cpp:77
 #, c++-format
 msgctxt "Ext2AttrView"
@@ -5882,7 +5881,7 @@ msgstr ""
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2350
 #, c++-format
 msgctxt "Nintendo3DS"
-msgid "Invalid (0x{:0>2X})"
+msgid "INVALID (0x{:0>2X})"
 msgstr ""
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2317
