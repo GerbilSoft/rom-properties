@@ -164,7 +164,7 @@ rp_image_ptr fromLinear32_neon(PixelFormat px_format,
 		}
 
 		case PixelFormat::Swap_ARGB32:
-		case PixelFormat::Swap_xRGB32:
+		case PixelFormat::Swap_xRGB32: {
 			// TODO: Could optimize by using vrev instead of vtbl.
 			static const array<uint8_t, 16> shuf_mask_Swap_ARGB32 = {{
 				3,2,1,0, 7,6,5,4, 11,10,9,8, 15,14,13,12
@@ -172,6 +172,7 @@ rp_image_ptr fromLinear32_neon(PixelFormat px_format,
 			shuf_mask = vld1q_u8(shuf_mask_Swap_ARGB32.data());
 			img_mask_type = (px_format == PixelFormat::Swap_ARGB32) ? MASK_NONE : MASK_ALPHA;
 			break;
+		}
 
 		case PixelFormat::Swap_RGBA32:
 		case PixelFormat::Swap_RGBx32: {
