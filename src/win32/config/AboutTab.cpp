@@ -43,7 +43,7 @@ using std::unique_ptr;
 
 // Maximum number of tabs.
 // NOTE: Must be adjusted if more tabs are added!
-#define MAX_TABS 3
+static constexpr int MAX_TABS = 3;
 
 // Windows: RichEdit control.
 #include <richedit.h>

@@ -49,7 +49,7 @@ using std::string;
 using std::wstring;
 
 // Timer ID for the XP drive update procedure.
-#define TMRID_XP_DRIVE_UPDATE 0xD103
+static constexpr unsigned int TMRID_XP_DRIVE_UPDATE = 0xD103;
 
 class CacheTabPrivate
 {
@@ -834,8 +834,9 @@ INT_PTR CALLBACK CacheTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, L
 				break;
 			}
 
-			if (wParam != DBT_DEVICEARRIVAL && wParam != DBT_DEVICEREMOVECOMPLETE)
+			if (wParam != DBT_DEVICEARRIVAL && wParam != DBT_DEVICEREMOVECOMPLETE) {
 				break;
+			}
 
 			// Device is being added or removed.
 			// Update the device in the drive list.
@@ -852,8 +853,9 @@ INT_PTR CALLBACK CacheTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, L
 		}
 
 		case WM_TIMER: {
-			if (wParam != TMRID_XP_DRIVE_UPDATE)
+			if (wParam != TMRID_XP_DRIVE_UPDATE) {
 				break;
+			}
 			auto *const d = reinterpret_cast<CacheTabPrivate*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
 			if (!d || d->isVista) {
 				// No CacheTabPrivate, or using Vista+.
