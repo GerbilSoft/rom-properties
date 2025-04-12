@@ -50,7 +50,6 @@ IF(CPU_i386 OR CPU_amd64)
 ELSEIF(CPU_arm OR CPU_arm64)
 	SET(${PROJECT_NAME}_CPU_SRCS byteswap_neon.c)
 ENDIF()
-UNSET(arch)
 
 # gcc byteswapping intrinsics.
 IF(NOT MSVC)
