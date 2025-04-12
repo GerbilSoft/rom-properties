@@ -296,12 +296,12 @@ static FORCEINLINE void rp_byte_swap_16_array(uint16_t *ptr, size_t n)
 	if (RP_CPU_arm_HasNEON()) {
 		rp_byte_swap_16_array_neon(ptr, n);
 	} else
-#  endif /* BYTESWAP_HAS_SSE2 */
+#  endif /* BYTESWAP_HAS_NEON */
 	// TODO: MMX-optimized version?
 	{
 		rp_byte_swap_16_array_c(ptr, n);
 	}
-#endif /* BYTESWAP_ALWAYS_HAS_SSE2 */
+#endif
 }
 
 /**
@@ -344,11 +344,11 @@ static FORCEINLINE void rp_byte_swap_32_array(uint32_t *ptr, size_t n)
 	if (RP_CPU_arm_HasNEON()) {
 		rp_byte_swap_32_array_neon(ptr, n);
 	} else
-#  endif /* BYTESWAP_HAS_SSE2 */
+#  endif /* BYTESWAP_HAS_NEON */
 	{
 		rp_byte_swap_32_array_c(ptr, n);
 	}
-#endif /* !BYTESWAP_ALWAYS_HAS_SSE2 */
+#endif
 }
 
 #ifdef __cplusplus
