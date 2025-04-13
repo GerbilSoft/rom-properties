@@ -26,15 +26,19 @@
 #  include "librpcpuid/cpuflags_x86.h"
 #  define IMAGEDECODER_HAS_SSE2 1
 #  define IMAGEDECODER_HAS_SSSE3 1
-#elif defined(RP_CPU_ARM) || defined(RP_CPU_ARM64)
-#  include "librpcpuid/cpuflags_arm.h"
-#  define IMAGEDECODER_HAS_NEON 1
+#elif defined(HAVE_ARM_NEON_H)
+#  if defined(RP_CPU_ARM) || defined(RP_CPU_ARM64)
+#    include "librpcpuid/cpuflags_arm.h"
+#    define IMAGEDECODER_HAS_NEON 1
+#  endif
 #endif
 #ifdef RP_CPU_AMD64
 #  define IMAGEDECODER_ALWAYS_HAS_SSE2 1
 #endif
-#ifdef RP_CPU_ARM64
-#  define IMAGEDECODER_ALWAYS_HAS_NEON 1
+#ifdef HAVE_ARM_NEON_H
+#  ifdef RP_CPU_ARM64
+#    define IMAGEDECODER_ALWAYS_HAS_NEON 1
+#  endif
 #endif
 
 namespace LibRpTexture {

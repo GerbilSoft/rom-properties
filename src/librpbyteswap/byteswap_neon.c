@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (librpbyteswap)                    *
- * byteswap_neon.c: Byteswapping functions.                                *
+ * byteswap_arm64.c: Byteswapping functions.                               *
  * NEON-optimized version.                                                 *
  *                                                                         *
  * Copyright (c) 2008-2025 by David Korth                                  *

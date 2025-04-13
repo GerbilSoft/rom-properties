@@ -2,11 +2,14 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * config.librptexture.h.in: LibRpTexture configuration. (source file)     *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #pragma once
+
+/* Define to 1 if you have the <arm_neon.h> header file. */
+#cmakedefine HAVE_ARM_NEON_H 1
 
 /* Define to 1 if librpbase RomFields support should be enabled. */
 #define ENABLE_LIBRPBASE_ROMFIELDS 1

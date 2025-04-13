@@ -199,7 +199,9 @@ IF(CPU_i386 OR CPU_amd64)
 		${${PROJECT_NAME}_SSE41_SRCS}
 		)
 ELSEIF(CPU_arm OR CPU_arm64)
-	SET(${PROJECT_NAME}_CPU_SRCS decoder/ImageDecoder_Linear_neon.cpp)
+	IF(HAVE_ARM_NEON_H)
+		SET(${PROJECT_NAME}_CPU_SRCS decoder/ImageDecoder_Linear_neon.cpp)
+	ENDIF(HAVE_ARM_NEON_H)
 ENDIF()
 UNSET(arch)
 

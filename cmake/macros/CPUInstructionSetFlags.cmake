@@ -110,3 +110,10 @@ IF(CPU_i386 OR CPU_amd64)
 		SET(SSE41_FLAG "-msse4.1")
 	ENDIF()
 ENDIF(CPU_i386 OR CPU_amd64)
+
+IF(CPU_arm OR CPU_arm64 OR CPU_arm64ec)
+	# Check for arm_neon.h.
+	# NOTE: Should always be present for arm64, but check anyway.
+	INCLUDE(CheckIncludeFile)
+	CHECK_INCLUDE_FILE("arm_neon.h" HAVE_ARM_NEON_H)
+ENDIF(CPU_arm OR CPU_arm64 OR CPU_arm64ec)
