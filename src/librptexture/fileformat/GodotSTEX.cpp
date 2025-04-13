@@ -1093,12 +1093,12 @@ const char *GodotSTEX::pixelFormat(void) const
 			if (d->hasEmbeddedFile) {
 				return nullptr;
 			}
-			if (d->pixelFormat >= 0 && d->pixelFormat < d->img_format_tbl_v3.size()) {
+			if (d->pixelFormat >= 0 && d->pixelFormat < static_cast<int>(d->img_format_tbl_v3.size())) {
 				return d->img_format_tbl_v3[d->pixelFormat];
 			}
 			break;
 		case 4:
-			if (d->pixelFormat >= 0 && d->pixelFormat < d->img_format_tbl_v4.size()) {
+			if (d->pixelFormat >= 0 && d->pixelFormat < static_cast<int>(d->img_format_tbl_v4.size())) {
 				return d->img_format_tbl_v4[d->pixelFormat];
 			}
 			break;

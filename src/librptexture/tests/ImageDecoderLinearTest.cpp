@@ -1,6 +1,7 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (librptexture/tests)               *
- * ImageDecoderLinearTest.cpp: Linear image decoding tests with SSSE3.     *
+ * ImageDecoderLinearTest.cpp: Linear image decoding tests.                *
+ * Includes CPU optimization tests where available.                        *
  *                                                                         *
  * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
@@ -653,8 +654,105 @@ TEST_P(ImageDecoderLinearTest, fromLinear_ssse3_benchmark)
 }
 #endif /* IMAGEDECODER_HAS_SSSE3 */
 
+#ifdef IMAGEDECODER_HAS_NEON
+/**
+ * Test the ImageDecoder::fromLinear*() functions. (NEON-optimized version)
+ */
+TEST_P(ImageDecoderLinearTest, fromLinear_neon_test)
+{
+	if (!RP_CPU_arm_HasNEON()) {
+		GTEST_SKIP() << "*** NEON is not supported on this CPU.";
+	}
+
+	// Parameterized test.
+	const ImageDecoderLinearTest_mode &mode = GetParam();
+
+	// Decode the image.
+	switch (mode.bpp) {
+#if 0
+		// TODO: 24-bit NEON
+		case 24:
+			// 24-bit image.
+			m_img = ImageDecoder::fromLinear24_neon(mode.src_pxf, 128, 128,
+				m_img_buf, m_img_buf_len, mode.stride);
+			break;
+#endif
+
+		case 32:
+			// 32-bit image.
+			m_img = ImageDecoder::fromLinear32_neon(mode.src_pxf, 128, 128,
+				reinterpret_cast<const uint32_t*>(m_img_buf),
+				m_img_buf_len, mode.stride);
+			break;
+
+		case 24:
+		case 15:
+		case 16:
+			// Not implemented...
+			GTEST_SKIP() << "*** NEON decoding is not implemented for " << static_cast<unsigned int>(mode.bpp) << "-bit color.";
+
+		default:
+			ASSERT_TRUE(false) << "Invalid bpp: " << mode.bpp;
+			return;
+	}
+
+	ASSERT_TRUE((bool)m_img);
+
+	// Validate the image.
+	ASSERT_NO_FATAL_FAILURE(Validate_RpImage(m_img.get(), mode.dest_pixel));
+}
+
+/**
+ * Benchmark the ImageDecoder::fromLinear*() functions. (NEON-optimized version)
+ */
+TEST_P(ImageDecoderLinearTest, fromLinear_neon_benchmark)
+{
+	if (!RP_CPU_arm_HasNEON()) {
+		GTEST_SKIP() << "*** NEON is not supported on this CPU.";
+	}
+
+	// Parameterized test.
+	const ImageDecoderLinearTest_mode &mode = GetParam();
+
+	// Decode the image.
+	switch (mode.bpp) {
+#if 0
+		// TODO: 24-bit NEON
+		case 24:
+			// 24-bit image.
+			for (unsigned int i = BENCHMARK_ITERATIONS; i > 0; i--) {
+				m_img = ImageDecoder::fromLinear24_neon(mode.src_pxf, 128, 128,
+					m_img_buf, m_img_buf_len, mode.stride);
+				m_img.reset();
+			}
+			break;
+#endif
+
+		case 32:
+			// 32-bit image.
+			for (unsigned int i = BENCHMARK_ITERATIONS; i > 0; i--) {
+				m_img = ImageDecoder::fromLinear32_neon(mode.src_pxf, 128, 128,
+					reinterpret_cast<const uint32_t*>(m_img_buf),
+					m_img_buf_len, mode.stride);
+				m_img.reset();
+			}
+			break;
+
+		case 24:
+		case 15:
+		case 16:
+			// Not implemented...
+			GTEST_SKIP() << "*** NEON decoding is not implemented for " << static_cast<unsigned int>(mode.bpp) << "-bit color.";
+
+		default:
+			ASSERT_TRUE(false) << "Invalid bpp: " << mode.bpp;
+			return;
+	}
+}
+#endif /* IMAGEDECODER_HAS_NEON */
+
 // NOTE: Add more instruction sets to the #ifdef if other optimizations are added.
-#if defined(IMAGEDECODER_HAS_SSE2) || defined(IMAGEDECODER_HAS_SSSE3)
+#if defined(IMAGEDECODER_HAS_SSE2) || defined(IMAGEDECODER_HAS_SSSE3) || defined(IMAGEDECODER_HAS_NEON)
 /**
  * Test the ImageDecoder::fromLinear*() dispatch functions.
  */
@@ -742,7 +840,7 @@ TEST_P(ImageDecoderLinearTest, fromLinear_dispatch_benchmark)
 			return;
 	}
 }
-#endif /* IMAGEDECODER_HAS_SSE2 || IMAGEDECODER_HAS_SSSE3 */
+#endif /* IMAGEDECODER_HAS_SSE2 || IMAGEDECODER_HAS_SSSE3 || IMAGEDECODER_HAS_NEON */
 
 // Test cases.
 

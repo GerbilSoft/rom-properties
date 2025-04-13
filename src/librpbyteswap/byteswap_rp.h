@@ -39,13 +39,15 @@
 #ifdef RP_CPU_AMD64
 #  define BYTESWAP_ALWAYS_HAS_SSE2 1
 #endif /* RP_CPU_AMD64 */
-#if defined(RP_CPU_ARM) || defined(RP_CPU_ARM64)
-#  include "librpcpuid/cpuflags_arm.h"
-#  define BYTESWAP_HAS_NEON 1
-#endif
-#ifdef RP_CPU_ARM64
-#  define BYTESWAP_ALWAYS_HAS_NEON 1
-#endif /* RP_CPU_ARM64 */
+#ifdef HAVE_ARM_NEON_H
+#  if defined(RP_CPU_ARM) || defined(RP_CPU_ARM64)
+#    include "librpcpuid/cpuflags_arm.h"
+#    define BYTESWAP_HAS_NEON 1
+#  endif
+#  ifdef RP_CPU_ARM64
+#    define BYTESWAP_ALWAYS_HAS_NEON 1
+#  endif /* RP_CPU_ARM64 */
+#endif /* HAVE_ARM_NEON_H */
 
 #if defined(_MSC_VER)
 

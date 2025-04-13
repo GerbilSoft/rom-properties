@@ -238,6 +238,25 @@ rp_image_ptr fromLinear32_ssse3(PixelFormat px_format,
 	const uint32_t *RESTRICT img_buf, size_t img_siz, int stride = 0);
 #endif /* IMAGEDECODER_HAS_SSSE3 */
 
+#ifdef IMAGEDECODER_HAS_NEON
+/**
+ * Convert a linear 32-bit RGB image to rp_image.
+ * NEON-optimized version.
+ * @param px_format	[in] 32-bit pixel format.
+ * @param width		[in] Image width.
+ * @param height	[in] Image height.
+ * @param img_buf	[in] 32-bit image buffer.
+ * @param img_siz	[in] Size of image data. [must be >= (w*h)*2]
+ * @param stride	[in,opt] Stride, in bytes. If 0, assumes width*bytespp.
+ * @return rp_image, or nullptr on error.
+ */
+ATTR_ACCESS_SIZE(read_only, 4, 5)
+RP_LIBROMDATA_PUBLIC
+rp_image_ptr fromLinear32_neon(PixelFormat px_format,
+	int width, int height,
+	const uint32_t *RESTRICT img_buf, size_t img_siz, int stride = 0);
+#endif /* IMAGEDECODER_HAS_SSSE3 */
+
 /**
  * Convert a linear 32-bit RGB image to rp_image.
  * @param px_format	[in] 32-bit pixel format.
@@ -252,14 +271,23 @@ static inline rp_image_ptr fromLinear32(PixelFormat px_format,
 	int width, int height,
 	const uint32_t *RESTRICT img_buf, size_t img_siz, int stride = 0)
 {
-#ifdef IMAGEDECODER_HAS_SSSE3
+#ifdef IMAGEDECODER_ALWAYS_HAS_NEON
+	return fromLinear32_neon(px_format, width, height, img_buf, img_siz, stride);
+#else
+#  ifdef IMAGEDECODER_HAS_SSSE3
 	if (RP_CPU_x86_HasSSSE3()) {
 		return fromLinear32_ssse3(px_format, width, height, img_buf, img_siz, stride);
 	} else
-#endif /* IMAGEDECODER_HAS_SSSE3 */
+#  endif /* IMAGEDECODER_HAS_SSSE3 */
+#  ifdef IMAGEDECODER_HAS_NEON
+	if (RP_CPU_arm_HasNEON()) {
+		return fromLinear32_neon(px_format, width, height, img_buf, img_siz, stride);
+	} else
+#  endif /* IMAGEDECODER_HAS_NEON */
 	{
 		return fromLinear32_cpp(px_format, width, height, img_buf, img_siz, stride);
 	}
+#endif
 }
 
 } }
