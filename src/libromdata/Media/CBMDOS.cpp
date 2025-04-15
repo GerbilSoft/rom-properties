@@ -623,7 +623,7 @@ int CBMDOSPrivate::read_GCR_track(uint8_t track)
 	// TODO: Return an error if we read less than what's expected.
 	auto p = gcr_buf.begin();
 	const auto p_end = gcr_buf.end();
-	for (uint8_t sector = 0; sector < this_track.sector_count && p < p_end; sector++) {
+	for (unsigned int sector = 0; sector < this_track.sector_count && p < p_end; sector++) {
 		// TODO: Read bits, not bytes. Most G64s are byte-aligned, though...
 
 		// C1541 GCR encodes four raw bytes into five encoded bytes.
