@@ -187,7 +187,7 @@ RomMetaData::MetaData *RomMetaDataPrivate::addProperty(Property name)
 		pMetaData = &metaData[static_cast<size_t>(map_metaData[static_cast<size_t>(name)])];
 		// If a string is present, delete it.
 		if (pMetaData->type == PropertyType::String) {
-			delete pMetaData->data.str;
+			free(const_cast<char*>(pMetaData->data.str));
 			pMetaData->data.str = nullptr;
 		}
 	} else {
