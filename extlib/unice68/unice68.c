@@ -329,7 +329,7 @@ static int exactread(void * buf, int len, FILE * inp, const char * name)
 {
   int n = myread(buf, len, inp, name);
   if (n != -1 && n != len) {
-    error("%s -- truncated at %d; expected %d\n", n, len);
+    error("%s -- truncated at %d; expected %d\n", name, n, len);
     n = -1;
   }
   return n;
