@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include "librptexture/config.librptexture.h"
+
 #include "common.h"
 #include "dll-macros.h"
 
@@ -25,9 +27,19 @@
 #  define RP_IMAGE_HAS_SSE2 1
 #  define RP_IMAGE_HAS_SSSE3 1
 #  define RP_IMAGE_HAS_SSE41 1
+#elif defined(HAVE_ARM_NEON_H)
+#  if defined(RP_CPU_ARM) || defined(RP_CPU_ARM64)
+#    include "librpcpuid/cpuflags_arm.h"
+#    define RP_IMAGE_HAS_NEON 1
+#  endif
 #endif
 #ifdef RP_CPU_AMD64
 #  define RP_IMAGE_ALWAYS_HAS_SSE2 1
+#endif
+#ifdef HAVE_ARM_NEON_H
+#  ifdef RP_CPU_ARM64
+#    define RP_IMAGE_ALWAYS_HAS_NEON 1
+#  endif
 #endif
 
 #include "../argb32_t.hpp"
@@ -512,6 +524,17 @@ class rp_image
 		int swizzle_ssse3(const char *swz_spec);
 #endif /* RP_IMAGE_HAS_SSSE3 */
 
+#ifdef RP_IMAGE_HAS_NEON
+		/**
+		 * Swizzle the image channels.
+		 * NEON-optimized version.
+		 *
+		 * @param swz_spec Swizzle specification: [rgba01]{4} [matches KTX2]
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		int swizzle_neon(const char *swz_spec);
+#endif /* RP_IMAGE_HAS_NEON */
+
 		/**
 		 * Swizzle the image channels.
 		 *
@@ -597,14 +620,23 @@ inline int rp_image::apply_chroma_key(uint32_t key)
  */
 inline int rp_image::swizzle(const char *swz_spec)
 {
-#if defined(RP_IMAGE_HAS_SSSE3)
+#ifdef RP_IMAGE_ALWAYS_HAS_NEON
+	return swizzle_neon(swz_spec);
+#else
+#  if defined(RP_IMAGE_HAS_SSSE3)
 	if (RP_CPU_x86_HasSSSE3()) {
 		return swizzle_ssse3(swz_spec);
 	} else
-#endif /* RP_IMAGE_HAS_SSSE3 */
+#  endif /* RP_IMAGE_HAS_SSSE3 */
+#  ifdef RP_IMAGE_HAS_NEON
+	if (RP_CPU_arm_HasNEON()) {
+		return swizzle_neon(swz_spec);
+	} else
+#  endif /* IMAGEDECODER_HAS_NEON */
 	{
 		return swizzle_cpp(swz_spec);
 	}
+#endif
 }
 
 }

@@ -89,6 +89,7 @@
   * Added NEON-optimized functions:
     * Array byteswap (16-bit and 32-bit)
     * Linear image decoding (32-bit color)
+    * Image swizzling (for e.g. KTX2)
     * Tested on Android. (arm64)
     * Compile-tested on MSVC. (arm32, arm64)
   * Switched XML parsers from TinyXML2 to PugiXML.
