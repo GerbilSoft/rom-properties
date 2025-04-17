@@ -66,18 +66,22 @@ int rp_image::swizzle_ssse3(const char *swz_spec)
 	// N.B.: For pshufb, only bit 7 needs to be set to indicate "zero the byte".
 	u8_32 pshufb_mask_vals;
 	u8_32 por_mask_vals;
+#define SET_MASK_VALS(n, shuf, por) do { \
+		pshufb_mask_vals.u8[n] = (shuf); \
+		por_mask_vals.u8[n] = (por); \
+	} while (0)
 #define SWIZZLE_MASK_VAL(n) do { \
 		switch (swz_ch.u8[n]) { \
-			case 'b':	pshufb_mask_vals.u8[n] = 0;	por_mask_vals.u8[n] = 0;	break; \
-			case 'g':	pshufb_mask_vals.u8[n] = 1;	por_mask_vals.u8[n] = 0;	break; \
-			case 'r':	pshufb_mask_vals.u8[n] = 2;	por_mask_vals.u8[n] = 0;	break; \
-			case 'a':	pshufb_mask_vals.u8[n] = 3;	por_mask_vals.u8[n] = 0;	break; \
-			case '0':	pshufb_mask_vals.u8[n] = 0x80;	por_mask_vals.u8[n] = 0;	break; \
-			case '1':	pshufb_mask_vals.u8[n] = 0x80;	por_mask_vals.u8[n] = 0xFF;	break; \
+					/*             n   shuf   por */ \
+			case 'b':	SET_MASK_VALS((n),    0, 0x00);	break; \
+			case 'g':	SET_MASK_VALS((n),    1, 0x00);	break; \
+			case 'r':	SET_MASK_VALS((n),    2, 0x00);	break; \
+			case 'a':	SET_MASK_VALS((n),    3, 0x00);	break; \
+			case '0':	SET_MASK_VALS((n), 0x80, 0x00);	break; \
+			case '1':	SET_MASK_VALS((n), 0x80, 0xFF);	break; \
 			default: \
 				assert(!"Invalid swizzle value."); \
-				pshufb_mask_vals.u8[n] = 0xFF; \
-				por_mask_vals.u8[n] = 0; \
+				SET_MASK_VALS((n), 0xFF, 0x00); \
 				break; \
 		} \
 	} while (0)
