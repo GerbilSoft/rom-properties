@@ -29,6 +29,7 @@ typedef uint32x4_t uint32xVTBL_t;
 #define vld1VTBL_u32 vld1q_u32
 #define vst1VTBL_u8  vst1q_u8
 #define vst1VTBL_u32 vst1q_u32
+#define vqtbl1q_u8_u32(a, b) vreinterpretq_u32_u8(vqtbl1q_u8(vreinterpretq_u8_u32(a), (b)))
 #elif defined(RP_CPU_ARM)
 //static constexpr size_t VEC_LEN_U8 = 8;
 static constexpr size_t VEC_LEN_U32 = 2;
@@ -38,6 +39,7 @@ typedef uint32x2_t uint32xVTBL_t;
 #define vld1VTBL_u32 vld1_u32
 #define vst1VTBL_u8  vst1_u8
 #define vst1VTBL_u32 vst1_u32
+#define vtbl1_u8_u32(a, b) vreinterpret_u32_u8(vtbl1_u8(vreinterpret_u8_u32(a), (b)))
 #else
 #  error Unsupported CPU?
 #endif
@@ -153,10 +155,10 @@ int rp_image::swizzle_neon(const char *swz_spec)
 #if defined(RP_CPU_ARM64)
 			uint32x4x4_t sa = vld4q_u32(bits);
 
-			sa.val[0] = vqtbl1q_u8(sa.val[0], shuf_mask);
-			sa.val[1] = vqtbl1q_u8(sa.val[1], shuf_mask);
-			sa.val[2] = vqtbl1q_u8(sa.val[2], shuf_mask);
-			sa.val[3] = vqtbl1q_u8(sa.val[3], shuf_mask);
+			sa.val[0] = vqtbl1q_u8_u32(sa.val[0], shuf_mask);
+			sa.val[1] = vqtbl1q_u8_u32(sa.val[1], shuf_mask);
+			sa.val[2] = vqtbl1q_u8_u32(sa.val[2], shuf_mask);
+			sa.val[3] = vqtbl1q_u8_u32(sa.val[3], shuf_mask);
 
 			sa.val[0] = vorrq_u32(sa.val[0], or_mask);
 			sa.val[1] = vorrq_u32(sa.val[1], or_mask);
@@ -168,23 +170,23 @@ int rp_image::swizzle_neon(const char *swz_spec)
 			uint32x2x4_t sa = vld4_u32(&bits[0]);
 			uint32x2x4_t sb = vld4_u32(&bits[8]);
 
-			sa.val[0] = vtbl1_u8(sa.val[0], shuf_mask);
-			sa.val[1] = vtbl1_u8(sa.val[1], shuf_mask);
-			sa.val[2] = vtbl1_u8(sa.val[2], shuf_mask);
-			sa.val[3] = vtbl1_u8(sa.val[3], shuf_mask);
-			sb.val[0] = vtbl1_u8(sb.val[0], shuf_mask);
-			sb.val[1] = vtbl1_u8(sb.val[1], shuf_mask);
-			sb.val[2] = vtbl1_u8(sb.val[2], shuf_mask);
-			sb.val[3] = vtbl1_u8(sb.val[3], shuf_mask);
+			sa.val[0] = vtbl1_u8_u32(sa.val[0], shuf_mask);
+			sa.val[1] = vtbl1_u8_u32(sa.val[1], shuf_mask);
+			sa.val[2] = vtbl1_u8_u32(sa.val[2], shuf_mask);
+			sa.val[3] = vtbl1_u8_u32(sa.val[3], shuf_mask);
+			sb.val[0] = vtbl1_u8_u32(sb.val[0], shuf_mask);
+			sb.val[1] = vtbl1_u8_u32(sb.val[1], shuf_mask);
+			sb.val[2] = vtbl1_u8_u32(sb.val[2], shuf_mask);
+			sb.val[3] = vtbl1_u8_u32(sb.val[3], shuf_mask);
 
-			sa.val[0] = vorr_u8(sa.val[0], or_mask);
-			sa.val[1] = vorr_u8(sa.val[1], or_mask);
-			sa.val[2] = vorr_u8(sa.val[2], or_mask);
-			sa.val[3] = vorr_u8(sa.val[3], or_mask);
-			sb.val[0] = vorr_u8(sb.val[0], or_mask);
-			sb.val[1] = vorr_u8(sb.val[1], or_mask);
-			sb.val[2] = vorr_u8(sb.val[2], or_mask);
-			sb.val[3] = vorr_u8(sb.val[3], or_mask);
+			sa.val[0] = vorr_u32(sa.val[0], or_mask);
+			sa.val[1] = vorr_u32(sa.val[1], or_mask);
+			sa.val[2] = vorr_u32(sa.val[2], or_mask);
+			sa.val[3] = vorr_u32(sa.val[3], or_mask);
+			sb.val[0] = vorr_u32(sb.val[0], or_mask);
+			sb.val[1] = vorr_u32(sb.val[1], or_mask);
+			sb.val[2] = vorr_u32(sb.val[2], or_mask);
+			sb.val[3] = vorr_u32(sb.val[3], or_mask);
 
 			vst4_u32(&bits[0], sa);
 			vst4_u32(&bits[8], sb);
