@@ -64,19 +64,19 @@ int rp_image::swizzle_ssse3(const char *swz_spec)
 	// This can be used for [rgba0].
 	// For 1, we'll need a separate por mask.
 	// N.B.: For pshufb, only bit 7 needs to be set to indicate "zero the byte".
-	uint8_t pshufb_mask_vals[4];
+	u8_32 pshufb_mask_vals;
 	u8_32 por_mask_vals;
 #define SWIZZLE_MASK_VAL(n) do { \
 		switch (swz_ch.u8[n]) { \
-			case 'b':	pshufb_mask_vals[n] = 0;	por_mask_vals.u8[n] = 0;	break; \
-			case 'g':	pshufb_mask_vals[n] = 1;	por_mask_vals.u8[n] = 0;	break; \
-			case 'r':	pshufb_mask_vals[n] = 2;	por_mask_vals.u8[n] = 0;	break; \
-			case 'a':	pshufb_mask_vals[n] = 3;	por_mask_vals.u8[n] = 0;	break; \
-			case '0':	pshufb_mask_vals[n] = 0x80;	por_mask_vals.u8[n] = 0;	break; \
-			case '1':	pshufb_mask_vals[n] = 0x80;	por_mask_vals.u8[n] = 0xFF;	break; \
+			case 'b':	pshufb_mask_vals.u8[n] = 0;	por_mask_vals.u8[n] = 0;	break; \
+			case 'g':	pshufb_mask_vals.u8[n] = 1;	por_mask_vals.u8[n] = 0;	break; \
+			case 'r':	pshufb_mask_vals.u8[n] = 2;	por_mask_vals.u8[n] = 0;	break; \
+			case 'a':	pshufb_mask_vals.u8[n] = 3;	por_mask_vals.u8[n] = 0;	break; \
+			case '0':	pshufb_mask_vals.u8[n] = 0x80;	por_mask_vals.u8[n] = 0;	break; \
+			case '1':	pshufb_mask_vals.u8[n] = 0x80;	por_mask_vals.u8[n] = 0xFF;	break; \
 			default: \
 				assert(!"Invalid swizzle value."); \
-				pshufb_mask_vals[n] = 0xFF; \
+				pshufb_mask_vals.u8[n] = 0xFF; \
 				por_mask_vals.u8[n] = 0; \
 				break; \
 		} \
@@ -87,13 +87,18 @@ int rp_image::swizzle_ssse3(const char *swz_spec)
 	SWIZZLE_MASK_VAL(2);
 	SWIZZLE_MASK_VAL(3);
 
-	const __m128i pshufb_mask = _mm_setr_epi8(
-		pshufb_mask_vals[0],	pshufb_mask_vals[1],	pshufb_mask_vals[2],	pshufb_mask_vals[3],
-		pshufb_mask_vals[0]+4,	pshufb_mask_vals[1]+4,	pshufb_mask_vals[2]+4,	pshufb_mask_vals[3]+4,
-		pshufb_mask_vals[0]+8,	pshufb_mask_vals[1]+8,	pshufb_mask_vals[2]+8,	pshufb_mask_vals[3]+8,
-		pshufb_mask_vals[0]+12,	pshufb_mask_vals[1]+12,	pshufb_mask_vals[2]+12,	pshufb_mask_vals[3]+12
+	const __m128i pshufb_mask = _mm_setr_epi32(
+		pshufb_mask_vals.u32,
+		pshufb_mask_vals.u32 + 0x04040404,
+		pshufb_mask_vals.u32 + 0x08080808,
+		pshufb_mask_vals.u32 + 0x0C0C0C0C
 	);
-	const __m128i por_mask = _mm_setr_epi32(por_mask_vals.u32, por_mask_vals.u32, por_mask_vals.u32, por_mask_vals.u32);
+	const __m128i por_mask = _mm_setr_epi32(
+		por_mask_vals.u32,
+		por_mask_vals.u32,
+		por_mask_vals.u32,
+		por_mask_vals.u32
+	);
 
 	// Channel indexes
 	static constexpr unsigned int SWZ_CH_B = 0U;
