@@ -387,15 +387,6 @@ rp_image_ptr fromLinear32_ssse3(PixelFormat px_format,
 					}
 					break;
 
-				case PixelFormat::G16R16:
-					// NOTE: Truncates to G8R8.
-					for (; x > 0; x--) {
-						*px_dest = G16R16_to_ARGB32(*img_buf);
-						img_buf++;
-						px_dest++;
-					}
-					break;
-
 				case PixelFormat::RABG8888:
 					// VTF "ARGB8888", which is actually RABG.
 					// TODO: This might be a VTFEdit bug. (Tested versions: 1.2.5, 1.3.3)

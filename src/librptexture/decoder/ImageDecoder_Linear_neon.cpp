@@ -156,11 +156,7 @@ rp_image_ptr fromLinear32_neon(PixelFormat px_format,
 
 	// Determine the byte shuffle mask.
 	uint8xVTBL_t shuf_mask;
-	enum {
-		MASK_NONE,	// for ARGB formats
-		MASK_ALPHA,	// for xRGB formats
-		MASK_ALPHA_B,	// for GR formats
-	} img_mask_type;
+	bool has_alpha;
 	switch (px_format) {
 		case PixelFormat::Host_ARGB32:
 			assert(!"ARGB32 is handled separately.");
@@ -174,7 +170,7 @@ rp_image_ptr fromLinear32_neon(PixelFormat px_format,
 			#endif /* RP_CPU_ARM64 */
 			}};
 			shuf_mask = vld1VTBL_u8(shuf_mask_Host_xRGB32.data());
-			img_mask_type = MASK_ALPHA;
+			has_alpha = false;
 			break;
 		}
 
@@ -187,7 +183,7 @@ rp_image_ptr fromLinear32_neon(PixelFormat px_format,
 			#endif /* RP_CPU_ARM64 */
 			}};
 			shuf_mask = vld1VTBL_u8(shuf_mask_Host_RGBA32.data());
-			img_mask_type = (px_format == PixelFormat::Host_RGBA32) ? MASK_NONE : MASK_ALPHA;
+			has_alpha = (px_format == PixelFormat::Host_RGBA32);
 			break;
 		}
 
@@ -201,7 +197,7 @@ rp_image_ptr fromLinear32_neon(PixelFormat px_format,
 			#endif /* RP_CPU_ARM64 */
 			}};
 			shuf_mask = vld1VTBL_u8(shuf_mask_Swap_ARGB32.data());
-			img_mask_type = (px_format == PixelFormat::Swap_ARGB32) ? MASK_NONE : MASK_ALPHA;
+			has_alpha = (px_format == PixelFormat::Swap_ARGB32);
 			break;
 		}
 
@@ -214,15 +210,14 @@ rp_image_ptr fromLinear32_neon(PixelFormat px_format,
 			#endif /* RP_CPU_ARM64 */
 			}};
 			shuf_mask = vld1VTBL_u8(shuf_mask_Swap_RGBA32.data());
-			img_mask_type = (px_format == PixelFormat::Swap_RGBA32) ? MASK_NONE : MASK_ALPHA;
+			has_alpha = (px_format == PixelFormat::Swap_RGBA32);
 			break;
 		}
 
 		// TODO: Verify this?
 		case PixelFormat::G16R16: {
 			// NOTE: Truncates to G8R8.
-			// NOTE: vld1q_u8() doesn't appear to have an equivalent to "-1" in pshufb,
-			// so use an "alpha mask" instead.
+			// NOTE 2: vtbl interprets an out-of-range index as "zero the byte".
 			static const array<uint8_t, VEC_LEN_U8> shuf_mask_G16R16 = {{
 				255,3,1,255, 255,7,5,255,
 			#ifdef RP_CPU_ARM64
@@ -230,7 +225,7 @@ rp_image_ptr fromLinear32_neon(PixelFormat px_format,
 			#endif /* RP_CPU_ARM64 */
 			}};
 			shuf_mask = vld1VTBL_u8(shuf_mask_G16R16.data());
-			img_mask_type = MASK_ALPHA_B;
+			has_alpha = false;
 			break;
 		}
 
@@ -242,7 +237,7 @@ rp_image_ptr fromLinear32_neon(PixelFormat px_format,
 			#endif /* RP_CPU_ARM64 */
 			}};
 			shuf_mask = vld1VTBL_u8(shuf_mask_RABG8888.data());
-			img_mask_type = MASK_NONE;
+			has_alpha = true;
 			break;
 		}
 
@@ -251,7 +246,7 @@ rp_image_ptr fromLinear32_neon(PixelFormat px_format,
 			return nullptr;
 	}
 
-	if (img_mask_type == MASK_NONE) {
+	if (has_alpha) {
 		// Image has a valid alpha channel.
 		for (unsigned int y = static_cast<unsigned int>(height); y > 0; y--) {
 			// Process 16 pixels per iteration using NEON.
@@ -318,15 +313,6 @@ rp_image_ptr fromLinear32_neon(PixelFormat px_format,
 					}
 					break;
 
-				case PixelFormat::G16R16:
-					// NOTE: Truncates to G8R8.
-					for (; x > 0; x--) {
-						*px_dest = G16R16_to_ARGB32(*img_buf);
-						img_buf++;
-						px_dest++;
-					}
-					break;
-
 				case PixelFormat::RABG8888:
 					// VTF "ARGB8888", which is actually RABG.
 					// TODO: This might be a VTFEdit bug. (Tested versions: 1.2.5, 1.3.3)
@@ -366,17 +352,7 @@ rp_image_ptr fromLinear32_neon(PixelFormat px_format,
 			0xFF000000, 0xFF000000
 #endif /* RP_CPU_ARM64 */
 		}};
-		// GR images don't have a blue channel.
-		static const array<uint32_t, VEC_LEN_U32> and_mask_GR_u32 = {{
-			0xFFFFFF00, 0xFFFFFF00,
-#ifdef RP_CPU_ARM64
-			0xFFFFFF00, 0xFFFFFF00
-#endif /* RP_CPU_ARM64 */
-		}};
-
 		uint32xVTBL_t or_mask = vld1VTBL_u32(or_mask_noAlpha_u32.data());
-		// NOTE: Only used for GR formats.
-		uint32xVTBL_t and_mask = vld1VTBL_u32(and_mask_GR_u32.data());
 
 		for (unsigned int y = static_cast<unsigned int>(height); y > 0; y--) {
 			// Process 16 pixels per iteration using NEON.
@@ -394,13 +370,6 @@ rp_image_ptr fromLinear32_neon(PixelFormat px_format,
 				sa.val[1] = vorrq_u32(sa.val[1], or_mask);
 				sa.val[2] = vorrq_u32(sa.val[2], or_mask);
 				sa.val[3] = vorrq_u32(sa.val[3], or_mask);
-
-				if (unlikely(img_mask_type == MASK_ALPHA_B)) {
-					sa.val[0] = vandq_u32(sa.val[0], and_mask);
-					sa.val[1] = vandq_u32(sa.val[1], and_mask);
-					sa.val[2] = vandq_u32(sa.val[2], and_mask);
-					sa.val[3] = vandq_u32(sa.val[3], and_mask);
-				}
 
 				vst4q_u32(px_dest, sa);
 #elif defined(RP_CPU_ARM)
@@ -424,17 +393,6 @@ rp_image_ptr fromLinear32_neon(PixelFormat px_format,
 				sb.val[1] = vorr_u8(sb.val[1], or_mask);
 				sb.val[2] = vorr_u8(sb.val[2], or_mask);
 				sb.val[3] = vorr_u8(sb.val[3], or_mask);
-
-				if (unlikely(img_mask_type == MASK_ALPHA_B)) {
-					sa.val[0] = vand_u32(sa.val[0], and_mask);
-					sa.val[1] = vand_u32(sa.val[1], and_mask);
-					sa.val[2] = vand_u32(sa.val[2], and_mask);
-					sa.val[3] = vand_u32(sa.val[3], and_mask);
-					sb.val[0] = vand_u32(sb.val[0], and_mask);
-					sb.val[1] = vand_u32(sb.val[1], and_mask);
-					sb.val[2] = vand_u32(sb.val[2], and_mask);
-					sb.val[3] = vand_u32(sb.val[3], and_mask);
-				}
 
 				vst4_u32(&px_dest[0], sa);
 				vst4_u32(&px_dest[8], sb);

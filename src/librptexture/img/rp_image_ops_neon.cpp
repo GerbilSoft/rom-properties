@@ -89,28 +89,25 @@ int rp_image::swizzle_neon(const char *swz_spec)
 	// Determine the pshufb mask.
 	// This can be used for [rgba0].
 	// For 1, we'll need a separate "por" mask.
-	// NOTE: NEON doesn't support bit 7 for "zero the byte", so we'll need to
-	// use a separate "pand" mask as well.
+	// N.B.: For vtbl, an out-of-range index (e.g. 0xFF) will return 0, i.e. "zero the byte".
 	u8_32 pshufb_mask_vals;
-	u8_32 pand_mask_vals;
 	u8_32 por_mask_vals;
-#define SET_MASK_VALS(n, shuf, pand, por) do { \
+#define SET_MASK_VALS(n, shuf, por) do { \
 		pshufb_mask_vals.u8[n] = (shuf); \
-		pand_mask_vals.u8[n] = (pand); \
 		por_mask_vals.u8[n] = (por); \
 	} while (0)
 #define SWIZZLE_MASK_VAL(n) do { \
 		switch (swz_ch.u8[n]) { \
-					/*             n   shuf  pand   por */ \
-			case 'b':	SET_MASK_VALS((n),    0, 0xFF, 0x00);	break; \
-			case 'g':	SET_MASK_VALS((n),    1, 0xFF, 0x00);	break; \
-			case 'r':	SET_MASK_VALS((n),    2, 0xFF, 0x00);	break; \
-			case 'a':	SET_MASK_VALS((n),    3, 0xFF, 0x00);	break; \
-			case '0':	SET_MASK_VALS((n), 0xFF, 0x00, 0x00);	break; \
-			case '1':	SET_MASK_VALS((n), 0xFF, 0x00, 0xFF);	break; \
+					/*             n   shuf   por */ \
+			case 'b':	SET_MASK_VALS((n),    0, 0x00);	break; \
+			case 'g':	SET_MASK_VALS((n),    1, 0x00);	break; \
+			case 'r':	SET_MASK_VALS((n),    2, 0x00);	break; \
+			case 'a':	SET_MASK_VALS((n),    3, 0x00);	break; \
+			case '0':	SET_MASK_VALS((n), 0xFF, 0x00);	break; \
+			case '1':	SET_MASK_VALS((n), 0xFF, 0xFF);	break; \
 			default: \
 				assert(!"Invalid swizzle value."); \
-				SET_MASK_VALS((n), 0xFF, 0x00, 0x00); \
+				SET_MASK_VALS((n), 0xFF, 0x00); \
 				break; \
 		} \
 	} while (0)
@@ -128,14 +125,6 @@ int rp_image::swizzle_neon(const char *swz_spec)
 		pshufb_mask_vals.u32 + 0x0C0C0C0C
 #endif /* RP_CPU_ARM64 */
 	}};
-	const array<uint32_t, VEC_LEN_U32> pand_mask_u32 = {{
-		pand_mask_vals.u32,
-		pand_mask_vals.u32,
-#ifdef RP_CPU_ARM64
-		pand_mask_vals.u32,
-		pand_mask_vals.u32
-#endif /* RP_CPU_ARM64 */
-	}};
 	const array<uint32_t, VEC_LEN_U32> por_mask_u32 = {{
 		por_mask_vals.u32,
 		por_mask_vals.u32,
@@ -146,7 +135,6 @@ int rp_image::swizzle_neon(const char *swz_spec)
 	}};
 
 	uint32xVTBL_t shuf_mask = vld1VTBL_u32(pshufb_mask_u32.data());
-	uint32xVTBL_t and_mask = vld1VTBL_u32(pand_mask_u32.data());
 	uint32xVTBL_t or_mask = vld1VTBL_u32(por_mask_u32.data());
 
 	// Channel indexes
@@ -170,11 +158,6 @@ int rp_image::swizzle_neon(const char *swz_spec)
 			sa.val[2] = vqtbl1q_u8(sa.val[2], shuf_mask);
 			sa.val[3] = vqtbl1q_u8(sa.val[3], shuf_mask);
 
-			sa.val[0] = vandq_u32(sa.val[0], and_mask);
-			sa.val[1] = vandq_u32(sa.val[1], and_mask);
-			sa.val[2] = vandq_u32(sa.val[2], and_mask);
-			sa.val[3] = vandq_u32(sa.val[3], and_mask);
-
 			sa.val[0] = vorrq_u32(sa.val[0], or_mask);
 			sa.val[1] = vorrq_u32(sa.val[1], or_mask);
 			sa.val[2] = vorrq_u32(sa.val[2], or_mask);
@@ -193,15 +176,6 @@ int rp_image::swizzle_neon(const char *swz_spec)
 			sb.val[1] = vtbl1_u8(sb.val[1], shuf_mask);
 			sb.val[2] = vtbl1_u8(sb.val[2], shuf_mask);
 			sb.val[3] = vtbl1_u8(sb.val[3], shuf_mask);
-
-			sa.val[0] = vand_u8(sa.val[0], and_mask);
-			sa.val[1] = vand_u8(sa.val[1], and_mask);
-			sa.val[2] = vand_u8(sa.val[2], and_mask);
-			sa.val[3] = vand_u8(sa.val[3], and_mask);
-			sb.val[0] = vand_u8(sb.val[0], and_mask);
-			sb.val[1] = vand_u8(sb.val[1], and_mask);
-			sb.val[2] = vand_u8(sb.val[2], and_mask);
-			sb.val[3] = vand_u8(sb.val[3], and_mask);
 
 			sa.val[0] = vorr_u8(sa.val[0], or_mask);
 			sa.val[1] = vorr_u8(sa.val[1], or_mask);
