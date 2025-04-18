@@ -170,17 +170,19 @@ int WimPrivate::addFields_XML()
 
 	vector<WimIndex> images;
 	images.reserve(number_of_images);
-	xml_node currentimage = wim_element.child("IMAGE");
 
 	const char *const s_unknown = C_("Wim", "(unknown)");
-	for (uint32_t i = 0; i < wimHeader.number_of_images; i++) {
+	uint32_t image_index = 1;
+	for (xml_node currentimage = wim_element.child("IMAGE");
+	     currentimage; currentimage = currentimage.next_sibling())
+	{
 		assert(currentimage != nullptr);
 		if (!currentimage) {
 			break;
 		}
 
 		WimIndex currentindex;
-		currentindex.index = i + 1;
+		currentindex.index = currentimage.attribute("INDEX").as_uint(image_index++);
 
 		// the last modification time is split into a high part and a
 		// low part so we shift and add them together
@@ -274,8 +276,6 @@ int WimPrivate::addFields_XML()
 			currentindex.description = description.text().as_string(s_none);
 			images.push_back(std::move(currentindex));
 		}
-
-		currentimage = currentimage.next_sibling();
 	}
 
 	auto *const vv_data = new RomFields::ListData_t();
