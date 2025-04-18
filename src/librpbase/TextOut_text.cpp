@@ -462,40 +462,8 @@ public:
 		size_t totalWidth = col_count + 1;
 		if (listDataDesc.names) {
 			unsigned int i = 0;
-			unsigned int is_timestamp = listDataDesc.col_attrs.is_timestamp;
 			for (const string &name : *(listDataDesc.names)) {
-				colSize[i] = utf8_disp_strlen(name);
-
-				if (unlikely(is_timestamp & 1)) {
-					// This is a timestamp column.
-					// Use a dummy timestamp to figure out the width.
-					const string s_timestamp = formatDateTime(
-						0, listDataDesc.col_attrs.dtflags);
-					if (likely(!s_timestamp.empty())) {
-						// Got the column width.
-						colSize[i] = std::max(colSize[i], utf8_disp_strlen(s_timestamp.c_str()));
-					}
-				}
-
-				// Next column
-				is_timestamp >>= 1;
-				i++;
-			}
-		} else if (listDataDesc.col_attrs.is_timestamp != 0) {
-			// No column names, but at least one column has timestamps.
-			unsigned int i = 0;
-			unsigned int is_timestamp = listDataDesc.col_attrs.is_timestamp;
-			for (; is_timestamp != 0 && i < col_count; i++, is_timestamp >>= 1) {
-				if (unlikely(is_timestamp & 1)) {
-					// This is a timestamp column.
-					// Use a dummy timestamp to figure out the width.
-					const string s_timestamp = formatDateTime(
-						0, listDataDesc.col_attrs.dtflags);
-					if (likely(!s_timestamp.empty())) {
-						// Got the column width.
-						colSize[i] = utf8_disp_strlen(s_timestamp.c_str());
-					}
-				}
+				colSize[i++] = utf8_disp_strlen(name);
 			}
 		}
 
@@ -509,8 +477,19 @@ public:
 			unsigned int is_timestamp = listDataDesc.col_attrs.is_timestamp;
 			const auto it_cend = it->cend();
 			for (auto jt = it->cbegin(); jt != it_cend; ++jt, col++, is_timestamp >>= 1) {
-				if (unlikely(is_timestamp & 1)) {
-					// Timestamp field. No newlines here.
+				if (unlikely((is_timestamp & 1) && jt->size() == sizeof(int64_t))) {
+					// Timestamp field. Determine the column width.
+					RomFields::TimeString_t time_string;
+					memcpy(time_string.str, jt->data(), 8);
+
+					string str = formatDateTime(
+						static_cast<time_t>(time_string.time),
+						listDataDesc.col_attrs.dtflags);
+					if (unlikely(str.empty())) {
+						str = C_("RomData", "Unknown");
+					}
+
+					colSize[col] = max(utf8_disp_strlen(str.c_str()), colSize[col]);
 					nl_count[row] = 0;
 					continue;
 				}
