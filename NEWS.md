@@ -17,6 +17,9 @@
     * Handled similarly to WiiUPackage.
     * Fixes #436: Add folder icon support for OG Xbox games
       * Requested by @Masamune3210.
+  * Wim: Add special handling for unstaged images.
+    * Fixes #445: [libromdata - WIM] Unstaged Windows OS installation images not properly supported
+      * Requested by @pivotman319-owo.
 
 * Bug fixes:
   * Amiibo: Fix an error that can cause the wrong Character Variant to be

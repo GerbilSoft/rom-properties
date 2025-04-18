@@ -82,6 +82,7 @@ struct WimIndex {
 	//string flags;			// not used right now
 	string dispname, dispdescription;
 	bool containswindowsimage = false;
+	bool is_unstaged = false;	// unstaged images have sets of components
 };
 
 /**
@@ -195,16 +196,20 @@ int WimPrivate::addFields_XML()
 		}
 
 		xml_node windowsinfo = currentimage.child("WINDOWS");
+		xml_node editionid;
+		xml_node language;	// first language only
 		if (windowsinfo) {
 			currentindex.containswindowsimage = true;
 			currentindex.windowsinfo.arch = static_cast<WimWindowsArchitecture>(
 				windowsinfo.child("ARCH").text().as_int(0));
-			currentindex.windowsinfo.editionid = windowsinfo.child("EDITIONID").text().as_string(s_unknown);
+			editionid = windowsinfo.child("EDITIONID");
+			currentindex.windowsinfo.editionid = editionid.text().as_string(s_unknown);
 
 			xml_node languages = windowsinfo.child("LANGUAGES");
 			if (languages) {
 				// NOTE: Only retrieving the first language.
-				currentindex.windowsinfo.languages.language = languages.child("LANGUAGE").text().get();
+				language = languages.child("LANGUAGE");
+				currentindex.windowsinfo.languages.language = language.text().get();
 			}
 			if (currentindex.windowsinfo.languages.language.empty()) {
 				currentindex.windowsinfo.languages.language = s_unknown;
@@ -228,9 +233,44 @@ int WimPrivate::addFields_XML()
 		currentindex.name = currentimage.child("NAME").text().as_string(s_none);
 		currentindex.description = currentimage.child("DESCRIPTION").text().as_string(s_none);
 		currentindex.dispname = currentimage.child("DISPLAYNAME").text().as_string(s_none);
-		currentindex.dispdescription = currentimage.child("DISPLAYDESCRIPTION").text().as_string(s_none);
+		xml_node dispdescription = currentimage.child("DISPLAYDESCRIPTION");
 
-		images.push_back(std::move(currentindex));
+		// Check for an unstaged image.
+		if (currentindex.containswindowsimage && editionid.empty() && language.empty()) {
+			// This may be an unstaged image.
+			// Check for "EDITIONS:" in the display description.
+			// TODO: Verify that this is the correct field.
+			const char *const s_dispdescription = dispdescription.text().get();
+			const char *p;
+			if (s_dispdescription[0] != '\0' && (p = strstr(s_dispdescription, "EDITIONS:")) != nullptr) {
+				// Found editions. Split it on commas and make each a separate image.
+				currentindex.windowsinfo.languages.language = "N/A";	// TODO
+				currentindex.dispdescription.assign(s_dispdescription, p - s_dispdescription);
+				// Remove trailing spaces, if any.
+				size_t cur_size = currentindex.dispdescription.size();
+				while (cur_size > 0 && currentindex.dispdescription[cur_size - 1] == ' ') {
+					cur_size--;
+				}
+				currentindex.dispdescription.resize(cur_size);
+
+				currentindex.is_unstaged = true;
+				char *const dupdesc = strdup(p + 9);
+				char *saveptr = nullptr;
+				for (const char *token = strtok_r(dupdesc, ",", &saveptr);
+				     token != nullptr; token = strtok_r(nullptr, ",", &saveptr))
+				{
+					currentindex.windowsinfo.editionid = token;
+					images.push_back(currentindex);
+				}
+				free(dupdesc);
+			}
+		}
+		if (!currentindex.is_unstaged) {
+			// Not an unstaged image. Use the display description as-is.
+			currentindex.dispdescription = dispdescription.text().as_string(s_none);
+			images.push_back(std::move(currentindex));
+		}
+
 		currentimage = currentimage.next_sibling();
 	}
 
@@ -239,11 +279,28 @@ int WimPrivate::addFields_XML()
 
 	// loop for the rows
 	unsigned int idx = 1;
+	char unstaged_idx = 'a';
 	for (const auto &image : images) {
 		vv_data->resize(vv_data->size()+1);
 		auto &data_row = vv_data->at(vv_data->size()-1);
 		data_row.reserve(10);
-		data_row.push_back(fmt::to_string(idx++));
+
+		if (likely(!image.is_unstaged)) {
+			// Staged images use the format "1", "2", "3", etc.
+			if (unstaged_idx != 'a') {
+				// Need to reset the unstaged index and increment the staged index.
+				idx++;
+				unstaged_idx = 'a';
+			}
+			data_row.push_back(fmt::to_string(idx++));
+		} else {
+			// Unstaged sub-images will use the format "1a", "1b", "1c", etc.
+			// TODO: What if there's more than 26 sub-images?
+			assert(unstaged_idx <= 'z');
+			data_row.push_back(fmt::format(FSTR("{:d}{:c}"), idx, unstaged_idx));
+			unstaged_idx++;
+		}
+
 		data_row.push_back(image.name);
 		data_row.push_back(image.description);
 		data_row.push_back(image.dispname);
