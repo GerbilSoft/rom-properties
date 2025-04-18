@@ -71,7 +71,7 @@ struct WimWindowsInfo {
 struct WimIndex {
 	// if you have more than 2^32 indices in a wim
 	// you probably have bigger issues
-	uint32_t index = 0;
+	uint32_t index = 0;		// main image index
 	uint64_t dircount = 0;
 	uint64_t filecount = 0;
 	uint64_t totalbytes = 0;
@@ -83,6 +83,7 @@ struct WimIndex {
 	string dispname, dispdescription;
 	bool containswindowsimage = false;
 	bool is_unstaged = false;	// unstaged images have sets of components
+	char unstaged_idx = 0;		// unstaged image sub-index
 };
 
 /**
@@ -255,11 +256,13 @@ int WimPrivate::addFields_XML()
 				currentindex.description.resize(cur_size);
 
 				currentindex.is_unstaged = true;
+				char unstaged_idx = 'a';
 				char *const dupdesc = strdup(p + 9);
 				char *saveptr = nullptr;
 				for (const char *token = strtok_r(dupdesc, ",", &saveptr);
 				     token != nullptr; token = strtok_r(nullptr, ",", &saveptr))
 				{
+					currentindex.unstaged_idx = unstaged_idx++;
 					currentindex.windowsinfo.editionid = token;
 					images.push_back(currentindex);
 				}
@@ -279,8 +282,6 @@ int WimPrivate::addFields_XML()
 	vv_data->reserve(number_of_images);
 
 	// loop for the rows
-	unsigned int idx = 1;
-	char unstaged_idx = 'a';
 	for (const auto &image : images) {
 		vv_data->resize(vv_data->size()+1);
 		auto &data_row = vv_data->at(vv_data->size()-1);
@@ -288,18 +289,12 @@ int WimPrivate::addFields_XML()
 
 		if (likely(!image.is_unstaged)) {
 			// Staged images use the format "1", "2", "3", etc.
-			if (unstaged_idx != 'a') {
-				// Need to reset the unstaged index and increment the staged index.
-				idx++;
-				unstaged_idx = 'a';
-			}
-			data_row.push_back(fmt::to_string(idx++));
+			data_row.push_back(fmt::to_string(image.index));
 		} else {
 			// Unstaged sub-images will use the format "1a", "1b", "1c", etc.
 			// TODO: What if there's more than 26 sub-images?
-			assert(unstaged_idx <= 'z');
-			data_row.push_back(fmt::format(FSTR("{:d}{:c}"), idx, unstaged_idx));
-			unstaged_idx++;
+			assert(image.unstaged_idx <= 'z');
+			data_row.push_back(fmt::format(FSTR("{:d}{:c}"), image.index, image.unstaged_idx));
 		}
 
 		data_row.push_back(image.name);
