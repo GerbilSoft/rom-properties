@@ -168,6 +168,8 @@ int WimPrivate::addFields_XML()
 		return -EIO;
 	}
 
+	// NOTE: number_of_images may be inaccurate, especially if
+	// an unstaged image is present.
 	vector<WimIndex> images;
 	images.reserve(number_of_images);
 
