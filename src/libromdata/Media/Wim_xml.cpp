@@ -72,6 +72,7 @@ struct WimIndex {
 	// if you have more than 2^32 indices in a wim
 	// you probably have bigger issues
 	uint32_t index = 0;		// main image index
+	uint32_t unstaged_idx = 0;	// unstaged image sub-index (only if is_unstaged)
 	uint64_t dircount = 0;
 	uint64_t filecount = 0;
 	uint64_t totalbytes = 0;
@@ -83,7 +84,6 @@ struct WimIndex {
 	string dispname, dispdescription;
 	bool containswindowsimage = false;
 	bool is_unstaged = false;	// unstaged images have sets of components
-	char unstaged_idx = 0;		// unstaged image sub-index
 };
 
 /**
@@ -240,6 +240,7 @@ int WimPrivate::addFields_XML()
 		currentindex.dispdescription = currentimage.child("DISPLAYDESCRIPTION").text().as_string(s_none);
 
 		// Check for an unstaged image.
+		// TODO: "FLAGS" node contains "Windows Foundation".
 		if (currentindex.containswindowsimage && editionid.empty() && language.empty()) {
 			// This may be an unstaged image.
 			// Check for "EDITIONS:" in the description.
@@ -258,7 +259,7 @@ int WimPrivate::addFields_XML()
 				currentindex.description.resize(cur_size);
 
 				currentindex.is_unstaged = true;
-				char unstaged_idx = 'a';
+				unsigned int unstaged_idx = 0;
 				char *const dupdesc = strdup(p + 9);
 				char *saveptr = nullptr;
 				for (const char *token = strtok_r(dupdesc, ",", &saveptr);
@@ -270,7 +271,7 @@ int WimPrivate::addFields_XML()
 				}
 				free(dupdesc);
 
-				if (unstaged_idx == 'a') {
+				if (unstaged_idx == 0) {
 					// Malformed entry; no actual sub-images.
 					currentindex.is_unstaged = false;
 				}
@@ -297,9 +298,17 @@ int WimPrivate::addFields_XML()
 			data_row.push_back(fmt::to_string(image.index));
 		} else {
 			// Unstaged sub-images will use the format "1a", "1b", "1c", etc.
-			// TODO: What if there's more than 26 sub-images?
-			assert(image.unstaged_idx <= 'z');
-			data_row.push_back(fmt::format(FSTR("{:d}{:c}"), image.index, image.unstaged_idx));
+			// If there's more than 26, it'll wrap back to "1aa", "1ab", "1ac", etc.
+			string image_index;
+			unsigned int unstaged_idx = image.unstaged_idx + 1;
+			while (unstaged_idx > 0) {
+				image_index += static_cast<char>('a' + ((unstaged_idx - 1) % 26));
+				unstaged_idx--;
+				unstaged_idx /= 26;
+			}
+			image_index += fmt::to_string(image.index);
+			std::reverse(image_index.begin(), image_index.end());
+			data_row.push_back(std::move(image_index));
 		}
 
 		data_row.push_back(image.name);
