@@ -269,6 +269,11 @@ int WimPrivate::addFields_XML()
 					images.push_back(currentindex);
 				}
 				free(dupdesc);
+
+				if (unstaged_idx == 'a') {
+					// Malformed entry; no actual sub-images.
+					currentindex.is_unstaged = false;
+				}
 			}
 		}
 		if (!currentindex.is_unstaged) {
