@@ -231,27 +231,28 @@ int WimPrivate::addFields_XML()
 		// display name -> name -> "(None)"
 		const char *const s_none = C_("Wim", "(none)");
 		currentindex.name = currentimage.child("NAME").text().as_string(s_none);
+		xml_node description = currentimage.child("DESCRIPTION");
 		currentindex.description = currentimage.child("DESCRIPTION").text().as_string(s_none);
 		currentindex.dispname = currentimage.child("DISPLAYNAME").text().as_string(s_none);
-		xml_node dispdescription = currentimage.child("DISPLAYDESCRIPTION");
+		currentindex.dispdescription = currentimage.child("DISPLAYDESCRIPTION").text().as_string(s_none);
 
 		// Check for an unstaged image.
 		if (currentindex.containswindowsimage && editionid.empty() && language.empty()) {
 			// This may be an unstaged image.
-			// Check for "EDITIONS:" in the display description.
+			// Check for "EDITIONS:" in the description.
 			// TODO: Verify that this is the correct field.
-			const char *const s_dispdescription = dispdescription.text().get();
+			const char *const s_description = description.text().get();
 			const char *p;
-			if (s_dispdescription[0] != '\0' && (p = strstr(s_dispdescription, "EDITIONS:")) != nullptr) {
+			if (s_description[0] != '\0' && (p = strstr(s_description, "EDITIONS:")) != nullptr) {
 				// Found editions. Split it on commas and make each a separate image.
 				currentindex.windowsinfo.languages.language = "N/A";	// TODO
-				currentindex.dispdescription.assign(s_dispdescription, p - s_dispdescription);
+				currentindex.description.assign(s_description, p - s_description);
 				// Remove trailing spaces, if any.
-				size_t cur_size = currentindex.dispdescription.size();
-				while (cur_size > 0 && currentindex.dispdescription[cur_size - 1] == ' ') {
+				size_t cur_size = currentindex.description.size();
+				while (cur_size > 0 && currentindex.description[cur_size - 1] == ' ') {
 					cur_size--;
 				}
-				currentindex.dispdescription.resize(cur_size);
+				currentindex.description.resize(cur_size);
 
 				currentindex.is_unstaged = true;
 				char *const dupdesc = strdup(p + 9);
@@ -267,7 +268,7 @@ int WimPrivate::addFields_XML()
 		}
 		if (!currentindex.is_unstaged) {
 			// Not an unstaged image. Use the display description as-is.
-			currentindex.dispdescription = dispdescription.text().as_string(s_none);
+			currentindex.description = description.text().as_string(s_none);
 			images.push_back(std::move(currentindex));
 		}
 
