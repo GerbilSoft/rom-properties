@@ -325,14 +325,7 @@ QLabel *RomDataViewPrivate::initString(QLabel *lblDesc,
 	if (field.type == RomFields::RFT_STRING) {
 		// Monospace font?
 		if (field.flags & RomFields::STRF_MONOSPACE) {
-#if QT_VERSION >= QT_VERSION_CHECK(5, 2, 0)
-			lblString->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
-#else /* QT_VERSION < QT_VERSION_CHECK(5, 2, 0) */
-			QFont fntMonospace(QApplication::font());
-			fntMonospace.setFamily(QLatin1String("Monospace"));
-			fntMonospace.setStyleHint(QFont::TypeWriter);
-			lblString->setFont(fntMonospace);
-#endif /* QT_VERSION >= QT_VERSION_CHECK(5, 2, 0) */
+			lblString->setFont(getSystemMonospaceFont());
 			lblString->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
 			vecMonoWidgets.push_back(lblString);
 		}
@@ -1237,14 +1230,7 @@ bool RomDataView::eventFilter(QObject *object, QEvent *event)
 			// Update monospace fonts.
 			Q_D(RomDataView);
 			for (QWidget *widget : d->vecMonoWidgets) {
-#if QT_VERSION >= QT_VERSION_CHECK(5, 2, 0)
-				widget->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
-#else /* QT_VERSION < QT_VERSION_CHECK(5, 2, 0) */
-				QFont fntMonospace(QApplication::font());
-				fntMonospace.setFamily(QLatin1String("Monospace"));
-				fntMonospace.setStyleHint(QFont::TypeWriter);
-				widget->setFont(fntMonospace);
-#endif /* QT_VERSION >= QT_VERSION_CHECK(5, 2, 0) */
+				widget->setFont(getSystemMonospaceFont());
 			}
 		}
 		return false;

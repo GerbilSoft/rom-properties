@@ -12,6 +12,7 @@
 #include <QtCore/QDateTime>
 #include <QtCore/QObject>
 #include <QtCore/QString>
+#include <QtGui/QFontDatabase>
 #include <QtGui/QImage>
 #include <QWidget>
 
@@ -34,6 +35,7 @@
 // NOTE: Using QT_VERSION_CHECK causes errors on moc-qt4 due to CMAKE_AUTOMOC.
 // Reference: https://bugzilla.redhat.com/show_bug.cgi?id=1396755
 // QT_VERSION_CHECK(6, 0, 0) -> 0x60000
+// QT_VERSION_CHECK(5, 2, 0) -> 0x50200
 // QT_VERSION_CHECK(5, 0, 0) -> 0x50000
 
 /** Text conversion **/
@@ -239,4 +241,24 @@ static inline bool installEventFilterInTopLevelWidget(QWidget *widget)
 	} else {
 		return false;
 	}
+}
+
+/**
+ * Get the system monospace font.
+ *
+ * NOTE: Only retrieves the configured font if compiled using Qt 5.2 or later.
+ * For older versions, the default "Monospace" font is used.
+ *
+ * @return System monospace font
+ */
+static inline QFont getSystemMonospaceFont(void)
+{
+#if QT_VERSION >= 0x50200
+	return QFontDatabase::systemFont(QFontDatabase::FixedFont);
+#else /* QT_VERSION < 0x50200 */
+	QFont fntMonospace(QApplication::font());
+	fntMonospace.setFamily(QLatin1String("Monospace"));
+	fntMonospace.setStyleHint(QFont::TypeWriter);
+	return fntMonospace;
+#endif /* QT_VERSION >= 0x50200 */
 }
