@@ -13,6 +13,7 @@
 #include <QtCore/QObject>
 #include <QtCore/QString>
 #include <QtGui/QImage>
+#include <QWidget>
 
 // NOTE: Using QT_VERSION_CHECK causes errors on moc-qt4 due to CMAKE_AUTOMOC.
 // Reference: https://bugzilla.redhat.com/show_bug.cgi?id=1396755
@@ -220,4 +221,22 @@ static inline QDateTime unixTimeToQDateTime(time_t timestamp, bool utc)
  * @param widget QWidget
  * @return True on success; false on error.
  */
-bool installEventFilterInTopLevelWidget(QWidget *widget);
+static inline bool installEventFilterInTopLevelWidget(QWidget *widget)
+{
+	// NOTE: This function must be inline. Otherwise, we can't use it
+	// in the XAttrView plugin because RpQt.cpp has more dependencies.
+	QWidget *p = widget->parentWidget();
+	while (p) {
+		QWidget *const p2 = p->parentWidget();
+		if (!p2) {
+			break;
+		}
+		p = p2;
+	}
+	if (p) {
+		p->installEventFilter(widget);
+		return true;
+	} else {
+		return false;
+	}
+}

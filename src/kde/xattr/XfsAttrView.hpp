@@ -32,6 +32,14 @@ protected:
 	// State change event. (Used for switching the UI language at runtime.)
 	void changeEvent(QEvent *event) final;
 
+	/**
+	 * Event filter for top-level windows.
+	 * @param object QObject
+	 * @param event Event
+	 * @return True to filter the event; false to pass it through.
+	 */
+	bool eventFilter(QObject *object, QEvent *event) final;
+
 public:
 	/**
 	 * Get the current XFS xflags.

@@ -89,26 +89,3 @@ QString rpFileDialogFilterToQt(const char *filter)
 
 	return qs_ret;
 }
-
-/**
- * Install a QWidget's event filter into its top-level widget.
- * @param widget QWidget
- * @return True on success; false on error.
- */
-bool installEventFilterInTopLevelWidget(QWidget *widget)
-{
-	QWidget *p = widget->parentWidget();
-	while (p) {
-		QWidget *const p2 = p->parentWidget();
-		if (!p2) {
-			break;
-		}
-		p = p2;
-	}
-	if (p) {
-		p->installEventFilter(widget);
-		return true;
-	} else {
-		return false;
-	}
-}

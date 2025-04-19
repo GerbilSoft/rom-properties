@@ -161,6 +161,10 @@ Ext2AttrView::Ext2AttrView(QWidget *parent)
 	// widgets that use monospace text.
 	d->ui.lblLsAttr->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
 
+	// Add an event filter for the top-level window so we can
+	// handle QEvent::StyleChange.
+	installEventFilterInTopLevelWidget(this);
+
 	// Create the checkboxes.
 	static constexpr int col_count = 4;
 	int col = 0, row = 0;
@@ -204,6 +208,24 @@ void Ext2AttrView::changeEvent(QEvent *event)
 
 	// Pass the event to the base class.
 	super::changeEvent(event);
+}
+
+/**
+ * Event filter for top-level windows.
+ * @param object QObject
+ * @param event Event
+ * @return True to filter the event; false to pass it through.
+ */
+bool Ext2AttrView::eventFilter(QObject *object, QEvent *event)
+{
+	if (event->type() == QEvent::StyleChange) {
+		// Update the monospace font.
+		Q_D(Ext2AttrView);
+		d->ui.lblLsAttr->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
+	}
+
+	// Allow the event to propagate.
+	return false;
 }
 
 /**
