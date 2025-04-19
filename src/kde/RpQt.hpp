@@ -14,6 +14,8 @@
 #include <QtCore/QString>
 #include <QtGui/QFontDatabase>
 #include <QtGui/QImage>
+
+#include <QApplication>
 #include <QWidget>
 
 // NOTE: Using QT_VERSION_CHECK causes errors on moc-qt4 due to CMAKE_AUTOMOC.
