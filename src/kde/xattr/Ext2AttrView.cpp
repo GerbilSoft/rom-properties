@@ -159,7 +159,14 @@ Ext2AttrView::Ext2AttrView(QWidget *parent)
 
 	// Make sure we use the system-wide monospace font for
 	// widgets that use monospace text.
+#if QT_VERSION >= QT_VERSION_CHECK(5, 2, 0)
 	d->ui.lblLsAttr->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
+#else /* QT_VERSION < QT_VERSION_CHECK(5, 2, 0) */
+	QFont fntMonospace(QApplication::font());
+	fntMonospace.setFamily(QLatin1String("Monospace"));
+	fntMonospace.setStyleHint(QFont::TypeWriter);
+	d->ui.lblLsAttr->setFont(fntMonospace);
+#endif /* QT_VERSION >= QT_VERSION_CHECK(5, 2, 0) */
 
 	// Add an event filter for the top-level window so we can
 	// handle QEvent::StyleChange.
@@ -218,10 +225,19 @@ void Ext2AttrView::changeEvent(QEvent *event)
  */
 bool Ext2AttrView::eventFilter(QObject *object, QEvent *event)
 {
+	Q_UNUSED(object);
+
 	if (event->type() == QEvent::StyleChange) {
 		// Update the monospace font.
 		Q_D(Ext2AttrView);
+#if QT_VERSION >= QT_VERSION_CHECK(5, 2, 0)
 		d->ui.lblLsAttr->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
+#else /* QT_VERSION < QT_VERSION_CHECK(5, 2, 0) */
+		QFont fntMonospace(QApplication::font());
+		fntMonospace.setFamily(QLatin1String("Monospace"));
+		fntMonospace.setStyleHint(QFont::TypeWriter);
+		d->ui.lblLsAttr->setFont(fntMonospace);
+#endif /* QT_VERSION >= QT_VERSION_CHECK(5, 2, 0) */
 	}
 
 	// Allow the event to propagate.

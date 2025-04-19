@@ -103,7 +103,13 @@ KeyStoreModelPrivate::KeyStoreModelPrivate(KeyStoreModel *q)
 void KeyStoreModelPrivate::style_t::init_fonts(void)
 {
 	// Monospace font
+#if QT_VERSION >= QT_VERSION_CHECK(5, 2, 0)
 	fntMonospace = QFontDatabase::systemFont(QFontDatabase::FixedFont);
+#else /* QT_VERSION < QT_VERSION_CHECK(5, 2, 0) */
+	fntMonospace = QApplication::font();
+	fntMonospace.setFamily(QLatin1String("Monospace"));
+	fntMonospace.setStyleHint(QFont::TypeWriter);
+#endif /* QT_VERSION >= QT_VERSION_CHECK(5, 2, 0) */
 
 	// Size hint for the monospace column.
 	// NOTE: Needs an extra space, possibly due to margins...
