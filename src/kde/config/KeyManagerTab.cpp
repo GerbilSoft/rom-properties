@@ -361,7 +361,7 @@ void KeyManagerTab::changeEvent(QEvent *event)
 			d->keyStoreModel->eventLanguageChange();
 			break;
 
-		case QEvent::FontChange:
+		case QEvent::StyleChange:
 			// Update the KeyStoreModel fonts.
 			d->keyStoreModel->eventFontChange();
 			break;

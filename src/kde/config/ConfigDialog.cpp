@@ -184,16 +184,30 @@ ConfigDialog::~ConfigDialog()
 }
 
 /**
- * Widget state has changed.
+ * Widget state has changed.°
  * @param event State change event.
  */
 void ConfigDialog::changeEvent(QEvent *event)
 {
-	if (event->type() == QEvent::LanguageChange) {
-		// Retranslate the UI.
-		Q_D(ConfigDialog);
-		d->ui.retranslateUi(this);
-		d->retranslateUi_nonDesigner();
+	Q_D(ConfigDialog);
+	switch (event->type()) {
+		case QEvent::LanguageChange:
+			// Retranslate the UI.
+			d->ui.retranslateUi(this);
+			d->retranslateUi_nonDesigner();
+			// TODO: Pass this event to child tabs?
+			break;
+
+#ifdef ENABLE_DECRYPTION
+		case QEvent::StyleChange:
+			// Update fonts in KeyManagerTab.
+			// NOTE: Must use sendEvent(); postEvent() crashes.
+			QGuiApplication::sendEvent(d->tabKeyManager, event);
+			break;
+#endif /* ENABLE_DECRYPTION */
+
+		default:
+			break;
 	}
 
 	// Pass the event to the base class.
