@@ -1105,17 +1105,7 @@ RomDataView::RomDataView(QWidget *parent)
 
 	// Add an event filter for the top-level window so we can
 	// handle QEvent::StyleChange.
-	QWidget *p = parent;
-	while (p) {
-		QWidget *const p2 = p->parentWidget();
-		if (!p2) {
-			break;
-		}
-		p = p2;
-	}
-	if (p) {
-		p->installEventFilter(this);
-	}
+	installEventFilterInTopLevelWidget(this);
 
 	// Create the "Options" button in the parent window.
 	d->createOptionsButton();
@@ -1130,17 +1120,7 @@ RomDataView::RomDataView(const RomDataPtr &romData, QWidget *parent)
 
 	// Add an event filter for the top-level window so we can
 	// handle QEvent::StyleChange.
-	QWidget *p = parent;
-	while (p) {
-		QWidget *const p2 = p->parentWidget();
-		if (!p2) {
-			break;
-		}
-		p = p2;
-	}
-	if (p) {
-		p->installEventFilter(this);
-	}
+	installEventFilterInTopLevelWidget(this);
 
 	// Create the "Options" button in the parent window.
 	d->createOptionsButton();

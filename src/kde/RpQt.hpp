@@ -164,6 +164,8 @@ static inline QImage rpToQImage(const LibRpTexture::rp_image_const_ptr &image)
 	return rpToQImage(image.get());
 }
 
+/** Other functions **/
+
 /**
  * Convert an RP file dialog filter to Qt.
  *
@@ -212,3 +214,10 @@ static inline QDateTime unixTimeToQDateTime(time_t timestamp, bool utc)
 
 	return dateTime;
 }
+
+/**
+ * Install a QWidget's event filter into its top-level widget.
+ * @param widget QWidget
+ * @return True on success; false on error.
+ */
+bool installEventFilterInTopLevelWidget(QWidget *widget);
