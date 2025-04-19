@@ -140,9 +140,9 @@ elseif(BASEARCH_X86_FOUND)
     cmake_dependent_option(WITH_AVX512VNNI "Build with AVX512 VNNI extensions" ON "WITH_AVX512" OFF)
     cmake_dependent_option(WITH_VPCLMULQDQ "Build with VPCLMULQDQ" ON "WITH_PCLMULQDQ;WITH_AVX512" OFF)
 endif()
-ENDIF(0) # rom-properties
 
 option(INSTALL_UTILS "Copy minigzip and minideflate during install" OFF)
+ENDIF(0) # rom-properties
 
 mark_as_advanced(FORCE
     ZLIB_SYMBOL_PREFIX
