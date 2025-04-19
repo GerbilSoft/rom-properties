@@ -327,6 +327,7 @@ QLabel *RomDataViewPrivate::initString(QLabel *lblDesc,
 		if (field.flags & RomFields::STRF_MONOSPACE) {
 			lblString->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
 			lblString->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+			vecMonoWidgets.push_back(lblString);
 		}
 
 		// "Warning" font?
@@ -1102,6 +1103,20 @@ RomDataView::RomDataView(QWidget *parent)
 	Q_D(RomDataView);
 	d->ui.setupUi(this);
 
+	// Add an event filter for the top-level window so we can
+	// handle QEvent::StyleChange.
+	QWidget *p = parent;
+	while (p) {
+		QWidget *const p2 = p->parentWidget();
+		if (!p2) {
+			break;
+		}
+		p = p2;
+	}
+	if (p) {
+		p->installEventFilter(this);
+	}
+
 	// Create the "Options" button in the parent window.
 	d->createOptionsButton();
 }
@@ -1112,6 +1127,20 @@ RomDataView::RomDataView(const RomDataPtr &romData, QWidget *parent)
 {
 	Q_D(RomDataView);
 	d->ui.setupUi(this);
+
+	// Add an event filter for the top-level window so we can
+	// handle QEvent::StyleChange.
+	QWidget *p = parent;
+	while (p) {
+		QWidget *const p2 = p->parentWidget();
+		if (!p2) {
+			break;
+		}
+		p = p2;
+	}
+	if (p) {
+		p->installEventFilter(this);
+	}
 
 	// Create the "Options" button in the parent window.
 	d->createOptionsButton();
@@ -1190,6 +1219,12 @@ void RomDataView::paintEvent(QPaintEvent *event)
 	super::paintEvent(event);
 }
 
+/**
+ * Event filter for QTreeView and top-level windows.
+ * @param object QObject
+ * @param event Event
+ * @return True to filter the event; false to pass it through.
+ */
 bool RomDataView::eventFilter(QObject *object, QEvent *event)
 {
 	// Check the event type.
@@ -1210,6 +1245,14 @@ bool RomDataView::eventFilter(QObject *object, QEvent *event)
 	QTreeView *const treeView = qobject_cast<QTreeView*>(object);
 	if (!treeView) {
 		// Not a QTreeView.
+		// Assuming this is a top-level window.
+		if (event->type() == QEvent::StyleChange) {
+			// Update monospace fonts.
+			Q_D(RomDataView);
+			for (QWidget *widget : d->vecMonoWidgets) {
+				widget->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
+			}
+		}
 		return false;
 	}
 

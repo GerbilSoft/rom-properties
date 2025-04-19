@@ -111,6 +111,10 @@ public:
 	uint32_t def_lc;	// Default language code for multi-language.
 
 public:
+	// Widgets using monospace fonts.
+	std::vector<QWidget*> vecMonoWidgets;
+
+public:
 	bool hasCheckedAchievements;
 
 public:

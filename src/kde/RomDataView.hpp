@@ -63,9 +63,9 @@ protected:
 	void paintEvent(QPaintEvent *event) final;
 
 	/**
-	 * Event filter for recalculating RFT_LISTDATA row heights.
-	 * @param object QObject.
-	 * @param event Event.
+	 * Event filter for QTreeView and top-level windows.
+	 * @param object QObject
+	 * @param event Event
 	 * @return True to filter the event; false to pass it through.
 	 */
 	bool eventFilter(QObject *object, QEvent *event) final;
