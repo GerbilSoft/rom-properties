@@ -96,6 +96,8 @@
     * Tested on Android. (arm64)
     * Compile-tested on MSVC. (arm32, arm64)
   * Switched XML parsers from TinyXML2 to PugiXML.
+  * KDE UI frontend: Monospace text now uses the system-wide monospace font
+    instead of the Qt default monospace font.
 
 ## v2.4.1 (released 2024/11/12)
 
