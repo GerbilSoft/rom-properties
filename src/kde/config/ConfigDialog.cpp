@@ -202,7 +202,7 @@ void ConfigDialog::changeEvent(QEvent *event)
 		case QEvent::StyleChange:
 			// Update fonts in KeyManagerTab.
 			// NOTE: Must use sendEvent(); postEvent() crashes.
-			QGuiApplication::sendEvent(d->tabKeyManager, event);
+			QApplication::sendEvent(d->tabKeyManager, event);
 			break;
 #endif /* ENABLE_DECRYPTION */
 
