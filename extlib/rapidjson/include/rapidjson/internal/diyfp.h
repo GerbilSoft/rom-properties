@@ -21,10 +21,15 @@
 
 #include "../rapidjson.h"
 
-#if defined(_MSC_VER) && defined(_M_AMD64)
+// rom-properties: Use softintrin.lib on ARM64EC. (ported from upstream)
+#if defined(_MSC_VER) && !defined(__INTEL_COMPILER) && defined(_M_AMD64)
 #include <intrin.h>
 #pragma intrinsic(_BitScanReverse64)
+#if !defined(_M_ARM64EC)
 #pragma intrinsic(_umul128)
+#else
+#pragma comment(lib,"softintrin")
+#endif
 #endif
 
 RAPIDJSON_NAMESPACE_BEGIN
