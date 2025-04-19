@@ -248,7 +248,7 @@ int WimPrivate::addFields_XML()
 			// Check for "EDITIONS:" in the description.
 			// TODO: Verify that this is the correct field.
 			const char *const s_description = description.text().get();
-			const char *p;
+			const char *p = nullptr;
 			if (s_description[0] != '\0' && (p = strstr(s_description, "EDITIONS:")) != nullptr) {
 				// Found editions. Split it on commas and make each a separate image.
 				currentindex.windowsinfo.languages.language = "N/A";	// TODO
