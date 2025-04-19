@@ -10,7 +10,7 @@
 #include "KeyStoreModel.hpp"
 #include "KeyStoreQt.hpp"
 
-// C++ STL classes.
+// C++ STL classes
 using std::array;
 
 /** KeyStoreModelPrivate **/
@@ -102,10 +102,8 @@ KeyStoreModelPrivate::KeyStoreModelPrivate(KeyStoreModel *q)
  */
 void KeyStoreModelPrivate::style_t::init_fonts(void)
 {
-	// Monospace font.
-	fntMonospace = QApplication::font();
-	fntMonospace.setFamily(QLatin1String("Monospace"));
-	fntMonospace.setStyleHint(QFont::TypeWriter);
+	// Monospace font
+	fntMonospace = QFontDatabase::systemFont(QFontDatabase::FixedFont);
 
 	// Size hint for the monospace column.
 	// NOTE: Needs an extra space, possibly due to margins...

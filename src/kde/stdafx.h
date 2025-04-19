@@ -70,6 +70,7 @@
 
 #include <QtGui/QDrag>
 #include <QtGui/QFont>
+#include <QtGui/QFontDatabase>
 #include <QtGui/QFontMetrics>
 #include <QtGui/QIcon>
 #include <QtGui/QImage>

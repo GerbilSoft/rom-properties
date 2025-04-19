@@ -157,6 +157,10 @@ Ext2AttrView::Ext2AttrView(QWidget *parent)
 	Q_D(Ext2AttrView);
 	d->ui.setupUi(this);
 
+	// Make sure we use the system-wide monospace font for
+	// widgets that use monospace text.
+	d->ui.lblLsAttr->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
+
 	// Create the checkboxes.
 	static constexpr int col_count = 4;
 	int col = 0, row = 0;

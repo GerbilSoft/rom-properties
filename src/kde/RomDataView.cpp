@@ -325,9 +325,7 @@ QLabel *RomDataViewPrivate::initString(QLabel *lblDesc,
 	if (field.type == RomFields::RFT_STRING) {
 		// Monospace font?
 		if (field.flags & RomFields::STRF_MONOSPACE) {
-			QFont font(QLatin1String("Monospace"));
-			font.setStyleHint(QFont::TypeWriter);
-			lblString->setFont(font);
+			lblString->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
 			lblString->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
 		}
 
