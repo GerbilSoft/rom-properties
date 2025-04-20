@@ -29,7 +29,7 @@ typedef uint32x4_t uint32xVTBL_t;
 #define vld1VTBL_u32 vld1q_u32
 #define vst1VTBL_u8  vst1q_u8
 #define vst1VTBL_u32 vst1q_u32
-#define vqtbl1q_u8_u32(a, b) vreinterpretq_u32_u8(vqtbl1q_u8(vreinterpretq_u8_u32(a), (b)))
+#define vqtbl1q_u8_u32(a, b) vreinterpretq_u32_u8(vqtbl1q_u8(vreinterpretq_u8_u32(a), vreinterpretq_u8_u32(b)))
 #elif defined(RP_CPU_ARM)
 //static constexpr size_t VEC_LEN_U8 = 8;
 static constexpr size_t VEC_LEN_U32 = 2;
@@ -39,7 +39,7 @@ typedef uint32x2_t uint32xVTBL_t;
 #define vld1VTBL_u32 vld1_u32
 #define vst1VTBL_u8  vst1_u8
 #define vst1VTBL_u32 vst1_u32
-#define vtbl1_u8_u32(a, b) vreinterpret_u32_u8(vtbl1_u8(vreinterpret_u8_u32(a), (b)))
+#define vtbl1_u8_u32(a, b) vreinterpret_u32_u8(vtbl1_u8(vreinterpret_u8_u32(a), vreinterpretq_u8_u32(b)))
 #else
 #  error Unsupported CPU?
 #endif
