@@ -14,6 +14,9 @@ using std::string;
 
 namespace LibRpFile {
 
+// 128 MB *should* be a reasonable maximum...
+static constexpr off64_t MAX_SIZE = 128U*1024U*1024U;
+
 /**
  * Open an IRpFile backed by an std::vector.
  * The resulting IRpFile is writable.
