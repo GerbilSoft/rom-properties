@@ -35,11 +35,11 @@ namespace Gdiplus {
 #include "rp-libfmt.h"
 
 #ifdef _WIN32
-static UINT old_console_cp = 0;
-static void RestoreConsoleCP(void)
+static UINT old_console_output_cp = 0;
+static void RestoreConsoleOutputCP(void)
 {
-	if (old_console_cp != 0) {
-		SetConsoleOutputCP(old_console_cp);
+	if (old_console_output_cp != 0) {
+		SetConsoleOutputCP(old_console_output_cp);
 	}
 }
 #endif /* _WIN32 */
@@ -191,8 +191,8 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 	// Tested on Windows XP (fails) and Windows 7 (works).
 	// TODO: Does it work on Windows Vista?
 	if (IsWindowsVistaOrGreater()) {
-		old_console_cp = GetConsoleOutputCP();
-		atexit(RestoreConsoleCP);
+		old_console_output_cp = GetConsoleOutputCP();
+		atexit(RestoreConsoleOutputCP);
 		SetConsoleOutputCP(CP_UTF8);
 	}
 #endif /* _WIN32 */
