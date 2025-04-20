@@ -6,6 +6,12 @@
   * NintendoDS_BNR: Animated icons were missing the animated icon flag.
     * Affects: v2.4 - v2.5
 
+* Other changes:
+  * Added support for localsearch-3.8, the new name of Tracker.
+    This is internally handled as API "3L".
+    * Fixes #446: Use `localsearch` paths instead of `tracker3-miners`
+      * Reported by @lufog.
+
 ## v2.5 (released 2025/04/19)
 
 * New parsers:
