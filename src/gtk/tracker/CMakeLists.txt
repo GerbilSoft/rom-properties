@@ -69,45 +69,63 @@ ENDIF(BUILD_TRACKER_EXTRACTOR)
 #########################################
 
 IF(BUILD_TRACKER_EXTRACTOR)
-	SET(_desc "Tracker API version for installation: 1, 2, 3 (default is auto, requires tracker packages to be installed)")
+	SET(_desc "Tracker API version for installation: 1, 2, 3, 3L (default is auto, requires tracker packages to be installed)")
 	SET(TRACKER_INSTALL_API_VERSION AUTO CACHE STRING "${_desc}")
-	SET_PROPERTY(CACHE TRACKER_INSTALL_API_VERSION PROPERTY STRINGS AUTO 1 2 3)
+	SET_PROPERTY(CACHE TRACKER_INSTALL_API_VERSION PROPERTY STRINGS AUTO 1 2 3 3L)
 	IF(TRACKER_INSTALL_API_VERSION STREQUAL AUTO)
 		# Determine which Tracker library is installed.
-		FIND_LIBRARY(HAVE_TRACKER_SPARQL_3_0 NAMES libtracker-sparql-3.0.so libtracker-sparql-3.0.so.0)
-		IF(HAVE_TRACKER_SPARQL_3_0)
-			SET(TRACKER_INSTALL_API_VERSION 3 CACHE INTERNAL "${_desc}" FORCE)
-		ELSE(HAVE_TRACKER_SPARQL_3_0)
-			FIND_LIBRARY(HAVE_TRACKER_SPARQL_2_0 NAMES libtracker-sparql-2.0.so libtracker-sparql-2.0.so.0)
-			IF(HAVE_TRACKER_SPARQL_2_0)
-				SET(TRACKER_INSTALL_API_VERSION 2 CACHE INTERNAL "${_desc}" FORCE)
-			ELSE(HAVE_TRACKER_SPARQL_2_0)
-				FIND_LIBRARY(HAVE_TRACKER_SPARQL_1_0 NAMES libtracker-sparql-1.0.so libtracker-sparql-1.0.so.0)
-				IF(HAVE_TRACKER_SPARQL_1_0)
-					SET(TRACKER_INSTALL_API_VERSION 1 CACHE INTERNAL "${_desc}" FORCE)
-				ELSE(HAVE_TRACKER_SPARQL_1_0)
-					MESSAGE(FATAL_ERROR "Unable to detect a supported Tracker library; please set TRACKER_INSTALL_API_VERSION manually.")
-				ENDIF(HAVE_TRACKER_SPARQL_1_0)
-			ENDIF(HAVE_TRACKER_SPARQL_2_0)
-		ENDIF(HAVE_TRACKER_SPARQL_3_0)
+		MESSAGE(STATUS "Checking for an installed Tracker SPARQL library")
+		FIND_LIBRARY(HAVE_TINYSPARQL_3_0 NAMES libtinysparql-3.0.so libtinysparql-3.0.so.0)
+		IF(HAVE_TINYSPARQL_3_0)
+			MESSAGE(STATUS "Checking for an installed Tracker SPARQL library - yes, found API 3L")
+			SET(TRACKER_INSTALL_API_VERSION "3L" CACHE INTERNAL "${_desc}" FORCE)
+		ELSE(HAVE_TINYSPARQL_3_0)
+			FIND_LIBRARY(HAVE_TRACKER_SPARQL_3_0 NAMES libtracker-sparql-3.0.so libtracker-sparql-3.0.so.0)
+			IF(HAVE_TRACKER_SPARQL_3_0)
+				MESSAGE(STATUS "Checking for an installed Tracker SPARQL library - yes, found API 3")
+				SET(TRACKER_INSTALL_API_VERSION 3 CACHE INTERNAL "${_desc}" FORCE)
+			ELSE(HAVE_TRACKER_SPARQL_3_0)
+				FIND_LIBRARY(HAVE_TRACKER_SPARQL_2_0 NAMES libtracker-sparql-2.0.so libtracker-sparql-2.0.so.0)
+				IF(HAVE_TRACKER_SPARQL_2_0)
+					MESSAGE(STATUS "Checking for an installed Tracker SPARQL library - yes, found API 2")
+					SET(TRACKER_INSTALL_API_VERSION 2 CACHE INTERNAL "${_desc}" FORCE)
+				ELSE(HAVE_TRACKER_SPARQL_2_0)
+					FIND_LIBRARY(HAVE_TRACKER_SPARQL_1_0 NAMES libtracker-sparql-1.0.so libtracker-sparql-1.0.so.0)
+					IF(HAVE_TRACKER_SPARQL_1_0)
+						MESSAGE(STATUS "Checking for an installed Tracker SPARQL library - yes, found API 1")
+						SET(TRACKER_INSTALL_API_VERSION 1 CACHE INTERNAL "${_desc}" FORCE)
+					ELSE(HAVE_TRACKER_SPARQL_1_0)
+						MESSAGE(FATAL_ERROR "Unable to detect a supported Tracker library; please set TRACKER_INSTALL_API_VERSION manually.")
+					ENDIF(HAVE_TRACKER_SPARQL_1_0)
+				ENDIF(HAVE_TRACKER_SPARQL_2_0)
+			ENDIF(HAVE_TRACKER_SPARQL_3_0)
+		ENDIF(HAVE_TINYSPARQL_3_0)
 	ELSEIF(TRACKER_INSTALL_API_VERSION LESS 1 OR TRACKER_INSTALL_API_VERSION GREATER 3)
-		MESSAGE(FATAL_ERROR "TRACKER_INSTALL_API_VERSION '${TRACKER_INSTALL_API_VERSION}' is invalid.")
+		IF(NOT TRACKER_INSTALL_API_VERSION STREQUAL "3L")
+			MESSAGE(FATAL_ERROR "TRACKER_INSTALL_API_VERSION '${TRACKER_INSTALL_API_VERSION}' is invalid.")
+		ENDIF(NOT TRACKER_INSTALL_API_VERSION STREQUAL "3L")
 	ENDIF()
 	UNSET(_desc)
 
 	# Determine paths based on API version.
+	# NOTE: As of tracker-3.8, the pathnames were all changed to "localsearch".
 
 	# Rule files
-	# - tracker-1.0: share/tracker/extract-rules/
-	# - tracker-2.0: share/tracker-miners/extract-rules/
-	# - tracker-3.0: share/tracker3-miners/extract-rules/
+	# - [1] tracker-1.0: share/tracker/extract-rules/
+	# - [2] tracker-2.0: share/tracker-miners/extract-rules/
+	# - [3] tracker-3.0: share/tracker3-miners/extract-rules/
+	# - [3L] localsearch-3.0: share/localsearch3/extract-rules/
 
 	# Extractor module
-	# - tracker-1.0: lib/[arch]/tracker-1.0/extract-modules/libextract-[module].so
-	# - tracker-2.0: lib/[arch]/tracker-miners-2.0/extract-modules/libextract-[module].so
-	# - tracker-3.0: lib/[arch]/tracker-miners-3.0/extract-modules/libextract-[module].so
+	# - [1] tracker-1.0: lib/[arch]/tracker-1.0/extract-modules/libextract-[module].so
+	# - [2] tracker-2.0: lib/[arch]/tracker-miners-2.0/extract-modules/libextract-[module].so
+	# - [3] tracker-3.0: lib/[arch]/tracker-miners-3.0/extract-modules/libextract-[module].so
+	# - [3L] localsearch-3.0: lib/[arch]/localsearch-3.0/extract-modules/libextract-[module].so
 
-	IF(TRACKER_INSTALL_API_VERSION EQUAL 3)
+	IF(TRACKER_INSTALL_API_VERSION STREQUAL "3L")
+		SET(TRACKER_EXTRACT_RULES_DIR "share/localsearch3/extract-rules")
+		SET(TRACKER_EXTRACT_MODULE_DIR "${DIR_INSTALL_LIB}/localsearch-3.0/extract-modules")
+	ELSEIF(TRACKER_INSTALL_API_VERSION EQUAL 3)
 		SET(TRACKER_EXTRACT_RULES_DIR "share/tracker3-miners/extract-rules")
 		SET(TRACKER_EXTRACT_MODULE_DIR "${DIR_INSTALL_LIB}/tracker-miners-3.0/extract-modules")
 	ELSEIF(TRACKER_INSTALL_API_VERSION EQUAL 2)

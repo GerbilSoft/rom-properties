@@ -94,3 +94,22 @@
 	                     _ELF_NOTE_DLOPEN_INT(feature3, description3, priority3, module3) "," \
 	                     _ELF_NOTE_DLOPEN_INT(feature4, description4, priority4, module4) "," \
 	                     _ELF_NOTE_DLOPEN_INT(feature5, description5, priority5, module5) "]", var)
+
+#define ELF_NOTE_DLOPEN7(var, feature0, description0, priority0, module0, feature1, description1, priority1, module1, feature2, description2, priority2, module2, feature3, description3, priority3, module3, feature4, description4, priority4, module4, feature5, description5, priority5, module5, feature6, description6, priority6, module6) \
+	_ELF_NOTE_DLOPEN("[" _ELF_NOTE_DLOPEN_INT(feature0, description0, priority0, module0) "," \
+	                     _ELF_NOTE_DLOPEN_INT(feature1, description1, priority1, module1) "," \
+	                     _ELF_NOTE_DLOPEN_INT(feature2, description2, priority2, module2) "," \
+	                     _ELF_NOTE_DLOPEN_INT(feature3, description3, priority3, module3) "," \
+	                     _ELF_NOTE_DLOPEN_INT(feature4, description4, priority4, module4) "," \
+	                     _ELF_NOTE_DLOPEN_INT(feature5, description5, priority5, module5) "," \
+	                     _ELF_NOTE_DLOPEN_INT(feature6, description6, priority6, module6) "]", var)
+
+#define ELF_NOTE_DLOPEN8(var, feature0, description0, priority0, module0, feature1, description1, priority1, module1, feature2, description2, priority2, module2, feature3, description3, priority3, module3, feature4, description4, priority4, module4, feature5, description5, priority5, module5, feature6, description6, priority6, module6, feature7, description7, priority7, module7) \
+	_ELF_NOTE_DLOPEN("[" _ELF_NOTE_DLOPEN_INT(feature0, description0, priority0, module0) "," \
+	                     _ELF_NOTE_DLOPEN_INT(feature1, description1, priority1, module1) "," \
+	                     _ELF_NOTE_DLOPEN_INT(feature2, description2, priority2, module2) "," \
+	                     _ELF_NOTE_DLOPEN_INT(feature3, description3, priority3, module3) "," \
+	                     _ELF_NOTE_DLOPEN_INT(feature4, description4, priority4, module4) "," \
+	                     _ELF_NOTE_DLOPEN_INT(feature5, description5, priority5, module5) "," \
+	                     _ELF_NOTE_DLOPEN_INT(feature6, description6, priority6, module6) "," \
+	                     _ELF_NOTE_DLOPEN_INT(feature7, description7, priority7, module7) "]", var)

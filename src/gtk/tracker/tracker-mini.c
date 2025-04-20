@@ -152,10 +152,22 @@ static void init_tracker_v2(void)
 int rp_tracker_init_pfn(void)
 {
 	// Attempt to open Tracker libraries.
-	// TODO: Use a config.h file for the library paths.
-	// Hard-coding 32-bit Ubuntu paths for now.
+	// NOTE: The libraries are already loaded in-process,
+	// so this should "just work" without having to specify
+	// the full paths.
 	if (rp_tracker_api > 0) {
 		// Already initialized.
+		return 0;
+	}
+
+	// Check for LocalSearch 3.0. (aka tracker-3.8)
+	libtracker_sparql_so = dlopen("libtinysparql-3.0.so.0", RTLD_NOW | RTLD_LOCAL);
+	libtracker_extract_so = dlopen("libtracker-extract.so", RTLD_NOW | RTLD_LOCAL);
+	if (libtracker_sparql_so && libtracker_extract_so) {
+		// Found LocalSearch 3.8.
+		// NOTE: Functions are essentially the same as 2.0.
+		init_tracker_v2();
+		rp_tracker_api = 3;
 		return 0;
 	}
 
