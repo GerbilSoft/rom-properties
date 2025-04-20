@@ -171,6 +171,9 @@ int rp_tracker_init_pfn(void)
 		return 0;
 	}
 
+	// Clear dlopen() pointers and try again.
+	close_modules();
+
 	// Check for Tracker 3.0.
 	libtracker_sparql_so = dlopen("libtracker-sparql-3.0.so.0", RTLD_NOW | RTLD_LOCAL);
 	libtracker_extract_so = dlopen("libtracker-extract.so", RTLD_NOW | RTLD_LOCAL);
