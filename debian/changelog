@@ -1,4 +1,4 @@
-rom-properties (2.5-1ppa6~plucky2) plucky; urgency=medium
+rom-properties (2.5-1ppa6~plucky3) plucky; urgency=medium
 
   * Build for Ubuntu 25.04 "Plucky" Puffin.
 
