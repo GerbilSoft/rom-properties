@@ -15,6 +15,9 @@
 // ARM NEON intrinsics
 #include <arm_neon.h>
 
+#define vrev16q_u8_u16(x) vreinterpretq_u16_u8(vrev16q_u8(vreinterpretq_u8_u16(x)))
+#define vrev32q_u8_u32(x) vreinterpretq_u32_u8(vrev32q_u8(vreinterpretq_u8_u32(x)))
+
 /**
  * 16-bit byteswap function.
  * NEON-optimized version.
@@ -39,8 +42,8 @@ void RP_C_API rp_byte_swap_16_array_neon(uint16_t *ptr, size_t n)
 	for (; n >= 32; n -= 32, ptr += 16) {
 		uint16x8x2_t vec = vld2q_u16(ptr);
 
-		vec.val[0] = vrev16q_u8(vec.val[0]);
-		vec.val[1] = vrev16q_u8(vec.val[1]);
+		vec.val[0] = vrev16q_u8_u16(vec.val[0]);
+		vec.val[1] = vrev16q_u8_u16(vec.val[1]);
 
 		vst2q_u16(ptr, vec);
 	}
@@ -75,8 +78,8 @@ void RP_C_API rp_byte_swap_32_array_neon(uint32_t *ptr, size_t n)
 	for (; n >= 32; n -= 32, ptr += 8) {
 		uint32x4x2_t vec = vld2q_u32(ptr);
 
-		vec.val[0] = vrev32q_u8(vec.val[0]);
-		vec.val[1] = vrev32q_u8(vec.val[1]);
+		vec.val[0] = vrev32q_u8_u32(vec.val[0]);
+		vec.val[1] = vrev32q_u8_u32(vec.val[1]);
 
 		vst2q_u32(ptr, vec);
 	}
