@@ -1064,8 +1064,8 @@ if(NOT SKIP_INSTALL_LIBRARIES AND NOT SKIP_INSTALL_ALL)
     # FIXME: Generator PDB expression doesn't have the debug postfix for some reason,
     # so cpack fails in debug builds if we get the PDB property.
     INCLUDE(DirInstallPaths)
-    SET(PDB_FILENAME_D "$<TARGET_FILE_DIR:png_shared>/lib${PNG_LIB_NAME}${CMAKE_DEBUG_POSTFIX}.pdb")
-    SET(PDB_FILENAME_R "$<TARGET_FILE_DIR:png_shared>/lib${PNG_LIB_NAME}${CMAKE_RELEASE_POSTFIX}.pdb")
+    SET(PDB_FILENAME_D "$<TARGET_FILE_DIR:png_shared>/libpng${PNGLIB_MAJOR}${PNGLIB_MINOR}${CMAKE_DEBUG_POSTFIX}.pdb")
+    SET(PDB_FILENAME_R "$<TARGET_FILE_DIR:png_shared>/libpng${PNGLIB_MAJOR}${PNGLIB_MINOR}${CMAKE_RELEASE_POSTFIX}.pdb")
     INSTALL(FILES "${PDB_FILENAME_D}" "${PDB_FILENAME_R}"
             DESTINATION "${DIR_INSTALL_DLL_DEBUG}"
             COMPONENT "debug"
