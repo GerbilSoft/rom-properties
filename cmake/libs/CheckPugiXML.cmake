@@ -17,7 +17,13 @@ IF(NOT USE_INTERNAL_XML)
 		# Found system PugiXML.
 		SET(HAVE_XML 1)
 		# NOTE: PugiXML's CMake configuration files don't set pugixml_LIBRARY.
-		SET(pugixml_LIBRARY pugixml::pugixml CACHE INTERNAL "PugiXML library" FORCE)
+		IF(TARGET pugixml::pugixml)
+			SET(pugixml_LIBRARY pugixml::pugixml CACHE INTERNAL "PugiXML library" FORCE)
+		ELSEIF(TARGET pugixml)
+			SET(pugixml_LIBRARY pugixml CACHE INTERNAL "PugiXML library" FORCE)
+		ELSE()
+			MESSAGE(FATAL_ERROR "Unable to find the correct PugiXML target.")
+		ENDIF()
 	ELSE()
 		# System PugiXML was not found.
 		# NOTE: Some older versions, e.g. 1.7-2 (Ubuntu 16.04), lack both

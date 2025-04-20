@@ -1,4 +1,4 @@
-rom-properties (2.5-1ppa6~focal1) focal; urgency=medium
+rom-properties (2.5-1ppa6~focal2) focal; urgency=medium
 
   * Build for Ubuntu 20.04 "Focal" Fossa.
 
