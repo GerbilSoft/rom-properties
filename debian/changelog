@@ -1,4 +1,4 @@
-rom-properties (2.5-1ppa6~jammy1) focal; urgency=medium
+rom-properties (2.5-1ppa6~jammy2) jammy; urgency=medium
 
   * Build for Ubuntu 22.04 "Jammy" Jellyfish.
 
