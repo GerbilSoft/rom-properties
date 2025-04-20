@@ -40,6 +40,8 @@
 	<icon type="stock">media-flash</icon>
 	<translation type="gettext">rom-properties</translation>
 	<releases>
+		<release version="2.5" date="2025-04-19"/>
+		<release version="2.4.1" date="2024-11-12"/>
 		<release version="2.4" date="2024-11-10"/>
 		<release version="2.3" date="2024-03-03"/>
 		<release version="2.2.1" date="2023-07-30"/>
