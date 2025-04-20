@@ -510,7 +510,11 @@ TEST_F(TextFuncsTest, utf16_bswap_BEtoLE)
 	str = utf16_bswap(C16(utf16be_data), C16_ARRAY_SIZE_I(utf16be_data));
 	EXPECT_EQ(C16_ARRAY_SIZE(utf16le_data), str.size());
 	// Remove the extra NULL before comparing.
-	str.resize(str.size()-1);
+	// NOTE: The str.empty() check is required to fix an aggressive loop
+	// optimization warning when compiling with LTO on gcc-14.2.0.
+	if (!str.empty()) {
+		str.resize(str.size()-1);
+	}
 	EXPECT_EQ(C16(utf16le_data), str);
 }
 
@@ -539,7 +543,11 @@ TEST_F(TextFuncsTest, utf16_bswap_LEtoBE)
 	str = utf16_bswap(C16(utf16le_data), C16_ARRAY_SIZE_I(utf16le_data));
 	EXPECT_EQ(C16_ARRAY_SIZE(utf16be_data), str.size());
 	// Remove the extra NULL before comparing.
-	str.resize(str.size()-1);
+	// NOTE: The str.empty() check is required to fix an aggressive loop
+	// optimization warning when compiling with LTO on gcc-14.2.0.
+	if (!str.empty()) {
+		str.resize(str.size()-1);
+	}
 	EXPECT_EQ(C16(utf16be_data), str);
 }
 
