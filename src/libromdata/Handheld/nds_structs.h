@@ -246,12 +246,12 @@ typedef enum {
  * Nintendo DSi file type.
  */
 typedef enum {
-	DSi_FTYPE_CARTRIDGE		= 0x00,
-	DSi_FTYPE_DSiWARE		= 0x04,
-	DSi_FTYPE_SYSTEM_FUN_TOOL	= 0x05,
-	DSi_FTYPE_NONEXEC_DATA		= 0x0F,
-	DSi_FTYPE_SYSTEM_BASE_TOOL	= 0x15,
-	DSi_FTYPE_SYSTEM_MENU		= 0x17,
+	DSi_FTYPE_CARTRIDGE		= 0x00U,
+	DSi_FTYPE_DSiWARE		= 0x04U,
+	DSi_FTYPE_SYSTEM_FUN_TOOL	= 0x05U,
+	DSi_FTYPE_NONEXEC_DATA		= 0x0FU,
+	DSi_FTYPE_SYSTEM_BASE_TOOL	= 0x15U,
+	DSi_FTYPE_SYSTEM_MENU		= 0x17U,
 } DSi_FileType;
 
 /**
@@ -271,18 +271,18 @@ typedef enum {
 
 // NDS_IconTitleData version.
 typedef enum {
-	NDS_ICON_VERSION_ORIGINAL	= 0x0001,	// Original
-	NDS_ICON_VERSION_HANS		= 0x0002,	// +HANS
-	NDS_ICON_VERSION_HANS_KO	= 0x0003,	// +KO
-	NDS_ICON_VERSION_DSi		= 0x0103,	// +DSi
+	NDS_ICON_VERSION_ORIGINAL	= 0x0001U,	// Original
+	NDS_ICON_VERSION_HANS		= 0x0002U,	// +HANS
+	NDS_ICON_VERSION_HANS_KO	= 0x0003U,	// +KO
+	NDS_ICON_VERSION_DSi		= 0x0103U,	// +DSi
 } NDS_IconTitleData_Version;
 
 // NDS_IconTitleData sizes.
 typedef enum {
-	NDS_ICON_SIZE_ORIGINAL		= 0x0840,	// Original
-	NDS_ICON_SIZE_HANS		= 0x0940,	// +HANS
-	NDS_ICON_SIZE_HANS_KO		= 0x0A40,	// +KO
-	NDS_ICON_SIZE_DSi		= 0x23C0,	// +DSi
+	NDS_ICON_SIZE_ORIGINAL		= 0x0840U,	// Original
+	NDS_ICON_SIZE_HANS		= 0x0940U,	// +HANS
+	NDS_ICON_SIZE_HANS_KO		= 0x0A40U,	// +KO
+	NDS_ICON_SIZE_DSi		= 0x23C0U,	// +DSi
 } NDS_IconTitleData_Size;
 
 // Icon/title languages.
