@@ -1,6 +1,6 @@
 # Changes
 
-## v2.5 (released 2025/??/??)
+## v2.5 (released 2025/04/19)
 
 * New parsers:
   * J2ME: Parser for Java 2 Micro Edition .jar packages. This supports
