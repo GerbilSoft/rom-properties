@@ -274,11 +274,6 @@ rp_image_ptr iQuePlayerPrivate::loadImage(off64_t address, size_t z_size, size_t
 		return nullptr;
 	}
 
-// FIXME: False-positive error on Ubuntu 22.04 arm64 due to the use of unz_size/2.
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wstringop-overread"
-#endif /* __GNUC__ && !__clang__ */
 	// Decompress the thumbnail image.
 	// Decompressed size must be 0x1880 bytes. (56*56*2)
 	auto img_buf = aligned_uptr<uint16_t>(16, unz_size/2);
@@ -317,9 +312,6 @@ rp_image_ptr iQuePlayerPrivate::loadImage(off64_t address, size_t z_size, size_t
 	// Convert the image.
 	return ImageDecoder::fromLinear16(px_format,
 		w, h, img_buf.get(), unz_size);
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic pop
-#endif /* __GNUC__ && !__clang__ */
 }
 
 /**
