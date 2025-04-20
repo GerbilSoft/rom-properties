@@ -1,5 +1,11 @@
 # Changes
 
+## v2.6 (released 2025/??/??)
+
+* Bug fixes:
+  * NintendoDS_BNR: Animated icons were missing the animated icon flag.
+    * Affects: v2.4 - v2.5
+
 ## v2.5 (released 2025/04/19)
 
 * New parsers:
