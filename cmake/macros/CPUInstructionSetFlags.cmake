@@ -119,5 +119,5 @@ IF(CPU_arm OR CPU_arm64 OR CPU_arm64ec)
 
 	IF(CPU_arm AND NOT MSVC)
 		SET(NEON_FLAG "-marm -mfpu=neon")
-	ENDIF(CPU_arm ANDNOT MSVC)
+	ENDIF(CPU_arm AND NOT MSVC)
 ENDIF(CPU_arm OR CPU_arm64 OR CPU_arm64ec)
