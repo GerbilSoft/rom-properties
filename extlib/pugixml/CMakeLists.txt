@@ -140,6 +140,10 @@ if (BUILD_SHARED_LIBS)
       ${msvc-rt-mtd-static}
       ${msvc-rt-mt-shared}
       ${msvc-rt-mt-static})
+
+  # rom-properties
+  DO_SPLIT_DEBUG(pugixml-shared)
+  SET_WINDOWS_SUBSYSTEM(pugixml-shared WIN32)
 endif()
 
 if (NOT BUILD_SHARED_LIBS OR PUGIXML_BUILD_SHARED_AND_STATIC_LIBS)
@@ -252,14 +256,45 @@ if(PUGIXML_INSTALL)
   if (NOT CMAKE_VERSION VERSION_LESS 3.12)
     set(namelink-component NAMELINK_COMPONENT ${PUGIXML_DEVELOPMENT_COMPONENT})
   endif()
+  # rom-properties: Only install the DLL, and use our custom destination path.
   install(TARGETS ${install-targets}
-    EXPORT pugixml-targets
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT ${PUGIXML_RUNTIME_COMPONENT}
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT ${PUGIXML_LIBRARY_COMPONENT} ${namelink-component}
-    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT ${PUGIXML_DEVELOPMENT_COMPONENT}
-    INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}${versioned-dir}
-    FRAMEWORK DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT runtime OPTIONAL)
+    #EXPORT pugixml-targets
+    #RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT ${PUGIXML_RUNTIME_COMPONENT}
+    RUNTIME DESTINATION ${INSTALL_BIN_DIR} COMPONENT ${PUGIXML_RUNTIME_COMPONENT}
+    #LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT ${PUGIXML_LIBRARY_COMPONENT} ${namelink-component}
+    #ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT ${PUGIXML_DEVELOPMENT_COMPONENT}
+    #INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}${versioned-dir}
+    #FRAMEWORK DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT runtime OPTIONAL)
+    )
 
+  IF(INSTALL_DEBUG AND TARGET pugixml-shared)
+    # FIXME: Generator expression $<TARGET_PROPERTY:${_target},PDB> didn't work with CPack-3.6.1.
+    INCLUDE(DirInstallPaths)
+    GET_TARGET_PROPERTY(DEBUG_FILENAME pugixml-shared PDB)
+    IF(WIN32)
+      # TODO: Test on MinGW.
+      # FIXME: Generator PDB expression doesn't have the debug postfix for some reason,
+      # so cpack fails in debug builds if we get the PDB property.
+      SET(PDB_FILENAME_D "$<TARGET_FILE_DIR:pugixml-shared>/pugixml${CMAKE_DEBUG_POSTFIX}.pdb")
+      SET(PDB_FILENAME_R "$<TARGET_FILE_DIR:pugixml-shared>/pugixml${CMAKE_RELEASE_POSTFIX}.pdb")
+      INSTALL(FILES "${PDB_FILENAME_D}" "${PDB_FILENAME_R}"
+        DESTINATION "${DIR_INSTALL_DLL_DEBUG}"
+        COMPONENT "debug"
+        OPTIONAL
+        )
+      UNSET(PDB_FILENAME_D)
+      UNSET(PDB_FILENAME_R)
+    ELSE(WIN32)
+      INSTALL(FILES "${DEBUG_FILENAME}"
+        DESTINATION "${DIR_INSTALL_DLL_DEBUG}"
+        COMPONENT "debug"
+        )
+    ENDIF(WIN32)
+    UNSET(DEBUG_FILENAME)
+  ENDIF(INSTALL_DEBUG AND TARGET pugixml-shared)
+
+  # rom-properties: Don't install any CMake or pkgconfig files.
+  IF(0)
   install(EXPORT pugixml-targets
     NAMESPACE pugixml::
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/pugixml COMPONENT ${PUGIXML_DEVELOPMENT_COMPONENT})
@@ -271,13 +306,17 @@ if(PUGIXML_INSTALL)
 
   install(FILES ${PROJECT_BINARY_DIR}/pugixml.pc
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig COMPONENT ${PUGIXML_DEVELOPMENT_COMPONENT})
+  ENDIF(0) # rom-properties
 
+  # rom-properties: Don't install any header files.
+  IF(0)
   install(
     FILES
       "${PROJECT_SOURCE_DIR}/src/pugiconfig.hpp"
       "${PROJECT_SOURCE_DIR}/src/pugixml.hpp"
     DESTINATION
       ${CMAKE_INSTALL_INCLUDEDIR}${versioned-dir} COMPONENT ${PUGIXML_DEVELOPMENT_COMPONENT})
+  ENDIF(0) # rom-properties
 endif()
 
 if (PUGIXML_BUILD_TESTS)
