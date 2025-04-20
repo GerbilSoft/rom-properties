@@ -184,7 +184,9 @@ ENDIF(USE_INTERNAL_ZSTD)
 # On other systems, this will be statically-linked.
 # NOTE: We're always using the internal copy of MiniZip-NG.
 # TODO: Support a system-wide version on Linux?
+# NOTE: MiniZip-NG uses SKIP_INSTALL_HDR instead of SKIP_INSTALL_HEADERS.
 SET(USE_INTERNAL_MINIZIP TRUE PARENT_SCOPE)
+SET(SKIP_INSTALL_HDR ON)
 IF(WIN32)
 	SET(USE_INTERNAL_MINIZIP_DLL TRUE PARENT_SCOPE)
 	SET(SKIP_INSTALL_LIBRARIES OFF)
