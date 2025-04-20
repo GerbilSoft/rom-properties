@@ -116,4 +116,8 @@ IF(CPU_arm OR CPU_arm64 OR CPU_arm64ec)
 	# NOTE: Should always be present for arm64, but check anyway.
 	INCLUDE(CheckIncludeFile)
 	CHECK_INCLUDE_FILE("arm_neon.h" HAVE_ARM_NEON_H)
+
+	IF(CPU_arm AND NOT MSVC)
+		SET(NEON_FLAG "-marm -mfpu=neon")
+	ENDIF(CPU_arm ANDNOT MSVC)
 ENDIF(CPU_arm OR CPU_arm64 OR CPU_arm64ec)
