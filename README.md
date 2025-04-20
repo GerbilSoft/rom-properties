@@ -11,20 +11,25 @@ video game ROM and disc images.
 [![CodeFactor](https://www.codefactor.io/repository/github/gerbilsoft/rom-properties/badge)](https://www.codefactor.io/repository/github/gerbilsoft/rom-properties/overview)
 [![codecov](https://codecov.io/gh/GerbilSoft/rom-properties/graph/badge.svg?token=oIiL6oVPwZ)](https://codecov.io/gh/GerbilSoft/rom-properties)
 
-## v2.4
+## v2.5
 
-![Thunar showing Wii U packages.](doc/img/rp-v2.4-thunar.WiiUPackage.png)
+![KDE Dolphin showing J2ME packages.](doc/img/rp-v2.5-kde6.J2ME.png)
 
-Major changes in v2.4 include:
+Major additions in v2.5 include:
 
-* Support for Palm OS executables.
+* J2ME packages
 
-* Support for Wii U NUS packages.
+* Quite OK Image Format
 
-* Support for Analogue Pocket ROM images. (slightly modified variant
-  of Nintendo Game Boy ROMs)
+* Extracted Wii U packages
 
-* Support for CDI-format Dreamcast disc images.
+* Extracted Xbox Disc file systems
+
+* Wim images: Support for unstaged images.
+
+* Ports of some x86 SSE optimizations to ARM NEON.
+
+* Lots and lots of tiny bug fixes and improvements.
 
 Translators wanted; if you can translate rom-properties from English to another
 language, check out the [Crowdin project](https://crowdin.com/project/rom-properties).
@@ -32,7 +37,7 @@ language, check out the [Crowdin project](https://crowdin.com/project/rom-proper
 Crowdin project page, file an issue here on GitHub with the requested
 language.)
 
-See [`NEWS.md`](NEWS.md) for a full list of changes in v2.4.
+See [`NEWS.md`](NEWS.md) for a full list of changes in v2.5.
 
 ## Feedback
 
@@ -61,6 +66,7 @@ The following platforms are still compatible, but may not receive as much suppor
 On Windows Vista and later, you will need the MSVC 2015-2022 runtime:
 * 32-bit: https://aka.ms/vs/17/release/VC_redist.x86.exe
 * 64-bit: https://aka.ms/vs/17/release/VC_redist.x64.exe
+* ARM64: https://aka.ms/vs/17/release/vc_redist.arm64.exe
 
 On Windows XP/2003 and earlier, you will need the MSVC 2015-2017 runtime:
 * 32-bit: https://aka.ms/vs/15/release/VC_redist.x86.exe
@@ -133,8 +139,8 @@ button.
 | Sony PlayStation Saves    |       Yes      |    Yes   |       Icon      |       N/A       |
 | Sony PlayStation 2 Discs  |       Yes      |    Yes   |       N/A       |      Covers     |
 
-\* Internal images are only present in Wii DLC WADs.<br>
-\* Sega Mega Drive includes Sega CD, 32X, and Pico.
+* Internal images are only present in Wii DLC WADs.
+* Sega Mega Drive includes Sega CD, 32X, and Pico.
 
 ### Handhelds
 
@@ -142,6 +148,7 @@ button.
 |:-----------------------------:|:--------------:|:--------:|:---------------:|:---------------:|
 | Atari Lynx                    |       Yes      |    Yes   |       N/A       |        No       |
 | Bandai WonderSwan (Color)     |       Yes      |    Yes   |       N/A       |      Title      |
+| J2ME                          |       Yes      |    Yes   |       Icon      |       N/A       |
 | Neo Geo Pocket (Color)        |       Yes      |    Yes   |       N/A       |      Title      |
 | Nintendo Game Boy (Color)     |       Yes      |    Yes   |       N/A       |      Title      |
 | Nintendo Virtual Boy          |       Yes      |    Yes   |       N/A       |        No       |
@@ -154,11 +161,11 @@ button.
 | Sony PlayStation Portable     |       Yes      |    Yes   |   Icon, Banner  |        No       |
 | Tiger game.com                |       Yes      |    Yes   |       Icon      |        No       |
 
-\* The Nintendo DSi TAD parser supports development TADs that are normally
-   imported using DSi Nmenu. It does not currently support DSi exports from
-   retail systems.<br>
-\* The PSP parser supports both PSP game and UMD video discs, as well as
-   several compressed disc formats: CISOv1, CISOv2, ZISO, JISO, and DAX.
+* The Nintendo DSi TAD parser supports development TADs that are normally
+  imported using DSi Nmenu. It does not currently support DSi exports from
+  retail systems.
+* The PSP parser supports both PSP game and UMD video discs, as well as
+  several compressed disc formats: CISOv1, CISOv2, ZISO, JISO, and DAX.
 
 ### Texture Formats
 
@@ -172,6 +179,7 @@ button.
 | Microsoft DirectDraw DDS |       Yes      |    Yes   |      Image      |       N/A      |
 | Microsoft Xbox XPR       |       Yes      |    Yes   |      Image      |       N/A      |
 | PowerVR 3.0.0            |       Yes      |    Yes   |      Image      |       N/A      |
+| Quite OK Image Format    |       Yes      |    Yes   |      Image      |       N/A      |
 | Sega PVR/GVR/SVR         |       Yes      |    Yes   |      Image      |       N/A      |
 | TrueVision TGA           |       Yes      |    Yes   |      Image      |       N/A      |
 | Valve VTF                |       Yes      |    Yes   |      Image      |       N/A      |
@@ -223,10 +231,12 @@ button.
 | ISO-9660 Disc Images           |       Yes      |   Yes    |        No       |       N/A      |
 | Windows Image (.wim)           |       Yes      |    No    |       N/A       |       N/A      |
 
-Notes:
 * Commodore DOS currently includes the 2040, 3040, 4040, 8050, 8250, 1540/1541,
   1571, and 1581 disk drives, in D64, D71, D80, D82, D81, D67, G64, and G71 formats.
   * File icons for GEOS files are supported.
+* UDF disc format is not currently supported. Hybrid disc images that have both
+  UDF and ISO-9660 data structures will be handled as ISO-9660.
+* CD-i and High Sierra disc images are handled by the ISO-9660 disc image parser.
 
 ### Other
 
@@ -239,7 +249,7 @@ Notes:
 | Nintendo Badge Arcade          |       Yes      |   Yes    |      Image      |       N/A      |
 | Windows/DOS Executables        |       Yes      |   Yes    |        No       |       N/A      |
 
-Notes:
+General notes for all formats:
 * Internal image refers to artwork contained within the ROM and/or disc image.
   These images are typically displayed on the system's main menu prior to
   starting the game.

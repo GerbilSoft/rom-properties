@@ -1,5 +1,5 @@
 # AppVeyor configuration file.
-version: '2.4.1.{build}'
+version: '2.5.0.{build}'
 
 # Build worker image (VM template)
 image:
