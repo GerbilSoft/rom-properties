@@ -82,6 +82,9 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 		__NR_openat2,		// Linux 5.6
 #endif /* __SNR_openat2 || __NR_openat2 */
 
+		// RomDataFormat needs this, at least on 32-bit (i386) KF5 builds.
+		SCMP_SYS(clock_getres),
+
 		// for ImageDecoderTest so we don't have to copy the test files to the binary directory
 		SCMP_SYS(chdir),
 

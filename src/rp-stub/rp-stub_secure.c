@@ -79,6 +79,9 @@ int rp_stub_do_security_options(bool config)
 		// NOTE: Only seems to get triggered on PowerPC...
 		SCMP_SYS(clock_gettime), SCMP_SYS(clock_gettime64),
 
+		// RomDataFormat needs this, at least on 32-bit (i386) KF5 builds.
+		SCMP_SYS(clock_getres),
+
 		// glibc ncsd
 		// TODO: Restrict connect() to AF_UNIX.
 		SCMP_SYS(connect), SCMP_SYS(recvmsg), SCMP_SYS(sendto),
