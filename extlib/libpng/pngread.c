@@ -162,6 +162,17 @@ png_read_info(png_structrp png_ptr, png_inforp info_ptr)
          break;
       }
 
+#ifdef PNG_READ_APNG_SUPPORTED
+      else if (chunk_name == png_acTL)
+         png_handle_acTL(png_ptr, info_ptr, length);
+
+      else if (chunk_name == png_fcTL)
+         png_handle_fcTL(png_ptr, info_ptr, length);
+
+      else if (chunk_name == png_fdAT)
+         png_handle_fdAT(png_ptr, info_ptr, length);
+#endif
+
       else
          png_handle_chunk(png_ptr, info_ptr, length);
    }

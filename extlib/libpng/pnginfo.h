@@ -295,6 +295,5 @@ defined(PNG_READ_BACKGROUND_SUPPORTED)
    png_byte next_frame_dispose_op;
    png_byte next_frame_blend_op;
 #endif
-
 };
 #endif /* PNGINFO_H */
