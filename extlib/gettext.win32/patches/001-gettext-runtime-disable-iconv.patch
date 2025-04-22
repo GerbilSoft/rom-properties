@@ -1,0 +1,57 @@
+diff '--color=auto' -ur gettext-0.24.orig/gettext-runtime/config.h.in gettext-0.24/gettext-runtime/config.h.in
+--- gettext-0.24.orig/gettext-runtime/config.h.in	2025-02-25 05:25:16.000000000 -0500
++++ gettext-0.24/gettext-runtime/config.h.in	2025-04-21 13:07:02.520459899 -0400
+@@ -725,10 +725,12 @@
+ #undef HAVE_GOOD_USELOCALE
+ 
+ /* Define if you have the iconv() function and it works. */
+-#undef HAVE_ICONV
++/* rom-properties: Disabled. */
++/* #undef HAVE_ICONV */
+ 
+ /* Define to 1 if you have the <iconv.h> header file. */
+-#undef HAVE_ICONV_H
++/* rom-properties: Disabled. */
++/* #undef HAVE_ICONV_H */
+ 
+ /* Define to 1 if the compiler supports one of the keywords 'inline',
+    '__inline__', '__inline' and effectively inlines functions marked as such.
+@@ -1243,11 +1245,13 @@
+ #undef HAVE___INLINE
+ 
+ /* Define as const if the declaration of iconv() needs const. */
+-#undef ICONV_CONST
++/* rom-properties: Disabled. */
++/* #undef ICONV_CONST */
+ 
+ /* Define to a symbolic name denoting the flavor of iconv_open()
+    implementation. */
+-#undef ICONV_FLAVOR
++/* rom-properties: Disabled. */
++/* #undef ICONV_FLAVOR */
+ 
+ /* Define to the value of ${prefix}, as a string. */
+ #undef INSTALLPREFIX
+diff '--color=auto' -ur gettext-0.24.orig/gettext-runtime/intl/config.h.in gettext-0.24/gettext-runtime/intl/config.h.in
+--- gettext-0.24.orig/gettext-runtime/intl/config.h.in	2025-02-25 05:25:10.000000000 -0500
++++ gettext-0.24/gettext-runtime/intl/config.h.in	2025-04-21 13:06:27.935503569 -0400
+@@ -373,7 +373,8 @@
+ #undef HAVE_GOOD_USELOCALE
+ 
+ /* Define if you have the iconv() function and it works. */
+-#undef HAVE_ICONV
++/* rom-properties: Disabled. */
++/* #undef HAVE_ICONV */
+ 
+ /* Define if you have the 'intmax_t' type in <stdint.h> or <inttypes.h>. */
+ #undef HAVE_INTMAX_T
+@@ -758,7 +759,8 @@
+ #endif
+ 
+ /* Define as const if the declaration of iconv() needs const. */
+-#undef ICONV_CONST
++/* rom-properties: Disabled. */
++/* #undef ICONV_CONST */
+ 
+ /* Define as the bit index in the word where to find bit 0 of the exponent of
+    'long double'. */

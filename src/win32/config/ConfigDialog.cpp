@@ -29,7 +29,7 @@ using std::tstring;
 // MSVC: Exception handling for /DELAYLOAD.
 #  include "libwin32common/DelayLoadHelper.h"
 // DelayLoad test implementation.
-DELAYLOAD_TEST_FUNCTION_IMPL1(textdomain, nullptr);
+DELAYLOAD_TEST_FUNCTION_IMPL1(libintl_textdomain, nullptr);
 #endif /* defined(_MSC_VER) && defined(ENABLE_NLS) */
 
 // rp_image backend registration
@@ -498,7 +498,7 @@ int CALLBACK rp_show_config_dialog(
 
 #if defined(_MSC_VER) && defined(ENABLE_NLS)
 	// Delay load verification.
-	if (DelayLoad_test_textdomain() != 0) {
+	if (DelayLoad_test_libintl_textdomain() != 0) {
 		// Delay load failed.
 		// TODO: Use a CMake macro for the soversion?
 		MessageBox(hWnd,

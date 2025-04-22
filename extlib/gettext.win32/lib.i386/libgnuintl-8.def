@@ -9,6 +9,7 @@ EXPORTS
     dcngettext
     dgettext
     dngettext
+    getlocalename_l_unsafe
     gettext
     libintl_asprintf
     libintl_bind_textdomain_codeset
@@ -21,7 +22,6 @@ EXPORTS
     libintl_fprintf
     libintl_fwprintf
     libintl_gettext
-    libintl_hash_string
     libintl_ngettext
     libintl_nl_current_default_domain DATA
     libintl_nl_default_default_domain DATA
@@ -46,4 +46,9 @@ EXPORTS
     libintl_wprintf
     locale_charset
     ngettext
+    rpl_getcwd
+    rpl_pthread_once
+    setlocale_messages
+    setlocale_messages_null
     textdomain
+    wgetcwd

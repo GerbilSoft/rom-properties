@@ -112,7 +112,7 @@ static int DelayLoad_test_ImageTypesConfig_className(void) {
 #  ifdef ENABLE_NLS
 // DelayLoad: libi18n
 #    include "libi18n/i18n.h"
-DELAYLOAD_TEST_FUNCTION_IMPL1(textdomain, nullptr);
+DELAYLOAD_TEST_FUNCTION_IMPL1(libintl_textdomain, nullptr);
 #  endif /* ENABLE_NLS */
 #endif /* _MSC_VER */
 
@@ -642,7 +642,7 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 #if defined(ENABLE_NLS) && defined(_MSC_VER)
 	// Delay load verification: libgnuintl
 	// TODO: Skip this if not linked with /DELAYLOAD?
-	if (DelayLoad_test_textdomain() != 0) {
+	if (DelayLoad_test_libintl_textdomain() != 0) {
 		// Delay load failed.
 		_fputts(_T("*** ERROR: ") LIBGNUINTL_DLL _T(" could not be loaded.\n\n")
 			_T("This build of rom-properties has localization enabled,\n")
