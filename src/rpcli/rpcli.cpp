@@ -306,7 +306,7 @@ static void DoFile(const TCHAR *filename, bool json, const vector<ExtractParam> 
 			fflush(stderr);
 
 #ifdef _WIN32
-			if (is_stdout_console) {
+			if (is_stdout_console && is_real_console) {
 				// Windows: Using stdout console.
 				// Convert to UTF-16 and use WriteConsoleW().
 				// NOTE: This is seemingly faster than even using UTF-8
@@ -326,7 +326,7 @@ static void DoFile(const TCHAR *filename, bool json, const vector<ExtractParam> 
 			}
 		} else {
 #ifdef _WIN32
-			if (is_stdout_console && !does_console_support_ansi) {
+			if (is_stdout_console && is_real_console && !does_console_support_ansi) {
 				// Windows: Using stdout console, but it doesn't support ANSI escapes.
 				// NOTE: Console may support UTF-8, but since it doesn't support
 				// ANSI escapes, we're better off using WriteConsoleW() anyway.

@@ -60,6 +60,7 @@ bool is_stdout_console = false;
 // For older Windows, we'll need to parse the sequences manually and
 // call SetConsoleTextAttribute().
 bool does_console_support_ansi = false;
+bool is_real_console = false;
 static WORD wAttributesOrig = 0x07;	// default is white on black
 #endif /* _WIN32 */
 
@@ -135,6 +136,8 @@ void init_vt(void)
 	DWORD dwMode = 0;
 	if (!GetConsoleMode(hStdOut, &dwMode)) {
 		// Not a console.
+		is_real_console = false;
+
 		// NOTE: Might be a MinTTY fake console.
 		if (check_mintty(hStdOut)) {
 			// This is MinTTY.
@@ -151,6 +154,7 @@ void init_vt(void)
 
 	// We have a console.
 	is_stdout_console = true;
+	is_real_console = true;
 
 	// Does it support ANSI escape sequences?
 	dwMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;

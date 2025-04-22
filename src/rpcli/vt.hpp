@@ -25,6 +25,10 @@ extern bool is_stdout_console;
 // For older Windows, we'll need to parse the sequences manually and
 // call SetConsoleTextAttribute().
 extern bool does_console_support_ansi;
+
+// Is this a real Windows console or a fake VT, e.g. MinTTY?
+// If true, this is a real Windows console, and WriteConsole() will work.
+extern bool is_real_console;
 #endif /* _WIN32 */
 
 /**
