@@ -307,7 +307,7 @@ static void DoFile(const TCHAR *filename, bool json, const vector<ExtractParam> 
 
 #ifdef _WIN32
 			if (ci_stdout.is_console && ci_stdout.is_real_console) {
-				// Windows: Using stdout console.
+				// Windows: Using a real console on stdout.
 				// Convert to UTF-16 and use WriteConsoleW().
 				// NOTE: This is seemingly faster than even using UTF-8
 				// output on Windows 10 1607.
@@ -481,8 +481,24 @@ static void DoScsiInquiry(const TCHAR *filename, bool json)
 		//cout << JSONScsiInquiry(file.get()) << '\n';
 		//cout.flush();
 	} else {
-		cout << ScsiInquiry(file.get()) << '\n';
-		cout.flush();
+#ifdef _WIN32
+		if (ci_stdout.is_console && ci_stdout.is_real_console) {
+			// Windows: Using a real console on stdout.
+			// Convert to UTF-16 and use WriteConsoleW().
+			// NOTE: This is seemingly faster than even using UTF-8
+			// output on Windows 10 1607.
+			ostringstream oss;
+			oss << ScsiInquiry(file.get()) << '\n';
+			cout.flush();
+			const string str = oss.str();
+			// TODO: Error checking.
+			win32_write_to_console(str.data(), static_cast<int>(str.size()));
+		} else
+#endif /* _WIN32 */
+		{
+			cout << ScsiInquiry(file.get()) << '\n';
+			cout.flush();
+		}
 	}
 }
 
@@ -540,8 +556,24 @@ static void DoAtaIdentifyDevice(const TCHAR *filename, bool json, bool packet)
 		//cout << JSONAtaIdentifyDevice(file.get(), packet) << '\n';
 		//cout.flush();
 	} else {
-		cout << AtaIdentifyDevice(file.get(), packet) << '\n';
-		cout.flush();
+#ifdef _WIN32
+		if (ci_stdout.is_console && ci_stdout.is_real_console) {
+			// Windows: Using a real console on stdout.
+			// Convert to UTF-16 and use WriteConsoleW().
+			// NOTE: This is seemingly faster than even using UTF-8
+			// output on Windows 10 1607.
+			ostringstream oss;
+			oss << AtaIdentifyDevice(file.get()) << '\n';
+			cout.flush();
+			const string str = oss.str();
+			// TODO: Error checking.
+			win32_write_to_console(str.data(), static_cast<int>(str.size()));
+		} else
+#endif /* _WIN32 */
+		{
+			cout << AtaIdentifyDevice(file.get(), packet) << '\n';
+			cout.flush();
+		}
 	}
 }
 #endif /* RP_OS_SCSI_SUPPORTED */
