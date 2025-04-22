@@ -16,20 +16,21 @@
 extern "C" {
 #endif
 
-// Is stdout a console?
-// If it is, we can print ANSI escape sequences.
-extern bool is_stdout_console;
-
+typedef struct _ConsoleInfo_t {
+	bool is_console;	// True if this is a real console and not redirected to a file.
 #ifdef _WIN32
-// Windows 10 1607 ("Anniversary Update") adds support for ANSI escape sequences.
-// For older Windows, we'll need to parse the sequences manually and
-// call SetConsoleTextAttribute().
-extern bool does_console_support_ansi;
+	bool supports_ansi;	// True if the console supports ANSI escape sequences.
+	bool is_real_console;	// True if this is a real Windows console and not e.g. MinTTY.
 
-// Is this a real Windows console or a fake VT, e.g. MinTTY?
-// If true, this is a real Windows console, and WriteConsole() will work.
-extern bool is_real_console;
+	// Windows 10 1607 ("Anniversary Update") adds support for ANSI escape sequences.
+	// For older Windows, we'll need to parse the sequences manually and
+	// call SetConsoleTextAttribute().
+	uint16_t wAttributesOrig;	// For real consoles: Original attributes
 #endif /* _WIN32 */
+} ConsoleInfo_t;
+
+extern ConsoleInfo_t ci_stdout;
+extern ConsoleInfo_t ci_stderr;
 
 /**
  * Initialize VT detection.

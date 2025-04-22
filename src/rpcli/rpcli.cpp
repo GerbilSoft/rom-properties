@@ -306,7 +306,7 @@ static void DoFile(const TCHAR *filename, bool json, const vector<ExtractParam> 
 			fflush(stderr);
 
 #ifdef _WIN32
-			if (is_stdout_console && is_real_console) {
+			if (ci_stdout.is_console && ci_stdout.is_real_console) {
 				// Windows: Using stdout console.
 				// Convert to UTF-16 and use WriteConsoleW().
 				// NOTE: This is seemingly faster than even using UTF-8
@@ -326,7 +326,7 @@ static void DoFile(const TCHAR *filename, bool json, const vector<ExtractParam> 
 			}
 		} else {
 #ifdef _WIN32
-			if (is_stdout_console && is_real_console && !does_console_support_ansi) {
+			if (ci_stdout.is_console && ci_stdout.is_real_console && !ci_stdout.supports_ansi) {
 				// Windows: Using stdout console, but it doesn't support ANSI escapes.
 				// NOTE: Console may support UTF-8, but since it doesn't support
 				// ANSI escapes, we're better off using WriteConsoleW() anyway.
@@ -341,7 +341,7 @@ static void DoFile(const TCHAR *filename, bool json, const vector<ExtractParam> 
 			{
 #ifdef ENABLE_SIXEL
 				// If this is a tty, print the icon/banner using libsixel.
-				if (is_stdout_console) {
+				if (ci_stdout.is_console) {
 					print_sixel_icon_banner(romData);
 				}
 #endif /* ENABLE_SIXEL */
@@ -717,8 +717,9 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 	vector<ExtractParam> extract;
 
 	// TODO: Add a command line option to override color output.
+	// NOTE: Only checking ci_stdout here, since actual data is printed on stdout.
 	init_vt();
-	if (is_stdout_console) {
+	if (ci_stdout.is_console) {
 		flags |= OF_Text_UseAnsiColor;
 	}
 
