@@ -1,13 +1,12 @@
 /* Convenience header for conditional use of GNU <libintl.h>.
-   Copyright (C) 1995-1998, 2000-2002, 2004-2006, 2009-2020 Free Software
-   Foundation, Inc.
+   Copyright (C) 1995-2025 Free Software Foundation, Inc.
 
-   This program is free software: you can redistribute it and/or modify
-   it under the terms of the GNU Lesser General Public License as published by
-   the Free Software Foundation; either version 2.1 of the License, or
-   (at your option) any later version.
+   This file is free software: you can redistribute it and/or modify
+   it under the terms of the GNU Lesser General Public License as
+   published by the Free Software Foundation; either version 2.1 of the
+   License, or (at your option) any later version.
 
-   This program is distributed in the hope that it will be useful,
+   This file is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU Lesser General Public License for more details.
@@ -19,6 +18,7 @@
 
 #ifndef _LIBGETTEXT_H
 #define _LIBGETTEXT_H 1
+
 
 #if defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 2))
 /* Disable -Wvla warnings enabled by KF5's extra-cmake-modules. */
@@ -55,19 +55,19 @@
    as well because people using "gettext.h" will not include <libintl.h>,
    and also including <libintl.h> would fail on SunOS 4, whereas <locale.h>
    is OK.  */
-#if defined(__sun)
-# include <locale.h>
-#endif
+# if defined(__sun)
+#  include <locale.h>
+# endif
 
 /* Many header files from the libstdc++ coming with g++ 3.3 or newer include
    <libintl.h>, which chokes if dcgettext is defined as a macro.  So include
    it now, to make later inclusions of <libintl.h> a NOP.  */
-#if defined(__cplusplus) && defined(__GNUG__) && (__GNUC__ >= 3)
-# include <cstdlib>
-# if (__GLIBC__ >= 2 && !defined __UCLIBC__) || _GLIBCXX_HAVE_LIBINTL_H
-#  include <libintl.h>
+# if defined(__cplusplus) && defined(__GNUG__) && (__GNUC__ >= 3)
+#  include <cstdlib>
+#  if (__GLIBC__ >= 2 && !defined __UCLIBC__) || _GLIBCXX_HAVE_LIBINTL_H
+#   include <libintl.h>
+#  endif
 # endif
-#endif
 
 /* Disabled NLS.
    The casts to 'const char *' serve the purpose of producing warnings
@@ -103,11 +103,13 @@
 
 #endif
 
+
 /* Prefer gnulib's setlocale override over libintl's setlocale override.  */
 #ifdef GNULIB_defined_setlocale
 # undef setlocale
 # define setlocale rpl_setlocale
 #endif
+
 
 /* A pseudo function call that serves as a marker for the automated
    extraction of messages, but does not call gettext().  The run-time
@@ -118,6 +120,7 @@
    initializer for static 'char[]' or 'const char[]' variables.  */
 #define gettext_noop(String) String
 
+
 /* The separator between msgctxt and msgid in a .mo file.  */
 #define GETTEXT_CONTEXT_GLUE "\004"
 
@@ -125,6 +128,9 @@
    MSGID.  MSGCTXT and MSGID must be string literals.  MSGCTXT should be
    short and rarely need to change.
    The letter 'p' stands for 'particular' or 'special'.  */
+
+#include <locale.h> /* for LC_MESSAGES */
+
 #ifdef DEFAULT_TEXT_DOMAIN
 # define pgettext(Msgctxt, Msgid) \
    pgettext_aux (DEFAULT_TEXT_DOMAIN, Msgctxt GETTEXT_CONTEXT_GLUE Msgid, Msgid, LC_MESSAGES)
@@ -188,11 +194,12 @@ npgettext_aux (const char *domain,
     return translation;
 }
 
+
 /* The same thing extended for non-constant arguments.  Here MSGCTXT and MSGID
    can be arbitrary expressions.  But for string literals these macros are
    less efficient than those above.  */
 
-#include <string.h>
+#include <string.h> /* for memcpy */
 
 /* GNULIB_NO_VLA can be defined to disable use of VLAs even if supported.
    This relates to the -Wvla and -Wvla-larger-than warnings, enabled in
@@ -201,16 +208,15 @@ npgettext_aux (const char *domain,
    or may have security implications due to non-deterministic stack usage.  */
 
 #if (!defined GNULIB_NO_VLA \
-     && (((__GNUC__ >= 3 || defined __clang__) && !defined __STRICT_ANSI__) \
-         /* || (__STDC_VERSION__ == 199901L && !defined __HP_cc)
-            || (__STDC_VERSION__ >= 201112L && !defined __STDC_NO_VLA__) */ ))
+     && defined __STDC_VERSION__ && 199901L <= __STDC_VERSION__ \
+     && !defined __STDC_NO_VLA__)
 # define _LIBGETTEXT_HAVE_VARIABLE_SIZE_ARRAYS 1
 #else
 # define _LIBGETTEXT_HAVE_VARIABLE_SIZE_ARRAYS 0
 #endif
 
 #if !_LIBGETTEXT_HAVE_VARIABLE_SIZE_ARRAYS
-#include <stdlib.h>
+# include <stdlib.h> /* for malloc, free */
 #endif
 
 #ifdef DEFAULT_TEXT_DOMAIN
@@ -235,8 +241,8 @@ dcpgettext_expr (const char *domain,
                  const char *msgctxt, const char *msgid,
                  int category)
 {
-  const size_t msgctxt_len = strlen (msgctxt) + 1;
-  const size_t msgid_len = strlen (msgid) + 1;
+  size_t msgctxt_len = strlen (msgctxt) + 1;
+  size_t msgid_len = strlen (msgid) + 1;
   const char *translation;
 #if _LIBGETTEXT_HAVE_VARIABLE_SIZE_ARRAYS
   char msg_ctxt_id[msgctxt_len + msgid_len];
@@ -321,5 +327,6 @@ dcnpgettext_expr (const char *domain,
 #if defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))
 #  pragma GCC diagnostic pop
 #endif
+
 
 #endif /* _LIBGETTEXT_H */
