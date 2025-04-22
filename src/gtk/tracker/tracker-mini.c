@@ -164,30 +164,29 @@ int rp_tracker_init_pfn(void)
 
 	for (const TrackerApiLibs_t *p = trackerApiLibs; p < pEnd; p++) {
 		libtracker_sparql_so = dlopen(p->sparql_so, RTLD_NOW | RTLD_LOCAL);
-		libtracker_extract_so = dlopen(p->extract_so, RTLD_NOW | RTLD_LOCAL);
-		if (libtracker_sparql_so && libtracker_extract_so) {
-			// Found a Tracker API.
-			// NOTE: API v3 is essentially the same as v2.
-			if (p->api_version >= 2) {
-				init_tracker_v2();
-			} else {
-				init_tracker_v1();
-			}
-
-			rp_tracker_api = p->api_version;
-			return 0;
+		if (!libtracker_sparql_so) {
+			// Not found. Try the next one.
+			continue;
 		}
 
-		// Not found. Try again.
-		// TODO: NULL out the function pointers?
-		if (libtracker_sparql_so) {
+		libtracker_extract_so = dlopen(p->extract_so, RTLD_NOW | RTLD_LOCAL);
+		if (!libtracker_extract_so) {
+			// Not found. Try the next one.
 			dlclose(libtracker_sparql_so);
 			libtracker_sparql_so = NULL;
+			continue;
 		}
-		if (libtracker_extract_so) {
-			dlclose(libtracker_extract_so);
-			libtracker_extract_so = NULL;
+
+		// Found a Tracker API.
+		// NOTE: API v3 is essentially the same as v2.
+		if (p->api_version >= 2) {
+			init_tracker_v2();
+		} else {
+			init_tracker_v1();
 		}
+
+		rp_tracker_api = p->api_version;
+		return 0;
 	}
 
 	// One or more libraries were not found.
