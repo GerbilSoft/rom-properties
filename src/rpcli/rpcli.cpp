@@ -306,10 +306,11 @@ static void DoFile(const TCHAR *filename, bool json, const vector<ExtractParam> 
 			fflush(stderr);
 
 #ifdef _WIN32
-			if (is_stdout_console && (!does_console_support_ansi || old_console_output_cp == 0)) {
-				// Windows: Using stdout console, but it doesn't support ANSI escapes,
-				// and/or UTF-8 is not supported.
+			if (is_stdout_console) {
+				// Windows: Using stdout console.
 				// Convert to UTF-16 and use WriteConsoleW().
+				// NOTE: This is seemingly faster than even using UTF-8
+				// output on Windows 10 1607.
 				ostringstream oss;
 				oss << JSONROMOutput(romData.get(), flags) << '\n';
 				cout.flush();

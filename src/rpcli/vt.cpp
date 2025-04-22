@@ -196,16 +196,30 @@ int win32_write_to_console(const char *str, int len)
 		return -ENOTTY;
 	}
 
+	// Write in 4096-character chunks.
+	// WriteConsole() seems to fail if the input buffer is > 64 KiB.
+	static constexpr int CHUNK_SIZE = 4096;
+
 #ifdef UNICODE
 	// Convert to UTF-16 first.
 	u16string wstr = utf8_to_utf16(str, len);
-	WriteConsole(hStdOut, wstr.data(), static_cast<DWORD>(wstr.size()), nullptr, nullptr);
+	const wchar_t *p = reinterpret_cast<const wchar_t*>(wstr.data());
+	for (int size = static_cast<int>(wstr.size()); size > 0; size -= CHUNK_SIZE) {
+		const DWORD chunk_len = static_cast<DWORD>((size > CHUNK_SIZE) ? CHUNK_SIZE : size);
+		WriteConsoleW(hStdOut, p, chunk_len, nullptr, nullptr);
+		p += chunk_len;
+	}
 #else /* !UNICODE */
 	// FIXME: Convert to ANSI?
 	if (len < 0) {
-		len = strlen(str);
+		len = static_cast<int>(strlen(str));
 	}
-	WriteConsole(hStdOut, str, static_cast<DWORD>(len), nullptr, nullptr);
+	const char *p = str;
+	for (int size = len; size > 0; size -= CHUNK_SIZE) {
+		const DWORD chunk_len = static_cast<DWORD>((size > CHUNK_SIZE) ? CHUNK_SIZE : size);
+		WriteConsoleA(hStdOut, p, chunk_len, nullptr, nullptr);
+		p += chunk_len;
+	}
 #endif /* UNICODE */
 
 	return 0;
