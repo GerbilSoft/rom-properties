@@ -658,7 +658,11 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 	// Enable UTF-8 console output.
 	// Tested on Windows XP (fails) and Windows 7 (works).
 	// TODO: Does it work on Windows Vista?
-	if (IsWindowsVistaOrGreater()) {
+	// FIXME: On Windows 7, if locale is set to Spanish (es_ES), running
+	// `rpcli rpcli.exe` causes a random crash halfway through printing,
+	// if we set the console output CP to UTF-8.
+	// TODO: Verify if that happens on Windows 8 or 8.1.
+	if (IsWindows10OrGreater()) {
 		old_console_output_cp = GetConsoleOutputCP();
 		atexit(RestoreConsoleOutputCP);
 		SetConsoleOutputCP(CP_UTF8);
