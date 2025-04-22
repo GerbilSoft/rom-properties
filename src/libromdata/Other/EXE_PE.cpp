@@ -771,7 +771,7 @@ void EXEPrivate::addFields_PE(void)
 		// Parse the manifest if it's present.
 		// TODO: Support external manifests, e.g. program.exe.manifest?
 		int ret = addFields_PE_Manifest();
-		if (ret != 0) {
+		if (ret != 0 && ret != -ENOENT) {
 			fields.addField_string(C_("RomData", "Warning"),
 				C_("RomData", "XML parsing failed."),
 				RomFields::STRF_WARNING);

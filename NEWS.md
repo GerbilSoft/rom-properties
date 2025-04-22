@@ -5,6 +5,8 @@
 * Bug fixes:
   * NintendoDS_BNR: Animated icons were missing the animated icon flag.
     * Affects: v2.4 - v2.5
+  * EXE: Don't show the "XML parsing failed" warning if the EXE doesn't
+    actually have a manifest.
 
 * Other changes:
   * Added support for localsearch-3.8, the new name of Tracker.
