@@ -11,15 +11,15 @@
 
 #include "vt.hpp"
 
+// librptext
+#include "librptext/conversion.hpp"
+using LibRpText::utf8_to_utf16;
+
 // C++ STL classes
 using std::array;
 using std::ostream;
 using std::string;
-
-#ifdef HAVE_STD_STRING_VIEW
-#include <string_view>
-using std::string_view;
-#endif /* #ifdef HAVE_STD_STRING_VIEW */
+using std::u16string;
 
 #ifdef _WIN32
 #  include "libwin32common/RpWin32_sdk.h"
@@ -181,14 +181,44 @@ void init_vt(void)
 
 #ifdef _WIN32
 /**
- * Write text with ANSI escape sequences to a Windows console.
- * Color escapes will be handled using SetConsoleTextAttribute().
- * TODO: Unicode?
- *
- * @param os Output stream (should be cout)
- * @param str Source text
+ * Write UTF-8 text to the Windows console.
+ * Direct write using WriteConsole(); no ANSI escape interpretation.
+ * @param str UTF-8 text string
+ * @param len Length of UTF-8 text string (if -1, use strlen)
+ * @return 0 on success; negative POSIX error code on error.
  */
-void cout_win32_ansi_color(ostream &os, const char *str)
+int win32_write_to_console(const char *str, int len)
+{
+	HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
+	assert(hStdOut != nullptr);
+	if (!hStdOut) {
+		// Cannot access the console handle...
+		return -ENOTTY;
+	}
+
+#ifdef UNICODE
+	// Convert to UTF-16 first.
+	u16string wstr = utf8_to_utf16(str, len);
+	WriteConsole(hStdOut, wstr.data(), static_cast<DWORD>(wstr.size()), nullptr, nullptr);
+#else /* !UNICODE */
+	// FIXME: Convert to ANSI?
+	if (len < 0) {
+		len = strlen(str);
+	}
+	WriteConsole(hStdOut, str, static_cast<DWORD>(len), nullptr, nullptr);
+#endif /* UNICODE */
+
+	return 0;
+}
+
+/**
+ * Write text with ANSI escape sequences to the Windows console.
+ * Color escapes will be handled using SetConsoleTextAttribute().
+ *
+ * @param str Source text
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int win32_console_print_ansi_color(const char *str)
 {
 	// Map ANSI colors (red=1) to Windows colors (blue=1).
 	static constexpr array<uint8_t, 8> color_map = {
@@ -199,9 +229,7 @@ void cout_win32_ansi_color(ostream &os, const char *str)
 	assert(hStdOut != nullptr);
 	if (!hStdOut) {
 		// Cannot access the console handle...
-		// Print the string as-is.
-		os << str;
-		return;
+		return -ENOTTY;
 	}
 
 	WORD wAttributes = wAttributesOrig;
@@ -212,18 +240,14 @@ void cout_win32_ansi_color(ostream &os, const char *str)
 		if (!pEsc) {
 			// No more escape characters.
 			// Send the rest of the buffer.
-			os << str;
+			win32_write_to_console(str);
 			break;
 		}
 
 		// Found an escape character.
 		// Send everything up to the escape.
 		if (str != pEsc) {
-#ifdef HAVE_STD_STRING_VIEW
-			os << string_view(str, pEsc - str);
-#else /* !HAVE_STD_STRING_VIEW */
-			os << string(str, pEsc - str);
-#endif /* HAVE_STD_STRING_VIEW */
+			win32_write_to_console(str, static_cast<int>(pEsc - str));
 			str = pEsc;
 		}
 
@@ -304,16 +328,13 @@ seq_loop:
 			goto seq_loop;
 		}
 
-		// Flush the output stream before setting attributes.
-		os.flush();
 		// Set the console attributes.
 		SetConsoleTextAttribute(hStdOut, wAttributes);
 		str++;
 	}
 
-	// Flush the output stream before restoring attributes.
-	os.flush();
 	// Restore the original console attributes.
 	SetConsoleTextAttribute(hStdOut, wAttributesOrig);
+	return 0;
 }
 #endif /* _WIN32 */

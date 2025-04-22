@@ -51,6 +51,10 @@ using namespace LibRomData;
 #endif /* _WIN32 */
 using namespace LibRpTexture;
 
+// librptext
+#include "librptext/conversion.hpp"
+using LibRpText::utf8_to_utf16;
+
 #ifdef ENABLE_SIXEL
 // Sixel
 #include "rp_sixel.hpp"
@@ -84,6 +88,7 @@ using std::ofstream;
 using std::ostringstream;
 using std::shared_ptr;
 using std::string;
+using std::u16string;
 using std::unique_ptr;
 using std::vector;
 
@@ -122,6 +127,18 @@ DELAYLOAD_TEST_FUNCTION_IMPL1(libintl_textdomain, nullptr);
 #  define T2U8c(tcs) (T2U8(tcs).c_str())
 #else /* !_WIN32 */
 #  define T2U8c(tcs) (tcs)
+#endif /* _WIN32 */
+
+#ifdef _WIN32
+// Console code page restoration
+// For UTF-8 console output on Windows 10.
+static UINT old_console_output_cp = 0;
+static void RestoreConsoleOutputCP(void)
+{
+	if (old_console_output_cp != 0) {
+		SetConsoleOutputCP(old_console_output_cp);
+	}
+}
 #endif /* _WIN32 */
 
 struct ExtractParam {
@@ -288,13 +305,36 @@ static void DoFile(const TCHAR *filename, bool json, const vector<ExtractParam> 
 			fputc('\n', stderr);
 			fflush(stderr);
 
-			cout << JSONROMOutput(romData.get(), flags) << '\n';
+#ifdef _WIN32
+			if (is_stdout_console && (!does_console_support_ansi || old_console_output_cp == 0)) {
+				// Windows: Using stdout console, but it doesn't support ANSI escapes,
+				// and/or UTF-8 is not supported.
+				// Convert to UTF-16 and use WriteConsoleW().
+				ostringstream oss;
+				oss << JSONROMOutput(romData.get(), flags) << '\n';
+				cout.flush();
+				const string str = oss.str();
+				// TODO: Error checking.
+				win32_write_to_console(str.data(), static_cast<int>(str.size()));
+			} else
+#endif /* _WIN32 */
+			{
+				// Windows: Using stdout console with UTF-8 support,
+				// or redirected to a file, or not using Windows.
+				cout << JSONROMOutput(romData.get(), flags) << '\n';
+			}
 		} else {
 #ifdef _WIN32
 			if (is_stdout_console && !does_console_support_ansi) {
+				// Windows: Using stdout console, but it doesn't support ANSI escapes.
+				// NOTE: Console may support UTF-8, but since it doesn't support
+				// ANSI escapes, we're better off using WriteConsoleW() anyway.
+				// Support for ANSI escape sequences was added in Windows 10 1607.
 				ostringstream oss;
 				oss << ROMOutput(romData.get(), lc, flags) << '\n';
-				cout_win32_ansi_color(cout, oss.str().c_str());
+				cout.flush();
+				// TODO: Error checking.
+				win32_console_print_ansi_color(oss.str().c_str());
 			} else
 #endif /* _WIN32 */
 			{
@@ -304,6 +344,8 @@ static void DoFile(const TCHAR *filename, bool json, const vector<ExtractParam> 
 					print_sixel_icon_banner(romData);
 				}
 #endif /* ENABLE_SIXEL */
+				// Windows: Using stdout console with UTF-8 and ANSI escape support,
+				// or redirected to a file, or not using Windows.
 				cout << ROMOutput(romData.get(), lc, flags) << '\n';
 			}
 		}
@@ -503,16 +545,6 @@ static void DoAtaIdentifyDevice(const TCHAR *filename, bool json, bool packet)
 }
 #endif /* RP_OS_SCSI_SUPPORTED */
 
-#ifdef _WIN32
-static UINT old_console_output_cp = 0;
-static void RestoreConsoleOutputCP(void)
-{
-	if (old_console_output_cp != 0) {
-		SetConsoleOutputCP(old_console_output_cp);
-	}
-}
-#endif /* _WIN32 */
-
 static void ShowUsage(void)
 {
 	// TODO: Use argv[0] instead of hard-coding 'rpcli'?
@@ -655,13 +687,10 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 #endif /* ENABLE_NLS && _MSC_VER */
 
 #ifdef _WIN32
-	// Enable UTF-8 console output.
-	// Tested on Windows XP (fails) and Windows 7 (works).
-	// TODO: Does it work on Windows Vista?
-	// FIXME: On Windows 7, if locale is set to Spanish (es_ES), running
-	// `rpcli rpcli.exe` causes a random crash halfway through printing,
-	// if we set the console output CP to UTF-8.
-	// TODO: Verify if that happens on Windows 8 or 8.1.
+	// Enable UTF-8 console output on Windows 10.
+	// For older Windows, which doesn't support ANSI escape sequences,
+	// WriteConsoleW() will be used for Unicode output instead.
+	// TODO: Require Windows 10 1607 or later for ANSI escape sequences?
 	if (IsWindows10OrGreater()) {
 		old_console_output_cp = GetConsoleOutputCP();
 		atexit(RestoreConsoleOutputCP);
