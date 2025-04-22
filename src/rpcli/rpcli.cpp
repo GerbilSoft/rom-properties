@@ -457,7 +457,7 @@ static void DoScsiInquiry(const TCHAR *filename, bool json)
 	}
 
 	// TODO: Check for unsupported devices? (Only CD-ROM is supported.)
-	if (file->isDevice()) {
+	if (!file->isDevice()) {
 		// TODO: Return an error code?
 		fputs("-- ", stderr);
 		fputs(C_("rpcli", "Not a device file"), stderr);
