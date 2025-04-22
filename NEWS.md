@@ -13,6 +13,9 @@
     This is internally handled as API "3L".
     * Fixes #446: Use `localsearch` paths instead of `tracker3-miners`
       * Reported by @lufog.
+  * rpcli: Limit Windows UTF-8 console output to Windows 10 or later.
+    On Windows 7 (and possibly 8 and 8.1), when using a non-English
+    language, rpcli might randomly crash due to console bugs.
 
 ## v2.5 (released 2025/04/19)
 
@@ -100,6 +103,7 @@
     can get tripped up because it uses C-style varargs.
   * rpcli: Text output for "warning" messages is now colorized if
     printing to a terminal.
+  * rpcli: On Windows, enable UTF-8 console output if using Windows 7 or later.
   * Removed IFUNC support. It's only supported by glibc on Linux (and possibly
     some of the BSDs), and it adds a lot of complexity. The regular C dispatch
     functions only have a few instructions of overhead in most cases.
