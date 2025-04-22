@@ -32,24 +32,6 @@ tracker_extract_pfns_t tracker_extract_pfns;
 	u.v.substruct.sym = dlsym(so, #prefix "_" #sym)
 
 /**
- * Close dlopen()'d module pointers.
- */
-static void close_modules(void)
-{
-	// TODO: NULL out the function pointers?
-	if (libtracker_sparql_so) {
-		dlclose(libtracker_sparql_so);
-		libtracker_sparql_so = NULL;
-	}
-	if (libtracker_extract_so) {
-		dlclose(libtracker_extract_so);
-		libtracker_extract_so = NULL;
-	}
-
-	rp_tracker_api = 0;
-}
-
-/**
  * Initialize libtracker_extract v1 function pointers.
  * Common to both v1 and v2.
  */
@@ -160,57 +142,55 @@ int rp_tracker_init_pfn(void)
 		return 0;
 	}
 
-	// Check for LocalSearch 3.0. (aka tracker-3.8)
-	libtracker_sparql_so = dlopen("libtinysparql-3.0.so.0", RTLD_NOW | RTLD_LOCAL);
-	libtracker_extract_so = dlopen("libtracker-extract.so", RTLD_NOW | RTLD_LOCAL);
-	if (libtracker_sparql_so && libtracker_extract_so) {
-		// Found LocalSearch 3.8.
-		// NOTE: Functions are essentially the same as 2.0.
-		init_tracker_v2();
-		rp_tracker_api = 3;
-		return 0;
-	}
+	typedef struct _TrackerApiLibs_t {
+		const char *sparql_so;	// libtracker-sparql filename
+		const char *extract_so;	// libtracker-extract.so filename
+		int api_version;	// Tracker API version (1, 2, 3; 3L isn't used here)
+	} TrackerApiLibs_t;
+	static const TrackerApiLibs_t trackerApiLibs[] = {
+		// LocalSearch 3.0 (aka tracker-3.8)
+		{"libtinysparql-3.0.so.0", "libtracker-extract.so", 3},
 
-	// Clear dlopen() pointers and try again.
-	close_modules();
+		// Tracker 3.0
+		{"libtracker-sparql-3.0.so.0", "libtracker-extract.so", 3},
 
-	// Check for Tracker 3.0.
-	libtracker_sparql_so = dlopen("libtracker-sparql-3.0.so.0", RTLD_NOW | RTLD_LOCAL);
-	libtracker_extract_so = dlopen("libtracker-extract.so", RTLD_NOW | RTLD_LOCAL);
-	if (libtracker_sparql_so && libtracker_extract_so) {
-		// Found Tracker 3.0.
-		// NOTE: Functions are essentially the same as 2.0.
-		init_tracker_v2();
-		rp_tracker_api = 3;
-		return 0;
-	}
+		// Tracker 2.0
+		{"libtracker-sparql-2.0.so.0", "libtracker-extract.so.0", 2},
 
-	// Clear dlopen() pointers and try again.
-	close_modules();
+		// Tracker 1.0
+		{"libtracker-sparql-1.0.so.0", "libtracker-extract.so.0", 1},
+	};
+	static const TrackerApiLibs_t *const pEnd = &trackerApiLibs[sizeof(trackerApiLibs)/sizeof(trackerApiLibs[0])];
 
-	// Check for Tracker 2.0.
-	libtracker_sparql_so = dlopen("libtracker-sparql-2.0.so.0", RTLD_NOW | RTLD_LOCAL);
-	libtracker_extract_so = dlopen("libtracker-extract.so.0", RTLD_NOW | RTLD_LOCAL);
-	if (libtracker_sparql_so && libtracker_extract_so) {
-		// Found Tracker 2.0.
-		init_tracker_v2();
-		return 0;
-	}
+	for (const TrackerApiLibs_t *p = trackerApiLibs; p < pEnd; p++) {
+		libtracker_sparql_so = dlopen(p->sparql_so, RTLD_NOW | RTLD_LOCAL);
+		libtracker_extract_so = dlopen(p->extract_so, RTLD_NOW | RTLD_LOCAL);
+		if (libtracker_sparql_so && libtracker_extract_so) {
+			// Found a Tracker API.
+			// NOTE: API v3 is essentially the same as v2.
+			if (p->api_version >= 2) {
+				init_tracker_v2();
+			} else {
+				init_tracker_v1();
+			}
 
-	// Clear dlopen() pointers and try again.
-	close_modules();
+			rp_tracker_api = p->api_version;
+			return 0;
+		}
 
-	// Check for Tracker 1.0.
-	libtracker_sparql_so = dlopen("libtracker-sparql-1.0.so.0", RTLD_NOW | RTLD_LOCAL);
-	libtracker_extract_so = dlopen("libtracker-extract.so.0", RTLD_NOW | RTLD_LOCAL);
-	if (libtracker_sparql_so && libtracker_extract_so) {
-		// Found Tracker 1.0.
-		init_tracker_v1();
-		return 0;
+		// Not found. Try again.
+		// TODO: NULL out the function pointers?
+		if (libtracker_sparql_so) {
+			dlclose(libtracker_sparql_so);
+			libtracker_sparql_so = NULL;
+		}
+		if (libtracker_extract_so) {
+			dlclose(libtracker_extract_so);
+			libtracker_extract_so = NULL;
+		}
 	}
 
 	// One or more libraries were not found.
-	close_modules();
 	return -ENOENT;
 }
 
