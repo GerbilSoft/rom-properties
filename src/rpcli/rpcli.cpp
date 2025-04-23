@@ -1015,7 +1015,7 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 			default:
 				// FIXME: Unicode character on Windows.
 				ConsolePrint(&ci_stderr,
-					fmt::format(FRUN(C_("rpcli", "Warning: skipping unknown switch '{:c}'")), (char)argv[i][1])), true;
+					fmt::format(FRUN(C_("rpcli", "Warning: skipping unknown switch '{:c}'")), (char)argv[i][1]), true);
 				fputc('\n', stderr);
 				fflush(stderr);
 				break;
