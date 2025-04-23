@@ -180,6 +180,26 @@ static void ConsolePrint(ConsoleInfo_t *ci, const char *str, bool newline = fals
 	}
 }
 
+/**
+ * Print text to the console.
+ *
+ * On Windows, if a real console is in use, use WriteConsole().
+ *
+ * On other systems, or if we're not using a real console on Windows,
+ * use regular stdio functions.
+ *
+ * @param ci ConsoleInfo_t
+ * @param str String (C++)
+ * @param newline If true, print a newline afterwards.
+ */
+static inline void ConsolePrint(ConsoleInfo_t *ci, const string &str, bool newline = false)
+{
+	// NOTE: May be more efficient if we call win32_write_to_console()
+	// with an actual length parameter, but it takes more effort to
+	// maintain two versions of this function...
+	return ConsolePrint(ci, str.c_str(), newline);
+}
+
 struct ExtractParam {
 	const TCHAR *filename;	// Target filename. Can be null due to argv[argc]
 	int imageType;		// Image Type. -1 = iconAnimData, MUST be between -1 and IMG_INT_MAX
@@ -221,67 +241,80 @@ static void ExtractImages(const RomData *romData, const vector<ExtractParam> &ex
 
 			if (image && image->isValid()) {
 				found = true;
+				ConsolePrint(&ci_stderr, "-- ");
 				if (likely(!isMipmap)) {
-					cerr << "-- " <<
-						// tr: {0:s} == image type name, {1:s} == output filename
+					// tr: {0:s} == image type name, {1:s} == output filename
+					ConsolePrint(&ci_stderr,
 						fmt::format(FRUN(C_("rpcli", "Extracting {0:s} into '{1:s}'")),
 							RomData::getImageTypeName(imageType),
-							T2U8c(p.filename)) << '\n';
+							T2U8c(p.filename)), true);
 				} else {
-					cerr << "-- " <<
-						// tr: {0:d} == mipmap level, {1:s} == output filename
+					// tr: {0:d} == mipmap level, {1:s} == output filename
+					ConsolePrint(&ci_stderr,
 						fmt::format(FRUN(C_("rpcli", "Extracting mipmap level {0:d} into '{1:s}'")),
-							p.mipmapLevel, T2U8c(p.filename)) << '\n';
+							p.mipmapLevel, T2U8c(p.filename)), true);
 				}
-				cerr.flush();
+				fflush(stderr);
 				int errcode = RpPng::save(p.filename, image);
 				if (errcode != 0) {
 					// tr: {0:s} == filename, {1:s} == error message
-					cerr << fmt::format(FRUN(C_("rpcli", "Couldn't create file '{0:s}': {1:s}")),
-						T2U8c(p.filename), strerror(-errcode)) << '\n';
+					ConsolePrint(&ci_stderr,
+						fmt::format(FRUN(C_("rpcli", "Couldn't create file '{0:s}': {1:s}")),
+							T2U8c(p.filename), strerror(-errcode)), true);
 				} else {
-					cerr << "   " << C_("rpcli", "Done") << '\n';
+					ConsolePrint(&ci_stderr, "   ");
+					ConsolePrint(&ci_stderr, C_("rpcli", "Done"), true);
 				}
-				cerr.flush();
+				fflush(stderr);
 			}
 		} else if (p.imageType == -1) {
 			// iconAnimData image
 			auto iconAnimData = romData->iconAnimData();
 			if (iconAnimData && iconAnimData->count != 0 && iconAnimData->seq_count != 0) {
 				found = true;
-				cerr << "-- " << fmt::format(FRUN(C_("rpcli", "Extracting animated icon into '{:s}'")), T2U8c(p.filename)) << '\n';
-				cerr.flush();
+				ConsolePrint(&ci_stderr, "-- ");
+				ConsolePrint(&ci_stderr,
+					fmt::format(FRUN(C_("rpcli", "Extracting animated icon into '{:s}'")),
+						T2U8c(p.filename)), true);
+				fflush(stderr);
 				int errcode = RpPng::save(p.filename, iconAnimData);
 				if (errcode == -ENOTSUP) {
-					cerr << "   " << C_("rpcli", "APNG not supported, extracting only the first frame") << '\n';
-					cerr.flush();
+					ConsolePrint(&ci_stderr, "   ");
+					ConsolePrint(&ci_stderr,
+						C_("rpcli", "APNG not supported, extracting only the first frame"), true);
+					fflush(stderr);
 					// falling back to outputting the first frame
 					errcode = RpPng::save(p.filename, iconAnimData->frames[iconAnimData->seq_index[0]]);
 				}
 				if (errcode != 0) {
-					cerr << "   " <<
+					ConsolePrint(&ci_stderr, "   ");
+					ConsolePrint(&ci_stderr,
 						fmt::format(FRUN(C_("rpcli", "Couldn't create file '{0:s}': {1:s}")),
-							T2U8c(p.filename), strerror(-errcode)) << '\n';
+							T2U8c(p.filename), strerror(-errcode)), true);
 				} else {
-					cerr << "   " << C_("rpcli", "Done") << '\n';
+					ConsolePrint(&ci_stderr, "   ");
+					ConsolePrint(&ci_stderr, C_("rpcli", "Done"), true);
 				}
-				cerr.flush();
+				fflush(stderr);
 			}
 		}
 
 		if (!found) {
 			// TODO: Return an error code?
 			if (p.imageType == -1) {
-				cerr << "-- " << C_("rpcli", "Animated icon not found") << '\n';
+				ConsolePrint(&ci_stderr, "-- ");
+				ConsolePrint(&ci_stderr, C_("rpcli", "Animated icon not found"), true);
 			} else if (p.mipmapLevel >= 0) {
-				cerr << "-- " <<
-					fmt::format(FRUN(C_("rpcli", "Mipmap level {:d} not found")), p.mipmapLevel) << '\n';
+				ConsolePrint(&ci_stderr, "-- ");
+				ConsolePrint(&ci_stderr,
+					fmt::format(FRUN(C_("rpcli", "Mipmap level {:d} not found")), p.mipmapLevel), true);
 			} else {
 				const RomData::ImageType imageType =
 					static_cast<RomData::ImageType>(p.imageType);
-				cerr << "-- " <<
+				ConsolePrint(&ci_stderr, "-- ");
+				ConsolePrint(&ci_stderr, 
 					fmt::format(FRUN(C_("rpcli", "Image '{:s}' not found")),
-						RomData::getImageTypeName(imageType)) << '\n';
+						RomData::getImageTypeName(imageType)), true);
 			}
 			cerr.flush();
 		}
@@ -305,20 +338,18 @@ static void DoFile(const TCHAR *filename, bool json, const vector<ExtractParam> 
 		// File: Open the file and call RomDataFactory::create() with the opened file.
 
 		// FIXME: Make T2U8c() unnecessary here.
-		fputs("== ", stderr);
-		fmt::print(stderr, FRUN(C_("rpcli", "Reading file '{:s}'...")), T2U8c(filename));
-		fputc('\n', stderr);
+		ConsolePrint(&ci_stderr, "== ");
+		ConsolePrint(&ci_stderr, fmt::format(FRUN(C_("rpcli", "Reading file '{:s}'...")), T2U8c(filename)), true);
 		fflush(stderr);
 
 		shared_ptr<RpFile> file = std::make_shared<RpFile>(filename, RpFile::FM_OPEN_READ_GZ);
 		if (!file->isOpen()) {
 			// TODO: Return an error code?
-			fputs("-- ", stderr);
-			fmt::print(stderr, FRUN(C_("rpcli", "Couldn't open file: {:s}")), strerror(file->lastError()));
-			fputc('\n', stderr);
+			ConsolePrint(&ci_stderr, "-- ");
+			ConsolePrint(&ci_stderr, fmt::format(FRUN(C_("rpcli", "Couldn't open file: {:s}")), strerror(file->lastError())), true);
 			fflush(stderr);
 			if (json) {
-				fmt::print(FSTR("{{\"error\":\"couldn't open file\",\"code\":{:d}}}\n"), file->lastError());
+				ConsolePrint(&ci_stderr, fmt::format(FSTR("{{\"error\":\"couldn't open file\",\"code\":{:d}}}\n"), file->lastError()));
 				fflush(stdout);
 			}
 			return;
@@ -329,9 +360,8 @@ static void DoFile(const TCHAR *filename, bool json, const vector<ExtractParam> 
 		// Directory: Call RomDataFactory::create() with the filename.
 
 		// FIXME: Make T2U8c() unnecessary here.
-		fputs("== ", stderr);
-		fmt::print(stderr, FRUN(C_("rpcli", "Reading directory '{:s}'...")), T2U8c(filename));
-		fputc('\n', stderr);
+		ConsolePrint(&ci_stderr, "== ");
+		ConsolePrint(&ci_stderr, fmt::format(FRUN(C_("rpcli", "Reading directory '{:s}'...")), T2U8c(filename)), true);
 		fflush(stderr);
 
 		romData = RomDataFactory::create(filename);
@@ -339,9 +369,8 @@ static void DoFile(const TCHAR *filename, bool json, const vector<ExtractParam> 
 
 	if (romData) {
 		if (json) {
-			fputs("-- ", stderr);
-			fputs(C_("rpcli", "Outputting JSON data"), stderr);
-			fputc('\n', stderr);
+			ConsolePrint(&ci_stderr, "-- ");
+			ConsolePrint(&ci_stderr, C_("rpcli", "Outputting JSON data"), true);
 			fflush(stderr);
 
 #ifdef _WIN32
@@ -353,6 +382,7 @@ static void DoFile(const TCHAR *filename, bool json, const vector<ExtractParam> 
 				ostringstream oss;
 				oss << JSONROMOutput(romData.get(), flags) << '\n';
 				cout.flush();
+				fflush(stdout);
 				const string str = oss.str();
 				// TODO: Error checking.
 				win32_write_to_console(&ci_stdout, str.data(), static_cast<int>(str.size()));
@@ -373,6 +403,7 @@ static void DoFile(const TCHAR *filename, bool json, const vector<ExtractParam> 
 				ostringstream oss;
 				oss << ROMOutput(romData.get(), lc, flags) << '\n';
 				cout.flush();
+				fflush(stdout);
 				// TODO: Error checking.
 				win32_console_print_ansi_color(oss.str().c_str());
 			} else
@@ -390,15 +421,15 @@ static void DoFile(const TCHAR *filename, bool json, const vector<ExtractParam> 
 			}
 		}
 		cout.flush();
+		fflush(stdout);
 		ExtractImages(romData.get(), extract);
 	} else {
-		fputs("-- ", stderr);
-		fputs(C_("rpcli", "ROM is not supported"), stderr);
-		fputc('\n', stderr);
+		ConsolePrint(&ci_stderr, "-- ");
+		ConsolePrint(&ci_stderr, C_("rpcli", "ROM is not supported"), true);
 		fflush(stderr);
 
 		if (json) {
-			fputs("{\"error\":\"rom is not supported\"}\n", stdout);
+			ConsolePrint(&ci_stdout, ("{\"error\":\"rom is not supported\"}\n"));
 			fflush(stdout);
 		}
 	}
