@@ -662,6 +662,21 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 	setlocale(LC_CTYPE, "C");
 #endif /* _WIN32 */
 
+#if defined(ENABLE_NLS) && defined(_MSC_VER)
+	// Delay load verification: libgnuintl
+	// TODO: Skip this if not linked with /DELAYLOAD?
+	if (DelayLoad_test_libintl_textdomain() != 0) {
+		// Delay load failed.
+		_fputts(_T("*** ERROR: ") LIBGNUINTL_DLL _T(" could not be loaded.\n\n")
+			_T("This build of rom-properties has localization enabled,\n")
+			_T("which requires the use of GNU gettext.\n\n")
+			_T("Please redownload rom-properties ") _T(RP_VERSION_STRING) _T(" and copy the\n")
+			LIBGNUINTL_DLL _T(" file to the installation directory.\n"),
+			stderr);
+		return EXIT_FAILURE;
+	}
+#endif /* ENABLE_NLS && _MSC_VER */
+
 #ifdef RP_LIBROMDATA_IS_DLL
 #  ifdef _MSC_VER
 #    define ROMDATA_PREFIX
@@ -695,21 +710,6 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 #  endif /* _MSC_VER */
 #endif /* RP_LIBROMDATA_IS_DLL */
 
-#if defined(ENABLE_NLS) && defined(_MSC_VER)
-	// Delay load verification: libgnuintl
-	// TODO: Skip this if not linked with /DELAYLOAD?
-	if (DelayLoad_test_libintl_textdomain() != 0) {
-		// Delay load failed.
-		_fputts(_T("*** ERROR: ") LIBGNUINTL_DLL _T(" could not be loaded.\n\n")
-			_T("This build of rom-properties has localization enabled,\n")
-			_T("which requires the use of GNU gettext.\n\n")
-			_T("Please redownload rom-properties ") _T(RP_VERSION_STRING) _T(" and copy the\n")
-			LIBGNUINTL_DLL _T(" file to the installation directory.\n"),
-			stderr);
-		return EXIT_FAILURE;
-	}
-#endif /* ENABLE_NLS && _MSC_VER */
-
 #ifdef _WIN32
 	// Enable UTF-8 console output on Windows 10.
 	// For older Windows, which doesn't support ANSI escape sequences,
@@ -734,7 +734,7 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 		// Since we didn't do anything, return a failure code.
 		return EXIT_FAILURE;
 	}
-	
+
 	static_assert(RomData::IMG_INT_MIN == 0, "RomData::IMG_INT_MIN must be 0!");
 
 	unsigned int flags = 0;	// OutputFlags
@@ -743,7 +743,7 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 	vector<ExtractParam> extract;
 
 	// TODO: Add a command line option to override color output.
-	// NOTE: Only checking ci_stdout here, since actual data is printed on stdout.
+	// NOTE: Only checking ci_stdout here, since the actual data is printed to stdout.
 	if (ci_stdout.is_console) {
 		flags |= OF_Text_UseAnsiColor;
 	}
