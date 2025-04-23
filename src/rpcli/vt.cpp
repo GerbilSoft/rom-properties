@@ -177,10 +177,10 @@ static void init_win32_ConsoleInfo_t(ConsoleInfo_t *ci, DWORD fd)
  */
 void init_vt(void)
 {
-#ifdef _WIN32
 	ci_stdout.stream = stdout;
 	ci_stderr.stream = stderr;
 
+#ifdef _WIN32
 	init_win32_ConsoleInfo_t(&ci_stdout, STD_OUTPUT_HANDLE);
 	init_win32_ConsoleInfo_t(&ci_stderr, STD_ERROR_HANDLE);
 #else /* !_WIN32 */
