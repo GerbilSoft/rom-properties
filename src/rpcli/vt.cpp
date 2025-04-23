@@ -365,3 +365,42 @@ seq_loop:
 	return 0;
 }
 #endif /* _WIN32 */
+
+/**
+ * Print text to the console.
+ *
+ * On Windows, if a real console is in use, use WriteConsole().
+ *
+ * On other systems, or if we're not using a real console on Windows,
+ * use regular stdio functions.
+ *
+ * @param ci ConsoleInfo_t
+ * @param str String
+ * @param newline If true, print a newline afterwards.
+ */
+void ConsolePrint(ConsoleInfo_t *ci, const char *str, bool newline)
+{
+#ifdef _WIN32
+	// Windows: If printing to console and UTF-8 is not enabled,
+	// convert to UTF-16 and use WriteConsoleW().
+	if (ci->is_console && ci->is_real_console) {
+		fflush(ci->stream);
+		// TODO: win32_write_to_console(): Take a handle.
+		int ret = win32_write_to_console(ci, str);
+		if (ret != 0) {
+			// Failed to write to console.
+			// Use stdio as a fallback.
+			fputs(str, ci->stream);
+		}
+	} else
+#endif /* _WIN32 */
+	{
+		// Regular stdio output.
+		fputs(str, ci->stream);
+	}
+
+	if (newline) {
+		// TODO: Use WriteConsole() for this if using a Win32 console?
+		fputc('\n', ci->stream);
+	}
+}

@@ -51,7 +51,9 @@ void init_vt(void);
 
 #ifdef __cplusplus
 
+// C++ includes
 #include <ostream>
+#include <string>
 
 #ifdef _WIN32
 /**
@@ -73,5 +75,39 @@ int win32_write_to_console(ConsoleInfo_t *ci, const char *str, int len = -1);
  */
 int win32_console_print_ansi_color(const char *str);
 #endif /* _WIN32 */
+
+/**
+ * Print text to the console.
+ *
+ * On Windows, if a real console is in use, use WriteConsole().
+ *
+ * On other systems, or if we're not using a real console on Windows,
+ * use regular stdio functions.
+ *
+ * @param ci ConsoleInfo_t
+ * @param str String
+ * @param newline If true, print a newline afterwards.
+ */
+void ConsolePrint(ConsoleInfo_t *ci, const char *str, bool newline = false);
+
+/**
+ * Print text to the console.
+ *
+ * On Windows, if a real console is in use, use WriteConsole().
+ *
+ * On other systems, or if we're not using a real console on Windows,
+ * use regular stdio functions.
+ *
+ * @param ci ConsoleInfo_t
+ * @param str String (C++)
+ * @param newline If true, print a newline afterwards.
+ */
+static inline void ConsolePrint(ConsoleInfo_t *ci, const std::string &str, bool newline = false)
+{
+	// NOTE: May be more efficient if we call win32_write_to_console()
+	// with an actual length parameter, but it takes more effort to
+	// maintain two versions of this function...
+	return ConsolePrint(ci, str.c_str(), newline);
+}
 
 #endif /* __cplusplus */
