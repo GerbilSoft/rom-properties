@@ -503,21 +503,19 @@ static void PrintPathnames(void)
 static void DoScsiInquiry(const TCHAR *filename, bool json)
 {
 	// FIXME: Make T2U8c() unnecessary here.
-	fputs("== ", stderr);
-	fmt::print(stderr, FRUN(C_("rpcli", "Opening device file '{:s}'...")), T2U8c(filename));
-	fputc('\n', stderr);
+	ConsolePrint(&ci_stderr, "== ");
+	ConsolePrint(&ci_stderr, fmt::format(FRUN(C_("rpcli", "Opening device file '{:s}'...")), T2U8c(filename)), true);
 	fflush(stderr);
 
 	unique_ptr<RpFile> file(new RpFile(filename, RpFile::FM_OPEN_READ_GZ));
 	if (!file->isOpen()) {
 		// TODO: Return an error code?
-		fputs("-- ", stderr);
-		fmt::print(stderr, FRUN(C_("rpcli", "Couldn't open file: {:s}")), strerror(file->lastError()));
-		fputc('\n', stderr);
+		ConsolePrint(&ci_stderr, "-- ");
+		ConsolePrint(&ci_stderr, fmt::format(FRUN(C_("rpcli", "Couldn't open file: {:s}")), strerror(file->lastError())), true);
 		fflush(stderr);
 
 		if (json) {
-			fmt::print("{{\"error\":\"couldn't open file\",\"code\":{:d}}}\n", file->lastError());
+			ConsolePrint(&ci_stdout, fmt::format("{{\"error\":\"couldn't open file\",\"code\":{:d}}}\n", file->lastError()));
 			fflush(stdout);
 		}
 		return;
@@ -526,22 +524,20 @@ static void DoScsiInquiry(const TCHAR *filename, bool json)
 	// TODO: Check for unsupported devices? (Only CD-ROM is supported.)
 	if (!file->isDevice()) {
 		// TODO: Return an error code?
-		fputs("-- ", stderr);
-		fputs(C_("rpcli", "Not a device file"), stderr);
-		fputc('\n', stderr);
+		ConsolePrint(&ci_stderr, "-- ");
+		ConsolePrint(&ci_stderr, C_("rpcli", "Not a device file"), true);
 		fflush(stderr);
 
 		if (json) {
-			fputs("{\"error\":\"not a device file\"}\n", stdout);
+			ConsolePrint(&ci_stdout, "{\"error\":\"not a device file\"}\n");
 			fflush(stdout);
 		}
 		return;
 	}
 
 	if (json) {
-		fputs("-- ", stderr);
-		fputs(C_("rpcli", "Outputting JSON data"), stderr);
-		fputc('\n', stderr);
+		ConsolePrint(&ci_stderr, "-- ");
+		ConsolePrint(&ci_stderr, C_("rpcli", "Outputting JSON data"), true);
 		fflush(stderr);
 
 		// TODO: JSONScsiInquiry
@@ -578,21 +574,19 @@ static void DoScsiInquiry(const TCHAR *filename, bool json)
 static void DoAtaIdentifyDevice(const TCHAR *filename, bool json, bool packet)
 {
 	// FIXME: Make T2U8c() unnecessary here.
-	fputs("== ", stderr);
-	fmt::print(stderr, FRUN(C_("rpcli", "Opening device file '{:s}'...")), T2U8c(filename));
-	fputc('\n', stderr);
+	ConsolePrint(&ci_stderr, "== ");
+	ConsolePrint(&ci_stderr, fmt::format(FRUN(C_("rpcli", "Opening device file '{:s}'...")), T2U8c(filename)), true);
 	fflush(stderr);
 
 	unique_ptr<RpFile> file(new RpFile(filename, RpFile::FM_OPEN_READ_GZ));
 	if (!file->isOpen()) {
 		// TODO: Return an error code?
-		fputs("-- ", stderr);
-		fmt::print(stderr, FRUN(C_("rpcli", "Couldn't open file: {:s}")), strerror(file->lastError()));
-		fputc('\n', stderr);
+		ConsolePrint(&ci_stderr, "-- ");
+		ConsolePrint(&ci_stderr, fmt::format(FRUN(C_("rpcli", "Couldn't open file: {:s}")), strerror(file->lastError())), true);
 		fflush(stderr);
 
 		if (json) {
-			fmt::print("{{\"error\":\"couldn't open file\",\"code\":{:d}}}\n", file->lastError());
+			ConsolePrint(&ci_stdout, fmt::format("{{\"error\":\"couldn't open file\",\"code\":{:d}}}\n", file->lastError()));
 			fflush(stdout);
 		}
 		return;
@@ -601,22 +595,20 @@ static void DoAtaIdentifyDevice(const TCHAR *filename, bool json, bool packet)
 	// TODO: Check for unsupported devices? (Only CD-ROM is supported.)
 	if (!file->isDevice()) {
 		// TODO: Return an error code?
-		fputs("-- ", stderr);
-		fputs(C_("rpcli", "Not a device file"), stderr);
-		fputc('\n', stderr);
+		ConsolePrint(&ci_stderr, "-- ");
+		ConsolePrint(&ci_stderr, C_("rpcli", "Not a device file"), true);
 		fflush(stderr);
 
 		if (json) {
-			fputs("{\"error\":\"Not a device file\"}\n", stdout);
+			ConsolePrint(&ci_stdout, ("{\"error\":\"Not a device file\"}\n"));
 			fflush(stdout);
 		}
 		return;
 	}
 
 	if (json) {
-		fputs("-- ", stderr);
-		fputs(C_("rpcli", "Outputting JSON data"), stderr);
-		fputc('\n', stderr);
+		ConsolePrint(&ci_stderr, "-- ");
+		ConsolePrint(&ci_stderr, C_("rpcli", "Outputting JSON data"), true);
 		fflush(stderr);
 
 		// TODO: JSONAtaIdentifyDevice
