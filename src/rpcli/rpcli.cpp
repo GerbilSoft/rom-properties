@@ -358,6 +358,7 @@ static void DoFile(const TCHAR *filename, bool json, const vector<ExtractParam> 
 #endif /* ENABLE_SIXEL */
 				// Windows: Using stdout console with UTF-8 and ANSI escape support,
 				// or redirected to a file, or not using Windows.
+				// TODO: If using Win10 1607 with UTF-8, use WriteConsoleA()?
 				cout << ROMOutput(romData.get(), lc, flags) << '\n';
 			}
 		}

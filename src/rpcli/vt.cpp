@@ -215,6 +215,7 @@ int win32_write_to_console(ConsoleInfo_t *ci, const char *str, int len)
 
 #ifdef UNICODE
 	// Convert to UTF-16 first.
+	// TODO: If using Win10 1607 with UTF-8, use WriteConsoleA()?
 	u16string wstr = utf8_to_utf16(str, len);
 	const wchar_t *p = reinterpret_cast<const wchar_t*>(wstr.data());
 	for (int size = static_cast<int>(wstr.size()); size > 0; size -= CHUNK_SIZE) {
