@@ -825,8 +825,9 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 		}
 	}
 	if (json) {
-		cout << "[\n";
 		cout.flush();
+		ConsolePrint(&ci_stdout, "[\n");
+		fflush(stdout);
 	}
 
 #ifdef _WIN32
@@ -834,8 +835,7 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 	const ULONG_PTR gdipToken = GdiplusHelper::InitGDIPlus();
 	assert(gdipToken != 0);
 	if (gdipToken == 0) {
-		fputs("*** ERROR: GDI+ initialization failed.", stderr);
-		fputc('\n', stderr);
+		ConsolePrint(&ci_stderr, "*** ERROR: GDI+ initialization failed.", true);
 		fflush(stderr);
 		return -EIO;
 	}
@@ -899,8 +899,8 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 				}
 				if (pos == 4 && s_lang[pos] != _T('\0')) {
 					// Invalid language code.
-					fmt::print(stderr, FRUN(C_("rpcli", "Warning: ignoring invalid language code '{:s}'")), T2U8c(s_lang));
-					fputc('\n', stderr);
+					ConsolePrint(&ci_stderr,
+						fmt::format(FRUN(C_("rpcli", "Warning: ignoring invalid language code '{:s}'")), T2U8c(s_lang)), true);
 					fflush(stderr);
 					break;
 				}
@@ -933,13 +933,13 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 #else /* !_WIN32 */
 					const char *const s_imgType = ts_imgType;
 #endif /* _WIN32 */
-					fmt::print(stderr, FRUN(C_("rpcli", "Warning: skipping invalid image type '{:s}'")), s_imgType);
-					fputc('\n', stderr);
+					ConsolePrint(&ci_stderr,
+						fmt::format(FRUN(C_("rpcli", "Warning: skipping invalid image type '{:s}'")), s_imgType), true);
 					fflush(stderr);
 					i++; continue;
 				} else if (num < RomData::IMG_INT_MIN || num > RomData::IMG_INT_MAX) {
-					fmt::print(stderr, FRUN(C_("rpcli", "Warning: skipping unknown image type {:d}")), num);
-					fputc('\n', stderr);
+					ConsolePrint(&ci_stderr,
+						fmt::format(FRUN(C_("rpcli", "Warning: skipping unknown image type {:d}")), num), true);
 					fflush(stderr);
 					i++; continue;
 				}
@@ -958,13 +958,13 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 #else /* !_WIN32 */
 					const char *const s_mipmapLevel = ts_mipmapLevel;
 #endif /* _WIN32 */
-					fmt::print(stderr, FRUN(C_("rpcli", "Warning: skipping invalid mipmap level '{:s}'")), s_mipmapLevel);
-					fputc('\n', stderr);
+					ConsolePrint(&ci_stderr,
+						fmt::format(FRUN(C_("rpcli", "Warning: skipping invalid mipmap level '{:s}'")), s_mipmapLevel), true);
 					fflush(stderr);
 					i++; continue;
 				} else if (num < -1 || num > 1024) {
-					fmt::print(stderr, FRUN(C_("rpcli", "Warning: skipping out-of-range mipmap level {:d}")), num);
-					fputc('\n', stderr);
+					ConsolePrint(&ci_stderr,
+						fmt::format(FRUN(C_("rpcli", "Warning: skipping out-of-range mipmap level {:d}")), num), true);
 					fflush(stderr);
 					i++; continue;
 				}
@@ -998,12 +998,13 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 						break;
 					default:
 						if (argv[i][2] == _T('\0')) {
-							fputs(C_("rpcli", "Warning: no inquiry request specified for '-i'"), stderr);
-							fputc('\n', stderr);
+							ConsolePrint(&ci_stderr,
+								C_("rpcli", "Warning: no inquiry request specified for '-i'"), true);
 						} else {
 							// FIXME: Unicode character on Windows.
-							fmt::print(stderr, FRUN(C_("rpcli", "Warning: skipping unknown inquiry request '{:c}'")), (char)argv[i][2]);
-							fputc('\n', stderr);
+							ConsolePrint(&ci_stderr,
+								fmt::format(FRUN(C_("rpcli", "Warning: skipping unknown inquiry request '{:c}'")),
+									(char)argv[i][2]), true);
 						}
 						fflush(stderr);
 						break;
@@ -1013,7 +1014,8 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 
 			default:
 				// FIXME: Unicode character on Windows.
-				fmt::print(stderr, FRUN(C_("rpcli", "Warning: skipping unknown switch '{:c}'")), (char)argv[i][1]);
+				ConsolePrint(&ci_stderr,
+					fmt::format(FRUN(C_("rpcli", "Warning: skipping unknown switch '{:c}'")), (char)argv[i][1])), true;
 				fputc('\n', stderr);
 				fflush(stderr);
 				break;
@@ -1022,8 +1024,9 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 			if (first) {
 				first = false;
 			} else if (json) {
-				cout << ",\n";
 				cout.flush();
+				ConsolePrint(&ci_stdout, ",\n");
+				fflush(stdout);
 			}
 
 			// TODO: Return codes?
@@ -1053,8 +1056,9 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 		}
 	}
 	if (json) {
-		cout << "]\n";
 		cout.flush();
+		ConsolePrint(&ci_stdout, "]\n");
+		fflush(stdout);
 	}
 
 #ifdef _WIN32
