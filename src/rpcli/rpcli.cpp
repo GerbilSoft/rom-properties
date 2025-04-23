@@ -336,11 +336,13 @@ static void DoFile(const TCHAR *filename, bool json, const vector<ExtractParam> 
 			}
 		} else {
 #ifdef _WIN32
-			if (ci_stdout.is_console && ci_stdout.is_real_console && !ci_stdout.supports_ansi) {
+			if (ci_stdout.is_console && ci_stdout.is_real_console /*&& !ci_stdout.supports_ansi*/) {
 				// Windows: Using stdout console, but it doesn't support ANSI escapes.
 				// NOTE: Console may support UTF-8, but since it doesn't support
 				// ANSI escapes, we're better off using WriteConsoleW() anyway.
 				// Support for ANSI escape sequences was added in Windows 10 1607.
+				// NOTE: Using this even on Windows 10 1607 because it's faster.
+				// TODO: Maybe use WriteConsoleA() on Windows 10 1607 instead.
 				ostringstream oss;
 				oss << ROMOutput(romData.get(), lc, flags) << '\n';
 				cout.flush();
