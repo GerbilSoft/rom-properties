@@ -583,7 +583,6 @@ static void ShowUsage(void)
 	// TODO: Use argv[0] instead of hard-coding 'rpcli'?
 #ifdef ENABLE_DECRYPTION	
 	const char *const s_usage = C_("rpcli", "Usage: rpcli [-k] [-c] [-p] [-j] [-l lang] [[-xN outfile]... [-mN outfile]... [-a apngoutfile] filename]...");
-	fputc('\n', stderr);
 #else /* !ENABLE_DECRYPTION */
 	const char *const s_usage = C_("rpcli", "Usage: rpcli [-c] [-p] [-j] [-l lang] [[-xN outfile]... [-mN outfile]... [-a apngoutfile] filename]...");
 #endif /* ENABLE_DECRYPTION */
