@@ -120,13 +120,15 @@ static void init_win32_ConsoleInfo_t(ConsoleInfo_t *ci, DWORD fd)
 	ci->wAttributesOrig = 0x07;
 
 	HANDLE hStd = GetStdHandle(fd);
-	if (!hStd) {
+	if (!hStd || hStd == INVALID_HANDLE_VALUE) {
 		// Not a valid console handle...
 		ci->is_console = false;
 		ci->supports_ansi = false;
 		ci->is_real_console = false;
+		ci->hConsole = nullptr;
 		return;
 	}
+	ci->hConsole = hStd;
 
 	DWORD dwMode = 0;
 	if (!GetConsoleMode(hStd, &dwMode)) {
@@ -176,6 +178,9 @@ static void init_win32_ConsoleInfo_t(ConsoleInfo_t *ci, DWORD fd)
 void init_vt(void)
 {
 #ifdef _WIN32
+	ci_stdout.stream = stdout;
+	ci_stderr.stream = stderr;
+
 	init_win32_ConsoleInfo_t(&ci_stdout, STD_OUTPUT_HANDLE);
 	init_win32_ConsoleInfo_t(&ci_stderr, STD_ERROR_HANDLE);
 #else /* !_WIN32 */
@@ -190,16 +195,17 @@ void init_vt(void)
 /**
  * Write UTF-8 text to the Windows console.
  * Direct write using WriteConsole(); no ANSI escape interpretation.
+ * @param ci ConsoleInfo_t
  * @param str UTF-8 text string
  * @param len Length of UTF-8 text string (if -1, use strlen)
  * @return 0 on success; negative POSIX error code on error.
  */
-int win32_write_to_console(const char *str, int len)
+int win32_write_to_console(ConsoleInfo_t *ci, const char *str, int len)
 {
-	HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
-	assert(hStdOut != nullptr);
-	if (!hStdOut) {
-		// Cannot access the console handle...
+	HANDLE hConsole = ci->hConsole;
+	assert(hConsole != nullptr);
+	if (!hConsole) {
+		// No console handle...
 		return -ENOTTY;
 	}
 
@@ -213,7 +219,7 @@ int win32_write_to_console(const char *str, int len)
 	const wchar_t *p = reinterpret_cast<const wchar_t*>(wstr.data());
 	for (int size = static_cast<int>(wstr.size()); size > 0; size -= CHUNK_SIZE) {
 		const DWORD chunk_len = static_cast<DWORD>((size > CHUNK_SIZE) ? CHUNK_SIZE : size);
-		WriteConsoleW(hStdOut, p, chunk_len, nullptr, nullptr);
+		WriteConsoleW(hConsole, p, chunk_len, nullptr, nullptr);
 		p += chunk_len;
 	}
 #else /* !UNICODE */
@@ -224,7 +230,7 @@ int win32_write_to_console(const char *str, int len)
 	const char *p = str;
 	for (int size = len; size > 0; size -= CHUNK_SIZE) {
 		const DWORD chunk_len = static_cast<DWORD>((size > CHUNK_SIZE) ? CHUNK_SIZE : size);
-		WriteConsoleA(hStdOut, p, chunk_len, nullptr, nullptr);
+		WriteConsoleA(hConsole, p, chunk_len, nullptr, nullptr);
 		p += chunk_len;
 	}
 #endif /* UNICODE */
@@ -233,7 +239,7 @@ int win32_write_to_console(const char *str, int len)
 }
 
 /**
- * Write text with ANSI escape sequences to the Windows console.
+ * Write text with ANSI escape sequences to the Windows console. (stdout)
  * Color escapes will be handled using SetConsoleTextAttribute().
  *
  * @param str Source text
@@ -247,8 +253,8 @@ int win32_console_print_ansi_color(const char *str)
 	};
 
 	HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
-	assert(hStdOut != nullptr);
-	if (!hStdOut) {
+	assert(hStdOut != nullptr && hStdOut != INVALID_HANDLE_VALUE);
+	if (!hStdOut || hStdOut == INVALID_HANDLE_VALUE) {
 		// Cannot access the console handle...
 		return -ENOTTY;
 	}
@@ -261,14 +267,14 @@ int win32_console_print_ansi_color(const char *str)
 		if (!pEsc) {
 			// No more escape characters.
 			// Send the rest of the buffer.
-			win32_write_to_console(str);
+			win32_write_to_console(&ci_stdout, str);
 			break;
 		}
 
 		// Found an escape character.
 		// Send everything up to the escape.
 		if (str != pEsc) {
-			win32_write_to_console(str, static_cast<int>(pEsc - str));
+			win32_write_to_console(&ci_stdout, str, static_cast<int>(pEsc - str));
 			str = pEsc;
 		}
 

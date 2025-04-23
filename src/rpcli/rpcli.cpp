@@ -149,46 +149,34 @@ static void RestoreConsoleOutputCP(void)
  * On other systems, or if we're not using a real console on Windows,
  * use regular stdio functions.
  *
- * @param stream Output stream
+ * @param ci ConsoleInfo_t
  * @param str String
  * @param newline If true, print a newline afterwards.
  */
-static void ConsolePrint(FILE *stream, const char *str, bool newline = false)
+static void ConsolePrint(ConsoleInfo_t *ci, const char *str, bool newline = false)
 {
 #ifdef _WIN32
 	// Windows: If printing to console and UTF-8 is not enabled,
 	// convert to UTF-16 and use WriteConsoleW().
-	// TODO: Store handles in ConsoleInfo_t and pass that instead of FILE*?
-	const ConsoleInfo_t *ci;
-	if (stream == stdout) {
-		ci = &ci_stdout;
-	} else if (stream == stderr) {
-		ci = &ci_stderr;
-	} else {
-		// Invalid stream!
-		assert(!"Invalid stream specified");
-		ci = &ci_stdout;
-	}
-
-	if (ci->is_console) {
-		fflush(stream);
+	if (ci->is_console && ci->is_real_console) {
+		fflush(ci->stream);
 		// TODO: win32_write_to_console(): Take a handle.
-		int ret = win32_write_to_console(str);
+		int ret = win32_write_to_console(ci, str);
 		if (ret != 0) {
 			// Failed to write to console.
 			// Use stdio as a fallback.
-			fputs(str, stream);
+			fputs(str, ci->stream);
 		}
 	} else
 #endif /* _WIN32 */
 	{
 		// Regular stdio output.
-		fputs(str, stream);
+		fputs(str, ci->stream);
 	}
 
 	if (newline) {
 		// TODO: Use WriteConsole() for this if using a Win32 console?
-		fputc('\n', stream);
+		fputc('\n', ci->stream);
 	}
 }
 
@@ -367,7 +355,7 @@ static void DoFile(const TCHAR *filename, bool json, const vector<ExtractParam> 
 				cout.flush();
 				const string str = oss.str();
 				// TODO: Error checking.
-				win32_write_to_console(str.data(), static_cast<int>(str.size()));
+				win32_write_to_console(&ci_stdout, str.data(), static_cast<int>(str.size()));
 			} else
 #endif /* _WIN32 */
 			{
@@ -543,7 +531,7 @@ static void DoScsiInquiry(const TCHAR *filename, bool json)
 			cout.flush();
 			const string str = oss.str();
 			// TODO: Error checking.
-			win32_write_to_console(str.data(), static_cast<int>(str.size()));
+			win32_write_to_console(&ci_stdout, str.data(), static_cast<int>(str.size()));
 		} else
 #endif /* _WIN32 */
 		{
@@ -618,7 +606,7 @@ static void DoAtaIdentifyDevice(const TCHAR *filename, bool json, bool packet)
 			cout.flush();
 			const string str = oss.str();
 			// TODO: Error checking.
-			win32_write_to_console(str.data(), static_cast<int>(str.size()));
+			win32_write_to_console(&ci_stdout, str.data(), static_cast<int>(str.size()));
 		} else
 #endif /* _WIN32 */
 		{
@@ -638,7 +626,7 @@ static void ShowUsage(void)
 #else /* !ENABLE_DECRYPTION */
 	const char *const s_usage = C_("rpcli", "Usage: rpcli [-c] [-p] [-j] [-l lang] [[-xN outfile]... [-mN outfile]... [-a apngoutfile] filename]...");
 #endif /* ENABLE_DECRYPTION */
-	ConsolePrint(stderr, s_usage, true);
+	ConsolePrint(&ci_stderr, s_usage, true);
 
 	struct cmd_t {
 		char opt[8];	// TODO: Automatic padding?
@@ -663,8 +651,8 @@ static void ShowUsage(void)
 	}};
 
 	for (const auto &p : cmds) {
-		ConsolePrint(stderr, p.opt);
-		ConsolePrint(stderr, pgettext_expr("rpcli", p.desc), true);
+		ConsolePrint(&ci_stderr, p.opt);
+		ConsolePrint(&ci_stderr, pgettext_expr("rpcli", p.desc), true);
 	}
 	fputc('\n', stderr);
 
@@ -676,21 +664,21 @@ static void ShowUsage(void)
 		{"  -ip: ", NOP_C_("rpcli", "Run an ATA IDENTIFY PACKET DEVICE command.")},
 	}};
 
-	ConsolePrint(stderr, C_("rpcli", "Special options for devices:"), true);
+	ConsolePrint(&ci_stderr, C_("rpcli", "Special options for devices:"), true);
 	for (const auto &p : cmds_dev) {
-		ConsolePrint(stderr, p.opt);
-		ConsolePrint(stderr, pgettext_expr("rpcli", p.desc), true);
+		ConsolePrint(&ci_stderr, p.opt);
+		ConsolePrint(&ci_stderr, pgettext_expr("rpcli", p.desc), true);
 	}
 	fputc('\n', stderr);
 #endif /* RP_OS_SCSI_SUPPORTED */
 
-	ConsolePrint(stderr, C_("rpcli", "Examples:"), true);
-	ConsolePrint(stderr, "* rpcli s3.gen\n");
-	ConsolePrint(stderr, "\t ");
-		ConsolePrint(stderr, C_("rpcli", "displays info about s3.gen"), true);
-	ConsolePrint(stderr, "* rpcli -x0 icon.png pokeb2.nds\n");
-	ConsolePrint(stderr, "\t ");
-		ConsolePrint(stderr, C_("rpcli", "extracts icon from pokeb2.nds"), true);
+	ConsolePrint(&ci_stderr, C_("rpcli", "Examples:"), true);
+	ConsolePrint(&ci_stderr, "* rpcli s3.gen\n");
+	ConsolePrint(&ci_stderr, "\t ");
+		ConsolePrint(&ci_stderr, C_("rpcli", "displays info about s3.gen"), true);
+	ConsolePrint(&ci_stderr, "* rpcli -x0 icon.png pokeb2.nds\n");
+	ConsolePrint(&ci_stderr, "\t ");
+		ConsolePrint(&ci_stderr, C_("rpcli", "extracts icon from pokeb2.nds"), true);
 	fflush(stderr);
 }
 

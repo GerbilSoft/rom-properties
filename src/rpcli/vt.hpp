@@ -12,15 +12,23 @@
 #include <stdint.h>
 #include "stdboolx.h"
 
+#ifdef _WIN32
+#  include "libwin32common/RpWin32_sdk.h"
+#else /* !_WIN32 */
+#  include <stdio.h>
+#endif /* _WIN32 */
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 typedef struct _ConsoleInfo_t {
+	FILE *stream;		// File handle, e.g. stdout or stderr
 	bool is_console;	// True if this is a real console and not redirected to a file.
 #ifdef _WIN32
 	bool supports_ansi;	// True if the console supports ANSI escape sequences.
 	bool is_real_console;	// True if this is a real Windows console and not e.g. MinTTY.
+	HANDLE hConsole;	// Console handle, or nullptr if not a real console.
 
 	// Windows 10 1607 ("Anniversary Update") adds support for ANSI escape sequences.
 	// For older Windows, we'll need to parse the sequences manually and
@@ -49,14 +57,15 @@ void init_vt(void);
 /**
  * Write UTF-8 text to the Windows console.
  * Direct write using WriteConsole(); no ANSI escape interpretation.
+ * @param ci ConsoleInfo_t
  * @param str UTF-8 text string
  * @param len Length of UTF-8 text string (if -1, use strlen)
  * @return 0 on success; negative POSIX error code on error.
  */
-int win32_write_to_console(const char *str, int len = -1);
+int win32_write_to_console(ConsoleInfo_t *ci, const char *str, int len = -1);
 
 /**
- * Write text with ANSI escape sequences to the Windows console.
+ * Write text with ANSI escape sequences to the Windows console. (stdout)
  * Color escapes will be handled using SetConsoleTextAttribute().
  *
  * @param str Source text
