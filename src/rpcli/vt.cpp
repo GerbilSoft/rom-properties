@@ -214,17 +214,31 @@ int win32_write_to_console(ConsoleInfo_t *ci, const char *str, int len)
 	static constexpr int CHUNK_SIZE = 4096;
 
 #ifdef UNICODE
-	// Convert to UTF-16 first.
-	// TODO: If using Win10 1607 with UTF-8, use WriteConsoleA()?
-	u16string wstr = utf8_to_utf16(str, len);
-	const wchar_t *p = reinterpret_cast<const wchar_t*>(wstr.data());
-	for (int size = static_cast<int>(wstr.size()); size > 0; size -= CHUNK_SIZE) {
-		const DWORD chunk_len = static_cast<DWORD>((size > CHUNK_SIZE) ? CHUNK_SIZE : size);
-		WriteConsoleW(hConsole, p, chunk_len, nullptr, nullptr);
-		p += chunk_len;
+	// If using a real Windows console with ANSI escape sequences, use WriteConsoleA().
+	if (ci->supports_ansi) {
+		if (len < 0) {
+			len = static_cast<int>(strlen(str));
+		}
+		const char *p = str;
+		for (int size = len; size > 0; size -= CHUNK_SIZE) {
+			const DWORD chunk_len = static_cast<DWORD>((size > CHUNK_SIZE) ? CHUNK_SIZE : size);
+			WriteConsoleA(hConsole, p, chunk_len, nullptr, nullptr);
+			p += chunk_len;
+		}
+	} else {
+		// ANSI escape sequences are not supported.
+		// This means it's likely older than Win10 1607, so no UTF-8 support.
+		// Convert to UTF-16 first.
+		u16string wstr = utf8_to_utf16(str, len);
+		const wchar_t *p = reinterpret_cast<const wchar_t*>(wstr.data());
+		for (int size = static_cast<int>(wstr.size()); size > 0; size -= CHUNK_SIZE) {
+			const DWORD chunk_len = static_cast<DWORD>((size > CHUNK_SIZE) ? CHUNK_SIZE : size);
+			WriteConsoleW(hConsole, p, chunk_len, nullptr, nullptr);
+			p += chunk_len;
+		}
 	}
 #else /* !UNICODE */
-	// FIXME: Convert to ANSI?
+	// FIXME: Convert from UTF-8 to ANSI?
 	if (len < 0) {
 		len = static_cast<int>(strlen(str));
 	}

@@ -317,9 +317,7 @@ static void DoFile(const TCHAR *filename, bool json, const vector<ExtractParam> 
 #ifdef _WIN32
 			if (ci_stdout.is_console && ci_stdout.is_real_console) {
 				// Windows: Using a real console on stdout.
-				// Convert to UTF-16 and use WriteConsoleW().
-				// NOTE: This is seemingly faster than even using UTF-8
-				// output on Windows 10 1607.
+				// Use WriteConsole(), which is faster than printf/cout.
 				ostringstream oss;
 				oss << JSONROMOutput(romData.get(), flags) << '\n';
 				cout.flush();
@@ -336,13 +334,11 @@ static void DoFile(const TCHAR *filename, bool json, const vector<ExtractParam> 
 			}
 		} else {
 #ifdef _WIN32
-			if (ci_stdout.is_console && ci_stdout.is_real_console /*&& !ci_stdout.supports_ansi*/) {
+			if (ci_stdout.is_console && ci_stdout.is_real_console && !ci_stdout.supports_ansi) {
 				// Windows: Using stdout console, but it doesn't support ANSI escapes.
 				// NOTE: Console may support UTF-8, but since it doesn't support
 				// ANSI escapes, we're better off using WriteConsoleW() anyway.
 				// Support for ANSI escape sequences was added in Windows 10 1607.
-				// NOTE: Using this even on Windows 10 1607 because it's faster.
-				// TODO: Maybe use WriteConsoleA() on Windows 10 1607 instead.
 				ostringstream oss;
 				oss << ROMOutput(romData.get(), lc, flags) << '\n';
 				cout.flush();
@@ -360,7 +356,6 @@ static void DoFile(const TCHAR *filename, bool json, const vector<ExtractParam> 
 #endif /* ENABLE_SIXEL */
 				// Windows: Using stdout console with UTF-8 and ANSI escape support,
 				// or redirected to a file, or not using Windows.
-				// TODO: If using Win10 1607 with UTF-8, use WriteConsoleA()?
 				cout << ROMOutput(romData.get(), lc, flags) << '\n';
 			}
 		}
@@ -491,9 +486,7 @@ static void DoScsiInquiry(const TCHAR *filename, bool json)
 #ifdef _WIN32
 		if (ci_stdout.is_console && ci_stdout.is_real_console) {
 			// Windows: Using a real console on stdout.
-			// Convert to UTF-16 and use WriteConsoleW().
-			// NOTE: This is seemingly faster than even using UTF-8
-			// output on Windows 10 1607.
+			// Use WriteConsole(), which is faster than printf/cout.
 			ostringstream oss;
 			oss << ScsiInquiry(file.get()) << '\n';
 			cout.flush();
@@ -562,9 +555,7 @@ static void DoAtaIdentifyDevice(const TCHAR *filename, bool json, bool packet)
 #ifdef _WIN32
 		if (ci_stdout.is_console && ci_stdout.is_real_console) {
 			// Windows: Using a real console on stdout.
-			// Convert to UTF-16 and use WriteConsoleW().
-			// NOTE: This is seemingly faster than even using UTF-8
-			// output on Windows 10 1607.
+			// Use WriteConsole(), which is faster than printf/cout.
 			ostringstream oss;
 			oss << AtaIdentifyDevice(file.get(), packet) << '\n';
 			cout.flush();
