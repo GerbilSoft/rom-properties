@@ -451,9 +451,8 @@ static void PrintSystemRegion(void)
 			buf += static_cast<char>(lc & 0xFF);
 		}
 	}
-	fmt::print(FRUN(C_("rpcli", "System language code: {:s}")),
-		(!buf.empty() ? buf.c_str() : C_("rpcli", "0 (this is a bug!)")));
-	putchar('\n');
+	ConsolePrint(&ci_stdout, fmt::format(FRUN(C_("rpcli", "System language code: {:s}")),
+		(!buf.empty() ? buf.c_str() : C_("rpcli", "0 (this is a bug!)"))), true);
 
 	uint32_t cc = __swab32(SystemRegion::getCountryCode());
 	buf.clear();
@@ -464,9 +463,8 @@ static void PrintSystemRegion(void)
 			buf += static_cast<char>(cc & 0xFF);
 		}
 	}
-	fmt::print(FRUN(C_("rpcli", "System country code: {:s}")),
-		(!buf.empty() ? buf.c_str() : C_("rpcli", "0 (this is a bug!)")));
-	putchar('\n');
+	ConsolePrint(&ci_stdout, fmt::format(FRUN(C_("rpcli", "System country code: {:s}")),
+		(!buf.empty() ? buf.c_str() : C_("rpcli", "0 (this is a bug!)"))), true);
 
 	// Extra line. (TODO: Only if multiple commands are specified.)
 	putchar('\n');
@@ -479,7 +477,8 @@ static void PrintSystemRegion(void)
 static void PrintPathnames(void)
 {
 	// TODO: Localize these strings?
-	fmt::print(FSTR(
+	// TODO: Only print an extra line if multiple commands are specified.
+	ConsolePrint(&ci_stdout, fmt::format(FSTR(
 		"User's home directory:   {:s}\n"
 		"User's cache directory:  {:s}\n"
 		"User's config directory: {:s}\n"
@@ -490,10 +489,8 @@ static void PrintPathnames(void)
 		OS_NAMESPACE::getCacheDirectory(),
 		OS_NAMESPACE::getConfigDirectory(),
 		FileSystem::getCacheDirectory(),
-		FileSystem::getConfigDirectory());
+		FileSystem::getConfigDirectory()), true);
 
-	// Extra line. (TODO: Only if multiple commands are specified.)
-	putchar('\n');
 	fflush(stdout);
 }
 
