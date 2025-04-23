@@ -16,6 +16,9 @@
 
 #include "verifykeys.hpp"
 
+// VT handling
+#include "vt.hpp"
+
 // Other rom-properties libraries
 #include "libi18n/i18n.h"
 
@@ -59,24 +62,24 @@ int VerifyKeys(void)
 		}
 		printedOne = true;
 
-		fputs("*** ", stdout);
-		fmt::print(FRUN(C_("rpcli", "Checking encryption keys: {:s}")), keyStore.sectName(sectIdx));
-		putchar('\n');
+		ConsolePrint(&ci_stdout, "*** ");
+		ConsolePrint(&ci_stdout,
+			fmt::format(FRUN(C_("rpcli", "Checking encryption keys: {:s}")), keyStore.sectName(sectIdx)), true);
 
 		const int keyCount = keyStore.keyCount(sectIdx);
 		for (int keyIdx = 0; keyIdx < keyCount; keyIdx++) {
 			const KeyStoreUI::Key *const key = keyStore.getKey(sectIdx, keyIdx);
 			assert(key != nullptr);
 			if (!key) {
-				fmt::print(FRUN(C_("rpcli", "WARNING: Key [{:d},{:d}] has no Key object. Skipping...")), sectIdx, keyIdx);
-				putchar('\n');
+				ConsolePrint(&ci_stdout,
+					fmt::format(FRUN(C_("rpcli", "WARNING: Key [{:d},{:d}] has no Key object. Skipping...")), sectIdx, keyIdx), true);
 				ret = 1;
 				continue;
 			}
 			assert(!key->name.empty());
 			if (key->name.empty()) {
-				fmt::print(FRUN(C_("rpcli", "WARNING: Key [{:d},{:d}] has no name. Skipping...")), sectIdx, keyIdx);
-				putchar('\n');
+				ConsolePrint(&ci_stdout,
+					fmt::format(FRUN(C_("rpcli", "WARNING: Key [{:d},{:d}] has no name. Skipping...")), sectIdx, keyIdx), true);
 				ret = 1;
 				continue;
 			}
@@ -106,12 +109,11 @@ int VerifyKeys(void)
 					break;
 			}
 
-			fmt::print(FSTR("{:s}: "), key->name);
+			ConsolePrint(&ci_stdout, fmt::format(FSTR("{:s}: "), key->name));
 			if (isOK) {
-				fmt::print(FSTR("{:s}\n"), s_err);
+				ConsolePrint(&ci_stdout, fmt::format(FSTR("{:s}\n"), s_err));
 			} else {
-				fmt::print(FRUN(C_("rpcli", "ERROR: {:s}")), s_err);
-				putchar('\n');
+				ConsolePrint(&ci_stdout, fmt::format(FRUN(C_("rpcli", "ERROR: {:s}")), s_err), true);
 				ret = 1;
 			}
 		}
