@@ -51,10 +51,6 @@ using namespace LibRomData;
 #endif /* _WIN32 */
 using namespace LibRpTexture;
 
-// librptext
-#include "librptext/conversion.hpp"
-using LibRpText::utf8_to_utf16;
-
 #ifdef ENABLE_SIXEL
 // Sixel
 #include "rp_sixel.hpp"
@@ -88,7 +84,6 @@ using std::ofstream;
 using std::ostringstream;
 using std::shared_ptr;
 using std::string;
-using std::u16string;
 using std::unique_ptr;
 using std::vector;
 
