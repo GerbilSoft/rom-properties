@@ -630,7 +630,7 @@ static void DoAtaIdentifyDevice(const TCHAR *filename, bool json, bool packet)
 			// NOTE: This is seemingly faster than even using UTF-8
 			// output on Windows 10 1607.
 			ostringstream oss;
-			oss << AtaIdentifyDevice(file.get()) << '\n';
+			oss << AtaIdentifyDevice(file.get(), packet) << '\n';
 			cout.flush();
 			const string str = oss.str();
 			// TODO: Error checking.
