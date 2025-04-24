@@ -329,21 +329,21 @@ seq_loop:
 		}
 
 		// Parse the decimal number in: [str, pSep)
-		if (str == pSep) {
-			// Invalid number.
-			continue;
-		}
 		num = 0;
-		for (; str < pSep; str++) {
-			const char chr = *str;
-			if (chr >= '0' && chr <= '9') {
-				num *= 10;
-				num += (chr - '0');
-			} else {
-				// Invalid number.
-				num = -1;
-				break;
+		if (str != pSep) {
+			for (; str < pSep; str++) {
+				const char chr = *str;
+				if (chr >= '0' && chr <= '9') {
+					num *= 10;
+					num += (chr - '0');
+				} else {
+					// Invalid number.
+					num = -1;
+					break;
+				}
 			}
+		} else {
+			// No number. This is interpreted as 0, aka Reset.
 		}
 
 		// Check the number.
@@ -353,6 +353,18 @@ seq_loop:
 		} else if (num == 1) {
 			// Bold
 			wAttributes |= FOREGROUND_INTENSITY;
+		} else if (num == 4) {
+			// Underline
+			// NOTE: Works on Windows 10; does not work on Windows 7.
+			wAttributes |= COMMON_LVB_UNDERSCORE;
+		} else if (num == 7) {
+			// Reverse video
+			// NOTE: Works on Windows 10; does not work on Windows 7.
+			wAttributes |= COMMON_LVB_REVERSE_VIDEO;
+		} else if (num == 27) {
+			// Not-reverse video
+			// NOTE: Works on Windows 10; does not work on Windows 7.
+			wAttributes &= ~COMMON_LVB_REVERSE_VIDEO;
 		} else if (num >= 30 && num <= 37) {
 			// Foreground color
 			wAttributes &= ~0x0007;
@@ -362,8 +374,8 @@ seq_loop:
 			wAttributes &= ~0x0070;
 			wAttributes |= (color_map[num - 40] << 4);
 		} else {
-			// Not a valid escape sequence.
-			continue;
+			// Not a valid number.
+			// Ignore it and keep processing.
 		}
 
 		// Is this a separator or the end of the sequence?
