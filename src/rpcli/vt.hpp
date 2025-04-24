@@ -29,12 +29,13 @@ typedef struct _ConsoleInfo_t {
 #ifdef _WIN32
 	bool supports_ansi;	// True if the console supports ANSI escape sequences.
 	bool is_real_console;	// True if this is a real Windows console and not e.g. MinTTY.
-	HANDLE hConsole;	// Console handle, or nullptr if not a real console.
 
 	// Windows 10 1607 ("Anniversary Update") adds support for ANSI escape sequences.
 	// For older Windows, we'll need to parse the sequences manually and
 	// call SetConsoleTextAttribute().
 	uint16_t wAttributesOrig;	// For real consoles: Original attributes
+
+	HANDLE hConsole;	// Console handle, or nullptr if not a real console.
 #endif /* _WIN32 */
 } ConsoleInfo_t;
 
