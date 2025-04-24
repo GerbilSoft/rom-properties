@@ -132,10 +132,11 @@ static void init_win32_ConsoleInfo_t(ConsoleInfo_t *ci, DWORD fd)
 
 	DWORD dwMode = 0;
 	if (!GetConsoleMode(hStd, &dwMode)) {
-		// Not a console.
+		// Not a real console.
 		ci->is_real_console = false;
 
 		// NOTE: Might be a MinTTY fake console.
+		// NOTE 2: On Windows 10, MinTTY (git bash, cygwin) acts like a real console.
 		if (check_mintty(hStd)) {
 			// This is MinTTY.
 			ci->is_console = true;
