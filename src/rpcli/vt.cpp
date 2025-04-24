@@ -347,46 +347,60 @@ seq_loop:
 		}
 
 		// Check the number.
-		if (num == 0) {
-			// Reset
-			wAttributes = ci_stdout.wAttributesOrig;
-		} else if (num == 1) {
-			// Bold
-			wAttributes |= FOREGROUND_INTENSITY;
-		} else if (num == 4) {
-			// Underline
-			// NOTE: Works on Windows 10; does not work on Windows 7.
-			wAttributes |= COMMON_LVB_UNDERSCORE;
-		} else if (num == 7) {
-			// Reverse video
-			// NOTE: Works on Windows 10; does not work on Windows 7.
-			wAttributes |= COMMON_LVB_REVERSE_VIDEO;
-		} else if (num == 22) {
-			// Normal intensity
-			wAttributes &= ~FOREGROUND_INTENSITY;
-		} else if (num == 27) {
-			// Not-reverse video
-			// NOTE: Works on Windows 10; does not work on Windows 7.
-			wAttributes &= ~COMMON_LVB_REVERSE_VIDEO;
-		} else if (num >= 30 && num <= 37) {
-			// Foreground color
-			wAttributes &= ~0x0007;
-			wAttributes |= color_map[num - 30];
-		} else if (num == 39) {
-			// Default foreground color
-			wAttributes &= ~0x0007;
-			wAttributes |= (ci_stdout.wAttributesOrig & 0x0007);
-		} else if (num >= 40 && num <= 47) {
-			// Background color
-			wAttributes &= ~0x0070;
-			wAttributes |= (color_map[num - 40] << 4);
-		} else if (num == 49) {
-			// Default background color
-			wAttributes &= ~0x0070;
-			wAttributes |= (ci_stdout.wAttributesOrig & 0x0070);
-		} else {
-			// Not a valid number.
-			// Ignore it and keep processing.
+		switch (num) {
+			case 0:
+				// Reset
+				wAttributes = ci_stdout.wAttributesOrig;
+				break;
+			case 1:
+				// Bold
+				wAttributes |= FOREGROUND_INTENSITY;
+				break;
+			case 4:
+				// Underline
+				// NOTE: Works on Windows 10; does not work on Windows 7.
+				wAttributes |= COMMON_LVB_UNDERSCORE;
+				break;
+			case 7:
+				// Reverse video
+				// NOTE: Works on Windows 10; does not work on Windows 7.
+				wAttributes |= COMMON_LVB_REVERSE_VIDEO;
+				break;
+			case 22:
+				// Normal intensity
+				wAttributes &= ~FOREGROUND_INTENSITY;
+				break;
+			case 27:
+				// Not-reverse video
+				// NOTE: Works on Windows 10; does not work on Windows 7.
+				wAttributes &= ~COMMON_LVB_REVERSE_VIDEO;
+				break;
+			case 30: case 31: case 32: case 33:
+			case 34: case 35: case 36: case 37:
+				// Foreground color
+				wAttributes &= ~0x0007;
+				wAttributes |= color_map[num - 30];
+				break;
+			case 39:
+				// Default foreground color
+				wAttributes &= ~0x0007;
+				wAttributes |= (ci_stdout.wAttributesOrig & 0x0007);
+				break;
+			case 40: case 41: case 42: case 43:
+			case 44: case 45: case 46: case 47:
+				// Background color
+				wAttributes &= ~0x0070;
+				wAttributes |= (color_map[num - 40] << 4);
+				break;
+			case 49:
+				// Default background color
+				wAttributes &= ~0x0070;
+				wAttributes |= (ci_stdout.wAttributesOrig & 0x0070);
+				break;
+			default:
+				// Not a valid number.
+				// Ignore it and keep processing.
+				break;
 		}
 
 		// Is this a separator or the end of the sequence?
