@@ -361,6 +361,9 @@ seq_loop:
 			// Reverse video
 			// NOTE: Works on Windows 10; does not work on Windows 7.
 			wAttributes |= COMMON_LVB_REVERSE_VIDEO;
+		} else if (num == 22) {
+			// Normal intensity
+			wAttributes &= ~FOREGROUND_INTENSITY;
 		} else if (num == 27) {
 			// Not-reverse video
 			// NOTE: Works on Windows 10; does not work on Windows 7.
@@ -369,10 +372,18 @@ seq_loop:
 			// Foreground color
 			wAttributes &= ~0x0007;
 			wAttributes |= color_map[num - 30];
+		} else if (num == 39) {
+			// Default foreground color
+			wAttributes &= ~0x0007;
+			wAttributes |= (ci_stdout.wAttributesOrig & 0x0007);
 		} else if (num >= 40 && num <= 47) {
 			// Background color
 			wAttributes &= ~0x0070;
 			wAttributes |= (color_map[num - 40] << 4);
+		} else if (num == 49) {
+			// Default background color
+			wAttributes &= ~0x0070;
+			wAttributes |= (ci_stdout.wAttributesOrig & 0x0070);
 		} else {
 			// Not a valid number.
 			// Ignore it and keep processing.
