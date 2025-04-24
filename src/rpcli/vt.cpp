@@ -369,7 +369,7 @@ seq_loop:
 			// Foreground color
 			wAttributes &= ~0x0007;
 			wAttributes |= color_map[num - 30];
-		} else if (num >= 40 && num <= 37) {
+		} else if (num >= 40 && num <= 47) {
 			// Background color
 			wAttributes &= ~0x0070;
 			wAttributes |= (color_map[num - 40] << 4);
