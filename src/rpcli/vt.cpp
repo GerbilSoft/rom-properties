@@ -449,7 +449,7 @@ void ConsolePrintNewline(const ConsoleInfo_t *ci)
 		if (ret != 0) {
 			// Failed to write to console.
 			// Use stdio as a fallback.
-			fwrite(str, 1, len, ci->stream);
+			fputc('\n', ci->stream);
 		}
 	} else
 #endif /* _WIN32 */
