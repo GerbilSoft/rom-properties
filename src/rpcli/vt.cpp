@@ -401,8 +401,50 @@ void ConsolePrint(ConsoleInfo_t *ci, const char *str, size_t len, bool newline)
 	// convert to UTF-16 and use WriteConsoleW().
 	if (ci->is_console && ci->is_real_console) {
 		fflush(ci->stream);
-		// TODO: win32_write_to_console(): Take a handle.
 		int ret = win32_write_to_console(ci, str, static_cast<int>(len));
+		if (ret == 0) {
+			// Text written to console successfully.
+			if (newline) {
+				ret = win32_write_to_console(ci, "\n", 1);
+				if (ret != 0) {
+					// Failed to write the newline?
+					// Use stdio as a fallback.
+					fputc('\n', ci->stream);
+				}
+			}
+		} else {
+			// Failed to write to console.
+			// Use stdio as a fallback.
+			fwrite(str, 1, len, ci->stream);
+			if (newline) {
+				fputc('\n', ci->stream);
+			}
+		}
+	} else
+#endif /* _WIN32 */
+	{
+		// Regular stdio output.
+		fwrite(str, 1, len, ci->stream);
+		if (newline) {
+			fputc('\n', ci->stream);
+		}
+	}
+}
+
+/**
+ * Print a newline to the console.
+ * Equivalent to fputc('\n', stdout).
+ *
+ * @param ci ConsoleInfo_t
+ */
+void ConsolePrintNewline(ConsoleInfo_t *ci)
+{
+#ifdef _WIN32
+	// Windows: If printing to console and UTF-8 is not enabled,
+	// convert to UTF-16 and use WriteConsoleW().
+	if (ci->is_console && ci->is_real_console) {
+		fflush(ci->stream);
+		int ret = win32_write_to_console(ci, "\n", 1);
 		if (ret != 0) {
 			// Failed to write to console.
 			// Use stdio as a fallback.
@@ -412,11 +454,6 @@ void ConsolePrint(ConsoleInfo_t *ci, const char *str, size_t len, bool newline)
 #endif /* _WIN32 */
 	{
 		// Regular stdio output.
-		fwrite(str, 1, len, ci->stream);
-	}
-
-	if (newline) {
-		// TODO: Use WriteConsole() for this if using a Win32 console?
 		fputc('\n', ci->stream);
 	}
 }

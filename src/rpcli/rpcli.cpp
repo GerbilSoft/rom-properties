@@ -401,7 +401,7 @@ static void PrintSystemRegion(void)
 		(!buf.empty() ? buf.c_str() : C_("rpcli", "0 (this is a bug!)"))), true);
 
 	// Extra line. (TODO: Only if multiple commands are specified.)
-	putchar('\n');
+	ConsolePrintNewline(&ci_stdout);
 	fflush(stdout);
 }
 
@@ -603,7 +603,7 @@ static void ShowUsage(void)
 		ConsolePrint(&ci_stderr, p.opt);
 		ConsolePrint(&ci_stderr, pgettext_expr("rpcli", p.desc), true);
 	}
-	fputc('\n', stderr);
+	ConsolePrintNewline(&ci_stderr);
 
 #ifdef RP_OS_SCSI_SUPPORTED
 	// Commands for devices
@@ -618,7 +618,7 @@ static void ShowUsage(void)
 		ConsolePrint(&ci_stderr, p.opt);
 		ConsolePrint(&ci_stderr, pgettext_expr("rpcli", p.desc), true);
 	}
-	fputc('\n', stderr);
+	ConsolePrintNewline(&ci_stderr);
 #endif /* RP_OS_SCSI_SUPPORTED */
 
 	ConsolePrint(&ci_stderr, C_("rpcli", "Examples:"), true);
@@ -945,7 +945,7 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 				// FIXME: Unicode character on Windows.
 				ConsolePrint(&ci_stderr,
 					fmt::format(FRUN(C_("rpcli", "Warning: skipping unknown switch '{:c}'")), (char)argv[i][1]), true);
-				fputc('\n', stderr);
+				ConsolePrintNewline(&ci_stderr);
 				fflush(stderr);
 				break;
 			}

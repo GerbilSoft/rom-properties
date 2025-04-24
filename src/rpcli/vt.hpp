@@ -126,4 +126,12 @@ static inline void ConsolePrint(ConsoleInfo_t *ci, const std::string &str, bool 
 	ConsolePrint(ci, str.data(), str.size(), newline);
 }
 
+/**
+ * Print a newline to the console.
+ * Equivalent to fputc('\n', stdout).
+ *
+ * @param ci ConsoleInfo_t
+ */
+void ConsolePrintNewline(ConsoleInfo_t *ci);
+
 #endif /* __cplusplus */

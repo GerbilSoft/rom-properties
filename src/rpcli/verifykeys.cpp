@@ -58,7 +58,7 @@ int VerifyKeys(void)
 	const int sectCount = keyStore.sectCount();
 	for (int sectIdx = 0; sectIdx < sectCount; sectIdx++) {
 		if (printedOne) {
-			putchar('\n');
+			ConsolePrintNewline(&ci_stdout);
 		}
 		printedOne = true;
 
