@@ -200,7 +200,7 @@ void init_vt(void)
  * @param len Length of UTF-8 text string (if -1, use strlen)
  * @return 0 on success; negative POSIX error code on error.
  */
-int win32_write_to_console(ConsoleInfo_t *ci, const char *str, int len)
+int win32_write_to_console(const ConsoleInfo_t *ci, const char *str, int len)
 {
 	HANDLE hConsole = ci->hConsole;
 	assert(hConsole != nullptr);
@@ -394,7 +394,7 @@ seq_loop:
  * @paran len Length of string
  * @param newline If true, print a newline afterwards.
  */
-void ConsolePrint(ConsoleInfo_t *ci, const char *str, size_t len, bool newline)
+void ConsolePrint(const ConsoleInfo_t *ci, const char *str, size_t len, bool newline)
 {
 #ifdef _WIN32
 	// Windows: If printing to console and UTF-8 is not enabled,
@@ -437,7 +437,7 @@ void ConsolePrint(ConsoleInfo_t *ci, const char *str, size_t len, bool newline)
  *
  * @param ci ConsoleInfo_t
  */
-void ConsolePrintNewline(ConsoleInfo_t *ci)
+void ConsolePrintNewline(const ConsoleInfo_t *ci)
 {
 #ifdef _WIN32
 	// Windows: If printing to console and UTF-8 is not enabled,

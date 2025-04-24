@@ -65,7 +65,7 @@ void init_vt(void);
  * @param len Length of UTF-8 text string (if -1, use strlen)
  * @return 0 on success; negative POSIX error code on error.
  */
-int win32_write_to_console(ConsoleInfo_t *ci, const char *str, int len = -1);
+int win32_write_to_console(const ConsoleInfo_t *ci, const char *str, int len = -1);
 
 /**
  * Write text with ANSI escape sequences to the Windows console. (stdout)
@@ -90,7 +90,7 @@ int win32_console_print_ansi_color(const char *str);
  * @param len Length of string
  * @param newline If true, print a newline afterwards.
  */
-void ConsolePrint(ConsoleInfo_t *ci, const char *str, size_t len, bool newline);
+void ConsolePrint(const ConsoleInfo_t *ci, const char *str, size_t len, bool newline);
 
 /**
  * Print text to the console.
@@ -104,7 +104,7 @@ void ConsolePrint(ConsoleInfo_t *ci, const char *str, size_t len, bool newline);
  * @param str C string
  * @param newline If true, print a newline afterwards.
  */
-static inline void ConsolePrint(ConsoleInfo_t *ci, const char *str, bool newline = false)
+static inline void ConsolePrint(const ConsoleInfo_t *ci, const char *str, bool newline = false)
 {
 	ConsolePrint(ci, str, strlen(str), newline);
 }
@@ -121,7 +121,7 @@ static inline void ConsolePrint(ConsoleInfo_t *ci, const char *str, bool newline
  * @param str String (C++)
  * @param newline If true, print a newline afterwards.
  */
-static inline void ConsolePrint(ConsoleInfo_t *ci, const std::string &str, bool newline = false)
+static inline void ConsolePrint(const ConsoleInfo_t *ci, const std::string &str, bool newline = false)
 {
 	ConsolePrint(ci, str.data(), str.size(), newline);
 }
@@ -132,6 +132,6 @@ static inline void ConsolePrint(ConsoleInfo_t *ci, const std::string &str, bool 
  *
  * @param ci ConsoleInfo_t
  */
-void ConsolePrintNewline(ConsoleInfo_t *ci);
+void ConsolePrintNewline(const ConsoleInfo_t *ci);
 
 #endif /* __cplusplus */
