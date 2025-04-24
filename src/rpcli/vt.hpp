@@ -10,6 +10,7 @@
 
 // C includes
 #include <stdint.h>
+#include <string.h>
 #include "stdboolx.h"
 
 #ifdef _WIN32
@@ -86,9 +87,27 @@ int win32_console_print_ansi_color(const char *str);
  *
  * @param ci ConsoleInfo_t
  * @param str String
+ * @param len Length of string
  * @param newline If true, print a newline afterwards.
  */
-void ConsolePrint(ConsoleInfo_t *ci, const char *str, bool newline = false);
+void ConsolePrint(ConsoleInfo_t *ci, const char *str, size_t len, bool newline);
+
+/**
+ * Print text to the console.
+ *
+ * On Windows, if a real console is in use, use WriteConsole().
+ *
+ * On other systems, or if we're not using a real console on Windows,
+ * use regular stdio functions.
+ *
+ * @param ci ConsoleInfo_t
+ * @param str C string
+ * @param newline If true, print a newline afterwards.
+ */
+static inline void ConsolePrint(ConsoleInfo_t *ci, const char *str, bool newline = false)
+{
+	ConsolePrint(ci, str, strlen(str), newline);
+}
 
 /**
  * Print text to the console.
@@ -104,10 +123,7 @@ void ConsolePrint(ConsoleInfo_t *ci, const char *str, bool newline = false);
  */
 static inline void ConsolePrint(ConsoleInfo_t *ci, const std::string &str, bool newline = false)
 {
-	// NOTE: May be more efficient if we call win32_write_to_console()
-	// with an actual length parameter, but it takes more effort to
-	// maintain two versions of this function...
-	return ConsolePrint(ci, str.c_str(), newline);
+	ConsolePrint(ci, str.data(), str.size(), newline);
 }
 
 #endif /* __cplusplus */
