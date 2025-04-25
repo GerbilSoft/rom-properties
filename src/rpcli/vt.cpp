@@ -11,15 +11,15 @@
 
 #include "vt.hpp"
 
+// librptext
+#include "librptext/conversion.hpp"
+using LibRpText::utf8_to_utf16;
+
 // C++ STL classes
 using std::array;
 using std::ostream;
 using std::string;
-
-#ifdef HAVE_STD_STRING_VIEW
-#include <string_view>
-using std::string_view;
-#endif /* #ifdef HAVE_STD_STRING_VIEW */
+using std::u16string;
 
 #ifdef _WIN32
 #  include "libwin32common/RpWin32_sdk.h"
@@ -51,17 +51,11 @@ typedef NTSTATUS (WINAPI *pfnNtQueryObject_t)(
 #  include <unistd.h>
 #endif /* _WIN32 */
 
-// Is stdout a console?
-// If it is, we can print ANSI escape sequences.
-bool is_stdout_console = false;
-
-#ifdef _WIN32
-// Windows 10 1607 ("Anniversary Update") adds support for ANSI escape sequences.
-// For older Windows, we'll need to parse the sequences manually and
-// call SetConsoleTextAttribute().
-bool does_console_support_ansi = false;
-static WORD wAttributesOrig = 0x07;	// default is white on black
-#endif /* _WIN32 */
+// Console information
+// NOTE: stdout and stderr can both be real consoles,
+// both be redirected, or one real and one redirected.
+ConsoleInfo_t ci_stdout;
+ConsoleInfo_t ci_stderr;
 
 #ifdef _WIN32
 static bool check_mintty(HANDLE hStdOut)
@@ -114,6 +108,69 @@ static bool check_mintty(HANDLE hStdOut)
 
 	return true;
 }
+
+/**
+ * Detect if a standard handle is a console or not.
+ * @param ci	[out] ConsoleInfo_t
+ * @param fd	[in] Standard handle, e.g. STD_OUTPUT_HANDLE or STD_ERROR_HANDLE
+ */
+static void init_win32_ConsoleInfo_t(ConsoleInfo_t *ci, DWORD fd)
+{
+	// Default attributes (white on black)
+	ci->wAttributesOrig = 0x07;
+
+	HANDLE hStd = GetStdHandle(fd);
+	if (!hStd || hStd == INVALID_HANDLE_VALUE) {
+		// Not a valid console handle...
+		ci->is_console = false;
+		ci->supports_ansi = false;
+		ci->is_real_console = false;
+		ci->hConsole = nullptr;
+		return;
+	}
+	ci->hConsole = hStd;
+
+	DWORD dwMode = 0;
+	if (!GetConsoleMode(hStd, &dwMode)) {
+		// Not a real console.
+		ci->is_real_console = false;
+
+		// NOTE: Might be a MinTTY fake console.
+		// NOTE 2: On Windows 10, MinTTY (git bash, cygwin) acts like a real console.
+		if (check_mintty(hStd)) {
+			// This is MinTTY.
+			ci->is_console = true;
+			ci->supports_ansi = true;
+			return;
+		} else {
+			// Not MinTTY.
+			ci->is_console = false;
+			ci->supports_ansi = false;
+		}
+		return;
+	}
+
+	// We have a real console.
+	ci->is_console = true;
+	ci->is_real_console = true;
+
+	// Does it support ANSI escape sequences?
+	dwMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+	if (SetConsoleMode(hStd, dwMode)) {
+		// ANSI escape sequences enabled.
+		ci->supports_ansi = true;
+		return;
+	}
+
+	// Failed to enable ANSI escape sequences.
+	ci->supports_ansi = false;
+
+	// Save the original console text attributes.
+	CONSOLE_SCREEN_BUFFER_INFO csbi;
+	if (GetConsoleScreenBufferInfo(hStd, &csbi)) {
+		ci->wAttributesOrig = csbi.wAttributes;
+	}
+}
 #endif /* _WIN32 */
 
 /**
@@ -121,74 +178,90 @@ static bool check_mintty(HANDLE hStdOut)
  */
 void init_vt(void)
 {
+	ci_stdout.stream = stdout;
+	ci_stderr.stream = stderr;
+
 #ifdef _WIN32
-	// On Windows 10 1607+ ("Anniversary Update"), we can enable
-	// VT escape sequence processing.
-	HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
-	if (!hStdOut) {
-		// No stdout...
-		is_stdout_console = false;
-		does_console_support_ansi = false;
-		return;
-	}
-
-	DWORD dwMode = 0;
-	if (!GetConsoleMode(hStdOut, &dwMode)) {
-		// Not a console.
-		// NOTE: Might be a MinTTY fake console.
-		if (check_mintty(hStdOut)) {
-			// This is MinTTY.
-			is_stdout_console = true;
-			does_console_support_ansi = true;
-			return;
-		}
-
-		// Not MinTTY.
-		is_stdout_console = false;
-		does_console_support_ansi = false;
-		return;
-	}
-
-	// We have a console.
-	is_stdout_console = true;
-
-	// Does it support ANSI escape sequences?
-	dwMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
-	if (SetConsoleMode(hStdOut, dwMode)) {
-		// ANSI escape sequences enabled.
-		does_console_support_ansi = true;
-		return;
-	}
-
-	// Failed to enable ANSI escape sequences.
-	does_console_support_ansi = false;
-
-	// Save the original console text attributes.
-	CONSOLE_SCREEN_BUFFER_INFO csbi;
-	if (GetConsoleScreenBufferInfo(hStdOut, &csbi)) {
-		wAttributesOrig = csbi.wAttributes;
-	} else {
-		// Failed to get the console text attributes.
-		// Default to white on black.
-		wAttributesOrig = 0x07;
-	}
+	init_win32_ConsoleInfo_t(&ci_stdout, STD_OUTPUT_HANDLE);
+	init_win32_ConsoleInfo_t(&ci_stderr, STD_ERROR_HANDLE);
 #else /* !_WIN32 */
 	// On other systems, use isatty() to determine if
 	// stdout is a tty or a file.
-	is_stdout_console = !!isatty(fileno(stdout));
+	ci_stdout.is_console = !!isatty(fileno(stdout));
+	ci_stderr.is_console = !!isatty(fileno(stderr));
 #endif
 }
 
 #ifdef _WIN32
 /**
- * Write text with ANSI escape sequences to a Windows console.
- * Color escapes will be handled using SetConsoleTextAttribute().
- * TODO: Unicode?
- *
- * @param os Output stream (should be cout)
- * @param str Source text
+ * Write UTF-8 text to the Windows console.
+ * Direct write using WriteConsole(); no ANSI escape interpretation.
+ * @param ci ConsoleInfo_t
+ * @param str UTF-8 text string
+ * @param len Length of UTF-8 text string (if -1, use strlen)
+ * @return 0 on success; negative POSIX error code on error.
  */
-void cout_win32_ansi_color(ostream &os, const char *str)
+int win32_write_to_console(const ConsoleInfo_t *ci, const char *str, int len)
+{
+	HANDLE hConsole = ci->hConsole;
+	assert(hConsole != nullptr);
+	if (!hConsole) {
+		// No console handle...
+		return -ENOTTY;
+	}
+
+	// Write in 4096-character chunks.
+	// WriteConsole() seems to fail if the input buffer is > 64 KiB.
+	static constexpr int CHUNK_SIZE = 4096;
+
+#ifdef UNICODE
+	// If using a real Windows console with ANSI escape sequences, use WriteConsoleA().
+	if (ci->supports_ansi) {
+		if (len < 0) {
+			len = static_cast<int>(strlen(str));
+		}
+		const char *p = str;
+		for (int size = len; size > 0; size -= CHUNK_SIZE) {
+			const DWORD chunk_len = static_cast<DWORD>((size > CHUNK_SIZE) ? CHUNK_SIZE : size);
+			WriteConsoleA(hConsole, p, chunk_len, nullptr, nullptr);
+			p += chunk_len;
+		}
+	} else {
+		// ANSI escape sequences are not supported.
+		// This means it's likely older than Win10 1607, so no UTF-8 support.
+		// Convert to UTF-16 first.
+		u16string wstr = utf8_to_utf16(str, len);
+		const wchar_t *p = reinterpret_cast<const wchar_t*>(wstr.data());
+		for (int size = static_cast<int>(wstr.size()); size > 0; size -= CHUNK_SIZE) {
+			const DWORD chunk_len = static_cast<DWORD>((size > CHUNK_SIZE) ? CHUNK_SIZE : size);
+			WriteConsoleW(hConsole, p, chunk_len, nullptr, nullptr);
+			p += chunk_len;
+		}
+	}
+#else /* !UNICODE */
+	// FIXME: Convert from UTF-8 to ANSI?
+	if (len < 0) {
+		len = static_cast<int>(strlen(str));
+	}
+	const char *p = str;
+	for (int size = len; size > 0; size -= CHUNK_SIZE) {
+		const DWORD chunk_len = static_cast<DWORD>((size > CHUNK_SIZE) ? CHUNK_SIZE : size);
+		WriteConsoleA(hConsole, p, chunk_len, nullptr, nullptr);
+		p += chunk_len;
+	}
+#endif /* UNICODE */
+
+	return 0;
+}
+
+/**
+ * Write text with ANSI escape sequences to the Windows console. (stdout)
+ * Color escapes will be handled using SetConsoleTextAttribute().
+ *
+ * @param str Source text
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int win32_console_print_ansi_color(const char *str)
 {
 	// Map ANSI colors (red=1) to Windows colors (blue=1).
 	static constexpr array<uint8_t, 8> color_map = {
@@ -196,15 +269,13 @@ void cout_win32_ansi_color(ostream &os, const char *str)
 	};
 
 	HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
-	assert(hStdOut != nullptr);
-	if (!hStdOut) {
+	assert(hStdOut != nullptr && hStdOut != INVALID_HANDLE_VALUE);
+	if (!hStdOut || hStdOut == INVALID_HANDLE_VALUE) {
 		// Cannot access the console handle...
-		// Print the string as-is.
-		os << str;
-		return;
+		return -ENOTTY;
 	}
 
-	WORD wAttributes = wAttributesOrig;
+	WORD wAttributes = ci_stdout.wAttributesOrig;
 
 	while (*str != '\0') {
 		// Find an escape character.
@@ -212,18 +283,14 @@ void cout_win32_ansi_color(ostream &os, const char *str)
 		if (!pEsc) {
 			// No more escape characters.
 			// Send the rest of the buffer.
-			os << str;
+			win32_write_to_console(&ci_stdout, str);
 			break;
 		}
 
 		// Found an escape character.
 		// Send everything up to the escape.
 		if (str != pEsc) {
-#ifdef HAVE_STD_STRING_VIEW
-			os << string_view(str, pEsc - str);
-#else /* !HAVE_STD_STRING_VIEW */
-			os << string(str, pEsc - str);
-#endif /* HAVE_STD_STRING_VIEW */
+			win32_write_to_console(&ci_stdout, str, static_cast<int>(pEsc - str));
 			str = pEsc;
 		}
 
@@ -262,41 +329,78 @@ seq_loop:
 		}
 
 		// Parse the decimal number in: [str, pSep)
-		if (str == pSep) {
-			// Invalid number.
-			continue;
-		}
 		num = 0;
-		for (; str < pSep; str++) {
-			const char chr = *str;
-			if (chr >= '0' && chr <= '9') {
-				num *= 10;
-				num += (chr - '0');
-			} else {
-				// Invalid number.
-				num = -1;
-				break;
+		if (str != pSep) {
+			for (; str < pSep; str++) {
+				const char chr = *str;
+				if (chr >= '0' && chr <= '9') {
+					num *= 10;
+					num += (chr - '0');
+				} else {
+					// Invalid number.
+					num = -1;
+					break;
+				}
 			}
+		} else {
+			// No number. This is interpreted as 0, aka Reset.
 		}
 
 		// Check the number.
-		if (num == 0) {
-			// Reset
-			wAttributes = wAttributesOrig;
-		} else if (num == 1) {
-			// Bold
-			wAttributes |= FOREGROUND_INTENSITY;
-		} else if (num >= 30 && num <= 37) {
-			// Foreground color
-			wAttributes &= ~0x0007;
-			wAttributes |= color_map[num - 30];
-		} else if (num >= 40 && num <= 37) {
-			// Background color
-			wAttributes &= ~0x0070;
-			wAttributes |= (color_map[num - 40] << 4);
-		} else {
-			// Not a valid escape sequence.
-			continue;
+		switch (num) {
+			case 0:
+				// Reset
+				wAttributes = ci_stdout.wAttributesOrig;
+				break;
+			case 1:
+				// Bold
+				wAttributes |= FOREGROUND_INTENSITY;
+				break;
+			case 4:
+				// Underline
+				// NOTE: Works on Windows 10; does not work on Windows 7.
+				wAttributes |= COMMON_LVB_UNDERSCORE;
+				break;
+			case 7:
+				// Reverse video
+				// NOTE: Works on Windows 10; does not work on Windows 7.
+				wAttributes |= COMMON_LVB_REVERSE_VIDEO;
+				break;
+			case 22:
+				// Normal intensity
+				wAttributes &= ~FOREGROUND_INTENSITY;
+				break;
+			case 27:
+				// Not-reverse video
+				// NOTE: Works on Windows 10; does not work on Windows 7.
+				wAttributes &= ~COMMON_LVB_REVERSE_VIDEO;
+				break;
+			case 30: case 31: case 32: case 33:
+			case 34: case 35: case 36: case 37:
+				// Foreground color
+				wAttributes &= ~0x0007;
+				wAttributes |= color_map[num - 30];
+				break;
+			case 39:
+				// Default foreground color
+				wAttributes &= ~0x0007;
+				wAttributes |= (ci_stdout.wAttributesOrig & 0x0007);
+				break;
+			case 40: case 41: case 42: case 43:
+			case 44: case 45: case 46: case 47:
+				// Background color
+				wAttributes &= ~0x0070;
+				wAttributes |= (color_map[num - 40] << 4);
+				break;
+			case 49:
+				// Default background color
+				wAttributes &= ~0x0070;
+				wAttributes |= (ci_stdout.wAttributesOrig & 0x0070);
+				break;
+			default:
+				// Not a valid number.
+				// Ignore it and keep processing.
+				break;
 		}
 
 		// Is this a separator or the end of the sequence?
@@ -304,16 +408,90 @@ seq_loop:
 			goto seq_loop;
 		}
 
-		// Flush the output stream before setting attributes.
-		os.flush();
 		// Set the console attributes.
 		SetConsoleTextAttribute(hStdOut, wAttributes);
 		str++;
 	}
 
-	// Flush the output stream before restoring attributes.
-	os.flush();
 	// Restore the original console attributes.
-	SetConsoleTextAttribute(hStdOut, wAttributesOrig);
+	SetConsoleTextAttribute(hStdOut, ci_stdout.wAttributesOrig);
+	return 0;
 }
 #endif /* _WIN32 */
+
+/**
+ * Print text to the console.
+ *
+ * On Windows, if a real console is in use, use WriteConsole().
+ *
+ * On other systems, or if we're not using a real console on Windows,
+ * use regular stdio functions.
+ *
+ * @param ci ConsoleInfo_t
+ * @param str String
+ * @paran len Length of string
+ * @param newline If true, print a newline afterwards.
+ */
+void ConsolePrint(const ConsoleInfo_t *ci, const char *str, size_t len, bool newline)
+{
+#ifdef _WIN32
+	// Windows: If printing to console and UTF-8 is not enabled,
+	// convert to UTF-16 and use WriteConsoleW().
+	if (ci->is_console && ci->is_real_console) {
+		fflush(ci->stream);
+		int ret = win32_write_to_console(ci, str, static_cast<int>(len));
+		if (ret == 0) {
+			// Text written to console successfully.
+			if (newline) {
+				ret = win32_write_to_console(ci, "\n", 1);
+				if (ret != 0) {
+					// Failed to write the newline?
+					// Use stdio as a fallback.
+					fputc('\n', ci->stream);
+				}
+			}
+		} else {
+			// Failed to write to console.
+			// Use stdio as a fallback.
+			fwrite(str, 1, len, ci->stream);
+			if (newline) {
+				fputc('\n', ci->stream);
+			}
+		}
+	} else
+#endif /* _WIN32 */
+	{
+		// Regular stdio output.
+		fwrite(str, 1, len, ci->stream);
+		if (newline) {
+			fputc('\n', ci->stream);
+		}
+	}
+}
+
+/**
+ * Print a newline to the console.
+ * Equivalent to fputc('\n', stdout).
+ *
+ * @param ci ConsoleInfo_t
+ */
+void ConsolePrintNewline(const ConsoleInfo_t *ci)
+{
+#ifdef _WIN32
+	// Windows: If printing to console and UTF-8 is not enabled,
+	// convert to UTF-16 and use WriteConsoleW().
+	if (ci->is_console && ci->is_real_console) {
+		fflush(ci->stream);
+		int ret = win32_write_to_console(ci, "\n", 1);
+		if (ret != 0) {
+			// Failed to write to console.
+			// Use stdio as a fallback.
+			fputc('\n', ci->stream);
+		}
+	} else
+#endif /* _WIN32 */
+	{
+		// Regular stdio output.
+		fputc('\n', ci->stream);
+	}
+}

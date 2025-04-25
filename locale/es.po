@@ -10163,7 +10163,7 @@ msgstr "ATA {:s} falló: {:0>8X}"
 #, c++-format
 msgctxt "rpcli"
 msgid "Extracting {0:s} into '{1:s}'"
-msgstr "Extracción de {0:s} en '{1:s}"
+msgstr "Extracción de {0:s} en '{1:s}'"
 
 #. tr: {0:d} == mipmap level, {1:s} == output filename
 #: ../src/rpcli/rpcli.cpp:177

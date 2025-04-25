@@ -7,15 +7,19 @@
     * Affects: v2.4 - v2.5
   * EXE: Don't show the "XML parsing failed" warning if the EXE doesn't
     actually have a manifest.
+  * rpcli: SCSI inquiry was accidentally broken during a code cleanup.
+    * Affects: v2.3 - v2.5
 
 * Other changes:
   * Added support for localsearch-3.8, the new name of Tracker.
     This is internally handled as API "3L".
     * Fixes #446: Use `localsearch` paths instead of `tracker3-miners`
       * Reported by @lufog.
-  * rpcli: Limit Windows UTF-8 console output to Windows 10 or later.
-    On Windows 7 (and possibly 8 and 8.1), when using a non-English
-    language, rpcli might randomly crash due to console bugs.
+  * rpcli: Improved Unicode output such that it works properly on older versions
+    of Windows, including Windows XP and Windows 7, by using WriteConsoleW().
+    This requires converting from UTF-8 to UTF-16, but it turns out doing this
+    is actually faster than printf/cout, even on versions of Windows that support
+    UTF-8 properly, so now it's used on Windows 10 as well.
 
 ## v2.5 (released 2025/04/19)
 

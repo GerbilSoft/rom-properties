@@ -124,6 +124,18 @@ DELAYLOAD_TEST_FUNCTION_IMPL1(libintl_textdomain, nullptr);
 #  define T2U8c(tcs) (tcs)
 #endif /* _WIN32 */
 
+#ifdef _WIN32
+// Console code page restoration
+// For UTF-8 console output on Windows 10.
+static UINT old_console_output_cp = 0;
+static void RestoreConsoleOutputCP(void)
+{
+	if (old_console_output_cp != 0) {
+		SetConsoleOutputCP(old_console_output_cp);
+	}
+}
+#endif /* _WIN32 */
+
 struct ExtractParam {
 	const TCHAR *filename;	// Target filename. Can be null due to argv[argc]
 	int imageType;		// Image Type. -1 = iconAnimData, MUST be between -1 and IMG_INT_MAX
@@ -137,10 +149,10 @@ struct ExtractParam {
 };
 
 /**
-* Extracts images from romdata
-* @param romData RomData containing the images
-* @param extract Vector of image extraction parameters
-*/
+ * Extracts images from romdata
+ * @param romData RomData containing the images
+ * @param extract Vector of image extraction parameters
+ */
 static void ExtractImages(const RomData *romData, const vector<ExtractParam> &extract)
 {
 	const uint32_t supported = romData->supportedImageTypes();
@@ -165,67 +177,80 @@ static void ExtractImages(const RomData *romData, const vector<ExtractParam> &ex
 
 			if (image && image->isValid()) {
 				found = true;
+				ConsolePrint(&ci_stderr, "-- ");
 				if (likely(!isMipmap)) {
-					cerr << "-- " <<
-						// tr: {0:s} == image type name, {1:s} == output filename
+					// tr: {0:s} == image type name, {1:s} == output filename
+					ConsolePrint(&ci_stderr,
 						fmt::format(FRUN(C_("rpcli", "Extracting {0:s} into '{1:s}'")),
 							RomData::getImageTypeName(imageType),
-							T2U8c(p.filename)) << '\n';
+							T2U8c(p.filename)), true);
 				} else {
-					cerr << "-- " <<
-						// tr: {0:d} == mipmap level, {1:s} == output filename
+					// tr: {0:d} == mipmap level, {1:s} == output filename
+					ConsolePrint(&ci_stderr,
 						fmt::format(FRUN(C_("rpcli", "Extracting mipmap level {0:d} into '{1:s}'")),
-							p.mipmapLevel, T2U8c(p.filename)) << '\n';
+							p.mipmapLevel, T2U8c(p.filename)), true);
 				}
-				cerr.flush();
+				fflush(stderr);
 				int errcode = RpPng::save(p.filename, image);
 				if (errcode != 0) {
 					// tr: {0:s} == filename, {1:s} == error message
-					cerr << fmt::format(FRUN(C_("rpcli", "Couldn't create file '{0:s}': {1:s}")),
-						T2U8c(p.filename), strerror(-errcode)) << '\n';
+					ConsolePrint(&ci_stderr,
+						fmt::format(FRUN(C_("rpcli", "Couldn't create file '{0:s}': {1:s}")),
+							T2U8c(p.filename), strerror(-errcode)), true);
 				} else {
-					cerr << "   " << C_("rpcli", "Done") << '\n';
+					ConsolePrint(&ci_stderr, "   ");
+					ConsolePrint(&ci_stderr, C_("rpcli", "Done"), true);
 				}
-				cerr.flush();
+				fflush(stderr);
 			}
 		} else if (p.imageType == -1) {
 			// iconAnimData image
 			auto iconAnimData = romData->iconAnimData();
 			if (iconAnimData && iconAnimData->count != 0 && iconAnimData->seq_count != 0) {
 				found = true;
-				cerr << "-- " << fmt::format(FRUN(C_("rpcli", "Extracting animated icon into '{:s}'")), T2U8c(p.filename)) << '\n';
-				cerr.flush();
+				ConsolePrint(&ci_stderr, "-- ");
+				ConsolePrint(&ci_stderr,
+					fmt::format(FRUN(C_("rpcli", "Extracting animated icon into '{:s}'")),
+						T2U8c(p.filename)), true);
+				fflush(stderr);
 				int errcode = RpPng::save(p.filename, iconAnimData);
 				if (errcode == -ENOTSUP) {
-					cerr << "   " << C_("rpcli", "APNG not supported, extracting only the first frame") << '\n';
-					cerr.flush();
+					ConsolePrint(&ci_stderr, "   ");
+					ConsolePrint(&ci_stderr,
+						C_("rpcli", "APNG not supported, extracting only the first frame"), true);
+					fflush(stderr);
 					// falling back to outputting the first frame
 					errcode = RpPng::save(p.filename, iconAnimData->frames[iconAnimData->seq_index[0]]);
 				}
 				if (errcode != 0) {
-					cerr << "   " <<
+					ConsolePrint(&ci_stderr, "   ");
+					ConsolePrint(&ci_stderr,
 						fmt::format(FRUN(C_("rpcli", "Couldn't create file '{0:s}': {1:s}")),
-							T2U8c(p.filename), strerror(-errcode)) << '\n';
+							T2U8c(p.filename), strerror(-errcode)), true);
 				} else {
-					cerr << "   " << C_("rpcli", "Done") << '\n';
+					ConsolePrint(&ci_stderr, "   ");
+					ConsolePrint(&ci_stderr, C_("rpcli", "Done"), true);
 				}
-				cerr.flush();
+				fflush(stderr);
 			}
 		}
 
 		if (!found) {
 			// TODO: Return an error code?
 			if (p.imageType == -1) {
-				cerr << "-- " << C_("rpcli", "Animated icon not found") << '\n';
+				ConsolePrint(&ci_stderr, "-- ");
+				ConsolePrint(&ci_stderr, C_("rpcli", "Animated icon not found"), true);
 			} else if (p.mipmapLevel >= 0) {
-				cerr << "-- " <<
-					fmt::format(FRUN(C_("rpcli", "Mipmap level {:d} not found")), p.mipmapLevel) << '\n';
+				ConsolePrint(&ci_stderr, "-- ");
+				ConsolePrint(&ci_stderr,
+					fmt::format(FRUN(C_("rpcli", "Mipmap level {:d} not found")), p.mipmapLevel), true);
 			} else {
 				const RomData::ImageType imageType =
 					static_cast<RomData::ImageType>(p.imageType);
-				cerr << "-- " <<
+				ConsolePrint(&ci_stderr, "-- ");
+				ConsolePrint(&ci_stderr, 
 					fmt::format(FRUN(C_("rpcli", "Image '{:s}' not found")),
-						RomData::getImageTypeName(imageType)) << '\n';
+						RomData::getImageTypeName(imageType)), true);
 			}
 			cerr.flush();
 		}
@@ -249,20 +274,18 @@ static void DoFile(const TCHAR *filename, bool json, const vector<ExtractParam> 
 		// File: Open the file and call RomDataFactory::create() with the opened file.
 
 		// FIXME: Make T2U8c() unnecessary here.
-		fputs("== ", stderr);
-		fmt::print(stderr, FRUN(C_("rpcli", "Reading file '{:s}'...")), T2U8c(filename));
-		fputc('\n', stderr);
+		ConsolePrint(&ci_stderr, "== ");
+		ConsolePrint(&ci_stderr, fmt::format(FRUN(C_("rpcli", "Reading file '{:s}'...")), T2U8c(filename)), true);
 		fflush(stderr);
 
 		shared_ptr<RpFile> file = std::make_shared<RpFile>(filename, RpFile::FM_OPEN_READ_GZ);
 		if (!file->isOpen()) {
 			// TODO: Return an error code?
-			fputs("-- ", stderr);
-			fmt::print(stderr, FRUN(C_("rpcli", "Couldn't open file: {:s}")), strerror(file->lastError()));
-			fputc('\n', stderr);
+			ConsolePrint(&ci_stderr, "-- ");
+			ConsolePrint(&ci_stderr, fmt::format(FRUN(C_("rpcli", "Couldn't open file: {:s}")), strerror(file->lastError())), true);
 			fflush(stderr);
 			if (json) {
-				fmt::print(FSTR("{{\"error\":\"couldn't open file\",\"code\":{:d}}}\n"), file->lastError());
+				ConsolePrint(&ci_stderr, fmt::format(FSTR("{{\"error\":\"couldn't open file\",\"code\":{:d}}}\n"), file->lastError()));
 				fflush(stdout);
 			}
 			return;
@@ -273,9 +296,8 @@ static void DoFile(const TCHAR *filename, bool json, const vector<ExtractParam> 
 		// Directory: Call RomDataFactory::create() with the filename.
 
 		// FIXME: Make T2U8c() unnecessary here.
-		fputs("== ", stderr);
-		fmt::print(stderr, FRUN(C_("rpcli", "Reading directory '{:s}'...")), T2U8c(filename));
-		fputc('\n', stderr);
+		ConsolePrint(&ci_stderr, "== ");
+		ConsolePrint(&ci_stderr, fmt::format(FRUN(C_("rpcli", "Reading directory '{:s}'...")), T2U8c(filename)), true);
 		fflush(stderr);
 
 		romData = RomDataFactory::create(filename);
@@ -283,40 +305,65 @@ static void DoFile(const TCHAR *filename, bool json, const vector<ExtractParam> 
 
 	if (romData) {
 		if (json) {
-			fputs("-- ", stderr);
-			fputs(C_("rpcli", "Outputting JSON data"), stderr);
-			fputc('\n', stderr);
+			ConsolePrint(&ci_stderr, "-- ");
+			ConsolePrint(&ci_stderr, C_("rpcli", "Outputting JSON data"), true);
 			fflush(stderr);
 
-			cout << JSONROMOutput(romData.get(), flags) << '\n';
+#ifdef _WIN32
+			if (ci_stdout.is_console && ci_stdout.is_real_console) {
+				// Windows: Using a real console on stdout.
+				// Use WriteConsole(), which is faster than printf/cout.
+				ostringstream oss;
+				oss << JSONROMOutput(romData.get(), flags) << '\n';
+				cout.flush();
+				fflush(stdout);
+				const string str = oss.str();
+				// TODO: Error checking.
+				win32_write_to_console(&ci_stdout, str.data(), static_cast<int>(str.size()));
+			} else
+#endif /* _WIN32 */
+			{
+				// Windows: Using stdout console with UTF-8 support,
+				// or redirected to a file, or not using Windows.
+				cout << JSONROMOutput(romData.get(), flags) << '\n';
+			}
 		} else {
 #ifdef _WIN32
-			if (is_stdout_console && !does_console_support_ansi) {
+			if (ci_stdout.is_console && ci_stdout.is_real_console && !ci_stdout.supports_ansi) {
+				// Windows: Using stdout console, but it doesn't support ANSI escapes.
+				// NOTE: Console may support UTF-8, but since it doesn't support
+				// ANSI escapes, we're better off using WriteConsoleW() anyway.
+				// Support for ANSI escape sequences was added in Windows 10 1607.
 				ostringstream oss;
 				oss << ROMOutput(romData.get(), lc, flags) << '\n';
-				cout_win32_ansi_color(cout, oss.str().c_str());
+				cout.flush();
+				fflush(stdout);
+				// TODO: Error checking.
+				win32_console_print_ansi_color(oss.str().c_str());
 			} else
 #endif /* _WIN32 */
 			{
 #ifdef ENABLE_SIXEL
 				// If this is a tty, print the icon/banner using libsixel.
-				if (is_stdout_console) {
+				if (ci_stdout.is_console) {
 					print_sixel_icon_banner(romData);
 				}
 #endif /* ENABLE_SIXEL */
+				// Windows: Using stdout console with UTF-8 and ANSI escape support,
+				// or redirected to a file, or not using Windows.
 				cout << ROMOutput(romData.get(), lc, flags) << '\n';
 			}
 		}
 		cout.flush();
+		fflush(stdout);
 		ExtractImages(romData.get(), extract);
 	} else {
-		fputs("-- ", stderr);
-		fputs(C_("rpcli", "ROM is not supported"), stderr);
-		fputc('\n', stderr);
+		ConsolePrint(&ci_stderr, "-- ");
+		ConsolePrint(&ci_stderr, C_("rpcli", "ROM is not supported"), true);
 		fflush(stderr);
 
 		if (json) {
-			fputs("{\"error\":\"rom is not supported\"}\n", stdout);
+			ConsolePrint(&ci_stdout, ("{\"error\":\"rom is not supported\"}\n"));
 			fflush(stdout);
 		}
 	}
@@ -338,9 +385,8 @@ static void PrintSystemRegion(void)
 			buf += static_cast<char>(lc & 0xFF);
 		}
 	}
-	fmt::print(FRUN(C_("rpcli", "System language code: {:s}")),
-		(!buf.empty() ? buf.c_str() : C_("rpcli", "0 (this is a bug!)")));
-	putchar('\n');
+	ConsolePrint(&ci_stdout, fmt::format(FRUN(C_("rpcli", "System language code: {:s}")),
+		(!buf.empty() ? buf.c_str() : C_("rpcli", "0 (this is a bug!)"))), true);
 
 	uint32_t cc = __swab32(SystemRegion::getCountryCode());
 	buf.clear();
@@ -351,12 +397,11 @@ static void PrintSystemRegion(void)
 			buf += static_cast<char>(cc & 0xFF);
 		}
 	}
-	fmt::print(FRUN(C_("rpcli", "System country code: {:s}")),
-		(!buf.empty() ? buf.c_str() : C_("rpcli", "0 (this is a bug!)")));
-	putchar('\n');
+	ConsolePrint(&ci_stdout, fmt::format(FRUN(C_("rpcli", "System country code: {:s}")),
+		(!buf.empty() ? buf.c_str() : C_("rpcli", "0 (this is a bug!)"))), true);
 
 	// Extra line. (TODO: Only if multiple commands are specified.)
-	putchar('\n');
+	ConsolePrintNewline(&ci_stdout);
 	fflush(stdout);
 }
 
@@ -366,7 +411,8 @@ static void PrintSystemRegion(void)
 static void PrintPathnames(void)
 {
 	// TODO: Localize these strings?
-	fmt::print(FSTR(
+	// TODO: Only print an extra line if multiple commands are specified.
+	ConsolePrint(&ci_stdout, fmt::format(FSTR(
 		"User's home directory:   {:s}\n"
 		"User's cache directory:  {:s}\n"
 		"User's config directory: {:s}\n"
@@ -377,10 +423,8 @@ static void PrintPathnames(void)
 		OS_NAMESPACE::getCacheDirectory(),
 		OS_NAMESPACE::getConfigDirectory(),
 		FileSystem::getCacheDirectory(),
-		FileSystem::getConfigDirectory());
+		FileSystem::getConfigDirectory()), true);
 
-	// Extra line. (TODO: Only if multiple commands are specified.)
-	putchar('\n');
 	fflush(stdout);
 }
 
@@ -393,53 +437,63 @@ static void PrintPathnames(void)
 static void DoScsiInquiry(const TCHAR *filename, bool json)
 {
 	// FIXME: Make T2U8c() unnecessary here.
-	fputs("== ", stderr);
-	fmt::print(stderr, FRUN(C_("rpcli", "Opening device file '{:s}'...")), T2U8c(filename));
-	fputc('\n', stderr);
+	ConsolePrint(&ci_stderr, "== ");
+	ConsolePrint(&ci_stderr, fmt::format(FRUN(C_("rpcli", "Opening device file '{:s}'...")), T2U8c(filename)), true);
 	fflush(stderr);
 
 	unique_ptr<RpFile> file(new RpFile(filename, RpFile::FM_OPEN_READ_GZ));
 	if (!file->isOpen()) {
 		// TODO: Return an error code?
-		fputs("-- ", stderr);
-		fmt::print(stderr, FRUN(C_("rpcli", "Couldn't open file: {:s}")), strerror(file->lastError()));
-		fputc('\n', stderr);
+		ConsolePrint(&ci_stderr, "-- ");
+		ConsolePrint(&ci_stderr, fmt::format(FRUN(C_("rpcli", "Couldn't open file: {:s}")), strerror(file->lastError())), true);
 		fflush(stderr);
 
 		if (json) {
-			fmt::print("{{\"error\":\"couldn't open file\",\"code\":{:d}}}\n", file->lastError());
+			ConsolePrint(&ci_stdout, fmt::format("{{\"error\":\"couldn't open file\",\"code\":{:d}}}\n", file->lastError()));
 			fflush(stdout);
 		}
 		return;
 	}
 
 	// TODO: Check for unsupported devices? (Only CD-ROM is supported.)
-	if (file->isDevice()) {
+	if (!file->isDevice()) {
 		// TODO: Return an error code?
-		fputs("-- ", stderr);
-		fputs(C_("rpcli", "Not a device file"), stderr);
-		fputc('\n', stderr);
+		ConsolePrint(&ci_stderr, "-- ");
+		ConsolePrint(&ci_stderr, C_("rpcli", "Not a device file"), true);
 		fflush(stderr);
 
 		if (json) {
-			fputs("{\"error\":\"not a device file\"}\n", stdout);
+			ConsolePrint(&ci_stdout, "{\"error\":\"not a device file\"}\n");
 			fflush(stdout);
 		}
 		return;
 	}
 
 	if (json) {
-		fputs("-- ", stderr);
-		fputs(C_("rpcli", "Outputting JSON data"), stderr);
-		fputc('\n', stderr);
+		ConsolePrint(&ci_stderr, "-- ");
+		ConsolePrint(&ci_stderr, C_("rpcli", "Outputting JSON data"), true);
 		fflush(stderr);
 
 		// TODO: JSONScsiInquiry
 		//cout << JSONScsiInquiry(file.get()) << '\n';
 		//cout.flush();
 	} else {
-		cout << ScsiInquiry(file.get()) << '\n';
-		cout.flush();
+#ifdef _WIN32
+		if (ci_stdout.is_console && ci_stdout.is_real_console) {
+			// Windows: Using a real console on stdout.
+			// Use WriteConsole(), which is faster than printf/cout.
+			ostringstream oss;
+			oss << ScsiInquiry(file.get()) << '\n';
+			cout.flush();
+			const string str = oss.str();
+			// TODO: Error checking.
+			win32_write_to_console(&ci_stdout, str.data(), static_cast<int>(str.size()));
+		} else
+#endif /* _WIN32 */
+		{
+			cout << ScsiInquiry(file.get()) << '\n';
+			cout.flush();
+		}
 	}
 }
 
@@ -452,21 +506,19 @@ static void DoScsiInquiry(const TCHAR *filename, bool json)
 static void DoAtaIdentifyDevice(const TCHAR *filename, bool json, bool packet)
 {
 	// FIXME: Make T2U8c() unnecessary here.
-	fputs("== ", stderr);
-	fmt::print(stderr, FRUN(C_("rpcli", "Opening device file '{:s}'...")), T2U8c(filename));
-	fputc('\n', stderr);
+	ConsolePrint(&ci_stderr, "== ");
+	ConsolePrint(&ci_stderr, fmt::format(FRUN(C_("rpcli", "Opening device file '{:s}'...")), T2U8c(filename)), true);
 	fflush(stderr);
 
 	unique_ptr<RpFile> file(new RpFile(filename, RpFile::FM_OPEN_READ_GZ));
 	if (!file->isOpen()) {
 		// TODO: Return an error code?
-		fputs("-- ", stderr);
-		fmt::print(stderr, FRUN(C_("rpcli", "Couldn't open file: {:s}")), strerror(file->lastError()));
-		fputc('\n', stderr);
+		ConsolePrint(&ci_stderr, "-- ");
+		ConsolePrint(&ci_stderr, fmt::format(FRUN(C_("rpcli", "Couldn't open file: {:s}")), strerror(file->lastError())), true);
 		fflush(stderr);
 
 		if (json) {
-			fmt::print("{{\"error\":\"couldn't open file\",\"code\":{:d}}}\n", file->lastError());
+			ConsolePrint(&ci_stdout, fmt::format("{{\"error\":\"couldn't open file\",\"code\":{:d}}}\n", file->lastError()));
 			fflush(stdout);
 		}
 		return;
@@ -475,55 +527,55 @@ static void DoAtaIdentifyDevice(const TCHAR *filename, bool json, bool packet)
 	// TODO: Check for unsupported devices? (Only CD-ROM is supported.)
 	if (!file->isDevice()) {
 		// TODO: Return an error code?
-		fputs("-- ", stderr);
-		fputs(C_("rpcli", "Not a device file"), stderr);
-		fputc('\n', stderr);
+		ConsolePrint(&ci_stderr, "-- ");
+		ConsolePrint(&ci_stderr, C_("rpcli", "Not a device file"), true);
 		fflush(stderr);
 
 		if (json) {
-			fputs("{\"error\":\"Not a device file\"}\n", stdout);
+			ConsolePrint(&ci_stdout, ("{\"error\":\"Not a device file\"}\n"));
 			fflush(stdout);
 		}
 		return;
 	}
 
 	if (json) {
-		fputs("-- ", stderr);
-		fputs(C_("rpcli", "Outputting JSON data"), stderr);
-		fputc('\n', stderr);
+		ConsolePrint(&ci_stderr, "-- ");
+		ConsolePrint(&ci_stderr, C_("rpcli", "Outputting JSON data"), true);
 		fflush(stderr);
 
 		// TODO: JSONAtaIdentifyDevice
 		//cout << JSONAtaIdentifyDevice(file.get(), packet) << '\n';
 		//cout.flush();
 	} else {
-		cout << AtaIdentifyDevice(file.get(), packet) << '\n';
-		cout.flush();
+#ifdef _WIN32
+		if (ci_stdout.is_console && ci_stdout.is_real_console) {
+			// Windows: Using a real console on stdout.
+			// Use WriteConsole(), which is faster than printf/cout.
+			ostringstream oss;
+			oss << AtaIdentifyDevice(file.get(), packet) << '\n';
+			cout.flush();
+			const string str = oss.str();
+			// TODO: Error checking.
+			win32_write_to_console(&ci_stdout, str.data(), static_cast<int>(str.size()));
+		} else
+#endif /* _WIN32 */
+		{
+			cout << AtaIdentifyDevice(file.get(), packet) << '\n';
+			cout.flush();
+		}
 	}
 }
 #endif /* RP_OS_SCSI_SUPPORTED */
 
-#ifdef _WIN32
-static UINT old_console_output_cp = 0;
-static void RestoreConsoleOutputCP(void)
-{
-	if (old_console_output_cp != 0) {
-		SetConsoleOutputCP(old_console_output_cp);
-	}
-}
-#endif /* _WIN32 */
-
 static void ShowUsage(void)
 {
 	// TODO: Use argv[0] instead of hard-coding 'rpcli'?
-
 #ifdef ENABLE_DECRYPTION	
-	fputs(C_("rpcli", "Usage: rpcli [-k] [-c] [-p] [-j] [-l lang] [[-xN outfile]... [-mN outfile]... [-a apngoutfile] filename]..."), stderr);
-	fputc('\n', stderr);
+	const char *const s_usage = C_("rpcli", "Usage: rpcli [-k] [-c] [-p] [-j] [-l lang] [[-xN outfile]... [-mN outfile]... [-a apngoutfile] filename]...");
 #else /* !ENABLE_DECRYPTION */
-	fputs(C_("rpcli", "Usage: rpcli [-c] [-p] [-j] [-l lang] [[-xN outfile]... [-mN outfile]... [-a apngoutfile] filename]..."), stderr);
-	fputc('\n', stderr);
+	const char *const s_usage = C_("rpcli", "Usage: rpcli [-c] [-p] [-j] [-l lang] [[-xN outfile]... [-mN outfile]... [-a apngoutfile] filename]...");
 #endif /* ENABLE_DECRYPTION */
+	ConsolePrint(&ci_stderr, s_usage, true);
 
 	struct cmd_t {
 		char opt[8];	// TODO: Automatic padding?
@@ -548,11 +600,10 @@ static void ShowUsage(void)
 	}};
 
 	for (const auto &p : cmds) {
-		fputs(p.opt, stderr);
-		fputs(pgettext_expr("rpcli", p.desc), stderr);
-		fputc('\n', stderr);
+		ConsolePrint(&ci_stderr, p.opt);
+		ConsolePrint(&ci_stderr, pgettext_expr("rpcli", p.desc), true);
 	}
-	fputc('\n', stderr);
+	ConsolePrintNewline(&ci_stderr);
 
 #ifdef RP_OS_SCSI_SUPPORTED
 	// Commands for devices
@@ -562,21 +613,21 @@ static void ShowUsage(void)
 		{"  -ip: ", NOP_C_("rpcli", "Run an ATA IDENTIFY PACKET DEVICE command.")},
 	}};
 
-	fputs(C_("rpcli", "Special options for devices:"), stderr);
-	fputc('\n', stderr);
+	ConsolePrint(&ci_stderr, C_("rpcli", "Special options for devices:"), true);
 	for (const auto &p : cmds_dev) {
-		fputs(p.opt, stderr);
-		fputs(pgettext_expr("rpcli", p.desc), stderr);
-		fputc('\n', stderr);
+		ConsolePrint(&ci_stderr, p.opt);
+		ConsolePrint(&ci_stderr, pgettext_expr("rpcli", p.desc), true);
 	}
-	fputc('\n', stderr);
+	ConsolePrintNewline(&ci_stderr);
 #endif /* RP_OS_SCSI_SUPPORTED */
 
-	fputs(C_("rpcli", "Examples:"), stderr); fputc('\n', stderr);
-	fputs("* rpcli s3.gen\n", stderr);
-	fputs("\t ", stderr); fputs(C_("rpcli", "displays info about s3.gen"), stderr); fputc('\n', stderr);
-	fputs("* rpcli -x0 icon.png pokeb2.nds\n", stderr);
-	fputs("\t ", stderr); fputs(C_("rpcli", "extracts icon from pokeb2.nds"), stderr); fputc('\n', stderr);
+	ConsolePrint(&ci_stderr, C_("rpcli", "Examples:"), true);
+	ConsolePrint(&ci_stderr, "* rpcli s3.gen\n");
+	ConsolePrint(&ci_stderr, "\t ");
+		ConsolePrint(&ci_stderr, C_("rpcli", "displays info about s3.gen"), true);
+	ConsolePrint(&ci_stderr, "* rpcli -x0 icon.png pokeb2.nds\n");
+	ConsolePrint(&ci_stderr, "\t ");
+		ConsolePrint(&ci_stderr, C_("rpcli", "extracts icon from pokeb2.nds"), true);
 	fflush(stderr);
 }
 
@@ -605,6 +656,21 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 	// (Needed for MSVC 2022; does nothing for MinGW-w64 11.0.0)
 	setlocale(LC_CTYPE, "C");
 #endif /* _WIN32 */
+
+#if defined(ENABLE_NLS) && defined(_MSC_VER)
+	// Delay load verification: libgnuintl
+	// TODO: Skip this if not linked with /DELAYLOAD?
+	if (DelayLoad_test_libintl_textdomain() != 0) {
+		// Delay load failed.
+		_fputts(_T("*** ERROR: ") LIBGNUINTL_DLL _T(" could not be loaded.\n\n")
+			_T("This build of rom-properties has localization enabled,\n")
+			_T("which requires the use of GNU gettext.\n\n")
+			_T("Please redownload rom-properties ") _T(RP_VERSION_STRING) _T(" and copy the\n")
+			LIBGNUINTL_DLL _T(" file to the installation directory.\n"),
+			stderr);
+		return EXIT_FAILURE;
+	}
+#endif /* ENABLE_NLS && _MSC_VER */
 
 #ifdef RP_LIBROMDATA_IS_DLL
 #  ifdef _MSC_VER
@@ -639,35 +705,20 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 #  endif /* _MSC_VER */
 #endif /* RP_LIBROMDATA_IS_DLL */
 
-#if defined(ENABLE_NLS) && defined(_MSC_VER)
-	// Delay load verification: libgnuintl
-	// TODO: Skip this if not linked with /DELAYLOAD?
-	if (DelayLoad_test_libintl_textdomain() != 0) {
-		// Delay load failed.
-		_fputts(_T("*** ERROR: ") LIBGNUINTL_DLL _T(" could not be loaded.\n\n")
-			_T("This build of rom-properties has localization enabled,\n")
-			_T("which requires the use of GNU gettext.\n\n")
-			_T("Please redownload rom-properties ") _T(RP_VERSION_STRING) _T(" and copy the\n")
-			LIBGNUINTL_DLL _T(" file to the installation directory.\n"),
-			stderr);
-		return EXIT_FAILURE;
-	}
-#endif /* ENABLE_NLS && _MSC_VER */
-
 #ifdef _WIN32
-	// Enable UTF-8 console output.
-	// Tested on Windows XP (fails) and Windows 7 (works).
-	// TODO: Does it work on Windows Vista?
-	// FIXME: On Windows 7, if locale is set to Spanish (es_ES), running
-	// `rpcli rpcli.exe` causes a random crash halfway through printing,
-	// if we set the console output CP to UTF-8.
-	// TODO: Verify if that happens on Windows 8 or 8.1.
+	// Enable UTF-8 console output on Windows 10.
+	// For older Windows, which doesn't support ANSI escape sequences,
+	// WriteConsoleW() will be used for Unicode output instead.
+	// TODO: Require Windows 10 1607 or later for ANSI escape sequences?
 	if (IsWindows10OrGreater()) {
 		old_console_output_cp = GetConsoleOutputCP();
 		atexit(RestoreConsoleOutputCP);
 		SetConsoleOutputCP(CP_UTF8);
 	}
 #endif /* _WIN32 */
+
+	// Detect console information.
+	init_vt();
 
 	// Initialize i18n.
 	rp_i18n_init();
@@ -678,7 +729,7 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 		// Since we didn't do anything, return a failure code.
 		return EXIT_FAILURE;
 	}
-	
+
 	static_assert(RomData::IMG_INT_MIN == 0, "RomData::IMG_INT_MIN must be 0!");
 
 	unsigned int flags = 0;	// OutputFlags
@@ -687,8 +738,8 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 	vector<ExtractParam> extract;
 
 	// TODO: Add a command line option to override color output.
-	init_vt();
-	if (is_stdout_console) {
+	// NOTE: Only checking ci_stdout here, since the actual data is printed to stdout.
+	if (ci_stdout.is_console) {
 		flags |= OF_Text_UseAnsiColor;
 	}
 
@@ -703,8 +754,9 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 		}
 	}
 	if (json) {
-		cout << "[\n";
 		cout.flush();
+		ConsolePrint(&ci_stdout, "[\n");
+		fflush(stdout);
 	}
 
 #ifdef _WIN32
@@ -712,8 +764,7 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 	const ULONG_PTR gdipToken = GdiplusHelper::InitGDIPlus();
 	assert(gdipToken != 0);
 	if (gdipToken == 0) {
-		fputs("*** ERROR: GDI+ initialization failed.", stderr);
-		fputc('\n', stderr);
+		ConsolePrint(&ci_stderr, "*** ERROR: GDI+ initialization failed.", true);
 		fflush(stderr);
 		return -EIO;
 	}
@@ -777,8 +828,8 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 				}
 				if (pos == 4 && s_lang[pos] != _T('\0')) {
 					// Invalid language code.
-					fmt::print(stderr, FRUN(C_("rpcli", "Warning: ignoring invalid language code '{:s}'")), T2U8c(s_lang));
-					fputc('\n', stderr);
+					ConsolePrint(&ci_stderr,
+						fmt::format(FRUN(C_("rpcli", "Warning: ignoring invalid language code '{:s}'")), T2U8c(s_lang)), true);
 					fflush(stderr);
 					break;
 				}
@@ -811,13 +862,13 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 #else /* !_WIN32 */
 					const char *const s_imgType = ts_imgType;
 #endif /* _WIN32 */
-					fmt::print(stderr, FRUN(C_("rpcli", "Warning: skipping invalid image type '{:s}'")), s_imgType);
-					fputc('\n', stderr);
+					ConsolePrint(&ci_stderr,
+						fmt::format(FRUN(C_("rpcli", "Warning: skipping invalid image type '{:s}'")), s_imgType), true);
 					fflush(stderr);
 					i++; continue;
 				} else if (num < RomData::IMG_INT_MIN || num > RomData::IMG_INT_MAX) {
-					fmt::print(stderr, FRUN(C_("rpcli", "Warning: skipping unknown image type {:d}")), num);
-					fputc('\n', stderr);
+					ConsolePrint(&ci_stderr,
+						fmt::format(FRUN(C_("rpcli", "Warning: skipping unknown image type {:d}")), num), true);
 					fflush(stderr);
 					i++; continue;
 				}
@@ -836,13 +887,13 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 #else /* !_WIN32 */
 					const char *const s_mipmapLevel = ts_mipmapLevel;
 #endif /* _WIN32 */
-					fmt::print(stderr, FRUN(C_("rpcli", "Warning: skipping invalid mipmap level '{:s}'")), s_mipmapLevel);
-					fputc('\n', stderr);
+					ConsolePrint(&ci_stderr,
+						fmt::format(FRUN(C_("rpcli", "Warning: skipping invalid mipmap level '{:s}'")), s_mipmapLevel), true);
 					fflush(stderr);
 					i++; continue;
 				} else if (num < -1 || num > 1024) {
-					fmt::print(stderr, FRUN(C_("rpcli", "Warning: skipping out-of-range mipmap level {:d}")), num);
-					fputc('\n', stderr);
+					ConsolePrint(&ci_stderr,
+						fmt::format(FRUN(C_("rpcli", "Warning: skipping out-of-range mipmap level {:d}")), num), true);
 					fflush(stderr);
 					i++; continue;
 				}
@@ -876,12 +927,13 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 						break;
 					default:
 						if (argv[i][2] == _T('\0')) {
-							fputs(C_("rpcli", "Warning: no inquiry request specified for '-i'"), stderr);
-							fputc('\n', stderr);
+							ConsolePrint(&ci_stderr,
+								C_("rpcli", "Warning: no inquiry request specified for '-i'"), true);
 						} else {
 							// FIXME: Unicode character on Windows.
-							fmt::print(stderr, FRUN(C_("rpcli", "Warning: skipping unknown inquiry request '{:c}'")), (char)argv[i][2]);
-							fputc('\n', stderr);
+							ConsolePrint(&ci_stderr,
+								fmt::format(FRUN(C_("rpcli", "Warning: skipping unknown inquiry request '{:c}'")),
+									(char)argv[i][2]), true);
 						}
 						fflush(stderr);
 						break;
@@ -891,8 +943,9 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 
 			default:
 				// FIXME: Unicode character on Windows.
-				fmt::print(stderr, FRUN(C_("rpcli", "Warning: skipping unknown switch '{:c}'")), (char)argv[i][1]);
-				fputc('\n', stderr);
+				ConsolePrint(&ci_stderr,
+					fmt::format(FRUN(C_("rpcli", "Warning: skipping unknown switch '{:c}'")), (char)argv[i][1]), true);
+				ConsolePrintNewline(&ci_stderr);
 				fflush(stderr);
 				break;
 			}
@@ -900,8 +953,9 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 			if (first) {
 				first = false;
 			} else if (json) {
-				cout << ",\n";
 				cout.flush();
+				ConsolePrint(&ci_stdout, ",\n");
+				fflush(stdout);
 			}
 
 			// TODO: Return codes?
@@ -931,8 +985,9 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 		}
 	}
 	if (json) {
-		cout << "]\n";
 		cout.flush();
+		ConsolePrint(&ci_stdout, "]\n");
+		fflush(stdout);
 	}
 
 #ifdef _WIN32
