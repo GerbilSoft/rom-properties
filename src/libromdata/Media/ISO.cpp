@@ -822,8 +822,14 @@ int ISO::loadFieldData(void)
 		cdsi = &d->cdromSectorInfo;
 	}
 
-	// Sector size
-	d->fields.addField_string_numeric(C_("ISO", "Sector Size"), cdsi->sector_size);
+	// Sector mode and size
+	// TODO: Verify subchannels and also CD-i modes later.
+	// Reference: https://www.gnu.org/software/ccd2cue/manual/html_node/MODE-_0028Compact-Disc-fields_0029.html
+	string sector_format = fmt::format(FSTR("MODE{:d}/{:d}"), cdsi->mode, cdsi->sector_size);
+	if (cdsi->subchannel_size > 0) {
+		sector_format += fmt::format(FSTR("+{:d}"), cdsi->subchannel_size);
+	}
+	d->fields.addField_string(C_("ISO", "Sector Format"), sector_format);
 
 	switch (d->discType) {
 		case ISOPrivate::DiscType::ISO9660:

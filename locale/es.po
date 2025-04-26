@@ -6719,7 +6719,7 @@ msgstr "Hora efectiva"
 
 #: ../src/libromdata/Media/ISO.cpp:786
 msgctxt "ISO"
-msgid "Sector Size"
+msgid "Sector Format"
 msgstr ""
 
 #: ../src/libromdata/Media/ISO.cpp:791
