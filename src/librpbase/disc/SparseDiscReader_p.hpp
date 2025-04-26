@@ -33,6 +33,12 @@ public:
 	off64_t disc_size;		// Virtual disc image size.
 	off64_t pos;			// Read position.
 	unsigned int block_size;	// Block size.
+
+	// CD-ROM specific information
+	bool hasCdromInfo;
+	uint8_t cdromSectorMode;
+	unsigned int cdromSectorSize;
+	unsigned int cdromSubchannelSize;
 };
 
 }

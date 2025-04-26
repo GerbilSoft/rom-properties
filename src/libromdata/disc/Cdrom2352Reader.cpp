@@ -36,6 +36,10 @@ private:
 	RP_DISABLE_COPY(Cdrom2352ReaderPrivate)
 
 public:
+	// CD-ROM sync magic magic
+	static const array<uint8_t, 12> CDROM_2352_MAGIC;
+
+public:
 	// Physical block size
 	// Supported block sizes: 2352 (raw), 2448 (raw+subchan)
 	unsigned int physBlockSize;
@@ -45,6 +49,10 @@ public:
 };
 
 /** Cdrom2352ReaderPrivate **/
+
+// CD-ROM sync magic magic
+const array<uint8_t, 12> Cdrom2352ReaderPrivate::CDROM_2352_MAGIC =
+	{{0x00,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0x00}};
 
 Cdrom2352ReaderPrivate::Cdrom2352ReaderPrivate(Cdrom2352Reader *q, unsigned int physBlockSize)
 	: super(q)
@@ -77,10 +85,34 @@ Cdrom2352Reader::Cdrom2352Reader(const IRpFilePtr &file, unsigned int physBlockS
 	const off64_t fileSize = m_file->size();
 	if (fileSize <= 0 || fileSize % d->physBlockSize != 0) {
 		// Invalid disc size.
-		m_file.reset();
 		m_lastError = EIO;
+		m_file.reset();
 		return;
 	}
+
+	// Read the first sector to determine the CD-ROM mode.
+	CDROM_2352_Sector_t sector;
+	size_t sz_read = m_file->seekAndRead(0, &sector, sizeof(sector));
+	if (sz_read != sizeof(sector)) {
+		// Read error.
+		m_lastError = m_file->lastError();
+		m_file.reset();
+		return;
+	}
+
+	// Check the CD-ROM sync magic.
+	if (memcmp(sector.sync, Cdrom2352ReaderPrivate::CDROM_2352_MAGIC.data(), Cdrom2352ReaderPrivate::CDROM_2352_MAGIC.size()) != 0) {
+		// Sync magic is incorrect.
+		m_lastError = EIO;
+		m_file.reset();
+		return;
+	}
+
+	// Get the CD-ROM information.
+	d->hasCdromInfo = true;
+	d->cdromSectorMode = sector.mode;
+	d->cdromSectorSize = 2352;
+	d->cdromSubchannelSize = 0;
 
 	// Disc parameters.
 	// NOTE: A 32-bit block count allows for ~8 TiB with 2048-byte sectors.
@@ -105,13 +137,8 @@ int Cdrom2352Reader::isDiscSupported_static(const uint8_t *pHeader, size_t szHea
 		return -1;
 	}
 
-	// CD-ROM sync magic magic
-	static constexpr array<uint8_t, 12> CDROM_2352_MAGIC =
-		{{0x00,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0x00}};
-
 	// Check the CD-ROM sync magic.
-	if (!memcmp(pHeader, CDROM_2352_MAGIC.data(), CDROM_2352_MAGIC.size()))
-	{
+	if (!memcmp(pHeader, Cdrom2352ReaderPrivate::CDROM_2352_MAGIC.data(), Cdrom2352ReaderPrivate::CDROM_2352_MAGIC.size())) {
 		// Valid CD-ROM sync magic.
 		return 0;
 	}

@@ -16,12 +16,15 @@
 
 // Other rom-properties libraries
 #include "librpbase/Achievements.hpp"
+#include "librpbase/disc/PartitionFile.hpp"
+#include "librpbase/disc/SparseDiscReader.hpp"
 #include "libi18n/i18n.h"
 using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;
 
 // C++ STL classes
+#include <typeinfo>
 using std::array;
 using std::string;
 using std::vector;
@@ -69,6 +72,9 @@ public:
 
 	// Sector offset
 	// Usually 0 (for 2048) or 16 (for 2352 or 2448).
+	// NOTE: If SparseDiscReader is used, this will almost
+	// always be 2048. Query SparseDiscReader to get the
+	// actual sector size.
 	unsigned int sector_offset;
 
 	// UDF version
@@ -783,7 +789,33 @@ int ISO::loadFieldData(void)
 	// TODO: ascii_to_utf8()?
 
 	// Sector size
-	d->fields.addField_string_numeric(C_("ISO", "Sector Size"), d->sector_size);
+	// NOTE: Need to check for a SparseDiscReader first, since if one's
+	// in use, ISO will always think the disc has 2048-byte sectors.
+	unsigned int sector_size = 0;
+	const SparseDiscReader *sdr = dynamic_cast<const SparseDiscReader*>(d->file.get());
+	if (!sdr) {
+		// Not a SparseDiscReader.
+		// If this is a PartitionFile, check the underlying IDiscReader.
+		PartitionFile *const pf = dynamic_cast<PartitionFile*>(d->file.get());
+		if (pf) {
+			IDiscReaderPtr dr = pf->getIDiscReader();
+			sdr = dynamic_cast<const SparseDiscReader*>(dr.get());
+		}
+	}
+	if (sdr) {
+		// Get the sector size from the SparseDiscReader.
+		// TODO: Also mode and subchannels?
+		if (sdr->hasCdromInfo()) {
+			sector_size = sdr->cdromSectorSize();
+		}
+	} else {
+		// Use the ISO-9660 sector size.
+		sector_size = d->sector_size;
+	}
+
+	if (sector_size > 0) {
+		d->fields.addField_string_numeric(C_("ISO", "Sector Size"), sector_size);
+	}
 
 	switch (d->discType) {
 		case ISOPrivate::DiscType::ISO9660:

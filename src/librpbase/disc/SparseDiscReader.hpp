@@ -29,7 +29,7 @@ protected:
 	SparseDiscReaderPrivate *const d_ptr;
 
 public:
-	/** IDiscReader functions. **/
+	/** IDiscReader functions **/
 
 	/**
 	 * Read data from the disc image.
@@ -59,8 +59,37 @@ public:
 	 */
 	off64_t size(void) final;
 
+public:
+	/** SparseDiscReader-specific properties **/
+
+	// CD-ROM specific information
+
+	/**
+	 * Is CD-ROM specific information set?
+	 * @return True if set; false if not.
+	 */
+	bool hasCdromInfo(void) const;
+
+	/**
+	 * Get the CD-ROM sector mode.
+	 * @return 1 or 2 for MODE1 or MODE2, or 0 if not applicable. (Audio CDs are not supported.)
+	 */
+	uint8_t cdromSectorMode(void) const;
+
+	/**
+	 * Get the CD-ROM sector size.
+	 * @return CD-ROM sector size, or 0 if not applicable.
+	 */
+	unsigned int cdromSectorSize(void) const;
+
+	/**
+	 * Get the CD-ROM subchannel size.
+	 * @return CD-ROM subchannel size, or 0 if not applicable.
+	 */
+	unsigned int cdromSubchannelSize(void) const;
+
 protected:
-	/** Virtual functions for SparseDiscReader subclasses. **/
+	/** Virtual functions for SparseDiscReader subclasses **/
 
 	/**
 	 * Get the physical address of the specified logical block index.

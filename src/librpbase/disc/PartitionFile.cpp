@@ -147,7 +147,7 @@ off64_t PartitionFile::tell(void)
 	return m_pos;
 }
 
-/** File properties. **/
+/** File properties **/
 
 /**
  * Get the file size.

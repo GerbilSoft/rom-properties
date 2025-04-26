@@ -23,6 +23,10 @@ SparseDiscReaderPrivate::SparseDiscReaderPrivate(SparseDiscReader *q)
 	, disc_size(0)
 	, pos(-1)
 	, block_size(0)
+	, hasCdromInfo(false)
+	, cdromSectorMode(0)
+	, cdromSectorSize(0)
+	, cdromSubchannelSize(0)
 {
 	// NOTE: Can't check q->m_file here.
 
@@ -207,6 +211,50 @@ off64_t SparseDiscReader::size(void)
 	}
 
 	return d->disc_size;
+}
+
+/** SparseDiscReader-specific properties **/
+
+// CD-ROM specific information
+
+/**
+ * Is CD-ROM specific information set?
+ * @return True if set; false if not.
+ */
+bool SparseDiscReader::hasCdromInfo(void) const
+{
+	RP_D(const SparseDiscReader);
+	return d->hasCdromInfo;
+}
+
+/**
+ * Get the CD-ROM sector mode.
+ * @return 0 for audio, 1 for MODE1, or 2 for MODE2.
+ */
+uint8_t SparseDiscReader::cdromSectorMode(void) const
+{
+	RP_D(const SparseDiscReader);
+	return d->cdromSectorMode;
+}
+
+/**
+ * Get the CD-ROM sector size.
+ * @return CD-ROM sector size, or 0 if not applicable.
+ */
+unsigned int SparseDiscReader::cdromSectorSize(void) const
+{
+	RP_D(const SparseDiscReader);
+	return d->cdromSectorSize;
+}
+
+/**
+ * Get the CD-ROM subchannel size.
+ * @return CD-ROM subchannel size, or 0 if not applicable.
+ */
+unsigned int SparseDiscReader::cdromSubchannelSize(void) const
+{
+	RP_D(const SparseDiscReader);
+	return d->cdromSubchannelSize;
 }
 
 /** SparseDiscReader **/

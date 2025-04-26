@@ -59,6 +59,8 @@ public:
 
 	// SectorReadMode to sector size map
 	static const array<uint32_t, static_cast<uint32_t>(SectorReadMode::Max)> sectorReadModeToSizeMap;
+	// SectorReadMode to CD-ROM mode map
+	static const array<uint8_t, static_cast<size_t>(SectorReadMode::Max)> sectorReadModeToCdromModeMap;
 
 	// Block range mapping
 	// NOTE: This currently *only* contains data tracks.
@@ -117,8 +119,14 @@ public:
 /** CdiReaderPrivate **/
 
 // SectorReadMode to sector size map
-const array<uint32_t, static_cast<uint32_t>(CdiReaderPrivate::SectorReadMode::Max)> CdiReaderPrivate::sectorReadModeToSizeMap = {{
+const array<uint32_t, static_cast<size_t>(CdiReaderPrivate::SectorReadMode::Max)> CdiReaderPrivate::sectorReadModeToSizeMap = {{
 	2048, 2336, 2352, 2352+16, 2352+96
+}};
+// SectorReadMode to CD-ROM mode map
+const array<uint8_t, static_cast<size_t>(CdiReaderPrivate::SectorReadMode::Max)> CdiReaderPrivate::sectorReadModeToCdromModeMap = {{
+	1, 2, 0,
+	// subchannel modes (TODO)
+	1, 1,
 }};
 
 CdiReaderPrivate::CdiReaderPrivate(CdiReader *q)
@@ -387,6 +395,33 @@ int CdiReaderPrivate::parseCdiFile(void)
 
 	// Done parsing the CDI.
 	// TODO: Sort by LBA?
+
+	// Set the SparseDiscReader CD-ROM sector size values.
+	// NOTE: Could be multiple sector size values, but we'll use the
+	// one from Track 02 if available; otherwise, Track 01.
+	BlockRange *sdrBlockRange = nullptr;
+	for (unsigned int i = 3; i > 0; i--) {
+		if (trackMappings.size() >= i && trackMappings[i-1] >= 0) {
+			sdrBlockRange = &blockRanges[trackMappings[i-1]];
+			break;
+		}
+	}
+	if (sdrBlockRange) {
+		unsigned int sectorSize = sdrBlockRange->sectorSize;
+		// TODO: Subchannel modes. Assuming Mode 1 for these for now.
+		this->hasCdromInfo = true;
+		this->cdromSectorMode = sectorReadModeToCdromModeMap[static_cast<size_t>(sdrBlockRange->sectorReadMode)];
+
+		if (sectorSize > 2352) {
+			// Subchannels are present.
+			this->cdromSectorSize = 2352;
+			this->cdromSubchannelSize = sectorSize - 2352;
+		} else {
+			// No subchannels.
+			this->cdromSectorSize = sectorSize;
+		}
+	}
+
 	return 0;
 }
 

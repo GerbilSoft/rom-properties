@@ -10,6 +10,11 @@
     * Affects: v2.5
   * rpcli: SCSI inquiry was accidentally broken during a code cleanup.
     * Affects: v2.3 - v2.5
+  * ISO: Get the sector size from the underlying disc reader classes if
+    not reading directly from a file.
+    * The SparseDiscReader changes in v2.3 broke this, so anything that
+      uses an ISO-9660 format showed 2048-byte sectors, even if this
+      wasn't the case.
 
 * Other changes:
   * Added support for localsearch-3.8, the new name of Tracker.

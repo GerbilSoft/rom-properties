@@ -242,6 +242,25 @@ int GdiReaderPrivate::parseGdiFile(char *gdibuf)
 
 	// Done parsing the GDI.
 	// TODO: Sort by LBA?
+
+	// Set the SparseDiscReader CD-ROM sector size values.
+	// NOTE: Could be multiple sector size values, but we'll use the
+	// one from Track 03 if available; otherwise, Track 02 or Track 01.
+	BlockRange *sdrBlockRange = nullptr;
+	for (unsigned int i = 3; i > 0; i--) {
+		if (trackMappings.size() >= i && trackMappings[i-1] >= 0) {
+			sdrBlockRange = &blockRanges[trackMappings[i-1]];
+			break;
+		}
+	}
+	if (sdrBlockRange) {
+		// TODO: Do any DC games use Mode 2 or subchannels?
+		this->hasCdromInfo = true;
+		this->cdromSectorMode = 1;
+		this->cdromSectorSize = sdrBlockRange->sectorSize;
+		this->cdromSubchannelSize = 0;
+	}
+
 	return 0;
 }
 
