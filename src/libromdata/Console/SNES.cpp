@@ -378,9 +378,7 @@ bool SNESPrivate::isSnesRomHeaderValid(const SNES_RomHeader *romHeader, bool isH
 		{
 			// New publisher code is invalid.
 			// NOTE: Allowing '00' for certain prototypes or homebrew.
-			if (romHeader->snes.ext.new_publisher_code.c[0] != 0 ||
-			    romHeader->snes.ext.new_publisher_code.c[1] != 0)
-			{
+			if (romHeader->snes.ext.new_publisher_code.u16 != 0) {
 				return false;
 			}
 		}
