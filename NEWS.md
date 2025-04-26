@@ -1,6 +1,6 @@
 # Changes
 
-## v2.6 (released 2025/??/??)
+## v2.5.1 (released 2025/??/??)
 
 * New parser features:
   * ISO: Show the sector mode in addition to sector sizes.
