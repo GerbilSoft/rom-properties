@@ -484,9 +484,9 @@ CisoPspReader::CisoPspReader(const IRpFilePtr &file)
 
 	// PSP disc images are always ISO-9660 Mode 1.
 	d->hasCdromInfo = true;
-	d->cdromSectorMode = 1;
-	d->cdromSectorSize = 2048;
-	d->cdromSubchannelSize = 0;
+	d->cdromSectorInfo.mode = 1;
+	d->cdromSectorInfo.sector_size = 2048;
+	d->cdromSectorInfo.subchannel_size = 0;
 
 	// Reset the disc position.
 	d->pos = 0;

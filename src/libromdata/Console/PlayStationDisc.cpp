@@ -18,7 +18,7 @@ using namespace LibRpFile;
 using namespace LibRpText;
 
 // IsoPartition
-#include "../cdrom_structs.h"
+#include "cdrom_structs.h"
 #include "../iso_structs.h"
 #include "../disc/Cdrom2352Reader.hpp"
 #include "../disc/IsoPartition.hpp"

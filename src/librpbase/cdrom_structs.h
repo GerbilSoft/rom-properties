@@ -1,5 +1,5 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (libromdata)                       *
+ * ROM Properties Page shell extension. (librpbase)                        *
  * cdrom_structs.h: CD-ROM data structures.                                *
  *                                                                         *
  * Copyright (c) 2017-2025 by David Korth.                                 *
@@ -174,3 +174,11 @@ static inline constexpr const uint8_t *cdromSectorDataPtr(const CDROM_2352_Secto
 #ifdef __cplusplus
 }
 #endif
+
+// CD-ROM sector information.
+// Convenience struct to be used by various classes.
+typedef struct _CdromSectorInfo {
+	uint8_t mode;
+	uint16_t sector_size;
+	uint16_t subchannel_size;
+} CdromSectorInfo;

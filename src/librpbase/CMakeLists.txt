@@ -78,6 +78,8 @@ SET(${PROJECT_NAME}_H
 	config/ConfReader.hpp
 	config/Config.hpp
 	config/AboutTabText.hpp
+
+	cdrom_structs.h
 	)
 
 IF(NOT USE_INTERNAL_PNG OR (USE_INTERNAL_PNG AND USE_INTERNAL_PNG_DLL))

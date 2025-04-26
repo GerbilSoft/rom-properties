@@ -148,7 +148,6 @@ SET(${PROJECT_NAME}_SRCS
 SET(${PROJECT_NAME}_H
 	RomDataFactory.hpp
 	CopierFormats.h
-	cdrom_structs.h
 	iso_structs.h
 	nintendo_system_id.h
 

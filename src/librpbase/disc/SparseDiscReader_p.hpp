@@ -13,6 +13,8 @@
 #include <cstdint>
 #include "common.h"
 
+#include "cdrom_structs.h"
+
 namespace LibRpBase {
 
 class SparseDiscReader;
@@ -36,9 +38,7 @@ public:
 
 	// CD-ROM specific information
 	bool hasCdromInfo;
-	uint8_t cdromSectorMode;
-	unsigned int cdromSectorSize;
-	unsigned int cdromSubchannelSize;
+	CdromSectorInfo cdromSectorInfo;
 };
 
 }

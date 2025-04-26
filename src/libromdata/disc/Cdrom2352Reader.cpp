@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * Cdrom2352Reader.hpp: CD-ROM reader for 2352-byte sector images.         *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -15,7 +15,7 @@
 #include "stdafx.h"
 #include "Cdrom2352Reader.hpp"
 #include "librpbase/disc/SparseDiscReader_p.hpp"
-#include "../cdrom_structs.h"
+#include "cdrom_structs.h"
 
 // Other rom-properties libraries
 using namespace LibRpBase;
@@ -110,9 +110,9 @@ Cdrom2352Reader::Cdrom2352Reader(const IRpFilePtr &file, unsigned int physBlockS
 
 	// Get the CD-ROM information.
 	d->hasCdromInfo = true;
-	d->cdromSectorMode = sector.mode;
-	d->cdromSectorSize = 2352;
-	d->cdromSubchannelSize = 0;
+	d->cdromSectorInfo.mode = sector.mode;
+	d->cdromSectorInfo.sector_size = 2352;
+	d->cdromSectorInfo.subchannel_size = 0;
 
 	// Disc parameters.
 	// NOTE: A 32-bit block count allows for ~8 TiB with 2048-byte sectors.

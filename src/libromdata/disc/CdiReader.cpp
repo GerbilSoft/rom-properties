@@ -14,7 +14,7 @@
 #include "CdiReader.hpp"
 #include "librpbase/disc/SparseDiscReader_p.hpp"
 
-#include "../cdrom_structs.h"
+#include "cdrom_structs.h"
 #include "IsoPartition.hpp"
 
 // Other rom-properties libraries
@@ -410,15 +410,15 @@ int CdiReaderPrivate::parseCdiFile(void)
 		unsigned int sectorSize = sdrBlockRange->sectorSize;
 		// TODO: Subchannel modes. Assuming Mode 1 for these for now.
 		this->hasCdromInfo = true;
-		this->cdromSectorMode = sectorReadModeToCdromModeMap[static_cast<size_t>(sdrBlockRange->sectorReadMode)];
+		cdromSectorInfo.mode = sectorReadModeToCdromModeMap[static_cast<size_t>(sdrBlockRange->sectorReadMode)];
 
 		if (sectorSize > 2352) {
 			// Subchannels are present.
-			this->cdromSectorSize = 2352;
-			this->cdromSubchannelSize = sectorSize - 2352;
+			cdromSectorInfo.sector_size = 2352;
+			cdromSectorInfo.subchannel_size = sectorSize - 2352;
 		} else {
 			// No subchannels.
-			this->cdromSectorSize = sectorSize;
+			cdromSectorInfo.sector_size = sectorSize;
 		}
 	}
 

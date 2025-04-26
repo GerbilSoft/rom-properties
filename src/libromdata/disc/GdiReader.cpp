@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * GdiReader.hpp: GD-ROM reader for Dreamcast GDI images.                  *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -10,7 +10,7 @@
 #include "GdiReader.hpp"
 #include "librpbase/disc/SparseDiscReader_p.hpp"
 
-#include "../cdrom_structs.h"
+#include "cdrom_structs.h"
 #include "IsoPartition.hpp"
 
 // Other rom-properties libraries
@@ -246,6 +246,7 @@ int GdiReaderPrivate::parseGdiFile(char *gdibuf)
 	// Set the SparseDiscReader CD-ROM sector size values.
 	// NOTE: Could be multiple sector size values, but we'll use the
 	// one from Track 03 if available; otherwise, Track 02 or Track 01.
+	// TODO: Move this to the PartitionFile in OpenIsoRomData()?
 	BlockRange *sdrBlockRange = nullptr;
 	for (unsigned int i = 3; i > 0; i--) {
 		if (trackMappings.size() >= i && trackMappings[i-1] >= 0) {
@@ -256,9 +257,9 @@ int GdiReaderPrivate::parseGdiFile(char *gdibuf)
 	if (sdrBlockRange) {
 		// TODO: Do any DC games use Mode 2 or subchannels?
 		this->hasCdromInfo = true;
-		this->cdromSectorMode = 1;
-		this->cdromSectorSize = sdrBlockRange->sectorSize;
-		this->cdromSubchannelSize = 0;
+		cdromSectorInfo.mode = 1;
+		cdromSectorInfo.sector_size = sdrBlockRange->sectorSize;
+		cdromSectorInfo.subchannel_size = 0;
 	}
 
 	return 0;

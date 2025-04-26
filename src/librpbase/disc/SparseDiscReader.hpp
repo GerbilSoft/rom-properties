@@ -10,6 +10,7 @@
 #pragma once
 
 #include "IDiscReader.hpp"
+#include "cdrom_structs.h"
 
 namespace LibRpBase {
 
@@ -65,28 +66,10 @@ public:
 	// CD-ROM specific information
 
 	/**
-	 * Is CD-ROM specific information set?
-	 * @return True if set; false if not.
+	 * Get the CD-ROM sector information.
+	 * @return CD-ROM sector information, or nullptr if not set.
 	 */
-	bool hasCdromInfo(void) const;
-
-	/**
-	 * Get the CD-ROM sector mode.
-	 * @return 1 or 2 for MODE1 or MODE2, or 0 if not applicable. (Audio CDs are not supported.)
-	 */
-	uint8_t cdromSectorMode(void) const;
-
-	/**
-	 * Get the CD-ROM sector size.
-	 * @return CD-ROM sector size, or 0 if not applicable.
-	 */
-	unsigned int cdromSectorSize(void) const;
-
-	/**
-	 * Get the CD-ROM subchannel size.
-	 * @return CD-ROM subchannel size, or 0 if not applicable.
-	 */
-	unsigned int cdromSubchannelSize(void) const;
+	const CdromSectorInfo *cdromSectorInfo(void) const;
 
 protected:
 	/** Virtual functions for SparseDiscReader subclasses **/

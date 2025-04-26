@@ -10,7 +10,7 @@
 #include "stdafx.h"
 #include "ISO.hpp"
 
-#include "../cdrom_structs.h"
+#include "cdrom_structs.h"
 #include "../iso_structs.h"
 #include "hsfs_structs.h"
 
@@ -792,6 +792,7 @@ int ISO::loadFieldData(void)
 	// NOTE: Need to check for a SparseDiscReader first, since if one's
 	// in use, ISO will always think the disc has 2048-byte sectors.
 	unsigned int sector_size = 0;
+	const CdromSectorInfo *cdsi = nullptr;
 	const SparseDiscReader *sdr = dynamic_cast<const SparseDiscReader*>(d->file.get());
 	if (!sdr) {
 		// Not a SparseDiscReader.
@@ -803,11 +804,13 @@ int ISO::loadFieldData(void)
 		}
 	}
 	if (sdr) {
-		// Get the sector size from the SparseDiscReader.
-		// TODO: Also mode and subchannels?
-		if (sdr->hasCdromInfo()) {
-			sector_size = sdr->cdromSectorSize();
-		}
+		// Get the CD-ROM sector info from the SparseDiscReader.
+		cdsi = sdr->cdromSectorInfo();
+	}
+
+	if (cdsi) {
+		// Use the CD-ROM sector info.
+		sector_size = cdsi->sector_size;
 	} else {
 		// Use the ISO-9660 sector size.
 		sector_size = d->sector_size;
