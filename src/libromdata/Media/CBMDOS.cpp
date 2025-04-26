@@ -1366,7 +1366,7 @@ int CBMDOS::loadFieldData(void)
 		delete vv_icons;
 	}
 
-	d->fields.addField_listData(C_("CBMDOS", "Directory"), &params);
+	d->fields.addField_listData(C_("RomData", "Directory"), &params);
 
 	// Check for a C128 autoboot sector.
 	if (d->diskType == CBMDOSPrivate::DiskType::D64 ||

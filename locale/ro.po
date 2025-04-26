@@ -6579,7 +6579,7 @@ msgid "Type"
 msgstr ""
 
 #: ../src/libromdata/Media/CBMDOS.cpp:1369
-msgctxt "CBMDOS"
+msgctxt "RomData"
 msgid "Directory"
 msgstr ""
 
