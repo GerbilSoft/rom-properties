@@ -6,6 +6,7 @@
   * ISO: Show the sector mode in addition to sector sizes.
     * Fixes #322: Underlying CD image type for ISO
       * Reported by @DankRank.
+  * SNES: List the Nintendo Power directory for full NP cartridge dumps.
 
 * Bug fixes:
   * NintendoDS_BNR: Animated icons were missing the animated icon flag.

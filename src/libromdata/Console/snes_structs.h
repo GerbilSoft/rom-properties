@@ -117,7 +117,10 @@ typedef struct _SNES_RomHeader {
 		struct {
 			/** Extended header is only present if old_publisher_code == 0x33. **/
 			struct {
-				char new_publisher_code[2];	// [0x7FB0]
+				union RP_PACKED {
+					char c[2];
+					uint16_t u16;
+				} new_publisher_code;		// [0x7FB0]
 #pragma pack(1)
 				union RP_PACKED {
 					char c[4];
@@ -244,6 +247,35 @@ typedef enum {
 	SNES_BSX_PRG_SCRIPT	= 0x00000100,	// BS-X script
 	SNES_BSX_PRG_SA_1	= 0x00000200,	// SA-1 program
 } SNES_BSX_Program_Type;
+
+/**
+ * Nintendo Power directory entry
+ * Reference: https://problemkaputt.de/fullsnes.htm#snescartnintendopowerdirectory
+ *
+ * All fields are in little-endian.
+ */
+#define SNES_NP_DIRECTORY_ADDRESS 0x60000U
+#define SNES_NP_FILE0_FOOTER "MULTICASSETTE 32"
+#pragma pack(1)
+typedef struct RP_PACKED _SNES_NP_DirEntry {
+	uint8_t directory_index;	// [0x0000] Directory index: 0-7 (or 0xFF for unused)
+	uint8_t first_flash_block;	// [0x0001] First 512K FLASH block (0-7 for blocks 0-7)
+	uint8_t first_sram_block;	// [0x0002] First 2K SRAM block (0-15 for blocks 0-15)
+	uint16_t num_flash_blocks;	// [0x0003] Number of 512K FLASH blocks (x4)
+	uint16_t num_sram_blocks;	// [0x0005] Number of 2K SRAM blocks (x16)
+	char game_code[12];		// [0x0007] Game code, e.g. "SHVC-AxxJ-  ")
+	char title_sjis[44];		// [0x0013] Title in Shift-JIS, NULL-padded (not used by the menu program)
+	uint8_t title_bmp[384];		// [0x003F] Title in bitmap format (192x12)
+	char date[10];			// [0x01BF] Date ("MM/DD/YYYY" on LAW carts; "YYYY/MM/DD" on NIN carts)
+	char time[8];			// [0x01C9] Time ("HH:MM:SS")
+	char kiosk_id[8];		// [0x01D1] Kiosk ID:
+					//          - "LAWnnnnn" for Lawson Convenience Store kiosks
+					//          - "NINnnnnn" for titles pre-installed by Nintendo
+	uint8_t unused[7703];		// [0x01D9] Unused (0xFF-filled)
+	char multicassette[16];		// [0x1FF0] File0 contains "MULTICASSETTE 32"; others have 0xFF.
+} SNES_NP_DirEntry;
+ASSERT_STRUCT(SNES_NP_DirEntry, 0x2000);
+#pragma pack()
 
 #ifdef __cplusplus
 }

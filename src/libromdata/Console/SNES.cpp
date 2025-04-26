@@ -21,6 +21,7 @@ using namespace LibRpFile;
 // C++ STL classes
 using std::array;
 using std::string;
+using std::unique_ptr;
 using std::vector;
 
 namespace LibRomData {
@@ -113,6 +114,13 @@ public:
 	 * @return Game ID if available; empty string if not.
 	 */
 	string getGameID(bool doFake = false) const;
+
+public:
+	/**
+	 * Add Nintendo Power fields.
+	 * @return 0 on success; negative POSIX error code on error.
+	 */
+	int addFields_NP(void);
 };
 
 ROMDATA_IMPL(SNES)
@@ -365,13 +373,13 @@ bool SNESPrivate::isSnesRomHeaderValid(const SNES_RomHeader *romHeader, bool isH
 	if (romHeader->snes.old_publisher_code == 0x33) {
 		// Extended header should be present.
 		// New publisher code and game ID must be alphanumeric.
-		if (!ISALNUM(romHeader->snes.ext.new_publisher_code[0]) ||
-		    !ISALNUM(romHeader->snes.ext.new_publisher_code[1]))
+		if (!ISALNUM(romHeader->snes.ext.new_publisher_code.c[0]) ||
+		    !ISALNUM(romHeader->snes.ext.new_publisher_code.c[1]))
 		{
 			// New publisher code is invalid.
 			// NOTE: Allowing '00' for certain prototypes or homebrew.
-			if (romHeader->snes.ext.new_publisher_code[0] != 0 ||
-			    romHeader->snes.ext.new_publisher_code[1] != 0)
+			if (romHeader->snes.ext.new_publisher_code.c[0] != 0 ||
+			    romHeader->snes.ext.new_publisher_code.c[1] != 0)
 			{
 				return false;
 			}
@@ -495,8 +503,8 @@ bool SNESPrivate::isBsxRomHeaderValid(const SNES_RomHeader *romHeader, bool isHi
 	// FIXME: Some BS-X ROMs have an invalid publisher code...
 #if 0
 	// New publisher code must be alphanumeric.
-	if (!ISALNUM(romHeader->bsx.ext.new_publisher_code[0]) ||
-	    !ISALNUM(romHeader->bsx.ext.new_publisher_code[1]))
+	if (!ISALNUM(romHeader->bsx.ext.new_publisher_code.c[0]) ||
+	    !ISALNUM(romHeader->bsx.ext.new_publisher_code.c[1]))
 	{
 		// New publisher code is invalid.
 		return false;
@@ -610,23 +618,23 @@ string SNESPrivate::getPublisher(void) const
 	// Publisher.
 	if (romHeader.snes.old_publisher_code == 0x33) {
 		// New publisher code.
-		publisher = NintendoPublishers::lookup(romHeader.snes.ext.new_publisher_code);
+		publisher = NintendoPublishers::lookup(romHeader.snes.ext.new_publisher_code.c);
 		if (publisher) {
 			s_publisher = publisher;
 		} else {
-			if (ISALNUM(romHeader.snes.ext.new_publisher_code[0]) &&
-			    ISALNUM(romHeader.snes.ext.new_publisher_code[1]))
+			if (ISALNUM(romHeader.snes.ext.new_publisher_code.c[0]) &&
+			    ISALNUM(romHeader.snes.ext.new_publisher_code.c[1]))
 			{
 				const array<char, 3> s_pub_code = {{
-					romHeader.snes.ext.new_publisher_code[0],
-					romHeader.snes.ext.new_publisher_code[1],
+					romHeader.snes.ext.new_publisher_code.c[0],
+					romHeader.snes.ext.new_publisher_code.c[1],
 					'\0'
 				}};
 				s_publisher = fmt::format(FRUN(C_("RomData", "Unknown ({:s})")), s_pub_code.data());
 			} else {
 				s_publisher = fmt::format(FRUN(C_("RomData", "Unknown ({:0>2X} {:0>2X})")),
-					static_cast<uint8_t>(romHeader.snes.ext.new_publisher_code[0]),
-					static_cast<uint8_t>(romHeader.snes.ext.new_publisher_code[1]));
+					static_cast<uint8_t>(romHeader.snes.ext.new_publisher_code.c[0]),
+					static_cast<uint8_t>(romHeader.snes.ext.new_publisher_code.c[1]));
 			}
 		}
 	} else {
@@ -780,6 +788,138 @@ string SNESPrivate::getGameID(bool doFake) const
 	}
 
 	return gameID;
+}
+
+/**
+ * Add Nintendo Power fields.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int SNESPrivate::addFields_NP(void)
+{
+	// Read the directory.
+	typedef array<SNES_NP_DirEntry, 8> SNES_NP_Directory;
+	unique_ptr<SNES_NP_Directory> directory(new SNES_NP_Directory);
+	size_t size = file->seekAndRead(SNES_NP_DIRECTORY_ADDRESS, directory.get(), sizeof(SNES_NP_Directory));
+	if (size != sizeof(SNES_NP_Directory)) {
+		// Seek and/or read error. Skip the directory.
+		return -EIO;
+	}
+
+	// Verify File0.
+	const SNES_NP_DirEntry &entry0 = (*(directory.get()))[0];
+	if (entry0.directory_index != 0 || memcmp(entry0.multicassette, SNES_NP_FILE0_FOOTER, 16) != 0) {
+		// File0 is incorrect.
+		// Not a Nintendo Power cartridge.
+		return -ENOENT;
+	}
+
+	// Process all of the files.
+	fields.addTab("NP");
+	auto *const vv_np = new RomFields::ListData_t();
+	vv_np->reserve(directory->size());
+	for (const SNES_NP_DirEntry &entry : *(directory.get())) {
+		if (entry.directory_index == 0xFF) {
+			// Unused directory index.
+			continue;
+		}
+
+		// TODO: Is this okay, or should we resize vv_np and
+		// get a reference to the new row that way?
+		vector<string> data_row;
+		data_row.reserve(5);
+
+		// #
+		data_row.push_back(fmt::to_string(entry.directory_index));
+
+		// Title
+		data_row.push_back(cp1252_sjis_to_utf8(
+			entry.title_sjis, static_cast<int>(sizeof(entry.title_sjis))));
+
+		// Game Code
+		// TODO: Trim trailing spaces?
+		data_row.push_back(latin1_to_utf8(
+			entry.game_code, static_cast<int>(sizeof(entry.game_code))));
+
+		// Timestamp
+		// NOTE: Should probably be localized using Japanese timezone offsets,
+		// but for now, we'll handle it as "UTC".
+
+		// Convert from strings to struct tm.
+		time_t nptime = -1;
+		struct tm tm;
+		char buf[16];
+		do {
+			// Try to convert the date portion.
+			memcpy(buf, entry.date, sizeof(entry.date));
+			buf[sizeof(entry.date)] = '\0';
+			// Try "MM/DD/YYYY" first.
+			int c = sscanf(buf, "%02d/%02d/%04d", &tm.tm_mon, &tm.tm_mday, &tm.tm_year);
+			if (c != 3) {
+				// Try "YYYY/MM/DD" next.
+				c = sscanf(buf, "%04d/%02d/%02d", &tm.tm_year, &tm.tm_mon, &tm.tm_mday);
+				if (c != 3) {
+					// Invalid date.
+					break;
+				}
+			}
+
+			// Try to convert the time portion.
+			memcpy(buf, entry.time, sizeof(entry.time));
+			buf[sizeof(entry.time)] = '\0';
+			c = sscanf(buf, "%02d:%02d:%02d", &tm.tm_hour, &tm.tm_min, &tm.tm_sec);
+			if (c != 3) {
+				// Invalid time.
+				break;
+			}
+
+			// Adjust values.
+			tm.tm_year -= 1900;
+			tm.tm_mon -= 1;
+
+			// tm_wday and tm_yday are output variables.
+			tm.tm_wday = 0;
+			tm.tm_yday = 0;
+			tm.tm_isdst = 0;
+
+			// If conversion fails, nptime will be set to -1.
+			nptime = timegm(&tm);
+		} while (0);
+
+		// Pack the 64-bit time_t into a string.
+		RomFields::TimeString_t time_string;
+		time_string.time = nptime;
+		data_row.emplace_back(time_string.str, sizeof(time_string.str));
+
+		// Kiosk ID
+		data_row.push_back(latin1_to_utf8(
+			entry.kiosk_id, static_cast<int>(sizeof(entry.kiosk_id))));
+
+		// Add the row.
+		vv_np->push_back(std::move(data_row));
+	}
+
+	static const array<const char*, 5> np_headers = {{
+		NOP_C_("SNES|NintendoPower", "#"),
+		NOP_C_("SNES|NintendoPower", "Title"),
+		NOP_C_("SNES|NintendoPower", "Game Code"),
+		NOP_C_("SNES|NintendoPower", "Timestamp"),
+		NOP_C_("SNES|NintendoPower", "Kiosk ID"),
+	}};
+	vector<string> *const v_pn_headers = RomFields::strArrayToVector_i18n(
+		"SNES|NintendoPower", np_headers);
+
+	RomFields::AFLD_PARAMS params(RomFields::RFT_LISTDATA_SEPARATE_ROW, 8);
+	params.col_attrs.is_timestamp = (1U << 3);
+	params.col_attrs.dtflags = static_cast<RomFields::DateTimeFlags>(
+		RomFields::RFT_DATETIME_HAS_DATE |
+		RomFields::RFT_DATETIME_HAS_TIME |
+		RomFields::RFT_DATETIME_IS_UTC);
+	params.headers = v_pn_headers;
+	params.data.single = vv_np;
+	fields.addField_listData(C_("RomData", "Directory"), &params);
+
+	// Fields added successfully.
+	return 0;
 }
 
 /** SNES **/
@@ -1208,7 +1348,7 @@ int SNES::loadFieldData(void)
 
 	// ROM header is read in the constructor.
 	const SNES_RomHeader *const romHeader = &d->romHeader;
-	d->fields.reserve(8); // Maximum of 8 fields.
+	d->fields.reserve(9); // Maximum of 9 fields.
 
 	// Cartridge HW
 	// TODO: Make this translatable.
@@ -1300,6 +1440,9 @@ int SNES::loadFieldData(void)
 	}
 
 	/** Add the field data. **/
+
+	// Tab name, in case we add a second tab.
+	d->fields.setTabName(0, (romHeader->snes.destination_code == SNES_DEST_JAPAN) ? "SFC" : "SNES");
 
 	// Title
 	d->fields.addField_string(C_("RomData", "Title"), d->getRomTitle());
@@ -1500,6 +1643,16 @@ int SNES::loadFieldData(void)
 			// Should not get here...
 			assert(!"Invalid ROM type.");
 			return 0;
+	}
+
+	// Is this a Nintendo Power cartridge?
+	if (romHeader->snes.old_publisher_code == 0x33 &&
+	    romHeader->snes.destination_code == SNES_DEST_JAPAN &&
+	    romHeader->snes.ext.new_publisher_code.u16 == cpu_to_be16('01') &&
+	    romHeader->snes.ext.id4.u32 == cpu_to_be32('MENU'))
+	{
+		// This is a Nintendo Power cartridge.
+		d->addFields_NP();
 	}
 
 	// TODO: Other fields.
