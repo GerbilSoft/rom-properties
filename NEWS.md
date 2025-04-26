@@ -7,6 +7,7 @@
     * Affects: v2.4 - v2.5
   * EXE: Don't show the "XML parsing failed" warning if the EXE doesn't
     actually have a manifest.
+    * Affects: v2.5
   * rpcli: SCSI inquiry was accidentally broken during a code cleanup.
     * Affects: v2.3 - v2.5
 
