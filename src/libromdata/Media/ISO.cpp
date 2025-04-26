@@ -187,7 +187,7 @@ public:
 	 */
 	inline uint32_t host32(uint32_lsb_msb_t lm32) const
 	{
-		return (likely(discType != DiscType::CDi) ? lm32.he : be16_to_cpu(lm32.be));
+		return (likely(discType != DiscType::CDi) ? lm32.he : be32_to_cpu(lm32.be));
 	}
 };
 
