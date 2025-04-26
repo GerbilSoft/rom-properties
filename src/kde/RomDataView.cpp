@@ -552,6 +552,10 @@ QTreeView *RomDataViewPrivate::initListData(QLabel *lblDesc,
 	// Add the field data to the ListDataModel.
 	listModel->setField(&field);
 
+	// FIXME: Qt6 is defaulting to sorting by column 0, descending.
+	// Qt5 didn't have this issue...
+	treeView->header()->setSortIndicator(-1, Qt::AscendingOrder);
+
 	// Set up column and header visibility.
 	if (listDataDesc.names) {
 		int col = 0;
@@ -565,10 +569,6 @@ QTreeView *RomDataViewPrivate::initListData(QLabel *lblDesc,
 			}
 			col++;
 		}
-
-		// FIXME: Qt6 is defaulting to sorting by column 0, descending.
-		// Qt5 didn't have this issue...
-		treeView->header()->setSortIndicator(-1, Qt::AscendingOrder);
 	} else {
 		// Hide the header.
 		treeView->header()->hide();
