@@ -823,9 +823,16 @@ int ISO::loadFieldData(void)
 	}
 
 	// Sector mode and size
-	// TODO: Verify subchannels and also CD-i modes later.
+	// TODO: Verify subchannels and other modes later.
 	// Reference: https://www.gnu.org/software/ccd2cue/manual/html_node/MODE-_0028Compact-Disc-fields_0029.html
-	string sector_format = fmt::format(FSTR("MODE{:d}/{:d}"), cdsi->mode, cdsi->sector_size);
+	string sector_format;
+	if (unlikely(d->discType == ISOPrivate::DiscType::CDi)) {
+		// CD-i uses its own sector format.
+		sector_format = fmt::format(FSTR("CDI/{:d}"), cdsi->sector_size);
+	} else {
+		// Regular sector format
+		sector_format = fmt::format(FSTR("MODE{:d}/{:d}"), cdsi->mode, cdsi->sector_size);
+	}
 	if (cdsi->subchannel_size > 0) {
 		sector_format += fmt::format(FSTR("+{:d}"), cdsi->subchannel_size);
 	}
