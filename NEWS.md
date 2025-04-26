@@ -2,6 +2,11 @@
 
 ## v2.6 (released 2025/??/??)
 
+* New parser features:
+  * ISO: Show the sector mode in addition to sector sizes.
+    * Fixes #322: Underlying CD image type for ISO
+      * Reported by @DankRank.
+
 * Bug fixes:
   * NintendoDS_BNR: Animated icons were missing the animated icon flag.
     * Affects: v2.4 - v2.5
