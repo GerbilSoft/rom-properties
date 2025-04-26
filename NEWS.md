@@ -20,6 +20,9 @@
     * The SparseDiscReader changes in v2.3 broke this, so anything that
       uses an ISO-9660 format showed 2048-byte sectors, even if this
       wasn't the case.
+  * KDE: On KF6, ListData widgets that didn't specify a default sorting
+    method ended up being sorted in reverse-order by default. Not sure
+    why this changed in Qt6. A workaround has been applied to fix it.
 
 * Other changes:
   * Added support for localsearch-3.8, the new name of Tracker.
