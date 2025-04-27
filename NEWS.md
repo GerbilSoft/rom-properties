@@ -39,6 +39,8 @@
     This requires converting from UTF-8 to UTF-16, but it turns out doing this
     is actually faster than printf/cout, even on versions of Windows that support
     UTF-8 properly, so now it's used on Windows 10 as well.
+  * rpcli: Some more status and error messages are now colorized if printing to
+    a console. (Cyan for status messages; red for error messages.)
 
 ## v2.5 (released 2025/04/19)
 
