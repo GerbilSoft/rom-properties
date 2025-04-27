@@ -274,15 +274,19 @@ static void DoFile(const TCHAR *filename, bool json, const vector<ExtractParam> 
 		// File: Open the file and call RomDataFactory::create() with the opened file.
 
 		// FIXME: Make T2U8c() unnecessary here.
+		ConsoleSetTextColor(&ci_stderr, 6, true);	// cyan
 		ConsolePrint(&ci_stderr, "== ");
 		ConsolePrint(&ci_stderr, fmt::format(FRUN(C_("rpcli", "Reading file '{:s}'...")), T2U8c(filename)), true);
+		ConsoleResetTextColor(&ci_stderr);
 		fflush(stderr);
 
 		shared_ptr<RpFile> file = std::make_shared<RpFile>(filename, RpFile::FM_OPEN_READ_GZ);
 		if (!file->isOpen()) {
 			// TODO: Return an error code?
+			ConsoleSetTextColor(&ci_stderr, 1, true);	// red
 			ConsolePrint(&ci_stderr, "-- ");
 			ConsolePrint(&ci_stderr, fmt::format(FRUN(C_("rpcli", "Couldn't open file: {:s}")), strerror(file->lastError())), true);
+			ConsoleResetTextColor(&ci_stderr);
 			fflush(stderr);
 			if (json) {
 				ConsolePrint(&ci_stderr, fmt::format(FSTR("{{\"error\":\"couldn't open file\",\"code\":{:d}}}\n"), file->lastError()));
@@ -296,8 +300,10 @@ static void DoFile(const TCHAR *filename, bool json, const vector<ExtractParam> 
 		// Directory: Call RomDataFactory::create() with the filename.
 
 		// FIXME: Make T2U8c() unnecessary here.
+		ConsoleSetTextColor(&ci_stderr, 6, true);	// cyan
 		ConsolePrint(&ci_stderr, "== ");
 		ConsolePrint(&ci_stderr, fmt::format(FRUN(C_("rpcli", "Reading directory '{:s}'...")), T2U8c(filename)), true);
+		ConsoleResetTextColor(&ci_stderr);
 		fflush(stderr);
 
 		romData = RomDataFactory::create(filename);
@@ -305,8 +311,10 @@ static void DoFile(const TCHAR *filename, bool json, const vector<ExtractParam> 
 
 	if (romData) {
 		if (json) {
+			ConsoleSetTextColor(&ci_stderr, 6, true);	// cyan
 			ConsolePrint(&ci_stderr, "-- ");
 			ConsolePrint(&ci_stderr, C_("rpcli", "Outputting JSON data"), true);
+			ConsoleResetTextColor(&ci_stderr);
 			fflush(stderr);
 
 #ifdef _WIN32
@@ -358,8 +366,10 @@ static void DoFile(const TCHAR *filename, bool json, const vector<ExtractParam> 
 		fflush(stdout);
 		ExtractImages(romData.get(), extract);
 	} else {
+		ConsoleSetTextColor(&ci_stderr, 1, true);	// red
 		ConsolePrint(&ci_stderr, "-- ");
 		ConsolePrint(&ci_stderr, C_("rpcli", "ROM is not supported"), true);
+		ConsoleResetTextColor(&ci_stderr);
 		fflush(stderr);
 
 		if (json) {
@@ -437,15 +447,19 @@ static void PrintPathnames(void)
 static void DoScsiInquiry(const TCHAR *filename, bool json)
 {
 	// FIXME: Make T2U8c() unnecessary here.
+	ConsoleSetTextColor(&ci_stderr, 6, true);	// cyan
 	ConsolePrint(&ci_stderr, "== ");
 	ConsolePrint(&ci_stderr, fmt::format(FRUN(C_("rpcli", "Opening device file '{:s}'...")), T2U8c(filename)), true);
+	ConsoleResetTextColor(&ci_stderr);
 	fflush(stderr);
 
 	unique_ptr<RpFile> file(new RpFile(filename, RpFile::FM_OPEN_READ_GZ));
 	if (!file->isOpen()) {
 		// TODO: Return an error code?
+		ConsoleSetTextColor(&ci_stderr, 1, true);	// red
 		ConsolePrint(&ci_stderr, "-- ");
 		ConsolePrint(&ci_stderr, fmt::format(FRUN(C_("rpcli", "Couldn't open file: {:s}")), strerror(file->lastError())), true);
+		ConsoleResetTextColor(&ci_stderr);
 		fflush(stderr);
 
 		if (json) {
@@ -458,8 +472,10 @@ static void DoScsiInquiry(const TCHAR *filename, bool json)
 	// TODO: Check for unsupported devices? (Only CD-ROM is supported.)
 	if (!file->isDevice()) {
 		// TODO: Return an error code?
+		ConsoleSetTextColor(&ci_stderr, 1, true);	// red
 		ConsolePrint(&ci_stderr, "-- ");
 		ConsolePrint(&ci_stderr, C_("rpcli", "Not a device file"), true);
+		ConsoleResetTextColor(&ci_stderr);
 		fflush(stderr);
 
 		if (json) {
@@ -470,8 +486,10 @@ static void DoScsiInquiry(const TCHAR *filename, bool json)
 	}
 
 	if (json) {
+		ConsoleSetTextColor(&ci_stderr, 6, true);	// cyan
 		ConsolePrint(&ci_stderr, "-- ");
 		ConsolePrint(&ci_stderr, C_("rpcli", "Outputting JSON data"), true);
+		ConsoleResetTextColor(&ci_stderr);
 		fflush(stderr);
 
 		// TODO: JSONScsiInquiry
@@ -506,15 +524,19 @@ static void DoScsiInquiry(const TCHAR *filename, bool json)
 static void DoAtaIdentifyDevice(const TCHAR *filename, bool json, bool packet)
 {
 	// FIXME: Make T2U8c() unnecessary here.
+	ConsoleSetTextColor(&ci_stderr, 6, true);	// cyan
 	ConsolePrint(&ci_stderr, "== ");
 	ConsolePrint(&ci_stderr, fmt::format(FRUN(C_("rpcli", "Opening device file '{:s}'...")), T2U8c(filename)), true);
+	ConsoleResetTextColor(&ci_stderr);
 	fflush(stderr);
 
 	unique_ptr<RpFile> file(new RpFile(filename, RpFile::FM_OPEN_READ_GZ));
 	if (!file->isOpen()) {
 		// TODO: Return an error code?
+		ConsoleSetTextColor(&ci_stderr, 1, true);	// red
 		ConsolePrint(&ci_stderr, "-- ");
 		ConsolePrint(&ci_stderr, fmt::format(FRUN(C_("rpcli", "Couldn't open file: {:s}")), strerror(file->lastError())), true);
+		ConsoleResetTextColor(&ci_stderr);
 		fflush(stderr);
 
 		if (json) {
@@ -527,8 +549,10 @@ static void DoAtaIdentifyDevice(const TCHAR *filename, bool json, bool packet)
 	// TODO: Check for unsupported devices? (Only CD-ROM is supported.)
 	if (!file->isDevice()) {
 		// TODO: Return an error code?
+		ConsoleSetTextColor(&ci_stderr, 1, true);	// red
 		ConsolePrint(&ci_stderr, "-- ");
 		ConsolePrint(&ci_stderr, C_("rpcli", "Not a device file"), true);
+		ConsoleResetTextColor(&ci_stderr);
 		fflush(stderr);
 
 		if (json) {
@@ -539,8 +563,10 @@ static void DoAtaIdentifyDevice(const TCHAR *filename, bool json, bool packet)
 	}
 
 	if (json) {
+		ConsoleSetTextColor(&ci_stderr, 6, true);	// cyan
 		ConsolePrint(&ci_stderr, "-- ");
 		ConsolePrint(&ci_stderr, C_("rpcli", "Outputting JSON data"), true);
+		ConsoleResetTextColor(&ci_stderr);
 		fflush(stderr);
 
 		// TODO: JSONAtaIdentifyDevice

@@ -33,7 +33,8 @@ typedef struct _ConsoleInfo_t {
 	// Windows 10 1607 ("Anniversary Update") adds support for ANSI escape sequences.
 	// For older Windows, we'll need to parse the sequences manually and
 	// call SetConsoleTextAttribute().
-	uint16_t wAttributesOrig;	// For real consoles: Original attributes
+	uint16_t wAttributesOrig;	// Original attributes
+	uint16_t wAttributesCur;	// Current attributes, when using ConsoleSetTextColor()
 
 	HANDLE hConsole;	// Console handle, or nullptr if not a real console.
 #endif /* _WIN32 */
@@ -134,5 +135,19 @@ static inline void ConsolePrint(const ConsoleInfo_t *ci, const std::string &str,
  * @param ci ConsoleInfo_t
  */
 void ConsolePrintNewline(const ConsoleInfo_t *ci);
+
+/**
+ * Set the console text color.
+ * @param ci ConsoleInfo_t
+ * @param color Console text color (ANSI escape sequence value, 0-7)
+ * @param bold If true, bold the text (or use high-intensity).
+ */
+void ConsoleSetTextColor(ConsoleInfo_t *ci, uint8_t color, bool bold = false);
+
+/**
+ * Reset the console text color to the original value.
+ * @param ci ConsoleInfo_t
+ */
+void ConsoleResetTextColor(ConsoleInfo_t *ci);
 
 #endif /* __cplusplus */

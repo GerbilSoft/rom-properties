@@ -51,6 +51,11 @@ typedef NTSTATUS (WINAPI *pfnNtQueryObject_t)(
 #  include <unistd.h>
 #endif /* _WIN32 */
 
+// Map ANSI colors (red=1) to Windows colors (blue=1).
+static constexpr array<uint8_t, 8> win32_color_map = {
+	0, 4, 2, 6, 1, 5, 3, 7
+};
+
 // Console information
 // NOTE: stdout and stderr can both be real consoles,
 // both be redirected, or one real and one redirected.
@@ -118,6 +123,7 @@ static void init_win32_ConsoleInfo_t(ConsoleInfo_t *ci, DWORD fd)
 {
 	// Default attributes (white on black)
 	ci->wAttributesOrig = 0x07;
+	ci->wAttributesCur = 0x07;
 
 	HANDLE hStd = GetStdHandle(fd);
 	if (!hStd || hStd == INVALID_HANDLE_VALUE) {
@@ -263,11 +269,6 @@ int win32_write_to_console(const ConsoleInfo_t *ci, const char *str, int len)
  */
 int win32_console_print_ansi_color(const char *str)
 {
-	// Map ANSI colors (red=1) to Windows colors (blue=1).
-	static constexpr array<uint8_t, 8> color_map = {
-		0, 4, 2, 6, 1, 5, 3, 7
-	};
-
 	HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
 	assert(hStdOut != nullptr && hStdOut != INVALID_HANDLE_VALUE);
 	if (!hStdOut || hStdOut == INVALID_HANDLE_VALUE) {
@@ -379,7 +380,7 @@ seq_loop:
 			case 34: case 35: case 36: case 37:
 				// Foreground color
 				wAttributes &= ~0x0007;
-				wAttributes |= color_map[num - 30];
+				wAttributes |= win32_color_map[num - 30];
 				break;
 			case 39:
 				// Default foreground color
@@ -390,7 +391,7 @@ seq_loop:
 			case 44: case 45: case 46: case 47:
 				// Background color
 				wAttributes &= ~0x0070;
-				wAttributes |= (color_map[num - 40] << 4);
+				wAttributes |= (win32_color_map[num - 40] << 4);
 				break;
 			case 49:
 				// Default background color
@@ -493,5 +494,87 @@ void ConsolePrintNewline(const ConsoleInfo_t *ci)
 	{
 		// Regular stdio output.
 		fputc('\n', ci->stream);
+	}
+}
+
+/**
+ * Set the console text color.
+ * @param ci ConsoleInfo_t
+ * @param color Console text color (ANSI escape sequence value, 0-7)
+ * @param bold If true, bold the text (or use high-intensity).
+ */
+void ConsoleSetTextColor(ConsoleInfo_t *ci, uint8_t color, bool bold)
+{
+	assert(color < 8);
+	color &= 0x07;
+	if (!ci->is_console) {
+		// Not a console. No colors.
+		return;
+	}
+
+#ifdef _WIN32
+	// Windows: If printing to a real console, and ANSI escape sequences
+	// are not supported, set Win32 console attributes.
+	if (ci->is_real_console && !ci->supports_ansi) {
+		// Set Win32 console attributes.
+		ci->wAttributesCur &= ~0x0F;
+		ci->wAttributesCur |= win32_color_map[color];
+		if (bold) {
+			ci->wAttributesCur |= FOREGROUND_INTENSITY;
+		}
+		SetConsoleTextAttribute(ci->hConsole, ci->wAttributesCur);
+		return;
+	}
+#endif /* _WIN32 */
+
+	// ANSI escape sequences are supported.
+	char buf[32];
+	int len = 0;
+	if (bold) {
+		len = snprintf(buf, sizeof(buf), "\033[3%u;1m", color);
+	} else {
+		len = snprintf(buf, sizeof(buf), "\033[3%um", color);
+	}
+#ifdef _WIN32
+	if (ci->is_real_console) {
+		WriteConsoleA(ci->hConsole, buf, len, nullptr, nullptr);
+	} else
+#endif /* _WIN32 */
+	{
+		fwrite(buf, 1, len, ci->stream);
+	}
+}
+
+/**
+ * Reset the console text color to the original value.
+ * @param ci ConsoleInfo_t
+ */
+void ConsoleResetTextColor(ConsoleInfo_t *ci)
+{
+	if (!ci->is_console) {
+		// Not a console. No colors.
+		return;
+	}
+
+#ifdef _WIN32
+	// Windows: If printing to a real console, and ANSI escape sequences
+	// are not supported, set Win32 console attributes.
+	if (ci->is_real_console && !ci->supports_ansi) {
+		// Set Win32 console attributes.
+		ci->wAttributesCur = ci->wAttributesOrig;
+		SetConsoleTextAttribute(ci->hConsole, ci->wAttributesOrig);
+		return;
+	}
+#endif /* _WIN32 */
+
+	// ANSI escape sequences are supported.
+	static const char ansi_color_reset[] = "\033[m";
+#ifdef _WIN32
+	if (ci->is_real_console) {
+		WriteConsoleA(ci->hConsole, ansi_color_reset, sizeof(ansi_color_reset)-1, nullptr, nullptr);
+	} else
+#endif /* _WIN32 */
+	{
+		fwrite(ansi_color_reset, 1, sizeof(ansi_color_reset)-1, ci->stream);
 	}
 }
