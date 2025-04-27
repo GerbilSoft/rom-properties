@@ -8,6 +8,7 @@
       * Requested by @DankRank.
   * SNES: List the Nintendo Power directory for full NP cartridge dumps.
     * Fixes #154: SNES: Nintendo Power directory
+  * MegaDrive: Add external image URL support for the Teradrive TMSS ROM.
 
 * Bug fixes:
   * NintendoDS_BNR: Animated icons were missing the animated icon flag.
