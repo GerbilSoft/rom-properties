@@ -11,15 +11,11 @@
 
 #include "vt.hpp"
 
-// librptext
-#include "librptext/conversion.hpp"
-using LibRpText::utf8_to_utf16;
-
 // C++ STL classes
 using std::array;
 using std::ostream;
 using std::string;
-using std::u16string;
+using std::unique_ptr;
 
 #ifdef _WIN32
 #  include "libwin32common/RpWin32_sdk.h"
@@ -236,9 +232,20 @@ int win32_write_to_console(const ConsoleInfo_t *ci, const char *str, int len)
 		// ANSI escape sequences are not supported.
 		// This means it's likely older than Win10 1607, so no UTF-8 support.
 		// Convert to UTF-16 first.
-		u16string wstr = utf8_to_utf16(str, len);
-		const wchar_t *p = reinterpret_cast<const wchar_t*>(wstr.data());
-		for (int size = static_cast<int>(wstr.size()); size > 0; size -= CHUNK_SIZE) {
+
+		// NOTE: Using MultiByteToWideChar() directly so we don't have a
+		// libromdata (librptext) dependency, since this function is used if
+		// libromdata can't be loaded for some reason.
+		const int cchWcs = MultiByteToWideChar(CP_UTF8, 0, str, len, nullptr, 0);
+		if (cchWcs <= 0) {
+			// Unable to convert the text...
+			return -EIO;
+		}
+		unique_ptr<wchar_t[]> wcs(new wchar_t[cchWcs]);
+		MultiByteToWideChar(CP_UTF8, 0, str, len, wcs.get(), cchWcs);
+
+		const wchar_t *p = wcs.get();
+		for (int size = cchWcs; size > 0; size -= CHUNK_SIZE) {
 			const DWORD chunk_len = static_cast<DWORD>((size > CHUNK_SIZE) ? CHUNK_SIZE : size);
 			WriteConsoleW(hConsole, p, chunk_len, nullptr, nullptr);
 			p += chunk_len;

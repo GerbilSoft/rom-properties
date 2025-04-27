@@ -683,17 +683,23 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 	setlocale(LC_CTYPE, "C");
 #endif /* _WIN32 */
 
+	// Detect console information.
+	init_vt();
+
 #if defined(ENABLE_NLS) && defined(_MSC_VER)
 	// Delay load verification: libgnuintl
 	// TODO: Skip this if not linked with /DELAYLOAD?
 	if (DelayLoad_test_libintl_textdomain() != 0) {
 		// Delay load failed.
-		_fputts(_T("*** ERROR: ") _T(LIBGNUINTL_DLL) _T(" could not be loaded.\n\n")
-			_T("This build of rom-properties has localization enabled,\n")
-			_T("which requires the use of GNU gettext.\n\n")
-			_T("Please redownload rom-properties ") _T(RP_VERSION_STRING) _T(" and copy the\n")
-			LIBGNUINTL_DLL _T(" file to the installation directory.\n"),
-			stderr);
+		ConsoleSetTextColor(&ci_stderr, 1, true);	// red
+		ConsolePrint(&ci_stderr, "*** ERROR: " LIBGNUINTL_DLL " could not be loaded.\n\n");
+		ConsoleResetTextColor(&ci_stderr);
+		ConsolePrint(&ci_stderr,
+			"This build of rom-properties has localization enabled,\n"
+			"which requires the use of GNU gettext.\n\n"
+			"Please redownload rom-properties " RP_VERSION_STRING " and copy the\n"
+			LIBGNUINTL_DLL " file to the installation directory.\n");
+		fflush(stderr);
 		return EXIT_FAILURE;
 	}
 #endif /* ENABLE_NLS && _MSC_VER */
@@ -702,30 +708,33 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 #  ifdef _MSC_VER
 #    define ROMDATA_PREFIX
 #  else
-#    define ROMDATA_PREFIX _T("lib")
+#    define ROMDATA_PREFIX "lib"
 #  endif
 #  ifndef NDEBUG
-#    define ROMDATA_SUFFIX _T("-") _T(LIBROMDATA_SOVERSION_STR) _T("d")
+#    define ROMDATA_SUFFIX "-" LIBROMDATA_SOVERSION_STR "d"
 #  else
-#    define ROMDATA_SUFFIX _T("-") _T(LIBROMDATA_SOVERSION_STR)
+#    define ROMDATA_SUFFIX "-" LIBROMDATA_SOVERSION_STR
 #  endif
 #  ifdef _WIN32
-#    define ROMDATA_EXT _T(".dll")
+#    define ROMDATA_EXT ".dll"
 #  else
 // TODO: macOS
-#    define ROMDATA_EXT _T(".so")
+#    define ROMDATA_EXT ".so"
 #  endif
-#  define ROMDATA_DLL ROMDATA_PREFIX _T("romdata") ROMDATA_SUFFIX ROMDATA_EXT
+#  define ROMDATA_DLL ROMDATA_PREFIX "romdata" ROMDATA_SUFFIX ROMDATA_EXT
 
 #  ifdef _MSC_VER
 	// Delay load verification: romdata-X.dll
 	// TODO: Skip this if not linked with /DELAYLOAD?
 	if (DelayLoad_test_ImageTypesConfig_className() != 0) {
 		// Delay load failed.
-		_fputts(_T("*** ERROR: ") ROMDATA_DLL _T(" could not be loaded.\n\n")
-			_T("Please redownload rom-properties ") _T(RP_VERSION_STRING) _T(" and copy the\n")
-			ROMDATA_DLL _T(" file to the installation directory.\n"),
-			stderr);
+		ConsoleSetTextColor(&ci_stderr, 1, true);	// red
+		ConsolePrint(&ci_stderr, "*** ERROR: " ROMDATA_DLL " could not be loaded.\n\n");
+		ConsoleResetTextColor(&ci_stderr);
+		ConsolePrint(&ci_stderr,
+			"Please redownload rom-properties " RP_VERSION_STRING " and copy the\n"
+			ROMDATA_DLL " file to the installation directory.\n");
+		fflush(stderr);
 		return EXIT_FAILURE;
 	}
 #  endif /* _MSC_VER */
@@ -742,9 +751,6 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 		SetConsoleOutputCP(CP_UTF8);
 	}
 #endif /* _WIN32 */
-
-	// Detect console information.
-	init_vt();
 
 	// Initialize i18n.
 	rp_i18n_init();
@@ -790,7 +796,9 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 	const ULONG_PTR gdipToken = GdiplusHelper::InitGDIPlus();
 	assert(gdipToken != 0);
 	if (gdipToken == 0) {
-		ConsolePrint(&ci_stderr, "*** ERROR: GDI+ initialization failed.", true);
+		ConsoleSetTextColor(&ci_stderr, 6, true);	// red
+		ConsolePrint(&ci_stderr, C_("rpcli", "*** ERROR: GDI+ initialization failed."), true);
+		ConsoleResetTextColor(&ci_stderr);
 		fflush(stderr);
 		return -EIO;
 	}
