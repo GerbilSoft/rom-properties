@@ -575,7 +575,7 @@ void ConsoleResetTextColor(ConsoleInfo_t *ci)
 #endif /* _WIN32 */
 
 	// ANSI escape sequences are supported.
-	static const char ansi_color_reset[] = "\033[m";
+	static const char ansi_color_reset[] = "\033[0m";
 #ifdef _WIN32
 	if (ci->is_real_console) {
 		WriteConsoleA(ci->hConsole, ansi_color_reset, sizeof(ansi_color_reset)-1, nullptr, nullptr);
