@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libi18n)                          *
  * i18n.c: Internationalization support code.                              *
  *                                                                         *
- * Copyright (c) 2017-2022 by David Korth.                                 *
+ * Copyright (c) 2017-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -19,6 +19,8 @@
 #ifdef _WIN32
 #  include "libwin32common/RpWin32_sdk.h"
 #  include <stdlib.h>	// _countof() on 32-bit MinGW-w64
+#  include <string.h>
+#  include <tchar.h>
 #endif
 
 // Initialized?

@@ -502,12 +502,12 @@ int CALLBACK rp_show_config_dialog(
 		// Delay load failed.
 		// TODO: Use a CMake macro for the soversion?
 		MessageBox(hWnd,
-			LIBGNUINTL_DLL _T(" could not be loaded.\n\n")
+			_T(LIBGNUINTL_DLL) _T(" could not be loaded.\n\n")
 			_T("This build of rom-properties has localization enabled,\n")
 			_T("which requires the use of GNU texttext.\n\n")
 			_T("Please redownload rom-properties and copy the\n")
-			LIBGNUINTL_DLL _T(" file to the installation directory."),
-			LIBGNUINTL_DLL _T(" not found"),
+			_T(LIBGNUINTL_DLL) _T(" file to the installation directory."),
+			_T(LIBGNUINTL_DLL) _T(" not found"),
 			MB_ICONSTOP);
 		return EXIT_FAILURE;
 	}

@@ -9,6 +9,9 @@
 #include "stdafx.h"
 #include "NetworkStatus.h"
 
+// C includes (Win32-specific)
+#include <tchar.h>
+
 // from nldef.h
 typedef enum _NL_NETWORK_CONNECTIVITY_LEVEL_HINT {
 	NetworkConnectivityLevelHintUnknown = 0,

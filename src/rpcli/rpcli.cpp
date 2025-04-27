@@ -688,7 +688,7 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 	// TODO: Skip this if not linked with /DELAYLOAD?
 	if (DelayLoad_test_libintl_textdomain() != 0) {
 		// Delay load failed.
-		_fputts(_T("*** ERROR: ") LIBGNUINTL_DLL _T(" could not be loaded.\n\n")
+		_fputts(_T("*** ERROR: ") _T(LIBGNUINTL_DLL) _T(" could not be loaded.\n\n")
 			_T("This build of rom-properties has localization enabled,\n")
 			_T("which requires the use of GNU gettext.\n\n")
 			_T("Please redownload rom-properties ") _T(RP_VERSION_STRING) _T(" and copy the\n")
