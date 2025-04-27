@@ -276,8 +276,9 @@ static void DoFile(const TCHAR *filename, bool json, const vector<ExtractParam> 
 		// FIXME: Make T2U8c() unnecessary here.
 		ConsoleSetTextColor(&ci_stderr, 6, true);	// cyan
 		ConsolePrint(&ci_stderr, "== ");
-		ConsolePrint(&ci_stderr, fmt::format(FRUN(C_("rpcli", "Reading file '{:s}'...")), T2U8c(filename)), true);
+		ConsolePrint(&ci_stderr, fmt::format(FRUN(C_("rpcli", "Reading file '{:s}'...")), T2U8c(filename)));
 		ConsoleResetTextColor(&ci_stderr);
+		ConsolePrintNewline(&ci_stderr);
 		fflush(stderr);
 
 		shared_ptr<RpFile> file = std::make_shared<RpFile>(filename, RpFile::FM_OPEN_READ_GZ);
@@ -285,8 +286,9 @@ static void DoFile(const TCHAR *filename, bool json, const vector<ExtractParam> 
 			// TODO: Return an error code?
 			ConsoleSetTextColor(&ci_stderr, 1, true);	// red
 			ConsolePrint(&ci_stderr, "-- ");
-			ConsolePrint(&ci_stderr, fmt::format(FRUN(C_("rpcli", "Couldn't open file: {:s}")), strerror(file->lastError())), true);
+			ConsolePrint(&ci_stderr, fmt::format(FRUN(C_("rpcli", "Couldn't open file: {:s}")), strerror(file->lastError())));
 			ConsoleResetTextColor(&ci_stderr);
+			ConsolePrintNewline(&ci_stderr);
 			fflush(stderr);
 			if (json) {
 				ConsolePrint(&ci_stderr, fmt::format(FSTR("{{\"error\":\"couldn't open file\",\"code\":{:d}}}\n"), file->lastError()));
@@ -302,8 +304,9 @@ static void DoFile(const TCHAR *filename, bool json, const vector<ExtractParam> 
 		// FIXME: Make T2U8c() unnecessary here.
 		ConsoleSetTextColor(&ci_stderr, 6, true);	// cyan
 		ConsolePrint(&ci_stderr, "== ");
-		ConsolePrint(&ci_stderr, fmt::format(FRUN(C_("rpcli", "Reading directory '{:s}'...")), T2U8c(filename)), true);
+		ConsolePrint(&ci_stderr, fmt::format(FRUN(C_("rpcli", "Reading directory '{:s}'...")), T2U8c(filename)));
 		ConsoleResetTextColor(&ci_stderr);
+		ConsolePrintNewline(&ci_stderr);
 		fflush(stderr);
 
 		romData = RomDataFactory::create(filename);
@@ -313,8 +316,9 @@ static void DoFile(const TCHAR *filename, bool json, const vector<ExtractParam> 
 		if (json) {
 			ConsoleSetTextColor(&ci_stderr, 6, true);	// cyan
 			ConsolePrint(&ci_stderr, "-- ");
-			ConsolePrint(&ci_stderr, C_("rpcli", "Outputting JSON data"), true);
+			ConsolePrint(&ci_stderr, C_("rpcli", "Outputting JSON data"));
 			ConsoleResetTextColor(&ci_stderr);
+			ConsolePrintNewline(&ci_stderr);
 			fflush(stderr);
 
 #ifdef _WIN32
@@ -368,8 +372,9 @@ static void DoFile(const TCHAR *filename, bool json, const vector<ExtractParam> 
 	} else {
 		ConsoleSetTextColor(&ci_stderr, 1, true);	// red
 		ConsolePrint(&ci_stderr, "-- ");
-		ConsolePrint(&ci_stderr, C_("rpcli", "ROM is not supported"), true);
+		ConsolePrint(&ci_stderr, C_("rpcli", "ROM is not supported"));
 		ConsoleResetTextColor(&ci_stderr);
+		ConsolePrintNewline(&ci_stderr);
 		fflush(stderr);
 
 		if (json) {
@@ -449,8 +454,9 @@ static void DoScsiInquiry(const TCHAR *filename, bool json)
 	// FIXME: Make T2U8c() unnecessary here.
 	ConsoleSetTextColor(&ci_stderr, 6, true);	// cyan
 	ConsolePrint(&ci_stderr, "== ");
-	ConsolePrint(&ci_stderr, fmt::format(FRUN(C_("rpcli", "Opening device file '{:s}'...")), T2U8c(filename)), true);
+	ConsolePrint(&ci_stderr, fmt::format(FRUN(C_("rpcli", "Opening device file '{:s}'...")), T2U8c(filename)));
 	ConsoleResetTextColor(&ci_stderr);
+	ConsolePrintNewline(&ci_stderr);
 	fflush(stderr);
 
 	unique_ptr<RpFile> file(new RpFile(filename, RpFile::FM_OPEN_READ_GZ));
@@ -458,8 +464,9 @@ static void DoScsiInquiry(const TCHAR *filename, bool json)
 		// TODO: Return an error code?
 		ConsoleSetTextColor(&ci_stderr, 1, true);	// red
 		ConsolePrint(&ci_stderr, "-- ");
-		ConsolePrint(&ci_stderr, fmt::format(FRUN(C_("rpcli", "Couldn't open file: {:s}")), strerror(file->lastError())), true);
+		ConsolePrint(&ci_stderr, fmt::format(FRUN(C_("rpcli", "Couldn't open file: {:s}")), strerror(file->lastError())));
 		ConsoleResetTextColor(&ci_stderr);
+		ConsolePrintNewline(&ci_stderr);
 		fflush(stderr);
 
 		if (json) {
@@ -474,8 +481,9 @@ static void DoScsiInquiry(const TCHAR *filename, bool json)
 		// TODO: Return an error code?
 		ConsoleSetTextColor(&ci_stderr, 1, true);	// red
 		ConsolePrint(&ci_stderr, "-- ");
-		ConsolePrint(&ci_stderr, C_("rpcli", "Not a device file"), true);
+		ConsolePrint(&ci_stderr, C_("rpcli", "Not a device file"));
 		ConsoleResetTextColor(&ci_stderr);
+		ConsolePrintNewline(&ci_stderr);
 		fflush(stderr);
 
 		if (json) {
@@ -488,8 +496,9 @@ static void DoScsiInquiry(const TCHAR *filename, bool json)
 	if (json) {
 		ConsoleSetTextColor(&ci_stderr, 6, true);	// cyan
 		ConsolePrint(&ci_stderr, "-- ");
-		ConsolePrint(&ci_stderr, C_("rpcli", "Outputting JSON data"), true);
+		ConsolePrint(&ci_stderr, C_("rpcli", "Outputting JSON data"));
 		ConsoleResetTextColor(&ci_stderr);
+		ConsolePrintNewline(&ci_stderr);
 		fflush(stderr);
 
 		// TODO: JSONScsiInquiry
@@ -526,8 +535,9 @@ static void DoAtaIdentifyDevice(const TCHAR *filename, bool json, bool packet)
 	// FIXME: Make T2U8c() unnecessary here.
 	ConsoleSetTextColor(&ci_stderr, 6, true);	// cyan
 	ConsolePrint(&ci_stderr, "== ");
-	ConsolePrint(&ci_stderr, fmt::format(FRUN(C_("rpcli", "Opening device file '{:s}'...")), T2U8c(filename)), true);
+	ConsolePrint(&ci_stderr, fmt::format(FRUN(C_("rpcli", "Opening device file '{:s}'...")), T2U8c(filename)));
 	ConsoleResetTextColor(&ci_stderr);
+	ConsolePrintNewline(&ci_stderr);
 	fflush(stderr);
 
 	unique_ptr<RpFile> file(new RpFile(filename, RpFile::FM_OPEN_READ_GZ));
@@ -535,8 +545,9 @@ static void DoAtaIdentifyDevice(const TCHAR *filename, bool json, bool packet)
 		// TODO: Return an error code?
 		ConsoleSetTextColor(&ci_stderr, 1, true);	// red
 		ConsolePrint(&ci_stderr, "-- ");
-		ConsolePrint(&ci_stderr, fmt::format(FRUN(C_("rpcli", "Couldn't open file: {:s}")), strerror(file->lastError())), true);
+		ConsolePrint(&ci_stderr, fmt::format(FRUN(C_("rpcli", "Couldn't open file: {:s}")), strerror(file->lastError())));
 		ConsoleResetTextColor(&ci_stderr);
+		ConsolePrintNewline(&ci_stderr);
 		fflush(stderr);
 
 		if (json) {
@@ -551,8 +562,9 @@ static void DoAtaIdentifyDevice(const TCHAR *filename, bool json, bool packet)
 		// TODO: Return an error code?
 		ConsoleSetTextColor(&ci_stderr, 1, true);	// red
 		ConsolePrint(&ci_stderr, "-- ");
-		ConsolePrint(&ci_stderr, C_("rpcli", "Not a device file"), true);
+		ConsolePrint(&ci_stderr, C_("rpcli", "Not a device file"));
 		ConsoleResetTextColor(&ci_stderr);
+		ConsolePrintNewline(&ci_stderr);
 		fflush(stderr);
 
 		if (json) {
@@ -565,8 +577,9 @@ static void DoAtaIdentifyDevice(const TCHAR *filename, bool json, bool packet)
 	if (json) {
 		ConsoleSetTextColor(&ci_stderr, 6, true);	// cyan
 		ConsolePrint(&ci_stderr, "-- ");
-		ConsolePrint(&ci_stderr, C_("rpcli", "Outputting JSON data"), true);
+		ConsolePrint(&ci_stderr, C_("rpcli", "Outputting JSON data"));
 		ConsoleResetTextColor(&ci_stderr);
+		ConsolePrintNewline(&ci_stderr);
 		fflush(stderr);
 
 		// TODO: JSONAtaIdentifyDevice
@@ -692,9 +705,10 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 	if (DelayLoad_test_libintl_textdomain() != 0) {
 		// Delay load failed.
 		ConsoleSetTextColor(&ci_stderr, 1, true);	// red
-		ConsolePrint(&ci_stderr, "*** ERROR: " LIBGNUINTL_DLL " could not be loaded.\n\n");
+		ConsolePrint(&ci_stderr, "*** ERROR: " LIBGNUINTL_DLL " could not be loaded.");
 		ConsoleResetTextColor(&ci_stderr);
 		ConsolePrint(&ci_stderr,
+			"\n\n"
 			"This build of rom-properties has localization enabled,\n"
 			"which requires the use of GNU gettext.\n\n"
 			"Please redownload rom-properties " RP_VERSION_STRING " and copy the\n"
@@ -729,9 +743,10 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 	if (DelayLoad_test_ImageTypesConfig_className() != 0) {
 		// Delay load failed.
 		ConsoleSetTextColor(&ci_stderr, 1, true);	// red
-		ConsolePrint(&ci_stderr, "*** ERROR: " ROMDATA_DLL " could not be loaded.\n\n");
+		ConsolePrint(&ci_stderr, "*** ERROR: " ROMDATA_DLL " could not be loaded.");
 		ConsoleResetTextColor(&ci_stderr);
 		ConsolePrint(&ci_stderr,
+			"\n\n"
 			"Please redownload rom-properties " RP_VERSION_STRING " and copy the\n"
 			ROMDATA_DLL " file to the installation directory.\n");
 		fflush(stderr);
@@ -797,8 +812,9 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 	assert(gdipToken != 0);
 	if (gdipToken == 0) {
 		ConsoleSetTextColor(&ci_stderr, 6, true);	// red
-		ConsolePrint(&ci_stderr, C_("rpcli", "*** ERROR: GDI+ initialization failed."), true);
+		ConsolePrint(&ci_stderr, C_("rpcli", "*** ERROR: GDI+ initialization failed."));
 		ConsoleResetTextColor(&ci_stderr);
+		ConsolePrintNewline(&ci_stderr);
 		fflush(stderr);
 		return -EIO;
 	}
