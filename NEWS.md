@@ -43,6 +43,8 @@
     UTF-8 properly, so now it's used on Windows 10 as well.
   * rpcli: Some more status and error messages are now colorized if printing to
     a console. (Cyan for status messages; red for error messages.)
+    * Colorization is now disabled on non-Windows systems if TERM is not set to
+      a terminal that supports color.
 
 ## v2.5 (released 2025/04/19)
 
