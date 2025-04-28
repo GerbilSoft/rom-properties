@@ -215,13 +215,13 @@ int win32_write_to_console(const ConsoleInfo_t *ci, const char *str, int len)
 	// Write in 4096-character chunks.
 	// WriteConsole() seems to fail if the input buffer is > 64 KiB.
 	static constexpr int CHUNK_SIZE = 4096;
+	if (len < 0) {
+		len = static_cast<int>(strlen(str));
+	}
 
 #ifdef UNICODE
 	// If using a real Windows console with ANSI escape sequences, use WriteConsoleA().
 	if (ci->supports_ansi) {
-		if (len < 0) {
-			len = static_cast<int>(strlen(str));
-		}
 		const char *p = str;
 		for (int size = len; size > 0; size -= CHUNK_SIZE) {
 			const DWORD chunk_len = static_cast<DWORD>((size > CHUNK_SIZE) ? CHUNK_SIZE : size);
@@ -253,9 +253,6 @@ int win32_write_to_console(const ConsoleInfo_t *ci, const char *str, int len)
 	}
 #else /* !UNICODE */
 	// FIXME: Convert from UTF-8 to ANSI?
-	if (len < 0) {
-		len = static_cast<int>(strlen(str));
-	}
 	const char *p = str;
 	for (int size = len; size > 0; size -= CHUNK_SIZE) {
 		const DWORD chunk_len = static_cast<DWORD>((size > CHUNK_SIZE) ? CHUNK_SIZE : size);
