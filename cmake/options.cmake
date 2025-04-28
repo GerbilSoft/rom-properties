@@ -1,5 +1,7 @@
 # Build options.
 
+OPTION(ENABLE_WERROR "Treat all compile warnings as errors. (Enable for development!)" OFF)
+
 # Platform options.
 # NOTE: If a platform is specified but it isn't found,
 # that plugin will not be built. There doesn't seem to

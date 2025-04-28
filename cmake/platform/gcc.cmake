@@ -274,20 +274,23 @@ IF(CFLAG_OPTIMIZE_FTREE_VECTORIZE)
 ENDIF(CFLAG_OPTIMIZE_FTREE_VECTORIZE)
 
 # Add "-Werror" *after* checking for everything else.
-SET(RP_C_FLAGS_COMMON   "${RP_C_FLAGS_COMMON} -Werror")
-SET(RP_CXX_FLAGS_COMMON "${RP_CXX_FLAGS_COMMON} -Werror")
-SET(CFLAGS_WNO_ERROR -Wno-error=unknown-pragmas -Wno-error=address -Wno-error=attributes -Wno-error=unused-parameter -Wno-error=unused-but-set-variable -Wno-error=ignored-qualifiers -Wno-error=missing-field-initializers -Wno-error=unused-variable -Wno-error=unused-function -Wno-error=type-limits -Wno-error=empty-body -Wno-error=address-of-packed-member -Wno-error=shift-negative-value -Wno-error=clobbered -Wno-error=overloaded-virtual -Wno-error=header-hygiene -Wno-error=cast-align -Wno-error=stringop-overread)
-FOREACH(FLAG_TEST ${CFLAGS_WNO_ERROR})
-	# CMake doesn't like certain characters in variable names.
-	STRING(REGEX REPLACE "/|:|=" "_" FLAG_TEST_VARNAME "${FLAG_TEST}")
+IF(ENABLE_WERROR)
+	SET(RP_C_FLAGS_COMMON   "${RP_C_FLAGS_COMMON} -Werror")
+	SET(RP_CXX_FLAGS_COMMON "${RP_CXX_FLAGS_COMMON} -Werror")
 
-	CHECK_C_COMPILER_FLAG("${FLAG_TEST}" CFLAG_${FLAG_TEST_VARNAME})
-	IF(CFLAG_${FLAG_TEST_VARNAME})
-		SET(RP_C_FLAGS_COMMON   "${RP_C_FLAGS_COMMON} ${FLAG_TEST}")
-		SET(RP_CXX_FLAGS_COMMON "${RP_CXX_FLAGS_COMMON} ${FLAG_TEST}")
-	ENDIF(CFLAG_${FLAG_TEST_VARNAME})
-	UNSET(CFLAG_${FLAG_TEST_VARNAME})
-ENDFOREACH(FLAG_TEST)
+	SET(CFLAGS_WNO_ERROR -Wno-error=unknown-pragmas -Wno-error=address -Wno-error=attributes -Wno-error=unused-parameter -Wno-error=unused-but-set-variable -Wno-error=ignored-qualifiers -Wno-error=missing-field-initializers -Wno-error=unused-variable -Wno-error=unused-function -Wno-error=type-limits -Wno-error=empty-body -Wno-error=address-of-packed-member -Wno-error=shift-negative-value -Wno-error=clobbered -Wno-error=overloaded-virtual -Wno-error=header-hygiene -Wno-error=cast-align -Wno-error=stringop-overread)
+	FOREACH(FLAG_TEST ${CFLAGS_WNO_ERROR})
+		# CMake doesn't like certain characters in variable names.
+		STRING(REGEX REPLACE "/|:|=" "_" FLAG_TEST_VARNAME "${FLAG_TEST}")
+
+		CHECK_C_COMPILER_FLAG("${FLAG_TEST}" CFLAG_${FLAG_TEST_VARNAME})
+		IF(CFLAG_${FLAG_TEST_VARNAME})
+			SET(RP_C_FLAGS_COMMON   "${RP_C_FLAGS_COMMON} ${FLAG_TEST}")
+			SET(RP_CXX_FLAGS_COMMON "${RP_CXX_FLAGS_COMMON} ${FLAG_TEST}")
+		ENDIF(CFLAG_${FLAG_TEST_VARNAME})
+		UNSET(CFLAG_${FLAG_TEST_VARNAME})
+	ENDFOREACH(FLAG_TEST)
+ENDIF(ENABLE_WERROR)
 
 ### Debug/Release flags ###
 
