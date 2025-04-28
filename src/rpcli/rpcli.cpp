@@ -806,7 +806,13 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 	// TODO: Add a command line option to override color output.
 	// NOTE: Only checking ci_stdout here, since the actual data is printed to stdout.
 	if (ci_stdout.is_console) {
-		flags |= OF_Text_UseAnsiColor;
+#ifndef _WIN32
+		// Non-Windows: ANSI color support is required.
+		if (ci_stdout.supports_ansi)
+#endif /* !_WIN32 */
+		{
+			flags |= OF_Text_UseAnsiColor;
+		}
 	}
 
 	for (int i = 1; i < argc; i++) { // figure out the json mode in advance

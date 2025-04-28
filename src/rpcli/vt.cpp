@@ -111,7 +111,7 @@ static bool check_mintty(HANDLE hStdOut)
 }
 
 /**
- * Detect if a standard handle is a console or not.
+ * Initialize console information for the specified standard handle.
  * @param ci	[out] ConsoleInfo_t
  * @param fd	[in] Standard handle, e.g. STD_OUTPUT_HANDLE or STD_ERROR_HANDLE
  */
@@ -173,6 +173,83 @@ static void init_win32_ConsoleInfo_t(ConsoleInfo_t *ci, DWORD fd)
 		ci->wAttributesOrig = csbi.wAttributes;
 	}
 }
+#else /* !_WIN32 */
+/**
+ * Initialize console information for the specified file descriptor.
+ * @param ci	[out] ConsoleInfo_t
+ * @param fd	[in] File descriptor
+ */
+static void init_posix_ConsoleInfo_t(ConsoleInfo_t *ci, int fd)
+{
+	// On other systems, use isatty() to determine if
+	// stdout is a tty or a file.
+	if (!isatty(fd)) {
+		// Not a tty.
+		ci->is_console = false;
+		ci->supports_ansi = false;
+		return;
+	}
+
+	// Is a tty. Check $TERM to see if it supports color.
+	ci->is_console = true;
+	const char *const TERM = getenv("TERM");
+	if (!TERM || TERM[0] == '\0') {
+		// No TERM variable, or it's empty...
+		ci->supports_ansi = false;
+		return;
+	}
+
+	// Reference: https://github.com/jwalton/go-supportscolor/blob/5d4fbba7ce3e2f0629f5885f89cd9a2d3e0d7a39/supportscolor.go#L271
+	// (?i)^screen|^xterm|^vt100|^vt220|^rxvt|color|ansi|cygwin|linux
+
+	// Convert to lowercase.
+	string s_term(TERM);
+	std::transform(s_term.begin(), s_term.end(), s_term.begin(),
+		[](char c) noexcept -> char { return std::tolower(c); });
+
+	/// Check for matching terminals.
+
+	// Match the beginning of the string.
+	struct match_begin_t {
+		uint8_t len;
+		char term[7];
+	};
+	static const array<match_begin_t, 5> match_begin = {{
+		{6, "screen"},
+		{5, "xterm"},
+		{5, "vt100"},
+		{5, "vt220"},
+		{4, "rxvt"},
+	}};
+	for (const match_begin_t &match : match_begin) {
+		if (!s_term.compare(0, match.len, match.term)) {
+			// Found a match!
+			ci->supports_ansi = true;
+			return;
+		}
+	}
+
+	// Match the entire string.
+	struct match_whole_t {
+		char term[8];
+	};
+	static const array<match_whole_t, 4> match_whole = {{
+		{"color"},
+		{"ansi"},
+		{"cygwin"},
+		{"linux"},
+	}};
+	for (const match_whole_t &match : match_whole) {
+		if (!s_term.compare(match.term)) {
+			// Found a match!
+			ci->supports_ansi = true;
+			return;
+		}
+	}
+
+	// No match. Assume this terminal doesn't support ANSI color.
+	ci->supports_ansi = false;
+}
 #endif /* _WIN32 */
 
 /**
@@ -187,10 +264,8 @@ void init_vt(void)
 	init_win32_ConsoleInfo_t(&ci_stdout, STD_OUTPUT_HANDLE);
 	init_win32_ConsoleInfo_t(&ci_stderr, STD_ERROR_HANDLE);
 #else /* !_WIN32 */
-	// On other systems, use isatty() to determine if
-	// stdout is a tty or a file.
-	ci_stdout.is_console = !!isatty(fileno(stdout));
-	ci_stderr.is_console = !!isatty(fileno(stderr));
+	init_posix_ConsoleInfo_t(&ci_stdout, fileno(stdout));
+	init_posix_ConsoleInfo_t(&ci_stderr, fileno(stderr));
 #endif
 }
 
@@ -509,12 +584,19 @@ void ConsolePrintNewline(const ConsoleInfo_t *ci)
  */
 void ConsoleSetTextColor(ConsoleInfo_t *ci, uint8_t color, bool bold)
 {
-	assert(color < 8);
-	color &= 0x07;
 	if (!ci->is_console) {
 		// Not a console. No colors.
 		return;
 	}
+#ifndef _WIN32
+	if (!ci->supports_ansi) {
+		// Non-Windows: No support for ANSI colors.
+		return;
+	}
+#endif /* !_WIN32 */
+
+	assert(color < 8);
+	color &= 0x07;
 
 #ifdef _WIN32
 	// Windows: If printing to a real console, and ANSI escape sequences
@@ -559,6 +641,12 @@ void ConsoleResetTextColor(ConsoleInfo_t *ci)
 		// Not a console. No colors.
 		return;
 	}
+#ifndef _WIN32
+	if (!ci->supports_ansi) {
+		// Non-Windows: No support for ANSI colors.
+		return;
+	}
+#endif /* !_WIN32 */
 
 #ifdef _WIN32
 	// Windows: If printing to a real console, and ANSI escape sequences

@@ -26,8 +26,8 @@ extern "C" {
 typedef struct _ConsoleInfo_t {
 	FILE *stream;		// File handle, e.g. stdout or stderr
 	bool is_console;	// True if this is a real console and not redirected to a file.
-#ifdef _WIN32
 	bool supports_ansi;	// True if the console supports ANSI escape sequences.
+#ifdef _WIN32
 	bool is_real_console;	// True if this is a real Windows console and not e.g. MinTTY.
 
 	// Windows 10 1607 ("Anniversary Update") adds support for ANSI escape sequences.
