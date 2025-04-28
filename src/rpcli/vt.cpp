@@ -251,18 +251,16 @@ static void init_posix_ConsoleInfo_t(ConsoleInfo_t *ci, int fd)
 {
 	// On other systems, use isatty() to determine if
 	// stdout is a tty or a file.
-	if (!isatty(fd)) {
+	if (isatty(fd)) {
+		// Is a tty.
+		ci->is_console = true;
+		// If $TERM matches a valid ANSI color terminal, ANSI color is supported.
+		ci->supports_ansi = is_color_TERM;
+	} else {
 		// Not a tty.
 		ci->is_console = false;
 		ci->supports_ansi = false;
-		return;
 	}
-
-	// Is a tty.
-	ci->is_console = true;
-
-	// If $TERM matches a valid ANSI color terminal, ANSI color is supported.
-	ci->supports_ansi = is_color_TERM;
 }
 #endif /* _WIN32 */
 
