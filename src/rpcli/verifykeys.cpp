@@ -62,24 +62,36 @@ int VerifyKeys(void)
 		}
 		printedOne = true;
 
+		ConsoleSetTextColor(&ci_stdout, 6, true);	// cyan
 		ConsolePrint(&ci_stdout, "*** ");
 		ConsolePrint(&ci_stdout,
-			fmt::format(FRUN(C_("rpcli", "Checking encryption keys: {:s}")), keyStore.sectName(sectIdx)), true);
+			fmt::format(FRUN(C_("rpcli", "Checking encryption keys: {:s}")), keyStore.sectName(sectIdx)));
+		ConsoleResetTextColor(&ci_stdout);
+		ConsolePrintNewline(&ci_stdout);
+		fflush(stdout);
 
 		const int keyCount = keyStore.keyCount(sectIdx);
 		for (int keyIdx = 0; keyIdx < keyCount; keyIdx++) {
 			const KeyStoreUI::Key *const key = keyStore.getKey(sectIdx, keyIdx);
 			assert(key != nullptr);
 			if (!key) {
+				ConsoleSetTextColor(&ci_stdout, 3, true);	// yellow
 				ConsolePrint(&ci_stdout,
 					fmt::format(FRUN(C_("rpcli", "WARNING: Key [{:d},{:d}] has no Key object. Skipping...")), sectIdx, keyIdx), true);
+				ConsoleResetTextColor(&ci_stdout);
+				ConsolePrintNewline(&ci_stdout);
+				fflush(stdout);
 				ret = 1;
 				continue;
 			}
 			assert(!key->name.empty());
 			if (key->name.empty()) {
+				ConsoleSetTextColor(&ci_stdout, 3, true);	// yellow
 				ConsolePrint(&ci_stdout,
 					fmt::format(FRUN(C_("rpcli", "WARNING: Key [{:d},{:d}] has no name. Skipping...")), sectIdx, keyIdx), true);
+				ConsoleResetTextColor(&ci_stdout);
+				ConsolePrintNewline(&ci_stdout);
+				fflush(stdout);
 				ret = 1;
 				continue;
 			}
@@ -111,11 +123,16 @@ int VerifyKeys(void)
 
 			ConsolePrint(&ci_stdout, fmt::format(FSTR("{:s}: "), key->name));
 			if (isOK) {
-				ConsolePrint(&ci_stdout, fmt::format(FSTR("{:s}\n"), s_err));
+				ConsoleSetTextColor(&ci_stdout, 2, true);	// green
+				ConsolePrint(&ci_stdout, s_err);
 			} else {
-				ConsolePrint(&ci_stdout, fmt::format(FRUN(C_("rpcli", "ERROR: {:s}")), s_err), true);
+				ConsoleSetTextColor(&ci_stdout, 1, true);	// red
+				ConsolePrint(&ci_stdout, fmt::format(FRUN(C_("rpcli", "ERROR: {:s}")), s_err));
 				ret = 1;
 			}
+			ConsoleResetTextColor(&ci_stdout);
+			ConsolePrintNewline(&ci_stdout);
+			fflush(stdout);
 		}
 	}
 
