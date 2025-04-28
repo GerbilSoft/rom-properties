@@ -177,26 +177,33 @@ static void ExtractImages(const RomData *romData, const vector<ExtractParam> &ex
 
 			if (image && image->isValid()) {
 				found = true;
+				ConsoleSetTextColor(&ci_stderr, 6, true);	// cyan
 				ConsolePrint(&ci_stderr, "-- ");
 				if (likely(!isMipmap)) {
 					// tr: {0:s} == image type name, {1:s} == output filename
 					ConsolePrint(&ci_stderr,
 						fmt::format(FRUN(C_("rpcli", "Extracting {0:s} into '{1:s}'")),
 							RomData::getImageTypeName(imageType),
-							T2U8c(p.filename)), true);
+							T2U8c(p.filename)));
 				} else {
 					// tr: {0:d} == mipmap level, {1:s} == output filename
 					ConsolePrint(&ci_stderr,
 						fmt::format(FRUN(C_("rpcli", "Extracting mipmap level {0:d} into '{1:s}'")),
-							p.mipmapLevel, T2U8c(p.filename)), true);
+							p.mipmapLevel, T2U8c(p.filename)));
 				}
+				ConsoleResetTextColor(&ci_stderr);
+				ConsolePrintNewline(&ci_stderr);
 				fflush(stderr);
+
 				int errcode = RpPng::save(p.filename, image);
 				if (errcode != 0) {
 					// tr: {0:s} == filename, {1:s} == error message
+					ConsoleSetTextColor(&ci_stderr, 1, true);	// red
 					ConsolePrint(&ci_stderr,
 						fmt::format(FRUN(C_("rpcli", "Couldn't create file '{0:s}': {1:s}")),
-							T2U8c(p.filename), strerror(-errcode)), true);
+							T2U8c(p.filename), strerror(-errcode)));
+					ConsoleResetTextColor(&ci_stderr);
+					ConsolePrintNewline(&ci_stderr);
 				} else {
 					ConsolePrint(&ci_stderr, "   ");
 					ConsolePrint(&ci_stderr, C_("rpcli", "Done"), true);
@@ -208,25 +215,35 @@ static void ExtractImages(const RomData *romData, const vector<ExtractParam> &ex
 			auto iconAnimData = romData->iconAnimData();
 			if (iconAnimData && iconAnimData->count != 0 && iconAnimData->seq_count != 0) {
 				found = true;
+				ConsoleSetTextColor(&ci_stderr, 6, true);	// cyan
 				ConsolePrint(&ci_stderr, "-- ");
 				ConsolePrint(&ci_stderr,
 					fmt::format(FRUN(C_("rpcli", "Extracting animated icon into '{:s}'")),
-						T2U8c(p.filename)), true);
+						T2U8c(p.filename)));
+				ConsoleResetTextColor(&ci_stderr);
+				ConsolePrintNewline(&ci_stderr);
 				fflush(stderr);
+
 				int errcode = RpPng::save(p.filename, iconAnimData);
 				if (errcode == -ENOTSUP) {
+					ConsoleSetTextColor(&ci_stderr, 3, true);	// yellow
 					ConsolePrint(&ci_stderr, "   ");
 					ConsolePrint(&ci_stderr,
-						C_("rpcli", "APNG not supported, extracting only the first frame"), true);
+						C_("rpcli", "APNG is not supported, extracting only the first frame"));
+					ConsoleResetTextColor(&ci_stderr);
+					ConsolePrintNewline(&ci_stderr);
 					fflush(stderr);
 					// falling back to outputting the first frame
 					errcode = RpPng::save(p.filename, iconAnimData->frames[iconAnimData->seq_index[0]]);
 				}
 				if (errcode != 0) {
+					ConsoleSetTextColor(&ci_stderr, 1, true);	// red
 					ConsolePrint(&ci_stderr, "   ");
 					ConsolePrint(&ci_stderr,
 						fmt::format(FRUN(C_("rpcli", "Couldn't create file '{0:s}': {1:s}")),
-							T2U8c(p.filename), strerror(-errcode)), true);
+							T2U8c(p.filename), strerror(-errcode)));
+					ConsoleResetTextColor(&ci_stderr);
+					ConsolePrintNewline(&ci_stderr);
 				} else {
 					ConsolePrint(&ci_stderr, "   ");
 					ConsolePrint(&ci_stderr, C_("rpcli", "Done"), true);
@@ -237,22 +254,23 @@ static void ExtractImages(const RomData *romData, const vector<ExtractParam> &ex
 
 		if (!found) {
 			// TODO: Return an error code?
+			ConsoleSetTextColor(&ci_stderr, 1, true);	// red
+			ConsolePrint(&ci_stderr, "-- ");
 			if (p.imageType == -1) {
-				ConsolePrint(&ci_stderr, "-- ");
-				ConsolePrint(&ci_stderr, C_("rpcli", "Animated icon not found"), true);
+				ConsolePrint(&ci_stderr, C_("rpcli", "Animated icon not found"));
 			} else if (p.mipmapLevel >= 0) {
-				ConsolePrint(&ci_stderr, "-- ");
 				ConsolePrint(&ci_stderr,
-					fmt::format(FRUN(C_("rpcli", "Mipmap level {:d} not found")), p.mipmapLevel), true);
+					fmt::format(FRUN(C_("rpcli", "Mipmap level {:d} not found")), p.mipmapLevel));
 			} else {
 				const RomData::ImageType imageType =
 					static_cast<RomData::ImageType>(p.imageType);
-				ConsolePrint(&ci_stderr, "-- ");
 				ConsolePrint(&ci_stderr, 
 					fmt::format(FRUN(C_("rpcli", "Image '{:s}' not found")),
-						RomData::getImageTypeName(imageType)), true);
+						RomData::getImageTypeName(imageType)));
 			}
-			cerr.flush();
+			ConsoleResetTextColor(&ci_stderr);
+			ConsolePrintNewline(&ci_stderr);
+			fflush(stderr);
 		}
 	}
 }
@@ -352,6 +370,7 @@ static void DoFile(const TCHAR *filename, bool json, const vector<ExtractParam> 
 				fflush(stdout);
 				// TODO: Error checking.
 				win32_console_print_ansi_color(oss.str().c_str());
+				fflush(stdout);
 			} else
 #endif /* _WIN32 */
 			{

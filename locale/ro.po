@@ -10144,7 +10144,7 @@ msgstr ""
 
 #: ../src/rpcli/rpcli.cpp:200
 msgctxt "rpcli"
-msgid "APNG not supported, extracting only the first frame"
+msgid "APNG is not supported, extracting only the first frame"
 msgstr ""
 
 #: ../src/rpcli/rpcli.cpp:219
