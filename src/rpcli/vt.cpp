@@ -174,28 +174,18 @@ static void init_win32_ConsoleInfo_t(ConsoleInfo_t *ci, DWORD fd)
 	}
 }
 #else /* !_WIN32 */
-/**
- * Initialize console information for the specified file descriptor.
- * @param ci	[out] ConsoleInfo_t
- * @param fd	[in] File descriptor
- */
-static void init_posix_ConsoleInfo_t(ConsoleInfo_t *ci, int fd)
-{
-	// On other systems, use isatty() to determine if
-	// stdout is a tty or a file.
-	if (!isatty(fd)) {
-		// Not a tty.
-		ci->is_console = false;
-		ci->supports_ansi = false;
-		return;
-	}
+static bool is_color_TERM = false;
 
-	// Is a tty. Check $TERM to see if it supports color.
-	ci->is_console = true;
+/**
+ * Check the TERM variable to determine if the terminal supports ANSI color.
+ * This will set the is_color_TERM variable.
+ */
+static void check_TERM_variable(void)
+{
 	const char *const TERM = getenv("TERM");
 	if (!TERM || TERM[0] == '\0') {
 		// No TERM variable, or it's empty...
-		ci->supports_ansi = false;
+		is_color_TERM = false;
 		return;
 	}
 
@@ -224,7 +214,7 @@ static void init_posix_ConsoleInfo_t(ConsoleInfo_t *ci, int fd)
 	for (const match_begin_t &match : match_begin) {
 		if (!s_term.compare(0, match.len, match.term)) {
 			// Found a match!
-			ci->supports_ansi = true;
+			is_color_TERM = true;
 			return;
 		}
 	}
@@ -242,13 +232,37 @@ static void init_posix_ConsoleInfo_t(ConsoleInfo_t *ci, int fd)
 	for (const match_whole_t &match : match_whole) {
 		if (!s_term.compare(match.term)) {
 			// Found a match!
-			ci->supports_ansi = true;
+			is_color_TERM = true;
 			return;
 		}
 	}
 
-	// No match. Assume this terminal doesn't support ANSI color.
-	ci->supports_ansi = false;
+	// Terminal does not support ANSI color.
+	is_color_TERM = false;
+	return;
+}
+
+/**
+ * Initialize console information for the specified file descriptor.
+ * @param ci	[out] ConsoleInfo_t
+ * @param fd	[in] File descriptor
+ */
+static void init_posix_ConsoleInfo_t(ConsoleInfo_t *ci, int fd)
+{
+	// On other systems, use isatty() to determine if
+	// stdout is a tty or a file.
+	if (!isatty(fd)) {
+		// Not a tty.
+		ci->is_console = false;
+		ci->supports_ansi = false;
+		return;
+	}
+
+	// Is a tty.
+	ci->is_console = true;
+
+	// If $TERM matches a valid ANSI color terminal, ANSI color is supported.
+	ci->supports_ansi = is_color_TERM;
 }
 #endif /* _WIN32 */
 
@@ -264,6 +278,7 @@ void init_vt(void)
 	init_win32_ConsoleInfo_t(&ci_stdout, STD_OUTPUT_HANDLE);
 	init_win32_ConsoleInfo_t(&ci_stderr, STD_ERROR_HANDLE);
 #else /* !_WIN32 */
+	check_TERM_variable();
 	init_posix_ConsoleInfo_t(&ci_stdout, fileno(stdout));
 	init_posix_ConsoleInfo_t(&ci_stderr, fileno(stderr));
 #endif
