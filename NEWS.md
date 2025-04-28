@@ -28,6 +28,8 @@
     why this changed in Qt6. A workaround has been applied to fix it.
   * ISO: Fix a typo that broke "Volume Size" on CD-i volumes.
     * Affects: v1.8 - v2.5
+  * Build system: DT_RELR detection was broken and didn't work properly
+    since it was implemented in v2.0. It now works properly.
 
 * Other changes:
   * Added support for localsearch-3.8, the new name of Tracker.
