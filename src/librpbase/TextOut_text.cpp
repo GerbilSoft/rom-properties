@@ -993,15 +993,20 @@ std::ostream& operator<<(std::ostream& os, const ROMOutput& fo) {
 			for (const RomData::ExtURL &extURL : extURLs) {
 				os << "-- " <<
 					RomData::getImageTypeName(static_cast<RomData::ImageType>(i)) << ": ";
+				const string url = urlPartialUnescape(extURL.url);
 
 				if (useAnsiColor) {
 					// Print the URL in bold blue, with an underline.
+					// Also, use "OSC 8" to indicate that this is a hyperlink.
+					// References:
+					// - https://gist.github.com/egmontkob/eb114294efbcd5adb1944c9f3cb5feda
+					// - https://github.com/Alhadis/OSC8-Adoption/
 					os << "\033[34;1;4m";
-				}
-				os << urlPartialUnescape(extURL.url);
-				if (useAnsiColor) {
-					// Reset the formatting.
+					os << "\033]8;;" << url << "\033\\" << url << "\033]8;;\033\\";
 					os << "\033[0m";
+				} else {
+					// Print the URL without any formatting.
+					os << url;
 				}
 
 				os << " (cache_key: " << extURL.cache_key << ")\n";

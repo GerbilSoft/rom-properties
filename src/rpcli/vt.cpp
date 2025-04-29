@@ -390,26 +390,52 @@ int win32_console_print_ansi_color(const char *str)
 			str = pEsc;
 		}
 
-		// Supported escape sequences:
-		// - 0: Reset
-		// - 1: Bold
-		// - 31-37: Foreground color
-		// - 41-47: Background color
-		// - m: End of sequence
-		// - ;: separator
-		//"\033[31;1m";
-
-		// Check for a '['.
+		// Check what type of escape sequence this is.
 		str++;
-		if (*str != '[') {
-			// Not a valid escape sequence.
+		bool ok = true;
+		switch (*str) {
+			case '[':
+				// Control Sequence Introducer (CSI)
+				// NOTE: Only "CSI n m" (attributes) is supported.
+				str++;
+				break;
+
+			case ']':
+				// Operating System Command (OSC)
+				// May be used for hyperlinks, but we can't easily support this
+				// with regular Windows cmd, so skip it entirely.
+				// Search for the end sequence:
+				// - "\033\\"
+				// - "\x9C" (ST)
+				for (str++; *str != '\0'; str++) {
+					if (str[0] == '\033' && str[1] == '\\') {
+						// Found the end sequence.
+						str += 2;
+						break;
+					} else if (static_cast<uint8_t>(str[0]) == 0x9C) {
+						// Found another possible end sequence.
+						str++;
+						break;
+					}
+				}
+				// Restart parsing.
+				ok = false;
+				break;
+
+			default:
+				// Not supported.
+				ok = false;
+				str++;
+				break;
+		}
+		if (!ok) {
 			continue;
 		}
 
+		// "CSI n m" processing
 		int num;
 seq_loop:
 		// Find the next ';' or 'm'.
-		str++;
 		const char *pSep = nullptr;;
 		for (const char *p = str; *p != '\0'; p++) {
 			if (*p == ';' || *p == 'm') {
@@ -530,6 +556,7 @@ seq_loop:
 
 		// Is this a separator or the end of the sequence?
 		if (*str == ';') {
+			str++;
 			goto seq_loop;
 		}
 
