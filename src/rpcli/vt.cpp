@@ -463,6 +463,10 @@ seq_loop:
 				// Normal intensity
 				wAttributes &= ~FOREGROUND_INTENSITY;
 				break;
+			case 24:
+				// Not underline
+				wAttributes &= ~COMMON_LVB_UNDERSCORE;
+				break;
 			case 27:
 				// Not-reverse video
 				// NOTE: Works on Windows 10; does not work on Windows 7.
