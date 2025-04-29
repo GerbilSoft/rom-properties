@@ -972,6 +972,7 @@ std::ostream& operator<<(std::ostream& os, const ROMOutput& fo) {
 
 		// External image URLs
 		// NOTE: IMGPF_ICON_ANIMATED won't ever appear in external images.
+		const bool useAnsiColor = !!(fo.flags & OF_Text_UseAnsiColor);
 		std::vector<RomData::ExtURL> extURLs;
 		for (int i = RomData::IMG_EXT_MIN; i <= RomData::IMG_EXT_MAX; i++) {
 			if (!(imgbf & (1U << i))) {
@@ -991,8 +992,19 @@ std::ostream& operator<<(std::ostream& os, const ROMOutput& fo) {
 
 			for (const RomData::ExtURL &extURL : extURLs) {
 				os << "-- " <<
-					RomData::getImageTypeName(static_cast<RomData::ImageType>(i)) << ": " << urlPartialUnescape(extURL.url) <<
-					" (cache_key: " << extURL.cache_key << ')' << '\n';
+					RomData::getImageTypeName(static_cast<RomData::ImageType>(i)) << ": ";
+
+				if (useAnsiColor) {
+					// Print the URL in bold blue, with an underline.
+					os << "\033[34;1;4m";
+				}
+				os << urlPartialUnescape(extURL.url);
+				if (useAnsiColor) {
+					// Reset the formatting.
+					os << "\033[0m";
+				}
+
+				os << " (cache_key: " << extURL.cache_key << ")\n";
 			}
 		}
 	}
