@@ -494,6 +494,20 @@ seq_loop:
 				wAttributes &= ~0x0070;
 				wAttributes |= (ci_stdout.wAttributesOrig & 0x0070);
 				break;
+			case 90: case 91: case 92: case 93:
+			case 94: case 95: case 96: case 97:
+				// Foreground color (bright)
+				wAttributes &= ~0x0007;
+				wAttributes |= win32_color_map[num - 90];
+				wAttributes |= FOREGROUND_INTENSITY;
+				break;
+			case 100: case 101: case 102: case 103:
+			case 104: case 105: case 106: case 107:
+				// Background color (bright)
+				wAttributes &= ~0x0070;
+				wAttributes |= (win32_color_map[num - 100] << 4);
+				wAttributes |= BACKGROUND_INTENSITY;
+				break;
 			default:
 				// Not a valid number.
 				// Ignore it and keep processing.
