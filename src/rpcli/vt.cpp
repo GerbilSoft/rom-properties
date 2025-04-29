@@ -369,6 +369,9 @@ int win32_console_print_ansi_color(const char *str)
 	}
 
 	WORD wAttributes = ci_stdout.wAttributesOrig;
+	// Bold/bright tracking
+	// FIXME: Set one of these if wAttributesOrig has FOREGROUND_INTENSITY?
+	bool bold = false, bright = false;
 
 	while (*str != '\0') {
 		// Find an escape character.
@@ -444,10 +447,13 @@ seq_loop:
 			case 0:
 				// Reset
 				wAttributes = ci_stdout.wAttributesOrig;
+				bold = false;
+				bright = false;
 				break;
 			case 1:
 				// Bold
 				wAttributes |= FOREGROUND_INTENSITY;
+				bold = true;
 				break;
 			case 4:
 				// Underline
@@ -475,11 +481,18 @@ seq_loop:
 			case 30: case 31: case 32: case 33:
 			case 34: case 35: case 36: case 37:
 				// Foreground color
-				wAttributes &= ~0x0007;
+				wAttributes &= ~0x000F;
 				wAttributes |= win32_color_map[num - 30];
+				// Brightness is disabled here, but if bold is set,
+				// we need to keep FOREGROUND_INTENSITY.
+				bright = false;
+				if (bold) {
+					wAttributes |= FOREGROUND_INTENSITY;
+				}
 				break;
 			case 39:
 				// Default foreground color
+				// NOTE: Does not affect bold/bright.
 				wAttributes &= ~0x0007;
 				wAttributes |= (ci_stdout.wAttributesOrig & 0x0007);
 				break;
@@ -500,6 +513,7 @@ seq_loop:
 				wAttributes &= ~0x0007;
 				wAttributes |= win32_color_map[num - 90];
 				wAttributes |= FOREGROUND_INTENSITY;
+				bright = true;
 				break;
 			case 100: case 101: case 102: case 103:
 			case 104: case 105: case 106: case 107:
