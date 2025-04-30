@@ -97,34 +97,42 @@ public:
 	}
 };
 class SafeString {
+public:
+	enum SafeStringFlags {
+		SSF_NO_QUOTES	= 0,
+		SSF_QUOTES	= (1U << 0),
+
+		SSF_NO_ESCAPE	= (1U << 1),
+	};
+private:
 	const char *str;
 	size_t len;
 	size_t width;
-	bool quotes;
+	SafeStringFlags flags;
 public:
-	explicit SafeString(const char *str, bool quotes = true, size_t width = 0)
+	explicit SafeString(const char *str, SafeStringFlags flags = SSF_QUOTES, size_t width = 0)
 		: str(str)
 		, len(str ? strlen(str) : 0)
 		, width(width)
-		, quotes(quotes) { }
+		, flags(flags) { }
 
-	explicit SafeString(const char *str, size_t len, bool quotes = true, size_t width = 0)
+	explicit SafeString(const char *str, size_t len, SafeStringFlags flags = SSF_QUOTES, size_t width = 0)
 		: str(str)
 		, len(len)
 		, width(width)
-		, quotes(quotes) { }
+		, flags(flags) { }
 
-	explicit SafeString(const string *str, bool quotes = true, size_t width = 0)
+	explicit SafeString(const string *str, SafeStringFlags flags = SSF_QUOTES, size_t width = 0)
 		: str(str ? str->c_str() : nullptr)
 		, len(str ? str->size() : 0)
 		, width(width)
-		, quotes(quotes) { }
+		, flags(flags) { }
 
-	explicit SafeString(const string &str, bool quotes = true, size_t width = 0)
+	explicit SafeString(const string &str, SafeStringFlags flags = SSF_QUOTES, size_t width = 0)
 		: str(str.c_str())
 		, len(str.size())
 		, width(width)
-		, quotes(quotes) { }
+		, flags(flags) { }
 
 private:
 	static string process(const SafeString& cp)
@@ -139,8 +147,8 @@ private:
 		}
 
 		string escaped;
-		escaped.reserve(cp.len + (cp.quotes ? 2 : 0));
-		if (cp.quotes) {
+		escaped.reserve(cp.len + ((cp.flags & SSF_QUOTES) ? 2 : 0));
+		if (cp.flags & SSF_QUOTES) {
 			escaped += '\'';
 		}
 
@@ -148,8 +156,8 @@ private:
 		for (const char *p = cp.str; n > 0; p++, n--) {
 			if (cp.width && *p == '\n') {
 				escaped += '\n';
-				escaped.append(cp.width + (cp.quotes ? 1 : 0), ' ');
-			} else if (static_cast<unsigned char>(*p) < 0x20) {
+				escaped.append(cp.width + ((cp.flags & SSF_QUOTES) ? 1 : 0), ' ');
+			} else if (static_cast<unsigned char>(*p) < 0x20 && !(cp.flags & SSF_NO_ESCAPE)) {
 				// Encode control characters using U+2400 through U+241F.
 				escaped += "\xE2\x90";
 				escaped += static_cast<char>(0x80 + static_cast<unsigned char>(*p));
@@ -158,7 +166,7 @@ private:
 			}
 		}
 
-		if (cp.quotes) {
+		if (cp.flags & SSF_QUOTES) {
 			escaped += '\'';
 		}
 
@@ -183,6 +191,45 @@ class StringField {
 	size_t width;
 	const RomFields::Field &romField;
 	bool useAnsiColor;
+private:
+	static string htmlLinkToOsc8(const string &in_str)
+	{
+		// Convert an HTML-style link to OSC 8.
+		// NOTE: Only supporting a single link in this format:
+		// <a href="https://blahblahblah">description</a>
+		string str;
+		const size_t apos1 = in_str.find("<a href=\"");
+		if (apos1 == string::npos) {
+			return in_str;
+		}
+		const size_t apos1_end = apos1 + 9;
+		const size_t apos2 = in_str.find("\">", apos1_end);
+		if (apos2 == string::npos) {
+			return in_str;
+		}
+		const size_t endapos = in_str.find("</a>", apos2 + 2);
+		if (endapos == string::npos) {
+			return in_str;
+		}
+
+		// "OSC 8" references:
+		// - https://gist.github.com/egmontkob/eb114294efbcd5adb1944c9f3cb5feda
+		// - https://github.com/Alhadis/OSC8-Adoption/
+
+		// Build the return string.
+		str.reserve(in_str.size() + 12);
+		str = in_str.substr(0, apos1);
+		str += "\033[34;1;4m"	// blue, bold, underlined
+		       "\033]8;;";	// OSC 8 start
+		str += in_str.substr(apos1_end, apos2 - apos1_end);
+		str += "\033\\";	// End of URL; start of display text
+		str += in_str.substr(apos2 + 2, endapos - apos2 - 2);
+		str += "\033]8;;\033\\"	// OSC 8 end
+		       "\033[0m";	// Unset color attributes
+		str += in_str.substr(endapos + 4);
+		return str;
+	}
+
 public:
 	StringField(size_t width, const RomFields::Field &romField, bool useAnsiColor)
 		: width(width), romField(romField), useAnsiColor(useAnsiColor) { }
@@ -197,7 +244,19 @@ public:
 
 		os << ColonPad(field.width, romField.name);
 		if (romField.data.str) {
-			os << SafeString(romField.data.str, true, field.width);
+			if ((field.romField.flags & RomFields::STRF_CREDITS) && field.useAnsiColor) {
+				// Credits field may contain a link.
+				// Print the link in blue with an underline, and use OSC 8.
+				// TODO: Is it possible to detect if the terminal supports OSC 8?
+				// FIXME: May conflict with STRF_WARNING.
+				// NOTE: Not using SafeString in order to print ANSI escape sequences.
+				// STRF_CREDITS fields shouldn't have any weird control codes...
+				string str = htmlLinkToOsc8(romField.data.str);
+				os << SafeString(str, static_cast<SafeString::SafeStringFlags>(SafeString::SSF_QUOTES | SafeString::SSF_NO_ESCAPE), field.width);
+			} else {
+				// Print the string without any formatting.
+				os << SafeString(romField.data.str, SafeString::SSF_QUOTES, field.width);
+			}
 		} else {
 			// Empty string.
 			os << "''";
@@ -653,7 +712,7 @@ public:
 							}
 						} else {
 							// Not a timestamp column. Use the string as-is.
-							str = SafeString(*jt, false);
+							str = SafeString(*jt, SafeString::SSF_NO_QUOTES);
 						}
 					} else if (linePos[col] == (unsigned int)string::npos) {
 						// End of string.
@@ -662,11 +721,11 @@ public:
 						const size_t nl_pos = jt->find('\n', linePos[col]);
 						if (nl_pos == string::npos) {
 							// No more newlines.
-							str = SafeString(jt->c_str() + linePos[col], false);
+							str = SafeString(jt->c_str() + linePos[col], SafeString::SSF_NO_QUOTES);
 							linePos[col] = (unsigned int)string::npos;
 						} else {
 							// Found a newline.
-							str = SafeString(jt->c_str() + linePos[col], nl_pos - linePos[col], false);
+							str = SafeString(jt->c_str() + linePos[col], nl_pos - linePos[col], SafeString::SSF_NO_QUOTES);
 							linePos[col] = (unsigned int)(nl_pos + 1);
 							if (linePos[col] > (unsigned int)jt->size()) {
 								// End of string.
@@ -814,7 +873,7 @@ public:
 			// Get the string and update the text.
 			const string *const pStr = RomFields::getFromStringMulti(pStr_multi, field.def_lc, field.user_lc);
 			assert(pStr != nullptr);
-			os << SafeString((pStr ? *pStr : ""), true, field.width);
+			os << SafeString((pStr ? *pStr : ""), SafeString::SSF_QUOTES, field.width);
 		} else {
 			// Empty string.
 			os << "''";
