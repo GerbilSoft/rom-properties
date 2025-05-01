@@ -1060,9 +1060,10 @@ std::ostream& operator<<(std::ostream& os, const ROMOutput& fo) {
 					// References:
 					// - https://gist.github.com/egmontkob/eb114294efbcd5adb1944c9f3cb5feda
 					// - https://github.com/Alhadis/OSC8-Adoption/
-					os << "\033[34;1;4m";
-					os << "\033]8;;" << url << "\033\\" << url << "\033]8;;\033\\";
-					os << "\033[0m";
+					// NOTE: Need to use OSC 8 *outside* of formatting in order to get Windows Terminal to recognize it.
+					os << "\033]8;;" << url << "\033\\"
+					      "\033[34;1;4m" << url << "\033[0m"
+					      "\033]8;;\033\\";
 				} else {
 					// Print the URL without any formatting.
 					os << url;
