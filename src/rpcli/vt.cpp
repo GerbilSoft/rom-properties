@@ -458,32 +458,27 @@ int win32_console_print_ansi_color(const char *str)
 		// - digit: Part of a parameter
 		// - letter: End of parameter
 		// - other: Invalid
-		int num = -1;
+		int num = 0;
 		char cmd = '\0';
 		for (; *str != '\0'; str++) {
 			const char c = *str;
 			if (c == ';') {
 				// Found a separator.
 				// Save the parameter.
-				if (num >= 0) {
-					params.push_back(num);
-				}
-				num = -1;
+				params.push_back(num);
+				num = 0;
 			} else if (vt_isdigit(c)) {
 				// Found a digit.
 				// This is part of a parameter.
-				if (num < 0) {
-					num = 0;
-				}
 				num *= 10;
 				num += (c - '0');
 			} else if (vt_isalpha(c)) {
 				// Found a letter.
 				// Finished processing this sequence.
-				if (num >= 0) {
-					// Save the last parameter.
-					params.push_back(num);
-				}
+
+				// Save the last parameter.
+				// NOTE: If no parameters were specified, this will be handled as "ESC 0 m" (reset).
+				params.push_back(num);
 				cmd = c;
 				str++;
 				break;
@@ -501,15 +496,6 @@ int win32_console_print_ansi_color(const char *str)
 		}
 
 		// Apply attributes based on the parameters.
-		if (params.empty()) {
-			// No parameters. Equivalent to "CSI 0 m", i.e. "reset".
-			wAttributes = ci_stdout.wAttributesOrig;
-			bold = false;
-			bright = false;
-			SetConsoleTextAttribute(hStdOut, wAttributes);
-			continue;
-		}
-
 		for (int param : params) {
 			switch (param) {
 				case 0:
