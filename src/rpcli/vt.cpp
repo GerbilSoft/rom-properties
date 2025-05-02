@@ -496,7 +496,9 @@ int win32_console_print_ansi_color(const char *str)
 		}
 
 		// Apply attributes based on the parameters.
-		for (int param : params) {
+		const size_t params_size = params.size();
+		for (size_t i = 0; i < params_size; i++) {
+			const int param = params[i];
 			switch (param) {
 				case 0:
 					// Reset
@@ -532,6 +534,7 @@ int win32_console_print_ansi_color(const char *str)
 					// NOTE: Works on Windows 10; does not work on Windows 7.
 					wAttributes &= ~COMMON_LVB_REVERSE_VIDEO;
 					break;
+
 				case 30: case 31: case 32: case 33:
 				case 34: case 35: case 36: case 37:
 					// Foreground color
@@ -544,12 +547,37 @@ int win32_console_print_ansi_color(const char *str)
 						wAttributes |= FOREGROUND_INTENSITY;
 					}
 					break;
+				case 38: case 48:
+					// 8-bit or 24-bit foreground or background color.
+					// NOT SUPPORTED; this is implemented in order to skip parameters.
+					if (i + 1 >= params_size) {
+						// Not enough parameters?
+						break;
+					}
+					// Check next parameter to determine how many to skip.
+					i++;
+					switch (params[i]) {
+						case 2:
+							// RGB truecolor: skip 3 parameters
+							i += 3;
+							break;
+						case 5:
+							// 256-color: skip 1 parameter
+							i++;
+							break;
+						default:
+							// FIXME: Not supported?
+							break;
+					}
+					break;
+
 				case 39:
 					// Default foreground color
 					// NOTE: Does not affect bold/bright.
 					wAttributes &= ~0x0007;
 					wAttributes |= (ci_stdout.wAttributesOrig & 0x0007);
 					break;
+
 				case 40: case 41: case 42: case 43:
 				case 44: case 45: case 46: case 47:
 					// Background color
@@ -561,6 +589,7 @@ int win32_console_print_ansi_color(const char *str)
 					wAttributes &= ~0x0070;
 					wAttributes |= (ci_stdout.wAttributesOrig & 0x0070);
 					break;
+
 				case 90: case 91: case 92: case 93:
 				case 94: case 95: case 96: case 97:
 					// Foreground color (bright)
@@ -569,6 +598,7 @@ int win32_console_print_ansi_color(const char *str)
 					wAttributes |= FOREGROUND_INTENSITY;
 					bright = true;
 					break;
+
 				case 100: case 101: case 102: case 103:
 				case 104: case 105: case 106: case 107:
 					// Background color (bright)
@@ -576,6 +606,7 @@ int win32_console_print_ansi_color(const char *str)
 					wAttributes |= (win32_color_map[param - 100] << 4);
 					wAttributes |= BACKGROUND_INTENSITY;
 					break;
+
 				default:
 					// Not a valid number.
 					// Ignore it and keep processing.
