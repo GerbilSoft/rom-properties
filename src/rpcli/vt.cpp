@@ -383,13 +383,7 @@ static constexpr inline bool vt_isalpha(char c)
  */
 int win32_console_print_ansi_color(const char *str)
 {
-	HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
-	assert(hStdOut != nullptr && hStdOut != INVALID_HANDLE_VALUE);
-	if (!hStdOut || hStdOut == INVALID_HANDLE_VALUE) {
-		// Cannot access the console handle...
-		return -ENOTTY;
-	}
-
+	HANDLE hStdOut = ci_stdout.hConsole;
 	WORD wAttributes = ci_stdout.wAttributesOrig;
 	// Bold/bright tracking
 	// FIXME: Set one of these if wAttributesOrig has FOREGROUND_INTENSITY?
