@@ -16,6 +16,7 @@ using std::array;
 using std::ostream;
 using std::string;
 using std::unique_ptr;
+using std::vector;
 
 #ifdef _WIN32
 #  include "libwin32common/RpWin32_sdk.h"
@@ -373,6 +374,7 @@ int win32_console_print_ansi_color(const char *str)
 	// FIXME: Set one of these if wAttributesOrig has FOREGROUND_INTENSITY?
 	bool bold = false, bright = false;
 
+	vector<int> params;	// "CSI n X" parameters (semicolon-separated)
 	while (*str != '\0') {
 		// Find an escape character.
 		const char *pEsc = strchr(str, '\033');
@@ -433,143 +435,155 @@ int win32_console_print_ansi_color(const char *str)
 		}
 
 		// "CSI n m" processing
-		int num;
-		WORD wAttrTmp = wAttributes;
-seq_loop:
-		// Find the next ';' or alphanumeric terminator.
-		const char *pSep = nullptr;;
-		for (const char *p = str; *p != '\0'; p++) {
-			char c = *p;
-			if (c == ';' || isalpha(c)) {
+		params.clear();
+
+		// Process all numeric parameters.
+		// Processing stops at:
+		// - semicolon: Next parameter
+		// - digit: Part of a parameter
+		// - letter: End of parameter
+		// - other: Invalid
+		int num = -1;
+		char cmd = '\0';
+		for (; *str != '\0'; str++) {
+			const char c = *str;
+			if (c == ';') {
 				// Found a separator.
-				pSep = p;
+				// Save the parameter.
+				if (num >= 0) {
+					params.push_back(num);
+				}
+				num = -1;
+			} else if (isdigit(c)) {
+				// Found a digit.
+				// This is part of a parameter.
+				if (num < 0) {
+					num = 0;
+				}
+				num *= 10;
+				num += (c - '0');
+			} else if (isalpha(c)) {
+				// Found a letter.
+				// Finished processing this sequence.
+				if (num >= 0) {
+					// Save the last parameter.
+					params.push_back(num);
+				}
+				cmd = c;
+				str++;
+				break;
+			} else {
+				// Invalid character.
+				str++;
 				break;
 			}
 		}
-		if (!pSep) {
-			// No separator...
-			// Not a valid escape sequence.
+
+		// Only "CSI n m" (SGR) is supported right now.
+		if (cmd != 'm') {
+			// Not SGR.
 			continue;
 		}
 
-		// Parse the decimal number in: [str, pSep)
-		num = 0;
-		if (str != pSep) {
-			for (; str < pSep; str++) {
-				const char chr = *str;
-				if (chr >= '0' && chr <= '9') {
-					num *= 10;
-					num += (chr - '0');
-				} else {
-					// Invalid number.
-					num = -1;
-					break;
-				}
-			}
-		} else {
-			// No number. This is interpreted as 0, aka Reset.
-		}
-
-		// Check the number.
-		switch (num) {
-			case 0:
-				// Reset
-				wAttrTmp = ci_stdout.wAttributesOrig;
-				bold = false;
-				bright = false;
-				break;
-			case 1:
-				// Bold
-				wAttrTmp |= FOREGROUND_INTENSITY;
-				bold = true;
-				break;
-			case 4:
-				// Underline
-				// NOTE: Works on Windows 10; does not work on Windows 7.
-				wAttrTmp |= COMMON_LVB_UNDERSCORE;
-				break;
-			case 7:
-				// Reverse video
-				// NOTE: Works on Windows 10; does not work on Windows 7.
-				wAttrTmp |= COMMON_LVB_REVERSE_VIDEO;
-				break;
-			case 22:
-				// Normal intensity
-				wAttrTmp &= ~FOREGROUND_INTENSITY;
-				break;
-			case 24:
-				// Not underline
-				wAttrTmp &= ~COMMON_LVB_UNDERSCORE;
-				break;
-			case 27:
-				// Not-reverse video
-				// NOTE: Works on Windows 10; does not work on Windows 7.
-				wAttrTmp &= ~COMMON_LVB_REVERSE_VIDEO;
-				break;
-			case 30: case 31: case 32: case 33:
-			case 34: case 35: case 36: case 37:
-				// Foreground color
-				wAttrTmp &= ~0x000F;
-				wAttrTmp |= win32_color_map[num - 30];
-				// Brightness is disabled here, but if bold is set,
-				// we need to keep FOREGROUND_INTENSITY.
-				bright = false;
-				if (bold) {
-					wAttrTmp |= FOREGROUND_INTENSITY;
-				}
-				break;
-			case 39:
-				// Default foreground color
-				// NOTE: Does not affect bold/bright.
-				wAttrTmp &= ~0x0007;
-				wAttrTmp |= (ci_stdout.wAttributesOrig & 0x0007);
-				break;
-			case 40: case 41: case 42: case 43:
-			case 44: case 45: case 46: case 47:
-				// Background color
-				wAttrTmp &= ~0x0070;
-				wAttrTmp |= (win32_color_map[num - 40] << 4);
-				break;
-			case 49:
-				// Default background color
-				wAttrTmp &= ~0x0070;
-				wAttrTmp |= (ci_stdout.wAttributesOrig & 0x0070);
-				break;
-			case 90: case 91: case 92: case 93:
-			case 94: case 95: case 96: case 97:
-				// Foreground color (bright)
-				wAttrTmp &= ~0x0007;
-				wAttrTmp |= win32_color_map[num - 90];
-				wAttrTmp |= FOREGROUND_INTENSITY;
-				bright = true;
-				break;
-			case 100: case 101: case 102: case 103:
-			case 104: case 105: case 106: case 107:
-				// Background color (bright)
-				wAttrTmp &= ~0x0070;
-				wAttrTmp |= (win32_color_map[num - 100] << 4);
-				wAttrTmp |= BACKGROUND_INTENSITY;
-				break;
-			default:
-				// Not a valid number.
-				// Ignore it and keep processing.
-				break;
-		}
-
-		// Is this a separator or something else?
-		if (*str == ';') {
-			str++;
-			goto seq_loop;
-		} else if (*str == 'm') {
-			// Terminator for "CSI n m".
-			// Set the console attributes.
-			wAttributes = wAttrTmp;
+		// Apply attributes based on the parameters.
+		if (params.empty()) {
+			// No parameters. Equivalent to "CSI 0 m", i.e. "reset".
+			wAttributes = ci_stdout.wAttributesOrig;
+			bold = false;
+			bright = false;
 			SetConsoleTextAttribute(hStdOut, wAttributes);
-			str++;
-		} else {
-			// Not "CSI n m". Ignore the values.
-			str++;
+			continue;
 		}
+
+		for (int param : params) {
+			switch (param) {
+				case 0:
+					// Reset
+					wAttributes = ci_stdout.wAttributesOrig;
+					bold = false;
+					bright = false;
+					break;
+				case 1:
+					// Bold
+					wAttributes |= FOREGROUND_INTENSITY;
+					bold = true;
+					break;
+				case 4:
+					// Underline
+					// NOTE: Works on Windows 10; does not work on Windows 7.
+					wAttributes |= COMMON_LVB_UNDERSCORE;
+					break;
+				case 7:
+					// Reverse video
+					// NOTE: Works on Windows 10; does not work on Windows 7.
+					wAttributes |= COMMON_LVB_REVERSE_VIDEO;
+					break;
+				case 22:
+					// Normal intensity
+					wAttributes &= ~FOREGROUND_INTENSITY;
+					break;
+				case 24:
+					// Not underline
+					wAttributes &= ~COMMON_LVB_UNDERSCORE;
+					break;
+				case 27:
+					// Not-reverse video
+					// NOTE: Works on Windows 10; does not work on Windows 7.
+					wAttributes &= ~COMMON_LVB_REVERSE_VIDEO;
+					break;
+				case 30: case 31: case 32: case 33:
+				case 34: case 35: case 36: case 37:
+					// Foreground color
+					wAttributes &= ~0x000F;
+					wAttributes |= win32_color_map[param - 30];
+					// Brightness is disabled here, but if bold is set,
+					// we need to keep FOREGROUND_INTENSITY.
+					bright = false;
+					if (bold) {
+						wAttributes |= FOREGROUND_INTENSITY;
+					}
+					break;
+				case 39:
+					// Default foreground color
+					// NOTE: Does not affect bold/bright.
+					wAttributes &= ~0x0007;
+					wAttributes |= (ci_stdout.wAttributesOrig & 0x0007);
+					break;
+				case 40: case 41: case 42: case 43:
+				case 44: case 45: case 46: case 47:
+					// Background color
+					wAttributes &= ~0x0070;
+					wAttributes |= (win32_color_map[param - 40] << 4);
+					break;
+				case 49:
+					// Default background color
+					wAttributes &= ~0x0070;
+					wAttributes |= (ci_stdout.wAttributesOrig & 0x0070);
+					break;
+				case 90: case 91: case 92: case 93:
+				case 94: case 95: case 96: case 97:
+					// Foreground color (bright)
+					wAttributes &= ~0x0007;
+					wAttributes |= win32_color_map[param - 90];
+					wAttributes |= FOREGROUND_INTENSITY;
+					bright = true;
+					break;
+				case 100: case 101: case 102: case 103:
+				case 104: case 105: case 106: case 107:
+					// Background color (bright)
+					wAttributes &= ~0x0070;
+					wAttributes |= (win32_color_map[param - 100] << 4);
+					wAttributes |= BACKGROUND_INTENSITY;
+					break;
+				default:
+					// Not a valid number.
+					// Ignore it and keep processing.
+					break;
+			}
+		}
+
+		// Apply the new attributes.
+		SetConsoleTextAttribute(hStdOut, wAttributes);
 	}
 
 	// Restore the original console attributes.
