@@ -357,7 +357,7 @@ static off64_t filesize_int(const tstring &tfilename)
 	HANDLE hFile = CreateFile(tfilename.c_str(),
 		GENERIC_READ, FILE_SHARE_READ, nullptr,
 		OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
-	if (!hFile) {
+	if (!hFile || hFile == INVALID_HANDLE_VALUE) {
 		// Error opening the file.
 		return -w32err_to_posix(GetLastError());
 	}
@@ -460,7 +460,7 @@ static int get_mtime_int(const tstring &tfilename, time_t *pMtime)
 	HANDLE hFile = CreateFile(tfilename.c_str(),
 		GENERIC_READ, FILE_SHARE_READ, nullptr,
 		OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
-	if (!hFile) {
+	if (!hFile || hFile == INVALID_HANDLE_VALUE) {
 		// Error opening the file.
 		return -w32err_to_posix(GetLastError());
 	}
