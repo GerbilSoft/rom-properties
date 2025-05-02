@@ -219,13 +219,13 @@ private:
 		// Build the return string.
 		str.reserve(in_str.size() + 12);
 		str = in_str.substr(0, apos1);
-		str += "\033[34;1;4m"	// blue, bold, underlined
-		       "\033]8;;";	// OSC 8 start
+		str += "\033]8;;";	// OSC 8 start
 		str += in_str.substr(apos1_end, apos2 - apos1_end);
-		str += "\033\\";	// End of URL; start of display text
+		str += "\033\\"		// End of URL; start of display text
+		       "\033[34;1;4m";	// blue, bold, underlined
 		str += in_str.substr(apos2 + 2, endapos - apos2 - 2);
-		str += "\033]8;;\033\\"	// OSC 8 end
-		       "\033[0m";	// Unset color attributes
+		str += "\033[0m"	// Unset color attributes
+		       "\033]8;;\033\\"; // OSC 8 end
 		str += in_str.substr(endapos + 4);
 		return str;
 	}
