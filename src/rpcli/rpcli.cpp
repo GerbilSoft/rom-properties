@@ -856,6 +856,17 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 	for (int i = 1; i < argc; i++){
 		if (argv[i][0] == _T('-')){
 			switch (argv[i][1]) {
+			case _T('C'):
+				// Force-enable ANSI escape sequences, even if it's not supported by the
+				// console or we're redirected to a file.
+				// TODO: Document this, and provide an option to force-disable ANSI.
+				ci_stdout.is_console = true;
+				ci_stdout.supports_ansi = true;
+				ci_stderr.is_console = true;
+				ci_stderr.supports_ansi = true;
+				flags |= OF_Text_UseAnsiColor;
+				break;
+
 #ifdef ENABLE_DECRYPTION
 			case _T('k'): {
 				// Verify encryption keys.
