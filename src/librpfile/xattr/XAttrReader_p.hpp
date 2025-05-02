@@ -59,6 +59,13 @@ public:
 	 */
 	int loadDosAttrs(void);
 
+	/**
+	 * Load the compression algorithm, if available.
+	 * Internal fd (filename on Windows) must be set.
+	 * @return 0 on success; negative POSIX error code on error.
+	 */
+	int loadCompressionAlgorithm(void);
+
 #ifdef _WIN32
 #  ifdef UNICODE
 	/**
@@ -103,6 +110,7 @@ public:
 	bool hasExt2Attributes;
 	bool hasXfsAttributes;
 	bool hasDosAttributes;
+	bool hasCompressionAlgorithm;
 	bool hasGenericXAttrs;
 
 	int ext2Attributes;
@@ -110,6 +118,7 @@ public:
 	uint32_t xfsProjectId;
 	unsigned int dosAttributes;
 	unsigned int validDosAttributes;
+	XAttrReader::ZAlgorithm compressionAlgorithm;
 	XAttrReader::XAttrList genericXAttrs;
 };
 

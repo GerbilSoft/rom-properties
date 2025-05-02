@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpfile)                        *
  * XAttrReader.hpp: Extended Attribute reader                              *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -45,6 +45,24 @@ public:
 	 * @return Last error number (POSIX error code)
 	 */
 	int lastError(void) const;
+
+public:
+	/**
+	 * Known compression algorithms.
+	 * TODO: Expand for Linux file systems, e.g. ZFS, Btrfs, bcachefs
+	 */
+	enum class ZAlgorithm {
+		None,
+
+#ifdef _WIN32
+		// NTFS-specific compression
+		LZNT1,
+		XPRESS4K,
+		LZX,
+		XPRESS8K,
+		XPRESS16K,
+#endif /* _WIN32 */
+	};
 
 public:
 	/**
@@ -95,6 +113,18 @@ public:
 	 * @return Valid MS-DOS attributes
 	 */
 	unsigned int validDosAttributes(void) const;
+
+	/**
+	 * Get the compression algoirthm used for this file.
+	 * @return Compression algorithm
+	 */
+	ZAlgorithm compressionAlgorithm(void) const;
+
+	/**
+	 * Does this file have a compression algorithm specified?
+	 * @return True if it does; false if not.
+	 */
+	bool hasCompressionAlgorithm(void) const;
 
 	/**
 	 * Does this file have generic extended attributes?

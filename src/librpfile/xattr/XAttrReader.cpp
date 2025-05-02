@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpfile)                        *
  * XAttrReader.cpp: Extended Attribute reader (common functions)           *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -125,6 +125,26 @@ unsigned int XAttrReader::validDosAttributes(void) const
 {
 	RP_D(const XAttrReader);
 	return d->validDosAttributes;
+}
+
+/**
+ * Get the compression algoirthm used for this file.
+ * @return Compression algorithm
+ */
+XAttrReader::ZAlgorithm XAttrReader::compressionAlgorithm(void) const
+{
+	RP_D(const XAttrReader);
+	return d->compressionAlgorithm;
+}
+
+/**
+ * Does this file have a compression algorithm specified?
+ * @return True if it does; false if not.
+ */
+bool XAttrReader::hasCompressionAlgorithm(void) const
+{
+	RP_D(const XAttrReader);
+	return d->hasCompressionAlgorithm;
 }
 
 /**

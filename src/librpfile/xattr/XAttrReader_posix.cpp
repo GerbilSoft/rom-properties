@@ -106,12 +106,14 @@ XAttrReaderPrivate::XAttrReaderPrivate(const char *filename)
 	, hasExt2Attributes(false)
 	, hasXfsAttributes(false)
 	, hasDosAttributes(false)
+	, hasCompressionAlgorithm(false)
 	, hasGenericXAttrs(false)
 	, ext2Attributes(0)
 	, xfsXFlags(0)
 	, xfsProjectId(0)
 	, dosAttributes(0)
 	, validDosAttributes(0)
+	, compressionAlgorithm(XAttrReader::ZAlgorithm::None)
 {
 	// Make sure this is a regular file or a directory.
 	mode_t mode;
@@ -167,6 +169,7 @@ XAttrReaderPrivate::XAttrReaderPrivate(const char *filename)
 	loadExt2Attrs();
 	loadXfsAttrs();
 	loadDosAttrs();
+	loadCompressionAlgorithm();
 	loadGenericXattrs();
 
 	lastError = 0;
@@ -308,6 +311,19 @@ int XAttrReaderPrivate::loadDosAttrs(void)
 	// Not supported.
 	return -ENOTSUP;
 #endif /* __linux__ */
+}
+
+/**
+ * Load the compression algorithm, if available.
+ * Internal fd (filename on Windows) must be set.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int XAttrReaderPrivate::loadCompressionAlgorithm(void)
+{
+	// TODO: Check for compression on various file systems.
+	hasCompressionAlgorithm = false;
+	compressionAlgorithm = XAttrReader::ZAlgorithm::None;
+	return -ENOTSUP;
 }
 
 /**
