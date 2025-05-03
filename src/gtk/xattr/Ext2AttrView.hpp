@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (GTK+ common)                      *
- * Ext2AttrView.h: Ext2 file system attribute viewer widget.               *
+ * Ext2AttrView.hpp: Ext2 file system attribute viewer widget.             *
  *                                                                         *
  * Copyright (c) 2017-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *

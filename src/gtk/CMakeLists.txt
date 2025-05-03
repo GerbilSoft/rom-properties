@@ -109,7 +109,7 @@ SET(${PROJECT_NAME}_SRCS
 	config/AchievementsTab.cpp
 	config/AboutTab.cpp
 
-	xattr/Ext2AttrView.c
+	xattr/Ext2AttrView.cpp
 	xattr/XfsAttrView.c
 	xattr/DosAttrView.c
 	xattr/XAttrView.cpp
@@ -142,7 +142,7 @@ SET(${PROJECT_NAME}_H
 	config/AchievementsTab.hpp
 	config/AboutTab.hpp
 
-	xattr/Ext2AttrView.h
+	xattr/Ext2AttrView.hpp
 	xattr/XfsAttrView.h
 	xattr/DosAttrView.h
 	xattr/XAttrView.hpp

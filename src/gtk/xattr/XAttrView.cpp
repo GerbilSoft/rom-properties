@@ -15,7 +15,7 @@
 using LibRpFile::XAttrReader;
 
 // Attribute viewer widgets
-#include "Ext2AttrView.h"
+#include "Ext2AttrView.hpp"
 #include "XfsAttrView.h"
 #include "DosAttrView.h"
 
