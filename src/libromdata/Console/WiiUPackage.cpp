@@ -43,7 +43,6 @@ using std::vector;
 namespace LibRomData {
 
 ROMDATA_IMPL(WiiUPackage)
-ROMDATA_IMPL_IMG(WiiUPackage)
 
 /** WiiUPackagePrivate **/
 
@@ -65,9 +64,6 @@ const RomDataInfo WiiUPackagePrivate::romDataInfo = {
 WiiUPackagePrivate::WiiUPackagePrivate(const char *path)
 	: super({}, &romDataInfo)
 	, packageType(PackageType::Unknown)
-	, ticket(nullptr)
-	, tmd(nullptr)
-	, fst(nullptr)
 {
 	if (path && path[0] != '\0') {
 #ifdef _WIN32
@@ -88,9 +84,6 @@ WiiUPackagePrivate::WiiUPackagePrivate(const char *path)
 WiiUPackagePrivate::WiiUPackagePrivate(const wchar_t *path)
 	: super({}, &romDataInfo)
 	, packageType(PackageType::Unknown)
-	, ticket(nullptr)
-	, tmd(nullptr)
-	, fst(nullptr)
 {
 	if (path && path[0] != L'\0') {
 		this->path.assign(path);
@@ -271,6 +264,13 @@ rp_image_const_ptr WiiUPackagePrivate::loadIcon(void)
 		return {};
 	}
 
+	// Verify that this is a Wii U package. (TMD format must be v1 or higher.)
+	if (tmd && tmd->tmdFormatVersion() < 1) {
+		// Not a Wii U package.
+		// TODO: loadInternalImage() should return ENOENT.
+		return {};
+	}
+
 	// Icon is "/meta/iconTex.tga".
 	IRpFilePtr f_icon = this->open("/meta/iconTex.tga");
 	if (!f_icon) {
@@ -376,6 +376,7 @@ void WiiUPackage::init(void)
 	// Open the ticket.
 	// NOTE: May not be present in extracted packages.
 	WiiTicket *ticket = nullptr;
+	int ticketFormatVersion = -1;
 
 	tstring s_path(d->path);
 	s_path += DIR_SEP_CHR;
@@ -389,9 +390,12 @@ void WiiUPackage::init(void)
 	if (subfile->isOpen()) {
 		ticket = new WiiTicket(subfile);
 		if (ticket->isValid()) {
-			// Make sure the ticket is v1.
-			if (ticket->ticketFormatVersion() != 1) {
-				// Not v1.
+			// Check the ticket version.
+			// Wii U titles are generally v1.
+			// vWii titles are v0.
+			ticketFormatVersion = ticket->ticketFormatVersion();
+			if (ticketFormatVersion != 0 && ticketFormatVersion != 1) {
+				// Not v0 or v1.
 				delete ticket;
 				ticket = nullptr;
 			}
@@ -412,6 +416,7 @@ void WiiUPackage::init(void)
 	// Open the TMD.
 	// NOTE: May not be present in extracted packages.
 	WiiTMD *tmd = nullptr;
+	int tmdFormatVersion = -1;
 
 	s_path.resize(orig_path_size);
 	if (d->packageType == WiiUPackagePrivate::PackageType::Extracted) {
@@ -423,9 +428,12 @@ void WiiUPackage::init(void)
 	if (subfile->isOpen()) {
 		tmd = new WiiTMD(subfile);
 		if (tmd->isValid()) {
-			// Make sure the TMD is v1.
-			if (tmd->tmdFormatVersion() != 1) {
-				// Not v1.
+			// Check the TMD version.
+			// Wii U titles are generally v1.
+			// vWii titles are v0.
+			tmdFormatVersion = tmd->tmdFormatVersion();
+			if (tmdFormatVersion != 0 && tmdFormatVersion != 1) {
+				// Not v0 or v1.
 				delete tmd;
 				tmd = nullptr;
 			}
@@ -462,6 +470,13 @@ void WiiUPackage::init(void)
 		return;
 	}
 #endif /* ENABLE_DECRYPTION */
+
+	if (tmdFormatVersion < 1) {
+		// This is a vWii title. No V1 contents table.
+		// There's also usually no useful icon.
+		// TODO: Do what WiiWAD does?
+		return;
+	}
 
 	// Read the contents table for group 0.
 	// TODO: Multiple groups?
@@ -651,6 +666,35 @@ uint32_t WiiUPackage::supportedImageTypes_static(void)
 }
 
 /**
+ * Get a bitfield of image types this object can retrieve.
+ * @return Bitfield of supported image types. (ImageTypesBF)
+ */
+uint32_t WiiUPackage::supportedImageTypes(void) const
+{
+	RP_D(const WiiUPackage);
+	uint32_t ret = 0;
+	if (d->tmd && d->tmd->tmdFormatVersion() >= 1) {
+		// Wii U packages have an icon.
+		ret = IMGBF_INT_ICON;
+	}
+
+#ifdef ENABLE_XML
+
+#ifdef HAVE_JPEG
+	ret |= IMGBF_EXT_MEDIA |
+	       IMGBF_EXT_COVER | IMGBF_EXT_COVER_3D |
+	       IMGBF_EXT_COVER_FULL;
+#else /* !HAVE_JPEG */
+	ret |= IMGBF_INT_ICON |
+	       IMGBF_EXT_MEDIA | IMGBF_EXT_COVER_3D;
+#endif /* HAVE_JPEG */
+
+#endif /* ENABLE_XML */
+
+	return ret;
+}
+
+/**
  * Get a list of all available image sizes for the specified image type.
  * @param imageType Image type.
  * @return Vector of available image sizes, or empty vector if no images are available.
@@ -660,9 +704,10 @@ vector<RomData::ImageSizeDef> WiiUPackage::supportedImageSizes_static(ImageType 
 	ASSERT_supportedImageSizes(imageType);
 
 	switch (imageType) {
-		case IMG_INT_ICON:
-			// Wii U icons are usually 128x128
+		case IMG_INT_ICON: {
+			// Wii U icons are usually 128x128.
 			return {{nullptr, 128, 128, 0}};
+		}
 
 #ifdef ENABLE_XML
 		case IMG_EXT_MEDIA:
@@ -695,6 +740,31 @@ vector<RomData::ImageSizeDef> WiiUPackage::supportedImageSizes_static(ImageType 
 
 	// Unsupported image type.
 	return {};
+}
+
+/**
+ * Get a list of all available image sizes for the specified image type.
+ * @param imageType Image type.
+ * @return Vector of available image sizes, or empty vector if no images are available.
+ */
+vector<RomData::ImageSizeDef> WiiUPackage::supportedImageSizes(ImageType imageType) const
+{
+	ASSERT_supportedImageSizes(imageType);
+
+	if (imageType == IMG_INT_ICON) {
+		// IMG_INT_ICON requires a Wii U (v1) TMD.
+		RP_D(const WiiUPackage);
+		if (d->tmd && d->tmd->tmdFormatVersion() >= 1) {
+			// Wii U packages have an icon.
+			return {{nullptr, 128, 128, 0}};;
+		} else {
+			// Not a Wii U (v1) TMD.
+			return {};
+		}
+	}
+
+	// Other image types don't depend on the TMD.
+	return supportedImageSizes_static(imageType);
 }
 
 /**
@@ -877,22 +947,29 @@ int WiiUPackage::extURLs(ImageType imageType, vector<ExtURL> &extURLs, int size)
 	}
 
 #ifdef ENABLE_XML
-	// Get the game ID and application type from the system XML.
-	// Format: "WUP-X-ABCD"
-	uint32_t applType = 0;
-	const string productCode = const_cast<WiiUPackagePrivate*>(d)->getProductCodeAndApplType_xml(&applType);
-	if (productCode.empty() || productCode.size() != 10 || productCode.compare(0, 4, "WUP-", 4) != 0 || productCode[5] != '-') {
-		// Invalid product code.
-		// TODO: Check 'X'?
-		return -ENOENT;
-	} else if (applType != 0x80000000) {
-		// Not a game.
-		return -ENOENT;
+	if (d->tmd && d->tmd->tmdFormatVersion() >= 1) {
+		// This is a Wii U (v1) TMD. We can get Wii U XML files.
+
+		// Get the game ID and application type from the system XML.
+		// Format: "WUP-X-ABCD"
+		uint32_t applType = 0;
+		const string productCode = const_cast<WiiUPackagePrivate*>(d)->getProductCodeAndApplType_xml(&applType);
+		if (productCode.empty() || productCode.size() != 10 || productCode.compare(0, 4, "WUP-", 4) != 0 || productCode[5] != '-') {
+			// Invalid product code.
+			// TODO: Check 'X'?
+			return -ENOENT;
+		} else if (applType != 0x80000000) {
+			// Not a game.
+			return -ENOENT;
+		}
+
+		const char *const id4 = &productCode[6];
+
+		return WiiU::extURLs_int(id4, imageType, extURLs, size);
 	}
 
-	const char *const id4 = &productCode[6];
-
-	return WiiU::extURLs_int(id4, imageType, extURLs, size);
+	// TODO: Wii-style external images?
+	return -ENOENT;
 #else /* !ENABLE_XML */
 	// Cannot check the system XML without XML support.
 	return -ENOTSUP;
