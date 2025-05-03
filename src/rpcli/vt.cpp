@@ -48,10 +48,12 @@ typedef NTSTATUS (WINAPI *pfnNtQueryObject_t)(
 #  include <unistd.h>
 #endif /* _WIN32 */
 
+#ifdef _WIN32
 // Map ANSI colors (red=1) to Windows colors (blue=1).
 static constexpr array<uint8_t, 8> win32_color_map = {
 	0, 4, 2, 6, 1, 5, 3, 7
 };
+#endif /* _WIN32 */
 
 // Console information
 // NOTE: stdout and stderr can both be real consoles,
