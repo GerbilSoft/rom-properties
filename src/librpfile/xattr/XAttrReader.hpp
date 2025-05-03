@@ -62,6 +62,13 @@ public:
 		XPRESS8K,
 		XPRESS16K,
 #endif /* _WIN32 */
+
+#ifndef _WIN32
+		// btrfs compression algorithms
+		ZLIB,
+		LZO,
+		ZSTD,
+#endif /* _WIN32 */
 	};
 
 public:

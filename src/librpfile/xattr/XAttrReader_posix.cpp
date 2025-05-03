@@ -64,6 +64,13 @@ struct fsxattr {
 // for the following ioctls:
 // - FAT_IOCTL_GET_ATTRIBUTES
 #  include <linux/msdos_fs.h>
+
+// TODO: Remove once /proc/mounts parsing is implemented.
+#  include <sys/vfs.h>
+#  include <linux/magic.h>
+#  ifndef BTRFS_SUPER_MAGIC
+#    define BTRFS_SUPER_MAGIC 0x9123683E
+#  endif
 #endif /* __linux__ */
 
 // O_LARGEFILE is Linux-specific.
@@ -320,10 +327,54 @@ int XAttrReaderPrivate::loadDosAttrs(void)
  */
 int XAttrReaderPrivate::loadCompressionAlgorithm(void)
 {
-	// TODO: Check for compression on various file systems.
 	hasCompressionAlgorithm = false;
 	compressionAlgorithm = XAttrReader::ZAlgorithm::None;
+
+#if defined(__linux__) && defined(HAVE_SYS_XATTR_H) && !defined(__stub_getxattr)
+	// TODO: Get the mount point, then look it up in /proc/mounts.
+	struct statfs sfbuf;
+	if (fstatfs(fd, &sfbuf) != 0) {
+		// statfs() failed.
+		return -EIO;
+	}
+	const uint32_t f_type = static_cast<uint32_t>(sfbuf.f_type);
+	printf("f_type: 0x%08X\n", f_type);
+
+	switch (f_type) {
+		default:
+			break;
+
+		case BTRFS_SUPER_MAGIC: {
+			// Check the "btrfs.compression" attribute.
+			char value[16];
+			ssize_t valuelen = fgetxattr(fd, "btrfs.compression", value, sizeof(value));
+			if (valuelen < 0 || valuelen >= static_cast<ssize_t>(sizeof(value))) {
+				// Invalid attribute.
+				break;
+			}
+			value[sizeof(value)-1] = '\0';
+
+			if (!strcmp(value, "zlib")) {
+				printf("is zlib\n");
+				compressionAlgorithm = XAttrReader::ZAlgorithm::ZLIB;
+				hasCompressionAlgorithm = true;
+			} else if (!strcmp(value, "lzo")) {
+				printf("is lzo\n");
+				compressionAlgorithm = XAttrReader::ZAlgorithm::LZO;
+				hasCompressionAlgorithm = true;
+			} else if (!strcmp(value, "zstd")) {
+				printf("is zstd\n");
+				compressionAlgorithm = XAttrReader::ZAlgorithm::ZSTD;
+				hasCompressionAlgorithm = true;
+			}
+			break;
+		}
+	}
+	return 0;
+#else /* !__linux__ */
+	// TODO: Check for compression on various file systems.
 	return -ENOTSUP;
+#endif /* __linux__ */
 }
 
 /**
