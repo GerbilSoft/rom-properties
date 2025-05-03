@@ -734,12 +734,7 @@ void ConsoleSetTextColor(ConsoleInfo_t *ci, uint8_t color, bool bold)
 
 	// ANSI escape sequences are supported.
 	char buf[32];
-	int len = 0;
-	if (bold) {
-		len = snprintf(buf, sizeof(buf), "\033[3%u;1m", color);
-	} else {
-		len = snprintf(buf, sizeof(buf), "\033[3%um", color);
-	}
+	int len = snprintf(buf, sizeof(buf), "\033[3%u%sm", color, (bold ? ";1" : ""));
 #ifdef _WIN32
 	if (ci->is_real_console) {
 		WriteConsoleA(ci->hConsole, buf, len, nullptr, nullptr);
