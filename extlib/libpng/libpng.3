@@ -1,6 +1,6 @@
-.TH LIBPNG 3 "February 18, 2025"
+.TH LIBPNG 3 "April 30, 2025"
 .SH NAME
-libpng \- Portable Network Graphics (PNG) Reference Library 1.6.47
+libpng \- Portable Network Graphics (PNG) Reference Library 1.6.48
 
 .SH SYNOPSIS
 \fB#include <png.h>\fP
@@ -223,7 +223,7 @@ libpng \- Portable Network Graphics (PNG) Reference Library 1.6.47
 
 \fBint png_image_begin_read_from_file (png_imagep \fP\fIimage\fP\fB, const char \fI*file_name\fP\fB);\fP
 
-\fBint png_image_begin_read_from_stdio (png_imagep \fP\fIimage\fP\fB, FILE* \fIfile\fP\fB);\fP
+\fBint png_image_begin_read_from_stdio (png_imagep \fP\fIimage\fP\fB, FILE *\fIfile\fP\fB);\fP
 
 \fBint, png_image_begin_read_from_memory (png_imagep \fP\fIimage\fP\fB, png_const_voidp \fP\fImemory\fP\fB, size_t \fIsize\fP\fB);\fP
 
@@ -528,7 +528,7 @@ libpng-manual.txt - A description on how to use and modify libpng
 
  Based on:
 
- libpng version 1.6.36, December 2018, through 1.6.47 - February 2025
+ libpng version 1.6.36, December 2018, through 1.6.48 - April 2025
  Updated and distributed by Cosmin Truta
  Copyright (c) 2018-2025 Cosmin Truta
 
@@ -4608,7 +4608,7 @@ READ APIs
      is filled in from the PNG header in the file.
 
    int png_image_begin_read_from_stdio (png_imagep image,
-     FILE* file)
+     FILE *file)
 
       The PNG header is read from the stdio FILE object.
 
@@ -4683,7 +4683,7 @@ be written:
       int convert_to_8_bit, const void *buffer,
       png_int_32 row_stride, const void *colormap)
 
-      Write the image to the given (FILE*).
+      Write the image to the given FILE object.
 
 With all write APIs if image is in one of the linear formats with
 (png_uint_16) data then setting convert_to_8_bit will cause the output to be
