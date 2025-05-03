@@ -31,6 +31,7 @@
   * Build system: DT_RELR detection was broken and didn't work properly
     since it was implemented in v2.0. It now works properly.
   * GTK4: Fix a potential crash in DragImage when using `rp-stub -R`.
+  * WiiUPackage: vWii packages are now handled properly.
 
 * Other changes:
   * Added support for localsearch-3.8, the new name of Tracker.
